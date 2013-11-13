@@ -134,6 +134,10 @@ gcc_pure
 static DecoderCommand
 decoder_get_virtual_command(Decoder &decoder)
 {
+	if (decoder.error.IsDefined())
+		/* an error has occurred: stop the decoder plugin */
+		return DecoderCommand::STOP;
+
 	const DecoderControl &dc = decoder.dc;
 	assert(dc.pipe != nullptr);
 

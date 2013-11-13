@@ -22,6 +22,7 @@
 
 #include "DecoderCommand.hxx"
 #include "ReplayGainInfo.hxx"
+#include "util/Error.hxx"
 
 class PcmConvert;
 struct DecoderControl;
@@ -86,6 +87,12 @@ struct Decoder {
 	 * has changed since the last check.
 	 */
 	unsigned replay_gain_serial;
+
+	/**
+	 * An error has occurred (in DecoderAPI.cxx), and the plugin
+	 * will be asked to stop.
+	 */
+	Error error;
 
 	Decoder(DecoderControl &_dc, bool _initial_seek_pending, Tag *_tag)
 		:dc(_dc),

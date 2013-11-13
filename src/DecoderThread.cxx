@@ -360,7 +360,12 @@ decoder_run_song(DecoderControl &dc,
 
 	dc.Lock();
 
-	if (ret)
+	if (decoder.error.IsDefined()) {
+		/* copy the Error from sruct Decoder to
+		   DecoderControl */
+		dc.state = DecoderState::ERROR;
+		dc.error = std::move(decoder.error);
+	} else if (ret)
 		dc.state = DecoderState::STOP;
 	else {
 		dc.state = DecoderState::ERROR;
