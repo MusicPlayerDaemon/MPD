@@ -20,6 +20,7 @@
 #include "config.h"
 #include "DecoderInternal.hxx"
 #include "DecoderControl.hxx"
+#include "pcm/PcmConvert.hxx"
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
@@ -32,6 +33,7 @@ Decoder::~Decoder()
 	/* caller must flush the chunk */
 	assert(chunk == nullptr);
 
+	delete convert;
 	delete song_tag;
 	delete stream_tag;
 	delete decoder_tag;

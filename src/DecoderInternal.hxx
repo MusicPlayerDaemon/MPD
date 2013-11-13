@@ -21,9 +21,9 @@
 #define MPD_DECODER_INTERNAL_HXX
 
 #include "DecoderCommand.hxx"
-#include "pcm/PcmConvert.hxx"
 #include "ReplayGainInfo.hxx"
 
+class PcmConvert;
 struct DecoderControl;
 struct InputStream;
 struct Tag;
@@ -31,7 +31,11 @@ struct Tag;
 struct Decoder {
 	DecoderControl &dc;
 
-	PcmConvert conv_state;
+	/**
+	 * For converting input data to the configured audio format.
+	 * nullptr means no conversion necessary.
+	 */
+	PcmConvert *convert;
 
 	/**
 	 * The time stamp of the next data chunk, in seconds.
@@ -85,6 +89,7 @@ struct Decoder {
 
 	Decoder(DecoderControl &_dc, bool _initial_seek_pending, Tag *_tag)
 		:dc(_dc),
+		 convert(nullptr),
 		 timestamp(0),
 		 initial_seek_pending(_initial_seek_pending),
 		 initial_seek_running(false),

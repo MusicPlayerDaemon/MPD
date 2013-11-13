@@ -20,6 +20,7 @@
 #include "config.h"
 #include "DecoderAPI.hxx"
 #include "DecoderError.hxx"
+#include "pcm/PcmConvert.hxx"
 #include "AudioConfig.hxx"
 #include "ReplayGainConfig.hxx"
 #include "MusicChunk.hxx"
@@ -47,6 +48,7 @@ decoder_initialized(Decoder &decoder,
 
 	assert(dc.state == DecoderState::START);
 	assert(dc.pipe != nullptr);
+	assert(decoder.convert == nullptr);
 	assert(decoder.stream_tag == nullptr);
 	assert(decoder.decoder_tag == nullptr);
 	assert(!decoder.seeking);
@@ -59,19 +61,22 @@ decoder_initialized(Decoder &decoder,
 	dc.seekable = seekable;
 	dc.total_time = total_time;
 
-	dc.Lock();
-	dc.state = DecoderState::DECODE;
-	dc.client_cond.signal();
-	dc.Unlock();
-
 	FormatDebug(decoder_domain, "audio_format=%s, seekable=%s",
 		    audio_format_to_string(dc.in_audio_format, &af_string),
 		    seekable ? "true" : "false");
 
-	if (dc.in_audio_format != dc.out_audio_format)
+	if (dc.in_audio_format != dc.out_audio_format) {
 		FormatDebug(decoder_domain, "converting to %s",
 			    audio_format_to_string(dc.out_audio_format,
 						   &af_string));
+
+		decoder.convert = new PcmConvert();
+	}
+
+	dc.Lock();
+	dc.state = DecoderState::DECODE;
+	dc.client_cond.signal();
+	dc.Unlock();
 }
 
 /**
@@ -388,13 +393,15 @@ decoder_data(Decoder &decoder,
 			return cmd;
 	}
 
-	if (dc.in_audio_format != dc.out_audio_format) {
+	if (decoder.convert != nullptr) {
+		assert(dc.in_audio_format != dc.out_audio_format);
+
 		Error error;
-		data = decoder.conv_state.Convert(dc.in_audio_format,
-						   data, length,
-						   dc.out_audio_format,
-						   &length,
-						   error);
+		data = decoder.convert->Convert(dc.in_audio_format,
+						data, length,
+						dc.out_audio_format,
+						&length,
+						error);
 		if (data == nullptr) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
@@ -402,6 +409,8 @@ decoder_data(Decoder &decoder,
 			LogError(error);
 			return DecoderCommand::STOP;
 		}
+	} else {
+		assert(dc.in_audio_format == dc.out_audio_format);
 	}
 
 	while (length > 0) {
