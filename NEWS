@@ -1,3 +1,7 @@
+ver 0.18.5 (20??/??/??)
+* fix build failures due to missing includes
+* fix build failure with static libmpdclient
+
 ver 0.18.4 (2013/11/13)
 * decoder
   - dsdiff: fix byte order bug
