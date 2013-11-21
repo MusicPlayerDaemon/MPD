@@ -30,16 +30,17 @@
 
 #include <glib.h>
 
+static GTimer *uptime;
 static struct stats stats;
 
 void stats_global_init(void)
 {
-	stats.timer = g_timer_new();
+	uptime = g_timer_new();
 }
 
 void stats_global_finish(void)
 {
-	g_timer_destroy(stats.timer);
+	g_timer_destroy(uptime);
 }
 
 void stats_update(void)
@@ -77,7 +78,7 @@ stats_print(Client &client)
 		      stats.artist_count,
 		      stats.album_count,
 		      stats.song_count,
-		      (long)g_timer_elapsed(stats.timer, NULL),
+		      (long)g_timer_elapsed(uptime, NULL),
 		      (long)(client.player_control.GetTotalPlayTime() + 0.5),
 		      stats.song_duration);
 

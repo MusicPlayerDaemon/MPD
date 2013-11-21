@@ -21,11 +21,8 @@
 #define MPD_STATS_HXX
 
 class Client;
-typedef struct _GTimer GTimer;
 
 struct stats {
-	GTimer *timer;
-
 	/** number of song files in the music directory */
 	unsigned song_count;
 
