@@ -83,6 +83,6 @@ stats_print(Client &client)
 
 	if (db_is_simple())
 		client_printf(client,
-			      "db_update: %li\n",
-			      (long)db_get_mtime());
+			      "db_update: %lu\n",
+			      (unsigned long)db_get_mtime());
 }
