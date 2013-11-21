@@ -45,6 +45,8 @@ void stats_global_finish(void)
 
 void stats_update(void)
 {
+	assert(GetDatabase() != nullptr);
+
 	Error error;
 
 	DatabaseStats stats2;
@@ -59,9 +61,11 @@ void stats_update(void)
 	}
 }
 
-void
-stats_print(Client &client)
+static void
+db_stats_print(Client &client)
 {
+	assert(GetDatabase() != nullptr);
+
 	if (!db_is_simple())
 		/* reload statistics if we're using the "proxy"
 		   database plugin */
@@ -73,18 +77,27 @@ stats_print(Client &client)
 		      "artists: %u\n"
 		      "albums: %u\n"
 		      "songs: %u\n"
-		      "uptime: %lu\n"
-		      "playtime: %lu\n"
 		      "db_playtime: %lu\n",
 		      stats.artist_count,
 		      stats.album_count,
 		      stats.song_count,
-		      (unsigned long)g_timer_elapsed(uptime, NULL),
-		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5),
 		      stats.total_duration);
 
 	if (db_is_simple())
 		client_printf(client,
 			      "db_update: %lu\n",
 			      (unsigned long)db_get_mtime());
+}
+
+void
+stats_print(Client &client)
+{
+	client_printf(client,
+		      "uptime: %lu\n"
+		      "playtime: %lu\n",
+		      (unsigned long)g_timer_elapsed(uptime, NULL),
+		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5));
+
+	if (GetDatabase() != nullptr)
+		db_stats_print(client);
 }

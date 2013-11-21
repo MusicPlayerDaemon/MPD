@@ -1,6 +1,7 @@
 ver 0.18.5 (20??/??/??)
 * configuration
   - fix crash when db_file is configured without music_directory
+  - fix crash on "stats" without db_file/music_directory
 * database
   - proxy: auto-reload statistics
 * decoder
