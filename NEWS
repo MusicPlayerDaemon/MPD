@@ -4,6 +4,7 @@ ver 0.18.5 (20??/??/??)
   - fix crash on "stats" without db_file/music_directory
 * database
   - proxy: auto-reload statistics
+  - proxy: provide "db_update" in "stats" response
 * decoder
   - fluidsynth: auto-detect by default
 * fix ia64, mipsel and other little-endian architectures

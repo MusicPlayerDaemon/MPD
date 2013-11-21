@@ -46,6 +46,9 @@ class ProxyDatabase : public Database {
 	struct mpd_connection *connection;
 	Directory *root;
 
+	/* this is mutable because GetStats() must be "const" */
+	mutable time_t update_stamp;
+
 public:
 	static Database *Create(const config_param &param,
 				Error &error);
@@ -72,8 +75,7 @@ public:
 			      Error &error) const override;
 
 	virtual time_t GetUpdateStamp() const override {
-		// TODO: implement
-		return 0;
+		return update_stamp;
 	}
 
 private:
@@ -242,6 +244,7 @@ ProxyDatabase::Open(Error &error)
 		return false;
 
 	root = Directory::NewRoot();
+	update_stamp = 0;
 
 	return true;
 }
@@ -635,6 +638,8 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 		mpd_run_stats(connection);
 	if (stats2 == nullptr)
 		return CheckError(connection, error);
+
+	update_stamp = (time_t)mpd_stats_get_db_update_time(stats2);
 
 	stats.song_count = mpd_stats_get_number_of_songs(stats2);
 	stats.total_duration = mpd_stats_get_db_play_time(stats2);
