@@ -72,15 +72,15 @@ stats_print(Client &client)
 	client_printf(client,
 		      "artists: %u\n"
 		      "albums: %u\n"
-		      "songs: %i\n"
-		      "uptime: %li\n"
-		      "playtime: %li\n"
-		      "db_playtime: %li\n",
+		      "songs: %u\n"
+		      "uptime: %lu\n"
+		      "playtime: %lu\n"
+		      "db_playtime: %lu\n",
 		      stats.artist_count,
 		      stats.album_count,
 		      stats.song_count,
-		      (long)g_timer_elapsed(uptime, NULL),
-		      (long)(client.player_control.GetTotalPlayTime() + 0.5),
+		      (unsigned long)g_timer_elapsed(uptime, NULL),
+		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5),
 		      stats.total_duration);
 
 	if (db_is_simple())
