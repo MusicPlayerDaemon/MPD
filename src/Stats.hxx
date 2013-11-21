@@ -22,21 +22,6 @@
 
 class Client;
 
-struct stats {
-	/** number of song files in the music directory */
-	unsigned song_count;
-
-	/** sum of all song durations in the music directory (in
-	    seconds) */
-	unsigned long song_duration;
-
-	/** number of distinct artist names in the music directory */
-	unsigned artist_count;
-
-	/** number of distinct album names in the music directory */
-	unsigned album_count;
-};
-
 void stats_global_init(void);
 
 void stats_global_finish(void);
