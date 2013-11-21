@@ -36,10 +36,20 @@
 /* well-known little-endian */
 #  define IS_LITTLE_ENDIAN true
 #  define IS_BIG_ENDIAN false
-#else
+#elif defined(__MIPSEB__)
 /* well-known big-endian */
 #  define IS_LITTLE_ENDIAN false
 #  define IS_BIG_ENDIAN true
+#else
+/* generic compile-time check */
+#  include <endian.h>
+#  if __BYTE_ORDER == __LITTLE_ENDIAN
+#    define IS_LITTLE_ENDIAN true
+#    define IS_BIG_ENDIAN false
+#  else
+#    define IS_LITTLE_ENDIAN false
+#    define IS_BIG_ENDIAN true
+#  endif
 #endif
 
 static inline constexpr bool

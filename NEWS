@@ -1,6 +1,7 @@
 ver 0.18.5 (20??/??/??)
 * decoder
   - fluidsynth: auto-detect by default
+* fix ia64, mipsel and other little-endian architectures
 * fix build failures due to missing includes
 * fix build failure with static libmpdclient
 
