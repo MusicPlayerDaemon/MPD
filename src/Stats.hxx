@@ -40,8 +40,6 @@ struct stats {
 	unsigned album_count;
 };
 
-extern struct stats stats;
-
 void stats_global_init(void);
 
 void stats_global_finish(void);

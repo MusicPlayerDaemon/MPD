@@ -30,7 +30,7 @@
 
 #include <glib.h>
 
-struct stats stats;
+static struct stats stats;
 
 void stats_global_init(void)
 {
