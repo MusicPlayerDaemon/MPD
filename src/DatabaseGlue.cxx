@@ -148,12 +148,12 @@ DatabaseGlobalOpen(Error &error)
 	return true;
 }
 
-time_t
-db_get_mtime(void)
+bool
+db_exists()
 {
 	assert(db != nullptr);
 	assert(db_is_open);
 	assert(db_is_simple());
 
-	return ((SimpleDatabase *)db)->GetLastModified();
+	return ((SimpleDatabase *)db)->GetUpdateStamp() > 0;
 }

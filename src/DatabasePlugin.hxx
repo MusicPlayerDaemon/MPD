@@ -30,6 +30,8 @@
 #include "tag/TagType.h"
 #include "Compiler.h"
 
+#include <time.h>
+
 struct config_param;
 struct DatabaseSelection;
 struct db_visitor;
@@ -132,6 +134,13 @@ public:
 	virtual bool GetStats(const DatabaseSelection &selection,
 			      DatabaseStats &stats,
 			      Error &error) const = 0;
+
+	/**
+	 * Returns the time stamp of the last database update.
+	 * Returns 0 if that is not not known/available.
+	 */
+	gcc_pure
+	virtual time_t GetUpdateStamp() const = 0;
 };
 
 struct DatabasePlugin {

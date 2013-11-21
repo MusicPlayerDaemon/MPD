@@ -63,24 +63,12 @@ bool
 db_save(Error &error);
 
 /**
- * May only be used if db_is_simple() returns true.
- */
-gcc_pure
-time_t
-db_get_mtime(void);
-
-/**
  * Returns true if there is a valid database file on the disk.
  *
  * May only be used if db_is_simple() returns true.
  */
 gcc_pure
-static inline bool
-db_exists(void)
-{
-	/* mtime is set only if the database file was loaded or saved
-	   successfully */
-	return db_get_mtime() > 0;
-}
+bool
+db_exists();
 
 #endif

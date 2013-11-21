@@ -71,6 +71,11 @@ public:
 			      DatabaseStats &stats,
 			      Error &error) const override;
 
+	virtual time_t GetUpdateStamp() const override {
+		// TODO: implement
+		return 0;
+	}
+
 private:
 	bool Configure(const config_param &param, Error &error);
 

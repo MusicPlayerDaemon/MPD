@@ -83,10 +83,11 @@ db_stats_print(Client &client)
 		      stats.song_count,
 		      stats.total_duration);
 
-	if (db_is_simple())
+	const time_t update_stamp = GetDatabase()->GetUpdateStamp();
+	if (update_stamp > 0)
 		client_printf(client,
 			      "db_update: %lu\n",
-			      (unsigned long)db_get_mtime());
+			      (unsigned long)update_stamp);
 }
 
 void
