@@ -1,4 +1,6 @@
 ver 0.18.5 (20??/??/??)
+* decoder
+  - fluidsynth: auto-detect by default
 * fix build failures due to missing includes
 * fix build failure with static libmpdclient
 
