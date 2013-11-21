@@ -133,7 +133,9 @@ void mapper_finish(void)
 const char *
 mapper_get_music_directory_utf8(void)
 {
-	return music_dir_utf8.c_str();
+	return music_dir_utf8.empty()
+		? nullptr
+		: music_dir_utf8.c_str();
 }
 
 const AllocatedPath &
