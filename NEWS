@@ -1,6 +1,8 @@
 ver 0.18.5 (20??/??/??)
 * configuration
   - fix crash when db_file is configured without music_directory
+* database
+  - proxy: auto-reload statistics
 * decoder
   - fluidsynth: auto-detect by default
 * fix ia64, mipsel and other little-endian architectures

@@ -62,6 +62,13 @@ void stats_update(void)
 void
 stats_print(Client &client)
 {
+	if (!db_is_simple())
+		/* reload statistics if we're using the "proxy"
+		   database plugin */
+		/* TODO: move this into the "proxy" database plugin as
+		   an "idle" handler */
+		stats_update();
+
 	client_printf(client,
 		      "artists: %u\n"
 		      "albums: %u\n"
