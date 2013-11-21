@@ -33,9 +33,11 @@
 #include <stdint.h>
 
 #if defined(__i386__) || defined(__x86_64__) || defined(__ARMEL__)
+/* well-known little-endian */
 #  define IS_LITTLE_ENDIAN true
 #  define IS_BIG_ENDIAN false
 #else
+/* well-known big-endian */
 #  define IS_LITTLE_ENDIAN false
 #  define IS_BIG_ENDIAN true
 #endif
