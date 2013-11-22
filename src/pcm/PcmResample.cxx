@@ -155,8 +155,19 @@ PcmResampler::Resample24(unsigned channels, unsigned src_rate,
 			 unsigned dest_rate, size_t *dest_size_r,
 			 Error &error_r)
 {
+#ifdef HAVE_LIBSAMPLERATE
+	if (pcm_resample_lsr_enabled())
+		return pcm_resample_lsr_24(this, channels,
+					   src_rate, src_buffer, src_size,
+					   dest_rate, dest_size_r,
+					   error_r);
+#else
+	(void)error_r;
+#endif
+
 	/* reuse the 32 bit code - the resampler code doesn't care if
 	   the upper 8 bits are actually used */
-	return Resample32(channels, src_rate, src_buffer, src_size,
-			  dest_rate, dest_size_r, error_r);
+	return pcm_resample_fallback_32(this, channels,
+					src_rate, src_buffer, src_size,
+					dest_rate, dest_size_r);
 }

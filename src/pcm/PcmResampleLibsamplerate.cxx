@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PcmResampleInternal.hxx"
+#include "PcmUtils.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -282,4 +283,28 @@ pcm_resample_lsr_32(PcmResampler *state,
 			       data->output_frames_gen * channels);
 
 	return dest_buffer;
+}
+
+const int32_t *
+pcm_resample_lsr_24(PcmResampler *state,
+		    unsigned channels,
+		    unsigned src_rate,
+		    const int32_t *src_buffer, size_t src_size,
+		    unsigned dest_rate, size_t *dest_size_r,
+		    Error &error)
+{
+	const auto result = pcm_resample_lsr_32(state, channels,
+						src_rate, src_buffer, src_size,
+						dest_rate, dest_size_r,
+						error);
+	if (result != nullptr)
+		/* src_float_to_int_array() clamps for 32 bit
+		   integers; now make sure everything's fine for 24
+		   bit */
+		/* TODO: eliminate the 32 bit clamp to reduce overhead */
+		PcmClampN<int32_t, int32_t, 24>(const_cast<int32_t *>(result),
+						result,
+						*dest_size_r / sizeof(*result));
+
+	return result;
 }

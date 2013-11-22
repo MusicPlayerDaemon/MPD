@@ -7,6 +7,7 @@ ver 0.18.5 (20??/??/??)
   - proxy: provide "db_update" in "stats" response
 * decoder
   - fluidsynth: auto-detect by default
+* clip 24 bit data from libsamplerate
 * fix ia64, mipsel and other little-endian architectures
 * fix build failures due to missing includes
 * fix build failure with static libmpdclient

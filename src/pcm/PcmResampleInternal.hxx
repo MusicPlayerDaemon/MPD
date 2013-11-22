@@ -69,6 +69,15 @@ pcm_resample_lsr_32(PcmResampler *state,
 		    unsigned dest_rate, size_t *dest_size_r,
 		    Error &error);
 
+const int32_t *
+pcm_resample_lsr_24(PcmResampler *state,
+		    unsigned channels,
+		    unsigned src_rate,
+		    const int32_t *src_buffer,
+		    size_t src_size,
+		    unsigned dest_rate, size_t *dest_size_r,
+		    Error &error);
+
 #endif
 
 const int16_t *
