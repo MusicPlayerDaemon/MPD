@@ -148,3 +148,15 @@ PcmResampler::Resample32(unsigned channels, unsigned src_rate,
 					src_rate, src_buffer, src_size,
 					dest_rate, dest_size_r);
 }
+
+const int32_t *
+PcmResampler::Resample24(unsigned channels, unsigned src_rate,
+			 const int32_t *src_buffer, size_t src_size,
+			 unsigned dest_rate, size_t *dest_size_r,
+			 Error &error_r)
+{
+	/* reuse the 32 bit code - the resampler code doesn't care if
+	   the upper 8 bits are actually used */
+	return Resample32(channels, src_rate, src_buffer, src_size,
+			  dest_rate, dest_size_r, error_r);
+}
