@@ -1952,6 +1952,32 @@ OK
             <para>
               Shows information about all outputs.
             </para>
+            <screen>
+outputid: 0
+outputname: My ALSA Device
+outputenabled: 0
+OK
+            </screen>
+            <para>
+              Return information:
+            </para>
+            <itemizedlist>
+              <listitem>
+                <para>
+                  <varname>outputid</varname>: ID of the output. May change between executions
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>outputname</varname>: Name of the output. It can be any.
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>outputenabled</varname>: Status of the output. 0 if disabled, 1 if enabled.
+                </para>
+              </listitem>
+            </itemizedlist>
           </listitem>
         </varlistentry>
       </variablelist>
