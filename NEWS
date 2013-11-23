@@ -1,4 +1,4 @@
-ver 0.18.5 (20??/??/??)
+ver 0.18.5 (2013/11/23)
 * configuration
   - fix crash when db_file is configured without music_directory
   - fix crash on "stats" without db_file/music_directory
