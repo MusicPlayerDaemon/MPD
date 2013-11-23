@@ -874,10 +874,12 @@ AM_CONDITIONAL(HAVE_FLAC, test x$enable_flac = xyes)
 enable_flac_encoder=$enable_flac
 
 dnl -------------------------------- FluidSynth -------------------------------
+
+MPD_AUTO_PKG(fluidsynth, FLUIDSYNTH, [fluidsynth >= 1.1],
+	[fluidsynth decoder], [fluidsynth not found])
+
 if test x$enable_fluidsynth = xyes; then
-	PKG_CHECK_MODULES(FLUIDSYNTH, [fluidsynth >= 1.1],
-		AC_DEFINE(ENABLE_FLUIDSYNTH, 1, [Define for fluidsynth support]),
-		enable_fluidsynth=no)
+	AC_DEFINE(ENABLE_FLUIDSYNTH, 1, [Define for fluidsynth support])
 fi
 
 AM_CONDITIONAL(ENABLE_FLUIDSYNTH, test x$enable_fluidsynth = xyes)

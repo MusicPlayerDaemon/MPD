@@ -190,18 +190,16 @@ iso9660_input_read(InputStream *is, void *ptr, size_t size,
 		   Error &error)
 {
 	Iso9660InputStream *iis = (Iso9660InputStream *)is;
-	int toread, readed = 0;
+	int readed = 0;
 	int no_blocks, cur_block;
 	size_t left_bytes = iis->statbuf->size - is->offset;
 
 	size = (size * ISO_BLOCKSIZE) / ISO_BLOCKSIZE;
 
 	if (left_bytes < size) {
-		toread = left_bytes;
 		no_blocks = CEILING(left_bytes,ISO_BLOCKSIZE);
 	} else {
-		toread = size;
-		no_blocks = toread / ISO_BLOCKSIZE;
+		no_blocks = size / ISO_BLOCKSIZE;
 	}
 	if (no_blocks > 0) {
 

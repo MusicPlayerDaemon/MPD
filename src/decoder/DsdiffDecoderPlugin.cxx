@@ -294,7 +294,6 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 			if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
 				return false;
 		}
-		chunk_size = 0;
 	}
 	/* done processing chunk headers, process tags if any */
 
@@ -385,10 +384,10 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 	while (chunk_size > 0) {
 		/* see how much aligned data from the remaining chunk
 		   fits into the local buffer */
-		unsigned now_frames = buffer_frames;
 		size_t now_size = buffer_size;
 		if (chunk_size < (uint64_t)now_size) {
-			now_frames = (unsigned)chunk_size / frame_size;
+			unsigned now_frames =
+				(unsigned)chunk_size / frame_size;
 			now_size = now_frames * frame_size;
 		}
 

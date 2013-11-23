@@ -30,59 +30,75 @@
 
 #include <glib.h>
 
-struct stats stats;
+static GTimer *uptime;
+static DatabaseStats stats;
 
 void stats_global_init(void)
 {
-	stats.timer = g_timer_new();
+	uptime = g_timer_new();
 }
 
 void stats_global_finish(void)
 {
-	g_timer_destroy(stats.timer);
+	g_timer_destroy(uptime);
 }
 
 void stats_update(void)
 {
+	assert(GetDatabase() != nullptr);
+
 	Error error;
 
 	DatabaseStats stats2;
 
 	const DatabaseSelection selection("", true);
 	if (GetDatabase()->GetStats(selection, stats2, error)) {
-		stats.song_count = stats2.song_count;
-		stats.song_duration = stats2.total_duration;
-		stats.artist_count = stats2.artist_count;
-		stats.album_count = stats2.album_count;
+		stats = stats2;
 	} else {
 		LogError(error);
 
-		stats.song_count = 0;
-		stats.song_duration = 0;
-		stats.artist_count = 0;
-		stats.album_count = 0;
+		stats.Clear();
 	}
+}
+
+static void
+db_stats_print(Client &client)
+{
+	assert(GetDatabase() != nullptr);
+
+	if (!db_is_simple())
+		/* reload statistics if we're using the "proxy"
+		   database plugin */
+		/* TODO: move this into the "proxy" database plugin as
+		   an "idle" handler */
+		stats_update();
+
+	client_printf(client,
+		      "artists: %u\n"
+		      "albums: %u\n"
+		      "songs: %u\n"
+		      "db_playtime: %lu\n",
+		      stats.artist_count,
+		      stats.album_count,
+		      stats.song_count,
+		      stats.total_duration);
+
+	const time_t update_stamp = GetDatabase()->GetUpdateStamp();
+	if (update_stamp > 0)
+		client_printf(client,
+			      "db_update: %lu\n",
+			      (unsigned long)update_stamp);
 }
 
 void
 stats_print(Client &client)
 {
 	client_printf(client,
-		      "artists: %u\n"
-		      "albums: %u\n"
-		      "songs: %i\n"
-		      "uptime: %li\n"
-		      "playtime: %li\n"
-		      "db_playtime: %li\n",
-		      stats.artist_count,
-		      stats.album_count,
-		      stats.song_count,
-		      (long)g_timer_elapsed(stats.timer, NULL),
-		      (long)(client.player_control.GetTotalPlayTime() + 0.5),
-		      stats.song_duration);
+		      "uptime: %lu\n"
+		      "playtime: %lu\n",
+		      (unsigned long)g_timer_elapsed(uptime, NULL),
+		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5));
 
-	if (db_is_simple())
-		client_printf(client,
-			      "db_update: %li\n",
-			      (long)db_get_mtime());
+	if (GetDatabase() != nullptr)
+		db_stats_print(client);
 }

@@ -63,4 +63,16 @@ PcmClamp(U x)
 	return T(x);
 }
 
+/**
+ * Check if the values in this buffer are within the range of the
+ * provided bit size, and clamps them whenever necessary.
+ */
+template<typename T, typename U, unsigned bits>
+static inline void
+PcmClampN(T *dest, const U *src, unsigned n)
+{
+	while (n-- > 0)
+		*dest++ = PcmClamp<T, U, bits>(*src++);
+}
+
 #endif

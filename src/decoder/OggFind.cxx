@@ -22,6 +22,8 @@
 #include "OggSyncState.hxx"
 #include "util/Error.hxx"
 
+#include <stdio.h>
+
 bool
 OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
 {

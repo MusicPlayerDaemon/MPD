@@ -273,11 +273,26 @@ public:
 		SocketAction(CURL_SOCKET_TIMEOUT, 0);
 	}
 
+	/**
+	 * This is a kludge to allow pausing/resuming a stream with
+	 * libcurl < 7.32.0.  Read the curl_easy_pause manpage for
+	 * more information.
+	 */
+	void ResumeSockets() {
+		int running_handles;
+		curl_multi_socket_all(multi, &running_handles);
+	}
+
 private:
 	static int TimerFunction(CURLM *multi, long timeout_ms, void *userp);
 
 	virtual void OnTimeout() override;
 };
+
+/**
+ * libcurl version number encoded in a 24 bit integer.
+ */
+static unsigned curl_version_num;
 
 /** libcurl should accept "ICY 200 OK" */
 static struct curl_slist *http_200_aliases;
@@ -330,6 +345,13 @@ input_curl_resume(struct input_curl *c)
 	if (c->paused) {
 		c->paused = false;
 		curl_easy_pause(c->easy, CURLPAUSE_CONT);
+
+		if (curl_version_num < 0x072000)
+			/* libcurl older than 7.32.0 does not update
+			   its sockets after curl_easy_pause(); force
+			   libcurl to do it now */
+			curl_multi->ResumeSockets();
+
 		curl_multi->InvalidateSockets();
 	}
 }
@@ -584,6 +606,16 @@ input_curl_init(const config_param &param, Error &error)
 			     "curl_global_init() failed: %s",
 			     curl_easy_strerror(code));
 		return false;
+	}
+
+	const auto version_info = curl_version_info(CURLVERSION_FIRST);
+	if (version_info != nullptr) {
+		FormatDebug(curl_domain, "version %s", version_info->version);
+		if (version_info->features & CURL_VERSION_SSL)
+			FormatDebug(curl_domain, "with %s",
+				    version_info->ssl_version);
+
+		curl_version_num = version_info->version_num;
 	}
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");

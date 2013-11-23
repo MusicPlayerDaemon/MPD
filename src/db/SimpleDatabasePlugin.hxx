@@ -26,8 +26,6 @@
 
 #include <cassert>
 
-#include <time.h>
-
 struct Directory;
 
 class SimpleDatabase : public Database {
@@ -55,11 +53,6 @@ public:
 
 	bool Save(Error &error);
 
-	gcc_pure
-	time_t GetLastModified() const {
-		return mtime;
-	}
-
 	static Database *Create(const config_param &param,
 				Error &error);
 
@@ -84,6 +77,10 @@ public:
 	virtual bool GetStats(const DatabaseSelection &selection,
 			      DatabaseStats &stats,
 			      Error &error) const override;
+
+	virtual time_t GetUpdateStamp() const override {
+		return mtime;
+	}
 
 protected:
 	bool Configure(const config_param &param, Error &error);
