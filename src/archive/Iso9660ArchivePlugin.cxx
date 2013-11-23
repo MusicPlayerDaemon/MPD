@@ -201,25 +201,26 @@ iso9660_input_read(InputStream *is, void *ptr, size_t size,
 	} else {
 		no_blocks = size / ISO_BLOCKSIZE;
 	}
-	if (no_blocks > 0) {
 
-		cur_block = is->offset / ISO_BLOCKSIZE;
+	if (no_blocks == 0)
+		return 0;
 
-		readed = iso9660_iso_seek_read (iis->archive->iso, ptr,
-			iis->statbuf->lsn + cur_block, no_blocks);
+	cur_block = is->offset / ISO_BLOCKSIZE;
 
-		if (readed != no_blocks * ISO_BLOCKSIZE) {
-			error.Format(iso9660_domain,
-				     "error reading ISO file at lsn %lu",
-				     (unsigned long)cur_block);
-			return 0;
-		}
-		if (left_bytes < size) {
-			readed = left_bytes;
-		}
+	readed = iso9660_iso_seek_read (iis->archive->iso, ptr,
+					iis->statbuf->lsn + cur_block, no_blocks);
 
-		is->offset += readed;
+	if (readed != no_blocks * ISO_BLOCKSIZE) {
+		error.Format(iso9660_domain,
+			     "error reading ISO file at lsn %lu",
+			     (unsigned long)cur_block);
+		return 0;
 	}
+	if (left_bytes < size) {
+		readed = left_bytes;
+	}
+
+	is->offset += readed;
 	return readed;
 }
 
