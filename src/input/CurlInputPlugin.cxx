@@ -586,6 +586,14 @@ input_curl_init(const config_param &param, Error &error)
 		return false;
 	}
 
+	const auto version_info = curl_version_info(CURLVERSION_FIRST);
+	if (version_info != nullptr) {
+		FormatDebug(curl_domain, "version %s", version_info->version);
+		if (version_info->features & CURL_VERSION_SSL)
+			FormatDebug(curl_domain, "with %s",
+				    version_info->ssl_version);
+	}
+
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
 
 	proxy = param.GetBlockValue("proxy");
