@@ -273,6 +273,16 @@ public:
 		SocketAction(CURL_SOCKET_TIMEOUT, 0);
 	}
 
+	/**
+	 * This is a kludge to allow pausing/resuming a stream with
+	 * libcurl < 7.32.0.  Read the curl_easy_pause manpage for
+	 * more information.
+	 */
+	void ResumeSockets() {
+		int running_handles;
+		curl_multi_socket_all(multi, &running_handles);
+	}
+
 private:
 	static int TimerFunction(CURLM *multi, long timeout_ms, void *userp);
 
@@ -335,6 +345,13 @@ input_curl_resume(struct input_curl *c)
 	if (c->paused) {
 		c->paused = false;
 		curl_easy_pause(c->easy, CURLPAUSE_CONT);
+
+		if (curl_version_num < 0x072000)
+			/* libcurl older than 7.32.0 does not update
+			   its sockets after curl_easy_pause(); force
+			   libcurl to do it now */
+			curl_multi->ResumeSockets();
+
 		curl_multi->InvalidateSockets();
 	}
 }

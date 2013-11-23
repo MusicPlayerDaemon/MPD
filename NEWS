@@ -5,6 +5,8 @@ ver 0.18.5 (20??/??/??)
 * database
   - proxy: auto-reload statistics
   - proxy: provide "db_update" in "stats" response
+* input
+  - curl: work around stream resume bug (fixed in libcurl 7.32.0)
 * decoder
   - fluidsynth: auto-detect by default
 * clip 24 bit data from libsamplerate
