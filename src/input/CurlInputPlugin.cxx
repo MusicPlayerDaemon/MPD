@@ -279,6 +279,11 @@ private:
 	virtual void OnTimeout() override;
 };
 
+/**
+ * libcurl version number encoded in a 24 bit integer.
+ */
+static unsigned curl_version_num;
+
 /** libcurl should accept "ICY 200 OK" */
 static struct curl_slist *http_200_aliases;
 
@@ -592,6 +597,8 @@ input_curl_init(const config_param &param, Error &error)
 		if (version_info->features & CURL_VERSION_SSL)
 			FormatDebug(curl_domain, "with %s",
 				    version_info->ssl_version);
+
+		curl_version_num = version_info->version_num;
 	}
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
