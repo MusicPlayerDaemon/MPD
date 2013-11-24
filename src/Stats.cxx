@@ -26,21 +26,29 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseSimple.hxx"
 #include "util/Error.hxx"
+#include "system/Clock.hxx"
 #include "Log.hxx"
 
+#ifndef WIN32
 #include <glib.h>
 
 static GTimer *uptime;
+#endif
+
 static DatabaseStats stats;
 
 void stats_global_init(void)
 {
+#ifndef WIN32
 	uptime = g_timer_new();
+#endif
 }
 
 void stats_global_finish(void)
 {
+#ifndef WIN32
 	g_timer_destroy(uptime);
+#endif
 }
 
 void stats_update(void)
@@ -94,9 +102,13 @@ void
 stats_print(Client &client)
 {
 	client_printf(client,
-		      "uptime: %lu\n"
+		      "uptime: %u\n"
 		      "playtime: %lu\n",
-		      (unsigned long)g_timer_elapsed(uptime, NULL),
+#ifdef WIN32
+		      GetProcessUptimeS(),
+#else
+		      (unsigned)g_timer_elapsed(uptime, NULL),
+#endif
 		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5));
 
 	if (GetDatabase() != nullptr)

@@ -96,3 +96,29 @@ MonotonicClockUS(void)
 #endif
 }
 
+#ifdef WIN32
+
+gcc_const
+static unsigned
+DeltaFileTimeS(FILETIME a, FILETIME b)
+{
+	ULARGE_INTEGER a2, b2;
+	b2.LowPart = b.dwLowDateTime;
+	b2.HighPart = b.dwHighDateTime;
+	a2.LowPart = a.dwLowDateTime;
+	a2.HighPart = a.dwHighDateTime;
+	return (a2.QuadPart - b2.QuadPart) / 10000000;
+}
+
+unsigned
+GetProcessUptimeS()
+{
+	FILETIME creation_time, now;
+	GetProcessTimes(GetCurrentProcess(), &creation_time,
+			nullptr, nullptr, nullptr);
+	GetSystemTimeAsFileTime(&now);
+
+	return DeltaFileTimeS(now, creation_time);
+}
+
+#endif

@@ -38,4 +38,15 @@ gcc_pure
 uint64_t
 MonotonicClockUS();
 
+#ifdef WIN32
+
+/**
+ * Returns the uptime of the current process in seconds.
+ */
+gcc_pure
+unsigned
+GetProcessUptimeS();
+
+#endif
+
 #endif
