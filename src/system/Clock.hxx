@@ -25,6 +25,13 @@
 #include <stdint.h>
 
 /**
+ * Returns the value of a monotonic clock in seconds.
+ */
+gcc_pure
+unsigned
+MonotonicClockS();
+
+/**
  * Returns the value of a monotonic clock in milliseconds.
  */
 gcc_pure

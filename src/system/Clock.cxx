@@ -31,6 +31,28 @@
 #endif
 
 unsigned
+MonotonicClockS(void)
+{
+#ifdef WIN32
+	return GetTickCount() / 1000;
+#elif defined(__APPLE__) /* OS X does not define CLOCK_MONOTONIC */
+	static mach_timebase_info_data_t base;
+	if (base.denom == 0)
+		(void)mach_timebase_info(&base);
+
+	return (unsigned)((mach_absolute_time() * base.numer / 1000)
+			  / (1000000 * base.denom));
+#elif defined(CLOCK_MONOTONIC)
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return ts.tv_sec;
+#else
+	/* we have no monotonic clock, fall back to time() */
+	return time(nullptr);
+#endif
+}
+
+unsigned
 MonotonicClockMS(void)
 {
 #ifdef WIN32

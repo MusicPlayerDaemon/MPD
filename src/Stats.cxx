@@ -30,9 +30,11 @@
 #include "Log.hxx"
 
 #ifndef WIN32
-#include <glib.h>
-
-static GTimer *uptime;
+/**
+ * The monotonic time stamp when MPD was started.  It is used to
+ * calculate the uptime.
+ */
+static unsigned start_time;
 #endif
 
 static DatabaseStats stats;
@@ -40,14 +42,7 @@ static DatabaseStats stats;
 void stats_global_init(void)
 {
 #ifndef WIN32
-	uptime = g_timer_new();
-#endif
-}
-
-void stats_global_finish(void)
-{
-#ifndef WIN32
-	g_timer_destroy(uptime);
+	start_time = MonotonicClockS();
 #endif
 }
 
@@ -107,7 +102,7 @@ stats_print(Client &client)
 #ifdef WIN32
 		      GetProcessUptimeS(),
 #else
-		      (unsigned)g_timer_elapsed(uptime, NULL),
+		      MonotonicClockS() - start_time,
 #endif
 		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5));
 

@@ -554,7 +554,6 @@ int mpd_main(int argc, char *argv[])
 	archive_plugin_deinit_all();
 #endif
 	config_global_finish();
-	stats_global_finish();
 	io_thread_deinit();
 	SignalHandlersFinish();
 	delete instance;

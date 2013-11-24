@@ -24,8 +24,6 @@ class Client;
 
 void stats_global_init(void);
 
-void stats_global_finish(void);
-
 void stats_update(void);
 
 void
