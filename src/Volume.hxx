@@ -26,8 +26,6 @@
 
 void volume_init(void);
 
-void volume_finish(void);
-
 gcc_pure
 int volume_level_get(void);
 

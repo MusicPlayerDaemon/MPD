@@ -23,6 +23,7 @@
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 #include "util/Domain.hxx"
+#include "system/PeriodClock.hxx"
 #include "Log.hxx"
 
 #include <glib.h>
@@ -39,7 +40,7 @@ static unsigned volume_software_set = 100;
 /** the cached hardware mixer value; invalid if negative */
 static int last_hardware_volume = -1;
 /** the age of #last_hardware_volume */
-static GTimer *hardware_volume_timer;
+static PeriodClock hardware_volume_clock;
 
 /**
  * Handler for #GlobalEvents::MIXER.
@@ -54,29 +55,19 @@ mixer_event_callback(void)
 	idle_add(IDLE_MIXER);
 }
 
-void volume_finish(void)
-{
-	g_timer_destroy(hardware_volume_timer);
-}
-
 void volume_init(void)
 {
-	hardware_volume_timer = g_timer_new();
-
 	GlobalEvents::Register(GlobalEvents::MIXER, mixer_event_callback);
 }
 
 int volume_level_get(void)
 {
-	assert(hardware_volume_timer != nullptr);
-
 	if (last_hardware_volume >= 0 &&
-	    g_timer_elapsed(hardware_volume_timer, nullptr) < 1.0)
+	    !hardware_volume_clock.CheckUpdate(1000))
 		/* throttle access to hardware mixers */
 		return last_hardware_volume;
 
 	last_hardware_volume = mixer_all_get_volume();
-	g_timer_start(hardware_volume_timer);
 	return last_hardware_volume;
 }
 

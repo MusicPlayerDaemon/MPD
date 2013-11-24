@@ -225,10 +225,7 @@ audio_output_reset_reopen(struct audio_output *ao)
 {
 	const ScopeLock protect(ao->mutex);
 
-	if (!ao->open && ao->fail_timer != nullptr) {
-		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = nullptr;
-	}
+	ao->fail_timer.Reset();
 }
 
 /**

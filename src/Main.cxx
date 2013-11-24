@@ -544,7 +544,6 @@ int mpd_main(int argc, char *argv[])
 	playlist_list_global_finish();
 	input_stream_global_finish();
 	audio_output_all_finish();
-	volume_finish();
 	mapper_finish();
 	delete instance->partition;
 	command_finish();

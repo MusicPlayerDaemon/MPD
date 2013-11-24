@@ -35,8 +35,6 @@
 #include "Log.hxx"
 #include "Compiler.h"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 
@@ -137,14 +135,7 @@ ao_open(struct audio_output *ao)
 	assert(ao->chunk == nullptr);
 	assert(ao->in_audio_format.IsValid());
 
-	if (ao->fail_timer != nullptr) {
-		/* this can only happen when this
-		   output thread fails while
-		   audio_output_open() is run in the
-		   player thread */
-		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = nullptr;
-	}
+	ao->fail_timer.Reset();
 
 	/* enable the device (just in case the last enable has failed) */
 
@@ -160,7 +151,7 @@ ao_open(struct audio_output *ao)
 		FormatError(error, "Failed to open filter for \"%s\" [%s]",
 			    ao->name, ao->plugin->name);
 
-		ao->fail_timer = g_timer_new();
+		ao->fail_timer.Update();
 		return;
 	}
 
@@ -180,7 +171,7 @@ ao_open(struct audio_output *ao)
 			    ao->name, ao->plugin->name);
 
 		ao_filter_close(ao);
-		ao->fail_timer = g_timer_new();
+		ao->fail_timer.Update();
 		return;
 	}
 
@@ -190,7 +181,7 @@ ao_open(struct audio_output *ao)
 			    ao->name, ao->plugin->name);
 
 		ao_filter_close(ao);
-		ao->fail_timer = g_timer_new();
+		ao->fail_timer.Update();
 		return;
 	}
 
@@ -256,7 +247,7 @@ ao_reopen_filter(struct audio_output *ao)
 
 		ao->chunk = nullptr;
 		ao->open = false;
-		ao->fail_timer = g_timer_new();
+		ao->fail_timer.Update();
 
 		ao->mutex.unlock();
 		ao_plugin_close(ao);
@@ -445,7 +436,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 
 		/* don't automatically reopen this device for 10
 		   seconds */
-		ao->fail_timer = g_timer_new();
+		ao->fail_timer.Update();
 		return false;
 	}
 
@@ -469,8 +460,8 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 
 			/* don't automatically reopen this device for
 			   10 seconds */
-			assert(ao->fail_timer == nullptr);
-			ao->fail_timer = g_timer_new();
+			assert(!ao->fail_timer.IsDefined());
+			ao->fail_timer.Update();
 
 			return false;
 		}

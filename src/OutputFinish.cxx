@@ -29,7 +29,7 @@ void
 ao_base_finish(struct audio_output *ao)
 {
 	assert(!ao->open);
-	assert(ao->fail_timer == nullptr);
+	assert(!ao->fail_timer.IsDefined());
 	assert(!ao->thread.IsDefined());
 
 	if (ao->mixer != nullptr)
@@ -44,7 +44,7 @@ void
 audio_output_free(struct audio_output *ao)
 {
 	assert(!ao->open);
-	assert(ao->fail_timer == nullptr);
+	assert(!ao->fail_timer.IsDefined());
 	assert(!ao->thread.IsDefined());
 
 	ao_plugin_finish(ao);

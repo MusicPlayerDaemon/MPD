@@ -25,15 +25,13 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
-
-#include <time.h>
+#include "system/PeriodClock.hxx"
 
 class Error;
 class Filter;
 class MusicPipe;
 struct config_param;
 struct PlayerControl;
-typedef struct _GTimer GTimer;
 
 enum audio_output_command {
 	AO_COMMAND_NONE = 0,
@@ -147,7 +145,7 @@ struct audio_output {
 	 * to estimate how long it should stay disabled (unless
 	 * explicitly reopened with "play").
 	 */
-	GTimer *fail_timer;
+	PeriodClock fail_timer;
 
 	/**
 	 * The configured audio format.

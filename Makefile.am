@@ -299,6 +299,7 @@ libsystem_a_SOURCES = \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
 	src/system/SignalFD.cxx src/system/SignalFD.hxx \
 	src/system/EPollFD.cxx src/system/EPollFD.hxx \
+	src/system/PeriodClock.hxx \
 	src/system/Clock.cxx src/system/Clock.hxx
 
 # Event loop library

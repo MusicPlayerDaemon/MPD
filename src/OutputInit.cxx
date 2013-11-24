@@ -173,7 +173,6 @@ ao_base_init(struct audio_output *ao,
 	ao->allow_play = true;
 	ao->in_playback_loop = false;
 	ao->woken_for_play = false;
-	ao->fail_timer = nullptr;
 
 	/* set up the filter chain */
 

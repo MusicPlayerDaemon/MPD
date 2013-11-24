@@ -32,8 +32,6 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <stdlib.h>
 
@@ -152,10 +150,7 @@ audio_output_open(struct audio_output *ao,
 	assert(ao->allow_play);
 	assert(audio_format.IsValid());
 
-	if (ao->fail_timer != nullptr) {
-		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = nullptr;
-	}
+	ao->fail_timer.Reset();
 
 	if (ao->open && audio_format == ao->in_audio_format) {
 		assert(ao->pipe == &mp ||
@@ -213,14 +208,12 @@ audio_output_close_locked(struct audio_output *ao)
 	if (ao->mixer != nullptr)
 		mixer_auto_close(ao->mixer);
 
-	assert(!ao->open || ao->fail_timer == nullptr);
+	assert(!ao->open || !ao->fail_timer.IsDefined());
 
 	if (ao->open)
 		ao_command(ao, AO_COMMAND_CLOSE);
-	else if (ao->fail_timer != nullptr) {
-		g_timer_destroy(ao->fail_timer);
-		ao->fail_timer = nullptr;
-	}
+	else
+		ao->fail_timer.Reset();
 }
 
 bool
@@ -231,8 +224,7 @@ audio_output_update(struct audio_output *ao,
 	const ScopeLock protect(ao->mutex);
 
 	if (ao->enabled && ao->really_enabled) {
-		if (ao->fail_timer == nullptr ||
-		    g_timer_elapsed(ao->fail_timer, nullptr) > REOPEN_AFTER) {
+		if (ao->fail_timer.Check(REOPEN_AFTER * 1000)) {
 			return audio_output_open(ao, audio_format, mp);
 		}
 	} else if (audio_output_is_open(ao))
@@ -312,7 +304,7 @@ audio_output_release(struct audio_output *ao)
 void audio_output_close(struct audio_output *ao)
 {
 	assert(ao != nullptr);
-	assert(!ao->open || ao->fail_timer == nullptr);
+	assert(!ao->open || !ao->fail_timer.IsDefined());
 
 	const ScopeLock protect(ao->mutex);
 	audio_output_close_locked(ao);
@@ -322,7 +314,7 @@ void audio_output_finish(struct audio_output *ao)
 {
 	audio_output_close(ao);
 
-	assert(ao->fail_timer == nullptr);
+	assert(!ao->fail_timer.IsDefined());
 
 	if (ao->thread.IsDefined()) {
 		assert(ao->allow_play);
