@@ -44,7 +44,7 @@ DatabaseGlobalOpen(Error &error);
  * Returns the global #Database instance.  May return nullptr if this MPD
  * configuration has no database (no music_directory was configured).
  */
-gcc_pure
+gcc_const
 const Database *
 GetDatabase();
 
