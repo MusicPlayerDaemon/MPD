@@ -17,20 +17,43 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_COMMAND_LINE_HXX
-#define MPD_COMMAND_LINE_HXX
+#include "OptionParser.hxx"
+#include "OptionDef.hxx"
 
-class Error;
+#include <string.h>
 
-struct options {
-	bool kill;
-	bool daemon;
-	bool log_stderr;
-	bool verbose;
-};
+bool OptionParser::CheckOption(const OptionDef &opt)
+{
+	assert(option != nullptr);
 
-bool
-parse_cmdline(int argc, char **argv, struct options *options,
-	      Error &error);
+	if (is_long)
+		return opt.HasLongOption() &&
+		       strcmp(option, opt.GetLongOption()) == 0;
 
-#endif
+	return opt.HasShortOption() &&
+	       option[0] == opt.GetShortOption() &&
+	       option[1] == '\0';
+}
+
+bool OptionParser::ParseNext()
+{
+	assert(HasEntries());
+	char *arg = *argv;
+	++argv;
+	--argc;
+	if (arg[0] == '-') {
+		if (arg[1] == '-') {
+			option = arg + 2;
+			is_long = true;
+		}
+		else {
+			option = arg + 1;
+			is_long = false;
+		}
+		option_raw = arg;
+		return true;
+	}
+	option = nullptr;
+	option_raw = nullptr;
+	return false;
+}

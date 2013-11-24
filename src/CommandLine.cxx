@@ -36,6 +36,8 @@
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/OptionDef.hxx"
+#include "util/OptionParser.hxx"
 #include "system/FatalError.hxx"
 
 #ifdef ENABLE_ENCODER
@@ -60,6 +62,25 @@
 #define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
 #define USER_CONFIG_FILE_LOCATION_XDG	"mpd/mpd.conf"
 #endif
+
+static const OptionDef opt_kill(
+	"kill", "kill the currently running mpd session");
+static const OptionDef opt_no_config(
+	"no-config", "don't read from config");
+static const OptionDef opt_no_daemon(
+	"no-daemon", "don't detach from console");
+static const OptionDef opt_stdout(
+	"stdout", nullptr); // hidden, compatibility with old versions
+static const OptionDef opt_stderr(
+	"stderr", "print messages to stderr");
+static const OptionDef opt_verbose(
+	"verbose", 'v', "verbose logging");
+static const OptionDef opt_version(
+	"version", 'V', "print version number");
+static const OptionDef opt_help(
+	"help", 'h', "show help options");
+static const OptionDef opt_help_alt(
+	nullptr, '?', nullptr); // hidden, standard alias for --help
 
 static constexpr Domain cmdline_domain("cmdline");
 
@@ -132,8 +153,39 @@ static void version(void)
 	exit(EXIT_SUCCESS);
 }
 
-static const char *summary =
-	"Music Player Daemon - a daemon for playing music.";
+static void PrintOption(const OptionDef &opt)
+{
+	if (opt.HasShortOption())
+		printf("  -%c, --%-12s%s\n",
+		       opt.GetShortOption(),
+		       opt.GetLongOption(),
+		       opt.GetDescription());
+	else
+		printf("  --%-16s%s\n",
+		       opt.GetLongOption(),
+		       opt.GetDescription());
+}
+
+gcc_noreturn
+static void help(void)
+{
+	puts("Usage:\n"
+	     "  mpd [OPTION...] [path/to/mpd.conf]\n"
+	     "\n"
+	     "Music Player Daemon - a daemon for playing music.\n"
+	     "\n"
+	     "Options:");
+
+	PrintOption(opt_help);
+	PrintOption(opt_kill);
+	PrintOption(opt_no_config);
+	PrintOption(opt_no_daemon);
+	PrintOption(opt_stderr);
+	PrintOption(opt_verbose);
+	PrintOption(opt_version);
+
+	exit(EXIT_SUCCESS);
+}
 
 gcc_pure
 static AllocatedPath
@@ -149,105 +201,111 @@ bool
 parse_cmdline(int argc, char **argv, struct options *options,
 	      Error &error)
 {
-	GOptionContext *context;
-	bool ret;
-	static gboolean option_version,
-		option_no_daemon,
-		option_no_config;
-	const GOptionEntry entries[] = {
-		{ "kill", 0, 0, G_OPTION_ARG_NONE, &options->kill,
-		  "kill the currently running mpd session", nullptr },
-		{ "no-config", 0, 0, G_OPTION_ARG_NONE, &option_no_config,
-		  "don't read from config", nullptr },
-		{ "no-daemon", 0, 0, G_OPTION_ARG_NONE, &option_no_daemon,
-		  "don't detach from console", nullptr },
-		{ "stdout", 0, 0, G_OPTION_ARG_NONE, &options->log_stderr,
-		  nullptr, nullptr },
-		{ "stderr", 0, 0, G_OPTION_ARG_NONE, &options->log_stderr,
-		  "print messages to stderr", nullptr },
-		{ "verbose", 'v', 0, G_OPTION_ARG_NONE, &options->verbose,
-		  "verbose logging", nullptr },
-		{ "version", 'V', 0, G_OPTION_ARG_NONE, &option_version,
-		  "print version number", nullptr },
-		{ nullptr, 0, 0, G_OPTION_ARG_NONE, nullptr, nullptr, nullptr }
-	};
-
+	bool use_config_file = true;
 	options->kill = false;
 	options->daemon = true;
 	options->log_stderr = false;
 	options->verbose = false;
 
-	context = g_option_context_new("[path/to/mpd.conf]");
-	g_option_context_add_main_entries(context, entries, nullptr);
+	// First pass: handle command line options
+	OptionParser parser(argc, argv);
+	while (parser.HasEntries()) {
+		if (!parser.ParseNext())
+			continue;
+		if (parser.CheckOption(opt_kill)) {
+			options->kill = true;
+			continue;
+		}
+		if (parser.CheckOption(opt_no_config)) {
+			use_config_file = false;
+			continue;
+		}
+		if (parser.CheckOption(opt_no_daemon)) {
+			options->daemon = false;
+			continue;
+		}
+		if (parser.CheckOption(opt_stderr, opt_stdout)) {
+			options->log_stderr = true;
+			continue;
+		}
+		if (parser.CheckOption(opt_verbose)) {
+			options->verbose = true;
+			continue;
+		}
+		if (parser.CheckOption(opt_version))
+			version();
+		if (parser.CheckOption(opt_help, opt_help_alt))
+			help();
 
-	g_option_context_set_summary(context, summary);
-
-	GError *gerror = nullptr;
-	ret = g_option_context_parse(context, &argc, &argv, &gerror);
-	g_option_context_free(context);
-
-	if (!ret)
-		FatalError("option parsing failed", gerror);
-
-	if (option_version)
-		version();
+		error.Format(cmdline_domain, "invalid option: %s",
+			     parser.GetOption());
+		return false;
+	}
 
 	/* initialize the logging library, so the configuration file
 	   parser can use it already */
 	log_early_init(options->verbose);
 
-	options->daemon = !option_no_daemon;
-
-	if (option_no_config) {
+	if (!use_config_file) {
 		LogDebug(cmdline_domain,
 			 "Ignoring config, using daemon defaults");
 		return true;
-	} else if (argc <= 1) {
-		/* default configuration file path */
+	}
 
-#ifdef WIN32
-		AllocatedPath path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_user_config_dir()),
-					     CONFIG_FILE_LOCATION);
-		if (!path.IsNull() && FileExists(path))
-			return ReadConfigFile(path, error);
-
-		const char *const*system_config_dirs =
-			g_get_system_config_dirs();
-
-		for (unsigned i = 0; system_config_dirs[i] != nullptr; ++i) {
-			path = PathBuildChecked(AllocatedPath::FromUTF8(system_config_dirs[i]),
-						CONFIG_FILE_LOCATION);
-			if (!path.IsNull() && FileExists(path))
-				return ReadConfigFile(path, error);
+	// Second pass: find non-option parameters (i.e. config file)
+	const char *config_file = nullptr;
+	for (int i = 1; i < argc; ++i) {
+		if (OptionParser::IsOption(argv[i]))
+			continue;
+		if (config_file == nullptr) {
+			config_file = argv[i];
+			continue;
 		}
-#else
-		AllocatedPath path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_user_config_dir()),
-						      USER_CONFIG_FILE_LOCATION_XDG);
-		if (!path.IsNull() && FileExists(path))
-			return ReadConfigFile(path, error);
-
-		path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_home_dir()),
-					     USER_CONFIG_FILE_LOCATION1);
-		if (!path.IsNull() && FileExists(path))
-			return ReadConfigFile(path, error);
-
-		path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_home_dir()),
-					USER_CONFIG_FILE_LOCATION2);
-		if (!path.IsNull() && FileExists(path))
-			return ReadConfigFile(path, error);
-
-		path = AllocatedPath::FromUTF8(SYSTEM_CONFIG_FILE_LOCATION);
-		if (!path.IsNull() && FileExists(path))
-			return ReadConfigFile(path, error);
-#endif
-
-		error.Set(cmdline_domain, "No configuration file found");
-		return false;
-	} else if (argc == 2) {
-		/* specified configuration file */
-		return ReadConfigFile(Path::FromFS(argv[1]), error);
-	} else {
 		error.Set(cmdline_domain, "too many arguments");
 		return false;
 	}
+
+	if (config_file != nullptr) {
+		/* use specified configuration file */
+		return ReadConfigFile(Path::FromFS(config_file), error);
+	}
+
+	/* use default configuration file path */
+#ifdef WIN32
+	AllocatedPath path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_user_config_dir()),
+					      CONFIG_FILE_LOCATION);
+	if (!path.IsNull() && FileExists(path))
+		return ReadConfigFile(path, error);
+
+	const char *const*system_config_dirs =
+		g_get_system_config_dirs();
+
+	for (unsigned i = 0; system_config_dirs[i] != nullptr; ++i) {
+		path = PathBuildChecked(AllocatedPath::FromUTF8(system_config_dirs[i]),
+					CONFIG_FILE_LOCATION);
+		if (!path.IsNull() && FileExists(path))
+			return ReadConfigFile(path, error);
+	}
+#else
+	AllocatedPath path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_user_config_dir()),
+					      USER_CONFIG_FILE_LOCATION_XDG);
+	if (!path.IsNull() && FileExists(path))
+		return ReadConfigFile(path, error);
+
+	path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_home_dir()),
+				USER_CONFIG_FILE_LOCATION1);
+	if (!path.IsNull() && FileExists(path))
+		return ReadConfigFile(path, error);
+
+	path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_home_dir()),
+				USER_CONFIG_FILE_LOCATION2);
+	if (!path.IsNull() && FileExists(path))
+		return ReadConfigFile(path, error);
+
+	path = AllocatedPath::FromUTF8(SYSTEM_CONFIG_FILE_LOCATION);
+	if (!path.IsNull() && FileExists(path))
+		return ReadConfigFile(path, error);
+#endif
+	error.Set(cmdline_domain, "No configuration file found");
+	return false;
 }
