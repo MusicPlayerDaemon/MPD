@@ -203,8 +203,6 @@ Iso9660InputStream::Read(void *ptr, size_t size, Error &error)
 	int no_blocks, cur_block;
 	size_t left_bytes = statbuf->size - base.offset;
 
-	size = (size * ISO_BLOCKSIZE) / ISO_BLOCKSIZE;
-
 	if (left_bytes < size) {
 		no_blocks = CEILING(left_bytes,ISO_BLOCKSIZE);
 	} else {
