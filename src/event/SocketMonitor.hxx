@@ -43,6 +43,12 @@
 
 class EventLoop;
 
+/**
+ * Monitor events on a socket.  Call Schedule() to announce events
+ * you're interested in, or Cancel() to cancel your subscription.  The
+ * #EventLoop will invoke virtual method OnSocketReady() as soon as
+ * any of the subscribed events are ready.
+ */
 class SocketMonitor {
 #ifdef USE_EPOLL
 #else

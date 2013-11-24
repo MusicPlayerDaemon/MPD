@@ -36,6 +36,9 @@ typedef void (*server_socket_callback_t)(int fd,
 
 class OneServerSocket;
 
+/**
+ * A socket that accepts incoming stream connections (e.g. TCP).
+ */
 class ServerSocket {
 	friend class OneServerSocket;
 

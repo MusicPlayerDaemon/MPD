@@ -45,6 +45,15 @@ class SocketMonitor;
 
 #include <assert.h>
 
+/**
+ * An event loop that polls for events on file/socket descriptors.
+ *
+ * This class is not thread-safe, all methods must be called from the
+ * thread that runs it, except where explicitly documented as
+ * thread-safe.
+ *
+ * @see SocketMonitor, MultiSocketMonitor, TimeoutMonitor, IdleMonitor
+ */
 class EventLoop final
 #ifdef USE_EPOLL
 	: private SocketMonitor
@@ -107,10 +116,18 @@ public:
 	EventLoop(Default dummy=Default());
 	~EventLoop();
 
+	/**
+	 * A caching wrapper for MonotonicClockMS().
+	 */
 	unsigned GetTimeMS() const {
 		return now_ms;
 	}
 
+	/**
+	 * Stop execution of this #EventLoop at the next chance.  This
+	 * method is thread-safe and non-blocking: after returning, it
+	 * is not guaranteed that the EventLoop has really stopped.
+	 */
 	void Break();
 
 	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) {
@@ -138,6 +155,10 @@ public:
 
 	void AddCall(std::function<void()> &&f);
 
+	/**
+	 * The main function of this class.  It will loop until
+	 * Break() gets called.  Can be called only once.
+	 */
 	void Run();
 
 private:

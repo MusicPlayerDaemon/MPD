@@ -28,6 +28,10 @@
 
 class EventLoop;
 
+/**
+ * This class monitors a timeout.  Use Schedule() to begin the timeout
+ * or Cancel() to cancel it.
+ */
 class TimeoutMonitor {
 #ifdef USE_EPOLL
 	friend class EventLoop;

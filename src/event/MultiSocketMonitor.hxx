@@ -47,7 +47,10 @@
 class EventLoop;
 
 /**
- * Monitor multiple sockets.
+ * Similar to #SocketMonitor, but monitors multiple sockets.  To use
+ * it, implement the methods PrepareSockets() and DispatchSockets().
+ * In PrepareSockets(), use UpdateSocketList() and AddSocket().
+ * DispatchSockets() will be called if at least one socket is ready.
  */
 class MultiSocketMonitor
 #ifdef USE_EPOLL
