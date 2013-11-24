@@ -41,11 +41,11 @@
 #define CEILING(x, y) ((x+(y-1))/y)
 
 class Iso9660ArchiveFile final : public ArchiveFile {
-public:
 	RefCount ref;
 
 	iso9660_t *iso;
 
+public:
 	Iso9660ArchiveFile(iso9660_t *_iso)
 		:ArchiveFile(iso9660_archive_plugin), iso(_iso) {}
 
@@ -53,9 +53,17 @@ public:
 		iso9660_close(iso);
 	}
 
+	void Ref() {
+		ref.Increment();
+	}
+
 	void Unref() {
 		if (ref.Decrement())
 			delete this;
+	}
+
+	long SeekRead(void *ptr, lsn_t start, long int i_size) const {
+		return iso9660_iso_seek_read(iso, ptr, start, i_size);
 	}
 
 	void Visit(const char *path, ArchiveVisitor &visitor);
@@ -131,31 +139,35 @@ Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 
 /* single archive handling */
 
-struct Iso9660InputStream {
+class Iso9660InputStream {
 	InputStream base;
 
 	Iso9660ArchiveFile *archive;
 
 	iso9660_stat_t *statbuf;
-	size_t max_blocks;
 
+public:
 	Iso9660InputStream(Iso9660ArchiveFile &_archive, const char *uri,
 			   Mutex &mutex, Cond &cond,
 			   iso9660_stat_t *_statbuf)
 		:base(iso9660_input_plugin, uri, mutex, cond),
-		      archive(&_archive), statbuf(_statbuf),
-		 max_blocks(CEILING(statbuf->size, ISO_BLOCKSIZE)) {
-
+		 archive(&_archive), statbuf(_statbuf) {
 		base.ready = true;
 		base.size = statbuf->size;
 
-		archive->ref.Increment();
+		archive->Ref();
 	}
 
 	~Iso9660InputStream() {
 		free(statbuf);
 		archive->Unref();
 	}
+
+	InputStream *Get() {
+		return &base;
+	}
+
+	size_t Read(void *ptr, size_t size, Error &error);
 };
 
 InputStream *
@@ -173,7 +185,7 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 	Iso9660InputStream *iis =
 		new Iso9660InputStream(*this, pathname, mutex, cond,
 				       statbuf);
-	return &iis->base;
+	return iis->Get();
 }
 
 static void
@@ -184,15 +196,12 @@ iso9660_input_close(InputStream *is)
 	delete iis;
 }
 
-
-static size_t
-iso9660_input_read(InputStream *is, void *ptr, size_t size,
-		   Error &error)
+inline size_t
+Iso9660InputStream::Read(void *ptr, size_t size, Error &error)
 {
-	Iso9660InputStream *iis = (Iso9660InputStream *)is;
 	int readed = 0;
 	int no_blocks, cur_block;
-	size_t left_bytes = iis->statbuf->size - is->offset;
+	size_t left_bytes = statbuf->size - base.offset;
 
 	size = (size * ISO_BLOCKSIZE) / ISO_BLOCKSIZE;
 
@@ -205,10 +214,10 @@ iso9660_input_read(InputStream *is, void *ptr, size_t size,
 	if (no_blocks == 0)
 		return 0;
 
-	cur_block = is->offset / ISO_BLOCKSIZE;
+	cur_block = base.offset / ISO_BLOCKSIZE;
 
-	readed = iso9660_iso_seek_read (iis->archive->iso, ptr,
-					iis->statbuf->lsn + cur_block, no_blocks);
+	readed = archive->SeekRead(ptr, statbuf->lsn + cur_block,
+				   no_blocks);
 
 	if (readed != no_blocks * ISO_BLOCKSIZE) {
 		error.Format(iso9660_domain,
@@ -220,8 +229,16 @@ iso9660_input_read(InputStream *is, void *ptr, size_t size,
 		readed = left_bytes;
 	}
 
-	is->offset += readed;
+	base.offset += readed;
 	return readed;
+}
+
+static size_t
+iso9660_input_read(InputStream *is, void *ptr, size_t size,
+		   Error &error)
+{
+	Iso9660InputStream *iis = (Iso9660InputStream *)is;
+	return iis->Read(ptr, size, error);
 }
 
 static bool
