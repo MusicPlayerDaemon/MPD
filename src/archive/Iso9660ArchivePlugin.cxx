@@ -142,7 +142,7 @@ Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 class Iso9660InputStream {
 	InputStream base;
 
-	Iso9660ArchiveFile *archive;
+	Iso9660ArchiveFile &archive;
 
 	iso9660_stat_t *statbuf;
 
@@ -151,16 +151,16 @@ public:
 			   Mutex &mutex, Cond &cond,
 			   iso9660_stat_t *_statbuf)
 		:base(iso9660_input_plugin, uri, mutex, cond),
-		 archive(&_archive), statbuf(_statbuf) {
+		 archive(_archive), statbuf(_statbuf) {
 		base.ready = true;
 		base.size = statbuf->size;
 
-		archive->Ref();
+		archive.Ref();
 	}
 
 	~Iso9660InputStream() {
 		free(statbuf);
-		archive->Unref();
+		archive.Unref();
 	}
 
 	InputStream *Get() {
@@ -216,8 +216,8 @@ Iso9660InputStream::Read(void *ptr, size_t size, Error &error)
 
 	cur_block = base.offset / ISO_BLOCKSIZE;
 
-	readed = archive->SeekRead(ptr, statbuf->lsn + cur_block,
-				   no_blocks);
+	readed = archive.SeekRead(ptr, statbuf->lsn + cur_block,
+				  no_blocks);
 
 	if (readed != no_blocks * ISO_BLOCKSIZE) {
 		error.Format(iso9660_domain,
