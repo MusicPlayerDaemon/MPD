@@ -73,7 +73,9 @@ client_new(EventLoop &loop, Partition &partition,
 	if (sa->sa_family != AF_UNIX) {
 		char *hostaddr = sockaddr_to_string(sa, sa_length,
 						    IgnoreError());
-		const char *progname = g_get_prgname();
+
+		// TODO: shall we obtain the program name from argv[0]?
+		const char *progname = "mpd";
 
 		struct request_info req;
 		request_init(&req, RQ_FILE, fd, RQ_DAEMON, progname, 0);
