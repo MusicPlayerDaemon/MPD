@@ -372,8 +372,8 @@ int mpd_main(int argc, char *argv[])
 	g_thread_init(nullptr);
 #endif
 
-	io_thread_init();
 	winsock_init();
+	io_thread_init();
 	config_global_init();
 
 	success = parse_cmdline(argc, argv, &options, error);
