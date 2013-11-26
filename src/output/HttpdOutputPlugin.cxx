@@ -201,7 +201,8 @@ HttpdOutput::OnAccept(int fd, const sockaddr &address,
 	if (address.sa_family != AF_UNIX) {
 		char *hostaddr = sockaddr_to_string(&address, address_length,
 						    IgnoreError());
-		const char *progname = g_get_prgname();
+		// TODO: shall we obtain the program name from argv[0]?
+		const char *progname = "mpd";
 
 		struct request_info req;
 		request_init(&req, RQ_FILE, fd, RQ_DAEMON, progname, 0);
