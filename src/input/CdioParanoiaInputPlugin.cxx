@@ -41,7 +41,12 @@
 #include <glib.h>
 #include <assert.h>
 
+#ifdef HAVE_CDIO_PARANOIA_PARANOIA_H
+#include <cdio/parannoia/paranoia.h>
+#else
 #include <cdio/paranoia.h>
+#endif
+
 #include <cdio/cd_types.h>
 
 struct CdioParanoiaInputStream {
