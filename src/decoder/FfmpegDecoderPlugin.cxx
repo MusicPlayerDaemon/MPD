@@ -120,8 +120,7 @@ mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 	if (whence == AVSEEK_SIZE)
 		return stream->input.size;
 
-	Error error;
-	if (!stream->input.LockSeek(pos, whence, error))
+	if (!stream->input.LockSeek(pos, whence, IgnoreError()))
 		return -1;
 
 	return stream->input.offset;
@@ -342,11 +341,9 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 		PADDING = 16,
 	};
 
-	Error error;
-
 	unsigned char buffer[BUFFER_SIZE];
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING || !is.LockRewind(error))
+	if (nbytes <= PADDING || !is.LockRewind(IgnoreError()))
 		return nullptr;
 
 	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
