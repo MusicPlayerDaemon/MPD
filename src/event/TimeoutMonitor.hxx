@@ -22,7 +22,7 @@
 
 #include "check.h"
 
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 #include <glib.h>
 #endif
 
@@ -33,24 +33,28 @@ class EventLoop;
  * or Cancel() to cancel it.
  */
 class TimeoutMonitor {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	friend class EventLoop;
 #endif
 
 	EventLoop &loop;
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	bool active;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	GSource *source;
 #endif
 
 public:
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	TimeoutMonitor(EventLoop &_loop)
 		:loop(_loop), active(false) {
 	}
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	TimeoutMonitor(EventLoop &_loop)
 		:loop(_loop), source(nullptr) {}
 #endif
@@ -64,9 +68,11 @@ public:
 	}
 
 	bool IsActive() const {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 		return active;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 		return source != nullptr;
 #endif
 	}
@@ -81,7 +87,7 @@ protected:
 private:
 	void Run();
 
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 	static gboolean Callback(gpointer data);
 #endif
 };

@@ -25,7 +25,7 @@
 
 #include <assert.h>
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 
 MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
 	:IdleMonitor(_loop), TimeoutMonitor(_loop), ready(false) {
@@ -65,7 +65,9 @@ MultiSocketMonitor::OnIdle()
 	}
 }
 
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 
 /**
  * The vtable for our GSource implementation.  Unfortunately, we

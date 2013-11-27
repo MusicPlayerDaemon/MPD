@@ -32,7 +32,7 @@
 #include <sys/socket.h>
 #endif
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 
 void
 SocketMonitor::Dispatch(unsigned flags)
@@ -43,7 +43,9 @@ SocketMonitor::Dispatch(unsigned flags)
 		Cancel();
 }
 
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 
 /*
  * GSource methods
@@ -113,14 +115,14 @@ void
 SocketMonitor::Open(int _fd)
 {
 	assert(fd < 0);
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 	assert(source == nullptr);
 #endif
 	assert(_fd >= 0);
 
 	fd = _fd;
 
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 	poll = {fd, 0, 0};
 
 	source = (Source *)g_source_new(&socket_monitor_source_funcs,
@@ -142,7 +144,7 @@ SocketMonitor::Steal()
 	int result = fd;
 	fd = -1;
 
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 	g_source_destroy(&source->base);
 	g_source_unref(&source->base);
 	source = nullptr;
@@ -156,7 +158,7 @@ SocketMonitor::Abandon()
 {
 	assert(IsDefined());
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	fd = -1;
 	loop.Abandon(*this);
 #else
@@ -178,7 +180,7 @@ SocketMonitor::Schedule(unsigned flags)
 	if (flags == GetScheduledFlags())
 		return;
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	if (scheduled_flags == 0)
 		loop.AddFD(fd, flags, *this);
 	else if (flags == 0)
@@ -187,7 +189,9 @@ SocketMonitor::Schedule(unsigned flags)
 		loop.ModifyFD(fd, flags, *this);
 
 	scheduled_flags = flags;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	poll.events = flags;
 	poll.revents &= flags;
 

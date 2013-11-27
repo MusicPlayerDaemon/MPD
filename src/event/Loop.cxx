@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Loop.hxx"
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 
 #include "system/Clock.hxx"
 #include "TimeoutMonitor.hxx"
@@ -33,7 +33,9 @@ EventLoop::EventLoop(Default)
 	:SocketMonitor(*this),
 	 now_ms(::MonotonicClockMS()),
 	 quit(false),
+#ifdef USE_EPOLL
 	 n_events(0),
+#endif
 	 thread(ThreadId::Null())
 {
 	SocketMonitor::Open(wake_fd.Get());
@@ -61,16 +63,20 @@ EventLoop::Break()
 void
 EventLoop::Abandon(SocketMonitor &m)
 {
+#ifdef USE_EPOLL
 	for (unsigned i = 0, n = n_events; i < n; ++i)
 		if (events[i].data.ptr == &m)
 			events[i].events = 0;
+#endif
 }
 
 bool
 EventLoop::RemoveFD(int _fd, SocketMonitor &m)
 {
+#ifdef USE_EPOLL
 	Abandon(m);
 	return epoll.Remove(_fd);
+#endif
 }
 
 void
@@ -115,7 +121,7 @@ EventLoop::Run()
 	assert(thread.IsNull());
 	thread = ThreadId::GetCurrent();
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	assert(!quit);
 
 	do {
@@ -162,6 +168,7 @@ EventLoop::Run()
 			   timeout */
 			continue;
 
+#ifdef USE_EPOLL
 		/* wait for new event */
 
 		const int n = epoll.Wait(events, MAX_EVENTS, timeout_ms);
@@ -186,15 +193,19 @@ EventLoop::Run()
 		}
 
 		n_events = 0;
+#endif
 	} while (!quit);
-#else
+
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	g_main_loop_run(loop);
 #endif
 
 	assert(thread.IsInside());
 }
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 
 void
 EventLoop::AddCall(std::function<void()> &&f)
@@ -229,7 +240,9 @@ EventLoop::OnSocketReady(gcc_unused unsigned flags)
 	return true;
 }
 
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 
 guint
 EventLoop::AddIdle(GSourceFunc function, gpointer data)

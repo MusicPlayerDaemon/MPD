@@ -23,11 +23,13 @@
 #include "check.h"
 #include "Compiler.h"
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 #include "IdleMonitor.hxx"
 #include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 #include <glib.h>
 #endif
 
@@ -53,11 +55,11 @@ class EventLoop;
  * DispatchSockets() will be called if at least one socket is ready.
  */
 class MultiSocketMonitor
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	: private IdleMonitor, private TimeoutMonitor
 #endif
 {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	class SingleFD final : public SocketMonitor {
 		MultiSocketMonitor &multi;
 
@@ -102,7 +104,9 @@ class MultiSocketMonitor
 	friend class SingleFD;
 
 	bool ready, refresh;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	struct Source {
 		GSource base;
 
@@ -141,12 +145,14 @@ class MultiSocketMonitor
 	std::forward_list<SingleFD> fds;
 
 public:
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	static constexpr unsigned READ = SocketMonitor::READ;
 	static constexpr unsigned WRITE = SocketMonitor::WRITE;
 	static constexpr unsigned ERROR = SocketMonitor::ERROR;
 	static constexpr unsigned HANGUP = SocketMonitor::HANGUP;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	static constexpr unsigned READ = G_IO_IN;
 	static constexpr unsigned WRITE = G_IO_OUT;
 	static constexpr unsigned ERROR = G_IO_ERR;
@@ -156,16 +162,18 @@ public:
 	MultiSocketMonitor(EventLoop &_loop);
 	~MultiSocketMonitor();
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	using IdleMonitor::GetEventLoop;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	EventLoop &GetEventLoop() {
 		return loop;
 	}
 #endif
 
 public:
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 	gcc_pure
 	uint64_t GetTime() const {
 		return g_source_get_time(&source->base);
@@ -173,10 +181,12 @@ public:
 #endif
 
 	void InvalidateSockets() {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 		refresh = true;
 		IdleMonitor::Schedule();
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 		/* no-op because GLib always calls the GSource's
 		   "prepare" method before each poll() anyway */
 #endif
@@ -184,7 +194,7 @@ public:
 
 	void AddSocket(int fd, unsigned events) {
 		fds.emplace_front(*this, fd, events);
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 		g_source_add_poll(&source->base, &fds.front().pfd);
 #endif
 	}
@@ -201,9 +211,11 @@ public:
 				i->SetEvents(events);
 				prev = i;
 			} else {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 				i->Steal();
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 				g_source_remove_poll(&source->base, &i->pfd);
 #endif
 				fds.erase_after(prev);
@@ -218,7 +230,7 @@ protected:
 	virtual int PrepareSockets() = 0;
 	virtual void DispatchSockets() = 0;
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 private:
 	void SetReady() {
 		ready = true;
@@ -234,7 +246,9 @@ private:
 
 	virtual void OnIdle() final;
 
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 public:
 	/* GSource callbacks */
 	static gboolean Prepare(GSource *source, gint *timeout_r);

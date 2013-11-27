@@ -22,9 +22,13 @@
 
 #include "check.h"
 
+#ifdef USE_INTERNAL_EVENTLOOP
 #ifdef USE_EPOLL
 #include <sys/epoll.h>
-#else
+#endif
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 #include <glib.h>
 #endif
 
@@ -50,8 +54,7 @@ class EventLoop;
  * any of the subscribed events are ready.
  */
 class SocketMonitor {
-#ifdef USE_EPOLL
-#else
+#ifdef USE_GLIB_EVENTLOOP
 	struct Source {
 		GSource base;
 
@@ -62,38 +65,46 @@ class SocketMonitor {
 	int fd;
 	EventLoop &loop;
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	/**
 	 * A bit mask of events that is currently registered in the EventLoop.
 	 */
 	unsigned scheduled_flags;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	Source *source;
 	GPollFD poll;
 #endif
 
 public:
+#ifdef USE_INTERNAL_EVENTLOOP
 #ifdef USE_EPOLL
 	static constexpr unsigned READ = EPOLLIN;
 	static constexpr unsigned WRITE = EPOLLOUT;
 	static constexpr unsigned ERROR = EPOLLERR;
 	static constexpr unsigned HANGUP = EPOLLHUP;
-#else
+#endif
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	static constexpr unsigned READ = G_IO_IN;
 	static constexpr unsigned WRITE = G_IO_OUT;
 	static constexpr unsigned ERROR = G_IO_ERR;
 	static constexpr unsigned HANGUP = G_IO_HUP;
-#endif
+#endif 
 
 	typedef std::make_signed<size_t>::type ssize_t;
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	SocketMonitor(EventLoop &_loop)
 		:fd(-1), loop(_loop), scheduled_flags(0) {}
 
 	SocketMonitor(int _fd, EventLoop &_loop)
 		:fd(_fd), loop(_loop), scheduled_flags(0) {}
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	SocketMonitor(EventLoop &_loop)
 		:fd(-1), loop(_loop), source(nullptr) {}
 
@@ -134,9 +145,11 @@ public:
 	unsigned GetScheduledFlags() const {
 		assert(IsDefined());
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 		return scheduled_flags;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 		return poll.events;
 #endif
 	}
@@ -173,9 +186,11 @@ protected:
 	virtual bool OnSocketReady(unsigned flags) = 0;
 
 public:
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	void Dispatch(unsigned flags);
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	/* GSource callbacks */
 	static gboolean Prepare(GSource *source, gint *timeout_r);
 	static gboolean Check(GSource *source);

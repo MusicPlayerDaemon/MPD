@@ -24,9 +24,10 @@
 void
 DeferredMonitor::Cancel()
 {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	pending = false;
-#else
+#endif
+#ifdef USE_GLIB_EVENTLOOP
 	const auto id = source_id.exchange(0);
 	if (id != 0)
 		g_source_remove(id);
@@ -36,10 +37,11 @@ DeferredMonitor::Cancel()
 void
 DeferredMonitor::Schedule()
 {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	if (!pending.exchange(true))
 		fd.Write();
-#else
+#endif
+#ifdef USE_GLIB_EVENTLOOP
 	const unsigned id = loop.AddIdle(Callback, this);
 	const auto old_id = source_id.exchange(id);
 	if (old_id != 0)
@@ -47,7 +49,7 @@ DeferredMonitor::Schedule()
 #endif
 }
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 
 bool
 DeferredMonitor::OnSocketReady(unsigned)
@@ -60,7 +62,9 @@ DeferredMonitor::OnSocketReady(unsigned)
 	return true;
 }
 
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 
 void
 DeferredMonitor::Run()

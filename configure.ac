@@ -148,13 +148,69 @@ AC_SEARCH_LIBS([gethostbyname], [nsl])
 AC_CHECK_FUNCS(pipe2 accept4)
 MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
 MPD_OPTIONAL_FUNC(signalfd, signalfd, USE_SIGNALFD)
-MPD_OPTIONAL_FUNC(epoll, epoll_create1, USE_EPOLL)
 
 AC_SEARCH_LIBS([exp], [m],,
 	[AC_MSG_ERROR([exp() not found])])
 
 AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
+
+dnl ---------------------------------------------------------------------------
+dnl Event loop selection
+dnl ---------------------------------------------------------------------------
+
+MPD_OPTIONAL_FUNC_NODEF(epoll, epoll_create1)
+
+AC_ARG_WITH(eventloop,
+	AS_HELP_STRING(
+		[--with-eventloop=@<:@glib|internal|auto@:>@],
+		[specify event loop implementation (default=auto)]),,
+	[with_eventloop=auto])
+
+AC_ARG_WITH(pollmethod,
+	AS_HELP_STRING(
+		[--with-pollmethod=@<:@epoll|auto@:>@],
+		[specify poll method for internal event loop (default=auto)]),,
+	[with_pollmethod=auto])
+
+if test "x$with_eventloop" = xauto; then
+	if test "x$enable_epoll" = xyes; then
+		with_eventloop=internal
+	else
+		with_eventloop=glib
+	fi
+fi
+
+case "$with_eventloop" in
+glib)
+	AC_DEFINE(USE_GLIB_EVENTLOOP, 1,
+		[Define to use GLib event loop])
+	;;
+internal)
+	AC_DEFINE(USE_INTERNAL_EVENTLOOP, 1,
+		[Define to use internal event loop])
+	;;
+*)
+	AC_MSG_ERROR([unknown eventloop option: $with_eventloop])
+	;;
+esac
+
+if test "x$with_eventloop" = xinternal; then
+	if test "x$with_pollmethod" = xauto; then
+		if test "x$enable_epoll" = xyes; then
+			with_pollmethod=epoll
+		else
+			AC_MSG_ERROR([no poll method is available for your platform])
+		fi
+	fi
+	case "$with_pollmethod" in
+	epoll)
+		AC_DEFINE(USE_EPOLL, 1, [Define to poll sockets with epoll])
+		;;
+	*)
+		AC_MSG_ERROR([unknown pollmethod option: $with_pollmethod])
+	esac
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl Allow tools to be specifically built
@@ -1619,6 +1675,16 @@ results(despotify,[Despotify])
 results(soundcloud,[Soundcloud])
 printf '\n\t'
 results(mms,[MMS])
+
+printf '\nEvent loop:\n\t'
+case $with_eventloop in
+glib)
+	printf 'GLib'
+	;;
+internal)
+	printf 'Internal (%s)' $with_pollmethod
+	;;
+esac
 
 printf '\n\n##########################################\n\n'
 

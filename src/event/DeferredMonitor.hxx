@@ -23,10 +23,12 @@
 #include "check.h"
 #include "Compiler.h"
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 #include "SocketMonitor.hxx"
 #include "WakeFD.hxx"
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 #include <glib.h>
 #endif
 
@@ -38,44 +40,51 @@ class EventLoop;
  * Defer execution of an event into an #EventLoop.
  */
 class DeferredMonitor
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	: private SocketMonitor
 #endif
 {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	std::atomic_bool pending;
 	WakeFD fd;
-#else
-	EventLoop &loop;
+#endif
 
+#ifdef USE_GLIB_EVENTLOOP
+	EventLoop &loop;
 	std::atomic<guint> source_id;
 #endif
 
 public:
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	DeferredMonitor(EventLoop &_loop)
 		:SocketMonitor(_loop), pending(false) {
 		SocketMonitor::Open(fd.Get());
 		SocketMonitor::Schedule(SocketMonitor::READ);
 	}
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	DeferredMonitor(EventLoop &_loop)
 		:loop(_loop), source_id(0) {}
 #endif
 
 	~DeferredMonitor() {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 		/* avoid closing the WakeFD twice */
 		SocketMonitor::Steal();
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 		Cancel();
 #endif
 	}
 
 	EventLoop &GetEventLoop() {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 		return SocketMonitor::GetEventLoop();
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 		return loop;
 #endif
 	}
@@ -87,9 +96,11 @@ protected:
 	virtual void RunDeferred() = 0;
 
 private:
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	virtual bool OnSocketReady(unsigned flags) override final;
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	void Run();
 	static gboolean Callback(gpointer data);
 #endif

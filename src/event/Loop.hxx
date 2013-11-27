@@ -24,8 +24,11 @@
 #include "thread/Id.hxx"
 #include "Compiler.h"
 
+#ifdef USE_INTERNAL_EVENTLOOP
 #ifdef USE_EPOLL
 #include "system/EPollFD.hxx"
+#endif
+
 #include "thread/Mutex.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
@@ -33,11 +36,13 @@
 #include <functional>
 #include <list>
 #include <set>
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 #include <glib.h>
 #endif
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 class TimeoutMonitor;
 class IdleMonitor;
 class SocketMonitor;
@@ -55,11 +60,11 @@ class SocketMonitor;
  * @see SocketMonitor, MultiSocketMonitor, TimeoutMonitor, IdleMonitor
  */
 class EventLoop final
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	: private SocketMonitor
 #endif
 {
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	struct TimerRecord {
 		/**
 		 * Projected monotonic_clock_ms() value when this
@@ -82,8 +87,6 @@ class EventLoop final
 		}
 	};
 
-	EPollFD epoll;
-
 	WakeFD wake_fd;
 
 	std::multiset<TimerRecord> timers;
@@ -96,10 +99,16 @@ class EventLoop final
 
 	bool quit;
 
+#ifdef USE_EPOLL
+	EPollFD epoll;
 	static constexpr unsigned MAX_EVENTS = 16;
 	unsigned n_events;
 	epoll_event events[MAX_EVENTS];
-#else
+#endif
+
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	GMainContext *context;
 	GMainLoop *loop;
 #endif
@@ -110,7 +119,7 @@ class EventLoop final
 	ThreadId thread;
 
 public:
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	struct Default {};
 
 	EventLoop(Default dummy=Default());
@@ -131,11 +140,15 @@ public:
 	void Break();
 
 	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) {
+#ifdef USE_EPOLL
 		return epoll.Add(_fd, flags, &m);
+#endif
 	}
 
 	bool ModifyFD(int _fd, unsigned flags, SocketMonitor &m) {
+#ifdef USE_EPOLL
 		return epoll.Modify(_fd, flags, &m);
+#endif
 	}
 
 	/**
@@ -165,7 +178,9 @@ private:
 	virtual bool OnSocketReady(unsigned flags) override;
 
 public:
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	EventLoop()
 		:context(g_main_context_new()),
 		 loop(g_main_loop_new(context, false)),

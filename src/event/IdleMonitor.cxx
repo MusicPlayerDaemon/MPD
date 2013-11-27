@@ -29,10 +29,11 @@ IdleMonitor::Cancel()
 	if (!IsActive())
 		return;
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	active = false;
 	loop.RemoveIdle(*this);
-#else
+#endif
+#ifdef USE_GLIB_EVENTLOOP
 	g_source_remove(source_id);
 	source_id = 0;
 #endif
@@ -47,10 +48,11 @@ IdleMonitor::Schedule()
 		/* already scheduled */
 		return;
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	active = true;
 	loop.AddIdle(*this);
-#else
+#endif
+#ifdef USE_GLIB_EVENTLOOP
 	source_id = loop.AddIdle(Callback, this);
 #endif
 }
@@ -60,10 +62,11 @@ IdleMonitor::Run()
 {
 	assert(loop.IsInside());
 
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	assert(active);
 	active = false;
-#else
+#endif
+#ifdef USE_GLIB_EVENTLOOP
 	assert(source_id != 0);
 	source_id = 0;
 #endif
@@ -71,7 +74,7 @@ IdleMonitor::Run()
 	OnIdle();
 }
 
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 
 gboolean
 IdleMonitor::Callback(gpointer data)

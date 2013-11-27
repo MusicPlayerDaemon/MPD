@@ -28,7 +28,7 @@
 #include <assert.h>
 
 class BlockingCallMonitor final
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 	: DeferredMonitor
 #endif
 {
@@ -40,20 +40,22 @@ class BlockingCallMonitor final
 	bool done;
 
 public:
-#ifdef USE_EPOLL
+#ifdef USE_INTERNAL_EVENTLOOP
 	BlockingCallMonitor(EventLoop &loop, std::function<void()> &&_f)
 		:f(std::move(_f)), done(false) {
 		loop.AddCall([this](){
 				this->DoRun();
 			});
 	}
-#else
+#endif
+
+#ifdef USE_GLIB_EVENTLOOP
 	BlockingCallMonitor(EventLoop &_loop, std::function<void()> &&_f)
 		:DeferredMonitor(_loop), f(std::move(_f)), done(false) {}
 #endif
 
 	void Run() {
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 		assert(!done);
 
 		Schedule();
@@ -65,13 +67,14 @@ public:
 		mutex.unlock();
 	}
 
-#ifndef USE_EPOLL
+#ifdef USE_GLIB_EVENTLOOP
 private:
 	virtual void RunDeferred() override {
 		DoRun();
 	}
+#endif
 
-#else
+#ifdef USE_INTERNAL_EVENTLOOP
 public:
 #endif
 	void DoRun() {
