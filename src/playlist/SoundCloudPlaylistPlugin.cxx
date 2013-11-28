@@ -25,6 +25,7 @@
 #include "InputStream.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -65,9 +66,9 @@ static char *
 soundcloud_resolve(const char* uri) {
 	char *u, *ru;
 
-	if (g_str_has_prefix(uri, "http://")) {
+	if (StringStartsWith(uri, "http://")) {
 		u = g_strdup(uri);
-	} else if (g_str_has_prefix(uri, "soundcloud.com")) {
+	} else if (StringStartsWith(uri, "soundcloud.com")) {
 		u = g_strconcat("http://", uri, nullptr);
 	} else {
 		/* assume it's just a path on soundcloud.com */

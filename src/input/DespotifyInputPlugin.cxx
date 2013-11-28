@@ -23,13 +23,12 @@
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "tag/Tag.hxx"
+#include "util/StringUtil.hxx"
 #include "Log.hxx"
 
 extern "C" {
 #include <despotify.h>
 }
-
-#include <glib.h>
 
 #include <unistd.h>
 #include <string.h>
@@ -130,7 +129,7 @@ input_despotify_open(const char *url,
 	struct ds_link *ds_link;
 	struct ds_track *track;
 
-	if (!g_str_has_prefix(url, "spt://"))
+	if (!StringStartsWith(url, "spt://"))
 		return nullptr;
 
 	session = mpd_despotify_get_session();

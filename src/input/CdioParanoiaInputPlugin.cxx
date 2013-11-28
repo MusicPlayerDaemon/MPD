@@ -25,6 +25,7 @@
 #include "CdioParanoiaInputPlugin.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
@@ -117,7 +118,7 @@ struct cdio_uri {
 static bool
 parse_cdio_uri(struct cdio_uri *dest, const char *src, Error &error)
 {
-	if (!g_str_has_prefix(src, "cdda://"))
+	if (!StringStartsWith(src, "cdda://"))
 		return false;
 
 	src += 7;

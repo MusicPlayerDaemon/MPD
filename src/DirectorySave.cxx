@@ -24,6 +24,7 @@
 #include "SongSave.hxx"
 #include "PlaylistDatabase.hxx"
 #include "TextFile.hxx"
+#include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -88,7 +89,7 @@ directory_load_subdir(TextFile &file, Directory &parent, const char *name,
 		return nullptr;
 	}
 
-	if (g_str_has_prefix(line, DIRECTORY_MTIME)) {
+	if (StringStartsWith(line, DIRECTORY_MTIME)) {
 		directory->mtime =
 			ParseUint64(line + sizeof(DIRECTORY_MTIME) - 1);
 
@@ -100,7 +101,7 @@ directory_load_subdir(TextFile &file, Directory &parent, const char *name,
 		}
 	}
 
-	if (!g_str_has_prefix(line, DIRECTORY_BEGIN)) {
+	if (!StringStartsWith(line, DIRECTORY_BEGIN)) {
 		error.Format(directory_domain, "Malformed line: %s", line);
 		directory->Delete();
 		return nullptr;
@@ -121,15 +122,15 @@ directory_load(TextFile &file, Directory &directory, Error &error)
 	const char *line;
 
 	while ((line = file.ReadLine()) != nullptr &&
-	       !g_str_has_prefix(line, DIRECTORY_END)) {
-		if (g_str_has_prefix(line, DIRECTORY_DIR)) {
+	       !StringStartsWith(line, DIRECTORY_END)) {
+		if (StringStartsWith(line, DIRECTORY_DIR)) {
 			Directory *subdir =
 				directory_load_subdir(file, directory,
 						      line + sizeof(DIRECTORY_DIR) - 1,
 						      error);
 			if (subdir == nullptr)
 				return false;
-		} else if (g_str_has_prefix(line, SONG_BEGIN)) {
+		} else if (StringStartsWith(line, SONG_BEGIN)) {
 			const char *name = line + sizeof(SONG_BEGIN) - 1;
 			Song *song;
 
@@ -144,7 +145,7 @@ directory_load(TextFile &file, Directory &directory, Error &error)
 				return false;
 
 			directory.AddSong(song);
-		} else if (g_str_has_prefix(line, PLAYLIST_META_BEGIN)) {
+		} else if (StringStartsWith(line, PLAYLIST_META_BEGIN)) {
 			/* duplicate the name, because
 			   playlist_metadata_load() will overwrite the
 			   buffer */

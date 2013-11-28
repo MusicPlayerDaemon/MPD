@@ -27,6 +27,7 @@
 #include "tag/Tag.hxx"
 #include "tag/TagSettings.h"
 #include "fs/Charset.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -81,16 +82,16 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 
 	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, DIRECTORY_INFO_END) != 0) {
-		if (g_str_has_prefix(line, DB_FORMAT_PREFIX)) {
+		if (StringStartsWith(line, DB_FORMAT_PREFIX)) {
 			format = atoi(line + sizeof(DB_FORMAT_PREFIX) - 1);
-		} else if (g_str_has_prefix(line, DIRECTORY_MPD_VERSION)) {
+		} else if (StringStartsWith(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version) {
 				error.Set(db_domain, "Duplicate version line");
 				return false;
 			}
 
 			found_version = true;
-		} else if (g_str_has_prefix(line, DIRECTORY_FS_CHARSET)) {
+		} else if (StringStartsWith(line, DIRECTORY_FS_CHARSET)) {
 			const char *new_charset;
 
 			if (found_charset) {
@@ -111,7 +112,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 					     new_charset, old_charset);
 				return false;
 			}
-		} else if (g_str_has_prefix(line, DB_TAG_PREFIX)) {
+		} else if (StringStartsWith(line, DB_TAG_PREFIX)) {
 			const char *name = line + sizeof(DB_TAG_PREFIX) - 1;
 			TagType tag = tag_name_parse(name);
 			if (tag == TAG_NUM_OF_ITEM_TYPES) {

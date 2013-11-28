@@ -26,8 +26,6 @@
 #include "util/StringUtil.hxx"
 #include "TextInputStream.hxx"
 
-#include <glib.h>
-
 #include <string.h>
 #include <stdlib.h>
 
@@ -119,7 +117,7 @@ ExtM3uPlaylist::NextSong()
 		
 		line_s = line.c_str();
 
-		if (g_str_has_prefix(line_s, "#EXTINF:")) {
+		if (StringStartsWith(line_s, "#EXTINF:")) {
 			delete tag;
 			tag = extm3u_parse_tag(line_s + 8);
 			continue;

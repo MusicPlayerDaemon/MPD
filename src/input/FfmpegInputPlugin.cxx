@@ -24,6 +24,7 @@
 #include "FfmpegInputPlugin.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -31,8 +32,6 @@ extern "C" {
 #include <libavformat/avio.h>
 #include <libavformat/avformat.h>
 }
-
-#include <glib.h>
 
 struct FfmpegInputStream {
 	InputStream base;
@@ -90,12 +89,12 @@ input_ffmpeg_open(const char *uri,
 		  Mutex &mutex, Cond &cond,
 		  Error &error)
 {
-	if (!g_str_has_prefix(uri, "gopher://") &&
-	    !g_str_has_prefix(uri, "rtp://") &&
-	    !g_str_has_prefix(uri, "rtsp://") &&
-	    !g_str_has_prefix(uri, "rtmp://") &&
-	    !g_str_has_prefix(uri, "rtmpt://") &&
-	    !g_str_has_prefix(uri, "rtmps://"))
+	if (!StringStartsWith(uri, "gopher://") &&
+	    !StringStartsWith(uri, "rtp://") &&
+	    !StringStartsWith(uri, "rtsp://") &&
+	    !StringStartsWith(uri, "rtmp://") &&
+	    !StringStartsWith(uri, "rtmpt://") &&
+	    !StringStartsWith(uri, "rtmps://"))
 		return nullptr;
 
 	AVIOContext *h;

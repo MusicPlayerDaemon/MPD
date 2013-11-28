@@ -21,10 +21,10 @@
 #include "MmsInputPlugin.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <glib.h>
 #include <libmms/mmsx.h>
 
 struct MmsInputStream {
@@ -58,10 +58,10 @@ input_mms_open(const char *url,
 	       Mutex &mutex, Cond &cond,
 	       Error &error)
 {
-	if (!g_str_has_prefix(url, "mms://") &&
-	    !g_str_has_prefix(url, "mmsh://") &&
-	    !g_str_has_prefix(url, "mmst://") &&
-	    !g_str_has_prefix(url, "mmsu://"))
+	if (!StringStartsWith(url, "mms://") &&
+	    !StringStartsWith(url, "mmsh://") &&
+	    !StringStartsWith(url, "mmst://") &&
+	    !StringStartsWith(url, "mmsu://"))
 		return nullptr;
 
 	const auto mms = mmsx_connect(nullptr, nullptr, url, 128 * 1024);

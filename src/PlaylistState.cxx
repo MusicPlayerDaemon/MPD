@@ -33,9 +33,8 @@
 #include "ConfigOption.hxx"
 #include "fs/Limits.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringUtil.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -112,7 +111,7 @@ playlist_state_load(TextFile &file, struct playlist &playlist)
 		return;
 	}
 
-	while (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
+	while (!StringStartsWith(line, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
 		queue_load_song(file, line, playlist.queue);
 
 		line = file.ReadLine();
@@ -135,7 +134,7 @@ playlist_state_restore(const char *line, TextFile &file,
 	int seek_time = 0;
 	bool random_mode = false;
 
-	if (!g_str_has_prefix(line, PLAYLIST_STATE_FILE_STATE))
+	if (!StringStartsWith(line, PLAYLIST_STATE_FILE_STATE))
 		return false;
 
 	line += sizeof(PLAYLIST_STATE_FILE_STATE) - 1;
@@ -149,40 +148,40 @@ playlist_state_restore(const char *line, TextFile &file,
 		state = PlayerState::STOP;
 
 	while ((line = file.ReadLine()) != nullptr) {
-		if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_TIME)) {
+		if (StringStartsWith(line, PLAYLIST_STATE_FILE_TIME)) {
 			seek_time =
 				atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));
-		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_REPEAT)) {
+		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_REPEAT)) {
 			playlist.SetRepeat(pc,
 					   strcmp(&(line[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
 						  "1") == 0);
-		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_SINGLE)) {
+		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_SINGLE)) {
 			playlist.SetSingle(pc,
 					   strcmp(&(line[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
 						  "1") == 0);
-		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CONSUME)) {
+		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_CONSUME)) {
 			playlist.SetConsume(strcmp(&(line[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
 						   "1") == 0);
-		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CROSSFADE)) {
+		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_CROSSFADE)) {
 			pc.SetCrossFade(atoi(line + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
-		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
+		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
 			pc.SetMixRampDb(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
-		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
+		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
 			const char *p = line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY);
 
 			/* this check discards "nan" which was used
 			   prior to MPD 0.18 */
 			if (IsDigitASCII(*p))
 				pc.SetMixRampDelay(atof(p));
-		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_RANDOM)) {
+		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_RANDOM)) {
 			random_mode =
 				strcmp(line + strlen(PLAYLIST_STATE_FILE_RANDOM),
 				       "1") == 0;
-		} else if (g_str_has_prefix(line, PLAYLIST_STATE_FILE_CURRENT)) {
+		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_CURRENT)) {
 			current = atoi(&(line
 					 [strlen
 					  (PLAYLIST_STATE_FILE_CURRENT)]));
-		} else if (g_str_has_prefix(line,
+		} else if (StringStartsWith(line,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
 			playlist_state_load(file, playlist);
 		}

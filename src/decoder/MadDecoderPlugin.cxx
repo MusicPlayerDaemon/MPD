@@ -26,6 +26,7 @@
 #include "tag/TagRva2.hxx"
 #include "tag/TagHandler.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/StringUtil.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -689,7 +690,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	/* This is technically incorrect, since the encoder might not be lame.
 	 * But there's no other way to determine if this is a lame tag, and we
 	 * wouldn't want to go reading a tag that's not there. */
-	if (!g_str_has_prefix(lame->encoder, "LAME"))
+	if (!StringStartsWith(lame->encoder, "LAME"))
 		return false;
 
 	if (sscanf(lame->encoder+4, "%u.%u",

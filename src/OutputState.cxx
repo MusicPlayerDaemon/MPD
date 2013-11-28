@@ -28,8 +28,7 @@
 #include "OutputInternal.hxx"
 #include "OutputError.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
+#include "util/StringUtil.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -61,7 +60,7 @@ audio_output_state_read(const char *line)
 	const char *name;
 	struct audio_output *ao;
 
-	if (!g_str_has_prefix(line, AUDIO_DEVICE_STATE))
+	if (!StringStartsWith(line, AUDIO_DEVICE_STATE))
 		return false;
 
 	line += sizeof(AUDIO_DEVICE_STATE) - 1;

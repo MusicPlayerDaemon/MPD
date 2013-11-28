@@ -22,11 +22,10 @@
 #include "MixerAll.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Domain.hxx"
 #include "system/PeriodClock.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -106,7 +105,7 @@ read_sw_volume_state(const char *line)
 	char *end = nullptr;
 	long int sv;
 
-	if (!g_str_has_prefix(line, SW_VOLUME_STATE))
+	if (!StringStartsWith(line, SW_VOLUME_STATE))
 		return false;
 
 	line += sizeof(SW_VOLUME_STATE) - 1;

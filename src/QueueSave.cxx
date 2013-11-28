@@ -26,12 +26,11 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
 #include "TextFile.hxx"
+#include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/Traits.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <stdlib.h>
 
@@ -78,7 +77,7 @@ queue_load_song(TextFile &file, const char *line, queue &queue)
 		return;
 
 	uint8_t priority = 0;
-	if (g_str_has_prefix(line, PRIO_LABEL)) {
+	if (StringStartsWith(line, PRIO_LABEL)) {
 		priority = strtoul(line + sizeof(PRIO_LABEL) - 1, nullptr, 10);
 
 		line = file.ReadLine();
@@ -89,7 +88,7 @@ queue_load_song(TextFile &file, const char *line, queue &queue)
 	const Database *db = nullptr;
 	Song *song;
 
-	if (g_str_has_prefix(line, SONG_BEGIN)) {
+	if (StringStartsWith(line, SONG_BEGIN)) {
 		const char *uri = line + sizeof(SONG_BEGIN) - 1;
 		if (!uri_has_scheme(uri) && !PathTraits::IsAbsoluteUTF8(uri))
 			return;

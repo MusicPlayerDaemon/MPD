@@ -40,6 +40,10 @@ strchug_fast(char *p)
 	return const_cast<char *>(strchug_fast((const char *)p));
 }
 
+gcc_pure
+bool
+StringStartsWith(const char *haystack, const char *needle);
+
 /**
  * Checks whether a string array contains the specified string.
  *

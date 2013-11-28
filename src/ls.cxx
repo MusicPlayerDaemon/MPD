@@ -19,10 +19,9 @@
 
 #include "config.h"
 #include "ls.hxx"
+#include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "Client.hxx"
-
-#include <glib.h>
 
 #include <assert.h>
 
@@ -90,7 +89,7 @@ bool uri_supported_scheme(const char *uri)
 	assert(uri_has_scheme(uri));
 
 	while (*urlPrefixes) {
-		if (g_str_has_prefix(uri, *urlPrefixes))
+		if (StringStartsWith(uri, *urlPrefixes))
 			return true;
 		urlPrefixes++;
 	}

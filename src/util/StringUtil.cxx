@@ -22,6 +22,7 @@
 #include "ASCII.hxx"
 
 #include <assert.h>
+#include <string.h>
 
 const char *
 strchug_fast(const char *p)
@@ -30,6 +31,13 @@ strchug_fast(const char *p)
 		++p;
 
 	return p;
+}
+
+bool
+StringStartsWith(const char *haystack, const char *needle)
+{
+	const size_t length = strlen(needle);
+	return memcmp(haystack, needle, length) == 0;
 }
 
 bool
