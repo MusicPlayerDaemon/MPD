@@ -51,6 +51,13 @@ class PcmConvert {
 
 	AudioFormat src_format, dest_format;
 
+	/**
+	 * Do we get DSD source data?  Then this flag is true and
+	 * src_format.format is set to SampleFormat::FLOAT, because
+	 * the #PcmDsd class will convert it to floating point.
+	 */
+	bool is_dsd;
+
 public:
 	PcmConvert();
 	~PcmConvert();

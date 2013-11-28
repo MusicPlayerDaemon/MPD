@@ -56,6 +56,10 @@ PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
 	src_format = _src_format;
 	dest_format = _dest_format;
 
+	is_dsd = src_format.format == SampleFormat::DSD;
+	if (is_dsd)
+		src_format.format = SampleFormat::FLOAT;
+
 	return true;
 }
 
@@ -277,8 +281,7 @@ PcmConvert::Convert(const void *src, size_t src_size,
 		    size_t *dest_size_r,
 		    Error &error)
 {
-	AudioFormat float_format;
-	if (src_format.format == SampleFormat::DSD) {
+	if (is_dsd) {
 		size_t f_size;
 		const float *f = dsd.ToFloat(src_format.channels,
 					     false, (const uint8_t *)src,
@@ -289,10 +292,6 @@ PcmConvert::Convert(const void *src, size_t src_size,
 			return nullptr;
 		}
 
-		float_format = src_format;
-		float_format.format = SampleFormat::FLOAT;
-
-		src_format = float_format;
 		src = f;
 		src_size = f_size;
 	}
