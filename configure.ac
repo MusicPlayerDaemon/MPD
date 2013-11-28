@@ -748,20 +748,12 @@ dnl Converter Plugins
 dnl ---------------------------------------------------------------------------
 
 dnl ------------------------------ libsamplerate ------------------------------
-MPD_AUTO_PKG(lsr, SAMPLERATE, [samplerate >= 0.0.15],
+MPD_AUTO_PKG(lsr, SAMPLERATE, [samplerate >= 0.1.3],
 	[libsamplerate resampling], [libsamplerate not found])
 if test x$enable_lsr = xyes; then
 	AC_DEFINE([HAVE_LIBSAMPLERATE], 1,
 		[Define to enable libsamplerate])
 fi
-
-if test x$enable_lsr = xyes; then
-	PKG_CHECK_MODULES([SAMPLERATE_013],
-		[samplerate >= 0.1.3],,
-		[AC_DEFINE([HAVE_LIBSAMPLERATE_NOINT], 1,
-		[libsamplerate doesn't provide src_int_to_float_array() (<0.1.3)])])
-fi
-
 AM_CONDITIONAL(HAVE_LIBSAMPLERATE, test x$enable_lsr = xyes)
 
 dnl ---------------------------------------------------------------------------

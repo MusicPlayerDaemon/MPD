@@ -225,26 +225,6 @@ pcm_resample_lsr_16(PcmResampler *state,
 	return dest_buffer;
 }
 
-#ifdef HAVE_LIBSAMPLERATE_NOINT
-
-/* libsamplerate introduced these functions in v0.1.3 */
-
-static void
-src_int_to_float_array(const int *in, float *out, int len)
-{
-	while (len-- > 0)
-		*out++ = *in++ / (float)(1 << (24 - 1));
-}
-
-static void
-src_float_to_int_array (const float *in, int *out, int len)
-{
-	while (len-- > 0)
-		*out++ = *in++ * (float)(1 << (24 - 1));
-}
-
-#endif
-
 const int32_t *
 pcm_resample_lsr_32(PcmResampler *state,
 		    unsigned channels,
