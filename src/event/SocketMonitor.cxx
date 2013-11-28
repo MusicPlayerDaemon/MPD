@@ -158,8 +158,9 @@ SocketMonitor::Abandon()
 	assert(IsDefined());
 
 #ifdef USE_INTERNAL_EVENTLOOP
+	int old_fd = fd;
 	fd = -1;
-	loop.Abandon(*this);
+	loop.Abandon(old_fd, *this);
 #else
 	Steal();
 #endif

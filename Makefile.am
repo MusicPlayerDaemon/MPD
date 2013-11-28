@@ -306,6 +306,8 @@ libsystem_a_SOURCES = \
 
 libevent_a_SOURCES = \
 	src/event/WakeFD.hxx \
+	src/event/PollGroup.hxx \
+	src/event/PollGroupEPoll.hxx \
 	src/event/SignalMonitor.hxx src/event/SignalMonitor.cxx \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
 	src/event/IdleMonitor.hxx src/event/IdleMonitor.cxx \

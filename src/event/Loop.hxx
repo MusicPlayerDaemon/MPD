@@ -25,10 +25,7 @@
 #include "Compiler.h"
 
 #ifdef USE_INTERNAL_EVENTLOOP
-#ifdef USE_EPOLL
-#include "system/EPollFD.hxx"
-#endif
-
+#include "PollGroup.hxx"
 #include "thread/Mutex.hxx"
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
@@ -99,13 +96,8 @@ class EventLoop final
 
 	bool quit;
 
-#ifdef USE_EPOLL
-	EPollFD epoll;
-	static constexpr unsigned MAX_EVENTS = 16;
-	unsigned n_events;
-	epoll_event events[MAX_EVENTS];
-#endif
-
+	PollGroup poll_group;
+	PollResult poll_result;
 #endif
 
 #ifdef USE_GLIB_EVENTLOOP
@@ -140,15 +132,11 @@ public:
 	void Break();
 
 	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) {
-#ifdef USE_EPOLL
-		return epoll.Add(_fd, flags, &m);
-#endif
+		return poll_group.Add(_fd, flags, &m);
 	}
 
 	bool ModifyFD(int _fd, unsigned flags, SocketMonitor &m) {
-#ifdef USE_EPOLL
-		return epoll.Modify(_fd, flags, &m);
-#endif
+		return poll_group.Modify(_fd, flags, &m);
 	}
 
 	/**
@@ -156,7 +144,7 @@ public:
 	 * has been closed.  This is like RemoveFD(), but does not
 	 * attempt to use #EPOLL_CTL_DEL.
 	 */
-	void Abandon(SocketMonitor &m);
+	bool Abandon(int fd, SocketMonitor &m);
 
 	bool RemoveFD(int fd, SocketMonitor &m);
 

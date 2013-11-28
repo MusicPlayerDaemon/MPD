@@ -23,9 +23,7 @@
 #include "check.h"
 
 #ifdef USE_INTERNAL_EVENTLOOP
-#ifdef USE_EPOLL
-#include <sys/epoll.h>
-#endif
+#include "PollGroup.hxx"
 #endif
 
 #ifdef USE_GLIB_EVENTLOOP
@@ -79,12 +77,10 @@ class SocketMonitor {
 
 public:
 #ifdef USE_INTERNAL_EVENTLOOP
-#ifdef USE_EPOLL
-	static constexpr unsigned READ = EPOLLIN;
-	static constexpr unsigned WRITE = EPOLLOUT;
-	static constexpr unsigned ERROR = EPOLLERR;
-	static constexpr unsigned HANGUP = EPOLLHUP;
-#endif
+	static constexpr unsigned READ = PollGroup::READ;
+	static constexpr unsigned WRITE = PollGroup::WRITE;
+	static constexpr unsigned ERROR = PollGroup::ERROR;
+	static constexpr unsigned HANGUP = PollGroup::HANGUP;
 #endif
 
 #ifdef USE_GLIB_EVENTLOOP

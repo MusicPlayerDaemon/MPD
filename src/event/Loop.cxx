@@ -33,9 +33,6 @@ EventLoop::EventLoop(Default)
 	:SocketMonitor(*this),
 	 now_ms(::MonotonicClockMS()),
 	 quit(false),
-#ifdef USE_EPOLL
-	 n_events(0),
-#endif
 	 thread(ThreadId::Null())
 {
 	SocketMonitor::Open(wake_fd.Get());
@@ -60,23 +57,18 @@ EventLoop::Break()
 		AddCall([this]() { Break(); });
 }
 
-void
-EventLoop::Abandon(SocketMonitor &m)
+bool
+EventLoop::Abandon(int _fd, SocketMonitor &m)
 {
-#ifdef USE_EPOLL
-	for (unsigned i = 0, n = n_events; i < n; ++i)
-		if (events[i].data.ptr == &m)
-			events[i].events = 0;
-#endif
+	poll_result.Clear(&m);
+	return poll_group.Abandon(_fd);
 }
 
 bool
 EventLoop::RemoveFD(int _fd, SocketMonitor &m)
 {
-#ifdef USE_EPOLL
-	Abandon(m);
-	return epoll.Remove(_fd);
-#endif
+	poll_result.Clear(&m);
+	return poll_group.Remove(_fd);
 }
 
 void
@@ -168,34 +160,29 @@ EventLoop::Run()
 			   timeout */
 			continue;
 
-#ifdef USE_EPOLL
 		/* wait for new event */
 
-		const int n = epoll.Wait(events, MAX_EVENTS, timeout_ms);
-		n_events = std::max(n, 0);
+		poll_group.ReadEvents(poll_result, timeout_ms);
 
 		now_ms = ::MonotonicClockMS();
 
 		assert(!quit);
 
 		/* invoke sockets */
-
-		for (int i = 0; i < n; ++i) {
-			const auto &e = events[i];
-
-			if (e.events != 0) {
-				SocketMonitor &m = *(SocketMonitor *)e.data.ptr;
-				m.Dispatch(e.events);
+		for (int i = 0; i < poll_result.GetSize(); ++i) {
+			auto events = poll_result.GetEvents(i);
+			if (events != 0) {
+				auto m = (SocketMonitor *)poll_result.GetObject(i);
+				m->Dispatch(events);
 
 				if (quit)
 					break;
 			}
 		}
 
-		n_events = 0;
-#endif
-	} while (!quit);
+		poll_result.Reset();
 
+	} while (!quit);
 #endif
 
 #ifdef USE_GLIB_EVENTLOOP
