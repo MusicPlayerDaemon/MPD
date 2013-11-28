@@ -29,6 +29,7 @@
 #include <stddef.h>
 
 class Error;
+class Domain;
 
 /**
  * This object is statically allocated (within another struct), and
@@ -100,6 +101,6 @@ private:
 				  Error &error);
 };
 
-extern const class Domain pcm_convert_domain;
+extern const Domain pcm_convert_domain;
 
 #endif

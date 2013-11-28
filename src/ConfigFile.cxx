@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "ConfigFile.hxx"
-#include "ConfigError.hxx"
 #include "ConfigData.hxx"
 #include "ConfigTemplates.hxx"
 #include "util/Tokenizer.hxx"
@@ -32,9 +31,7 @@
 #include "Log.hxx"
 
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
-#include <errno.h>
 
 #define MAX_STRING_SIZE	MPD_PATH_MAX+80
 

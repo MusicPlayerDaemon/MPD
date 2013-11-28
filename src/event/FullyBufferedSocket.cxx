@@ -23,6 +23,7 @@
 #include "util/fifo_buffer.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Compiler.h"
 
 #include <assert.h>
 #include <stdint.h>

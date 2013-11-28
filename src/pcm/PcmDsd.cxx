@@ -25,7 +25,6 @@
 #include <algorithm>
 
 #include <assert.h>
-#include <string.h>
 
 PcmDsd::PcmDsd()
 {

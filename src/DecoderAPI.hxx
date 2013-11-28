@@ -27,6 +27,8 @@
 #ifndef MPD_DECODER_API_HXX
 #define MPD_DECODER_API_HXX
 
+// IWYU pragma: begin_exports
+
 #include "check.h"
 #include "DecoderCommand.hxx"
 #include "DecoderPlugin.hxx"
@@ -35,6 +37,8 @@
 #include "AudioFormat.hxx"
 #include "MixRampInfo.hxx"
 #include "ConfigData.hxx"
+
+// IWYU pragma: end_exports
 
 /**
  * Notify the player thread that it has finished initialization and

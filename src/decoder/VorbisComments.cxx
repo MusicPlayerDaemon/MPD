@@ -20,7 +20,6 @@
 #include "config.h"
 #include "VorbisComments.hxx"
 #include "XiphTags.hxx"
-#include "tag/Tag.hxx"
 #include "tag/TagTable.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
@@ -29,7 +28,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>

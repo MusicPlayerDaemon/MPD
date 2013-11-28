@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "DatabaseQueue.hxx"
-#include "DatabaseSelection.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "Partition.hxx"

@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "PcmBuffer.hxx"
-#include "poison.h"
 
 void *
 PcmBuffer::Get(size_t new_size)

@@ -21,8 +21,6 @@
 #define MPD_FFMPEG_METADATA_HXX
 
 extern "C" {
-#include <libavformat/avformat.h>
-#include <libavutil/avutil.h>
 #include <libavutil/dict.h>
 }
 
@@ -35,6 +33,6 @@ struct tag_handler;
 
 void
 ffmpeg_scan_dictionary(AVDictionary *dict,
-		       const struct tag_handler *handler, void *handler_ctx);
+		       const tag_handler *handler, void *handler_ctx);
 
 #endif

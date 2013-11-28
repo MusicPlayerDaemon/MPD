@@ -39,9 +39,6 @@
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
 
-#include <unistd.h>
-#include <stdio.h> /* for SEEK_SET, SEEK_CUR */
-
 struct DsfMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;

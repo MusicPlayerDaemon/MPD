@@ -22,8 +22,6 @@
 #include "OutputAPI.hxx"
 #include "Timer.hxx"
 
-#include <assert.h>
-
 struct NullOutput {
 	struct audio_output base;
 

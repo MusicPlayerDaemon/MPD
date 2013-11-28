@@ -25,8 +25,6 @@
 #include "util/ByteReverse.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-#include <unistd.h>
 #include <string.h>
 #include <stdio.h> /* for SEEK_SET */
 

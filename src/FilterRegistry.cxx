@@ -21,7 +21,6 @@
 #include "FilterRegistry.hxx"
 #include "FilterPlugin.hxx"
 
-#include <stddef.h>
 #include <string.h>
 
 const struct filter_plugin *const filter_plugins[] = {

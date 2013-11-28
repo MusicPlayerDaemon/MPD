@@ -23,7 +23,6 @@
 #include "ConfigData.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
-#include "system/fd_util.h"
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
@@ -33,16 +32,11 @@
 #include "system/FatalError.hxx"
 
 #include <assert.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <string.h>
-#include <stdarg.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-#include <errno.h>
 #include <glib.h>
 
 #ifdef HAVE_SYSLOG

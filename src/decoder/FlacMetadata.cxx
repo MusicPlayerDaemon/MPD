@@ -21,7 +21,6 @@
 #include "FlacMetadata.hxx"
 #include "XiphTags.hxx"
 #include "MixRampInfo.hxx"
-#include "tag/Tag.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagTable.hxx"
 #include "tag/TagBuilder.hxx"
@@ -30,7 +29,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
 #include <string.h>
 
 static bool

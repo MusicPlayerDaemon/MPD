@@ -22,7 +22,6 @@
 #include "PlaylistError.hxx"
 #include "PlayerControl.hxx"
 #include "Song.hxx"
-#include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"
 

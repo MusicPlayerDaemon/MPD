@@ -21,6 +21,8 @@
 #include "IdleMonitor.hxx"
 #include "Loop.hxx"
 
+#include <assert.h>
+
 void
 IdleMonitor::Cancel()
 {

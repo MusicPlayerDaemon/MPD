@@ -29,13 +29,10 @@
 #include <avahi-client/client.h>
 #include <avahi-client/publish.h>
 
-#include <avahi-common/watch.h>
 #include <avahi-common/alternative.h>
 #include <avahi-common/domain.h>
 #include <avahi-common/malloc.h>
 #include <avahi-common/error.h>
-
-#include <stddef.h>
 
 static constexpr Domain avahi_domain("avahi");
 

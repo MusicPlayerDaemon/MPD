@@ -24,7 +24,6 @@
 #include "Instance.hxx"
 #include "Main.hxx"
 #include "protocol/Result.hxx"
-#include "protocol/ArgParser.hxx"
 
 #include <set>
 #include <string>

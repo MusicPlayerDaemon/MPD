@@ -28,7 +28,6 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-#include <assert.h>
 #include <stdio.h>
 
 class AllocatedPath;

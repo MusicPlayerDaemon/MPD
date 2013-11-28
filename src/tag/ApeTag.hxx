@@ -34,6 +34,6 @@ extern const struct tag_table ape_tags[];
  */
 bool
 tag_ape_scan2(Path path_fs,
-	      const struct tag_handler *handler, void *handler_ctx);
+	      const tag_handler *handler, void *handler_ctx);
 
 #endif

@@ -26,7 +26,6 @@
 #include <sys/stat.h>
 
 struct Directory;
-struct archive_plugin;
 
 #ifdef ENABLE_ARCHIVE
 

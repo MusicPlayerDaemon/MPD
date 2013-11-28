@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <sys/epoll.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include "check.h"
 

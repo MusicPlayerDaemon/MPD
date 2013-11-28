@@ -38,6 +38,7 @@
 #include <glib.h>
 
 #include <string>
+#include <algorithm>
 
 #include <sys/types.h>
 #include <sys/stat.h>

@@ -22,6 +22,8 @@
 
 #include "check.h"
 
-extern const class Domain vorbis_domain;
+class Domain;
+
+extern const Domain vorbis_domain;
 
 #endif

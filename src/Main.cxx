@@ -80,10 +80,7 @@
 
 #include <glib.h>
 
-#include <unistd.h>
 #include <stdlib.h>
-#include <errno.h>
-#include <string.h>
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>

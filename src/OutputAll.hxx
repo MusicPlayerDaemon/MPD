@@ -115,7 +115,7 @@ audio_output_all_set_replay_gain_mode(ReplayGainMode mode);
  * (all closed then)
  */
 bool
-audio_output_all_play(struct music_chunk *chunk, Error &error);
+audio_output_all_play(music_chunk *chunk, Error &error);
 
 /**
  * Checks if the output devices have drained their music pipe, and

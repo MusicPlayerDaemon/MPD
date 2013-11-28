@@ -36,9 +36,7 @@
 #include <assert.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <errno.h>
-#include <dirent.h>
 
 static constexpr Domain mapper_domain("mapper");
 

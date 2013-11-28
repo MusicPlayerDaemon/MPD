@@ -20,7 +20,6 @@
 #include "config.h"
 #include "SongSort.hxx"
 #include "Song.hxx"
-#include "util/list.h"
 #include "tag/Tag.hxx"
 
 extern "C" {
@@ -29,7 +28,6 @@ extern "C" {
 
 #include <glib.h>
 
-#include <assert.h>
 #include <stdlib.h>
 
 static const char *

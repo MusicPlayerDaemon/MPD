@@ -34,8 +34,6 @@
 
 #include <zzip/zzip.h>
 
-#include <string.h>
-
 class ZzipArchiveFile final : public ArchiveFile {
 public:
 	RefCount ref;

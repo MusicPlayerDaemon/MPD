@@ -21,7 +21,6 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistMapper.hxx"
 #include "PlaylistRegistry.hxx"
-#include "PlaylistError.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "InputStream.hxx"

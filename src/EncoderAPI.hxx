@@ -25,9 +25,13 @@
 #ifndef MPD_ENCODER_API_HXX
 #define MPD_ENCODER_API_HXX
 
+// IWYU pragma: begin_exports
+
 #include "EncoderPlugin.hxx"
 #include "AudioFormat.hxx"
 #include "tag/Tag.hxx"
 #include "ConfigData.hxx"
+
+// IWYU pragma: end_exports
 
 #endif

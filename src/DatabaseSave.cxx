@@ -23,7 +23,6 @@
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
 #include "DirectorySave.hxx"
-#include "Song.hxx"
 #include "TextFile.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagSettings.h"
@@ -33,7 +32,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 

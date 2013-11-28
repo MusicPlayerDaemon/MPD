@@ -26,7 +26,6 @@
 #include "system/FatalError.hxx"
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 
 int

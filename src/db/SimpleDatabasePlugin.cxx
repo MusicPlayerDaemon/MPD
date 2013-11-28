@@ -33,7 +33,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <sys/types.h>
 #include <errno.h>
 
 static constexpr Domain simple_db_domain("simple_db");

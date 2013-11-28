@@ -30,9 +30,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
-#include <string.h>
-
 #define DIRECTORY_DIR "directory: "
 #define DIRECTORY_MTIME "mtime: "
 #define DIRECTORY_BEGIN "begin: "

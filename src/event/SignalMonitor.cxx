@@ -39,6 +39,8 @@
 
 #include <algorithm>
 
+#include <assert.h>
+
 class SignalMonitor final : private SocketMonitor {
 #ifdef USE_SIGNALFD
 	SignalFD fd;

@@ -23,6 +23,7 @@
 #include "PcmUtils.hxx"
 #include "AudioFormat.hxx"
 
+#include <assert.h>
 #include <math.h>
 
 template<typename T, typename U, unsigned bits>

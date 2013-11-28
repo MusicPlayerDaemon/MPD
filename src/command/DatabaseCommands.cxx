@@ -26,13 +26,9 @@
 #include "CommandError.hxx"
 #include "Client.hxx"
 #include "tag/Tag.hxx"
-#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "SongFilter.hxx"
 #include "protocol/Result.hxx"
-
-#include <assert.h>
-#include <string.h>
 
 CommandResult
 handle_lsinfo2(Client &client, int argc, char *argv[])

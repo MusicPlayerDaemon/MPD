@@ -22,7 +22,6 @@
 
 #include "event/SocketMonitor.hxx"
 #include "util/FifoBuffer.hxx"
-#include "Compiler.h"
 
 class Error;
 

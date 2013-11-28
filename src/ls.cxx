@@ -25,8 +25,6 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <string.h>
-
 
 /**
   * file:// is not included in remoteUrlPrefixes, the connection method

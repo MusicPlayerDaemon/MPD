@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MixerInternal.hxx"
-#include "OutputAPI.hxx"
+#include "ConfigData.hxx"
 #include "system/fd_util.h"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
@@ -28,10 +28,8 @@
 
 #include <assert.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
 

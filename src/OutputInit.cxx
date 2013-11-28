@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "OutputInternal.hxx"
-#include "OutputControl.hxx"
 #include "OutputList.hxx"
 #include "OutputError.hxx"
 #include "OutputAPI.hxx"

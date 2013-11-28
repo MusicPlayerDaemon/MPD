@@ -27,7 +27,6 @@
 #include "EmbeddedCuePlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "SongEnumerator.hxx"
-#include "tag/Tag.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
@@ -38,7 +37,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/ASCII.hxx"
 
-#include <assert.h>
 #include <string.h>
 
 class EmbeddedCuePlaylist final : public SongEnumerator {

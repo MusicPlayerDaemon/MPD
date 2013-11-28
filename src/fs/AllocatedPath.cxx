@@ -26,7 +26,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
 #include <string.h>
 
 inline AllocatedPath::AllocatedPath(Donate, pointer _value)

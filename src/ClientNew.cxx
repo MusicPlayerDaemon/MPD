@@ -31,13 +31,11 @@
 #include <glib.h>
 
 #include <assert.h>
-#include <sys/types.h>
 #ifdef WIN32
 #include <winsock2.h>
 #else
 #include <sys/socket.h>
 #endif
-#include <unistd.h>
 
 #ifdef HAVE_LIBWRAP
 #include <tcpd.h>

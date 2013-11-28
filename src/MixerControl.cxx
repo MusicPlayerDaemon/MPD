@@ -23,7 +23,6 @@
 #include "util/Error.hxx"
 
 #include <assert.h>
-#include <stddef.h>
 
 Mixer *
 mixer_new(const struct mixer_plugin *plugin, void *ao,

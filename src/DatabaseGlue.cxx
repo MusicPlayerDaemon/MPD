@@ -21,7 +21,6 @@
 #include "DatabaseGlue.hxx"
 #include "DatabaseSimple.hxx"
 #include "DatabaseRegistry.hxx"
-#include "DatabaseSave.hxx"
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
 #include "util/Error.hxx"
@@ -30,13 +29,8 @@
 #include "DatabasePlugin.hxx"
 #include "db/SimpleDatabasePlugin.hxx"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 #include <assert.h>
 #include <string.h>
-#include <errno.h>
-
 
 static Database *db;
 static bool db_is_open;

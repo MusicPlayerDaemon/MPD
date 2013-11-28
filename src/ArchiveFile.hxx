@@ -23,6 +23,8 @@
 class Mutex;
 class Cond;
 class Error;
+class ArchiveVisitor;
+struct InputStream;
 
 class ArchiveFile {
 public:

@@ -24,16 +24,13 @@
 #include "OutputInternal.hxx"
 #include "OutputPlugin.hxx"
 #include "OutputError.hxx"
-#include "MixerPlugin.hxx"
 #include "MixerControl.hxx"
 #include "notify.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
-#include "FilterPlugin.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
-#include <stdlib.h>
 
 /** after a failure, wait this number of seconds before
     automatically reopening the device */

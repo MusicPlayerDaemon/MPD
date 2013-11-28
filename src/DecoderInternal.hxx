@@ -20,13 +20,11 @@
 #ifndef MPD_DECODER_INTERNAL_HXX
 #define MPD_DECODER_INTERNAL_HXX
 
-#include "DecoderCommand.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/Error.hxx"
 
 class PcmConvert;
 struct DecoderControl;
-struct InputStream;
 struct Tag;
 
 struct Decoder {

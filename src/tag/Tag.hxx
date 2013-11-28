@@ -20,8 +20,8 @@
 #ifndef MPD_TAG_HXX
 #define MPD_TAG_HXX
 
-#include "TagType.h"
-#include "TagItem.hxx"
+#include "TagType.h" // IWYU pragma: export
+#include "TagItem.hxx" // IWYU pragma: export
 #include "Compiler.h"
 
 #include <algorithm>

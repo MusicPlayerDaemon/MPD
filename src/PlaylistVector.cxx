@@ -24,7 +24,6 @@
 #include <algorithm>
 
 #include <assert.h>
-#include <string.h>
 
 PlaylistVector::iterator
 PlaylistVector::find(const char *name)

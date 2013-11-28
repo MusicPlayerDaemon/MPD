@@ -24,7 +24,6 @@
 #include "BufferedSocket.hxx"
 #include "IdleMonitor.hxx"
 #include "util/PeakBuffer.hxx"
-#include "Compiler.h"
 
 /**
  * A #BufferedSocket specialization that adds an output buffer.

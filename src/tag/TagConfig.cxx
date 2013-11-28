@@ -30,8 +30,6 @@
 
 #include <algorithm>
 
-#include <string.h>
-
 void
 TagLoadConfig()
 {

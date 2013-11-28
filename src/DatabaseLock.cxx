@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "DatabaseLock.hxx"
-#include "Compiler.h"
 
 Mutex db_mutex;
 

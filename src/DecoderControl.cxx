@@ -22,8 +22,6 @@
 #include "MusicPipe.hxx"
 #include "Song.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 
 DecoderControl::DecoderControl(Mutex &_mutex, Cond &_client_cond)

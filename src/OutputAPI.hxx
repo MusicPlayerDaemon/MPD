@@ -20,10 +20,14 @@
 #ifndef MPD_OUTPUT_API_HXX
 #define MPD_OUTPUT_API_HxX
 
+// IWYU pragma: begin_exports
+
 #include "OutputPlugin.hxx"
 #include "OutputInternal.hxx"
 #include "AudioFormat.hxx"
 #include "tag/Tag.hxx"
 #include "ConfigData.hxx"
+
+// IWYU pragma: end_exports
 
 #endif

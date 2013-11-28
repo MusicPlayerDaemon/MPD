@@ -24,11 +24,8 @@
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <errno.h>
 #include <unistd.h>
 
 bool

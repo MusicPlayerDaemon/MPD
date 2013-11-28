@@ -33,10 +33,10 @@ class Error;
 
 bool
 tag_id3_scan(Path path_fs,
-	     const struct tag_handler *handler, void *handler_ctx);
+	     const tag_handler *handler, void *handler_ctx);
 
 Tag *
-tag_id3_import(struct id3_tag *);
+tag_id3_import(id3_tag *);
 
 /**
  * Loads the ID3 tags from the file into a libid3tag object.  The
@@ -53,8 +53,8 @@ tag_id3_load(Path path_fs, Error &error);
  *
  */
 void
-scan_id3_tag(struct id3_tag *tag,
-	     const struct tag_handler *handler, void *handler_ctx);
+scan_id3_tag(id3_tag *tag,
+	     const tag_handler *handler, void *handler_ctx);
 
 #else
 
@@ -62,7 +62,7 @@ scan_id3_tag(struct id3_tag *tag,
 
 static inline bool
 tag_id3_scan(gcc_unused Path path_fs,
-	     gcc_unused const struct tag_handler *handler,
+	     gcc_unused const tag_handler *handler,
 	     gcc_unused void *handler_ctx)
 {
 	return false;

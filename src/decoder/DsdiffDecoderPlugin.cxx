@@ -38,9 +38,6 @@
 #include "DsdLib.hxx"
 #include "Log.hxx"
 
-#include <unistd.h>
-#include <stdio.h> /* for SEEK_SET, SEEK_CUR */
-
 struct DsdiffHeader {
 	DsdId id;
 	DffDsdUint64 size;

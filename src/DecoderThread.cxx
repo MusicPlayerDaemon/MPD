@@ -29,7 +29,6 @@
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "DecoderAPI.hxx"
-#include "tag/Tag.hxx"
 #include "InputStream.hxx"
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"

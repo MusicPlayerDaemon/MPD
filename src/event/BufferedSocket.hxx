@@ -23,13 +23,13 @@
 #include "check.h"
 #include "SocketMonitor.hxx"
 #include "util/FifoBuffer.hxx"
-#include "Compiler.h"
 
 #include <assert.h>
 #include <stdint.h>
 
 struct fifo_buffer;
 class Error;
+class EventLoop;
 
 /**
  * A #SocketMonitor specialization that adds an input buffer.

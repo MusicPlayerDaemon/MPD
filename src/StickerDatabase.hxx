@@ -106,7 +106,7 @@ sticker_delete_value(const char *type, const char *uri, const char *name);
  * @param sticker the sticker object to be freed
  */
 void
-sticker_free(struct sticker *sticker);
+sticker_free(sticker *sticker);
 
 /**
  * Determines a single value in a sticker.
@@ -117,7 +117,7 @@ sticker_free(struct sticker *sticker);
  */
 gcc_pure
 const char *
-sticker_get_value(const struct sticker &sticker, const char *name);
+sticker_get_value(const sticker &sticker, const char *name);
 
 /**
  * Iterates over all sticker items in a sticker.
@@ -127,7 +127,7 @@ sticker_get_value(const struct sticker &sticker, const char *name);
  * @param user_data an opaque pointer for the callback function
  */
 void
-sticker_foreach(const struct sticker &sticker,
+sticker_foreach(const sticker &sticker,
 		void (*func)(const char *name, const char *value,
 			     void *user_data),
 		void *user_data);
@@ -139,7 +139,7 @@ sticker_foreach(const struct sticker &sticker,
  * @param uri the URI of the resource, e.g. the song path
  * @return a sticker object, or nullptr on error or if there is no sticker
  */
-struct sticker *
+sticker *
 sticker_load(const char *type, const char *uri);
 
 /**

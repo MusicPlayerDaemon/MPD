@@ -34,10 +34,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <errno.h>
 
 enum {
 	MAX_PORTS = 16,

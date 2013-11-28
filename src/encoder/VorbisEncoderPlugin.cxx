@@ -33,8 +33,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
-
 struct vorbis_encoder {
 	/** the base class */
 	Encoder encoder;

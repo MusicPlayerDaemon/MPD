@@ -22,11 +22,6 @@
 #include "Idle.hxx"
 
 #include <assert.h>
-#include <string.h>
-
-	bool Unsubscribe(const char *channel);
-	void UnsubscribeAll();
-	bool PushMessage(const ClientMessage &msg);
 
 Client::SubscribeResult
 Client::Subscribe(const char *channel)

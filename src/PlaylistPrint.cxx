@@ -23,8 +23,6 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
-#include "PlaylistRegistry.hxx"
-#include "PlaylistPlugin.hxx"
 #include "QueuePrint.hxx"
 #include "SongEnumerator.hxx"
 #include "SongPrint.hxx"

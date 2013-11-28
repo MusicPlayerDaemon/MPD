@@ -31,7 +31,6 @@ extern "C" {
 #include "util/growing_fifo.h"
 }
 
-#include <assert.h>
 #include <string.h>
 
 #include <FLAC/stream_encoder.h>

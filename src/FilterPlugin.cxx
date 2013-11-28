@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "FilterPlugin.hxx"
-#include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "ConfigData.hxx"
 #include "ConfigError.hxx"

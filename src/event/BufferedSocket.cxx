@@ -22,6 +22,9 @@
 #include "system/SocketError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Compiler.h"
+
+#include <algorithm>
 
 BufferedSocket::ssize_t
 BufferedSocket::DirectRead(void *data, size_t length)

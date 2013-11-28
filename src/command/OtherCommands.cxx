@@ -44,10 +44,6 @@
 #include "Client.hxx"
 #include "Idle.hxx"
 
-#ifdef ENABLE_SQLITE
-#include "StickerDatabase.hxx"
-#endif
-
 #include <assert.h>
 #include <string.h>
 

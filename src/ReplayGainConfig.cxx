@@ -22,12 +22,12 @@
 #include "Idle.hxx"
 #include "ConfigData.hxx"
 #include "ConfigGlobal.hxx"
-#include "Playlist.hxx"
 #include "system/FatalError.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 ReplayGainMode replay_gain_mode = REPLAY_GAIN_OFF;
 

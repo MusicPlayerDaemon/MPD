@@ -63,7 +63,7 @@ sticker_song_delete_value(const Song *song, const char *name);
  * @param song the song object
  * @return a sticker object, or NULL on error or if there is no sticker
  */
-struct sticker *
+sticker *
 sticker_song_get(const Song *song);
 
 /**

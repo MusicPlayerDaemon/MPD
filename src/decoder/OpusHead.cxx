@@ -21,7 +21,6 @@
 #include "OpusHead.hxx"
 
 #include <stdint.h>
-#include <string.h>
 
 struct OpusHead {
 	char signature[8];

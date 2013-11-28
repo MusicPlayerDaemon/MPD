@@ -22,7 +22,6 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseError.hxx"
-#include "PlaylistVector.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "SongFilter.hxx"

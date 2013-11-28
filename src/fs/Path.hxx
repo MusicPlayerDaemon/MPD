@@ -29,8 +29,6 @@
 #include <assert.h>
 #include <string.h>
 
-class Error;
-
 /**
  * A path name in the native file system character set.
  *

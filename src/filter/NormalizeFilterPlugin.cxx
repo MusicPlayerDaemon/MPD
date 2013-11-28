@@ -25,7 +25,6 @@
 #include "AudioFormat.hxx"
 #include "AudioCompress/compress.h"
 
-#include <assert.h>
 #include <string.h>
 
 class NormalizeFilter final : public Filter {

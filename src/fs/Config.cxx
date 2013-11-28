@@ -20,15 +20,9 @@
 #include "config.h"
 #include "Config.hxx"
 #include "Charset.hxx"
-#include "Domain.hxx"
 #include "ConfigGlobal.hxx"
-#include "Log.hxx"
-#include "Compiler.h"
 
 #include <glib.h>
-
-#include <assert.h>
-#include <string.h>
 
 #ifdef WIN32
 #include <windows.h> // for GetACP()

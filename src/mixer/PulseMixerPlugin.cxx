@@ -26,7 +26,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <pulse/thread-mainloop.h>
 #include <pulse/context.h>
 #include <pulse/introspect.h>
 #include <pulse/stream.h>
@@ -34,7 +33,6 @@
 #include <pulse/error.h>
 
 #include <assert.h>
-#include <string.h>
 
 struct PulseMixer final : public Mixer {
 	PulseOutput *output;

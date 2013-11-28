@@ -24,7 +24,6 @@
 
 struct config_param;
 struct InputStream;
-struct Tag;
 struct tag_handler;
 
 /**

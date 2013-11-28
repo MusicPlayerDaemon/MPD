@@ -30,7 +30,6 @@
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 
-class Path;
 class AllocatedPath;
 struct Directory;
 struct Song;

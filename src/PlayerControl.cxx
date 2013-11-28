@@ -21,9 +21,8 @@
 #include "PlayerControl.hxx"
 #include "Idle.hxx"
 #include "Song.hxx"
-#include "DecoderControl.hxx"
 
-#include <cmath>
+#include <algorithm>
 
 #include <assert.h>
 

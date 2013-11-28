@@ -21,7 +21,6 @@
 #include "TagId3.hxx"
 #include "TagHandler.hxx"
 #include "TagTable.hxx"
-#include "Tag.hxx"
 #include "TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

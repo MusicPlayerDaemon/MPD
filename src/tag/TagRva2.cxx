@@ -21,10 +21,10 @@
 #include "TagRva2.hxx"
 #include "ReplayGainInfo.hxx"
 
+#include <id3tag.h>
+
 #include <stdint.h>
 #include <string.h>
-#include <glib.h>
-#include <id3tag.h>
 
 enum rva2_channel {
 	CHANNEL_OTHER = 0x00,

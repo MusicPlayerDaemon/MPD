@@ -24,7 +24,6 @@
 
 class SongFilter;
 struct DatabaseSelection;
-struct db_visitor;
 class Client;
 class Error;
 

@@ -21,8 +21,6 @@
 #include "FilterConfig.hxx"
 #include "filter/ChainFilterPlugin.hxx"
 #include "FilterPlugin.hxx"
-#include "FilterInternal.hxx"
-#include "FilterRegistry.hxx"
 #include "ConfigData.hxx"
 #include "ConfigOption.hxx"
 #include "ConfigGlobal.hxx"

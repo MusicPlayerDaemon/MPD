@@ -21,7 +21,6 @@
 #include "InotifyQueue.hxx"
 #include "InotifyDomain.hxx"
 #include "UpdateGlue.hxx"
-#include "event/Loop.hxx"
 #include "Log.hxx"
 
 #include <string.h>

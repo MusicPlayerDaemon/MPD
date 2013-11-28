@@ -35,9 +35,6 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 
-#include <assert.h>
-#include <stdlib.h>
-
 static void
 print_spl_list(Client &client, const PlaylistVector &list)
 {

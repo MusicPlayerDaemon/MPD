@@ -27,8 +27,6 @@
 
 #include "util/RefCount.hxx"
 
-#include <algorithm>
-
 #include <stddef.h>
 
 /**

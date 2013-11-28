@@ -23,6 +23,6 @@
 struct list_head;
 
 void
-song_list_sort(struct list_head *songs);
+song_list_sort(list_head *songs);
 
 #endif

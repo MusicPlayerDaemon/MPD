@@ -29,7 +29,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
 #include <string.h>
 
 static constexpr Domain xspf_domain("xspf");

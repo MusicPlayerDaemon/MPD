@@ -23,7 +23,6 @@
 #include "event/Loop.hxx"
 #include "util/CharUtil.hxx"
 
-#include <assert.h>
 #include <string.h>
 
 BufferedSocket::InputResult

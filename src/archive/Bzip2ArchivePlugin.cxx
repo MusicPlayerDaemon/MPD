@@ -35,9 +35,7 @@
 
 #include <bzlib.h>
 
-#include <stdint.h>
 #include <stddef.h>
-#include <string.h>
 
 #ifdef HAVE_OLDER_BZIP2
 #define BZ2_bzDecompressInit bzDecompressInit

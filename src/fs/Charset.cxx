@@ -22,8 +22,6 @@
 #include "Domain.hxx"
 #include "Limits.hxx"
 #include "system/FatalError.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <glib.h>

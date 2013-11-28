@@ -21,7 +21,7 @@
 #define MPD_SOCKET_ERROR_HXX
 
 #include "Compiler.h"
-#include "util/Error.hxx"
+#include "util/Error.hxx" // IWYU pragma: export
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -31,11 +31,13 @@ typedef DWORD socket_error_t;
 typedef int socket_error_t;
 #endif
 
+class Domain;
+
 /**
  * A #Domain for #Error for socket I/O errors.  The code is an errno
  * value (or WSAGetLastError() on Windows).
  */
-extern const class Domain socket_domain;
+extern const Domain socket_domain;
 
 gcc_pure
 static inline socket_error_t

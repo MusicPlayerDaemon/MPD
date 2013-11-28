@@ -27,9 +27,6 @@
 #include <glib.h>
 #include <libmms/mmsx.h>
 
-#include <string.h>
-#include <errno.h>
-
 struct MmsInputStream {
 	InputStream base;
 

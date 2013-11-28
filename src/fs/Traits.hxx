@@ -31,8 +31,6 @@
 
 #include <assert.h>
 
-class Error;
-
 /**
  * This class describes the nature of a filesystem path.
  */

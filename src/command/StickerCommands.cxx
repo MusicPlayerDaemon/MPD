@@ -31,8 +31,6 @@
 #include "protocol/Result.hxx"
 #include "util/Error.hxx"
 
-#include <glib.h>
-
 #include <string.h>
 
 struct sticker_song_find_data {

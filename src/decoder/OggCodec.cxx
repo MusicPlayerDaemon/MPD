@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "OggCodec.hxx"
+#include "DecoderAPI.hxx"
 
 #include <string.h>
 

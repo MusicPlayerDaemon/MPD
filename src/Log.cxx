@@ -19,28 +19,13 @@
 
 #include "config.h"
 #include "LogV.hxx"
-#include "ConfigData.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
-#include "system/fd_util.h"
-#include "system/FatalError.hxx"
-#include "fs/Path.hxx"
-#include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "system/FatalError.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
 #include <errno.h>
 
 static GLogLevelFlags

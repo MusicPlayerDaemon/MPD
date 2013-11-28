@@ -20,7 +20,7 @@
 #ifndef MPD_LOGV_HXX
 #define MPD_LOGV_HXX
 
-#include "Log.hxx"
+#include "Log.hxx" // IWYU pragma: export
 
 #include <stdarg.h>
 

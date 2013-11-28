@@ -43,7 +43,6 @@
 #include "ConfigError.hxx"
 #include "ConfigData.hxx"
 #include "AudioFormat.hxx"
-#include "CheckAudioFormat.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"

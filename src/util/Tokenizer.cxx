@@ -26,9 +26,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
-#include <string.h>
-
 static constexpr Domain tokenizer_domain("tokenizer");
 
 static inline bool

@@ -25,13 +25,9 @@
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
 #include "FlacPcm.hxx"
-#include "MixRampInfo.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "Log.hxx"
-
-#include <assert.h>
 
 flac_data::flac_data(Decoder &_decoder,
 		     InputStream &_input_stream)

@@ -20,8 +20,6 @@
 #ifndef MPD_TAG_CONFIG_HXX
 #define MPD_TAG_CONFIG_HXX
 
-#include "TagType.h"
-
 void
 TagLoadConfig();
 

@@ -22,6 +22,7 @@
 
 struct audio_output;
 
-void audio_output_thread_start(struct audio_output *ao);
+void
+audio_output_thread_start(audio_output *ao);
 
 #endif

@@ -21,7 +21,6 @@
 #include "SongSave.hxx"
 #include "Song.hxx"
 #include "TagSave.hxx"
-#include "Directory.hxx"
 #include "TextFile.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"

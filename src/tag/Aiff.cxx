@@ -26,9 +26,7 @@
 #include <limits>
 
 #include <stdint.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <string.h>
 
 static constexpr Domain aiff_domain("aiff");

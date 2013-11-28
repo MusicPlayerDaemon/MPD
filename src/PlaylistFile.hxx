@@ -24,7 +24,6 @@
 #include <string>
 
 struct Song;
-struct PlaylistInfo;
 class PlaylistVector;
 class Error;
 

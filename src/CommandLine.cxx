@@ -38,7 +38,6 @@
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
-#include "system/FatalError.hxx"
 
 #ifdef ENABLE_ENCODER
 #include "EncoderList.hxx"

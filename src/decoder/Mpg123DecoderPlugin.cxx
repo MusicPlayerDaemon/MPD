@@ -26,9 +26,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <mpg123.h>
+
 #include <stdio.h>
 
 static constexpr Domain mpg123_domain("mpg123");

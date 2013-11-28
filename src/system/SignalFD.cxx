@@ -20,7 +20,6 @@
 #include "config.h"
 #ifdef USE_SIGNALFD
 #include "SignalFD.hxx"
-#include "fd_util.h"
 #include "FatalError.hxx"
 
 #include <assert.h>

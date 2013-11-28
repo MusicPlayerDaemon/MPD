@@ -27,6 +27,9 @@
 #ifndef WIN32
 #include <sys/socket.h>
 #include <netdb.h>
+#ifdef HAVE_TCP
+#include <netinet/in.h>
+#endif
 #else
 #include <ws2tcpip.h>
 #include <winsock.h>

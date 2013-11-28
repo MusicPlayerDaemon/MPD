@@ -34,6 +34,7 @@
 #endif
 
 #include <forward_list>
+#include <iterator>
 
 #include <assert.h>
 #include <stdint.h>

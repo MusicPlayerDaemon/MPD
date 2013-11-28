@@ -28,7 +28,6 @@
 #include "OutputCommand.hxx"
 #include "OutputAll.hxx"
 #include "OutputInternal.hxx"
-#include "OutputPlugin.hxx"
 #include "PlayerControl.hxx"
 #include "MixerControl.hxx"
 #include "Idle.hxx"

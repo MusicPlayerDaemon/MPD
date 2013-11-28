@@ -22,7 +22,6 @@
 #include "ConfigError.hxx"
 #include "OutputAPI.hxx"
 #include "Timer.hxx"
-#include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
@@ -30,10 +29,8 @@
 #include "Log.hxx"
 #include "open.h"
 
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <string.h>
 #include <unistd.h>
 
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */

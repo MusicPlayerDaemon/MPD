@@ -20,7 +20,6 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateRemove.hxx"
 #include "UpdateDomain.hxx"
-#include "Playlist.hxx"
 #include "GlobalEvents.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

@@ -32,12 +32,12 @@ struct PlayerControl;
 class TextFile;
 
 void
-playlist_state_save(FILE *fp, const struct playlist &playlist,
+playlist_state_save(FILE *fp, const playlist &playlist,
 		    PlayerControl &pc);
 
 bool
 playlist_state_restore(const char *line, TextFile &file,
-		       struct playlist &playlist, PlayerControl &pc);
+		       playlist &playlist, PlayerControl &pc);
 
 /**
  * Generates a hash number for the current state of the playlist and
@@ -46,7 +46,7 @@ playlist_state_restore(const char *line, TextFile &file,
  * be saved.
  */
 unsigned
-playlist_state_get_hash(const struct playlist &playlist,
+playlist_state_get_hash(const playlist &playlist,
 			PlayerControl &c);
 
 #endif

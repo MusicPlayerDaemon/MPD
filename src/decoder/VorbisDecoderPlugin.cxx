@@ -25,9 +25,7 @@
 #include "InputStream.hxx"
 #include "OggCodec.hxx"
 #include "util/Error.hxx"
-#include "util/UriUtil.hxx"
 #include "util/Macros.hxx"
-#include "system/ByteOrder.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
@@ -48,7 +46,6 @@
 #define ov_time_seek_page(VF, S) (ov_time_seek_page(VF, (S)*1000))
 #endif /* HAVE_TREMOR */
 
-#include <assert.h>
 #include <errno.h>
 
 struct vorbis_input_stream {

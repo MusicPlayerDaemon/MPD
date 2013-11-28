@@ -24,7 +24,8 @@
 #ifndef MPD_OGG_CODEC_HXX
 #define MPD_OGG_CODEC_HXX
 
-#include "DecoderAPI.hxx"
+struct Decoder;
+struct InputStream;
 
 enum ogg_codec {
 	OGG_CODEC_UNKNOWN,

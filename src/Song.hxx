@@ -26,7 +26,7 @@
 #include <string>
 
 #include <assert.h>
-#include <sys/time.h>
+#include <time.h>
 
 #define SONG_FILE	"file: "
 #define SONG_TIME	"Time: "

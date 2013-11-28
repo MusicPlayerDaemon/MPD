@@ -24,7 +24,6 @@
 
 #include "config.h"
 #include "PlaylistGlobal.hxx"
-#include "Playlist.hxx"
 #include "Main.hxx"
 #include "Instance.hxx"
 #include "GlobalEvents.hxx"

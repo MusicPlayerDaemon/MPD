@@ -31,6 +31,6 @@ struct tag_handler;
  */
 bool
 tag_file_scan(Path path,
-	      const struct tag_handler *handler, void *handler_ctx);
+	      const tag_handler *handler, void *handler_ctx);
 
 #endif

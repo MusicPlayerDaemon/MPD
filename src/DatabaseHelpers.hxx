@@ -22,7 +22,6 @@
 
 #include "DatabaseVisitor.hxx"
 #include "tag/TagType.h"
-#include "Compiler.h"
 
 class Error;
 class Database;

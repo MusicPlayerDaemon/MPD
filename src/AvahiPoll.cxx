@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "AvahiPoll.hxx"
-#include "event/Loop.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/TimeoutMonitor.hxx"
 

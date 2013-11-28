@@ -27,8 +27,6 @@
 #include <limits>
 
 #include <assert.h>
-#include <limits.h>
-#include <stddef.h>
 
 Timer::Timer(const AudioFormat af)
 	: time(0),

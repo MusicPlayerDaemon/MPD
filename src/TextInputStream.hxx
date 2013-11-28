@@ -25,7 +25,6 @@
 #include <string>
 
 struct InputStream;
-struct fifo_buffer;
 
 class TextInputStream {
 	InputStream &is;

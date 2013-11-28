@@ -19,9 +19,12 @@
 
 #include "FormatString.hxx"
 
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#ifdef WIN32
+#include <string.h>
+#endif
 
 char *
 FormatNewV(const char *fmt, va_list args)

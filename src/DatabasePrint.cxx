@@ -21,7 +21,6 @@
 #include "DatabasePrint.hxx"
 #include "DatabaseSelection.hxx"
 #include "SongFilter.hxx"
-#include "PlaylistVector.hxx"
 #include "SongPrint.hxx"
 #include "TimePrint.hxx"
 #include "Directory.hxx"

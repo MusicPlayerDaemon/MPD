@@ -31,7 +31,6 @@
 
 #include <glib.h>
 
-#include <assert.h>
 #include <string.h>
 
 static constexpr Domain asx_domain("asx");

@@ -28,7 +28,6 @@
 #include "util/Domain.hxx"
 
 extern "C" {
-#include <libavutil/avutil.h>
 #include <libavformat/avio.h>
 #include <libavformat/avformat.h>
 }

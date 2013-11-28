@@ -24,7 +24,7 @@
 #include "TextFile.hxx"
 #include "Partition.hxx"
 #include "Volume.hxx"
-#include "event/Loop.hxx"
+
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"

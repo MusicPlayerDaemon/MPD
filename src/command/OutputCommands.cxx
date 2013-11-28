@@ -24,8 +24,6 @@
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
 
-#include <string.h>
-
 CommandResult
 handle_enableoutput(Client &client, gcc_unused int argc, char *argv[])
 {

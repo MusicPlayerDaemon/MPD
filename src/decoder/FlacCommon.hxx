@@ -29,7 +29,6 @@
 #include "pcm/PcmBuffer.hxx"
 
 #include <FLAC/stream_decoder.h>
-#include <FLAC/metadata.h>
 
 struct flac_data : public FlacInput {
 	PcmBuffer buffer;

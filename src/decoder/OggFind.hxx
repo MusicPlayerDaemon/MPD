@@ -25,7 +25,6 @@
 
 #include <ogg/ogg.h>
 
-struct InputStream;
 class OggSyncState;
 
 /**

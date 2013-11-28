@@ -32,7 +32,6 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <cdio/cdio.h>
 #include <cdio/iso9660.h>
 
 #include <stdlib.h>

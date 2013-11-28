@@ -27,8 +27,9 @@
 struct sockaddr;
 struct addrinfo;
 class Error;
+class Domain;
 
-extern const class Domain resolver_domain;
+extern const Domain resolver_domain;
 
 /**
  * Converts the specified socket address into a string in the form
@@ -42,7 +43,7 @@ extern const class Domain resolver_domain;
  */
 gcc_malloc
 char *
-sockaddr_to_string(const struct sockaddr *sa, size_t length, Error &error);
+sockaddr_to_string(const sockaddr *sa, size_t length, Error &error);
 
 /**
  * Resolve a specification in the form "host", "host:port",
@@ -54,7 +55,7 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, Error &error);
  * @return an #addrinfo linked list that must be freed with
  * freeaddrinfo(), or NULL on error
  */
-struct addrinfo *
+addrinfo *
 resolve_host_port(const char *host_port, unsigned default_port,
 		  int flags, int socktype,
 		  Error &error);

@@ -21,8 +21,6 @@
 #include "Queue.hxx"
 #include "Song.hxx"
 
-#include <stdlib.h>
-
 queue::queue(unsigned _max_length)
 	:max_length(_max_length), length(0),
 	 version(1),

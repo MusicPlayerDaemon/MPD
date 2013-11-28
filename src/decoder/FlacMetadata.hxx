@@ -27,6 +27,7 @@
 
 #include <assert.h>
 
+struct tag_handler;
 class MixRampInfo;
 
 class FlacMetadataChain {
@@ -81,7 +82,7 @@ public:
 		return FLAC__Metadata_ChainStatusString[GetStatus()];
 	}
 
-	void Scan(const struct tag_handler *handler, void *handler_ctx);
+	void Scan(const tag_handler *handler, void *handler_ctx);
 };
 
 class FLACMetadataIterator {
@@ -110,7 +111,6 @@ public:
 	}
 };
 
-struct tag_handler;
 struct Tag;
 struct ReplayGainInfo;
 
@@ -136,6 +136,6 @@ flac_vorbis_comments_to_tag(Tag &tag,
 
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
-		   const struct tag_handler *handler, void *handler_ctx);
+		   const tag_handler *handler, void *handler_ctx);
 
 #endif

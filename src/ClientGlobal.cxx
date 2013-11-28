@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
-#include "ClientList.hxx"
 #include "ConfigGlobal.hxx"
 
 #define CLIENT_TIMEOUT_DEFAULT			(60)

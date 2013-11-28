@@ -20,8 +20,6 @@
 #ifndef MPD_CONFIG_TEMPLATES_HXX
 #define MPD_CONFIG_TEMPLATES_HXX
 
-#include "ConfigOption.hxx"
-
 struct ConfigTemplate {
 	const char *const name;
 	const bool repeatable;

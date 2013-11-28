@@ -22,6 +22,8 @@
 #include "PcmBuffer.hxx"
 #include "AudioFormat.hxx"
 
+#include <assert.h>
+
 constexpr
 static inline uint32_t
 pcm_two_dsd_to_usb_marker1(uint8_t a, uint8_t b)

@@ -30,8 +30,6 @@
 
 #include <mpc/mpcdec.h>
 
-#include <assert.h>
-#include <unistd.h>
 #include <math.h>
 
 struct mpc_decoder_data {

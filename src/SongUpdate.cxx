@@ -20,14 +20,11 @@
 #include "config.h" /* must be first for large file support */
 #include "Song.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
-#include "InputStream.hxx"
-#include "DecoderPlugin.hxx"
 #include "DecoderList.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
@@ -35,13 +32,10 @@
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
 #include "TagFile.hxx"
-#include "thread/Cond.hxx"
 
 #include <assert.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <stdio.h>
 
 Song *
 Song::LoadFile(const char *path_utf8, Directory *parent)

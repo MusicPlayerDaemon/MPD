@@ -28,7 +28,6 @@
 #include "poison.h"
 
 #include <assert.h>
-#include <string.h>
 
 class ConvertFilter final : public Filter {
 	/**

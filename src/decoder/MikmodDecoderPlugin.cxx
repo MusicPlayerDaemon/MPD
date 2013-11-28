@@ -25,8 +25,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
 #include <mikmod.h>
+
 #include <assert.h>
 
 static constexpr Domain mikmod_domain("mikmod");

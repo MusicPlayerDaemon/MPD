@@ -28,8 +28,6 @@
 #include <utility>
 #include <string>
 
-#include <assert.h>
-
 class Error;
 
 /**

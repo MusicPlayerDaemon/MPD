@@ -21,7 +21,6 @@
 #include "TextInputStream.hxx"
 #include "InputStream.hxx"
 #include "util/CharUtil.hxx"
-#include "util/fifo_buffer.h"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
