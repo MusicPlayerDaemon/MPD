@@ -66,6 +66,7 @@ dnl ---------------------------------------------------------------------------
 AC_CANONICAL_HOST
 
 host_is_darwin=no
+host_is_windows=no
 
 case "$host_os" in
 mingw32* | windows*)
@@ -76,14 +77,14 @@ mingw32* | windows*)
 	AM_CPPFLAGS="$AM_CPPFLAGS -DWIN32_LEAN_AND_MEAN"
 	AM_CPPFLAGS="$AM_CPPFLAGS -DWINVER=0x0600 -D_WIN32_WINNT=0x0600"
 	LIBS="$LIBS -lws2_32"
-	HAVE_WINDOWS=1
+	host_is_windows=yes
 	;;
 
 darwin*)
 	host_is_darwin=yes
 	;;
 esac
-AM_CONDITIONAL([HAVE_WINDOWS], [test x$HAVE_WINDOWS = x1])
+AM_CONDITIONAL([HAVE_WINDOWS], [test x$host_is_windows = xyes])
 
 if test -z "$prefix" || test "x$prefix" = xNONE; then
 	local_lib=
@@ -1443,17 +1444,13 @@ AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
 
 dnl --------------------------------- WinMM ---------------------------------
 
-case "$host_os" in
-	mingw32* | windows*)
-		AC_DEFINE(ENABLE_WINMM_OUTPUT, 1, [Define to enable WinMM support])
-		enable_winmm_output=yes
-		LIBS="$LIBS -lwinmm"
-		;;
-
-	*)
-		enable_winmm_output=no
-		;;
-esac
+if test "x$host_is_windows" = xyes; then
+	AC_DEFINE(ENABLE_WINMM_OUTPUT, 1, [Define to enable WinMM support])
+	enable_winmm_output=yes
+	LIBS="$LIBS -lwinmm"
+else
+	enable_winmm_output=no
+fi
 
 AM_CONDITIONAL(ENABLE_WINMM_OUTPUT, test x$enable_winmm_output = xyes)
 
