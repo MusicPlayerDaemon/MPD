@@ -25,6 +25,8 @@
 
 #include <stdint.h>
 
+template<typename T> struct ConstBuffer;
+
 /**
  * Wrapper for the dsd2pcm library.
  */
@@ -39,9 +41,8 @@ public:
 
 	void Reset();
 
-	const float *ToFloat(unsigned channels, bool lsbfirst,
-			     const uint8_t *src, size_t src_size,
-			     size_t *dest_size_r);
+	ConstBuffer<float> ToFloat(unsigned channels, bool lsbfirst,
+				   ConstBuffer<uint8_t> src);
 };
 
 #endif

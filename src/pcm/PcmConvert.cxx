@@ -22,6 +22,7 @@
 #include "PcmChannels.hxx"
 #include "PcmFormat.hxx"
 #include "AudioFormat.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -287,39 +288,39 @@ PcmConvert::Convert(const void *src, size_t src_size,
 		    size_t *dest_size_r,
 		    Error &error)
 {
+	ConstBuffer<void> buffer(src, src_size);
+
 	if (is_dsd) {
-		size_t f_size;
-		const float *f = dsd.ToFloat(src_format.channels,
-					     false, (const uint8_t *)src,
-					     src_size, &f_size);
-		if (f == nullptr) {
+		auto s = ConstBuffer<uint8_t>::FromVoid(buffer);
+		auto d = dsd.ToFloat(src_format.channels,
+				     false, s);
+		if (d.IsNull()) {
 			error.Set(pcm_convert_domain,
 				  "DSD to PCM conversion failed");
 			return nullptr;
 		}
 
-		src = f;
-		src_size = f_size;
+		buffer = d.ToVoid();
 	}
 
 	switch (dest_format.format) {
 	case SampleFormat::S16:
-		return Convert16(src, src_size,
+		return Convert16(buffer.data, buffer.size,
 				 dest_size_r,
 				 error);
 
 	case SampleFormat::S24_P32:
-		return Convert24(src, src_size,
+		return Convert24(buffer.data, buffer.size,
 				 dest_size_r,
 				 error);
 
 	case SampleFormat::S32:
-		return Convert32(src, src_size,
+		return Convert32(buffer.data, buffer.size,
 				 dest_size_r,
 				 error);
 
 	case SampleFormat::FLOAT:
-		return ConvertFloat(src, src_size,
+		return ConvertFloat(buffer.data, buffer.size,
 				    dest_size_r,
 				    error);
 

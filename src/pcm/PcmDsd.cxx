@@ -21,6 +21,7 @@
 #include "PcmDsd.hxx"
 #include "dsd2pcm/dsd2pcm.h"
 #include "util/Macros.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <algorithm>
 
@@ -46,22 +47,20 @@ PcmDsd::Reset()
 			dsd2pcm_reset(dsd2pcm[i]);
 }
 
-const float *
+ConstBuffer<float>
 PcmDsd::ToFloat(unsigned channels, bool lsbfirst,
-		const uint8_t *src, size_t src_size,
-		size_t *dest_size_r)
+		ConstBuffer<uint8_t> src)
 {
-	assert(src != nullptr);
-	assert(src_size > 0);
-	assert(src_size % channels == 0);
+	assert(!src.IsNull());
+	assert(!src.IsEmpty());
+	assert(src.size % channels == 0);
 	assert(channels <= ARRAY_SIZE(dsd2pcm));
 
-	const unsigned num_samples = src_size;
-	const unsigned num_frames = src_size / channels;
+	const unsigned num_samples = src.size;
+	const unsigned num_frames = src.size / channels;
 
 	float *dest;
 	const size_t dest_size = num_samples * sizeof(*dest);
-	*dest_size_r = dest_size;
 	dest = (float *)buffer.Get(dest_size);
 
 	for (unsigned c = 0; c < channels; ++c) {
@@ -72,9 +71,9 @@ PcmDsd::ToFloat(unsigned channels, bool lsbfirst,
 		}
 
 		dsd2pcm_translate(dsd2pcm[c], num_frames,
-				  src + c, channels,
+				  src.data + c, channels,
 				  lsbfirst, dest + c, channels);
 	}
 
-	return dest;
+	return { dest, num_samples };
 }
