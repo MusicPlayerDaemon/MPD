@@ -17,19 +17,41 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_POLLGROUP_HXX
-#define MPD_EVENT_POLLGROUP_HXX
+#ifndef MPD_EVENT_POLLRESULT_GENERIC_HXX
+#define MPD_EVENT_POLLRESULT_GENERIC_HXX
 
-#ifdef USE_EPOLL
-#include "PollGroupEPoll.hxx"
-typedef PollResultEPoll PollResult;
-typedef PollGroupEPoll  PollGroup;
-#endif
+#include "check.h"
 
-#ifdef USE_WINSELECT
-#include "PollGroupWinSelect.hxx"
-typedef PollResultGeneric  PollResult;
-typedef PollGroupWinSelect PollGroup;
-#endif
+#include <vector>
+
+class PollResultGeneric
+{
+	struct Item
+	{
+		unsigned events;
+		void *obj;
+
+		Item() = default;
+		Item(unsigned _events, void *_obj)
+			: events(_events), obj(_obj) { }
+	};
+
+	std::vector<Item> items;
+public:
+	int GetSize() const { return items.size(); }
+	unsigned GetEvents(int i) const { return items[i].events; }
+	void *GetObject(int i) const { return items[i].obj; }
+	void Reset() { items.clear(); }
+
+	void Clear(void *obj) {
+		for (auto i = items.begin(); i != items.end(); ++i)
+			if (i->obj == obj)
+				i->events = 0;
+	}
+
+	void Add(unsigned events, void *obj) {
+		items.emplace_back(events, obj);
+	}
+};
 
 #endif
