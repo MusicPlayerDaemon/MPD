@@ -20,10 +20,10 @@
 #ifndef PCM_CONVERT_HXX
 #define PCM_CONVERT_HXX
 
-#include "PcmDither.hxx"
 #include "PcmDsd.hxx"
 #include "PcmResample.hxx"
 #include "PcmBuffer.hxx"
+#include "FormatConverter.hxx"
 #include "AudioFormat.hxx"
 
 #include <stddef.h>
@@ -42,10 +42,7 @@ class PcmConvert {
 
 	PcmResampler resampler;
 
-	PcmDither dither;
-
-	/** the buffer for converting the sample format */
-	PcmBuffer format_buffer;
+	PcmFormatConverter format_converter;
 
 	/** the buffer for converting the channel count */
 	PcmBuffer channels_buffer;
@@ -85,16 +82,16 @@ public:
 			    Error &error);
 
 private:
-	ConstBuffer<int16_t> Convert16(ConstBuffer<void> src,
+	ConstBuffer<int16_t> Convert16(ConstBuffer<int16_t> src,
 				       AudioFormat format,
 				       Error &error);
-	ConstBuffer<int32_t> Convert24(ConstBuffer<void> src,
+	ConstBuffer<int32_t> Convert24(ConstBuffer<int32_t> src,
 				       AudioFormat format,
 				       Error &error);
-	ConstBuffer<int32_t> Convert32(ConstBuffer<void> src,
+	ConstBuffer<int32_t> Convert32(ConstBuffer<int32_t> src,
 				       AudioFormat format,
 				       Error &error);
-	ConstBuffer<float> ConvertFloat(ConstBuffer<void> src,
+	ConstBuffer<float> ConvertFloat(ConstBuffer<float> src,
 					AudioFormat format,
 					Error &error);
 };

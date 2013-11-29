@@ -20,11 +20,11 @@
 #include "config.h"
 #include "PcmConvert.hxx"
 #include "PcmChannels.hxx"
-#include "PcmFormat.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <assert.h>
 #include <math.h>
@@ -53,7 +53,7 @@ PcmConvert::~PcmConvert()
 
 bool
 PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
-		 gcc_unused Error &error)
+		 Error &error)
 {
 	assert(!src_format.IsValid());
 	assert(!dest_format.IsValid());
@@ -63,12 +63,24 @@ PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
 	src_format = _src_format;
 	dest_format = _dest_format;
 
+	AudioFormat format = src_format;
+	if (format.format == SampleFormat::DSD)
+		format.format = SampleFormat::FLOAT;
+
+	if (format.format != dest_format.format &&
+	    !format_converter.Open(format.format, dest_format.format, error))
+		return false;
+	format.format = dest_format.format;
+
 	return true;
 }
 
 void
 PcmConvert::Close()
 {
+	if (src_format.format != dest_format.format)
+		format_converter.Close();
+
 	dsd.Reset();
 	resampler.Reset();
 
@@ -79,23 +91,14 @@ PcmConvert::Close()
 }
 
 inline ConstBuffer<int16_t>
-PcmConvert::Convert16(ConstBuffer<void> src, AudioFormat format, Error &error)
+PcmConvert::Convert16(ConstBuffer<int16_t> src, AudioFormat format,
+		      Error &error)
 {
-	const int16_t *buf;
-	size_t len;
-
+	assert(format.format == SampleFormat::S16);
 	assert(dest_format.format == SampleFormat::S16);
 
-	buf = pcm_convert_to_16(format_buffer, dither,
-				format.format,
-				src.data, src.size,
-				&len);
-	if (buf == nullptr) {
-		error.Format(pcm_convert_domain,
-			     "Conversion from %s to 16 bit is not implemented",
-			     sample_format_to_string(format.format));
-		return nullptr;
-	}
+	auto buf = src.data;
+	size_t len = src.size * sizeof(*src.data);
 
 	if (format.channels != dest_format.channels) {
 		buf = pcm_convert_channels_16(channels_buffer,
@@ -125,22 +128,14 @@ PcmConvert::Convert16(ConstBuffer<void> src, AudioFormat format, Error &error)
 }
 
 inline ConstBuffer<int32_t>
-PcmConvert::Convert24(ConstBuffer<void> src, AudioFormat format, Error &error)
+PcmConvert::Convert24(ConstBuffer<int32_t> src, AudioFormat format,
+		      Error &error)
 {
-	const int32_t *buf;
-	size_t len;
-
+	assert(format.format == SampleFormat::S24_P32);
 	assert(dest_format.format == SampleFormat::S24_P32);
 
-	buf = pcm_convert_to_24(format_buffer,
-				format.format,
-				src.data, src.size, &len);
-	if (buf == nullptr) {
-		error.Format(pcm_convert_domain,
-			     "Conversion from %s to 24 bit is not implemented",
-			     sample_format_to_string(format.format));
-		return nullptr;
-	}
+	auto buf = src.data;
+	size_t len = src.size * sizeof(*src.data);
 
 	if (format.channels != dest_format.channels) {
 		buf = pcm_convert_channels_24(channels_buffer,
@@ -170,22 +165,14 @@ PcmConvert::Convert24(ConstBuffer<void> src, AudioFormat format, Error &error)
 }
 
 inline ConstBuffer<int32_t>
-PcmConvert::Convert32(ConstBuffer<void> src, AudioFormat format, Error &error)
+PcmConvert::Convert32(ConstBuffer<int32_t> src, AudioFormat format,
+		      Error &error)
 {
-	const int32_t *buf;
-	size_t len;
-
+	assert(format.format == SampleFormat::S32);
 	assert(dest_format.format == SampleFormat::S32);
 
-	buf = pcm_convert_to_32(format_buffer,
-				format.format,
-				src.data, src.size, &len);
-	if (buf == nullptr) {
-		error.Format(pcm_convert_domain,
-			     "Conversion from %s to 32 bit is not implemented",
-			     sample_format_to_string(format.format));
-		return nullptr;
-	}
+	auto buf = src.data;
+	size_t len = src.size * sizeof(*src.data);
 
 	if (format.channels != dest_format.channels) {
 		buf = pcm_convert_channels_32(channels_buffer,
@@ -215,23 +202,14 @@ PcmConvert::Convert32(ConstBuffer<void> src, AudioFormat format, Error &error)
 }
 
 inline ConstBuffer<float>
-PcmConvert::ConvertFloat(ConstBuffer<void> src, AudioFormat format,
+PcmConvert::ConvertFloat(ConstBuffer<float> src, AudioFormat format,
 			 Error &error)
 {
+	assert(format.format == SampleFormat::FLOAT);
 	assert(dest_format.format == SampleFormat::FLOAT);
 
-	/* convert to float now */
-
-	size_t size;
-	const float *buffer = pcm_convert_to_float(format_buffer,
-						   format.format,
-						   src.data, src.size, &size);
-	if (buffer == nullptr) {
-		error.Format(pcm_convert_domain,
-			     "Conversion from %s to float is not implemented",
-			     sample_format_to_string(format.format));
-		return nullptr;
-	}
+	auto buffer = src.data;
+	size_t size = src.size * sizeof(*src.data);
 
 	/* convert channels */
 
@@ -288,21 +266,33 @@ PcmConvert::Convert(const void *src, size_t src_size,
 		format.format = SampleFormat::FLOAT;
 	}
 
+	if (format.format != dest_format.format) {
+		buffer = format_converter.Convert(buffer, error);
+		if (buffer.IsNull())
+			return nullptr;
+
+		format.format = dest_format.format;
+	}
+
 	switch (dest_format.format) {
 	case SampleFormat::S16:
-		buffer = Convert16(buffer, format, error).ToVoid();
+		buffer = Convert16(ConstBuffer<int16_t>::FromVoid(buffer),
+				   format, error).ToVoid();
 		break;
 
 	case SampleFormat::S24_P32:
-		buffer = Convert24(buffer, format, error).ToVoid();
+		buffer = Convert24(ConstBuffer<int32_t>::FromVoid(buffer),
+				   format, error).ToVoid();
 		break;
 
 	case SampleFormat::S32:
-		buffer = Convert32(buffer, format, error).ToVoid();
+		buffer = Convert32(ConstBuffer<int32_t>::FromVoid(buffer),
+				   format, error).ToVoid();
 		break;
 
 	case SampleFormat::FLOAT:
-		buffer = ConvertFloat(buffer, format, error).ToVoid();
+		buffer = ConvertFloat(ConstBuffer<float>::FromVoid(buffer),
+				      format, error).ToVoid();
 		break;
 
 	default:
