@@ -28,11 +28,12 @@
 /**
  * Wrapper for the dsd2pcm library.
  */
-struct PcmDsd {
+class PcmDsd {
 	PcmBuffer buffer;
 
 	struct dsd2pcm_ctx_s *dsd2pcm[32];
 
+public:
 	PcmDsd();
 	~PcmDsd();
 
