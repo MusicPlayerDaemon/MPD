@@ -28,6 +28,7 @@
 
 #include <stddef.h>
 
+template<typename T> struct ConstBuffer;
 class Error;
 class Domain;
 
@@ -91,21 +92,10 @@ public:
 			    Error &error);
 
 private:
-	const int16_t *Convert16(const void *src_buffer, size_t src_size,
-				 size_t *dest_size_r,
-				 Error &error);
-
-	const int32_t *Convert24(const void *src_buffer, size_t src_size,
-				 size_t *dest_size_r,
-				 Error &error);
-
-	const int32_t *Convert32(const void *src_buffer, size_t src_size,
-				 size_t *dest_size_r,
-				 Error &error);
-
-	const float *ConvertFloat(const void *src_buffer, size_t src_size,
-				  size_t *dest_size_r,
-				  Error &error);
+	ConstBuffer<int16_t> Convert16(ConstBuffer<void> src, Error &error);
+	ConstBuffer<int32_t> Convert24(ConstBuffer<void> src, Error &error);
+	ConstBuffer<int32_t> Convert32(ConstBuffer<void> src, Error &error);
+	ConstBuffer<float> ConvertFloat(ConstBuffer<void> src, Error &error);
 };
 
 extern const Domain pcm_convert_domain;

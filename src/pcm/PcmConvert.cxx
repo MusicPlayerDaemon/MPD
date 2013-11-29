@@ -82,10 +82,8 @@ PcmConvert::Close()
 #endif
 }
 
-inline const int16_t *
-PcmConvert::Convert16(const void *src_buffer, size_t src_size,
-		      size_t *dest_size_r,
-		      Error &error)
+inline ConstBuffer<int16_t>
+PcmConvert::Convert16(ConstBuffer<void> src, Error &error)
 {
 	const int16_t *buf;
 	size_t len;
@@ -94,7 +92,7 @@ PcmConvert::Convert16(const void *src_buffer, size_t src_size,
 
 	buf = pcm_convert_to_16(format_buffer, dither,
 				src_format.format,
-				src_buffer, src_size,
+				src.data, src.size,
 				&len);
 	if (buf == nullptr) {
 		error.Format(pcm_convert_domain,
@@ -127,14 +125,11 @@ PcmConvert::Convert16(const void *src_buffer, size_t src_size,
 			return nullptr;
 	}
 
-	*dest_size_r = len;
-	return buf;
+	return ConstBuffer<int16_t>::FromVoid({buf, len});
 }
 
-inline const int32_t *
-PcmConvert::Convert24(const void *src_buffer, size_t src_size,
-		      size_t *dest_size_r,
-		      Error &error)
+inline ConstBuffer<int32_t>
+PcmConvert::Convert24(ConstBuffer<void> src, Error &error)
 {
 	const int32_t *buf;
 	size_t len;
@@ -143,7 +138,7 @@ PcmConvert::Convert24(const void *src_buffer, size_t src_size,
 
 	buf = pcm_convert_to_24(format_buffer,
 				src_format.format,
-				src_buffer, src_size, &len);
+				src.data, src.size, &len);
 	if (buf == nullptr) {
 		error.Format(pcm_convert_domain,
 			     "Conversion from %s to 24 bit is not implemented",
@@ -175,14 +170,11 @@ PcmConvert::Convert24(const void *src_buffer, size_t src_size,
 			return nullptr;
 	}
 
-	*dest_size_r = len;
-	return buf;
+	return ConstBuffer<int32_t>::FromVoid({buf, len});
 }
 
-inline const int32_t *
-PcmConvert::Convert32(const void *src_buffer, size_t src_size,
-		      size_t *dest_size_r,
-		      Error &error)
+inline ConstBuffer<int32_t>
+PcmConvert::Convert32(ConstBuffer<void> src, Error &error)
 {
 	const int32_t *buf;
 	size_t len;
@@ -191,7 +183,7 @@ PcmConvert::Convert32(const void *src_buffer, size_t src_size,
 
 	buf = pcm_convert_to_32(format_buffer,
 				src_format.format,
-				src_buffer, src_size, &len);
+				src.data, src.size, &len);
 	if (buf == nullptr) {
 		error.Format(pcm_convert_domain,
 			     "Conversion from %s to 32 bit is not implemented",
@@ -220,28 +212,23 @@ PcmConvert::Convert32(const void *src_buffer, size_t src_size,
 					   dest_format.sample_rate, &len,
 					   error);
 		if (buf == nullptr)
-			return buf;
+			return nullptr;
 	}
 
-	*dest_size_r = len;
-	return buf;
+	return ConstBuffer<int32_t>::FromVoid({buf, len});
 }
 
-inline const float *
-PcmConvert::ConvertFloat(const void *src_buffer, size_t src_size,
-			 size_t *dest_size_r,
-			 Error &error)
+inline ConstBuffer<float>
+PcmConvert::ConvertFloat(ConstBuffer<void> src, Error &error)
 {
-	const float *buffer = (const float *)src_buffer;
-	size_t size = src_size;
-
 	assert(dest_format.format == SampleFormat::FLOAT);
 
 	/* convert to float now */
 
-	buffer = pcm_convert_to_float(format_buffer,
-				      src_format.format,
-				      buffer, size, &size);
+	size_t size;
+	const float *buffer = pcm_convert_to_float(format_buffer,
+						   src_format.format,
+						   src.data, src.size, &size);
 	if (buffer == nullptr) {
 		error.Format(pcm_convert_domain,
 			     "Conversion from %s to float is not implemented",
@@ -279,8 +266,7 @@ PcmConvert::ConvertFloat(const void *src_buffer, size_t src_size,
 			return nullptr;
 	}
 
-	*dest_size_r = size;
-	return buffer;
+	return ConstBuffer<float>::FromVoid({buffer, size});
 }
 
 const void *
@@ -305,24 +291,20 @@ PcmConvert::Convert(const void *src, size_t src_size,
 
 	switch (dest_format.format) {
 	case SampleFormat::S16:
-		return Convert16(buffer.data, buffer.size,
-				 dest_size_r,
-				 error);
+		buffer = Convert16(buffer, error).ToVoid();
+		break;
 
 	case SampleFormat::S24_P32:
-		return Convert24(buffer.data, buffer.size,
-				 dest_size_r,
-				 error);
+		buffer = Convert24(buffer, error).ToVoid();
+		break;
 
 	case SampleFormat::S32:
-		return Convert32(buffer.data, buffer.size,
-				 dest_size_r,
-				 error);
+		buffer = Convert32(buffer, error).ToVoid();
+		break;
 
 	case SampleFormat::FLOAT:
-		return ConvertFloat(buffer.data, buffer.size,
-				    dest_size_r,
-				    error);
+		buffer = ConvertFloat(buffer, error).ToVoid();
+		break;
 
 	default:
 		error.Format(pcm_convert_domain,
@@ -330,4 +312,7 @@ PcmConvert::Convert(const void *src, size_t src_size,
 			     sample_format_to_string(dest_format.format));
 		return nullptr;
 	}
+
+	*dest_size_r = buffer.size;
+	return buffer.data;
 }
