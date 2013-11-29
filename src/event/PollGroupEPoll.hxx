@@ -38,8 +38,8 @@ public:
 	PollResultEPoll() : n_events(0) { }
 
 	int GetSize() const { return n_events; }
-	unsigned GetEvents(int i) { return events[i].events; }
-	void *GetObject(int i) { return events[i].data.ptr; }
+	unsigned GetEvents(int i) const { return events[i].events; }
+	void *GetObject(int i) const { return events[i].data.ptr; }
 	void Reset() { n_events = 0; }
 
 	void Clear(void *obj) {
