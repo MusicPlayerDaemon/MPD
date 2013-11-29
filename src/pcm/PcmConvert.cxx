@@ -30,6 +30,12 @@
 
 const Domain pcm_convert_domain("pcm_convert");
 
+bool
+pcm_convert_global_init(Error &error)
+{
+	return pcm_resample_global_init(error);
+}
+
 PcmConvert::PcmConvert()
 {
 #ifndef NDEBUG

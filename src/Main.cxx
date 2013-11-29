@@ -54,7 +54,7 @@
 #include "ZeroconfGlue.hxx"
 #include "DecoderList.hxx"
 #include "AudioConfig.hxx"
-#include "pcm/PcmResample.hxx"
+#include "pcm/PcmConvert.hxx"
 #include "Daemon.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
@@ -428,7 +428,7 @@ int mpd_main(int argc, char *argv[])
 	archive_plugin_init_all();
 #endif
 
-	if (!pcm_resample_global_init(error)) {
+	if (!pcm_convert_global_init(error)) {
 		LogError(error);
 		return EXIT_FAILURE;
 	}

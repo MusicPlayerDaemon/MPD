@@ -110,4 +110,7 @@ private:
 
 extern const Domain pcm_convert_domain;
 
+bool
+pcm_convert_global_init(Error &error);
+
 #endif
