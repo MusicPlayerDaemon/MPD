@@ -135,9 +135,9 @@ DeltaFileTimeS(FILETIME a, FILETIME b)
 unsigned
 GetProcessUptimeS()
 {
-	FILETIME creation_time, now;
+	FILETIME creation_time, exit_time, kernel_time, user_time, now;
 	GetProcessTimes(GetCurrentProcess(), &creation_time,
-			nullptr, nullptr, nullptr);
+			&exit_time, &kernel_time, &user_time);
 	GetSystemTimeAsFileTime(&now);
 
 	return DeltaFileTimeS(now, creation_time);
