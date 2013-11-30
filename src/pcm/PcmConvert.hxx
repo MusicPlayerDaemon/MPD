@@ -24,6 +24,7 @@
 #include "PcmResample.hxx"
 #include "PcmBuffer.hxx"
 #include "FormatConverter.hxx"
+#include "ChannelsConverter.hxx"
 #include "AudioFormat.hxx"
 
 #include <stddef.h>
@@ -43,9 +44,7 @@ class PcmConvert {
 	PcmResampler resampler;
 
 	PcmFormatConverter format_converter;
-
-	/** the buffer for converting the channel count */
-	PcmBuffer channels_buffer;
+	PcmChannelsConverter channels_converter;
 
 	AudioFormat src_format, dest_format;
 

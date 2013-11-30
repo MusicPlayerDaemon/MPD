@@ -338,6 +338,7 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmPack.cxx src/pcm/PcmPack.hxx \
 	src/pcm/PcmFormat.cxx src/pcm/PcmFormat.hxx \
 	src/pcm/FormatConverter.cxx src/pcm/FormatConverter.hxx \
+	src/pcm/ChannelsConverter.cxx src/pcm/ChannelsConverter.hxx \
 	src/pcm/PcmResample.cxx src/pcm/PcmResample.hxx \
 	src/pcm/PcmResampleFallback.cxx \
 	src/pcm/PcmResampleInternal.hxx \

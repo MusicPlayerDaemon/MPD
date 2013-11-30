@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "PcmConvert.hxx"
-#include "PcmChannels.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
@@ -72,12 +71,22 @@ PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
 		return false;
 	format.format = dest_format.format;
 
+	if (format.channels != dest_format.channels &&
+	    !channels_converter.Open(format.format, format.channels,
+				     dest_format.channels, error)) {
+		format_converter.Close();
+		return false;
+	}
+
 	return true;
 }
 
 void
 PcmConvert::Close()
 {
+	if (src_format.channels != dest_format.channels)
+		channels_converter.Close();
+
 	if (src_format.format != dest_format.format)
 		format_converter.Close();
 
@@ -96,24 +105,10 @@ PcmConvert::Convert16(ConstBuffer<int16_t> src, AudioFormat format,
 {
 	assert(format.format == SampleFormat::S16);
 	assert(dest_format.format == SampleFormat::S16);
+	assert(format.channels == dest_format.channels);
 
 	auto buf = src.data;
 	size_t len = src.size * sizeof(*src.data);
-
-	if (format.channels != dest_format.channels) {
-		buf = pcm_convert_channels_16(channels_buffer,
-					      dest_format.channels,
-					      format.channels,
-					      buf, len, &len);
-		if (buf == nullptr) {
-			error.Format(pcm_convert_domain,
-				     "Conversion from %u to %u channels "
-				     "is not implemented",
-				     format.channels,
-				     dest_format.channels);
-			return nullptr;
-		}
-	}
 
 	if (format.sample_rate != dest_format.sample_rate) {
 		buf = resampler.Resample16(dest_format.channels,
@@ -133,24 +128,10 @@ PcmConvert::Convert24(ConstBuffer<int32_t> src, AudioFormat format,
 {
 	assert(format.format == SampleFormat::S24_P32);
 	assert(dest_format.format == SampleFormat::S24_P32);
+	assert(format.channels == dest_format.channels);
 
 	auto buf = src.data;
 	size_t len = src.size * sizeof(*src.data);
-
-	if (format.channels != dest_format.channels) {
-		buf = pcm_convert_channels_24(channels_buffer,
-					      dest_format.channels,
-					      format.channels,
-					      buf, len, &len);
-		if (buf == nullptr) {
-			error.Format(pcm_convert_domain,
-				     "Conversion from %u to %u channels "
-				     "is not implemented",
-				     format.channels,
-				     dest_format.channels);
-			return nullptr;
-		}
-	}
 
 	if (format.sample_rate != dest_format.sample_rate) {
 		buf = resampler.Resample24(dest_format.channels,
@@ -170,24 +151,10 @@ PcmConvert::Convert32(ConstBuffer<int32_t> src, AudioFormat format,
 {
 	assert(format.format == SampleFormat::S32);
 	assert(dest_format.format == SampleFormat::S32);
+	assert(format.channels == dest_format.channels);
 
 	auto buf = src.data;
 	size_t len = src.size * sizeof(*src.data);
-
-	if (format.channels != dest_format.channels) {
-		buf = pcm_convert_channels_32(channels_buffer,
-					      dest_format.channels,
-					      format.channels,
-					      buf, len, &len);
-		if (buf == nullptr) {
-			error.Format(pcm_convert_domain,
-				     "Conversion from %u to %u channels "
-				     "is not implemented",
-				     format.channels,
-				     dest_format.channels);
-			return nullptr;
-		}
-	}
 
 	if (format.sample_rate != dest_format.sample_rate) {
 		buf = resampler.Resample32(dest_format.channels,
@@ -207,26 +174,10 @@ PcmConvert::ConvertFloat(ConstBuffer<float> src, AudioFormat format,
 {
 	assert(format.format == SampleFormat::FLOAT);
 	assert(dest_format.format == SampleFormat::FLOAT);
+	assert(format.channels == dest_format.channels);
 
 	auto buffer = src.data;
 	size_t size = src.size * sizeof(*src.data);
-
-	/* convert channels */
-
-	if (format.channels != dest_format.channels) {
-		buffer = pcm_convert_channels_float(channels_buffer,
-						    dest_format.channels,
-						    format.channels,
-						    buffer, size, &size);
-		if (buffer == nullptr) {
-			error.Format(pcm_convert_domain,
-				     "Conversion from %u to %u channels "
-				     "is not implemented",
-				     format.channels,
-				     dest_format.channels);
-			return nullptr;
-		}
-	}
 
 	/* resample with float, because this is the best format for
 	   libsamplerate */
@@ -272,6 +223,14 @@ PcmConvert::Convert(const void *src, size_t src_size,
 			return nullptr;
 
 		format.format = dest_format.format;
+	}
+
+	if (format.channels != dest_format.channels) {
+		buffer = channels_converter.Convert(buffer, error);
+		if (buffer.IsNull())
+			return nullptr;
+
+		format.channels = dest_format.channels;
 	}
 
 	switch (dest_format.format) {
