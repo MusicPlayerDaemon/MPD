@@ -32,4 +32,10 @@ typedef PollResultGeneric  PollResult;
 typedef PollGroupWinSelect PollGroup;
 #endif
 
+#ifdef USE_POLL
+#include "PollGroupPoll.hxx"
+typedef PollResultGeneric PollResult;
+typedef PollGroupPoll     PollGroup;
+#endif
+
 #endif

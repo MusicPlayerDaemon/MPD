@@ -160,6 +160,7 @@ dnl ---------------------------------------------------------------------------
 dnl Event loop selection
 dnl ---------------------------------------------------------------------------
 
+MPD_OPTIONAL_FUNC_NODEF(poll, poll)
 MPD_OPTIONAL_FUNC_NODEF(epoll, epoll_create1)
 
 AC_ARG_WITH(eventloop,
@@ -170,7 +171,7 @@ AC_ARG_WITH(eventloop,
 
 AC_ARG_WITH(pollmethod,
 	AS_HELP_STRING(
-		[--with-pollmethod=@<:@epoll|winselect|auto@:>@],
+		[--with-pollmethod=@<:@epoll|poll|winselect|auto@:>@],
 		[specify poll method for internal event loop (default=auto)]),,
 	[with_pollmethod=auto])
 
@@ -202,6 +203,8 @@ if test "x$with_eventloop" = xinternal; then
 	if test "x$with_pollmethod" = xauto; then
 		if test "x$enable_epoll" = xyes; then
 			with_pollmethod=epoll
+		elif test "x$enable_poll" = xyes; then
+			with_pollmethod=poll
 		elif test "x$host_is_windows" = xyes; then
 			with_pollmethod=winselect
 		else
@@ -211,6 +214,9 @@ if test "x$with_eventloop" = xinternal; then
 	case "$with_pollmethod" in
 	epoll)
 		AC_DEFINE(USE_EPOLL, 1, [Define to poll sockets with epoll])
+		;;
+	poll)
+		AC_DEFINE(USE_POLL, 1, [Define to poll sockets with poll])
 		;;
 	winselect)
 		AC_DEFINE(USE_WINSELECT, 1,

@@ -309,6 +309,7 @@ libevent_a_SOURCES = \
 	src/event/WakeFD.hxx \
 	src/event/PollGroup.hxx \
 	src/event/PollGroupEPoll.hxx \
+	src/event/PollGroupPoll.hxx src/event/PollGroupPoll.cxx \
 	src/event/PollGroupWinSelect.hxx src/event/PollGroupWinSelect.cxx \
 	src/event/PollResultGeneric.hxx \
 	src/event/SignalMonitor.hxx src/event/SignalMonitor.cxx \
