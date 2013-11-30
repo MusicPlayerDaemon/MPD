@@ -52,13 +52,6 @@ class PcmConvert {
 
 	AudioFormat src_format, dest_format;
 
-	/**
-	 * Do we get DSD source data?  Then this flag is true and
-	 * src_format.format is set to SampleFormat::FLOAT, because
-	 * the #PcmDsd class will convert it to floating point.
-	 */
-	bool is_dsd;
-
 public:
 	PcmConvert();
 	~PcmConvert();
@@ -92,10 +85,18 @@ public:
 			    Error &error);
 
 private:
-	ConstBuffer<int16_t> Convert16(ConstBuffer<void> src, Error &error);
-	ConstBuffer<int32_t> Convert24(ConstBuffer<void> src, Error &error);
-	ConstBuffer<int32_t> Convert32(ConstBuffer<void> src, Error &error);
-	ConstBuffer<float> ConvertFloat(ConstBuffer<void> src, Error &error);
+	ConstBuffer<int16_t> Convert16(ConstBuffer<void> src,
+				       AudioFormat format,
+				       Error &error);
+	ConstBuffer<int32_t> Convert24(ConstBuffer<void> src,
+				       AudioFormat format,
+				       Error &error);
+	ConstBuffer<int32_t> Convert32(ConstBuffer<void> src,
+				       AudioFormat format,
+				       Error &error);
+	ConstBuffer<float> ConvertFloat(ConstBuffer<void> src,
+					AudioFormat format,
+					Error &error);
 };
 
 extern const Domain pcm_convert_domain;
