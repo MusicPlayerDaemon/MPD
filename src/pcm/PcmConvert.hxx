@@ -21,10 +21,10 @@
 #define PCM_CONVERT_HXX
 
 #include "PcmDsd.hxx"
-#include "PcmResample.hxx"
 #include "PcmBuffer.hxx"
 #include "FormatConverter.hxx"
 #include "ChannelsConverter.hxx"
+#include "GlueResampler.hxx"
 #include "AudioFormat.hxx"
 
 #include <stddef.h>
@@ -41,10 +41,9 @@ class Domain;
 class PcmConvert {
 	PcmDsd dsd;
 
-	PcmResampler resampler;
-
 	PcmFormatConverter format_converter;
 	PcmChannelsConverter channels_converter;
+	GluePcmResampler resampler;
 
 	AudioFormat src_format, dest_format;
 
@@ -79,20 +78,6 @@ public:
 	const void *Convert(const void *src, size_t src_size,
 			    size_t *dest_size_r,
 			    Error &error);
-
-private:
-	ConstBuffer<int16_t> Convert16(ConstBuffer<int16_t> src,
-				       AudioFormat format,
-				       Error &error);
-	ConstBuffer<int32_t> Convert24(ConstBuffer<int32_t> src,
-				       AudioFormat format,
-				       Error &error);
-	ConstBuffer<int32_t> Convert32(ConstBuffer<int32_t> src,
-				       AudioFormat format,
-				       Error &error);
-	ConstBuffer<float> ConvertFloat(ConstBuffer<float> src,
-					AudioFormat format,
-					Error &error);
 };
 
 extern const Domain pcm_convert_domain;

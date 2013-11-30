@@ -78,6 +78,10 @@ PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
 		return false;
 	}
 
+	if (format.sample_rate != dest_format.sample_rate &&
+	    !resampler.Open(format, dest_format.sample_rate, error))
+		return false;
+
 	return true;
 }
 
@@ -91,108 +95,14 @@ PcmConvert::Close()
 		format_converter.Close();
 
 	dsd.Reset();
-	resampler.Reset();
+
+	if (src_format.sample_rate != dest_format.sample_rate)
+		resampler.Close();
 
 #ifndef NDEBUG
 	src_format.Clear();
 	dest_format.Clear();
 #endif
-}
-
-inline ConstBuffer<int16_t>
-PcmConvert::Convert16(ConstBuffer<int16_t> src, AudioFormat format,
-		      Error &error)
-{
-	assert(format.format == SampleFormat::S16);
-	assert(dest_format.format == SampleFormat::S16);
-	assert(format.channels == dest_format.channels);
-
-	auto buf = src.data;
-	size_t len = src.size * sizeof(*src.data);
-
-	if (format.sample_rate != dest_format.sample_rate) {
-		buf = resampler.Resample16(dest_format.channels,
-					   format.sample_rate, buf, len,
-					   dest_format.sample_rate, &len,
-					   error);
-		if (buf == nullptr)
-			return nullptr;
-	}
-
-	return ConstBuffer<int16_t>::FromVoid({buf, len});
-}
-
-inline ConstBuffer<int32_t>
-PcmConvert::Convert24(ConstBuffer<int32_t> src, AudioFormat format,
-		      Error &error)
-{
-	assert(format.format == SampleFormat::S24_P32);
-	assert(dest_format.format == SampleFormat::S24_P32);
-	assert(format.channels == dest_format.channels);
-
-	auto buf = src.data;
-	size_t len = src.size * sizeof(*src.data);
-
-	if (format.sample_rate != dest_format.sample_rate) {
-		buf = resampler.Resample24(dest_format.channels,
-					   format.sample_rate, buf, len,
-					   dest_format.sample_rate, &len,
-					   error);
-		if (buf == nullptr)
-			return nullptr;
-	}
-
-	return ConstBuffer<int32_t>::FromVoid({buf, len});
-}
-
-inline ConstBuffer<int32_t>
-PcmConvert::Convert32(ConstBuffer<int32_t> src, AudioFormat format,
-		      Error &error)
-{
-	assert(format.format == SampleFormat::S32);
-	assert(dest_format.format == SampleFormat::S32);
-	assert(format.channels == dest_format.channels);
-
-	auto buf = src.data;
-	size_t len = src.size * sizeof(*src.data);
-
-	if (format.sample_rate != dest_format.sample_rate) {
-		buf = resampler.Resample32(dest_format.channels,
-					   format.sample_rate, buf, len,
-					   dest_format.sample_rate, &len,
-					   error);
-		if (buf == nullptr)
-			return nullptr;
-	}
-
-	return ConstBuffer<int32_t>::FromVoid({buf, len});
-}
-
-inline ConstBuffer<float>
-PcmConvert::ConvertFloat(ConstBuffer<float> src, AudioFormat format,
-			 Error &error)
-{
-	assert(format.format == SampleFormat::FLOAT);
-	assert(dest_format.format == SampleFormat::FLOAT);
-	assert(format.channels == dest_format.channels);
-
-	auto buffer = src.data;
-	size_t size = src.size * sizeof(*src.data);
-
-	/* resample with float, because this is the best format for
-	   libsamplerate */
-
-	if (format.sample_rate != dest_format.sample_rate) {
-		buffer = resampler.ResampleFloat(dest_format.channels,
-						 format.sample_rate,
-						 buffer, size,
-						 dest_format.sample_rate,
-						 &size, error);
-		if (buffer == nullptr)
-			return nullptr;
-	}
-
-	return ConstBuffer<float>::FromVoid({buffer, size});
 }
 
 const void *
@@ -233,32 +143,12 @@ PcmConvert::Convert(const void *src, size_t src_size,
 		format.channels = dest_format.channels;
 	}
 
-	switch (dest_format.format) {
-	case SampleFormat::S16:
-		buffer = Convert16(ConstBuffer<int16_t>::FromVoid(buffer),
-				   format, error).ToVoid();
-		break;
+	if (format.sample_rate != dest_format.sample_rate) {
+		buffer = resampler.Resample(buffer, error);
+		if (buffer.IsNull())
+			return nullptr;
 
-	case SampleFormat::S24_P32:
-		buffer = Convert24(ConstBuffer<int32_t>::FromVoid(buffer),
-				   format, error).ToVoid();
-		break;
-
-	case SampleFormat::S32:
-		buffer = Convert32(ConstBuffer<int32_t>::FromVoid(buffer),
-				   format, error).ToVoid();
-		break;
-
-	case SampleFormat::FLOAT:
-		buffer = ConvertFloat(ConstBuffer<float>::FromVoid(buffer),
-				      format, error).ToVoid();
-		break;
-
-	default:
-		error.Format(pcm_convert_domain,
-			     "PCM conversion to %s is not implemented",
-			     sample_format_to_string(dest_format.format));
-		return nullptr;
+		format.sample_rate = dest_format.sample_rate;
 	}
 
 	*dest_size_r = buffer.size;
