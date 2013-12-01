@@ -20,44 +20,62 @@
 #include "config.h"
 #include "ConfiguredResampler.hxx"
 #include "FallbackResampler.hxx"
+#include "ConfigGlobal.hxx"
+#include "ConfigOption.hxx"
+#include "ConfigError.hxx"
+#include "util/Error.hxx"
 
 #ifdef HAVE_LIBSAMPLERATE
 #include "LibsamplerateResampler.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
 #endif
 
 #include <string.h>
 
+enum class SelectedResampler {
+	FALLBACK,
+
 #ifdef HAVE_LIBSAMPLERATE
-static bool lsr_enabled;
+	LIBSAMPLERATE,
 #endif
+};
+
+static SelectedResampler selected_resampler = SelectedResampler::FALLBACK;
 
 bool
 pcm_resampler_global_init(Error &error)
 {
-#ifdef HAVE_LIBSAMPLERATE
 	const char *converter =
 		config_get_string(CONF_SAMPLERATE_CONVERTER, "");
 
-	lsr_enabled = strcmp(converter, "internal") != 0;
-	if (lsr_enabled)
-		return pcm_resample_lsr_global_init(converter, error);
-	else
+	if (strcmp(converter, "internal") == 0)
 		return true;
-#else
-	(void)error;
-	return true;
+
+#ifdef HAVE_LIBSAMPLERATE
+	selected_resampler = SelectedResampler::LIBSAMPLERATE;
+	return pcm_resample_lsr_global_init(converter, error);
 #endif
+
+	if (*converter == 0)
+		return true;
+
+	error.Format(config_domain,
+		     "The samplerate_converter '%s' is not available",
+		     converter);
+	return false;
 }
 
 PcmResampler *
 pcm_resampler_create()
 {
+	switch (selected_resampler) {
+	case SelectedResampler::FALLBACK:
+		return new FallbackPcmResampler();
+
 #ifdef HAVE_LIBSAMPLERATE
-	if (lsr_enabled)
+	case SelectedResampler::LIBSAMPLERATE:
 		return new LibsampleratePcmResampler();
 #endif
+	}
 
-	return new FallbackPcmResampler();
+	gcc_unreachable();
 }
