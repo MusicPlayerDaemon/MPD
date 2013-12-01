@@ -123,30 +123,37 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 	gcc_unreachable();
 }
 
-template<typename T, typename U, unsigned bits>
-static T
-PcmAdd(T _a, T _b)
+template<SampleFormat F, class Traits=SampleTraits<F>>
+static typename Traits::value_type
+PcmAdd(typename Traits::value_type _a, typename Traits::value_type _b)
 {
-	U a(_a), b(_b);
-	return PcmClamp<T, U, bits>(a + b);
+	typename Traits::long_type a(_a), b(_b);
+
+	return PcmClamp<typename Traits::value_type,
+			typename Traits::long_type,
+			Traits::BITS>(a + b);
 }
 
-template<typename T, typename U, unsigned bits>
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-PcmAdd(T *a, const T *b, unsigned n)
+PcmAdd(typename Traits::pointer_type a,
+       typename Traits::const_pointer_type b,
+       size_t n)
 {
 	for (size_t i = 0; i != n; ++i)
-		a[i] = PcmAdd<T, U, bits>(a[i], b[i]);
+		a[i] = PcmAdd<F, Traits>(a[i], b[i]);
 }
 
-template<typename T, typename U, unsigned bits>
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
 PcmAddVoid(void *a, const void *b, size_t size)
 {
-	constexpr size_t sample_size = sizeof(T);
+	constexpr size_t sample_size = Traits::SAMPLE_SIZE;
 	assert(size % sample_size == 0);
 
-	PcmAdd<T, U, bits>((T *)a, (const T *)b, size / sample_size);
+	PcmAdd<F, Traits>(typename Traits::pointer_type(a),
+			  typename Traits::const_pointer_type(b),
+			  size / sample_size);
 }
 
 static void
@@ -171,19 +178,19 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 		return false;
 
 	case SampleFormat::S8:
-		PcmAddVoid<int8_t, int32_t, 8>(buffer1, buffer2, size);
+		PcmAddVoid<SampleFormat::S8>(buffer1, buffer2, size);
 		return true;
 
 	case SampleFormat::S16:
-		PcmAddVoid<int16_t, int32_t, 16>(buffer1, buffer2, size);
+		PcmAddVoid<SampleFormat::S16>(buffer1, buffer2, size);
 		return true;
 
 	case SampleFormat::S24_P32:
-		PcmAddVoid<int32_t, int64_t, 24>(buffer1, buffer2, size);
+		PcmAddVoid<SampleFormat::S24_P32>(buffer1, buffer2, size);
 		return true;
 
 	case SampleFormat::S32:
-		PcmAddVoid<int32_t, int64_t, 32>(buffer1, buffer2, size);
+		PcmAddVoid<SampleFormat::S32>(buffer1, buffer2, size);
 		return true;
 
 	case SampleFormat::FLOAT:
