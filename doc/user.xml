@@ -417,8 +417,6 @@ systemctl start mpd.socket</programlisting>
                   (signed 8 bit integer samples),
                   <varname>16</varname>, <varname>24</varname> (signed
                   24 bit integer samples padded to 32 bit),
-                  <varname>24_3</varname> (signed 24 bit integer
-                  samples, no padding, 3 bytes per sample),
                   <varname>32</varname> (signed 32 bit integer
                   samples), <varname>f</varname> (32 bit floating
                   point, -1.0 to 1.0).
