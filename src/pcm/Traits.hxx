@@ -99,7 +99,7 @@ struct SampleTraits<SampleFormat::S24_P32> {
 	typedef value_type *pointer_type;
 	typedef const value_type *const_pointer_type;
 
-	typedef int long_type;
+	typedef int64_t long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 	static constexpr unsigned BITS = 24;
