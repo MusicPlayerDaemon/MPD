@@ -393,7 +393,7 @@ systemctl start mpd.socket</programlisting>
                 a name registered in the PULSE server.
               </entry>
             </row>
-            <row>
+            <row id="ao_format">
               <entry>
                 <varname>format</varname>
               </entry>
@@ -606,6 +606,148 @@ systemctl start mpd.socket</programlisting>
           </tbody>
         </tgroup>
       </informaltable>
+    </section>
+
+    <section>
+      <title>Audio Format Settings</title>
+
+      <section>
+        <title>Global Audio Format</title>
+
+        <para>
+          The setting <varname>audio_output_format</varname> forces
+          MPD to use one audio format for all outputs.  Doing that is
+          usually not a good idea.  The values are the same as in
+          <link linkend="ao_format"><varname>format</varname> in the
+          <varname>audio_output</varname> section</link>.
+        </para>
+      </section>
+
+      <section>
+        <title>Resampler</title>
+
+        <para>
+          Sometimes, music needs to be resampled before it can be
+          played; for example, CDs use a sample rate of 44,100 Hz
+          while many cheap audio chips can only handle 48,000 Hz.
+          Resampling reduces the quality and consumes a lot of CPU.
+          There are different options, some of them optimized for high
+          quality and others for low CPU usage, but you can't have
+          both at the same time.  Often, the resampler is the
+          component that is responsible for most of MPD's CPU usage.
+          Since MPD comes with high quality defaults, it may appear
+          that MPD consumes more CPU than other software.
+        </para>
+
+        <para>
+          The following resamplers are available (if enabled at
+          compile time):
+        </para>
+
+        <itemizedlist>
+          <listitem>
+            <para>
+              <ulink
+                  url="http://www.mega-nerd.com/SRC/">libsamplerate</ulink>
+              a.k.a. Secret Rabbit Code (SRC).
+            </para>
+          </listitem>
+
+          <listitem>
+            <para>
+              internal: low CPU usage, but very poor quality.  This is
+              the fallback if MPD was compiled without an external
+              resampler.
+            </para>
+          </listitem>
+        </itemizedlist>
+
+        <para>
+          The setting <varname>samplerate_converter</varname> controls
+          how MPD shall resample music.  Possible values:
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  Value
+                </entry>
+                <entry>
+                  Description
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  "<parameter>internal</parameter>"
+                </entry>
+                <entry>
+                  The internal resampler.  Low CPU usage, but very
+                  poor quality.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Best Sinc Interpolator</parameter>" or
+                  "<parameter>0</parameter>"
+                </entry>
+                <entry>
+                  libsamplerate: Band limited sinc interpolation, best
+                  quality, 97dB SNR, 96% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Medium Sinc Interpolator</parameter>" or
+                  "<parameter>1</parameter>"
+                </entry>
+                <entry>
+                  libsamplerate: Band limited sinc interpolation,
+                  medium quality, 97dB SNR, 90% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Fastest Sinc Interpolator</parameter>" or
+                  "<parameter>2</parameter>"
+                </entry>
+                <entry>
+                  libsamplerate: Band limited sinc interpolation,
+                  fastest, 97dB SNR, 80% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>ZOH Sinc Interpolator</parameter>" or
+                  "<parameter>3</parameter>"
+                </entry>
+                <entry>
+                  libsamplerate: Zero order hold interpolator, very
+                  fast, very poor quality with audible distortions.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Linear Interpolator</parameter>" or
+                  "<parameter>4</parameter>"
+                </entry>
+                <entry>
+                  libsamplerate: Linear interpolator, very fast, poor
+                  quality.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
     </section>
   </chapter>
 

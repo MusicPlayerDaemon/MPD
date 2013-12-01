@@ -136,53 +136,6 @@ for the format of this parameter.  Multiple audio_output sections may be
 specified.  If no audio_output section is specified, then MPD will scan for a
 usable audio output.
 .TP
-.B audio_output_format <sample_rate:bits:channels>
-This specifies the sample rate, bits per sample, and number of channels of
-audio that is sent to each audio output.  Note that audio outputs may specify
-their own audio format which will be used for actual output to the audio
-device.  An example is "44100:16:2" for 44100Hz, 16 bits, and 2 channels.  The
-default is to use the audio format of the input file.
-Any of the three attributes may be an asterisk to specify that this
-attribute should not be enforced
-.TP
-.B samplerate_converter <integer or prefix>
-This specifies the libsamplerate converter to use.  The supplied value should
-either be an integer or a prefix of the name of a converter.  The default is
-"Fastest Sinc Interpolator".
-
-At the time of this writing, the following converters are available:
-.RS
-.TP
-Best Sinc Interpolator (0)
-
-Band limited sinc interpolation, best quality, 97dB SNR, 96% BW.
-.TP
-Medium Sinc Interpolator (1)
-
-Band limited sinc interpolation, medium quality, 97dB SNR, 90% BW.
-.TP
-Fastest Sinc Interpolator (2)
-
-Band limited sinc interpolation, fastest, 97dB SNR, 80% BW.
-.TP
-ZOH Interpolator (3)
-
-Zero order hold interpolator, very fast, very poor quality with audible
-distortions.
-.TP
-Linear Interpolator (4)
-
-Linear interpolator, very fast, poor quality.
-.TP
-internal
-
-Poor quality, no floating point operations.  This is the default (and
-only choice) if MPD was compiled without libsamplerate.
-.RE
-.IP
-For an up-to-date list of available converters, please see the libsamplerate
-documentation (available online at <\fBhttp://www.mega\-nerd.com/SRC/\fP>).
-.TP
 .B replaygain <off or album or track or auto>
 If specified, mpd will adjust the volume of songs played using ReplayGain tags
 (see <\fBhttp://www.replaygain.org/\fP>).  Setting this to "album" will adjust
