@@ -22,51 +22,7 @@
 #include "PcmDither.hxx"
 #include "PcmBuffer.hxx"
 #include "PcmUtils.hxx"
-
-#include <type_traits>
-
-template<SampleFormat F>
-struct SampleTraits {};
-
-template<>
-struct SampleTraits<SampleFormat::S8> {
-	typedef int8_t value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
-
-	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
-	static constexpr unsigned BITS = sizeof(value_type) * 8;
-};
-
-template<>
-struct SampleTraits<SampleFormat::S16> {
-	typedef int16_t value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
-
-	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
-	static constexpr unsigned BITS = sizeof(value_type) * 8;
-};
-
-template<>
-struct SampleTraits<SampleFormat::S32> {
-	typedef int32_t value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
-
-	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
-	static constexpr unsigned BITS = sizeof(value_type) * 8;
-};
-
-template<>
-struct SampleTraits<SampleFormat::S24_P32> {
-	typedef int32_t value_type;
-	typedef value_type *pointer_type;
-	typedef const value_type *const_pointer_type;
-
-	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
-	static constexpr unsigned BITS = 24;
-};
+#include "Traits.hxx"
 
 static void
 pcm_convert_8_to_16(int16_t *out, const int8_t *in, const int8_t *in_end)
