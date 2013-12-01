@@ -25,16 +25,40 @@
 
 #include <stdint.h>
 
+/**
+ * This template describes the specified #SampleFormat.  This is an
+ * empty prototype; the specializations contain the real definitions.
+ * See SampleTraits<uint8_t> for more documentation.
+ */
 template<SampleFormat F>
 struct SampleTraits {};
 
 template<>
 struct SampleTraits<SampleFormat::S8> {
+	/**
+	 * The type used for one sample value.
+	 */
 	typedef int8_t value_type;
+
+	/**
+	 * A writable pointer.
+	 */
 	typedef value_type *pointer_type;
+
+	/**
+	 * A read-only pointer.
+	 */
 	typedef const value_type *const_pointer_type;
 
+	/**
+	 * The size of one sample in bytes.
+	 */
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+
+	/**
+	 * The integer bit depth of one sample.  This attribute may
+	 * not exist if this is not an integer sample format.
+	 */
 	static constexpr unsigned BITS = sizeof(value_type) * 8;
 };
 
