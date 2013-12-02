@@ -56,8 +56,10 @@ ConvertFromFloat(typename Traits::pointer_type dest,
 	const float factor = 1 << (bits - 1);
 
 	while (src != end) {
-		int sample(*src++ * factor);
-		*dest++ = PcmClamp<typename Traits::value_type, int, bits>(sample);
+		typename Traits::long_type sample(*src++ * factor);
+		*dest++ = PcmClamp<typename Traits::value_type,
+				   typename Traits::long_type,
+				   Traits::BITS>(sample);
 	}
 }
 
