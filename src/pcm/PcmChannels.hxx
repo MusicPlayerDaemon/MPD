@@ -24,6 +24,7 @@
 #include <stddef.h>
 
 class PcmBuffer;
+template<typename T> struct ConstBuffer;
 
 /**
  * Changes the number of channels in 16 bit PCM data.
@@ -32,15 +33,13 @@ class PcmBuffer;
  * @param dest_channels the number of channels requested
  * @param src_channels the number of channels in the source buffer
  * @param src the source PCM buffer
- * @param src_size the number of bytes in #src
- * @param dest_size_r returns the number of bytes of the destination buffer
  * @return the destination buffer
  */
-const int16_t *
+ConstBuffer<int16_t>
 pcm_convert_channels_16(PcmBuffer &buffer,
 			unsigned dest_channels,
-			unsigned src_channels, const int16_t *src,
-			size_t src_size, size_t *dest_size_r);
+			unsigned src_channels,
+			ConstBuffer<int16_t> src);
 
 /**
  * Changes the number of channels in 24 bit PCM data (aligned at 32
@@ -50,15 +49,13 @@ pcm_convert_channels_16(PcmBuffer &buffer,
  * @param dest_channels the number of channels requested
  * @param src_channels the number of channels in the source buffer
  * @param src the source PCM buffer
- * @param src_size the number of bytes in #src
- * @param dest_size_r returns the number of bytes of the destination buffer
  * @return the destination buffer
  */
-const int32_t *
+ConstBuffer<int32_t>
 pcm_convert_channels_24(PcmBuffer &buffer,
 			unsigned dest_channels,
-			unsigned src_channels, const int32_t *src,
-			size_t src_size, size_t *dest_size_r);
+			unsigned src_channels,
+			ConstBuffer<int32_t> src);
 
 /**
  * Changes the number of channels in 32 bit PCM data.
@@ -67,15 +64,13 @@ pcm_convert_channels_24(PcmBuffer &buffer,
  * @param dest_channels the number of channels requested
  * @param src_channels the number of channels in the source buffer
  * @param src the source PCM buffer
- * @param src_size the number of bytes in #src
- * @param dest_size_r returns the number of bytes of the destination buffer
  * @return the destination buffer
  */
-const int32_t *
+ConstBuffer<int32_t>
 pcm_convert_channels_32(PcmBuffer &buffer,
 			unsigned dest_channels,
-			unsigned src_channels, const int32_t *src,
-			size_t src_size, size_t *dest_size_r);
+			unsigned src_channels,
+			ConstBuffer<int32_t> src);
 
 /**
  * Changes the number of channels in 32 bit float PCM data.
@@ -84,14 +79,12 @@ pcm_convert_channels_32(PcmBuffer &buffer,
  * @param dest_channels the number of channels requested
  * @param src_channels the number of channels in the source buffer
  * @param src the source PCM buffer
- * @param src_size the number of bytes in #src
- * @param dest_size_r returns the number of bytes of the destination buffer
  * @return the destination buffer
  */
-const float *
+ConstBuffer<float>
 pcm_convert_channels_float(PcmBuffer &buffer,
 			   unsigned dest_channels,
-			   unsigned src_channels, const float *src,
-			   size_t src_size, size_t *dest_size_r);
+			   unsigned src_channels,
+			   ConstBuffer<float> src);
 
 #endif

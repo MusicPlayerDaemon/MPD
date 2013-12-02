@@ -62,11 +62,8 @@ PcmChannelsConverter::Close()
 }
 
 ConstBuffer<void>
-PcmChannelsConverter::Convert(ConstBuffer<void> src, Error &error)
+PcmChannelsConverter::Convert(ConstBuffer<void> src, gcc_unused Error &error)
 {
-	const void *result = nullptr;
-	size_t result_size = 0;
-
 	switch (format) {
 	case SampleFormat::UNDEFINED:
 	case SampleFormat::S8:
@@ -75,41 +72,26 @@ PcmChannelsConverter::Convert(ConstBuffer<void> src, Error &error)
 		gcc_unreachable();
 
 	case SampleFormat::S16:
-		result = pcm_convert_channels_16(buffer, dest_channels,
-						 src_channels,
-						 (const int16_t *)src.data,
-						 src.size, &result_size);
-		break;
+		return pcm_convert_channels_16(buffer, dest_channels,
+					       src_channels,
+					       ConstBuffer<int16_t>::FromVoid(src)).ToVoid();
 
 	case SampleFormat::S24_P32:
-		result = pcm_convert_channels_24(buffer, dest_channels,
-						 src_channels,
-						 (const int32_t *)src.data,
-						 src.size, &result_size);
-		break;
+		return pcm_convert_channels_24(buffer, dest_channels,
+					       src_channels,
+					       ConstBuffer<int32_t>::FromVoid(src)).ToVoid();
 
 	case SampleFormat::S32:
-		result = pcm_convert_channels_32(buffer, dest_channels,
-						 src_channels,
-						 (const int32_t *)src.data,
-						 src.size, &result_size);
-		break;
+		return pcm_convert_channels_32(buffer, dest_channels,
+					       src_channels,
+					       ConstBuffer<int32_t>::FromVoid(src)).ToVoid();
 
 	case SampleFormat::FLOAT:
-		result = pcm_convert_channels_float(buffer, dest_channels,
-						    src_channels,
-						    (const float *)src.data,
-						    src.size, &result_size);
-		break;
+		return pcm_convert_channels_float(buffer, dest_channels,
+						  src_channels,
+						  ConstBuffer<float>::FromVoid(src)).ToVoid();
 	}
 
-	if (result == nullptr) {
-		error.Format(pcm_convert_domain,
-			     "Conversion from %u to %u channels "
-			     "is not implemented",
-			     src_channels, dest_channels);
-		return nullptr;
-	}
-
-	return { result, result_size };
+	assert(false);
+	gcc_unreachable();
 }
