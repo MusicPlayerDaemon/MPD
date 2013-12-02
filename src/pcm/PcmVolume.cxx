@@ -20,37 +20,41 @@
 #include "config.h"
 #include "PcmVolume.hxx"
 #include "PcmUtils.hxx"
+#include "Traits.hxx"
 #include "AudioFormat.hxx"
 
 #include <stdint.h>
 #include <string.h>
 
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-pcm_volume_change_8(int8_t *buffer, const int8_t *end, int volume)
+pcm_volume_change(typename Traits::pointer_type buffer,
+		  typename Traits::const_pointer_type end,
+		  int volume)
 {
 	while (buffer < end) {
-		int32_t sample = *buffer;
+		typename Traits::long_type sample = *buffer;
 
 		sample = (sample * volume + pcm_volume_dither() +
 			  PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 
-		*buffer++ = PcmClamp<int8_t, int16_t, 8>(sample);
+		*buffer++ = PcmClamp<typename Traits::value_type,
+				     typename Traits::long_type,
+				     Traits::BITS>(sample);
 	}
+}
+
+static void
+pcm_volume_change_8(int8_t *buffer, const int8_t *end, int volume)
+{
+	pcm_volume_change<SampleFormat::S8>(buffer, end, volume);
 }
 
 static void
 pcm_volume_change_16(int16_t *buffer, const int16_t *end, int volume)
 {
-	while (buffer < end) {
-		int32_t sample = *buffer;
-
-		sample = (sample * volume + pcm_volume_dither() +
-			  PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-
-		*buffer++ = PcmClamp<int16_t, int32_t, 16>(sample);
-	}
+	pcm_volume_change<SampleFormat::S16>(buffer, end, volume);
 }
 
 #ifdef __i386__
@@ -87,44 +91,32 @@ pcm_volume_sample_24(int32_t sample, int32_t volume, gcc_unused int32_t dither)
 static void
 pcm_volume_change_24(int32_t *buffer, const int32_t *end, int volume)
 {
-	while (buffer < end) {
 #ifdef __i386__
+	while (buffer < end) {
 		/* assembly version for i386 */
 		int32_t sample = *buffer;
 
 		sample = pcm_volume_sample_24(sample, volume,
 					      pcm_volume_dither());
-#else
-		/* portable version */
-		int64_t sample = *buffer;
-
-		sample = (sample * volume + pcm_volume_dither() +
-			  PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-#endif
-		*buffer++ = PcmClamp<int32_t, int32_t, 24>(sample);
 	}
+#else
+	pcm_volume_change<SampleFormat::S24_P32>(buffer, end, volume);
+#endif
 }
 
 static void
 pcm_volume_change_32(int32_t *buffer, const int32_t *end, int volume)
 {
-	while (buffer < end) {
 #ifdef __i386__
+	while (buffer < end) {
 		/* assembly version for i386 */
 		int32_t sample = *buffer;
 
 		*buffer++ = pcm_volume_sample_24(sample, volume, 0);
-#else
-		/* portable version */
-		int64_t sample = *buffer;
-
-		sample = (sample * volume + pcm_volume_dither() +
-			  PCM_VOLUME_1 / 2)
-			/ PCM_VOLUME_1;
-		*buffer++ = PcmClamp<int32_t, int64_t, 32>(sample);
-#endif
 	}
+#else
+	pcm_volume_change<SampleFormat::S32>(buffer, end, volume);
+#endif
 }
 
 static void
