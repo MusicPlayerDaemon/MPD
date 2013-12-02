@@ -122,6 +122,18 @@ struct Tag {
 	void AddItem(TagType type, const char *value);
 
 	/**
+	 * Removes all tag items.
+	 */
+	void RemoveAll() {
+		num_items = 0;
+	}
+
+	/**
+	 * Removes all tag items of the specified type.
+	 */
+	void RemoveType(TagType type);
+
+	/**
 	 * Merges the data from two tags.  If both tags share data for the
 	 * same TagType, only data from "add" is used.
 	 *
