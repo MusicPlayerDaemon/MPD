@@ -29,6 +29,31 @@
 #include <assert.h>
 #include <string.h>
 
+TagBuilder::TagBuilder(const Tag &other)
+	:time(other.time), has_playlist(other.has_playlist)
+{
+	items.reserve(other.num_items);
+
+	tag_pool_lock.lock();
+	for (unsigned i = 0, n = other.num_items; i != n; ++i)
+		items.push_back(tag_pool_dup_item(other.items[i]));
+	tag_pool_lock.unlock();
+}
+
+TagBuilder::TagBuilder(Tag &&other)
+	:time(other.time), has_playlist(other.has_playlist)
+{
+	/* move all TagItem pointers from the Tag object; we don't
+	   need to contact the tag pool, because all we do is move
+	   references */
+	std::copy_n(other.items, other.num_items, std::back_inserter(items));
+
+	/* discard the pointers from the Tag object */
+	other.num_items = 0;
+	delete[] other.items;
+	other.items = nullptr;
+}
+
 void
 TagBuilder::Clear()
 {
