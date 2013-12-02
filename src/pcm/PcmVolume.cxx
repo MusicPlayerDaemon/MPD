@@ -39,9 +39,7 @@ pcm_volume_change(typename Traits::pointer_type buffer,
 			  PCM_VOLUME_1 / 2)
 			/ PCM_VOLUME_1;
 
-		*buffer++ = PcmClamp<typename Traits::value_type,
-				     typename Traits::long_type,
-				     Traits::BITS>(sample);
+		*buffer++ = PcmClamp<F, Traits>(sample);
 	}
 }
 

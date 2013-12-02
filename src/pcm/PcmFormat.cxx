@@ -57,9 +57,7 @@ ConvertFromFloat(typename Traits::pointer_type dest,
 
 	while (src != end) {
 		typename Traits::long_type sample(*src++ * factor);
-		*dest++ = PcmClamp<typename Traits::value_type,
-				   typename Traits::long_type,
-				   Traits::BITS>(sample);
+		*dest++ = PcmClamp<F, Traits>(sample);
 	}
 }
 

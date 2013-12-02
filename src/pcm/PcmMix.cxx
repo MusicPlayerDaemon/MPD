@@ -38,9 +38,7 @@ PcmAddVolume(typename Traits::value_type _a, typename Traits::value_type _b,
 	       pcm_volume_dither() + PCM_VOLUME_1 / 2)
 		/ PCM_VOLUME_1;
 
-	return PcmClamp<typename Traits::value_type,
-			typename Traits::long_type,
-			Traits::BITS>(c);
+	return PcmClamp<F, Traits>(c);
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
@@ -129,9 +127,7 @@ PcmAdd(typename Traits::value_type _a, typename Traits::value_type _b)
 {
 	typename Traits::long_type a(_a), b(_b);
 
-	return PcmClamp<typename Traits::value_type,
-			typename Traits::long_type,
-			Traits::BITS>(a + b);
+	return PcmClamp<F, Traits>(a + b);
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>

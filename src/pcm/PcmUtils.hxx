@@ -26,6 +26,9 @@
 
 #include <stdint.h>
 
+enum class SampleFormat : uint8_t;
+template<SampleFormat F> struct SampleTraits;
+
 /**
  * Add a byte count to the specified pointer.  This is a utility
  * function to convert a source pointer and a byte count to an "end"
@@ -42,13 +45,15 @@ pcm_end_pointer(const T *p, size_t size)
  * Check if the value is within the range of the provided bit size,
  * and caps it if necessary.
  */
-template<typename T, typename U, unsigned bits>
+template<SampleFormat F, class Traits=SampleTraits<F>>
 gcc_const
-static inline T
-PcmClamp(U x)
+static inline typename Traits::value_type
+PcmClamp(typename Traits::long_type x)
 {
-	constexpr U MIN_VALUE = -(U(1) << (bits - 1));
-	constexpr U MAX_VALUE = (U(1) << (bits - 1)) - 1;
+	typedef typename Traits::value_type T;
+	typedef typename Traits::long_type U;
+	constexpr U MIN_VALUE = -(U(1) << (Traits::BITS - 1));
+	constexpr U MAX_VALUE = (U(1) << (Traits::BITS - 1)) - 1;
 
 	typedef std::numeric_limits<T> limits;
 	static_assert(MIN_VALUE >= limits::min(), "out of range");
