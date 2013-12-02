@@ -105,4 +105,15 @@ struct SampleTraits<SampleFormat::S24_P32> {
 	static constexpr unsigned BITS = 24;
 };
 
+template<>
+struct SampleTraits<SampleFormat::FLOAT> {
+	typedef float value_type;
+	typedef value_type *pointer_type;
+	typedef const value_type *const_pointer_type;
+
+	typedef float long_type;
+
+	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+};
+
 #endif
