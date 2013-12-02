@@ -49,6 +49,12 @@ public:
 	 */
 	gcc_malloc
 	void *Get(size_t size);
+
+	template<typename T>
+	gcc_malloc
+	T *GetT(size_t n) {
+		return (T *)Get(n * sizeof(T));
+	}
 };
 
 #endif
