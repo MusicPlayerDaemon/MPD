@@ -91,6 +91,31 @@ NToStereo(typename Traits::pointer_type dest,
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
+static typename Traits::pointer_type
+NToM(typename Traits::pointer_type dest,
+     unsigned dest_channels,
+     unsigned src_channels,
+     typename Traits::const_pointer_type src,
+     typename Traits::const_pointer_type end)
+{
+	assert((end - src) % src_channels == 0);
+
+	while (src != end) {
+		typename Traits::long_type sum = *src++;
+		for (unsigned c = 1; c < src_channels; ++c)
+			sum += *src++;
+
+		typename Traits::value_type value(sum / int(src_channels));
+
+		/* TODO: this is actually only mono ... */
+		for (unsigned c = 0; c < dest_channels; ++c)
+			*dest++ = value;
+	}
+
+	return dest;
+}
+
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static ConstBuffer<typename Traits::value_type>
 ConvertChannels(PcmBuffer &buffer,
 		unsigned dest_channels,
@@ -109,7 +134,8 @@ ConvertChannels(PcmBuffer &buffer,
 	else if (dest_channels == 2)
 		NToStereo<F>(dest, src_channels, src.begin(), src.end());
 	else
-		return nullptr;
+		NToM<F>(dest, dest_channels,
+			src_channels, src.begin(), src.end());
 
 	return { dest, dest_size };
 }
