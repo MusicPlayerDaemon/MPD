@@ -25,7 +25,7 @@
 
 #include <glib.h>
 
-#ifndef HAVE_OSX
+#ifndef __APPLE__
 #include <AL/al.h>
 #include <AL/alc.h>
 #else
