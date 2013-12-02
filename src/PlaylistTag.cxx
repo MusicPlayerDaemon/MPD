@@ -1,0 +1,87 @@
+/*
+ * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+/*
+ * Functions for editing the playlist (adding, removing, reordering
+ * songs in the queue).
+ *
+ */
+
+#include "config.h"
+#include "Playlist.hxx"
+#include "PlaylistError.hxx"
+#include "Song.hxx"
+#include "tag/Tag.hxx"
+#include "util/Error.hxx"
+
+bool
+playlist::AddSongIdTag(unsigned id, TagType tag_type, const char *value,
+		       Error &error)
+{
+	const int position = queue.IdToPosition(id);
+	if (position < 0) {
+		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
+			  "No such song");
+		return false;
+	}
+
+	Song &song = queue.Get(position);
+	if (song.IsFile()) {
+		error.Set(playlist_domain, int(PlaylistResult::DENIED),
+			  "Cannot edit tags of local file");
+		return false;
+	}
+
+	if (song.tag == nullptr)
+		song.tag = new Tag();
+	song.tag->AddItem(tag_type, value);
+	queue.ModifyAtPosition(position);
+	OnModified();
+	return true;
+}
+
+bool
+playlist::ClearSongIdTag(unsigned id, TagType tag_type,
+			 Error &error)
+{
+	const int position = queue.IdToPosition(id);
+	if (position < 0) {
+		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
+			  "No such song");
+		return false;
+	}
+
+	Song &song = queue.Get(position);
+	if (song.IsFile()) {
+		error.Set(playlist_domain, int(PlaylistResult::DENIED),
+			  "Cannot edit tags of local file");
+		return false;
+	}
+
+	if (song.tag == nullptr)
+		return true;
+
+	if (tag_type == TAG_NUM_OF_ITEM_TYPES)
+		song.tag->RemoveAll();
+	else
+		song.tag->RemoveType(tag_type);
+	queue.ModifyAtPosition(position);
+	OnModified();
+	return true;
+}

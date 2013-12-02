@@ -82,6 +82,7 @@ src_mpd_SOURCES = \
 	src/command/CommandError.cxx src/command/CommandError.hxx \
 	src/command/AllCommands.cxx src/command/AllCommands.hxx \
 	src/command/QueueCommands.cxx src/command/QueueCommands.hxx \
+	src/command/TagCommands.cxx src/command/TagCommands.hxx \
 	src/command/PlayerCommands.cxx src/command/PlayerCommands.hxx \
 	src/command/PlaylistCommands.cxx src/command/PlaylistCommands.hxx \
 	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
@@ -170,6 +171,7 @@ src_mpd_SOURCES = \
 	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
 	src/PlaylistControl.cxx \
 	src/PlaylistEdit.cxx \
+	src/PlaylistTag.cxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \
 	src/PlaylistMapper.cxx src/PlaylistMapper.hxx \

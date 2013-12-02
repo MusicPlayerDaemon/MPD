@@ -23,8 +23,10 @@
 #include "Queue.hxx"
 #include "PlaylistError.hxx"
 
+enum TagType : uint8_t;
 struct PlayerControl;
 struct Song;
+class Error;
 
 struct playlist {
 	/**
@@ -204,6 +206,10 @@ public:
 
 	PlaylistResult SetPriorityId(PlayerControl &pc,
 				     unsigned song_id, uint8_t priority);
+
+	bool AddSongIdTag(unsigned id, TagType tag_type, const char *value,
+			  Error &error);
+	bool ClearSongIdTag(unsigned id, TagType tag_type, Error &error);
 
 	void Stop(PlayerControl &pc);
 

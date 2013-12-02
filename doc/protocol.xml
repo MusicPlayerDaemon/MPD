@@ -1258,6 +1258,44 @@ OK
             </para>
           </listitem>
         </varlistentry>
+
+        <varlistentry id="command_addtagid">
+          <term>
+            <cmdsynopsis>
+              <command>addtagid</command>
+              <arg choice="req"><replaceable>SONGID</replaceable></arg>
+              <arg choice="req"><replaceable>TAG</replaceable></arg>
+              <arg choice="req"><replaceable>VALUE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Adds a tag to the specified song.  Editing song tags is
+              only possible for remote songs.  This change is
+              volatile: it may be overwritten by tags received from
+              the server, and the data is gone when the song gets
+              removed from the queue.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_cleartagid">
+          <term>
+            <cmdsynopsis>
+              <command>cleartagid</command>
+              <arg choice="req"><replaceable>SONGID</replaceable></arg>
+              <arg choice="opt"><replaceable>TAG</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Removes tags from the specified song.  If
+              <varname>TAG</varname> is not specified, then all tag
+              values will be removed.  Editing song tags is only
+              possible for remote songs.
+            </para>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 

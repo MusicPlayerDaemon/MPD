@@ -20,6 +20,7 @@
 #include "config.h"
 #include "AllCommands.hxx"
 #include "QueueCommands.hxx"
+#include "TagCommands.hxx"
 #include "PlayerCommands.hxx"
 #include "PlaylistCommands.hxx"
 #include "DatabaseCommands.hxx"
@@ -74,9 +75,11 @@ handle_not_commands(Client &client, int argc, char *argv[]);
 static const struct command commands[] = {
 	{ "add", PERMISSION_ADD, 1, 1, handle_add },
 	{ "addid", PERMISSION_ADD, 1, 2, handle_addid },
+	{ "addtagid", PERMISSION_ADD, 3, 3, handle_addtagid },
 	{ "channels", PERMISSION_READ, 0, 0, handle_channels },
 	{ "clear", PERMISSION_CONTROL, 0, 0, handle_clear },
 	{ "clearerror", PERMISSION_CONTROL, 0, 0, handle_clearerror },
+	{ "cleartagid", PERMISSION_ADD, 1, 2, handle_cleartagid },
 	{ "close", PERMISSION_NONE, -1, -1, handle_close },
 	{ "commands", PERMISSION_NONE, 0, 0, handle_commands },
 	{ "config", PERMISSION_ADMIN, 0, 0, handle_config },
