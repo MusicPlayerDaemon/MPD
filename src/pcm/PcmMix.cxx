@@ -125,7 +125,7 @@ template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::value_type
 PcmAdd(typename Traits::value_type _a, typename Traits::value_type _b)
 {
-	typename Traits::long_type a(_a), b(_b);
+	typename Traits::sum_type a(_a), b(_b);
 
 	return PcmClamp<F, Traits>(a + b);
 }

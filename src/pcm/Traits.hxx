@@ -51,6 +51,13 @@ struct SampleTraits<SampleFormat::S8> {
 	typedef const value_type *const_pointer_type;
 
 	/**
+	 * A "long" type that is large and accurate enough for adding
+	 * two values without risking an (integer) overflow or
+	 * (floating point) precision loss.
+	 */
+	typedef int sum_type;
+
+	/**
 	 * A "long" type that is large and accurate enough for
 	 * arithmetic without risking an (integer) overflow or
 	 * (floating point) precision loss.
@@ -75,6 +82,7 @@ struct SampleTraits<SampleFormat::S16> {
 	typedef value_type *pointer_type;
 	typedef const value_type *const_pointer_type;
 
+	typedef int_least32_t sum_type;
 	typedef int_least32_t long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
@@ -87,6 +95,7 @@ struct SampleTraits<SampleFormat::S32> {
 	typedef value_type *pointer_type;
 	typedef const value_type *const_pointer_type;
 
+	typedef int_least64_t sum_type;
 	typedef int_least64_t long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
@@ -99,6 +108,7 @@ struct SampleTraits<SampleFormat::S24_P32> {
 	typedef value_type *pointer_type;
 	typedef const value_type *const_pointer_type;
 
+	typedef int_least32_t sum_type;
 	typedef int_least64_t long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
@@ -111,6 +121,7 @@ struct SampleTraits<SampleFormat::FLOAT> {
 	typedef value_type *pointer_type;
 	typedef const value_type *const_pointer_type;
 
+	typedef float sum_type;
 	typedef float long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);

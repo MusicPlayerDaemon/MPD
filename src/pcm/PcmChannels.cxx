@@ -44,8 +44,8 @@ static typename Traits::value_type
 StereoToMono(typename Traits::value_type _a,
 	     typename Traits::value_type _b)
 {
-	typename Traits::long_type a(_a);
-	typename Traits::long_type b(_b);
+	typename Traits::sum_type a(_a);
+	typename Traits::sum_type b(_b);
 
 	return typename Traits::value_type((a + b) / 2);
 }
@@ -76,7 +76,7 @@ NToStereo(typename Traits::pointer_type dest,
 	assert((end - src) % src_channels == 0);
 
 	while (src != end) {
-		typename Traits::long_type sum = *src++;
+		typename Traits::sum_type sum = *src++;
 		for (unsigned c = 1; c < src_channels; ++c)
 			sum += *src++;
 
@@ -101,7 +101,7 @@ NToM(typename Traits::pointer_type dest,
 	assert((end - src) % src_channels == 0);
 
 	while (src != end) {
-		typename Traits::long_type sum = *src++;
+		typename Traits::sum_type sum = *src++;
 		for (unsigned c = 1; c < src_channels; ++c)
 			sum += *src++;
 
