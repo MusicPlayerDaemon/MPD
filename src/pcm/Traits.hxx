@@ -55,7 +55,7 @@ struct SampleTraits<SampleFormat::S8> {
 	 * arithmetic without risking an (integer) overflow or
 	 * (floating point) precision loss.
 	 */
-	typedef int long_type;
+	typedef int_least16_t long_type;
 
 	/**
 	 * The size of one sample in bytes.
@@ -75,7 +75,7 @@ struct SampleTraits<SampleFormat::S16> {
 	typedef value_type *pointer_type;
 	typedef const value_type *const_pointer_type;
 
-	typedef int long_type;
+	typedef int_least32_t long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 	static constexpr unsigned BITS = sizeof(value_type) * 8;
@@ -87,7 +87,7 @@ struct SampleTraits<SampleFormat::S32> {
 	typedef value_type *pointer_type;
 	typedef const value_type *const_pointer_type;
 
-	typedef int64_t long_type;
+	typedef int_least64_t long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 	static constexpr unsigned BITS = sizeof(value_type) * 8;
@@ -99,7 +99,7 @@ struct SampleTraits<SampleFormat::S24_P32> {
 	typedef value_type *pointer_type;
 	typedef const value_type *const_pointer_type;
 
-	typedef int64_t long_type;
+	typedef int_least64_t long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 	static constexpr unsigned BITS = 24;
