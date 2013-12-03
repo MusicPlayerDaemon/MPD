@@ -31,6 +31,9 @@ static inline bool HasEvent(unsigned events, int event_id)
 	return (events & (1 << event_id)) != 0;
 }
 
+PollGroupWinSelect::PollGroupWinSelect() { }
+PollGroupWinSelect::~PollGroupWinSelect() { }
+
 bool PollGroupWinSelect::CanModify(PollGroupWinSelect::Item &item,
 				   unsigned events, int event_id)
 {

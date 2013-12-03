@@ -96,8 +96,8 @@ public:
 	static constexpr unsigned ERROR = 0;
 	static constexpr unsigned HANGUP = 0;
 
-	PollGroupWinSelect() { }
-	~PollGroupWinSelect() { }
+	PollGroupWinSelect();
+	~PollGroupWinSelect();
 
 	void ReadEvents(PollResultGeneric &result, int timeout_ms);
 	bool Add(int fd, unsigned events, void *obj);
