@@ -24,7 +24,7 @@
 #include "ConfigData.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
-#include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -215,11 +215,11 @@ static int handle_end_map(void *ctx)
 	s = Song::NewRemote(u);
 	g_free(u);
 
-	Tag *t = new Tag();
-	t->time = data->duration / 1000;
+	TagBuilder tag;
+	tag.SetTime(data->duration / 1000);
 	if (data->title != nullptr)
-		t->AddItem(TAG_NAME, data->title);
-	s->tag = t;
+		tag.AddItem(TAG_NAME, data->title);
+	s->tag = tag.Commit();
 
 	data->songs.emplace_front(s);
 
