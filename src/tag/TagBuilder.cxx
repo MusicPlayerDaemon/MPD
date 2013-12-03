@@ -46,6 +46,7 @@ TagBuilder::TagBuilder(Tag &&other)
 	/* move all TagItem pointers from the Tag object; we don't
 	   need to contact the tag pool, because all we do is move
 	   references */
+	items.reserve(other.num_items);
 	std::copy_n(other.items, other.num_items, std::back_inserter(items));
 
 	/* discard the pointers from the Tag object */
