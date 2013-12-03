@@ -33,8 +33,6 @@
 #include "ConfigOption.hxx"
 #include "notify.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 
@@ -110,7 +108,7 @@ audio_output_all_init(PlayerControl &pc)
 	Error error;
 
 	num_audio_outputs = audio_output_config_count();
-	audio_outputs = g_new(struct audio_output *, num_audio_outputs);
+	audio_outputs = new audio_output *[num_audio_outputs];
 
 	const config_param empty;
 
@@ -160,7 +158,7 @@ audio_output_all_finish(void)
 		audio_output_finish(audio_outputs[i]);
 	}
 
-	g_free(audio_outputs);
+	delete[] audio_outputs;
 	audio_outputs = nullptr;
 	num_audio_outputs = 0;
 }
