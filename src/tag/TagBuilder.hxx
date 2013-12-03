@@ -109,6 +109,13 @@ public:
 	}
 
 	/**
+	 * Checks whether the tag contains one or more items with
+	 * the specified type.
+	 */
+	gcc_pure
+	bool HasType(TagType type) const;
+
+	/**
 	 * Appends a new tag item.
 	 *
 	 * @param type the type of the new tag item

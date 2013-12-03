@@ -74,6 +74,16 @@ TagBuilder::Commit()
 	return tag;
 }
 
+bool
+TagBuilder::HasType(TagType type) const
+{
+	for (auto i : items)
+		if (i->type == type)
+			return true;
+
+	return false;
+}
+
 inline void
 TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
 {
