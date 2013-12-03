@@ -25,7 +25,6 @@
 #include "TagBuilder.hxx"
 #include "util/ASCII.hxx"
 
-#include <glib.h>
 #include <assert.h>
 #include <string.h>
 
@@ -59,12 +58,6 @@ tag_name_parse_i(const char *name)
 	return TAG_NUM_OF_ITEM_TYPES;
 }
 
-static size_t
-items_size(const Tag &tag)
-{
-	return tag.num_items * sizeof(TagItem *);
-}
-
 void
 Tag::Clear()
 {
@@ -76,7 +69,7 @@ Tag::Clear()
 		tag_pool_put_item(items[i]);
 	tag_pool_lock.unlock();
 
-	g_free(items);
+	delete[] items;
 	items = nullptr;
 	num_items = 0;
 }
@@ -88,7 +81,7 @@ Tag::~Tag()
 		tag_pool_put_item(items[i]);
 	tag_pool_lock.unlock();
 
-	g_free(items);
+	delete[] items;
 }
 
 Tag::Tag(const Tag &other)
@@ -97,7 +90,7 @@ Tag::Tag(const Tag &other)
 	 num_items(other.num_items)
 {
 	if (num_items > 0) {
-		items = (TagItem **)g_malloc(items_size(other));
+		items = new TagItem *[num_items];
 
 		tag_pool_lock.lock();
 		for (unsigned i = 0; i < num_items; i++)

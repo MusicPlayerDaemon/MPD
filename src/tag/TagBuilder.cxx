@@ -125,7 +125,7 @@ TagBuilder::Commit(Tag &tag)
 	   object */
 	const unsigned n_items = items.size();
 	tag.num_items = n_items;
-	tag.items = g_new(TagItem *, n_items);
+	tag.items = new TagItem *[n_items];
 	std::copy_n(items.begin(), n_items, tag.items);
 	items.clear();
 
