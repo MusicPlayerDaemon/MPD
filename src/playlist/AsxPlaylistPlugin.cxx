@@ -57,7 +57,7 @@ struct AsxParser {
 	 * valid if state==ENTRY.  TAG_NUM_OF_ITEM_TYPES means there
 	 * is no (known) tag.
 	 */
-	TagType tag;
+	TagType tag_type;
 
 	/**
 	 * The current song.  It is allocated after the "location"
@@ -95,7 +95,7 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 		if (StringEqualsCaseASCII(element_name, "entry")) {
 			parser->state = AsxParser::ENTRY;
 			parser->song = Song::NewRemote("asx:");
-			parser->tag = TAG_NUM_OF_ITEM_TYPES;
+			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
@@ -124,9 +124,9 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 		} else if (StringEqualsCaseASCII(element_name, "author"))
 			/* is that correct?  or should it be COMPOSER
 			   or PERFORMER? */
-			parser->tag = TAG_ARTIST;
+			parser->tag_type = TAG_ARTIST;
 		else if (StringEqualsCaseASCII(element_name, "title"))
-			parser->tag = TAG_TITLE;
+			parser->tag_type = TAG_TITLE;
 
 		break;
 	}
@@ -152,7 +152,7 @@ asx_end_element(gcc_unused GMarkupParseContext *context,
 
 			parser->state = AsxParser::ROOT;
 		} else
-			parser->tag = TAG_NUM_OF_ITEM_TYPES;
+			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 
 		break;
 	}
@@ -170,10 +170,10 @@ asx_text(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case AsxParser::ENTRY:
-		if (parser->tag != TAG_NUM_OF_ITEM_TYPES) {
+		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES) {
 			if (parser->song->tag == nullptr)
 				parser->song->tag = new Tag();
-			parser->song->tag->AddItem(parser->tag,
+			parser->song->tag->AddItem(parser->tag_type,
 						   text, text_len);
 		}
 
