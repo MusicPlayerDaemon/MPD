@@ -24,6 +24,7 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
 #include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "IcyMetaDataParser.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/TimeoutMonitor.hxx"
@@ -780,8 +781,11 @@ copy_icy_tag(struct input_curl *c)
 
 	delete c->tag;
 
-	if (!c->meta_name.empty() && !tag->HasType(TAG_NAME))
-		tag->AddItem(TAG_NAME, c->meta_name.c_str());
+	if (!c->meta_name.empty() && !tag->HasType(TAG_NAME)) {
+		TagBuilder tag_builder(std::move(*tag));
+		tag_builder.AddItem(TAG_NAME, c->meta_name.c_str());
+		tag_builder.Commit(*tag);
+	}
 
 	c->tag = tag;
 }
@@ -910,8 +914,10 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 		delete c->tag;
 
-		c->tag = new Tag();
-		c->tag->AddItem(TAG_NAME, c->meta_name.c_str());
+		TagBuilder tag_builder;
+		tag_builder.AddItem(TAG_NAME, c->meta_name.c_str());
+
+		c->tag = tag_builder.Commit();
 	} else if (StringEqualsCaseASCII(name, "icy-metaint")) {
 		char buffer[64];
 		size_t icy_metaint;
