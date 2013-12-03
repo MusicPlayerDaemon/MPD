@@ -22,6 +22,31 @@
 
 #include <string.h>
 
+PathTraits::string
+PathTraits::BuildFS(PathTraits::const_pointer a, size_t a_size,
+		    PathTraits::const_pointer b, size_t b_size)
+{
+	assert(a != nullptr);
+	assert(b != nullptr);
+
+	if (a_size == 0)
+		return string(b, b_size);
+	if (b_size == 0)
+		return string(a, a_size);
+
+	string result(a, a_size);
+
+	if (!IsSeparatorFS(a[a_size - 1]))
+		result.push_back(SEPARATOR_FS);
+
+	if (IsSeparatorFS(b[0]))
+		result.append(b + 1, b_size - 1);
+	else
+		result.append(b, b_size);
+
+	return result;
+}
+
 const char *
 PathTraits::GetBaseUTF8(const char *p)
 {
