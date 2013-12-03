@@ -28,6 +28,7 @@
 #include "PlaylistError.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 
 bool
@@ -48,9 +49,15 @@ playlist::AddSongIdTag(unsigned id, TagType tag_type, const char *value,
 		return false;
 	}
 
-	if (song.tag == nullptr)
-		song.tag = new Tag();
-	song.tag->AddItem(tag_type, value);
+	TagBuilder tag;
+	if (song.tag != nullptr) {
+		tag = std::move(*song.tag);
+		delete song.tag;
+	}
+
+	tag.AddItem(tag_type, value);
+	song.tag = tag.Commit();
+
 	queue.ModifyAtPosition(position);
 	OnModified();
 	return true;
@@ -77,10 +84,15 @@ playlist::ClearSongIdTag(unsigned id, TagType tag_type,
 	if (song.tag == nullptr)
 		return true;
 
+	TagBuilder tag(std::move(*song.tag));
+	delete song.tag;
+
 	if (tag_type == TAG_NUM_OF_ITEM_TYPES)
-		song.tag->RemoveAll();
+		tag.RemoveAll();
 	else
-		song.tag->RemoveType(tag_type);
+		tag.RemoveType(tag_type);
+	song.tag = tag.Commit();
+
 	queue.ModifyAtPosition(position);
 	OnModified();
 	return true;

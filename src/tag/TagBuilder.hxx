@@ -147,6 +147,16 @@ public:
 	gcc_nonnull_all
 	void AddItem(TagType type, const char *value);
 
+	/**
+	 * Removes all tag items.
+	 */
+	void RemoveAll();
+
+	/**
+	 * Removes all tag items of the specified type.
+	 */
+	void RemoveType(TagType type);
+
 private:
 	gcc_nonnull_all
 	void AddItemInternal(TagType type, const char *value, size_t length);

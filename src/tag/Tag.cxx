@@ -187,23 +187,3 @@ Tag::AddItem(TagType type, const char *value)
 {
 	AddItem(type, value, strlen(value));
 }
-
-void
-Tag::RemoveType(TagType type)
-{
-	auto dest = items, src = items, end = items + num_items;
-
-	tag_pool_lock.lock();
-	while (src != end) {
-		TagItem *item = *src++;
-		if (item->type == type)
-			/* remove it */
-			tag_pool_put_item(item);
-		else
-			/* keep it */
-			*dest++ = item;
-	}
-	tag_pool_lock.unlock();
-
-	num_items = dest - items;
-}

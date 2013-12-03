@@ -108,13 +108,7 @@ TagBuilder::Clear()
 {
 	time = -1;
 	has_playlist = false;
-
-	tag_pool_lock.lock();
-	for (auto i : items)
-		tag_pool_put_item(i);
-	tag_pool_lock.unlock();
-
-	items.clear();
+	RemoveAll();
 }
 
 void
@@ -215,4 +209,30 @@ TagBuilder::AddItem(TagType type, const char *value)
 	assert(value != nullptr);
 
 	AddItem(type, value, strlen(value));
+}
+
+void
+TagBuilder::RemoveAll()
+{
+	tag_pool_lock.lock();
+	for (auto i : items)
+		tag_pool_put_item(i);
+	tag_pool_lock.unlock();
+
+	items.clear();
+}
+
+void
+TagBuilder::RemoveType(TagType type)
+{
+	const auto begin = items.begin(), end = items.end();
+
+	items.erase(std::remove_if(begin, end,
+				   [type](TagItem *item) {
+					   if (item->type != type)
+						   return false;
+					   tag_pool_put_item(item);
+					   return true;
+				   }),
+		    end);
 }
