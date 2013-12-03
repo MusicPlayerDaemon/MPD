@@ -188,9 +188,9 @@ CueParser::Feed2(char *p)
 		return;
 
 	if (strcmp(command, "REM") == 0) {
-		Tag *current_tag = GetCurrentTag();
-		if (current_tag != nullptr)
-			cue_parse_rem(p, *current_tag);
+		Tag *tag = GetCurrentTag();
+		if (tag != nullptr)
+			cue_parse_rem(p, *tag);
 	} else if (strcmp(command, "PERFORMER") == 0) {
 		/* MPD knows a "performer" tag, but it is not a good
 		   match for this CUE tag; from the Hydrogenaudio
@@ -202,9 +202,9 @@ CueParser::Feed2(char *p)
 			? TAG_ARTIST
 			: TAG_ALBUM_ARTIST;
 
-		Tag *current_tag = GetCurrentTag();
-		if (current_tag != nullptr)
-			cue_add_tag(*current_tag, type, p);
+		Tag *tag = GetCurrentTag();
+		if (tag != nullptr)
+			cue_add_tag(*tag, type, p);
 	} else if (strcmp(command, "TITLE") == 0) {
 		if (state == HEADER)
 			cue_add_tag(*header_tag, TAG_ALBUM, p);
