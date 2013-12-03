@@ -20,6 +20,7 @@
 #include "config.h"
 #include "IcyMetaDataParser.hxx"
 #include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -66,7 +67,7 @@ IcyMetaDataParser::Data(size_t length)
 }
 
 static void
-icy_add_item(Tag &tag, TagType type, const char *value)
+icy_add_item(TagBuilder &tag, TagType type, const char *value)
 {
 	size_t length = strlen(value);
 
@@ -81,7 +82,7 @@ icy_add_item(Tag &tag, TagType type, const char *value)
 }
 
 static void
-icy_parse_tag_item(Tag &tag, const char *item)
+icy_parse_tag_item(TagBuilder &tag, const char *item)
 {
 	gchar **p = g_strsplit(item, "=", 0);
 
@@ -99,15 +100,16 @@ icy_parse_tag_item(Tag &tag, const char *item)
 static Tag *
 icy_parse_tag(const char *p)
 {
-	Tag *tag = new Tag();
+	TagBuilder tag;
+
 	gchar **items = g_strsplit(p, ";", 0);
 
 	for (unsigned i = 0; items[i] != nullptr; ++i)
-		icy_parse_tag_item(*tag, items[i]);
+		icy_parse_tag_item(tag, items[i]);
 
 	g_strfreev(items);
 
-	return tag;
+	return tag.Commit();
 }
 
 size_t
