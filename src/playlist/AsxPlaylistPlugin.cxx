@@ -23,7 +23,7 @@
 #include "MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
-#include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -64,6 +64,8 @@ struct AsxParser {
 	 * element.
 	 */
 	Song *song;
+
+	TagBuilder tag_builder;
 
 	AsxParser()
 		:state(ROOT) {}
@@ -106,18 +108,13 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 							  attribute_values,
 							  "href");
 			if (href != nullptr) {
-				/* create new song object, and copy
-				   the existing tag over; we cannot
+				/* create new song object; we cannot
 				   replace the existing song's URI,
 				   because that attribute is
 				   immutable */
 				Song *song = Song::NewRemote(href);
-
-				if (parser->song != nullptr) {
-					song->tag = parser->song->tag;
-					parser->song->tag = nullptr;
+				if (parser->song != nullptr)
 					parser->song->Free();
-				}
 
 				parser->song = song;
 			}
@@ -145,9 +142,11 @@ asx_end_element(gcc_unused GMarkupParseContext *context,
 
 	case AsxParser::ENTRY:
 		if (StringEqualsCaseASCII(element_name, "entry")) {
-			if (strcmp(parser->song->uri, "asx:") != 0)
+			if (strcmp(parser->song->uri, "asx:") != 0) {
+				assert(parser->song->tag == nullptr);
+				parser->song->tag = parser->tag_builder.Commit();
 				parser->songs.emplace_front(parser->song);
-			else
+			} else
 				parser->song->Free();
 
 			parser->state = AsxParser::ROOT;
@@ -171,10 +170,8 @@ asx_text(gcc_unused GMarkupParseContext *context,
 
 	case AsxParser::ENTRY:
 		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES) {
-			if (parser->song->tag == nullptr)
-				parser->song->tag = new Tag();
-			parser->song->tag->AddItem(parser->tag_type,
-						   text, text_len);
+			parser->tag_builder.AddItem(parser->tag_type,
+						    text, text_len);
 		}
 
 		break;
