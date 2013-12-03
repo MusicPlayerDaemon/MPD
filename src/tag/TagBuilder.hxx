@@ -63,10 +63,11 @@ public:
 	}
 
 	TagBuilder(const TagBuilder &other) = delete;
-	TagBuilder &operator=(const TagBuilder &other) = delete;
 
 	TagBuilder(const Tag &other);
 	TagBuilder(Tag &&other);
+
+	TagBuilder &operator=(const TagBuilder &other);
 
 	/**
 	 * Returns true if the tag contains no items.  This ignores the "time"

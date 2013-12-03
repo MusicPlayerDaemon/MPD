@@ -54,6 +54,23 @@ TagBuilder::TagBuilder(Tag &&other)
 	other.items = nullptr;
 }
 
+TagBuilder &
+TagBuilder::operator=(const TagBuilder &other)
+{
+	/* copy all attributes */
+	time = other.time;
+	has_playlist = other.has_playlist;
+	items = other.items;
+
+	/* increment the tag pool refcounters */
+	tag_pool_lock.lock();
+	for (auto i : items)
+		tag_pool_dup_item(i);
+	tag_pool_lock.unlock();
+
+	return *this;
+}
+
 void
 TagBuilder::Clear()
 {
