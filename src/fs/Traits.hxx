@@ -41,11 +41,11 @@ struct PathTraits {
 
 #ifdef WIN32
 	static constexpr value_type SEPARATOR_FS = '\\';
-	static constexpr char SEPARATOR_UTF8 = '/';
 #else
 	static constexpr value_type SEPARATOR_FS = '/';
-	static constexpr char SEPARATOR_UTF8 = '/';
 #endif
+
+	static constexpr char SEPARATOR_UTF8 = '/';
 
 	static constexpr bool IsSeparatorFS(value_type ch) {
 		return
@@ -56,11 +56,7 @@ struct PathTraits {
 	}
 
 	static constexpr bool IsSeparatorUTF8(char ch) {
-		return
-#ifdef WIN32
-			ch == '/' ||
-#endif
-			ch == SEPARATOR_UTF8;
+		return ch == SEPARATOR_UTF8;
 	}
 
 	gcc_pure
