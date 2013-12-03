@@ -37,8 +37,7 @@ class Error;
  * stored.
  */
 class AllocatedPath {
-	typedef std::string string;
-
+	typedef PathTraits::string string;
 	typedef PathTraits::value_type value_type;
 	typedef PathTraits::pointer pointer;
 	typedef PathTraits::const_pointer const_pointer;

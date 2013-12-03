@@ -36,6 +36,7 @@
  * This class describes the nature of a filesystem path.
  */
 struct PathTraits {
+	typedef std::string string;
 	typedef char value_type;
 	typedef char *pointer;
 	typedef const char *const_pointer;
