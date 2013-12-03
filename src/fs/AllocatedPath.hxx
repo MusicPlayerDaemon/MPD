@@ -54,6 +54,8 @@ class AllocatedPath {
 
 	AllocatedPath(const_pointer _value):value(_value) {}
 
+	AllocatedPath(string &&_value):value(_value) {}
+
 public:
 	/**
 	 * Copy a #AllocatedPath object.
@@ -112,6 +114,15 @@ public:
 	gcc_pure
 	static AllocatedPath FromFS(const_pointer fs) {
 		return AllocatedPath(fs);
+	}
+
+	/**
+	 * Convert a C++ string that is already in the filesystem
+	 * character set to a #Path instance.
+	 */
+	gcc_pure
+	static AllocatedPath FromFS(string &&fs) {
+		return AllocatedPath(std::move(fs));
 	}
 
 	/**
