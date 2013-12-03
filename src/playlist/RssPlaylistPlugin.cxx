@@ -57,7 +57,7 @@ struct RssParser {
 	 * valid if state==ITEM.  TAG_NUM_OF_ITEM_TYPES means there
 	 * is no (known) tag.
 	 */
-	TagType tag;
+	TagType tag_type;
 
 	/**
 	 * The current song.  It is allocated after the "location"
@@ -94,7 +94,7 @@ rss_start_element(gcc_unused GMarkupParseContext *context,
 		if (StringEqualsCaseASCII(element_name, "item")) {
 			parser->state = RssParser::ITEM;
 			parser->song = Song::NewRemote("rss:");
-			parser->tag = TAG_NUM_OF_ITEM_TYPES;
+			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
@@ -121,9 +121,9 @@ rss_start_element(gcc_unused GMarkupParseContext *context,
 				parser->song = song;
 			}
 		} else if (StringEqualsCaseASCII(element_name, "title"))
-			parser->tag = TAG_TITLE;
+			parser->tag_type = TAG_TITLE;
 		else if (StringEqualsCaseASCII(element_name, "itunes:author"))
-			parser->tag = TAG_ARTIST;
+			parser->tag_type = TAG_ARTIST;
 
 		break;
 	}
@@ -149,7 +149,7 @@ rss_end_element(gcc_unused GMarkupParseContext *context,
 
 			parser->state = RssParser::ROOT;
 		} else
-			parser->tag = TAG_NUM_OF_ITEM_TYPES;
+			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 
 		break;
 	}
@@ -167,10 +167,10 @@ rss_text(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case RssParser::ITEM:
-		if (parser->tag != TAG_NUM_OF_ITEM_TYPES) {
+		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES) {
 			if (parser->song->tag == nullptr)
 				parser->song->tag = new Tag();
-			parser->song->tag->AddItem(parser->tag,
+			parser->song->tag->AddItem(parser->tag_type,
 						   text, text_len);
 		}
 
