@@ -22,7 +22,7 @@
 #include "PlaylistPlugin.hxx"
 #include "MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
-#include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -63,6 +63,8 @@ struct XspfParser {
 	 * element.
 	 */
 	Song *song;
+
+	TagBuilder tag_builder;
 
 	XspfParser()
 		:state(ROOT) {}
@@ -147,8 +149,11 @@ xspf_end_element(gcc_unused GMarkupParseContext *context,
 
 	case XspfParser::TRACK:
 		if (strcmp(element_name, "track") == 0) {
-			if (parser->song != nullptr)
+			if (parser->song != nullptr) {
+				assert(parser->song->tag == nullptr);
+				parser->song->tag = parser->tag_builder.Commit();
 				parser->songs.emplace_front(parser->song);
+			}
 
 			parser->state = XspfParser::TRACKLIST;
 		} else
@@ -177,11 +182,9 @@ xspf_text(gcc_unused GMarkupParseContext *context,
 
 	case XspfParser::TRACK:
 		if (parser->song != nullptr &&
-		    parser->tag_type != TAG_NUM_OF_ITEM_TYPES) {
-			if (parser->song->tag == nullptr)
-				parser->song->tag = new Tag();
-			parser->song->tag->AddItem(parser->tag_type, text, text_len);
-		}
+		    parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
+			parser->tag_builder.AddItem(parser->tag_type,
+						    text, text_len);
 
 		break;
 
