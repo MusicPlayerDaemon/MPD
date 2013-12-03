@@ -64,8 +64,8 @@ public:
 
 	TagBuilder(const TagBuilder &other) = delete;
 
-	TagBuilder(const Tag &other);
-	TagBuilder(Tag &&other);
+	explicit TagBuilder(const Tag &other);
+	explicit TagBuilder(Tag &&other);
 
 	TagBuilder &operator=(const TagBuilder &other);
 
