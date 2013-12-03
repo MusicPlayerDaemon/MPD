@@ -37,12 +37,6 @@ inline AllocatedPath::AllocatedPath(Donate, pointer _value)
 AllocatedPath::~AllocatedPath() {}
 
 AllocatedPath
-AllocatedPath::Build(const_pointer a, const_pointer b)
-{
-	return AllocatedPath(Donate(), g_build_filename(a, b, nullptr));
-}
-
-AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8)
 {
 	return AllocatedPath(Donate(), ::PathFromUTF8(path_utf8));

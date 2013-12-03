@@ -55,6 +55,10 @@ class AllocatedPath {
 
 	AllocatedPath(string &&_value):value(_value) {}
 
+	static AllocatedPath Build(const_pointer a, size_t a_size,
+				   const_pointer b, size_t b_size) {
+		return AllocatedPath(PathTraits::BuildFS(a, a_size, b, b_size));
+	}
 public:
 	/**
 	 * Copy a #AllocatedPath object.
@@ -88,22 +92,28 @@ public:
 	 * Join two path components with the path separator.
 	 */
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer a, const_pointer b);
+	static AllocatedPath Build(const_pointer a, const_pointer b) {
+		return Build(a, PathTraits::GetLengthFS(a),
+			     b, PathTraits::GetLengthFS(b));
+	}
 
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const_pointer a, const AllocatedPath &b) {
-		return Build(a, b.c_str());
+		return Build(a, PathTraits::GetLengthFS(a),
+			     b.value.c_str(), b.value.size());
 	}
 
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const AllocatedPath &a, const_pointer b) {
-		return Build(a.c_str(), b);
+		return Build(a.value.c_str(), a.value.size(),
+			     b, PathTraits::GetLengthFS(b));
 	}
 
 	gcc_pure
 	static AllocatedPath Build(const AllocatedPath &a,
 				   const AllocatedPath &b) {
-		return Build(a.c_str(), b.c_str());
+		return Build(a.value.c_str(), a.value.size(),
+			     b.value.c_str(), b.value.size());
 	}
 
 	/**
