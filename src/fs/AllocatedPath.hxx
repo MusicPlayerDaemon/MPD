@@ -53,7 +53,7 @@ class AllocatedPath {
 
 	AllocatedPath(const_pointer _value):value(_value) {}
 
-	AllocatedPath(string &&_value):value(_value) {}
+	AllocatedPath(string &&_value):value(std::move(_value)) {}
 
 	static AllocatedPath Build(const_pointer a, size_t a_size,
 				   const_pointer b, size_t b_size) {
