@@ -21,6 +21,7 @@
 #define MPD_CUE_PARSER_HXX
 
 #include "check.h"
+#include "tag/TagBuilder.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -59,7 +60,14 @@ class CueParser {
 	/**
 	 * Tags read from the CUE header.
 	 */
-	Tag *header_tag;
+	TagBuilder header_tag;
+
+	/**
+	 * Tags read for the current song (attribute #current).  When
+	 * #current gets moved to #previous, TagBuilder::Commit() will
+	 * be called.
+	 */
+	TagBuilder song_tag;
 
 	std::string filename;
 
@@ -121,7 +129,7 @@ public:
 
 private:
 	gcc_pure
-	Tag *GetCurrentTag();
+	TagBuilder *GetCurrentTag();
 
 	/**
 	 * Commit the current song.  It will be moved to "previous",

@@ -31,7 +31,7 @@
 #include <stdlib.h>
 
 CueParser::CueParser()
-	:state(HEADER), header_tag(new Tag()),
+	:state(HEADER),
 	 current(nullptr),
 	 previous(nullptr),
 	 finished(nullptr),
@@ -39,8 +39,6 @@ CueParser::CueParser()
 
 CueParser::~CueParser()
 {
-	delete header_tag;
-
 	if (current != nullptr)
 		current->Free();
 
@@ -109,7 +107,7 @@ cue_next_value(char **pp)
 }
 
 static void
-cue_add_tag(Tag &tag, TagType type, char *p)
+cue_add_tag(TagBuilder &tag, TagType type, char *p)
 {
 	const char *value = cue_next_value(&p);
 	if (value != nullptr)
@@ -118,7 +116,7 @@ cue_add_tag(Tag &tag, TagType type, char *p)
 }
 
 static void
-cue_parse_rem(char *p, Tag &tag)
+cue_parse_rem(char *p, TagBuilder &tag)
 {
 	const char *type = cue_next_token(&p);
 	if (type == nullptr)
@@ -129,13 +127,13 @@ cue_parse_rem(char *p, Tag &tag)
 		cue_add_tag(tag, type2, p);
 }
 
-Tag *
+TagBuilder *
 CueParser::GetCurrentTag()
 {
 	if (state == HEADER)
-		return header_tag;
+		return &header_tag;
 	else if (state == TRACK)
-		return current->tag;
+		return &song_tag;
 	else
 		return nullptr;
 }
@@ -172,6 +170,9 @@ CueParser::Commit()
 	if (current == nullptr)
 		return;
 
+	assert(current->tag == nullptr);
+	current->tag = song_tag.Commit();
+
 	finished = previous;
 	previous = current;
 	current = nullptr;
@@ -188,7 +189,7 @@ CueParser::Feed2(char *p)
 		return;
 
 	if (strcmp(command, "REM") == 0) {
-		Tag *tag = GetCurrentTag();
+		TagBuilder *tag = GetCurrentTag();
 		if (tag != nullptr)
 			cue_parse_rem(p, *tag);
 	} else if (strcmp(command, "PERFORMER") == 0) {
@@ -202,14 +203,14 @@ CueParser::Feed2(char *p)
 			? TAG_ARTIST
 			: TAG_ALBUM_ARTIST;
 
-		Tag *tag = GetCurrentTag();
+		TagBuilder *tag = GetCurrentTag();
 		if (tag != nullptr)
 			cue_add_tag(*tag, type, p);
 	} else if (strcmp(command, "TITLE") == 0) {
 		if (state == HEADER)
-			cue_add_tag(*header_tag, TAG_ALBUM, p);
+			cue_add_tag(header_tag, TAG_ALBUM, p);
 		else if (state == TRACK)
-			cue_add_tag(*current->tag, TAG_TITLE, p);
+			cue_add_tag(song_tag, TAG_TITLE, p);
 	} else if (strcmp(command, "FILE") == 0) {
 		Commit();
 
@@ -251,8 +252,10 @@ CueParser::Feed2(char *p)
 		state = TRACK;
 		current = Song::NewRemote(filename.c_str());
 		assert(current->tag == nullptr);
-		current->tag = new Tag(*header_tag);
-		current->tag->AddItem(TAG_TRACK, nr);
+
+		song_tag = header_tag;
+		song_tag.AddItem(TAG_TRACK, nr);
+
 		last_updated = false;
 	} else if (state == IGNORE_TRACK) {
 		return;
