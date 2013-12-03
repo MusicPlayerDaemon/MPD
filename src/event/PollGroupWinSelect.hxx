@@ -90,6 +90,8 @@ class PollGroupWinSelect
 	bool CanModify(Item &item, unsigned events, int event_id);
 	void Modify(Item &item, int fd, unsigned events, int event_id);
 
+	PollGroupWinSelect(PollGroupWinSelect &) = delete;
+	PollGroupWinSelect &operator=(PollGroupWinSelect &) = delete;
 public:
 	static constexpr unsigned READ = 1;
 	static constexpr unsigned WRITE = 2;
