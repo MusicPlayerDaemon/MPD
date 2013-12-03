@@ -23,7 +23,7 @@
 #include "MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
-#include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -65,6 +65,8 @@ struct RssParser {
 	 */
 	Song *song;
 
+	TagBuilder tag_builder;
+
 	RssParser()
 		:state(ROOT) {}
 };
@@ -105,18 +107,14 @@ rss_start_element(gcc_unused GMarkupParseContext *context,
 							  attribute_values,
 							  "url");
 			if (href != nullptr) {
-				/* create new song object, and copy
-				   the existing tag over; we cannot
+				/* create new song object; we cannot
 				   replace the existing song's URI,
 				   because that attribute is
 				   immutable */
 				Song *song = Song::NewRemote(href);
 
-				if (parser->song != nullptr) {
-					song->tag = parser->song->tag;
-					parser->song->tag = nullptr;
+				if (parser->song != nullptr)
 					parser->song->Free();
-				}
 
 				parser->song = song;
 			}
@@ -142,9 +140,11 @@ rss_end_element(gcc_unused GMarkupParseContext *context,
 
 	case RssParser::ITEM:
 		if (StringEqualsCaseASCII(element_name, "item")) {
-			if (strcmp(parser->song->uri, "rss:") != 0)
+			if (strcmp(parser->song->uri, "rss:") != 0) {
+				assert(parser->song->tag == nullptr);
+				parser->song->tag = parser->tag_builder.Commit();
 				parser->songs.emplace_front(parser->song);
-			else
+			} else
 				parser->song->Free();
 
 			parser->state = RssParser::ROOT;
@@ -167,12 +167,9 @@ rss_text(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case RssParser::ITEM:
-		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES) {
-			if (parser->song->tag == nullptr)
-				parser->song->tag = new Tag();
-			parser->song->tag->AddItem(parser->tag_type,
-						   text, text_len);
-		}
+		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
+			parser->tag_builder.AddItem(parser->tag_type,
+						    text, text_len);
 
 		break;
 	}
