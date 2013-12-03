@@ -72,6 +72,37 @@ TagBuilder::operator=(const TagBuilder &other)
 	return *this;
 }
 
+TagBuilder &
+TagBuilder::operator=(TagBuilder &&other)
+{
+	time = other.time;
+	has_playlist = other.has_playlist;
+	items = std::move(other.items);
+
+	return *this;
+}
+
+TagBuilder &
+TagBuilder::operator=(Tag &&other)
+{
+	time = other.time;
+	has_playlist = other.has_playlist;
+
+	/* move all TagItem pointers from the Tag object; we don't
+	   need to contact the tag pool, because all we do is move
+	   references */
+	items.clear();
+	items.reserve(other.num_items);
+	std::copy_n(other.items, other.num_items, std::back_inserter(items));
+
+	/* discard the pointers from the Tag object */
+	other.num_items = 0;
+	delete[] other.items;
+	other.items = nullptr;
+
+	return *this;
+}
+
 void
 TagBuilder::Clear()
 {

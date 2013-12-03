@@ -68,6 +68,9 @@ public:
 	explicit TagBuilder(Tag &&other);
 
 	TagBuilder &operator=(const TagBuilder &other);
+	TagBuilder &operator=(TagBuilder &&other);
+
+	TagBuilder &operator=(Tag &&other);
 
 	/**
 	 * Returns true if the tag contains no items.  This ignores the "time"
