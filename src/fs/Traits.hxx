@@ -29,6 +29,7 @@
 
 #include <string>
 
+#include <string.h>
 #include <assert.h>
 
 /**
@@ -77,6 +78,11 @@ struct PathTraits {
 			return true;
 #endif
 		return IsSeparatorUTF8(*p);
+	}
+
+	gcc_pure
+	static size_t GetLengthFS(const_pointer p) {
+		return strlen(p);
 	}
 
 	/**
