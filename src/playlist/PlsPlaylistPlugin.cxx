@@ -23,7 +23,7 @@
 #include "MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
-#include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -31,6 +31,8 @@
 #include <glib.h>
 
 #include <string>
+
+#include <stdio.h>
 
 static constexpr Domain pls_domain("pls");
 
@@ -75,14 +77,14 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		song = Song::NewRemote(value);
 		g_free(value);
 
+		TagBuilder tag;
+
 		sprintf(key, "Title%u", num_entries);
 		value = g_key_file_get_string(keyfile, "playlist", key,
 					      &error);
-		if(error == nullptr && value){
-			if (song->tag == nullptr)
-				song->tag = new Tag();
-			song->tag->AddItem(TAG_TITLE, value);
-		}
+		if (error == nullptr && value != nullptr)
+			tag.AddItem(TAG_TITLE, value);
+
 		/* Ignore errors? Most likely value not present */
 		if(error) g_error_free(error);
 		error = nullptr;
@@ -91,15 +93,14 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		sprintf(key, "Length%u", num_entries);
 		length = g_key_file_get_integer(keyfile, "playlist", key,
 						&error);
-		if(error == nullptr && length > 0){
-			if (song->tag == nullptr)
-				song->tag = new Tag();
-			song->tag->time = length;
-		}
+		if (error == nullptr && length > 0)
+			tag.SetTime(length);
+
 		/* Ignore errors? Most likely value not present */
 		if(error) g_error_free(error);
 		error = nullptr;
 
+		song->tag = tag.Commit();
 		songs.emplace_front(song);
 		num_entries--;
 	}
