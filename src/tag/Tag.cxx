@@ -74,16 +74,6 @@ Tag::Clear()
 	num_items = 0;
 }
 
-Tag::~Tag()
-{
-	tag_pool_lock.lock();
-	for (int i = num_items; --i >= 0; )
-		tag_pool_put_item(items[i]);
-	tag_pool_lock.unlock();
-
-	delete[] items;
-}
-
 Tag::Tag(const Tag &other)
 	:time(other.time), has_playlist(other.has_playlist),
 	 items(nullptr),

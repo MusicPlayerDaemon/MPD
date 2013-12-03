@@ -71,7 +71,9 @@ struct Tag {
 	/**
 	 * Free the tag object and all its items.
 	 */
-	~Tag();
+	~Tag() {
+		Clear();
+	}
 
 	Tag &operator=(const Tag &other) = delete;
 
