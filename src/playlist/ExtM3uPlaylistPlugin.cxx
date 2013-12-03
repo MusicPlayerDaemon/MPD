@@ -23,6 +23,7 @@
 #include "SongEnumerator.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
 #include "TextInputStream.hxx"
 
@@ -72,7 +73,6 @@ extm3u_parse_tag(const char *line)
 	long duration;
 	char *endptr;
 	const char *name;
-	Tag *tag;
 
 	duration = strtol(line, &endptr, 10);
 	if (endptr[0] != ',')
@@ -89,16 +89,16 @@ extm3u_parse_tag(const char *line)
 		   object */
 		return NULL;
 
-	tag = new Tag();
-	tag->time = duration;
+	TagBuilder tag;
+	tag.SetTime(duration);
 
 	/* unfortunately, there is no real specification for the
 	   EXTM3U format, so we must assume that the string after the
 	   comma is opaque, and is just the song name*/
 	if (*name != 0)
-		tag->AddItem(TAG_NAME, name);
+		tag.AddItem(TAG_NAME, name);
 
-	return tag;
+	return tag.Commit();
 }
 
 Song *
