@@ -24,6 +24,7 @@
 #include "ConfigData.hxx"
 #include "stdbin.h"
 #include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 
 #include <stddef.h>
@@ -81,8 +82,13 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	encoder_to_stdout(*encoder);
 
 	Tag tag;
-	tag.AddItem(TAG_ARTIST, "Foo");
-	tag.AddItem(TAG_TITLE, "Bar");
+
+	{
+		TagBuilder tag_builder;
+		tag_builder.AddItem(TAG_ARTIST, "Foo");
+		tag_builder.AddItem(TAG_TITLE, "Bar");
+		tag_builder.Commit(tag);
+	}
 
 	success = encoder_tag(encoder, &tag, IgnoreError());
 	assert(success);

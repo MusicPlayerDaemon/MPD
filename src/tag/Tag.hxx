@@ -104,24 +104,6 @@ struct Tag {
 	void Clear();
 
 	/**
-	 * Appends a new tag item.
-	 *
-	 * @param type the type of the new tag item
-	 * @param value the value of the tag item (not null-terminated)
-	 * @param len the length of #value
-	 */
-	void AddItem(TagType type, const char *value, size_t len);
-
-	/**
-	 * Appends a new tag item.
-	 *
-	 * @param tag the #tag object
-	 * @param type the type of the new tag item
-	 * @param value the value of the tag item (null-terminated)
-	 */
-	void AddItem(TagType type, const char *value);
-
-	/**
 	 * Merges the data from two tags.  If both tags share data for the
 	 * same TagType, only data from "add" is used.
 	 *
@@ -152,9 +134,6 @@ struct Tag {
 	 */
 	gcc_pure
 	bool HasType(TagType type) const;
-
-private:
-	void AddItemInternal(TagType type, const char *value, size_t len);
 };
 
 /**
