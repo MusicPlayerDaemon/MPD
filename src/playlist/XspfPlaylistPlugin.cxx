@@ -56,7 +56,7 @@ struct XspfParser {
 	 * valid if state==TRACK.  TAG_NUM_OF_ITEM_TYPES means there
 	 * is no (known) tag.
 	 */
-	TagType tag;
+	TagType tag_type;
 
 	/**
 	 * The current song.  It is allocated after the "location"
@@ -94,7 +94,7 @@ xspf_start_element(gcc_unused GMarkupParseContext *context,
 		if (strcmp(element_name, "track") == 0) {
 			parser->state = XspfParser::TRACK;
 			parser->song = nullptr;
-			parser->tag = TAG_NUM_OF_ITEM_TYPES;
+			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
@@ -103,17 +103,17 @@ xspf_start_element(gcc_unused GMarkupParseContext *context,
 		if (strcmp(element_name, "location") == 0)
 			parser->state = XspfParser::LOCATION;
 		else if (strcmp(element_name, "title") == 0)
-			parser->tag = TAG_TITLE;
+			parser->tag_type = TAG_TITLE;
 		else if (strcmp(element_name, "creator") == 0)
 			/* TAG_COMPOSER would be more correct
 			   according to the XSPF spec */
-			parser->tag = TAG_ARTIST;
+			parser->tag_type = TAG_ARTIST;
 		else if (strcmp(element_name, "annotation") == 0)
-			parser->tag = TAG_COMMENT;
+			parser->tag_type = TAG_COMMENT;
 		else if (strcmp(element_name, "album") == 0)
-			parser->tag = TAG_ALBUM;
+			parser->tag_type = TAG_ALBUM;
 		else if (strcmp(element_name, "trackNum") == 0)
-			parser->tag = TAG_TRACK;
+			parser->tag_type = TAG_TRACK;
 
 		break;
 
@@ -152,7 +152,7 @@ xspf_end_element(gcc_unused GMarkupParseContext *context,
 
 			parser->state = XspfParser::TRACKLIST;
 		} else
-			parser->tag = TAG_NUM_OF_ITEM_TYPES;
+			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 
 		break;
 
@@ -177,10 +177,10 @@ xspf_text(gcc_unused GMarkupParseContext *context,
 
 	case XspfParser::TRACK:
 		if (parser->song != nullptr &&
-		    parser->tag != TAG_NUM_OF_ITEM_TYPES) {
+		    parser->tag_type != TAG_NUM_OF_ITEM_TYPES) {
 			if (parser->song->tag == nullptr)
 				parser->song->tag = new Tag();
-			parser->song->tag->AddItem(parser->tag, text, text_len);
+			parser->song->tag->AddItem(parser->tag_type, text, text_len);
 		}
 
 		break;
