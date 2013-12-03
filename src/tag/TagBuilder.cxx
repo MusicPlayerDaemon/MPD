@@ -109,6 +109,25 @@ TagBuilder::HasType(TagType type) const
 	return false;
 }
 
+void
+TagBuilder::Complement(const Tag &other)
+{
+	if (time <= 0)
+		time = other.time;
+
+	has_playlist |= other.has_playlist;
+
+	items.reserve(items.size() + other.num_items);
+
+	tag_pool_lock.lock();
+	for (unsigned i = 0, n = other.num_items; i != n; ++i) {
+		TagItem *item = other.items[i];
+		if (!HasType(item->type))
+			items.push_back(tag_pool_dup_item(item));
+	}
+	tag_pool_lock.unlock();
+}
+
 inline void
 TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
 {

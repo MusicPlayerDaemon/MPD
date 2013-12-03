@@ -119,6 +119,12 @@ public:
 	bool HasType(TagType type) const;
 
 	/**
+	 * Copy attributes and items from the other object that do not
+	 * exist in this object.
+	 */
+	void Complement(const Tag &other);
+
+	/**
 	 * Appends a new tag item.
 	 *
 	 * @param type the type of the new tag item

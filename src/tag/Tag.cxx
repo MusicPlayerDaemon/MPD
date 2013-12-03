@@ -22,6 +22,7 @@
 #include "TagPool.hxx"
 #include "TagString.hxx"
 #include "TagSettings.h"
+#include "TagBuilder.hxx"
 #include "util/ASCII.hxx"
 
 #include <glib.h>
@@ -108,46 +109,9 @@ Tag::Tag(const Tag &other)
 Tag *
 Tag::Merge(const Tag &base, const Tag &add)
 {
-	unsigned n;
-
-	/* allocate new tag object */
-
-	Tag *ret = new Tag();
-	ret->time = add.time > 0 ? add.time : base.time;
-	ret->num_items = base.num_items + add.num_items;
-	ret->items = ret->num_items > 0
-		? (TagItem **)g_malloc(items_size(*ret))
-		: nullptr;
-
-	tag_pool_lock.lock();
-
-	/* copy all items from "add" */
-
-	for (unsigned i = 0; i < add.num_items; ++i)
-		ret->items[i] = tag_pool_dup_item(add.items[i]);
-
-	n = add.num_items;
-
-	/* copy additional items from "base" */
-
-	for (unsigned i = 0; i < base.num_items; ++i)
-		if (!add.HasType(base.items[i]->type))
-			ret->items[n++] = tag_pool_dup_item(base.items[i]);
-
-	tag_pool_lock.unlock();
-
-	assert(n <= ret->num_items);
-
-	if (n < ret->num_items) {
-		/* some tags were not copied - shrink ret->items */
-		assert(n > 0);
-
-		ret->num_items = n;
-		ret->items = (TagItem **)
-			g_realloc(ret->items, items_size(*ret));
-	}
-
-	return ret;
+	TagBuilder builder(base);
+	builder.Complement(add);
+	return builder.Commit();
 }
 
 Tag *
