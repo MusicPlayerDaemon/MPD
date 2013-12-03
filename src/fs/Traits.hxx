@@ -24,7 +24,7 @@
 #include "Compiler.h"
 
 #ifdef WIN32
-#include <glib.h>
+#include "util/CharUtil.hxx"
 #endif
 
 #include <string>
@@ -62,23 +62,21 @@ struct PathTraits {
 	gcc_pure
 	static bool IsAbsoluteFS(const_pointer p) {
 		assert(p != nullptr);
-
 #ifdef WIN32
-		return g_path_is_absolute(p);
-#else
-		return IsSeparatorFS(*p);
+		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparatorFS(p[2]))
+			return true;
 #endif
+		return IsSeparatorFS(*p);
 	}
 
 	gcc_pure
 	static bool IsAbsoluteUTF8(const char *p) {
 		assert(p != nullptr);
-
 #ifdef WIN32
-		return g_path_is_absolute(p);
-#else
-		return IsSeparatorUTF8(*p);
+		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparatorUTF8(p[2]))
+			return true;
 #endif
+		return IsSeparatorUTF8(*p);
 	}
 
 	/**
