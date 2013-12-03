@@ -31,7 +31,7 @@
 #include <stdlib.h>
 
 CueParser::CueParser()
-	:state(HEADER), tag(new Tag()),
+	:state(HEADER), header_tag(new Tag()),
 	 current(nullptr),
 	 previous(nullptr),
 	 finished(nullptr),
@@ -39,7 +39,7 @@ CueParser::CueParser()
 
 CueParser::~CueParser()
 {
-	delete tag;
+	delete header_tag;
 
 	if (current != nullptr)
 		current->Free();
@@ -133,7 +133,7 @@ Tag *
 CueParser::GetCurrentTag()
 {
 	if (state == HEADER)
-		return tag;
+		return header_tag;
 	else if (state == TRACK)
 		return current->tag;
 	else
@@ -207,7 +207,7 @@ CueParser::Feed2(char *p)
 			cue_add_tag(*current_tag, type, p);
 	} else if (strcmp(command, "TITLE") == 0) {
 		if (state == HEADER)
-			cue_add_tag(*tag, TAG_ALBUM, p);
+			cue_add_tag(*header_tag, TAG_ALBUM, p);
 		else if (state == TRACK)
 			cue_add_tag(*current->tag, TAG_TITLE, p);
 	} else if (strcmp(command, "FILE") == 0) {
@@ -251,7 +251,7 @@ CueParser::Feed2(char *p)
 		state = TRACK;
 		current = Song::NewRemote(filename.c_str());
 		assert(current->tag == nullptr);
-		current->tag = new Tag(*tag);
+		current->tag = new Tag(*header_tag);
 		current->tag->AddItem(TAG_TRACK, nr);
 		last_updated = false;
 	} else if (state == IGNORE_TRACK) {

@@ -56,7 +56,10 @@ class CueParser {
 		IGNORE_TRACK,
 	} state;
 
-	Tag *tag;
+	/**
+	 * Tags read from the CUE header.
+	 */
+	Tag *header_tag;
 
 	std::string filename;
 
