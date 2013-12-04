@@ -85,14 +85,19 @@ struct PathTraitsFS {
  * This class describes the nature of a MPD internal filesystem path.
  */
 struct PathTraitsUTF8 {
-	static constexpr char SEPARATOR = '/';
+	typedef std::string string;
+	typedef char value_type;
+	typedef char *pointer;
+	typedef const char *const_pointer;
 
-	static constexpr bool IsSeparator(char ch) {
+	static constexpr value_type SEPARATOR = '/';
+
+	static constexpr bool IsSeparator(value_type ch) {
 		return ch == SEPARATOR;
 	}
 
 	gcc_pure gcc_nonnull_all
-	static bool IsAbsolute(const char *p) {
+	static bool IsAbsolute(const_pointer p) {
 		assert(p != nullptr);
 #ifdef WIN32
 		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparator(p[2]))
@@ -106,7 +111,7 @@ struct PathTraitsUTF8 {
 	 * The return value points inside the given string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const char *GetBase(const char *p);
+	static const_pointer GetBase(const_pointer p);
 
 	/**
 	 * Determine the "parent" file name of the given UTF-8 path.
@@ -114,7 +119,7 @@ struct PathTraitsUTF8 {
 	 * separator in the given input string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static std::string GetParent(const char *p);
+	static string GetParent(const_pointer p);
 };
 
 #endif

@@ -47,8 +47,8 @@ PathTraitsFS::Build(PathTraitsFS::const_pointer a, size_t a_size,
 	return result;
 }
 
-const char *
-PathTraitsUTF8::GetBase(const char *p)
+PathTraitsUTF8::const_pointer
+PathTraitsUTF8::GetBase(PathTraitsUTF8::const_pointer p)
 {
 	assert(p != nullptr);
 
@@ -58,8 +58,8 @@ PathTraitsUTF8::GetBase(const char *p)
 		: p;
 }
 
-std::string
-PathTraitsUTF8::GetParent(const char *p)
+PathTraitsUTF8::string
+PathTraitsUTF8::GetParent(PathTraitsUTF8::const_pointer p)
 {
 	assert(p != nullptr);
 
