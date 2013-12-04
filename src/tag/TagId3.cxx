@@ -34,6 +34,8 @@
 #include <glib.h>
 #include <id3tag.h>
 
+#include <string>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -339,10 +341,9 @@ tag_id3_import_ufid(struct id3_tag *id3_tag,
 		if (value == nullptr || length == 0)
 			continue;
 
-		char *p = g_strndup((const char *)value, length);
+		std::string p((const char *)value, length);
 		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_MUSICBRAINZ_TRACKID, p);
-		g_free(p);
+				       TAG_MUSICBRAINZ_TRACKID, p.c_str());
 	}
 }
 
