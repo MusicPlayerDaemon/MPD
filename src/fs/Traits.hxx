@@ -55,7 +55,7 @@ struct PathTraitsFS {
 			ch == SEPARATOR;
 	}
 
-	gcc_pure
+	gcc_pure gcc_nonnull_all
 	static bool IsAbsolute(const_pointer p) {
 		assert(p != nullptr);
 #ifdef WIN32
@@ -65,7 +65,7 @@ struct PathTraitsFS {
 		return IsSeparator(*p);
 	}
 
-	gcc_pure
+	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer p) {
 		return strlen(p);
 	}
@@ -91,7 +91,7 @@ struct PathTraitsUTF8 {
 		return ch == SEPARATOR;
 	}
 
-	gcc_pure
+	gcc_pure gcc_nonnull_all
 	static bool IsAbsolute(const char *p) {
 		assert(p != nullptr);
 #ifdef WIN32
