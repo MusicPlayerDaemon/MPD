@@ -156,10 +156,9 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
 		return false;
 
-	char *name = g_strndup(name_fs_str,
-			       name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
-	std::string name_utf8 = PathToUTF8(name);
-	g_free(name);
+	std::string name(name_fs_str,
+			 name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
+	std::string name_utf8 = PathToUTF8(name.c_str());
 	if (name_utf8.empty())
 		return false;
 
