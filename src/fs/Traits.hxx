@@ -107,6 +107,11 @@ struct PathTraitsFS {
 	gcc_pure gcc_nonnull_all
 	static string Build(const_pointer a, size_t a_size,
 			    const_pointer b, size_t b_size);
+
+	gcc_pure gcc_nonnull_all
+	static string Build(const_pointer a, const_pointer b) {
+		return Build(a, GetLength(a), b, GetLength(b));
+	}
 };
 
 /**
@@ -169,6 +174,11 @@ struct PathTraitsUTF8 {
 	gcc_pure gcc_nonnull_all
 	static string Build(const_pointer a, size_t a_size,
 			    const_pointer b, size_t b_size);
+
+	gcc_pure gcc_nonnull_all
+	static string Build(const_pointer a, const_pointer b) {
+		return Build(a, GetLength(a), b, GetLength(b));
+	}
 };
 
 #endif
