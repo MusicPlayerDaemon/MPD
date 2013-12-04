@@ -165,12 +165,14 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 		base_uri = nullptr;
 	}
 
-	char *allocated = nullptr;
-	if (base_uri != nullptr)
-		uri = allocated = g_build_filename(base_uri, uri, nullptr);
+	std::string full_uri;
+	if (base_uri != nullptr) {
+		full_uri = PathTraitsUTF8::Build(base_uri, uri);
+		uri = full_uri.c_str();
+	}
 
 	Song *dest = playlist_check_load_song(song, uri, secure);
 	song->Free();
-	g_free(allocated);
+
 	return dest;
 }
