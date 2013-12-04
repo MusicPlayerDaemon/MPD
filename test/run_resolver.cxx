@@ -51,16 +51,8 @@ int main(int argc, char **argv)
 	}
 
 	for (const struct addrinfo *i = ai; i != NULL; i = i->ai_next) {
-		char *p = sockaddr_to_string(i->ai_addr, i->ai_addrlen,
-					     error);
-		if (p == NULL) {
-			freeaddrinfo(ai);
-			LogError(error);
-			return EXIT_FAILURE;
-		}
-
-		g_print("%s\n", p);
-		g_free(p);
+		const auto s = sockaddr_to_string(i->ai_addr, i->ai_addrlen);
+		g_print("%s\n", s.c_str());
 	}
 
 	freeaddrinfo(ai);

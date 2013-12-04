@@ -107,7 +107,10 @@ public:
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
 
-	char *ToString() const;
+	gcc_pure
+	std::string ToString() const {
+		return sockaddr_to_string(address, address_length);
+	}
 
 	void SetFD(int _fd) {
 		SocketMonitor::Open(_fd);
@@ -121,18 +124,6 @@ private:
 };
 
 static constexpr Domain server_socket_domain("server_socket");
-
-/**
- * Wraper for sockaddr_to_string() which never fails.
- */
-char *
-OneServerSocket::ToString() const
-{
-	char *p = sockaddr_to_string(address, address_length, IgnoreError());
-	if (p == nullptr)
-		p = g_strdup("[unknown]");
-	return p;
-}
 
 static int
 get_remote_uid(int fd)
@@ -243,23 +234,21 @@ ServerSocket::Open(Error &error)
 		Error error2;
 		if (!i.Open(error2)) {
 			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
-				char *address_string = i.ToString();
-				char *good_string = good->ToString();
+				const auto address_string = i.ToString();
+				const auto good_string = good->ToString();
 				FormatWarning(server_socket_domain,
 					      "bind to '%s' failed: %s "
 					      "(continuing anyway, because "
 					      "binding to '%s' succeeded)",
-					      address_string, error2.GetMessage(),
-					      good_string);
-				g_free(address_string);
-				g_free(good_string);
+					      address_string.c_str(),
+					      error2.GetMessage(),
+					      good_string.c_str());
 			} else if (bad == nullptr) {
 				bad = &i;
 
-				char *address_string = i.ToString();
+				const auto address_string = i.ToString();
 				error2.FormatPrefix("Failed to bind to '%s': ",
-						    address_string);
-				g_free(address_string);
+						    address_string.c_str());
 
 				last_error = std::move(error2);
 			}

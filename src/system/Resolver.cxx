@@ -44,17 +44,17 @@
 
 const Domain resolver_domain("resolver");
 
-char *
-sockaddr_to_string(const struct sockaddr *sa, size_t length, Error &error)
+std::string
+sockaddr_to_string(const struct sockaddr *sa, size_t length)
 {
 #ifdef HAVE_UN
 	if (sa->sa_family == AF_UNIX) {
 		/* return path of UNIX domain sockets */
 		const sockaddr_un &s_un = *(const sockaddr_un *)sa;
 		if (length < sizeof(s_un) || s_un.sun_path[0] == 0)
-			return g_strdup("local");
+			return "local";
 
-		return g_strdup(s_un.sun_path);
+		return s_un.sun_path;
 	}
 #endif
 
@@ -83,17 +83,23 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length, Error &error)
 
 	ret = getnameinfo(sa, length, host, sizeof(host), serv, sizeof(serv),
 			  NI_NUMERICHOST|NI_NUMERICSERV);
-	if (ret != 0) {
-		error.Set(resolver_domain, ret, gai_strerror(ret));
-		return NULL;
-	}
+	if (ret != 0)
+		return "unknown";
 
 #ifdef HAVE_IPV6
-	if (strchr(host, ':') != NULL)
-		return g_strconcat("[", host, "]:", serv, NULL);
+	if (strchr(host, ':') != NULL) {
+		std::string result("[");
+		result.append(host);
+		result.append("]:");
+		result.append(serv);
+		return result;
+	}
 #endif
 
-	return g_strconcat(host, ":", serv, NULL);
+	std::string result(host);
+	result.push_back(':');
+	result.append(serv);
+	return result;
 }
 
 struct addrinfo *

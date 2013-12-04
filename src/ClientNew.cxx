@@ -28,8 +28,6 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #ifdef WIN32
 #include <winsock2.h>
@@ -63,15 +61,12 @@ client_new(EventLoop &loop, Partition &partition,
 	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
 {
 	static unsigned int next_client_num;
-	char *remote;
+	const auto remote = sockaddr_to_string(sa, sa_length);
 
 	assert(fd >= 0);
 
 #ifdef HAVE_LIBWRAP
 	if (sa->sa_family != AF_UNIX) {
-		char *hostaddr = sockaddr_to_string(sa, sa_length,
-						    IgnoreError());
-
 		// TODO: shall we obtain the program name from argv[0]?
 		const char *progname = "mpd";
 
@@ -84,14 +79,11 @@ client_new(EventLoop &loop, Partition &partition,
 			/* tcp wrappers says no */
 			FormatWarning(client_domain,
 				      "libwrap refused connection (libwrap=%s) from %s",
-				      progname, hostaddr);
+				      progname, remote.c_str());
 
-			g_free(hostaddr);
 			close_socket(fd);
 			return;
 		}
-
-		g_free(hostaddr);
 	}
 #endif	/* HAVE_WRAP */
 
@@ -109,9 +101,8 @@ client_new(EventLoop &loop, Partition &partition,
 
 	client_list.Add(*client);
 
-	remote = sockaddr_to_string(sa, sa_length, IgnoreError());
-	FormatInfo(client_domain, "[%u] opened from %s", client->num, remote);
-	g_free(remote);
+	FormatInfo(client_domain, "[%u] opened from %s",
+		   client->num, remote.c_str());
 }
 
 void

@@ -33,8 +33,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 
 #include <sys/types.h>
@@ -199,8 +197,8 @@ HttpdOutput::OnAccept(int fd, const sockaddr &address,
 
 #ifdef HAVE_LIBWRAP
 	if (address.sa_family != AF_UNIX) {
-		char *hostaddr = sockaddr_to_string(&address, address_length,
-						    IgnoreError());
+		const auto hostaddr = sockaddr_to_string(&address,
+							 address_length);
 		// TODO: shall we obtain the program name from argv[0]?
 		const char *progname = "mpd";
 
@@ -213,13 +211,10 @@ HttpdOutput::OnAccept(int fd, const sockaddr &address,
 			/* tcp wrappers says no */
 			FormatWarning(httpd_output_domain,
 				      "libwrap refused connection (libwrap=%s) from %s",
-				      progname, hostaddr);
-			g_free(hostaddr);
+				      progname, hostaddr.c_str());
 			close_socket(fd);
 			return;
 		}
-
-		g_free(hostaddr);
 	}
 #else
 	(void)address;

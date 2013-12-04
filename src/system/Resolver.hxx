@@ -22,6 +22,8 @@
 
 #include "Compiler.h"
 
+#include <string>
+
 #include <stddef.h>
 
 struct sockaddr;
@@ -33,17 +35,14 @@ extern const Domain resolver_domain;
 
 /**
  * Converts the specified socket address into a string in the form
- * "IP:PORT".  The return value must be freed with g_free() when you
- * don't need it anymore.
+ * "IP:PORT".
  *
  * @param sa the sockaddr struct
  * @param length the length of #sa in bytes
- * @param error location to store the error occurring, or NULL to
- * ignore errors
  */
-gcc_malloc
-char *
-sockaddr_to_string(const sockaddr *sa, size_t length, Error &error);
+gcc_pure
+std::string
+sockaddr_to_string(const sockaddr *sa, size_t length);
 
 /**
  * Resolve a specification in the form "host", "host:port",
