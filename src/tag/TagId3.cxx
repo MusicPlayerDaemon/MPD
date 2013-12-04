@@ -36,7 +36,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
 #include <string.h>
 
 #  ifndef ID3_FRAME_COMPOSER
@@ -430,20 +429,16 @@ tag_id3_read(FILE *stream, long offset, int whence)
 	if (tag_size <= 0) return nullptr;
 
 	/* Found a tag.  Allocate a buffer and read it in. */
-	id3_byte_t *tag_buffer = (id3_byte_t *)g_malloc(tag_size);
-	if (!tag_buffer)
-		return nullptr;
-
+	id3_byte_t *tag_buffer = new id3_byte_t[tag_size];
 	int tag_buffer_size = fill_buffer(tag_buffer, tag_size,
 					  stream, offset, whence);
 	if (tag_buffer_size < tag_size) {
-		g_free(tag_buffer);
+		delete[] tag_buffer;
 		return nullptr;
 	}
 
 	tag = id3_tag_parse(tag_buffer, tag_buffer_size);
-
-	g_free(tag_buffer);
+	delete[] tag_buffer;
 
 	return tag;
 }
@@ -524,16 +519,16 @@ tag_id3_riff_aiff_load(FILE *file)
 		/* too large, don't allocate so much memory */
 		return nullptr;
 
-	id3_byte_t *buffer = (id3_byte_t *)g_malloc(size);
+	id3_byte_t *buffer = new id3_byte_t[size];
 	size_t ret = fread(buffer, size, 1, file);
 	if (ret != 1) {
 		LogWarning(id3_domain, "Failed to read RIFF chunk");
-		g_free(buffer);
+		delete[] buffer;
 		return nullptr;
 	}
 
 	struct id3_tag *tag = id3_tag_parse(buffer, size);
-	g_free(buffer);
+	delete[] buffer;
 	return tag;
 }
 
