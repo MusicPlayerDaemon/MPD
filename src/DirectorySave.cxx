@@ -29,7 +29,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <glib.h>
+#include <stddef.h>
 
 #define DIRECTORY_DIR "directory: "
 #define DIRECTORY_MTIME "mtime: "
@@ -146,18 +146,10 @@ directory_load(TextFile &file, Directory &directory, Error &error)
 
 			directory.AddSong(song);
 		} else if (StringStartsWith(line, PLAYLIST_META_BEGIN)) {
-			/* duplicate the name, because
-			   playlist_metadata_load() will overwrite the
-			   buffer */
-			char *name = g_strdup(line + sizeof(PLAYLIST_META_BEGIN) - 1);
-
+			const char *name = line + sizeof(PLAYLIST_META_BEGIN) - 1;
 			if (!playlist_metadata_load(file, directory.playlists,
-						    name, error)) {
-				g_free(name);
+						    name, error))
 				return false;
-			}
-
-			g_free(name);
 		} else {
 			error.Format(directory_domain,
 				     "Malformed line: %s", line);
