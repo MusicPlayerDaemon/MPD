@@ -84,6 +84,21 @@ struct PathTraitsFS {
 	}
 
 	/**
+	 * Determine the "base" file name of the given native path.
+	 * The return value points inside the given string.
+	 */
+	gcc_pure gcc_nonnull_all
+	static const_pointer GetBase(const_pointer p);
+
+	/**
+	 * Determine the "parent" file name of the given native path.
+	 * As a special case, returns the string "." if there is no
+	 * separator in the given input string.
+	 */
+	gcc_pure gcc_nonnull_all
+	static string GetParent(const_pointer p);
+
+	/**
 	 * Constructs the path from the given components.
 	 * If either of the components is empty string,
 	 * remaining component is returned unchanged.
@@ -139,6 +154,16 @@ struct PathTraitsUTF8 {
 	 */
 	gcc_pure gcc_nonnull_all
 	static string GetParent(const_pointer p);
+
+	/**
+	 * Constructs the path from the given components.
+	 * If either of the components is empty string,
+	 * remaining component is returned unchanged.
+	 * If both components are empty strings, empty string is returned.
+	 */
+	gcc_pure gcc_nonnull_all
+	static string Build(const_pointer a, size_t a_size,
+			    const_pointer b, size_t b_size);
 };
 
 #endif

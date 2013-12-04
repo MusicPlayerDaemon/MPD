@@ -22,24 +22,25 @@
 
 #include <string.h>
 
-PathTraitsFS::string
-PathTraitsFS::Build(PathTraitsFS::const_pointer a, size_t a_size,
-		    PathTraitsFS::const_pointer b, size_t b_size)
+template<typename Traits>
+typename Traits::string
+BuildPathImpl(typename Traits::const_pointer a, size_t a_size,
+	      typename Traits::const_pointer b, size_t b_size)
 {
 	assert(a != nullptr);
 	assert(b != nullptr);
 
 	if (a_size == 0)
-		return string(b, b_size);
+		return typename Traits::string(b, b_size);
 	if (b_size == 0)
-		return string(a, a_size);
+		return typename Traits::string(a, a_size);
 
-	string result(a, a_size);
+	typename Traits::string result(a, a_size);
 
-	if (!IsSeparator(a[a_size - 1]))
-		result.push_back(SEPARATOR);
+	if (!Traits::IsSeparator(a[a_size - 1]))
+		result.push_back(Traits::SEPARATOR);
 
-	if (IsSeparator(b[0]))
+	if (Traits::IsSeparator(b[0]))
 		result.append(b + 1, b_size - 1);
 	else
 		result.append(b, b_size);
@@ -47,26 +48,66 @@ PathTraitsFS::Build(PathTraitsFS::const_pointer a, size_t a_size,
 	return result;
 }
 
-PathTraitsUTF8::const_pointer
-PathTraitsUTF8::GetBase(PathTraitsUTF8::const_pointer p)
+template<typename Traits>
+typename Traits::const_pointer
+GetBasePathImpl(typename Traits::const_pointer p)
 {
 	assert(p != nullptr);
 
-	const char *slash = strrchr(p, SEPARATOR);
-	return slash != nullptr
-		? slash + 1
+	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
+	return sep != nullptr
+		? sep + 1
 		: p;
+}
+
+template<typename Traits>
+typename Traits::string
+GetParentPathImpl(typename Traits::const_pointer p)
+{
+	assert(p != nullptr);
+
+	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
+	if (sep == nullptr)
+		return typename Traits::string(".");
+	if (sep == p)
+		return typename Traits::string(p, p + 1);
+	return typename Traits::string(p, sep);
+}
+
+PathTraitsFS::string
+PathTraitsFS::Build(PathTraitsFS::const_pointer a, size_t a_size,
+		    PathTraitsFS::const_pointer b, size_t b_size)
+{
+	return BuildPathImpl<PathTraitsFS>(a, a_size, b, b_size);
+}
+
+PathTraitsFS::const_pointer
+PathTraitsFS::GetBase(PathTraitsFS::const_pointer p)
+{
+	return GetBasePathImpl<PathTraitsFS>(p);
+}
+
+PathTraitsFS::string
+PathTraitsFS::GetParent(PathTraitsFS::const_pointer p)
+{
+	return GetParentPathImpl<PathTraitsFS>(p);
+}
+
+PathTraitsUTF8::string
+PathTraitsUTF8::Build(PathTraitsUTF8::const_pointer a, size_t a_size,
+		      PathTraitsUTF8::const_pointer b, size_t b_size)
+{
+	return BuildPathImpl<PathTraitsUTF8>(a, a_size, b, b_size);
+}
+
+PathTraitsUTF8::const_pointer
+PathTraitsUTF8::GetBase(PathTraitsUTF8::const_pointer p)
+{
+	return GetBasePathImpl<PathTraitsUTF8>(p);
 }
 
 PathTraitsUTF8::string
 PathTraitsUTF8::GetParent(PathTraitsUTF8::const_pointer p)
 {
-	assert(p != nullptr);
-
-	const char *slash = strrchr(p, SEPARATOR);
-	if (slash == nullptr)
-		return std::string(".");
-	if (slash == p)
-		return std::string(p, p + 1);
-	return std::string(p, slash);
+	return GetParentPathImpl<PathTraitsUTF8>(p);
 }
