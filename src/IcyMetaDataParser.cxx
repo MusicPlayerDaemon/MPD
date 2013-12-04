@@ -38,7 +38,7 @@ IcyMetaDataParser::Reset()
 		return;
 
 	if (data_rest == 0 && meta_size > 0)
-		g_free(meta_data);
+		delete[] meta_data;
 
 	delete tag;
 
@@ -138,7 +138,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 		/* initialize metadata reader, allocate enough
 		   memory (+1 for the null terminator) */
 		meta_position = 0;
-		meta_data = (char *)g_malloc(meta_size + 1);
+		meta_data = new char[meta_size + 1];
 	}
 
 	assert(meta_position < meta_size);
@@ -163,7 +163,7 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 		delete tag;
 
 		tag = icy_parse_tag(meta_data);
-		g_free(meta_data);
+		delete[] meta_data;
 
 		/* change back to normal data mode */
 
