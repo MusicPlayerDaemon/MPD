@@ -22,8 +22,6 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <glib.h>
-
 #ifndef WIN32
 #include <sys/socket.h>
 #include <netdb.h>
@@ -107,19 +105,19 @@ resolve_host_port(const char *host_port, unsigned default_port,
 		  int flags, int socktype,
 		  Error &error)
 {
-	char *p = g_strdup(host_port);
-	const char *host = p, *port = NULL;
+	std::string p(host_port);
+	const char *host = p.c_str(), *port = nullptr;
 
 	if (host_port[0] == '[') {
 		/* IPv6 needs enclosing square braces, to
 		   differentiate between IP colons and the port
 		   separator */
 
-		char *q = strchr(p + 1, ']');
-		if (q != NULL && q[1] == ':' && q[2] != 0) {
-			*q = 0;
+		size_t q = p.find(']', 1);
+		if (q != p.npos && p[q + 1] == ':' && p[q + 2] != 0) {
+			p[q] = 0;
+			port = host + q + 2;
 			++host;
-			port = q + 2;
 		}
 	}
 
@@ -127,10 +125,11 @@ resolve_host_port(const char *host_port, unsigned default_port,
 		/* port is after the colon, but only if it's the only
 		   colon (don't split IPv6 addresses) */
 
-		char *q = strchr(p, ':');
-		if (q != NULL && q[1] != 0 && strchr(q + 1, ':') == NULL) {
-			*q = 0;
-			port = q + 1;
+		auto q = p.find(':');
+		if (q != p.npos && p[q + 1] != 0 &&
+		    p.find(':', q + 1) == p.npos) {
+			p[q] = 0;
+			port = host + q + 1;
 		}
 	}
 
@@ -151,7 +150,6 @@ resolve_host_port(const char *host_port, unsigned default_port,
 
 	struct addrinfo *ai;
 	int ret = getaddrinfo(host, port, &hints, &ai);
-	g_free(p);
 	if (ret != 0) {
 		error.Format(resolver_domain, ret,
 			     "Failed to look up '%s': %s",
