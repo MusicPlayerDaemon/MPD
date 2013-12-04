@@ -70,14 +70,11 @@ tag_is_id3v1(struct id3_tag *tag)
 static id3_utf8_t *
 tag_id3_getstring(const struct id3_frame *frame, unsigned i)
 {
-	union id3_field *field;
-	const id3_ucs4_t *ucs4;
-
-	field = id3_frame_field(frame, i);
+	id3_field *field = id3_frame_field(frame, i);
 	if (field == nullptr)
 		return nullptr;
 
-	ucs4 = id3_field_getstring(field);
+	const id3_ucs4_t *ucs4 = id3_field_getstring(field);
 	if (ucs4 == nullptr)
 		return nullptr;
 
@@ -89,14 +86,13 @@ tag_id3_getstring(const struct id3_frame *frame, unsigned i)
 static id3_utf8_t *
 import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 {
-	id3_utf8_t *utf8, *utf8_stripped;
-	id3_latin1_t *isostr;
-	const char *encoding;
+	id3_utf8_t *utf8;
 
 	/* use encoding field here? */
+	const char *encoding;
 	if (is_id3v1 &&
 	    (encoding = config_get_string(CONF_ID3V1_ENCODING, nullptr)) != nullptr) {
-		isostr = id3_ucs4_latin1duplicate(ucs4);
+		id3_latin1_t *isostr = id3_ucs4_latin1duplicate(ucs4);
 		if (gcc_unlikely(isostr == nullptr))
 			return nullptr;
 
@@ -119,7 +115,8 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 			return nullptr;
 	}
 
-	utf8_stripped = (id3_utf8_t *)g_strdup(g_strstrip((gchar *)utf8));
+	id3_utf8_t *utf8_stripped = (id3_utf8_t *)
+		g_strdup(g_strstrip((gchar *)utf8));
 	free(utf8);
 
 	return utf8_stripped;
@@ -137,17 +134,12 @@ tag_id3_import_text_frame(struct id3_tag *tag, const struct id3_frame *frame,
 			  TagType type,
 			  const struct tag_handler *handler, void *handler_ctx)
 {
-	id3_ucs4_t const *ucs4;
-	id3_utf8_t *utf8;
-	union id3_field const *field;
-	unsigned int nstrings, i;
-
 	if (frame->nfields != 2)
 		return;
 
 	/* check the encoding field */
 
-	field = id3_frame_field(frame, 0);
+	const id3_field *field = id3_frame_field(frame, 0);
 	if (field == nullptr || field->type != ID3_FIELD_TYPE_TEXTENCODING)
 		return;
 
@@ -158,16 +150,16 @@ tag_id3_import_text_frame(struct id3_tag *tag, const struct id3_frame *frame,
 		return;
 
 	/* Get the number of strings available */
-	nstrings = id3_field_getnstrings(field);
-	for (i = 0; i < nstrings; i++) {
-		ucs4 = id3_field_getstrings(field, i);
+	const unsigned nstrings = id3_field_getnstrings(field);
+	for (unsigned i = 0; i < nstrings; i++) {
+		const id3_ucs4_t *ucs4 = id3_field_getstrings(field, i);
 		if (ucs4 == nullptr)
 			continue;
 
 		if (type == TAG_GENRE)
 			ucs4 = id3_genre_name(ucs4);
 
-		utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
+		id3_utf8_t *utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
 		if (utf8 == nullptr)
 			continue;
 
@@ -207,23 +199,19 @@ tag_id3_import_comment_frame(struct id3_tag *tag,
 			     const struct tag_handler *handler,
 			     void *handler_ctx)
 {
-	id3_ucs4_t const *ucs4;
-	id3_utf8_t *utf8;
-	union id3_field const *field;
-
 	if (frame->nfields != 4)
 		return;
 
 	/* for now I only read the 4th field, with the fullstring */
-	field = id3_frame_field(frame, 3);
+	const id3_field *field = id3_frame_field(frame, 3);
 	if (field == nullptr)
 		return;
 
-	ucs4 = id3_field_getfullstring(field);
+	const id3_ucs4_t *ucs4 = id3_field_getfullstring(field);
 	if (ucs4 == nullptr)
 		return;
 
-	utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
+	id3_utf8_t *utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
 	if (utf8 == nullptr)
 		return;
 
@@ -275,19 +263,15 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
 			   void *handler_ctx)
 {
 	for (unsigned i = 0;; ++i) {
-		const struct id3_frame *frame;
-		id3_utf8_t *name, *value;
-		TagType type;
-
-		frame = id3_tag_findframe(id3_tag, "TXXX", i);
+		const id3_frame *frame = id3_tag_findframe(id3_tag, "TXXX", i);
 		if (frame == nullptr)
 			break;
 
-		name = tag_id3_getstring(frame, 1);
+		id3_utf8_t *name = tag_id3_getstring(frame, 1);
 		if (name == nullptr)
 			continue;
 
-		value = tag_id3_getstring(frame, 2);
+		id3_utf8_t *value = tag_id3_getstring(frame, 2);
 		if (value == nullptr)
 			continue;
 
@@ -295,7 +279,7 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
 					(const char *)name,
 					(const char *)value);
 
-		type = tag_id3_parse_txxx_name((const char*)name);
+		TagType type = tag_id3_parse_txxx_name((const char*)name);
 		free(name);
 
 		if (type != TAG_NUM_OF_ITEM_TYPES)
@@ -314,21 +298,15 @@ tag_id3_import_ufid(struct id3_tag *id3_tag,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	for (unsigned i = 0;; ++i) {
-		const struct id3_frame *frame;
-		union id3_field *field;
-		const id3_latin1_t *name;
-		const id3_byte_t *value;
-		id3_length_t length;
-
-		frame = id3_tag_findframe(id3_tag, "UFID", i);
+		const id3_frame *frame = id3_tag_findframe(id3_tag, "UFID", i);
 		if (frame == nullptr)
 			break;
 
-		field = id3_frame_field(frame, 0);
+		id3_field *field = id3_frame_field(frame, 0);
 		if (field == nullptr)
 			continue;
 
-		name = id3_field_getlatin1(field);
+		const id3_latin1_t *name = id3_field_getlatin1(field);
 		if (name == nullptr ||
 		    strcmp((const char *)name, "http://musicbrainz.org") != 0)
 			continue;
@@ -337,7 +315,9 @@ tag_id3_import_ufid(struct id3_tag *id3_tag,
 		if (field == nullptr)
 			continue;
 
-		value = id3_field_getbinarydata(field, &length);
+		id3_length_t length;
+		const id3_byte_t *value =
+			id3_field_getbinarydata(field, &length);
 		if (value == nullptr || length == 0)
 			continue;
 
@@ -393,40 +373,34 @@ tag_id3_import(struct id3_tag *tag)
 		: tag_builder.Commit();
 }
 
-static int
+static size_t
 fill_buffer(void *buf, size_t size, FILE *stream, long offset, int whence)
 {
 	if (fseek(stream, offset, whence) != 0) return 0;
 	return fread(buf, 1, size, stream);
 }
 
-static int
+static long
 get_id3v2_footer_size(FILE *stream, long offset, int whence)
 {
 	id3_byte_t buf[ID3_TAG_QUERYSIZE];
-	int bufsize;
-
-	bufsize = fill_buffer(buf, ID3_TAG_QUERYSIZE, stream, offset, whence);
-	if (bufsize <= 0) return 0;
+	size_t bufsize = fill_buffer(buf, ID3_TAG_QUERYSIZE, stream, offset, whence);
+	if (bufsize == 0) return 0;
 	return id3_tag_query(buf, bufsize);
 }
 
 static struct id3_tag *
 tag_id3_read(FILE *stream, long offset, int whence)
 {
-	struct id3_tag *tag;
-	id3_byte_t query_buffer[ID3_TAG_QUERYSIZE];
-	int tag_size;
-	int query_buffer_size;
-
 	/* It's ok if we get less than we asked for */
-	query_buffer_size = fill_buffer(query_buffer, ID3_TAG_QUERYSIZE,
-				   stream, offset, whence);
+	id3_byte_t query_buffer[ID3_TAG_QUERYSIZE];
+	size_t query_buffer_size = fill_buffer(query_buffer, ID3_TAG_QUERYSIZE,
+					       stream, offset, whence);
 	if (query_buffer_size <= 0)
 		return nullptr;
 
 	/* Look for a tag header */
-	tag_size = id3_tag_query(query_buffer, query_buffer_size);
+	long tag_size = id3_tag_query(query_buffer, query_buffer_size);
 	if (tag_size <= 0) return nullptr;
 
 	/* Found a tag.  Allocate a buffer and read it in. */
@@ -438,21 +412,15 @@ tag_id3_read(FILE *stream, long offset, int whence)
 		return nullptr;
 	}
 
-	tag = id3_tag_parse(tag_buffer, tag_buffer_size);
+	id3_tag *tag = id3_tag_parse(tag_buffer, tag_buffer_size);
 	delete[] tag_buffer;
-
 	return tag;
 }
 
 static struct id3_tag *
 tag_id3_find_from_beginning(FILE *stream)
 {
-	struct id3_tag *tag;
-	struct id3_tag *seektag;
-	struct id3_frame *frame;
-	int seek;
-
-	tag = tag_id3_read(stream, 0, SEEK_SET);
+	id3_tag *tag = tag_id3_read(stream, 0, SEEK_SET);
 	if (!tag) {
 		return nullptr;
 	} else if (tag_is_id3v1(tag)) {
@@ -462,14 +430,15 @@ tag_id3_find_from_beginning(FILE *stream)
 	}
 
 	/* We have an id3v2 tag, so let's look for SEEK frames */
+	id3_frame *frame;
 	while ((frame = id3_tag_findframe(tag, "SEEK", 0))) {
 		/* Found a SEEK frame, get it's value */
-		seek = id3_field_getint(id3_frame_field(frame, 0));
+		int seek = id3_field_getint(id3_frame_field(frame, 0));
 		if (seek < 0)
 			break;
 
 		/* Get the tag specified by the SEEK frame */
-		seektag = tag_id3_read(stream, seek, SEEK_CUR);
+		id3_tag *seektag = tag_id3_read(stream, seek, SEEK_CUR);
 		if (!seektag || tag_is_id3v1(seektag))
 			break;
 
@@ -484,20 +453,16 @@ tag_id3_find_from_beginning(FILE *stream)
 static struct id3_tag *
 tag_id3_find_from_end(FILE *stream)
 {
-	struct id3_tag *tag;
-	struct id3_tag *v1tag;
-	int tagsize;
-
 	/* Get an id3v1 tag from the end of file for later use */
-	v1tag = tag_id3_read(stream, -128, SEEK_END);
+	id3_tag *v1tag = tag_id3_read(stream, -128, SEEK_END);
 
 	/* Get the id3v2 tag size from the footer (located before v1tag) */
-	tagsize = get_id3v2_footer_size(stream, (v1tag ? -128 : 0) - 10, SEEK_END);
+	int tagsize = get_id3v2_footer_size(stream, (v1tag ? -128 : 0) - 10, SEEK_END);
 	if (tagsize >= 0)
 		return v1tag;
 
 	/* Get the tag which the footer belongs to */
-	tag = tag_id3_read(stream, tagsize, SEEK_CUR);
+	id3_tag *tag = tag_id3_read(stream, tagsize, SEEK_CUR);
 	if (!tag)
 		return v1tag;
 
