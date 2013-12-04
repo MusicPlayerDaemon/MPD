@@ -22,8 +22,6 @@
 #include "system/ByteOrder.hxx"
 #include "fs/FileSystem.hxx"
 
-#include <glib.h>
-
 #include <stdint.h>
 #include <assert.h>
 #include <stdio.h>
@@ -61,9 +59,9 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 	remaining -= sizeof(footer);
 	assert(remaining > 10);
 
-	char *buffer = (char *)g_malloc(remaining);
+	char *buffer = new char[remaining];
 	if (fread(buffer, 1, remaining, fp) != remaining) {
-		g_free(buffer);
+		delete[] buffer;
 		return false;
 	}
 
@@ -98,7 +96,7 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 		remaining -= size;
 	}
 
-	g_free(buffer);
+	delete[] buffer;
 	return true;
 }
 
