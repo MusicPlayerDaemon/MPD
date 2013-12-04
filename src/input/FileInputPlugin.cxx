@@ -60,7 +60,7 @@ input_file_open(const char *filename,
 	int fd, ret;
 	struct stat st;
 
-	if (!PathTraits::IsAbsoluteFS(filename))
+	if (!PathTraitsFS::IsAbsolute(filename))
 		return nullptr;
 
 	fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);

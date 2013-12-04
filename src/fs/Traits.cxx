@@ -22,9 +22,9 @@
 
 #include <string.h>
 
-PathTraits::string
-PathTraits::BuildFS(PathTraits::const_pointer a, size_t a_size,
-		    PathTraits::const_pointer b, size_t b_size)
+PathTraitsFS::string
+PathTraitsFS::Build(PathTraitsFS::const_pointer a, size_t a_size,
+		    PathTraitsFS::const_pointer b, size_t b_size)
 {
 	assert(a != nullptr);
 	assert(b != nullptr);
@@ -36,10 +36,10 @@ PathTraits::BuildFS(PathTraits::const_pointer a, size_t a_size,
 
 	string result(a, a_size);
 
-	if (!IsSeparatorFS(a[a_size - 1]))
-		result.push_back(SEPARATOR_FS);
+	if (!IsSeparator(a[a_size - 1]))
+		result.push_back(SEPARATOR);
 
-	if (IsSeparatorFS(b[0]))
+	if (IsSeparator(b[0]))
 		result.append(b + 1, b_size - 1);
 	else
 		result.append(b, b_size);
@@ -48,22 +48,22 @@ PathTraits::BuildFS(PathTraits::const_pointer a, size_t a_size,
 }
 
 const char *
-PathTraits::GetBaseUTF8(const char *p)
+PathTraitsUTF8::GetBase(const char *p)
 {
 	assert(p != nullptr);
 
-	const char *slash = strrchr(p, SEPARATOR_UTF8);
+	const char *slash = strrchr(p, SEPARATOR);
 	return slash != nullptr
 		? slash + 1
 		: p;
 }
 
 std::string
-PathTraits::GetParentUTF8(const char *p)
+PathTraitsUTF8::GetParent(const char *p)
 {
 	assert(p != nullptr);
 
-	const char *slash = strrchr(p, SEPARATOR_UTF8);
+	const char *slash = strrchr(p, SEPARATOR);
 	return slash != nullptr
 		? std::string(p, slash)
 		: std::string(".");

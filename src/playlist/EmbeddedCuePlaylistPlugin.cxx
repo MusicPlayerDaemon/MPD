@@ -93,7 +93,7 @@ embcue_playlist_open_uri(const char *uri,
 			 gcc_unused Mutex &mutex,
 			 gcc_unused Cond &cond)
 {
-	if (!PathTraits::IsAbsoluteUTF8(uri))
+	if (!PathTraitsUTF8::IsAbsolute(uri))
 		/* only local files supported */
 		return nullptr;
 
@@ -116,7 +116,7 @@ embcue_playlist_open_uri(const char *uri,
 		return nullptr;
 	}
 
-	playlist->filename = PathTraits::GetBaseUTF8(uri);
+	playlist->filename = PathTraitsUTF8::GetBase(uri);
 
 	playlist->next = &playlist->cuesheet[0];
 	playlist->parser = new CueParser();

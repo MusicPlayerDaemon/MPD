@@ -188,7 +188,7 @@ static void help(void)
 
 gcc_pure
 static AllocatedPath
-PathBuildChecked(const AllocatedPath &a, PathTraits::const_pointer b)
+PathBuildChecked(const AllocatedPath &a, PathTraitsFS::const_pointer b)
 {
 	if (a.IsNull())
 		return AllocatedPath::Null();

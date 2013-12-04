@@ -36,9 +36,9 @@
  * instance lives, the string must not be invalidated.
  */
 class Path {
-	typedef PathTraits::value_type value_type;
-	typedef PathTraits::pointer pointer;
-	typedef PathTraits::const_pointer const_pointer;
+	typedef PathTraitsFS::value_type value_type;
+	typedef PathTraitsFS::pointer pointer;
+	typedef PathTraitsFS::const_pointer const_pointer;
 
 	const char *value;
 
@@ -139,7 +139,7 @@ public:
 
 	gcc_pure
 	bool IsAbsolute() {
-		return PathTraits::IsAbsoluteFS(c_str());
+		return PathTraitsFS::IsAbsolute(c_str());
 	}
 };
 

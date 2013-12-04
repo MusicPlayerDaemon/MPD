@@ -56,7 +56,7 @@ void
 playlist_print_uri(FILE *file, const char *uri)
 {
 	auto path = playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
-		!PathTraits::IsAbsoluteUTF8(uri)
+		!PathTraitsUTF8::IsAbsolute(uri)
 		? map_uri_fs(uri)
 		: AllocatedPath::FromUTF8(uri);
 

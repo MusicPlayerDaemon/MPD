@@ -36,14 +36,14 @@ Path::RelativeFS(const char *other_fs) const
 
 	other_fs += l;
 	if (*other_fs != 0) {
-		if (!PathTraits::IsSeparatorFS(*other_fs))
+		if (!PathTraitsFS::IsSeparator(*other_fs))
 			/* mismatch */
 			return nullptr;
 
 		/* skip remaining path separators */
 		do {
 			++other_fs;
-		} while (PathTraits::IsSeparatorFS(*other_fs));
+		} while (PathTraitsFS::IsSeparator(*other_fs));
 	}
 
 	return other_fs;

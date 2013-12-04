@@ -145,7 +145,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	assert(decoder.stream_tag == nullptr);
 	assert(decoder.decoder_tag == nullptr);
 	assert(path != nullptr);
-	assert(PathTraits::IsAbsoluteFS(path));
+	assert(PathTraitsFS::IsAbsolute(path));
 	assert(decoder.dc.state == DecoderState::START);
 
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);

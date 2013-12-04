@@ -37,10 +37,10 @@ class Error;
  * stored.
  */
 class AllocatedPath {
-	typedef PathTraits::string string;
-	typedef PathTraits::value_type value_type;
-	typedef PathTraits::pointer pointer;
-	typedef PathTraits::const_pointer const_pointer;
+	typedef PathTraitsFS::string string;
+	typedef PathTraitsFS::value_type value_type;
+	typedef PathTraitsFS::pointer pointer;
+	typedef PathTraitsFS::const_pointer const_pointer;
 
 	string value;
 
@@ -57,7 +57,7 @@ class AllocatedPath {
 
 	static AllocatedPath Build(const_pointer a, size_t a_size,
 				   const_pointer b, size_t b_size) {
-		return AllocatedPath(PathTraits::BuildFS(a, a_size, b, b_size));
+		return AllocatedPath(PathTraitsFS::Build(a, a_size, b, b_size));
 	}
 public:
 	/**
@@ -93,20 +93,20 @@ public:
 	 */
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const_pointer a, const_pointer b) {
-		return Build(a, PathTraits::GetLengthFS(a),
-			     b, PathTraits::GetLengthFS(b));
+		return Build(a, PathTraitsFS::GetLength(a),
+			     b, PathTraitsFS::GetLength(b));
 	}
 
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const_pointer a, const AllocatedPath &b) {
-		return Build(a, PathTraits::GetLengthFS(a),
+		return Build(a, PathTraitsFS::GetLength(a),
 			     b.value.c_str(), b.value.size());
 	}
 
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const AllocatedPath &a, const_pointer b) {
 		return Build(a.value.c_str(), a.value.size(),
-			     b, PathTraits::GetLengthFS(b));
+			     b, PathTraitsFS::GetLength(b));
 	}
 
 	gcc_pure
@@ -233,7 +233,7 @@ public:
 
 	gcc_pure
 	bool IsAbsolute() {
-		return PathTraits::IsAbsoluteFS(c_str());
+		return PathTraitsFS::IsAbsolute(c_str());
 	}
 };
 

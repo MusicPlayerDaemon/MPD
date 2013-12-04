@@ -99,7 +99,7 @@ playlist_check_load_song(const Song *song, const char *uri, bool secure)
 
 	if (uri_has_scheme(uri)) {
 		dest = Song::NewRemote(uri);
-	} else if (PathTraits::IsAbsoluteUTF8(uri) && secure) {
+	} else if (PathTraitsUTF8::IsAbsolute(uri) && secure) {
 		dest = Song::LoadFile(uri, nullptr);
 		if (dest == nullptr)
 			return nullptr;
@@ -142,13 +142,13 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 	}
 
 	if (base_uri != nullptr && strcmp(base_uri, ".") == 0)
-		/* PathTraits::GetParentUTF8() returns "." when there
+		/* PathTraitsUTF8::GetParent() returns "." when there
 		   is no directory name in the given path; clear that
 		   now, because it would break the database lookup
 		   functions */
 		base_uri = nullptr;
 
-	if (PathTraits::IsAbsoluteUTF8(uri)) {
+	if (PathTraitsUTF8::IsAbsolute(uri)) {
 		/* XXX fs_charset vs utf8? */
 		const char *suffix = map_to_relative_path(uri);
 		assert(suffix != nullptr);

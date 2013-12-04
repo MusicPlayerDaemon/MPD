@@ -290,7 +290,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 
 	const char *target_str = target.c_str();
 
-	if (PathTraits::IsAbsoluteFS(target_str)) {
+	if (PathTraitsFS::IsAbsolute(target_str)) {
 		/* if the symlink points to an absolute path, see if
 		   that path is inside the music directory */
 		const char *relative = map_to_relative_path(target_str);
@@ -301,7 +301,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 
 	const char *p = target_str;
 	while (*p == '.') {
-		if (p[1] == '.' && PathTraits::IsSeparatorFS(p[2])) {
+		if (p[1] == '.' && PathTraitsFS::IsSeparator(p[2])) {
 			/* "../" moves to parent directory */
 			directory = directory->parent;
 			if (directory == nullptr) {
@@ -311,7 +311,7 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 				return !follow_outside_symlinks;
 			}
 			p += 3;
-		} else if (PathTraits::IsSeparatorFS(p[1]))
+		} else if (PathTraitsFS::IsSeparator(p[1]))
 			/* eliminate "./" */
 			p += 2;
 		else
@@ -454,7 +454,7 @@ update_uri(const char *uri)
 	if (parent == nullptr)
 		return;
 
-	const char *name = PathTraits::GetBaseUTF8(uri);
+	const char *name = PathTraitsUTF8::GetBase(uri);
 
 	struct stat st;
 	if (!skip_symlink(parent, name) &&

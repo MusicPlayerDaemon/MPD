@@ -75,14 +75,14 @@ AllocatedPath::RelativeFS(const char *other_fs) const
 
 	other_fs += l;
 	if (*other_fs != 0) {
-		if (!PathTraits::IsSeparatorFS(*other_fs))
+		if (!PathTraitsFS::IsSeparator(*other_fs))
 			/* mismatch */
 			return nullptr;
 
 		/* skip remaining path separators */
 		do {
 			++other_fs;
-		} while (PathTraits::IsSeparatorFS(*other_fs));
+		} while (PathTraitsFS::IsSeparator(*other_fs));
 	}
 
 	return other_fs;
@@ -94,7 +94,7 @@ AllocatedPath::ChopSeparators()
 	size_t l = length();
 	const char *p = data();
 
-	while (l >= 2 && PathTraits::IsSeparatorFS(p[l - 1])) {
+	while (l >= 2 && PathTraitsFS::IsSeparator(p[l - 1])) {
 		--l;
 
 #if GCC_CHECK_VERSION(4,7) && !defined(__clang__)

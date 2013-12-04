@@ -46,7 +46,7 @@ input_archive_open(const char *pathname,
 	const struct archive_plugin *arplug;
 	InputStream *is;
 
-	if (!PathTraits::IsAbsoluteFS(pathname))
+	if (!PathTraitsFS::IsAbsolute(pathname))
 		return nullptr;
 
 	char *pname = g_strdup(pathname);

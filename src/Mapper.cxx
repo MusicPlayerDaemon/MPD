@@ -148,7 +148,7 @@ map_to_relative_path(const char *path_utf8)
 	return !music_dir_utf8.empty() &&
 		memcmp(path_utf8, music_dir_utf8.c_str(),
 		       music_dir_utf8_length) == 0 &&
-		PathTraits::IsSeparatorUTF8(path_utf8[music_dir_utf8_length])
+		PathTraitsUTF8::IsSeparator(path_utf8[music_dir_utf8_length])
 		? path_utf8 + music_dir_utf8_length + 1
 		: path_utf8;
 }
@@ -232,7 +232,7 @@ map_song_fs(const Song &song)
 std::string
 map_fs_to_utf8(const char *path_fs)
 {
-	if (PathTraits::IsSeparatorFS(path_fs[0])) {
+	if (PathTraitsFS::IsSeparator(path_fs[0])) {
 		path_fs = music_dir_fs.RelativeFS(path_fs);
 		if (path_fs == nullptr || *path_fs == 0)
 			return std::string();

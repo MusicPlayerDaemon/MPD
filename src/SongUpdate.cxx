@@ -43,7 +43,7 @@ Song::LoadFile(const char *path_utf8, Directory *parent)
 	Song *song;
 	bool ret;
 
-	assert((parent == nullptr) == PathTraits::IsAbsoluteUTF8(path_utf8));
+	assert((parent == nullptr) == PathTraitsUTF8::IsAbsolute(path_utf8));
 	assert(!uri_has_scheme(path_utf8));
 	assert(strchr(path_utf8, '\n') == nullptr);
 

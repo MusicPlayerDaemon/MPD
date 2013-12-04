@@ -33,56 +33,40 @@
 #include <assert.h>
 
 /**
- * This class describes the nature of a filesystem path.
+ * This class describes the nature of a native filesystem path.
  */
-struct PathTraits {
+struct PathTraitsFS {
 	typedef std::string string;
 	typedef char value_type;
 	typedef char *pointer;
 	typedef const char *const_pointer;
 
 #ifdef WIN32
-	static constexpr value_type SEPARATOR_FS = '\\';
+	static constexpr value_type SEPARATOR = '\\';
 #else
-	static constexpr value_type SEPARATOR_FS = '/';
+	static constexpr value_type SEPARATOR = '/';
 #endif
 
-	static constexpr char SEPARATOR_UTF8 = '/';
-
-	static constexpr bool IsSeparatorFS(value_type ch) {
+	static constexpr bool IsSeparator(value_type ch) {
 		return
 #ifdef WIN32
 			ch == '/' ||
 #endif
-			ch == SEPARATOR_FS;
-	}
-
-	static constexpr bool IsSeparatorUTF8(char ch) {
-		return ch == SEPARATOR_UTF8;
+			ch == SEPARATOR;
 	}
 
 	gcc_pure
-	static bool IsAbsoluteFS(const_pointer p) {
+	static bool IsAbsolute(const_pointer p) {
 		assert(p != nullptr);
 #ifdef WIN32
-		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparatorFS(p[2]))
+		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparator(p[2]))
 			return true;
 #endif
-		return IsSeparatorFS(*p);
+		return IsSeparator(*p);
 	}
 
 	gcc_pure
-	static bool IsAbsoluteUTF8(const char *p) {
-		assert(p != nullptr);
-#ifdef WIN32
-		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparatorUTF8(p[2]))
-			return true;
-#endif
-		return IsSeparatorUTF8(*p);
-	}
-
-	gcc_pure
-	static size_t GetLengthFS(const_pointer p) {
+	static size_t GetLength(const_pointer p) {
 		return strlen(p);
 	}
 
@@ -93,15 +77,36 @@ struct PathTraits {
 	 * If both components are empty strings, empty string is returned.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string BuildFS(const_pointer a, size_t a_size,
-			      const_pointer b, size_t b_size);
+	static string Build(const_pointer a, size_t a_size,
+			    const_pointer b, size_t b_size);
+};
+
+/**
+ * This class describes the nature of a MPD internal filesystem path.
+ */
+struct PathTraitsUTF8 {
+	static constexpr char SEPARATOR = '/';
+
+	static constexpr bool IsSeparator(char ch) {
+		return ch == SEPARATOR;
+	}
+
+	gcc_pure
+	static bool IsAbsolute(const char *p) {
+		assert(p != nullptr);
+#ifdef WIN32
+		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparator(p[2]))
+			return true;
+#endif
+		return IsSeparator(*p);
+	}
 
 	/**
 	 * Determine the "base" file name of the given UTF-8 path.
 	 * The return value points inside the given string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const char *GetBaseUTF8(const char *p);
+	static const char *GetBase(const char *p);
 
 	/**
 	 * Determine the "parent" file name of the given UTF-8 path.
@@ -109,7 +114,7 @@ struct PathTraits {
 	 * separator in the given input string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static std::string GetParentUTF8(const char *p);
+	static std::string GetParent(const char *p);
 };
 
 #endif

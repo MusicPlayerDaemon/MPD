@@ -36,39 +36,39 @@ namespace FOpenMode {
 	/**
 	 * Open mode for reading text files.
 	 */
-	constexpr PathTraits::const_pointer ReadText = "r";
+	constexpr PathTraitsFS::const_pointer ReadText = "r";
 
 	/**
 	 * Open mode for reading binary files.
 	 */
-	constexpr PathTraits::const_pointer ReadBinary = "rb";
+	constexpr PathTraitsFS::const_pointer ReadBinary = "rb";
 
 	/**
 	 * Open mode for writing text files.
 	 */
-	constexpr PathTraits::const_pointer WriteText = "w";
+	constexpr PathTraitsFS::const_pointer WriteText = "w";
 
 	/**
 	 * Open mode for writing binary files.
 	 */
-	constexpr PathTraits::const_pointer WriteBinary = "wb";
+	constexpr PathTraitsFS::const_pointer WriteBinary = "wb";
 
 	/**
 	 * Open mode for appending text files.
 	 */
-	constexpr PathTraits::const_pointer AppendText = "a";
+	constexpr PathTraitsFS::const_pointer AppendText = "a";
 
 	/**
 	 * Open mode for appending binary files.
 	 */
-	constexpr PathTraits::const_pointer AppendBinary = "ab";
+	constexpr PathTraitsFS::const_pointer AppendBinary = "ab";
 }
 
 /**
  * Wrapper for fopen() that uses #Path names.
  */
 static inline FILE *
-FOpen(Path file, PathTraits::const_pointer mode)
+FOpen(Path file, PathTraitsFS::const_pointer mode)
 {
 	return fopen(file.c_str(), mode);
 }

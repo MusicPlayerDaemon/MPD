@@ -246,7 +246,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 		if (!uri_has_scheme(s)) {
 			uri_utf8 = map_fs_to_utf8(s);
 			if (uri_utf8.empty()) {
-				if (PathTraits::IsAbsoluteFS(s)) {
+				if (PathTraitsFS::IsAbsolute(s)) {
 					uri_utf8 = PathToUTF8(s);
 					if (uri_utf8.empty())
 						continue;

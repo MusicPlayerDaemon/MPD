@@ -90,7 +90,7 @@ queue_load_song(TextFile &file, const char *line, queue &queue)
 
 	if (StringStartsWith(line, SONG_BEGIN)) {
 		const char *uri = line + sizeof(SONG_BEGIN) - 1;
-		if (!uri_has_scheme(uri) && !PathTraits::IsAbsoluteUTF8(uri))
+		if (!uri_has_scheme(uri) && !PathTraitsUTF8::IsAbsolute(uri))
 			return;
 
 		Error error;

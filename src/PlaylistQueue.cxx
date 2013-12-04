@@ -35,7 +35,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 bool secure)
 {
 	const std::string base_uri = uri != nullptr
-		? PathTraits::GetParentUTF8(uri)
+		? PathTraitsUTF8::GetParent(uri)
 		: std::string(".");
 
 	Song *song;

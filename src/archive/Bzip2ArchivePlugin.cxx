@@ -51,7 +51,7 @@ public:
 
 	Bzip2ArchiveFile(const char *path, InputStream *_is)
 		:ArchiveFile(bz2_archive_plugin),
-		 name(PathTraits::GetBaseUTF8(path)),
+		 name(PathTraitsUTF8::GetBase(path)),
 		 istream(_is) {
 		// remove .bz2 suffix
 		const size_t len = name.length();

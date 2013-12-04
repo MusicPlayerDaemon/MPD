@@ -114,7 +114,7 @@ Directory::GetName() const
 {
 	assert(!IsRoot());
 
-	return PathTraits::GetBaseUTF8(path);
+	return PathTraitsUTF8::GetBase(path);
 }
 
 Directory *
