@@ -56,6 +56,19 @@ struct PathTraitsFS {
 	}
 
 	gcc_pure gcc_nonnull_all
+	static const_pointer FindLastSeparator(const_pointer p) {
+		assert(p != nullptr);
+#ifdef WIN32
+		const_pointer pos = p + GetLength(p);
+		while (p != pos && !IsSeparator(*pos))
+			--pos;
+		return IsSeparator(*pos) ? pos : nullptr;
+#else
+		return strrchr(p, SEPARATOR);
+#endif
+	}
+
+	gcc_pure gcc_nonnull_all
 	static bool IsAbsolute(const_pointer p) {
 		assert(p != nullptr);
 #ifdef WIN32
@@ -94,6 +107,12 @@ struct PathTraitsUTF8 {
 
 	static constexpr bool IsSeparator(value_type ch) {
 		return ch == SEPARATOR;
+	}
+
+	gcc_pure gcc_nonnull_all
+	static const_pointer FindLastSeparator(const_pointer p) {
+		assert(p != nullptr);
+		return strrchr(p, SEPARATOR);
 	}
 
 	gcc_pure gcc_nonnull_all
