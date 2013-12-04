@@ -107,10 +107,10 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 			FormatWarning(id3_domain,
 				      "Unable to convert %s string to UTF-8: '%s'",
 				      encoding, isostr);
-			g_free(isostr);
+			free(isostr);
 			return nullptr;
 		}
-		g_free(isostr);
+		free(isostr);
 	} else {
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
 		if (gcc_unlikely(utf8 == nullptr))
@@ -118,7 +118,7 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 	}
 
 	utf8_stripped = (id3_utf8_t *)g_strdup(g_strstrip((gchar *)utf8));
-	g_free(utf8);
+	free(utf8);
 
 	return utf8_stripped;
 }
