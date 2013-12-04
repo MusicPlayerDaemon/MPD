@@ -57,7 +57,7 @@ AllocatedPath::FromUTF8(const char *path_utf8, Error &error)
 AllocatedPath
 AllocatedPath::GetDirectoryName() const
 {
-	return AllocatedPath(Donate(), g_path_get_dirname(c_str()));
+	return FromFS(PathTraitsFS::GetParent(c_str()));
 }
 
 std::string
