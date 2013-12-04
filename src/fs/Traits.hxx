@@ -140,6 +140,11 @@ struct PathTraitsUTF8 {
 		return IsSeparator(*p);
 	}
 
+	gcc_pure gcc_nonnull_all
+	static size_t GetLength(const_pointer p) {
+		return strlen(p);
+	}
+
 	/**
 	 * Determine the "base" file name of the given UTF-8 path.
 	 * The return value points inside the given string.
