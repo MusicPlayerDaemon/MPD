@@ -96,9 +96,8 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 	if (is_id3v1 &&
 	    (encoding = config_get_string(CONF_ID3V1_ENCODING, nullptr)) != nullptr) {
 		isostr = id3_ucs4_latin1duplicate(ucs4);
-		if (G_UNLIKELY(!isostr)) {
+		if (gcc_unlikely(isostr == nullptr))
 			return nullptr;
-		}
 
 		utf8 = (id3_utf8_t *)
 			g_convert_with_fallback((const char*)isostr, -1,
@@ -115,9 +114,8 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 		g_free(isostr);
 	} else {
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
-		if (G_UNLIKELY(!utf8)) {
+		if (gcc_unlikely(utf8 == nullptr))
 			return nullptr;
-		}
 	}
 
 	utf8_stripped = (id3_utf8_t *)g_strdup(g_strstrip((gchar *)utf8));
