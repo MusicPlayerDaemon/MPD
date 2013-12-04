@@ -64,7 +64,9 @@ PathTraitsUTF8::GetParent(PathTraitsUTF8::const_pointer p)
 	assert(p != nullptr);
 
 	const char *slash = strrchr(p, SEPARATOR);
-	return slash != nullptr
-		? std::string(p, slash)
-		: std::string(".");
+	if (slash == nullptr)
+		return std::string(".");
+	if (slash == p)
+		return std::string(p, p + 1);
+	return std::string(p, slash);
 }
