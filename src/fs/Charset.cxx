@@ -23,8 +23,11 @@
 #include "Limits.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
+#include "Traits.hxx"
 
 #include <glib.h>
+
+#include <algorithm>
 
 #include <assert.h>
 #include <string.h>
@@ -74,13 +77,29 @@ GetFSCharset()
 	return fs_charset.empty() ? "utf-8" : fs_charset.c_str();
 }
 
+static inline void FixSeparators(std::string &s)
+{
+#ifdef WIN32
+	// For whatever reason GCC can't convert constexpr to value reference.
+	// This leads to link errors when passing separators directly.
+	auto from = PathTraitsFS::SEPARATOR;
+	auto to = PathTraitsUTF8::SEPARATOR;
+	std::replace(s.begin(), s.end(), from, to);
+#else
+	(void)s;
+#endif
+}
+
 std::string
 PathToUTF8(const char *path_fs)
 {
 	assert(path_fs != nullptr);
 
-	if (fs_charset.empty())
-		return std::string(path_fs);
+	if (fs_charset.empty()) {
+		auto result = std::string(path_fs);
+		FixSeparators(result);
+		return result;
+	}
 
 	GIConv conv = g_iconv_open("utf-8", fs_charset.c_str());
 	if (conv == reinterpret_cast<GIConv>(-1))
@@ -101,7 +120,9 @@ PathToUTF8(const char *path_fs)
 	if (ret == static_cast<size_t>(-1) || in_left > 0)
 		return std::string();
 
-	return std::string(path_utf8, sizeof(path_utf8) - out_left);
+	auto result_path = std::string(path_utf8, sizeof(path_utf8) - out_left);
+	FixSeparators(result_path);
+	return result_path;
 }
 
 char *
