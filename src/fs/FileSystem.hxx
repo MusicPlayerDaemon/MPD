@@ -131,22 +131,16 @@ MakeFifo(Path path, mode_t mode)
 	return mkfifo(path.c_str(), mode) == 0;
 }
 
-#endif
-
 /**
  * Wrapper for access() that uses #Path names.
  */
 static inline bool
 CheckAccess(Path path, int mode)
 {
-#ifdef WIN32
-	(void)path;
-	(void)mode;
-	return true;
-#else
 	return access(path.c_str(), mode) == 0;
-#endif
 }
+
+#endif
 
 /**
  * Checks is specified path exists and accessible.
