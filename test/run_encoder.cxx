@@ -117,4 +117,7 @@ int main(int argc, char **argv)
 	}
 
 	encoder_to_stdout(*encoder);
+
+	encoder_close(encoder);
+	encoder_finish(encoder);
 }
