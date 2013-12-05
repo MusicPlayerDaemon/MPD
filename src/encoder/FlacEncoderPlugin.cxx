@@ -23,15 +23,10 @@
 #include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "ConfigError.hxx"
+#include "util/Manual.hxx"
+#include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "util/fifo_buffer.h"
-
-extern "C" {
-#include "util/growing_fifo.h"
-}
-
-#include <string.h>
 
 #include <FLAC/stream_encoder.h>
 
@@ -53,7 +48,7 @@ struct flac_encoder {
 	 * This buffer will hold encoded data from libFLAC until it is
 	 * picked up with flac_encoder_read().
 	 */
-	struct fifo_buffer *output_buffer;
+	Manual<DynamicFifoBuffer<uint8_t>> output_buffer;
 
 	flac_encoder():encoder(flac_encoder_plugin) {}
 };
@@ -140,7 +135,7 @@ flac_write_callback(gcc_unused const FLAC__StreamEncoder *fse,
 	struct flac_encoder *encoder = (struct flac_encoder *) client_data;
 
 	//transfer data to buffer
-	growing_fifo_append(&encoder->output_buffer, data, bytes);
+	encoder->output_buffer->Append((const uint8_t *)data, bytes);
 
 	return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
 }
@@ -153,7 +148,7 @@ flac_encoder_close(Encoder *_encoder)
 	FLAC__stream_encoder_delete(encoder->fse);
 
 	encoder->expand_buffer.Clear();
-	fifo_buffer_free(encoder->output_buffer);
+	encoder->output_buffer.Destruct();
 }
 
 static bool
@@ -195,7 +190,7 @@ flac_encoder_open(Encoder *_encoder, AudioFormat &audio_format, Error &error)
 		return false;
 	}
 
-	encoder->output_buffer = growing_fifo_new();
+	encoder->output_buffer.Construct(8192);
 
 	/* this immediately outputs data through callback */
 
@@ -304,18 +299,7 @@ flac_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 
-	size_t max_length;
-	const char *src = (const char *)
-		fifo_buffer_read(encoder->output_buffer, &max_length);
-	if (src == nullptr)
-		return 0;
-
-	if (length > max_length)
-		length = max_length;
-
-	memcpy(dest, src, length);
-	fifo_buffer_consume(encoder->output_buffer, length);
-	return length;
+	return encoder->output_buffer->Read((uint8_t *)dest, length);
 }
 
 static const char *

@@ -21,10 +21,8 @@
 #include "WaveEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
 #include "system/ByteOrder.hxx"
-#include "util/fifo_buffer.h"
-extern "C" {
-#include "util/growing_fifo.h"
-}
+#include "util/Manual.hxx"
+#include "util/DynamicFifoBuffer.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -33,7 +31,7 @@ struct WaveEncoder {
 	Encoder encoder;
 	unsigned bits;
 
-	struct fifo_buffer *buffer;
+	Manual<DynamicFifoBuffer<uint8_t>> buffer;
 
 	WaveEncoder():encoder(wave_encoder_plugin) {}
 };
@@ -128,9 +126,11 @@ wave_encoder_open(Encoder *_encoder,
 		break;
 	}
 
-	encoder->buffer = growing_fifo_new();
-	wave_header *header = (wave_header *)
-		growing_fifo_write(&encoder->buffer, sizeof(*header));
+	encoder->buffer.Construct(8192);
+
+	auto range = encoder->buffer->Write();
+	assert(range.size >= sizeof(wave_header));
+	wave_header *header = (wave_header *)range.data;
 
 	/* create PCM wave header in initial buffer */
 	fill_wave_header(header,
@@ -138,7 +138,8 @@ wave_encoder_open(Encoder *_encoder,
 			 encoder->bits,
 			 audio_format.sample_rate,
 			 (encoder->bits / 8) * audio_format.channels);
-	fifo_buffer_append(encoder->buffer, sizeof(*header));
+
+	encoder->buffer->Append(sizeof(*header));
 
 	return true;
 }
@@ -148,7 +149,7 @@ wave_encoder_close(Encoder *_encoder)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
-	fifo_buffer_free(encoder->buffer);
+	encoder->buffer.Destruct();
 }
 
 static size_t
@@ -198,7 +199,7 @@ wave_encoder_write(Encoder *_encoder,
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
-	uint8_t *dst = (uint8_t *)growing_fifo_write(&encoder->buffer, length);
+	uint8_t *dst = encoder->buffer->Write(length);
 
 	if (IsLittleEndian()) {
 		switch (encoder->bits) {
@@ -230,7 +231,7 @@ wave_encoder_write(Encoder *_encoder,
 		}
 	}
 
-	fifo_buffer_append(encoder->buffer, length);
+	encoder->buffer->Append(length);
 	return true;
 }
 
@@ -239,17 +240,7 @@ wave_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	WaveEncoder *encoder = (WaveEncoder *)_encoder;
 
-	size_t max_length;
-	const void *src = fifo_buffer_read(encoder->buffer, &max_length);
-	if (src == NULL)
-		return 0;
-
-	if (length > max_length)
-		length = max_length;
-
-	memcpy(dest, src, length);
-	fifo_buffer_consume(encoder->buffer, length);
-	return length;
+	return encoder->buffer->Read((uint8_t *)dest, length);
 }
 
 static const char *

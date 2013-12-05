@@ -20,21 +20,19 @@
 #include "config.h"
 #include "NullEncoderPlugin.hxx"
 #include "EncoderAPI.hxx"
-#include "util/fifo_buffer.h"
-extern "C" {
-#include "util/growing_fifo.h"
-}
+#include "util/Manual.hxx"
+#include "util/DynamicFifoBuffer.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
-#include <string.h>
 
 struct NullEncoder final {
 	Encoder encoder;
 
-	struct fifo_buffer *buffer;
+	Manual<DynamicFifoBuffer<uint8_t>> buffer;
 
-	NullEncoder():encoder(null_encoder_plugin) {}
+	NullEncoder()
+		:encoder(null_encoder_plugin) {}
 };
 
 static Encoder *
@@ -58,7 +56,7 @@ null_encoder_close(Encoder *_encoder)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
 
-	fifo_buffer_free(encoder->buffer);
+	encoder->buffer.Destruct();
 }
 
 
@@ -68,7 +66,7 @@ null_encoder_open(Encoder *_encoder,
 		  gcc_unused Error &error)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
-	encoder->buffer = growing_fifo_new();
+	encoder->buffer.Construct(8192);
 	return true;
 }
 
@@ -79,7 +77,7 @@ null_encoder_write(Encoder *_encoder,
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
 
-	growing_fifo_append(&encoder->buffer, data, length);
+	encoder->buffer->Append((const uint8_t *)data, length);
 	return length;
 }
 
@@ -88,17 +86,7 @@ null_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
 	NullEncoder *encoder = (NullEncoder *)_encoder;
 
-	size_t max_length;
-	const void *src = fifo_buffer_read(encoder->buffer, &max_length);
-	if (src == nullptr)
-		return 0;
-
-	if (length > max_length)
-		length = max_length;
-
-	memcpy(dest, src, length);
-	fifo_buffer_consume(encoder->buffer, length);
-	return length;
+	return encoder->buffer->Read((uint8_t *)dest, length);
 }
 
 const EncoderPlugin null_encoder_plugin = {
