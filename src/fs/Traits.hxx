@@ -68,11 +68,18 @@ struct PathTraitsFS {
 #endif
 	}
 
+#ifdef WIN32
+	gcc_pure gcc_nonnull_all
+	static constexpr bool IsDrive(const_pointer p) {
+		return IsAlphaASCII(p[0]) && p[1] == ':';
+	}
+#endif
+
 	gcc_pure gcc_nonnull_all
 	static bool IsAbsolute(const_pointer p) {
 		assert(p != nullptr);
 #ifdef WIN32
-		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparator(p[2]))
+		if (IsDrive(p) && IsSeparator(p[2]))
 			return true;
 #endif
 		return IsSeparator(*p);
@@ -135,11 +142,18 @@ struct PathTraitsUTF8 {
 		return strrchr(p, SEPARATOR);
 	}
 
+#ifdef WIN32
+	gcc_pure gcc_nonnull_all
+	static constexpr bool IsDrive(const_pointer p) {
+		return IsAlphaASCII(p[0]) && p[1] == ':';
+	}
+#endif
+
 	gcc_pure gcc_nonnull_all
 	static bool IsAbsolute(const_pointer p) {
 		assert(p != nullptr);
 #ifdef WIN32
-		if (IsAlphaASCII(p[0]) && p[1] == ':' && IsSeparator(p[2]))
+		if (IsDrive(p) && IsSeparator(p[2]))
 			return true;
 #endif
 		return IsSeparator(*p);
