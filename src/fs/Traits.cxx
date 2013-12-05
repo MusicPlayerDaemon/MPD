@@ -71,6 +71,10 @@ GetParentPathImpl(typename Traits::const_pointer p)
 		return typename Traits::string(".");
 	if (sep == p)
 		return typename Traits::string(p, p + 1);
+#ifdef WIN32
+	if (Traits::IsDrive(p) && sep == p + 2)
+		return typename Traits::string(p, p + 3);
+#endif
 	return typename Traits::string(p, sep);
 }
 
