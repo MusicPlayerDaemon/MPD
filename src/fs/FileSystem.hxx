@@ -149,6 +149,20 @@ CheckAccess(Path path, int mode)
 }
 
 /**
+ * Checks is specified path exists and accessible.
+ */
+static inline bool
+CheckAccess(Path path)
+{
+#ifdef WIN32
+	struct stat buf;
+	return StatFile(path, buf);
+#else
+	return CheckAccess(path, F_OK);
+#endif
+}
+
+/**
  * Checks if #Path exists and is a regular file.
  */
 static inline bool
