@@ -71,7 +71,7 @@ SimpleDatabase::Check(Error &error) const
 	assert(!path.IsNull());
 
 	/* Check if the file exists */
-	if (!CheckAccess(path, F_OK)) {
+	if (!CheckAccess(path)) {
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
@@ -94,6 +94,7 @@ SimpleDatabase::Check(Error &error) const
 			return false;
 		}
 
+#ifndef WIN32
 		/* Check if we can write to the directory */
 		if (!CheckAccess(dirPath, X_OK | W_OK)) {
 			const int e = errno;
@@ -102,7 +103,7 @@ SimpleDatabase::Check(Error &error) const
 					  dirPath_utf8.c_str());
 			return false;
 		}
-
+#endif
 		return true;
 	}
 
@@ -121,12 +122,14 @@ SimpleDatabase::Check(Error &error) const
 		return false;
 	}
 
+#ifndef WIN32
 	/* And check that we can write to it */
 	if (!CheckAccess(path, R_OK | W_OK)) {
 		error.FormatErrno("Can't open db file \"%s\" for reading/writing",
 				  path_utf8.c_str());
 		return false;
 	}
+#endif
 
 	return true;
 }
