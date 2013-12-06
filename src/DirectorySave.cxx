@@ -23,7 +23,7 @@
 #include "Song.hxx"
 #include "SongSave.hxx"
 #include "PlaylistDatabase.hxx"
-#include "TextFile.hxx"
+#include "fs/TextFile.hxx"
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"

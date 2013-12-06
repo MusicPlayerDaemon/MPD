@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlaylistDatabase.hxx"
 #include "PlaylistVector.hxx"
-#include "TextFile.hxx"
+#include "fs/TextFile.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

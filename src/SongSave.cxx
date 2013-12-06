@@ -21,7 +21,7 @@
 #include "SongSave.hxx"
 #include "Song.hxx"
 #include "TagSave.hxx"
-#include "TextFile.hxx"
+#include "fs/TextFile.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"

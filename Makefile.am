@@ -200,7 +200,6 @@ src_mpd_SOURCES = \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/TagFile.cxx src/TagFile.hxx \
-	src/TextFile.cxx src/TextFile.hxx \
 	src/TextInputStream.cxx \
 	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
@@ -379,6 +378,7 @@ libfs_a_SOURCES = \
 	src/fs/Charset.cxx src/fs/Charset.hxx \
 	src/fs/Path.cxx src/fs/Path.hxx \
 	src/fs/AllocatedPath.cxx src/fs/AllocatedPath.hxx \
+	src/fs/TextFile.cxx src/fs/TextFile.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/DirectoryReader.hxx
 
@@ -1163,8 +1163,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/SongSave.cxx src/SongSort.cxx \
 	src/TagSave.cxx \
-	src/SongFilter.cxx \
-	src/TextFile.cxx
+	src/SongFilter.cxx
 
 test_run_input_LDADD = \
 	$(INPUT_LIBS) \

@@ -23,7 +23,7 @@
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
 #include "DirectorySave.hxx"
-#include "TextFile.hxx"
+#include "fs/TextFile.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagSettings.h"
 #include "fs/Charset.hxx"

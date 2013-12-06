@@ -21,7 +21,7 @@
 #include "StateFile.hxx"
 #include "OutputState.hxx"
 #include "PlaylistState.hxx"
-#include "TextFile.hxx"
+#include "fs/TextFile.hxx"
 #include "Partition.hxx"
 #include "Volume.hxx"
 

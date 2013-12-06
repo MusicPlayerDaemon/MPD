@@ -26,7 +26,7 @@
 #include "DatabaseGlue.hxx"
 #include "Song.hxx"
 #include "Mapper.hxx"
-#include "TextFile.hxx"
+#include "fs/TextFile.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 #include "ConfigDefaults.hxx"
