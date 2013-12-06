@@ -22,6 +22,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Domain.hxx"
+#include "fs/StandardDirectory.hxx"
 #include "util/Error.hxx"
 #include "ConfigGlobal.hxx"
 
@@ -39,14 +40,14 @@
 static AllocatedPath
 GetHome(const char *user, Error &error)
 {
-	passwd *pw = getpwnam(user);
-	if (pw == nullptr) {
+	AllocatedPath result = GetHomeDir(user);
+	if (result.IsNull()) {
 		error.Format(path_domain,
 			     "no such user: %s", user);
 		return AllocatedPath::Null();
 	}
 
-	return AllocatedPath::FromFS(pw->pw_dir);
+	return result;
 }
 
 /**
@@ -55,14 +56,14 @@ GetHome(const char *user, Error &error)
 static AllocatedPath
 GetHome(Error &error)
 {
-	const char *home = g_get_home_dir();
-	if (home == nullptr) {
+	AllocatedPath result = GetHomeDir();
+	if (result.IsNull()) {
 		error.Set(path_domain,
 			  "problems getting home for current user");
 		return AllocatedPath::Null();
 	}
 
-	return AllocatedPath::FromUTF8(home, error);
+	return result;
 }
 
 /**
