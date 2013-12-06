@@ -380,6 +380,7 @@ libfs_a_SOURCES = \
 	src/fs/AllocatedPath.cxx src/fs/AllocatedPath.hxx \
 	src/fs/TextFile.cxx src/fs/TextFile.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
+	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/DirectoryReader.hxx
 
 # database plugins

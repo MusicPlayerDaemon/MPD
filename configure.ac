@@ -147,6 +147,7 @@ AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 
 AC_CHECK_FUNCS(pipe2 accept4)
+AC_CHECK_FUNCS(getpwnam_r getpwuid_r)
 MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
 MPD_OPTIONAL_FUNC(signalfd, signalfd, USE_SIGNALFD)
 
