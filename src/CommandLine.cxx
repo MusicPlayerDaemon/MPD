@@ -34,6 +34,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/StandardDirectory.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"
@@ -55,7 +56,8 @@
 #include <stdlib.h>
 
 #ifdef WIN32
-#define CONFIG_FILE_LOCATION		"\\mpd\\mpd.conf"
+#define CONFIG_FILE_LOCATION		"mpd\\mpd.conf"
+#define APP_CONFIG_FILE_LOCATION	"conf\\mpd.conf"
 #else
 #define USER_CONFIG_FILE_LOCATION1	".mpdconf"
 #define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
@@ -186,14 +188,36 @@ static void help(void)
 	exit(EXIT_SUCCESS);
 }
 
-gcc_pure
-static AllocatedPath
-PathBuildChecked(const AllocatedPath &a, PathTraitsFS::const_pointer b)
+class ConfigLoader
 {
-	if (a.IsNull())
-		return AllocatedPath::Null();
+	Error &error;
+	bool result;
+public:
+	ConfigLoader(Error &_error) : error(_error), result(false) { }
 
-	return AllocatedPath::Build(a, b);
+	bool GetResult() const { return result; }
+
+	bool TryFile(const Path path);
+	bool TryFile(const AllocatedPath &base_path,
+		     PathTraitsFS::const_pointer path);
+};
+
+bool ConfigLoader::TryFile(Path path)
+{
+	if (FileExists(path)) {
+		result = ReadConfigFile(path, error);
+		return true;
+	}
+	return false;
+}
+
+bool ConfigLoader::TryFile(const AllocatedPath &base_path,
+			   PathTraitsFS::const_pointer path)
+{
+	if (base_path.IsNull())
+		return false;
+	auto full_path = AllocatedPath::Build(base_path, path);
+	return TryFile(full_path);
 }
 
 bool
@@ -270,41 +294,25 @@ parse_cmdline(int argc, char **argv, struct options *options,
 	}
 
 	/* use default configuration file path */
+
+	ConfigLoader loader(error);
+
+	bool found =
 #ifdef WIN32
-	AllocatedPath path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_user_config_dir()),
-					      CONFIG_FILE_LOCATION);
-	if (!path.IsNull() && FileExists(path))
-		return ReadConfigFile(path, error);
-
-	const char *const*system_config_dirs =
-		g_get_system_config_dirs();
-
-	for (unsigned i = 0; system_config_dirs[i] != nullptr; ++i) {
-		path = PathBuildChecked(AllocatedPath::FromUTF8(system_config_dirs[i]),
-					CONFIG_FILE_LOCATION);
-		if (!path.IsNull() && FileExists(path))
-			return ReadConfigFile(path, error);
-	}
+		loader.TryFile(GetUserConfigDir(), CONFIG_FILE_LOCATION) ||
+		loader.TryFile(GetSystemConfigDir(), CONFIG_FILE_LOCATION) ||
+		loader.TryFile(GetAppBaseDir(), APP_CONFIG_FILE_LOCATION);
 #else
-	AllocatedPath path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_user_config_dir()),
-					      USER_CONFIG_FILE_LOCATION_XDG);
-	if (!path.IsNull() && FileExists(path))
-		return ReadConfigFile(path, error);
-
-	path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_home_dir()),
-				USER_CONFIG_FILE_LOCATION1);
-	if (!path.IsNull() && FileExists(path))
-		return ReadConfigFile(path, error);
-
-	path = PathBuildChecked(AllocatedPath::FromUTF8(g_get_home_dir()),
-				USER_CONFIG_FILE_LOCATION2);
-	if (!path.IsNull() && FileExists(path))
-		return ReadConfigFile(path, error);
-
-	path = AllocatedPath::FromUTF8(SYSTEM_CONFIG_FILE_LOCATION);
-	if (!path.IsNull() && FileExists(path))
-		return ReadConfigFile(path, error);
+		loader.TryFile(GetUserConfigDir(),
+			       USER_CONFIG_FILE_LOCATION_XDG) ||
+		loader.TryFile(GetHomeDir(), USER_CONFIG_FILE_LOCATION1) ||
+		loader.TryFile(GetHomeDir(), USER_CONFIG_FILE_LOCATION2) ||
+		loader.TryFile(Path::FromFS(SYSTEM_CONFIG_FILE_LOCATION));
 #endif
-	error.Set(cmdline_domain, "No configuration file found");
-	return false;
+	if (!found) {
+		error.Set(cmdline_domain, "No configuration file found");
+		return false;
+	}
+
+	return loader.GetResult();
 }
