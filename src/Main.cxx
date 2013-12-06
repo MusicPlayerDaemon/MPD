@@ -50,6 +50,7 @@
 #include "IOThread.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
+#include "fs/StandardDirectory.hxx"
 #include "PlaylistRegistry.hxx"
 #include "ZeroconfGlue.hxx"
 #include "DecoderList.hxx"
@@ -132,13 +133,9 @@ glue_mapper_init(Error &error)
 		return false;
 
 	if (music_dir.IsNull()) {
-		const char *path =
-			g_get_user_special_dir(G_USER_DIRECTORY_MUSIC);
-		if (path != nullptr) {
-			music_dir = AllocatedPath::FromUTF8(path, error);
-			if (music_dir.IsNull())
-				return false;
-		}
+		music_dir = GetUserMusicDir();
+		if (music_dir.IsNull())
+			return false;
 	}
 
 	mapper_init(std::move(music_dir), std::move(playlist_dir));
