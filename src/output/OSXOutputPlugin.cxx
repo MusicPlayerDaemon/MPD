@@ -363,9 +363,9 @@ osx_output_open(struct audio_output *ao, AudioFormat &audio_format,
 
 	OSStatus status = AudioUnitInitialize(od->au);
 	if (status != noErr) {
-		error.Set(osx_output_domain, status,
-			  "Unable to initialize OS X audio unit: %s",
-			  GetMacOSStatusCommentString(status));
+		error.Format(osx_output_domain, status,
+			     "Unable to initialize OS X audio unit: %s",
+			     GetMacOSStatusCommentString(status));
 		return false;
 	}
 

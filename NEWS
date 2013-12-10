@@ -3,6 +3,7 @@ ver 0.18.6 (not yet released)
   - cdio_paranoia: support libcdio-paranoia 0.90
 * output
   - openal: fix build failure on Mac OS X
+  - osx: fix build failure
 
 ver 0.18.5 (2013/11/23)
 * configuration
