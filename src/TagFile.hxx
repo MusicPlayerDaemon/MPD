@@ -28,6 +28,9 @@ struct tag_handler;
 /**
  * Scan the tags of a song file.  Invokes matching decoder plugins,
  * but does not invoke the special "APE" and "ID3" scanners.
+ *
+ * @return true if the file was recognized (even if no metadata was
+ * found)
  */
 bool
 tag_file_scan(Path path,
