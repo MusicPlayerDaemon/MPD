@@ -95,8 +95,7 @@ Song::UpdateFile()
 
 	TagBuilder tag_builder;
 	if (!tag_file_scan(path_fs,
-			   &full_tag_handler, &tag_builder) ||
-	    !tag_builder.IsDefined())
+			   &full_tag_handler, &tag_builder))
 		return false;
 
 	if (tag_builder.IsEmpty())
