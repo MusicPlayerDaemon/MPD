@@ -1885,6 +1885,18 @@ systemctl start mpd.socket</programlisting>
               </row>
               <row>
                 <entry>
+                  <varname>protocol</varname>
+                  <parameter>icecast2|icecast1|shoutcast</parameter>
+                </entry>
+                <entry>
+                  Specifies the protocol that wil be used to connect
+                  to the icecast/shoutcast server.  The default
+                  is "<parameter>icecast2</parameter>".
+
+                </entry>
+              </row>
+              <row>
+                <entry>
                   <varname>mount</varname>
                   <parameter>URI</parameter>
                 </entry>
