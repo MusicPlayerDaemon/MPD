@@ -420,17 +420,6 @@ default is "".
 This specifies how many bytes to write to the audio device at once.  This
 parameter is to work around a bug in older versions of libao on sound cards
 with very small buffers.  The default is 1024.
-.SH REQUIRED FIFO OUTPUT PARAMETERS
-.TP
-.B path <path>
-This specifies the path of the FIFO to output to.  Must be an absolute path.
-If the path does not exist it will be created when mpd is started, and removed
-when mpd is stopped.  The FIFO will be created with the same user and group as
-mpd is running as.  Default permissions can be modified by using the builtin
-shell command "umask".  If a FIFO already exists at the specified path it will
-be reused, and will \fBnot\fP be removed when mpd is stopped.  You can use the
-"mkfifo" command to create this, and then you may modify the permissions to
-your liking.
 .SH REQUIRED SHOUT OUTPUT PARAMETERS
 .TP
 .B name <name>
