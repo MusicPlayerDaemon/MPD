@@ -398,28 +398,6 @@ channels, respectively.  The default is to let JACK choose a pair of ports.
 .TP
 .B ringbuffer_size <size in bytes>
 This specifies the size of the ringbuffer in bytes.  The default is 32768.
-.SH OPTIONAL AO OUTPUT PARAMETERS
-.TP
-.B driver <driver>
-This specifies the libao driver to use for audio output.  Possible values
-depend on what libao drivers are available.  See
-<\fBhttp://www.xiph.org/ao/doc/drivers.html\fP> for information on some
-commonly used drivers.  Typical values for Linux include "oss" and "alsa09".
-The default is "default", which causes libao to select an appropriate plugin.
-.TP
-.B options <opts>
-This specifies the options to use for the selected libao driver.  For oss, the
-only option available is "dsp".  For alsa09, the available options are: "dev",
-"buf_size", and "periods".  See <\fBhttp://www.xiph.org/ao/doc/drivers.html\fP>
-for available options for some commonly used drivers.  Options are assigned
-using "=", and ";" is used to separate options.  An example for oss:
-"dsp=/dev/dsp".  An example for alsa09: "dev=hw:0,0;buf_size=4096".  The
-default is "".
-.TP
-.B write_size <size in bytes>
-This specifies how many bytes to write to the audio device at once.  This
-parameter is to work around a bug in older versions of libao on sound cards
-with very small buffers.  The default is 1024.
 .SH REQUIRED SHOUT OUTPUT PARAMETERS
 .TP
 .B name <name>

@@ -1398,6 +1398,59 @@ systemctl start mpd.socket</programlisting>
           The <varname>ao</varname> plugin uses the portable
           <filename>libao</filename> library.
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>driver</varname>
+                  <parameter>D</parameter>
+                </entry>
+                <entry>
+                  The <filename>libao</filename> driver to use for
+                  audio output.  Possible values depend on what libao
+                  drivers are available.  See <ulink
+                  url="http://www.xiph.org/ao/doc/drivers.html">http://www.xiph.org/ao/doc/drivers.html</ulink>
+                  for information on some commonly used drivers.
+                  Typical values for Linux include "oss" and "alsa09".
+                  The default is "default", which causes libao to
+                  select an appropriate plugin.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>options</varname>
+                  <parameter>O</parameter>
+                </entry>
+                <entry>
+                  Options to pass to the selected
+                  <filename>libao</filename> driver.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>write_size</varname>
+                  <parameter>O</parameter>
+                </entry>
+                <entry>
+                  This specifies how many bytes to write to the audio
+                  device at once.  This parameter is to work around a
+                  bug in older versions of libao on sound cards with
+                  very small buffers.  The default is 1024.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
