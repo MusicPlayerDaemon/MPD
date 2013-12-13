@@ -92,8 +92,8 @@ Tag::Tag(const Tag &other)
 Tag *
 Tag::Merge(const Tag &base, const Tag &add)
 {
-	TagBuilder builder(base);
-	builder.Complement(add);
+	TagBuilder builder(add);
+	builder.Complement(base);
 	return builder.Commit();
 }
 
