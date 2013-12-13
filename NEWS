@@ -4,6 +4,8 @@ ver 0.18.6 (not yet released)
 * output
   - openal: fix build failure on Mac OS X
   - osx: fix build failure
+* mixer
+  - alsa: fix build failure with uClibc
 * accept files without metadata
 
 ver 0.18.5 (2013/11/23)
