@@ -63,7 +63,8 @@ soundcloud_init(const config_param &param)
  * @return Constructed URL. Must be freed with g_free.
  */
 static char *
-soundcloud_resolve(const char* uri) {
+soundcloud_resolve(const char* uri)
+{
 	char *u, *ru;
 
 	if (StringStartsWith(uri, "http://")) {
@@ -109,12 +110,13 @@ struct parse_data {
 	std::forward_list<SongPointer> songs;
 };
 
-static int handle_integer(void *ctx,
-			  long
+static int
+handle_integer(void *ctx,
+	       long
 #ifndef HAVE_YAJL1
-			  long
+	       long
 #endif
-			  intval)
+	       intval)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 
@@ -129,13 +131,14 @@ static int handle_integer(void *ctx,
 	return 1;
 }
 
-static int handle_string(void *ctx, const unsigned char* stringval,
+static int
+handle_string(void *ctx, const unsigned char* stringval,
 #ifdef HAVE_YAJL1
-			 unsigned int
+	      unsigned int
 #else
-			 size_t
+	      size_t
 #endif
-			 stringlen)
+	      stringlen)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 	const char *s = (const char *) stringval;
@@ -159,13 +162,14 @@ static int handle_string(void *ctx, const unsigned char* stringval,
 	return 1;
 }
 
-static int handle_mapkey(void *ctx, const unsigned char* stringval,
+static int
+handle_mapkey(void *ctx, const unsigned char* stringval,
 #ifdef HAVE_YAJL1
-			 unsigned int
+	      unsigned int
 #else
-			 size_t
+	      size_t
 #endif
-			 stringlen)
+	      stringlen)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 
@@ -182,7 +186,8 @@ static int handle_mapkey(void *ctx, const unsigned char* stringval,
 	return 1;
 }
 
-static int handle_start_map(void *ctx)
+static int
+handle_start_map(void *ctx)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 
@@ -192,7 +197,8 @@ static int handle_start_map(void *ctx)
 	return 1;
 }
 
-static int handle_end_map(void *ctx)
+static int
+handle_end_map(void *ctx)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 
