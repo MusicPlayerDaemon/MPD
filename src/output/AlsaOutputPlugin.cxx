@@ -27,7 +27,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
 #include <alsa/asoundlib.h>
 
 #include <string>
@@ -118,7 +117,7 @@ struct AlsaOutput {
 	 * It contains silence samples, enough to fill one period (see
 	 * #period_frames).
 	 */
-	void *silence;
+	uint8_t *silence;
 
 	AlsaOutput():mode(0), writei(snd_pcm_writei) {
 	}
@@ -593,8 +592,8 @@ configure_hw:
 	ad->period_frames = alsa_period_size;
 	ad->period_position = 0;
 
-	ad->silence = g_malloc(snd_pcm_frames_to_bytes(ad->pcm,
-						       alsa_period_size));
+	ad->silence = new uint8_t[snd_pcm_frames_to_bytes(ad->pcm,
+							  alsa_period_size)];
 	snd_pcm_format_set_silence(format, ad->silence,
 				   alsa_period_size * channels);
 
@@ -641,7 +640,7 @@ alsa_setup_dsd(AlsaOutput *ad, const AudioFormat audio_format,
 		error.Format(alsa_output_domain,
 			     "Failed to configure DSD-over-USB on ALSA device \"%s\"",
 			     alsa_device(ad));
-		g_free(ad->silence);
+		delete[] ad->silence;
 		return false;
 	}
 
@@ -811,7 +810,7 @@ alsa_close(struct audio_output *ao)
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
 	snd_pcm_close(ad->pcm);
-	g_free(ad->silence);
+	delete[] ad->silence;
 }
 
 static size_t
