@@ -102,7 +102,7 @@ vorbis_scan_comment(const char *comment,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	if (handler->pair != nullptr) {
-		char *name = g_strdup((const char*)comment);
+		char *name = g_strdup(comment);
 		char *value = strchr(name, '=');
 
 		if (value != nullptr && value > name) {
