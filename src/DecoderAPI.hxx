@@ -113,6 +113,14 @@ decoder_read(Decoder &decoder, InputStream &is,
 }
 
 /**
+ * Skip data on the #InputStream.
+ *
+ * @return true on success, false on error or command
+ */
+bool
+decoder_skip(Decoder *decoder, InputStream &is, size_t size);
+
+/**
  * Sets the time stamp for the next data chunk [seconds].  The MPD
  * core automatically counts it up, and a decoder plugin only needs to
  * use this function if it thinks that adding to the time stamp based
