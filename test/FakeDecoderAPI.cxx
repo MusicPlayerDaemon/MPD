@@ -65,6 +65,22 @@ decoder_read(gcc_unused Decoder *decoder,
 	return is.LockRead(buffer, length, IgnoreError());
 }
 
+bool
+decoder_skip(Decoder *decoder, InputStream &is, size_t size)
+{
+	while (size > 0) {
+		char buffer[1024];
+		size_t nbytes = decoder_read(decoder, is, buffer,
+					     std::min(sizeof(buffer), size));
+		if (nbytes == 0)
+			return false;
+
+		size -= nbytes;
+	}
+
+	return true;
+}
+
 void
 decoder_timestamp(gcc_unused Decoder &decoder,
 		  gcc_unused double t)

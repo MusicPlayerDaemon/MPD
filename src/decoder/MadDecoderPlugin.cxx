@@ -413,20 +413,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		mad_stream_skip(&stream, tagsize);
 	} else {
 		mad_stream_skip(&stream, count);
-
-		while (count < tagsize) {
-			size_t len = tagsize - count;
-			char ignored[1024];
-			if (len > sizeof(ignored))
-				len = sizeof(ignored);
-
-			len = decoder_read(decoder, input_stream,
-					   ignored, len);
-			if (len == 0)
-				break;
-			else
-				count += len;
-		}
+		decoder_skip(decoder, input_stream, tagsize - count);
 	}
 #endif
 }
