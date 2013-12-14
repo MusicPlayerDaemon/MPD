@@ -30,27 +30,35 @@
 
 #include <string.h>
 
+static const char *
+vorbis_comment_value(const FLAC__StreamMetadata *block,
+		     const char *name)
+{
+	int offset =
+		FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
+								    name);
+	if (offset < 0)
+		return nullptr;
+
+	size_t name_length = strlen(name);
+
+	const FLAC__StreamMetadata_VorbisComment_Entry &vc =
+		block->data.vorbis_comment.comments[offset];
+	const char *comment = (const char *)vc.entry;
+
+	/* 1 is for '=' */
+	return comment + name_length + 1;
+}
+
 static bool
 flac_find_float_comment(const FLAC__StreamMetadata *block,
 			const char *cmnt, float *fl)
 {
-	int offset;
-	size_t pos;
-	int len;
-	unsigned char *p;
-
-	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
-								     cmnt);
-	if (offset < 0)
+	const char *value = vorbis_comment_value(block, cmnt);
+	if (value == nullptr)
 		return false;
 
-	pos = strlen(cmnt) + 1; /* 1 is for '=' */
-	len = block->data.vorbis_comment.comments[offset].length - pos;
-	if (len <= 0)
-		return false;
-
-	p = &block->data.vorbis_comment.comments[offset].entry[pos];
-	*fl = (float)atof((char *)p);
+	*fl = (float)atof(value);
 	return true;
 }
 
@@ -81,23 +89,11 @@ gcc_pure
 static std::string
 flac_find_string_comment(const FLAC__StreamMetadata *block, const char *cmnt)
 {
-	int offset;
-	size_t pos;
-	int len;
-	const unsigned char *p;
-
-	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
-								     cmnt);
-	if (offset < 0)
+	const char *value = vorbis_comment_value(block, cmnt);
+	if (value == nullptr)
 		return std::string();
 
-	pos = strlen(cmnt) + 1; /* 1 is for '=' */
-	len = block->data.vorbis_comment.comments[offset].length - pos;
-	if (len <= 0)
-		return std::string();
-
-	p = &block->data.vorbis_comment.comments[offset].entry[pos];
-	return std::string((const char *)p, len);
+	return std::string(value);
 }
 
 MixRampInfo
