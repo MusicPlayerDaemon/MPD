@@ -827,6 +827,7 @@ MPD_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
 if test x$enable_cdio_paranoia = xyes; then
 	AC_DEFINE([ENABLE_CDIO_PARANOIA], 1,
 		[Define to enable libcdio_paranoia support])
+	AC_CHECK_HEADERS(cdio/paranoia/paranoia.h)
 fi
 
 AM_CONDITIONAL(ENABLE_CDIO_PARANOIA, test x$enable_cdio_paranoia = xyes)
