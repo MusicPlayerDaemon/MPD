@@ -20,7 +20,7 @@
 #include "config.h"
 #include "IOThread.hxx"
 #include "DecoderList.hxx"
-#include "DecoderAPI.hxx"
+#include "DecoderPlugin.hxx"
 #include "InputInit.hxx"
 #include "InputStream.hxx"
 #include "AudioFormat.hxx"
@@ -41,79 +41,6 @@
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
 #endif
-
-void
-decoder_initialized(gcc_unused Decoder &decoder,
-		    gcc_unused const AudioFormat audio_format,
-		    gcc_unused bool seekable,
-		    gcc_unused float total_time)
-{
-}
-
-DecoderCommand
-decoder_get_command(gcc_unused Decoder &decoder)
-{
-	return DecoderCommand::NONE;
-}
-
-void
-decoder_command_finished(gcc_unused Decoder &decoder)
-{
-}
-
-double
-decoder_seek_where(gcc_unused Decoder &decoder)
-{
-	return 1.0;
-}
-
-void
-decoder_seek_error(gcc_unused Decoder &decoder)
-{
-}
-
-size_t
-decoder_read(gcc_unused Decoder *decoder,
-	     InputStream &is,
-	     void *buffer, size_t length)
-{
-	return is.LockRead(buffer, length, IgnoreError());
-}
-
-void
-decoder_timestamp(gcc_unused Decoder &decoder,
-		  gcc_unused double t)
-{
-}
-
-DecoderCommand
-decoder_data(gcc_unused Decoder &decoder,
-	     gcc_unused InputStream *is,
-	     const void *data, size_t datalen,
-	     gcc_unused uint16_t kbit_rate)
-{
-	gcc_unused ssize_t nbytes = write(1, data, datalen);
-	return DecoderCommand::NONE;
-}
-
-DecoderCommand
-decoder_tag(gcc_unused Decoder &decoder,
-	    gcc_unused InputStream *is,
-	    gcc_unused Tag &&tag)
-{
-	return DecoderCommand::NONE;
-}
-
-void
-decoder_replay_gain(gcc_unused Decoder &decoder,
-		    gcc_unused const ReplayGainInfo *replay_gain_info)
-{
-}
-
-void
-decoder_mixramp(gcc_unused Decoder &decoder, gcc_unused MixRampInfo &&mix_ramp)
-{
-}
 
 static bool empty = true;
 
