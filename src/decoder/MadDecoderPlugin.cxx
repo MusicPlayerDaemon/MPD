@@ -32,16 +32,16 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <glib.h>
 #include <mad.h>
 
 #ifdef HAVE_ID3TAG
 #include <id3tag.h>
 #endif
+
+#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #define FRAMES_CUSHION    2000
 
@@ -349,14 +349,14 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		id3_data = stream.this_frame;
 		mad_stream_skip(&(stream), tagsize);
 	} else {
-		allocated = (id3_byte_t *)g_malloc(tagsize);
+		allocated = new id3_byte_t[tagsize];
 		memcpy(allocated, stream.this_frame, count);
 		mad_stream_skip(&(stream), count);
 
 		if (!decoder_read_full(decoder, input_stream,
 				       allocated + count, tagsize - count)) {
 			LogDebug(mad_domain, "error parsing ID3 tag");
-			g_free(allocated);
+			delete[] allocated;
 			return;
 		}
 
@@ -365,7 +365,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 
 	id3_tag = id3_tag_parse(id3_data, tagsize);
 	if (id3_tag == nullptr) {
-		g_free(allocated);
+		delete[] allocated;
 		return;
 	}
 
@@ -390,7 +390,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 
 	id3_tag_delete(id3_tag);
 
-	g_free(allocated);
+	delete[] allocated;
 #else /* !HAVE_ID3TAG */
 	(void)mpd_tag;
 
