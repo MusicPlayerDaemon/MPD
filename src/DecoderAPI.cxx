@@ -307,6 +307,24 @@ decoder_read(Decoder *decoder,
 }
 
 bool
+decoder_read_full(Decoder *decoder, InputStream &is,
+		  void *_buffer, size_t size)
+{
+	uint8_t *buffer = (uint8_t *)_buffer;
+
+	while (size > 0) {
+		size_t nbytes = decoder_read(decoder, is, buffer, size);
+		if (nbytes == 0)
+			return false;
+
+		buffer += nbytes;
+		size -= nbytes;
+	}
+
+	return true;
+}
+
+bool
 decoder_skip(Decoder *decoder, InputStream &is, size_t size)
 {
 	while (size > 0) {
