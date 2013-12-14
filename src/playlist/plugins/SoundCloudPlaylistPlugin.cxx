@@ -112,12 +112,7 @@ struct parse_data {
 };
 
 static int
-handle_integer(void *ctx,
-	       long
-#ifndef HAVE_YAJL1
-	       long
-#endif
-	       intval)
+handle_integer(void *ctx, long long intval)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 
@@ -133,13 +128,7 @@ handle_integer(void *ctx,
 }
 
 static int
-handle_string(void *ctx, const unsigned char* stringval,
-#ifdef HAVE_YAJL1
-	      unsigned int
-#else
-	      size_t
-#endif
-	      stringlen)
+handle_string(void *ctx, const unsigned char *stringval, size_t stringlen)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 	const char *s = (const char *) stringval;
@@ -162,13 +151,7 @@ handle_string(void *ctx, const unsigned char* stringval,
 }
 
 static int
-handle_mapkey(void *ctx, const unsigned char* stringval,
-#ifdef HAVE_YAJL1
-	      unsigned int
-#else
-	      size_t
-#endif
-	      stringlen)
+handle_mapkey(void *ctx, const unsigned char *stringval, size_t stringlen)
 {
 	struct parse_data *data = (struct parse_data *) ctx;
 
@@ -283,20 +266,11 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 		}
 
 		if (done) {
-#ifdef HAVE_YAJL1
-			stat = yajl_parse_complete(hand);
-#else
 			stat = yajl_complete_parse(hand);
-#endif
 		} else
 			stat = yajl_parse(hand, ubuffer, nbytes);
 
-		if (stat != yajl_status_ok
-#ifdef HAVE_YAJL1
-		    && stat != yajl_status_insufficient_data
-#endif
-		    )
-		{
+		if (stat != yajl_status_ok) {
 			unsigned char *str = yajl_get_error(hand, 1, ubuffer, nbytes);
 			LogError(soundcloud_domain, (const char *)str);
 			yajl_free_error(hand, str);
@@ -360,12 +334,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	data.got_url = 0;
 	data.title = nullptr;
 	data.stream_url = nullptr;
-#ifdef HAVE_YAJL1
-	yajl_handle hand = yajl_alloc(&parse_callbacks, nullptr, nullptr,
-				      &data);
-#else
 	yajl_handle hand = yajl_alloc(&parse_callbacks, nullptr, &data);
-#endif
 
 	int ret = soundcloud_parse_json(u, hand, mutex, cond);
 

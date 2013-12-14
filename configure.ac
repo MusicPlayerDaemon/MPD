@@ -770,14 +770,11 @@ dnl --------------------------------- Soundcloud ------------------------------
 MPD_AUTO([soundcloud], [soundcloud.com support], [libyajl not found],
 	[PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
 		[found_soundcloud=yes],
-		AC_CHECK_LIB([yajl], [yajl_parse_complete],
-			[found_soundcloud=yes YAJL_CFLAGS=-DHAVE_YAJL1 YAJL_LIBS=-lyajl],
-			[found_soundcloud=no]))])
+		[found_soundcloud=no])])
 if test x$enable_soundcloud = xyes; then
 	AC_DEFINE(ENABLE_SOUNDCLOUD, 1, [Define when soundcloud is enabled])
 fi
 AM_CONDITIONAL(ENABLE_SOUNDCLOUD, test x$enable_soundcloud = xyes)
-AC_SUBST(YAJL_LIBS)
 
 dnl ---------------------------------- cdio ---------------------------------
 MPD_ENABLE_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
