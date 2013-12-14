@@ -134,7 +134,7 @@ DespotifyInputStream::Callback(int sig)
 
 	case DESPOTIFY_END_OF_PLAYLIST:
 		eof = true;
-		FormatDebug(despotify_domain, "End of playlist: %d", eof);
+		LogDebug(despotify_domain, "End of playlist");
 		break;
 	}
 }
