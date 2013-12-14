@@ -207,12 +207,9 @@ static int handle_end_map(void *ctx)
 	/* got_url == 1, track finished, make it into a song */
 	data->got_url = 0;
 
-	Song *s;
-	char *u;
-
-	u = g_strconcat(data->stream_url, "?client_id=",
-			soundcloud_config.apikey.c_str(), nullptr);
-	s = Song::NewRemote(u);
+	char *u = g_strconcat(data->stream_url, "?client_id=",
+			      soundcloud_config.apikey.c_str(), nullptr);
+	Song *s = Song::NewRemote(u);
 	g_free(u);
 
 	TagBuilder tag;
@@ -250,9 +247,6 @@ static int
 soundcloud_parse_json(const char *url, yajl_handle hand,
 		      Mutex &mutex, Cond &cond)
 {
-	char buffer[4096];
-	unsigned char *ubuffer = (unsigned char *)buffer;
-
 	Error error;
 	InputStream *input_stream = InputStream::Open(url, mutex, cond,
 						      error);
@@ -269,6 +263,8 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	int done = 0;
 
 	while (!done) {
+		char buffer[4096];
+		unsigned char *ubuffer = (unsigned char *)buffer;
 		const size_t nbytes =
 			input_stream->Read(buffer, sizeof(buffer), error);
 		if (nbytes == 0) {
@@ -319,22 +315,22 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
  *	soundcloud://playlist/<playlist-id>
  *	soundcloud://url/<url or path of soundcloud page>
  */
-
 static SongEnumerator *
 soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
-	char *s, *p;
-	char *scheme, *arg, *rest;
-	s = g_strdup(uri);
-	scheme = s;
-	for (p = s; *p; p++) {
+	char *s = g_strdup(uri);
+	char *scheme = s;
+
+	char *p = s;
+	for (; *p; p++) {
 		if (*p == ':' && *(p+1) == '/' && *(p+2) == '/') {
 			*p = 0;
 			p += 3;
 			break;
 		}
 	}
-	arg = p;
+
+	char *arg = p;
 	for (; *p; p++) {
 		if (*p == '/') {
 			*p = 0;
@@ -342,7 +338,8 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 			break;
 		}
 	}
-	rest = p;
+
+	char *rest = p;
 
 	if (strcmp(scheme, "soundcloud") != 0) {
 		FormatWarning(soundcloud_domain,
@@ -373,16 +370,15 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 		return nullptr;
 	}
 
-	yajl_handle hand;
 	struct parse_data data;
-
 	data.got_url = 0;
 	data.title = nullptr;
 	data.stream_url = nullptr;
 #ifdef HAVE_YAJL1
-	hand = yajl_alloc(&parse_callbacks, nullptr, nullptr, (void *) &data);
+	yajl_handle hand = yajl_alloc(&parse_callbacks, nullptr, nullptr,
+				      &data);
 #else
-	hand = yajl_alloc(&parse_callbacks, nullptr, (void *) &data);
+	yajl_handle hand = yajl_alloc(&parse_callbacks, nullptr, &data);
 #endif
 
 	int ret = soundcloud_parse_json(u, hand, mutex, cond);
