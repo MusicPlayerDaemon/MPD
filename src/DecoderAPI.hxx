@@ -113,6 +113,17 @@ decoder_read(Decoder &decoder, InputStream &is,
 }
 
 /**
+ * Blocking read from the input stream.  Attempts to fill the buffer
+ * completely; there is no partial result.
+ *
+ * @return true on success, false on error or command or not enough
+ * data
+ */
+bool
+decoder_read_full(Decoder *decoder, InputStream &is,
+		  void *buffer, size_t size);
+
+/**
  * Skip data on the #InputStream.
  *
  * @return true on success, false on error or command
