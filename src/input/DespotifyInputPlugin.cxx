@@ -36,7 +36,7 @@ extern "C" {
 
 #include <stdio.h>
 
-struct DespotifyInputStream {
+class DespotifyInputStream {
 	InputStream base;
 
 	struct despotify_session *session;
@@ -62,30 +62,52 @@ struct DespotifyInputStream {
 		base.ready = true;
 	}
 
+public:
 	~DespotifyInputStream() {
 		delete tag;
 
 		despotify_free_track(track);
 	}
+
+	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond,
+				 Error &error);
+
+	bool IsEOF() const {
+		return eof;
+	}
+
+	size_t Read(void *ptr, size_t size, Error &error);
+
+	Tag *ReadTag() {
+		Tag *result = tag;
+		tag = nullptr;
+		return result;
+	}
+
+	void Callback(int sig);
+
+private:
+	void FillBuffer();
 };
 
-static void
-refill_buffer(DespotifyInputStream *ctx)
+inline void
+DespotifyInputStream::FillBuffer()
 {
 	/* Wait until there is data */
 	while (1) {
-		int rc = despotify_get_pcm(ctx->session, &ctx->pcm);
+		int rc = despotify_get_pcm(session, &pcm);
 
-		if (rc == 0 && ctx->pcm.len) {
-			ctx->len_available = ctx->pcm.len;
+		if (rc == 0 && pcm.len) {
+			len_available = pcm.len;
 			break;
 		}
-		if (ctx->eof == true)
+
+		if (eof == true)
 			break;
 
 		if (rc < 0) {
 			LogDebug(despotify_domain, "despotify_get_pcm error");
-			ctx->eof = true;
+			eof = true;
 			break;
 		}
 
@@ -94,11 +116,9 @@ refill_buffer(DespotifyInputStream *ctx)
 	}
 }
 
-static void callback(gcc_unused struct despotify_session* ds,
-		     int sig, gcc_unused void* data, void* callback_data)
+inline void
+DespotifyInputStream::Callback(int sig)
 {
-	DespotifyInputStream *ctx = (DespotifyInputStream *)callback_data;
-
 	switch (sig) {
 	case DESPOTIFY_NEW_TRACK:
 		break;
@@ -108,35 +128,38 @@ static void callback(gcc_unused struct despotify_session* ds,
 
 	case DESPOTIFY_TRACK_PLAY_ERROR:
 		LogWarning(despotify_domain, "Track play error");
-		ctx->eof = true;
-		ctx->len_available = 0;
+		eof = true;
+		len_available = 0;
 		break;
 
 	case DESPOTIFY_END_OF_PLAYLIST:
-		ctx->eof = true;
-		FormatDebug(despotify_domain, "End of playlist: %d", ctx->eof);
+		eof = true;
+		FormatDebug(despotify_domain, "End of playlist: %d", eof);
 		break;
 	}
 }
 
-
-static InputStream *
-input_despotify_open(const char *url,
-		     Mutex &mutex, Cond &cond,
-		     gcc_unused Error &error)
+static void callback(gcc_unused struct despotify_session* ds,
+		     int sig, gcc_unused void* data, void* callback_data)
 {
-	struct despotify_session *session;
-	struct ds_link *ds_link;
-	struct ds_track *track;
+	DespotifyInputStream *ctx = (DespotifyInputStream *)callback_data;
 
+	ctx->Callback(sig);
+}
+
+inline InputStream *
+DespotifyInputStream::Open(const char *url,
+			   Mutex &mutex, Cond &cond,
+			   gcc_unused Error &error)
+{
 	if (!StringStartsWith(url, "spt://"))
 		return nullptr;
 
-	session = mpd_despotify_get_session();
-	if (!session)
+	despotify_session *session = mpd_despotify_get_session();
+	if (session == nullptr)
 		return nullptr;
 
-	ds_link = despotify_link_from_uri(url + 6);
+	ds_link *ds_link = despotify_link_from_uri(url + 6);
 	if (!ds_link) {
 		FormatDebug(despotify_domain, "Can't find %s", url);
 		return nullptr;
@@ -146,7 +169,7 @@ input_despotify_open(const char *url,
 		return nullptr;
 	}
 
-	track = despotify_link_get_track(session, ds_link);
+	ds_track *track = despotify_link_get_track(session, ds_link);
 	despotify_free_link(ds_link);
 	if (!track)
 		return nullptr;
@@ -169,24 +192,32 @@ input_despotify_open(const char *url,
 	return &ctx->base;
 }
 
-static size_t
-input_despotify_read(InputStream *is, void *ptr, size_t size,
-		     gcc_unused Error &error)
+static InputStream *
+input_despotify_open(const char *url, Mutex &mutex, Cond &cond, Error &error)
 {
-	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
-	size_t to_cpy = size;
+	return DespotifyInputStream::Open(url, mutex, cond, error);
+}
 
-	if (ctx->len_available == 0)
-		refill_buffer(ctx);
+inline size_t
+DespotifyInputStream::Read(void *ptr, size_t size, gcc_unused Error &error)
+{
+	if (len_available == 0)
+		FillBuffer();
 
-	if (ctx->len_available < size)
-		to_cpy = ctx->len_available;
-	memcpy(ptr, ctx->pcm.buf, to_cpy);
-	ctx->len_available -= to_cpy;
+	size_t to_cpy = std::min(size, len_available);
+	memcpy(ptr, pcm.buf, to_cpy);
+	len_available -= to_cpy;
 
-	is->offset += to_cpy;
+	base.offset += to_cpy;
 
 	return to_cpy;
+}
+
+static size_t
+input_despotify_read(InputStream *is, void *ptr, size_t size, Error &error)
+{
+	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
+	return ctx->Read(ptr, size, error);
 }
 
 static void
@@ -203,18 +234,15 @@ input_despotify_eof(InputStream *is)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
 
-	return ctx->eof;
+	return ctx->IsEOF();
 }
 
 static Tag *
 input_despotify_tag(InputStream *is)
 {
 	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
-	Tag *tag = ctx->tag;
 
-	ctx->tag = nullptr;
-
-	return tag;
+	return ctx->ReadTag();
 }
 
 const InputPlugin input_plugin_despotify = {
