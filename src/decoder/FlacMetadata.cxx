@@ -28,8 +28,6 @@
 #include "util/ASCII.hxx"
 #include "util/SplitString.hxx"
 
-#include <glib.h>
-
 #include <string.h>
 
 static bool
@@ -39,7 +37,7 @@ flac_find_float_comment(const FLAC__StreamMetadata *block,
 	int offset;
 	size_t pos;
 	int len;
-	unsigned char tmp, *p;
+	unsigned char *p;
 
 	offset = FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
 								     cmnt);
@@ -52,11 +50,7 @@ flac_find_float_comment(const FLAC__StreamMetadata *block,
 		return false;
 
 	p = &block->data.vorbis_comment.comments[offset].entry[pos];
-	tmp = p[len];
-	p[len] = '\0';
 	*fl = (float)atof((char *)p);
-	p[len] = tmp;
-
 	return true;
 }
 
@@ -117,21 +111,19 @@ flac_parse_mixramp(const FLAC__StreamMetadata *block)
 
 /**
  * Checks if the specified name matches the entry's name, and if yes,
- * returns the comment value (not null-temrinated).
+ * returns the comment value;
  */
 static const char *
 flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		   const char *name, size_t *length_r)
+		   const char *name)
 {
 	size_t name_length = strlen(name);
 	const char *comment = (const char*)entry->entry;
 
-	if (entry->length <= name_length ||
-	    !StringEqualsCaseASCII(comment, name, name_length))
+	if (!StringEqualsCaseASCII(comment, name, name_length))
 		return nullptr;
 
 	if (comment[name_length] == '=') {
-		*length_r = entry->length - name_length - 1;
 		return comment + name_length + 1;
 	}
 
@@ -147,14 +139,9 @@ flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const char *name, TagType tag_type,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	const char *value;
-	size_t value_length;
-
-	value = flac_comment_value(entry, name, &value_length);
+	const char *value = flac_comment_value(entry, name);
 	if (value != nullptr) {
-		char *p = g_strndup(value, value_length);
-		tag_handler_invoke_tag(handler, handler_ctx, tag_type, p);
-		g_free(p);
+		tag_handler_invoke_tag(handler, handler_ctx, tag_type, value);
 		return true;
 	}
 
