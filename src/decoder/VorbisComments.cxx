@@ -25,8 +25,7 @@
 #include "tag/TagBuilder.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
-
-#include <glib.h>
+#include "util/SplitString.hxx"
 
 #include <stddef.h>
 #include <string.h>
@@ -102,16 +101,11 @@ vorbis_scan_comment(const char *comment,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	if (handler->pair != nullptr) {
-		char *name = g_strdup(comment);
-		char *value = strchr(name, '=');
-
-		if (value != nullptr && value > name) {
-			*value++ = 0;
+		const SplitString split(comment, '=');
+		if (split.IsDefined() && !split.IsEmpty())
 			tag_handler_invoke_pair(handler, handler_ctx,
-						name, value);
-		}
-
-		g_free(name);
+						split.GetFirst(),
+						split.GetSecond());
 	}
 
 	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)

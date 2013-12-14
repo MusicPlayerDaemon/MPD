@@ -26,6 +26,7 @@
 #include "tag/TagBuilder.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
+#include "util/SplitString.hxx"
 
 #include <glib.h>
 
@@ -165,16 +166,12 @@ flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	if (handler->pair != nullptr) {
-		char *name = g_strdup((const char*)entry->entry);
-		char *value = strchr(name, '=');
-
-		if (value != nullptr && value > name) {
-			*value++ = 0;
+		const char *comment = (const char *)entry->entry;
+		const SplitString split(comment, '=');
+		if (split.IsDefined() && !split.IsEmpty())
 			tag_handler_invoke_pair(handler, handler_ctx,
-						name, value);
-		}
-
-		g_free(name);
+						split.GetFirst(),
+						split.GetSecond());
 	}
 
 	for (const struct tag_table *i = xiph_tags; i->name != nullptr; ++i)

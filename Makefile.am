@@ -253,6 +253,7 @@ libutil_a_SOURCES = \
 	src/util/CharUtil.hxx \
 	src/util/NumberParser.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
+	src/util/SplitString.cxx src/util/SplitString.hxx \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/UriUtil.cxx src/util/UriUtil.hxx \
