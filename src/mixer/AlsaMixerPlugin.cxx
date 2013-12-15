@@ -47,10 +47,22 @@ class AlsaMixerMonitor final : private MultiSocketMonitor {
 public:
 	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
 		:MultiSocketMonitor(_loop), mixer(_mixer) {
-		BlockingCall(_loop, [this](){ InvalidateSockets(); });
+#ifdef USE_EPOLL
+		_loop.AddCall([this](){ InvalidateSockets(); });
+#else
+		_loop.AddIdle(InitAlsaMixerMonitor, this);
+#endif
 	}
 
 private:
+#ifndef USE_EPOLL
+	static gboolean InitAlsaMixerMonitor(gpointer data) {
+		AlsaMixerMonitor &amm = *(AlsaMixerMonitor *)data;
+		amm.InvalidateSockets();
+		return false;
+	}
+#endif
+
 	virtual int PrepareSockets() override;
 	virtual void DispatchSockets() override;
 };
