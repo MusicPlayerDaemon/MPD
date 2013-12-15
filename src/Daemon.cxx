@@ -25,8 +25,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -209,10 +207,10 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&_pidfile)
 		user_uid = pwd->pw_uid;
 		user_gid = pwd->pw_gid;
 
-		user_name = g_strdup(user);
+		user_name = strdup(user);
 
 		/* this is needed by libs such as arts */
-		g_setenv("HOME", pwd->pw_dir, true);
+		setenv("HOME", pwd->pw_dir, true);
 	}
 
 	if (group) {
@@ -235,7 +233,7 @@ daemonize_finish(void)
 		pidfile = AllocatedPath::Null();
 	}
 
-	g_free(user_name);
+	free(user_name);
 }
 
 #endif
