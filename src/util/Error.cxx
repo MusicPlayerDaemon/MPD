@@ -21,11 +21,14 @@
 #include "Error.hxx"
 #include "Domain.hxx"
 
+#ifdef WIN32
 #include <glib.h>
+#endif
 
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 
 const Domain errno_domain("errno");
 
@@ -70,7 +73,7 @@ Error::FormatPrefix(const char *fmt, ...)
 void
 Error::SetErrno(int e)
 {
-	Set(errno_domain, e, g_strerror(e));
+	Set(errno_domain, e, strerror(e));
 }
 
 void
@@ -82,7 +85,7 @@ Error::SetErrno()
 void
 Error::SetErrno(int e, const char *prefix)
 {
-	Format(errno_domain, e, "%s: %s", prefix, g_strerror(e));
+	Format(errno_domain, e, "%s: %s", prefix, strerror(e));
 }
 
 void

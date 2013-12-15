@@ -23,12 +23,15 @@
 #include "util/Domain.hxx"
 #include "LogV.hxx"
 
+#ifdef WIN32
 #include <glib.h>
+#endif
 
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -88,7 +91,7 @@ FatalSystemError(const char *msg)
 #ifdef WIN32
 	system_error = g_win32_error_message(GetLastError());
 #else
-	system_error = g_strerror(errno);
+	system_error = strerror(errno);
 #endif
 
 	FormatError(fatal_error_domain, "%s: %s", msg, system_error);

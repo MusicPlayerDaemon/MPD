@@ -24,9 +24,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
+#include <string.h>
 #include <errno.h>
 
 CommandResult
@@ -38,7 +37,7 @@ print_playlist_result(Client &client, PlaylistResult result)
 
 	case PlaylistResult::ERRNO:
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      g_strerror(errno));
+			      strerror(errno));
 		return CommandResult::ERROR;
 
 	case PlaylistResult::DENIED:
@@ -115,7 +114,7 @@ print_error(Client &client, const Error &error)
 		}
 	} else if (error.IsDomain(errno_domain)) {
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      g_strerror(error.GetCode()));
+			      strerror(error.GetCode()));
 		return CommandResult::ERROR;
 	}
 

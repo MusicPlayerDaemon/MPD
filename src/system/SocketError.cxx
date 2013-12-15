@@ -21,7 +21,7 @@
 #include "SocketError.hxx"
 #include "util/Domain.hxx"
 
-#include <glib.h>
+#include <string.h>
 
 const Domain socket_domain("socket");
 
@@ -41,6 +41,6 @@ SocketErrorMessage::SocketErrorMessage(socket_error_t code)
 #else
 
 SocketErrorMessage::SocketErrorMessage(socket_error_t code)
-	:msg(g_strerror(code)) {}
+	:msg(strerror(code)) {}
 
 #endif
