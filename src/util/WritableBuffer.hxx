@@ -41,47 +41,47 @@
  */
 template<typename T>
 struct WritableBuffer {
-  typedef size_t size_type;
-  typedef T *pointer_type;
-  typedef const T *const_pointer_type;
-  typedef pointer_type iterator;
-  typedef const_pointer_type const_iterator;
+	typedef size_t size_type;
+	typedef T *pointer_type;
+	typedef const T *const_pointer_type;
+	typedef pointer_type iterator;
+	typedef const_pointer_type const_iterator;
 
-  pointer_type data;
-  size_type size;
+	pointer_type data;
+	size_type size;
 
-  WritableBuffer() = default;
+	WritableBuffer() = default;
 
-  constexpr WritableBuffer(pointer_type _data, size_type _size)
-    :data(_data), size(_size) {}
+	constexpr WritableBuffer(pointer_type _data, size_type _size)
+		:data(_data), size(_size) {}
 
-  constexpr static WritableBuffer Null() {
-    return { nullptr, 0 };
-  }
+	constexpr static WritableBuffer Null() {
+		return { nullptr, 0 };
+	}
 
-  constexpr bool IsNull() const {
-    return data == nullptr;
-  }
+	constexpr bool IsNull() const {
+		return data == nullptr;
+	}
 
-  constexpr bool IsEmpty() const {
-    return size == 0;
-  }
+	constexpr bool IsEmpty() const {
+		return size == 0;
+	}
 
-  constexpr iterator begin() const {
-    return data;
-  }
+	constexpr iterator begin() const {
+		return data;
+	}
 
-  constexpr iterator end() const {
-    return data + size;
-  }
+	constexpr iterator end() const {
+		return data + size;
+	}
 
-  constexpr const_iterator cbegin() const {
-    return data;
-  }
+	constexpr const_iterator cbegin() const {
+		return data;
+	}
 
-  constexpr const_iterator cend() const {
-    return data + size;
-  }
+	constexpr const_iterator cend() const {
+		return data + size;
+	}
 };
 
 #endif
