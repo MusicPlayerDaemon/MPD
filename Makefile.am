@@ -147,6 +147,7 @@ src_mpd_SOURCES = \
 	src/ClientFile.cxx src/ClientFile.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/LogInit.cxx src/LogInit.hxx \
+	src/LogBackend.cxx \
 	src/Log.cxx src/Log.hxx src/LogV.hxx \
 	src/LogLevel.hxx \
 	src/ls.cxx src/ls.hxx \
@@ -1136,7 +1137,7 @@ test_read_conf_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	test/read_conf.cxx
 
 test_run_resolver_LDADD = \
@@ -1144,7 +1145,7 @@ test_run_resolver_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_resolver_SOURCES = \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	test/run_resolver.cxx
 
 test_DumpDatabase_LDADD = \
@@ -1157,7 +1158,7 @@ test_DumpDatabase_LDADD = \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/protocol/Ack.cxx \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/DatabaseError.cxx \
 	src/DatabaseRegistry.cxx \
 	src/DatabaseSelection.cxx \
@@ -1181,7 +1182,7 @@ test_run_input_LDADD = \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/TagSave.cxx
 
@@ -1199,7 +1200,7 @@ test_visit_archive_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/InputStream.cxx
 
@@ -1222,7 +1223,7 @@ test_dump_text_file_LDADD = \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/TextInputStream.cxx
 
@@ -1244,7 +1245,7 @@ test_dump_playlist_LDADD = \
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	test/FakeDecoderAPI.cxx \
 	$(DECODER_SRC) \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/Song.cxx src/TagSave.cxx \
 	src/TagFile.cxx \
@@ -1273,7 +1274,7 @@ test_run_decoder_LDADD = \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/stdbin.h \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
@@ -1297,7 +1298,7 @@ test_read_tags_LDADD = \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
 	test/FakeDecoderAPI.cxx \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
 	src/CheckAudioFormat.cxx \
@@ -1309,7 +1310,7 @@ test_dump_rva2_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_rva2_SOURCES = \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	test/dump_rva2.cxx
 endif
 
@@ -1323,7 +1324,7 @@ test_run_filter_LDADD = \
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/FilterPlugin.cxx src/FilterRegistry.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
@@ -1343,7 +1344,7 @@ if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.cxx \
 	test/stdbin.h \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx
@@ -1363,7 +1364,7 @@ if ENABLE_VORBIS_ENCODER
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	test/stdbin.h \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
@@ -1391,7 +1392,7 @@ test_software_volume_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_avahi_SOURCES = \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/ZeroconfAvahi.cxx src/AvahiPoll.cxx \
 	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
 	test/run_avahi.cxx
@@ -1413,7 +1414,7 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.cxx \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/AudioFormat.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
@@ -1439,7 +1440,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
@@ -1467,7 +1468,7 @@ test_read_mixer_LDADD = \
 	libfs.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/MixerControl.cxx \
 	src/FilterPlugin.cxx \
 	src/filter/VolumeFilterPlugin.cxx
@@ -1488,7 +1489,7 @@ if ENABLE_INOTIFY
 noinst_PROGRAMS += test/run_inotify
 test_run_inotify_SOURCES = test/run_inotify.cxx \
 	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/InotifyDomain.cxx \
 	src/InotifySource.cxx
 test_run_inotify_LDADD = \
@@ -1515,7 +1516,7 @@ test_test_byte_reverse_LDADD = \
 	$(CPPUNIT_LIBS)
 
 test_test_mixramp_SOURCES = \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	test/test_mixramp.cxx
 test_test_mixramp_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_mixramp_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
@@ -1542,7 +1543,7 @@ test_test_pcm_LDADD = \
 	$(GLIB_LIBS)
 
 test_test_archive_SOURCES = \
-	src/Log.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	test/test_archive.cxx
 test_test_archive_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_archive_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations

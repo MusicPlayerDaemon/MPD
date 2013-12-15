@@ -20,46 +20,18 @@
 #include "config.h"
 #include "LogV.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
-
-static GLogLevelFlags
-ToGLib(LogLevel level)
-{
-	switch (level) {
-	case LogLevel::DEBUG:
-		return G_LOG_LEVEL_DEBUG;
-
-	case LogLevel::INFO:
-		return G_LOG_LEVEL_INFO;
-
-	case LogLevel::DEFAULT:
-		return G_LOG_LEVEL_MESSAGE;
-
-	case LogLevel::WARNING:
-	case LogLevel::ERROR:
-		return G_LOG_LEVEL_WARNING;
-	}
-
-	assert(false);
-	gcc_unreachable();
-}
-
-void
-Log(const Domain &domain, LogLevel level, const char *msg)
-{
-	g_log(domain.GetName(), ToGLib(level), "%s", msg);
-}
 
 void
 LogFormatV(const Domain &domain, LogLevel level, const char *fmt, va_list ap)
 {
-	g_logv(domain.GetName(), ToGLib(level), fmt, ap);
+	char msg[1024];
+	vsnprintf(msg, sizeof(msg), fmt, ap);
+	Log(domain, level, msg);
 }
 
 void
@@ -144,7 +116,7 @@ FormatError(const Error &error, const char *fmt, ...)
 void
 LogErrno(const Domain &domain, int e, const char *msg)
 {
-	LogFormat(domain, LogLevel::ERROR, "%s: %s", msg, g_strerror(e));
+	LogFormat(domain, LogLevel::ERROR, "%s: %s", msg, strerror(e));
 }
 
 void
