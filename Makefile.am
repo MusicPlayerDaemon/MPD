@@ -147,7 +147,7 @@ src_mpd_SOURCES = \
 	src/ClientFile.cxx src/ClientFile.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/LogInit.cxx src/LogInit.hxx \
-	src/LogBackend.cxx \
+	src/LogBackend.cxx src/LogBackend.hxx \
 	src/Log.cxx src/Log.hxx src/LogV.hxx \
 	src/LogLevel.hxx \
 	src/ls.cxx src/ls.hxx \

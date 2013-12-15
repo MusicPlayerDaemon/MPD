@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "LogInit.hxx"
+#include "LogBackend.hxx"
 #include "Log.hxx"
 #include "ConfigData.hxx"
 #include "ConfigGlobal.hxx"
@@ -28,7 +29,6 @@
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "util/CharUtil.hxx"
 #include "system/FatalError.hxx"
 
 #include <assert.h>
@@ -39,22 +39,13 @@
 #include <unistd.h>
 #include <glib.h>
 
-#ifdef HAVE_SYSLOG
-#include <syslog.h>
-#endif
-
-#define LOG_LEVEL_SECURE G_LOG_LEVEL_INFO
+#define LOG_LEVEL_SECURE LogLevel::INFO
 
 #define LOG_DATE_BUF_SIZE 16
 #define LOG_DATE_LEN (LOG_DATE_BUF_SIZE - 1)
 
 static constexpr Domain log_domain("log");
 
-static GLogLevelFlags log_threshold = G_LOG_LEVEL_MESSAGE;
-
-static const char *log_charset;
-
-static bool stdout_mode = true;
 static int out_fd;
 static AllocatedPath out_path = AllocatedPath::Null();
 
@@ -65,66 +56,6 @@ static void redirect_logs(int fd)
 		FatalSystemError("Failed to dup2 stdout");
 	if (dup2(fd, STDERR_FILENO) < 0)
 		FatalSystemError("Failed to dup2 stderr");
-}
-
-static const char *log_date(void)
-{
-	static char buf[LOG_DATE_BUF_SIZE];
-	time_t t = time(nullptr);
-	strftime(buf, LOG_DATE_BUF_SIZE, "%b %d %H:%M : ", localtime(&t));
-	return buf;
-}
-
-/**
- * Determines the length of the string excluding trailing whitespace
- * characters.
- */
-static int
-chomp_length(const char *p)
-{
-	size_t length = strlen(p);
-
-	while (length > 0 && IsWhitespaceOrNull(p[length - 1]))
-		--length;
-
-	return (int)length;
-}
-
-static void
-file_log_func(const gchar *domain,
-	      GLogLevelFlags log_level,
-	      const gchar *message, gcc_unused gpointer user_data)
-{
-	char *converted;
-
-	if (log_level > log_threshold)
-		return;
-
-	if (log_charset != nullptr) {
-		converted = g_convert_with_fallback(message, -1,
-						    log_charset, "utf-8",
-						    nullptr, nullptr,
-						    nullptr, nullptr);
-		if (converted != nullptr)
-			message = converted;
-	} else
-		converted = nullptr;
-
-	if (domain == nullptr)
-		domain = "";
-
-	fprintf(stderr, "%s%s%s%.*s\n",
-		stdout_mode ? "" : log_date(),
-		domain, *domain == 0 ? "" : ": ",
-		chomp_length(message), message);
-
-	g_free(converted);
-}
-
-static void
-log_init_stdout(void)
-{
-	g_log_set_default_handler(file_log_func, nullptr);
 }
 
 static int
@@ -148,85 +79,22 @@ log_init_file(unsigned line, Error &error)
 		return false;
 	}
 
-	g_log_set_default_handler(file_log_func, nullptr);
+	EnableLogTimestamp();
 	return true;
 }
 
-#ifdef HAVE_SYSLOG
-
-static int
-glib_to_syslog_level(GLogLevelFlags log_level)
-{
-	switch (log_level & G_LOG_LEVEL_MASK) {
-	case G_LOG_LEVEL_ERROR:
-	case G_LOG_LEVEL_CRITICAL:
-		return LOG_ERR;
-
-	case G_LOG_LEVEL_WARNING:
-		return LOG_WARNING;
-
-	case G_LOG_LEVEL_MESSAGE:
-		return LOG_NOTICE;
-
-	case G_LOG_LEVEL_INFO:
-		return LOG_INFO;
-
-	case G_LOG_LEVEL_DEBUG:
-		return LOG_DEBUG;
-
-	default:
-		return LOG_NOTICE;
-	}
-}
-
-static void
-syslog_log_func(const gchar *domain,
-		GLogLevelFlags log_level, const gchar *message,
-		gcc_unused gpointer user_data)
-{
-	if (stdout_mode) {
-		/* fall back to the file log function during
-		   startup */
-		file_log_func(domain, log_level,
-			      message, user_data);
-		return;
-	}
-
-	if (log_level > log_threshold)
-		return;
-
-	if (domain == nullptr)
-		domain = "";
-
-	syslog(glib_to_syslog_level(log_level), "%s%s%.*s",
-	       domain, *domain == 0 ? "" : ": ",
-	       chomp_length(message), message);
-}
-
-static void
-log_init_syslog(void)
-{
-	assert(out_path.IsNull());
-
-	openlog(PACKAGE, 0, LOG_DAEMON);
-	g_log_set_default_handler(syslog_log_func, nullptr);
-}
-
-#endif
-
-static inline GLogLevelFlags
+static inline LogLevel
 parse_log_level(const char *value, unsigned line)
 {
 	if (0 == strcmp(value, "default"))
-		return G_LOG_LEVEL_MESSAGE;
+		return LogLevel::DEFAULT;
 	if (0 == strcmp(value, "secure"))
 		return LOG_LEVEL_SECURE;
 	else if (0 == strcmp(value, "verbose"))
-		return G_LOG_LEVEL_DEBUG;
+		return LogLevel::DEBUG;
 	else {
 		FormatFatalError("unknown log level \"%s\" at line %u",
 				 value, line);
-		return G_LOG_LEVEL_MESSAGE;
 	}
 }
 
@@ -234,9 +102,7 @@ void
 log_early_init(bool verbose)
 {
 	if (verbose)
-		log_threshold = G_LOG_LEVEL_DEBUG;
-
-	log_init_stdout();
+		SetLogThreshold(LogLevel::DEBUG);
 }
 
 bool
@@ -244,16 +110,17 @@ log_init(bool verbose, bool use_stdout, Error &error)
 {
 	const struct config_param *param;
 
-	g_get_charset(&log_charset);
+	const char *charset;
+	g_get_charset(&charset);
+	SetLogCharset(charset);
 
 	if (verbose)
-		log_threshold = G_LOG_LEVEL_DEBUG;
+		SetLogThreshold(LogLevel::DEBUG);
 	else if ((param = config_get_param(CONF_LOG_LEVEL)) != nullptr)
-		log_threshold = parse_log_level(param->value.c_str(),
-						param->line);
+		SetLogThreshold(parse_log_level(param->value.c_str(),
+						param->line));
 
 	if (use_stdout) {
-		log_init_stdout();
 		return true;
 	} else {
 		param = config_get_param(CONF_LOG_FILE);
@@ -261,7 +128,7 @@ log_init(bool verbose, bool use_stdout, Error &error)
 #ifdef HAVE_SYSLOG
 			/* no configuration: default to syslog (if
 			   available) */
-			log_init_syslog();
+			LogInitSysLog();
 			return true;
 #else
 			error.Set(log_domain,
@@ -270,7 +137,7 @@ log_init(bool verbose, bool use_stdout, Error &error)
 #endif
 #ifdef HAVE_SYSLOG
 		} else if (strcmp(param->value.c_str(), "syslog") == 0) {
-			log_init_syslog();
+			LogInitSysLog();
 			return true;
 #endif
 		} else {
@@ -284,12 +151,8 @@ log_init(bool verbose, bool use_stdout, Error &error)
 static void
 close_log_files(void)
 {
-	if (stdout_mode)
-		return;
-
 #ifdef HAVE_SYSLOG
-	if (out_path.IsNull())
-		closelog();
+	LogFinishSysLog();
 #endif
 }
 
@@ -303,31 +166,34 @@ log_deinit(void)
 
 void setup_log_output(bool use_stdout)
 {
+	if (use_stdout)
+		return;
+
 	fflush(nullptr);
-	if (!use_stdout) {
-#ifndef WIN32
-		if (out_path.IsNull())
-			out_fd = open("/dev/null", O_WRONLY);
+
+	if (out_fd < 0) {
+#ifdef WIN32
+		return;
+#else
+		out_fd = open("/dev/null", O_WRONLY);
+		if (out_fd < 0)
+			return;
 #endif
-
-		if (out_fd >= 0) {
-			redirect_logs(out_fd);
-			close(out_fd);
-		}
-
-		stdout_mode = false;
-		log_charset = nullptr;
 	}
+
+	redirect_logs(out_fd);
+	close(out_fd);
+	out_fd = -1;
+
+	SetLogCharset(nullptr);
 }
 
 int cycle_log_files(void)
 {
 	int fd;
 
-	if (stdout_mode || out_path.IsNull())
+	if (out_path.IsNull())
 		return 0;
-
-	assert(!out_path.IsNull());
 
 	FormatDebug(log_domain, "Cycling log files");
 	close_log_files();
