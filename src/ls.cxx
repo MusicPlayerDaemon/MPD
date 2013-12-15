@@ -55,6 +55,9 @@ static const char *remoteUrlPrefixes[] = {
 #ifdef ENABLE_DESPOTIFY
 	"spt://",
 #endif
+#ifdef HAVE_ALSA
+	"alsa://",
+#endif
 	NULL
 };
 

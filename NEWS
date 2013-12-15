@@ -1,6 +1,8 @@
 ver 0.19 (not yet released)
 * protocol
   - new commands "addtagid", "cleartagid"
+* input
+  - alsa: new input plugin
 * new resampler option using libsoxr
 
 ver 0.18.6 (not yet released)

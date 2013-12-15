@@ -22,6 +22,10 @@
 #include "util/Macros.hxx"
 #include "input/FileInputPlugin.hxx"
 
+#ifdef HAVE_ALSA
+#include "input/AlsaInputPlugin.hxx"
+#endif
+
 #ifdef ENABLE_ARCHIVE
 #include "input/ArchiveInputPlugin.hxx"
 #endif
@@ -48,6 +52,9 @@
 
 const InputPlugin *const input_plugins[] = {
 	&input_plugin_file,
+#ifdef HAVE_ALSA
+	&input_plugin_alsa,
+#endif
 #ifdef ENABLE_ARCHIVE
 	&input_plugin_archive,
 #endif

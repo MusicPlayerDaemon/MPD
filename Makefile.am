@@ -802,6 +802,14 @@ INPUT_LIBS = \
 	$(DESPOTIFY_LIBS) \
 	$(MMS_LIBS)
 
+if HAVE_ALSA
+libinput_a_SOURCES += \
+	src/input/AlsaInputPlugin.cxx \
+	src/input/AlsaInputPlugin.hxx
+INPUT_LIBS += $(ALSA_LIBS)
+endif
+
+
 if ENABLE_CURL
 libinput_a_SOURCES += \
 	src/input/CurlInputPlugin.cxx src/input/CurlInputPlugin.hxx \
