@@ -60,15 +60,14 @@ FullyBufferedSocket::Flush()
 {
 	assert(IsDefined());
 
-	size_t length;
-	const void *data = output.Read(&length);
-	if (data == nullptr) {
+	const auto data = output.Read();
+	if (data.IsNull()) {
 		IdleMonitor::Cancel();
 		CancelWrite();
 		return true;
 	}
 
-	auto nbytes = DirectWrite(data, length);
+	auto nbytes = DirectWrite(data.data, data.size);
 	if (gcc_unlikely(nbytes <= 0))
 		return nbytes == 0;
 

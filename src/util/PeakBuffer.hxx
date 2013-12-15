@@ -20,11 +20,13 @@
 #ifndef MPD_PEAK_BUFFER_HXX
 #define MPD_PEAK_BUFFER_HXX
 
+#include "ConstBuffer.hxx"
 #include "Compiler.h"
 
 #include <stddef.h>
 
 struct fifo_buffer;
+template<typename T> struct ConstBuffer;
 
 /**
  * A FIFO-like buffer that will allocate more memory on demand to
@@ -57,7 +59,9 @@ public:
 	gcc_pure
 	bool IsEmpty() const;
 
-	const void *Read(size_t *length_r) const;
+	gcc_pure
+	ConstBuffer<void> Read() const;
+
 	void Consume(size_t length);
 
 	bool Append(const void *data, size_t length);

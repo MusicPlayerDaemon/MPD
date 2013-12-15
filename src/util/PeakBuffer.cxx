@@ -45,19 +45,21 @@ PeakBuffer::IsEmpty() const
 		 fifo_buffer_is_empty(peak_buffer));
 }
 
-const void *
-PeakBuffer::Read(size_t *length_r) const
+ConstBuffer<void>
+PeakBuffer::Read() const
 {
 	if (normal_buffer != nullptr) {
-		const void *p = fifo_buffer_read(normal_buffer, length_r);
+		size_t size;
+		const void *p = fifo_buffer_read(normal_buffer, &size);
 		if (p != nullptr)
-			return p;
+			return { p, size };
 	}
 
 	if (peak_buffer != nullptr) {
-		const void *p = fifo_buffer_read(peak_buffer, length_r);
+		size_t size;
+		const void *p = fifo_buffer_read(peak_buffer, &size);
 		if (p != nullptr)
-			return p;
+			return { p, size };
 	}
 
 	return nullptr;
