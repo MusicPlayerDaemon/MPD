@@ -30,8 +30,6 @@
 #include "util/Error.hxx"
 #include "Song.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 

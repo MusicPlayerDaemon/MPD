@@ -50,8 +50,6 @@
 #include "ArchivePlugin.hxx"
 #endif
 
-#include <glib.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 

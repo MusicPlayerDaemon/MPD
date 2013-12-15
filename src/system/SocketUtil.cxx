@@ -22,8 +22,6 @@
 #include "SocketError.hxx"
 #include "fd_util.h"
 
-#include <glib.h>
-
 #include <unistd.h>
 
 #ifndef WIN32

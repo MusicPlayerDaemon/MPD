@@ -26,8 +26,6 @@
 #include "util/Error.hxx"
 #include "ConfigGlobal.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 

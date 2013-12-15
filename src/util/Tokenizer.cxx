@@ -24,8 +24,6 @@
 #include "Error.hxx"
 #include "Domain.hxx"
 
-#include <glib.h>
-
 static constexpr Domain tokenizer_domain("tokenizer");
 
 static inline bool
