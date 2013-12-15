@@ -20,13 +20,14 @@
 #ifndef MPD_PEAK_BUFFER_HXX
 #define MPD_PEAK_BUFFER_HXX
 
-#include "ConstBuffer.hxx"
+#include "WritableBuffer.hxx"
 #include "Compiler.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
-struct fifo_buffer;
-template<typename T> struct ConstBuffer;
+template<typename T> struct WritableBuffer;
+template<typename T> class DynamicFifoBuffer;
 
 /**
  * A FIFO-like buffer that will allocate more memory on demand to
@@ -36,7 +37,7 @@ template<typename T> struct ConstBuffer;
 class PeakBuffer {
 	size_t normal_size, peak_size;
 
-	fifo_buffer *normal_buffer, *peak_buffer;
+	DynamicFifoBuffer<uint8_t> *normal_buffer, *peak_buffer;
 
 public:
 	PeakBuffer(size_t _normal_size, size_t _peak_size)
@@ -60,7 +61,7 @@ public:
 	bool IsEmpty() const;
 
 	gcc_pure
-	ConstBuffer<void> Read() const;
+	WritableBuffer<void> Read() const;
 
 	void Consume(size_t length);
 

@@ -18,48 +18,39 @@
  */
 
 #include "PeakBuffer.hxx"
-#include "HugeAllocator.hxx"
-#include "fifo_buffer.h"
+#include "DynamicFifoBuffer.hxx"
 
 #include <algorithm>
 
 #include <assert.h>
-#include <stdint.h>
 #include <string.h>
 
 PeakBuffer::~PeakBuffer()
 {
-	if (normal_buffer != nullptr)
-		fifo_buffer_free(normal_buffer);
-
-	if (peak_buffer != nullptr)
-		HugeFree(peak_buffer, peak_size);
+	delete normal_buffer;
+	delete peak_buffer;
 }
 
 bool
 PeakBuffer::IsEmpty() const
 {
-	return (normal_buffer == nullptr ||
-		fifo_buffer_is_empty(normal_buffer)) &&
-		(peak_buffer == nullptr ||
-		 fifo_buffer_is_empty(peak_buffer));
+	return (normal_buffer == nullptr || normal_buffer->IsEmpty()) &&
+		(peak_buffer == nullptr || peak_buffer->IsEmpty());
 }
 
-ConstBuffer<void>
+WritableBuffer<void>
 PeakBuffer::Read() const
 {
 	if (normal_buffer != nullptr) {
-		size_t size;
-		const void *p = fifo_buffer_read(normal_buffer, &size);
-		if (p != nullptr)
-			return { p, size };
+		const auto p = normal_buffer->Read();
+		if (!p.IsNull())
+			return p.ToVoid();
 	}
 
 	if (peak_buffer != nullptr) {
-		size_t size;
-		const void *p = fifo_buffer_read(peak_buffer, &size);
-		if (p != nullptr)
-			return { p, size };
+		const auto p = peak_buffer->Read();
+		if (!p.IsNull())
+			return p.ToVoid();
 	}
 
 	return nullptr;
@@ -68,15 +59,15 @@ PeakBuffer::Read() const
 void
 PeakBuffer::Consume(size_t length)
 {
-	if (normal_buffer != nullptr && !fifo_buffer_is_empty(normal_buffer)) {
-		fifo_buffer_consume(normal_buffer, length);
+	if (normal_buffer != nullptr && !normal_buffer->IsEmpty()) {
+		normal_buffer->Consume(length);
 		return;
 	}
 
-	if (peak_buffer != nullptr && !fifo_buffer_is_empty(peak_buffer)) {
-		fifo_buffer_consume(peak_buffer, length);
-		if (fifo_buffer_is_empty(peak_buffer)) {
-			HugeFree(peak_buffer, peak_size);
+	if (peak_buffer != nullptr && !peak_buffer->IsEmpty()) {
+		peak_buffer->Consume(length);
+		if (peak_buffer->IsEmpty()) {
+			delete peak_buffer;
 			peak_buffer = nullptr;
 		}
 
@@ -85,7 +76,7 @@ PeakBuffer::Consume(size_t length)
 }
 
 static size_t
-AppendTo(fifo_buffer *buffer, const void *data, size_t length)
+AppendTo(DynamicFifoBuffer<uint8_t> &buffer, const void *data, size_t length)
 {
 	assert(data != nullptr);
 	assert(length > 0);
@@ -93,14 +84,13 @@ AppendTo(fifo_buffer *buffer, const void *data, size_t length)
 	size_t total = 0;
 
 	do {
-		size_t max_length;
-		void *p = fifo_buffer_write(buffer, &max_length);
-		if (p == nullptr)
+		const auto p = buffer.Write();
+		if (p.IsNull())
 			break;
 
-		const size_t nbytes = std::min(length, max_length);
-		memcpy(p, data, nbytes);
-		fifo_buffer_append(buffer, nbytes);
+		const size_t nbytes = std::min(length, p.size);
+		memcpy(p.data, data, nbytes);
+		buffer.Append(nbytes);
 
 		data = (const uint8_t *)data + nbytes;
 		length -= nbytes;
@@ -116,15 +106,15 @@ PeakBuffer::Append(const void *data, size_t length)
 	if (length == 0)
 		return true;
 
-	if (peak_buffer != nullptr && !fifo_buffer_is_empty(peak_buffer)) {
-		size_t nbytes = AppendTo(peak_buffer, data, length);
+	if (peak_buffer != nullptr && !peak_buffer->IsEmpty()) {
+		size_t nbytes = AppendTo(*peak_buffer, data, length);
 		return nbytes == length;
 	}
 
 	if (normal_buffer == nullptr)
-		normal_buffer = fifo_buffer_new(normal_size);
+		normal_buffer = new DynamicFifoBuffer<uint8_t>(normal_size);
 
-	size_t nbytes = AppendTo(normal_buffer, data, length);
+	size_t nbytes = AppendTo(*normal_buffer, data, length);
 	if (nbytes > 0) {
 		data = (const uint8_t *)data + nbytes;
 		length -= nbytes;
@@ -133,13 +123,11 @@ PeakBuffer::Append(const void *data, size_t length)
 	}
 
 	if (peak_buffer == nullptr && peak_size > 0) {
-		peak_buffer = (fifo_buffer *)HugeAllocate(peak_size);
+		peak_buffer = new DynamicFifoBuffer<uint8_t>(peak_size);
 		if (peak_buffer == nullptr)
 			return false;
-
-		fifo_buffer_init(peak_buffer, peak_size);
 	}
 
-	nbytes = AppendTo(peak_buffer, data, length);
+	nbytes = AppendTo(*peak_buffer, data, length);
 	return nbytes == length;
 }
