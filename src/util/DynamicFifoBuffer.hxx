@@ -57,7 +57,7 @@ protected:
 	T *data;
 
 public:
-	DynamicFifoBuffer(size_type _capacity)
+	explicit DynamicFifoBuffer(size_type _capacity)
 		:head(0), tail(0), capacity(_capacity),
 		 data(new T[capacity]) {}
 	~DynamicFifoBuffer() {
