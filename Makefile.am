@@ -990,14 +990,6 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/ExtM3uPlaylistPlugin.hxx \
 	src/playlist/M3uPlaylistPlugin.cxx \
 	src/playlist/M3uPlaylistPlugin.hxx \
-	src/playlist/PlsPlaylistPlugin.cxx \
-	src/playlist/PlsPlaylistPlugin.hxx \
-	src/playlist/XspfPlaylistPlugin.cxx \
-	src/playlist/XspfPlaylistPlugin.hxx \
-	src/playlist/AsxPlaylistPlugin.cxx \
-	src/playlist/AsxPlaylistPlugin.hxx \
-	src/playlist/RssPlaylistPlugin.cxx \
-	src/playlist/RssPlaylistPlugin.hxx \
 	src/playlist/CuePlaylistPlugin.cxx \
 	src/playlist/CuePlaylistPlugin.hxx \
 	src/playlist/EmbeddedCuePlaylistPlugin.cxx \
@@ -1022,6 +1014,18 @@ libplaylist_plugins_a_SOURCES += \
 	src/playlist/SoundCloudPlaylistPlugin.cxx \
 	src/playlist/SoundCloudPlaylistPlugin.hxx
 PLAYLIST_LIBS += $(YAJL_LIBS)
+endif
+
+if HAVE_GLIB
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/PlsPlaylistPlugin.cxx \
+	src/playlist/PlsPlaylistPlugin.hxx \
+	src/playlist/XspfPlaylistPlugin.cxx \
+	src/playlist/XspfPlaylistPlugin.hxx \
+	src/playlist/AsxPlaylistPlugin.cxx \
+	src/playlist/AsxPlaylistPlugin.hxx \
+	src/playlist/RssPlaylistPlugin.cxx \
+	src/playlist/RssPlaylistPlugin.hxx
 endif
 
 #

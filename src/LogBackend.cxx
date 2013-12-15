@@ -23,18 +23,24 @@
 #include "util/Domain.hxx"
 #include "util/CharUtil.hxx"
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef HAVE_SYSLOG
 #include <syslog.h>
 #endif
 
 static LogLevel log_threshold = LogLevel::INFO;
+
+#ifdef HAVE_GLIB
 static const char *log_charset;
+#endif
 
 static bool enable_timestamp;
 
@@ -48,11 +54,15 @@ SetLogThreshold(LogLevel _threshold)
 	log_threshold = _threshold;
 }
 
+#ifdef HAVE_GLIB
+
 void
 SetLogCharset(const char *_charset)
 {
 	log_charset = _charset;
 }
+
+#endif
 
 void
 EnableLogTimestamp()
@@ -142,6 +152,7 @@ LogFinishSysLog()
 static void
 FileLog(const Domain &domain, const char *message)
 {
+#ifdef HAVE_GLIB
 	char *converted;
 
 	if (log_charset != nullptr) {
@@ -153,13 +164,16 @@ FileLog(const Domain &domain, const char *message)
 			message = converted;
 	} else
 		converted = nullptr;
+#endif
 
 	fprintf(stderr, "%s%s: %.*s\n",
 		enable_timestamp ? log_date() : "",
 		domain.GetName(),
 		chomp_length(message), message);
 
+#ifdef HAVE_GLIB
 	g_free(converted);
+#endif
 }
 
 void

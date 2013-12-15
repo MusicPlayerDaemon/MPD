@@ -23,7 +23,7 @@
 #include "util/Domain.hxx"
 #include "LogV.hxx"
 
-#ifdef WIN32
+#ifdef HAVE_GLIB
 #include <glib.h>
 #endif
 
@@ -78,11 +78,15 @@ FatalError(const char *msg, const Error &error)
 	FormatFatalError("%s: %s", msg, error.GetMessage());
 }
 
+#ifdef HAVE_GLIB
+
 void
 FatalError(const char *msg, GError *error)
 {
 	FormatFatalError("%s: %s", msg, error->message);
 }
+
+#endif
 
 void
 FatalSystemError(const char *msg)

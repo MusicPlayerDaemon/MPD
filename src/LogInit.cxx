@@ -31,13 +31,16 @@
 #include "util/Domain.hxx"
 #include "system/FatalError.hxx"
 
+#ifdef HAVE_GLIB
+#include <glib.h>
+#endif
+
 #include <assert.h>
 #include <string.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
-#include <glib.h>
 
 #define LOG_LEVEL_SECURE LogLevel::INFO
 
@@ -110,9 +113,11 @@ log_init(bool verbose, bool use_stdout, Error &error)
 {
 	const struct config_param *param;
 
+#ifdef HAVE_GLIB
 	const char *charset;
 	g_get_charset(&charset);
 	SetLogCharset(charset);
+#endif
 
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);

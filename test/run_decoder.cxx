@@ -29,7 +29,9 @@
 #include "Log.hxx"
 #include "stdbin.h"
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <assert.h>
 #include <unistd.h>
@@ -192,8 +194,10 @@ int main(int argc, char **argv)
 	decoder_name = argv[1];
 	decoder.uri = argv[2];
 
+#ifdef HAVE_GLIB
 #if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
+#endif
 #endif
 
 	g_log_set_default_handler(my_log_func, NULL);

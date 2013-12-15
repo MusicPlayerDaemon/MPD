@@ -79,7 +79,9 @@
 #include "ArchiveList.hxx"
 #endif
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <stdlib.h>
 
@@ -91,6 +93,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #endif
+
+#include <limits.h>
 
 static constexpr unsigned DEFAULT_BUFFER_SIZE = 4096;
 static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
@@ -359,11 +363,13 @@ int mpd_main(int argc, char *argv[])
 	setlocale(LC_CTYPE,"");
 #endif
 
+#ifdef HAVE_GLIB
 	g_set_application_name("Music Player Daemon");
 
 #if !GLIB_CHECK_VERSION(2,32,0)
 	/* enable GLib's thread safety code */
 	g_thread_init(nullptr);
+#endif
 #endif
 
 	winsock_init();
@@ -473,7 +479,7 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	if (!glue_state_file_init(error)) {
-		g_printerr("%s\n", error.GetMessage());
+		LogError(error);
 		return EXIT_FAILURE;
 	}
 
