@@ -148,6 +148,7 @@ src_mpd_SOURCES = \
 	src/Listen.cxx src/Listen.hxx \
 	src/LogInit.cxx src/LogInit.hxx \
 	src/Log.cxx src/Log.hxx src/LogV.hxx \
+	src/LogLevel.hxx \
 	src/ls.cxx src/ls.hxx \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \

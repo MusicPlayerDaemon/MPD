@@ -20,46 +20,11 @@
 #ifndef MPD_LOG_HXX
 #define MPD_LOG_HXX
 
+#include "LogLevel.hxx"
 #include "Compiler.h"
-
-#ifdef WIN32
-#include <windows.h>
-/* damn you, windows.h! */
-#ifdef ERROR
-#undef ERROR
-#endif
-#endif
 
 class Error;
 class Domain;
-
-enum class LogLevel {
-	/**
-	 * Debug message for developers.
-	 */
-	DEBUG,
-
-	/**
-	 * Unimportant informational message.
-	 */
-	INFO,
-
-	/**
-	 * Interesting informational message.
-	 */
-	DEFAULT,
-
-	/**
-	 * Warning: something may be wrong.
-	 */
-	WARNING,
-
-	/**
-	 * An error has occurred, an operation could not finish
-	 * successfully.
-	 */
-	ERROR,
-};
 
 void
 Log(const Domain &domain, LogLevel level, const char *msg);
