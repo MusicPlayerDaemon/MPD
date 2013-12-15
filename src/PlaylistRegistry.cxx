@@ -40,8 +40,6 @@
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 
@@ -130,13 +128,12 @@ static SongEnumerator *
 playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 			      bool *tried)
 {
-	char *scheme;
 	SongEnumerator *playlist = nullptr;
 
 	assert(uri != nullptr);
 
-	scheme = g_uri_parse_scheme(uri);
-	if (scheme == nullptr)
+	const auto scheme = uri_get_scheme(uri);
+	if (scheme.empty())
 		return nullptr;
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
@@ -146,7 +143,7 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 
 		if (playlist_plugins_enabled[i] && plugin->open_uri != nullptr &&
 		    plugin->schemes != nullptr &&
-		    string_array_contains(plugin->schemes, scheme)) {
+		    string_array_contains(plugin->schemes, scheme.c_str())) {
 			playlist = playlist_plugin_open_uri(plugin, uri,
 							    mutex, cond);
 			if (playlist != nullptr)
@@ -156,7 +153,6 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 		}
 	}
 
-	g_free(scheme);
 	return playlist;
 }
 

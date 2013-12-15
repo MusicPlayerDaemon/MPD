@@ -27,6 +27,16 @@ bool uri_has_scheme(const char *uri)
 	return strstr(uri, "://") != nullptr;
 }
 
+std::string
+uri_get_scheme(const char *uri)
+{
+	const char *end = strstr(uri, "://");
+	if (end == nullptr)
+		end = uri;
+
+	return std::string(uri, end);
+}
+
 /* suffixes should be ascii only characters */
 const char *
 uri_get_suffix(const char *uri)

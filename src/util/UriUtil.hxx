@@ -31,6 +31,13 @@
 gcc_pure
 bool uri_has_scheme(const char *uri);
 
+/**
+ * Returns the scheme name of the specified URI, or an empty string.
+ */
+gcc_pure
+std::string
+uri_get_scheme(const char *uri);
+
 gcc_pure
 const char *
 uri_get_suffix(const char *uri);
