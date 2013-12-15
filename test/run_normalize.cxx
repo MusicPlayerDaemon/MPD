@@ -33,6 +33,7 @@
 #include <glib.h>
 
 #include <stddef.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
 	ssize_t nbytes;
 
 	if (argc > 2) {
-		g_printerr("Usage: run_normalize [FORMAT] <IN >OUT\n");
+		fprintf(stderr, "Usage: run_normalize [FORMAT] <IN >OUT\n");
 		return 1;
 	}
 
@@ -51,7 +52,7 @@ int main(int argc, char **argv)
 	if (argc > 1) {
 		Error error;
 		if (!audio_format_parse(audio_format, argv[1], false, error)) {
-			g_printerr("Failed to parse audio format: %s\n",
+			fprintf(stderr, "Failed to parse audio format: %s\n",
 				   error.GetMessage());
 			return 1;
 		}

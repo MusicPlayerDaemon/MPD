@@ -30,24 +30,13 @@
 #include "ConfigGlobal.hxx"
 #include "util/FifoBuffer.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 #include "stdbin.h"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-static void
-my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
-	    const gchar *message, gcc_unused gpointer user_data)
-{
-	if (log_domain != NULL)
-		g_printerr("%s: %s\n", log_domain, message);
-	else
-		g_printerr("%s\n", message);
-}
 
 const char *
 config_get_string(gcc_unused enum ConfigOption option,
@@ -62,26 +51,23 @@ int main(int argc, char **argv)
 	const void *output;
 
 	if (argc != 3) {
-		g_printerr("Usage: run_convert IN_FORMAT OUT_FORMAT <IN >OUT\n");
+		fprintf(stderr,
+			"Usage: run_convert IN_FORMAT OUT_FORMAT <IN >OUT\n");
 		return 1;
 	}
-
-	g_log_set_default_handler(my_log_func, NULL);
 
 	Error error;
 	if (!audio_format_parse(in_audio_format, argv[1],
 				false, error)) {
-		g_printerr("Failed to parse audio format: %s\n",
-			   error.GetMessage());
-		return 1;
+		LogError(error, "Failed to parse audio format");
+		return EXIT_FAILURE;
 	}
 
 	AudioFormat out_audio_format_mask;
 	if (!audio_format_parse(out_audio_format_mask, argv[2],
 				true, error)) {
-		g_printerr("Failed to parse audio format: %s\n",
-			   error.GetMessage());
-		return 1;
+		LogError(error, "Failed to parse audio format");
+		return EXIT_FAILURE;
 	}
 
 	out_audio_format = in_audio_format;
@@ -91,8 +77,7 @@ int main(int argc, char **argv)
 
 	PcmConvert state;
 	if (!state.Open(in_audio_format, out_audio_format_mask, error)) {
-		g_printerr("Failed to open PcmConvert: %s\n",
-			   error.GetMessage());
+		LogError(error, "Failed to open PcmConvert");
 		return EXIT_FAILURE;
 	}
 
@@ -124,8 +109,8 @@ int main(int argc, char **argv)
 				       &length, error);
 		if (output == NULL) {
 			state.Close();
-			g_printerr("Failed to convert: %s\n", error.GetMessage());
-			return 2;
+			LogError(error, "Failed to convert");
+			return EXIT_FAILURE;
 		}
 
 		gcc_unused ssize_t ignored = write(1, output, length);

@@ -21,40 +21,26 @@
 #include "ConfigGlobal.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <assert.h>
-
-static void
-my_log_func(gcc_unused const gchar *log_domain,
-	    GLogLevelFlags log_level,
-	    const gchar *message, gcc_unused gpointer user_data)
-{
-	if (log_level > G_LOG_LEVEL_WARNING)
-		return;
-
-	g_printerr("%s\n", message);
-}
 
 int main(int argc, char **argv)
 {
 	if (argc != 3) {
-		g_printerr("Usage: read_conf FILE SETTING\n");
-		return 1;
+		fprintf(stderr, "Usage: read_conf FILE SETTING\n");
+		return EXIT_FAILURE;
 	}
 
 	const Path config_path = Path::FromFS(argv[1]);
 	const char *name = argv[2];
 
-	g_log_set_default_handler(my_log_func, NULL);
-
 	config_global_init();
 
 	Error error;
 	if (!ReadConfigFile(config_path, error)) {
-		g_printerr("%s:", error.GetMessage());
-		return 1;
+		LogError(error);
+		return EXIT_FAILURE;
 	}
 
 	ConfigOption option = ParseConfigOptionName(name);
@@ -63,11 +49,11 @@ int main(int argc, char **argv)
 		: nullptr;
 	int ret;
 	if (value != NULL) {
-		g_print("%s\n", value);
-		ret = 0;
+		printf("%s\n", value);
+		ret = EXIT_SUCCESS;
 	} else {
-		g_printerr("No such setting: %s\n", name);
-		ret = 2;
+		fprintf(stderr, "No such setting: %s\n", name);
+		ret = EXIT_FAILURE;
 	}
 
 	config_global_finish();

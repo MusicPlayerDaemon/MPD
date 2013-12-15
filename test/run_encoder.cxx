@@ -24,9 +24,8 @@
 #include "AudioParser.hxx"
 #include "ConfigData.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 #include "stdbin.h"
-
-#include <glib.h>
 
 #include <stddef.h>
 #include <unistd.h>
@@ -50,8 +49,9 @@ int main(int argc, char **argv)
 	/* parse command line */
 
 	if (argc > 3) {
-		g_printerr("Usage: run_encoder [ENCODER] [FORMAT] <IN >OUT\n");
-		return 1;
+		fprintf(stderr,
+			"Usage: run_encoder [ENCODER] [FORMAT] <IN >OUT\n");
+		return EXIT_FAILURE;
 	}
 
 	if (argc > 1)
@@ -63,8 +63,8 @@ int main(int argc, char **argv)
 
 	const auto plugin = encoder_plugin_get(encoder_name);
 	if (plugin == NULL) {
-		g_printerr("No such encoder: %s\n", encoder_name);
-		return 1;
+		fprintf(stderr, "No such encoder: %s\n", encoder_name);
+		return EXIT_FAILURE;
 	}
 
 	config_param param;
@@ -73,9 +73,8 @@ int main(int argc, char **argv)
 	Error error;
 	const auto encoder = encoder_init(*plugin, param, error);
 	if (encoder == NULL) {
-		g_printerr("Failed to initialize encoder: %s\n",
-			   error.GetMessage());
-		return 1;
+		LogError(error, "Failed to initialize encoder");
+		return EXIT_FAILURE;
 	}
 
 	/* open the encoder */
@@ -83,16 +82,14 @@ int main(int argc, char **argv)
 	AudioFormat audio_format(44100, SampleFormat::S16, 2);
 	if (argc > 2) {
 		if (!audio_format_parse(audio_format, argv[2], false, error)) {
-			g_printerr("Failed to parse audio format: %s\n",
-				   error.GetMessage());
-			return 1;
+			LogError(error, "Failed to parse audio format");
+			return EXIT_FAILURE;
 		}
 	}
 
 	if (!encoder_open(encoder, audio_format, error)) {
-		g_printerr("Failed to open encoder: %s\n",
-			   error.GetMessage());
-		return 1;
+		LogError(error, "Failed to open encoder");
+		return EXIT_FAILURE;
 	}
 
 	encoder_to_stdout(*encoder);
@@ -102,18 +99,16 @@ int main(int argc, char **argv)
 	ssize_t nbytes;
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		if (!encoder_write(encoder, buffer, nbytes, error)) {
-			g_printerr("encoder_write() failed: %s\n",
-				   error.GetMessage());
-			return 1;
+			LogError(error, "encoder_write() failed");
+			return EXIT_FAILURE;
 		}
 
 		encoder_to_stdout(*encoder);
 	}
 
 	if (!encoder_end(encoder, error)) {
-		g_printerr("encoder_flush() failed: %s\n",
-			   error.GetMessage());
-		return 1;
+		LogError(error, "encoder_flush() failed");
+		return EXIT_FAILURE;
 	}
 
 	encoder_to_stdout(*encoder);

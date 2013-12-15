@@ -36,16 +36,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
-
-static void
-my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
-	    const gchar *message, gcc_unused gpointer user_data)
-{
-	if (log_domain != NULL)
-		g_printerr("%s: %s\n", log_domain, message);
-	else
-		g_printerr("%s\n", message);
-}
+#include <stdio.h>
 
 struct Decoder {
 	const char *uri;
@@ -66,9 +57,9 @@ decoder_initialized(Decoder &decoder,
 	assert(!decoder.initialized);
 	assert(audio_format.IsValid());
 
-	g_printerr("audio_format=%s duration=%f\n",
-		   audio_format_to_string(audio_format, &af_string),
-		   duration);
+	fprintf(stderr, "audio_format=%s duration=%f\n",
+		audio_format_to_string(audio_format, &af_string),
+		duration);
 
 	decoder.initialized = true;
 }
@@ -167,13 +158,13 @@ decoder_replay_gain(gcc_unused Decoder &decoder,
 {
 	const ReplayGainTuple *tuple = &rgi->tuples[REPLAY_GAIN_ALBUM];
 	if (tuple->IsDefined())
-		g_printerr("replay_gain[album]: gain=%f peak=%f\n",
-			   tuple->gain, tuple->peak);
+		fprintf(stderr, "replay_gain[album]: gain=%f peak=%f\n",
+			tuple->gain, tuple->peak);
 
 	tuple = &rgi->tuples[REPLAY_GAIN_TRACK];
 	if (tuple->IsDefined())
-		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
-			   tuple->gain, tuple->peak);
+		fprintf(stderr, "replay_gain[track]: gain=%f peak=%f\n",
+			tuple->gain, tuple->peak);
 }
 
 void
@@ -186,8 +177,8 @@ int main(int argc, char **argv)
 	const char *decoder_name;
 
 	if (argc != 3) {
-		g_printerr("Usage: run_decoder DECODER URI >OUT\n");
-		return 1;
+		fprintf(stderr, "Usage: run_decoder DECODER URI >OUT\n");
+		return EXIT_FAILURE;
 	}
 
 	Decoder decoder;
@@ -200,23 +191,21 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-	g_log_set_default_handler(my_log_func, NULL);
-
 	io_thread_init();
 	io_thread_start();
 
 	Error error;
 	if (!input_stream_global_init(error)) {
 		LogError(error);
-		return 2;
+		return EXIT_FAILURE;
 	}
 
 	decoder_plugin_init_all();
 
 	decoder.plugin = decoder_plugin_from_name(decoder_name);
 	if (decoder.plugin == NULL) {
-		g_printerr("No such decoder: %s\n", decoder_name);
-		return 1;
+		fprintf(stderr, "No such decoder: %s\n", decoder_name);
+		return EXIT_FAILURE;
 	}
 
 	decoder.initialized = false;
@@ -233,17 +222,17 @@ int main(int argc, char **argv)
 			if (error.IsDefined())
 				LogError(error);
 			else
-				g_printerr("InputStream::Open() failed\n");
+				fprintf(stderr, "InputStream::Open() failed\n");
 
-			return 1;
+			return EXIT_FAILURE;
 		}
 
 		decoder.plugin->StreamDecode(decoder, *is);
 
 		is->Close();
 	} else {
-		g_printerr("Decoder plugin is not usable\n");
-		return 1;
+		fprintf(stderr, "Decoder plugin is not usable\n");
+		return EXIT_FAILURE;
 	}
 
 	decoder_plugin_deinit_all();
@@ -251,8 +240,8 @@ int main(int argc, char **argv)
 	io_thread_deinit();
 
 	if (!decoder.initialized) {
-		g_printerr("Decoding failed\n");
-		return 1;
+		fprintf(stderr, "Decoding failed\n");
+		return EXIT_FAILURE;
 	}
 
 	return 0;

@@ -40,16 +40,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-static void
-my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
-	    const gchar *message, gcc_unused gpointer user_data)
-{
-	if (log_domain != NULL)
-		g_printerr("%s: %s\n", log_domain, message);
-	else
-		g_printerr("%s\n", message);
-}
-
 static int
 dump_input_stream(InputStream *is)
 {
@@ -73,14 +63,14 @@ dump_input_stream(InputStream *is)
 	/* print meta data */
 
 	if (!is->mime.empty())
-		g_printerr("MIME type: %s\n", is->mime.c_str());
+		fprintf(stderr, "MIME type: %s\n", is->mime.c_str());
 
 	/* read data and tags from the stream */
 
 	while (!is->IsEOF()) {
 		Tag *tag = is->ReadTag();
 		if (tag != NULL) {
-			g_printerr("Received a tag:\n");
+			fprintf(stderr, "Received a tag:\n");
 			tag_save(stderr, *tag);
 			delete tag;
 		}
@@ -116,8 +106,8 @@ int main(int argc, char **argv)
 	int ret;
 
 	if (argc != 2) {
-		g_printerr("Usage: run_input URI\n");
-		return 1;
+		fprintf(stderr, "Usage: run_input URI\n");
+		return EXIT_FAILURE;
 	}
 
 	/* initialize GLib */
@@ -127,8 +117,6 @@ int main(int argc, char **argv)
 	g_thread_init(NULL);
 #endif
 #endif
-
-	g_log_set_default_handler(my_log_func, NULL);
 
 	/* initialize MPD */
 
@@ -159,8 +147,8 @@ int main(int argc, char **argv)
 		if (error.IsDefined())
 			LogError(error);
 		else
-			g_printerr("input_stream::Open() failed\n");
-		ret = 2;
+			fprintf(stderr, "input_stream::Open() failed\n");
+		ret = EXIT_FAILURE;
 	}
 
 	/* deinitialize everything */
