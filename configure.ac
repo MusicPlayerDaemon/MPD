@@ -66,11 +66,19 @@ dnl ---------------------------------------------------------------------------
 AC_CANONICAL_HOST
 
 host_is_unix=yes
+host_is_linux=no
 host_is_darwin=no
 host_is_solaris=no
 host_is_windows=no
 
+linux_auto=no
+
 case "$host_os" in
+linux*)
+	host_is_linux=yes
+	linux_auto=auto
+	;;
+
 mingw32* | windows*)
 	AC_CONFIG_FILES([
 		src/win/mpd_win32_rc.rc
@@ -153,10 +161,16 @@ AC_SEARCH_LIBS([syslog], [bsd socket inet],
 AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 
-AC_CHECK_FUNCS(pipe2 accept4)
+if test x$host_is_linux = xyes; then
+	AC_CHECK_FUNCS(pipe2 accept4)
+fi
+
 AC_CHECK_FUNCS(getpwnam_r getpwuid_r)
-MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
-MPD_OPTIONAL_FUNC(signalfd, signalfd, USE_SIGNALFD)
+
+if test x$host_is_linux = xyes; then
+	MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
+	MPD_OPTIONAL_FUNC(signalfd, signalfd, USE_SIGNALFD)
+fi
 
 AC_SEARCH_LIBS([exp], [m],,
 	[AC_MSG_ERROR([exp() not found])])
@@ -169,7 +183,10 @@ dnl Event loop selection
 dnl ---------------------------------------------------------------------------
 
 MPD_OPTIONAL_FUNC_NODEF(poll, poll)
-MPD_OPTIONAL_FUNC_NODEF(epoll, epoll_create1)
+
+if test x$host_is_linux = xyes; then
+	MPD_OPTIONAL_FUNC_NODEF(epoll, epoll_create1)
+fi
 
 AC_ARG_WITH(eventloop,
 	AS_HELP_STRING(
@@ -251,7 +268,7 @@ AC_ARG_ENABLE(adplug,
 
 AC_ARG_ENABLE(alsa,
 	AS_HELP_STRING([--enable-alsa], [enable ALSA support]),,
-	[enable_alsa=auto])
+	[enable_alsa=$linux_auto])
 
 AC_ARG_ENABLE(roar,
 	AS_HELP_STRING([--enable-roar],
@@ -473,7 +490,7 @@ AC_ARG_ENABLE(sqlite,
 AC_ARG_ENABLE(systemd-daemon,
 	AS_HELP_STRING([--enable-systemd-daemon],
 		[use the systemd daemon library (default=auto)]),,
-	[enable_systemd_daemon=auto])
+	[enable_systemd_daemon=$linux_auto])
 
 AC_ARG_ENABLE(tcp,
 	AS_HELP_STRING([--disable-tcp],
