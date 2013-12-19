@@ -66,6 +66,7 @@ dnl ---------------------------------------------------------------------------
 AC_CANONICAL_HOST
 
 host_is_darwin=no
+host_is_solaris=no
 host_is_windows=no
 
 case "$host_os" in
@@ -82,6 +83,10 @@ mingw32* | windows*)
 
 darwin*)
 	host_is_darwin=yes
+	;;
+
+solaris*)
+	host_is_solaris=yes
 	;;
 esac
 AM_CONDITIONAL([HAVE_WINDOWS], [test x$host_is_windows = xyes])
@@ -456,7 +461,7 @@ AC_ARG_ENABLE(sndfile,
 AC_ARG_ENABLE(solaris_output,
 	AS_HELP_STRING([--enable-solaris-output],
 		[enables the Solaris /dev/audio output]),,
-	[enable_solaris_output=auto])
+	[enable_solaris_output=$host_is_solaris])
 
 AC_ARG_ENABLE(sqlite,
 	AS_HELP_STRING([--enable-sqlite],
@@ -1464,18 +1469,6 @@ fi
 AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
 
 dnl --------------------------------- Solaris ---------------------------------
-
-if test x$enable_solaris_output = xauto; then
-	case "$host_os" in
-	solaris*)
-		enable_solaris_output=yes
-		;;
-
-	*)
-		enable_solaris_output=no
-		;;
-	esac
-fi
 
 if test x$enable_solaris_output = xyes; then
 	AC_DEFINE(ENABLE_SOLARIS_OUTPUT, 1, [Define to enable Solaris /dev/audio support])
