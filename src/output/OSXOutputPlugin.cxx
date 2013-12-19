@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
 #include "OutputAPI.hxx"
-#include "util/fifo_buffer.h"
+#include "utill/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "thread/Mutex.hxx"
@@ -44,7 +44,7 @@ struct OSXOutput {
 	Mutex mutex;
 	Cond condition;
 
-	struct fifo_buffer *buffer;
+	DynamicFifoBuffer<uint8_t> *buffer;
 };
 
 static constexpr Domain osx_output_domain("osx_output");
@@ -207,22 +207,19 @@ osx_render(void *vdata,
 
 	od->mutex.lock();
 
-	size_t nbytes;
-	const void *src = fifo_buffer_read(od->buffer, &nbytes);
+	auto src = od->buffer->Read();
+	if (!src.IsEmpty()) {
+		if (src.size > buffer_size)
+			src.size = buffer_size;
 
-	if (src != NULL) {
-		if (nbytes > buffer_size)
-			nbytes = buffer_size;
-
-		memcpy(buffer->mData, src, nbytes);
-		fifo_buffer_consume(od->buffer, nbytes);
-	} else
-		nbytes = 0;
+		memcpy(buffer->mData, src.data, src.size);
+		od->buffer->Consume(src.size);
+	}
 
 	od->condition.signal();
 	od->mutex.unlock();
 
-	buffer->mDataByteSize = nbytes;
+	buffer->mDataByteSize = src.size;
 
 	unsigned i;
 	for (i = 1; i < buffer_list->mNumberBuffers; ++i) {
@@ -298,7 +295,7 @@ osx_output_cancel(struct audio_output *ao)
 	OSXOutput *od = (OSXOutput *)ao;
 
 	const ScopeLock protect(od->mutex);
-	fifo_buffer_clear(od->buffer);
+	od->buffer->Clear();
 }
 
 static void
@@ -309,7 +306,7 @@ osx_output_close(struct audio_output *ao)
 	AudioOutputUnitStop(od->au);
 	AudioUnitUninitialize(od->au);
 
-	fifo_buffer_free(od->buffer);
+	delete od->buffer;
 }
 
 static bool
@@ -370,8 +367,8 @@ osx_output_open(struct audio_output *ao, AudioFormat &audio_format,
 	}
 
 	/* create a buffer of 1s */
-	od->buffer = fifo_buffer_new(audio_format.sample_rate *
-				     audio_format.GetFrameSize());
+	od->buffer = new DynamicFifoBuffer<uint8_t>(audio_format.sample_rate *
+						    audio_format.GetFrameSize());
 
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
@@ -393,23 +390,21 @@ osx_output_play(struct audio_output *ao, const void *chunk, size_t size,
 
 	const ScopeLock protect(od->mutex);
 
-	void *dest;
-	size_t max_length;
-
+	DynamicFifoBuffer<uint8_t>::Range dest;
 	while (true) {
-		dest = fifo_buffer_write(od->buffer, &max_length);
-		if (dest != NULL)
+		dest = od->buffer->Write();
+		if (!dest.IsEmpty())
 			break;
 
 		/* wait for some free space in the buffer */
 		od->condition.wait(od->mutex);
 	}
 
-	if (size > max_length)
-		size = max_length;
+	if (size > dest.size)
+		size = dest.size;
 
-	memcpy(dest, chunk, size);
-	fifo_buffer_append(od->buffer, size);
+	memcpy(dest.data, chunk, size);
+	od->buffer->Append(size);
 
 	return size;
 }
