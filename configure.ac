@@ -65,6 +65,7 @@ dnl OS Specific Defaults
 dnl ---------------------------------------------------------------------------
 AC_CANONICAL_HOST
 
+host_is_unix=yes
 host_is_darwin=no
 host_is_solaris=no
 host_is_windows=no
@@ -79,6 +80,7 @@ mingw32* | windows*)
 	AM_CPPFLAGS="$AM_CPPFLAGS -DWINVER=0x0600 -D_WIN32_WINNT=0x0600"
 	LIBS="$LIBS -lws2_32"
 	host_is_windows=yes
+	host_is_unix=no
 	;;
 
 darwin*)
@@ -496,7 +498,7 @@ AC_ARG_ENABLE(twolame-encoder,
 AC_ARG_ENABLE(un,
 	AS_HELP_STRING([--disable-un],
 		[disable support for clients connecting via unix domain sockets (default: enable)]),,
-	[enable_un=yes])
+	[enable_un=$host_is_unix])
 
 AC_ARG_ENABLE(vorbis,
 	AS_HELP_STRING([--enable-vorbis],
@@ -606,12 +608,6 @@ fi
 if test x$enable_tcp = xyes; then
 	AC_DEFINE(HAVE_TCP, 1, [Define if TCP socket support is enabled])
 fi
-
-case "$host_os" in
-mingw* | windows* | cygwin*)
-	enable_un=no
-	;;
-esac
 
 if test x$enable_un = xyes; then
 	AC_DEFINE(HAVE_UN, 1, [Define if unix domain socket support is enabled])
