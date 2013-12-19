@@ -43,13 +43,13 @@ PeakBuffer::Read() const
 {
 	if (normal_buffer != nullptr) {
 		const auto p = normal_buffer->Read();
-		if (!p.IsNull())
+		if (!p.IsEmpty())
 			return p.ToVoid();
 	}
 
 	if (peak_buffer != nullptr) {
 		const auto p = peak_buffer->Read();
-		if (!p.IsNull())
+		if (!p.IsEmpty())
 			return p.ToVoid();
 	}
 
@@ -85,7 +85,7 @@ AppendTo(DynamicFifoBuffer<uint8_t> &buffer, const void *data, size_t length)
 
 	do {
 		const auto p = buffer.Write();
-		if (p.IsNull())
+		if (p.IsEmpty())
 			break;
 
 		const size_t nbytes = std::min(length, p.size);

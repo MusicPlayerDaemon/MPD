@@ -60,7 +60,7 @@ FullyBufferedSocket::Flush()
 	assert(IsDefined());
 
 	const auto data = output.Read();
-	if (data.IsNull()) {
+	if (data.IsEmpty()) {
 		IdleMonitor::Cancel();
 		CancelWrite();
 		return true;
