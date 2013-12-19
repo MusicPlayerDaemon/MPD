@@ -24,6 +24,7 @@
 #include "Compiler.h"
 
 #include <string>
+#include <algorithm>
 
 #include <assert.h>
 
