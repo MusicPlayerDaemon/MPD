@@ -27,7 +27,6 @@
 #include <assert.h>
 #include <stdint.h>
 
-struct fifo_buffer;
 class Error;
 class EventLoop;
 

@@ -261,7 +261,6 @@ libutil_a_SOURCES = \
 	src/util/UriUtil.cxx src/util/UriUtil.hxx \
 	src/util/Manual.hxx \
 	src/util/RefCount.hxx \
-	src/util/fifo_buffer.c src/util/fifo_buffer.h \
 	src/util/FifoBuffer.hxx \
 	src/util/DynamicFifoBuffer.hxx \
 	src/util/ConstBuffer.hxx \
