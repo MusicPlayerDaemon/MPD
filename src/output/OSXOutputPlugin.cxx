@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
 #include "OutputAPI.hxx"
-#include "utill/DynamicFifoBuffer.hxx"
+#include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "thread/Mutex.hxx"
