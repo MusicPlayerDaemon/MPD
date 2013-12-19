@@ -87,7 +87,8 @@ riff_seek_id3(FILE *file)
 			/* pad byte */
 			++size;
 
-		if (memcmp(chunk.id, "id3 ", 4) == 0)
+		if (memcmp(chunk.id, "id3 ", 4) == 0 ||
+		    memcmp(chunk.id, "ID3 ", 4) == 0)
 			/* found it! */
 			return size;
 
