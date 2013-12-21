@@ -191,16 +191,16 @@ alsa_input_eof(gcc_unused InputStream *is)
 };
 
 const struct InputPlugin input_plugin_alsa = {
-	.name = "alsa",
-	.init = nullptr,
-	.finish = nullptr,
-	.open = alsa_input_open,
-	.close = alsa_input_close,
-	.check = nullptr,
-	.update = nullptr,
-	.tag = nullptr,
-	.available = nullptr,
-	.read = alsa_input_read,
-	.eof = alsa_input_eof,
-	.seek = nullptr
+	"alsa",
+	nullptr,
+	nullptr,
+	alsa_input_open,
+	alsa_input_close,
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+	alsa_input_read,
+	alsa_input_eof,
+	nullptr,
 };
