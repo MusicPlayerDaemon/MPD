@@ -23,9 +23,10 @@
 #include "check.h"
 #include "PollResultGeneric.hxx"
 
-#include <string.h> // for size_t
 #include <vector>
 #include <unordered_map>
+
+#include <stddef.h>
 #include <sys/poll.h>
 
 class PollGroupPoll
