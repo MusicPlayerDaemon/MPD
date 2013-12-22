@@ -24,6 +24,7 @@
 #include "AudioFormat.hxx"
 
 #include <stdint.h>
+#include <stddef.h>
 
 /**
  * This template describes the specified #SampleFormat.  This is an
