@@ -1397,7 +1397,7 @@ endif
 
 test_software_volume_SOURCES = test/software_volume.cxx \
 	test/stdbin.h \
-	src/CheckAudioFormat.cxx \
+	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
 test_software_volume_LDADD = \
 	$(PCM_LIBS) \
@@ -1484,6 +1484,7 @@ test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/MixerControl.cxx \
 	src/FilterPlugin.cxx \
+	src/AudioFormat.cxx \
 	src/filter/VolumeFilterPlugin.cxx
 
 if ENABLE_BZIP2_TEST
@@ -1538,6 +1539,7 @@ test_test_mixramp_LDADD = \
 	$(CPPUNIT_LIBS)
 
 test_test_pcm_SOURCES = \
+	src/AudioFormat.cxx \
 	test/test_pcm_util.hxx \
 	test/test_pcm_dither.cxx \
 	test/test_pcm_pack.cxx \

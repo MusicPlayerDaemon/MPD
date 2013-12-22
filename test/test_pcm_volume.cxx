@@ -17,169 +17,108 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "test_pcm_all.hxx"
 #include "pcm/Volume.hxx"
+#include "pcm/Traits.hxx"
+#include "util/ConstBuffer.hxx"
+#include "util/Error.hxx"
 #include "test_pcm_util.hxx"
 
 #include <algorithm>
 
 #include <string.h>
 
+template<SampleFormat F, class Traits=SampleTraits<F>,
+	 typename G=RandomInt<typename Traits::value_type>>
+static void
+TestVolume(G g=G())
+{
+	typedef typename Traits::value_type value_type;
+
+	PcmVolume pv;
+	CPPUNIT_ASSERT(pv.Open(F, IgnoreError()));
+
+	constexpr size_t N = 256;
+	static value_type zero[N];
+	const auto _src = TestDataBuffer<value_type, N>(g);
+	const ConstBuffer<void> src(_src, sizeof(_src));
+
+	pv.SetVolume(0);
+	auto dest = pv.Apply(src);
+	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest.data, zero, sizeof(zero)));
+
+	pv.SetVolume(PCM_VOLUME_1);
+	dest = pv.Apply(src);
+	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest.data, src.data, src.size));
+
+	pv.SetVolume(PCM_VOLUME_1 / 2);
+	dest = pv.Apply(src);
+	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
+
+	const auto _dest = ConstBuffer<value_type>::FromVoid(dest);
+	for (unsigned i = 0; i < N; ++i) {
+		CPPUNIT_ASSERT(_dest.data[i] >= (_src[i] - 1) / 2);
+		CPPUNIT_ASSERT(_dest.data[i] <= _src[i] / 2 + 1);
+	}
+
+	pv.Close();
+}
+
 void
 PcmVolumeTest::TestVolume8()
 {
-	constexpr unsigned N = 256;
-	static int8_t zero[N];
-	const auto src = TestDataBuffer<int8_t, N>();
-
-	int8_t dest[N];
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S8, 0));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S8, PCM_VOLUME_1));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S8, PCM_VOLUME_1 / 2));
-
-	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT(dest[i] >= (src[i] - 1) / 2);
-		CPPUNIT_ASSERT(dest[i] <= src[i] / 2 + 1);
-	}
+	TestVolume<SampleFormat::S8>();
 }
 
 void
 PcmVolumeTest::TestVolume16()
 {
-	constexpr unsigned N = 256;
-	static int16_t zero[N];
-	const auto src = TestDataBuffer<int16_t, N>();
-
-	int16_t dest[N];
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S16, 0));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S16, PCM_VOLUME_1));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S16, PCM_VOLUME_1 / 2));
-
-	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT(dest[i] >= (src[i] - 1) / 2);
-		CPPUNIT_ASSERT(dest[i] <= src[i] / 2 + 1);
-	}
+	TestVolume<SampleFormat::S16>();
 }
 
 void
 PcmVolumeTest::TestVolume24()
 {
-	constexpr unsigned N = 256;
-	static int32_t zero[N];
-	const auto src = TestDataBuffer<int32_t, N>(RandomInt24());
-
-	int32_t dest[N];
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S24_P32, 0));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S24_P32, PCM_VOLUME_1));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S24_P32, PCM_VOLUME_1 / 2));
-
-	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT(dest[i] >= (src[i] - 1) / 2);
-		CPPUNIT_ASSERT(dest[i] <= src[i] / 2 + 1);
-	}
+	TestVolume<SampleFormat::S24_P32>(RandomInt24());
 }
 
 void
 PcmVolumeTest::TestVolume32()
 {
-	constexpr unsigned N = 256;
-	static int32_t zero[N];
-	const auto src = TestDataBuffer<int32_t, N>();
-
-	int32_t dest[N];
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S32, 0));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S32, PCM_VOLUME_1));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
-
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::S32, PCM_VOLUME_1 / 2));
-
-	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT(dest[i] >= (src[i] - 1) / 2);
-		CPPUNIT_ASSERT(dest[i] <= src[i] / 2 + 1);
-	}
+	TestVolume<SampleFormat::S32>();
 }
 
 void
 PcmVolumeTest::TestVolumeFloat()
 {
-	constexpr unsigned N = 256;
+	PcmVolume pv;
+	CPPUNIT_ASSERT(pv.Open(SampleFormat::FLOAT, IgnoreError()));
+
+	constexpr size_t N = 256;
 	static float zero[N];
-	const auto src = TestDataBuffer<float, N>(RandomFloat());
+	const auto _src = TestDataBuffer<float, N>(RandomFloat());
+	const ConstBuffer<void> src(_src, sizeof(_src));
 
-	float dest[N];
+	pv.SetVolume(0);
+	auto dest = pv.Apply(src);
+	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest.data, zero, sizeof(zero)));
 
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::FLOAT, 0));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, zero, sizeof(zero)));
+	pv.SetVolume(PCM_VOLUME_1);
+	dest = pv.Apply(src);
+	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
+	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest.data, src.data, src.size));
 
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::FLOAT, PCM_VOLUME_1));
-	CPPUNIT_ASSERT_EQUAL(0, memcmp(dest, src, sizeof(src)));
+	pv.SetVolume(PCM_VOLUME_1 / 2);
+	dest = pv.Apply(src);
+	CPPUNIT_ASSERT_EQUAL(src.size, dest.size);
 
-	std::copy(src.begin(), src.end(), dest);
-	CPPUNIT_ASSERT_EQUAL(true,
-			     pcm_volume(dest, sizeof(dest),
-					SampleFormat::FLOAT,
-					PCM_VOLUME_1 / 2));
-
+	const auto _dest = ConstBuffer<float>::FromVoid(dest);
 	for (unsigned i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_DOUBLES_EQUAL(src[i] / 2, dest[i], 1);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(_src[i] / 2, _dest.data[i], 1);
+
+	pv.Close();
 }

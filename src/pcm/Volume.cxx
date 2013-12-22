@@ -19,9 +19,11 @@
 
 #include "config.h"
 #include "Volume.hxx"
+#include "Domain.hxx"
 #include "PcmUtils.hxx"
 #include "Traits.hxx"
-#include "AudioFormat.hxx"
+#include "util/ConstBuffer.hxx"
+#include "util/Error.hxx"
 
 #include <stdint.h>
 #include <string.h>
@@ -143,61 +145,88 @@ pcm_volume_change_float(float *dest, const float *src, const float *end,
 }
 
 bool
-pcm_volume(void *buffer, size_t length,
-	   SampleFormat format,
-	   int volume)
+PcmVolume::Open(SampleFormat _format, Error &error)
 {
-	if (volume == PCM_VOLUME_1S)
-		return true;
+	assert(format == SampleFormat::UNDEFINED);
 
-	if (volume <= 0) {
-		memset(buffer, 0, length);
-		return true;
-	}
-
-	const void *end = pcm_end_pointer(buffer, length);
-	switch (format) {
+	switch (_format) {
 	case SampleFormat::UNDEFINED:
 	case SampleFormat::DSD:
-		/* not implemented */
+		error.Format(pcm_domain,
+			     "Software volume for %s is not implemented",
+			     sample_format_to_string(_format));
 		return false;
 
 	case SampleFormat::S8:
-		pcm_volume_change_8((int8_t *)buffer,
-				    (const int8_t *)buffer,
-				    (const int8_t *)end,
-				    volume);
-		return true;
-
 	case SampleFormat::S16:
-		pcm_volume_change_16((int16_t *)buffer,
-				     (const int16_t *)buffer,
-				     (const int16_t *)end,
-				     volume);
-		return true;
-
 	case SampleFormat::S24_P32:
-		pcm_volume_change_24((int32_t *)buffer,
-				     (const int32_t *)buffer,
-				     (const int32_t *)end,
-				     volume);
-		return true;
-
 	case SampleFormat::S32:
-		pcm_volume_change_32((int32_t *)buffer,
-				     (const int32_t *)buffer,
-				     (const int32_t *)end,
-				     volume);
-		return true;
-
 	case SampleFormat::FLOAT:
-		pcm_volume_change_float((float *)buffer,
-					(const float *)buffer,
-					(const float *)end,
-					pcm_volume_to_float(volume));
-		return true;
+		break;
 	}
 
-	assert(false);
-	gcc_unreachable();
+	format = _format;
+	return true;
+}
+
+ConstBuffer<void>
+PcmVolume::Apply(ConstBuffer<void> src)
+{
+	if (volume == PCM_VOLUME_1)
+		return src;
+
+	void *data = buffer.Get(src.size);
+
+	if (volume == 0) {
+		/* optimized special case: 0% volume = memset(0) */
+		/* TODO: is this valid for all sample formats? What
+		   about floating point? */
+		memset(data, 0, src.size);
+		return { data, src.size };
+	}
+
+	const void *end = pcm_end_pointer(src.data, src.size);
+	switch (format) {
+	case SampleFormat::UNDEFINED:
+	case SampleFormat::DSD:
+		assert(false);
+		gcc_unreachable();
+
+	case SampleFormat::S8:
+		pcm_volume_change_8((int8_t *)data,
+				    (const int8_t *)src.data,
+				    (const int8_t *)end,
+				    volume);
+		break;
+
+	case SampleFormat::S16:
+		pcm_volume_change_16((int16_t *)data,
+				     (const int16_t *)src.data,
+				     (const int16_t *)end,
+				     volume);
+		break;
+
+	case SampleFormat::S24_P32:
+		pcm_volume_change_24((int32_t *)data,
+				     (const int32_t *)src.data,
+				     (const int32_t *)end,
+				     volume);
+		break;
+
+	case SampleFormat::S32:
+		pcm_volume_change_32((int32_t *)data,
+				     (const int32_t *)src.data,
+				     (const int32_t *)end,
+				     volume);
+		break;
+
+	case SampleFormat::FLOAT:
+		pcm_volume_change_float((float *)data,
+					(const float *)src.data,
+					(const float *)end,
+					pcm_volume_to_float(volume));
+		break;
+	}
+
+	return { data, src.size };
 }

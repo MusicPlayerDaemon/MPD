@@ -22,9 +22,17 @@
 
 #include "PcmPrng.hxx"
 #include "AudioFormat.hxx"
+#include "PcmBuffer.hxx"
 
 #include <stdint.h>
 #include <stddef.h>
+
+#ifndef NDEBUG
+#include <assert.h>
+#endif
+
+class Error;
+template<typename T> struct ConstBuffer;
 
 /**
  * Number of fractional bits for a fixed-point volume value.
@@ -71,17 +79,66 @@ pcm_volume_dither(void)
 }
 
 /**
- * Adjust the volume of the specified PCM buffer.
- *
- * @param buffer the PCM buffer
- * @param length the length of the PCM buffer
- * @param format the sample format of the PCM buffer
- * @param volume the volume between 0 and #PCM_VOLUME_1
- * @return true on success, false if the audio format is not supported
+ * A class that converts samples from one format to another.
  */
-bool
-pcm_volume(void *buffer, size_t length,
-	   SampleFormat format,
-	   int volume);
+class PcmVolume {
+	SampleFormat format;
+
+	unsigned volume;
+
+	PcmBuffer buffer;
+
+public:
+	PcmVolume()
+		:volume(PCM_VOLUME_1) {
+#ifndef NDEBUG
+		format = SampleFormat::UNDEFINED;
+#endif
+	}
+
+#ifndef NDEBUG
+	~PcmVolume() {
+		assert(format == SampleFormat::UNDEFINED);
+	}
+#endif
+
+	unsigned GetVolume() const {
+		return volume;
+	}
+
+	/**
+	 * @param _volume the volume level in the range
+	 * [0..#PCM_VOLUME_1]; may be bigger than #PCM_VOLUME_1, but
+	 * then it will most likely clip a lot
+	 */
+	void SetVolume(unsigned _volume) {
+		volume = _volume;
+	}
+
+	/**
+	 * Opens the object, prepare for Apply().
+	 *
+	 * @param format the sample format
+	 * @param error location to store the error
+	 * @return true on success
+	 */
+	bool Open(SampleFormat format, Error &error);
+
+	/**
+	 * Closes the object.  After that, you may call Open() again.
+	 */
+	void Close() {
+#ifndef NDEBUG
+		assert(format != SampleFormat::UNDEFINED);
+		format = SampleFormat::UNDEFINED;
+#endif
+	}
+
+	/**
+	 * Apply the volume level.
+	 */
+	gcc_pure
+	ConstBuffer<void> Apply(ConstBuffer<void> src);
+};
 
 #endif

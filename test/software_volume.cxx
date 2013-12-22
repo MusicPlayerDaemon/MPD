@@ -27,12 +27,14 @@
 #include "pcm/Volume.hxx"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "stdbin.h"
 
 #include <glib.h>
 
 #include <stddef.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 int main(int argc, char **argv)
@@ -55,14 +57,16 @@ int main(int argc, char **argv)
 		}
 	}
 
-	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		if (!pcm_volume(buffer, nbytes,
-				audio_format.format,
-				PCM_VOLUME_1 / 2)) {
-			g_printerr("pcm_volume() has failed\n");
-			return 2;
-		}
-
-		gcc_unused ssize_t ignored = write(1, buffer, nbytes);
+	PcmVolume pv;
+	if (!pv.Open(audio_format.format, error)) {
+		fprintf(stderr, "%s\n", error.GetMessage());
+		return EXIT_FAILURE;
 	}
+
+	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
+		auto dest = pv.Apply({buffer, size_t(nbytes)});
+		gcc_unused ssize_t ignored = write(1, dest.data, dest.size);
+	}
+
+	pv.Close();
 }

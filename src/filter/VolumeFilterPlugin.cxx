@@ -23,8 +23,8 @@
 #include "FilterInternal.hxx"
 #include "FilterRegistry.hxx"
 #include "pcm/Volume.hxx"
-#include "pcm/PcmBuffer.hxx"
 #include "AudioFormat.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -32,29 +32,15 @@
 #include <string.h>
 
 class VolumeFilter final : public Filter {
-	/**
-	 * The current volume, from 0 to #PCM_VOLUME_1.
-	 */
-	unsigned volume;
-
-	AudioFormat format;
-
-	PcmBuffer buffer;
+	PcmVolume pv;
 
 public:
-	VolumeFilter()
-		:volume(PCM_VOLUME_1) {}
-
 	unsigned GetVolume() const {
-		assert(volume <= PCM_VOLUME_1);
-
-		return volume;
+		return pv.GetVolume();
 	}
 
 	void SetVolume(unsigned _volume) {
-		assert(_volume <= PCM_VOLUME_1);
-
-		volume = _volume;
+		pv.SetVolume(_volume);
 	}
 
 	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
@@ -73,50 +59,27 @@ volume_filter_init(gcc_unused const config_param &param,
 }
 
 AudioFormat
-VolumeFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
+VolumeFilter::Open(AudioFormat &audio_format, Error &error)
 {
-	format = audio_format;
+	if (!pv.Open(audio_format.format, error))
+		return AudioFormat::Undefined();
 
-	return format;
+	return audio_format;
 }
 
 void
 VolumeFilter::Close()
 {
-	buffer.Clear();
+	pv.Close();
 }
 
 const void *
 VolumeFilter::FilterPCM(const void *src, size_t src_size,
-			size_t *dest_size_r, Error &error)
+			size_t *dest_size_r, gcc_unused Error &error)
 {
-	*dest_size_r = src_size;
-
-	if (volume >= PCM_VOLUME_1)
-		/* optimized special case: 100% volume = no-op */
-		return src;
-
-	void *dest = buffer.Get(src_size);
-
-	if (volume <= 0) {
-		/* optimized special case: 0% volume = memset(0) */
-		/* XXX is this valid for all sample formats? What
-		   about floating point? */
-		memset(dest, 0, src_size);
-		return dest;
-	}
-
-	memcpy(dest, src, src_size);
-
-	bool success = pcm_volume(dest, src_size,
-				  format.format,
-				  volume);
-	if (!success) {
-		error.Set(volume_domain, "pcm_volume() has failed");
-		return NULL;
-	}
-
-	return dest;
+	const auto dest = pv.Apply({src, src_size});
+	*dest_size_r = dest.size;
+	return dest.data;
 }
 
 const struct filter_plugin volume_filter_plugin = {

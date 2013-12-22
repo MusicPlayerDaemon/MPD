@@ -28,6 +28,7 @@
 #include "MixerControl.hxx"
 #include "pcm/Volume.hxx"
 #include "pcm/PcmBuffer.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -55,8 +56,8 @@ class ReplayGainFilter final : public Filter {
 	ReplayGainInfo info;
 
 	/**
-	 * The current volume, between 0 and a value that may or may not exceed
-	 * #PCM_VOLUME_1.
+	 * About the current volume: it is between 0 and a value that
+	 * may or may not exceed #PCM_VOLUME_1.
 	 *
 	 * If the default value of true is used for replaygain_limit, the
 	 * application of the volume to the signal will never cause clipping.
@@ -66,16 +67,11 @@ class ReplayGainFilter final : public Filter {
 	 * maintain a consistent audio level. Whether clipping will actually
 	 * occur depends on what value the user is using for replaygain_preamp.
 	 */
-	unsigned volume;
-
-	AudioFormat format;
-
-	PcmBuffer buffer;
+	PcmVolume pv;
 
 public:
 	ReplayGainFilter()
-		:mixer(nullptr), mode(REPLAY_GAIN_OFF),
-		volume(PCM_VOLUME_1) {
+		:mixer(nullptr), mode(REPLAY_GAIN_OFF) {
 		info.Clear();
 	}
 
@@ -125,6 +121,7 @@ public:
 void
 ReplayGainFilter::Update()
 {
+	unsigned volume = PCM_VOLUME_1;
 	if (mode != REPLAY_GAIN_OFF) {
 		const auto &tuple = info.tuples[mode];
 		float scale = tuple.CalculateScale(replay_gain_preamp,
@@ -134,8 +131,9 @@ ReplayGainFilter::Update()
 			    "scale=%f\n", (double)scale);
 
 		volume = pcm_float_to_volume(scale);
-	} else
-		volume = PCM_VOLUME_1;
+	}
+
+	pv.SetVolume(volume);
 
 	if (mixer != nullptr) {
 		/* update the hardware mixer volume */
@@ -160,48 +158,25 @@ replay_gain_filter_init(gcc_unused const config_param &param,
 AudioFormat
 ReplayGainFilter::Open(AudioFormat &af, gcc_unused Error &error)
 {
-	format = af;
+	if (!pv.Open(af.format, error))
+		return AudioFormat::Undefined();
 
-	return format;
+	return af;
 }
 
 void
 ReplayGainFilter::Close()
 {
-	buffer.Clear();
+	pv.Close();
 }
 
 const void *
 ReplayGainFilter::FilterPCM(const void *src, size_t src_size,
-			    size_t *dest_size_r, Error &error)
+			    size_t *dest_size_r, gcc_unused Error &error)
 {
-
-	*dest_size_r = src_size;
-
-	if (volume == PCM_VOLUME_1)
-		/* optimized special case: 100% volume = no-op */
-		return src;
-
-	void *dest = buffer.Get(src_size);
-	if (volume <= 0) {
-		/* optimized special case: 0% volume = memset(0) */
-		/* XXX is this valid for all sample formats? What
-		   about floating point? */
-		memset(dest, 0, src_size);
-		return dest;
-	}
-
-	memcpy(dest, src, src_size);
-
-	bool success = pcm_volume(dest, src_size,
-				  format.format,
-				  volume);
-	if (!success) {
-		error.Set(replay_gain_domain, "pcm_volume() has failed");
-		return nullptr;
-	}
-
-	return dest;
+	const auto dest = pv.Apply({src, src_size});
+	*dest_size_r = dest.size;
+	return dest.data;
 }
 
 const struct filter_plugin replay_gain_filter_plugin = {

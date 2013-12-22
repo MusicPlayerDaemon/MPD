@@ -101,15 +101,6 @@ filter_plugin_by_name(gcc_unused const char *name)
 	return NULL;
 }
 
-bool
-pcm_volume(gcc_unused void *buffer, gcc_unused size_t length,
-	   gcc_unused SampleFormat format,
-	   gcc_unused int volume)
-{
-	assert(false);
-	return false;
-}
-
 int main(int argc, gcc_unused char **argv)
 {
 	int volume;
