@@ -27,6 +27,11 @@
 #include <stddef.h>
 
 /**
+ * Number of fractional bits for a fixed-point volume value.
+ */
+static constexpr unsigned PCM_VOLUME_BITS = 10;
+
+/**
  * This value means "100% volume".
  */
 static constexpr unsigned PCM_VOLUME_1 = 1024;

@@ -37,7 +37,7 @@ pcm_volume_change(typename Traits::pointer_type buffer,
 
 		sample = (sample * volume + pcm_volume_dither() +
 			  PCM_VOLUME_1S / 2)
-			/ PCM_VOLUME_1S;
+			>> PCM_VOLUME_BITS;
 
 		*buffer++ = PcmClamp<F, Traits>(sample);
 	}
