@@ -22,6 +22,8 @@
 
 #include <stdint.h>
 
+enum class SampleFormat : uint8_t;
+
 class PcmDither {
 	int32_t error[3];
 	int32_t random;
@@ -30,9 +32,6 @@ public:
 	constexpr PcmDither()
 		:error{0, 0, 0}, random(0) {}
 
-	template<typename T, T MIN, T MAX, unsigned scale_bits>
-	T Dither(T sample);
-
 	void Dither24To16(int16_t *dest, const int32_t *src,
 			  const int32_t *src_end);
 
@@ -40,8 +39,16 @@ public:
 			  const int32_t *src_end);
 
 private:
-	int16_t Dither24To16(int_fast32_t sample);
-	int16_t Dither32To16(int_fast32_t sample);
+	template<typename T, T MIN, T MAX, unsigned scale_bits>
+	T Dither(T sample);
+
+	template<typename ST, typename DT>
+	typename DT::value_type DitherShift(typename ST::value_type sample);
+
+	template<typename ST, typename DT>
+	void DitherShift(typename DT::pointer_type dest,
+			 typename ST::const_pointer_type src,
+			 typename ST::const_pointer_type src_end);
 };
 
 #endif

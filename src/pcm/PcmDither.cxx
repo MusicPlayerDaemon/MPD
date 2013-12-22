@@ -20,9 +20,10 @@
 #include "config.h"
 #include "PcmDither.hxx"
 #include "PcmPrng.hxx"
+#include "Traits.hxx"
 
 template<typename T, T MIN, T MAX, unsigned scale_bits>
-T
+inline T
 PcmDither::Dither(T sample)
 {
 	constexpr T round = 1 << (scale_bits - 1);
@@ -61,38 +62,43 @@ PcmDither::Dither(T sample)
 	return output;
 }
 
-inline int16_t
-PcmDither::Dither24To16(int_fast32_t sample)
+template<typename ST, typename DT>
+inline typename DT::value_type
+PcmDither::DitherShift(typename ST::value_type sample)
 {
-	typedef decltype(sample) T;
-	constexpr unsigned from_bits = 24;
-	constexpr unsigned to_bits = 16;
-	constexpr unsigned scale_bits = from_bits - to_bits;
-	constexpr int_fast32_t ONE = 1 << (from_bits - 1);
-	constexpr int_fast32_t MIN = -ONE;
-	constexpr int_fast32_t MAX = ONE - 1;
+	static_assert(ST::BITS > DT::BITS,
+		      "Sample formats cannot be dithered");
 
-	return Dither<T, MIN, MAX, scale_bits>(sample) >> scale_bits;
+	constexpr unsigned scale_bits = ST::BITS - DT::BITS;
+
+	return Dither<typename ST::sum_type, ST::MIN, ST::MAX,
+		      scale_bits>(sample) >> scale_bits;
+}
+
+template<typename ST, typename DT>
+inline void
+PcmDither::DitherShift(typename DT::pointer_type dest,
+		       typename ST::const_pointer_type src,
+		       typename ST::const_pointer_type src_end)
+{
+	while (src < src_end)
+		*dest++ = DitherShift<ST, DT>(*src++);
 }
 
 void
 PcmDither::Dither24To16(int16_t *dest, const int32_t *src,
 			const int32_t *src_end)
 {
-	while (src < src_end)
-		*dest++ = Dither24To16(*src++);
-}
-
-inline int16_t
-PcmDither::Dither32To16(int_fast32_t sample)
-{
-	return Dither24To16(sample >> 8);
+	typedef SampleTraits<SampleFormat::S24_P32> ST;
+	typedef SampleTraits<SampleFormat::S16> DT;
+	DitherShift<ST, DT>(dest, src, src_end);
 }
 
 void
 PcmDither::Dither32To16(int16_t *dest, const int32_t *src,
 			const int32_t *src_end)
 {
-	while (src < src_end)
-		*dest++ = Dither32To16(*src++);
+	typedef SampleTraits<SampleFormat::S32> ST;
+	typedef SampleTraits<SampleFormat::S16> DT;
+	DitherShift<ST, DT>(dest, src, src_end);
 }
