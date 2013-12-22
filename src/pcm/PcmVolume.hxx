@@ -26,10 +26,11 @@
 #include <stdint.h>
 #include <stddef.h>
 
-enum {
-	/** this value means "100% volume" */
-	PCM_VOLUME_1 = 1024,
-};
+/**
+ * This value means "100% volume".
+ */
+static constexpr unsigned PCM_VOLUME_1 = 1024;
+static constexpr int PCM_VOLUME_1S = PCM_VOLUME_1;
 
 struct AudioFormat;
 

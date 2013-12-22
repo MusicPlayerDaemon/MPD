@@ -36,8 +36,8 @@ PcmAddVolume(typename Traits::value_type _a, typename Traits::value_type _b,
 	typename Traits::long_type a(_a), b(_b);
 
 	typename Traits::value_type c = ((a * volume1 + b * volume2) +
-	       pcm_volume_dither() + PCM_VOLUME_1 / 2)
-		/ PCM_VOLUME_1;
+		pcm_volume_dither() + PCM_VOLUME_1S / 2)
+		/ PCM_VOLUME_1S;
 
 	return PcmClamp<F, Traits>(c);
 }
@@ -204,7 +204,6 @@ bool
 pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	SampleFormat format, float portion1)
 {
-	int vol1;
 	float s;
 
 	/* portion1 is between 0.0 and 1.0 for crossfading, MixRamp uses -1
@@ -215,8 +214,8 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	s = sin(M_PI_2 * portion1);
 	s *= s;
 
-	vol1 = s * PCM_VOLUME_1 + 0.5;
-	vol1 = Clamp<int>(vol1, 0, PCM_VOLUME_1);
+	int vol1 = s * PCM_VOLUME_1S + 0.5;
+	vol1 = Clamp<int>(vol1, 0, PCM_VOLUME_1S);
 
-	return pcm_add_vol(buffer1, buffer2, size, vol1, PCM_VOLUME_1 - vol1, format);
+	return pcm_add_vol(buffer1, buffer2, size, vol1, PCM_VOLUME_1S - vol1, format);
 }
