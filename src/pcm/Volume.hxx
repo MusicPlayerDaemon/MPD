@@ -23,6 +23,7 @@
 #include "PcmPrng.hxx"
 #include "AudioFormat.hxx"
 #include "PcmBuffer.hxx"
+#include "PcmDither.hxx"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -87,6 +88,7 @@ class PcmVolume {
 	unsigned volume;
 
 	PcmBuffer buffer;
+	PcmDither dither;
 
 public:
 	PcmVolume()

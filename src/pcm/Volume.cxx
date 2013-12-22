@@ -25,62 +25,69 @@
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 
+#include "PcmDither.cxx" // including the .cxx file to get inlined templates
+
 #include <stdint.h>
 #include <string.h>
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static inline typename Traits::value_type
-pcm_volume_sample(typename Traits::value_type _sample,
+pcm_volume_sample(PcmDither &dither,
+		  typename Traits::value_type _sample,
 		  int volume)
 {
 	typename Traits::long_type sample(_sample);
 
-	sample = (sample * volume + pcm_volume_dither() +
-		  PCM_VOLUME_1S / 2)
-		>> PCM_VOLUME_BITS;
-
-	return PcmClamp<F, Traits>(sample);
+	return dither.DitherShift<typename Traits::long_type,
+				  Traits::BITS + PCM_VOLUME_BITS,
+				  Traits::BITS>(sample * volume);
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-pcm_volume_change(typename Traits::pointer_type dest,
+pcm_volume_change(PcmDither &dither,
+		  typename Traits::pointer_type dest,
 		  typename Traits::const_pointer_type src,
 		  typename Traits::const_pointer_type end,
 		  int volume)
 {
 	while (src < end) {
 		const auto sample = *src++;
-		*dest++ = pcm_volume_sample<F, Traits>(sample, volume);
+		*dest++ = pcm_volume_sample<F, Traits>(dither, sample, volume);
 	}
 }
 
 static void
-pcm_volume_change_8(int8_t *dest, const int8_t *src, const int8_t *end,
+pcm_volume_change_8(PcmDither &dither,
+		    int8_t *dest, const int8_t *src, const int8_t *end,
 		    int volume)
 {
-	pcm_volume_change<SampleFormat::S8>(dest, src, end, volume);
+	pcm_volume_change<SampleFormat::S8>(dither, dest, src, end, volume);
 }
 
 static void
-pcm_volume_change_16(int16_t *dest, const int16_t *src, const int16_t *end,
+pcm_volume_change_16(PcmDither &dither,
+		     int16_t *dest, const int16_t *src, const int16_t *end,
 		     int volume)
 {
-	pcm_volume_change<SampleFormat::S16>(dest, src, end, volume);
+	pcm_volume_change<SampleFormat::S16>(dither, dest, src, end, volume);
 }
 
 static void
-pcm_volume_change_24(int32_t *dest, const int32_t *src, const int32_t *end,
+pcm_volume_change_24(PcmDither &dither,
+		     int32_t *dest, const int32_t *src, const int32_t *end,
 		     int volume)
 {
-	pcm_volume_change<SampleFormat::S24_P32>(dest, src, end, volume);
+	pcm_volume_change<SampleFormat::S24_P32>(dither, dest, src, end,
+						 volume);
 }
 
 static void
-pcm_volume_change_32(int32_t *dest, const int32_t *src, const int32_t *end,
+pcm_volume_change_32(PcmDither &dither,
+		     int32_t *dest, const int32_t *src, const int32_t *end,
 		     int volume)
 {
-	pcm_volume_change<SampleFormat::S32>(dest, src, end, volume);
+	pcm_volume_change<SampleFormat::S32>(dither, dest, src, end, volume);
 }
 
 static void
@@ -143,28 +150,28 @@ PcmVolume::Apply(ConstBuffer<void> src)
 		gcc_unreachable();
 
 	case SampleFormat::S8:
-		pcm_volume_change_8((int8_t *)data,
+		pcm_volume_change_8(dither, (int8_t *)data,
 				    (const int8_t *)src.data,
 				    (const int8_t *)end,
 				    volume);
 		break;
 
 	case SampleFormat::S16:
-		pcm_volume_change_16((int16_t *)data,
+		pcm_volume_change_16(dither, (int16_t *)data,
 				     (const int16_t *)src.data,
 				     (const int16_t *)end,
 				     volume);
 		break;
 
 	case SampleFormat::S24_P32:
-		pcm_volume_change_24((int32_t *)data,
+		pcm_volume_change_24(dither, (int32_t *)data,
 				     (const int32_t *)src.data,
 				     (const int32_t *)end,
 				     volume);
 		break;
 
 	case SampleFormat::S32:
-		pcm_volume_change_32((int32_t *)data,
+		pcm_volume_change_32(dither, (int32_t *)data,
 				     (const int32_t *)src.data,
 				     (const int32_t *)end,
 				     volume);

@@ -62,6 +62,19 @@ PcmDither::Dither(T sample)
 	return output >> scale_bits;
 }
 
+template<typename ST, unsigned SBITS, unsigned DBITS>
+inline ST
+PcmDither::DitherShift(ST sample)
+{
+	static_assert(sizeof(ST) * 8 > SBITS, "Source type too small");
+	static_assert(SBITS > DBITS, "Non-positive scale_bits");
+
+	static constexpr ST MIN = -(ST(1) << (SBITS - 1));
+	static constexpr ST MAX = (ST(1) << (SBITS - 1)) - 1;
+
+	return Dither<ST, MIN, MAX, SBITS - DBITS>(sample);
+}
+
 template<typename ST, typename DT>
 inline typename DT::value_type
 PcmDither::DitherConvert(typename ST::value_type sample)

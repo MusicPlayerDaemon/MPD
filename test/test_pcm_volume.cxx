@@ -60,8 +60,9 @@ TestVolume(G g=G())
 
 	const auto _dest = ConstBuffer<value_type>::FromVoid(dest);
 	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT(_dest.data[i] >= (_src[i] - 1) / 2);
-		CPPUNIT_ASSERT(_dest.data[i] <= _src[i] / 2 + 1);
+		const auto expected = (_src[i] + 1) / 2;
+		CPPUNIT_ASSERT(_dest.data[i] >= expected - 4);
+		CPPUNIT_ASSERT(_dest.data[i] <= expected + 4);
 	}
 
 	pv.Close();

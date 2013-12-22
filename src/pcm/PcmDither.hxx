@@ -32,6 +32,18 @@ public:
 	constexpr PcmDither()
 		:error{0, 0, 0}, random(0) {}
 
+	/**
+	 * Shift the given sample by #SBITS-#DBITS to the right, and
+	 * apply dithering.
+	 *
+	 * @param ST the input sample type
+	 * @param SBITS the input bit width
+	 * @param DBITS the output bit width
+	 * @param sample the input sample value
+	 */
+	template<typename ST, unsigned SBITS, unsigned DBITS>
+	ST DitherShift(ST sample);
+
 	void Dither24To16(int16_t *dest, const int32_t *src,
 			  const int32_t *src_end);
 
