@@ -23,6 +23,7 @@
 #include "PcmUtils.hxx"
 #include "AudioFormat.hxx"
 #include "Traits.hxx"
+#include "util/Clamp.hxx"
 
 #include <assert.h>
 #include <math.h>
@@ -215,7 +216,7 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	s *= s;
 
 	vol1 = s * PCM_VOLUME_1 + 0.5;
-	vol1 = vol1 > PCM_VOLUME_1 ? PCM_VOLUME_1 : (vol1 < 0 ? 0 : vol1);
+	vol1 = Clamp<int>(vol1, 0, PCM_VOLUME_1);
 
 	return pcm_add_vol(buffer1, buffer2, size, vol1, PCM_VOLUME_1 - vol1, format);
 }

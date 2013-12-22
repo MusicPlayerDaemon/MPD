@@ -27,6 +27,7 @@
 #include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/ReusableArray.hxx"
+#include "util/Clamp.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -372,8 +373,7 @@ AlsaMixer::SetVolume(unsigned volume, Error &error)
 
 	level = (long)(((vol / 100.0) * (volume_max - volume_min) +
 			volume_min) + 0.5);
-	level = level > volume_max ? volume_max : level;
-	level = level < volume_min ? volume_min : level;
+	level = Clamp(level, volume_min, volume_max);
 
 	err = snd_mixer_selem_set_playback_volume_all(elem, level);
 	if (err < 0) {

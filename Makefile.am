@@ -248,6 +248,7 @@ endif
 
 libutil_a_SOURCES = \
 	src/util/Macros.hxx \
+	src/util/Clamp.hxx \
 	src/util/Error.cxx src/util/Error.hxx \
 	src/util/Domain.hxx \
 	src/util/ReusableArray.hxx \
