@@ -26,7 +26,7 @@
 #include "ReplayGainInfo.hxx"
 #include "ReplayGainConfig.hxx"
 #include "MixerControl.hxx"
-#include "pcm/PcmVolume.hxx"
+#include "pcm/Volume.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

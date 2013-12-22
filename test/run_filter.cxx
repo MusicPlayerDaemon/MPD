@@ -25,7 +25,7 @@
 #include "AudioFormat.hxx"
 #include "FilterPlugin.hxx"
 #include "FilterInternal.hxx"
-#include "pcm/PcmVolume.hxx"
+#include "pcm/Volume.hxx"
 #include "MixerControl.hxx"
 #include "stdbin.h"
 #include "util/Error.hxx"

@@ -24,7 +24,7 @@
 #include "FilterRegistry.hxx"
 #include "FilterInternal.hxx"
 #include "filter/VolumeFilterPlugin.hxx"
-#include "pcm/PcmVolume.hxx"
+#include "pcm/Volume.hxx"
 #include "ConfigData.hxx"
 #include "util/Error.hxx"
 

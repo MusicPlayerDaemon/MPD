@@ -18,7 +18,7 @@
  */
 
 #include "test_pcm_all.hxx"
-#include "pcm/PcmVolume.hxx"
+#include "pcm/Volume.hxx"
 #include "test_pcm_util.hxx"
 
 #include <algorithm>

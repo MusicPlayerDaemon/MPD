@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "PcmVolume.hxx"
+#include "Volume.hxx"
 #include "PcmUtils.hxx"
 #include "Traits.hxx"
 #include "AudioFormat.hxx"

@@ -23,7 +23,7 @@
 #include "MixerInternal.hxx"
 #include "MixerList.hxx"
 #include "OutputAll.hxx"
-#include "pcm/PcmVolume.hxx"
+#include "pcm/Volume.hxx"
 #include "OutputInternal.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

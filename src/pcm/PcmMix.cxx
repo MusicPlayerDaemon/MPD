@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PcmMix.hxx"
-#include "PcmVolume.hxx"
+#include "Volume.hxx"
 #include "PcmUtils.hxx"
 #include "AudioFormat.hxx"
 #include "Traits.hxx"
