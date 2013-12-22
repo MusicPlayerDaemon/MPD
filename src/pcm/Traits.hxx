@@ -74,6 +74,16 @@ struct SampleTraits<SampleFormat::S8> {
 	 * not exist if this is not an integer sample format.
 	 */
 	static constexpr unsigned BITS = sizeof(value_type) * 8;
+
+	/**
+	 * The minimum sample value.
+	 */
+	static constexpr value_type MIN = -(sum_type(1) << (BITS - 1));
+
+	/**
+	 * The maximum sample value.
+	 */
+	static constexpr value_type MAX = (sum_type(1) << (BITS - 1)) - 1;
 };
 
 template<>
@@ -87,6 +97,9 @@ struct SampleTraits<SampleFormat::S16> {
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 	static constexpr unsigned BITS = sizeof(value_type) * 8;
+
+	static constexpr value_type MIN = -(sum_type(1) << (BITS - 1));
+	static constexpr value_type MAX = (sum_type(1) << (BITS - 1)) - 1;
 };
 
 template<>
@@ -100,6 +113,9 @@ struct SampleTraits<SampleFormat::S32> {
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 	static constexpr unsigned BITS = sizeof(value_type) * 8;
+
+	static constexpr value_type MIN = -(sum_type(1) << (BITS - 1));
+	static constexpr value_type MAX = (sum_type(1) << (BITS - 1)) - 1;
 };
 
 template<>
@@ -113,6 +129,9 @@ struct SampleTraits<SampleFormat::S24_P32> {
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
 	static constexpr unsigned BITS = 24;
+
+	static constexpr value_type MIN = -(sum_type(1) << (BITS - 1));
+	static constexpr value_type MAX = (sum_type(1) << (BITS - 1)) - 1;
 };
 
 template<>
@@ -125,6 +144,9 @@ struct SampleTraits<SampleFormat::FLOAT> {
 	typedef float long_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+
+	static constexpr value_type MIN = -1;
+	static constexpr value_type MAX = 1;
 };
 
 #endif

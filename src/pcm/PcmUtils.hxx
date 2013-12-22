@@ -51,19 +51,16 @@ static inline typename Traits::value_type
 PcmClamp(typename Traits::long_type x)
 {
 	typedef typename Traits::value_type T;
-	typedef typename Traits::long_type U;
-	constexpr U MIN_VALUE = -(U(1) << (Traits::BITS - 1));
-	constexpr U MAX_VALUE = (U(1) << (Traits::BITS - 1)) - 1;
 
 	typedef std::numeric_limits<T> limits;
-	static_assert(MIN_VALUE >= limits::min(), "out of range");
-	static_assert(MAX_VALUE <= limits::max(), "out of range");
+	static_assert(Traits::MIN >= limits::min(), "out of range");
+	static_assert(Traits::MAX <= limits::max(), "out of range");
 
-	if (gcc_unlikely(x < MIN_VALUE))
-		return T(MIN_VALUE);
+	if (gcc_unlikely(x < Traits::MIN))
+		return T(Traits::MIN);
 
-	if (gcc_unlikely(x > MAX_VALUE))
-		return T(MAX_VALUE);
+	if (gcc_unlikely(x > Traits::MAX))
+		return T(Traits::MAX);
 
 	return T(x);
 }
