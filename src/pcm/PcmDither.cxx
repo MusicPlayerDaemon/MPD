@@ -21,17 +21,12 @@
 #include "PcmDither.hxx"
 #include "PcmPrng.hxx"
 
-inline int16_t
-PcmDither::Dither24To16(int_fast32_t sample)
+template<typename T, T MIN, T MAX, unsigned scale_bits>
+T
+PcmDither::Dither(T sample)
 {
-	constexpr unsigned from_bits = 24;
-	constexpr unsigned to_bits = 16;
-	constexpr unsigned scale_bits = from_bits - to_bits;
-	constexpr int_fast32_t round = 1 << (scale_bits - 1);
-	constexpr int_fast32_t mask = (1 << scale_bits) - 1;
-	constexpr int_fast32_t ONE = 1 << (from_bits - 1);
-	constexpr int_fast32_t MIN = -ONE;
-	constexpr int_fast32_t MAX = ONE - 1;
+	constexpr T round = 1 << (scale_bits - 1);
+	constexpr T mask = (1 << scale_bits) - 1;
 
 	sample += error[0] - error[1] + error[2];
 
@@ -39,9 +34,9 @@ PcmDither::Dither24To16(int_fast32_t sample)
 	error[1] = error[0] / 2;
 
 	/* round */
-	int_fast32_t output = sample + round;
+	T output = sample + round;
 
-	int_fast32_t rnd = pcm_prng(random);
+	const T rnd = pcm_prng(random);
 	output += (rnd & mask) - (random & mask);
 
 	random = rnd;
@@ -63,7 +58,21 @@ PcmDither::Dither24To16(int_fast32_t sample)
 
 	error[0] = sample - output;
 
-	return (int16_t)(output >> scale_bits);
+	return output;
+}
+
+inline int16_t
+PcmDither::Dither24To16(int_fast32_t sample)
+{
+	typedef decltype(sample) T;
+	constexpr unsigned from_bits = 24;
+	constexpr unsigned to_bits = 16;
+	constexpr unsigned scale_bits = from_bits - to_bits;
+	constexpr int_fast32_t ONE = 1 << (from_bits - 1);
+	constexpr int_fast32_t MIN = -ONE;
+	constexpr int_fast32_t MAX = ONE - 1;
+
+	return Dither<T, MIN, MAX, scale_bits>(sample) >> scale_bits;
 }
 
 void

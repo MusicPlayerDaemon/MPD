@@ -30,6 +30,9 @@ public:
 	constexpr PcmDither()
 		:error{0, 0, 0}, random(0) {}
 
+	template<typename T, T MIN, T MAX, unsigned scale_bits>
+	T Dither(T sample);
+
 	void Dither24To16(int16_t *dest, const int32_t *src,
 			  const int32_t *src_end);
 
