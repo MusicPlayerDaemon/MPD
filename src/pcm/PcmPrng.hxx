@@ -24,7 +24,7 @@
  * A very simple linear congruential PRNG.  It's good enough for PCM
  * dithering.
  */
-constexpr static unsigned long
+constexpr static inline unsigned long
 pcm_prng(unsigned long state)
 {
 	return (state * 0x0019660dL + 0x3c6ef35fL) & 0xffffffffL;
