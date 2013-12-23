@@ -40,31 +40,8 @@ pcm_volume_sample(typename Traits::value_type _sample,
 	return PcmClamp<F, Traits>(sample);
 }
 
-template<SampleFormat F, class Traits=SampleTraits<F>>
-static void
-pcm_volume_change(typename Traits::pointer_type buffer,
-		  typename Traits::const_pointer_type end,
-		  int volume)
-{
-	while (buffer < end) {
-		const auto sample = *buffer;
-		*buffer++ = pcm_volume_sample<F, Traits>(sample, volume);
-	}
-}
-
-static void
-pcm_volume_change_8(int8_t *buffer, const int8_t *end, int volume)
-{
-	pcm_volume_change<SampleFormat::S8>(buffer, end, volume);
-}
-
-static void
-pcm_volume_change_16(int16_t *buffer, const int16_t *end, int volume)
-{
-	pcm_volume_change<SampleFormat::S16>(buffer, end, volume);
-}
-
 #ifdef __i386__
+
 /**
  * Optimized volume function for i386.  Use the EDX:EAX 2*32 bit
  * multiplication result instead of emulating 64 bit multiplication.
@@ -93,37 +70,60 @@ pcm_volume_sample_24(int32_t sample, int32_t volume, gcc_unused int32_t dither)
 
 	return result;
 }
+
+template<>
+inline int32_t
+pcm_volume_sample<SampleFormat::S24_P32,
+		  SampleTraits<SampleFormat::S24_P32>>(int32_t sample,
+						       int volume)
+{
+	return pcm_volume_sample_24(sample, volume, pcm_volume_dither());
+}
+
+template<>
+inline int32_t
+pcm_volume_sample<SampleFormat::S32,
+		  SampleTraits<SampleFormat::S32>>(int32_t sample, int volume)
+{
+	return pcm_volume_sample_24(sample, volume, pcm_volume_dither());
+}
+
 #endif
+
+template<SampleFormat F, class Traits=SampleTraits<F>>
+static void
+pcm_volume_change(typename Traits::pointer_type buffer,
+		  typename Traits::const_pointer_type end,
+		  int volume)
+{
+	while (buffer < end) {
+		const auto sample = *buffer;
+		*buffer++ = pcm_volume_sample<F, Traits>(sample, volume);
+	}
+}
+
+static void
+pcm_volume_change_8(int8_t *buffer, const int8_t *end, int volume)
+{
+	pcm_volume_change<SampleFormat::S8>(buffer, end, volume);
+}
+
+static void
+pcm_volume_change_16(int16_t *buffer, const int16_t *end, int volume)
+{
+	pcm_volume_change<SampleFormat::S16>(buffer, end, volume);
+}
 
 static void
 pcm_volume_change_24(int32_t *buffer, const int32_t *end, int volume)
 {
-#ifdef __i386__
-	while (buffer < end) {
-		/* assembly version for i386 */
-		int32_t sample = *buffer;
-
-		sample = pcm_volume_sample_24(sample, volume,
-					      pcm_volume_dither());
-	}
-#else
 	pcm_volume_change<SampleFormat::S24_P32>(buffer, end, volume);
-#endif
 }
 
 static void
 pcm_volume_change_32(int32_t *buffer, const int32_t *end, int volume)
 {
-#ifdef __i386__
-	while (buffer < end) {
-		/* assembly version for i386 */
-		int32_t sample = *buffer;
-
-		*buffer++ = pcm_volume_sample_24(sample, volume, 0);
-	}
-#else
 	pcm_volume_change<SampleFormat::S32>(buffer, end, volume);
-#endif
 }
 
 static void
