@@ -27,19 +27,28 @@
 #include <string.h>
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
+static inline typename Traits::value_type
+pcm_volume_sample(typename Traits::value_type _sample,
+		  int volume)
+{
+	typename Traits::long_type sample(_sample);
+
+	sample = (sample * volume + pcm_volume_dither() +
+		  PCM_VOLUME_1S / 2)
+		>> PCM_VOLUME_BITS;
+
+	return PcmClamp<F, Traits>(sample);
+}
+
+template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
 pcm_volume_change(typename Traits::pointer_type buffer,
 		  typename Traits::const_pointer_type end,
 		  int volume)
 {
 	while (buffer < end) {
-		typename Traits::long_type sample = *buffer;
-
-		sample = (sample * volume + pcm_volume_dither() +
-			  PCM_VOLUME_1S / 2)
-			>> PCM_VOLUME_BITS;
-
-		*buffer++ = PcmClamp<F, Traits>(sample);
+		const auto sample = *buffer;
+		*buffer++ = pcm_volume_sample<F, Traits>(sample, volume);
 	}
 }
 
