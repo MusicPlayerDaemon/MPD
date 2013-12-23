@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FormatConverter.hxx"
 #include "PcmFormat.hxx"
-#include "PcmConvert.hxx"
+#include "Domain.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 
@@ -93,7 +93,7 @@ PcmFormatConverter::Convert(ConstBuffer<void> src, Error &error)
 	}
 
 	if (result == nullptr) {
-		error.Format(pcm_convert_domain,
+		error.Format(pcm_domain,
 			     "PCM conversion from %s to %s is not implemented",
 			     sample_format_to_string(src_format),
 			     sample_format_to_string(dest_format));

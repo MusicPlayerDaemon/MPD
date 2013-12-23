@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PcmConvert.hxx"
+#include "Domain.hxx"
 #include "ConfiguredResampler.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
@@ -28,8 +29,6 @@
 
 #include <assert.h>
 #include <math.h>
-
-const Domain pcm_convert_domain("pcm_convert");
 
 bool
 pcm_convert_global_init(Error &error)
@@ -131,7 +130,7 @@ PcmConvert::Convert(const void *src, size_t src_size,
 		auto d = dsd.ToFloat(format.channels,
 				     false, s);
 		if (d.IsNull()) {
-			error.Set(pcm_convert_domain,
+			error.Set(pcm_domain,
 				  "DSD to PCM conversion failed");
 			return nullptr;
 		}

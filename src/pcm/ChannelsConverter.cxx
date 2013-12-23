@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ChannelsConverter.hxx"
 #include "PcmChannels.hxx"
-#include "PcmConvert.hxx"
+#include "Domain.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 
@@ -41,7 +41,7 @@ PcmChannelsConverter::Open(SampleFormat _format,
 		break;
 
 	default:
-		error.Format(pcm_convert_domain,
+		error.Format(pcm_domain,
 			     "PCM channel conversion for %s is not implemented",
 			     sample_format_to_string(format));
 		return false;

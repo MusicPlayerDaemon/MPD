@@ -331,6 +331,7 @@ libevent_a_SOURCES = \
 # PCM library
 
 libpcm_a_SOURCES = \
+	src/pcm/Domain.cxx src/pcm/Domain.hxx \
 	src/pcm/Traits.hxx \
 	src/pcm/PcmBuffer.cxx src/pcm/PcmBuffer.hxx \
 	src/pcm/PcmExport.cxx src/pcm/PcmExport.hxx \
