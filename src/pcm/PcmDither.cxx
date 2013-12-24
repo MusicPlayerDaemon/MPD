@@ -59,7 +59,7 @@ PcmDither::Dither(T sample)
 
 	error[0] = sample - output;
 
-	return output;
+	return output >> scale_bits;
 }
 
 template<typename ST, typename DT>
@@ -72,7 +72,7 @@ PcmDither::DitherConvert(typename ST::value_type sample)
 	constexpr unsigned scale_bits = ST::BITS - DT::BITS;
 
 	return Dither<typename ST::sum_type, ST::MIN, ST::MAX,
-		      scale_bits>(sample) >> scale_bits;
+		      scale_bits>(sample);
 }
 
 template<typename ST, typename DT>
