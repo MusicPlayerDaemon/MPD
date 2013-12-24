@@ -96,10 +96,16 @@ ao_filter_open(struct audio_output *ao, AudioFormat &format,
 	assert(format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
-	if (ao->replay_gain_filter != nullptr)
-		ao->replay_gain_filter->Open(format, error_r);
-	if (ao->other_replay_gain_filter != nullptr)
-		ao->other_replay_gain_filter->Open(format, error_r);
+	if (ao->replay_gain_filter != nullptr &&
+	    !ao->replay_gain_filter->Open(format, error_r).IsDefined())
+		return AudioFormat::Undefined();
+
+	if (ao->other_replay_gain_filter != nullptr &&
+	    !ao->other_replay_gain_filter->Open(format, error_r).IsDefined()) {
+		if (ao->replay_gain_filter != nullptr)
+			ao->replay_gain_filter->Close();
+		return AudioFormat::Undefined();
+	}
 
 	const AudioFormat af = ao->filter->Open(format, error_r);
 	if (!af.IsDefined()) {
