@@ -43,12 +43,12 @@ private:
 	T Dither(T sample);
 
 	template<typename ST, typename DT>
-	typename DT::value_type DitherShift(typename ST::value_type sample);
+	typename DT::value_type DitherConvert(typename ST::value_type sample);
 
 	template<typename ST, typename DT>
-	void DitherShift(typename DT::pointer_type dest,
-			 typename ST::const_pointer_type src,
-			 typename ST::const_pointer_type src_end);
+	void DitherConvert(typename DT::pointer_type dest,
+			   typename ST::const_pointer_type src,
+			   typename ST::const_pointer_type src_end);
 };
 
 #endif

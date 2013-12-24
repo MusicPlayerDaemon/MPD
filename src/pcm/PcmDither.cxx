@@ -64,7 +64,7 @@ PcmDither::Dither(T sample)
 
 template<typename ST, typename DT>
 inline typename DT::value_type
-PcmDither::DitherShift(typename ST::value_type sample)
+PcmDither::DitherConvert(typename ST::value_type sample)
 {
 	static_assert(ST::BITS > DT::BITS,
 		      "Sample formats cannot be dithered");
@@ -77,12 +77,12 @@ PcmDither::DitherShift(typename ST::value_type sample)
 
 template<typename ST, typename DT>
 inline void
-PcmDither::DitherShift(typename DT::pointer_type dest,
-		       typename ST::const_pointer_type src,
-		       typename ST::const_pointer_type src_end)
+PcmDither::DitherConvert(typename DT::pointer_type dest,
+			 typename ST::const_pointer_type src,
+			 typename ST::const_pointer_type src_end)
 {
 	while (src < src_end)
-		*dest++ = DitherShift<ST, DT>(*src++);
+		*dest++ = DitherConvert<ST, DT>(*src++);
 }
 
 void
@@ -91,7 +91,7 @@ PcmDither::Dither24To16(int16_t *dest, const int32_t *src,
 {
 	typedef SampleTraits<SampleFormat::S24_P32> ST;
 	typedef SampleTraits<SampleFormat::S16> DT;
-	DitherShift<ST, DT>(dest, src, src_end);
+	DitherConvert<ST, DT>(dest, src, src_end);
 }
 
 void
@@ -100,5 +100,5 @@ PcmDither::Dither32To16(int16_t *dest, const int32_t *src,
 {
 	typedef SampleTraits<SampleFormat::S32> ST;
 	typedef SampleTraits<SampleFormat::S16> DT;
-	DitherShift<ST, DT>(dest, src, src_end);
+	DitherConvert<ST, DT>(dest, src, src_end);
 }
