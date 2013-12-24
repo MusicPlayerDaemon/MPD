@@ -39,9 +39,27 @@ public:
 			  const int32_t *src_end);
 
 private:
+	/**
+	 * Shift the given sample by #scale_bits to the right, and
+	 * apply dithering.
+	 *
+	 * @param T the input sample type
+	 * @param MIN the minimum input sample value
+	 * @param MAX the maximum input sample value
+	 * @param scale_bits the number of bits to be discarded
+	 * @param sample the input sample value
+	 */
 	template<typename T, T MIN, T MAX, unsigned scale_bits>
 	T Dither(T sample);
 
+	/**
+	 * Convert the given sample from one sample format to another,
+	 * discarding bits.
+	 *
+	 * @param ST the input #SampleTraits class
+	 * @param ST the output #SampleTraits class
+	 * @param sample the input sample value
+	 */
 	template<typename ST, typename DT>
 	typename DT::value_type DitherConvert(typename ST::value_type sample);
 
