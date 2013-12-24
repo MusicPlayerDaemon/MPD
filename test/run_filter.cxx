@@ -30,6 +30,7 @@
 #include "stdbin.h"
 #include "util/Error.hxx"
 #include "system/FatalError.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -66,14 +67,14 @@ load_filter(const char *name)
 
 	param = find_named_config_block(CONF_AUDIO_FILTER, name);
 	if (param == NULL) {
-		g_printerr("No such configured filter: %s\n", name);
+		fprintf(stderr, "No such configured filter: %s\n", name);
 		return nullptr;
 	}
 
 	Error error;
 	Filter *filter = filter_configured_new(*param, error);
 	if (filter == NULL) {
-		g_printerr("Failed to load filter: %s\n", error.GetMessage());
+		LogError(error, "Failed to load filter");
 		return NULL;
 	}
 
@@ -87,8 +88,8 @@ int main(int argc, char **argv)
 	char buffer[4096];
 
 	if (argc < 3 || argc > 4) {
-		g_printerr("Usage: run_filter CONFIG NAME [FORMAT] <IN\n");
-		return 1;
+		fprintf(stderr, "Usage: run_filter CONFIG NAME [FORMAT] <IN\n");
+		return EXIT_FAILURE;
 	}
 
 	const Path config_path = Path::FromFS(argv[1]);
@@ -112,9 +113,8 @@ int main(int argc, char **argv)
 	if (argc > 3) {
 		Error error;
 		if (!audio_format_parse(audio_format, argv[3], false, error)) {
-			g_printerr("Failed to parse audio format: %s\n",
-				   error.GetMessage());
-			return 1;
+			LogError(error, "Failed to parse audio format");
+			return EXIT_FAILURE;
 		}
 	}
 
@@ -122,20 +122,20 @@ int main(int argc, char **argv)
 
 	Filter *filter = load_filter(argv[2]);
 	if (filter == NULL)
-		return 1;
+		return EXIT_FAILURE;
 
 	/* open the filter */
 
 	Error error;
 	const AudioFormat out_audio_format = filter->Open(audio_format, error);
 	if (!out_audio_format.IsDefined()) {
-		g_printerr("Failed to open filter: %s\n", error.GetMessage());
+		LogError(error, "Failed to open filter");
 		delete filter;
-		return 1;
+		return EXIT_FAILURE;
 	}
 
-	g_printerr("audio_format=%s\n",
-		   audio_format_to_string(out_audio_format, &af_string));
+	fprintf(stderr, "audio_format=%s\n",
+		audio_format_to_string(out_audio_format, &af_string));
 
 	/* play */
 
@@ -151,15 +151,16 @@ int main(int argc, char **argv)
 		dest = filter->FilterPCM(buffer, (size_t)nbytes,
 					 &length, error);
 		if (dest == NULL) {
-			g_printerr("Filter failed: %s\n", error.GetMessage());
+			LogError(error, "Filter failed");
 			filter->Close();
 			delete filter;
-			return 1;
+			return EXIT_FAILURE;
 		}
 
 		nbytes = write(1, dest, length);
 		if (nbytes < 0) {
-			g_printerr("Failed to write: %s\n", g_strerror(errno));
+			fprintf(stderr, "Failed to write: %s\n",
+				strerror(errno));
 			filter->Close();
 			delete filter;
 			return 1;

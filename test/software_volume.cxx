@@ -30,8 +30,7 @@
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "stdbin.h"
-
-#include <glib.h>
+#include "Log.hxx"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -43,17 +42,16 @@ int main(int argc, char **argv)
 	ssize_t nbytes;
 
 	if (argc > 2) {
-		g_printerr("Usage: software_volume [FORMAT] <IN >OUT\n");
-		return 1;
+		fprintf(stderr, "Usage: software_volume [FORMAT] <IN >OUT\n");
+		return EXIT_FAILURE;
 	}
 
 	Error error;
 	AudioFormat audio_format(48000, SampleFormat::S16, 2);
 	if (argc > 1) {
 		if (!audio_format_parse(audio_format, argv[1], false, error)) {
-			g_printerr("Failed to parse audio format: %s\n",
-				   error.GetMessage());
-			return 1;
+			LogError(error, "Failed to parse audio format");
+			return EXIT_FAILURE;
 		}
 	}
 

@@ -49,8 +49,8 @@ int main(int argc, char **argv)
 	Song *song;
 
 	if (argc != 3) {
-		g_printerr("Usage: dump_playlist CONFIG URI\n");
-		return 1;
+		fprintf(stderr, "Usage: dump_playlist CONFIG URI\n");
+		return EXIT_FAILURE;
 	}
 
 	const Path config_path = Path::FromFS(argv[1]);
@@ -68,8 +68,8 @@ int main(int argc, char **argv)
 
 	Error error;
 	if (!ReadConfigFile(config_path, error)) {
-		g_printerr("%s\n", error.GetMessage());
-		return 1;
+		LogError(error);
+		return EXIT_FAILURE;
 	}
 
 	io_thread_init();
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
 
 	if (!input_stream_global_init(error)) {
 		LogError(error);
-		return 2;
+		return EXIT_FAILURE;
 	}
 
 	playlist_list_global_init();
@@ -97,7 +97,8 @@ int main(int argc, char **argv)
 			if (error.IsDefined())
 				LogError(error);
 			else
-				g_printerr("InputStream::Open() failed\n");
+				fprintf(stderr,
+					"InputStream::Open() failed\n");
 			return 2;
 		}
 
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
 		playlist = playlist_list_open_stream(*is, uri);
 		if (playlist == NULL) {
 			is->Close();
-			g_printerr("Failed to open playlist\n");
+			fprintf(stderr, "Failed to open playlist\n");
 			return 2;
 		}
 	}
@@ -116,18 +117,18 @@ int main(int argc, char **argv)
 	/* dump the playlist */
 
 	while ((song = playlist->NextSong()) != NULL) {
-		g_print("%s\n", song->uri);
+		printf("%s\n", song->uri);
 
 		if (song->end_ms > 0)
-			g_print("range: %u:%02u..%u:%02u\n",
-				song->start_ms / 60000,
-				(song->start_ms / 1000) % 60,
-				song->end_ms / 60000,
-				(song->end_ms / 1000) % 60);
+			printf("range: %u:%02u..%u:%02u\n",
+			       song->start_ms / 60000,
+			       (song->start_ms / 1000) % 60,
+			       song->end_ms / 60000,
+			       (song->end_ms / 1000) % 60);
 		else if (song->start_ms > 0)
-			g_print("range: %u:%02u..\n",
-				song->start_ms / 60000,
-				(song->start_ms / 1000) % 60);
+			printf("range: %u:%02u..\n",
+			       song->start_ms / 60000,
+			       (song->start_ms / 1000) % 60);
 
 		if (song->tag != NULL)
 			tag_save(stdout, *song->tag);

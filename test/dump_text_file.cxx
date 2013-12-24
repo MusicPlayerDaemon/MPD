@@ -89,8 +89,8 @@ int main(int argc, char **argv)
 	int ret;
 
 	if (argc != 2) {
-		g_printerr("Usage: run_input URI\n");
-		return 1;
+		fprintf(stderr, "Usage: run_input URI\n");
+		return EXIT_FAILURE;
 	}
 
 	/* initialize GLib */
@@ -129,8 +129,8 @@ int main(int argc, char **argv)
 		if (error.IsDefined())
 			LogError(error);
 		else
-			g_printerr("input_stream::Open() failed\n");
-		ret = 2;
+			fprintf(stderr, "input_stream::Open() failed\n");
+		ret = EXIT_FAILURE;
 	}
 
 	/* deinitialize everything */

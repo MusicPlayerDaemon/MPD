@@ -1397,6 +1397,7 @@ endif
 
 test_software_volume_SOURCES = test/software_volume.cxx \
 	test/stdbin.h \
+	src/Log.cxx src/LogBackend.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
 test_software_volume_LDADD = \

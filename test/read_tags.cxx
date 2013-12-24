@@ -47,20 +47,20 @@ static bool empty = true;
 static void
 print_duration(unsigned seconds, gcc_unused void *ctx)
 {
-	g_print("duration=%d\n", seconds);
+	printf("duration=%d\n", seconds);
 }
 
 static void
 print_tag(TagType type, const char *value, gcc_unused void *ctx)
 {
-	g_print("[%s]=%s\n", tag_item_names[type], value);
+	printf("[%s]=%s\n", tag_item_names[type], value);
 	empty = false;
 }
 
 static void
 print_pair(const char *name, const char *value, gcc_unused void *ctx)
 {
-	g_print("\"%s\"=%s\n", name, value);
+	printf("\"%s\"=%s\n", name, value);
 }
 
 static const struct tag_handler print_handler = {
@@ -80,8 +80,8 @@ int main(int argc, char **argv)
 #endif
 
 	if (argc != 3) {
-		g_printerr("Usage: read_tags DECODER FILE\n");
-		return 1;
+		fprintf(stderr, "Usage: read_tags DECODER FILE\n");
+		return EXIT_FAILURE;
 	}
 
 	decoder_name = argv[1];
@@ -104,8 +104,8 @@ int main(int argc, char **argv)
 
 	plugin = decoder_plugin_from_name(decoder_name);
 	if (plugin == NULL) {
-		g_printerr("No such decoder: %s\n", decoder_name);
-		return 1;
+		fprintf(stderr, "No such decoder: %s\n", decoder_name);
+		return EXIT_FAILURE;
 	}
 
 	bool success = plugin->ScanFile(path, print_handler, nullptr);
@@ -116,9 +116,8 @@ int main(int argc, char **argv)
 		InputStream *is = InputStream::Open(path, mutex, cond,
 						    error);
 		if (is == NULL) {
-			g_printerr("Failed to open %s: %s\n",
-				   path, error.GetMessage());
-			return 1;
+			FormatError(error, "Failed to open %s", path);
+			return EXIT_FAILURE;
 		}
 
 		mutex.lock();
@@ -128,8 +127,7 @@ int main(int argc, char **argv)
 		if (!is->Check(error)) {
 			mutex.unlock();
 
-			g_printerr("Failed to read %s: %s\n",
-				   path, error.GetMessage());
+			FormatError(error, "Failed to read %s", path);
 			return EXIT_FAILURE;
 		}
 
@@ -144,8 +142,8 @@ int main(int argc, char **argv)
 	io_thread_deinit();
 
 	if (!success) {
-		g_printerr("Failed to read tags\n");
-		return 1;
+		fprintf(stderr, "Failed to read tags\n");
+		return EXIT_FAILURE;
 	}
 
 	if (empty) {

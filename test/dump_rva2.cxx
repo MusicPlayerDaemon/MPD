@@ -24,10 +24,9 @@
 #include "ConfigGlobal.hxx"
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
+#include "Log.hxx"
 
 #include <id3tag.h>
-
-#include <glib.h>
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -50,8 +49,8 @@ int main(int argc, char **argv)
 #endif
 
 	if (argc != 2) {
-		g_printerr("Usage: read_rva2 FILE\n");
-		return 1;
+		fprintf(stderr, "Usage: read_rva2 FILE\n");
+		return EXIT_FAILURE;
 	}
 
 	const char *path = argv[1];
@@ -60,9 +59,9 @@ int main(int argc, char **argv)
 	struct id3_tag *tag = tag_id3_load(Path::FromFS(path), error);
 	if (tag == NULL) {
 		if (error.IsDefined())
-			g_printerr("%s\n", error.GetMessage());
+			LogError(error);
 		else
-			g_printerr("No ID3 tag found\n");
+			fprintf(stderr, "No ID3 tag found\n");
 
 		return EXIT_FAILURE;
 	}
@@ -74,19 +73,19 @@ int main(int argc, char **argv)
 	id3_tag_delete(tag);
 
 	if (!success) {
-		g_printerr("No RVA2 tag found\n");
+		fprintf(stderr, "No RVA2 tag found\n");
 		return EXIT_FAILURE;
 	}
 
 	const ReplayGainTuple *tuple = &replay_gain.tuples[REPLAY_GAIN_ALBUM];
 	if (tuple->IsDefined())
-		g_printerr("replay_gain[album]: gain=%f peak=%f\n",
-			   tuple->gain, tuple->peak);
+		fprintf(stderr, "replay_gain[album]: gain=%f peak=%f\n",
+			tuple->gain, tuple->peak);
 
 	tuple = &replay_gain.tuples[REPLAY_GAIN_TRACK];
 	if (tuple->IsDefined())
-		g_printerr("replay_gain[track]: gain=%f peak=%f\n",
-			   tuple->gain, tuple->peak);
+		fprintf(stderr, "replay_gain[track]: gain=%f peak=%f\n",
+			tuple->gain, tuple->peak);
 
 	return EXIT_SUCCESS;
 }

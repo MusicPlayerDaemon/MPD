@@ -22,8 +22,6 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #ifdef WIN32
 #include <ws2tcpip.h>
 #include <winsock.h>
@@ -37,7 +35,7 @@
 int main(int argc, char **argv)
 {
 	if (argc != 2) {
-		g_printerr("Usage: run_resolver HOST\n");
+		fprintf(stderr, "Usage: run_resolver HOST\n");
 		return EXIT_FAILURE;
 	}
 
@@ -52,7 +50,7 @@ int main(int argc, char **argv)
 
 	for (const struct addrinfo *i = ai; i != NULL; i = i->ai_next) {
 		const auto s = sockaddr_to_string(i->ai_addr, i->ai_addrlen);
-		g_print("%s\n", s.c_str());
+		printf("%s\n", s.c_str());
 	}
 
 	freeaddrinfo(ai);

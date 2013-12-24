@@ -27,6 +27,7 @@
 #include "event/Loop.hxx"
 #include "ConfigData.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -106,8 +107,8 @@ int main(int argc, gcc_unused char **argv)
 	int volume;
 
 	if (argc != 2) {
-		g_printerr("Usage: read_mixer PLUGIN\n");
-		return 1;
+		fprintf(stderr, "Usage: read_mixer PLUGIN\n");
+		return EXIT_FAILURE;
 	}
 
 #if !GLIB_CHECK_VERSION(2,32,0)
@@ -120,14 +121,14 @@ int main(int argc, gcc_unused char **argv)
 	Mixer *mixer = mixer_new(&alsa_mixer_plugin, nullptr,
 				 config_param(), error);
 	if (mixer == NULL) {
-		g_printerr("mixer_new() failed: %s\n", error.GetMessage());
-		return 2;
+		LogError(error, "mixer_new() failed");
+		return EXIT_FAILURE;
 	}
 
 	if (!mixer_open(mixer, error)) {
 		mixer_free(mixer);
-		g_printerr("failed to open the mixer: %s\n", error.GetMessage());
-		return 2;
+		LogError(error, "failed to open the mixer");
+		return EXIT_FAILURE;
 	}
 
 	volume = mixer_get_volume(mixer, error);
@@ -140,13 +141,12 @@ int main(int argc, gcc_unused char **argv)
 
 	if (volume < 0) {
 		if (error.IsDefined()) {
-			g_printerr("failed to read volume: %s\n",
-				   error.GetMessage());
+			LogError(error, "failed to read volume");
 		} else
-			g_printerr("failed to read volume\n");
-		return 2;
+			fprintf(stderr, "failed to read volume\n");
+		return EXIT_FAILURE;
 	}
 
-	g_print("%d\n", volume);
+	printf("%d\n", volume);
 	return 0;
 }

@@ -24,8 +24,6 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <sys/inotify.h>
 
 static constexpr unsigned IN_MASK =
@@ -39,7 +37,7 @@ static void
 my_inotify_callback(gcc_unused int wd, unsigned mask,
 		    const char *name, gcc_unused void *ctx)
 {
-	g_print("mask=0x%x name='%s'\n", mask, name);
+	printf("mask=0x%x name='%s'\n", mask, name);
 }
 
 int main(int argc, char **argv)
@@ -47,8 +45,8 @@ int main(int argc, char **argv)
 	const char *path;
 
 	if (argc != 2) {
-		g_printerr("Usage: run_inotify PATH\n");
-		return 1;
+		fprintf(stderr, "Usage: run_inotify PATH\n");
+		return EXIT_FAILURE;
 	}
 
 	path = argv[1];
@@ -62,17 +60,18 @@ int main(int argc, char **argv)
 						      nullptr, error);
 	if (source == NULL) {
 		LogError(error);
-		return 2;
+		return EXIT_FAILURE;
 	}
 
 	int descriptor = source->Add(path, IN_MASK, error);
 	if (descriptor < 0) {
 		delete source;
 		LogError(error);
-		return 2;
+		return EXIT_FAILURE;
 	}
 
 	event_loop.Run();
 
 	delete source;
+	return EXIT_SUCCESS;
 }

@@ -36,6 +36,7 @@
 #include "PlayerControl.hxx"
 #include "stdbin.h"
 #include "util/Error.hxx"
+#include "Log.hxx"
 
 #include <glib.h>
 
@@ -83,7 +84,7 @@ load_audio_output(const char *name)
 
 	param = find_named_config_block(CONF_AUDIO_OUTPUT, name);
 	if (param == NULL) {
-		g_printerr("No such configured audio output: %s\n", name);
+		fprintf(stderr, "No such configured audio output: %s\n", name);
 		return nullptr;
 	}
 
@@ -93,7 +94,7 @@ load_audio_output(const char *name)
 	struct audio_output *ao =
 		audio_output_new(*param, dummy_player_control, error);
 	if (ao == nullptr)
-		g_printerr("%s\n", error.GetMessage());
+		LogError(error);
 
 	return ao;
 }
@@ -105,21 +106,19 @@ run_output(struct audio_output *ao, AudioFormat audio_format)
 
 	Error error;
 	if (!ao_plugin_enable(ao, error)) {
-		g_printerr("Failed to enable audio output: %s\n",
-			   error.GetMessage());
+		LogError(error, "Failed to enable audio output");
 		return false;
 	}
 
 	if (!ao_plugin_open(ao, audio_format, error)) {
 		ao_plugin_disable(ao);
-		g_printerr("Failed to open audio output: %s\n",
-			   error.GetMessage());
+		LogError(error, "Failed to open audio output");
 		return false;
 	}
 
 	struct audio_format_string af_string;
-	g_printerr("audio_format=%s\n",
-		   audio_format_to_string(audio_format, &af_string));
+	fprintf(stderr, "audio_format=%s\n",
+		audio_format_to_string(audio_format, &af_string));
 
 	size_t frame_size = audio_format.GetFrameSize();
 
@@ -145,8 +144,7 @@ run_output(struct audio_output *ao, AudioFormat audio_format)
 			if (consumed == 0) {
 				ao_plugin_close(ao);
 				ao_plugin_disable(ao);
-				g_printerr("Failed to play: %s\n",
-					   error.GetMessage());
+				LogError(error, "Failed to play");
 				return false;
 			}
 
@@ -168,8 +166,8 @@ int main(int argc, char **argv)
 	Error error;
 
 	if (argc < 3 || argc > 4) {
-		g_printerr("Usage: run_output CONFIG NAME [FORMAT] <IN\n");
-		return 1;
+		fprintf(stderr, "Usage: run_output CONFIG NAME [FORMAT] <IN\n");
+		return EXIT_FAILURE;
 	}
 
 	const Path config_path = Path::FromFS(argv[1]);
@@ -184,8 +182,8 @@ int main(int argc, char **argv)
 
 	config_global_init();
 	if (!ReadConfigFile(config_path, error)) {
-		g_printerr("%s\n", error.GetMessage());
-		return 1;
+		LogError(error);
+		return EXIT_FAILURE;
 	}
 
 	main_loop = new EventLoop(EventLoop::Default());
@@ -203,9 +201,8 @@ int main(int argc, char **argv)
 
 	if (argc > 3) {
 		if (!audio_format_parse(audio_format, argv[3], false, error)) {
-			g_printerr("Failed to parse audio format: %s\n",
-				   error.GetMessage());
-			return 1;
+			LogError(error, "Failed to parse audio format");
+			return EXIT_FAILURE;
 		}
 	}
 
