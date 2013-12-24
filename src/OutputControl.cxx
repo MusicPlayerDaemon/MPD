@@ -96,6 +96,8 @@ audio_output_set_replay_gain_mode(struct audio_output *ao,
 {
 	if (ao->replay_gain_filter != nullptr)
 		replay_gain_filter_set_mode(ao->replay_gain_filter, mode);
+	if (ao->other_replay_gain_filter != nullptr)
+		replay_gain_filter_set_mode(ao->other_replay_gain_filter, mode);
 }
 
 void

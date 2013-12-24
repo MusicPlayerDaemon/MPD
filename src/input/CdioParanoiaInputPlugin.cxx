@@ -43,7 +43,7 @@
 #include <assert.h>
 
 #ifdef HAVE_CDIO_PARANOIA_PARANOIA_H
-#include <cdio/parannoia/paranoia.h>
+#include <cdio/paranoia/paranoia.h>
 #else
 #include <cdio/paranoia.h>
 #endif

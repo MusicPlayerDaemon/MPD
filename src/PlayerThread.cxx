@@ -1080,8 +1080,11 @@ Player::Run()
 
 	delete cross_fade_tag;
 
-	if (song != nullptr)
+	if (song != nullptr) {
+		const auto uri = song->GetURI();
+		FormatDefault(player_domain, "played \"%s\"", uri.c_str());
 		song->Free();
+	}
 
 	pc.Lock();
 
