@@ -35,16 +35,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-static void
-my_log_func(const gchar *log_domain, gcc_unused GLogLevelFlags log_level,
-	    const gchar *message, gcc_unused gpointer user_data)
-{
-	if (log_domain != NULL)
-		g_printerr("%s: %s\n", log_domain, message);
-	else
-		g_printerr("%s\n", message);
-}
-
 class MyArchiveVisitor final : public ArchiveVisitor {
  public:
 	virtual void VisitArchiveEntry(const char *path_utf8) override {
@@ -70,8 +60,6 @@ main(int argc, char **argv)
 #if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
 #endif
-
-	g_log_set_default_handler(my_log_func, NULL);
 
 	/* initialize MPD */
 
