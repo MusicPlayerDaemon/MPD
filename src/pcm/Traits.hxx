@@ -63,7 +63,7 @@ struct SampleTraits<SampleFormat::S8> {
 	 * arithmetic without risking an (integer) overflow or
 	 * (floating point) precision loss.
 	 */
-	typedef int_least16_t long_type;
+	typedef int_least32_t long_type;
 
 	/**
 	 * The size of one sample in bytes.
