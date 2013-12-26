@@ -30,6 +30,7 @@
 #include "thread/Mutex.hxx"
 #include "event/ServerSocket.hxx"
 #include "event/DeferredMonitor.hxx"
+#include "util/Cast.hxx"
 
 #ifdef _LIBCPP_VERSION
 /* can't use incomplete template arguments with libc++ */
@@ -157,7 +158,7 @@ public:
 #endif
 
 	static constexpr HttpdOutput *Cast(audio_output *ao) {
-		return (HttpdOutput *)((char *)ao - offsetof(HttpdOutput, base));
+		return ContainerCast(ao, HttpdOutput, base);
 	}
 
 #if GCC_CHECK_VERSION(4,6) || defined(__clang__)

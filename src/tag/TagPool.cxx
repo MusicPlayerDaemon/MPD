@@ -20,6 +20,7 @@
 #include "config.h"
 #include "TagPool.hxx"
 #include "TagItem.hxx"
+#include "util/Cast.hxx"
 
 #include <glib.h>
 
@@ -67,7 +68,7 @@ calc_hash(TagType type, const char *p)
 static inline struct slot *
 tag_item_to_slot(TagItem *item)
 {
-	return (struct slot*)(((char*)item) - offsetof(struct slot, item));
+	return ContainerCast(item, slot, item);
 }
 
 static struct slot *slot_alloc(struct slot *next,
