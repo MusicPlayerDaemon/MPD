@@ -21,6 +21,7 @@
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
 #include "pcm/PcmMix.hxx"
+#include "pcm/PcmDither.hxx"
 
 template<typename T, SampleFormat format, typename G=RandomInt<T>>
 static void
@@ -30,23 +31,26 @@ TestPcmMix(G g=G())
 	const auto src1 = TestDataBuffer<T, N>(g);
 	const auto src2 = TestDataBuffer<T, N>(g);
 
+	PcmDither dither;
+
 	/* portion1=1.0: result must be equal to src1 */
 	auto result = src1;
-	bool success = pcm_mix(result.begin(), src2.begin(), sizeof(result),
+	bool success = pcm_mix(dither,
+			       result.begin(), src2.begin(), sizeof(result),
 			       format, 1.0);
 	CPPUNIT_ASSERT(success);
-	AssertEqualWithTolerance(result, src1, 1);
+	AssertEqualWithTolerance(result, src1, 3);
 
 	/* portion1=0.0: result must be equal to src2 */
 	result = src1;
-	success = pcm_mix(result.begin(), src2.begin(), sizeof(result),
+	success = pcm_mix(dither, result.begin(), src2.begin(), sizeof(result),
 			  format, 0.0);
 	CPPUNIT_ASSERT(success);
-	AssertEqualWithTolerance(result, src2, 1);
+	AssertEqualWithTolerance(result, src2, 3);
 
 	/* portion1=0.5 */
 	result = src1;
-	success = pcm_mix(result.begin(), src2.begin(), sizeof(result),
+	success = pcm_mix(dither, result.begin(), src2.begin(), sizeof(result),
 			  format, 0.5);
 	CPPUNIT_ASSERT(success);
 
@@ -54,7 +58,7 @@ TestPcmMix(G g=G())
 	for (unsigned i = 0; i < N; ++i)
 		expected[i] = (int64_t(src1[i]) + int64_t(src2[i])) / 2;
 
-	AssertEqualWithTolerance(result, expected, 1);
+	AssertEqualWithTolerance(result, expected, 3);
 }
 
 void

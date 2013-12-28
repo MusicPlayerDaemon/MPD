@@ -25,41 +25,47 @@
 #include "Traits.hxx"
 #include "util/Clamp.hxx"
 
+#include "PcmDither.cxx" // including the .cxx file to get inlined templates
+
 #include <assert.h>
 #include <math.h>
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::value_type
-PcmAddVolume(typename Traits::value_type _a, typename Traits::value_type _b,
+PcmAddVolume(PcmDither &dither,
+	     typename Traits::value_type _a, typename Traits::value_type _b,
 	     int volume1, int volume2)
 {
 	typename Traits::long_type a(_a), b(_b);
+	typename Traits::long_type c(a * volume1 + b * volume2);
 
-	typename Traits::value_type c = ((a * volume1 + b * volume2) +
-		pcm_volume_dither() + PCM_VOLUME_1S / 2)
-		/ PCM_VOLUME_1S;
-
-	return PcmClamp<F, Traits>(c);
+	return dither.DitherShift<typename Traits::long_type,
+				  Traits::BITS + PCM_VOLUME_BITS,
+				  Traits::BITS>(c);
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-PcmAddVolume(typename Traits::pointer_type a,
+PcmAddVolume(PcmDither &dither,
+	     typename Traits::pointer_type a,
 	     typename Traits::const_pointer_type b,
 	     size_t n, int volume1, int volume2)
 {
 	for (size_t i = 0; i != n; ++i)
-		a[i] = PcmAddVolume<F, Traits>(a[i], b[i], volume1, volume2);
+		a[i] = PcmAddVolume<F, Traits>(dither, a[i], b[i],
+					       volume1, volume2);
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
-PcmAddVolumeVoid(void *a, const void *b, size_t size, int volume1, int volume2)
+PcmAddVolumeVoid(PcmDither &dither,
+		 void *a, const void *b, size_t size, int volume1, int volume2)
 {
 	constexpr size_t sample_size = Traits::SAMPLE_SIZE;
 	assert(size % sample_size == 0);
 
-	PcmAddVolume<F, Traits>(typename Traits::pointer_type(a),
+	PcmAddVolume<F, Traits>(dither,
+				typename Traits::pointer_type(a),
 				typename Traits::const_pointer_type(b),
 				size / sample_size,
 				volume1, volume2);
@@ -80,7 +86,7 @@ pcm_add_vol_float(float *buffer1, const float *buffer2,
 }
 
 static bool
-pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
+pcm_add_vol(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
 	    int vol1, int vol2,
 	    SampleFormat format)
 {
@@ -91,22 +97,26 @@ pcm_add_vol(void *buffer1, const void *buffer2, size_t size,
 		return false;
 
 	case SampleFormat::S8:
-		PcmAddVolumeVoid<SampleFormat::S8>(buffer1, buffer2, size,
+		PcmAddVolumeVoid<SampleFormat::S8>(dither,
+						   buffer1, buffer2, size,
 						   vol1, vol2);
 		return true;
 
 	case SampleFormat::S16:
-		PcmAddVolumeVoid<SampleFormat::S16>(buffer1, buffer2, size,
+		PcmAddVolumeVoid<SampleFormat::S16>(dither,
+						    buffer1, buffer2, size,
 						    vol1, vol2);
 		return true;
 
 	case SampleFormat::S24_P32:
-		PcmAddVolumeVoid<SampleFormat::S24_P32>(buffer1, buffer2, size,
+		PcmAddVolumeVoid<SampleFormat::S24_P32>(dither,
+							buffer1, buffer2, size,
 							vol1, vol2);
 		return true;
 
 	case SampleFormat::S32:
-		PcmAddVolumeVoid<SampleFormat::S32>(buffer1, buffer2, size,
+		PcmAddVolumeVoid<SampleFormat::S32>(dither,
+						    buffer1, buffer2, size,
 						    vol1, vol2);
 		return true;
 
@@ -201,7 +211,7 @@ pcm_add(void *buffer1, const void *buffer2, size_t size,
 }
 
 bool
-pcm_mix(void *buffer1, const void *buffer2, size_t size,
+pcm_mix(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
 	SampleFormat format, float portion1)
 {
 	float s;
@@ -217,5 +227,6 @@ pcm_mix(void *buffer1, const void *buffer2, size_t size,
 	int vol1 = s * PCM_VOLUME_1S + 0.5;
 	vol1 = Clamp<int>(vol1, 0, PCM_VOLUME_1S);
 
-	return pcm_add_vol(buffer1, buffer2, size, vol1, PCM_VOLUME_1S - vol1, format);
+	return pcm_add_vol(dither, buffer1, buffer2, size,
+			   vol1, PCM_VOLUME_1S - vol1, format);
 }

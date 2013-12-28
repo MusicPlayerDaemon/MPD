@@ -25,6 +25,8 @@
 
 #include <stddef.h>
 
+class PcmDither;
+
 /*
  * Linearly mixes two PCM buffers.  Both must have the same length and
  * the same audio format.  The formula is:
@@ -44,7 +46,7 @@
  */
 gcc_warn_unused_result
 bool
-pcm_mix(void *buffer1, const void *buffer2, size_t size,
+pcm_mix(PcmDither &dither, void *buffer1, const void *buffer2, size_t size,
 	SampleFormat format, float portion1);
 
 #endif

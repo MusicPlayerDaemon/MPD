@@ -22,6 +22,7 @@
 
 #include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
+#include "pcm/PcmDither.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
@@ -170,6 +171,11 @@ struct audio_output {
 	 * The buffer used to allocate the cross-fading result.
 	 */
 	PcmBuffer cross_fade_buffer;
+
+	/**
+	 * The dithering state for cross-fading two streams.
+	 */
+	PcmDither cross_fade_dither;
 
 	/**
 	 * The filter object of this audio output.  This is an

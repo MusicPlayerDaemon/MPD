@@ -392,7 +392,7 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 
 		void *dest = ao->cross_fade_buffer.Get(other_length);
 		memcpy(dest, other_data, other_length);
-		if (!pcm_mix(dest, data, length,
+		if (!pcm_mix(ao->cross_fade_dither, dest, data, length,
 			     ao->in_audio_format.format,
 			     1.0 - chunk->mix_ratio)) {
 			FormatError(output_domain,
