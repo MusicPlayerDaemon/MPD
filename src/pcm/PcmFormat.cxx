@@ -19,10 +19,11 @@
 
 #include "config.h"
 #include "PcmFormat.hxx"
-#include "PcmDither.hxx"
 #include "PcmBuffer.hxx"
 #include "PcmUtils.hxx"
 #include "Traits.hxx"
+
+#include "PcmDither.cxx" // including the .cxx file to get inlined templates
 
 static void
 pcm_convert_8_to_16(int16_t *out, const int8_t *in, const int8_t *in_end)

@@ -85,7 +85,7 @@ PcmDither::DitherConvert(typename DT::pointer_type dest,
 		*dest++ = DitherConvert<ST, DT>(*src++);
 }
 
-void
+inline void
 PcmDither::Dither24To16(int16_t *dest, const int32_t *src,
 			const int32_t *src_end)
 {
@@ -94,7 +94,7 @@ PcmDither::Dither24To16(int16_t *dest, const int32_t *src,
 	DitherConvert<ST, DT>(dest, src, src_end);
 }
 
-void
+inline void
 PcmDither::Dither32To16(int16_t *dest, const int32_t *src,
 			const int32_t *src_end)
 {

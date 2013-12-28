@@ -19,7 +19,7 @@
 
 #include "test_pcm_all.hxx"
 #include "test_pcm_util.hxx"
-#include "pcm/PcmDither.hxx"
+#include "pcm/PcmDither.cxx"
 
 void
 PcmDitherTest::TestDither24()
