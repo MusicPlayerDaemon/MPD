@@ -42,56 +42,6 @@ pcm_volume_sample(typename Traits::value_type _sample,
 	return PcmClamp<F, Traits>(sample);
 }
 
-#ifdef __i386__
-
-/**
- * Optimized volume function for i386.  Use the EDX:EAX 2*32 bit
- * multiplication result instead of emulating 64 bit multiplication.
- */
-static inline int32_t
-pcm_volume_sample_24(int32_t sample, int32_t volume, gcc_unused int32_t dither)
-{
-	int32_t result;
-
-	asm(/* edx:eax = sample * volume */
-	    "imul %2\n"
-
-	    /* "add %3, %1\n"  dithering disabled for now, because we
-	       have no overflow check - is dithering really important
-	       here? */
-
-	    /* eax = edx:eax / PCM_VOLUME_1 */
-	    "sal $22, %%edx\n"
-	    "shr $10, %1\n"
-	    "or %%edx, %1\n"
-
-	    : "=a"(result)
-	    : "0"(sample), "r"(volume) /* , "r"(dither) */
-	    : "edx"
-	    );
-
-	return result;
-}
-
-template<>
-inline int32_t
-pcm_volume_sample<SampleFormat::S24_P32,
-		  SampleTraits<SampleFormat::S24_P32>>(int32_t sample,
-						       int volume)
-{
-	return pcm_volume_sample_24(sample, volume, pcm_volume_dither());
-}
-
-template<>
-inline int32_t
-pcm_volume_sample<SampleFormat::S32,
-		  SampleTraits<SampleFormat::S32>>(int32_t sample, int volume)
-{
-	return pcm_volume_sample_24(sample, volume, pcm_volume_dither());
-}
-
-#endif
-
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
 pcm_volume_change(typename Traits::pointer_type dest,
