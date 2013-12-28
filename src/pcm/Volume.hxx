@@ -20,7 +20,6 @@
 #ifndef MPD_PCM_VOLUME_HXX
 #define MPD_PCM_VOLUME_HXX
 
-#include "PcmPrng.hxx"
 #include "AudioFormat.hxx"
 #include "PcmBuffer.hxx"
 #include "PcmDither.hxx"
@@ -62,21 +61,6 @@ static inline float
 pcm_volume_to_float(int volume)
 {
 	return (float)volume / (float)PCM_VOLUME_1;
-}
-
-/**
- * Returns the next volume dithering number, between -511 and +511.
- * This number is taken from a global PRNG, see pcm_prng().
- */
-static inline int
-pcm_volume_dither(void)
-{
-	static unsigned long state;
-	uint32_t r;
-
-	r = state = pcm_prng(state);
-
-	return (r & 511) - ((r >> 9) & 511);
 }
 
 /**
