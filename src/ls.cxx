@@ -49,6 +49,9 @@ static const char *remoteUrlPrefixes[] = {
 	"rtmpt://",
 	"rtmps://",
 #endif
+#ifdef ENABLE_SMBCLIENT
+	"smb://",
+#endif
 #ifdef ENABLE_CDIO_PARANOIA
 	"cdda://",
 #endif

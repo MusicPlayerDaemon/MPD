@@ -791,6 +791,7 @@ libinput_a_SOURCES = \
 
 libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(CURL_CFLAGS) \
+	$(SMBCLIENT_CFLAGS) \
 	$(CDIO_PARANOIA_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(DESPOTIFY_CFLAGS) \
@@ -799,6 +800,7 @@ libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 INPUT_LIBS = \
 	libinput.a \
 	$(CURL_LIBS) \
+	$(SMBCLIENT_LIBS) \
 	$(CDIO_PARANOIA_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(DESPOTIFY_LIBS) \
@@ -816,6 +818,11 @@ if ENABLE_CURL
 libinput_a_SOURCES += \
 	src/input/CurlInputPlugin.cxx src/input/CurlInputPlugin.hxx \
 	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
+endif
+
+if ENABLE_SMBCLIENT
+libinput_a_SOURCES += \
+	src/input/SmbclientInputPlugin.cxx src/input/SmbclientInputPlugin.hxx
 endif
 
 if ENABLE_CDIO_PARANOIA

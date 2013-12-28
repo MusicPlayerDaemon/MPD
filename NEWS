@@ -3,6 +3,7 @@ ver 0.19 (not yet released)
   - new commands "addtagid", "cleartagid"
 * input
   - alsa: new input plugin
+  - smbclient: new input plugin
 * filter
   - volume: improved software volume dithering
 * new resampler option using libsoxr

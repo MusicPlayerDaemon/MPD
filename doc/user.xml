@@ -1059,6 +1059,20 @@ systemctl start mpd.socket</programlisting>
           </tgroup>
         </informaltable>
       </section>
+
+      <section>
+        <title><varname>smbclient</varname></title>
+
+        <para>
+          Allows MPD to access files on SMB/CIFS servers (e.g. Samba
+          or Microsoft Windows).  All URIs with the
+          <filename>smb://</filename> scheme are used.  Example:
+        </para>
+
+        <para>
+          <filename>mpc add smb://servername/sharename/filename.ogg</filename>
+        </para>
+      </section>
     </section>
 
     <section>

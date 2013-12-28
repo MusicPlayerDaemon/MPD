@@ -38,6 +38,10 @@
 #include "input/FfmpegInputPlugin.hxx"
 #endif
 
+#ifdef ENABLE_SMBCLIENT
+#include "input/SmbclientInputPlugin.hxx"
+#endif
+
 #ifdef ENABLE_MMS
 #include "input/MmsInputPlugin.hxx"
 #endif
@@ -63,6 +67,9 @@ const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef HAVE_FFMPEG
 	&input_plugin_ffmpeg,
+#endif
+#ifdef ENABLE_SMBCLIENT
+	&input_plugin_smbclient,
 #endif
 #ifdef ENABLE_MMS
 	&input_plugin_mms,

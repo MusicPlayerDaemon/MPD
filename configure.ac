@@ -300,6 +300,11 @@ AC_ARG_ENABLE(curl,
 		[enable support for libcurl HTTP streaming (default: auto)]),,
 	[enable_curl=auto])
 
+AC_ARG_ENABLE(smbclient,
+	AS_HELP_STRING([--enable-smbclient],
+		[enable support for libsmbclient (default: auto)]),,
+	[enable_smbclient=auto])
+
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
 		[enable debugging (default: disabled)]),,
@@ -826,6 +831,14 @@ if test x$enable_curl = xyes; then
 	AC_DEFINE(ENABLE_CURL, 1, [Define when libcurl is used for HTTP streaming])
 fi
 AM_CONDITIONAL(ENABLE_CURL, test x$enable_curl = xyes)
+
+dnl ----------------------------------- smbclient -----------------------------
+MPD_AUTO_PKG(smbclient, SMBCLIENT, [smbclient >= 0.2],
+	[smbclient input plugin], [libsmbclient not found])
+if test x$enable_smbclient = xyes; then
+	AC_DEFINE(ENABLE_SMBCLIENT, 1, [Define when libsmbclient is used])
+fi
+AM_CONDITIONAL(ENABLE_SMBCLIENT, test x$enable_smbclient = xyes)
 
 dnl --------------------------------- Despotify ---------------------------------
 MPD_AUTO_PKG(despotify, DESPOTIFY, [despotify],
@@ -1708,6 +1721,7 @@ fi
 printf '\nStreaming support:\n\t'
 results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
+results(smbclient,[SMBCLIENT])
 results(despotify,[Despotify])
 results(soundcloud,[Soundcloud])
 printf '\n\t'
