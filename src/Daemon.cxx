@@ -116,7 +116,11 @@ daemonize_set_user(void)
 	/* init supplementary groups
 	 * (must be done before we change our uid)
 	 */
-	if (!had_group && initgroups(user_name, user_gid) == -1) {
+	if (!had_group &&
+	    /* no need to set the new user's supplementary groups if
+	       we are already this user */
+	    user_uid != getuid() &&
+	    initgroups(user_name, user_gid) == -1) {
 		FormatFatalSystemError("Failed to set supplementary groups "
 				       "of user \"%s\"",
 				       user_name);

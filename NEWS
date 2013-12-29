@@ -1,4 +1,6 @@
 ver 0.18.7 (not yet released)
+* daemon: don't initialize supplementary groups when already running
+  as the configured user
 
 ver 0.18.6 (2013/12/24)
 * input
