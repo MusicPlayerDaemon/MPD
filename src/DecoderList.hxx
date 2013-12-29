@@ -29,6 +29,7 @@ extern bool decoder_plugins_enabled[];
 
 /* interface for using plugins */
 
+gcc_pure
 const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name);
 
