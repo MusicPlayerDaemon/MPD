@@ -52,7 +52,7 @@ static char *user_name;
 static uid_t user_uid = (uid_t)-1;
 
 /** the Unix group id which MPD runs as */
-static gid_t user_gid = (pid_t)-1;
+static gid_t user_gid = (gid_t)-1;
 
 /** the absolute path of the pidfile */
 static AllocatedPath pidfile = AllocatedPath::Null();
