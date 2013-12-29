@@ -118,43 +118,6 @@ static constexpr unsigned num_decoder_plugins =
 /** which plugins have been initialized successfully? */
 bool decoder_plugins_enabled[num_decoder_plugins];
 
-static unsigned
-decoder_plugin_index(const struct DecoderPlugin *plugin)
-{
-	unsigned i = 0;
-
-	while (decoder_plugins[i] != plugin)
-		++i;
-
-	return i;
-}
-
-static unsigned
-decoder_plugin_next_index(const struct DecoderPlugin *plugin)
-{
-	return plugin == 0
-		? 0 /* start with first plugin */
-		: decoder_plugin_index(plugin) + 1;
-}
-
-const struct DecoderPlugin *
-decoder_plugin_from_suffix(const char *suffix,
-			   const struct DecoderPlugin *plugin)
-{
-	if (suffix == nullptr)
-		return nullptr;
-
-	for (unsigned i = decoder_plugin_next_index(plugin);
-	     decoder_plugins[i] != nullptr; ++i) {
-		plugin = decoder_plugins[i];
-		if (decoder_plugins_enabled[i] &&
-		    plugin->SupportsSuffix(suffix))
-			return plugin;
-	}
-
-	return nullptr;
-}
-
 const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name)
 {
@@ -211,5 +174,13 @@ void decoder_plugin_deinit_all(void)
 {
 	decoder_plugins_for_each_enabled([=](const DecoderPlugin &plugin){
 			plugin.Finish();
+		});
+}
+
+bool
+decoder_plugins_supports_suffix(const char *suffix)
+{
+	return decoder_plugins_try([suffix](const DecoderPlugin &plugin){
+			return plugin.SupportsSuffix(suffix);
 		});
 }

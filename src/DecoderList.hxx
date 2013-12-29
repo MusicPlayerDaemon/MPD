@@ -20,23 +20,14 @@
 #ifndef MPD_DECODER_LIST_HXX
 #define MPD_DECODER_LIST_HXX
 
+#include "Compiler.h"
+
 struct DecoderPlugin;
 
 extern const struct DecoderPlugin *const decoder_plugins[];
 extern bool decoder_plugins_enabled[];
 
 /* interface for using plugins */
-
-/**
- * Find the next enabled decoder plugin which supports the specified suffix.
- *
- * @param suffix the file name suffix
- * @param plugin the previous plugin, or nullptr to find the first plugin
- * @return a plugin, or nullptr if none matches
- */
-const struct DecoderPlugin *
-decoder_plugin_from_suffix(const char *suffix,
-			   const struct DecoderPlugin *plugin);
 
 const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name);
@@ -85,5 +76,13 @@ decoder_plugins_for_each_enabled(F f)
 		if (decoder_plugins_enabled[i])
 			f(*decoder_plugins[i]);
 }
+
+/**
+ * Is there at least once #DecoderPlugin that supports the specified
+ * file name suffix?
+ */
+gcc_pure gcc_nonnull_all
+bool
+decoder_plugins_supports_suffix(const char *suffix);
 
 #endif

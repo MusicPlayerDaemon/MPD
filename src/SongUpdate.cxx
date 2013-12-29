@@ -107,7 +107,6 @@ bool
 Song::UpdateFileInArchive()
 {
 	const char *suffix;
-	const struct DecoderPlugin *plugin;
 
 	assert(IsFile());
 
@@ -117,8 +116,7 @@ Song::UpdateFileInArchive()
 	if (suffix == nullptr)
 		return false;
 
-	plugin = decoder_plugin_from_suffix(suffix, nullptr);
-	if (plugin == nullptr)
+	if (!decoder_plugins_supports_suffix(suffix))
 		return false;
 
 	delete tag;

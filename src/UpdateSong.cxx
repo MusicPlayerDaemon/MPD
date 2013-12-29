@@ -105,9 +105,7 @@ update_song_file(Directory &directory,
 		 const char *name, const char *suffix,
 		 const struct stat *st)
 {
-	const struct DecoderPlugin *plugin =
-		decoder_plugin_from_suffix(suffix, nullptr);
-	if (plugin == nullptr)
+	if (!decoder_plugins_supports_suffix(suffix))
 		return false;
 
 	update_song_file2(directory, name, st, suffix);
