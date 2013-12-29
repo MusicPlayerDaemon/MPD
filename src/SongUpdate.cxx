@@ -32,6 +32,7 @@
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
 #include "TagFile.hxx"
+#include "TagStream.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -119,12 +120,15 @@ Song::UpdateFileInArchive()
 	if (!decoder_plugins_supports_suffix(suffix))
 		return false;
 
+	const auto path_fs = map_song_fs(*this);
+	if (path_fs.IsNull())
+		return false;
+
+	TagBuilder tag_builder;
+	if (!tag_stream_scan(path_fs.c_str(), full_tag_handler, &tag_builder))
+		return false;
+
 	delete tag;
-
-	//accept every file that has music suffix
-	//because we don't support tag reading through
-	//input streams
-	tag = new Tag();
-
+	tag = tag_builder.Commit();
 	return true;
 }

@@ -202,6 +202,7 @@ src_mpd_SOURCES = \
 	src/TagPrint.cxx src/TagPrint.hxx \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/TagFile.cxx src/TagFile.hxx \
+	src/TagStream.cxx src/TagStream.hxx \
 	src/TextInputStream.cxx \
 	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
