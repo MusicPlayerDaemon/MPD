@@ -80,11 +80,9 @@ public:
 };
 
 bool
-tag_file_scan(Path path_fs,
-	      const struct tag_handler *handler, void *handler_ctx)
+tag_file_scan(Path path_fs, const tag_handler &handler, void *handler_ctx)
 {
 	assert(!path_fs.IsNull());
-	assert(handler != nullptr);
 
 	/* check if there's a suffix and a plugin */
 
@@ -92,7 +90,7 @@ tag_file_scan(Path path_fs,
 	if (suffix == nullptr)
 		return false;
 
-	TagFileScan tfs(path_fs, suffix, *handler, handler_ctx);
+	TagFileScan tfs(path_fs, suffix, handler, handler_ctx);
 	return decoder_plugins_try([&](const DecoderPlugin &plugin){
 			return tfs.Scan(plugin);
 		});

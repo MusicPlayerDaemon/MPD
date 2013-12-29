@@ -103,7 +103,7 @@ embcue_playlist_open_uri(const char *uri,
 
 	const auto playlist = new EmbeddedCuePlaylist();
 
-	tag_file_scan(path_fs, &embcue_tag_handler, playlist);
+	tag_file_scan(path_fs, embcue_tag_handler, playlist);
 	if (playlist->cuesheet.empty()) {
 		tag_ape_scan2(path_fs, &embcue_tag_handler, playlist);
 		if (playlist->cuesheet.empty())

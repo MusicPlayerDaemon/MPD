@@ -114,7 +114,7 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	if (!tag_file_scan(path_fs, &print_comment_handler, &client)) {
+	if (!tag_file_scan(path_fs, print_comment_handler, &client)) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "Failed to load file");
 		return CommandResult::ERROR;
