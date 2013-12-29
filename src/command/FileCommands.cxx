@@ -25,13 +25,16 @@
 #include "ClientFile.hxx"
 #include "Client.hxx"
 #include "util/CharUtil.hxx"
+#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/ApeTag.hxx"
 #include "tag/TagId3.hxx"
+#include "TagStream.hxx"
 #include "TagFile.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "ls.hxx"
 
 #include <assert.h>
 
@@ -80,6 +83,25 @@ static constexpr tag_handler print_comment_handler = {
 	print_pair,
 };
 
+static CommandResult
+read_stream_comments(Client &client, const char *uri)
+{
+	if (!uri_supported_scheme(uri)) {
+		command_error(client, ACK_ERROR_NO_EXIST,
+			      "unsupported URI scheme");
+		return CommandResult::ERROR;
+	}
+
+	if (!tag_stream_scan(uri, print_comment_handler, &client)) {
+		command_error(client, ACK_ERROR_NO_EXIST,
+			      "Failed to load file");
+		return CommandResult::ERROR;
+	}
+
+	return CommandResult::OK;
+
+}
+
 CommandResult
 handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 {
@@ -102,6 +124,8 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 		Error error;
 		if (!client_allow_file(client, path_fs, error))
 			return print_error(client, error);
+	} else if (uri_has_scheme(uri)) {
+		return read_stream_comments(client, uri);
 	} else if (*uri != '/') {
 		path_fs = map_uri_fs(uri);
 		if (path_fs.IsNull()) {

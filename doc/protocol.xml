@@ -1618,6 +1618,10 @@ OK
               deprecated; use "listplaylists" instead.
             </para>
             <para>
+              This command may be used to list metadata of remote
+              files (e.g. URI beginning with "http://" or "smb://").
+            </para>
+            <para>
               Clients that are connected via UNIX domain socket may
               use this command to read the tags of an arbitrary local
               file (URI beginning with "file:///").
@@ -1637,6 +1641,10 @@ OK
               specified by "URI".  This "URI" can be a path relative
               to the music directory or a URL in the form
               "file:///foo/bar.ogg".
+            </para>
+            <para>
+              This command may be used to list metadata of remote
+              files (e.g. URI beginning with "http://" or "smb://").
             </para>
             <para>
               The response consists of lines in the form "KEY: VALUE".

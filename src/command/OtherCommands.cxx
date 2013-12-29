@@ -136,6 +136,26 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 		return CommandResult::OK;
 	}
 
+	if (uri_has_scheme(uri)) {
+		if (!uri_supported_scheme(uri)) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "unsupported URI scheme");
+			return CommandResult::ERROR;
+		}
+
+		Song *song = Song::NewRemote(uri);
+		if (!song->UpdateStream()) {
+			song->Free();
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "No such file");
+			return CommandResult::ERROR;
+		}
+
+		song_print_info(client, *song);
+		song->Free();
+		return CommandResult::OK;
+	}
+
 	CommandResult result = handle_lsinfo2(client, argc, argv);
 	if (result != CommandResult::OK)
 		return result;

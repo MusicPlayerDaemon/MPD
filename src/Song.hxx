@@ -130,6 +130,7 @@ struct Song {
 
 	bool UpdateFile();
 	bool UpdateFileInArchive();
+	bool UpdateStream();
 
 	/**
 	 * Returns the URI of the song in UTF-8 encoding, including its
