@@ -119,6 +119,15 @@ struct InputStream {
 				 Error &error);
 
 	/**
+	 * Just like Open(), but waits for the stream to become ready.
+	 * It is a wrapper for Open(), WaitReady() and Check().
+	 */
+	gcc_malloc gcc_nonnull_all
+	static InputStream *OpenReady(const char *uri,
+				      Mutex &mutex, Cond &cond,
+				      Error &error);
+
+	/**
 	 * Close the input stream and free resources.
 	 *
 	 * The caller must not lock the mutex.

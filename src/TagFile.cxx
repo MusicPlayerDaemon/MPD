@@ -62,9 +62,9 @@ public:
 
 		/* open the InputStream (if not already open) */
 		if (is == nullptr) {
-			is = InputStream::Open(path_fs.c_str(),
-					       mutex, cond,
-					       IgnoreError());
+			is = InputStream::OpenReady(path_fs.c_str(),
+						    mutex, cond,
+						    IgnoreError());
 			if (is == nullptr)
 				return false;
 		} else

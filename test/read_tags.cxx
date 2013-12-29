@@ -113,25 +113,12 @@ int main(int argc, char **argv)
 		Mutex mutex;
 		Cond cond;
 
-		InputStream *is = InputStream::Open(path, mutex, cond,
-						    error);
+		InputStream *is = InputStream::OpenReady(path, mutex, cond,
+							 error);
 		if (is == NULL) {
 			FormatError(error, "Failed to open %s", path);
 			return EXIT_FAILURE;
 		}
-
-		mutex.lock();
-
-		is->WaitReady();
-
-		if (!is->Check(error)) {
-			mutex.unlock();
-
-			FormatError(error, "Failed to read %s", path);
-			return EXIT_FAILURE;
-		}
-
-		mutex.unlock();
 
 		success = plugin->ScanStream(*is, print_handler, nullptr);
 		is->Close();

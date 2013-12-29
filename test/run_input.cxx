@@ -50,16 +50,6 @@ dump_input_stream(InputStream *is)
 
 	is->Lock();
 
-	/* wait until the stream becomes ready */
-
-	is->WaitReady();
-
-	if (!is->Check(error)) {
-		LogError(error);
-		is->Unlock();
-		return EXIT_FAILURE;
-	}
-
 	/* print meta data */
 
 	if (!is->mime.empty())
@@ -139,7 +129,7 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	is = InputStream::Open(argv[1], mutex, cond, error);
+	is = InputStream::OpenReady(argv[1], mutex, cond, error);
 	if (is != NULL) {
 		ret = dump_input_stream(is);
 		is->Close();

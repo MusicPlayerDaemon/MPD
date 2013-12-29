@@ -146,7 +146,7 @@ bz2_open(const char *pathname, Error &error)
 {
 	static Mutex mutex;
 	static Cond cond;
-	InputStream *is = InputStream::Open(pathname, mutex, cond, error);
+	InputStream *is = InputStream::OpenReady(pathname, mutex, cond, error);
 	if (is == nullptr)
 		return nullptr;
 

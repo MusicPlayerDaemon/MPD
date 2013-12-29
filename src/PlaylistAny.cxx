@@ -41,7 +41,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 	}
 
 	Error error;
-	InputStream *is = InputStream::Open(uri, mutex, cond, error);
+	InputStream *is = InputStream::OpenReady(uri, mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
 			FormatError(error, "Failed to open %s", uri);

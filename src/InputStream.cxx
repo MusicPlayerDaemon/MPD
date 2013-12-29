@@ -57,6 +57,28 @@ InputStream::Open(const char *url,
 	return nullptr;
 }
 
+InputStream *
+InputStream::OpenReady(const char *uri,
+		       Mutex &mutex, Cond &cond,
+		       Error &error)
+{
+	InputStream *is = Open(uri, mutex, cond, error);
+	if (is == nullptr)
+		return nullptr;
+
+	mutex.lock();
+	is->WaitReady();
+	bool success = is->Check(error);
+	mutex.unlock();
+
+	if (!success) {
+		is->Close();
+		is = nullptr;
+	}
+
+	return is;
+}
+
 bool
 InputStream::Check(Error &error)
 {

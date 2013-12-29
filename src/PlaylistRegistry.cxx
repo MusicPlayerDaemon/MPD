@@ -269,9 +269,7 @@ playlist_list_open_stream_suffix(InputStream &is, const char *suffix)
 SongEnumerator *
 playlist_list_open_stream(InputStream &is, const char *uri)
 {
-	const char *suffix;
-
-	is.LockWaitReady();
+	assert(is.ready);
 
 	const char *const mime = is.GetMimeType();
 	if (mime != nullptr) {
@@ -280,7 +278,7 @@ playlist_list_open_stream(InputStream &is, const char *uri)
 			return playlist;
 	}
 
-	suffix = uri != nullptr ? uri_get_suffix(uri) : nullptr;
+	const char *suffix = uri != nullptr ? uri_get_suffix(uri) : nullptr;
 	if (suffix != nullptr) {
 		auto playlist = playlist_list_open_stream_suffix(is, suffix);
 		if (playlist != nullptr)
@@ -317,15 +315,13 @@ playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 		return nullptr;
 
 	Error error;
-	InputStream *is = InputStream::Open(path_fs, mutex, cond, error);
+	InputStream *is = InputStream::OpenReady(path_fs, mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
 
 		return nullptr;
 	}
-
-	is->LockWaitReady();
 
 	auto playlist = playlist_list_open_stream_suffix(*is, suffix);
 	if (playlist != nullptr)

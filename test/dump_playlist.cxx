@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
-		is = InputStream::Open(uri, mutex, cond, error);
+		is = InputStream::OpenReady(uri, mutex, cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
 				LogError(error);
@@ -101,8 +101,6 @@ int main(int argc, char **argv)
 					"InputStream::Open() failed\n");
 			return 2;
 		}
-
-		is->LockWaitReady();
 
 		/* open the playlist */
 
