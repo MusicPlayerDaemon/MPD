@@ -29,6 +29,56 @@
 
 #include <assert.h>
 
+class TagFileScan {
+	const Path path_fs;
+	const char *const suffix;
+
+	const tag_handler &handler;
+	void *handler_ctx;
+
+	Mutex mutex;
+	Cond cond;
+	InputStream *is;
+
+public:
+	TagFileScan(Path _path_fs, const char *_suffix,
+		    const tag_handler &_handler, void *_handler_ctx)
+		:path_fs(_path_fs), suffix(_suffix),
+		 handler(_handler), handler_ctx(_handler_ctx) ,
+		 is(nullptr) {}
+
+	~TagFileScan() {
+		if (is != nullptr)
+			is->Close();
+	}
+
+	bool ScanFile(const DecoderPlugin &plugin) {
+		return plugin.ScanFile(path_fs.c_str(), handler, handler_ctx);
+	}
+
+	bool ScanStream(const DecoderPlugin &plugin) {
+		if (plugin.scan_stream == nullptr)
+			return false;
+
+		/* open the InputStream (if not already open) */
+		if (is == nullptr) {
+			is = InputStream::Open(path_fs.c_str(),
+					       mutex, cond,
+					       IgnoreError());
+			if (is == nullptr)
+				return false;
+		}
+
+		/* now try the stream_tag() method */
+		return plugin.ScanStream(*is, handler, handler_ctx);
+	}
+
+	bool Scan(const DecoderPlugin &plugin) {
+		return plugin.SupportsSuffix(suffix) &&
+			(ScanFile(plugin) || ScanStream(plugin));
+	}
+};
+
 bool
 tag_file_scan(Path path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
@@ -42,45 +92,8 @@ tag_file_scan(Path path_fs,
 	if (suffix == nullptr)
 		return false;
 
-	const struct DecoderPlugin *plugin =
-		decoder_plugin_from_suffix(suffix, nullptr);
-	if (plugin == nullptr)
-		return false;
-
-	InputStream *is = nullptr;
-	Mutex mutex;
-	Cond cond;
-
-	do {
-		/* load file tag */
-		if (plugin->ScanFile(path_fs.c_str(),
-				     *handler, handler_ctx))
-			break;
-
-		/* fall back to stream tag */
-		if (plugin->scan_stream != nullptr) {
-			/* open the InputStream (if not already
-			   open) */
-			if (is == nullptr)
-				is = InputStream::Open(path_fs.c_str(),
-						       mutex, cond,
-						       IgnoreError());
-
-			/* now try the stream_tag() method */
-			if (is != nullptr) {
-				if (plugin->ScanStream(*is,
-						       *handler, handler_ctx))
-					break;
-
-				is->LockRewind(IgnoreError());
-			}
-		}
-
-		plugin = decoder_plugin_from_suffix(suffix, plugin);
-	} while (plugin != nullptr);
-
-	if (is != nullptr)
-		is->Close();
-
-	return plugin != nullptr;
+	TagFileScan tfs(path_fs, suffix, *handler, handler_ctx);
+	return decoder_plugins_try([&](const DecoderPlugin &plugin){
+			return tfs.Scan(plugin);
+		});
 }
