@@ -31,6 +31,6 @@ bool
 update_container_file(Directory &directory,
 		      const char *name,
 		      const struct stat *st,
-		      const DecoderPlugin &plugin);
+		      const char *suffix);
 
 #endif

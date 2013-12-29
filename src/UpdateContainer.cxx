@@ -26,6 +26,7 @@
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "DecoderPlugin.hxx"
+#include "DecoderList.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "tag/TagHandler.hxx"
@@ -64,14 +65,25 @@ make_directory_if_modified(Directory &parent, const char *name,
 	return directory;
 }
 
+static bool
+SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
+{
+	return plugin.container_scan != nullptr &&
+		plugin.SupportsSuffix(suffix);
+}
+
 bool
 update_container_file(Directory &directory,
 		      const char *name,
 		      const struct stat *st,
-		      const DecoderPlugin &plugin)
+		      const char *suffix)
 {
-	if (plugin.container_scan == nullptr)
+	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){
+			return SupportsContainerSuffix(plugin, suffix);
+		});
+	if (_plugin == nullptr)
 		return false;
+	const DecoderPlugin &plugin = *_plugin;
 
 	db_lock();
 	Directory *contdir = make_directory_if_modified(directory, name, st);

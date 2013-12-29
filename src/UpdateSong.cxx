@@ -35,7 +35,7 @@
 static void
 update_song_file2(Directory &directory,
 		  const char *name, const struct stat *st,
-		  const DecoderPlugin &plugin)
+		  const char *suffix)
 {
 	db_lock();
 	Song *song = directory.FindSong(name);
@@ -56,7 +56,7 @@ update_song_file2(Directory &directory,
 
 	if (!(song != nullptr && st->st_mtime == song->mtime &&
 	      !walk_discard) &&
-	    update_container_file(directory, name, st, plugin)) {
+	    update_container_file(directory, name, st, suffix)) {
 		if (song != nullptr) {
 			db_lock();
 			delete_song(directory, song);
@@ -110,6 +110,6 @@ update_song_file(Directory &directory,
 	if (plugin == nullptr)
 		return false;
 
-	update_song_file2(directory, name, st, *plugin);
+	update_song_file2(directory, name, st, suffix);
 	return true;
 }
