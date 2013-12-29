@@ -106,11 +106,10 @@ daemonize_set_user(void)
 		return;
 
 	/* set gid */
-	if (user_gid != (gid_t)-1 && user_gid != getgid()) {
-		if (setgid(user_gid) == -1) {
-			FormatFatalSystemError("Failed to set group %d",
-					       (int)user_gid);
-		}
+	if (user_gid != (gid_t)-1 && user_gid != getgid() &&
+	    setgid(user_gid) == -1) {
+		FormatFatalSystemError("Failed to set group %d",
+				       (int)user_gid);
 	}
 
 #ifdef _BSD_SOURCE
