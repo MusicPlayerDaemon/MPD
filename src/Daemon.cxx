@@ -47,7 +47,7 @@ static char *user_name;
 static uid_t user_uid = (uid_t)-1;
 
 /** the Unix group id which MPD runs as */
-static gid_t user_gid = (pid_t)-1;
+static gid_t user_gid = (gid_t)-1;
 
 /** the absolute path of the pidfile */
 static AllocatedPath pidfile = AllocatedPath::Null();
@@ -101,18 +101,21 @@ daemonize_set_user(void)
 		return;
 
 	/* set gid */
-	if (user_gid != (gid_t)-1 && user_gid != getgid()) {
-		if (setgid(user_gid) == -1) {
-			FormatFatalSystemError("Failed to set group %d",
-					       (int)user_gid);
-		}
+	if (user_gid != (gid_t)-1 && user_gid != getgid() &&
+	    setgid(user_gid) == -1) {
+		FormatFatalSystemError("Failed to set group %d",
+				       (int)user_gid);
 	}
 
 #ifdef _BSD_SOURCE
-	/* init suplementary groups
+	/* init supplementary groups
 	 * (must be done before we change our uid)
 	 */
-	if (!had_group && initgroups(user_name, user_gid) == -1) {
+	if (!had_group &&
+	    /* no need to set the new user's supplementary groups if
+	       we are already this user */
+	    user_uid != getuid() &&
+	    initgroups(user_name, user_gid) == -1) {
 		FormatFatalSystemError("Failed to set supplementary groups "
 				       "of user \"%s\"",
 				       user_name);
