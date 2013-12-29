@@ -1,4 +1,6 @@
 ver 0.18.7 (not yet released)
+* playlist
+  - soundcloud: fix build failure with libyajl 2.0.1
 * daemon: don't initialize supplementary groups when already running
   as the configured user
 

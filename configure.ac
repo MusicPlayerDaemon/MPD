@@ -732,7 +732,7 @@ dnl --------------------------------- Soundcloud ------------------------------
 if test x$enable_soundcloud != xno; then
 	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
 		[found_soundcloud=yes],
-		AC_CHECK_LIB([yajl], [yajl_alloc],
+		AC_CHECK_LIB([yajl], [yajl_parse_complete],
 			[found_soundcloud=yes YAJL_CFLAGS=-DHAVE_YAJL1 YAJL_LIBS=-lyajl],
 			[found_soundcloud=no]))
 fi
