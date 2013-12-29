@@ -156,28 +156,6 @@ decoder_plugin_from_suffix(const char *suffix,
 }
 
 const struct DecoderPlugin *
-decoder_plugin_from_mime_type(const char *mimeType, unsigned int next)
-{
-	static unsigned i = num_decoder_plugins;
-
-	if (mimeType == nullptr)
-		return nullptr;
-
-	if (!next)
-		i = 0;
-	for (; decoder_plugins[i] != nullptr; ++i) {
-		const struct DecoderPlugin *plugin = decoder_plugins[i];
-		if (decoder_plugins_enabled[i] &&
-		    plugin->SupportsMimeType(mimeType)) {
-			++i;
-			return plugin;
-		}
-	}
-
-	return nullptr;
-}
-
-const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name)
 {
 	return decoder_plugins_find([=](const DecoderPlugin &plugin){

@@ -39,9 +39,6 @@ decoder_plugin_from_suffix(const char *suffix,
 			   const struct DecoderPlugin *plugin);
 
 const struct DecoderPlugin *
-decoder_plugin_from_mime_type(const char *mimeType, unsigned int next);
-
-const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name);
 
 /* this is where we "load" all the "plugins" ;-) */
