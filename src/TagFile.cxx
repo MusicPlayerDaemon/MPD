@@ -67,7 +67,8 @@ public:
 					       IgnoreError());
 			if (is == nullptr)
 				return false;
-		}
+		} else
+			is->LockRewind(IgnoreError());
 
 		/* now try the stream_tag() method */
 		return plugin.ScanStream(*is, handler, handler_ctx);
