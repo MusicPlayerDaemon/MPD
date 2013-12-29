@@ -280,54 +280,66 @@ decoder_load_replay_gain(Decoder &decoder, const char *path_fs)
 		decoder_replay_gain(decoder, &info);
 }
 
+static bool
+TryDecoderFile(Decoder &decoder, const char *path_fs, const char *suffix,
+	       const DecoderPlugin &plugin)
+{
+	if (!plugin.SupportsSuffix(suffix))
+		return false;
+
+	DecoderControl &dc = decoder.dc;
+
+	if (plugin.file_decode != nullptr) {
+		dc.Lock();
+
+		if (decoder_file_decode(plugin, decoder, path_fs))
+			return true;
+
+		dc.Unlock();
+	} else if (plugin.stream_decode != nullptr) {
+		InputStream *input_stream =
+			decoder_input_stream_open(dc, path_fs);
+		if (input_stream == nullptr)
+			return false;
+
+		dc.Lock();
+
+		bool success = decoder_stream_decode(plugin, decoder,
+						     *input_stream);
+
+		dc.Unlock();
+
+		input_stream->Close();
+
+		if (success) {
+			dc.Lock();
+			return true;
+		}
+	}
+
+	return false;
+}
+
 /**
  * Try decoding a file.
  */
 static bool
 decoder_run_file(Decoder &decoder, const char *path_fs)
 {
-	DecoderControl &dc = decoder.dc;
 	const char *suffix = uri_get_suffix(path_fs);
-	const struct DecoderPlugin *plugin = nullptr;
-
 	if (suffix == nullptr)
 		return false;
 
+	DecoderControl &dc = decoder.dc;
 	dc.Unlock();
 
 	decoder_load_replay_gain(decoder, path_fs);
 
-	while ((plugin = decoder_plugin_from_suffix(suffix, plugin)) != nullptr) {
-		if (plugin->file_decode != nullptr) {
-			dc.Lock();
-
-			if (decoder_file_decode(*plugin, decoder, path_fs))
-				return true;
-
-			dc.Unlock();
-		} else if (plugin->stream_decode != nullptr) {
-			InputStream *input_stream;
-			bool success;
-
-			input_stream = decoder_input_stream_open(dc, path_fs);
-			if (input_stream == nullptr)
-				continue;
-
-			dc.Lock();
-
-			success = decoder_stream_decode(*plugin, decoder,
-							*input_stream);
-
-			dc.Unlock();
-
-			input_stream->Close();
-
-			if (success) {
-				dc.Lock();
-				return true;
-			}
-		}
-	}
+	if (decoder_plugins_try([&decoder, path_fs, suffix](const DecoderPlugin &plugin){
+				return TryDecoderFile(decoder, path_fs, suffix,
+						      plugin);
+			}))
+		return true;
 
 	dc.Lock();
 	return false;
