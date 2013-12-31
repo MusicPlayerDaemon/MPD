@@ -30,7 +30,7 @@
 struct HttpdOutput;
 class Page;
 
-class HttpdClient final : public BufferedSocket {
+class HttpdClient final : BufferedSocket {
 	/**
 	 * The httpd output object this client is connected to.
 	 */
