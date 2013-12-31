@@ -31,6 +31,10 @@ class EventLoop;
 /**
  * This class monitors a timeout.  Use Schedule() to begin the timeout
  * or Cancel() to cancel it.
+ *
+ * This class is not thread-safe, all methods must be called from the
+ * thread that runs the #EventLoop, except where explicitly documented
+ * as thread-safe.
  */
 class TimeoutMonitor {
 #ifdef USE_INTERNAL_EVENTLOOP

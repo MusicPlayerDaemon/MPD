@@ -50,6 +50,10 @@ class EventLoop;
  * you're interested in, or Cancel() to cancel your subscription.  The
  * #EventLoop will invoke virtual method OnSocketReady() as soon as
  * any of the subscribed events are ready.
+ *
+ * This class is not thread-safe, all methods must be called from the
+ * thread that runs the #EventLoop, except where explicitly documented
+ * as thread-safe.
  */
 class SocketMonitor {
 #ifdef USE_GLIB_EVENTLOOP

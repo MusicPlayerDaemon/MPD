@@ -38,6 +38,9 @@ class EventLoop;
 
 /**
  * Defer execution of an event into an #EventLoop.
+ *
+ * This class is thread-safe, however the constructor must be called
+ * from the thread that runs the #EventLoop
  */
 class DeferredMonitor
 #ifdef USE_INTERNAL_EVENTLOOP
