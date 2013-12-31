@@ -213,6 +213,9 @@ struct HttpdOutput final : private ServerSocket {
 	 */
 	void SendHeader(HttpdClient &client) const;
 
+	gcc_pure
+	unsigned Delay() const;
+
 	/**
 	 * Reads data from the encoder (as much as available) and
 	 * returns it as a new #page object.
@@ -234,6 +237,10 @@ struct HttpdOutput final : private ServerSocket {
 	bool EncodeAndPlay(const void *chunk, size_t size, Error &error);
 
 	void SendTag(const Tag *tag);
+
+	size_t Play(const void *chunk, size_t size, Error &error);
+
+	void CancelAllClients();
 
 private:
 	virtual void OnAccept(int fd, const sockaddr &address,

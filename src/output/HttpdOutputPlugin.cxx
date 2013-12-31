@@ -361,17 +361,15 @@ HttpdOutput::SendHeader(HttpdClient &client) const
 		client.PushPage(header);
 }
 
-static unsigned
-httpd_output_delay(struct audio_output *ao)
+inline unsigned
+HttpdOutput::Delay() const
 {
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	if (!httpd->LockHasClients() && httpd->base.pause) {
+	if (!LockHasClients() && base.pause) {
 		/* if there's no client and this output is paused,
 		   then httpd_output_pause() will not do anything, it
 		   will not fill the buffer and it will not update the
 		   timer; therefore, we reset the timer here */
-		httpd->timer->Reset();
+		timer->Reset();
 
 		/* some arbitrary delay that is long enough to avoid
 		   consuming too much CPU, and short enough to notice
@@ -379,9 +377,17 @@ httpd_output_delay(struct audio_output *ao)
 		return 1000;
 	}
 
-	return httpd->timer->IsStarted()
-		? httpd->timer->GetDelay()
+	return timer->IsStarted()
+		? timer->GetDelay()
 		: 0;
+}
+
+static unsigned
+httpd_output_delay(struct audio_output *ao)
+{
+	HttpdOutput *httpd = HttpdOutput::Cast(ao);
+
+	return httpd->Delay();
 }
 
 void
@@ -426,22 +432,28 @@ HttpdOutput::EncodeAndPlay(const void *chunk, size_t size, Error &error)
 	return true;
 }
 
+inline size_t
+HttpdOutput::Play(const void *chunk, size_t size, Error &error)
+{
+	if (LockHasClients()) {
+		if (!EncodeAndPlay(chunk, size, error))
+			return 0;
+	}
+
+	if (!timer->IsStarted())
+		timer->Start();
+	timer->Add(size);
+
+	return size;
+}
+
 static size_t
 httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		  Error &error)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	if (httpd->LockHasClients()) {
-		if (!httpd->EncodeAndPlay(chunk, size, error))
-			return 0;
-	}
-
-	if (!httpd->timer->IsStarted())
-		httpd->timer->Start();
-	httpd->timer->Add(size);
-
-	return size;
+	return httpd->Play(chunk, size, error);
 }
 
 static bool
@@ -515,14 +527,19 @@ httpd_output_tag(struct audio_output *ao, const Tag *tag)
 	httpd->SendTag(tag);
 }
 
+inline void
+HttpdOutput::CancelAllClients()
+{
+	const ScopeLock protect(mutex);
+	for (auto &client : clients)
+		client.CancelQueue();
+}
+
 static void
 httpd_output_cancel(struct audio_output *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	const ScopeLock protect(httpd->mutex);
-	for (auto &client : httpd->clients)
-		client.CancelQueue();
+	httpd->CancelAllClients();
 }
 
 const struct audio_output_plugin httpd_output_plugin = {
