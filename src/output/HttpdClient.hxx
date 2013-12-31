@@ -34,7 +34,7 @@ class HttpdClient final : BufferedSocket {
 	/**
 	 * The httpd output object this client is connected to.
 	 */
-	HttpdOutput *const httpd;
+	HttpdOutput &httpd;
 
 	/**
 	 * The current state of the client.
@@ -120,7 +120,7 @@ public:
 	 * @param httpd the HTTP output device
 	 * @param fd the socket file descriptor
 	 */
-	HttpdClient(HttpdOutput *httpd, int _fd, EventLoop &_loop,
+	HttpdClient(HttpdOutput &httpd, int _fd, EventLoop &_loop,
 		    bool _metadata_supported);
 
 	/**

@@ -48,13 +48,13 @@ HttpdClient::~HttpdClient()
 void
 HttpdClient::Close()
 {
-	httpd->RemoveClient(*this);
+	httpd.RemoveClient(*this);
 }
 
 void
 HttpdClient::LockClose()
 {
-	const ScopeLock protect(httpd->mutex);
+	const ScopeLock protect(httpd.mutex);
 	Close();
 }
 
@@ -67,7 +67,7 @@ HttpdClient::BeginResponse()
 	current_page = nullptr;
 
 	if (!head_method)
-		httpd->SendHeader(*this);
+		httpd.SendHeader(*this);
 }
 
 /**
@@ -155,13 +155,13 @@ HttpdClient::SendResponse()
 			 "realTimeInfo.dlna.org: DLNA.ORG_TLAG=*\r\n"
 			 "contentFeatures.dlna.org: DLNA.ORG_OP=01;DLNA.ORG_CI=0\r\n"
 			 "\r\n",
-			 httpd->content_type);
+			 httpd.content_type);
 
 	} else if (metadata_requested) {
 		char *metadata_header =
-			icy_server_metadata_header(httpd->name, httpd->genre,
-						   httpd->website,
-						   httpd->content_type,
+			icy_server_metadata_header(httpd.name, httpd.genre,
+						   httpd.website,
+						   httpd.content_type,
 						   metaint);
 
 		g_strlcpy(buffer, metadata_header, sizeof(buffer));
@@ -176,7 +176,7 @@ HttpdClient::SendResponse()
 			 "Pragma: no-cache\r\n"
 			 "Cache-Control: no-cache, no-store\r\n"
 			 "\r\n",
-			 httpd->content_type);
+			 httpd.content_type);
 	}
 
 	ssize_t nbytes = SocketMonitor::Write(buffer, strlen(buffer));
@@ -192,7 +192,7 @@ HttpdClient::SendResponse()
 	return true;
 }
 
-HttpdClient::HttpdClient(HttpdOutput *_httpd, int _fd, EventLoop &_loop,
+HttpdClient::HttpdClient(HttpdOutput &_httpd, int _fd, EventLoop &_loop,
 			 bool _metadata_supported)
 	:BufferedSocket(_fd, _loop),
 	 httpd(_httpd),
@@ -262,7 +262,7 @@ HttpdClient::GetBytesTillMetaData() const
 inline bool
 HttpdClient::TryWrite()
 {
-	const ScopeLock protect(httpd->mutex);
+	const ScopeLock protect(httpd.mutex);
 
 	assert(state == RESPONSE);
 
@@ -270,7 +270,7 @@ HttpdClient::TryWrite()
 		if (pages.empty()) {
 			/* another thread has removed the event source
 			   while this thread was waiting for
-			   httpd->mutex */
+			   httpd.mutex */
 			CancelWrite();
 			return true;
 		}
