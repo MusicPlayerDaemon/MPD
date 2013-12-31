@@ -129,6 +129,19 @@ struct HttpdOutput final : private ServerSocket {
 	HttpdOutput(EventLoop &_loop);
 	~HttpdOutput();
 
+#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
+
+	static constexpr HttpdOutput *Cast(audio_output *ao) {
+		return (HttpdOutput *)((char *)ao - offsetof(HttpdOutput, base));
+	}
+
+#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 	bool Init(const config_param &param, Error &error);
 
 	void Finish() {
