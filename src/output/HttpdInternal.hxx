@@ -29,6 +29,7 @@
 #include "Timer.hxx"
 #include "thread/Mutex.hxx"
 #include "event/ServerSocket.hxx"
+#include "event/DeferredMonitor.hxx"
 
 #ifdef _LIBCPP_VERSION
 /* can't use incomplete template arguments with libc++ */
@@ -36,6 +37,8 @@
 #endif
 
 #include <forward_list>
+#include <queue>
+#include <list>
 
 struct config_param;
 class Error;
@@ -46,7 +49,7 @@ class Page;
 struct Encoder;
 struct Tag;
 
-class HttpdOutput final : ServerSocket {
+class HttpdOutput final : ServerSocket, DeferredMonitor {
 	struct audio_output base;
 
 	/**
@@ -80,6 +83,12 @@ public:
 	 */
 	mutable Mutex mutex;
 
+	/**
+	 * This condition gets signalled when an item is removed from
+	 * #pages.
+	 */
+	Cond cond;
+
 private:
 	/**
 	 * A #Timer object to synchronize this output with the
@@ -96,6 +105,14 @@ private:
 	 * The metadata, which is sent to every client.
 	 */
 	Page *metadata;
+
+	/**
+	 * The page queue, i.e. pages from the encoder to be
+	 * broadcasted to all clients.  This container is necessary to
+	 * pass pages from the OutputThread to the IOThread.  It is
+	 * protected by #mutex, and removing signals #cond.
+	 */
+	std::queue<Page *, std::list<Page *>> pages;
 
  public:
 	/**
@@ -248,6 +265,8 @@ public:
 	void CancelAllClients();
 
 private:
+	virtual void RunDeferred() override;
+
 	virtual void OnAccept(int fd, const sockaddr &address,
 			      size_t address_length, int uid) override;
 };

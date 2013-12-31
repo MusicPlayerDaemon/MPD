@@ -29,6 +29,7 @@
 #include "IcyMetaDataServer.hxx"
 #include "system/fd_util.h"
 #include "IOThread.hxx"
+#include "event/Call.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -49,7 +50,7 @@ const Domain httpd_output_domain("httpd_output");
 
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop)
-	:ServerSocket(_loop),
+	:ServerSocket(_loop), DeferredMonitor(_loop),
 	 encoder(nullptr), unflushed_input(0),
 	 metadata(nullptr)
 {
@@ -162,13 +163,36 @@ httpd_output_finish(struct audio_output *ao)
 inline void
 HttpdOutput::AddClient(int fd)
 {
-	clients.emplace_front(*this, fd, GetEventLoop(),
+	clients.emplace_front(*this, fd, ServerSocket::GetEventLoop(),
 			      encoder->plugin.tag == nullptr);
 	++clients_cnt;
 
 	/* pass metadata to client */
 	if (metadata != nullptr)
 		clients.front().PushMetaData(metadata);
+}
+
+void
+HttpdOutput::RunDeferred()
+{
+	/* this method runs in the IOThread; it broadcasts pages from
+	   our own queue to all clients */
+
+	const ScopeLock protect(mutex);
+
+	while (!pages.empty()) {
+		Page *page = pages.front();
+		pages.pop();
+
+		for (auto &client : clients)
+			client.PushPage(page);
+
+		page->Unref();
+	}
+
+	/* wake up the client that may be waiting for the queue to be
+	   flushed */
+	cond.broadcast();
 }
 
 void
@@ -393,19 +417,29 @@ HttpdOutput::BroadcastPage(Page *page)
 {
 	assert(page != nullptr);
 
-	const ScopeLock protect(mutex);
-	for (auto &client : clients)
-		client.PushPage(page);
+	mutex.lock();
+	pages.push(page);
+	page->Ref();
+	mutex.unlock();
+
+	DeferredMonitor::Schedule();
 }
 
 void
 HttpdOutput::BroadcastFromEncoder()
 {
+	/* synchronize with the IOThread */
+	mutex.lock();
+	while (!pages.empty())
+		cond.wait(mutex);
+
 	Page *page;
-	while ((page = ReadPage()) != nullptr) {
-		BroadcastPage(page);
-		page->Unref();
-	}
+	while ((page = ReadPage()) != nullptr)
+		pages.push(page);
+
+	mutex.unlock();
+
+	DeferredMonitor::Schedule();
 }
 
 inline bool
@@ -519,15 +553,27 @@ inline void
 HttpdOutput::CancelAllClients()
 {
 	const ScopeLock protect(mutex);
+
+	while (!pages.empty()) {
+		Page *page = pages.front();
+		pages.pop();
+		page->Unref();
+	}
+
 	for (auto &client : clients)
 		client.CancelQueue();
+
+	cond.broadcast();
 }
 
 static void
 httpd_output_cancel(struct audio_output *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-	httpd->CancelAllClients();
+
+	BlockingCall(io_thread_get(), [httpd](){
+			httpd->CancelAllClients();
+		});
 }
 
 const struct audio_output_plugin httpd_output_plugin = {
