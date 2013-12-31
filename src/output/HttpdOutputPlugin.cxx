@@ -128,24 +128,22 @@ HttpdOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
+inline bool
+HttpdOutput::Init(const config_param &param, Error &error)
+{
+	return ao_base_init(&base, &httpd_output_plugin, param, error);
+}
+
 static struct audio_output *
 httpd_output_init(const config_param &param, Error &error)
 {
 	HttpdOutput *httpd = new HttpdOutput(*main_loop);
 
-	if (!ao_base_init(&httpd->base, &httpd_output_plugin, param,
-			  error)) {
+	audio_output *result = httpd->InitAndConfigure(param, error);
+	if (result == nullptr)
 		delete httpd;
-		return nullptr;
-	}
 
-	if (!httpd->Configure(param, error)) {
-		ao_base_finish(&httpd->base);
-		delete httpd;
-		return nullptr;
-	}
-
-	return &httpd->base;
+	return result;
 }
 
 #if GCC_CHECK_VERSION(4,6) || defined(__clang__)
@@ -168,7 +166,7 @@ httpd_output_finish(struct audio_output *ao)
 {
 	HttpdOutput *httpd = Cast(ao);
 
-	ao_base_finish(&httpd->base);
+	httpd->Finish();
 	delete httpd;
 }
 
