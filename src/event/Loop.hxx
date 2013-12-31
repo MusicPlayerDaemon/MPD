@@ -154,6 +154,11 @@ public:
 	void AddTimer(TimeoutMonitor &t, unsigned ms);
 	void CancelTimer(TimeoutMonitor &t);
 
+	/**
+	 * Schedule a function to be called inside the thread.
+	 *
+	 * This method is thread-safe.
+	 */
 	void AddCall(std::function<void()> &&f);
 
 	/**
