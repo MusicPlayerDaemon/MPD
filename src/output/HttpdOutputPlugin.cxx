@@ -306,8 +306,6 @@ httpd_output_open(struct audio_output *ao, AudioFormat &audio_format,
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	assert(httpd->clients.empty());
-
 	const ScopeLock protect(httpd->mutex);
 	return httpd->Open(audio_format, error);
 }

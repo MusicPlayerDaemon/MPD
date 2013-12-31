@@ -46,7 +46,7 @@ class Page;
 struct Encoder;
 struct Tag;
 
-struct HttpdOutput final : private ServerSocket {
+class HttpdOutput final : ServerSocket {
 	struct audio_output base;
 
 	/**
@@ -68,6 +68,7 @@ struct HttpdOutput final : private ServerSocket {
 	 */
 	size_t unflushed_input;
 
+public:
 	/**
 	 * The MIME type produced by the #encoder.
 	 */
@@ -79,6 +80,7 @@ struct HttpdOutput final : private ServerSocket {
 	 */
 	mutable Mutex mutex;
 
+private:
 	/**
 	 * A #Timer object to synchronize this output with the
 	 * wallclock.
@@ -95,6 +97,7 @@ struct HttpdOutput final : private ServerSocket {
 	 */
 	Page *metadata;
 
+ public:
 	/**
 	 * The configured name.
 	 */
@@ -108,6 +111,7 @@ struct HttpdOutput final : private ServerSocket {
 	 */
 	char const *website;
 
+private:
 	/**
 	 * A linked list containing all clients which are currently
 	 * connected.
@@ -126,6 +130,7 @@ struct HttpdOutput final : private ServerSocket {
 	 */
 	unsigned clients_max, clients_cnt;
 
+public:
 	HttpdOutput(EventLoop &_loop);
 	~HttpdOutput();
 

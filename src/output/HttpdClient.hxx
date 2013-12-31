@@ -27,7 +27,7 @@
 
 #include <stddef.h>
 
-struct HttpdOutput;
+class HttpdOutput;
 class Page;
 
 class HttpdClient final : BufferedSocket {
