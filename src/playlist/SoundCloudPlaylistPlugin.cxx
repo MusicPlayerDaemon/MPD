@@ -363,6 +363,14 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 		u = g_strconcat("https://api.soundcloud.com/playlists/",
 				rest, ".json?client_id=",
 				soundcloud_config.apikey.c_str(), nullptr);
+	} else if (strcmp(arg, "user") == 0) {
+		u = g_strconcat("https://api.soundcloud.com/users/",
+				rest, "/tracks.json?client_id=",
+				soundcloud_config.apikey.c_str(), nullptr);
+	} else if (strcmp(arg, "search") == 0) {
+		u = g_strconcat("https://api.soundcloud.com/tracks.json?q=",
+				rest, "&client_id=",
+				soundcloud_config.apikey.c_str(), nullptr);
 	} else if (strcmp(arg, "url") == 0) {
 		/* Translate to soundcloud resolver call. libcurl will automatically
 		   follow the redirect to the right resource. */
