@@ -2340,6 +2340,47 @@ systemctl start mpd.socket</programlisting>
         </para>
       </section>
 
+      <section>
+        <title><varname>soundcloud</varname></title>
+
+        <para>
+          Adds <ulink url="https://www.soundcloud.com/">Soundcloud</ulink>
+          playlists. SoundCloud playlists use the <filename>soundcloud://</filename> URI,
+          and with a number of arguments, you may load different playlists with
+        </para>
+
+        <programlisting>
+mpc load soundcloud://track/TRACK_ID
+mpc load soundcloud://playlist/PLAYLIST_ID
+mpc load soundcloud://user/USERNAME
+mpc load soundcloud://search/SEARCH_QUERY
+mpc load soundcloud://url/https://soundcloud.com/ARTIST/TRACK-NAME
+        </programlisting>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>apikey</varname>
+                  <parameter>client_id</parameter>
+                </entry>
+                <entry>
+                  User apikey/client_id can override the MPD token provided by SoundCloud.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+      </section>
+
     </section>
   </chapter>
 </book>
