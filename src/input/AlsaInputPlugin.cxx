@@ -31,59 +31,250 @@
 #include "util/Domain.hxx"
 #include "util/Error.hxx"
 #include "util/StringUtil.hxx"
+#include "util/ReusableArray.hxx"
+#include "util/Cast.hxx"
 #include "Log.hxx"
+#include "event/MultiSocketMonitor.hxx"
+#include "event/DeferredMonitor.hxx"
+#include "event/Call.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
+#include "IOThread.hxx"
 
 #include <alsa/asoundlib.h>
+
+#include <assert.h>
+#include <string.h>
 
 static constexpr Domain alsa_input_domain("alsa");
 
 static constexpr const char *default_device = "hw:0,0";
-
-// this value chosen to balance between limiting latency and avoiding stutter
-static constexpr int max_frames_to_buffer = 64;
 
 // the following defaults are because the PcmDecoderPlugin forces CD format
 static constexpr snd_pcm_format_t default_format = SND_PCM_FORMAT_S16;
 static constexpr int default_channels = 2; // stereo
 static constexpr unsigned int default_rate = 44100; // cd quality
 
-struct AlsaInputStream {
+/**
+ * This value should be the same as the read buffer size defined in
+ * PcmDecoderPlugin.cxx:pcm_stream_decode().
+ * We use it to calculate how many audio frames to buffer in the alsa driver
+ * before reading from the device. snd_pcm_readi() blocks until that many
+ * frames are ready.
+ */
+static constexpr size_t read_buffer_size = 4096;
+
+class AlsaInputStream final : MultiSocketMonitor, DeferredMonitor {
 	InputStream base;
 	snd_pcm_t *capture_handle;
 	size_t frame_size;
-	size_t max_bytes_to_read;
+	int frames_to_read;
+	bool eof;
 
-	AlsaInputStream(const char *uri, Mutex &mutex, Cond &cond,
-			snd_pcm_t *handle)
-		:base(input_plugin_alsa, uri, mutex, cond),
-		 capture_handle(handle) {
-		frame_size = snd_pcm_format_width(default_format) / 8 * default_channels;
-		max_bytes_to_read = max_frames_to_buffer * frame_size;
+	/**
+	 * Is somebody waiting for data?  This is set by method
+	 * Available().
+	 */
+	std::atomic_bool waiting;
+
+	ReusableArray<pollfd> pfd_buffer;
+
+public:
+	AlsaInputStream(EventLoop &loop,
+			const char *uri, Mutex &mutex, Cond &cond,
+			snd_pcm_t *_handle, int _frame_size)
+		:MultiSocketMonitor(loop),
+		 DeferredMonitor(loop),
+		 base(input_plugin_alsa, uri, mutex, cond),
+		 capture_handle(_handle),
+		 frame_size(_frame_size),
+		 eof(false)
+	{
+		assert(uri != nullptr);
+		assert(_handle != nullptr);
+
+		/* this mime type forces use of the PcmDecoderPlugin.
+		   Needs to be generalised when/if that decoder is
+		   updated to support other audio formats */
 		base.mime = strdup("audio/x-mpd-cdda-pcm");
 		base.seekable = false;
 		base.size = -1;
 		base.ready = true;
+		frames_to_read = read_buffer_size / frame_size;
+
+		snd_pcm_start(capture_handle);
+
+		DeferredMonitor::Schedule();
 	}
 
 	~AlsaInputStream() {
 		snd_pcm_close(capture_handle);
 	}
+
+	using DeferredMonitor::GetEventLoop;
+
+	static InputStream *Create(const char *uri, Mutex &mutex, Cond &cond,
+				   Error &error);
+
+#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
+
+	static constexpr AlsaInputStream *Cast(InputStream *is) {
+		return ContainerCast(is, AlsaInputStream, base);
+	}
+
+#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+	bool Available() {
+		if (snd_pcm_avail(capture_handle) > frames_to_read)
+			return true;
+
+		if (!waiting.exchange(true))
+			SafeInvalidateSockets();
+
+		return false;
+	}
+
+	size_t Read(void *ptr, size_t size, Error &error);
+
+	bool IsEOF() {
+		return eof;
+	}
+
+private:
+	static snd_pcm_t *OpenDevice(const char *device, int rate,
+				     snd_pcm_format_t format, int channels,
+				     Error &error);
+
+	int Recover(int err);
+
+	void SafeInvalidateSockets() {
+		DeferredMonitor::Schedule();
+	}
+
+	virtual void RunDeferred() override {
+		InvalidateSockets();
+	}
+
+	virtual int PrepareSockets() override;
+	virtual void DispatchSockets() override;
 };
 
-static InputStream *
-alsa_input_open(const char *uri, Mutex &mutex, Cond &cond, Error &error)
+inline InputStream *
+AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond,
+			Error &error)
 {
-	int err;
-
-	// check uri is appropriate for alsa input
-	if (!StringStartsWith(uri, "alsa://"))
+	const char *const scheme = "alsa://";
+	if (!StringStartsWith(uri, scheme))
 		return nullptr;
 
-	const char *device = uri + 7;
-	if (device[0] == '\0')
+	const char *device = uri + strlen(scheme);
+	if (strlen(device) == 0)
 		device = default_device;
 
+	/* placeholders - eventually user-requested audio format will
+	   be passed via the URI. For now we just force the
+	   defaults */
+	int rate = default_rate;
+	snd_pcm_format_t format = default_format;
+	int channels = default_channels;
+
+	snd_pcm_t *handle = OpenDevice(device, rate, format, channels,
+				       error);
+	if (handle == nullptr)
+		return nullptr;
+
+	int frame_size = snd_pcm_format_width(format) / 8 * channels;
+	AlsaInputStream *stream = new AlsaInputStream(io_thread_get(),
+						      uri, mutex, cond,
+						      handle, frame_size);
+	return &stream->base;
+}
+
+inline size_t
+AlsaInputStream::Read(void *ptr, size_t size, Error &error)
+{
+	assert(ptr != nullptr);
+
+	int num_frames = size / frame_size;
+	int ret;
+	while ((ret = snd_pcm_readi(capture_handle, ptr, num_frames)) < 0) {
+		if (Recover(ret) < 0) {
+			eof = true;
+			error.Format(alsa_input_domain,
+				     "PCM error - stream aborted");
+			return 0;
+		}
+	}
+
+	size_t nbytes = ret * frame_size;
+	base.offset += nbytes;
+	return nbytes;
+}
+
+int
+AlsaInputStream::PrepareSockets()
+{
+	if (!waiting) {
+		ClearSocketList();
+		return -1;
+	}
+
+	int count = snd_pcm_poll_descriptors_count(capture_handle);
+	if (count < 0) {
+		ClearSocketList();
+		return -1;
+	}
+
+	struct pollfd *pfds = pfd_buffer.Get(count);
+
+	count = snd_pcm_poll_descriptors(capture_handle, pfds, count);
+	if (count < 0)
+		count = 0;
+
+	ReplaceSocketList(pfds, count);
+	return -1;
+}
+
+void
+AlsaInputStream::DispatchSockets()
+{
+	waiting = false;
+
+	const ScopeLock protect(base.mutex);
+	/* wake up the thread that is waiting for more data */
+	base.cond.broadcast();
+}
+
+inline int
+AlsaInputStream::Recover(int err)
+{
+	switch(err) {
+	case -EPIPE:
+		LogDebug(alsa_input_domain, "Buffer Overrun");
+		// drop through
+	case -ESTRPIPE:
+	case -EINTR:
+		err = snd_pcm_recover(capture_handle, err, 1);
+		break;
+	default:
+		// something broken somewhere, give up
+		err = -1;
+	}
+	return err;
+}
+
+inline snd_pcm_t *
+AlsaInputStream::OpenDevice(const char *device,
+			    int rate, snd_pcm_format_t format, int channels,
+			    Error &error)
+{
 	snd_pcm_t *capture_handle;
+	int err;
 	if ((err = snd_pcm_open(&capture_handle, device,
 				SND_PCM_STREAM_CAPTURE, 0)) < 0) {
 		error.Format(alsa_input_domain, "Failed to open device: %s (%s)", device, snd_strerror(err));
@@ -106,34 +297,52 @@ alsa_input_open(const char *uri, Mutex &mutex, Cond &cond, Error &error)
 
 	if ((err = snd_pcm_hw_params_set_access(capture_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
 		error.Format(alsa_input_domain, "Cannot set access type (%s)", snd_strerror (err));
-		snd_pcm_hw_params_free (hw_params);
+		snd_pcm_hw_params_free(hw_params);
 		snd_pcm_close(capture_handle);
 		return nullptr;
 	}
 
-	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, default_format)) < 0) {
+	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0) {
 		snd_pcm_hw_params_free(hw_params);
 		snd_pcm_close(capture_handle);
 		error.Format(alsa_input_domain, "Cannot set sample format (%s)", snd_strerror (err));
 		return nullptr;
 	}
 
-	if ((err = snd_pcm_hw_params_set_channels(capture_handle, hw_params, default_channels)) < 0) {
+	if ((err = snd_pcm_hw_params_set_channels(capture_handle, hw_params, channels)) < 0) {
 		snd_pcm_hw_params_free(hw_params);
 		snd_pcm_close(capture_handle);
 		error.Format(alsa_input_domain, "Cannot set channels (%s)", snd_strerror (err));
 		return nullptr;
 	}
 
-	if ((err = snd_pcm_hw_params_set_rate(capture_handle, hw_params, default_rate, 0)) < 0) {
+	if ((err = snd_pcm_hw_params_set_rate(capture_handle, hw_params, rate, 0)) < 0) {
 		snd_pcm_hw_params_free(hw_params);
 		snd_pcm_close(capture_handle);
 		error.Format(alsa_input_domain, "Cannot set sample rate (%s)", snd_strerror (err));
 		return nullptr;
 	}
 
+	/* period needs to be big enough so that poll() doesn't fire too often,
+	 * but small enough that buffer overruns don't occur if Read() is not
+	 * invoked often enough.
+	 * the calculation here is empirical; however all measurements were
+	 * done using 44100:16:2. When we extend this plugin to support
+	 * other audio formats then this may need to be revisited */
+	snd_pcm_uframes_t period = read_buffer_size * 2;
+	int direction = -1;
+	if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle, hw_params,
+							  &period, &direction)) < 0) {
+		error.Format(alsa_input_domain, "Cannot set period size (%s)",
+			     snd_strerror(err));
+		snd_pcm_hw_params_free(hw_params);
+		snd_pcm_close(capture_handle);
+		return nullptr;
+	}
+
 	if ((err = snd_pcm_hw_params(capture_handle, hw_params)) < 0) {
-		error.Format(alsa_input_domain, "Cannot set parameters (%s)", snd_strerror (err));
+		error.Format(alsa_input_domain, "Cannot set parameters (%s)",
+			     snd_strerror(err));
 		snd_pcm_hw_params_free(hw_params);
 		snd_pcm_close(capture_handle);
 		return nullptr;
@@ -141,54 +350,79 @@ alsa_input_open(const char *uri, Mutex &mutex, Cond &cond, Error &error)
 
 	snd_pcm_hw_params_free (hw_params);
 
-	// clear any data already in the PCM buffer
-	if ((err = snd_pcm_drop(capture_handle)) < 0) {
-		error.Format(alsa_input_domain, "Cannot clear PCM buffer (%s)", snd_strerror (err));
-		snd_pcm_hw_params_free(hw_params);
+	snd_pcm_sw_params_t *sw_params;
+
+	snd_pcm_sw_params_malloc(&sw_params);
+	snd_pcm_sw_params_current(capture_handle, sw_params);
+
+	if ((err = snd_pcm_sw_params_set_start_threshold(capture_handle, sw_params,
+							 period)) < 0)  {
+		error.Format(alsa_input_domain,
+			     "unable to set start threshold (%s)", snd_strerror(err));
+		snd_pcm_sw_params_free(sw_params);
 		snd_pcm_close(capture_handle);
 		return nullptr;
 	}
 
-	AlsaInputStream *ais = new AlsaInputStream(uri, mutex, cond, capture_handle);
-	return &ais->base;
+	if ((err = snd_pcm_sw_params_set_period_event(capture_handle, sw_params,
+						      1)) < 0) {
+		error.Format(alsa_input_domain,
+			     "unable to set period event (%s)", snd_strerror(err));
+		snd_pcm_sw_params_free(sw_params);
+		snd_pcm_close(capture_handle);
+		return nullptr;
+	}
+
+	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0) {
+		error.Format(alsa_input_domain,
+			     "unable to install sw params (%s)", snd_strerror(err));
+		snd_pcm_sw_params_free(sw_params);
+		snd_pcm_close(capture_handle);
+		return nullptr;
+	}
+
+	snd_pcm_sw_params_free(sw_params);
+
+	snd_pcm_prepare(capture_handle);
+
+	return capture_handle;
+}
+
+/*#########################  Plugin Functions  ##############################*/
+
+static InputStream *
+alsa_input_open(const char *uri, Mutex &mutex, Cond &cond, Error &error)
+{
+	return AlsaInputStream::Create(uri, mutex, cond, error);
 }
 
 static void
 alsa_input_close(InputStream *is)
 {
-	AlsaInputStream *ais = (AlsaInputStream*) is;
+	AlsaInputStream *ais = AlsaInputStream::Cast(is);
 	delete ais;
 }
 
-static size_t
-alsa_input_read(InputStream *is, void *ptr, size_t size,
-		gcc_unused Error &error)
+static bool
+alsa_input_available(InputStream *is)
 {
-	AlsaInputStream *ais = (AlsaInputStream*) is;
-	int num_frames = max_frames_to_buffer;
-	if (size < ais->max_bytes_to_read)
-		// calculate number of whole frames that will fit in size bytes
-		num_frames = size / ais->frame_size;
+	AlsaInputStream *ais = AlsaInputStream::Cast(is);
+	return ais->Available();
+}
 
-	int ret;
-	while ((ret = snd_pcm_readi(ais->capture_handle, ptr,
-				    num_frames)) < 0) {
-		snd_pcm_prepare(ais->capture_handle);
-		LogDebug(alsa_input_domain, "Buffer Overrun");
-	}
-
-	size_t nbytes = ret == max_frames_to_buffer
-		? ais->max_bytes_to_read
-		: ret * ais->frame_size;
-	is->offset += nbytes;
-	return nbytes;
+static size_t
+alsa_input_read(InputStream *is, void *ptr, size_t size, Error &error)
+{
+	AlsaInputStream *ais = AlsaInputStream::Cast(is);
+	return ais->Read(ptr, size, error);
 }
 
 static bool
 alsa_input_eof(gcc_unused InputStream *is)
 {
-	return false;
-};
+	AlsaInputStream *ais = AlsaInputStream::Cast(is);
+	return ais->IsEOF();
+}
 
 const struct InputPlugin input_plugin_alsa = {
 	"alsa",
@@ -199,7 +433,7 @@ const struct InputPlugin input_plugin_alsa = {
 	nullptr,
 	nullptr,
 	nullptr,
-	nullptr,
+	alsa_input_available,
 	alsa_input_read,
 	alsa_input_eof,
 	nullptr,
