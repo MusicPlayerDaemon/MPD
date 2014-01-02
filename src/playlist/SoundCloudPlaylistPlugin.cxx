@@ -67,16 +67,16 @@ soundcloud_resolve(const char* uri)
 {
 	char *u, *ru;
 
-	if (StringStartsWith(uri, "http://")) {
+	if (StringStartsWith(uri, "https://")) {
 		u = g_strdup(uri);
 	} else if (StringStartsWith(uri, "soundcloud.com")) {
-		u = g_strconcat("http://", uri, nullptr);
+		u = g_strconcat("https://", uri, nullptr);
 	} else {
 		/* assume it's just a path on soundcloud.com */
-		u = g_strconcat("http://soundcloud.com/", uri, nullptr);
+		u = g_strconcat("https://soundcloud.com/", uri, nullptr);
 	}
 
-	ru = g_strconcat("http://api.soundcloud.com/resolve.json?url=",
+	ru = g_strconcat("https://api.soundcloud.com/resolve.json?url=",
 			 u, "&client_id=",
 			 soundcloud_config.apikey.c_str(), nullptr);
 	g_free(u);
@@ -356,11 +356,11 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	char *u = nullptr;
 	if (strcmp(arg, "track") == 0) {
-		u = g_strconcat("http://api.soundcloud.com/tracks/",
+		u = g_strconcat("https://api.soundcloud.com/tracks/",
 				rest, ".json?client_id=",
 				soundcloud_config.apikey.c_str(), nullptr);
 	} else if (strcmp(arg, "playlist") == 0) {
-		u = g_strconcat("http://api.soundcloud.com/playlists/",
+		u = g_strconcat("https://api.soundcloud.com/playlists/",
 				rest, ".json?client_id=",
 				soundcloud_config.apikey.c_str(), nullptr);
 	} else if (strcmp(arg, "url") == 0) {

@@ -2,6 +2,8 @@ ver 0.19 (not yet released)
 * protocol
   - new commands "addtagid", "cleartagid"
   - "lsinfo" and "readcomments" allowed for remote files
+* playlist
+  - soundcloud: use https instead of http
 * archive
   - read tags from songs in an archive
 * input
