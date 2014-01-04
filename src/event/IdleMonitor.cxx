@@ -31,14 +31,8 @@ IdleMonitor::Cancel()
 	if (!IsActive())
 		return;
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	active = false;
 	loop.RemoveIdle(*this);
-#endif
-#ifdef USE_GLIB_EVENTLOOP
-	g_source_remove(source_id);
-	source_id = 0;
-#endif
 }
 
 void
@@ -50,13 +44,8 @@ IdleMonitor::Schedule()
 		/* already scheduled */
 		return;
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	active = true;
 	loop.AddIdle(*this);
-#endif
-#ifdef USE_GLIB_EVENTLOOP
-	source_id = loop.AddIdle(Callback, this);
-#endif
 }
 
 void
@@ -64,26 +53,8 @@ IdleMonitor::Run()
 {
 	assert(loop.IsInside());
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	assert(active);
 	active = false;
-#endif
-#ifdef USE_GLIB_EVENTLOOP
-	assert(source_id != 0);
-	source_id = 0;
-#endif
 
 	OnIdle();
 }
-
-#ifdef USE_GLIB_EVENTLOOP
-
-gboolean
-IdleMonitor::Callback(gpointer data)
-{
-	IdleMonitor &monitor = *(IdleMonitor *)data;
-	monitor.Run();
-	return false;
-}
-
-#endif

@@ -22,10 +22,6 @@
 
 #include "check.h"
 
-#ifdef USE_GLIB_EVENTLOOP
-#include <glib.h>
-#endif
-
 class EventLoop;
 
 /**
@@ -38,30 +34,15 @@ class EventLoop;
  * as thread-safe.
  */
 class IdleMonitor {
-#ifdef USE_INTERNAL_EVENTLOOP
 	friend class EventLoop;
-#endif
 
 	EventLoop &loop;
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	bool active;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	guint source_id;
-#endif
 
 public:
-#ifdef USE_INTERNAL_EVENTLOOP
 	IdleMonitor(EventLoop &_loop)
 		:loop(_loop), active(false) {}
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	IdleMonitor(EventLoop &_loop)
-		:loop(_loop), source_id(0) {}
-#endif
 
 	~IdleMonitor() {
 		Cancel();
@@ -72,13 +53,7 @@ public:
 	}
 
 	bool IsActive() const {
-#ifdef USE_INTERNAL_EVENTLOOP
 		return active;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-		return source_id != 0;
-#endif
 	}
 
 	void Schedule();
@@ -89,9 +64,6 @@ protected:
 
 private:
 	void Run();
-#ifdef USE_GLIB_EVENTLOOP
-	static gboolean Callback(gpointer data);
-#endif
 };
 
 #endif /* MAIN_NOTIFY_H */

@@ -31,8 +31,6 @@
 #include <sys/socket.h>
 #endif
 
-#ifdef USE_INTERNAL_EVENTLOOP
-
 void
 SocketMonitor::Dispatch(unsigned flags)
 {
@@ -41,68 +39,6 @@ SocketMonitor::Dispatch(unsigned flags)
 	if (flags != 0 && !OnSocketReady(flags) && IsDefined())
 		Cancel();
 }
-
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-
-/*
- * GSource methods
- *
- */
-
-gboolean
-SocketMonitor::Prepare(gcc_unused GSource *source, gcc_unused gint *timeout_r)
-{
-	return false;
-}
-
-gboolean
-SocketMonitor::Check(GSource *_source)
-{
-	const Source &source = *(const Source *)_source;
-	const SocketMonitor &monitor = *source.monitor;
-	assert(_source == &monitor.source->base);
-
-	return monitor.Check();
-}
-
-gboolean
-SocketMonitor::Dispatch(GSource *_source,
-			gcc_unused GSourceFunc callback,
-			gcc_unused gpointer user_data)
-{
-	Source &source = *(Source *)_source;
-	SocketMonitor &monitor = *source.monitor;
-	assert(_source == &monitor.source->base);
-
-	monitor.Dispatch();
-	return true;
-}
-
-/**
- * The vtable for our GSource implementation.  Unfortunately, we
- * cannot declare it "const", because g_source_new() takes a non-const
- * pointer, for whatever reason.
- */
-static GSourceFuncs socket_monitor_source_funcs = {
-	SocketMonitor::Prepare,
-	SocketMonitor::Check,
-	SocketMonitor::Dispatch,
-	nullptr,
-	nullptr,
-	nullptr,
-};
-
-SocketMonitor::SocketMonitor(int _fd, EventLoop &_loop)
-	:fd(-1), loop(_loop),
-	 source(nullptr) {
-	assert(_fd >= 0);
-
-	Open(_fd);
-}
-
-#endif
 
 SocketMonitor::~SocketMonitor()
 {
@@ -114,23 +50,9 @@ void
 SocketMonitor::Open(int _fd)
 {
 	assert(fd < 0);
-#ifdef USE_GLIB_EVENTLOOP
-	assert(source == nullptr);
-#endif
 	assert(_fd >= 0);
 
 	fd = _fd;
-
-#ifdef USE_GLIB_EVENTLOOP
-	poll = {fd, 0, 0};
-
-	source = (Source *)g_source_new(&socket_monitor_source_funcs,
-					sizeof(*source));
-	source->monitor = this;
-
-	g_source_attach(&source->base, loop.GetContext());
-	g_source_add_poll(&source->base, &poll);
-#endif
 }
 
 int
@@ -143,12 +65,6 @@ SocketMonitor::Steal()
 	int result = fd;
 	fd = -1;
 
-#ifdef USE_GLIB_EVENTLOOP
-	g_source_destroy(&source->base);
-	g_source_unref(&source->base);
-	source = nullptr;
-#endif
-
 	return result;
 }
 
@@ -157,13 +73,9 @@ SocketMonitor::Abandon()
 {
 	assert(IsDefined());
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	int old_fd = fd;
 	fd = -1;
 	loop.Abandon(old_fd, *this);
-#else
-	Steal();
-#endif
 }
 
 void
@@ -180,7 +92,6 @@ SocketMonitor::Schedule(unsigned flags)
 	if (flags == GetScheduledFlags())
 		return;
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	if (scheduled_flags == 0)
 		loop.AddFD(fd, flags, *this);
 	else if (flags == 0)
@@ -189,14 +100,6 @@ SocketMonitor::Schedule(unsigned flags)
 		loop.ModifyFD(fd, flags, *this);
 
 	scheduled_flags = flags;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	poll.events = flags;
-	poll.revents &= flags;
-
-	loop.WakeUp();
-#endif
 }
 
 SocketMonitor::ssize_t

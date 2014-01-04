@@ -20,8 +20,6 @@
 #include "config.h"
 #include "Loop.hxx"
 
-#ifdef USE_INTERNAL_EVENTLOOP
-
 #include "system/Clock.hxx"
 #include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
@@ -104,15 +102,12 @@ EventLoop::CancelTimer(TimeoutMonitor &t)
 	}
 }
 
-#endif
-
 void
 EventLoop::Run()
 {
 	assert(thread.IsNull());
 	thread = ThreadId::GetCurrent();
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	assert(!quit);
 
 	do {
@@ -180,16 +175,9 @@ EventLoop::Run()
 		poll_result.Reset();
 
 	} while (!quit);
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	g_main_loop_run(loop);
-#endif
 
 	assert(thread.IsInside());
 }
-
-#ifdef USE_INTERNAL_EVENTLOOP
 
 void
 EventLoop::AddDeferred(DeferredMonitor &d)
@@ -254,39 +242,3 @@ EventLoop::OnSocketReady(gcc_unused unsigned flags)
 
 	return true;
 }
-
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-
-guint
-EventLoop::AddIdle(GSourceFunc function, gpointer data)
-{
-	GSource *source = g_idle_source_new();
-	g_source_set_callback(source, function, data, nullptr);
-	guint id = g_source_attach(source, GetContext());
-	g_source_unref(source);
-	return id;
-}
-
-GSource *
-EventLoop::AddTimeout(guint interval_ms,
-		      GSourceFunc function, gpointer data)
-{
-	GSource *source = g_timeout_source_new(interval_ms);
-	g_source_set_callback(source, function, data, nullptr);
-	g_source_attach(source, GetContext());
-	return source;
-}
-
-GSource *
-EventLoop::AddTimeoutSeconds(guint interval_s,
-			     GSourceFunc function, gpointer data)
-{
-	GSource *source = g_timeout_source_new_seconds(interval_s);
-	g_source_set_callback(source, function, data, nullptr);
-	g_source_attach(source, GetContext());
-	return source;
-}
-
-#endif

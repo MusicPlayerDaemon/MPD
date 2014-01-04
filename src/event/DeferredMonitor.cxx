@@ -24,46 +24,11 @@
 void
 DeferredMonitor::Cancel()
 {
-#ifdef USE_INTERNAL_EVENTLOOP
 	loop.RemoveDeferred(*this);
-#endif
-#ifdef USE_GLIB_EVENTLOOP
-	const auto id = source_id.exchange(0);
-	if (id != 0)
-		g_source_remove(id);
-#endif
 }
 
 void
 DeferredMonitor::Schedule()
 {
-#ifdef USE_INTERNAL_EVENTLOOP
 	loop.AddDeferred(*this);
-#endif
-#ifdef USE_GLIB_EVENTLOOP
-	const unsigned id = loop.AddIdle(Callback, this);
-	const auto old_id = source_id.exchange(id);
-	if (old_id != 0)
-		g_source_remove(old_id);
-#endif
 }
-
-#ifdef USE_GLIB_EVENTLOOP
-
-void
-DeferredMonitor::Run()
-{
-	const auto id = source_id.exchange(0);
-	if (id != 0)
-		RunDeferred();
-}
-
-gboolean
-DeferredMonitor::Callback(gpointer data)
-{
-	DeferredMonitor &monitor = *(DeferredMonitor *)data;
-	monitor.Run();
-	return false;
-}
-
-#endif

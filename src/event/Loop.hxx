@@ -24,7 +24,6 @@
 #include "thread/Id.hxx"
 #include "Compiler.h"
 
-#ifdef USE_INTERNAL_EVENTLOOP
 #include "PollGroup.hxx"
 #include "thread/Mutex.hxx"
 #include "WakeFD.hxx"
@@ -32,18 +31,11 @@
 
 #include <list>
 #include <set>
-#endif
 
-#ifdef USE_GLIB_EVENTLOOP
-#include <glib.h>
-#endif
-
-#ifdef USE_INTERNAL_EVENTLOOP
 class TimeoutMonitor;
 class IdleMonitor;
 class DeferredMonitor;
 class SocketMonitor;
-#endif
 
 #include <assert.h>
 
@@ -56,12 +48,8 @@ class SocketMonitor;
  *
  * @see SocketMonitor, MultiSocketMonitor, TimeoutMonitor, IdleMonitor
  */
-class EventLoop final
-#ifdef USE_INTERNAL_EVENTLOOP
-	: private SocketMonitor
-#endif
+class EventLoop final : SocketMonitor
 {
-#ifdef USE_INTERNAL_EVENTLOOP
 	struct TimerRecord {
 		/**
 		 * Projected monotonic_clock_ms() value when this
@@ -98,12 +86,6 @@ class EventLoop final
 
 	PollGroup poll_group;
 	PollResult poll_result;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	GMainContext *context;
-	GMainLoop *loop;
-#endif
 
 	/**
 	 * A reference to the thread that is currently inside Run().
@@ -111,7 +93,6 @@ class EventLoop final
 	ThreadId thread;
 
 public:
-#ifdef USE_INTERNAL_EVENTLOOP
 	struct Default {};
 
 	EventLoop(Default dummy=Default());
@@ -179,47 +160,6 @@ private:
 	virtual bool OnSocketReady(unsigned flags) override;
 
 public:
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	EventLoop()
-		:context(g_main_context_new()),
-		 loop(g_main_loop_new(context, false)),
-		 thread(ThreadId::Null()) {}
-
-	struct Default {};
-	EventLoop(gcc_unused Default _dummy)
-		:context(g_main_context_ref(g_main_context_default())),
-		 loop(g_main_loop_new(context, false)),
-		 thread(ThreadId::Null()) {}
-
-	~EventLoop() {
-		g_main_loop_unref(loop);
-		g_main_context_unref(context);
-	}
-
-	GMainContext *GetContext() {
-		return context;
-	}
-
-	void WakeUp() {
-		g_main_context_wakeup(context);
-	}
-
-	void Break() {
-		g_main_loop_quit(loop);
-	}
-
-	void Run();
-
-	guint AddIdle(GSourceFunc function, gpointer data);
-
-	GSource *AddTimeout(guint interval_ms,
-			    GSourceFunc function, gpointer data);
-
-	GSource *AddTimeoutSeconds(guint interval_s,
-				   GSourceFunc function, gpointer data);
-#endif
 
 	/**
 	 * Are we currently running inside this EventLoop's thread?

@@ -23,15 +23,9 @@
 #include "check.h"
 #include "Compiler.h"
 
-#ifdef USE_INTERNAL_EVENTLOOP
 #include "IdleMonitor.hxx"
 #include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-#include <glib.h>
-#endif
 
 #include <forward_list>
 #include <iterator>
@@ -55,12 +49,8 @@ class EventLoop;
  * In PrepareSockets(), use UpdateSocketList() and AddSocket().
  * DispatchSockets() will be called if at least one socket is ready.
  */
-class MultiSocketMonitor
-#ifdef USE_INTERNAL_EVENTLOOP
-	: private IdleMonitor, private TimeoutMonitor
-#endif
+class MultiSocketMonitor : IdleMonitor, TimeoutMonitor
 {
-#ifdef USE_INTERNAL_EVENTLOOP
 	class SingleFD final : public SocketMonitor {
 		MultiSocketMonitor &multi;
 
@@ -105,99 +95,28 @@ class MultiSocketMonitor
 	friend class SingleFD;
 
 	bool ready, refresh;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	struct Source {
-		GSource base;
-
-		MultiSocketMonitor *monitor;
-	};
-
-	struct SingleFD {
-		GPollFD pfd;
-
-		constexpr SingleFD(gcc_unused MultiSocketMonitor &m,
-				   int fd, unsigned events)
-			:pfd{fd, gushort(events), 0} {}
-
-		constexpr int GetFD() const {
-			return pfd.fd;
-		}
-
-		constexpr unsigned GetEvents() const {
-			return pfd.events;
-		}
-
-		constexpr unsigned GetReturnedEvents() const {
-			return pfd.revents;
-		}
-
-		void SetEvents(unsigned _events) {
-			pfd.events = _events;
-		}
-	};
-
-	EventLoop &loop;
-	Source *source;
-	uint64_t absolute_timeout_us;
-#endif
 
 	std::forward_list<SingleFD> fds;
 
 public:
-#ifdef USE_INTERNAL_EVENTLOOP
 	static constexpr unsigned READ = SocketMonitor::READ;
 	static constexpr unsigned WRITE = SocketMonitor::WRITE;
 	static constexpr unsigned ERROR = SocketMonitor::ERROR;
 	static constexpr unsigned HANGUP = SocketMonitor::HANGUP;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	static constexpr unsigned READ = G_IO_IN;
-	static constexpr unsigned WRITE = G_IO_OUT;
-	static constexpr unsigned ERROR = G_IO_ERR;
-	static constexpr unsigned HANGUP = G_IO_HUP;
-#endif
 
 	MultiSocketMonitor(EventLoop &_loop);
 	~MultiSocketMonitor();
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	using IdleMonitor::GetEventLoop;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	EventLoop &GetEventLoop() {
-		return loop;
-	}
-#endif
 
 public:
-#ifdef USE_GLIB_EVENTLOOP
-	gcc_pure
-	uint64_t GetTime() const {
-		return g_source_get_time(&source->base);
-	}
-#endif
-
 	void InvalidateSockets() {
-#ifdef USE_INTERNAL_EVENTLOOP
 		refresh = true;
 		IdleMonitor::Schedule();
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-		/* no-op because GLib always calls the GSource's
-		   "prepare" method before each poll() anyway */
-#endif
 	}
 
 	void AddSocket(int fd, unsigned events) {
 		fds.emplace_front(*this, fd, events);
-#ifdef USE_GLIB_EVENTLOOP
-		g_source_add_poll(&source->base, &fds.front().pfd);
-#endif
 	}
 
 	template<typename E>
@@ -212,13 +131,7 @@ public:
 				i->SetEvents(events);
 				prev = i;
 			} else {
-#ifdef USE_INTERNAL_EVENTLOOP
 				i->Steal();
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-				g_source_remove_poll(&source->base, &i->pfd);
-#endif
 				fds.erase_after(prev);
 			}
 		}
@@ -231,7 +144,6 @@ protected:
 	virtual int PrepareSockets() = 0;
 	virtual void DispatchSockets() = 0;
 
-#ifdef USE_INTERNAL_EVENTLOOP
 private:
 	void SetReady() {
 		ready = true;
@@ -246,25 +158,6 @@ private:
 	}
 
 	virtual void OnIdle() final;
-
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-public:
-	/* GSource callbacks */
-	static gboolean Prepare(GSource *source, gint *timeout_r);
-	static gboolean Check(GSource *source);
-	static gboolean Dispatch(GSource *source, GSourceFunc callback,
-				 gpointer user_data);
-
-private:
-	bool Prepare(gint *timeout_r);
-	bool Check() const;
-
-	void Dispatch() {
-		DispatchSockets();
-	}
-#endif
 };
 
 #endif

@@ -188,69 +188,37 @@ if test x$host_is_linux = xyes; then
 	MPD_OPTIONAL_FUNC_NODEF(epoll, epoll_create1)
 fi
 
-AC_ARG_WITH(eventloop,
-	AS_HELP_STRING(
-		[--with-eventloop=@<:@glib|internal|auto@:>@],
-		[specify event loop implementation (default=auto)]),,
-	[with_eventloop=auto])
-
 AC_ARG_WITH(pollmethod,
 	AS_HELP_STRING(
 		[--with-pollmethod=@<:@epoll|poll|winselect|auto@:>@],
 		[specify poll method for internal event loop (default=auto)]),,
 	[with_pollmethod=auto])
 
-if test "x$with_eventloop" = xauto; then
-	if
-		test "x$enable_epoll" = xyes ||
-		test "x$host_is_windows" = xyes; then
-			with_eventloop=internal
+if test "x$with_pollmethod" = xauto; then
+	if test "x$enable_epoll" = xyes; then
+		with_pollmethod=epoll
+	elif test "x$enable_poll" = xyes; then
+		with_pollmethod=poll
+	elif test "x$host_is_windows" = xyes; then
+		with_pollmethod=winselect
 	else
-		with_eventloop=glib
+		AC_MSG_ERROR([no poll method is available for your platform])
 	fi
 fi
-
-case "$with_eventloop" in
-glib)
-	AC_DEFINE(USE_GLIB_EVENTLOOP, 1,
-		[Define to use GLib event loop])
+case "$with_pollmethod" in
+epoll)
+	AC_DEFINE(USE_EPOLL, 1, [Define to poll sockets with epoll])
 	;;
-internal)
-	AC_DEFINE(USE_INTERNAL_EVENTLOOP, 1,
-		[Define to use internal event loop])
+poll)
+	AC_DEFINE(USE_POLL, 1, [Define to poll sockets with poll])
+	;;
+winselect)
+	AC_DEFINE(USE_WINSELECT, 1,
+		[Define to poll sockets with Windows select])
 	;;
 *)
-	AC_MSG_ERROR([unknown eventloop option: $with_eventloop])
-	;;
+	AC_MSG_ERROR([unknown pollmethod option: $with_pollmethod])
 esac
-
-if test "x$with_eventloop" = xinternal; then
-	if test "x$with_pollmethod" = xauto; then
-		if test "x$enable_epoll" = xyes; then
-			with_pollmethod=epoll
-		elif test "x$enable_poll" = xyes; then
-			with_pollmethod=poll
-		elif test "x$host_is_windows" = xyes; then
-			with_pollmethod=winselect
-		else
-			AC_MSG_ERROR([no poll method is available for your platform])
-		fi
-	fi
-	case "$with_pollmethod" in
-	epoll)
-		AC_DEFINE(USE_EPOLL, 1, [Define to poll sockets with epoll])
-		;;
-	poll)
-		AC_DEFINE(USE_POLL, 1, [Define to poll sockets with poll])
-		;;
-	winselect)
-		AC_DEFINE(USE_WINSELECT, 1,
-			[Define to poll sockets with Windows select])
-		;;
-	*)
-		AC_MSG_ERROR([unknown pollmethod option: $with_pollmethod])
-	esac
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl Allow tools to be specifically built
@@ -1728,14 +1696,7 @@ printf '\n\t'
 results(mms,[MMS])
 
 printf '\nEvent loop:\n\t'
-case $with_eventloop in
-glib)
-	printf 'GLib'
-	;;
-internal)
-	printf 'Internal (%s)' $with_pollmethod
-	;;
-esac
+printf $with_pollmethod
 
 printf '\n\n##########################################\n\n'
 

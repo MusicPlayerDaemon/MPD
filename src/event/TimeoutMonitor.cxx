@@ -25,32 +25,19 @@ void
 TimeoutMonitor::Cancel()
 {
 	if (IsActive()) {
-#ifdef USE_INTERNAL_EVENTLOOP
 		active = false;
 		loop.CancelTimer(*this);
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-		g_source_destroy(source);
-		g_source_unref(source);
-		source = nullptr;
-#endif
 	}
 }
 
 void
+
 TimeoutMonitor::Schedule(unsigned ms)
 {
 	Cancel();
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	active = true;
 	loop.AddTimer(*this, ms);
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	source = loop.AddTimeout(ms, Callback, this);
-#endif
 }
 
 void
@@ -58,33 +45,11 @@ TimeoutMonitor::ScheduleSeconds(unsigned s)
 {
 	Cancel();
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	Schedule(s * 1000u);
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	source = loop.AddTimeoutSeconds(s, Callback, this);
-#endif
 }
 
 void
 TimeoutMonitor::Run()
 {
-#ifdef USE_GLIB_EVENTLOOP
-	Cancel();
-#endif
-
 	OnTimeout();
 }
-
-#ifdef USE_GLIB_EVENTLOOP
-
-gboolean
-TimeoutMonitor::Callback(gpointer data)
-{
-	TimeoutMonitor &monitor = *(TimeoutMonitor *)data;
-	monitor.Run();
-	return false;
-}
-
-#endif

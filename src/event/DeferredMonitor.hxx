@@ -23,10 +23,6 @@
 #include "check.h"
 #include "Compiler.h"
 
-#ifdef USE_GLIB_EVENTLOOP
-#include <glib.h>
-#endif
-
 #include <atomic>
 
 class EventLoop;
@@ -39,25 +35,12 @@ class EventLoop;
 class DeferredMonitor {
 	EventLoop &loop;
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	friend class EventLoop;
 	bool pending;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	std::atomic<guint> source_id;
-#endif
 
 public:
-#ifdef USE_INTERNAL_EVENTLOOP
 	DeferredMonitor(EventLoop &_loop)
 		:loop(_loop), pending(false) {}
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	DeferredMonitor(EventLoop &_loop)
-		:loop(_loop), source_id(0) {}
-#endif
 
 	~DeferredMonitor() {
 		Cancel();
@@ -72,12 +55,6 @@ public:
 
 protected:
 	virtual void RunDeferred() = 0;
-
-private:
-#ifdef USE_GLIB_EVENTLOOP
-	void Run();
-	static gboolean Callback(gpointer data);
-#endif
 };
 
 #endif /* MAIN_NOTIFY_H */

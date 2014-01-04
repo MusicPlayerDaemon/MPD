@@ -21,14 +21,7 @@
 #define MPD_SOCKET_MONITOR_HXX
 
 #include "check.h"
-
-#ifdef USE_INTERNAL_EVENTLOOP
 #include "PollGroup.hxx"
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-#include <glib.h>
-#endif
 
 #include <type_traits>
 
@@ -56,60 +49,27 @@ class EventLoop;
  * as thread-safe.
  */
 class SocketMonitor {
-#ifdef USE_GLIB_EVENTLOOP
-	struct Source {
-		GSource base;
-
-		SocketMonitor *monitor;
-	};
-#endif
-
 	int fd;
 	EventLoop &loop;
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	/**
 	 * A bit mask of events that is currently registered in the EventLoop.
 	 */
 	unsigned scheduled_flags;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	Source *source;
-	GPollFD poll;
-#endif
 
 public:
-#ifdef USE_INTERNAL_EVENTLOOP
 	static constexpr unsigned READ = PollGroup::READ;
 	static constexpr unsigned WRITE = PollGroup::WRITE;
 	static constexpr unsigned ERROR = PollGroup::ERROR;
 	static constexpr unsigned HANGUP = PollGroup::HANGUP;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	static constexpr unsigned READ = G_IO_IN;
-	static constexpr unsigned WRITE = G_IO_OUT;
-	static constexpr unsigned ERROR = G_IO_ERR;
-	static constexpr unsigned HANGUP = G_IO_HUP;
-#endif 
 
 	typedef std::make_signed<size_t>::type ssize_t;
 
-#ifdef USE_INTERNAL_EVENTLOOP
 	SocketMonitor(EventLoop &_loop)
 		:fd(-1), loop(_loop), scheduled_flags(0) {}
 
 	SocketMonitor(int _fd, EventLoop &_loop)
 		:fd(_fd), loop(_loop), scheduled_flags(0) {}
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	SocketMonitor(EventLoop &_loop)
-		:fd(-1), loop(_loop), source(nullptr) {}
-
-	SocketMonitor(int _fd, EventLoop &_loop);
-#endif
 
 	~SocketMonitor();
 
@@ -145,13 +105,7 @@ public:
 	unsigned GetScheduledFlags() const {
 		assert(IsDefined());
 
-#ifdef USE_INTERNAL_EVENTLOOP
 		return scheduled_flags;
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-		return poll.events;
-#endif
 	}
 
 	void Schedule(unsigned flags);
@@ -186,30 +140,7 @@ protected:
 	virtual bool OnSocketReady(unsigned flags) = 0;
 
 public:
-#ifdef USE_INTERNAL_EVENTLOOP
 	void Dispatch(unsigned flags);
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
-	/* GSource callbacks */
-	static gboolean Prepare(GSource *source, gint *timeout_r);
-	static gboolean Check(GSource *source);
-	static gboolean Dispatch(GSource *source, GSourceFunc callback,
-				 gpointer user_data);
-
-private:
-	bool Check() const {
-		assert(IsDefined());
-
-		return (poll.revents & poll.events) != 0;
-	}
-
-	void Dispatch() {
-		assert(IsDefined());
-
-		OnSocketReady(poll.revents & poll.events);
-	}
-#endif
 };
 
 #endif
