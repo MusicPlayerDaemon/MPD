@@ -52,10 +52,8 @@ EventLoop::~EventLoop()
 void
 EventLoop::Break()
 {
-	if (IsInside())
-		quit = true;
-	else
-		AddCall([this]() { Break(); });
+	quit = true;
+	wake_fd.Write();
 }
 
 bool
