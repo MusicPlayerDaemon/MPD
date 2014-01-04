@@ -387,6 +387,12 @@ HttpdClient::PushPage(Page *page)
 		/* the client is still writing the HTTP request */
 		return;
 
+	if (queue_size > 256 * 1024) {
+		FormatDebug(httpd_output_domain,
+			    "client is too slow, flushing its queue");
+		ClearQueue();
+	}
+
 	page->Ref();
 	pages.push(page);
 	queue_size += page->size;

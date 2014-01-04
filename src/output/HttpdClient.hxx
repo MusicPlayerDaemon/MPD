@@ -143,14 +143,6 @@ public:
 	void LockClose();
 
 	/**
-	 * Returns the total size of this client's page queue.
-	 */
-	gcc_pure
-	size_t GetQueueSize() const {
-		return queue_size;
-	}
-
-	/**
 	 * Clears the page queue.
 	 */
 	void CancelQueue();

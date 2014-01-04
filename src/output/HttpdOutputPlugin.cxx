@@ -401,16 +401,6 @@ HttpdOutput::BroadcastPage(Page *page)
 void
 HttpdOutput::BroadcastFromEncoder()
 {
-	mutex.lock();
-	for (auto &client : clients) {
-		if (client.GetQueueSize() > 256 * 1024) {
-			FormatDebug(httpd_output_domain,
-				    "client is too slow, flushing its queue");
-			client.CancelQueue();
-		}
-	}
-	mutex.unlock();
-
 	Page *page;
 	while ((page = ReadPage()) != nullptr) {
 		BroadcastPage(page);
