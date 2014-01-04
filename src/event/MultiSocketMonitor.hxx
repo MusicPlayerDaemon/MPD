@@ -21,17 +21,15 @@
 #define MPD_MULTI_SOCKET_MONITOR_HXX
 
 #include "check.h"
-#include "Compiler.h"
-
 #include "IdleMonitor.hxx"
 #include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
+#include "Compiler.h"
 
 #include <forward_list>
 #include <iterator>
 
 #include <assert.h>
-#include <stdint.h>
 
 #ifdef WIN32
 /* ERROR is a WIN32 macro that poisons our namespace; this is a kludge

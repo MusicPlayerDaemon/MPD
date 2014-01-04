@@ -19,11 +19,6 @@
 
 #include "config.h"
 #include "MultiSocketMonitor.hxx"
-#include "Loop.hxx"
-#include "system/fd_util.h"
-#include "Compiler.h"
-
-#include <assert.h>
 
 MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
 	:IdleMonitor(_loop), TimeoutMonitor(_loop), ready(false) {
