@@ -187,6 +187,9 @@ public:
 	 */
 	void PushMetaData(Page *page);
 
+private:
+	void ClearQueue();
+
 protected:
 	virtual bool OnSocketReady(unsigned flags) override;
 	virtual InputResult OnSocketInput(void *data, size_t length) override;

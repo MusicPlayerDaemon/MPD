@@ -37,8 +37,7 @@ HttpdClient::~HttpdClient()
 		if (current_page != nullptr)
 			current_page->Unref();
 
-		for (auto page : pages)
-			page->Unref();
+		ClearQueue();
 	}
 
 	if (metadata)
@@ -209,15 +208,23 @@ HttpdClient::HttpdClient(HttpdOutput &_httpd, int _fd, EventLoop &_loop,
 }
 
 void
-HttpdClient::CancelQueue()
+HttpdClient::ClearQueue()
 {
-	if (state != RESPONSE)
-		return;
+	assert(state == RESPONSE);
 
 	for (auto page : pages)
 		page->Unref();
 	pages.clear();
 	queue_size = 0;
+}
+
+void
+HttpdClient::CancelQueue()
+{
+	if (state != RESPONSE)
+		return;
+
+	ClearQueue();
 
 	if (current_page == nullptr)
 		CancelWrite();
