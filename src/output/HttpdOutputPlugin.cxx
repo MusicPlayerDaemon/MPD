@@ -71,8 +71,11 @@ HttpdOutput::Bind(Error &error)
 {
 	open = false;
 
-	const ScopeLock protect(mutex);
-	return ServerSocket::Open(error);
+	bool result = false;
+	BlockingCall(DeferredMonitor::GetEventLoop(), [this, &error, &result](){
+			result = ServerSocket::Open(error);
+		});
+	return result;
 }
 
 inline void
@@ -80,8 +83,9 @@ HttpdOutput::Unbind()
 {
 	assert(!open);
 
-	const ScopeLock protect(mutex);
-	ServerSocket::Close();
+	BlockingCall(DeferredMonitor::GetEventLoop(), [this](){
+			ServerSocket::Close();
+		});
 }
 
 inline bool
