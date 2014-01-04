@@ -23,11 +23,6 @@
 #include "check.h"
 #include "Compiler.h"
 
-#ifdef USE_INTERNAL_EVENTLOOP
-#include "SocketMonitor.hxx"
-#include "WakeFD.hxx"
-#endif
-
 #ifdef USE_GLIB_EVENTLOOP
 #include <glib.h>
 #endif
@@ -39,31 +34,24 @@ class EventLoop;
 /**
  * Defer execution of an event into an #EventLoop.
  *
- * This class is thread-safe, however the constructor must be called
- * from the thread that runs the #EventLoop
+ * This class is thread-safe.
  */
-class DeferredMonitor
+class DeferredMonitor {
+	EventLoop &loop;
+
 #ifdef USE_INTERNAL_EVENTLOOP
-	: private SocketMonitor
-#endif
-{
-#ifdef USE_INTERNAL_EVENTLOOP
-	std::atomic_bool pending;
-	WakeFD fd;
+	friend class EventLoop;
+	bool pending;
 #endif
 
 #ifdef USE_GLIB_EVENTLOOP
-	EventLoop &loop;
 	std::atomic<guint> source_id;
 #endif
 
 public:
 #ifdef USE_INTERNAL_EVENTLOOP
 	DeferredMonitor(EventLoop &_loop)
-		:SocketMonitor(_loop), pending(false) {
-		SocketMonitor::Open(fd.Get());
-		SocketMonitor::Schedule(SocketMonitor::READ);
-	}
+		:loop(_loop), pending(false) {}
 #endif
 
 #ifdef USE_GLIB_EVENTLOOP
@@ -72,24 +60,11 @@ public:
 #endif
 
 	~DeferredMonitor() {
-#ifdef USE_INTERNAL_EVENTLOOP
-		/* avoid closing the WakeFD twice */
-		SocketMonitor::Steal();
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
 		Cancel();
-#endif
 	}
 
 	EventLoop &GetEventLoop() {
-#ifdef USE_INTERNAL_EVENTLOOP
-		return SocketMonitor::GetEventLoop();
-#endif
-
-#ifdef USE_GLIB_EVENTLOOP
 		return loop;
-#endif
 	}
 
 	void Schedule();
@@ -99,10 +74,6 @@ protected:
 	virtual void RunDeferred() = 0;
 
 private:
-#ifdef USE_INTERNAL_EVENTLOOP
-	virtual bool OnSocketReady(unsigned flags) override final;
-#endif
-
 #ifdef USE_GLIB_EVENTLOOP
 	void Run();
 	static gboolean Callback(gpointer data);

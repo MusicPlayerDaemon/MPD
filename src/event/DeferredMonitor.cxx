@@ -25,7 +25,7 @@ void
 DeferredMonitor::Cancel()
 {
 #ifdef USE_INTERNAL_EVENTLOOP
-	pending = false;
+	loop.RemoveDeferred(*this);
 #endif
 #ifdef USE_GLIB_EVENTLOOP
 	const auto id = source_id.exchange(0);
@@ -38,8 +38,7 @@ void
 DeferredMonitor::Schedule()
 {
 #ifdef USE_INTERNAL_EVENTLOOP
-	if (!pending.exchange(true))
-		fd.Write();
+	loop.AddDeferred(*this);
 #endif
 #ifdef USE_GLIB_EVENTLOOP
 	const unsigned id = loop.AddIdle(Callback, this);
@@ -48,21 +47,6 @@ DeferredMonitor::Schedule()
 		g_source_remove(old_id);
 #endif
 }
-
-#ifdef USE_INTERNAL_EVENTLOOP
-
-bool
-DeferredMonitor::OnSocketReady(unsigned)
-{
-	fd.Read();
-
-	if (pending.exchange(false))
-		RunDeferred();
-
-	return true;
-}
-
-#endif
 
 #ifdef USE_GLIB_EVENTLOOP
 

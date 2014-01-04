@@ -42,6 +42,7 @@
 #ifdef USE_INTERNAL_EVENTLOOP
 class TimeoutMonitor;
 class IdleMonitor;
+class DeferredMonitor;
 class SocketMonitor;
 #endif
 
@@ -91,6 +92,7 @@ class EventLoop final
 
 	Mutex mutex;
 	std::list<std::function<void()>> calls;
+	std::list<DeferredMonitor *> deferred;
 
 	unsigned now_ms;
 
@@ -160,6 +162,21 @@ public:
 	 * This method is thread-safe.
 	 */
 	void AddCall(std::function<void()> &&f);
+
+	/**
+	 * Schedule a call to DeferredMonitor::RunDeferred().
+	 *
+	 * This method is thread-safe.
+	 */
+	void AddDeferred(DeferredMonitor &d);
+
+	/**
+	 * Cancel a pending call to DeferredMonitor::RunDeferred().
+	 * However after returning, the call may still be running.
+	 *
+	 * This method is thread-safe.
+	 */
+	void RemoveDeferred(DeferredMonitor &d);
 
 	/**
 	 * The main function of this class.  It will loop until

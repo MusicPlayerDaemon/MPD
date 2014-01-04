@@ -26,6 +26,7 @@
 #include "TimeoutMonitor.hxx"
 #include "SocketMonitor.hxx"
 #include "IdleMonitor.hxx"
+#include "DeferredMonitor.hxx"
 
 #include <algorithm>
 
@@ -204,6 +205,44 @@ EventLoop::AddCall(std::function<void()> &&f)
 	wake_fd.Write();
 }
 
+void
+EventLoop::AddDeferred(DeferredMonitor &d)
+{
+	mutex.lock();
+	if (d.pending) {
+		mutex.unlock();
+		return;
+	}
+
+	assert(std::find(deferred.begin(),
+			 deferred.end(), &d) == deferred.end());
+
+	d.pending = true;
+	deferred.push_back(&d);
+	mutex.unlock();
+
+	wake_fd.Write();
+}
+
+void
+EventLoop::RemoveDeferred(DeferredMonitor &d)
+{
+	const ScopeLock protect(mutex);
+
+	if (!d.pending) {
+		assert(std::find(deferred.begin(),
+				 deferred.end(), &d) == deferred.end());
+		return;
+	}
+
+	d.pending = false;
+
+	auto i = std::find(deferred.begin(), deferred.end(), &d);
+	assert(i != deferred.end());
+
+	deferred.erase(i);
+}
+
 bool
 EventLoop::OnSocketReady(gcc_unused unsigned flags)
 {
@@ -212,6 +251,18 @@ EventLoop::OnSocketReady(gcc_unused unsigned flags)
 	wake_fd.Read();
 
 	mutex.lock();
+
+	while (!deferred.empty() && !quit) {
+		DeferredMonitor &m = *deferred.front();
+		assert(m.pending);
+
+		deferred.pop_front();
+		m.pending = false;
+
+		mutex.unlock();
+		m.RunDeferred();
+		mutex.lock();
+	}
 
 	while (!calls.empty() && !quit) {
 		auto f = std::move(calls.front());
