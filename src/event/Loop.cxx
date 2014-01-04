@@ -165,17 +165,15 @@ EventLoop::Run()
 
 		now_ms = ::MonotonicClockMS();
 
-		assert(!quit);
-
 		/* invoke sockets */
 		for (int i = 0; i < poll_result.GetSize(); ++i) {
 			auto events = poll_result.GetEvents(i);
 			if (events != 0) {
-				auto m = (SocketMonitor *)poll_result.GetObject(i);
-				m->Dispatch(events);
-
 				if (quit)
 					break;
+
+				auto m = (SocketMonitor *)poll_result.GetObject(i);
+				m->Dispatch(events);
 			}
 		}
 
