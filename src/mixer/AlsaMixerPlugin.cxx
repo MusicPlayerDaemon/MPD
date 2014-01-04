@@ -23,8 +23,8 @@
 #include "GlobalEvents.hxx"
 #include "Main.hxx"
 #include "event/MultiSocketMonitor.hxx"
+#include "event/DeferredMonitor.hxx"
 #include "event/Loop.hxx"
-#include "event/Call.hxx"
 #include "util/ASCII.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/Clamp.hxx"
@@ -40,29 +40,22 @@
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
 static constexpr unsigned VOLUME_MIXER_ALSA_INDEX_DEFAULT = 0;
 
-class AlsaMixerMonitor final : private MultiSocketMonitor {
+class AlsaMixerMonitor final : MultiSocketMonitor, DeferredMonitor {
 	snd_mixer_t *mixer;
 
 	ReusableArray<pollfd> pfd_buffer;
 
 public:
 	AlsaMixerMonitor(EventLoop &_loop, snd_mixer_t *_mixer)
-		:MultiSocketMonitor(_loop), mixer(_mixer) {
-#ifdef USE_INTERNAL_EVENTLOOP
-		_loop.AddCall([this](){ InvalidateSockets(); });
-#else
-		_loop.AddIdle(InitAlsaMixerMonitor, this);
-#endif
+		:MultiSocketMonitor(_loop), DeferredMonitor(_loop),
+		 mixer(_mixer) {
+		DeferredMonitor::Schedule();
 	}
 
 private:
-#ifndef USE_INTERNAL_EVENTLOOP
-	static gboolean InitAlsaMixerMonitor(gpointer data) {
-		AlsaMixerMonitor &amm = *(AlsaMixerMonitor *)data;
-		amm.InvalidateSockets();
-		return false;
+	virtual void RunDeferred() override {
+		InvalidateSockets();
 	}
-#endif
 
 	virtual int PrepareSockets() override;
 	virtual void DispatchSockets() override;
