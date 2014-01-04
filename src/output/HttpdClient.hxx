@@ -56,6 +56,11 @@ class HttpdClient final : BufferedSocket {
 	std::list<Page *> pages;
 
 	/**
+	 * The sum of all page sizes in #pages.
+	 */
+	size_t queue_size;
+
+	/**
 	 * The #page which is currently being sent to the client.
 	 */
 	Page *current_page;
@@ -140,7 +145,9 @@ public:
 	 * Returns the total size of this client's page queue.
 	 */
 	gcc_pure
-	size_t GetQueueSize() const;
+	size_t GetQueueSize() const {
+		return queue_size;
+	}
 
 	/**
 	 * Clears the page queue.

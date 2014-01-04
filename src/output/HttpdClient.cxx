@@ -197,6 +197,7 @@ HttpdClient::HttpdClient(HttpdOutput &_httpd, int _fd, EventLoop &_loop,
 	:BufferedSocket(_fd, _loop),
 	 httpd(_httpd),
 	 state(REQUEST),
+	 queue_size(0),
 	 head_method(false),
 	 dlna_streaming_requested(false),
 	 metadata_supported(_metadata_supported),
@@ -205,18 +206,6 @@ HttpdClient::HttpdClient(HttpdOutput &_httpd, int _fd, EventLoop &_loop,
 	 metadata(nullptr),
 	 metadata_current_position(0), metadata_fill(0)
 {
-}
-
-size_t
-HttpdClient::GetQueueSize() const
-{
-	if (state != RESPONSE)
-		return 0;
-
-	size_t size = 0;
-	for (auto page : pages)
-		size += page->size;
-	return size;
 }
 
 void
@@ -228,6 +217,7 @@ HttpdClient::CancelQueue()
 	for (auto page : pages)
 		page->Unref();
 	pages.clear();
+	queue_size = 0;
 
 	if (current_page == nullptr)
 		CancelWrite();
@@ -278,6 +268,9 @@ HttpdClient::TryWrite()
 		current_page = pages.front();
 		pages.pop_front();
 		current_position = 0;
+
+		assert(queue_size >= current_page->size);
+		queue_size -= current_page->size;
 	}
 
 	const ssize_t bytes_to_write = GetBytesTillMetaData();
@@ -380,6 +373,7 @@ HttpdClient::PushPage(Page *page)
 
 	page->Ref();
 	pages.push_back(page);
+	queue_size += page->size;
 
 	ScheduleWrite();
 }
