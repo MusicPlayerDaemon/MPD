@@ -30,7 +30,6 @@
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
 
-#include <functional>
 #include <list>
 #include <set>
 #endif
@@ -91,7 +90,6 @@ class EventLoop final
 	std::list<IdleMonitor *> idle;
 
 	Mutex mutex;
-	std::list<std::function<void()>> calls;
 	std::list<DeferredMonitor *> deferred;
 
 	unsigned now_ms;
@@ -155,13 +153,6 @@ public:
 
 	void AddTimer(TimeoutMonitor &t, unsigned ms);
 	void CancelTimer(TimeoutMonitor &t);
-
-	/**
-	 * Schedule a function to be called inside the thread.
-	 *
-	 * This method is thread-safe.
-	 */
-	void AddCall(std::function<void()> &&f);
 
 	/**
 	 * Schedule a call to DeferredMonitor::RunDeferred().

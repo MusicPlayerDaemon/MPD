@@ -194,16 +194,6 @@ EventLoop::Run()
 #ifdef USE_INTERNAL_EVENTLOOP
 
 void
-EventLoop::AddCall(std::function<void()> &&f)
-{
-	mutex.lock();
-	calls.push_back(f);
-	mutex.unlock();
-
-	wake_fd.Write();
-}
-
-void
 EventLoop::AddDeferred(DeferredMonitor &d)
 {
 	mutex.lock();
@@ -259,15 +249,6 @@ EventLoop::OnSocketReady(gcc_unused unsigned flags)
 
 		mutex.unlock();
 		m.RunDeferred();
-		mutex.lock();
-	}
-
-	while (!calls.empty() && !quit) {
-		auto f = std::move(calls.front());
-		calls.pop_front();
-
-		mutex.unlock();
-		f();
 		mutex.lock();
 	}
 
