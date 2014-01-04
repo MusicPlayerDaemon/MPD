@@ -212,10 +212,19 @@ HttpdClient::ClearQueue()
 {
 	assert(state == RESPONSE);
 
-	for (auto page : pages)
+	while (!pages.empty()) {
+		Page *page = pages.front();
+		pages.pop();
+
+#ifndef NDEBUG
+		assert(queue_size >= page->size);
+		queue_size -= page->size;
+#endif
+
 		page->Unref();
-	pages.clear();
-	queue_size = 0;
+	}
+
+	assert(queue_size == 0);
 }
 
 void
@@ -273,7 +282,7 @@ HttpdClient::TryWrite()
 		}
 
 		current_page = pages.front();
-		pages.pop_front();
+		pages.pop();
 		current_position = 0;
 
 		assert(queue_size >= current_page->size);
@@ -379,7 +388,7 @@ HttpdClient::PushPage(Page *page)
 		return;
 
 	page->Ref();
-	pages.push_back(page);
+	pages.push(page);
 	queue_size += page->size;
 
 	ScheduleWrite();

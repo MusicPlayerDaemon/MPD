@@ -23,6 +23,7 @@
 #include "event/BufferedSocket.hxx"
 #include "Compiler.h"
 
+#include <queue>
 #include <list>
 
 #include <stddef.h>
@@ -53,7 +54,7 @@ class HttpdClient final : BufferedSocket {
 	/**
 	 * A queue of #Page objects to be sent to the client.
 	 */
-	std::list<Page *> pages;
+	std::queue<Page *, std::list<Page *>> pages;
 
 	/**
 	 * The sum of all page sizes in #pages.
