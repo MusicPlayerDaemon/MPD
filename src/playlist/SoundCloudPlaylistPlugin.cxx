@@ -46,7 +46,8 @@ static constexpr Domain soundcloud_domain("soundcloud");
 static bool
 soundcloud_init(const config_param &param)
 {
-	soundcloud_config.apikey = param.GetBlockValue("apikey", "");
+	// APIKEY for MPD application, registered under DarkFox' account.
+	soundcloud_config.apikey = param.GetBlockValue("apikey", "a25e51780f7f86af0afa91f241d091f8");
 	if (soundcloud_config.apikey.empty()) {
 		LogDebug(soundcloud_domain,
 			 "disabling the soundcloud playlist plugin "
