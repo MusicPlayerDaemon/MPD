@@ -31,8 +31,9 @@ PollGroupPoll::~PollGroupPoll() { }
 bool PollGroupPoll::Add(int fd, unsigned events, void *obj)
 {
 	assert(items.find(fd) == items.end());
-	poll_events.resize(poll_events.size() + 1);
-	size_t index = poll_events.size() - 1;
+
+	const size_t index = poll_events.size();
+	poll_events.resize(index + 1);
 	auto &e = poll_events[index];
 	e.fd = fd;
 	e.events = events;
