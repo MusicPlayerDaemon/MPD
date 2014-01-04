@@ -28,7 +28,7 @@
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "system/fd_util.h"
-#include "Main.hxx"
+#include "IOThread.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -137,7 +137,7 @@ HttpdOutput::Init(const config_param &param, Error &error)
 static struct audio_output *
 httpd_output_init(const config_param &param, Error &error)
 {
-	HttpdOutput *httpd = new HttpdOutput(*main_loop);
+	HttpdOutput *httpd = new HttpdOutput(io_thread_get());
 
 	audio_output *result = httpd->InitAndConfigure(param, error);
 	if (result == nullptr)
