@@ -20,6 +20,8 @@
 #include "config.h"
 #include "MultiSocketMonitor.hxx"
 
+#include <algorithm>
+
 #ifndef WIN32
 #include <poll.h>
 #endif
