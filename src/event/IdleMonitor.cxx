@@ -26,7 +26,7 @@
 void
 IdleMonitor::Cancel()
 {
-	assert(loop.IsInside());
+	assert(loop.IsInsideOrNull());
 
 	if (!IsActive())
 		return;

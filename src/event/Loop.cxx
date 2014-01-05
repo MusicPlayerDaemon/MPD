@@ -57,6 +57,8 @@ EventLoop::Break()
 bool
 EventLoop::Abandon(int _fd, SocketMonitor &m)
 {
+	assert(IsInside());
+
 	poll_result.Clear(&m);
 	return poll_group.Abandon(_fd);
 }
@@ -64,6 +66,8 @@ EventLoop::Abandon(int _fd, SocketMonitor &m)
 bool
 EventLoop::RemoveFD(int _fd, SocketMonitor &m)
 {
+	assert(IsInsideOrNull());
+
 	poll_result.Clear(&m);
 	return poll_group.Remove(_fd);
 }
@@ -71,6 +75,7 @@ EventLoop::RemoveFD(int _fd, SocketMonitor &m)
 void
 EventLoop::AddIdle(IdleMonitor &i)
 {
+	assert(IsInside());
 	assert(std::find(idle.begin(), idle.end(), &i) == idle.end());
 
 	idle.push_back(&i);
@@ -79,6 +84,8 @@ EventLoop::AddIdle(IdleMonitor &i)
 void
 EventLoop::RemoveIdle(IdleMonitor &i)
 {
+	assert(IsInside());
+
 	auto it = std::find(idle.begin(), idle.end(), &i);
 	assert(it != idle.end());
 
@@ -88,12 +95,16 @@ EventLoop::RemoveIdle(IdleMonitor &i)
 void
 EventLoop::AddTimer(TimeoutMonitor &t, unsigned ms)
 {
+	assert(IsInside());
+
 	timers.insert(TimerRecord(t, now_ms + ms));
 }
 
 void
 EventLoop::CancelTimer(TimeoutMonitor &t)
 {
+	assert(IsInsideOrNull());
+
 	for (auto i = timers.begin(), end = timers.end(); i != end; ++i) {
 		if (&i->timer == &t) {
 			timers.erase(i);
@@ -176,7 +187,10 @@ EventLoop::Run()
 
 	} while (!quit);
 
+#ifndef NDEBUG
 	assert(thread.IsInside());
+	thread = ThreadId::Null();
+#endif
 }
 
 void
@@ -236,6 +250,8 @@ EventLoop::HandleDeferred()
 bool
 EventLoop::OnSocketReady(gcc_unused unsigned flags)
 {
+	assert(IsInside());
+
 	wake_fd.Read();
 
 	mutex.lock();

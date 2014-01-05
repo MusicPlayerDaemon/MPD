@@ -102,6 +102,8 @@ public:
 	 * A caching wrapper for MonotonicClockMS().
 	 */
 	unsigned GetTimeMS() const {
+		assert(IsInside());
+
 		return now_ms;
 	}
 
@@ -113,10 +115,14 @@ public:
 	void Break();
 
 	bool AddFD(int _fd, unsigned flags, SocketMonitor &m) {
+		assert(thread.IsNull() || thread.IsInside());
+
 		return poll_group.Add(_fd, flags, &m);
 	}
 
 	bool ModifyFD(int _fd, unsigned flags, SocketMonitor &m) {
+		assert(IsInside());
+
 		return poll_group.Modify(_fd, flags, &m);
 	}
 
@@ -177,6 +183,13 @@ public:
 
 		return thread.IsInside();
 	}
+
+#ifndef NDEBUG
+	gcc_pure
+	bool IsInsideOrNull() const {
+		return thread.IsNull() || thread.IsInside();
+	}
+#endif
 };
 
 #endif /* MAIN_NOTIFY_H */
