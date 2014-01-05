@@ -347,7 +347,9 @@ HttpdOutput::Close()
 
 	delete timer;
 
-	clients.clear();
+	BlockingCall(GetEventLoop(), [this](){
+			clients.clear();
+		});
 
 	if (header != nullptr)
 		header->Unref();
