@@ -236,8 +236,6 @@ EventLoop::HandleDeferred()
 bool
 EventLoop::OnSocketReady(gcc_unused unsigned flags)
 {
-	assert(!quit);
-
 	wake_fd.Read();
 
 	mutex.lock();
