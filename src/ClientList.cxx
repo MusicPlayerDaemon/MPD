@@ -40,8 +40,14 @@ ClientList::Remove(Client &client)
 void
 ClientList::CloseAll()
 {
-	while (!list.empty())
-		list.front()->Close();
+	while (!list.empty()) {
+		delete list.front();
+		list.pop_front();
+
+#ifndef NDEBUG
+		--size;
+#endif
+	}
 
 	assert(size == 0);
 }
