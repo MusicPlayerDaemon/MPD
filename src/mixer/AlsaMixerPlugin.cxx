@@ -91,8 +91,10 @@ static constexpr Domain alsa_mixer_domain("alsa_mixer");
 int
 AlsaMixerMonitor::PrepareSockets()
 {
-	if (mixer == nullptr)
+	if (mixer == nullptr) {
+		ClearSocketList();
 		return -1;
+	}
 
 	int count = snd_mixer_poll_descriptors_count(mixer);
 	if (count < 0)

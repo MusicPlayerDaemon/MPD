@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "MultiSocketMonitor.hxx"
+#include "Loop.hxx"
 
 #include <algorithm>
 
@@ -33,6 +34,14 @@ MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
 MultiSocketMonitor::~MultiSocketMonitor()
 {
 	// TODO
+}
+
+void
+MultiSocketMonitor::ClearSocketList()
+{
+	assert(GetEventLoop().IsInsideOrNull());
+
+	fds.clear();
 }
 
 #ifndef WIN32

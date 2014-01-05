@@ -126,6 +126,11 @@ public:
 	}
 
 	/**
+	 * Remove all sockets.
+	 */
+	void ClearSocketList();
+
+	/**
 	 * Update the known sockets by invoking the given function for
 	 * each one; its return value is the events bit mask.  A
 	 * return value of 0 means the socket will be removed from the
