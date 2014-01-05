@@ -84,6 +84,12 @@ class EventLoop final : SocketMonitor
 
 	bool quit;
 
+	/**
+	 * True when the object has been modified and another check is
+	 * necessary before going to sleep via PollGroup::ReadEvents().
+	 */
+	bool again;
+
 	PollGroup poll_group;
 	PollResult poll_result;
 

@@ -79,6 +79,7 @@ EventLoop::AddIdle(IdleMonitor &i)
 	assert(std::find(idle.begin(), idle.end(), &i) == idle.end());
 
 	idle.push_back(&i);
+	again = true;
 }
 
 void
@@ -98,6 +99,7 @@ EventLoop::AddTimer(TimeoutMonitor &t, unsigned ms)
 	assert(IsInside());
 
 	timers.insert(TimerRecord(t, now_ms + ms));
+	again = true;
 }
 
 void
@@ -123,6 +125,7 @@ EventLoop::Run()
 
 	do {
 		now_ms = ::MonotonicClockMS();
+		again = false;
 
 		/* invoke timers */
 
@@ -149,7 +152,6 @@ EventLoop::Run()
 
 		/* invoke idle */
 
-		const bool idle_empty = idle.empty();
 		while (!idle.empty()) {
 			IdleMonitor &m = *idle.front();
 			idle.pop_front();
@@ -159,7 +161,7 @@ EventLoop::Run()
 				return;
 		}
 
-		if (!idle_empty)
+		if (again)
 			/* re-evaluate timers because one of the
 			   IdleMonitors may have added a new
 			   timeout */
