@@ -104,24 +104,7 @@ AlsaMixerMonitor::PrepareSockets()
 	if (count < 0)
 		count = 0;
 
-	struct pollfd *end = pfds + count;
-
-	UpdateSocketList([pfds, end](int fd) -> unsigned {
-			auto i = std::find_if(pfds, end, [fd](const struct pollfd &pfd){
-					return pfd.fd == fd;
-				});
-			if (i == end)
-				return 0;
-
-			auto events = i->events;
-			i->events = 0;
-			return events;
-		});
-
-	for (auto i = pfds; i != end; ++i)
-		if (i->events != 0)
-			AddSocket(i->fd, i->events);
-
+	ReplaceSocketList(pfds, count);
 	return -1;
 }
 

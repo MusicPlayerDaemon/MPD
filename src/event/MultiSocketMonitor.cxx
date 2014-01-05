@@ -20,6 +20,10 @@
 #include "config.h"
 #include "MultiSocketMonitor.hxx"
 
+#ifndef WIN32
+#include <poll.h>
+#endif
+
 MultiSocketMonitor::MultiSocketMonitor(EventLoop &_loop)
 	:IdleMonitor(_loop), TimeoutMonitor(_loop), ready(false) {
 }
@@ -28,6 +32,32 @@ MultiSocketMonitor::~MultiSocketMonitor()
 {
 	// TODO
 }
+
+#ifndef WIN32
+
+void
+MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n)
+{
+	pollfd *const end = pfds + n;
+
+	UpdateSocketList([pfds, end](int fd) -> unsigned {
+			auto i = std::find_if(pfds, end, [fd](const struct pollfd &pfd){
+					return pfd.fd == fd;
+				});
+			if (i == end)
+				return 0;
+
+			auto events = i->events;
+			i->events = 0;
+			return events;
+		});
+
+	for (auto i = pfds; i != end; ++i)
+		if (i->events != 0)
+			AddSocket(i->fd, i->events);
+}
+
+#endif
 
 void
 MultiSocketMonitor::Prepare()

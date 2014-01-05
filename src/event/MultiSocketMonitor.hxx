@@ -39,6 +39,10 @@
 #endif
 #endif
 
+#ifndef WIN32
+struct pollfd;
+#endif
+
 class EventLoop;
 
 /**
@@ -134,6 +138,14 @@ public:
 			}
 		}
 	}
+
+#ifndef WIN32
+	/**
+	 * Replace the socket list with the given file descriptors.
+	 * The given pollfd array will be modified by this method.
+	 */
+	void ReplaceSocketList(pollfd *pfds, unsigned n);
+#endif
 
 protected:
 	/**
