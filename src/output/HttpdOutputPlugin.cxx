@@ -72,7 +72,7 @@ HttpdOutput::Bind(Error &error)
 	open = false;
 
 	bool result = false;
-	BlockingCall(DeferredMonitor::GetEventLoop(), [this, &error, &result](){
+	BlockingCall(GetEventLoop(), [this, &error, &result](){
 			result = ServerSocket::Open(error);
 		});
 	return result;
@@ -83,7 +83,7 @@ HttpdOutput::Unbind()
 {
 	assert(!open);
 
-	BlockingCall(DeferredMonitor::GetEventLoop(), [this](){
+	BlockingCall(GetEventLoop(), [this](){
 			ServerSocket::Close();
 		});
 }
@@ -167,7 +167,7 @@ httpd_output_finish(struct audio_output *ao)
 inline void
 HttpdOutput::AddClient(int fd)
 {
-	clients.emplace_front(*this, fd, ServerSocket::GetEventLoop(),
+	clients.emplace_front(*this, fd, GetEventLoop(),
 			      encoder->plugin.tag == nullptr);
 	++clients_cnt;
 

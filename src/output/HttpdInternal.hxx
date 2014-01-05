@@ -164,6 +164,8 @@ public:
 #pragma GCC diagnostic pop
 #endif
 
+	using DeferredMonitor::GetEventLoop;
+
 	bool Init(const config_param &param, Error &error);
 
 	void Finish() {
