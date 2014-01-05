@@ -31,7 +31,7 @@
 EventLoop::EventLoop(Default)
 	:SocketMonitor(*this),
 	 now_ms(::MonotonicClockMS()),
-	 quit(false),
+	 quit(false), busy(true),
 	 thread(ThreadId::Null())
 {
 	SocketMonitor::Open(wake_fd.Get());
@@ -122,6 +122,7 @@ EventLoop::Run()
 	thread = ThreadId::GetCurrent();
 
 	assert(!quit);
+	assert(busy);
 
 	do {
 		now_ms = ::MonotonicClockMS();
@@ -161,6 +162,13 @@ EventLoop::Run()
 				return;
 		}
 
+		/* try to handle DeferredMonitors without WakeFD
+		   overhead */
+		mutex.lock();
+		HandleDeferred();
+		busy = false;
+		mutex.unlock();
+
 		if (again)
 			/* re-evaluate timers because one of the
 			   IdleMonitors may have added a new
@@ -172,6 +180,10 @@ EventLoop::Run()
 		poll_group.ReadEvents(poll_result, timeout_ms);
 
 		now_ms = ::MonotonicClockMS();
+
+		mutex.lock();
+		busy = true;
+		mutex.unlock();
 
 		/* invoke sockets */
 		for (int i = 0; i < poll_result.GetSize(); ++i) {
@@ -190,6 +202,7 @@ EventLoop::Run()
 	} while (!quit);
 
 #ifndef NDEBUG
+	assert(busy);
 	assert(thread.IsInside());
 	thread = ThreadId::Null();
 #endif
@@ -209,10 +222,11 @@ EventLoop::AddDeferred(DeferredMonitor &d)
 
 	/* we don't need to wake up the EventLoop if another
 	   DeferredMonitor has already done it */
-	const bool must_wake = deferred.empty();
+	const bool must_wake = !busy && deferred.empty();
 
 	d.pending = true;
 	deferred.push_back(&d);
+	again = true;
 	mutex.unlock();
 
 	if (must_wake)

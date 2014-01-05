@@ -90,6 +90,14 @@ class EventLoop final : SocketMonitor
 	 */
 	bool again;
 
+	/**
+	 * True when handling callbacks, false when waiting for I/O or
+	 * timeout.
+	 *
+	 * Protected with #mutex.
+	 */
+	bool busy;
+
 	PollGroup poll_group;
 	PollResult poll_result;
 
