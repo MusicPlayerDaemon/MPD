@@ -207,11 +207,16 @@ EventLoop::AddDeferred(DeferredMonitor &d)
 	assert(std::find(deferred.begin(),
 			 deferred.end(), &d) == deferred.end());
 
+	/* we don't need to wake up the EventLoop if another
+	   DeferredMonitor has already done it */
+	const bool must_wake = deferred.empty();
+
 	d.pending = true;
 	deferred.push_back(&d);
 	mutex.unlock();
 
-	wake_fd.Write();
+	if (must_wake)
+		wake_fd.Write();
 }
 
 void
