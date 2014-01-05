@@ -217,15 +217,9 @@ EventLoop::RemoveDeferred(DeferredMonitor &d)
 	deferred.erase(i);
 }
 
-bool
-EventLoop::OnSocketReady(gcc_unused unsigned flags)
+void
+EventLoop::HandleDeferred()
 {
-	assert(!quit);
-
-	wake_fd.Read();
-
-	mutex.lock();
-
 	while (!deferred.empty() && !quit) {
 		DeferredMonitor &m = *deferred.front();
 		assert(m.pending);
@@ -237,7 +231,17 @@ EventLoop::OnSocketReady(gcc_unused unsigned flags)
 		m.RunDeferred();
 		mutex.lock();
 	}
+}
 
+bool
+EventLoop::OnSocketReady(gcc_unused unsigned flags)
+{
+	assert(!quit);
+
+	wake_fd.Read();
+
+	mutex.lock();
+	HandleDeferred();
 	mutex.unlock();
 
 	return true;

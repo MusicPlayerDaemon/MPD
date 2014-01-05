@@ -157,6 +157,13 @@ public:
 	void Run();
 
 private:
+	/**
+	 * Invoke all pending DeferredMonitors.
+	 *
+	 * Caller must lock the mutex.
+	 */
+	void HandleDeferred();
+
 	virtual bool OnSocketReady(unsigned flags) override;
 
 public:
