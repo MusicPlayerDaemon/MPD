@@ -112,6 +112,10 @@ public:
 	using IdleMonitor::GetEventLoop;
 
 public:
+	/**
+	 * Invalidate the socket list.  A call to PrepareSockets() is
+	 * scheduled which will then update the list.
+	 */
 	void InvalidateSockets() {
 		refresh = true;
 		IdleMonitor::Schedule();
@@ -121,6 +125,12 @@ public:
 		fds.emplace_front(*this, fd, events);
 	}
 
+	/**
+	 * Update the known sockets by invoking the given function for
+	 * each one; its return value is the events bit mask.  A
+	 * return value of 0 means the socket will be removed from the
+	 * list.
+	 */
 	template<typename E>
 	void UpdateSocketList(E &&e) {
 		for (auto prev = fds.before_begin(), end = fds.end(),
