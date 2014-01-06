@@ -48,57 +48,52 @@ static void
 pcm_volume_change(PcmDither &dither,
 		  typename Traits::pointer_type dest,
 		  typename Traits::const_pointer_type src,
-		  typename Traits::const_pointer_type end,
+		  size_t n,
 		  int volume)
 {
-	while (src < end) {
-		const auto sample = *src++;
-		*dest++ = pcm_volume_sample<F, Traits>(dither, sample, volume);
-	}
+	for (size_t i = 0; i != n; ++i)
+		dest[i] = pcm_volume_sample<F, Traits>(dither, src[i], volume);
 }
 
 static void
 pcm_volume_change_8(PcmDither &dither,
-		    int8_t *dest, const int8_t *src, const int8_t *end,
+		    int8_t *dest, const int8_t *src, size_t n,
 		    int volume)
 {
-	pcm_volume_change<SampleFormat::S8>(dither, dest, src, end, volume);
+	pcm_volume_change<SampleFormat::S8>(dither, dest, src, n, volume);
 }
 
 static void
 pcm_volume_change_16(PcmDither &dither,
-		     int16_t *dest, const int16_t *src, const int16_t *end,
+		     int16_t *dest, const int16_t *src, size_t n,
 		     int volume)
 {
-	pcm_volume_change<SampleFormat::S16>(dither, dest, src, end, volume);
+	pcm_volume_change<SampleFormat::S16>(dither, dest, src, n, volume);
 }
 
 static void
 pcm_volume_change_24(PcmDither &dither,
-		     int32_t *dest, const int32_t *src, const int32_t *end,
+		     int32_t *dest, const int32_t *src, size_t n,
 		     int volume)
 {
-	pcm_volume_change<SampleFormat::S24_P32>(dither, dest, src, end,
+	pcm_volume_change<SampleFormat::S24_P32>(dither, dest, src, n,
 						 volume);
 }
 
 static void
 pcm_volume_change_32(PcmDither &dither,
-		     int32_t *dest, const int32_t *src, const int32_t *end,
+		     int32_t *dest, const int32_t *src, size_t n,
 		     int volume)
 {
-	pcm_volume_change<SampleFormat::S32>(dither, dest, src, end, volume);
+	pcm_volume_change<SampleFormat::S32>(dither, dest, src, n, volume);
 }
 
 static void
-pcm_volume_change_float(float *dest, const float *src, const float *end,
+pcm_volume_change_float(float *dest, const float *src, size_t n,
 			float volume)
 {
-	while (src < end) {
-		float sample = *src++;
-		sample *= volume;
-		*dest++ = sample;
-	}
+	for (size_t i = 0; i != n; ++i)
+		dest[i] = src[i] * volume;
 }
 
 bool
@@ -142,7 +137,6 @@ PcmVolume::Apply(ConstBuffer<void> src)
 		return { data, src.size };
 	}
 
-	const void *end = pcm_end_pointer(src.data, src.size);
 	switch (format) {
 	case SampleFormat::UNDEFINED:
 	case SampleFormat::DSD:
@@ -152,35 +146,35 @@ PcmVolume::Apply(ConstBuffer<void> src)
 	case SampleFormat::S8:
 		pcm_volume_change_8(dither, (int8_t *)data,
 				    (const int8_t *)src.data,
-				    (const int8_t *)end,
+				    src.size / sizeof(int8_t),
 				    volume);
 		break;
 
 	case SampleFormat::S16:
 		pcm_volume_change_16(dither, (int16_t *)data,
 				     (const int16_t *)src.data,
-				     (const int16_t *)end,
+				     src.size / sizeof(int16_t),
 				     volume);
 		break;
 
 	case SampleFormat::S24_P32:
 		pcm_volume_change_24(dither, (int32_t *)data,
 				     (const int32_t *)src.data,
-				     (const int32_t *)end,
+				     src.size / sizeof(int32_t),
 				     volume);
 		break;
 
 	case SampleFormat::S32:
 		pcm_volume_change_32(dither, (int32_t *)data,
 				     (const int32_t *)src.data,
-				     (const int32_t *)end,
+				     src.size / sizeof(int32_t),
 				     volume);
 		break;
 
 	case SampleFormat::FLOAT:
 		pcm_volume_change_float((float *)data,
 					(const float *)src.data,
-					(const float *)end,
+					src.size / sizeof(float),
 					pcm_volume_to_float(volume));
 		break;
 	}
