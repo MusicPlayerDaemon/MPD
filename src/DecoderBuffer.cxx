@@ -82,6 +82,12 @@ decoder_buffer_is_full(const DecoderBuffer *buffer)
 	return buffer->consumed == 0 && buffer->length == buffer->size;
 }
 
+void
+decoder_buffer_clear(DecoderBuffer *buffer)
+{
+	buffer->length = buffer->consumed = 0;
+}
+
 static void
 decoder_buffer_shift(DecoderBuffer *buffer)
 {

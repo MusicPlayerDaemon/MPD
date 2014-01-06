@@ -84,7 +84,7 @@ adts_find_frame(DecoderBuffer *buffer)
 		const uint8_t *p = (const uint8_t *)memchr(data, 0xff, length);
 		if (p == nullptr) {
 			/* no marker - discard the buffer */
-			decoder_buffer_consume(buffer, length);
+			decoder_buffer_clear(buffer);
 			continue;
 		}
 
@@ -111,10 +111,7 @@ adts_find_frame(DecoderBuffer *buffer)
 				/* not enough data; discard this frame
 				   to prevent a possible buffer
 				   overflow */
-				data = (const uint8_t *)
-					decoder_buffer_read(buffer, &length);
-				if (data != nullptr)
-					decoder_buffer_consume(buffer, length);
+				decoder_buffer_clear(buffer);
 			}
 
 			continue;
@@ -196,9 +193,7 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 
 		is.LockSeek(tagsize, SEEK_SET, IgnoreError());
 
-		data = (const uint8_t *)decoder_buffer_read(buffer, &length);
-		if (data != nullptr)
-			decoder_buffer_consume(buffer, length);
+		decoder_buffer_clear(buffer);
 		decoder_buffer_fill(buffer);
 
 		return song_length;
