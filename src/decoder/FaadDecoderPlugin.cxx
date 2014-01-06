@@ -24,6 +24,7 @@
 #include "InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -66,12 +67,9 @@ adts_check_frame(const unsigned char *data)
 static size_t
 adts_find_frame(DecoderBuffer *buffer)
 {
-	size_t length;
-
 	while (true) {
-		const uint8_t *data = (const uint8_t *)
-			decoder_buffer_read(buffer, &length);
-		if (data == nullptr || length < 8) {
+		auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+		if (data.size < 8) {
 			/* not enough data yet */
 			if (!decoder_buffer_fill(buffer))
 				/* failed */
@@ -81,21 +79,22 @@ adts_find_frame(DecoderBuffer *buffer)
 		}
 
 		/* find the 0xff marker */
-		const uint8_t *p = (const uint8_t *)memchr(data, 0xff, length);
+		const uint8_t *p = (const uint8_t *)
+			memchr(data.data, 0xff, data.size);
 		if (p == nullptr) {
 			/* no marker - discard the buffer */
 			decoder_buffer_clear(buffer);
 			continue;
 		}
 
-		if (p > data) {
+		if (p > data.data) {
 			/* discard data before 0xff */
-			decoder_buffer_consume(buffer, p - data);
+			decoder_buffer_consume(buffer, p - data.data);
 			continue;
 		}
 
 		/* is it a frame? */
-		size_t frame_length = adts_check_frame(data);
+		size_t frame_length = adts_check_frame(data.data);
 		if (frame_length == 0) {
 			/* it's just some random 0xff byte; discard it
 			   and continue searching */
@@ -103,7 +102,7 @@ adts_find_frame(DecoderBuffer *buffer)
 			continue;
 		}
 
-		if (length < frame_length) {
+		if (data.size < frame_length) {
 			/* available buffer size is smaller than the
 			   frame will be - attempt to read more
 			   data */
@@ -135,13 +134,11 @@ adts_song_duration(DecoderBuffer *buffer)
 			break;
 
 		if (frames == 0) {
-			size_t buffer_length;
-			const uint8_t *data = (const uint8_t *)
-				decoder_buffer_read(buffer, &buffer_length);
-			assert(data != nullptr);
-			assert(frame_length <= buffer_length);
+			auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+			assert(!data.IsEmpty());
+			assert(frame_length <= data.size);
 
-			sample_rate = adts_sample_rates[(data[2] & 0x3c) >> 2];
+			sample_rate = adts_sample_rates[(data.data[2] & 0x3c) >> 2];
 		}
 
 		decoder_buffer_consume(buffer, frame_length);
@@ -161,18 +158,16 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 	const size_t fileread = size >= 0 ? size : 0;
 
 	decoder_buffer_fill(buffer);
-	size_t length;
-	const uint8_t *data = (const uint8_t *)
-		decoder_buffer_read(buffer, &length);
-	if (data == nullptr)
+	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+	if (data.IsEmpty())
 		return -1;
 
 	size_t tagsize = 0;
-	if (length >= 10 && !memcmp(data, "ID3", 3)) {
+	if (data.size >= 10 && !memcmp(data.data, "ID3", 3)) {
 		/* skip the ID3 tag */
 
-		tagsize = (data[6] << 21) | (data[7] << 14) |
-		    (data[8] << 7) | (data[9] << 0);
+		tagsize = (data.data[6] << 21) | (data.data[7] << 14) |
+		    (data.data[8] << 7) | (data.data[9] << 0);
 
 		tagsize += 10;
 
@@ -181,13 +176,13 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 		if (!success)
 			return -1;
 
-		data = (const uint8_t *)decoder_buffer_read(buffer, &length);
-		if (data == nullptr)
+		data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+		if (data.IsEmpty())
 			return -1;
 	}
 
-	if (is.IsSeekable() && length >= 2 &&
-	    data[0] == 0xFF && ((data[1] & 0xF6) == 0xF0)) {
+	if (is.IsSeekable() && data.size >= 2 &&
+	    data.data[0] == 0xFF && ((data.data[1] & 0xF6) == 0xF0)) {
 		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);
 
@@ -197,20 +192,20 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 		decoder_buffer_fill(buffer);
 
 		return song_length;
-	} else if (length >= 5 && memcmp(data, "ADIF", 4) == 0) {
+	} else if (data.size >= 5 && memcmp(data.data, "ADIF", 4) == 0) {
 		/* obtain the duration from the ADIF header */
 		unsigned bit_rate;
-		size_t skip_size = (data[4] & 0x80) ? 9 : 0;
+		size_t skip_size = (data.data[4] & 0x80) ? 9 : 0;
 
-		if (8 + skip_size > length)
+		if (8 + skip_size > data.size)
 			/* not enough data yet; skip parsing this
 			   header */
 			return -1;
 
-		bit_rate = ((data[4 + skip_size] & 0x0F) << 19) |
-			(data[5 + skip_size] << 11) |
-			(data[6 + skip_size] << 3) |
-			(data[7 + skip_size] & 0xE0);
+		bit_rate = ((data.data[4 + skip_size] & 0x0F) << 19) |
+			(data.data[5 + skip_size] << 11) |
+			(data.data[6 + skip_size] << 3) |
+			(data.data[7 + skip_size] & 0xE0);
 
 		if (fileread != 0 && bit_rate != 0)
 			return fileread * 8.0 / bit_rate;
@@ -238,10 +233,8 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
 	uint32_t *sample_rate_p = &sample_rate;
 #endif
 
-	size_t length;
-	const unsigned char *data = (const unsigned char *)
-		decoder_buffer_read(buffer, &length);
-	if (data == nullptr) {
+	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+	if (data.IsEmpty()) {
 		error.Set(faad_decoder_domain, "Empty file");
 		return false;
 	}
@@ -249,8 +242,8 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
 	uint8_t channels;
 	int32_t nbytes = NeAACDecInit(decoder,
 				      /* deconst hack, libfaad requires this */
-				      const_cast<unsigned char *>(data),
-				      length,
+				      const_cast<uint8_t *>(data.data),
+				      data.size,
 				      sample_rate_p, &channels);
 	if (nbytes < 0) {
 		error.Set(faad_decoder_domain, "Not an AAC stream");
@@ -271,16 +264,14 @@ static const void *
 faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer *buffer,
 		    NeAACDecFrameInfo *frame_info)
 {
-	size_t length;
-	const unsigned char *data = (const unsigned char *)
-		decoder_buffer_read(buffer, &length);
-	if (data == nullptr)
+	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+	if (data.IsEmpty())
 		return nullptr;
 
 	return NeAACDecDecode(decoder, frame_info,
 			      /* deconst hack, libfaad requires this */
-			      const_cast<unsigned char *>(data),
-			      length);
+			      const_cast<uint8_t *>(data.data),
+			      data.size);
 }
 
 /**

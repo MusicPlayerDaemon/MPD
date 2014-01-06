@@ -34,6 +34,8 @@ struct DecoderBuffer;
 struct Decoder;
 struct InputStream;
 
+template<typename T> struct ConstBuffer;
+
 /**
  * Creates a new buffer.
  *
@@ -80,13 +82,10 @@ decoder_buffer_fill(DecoderBuffer *buffer);
  * decoder_buffer_consume() call.
  *
  * @param buffer the decoder_buffer object
- * @param length_r pointer to a size_t where you will receive the
- * number of bytes available
- * @return a pointer to the read buffer, or nullptr if there is no data
- * available
  */
-const void *
-decoder_buffer_read(const DecoderBuffer *buffer, size_t *length_r);
+gcc_pure
+ConstBuffer<void>
+decoder_buffer_read(const DecoderBuffer *buffer);
 
 /**
  * Consume (delete, invalidate) a part of the buffer.  The "nbytes"

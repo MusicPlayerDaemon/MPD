@@ -20,6 +20,7 @@
 #include "config.h"
 #include "DecoderBuffer.hxx"
 #include "DecoderAPI.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <glib.h>
 
@@ -124,15 +125,13 @@ decoder_buffer_fill(DecoderBuffer *buffer)
 	return true;
 }
 
-const void *
-decoder_buffer_read(const DecoderBuffer *buffer, size_t *length_r)
+ConstBuffer<void>
+decoder_buffer_read(const DecoderBuffer *buffer)
 {
-	if (buffer->consumed >= buffer->length)
-		/* buffer is empty */
-		return nullptr;
-
-	*length_r = buffer->length - buffer->consumed;
-	return buffer->data + buffer->consumed;
+	return {
+		buffer->data + buffer->consumed,
+		buffer->length - buffer->consumed
+	};
 }
 
 void
@@ -149,19 +148,17 @@ decoder_buffer_consume(DecoderBuffer *buffer, size_t nbytes)
 bool
 decoder_buffer_skip(DecoderBuffer *buffer, size_t nbytes)
 {
-	size_t length;
-	const void *data;
 	bool success;
 
 	/* this could probably be optimized by seeking */
 
 	while (true) {
-		data = decoder_buffer_read(buffer, &length);
-		if (data != nullptr) {
-			if (length > nbytes)
-				length = nbytes;
-			decoder_buffer_consume(buffer, length);
-			nbytes -= length;
+		auto data = decoder_buffer_read(buffer);
+		if (!data.IsEmpty()) {
+			if (data.size > nbytes)
+				data.size = nbytes;
+			decoder_buffer_consume(buffer, data.size);
+			nbytes -= data.size;
 			if (nbytes == 0)
 				return true;
 		}
