@@ -20,6 +20,8 @@
 #ifndef MPD_DECODER_BUFFER_HXX
 #define MPD_DECODER_BUFFER_HXX
 
+#include "Compiler.h"
+
 #include <stddef.h>
 
 /**
@@ -50,9 +52,11 @@ decoder_buffer_new(Decoder *decoder, InputStream &is,
 void
 decoder_buffer_free(DecoderBuffer *buffer);
 
+gcc_pure
 bool
 decoder_buffer_is_empty(const DecoderBuffer *buffer);
 
+gcc_pure
 bool
 decoder_buffer_is_full(const DecoderBuffer *buffer);
 
