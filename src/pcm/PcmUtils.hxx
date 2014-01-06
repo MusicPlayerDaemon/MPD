@@ -30,18 +30,6 @@ enum class SampleFormat : uint8_t;
 template<SampleFormat F> struct SampleTraits;
 
 /**
- * Add a byte count to the specified pointer.  This is a utility
- * function to convert a source pointer and a byte count to an "end"
- * pointer for use in loops.
- */
-template<typename T>
-static inline const T *
-pcm_end_pointer(const T *p, size_t size)
-{
-	return (const T *)((const uint8_t *)p + size);
-}
-
-/**
  * Check if the value is within the range of the provided bit size,
  * and caps it if necessary.
  */
