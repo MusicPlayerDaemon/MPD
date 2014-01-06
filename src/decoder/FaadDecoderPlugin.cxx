@@ -67,15 +67,13 @@ static size_t
 adts_find_frame(DecoderBuffer *buffer)
 {
 	size_t length, frame_length;
-	bool ret;
 
 	while (true) {
 		const uint8_t *data = (const uint8_t *)
 			decoder_buffer_read(buffer, &length);
 		if (data == nullptr || length < 8) {
 			/* not enough data yet */
-			ret = decoder_buffer_fill(buffer);
-			if (!ret)
+			if (!decoder_buffer_fill(buffer))
 				/* failed */
 				return 0;
 
@@ -109,8 +107,7 @@ adts_find_frame(DecoderBuffer *buffer)
 			/* available buffer size is smaller than the
 			   frame will be - attempt to read more
 			   data */
-			ret = decoder_buffer_fill(buffer);
-			if (!ret) {
+			if (!decoder_buffer_fill(buffer)) {
 				/* not enough data; discard this frame
 				   to prevent a possible buffer
 				   overflow */
