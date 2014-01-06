@@ -50,9 +50,6 @@ PcmFormatConverter::Close()
 ConstBuffer<void>
 PcmFormatConverter::Convert(ConstBuffer<void> src, Error &error)
 {
-	const void *result = nullptr;
-	size_t result_size = 0;
-
 	switch (dest_format) {
 	case SampleFormat::UNDEFINED:
 		assert(false);
@@ -60,45 +57,33 @@ PcmFormatConverter::Convert(ConstBuffer<void> src, Error &error)
 
 	case SampleFormat::S8:
 	case SampleFormat::DSD:
-		result = nullptr;
-		break;
-
-	case SampleFormat::S16:
-		result = pcm_convert_to_16(buffer, dither,
-					   src_format,
-					   src.data, src.size,
-					   &result_size);
-		break;
-
-	case SampleFormat::S24_P32:
-		result = pcm_convert_to_24(buffer,
-					   src_format,
-					   src.data, src.size,
-					   &result_size);
-		break;
-
-	case SampleFormat::S32:
-		result = pcm_convert_to_32(buffer,
-					   src_format,
-					   src.data, src.size,
-					   &result_size);
-		break;
-
-	case SampleFormat::FLOAT:
-		result = pcm_convert_to_float(buffer,
-					      src_format,
-					      src.data, src.size,
-					      &result_size);
-		break;
-	}
-
-	if (result == nullptr) {
 		error.Format(pcm_domain,
 			     "PCM conversion from %s to %s is not implemented",
 			     sample_format_to_string(src_format),
 			     sample_format_to_string(dest_format));
 		return nullptr;
+
+	case SampleFormat::S16:
+		return pcm_convert_to_16(buffer, dither,
+					 src_format,
+					 src).ToVoid();
+
+	case SampleFormat::S24_P32:
+		return pcm_convert_to_24(buffer,
+					 src_format,
+					 src).ToVoid();
+
+	case SampleFormat::S32:
+		return pcm_convert_to_32(buffer,
+					 src_format,
+					 src).ToVoid();
+
+	case SampleFormat::FLOAT:
+		return pcm_convert_to_float(buffer,
+					    src_format,
+					    src).ToVoid();
 	}
 
-	return { result, result_size };
+	assert(false);
+	gcc_unreachable();
 }

@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "util/ConstBuffer.hxx"
+
 #include <array>
 #include <random>
 
@@ -75,6 +77,14 @@ public:
 
 	operator typename std::array<T, N>::const_pointer() const {
 		return begin();
+	}
+
+	operator ConstBuffer<T>() const {
+		return { begin(), size() };
+	}
+
+	operator ConstBuffer<void>() const {
+		return { begin(), size() * sizeof(T) };
 	}
 };
 

@@ -29,86 +29,72 @@
 void
 PcmFormatTest::TestFormat8to16()
 {
-	constexpr unsigned N = 256;
+	constexpr size_t N = 256;
 	const auto src = TestDataBuffer<int8_t, N>();
 
 	PcmBuffer buffer;
 
-	size_t d_size;
 	PcmDither dither;
-	auto d = pcm_convert_to_16(buffer, dither, SampleFormat::S8,
-				   src, sizeof(src), &d_size);
-	auto d_end = pcm_end_pointer(d, d_size);
-	CPPUNIT_ASSERT_EQUAL(N, unsigned(d_end - d));
+	auto d = pcm_convert_to_16(buffer, dither, SampleFormat::S8, src);
+	CPPUNIT_ASSERT_EQUAL(N, d.size);
 
 	for (size_t i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 8);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d.data[i] >> 8);
 }
 
 void
 PcmFormatTest::TestFormat16to24()
 {
-	constexpr unsigned N = 256;
+	constexpr size_t N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
 
 	PcmBuffer buffer;
 
-	size_t d_size;
-	auto d = pcm_convert_to_24(buffer, SampleFormat::S16,
-				   src, sizeof(src), &d_size);
-	auto d_end = pcm_end_pointer(d, d_size);
-	CPPUNIT_ASSERT_EQUAL(N, unsigned(d_end - d));
+	auto d = pcm_convert_to_24(buffer, SampleFormat::S16, src);
+	CPPUNIT_ASSERT_EQUAL(N, d.size);
 
 	for (size_t i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 8);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d.data[i] >> 8);
 }
 
 void
 PcmFormatTest::TestFormat16to32()
 {
-	constexpr unsigned N = 256;
+	constexpr size_t N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
 
 	PcmBuffer buffer;
 
-	size_t d_size;
-	auto d = pcm_convert_to_32(buffer, SampleFormat::S16,
-				   src, sizeof(src), &d_size);
-	auto d_end = pcm_end_pointer(d, d_size);
-	CPPUNIT_ASSERT_EQUAL(N, unsigned(d_end - d));
+	auto d = pcm_convert_to_32(buffer, SampleFormat::S16, src);
+	CPPUNIT_ASSERT_EQUAL(N, d.size);
 
 	for (size_t i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 16);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d.data[i] >> 16);
 }
 
 void
 PcmFormatTest::TestFormatFloat()
 {
-	constexpr unsigned N = 256;
+	constexpr size_t N = 256;
 	const auto src = TestDataBuffer<int16_t, N>();
 
 	PcmBuffer buffer1, buffer2;
 
-	size_t f_size;
-	auto f = pcm_convert_to_float(buffer1, SampleFormat::S16,
-				      src, sizeof(src), &f_size);
-	auto f_end = pcm_end_pointer(f, f_size);
-	CPPUNIT_ASSERT_EQUAL(N, unsigned(f_end - f));
+	auto f = pcm_convert_to_float(buffer1, SampleFormat::S16, src);
+	CPPUNIT_ASSERT_EQUAL(N, f.size);
 
-	for (auto i = f; i != f_end; ++i) {
-		CPPUNIT_ASSERT(*i >= -1.);
-		CPPUNIT_ASSERT(*i <= 1.);
+	for (size_t i = 0; i != f.size; ++i) {
+		CPPUNIT_ASSERT(f.data[i] >= -1.);
+		CPPUNIT_ASSERT(f.data[i] <= 1.);
 	}
 
 	PcmDither dither;
 
-	size_t d_size;
 	auto d = pcm_convert_to_16(buffer2, dither,
 				   SampleFormat::FLOAT,
-				   f, f_size, &d_size);
-	auto d_end = pcm_end_pointer(d, d_size);
-	CPPUNIT_ASSERT_EQUAL(N, unsigned(d_end - d));
+				   f.ToVoid());
+	CPPUNIT_ASSERT_EQUAL(N, d.size);
 
 	for (size_t i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(src[i], d[i]);
+		CPPUNIT_ASSERT_EQUAL(src[i], d.data[i]);
 }
