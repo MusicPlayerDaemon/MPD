@@ -56,6 +56,9 @@ decoder_buffer_is_empty(const DecoderBuffer *buffer);
 bool
 decoder_buffer_is_full(const DecoderBuffer *buffer);
 
+void
+decoder_buffer_clear(DecoderBuffer *buffer);
+
 /**
  * Read data from the input_stream and append it to the buffer.
  *
