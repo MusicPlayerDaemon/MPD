@@ -26,11 +26,10 @@
 #include "PcmDither.cxx" // including the .cxx file to get inlined templates
 
 static void
-pcm_convert_8_to_16(int16_t *out, const int8_t *in, const int8_t *in_end)
+pcm_convert_8_to_16(int16_t *out, const int8_t *in, size_t n)
 {
-	while (in < in_end) {
-		*out++ = *in++ << 8;
-	}
+	for (size_t i = 0; i != n; ++i)
+		out[i] = in[i] << 8;
 }
 
 static void
@@ -50,25 +49,16 @@ pcm_convert_32_to_16(PcmDither &dither,
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static void
 ConvertFromFloat(typename Traits::pointer_type dest,
-		 const float *src, const float *end)
+		 const float *src, size_t n)
 {
 	constexpr auto bits = Traits::BITS;
 
 	const float factor = 1 << (bits - 1);
 
-	while (src != end) {
-		typename Traits::long_type sample(*src++ * factor);
-		*dest++ = PcmClamp<F, Traits>(sample);
+	for (size_t i = 0; i != n; ++i) {
+		typename Traits::long_type sample(src[i] * factor);
+		dest[i] = PcmClamp<F, Traits>(sample);
 	}
-}
-
-template<SampleFormat F, class Traits=SampleTraits<F>>
-static void
-ConvertFromFloat(typename Traits::pointer_type dest,
-		 const float *src, size_t size)
-{
-	ConvertFromFloat<F, Traits>(dest, src,
-				    pcm_end_pointer(src, size));
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
@@ -82,7 +72,7 @@ AllocateFromFloat(PcmBuffer &buffer, const float *src, size_t src_size,
 	const size_t num_samples = src_size / src_sample_size;
 	*dest_size_r = num_samples * sizeof(typename Traits::value_type);
 	auto dest = (typename Traits::pointer_type)buffer.Get(*dest_size_r);
-	ConvertFromFloat<F, Traits>(dest, src, src_size);
+	ConvertFromFloat<F, Traits>(dest, src, src_size / sizeof(*src));
 	return dest;
 }
 
@@ -93,7 +83,7 @@ pcm_allocate_8_to_16(PcmBuffer &buffer,
 	int16_t *dest;
 	*dest_size_r = src_size / sizeof(*src) * sizeof(*dest);
 	dest = (int16_t *)buffer.Get(*dest_size_r);
-	pcm_convert_8_to_16(dest, src, pcm_end_pointer(src, src_size));
+	pcm_convert_8_to_16(dest, src, src_size / sizeof(*src));
 	return dest;
 }
 
@@ -175,26 +165,26 @@ pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
 }
 
 static void
-pcm_convert_8_to_24(int32_t *out, const int8_t *in, const int8_t *in_end)
+pcm_convert_8_to_24(int32_t *out, const int8_t *in, size_t n)
 {
-	while (in < in_end)
-		*out++ = *in++ << 16;
+	for (size_t i = 0; i != n; ++i)
+		out[i] = in[i] << 16;
 }
 
 static void
-pcm_convert_16_to_24(int32_t *out, const int16_t *in, const int16_t *in_end)
+pcm_convert_16_to_24(int32_t *out, const int16_t *in, size_t n)
 {
-	while (in < in_end)
-		*out++ = *in++ << 8;
+	for (size_t i = 0; i != n; ++i)
+		out[i] = in[i] << 8;
 }
 
 static void
 pcm_convert_32_to_24(int32_t *gcc_restrict out,
 		     const int32_t *gcc_restrict in,
-		     const int32_t *gcc_restrict in_end)
+		     size_t n)
 {
-	while (in < in_end)
-		*out++ = *in++ >> 8;
+	for (size_t i = 0; i != n; ++i)
+		out[i] = in[i] >> 8;
 }
 
 static int32_t *
@@ -204,7 +194,7 @@ pcm_allocate_8_to_24(PcmBuffer &buffer,
 	int32_t *dest;
 	*dest_size_r = src_size / sizeof(*src) * sizeof(*dest);
 	dest = (int32_t *)buffer.Get(*dest_size_r);
-	pcm_convert_8_to_24(dest, src, pcm_end_pointer(src, src_size));
+	pcm_convert_8_to_24(dest, src, src_size / sizeof(*src));
 	return dest;
 }
 
@@ -216,7 +206,7 @@ pcm_allocate_16_to_24(PcmBuffer &buffer,
 	*dest_size_r = src_size * 2;
 	assert(*dest_size_r == src_size / sizeof(*src) * sizeof(*dest));
 	dest = (int32_t *)buffer.Get(*dest_size_r);
-	pcm_convert_16_to_24(dest, src, pcm_end_pointer(src, src_size));
+	pcm_convert_16_to_24(dest, src, src_size / sizeof(*src));
 	return dest;
 }
 
@@ -226,7 +216,7 @@ pcm_allocate_32_to_24(PcmBuffer &buffer,
 {
 	*dest_size_r = src_size;
 	int32_t *dest = (int32_t *)buffer.Get(*dest_size_r);
-	pcm_convert_32_to_24(dest, src, pcm_end_pointer(src, src_size));
+	pcm_convert_32_to_24(dest, src, src_size / sizeof(*src));
 	return dest;
 }
 
@@ -280,26 +270,26 @@ pcm_convert_to_24(PcmBuffer &buffer,
 }
 
 static void
-pcm_convert_8_to_32(int32_t *out, const int8_t *in, const int8_t *in_end)
+pcm_convert_8_to_32(int32_t *out, const int8_t *in, size_t n)
 {
-	while (in < in_end)
-		*out++ = *in++ << 24;
+	for (size_t i = 0; i != n; ++i)
+		out[i] = in[i] << 24;
 }
 
 static void
-pcm_convert_16_to_32(int32_t *out, const int16_t *in, const int16_t *in_end)
+pcm_convert_16_to_32(int32_t *out, const int16_t *in, size_t n)
 {
-	while (in < in_end)
-		*out++ = *in++ << 16;
+	for (size_t i = 0; i != n; ++i)
+		out[i] = in[i] << 16;
 }
 
 static void
 pcm_convert_24_to_32(int32_t *gcc_restrict out,
 		     const int32_t *gcc_restrict in,
-		     const int32_t *gcc_restrict in_end)
+		     size_t n)
 {
-	while (in < in_end)
-		*out++ = *in++ << 8;
+	for (size_t i = 0; i != n; ++i)
+		out[i] = in[i] << 8;
 }
 
 static int32_t *
@@ -309,7 +299,7 @@ pcm_allocate_8_to_32(PcmBuffer &buffer,
 	int32_t *dest;
 	*dest_size_r = src_size / sizeof(*src) * sizeof(*dest);
 	dest = (int32_t *)buffer.Get(*dest_size_r);
-	pcm_convert_8_to_32(dest, src, pcm_end_pointer(src, src_size));
+	pcm_convert_8_to_32(dest, src, src_size / sizeof(*src));
 	return dest;
 }
 
@@ -321,7 +311,7 @@ pcm_allocate_16_to_32(PcmBuffer &buffer,
 	*dest_size_r = src_size * 2;
 	assert(*dest_size_r == src_size / sizeof(*src) * sizeof(*dest));
 	dest = (int32_t *)buffer.Get(*dest_size_r);
-	pcm_convert_16_to_32(dest, src, pcm_end_pointer(src, src_size));
+	pcm_convert_16_to_32(dest, src, src_size / sizeof(*src));
 	return dest;
 }
 
@@ -332,7 +322,7 @@ pcm_allocate_24p32_to_32(PcmBuffer &buffer,
 {
 	*dest_size_r = src_size;
 	int32_t *dest = (int32_t *)buffer.Get(*dest_size_r);
-	pcm_convert_24_to_32(dest, src, pcm_end_pointer(src, src_size));
+	pcm_convert_24_to_32(dest, src, src_size / sizeof(*src));
 	return dest;
 }
 
@@ -346,7 +336,7 @@ pcm_allocate_float_to_32(PcmBuffer &buffer,
 						 dest_size_r);
 
 	/* convert to 32 bit in-place */
-	pcm_convert_24_to_32(dest, dest, pcm_end_pointer(dest, *dest_size_r));
+	pcm_convert_24_to_32(dest, dest, src_size / sizeof(*src));
 	return dest;
 }
 
