@@ -38,6 +38,10 @@ class InotifySource final : private SocketMonitor {
 		      mpd_inotify_callback_t callback, void *ctx, int fd);
 
 public:
+	~InotifySource() {
+		Close();
+	}
+
 	/**
 	 * Creates a new inotify source and registers it in the GLib main
 	 * loop.

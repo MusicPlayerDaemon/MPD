@@ -82,6 +82,11 @@ public:
 	Client(EventLoop &loop, Partition &partition,
 	       int fd, int uid, int num);
 
+	~Client() {
+		if (FullyBufferedSocket::IsDefined())
+			FullyBufferedSocket::Close();
+	}
+
 	bool IsConnected() const {
 		return FullyBufferedSocket::IsDefined();
 	}

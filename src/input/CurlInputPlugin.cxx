@@ -200,8 +200,6 @@ public:
 		   Abandon() would be most appropriate, but it breaks
 		   the second case - is that a CURL bug?  is there a
 		   better solution? */
-
-		Steal();
 	}
 
 	/**

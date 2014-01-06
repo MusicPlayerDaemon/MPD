@@ -58,14 +58,6 @@ public:
 #endif
 	}
 
-	~SignalMonitor() {
-		/* prevent the descriptor to be closed twice */
-#ifdef USE_SIGNALFD
-		if (SocketMonitor::IsDefined())
-#endif
-			SocketMonitor::Steal();
-	}
-
 	using SocketMonitor::GetEventLoop;
 
 #ifdef USE_SIGNALFD

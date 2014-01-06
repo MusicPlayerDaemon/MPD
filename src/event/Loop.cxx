@@ -42,9 +42,6 @@ EventLoop::~EventLoop()
 {
 	assert(idle.empty());
 	assert(timers.empty());
-
-	/* avoid closing the WakeFD twice */
-	SocketMonitor::Steal();
 }
 
 void

@@ -42,6 +42,9 @@ HttpdClient::~HttpdClient()
 
 	if (metadata)
 		metadata->Unref();
+
+	if (IsDefined())
+		BufferedSocket::Close();
 }
 
 void

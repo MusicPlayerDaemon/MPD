@@ -43,7 +43,7 @@ SocketMonitor::Dispatch(unsigned flags)
 SocketMonitor::~SocketMonitor()
 {
 	if (IsDefined())
-		Close();
+		Cancel();
 }
 
 void

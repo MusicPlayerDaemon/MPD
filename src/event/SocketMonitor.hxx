@@ -44,6 +44,9 @@ class EventLoop;
  * #EventLoop will invoke virtual method OnSocketReady() as soon as
  * any of the subscribed events are ready.
  *
+ * This class does not feel responsible for closing the socket.  Call
+ * Close() to do it manually.
+ *
  * This class is not thread-safe, all methods must be called from the
  * thread that runs the #EventLoop, except where explicitly documented
  * as thread-safe.
@@ -91,7 +94,7 @@ public:
 
 	/**
 	 * "Steal" the socket descriptor.  This abandons the socket
-	 * and puts the responsibility for closing it to the caller.
+	 * and returns it.
 	 */
 	int Steal();
 

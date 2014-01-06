@@ -90,6 +90,9 @@ public:
 
 	~OneServerSocket() {
 		g_free(address);
+
+		if (IsDefined())
+			Close();
 	}
 
 	unsigned GetSerial() const {

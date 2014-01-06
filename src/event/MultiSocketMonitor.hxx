@@ -143,7 +143,6 @@ public:
 				i->SetEvents(events);
 				prev = i;
 			} else {
-				i->Steal();
 				fds.erase_after(prev);
 			}
 		}

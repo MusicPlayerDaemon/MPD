@@ -43,7 +43,6 @@ public:
 	}
 
 	~BonjourMonitor() {
-		Steal();
 		DNSServiceRefDeallocate(service_ref);
 	}
 
