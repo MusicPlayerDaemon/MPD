@@ -45,7 +45,12 @@ public:
 		:loop(_loop), active(false) {}
 
 	~IdleMonitor() {
-		Cancel();
+#ifndef NDEBUG
+		/* this check is redundant, it is only here to avoid
+		   the assertion in Cancel() */
+		if (IsActive())
+#endif
+			Cancel();
 	}
 
 	EventLoop &GetEventLoop() const {
