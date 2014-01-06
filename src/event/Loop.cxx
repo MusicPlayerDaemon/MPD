@@ -42,6 +42,10 @@ EventLoop::~EventLoop()
 {
 	assert(idle.empty());
 	assert(timers.empty());
+
+	/* this is necessary to get a well-defined destruction
+	   order */
+	SocketMonitor::Cancel();
 }
 
 void
