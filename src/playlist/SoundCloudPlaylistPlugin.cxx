@@ -322,18 +322,10 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 static SongEnumerator *
 soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
-	char *s = g_strdup(uri);
-	char *scheme = s;
+	assert(memcmp(uri, "soundcloud://", 13) == 0);
 
+	char *const s = g_strdup(uri + 13);
 	char *p = s;
-	for (; *p; p++) {
-		if (*p == ':' && *(p+1) == '/' && *(p+2) == '/') {
-			*p = 0;
-			p += 3;
-			break;
-		}
-	}
-
 	char *arg = p;
 	for (; *p; p++) {
 		if (*p == '/') {
@@ -344,14 +336,6 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	}
 
 	char *rest = p;
-
-	if (strcmp(scheme, "soundcloud") != 0) {
-		FormatWarning(soundcloud_domain,
-			      "incompatible scheme for soundcloud plugin: %s",
-			      scheme);
-		g_free(s);
-		return nullptr;
-	}
 
 	char *u = nullptr;
 	if (strcmp(arg, "track") == 0) {
