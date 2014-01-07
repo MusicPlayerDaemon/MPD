@@ -57,7 +57,7 @@ song_remove_event(void)
 #ifdef ENABLE_SQLITE
 	/* if the song has a sticker, remove it */
 	if (sticker_enabled())
-		sticker_song_delete(removed_song);
+		sticker_song_delete(*removed_song);
 #endif
 
 	instance->DeleteSong(*removed_song);

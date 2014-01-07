@@ -34,28 +34,28 @@ struct sticker;
  */
 gcc_pure
 std::string
-sticker_song_get_value(const Song *song, const char *name);
+sticker_song_get_value(const Song &song, const char *name);
 
 /**
  * Sets a sticker value in the specified song.  Overwrites existing
  * values.
  */
 bool
-sticker_song_set_value(const Song *song,
+sticker_song_set_value(const Song &song,
 		       const char *name, const char *value);
 
 /**
  * Deletes a sticker from the database.  All values are deleted.
  */
 bool
-sticker_song_delete(const Song *song);
+sticker_song_delete(const Song &song);
 
 /**
  * Deletes a sticker value.  Does nothing if the sticker did not
  * exist.
  */
 bool
-sticker_song_delete_value(const Song *song, const char *name);
+sticker_song_delete_value(const Song &song, const char *name);
 
 /**
  * Loads the sticker for the specified song.
@@ -64,7 +64,7 @@ sticker_song_delete_value(const Song *song, const char *name);
  * @return a sticker object, or NULL on error or if there is no sticker
  */
 sticker *
-sticker_song_get(const Song *song);
+sticker_song_get(const Song &song);
 
 /**
  * Finds stickers with the specified name below the specified

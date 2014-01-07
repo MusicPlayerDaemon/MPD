@@ -63,7 +63,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		if (song == nullptr)
 			return print_error(client, error);
 
-		const auto value = sticker_song_get_value(song, argv[4]);
+		const auto value = sticker_song_get_value(*song, argv[4]);
 		db->ReturnSong(song);
 		if (value.empty()) {
 			command_error(client, ACK_ERROR_NO_EXIST,
@@ -80,7 +80,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		if (song == nullptr)
 			return print_error(client, error);
 
-		sticker *sticker = sticker_song_get(song);
+		sticker *sticker = sticker_song_get(*song);
 		db->ReturnSong(song);
 		if (sticker) {
 			sticker_print(client, *sticker);
@@ -94,7 +94,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		if (song == nullptr)
 			return print_error(client, error);
 
-		bool ret = sticker_song_set_value(song, argv[4], argv[5]);
+		bool ret = sticker_song_set_value(*song, argv[4], argv[5]);
 		db->ReturnSong(song);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
@@ -111,8 +111,8 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 			return print_error(client, error);
 
 		bool ret = argc == 4
-			? sticker_song_delete(song)
-			: sticker_song_delete_value(song, argv[4]);
+			? sticker_song_delete(*song)
+			: sticker_song_delete_value(*song, argv[4]);
 		db->ReturnSong(song);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,

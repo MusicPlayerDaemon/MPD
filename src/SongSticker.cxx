@@ -29,53 +29,48 @@
 #include <string.h>
 
 std::string
-sticker_song_get_value(const Song *song, const char *name)
+sticker_song_get_value(const Song &song, const char *name)
 {
-	assert(song != nullptr);
-	assert(song->IsInDatabase());
+	assert(song.IsInDatabase());
 
-	const auto uri = song->GetURI();
+	const auto uri = song.GetURI();
 	return sticker_load_value("song", uri.c_str(), name);
 }
 
 bool
-sticker_song_set_value(const Song *song,
+sticker_song_set_value(const Song &song,
 		       const char *name, const char *value)
 {
-	assert(song != nullptr);
-	assert(song->IsInDatabase());
+	assert(song.IsInDatabase());
 
-	const auto uri = song->GetURI();
+	const auto uri = song.GetURI();
 	return sticker_store_value("song", uri.c_str(), name, value);
 }
 
 bool
-sticker_song_delete(const Song *song)
+sticker_song_delete(const Song &song)
 {
-	assert(song != nullptr);
-	assert(song->IsInDatabase());
+	assert(song.IsInDatabase());
 
-	const auto uri = song->GetURI();
+	const auto uri = song.GetURI();
 	return sticker_delete("song", uri.c_str());
 }
 
 bool
-sticker_song_delete_value(const Song *song, const char *name)
+sticker_song_delete_value(const Song &song, const char *name)
 {
-	assert(song != nullptr);
-	assert(song->IsInDatabase());
+	assert(song.IsInDatabase());
 
-	const auto uri = song->GetURI();
+	const auto uri = song.GetURI();
 	return sticker_delete_value("song", uri.c_str(), name);
 }
 
 struct sticker *
-sticker_song_get(const Song *song)
+sticker_song_get(const Song &song)
 {
-	assert(song != nullptr);
-	assert(song->IsInDatabase());
+	assert(song.IsInDatabase());
 
-	const auto uri = song->GetURI();
+	const auto uri = song.GetURI();
 	return sticker_load("song", uri.c_str());
 }
 
