@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>

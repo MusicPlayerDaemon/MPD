@@ -33,6 +33,7 @@
 #endif
 
 #include <stdlib.h>
+#include <stdio.h>
 
 const char *
 config_get_string(gcc_unused enum ConfigOption option,
