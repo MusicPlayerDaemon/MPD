@@ -347,18 +347,18 @@ decoder_run_file(Decoder &decoder, const char *path_fs)
 
 static void
 decoder_run_song(DecoderControl &dc,
-		 const Song *song, const char *uri)
+		 const Song &song, const char *uri)
 {
 	Decoder decoder(dc, dc.start_ms > 0,
-			song->tag != nullptr && song->IsFile()
-			? new Tag(*song->tag) : nullptr);
+			song.tag != nullptr && song.IsFile()
+			? new Tag(*song.tag) : nullptr);
 	int ret;
 
 	dc.state = DecoderState::START;
 
 	decoder_command_finished_locked(dc);
 
-	ret = song->IsFile()
+	ret = song.IsFile()
 		? decoder_run_file(decoder, uri)
 		: decoder_run_stream(decoder, uri);
 
@@ -381,7 +381,7 @@ decoder_run_song(DecoderControl &dc,
 	else {
 		dc.state = DecoderState::ERROR;
 
-		const char *error_uri = song->uri;
+		const char *error_uri = song.uri;
 		const std::string allocated = uri_remove_auth(error_uri);
 		if (!allocated.empty())
 			error_uri = allocated.c_str();
@@ -398,12 +398,12 @@ decoder_run(DecoderControl &dc)
 {
 	dc.ClearError();
 
-	const Song *song = dc.song;
-	assert(song != nullptr);
+	assert(dc.song != nullptr);
+	const Song &song = *dc.song;
 
-	const std::string uri = song->IsFile()
-		? std::string(map_song_fs(*song).c_str())
-		: song->GetURI();
+	const std::string uri = song.IsFile()
+		? std::string(map_song_fs(song).c_str())
+		: song.GetURI();
 
 	if (uri.empty()) {
 		dc.state = DecoderState::ERROR;
