@@ -323,43 +323,35 @@ static SongEnumerator *
 soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(memcmp(uri, "soundcloud://", 13) == 0);
-
-	char *const s = g_strdup(uri + 13);
-	char *p = s;
-	char *arg = p;
-	for (; *p; p++) {
-		if (*p == '/') {
-			*p = 0;
-			p++;
-			break;
-		}
-	}
-
-	char *rest = p;
+	uri += 13;
 
 	char *u = nullptr;
-	if (strcmp(arg, "track") == 0) {
+	if (memcmp(uri, "track/", 6) == 0) {
+		const char *rest = uri + 6;
 		u = g_strconcat("https://api.soundcloud.com/tracks/",
 				rest, ".json?client_id=",
 				soundcloud_config.apikey.c_str(), nullptr);
-	} else if (strcmp(arg, "playlist") == 0) {
+	} else if (memcmp(uri, "playlist/", 9) == 0) {
+		const char *rest = uri + 9;
 		u = g_strconcat("https://api.soundcloud.com/playlists/",
 				rest, ".json?client_id=",
 				soundcloud_config.apikey.c_str(), nullptr);
-	} else if (strcmp(arg, "user") == 0) {
+	} else if (memcmp(uri, "user/", 5) == 0) {
+		const char *rest = uri + 5;
 		u = g_strconcat("https://api.soundcloud.com/users/",
 				rest, "/tracks.json?client_id=",
 				soundcloud_config.apikey.c_str(), nullptr);
-	} else if (strcmp(arg, "search") == 0) {
+	} else if (memcmp(uri, "search/", 7) == 0) {
+		const char *rest = uri + 7;
 		u = g_strconcat("https://api.soundcloud.com/tracks.json?q=",
 				rest, "&client_id=",
 				soundcloud_config.apikey.c_str(), nullptr);
-	} else if (strcmp(arg, "url") == 0) {
+	} else if (memcmp(uri, "url/", 4) == 0) {
+		const char *rest = uri + 4;
 		/* Translate to soundcloud resolver call. libcurl will automatically
 		   follow the redirect to the right resource. */
 		u = soundcloud_resolve(rest);
 	}
-	g_free(s);
 
 	if (u == nullptr) {
 		LogWarning(soundcloud_domain, "unknown soundcloud URI");
