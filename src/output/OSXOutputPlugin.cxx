@@ -72,7 +72,7 @@ osx_output_configure(OSXOutput *oo, const config_param &param)
 	}
 	else {
 		oo->component_subtype = kAudioUnitSubType_HALOutput;
-		/* XXX am I supposed to g_strdup() this? */
+		/* XXX am I supposed to strdup() this? */
 		oo->device_name = device;
 	}
 }

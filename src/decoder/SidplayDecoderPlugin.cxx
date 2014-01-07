@@ -21,6 +21,7 @@
 #include "SidplayDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
+#include "util/Alloc.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
 #include "Log.hxx"
@@ -121,7 +122,7 @@ sidplay_finish()
 static char *
 get_container_name(const char *path_fs)
 {
-	char *path_container=g_strdup(path_fs);
+	char *path_container = strdup(path_fs);
 
 	if(!g_pattern_match(path_with_subtune,
 		strlen(path_container), path_container, nullptr))
@@ -163,9 +164,9 @@ get_song_length(const char *path_fs)
 	if (songlength_database == nullptr)
 		return -1;
 
-	gchar *sid_file=get_container_name(path_fs);
+	char *sid_file = get_container_name(path_fs);
 	SidTuneMod tune(sid_file);
-	g_free(sid_file);
+	free(sid_file);
 	if(!tune) {
 		LogWarning(sidplay_domain,
 			   "failed to load file for calculating md5 sum");

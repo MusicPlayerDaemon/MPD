@@ -30,13 +30,12 @@
 #ifndef MPD_VAR_SIZE_HXX
 #define MPD_VAR_SIZE_HXX
 
+#include "Alloc.hxx"
 #include "Compiler.h"
 
 #include <type_traits>
 #include <utility>
 #include <new>
-
-#include <glib.h>
 
 /**
  * Allocate and construct a variable-size object.  That is useful for
@@ -61,7 +60,7 @@ NewVarSize(size_t declared_tail_size, size_t real_tail_size, Args&&... args)
 	size_t size = sizeof(T) - declared_tail_size + real_tail_size;
 
 	/* allocate memory */
-	T *instance = (T *)g_malloc(size);
+	T *instance = (T *)xalloc(size);
 
 	/* call the constructor */
 	new(instance) T(std::forward<Args>(args)...);
@@ -78,7 +77,7 @@ DeleteVarSize(T *instance)
 	instance->T::~T();
 
 	/* free memory */
-	g_free(instance);
+	free(instance);
 }
 
 #endif

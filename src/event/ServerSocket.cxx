@@ -31,11 +31,10 @@
 #include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/Alloc.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <string>
 #include <algorithm>
@@ -79,7 +78,7 @@ public:
 		 parent(_parent), serial(_serial),
 		 path(AllocatedPath::Null()),
 		 address_length(_address_length),
-		 address((sockaddr *)g_memdup(_address, _address_length))
+		 address((sockaddr *)xmemdup(_address, _address_length))
 	{
 		assert(_address != nullptr);
 		assert(_address_length > 0);
@@ -89,7 +88,7 @@ public:
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
 	~OneServerSocket() {
-		g_free(address);
+		free(address);
 
 		if (IsDefined())
 			Close();

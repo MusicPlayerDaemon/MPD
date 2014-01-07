@@ -26,9 +26,10 @@
 #include "ArchiveFile.hxx"
 #include "InputPlugin.hxx"
 #include "fs/Traits.hxx"
+#include "util/Alloc.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
+#include <stdlib.h>
 
 /**
  * select correct archive plugin to handle the input stream
@@ -49,13 +50,13 @@ input_archive_open(const char *pathname,
 	if (!PathTraitsFS::IsAbsolute(pathname))
 		return nullptr;
 
-	char *pname = g_strdup(pathname);
+	char *pname = strdup(pathname);
 	// archive_lookup will modify pname when true is returned
 	const char *archive, *filename, *suffix;
 	if (!archive_lookup(pname, &archive, &filename, &suffix)) {
 		FormatDebug(archive_domain,
 			    "not an archive, lookup %s failed", pname);
-		g_free(pname);
+		free(pname);
 		return nullptr;
 	}
 
@@ -64,19 +65,19 @@ input_archive_open(const char *pathname,
 	if (!arplug) {
 		FormatWarning(archive_domain,
 			      "can't handle archive %s", archive);
-		g_free(pname);
+		free(pname);
 		return nullptr;
 	}
 
 	auto file = archive_file_open(arplug, archive, error);
 	if (file == nullptr) {
-		g_free(pname);
+		free(pname);
 		return nullptr;
 	}
 
 	//setup fileops
 	is = file->OpenStream(filename, mutex, cond, error);
-	g_free(pname);
+	free(pname);
 	file->Close();
 
 	return is;

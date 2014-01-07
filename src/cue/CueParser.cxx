@@ -19,12 +19,11 @@
 
 #include "config.h"
 #include "CueParser.hxx"
+#include "util/Alloc.hxx"
 #include "util/StringUtil.hxx"
 #include "util/CharUtil.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
@@ -290,9 +289,9 @@ CueParser::Feed(const char *line)
 	assert(!end);
 	assert(line != nullptr);
 
-	char *allocated = g_strdup(line);
+	char *allocated = xstrdup(line);
 	Feed2(allocated);
-	g_free(allocated);
+	free(allocated);
 }
 
 void

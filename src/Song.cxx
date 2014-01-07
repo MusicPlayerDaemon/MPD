@@ -21,11 +21,11 @@
 #include "Song.hxx"
 #include "Directory.hxx"
 #include "tag/Tag.hxx"
-
-#include <glib.h>
+#include "util/Alloc.hxx"
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 Directory detached_root;
 
@@ -39,7 +39,7 @@ song_alloc(const char *uri, Directory *parent)
 	assert(uri_length);
 
 	Song *song = (Song *)
-		g_malloc(sizeof(*song) - sizeof(song->uri) + uri_length + 1);
+		xalloc(sizeof(*song) - sizeof(song->uri) + uri_length + 1);
 
 	song->tag = nullptr;
 	memcpy(song->uri, uri, uri_length + 1);
@@ -72,7 +72,7 @@ Song::ReplaceURI(const char *new_uri)
 	new_song->mtime = mtime;
 	new_song->start_ms = start_ms;
 	new_song->end_ms = end_ms;
-	g_free(this);
+	free(this);
 	return new_song;
 }
 
@@ -106,7 +106,7 @@ void
 Song::Free()
 {
 	delete tag;
-	g_free(this);
+	free(this);
 }
 
 void

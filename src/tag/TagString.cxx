@@ -19,11 +19,13 @@
 
 #include "config.h"
 #include "TagString.hxx"
+#include "util/Alloc.hxx"
 
 #include <glib.h>
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 /**
  * Replace invalid sequences with the question mark.
@@ -33,7 +35,7 @@ patch_utf8(const char *src, size_t length, const gchar *end)
 {
 	/* duplicate the string, and replace invalid bytes in that
 	   buffer */
-	char *dest = g_strdup(src);
+	char *dest = xstrdup(src);
 
 	do {
 		dest[end - src] = '?';
@@ -58,9 +60,12 @@ fix_utf8(const char *str, size_t length)
 	/* no, it's not - try to import it from ISO-Latin-1 */
 	temp = g_convert(str, length, "utf-8", "iso-8859-1",
 			 nullptr, &written, nullptr);
-	if (temp != nullptr)
+	if (temp != nullptr) {
 		/* success! */
-		return temp;
+		char *p = xstrdup(temp);
+		g_free(temp);
+		return p;
+	}
 
 	/* no, still broken - there's no medication, just patch
 	   invalid sequences */
@@ -96,7 +101,7 @@ clear_non_printable(const char *p, size_t length)
 	if (first == nullptr)
 		return nullptr;
 
-	dest = g_strndup(p, length);
+	dest = xstrndup(p, length);
 
 	for (size_t i = first - p; i < length; ++i)
 		if (char_is_non_printable(dest[i]))
@@ -120,7 +125,7 @@ FixTagString(const char *p, size_t length)
 	if (cleared == nullptr)
 		cleared = utf8;
 	else
-		g_free(utf8);
+		free(utf8);
 
 	return cleared;
 }

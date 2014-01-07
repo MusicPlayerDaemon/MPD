@@ -22,6 +22,7 @@
 #include "DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "util/Alloc.hxx"
 #include "util/FormatString.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -53,7 +54,7 @@ static char *
 get_container_name(const char *path_fs)
 {
 	const char *subtune_suffix = uri_get_suffix(path_fs);
-	char *path_container = g_strdup(path_fs);
+	char *path_container = xstrdup(path_fs);
 
 	char pat[64];
 	snprintf(pat, sizeof(pat), "%s%s",
@@ -137,7 +138,7 @@ gme_file_decode(Decoder &decoder, const char *path_fs)
 	Music_Emu *emu;
 	const char *gme_err =
 		gme_open_file(path_container, &emu, GME_SAMPLE_RATE);
-	g_free(path_container);
+	free(path_container);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return;

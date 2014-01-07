@@ -24,11 +24,14 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"
 #include "system/FatalError.hxx"
+#include "util/Alloc.hxx"
 #include "util/ASCII.hxx"
 
 #include <glib.h>
 
 #include <algorithm>
+
+#include <stdlib.h>
 
 void
 TagLoadConfig()
@@ -44,7 +47,7 @@ TagLoadConfig()
 
 	bool quit = false;
 	char *temp, *c, *s;
-	temp = c = s = g_strdup(value);
+	temp = c = s = xstrdup(value);
 	do {
 		if (*s == ',' || *s == '\0') {
 			if (*s == '\0')
@@ -68,5 +71,5 @@ TagLoadConfig()
 		s++;
 	} while (!quit);
 
-	g_free(temp);
+	free(temp);
 }

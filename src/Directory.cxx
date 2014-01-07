@@ -174,7 +174,7 @@ Directory::LookupDirectory(const char *uri)
 	if (isRootDirectory(uri))
 		return this;
 
-	char *duplicated = g_strdup(uri), *name = duplicated;
+	char *duplicated = xstrdup(uri), *name = duplicated;
 
 	Directory *d = this;
 	while (1) {
@@ -194,7 +194,7 @@ Directory::LookupDirectory(const char *uri)
 		name = slash + 1;
 	}
 
-	g_free(duplicated);
+	free(duplicated);
 
 	return d;
 }
@@ -244,7 +244,7 @@ Directory::LookupSong(const char *uri)
 	assert(holding_db_lock());
 	assert(uri != nullptr);
 
-	duplicated = g_strdup(uri);
+	duplicated = xstrdup(uri);
 	base = strrchr(duplicated, '/');
 
 	Directory *d = this;
@@ -252,7 +252,7 @@ Directory::LookupSong(const char *uri)
 		*base++ = 0;
 		d = d->LookupDirectory(duplicated);
 		if (d == nullptr) {
-			g_free(duplicated);
+			free(duplicated);
 			return nullptr;
 		}
 	} else
@@ -261,7 +261,7 @@ Directory::LookupSong(const char *uri)
 	Song *song = d->FindSong(base);
 	assert(song == nullptr || song->parent == d);
 
-	g_free(duplicated);
+	free(duplicated);
 	return song;
 
 }

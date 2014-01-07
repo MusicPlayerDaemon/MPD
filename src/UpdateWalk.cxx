@@ -38,14 +38,14 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "util/Alloc.hxx"
 #include "util/UriUtil.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 
 bool walk_discard;
@@ -426,7 +426,7 @@ static Directory *
 directory_make_uri_parent_checked(const char *uri)
 {
 	Directory *directory = db_get_root();
-	char *duplicated = g_strdup(uri);
+	char *duplicated = xstrdup(uri);
 	char *name_utf8 = duplicated, *slash;
 
 	while ((slash = strchr(name_utf8, '/')) != nullptr) {
@@ -443,7 +443,7 @@ directory_make_uri_parent_checked(const char *uri)
 		name_utf8 = slash + 1;
 	}
 
-	g_free(duplicated);
+	free(duplicated);
 	return directory;
 }
 

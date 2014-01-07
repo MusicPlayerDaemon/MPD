@@ -28,11 +28,10 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/Alloc.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <string.h>
 
@@ -127,7 +126,7 @@ playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
 
 		if ((playlist.AppendURI(pc, uri_utf8.c_str())) != PlaylistResult::SUCCESS) {
 			/* for windows compatibility, convert slashes */
-			char *temp2 = g_strdup(uri_utf8.c_str());
+			char *temp2 = xstrdup(uri_utf8.c_str());
 			char *p = temp2;
 			while (*p) {
 				if (*p == '\\')
@@ -139,7 +138,7 @@ playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
 				FormatError(playlist_domain,
 					    "can't add file \"%s\"", temp2);
 
-			g_free(temp2);
+			free(temp2);
 		}
 	}
 

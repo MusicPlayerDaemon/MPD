@@ -25,6 +25,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 Mutex tag_pool_lock;
 

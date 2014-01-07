@@ -24,10 +24,9 @@
 #include "TagString.hxx"
 #include "Tag.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 TagBuilder::TagBuilder(const Tag &other)
 	:time(other.time), has_playlist(other.has_playlist)
@@ -187,7 +186,7 @@ TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
 	auto i = tag_pool_get_item(type, value, length);
 	tag_pool_lock.unlock();
 
-	g_free(p);
+	free(p);
 
 	items.push_back(i);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * Copyright (C) 2003-2014 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,54 +17,60 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Page.hxx"
-#include "util/Alloc.hxx"
+#include "Alloc.hxx"
 
-#include <new>
-
-#include <assert.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-Page *
-Page::Create(size_t size)
+gcc_noreturn
+static void
+oom()
 {
-	void *p = xalloc(sizeof(Page) + size -
-			 sizeof(Page::data));
-	return ::new(p) Page(size);
+	(void)write(STDERR_FILENO, "Out of memory\n", 14);
+	_exit(1);
 }
 
-Page *
-Page::Copy(const void *data, size_t size)
+void *
+xalloc(size_t size)
 {
-	assert(data != nullptr);
+	void *p = malloc(size);
+	if (gcc_unlikely(p == nullptr))
+		oom();
 
-	Page *page = Create(size);
-	memcpy(page->data, data, size);
-	return page;
+	return p;
 }
 
-Page *
-Page::Concat(const Page &a, const Page &b)
+void *
+xmemdup(const void *s, size_t size)
 {
-	Page *page = Create(a.size + b.size);
-
-	memcpy(page->data, a.data, a.size);
-	memcpy(page->data + a.size, b.data, b.size);
-
-	return page;
+	void *p = xalloc(size);
+	memcpy(p, s, size);
+	return p;
 }
 
-bool
-Page::Unref()
+char *
+xstrdup(const char *s)
 {
-	bool unused = ref.Decrement();
+	char *p = strdup(s);
+	if (gcc_unlikely(p == nullptr))
+		oom();
 
-	if (unused) {
-		this->Page::~Page();
-		free(this);
-	}
+	return p;
+}
 
-	return unused;
+char *
+xstrndup(const char *s, size_t n)
+{
+#ifdef WIN32
+	char *p = (char *)xalloc(n + 1);
+	memcpy(p, s, n);
+	p[n] = 0;
+#else
+	char *p = strndup(s, n);
+	if (gcc_unlikely(p == nullptr))
+		oom();
+#endif
+
+	return p;
 }
