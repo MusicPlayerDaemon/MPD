@@ -370,19 +370,17 @@ Player::WaitForDecoder()
  * indicated by the decoder plugin.
  */
 static double
-real_song_duration(const Song *song, double decoder_duration)
+real_song_duration(const Song &song, double decoder_duration)
 {
-	assert(song != nullptr);
-
 	if (decoder_duration <= 0.0)
 		/* the decoder plugin didn't provide information; fall
 		   back to Song::GetDuration() */
-		return song->GetDuration();
+		return song.GetDuration();
 
-	if (song->end_ms > 0 && song->end_ms / 1000.0 < decoder_duration)
-		return (song->end_ms - song->start_ms) / 1000.0;
+	if (song.end_ms > 0 && song.end_ms / 1000.0 < decoder_duration)
+		return (song.end_ms - song.start_ms) / 1000.0;
 
-	return decoder_duration - song->start_ms / 1000.0;
+	return decoder_duration - song.start_ms / 1000.0;
 }
 
 bool
@@ -450,7 +448,7 @@ Player::CheckDecoderStartup()
 			return true;
 
 		pc.Lock();
-		pc.total_time = real_song_duration(dc.song, dc.total_time);
+		pc.total_time = real_song_duration(*dc.song, dc.total_time);
 		pc.audio_format = dc.in_audio_format;
 		pc.Unlock();
 
@@ -683,19 +681,19 @@ Player::ProcessCommand()
 }
 
 static void
-update_song_tag(PlayerControl &pc, Song *song, const Tag &new_tag)
+update_song_tag(PlayerControl &pc, Song &song, const Tag &new_tag)
 {
-	if (song->IsFile())
+	if (song.IsFile())
 		/* don't update tags of local files, only remote
 		   streams may change tags dynamically */
 		return;
 
-	Tag *old_tag = song->tag;
-	song->tag = new Tag(new_tag);
+	Tag *old_tag = song.tag;
+	song.tag = new Tag(new_tag);
 
 	delete old_tag;
 
-	pc.LockSetTaggedSong(*song);
+	pc.LockSetTaggedSong(song);
 
 	/* the main thread will update the playlist version when he
 	   receives this event */
@@ -715,7 +713,7 @@ update_song_tag(PlayerControl &pc, Song *song, const Tag &new_tag)
  */
 static bool
 play_chunk(PlayerControl &pc,
-	   Song *song, struct music_chunk *chunk,
+	   Song &song, struct music_chunk *chunk,
 	   MusicBuffer &buffer,
 	   const AudioFormat format,
 	   Error &error)
@@ -838,7 +836,7 @@ Player::PlayNextChunk()
 	/* play the current chunk */
 
 	Error error;
-	if (!play_chunk(pc, song, chunk, buffer, play_audio_format, error)) {
+	if (!play_chunk(pc, *song, chunk, buffer, play_audio_format, error)) {
 		LogError(error);
 
 		buffer.Return(chunk);
