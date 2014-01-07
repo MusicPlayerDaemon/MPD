@@ -49,7 +49,10 @@ DumpDirectory(const Directory &directory, Error &)
 static bool
 DumpSong(Song &song, Error &)
 {
-	cout << "S " << song.parent->path << "/" << song.uri << endl;
+	cout << "S ";
+	if (song.parent != nullptr && !song.parent->IsRoot())
+		cout << song.parent->path << "/";
+	cout << song.uri << endl;
 	return true;
 }
 

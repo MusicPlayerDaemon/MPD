@@ -95,10 +95,6 @@ protected:
 	static Directory *Allocate(const char *path);
 
 public:
-	/**
-	 * Default constructor, needed for #detached_root.
-	 */
-	Directory();
 	~Directory();
 
 	/**

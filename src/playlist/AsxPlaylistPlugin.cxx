@@ -43,7 +43,7 @@ struct AsxParser {
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
 	 */
-	std::forward_list<SongPointer> songs;
+	std::forward_list<DetachedSong> songs;
 
 	/**
 	 * The current position in the XML file.
@@ -60,10 +60,9 @@ struct AsxParser {
 	TagType tag_type;
 
 	/**
-	 * The current song.  It is allocated after the "location"
-	 * element.
+	 * The current song URI.  It is set by the "ref" element.
 	 */
-	Song *song;
+	std::string location;
 
 	TagBuilder tag_builder;
 
@@ -96,7 +95,7 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 	case AsxParser::ROOT:
 		if (StringEqualsCaseASCII(element_name, "entry")) {
 			parser->state = AsxParser::ENTRY;
-			parser->song = Song::NewRemote("asx:");
+			parser->location.clear();
 			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 		}
 
@@ -107,17 +106,8 @@ asx_start_element(gcc_unused GMarkupParseContext *context,
 			const gchar *href = get_attribute(attribute_names,
 							  attribute_values,
 							  "href");
-			if (href != nullptr) {
-				/* create new song object; we cannot
-				   replace the existing song's URI,
-				   because that attribute is
-				   immutable */
-				Song *song = Song::NewRemote(href);
-				if (parser->song != nullptr)
-					parser->song->Free();
-
-				parser->song = song;
-			}
+			if (href != nullptr)
+				parser->location = href;
 		} else if (StringEqualsCaseASCII(element_name, "author"))
 			/* is that correct?  or should it be COMPOSER
 			   or PERFORMER? */
@@ -142,12 +132,9 @@ asx_end_element(gcc_unused GMarkupParseContext *context,
 
 	case AsxParser::ENTRY:
 		if (StringEqualsCaseASCII(element_name, "entry")) {
-			if (strcmp(parser->song->uri, "asx:") != 0) {
-				assert(parser->song->tag == nullptr);
-				parser->song->tag = parser->tag_builder.CommitNew();
-				parser->songs.emplace_front(parser->song);
-			} else
-				parser->song->Free();
+			if (!parser->location.empty())
+				parser->songs.emplace_front(std::move(parser->location),
+							    parser->tag_builder.Commit());
 
 			parser->state = AsxParser::ROOT;
 		} else
@@ -186,15 +173,6 @@ static const GMarkupParser asx_parser = {
 	nullptr,
 };
 
-static void
-asx_parser_destroy(gpointer data)
-{
-	AsxParser *parser = (AsxParser *)data;
-
-	if (parser->state >= AsxParser::ENTRY)
-		parser->song->Free();
-}
-
 /*
  * The playlist object
  *
@@ -215,7 +193,7 @@ asx_open_stream(InputStream &is)
 
 	context = g_markup_parse_context_new(&asx_parser,
 					     G_MARKUP_TREAT_CDATA_AS_TEXT,
-					     &parser, asx_parser_destroy);
+					     &parser, nullptr);
 
 	while (true) {
 		nbytes = is.LockRead(buffer, sizeof(buffer), error2);

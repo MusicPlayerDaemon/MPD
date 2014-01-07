@@ -55,26 +55,24 @@ PrintDirectoryFull(Client &client, const Directory &directory)
 
 static void
 print_playlist_in_directory(Client &client,
-			    const Directory &directory,
+			    const Directory *directory,
 			    const char *name_utf8)
 {
-	if (directory.IsRoot())
+	if (directory == nullptr || directory->IsRoot())
 		client_printf(client, "playlist: %s\n", name_utf8);
 	else
 		client_printf(client, "playlist: %s/%s\n",
-			      directory.GetPath(), name_utf8);
+			      directory->GetPath(), name_utf8);
 }
 
 static bool
 PrintSongBrief(Client &client, const Song &song)
 {
-	assert(song.parent != nullptr);
-
 	song_print_uri(client, song);
 
 	if (song.tag != nullptr && song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
-		print_playlist_in_directory(client, *song.parent, song.uri);
+		print_playlist_in_directory(client, song.parent, song.uri);
 
 	return true;
 }
@@ -82,13 +80,11 @@ PrintSongBrief(Client &client, const Song &song)
 static bool
 PrintSongFull(Client &client, const Song &song)
 {
-	assert(song.parent != nullptr);
-
 	song_print_info(client, song);
 
 	if (song.tag != nullptr && song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
-		print_playlist_in_directory(client, *song.parent, song.uri);
+		print_playlist_in_directory(client, song.parent, song.uri);
 
 	return true;
 }
@@ -98,7 +94,7 @@ PrintPlaylistBrief(Client &client,
 		   const PlaylistInfo &playlist,
 		   const Directory &directory)
 {
-	print_playlist_in_directory(client, directory, playlist.name.c_str());
+	print_playlist_in_directory(client, &directory, playlist.name.c_str());
 	return true;
 }
 
@@ -107,7 +103,7 @@ PrintPlaylistFull(Client &client,
 		  const PlaylistInfo &playlist,
 		  const Directory &directory)
 {
-	print_playlist_in_directory(client, directory, playlist.name.c_str());
+	print_playlist_in_directory(client, &directory, playlist.name.c_str());
 
 	if (playlist.mtime > 0)
 		time_print(client, "Last-Modified", playlist.mtime);

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Queue.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 
 queue::queue(unsigned _max_length)
 	:max_length(_max_length), length(0),
@@ -84,7 +84,7 @@ queue::ModifyAtOrder(unsigned _order)
 }
 
 unsigned
-queue::Append(Song *song, uint8_t priority)
+queue::Append(DetachedSong &&song, uint8_t priority)
 {
 	assert(!IsFull());
 
@@ -92,7 +92,7 @@ queue::Append(Song *song, uint8_t priority)
 	const unsigned id = id_table.Insert(position);
 
 	auto &item = items[position];
-	item.song = song->DupDetached();
+	item.song = new DetachedSong(std::move(song));
 	item.id = id;
 	item.version = version;
 	item.priority = priority;
@@ -219,11 +219,7 @@ queue::DeletePosition(unsigned position)
 {
 	assert(position < length);
 
-	{
-		Song &song = Get(position);
-		assert(!song.IsInDatabase() || song.IsDetached());
-		song.Free();
-	}
+	delete items[position].song;
 
 	const unsigned id = PositionToId(position);
 	const unsigned _order = PositionToOrder(position);
@@ -257,9 +253,7 @@ queue::Clear()
 	for (unsigned i = 0; i < length; i++) {
 		Item *item = &items[i];
 
-		assert(!item->song->IsInDatabase() ||
-		       item->song->IsDetached());
-		item->song->Free();
+		delete item->song;
 
 		id_table.Erase(item->id);
 	}

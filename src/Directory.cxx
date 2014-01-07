@@ -48,14 +48,6 @@ Directory::Allocate(const char *path)
 				     path);
 }
 
-Directory::Directory()
-{
-	INIT_LIST_HEAD(&children);
-	INIT_LIST_HEAD(&songs);
-
-	path[0] = 0;
-}
-
 Directory::Directory(const char *_path)
 	:mtime(0), have_stat(false)
 {

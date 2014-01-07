@@ -1,7 +1,6 @@
 #include "config.h"
 #include "Queue.hxx"
-#include "Song.hxx"
-#include "Directory.hxx"
+#include "DetachedSong.hxx"
 #include "util/Macros.hxx"
 
 #include <cppunit/TestFixture.h>
@@ -9,21 +8,8 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-Directory detached_root;
-
-Directory::Directory() {}
-Directory::~Directory() {}
-
-Song *
-Song::DupDetached() const
-{
-	return const_cast<Song *>(this);
-}
-
-void
-Song::Free()
-{
-}
+Tag::Tag(const Tag &) {}
+void Tag::Clear() {}
 
 static void
 check_descending_priority(const struct queue *queue,
@@ -53,12 +39,29 @@ public:
 void
 QueuePriorityTest::TestPriority()
 {
-	static Song songs[16];
+	DetachedSong songs[16] = {
+		DetachedSong("0.ogg"),
+		DetachedSong("1.ogg"),
+		DetachedSong("2.ogg"),
+		DetachedSong("3.ogg"),
+		DetachedSong("4.ogg"),
+		DetachedSong("5.ogg"),
+		DetachedSong("6.ogg"),
+		DetachedSong("7.ogg"),
+		DetachedSong("8.ogg"),
+		DetachedSong("9.ogg"),
+		DetachedSong("a.ogg"),
+		DetachedSong("b.ogg"),
+		DetachedSong("c.ogg"),
+		DetachedSong("d.ogg"),
+		DetachedSong("e.ogg"),
+		DetachedSong("f.ogg"),
+	};
 
 	struct queue queue(32);
 
 	for (unsigned i = 0; i < ARRAY_SIZE(songs); ++i)
-		queue.Append(&songs[i], 0);
+		queue.Append(DetachedSong(songs[i]), 0);
 
 	CPPUNIT_ASSERT_EQUAL(unsigned(ARRAY_SIZE(songs)), queue.GetLength());
 

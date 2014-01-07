@@ -24,14 +24,14 @@
 
 #include <stdio.h>
 
-struct Song;
 struct queue;
 struct playlist;
 struct PlayerControl;
+class DetachedSong;
 class Error;
 
 void
-playlist_print_song(FILE *fp, const Song &song);
+playlist_print_song(FILE *file, const DetachedSong &song);
 
 void
 playlist_print_uri(FILE *fp, const char *uri);

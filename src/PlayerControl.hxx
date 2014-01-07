@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 
-struct Song;
+class DetachedSong;
 
 enum class PlayerState : uint8_t {
 	STOP,
@@ -131,16 +131,16 @@ struct PlayerControl {
 	Error error;
 
 	/**
-	 * A copy of the current #Song after its tags have been
-	 * updated by the decoder (for example, a radio stream that
-	 * has sent a new tag after switching to the next song).  This
-	 * shall be used by the GlobalEvents::TAG handler to update
-	 * the current #Song in the queue.
+	 * A copy of the current #DetachedSong after its tags have
+	 * been updated by the decoder (for example, a radio stream
+	 * that has sent a new tag after switching to the next song).
+	 * This shall be used by the GlobalEvents::TAG handler to
+	 * update the current #DetachedSong in the queue.
 	 *
 	 * Protected by #mutex.  Set by the PlayerThread and consumed
 	 * by the main thread.
 	 */
-	Song *tagged_song;
+	DetachedSong *tagged_song;
 
 	uint16_t bit_rate;
 	AudioFormat audio_format;
@@ -153,7 +153,7 @@ struct PlayerControl {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	Song *next_song;
+	DetachedSong *next_song;
 
 	double seek_where;
 
@@ -299,7 +299,7 @@ public:
 	 * @param song the song to be queued; the given instance will
 	 * be owned and freed by the player
 	 */
-	void Play(Song *song);
+	void Play(DetachedSong *song);
 
 	/**
 	 * see PlayerCommand::CANCEL
@@ -371,9 +371,9 @@ public:
 
 	/**
 	 * Set the #tagged_song attribute to a newly allocated copy of
-	 * the given #Song.  Locks and unlocks the object.
+	 * the given #DetachedSong.  Locks and unlocks the object.
 	 */
-	void LockSetTaggedSong(const Song &song);
+	void LockSetTaggedSong(const DetachedSong &song);
 
 	void ClearTaggedSong();
 
@@ -382,8 +382,8 @@ public:
 	 *
 	 * Caller must lock the object.
 	 */
-	Song *ReadTaggedSong() {
-		Song *result = tagged_song;
+	DetachedSong *ReadTaggedSong() {
+		DetachedSong *result = tagged_song;
 		tagged_song = nullptr;
 		return result;
 	}
@@ -391,9 +391,9 @@ public:
 	/**
 	 * Like ReadTaggedSong(), but locks and unlocks the object.
 	 */
-	Song *LockReadTaggedSong() {
+	DetachedSong *LockReadTaggedSong() {
 		Lock();
-		Song *result = ReadTaggedSong();
+		DetachedSong *result = ReadTaggedSong();
 		Unlock();
 		return result;
 	}
@@ -403,7 +403,7 @@ public:
 	void UpdateAudio();
 
 private:
-	void EnqueueSongLocked(Song *song) {
+	void EnqueueSongLocked(DetachedSong *song) {
 		assert(song != nullptr);
 		assert(next_song == nullptr);
 
@@ -416,7 +416,7 @@ public:
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
 	 */
-	void EnqueueSong(Song *song);
+	void EnqueueSong(DetachedSong *song);
 
 	/**
 	 * Makes the player thread seek the specified song to a position.
@@ -426,7 +426,7 @@ public:
 	 * @return true on success, false on failure (e.g. if MPD isn't
 	 * playing currently)
 	 */
-	bool Seek(Song *song, float seek_time);
+	bool Seek(DetachedSong *song, float seek_time);
 
 	void SetCrossFade(float cross_fade_seconds);
 

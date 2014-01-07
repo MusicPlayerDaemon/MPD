@@ -22,7 +22,7 @@
 #include "PlaylistPlugin.hxx"
 #include "MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -37,7 +37,7 @@
 static constexpr Domain pls_domain("pls");
 
 static void
-pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
+pls_parser(GKeyFile *keyfile, std::forward_list<DetachedSong> &songs)
 {
 	gchar *value;
 	GError *error = nullptr;
@@ -61,17 +61,14 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 	for (; num_entries > 0; --num_entries) {
 		char key[64];
 		sprintf(key, "File%u", num_entries);
-		value = g_key_file_get_string(keyfile, "playlist", key,
-					      &error);
+		char *uri = g_key_file_get_string(keyfile, "playlist", key,
+						  &error);
 		if(error) {
 			FormatError(pls_domain, "Invalid PLS entry %s: '%s'",
 				    key, error->message);
 			g_error_free(error);
 			return;
 		}
-
-		Song *song = Song::NewRemote(value);
-		g_free(value);
 
 		TagBuilder tag;
 
@@ -89,8 +86,8 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		if (length > 0)
 			tag.SetTime(length);
 
-		song->tag = tag.CommitNew();
-		songs.emplace_front(song);
+		songs.emplace_front(uri, tag.Commit());
+		g_free(uri);
 	}
 
 }
@@ -135,7 +132,7 @@ pls_open_stream(InputStream &is)
 		return nullptr;
 	}
 
-	std::forward_list<SongPointer> songs;
+	std::forward_list<DetachedSong> songs;
 	pls_parser(keyfile, songs);
 	g_key_file_free(keyfile);
 

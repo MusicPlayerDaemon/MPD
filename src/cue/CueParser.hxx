@@ -26,7 +26,7 @@
 
 #include <string>
 
-struct Song;
+class DetachedSong;
 struct Tag;
 
 class CueParser {
@@ -74,19 +74,19 @@ class CueParser {
 	/**
 	 * The song currently being edited.
 	 */
-	Song *current;
+	DetachedSong *current;
 
 	/**
 	 * The previous song.  It is remembered because its end_time
 	 * will be set to the current song's start time.
 	 */
-	Song *previous;
+	DetachedSong *previous;
 
 	/**
 	 * A song that is completely finished and can be returned to
 	 * the caller via cue_parser_get().
 	 */
-	Song *finished;
+	DetachedSong *finished;
 
 	/**
 	 * Set to true after previous.end_time has been updated to the
@@ -125,7 +125,7 @@ public:
 	 * @return a song object that must be freed by the caller, or NULL if
 	 * no song was finished at this time
 	 */
-	Song *Get();
+	DetachedSong *Get();
 
 private:
 	gcc_pure

@@ -21,6 +21,7 @@
 #include "XspfPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "MemorySongEnumerator.hxx"
+#include "DetachedSong.hxx"
 #include "InputStream.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
@@ -41,7 +42,7 @@ struct XspfParser {
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
 	 */
-	std::forward_list<SongPointer> songs;
+	std::forward_list<DetachedSong> songs;
 
 	/**
 	 * The current position in the XML file.
@@ -59,10 +60,9 @@ struct XspfParser {
 	TagType tag_type;
 
 	/**
-	 * The current song.  It is allocated after the "location"
-	 * element.
+	 * The current song URI.  It is set by the "location" element.
 	 */
-	Song *song;
+	std::string location;
 
 	TagBuilder tag_builder;
 
@@ -95,7 +95,7 @@ xspf_start_element(gcc_unused GMarkupParseContext *context,
 	case XspfParser::TRACKLIST:
 		if (strcmp(element_name, "track") == 0) {
 			parser->state = XspfParser::TRACK;
-			parser->song = nullptr;
+			parser->location.clear();
 			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 		}
 
@@ -149,11 +149,9 @@ xspf_end_element(gcc_unused GMarkupParseContext *context,
 
 	case XspfParser::TRACK:
 		if (strcmp(element_name, "track") == 0) {
-			if (parser->song != nullptr) {
-				assert(parser->song->tag == nullptr);
-				parser->song->tag = parser->tag_builder.CommitNew();
-				parser->songs.emplace_front(parser->song);
-			}
+			if (!parser->location.empty())
+				parser->songs.emplace_front(std::move(parser->location),
+							    parser->tag_builder.Commit());
 
 			parser->state = XspfParser::TRACKLIST;
 		} else
@@ -181,7 +179,7 @@ xspf_text(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case XspfParser::TRACK:
-		if (parser->song != nullptr &&
+		if (!parser->location.empty() &&
 		    parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
 			parser->tag_builder.AddItem(parser->tag_type,
 						    text, text_len);
@@ -189,11 +187,7 @@ xspf_text(gcc_unused GMarkupParseContext *context,
 		break;
 
 	case XspfParser::LOCATION:
-		if (parser->song == nullptr) {
-			char *uri = g_strndup(text, text_len);
-			parser->song = Song::NewRemote(uri);
-			g_free(uri);
-		}
+		parser->location.assign(text, text_len);
 
 		break;
 	}
@@ -206,15 +200,6 @@ static const GMarkupParser xspf_parser = {
 	nullptr,
 	nullptr,
 };
-
-static void
-xspf_parser_destroy(gpointer data)
-{
-	XspfParser *parser = (XspfParser *)data;
-
-	if (parser->state >= XspfParser::TRACK && parser->song != nullptr)
-		parser->song->Free();
-}
 
 /*
  * The playlist object
@@ -236,7 +221,7 @@ xspf_open_stream(InputStream &is)
 
 	context = g_markup_parse_context_new(&xspf_parser,
 					     G_MARKUP_TREAT_CDATA_AS_TEXT,
-					     &parser, xspf_parser_destroy);
+					     &parser, nullptr);
 
 	while (true) {
 		nbytes = is.LockRead(buffer, sizeof(buffer), error2);

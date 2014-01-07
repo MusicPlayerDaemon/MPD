@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlayerControl.hxx"
 #include "Idle.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 
 #include <algorithm>
 
@@ -42,15 +42,12 @@ PlayerControl::PlayerControl(unsigned _buffer_chunks,
 
 PlayerControl::~PlayerControl()
 {
-	if (next_song != nullptr)
-		next_song->Free();
-
-	if (tagged_song != nullptr)
-		tagged_song->Free();
+	delete next_song;
+	delete tagged_song;
 }
 
 void
-PlayerControl::Play(Song *song)
+PlayerControl::Play(DetachedSong *song)
 {
 	assert(song != nullptr);
 
@@ -195,26 +192,23 @@ PlayerControl::ClearError()
 }
 
 void
-PlayerControl::LockSetTaggedSong(const Song &song)
+PlayerControl::LockSetTaggedSong(const DetachedSong &song)
 {
 	Lock();
-	if (tagged_song != nullptr)
-		tagged_song->Free();
-	tagged_song = song.DupDetached();
+	delete tagged_song;
+	tagged_song = new DetachedSong(song);
 	Unlock();
 }
 
 void
 PlayerControl::ClearTaggedSong()
 {
-	if (tagged_song != nullptr) {
-		tagged_song->Free();
-		tagged_song = nullptr;
-	}
+	delete tagged_song;
+	tagged_song = nullptr;
 }
 
 void
-PlayerControl::EnqueueSong(Song *song)
+PlayerControl::EnqueueSong(DetachedSong *song)
 {
 	assert(song != nullptr);
 
@@ -224,15 +218,13 @@ PlayerControl::EnqueueSong(Song *song)
 }
 
 bool
-PlayerControl::Seek(Song *song, float seek_time)
+PlayerControl::Seek(DetachedSong *song, float seek_time)
 {
 	assert(song != nullptr);
 
 	Lock();
 
-	if (next_song != nullptr)
-		next_song->Free();
-
+	delete next_song;
 	next_song = song;
 	seek_where = seek_time;
 	SynchronousCommand(PlayerCommand::SEEK);

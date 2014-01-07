@@ -23,6 +23,7 @@
 #include "PlaylistFile.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
+#include "DetachedSong.hxx"
 
 #include <functional>
 
@@ -30,7 +31,7 @@ static bool
 AddSong(const char *playlist_path_utf8,
 	Song &song, Error &error)
 {
-	return spl_append_song(playlist_path_utf8, song, error);
+	return spl_append_song(playlist_path_utf8, DetachedSong(song), error);
 }
 
 bool

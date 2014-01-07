@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * Copyright (C) 2003-2014 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,47 +17,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SONG_POINTER_HXX
-#define MPD_SONG_POINTER_HXX
-
+#include "config.h"
+#include "DetachedSong.hxx"
 #include "Song.hxx"
+#include "util/UriUtil.hxx"
+#include "fs/Traits.hxx"
 
-#include <utility>
+DetachedSong::DetachedSong(const Song &other)
+	:uri(other.GetURI().c_str()),
+	 tag(other.tag != nullptr ? *other.tag : Tag()),
+	 mtime(other.mtime),
+	 start_ms(other.start_ms), end_ms(other.end_ms) {}
 
-class SongPointer {
-	Song *song;
+bool
+DetachedSong::IsRemote() const
+{
+	return uri_has_scheme(uri.c_str());
+}
 
-public:
-	explicit SongPointer(Song *_song)
-		:song(_song) {}
+bool
+DetachedSong::IsAbsoluteFile() const
+{
+	return PathTraitsUTF8::IsAbsolute(uri.c_str());
+}
 
-	SongPointer(const SongPointer &) = delete;
+double
+DetachedSong::GetDuration() const
+{
+	if (end_ms > 0)
+		return (end_ms - start_ms) / 1000.0;
 
-	SongPointer(SongPointer &&other):song(other.song) {
-		other.song = nullptr;
-	}
-
-	~SongPointer() {
-		if (song != nullptr)
-			song->Free();
-	}
-
-	SongPointer &operator=(const SongPointer &) = delete;
-
-	SongPointer &operator=(SongPointer &&other) {
-		std::swap(song, other.song);
-		return *this;
-	}
-
-	operator const Song *() const {
-		return song;
-	}
-
-	Song *Steal() {
-		auto result = song;
-		song = nullptr;
-		return result;
-	}
-};
-
-#endif
+	return tag.time - start_ms / 1000.0;
+}

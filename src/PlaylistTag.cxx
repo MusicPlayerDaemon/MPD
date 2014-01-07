@@ -26,7 +26,7 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
@@ -42,21 +42,18 @@ playlist::AddSongIdTag(unsigned id, TagType tag_type, const char *value,
 		return false;
 	}
 
-	Song &song = queue.Get(position);
+	DetachedSong &song = queue.Get(position);
 	if (song.IsFile()) {
 		error.Set(playlist_domain, int(PlaylistResult::DENIED),
 			  "Cannot edit tags of local file");
 		return false;
 	}
 
-	TagBuilder tag;
-	if (song.tag != nullptr) {
-		tag = std::move(*song.tag);
-		delete song.tag;
+	{
+		TagBuilder tag(std::move(song.WritableTag()));
+		tag.AddItem(tag_type, value);
+		song.SetTag(tag.Commit());
 	}
-
-	tag.AddItem(tag_type, value);
-	song.tag = tag.CommitNew();
 
 	queue.ModifyAtPosition(position);
 	OnModified();
@@ -74,24 +71,21 @@ playlist::ClearSongIdTag(unsigned id, TagType tag_type,
 		return false;
 	}
 
-	Song &song = queue.Get(position);
+	DetachedSong &song = queue.Get(position);
 	if (song.IsFile()) {
 		error.Set(playlist_domain, int(PlaylistResult::DENIED),
 			  "Cannot edit tags of local file");
 		return false;
 	}
 
-	if (song.tag == nullptr)
-		return true;
-
-	TagBuilder tag(std::move(*song.tag));
-	delete song.tag;
-
-	if (tag_type == TAG_NUM_OF_ITEM_TYPES)
-		tag.RemoveAll();
-	else
-		tag.RemoveType(tag_type);
-	song.tag = tag.CommitNew();
+	{
+		TagBuilder tag(std::move(song.WritableTag()));
+		if (tag_type == TAG_NUM_OF_ITEM_TYPES)
+			tag.RemoveAll();
+		else
+			tag.RemoveType(tag_type);
+		song.SetTag(tag.Commit());
+	}
 
 	queue.ModifyAtPosition(position);
 	OnModified();

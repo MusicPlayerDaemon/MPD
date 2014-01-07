@@ -21,23 +21,23 @@
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
 #include "PlayerControl.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
 
 void
-playlist::TagModified(Song &&song)
+playlist::TagModified(DetachedSong &&song)
 {
-	if (!playing || song.tag == nullptr)
+	if (!playing)
 		return;
 
 	assert(current >= 0);
 
-	Song &current_song = queue.GetOrder(current);
-	if (SongEquals(song, current_song))
-		current_song.ReplaceTag(std::move(*song.tag));
+	DetachedSong &current_song = queue.GetOrder(current);
+	if (song.IsSame(current_song))
+		current_song.MoveTagFrom(std::move(song));
 
 	queue.ModifyAtOrder(current);
 	queue.IncrementVersion();
@@ -55,15 +55,12 @@ playlist_queue_song_order(playlist &playlist, PlayerControl &pc,
 
 	playlist.queued = order;
 
-	Song *song = playlist.queue.GetOrder(order).DupDetached();
+	const DetachedSong &song = playlist.queue.GetOrder(order);
 
-	{
-		const auto uri = song->GetURI();
-		FormatDebug(playlist_domain, "queue song %i:\"%s\"",
-			    playlist.queued, uri.c_str());
-	}
+	FormatDebug(playlist_domain, "queue song %i:\"%s\"",
+		    playlist.queued, song.GetURI());
 
-	pc.EnqueueSong(song);
+	pc.EnqueueSong(new DetachedSong(song));
 }
 
 /**
@@ -88,7 +85,7 @@ playlist_song_started(playlist &playlist, PlayerControl &pc)
 	idle_add(IDLE_PLAYER);
 }
 
-const Song *
+const DetachedSong *
 playlist::GetQueuedSong() const
 {
 	return playing && queued >= 0
@@ -97,7 +94,7 @@ playlist::GetQueuedSong() const
 }
 
 void
-playlist::UpdateQueuedSong(PlayerControl &pc, const Song *prev)
+playlist::UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev)
 {
 	if (!playing)
 		return;
@@ -124,7 +121,7 @@ playlist::UpdateQueuedSong(PlayerControl &pc, const Song *prev)
 		current = queue.PositionToOrder(current_position);
 	}
 
-	const Song *const next_song = next_order >= 0
+	const DetachedSong *const next_song = next_order >= 0
 		? &queue.GetOrder(next_order)
 		: nullptr;
 
@@ -148,15 +145,11 @@ playlist::PlayOrder(PlayerControl &pc, int order)
 	playing = true;
 	queued = -1;
 
-	Song *song = queue.GetOrder(order).DupDetached();
+	const DetachedSong &song = queue.GetOrder(order);
 
-	{
-		const auto uri = song->GetURI();
-		FormatDebug(playlist_domain, "play %i:\"%s\"",
-			    order, uri.c_str());
-	}
+	FormatDebug(playlist_domain, "play %i:\"%s\"", order, song.GetURI());
 
-	pc.Play(song);
+	pc.Play(new DetachedSong(song));
 	current = order;
 }
 
@@ -173,7 +166,7 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 
 	pc.Lock();
 	const PlayerState pc_state = pc.GetState();
-	const Song *pc_next_song = pc.next_song;
+	const DetachedSong *pc_next_song = pc.next_song;
 	pc.Unlock();
 
 	if (pc_state == PlayerState::STOP)
@@ -286,7 +279,7 @@ playlist::SetRandom(PlayerControl &pc, bool status)
 	if (status == queue.random)
 		return;
 
-	const Song *const queued_song = GetQueuedSong();
+	const DetachedSong *const queued_song = GetQueuedSong();
 
 	queue.random = status;
 

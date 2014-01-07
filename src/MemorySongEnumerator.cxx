@@ -20,13 +20,13 @@
 #include "config.h"
 #include "MemorySongEnumerator.hxx"
 
-Song *
+DetachedSong *
 MemorySongEnumerator::NextSong()
 {
 	if (songs.empty())
 		return nullptr;
 
-	auto result = songs.front().Steal();
+	auto result = new DetachedSong(std::move(songs.front()));
 	songs.pop_front();
 	return result;
 }

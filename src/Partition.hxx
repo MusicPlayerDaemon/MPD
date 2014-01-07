@@ -76,8 +76,8 @@ struct Partition {
 		return playlist.DeleteRange(pc, start, end);
 	}
 
-	void DeleteSong(const Song &song) {
-		playlist.DeleteSong(pc, song);
+	void DeleteSong(const char *uri) {
+		playlist.DeleteSong(pc, uri);
 	}
 
 	void Shuffle(unsigned start, unsigned end) {

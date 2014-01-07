@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Partition.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 
 void
 Partition::DatabaseModified()
@@ -30,10 +30,10 @@ Partition::DatabaseModified()
 void
 Partition::TagModified()
 {
-	Song *song = pc.LockReadTaggedSong();
+	DetachedSong *song = pc.LockReadTaggedSong();
 	if (song != nullptr) {
 		playlist.TagModified(std::move(*song));
-		song->Free();
+		delete song;
 	}
 }
 

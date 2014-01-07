@@ -29,7 +29,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-struct Song;
+class DetachedSong;
 
 /**
  * A queue of songs.  This is the backend of the playlist: it contains
@@ -53,7 +53,7 @@ struct queue {
 	 * information attached.
 	 */
 	struct Item {
-		Song *song;
+		DetachedSong *song;
 
 		/** the unique id of this item in the queue */
 		unsigned id;
@@ -200,7 +200,7 @@ struct queue {
 	/**
 	 * Returns the song at the specified position.
 	 */
-	Song &Get(unsigned position) const {
+	DetachedSong &Get(unsigned position) const {
 		assert(position < length);
 
 		return *items[position].song;
@@ -209,7 +209,7 @@ struct queue {
 	/**
 	 * Returns the song at the specified order number.
 	 */
-	Song &GetOrder(unsigned _order) const {
+	DetachedSong &GetOrder(unsigned _order) const {
 		return Get(OrderToPosition(_order));
 	}
 
@@ -268,7 +268,7 @@ struct queue {
 	 *
 	 * @param priority the priority of this new queue item
 	 */
-	unsigned Append(Song *song, uint8_t priority);
+	unsigned Append(DetachedSong &&song, uint8_t priority);
 
 	/**
 	 * Swaps two songs, addressed by their position.

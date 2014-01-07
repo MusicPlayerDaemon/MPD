@@ -26,7 +26,7 @@
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
 #include "PlayerControl.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "Log.hxx"
 
 void
@@ -195,7 +195,7 @@ playlist::SeekSongPosition(PlayerControl &pc, unsigned song, float seek_time)
 	if (!queue.IsValidPosition(song))
 		return PlaylistResult::BAD_RANGE;
 
-	const Song *queued_song = GetQueuedSong();
+	const DetachedSong *queued_song = GetQueuedSong();
 
 	unsigned i = queue.random
 		? queue.PositionToOrder(song)
@@ -215,8 +215,7 @@ playlist::SeekSongPosition(PlayerControl &pc, unsigned song, float seek_time)
 		queued_song = nullptr;
 	}
 
-	Song *the_song = queue.GetOrder(i).DupDetached();
-	if (!pc.Seek(the_song, seek_time)) {
+	if (!pc.Seek(new DetachedSong(queue.GetOrder(i)), seek_time)) {
 		UpdateQueuedSong(pc, queued_song);
 
 		return PlaylistResult::NOT_PLAYING;

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SongFilter.hxx"
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
@@ -151,6 +152,18 @@ SongFilter::Item::Match(const Song &song) const
 	return song.tag != NULL && Match(*song.tag);
 }
 
+bool
+SongFilter::Item::Match(const DetachedSong &song) const
+{
+	if (tag == LOCATE_TAG_BASE_TYPE)
+		return uri_is_child_or_same(value.c_str(), song.GetURI());
+
+	if (tag == LOCATE_TAG_FILE_TYPE)
+		return StringMatch(song.GetURI());
+
+	return Match(song.GetTag());
+}
+
 SongFilter::SongFilter(unsigned tag, const char *value, bool fold_case)
 {
 	items.push_back(Item(tag, value, fold_case));
@@ -195,6 +208,16 @@ SongFilter::Parse(unsigned argc, char *argv[], bool fold_case)
 
 bool
 SongFilter::Match(const Song &song) const
+{
+	for (const auto &i : items)
+		if (!i.Match(song))
+			return false;
+
+	return true;
+}
+
+bool
+SongFilter::Match(const DetachedSong &song) const
 {
 	for (const auto &i : items)
 		if (!i.Match(song))

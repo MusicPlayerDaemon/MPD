@@ -36,7 +36,7 @@ class CuePlaylist final : public SongEnumerator {
 		:is(_is), tis(is) {
 	}
 
-	virtual Song *NextSong() override;
+	virtual DetachedSong *NextSong() override;
 };
 
 static SongEnumerator *
@@ -45,10 +45,10 @@ cue_playlist_open_stream(InputStream &is)
 	return new CuePlaylist(is);
 }
 
-Song *
+DetachedSong *
 CuePlaylist::NextSong()
 {
-	Song *song = parser.Get();
+	DetachedSong *song = parser.Get();
 	if (song != nullptr)
 		return song;
 

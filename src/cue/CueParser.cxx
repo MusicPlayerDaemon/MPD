@@ -22,7 +22,7 @@
 #include "util/Alloc.hxx"
 #include "util/StringUtil.hxx"
 #include "util/CharUtil.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 
 #include <assert.h>
@@ -38,14 +38,9 @@ CueParser::CueParser()
 
 CueParser::~CueParser()
 {
-	if (current != nullptr)
-		current->Free();
-
-	if (previous != nullptr)
-		previous->Free();
-
-	if (finished != nullptr)
-		finished->Free();
+	delete current;
+	delete previous;
+	delete finished;
 }
 
 static const char *
@@ -169,8 +164,8 @@ CueParser::Commit()
 	if (current == nullptr)
 		return;
 
-	assert(current->tag == nullptr);
-	current->tag = song_tag.CommitNew();
+	assert(!current->GetTag().IsDefined());
+	current->SetTag(song_tag.Commit());
 
 	finished = previous;
 	previous = current;
@@ -249,8 +244,8 @@ CueParser::Feed2(char *p)
 		}
 
 		state = TRACK;
-		current = Song::NewRemote(filename.c_str());
-		assert(current->tag == nullptr);
+		current = new DetachedSong(std::move(filename));
+		assert(!current->GetTag().IsDefined());
 
 		song_tag = header_tag;
 		song_tag.AddItem(TAG_TRACK, nr);
@@ -272,14 +267,14 @@ CueParser::Feed2(char *p)
 			return;
 
 		if (!last_updated && previous != nullptr &&
-		    previous->start_ms < (unsigned)position_ms) {
+		    previous->GetStartMS() < (unsigned)position_ms) {
 			last_updated = true;
-			previous->end_ms = position_ms;
-			previous->tag->time =
-				(previous->end_ms - previous->start_ms + 500) / 1000;
+			previous->SetEndMS(position_ms);
+			previous->WritableTag().time =
+				(previous->GetEndMS() - previous->GetStartMS() + 500) / 1000;
 		}
 
-		current->start_ms = position_ms;
+		current->SetStartMS(position_ms);
 	}
 }
 
@@ -305,7 +300,7 @@ CueParser::Finish()
 	end = true;
 }
 
-Song *
+DetachedSong *
 CueParser::Get()
 {
 	if (finished == nullptr && end) {
@@ -317,7 +312,7 @@ CueParser::Get()
 		previous = nullptr;
 	}
 
-	Song *song = finished;
+	DetachedSong *song = finished;
 	finished = nullptr;
 	return song;
 }

@@ -38,6 +38,7 @@
 struct Tag;
 struct TagItem;
 struct Song;
+class DetachedSong;
 
 class SongFilter {
 public:
@@ -80,6 +81,9 @@ public:
 
 		gcc_pure
 		bool Match(const Song &song) const;
+
+		gcc_pure
+		bool Match(const DetachedSong &song) const;
 	};
 
 private:
@@ -104,6 +108,9 @@ public:
 
 	gcc_pure
 	bool Match(const Song &song) const;
+
+	gcc_pure
+	bool Match(const DetachedSong &song) const;
 
 	const std::list<Item> &GetItems() const {
 		return items;

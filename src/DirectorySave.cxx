@@ -22,6 +22,7 @@
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "SongSave.hxx"
+#include "DetachedSong.hxx"
 #include "PlaylistDatabase.hxx"
 #include "fs/TextFile.hxx"
 #include "util/StringUtil.hxx"
@@ -132,7 +133,6 @@ directory_load(TextFile &file, Directory &directory, Error &error)
 				return false;
 		} else if (StringStartsWith(line, SONG_BEGIN)) {
 			const char *name = line + sizeof(SONG_BEGIN) - 1;
-			Song *song;
 
 			if (directory.FindSong(name) != nullptr) {
 				error.Format(directory_domain,
@@ -140,11 +140,13 @@ directory_load(TextFile &file, Directory &directory, Error &error)
 				return false;
 			}
 
-			song = song_load(file, &directory, name, error);
+			DetachedSong *song = song_load(file, name, error);
 			if (song == nullptr)
 				return false;
 
-			directory.AddSong(song);
+			directory.AddSong(Song::NewFrom(std::move(*song),
+							&directory));
+			delete song;
 		} else if (StringStartsWith(line, PLAYLIST_META_BEGIN)) {
 			const char *name = line + sizeof(PLAYLIST_META_BEGIN) - 1;
 			if (!playlist_metadata_load(file, directory.playlists,

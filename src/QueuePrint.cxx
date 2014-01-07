@@ -94,7 +94,7 @@ queue_find(Client &client, const queue &queue,
 	   const SongFilter &filter)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
-		const Song &song = queue.Get(i);
+		const DetachedSong &song = queue.Get(i);
 
 		if (filter.Match(song))
 			queue_print_song_info(client, queue, i);

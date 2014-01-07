@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SongPrint.hxx"
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "Directory.hxx"
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
@@ -27,21 +28,31 @@
 #include "Client.hxx"
 #include "util/UriUtil.hxx"
 
+static void
+song_print_uri(Client &client, const char *uri)
+{
+	const std::string allocated = uri_remove_auth(uri);
+	if (!allocated.empty())
+		uri = allocated.c_str();
+
+	client_printf(client, "%s%s\n", SONG_FILE,
+		      map_to_relative_path(uri));
+}
+
 void
 song_print_uri(Client &client, const Song &song)
 {
-	if (song.IsInDatabase() && !song.parent->IsRoot()) {
+	if (song.parent != nullptr && !song.parent->IsRoot()) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
 			      song.parent->GetPath(), song.uri);
-	} else {
-		const char *uri = song.uri;
-		const std::string allocated = uri_remove_auth(uri);
-		if (!allocated.empty())
-			uri = allocated.c_str();
+	} else
+		song_print_uri(client, song.uri);
+}
 
-		client_printf(client, "%s%s\n", SONG_FILE,
-			      map_to_relative_path(uri));
-	}
+void
+song_print_uri(Client &client, const DetachedSong &song)
+{
+	song_print_uri(client, song.GetURI());
 }
 
 void
@@ -65,4 +76,29 @@ song_print_info(Client &client, const Song &song)
 
 	if (song.tag != nullptr)
 		tag_print(client, *song.tag);
+}
+
+void
+song_print_info(Client &client, const DetachedSong &song)
+{
+	song_print_uri(client, song);
+
+	const unsigned start_ms = song.GetStartMS();
+	const unsigned end_ms = song.GetEndMS();
+
+	if (end_ms > 0)
+		client_printf(client, "Range: %u.%03u-%u.%03u\n",
+			      start_ms / 1000,
+			      start_ms % 1000,
+			      end_ms / 1000,
+			      end_ms % 1000);
+	else if (start_ms > 0)
+		client_printf(client, "Range: %u.%03u-\n",
+			      start_ms / 1000,
+			      start_ms % 1000);
+
+	if (song.GetLastModified() > 0)
+		time_print(client, "Last-Modified", song.GetLastModified());
+
+	tag_print(client, song.GetTag());
 }

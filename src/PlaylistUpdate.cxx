@@ -22,35 +22,36 @@
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "util/Error.hxx"
 
 static bool
-UpdatePlaylistSong(const Database &db, Song &song)
+UpdatePlaylistSong(const Database &db, DetachedSong &song)
 {
-	if (!song.IsInDatabase() || !song.IsDetached())
+	if (!song.IsInDatabase())
 		/* only update Songs instances that are "detached"
 		   from the Database */
 		return false;
 
-	Song *original = db.GetSong(song.uri, IgnoreError());
+	Song *original = db.GetSong(song.GetURI(), IgnoreError());
 	if (original == nullptr)
 		/* not found - shouldn't happen, because the update
 		   thread should ensure that all stale Song instances
 		   have been purged */
 		return false;
 
-	if (original->mtime == song.mtime) {
+	if (original->mtime == song.GetLastModified()) {
 		/* not modified */
 		db.ReturnSong(original);
 		return false;
 	}
 
-	song.mtime = original->mtime;
+	song.SetLastModified(original->mtime);
 
 	if (original->tag != nullptr)
-		song.ReplaceTag(Tag(*original->tag));
+		song.SetTag(*original->tag);
 
 	db.ReturnSong(original);
 	return true;

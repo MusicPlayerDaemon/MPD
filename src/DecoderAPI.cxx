@@ -28,7 +28,7 @@
 #include "MusicPipe.hxx"
 #include "DecoderControl.hxx"
 #include "DecoderInternal.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -467,7 +467,7 @@ decoder_data(Decoder &decoder,
 		const auto dest =
 			chunk->Write(dc.out_audio_format,
 				     decoder.timestamp -
-				     dc.song->start_ms / 1000.0,
+				     dc.song->GetStartMS() / 1000.0,
 				     kbit_rate);
 		if (dest.IsNull()) {
 			/* the chunk is full, flush it */

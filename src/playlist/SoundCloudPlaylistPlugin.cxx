@@ -108,7 +108,7 @@ struct parse_data {
 	char* title;
 	int got_url; /* nesting level of last stream_url */
 
-	std::forward_list<SongPointer> songs;
+	std::forward_list<DetachedSong> songs;
 };
 
 static int
@@ -214,16 +214,14 @@ handle_end_map(void *ctx)
 
 	char *u = g_strconcat(data->stream_url, "?client_id=",
 			      soundcloud_config.apikey.c_str(), nullptr);
-	Song *s = Song::NewRemote(u);
-	g_free(u);
 
 	TagBuilder tag;
 	tag.SetTime(data->duration / 1000);
 	if (data->title != nullptr)
 		tag.AddItem(TAG_NAME, data->title);
-	s->tag = tag.CommitNew();
 
-	data->songs.emplace_front(s);
+	data->songs.emplace_front(u, tag.Commit());
+	g_free(u);
 
 	return 1;
 }

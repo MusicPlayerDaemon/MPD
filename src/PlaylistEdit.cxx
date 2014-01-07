@@ -30,6 +30,7 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "Idle.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
@@ -64,23 +65,23 @@ playlist::AppendFile(PlayerControl &pc,
 	if (song == nullptr)
 		return PlaylistResult::NO_SUCH_SONG;
 
-	const auto result = AppendSong(pc, song, added_id);
+	const auto result = AppendSong(pc, DetachedSong(*song), added_id);
 	song->Free();
 	return result;
 }
 
 PlaylistResult
 playlist::AppendSong(PlayerControl &pc,
-		     Song *song, unsigned *added_id)
+		     DetachedSong &&song, unsigned *added_id)
 {
 	unsigned id;
 
 	if (queue.IsFull())
 		return PlaylistResult::TOO_LARGE;
 
-	const Song *const queued_song = GetQueuedSong();
+	const DetachedSong *const queued_song = GetQueuedSong();
 
-	id = queue.Append(song, 0);
+	id = queue.Append(std::move(song), 0);
 
 	if (queue.random) {
 		/* shuffle the new song into the list of remaining
@@ -110,25 +111,24 @@ playlist::AppendURI(PlayerControl &pc,
 {
 	FormatDebug(playlist_domain, "add to playlist: %s", uri);
 
-	const Database *db = nullptr;
-	Song *song;
+	DetachedSong *song;
 	if (uri_has_scheme(uri)) {
-		song = Song::NewRemote(uri);
+		song = new DetachedSong(uri);
 	} else {
-		db = GetDatabase();
+		const Database *db = GetDatabase();
 		if (db == nullptr)
 			return PlaylistResult::NO_SUCH_SONG;
 
-		song = db->GetSong(uri, IgnoreError());
-		if (song == nullptr)
+		Song *tmp = db->GetSong(uri, IgnoreError());
+		if (tmp == nullptr)
 			return PlaylistResult::NO_SUCH_SONG;
+
+		song = new DetachedSong(*tmp);
+		db->ReturnSong(tmp);
 	}
 
-	PlaylistResult result = AppendSong(pc, song, added_id);
-	if (db != nullptr)
-		db->ReturnSong(song);
-	else
-		song->Free();
+	PlaylistResult result = AppendSong(pc, std::move(*song), added_id);
+	delete song;
 
 	return result;
 }
@@ -139,7 +139,7 @@ playlist::SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2)
 	if (!queue.IsValidPosition(song1) || !queue.IsValidPosition(song2))
 		return PlaylistResult::BAD_RANGE;
 
-	const Song *const queued_song = GetQueuedSong();
+	const DetachedSong *const queued_song = GetQueuedSong();
 
 	queue.SwapPositions(song1, song2);
 
@@ -193,7 +193,7 @@ playlist::SetPriorityRange(PlayerControl &pc,
 	/* remember "current" and "queued" */
 
 	const int current_position = GetCurrentPosition();
-	const Song *const queued_song = GetQueuedSong();
+	const DetachedSong *const queued_song = GetQueuedSong();
 
 	/* apply the priority changes */
 
@@ -225,7 +225,7 @@ playlist::SetPriorityId(PlayerControl &pc,
 
 void
 playlist::DeleteInternal(PlayerControl &pc,
-			 unsigned song, const Song **queued_p)
+			 unsigned song, const DetachedSong **queued_p)
 {
 	assert(song < GetLength());
 
@@ -275,7 +275,7 @@ playlist::DeletePosition(PlayerControl &pc, unsigned song)
 	if (song >= queue.GetLength())
 		return PlaylistResult::BAD_RANGE;
 
-	const Song *queued_song = GetQueuedSong();
+	const DetachedSong *queued_song = GetQueuedSong();
 
 	DeleteInternal(pc, song, &queued_song);
 
@@ -297,7 +297,7 @@ playlist::DeleteRange(PlayerControl &pc, unsigned start, unsigned end)
 	if (start >= end)
 		return PlaylistResult::SUCCESS;
 
-	const Song *queued_song = GetQueuedSong();
+	const DetachedSong *queued_song = GetQueuedSong();
 
 	do {
 		DeleteInternal(pc, --end, &queued_song);
@@ -320,10 +320,10 @@ playlist::DeleteId(PlayerControl &pc, unsigned id)
 }
 
 void
-playlist::DeleteSong(PlayerControl &pc, const struct Song &song)
+playlist::DeleteSong(PlayerControl &pc, const char *uri)
 {
 	for (int i = queue.GetLength() - 1; i >= 0; --i)
-		if (SongEquals(song, queue.Get(i)))
+		if (queue.Get(i).IsURI(uri))
 			DeletePosition(pc, i);
 }
 
@@ -341,7 +341,7 @@ playlist::MoveRange(PlayerControl &pc, unsigned start, unsigned end, int to)
 		/* nothing happens */
 		return PlaylistResult::SUCCESS;
 
-	const Song *const queued_song = GetQueuedSong();
+	const DetachedSong *const queued_song = GetQueuedSong();
 
 	/*
 	 * (to < 0) => move to offset from current song
@@ -401,7 +401,7 @@ playlist::Shuffle(PlayerControl &pc, unsigned start, unsigned end)
 		/* needs at least two entries. */
 		return;
 
-	const Song *const queued_song = GetQueuedSong();
+	const DetachedSong *const queued_song = GetQueuedSong();
 	if (playing && current >= 0) {
 		unsigned current_position = queue.OrderToPosition(current);
 

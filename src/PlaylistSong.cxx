@@ -24,41 +24,42 @@
 #include "DatabaseGlue.hxx"
 #include "ls.hxx"
 #include "tag/Tag.hxx"
+#include "tag/TagBuilder.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "DetachedSong.hxx"
 #include "Song.hxx"
 
 #include <assert.h>
 #include <string.h>
 
 static void
-merge_song_metadata(Song *dest, const Song *base,
-		    const Song *add)
+merge_song_metadata(DetachedSong *dest, const DetachedSong *base,
+		    const DetachedSong *add)
 {
-	dest->tag = base->tag != nullptr
-		? (add->tag != nullptr
-		   ? Tag::Merge(*base->tag, *add->tag)
-		   : new Tag(*base->tag))
-		: (add->tag != nullptr
-		   ? new Tag(*add->tag)
-		   : nullptr);
+	{
+		TagBuilder builder(add->GetTag());
+		builder.Complement(base->GetTag());
+		dest->SetTag(builder.Commit());
+	}
 
-	dest->mtime = base->mtime;
-	dest->start_ms = add->start_ms;
-	dest->end_ms = add->end_ms;
+	dest->SetLastModified(base->GetLastModified());
+	dest->SetStartMS(add->GetStartMS());
+	dest->SetEndMS(add->GetEndMS());
 }
 
-static Song *
-apply_song_metadata(Song *dest, const Song *src)
+static DetachedSong *
+apply_song_metadata(DetachedSong *dest, const DetachedSong *src)
 {
-	Song *tmp;
+	DetachedSong *tmp;
 
 	assert(dest != nullptr);
 	assert(src != nullptr);
 
-	if (src->tag == nullptr && src->start_ms == 0 && src->end_ms == 0)
+	if (!src->GetTag().IsDefined() &&
+	    src->GetStartMS() == 0 && src->GetEndMS() == 0)
 		return dest;
 
 	if (dest->IsInDatabase()) {
@@ -70,37 +71,41 @@ apply_song_metadata(Song *dest, const Song *src)
 		if (path_utf8.empty())
 			path_utf8 = path_fs.c_str();
 
-		tmp = Song::NewFile(path_utf8.c_str(), nullptr);
+		tmp = new DetachedSong(std::move(path_utf8));
 
 		merge_song_metadata(tmp, dest, src);
 	} else {
-		tmp = Song::NewFile(dest->uri, nullptr);
+		tmp = new DetachedSong(dest->GetURI());
 		merge_song_metadata(tmp, dest, src);
 	}
 
-	if (dest->tag != nullptr && dest->tag->time > 0 &&
-	    src->start_ms > 0 && src->end_ms == 0 &&
-	    src->start_ms / 1000 < (unsigned)dest->tag->time)
+	if (dest->GetTag().IsDefined() && dest->GetTag().time > 0 &&
+	    src->GetStartMS() > 0 && src->GetEndMS() == 0 &&
+	    src->GetStartMS() / 1000 < (unsigned)dest->GetTag().time)
 		/* the range is open-ended, and the playlist plugin
 		   did not know the total length of the song file
 		   (e.g. last track on a CUE file); fix it up here */
-		tmp->tag->time = dest->tag->time - src->start_ms / 1000;
+		tmp->WritableTag().time =
+			dest->GetTag().time - src->GetStartMS() / 1000;
 
-	dest->Free();
+	delete dest;
 	return tmp;
 }
 
-static Song *
-playlist_check_load_song(const Song *song, const char *uri, bool secure)
+static DetachedSong *
+playlist_check_load_song(const DetachedSong *song, const char *uri, bool secure)
 {
-	Song *dest;
+	DetachedSong *dest;
 
 	if (uri_has_scheme(uri)) {
-		dest = Song::NewRemote(uri);
+		dest = new DetachedSong(uri);
 	} else if (PathTraitsUTF8::IsAbsolute(uri) && secure) {
-		dest = Song::LoadFile(uri, nullptr);
-		if (dest == nullptr)
+		Song *tmp = Song::LoadFile(uri, nullptr);
+		if (tmp == nullptr)
 			return nullptr;
+
+		dest = new DetachedSong(*tmp);
+		delete tmp;
 	} else {
 		const Database *db = GetDatabase();
 		if (db == nullptr)
@@ -111,22 +116,22 @@ playlist_check_load_song(const Song *song, const char *uri, bool secure)
 			/* not found in database */
 			return nullptr;
 
-		dest = tmp->DupDetached();
+		dest = new DetachedSong(*tmp);
 		db->ReturnSong(tmp);
 	}
 
 	return apply_song_metadata(dest, song);
 }
 
-Song *
-playlist_check_translate_song(Song *song, const char *base_uri,
+DetachedSong *
+playlist_check_translate_song(DetachedSong *song, const char *base_uri,
 			      bool secure)
 {
 	if (song->IsInDatabase())
 		/* already ok */
 		return song;
 
-	const char *uri = song->uri;
+	const char *uri = song->GetURI();
 
 	if (uri_has_scheme(uri)) {
 		if (uri_supported_scheme(uri))
@@ -134,7 +139,7 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 			return song;
 		else {
 			/* unsupported remote song */
-			song->Free();
+			delete song;
 			return nullptr;
 		}
 	}
@@ -156,7 +161,7 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 		else if (!secure) {
 			/* local files must be relative to the music
 			   directory when "secure" is enabled */
-			song->Free();
+			delete song;
 			return nullptr;
 		}
 
@@ -169,8 +174,8 @@ playlist_check_translate_song(Song *song, const char *base_uri,
 		uri = full_uri.c_str();
 	}
 
-	Song *dest = playlist_check_load_song(song, uri, secure);
-	song->Free();
+	DetachedSong *dest = playlist_check_load_song(song, uri, secure);
+	delete song;
 
 	return dest;
 }

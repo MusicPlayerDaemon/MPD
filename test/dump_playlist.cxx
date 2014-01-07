@@ -19,9 +19,8 @@
 
 #include "config.h"
 #include "TagSave.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "SongEnumerator.hxx"
-#include "Directory.hxx"
 #include "InputStream.hxx"
 #include "ConfigGlobal.hxx"
 #include "DecoderList.hxx"
@@ -39,14 +38,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-Directory::Directory() {}
-Directory::~Directory() {}
-
 int main(int argc, char **argv)
 {
 	const char *uri;
 	InputStream *is = NULL;
-	Song *song;
 
 	if (argc != 3) {
 		fprintf(stderr, "Usage: dump_playlist CONFIG URI\n");
@@ -114,24 +109,27 @@ int main(int argc, char **argv)
 
 	/* dump the playlist */
 
+	DetachedSong *song;
 	while ((song = playlist->NextSong()) != NULL) {
-		printf("%s\n", song->uri);
+		printf("%s\n", song->GetURI());
 
-		if (song->end_ms > 0)
+		const unsigned start_ms = song->GetStartMS();
+		const unsigned end_ms = song->GetEndMS();
+
+		if (end_ms > 0)
 			printf("range: %u:%02u..%u:%02u\n",
-			       song->start_ms / 60000,
-			       (song->start_ms / 1000) % 60,
-			       song->end_ms / 60000,
-			       (song->end_ms / 1000) % 60);
-		else if (song->start_ms > 0)
+			       start_ms / 60000,
+			       (start_ms / 1000) % 60,
+			       end_ms / 60000,
+			       (end_ms / 1000) % 60);
+		else if (start_ms > 0)
 			printf("range: %u:%02u..\n",
-			       song->start_ms / 60000,
-			       (song->start_ms / 1000) % 60);
+			       start_ms / 60000,
+			       (start_ms / 1000) % 60);
 
-		if (song->tag != NULL)
-			tag_save(stdout, *song->tag);
+		tag_save(stdout, song->GetTag());
 
-		song->Free();
+		delete song;
 	}
 
 	/* deinitialize everything */

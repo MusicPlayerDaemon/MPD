@@ -26,11 +26,15 @@
 
 struct Song;
 struct Directory;
+class DetachedSong;
 class TextFile;
 class Error;
 
 void
 song_save(FILE *fp, const Song &song);
+
+void
+song_save(FILE *fp, const DetachedSong &song);
 
 /**
  * Loads a song from the input file.  Reading stops after the
@@ -39,8 +43,8 @@ song_save(FILE *fp, const Song &song);
  * @param error location to store the error occurring
  * @return true on success, false on error
  */
-Song *
-song_load(TextFile &file, Directory *parent, const char *uri,
+DetachedSong *
+song_load(TextFile &file, const char *uri,
 	  Error &error);
 
 #endif

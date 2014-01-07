@@ -21,18 +21,18 @@
 #define MPD_MEMORY_PLAYLIST_PROVIDER_HXX
 
 #include "SongEnumerator.hxx"
-#include "SongPointer.hxx"
+#include "DetachedSong.hxx"
 
 #include <forward_list>
 
 class MemorySongEnumerator final : public SongEnumerator {
-	std::forward_list<SongPointer> songs;
+	std::forward_list<DetachedSong> songs;
 
 public:
-	MemorySongEnumerator(std::forward_list<SongPointer> &&_songs)
+	MemorySongEnumerator(std::forward_list<DetachedSong> &&_songs)
 		:songs(std::move(_songs)) {}
 
-	virtual Song *NextSong() override;
+	virtual DetachedSong *NextSong() override;
 };
 
 #endif

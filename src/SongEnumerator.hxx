@@ -20,7 +20,7 @@
 #ifndef MPD_SONG_ENUMERATOR_HXX
 #define MPD_SONG_ENUMERATOR_HXX
 
-struct Song;
+class DetachedSong;
 
 /**
  * An object which provides serial access to a number of #Song
@@ -35,7 +35,7 @@ public:
 	 * freeing the returned #Song object.  Returns nullptr if
 	 * there are no more songs.
 	 */
-	virtual Song *NextSong() = 0;
+	virtual DetachedSong *NextSong() = 0;
 };
 
 #endif

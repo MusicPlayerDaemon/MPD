@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SongSave.hxx"
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "TagSave.hxx"
 #include "fs/TextFile.hxx"
 #include "tag/Tag.hxx"
@@ -36,15 +37,21 @@
 
 static constexpr Domain song_save_domain("song_save");
 
+static void
+range_save(FILE *file, unsigned start_ms, unsigned end_ms)
+{
+	if (end_ms > 0)
+		fprintf(file, "Range: %u-%u\n", start_ms, end_ms);
+	else if (start_ms > 0)
+		fprintf(file, "Range: %u-\n", start_ms);
+}
+
 void
 song_save(FILE *fp, const Song &song)
 {
 	fprintf(fp, SONG_BEGIN "%s\n", song.uri);
 
-	if (song.end_ms > 0)
-		fprintf(fp, "Range: %u-%u\n", song.start_ms, song.end_ms);
-	else if (song.start_ms > 0)
-		fprintf(fp, "Range: %u-\n", song.start_ms);
+	range_save(fp, song.start_ms, song.end_ms);
 
 	if (song.tag != nullptr)
 		tag_save(fp, *song.tag);
@@ -53,13 +60,24 @@ song_save(FILE *fp, const Song &song)
 	fprintf(fp, SONG_END "\n");
 }
 
-Song *
-song_load(TextFile &file, Directory *parent, const char *uri,
+void
+song_save(FILE *fp, const DetachedSong &song)
+{
+	fprintf(fp, SONG_BEGIN "%s\n", song.GetURI());
+
+	range_save(fp, song.GetStartMS(), song.GetEndMS());
+
+	tag_save(fp, song.GetTag());
+
+	fprintf(fp, SONG_MTIME ": %li\n", (long)song.GetLastModified());
+	fprintf(fp, SONG_END "\n");
+}
+
+DetachedSong *
+song_load(TextFile &file, const char *uri,
 	  Error &error)
 {
-	Song *song = parent != nullptr
-		? Song::NewFile(uri, parent)
-		: Song::NewRemote(uri);
+	DetachedSong *song = new DetachedSong(uri);
 
 	TagBuilder tag;
 
@@ -68,7 +86,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 	       strcmp(line, SONG_END) != 0) {
 		char *colon = strchr(line, ':');
 		if (colon == nullptr || colon == line) {
-			song->Free();
+			delete song;
 
 			error.Format(song_save_domain,
 				     "unknown line in db: %s", line);
@@ -86,15 +104,19 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		} else if (strcmp(line, "Playlist") == 0) {
 			tag.SetHasPlaylist(strcmp(value, "yes") == 0);
 		} else if (strcmp(line, SONG_MTIME) == 0) {
-			song->mtime = atoi(value);
+			song->SetLastModified(atoi(value));
 		} else if (strcmp(line, "Range") == 0) {
 			char *endptr;
 
-			song->start_ms = strtoul(value, &endptr, 10);
-			if (*endptr == '-')
-				song->end_ms = strtoul(endptr + 1, nullptr, 10);
+			unsigned start_ms = strtoul(value, &endptr, 10);
+			unsigned end_ms = *endptr == '-'
+				? strtoul(endptr + 1, nullptr, 10)
+				: 0;
+
+			song->SetStartMS(start_ms);
+			song->SetEndMS(end_ms);
 		} else {
-			song->Free();
+			delete song;
 
 			error.Format(song_save_domain,
 				     "unknown line in db: %s", line);
@@ -102,8 +124,6 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		}
 	}
 
-	if (tag.IsDefined())
-		song->tag = tag.CommitNew();
-
+	song->SetTag(tag.Commit());
 	return song;
 }

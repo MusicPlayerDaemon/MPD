@@ -60,7 +60,10 @@ song_remove_event(void)
 		sticker_song_delete(*removed_song);
 #endif
 
-	instance->DeleteSong(*removed_song);
+	{
+		const auto uri = removed_song->GetURI();
+		instance->DeleteSong(uri.c_str());
+	}
 
 	/* clear "removed_song" and send signal to update thread */
 	remove_mutex.lock();

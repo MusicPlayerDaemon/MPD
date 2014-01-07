@@ -23,7 +23,7 @@
 #include "PlaylistPlugin.hxx"
 #include "MemorySongEnumerator.hxx"
 #include "tag/Tag.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "Log.hxx"
 
 extern "C" {
@@ -34,10 +34,9 @@ extern "C" {
 #include <stdlib.h>
 
 static void
-add_song(std::forward_list<SongPointer> &songs, ds_track &track)
+add_song(std::forward_list<DetachedSong> &songs, ds_track &track)
 {
 	const char *dsp_scheme = despotify_playlist_plugin.schemes[0];
-	Song *song;
 	char uri[128];
 	char *ds_uri;
 
@@ -52,15 +51,12 @@ add_song(std::forward_list<SongPointer> &songs, ds_track &track)
 		return;
 	}
 
-	song = Song::NewRemote(uri);
-	song->tag = new Tag(mpd_despotify_tag_from_track(track));
-
-	songs.emplace_front(song);
+	songs.emplace_front(uri, mpd_despotify_tag_from_track(track));
 }
 
 static bool
 parse_track(struct despotify_session *session,
-	    std::forward_list<SongPointer> &songs,
+	    std::forward_list<DetachedSong> &songs,
 	    struct ds_link *link)
 {
 	struct ds_track *track = despotify_link_get_track(session, link);
@@ -73,7 +69,7 @@ parse_track(struct despotify_session *session,
 
 static bool
 parse_playlist(struct despotify_session *session,
-	       std::forward_list<SongPointer> &songs,
+	       std::forward_list<DetachedSong> &songs,
 	       struct ds_link *link)
 {
 	ds_playlist *playlist = despotify_link_get_playlist(session, link);
@@ -103,7 +99,7 @@ despotify_playlist_open_uri(const char *url,
 		return nullptr;
 	}
 
-	std::forward_list<SongPointer> songs;
+	std::forward_list<DetachedSong> songs;
 
 	bool parse_result;
 	switch (link->type) {

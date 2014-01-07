@@ -24,7 +24,7 @@
 #include "Playlist.hxx"
 #include "InputStream.hxx"
 #include "SongEnumerator.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "thread/Cond.hxx"
 #include "fs/Traits.hxx"
 
@@ -38,13 +38,13 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 		? PathTraitsUTF8::GetParent(uri)
 		: std::string(".");
 
-	Song *song;
+	DetachedSong *song;
 	for (unsigned i = 0;
 	     i < end_index && (song = e.NextSong()) != nullptr;
 	     ++i) {
 		if (i < start_index) {
 			/* skip songs before the start index */
-			song->Free();
+			delete song;
 			continue;
 		}
 
@@ -53,8 +53,8 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 		if (song == nullptr)
 			continue;
 
-		PlaylistResult result = dest.AppendSong(pc, song);
-		song->Free();
+		PlaylistResult result = dest.AppendSong(pc, std::move(*song));
+		delete song;
 		if (result != PlaylistResult::SUCCESS)
 			return result;
 	}

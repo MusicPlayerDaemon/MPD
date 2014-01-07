@@ -30,7 +30,7 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/ApeTag.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "TagFile.hxx"
 #include "cue/CueParser.hxx"
 #include "fs/Traits.hxx"
@@ -69,7 +69,7 @@ public:
 		delete parser;
 	}
 
-	virtual Song *NextSong() override;
+	virtual DetachedSong *NextSong() override;
 };
 
 static void
@@ -124,10 +124,10 @@ embcue_playlist_open_uri(const char *uri,
 	return playlist;
 }
 
-Song *
+DetachedSong *
 EmbeddedCuePlaylist::NextSong()
 {
-	Song *song = parser->Get();
+	DetachedSong *song = parser->Get();
 	if (song != nullptr)
 		return song;
 
@@ -145,14 +145,16 @@ EmbeddedCuePlaylist::NextSong()
 
 		parser->Feed(line);
 		song = parser->Get();
-		if (song != nullptr)
-			return song->ReplaceURI(filename.c_str());
+		if (song != nullptr) {
+			song->SetURI(filename);
+			return song;
+		}
 	}
 
 	parser->Finish();
 	song = parser->Get();
 	if (song != nullptr)
-		song = song->ReplaceURI(filename.c_str());
+		song->SetURI(filename);
 	return song;
 }
 

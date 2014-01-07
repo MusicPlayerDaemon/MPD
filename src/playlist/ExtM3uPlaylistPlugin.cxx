@@ -21,7 +21,7 @@
 #include "ExtM3uPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "SongEnumerator.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
@@ -44,7 +44,7 @@ public:
 			strcmp(line.c_str(), "#EXTM3U") == 0;
 	}
 
-	virtual Song *NextSong() override;
+	virtual DetachedSong *NextSong() override;
 };
 
 static SongEnumerator *
@@ -101,20 +101,19 @@ extm3u_parse_tag(const char *line)
 	return tag.CommitNew();
 }
 
-Song *
+DetachedSong *
 ExtM3uPlaylist::NextSong()
 {
 	Tag *tag = NULL;
 	std::string line;
 	const char *line_s;
-	Song *song;
 
 	do {
 		if (!tis.ReadLine(line)) {
 			delete tag;
 			return NULL;
 		}
-		
+
 		line_s = line.c_str();
 
 		if (StringStartsWith(line_s, "#EXTINF:")) {
@@ -126,8 +125,8 @@ ExtM3uPlaylist::NextSong()
 		line_s = strchug_fast(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	song = Song::NewRemote(line_s);
-	song->tag = tag;
+	DetachedSong *song = new DetachedSong(line_s, std::move(*tag));
+	delete tag;
 	return song;
 }
 

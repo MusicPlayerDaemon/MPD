@@ -21,12 +21,19 @@
 #define MPD_SONG_PRINT_HXX
 
 struct Song;
+class DetachedSong;
 class Client;
+
+void
+song_print_info(Client &client, const DetachedSong &song);
 
 void
 song_print_info(Client &client, const Song &song);
 
 void
 song_print_uri(Client &client, const Song &song);
+
+void
+song_print_uri(Client &client, const DetachedSong &song);
 
 #endif

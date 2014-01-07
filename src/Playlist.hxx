@@ -25,7 +25,7 @@
 
 enum TagType : uint8_t;
 struct PlayerControl;
-struct Song;
+class DetachedSong;
 class Error;
 
 struct playlist {
@@ -100,7 +100,7 @@ struct playlist {
 	 * none if there is none (yet?) or if MPD isn't playing.
 	 */
 	gcc_pure
-	const Song *GetQueuedSong() const;
+	const DetachedSong *GetQueuedSong() const;
 
 	/**
 	 * This is the "PLAYLIST" event handler.  It is invoked by the
@@ -125,7 +125,7 @@ protected:
 	 * @param prev the song which was previously queued, as
 	 * determined by playlist_get_queued_song()
 	 */
-	void UpdateQueuedSong(PlayerControl &pc, const Song *prev);
+	void UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev);
 
 public:
 	void Clear(PlayerControl &pc);
@@ -135,7 +135,7 @@ public:
 	 * thread.  Apply the given song's tag to the current song if
 	 * the song matches.
 	 */
-	void TagModified(Song &&song);
+	void TagModified(DetachedSong &&song);
 
 	/**
 	 * The database has been modified.  Pull all updates.
@@ -143,7 +143,7 @@ public:
 	void DatabaseModified();
 
 	PlaylistResult AppendSong(PlayerControl &pc,
-				  Song *song,
+				  DetachedSong &&song,
 				  unsigned *added_id=nullptr);
 
 	/**
@@ -162,7 +162,7 @@ public:
 
 protected:
 	void DeleteInternal(PlayerControl &pc,
-			    unsigned song, const Song **queued_p);
+			    unsigned song, const DetachedSong **queued_p);
 
 public:
 	PlaylistResult DeletePosition(PlayerControl &pc,
@@ -184,7 +184,7 @@ public:
 	PlaylistResult DeleteRange(PlayerControl &pc,
 				   unsigned start, unsigned end);
 
-	void DeleteSong(PlayerControl &pc, const Song &song);
+	void DeleteSong(PlayerControl &pc, const char *uri);
 
 	void Shuffle(PlayerControl &pc, unsigned start, unsigned end);
 

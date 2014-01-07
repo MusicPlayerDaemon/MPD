@@ -24,14 +24,13 @@
 
 class ClientList;
 struct Partition;
-struct Song;
 
 struct Instance {
 	ClientList *client_list;
 
 	Partition *partition;
 
-	void DeleteSong(const Song &song);
+	void DeleteSong(const char *uri);
 
 	/**
 	 * The database has been modified.  Propagate the change to

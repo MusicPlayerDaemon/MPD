@@ -24,7 +24,7 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "system/FatalError.hxx"
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
@@ -92,7 +92,7 @@ class Player {
 	/**
 	 * the song currently being played
 	 */
-	Song *song;
+	DetachedSong *song;
 
 	/**
 	 * is cross fading enabled?
@@ -290,12 +290,12 @@ Player::StartDecoder(MusicPipe &_pipe)
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
 
-	unsigned start_ms = pc.next_song->start_ms;
+	unsigned start_ms = pc.next_song->GetStartMS();
 	if (pc.command == PlayerCommand::SEEK)
 		start_ms += (unsigned)(pc.seek_where * 1000);
 
-	dc.Start(pc.next_song->DupDetached(),
-		 start_ms, pc.next_song->end_ms,
+	dc.Start(new DetachedSong(*pc.next_song),
+		 start_ms, pc.next_song->GetEndMS(),
 		 buffer, _pipe);
 }
 
@@ -329,7 +329,7 @@ Player::WaitForDecoder()
 	if (error.IsDefined()) {
 		pc.SetError(PlayerError::DECODER, std::move(error));
 
-		pc.next_song->Free();
+		delete pc.next_song;
 		pc.next_song = nullptr;
 
 		pc.Unlock();
@@ -339,9 +339,7 @@ Player::WaitForDecoder()
 
 	pc.ClearTaggedSong();
 
-	if (song != nullptr)
-		song->Free();
-
+	delete song;
 	song = pc.next_song;
 	elapsed_time = 0.0;
 
@@ -370,17 +368,20 @@ Player::WaitForDecoder()
  * indicated by the decoder plugin.
  */
 static double
-real_song_duration(const Song &song, double decoder_duration)
+real_song_duration(const DetachedSong &song, double decoder_duration)
 {
 	if (decoder_duration <= 0.0)
 		/* the decoder plugin didn't provide information; fall
 		   back to Song::GetDuration() */
 		return song.GetDuration();
 
-	if (song.end_ms > 0 && song.end_ms / 1000.0 < decoder_duration)
-		return (song.end_ms - song.start_ms) / 1000.0;
+	const unsigned start_ms = song.GetStartMS();
+	const unsigned end_ms = song.GetEndMS();
 
-	return decoder_duration - song.start_ms / 1000.0;
+	if (end_ms > 0 && end_ms / 1000.0 < decoder_duration)
+		return (end_ms - start_ms) / 1000.0;
+
+	return decoder_duration - start_ms / 1000.0;
 }
 
 bool
@@ -458,10 +459,10 @@ Player::CheckDecoderStartup()
 		decoder_starting = false;
 
 		if (!paused && !OpenOutput()) {
-			const auto uri = dc.song->GetURI();
 			FormatError(player_domain,
 				    "problems opening audio device "
-				    "while playing \"%s\"", uri.c_str());
+				    "while playing \"%s\"",
+				    dc.song->GetURI());
 			return true;
 		}
 
@@ -516,7 +517,7 @@ Player::SeekDecoder()
 {
 	assert(pc.next_song != nullptr);
 
-	const unsigned start_ms = pc.next_song->start_ms;
+	const unsigned start_ms = pc.next_song->GetStartMS();
 
 	if (!dc.LockIsCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
@@ -542,7 +543,7 @@ Player::SeekDecoder()
 			ClearAndReplacePipe(dc.pipe);
 		}
 
-		pc.next_song->Free();
+		delete pc.next_song;
 		pc.next_song = nullptr;
 		queued = false;
 	}
@@ -658,7 +659,7 @@ Player::ProcessCommand()
 			pc.Lock();
 		}
 
-		pc.next_song->Free();
+		delete pc.next_song;
 		pc.next_song = nullptr;
 		queued = false;
 		pc.CommandFinished();
@@ -681,17 +682,14 @@ Player::ProcessCommand()
 }
 
 static void
-update_song_tag(PlayerControl &pc, Song &song, const Tag &new_tag)
+update_song_tag(PlayerControl &pc, DetachedSong &song, const Tag &new_tag)
 {
 	if (song.IsFile())
 		/* don't update tags of local files, only remote
 		   streams may change tags dynamically */
 		return;
 
-	Tag *old_tag = song.tag;
-	song.tag = new Tag(new_tag);
-
-	delete old_tag;
+	song.SetTag(new_tag);
 
 	pc.LockSetTaggedSong(song);
 
@@ -713,7 +711,7 @@ update_song_tag(PlayerControl &pc, Song &song, const Tag &new_tag)
  */
 static bool
 play_chunk(PlayerControl &pc,
-	   Song &song, struct music_chunk *chunk,
+	   DetachedSong &song, struct music_chunk *chunk,
 	   MusicBuffer &buffer,
 	   const AudioFormat format,
 	   Error &error)
@@ -880,10 +878,7 @@ Player::SongBorder()
 {
 	xfade_state = CrossFadeState::UNKNOWN;
 
-	{
-		const auto uri = song->GetURI();
-		FormatDefault(player_domain, "played \"%s\"", uri.c_str());
-	}
+	FormatDefault(player_domain, "played \"%s\"", song->GetURI());
 
 	ReplacePipe(dc.pipe);
 
@@ -1079,9 +1074,8 @@ Player::Run()
 	delete cross_fade_tag;
 
 	if (song != nullptr) {
-		const auto uri = song->GetURI();
-		FormatDefault(player_domain, "played \"%s\"", uri.c_str());
-		song->Free();
+		FormatDefault(player_domain, "played \"%s\"", song->GetURI());
+		delete song;
 	}
 
 	pc.Lock();
@@ -1090,7 +1084,7 @@ Player::Run()
 
 	if (queued) {
 		assert(pc.next_song != nullptr);
-		pc.next_song->Free();
+		delete pc.next_song;
 		pc.next_song = nullptr;
 	}
 
@@ -1139,10 +1133,8 @@ player_task(void *arg)
 			/* fall through */
 
 		case PlayerCommand::PAUSE:
-			if (pc.next_song != nullptr) {
-				pc.next_song->Free();
-				pc.next_song = nullptr;
-			}
+			delete pc.next_song;
+			pc.next_song = nullptr;
 
 			pc.CommandFinished();
 			break;
@@ -1177,10 +1169,8 @@ player_task(void *arg)
 			return;
 
 		case PlayerCommand::CANCEL:
-			if (pc.next_song != nullptr) {
-				pc.next_song->Free();
-				pc.next_song = nullptr;
-			}
+			delete pc.next_song;
+			pc.next_song = nullptr;
 
 			pc.CommandFinished();
 			break;

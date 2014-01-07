@@ -21,7 +21,7 @@
 #include "M3uPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "SongEnumerator.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "util/StringUtil.hxx"
 #include "TextInputStream.hxx"
 
@@ -33,7 +33,7 @@ public:
 		:tis(is) {
 	}
 
-	virtual Song *NextSong() override;
+	virtual DetachedSong *NextSong() override;
 };
 
 static SongEnumerator *
@@ -42,7 +42,7 @@ m3u_open_stream(InputStream &is)
 	return new M3uPlaylist(is);
 }
 
-Song *
+DetachedSong *
 M3uPlaylist::NextSong()
 {
 	std::string line;
@@ -56,7 +56,7 @@ M3uPlaylist::NextSong()
 		line_s = strchug_fast(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	return Song::NewRemote(line_s);
+	return new DetachedSong(line_s);
 }
 
 static const char *const m3u_suffixes[] = {

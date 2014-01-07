@@ -31,8 +31,6 @@
 std::string
 sticker_song_get_value(const Song &song, const char *name)
 {
-	assert(song.IsInDatabase());
-
 	const auto uri = song.GetURI();
 	return sticker_load_value("song", uri.c_str(), name);
 }
@@ -41,8 +39,6 @@ bool
 sticker_song_set_value(const Song &song,
 		       const char *name, const char *value)
 {
-	assert(song.IsInDatabase());
-
 	const auto uri = song.GetURI();
 	return sticker_store_value("song", uri.c_str(), name, value);
 }
@@ -50,8 +46,6 @@ sticker_song_set_value(const Song &song,
 bool
 sticker_song_delete(const Song &song)
 {
-	assert(song.IsInDatabase());
-
 	const auto uri = song.GetURI();
 	return sticker_delete("song", uri.c_str());
 }
@@ -59,8 +53,6 @@ sticker_song_delete(const Song &song)
 bool
 sticker_song_delete_value(const Song &song, const char *name)
 {
-	assert(song.IsInDatabase());
-
 	const auto uri = song.GetURI();
 	return sticker_delete_value("song", uri.c_str(), name);
 }
@@ -68,8 +60,6 @@ sticker_song_delete_value(const Song &song, const char *name)
 struct sticker *
 sticker_song_get(const Song &song)
 {
-	assert(song.IsInDatabase());
-
 	const auto uri = song.GetURI();
 	return sticker_load("song", uri.c_str());
 }

@@ -25,6 +25,7 @@
 #include "Mapper.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Charset.hxx"
@@ -219,14 +220,18 @@ map_detached_song_fs(const char *uri_utf8)
 AllocatedPath
 map_song_fs(const Song &song)
 {
-	assert(song.IsFile());
+	return song.parent == nullptr
+		? map_detached_song_fs(song.uri)
+		: map_directory_child_fs(*song.parent, song.uri);
+}
 
-	if (song.IsInDatabase())
-		return song.IsDetached()
-			? map_detached_song_fs(song.uri)
-			: map_directory_child_fs(*song.parent, song.uri);
+AllocatedPath
+map_song_fs(const DetachedSong &song)
+{
+	if (song.IsAbsoluteFile())
+		return AllocatedPath::FromUTF8(song.GetURI());
 	else
-		return AllocatedPath::FromUTF8(song.uri);
+		return map_uri_fs(song.GetURI());
 }
 
 std::string

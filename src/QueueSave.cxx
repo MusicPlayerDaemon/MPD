@@ -21,7 +21,7 @@
 #include "QueueSave.hxx"
 #include "Queue.hxx"
 #include "PlaylistError.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "SongSave.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
@@ -37,20 +37,19 @@
 #define PRIO_LABEL "Prio: "
 
 static void
-queue_save_database_song(FILE *fp, int idx, const Song &song)
+queue_save_database_song(FILE *fp, int idx, const DetachedSong &song)
 {
-	const auto uri = song.GetURI();
-	fprintf(fp, "%i:%s\n", idx, uri.c_str());
+	fprintf(fp, "%i:%s\n", idx, song.GetURI());
 }
 
 static void
-queue_save_full_song(FILE *fp, const Song &song)
+queue_save_full_song(FILE *fp, const DetachedSong &song)
 {
 	song_save(fp, song);
 }
 
 static void
-queue_save_song(FILE *fp, int idx, const Song &song)
+queue_save_song(FILE *fp, int idx, const DetachedSong &song)
 {
 	if (song.IsInDatabase())
 		queue_save_database_song(fp, idx, song);
@@ -85,8 +84,7 @@ queue_load_song(TextFile &file, const char *line, queue &queue)
 			return;
 	}
 
-	const Database *db = nullptr;
-	Song *song;
+	DetachedSong *song;
 
 	if (StringStartsWith(line, SONG_BEGIN)) {
 		const char *uri = line + sizeof(SONG_BEGIN) - 1;
@@ -94,7 +92,7 @@ queue_load_song(TextFile &file, const char *line, queue &queue)
 			return;
 
 		Error error;
-		song = song_load(file, nullptr, uri, error);
+		song = song_load(file, uri, error);
 		if (song == nullptr) {
 			LogError(error);
 			return;
@@ -111,22 +109,21 @@ queue_load_song(TextFile &file, const char *line, queue &queue)
 		const char *uri = endptr + 1;
 
 		if (uri_has_scheme(uri)) {
-			song = Song::NewRemote(uri);
+			song = new DetachedSong(uri);
 		} else {
-			db = GetDatabase();
+			const Database *db = GetDatabase();
 			if (db == nullptr)
 				return;
 
-			song = db->GetSong(uri, IgnoreError());
-			if (song == nullptr)
+			Song *tmp = db->GetSong(uri, IgnoreError());
+			if (tmp == nullptr)
 				return;
+
+			song = new DetachedSong(*tmp);
+			db->ReturnSong(tmp);
 		}
 	}
 
-	queue.Append(song, priority);
-
-	if (db != nullptr)
-		db->ReturnSong(song);
-	else
-		song->Free();
+	queue.Append(std::move(*song), priority);
+	delete song;
 }

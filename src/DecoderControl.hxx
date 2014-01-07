@@ -36,7 +36,7 @@
 #undef ERROR
 #endif
 
-struct Song;
+class DetachedSong;
 class MusicBuffer;
 class MusicPipe;
 
@@ -123,7 +123,7 @@ struct DecoderControl {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	Song *song;
+	DetachedSong *song;
 
 	/**
 	 * The initial seek position (in milliseconds), e.g. to the
@@ -293,10 +293,10 @@ struct DecoderControl {
 	 * Caller must lock the object.
 	 */
 	gcc_pure
-	bool IsCurrentSong(const Song &_song) const;
+	bool IsCurrentSong(const DetachedSong &_song) const;
 
 	gcc_pure
-	bool LockIsCurrentSong(const Song &_song) const {
+	bool LockIsCurrentSong(const DetachedSong &_song) const {
 		Lock();
 		const bool result = IsCurrentSong(_song);
 		Unlock();
@@ -360,7 +360,7 @@ public:
 	 * @param pipe the pipe which receives the decoded chunks (owned by
 	 * the caller)
 	 */
-	void Start(Song *song, unsigned start_ms, unsigned end_ms,
+	void Start(DetachedSong *song, unsigned start_ms, unsigned end_ms,
 		   MusicBuffer &buffer, MusicPipe &pipe);
 
 	void Stop();

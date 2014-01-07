@@ -192,6 +192,7 @@ src_mpd_SOURCES = \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/SignalHandlers.cxx src/SignalHandlers.hxx \
+	src/DetachedSong.cxx src/DetachedSong.hxx \
 	src/Song.cxx src/Song.hxx \
 	src/SongUpdate.cxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
@@ -206,7 +207,6 @@ src_mpd_SOURCES = \
 	src/TextInputStream.cxx \
 	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
-	src/SongPointer.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
 	src/Timer.cxx
 
@@ -1271,7 +1271,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	$(DECODER_SRC) \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
-	src/Song.cxx src/TagSave.cxx \
+	src/TagSave.cxx \
 	src/TagFile.cxx \
 	src/CheckAudioFormat.cxx \
 	src/TextInputStream.cxx \

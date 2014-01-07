@@ -33,6 +33,7 @@
 class AllocatedPath;
 struct Directory;
 struct Song;
+class DetachedSong;
 
 void
 mapper_init(AllocatedPath &&music_dir, AllocatedPath &&playlist_dir);
@@ -115,6 +116,10 @@ map_directory_child_fs(const Directory &directory, const char *name);
 gcc_pure
 AllocatedPath
 map_song_fs(const Song &song);
+
+gcc_pure
+AllocatedPath
+map_song_fs(const DetachedSong &song);
 
 /**
  * Maps a file system path (relative to the music directory or

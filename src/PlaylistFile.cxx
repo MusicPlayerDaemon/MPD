@@ -24,7 +24,7 @@
 #include "PlaylistVector.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseGlue.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "Mapper.hxx"
 #include "fs/TextFile.hxx"
 #include "ConfigGlobal.hxx"
@@ -361,7 +361,7 @@ spl_remove_index(const char *utf8path, unsigned pos, Error &error)
 }
 
 bool
-spl_append_song(const char *utf8path, const Song &song, Error &error)
+spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 {
 	if (spl_map(error).IsNull())
 		return false;
@@ -402,22 +402,21 @@ bool
 spl_append_uri(const char *url, const char *utf8file, Error &error)
 {
 	if (uri_has_scheme(url)) {
-		Song *song = Song::NewRemote(url);
-		bool success = spl_append_song(utf8file, *song, error);
-		song->Free();
-		return success;
+		return spl_append_song(utf8file, DetachedSong(url),
+				       error);
 	} else {
 		const Database *db = GetDatabase(error);
 		if (db == nullptr)
 			return false;
 
-		Song *song = db->GetSong(url, error);
-		if (song == nullptr)
+		Song *tmp = db->GetSong(url, error);
+		if (tmp == nullptr)
 			return false;
 
-		bool success = spl_append_song(utf8file, *song, error);
-		db->ReturnSong(song);
-		return success;
+		const DetachedSong song(*tmp);
+		db->ReturnSong(tmp);
+
+		return spl_append_song(utf8file, song, error);
 	}
 }
 

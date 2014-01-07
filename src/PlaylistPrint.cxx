@@ -31,6 +31,7 @@
 #include "Client.hxx"
 #include "InputStream.hxx"
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "fs/Traits.hxx"
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
@@ -151,7 +152,7 @@ playlist_provider_print(Client &client, const char *uri,
 		? PathTraitsUTF8::GetParent(uri)
 		: std::string(".");
 
-	Song *song;
+	DetachedSong *song;
 	while ((song = e.NextSong()) != nullptr) {
 		song = playlist_check_translate_song(song, base_uri.c_str(),
 						     false);
@@ -163,7 +164,7 @@ playlist_provider_print(Client &client, const char *uri,
 		else
 			song_print_uri(client, *song);
 
-		song->Free();
+		delete song;
 	}
 }
 

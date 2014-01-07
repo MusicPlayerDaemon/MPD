@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DecoderControl.hxx"
 #include "MusicPipe.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 
 #include <assert.h>
 
@@ -36,8 +36,7 @@ DecoderControl::~DecoderControl()
 {
 	ClearError();
 
-	if (song != nullptr)
-		song->Free();
+	delete song;
 }
 
 void
@@ -53,7 +52,7 @@ DecoderControl::WaitForDecoder()
 }
 
 bool
-DecoderControl::IsCurrentSong(const Song &_song) const
+DecoderControl::IsCurrentSong(const DetachedSong &_song) const
 {
 	switch (state) {
 	case DecoderState::STOP:
@@ -62,7 +61,7 @@ DecoderControl::IsCurrentSong(const Song &_song) const
 
 	case DecoderState::START:
 	case DecoderState::DECODE:
-		return SongEquals(*song, _song);
+		return song->IsSame(_song);
 	}
 
 	assert(false);
@@ -70,16 +69,14 @@ DecoderControl::IsCurrentSong(const Song &_song) const
 }
 
 void
-DecoderControl::Start(Song *_song,
+DecoderControl::Start(DetachedSong *_song,
 		      unsigned _start_ms, unsigned _end_ms,
 		      MusicBuffer &_buffer, MusicPipe &_pipe)
 {
 	assert(_song != nullptr);
 	assert(_pipe.IsEmpty());
 
-	if (song != nullptr)
-		song->Free();
-
+	delete song;
 	song = _song;
 	start_ms = _start_ms;
 	end_ms = _end_ms;

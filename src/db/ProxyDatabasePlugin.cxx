@@ -340,20 +340,19 @@ void
 ProxyDatabase::ReturnSong(Song *song) const
 {
 	assert(song != nullptr);
-	assert(song->IsInDatabase());
-	assert(song->IsDetached());
+	assert(song->parent == nullptr);
 
 	song->Free();
 }
 
 static bool
-Visit(struct mpd_connection *connection, const char *uri,
+Visit(struct mpd_connection *connection, Directory &root, const char *uri,
       bool recursive, const SongFilter *filter,
       VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error);
 
 static bool
-Visit(struct mpd_connection *connection,
+Visit(struct mpd_connection *connection, Directory &root,
       bool recursive, const SongFilter *filter,
       const struct mpd_directory *directory,
       VisitDirectory visit_directory, VisitSong visit_song,
@@ -362,7 +361,7 @@ Visit(struct mpd_connection *connection,
 	const char *path = mpd_directory_get_path(directory);
 
 	if (visit_directory) {
-		Directory *d = Directory::NewGeneric(path, &detached_root);
+		Directory *d = Directory::NewGeneric(path, &root);
 		bool success = visit_directory(*d, error);
 		d->Free();
 		if (!success)
@@ -370,7 +369,7 @@ Visit(struct mpd_connection *connection,
 	}
 
 	if (recursive &&
-	    !Visit(connection, path, recursive, filter,
+	    !Visit(connection, root, path, recursive, filter,
 		   visit_directory, visit_song, visit_playlist, error))
 		return false;
 
@@ -394,7 +393,7 @@ Copy(TagBuilder &tag, TagType d_tag,
 static Song *
 Convert(const struct mpd_song *song)
 {
-	Song *s = Song::NewDetached(mpd_song_get_uri(song));
+	Song *s = Song::NewFile(mpd_song_get_uri(song), nullptr);
 
 	s->mtime = mpd_song_get_last_modified(song);
 	s->start_ms = mpd_song_get_start(song) * 1000;
@@ -434,7 +433,7 @@ Visit(const SongFilter *filter,
 }
 
 static bool
-Visit(const struct mpd_playlist *playlist,
+Visit(const struct mpd_playlist *playlist, Directory &root,
       VisitPlaylist visit_playlist, Error &error)
 {
 	if (!visit_playlist)
@@ -443,7 +442,7 @@ Visit(const struct mpd_playlist *playlist,
 	PlaylistInfo p(mpd_playlist_get_path(playlist),
 		       mpd_playlist_get_last_modified(playlist));
 
-	return visit_playlist(p, detached_root, error);
+	return visit_playlist(p, root, error);
 }
 
 class ProxyEntity {
@@ -485,7 +484,7 @@ ReceiveEntities(struct mpd_connection *connection)
 }
 
 static bool
-Visit(struct mpd_connection *connection, const char *uri,
+Visit(struct mpd_connection *connection, Directory &root, const char *uri,
       bool recursive, const SongFilter *filter,
       VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error)
@@ -503,7 +502,7 @@ Visit(struct mpd_connection *connection, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_DIRECTORY:
-			if (!Visit(connection, recursive, filter,
+			if (!Visit(connection, root, recursive, filter,
 				   mpd_entity_get_directory(entity),
 				   visit_directory, visit_song, visit_playlist,
 				   error))
@@ -518,7 +517,7 @@ Visit(struct mpd_connection *connection, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_PLAYLIST:
-			if (!Visit(mpd_entity_get_playlist(entity),
+			if (!Visit(mpd_entity_get_playlist(entity), root,
 				   visit_playlist, error))
 				return false;
 			break;
@@ -577,7 +576,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 		return ::SearchSongs(connection, selection, visit_song, error);
 
 	/* fall back to recursive walk (slow!) */
-	return ::Visit(connection, selection.uri.c_str(),
+	return ::Visit(connection, *root, selection.uri.c_str(),
 		       selection.recursive, selection.filter,
 		       visit_directory, visit_song, visit_playlist,
 		       error);

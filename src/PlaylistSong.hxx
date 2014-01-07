@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYLIST_SONG_HXX
 #define MPD_PLAYLIST_SONG_HXX
 
-struct Song;
+class DetachedSong;
 
 /**
  * Verifies the song, returns nullptr if it is unsafe.  Translate the
@@ -30,8 +30,8 @@ struct Song;
  * @param secure if true, then local files are only allowed if they
  * are relative to base_uri
  */
-Song *
-playlist_check_translate_song(Song *song, const char *base_uri,
+DetachedSong *
+playlist_check_translate_song(DetachedSong *song, const char *base_uri,
 			      bool secure);
 
 #endif

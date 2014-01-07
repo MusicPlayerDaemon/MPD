@@ -23,7 +23,7 @@
 #include "DecoderInternal.hxx"
 #include "DecoderError.hxx"
 #include "DecoderPlugin.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "system/FatalError.hxx"
 #include "Mapper.hxx"
 #include "fs/Traits.hxx"
@@ -347,11 +347,10 @@ decoder_run_file(Decoder &decoder, const char *path_fs)
 
 static void
 decoder_run_song(DecoderControl &dc,
-		 const Song &song, const char *uri)
+		 const DetachedSong &song, const char *uri)
 {
 	Decoder decoder(dc, dc.start_ms > 0,
-			song.tag != nullptr && song.IsFile()
-			? new Tag(*song.tag) : nullptr);
+			new Tag(song.GetTag()));
 	int ret;
 
 	dc.state = DecoderState::START;
@@ -381,7 +380,7 @@ decoder_run_song(DecoderControl &dc,
 	else {
 		dc.state = DecoderState::ERROR;
 
-		const char *error_uri = song.uri;
+		const char *error_uri = song.GetURI();
 		const std::string allocated = uri_remove_auth(error_uri);
 		if (!allocated.empty())
 			error_uri = allocated.c_str();
@@ -399,10 +398,10 @@ decoder_run(DecoderControl &dc)
 	dc.ClearError();
 
 	assert(dc.song != nullptr);
-	const Song &song = *dc.song;
+	const DetachedSong &song = *dc.song;
 
 	const std::string uri = song.IsFile()
-		? std::string(map_song_fs(song).c_str())
+		? map_song_fs(song).c_str()
 		: song.GetURI();
 
 	if (uri.empty()) {

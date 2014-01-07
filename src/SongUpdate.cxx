@@ -78,8 +78,6 @@ tag_scan_fallback(Path path,
 bool
 Song::UpdateFile()
 {
-	assert(IsFile());
-
 	const auto path_fs = map_song_fs(*this);
 	if (path_fs.IsNull())
 		return false;
@@ -107,13 +105,9 @@ Song::UpdateFile()
 bool
 Song::UpdateFileInArchive()
 {
-	const char *suffix;
-
-	assert(IsFile());
-
 	/* check if there's a suffix and a plugin */
 
-	suffix = uri_get_suffix(uri);
+	const char *suffix = uri_get_suffix(uri);
 	if (suffix == nullptr)
 		return false;
 

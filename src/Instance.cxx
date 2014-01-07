@@ -23,9 +23,9 @@
 #include "Idle.hxx"
 
 void
-Instance::DeleteSong(const Song &song)
+Instance::DeleteSong(const char *uri)
 {
-	partition->DeleteSong(song);
+	partition->DeleteSong(uri);
 }
 
 void

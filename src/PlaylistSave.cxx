@@ -23,6 +23,7 @@
 #include "PlaylistError.hxx"
 #include "Playlist.hxx"
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -36,7 +37,7 @@
 #include <string.h>
 
 void
-playlist_print_song(FILE *file, const Song &song)
+playlist_print_song(FILE *file, const DetachedSong &song)
 {
 	if (playlist_saveAbsolutePaths && song.IsInDatabase()) {
 		const auto path = map_song_fs(song);
@@ -44,7 +45,7 @@ playlist_print_song(FILE *file, const Song &song)
 			fprintf(file, "%s\n", path.c_str());
 	} else {
 		const auto uri_utf8 = song.GetURI();
-		const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8.c_str());
+		const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
 
 		if (!uri_fs.IsNull())
 			fprintf(file, "%s\n", uri_fs.c_str());

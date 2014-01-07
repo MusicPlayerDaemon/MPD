@@ -32,13 +32,12 @@
 #define SONG_TIME	"Time: "
 
 struct Tag;
+struct Directory;
+class DetachedSong;
 
 /**
- * A dummy #directory instance that is used for "detached" song
- * copies.
+ * A song file inside the configured music directory.
  */
-extern struct Directory detached_root;
-
 struct Song {
 	/**
 	 * Pointers to the siblings of this directory within the
@@ -51,7 +50,14 @@ struct Song {
 	struct list_head siblings;
 
 	Tag *tag;
+
+	/**
+	 * The #Directory that contains this song.  May be nullptr if
+	 * the current database plugin does not manage the parent
+	 * directory this way.
+	 */
 	Directory *parent;
+
 	time_t mtime;
 
 	/**
@@ -65,11 +71,14 @@ struct Song {
 	 */
 	unsigned end_ms;
 
+	/**
+	 * The file name.  If #parent is nullptr, then this is the URI
+	 * relative to the music directory.
+	 */
 	char uri[sizeof(int)];
 
-	/** allocate a new song with a remote URL */
 	gcc_malloc
-	static Song *NewRemote(const char *uri);
+	static Song *NewFrom(DetachedSong &&other, Directory *parent);
 
 	/** allocate a new song with a local file name */
 	gcc_malloc
@@ -87,46 +96,7 @@ struct Song {
 		return LoadFile(path_utf8, &parent);
 	}
 
-	/**
-	 * Replaces the URI of a song object.  The given song object
-	 * is destroyed, and a newly allocated one is returned.  It
-	 * does not update the reference within the parent directory;
-	 * the caller is responsible for doing that.
-	 */
-	gcc_malloc
-	Song *ReplaceURI(const char *uri);
-
-	/**
-	 * Creates a "detached" song object.
-	 */
-	gcc_malloc
-	static Song *NewDetached(const char *uri);
-
-	/**
-	 * Creates a duplicate of the song object.  If the object is
-	 * in the database, it creates a "detached" copy of this song,
-	 * see Song::IsDetached().
-	 */
-	gcc_malloc
-	Song *DupDetached() const;
-
 	void Free();
-
-	bool IsInDatabase() const {
-		return parent != nullptr;
-	}
-
-	bool IsFile() const {
-		return IsInDatabase() || uri[0] == '/';
-	}
-
-	bool IsDetached() const {
-		assert(IsInDatabase());
-
-		return parent == &detached_root;
-	}
-
-	void ReplaceTag(Tag &&tag);
 
 	bool UpdateFile();
 	bool UpdateFileInArchive();
@@ -141,12 +111,5 @@ struct Song {
 	gcc_pure
 	double GetDuration() const;
 };
-
-/**
- * Returns true if both objects refer to the same physical song.
- */
-gcc_pure
-bool
-SongEquals(const Song &a, const Song &b);
 
 #endif
