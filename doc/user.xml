@@ -829,7 +829,7 @@ systemctl start mpd.socket</programlisting>
             <tbody>
               <row>
                 <entry>
-                  <varname>default_bute_order</varname>
+                  <varname>default_byte_order</varname>
                 <parameter>little_endian|big_endian</parameter>
                 </entry>
                 <entry>
