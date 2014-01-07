@@ -146,13 +146,11 @@ handle_string(void *ctx, const unsigned char* stringval,
 
 	switch (data->key) {
 	case Title:
-		if (data->title != nullptr)
-			g_free(data->title);
+		g_free(data->title);
 		data->title = g_strndup(s, stringlen);
 		break;
 	case Stream_URL:
-		if (data->stream_url != nullptr)
-			g_free(data->stream_url);
+		g_free(data->stream_url);
 		data->stream_url = g_strndup(s, stringlen);
 		data->got_url = 1;
 		break;
@@ -399,10 +397,8 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	g_free(u);
 	yajl_free(hand);
-	if (data.title != nullptr)
-		g_free(data.title);
-	if (data.stream_url != nullptr)
-		g_free(data.stream_url);
+	g_free(data.title);
+	g_free(data.stream_url);
 
 	if (ret == -1)
 		return nullptr;
