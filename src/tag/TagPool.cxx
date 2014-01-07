@@ -35,7 +35,7 @@ struct slot {
 	struct slot *next;
 	unsigned char ref;
 	TagItem item;
-} mpd_packed;
+} gcc_packed;
 
 static struct slot *slots[NUM_SLOTS];
 
