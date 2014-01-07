@@ -49,6 +49,10 @@ class SongFilter;
 class Error;
 
 struct Directory {
+	template<class T, typename... Args> friend T *
+	NewVarSize(size_t declared_tail_size, size_t real_tail_size,
+		   Args&&... args);
+
 	/**
 	 * Pointers to the siblings of this directory within the
 	 * parent directory.  It is unused (undefined) in the root

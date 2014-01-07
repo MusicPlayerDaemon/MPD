@@ -25,6 +25,7 @@
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "fs/Traits.hxx"
+#include "util/VarSize.hxx"
 #include "util/Error.hxx"
 
 extern "C" {
@@ -42,14 +43,9 @@ Directory::Allocate(const char *path)
 {
 	assert(path != nullptr);
 
-	const size_t path_size = strlen(path) + 1;
-	Directory *directory =
-		(Directory *)g_malloc(sizeof(*directory)
-				      - sizeof(directory->path)
-				      + path_size);
-	new(directory) Directory(path);
-
-	return directory;
+	return NewVarSize<Directory>(sizeof(Directory::path),
+				     strlen(path) + 1,
+				     path);
 }
 
 Directory::Directory()
@@ -96,8 +92,7 @@ Directory::NewGeneric(const char *path, Directory *parent)
 void
 Directory::Free()
 {
-	this->Directory::~Directory();
-	g_free(this);
+	DeleteVarSize(this);
 }
 
 void
