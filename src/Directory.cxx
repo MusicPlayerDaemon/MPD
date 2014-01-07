@@ -44,9 +44,9 @@ Directory::Allocate(const char *path)
 
 	const size_t path_size = strlen(path) + 1;
 	Directory *directory =
-		(Directory *)g_malloc0(sizeof(*directory)
-				       - sizeof(directory->path)
-				       + path_size);
+		(Directory *)g_malloc(sizeof(*directory)
+				      - sizeof(directory->path)
+				      + path_size);
 	new(directory) Directory(path);
 
 	return directory;
@@ -61,6 +61,7 @@ Directory::Directory()
 }
 
 Directory::Directory(const char *_path)
+	:mtime(0), have_stat(false)
 {
 	INIT_LIST_HEAD(&children);
 	INIT_LIST_HEAD(&songs);
