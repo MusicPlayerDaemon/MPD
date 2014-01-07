@@ -31,13 +31,13 @@ Mutex tag_pool_lock;
 
 #define NUM_SLOTS 4096
 
-struct slot {
-	struct slot *next;
+struct TagPoolSlot {
+	TagPoolSlot *next;
 	unsigned char ref;
 	TagItem item;
 } gcc_packed;
 
-static struct slot *slots[NUM_SLOTS];
+static TagPoolSlot *slots[NUM_SLOTS];
 
 static inline unsigned
 calc_hash_n(TagType type, const char *p, size_t length)
@@ -65,19 +65,18 @@ calc_hash(TagType type, const char *p)
 	return hash ^ type;
 }
 
-static inline struct slot *
+static inline constexpr TagPoolSlot *
 tag_item_to_slot(TagItem *item)
 {
-	return ContainerCast(item, slot, item);
+	return ContainerCast(item, TagPoolSlot, item);
 }
 
-static struct slot *slot_alloc(struct slot *next,
-			       TagType type,
-			       const char *value, int length)
+static TagPoolSlot *
+slot_alloc(TagPoolSlot *next, TagType type, const char *value, int length)
 {
-	struct slot *slot;
+	TagPoolSlot *slot;
 
-	slot = (struct slot *)
+	slot = (TagPoolSlot *)
 		g_malloc(sizeof(*slot) - sizeof(slot->item.value) + length + 1);
 	slot->next = next;
 	slot->ref = 1;
@@ -90,7 +89,7 @@ static struct slot *slot_alloc(struct slot *next,
 TagItem *
 tag_pool_get_item(TagType type, const char *value, size_t length)
 {
-	struct slot **slot_p, *slot;
+	TagPoolSlot **slot_p, *slot;
 
 	slot_p = &slots[calc_hash_n(type, value, length) % NUM_SLOTS];
 	for (slot = *slot_p; slot != nullptr; slot = slot->next) {
@@ -112,7 +111,7 @@ tag_pool_get_item(TagType type, const char *value, size_t length)
 TagItem *
 tag_pool_dup_item(TagItem *item)
 {
-	struct slot *slot = tag_item_to_slot(item);
+	TagPoolSlot *slot = tag_item_to_slot(item);
 
 	assert(slot->ref > 0);
 
@@ -123,7 +122,7 @@ tag_pool_dup_item(TagItem *item)
 		/* the reference counter overflows above 0xff;
 		   duplicate the item, and start with 1 */
 		size_t length = strlen(item->value);
-		struct slot **slot_p =
+		TagPoolSlot **slot_p =
 			&slots[calc_hash_n(item->type, item->value,
 					   length) % NUM_SLOTS];
 		slot = slot_alloc(*slot_p, item->type,
@@ -136,7 +135,7 @@ tag_pool_dup_item(TagItem *item)
 void
 tag_pool_put_item(TagItem *item)
 {
-	struct slot **slot_p, *slot;
+	TagPoolSlot **slot_p, *slot;
 
 	slot = tag_item_to_slot(item);
 	assert(slot->ref > 0);
