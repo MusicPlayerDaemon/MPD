@@ -21,8 +21,7 @@
 #include "DecoderBuffer.hxx"
 #include "DecoderAPI.hxx"
 #include "util/ConstBuffer.hxx"
-
-#include <glib.h>
+#include "util/VarSize.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -43,24 +42,22 @@ struct DecoderBuffer {
 
 	/** the actual buffer (dynamic size) */
 	unsigned char data[sizeof(size_t)];
+
+	DecoderBuffer(Decoder *_decoder, InputStream &_is,
+		      size_t _size)
+		:decoder(_decoder), is(&_is),
+		 size(_size), length(0), consumed(0) {}
 };
 
 DecoderBuffer *
 decoder_buffer_new(Decoder *decoder, InputStream &is,
 		   size_t size)
 {
-	DecoderBuffer *buffer = (DecoderBuffer *)
-		g_malloc(sizeof(*buffer) - sizeof(buffer->data) + size);
-
 	assert(size > 0);
 
-	buffer->decoder = decoder;
-	buffer->is = &is;
-	buffer->size = size;
-	buffer->length = 0;
-	buffer->consumed = 0;
-
-	return buffer;
+	return NewVarSize<DecoderBuffer>(sizeof(DecoderBuffer::data),
+					 size,
+					 decoder, is, size);
 }
 
 void
@@ -68,7 +65,7 @@ decoder_buffer_free(DecoderBuffer *buffer)
 {
 	assert(buffer != nullptr);
 
-	g_free(buffer);
+	DeleteVarSize(buffer);
 }
 
 bool
