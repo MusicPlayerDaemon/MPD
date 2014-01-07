@@ -21,8 +21,7 @@
 #include "TagPool.hxx"
 #include "TagItem.hxx"
 #include "util/Cast.hxx"
-
-#include <glib.h>
+#include "util/VarSize.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -35,7 +34,29 @@ struct TagPoolSlot {
 	TagPoolSlot *next;
 	unsigned char ref;
 	TagItem item;
+
+	TagPoolSlot(TagPoolSlot *_next, TagType type,
+		    const char *value, size_t length)
+		:next(_next), ref(1) {
+		item.type = type;
+		memcpy(item.value, value, length);
+		item.value[length] = 0;
+	}
+
+	static TagPoolSlot *Create(TagPoolSlot *_next, TagType type,
+				   const char *value, size_t length);
 } gcc_packed;
+
+TagPoolSlot *
+TagPoolSlot::Create(TagPoolSlot *_next, TagType type,
+		    const char *value, size_t length)
+{
+	TagPoolSlot *dummy;
+	return NewVarSize<TagPoolSlot>(sizeof(dummy->item.value),
+				       length + 1,
+				       _next, type,
+				       value, length);
+}
 
 static TagPoolSlot *slots[NUM_SLOTS];
 
@@ -71,21 +92,6 @@ tag_item_to_slot(TagItem *item)
 	return ContainerCast(item, TagPoolSlot, item);
 }
 
-static TagPoolSlot *
-slot_alloc(TagPoolSlot *next, TagType type, const char *value, int length)
-{
-	TagPoolSlot *slot;
-
-	slot = (TagPoolSlot *)
-		g_malloc(sizeof(*slot) - sizeof(slot->item.value) + length + 1);
-	slot->next = next;
-	slot->ref = 1;
-	slot->item.type = type;
-	memcpy(slot->item.value, value, length);
-	slot->item.value[length] = 0;
-	return slot;
-}
-
 TagItem *
 tag_pool_get_item(TagType type, const char *value, size_t length)
 {
@@ -103,7 +109,7 @@ tag_pool_get_item(TagType type, const char *value, size_t length)
 		}
 	}
 
-	slot = slot_alloc(*slot_p, type, value, length);
+	slot = TagPoolSlot::Create(*slot_p, type, value, length);
 	*slot_p = slot;
 	return &slot->item;
 }
@@ -125,8 +131,8 @@ tag_pool_dup_item(TagItem *item)
 		TagPoolSlot **slot_p =
 			&slots[calc_hash_n(item->type, item->value,
 					   length) % NUM_SLOTS];
-		slot = slot_alloc(*slot_p, item->type,
-				  item->value, strlen(item->value));
+		slot = TagPoolSlot::Create(*slot_p, item->type,
+					   item->value, strlen(item->value));
 		*slot_p = slot;
 		return &slot->item;
 	}
@@ -151,5 +157,5 @@ tag_pool_put_item(TagItem *item)
 	}
 
 	*slot_p = slot->next;
-	g_free(slot);
+	DeleteVarSize(slot);
 }
