@@ -393,6 +393,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	if (!ret) {
 		LogError(error);
 		NeAACDecClose(decoder);
+		decoder_buffer_free(buffer);
 		return;
 	}
 
@@ -461,6 +462,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	/* cleanup */
 
 	NeAACDecClose(decoder);
+	decoder_buffer_free(buffer);
 }
 
 static bool

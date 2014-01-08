@@ -2,6 +2,8 @@ ver 0.18.7 (not yet released)
 * playlist
   - pls: fix crash after parser error
   - soundcloud: fix build failure with libyajl 2.0.1
+* decoder
+  - faad: fix memory leak
 * daemon: don't initialize supplementary groups when already running
   as the configured user
 
