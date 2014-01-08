@@ -364,15 +364,6 @@ AlsaInputStream::OpenDevice(const char *device,
 		return nullptr;
 	}
 
-	if ((err = snd_pcm_sw_params_set_period_event(capture_handle, sw_params,
-						      1)) < 0) {
-		error.Format(alsa_input_domain,
-			     "unable to set period event (%s)", snd_strerror(err));
-		snd_pcm_sw_params_free(sw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
-	}
-
 	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0) {
 		error.Format(alsa_input_domain,
 			     "unable to install sw params (%s)", snd_strerror(err));
