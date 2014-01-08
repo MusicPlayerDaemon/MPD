@@ -60,15 +60,13 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 	Song *song = parent != nullptr
 		? Song::NewFile(uri, parent)
 		: Song::NewRemote(uri);
-	char *line, *colon;
-	TagType type;
-	const char *value;
 
 	TagBuilder tag;
 
+	char *line;
 	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, SONG_END) != 0) {
-		colon = strchr(line, ':');
+		char *colon = strchr(line, ':');
 		if (colon == nullptr || colon == line) {
 			song->Free();
 
@@ -78,8 +76,9 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 		}
 
 		*colon++ = 0;
-		value = strchug_fast(colon);
+		const char *value = strchug_fast(colon);
 
+		TagType type;
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			tag.AddItem(type, value);
 		} else if (strcmp(line, "Time") == 0) {
