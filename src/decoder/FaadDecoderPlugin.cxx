@@ -359,6 +359,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	if (!faad_decoder_init(decoder, buffer, audio_format, error)) {
 		LogError(error);
 		NeAACDecClose(decoder);
+		decoder_buffer_free(buffer);
 		return;
 	}
 
@@ -428,6 +429,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	/* cleanup */
 
 	NeAACDecClose(decoder);
+	decoder_buffer_free(buffer);
 }
 
 static bool

@@ -42,7 +42,8 @@ const char *
 uri_get_suffix(const char *uri)
 {
 	const char *suffix = strrchr(uri, '.');
-	if (suffix == nullptr)
+	if (suffix == nullptr || suffix == uri ||
+	    suffix[-1] == '/' || suffix[-1] == '\\')
 		return nullptr;
 
 	++suffix;

@@ -29,6 +29,10 @@ public:
 					       "jpg"));
 		CPPUNIT_ASSERT_EQUAL(0, strcmp(uri_get_suffix("/foo.png/bar.jpg"),
 					       "jpg"));
+		CPPUNIT_ASSERT_EQUAL((const char *)nullptr,
+				     uri_get_suffix(".jpg"));
+		CPPUNIT_ASSERT_EQUAL((const char *)nullptr,
+				     uri_get_suffix("/foo/.jpg"));
 	}
 
 	void TestRemoveAuth() {
