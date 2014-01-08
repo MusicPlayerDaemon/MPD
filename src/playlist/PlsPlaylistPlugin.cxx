@@ -81,24 +81,17 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 
 		sprintf(key, "Title%u", num_entries);
 		value = g_key_file_get_string(keyfile, "playlist", key,
-					      &error);
-		if (error == nullptr && value != nullptr)
+					      nullptr);
+		if (value != nullptr)
 			tag.AddItem(TAG_TITLE, value);
 
-		/* Ignore errors? Most likely value not present */
-		if(error) g_error_free(error);
-		error = nullptr;
 		g_free(value);
 
 		sprintf(key, "Length%u", num_entries);
 		length = g_key_file_get_integer(keyfile, "playlist", key,
-						&error);
-		if (error == nullptr && length > 0)
+						nullptr);
+		if (length > 0)
 			tag.SetTime(length);
-
-		/* Ignore errors? Most likely value not present */
-		if(error) g_error_free(error);
-		error = nullptr;
 
 		song->tag = tag.CommitNew();
 		songs.emplace_front(song);
