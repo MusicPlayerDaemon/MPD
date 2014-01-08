@@ -59,7 +59,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		}
 	}
 
-	while (num_entries > 0) {
+	for (; num_entries > 0; --num_entries) {
 		Song *song;
 
 		char key[64];
@@ -95,7 +95,6 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 
 		song->tag = tag.CommitNew();
 		songs.emplace_front(song);
-		num_entries--;
 	}
 
 }
