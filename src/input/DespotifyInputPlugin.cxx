@@ -41,7 +41,7 @@ class DespotifyInputStream {
 
 	struct despotify_session *session;
 	struct ds_track *track;
-	Tag *tag;
+	Tag tag;
 	struct ds_pcm_data pcm;
 	size_t len_available;
 	bool eof;
@@ -64,8 +64,6 @@ class DespotifyInputStream {
 
 public:
 	~DespotifyInputStream() {
-		delete tag;
-
 		despotify_free_track(track);
 	}
 
@@ -79,8 +77,11 @@ public:
 	size_t Read(void *ptr, size_t size, Error &error);
 
 	Tag *ReadTag() {
-		Tag *result = tag;
-		tag = nullptr;
+		if (tag.IsEmpty())
+			return nullptr;
+
+		Tag *result = new Tag(std::move(tag));
+		tag.Clear();
 		return result;
 	}
 

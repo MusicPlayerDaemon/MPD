@@ -83,8 +83,7 @@ void mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, in
 	}
 }
 
-
-Tag *
+Tag
 mpd_despotify_tag_from_track(const ds_track &track)
 {
 	char tracknum[20];
@@ -92,7 +91,7 @@ mpd_despotify_tag_from_track(const ds_track &track)
 	char date[20];
 
 	if (!track.has_meta_data)
-		return new Tag();
+		return Tag();
 
 	TagBuilder tag;
 	snprintf(tracknum, sizeof(tracknum), "%d", track.tracknumber);
@@ -108,7 +107,7 @@ mpd_despotify_tag_from_track(const ds_track &track)
 	tag.AddItem(TAG_COMMENT, comment);
 	tag.SetTime(track.length / 1000);
 
-	return tag.CommitNew();
+	return tag.Commit();
 }
 
 struct despotify_session *mpd_despotify_get_session(void)

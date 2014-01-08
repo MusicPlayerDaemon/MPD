@@ -53,7 +53,7 @@ add_song(std::forward_list<SongPointer> &songs, ds_track &track)
 	}
 
 	song = Song::NewRemote(uri);
-	song->tag = mpd_despotify_tag_from_track(track);
+	song->tag = new Tag(mpd_despotify_tag_from_track(track));
 
 	songs.emplace_front(song);
 }

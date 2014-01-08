@@ -42,9 +42,9 @@ struct despotify_session *mpd_despotify_get_session(void);
  *
  * @param track the track to convert
  *
- * @return a pointer to the filled in tags structure
+ * @return filled in #Tag structure
  */
-Tag *
+Tag
 mpd_despotify_tag_from_track(const ds_track &track);
 
 /**
