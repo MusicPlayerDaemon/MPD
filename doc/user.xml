@@ -1073,6 +1073,24 @@ systemctl start mpd.socket</programlisting>
           <filename>mpc add smb://servername/sharename/filename.ogg</filename>
         </para>
       </section>
+
+      <section>
+        <title><varname>alsa</varname></title>
+
+        <para>
+          Allows MPD on Linux to play audio directly from a soundcard using
+          the scheme <filename>alsa://</filename>. Audio is formatted as
+          44.1 kHz 16-bit stereo (CD format). Examples:
+        </para>
+
+        <para>
+          <filename>mpc add alsa://</filename> plays audio from device hw:0,0
+        </para>
+        <para>
+          <filename>mpc add alsa://hw:1,0</filename> plays audio from device
+          hw:1,0
+        </para>
+      </section>
     </section>
 
     <section>
