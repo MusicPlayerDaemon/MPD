@@ -98,7 +98,7 @@ extm3u_parse_tag(const char *line)
 	if (*name != 0)
 		tag.AddItem(TAG_NAME, name);
 
-	return tag.Commit();
+	return tag.CommitNew();
 }
 
 Song *

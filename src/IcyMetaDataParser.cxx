@@ -109,7 +109,7 @@ icy_parse_tag(const char *p)
 
 	g_strfreev(items);
 
-	return tag.Commit();
+	return tag.CommitNew();
 }
 
 size_t

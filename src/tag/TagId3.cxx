@@ -370,7 +370,7 @@ tag_id3_import(struct id3_tag *tag)
 	scan_id3_tag(tag, &add_tag_handler, &tag_builder);
 	return tag_builder.IsEmpty()
 		? nullptr
-		: tag_builder.Commit();
+		: tag_builder.CommitNew();
 }
 
 static size_t

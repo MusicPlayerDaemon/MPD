@@ -915,7 +915,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 		TagBuilder tag_builder;
 		tag_builder.AddItem(TAG_NAME, c->meta_name.c_str());
 
-		c->tag = tag_builder.Commit();
+		c->tag = tag_builder.CommitNew();
 	} else if (StringEqualsCaseASCII(name, "icy-metaint")) {
 		char buffer[64];
 		size_t icy_metaint;

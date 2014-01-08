@@ -114,7 +114,7 @@ update_container_file(Directory &directory,
 				add_tag_handler, &tag_builder);
 
 		if (tag_builder.IsDefined())
-			song->tag = tag_builder.Commit();
+			song->tag = tag_builder.CommitNew();
 		else
 			tag_builder.Clear();
 

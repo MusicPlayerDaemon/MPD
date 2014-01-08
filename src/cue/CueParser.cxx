@@ -170,7 +170,7 @@ CueParser::Commit()
 		return;
 
 	assert(current->tag == nullptr);
-	current->tag = song_tag.Commit();
+	current->tag = song_tag.CommitNew();
 
 	finished = previous;
 	previous = current;

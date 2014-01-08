@@ -134,7 +134,7 @@ TagBuilder::Commit(Tag &tag)
 }
 
 Tag *
-TagBuilder::Commit()
+TagBuilder::CommitNew()
 {
 	Tag *tag = new Tag();
 	Commit(*tag);

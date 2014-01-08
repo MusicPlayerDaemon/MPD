@@ -100,7 +100,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		if(error) g_error_free(error);
 		error = nullptr;
 
-		song->tag = tag.Commit();
+		song->tag = tag.CommitNew();
 		songs.emplace_front(song);
 		num_entries--;
 	}

@@ -108,7 +108,7 @@ mpd_despotify_tag_from_track(struct ds_track *track)
 	tag.AddItem(TAG_COMMENT, comment);
 	tag.SetTime(track->length / 1000);
 
-	return tag.Commit();
+	return tag.CommitNew();
 }
 
 struct despotify_session *mpd_despotify_get_session(void)

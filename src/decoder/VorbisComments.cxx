@@ -137,5 +137,5 @@ vorbis_comments_to_tag(char **comments)
 	vorbis_comments_scan(comments, &add_tag_handler, &tag_builder);
 	return tag_builder.IsEmpty()
 		? nullptr
-		: tag_builder.Commit();
+		: tag_builder.CommitNew();
 }

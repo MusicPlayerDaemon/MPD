@@ -151,7 +151,7 @@ xspf_end_element(gcc_unused GMarkupParseContext *context,
 		if (strcmp(element_name, "track") == 0) {
 			if (parser->song != nullptr) {
 				assert(parser->song->tag == nullptr);
-				parser->song->tag = parser->tag_builder.Commit();
+				parser->song->tag = parser->tag_builder.CommitNew();
 				parser->songs.emplace_front(parser->song);
 			}
 

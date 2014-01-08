@@ -101,7 +101,7 @@ public:
 	 * returned object is owned by the caller.  This object is
 	 * empty afterwards.
 	 */
-	Tag *Commit();
+	Tag *CommitNew();
 
 	void SetTime(int _time) {
 		time = _time;

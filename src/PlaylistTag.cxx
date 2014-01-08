@@ -56,7 +56,7 @@ playlist::AddSongIdTag(unsigned id, TagType tag_type, const char *value,
 	}
 
 	tag.AddItem(tag_type, value);
-	song.tag = tag.Commit();
+	song.tag = tag.CommitNew();
 
 	queue.ModifyAtPosition(position);
 	OnModified();
@@ -91,7 +91,7 @@ playlist::ClearSongIdTag(unsigned id, TagType tag_type,
 		tag.RemoveAll();
 	else
 		tag.RemoveType(tag_type);
-	song.tag = tag.Commit();
+	song.tag = tag.CommitNew();
 
 	queue.ModifyAtPosition(position);
 	OnModified();

@@ -144,7 +144,7 @@ asx_end_element(gcc_unused GMarkupParseContext *context,
 		if (StringEqualsCaseASCII(element_name, "entry")) {
 			if (strcmp(parser->song->uri, "asx:") != 0) {
 				assert(parser->song->tag == nullptr);
-				parser->song->tag = parser->tag_builder.Commit();
+				parser->song->tag = parser->tag_builder.CommitNew();
 				parser->songs.emplace_front(parser->song);
 			} else
 				parser->song->Free();

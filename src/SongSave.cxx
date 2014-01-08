@@ -104,7 +104,7 @@ song_load(TextFile &file, Directory *parent, const char *uri,
 	}
 
 	if (tag.IsDefined())
-		song->tag = tag.Commit();
+		song->tag = tag.CommitNew();
 
 	return song;
 }
