@@ -68,7 +68,6 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 			FormatError(pls_domain, "Invalid PLS entry %s: '%s'",
 				    key, error->message);
 			g_error_free(error);
-			g_free(key);
 			return;
 		}
 
