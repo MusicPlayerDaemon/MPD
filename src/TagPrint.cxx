@@ -35,6 +35,12 @@ void tag_print_types(Client &client)
 	}
 }
 
+void
+tag_print(Client &client, TagType type, const char *value)
+{
+	client_printf(client, "%s: %s\n", tag_item_names[type], value);
+}
+
 void tag_print(Client &client, const Tag &tag)
 {
 	if (tag.time >= 0)

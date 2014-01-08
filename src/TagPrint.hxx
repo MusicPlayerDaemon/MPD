@@ -20,10 +20,17 @@
 #ifndef MPD_TAG_PRINT_HXX
 #define MPD_TAG_PRINT_HXX
 
+#include <stdint.h>
+
+enum TagType : uint8_t;
+
 struct Tag;
 class Client;
 
 void tag_print_types(Client &client);
+
+void
+tag_print(Client &client, TagType type, const char *value);
 
 void
 tag_print(Client &client, const Tag &tag);

@@ -26,6 +26,8 @@
 #include "Song.hxx"
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
+#include "TagStream.hxx"
+#include "tag/TagHandler.hxx"
 #include "TimePrint.hxx"
 #include "Mapper.hxx"
 #include "DecoderPrint.hxx"
@@ -98,6 +100,20 @@ handle_close(gcc_unused Client &client,
 	return CommandResult::FINISH;
 }
 
+static void
+print_tag(TagType type, const char *value, void *ctx)
+{
+	Client &client = *(Client *)ctx;
+
+	tag_print(client, type, value);
+}
+
+static constexpr tag_handler print_tag_handler = {
+	nullptr,
+	print_tag,
+	nullptr,
+};
+
 CommandResult
 handle_lsinfo(Client &client, int argc, char *argv[])
 {
@@ -143,16 +159,12 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 			return CommandResult::ERROR;
 		}
 
-		Song *song = Song::NewRemote(uri);
-		if (!song->UpdateStream()) {
-			song->Free();
+		if (!tag_stream_scan(uri, print_tag_handler, &client)) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "No such file");
 			return CommandResult::ERROR;
 		}
 
-		song_print_info(client, *song);
-		song->Free();
 		return CommandResult::OK;
 	}
 

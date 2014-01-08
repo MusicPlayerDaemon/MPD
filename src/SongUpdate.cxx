@@ -132,17 +132,3 @@ Song::UpdateFileInArchive()
 	tag = tag_builder.CommitNew();
 	return true;
 }
-
-bool
-Song::UpdateStream()
-{
-	assert(!IsFile());
-
-	TagBuilder tag_builder;
-	if (!tag_stream_scan(uri, full_tag_handler, &tag_builder))
-		return false;
-
-	delete tag;
-	tag = tag_builder.CommitNew();
-	return true;
-}
