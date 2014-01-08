@@ -34,7 +34,7 @@ extern "C" {
 #include <stdlib.h>
 
 static void
-add_song(std::forward_list<SongPointer> &songs, struct ds_track *track)
+add_song(std::forward_list<SongPointer> &songs, ds_track &track)
 {
 	const char *dsp_scheme = despotify_playlist_plugin.schemes[0];
 	Song *song;
@@ -45,10 +45,10 @@ add_song(std::forward_list<SongPointer> &songs, struct ds_track *track)
 	snprintf(uri, sizeof(uri), "%s://", dsp_scheme);
 	ds_uri = uri + strlen(dsp_scheme) + 3;
 
-	if (despotify_track_to_uri(track, ds_uri) != ds_uri) {
+	if (despotify_track_to_uri(&track, ds_uri) != ds_uri) {
 		/* Should never really fail, but let's be sure */
 		FormatDebug(despotify_domain,
-			    "Can't add track %s", track->title);
+			    "Can't add track %s", track.title);
 		return;
 	}
 
@@ -67,7 +67,7 @@ parse_track(struct despotify_session *session,
 	if (track == nullptr)
 		return false;
 
-	add_song(songs, track);
+	add_song(songs, *track);
 	return true;
 }
 
@@ -82,7 +82,7 @@ parse_playlist(struct despotify_session *session,
 
 	for (ds_track *track = playlist->tracks; track != nullptr;
 	     track = track->next)
-		add_song(songs, track);
+		add_song(songs, *track);
 
 	return true;
 }

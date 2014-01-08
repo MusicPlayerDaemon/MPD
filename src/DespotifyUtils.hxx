@@ -45,7 +45,7 @@ struct despotify_session *mpd_despotify_get_session(void);
  * @return a pointer to the filled in tags structure
  */
 Tag *
-mpd_despotify_tag_from_track(struct ds_track *track);
+mpd_despotify_tag_from_track(const ds_track &track);
 
 /**
  * Register a despotify callback.

@@ -85,28 +85,28 @@ void mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, in
 
 
 Tag *
-mpd_despotify_tag_from_track(struct ds_track *track)
+mpd_despotify_tag_from_track(const ds_track &track)
 {
 	char tracknum[20];
 	char comment[80];
 	char date[20];
 
-	if (!track->has_meta_data)
+	if (!track.has_meta_data)
 		return new Tag();
 
 	TagBuilder tag;
-	snprintf(tracknum, sizeof(tracknum), "%d", track->tracknumber);
-	snprintf(date, sizeof(date), "%d", track->year);
+	snprintf(tracknum, sizeof(tracknum), "%d", track.tracknumber);
+	snprintf(date, sizeof(date), "%d", track.year);
 	snprintf(comment, sizeof(comment), "Bitrate %d Kbps, %sgeo restricted",
-		 track->file_bitrate / 1000,
-		 track->geo_restricted ? "" : "not ");
-	tag.AddItem(TAG_TITLE, track->title);
-	tag.AddItem(TAG_ARTIST, track->artist->name);
+		 track.file_bitrate / 1000,
+		 track.geo_restricted ? "" : "not ");
+	tag.AddItem(TAG_TITLE, track.title);
+	tag.AddItem(TAG_ARTIST, track.artist->name);
 	tag.AddItem(TAG_TRACK, tracknum);
-	tag.AddItem(TAG_ALBUM, track->album);
+	tag.AddItem(TAG_ALBUM, track.album);
 	tag.AddItem(TAG_DATE, date);
 	tag.AddItem(TAG_COMMENT, comment);
-	tag.SetTime(track->length / 1000);
+	tag.SetTime(track.length / 1000);
 
 	return tag.CommitNew();
 }

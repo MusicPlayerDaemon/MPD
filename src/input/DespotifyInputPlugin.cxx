@@ -52,7 +52,7 @@ class DespotifyInputStream {
 			     ds_track *_track)
 		:base(input_plugin_despotify, uri, mutex, cond),
 		 session(_session), track(_track),
-		 tag(mpd_despotify_tag_from_track(track)),
+		 tag(mpd_despotify_tag_from_track(*track)),
 		 len_available(0), eof(false) {
 
 		memset(&pcm, 0, sizeof(pcm));
