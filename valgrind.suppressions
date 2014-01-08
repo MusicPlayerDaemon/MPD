@@ -485,3 +485,25 @@
    fun:call_init
    fun:_dl_init
 }
+
+#
+# libsmbclient
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:smbc_*_context
+   fun:smbc_init
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:smbc_setDebug
+   fun:smbc_init
+}
