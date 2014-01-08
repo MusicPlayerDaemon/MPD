@@ -130,9 +130,8 @@ flac_parse_replay_gain(ReplayGainInfo &rgi,
 MixRampInfo
 flac_parse_mixramp(const FLAC__StreamMetadata *block);
 
-void
-flac_vorbis_comments_to_tag(Tag &tag,
-			    const FLAC__StreamMetadata_VorbisComment *comment);
+Tag
+flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment);
 
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,

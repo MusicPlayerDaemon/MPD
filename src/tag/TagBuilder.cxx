@@ -133,6 +133,14 @@ TagBuilder::Commit(Tag &tag)
 	Clear();
 }
 
+Tag
+TagBuilder::Commit()
+{
+	Tag tag;
+	Commit(tag);
+	return tag;
+}
+
 Tag *
 TagBuilder::CommitNew()
 {

@@ -782,7 +782,7 @@ copy_icy_tag(struct input_curl *c)
 	if (!c->meta_name.empty() && !tag->HasType(TAG_NAME)) {
 		TagBuilder tag_builder(std::move(*tag));
 		tag_builder.AddItem(TAG_NAME, c->meta_name.c_str());
-		tag_builder.Commit(*tag);
+		*tag = tag_builder.Commit();
 	}
 
 	c->tag = tag;

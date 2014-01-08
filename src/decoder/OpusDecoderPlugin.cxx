@@ -292,8 +292,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	    !tag_builder.IsEmpty()) {
 		decoder_replay_gain(decoder, &rgi);
 
-		Tag tag;
-		tag_builder.Commit(tag);
+		Tag tag = tag_builder.Commit();
 		cmd = decoder_tag(decoder, input_stream, std::move(tag));
 	} else
 		cmd = decoder_get_command(decoder);

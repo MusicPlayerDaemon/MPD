@@ -97,6 +97,12 @@ public:
 	void Commit(Tag &tag);
 
 	/**
+	 * Create a new #Tag instance from data in this object.  This
+	 * object is empty afterwards.
+	 */
+	Tag Commit();
+
+	/**
 	 * Create a new #Tag instance from data in this object.  The
 	 * returned object is owned by the caller.  This object is
 	 * empty afterwards.

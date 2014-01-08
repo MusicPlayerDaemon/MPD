@@ -24,6 +24,7 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagTable.hxx"
 #include "tag/TagBuilder.hxx"
+#include "tag/Tag.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
 #include "util/SplitString.hxx"
@@ -199,13 +200,12 @@ flac_scan_metadata(const FLAC__StreamMetadata *block,
 	}
 }
 
-void
-flac_vorbis_comments_to_tag(Tag &tag,
-			    const FLAC__StreamMetadata_VorbisComment *comment)
+Tag
+flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment)
 {
 	TagBuilder tag_builder;
 	flac_scan_comments(comment, &add_tag_handler, &tag_builder);
-	tag_builder.Commit(tag);
+	return tag_builder.Commit();
 }
 
 void
