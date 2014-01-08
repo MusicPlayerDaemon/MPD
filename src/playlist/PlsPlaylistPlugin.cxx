@@ -40,7 +40,6 @@ static void
 pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 {
 	gchar *value;
-	int length;
 	GError *error = nullptr;
 	int num_entries = g_key_file_get_integer(keyfile, "playlist",
 						 "NumberOfEntries", &error);
@@ -60,8 +59,6 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 	}
 
 	for (; num_entries > 0; --num_entries) {
-		Song *song;
-
 		char key[64];
 		sprintf(key, "File%u", num_entries);
 		value = g_key_file_get_string(keyfile, "playlist", key,
@@ -74,7 +71,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 			return;
 		}
 
-		song = Song::NewRemote(value);
+		Song *song = Song::NewRemote(value);
 		g_free(value);
 
 		TagBuilder tag;
@@ -88,8 +85,8 @@ pls_parser(GKeyFile *keyfile, std::forward_list<SongPointer> &songs)
 		g_free(value);
 
 		sprintf(key, "Length%u", num_entries);
-		length = g_key_file_get_integer(keyfile, "playlist", key,
-						nullptr);
+		int length = g_key_file_get_integer(keyfile, "playlist", key,
+						    nullptr);
 		if (length > 0)
 			tag.SetTime(length);
 
@@ -104,15 +101,12 @@ pls_open_stream(InputStream &is)
 {
 	GError *error = nullptr;
 	Error error2;
-	size_t nbytes;
-	char buffer[1024];
-	bool success;
-	GKeyFile *keyfile;
 
 	std::string kf_data;
 
 	do {
-		nbytes = is.LockRead(buffer, sizeof(buffer), error2);
+		char buffer[1024];
+		size_t nbytes = is.LockRead(buffer, sizeof(buffer), error2);
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				LogError(error2);
@@ -131,12 +125,10 @@ pls_open_stream(InputStream &is)
 		return nullptr;
 	}
 
-	keyfile = g_key_file_new();
-	success = g_key_file_load_from_data(keyfile,
-					    kf_data.data(), kf_data.length(),
-					    G_KEY_FILE_NONE, &error);
-
-	if (!success) {
+	GKeyFile *keyfile = g_key_file_new();
+	if (!g_key_file_load_from_data(keyfile,
+				       kf_data.data(), kf_data.length(),
+				       G_KEY_FILE_NONE, &error)) {
 		FormatError(pls_domain,
 			    "KeyFile parser failed: %s", error->message);
 		g_error_free(error);
