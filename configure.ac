@@ -229,6 +229,11 @@ AC_ARG_ENABLE(libmpdclient,
 		[enable support for the MPD client]),,
 	enable_libmpdclient=auto)
 
+AC_ARG_ENABLE(expat,
+	AS_HELP_STRING([--enable-expat],
+		[enable the expat XML parser]),,
+	enable_expat=auto)
+
 AC_ARG_ENABLE(adplug,
 	AS_HELP_STRING([--enable-adplug],
 		[enable the AdPlug decoder plugin (default: auto)]),,
@@ -638,6 +643,15 @@ if test x$enable_libmpdclient = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_LIBMPDCLIENT, test x$enable_libmpdclient = xyes)
+
+dnl -------------------------------- expat --------------------------------
+MPD_AUTO_PKG(expat, EXPAT, [expat],
+	[expat XML parser], [expat not found])
+if test x$enable_expat = xyes; then
+	AC_DEFINE(HAVE_EXPAT, 1, [Define to use the expat XML parser])
+fi
+
+AM_CONDITIONAL(HAVE_EXPAT, test x$enable_expat = xyes)
 
 dnl --------------------------------- inotify ---------------------------------
 AC_CHECK_FUNCS(inotify_init inotify_init1)

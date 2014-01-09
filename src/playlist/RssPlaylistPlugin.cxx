@@ -21,19 +21,12 @@
 #include "RssPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "MemorySongEnumerator.hxx"
-#include "InputStream.hxx"
 #include "Song.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "Expat.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
-
-#include <string.h>
-
-static constexpr Domain rss_domain("rss");
 
 /**
  * This is the state object for the GLib XML parser.
@@ -71,23 +64,9 @@ struct RssParser {
 		:state(ROOT) {}
 };
 
-static const gchar *
-get_attribute(const gchar **attribute_names, const gchar **attribute_values,
-	      const gchar *name)
-{
-	for (unsigned i = 0; attribute_names[i] != nullptr; ++i)
-		if (StringEqualsCaseASCII(attribute_names[i], name))
-			return attribute_values[i];
-
-	return nullptr;
-}
-
-static void
-rss_start_element(gcc_unused GMarkupParseContext *context,
-		  const gchar *element_name,
-		  const gchar **attribute_names,
-		  const gchar **attribute_values,
-		  gpointer user_data, gcc_unused GError **error)
+static void XMLCALL
+rss_start_element(void *user_data, const XML_Char *element_name,
+		  const XML_Char **atts)
 {
 	RssParser *parser = (RssParser *)user_data;
 
@@ -103,9 +82,8 @@ rss_start_element(gcc_unused GMarkupParseContext *context,
 
 	case RssParser::ITEM:
 		if (StringEqualsCaseASCII(element_name, "enclosure")) {
-			const gchar *href = get_attribute(attribute_names,
-							  attribute_values,
-							  "url");
+			const char *href =
+				ExpatParser::GetAttributeCase(atts, "url");
 			if (href != nullptr)
 				parser->location = href;
 		} else if (StringEqualsCaseASCII(element_name, "title"))
@@ -117,10 +95,8 @@ rss_start_element(gcc_unused GMarkupParseContext *context,
 	}
 }
 
-static void
-rss_end_element(gcc_unused GMarkupParseContext *context,
-		const gchar *element_name,
-		gpointer user_data, gcc_unused GError **error)
+static void XMLCALL
+rss_end_element(void *user_data, const XML_Char *element_name)
 {
 	RssParser *parser = (RssParser *)user_data;
 
@@ -142,10 +118,8 @@ rss_end_element(gcc_unused GMarkupParseContext *context,
 	}
 }
 
-static void
-rss_text(gcc_unused GMarkupParseContext *context,
-	 const gchar *text, gsize text_len,
-	 gpointer user_data, gcc_unused GError **error)
+static void XMLCALL
+rss_char_data(void *user_data, const XML_Char *s, int len)
 {
 	RssParser *parser = (RssParser *)user_data;
 
@@ -155,20 +129,11 @@ rss_text(gcc_unused GMarkupParseContext *context,
 
 	case RssParser::ITEM:
 		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
-			parser->tag_builder.AddItem(parser->tag_type,
-						    text, text_len);
+			parser->tag_builder.AddItem(parser->tag_type, s, len);
 
 		break;
 	}
 }
-
-static const GMarkupParser rss_parser = {
-	rss_start_element,
-	rss_end_element,
-	rss_text,
-	nullptr,
-	nullptr,
-};
 
 /*
  * The playlist object
@@ -179,58 +144,21 @@ static SongEnumerator *
 rss_open_stream(InputStream &is)
 {
 	RssParser parser;
-	GMarkupParseContext *context;
-	char buffer[1024];
-	size_t nbytes;
-	bool success;
-	Error error2;
-	GError *error = nullptr;
 
-	/* parse the RSS XML file */
+	{
+		ExpatParser expat(&parser);
+		expat.SetElementHandler(rss_start_element, rss_end_element);
+		expat.SetCharacterDataHandler(rss_char_data);
 
-	context = g_markup_parse_context_new(&rss_parser,
-					     G_MARKUP_TREAT_CDATA_AS_TEXT,
-					     &parser, nullptr);
-
-	while (true) {
-		nbytes = is.LockRead(buffer, sizeof(buffer), error2);
-		if (nbytes == 0) {
-			if (error2.IsDefined()) {
-				g_markup_parse_context_free(context);
-				LogError(error2);
-				return nullptr;
-			}
-
-			break;
-		}
-
-		success = g_markup_parse_context_parse(context, buffer, nbytes,
-						       &error);
-		if (!success) {
-			FormatError(rss_domain,
-				    "XML parser failed: %s", error->message);
-			g_error_free(error);
-			g_markup_parse_context_free(context);
+		Error error;
+		if (!expat.Parse(is, error)) {
+			LogError(error);
 			return nullptr;
 		}
 	}
 
-	success = g_markup_parse_context_end_parse(context, &error);
-	if (!success) {
-		FormatError(rss_domain,
-			    "XML parser failed: %s", error->message);
-		g_error_free(error);
-		g_markup_parse_context_free(context);
-		return nullptr;
-	}
-
 	parser.songs.reverse();
-	MemorySongEnumerator *playlist =
-		new MemorySongEnumerator(std::move(parser.songs));
-
-	g_markup_parse_context_free(context);
-
-	return playlist;
+	return new MemorySongEnumerator(std::move(parser.songs));
 }
 
 static const char *const rss_suffixes[] = {

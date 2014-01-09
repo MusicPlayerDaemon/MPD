@@ -26,9 +26,8 @@
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "Expat.hxx"
 #include "Log.hxx"
-
-#include <glib.h>
 
 #include <string.h>
 
@@ -70,12 +69,9 @@ struct XspfParser {
 		:state(ROOT) {}
 };
 
-static void
-xspf_start_element(gcc_unused GMarkupParseContext *context,
-		   const gchar *element_name,
-		   gcc_unused const gchar **attribute_names,
-		   gcc_unused const gchar **attribute_values,
-		   gpointer user_data, gcc_unused GError **error)
+static void XMLCALL
+xspf_start_element(void *user_data, const XML_Char *element_name,
+		   gcc_unused const XML_Char **atts)
 {
 	XspfParser *parser = (XspfParser *)user_data;
 
@@ -124,10 +120,8 @@ xspf_start_element(gcc_unused GMarkupParseContext *context,
 	}
 }
 
-static void
-xspf_end_element(gcc_unused GMarkupParseContext *context,
-		 const gchar *element_name,
-		 gpointer user_data, gcc_unused GError **error)
+static void XMLCALL
+xspf_end_element(void *user_data, const XML_Char *element_name)
 {
 	XspfParser *parser = (XspfParser *)user_data;
 
@@ -165,10 +159,8 @@ xspf_end_element(gcc_unused GMarkupParseContext *context,
 	}
 }
 
-static void
-xspf_text(gcc_unused GMarkupParseContext *context,
-	  const gchar *text, gsize text_len,
-	  gpointer user_data, gcc_unused GError **error)
+static void XMLCALL
+xspf_char_data(void *user_data, const XML_Char *s, int len)
 {
 	XspfParser *parser = (XspfParser *)user_data;
 
@@ -181,25 +173,16 @@ xspf_text(gcc_unused GMarkupParseContext *context,
 	case XspfParser::TRACK:
 		if (!parser->location.empty() &&
 		    parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
-			parser->tag_builder.AddItem(parser->tag_type,
-						    text, text_len);
+			parser->tag_builder.AddItem(parser->tag_type, s, len);
 
 		break;
 
 	case XspfParser::LOCATION:
-		parser->location.assign(text, text_len);
+		parser->location.assign(s, len);
 
 		break;
 	}
 }
-
-static const GMarkupParser xspf_parser = {
-	xspf_start_element,
-	xspf_end_element,
-	xspf_text,
-	nullptr,
-	nullptr,
-};
 
 /*
  * The playlist object
@@ -210,58 +193,21 @@ static SongEnumerator *
 xspf_open_stream(InputStream &is)
 {
 	XspfParser parser;
-	GMarkupParseContext *context;
-	char buffer[1024];
-	size_t nbytes;
-	bool success;
-	Error error2;
-	GError *error = nullptr;
 
-	/* parse the XSPF XML file */
+	{
+		ExpatParser expat(&parser);
+		expat.SetElementHandler(xspf_start_element, xspf_end_element);
+		expat.SetCharacterDataHandler(xspf_char_data);
 
-	context = g_markup_parse_context_new(&xspf_parser,
-					     G_MARKUP_TREAT_CDATA_AS_TEXT,
-					     &parser, nullptr);
-
-	while (true) {
-		nbytes = is.LockRead(buffer, sizeof(buffer), error2);
-		if (nbytes == 0) {
-			if (error2.IsDefined()) {
-				g_markup_parse_context_free(context);
-				LogError(error2);
-				return nullptr;
-			}
-
-			break;
-		}
-
-		success = g_markup_parse_context_parse(context, buffer, nbytes,
-						       &error);
-		if (!success) {
-			FormatError(xspf_domain,
-				    "XML parser failed: %s", error->message);
-			g_error_free(error);
-			g_markup_parse_context_free(context);
+		Error error;
+		if (!expat.Parse(is, error)) {
+			LogError(error);
 			return nullptr;
 		}
 	}
 
-	success = g_markup_parse_context_end_parse(context, &error);
-	if (!success) {
-		FormatError(xspf_domain,
-			    "XML parser failed: %s", error->message);
-		g_error_free(error);
-		g_markup_parse_context_free(context);
-		return nullptr;
-	}
-
 	parser.songs.reverse();
-	MemorySongEnumerator *playlist =
-		new MemorySongEnumerator(std::move(parser.songs));
-
-	g_markup_parse_context_free(context);
-
-	return playlist;
+	return new MemorySongEnumerator(std::move(parser.songs));
 }
 
 static const char *const xspf_suffixes[] = {

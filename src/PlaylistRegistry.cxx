@@ -46,10 +46,12 @@
 const struct playlist_plugin *const playlist_plugins[] = {
 	&extm3u_playlist_plugin,
 	&m3u_playlist_plugin,
-	&xspf_playlist_plugin,
 	&pls_playlist_plugin,
+#ifdef HAVE_EXPAT
+	&xspf_playlist_plugin,
 	&asx_playlist_plugin,
 	&rss_playlist_plugin,
+#endif
 #ifdef ENABLE_DESPOTIFY
 	&despotify_playlist_plugin,
 #endif

@@ -1016,11 +1016,13 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/EmbeddedCuePlaylistPlugin.hxx \
 	src/PlaylistRegistry.cxx src/PlaylistRegistry.hxx
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(EXPAT_CFLAGS) \
 	$(YAJL_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS))
 
 PLAYLIST_LIBS = \
 	libplaylist_plugins.a \
+	$(EXPAT_LIBS) \
 	$(FLAC_LIBS)
 
 if ENABLE_DESPOTIFY
@@ -1036,16 +1038,21 @@ libplaylist_plugins_a_SOURCES += \
 PLAYLIST_LIBS += $(YAJL_LIBS)
 endif
 
-if HAVE_GLIB
+if HAVE_EXPAT
 libplaylist_plugins_a_SOURCES += \
-	src/playlist/PlsPlaylistPlugin.cxx \
-	src/playlist/PlsPlaylistPlugin.hxx \
+	src/Expat.cxx src/Expat.hxx \
 	src/playlist/XspfPlaylistPlugin.cxx \
 	src/playlist/XspfPlaylistPlugin.hxx \
 	src/playlist/AsxPlaylistPlugin.cxx \
 	src/playlist/AsxPlaylistPlugin.hxx \
 	src/playlist/RssPlaylistPlugin.cxx \
 	src/playlist/RssPlaylistPlugin.hxx
+endif
+
+if HAVE_GLIB
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/PlsPlaylistPlugin.cxx \
+	src/playlist/PlsPlaylistPlugin.hxx
 endif
 
 #

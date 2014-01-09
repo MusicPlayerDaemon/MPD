@@ -1,0 +1,76 @@
+/*
+ * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * http://www.musicpd.org
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+#include "config.h"
+#include "Expat.hxx"
+#include "InputStream.hxx"
+#include "util/ASCII.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
+
+#include <string.h>
+
+static constexpr Domain expat_domain("expat");
+
+void
+ExpatParser::SetError(Error &error)
+{
+	XML_Error code = XML_GetErrorCode(parser);
+	error.Format(expat_domain, int(code), "XML parser failed: %s",
+		     XML_ErrorString(code));
+}
+
+bool
+ExpatParser::Parse(InputStream &is, Error &error)
+{
+	assert(is.ready);
+
+	while (true) {
+		char buffer[4096];
+		size_t nbytes = is.LockRead(buffer, sizeof(buffer), error);
+		if (nbytes == 0)
+			break;
+
+		if (XML_Parse(parser, buffer, nbytes, false) != XML_STATUS_OK) {
+			SetError(error);
+			return false;
+		}
+	}
+
+	if (error.IsDefined())
+		return false;
+
+	if (XML_Parse(parser, "", 0, true) != XML_STATUS_OK) {
+		SetError(error);
+		return false;
+	}
+
+	return true;
+}
+
+const char *
+ExpatParser::GetAttributeCase(const XML_Char **atts,
+			      const char *name)
+{
+	for (unsigned i = 0; atts[i] != nullptr; ++i)
+		if (StringEqualsCaseASCII(atts[i], name))
+			return atts[i] + strlen(name) + 1;
+
+	return nullptr;
+}
