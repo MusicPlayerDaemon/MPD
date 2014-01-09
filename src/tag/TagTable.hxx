@@ -47,4 +47,13 @@ gcc_pure
 TagType
 tag_table_lookup_i(const tag_table *table, const char *name);
 
+/**
+ * Looks up a #TagType in a tag translation table and returns its
+ * string representation.  Returns nullptr if the specified type was
+ * not found in the table.
+ */
+gcc_pure
+const char *
+tag_table_lookup(const tag_table *table, TagType type);
+
 #endif

@@ -51,3 +51,13 @@ tag_table_lookup_i(const struct tag_table *table, const char *name)
 
 	return TAG_NUM_OF_ITEM_TYPES;
 }
+
+const char *
+tag_table_lookup(const tag_table *table, TagType type)
+{
+	for (; table->name != nullptr; ++table)
+		if (table->type == type)
+			return table->name;
+
+	return nullptr;
+}
