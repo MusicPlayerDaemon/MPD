@@ -98,6 +98,14 @@ class EventLoop final : SocketMonitor
 	 */
 	bool busy;
 
+#ifndef NDEBUG
+	/**
+	 * True if Run() was never called.  This is used for assert()
+	 * calls.
+	 */
+	bool virgin;
+#endif
+
 	PollGroup poll_group;
 	PollResult poll_result;
 
@@ -197,6 +205,13 @@ public:
 
 		return thread.IsInside();
 	}
+
+#ifndef NDEBUG
+	gcc_pure
+	bool IsInsideOrVirgin() const {
+		return virgin || IsInside();
+	}
+#endif
 
 #ifndef NDEBUG
 	gcc_pure

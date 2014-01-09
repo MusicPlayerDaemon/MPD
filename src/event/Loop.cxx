@@ -32,6 +32,9 @@ EventLoop::EventLoop(Default)
 	:SocketMonitor(*this),
 	 now_ms(::MonotonicClockMS()),
 	 quit(false), busy(true),
+#ifndef NDEBUG
+	 virgin(true),
+#endif
 	 thread(ThreadId::Null())
 {
 	SocketMonitor::Open(wake_fd.Get());
@@ -58,7 +61,7 @@ EventLoop::Break()
 bool
 EventLoop::Abandon(int _fd, SocketMonitor &m)
 {
-	assert(IsInside());
+	assert(IsInsideOrVirgin());
 
 	poll_result.Clear(&m);
 	return poll_group.Abandon(_fd);
@@ -76,7 +79,7 @@ EventLoop::RemoveFD(int _fd, SocketMonitor &m)
 void
 EventLoop::AddIdle(IdleMonitor &i)
 {
-	assert(IsInside());
+	assert(IsInsideOrVirgin());
 	assert(std::find(idle.begin(), idle.end(), &i) == idle.end());
 
 	idle.push_back(&i);
@@ -86,7 +89,7 @@ EventLoop::AddIdle(IdleMonitor &i)
 void
 EventLoop::RemoveIdle(IdleMonitor &i)
 {
-	assert(IsInside());
+	assert(IsInsideOrVirgin());
 
 	auto it = std::find(idle.begin(), idle.end(), &i);
 	assert(it != idle.end());
@@ -97,7 +100,7 @@ EventLoop::RemoveIdle(IdleMonitor &i)
 void
 EventLoop::AddTimer(TimeoutMonitor &t, unsigned ms)
 {
-	assert(IsInside());
+	assert(IsInsideOrVirgin());
 
 	timers.insert(TimerRecord(t, now_ms + ms));
 	again = true;
@@ -120,6 +123,12 @@ void
 EventLoop::Run()
 {
 	assert(thread.IsNull());
+	assert(virgin);
+
+#ifndef NDEBUG
+	virgin = false;
+#endif
+
 	thread = ThreadId::GetCurrent();
 
 	assert(!quit);

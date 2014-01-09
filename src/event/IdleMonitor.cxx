@@ -38,7 +38,7 @@ IdleMonitor::Cancel()
 void
 IdleMonitor::Schedule()
 {
-	assert(loop.IsInside());
+	assert(loop.IsInsideOrVirgin());
 
 	if (IsActive())
 		/* already scheduled */
