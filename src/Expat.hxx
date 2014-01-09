@@ -60,4 +60,52 @@ private:
 	void SetError(Error &error);
 };
 
+/**
+ * A specialization of #ExpatParser that provides the most common
+ * callbacks as virtual methods.
+ */
+class CommonExpatParser {
+	ExpatParser parser;
+
+public:
+	CommonExpatParser():parser(this) {
+		parser.SetElementHandler(StartElement, EndElement);
+		parser.SetCharacterDataHandler(CharacterData);
+	}
+
+	bool Parse(InputStream &is, Error &error) {
+		return parser.Parse(is, error);
+	}
+
+	gcc_pure
+	static const char *GetAttributeCase(const XML_Char **atts,
+					    const char *name) {
+		return ExpatParser::GetAttributeCase(atts, name);
+	}
+
+protected:
+	virtual void StartElement(const XML_Char *name,
+				  const XML_Char **atts) = 0;
+	virtual void EndElement(const XML_Char *name) = 0;
+	virtual void CharacterData(const XML_Char *s, int len) = 0;
+
+private:
+	static void XMLCALL StartElement(void *user_data, const XML_Char *name,
+					 const XML_Char **atts) {
+		CommonExpatParser &p = *(CommonExpatParser *)user_data;
+		p.StartElement(name, atts);
+	}
+
+	static void XMLCALL EndElement(void *user_data, const XML_Char *name) {
+		CommonExpatParser &p = *(CommonExpatParser *)user_data;
+		p.EndElement(name);
+	}
+
+	static void XMLCALL CharacterData(void *user_data,
+					  const XML_Char *s, int len) {
+		CommonExpatParser &p = *(CommonExpatParser *)user_data;
+		p.CharacterData(s, len);
+	}
+};
+
 #endif
