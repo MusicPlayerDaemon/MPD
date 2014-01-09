@@ -360,13 +360,9 @@ Visit(struct mpd_connection *connection, Directory &root,
 {
 	const char *path = mpd_directory_get_path(directory);
 
-	if (visit_directory) {
-		Directory *d = Directory::NewGeneric(path, &root);
-		bool success = visit_directory(*d, error);
-		d->Free();
-		if (!success)
-			return false;
-	}
+	if (visit_directory &&
+	    !visit_directory(Directory(path, &root), error))
+		return false;
 
 	if (recursive &&
 	    !Visit(connection, root, path, recursive, filter,
