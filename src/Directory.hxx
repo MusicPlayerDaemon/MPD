@@ -100,14 +100,6 @@ public:
 	}
 
 	/**
-	 * Free this #Directory object (and the whole object tree within it),
-	 * assuming it was already removed from the parent.
-	 */
-	void Free() {
-		delete this;
-	}
-
-	/**
 	 * Remove this #Directory object from its parent and free it.  This
 	 * must not be called with the root Directory.
 	 *

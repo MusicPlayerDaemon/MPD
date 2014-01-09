@@ -251,7 +251,7 @@ ProxyDatabase::Open(Error &error)
 void
 ProxyDatabase::Close()
 {
-	root->Free();
+	delete root;
 
 	if (connection != nullptr)
 		mpd_connection_free(connection);

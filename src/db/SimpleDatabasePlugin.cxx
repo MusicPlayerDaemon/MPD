@@ -168,7 +168,7 @@ SimpleDatabase::Open(Error &error)
 #endif
 
 	if (!Load(error)) {
-		root->Free();
+		delete root;
 
 		LogError(error);
 		error.Clear();
@@ -188,7 +188,7 @@ SimpleDatabase::Close()
 	assert(root != nullptr);
 	assert(borrowed_song_count == 0);
 
-	root->Free();
+	delete root;
 }
 
 Song *

@@ -53,7 +53,7 @@ Directory::~Directory()
 
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, *this)
-		child->Free();
+		delete child;
 }
 
 void
@@ -63,7 +63,7 @@ Directory::Delete()
 	assert(parent != nullptr);
 
 	list_del(&siblings);
-	Free();
+	delete this;
 }
 
 const char *
