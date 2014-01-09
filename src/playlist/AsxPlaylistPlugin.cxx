@@ -182,21 +182,20 @@ static SongEnumerator *
 asx_open_stream(InputStream &is)
 {
 	AsxParser parser;
-	GMarkupParseContext *context;
-	char buffer[1024];
-	size_t nbytes;
 	bool success;
 	Error error2;
 	GError *error = nullptr;
 
 	/* parse the ASX XML file */
 
-	context = g_markup_parse_context_new(&asx_parser,
-					     G_MARKUP_TREAT_CDATA_AS_TEXT,
-					     &parser, nullptr);
+	GMarkupParseContext *context =
+		g_markup_parse_context_new(&asx_parser,
+					   G_MARKUP_TREAT_CDATA_AS_TEXT,
+					   &parser, nullptr);
 
 	while (true) {
-		nbytes = is.LockRead(buffer, sizeof(buffer), error2);
+	char buffer[1024];
+		size_t nbytes = is.LockRead(buffer, sizeof(buffer), error2);
 		if (nbytes == 0) {
 			if (error2.IsDefined()) {
 				g_markup_parse_context_free(context);
