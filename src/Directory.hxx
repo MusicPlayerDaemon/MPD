@@ -26,6 +26,8 @@
 #include "DatabaseVisitor.hxx"
 #include "PlaylistVector.hxx"
 
+#include <string>
+
 #include <sys/types.h>
 
 #define DEVICE_INARCHIVE (dev_t)(-1)
@@ -49,10 +51,6 @@ class SongFilter;
 class Error;
 
 struct Directory {
-	template<class T, typename... Args> friend T *
-	NewVarSize(size_t declared_tail_size, size_t real_tail_size,
-		   Args&&... args);
-
 	/**
 	 * Pointers to the siblings of this directory within the
 	 * parent directory.  It is unused (undefined) in the root
@@ -86,36 +84,28 @@ struct Directory {
 	ino_t inode;
 	dev_t device;
 	bool have_stat; /* not needed if ino_t == dev_t == 0 is impossible */
-	char path[sizeof(long)];
 
-protected:
-	Directory(const char *path);
-
-	gcc_malloc gcc_nonnull_all
-	static Directory *Allocate(const char *path);
+	std::string path;
 
 public:
+	Directory(const char *_path_utf8, Directory *_parent);
 	~Directory();
-
-	/**
-	 * Generic constructor for #Directory object.
-	 */
-	gcc_malloc
-	static Directory *NewGeneric(const char *path_utf8, Directory *parent);
 
 	/**
 	 * Create a new root #Directory object.
 	 */
 	gcc_malloc
 	static Directory *NewRoot() {
-		return NewGeneric("", nullptr);
+		return new Directory("", nullptr);
 	}
 
 	/**
 	 * Free this #Directory object (and the whole object tree within it),
 	 * assuming it was already removed from the parent.
 	 */
-	void Free();
+	void Free() {
+		delete this;
+	}
 
 	/**
 	 * Remove this #Directory object from its parent and free it.  This
@@ -178,7 +168,7 @@ public:
 
 	gcc_pure
 	const char *GetPath() const {
-		return path;
+		return path.c_str();
 	}
 
 	/**

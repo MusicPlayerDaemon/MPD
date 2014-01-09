@@ -25,7 +25,7 @@
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "fs/Traits.hxx"
-#include "util/VarSize.hxx"
+#include "util/Alloc.hxx"
 #include "util/Error.hxx"
 
 extern "C" {
@@ -38,23 +38,11 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 
-inline Directory *
-Directory::Allocate(const char *path)
-{
-	assert(path != nullptr);
-
-	return NewVarSize<Directory>(sizeof(Directory::path),
-				     strlen(path) + 1,
-				     path);
-}
-
-Directory::Directory(const char *_path)
-	:mtime(0), have_stat(false)
+Directory::Directory(const char *_path_utf8, Directory *_parent)
+	:parent(_parent), path(_path_utf8)
 {
 	INIT_LIST_HEAD(&children);
 	INIT_LIST_HEAD(&songs);
-
-	strcpy(path, _path);
 }
 
 Directory::~Directory()
@@ -66,25 +54,6 @@ Directory::~Directory()
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, *this)
 		child->Free();
-}
-
-Directory *
-Directory::NewGeneric(const char *path, Directory *parent)
-{
-	assert(path != nullptr);
-	assert((*path == 0) == (parent == nullptr));
-
-	Directory *directory = Allocate(path);
-
-	directory->parent = parent;
-
-	return directory;
-}
-
-void
-Directory::Free()
-{
-	DeleteVarSize(this);
 }
 
 void
@@ -102,7 +71,7 @@ Directory::GetName() const
 {
 	assert(!IsRoot());
 
-	return PathTraitsUTF8::GetBase(path);
+	return PathTraitsUTF8::GetBase(path.c_str());
 }
 
 Directory *
@@ -123,7 +92,7 @@ Directory::CreateChild(const char *name_utf8)
 		path_utf8 = allocated;
 	}
 
-	Directory *child = NewGeneric(path_utf8, this);
+	Directory *child = new Directory(path_utf8, this);
 	g_free(allocated);
 
 	list_add_tail(&child->siblings, &children);
@@ -264,7 +233,7 @@ directory_cmp(gcc_unused void *priv,
 {
 	const Directory *a = (const Directory *)_a;
 	const Directory *b = (const Directory *)_b;
-	return g_utf8_collate(a->path, b->path);
+	return g_utf8_collate(a->path.c_str(), b->path.c_str());
 }
 
 void
