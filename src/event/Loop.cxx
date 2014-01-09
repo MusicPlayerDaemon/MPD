@@ -100,7 +100,9 @@ EventLoop::RemoveIdle(IdleMonitor &i)
 void
 EventLoop::AddTimer(TimeoutMonitor &t, unsigned ms)
 {
-	assert(IsInsideOrVirgin());
+	/* can't use IsInsideOrVirgin() here because libavahi-client
+	   modifies the timeout during avahi_client_free() */
+	assert(IsInsideOrNull());
 
 	timers.insert(TimerRecord(t, now_ms + ms));
 	again = true;
