@@ -906,6 +906,14 @@ systemctl start mpd.socket</programlisting>
           </tgroup>
         </informaltable>
       </section>
+
+      <section>
+        <title><varname>upnp</varname></title>
+
+        <para>
+          Provides access to UPnP media servers.
+        </para>
+      </section>
     </section>
 
     <section>
