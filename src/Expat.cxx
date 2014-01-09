@@ -37,6 +37,18 @@ ExpatParser::SetError(Error &error)
 }
 
 bool
+ExpatParser::Parse(const char *data, size_t length, bool is_final,
+		   Error &error)
+{
+	bool success = XML_Parse(parser, data, length,
+				 is_final) == XML_STATUS_OK;
+	if (!success)
+		SetError(error);
+
+	return success;
+}
+
+bool
 ExpatParser::Parse(InputStream &is, Error &error)
 {
 	assert(is.ready);
@@ -47,21 +59,14 @@ ExpatParser::Parse(InputStream &is, Error &error)
 		if (nbytes == 0)
 			break;
 
-		if (XML_Parse(parser, buffer, nbytes, false) != XML_STATUS_OK) {
-			SetError(error);
+		if (!Parse(buffer, nbytes, false, error))
 			return false;
-		}
 	}
 
 	if (error.IsDefined())
 		return false;
 
-	if (XML_Parse(parser, "", 0, true) != XML_STATUS_OK) {
-		SetError(error);
-		return false;
-	}
-
-	return true;
+	return Parse("", 0, true, error);
 }
 
 const char *

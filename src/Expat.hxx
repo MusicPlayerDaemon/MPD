@@ -50,6 +50,9 @@ public:
 		XML_SetCharacterDataHandler(parser, charhndl);
 	}
 
+	bool Parse(const char *data, size_t length, bool is_final,
+		   Error &error);
+
 	bool Parse(InputStream &is, Error &error);
 
 	gcc_pure
@@ -71,6 +74,11 @@ public:
 	CommonExpatParser():parser(this) {
 		parser.SetElementHandler(StartElement, EndElement);
 		parser.SetCharacterDataHandler(CharacterData);
+	}
+
+	bool Parse(const char *data, size_t length, bool is_final,
+		   Error &error) {
+		return parser.Parse(data, length, is_final, error);
 	}
 
 	bool Parse(InputStream &is, Error &error) {
