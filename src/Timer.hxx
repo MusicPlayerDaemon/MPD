@@ -42,8 +42,6 @@ public:
 	 * Returns the number of milliseconds to sleep to get back to sync.
 	 */
 	unsigned GetDelay() const;
-
-	void Synchronize() const;
 };
 
 #endif

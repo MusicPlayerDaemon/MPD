@@ -22,8 +22,6 @@
 #include "AudioFormat.hxx"
 #include "system/Clock.hxx"
 
-#include <glib.h>
-
 #include <limits>
 
 #include <assert.h>
@@ -66,15 +64,4 @@ unsigned Timer::GetDelay() const
 		delay = std::numeric_limits<int>::max();
 
 	return delay;
-}
-
-void Timer::Synchronize() const
-{
-	int64_t sleep_duration;
-
-	assert(started);
-
-	sleep_duration = time - MonotonicClockUS();
-	if (sleep_duration > 0)
-		g_usleep(sleep_duration);
 }
