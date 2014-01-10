@@ -86,6 +86,7 @@ protected:
 				m_tobj.m_pid = m_path.back().attributes["parentID"];
 			}
 			break;
+
 		case 'i':
 			if (!strcmp(name, "item")) {
 				m_tobj.clear();
@@ -94,7 +95,21 @@ protected:
 				m_tobj.m_pid = m_path.back().attributes["parentID"];
 			}
 			break;
-		default:
+
+		case 'r':
+			if (!strcmp(name, "res")) {
+				// <res protocolInfo="http-get:*:audio/mpeg:*" size="5171496"
+				// bitrate="24576" duration="00:03:35" sampleFrequency="44100"
+				// nrAudioChannels="2">
+				std::string s;
+				s="protocolInfo";m_tobj.m_props[s] = m_path.back().attributes[s];
+				s="size";m_tobj.m_props[s] = m_path.back().attributes[s];
+				s="bitrate";m_tobj.m_props[s] = m_path.back().attributes[s];
+				s="duration";m_tobj.m_props[s] = m_path.back().attributes[s];
+				s="sampleFrequency";m_tobj.m_props[s] = m_path.back().attributes[s];
+				s="nrAudioChannels";m_tobj.m_props[s] = m_path.back().attributes[s];
+			}
+
 			break;
 		}
 	}
@@ -135,17 +150,6 @@ protected:
 			if (checkobjok()) {
 				m_dir.m_items.push_back(m_tobj);
 			}
-		} else if (!strcmp(name, "res")) {
-			// <res protocolInfo="http-get:*:audio/mpeg:*" size="5171496"
-			// bitrate="24576" duration="00:03:35" sampleFrequency="44100"
-			// nrAudioChannels="2">
-			std::string s;
-			s="protocolInfo";m_tobj.m_props[s] = m_path.back().attributes[s];
-			s="size";m_tobj.m_props[s] = m_path.back().attributes[s];
-			s="bitrate";m_tobj.m_props[s] = m_path.back().attributes[s];
-			s="duration";m_tobj.m_props[s] = m_path.back().attributes[s];
-			s="sampleFrequency";m_tobj.m_props[s] = m_path.back().attributes[s];
-			s="nrAudioChannels";m_tobj.m_props[s] = m_path.back().attributes[s];
 		}
 
 		m_path.pop_back();
