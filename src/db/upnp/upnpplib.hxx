@@ -56,10 +56,6 @@ public:
 	/** Retrieve the singleton LibUPnP object */
 	static LibUPnP *getLibUPnP(Error &error);
 
-	/** Set max library buffer size for reading content from servers.
-	 * The default is 200k and should be ok */
-	void setMaxContentLength(int bytes);
-
 	/** Check state after initialization */
 	bool ok() const
 	{

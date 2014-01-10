@@ -51,7 +51,7 @@ LibUPnP::LibUPnP()
 		return;
 	}
 
-	setMaxContentLength(2000*1024);
+	UpnpSetMaxContentLength(2000*1024);
 
 	code = UpnpRegisterClient(o_callback, (void *)this, &m_clh);
 	if (code != UPNP_E_SUCCESS) {
@@ -63,11 +63,6 @@ LibUPnP::LibUPnP()
 
 	// Servers sometimes make error (e.g.: minidlna returns bad utf-8)
 	ixmlRelaxParser(1);
-}
-
-void LibUPnP::setMaxContentLength(int bytes)
-{
-	UpnpSetMaxContentLength(bytes);
 }
 
 void
