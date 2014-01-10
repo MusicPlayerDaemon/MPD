@@ -23,11 +23,9 @@
 #include "thread/Mutex.hxx"
 #include "util/Error.hxx"
 
-#include <string>
 #include <map>
 
 #include <upnp/upnp.h>
-#include <upnp/upnptools.h>
 
 /** Our link to libupnp. Initialize and keep the handle around */
 class LibUPnP {
@@ -57,12 +55,6 @@ public:
 
 	/** Retrieve the singleton LibUPnP object */
 	static LibUPnP *getLibUPnP(Error &error);
-
-	/** Set log file name and activate logging.
-	 *
-	 * @param fn file name to use. Use empty string to turn logging off
-	 */
-	bool setLogFileName(const std::string& fn);
 
 	/** Set max library buffer size for reading content from servers.
 	 * The default is 200k and should be ok */

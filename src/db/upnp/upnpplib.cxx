@@ -20,16 +20,10 @@
 #include "config.h"
 #include "upnpplib.hxx"
 #include "Domain.hxx"
-#include "Util.hxx"
 #include "Log.hxx"
 
-#include <string>
-#include <map>
-#include <vector>
-#include <set>
-
 #include <upnp/ixml.h>
-#include <upnp/upnpdebug.h>
+#include <upnp/upnptools.h>
 
 static LibUPnP *theLib;
 
@@ -58,9 +52,6 @@ LibUPnP::LibUPnP()
 	}
 
 	setMaxContentLength(2000*1024);
-#ifdef DEBUG
-	UpnpCloseLog();
-#endif
 
 	code = UpnpRegisterClient(o_callback, (void *)this, &m_clh);
 	if (code != UPNP_E_SUCCESS) {
@@ -77,26 +68,6 @@ LibUPnP::LibUPnP()
 void LibUPnP::setMaxContentLength(int bytes)
 {
 	UpnpSetMaxContentLength(bytes);
-}
-
-bool LibUPnP::setLogFileName(const std::string& fn)
-{
-	const ScopeLock protect(m_mutex);
-
-	if (fn.empty()) {
-		UpnpCloseLog();
-	} else {
-		UpnpSetLogLevel(UPNP_INFO);
-		UpnpSetLogFileNames(fn.c_str(), fn.c_str());
-		int code = UpnpInitLog();
-		if (code != UPNP_E_SUCCESS) {
-			FormatError(upnp_domain, "UpnpInitLog() failed: %s",
-				    UpnpGetErrorMessage(code));
-			return false;
-		}
-	}
-
-	return true;
 }
 
 void

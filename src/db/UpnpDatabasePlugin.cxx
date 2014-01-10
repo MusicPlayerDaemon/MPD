@@ -63,7 +63,6 @@ class UpnpDatabase : public Database {
 	LibUPnP *m_lib;
 	UPnPDeviceDirectory *m_superdir;
 	Directory *m_root;
-	std::string m_upnplog;
 
 public:
 	UpnpDatabase()
@@ -194,9 +193,8 @@ UpnpDatabase::Create(const config_param &param, Error &error)
 }
 
 bool
-UpnpDatabase::Configure(const config_param& param, Error&)
+UpnpDatabase::Configure(const config_param &, Error &)
 {
-	m_upnplog = param.GetBlockValue("upnplog", "");
 	return true;
 }
 
@@ -225,9 +223,6 @@ bool UpnpDatabase::reallyOpen(Error &error)
 	if (!m_lib)
 		return false;
 
-	if (!m_upnplog.empty()) {
-		m_lib->setLogFileName(m_upnplog);
-	}
 	m_superdir = UPnPDeviceDirectory::getTheDir();
 	if (!m_superdir || !m_superdir->ok()) {
 		error.Set(upnp_domain, "Discovery services startup failed");
