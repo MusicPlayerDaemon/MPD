@@ -37,6 +37,16 @@ static const char *const upnptags[] = {
 	nullptr,
 };
 
+static const char *const res_attributes[] = {
+	"protocolInfo",
+	"size",
+	"bitrate",
+	"duration",
+	"sampleFrequency",
+	"nrAudioChannels",
+	nullptr,
+};
+
 gcc_pure
 static UPnPDirObject::ItemClass
 ParseItemClass(const char *name)
@@ -96,13 +106,11 @@ protected:
 				// <res protocolInfo="http-get:*:audio/mpeg:*" size="5171496"
 				// bitrate="24576" duration="00:03:35" sampleFrequency="44100"
 				// nrAudioChannels="2">
-				std::string s;
-				s="protocolInfo";m_tobj.m_props[s] = attributes[s];
-				s="size";m_tobj.m_props[s] = attributes[s];
-				s="bitrate";m_tobj.m_props[s] = attributes[s];
-				s="duration";m_tobj.m_props[s] = attributes[s];
-				s="sampleFrequency";m_tobj.m_props[s] = attributes[s];
-				s="nrAudioChannels";m_tobj.m_props[s] = attributes[s];
+
+				for (auto i = res_attributes; *i != nullptr; ++i) {
+					const std::string s(*i);
+					m_tobj.m_props[s] = attributes[s];
+				}
 			}
 
 			break;
