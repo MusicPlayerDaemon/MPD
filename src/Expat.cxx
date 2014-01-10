@@ -73,9 +73,9 @@ const char *
 ExpatParser::GetAttributeCase(const XML_Char **atts,
 			      const char *name)
 {
-	for (unsigned i = 0; atts[i] != nullptr; ++i)
+	for (unsigned i = 0; atts[i] != nullptr; i += 2)
 		if (StringEqualsCaseASCII(atts[i], name))
-			return atts[i] + strlen(name) + 1;
+			return atts[i + 1];
 
 	return nullptr;
 }
