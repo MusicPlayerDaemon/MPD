@@ -34,7 +34,6 @@
  */
 class UPnPDeviceParser final : public CommonExpatParser {
 	UPnPDevice &m_device;
-	std::string m_tabs;
 	std::vector<std::string> m_path;
 	UPnPService m_tservice;
 
@@ -44,7 +43,6 @@ public:
 
 protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **) {
-		m_tabs.push_back('\t');
 		m_path.push_back(name);
 	}
 
@@ -53,8 +51,7 @@ protected:
 			m_device.services.push_back(m_tservice);
 			m_tservice.clear();
 		}
-		if (m_tabs.size())
-			m_tabs.erase(m_tabs.size()-1);
+
 		m_path.pop_back();
 	}
 
