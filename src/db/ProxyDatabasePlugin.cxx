@@ -83,6 +83,8 @@ private:
 	bool Connect(Error &error);
 	bool CheckConnection(Error &error);
 	bool EnsureConnected(Error &error);
+
+	void Disconnect();
 };
 
 static constexpr Domain libmpdclient_domain("libmpdclient");
@@ -254,7 +256,7 @@ ProxyDatabase::Close()
 	delete root;
 
 	if (connection != nullptr)
-		mpd_connection_free(connection);
+		Disconnect();
 }
 
 bool
@@ -269,10 +271,8 @@ ProxyDatabase::Connect(Error &error)
 	}
 
 	if (!CheckError(connection, error)) {
-		if (connection != nullptr) {
-			mpd_connection_free(connection);
-			connection = nullptr;
-		}
+		if (connection != nullptr)
+			Disconnect();
 
 		return false;
 	}
@@ -286,7 +286,7 @@ ProxyDatabase::CheckConnection(Error &error)
 	assert(connection != nullptr);
 
 	if (!mpd_connection_clear_error(connection)) {
-		mpd_connection_free(connection);
+		Disconnect();
 		return Connect(error);
 	}
 
@@ -299,6 +299,15 @@ ProxyDatabase::EnsureConnected(Error &error)
 	return connection != nullptr
 		? CheckConnection(error)
 		: Connect(error);
+}
+
+void
+ProxyDatabase::Disconnect()
+{
+	assert(connection != nullptr);
+
+	mpd_connection_free(connection);
+	connection = nullptr;
 }
 
 static Song *
