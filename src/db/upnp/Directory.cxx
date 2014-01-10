@@ -134,20 +134,12 @@ protected:
 				m_tobj.m_props["upnp:class"].c_str();
 			auto item_class = ParseItemClass(item_class_name);
 			if (item_class == UPnPDirObject::ItemClass::UNKNOWN) {
-				PLOGINF("checkobjok: found object of unknown class: [%s]\n",
-					item_class_name);
 				ok = false;
 			} else {
 				m_tobj.item_class = item_class;
 			}
 		}
 
-		if (!ok) {
-			PLOGINF("checkobjok: skip: id [%s] pid [%s] clss [%s] tt [%s]\n",
-				m_tobj.m_id.c_str(), m_tobj.m_pid.c_str(),
-				m_tobj.m_props["upnp:class"].c_str(),
-				m_tobj.m_title.c_str());
-		}
 		return ok;
 	}
 
