@@ -53,12 +53,7 @@ ParseItemClass(const char *name)
  * An XML parser which builds directory contents from DIDL lite input.
  */
 class UPnPDirParser final : public CommonExpatParser {
-	struct StackEl {
-		StackEl(const std::string& nm) : name(nm) {}
-		std::string name;
-	};
-
-	std::vector<StackEl> m_path;
+	std::vector<std::string> m_path;
 	UPnPDirObject m_tobj;
 
 public:
@@ -71,7 +66,7 @@ public:
 protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **attrs)
 	{
-		m_path.push_back(StackEl(name));
+		m_path.push_back(name);
 
 		std::map<std::string,std::string> attributes;
 		for (int i = 0; attrs[i] != 0; i += 2)
@@ -161,19 +156,19 @@ protected:
 			return;
 		std::string str(s, len);
 		trimstring(str);
-		switch (m_path.back().name[0]) {
+		switch (m_path.back()[0]) {
 		case 'd':
-			if (!m_path.back().name.compare("dc:title"))
+			if (!m_path.back().compare("dc:title"))
 				m_tobj.m_title += str;
 			break;
 		case 'r':
-			if (!m_path.back().name.compare("res")) {
+			if (!m_path.back().compare("res")) {
 				m_tobj.m_props["url"] += str;
 			}
 			break;
 		case 'u':
 			for (int i = 0; i < nupnptags; i++) {
-				if (!m_path.back().name.compare(upnptags[i])) {
+				if (!m_path.back().compare(upnptags[i])) {
 					m_tobj.m_props[upnptags[i]] += str;
 				}
 			}
