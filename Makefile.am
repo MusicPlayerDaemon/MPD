@@ -397,6 +397,7 @@ libfs_a_SOURCES = \
 libdb_plugins_a_SOURCES = \
 	src/DatabaseRegistry.cxx src/DatabaseRegistry.hxx \
 	src/DatabaseHelpers.cxx src/DatabaseHelpers.hxx \
+	src/db/LazyDatabase.cxx src/db/LazyDatabase.hxx \
 	src/db/SimpleDatabasePlugin.cxx src/db/SimpleDatabasePlugin.hxx
 
 if HAVE_LIBMPDCLIENT

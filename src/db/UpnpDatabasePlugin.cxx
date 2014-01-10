@@ -24,6 +24,7 @@
 #include "upnp/Discovery.hxx"
 #include "upnp/ContentDirectoryService.hxx"
 #include "upnp/Directory.hxx"
+#include "LazyDatabase.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseError.hxx"
@@ -99,7 +100,6 @@ protected:
 	bool Configure(const config_param &param, Error &error);
 
 private:
-	bool reallyOpen(Error &error);
 	bool VisitServer(ContentDirectoryService* server,
 			 const std::vector<std::string> &vpath,
 			 const DatabaseSelection &selection,
@@ -188,11 +188,15 @@ UpnpDatabase::Create(gcc_unused EventLoop &loop,
 		     const config_param &param, Error &error)
 {
 	UpnpDatabase *db = new UpnpDatabase();
-	if (db && !db->Configure(param, error)) {
+	if (!db->Configure(param, error)) {
 		delete db;
-		db = nullptr;
+		return nullptr;
 	}
-	return db;
+
+	/* libupnp loses its ability to receive multicast messages
+	   apparently due to daemonization; using the LazyDatabase
+	   wrapper works around this problem */
+	return new LazyDatabase(db);
 }
 
 bool
@@ -201,23 +205,8 @@ UpnpDatabase::Configure(const config_param &, Error &)
 	return true;
 }
 
-// Open is called before mpd daemonizes, and daemonizing messes with
-// the UpNP lib (it loses its ability to receive mcast messages
-// apparently).
-// So we delay actual opening until the first client call.
-//
-// Unfortunately the servers may take a few seconds to answer the
-// first search on the network, so we would either have to sleep for a
-// relatively long time (maybe 5S), or accept that the directory may
-// not be complete on the first client call. There is no simple
-// solution to this issue, we would need a call from mpd after daemonizing.
 bool
-UpnpDatabase::Open(Error &)
-{
-	return true;
-}
-
-bool UpnpDatabase::reallyOpen(Error &error)
+UpnpDatabase::Open(Error &error)
 {
 	if (m_root)
 		return true;
@@ -320,9 +309,6 @@ upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 Song *
 UpnpDatabase::GetSong(const char *uri, Error &error) const
 {
-	if (!const_cast<UpnpDatabase *>(this)->reallyOpen(error))
-		return nullptr;
-
 	if (!m_superdir || !m_superdir->ok()) {
 		error.Set(upnp_domain,
 			  "UpnpDatabase::GetSong() superdir is sick");
@@ -813,9 +799,6 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		    VisitPlaylist visit_playlist,
 		    Error &error) const
 {
-	if (!const_cast<UpnpDatabase *>(this)->reallyOpen(error))
-		return false;
-
 	std::vector<ContentDirectoryService> servers;
 	if (!m_superdir || !m_superdir->ok() ||
 	    !m_superdir->getDirServices(servers)) {
@@ -873,9 +856,6 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			      VisitString visit_string,
 			      Error &error) const
 {
-	if (!const_cast<UpnpDatabase *>(this)->reallyOpen(error))
-		return false;
-
 	if (!visit_string)
 		return true;
 
