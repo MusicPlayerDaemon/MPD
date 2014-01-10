@@ -300,14 +300,9 @@ upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 
 	Song *s = Song::NewFile(url.c_str(), nullptr);
 
-	// I don't think that upnp returns this.
-	s->mtime = time(0);
-
-	s->start_ms = 0;
 	std::string sprop("0:0:0");
 	dirent.getprop("duration", sprop);
 	int seconds = upnpDurationToSeconds(sprop);
-	s->end_ms = seconds * 1000;
 
 	TagBuilder tag;
 	tag.SetTime(seconds);
