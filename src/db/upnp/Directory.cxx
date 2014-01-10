@@ -24,7 +24,6 @@
 
 #include <string>
 #include <vector>
-#include <map>
 
 #include <string.h>
 
@@ -78,17 +77,19 @@ protected:
 	{
 		m_path.push_back(name);
 
-		std::map<std::string,std::string> attributes;
-		for (int i = 0; attrs[i] != 0; i += 2)
-			attributes[attrs[i]] = attrs[i+1];
-
 		switch (name[0]) {
 		case 'c':
 			if (!strcmp(name, "container")) {
 				m_tobj.clear();
 				m_tobj.type = UPnPDirObject::Type::CONTAINER;
-				m_tobj.m_id = attributes["id"];
-				m_tobj.m_pid = attributes["parentID"];
+
+				const char *id = GetAttribute(attrs, "id");
+				if (id != nullptr)
+					m_tobj.m_id = id;
+
+				const char *pid = GetAttribute(attrs, "parentID");
+				if (pid != nullptr)
+					m_tobj.m_pid = pid;
 			}
 			break;
 
@@ -96,8 +97,14 @@ protected:
 			if (!strcmp(name, "item")) {
 				m_tobj.clear();
 				m_tobj.type = UPnPDirObject::Type::ITEM;
-				m_tobj.m_id = attributes["id"];
-				m_tobj.m_pid = attributes["parentID"];
+
+				const char *id = GetAttribute(attrs, "id");
+				if (id != nullptr)
+					m_tobj.m_id = id;
+
+				const char *pid = GetAttribute(attrs, "parentID");
+				if (pid != nullptr)
+					m_tobj.m_pid = pid;
 			}
 			break;
 
@@ -108,8 +115,9 @@ protected:
 				// nrAudioChannels="2">
 
 				for (auto i = res_attributes; *i != nullptr; ++i) {
-					const std::string s(*i);
-					m_tobj.m_props[s] = attributes[s];
+					const char *value = GetAttribute(attrs, *i);
+					if (value != nullptr)
+						m_tobj.m_props.emplace(*i, value);
 				}
 			}
 

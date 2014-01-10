@@ -70,6 +70,17 @@ ExpatParser::Parse(InputStream &is, Error &error)
 }
 
 const char *
+ExpatParser::GetAttribute(const XML_Char **atts,
+			  const char *name)
+{
+	for (unsigned i = 0; atts[i] != nullptr; i += 2)
+		if (strcmp(atts[i], name) == 0)
+			return atts[i + 1];
+
+	return nullptr;
+}
+
+const char *
 ExpatParser::GetAttributeCase(const XML_Char **atts,
 			      const char *name)
 {

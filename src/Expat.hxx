@@ -56,6 +56,10 @@ public:
 	bool Parse(InputStream &is, Error &error);
 
 	gcc_pure
+	static const char *GetAttribute(const XML_Char **atts,
+					const char *name);
+
+	gcc_pure
 	static const char *GetAttributeCase(const XML_Char **atts,
 					    const char *name);
 
@@ -83,6 +87,12 @@ public:
 
 	bool Parse(InputStream &is, Error &error) {
 		return parser.Parse(is, error);
+	}
+
+	gcc_pure
+	static const char *GetAttribute(const XML_Char **atts,
+					const char *name) {
+		return ExpatParser::GetAttribute(atts, name);
 	}
 
 	gcc_pure
