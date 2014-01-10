@@ -294,24 +294,24 @@ upnpDurationToSeconds(const std::string &duration)
 static Song *
 upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 {
-	std::string url(uri);
-	if (url.empty())
-		dirent.getprop("url", url);
+	if (*uri == 0)
+		uri = dirent.getprop("url");
 
-	Song *s = Song::NewFile(url.c_str(), nullptr);
-
-	std::string sprop("0:0:0");
-	dirent.getprop("duration", sprop);
-	int seconds = upnpDurationToSeconds(sprop);
+	Song *s = Song::NewFile(uri, nullptr);
 
 	TagBuilder tag;
-	tag.SetTime(seconds);
+
+	const char *duration = dirent.getprop("duration");
+	if (duration != nullptr)
+		tag.SetTime(upnpDurationToSeconds(duration));
 
 	tag.AddItem(TAG_TITLE, titleToPathElt(dirent.m_title).c_str());
 
-	for (auto i = upnp_tags; i->name != nullptr; ++i)
-		if (dirent.getprop(i->name, sprop))
-			tag.AddItem(i->type, sprop.c_str());
+	for (auto i = upnp_tags; i->name != nullptr; ++i) {
+		const char *value = dirent.getprop(i->name);
+		if (value != nullptr)
+			tag.AddItem(i->type, value);
+	}
 
 	s->tag = tag.CommitNew();
 	return s;
@@ -378,11 +378,11 @@ getTagValue(UPnPDirObject& dirent, TagType tag,
 	if (name == nullptr)
 		return false;
 
-	std::string propvalue;
-	dirent.getprop(name, propvalue);
-	if (propvalue.empty())
+	const char *value = dirent.getprop(name);
+	if (value == nullptr)
 		return false;
-	tagvalue = propvalue;
+
+	tagvalue = value;
 	return true;
 }
 

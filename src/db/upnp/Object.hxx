@@ -56,13 +56,11 @@ public:
 	 * @param[out] value
 	 * @return true if found.
 	 */
-	bool getprop(const std::string &name, std::string &value) const
-	{
+	const char *getprop(const char *name) const {
 		auto it = m_props.find(name);
 		if (it == m_props.end())
-			return false;
-		value = it->second;
-		return true;
+			return nullptr;
+		return it->second.c_str();
 	}
 
 	void clear()
