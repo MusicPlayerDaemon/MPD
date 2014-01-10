@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ProxyDatabasePlugin.hxx"
 #include "DatabasePlugin.hxx"
+#include "DatabaseListener.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
@@ -31,14 +32,21 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "protocol/Ack.hxx"
+#include "Main.hxx"
+#include "event/SocketMonitor.hxx"
+#include "event/IdleMonitor.hxx"
+#include "Log.hxx"
 
 #include <mpd/client.h>
+#include <mpd/async.h>
 
 #include <cassert>
 #include <string>
 #include <list>
 
-class ProxyDatabase : public Database {
+class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
+	DatabaseListener &listener;
+
 	std::string host;
 	unsigned port;
 
@@ -48,7 +56,23 @@ class ProxyDatabase : public Database {
 	/* this is mutable because GetStats() must be "const" */
 	mutable time_t update_stamp;
 
+	/**
+	 * The libmpdclient idle mask that was removed from the other
+	 * MPD.  This will be handled by the next OnIdle() call.
+	 */
+	unsigned idle_received;
+
+	/**
+	 * Is the #connection currently "idle"?  That is, did we send
+	 * the "idle" command to it?
+	 */
+	bool is_idle;
+
 public:
+	ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener)
+		:SocketMonitor(_loop), IdleMonitor(_loop),
+		 listener(_listener) {}
+
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
 				const config_param &param,
 				Error &error);
@@ -86,6 +110,12 @@ private:
 	bool EnsureConnected(Error &error);
 
 	void Disconnect();
+
+	/* virtual methods from SocketMonitor */
+	virtual bool OnSocketReady(unsigned flags) override;
+
+	/* virtual methods from IdleMonitor */
+	virtual void OnIdle() override;
 };
 
 static constexpr Domain libmpdclient_domain("libmpdclient");
@@ -219,11 +249,10 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 }
 
 Database *
-ProxyDatabase::Create(gcc_unused EventLoop &loop,
-		      gcc_unused DatabaseListener &listener,
+ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
 		      const config_param &param, Error &error)
 {
-	ProxyDatabase *db = new ProxyDatabase();
+	ProxyDatabase *db = new ProxyDatabase(loop, listener);
 	if (!db->Configure(param, error)) {
 		delete db;
 		db = nullptr;
@@ -273,6 +302,12 @@ ProxyDatabase::Connect(Error &error)
 		return false;
 	}
 
+	idle_received = unsigned(-1);
+	is_idle = false;
+
+	SocketMonitor::Open(mpd_async_get_fd(mpd_connection_get_async(connection)));
+	IdleMonitor::Schedule();
+
 	if (!CheckError(connection, error)) {
 		if (connection != nullptr)
 			Disconnect();
@@ -293,6 +328,18 @@ ProxyDatabase::CheckConnection(Error &error)
 		return Connect(error);
 	}
 
+	if (is_idle) {
+		unsigned idle = mpd_run_noidle(connection);
+		if (idle == 0 && !CheckError(connection, error)) {
+			Disconnect();
+			return false;
+		}
+
+		idle_received |= idle;
+		is_idle = false;
+		IdleMonitor::Schedule();
+	}
+
 	return true;
 }
 
@@ -309,8 +356,72 @@ ProxyDatabase::Disconnect()
 {
 	assert(connection != nullptr);
 
+	IdleMonitor::Cancel();
+	SocketMonitor::Steal();
+
 	mpd_connection_free(connection);
 	connection = nullptr;
+}
+
+bool
+ProxyDatabase::OnSocketReady(gcc_unused unsigned flags)
+{
+	assert(connection != nullptr);
+
+	if (!is_idle) {
+		// TODO: can this happen?
+		IdleMonitor::Schedule();
+		return false;
+	}
+
+	unsigned idle = (unsigned)mpd_recv_idle(connection, false);
+	if (idle == 0) {
+		Error error;
+		if (!CheckError(connection, error)) {
+			LogError(error);
+			Disconnect();
+			return false;
+		}
+	}
+
+	/* let OnIdle() handle this */
+	idle_received |= idle;
+	is_idle = false;
+	IdleMonitor::Schedule();
+	return false;
+}
+
+void
+ProxyDatabase::OnIdle()
+{
+	assert(connection != nullptr);
+
+	/* handle previous idle events */
+
+	if (idle_received & MPD_IDLE_DATABASE)
+		listener.OnDatabaseModified();
+
+	idle_received = 0;
+
+	/* send a new idle command to the other MPD */
+
+	if (is_idle)
+		// TODO: can this happen?
+		return;
+
+	if (!mpd_send_idle_mask(connection, MPD_IDLE_DATABASE)) {
+		Error error;
+		if (!CheckError(connection, error))
+			LogError(error);
+
+		SocketMonitor::Steal();
+		mpd_connection_free(connection);
+		connection = nullptr;
+		return;
+	}
+
+	is_idle = true;
+	SocketMonitor::ScheduleRead();
 }
 
 static Song *

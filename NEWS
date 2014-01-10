@@ -3,6 +3,7 @@ ver 0.19 (not yet released)
   - new commands "addtagid", "cleartagid"
   - "lsinfo" and "readcomments" allowed for remote files
 * database
+  - proxy: forward "idle" events
   - upnp: new plugin
 * playlist
   - soundcloud: use https instead of http
