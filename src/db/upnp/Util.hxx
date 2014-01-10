@@ -34,13 +34,4 @@ path_getfather(const std::string &s);
 template <class T>
 bool csvToStrings(const std::string& s, T &tokens);
 
-#define UPNPP_DEBUG
-
-#if defined(UPNPP_DEBUG) && defined(DEBUG)
-#include <upnp/upnpdebug.h>
-#define PLOGINF(...) UpnpPrintf(UPNP_INFO, API, __FILE__, __LINE__, __VA_ARGS__)
-#else
-#define PLOGINF(...)
-#endif
-
 #endif /* _UPNPP_H_X_INCLUDED_ */
