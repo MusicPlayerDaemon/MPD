@@ -48,6 +48,17 @@
 
 static const char *const rootid = "0";
 
+static const struct tag_table upnp_tags[] = {
+	{ "upnp:artist", TAG_ARTIST },
+	{ "upnp:album", TAG_ALBUM },
+	{ "upnp:originalTrackNumber", TAG_TRACK },
+	{ "upnp:genre", TAG_GENRE },
+	{ "dc:title", TAG_TITLE },
+
+	/* sentinel */
+	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
+};
+
 class UpnpDatabase : public Database {
 	LibUPnP *m_lib;
 	UPnPDeviceDirectory *m_superdir;
@@ -276,17 +287,6 @@ upnpDurationToSeconds(const std::string &duration)
 	return atoi(v[0].c_str())*3600 + atoi(v[1].c_str())*60 + atoi(v[2].c_str());
 }
 
-// Upnp element to mpd tag number correspondance.
-// Don't know the upnp equivalent if any: TAG_ALBUM_ARTIST TAG_NAME
-// TAG_DATE TAG_COMPOSER TAG_PERFORMER TAG_COMMENT TAG_DISC
-static std::map<std::string, TagType> propToTag = {
-	{"upnp:artist", TAG_ARTIST},
-	{"upnp:album", TAG_ALBUM},
-	{"upnp:originalTrackNumber", TAG_TRACK},
-	{"upnp:genre", TAG_GENRE},
-	{"dc:title", TAG_TITLE},
-};
-
 // If uri is empty, we use the object's url instead. This happens
 // when the target of a Visit() is a song, which  only happens when
 // "add"ing AFAIK. Visit() calls us with a null uri so that the url
@@ -314,9 +314,9 @@ upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 
 	tag.AddItem(TAG_TITLE, titleToPathElt(dirent.m_title).c_str());
 
-	for (auto &pt : propToTag)
-		if (dirent.getprop(pt.first, sprop))
-			tag.AddItem(pt.second, sprop.c_str());
+	for (auto i = upnp_tags; i->name != nullptr; ++i)
+		if (dirent.getprop(i->name, sprop))
+			tag.AddItem(i->type, sprop.c_str());
 
 	s->tag = tag.CommitNew();
 	return s;
@@ -363,17 +363,6 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 
 	return song;
 }
-
-static const struct tag_table upnp_tags[] = {
-	{ "upnp:artist", TAG_ARTIST },
-	{ "upnp:album", TAG_ALBUM },
-	{ "upnp:originalTrackNumber", TAG_TRACK },
-	{ "upnp:genre", TAG_GENRE },
-	{ "dc:title", TAG_TITLE },
-
-	/* sentinel */
-	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
-};
 
 /**
  * Retrieve the value for an MPD tag from an object entry.
