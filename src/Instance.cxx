@@ -21,6 +21,7 @@
 #include "Instance.hxx"
 #include "Partition.hxx"
 #include "Idle.hxx"
+#include "Stats.hxx"
 
 void
 Instance::DeleteSong(const char *uri)
@@ -31,6 +32,7 @@ Instance::DeleteSong(const char *uri)
 void
 Instance::DatabaseModified()
 {
+	stats_invalidate();
 	partition->DatabaseModified();
 	idle_add(IDLE_DATABASE);
 }

@@ -29,7 +29,6 @@
 #include "GlobalEvents.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "Stats.hxx"
 #include "Main.hxx"
 #include "Instance.hxx"
 #include "system/FatalError.hxx"
@@ -162,8 +161,6 @@ static void update_finished_event(void)
 		spawn_update_task(std::move(i));
 	} else {
 		progress = UPDATE_PROGRESS_IDLE;
-
-		stats_invalidate();
 	}
 }
 
