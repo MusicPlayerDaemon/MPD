@@ -58,6 +58,11 @@ public:
 	// The map keys are the XML tag or attribute names.
 	std::map<std::string, std::string> m_props;
 
+	/**
+	 * Song duration in seconds.  0 if unknown.
+	 */
+	int duration;
+
 	/** Get named property
 	 * @param property name (e.g. upnp:artist, upnp:album,
 	 *     upnp:originalTrackNumber, upnp:genre). Use m_title instead
@@ -80,6 +85,7 @@ public:
 		type = Type::UNKNOWN;
 		item_class = ItemClass::UNKNOWN;
 		m_props.clear();
+		duration = -1;
 	}
 };
 

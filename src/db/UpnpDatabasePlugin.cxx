@@ -229,16 +229,6 @@ titleToPathElt(const std::string &in)
 	return out;
 }
 
-gcc_pure
-static int
-upnpDurationToSeconds(const std::string &duration)
-{
-	const auto v = stringToTokens(duration, ":");
-	if (v.size() != 3)
-		return 0;
-	return atoi(v[0].c_str())*3600 + atoi(v[1].c_str())*60 + atoi(v[2].c_str());
-}
-
 // If uri is empty, we use the object's url instead. This happens
 // when the target of a Visit() is a song, which  only happens when
 // "add"ing AFAIK. Visit() calls us with a null uri so that the url
@@ -253,9 +243,8 @@ upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 
 	TagBuilder tag;
 
-	const char *duration = dirent.getprop("duration");
-	if (duration != nullptr)
-		tag.SetTime(upnpDurationToSeconds(duration));
+	if (dirent.duration > 0)
+		tag.SetTime(dirent.duration);
 
 	tag.AddItem(TAG_TITLE, titleToPathElt(dirent.m_title).c_str());
 

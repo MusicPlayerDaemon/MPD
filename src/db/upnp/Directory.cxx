@@ -36,16 +36,6 @@ static const char *const upnptags[] = {
 	nullptr,
 };
 
-static const char *const res_attributes[] = {
-	"protocolInfo",
-	"size",
-	"bitrate",
-	"duration",
-	"sampleFrequency",
-	"nrAudioChannels",
-	nullptr,
-};
-
 gcc_pure
 static UPnPDirObject::ItemClass
 ParseItemClass(const char *name)
@@ -56,6 +46,16 @@ ParseItemClass(const char *name)
 		return UPnPDirObject::ItemClass::PLAYLIST;
 	else
 		return UPnPDirObject::ItemClass::UNKNOWN;
+}
+
+gcc_pure
+static int
+ParseDuration(const std::string &duration)
+{
+	const auto v = stringToTokens(duration, ":");
+	if (v.size() != 3)
+		return 0;
+	return atoi(v[0].c_str())*3600 + atoi(v[1].c_str())*60 + atoi(v[2].c_str());
 }
 
 /**
@@ -114,11 +114,10 @@ protected:
 				// bitrate="24576" duration="00:03:35" sampleFrequency="44100"
 				// nrAudioChannels="2">
 
-				for (auto i = res_attributes; *i != nullptr; ++i) {
-					const char *value = GetAttribute(attrs, *i);
-					if (value != nullptr)
-						m_tobj.m_props.emplace(*i, value);
-				}
+				const char *duration =
+					GetAttribute(attrs, "duration");
+				if (duration != nullptr)
+					m_tobj.duration = ParseDuration(duration);
 			}
 
 			break;
