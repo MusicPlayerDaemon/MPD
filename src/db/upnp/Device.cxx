@@ -59,9 +59,6 @@ protected:
 	}
 
 	virtual void CharacterData(const XML_Char *s, int len) {
-		if (len == 0)
-			return;
-
 		std::string str(s, len);
 		trimstring(str);
 		switch (m_path.back()[0]) {

@@ -160,8 +160,6 @@ protected:
 
 	virtual void CharacterData(const XML_Char *s, int len)
 	{
-		if (s == 0 || *s == 0)
-			return;
 		std::string str(s, len);
 		trimstring(str);
 		switch (m_path.back()[0]) {
