@@ -85,9 +85,6 @@ public:
 	{
 		return m_clh;
 	}
-
-	/** Translate integer error code (UPNP_E_XXX) to string */
-	static std::string errAsString(const std::string& who, int code);
 };
 
 #endif /* _LIBUPNP.H_X_INCLUDED_ */

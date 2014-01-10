@@ -24,7 +24,6 @@
 #include "Log.hxx"
 
 #include <string>
-#include <sstream>
 #include <map>
 #include <vector>
 #include <set>
@@ -109,14 +108,6 @@ LibUPnP::registerHandler(Upnp_EventType et, Upnp_FunPtr handler, void *cookie)
 		m_handlers.erase(et);
 	else
 		m_handlers.emplace(et, Handler(handler, cookie));
-}
-
-std::string
-LibUPnP::errAsString(const std::string& who, int code)
-{
-	std::ostringstream os;
-	os << who << " :" << code << ": " << UpnpGetErrorMessage(code);
-	return os.str();
 }
 
 int
