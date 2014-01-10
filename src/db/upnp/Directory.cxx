@@ -126,21 +126,21 @@ protected:
 	}
 
 	bool checkobjok() {
-		bool ok =  !m_tobj.m_id.empty() && !m_tobj.m_pid.empty() &&
-			!m_tobj.m_title.empty();
+		if (m_tobj.m_id.empty() || m_tobj.m_pid.empty() ||
+		    m_tobj.m_title.empty())
+			return false;
 
-		if (ok && m_tobj.type == UPnPDirObject::Type::ITEM) {
+		if (m_tobj.type == UPnPDirObject::Type::ITEM) {
 			const char *item_class_name =
 				m_tobj.m_props["upnp:class"].c_str();
 			auto item_class = ParseItemClass(item_class_name);
-			if (item_class == UPnPDirObject::ItemClass::UNKNOWN) {
-				ok = false;
-			} else {
-				m_tobj.item_class = item_class;
-			}
+			if (item_class == UPnPDirObject::ItemClass::UNKNOWN)
+				return false;
+
+			m_tobj.item_class = item_class;
 		}
 
-		return ok;
+		return true;
 	}
 
 	virtual void EndElement(const XML_Char *name)
