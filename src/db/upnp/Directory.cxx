@@ -37,6 +37,18 @@ static const char *const upnptags[] = {
 };
 static const int nupnptags = sizeof(upnptags) / sizeof(char*);
 
+gcc_pure
+static UPnPDirObject::ItemClass
+ParseItemClass(const char *name)
+{
+	if (strcmp(name, "object.item.audioItem.musicTrack") == 0)
+		return UPnPDirObject::ItemClass::MUSIC;
+	else if (strcmp(name, "object.item.playlistItem") == 0)
+		return UPnPDirObject::ItemClass::PLAYLIST;
+	else
+		return UPnPDirObject::ItemClass::UNKNOWN;
+}
+
 /**
  * An XML parser which builds directory contents from DIDL lite input.
  */
@@ -49,16 +61,11 @@ class UPnPDirParser final : public CommonExpatParser {
 
 	std::vector<StackEl> m_path;
 	UPnPDirObject m_tobj;
-	std::map<std::string, UPnPDirObject::ItemClass> m_okitems;
 
 public:
 	UPnPDirParser(UPnPDirContent& dir)
 		:m_dir(dir)
 	{
-		m_okitems["object.item.audioItem.musicTrack"] =
-			UPnPDirObject::ItemClass::MUSIC;
-		m_okitems["object.item.playlistItem"] =
-			UPnPDirObject::ItemClass::PLAYLIST;
 	}
 	UPnPDirContent& m_dir;
 
@@ -97,13 +104,15 @@ protected:
 			!m_tobj.m_title.empty();
 
 		if (ok && m_tobj.type == UPnPDirObject::Type::ITEM) {
-			auto it = m_okitems.find(m_tobj.m_props["upnp:class"]);
-			if (it == m_okitems.end()) {
+			const char *item_class_name =
+				m_tobj.m_props["upnp:class"].c_str();
+			auto item_class = ParseItemClass(item_class_name);
+			if (item_class == UPnPDirObject::ItemClass::UNKNOWN) {
 				PLOGINF("checkobjok: found object of unknown class: [%s]\n",
-					m_tobj.m_props["upnp:class"].c_str());
+					item_class_name);
 				ok = false;
 			} else {
-				m_tobj.item_class = it->second;
+				m_tobj.item_class = item_class;
 			}
 		}
 
