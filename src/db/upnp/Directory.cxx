@@ -34,8 +34,8 @@ static const char *const upnptags[] = {
 	"upnp:genre",
 	"upnp:originalTrackNumber",
 	"upnp:class",
+	nullptr,
 };
-static const int nupnptags = sizeof(upnptags) / sizeof(char*);
 
 gcc_pure
 static UPnPDirObject::ItemClass
@@ -167,11 +167,9 @@ protected:
 			}
 			break;
 		case 'u':
-			for (int i = 0; i < nupnptags; i++) {
-				if (!m_path.back().compare(upnptags[i])) {
-					m_tobj.m_props[upnptags[i]] += str;
-				}
-			}
+			for (auto i = upnptags; *i != nullptr; ++i)
+				if (!m_path.back().compare(*i))
+					m_tobj.m_props[*i] += str;
 			break;
 		}
 	}
