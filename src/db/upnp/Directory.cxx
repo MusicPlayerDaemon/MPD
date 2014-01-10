@@ -56,9 +56,9 @@ public:
 		:m_dir(dir)
 	{
 		m_okitems["object.item.audioItem.musicTrack"] =
-			UPnPDirObject::audioItem_musicTrack;
+			UPnPDirObject::ItemClass::MUSIC;
 		m_okitems["object.item.playlistItem"] =
-			UPnPDirObject::audioItem_playlist;
+			UPnPDirObject::ItemClass::PLAYLIST;
 	}
 	UPnPDirContent& m_dir;
 
@@ -74,7 +74,7 @@ protected:
 		case 'c':
 			if (!strcmp(name, "container")) {
 				m_tobj.clear();
-				m_tobj.m_type = UPnPDirObject::container;
+				m_tobj.type = UPnPDirObject::Type::CONTAINER;
 				m_tobj.m_id = m_path.back().attributes["id"];
 				m_tobj.m_pid = m_path.back().attributes["parentID"];
 			}
@@ -82,7 +82,7 @@ protected:
 		case 'i':
 			if (!strcmp(name, "item")) {
 				m_tobj.clear();
-				m_tobj.m_type = UPnPDirObject::item;
+				m_tobj.type = UPnPDirObject::Type::ITEM;
 				m_tobj.m_id = m_path.back().attributes["id"];
 				m_tobj.m_pid = m_path.back().attributes["parentID"];
 			}
@@ -96,14 +96,14 @@ protected:
 		bool ok =  !m_tobj.m_id.empty() && !m_tobj.m_pid.empty() &&
 			!m_tobj.m_title.empty();
 
-		if (ok && m_tobj.m_type == UPnPDirObject::item) {
+		if (ok && m_tobj.type == UPnPDirObject::Type::ITEM) {
 			auto it = m_okitems.find(m_tobj.m_props["upnp:class"]);
 			if (it == m_okitems.end()) {
 				PLOGINF("checkobjok: found object of unknown class: [%s]\n",
 					m_tobj.m_props["upnp:class"].c_str());
 				ok = false;
 			} else {
-				m_tobj.m_iclass = it->second;
+				m_tobj.item_class = it->second;
 			}
 		}
 

@@ -30,7 +30,12 @@
  */
 class UPnPDirObject {
 public:
-	enum ObjType {item, container};
+	enum class Type {
+		UNKNOWN,
+		ITEM,
+		CONTAINER,
+	};
+
 	// There are actually several kinds of containers:
 	// object.container.storageFolder, object.container.person,
 	// object.container.playlistContainer etc., but they all seem to
@@ -38,13 +43,17 @@ public:
 	// items are special to us, and so should playlists, but I've not
 	// seen one of the latter yet (servers seem to use containers for
 	// playlists).
-	enum ItemClass {audioItem_musicTrack, audioItem_playlist};
+	enum class ItemClass {
+		UNKNOWN,
+		MUSIC,
+		PLAYLIST,
+	};
 
 	std::string m_id; // ObjectId
 	std::string m_pid; // Parent ObjectId
 	std::string m_title; // dc:title. Directory name for a container.
-	ObjType m_type; // item or container
-	ItemClass m_iclass;
+	Type type;
+	ItemClass item_class;
 	// Properties as gathered from the XML document (url, artist, etc.)
 	// The map keys are the XML tag or attribute names.
 	std::map<std::string, std::string> m_props;
@@ -68,8 +77,8 @@ public:
 		m_id.clear();
 		m_pid.clear();
 		m_title.clear();
-		m_type = (ObjType)-1;
-		m_iclass = (ItemClass)-1;
+		type = Type::UNKNOWN;
+		item_class = ItemClass::UNKNOWN;
 		m_props.clear();
 	}
 };

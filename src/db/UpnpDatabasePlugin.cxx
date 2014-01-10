@@ -721,18 +721,27 @@ UpnpDatabase::VisitServer(ContentDirectoryService* server,
 		return SearchSongs(server, objid.c_str(), selection,
 				   visit_song, error);
 
-	if (tdirent.m_type == UPnPDirObject::item) {
+	if (tdirent.type == UPnPDirObject::Type::ITEM) {
 		// Target is a song. Not too sure we ever get there actually, maybe
 		// this is always catched by the special uri test above.
-		if (visit_song &&
-		    tdirent.m_iclass == UPnPDirObject::audioItem_musicTrack) {
-			return visitSong(tdirent, "", selection, visit_song,
-					 error);
-		} else if (visit_playlist &&
-			   tdirent.m_iclass == UPnPDirObject::audioItem_playlist) {
-			// Note: I've yet to see a playlist item (playlists
-			// seem to be usually handled as containers, so I'll
-			// decide what to do when I see one...
+		switch (tdirent.item_class) {
+		case UPnPDirObject::ItemClass::MUSIC:
+			if (visit_song)
+				return visitSong(tdirent, "", selection, visit_song,
+						 error);
+			break;
+
+		case UPnPDirObject::ItemClass::PLAYLIST:
+			if (visit_playlist) {
+				/* Note: I've yet to see a playlist
+				 item (playlists seem to be usually
+				 handled as containers, so I'll decide
+				 what to do when I see one... */
+			}
+			break;
+
+		case UPnPDirObject::ItemClass::UNKNOWN:
+			break;
 		}
 
 		return true;
@@ -757,28 +766,40 @@ UpnpDatabase::VisitServer(ContentDirectoryService* server,
 
 	if (visit_song || visit_playlist) {
 		for (const auto &dirent : dirbuf.m_items) {
-			if (visit_song &&
-			    dirent.m_iclass == UPnPDirObject::audioItem_musicTrack) {
-				/* We identify songs by giving them a
-				   special path. The Id is enough to
-				   fetch them from the server
-				   anyway. */
+			switch (dirent.item_class) {
+			case UPnPDirObject::ItemClass::MUSIC:
+				if (visit_song) {
+					/* We identify songs by giving
+					   them a special path. The Id
+					   is enough to fetch them
+					   from the server anyway. */
 
-				std::string p;
-				if (!selection.recursive)
-					p = selection.uri + "/" +
-						titleToPathElt(dirent.m_title);
+					std::string p;
+					if (!selection.recursive)
+						p = selection.uri + "/" +
+							titleToPathElt(dirent.m_title);
 
-				if (!visitSong(dirent, p.c_str(),
-					       selection, visit_song, error))
-					return false;
-			} else if (visit_playlist &&
-				   dirent.m_iclass == UPnPDirObject::audioItem_playlist) {
-				/* Note: I've yet to see a playlist
-				   item (playlists seem to be usually
-				   handled as containers, so I'll
-				   decide what to do when I see
-				   one... */
+					if (!visitSong(dirent, p.c_str(),
+						       selection, visit_song, error))
+						return false;
+				}
+
+				break;
+
+			case UPnPDirObject::ItemClass::PLAYLIST:
+				if (visit_playlist) {
+					/* Note: I've yet to see a
+					   playlist item (playlists
+					   seem to be usually handled
+					   as containers, so I'll
+					   decide what to do when I
+					   see one... */
+				}
+
+				break;
+
+			case UPnPDirObject::ItemClass::UNKNOWN:
+				break;
 			}
 		}
 	}
