@@ -39,6 +39,12 @@ static unsigned start_time;
 
 static DatabaseStats stats;
 
+enum class StatsValidity : uint8_t {
+	INVALID, VALID, FAILED,
+};
+
+static StatsValidity stats_validity = StatsValidity::INVALID;
+
 void stats_global_init(void)
 {
 #ifndef WIN32
@@ -46,21 +52,39 @@ void stats_global_init(void)
 #endif
 }
 
-void stats_update(void)
+void
+stats_invalidate()
 {
 	assert(GetDatabase() != nullptr);
 
+	stats_validity = StatsValidity::INVALID;
+}
+
+static bool
+stats_update()
+{
+	switch (stats_validity) {
+	case StatsValidity::INVALID:
+		break;
+
+	case StatsValidity::VALID:
+		return true;
+
+	case StatsValidity::FAILED:
+		return false;
+	}
+
 	Error error;
 
-	DatabaseStats stats2;
-
 	const DatabaseSelection selection("", true);
-	if (GetDatabase()->GetStats(selection, stats2, error)) {
-		stats = stats2;
+	if (GetDatabase()->GetStats(selection, stats, error)) {
+		stats_validity = StatsValidity::VALID;
+		return true;
 	} else {
 		LogError(error);
 
-		stats.Clear();
+		stats_validity = StatsValidity::FAILED;
+		return true;
 	}
 }
 
@@ -74,7 +98,10 @@ db_stats_print(Client &client)
 		   database plugin */
 		/* TODO: move this into the "proxy" database plugin as
 		   an "idle" handler */
-		stats_update();
+		stats_invalidate();
+
+	if (!stats_update())
+		return;
 
 	client_printf(client,
 		      "artists: %u\n"

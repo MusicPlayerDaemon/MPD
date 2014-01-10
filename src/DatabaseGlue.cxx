@@ -137,8 +137,6 @@ DatabaseGlobalOpen(Error &error)
 
 	db_is_open = true;
 
-	stats_update();
-
 	return true;
 }
 

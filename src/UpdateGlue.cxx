@@ -163,7 +163,7 @@ static void update_finished_event(void)
 	} else {
 		progress = UPDATE_PROGRESS_IDLE;
 
-		stats_update();
+		stats_invalidate();
 	}
 }
 
