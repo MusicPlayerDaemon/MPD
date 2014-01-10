@@ -56,7 +56,6 @@ class UPnPDirParser final : public CommonExpatParser {
 	struct StackEl {
 		StackEl(const std::string& nm) : name(nm) {}
 		std::string name;
-		std::map<std::string,std::string> attributes;
 	};
 
 	std::vector<StackEl> m_path;
@@ -73,17 +72,18 @@ protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **attrs)
 	{
 		m_path.push_back(StackEl(name));
-		for (int i = 0; attrs[i] != 0; i += 2) {
-			m_path.back().attributes[attrs[i]] = attrs[i+1];
-		}
+
+		std::map<std::string,std::string> attributes;
+		for (int i = 0; attrs[i] != 0; i += 2)
+			attributes[attrs[i]] = attrs[i+1];
 
 		switch (name[0]) {
 		case 'c':
 			if (!strcmp(name, "container")) {
 				m_tobj.clear();
 				m_tobj.type = UPnPDirObject::Type::CONTAINER;
-				m_tobj.m_id = m_path.back().attributes["id"];
-				m_tobj.m_pid = m_path.back().attributes["parentID"];
+				m_tobj.m_id = attributes["id"];
+				m_tobj.m_pid = attributes["parentID"];
 			}
 			break;
 
@@ -91,8 +91,8 @@ protected:
 			if (!strcmp(name, "item")) {
 				m_tobj.clear();
 				m_tobj.type = UPnPDirObject::Type::ITEM;
-				m_tobj.m_id = m_path.back().attributes["id"];
-				m_tobj.m_pid = m_path.back().attributes["parentID"];
+				m_tobj.m_id = attributes["id"];
+				m_tobj.m_pid = attributes["parentID"];
 			}
 			break;
 
@@ -102,12 +102,12 @@ protected:
 				// bitrate="24576" duration="00:03:35" sampleFrequency="44100"
 				// nrAudioChannels="2">
 				std::string s;
-				s="protocolInfo";m_tobj.m_props[s] = m_path.back().attributes[s];
-				s="size";m_tobj.m_props[s] = m_path.back().attributes[s];
-				s="bitrate";m_tobj.m_props[s] = m_path.back().attributes[s];
-				s="duration";m_tobj.m_props[s] = m_path.back().attributes[s];
-				s="sampleFrequency";m_tobj.m_props[s] = m_path.back().attributes[s];
-				s="nrAudioChannels";m_tobj.m_props[s] = m_path.back().attributes[s];
+				s="protocolInfo";m_tobj.m_props[s] = attributes[s];
+				s="size";m_tobj.m_props[s] = attributes[s];
+				s="bitrate";m_tobj.m_props[s] = attributes[s];
+				s="duration";m_tobj.m_props[s] = attributes[s];
+				s="sampleFrequency";m_tobj.m_props[s] = attributes[s];
+				s="nrAudioChannels";m_tobj.m_props[s] = attributes[s];
 			}
 
 			break;
