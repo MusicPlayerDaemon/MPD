@@ -32,7 +32,6 @@ static const char *const upnptags[] = {
 	"upnp:album",
 	"upnp:genre",
 	"upnp:originalTrackNumber",
-	"upnp:class",
 	nullptr,
 };
 
@@ -105,6 +104,12 @@ protected:
 				const char *pid = GetAttribute(attrs, "parentID");
 				if (pid != nullptr)
 					m_tobj.m_pid = pid;
+
+				const char *item_class_name =
+					GetAttribute(attrs, "upnp:class");
+				if (item_class_name != nullptr)
+					m_tobj.item_class =
+						ParseItemClass(item_class_name);
 			}
 			break;
 
@@ -126,18 +131,9 @@ protected:
 
 	bool checkobjok() {
 		if (m_tobj.m_id.empty() || m_tobj.m_pid.empty() ||
-		    m_tobj.m_title.empty())
+		    m_tobj.m_title.empty() ||
+		    m_tobj.item_class == UPnPDirObject::ItemClass::UNKNOWN)
 			return false;
-
-		if (m_tobj.type == UPnPDirObject::Type::ITEM) {
-			const char *item_class_name =
-				m_tobj.m_props["upnp:class"].c_str();
-			auto item_class = ParseItemClass(item_class_name);
-			if (item_class == UPnPDirObject::ItemClass::UNKNOWN)
-				return false;
-
-			m_tobj.item_class = item_class;
-		}
 
 		return true;
 	}
