@@ -51,6 +51,7 @@ public:
 
 	std::string m_id; // ObjectId
 	std::string m_pid; // Parent ObjectId
+	std::string url;
 	std::string m_title; // dc:title. Directory name for a container.
 	Type type;
 	ItemClass item_class;
@@ -81,6 +82,7 @@ public:
 	{
 		m_id.clear();
 		m_pid.clear();
+		url.clear();
 		m_title.clear();
 		type = Type::UNKNOWN;
 		item_class = ItemClass::UNKNOWN;

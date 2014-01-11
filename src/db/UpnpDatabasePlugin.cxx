@@ -237,7 +237,7 @@ static Song *
 upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 {
 	if (*uri == 0)
-		uri = dirent.getprop("url");
+		uri = dirent.url.c_str();
 
 	Song *s = Song::NewFile(uri, nullptr);
 

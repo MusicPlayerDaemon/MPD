@@ -168,7 +168,7 @@ protected:
 			break;
 		case 'r':
 			if (!m_path.back().compare("res")) {
-				m_tobj.m_props["url"] += str;
+				m_tobj.url = str;
 			}
 			break;
 		case 'u':
