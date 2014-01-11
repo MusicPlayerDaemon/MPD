@@ -24,6 +24,7 @@
 #include "upnp/Discovery.hxx"
 #include "upnp/ContentDirectoryService.hxx"
 #include "upnp/Directory.hxx"
+#include "upnp/Util.hxx"
 #include "LazyDatabase.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
@@ -145,42 +146,6 @@ private:
 		       const UPnPDirObject& dirent, std::string &idpath,
 		       Error &error) const;
 };
-
-gcc_pure
-static std::vector<std::string>
-stringToTokens(const std::string &str,
-	       const char *delims = "/", bool skipinit = true)
-{
-	std::vector<std::string> tokens;
-
-	std::string::size_type startPos = 0;
-
-	// Skip initial delims, return empty if this eats all.
-	if (skipinit &&
-	    (startPos = str.find_first_not_of(delims, 0)) == std::string::npos)
-		return tokens;
-
-	while (startPos < str.size()) {
-		// Find next delimiter or end of string (end of token)
-		auto pos = str.find_first_of(delims, startPos);
-
-		// Add token to the vector and adjust start
-		if (pos == std::string::npos) {
-			tokens.push_back(str.substr(startPos));
-			break;
-		} else if (pos == startPos) {
-			// Dont' push empty tokens after first
-			if (tokens.empty())
-				tokens.push_back(std::string());
-			startPos = ++pos;
-		} else {
-			tokens.push_back(str.substr(startPos, pos - startPos));
-			startPos = ++pos;
-		}
-	}
-
-	return tokens;
-}
 
 Database *
 UpnpDatabase::Create(gcc_unused EventLoop &loop,

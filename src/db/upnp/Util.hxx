@@ -20,7 +20,10 @@
 #ifndef MPD_UPNP_UTIL_HXX
 #define MPD_UPNP_UTIL_HXX
 
+#include "Compiler.h"
+
 #include <string>
+#include <vector>
 
 std::string
 caturl(const std::string& s1, const std::string& s2);
@@ -30,6 +33,11 @@ trimstring(std::string &s, const char *ws = " \t\n");
 
 std::string
 path_getfather(const std::string &s);
+
+gcc_pure
+std::vector<std::string>
+stringToTokens(const std::string &str,
+	       const char *delims = "/", bool skipinit = true);
 
 template <class T>
 bool csvToStrings(const std::string& s, T &tokens);
