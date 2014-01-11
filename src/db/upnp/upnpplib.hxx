@@ -20,7 +20,6 @@
 #ifndef _LIBUPNP_H_X_INCLUDED_
 #define _LIBUPNP_H_X_INCLUDED_
 
-#include "thread/Mutex.hxx"
 #include "util/Error.hxx"
 
 #include <map>
@@ -40,7 +39,6 @@ class LibUPnP {
 
 	Error init_error;
 	UpnpClient_Handle m_clh;
-	Mutex m_mutex;
 	std::map<Upnp_EventType, Handler> m_handlers;
 
 	LibUPnP();

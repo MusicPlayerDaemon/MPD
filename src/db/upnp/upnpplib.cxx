@@ -68,8 +68,6 @@ LibUPnP::LibUPnP()
 void
 LibUPnP::registerHandler(Upnp_EventType et, Upnp_FunPtr handler, void *cookie)
 {
-	const ScopeLock protect(m_mutex);
-
 	if (handler == nullptr)
 		m_handlers.erase(et);
 	else
