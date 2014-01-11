@@ -34,25 +34,27 @@
 #include <map>
 
 // The service type string we are looking for.
-static const std::string ContentDirectorySType("urn:schemas-upnp-org:service:ContentDirectory:1");
+static const char *const ContentDirectorySType = "urn:schemas-upnp-org:service:ContentDirectory:1";
 
 // We don't include a version in comparisons, as we are satisfied with
 // version 1
+gcc_pure
 static bool
-isCDService(const std::string &st)
+isCDService(const char *st)
 {
-	const std::string::size_type sz(ContentDirectorySType.size()-2);
-	return !ContentDirectorySType.compare(0, sz, st, 0, sz);
+	const size_t sz = strlen(ContentDirectorySType) - 2;
+	return memcmp(ContentDirectorySType, st, sz) == 0;
 }
 
 // The type of device we're asking for in search
-static const std::string MediaServerDType("urn:schemas-upnp-org:device:MediaServer:1") ;
+static const char *const MediaServerDType = "urn:schemas-upnp-org:device:MediaServer:1";
 
+gcc_pure
 static bool
-isMSDevice(const std::string &st)
+isMSDevice(const char *st)
 {
-	const std::string::size_type sz(MediaServerDType.size()-2);
-	return !MediaServerDType.compare(0, sz, st, 0, sz);
+	const size_t sz = strlen(MediaServerDType) - 2;
+	return memcmp(MediaServerDType, st, sz) == 0;
 }
 
 /**
@@ -252,7 +254,7 @@ UPnPDeviceDirectory::search()
 
 	// We search both for device and service just in case.
 	int code = UpnpSearchAsync(lib->getclh(), m_searchTimeout,
-				   ContentDirectorySType.c_str(), lib);
+				   ContentDirectorySType, lib);
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
 			     "UpnpSearchAsync() failed: %s",
@@ -261,7 +263,7 @@ UPnPDeviceDirectory::search()
 	}
 
 	code = UpnpSearchAsync(lib->getclh(), m_searchTimeout,
-			       MediaServerDType.c_str(), lib);
+			       MediaServerDType, lib);
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
 			     "UpnpSearchAsync() failed: %s",
@@ -297,7 +299,7 @@ UPnPDeviceDirectory::getDirServices(std::vector<ContentDirectoryService> &out)
 	for (auto dit = contentDirectories.m_directories.begin();
 	     dit != contentDirectories.m_directories.end(); dit++) {
 		for (const auto &service : dit->second.device.services) {
-			if (isCDService(service.serviceType)) {
+			if (isCDService(service.serviceType.c_str())) {
 				out.emplace_back(dit->second.device, service);
 			}
 		}
