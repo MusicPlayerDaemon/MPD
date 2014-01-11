@@ -37,7 +37,8 @@ static bool db_is_open;
 static bool is_simple;
 
 bool
-DatabaseGlobalInit(const config_param &param, Error &error)
+DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
+		   const config_param &param, Error &error)
 {
 	assert(db == nullptr);
 	assert(!db_is_open);
@@ -53,7 +54,7 @@ DatabaseGlobalInit(const config_param &param, Error &error)
 		return false;
 	}
 
-	db = plugin->create(param, error);
+	db = plugin->create(loop, listener, param, error);
 	return db != nullptr;
 }
 

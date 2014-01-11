@@ -38,7 +38,9 @@
 static constexpr Domain simple_db_domain("simple_db");
 
 Database *
-SimpleDatabase::Create(const config_param &param, Error &error)
+SimpleDatabase::Create(gcc_unused EventLoop &loop,
+		       gcc_unused DatabaseListener &listener,
+		       const config_param &param, Error &error)
 {
 	SimpleDatabase *db = new SimpleDatabase();
 	if (!db->Configure(param, error)) {

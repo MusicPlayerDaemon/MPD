@@ -186,7 +186,7 @@ glue_db_init_and_load(void)
 		return true;
 
 	Error error;
-	if (!DatabaseGlobalInit(*param, error))
+	if (!DatabaseGlobalInit(*main_loop, *instance, *param, error))
 		FatalError(error);
 
 	delete allocated;

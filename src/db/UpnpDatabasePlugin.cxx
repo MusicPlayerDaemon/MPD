@@ -69,7 +69,8 @@ public:
 		: m_lib(0), m_superdir(0), m_root(0)
 	{}
 
-	static Database *Create(const config_param &param,
+	static Database *Create(EventLoop &loop, DatabaseListener &listener,
+				const config_param &param,
 				Error &error);
 
 	virtual bool Open(Error &error) override;
@@ -182,7 +183,9 @@ stringToTokens(const std::string &str,
 }
 
 Database *
-UpnpDatabase::Create(const config_param &param, Error &error)
+UpnpDatabase::Create(gcc_unused EventLoop &loop,
+		     gcc_unused DatabaseListener &listener,
+		     const config_param &param, Error &error)
 {
 	UpnpDatabase *db = new UpnpDatabase();
 	if (db && !db->Configure(param, error)) {

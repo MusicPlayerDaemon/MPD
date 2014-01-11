@@ -53,7 +53,8 @@ public:
 
 	bool Save(Error &error);
 
-	static Database *Create(const config_param &param,
+	static Database *Create(EventLoop &loop, DatabaseListener &listener,
+				const config_param &param,
 				Error &error);
 
 	virtual bool Open(Error &error) override;

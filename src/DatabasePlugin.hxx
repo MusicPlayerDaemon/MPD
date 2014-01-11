@@ -37,6 +37,8 @@ struct DatabaseSelection;
 struct db_visitor;
 struct Song;
 class Error;
+class EventLoop;
+class DatabaseListener;
 
 struct DatabaseStats {
 	/**
@@ -149,7 +151,8 @@ struct DatabasePlugin {
 	/**
 	 * Allocates and configures a database.
 	 */
-	Database *(*create)(const config_param &param,
+	Database *(*create)(EventLoop &loop, DatabaseListener &listener,
+			    const config_param &param,
 			    Error &error);
 };
 

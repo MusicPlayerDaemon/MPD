@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2013 The Music Player Daemon Project
+ * Copyright (C) 2003-2014 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,42 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_INSTANCE_HXX
-#define MPD_INSTANCE_HXX
+#ifndef MPD_DATABASE_CLIENT_HXX
+#define MPD_DATABASE_CLIENT_HXX
 
-#include "check.h"
-#include "DatabaseListener.hxx"
-#include "Compiler.h"
-
-class ClientList;
-struct Partition;
-
-struct Instance final : public DatabaseListener {
-	ClientList *client_list;
-
-	Partition *partition;
-
-	void DeleteSong(const char *uri);
-
+/**
+ * An object that listens to events from the #Database.
+ *
+ * @see #Instance
+ */
+class DatabaseListener {
+public:
 	/**
-	 * The database has been modified.  Propagate the change to
-	 * all subsystems.
+	 * The database has been modified.  This must be called in the
+	 * thread that has created the #Database instance and that
+	 * runs the #EventLoop.
 	 */
-	void DatabaseModified();
-
-	/**
-	 * A tag in the play queue has been modified by the player
-	 * thread.  Propagate the change to all subsystems.
-	 */
-	void TagModified();
-
-	/**
-	 * Synchronize the player with the play queue.
-	 */
-	void SyncWithPlayer();
-
-private:
-	virtual void OnDatabaseModified();
+	virtual void OnDatabaseModified() = 0;
 };
 
 #endif

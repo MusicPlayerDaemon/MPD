@@ -21,6 +21,7 @@
 #include "DatabaseRegistry.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
+#include "DatabaseListener.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "PlaylistVector.hxx"
@@ -28,6 +29,7 @@
 #include "ConfigData.hxx"
 #include "tag/TagConfig.hxx"
 #include "fs/Path.hxx"
+#include "event/Loop.hxx"
 #include "util/Error.hxx"
 
 #include <glib.h>
@@ -47,6 +49,13 @@ InputStream::LockRead(void *, size_t, Error &)
 	return 0;
 }
 #endif
+
+class MyDatabaseListener final : public DatabaseListener {
+public:
+	virtual void OnDatabaseModified() override {
+		cout << "DatabaseModified" << endl;
+	}
+};
 
 static bool
 DumpDirectory(const Directory &directory, Error &)
@@ -108,6 +117,9 @@ main(int argc, char **argv)
 
 	TagLoadConfig();
 
+	EventLoop event_loop;
+	MyDatabaseListener database_listener;
+
 	/* do it */
 
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
@@ -115,7 +127,8 @@ main(int argc, char **argv)
 	if (path != nullptr)
 		param.AddBlockParam("path", path->value.c_str(), path->line);
 
-	Database *db = plugin->create(param, error);
+	Database *db = plugin->create(event_loop, database_listener,
+				      param, error);
 
 	if (db == nullptr) {
 		cerr << error.GetMessage() << endl;

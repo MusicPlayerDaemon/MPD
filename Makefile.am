@@ -114,6 +114,7 @@ src_mpd_SOURCES = \
 	src/DatabaseLock.cxx src/DatabaseLock.hxx \
 	src/DatabaseSave.cxx src/DatabaseSave.hxx \
 	src/DatabasePlugin.hxx \
+	src/DatabaseListener.hxx \
 	src/DatabaseVisitor.hxx \
 	src/DatabaseSelection.cxx src/DatabaseSelection.hxx \
 	src/ExcludeList.cxx src/ExcludeList.hxx \
@@ -1202,6 +1203,7 @@ test_DumpDatabase_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libutil.a \
+	libevent.a \
 	libsystem.a \
 	libfs.a \
 	$(GLIB_LIBS)

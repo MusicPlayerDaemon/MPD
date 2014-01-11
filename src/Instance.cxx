@@ -48,3 +48,9 @@ Instance::SyncWithPlayer()
 {
 	partition->SyncWithPlayer();
 }
+
+void
+Instance::OnDatabaseModified()
+{
+	DatabaseModified();
+}

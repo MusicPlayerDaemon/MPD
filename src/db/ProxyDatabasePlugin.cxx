@@ -49,7 +49,8 @@ class ProxyDatabase : public Database {
 	mutable time_t update_stamp;
 
 public:
-	static Database *Create(const config_param &param,
+	static Database *Create(EventLoop &loop, DatabaseListener &listener,
+				const config_param &param,
 				Error &error);
 
 	virtual bool Open(Error &error) override;
@@ -218,7 +219,9 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 }
 
 Database *
-ProxyDatabase::Create(const config_param &param, Error &error)
+ProxyDatabase::Create(gcc_unused EventLoop &loop,
+		      gcc_unused DatabaseListener &listener,
+		      const config_param &param, Error &error)
 {
 	ProxyDatabase *db = new ProxyDatabase();
 	if (!db->Configure(param, error)) {
