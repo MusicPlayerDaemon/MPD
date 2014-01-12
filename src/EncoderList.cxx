@@ -25,6 +25,7 @@
 #include "encoder/VorbisEncoderPlugin.hxx"
 #include "encoder/OpusEncoderPlugin.hxx"
 #include "encoder/FlacEncoderPlugin.hxx"
+#include "encoder/ShineEncoderPlugin.hxx"
 #include "encoder/LameEncoderPlugin.hxx"
 #include "encoder/TwolameEncoderPlugin.hxx"
 
@@ -49,6 +50,9 @@ const EncoderPlugin *const encoder_plugins[] = {
 #endif
 #ifdef ENABLE_FLAC_ENCODER
 	&flac_encoder_plugin,
+#endif
+#ifdef ENABLE_SHINE_ENCODER
+	&shine_encoder_plugin,
 #endif
 	nullptr
 };

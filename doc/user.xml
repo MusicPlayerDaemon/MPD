@@ -1370,6 +1370,35 @@ systemctl start mpd.socket</programlisting>
       </section>
 
       <section>
+        <title><varname>shine</varname></title>
+
+        <para>
+          Encodes into MP3 using the shine library.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>bitrate</varname>
+                </entry>
+                <entry>
+                  Sets the bit rate in kilobit per second.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
         <title><varname>twolame</varname></title>
 
         <para>

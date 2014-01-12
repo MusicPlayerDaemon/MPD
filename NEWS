@@ -14,6 +14,8 @@ ver 0.19 (not yet released)
   - smbclient: new input plugin
 * filter
   - volume: improved software volume dithering
+* encoder:
+  - shine: new encoder plugin
 * new resampler option using libsoxr
 
 ver 0.18.7 (not yet released)

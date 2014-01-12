@@ -449,6 +449,10 @@ AC_ARG_ENABLE(sidplay,
 		[enable C64 SID support via libsidplay2]),,
 	enable_sidplay=auto)
 
+AC_ARG_ENABLE(shine-encoder,
+	AS_HELP_STRING([--enable-shine-encoder],
+		[enables shine encoder]),,
+	[enable_shine_encoder=auto])
 
 AC_ARG_ENABLE(shout,
 	AS_HELP_STRING([--enable-shout],
@@ -1252,6 +1256,7 @@ else
 	enable_vorbis_encoder=no
 	enable_lame_encoder=no
 	enable_twolame_encoder=no
+	enable_shine_encoder=no
 	enable_wave_encoder=no
 	enable_flac_encoder=no
 fi
@@ -1262,6 +1267,17 @@ if test x$enable_flac_encoder = xyes; then
 		[Define to enable the FLAC encoder plugin])
 fi
 AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
+
+dnl ------------------------------- Shine Encoder ------------------------------
+
+MPD_AUTO_PKG(shine_encoder, SHINE, [shine >= 3],
+	[shine encoder], [libshine not found])
+
+if test x$enable_shine_encoder = xyes; then
+	AC_DEFINE(ENABLE_SHINE_ENCODER, 1,
+		[Define to enable the shine encoder plugin])
+fi
+AM_CONDITIONAL(ENABLE_SHINE_ENCODER, test x$enable_shine_encoder = xyes)
 
 dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
 MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
@@ -1306,6 +1322,7 @@ if test x$enable_vorbis_encoder != xno ||
 	test x$enable_lame_encoder != xno ||
 	test x$enable_twolame_encoder != xno ||
 	test x$enable_flac_encoder != xno ||
+	test x$enable_shine_encoder != xno ||
 	test x$enable_wave_encoder != xno; then
 	# at least one encoder plugin is enabled
 	enable_encoder=yes
@@ -1717,6 +1734,7 @@ if
 		printf '\nStreaming encoder support:\n\t'
 		results(flac_encoder, [FLAC])
 		results(lame_encoder, [LAME])
+		results(shine_encoder, [Shine])
 		results(vorbis_encoder, [Ogg Vorbis])
 		results(opus, [Opus])
 		results(twolame_encoder, [TwoLAME])

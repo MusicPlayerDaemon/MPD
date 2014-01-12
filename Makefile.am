@@ -722,6 +722,7 @@ libencoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(TWOLAME_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
 	$(OPUS_CFLAGS) \
+	$(SHINE_CFLAGS) \
 	$(VORBISENC_CFLAGS)
 
 ENCODER_LIBS = \
@@ -730,6 +731,7 @@ ENCODER_LIBS = \
 	$(TWOLAME_LIBS) \
 	$(FLAC_LIBS) \
 	$(OPUS_LIBS) \
+	$(SHINE_LIBS) \
 	$(VORBISENC_LIBS)
 
 libencoder_plugins_a_SOURCES = \
@@ -778,6 +780,12 @@ endif
 if ENABLE_FLAC_ENCODER
 libencoder_plugins_a_SOURCES += \
 	src/encoder/FlacEncoderPlugin.cxx src/encoder/FlacEncoderPlugin.hxx
+endif
+
+if ENABLE_SHINE_ENCODER
+libencoder_plugins_a_SOURCES += \
+	src/encoder/ShineEncoderPlugin.cxx \
+	src/encoder/ShineEncoderPlugin.hxx
 endif
 
 else
