@@ -57,7 +57,7 @@ struct ShineEncoder {
 
 	bool Setup(Error &error);
 
-	bool WriteChunk(bool flush, Error &error);
+	bool WriteChunk(bool flush);
 };
 
 static constexpr Domain shine_encoder_domain("shine_encoder");
@@ -142,7 +142,9 @@ shine_encoder_open(Encoder *_encoder, AudioFormat &audio_format, Error &error)
 
 	encoder->stereo[0] = new int16_t[encoder->frame_size];
 	encoder->stereo[1] = new int16_t[encoder->frame_size];
-	encoder->input_pos = 0;
+	/* workaround for bug:
+	   https://github.com/savonet/shine/issues/11 */
+	encoder->input_pos = SHINE_MAX_SAMPLES + 1;
 
 	encoder->output_buffer.Construct(BUFFER_INIT_SIZE);
 
@@ -154,6 +156,12 @@ shine_encoder_close(Encoder *_encoder)
 {
 	ShineEncoder *encoder = (ShineEncoder *)_encoder;
 
+	if (encoder->input_pos > SHINE_MAX_SAMPLES) {
+		/* write zero chunk */
+		encoder->input_pos = 0;
+		encoder->WriteChunk(true);
+	}
+
 	shine_close(encoder->shine);
 	delete[] encoder->stereo[0];
 	delete[] encoder->stereo[1];
@@ -161,7 +169,7 @@ shine_encoder_close(Encoder *_encoder)
 }
 
 bool
-ShineEncoder::WriteChunk(bool flush, gcc_unused Error &error)
+ShineEncoder::WriteChunk(bool flush)
 {
 	if (flush || input_pos == frame_size) {
 		long written;
@@ -195,6 +203,10 @@ shine_encoder_write(Encoder *_encoder,
 	length /= sizeof(*data) * encoder->audio_format.channels;
 	size_t written = 0;
 
+	if (encoder->input_pos > SHINE_MAX_SAMPLES) {
+		encoder->input_pos = 0;
+	}
+
 	/* write all data to de-interleaved buffers */
 	while (written < length) {
 		for (;
@@ -207,7 +219,7 @@ shine_encoder_write(Encoder *_encoder,
 			encoder->stereo[1][encoder->input_pos] = data[base + 1];
 		}
 		/* write if chunk is filled */
-		encoder->WriteChunk(false, error);
+		encoder->WriteChunk(false);
 	}
 
 	return true;
@@ -220,7 +232,7 @@ shine_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 	long written;
 
 	/* flush buffers and flush shine */
-	encoder->WriteChunk(true, error);
+	encoder->WriteChunk(true);
 	const uint8_t *data = shine_flush(encoder->shine, &written);
 
 	if (written > 0)
