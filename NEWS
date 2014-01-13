@@ -1,4 +1,4 @@
-ver 0.18.7 (not yet released)
+ver 0.18.7 (2013/01/13)
 * playlist
   - pls: fix crash after parser error
   - soundcloud: fix build failure with libyajl 2.0.1
