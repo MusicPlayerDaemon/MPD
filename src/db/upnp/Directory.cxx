@@ -104,12 +104,6 @@ protected:
 				const char *pid = GetAttribute(attrs, "parentID");
 				if (pid != nullptr)
 					m_tobj.m_pid = pid;
-
-				const char *item_class_name =
-					GetAttribute(attrs, "upnp:class");
-				if (item_class_name != nullptr)
-					m_tobj.item_class =
-						ParseItemClass(item_class_name);
 			}
 			break;
 
@@ -132,7 +126,8 @@ protected:
 	bool checkobjok() {
 		if (m_tobj.m_id.empty() || m_tobj.m_pid.empty() ||
 		    m_tobj.m_title.empty() ||
-		    m_tobj.item_class == UPnPDirObject::ItemClass::UNKNOWN)
+		    (m_tobj.type == UPnPDirObject::Type::ITEM &&
+		     m_tobj.item_class == UPnPDirObject::ItemClass::UNKNOWN))
 			return false;
 
 		return true;
@@ -168,6 +163,11 @@ protected:
 			}
 			break;
 		case 'u':
+			if (m_path.back() == "upnp:class") {
+				m_tobj.item_class = ParseItemClass(str.c_str());
+				break;
+			}
+
 			for (auto i = upnptags; *i != nullptr; ++i)
 				if (!m_path.back().compare(*i))
 					m_tobj.m_props[*i] += str;
