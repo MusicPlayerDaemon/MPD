@@ -829,8 +829,13 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 
 		for (auto &dirent : dirbuf.m_items) {
 			std::string tagvalue;
-			if (getTagValue(dirent, tag, tagvalue))
+			if (getTagValue(dirent, tag, tagvalue)) {
+#if defined(__clang__) || GCC_CHECK_VERSION(4,8)
 				values.emplace(std::move(tagvalue));
+#else
+				values.insert(std::move(tagvalue));
+#endif
+			}
 		}
 	}
 
