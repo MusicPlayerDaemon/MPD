@@ -247,7 +247,7 @@ input_despotify_tag(InputStream *is)
 }
 
 const InputPlugin input_plugin_despotify = {
-	"spt",
+	"despotify",
 	nullptr,
 	nullptr,
 	input_despotify_open,
