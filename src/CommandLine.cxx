@@ -23,6 +23,8 @@
 #include "LogInit.hxx"
 #include "Log.hxx"
 #include "ConfigGlobal.hxx"
+#include "DatabaseRegistry.hxx"
+#include "DatabasePlugin.hxx"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
 #include "OutputList.hxx"
@@ -93,6 +95,12 @@ static void version(void)
 	     "This is free software; see the source for copying conditions.  There is NO\n"
 	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 	     "\n"
+	     "Database plugins:");
+
+	for (auto i = database_plugins; *i != nullptr; ++i)
+		printf(" %s", (*i)->name);
+
+	puts("\n\n"
 	     "Decoders plugins:");
 
 	decoder_plugins_for_each([](const DecoderPlugin &plugin){
