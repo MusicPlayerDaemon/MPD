@@ -22,24 +22,18 @@
 
 #include "util/Error.hxx"
 
-#include <map>
-
 #include <upnp/upnp.h>
+
+#include <functional>
 
 /** Our link to libupnp. Initialize and keep the handle around */
 class LibUPnP {
-	// A Handler object records the data from registerHandler.
-	class Handler {
-	public:
-		Handler(Upnp_FunPtr h, void *c)
-			: handler(h), cookie(c) {}
-		Upnp_FunPtr handler;
-		void *cookie;
-	};
+	typedef std::function<void(Upnp_EventType type, void *event)> Handler;
 
 	Error init_error;
 	UpnpClient_Handle m_clh;
-	std::map<Upnp_EventType, Handler> m_handlers;
+
+	Handler handler;
 
 	LibUPnP();
 
@@ -65,7 +59,10 @@ public:
 		return init_error;
 	}
 
-	void registerHandler(Upnp_EventType et, Upnp_FunPtr handler, void *cookie);
+	template<typename T>
+	void SetHandler(T &&_handler) {
+		handler = std::forward<T>(_handler);
+	}
 
 	UpnpClient_Handle getclh()
 	{

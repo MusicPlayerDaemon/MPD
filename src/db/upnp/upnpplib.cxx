@@ -65,15 +65,6 @@ LibUPnP::LibUPnP()
 	ixmlRelaxParser(1);
 }
 
-void
-LibUPnP::registerHandler(Upnp_EventType et, Upnp_FunPtr handler, void *cookie)
-{
-	if (handler == nullptr)
-		m_handlers.erase(et);
-	else
-		m_handlers.emplace(et, Handler(handler, cookie));
-}
-
 int
 LibUPnP::o_callback(Upnp_EventType et, void* evp, void* cookie)
 {
@@ -83,10 +74,9 @@ LibUPnP::o_callback(Upnp_EventType et, void* evp, void* cookie)
 		ulib = theLib;
 	}
 
-	auto it = ulib->m_handlers.find(et);
-	if (it != ulib->m_handlers.end()) {
-		(it->second.handler)(et, evp, it->second.cookie);
-	}
+	if (ulib->handler)
+		ulib->handler(et, evp);
+
 	return UPNP_E_SUCCESS;
 }
 

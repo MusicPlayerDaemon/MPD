@@ -158,7 +158,7 @@ discoExplorer(void *)
 // mutex just for clarifying the message printing, the workqueue is
 // mt-safe of course.
 static int
-cluCallBack(Upnp_EventType et, void *evp, void *)
+cluCallBack(Upnp_EventType et, void *evp)
 {
 	static Mutex cblock;
 	const ScopeLock protect(cblock);
@@ -231,11 +231,9 @@ UPnPDeviceDirectory::UPnPDeviceDirectory()
 	if (lib == nullptr)
 		return;
 
-	lib->registerHandler(UPNP_DISCOVERY_SEARCH_RESULT, cluCallBack, this);
-	lib->registerHandler(UPNP_DISCOVERY_ADVERTISEMENT_ALIVE,
-			     cluCallBack, this);
-	lib->registerHandler(UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE,
-			     cluCallBack, this);
+	lib->SetHandler([](Upnp_EventType type, void *event){
+			cluCallBack(type, event);
+		});
 
 	search();
 }
