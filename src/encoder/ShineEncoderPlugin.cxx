@@ -45,26 +45,19 @@ struct ShineEncoder {
 
 	shine_config_t config;
 
-	uint16_t frame_size;
-	int16_t buffer[SHINE_MAX_SAMPLES * CHANNELS];
-	int16_t channels[CHANNELS][SHINE_MAX_SAMPLES];
+	size_t frame_size;
+	size_t input_pos;
 	int16_t *stereo[CHANNELS];
-
-	Manual<DynamicFifoBuffer<int16_t>> input_buffer;
-	size_t input_size;
 
 	Manual<DynamicFifoBuffer<uint8_t>> output_buffer;
 
-	ShineEncoder()
-		:encoder(shine_encoder_plugin),
-		 stereo { channels[0], channels[1] },
-		 input_size(0) {}
+	ShineEncoder():encoder(shine_encoder_plugin){}
 
 	bool Configure(const config_param &param, Error &error);
 
 	bool Setup(Error &error);
 
-	bool WriteChunks(bool flush, Error &error);
+	bool WriteChunk(bool flush, Error &error);
 };
 
 static constexpr Domain shine_encoder_domain("shine_encoder");
@@ -105,14 +98,16 @@ shine_encoder_finish(Encoder *_encoder)
 inline bool
 ShineEncoder::Setup(Error &error)
 {
-	input_size = 0;
 	config.mpeg.mode = audio_format.channels == 2 ? STEREO : MONO;
 	config.wave.samplerate = audio_format.sample_rate;
-	config.wave.channels = audio_format.channels == 2 ? PCM_STEREO : PCM_MONO;
+	config.wave.channels =
+		audio_format.channels == 2 ? PCM_STEREO : PCM_MONO;
 
 	if (shine_check_config(config.wave.samplerate, config.mpeg.bitr) < 0) {
 		error.Format(config_domain,
-			     "error configuring shine. samplerate %d and bitrate %d configuration not supported.",
+			     "error configuring shine. "
+			     "samplerate %d and bitrate %d configuration"
+			     " not supported.",
 			     config.wave.samplerate,
 			     config.mpeg.bitr);
 
@@ -145,7 +140,10 @@ shine_encoder_open(Encoder *_encoder, AudioFormat &audio_format, Error &error)
 	if (!encoder->Setup(error))
 		return false;
 
-	encoder->input_buffer.Construct(BUFFER_INIT_SIZE);
+	encoder->stereo[0] = new int16_t[encoder->frame_size];
+	encoder->stereo[1] = new int16_t[encoder->frame_size];
+	encoder->input_pos = 0;
+
 	encoder->output_buffer.Construct(BUFFER_INIT_SIZE);
 
 	return true;
@@ -157,42 +155,31 @@ shine_encoder_close(Encoder *_encoder)
 	ShineEncoder *encoder = (ShineEncoder *)_encoder;
 
 	shine_close(encoder->shine);
-	encoder->input_buffer.Destruct();
+	delete[] encoder->stereo[0];
+	delete[] encoder->stereo[1];
 	encoder->output_buffer.Destruct();
 }
 
 bool
-ShineEncoder::WriteChunks(bool flush, gcc_unused Error &error)
+ShineEncoder::WriteChunk(bool flush, gcc_unused Error &error)
 {
-	const size_t chunk_size = frame_size * audio_format.channels;
-
-	/*
-	 * shine requires data in specific sizes, therefore we need to
-	 * buffer the received data and encode in chunks.
-	 */
-	while (input_size >= chunk_size || (flush && input_size > 0)) {
+	if (flush || input_pos == frame_size) {
 		long written;
-
-		const size_t read = input_buffer->Read(buffer, chunk_size);
-		input_size -= read;
-
-		/* de-interleave data */
-		for (size_t i = 0; i < read / audio_format.channels; i++) {
-			channels[0][i] = buffer[i * audio_format.channels];
-			channels[1][i] = buffer[i * audio_format.channels + 1];
-		}
 
 		if (flush) {
 			/* fill remaining with 0s */
-			for (size_t i = read / audio_format.channels; i < frame_size; i++) {
-				channels[0][i] = channels[1][i] = 0;
+			for (; input_pos < frame_size; input_pos++) {
+				stereo[0][input_pos] = stereo[1][input_pos] = 0;
 			}
 		}
 
-		const uint8_t *out = shine_encode_buffer(shine, stereo, &written);
+		const uint8_t *out =
+			shine_encode_buffer(shine, stereo, &written);
 
 		if (written > 0)
-			output_buffer->Append((const uint8_t *)out, written);
+			output_buffer->Append(out, written);
+
+		input_pos = 0;
 	}
 
 	return true;
@@ -205,11 +192,25 @@ shine_encoder_write(Encoder *_encoder,
 {
 	ShineEncoder *encoder = (ShineEncoder *)_encoder;
 	const int16_t *data = (const int16_t*)_data;
+	length /= sizeof(*data) * encoder->audio_format.channels;
+	size_t written = 0;
 
-	encoder->input_buffer->Append(data, length / sizeof(*data));
-	encoder->input_size += length / sizeof(*data);
+	/* write all data to de-interleaved buffers */
+	while (written < length) {
+		for (;
+		     written < length
+			     && encoder->input_pos < encoder->frame_size;
+		     written++, encoder->input_pos++) {
+			const size_t base =
+				written * encoder->audio_format.channels;
+			encoder->stereo[0][encoder->input_pos] = data[base];
+			encoder->stereo[1][encoder->input_pos] = data[base + 1];
+		}
+		/* write if chunk is filled */
+		encoder->WriteChunk(false, error);
+	}
 
-	return encoder->WriteChunks(false, error);
+	return true;
 }
 
 static bool
@@ -218,7 +219,8 @@ shine_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 	ShineEncoder *encoder = (ShineEncoder *)_encoder;
 	long written;
 
-	encoder->WriteChunks(true, error);
+	/* flush buffers and flush shine */
+	encoder->WriteChunk(true, error);
 	const uint8_t *data = shine_flush(encoder->shine, &written);
 
 	if (written > 0)
