@@ -18,12 +18,13 @@ ver 0.19 (not yet released)
   - shine: new encoder plugin
 * new resampler option using libsoxr
 
-ver 0.18.7 (not yet released)
+ver 0.18.7 (2013/01/13)
 * playlist
   - pls: fix crash after parser error
   - soundcloud: fix build failure with libyajl 2.0.1
 * decoder
   - faad: fix memory leak
+  - mpcdec: reject libmpcdec SV7 in configure script
 * daemon: don't initialize supplementary groups when already running
   as the configured user
 

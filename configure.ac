@@ -1089,7 +1089,7 @@ AM_CONDITIONAL(ENABLE_SNDFILE, test x$enable_sndfile = xyes)
 
 dnl --------------------------------- musepack --------------------------------
 
-MPD_AUTO_LIB(mpc, MPCDEC, mpcdec, main, [-lmpcdec], [],
+MPD_AUTO_LIB(mpc, MPCDEC, mpcdec, mpc_demux_init, [-lmpcdec], [],
 	[mpcdec], [libmpcdec not found])
 if test x$enable_mpc = xyes; then
 	AC_DEFINE(HAVE_MPCDEC, 1, [Define to use libmpcdec for MPC decoding])
