@@ -18,7 +18,7 @@
  */
 
 #ifndef MPD_OUTPUT_API_HXX
-#define MPD_OUTPUT_API_HxX
+#define MPD_OUTPUT_API_HXX
 
 #include "OutputPlugin.hxx"
 #include "OutputInternal.hxx"
