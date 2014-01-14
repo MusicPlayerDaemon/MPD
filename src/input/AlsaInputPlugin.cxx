@@ -96,7 +96,7 @@ public:
 		/* this mime type forces use of the PcmDecoderPlugin.
 		   Needs to be generalised when/if that decoder is
 		   updated to support other audio formats */
-		base.mime = strdup("audio/x-mpd-cdda-pcm");
+		base.mime = "audio/x-mpd-cdda-pcm";
 		base.seekable = false;
 		base.size = -1;
 		base.ready = true;
