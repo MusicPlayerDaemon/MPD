@@ -122,8 +122,9 @@ PeakBuffer::Append(const void *data, size_t length)
 			return true;
 	}
 
-	if (peak_buffer == nullptr && peak_size > 0) {
-		peak_buffer = new DynamicFifoBuffer<uint8_t>(peak_size);
+	if (peak_buffer == nullptr) {
+		if (peak_size > 0)
+			peak_buffer = new DynamicFifoBuffer<uint8_t>(peak_size);
 		if (peak_buffer == nullptr)
 			return false;
 	}
