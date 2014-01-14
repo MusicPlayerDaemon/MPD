@@ -18,6 +18,7 @@ ver 0.19 (not yet released)
   - shine: new encoder plugin
 * new resampler option using libsoxr
 * the update thread runs at "idle" priority
+* the output thread runs at "real-time" priority
 
 ver 0.18.7 (2013/01/13)
 * playlist

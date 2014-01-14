@@ -69,4 +69,17 @@ SetThreadIdlePriority()
 #endif
 };
 
+/**
+ * Raise the current thread's priority to "real-time" (very high).
+ */
+static inline void
+SetThreadRealtime()
+{
+#ifdef __linux__
+	struct sched_param sched_param;
+	sched_param.sched_priority = 50;
+	sched_setscheduler(0, SCHED_FIFO, &sched_param);
+#endif
+};
+
 #endif

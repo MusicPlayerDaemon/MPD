@@ -30,6 +30,7 @@
 #include "PlayerControl.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
+#include "thread/Util.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -577,6 +578,8 @@ static void
 audio_output_task(void *arg)
 {
 	struct audio_output *ao = (struct audio_output *)arg;
+
+	SetThreadRealtime();
 
 	ao->mutex.lock();
 
