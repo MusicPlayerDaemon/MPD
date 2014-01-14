@@ -52,6 +52,12 @@ public:
 	std::string m_id; // ObjectId
 	std::string m_pid; // Parent ObjectId
 	std::string url;
+
+	/**
+	 * A copy of "dc:title" sanitized as a file name.
+	 */
+	std::string name;
+
 	std::string m_title; // dc:title. Directory name for a container.
 	Type type;
 	ItemClass item_class;
@@ -71,8 +77,8 @@ public:
 	 * @param[out] value
 	 * @return true if found.
 	 */
-	const char *getprop(const char *name) const {
-		auto it = m_props.find(name);
+	const char *getprop(const char *_name) const {
+		auto it = m_props.find(_name);
 		if (it == m_props.end())
 			return nullptr;
 		return it->second.c_str();

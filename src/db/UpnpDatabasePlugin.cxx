@@ -40,7 +40,6 @@
 #include "Log.hxx"
 #include "SongFilter.hxx"
 
-#include <algorithm>
 #include <string>
 #include <vector>
 #include <map>
@@ -208,19 +207,6 @@ UpnpDatabase::ReturnSong(Song *song) const
 	assert(song != nullptr);
 
 	song->Free();
-}
-
-/**
- * Transform titles to turn '/' into '_' to make them acceptable path
- * elements. There is a very slight risk of collision in doing
- * this. Twonky returns directory names (titles) like 'Artist/Album'.
- */
-gcc_pure
-static std::string
-titleToPathElt(std::string s)
-{
-	std::replace(s.begin(), s.end(), '/', '_');
-	return s;
 }
 
 // If uri is empty, we use the object's url instead. This happens
@@ -528,7 +514,7 @@ UpnpDatabase::BuildPath(ContentDirectoryService *server,
 		if (!ReadNode(server, pid, dirent, error))
 			return false;
 		pid = dirent.m_pid.c_str();
-		path = titleToPathElt(dirent.m_title) + (path.empty()? "" : "/" + path);
+		path = dirent.name + (path.empty()? "" : "/" + path);
 	}
 	path = std::string(server->getFriendlyName()) + "/" + path;
 	return true;
@@ -563,7 +549,7 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 
 		// Look for the name in the sub-container list
 		for (auto& dirent : dirbuf.m_containers) {
-			if (!vpath[i].compare(titleToPathElt(dirent.m_title))) {
+			if (!vpath[i].compare(dirent.name)) {
 				objid = dirent.m_id; // Next readdir target
 				found = true;
 				if (i == vpath.size() - 1) {
@@ -581,7 +567,7 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 
 		// Path elt was not a container, look at the items list
 		for (auto& dirent : dirbuf.m_items) {
-			if (!vpath[i].compare(titleToPathElt(dirent.m_title))) {
+			if (!vpath[i].compare(dirent.name)) {
 				// If this is the last path elt, we found the target,
 				// else it does not exist
 				if (i == vpath.size() - 1) {
@@ -689,7 +675,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService* server,
 	if (visit_directory) {
 		for (auto& dirent : dirbuf.m_containers) {
 			Directory d((selection.uri + "/" +
-				     titleToPathElt(dirent.m_title)).c_str(),
+				     dirent.name).c_str(),
 				    m_root);
 			if (!visit_directory(d, error))
 				return false;
@@ -709,7 +695,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService* server,
 					std::string p;
 					if (!selection.recursive)
 						p = selection.uri + "/" +
-							titleToPathElt(dirent.m_title);
+							dirent.name;
 
 					if (!visitSong(dirent, p.c_str(),
 						       selection, visit_song, error))

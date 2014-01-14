@@ -22,6 +22,7 @@
 #include "Util.hxx"
 #include "Expat.hxx"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -55,6 +56,19 @@ ParseDuration(const std::string &duration)
 	if (v.size() != 3)
 		return 0;
 	return atoi(v[0].c_str())*3600 + atoi(v[1].c_str())*60 + atoi(v[2].c_str());
+}
+
+/**
+ * Transform titles to turn '/' into '_' to make them acceptable path
+ * elements. There is a very slight risk of collision in doing
+ * this. Twonky returns directory names (titles) like 'Artist/Album'.
+ */
+gcc_pure
+static std::string
+titleToPathElt(std::string s)
+{
+	std::replace(s.begin(), s.end(), '/', '_');
+	return s;
 }
 
 /**
@@ -125,7 +139,7 @@ protected:
 
 	bool checkobjok() {
 		if (m_tobj.m_id.empty() || m_tobj.m_pid.empty() ||
-		    m_tobj.m_title.empty() ||
+		    m_tobj.name.empty() ||
 		    (m_tobj.type == UPnPDirObject::Type::ITEM &&
 		     m_tobj.item_class == UPnPDirObject::ItemClass::UNKNOWN))
 			return false;
@@ -154,8 +168,11 @@ protected:
 		trimstring(str);
 		switch (m_path.back()[0]) {
 		case 'd':
-			if (!m_path.back().compare("dc:title"))
-				m_tobj.m_title += str;
+			if (!m_path.back().compare("dc:title")) {
+				m_tobj.m_title = str;
+				m_tobj.name = titleToPathElt(str);
+			}
+
 			break;
 		case 'r':
 			if (!m_path.back().compare("res")) {
