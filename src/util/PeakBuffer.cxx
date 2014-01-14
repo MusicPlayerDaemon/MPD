@@ -130,8 +130,9 @@ PeakBuffer::Append(const void *data, size_t length)
 			return true;
 	}
 
-	if (peak_buffer == nullptr && peak_size > 0) {
-		peak_buffer = (fifo_buffer *)HugeAllocate(peak_size);
+	if (peak_buffer == nullptr) {
+		if (peak_size > 0)
+			peak_buffer = (fifo_buffer *)HugeAllocate(peak_size);
 		if (peak_buffer == nullptr)
 			return false;
 
