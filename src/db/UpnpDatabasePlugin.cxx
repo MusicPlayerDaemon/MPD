@@ -24,6 +24,7 @@
 #include "upnp/Discovery.hxx"
 #include "upnp/ContentDirectoryService.hxx"
 #include "upnp/Directory.hxx"
+#include "upnp/Tags.hxx"
 #include "upnp/Util.hxx"
 #include "LazyDatabase.hxx"
 #include "DatabasePlugin.hxx"
@@ -49,17 +50,6 @@
 #include <string.h>
 
 static const char *const rootid = "0";
-
-static const struct tag_table upnp_tags[] = {
-	{ "upnp:artist", TAG_ARTIST },
-	{ "upnp:album", TAG_ALBUM },
-	{ "upnp:originalTrackNumber", TAG_TRACK },
-	{ "upnp:genre", TAG_GENRE },
-	{ "dc:title", TAG_TITLE },
-
-	/* sentinel */
-	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
-};
 
 class UpnpDatabase : public Database {
 	LibUPnP *m_lib;

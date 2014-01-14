@@ -413,6 +413,7 @@ DB_LIBS = \
 if HAVE_LIBUPNP
 libdb_plugins_a_SOURCES += \
 	src/db/UpnpDatabasePlugin.cxx src/db/UpnpDatabasePlugin.hxx \
+	src/db/upnp/Tags.cxx src/db/upnp/Tags.hxx \
 	src/db/upnp/ContentDirectoryService.cxx src/db/upnp/ContentDirectoryService.hxx \
 	src/db/upnp/Device.cxx src/db/upnp/Device.hxx \
 	src/db/upnp/Directory.cxx src/db/upnp/Directory.hxx \
