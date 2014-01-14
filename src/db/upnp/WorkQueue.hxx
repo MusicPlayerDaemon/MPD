@@ -67,9 +67,6 @@ class WorkQueue {
 	Cond client_cond;
 	Cond worker_cond;
 	Mutex mutex;
-	// Client/Worker threads currently waiting for a job
-	unsigned n_clients_waiting;
-	unsigned n_workers_waiting;
 
 public:
 	/** Create a WorkQueue
@@ -82,8 +79,7 @@ public:
 		:name(_name), high(hi), low(lo),
 		 n_workers_exited(0),
 		 ok(true),
-		 n_threads(0), threads(nullptr),
-		 n_clients_waiting(0), n_workers_waiting(0)
+		 n_threads(0), threads(nullptr)
 	{
 	}
 
@@ -136,20 +132,15 @@ public:
 
 		while (IsOK() && high > 0 && queue.size() >= high) {
 			// Keep the order: we test IsOK() AFTER the sleep...
-			n_clients_waiting++;
 			client_cond.wait(mutex);
-			if (!IsOK()) {
-				n_clients_waiting--;
+			if (!IsOK())
 				return false;
-			}
-			n_clients_waiting--;
 		}
 
 		queue.push(t);
-		if (n_workers_waiting > 0) {
-			// Just wake one worker, there is only one new task.
-			worker_cond.signal();
-		}
+
+		// Just wake one worker, there is only one new task.
+		worker_cond.signal();
 
 		return true;
 	}
@@ -165,9 +156,7 @@ public:
 		ok = false;
 		while (n_workers_exited < n_threads) {
 			worker_cond.broadcast();
-			n_clients_waiting++;
 			client_cond.wait(mutex);
-			n_clients_waiting--;
 		}
 
 		// Perform the thread joins and compute overall status
@@ -182,7 +171,7 @@ public:
 		n_threads = 0;
 
 		// Reset to start state.
-		n_workers_exited = n_clients_waiting = n_workers_waiting = 0;
+		n_workers_exited = 0;
 		ok = true;
 	}
 
@@ -200,7 +189,6 @@ public:
 		}
 
 		while (IsOK() && queue.size() < low) {
-			n_workers_waiting++;
 			if (queue.empty())
 				client_cond.broadcast();
 			worker_cond.wait(mutex);
@@ -210,18 +198,15 @@ public:
 					LOGERR(("WorkQueue::take:%s: cond_wait failed or !ok\n",
 						name.c_str()));
 				}
-				n_workers_waiting--;
 				return false;
 			}
-			n_workers_waiting--;
 		}
 
 		tp = queue.front();
 		queue.pop();
-		if (n_clients_waiting > 0) {
-			// No reason to wake up more than one client thread
-			client_cond.signal();
-		}
+
+		// No reason to wake up more than one client thread
+		client_cond.signal();
 		return true;
 	}
 
