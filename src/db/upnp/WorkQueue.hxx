@@ -241,7 +241,7 @@ public:
 	 * Sleeps if there are not enough. Signal if we go to sleep on empty
 	 * queue: client may be waiting for our going idle.
 	 */
-	bool take(T* tp, size_t *szp = 0)
+	bool take(T* tp)
 	{
 		const ScopeLock protect(m_mutex);
 
@@ -267,8 +267,6 @@ public:
 		}
 
 		*tp = m_queue.front();
-		if (szp)
-			*szp = m_queue.size();
 		m_queue.pop();
 		if (m_clients_waiting > 0) {
 			// No reason to wake up more than one client thread

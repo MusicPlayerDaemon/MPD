@@ -109,8 +109,7 @@ discoExplorer(void *)
 {
 	for (;;) {
 		DiscoveredTask *tsk = 0;
-		size_t qsz;
-		if (!discoveredQueue.take(&tsk, &qsz)) {
+		if (!discoveredQueue.take(&tsk)) {
 			discoveredQueue.workerExit();
 			return (void*)1;
 		}
