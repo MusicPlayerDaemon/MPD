@@ -488,7 +488,7 @@ UpnpDatabase::ReadNode(ContentDirectoryService *server,
 		return false;
 
 	if (dirbuf.objects.size() == 1) {
-		dirent = dirbuf.objects[0];
+		dirent = std::move(dirbuf.objects[0]);
 	} else {
 		error.Format(upnp_domain, "Bad resource");
 		return false;
@@ -542,8 +542,7 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 			return false;
 
 		// Look for the name in the sub-container list
-		const UPnPDirObject *child =
-			dirbuf.FindObject(vpath[i].c_str());
+		UPnPDirObject *child = dirbuf.FindObject(vpath[i].c_str());
 		if (child == nullptr)
 			break;
 
@@ -558,7 +557,7 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 				// The last element in the path was found and it's
 				// a container, we're done
 				oobjid = objid;
-				odirent = *child;
+				odirent = std::move(*child);
 				return true;
 			}
 			break;
@@ -568,7 +567,7 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 			// else it does not exist
 			if (i == vpath.size() - 1) {
 				oobjid = objid;
-				odirent = *child;
+				odirent = std::move(*child);
 				return true;
 			} else {
 				error.Format(db_domain, DB_NOT_FOUND,

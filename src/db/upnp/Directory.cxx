@@ -151,7 +151,7 @@ protected:
 	{
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
 		    checkobjok())
-			m_dir.objects.push_back(m_tobj);
+			m_dir.objects.push_back(std::move(m_tobj));
 
 		m_path.pop_back();
 	}

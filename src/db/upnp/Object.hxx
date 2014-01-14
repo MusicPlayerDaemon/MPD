@@ -70,6 +70,10 @@ public:
 	 */
 	int duration;
 
+	UPnPDirObject() = default;
+	UPnPDirObject(UPnPDirObject &&) = default;
+	UPnPDirObject &operator=(UPnPDirObject &&) = default;
+
 	/** Get named property
 	 * @param property name (e.g. upnp:artist, upnp:album,
 	 *     upnp:originalTrackNumber, upnp:genre). Use m_title instead

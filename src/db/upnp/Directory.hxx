@@ -37,8 +37,8 @@ public:
 	std::vector<UPnPDirObject> objects;
 
 	gcc_pure
-	const UPnPDirObject *FindObject(const char *name) const {
-		for (const auto &o : objects)
+	UPnPDirObject *FindObject(const char *name) {
+		for (auto &o : objects)
 			if (o.name == name)
 				return &o;
 
