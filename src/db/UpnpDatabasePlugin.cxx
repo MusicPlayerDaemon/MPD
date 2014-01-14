@@ -281,7 +281,7 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
  * Retrieve the value for an MPD tag from an object entry.
  */
 static bool
-getTagValue(UPnPDirObject& dirent, TagType tag,
+getTagValue(const UPnPDirObject &dirent, TagType tag,
 	    std::string &tagvalue)
 {
 	if (tag == TAG_TITLE) {
