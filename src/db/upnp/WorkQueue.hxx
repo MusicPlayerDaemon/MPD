@@ -75,7 +75,7 @@ public:
 	WorkQueue(const char *_name, size_t hi = 0, size_t lo = 1)
 		:name(_name), high(hi), low(lo),
 		 n_workers_exited(0),
-		 ok(true),
+		 ok(false),
 		 n_threads(0), threads(nullptr)
 	{
 	}
@@ -97,6 +97,7 @@ public:
 		const ScopeLock protect(mutex);
 
 		assert(nworkers > 0);
+		assert(!ok);
 		assert(n_threads == 0);
 		assert(threads == nullptr);
 
@@ -110,6 +111,8 @@ public:
 				return false;
 			}
 		}
+
+		ok = true;
 		return true;
 	}
 
@@ -121,10 +124,10 @@ public:
 	{
 		const ScopeLock protect(mutex);
 
-		while (IsOK() && high > 0 && queue.size() >= high) {
-			// Keep the order: we test IsOK() AFTER the sleep...
+		while (ok && high > 0 && queue.size() >= high) {
+			// Keep the order: we test ok AFTER the sleep...
 			client_cond.wait(mutex);
-			if (!IsOK())
+			if (!ok)
 				return false;
 		}
 
@@ -163,7 +166,6 @@ public:
 
 		// Reset to start state.
 		n_workers_exited = 0;
-		ok = true;
 	}
 
 	/** Take task from queue. Called from worker.
@@ -175,22 +177,15 @@ public:
 	{
 		const ScopeLock protect(mutex);
 
-		if (!IsOK()) {
+		if (!ok)
 			return false;
-		}
 
-		while (IsOK() && queue.size() < low) {
+		while (ok && queue.size() < low) {
 			if (queue.empty())
 				client_cond.broadcast();
 			worker_cond.wait(mutex);
-			if (!IsOK()) {
-				// !ok is a normal condition when shutting down
-				if (IsOK()) {
-					LOGERR(("WorkQueue::take:%s: cond_wait failed or !ok\n",
-						name.c_str()));
-				}
+			if (!ok)
 				return false;
-			}
 		}
 
 		tp = queue.front();
@@ -216,12 +211,6 @@ public:
 		n_workers_exited++;
 		ok = false;
 		client_cond.broadcast();
-	}
-
-private:
-	bool IsOK()
-	{
-		return ok && n_threads > 0;
 	}
 };
 
