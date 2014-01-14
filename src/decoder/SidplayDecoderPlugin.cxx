@@ -210,7 +210,7 @@ sidplay_file_decode(Decoder &decoder, const char *path_fs)
 
 	char *path_container=get_container_name(path_fs);
 	SidTune tune(path_container, nullptr, true);
-	g_free(path_container);
+	free(path_container);
 	if (!tune) {
 		LogWarning(sidplay_domain, "failed to load file");
 		return;
@@ -347,7 +347,7 @@ sidplay_scan_file(const char *path_fs,
 	char *path_container=get_container_name(path_fs);
 
 	SidTune tune(path_container, nullptr, true);
-	g_free(path_container);
+	free(path_container);
 	if (!tune)
 		return false;
 
