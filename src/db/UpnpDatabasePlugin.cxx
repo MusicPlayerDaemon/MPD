@@ -569,7 +569,7 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 
 		// Look for the name in the sub-container list
 		for (auto& dirent : dirbuf.m_containers) {
-			if (!vpath[i].compare(titleToPathElt(dirent.m_title.c_str()))) {
+			if (!vpath[i].compare(titleToPathElt(dirent.m_title))) {
 				objid = dirent.m_id; // Next readdir target
 				found = true;
 				if (i == vpath.size() - 1) {
@@ -587,7 +587,7 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 
 		// Path elt was not a container, look at the items list
 		for (auto& dirent : dirbuf.m_items) {
-			if (!vpath[i].compare(titleToPathElt(dirent.m_title.c_str()))) {
+			if (!vpath[i].compare(titleToPathElt(dirent.m_title))) {
 				// If this is the last path elt, we found the target,
 				// else it does not exist
 				if (i == vpath.size() - 1) {
