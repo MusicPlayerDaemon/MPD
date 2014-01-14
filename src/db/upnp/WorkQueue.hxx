@@ -82,12 +82,6 @@ class WorkQueue {
 	unsigned int m_clients_waiting;
 	unsigned int m_workers_waiting;
 
-	// Statistics
-	unsigned int m_tottasks;
-	unsigned int m_nowake;
-	unsigned int m_workersleeps;
-	unsigned int m_clientsleeps;
-
 public:
 	/** Create a WorkQueue
 	 * @param name for message printing
@@ -99,8 +93,7 @@ public:
 		:m_name(name), m_high(hi), m_low(lo),
 		 m_workers_exited(0),
 		 m_ok(true),
-		 m_clients_waiting(0), m_workers_waiting(0),
-		 m_tottasks(0), m_nowake(0), m_workersleeps(0), m_clientsleeps(0)
+		 m_clients_waiting(0), m_workers_waiting(0)
 	{
 	}
 
@@ -148,7 +141,6 @@ public:
 		}
 
 		while (ok() && m_high > 0 && m_queue.size() >= m_high) {
-			m_clientsleeps++;
 			// Keep the order: we test ok() AFTER the sleep...
 			m_clients_waiting++;
 			m_ccond.wait(m_mutex);
@@ -163,8 +155,6 @@ public:
 		if (m_workers_waiting > 0) {
 			// Just wake one worker, there is only one new task.
 			m_wcond.signal();
-		} else {
-			m_nowake++;
 		}
 
 		return true;
@@ -242,8 +232,7 @@ public:
 		}
 
 		// Reset to start state.
-		m_workers_exited = m_clients_waiting = m_workers_waiting =
-			m_tottasks = m_nowake = m_workersleeps = m_clientsleeps = 0;
+		m_workers_exited = m_clients_waiting = m_workers_waiting = 0;
 		m_ok = true;
 	}
 
@@ -261,7 +250,6 @@ public:
 		}
 
 		while (ok() && m_queue.size() < m_low) {
-			m_workersleeps++;
 			m_workers_waiting++;
 			if (m_queue.empty())
 				m_ccond.broadcast();
@@ -278,7 +266,6 @@ public:
 			m_workers_waiting--;
 		}
 
-		m_tottasks++;
 		*tp = m_queue.front();
 		if (szp)
 			*szp = m_queue.size();
@@ -286,8 +273,6 @@ public:
 		if (m_clients_waiting > 0) {
 			// No reason to wake up more than one client thread
 			m_ccond.signal();
-		} else {
-			m_nowake++;
 		}
 		return true;
 	}
