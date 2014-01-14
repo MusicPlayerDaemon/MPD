@@ -292,14 +292,6 @@ public:
 		m_ccond.broadcast();
 	}
 
-	size_t qsize()
-	{
-		const ScopeLock protect(m_mutex);
-
-		size_t sz = m_queue.size();
-		return sz;
-	}
-
 private:
 	bool ok()
 	{
