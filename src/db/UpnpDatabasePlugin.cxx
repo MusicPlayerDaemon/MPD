@@ -452,7 +452,11 @@ UpnpDatabase::SearchSongs(ContentDirectoryService* server,
 	if (!SearchSongs(server, objid, selection, dirbuf, error))
 		return false;
 
-	for (const auto &dirent : dirbuf.m_items) {
+	for (const auto &dirent : dirbuf.objects) {
+		if (dirent.type != UPnPDirObject::Type::ITEM ||
+		    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
+			continue;
+
 		// We get song ids as the result of the UPnP search. But our
 		// client expects paths (e.g. we get 1$4$3788 from minidlna,
 		// but we need to translate to /Music/All_Music/Satisfaction).
@@ -489,10 +493,8 @@ UpnpDatabase::ReadNode(ContentDirectoryService *server,
 	if (!server->getMetadata(objid, dirbuf, error))
 		return false;
 
-	if (dirbuf.m_containers.size() == 1) {
-		dirent = dirbuf.m_containers[0];
-	} else if (dirbuf.m_items.size() == 1) {
-		dirent = dirbuf.m_items[0];
+	if (dirbuf.objects.size() == 1) {
+		dirent = dirbuf.objects[0];
 	} else {
 		error.Format(upnp_domain, "Bad resource");
 		return false;
@@ -545,46 +547,41 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 		if (!server->readDir(objid.c_str(), dirbuf, error))
 			return false;
 
-		bool found = false;
-
 		// Look for the name in the sub-container list
-		for (auto& dirent : dirbuf.m_containers) {
-			if (!vpath[i].compare(dirent.name)) {
-				objid = dirent.m_id; // Next readdir target
-				found = true;
-				if (i == vpath.size() - 1) {
-					// The last element in the path was found and it's
-					// a container, we're done
-					oobjid = objid;
-					odirent = dirent;
-					return true;
-				}
-				break;
-			}
-		}
-		if (found)
-			continue;
-
-		// Path elt was not a container, look at the items list
-		for (auto& dirent : dirbuf.m_items) {
-			if (!vpath[i].compare(dirent.name)) {
-				// If this is the last path elt, we found the target,
-				// else it does not exist
-				if (i == vpath.size() - 1) {
-					oobjid = objid;
-					odirent = dirent;
-					return true;
-				} else {
-					error.Format(db_domain, DB_NOT_FOUND,
-						     "No such object");
-					return false;
-				}
-			}
-		}
-
-		// Neither container nor item, we're done.
-		if (!found)
+		const UPnPDirObject *child =
+			dirbuf.FindObject(vpath[i].c_str());
+		if (child == nullptr)
 			break;
+
+		switch (child->type) {
+		case UPnPDirObject::Type::UNKNOWN:
+			assert(false);
+			gcc_unreachable();
+
+		case UPnPDirObject::Type::CONTAINER:
+			objid = child->m_id; // Next readdir target
+			if (i == vpath.size() - 1) {
+				// The last element in the path was found and it's
+				// a container, we're done
+				oobjid = objid;
+				odirent = *child;
+				return true;
+			}
+			break;
+
+		case UPnPDirObject::Type::ITEM:
+			// If this is the last path elt, we found the target,
+			// else it does not exist
+			if (i == vpath.size() - 1) {
+				oobjid = objid;
+				odirent = *child;
+				return true;
+			} else {
+				error.Format(db_domain, DB_NOT_FOUND,
+					     "No such object");
+				return false;
+			}
+		}
 	}
 
 	error.Format(db_domain, DB_NOT_FOUND, "No such object");
@@ -675,18 +672,24 @@ UpnpDatabase::VisitServer(ContentDirectoryService* server,
 	if (!server->readDir(objid.c_str(), dirbuf, error))
 		return false;
 
-	if (visit_directory) {
-		for (auto& dirent : dirbuf.m_containers) {
-			Directory d((selection.uri + "/" +
-				     dirent.name).c_str(),
-				    m_root);
-			if (!visit_directory(d, error))
-				return false;
-		}
-	}
+	for (const auto &dirent : dirbuf.objects) {
+		switch (dirent.type) {
+		case UPnPDirObject::Type::UNKNOWN:
+			assert(false);
+			gcc_unreachable();
 
-	if (visit_song || visit_playlist) {
-		for (const auto &dirent : dirbuf.m_items) {
+		case UPnPDirObject::Type::CONTAINER:
+			if (visit_directory) {
+				Directory d((selection.uri + "/" +
+					     dirent.name).c_str(),
+					    m_root);
+				if (!visit_directory(d, error))
+					return false;
+			}
+
+			break;
+
+		case UPnPDirObject::Type::ITEM:
 			switch (dirent.item_class) {
 			case UPnPDirObject::ItemClass::MUSIC:
 				if (visit_song) {
@@ -810,7 +813,11 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		if (!SearchSongs(&server, rootid, selection, dirbuf, error))
 			return false;
 
-		for (auto &dirent : dirbuf.m_items) {
+		for (const auto &dirent : dirbuf.objects) {
+			if (dirent.type != UPnPDirObject::Type::ITEM ||
+			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
+				continue;
+
 			std::string tagvalue;
 			if (getTagValue(dirent, tag, tagvalue)) {
 #if defined(__clang__) || GCC_CHECK_VERSION(4,8)

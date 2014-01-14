@@ -21,6 +21,7 @@
 #define MPD_UPNP_DIRECTORY_HXX
 
 #include "Object.hxx"
+#include "Compiler.h"
 
 #include <string>
 #include <vector>
@@ -33,8 +34,16 @@ class Error;
  */
 class UPnPDirContent {
 public:
-	std::vector<UPnPDirObject> m_containers;
-	std::vector<UPnPDirObject> m_items;
+	std::vector<UPnPDirObject> objects;
+
+	gcc_pure
+	const UPnPDirObject *FindObject(const char *name) const {
+		for (const auto &o : objects)
+			if (o.name == name)
+				return &o;
+
+		return nullptr;
+	}
 
 	/**
 	 * Parse from DIDL-Lite XML data.

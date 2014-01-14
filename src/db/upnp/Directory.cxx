@@ -149,15 +149,9 @@ protected:
 
 	virtual void EndElement(const XML_Char *name)
 	{
-		if (!strcmp(name, "container")) {
-			if (checkobjok()) {
-				m_dir.m_containers.push_back(m_tobj);
-			}
-		} else if (!strcmp(name, "item")) {
-			if (checkobjok()) {
-				m_dir.m_items.push_back(m_tobj);
-			}
-		}
+		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
+		    checkobjok())
+			m_dir.objects.push_back(m_tobj);
 
 		m_path.pop_back();
 	}
