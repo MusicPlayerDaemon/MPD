@@ -121,12 +121,6 @@ public:
 	{
 		const ScopeLock protect(mutex);
 
-		if (!IsOK()) {
-			LOGERR(("WorkQueue::put:%s: !ok or mutex_lock failed\n",
-				name.c_str()));
-			return false;
-		}
-
 		while (IsOK() && high > 0 && queue.size() >= high) {
 			// Keep the order: we test IsOK() AFTER the sleep...
 			client_cond.wait(mutex);
