@@ -28,7 +28,7 @@
 
 #include <string>
 #include <queue>
-#include <unordered_map>
+#include <list>
 
 //#include "debuglog.h"
 #define LOGINFO(X)
@@ -49,16 +49,6 @@
  */
 template <class T>
 class WorkQueue {
-	/**
-	 * Store per-worker-thread data. Just an initialized timespec,
-	 * and used at the moment.
-	 */
-	class WQTData {
-	public:
-		WQTData() {wstart.tv_sec = 0; wstart.tv_nsec = 0;}
-		struct timespec wstart;
-	};
-
 	// Configuration
 	const std::string name;
 	const size_t high;
@@ -69,9 +59,7 @@ class WorkQueue {
 	unsigned n_workers_exited;
 	bool ok;
 
-	// Per-thread data. The data is not used currently, this could be
-	// a set<pthread_t>
-	std::unordered_map<pthread_t, WQTData> threads;
+	std::list<pthread_t> threads;
 
 	// Synchronization
 	std::queue<T> queue;
@@ -121,7 +109,7 @@ public:
 					name.c_str(), err));
 				return false;
 			}
-			threads.insert(std::make_pair(thr, WQTData()));
+			threads.push_back(thr);
 		}
 		return true;
 	}
@@ -226,9 +214,9 @@ public:
 		// Workers return (void*)1 if ok
 		while (!threads.empty()) {
 			void *status;
-			auto it = threads.begin();
-			pthread_join(it->first, &status);
-			threads.erase(it);
+			auto thread = threads.front();
+			pthread_join(thread, &status);
+			threads.pop_front();
 		}
 
 		// Reset to start state.
