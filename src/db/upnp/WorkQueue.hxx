@@ -24,13 +24,10 @@
 #include "thread/Cond.hxx"
 
 #include <pthread.h>
-#include <time.h>
 
 #include <string>
 #include <queue>
-#include <list>
 
-//#include "debuglog.h"
 #define LOGINFO(X)
 #define LOGERR(X)
 
