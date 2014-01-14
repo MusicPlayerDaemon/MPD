@@ -31,6 +31,7 @@
 #include "util/Error.hxx"
 #include "Song.hxx"
 #include "DetachedSong.hxx"
+#include "Mapper.hxx"
 #include "Idle.hxx"
 #include "DatabaseSong.hxx"
 #include "Log.hxx"

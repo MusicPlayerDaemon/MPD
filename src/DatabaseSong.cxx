@@ -22,6 +22,7 @@
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "DetachedSong.hxx"
+#include "Mapper.hxx"
 
 DetachedSong *
 DatabaseDetachSong(const char *uri, Error &error)
@@ -34,7 +35,7 @@ DatabaseDetachSong(const char *uri, Error &error)
 	if (tmp == nullptr)
 		return nullptr;
 
-	DetachedSong *song = new DetachedSong(*tmp);
+	DetachedSong *song = new DetachedSong(map_song_detach(*tmp));
 	db->ReturnSong(tmp);
 	return song;
 }

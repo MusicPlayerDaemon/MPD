@@ -24,6 +24,7 @@
 #include "Partition.hxx"
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"
+#include "Mapper.hxx"
 
 #include <functional>
 
@@ -31,7 +32,8 @@ static bool
 AddToQueue(Partition &partition, const Song &song, Error &error)
 {
 	PlaylistResult result =
-		partition.playlist.AppendSong(partition.pc, DetachedSong(song),
+		partition.playlist.AppendSong(partition.pc,
+					      map_song_detach(song),
 					      nullptr);
 	if (result != PlaylistResult::SUCCESS) {
 		error.Set(playlist_domain, int(result), "Playlist error");

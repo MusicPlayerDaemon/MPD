@@ -217,6 +217,12 @@ map_detached_song_fs(const char *uri_utf8)
 	return AllocatedPath::Build(music_dir_fs, uri_fs);
 }
 
+DetachedSong
+map_song_detach(const Song &song)
+{
+	return DetachedSong(song);
+}
+
 AllocatedPath
 map_song_fs(const Song &song)
 {

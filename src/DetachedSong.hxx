@@ -32,6 +32,8 @@
 struct Song;
 
 class DetachedSong {
+	friend DetachedSong map_song_detach(const Song &song);
+
 	/**
 	 * An UTF-8-encoded URI referring to the song file.  This can
 	 * be one of:
@@ -60,14 +62,14 @@ class DetachedSong {
 	 */
 	unsigned end_ms;
 
+	explicit DetachedSong(const Song &other);
+
 public:
 	explicit DetachedSong(const DetachedSong &other)
 		:uri(other.uri),
 		 tag(other.tag),
 		 mtime(other.mtime),
 		 start_ms(other.start_ms), end_ms(other.end_ms) {}
-
-	explicit DetachedSong(const Song &other);
 
 	explicit DetachedSong(const char *_uri)
 		:uri(_uri),
