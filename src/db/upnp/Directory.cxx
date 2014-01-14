@@ -65,7 +65,7 @@ ParseDuration(const std::string &duration)
  */
 gcc_pure
 static std::string
-titleToPathElt(std::string s)
+titleToPathElt(std::string &&s)
 {
 	std::replace(s.begin(), s.end(), '/', '_');
 	return s;
@@ -170,7 +170,7 @@ protected:
 		case 'd':
 			if (!m_path.back().compare("dc:title")) {
 				m_tobj.m_title = str;
-				m_tobj.name = titleToPathElt(str);
+				m_tobj.name = titleToPathElt(std::move(str));
 			}
 
 			break;
