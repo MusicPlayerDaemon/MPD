@@ -48,8 +48,6 @@ template <class T>
 class WorkQueue {
 	// Configuration
 	const std::string name;
-	const size_t high;
-	const size_t low;
 
 	// Status
 	// Worker threads having called exit
@@ -72,8 +70,8 @@ public:
 	 *    meaning no limit. hi == -1 means that the queue is disabled.
 	 * @param lo minimum count of tasks before worker starts. Default 1.
 	 */
-	WorkQueue(const char *_name, size_t hi = 0, size_t lo = 1)
-		:name(_name), high(hi), low(lo),
+	WorkQueue(const char *_name)
+		:name(_name),
 		 n_workers_exited(0),
 		 ok(false),
 		 n_threads(0), threads(nullptr)
@@ -124,13 +122,6 @@ public:
 	{
 		const ScopeLock protect(mutex);
 
-		while (ok && high > 0 && queue.size() >= high) {
-			// Keep the order: we test ok AFTER the sleep...
-			client_cond.wait(mutex);
-			if (!ok)
-				return false;
-		}
-
 		queue.push(t);
 
 		// Just wake one worker, there is only one new task.
@@ -180,9 +171,7 @@ public:
 		if (!ok)
 			return false;
 
-		while (ok && queue.size() < low) {
-			if (queue.empty())
-				client_cond.broadcast();
+		while (queue.empty()) {
 			worker_cond.wait(mutex);
 			if (!ok)
 				return false;
@@ -190,9 +179,6 @@ public:
 
 		tp = queue.front();
 		queue.pop();
-
-		// No reason to wake up more than one client thread
-		client_cond.signal();
 		return true;
 	}
 
