@@ -40,6 +40,7 @@
 #include "Log.hxx"
 #include "SongFilter.hxx"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <map>
@@ -216,17 +217,10 @@ UpnpDatabase::ReturnSong(Song *song) const
  */
 gcc_pure
 static std::string
-titleToPathElt(const std::string &in)
+titleToPathElt(std::string s)
 {
-	std::string out;
-	for (auto it = in.begin(); it != in.end(); it++) {
-		if (*it == '/') {
-			out += '_';
-		} else {
-			out += *it;
-		}
-	}
-	return out;
+	std::replace(s.begin(), s.end(), '/', '_');
+	return s;
 }
 
 // If uri is empty, we use the object's url instead. This happens
