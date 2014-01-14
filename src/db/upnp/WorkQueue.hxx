@@ -154,50 +154,8 @@ public:
 		return true;
 	}
 
-	/**
-	 * Wait until the queue is inactive. Called from client.
-	 *
-	 * Waits until the task queue is empty and the workers are all
-	 * back sleeping. Used by the client to wait for all current work
-	 * to be completed, when it needs to perform work that couldn't be
-	 * done in parallel with the worker's tasks, or before shutting
-	 * down. Work can be resumed after calling this. Note that the
-	 * only thread which can call it safely is the client just above
-	 * (which can control the task flow), else there could be
-	 * tasks in the intermediate queues.
-	 * To rephrase: there is no warranty on return that the queue is actually
-	 * idle EXCEPT if the caller knows that no jobs are still being created.
-	 * It would be possible to transform this into a safe call if some kind
-	 * of suspend condition was set on the queue by waitIdle(), to be reset by
-	 * some kind of "resume" call. Not currently the case.
-	 */
-	bool waitIdle()
-	{
-		const ScopeLock protect(mutex);
-
-		if (!IsOK()) {
-			LOGERR(("WorkQueue::waitIdle:%s: not ok or can't lock\n",
-				name.c_str()));
-			return false;
-		}
-
-		// We're done when the queue is empty AND all workers are back
-		// waiting for a task.
-		while (IsOK() && (queue.size() > 0 ||
-				  n_workers_waiting != n_threads)) {
-			n_clients_waiting++;
-			client_cond.wait(mutex);
-			n_clients_waiting--;
-		}
-
-		return IsOK();
-	}
-
 
 	/** Tell the workers to exit, and wait for them.
-	 *
-	 * Does not bother about tasks possibly remaining on the queue, so
-	 * should be called after waitIdle() for an orderly shutdown.
 	 */
 	void setTerminateAndWait()
 	{
