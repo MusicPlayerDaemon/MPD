@@ -575,7 +575,9 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 					odirent = dirent;
 					return true;
 				} else {
-					return true;
+					error.Format(db_domain, DB_NOT_FOUND,
+						     "No such object");
+					return false;
 				}
 			}
 		}
@@ -585,7 +587,8 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 			break;
 	}
 
-	return true;
+	error.Format(db_domain, DB_NOT_FOUND, "No such object");
+	return false;
 }
 
 // vpath is a parsed and writeable version of selection.uri. There is
