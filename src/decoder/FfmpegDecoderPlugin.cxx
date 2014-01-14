@@ -222,6 +222,9 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 					   codec_context->channels,
 					   frame->nb_samples,
 					   codec_context->sample_fmt, 1);
+	if (data_size <= 0)
+		return data_size;
+
 	if (av_sample_fmt_is_planar(codec_context->sample_fmt) &&
 	    codec_context->channels > 1) {
 		if(*global_buffer_size < data_size) {
