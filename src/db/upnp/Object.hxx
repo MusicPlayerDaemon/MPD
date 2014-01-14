@@ -20,8 +20,9 @@
 #ifndef MPD_UPNP_OBJECT_HXX
 #define MPD_UPNP_OBJECT_HXX
 
+#include "tag/Tag.hxx"
+
 #include <string>
-#include <map>
 
 /**
  * UpnP Media Server directory entry, converted from XML data.
@@ -61,43 +62,21 @@ public:
 	std::string m_title; // dc:title. Directory name for a container.
 	Type type;
 	ItemClass item_class;
-	// Properties as gathered from the XML document (url, artist, etc.)
-	// The map keys are the XML tag or attribute names.
-	std::map<std::string, std::string> m_props;
 
-	/**
-	 * Song duration in seconds.  0 if unknown.
-	 */
-	int duration;
+	Tag tag;
 
 	UPnPDirObject() = default;
 	UPnPDirObject(UPnPDirObject &&) = default;
 	UPnPDirObject &operator=(UPnPDirObject &&) = default;
-
-	/** Get named property
-	 * @param property name (e.g. upnp:artist, upnp:album,
-	 *     upnp:originalTrackNumber, upnp:genre). Use m_title instead
-	 *     for dc:title.
-	 * @param[out] value
-	 * @return true if found.
-	 */
-	const char *getprop(const char *_name) const {
-		auto it = m_props.find(_name);
-		if (it == m_props.end())
-			return nullptr;
-		return it->second.c_str();
-	}
 
 	void clear()
 	{
 		m_id.clear();
 		m_pid.clear();
 		url.clear();
-		m_title.clear();
 		type = Type::UNKNOWN;
 		item_class = ItemClass::UNKNOWN;
-		m_props.clear();
-		duration = -1;
+		tag.Clear();
 	}
 };
 

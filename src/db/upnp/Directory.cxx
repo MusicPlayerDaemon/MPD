@@ -21,20 +21,15 @@
 #include "Directory.hxx"
 #include "Util.hxx"
 #include "Expat.hxx"
+#include "Tags.hxx"
+#include "tag/TagBuilder.hxx"
+#include "tag/TagTable.hxx"
 
 #include <algorithm>
 #include <string>
 #include <vector>
 
 #include <string.h>
-
-static const char *const upnptags[] = {
-	"upnp:artist",
-	"upnp:album",
-	"upnp:genre",
-	"upnp:originalTrackNumber",
-	nullptr,
-};
 
 gcc_pure
 static UPnPDirObject::ItemClass
@@ -77,6 +72,7 @@ titleToPathElt(std::string &&s)
 class UPnPDirParser final : public CommonExpatParser {
 	std::vector<std::string> m_path;
 	UPnPDirObject m_tobj;
+	TagBuilder tag;
 
 public:
 	UPnPDirParser(UPnPDirContent& dir)
@@ -130,7 +126,7 @@ protected:
 				const char *duration =
 					GetAttribute(attrs, "duration");
 				if (duration != nullptr)
-					m_tobj.duration = ParseDuration(duration);
+					tag.SetTime(ParseDuration(duration));
 			}
 
 			break;
@@ -150,8 +146,10 @@ protected:
 	virtual void EndElement(const XML_Char *name)
 	{
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
-		    checkobjok())
+		    checkobjok()) {
+			tag.Commit(m_tobj.tag);
 			m_dir.objects.push_back(std::move(m_tobj));
+		}
 
 		m_path.pop_back();
 	}
@@ -160,14 +158,19 @@ protected:
 	{
 		std::string str(s, len);
 		trimstring(str);
-		switch (m_path.back()[0]) {
-		case 'd':
-			if (!m_path.back().compare("dc:title")) {
-				m_tobj.m_title = str;
-				m_tobj.name = titleToPathElt(std::move(str));
-			}
 
-			break;
+		TagType type = tag_table_lookup(upnp_tags,
+						m_path.back().c_str());
+		if (type != TAG_NUM_OF_ITEM_TYPES) {
+			tag.AddItem(type, str.c_str());
+
+			if (type == TAG_TITLE)
+				m_tobj.name = titleToPathElt(std::move(str));
+
+			return;
+		}
+
+		switch (m_path.back()[0]) {
 		case 'r':
 			if (!m_path.back().compare("res")) {
 				m_tobj.url = str;
@@ -178,10 +181,6 @@ protected:
 				m_tobj.item_class = ParseItemClass(str.c_str());
 				break;
 			}
-
-			for (auto i = upnptags; *i != nullptr; ++i)
-				if (!m_path.back().compare(*i))
-					m_tobj.m_props[*i] += str;
 			break;
 		}
 	}

@@ -210,21 +210,7 @@ upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 		uri = dirent.url.c_str();
 
 	Song *s = Song::NewFile(uri, nullptr);
-
-	TagBuilder tag;
-
-	if (dirent.duration > 0)
-		tag.SetTime(dirent.duration);
-
-	tag.AddItem(TAG_TITLE, dirent.m_title.c_str());
-
-	for (auto i = upnp_tags; i->name != nullptr; ++i) {
-		const char *value = dirent.getprop(i->name);
-		if (value != nullptr)
-			tag.AddItem(i->type, value);
-	}
-
-	s->tag = tag.CommitNew();
+	s->tag = new Tag(dirent.tag);
 	return s;
 }
 
@@ -265,27 +251,6 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 		error.Format(db_domain, DB_NOT_FOUND, "No such song: %s", uri);
 
 	return song;
-}
-
-/**
- * Retrieve the value for an MPD tag from an object entry.
- */
-gcc_pure
-static const char *
-getTagValue(const UPnPDirObject &dirent, TagType tag)
-{
-	if (tag == TAG_TITLE) {
-		if (!dirent.m_title.empty())
-			return dirent.m_title.c_str();
-
-		return nullptr;
-	}
-
-	const char *name = tag_table_lookup(upnp_tags, tag);
-	if (name == nullptr)
-		return nullptr;
-
-	return dirent.getprop(name);
 }
 
 /**
@@ -801,7 +766,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
 				continue;
 
-			const char *value = getTagValue(dirent, tag);
+			const char *value = dirent.tag.GetValue(tag);
 			if (value != nullptr) {
 #if defined(__clang__) || GCC_CHECK_VERSION(4,8)
 				values.emplace(value);
