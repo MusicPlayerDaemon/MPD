@@ -67,7 +67,7 @@ extm3u_open_stream(InputStream &is)
  *
  * @param line the rest of the input line after the colon
  */
-static Tag *
+static Tag
 extm3u_parse_tag(const char *line)
 {
 	long duration;
@@ -77,7 +77,7 @@ extm3u_parse_tag(const char *line)
 	duration = strtol(line, &endptr, 10);
 	if (endptr[0] != ',')
 		/* malformed line */
-		return NULL;
+		return Tag();
 
 	if (duration < 0)
 		/* 0 means unknown duration */
@@ -87,7 +87,7 @@ extm3u_parse_tag(const char *line)
 	if (*name == 0 && duration == 0)
 		/* no information available; don't allocate a tag
 		   object */
-		return NULL;
+		return Tag();
 
 	TagBuilder tag;
 	tag.SetTime(duration);
@@ -98,26 +98,23 @@ extm3u_parse_tag(const char *line)
 	if (*name != 0)
 		tag.AddItem(TAG_NAME, name);
 
-	return tag.CommitNew();
+	return tag.Commit();
 }
 
 DetachedSong *
 ExtM3uPlaylist::NextSong()
 {
-	Tag *tag = NULL;
+	Tag tag;
 	std::string line;
 	const char *line_s;
 
 	do {
-		if (!tis.ReadLine(line)) {
-			delete tag;
+		if (!tis.ReadLine(line))
 			return NULL;
-		}
 
 		line_s = line.c_str();
 
 		if (StringStartsWith(line_s, "#EXTINF:")) {
-			delete tag;
 			tag = extm3u_parse_tag(line_s + 8);
 			continue;
 		}
@@ -125,9 +122,7 @@ ExtM3uPlaylist::NextSong()
 		line_s = strchug_fast(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	DetachedSong *song = new DetachedSong(line_s, std::move(*tag));
-	delete tag;
-	return song;
+	return new DetachedSong(line_s, std::move(tag));
 }
 
 static const char *const extm3u_suffixes[] = {
