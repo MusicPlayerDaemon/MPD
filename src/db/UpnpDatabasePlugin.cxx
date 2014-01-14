@@ -280,28 +280,22 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 /**
  * Retrieve the value for an MPD tag from an object entry.
  */
-static bool
-getTagValue(const UPnPDirObject &dirent, TagType tag,
-	    std::string &tagvalue)
+gcc_pure
+static const char *
+getTagValue(const UPnPDirObject &dirent, TagType tag)
 {
 	if (tag == TAG_TITLE) {
-		if (!dirent.m_title.empty()) {
-			tagvalue = dirent.m_title;
-			return true;
-		}
-		return false;
+		if (!dirent.m_title.empty())
+			return dirent.m_title.c_str();
+
+		return nullptr;
 	}
 
 	const char *name = tag_table_lookup(upnp_tags, tag);
 	if (name == nullptr)
-		return false;
+		return nullptr;
 
-	const char *value = dirent.getprop(name);
-	if (value == nullptr)
-		return false;
-
-	tagvalue = value;
-	return true;
+	return dirent.getprop(name);
 }
 
 /**
@@ -818,12 +812,12 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
 				continue;
 
-			std::string tagvalue;
-			if (getTagValue(dirent, tag, tagvalue)) {
+			const char *value = getTagValue(dirent, tag);
+			if (value != nullptr) {
 #if defined(__clang__) || GCC_CHECK_VERSION(4,8)
-				values.emplace(std::move(tagvalue));
+				values.emplace(value);
 #else
-				values.insert(std::move(tagvalue));
+				values.insert(value);
 #endif
 			}
 		}
