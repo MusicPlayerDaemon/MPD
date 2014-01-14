@@ -39,7 +39,7 @@ TagLoadConfig()
 	if (value == nullptr)
 		return;
 
-	std::fill_n(ignore_tag_items, TAG_NUM_OF_ITEM_TYPES, true);
+	std::fill_n(ignore_tag_items, size_t(TAG_NUM_OF_ITEM_TYPES), true);
 
 	if (StringEqualsCaseASCII(value, "none"))
 		return;

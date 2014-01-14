@@ -101,7 +101,7 @@ bool
 SongFilter::Item::Match(const Tag &_tag) const
 {
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
-	std::fill_n(visited_types, TAG_NUM_OF_ITEM_TYPES, false);
+	std::fill_n(visited_types, size_t(TAG_NUM_OF_ITEM_TYPES), false);
 
 	for (unsigned i = 0; i < _tag.num_items; i++) {
 		visited_types[_tag.items[i]->type] = true;
