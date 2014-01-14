@@ -246,7 +246,7 @@ upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 	if (dirent.duration > 0)
 		tag.SetTime(dirent.duration);
 
-	tag.AddItem(TAG_TITLE, titleToPathElt(dirent.m_title).c_str());
+	tag.AddItem(TAG_TITLE, dirent.m_title.c_str());
 
 	for (auto i = upnp_tags; i->name != nullptr; ++i) {
 		const char *value = dirent.getprop(i->name);
@@ -306,7 +306,7 @@ getTagValue(UPnPDirObject& dirent, TagType tag,
 {
 	if (tag == TAG_TITLE) {
 		if (!dirent.m_title.empty()) {
-			tagvalue = titleToPathElt(dirent.m_title);
+			tagvalue = dirent.m_title;
 			return true;
 		}
 		return false;
