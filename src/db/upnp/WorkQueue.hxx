@@ -227,7 +227,7 @@ public:
 private:
 	bool IsOK()
 	{
-		return ok && n_workers_exited == 0 && n_threads > 0;
+		return ok && n_threads > 0;
 	}
 };
 
