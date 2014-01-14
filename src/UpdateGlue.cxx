@@ -34,6 +34,7 @@
 #include "system/FatalError.hxx"
 #include "thread/Id.hxx"
 #include "thread/Thread.hxx"
+#include "thread/Util.hxx"
 
 #include <assert.h>
 
@@ -67,6 +68,8 @@ update_task(gcc_unused void *ctx)
 			    next.path_utf8.c_str());
 	else
 		LogDebug(update_domain, "starting");
+
+	SetThreadIdlePriority();
 
 	modified = update_walk(next.path_utf8.c_str(), next.discard);
 

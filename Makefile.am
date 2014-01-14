@@ -285,6 +285,7 @@ libutil_a_SOURCES = \
 # Multi-threading library
 
 libthread_a_SOURCES = \
+	src/thread/Util.hxx \
 	src/thread/Mutex.hxx \
 	src/thread/PosixMutex.hxx \
 	src/thread/CriticalSection.hxx \
