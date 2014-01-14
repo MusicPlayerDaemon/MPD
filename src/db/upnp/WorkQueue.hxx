@@ -59,7 +59,8 @@ class WorkQueue {
 	unsigned n_workers_exited;
 	bool ok;
 
-	std::list<pthread_t> threads;
+	unsigned n_threads;
+	pthread_t *threads;
 
 	// Synchronization
 	std::queue<T> queue;
@@ -81,6 +82,7 @@ public:
 		:name(_name), high(hi), low(lo),
 		 n_workers_exited(0),
 		 ok(true),
+		 n_threads(0), threads(nullptr),
 		 n_clients_waiting(0), n_workers_waiting(0)
 	{
 	}
@@ -101,15 +103,19 @@ public:
 	{
 		const ScopeLock protect(mutex);
 
+		assert(nworkers > 0);
+		assert(n_threads == 0);
+		assert(threads == nullptr);
+
+		threads = new pthread_t[n_threads];
+
 		for  (int i = 0; i < nworkers; i++) {
 			int err;
-			pthread_t thr;
-			if ((err = pthread_create(&thr, 0, workproc, arg))) {
+			if ((err = pthread_create(&threads[n_threads++], 0, workproc, arg))) {
 				LOGERR(("WorkQueue:%s: pthread_create failed, err %d\n",
 					name.c_str(), err));
 				return false;
 			}
-			threads.push_back(thr);
 		}
 		return true;
 	}
@@ -178,7 +184,7 @@ public:
 		// We're done when the queue is empty AND all workers are back
 		// waiting for a task.
 		while (IsOK() && (queue.size() > 0 ||
-				n_workers_waiting != threads.size())) {
+				  n_workers_waiting != n_threads)) {
 			n_clients_waiting++;
 			client_cond.wait(mutex);
 			n_clients_waiting--;
@@ -197,13 +203,9 @@ public:
 	{
 		const ScopeLock protect(mutex);
 
-		if (threads.empty())
-			// Already called ?
-			return;
-
 		// Wait for all worker threads to have called workerExit()
 		ok = false;
-		while (n_workers_exited < threads.size()) {
+		while (n_workers_exited < n_threads) {
 			worker_cond.broadcast();
 			n_clients_waiting++;
 			client_cond.wait(mutex);
@@ -212,12 +214,14 @@ public:
 
 		// Perform the thread joins and compute overall status
 		// Workers return (void*)1 if ok
-		while (!threads.empty()) {
+		for (unsigned i = 0; i < n_threads; ++i) {
 			void *status;
-			auto thread = threads.front();
-			pthread_join(thread, &status);
-			threads.pop_front();
+			pthread_join(threads[i], &status);
 		}
+
+		delete[] threads;
+		threads = nullptr;
+		n_threads = 0;
 
 		// Reset to start state.
 		n_workers_exited = n_clients_waiting = n_workers_waiting = 0;
@@ -283,7 +287,7 @@ public:
 private:
 	bool IsOK()
 	{
-		return ok && n_workers_exited == 0 && !threads.empty();
+		return ok && n_workers_exited == 0 && n_threads > 0;
 	}
 };
 
