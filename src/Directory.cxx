@@ -39,7 +39,9 @@ extern "C" {
 #include <stdlib.h>
 
 Directory::Directory(const char *_path_utf8, Directory *_parent)
-	:parent(_parent), path(_path_utf8)
+	:parent(_parent),
+	 mtime(0), have_stat(false),
+	 path(_path_utf8)
 {
 	INIT_LIST_HEAD(&children);
 	INIT_LIST_HEAD(&songs);
