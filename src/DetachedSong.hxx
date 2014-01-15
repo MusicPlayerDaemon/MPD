@@ -74,7 +74,7 @@ public:
 		 mtime(0), start_ms(0), end_ms(0) {}
 
 	explicit DetachedSong(const std::string &_uri)
-		:uri(std::move(_uri)),
+		:uri(_uri),
 		 mtime(0), start_ms(0), end_ms(0) {}
 
 	explicit DetachedSong(std::string &&_uri)
