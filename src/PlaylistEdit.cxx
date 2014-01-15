@@ -32,8 +32,7 @@
 #include "Song.hxx"
 #include "DetachedSong.hxx"
 #include "Idle.hxx"
-#include "DatabaseGlue.hxx"
-#include "DatabasePlugin.hxx"
+#include "DatabaseSong.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>
@@ -113,16 +112,9 @@ playlist::AppendURI(PlayerControl &pc,
 	if (uri_has_scheme(uri)) {
 		song = new DetachedSong(uri);
 	} else {
-		const Database *db = GetDatabase();
-		if (db == nullptr)
+		song = DatabaseDetachSong(uri, IgnoreError());
+		if (song == nullptr)
 			return PlaylistResult::NO_SUCH_SONG;
-
-		Song *tmp = db->GetSong(uri, IgnoreError());
-		if (tmp == nullptr)
-			return PlaylistResult::NO_SUCH_SONG;
-
-		song = new DetachedSong(*tmp);
-		db->ReturnSong(tmp);
 	}
 
 	PlaylistResult result = AppendSong(pc, std::move(*song), added_id);

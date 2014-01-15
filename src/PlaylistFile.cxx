@@ -22,8 +22,7 @@
 #include "PlaylistSave.hxx"
 #include "PlaylistInfo.hxx"
 #include "PlaylistVector.hxx"
-#include "DatabasePlugin.hxx"
-#include "DatabaseGlue.hxx"
+#include "DatabaseSong.hxx"
 #include "DetachedSong.hxx"
 #include "Mapper.hxx"
 #include "fs/TextFile.hxx"
@@ -405,18 +404,13 @@ spl_append_uri(const char *url, const char *utf8file, Error &error)
 		return spl_append_song(utf8file, DetachedSong(url),
 				       error);
 	} else {
-		const Database *db = GetDatabase(error);
-		if (db == nullptr)
+		DetachedSong *song = DatabaseDetachSong(url, error);
+		if (song == nullptr)
 			return false;
 
-		Song *tmp = db->GetSong(url, error);
-		if (tmp == nullptr)
-			return false;
-
-		const DetachedSong song(*tmp);
-		db->ReturnSong(tmp);
-
-		return spl_append_song(utf8file, song, error);
+		bool success = spl_append_song(utf8file, *song, error);
+		delete song;
+		return success;
 	}
 }
 

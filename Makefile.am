@@ -107,6 +107,7 @@ src_mpd_SOURCES = \
 	src/DirectorySave.cxx src/DirectorySave.hxx \
 	src/DatabaseSimple.hxx \
 	src/DatabaseGlue.cxx src/DatabaseGlue.hxx \
+	src/DatabaseSong.cxx src/DatabaseSong.hxx \
 	src/DatabasePrint.cxx src/DatabasePrint.hxx \
 	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \
 	src/DatabasePlaylist.cxx src/DatabasePlaylist.hxx \

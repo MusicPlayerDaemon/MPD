@@ -20,8 +20,7 @@
 #include "config.h"
 #include "PlaylistSong.hxx"
 #include "Mapper.hxx"
-#include "DatabasePlugin.hxx"
-#include "DatabaseGlue.hxx"
+#include "DatabaseSong.hxx"
 #include "ls.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
@@ -106,17 +105,9 @@ playlist_check_load_song(const DetachedSong *song, const char *uri, bool secure)
 			return nullptr;
 		}
 	} else {
-		const Database *db = GetDatabase();
-		if (db == nullptr)
+		dest = DatabaseDetachSong(uri, IgnoreError());
+		if (dest == nullptr)
 			return nullptr;
-
-		Song *tmp = db->GetSong(uri, IgnoreError());
-		if (tmp == nullptr)
-			/* not found in database */
-			return nullptr;
-
-		dest = new DetachedSong(*tmp);
-		db->ReturnSong(tmp);
 	}
 
 	return apply_song_metadata(dest, song);
