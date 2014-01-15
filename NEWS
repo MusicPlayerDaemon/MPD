@@ -20,6 +20,10 @@ ver 0.19 (not yet released)
 * the update thread runs at "idle" priority
 * the output thread runs at "real-time" priority
 
+ver 0.18.8 (not yet released)
+* decoder
+  - ffmpeg: support libav v10_alpha1
+
 ver 0.18.7 (2013/01/13)
 * playlist
   - pls: fix crash after parser error

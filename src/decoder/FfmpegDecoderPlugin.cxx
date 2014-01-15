@@ -38,6 +38,10 @@ extern "C" {
 #include <libavutil/avutil.h>
 #include <libavutil/log.h>
 #include <libavutil/mathematics.h>
+
+#if LIBAVUTIL_VERSION_MAJOR >= 53
+#include <libavutil/frame.h>
+#endif
 }
 
 #include <assert.h>
@@ -453,7 +457,11 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	decoder_initialized(decoder, audio_format,
 			    input.seekable, total_time);
 
+#if LIBAVUTIL_VERSION_MAJOR >= 53
+	AVFrame *frame = av_frame_alloc();
+#else
 	AVFrame *frame = avcodec_alloc_frame();
+#endif
 	if (!frame) {
 		LogError(ffmpeg_domain, "Could not allocate frame");
 		avformat_close_input(&format_context);
@@ -497,7 +505,9 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		}
 	} while (cmd != DecoderCommand::STOP);
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
+#if LIBAVUTIL_VERSION_MAJOR >= 53
+	av_frame_free(&frame);
+#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
 	avcodec_free_frame(&frame);
 #else
 	av_freep(&frame);
