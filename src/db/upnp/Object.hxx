@@ -59,7 +59,6 @@ public:
 	 */
 	std::string name;
 
-	std::string m_title; // dc:title. Directory name for a container.
 	Type type;
 	ItemClass item_class;
 
