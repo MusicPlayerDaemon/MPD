@@ -100,12 +100,11 @@ playlist_check_load_song(const DetachedSong *song, const char *uri, bool secure)
 	if (uri_has_scheme(uri)) {
 		dest = new DetachedSong(uri);
 	} else if (PathTraitsUTF8::IsAbsolute(uri) && secure) {
-		Song *tmp = Song::LoadFile(uri, nullptr);
-		if (tmp == nullptr)
+		dest = new DetachedSong(uri);
+		if (!dest->Update()) {
+			delete dest;
 			return nullptr;
-
-		dest = new DetachedSong(*tmp);
-		delete tmp;
+		}
 	} else {
 		const Database *db = GetDatabase();
 		if (db == nullptr)

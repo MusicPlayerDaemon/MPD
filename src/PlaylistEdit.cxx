@@ -61,13 +61,11 @@ PlaylistResult
 playlist::AppendFile(PlayerControl &pc,
 		     const char *path_utf8, unsigned *added_id)
 {
-	Song *song = Song::LoadFile(path_utf8, nullptr);
-	if (song == nullptr)
+	DetachedSong song(path_utf8);
+	if (!song.Update())
 		return PlaylistResult::NO_SUCH_SONG;
 
-	const auto result = AppendSong(pc, DetachedSong(*song), added_id);
-	song->Free();
-	return result;
+	return AppendSong(pc, std::move(song), added_id);
 }
 
 PlaylistResult

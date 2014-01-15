@@ -23,7 +23,7 @@
 #include "CommandError.hxx"
 #include "UpdateGlue.hxx"
 #include "Directory.hxx"
-#include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
 #include "TagStream.hxx"
@@ -140,15 +140,14 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 		if (!client_allow_file(client, path_fs, error))
 			return print_error(client, error);
 
-		Song *song = Song::LoadFile(path_utf8, nullptr);
-		if (song == nullptr) {
+		DetachedSong song(path_utf8);
+		if (!song.Update()) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "No such file");
 			return CommandResult::ERROR;
 		}
 
-		song_print_info(client, *song);
-		song->Free();
+		song_print_info(client, song);
 		return CommandResult::OK;
 	}
 

@@ -19,6 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "Song.hxx"
+#include "DetachedSong.hxx"
 #include "util/UriUtil.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
@@ -125,4 +126,40 @@ Song::UpdateFileInArchive()
 	delete tag;
 	tag = tag_builder.CommitNew();
 	return true;
+}
+
+bool
+DetachedSong::Update()
+{
+	if (IsAbsoluteFile()) {
+		const AllocatedPath path_fs =
+			AllocatedPath::FromUTF8(uri.c_str());
+
+		struct stat st;
+		if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
+			return false;
+
+		TagBuilder tag_builder;
+		if (!tag_file_scan(path_fs, full_tag_handler, &tag_builder))
+			return false;
+
+		if (tag_builder.IsEmpty())
+			tag_scan_fallback(path_fs, &full_tag_handler,
+					  &tag_builder);
+
+		mtime = st.st_mtime;
+		tag_builder.Commit(tag);
+		return true;
+	} else if (IsRemote()) {
+		TagBuilder tag_builder;
+		if (!tag_stream_scan(uri.c_str(), full_tag_handler,
+				     &tag_builder))
+			return false;
+
+		mtime = 0;
+		tag_builder.Commit(tag);
+		return true;
+	} else
+		// TODO: implement
+		return false;
 }

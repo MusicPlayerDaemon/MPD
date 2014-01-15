@@ -179,6 +179,13 @@ public:
 
 	gcc_pure
 	double GetDuration() const;
+
+	/**
+	 * Update the #tag and #mtime.
+	 *
+	 * @return true on success
+	 */
+	bool Update();
 };
 
 #endif
