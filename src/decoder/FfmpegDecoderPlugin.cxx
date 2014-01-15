@@ -38,7 +38,6 @@ extern "C" {
 #include <libavutil/avutil.h>
 #include <libavutil/log.h>
 #include <libavutil/mathematics.h>
-#include <libavutil/dict.h>
 }
 
 #include <assert.h>
