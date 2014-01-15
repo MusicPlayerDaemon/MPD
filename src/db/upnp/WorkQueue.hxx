@@ -99,7 +99,7 @@ public:
 		assert(n_threads == 0);
 		assert(threads == nullptr);
 
-		threads = new pthread_t[n_threads];
+		threads = new pthread_t[nworkers];
 
 		for  (int i = 0; i < nworkers; i++) {
 			int err;
