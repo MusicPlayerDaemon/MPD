@@ -90,7 +90,7 @@ public:
 	 * @param arg initial parameter to thread function.
 	 * @return true if ok.
 	 */
-	bool start(int nworkers, void *(*workproc)(void *), void *arg)
+	bool start(unsigned nworkers, void *(*workproc)(void *), void *arg)
 	{
 		const ScopeLock protect(mutex);
 
@@ -99,11 +99,12 @@ public:
 		assert(n_threads == 0);
 		assert(threads == nullptr);
 
-		threads = new pthread_t[nworkers];
+		n_threads = nworkers;
+		threads = new pthread_t[n_threads];
 
-		for  (int i = 0; i < nworkers; i++) {
+		for  (unsigned i = 0; i < nworkers; i++) {
 			int err;
-			if ((err = pthread_create(&threads[n_threads++], 0, workproc, arg))) {
+			if ((err = pthread_create(&threads[i], 0, workproc, arg))) {
 				LOGERR(("WorkQueue:%s: pthread_create failed, err %d\n",
 					name.c_str(), err));
 				return false;
