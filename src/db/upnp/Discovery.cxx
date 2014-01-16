@@ -107,6 +107,9 @@ static ContentDirectoryPool contentDirectories;
 static void *
 discoExplorer(void *)
 {
+	auto &mutex = contentDirectories.m_mutex;
+	auto &directories = contentDirectories.m_directories;
+
 	for (;;) {
 		DiscoveredTask *tsk = 0;
 		if (!discoveredQueue.take(tsk)) {
@@ -114,12 +117,12 @@ discoExplorer(void *)
 			return (void*)1;
 		}
 
-		const ScopeLock protect(contentDirectories.m_mutex);
+		const ScopeLock protect(mutex);
 		if (!tsk->alive) {
 			// Device signals it is going off.
-			auto it = contentDirectories.m_directories.find(tsk->deviceId);
-			if (it != contentDirectories.m_directories.end()) {
-				contentDirectories.m_directories.erase(it);
+			auto it = directories.find(tsk->deviceId);
+			if (it != directories.end()) {
+				directories.erase(it);
 			}
 		} else {
 			// Device signals its existence and well-being. Perform the
@@ -142,9 +145,9 @@ discoExplorer(void *)
 			}
 
 #if defined(__clang__) || GCC_CHECK_VERSION(4,8)
-			auto e = contentDirectories.m_directories.emplace(tsk->deviceId, d);
+			auto e = directories.emplace(tsk->deviceId, d);
 #else
-			auto e = contentDirectories.m_directories.insert(std::make_pair(tsk->deviceId, d));
+			auto e = directories.insert(std::make_pair(tsk->deviceId, d));
 #endif
 			if (!e.second)
 				e.first->second = d;
@@ -199,13 +202,14 @@ void
 UPnPDeviceDirectory::expireDevices()
 {
 	const ScopeLock protect(contentDirectories.m_mutex);
+	auto &directories = contentDirectories.m_directories;
 	time_t now = time(0);
 	bool didsomething = false;
 
-	for (auto it = contentDirectories.m_directories.begin();
-	     it != contentDirectories.m_directories.end();) {
+	for (auto it = directories.begin();
+	     it != directories.end();) {
 		if (now - it->second.last_seen > it->second.expires) {
-			it = contentDirectories.m_directories.erase(it);
+			it = directories.erase(it);
 			didsomething = true;
 		} else {
 			it++;
@@ -271,9 +275,10 @@ UPnPDeviceDirectory::getDirServices(std::vector<ContentDirectoryService> &out)
 	expireDevices();
 
 	const ScopeLock protect(contentDirectories.m_mutex);
+	auto &directories = contentDirectories.m_directories;
 
-	for (auto dit = contentDirectories.m_directories.begin();
-	     dit != contentDirectories.m_directories.end(); dit++) {
+	for (auto dit = directories.begin();
+	     dit != directories.end(); dit++) {
 		for (const auto &service : dit->second.device.services) {
 			if (isCDService(service.serviceType.c_str())) {
 				out.emplace_back(dit->second.device, service);
