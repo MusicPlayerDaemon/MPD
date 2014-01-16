@@ -119,11 +119,12 @@ public:
 	 *
 	 * Sleeps if there are already too many.
 	 */
-	bool put(T t)
+	template<typename U>
+	bool put(U &&u)
 	{
 		const ScopeLock protect(mutex);
 
-		queue.push(t);
+		queue.emplace(std::forward<U>(u));
 
 		// Just wake one worker, there is only one new task.
 		worker_cond.signal();
@@ -178,7 +179,7 @@ public:
 				return false;
 		}
 
-		tp = queue.front();
+		tp = std::move(queue.front());
 		queue.pop();
 		return true;
 	}
