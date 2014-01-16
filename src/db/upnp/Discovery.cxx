@@ -157,15 +157,9 @@ discoExplorer(void *)
 // thread context.
 // Example: ContentDirectories appearing and disappearing from the network
 // We queue a task for our worker thread(s)
-// It seems that this can get called by several threads. We have a
-// mutex just for clarifying the message printing, the workqueue is
-// mt-safe of course.
 static int
 cluCallBack(Upnp_EventType et, void *evp)
 {
-	static Mutex cblock;
-	const ScopeLock protect(cblock);
-
 	switch (et) {
 	case UPNP_DISCOVERY_SEARCH_RESULT:
 	case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
