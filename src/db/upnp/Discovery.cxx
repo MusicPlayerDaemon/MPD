@@ -156,6 +156,33 @@ discoExplorer(void *)
 	}
 }
 
+static int
+OnAlive(Upnp_Discovery *disco)
+{
+	if (isMSDevice(disco->DeviceType) ||
+	    isCDService(disco->ServiceType)) {
+		DiscoveredTask *tp = new DiscoveredTask(1, disco);
+		if (discoveredQueue.put(tp))
+			return UPNP_E_FINISH;
+	}
+
+	return UPNP_E_SUCCESS;
+}
+
+static int
+OnByeBye(Upnp_Discovery *disco)
+{
+
+	if (isMSDevice(disco->DeviceType) ||
+	    isCDService(disco->ServiceType)) {
+		DiscoveredTask *tp = new DiscoveredTask(0, disco);
+		if (discoveredQueue.put(tp))
+			return UPNP_E_FINISH;
+	}
+
+	return UPNP_E_SUCCESS;
+}
+
 // This gets called for all libupnp asynchronous events, in a libupnp
 // thread context.
 // Example: ContentDirectories appearing and disappearing from the network
@@ -168,26 +195,13 @@ cluCallBack(Upnp_EventType et, void *evp)
 	case UPNP_DISCOVERY_ADVERTISEMENT_ALIVE:
 		{
 			Upnp_Discovery *disco = (Upnp_Discovery *)evp;
-			if (isMSDevice(disco->DeviceType) ||
-			    isCDService(disco->ServiceType)) {
-				DiscoveredTask *tp = new DiscoveredTask(1, disco);
-				if (discoveredQueue.put(tp))
-					return UPNP_E_FINISH;
-			}
-			break;
+			return OnAlive(disco);
 		}
 
 	case UPNP_DISCOVERY_ADVERTISEMENT_BYEBYE:
 		{
 			Upnp_Discovery *disco = (Upnp_Discovery *)evp;
-
-			if (isMSDevice(disco->DeviceType) ||
-			    isCDService(disco->ServiceType)) {
-				DiscoveredTask *tp = new DiscoveredTask(0, disco);
-				if (discoveredQueue.put(tp))
-					return UPNP_E_FINISH;
-			}
-			break;
+			return OnByeBye(disco);
 		}
 
 	default:
