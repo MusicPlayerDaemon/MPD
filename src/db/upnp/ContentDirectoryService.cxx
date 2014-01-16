@@ -24,12 +24,10 @@
 #include "ixmlwrap.hxx"
 #include "Directory.hxx"
 #include "Util.hxx"
-#include "upnpplib.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>
 
-#include <upnp/upnp.h>
 #include <upnp/upnptools.h>
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
@@ -64,17 +62,12 @@ public:
 };
 
 bool
-ContentDirectoryService::readDirSlice(const char *objectId, int offset,
+ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
+				      const char *objectId, int offset,
 				      int count, UPnPDirContent &dirbuf,
 				      int *didreadp, int *totalp,
 				      Error &error)
 {
-	LibUPnP *lib = LibUPnP::getLibUPnP(error);
-	if (lib == nullptr)
-		return false;
-
-	UpnpClient_Handle hdl = lib->getclh();
-
 	IXML_Document *request(0);
 	IXML_Document *response(0);
 	DirBResFree cleaner(&request, &response);
@@ -132,7 +125,8 @@ ContentDirectoryService::readDirSlice(const char *objectId, int offset,
 }
 
 bool
-ContentDirectoryService::readDir(const char *objectId,
+ContentDirectoryService::readDir(UpnpClient_Handle handle,
+				 const char *objectId,
 				 UPnPDirContent &dirbuf,
 				 Error &error)
 {
@@ -141,7 +135,7 @@ ContentDirectoryService::readDir(const char *objectId,
 
 	while (offset < total) {
 		int count;
-		if (!readDirSlice(objectId, offset, m_rdreqcnt, dirbuf,
+		if (!readDirSlice(handle, objectId, offset, m_rdreqcnt, dirbuf,
 				  &count, &total, error))
 			return false;
 
@@ -152,17 +146,12 @@ ContentDirectoryService::readDir(const char *objectId,
 }
 
 bool
-ContentDirectoryService::search(const char *objectId,
+ContentDirectoryService::search(UpnpClient_Handle hdl,
+				const char *objectId,
 				const char *ss,
 				UPnPDirContent &dirbuf,
 				Error &error)
 {
-	LibUPnP *lib = LibUPnP::getLibUPnP(error);
-	if (lib == nullptr)
-		return false;
-
-	UpnpClient_Handle hdl = lib->getclh();
-
 	IXML_Document *request(0);
 	IXML_Document *response(0);
 
@@ -226,15 +215,10 @@ ContentDirectoryService::search(const char *objectId,
 }
 
 bool
-ContentDirectoryService::getSearchCapabilities(std::set<std::string> &result,
+ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
+					       std::set<std::string> &result,
 					       Error &error)
 {
-	LibUPnP *lib = LibUPnP::getLibUPnP(error);
-	if (lib == nullptr)
-		return false;
-
-	UpnpClient_Handle hdl = lib->getclh();
-
 	IXML_Document *request(0);
 	IXML_Document *response(0);
 
@@ -272,16 +256,11 @@ ContentDirectoryService::getSearchCapabilities(std::set<std::string> &result,
 }
 
 bool
-ContentDirectoryService::getMetadata(const char *objectId,
+ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
+				     const char *objectId,
 				     UPnPDirContent &dirbuf,
 				     Error &error)
 {
-	LibUPnP *lib = LibUPnP::getLibUPnP(error);
-	if (lib == nullptr)
-		return false;
-
-	UpnpClient_Handle hdl = lib->getclh();
-
 	IXML_Document *response(0);
 
 	// Create request

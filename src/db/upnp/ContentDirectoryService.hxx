@@ -20,6 +20,8 @@
 #ifndef _UPNPDIR_HXX_INCLUDED_
 #define _UPNPDIR_HXX_INCLUDED_
 
+#include <upnp/upnp.h>
+
 #include <string>
 #include <set>
 
@@ -71,10 +73,12 @@ public:
 	 * @param objectId the UPnP object Id for the container. Root has Id "0"
 	 * @param[out] dirbuf stores the entries we read.
 	 */
-	bool readDir(const char *objectId, UPnPDirContent &dirbuf,
+	bool readDir(UpnpClient_Handle handle,
+		     const char *objectId, UPnPDirContent &dirbuf,
 		     Error &error);
 
-	bool readDirSlice(const char *objectId, int offset,
+	bool readDirSlice(UpnpClient_Handle handle,
+			  const char *objectId, int offset,
 			  int count, UPnPDirContent& dirbuf,
 			  int *didread, int *total,
 			  Error &error);
@@ -89,7 +93,8 @@ public:
 	 * section 2.5.5. Maybe we'll provide an easier way some day...
 	 * @param[out] dirbuf stores the entries we read.
 	 */
-	bool search(const char *objectId, const char *searchstring,
+	bool search(UpnpClient_Handle handle,
+		    const char *objectId, const char *searchstring,
 		    UPnPDirContent &dirbuf,
 		    Error &error);
 
@@ -99,7 +104,8 @@ public:
 	 * @param[out] dirbuf stores the entries we read. At most one entry will be
 	 *   returned.
 	 */
-	bool getMetadata(const char *objectId, UPnPDirContent &dirbuf,
+	bool getMetadata(UpnpClient_Handle handle,
+			 const char *objectId, UPnPDirContent &dirbuf,
 			 Error &error);
 
 	/** Retrieve search capabilities
@@ -107,7 +113,8 @@ public:
 	 * @param[out] result an empty vector: no search, or a single '*' element:
 	 *     any tag can be used in a search, or a list of usable tag names.
 	 */
-	bool getSearchCapabilities(std::set<std::string> &result,
+	bool getSearchCapabilities(UpnpClient_Handle handle,
+				   std::set<std::string> &result,
 				   Error &error);
 
 	/** Retrieve the "friendly name" for this server, useful for display. */

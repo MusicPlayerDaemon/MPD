@@ -216,17 +216,13 @@ UPnPDeviceDirectory::expireDevices()
 		search();
 }
 
-UPnPDeviceDirectory::UPnPDeviceDirectory()
-	:m_searchTimeout(2), m_lastSearch(0)
+UPnPDeviceDirectory::UPnPDeviceDirectory(LibUPnP *_lib)
+	:lib(_lib), m_searchTimeout(2), m_lastSearch(0)
 {
 	if (!discoveredQueue.start(1, discoExplorer, 0)) {
 		error.Set(upnp_domain, "Discover work queue start failed");
 		return;
 	}
-
-	LibUPnP *lib = LibUPnP::getLibUPnP(error);
-	if (lib == nullptr)
-		return;
 
 	lib->SetHandler([](Upnp_EventType type, void *event){
 			cluCallBack(type, event);
@@ -242,10 +238,6 @@ UPnPDeviceDirectory::search()
 	if (now - m_lastSearch < 10)
 		return true;
 	m_lastSearch = now;
-
-	LibUPnP *lib = LibUPnP::getLibUPnP(error);
-	if (lib == nullptr)
-		return false;
 
 	// We search both for device and service just in case.
 	int code = UpnpSearchAsync(lib->getclh(), m_searchTimeout,

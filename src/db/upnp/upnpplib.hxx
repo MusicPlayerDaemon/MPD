@@ -35,18 +35,15 @@ class LibUPnP {
 
 	Handler handler;
 
+	static int o_callback(Upnp_EventType, void *, void *);
+
+public:
 	LibUPnP();
 
 	LibUPnP(const LibUPnP &) = delete;
 	LibUPnP &operator=(const LibUPnP &) = delete;
 
-	static int o_callback(Upnp_EventType, void *, void *);
-
-public:
 	~LibUPnP();
-
-	/** Retrieve the singleton LibUPnP object */
-	static LibUPnP *getLibUPnP(Error &error);
 
 	/** Check state after initialization */
 	bool ok() const

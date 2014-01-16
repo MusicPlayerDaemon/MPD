@@ -159,14 +159,18 @@ UpnpDatabase::Configure(const config_param &, Error &)
 bool
 UpnpDatabase::Open(Error &error)
 {
-	m_lib = LibUPnP::getLibUPnP(error);
-	if (!m_lib)
+	m_lib = new LibUPnP();
+	if (!m_lib->ok()) {
+		error.Set(m_lib->GetInitError());
+		delete m_lib;
 		return false;
+	}
 
-	m_superdir = new UPnPDeviceDirectory();
+	m_superdir = new UPnPDeviceDirectory(m_lib);
 	if (!m_superdir->ok()) {
 		error.Set(m_superdir->GetError());
 		delete m_superdir;
+		delete m_lib;
 		return false;
 	}
 
@@ -182,7 +186,7 @@ UpnpDatabase::Close()
 {
 	delete m_root;
 	delete m_superdir;
-	// TBD decide what we do with the lib object
+	delete m_lib;
 }
 
 void
@@ -285,7 +289,7 @@ UpnpDatabase::SearchSongs(ContentDirectoryService* server,
 		return true;
 
 	std::set<std::string> searchcaps;
-	if (!server->getSearchCapabilities(searchcaps, error))
+	if (!server->getSearchCapabilities(m_lib->getclh(), searchcaps, error))
 		return false;
 
 	if (searchcaps.empty())
@@ -352,7 +356,9 @@ UpnpDatabase::SearchSongs(ContentDirectoryService* server,
 		}
 	}
 
-	return server->search(objid, cond.c_str(), dirbuf, error);
+	return server->search(m_lib->getclh(),
+			      objid, cond.c_str(), dirbuf,
+			      error);
 }
 
 static bool
@@ -433,7 +439,7 @@ UpnpDatabase::ReadNode(ContentDirectoryService *server,
 		       Error &error) const
 {
 	UPnPDirContent dirbuf;
-	if (!server->getMetadata(objid, dirbuf, error))
+	if (!server->getMetadata(m_lib->getclh(), objid, dirbuf, error))
 		return false;
 
 	if (dirbuf.objects.size() == 1) {
@@ -484,10 +490,12 @@ UpnpDatabase::Namei(ContentDirectoryService* server,
 		return true;
 	}
 
+	const UpnpClient_Handle handle = m_lib->getclh();
+
 	// Walk the path elements, read each directory and try to find the next one
 	for (unsigned int i = 0; i < vpath.size(); i++) {
 		UPnPDirContent dirbuf;
-		if (!server->readDir(objid.c_str(), dirbuf, error))
+		if (!server->readDir(handle, objid.c_str(), dirbuf, error))
 			return false;
 
 		// Look for the name in the sub-container list
@@ -611,7 +619,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService* server,
 	   and loop here, but it's not useful as mpd will only return
 	   data to the client when we're done anyway. */
 	UPnPDirContent dirbuf;
-	if (!server->readDir(objid.c_str(), dirbuf, error))
+	if (!server->readDir(m_lib->getclh(), objid.c_str(), dirbuf, error))
 		return false;
 
 	for (const auto &dirent : dirbuf.objects) {

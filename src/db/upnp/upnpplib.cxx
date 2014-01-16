@@ -27,20 +27,6 @@
 
 static LibUPnP *theLib;
 
-LibUPnP *
-LibUPnP::getLibUPnP(Error &error)
-{
-	if (theLib == nullptr)
-		theLib = new LibUPnP;
-
-	if (!theLib->ok()) {
-		error.Set(theLib->GetInitError());
-		return nullptr;
-	}
-
-	return theLib;
-}
-
 LibUPnP::LibUPnP()
 {
 	auto code = UpnpInit(0, 0);

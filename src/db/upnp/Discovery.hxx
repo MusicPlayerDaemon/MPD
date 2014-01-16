@@ -26,6 +26,7 @@
 
 #include <time.h>
 
+class LibUPnP;
 class ContentDirectoryService;
 
 /**
@@ -35,6 +36,8 @@ class ContentDirectoryService;
  * for now, but this could be made more general, by removing the filtering.
  */
 class UPnPDeviceDirectory {
+	LibUPnP *const lib;
+
 	Error error;
 
 	/**
@@ -47,7 +50,7 @@ class UPnPDeviceDirectory {
 	time_t m_lastSearch;
 
 public:
-	UPnPDeviceDirectory();
+	UPnPDeviceDirectory(LibUPnP *_lib);
 
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
