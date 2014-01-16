@@ -163,9 +163,6 @@ UpnpDatabase::Configure(const config_param &, Error &)
 bool
 UpnpDatabase::Open(Error &error)
 {
-	if (m_root)
-		return true;
-
 	m_lib = LibUPnP::getLibUPnP(error);
 	if (!m_lib)
 		return false;
@@ -186,8 +183,7 @@ UpnpDatabase::Open(Error &error)
 void
 UpnpDatabase::Close()
 {
-	if (m_root)
-		delete m_root;
+	delete m_root;
 	// TBD decide what we do with the lib and superdir objects
 }
 
