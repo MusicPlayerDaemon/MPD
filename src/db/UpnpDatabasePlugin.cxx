@@ -57,10 +57,6 @@ class UpnpDatabase : public Database {
 	Directory *m_root;
 
 public:
-	UpnpDatabase()
-		: m_lib(0), m_superdir(0), m_root(0)
-	{}
-
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
 				const config_param &param,
 				Error &error);
