@@ -20,9 +20,16 @@
 #ifndef _UPNPPDISC_H_X_INCLUDED_
 #define _UPNPPDISC_H_X_INCLUDED_
 
+#include "Device.hxx"
+#include "WorkQueue.hxx"
+#include "thread/Mutex.hxx"
 #include "util/Error.hxx"
 
+#include <upnp/upnp.h>
+
+#include <map>
 #include <vector>
+#include <string>
 
 #include <time.h>
 
@@ -36,9 +43,45 @@ class ContentDirectoryService;
  * for now, but this could be made more general, by removing the filtering.
  */
 class UPnPDeviceDirectory {
+	/**
+	 * Each appropriate discovery event (executing in a libupnp thread
+	 * context) queues the following task object for processing by the
+	 * discovery thread.
+	 */
+	struct DiscoveredTask {
+		bool alive;
+		std::string url;
+		std::string deviceId;
+		int expires; // Seconds valid
+
+		DiscoveredTask(bool _alive, const Upnp_Discovery *disco)
+			: alive(_alive), url(disco->Location),
+			  deviceId(disco->DeviceId),
+			  expires(disco->Expires) {}
+	};
+
+	/**
+	 * Descriptor for one device having a Content Directory
+	 * service found on the network.
+	 */
+	class ContentDirectoryDescriptor {
+	public:
+		ContentDirectoryDescriptor(const std::string &url,
+					   const std::string &description,
+					   time_t last, int exp)
+			:device(url, description), last_seen(last), expires(exp+20) {}
+		UPnPDevice device;
+		time_t last_seen;
+		int expires; // seconds valid
+	};
+
 	LibUPnP *const lib;
 
 	Error error;
+
+	Mutex mutex;
+	std::map<std::string, ContentDirectoryDescriptor> directories;
+	WorkQueue<DiscoveredTask *> discoveredQueue;
 
 	/**
 	 * The UPnP device search timeout, which should actually be
@@ -85,6 +128,18 @@ private:
 	 * directory.
 	 */
 	void expireDevices();
+
+	/**
+	 * Worker routine for the discovery queue. Get messages about
+	 * devices appearing and disappearing, and update the
+	 * directory pool accordingly.
+	 */
+	static void *discoExplorer(void *);
+	void discoExplorer();
+
+	int OnAlive(Upnp_Discovery *disco);
+	int OnByeBye(Upnp_Discovery *disco);
+	int cluCallBack(Upnp_EventType et, void *evp);
 };
 
 

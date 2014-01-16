@@ -23,6 +23,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
+#include <assert.h>
 #include <pthread.h>
 
 #include <string>

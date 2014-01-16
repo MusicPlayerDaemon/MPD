@@ -19,19 +19,13 @@
 
 #include "config.h"
 #include "Discovery.hxx"
-#include "Device.hxx"
 #include "Domain.hxx"
 #include "ContentDirectoryService.hxx"
-#include "WorkQueue.hxx"
 #include "upnpplib.hxx"
-#include "thread/Mutex.hxx"
 
-#include <upnp/upnp.h>
 #include <upnp/upnptools.h>
 
 #include <string.h>
-
-#include <map>
 
 // The service type string we are looking for.
 static const char *const ContentDirectorySType = "urn:schemas-upnp-org:service:ContentDirectory:1";
@@ -57,64 +51,14 @@ isMSDevice(const char *st)
 	return memcmp(MediaServerDType, st, sz) == 0;
 }
 
-/**
- * Each appropriate discovery event (executing in a libupnp thread
- * context) queues the following task object for processing by the
- * discovery thread.
- */
-struct DiscoveredTask {
-	bool alive;
-	std::string url;
-	std::string deviceId;
-	int expires; // Seconds valid
-
-	DiscoveredTask(bool _alive, const Upnp_Discovery *disco)
-		: alive(_alive), url(disco->Location),
-		  deviceId(disco->DeviceId),
-		  expires(disco->Expires) {}
-
-};
-static WorkQueue<DiscoveredTask *> discoveredQueue("DiscoveredQueue");
-
-// Descriptor for one device having a Content Directory service found
-// on the network.
-class ContentDirectoryDescriptor {
-public:
-	ContentDirectoryDescriptor(const std::string &url,
-				   const std::string &description,
-				   time_t last, int exp)
-		:device(url, description), last_seen(last), expires(exp+20) {}
-	UPnPDevice device;
-	time_t last_seen;
-	int expires; // seconds valid
-};
-
-// A ContentDirectoryPool holds the characteristics of the servers
-// currently on the network.
-// The map is referenced by deviceId (==UDN)
-// The class is instanciated as a static (unenforced) singleton.
-class ContentDirectoryPool {
-public:
-	Mutex m_mutex;
-	std::map<std::string, ContentDirectoryDescriptor> m_directories;
-};
-
-static ContentDirectoryPool contentDirectories;
-
-// Worker routine for the discovery queue. Get messages about devices
-// appearing and disappearing, and update the directory pool
-// accordingly.
-static void *
-discoExplorer(void *)
+inline void
+UPnPDeviceDirectory::discoExplorer()
 {
-	auto &mutex = contentDirectories.m_mutex;
-	auto &directories = contentDirectories.m_directories;
-
 	for (;;) {
 		DiscoveredTask *tsk = 0;
 		if (!discoveredQueue.take(tsk)) {
 			discoveredQueue.workerExit();
-			return (void*)1;
+			return;
 		}
 
 		const ScopeLock protect(mutex);
@@ -156,8 +100,16 @@ discoExplorer(void *)
 	}
 }
 
-static int
-OnAlive(Upnp_Discovery *disco)
+void *
+UPnPDeviceDirectory::discoExplorer(void *ctx)
+{
+	UPnPDeviceDirectory &directory = *(UPnPDeviceDirectory *)ctx;
+	directory.discoExplorer();
+	return (void*)1;
+}
+
+inline int
+UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
@@ -169,8 +121,8 @@ OnAlive(Upnp_Discovery *disco)
 	return UPNP_E_SUCCESS;
 }
 
-static int
-OnByeBye(Upnp_Discovery *disco)
+inline int
+UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
 {
 
 	if (isMSDevice(disco->DeviceType) ||
@@ -187,8 +139,8 @@ OnByeBye(Upnp_Discovery *disco)
 // thread context.
 // Example: ContentDirectories appearing and disappearing from the network
 // We queue a task for our worker thread(s)
-static int
-cluCallBack(Upnp_EventType et, void *evp)
+inline int
+UPnPDeviceDirectory::cluCallBack(Upnp_EventType et, void *evp)
 {
 	switch (et) {
 	case UPNP_DISCOVERY_SEARCH_RESULT:
@@ -215,8 +167,7 @@ cluCallBack(Upnp_EventType et, void *evp)
 void
 UPnPDeviceDirectory::expireDevices()
 {
-	const ScopeLock protect(contentDirectories.m_mutex);
-	auto &directories = contentDirectories.m_directories;
+	const ScopeLock protect(mutex);
 	time_t now = time(0);
 	bool didsomething = false;
 
@@ -235,14 +186,16 @@ UPnPDeviceDirectory::expireDevices()
 }
 
 UPnPDeviceDirectory::UPnPDeviceDirectory(LibUPnP *_lib)
-	:lib(_lib), m_searchTimeout(2), m_lastSearch(0)
+	:lib(_lib),
+	 discoveredQueue("DiscoveredQueue"),
+	 m_searchTimeout(2), m_lastSearch(0)
 {
-	if (!discoveredQueue.start(1, discoExplorer, 0)) {
+	if (!discoveredQueue.start(1, discoExplorer, this)) {
 		error.Set(upnp_domain, "Discover work queue start failed");
 		return;
 	}
 
-	lib->SetHandler([](Upnp_EventType type, void *event){
+	lib->SetHandler([this](Upnp_EventType type, void *event){
 			cluCallBack(type, event);
 		});
 
@@ -288,8 +241,7 @@ UPnPDeviceDirectory::getDirServices(std::vector<ContentDirectoryService> &out)
 	// Has locking, do it before our own lock
 	expireDevices();
 
-	const ScopeLock protect(contentDirectories.m_mutex);
-	auto &directories = contentDirectories.m_directories;
+	const ScopeLock protect(mutex);
 
 	for (auto dit = directories.begin();
 	     dit != directories.end(); dit++) {
