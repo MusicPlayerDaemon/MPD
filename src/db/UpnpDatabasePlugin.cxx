@@ -163,9 +163,10 @@ UpnpDatabase::Open(Error &error)
 	if (!m_lib)
 		return false;
 
-	m_superdir = UPnPDeviceDirectory::getTheDir();
-	if (!m_superdir || !m_superdir->ok()) {
-		error.Set(upnp_domain, "Discovery services startup failed");
+	m_superdir = new UPnPDeviceDirectory();
+	if (!m_superdir->ok()) {
+		error.Set(m_superdir->GetError());
+		delete m_superdir;
 		return false;
 	}
 
@@ -180,7 +181,8 @@ void
 UpnpDatabase::Close()
 {
 	delete m_root;
-	// TBD decide what we do with the lib and superdir objects
+	delete m_superdir;
+	// TBD decide what we do with the lib object
 }
 
 void

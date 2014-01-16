@@ -275,17 +275,6 @@ UPnPDeviceDirectory::search()
 	return true;
 }
 
-UPnPDeviceDirectory *UPnPDeviceDirectory::getTheDir()
-{
-	// TODO: elimate static variable
-	static UPnPDeviceDirectory *theDevDir;
-	if (theDevDir == nullptr)
-		theDevDir = new UPnPDeviceDirectory();
-	if (theDevDir && !theDevDir->ok())
-		return 0;
-	return theDevDir;
-}
-
 bool
 UPnPDeviceDirectory::getDirServices(std::vector<ContentDirectoryService> &out)
 {

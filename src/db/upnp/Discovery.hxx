@@ -46,13 +46,11 @@ class UPnPDeviceDirectory {
 
 	time_t m_lastSearch;
 
-	UPnPDeviceDirectory();
 public:
+	UPnPDeviceDirectory();
+
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
-
-	/** This class is a singleton. Get the instance here */
-	static UPnPDeviceDirectory *getTheDir();
 
 	/** Retrieve the directory services currently seen on the network */
 	bool getDirServices(std::vector<ContentDirectoryService> &);
