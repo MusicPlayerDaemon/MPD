@@ -103,7 +103,6 @@ PcmVolume::Open(SampleFormat _format, Error &error)
 
 	switch (_format) {
 	case SampleFormat::UNDEFINED:
-	case SampleFormat::DSD:
 		error.Format(pcm_domain,
 			     "Software volume for %s is not implemented",
 			     sample_format_to_string(_format));
@@ -114,6 +113,10 @@ PcmVolume::Open(SampleFormat _format, Error &error)
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
 	case SampleFormat::FLOAT:
+		break;
+
+	case SampleFormat::DSD:
+		// TODO: implement this; currently, it's a no-op
 		break;
 	}
 
@@ -139,7 +142,6 @@ PcmVolume::Apply(ConstBuffer<void> src)
 
 	switch (format) {
 	case SampleFormat::UNDEFINED:
-	case SampleFormat::DSD:
 		assert(false);
 		gcc_unreachable();
 
@@ -177,6 +179,10 @@ PcmVolume::Apply(ConstBuffer<void> src)
 					src.size / sizeof(float),
 					pcm_volume_to_float(volume));
 		break;
+
+	case SampleFormat::DSD:
+		// TODO: implement this; currently, it's a no-op
+		return src;
 	}
 
 	return { data, src.size };
