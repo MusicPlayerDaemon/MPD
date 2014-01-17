@@ -23,8 +23,7 @@
 #include "PlaylistError.hxx"
 #include "DetachedSong.hxx"
 #include "SongSave.hxx"
-#include "DatabasePlugin.hxx"
-#include "DatabaseGlue.hxx"
+#include "DatabaseSong.hxx"
 #include "fs/TextFile.hxx"
 #include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
@@ -111,16 +110,9 @@ queue_load_song(TextFile &file, const char *line, queue &queue)
 		if (uri_has_scheme(uri)) {
 			song = new DetachedSong(uri);
 		} else {
-			const Database *db = GetDatabase();
-			if (db == nullptr)
+			song = DatabaseDetachSong(uri, IgnoreError());
+			if (song == nullptr)
 				return;
-
-			Song *tmp = db->GetSong(uri, IgnoreError());
-			if (tmp == nullptr)
-				return;
-
-			song = new DetachedSong(*tmp);
-			db->ReturnSong(tmp);
 		}
 	}
 
