@@ -61,7 +61,6 @@ struct UPnPService {
  */
 class UPnPDevice {
 public:
-	bool ok;
 	// e.g. urn:schemas-upnp-org:device:MediaServer:1
 	std::string deviceType;
 	// e.g. MediaTomb
@@ -78,17 +77,17 @@ public:
 	// Services provided by this device.
 	std::vector<UPnPService> services;
 
+	UPnPDevice() = default;
+	UPnPDevice(const UPnPDevice &) = delete;
+	UPnPDevice(UPnPDevice &&) = default;
+	UPnPDevice &operator=(UPnPDevice &&) = default;
+
 	/** Build device from xml description downloaded from discovery
 	 * @param url where the description came from
 	 * @param description the xml device description
 	 */
-	UPnPDevice(const std::string &url, const char *description);
-
-	UPnPDevice() : ok(false) {}
-
-	UPnPDevice(const UPnPDevice &) = delete;
-	UPnPDevice(UPnPDevice &&) = default;
-	UPnPDevice &operator=(UPnPDevice &&) = default;
+	bool Parse(const std::string &url, const char *description,
+		   Error &error);
 };
 
 #endif /* _UPNPDEV_HXX_INCLUDED_ */

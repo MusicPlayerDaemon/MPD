@@ -22,6 +22,7 @@
 #include "Domain.hxx"
 #include "ContentDirectoryService.hxx"
 #include "upnpplib.hxx"
+#include "Log.hxx"
 
 #include <upnp/upnptools.h>
 
@@ -73,12 +74,17 @@ UPnPDeviceDirectory::discoExplorer()
 		}
 
 		// Update or insert the device
-		ContentDirectoryDescriptor d(tsk->url, buf,
-					     time(0), tsk->expires);
-		free(buf);
-		if (!d.device.ok) {
-			delete tsk;
-			continue;
+		ContentDirectoryDescriptor d(time(0), tsk->expires);
+
+		{
+			Error error2;
+			bool success = d.Parse(tsk->url, buf, error2);
+			free(buf);
+			if (!success) {
+				delete tsk;
+				LogError(error2);
+				continue;
+			}
 		}
 
 		const ScopeLock protect(mutex);

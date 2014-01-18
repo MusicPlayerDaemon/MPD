@@ -21,7 +21,6 @@
 #include "Device.hxx"
 #include "Util.hxx"
 #include "Expat.hxx"
-#include "Log.hxx"
 #include "util/Error.hxx"
 
 #include <stdlib.h>
@@ -99,16 +98,15 @@ protected:
 	}
 };
 
-UPnPDevice::UPnPDevice(const std::string &url, const char *description)
-	:ok(false)
+bool
+UPnPDevice::Parse(const std::string &url, const char *description,
+		  Error &error)
 {
-	UPnPDeviceParser mparser(*this);
-	Error error;
-	if (!mparser.Parse(description, strlen(description), true,
-			   error)) {
-		// TODO: pass Error to caller
-		LogError(error);
-		return;
+	{
+		UPnPDeviceParser mparser(*this);
+		if (!mparser.Parse(description, strlen(description),
+				   true, error))
+			return false;
 	}
 
 	if (URLBase.empty()) {
@@ -129,5 +127,6 @@ UPnPDevice::UPnPDevice(const std::string &url, const char *description)
 			}
 		}
 	}
-	ok = true;
+
+	return true;
 }

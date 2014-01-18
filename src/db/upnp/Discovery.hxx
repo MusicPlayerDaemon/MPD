@@ -65,15 +65,19 @@ class UPnPDeviceDirectory {
 	 */
 	class ContentDirectoryDescriptor {
 	public:
-		ContentDirectoryDescriptor() = default;
-
-		ContentDirectoryDescriptor(const std::string &url,
-					   const char *description,
-					   time_t last, int exp)
-			:device(url, description), last_seen(last), expires(exp+20) {}
 		UPnPDevice device;
 		time_t last_seen;
 		int expires; // seconds valid
+
+		ContentDirectoryDescriptor() = default;
+
+		ContentDirectoryDescriptor(time_t last, int exp)
+			:last_seen(last), expires(exp+20) {}
+
+		bool Parse(const std::string &url, const char *description,
+			   Error &_error) {
+			return device.Parse(url, description, _error);
+		}
 	};
 
 	LibUPnP *const lib;
