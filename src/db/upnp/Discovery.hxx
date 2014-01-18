@@ -65,6 +65,8 @@ class UPnPDeviceDirectory {
 	 */
 	class ContentDirectoryDescriptor {
 	public:
+		ContentDirectoryDescriptor() = default;
+
 		ContentDirectoryDescriptor(const std::string &url,
 					   const char *description,
 					   time_t last, int exp)

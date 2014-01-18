@@ -85,6 +85,10 @@ public:
 	UPnPDevice(const std::string &url, const char *description);
 
 	UPnPDevice() : ok(false) {}
+
+	UPnPDevice(const UPnPDevice &) = delete;
+	UPnPDevice(UPnPDevice &&) = default;
+	UPnPDevice &operator=(UPnPDevice &&) = default;
 };
 
 #endif /* _UPNPDEV_HXX_INCLUDED_ */

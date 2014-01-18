@@ -82,13 +82,7 @@ UPnPDeviceDirectory::discoExplorer()
 		}
 
 		const ScopeLock protect(mutex);
-#if defined(__clang__) || GCC_CHECK_VERSION(4,8)
-		auto e = directories.emplace(tsk->deviceId, d);
-#else
-		auto e = directories.insert(std::make_pair(tsk->deviceId, d));
-#endif
-		if (!e.second)
-			e.first->second = d;
+		directories[std::move(tsk->deviceId)] = std::move(d);
 
 		delete tsk;
 	}
