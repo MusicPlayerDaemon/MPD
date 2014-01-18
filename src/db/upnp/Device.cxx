@@ -60,40 +60,40 @@ protected:
 		switch (m_path.back()[0]) {
 		case 'c':
 			if (!m_path.back().compare("controlURL"))
-				m_tservice.controlURL += str;
+				m_tservice.controlURL = std::move(str);
 			break;
 		case 'd':
 			if (!m_path.back().compare("deviceType"))
-				m_device.deviceType += str;
+				m_device.deviceType = std::move(str);
 			break;
 		case 'e':
 			if (!m_path.back().compare("eventSubURL"))
-				m_tservice.eventSubURL += str;
+				m_tservice.eventSubURL = std::move(str);
 			break;
 		case 'f':
 			if (!m_path.back().compare("friendlyName"))
-				m_device.friendlyName += str;
+				m_device.friendlyName = std::move(str);
 			break;
 		case 'm':
 			if (!m_path.back().compare("manufacturer"))
-				m_device.manufacturer += str;
+				m_device.manufacturer = std::move(str);
 			else if (!m_path.back().compare("modelName"))
-				m_device.modelName += str;
+				m_device.modelName = std::move(str);
 			break;
 		case 's':
 			if (!m_path.back().compare("serviceType"))
-				m_tservice.serviceType = str;
+				m_tservice.serviceType = std::move(str);
 			else if (!m_path.back().compare("serviceId"))
-				m_tservice.serviceId += str;
+				m_tservice.serviceId = std::move(str);
 		case 'S':
 			if (!m_path.back().compare("SCPDURL"))
-				m_tservice.SCPDURL = str;
+				m_tservice.SCPDURL = std::move(str);
 			break;
 		case 'U':
 			if (!m_path.back().compare("UDN"))
-				m_device.UDN = str;
+				m_device.UDN = std::move(str);
 			else if (!m_path.back().compare("URLBase"))
-				m_device.URLBase += str;
+				m_device.URLBase = std::move(str);
 			break;
 		}
 	}

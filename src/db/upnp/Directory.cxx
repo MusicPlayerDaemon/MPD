@@ -172,7 +172,7 @@ protected:
 		switch (m_path.back()[0]) {
 		case 'r':
 			if (!m_path.back().compare("res")) {
-				m_tobj.url = str;
+				m_tobj.url = std::move(str);
 			}
 			break;
 		case 'u':
