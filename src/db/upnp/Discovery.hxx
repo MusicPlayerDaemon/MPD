@@ -67,16 +67,14 @@ class UPnPDeviceDirectory {
 
 		/**
 		 * The MonotonicClockS() time stamp when this device
-		 * was last seen alive.
+		 * expires.
 		 */
-		unsigned last_seen;
-
-		unsigned expires; // seconds valid
+		unsigned expires;
 
 		ContentDirectoryDescriptor() = default;
 
 		ContentDirectoryDescriptor(unsigned last, int exp)
-			:last_seen(last), expires(exp+20) {}
+			:expires(last + exp + 20) {}
 
 		bool Parse(const std::string &url, const char *description,
 			   Error &_error) {

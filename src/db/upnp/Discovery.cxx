@@ -170,7 +170,7 @@ UPnPDeviceDirectory::expireDevices(Error &error)
 
 	for (auto it = directories.begin();
 	     it != directories.end();) {
-		if (now - it->second.last_seen > it->second.expires) {
+		if (now > it->second.expires) {
 			it = directories.erase(it);
 			didsomething = true;
 		} else {
