@@ -31,8 +31,6 @@
 #include <vector>
 #include <string>
 
-#include <time.h>
-
 class LibUPnP;
 class ContentDirectoryService;
 
@@ -51,7 +49,7 @@ class UPnPDeviceDirectory {
 	struct DiscoveredTask {
 		std::string url;
 		std::string deviceId;
-		int expires; // Seconds valid
+		unsigned expires; // Seconds valid
 
 		DiscoveredTask(const Upnp_Discovery *disco)
 			:url(disco->Location),
@@ -66,12 +64,18 @@ class UPnPDeviceDirectory {
 	class ContentDirectoryDescriptor {
 	public:
 		UPnPDevice device;
-		time_t last_seen;
-		int expires; // seconds valid
+
+		/**
+		 * The MonotonicClockS() time stamp when this device
+		 * was last seen alive.
+		 */
+		unsigned last_seen;
+
+		unsigned expires; // seconds valid
 
 		ContentDirectoryDescriptor() = default;
 
-		ContentDirectoryDescriptor(time_t last, int exp)
+		ContentDirectoryDescriptor(unsigned last, int exp)
 			:last_seen(last), expires(exp+20) {}
 
 		bool Parse(const std::string &url, const char *description,
@@ -93,7 +97,10 @@ class UPnPDeviceDirectory {
 	 */
 	int m_searchTimeout;
 
-	time_t m_lastSearch;
+	/**
+	 * The MonotonicClockS() time stamp of the last search.
+	 */
+	unsigned m_lastSearch;
 
 public:
 	UPnPDeviceDirectory(LibUPnP *_lib);

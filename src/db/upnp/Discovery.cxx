@@ -22,6 +22,7 @@
 #include "Domain.hxx"
 #include "ContentDirectoryService.hxx"
 #include "upnpplib.hxx"
+#include "system/Clock.hxx"
 #include "Log.hxx"
 
 #include <upnp/upnptools.h>
@@ -74,7 +75,7 @@ UPnPDeviceDirectory::discoExplorer()
 		}
 
 		// Update or insert the device
-		ContentDirectoryDescriptor d(time(0), tsk->expires);
+		ContentDirectoryDescriptor d(MonotonicClockS(), tsk->expires);
 
 		{
 			Error error2;
@@ -164,7 +165,7 @@ bool
 UPnPDeviceDirectory::expireDevices(Error &error)
 {
 	const ScopeLock protect(mutex);
-	time_t now = time(0);
+	const unsigned now = MonotonicClockS();
 	bool didsomething = false;
 
 	for (auto it = directories.begin();
@@ -208,7 +209,7 @@ UPnPDeviceDirectory::Start(Error &error)
 bool
 UPnPDeviceDirectory::search(Error &error)
 {
-	time_t now = time(0);
+	const unsigned now = MonotonicClockS();
 	if (now - m_lastSearch < 10)
 		return true;
 	m_lastSearch = now;
