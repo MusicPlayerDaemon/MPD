@@ -238,9 +238,8 @@ static void winsock_init(void)
 {
 #ifdef WIN32
 	WSADATA sockinfo;
-	int retval;
 
-	retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
+	int retval = WSAStartup(MAKEWORD(2, 2), &sockinfo);
 	if(retval != 0)
 		FormatFatalError("Attempt to open Winsock2 failed; error code %d",
 				 retval);
@@ -258,14 +257,11 @@ static void
 initialize_decoder_and_player(void)
 {
 	const struct config_param *param;
-	char *test;
-	size_t buffer_size;
-	float perc;
-	unsigned buffered_chunks;
-	unsigned buffered_before_play;
 
+	size_t buffer_size;
 	param = config_get_param(CONF_AUDIO_BUFFER_SIZE);
 	if (param != nullptr) {
+		char *test;
 		long tmp = strtol(param->value.c_str(), &test, 10);
 		if (*test != '\0' || tmp <= 0 || tmp == LONG_MAX)
 			FormatFatalError("buffer size \"%s\" is not a "
@@ -277,14 +273,16 @@ initialize_decoder_and_player(void)
 
 	buffer_size *= 1024;
 
-	buffered_chunks = buffer_size / CHUNK_SIZE;
+	const unsigned buffered_chunks = buffer_size / CHUNK_SIZE;
 
 	if (buffered_chunks >= 1 << 15)
 		FormatFatalError("buffer size \"%lu\" is too big",
 				 (unsigned long)buffer_size);
 
+	float perc;
 	param = config_get_param(CONF_BUFFER_BEFORE_PLAY);
 	if (param != nullptr) {
+		char *test;
 		perc = strtod(param->value.c_str(), &test);
 		if (*test != '%' || perc < 0 || perc > 100) {
 			FormatFatalError("buffered before play \"%s\" is not "
@@ -295,7 +293,7 @@ initialize_decoder_and_player(void)
 	} else
 		perc = DEFAULT_BUFFER_BEFORE_PLAY;
 
-	buffered_before_play = (perc / 100) * buffered_chunks;
+	unsigned buffered_before_play = (perc / 100) * buffered_chunks;
 	if (buffered_before_play > buffered_chunks)
 		buffered_before_play = buffered_chunks;
 
@@ -351,8 +349,6 @@ int main(int argc, char *argv[])
 int mpd_main(int argc, char *argv[])
 {
 	struct options options;
-	clock_t start;
-	bool create_db;
 	Error error;
 
 	daemonize_close_stdin();
@@ -436,7 +432,7 @@ int mpd_main(int argc, char *argv[])
 	decoder_plugin_init_all();
 	update_global_init();
 
-	create_db = !glue_db_init_and_load();
+	const bool create_db = !glue_db_init_and_load();
 
 	glue_sticker_init();
 
@@ -526,7 +522,7 @@ int mpd_main(int argc, char *argv[])
 	listen_global_finish();
 	delete instance->client_list;
 
-	start = clock();
+	const clock_t start = clock();
 	DatabaseGlobalDeinit();
 	FormatDebug(main_domain,
 		    "db_finish took %f seconds",
