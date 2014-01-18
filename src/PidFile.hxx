@@ -47,6 +47,25 @@ public:
 
 	PidFile(const PidFile &) = delete;
 
+	void Close() {
+		if (file == nullptr)
+			return;
+
+		fclose(file);
+	}
+
+	void Delete(const AllocatedPath &path) {
+		if (file == nullptr) {
+			assert(path.IsNull());
+			return;
+		}
+
+		assert(!path.IsNull());
+
+		fclose(file);
+		RemoveFile(path);
+	}
+
 	void Write(pid_t pid) {
 		if (file == nullptr)
 			return;

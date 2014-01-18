@@ -403,6 +403,7 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	daemonize_set_user();
+	daemonize_begin(options.daemon);
 
 	GlobalEvents::Initialize(*main_loop);
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
@@ -451,7 +452,7 @@ int mpd_main(int argc, char *argv[])
 
 	playlist_list_global_init();
 
-	daemonize(options.daemon);
+	daemonize_commit();
 
 	setup_log_output(options.log_stderr);
 

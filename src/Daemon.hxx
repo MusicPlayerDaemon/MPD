@@ -81,11 +81,19 @@ daemonize_set_user(void)
 
 #ifndef WIN32
 void
-daemonize(bool detach);
+daemonize_begin(bool detach);
 #else
 static inline void
-daemonize(bool detach)
+daemonize_begin(bool detach)
 { (void)detach; }
+#endif
+
+#ifndef WIN32
+void
+daemonize_commit();
+#else
+static inline void
+daemonize_commit() {}
 #endif
 
 #endif

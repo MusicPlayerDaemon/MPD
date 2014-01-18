@@ -31,6 +31,7 @@
 #include <fcntl.h>
 
 #ifndef WIN32
+#include <sys/wait.h>
 #include <signal.h>
 #include <pwd.h>
 #include <grp.h>
@@ -55,6 +56,11 @@ static AllocatedPath pidfile = AllocatedPath::Null();
 /* whether "group" conf. option was given */
 static bool had_group = false;
 
+/**
+ * The write end of a pipe that is used to notify the parent process
+ * that initialization has finished and that it should detach.
+ */
+static int detach_fd = -1;
 
 void
 daemonize_kill(void)
@@ -130,48 +136,93 @@ daemonize_set_user(void)
 	}
 }
 
-static void
-daemonize_detach(void)
+void
+daemonize_begin(bool detach)
 {
+	/* release the current working directory */
+	if (chdir("/") < 0)
+		FatalError("problems changing to root directory");
+
+	if (!detach)
+		/* the rest of this function deals with detaching the
+		   process */
+		return;
+
+	/* do this before daemonizing so we can fail gracefully if we
+	   can't write to the pid file */
+	PidFile pidfile2(pidfile);
+
 	/* flush all file handles before duplicating the buffers */
 
 	fflush(nullptr);
 
-	/* detach from parent process */
+	/* create a pipe to synchronize the parent and the child */
 
-	switch (fork()) {
-	case -1:
+	int fds[2];
+	if (pipe(fds) < 0)
+		FatalSystemError("pipe() failed");
+
+	/* move to a child process */
+
+	pid_t pid = fork();
+	if (pid < 0)
 		FatalSystemError("fork() failed");
-	case 0:
-		break;
-	default:
-		/* exit the parent process */
-		_exit(EXIT_SUCCESS);
+
+	if (pid == 0) {
+		/* in the child process */
+
+		pidfile2.Close();
+		close(fds[0]);
+		detach_fd = fds[1];
+
+		/* detach from the current session */
+		setsid();
+
+		/* continue starting MPD */
+		return;
 	}
 
-	/* release the current working directory */
+	/* in the parent process */
 
-	if (chdir("/") < 0)
-		FatalError("problems changing to root directory");
+	close(fds[1]);
 
-	/* detach from the current session */
+	int result;
+	ssize_t nbytes = read(fds[0], &result, sizeof(result));
+	if (nbytes == (ssize_t)sizeof(result)) {
+		/* the child process was successful */
+		pidfile2.Write(pid);
+		exit(EXIT_SUCCESS);
+	}
 
-	setsid();
+	/* something bad happened in the child process */
 
-	LogDebug(daemon_domain, "daemonized");
+	pidfile2.Delete(pidfile);
+
+	int status;
+	pid_t pid2 = waitpid(pid, &status, 0);
+	if (pid2 < 0)
+		FatalSystemError("waitpid() failed");
+
+	if (WIFSIGNALED(status))
+		FormatFatalError("MPD died from signal %d%s", WTERMSIG(status),
+				 WCOREDUMP(status) ? " (core dumped)" : "");
+
+	exit(WEXITSTATUS(status));
 }
 
 void
-daemonize(bool detach)
+daemonize_commit()
 {
-	/* do this before daemon'izing so we can fail gracefully if we
-	   can't write to the pid file */
-	PidFile pidfile2(pidfile);
-
-	if (detach)
-		daemonize_detach();
-
-	pidfile2.Write();
+	if (detach_fd >= 0) {
+		/* tell the parent process to let go of us and exit
+		   indicating success */
+		int result = 0;
+		write(detach_fd, &result, sizeof(result));
+		close(detach_fd);
+	} else
+		/* the pidfile was not written by the parent because
+		   there is no parent - do it now */
+		PidFile(pidfile).Write();
 }
 
 void
