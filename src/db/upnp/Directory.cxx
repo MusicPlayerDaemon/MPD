@@ -156,8 +156,7 @@ protected:
 
 	virtual void CharacterData(const XML_Char *s, int len)
 	{
-		std::string str(s, len);
-		trimstring(str);
+		std::string str = trimstring(s, len);
 
 		TagType type = tag_table_lookup(upnp_tags,
 						m_path.back().c_str());

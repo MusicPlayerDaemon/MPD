@@ -28,8 +28,9 @@
 std::string
 caturl(const std::string& s1, const std::string& s2);
 
-void
-trimstring(std::string &s, const char *ws = " \t\n");
+gcc_pure
+std::string
+trimstring(const char *p, size_t length);
 
 std::string
 path_getfather(const std::string &s);

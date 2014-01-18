@@ -56,8 +56,7 @@ protected:
 	}
 
 	virtual void CharacterData(const XML_Char *s, int len) {
-		std::string str(s, len);
-		trimstring(str);
+		std::string str = trimstring(s, len);
 		switch (m_path.back()[0]) {
 		case 'c':
 			if (!m_path.back().compare("controlURL"))

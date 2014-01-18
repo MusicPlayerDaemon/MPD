@@ -18,6 +18,7 @@
  */
 
 #include "Util.hxx"
+#include "util/CharUtil.hxx"
 
 #include <string>
 #include <map>
@@ -27,19 +28,17 @@
 #include <upnp/ixml.h>
 
 /** Get rid of white space at both ends */
-void
-trimstring(std::string &s, const char *ws)
+std::string
+trimstring(const char *p, size_t length)
 {
-	auto pos = s.find_first_not_of(ws);
-	if (pos == std::string::npos) {
-		s.clear();
-		return;
-	}
-	s.replace(0, pos, std::string());
+	while (length > 0 && IsWhitespaceOrNull(p[length - 1]))
+		--length;
 
-	pos = s.find_last_not_of(ws);
-	if (pos != std::string::npos && pos != s.length()-1)
-		s.replace(pos + 1, std::string::npos, std::string());
+	const char *end = p + length;
+	while (p != end && IsWhitespaceOrNull(*p))
+		++p;
+
+	return std::string(p, end);
 }
 
 std::string
