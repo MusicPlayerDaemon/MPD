@@ -34,10 +34,10 @@ getFirstElementValue(IXML_Document *doc, const char *name)
 				ret = ixmlNode_getNodeValue(dnode);
 			}
 		}
+
+		ixmlNodeList_free(nodes);
 	}
 
-	if(nodes)
-		ixmlNodeList_free(nodes);
 	return ret;
 }
 
