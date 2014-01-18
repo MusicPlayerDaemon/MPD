@@ -66,7 +66,7 @@ class UPnPDeviceDirectory {
 	class ContentDirectoryDescriptor {
 	public:
 		ContentDirectoryDescriptor(const std::string &url,
-					   const std::string &description,
+					   const char *description,
 					   time_t last, int exp)
 			:device(url, description), last_seen(last), expires(exp+20) {}
 		UPnPDevice device;

@@ -99,12 +99,12 @@ protected:
 	}
 };
 
-UPnPDevice::UPnPDevice(const std::string &url, const std::string &description)
+UPnPDevice::UPnPDevice(const std::string &url, const char *description)
 	:ok(false)
 {
 	UPnPDeviceParser mparser(*this);
 	Error error;
-	if (!mparser.Parse(description.data(), description.length(), true,
+	if (!mparser.Parse(description, strlen(description), true,
 			   error)) {
 		// TODO: pass Error to caller
 		LogError(error);

@@ -82,7 +82,7 @@ public:
 	 * @param url where the description came from
 	 * @param description the xml device description
 	 */
-	UPnPDevice(const std::string &url, const std::string &description);
+	UPnPDevice(const std::string &url, const char *description);
 
 	UPnPDevice() : ok(false) {}
 };
