@@ -77,6 +77,9 @@ struct Song {
 	 */
 	char uri[sizeof(int)];
 
+	Song(const char *_uri, size_t uri_length, Directory *parent);
+	~Song();
+
 	gcc_malloc
 	static Song *NewFrom(DetachedSong &&other, Directory *parent);
 

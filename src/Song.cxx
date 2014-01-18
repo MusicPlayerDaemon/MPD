@@ -21,12 +21,23 @@
 #include "Song.hxx"
 #include "Directory.hxx"
 #include "tag/Tag.hxx"
-#include "util/Alloc.hxx"
+#include "util/VarSize.hxx"
 #include "DetachedSong.hxx"
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+
+inline Song::Song(const char *_uri, size_t uri_length, Directory *_parent)
+	:tag(nullptr), parent(_parent), mtime(0), start_ms(0), end_ms(0)
+{
+	memcpy(uri, _uri, uri_length + 1);
+}
+
+inline Song::~Song()
+{
+	delete tag;
+}
 
 static Song *
 song_alloc(const char *uri, Directory *parent)
@@ -37,16 +48,9 @@ song_alloc(const char *uri, Directory *parent)
 	uri_length = strlen(uri);
 	assert(uri_length);
 
-	Song *song = (Song *)
-		xalloc(sizeof(*song) - sizeof(song->uri) + uri_length + 1);
-
-	song->tag = nullptr;
-	memcpy(song->uri, uri, uri_length + 1);
-	song->parent = parent;
-	song->mtime = 0;
-	song->start_ms = song->end_ms = 0;
-
-	return song;
+	return NewVarSize<Song>(sizeof(Song::uri),
+				uri_length + 1,
+				uri, uri_length, parent);
 }
 
 Song *
@@ -69,8 +73,7 @@ Song::NewFile(const char *path, Directory *parent)
 void
 Song::Free()
 {
-	delete tag;
-	free(this);
+	DeleteVarSize(this);
 }
 
 std::string
