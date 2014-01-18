@@ -61,7 +61,6 @@ UPnPDeviceDirectory::discoExplorer()
 			return;
 		}
 
-		const ScopeLock protect(mutex);
 		// Device signals its existence and well-being. Perform the
 		// UPnP "description" phase by downloading and decoding the
 		// description document.
@@ -81,6 +80,7 @@ UPnPDeviceDirectory::discoExplorer()
 			continue;
 		}
 
+		const ScopeLock protect(mutex);
 #if defined(__clang__) || GCC_CHECK_VERSION(4,8)
 		auto e = directories.emplace(tsk->deviceId, d);
 #else
