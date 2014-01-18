@@ -49,9 +49,7 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 	}
 
 	song.SetLastModified(original->mtime);
-
-	if (original->tag != nullptr)
-		song.SetTag(*original->tag);
+	song.SetTag(original->tag);
 
 	db.ReturnSong(original);
 	return true;

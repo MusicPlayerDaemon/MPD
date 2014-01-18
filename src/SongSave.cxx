@@ -53,8 +53,7 @@ song_save(FILE *fp, const Song &song)
 
 	range_save(fp, song.start_ms, song.end_ms);
 
-	if (song.tag != nullptr)
-		tag_save(fp, *song.tag);
+	tag_save(fp, song.tag);
 
 	fprintf(fp, SONG_MTIME ": %li\n", (long)song.mtime);
 	fprintf(fp, SONG_END "\n");

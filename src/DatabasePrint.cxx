@@ -70,7 +70,7 @@ PrintSongBrief(Client &client, const Song &song)
 {
 	song_print_uri(client, song);
 
-	if (song.tag != nullptr && song.tag->has_playlist)
+	if (song.tag.has_playlist)
 		/* this song file has an embedded CUE sheet */
 		print_playlist_in_directory(client, song.parent, song.uri);
 
@@ -82,7 +82,7 @@ PrintSongFull(Client &client, const Song &song)
 {
 	song_print_info(client, song);
 
-	if (song.tag != nullptr && song.tag->has_playlist)
+	if (song.tag.has_playlist)
 		/* this song file has an embedded CUE sheet */
 		print_playlist_in_directory(client, song.parent, song.uri);
 

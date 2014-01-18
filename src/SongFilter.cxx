@@ -149,7 +149,7 @@ SongFilter::Item::Match(const Song &song) const
 		return StringMatch(uri.c_str());
 	}
 
-	return song.tag != NULL && Match(*song.tag);
+	return Match(song.tag);
 }
 
 bool

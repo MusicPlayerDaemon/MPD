@@ -25,7 +25,7 @@
 
 DetachedSong::DetachedSong(const Song &other)
 	:uri(other.GetURI().c_str()),
-	 tag(other.tag != nullptr ? *other.tag : Tag()),
+	 tag(other.tag),
 	 mtime(other.mtime),
 	 start_ms(other.start_ms), end_ms(other.end_ms) {}
 

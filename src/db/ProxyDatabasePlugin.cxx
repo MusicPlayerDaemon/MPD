@@ -524,7 +524,7 @@ Convert(const struct mpd_song *song)
 	for (const auto *i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		Copy(tag, i->d, song, i->s);
 
-	s->tag = tag.CommitNew();
+	tag.Commit(s->tag);
 
 	return s;
 }

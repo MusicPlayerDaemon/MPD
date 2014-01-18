@@ -113,10 +113,7 @@ update_container_file(Directory &directory,
 		plugin.ScanFile(child_path_fs.c_str(),
 				add_tag_handler, &tag_builder);
 
-		if (tag_builder.IsDefined())
-			song->tag = tag_builder.CommitNew();
-		else
-			tag_builder.Clear();
+		tag_builder.Commit(song->tag);
 
 		db_lock();
 		contdir->AddSong(song);

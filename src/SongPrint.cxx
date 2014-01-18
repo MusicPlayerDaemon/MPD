@@ -74,8 +74,7 @@ song_print_info(Client &client, const Song &song)
 	if (song.mtime > 0)
 		time_print(client, "Last-Modified", song.mtime);
 
-	if (song.tag != nullptr)
-		tag_print(client, *song.tag);
+	tag_print(client, song.tag);
 }
 
 void

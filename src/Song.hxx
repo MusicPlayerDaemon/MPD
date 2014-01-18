@@ -21,6 +21,7 @@
 #define MPD_SONG_HXX
 
 #include "util/list.h"
+#include "tag/Tag.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -31,7 +32,6 @@
 #define SONG_FILE	"file: "
 #define SONG_TIME	"Time: "
 
-struct Tag;
 struct Directory;
 class DetachedSong;
 
@@ -49,7 +49,7 @@ struct Song {
 	 */
 	struct list_head siblings;
 
-	Tag *tag;
+	Tag tag;
 
 	/**
 	 * The #Directory that contains this song.  May be nullptr if

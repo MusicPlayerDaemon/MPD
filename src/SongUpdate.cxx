@@ -98,8 +98,7 @@ Song::UpdateFile()
 
 	mtime = st.st_mtime;
 
-	delete tag;
-	tag = tag_builder.CommitNew();
+	tag_builder.Commit(tag);
 	return true;
 }
 
@@ -123,8 +122,7 @@ Song::UpdateFileInArchive()
 	if (!tag_stream_scan(path_fs.c_str(), full_tag_handler, &tag_builder))
 		return false;
 
-	delete tag;
-	tag = tag_builder.CommitNew();
+	tag_builder.Commit(tag);
 	return true;
 }
 

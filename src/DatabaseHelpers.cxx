@@ -39,9 +39,7 @@ typedef std::set<const char *, StringLess> StringSet;
 static bool
 CollectTags(StringSet &set, TagType tag_type, Song &song)
 {
-	Tag *tag = song.tag;
-	if (tag == nullptr)
-		return true;
+	const Tag *tag = &song.tag;
 
 	bool found = false;
 	for (unsigned i = 0; i < tag->num_items; ++i) {
@@ -108,8 +106,7 @@ StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 {
 	++stats.song_count;
 
-	if (song.tag != nullptr)
-		StatsVisitTag(stats, artists, albums, *song.tag);
+	StatsVisitTag(stats, artists, albums, song.tag);
 
 	return true;
 }

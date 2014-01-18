@@ -29,14 +29,13 @@
 #include <stdlib.h>
 
 inline Song::Song(const char *_uri, size_t uri_length, Directory *_parent)
-	:tag(nullptr), parent(_parent), mtime(0), start_ms(0), end_ms(0)
+	:parent(_parent), mtime(0), start_ms(0), end_ms(0)
 {
 	memcpy(uri, _uri, uri_length + 1);
 }
 
 inline Song::~Song()
 {
-	delete tag;
 }
 
 static Song *
@@ -57,7 +56,7 @@ Song *
 Song::NewFrom(DetachedSong &&other, Directory *parent)
 {
 	Song *song = song_alloc(other.GetURI(), parent);
-	song->tag = new Tag(std::move(other.WritableTag()));
+	song->tag = std::move(other.WritableTag());
 	song->mtime = other.GetLastModified();
 	song->start_ms = other.GetStartMS();
 	song->end_ms = other.GetEndMS();
@@ -101,8 +100,8 @@ Song::GetDuration() const
 	if (end_ms > 0)
 		return (end_ms - start_ms) / 1000.0;
 
-	if (tag == nullptr)
+	if (tag.time <= 0)
 		return 0;
 
-	return tag->time - start_ms / 1000.0;
+	return tag.time - start_ms / 1000.0;
 }

@@ -205,7 +205,7 @@ upnpItemToSong(UPnPDirObject &&dirent, const char *uri)
 		uri = dirent.url.c_str();
 
 	Song *s = Song::NewFile(uri, nullptr);
-	s->tag = new Tag(std::move(dirent.tag));
+	s->tag = std::move(dirent.tag);
 	return s;
 }
 
