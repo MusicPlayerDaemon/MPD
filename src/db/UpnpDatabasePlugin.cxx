@@ -165,8 +165,7 @@ UpnpDatabase::Open(Error &error)
 	}
 
 	m_superdir = new UPnPDeviceDirectory(m_lib);
-	if (!m_superdir->ok()) {
-		error.Set(m_superdir->GetError());
+	if (!m_superdir->Start(error)) {
 		delete m_superdir;
 		delete m_lib;
 		return false;
@@ -215,20 +214,12 @@ upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 Song *
 UpnpDatabase::GetSong(const char *uri, Error &error) const
 {
-	if (!m_superdir->ok()) {
-		error.Set(upnp_domain,
-			  "UpnpDatabase::GetSong() superdir is sick");
-		return nullptr;
-	}
-
 	Song *song = nullptr;
 	auto vpath = stringToTokens(uri, "/", true);
 	if (vpath.size() >= 2) {
 		ContentDirectoryService server;
-		if (!m_superdir->getServer(vpath[0].c_str(), server)) {
-			error.Set(upnp_domain, "server not found");
+		if (!m_superdir->getServer(vpath[0].c_str(), server, error))
 			return nullptr;
-		}
 
 		vpath.erase(vpath.begin());
 		UPnPDirObject dirent;
@@ -688,12 +679,8 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		    Error &error) const
 {
 	std::vector<ContentDirectoryService> servers;
-	if (!m_superdir->ok() ||
-	    !m_superdir->getDirServices(servers)) {
-		error.Set(upnp_domain,
-			  "UpnpDatabase::Visit() superdir is sick");
+	if (!m_superdir->getDirServices(servers, error))
 		return false;
-	}
 
 	auto vpath = stringToTokens(selection.uri, "/", true);
 	if (vpath.empty()) {
@@ -748,12 +735,8 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		return true;
 
 	std::vector<ContentDirectoryService> servers;
-	if (!m_superdir->ok() ||
-	    !m_superdir->getDirServices(servers)) {
-		error.Set(upnp_domain,
-			  "UpnpDatabase::Visit() superdir is sick");
+	if (!m_superdir->getDirServices(servers, error))
 		return false;
-	}
 
 	std::set<std::string> values;
 	for (auto& server : servers) {

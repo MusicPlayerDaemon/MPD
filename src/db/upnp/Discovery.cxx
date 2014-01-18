@@ -160,8 +160,8 @@ UPnPDeviceDirectory::cluCallBack(Upnp_EventType et, void *evp)
 	return UPNP_E_SUCCESS;
 }
 
-void
-UPnPDeviceDirectory::expireDevices()
+bool
+UPnPDeviceDirectory::expireDevices(Error &error)
 {
 	const ScopeLock protect(mutex);
 	time_t now = time(0);
@@ -178,7 +178,9 @@ UPnPDeviceDirectory::expireDevices()
 	}
 
 	if (didsomething)
-		search();
+		return search(error);
+
+	return true;
 }
 
 UPnPDeviceDirectory::UPnPDeviceDirectory(LibUPnP *_lib)
@@ -186,20 +188,25 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(LibUPnP *_lib)
 	 discoveredQueue("DiscoveredQueue"),
 	 m_searchTimeout(2), m_lastSearch(0)
 {
+}
+
+bool
+UPnPDeviceDirectory::Start(Error &error)
+{
 	if (!discoveredQueue.start(1, discoExplorer, this)) {
 		error.Set(upnp_domain, "Discover work queue start failed");
-		return;
+		return false;
 	}
 
 	lib->SetHandler([this](Upnp_EventType type, void *event){
 			cluCallBack(type, event);
 		});
 
-	search();
+	return search(error);
 }
 
 bool
-UPnPDeviceDirectory::search()
+UPnPDeviceDirectory::search(Error &error)
 {
 	time_t now = time(0);
 	if (now - m_lastSearch < 10)
@@ -229,13 +236,12 @@ UPnPDeviceDirectory::search()
 }
 
 bool
-UPnPDeviceDirectory::getDirServices(std::vector<ContentDirectoryService> &out)
+UPnPDeviceDirectory::getDirServices(std::vector<ContentDirectoryService> &out,
+				    Error &error)
 {
-	if (!ok())
-		return false;
-
 	// Has locking, do it before our own lock
-	expireDevices();
+	if (!expireDevices(error))
+		return false;
 
 	const ScopeLock protect(mutex);
 
@@ -253,12 +259,12 @@ UPnPDeviceDirectory::getDirServices(std::vector<ContentDirectoryService> &out)
 
 bool
 UPnPDeviceDirectory::getServer(const char *friendlyName,
-			       ContentDirectoryService &server)
+			       ContentDirectoryService &server,
+			       Error &error)
 {
 	std::vector<ContentDirectoryService> ds;
-	if (!getDirServices(ds)) {
+	if (!getDirServices(ds, error))
 		return false;
-	}
 
 	for (const auto &i : ds) {
 		if (strcmp(friendlyName, i.getFriendlyName()) == 0) {
@@ -267,5 +273,6 @@ UPnPDeviceDirectory::getServer(const char *friendlyName,
 		}
 	}
 
+	error.Set(upnp_domain, "Server not found");
 	return false;
 }

@@ -82,8 +82,6 @@ class UPnPDeviceDirectory {
 
 	LibUPnP *const lib;
 
-	Error error;
-
 	Mutex mutex;
 	std::map<std::string, ContentDirectoryDescriptor> directories;
 	WorkQueue<DiscoveredTask *> discoveredQueue;
@@ -103,8 +101,10 @@ public:
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
 
+	bool Start(Error &error);
+
 	/** Retrieve the directory services currently seen on the network */
-	bool getDirServices(std::vector<ContentDirectoryService> &);
+	bool getDirServices(std::vector<ContentDirectoryService> &, Error &);
 
 	/**
 	 * Get server by friendly name. It's a bit wasteful to copy
@@ -112,27 +112,18 @@ public:
 	 * there isn't going to be millions...
 	 */
 	bool getServer(const char *friendlyName,
-		       ContentDirectoryService &server);
-
-	/** My health */
-	bool ok() const {
-		return !error.IsDefined();
-	}
-
-	/** My diagnostic if health is bad */
-	const Error &GetError() const {
-		return error;
-	}
+		       ContentDirectoryService &server,
+		       Error &error);
 
 private:
-	bool search();
+	bool search(Error &error);
 
 	/**
 	 * Look at the devices and get rid of those which have not
 	 * been seen for too long. We do this when listing the top
 	 * directory.
 	 */
-	void expireDevices();
+	bool expireDevices(Error &error);
 
 	/**
 	 * Worker routine for the discovery queue. Get messages about
