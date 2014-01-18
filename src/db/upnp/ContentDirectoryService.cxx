@@ -49,13 +49,11 @@ ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 
 class DirBResFree {
 public:
-	IXML_Document **rqpp, **rspp;
-	DirBResFree(IXML_Document** _rqpp, IXML_Document **_rspp)
-		:rqpp(_rqpp), rspp(_rspp) {}
+	IXML_Document **rspp;
+	DirBResFree(IXML_Document **_rspp)
+		:rspp(_rspp) {}
 	~DirBResFree()
 	{
-		if (*rqpp)
-			ixmlDocument_free(*rqpp);
 		if (*rspp)
 			ixmlDocument_free(*rspp);
 	}
@@ -68,37 +66,38 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				      int *didreadp, int *totalp,
 				      Error &error)
 {
-	IXML_Document *request(0);
-	IXML_Document *response(0);
-	DirBResFree cleaner(&request, &response);
-
 	// Create request
 	char ofbuf[100], cntbuf[100];
 	sprintf(ofbuf, "%d", offset);
 	sprintf(cntbuf, "%d", count);
 	int argcnt = 6;
 	// Some devices require an empty SortCriteria, else bad params
-	request = UpnpMakeAction("Browse", m_serviceType.c_str(), argcnt,
-				 "ObjectID", objectId,
-				 "BrowseFlag", "BrowseDirectChildren",
-				 "Filter", "*",
-				 "SortCriteria", "",
-				 "StartingIndex", ofbuf,
-				 "RequestedCount", cntbuf,
-				 nullptr, nullptr);
+	IXML_Document *request =
+		UpnpMakeAction("Browse", m_serviceType.c_str(), argcnt,
+			       "ObjectID", objectId,
+			       "BrowseFlag", "BrowseDirectChildren",
+			       "Filter", "*",
+			       "SortCriteria", "",
+			       "StartingIndex", ofbuf,
+			       "RequestedCount", cntbuf,
+			       nullptr, nullptr);
 	if (request == nullptr) {
 		error.Set(upnp_domain, "UpnpMakeAction() failed");
 		return false;
 	}
 
+	IXML_Document *response;
 	int code = UpnpSendAction(hdl, m_actionURL.c_str(), m_serviceType.c_str(),
 				  0 /*devUDN*/, request, &response);
+	ixmlDocument_free(request);
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
 			     "UpnpSendAction() failed: %s",
 			     UpnpGetErrorMessage(code));
 		return false;
 	}
+
+	DirBResFree cleaner(&response);
 
 	int didread = -1;
 	std::string tbuf = ixmlwrap::getFirstElementValue(response, "NumberReturned");
@@ -152,40 +151,42 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 				UPnPDirContent &dirbuf,
 				Error &error)
 {
-	IXML_Document *request(0);
-	IXML_Document *response(0);
-
 	int offset = 0;
 	int total = 1000;// Updated on first read.
 
 	while (offset < total) {
-		DirBResFree cleaner(&request, &response);
 		char ofbuf[100];
 		sprintf(ofbuf, "%d", offset);
 		// Create request
 		int argcnt = 6;
-		request = UpnpMakeAction("Search", m_serviceType.c_str(), argcnt,
-					 "ContainerID", objectId,
-					 "SearchCriteria", ss,
-					 "Filter", "*",
-					 "SortCriteria", "",
-					 "StartingIndex", ofbuf,
-					 "RequestedCount", "0", // Setting a value here gets twonky into fits
-					 nullptr, nullptr);
+
+		IXML_Document *request =
+			UpnpMakeAction("Search", m_serviceType.c_str(), argcnt,
+				       "ContainerID", objectId,
+				       "SearchCriteria", ss,
+				       "Filter", "*",
+				       "SortCriteria", "",
+				       "StartingIndex", ofbuf,
+				       "RequestedCount", "0", // Setting a value here gets twonky into fits
+				       nullptr, nullptr);
 		if (request == 0) {
 			error.Set(upnp_domain, "UpnpMakeAction() failed");
 			return false;
 		}
 
+		IXML_Document *response;
 		auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 					   m_serviceType.c_str(),
 					   0 /*devUDN*/, request, &response);
+		ixmlDocument_free(request);
 		if (code != UPNP_E_SUCCESS) {
 			error.Format(upnp_domain, code,
 				     "UpnpSendAction() failed: %s",
 				     UpnpGetErrorMessage(code));
 			return false;
 		}
+
+		DirBResFree cleaner(&response);
 
 		int count = -1;
 		std::string tbuf =
@@ -219,20 +220,20 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 					       std::set<std::string> &result,
 					       Error &error)
 {
-	IXML_Document *request(0);
-	IXML_Document *response(0);
-
-	request = UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
-				 0,
-				 nullptr, nullptr);
+	IXML_Document *request =
+		UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
+			       0,
+			       nullptr, nullptr);
 	if (request == 0) {
 		error.Set(upnp_domain, "UpnpMakeAction() failed");
 		return false;
 	}
 
+	IXML_Document *response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
 				   0 /*devUDN*/, request, &response);
+	ixmlDocument_free(request);
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
 			     "UpnpSendAction() failed: %s",
@@ -241,6 +242,7 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 	}
 
 	std::string tbuf = ixmlwrap::getFirstElementValue(response, "SearchCaps");
+	ixmlDocument_free(response);
 
 	result.clear();
 	if (!tbuf.compare("*")) {
@@ -261,8 +263,6 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 				     UPnPDirContent &dirbuf,
 				     Error &error)
 {
-	IXML_Document *response(0);
-
 	// Create request
 	int argcnt = 6;
 	IXML_Document *request =
@@ -274,15 +274,16 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 			       "StartingIndex", "0",
 			       "RequestedCount", "1",
 			       nullptr, nullptr);
-	DirBResFree cleaner(&request, &response);
 	if (request == nullptr) {
 		error.Set(upnp_domain, "UpnpMakeAction() failed");
 		return false;
 	}
 
+	IXML_Document *response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
 				   0 /*devUDN*/, request, &response);
+	ixmlDocument_free(request);
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
 			     "UpnpSendAction() failed: %s",
@@ -291,5 +292,6 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 	}
 
 	std::string tbuf = ixmlwrap::getFirstElementValue(response, "Result");
+	ixmlDocument_free(response);
 	return dirbuf.parse(tbuf, error);
 }
