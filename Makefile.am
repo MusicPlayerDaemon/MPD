@@ -424,6 +424,7 @@ libdb_plugins_a_SOURCES += \
 	src/db/upnp/ixmlwrap.cxx src/db/upnp/ixmlwrap.hxx \
 	src/db/upnp/upnpplib.cxx src/db/upnp/upnpplib.hxx \
 	src/db/upnp/Util.cxx src/db/upnp/Util.hxx \
+	src/db/upnp/Action.hxx \
 	src/db/upnp/WorkQueue.hxx \
 	src/db/upnp/Object.hxx
 DB_LIBS += \

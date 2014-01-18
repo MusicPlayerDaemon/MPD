@@ -24,11 +24,10 @@
 #include "ixmlwrap.hxx"
 #include "Directory.hxx"
 #include "Util.hxx"
+#include "Action.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>
-
-#include <upnp/upnptools.h>
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 						 const UPnPService &service)
@@ -80,17 +79,15 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	char ofbuf[100], cntbuf[100];
 	sprintf(ofbuf, "%d", offset);
 	sprintf(cntbuf, "%d", count);
-	int argcnt = 6;
 	// Some devices require an empty SortCriteria, else bad params
 	IXML_Document *request =
-		UpnpMakeAction("Browse", m_serviceType.c_str(), argcnt,
-			       "ObjectID", objectId,
-			       "BrowseFlag", "BrowseDirectChildren",
-			       "Filter", "*",
-			       "SortCriteria", "",
-			       "StartingIndex", ofbuf,
-			       "RequestedCount", cntbuf,
-			       nullptr, nullptr);
+		MakeActionHelper("Browse", m_serviceType.c_str(),
+				 "ObjectID", objectId,
+				 "BrowseFlag", "BrowseDirectChildren",
+				 "Filter", "*",
+				 "SortCriteria", "",
+				 "StartingIndex", ofbuf,
+				 "RequestedCount", cntbuf);
 	if (request == nullptr) {
 		error.Set(upnp_domain, "UpnpMakeAction() failed");
 		return false;
@@ -165,18 +162,15 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 	while (offset < total) {
 		char ofbuf[100];
 		sprintf(ofbuf, "%d", offset);
-		// Create request
-		int argcnt = 6;
 
 		IXML_Document *request =
-			UpnpMakeAction("Search", m_serviceType.c_str(), argcnt,
-				       "ContainerID", objectId,
-				       "SearchCriteria", ss,
-				       "Filter", "*",
-				       "SortCriteria", "",
-				       "StartingIndex", ofbuf,
-				       "RequestedCount", "0", // Setting a value here gets twonky into fits
-				       nullptr, nullptr);
+			MakeActionHelper("Search", m_serviceType.c_str(),
+					 "ContainerID", objectId,
+					 "SearchCriteria", ss,
+					 "Filter", "*",
+					 "SortCriteria", "",
+					 "StartingIndex", ofbuf,
+					 "RequestedCount", "0"); // Setting a value here gets twonky into fits
 		if (request == 0) {
 			error.Set(upnp_domain, "UpnpMakeAction() failed");
 			return false;
@@ -270,16 +264,14 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 				     Error &error)
 {
 	// Create request
-	int argcnt = 6;
 	IXML_Document *request =
-		UpnpMakeAction("Browse", m_serviceType.c_str(), argcnt,
-			       "ObjectID", objectId,
-			       "BrowseFlag", "BrowseMetadata",
-			       "Filter", "*",
-			       "SortCriteria", "",
-			       "StartingIndex", "0",
-			       "RequestedCount", "1",
-			       nullptr, nullptr);
+		MakeActionHelper("Browse", m_serviceType.c_str(),
+				 "ObjectID", objectId,
+				 "BrowseFlag", "BrowseMetadata",
+				 "Filter", "*",
+				 "SortCriteria", "",
+				 "StartingIndex", "0",
+				 "RequestedCount", "1");
 	if (request == nullptr) {
 		error.Set(upnp_domain, "UpnpMakeAction() failed");
 		return false;
