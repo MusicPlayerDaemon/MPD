@@ -26,7 +26,6 @@
 #include "upnp/Directory.hxx"
 #include "upnp/Tags.hxx"
 #include "upnp/Util.hxx"
-#include "LazyDatabase.hxx"
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseError.hxx"
@@ -147,7 +146,7 @@ UpnpDatabase::Create(gcc_unused EventLoop &loop,
 	/* libupnp loses its ability to receive multicast messages
 	   apparently due to daemonization; using the LazyDatabase
 	   wrapper works around this problem */
-	return new LazyDatabase(db);
+	return db;
 }
 
 bool
