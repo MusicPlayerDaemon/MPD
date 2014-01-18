@@ -402,7 +402,7 @@ decoder_run(DecoderControl &dc)
 
 	const std::string uri = song.IsFile()
 		? map_song_fs(song).c_str()
-		: song.GetURI();
+		: song.GetRealURI();
 
 	if (uri.empty()) {
 		dc.state = DecoderState::ERROR;

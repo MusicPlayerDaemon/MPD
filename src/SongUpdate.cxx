@@ -130,7 +130,7 @@ DetachedSong::Update()
 {
 	if (IsAbsoluteFile()) {
 		const AllocatedPath path_fs =
-			AllocatedPath::FromUTF8(uri.c_str());
+			AllocatedPath::FromUTF8(GetRealURI());
 
 		struct stat st;
 		if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))

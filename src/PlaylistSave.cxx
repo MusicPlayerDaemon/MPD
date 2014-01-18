@@ -38,7 +38,8 @@
 void
 playlist_print_song(FILE *file, const DetachedSong &song)
 {
-	if (playlist_saveAbsolutePaths && song.IsInDatabase()) {
+	if (playlist_saveAbsolutePaths &&
+	    song.IsInDatabase() && song.IsFile()) {
 		const auto path = map_song_fs(song);
 		if (!path.IsNull())
 			fprintf(file, "%s\n", path.c_str());

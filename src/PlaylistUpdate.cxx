@@ -30,7 +30,7 @@
 static bool
 UpdatePlaylistSong(const Database &db, DetachedSong &song)
 {
-	if (!song.IsInDatabase())
+	if (!song.IsInDatabase() || !song.IsFile())
 		/* only update Songs instances that are "detached"
 		   from the Database */
 		return false;

@@ -47,6 +47,16 @@ class DetachedSong {
 	 */
 	std::string uri;
 
+	/**
+	 * The "real" URI, the one to be used for opening the
+	 * resource.  If this attribute is empty, then #uri shall be
+	 * used.
+	 *
+	 * This attribute is used for songs from the database which
+	 * have a relative URI.
+	 */
+	std::string real_uri;
+
 	Tag tag;
 
 	time_t mtime;
@@ -98,6 +108,29 @@ public:
 	}
 
 	/**
+	 * Does this object have a "real" URI different from the
+	 * displayed URI?
+	 */
+	gcc_pure
+	bool HasRealURI() const {
+		return !real_uri.empty();
+	}
+
+	/**
+	 * Returns "real" URI (#real_uri) and falls back to just
+	 * GetURI().
+	 */
+	gcc_pure
+	const char *GetRealURI() const {
+		return (HasRealURI() ? real_uri : uri).c_str();
+	}
+
+	template<typename T>
+	void SetRealURI(T &&_uri) {
+		real_uri = std::forward<T>(_uri);
+	}
+
+	/**
 	 * Returns true if both objects refer to the same physical
 	 * song.
 	 */
@@ -123,9 +156,7 @@ public:
 	bool IsAbsoluteFile() const;
 
 	gcc_pure
-	bool IsInDatabase() const {
-		return IsFile() && !IsAbsoluteFile();
-	}
+	bool IsInDatabase() const;
 
 	const Tag &GetTag() const {
 		return tag;

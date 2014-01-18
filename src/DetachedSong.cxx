@@ -32,13 +32,23 @@ DetachedSong::DetachedSong(const LightSong &other)
 bool
 DetachedSong::IsRemote() const
 {
-	return uri_has_scheme(uri.c_str());
+	return uri_has_scheme(GetRealURI());
 }
 
 bool
 DetachedSong::IsAbsoluteFile() const
 {
-	return PathTraitsUTF8::IsAbsolute(uri.c_str());
+	return PathTraitsUTF8::IsAbsolute(GetRealURI());
+}
+
+bool
+DetachedSong::IsInDatabase() const
+{
+	/* here, we use GetURI() and not GetRealURI() because
+	   GetRealURI() is never relative */
+
+	const char *_uri = GetURI();
+	return !uri_has_scheme(_uri) && !PathTraitsUTF8::IsAbsolute(_uri);
 }
 
 double

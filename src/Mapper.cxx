@@ -26,6 +26,7 @@
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "DetachedSong.hxx"
+#include "LightSong.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Charset.hxx"
@@ -220,7 +221,15 @@ map_detached_song_fs(const char *uri_utf8)
 DetachedSong
 map_song_detach(const LightSong &song)
 {
-	return DetachedSong(song);
+	DetachedSong detached(song);
+
+	if (detached.IsInDatabase()) {
+		const auto uri = song.GetURI();
+		detached.SetRealURI(PathTraitsUTF8::Build(music_dir_utf8.c_str(),
+							  uri.c_str()));
+	}
+
+	return detached;
 }
 
 AllocatedPath
@@ -235,7 +244,7 @@ AllocatedPath
 map_song_fs(const DetachedSong &song)
 {
 	if (song.IsAbsoluteFile())
-		return AllocatedPath::FromUTF8(song.GetURI());
+		return AllocatedPath::FromUTF8(song.GetRealURI());
 	else
 		return map_uri_fs(song.GetURI());
 }
