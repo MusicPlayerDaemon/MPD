@@ -23,9 +23,9 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
+#include "PidFile.hxx"
 #include "Log.hxx"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -164,28 +164,14 @@ daemonize_detach(void)
 void
 daemonize(bool detach)
 {
-	FILE *fp = nullptr;
-
-	if (!pidfile.IsNull()) {
-		/* do this before daemon'izing so we can fail gracefully if we can't
-		 * write to the pid file */
-		LogDebug(daemon_domain, "opening pid file");
-		fp = FOpen(pidfile, "w+");
-		if (!fp) {
-			const std::string utf8 = pidfile.ToUTF8();
-			FormatFatalSystemError("Failed to create pid file \"%s\"",
-					       pidfile.c_str());
-		}
-	}
+	/* do this before daemon'izing so we can fail gracefully if we
+	   can't write to the pid file */
+	PidFile pidfile2(pidfile);
 
 	if (detach)
 		daemonize_detach();
 
-	if (!pidfile.IsNull()) {
-		LogDebug(daemon_domain, "writing pid file");
-		fprintf(fp, "%lu\n", (unsigned long)getpid());
-		fclose(fp);
-	}
+	pidfile2.Write();
 }
 
 void

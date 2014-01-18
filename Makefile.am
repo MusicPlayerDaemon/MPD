@@ -159,6 +159,7 @@ src_mpd_SOURCES = \
 	src/Win32Main.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
 	src/Daemon.cxx src/Daemon.hxx \
+	src/PidFile.hxx \
 	src/AudioCompress/compress.c \
 	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
