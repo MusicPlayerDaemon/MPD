@@ -137,13 +137,6 @@ daemonize_detach(void)
 
 	fflush(nullptr);
 
-#ifdef HAVE_DAEMON
-
-	if (daemon(0, 1))
-		FatalSystemError("daemon() failed");
-
-#elif defined(HAVE_FORK)
-
 	/* detach from parent process */
 
 	switch (fork()) {
@@ -164,10 +157,6 @@ daemonize_detach(void)
 	/* detach from the current session */
 
 	setsid();
-
-#else
-	FatalError("no support for daemonizing");
-#endif
 
 	LogDebug(daemon_domain, "daemonized");
 }

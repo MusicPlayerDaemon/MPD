@@ -153,7 +153,6 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl Header/Library Checks
 dnl ---------------------------------------------------------------------------
-AC_CHECK_FUNCS(daemon fork)
 
 AC_SEARCH_LIBS([syslog], [bsd socket inet],
 	[AC_DEFINE(HAVE_SYSLOG, 1, [Define if syslog() is available])])
