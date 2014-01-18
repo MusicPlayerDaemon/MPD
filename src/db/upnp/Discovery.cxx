@@ -77,6 +77,7 @@ UPnPDeviceDirectory::discoExplorer()
 					     time(0), tsk->expires);
 		free(buf);
 		if (!d.device.ok) {
+			delete tsk;
 			continue;
 		}
 
