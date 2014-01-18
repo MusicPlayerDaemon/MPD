@@ -354,7 +354,6 @@ int mpd_main(int argc, char *argv[])
 	clock_t start;
 	bool create_db;
 	Error error;
-	bool success;
 
 	daemonize_close_stdin();
 
@@ -376,8 +375,7 @@ int mpd_main(int argc, char *argv[])
 	io_thread_init();
 	config_global_init();
 
-	success = parse_cmdline(argc, argv, &options, error);
-	if (!success) {
+	if (!parse_cmdline(argc, argv, &options, error)) {
 		LogError(error);
 		return EXIT_FAILURE;
 	}
@@ -403,8 +401,7 @@ int mpd_main(int argc, char *argv[])
 	const unsigned max_clients = config_get_positive(CONF_MAX_CONN, 10);
 	instance->client_list = new ClientList(max_clients);
 
-	success = listen_global_init(error);
-	if (!success) {
+	if (!listen_global_init(error)) {
 		LogError(error);
 		return EXIT_FAILURE;
 	}
@@ -485,16 +482,16 @@ int mpd_main(int argc, char *argv[])
 
 	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(instance->partition->playlist.queue.random));
 
-	success = config_get_bool(CONF_AUTO_UPDATE, false);
+	if (config_get_bool(CONF_AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
-	if (success && mapper_has_music_directory())
-		mpd_inotify_init(config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
-						     G_MAXUINT));
+		if (mapper_has_music_directory())
+			mpd_inotify_init(config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
+							     G_MAXUINT));
 #else
-	if (success)
 		FormatWarning(main_domain,
 			      "inotify: auto_update was disabled. enable during compilation phase");
 #endif
+	}
 
 	config_global_check();
 
