@@ -75,6 +75,7 @@ UPnPDeviceDirectory::discoExplorer()
 		// Update or insert the device
 		ContentDirectoryDescriptor d(tsk->url, buf,
 					     time(0), tsk->expires);
+		free(buf);
 		if (!d.device.ok) {
 			continue;
 		}
