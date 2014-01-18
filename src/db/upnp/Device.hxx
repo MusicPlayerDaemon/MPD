@@ -87,6 +87,4 @@ public:
 	UPnPDevice() : ok(false) {}
 };
 
-typedef std::vector<UPnPService>::iterator DevServIt;
-
 #endif /* _UPNPDEV_HXX_INCLUDED_ */
