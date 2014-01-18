@@ -62,40 +62,33 @@ UPnPDeviceDirectory::discoExplorer()
 		}
 
 		const ScopeLock protect(mutex);
-		if (!tsk->alive) {
-			// Device signals it is going off.
-			auto it = directories.find(tsk->deviceId);
-			if (it != directories.end()) {
-				directories.erase(it);
-			}
-		} else {
-			// Device signals its existence and well-being. Perform the
-			// UPnP "description" phase by downloading and decoding the
-			// description document.
-			char *buf;
-			// LINE_SIZE is defined by libupnp's upnp.h...
-			char contentType[LINE_SIZE];
-			int code = UpnpDownloadUrlItem(tsk->url.c_str(), &buf, contentType);
-			if (code != UPNP_E_SUCCESS) {
-				continue;
-			}
-			std::string sdesc(buf);
+		// Device signals its existence and well-being. Perform the
+		// UPnP "description" phase by downloading and decoding the
+		// description document.
+		char *buf;
+		// LINE_SIZE is defined by libupnp's upnp.h...
+		char contentType[LINE_SIZE];
+		int code = UpnpDownloadUrlItem(tsk->url.c_str(), &buf, contentType);
+		if (code != UPNP_E_SUCCESS) {
+			continue;
+		}
+		std::string sdesc(buf);
 
-			// Update or insert the device
-			ContentDirectoryDescriptor d(tsk->url, sdesc,
-						     time(0), tsk->expires);
-			if (!d.device.ok) {
-				continue;
-			}
+		// Update or insert the device
+		ContentDirectoryDescriptor d(tsk->url, sdesc,
+					     time(0), tsk->expires);
+		if (!d.device.ok) {
+			continue;
+		}
 
 #if defined(__clang__) || GCC_CHECK_VERSION(4,8)
-			auto e = directories.emplace(tsk->deviceId, d);
+		auto e = directories.emplace(tsk->deviceId, d);
 #else
-			auto e = directories.insert(std::make_pair(tsk->deviceId, d));
+		auto e = directories.insert(std::make_pair(tsk->deviceId, d));
 #endif
-			if (!e.second)
-				e.first->second = d;
-		}
+		if (!e.second)
+			e.first->second = d;
+
 		delete tsk;
 	}
 }
@@ -113,7 +106,7 @@ UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
-		DiscoveredTask *tp = new DiscoveredTask(1, disco);
+		DiscoveredTask *tp = new DiscoveredTask(disco);
 		if (discoveredQueue.put(tp))
 			return UPNP_E_FINISH;
 	}
@@ -127,9 +120,11 @@ UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
 
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
-		DiscoveredTask *tp = new DiscoveredTask(0, disco);
-		if (discoveredQueue.put(tp))
-			return UPNP_E_FINISH;
+		// Device signals it is going off.
+		const ScopeLock protect(mutex);
+		auto it = directories.find(disco->DeviceId);
+		if (it != directories.end())
+			directories.erase(it);
 	}
 
 	return UPNP_E_SUCCESS;

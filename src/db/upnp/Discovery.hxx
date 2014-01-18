@@ -49,13 +49,12 @@ class UPnPDeviceDirectory {
 	 * discovery thread.
 	 */
 	struct DiscoveredTask {
-		bool alive;
 		std::string url;
 		std::string deviceId;
 		int expires; // Seconds valid
 
-		DiscoveredTask(bool _alive, const Upnp_Discovery *disco)
-			: alive(_alive), url(disco->Location),
+		DiscoveredTask(const Upnp_Discovery *disco)
+			:url(disco->Location),
 			  deviceId(disco->DeviceId),
 			  expires(disco->Expires) {}
 	};
