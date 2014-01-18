@@ -107,9 +107,7 @@ public:
 	bool getDirServices(std::vector<ContentDirectoryService> &, Error &);
 
 	/**
-	 * Get server by friendly name. It's a bit wasteful to copy
-	 * all servers for this, we could directly walk the list. Otoh
-	 * there isn't going to be millions...
+	 * Get server by friendly name.
 	 */
 	bool getServer(const char *friendlyName,
 		       ContentDirectoryService &server,

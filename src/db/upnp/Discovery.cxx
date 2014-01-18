@@ -262,14 +262,24 @@ UPnPDeviceDirectory::getServer(const char *friendlyName,
 			       ContentDirectoryService &server,
 			       Error &error)
 {
-	std::vector<ContentDirectoryService> ds;
-	if (!getDirServices(ds, error))
+	// Has locking, do it before our own lock
+	if (!expireDevices(error))
 		return false;
 
-	for (const auto &i : ds) {
-		if (strcmp(friendlyName, i.getFriendlyName()) == 0) {
-			server = i;
-			return true;
+	const ScopeLock protect(mutex);
+
+	for (const auto &i : directories) {
+		const auto &device = i.second.device;
+
+		if (device.friendlyName != friendlyName)
+			continue;
+
+		for (const auto &service : device.services) {
+			if (isCDService(service.serviceType.c_str())) {
+				server = ContentDirectoryService(device,
+								 service);
+				return true;
+			}
 		}
 	}
 
