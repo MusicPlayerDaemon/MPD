@@ -215,7 +215,7 @@ upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
 Song *
 UpnpDatabase::GetSong(const char *uri, Error &error) const
 {
-	if (!m_superdir || !m_superdir->ok()) {
+	if (!m_superdir->ok()) {
 		error.Set(upnp_domain,
 			  "UpnpDatabase::GetSong() superdir is sick");
 		return nullptr;
@@ -688,7 +688,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		    Error &error) const
 {
 	std::vector<ContentDirectoryService> servers;
-	if (!m_superdir || !m_superdir->ok() ||
+	if (!m_superdir->ok() ||
 	    !m_superdir->getDirServices(servers)) {
 		error.Set(upnp_domain,
 			  "UpnpDatabase::Visit() superdir is sick");
@@ -748,7 +748,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		return true;
 
 	std::vector<ContentDirectoryService> servers;
-	if (!m_superdir || !m_superdir->ok() ||
+	if (!m_superdir->ok() ||
 	    !m_superdir->getDirServices(servers)) {
 		error.Set(upnp_domain,
 			  "UpnpDatabase::Visit() superdir is sick");
