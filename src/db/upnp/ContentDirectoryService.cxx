@@ -59,6 +59,16 @@ public:
 	}
 };
 
+static bool
+ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response, Error &error)
+{
+	const char *p = ixmlwrap::getFirstElementValue(response, "Result");
+	if (p == nullptr)
+		p = "";
+
+	return dirbuf.parse(p, error);
+}
+
 bool
 ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				      const char *objectId, int offset,
@@ -100,9 +110,9 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	DirBResFree cleaner(&response);
 
 	int didread = -1;
-	std::string tbuf = ixmlwrap::getFirstElementValue(response, "NumberReturned");
-	if (!tbuf.empty())
-		didread = atoi(tbuf.c_str());
+	const char *value = ixmlwrap::getFirstElementValue(response, "NumberReturned");
+	if (value != nullptr)
+		didread = atoi(value);
 
 	if (count == -1 || count == 0) {
 		// TODO: what's this?
@@ -110,13 +120,11 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 		return false;
 	}
 
-	tbuf = ixmlwrap::getFirstElementValue(response, "TotalMatches");
-	if (!tbuf.empty())
-		*totalp = atoi(tbuf.c_str());
+	value = ixmlwrap::getFirstElementValue(response, "TotalMatches");
+	if (value != nullptr)
+		*totalp = atoi(value);
 
-	tbuf = ixmlwrap::getFirstElementValue(response, "Result");
-
-	if (!dirbuf.parse(tbuf, error))
+	if (!ReadResultTag(dirbuf, response, error))
 		return false;
 
 	*didreadp = didread;
@@ -189,10 +197,10 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 		DirBResFree cleaner(&response);
 
 		int count = -1;
-		std::string tbuf =
+		const char *value =
 			ixmlwrap::getFirstElementValue(response, "NumberReturned");
-		if (!tbuf.empty())
-			count = atoi(tbuf.c_str());
+		if (value != nullptr)
+			count = atoi(value);
 
 		if (count == -1 || count == 0) {
 			// TODO: what's this?
@@ -202,13 +210,11 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 
 		offset += count;
 
-		tbuf = ixmlwrap::getFirstElementValue(response, "TotalMatches");
-		if (!tbuf.empty())
-			total = atoi(tbuf.c_str());
+		value = ixmlwrap::getFirstElementValue(response, "TotalMatches");
+		if (value != nullptr)
+			total = atoi(value);
 
-		tbuf = ixmlwrap::getFirstElementValue(response, "Result");
-
-		if (!dirbuf.parse(tbuf, error))
+		if (!ReadResultTag(dirbuf, response, error))
 			return false;
 	}
 
@@ -291,7 +297,7 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 		return false;
 	}
 
-	std::string tbuf = ixmlwrap::getFirstElementValue(response, "Result");
+	bool success = ReadResultTag(dirbuf, response, error);
 	ixmlDocument_free(response);
-	return dirbuf.parse(tbuf, error);
+	return success;
 }

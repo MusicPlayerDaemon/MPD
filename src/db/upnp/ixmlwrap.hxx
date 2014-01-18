@@ -24,10 +24,10 @@
 namespace ixmlwrap {
 	/**
 	 * Retrieve the text content for the first element of given
-	 * name.  Returns an empty string if the element does not
+	 * name.  Returns nullptr if the element does not
 	 * contain a text node
 	 */
-	std::string getFirstElementValue(IXML_Document *doc,
+	const char *getFirstElementValue(IXML_Document *doc,
 					 const char *name);
 
 };

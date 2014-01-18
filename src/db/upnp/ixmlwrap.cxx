@@ -19,10 +19,10 @@
 
 namespace ixmlwrap {
 
-std::string
+const char *
 getFirstElementValue(IXML_Document *doc, const char *name)
 {
-	std::string ret;
+	const char *ret = nullptr;
 	IXML_NodeList *nodes =
 		ixmlDocument_getElementsByTagName(doc, name);
 

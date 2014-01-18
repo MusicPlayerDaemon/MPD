@@ -58,7 +58,7 @@ public:
 	 * actually global, nothing really bad will happen if you mix
 	 * up...
 	 */
-	bool parse(const std::string &didltext, Error &error);
+	bool parse(const char *didltext, Error &error);
 };
 
 #endif /* _UPNPDIRCONTENT_H_X_INCLUDED_ */
