@@ -27,6 +27,7 @@
 #include "FileCommands.hxx"
 #include "OutputCommands.hxx"
 #include "MessageCommands.hxx"
+#include "NeighborCommands.hxx"
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
 #include "tag/TagType.h"
@@ -99,6 +100,9 @@ static const struct command commands[] = {
 	{ "list", PERMISSION_READ, 1, -1, handle_list },
 	{ "listall", PERMISSION_READ, 0, 1, handle_listall },
 	{ "listallinfo", PERMISSION_READ, 0, 1, handle_listallinfo },
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	{ "listneighbors", PERMISSION_READ, 0, 0, handle_listneighbors },
+#endif
 	{ "listplaylist", PERMISSION_READ, 1, 1, handle_listplaylist },
 	{ "listplaylistinfo", PERMISSION_READ, 1, 1, handle_listplaylistinfo },
 	{ "listplaylists", PERMISSION_READ, 0, 0, handle_listplaylists },
@@ -177,6 +181,11 @@ command_available(gcc_unused const struct command *cmd)
 #ifdef ENABLE_SQLITE
 	if (strcmp(cmd->cmd, "sticker") == 0)
 		return sticker_enabled();
+#endif
+
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	if (strcmp(cmd->cmd, "listneighbors") == 0)
+		return neighbor_commands_available();
 #endif
 
 	return true;

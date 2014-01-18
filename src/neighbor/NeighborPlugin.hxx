@@ -17,56 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Instance.hxx"
-#include "Partition.hxx"
-#include "Idle.hxx"
-#include "Stats.hxx"
+#ifndef MPD_NEIGHBOR_PLUGIN_HXX
+#define MPD_NEIGHBOR_PLUGIN_HXX
 
-void
-Instance::DeleteSong(const char *uri)
-{
-	partition->DeleteSong(uri);
-}
+struct config_param;
+class Error;
+class EventLoop;
+class NeighborListener;
+class NeighborExplorer;
 
-void
-Instance::DatabaseModified()
-{
-	stats_invalidate();
-	partition->DatabaseModified();
-	idle_add(IDLE_DATABASE);
-}
+struct NeighborPlugin {
+	const char *name;
 
-void
-Instance::TagModified()
-{
-	partition->TagModified();
-}
-
-void
-Instance::SyncWithPlayer()
-{
-	partition->SyncWithPlayer();
-}
-
-void
-Instance::OnDatabaseModified()
-{
-	DatabaseModified();
-}
-
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-
-void
-Instance::FoundNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
-
-void
-Instance::LostNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
+	/**
+	 * Allocates and configures a #NeighborExplorer instance.
+	 */
+	NeighborExplorer *(*create)(EventLoop &loop, NeighborListener &listener,
+				    const config_param &param,
+				    Error &error);
+};
 
 #endif

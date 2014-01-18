@@ -17,6 +17,7 @@ noinst_LIBRARIES = \
 	libtag.a \
 	libinput.a \
 	libfs.a \
+	libneighbor.a \
 	libdb_plugins.a \
 	libplaylist_plugins.a \
 	libdecoder_plugins.a \
@@ -30,6 +31,7 @@ src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBWRAP_CFLAGS) \
 	$(SQLITE_CFLAGS)
 src_mpd_LDADD = \
+	$(NEIGHBOR_LIBS) \
 	$(DB_LIBS) \
 	$(PLAYLIST_LIBS) \
 	$(AVAHI_LIBS) \
@@ -397,6 +399,37 @@ libfs_a_SOURCES = \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/DirectoryReader.hxx
+
+# neighbor plugins
+
+if ENABLE_NEIGHBOR_PLUGINS
+
+src_mpd_SOURCES += \
+	src/command/NeighborCommands.cxx \
+	src/command/NeighborCommands.hxx
+
+libneighbor_a_SOURCES = \
+	src/neighbor/Registry.cxx src/neighbor/Registry.hxx \
+	src/neighbor/Glue.cxx src/neighbor/Glue.hxx \
+	src/neighbor/Info.hxx \
+	src/neighbor/Listener.hxx \
+	src/neighbor/Explorer.hxx \
+	src/neighbor/NeighborPlugin.hxx
+
+libneighbor_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(SMBCLIENT_CFLAGS)
+
+if ENABLE_SMBCLIENT
+libneighbor_a_SOURCES += \
+	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx \
+	src/neighbor/plugins/SmbclientNeighborPlugin.cxx src/neighbor/plugins/SmbclientNeighborPlugin.hxx
+endif
+
+NEIGHBOR_LIBS = \
+	$(SMBCLIENT_LIBS) \
+	libneighbor.a
+
+endif
 
 # database plugins
 
@@ -1199,6 +1232,10 @@ noinst_PROGRAMS = \
 	test/run_normalize \
 	test/software_volume
 
+if ENABLE_NEIGHBOR_PLUGINS
+noinst_PROGRAMS += test/run_neighbor_explorer
+endif
+
 if HAVE_AVAHI
 noinst_PROGRAMS += test/run_avahi
 endif
@@ -1277,6 +1314,23 @@ test_run_input_SOURCES = test/run_input.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/TagSave.cxx
+
+if ENABLE_NEIGHBOR_PLUGINS
+
+test_run_neighbor_explorer_SOURCES = \
+	src/Log.cxx src/LogBackend.cxx \
+	test/run_neighbor_explorer.cxx
+test_run_neighbor_explorer_LDADD = \
+	$(GLIB_LIBS) \
+	$(NEIGHBOR_LIBS) \
+	libconf.a \
+	libevent.a \
+	libfs.a \
+	libsystem.a \
+	libthread.a \
+	libutil.a
+
+endif
 
 if ENABLE_ARCHIVE
 

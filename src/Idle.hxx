@@ -59,6 +59,9 @@ static constexpr unsigned IDLE_SUBSCRIPTION = 0x200;
 /** a message on the subscribed channel was received */
 static constexpr unsigned IDLE_MESSAGE = 0x400;
 
+/** a neighbor was found or lost */
+static constexpr unsigned IDLE_NEIGHBOR = 0x800;
+
 /**
  * Adds idle flag (with bitwise "or") and queues notifications to all
  * clients.

@@ -77,6 +77,7 @@ const ConfigTemplate config_templates[] = {
 	{ "despotify_high_bitrate", false, false },
 	{ "filter", true, true },
 	{ "database", false, true },
+	{ "neighbors", true, true },
 };
 
 static constexpr unsigned n_config_templates =

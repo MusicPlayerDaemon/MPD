@@ -18,55 +18,37 @@
  */
 
 #include "config.h"
+#include "NeighborCommands.hxx"
+#include "client/Client.hxx"
 #include "Instance.hxx"
-#include "Partition.hxx"
-#include "Idle.hxx"
-#include "Stats.hxx"
+#include "Main.hxx"
+#include "protocol/Result.hxx"
+#include "neighbor/Glue.hxx"
+#include "neighbor/Info.hxx"
 
-void
-Instance::DeleteSong(const char *uri)
+#include <set>
+#include <string>
+
+#include <assert.h>
+
+bool
+neighbor_commands_available()
 {
-	partition->DeleteSong(uri);
+	return instance->neighbors != nullptr;
 }
 
-void
-Instance::DatabaseModified()
+CommandResult
+handle_listneighbors(Client &client,
+		     gcc_unused int argc, gcc_unused char *argv[])
 {
-	stats_invalidate();
-	partition->DatabaseModified();
-	idle_add(IDLE_DATABASE);
+	assert(instance->neighbors != nullptr);
+
+	const auto neighbors = instance->neighbors->GetList();
+	for (const auto &i : neighbors)
+		client_printf(client,
+			      "neighbor: %s\n"
+			      "name: %s\n",
+			      i.uri.c_str(),
+			      i.display_name.c_str());
+	return CommandResult::OK;
 }
-
-void
-Instance::TagModified()
-{
-	partition->TagModified();
-}
-
-void
-Instance::SyncWithPlayer()
-{
-	partition->SyncWithPlayer();
-}
-
-void
-Instance::OnDatabaseModified()
-{
-	DatabaseModified();
-}
-
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-
-void
-Instance::FoundNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
-
-void
-Instance::LostNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
-
-#endif

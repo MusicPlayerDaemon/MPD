@@ -17,56 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Instance.hxx"
-#include "Partition.hxx"
-#include "Idle.hxx"
-#include "Stats.hxx"
+#ifndef MPD_NEIGHBOR_REGISTRY_HXX
+#define MPD_NEIGHBOR_REGISTRY_HXX
 
-void
-Instance::DeleteSong(const char *uri)
-{
-	partition->DeleteSong(uri);
-}
+#include "Compiler.h"
 
-void
-Instance::DatabaseModified()
-{
-	stats_invalidate();
-	partition->DatabaseModified();
-	idle_add(IDLE_DATABASE);
-}
+struct NeighborPlugin;
 
-void
-Instance::TagModified()
-{
-	partition->TagModified();
-}
+/**
+ * nullptr terminated list of all neighbor plugins which were enabled at
+ * compile time.
+ */
+extern const NeighborPlugin *const neighbor_plugins[];
 
-void
-Instance::SyncWithPlayer()
-{
-	partition->SyncWithPlayer();
-}
-
-void
-Instance::OnDatabaseModified()
-{
-	DatabaseModified();
-}
-
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-
-void
-Instance::FoundNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
-
-void
-Instance::LostNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
+gcc_pure
+const NeighborPlugin *
+GetNeighborPluginByName(const char *name);
 
 #endif

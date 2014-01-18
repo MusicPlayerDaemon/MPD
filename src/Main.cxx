@@ -67,6 +67,10 @@
 #include "config/ConfigOption.hxx"
 #include "Stats.hxx"
 
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+#include "neighbor/Glue.hxx"
+#endif
+
 #ifdef ENABLE_INOTIFY
 #include "db/update/InotifyUpdate.hxx"
 #endif
@@ -394,6 +398,19 @@ int mpd_main(int argc, char *argv[])
 
 	instance = new Instance();
 
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	instance->neighbors = new NeighborGlue();
+	if (!instance->neighbors->Init(io_thread_get(), *instance, error)) {
+		LogError(error);
+		return EXIT_FAILURE;
+	}
+
+	if (instance->neighbors->IsEmpty()) {
+		delete instance->neighbors;
+		instance->neighbors = nullptr;
+	}
+#endif
+
 	const unsigned max_clients = config_get_positive(CONF_MAX_CONN, 10);
 	instance->client_list = new ClientList(max_clients);
 
@@ -460,6 +477,12 @@ int mpd_main(int argc, char *argv[])
 
 	io_thread_start();
 
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	if (instance->neighbors != nullptr &&
+	    !instance->neighbors->Open(error))
+		FatalError(error);
+#endif
+
 	ZeroconfInit(*main_loop);
 
 	player_create(instance->partition->pc);
@@ -522,6 +545,13 @@ int mpd_main(int argc, char *argv[])
 	ZeroconfDeinit();
 	listen_global_finish();
 	delete instance->client_list;
+
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	if (instance->neighbors != nullptr) {
+		instance->neighbors->Close();
+		delete instance->neighbors;
+	}
+#endif
 
 	const clock_t start = clock();
 	DatabaseGlobalDeinit();

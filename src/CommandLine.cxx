@@ -42,6 +42,11 @@
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
 
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+#include "neighbor/Registry.hxx"
+#include "neighbor/NeighborPlugin.hxx"
+#endif
+
 #ifdef ENABLE_ENCODER
 #include "encoder/EncoderList.hxx"
 #include "encoder/EncoderPlugin.hxx"
@@ -104,6 +109,13 @@ static void version(void)
 	for (auto i = database_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
 
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	puts("\n\n"
+	     "Neighbor plugins:");
+	for (auto i = neighbor_plugins; *i != nullptr; ++i)
+		printf(" %s", (*i)->name);
+#endif
+
 	puts("\n\n"
 	     "Decoders plugins:");
 
@@ -148,7 +160,7 @@ static void version(void)
 #endif
 
 	puts("\n"
-	     "input/Input plugins:");
+	     "Input plugins:");
 	input_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
 

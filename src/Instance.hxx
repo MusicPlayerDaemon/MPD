@@ -24,10 +24,24 @@
 #include "db/DatabaseListener.hxx"
 #include "Compiler.h"
 
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+#include "neighbor/Listener.hxx"
+class NeighborGlue;
+#endif
+
 class ClientList;
 struct Partition;
 
-struct Instance final : public DatabaseListener {
+struct Instance final
+	: public DatabaseListener
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	, public NeighborListener
+#endif
+{
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	NeighborGlue *neighbors;
+#endif
+
 	ClientList *client_list;
 
 	Partition *partition;
@@ -53,6 +67,12 @@ struct Instance final : public DatabaseListener {
 
 private:
 	virtual void OnDatabaseModified();
+
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	/* virtual methods from class NeighborListener */
+	virtual void FoundNeighbor(const NeighborInfo &info) override;
+	virtual void LostNeighbor(const NeighborInfo &info) override;
+#endif
 };
 
 #endif

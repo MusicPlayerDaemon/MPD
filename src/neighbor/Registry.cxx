@@ -18,55 +18,25 @@
  */
 
 #include "config.h"
-#include "Instance.hxx"
-#include "Partition.hxx"
-#include "Idle.hxx"
-#include "Stats.hxx"
+#include "Registry.hxx"
+#include "NeighborPlugin.hxx"
+#include "plugins/SmbclientNeighborPlugin.hxx"
 
-void
-Instance::DeleteSong(const char *uri)
-{
-	partition->DeleteSong(uri);
-}
+#include <string.h>
 
-void
-Instance::DatabaseModified()
-{
-	stats_invalidate();
-	partition->DatabaseModified();
-	idle_add(IDLE_DATABASE);
-}
-
-void
-Instance::TagModified()
-{
-	partition->TagModified();
-}
-
-void
-Instance::SyncWithPlayer()
-{
-	partition->SyncWithPlayer();
-}
-
-void
-Instance::OnDatabaseModified()
-{
-	DatabaseModified();
-}
-
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-
-void
-Instance::FoundNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
-
-void
-Instance::LostNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
-
+const NeighborPlugin *const neighbor_plugins[] = {
+#ifdef ENABLE_SMBCLIENT
+	&smbclient_neighbor_plugin,
 #endif
+	nullptr
+};
+
+const NeighborPlugin *
+GetNeighborPluginByName(const char *name)
+{
+	for (auto i = neighbor_plugins; *i != nullptr; ++i)
+		if (strcmp((*i)->name, name) == 0)
+			return *i;
+
+	return nullptr;
+}

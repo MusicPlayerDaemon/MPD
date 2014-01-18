@@ -885,6 +885,27 @@ fi
 AM_CONDITIONAL(ENABLE_MMS, test x$enable_mms = xyes)
 
 dnl ---------------------------------------------------------------------------
+dnl Neighbor Plugins
+dnl ---------------------------------------------------------------------------
+
+AC_ARG_ENABLE(neighbor-plugins,
+	AS_HELP_STRING([--enable-neighbor-plugins],
+		[enable support for neighbor discovery (default: auto)]),,
+	[enable_neighbor_plugins=auto])
+
+if test x$enable_neighbor_plugins = xauto; then
+	if test x$enable_smbclient = xyes; then
+		enable_neighbor_plugins=yes
+	fi
+fi
+
+if test x$enable_neighbor_plugins = xyes; then
+	AC_DEFINE(ENABLE_NEIGHBOR_PLUGINS, 1,
+		[Define to enable support for neighbor discovery])
+fi
+AM_CONDITIONAL(ENABLE_NEIGHBOR_PLUGINS, test x$enable_neighbor_plugins = xyes)
+
+dnl ---------------------------------------------------------------------------
 dnl Archive Plugins
 dnl ---------------------------------------------------------------------------
 

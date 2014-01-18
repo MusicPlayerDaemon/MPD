@@ -17,56 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Instance.hxx"
-#include "Partition.hxx"
-#include "Idle.hxx"
-#include "Stats.hxx"
+#ifndef MPD_NEIGHBOR_COMMANDS_HXX
+#define MPD_NEIGHBOR_COMMANDS_HXX
 
-void
-Instance::DeleteSong(const char *uri)
-{
-	partition->DeleteSong(uri);
-}
+#include "CommandResult.hxx"
+#include "Compiler.h"
 
-void
-Instance::DatabaseModified()
-{
-	stats_invalidate();
-	partition->DatabaseModified();
-	idle_add(IDLE_DATABASE);
-}
+class Client;
 
-void
-Instance::TagModified()
-{
-	partition->TagModified();
-}
+gcc_pure
+bool
+neighbor_commands_available();
 
-void
-Instance::SyncWithPlayer()
-{
-	partition->SyncWithPlayer();
-}
-
-void
-Instance::OnDatabaseModified()
-{
-	DatabaseModified();
-}
-
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-
-void
-Instance::FoundNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
-
-void
-Instance::LostNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
+CommandResult
+handle_listneighbors(Client &client, int argc, char *argv[]);
 
 #endif

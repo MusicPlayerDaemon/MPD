@@ -2,6 +2,7 @@ ver 0.19 (not yet released)
 * protocol
   - new commands "addtagid", "cleartagid"
   - "lsinfo" and "readcomments" allowed for remote files
+  - "listneighbors" lists file servers on the local network
 * database
   - proxy: forward "idle" events
   - proxy: copy "Last-Modified" from remote directories

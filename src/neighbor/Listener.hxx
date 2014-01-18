@@ -17,56 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Instance.hxx"
-#include "Partition.hxx"
-#include "Idle.hxx"
-#include "Stats.hxx"
+#ifndef MPD_NEIGHBOR_LISTENER_HXX
+#define MPD_NEIGHBOR_LISTENER_HXX
 
-void
-Instance::DeleteSong(const char *uri)
-{
-	partition->DeleteSong(uri);
-}
+struct NeighborInfo;
+class NeighborExplorer;
 
-void
-Instance::DatabaseModified()
-{
-	stats_invalidate();
-	partition->DatabaseModified();
-	idle_add(IDLE_DATABASE);
-}
-
-void
-Instance::TagModified()
-{
-	partition->TagModified();
-}
-
-void
-Instance::SyncWithPlayer()
-{
-	partition->SyncWithPlayer();
-}
-
-void
-Instance::OnDatabaseModified()
-{
-	DatabaseModified();
-}
-
-#ifdef ENABLE_NEIGHBOR_PLUGINS
-
-void
-Instance::FoundNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
-
-void
-Instance::LostNeighbor(gcc_unused const NeighborInfo &info)
-{
-	idle_add(IDLE_NEIGHBOR);
-}
+/**
+ * An interface that listens on events from neighbor plugins.  The
+ * methods must be thread-safe and non-blocking.
+ */
+class NeighborListener {
+public:
+	virtual void FoundNeighbor(const NeighborInfo &info) = 0;
+	virtual void LostNeighbor(const NeighborInfo &info) = 0;
+};
 
 #endif
