@@ -199,13 +199,13 @@ UpnpDatabase::ReturnSong(Song *song) const
 // "add"ing AFAIK. Visit() calls us with a null uri so that the url
 // appropriate for fetching is used instead.
 static Song *
-upnpItemToSong(const UPnPDirObject &dirent, const char *uri)
+upnpItemToSong(UPnPDirObject &&dirent, const char *uri)
 {
 	if (*uri == 0)
 		uri = dirent.url.c_str();
 
 	Song *s = Song::NewFile(uri, nullptr);
-	s->tag = new Tag(dirent.tag);
+	s->tag = new Tag(std::move(dirent.tag));
 	return s;
 }
 
@@ -232,7 +232,7 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 				      error))
 				return nullptr;
 		}
-		song = upnpItemToSong(dirent, "");
+		song = upnpItemToSong(std::move(dirent), "");
 	}
 	if (song == nullptr)
 		error.Format(db_domain, DB_NOT_FOUND, "No such song: %s", uri);
@@ -351,13 +351,13 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 }
 
 static bool
-visitSong(const UPnPDirObject& meta, const char *path,
+visitSong(UPnPDirObject &&meta, const char *path,
 	  const DatabaseSelection &selection,
 	  VisitSong visit_song, Error& error)
 {
 	if (!visit_song)
 		return true;
-	Song *s = upnpItemToSong(meta, path);
+	Song *s = upnpItemToSong(std::move(meta), path);
 	if (!selection.Match(*s))
 		return true;
 	bool success = visit_song(*s, error);
@@ -390,7 +390,7 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 	if (!SearchSongs(server, objid, selection, dirbuf, error))
 		return false;
 
-	for (const auto &dirent : dirbuf.objects) {
+	for (auto &dirent : dirbuf.objects) {
 		if (dirent.type != UPnPDirObject::Type::ITEM ||
 		    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
 			continue;
@@ -414,7 +414,8 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 		std::string path = songPath(server.getFriendlyName(),
 					    dirent.m_id);
 		//BuildPath(server, dirent, path);
-		if (!visitSong(dirent, path.c_str(), selection, visit_song,
+		if (!visitSong(std::move(dirent), path.c_str(),
+			       selection, visit_song,
 			       error))
 			return false;
 	}
@@ -553,7 +554,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 				      error))
 				return false;
 
-			if (!visitSong(dirent, "", selection,
+			if (!visitSong(std::move(dirent), "", selection,
 				       visit_song, error))
 				return false;
 		}
@@ -584,7 +585,8 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 		switch (tdirent.item_class) {
 		case UPnPDirObject::ItemClass::MUSIC:
 			if (visit_song)
-				return visitSong(tdirent, "", selection, visit_song,
+				return visitSong(std::move(tdirent), "",
+						 selection, visit_song,
 						 error);
 			break;
 
@@ -611,7 +613,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 	if (!server.readDir(m_lib->getclh(), objid.c_str(), dirbuf, error))
 		return false;
 
-	for (const auto &dirent : dirbuf.objects) {
+	for (auto &dirent : dirbuf.objects) {
 		switch (dirent.type) {
 		case UPnPDirObject::Type::UNKNOWN:
 			assert(false);
@@ -642,7 +644,8 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 						p = selection.uri + "/" +
 							dirent.name;
 
-					if (!visitSong(dirent, p.c_str(),
+					if (!visitSong(std::move(dirent),
+						       p.c_str(),
 						       selection, visit_song, error))
 						return false;
 				}
