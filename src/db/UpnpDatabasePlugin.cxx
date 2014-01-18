@@ -678,12 +678,12 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		    VisitPlaylist visit_playlist,
 		    Error &error) const
 {
-	std::vector<ContentDirectoryService> servers;
-	if (!m_superdir->getDirServices(servers, error))
-		return false;
-
 	auto vpath = stringToTokens(selection.uri, "/", true);
 	if (vpath.empty()) {
+		std::vector<ContentDirectoryService> servers;
+		if (!m_superdir->getDirServices(servers, error))
+			return false;
+
 		if (!selection.recursive) {
 			// If the path is empty and recursive is not set, synthetize a
 			// pseudo-directory from the list of servers.
@@ -709,19 +709,11 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	std::string servername(vpath[0]);
 	vpath.erase(vpath.begin());
 
-	ContentDirectoryService *server = 0;
-	for (auto& dir : servers) {
-		if (!servername.compare(dir.getFriendlyName())) {
-			server = &dir;
-			break;
-		}
-	}
-	if (server == 0) {
-		FormatDebug(db_domain, "UpnpDatabase::Visit: server %s not found\n",
-			    vpath[0].c_str());
-		return true;
-	}
-	return VisitServer(*server, vpath, selection,
+	ContentDirectoryService server;
+	if (!m_superdir->getServer(servername.c_str(), server, error))
+		return false;
+
+	return VisitServer(server, vpath, selection,
 			   visit_directory, visit_song, visit_playlist, error);
 }
 
