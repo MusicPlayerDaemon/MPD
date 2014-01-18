@@ -156,10 +156,11 @@ protected:
 
 	virtual void CharacterData(const XML_Char *s, int len)
 	{
+		const auto &current = m_path.back();
 		std::string str = trimstring(s, len);
 
 		TagType type = tag_table_lookup(upnp_tags,
-						m_path.back().c_str());
+						current.c_str());
 		if (type != TAG_NUM_OF_ITEM_TYPES) {
 			tag.AddItem(type, str.c_str());
 
@@ -169,14 +170,14 @@ protected:
 			return;
 		}
 
-		switch (m_path.back()[0]) {
+		switch (current[0]) {
 		case 'r':
-			if (!m_path.back().compare("res")) {
+			if (!current.compare("res")) {
 				m_tobj.url = std::move(str);
 			}
 			break;
 		case 'u':
-			if (m_path.back() == "upnp:class") {
+			if (current == "upnp:class") {
 				m_tobj.item_class = ParseItemClass(str.c_str());
 				break;
 			}

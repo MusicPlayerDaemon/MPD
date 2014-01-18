@@ -55,43 +55,44 @@ protected:
 	}
 
 	virtual void CharacterData(const XML_Char *s, int len) {
+		const auto &current = m_path.back();
 		std::string str = trimstring(s, len);
-		switch (m_path.back()[0]) {
+		switch (current[0]) {
 		case 'c':
-			if (!m_path.back().compare("controlURL"))
+			if (!current.compare("controlURL"))
 				m_tservice.controlURL = std::move(str);
 			break;
 		case 'd':
-			if (!m_path.back().compare("deviceType"))
+			if (!current.compare("deviceType"))
 				m_device.deviceType = std::move(str);
 			break;
 		case 'e':
-			if (!m_path.back().compare("eventSubURL"))
+			if (!current.compare("eventSubURL"))
 				m_tservice.eventSubURL = std::move(str);
 			break;
 		case 'f':
-			if (!m_path.back().compare("friendlyName"))
+			if (!current.compare("friendlyName"))
 				m_device.friendlyName = std::move(str);
 			break;
 		case 'm':
-			if (!m_path.back().compare("manufacturer"))
+			if (!current.compare("manufacturer"))
 				m_device.manufacturer = std::move(str);
-			else if (!m_path.back().compare("modelName"))
+			else if (!current.compare("modelName"))
 				m_device.modelName = std::move(str);
 			break;
 		case 's':
-			if (!m_path.back().compare("serviceType"))
+			if (!current.compare("serviceType"))
 				m_tservice.serviceType = std::move(str);
-			else if (!m_path.back().compare("serviceId"))
+			else if (!current.compare("serviceId"))
 				m_tservice.serviceId = std::move(str);
 		case 'S':
-			if (!m_path.back().compare("SCPDURL"))
+			if (!current.compare("SCPDURL"))
 				m_tservice.SCPDURL = std::move(str);
 			break;
 		case 'U':
-			if (!m_path.back().compare("UDN"))
+			if (!current.compare("UDN"))
 				m_device.UDN = std::move(str);
-			else if (!m_path.back().compare("URLBase"))
+			else if (!current.compare("URLBase"))
 				m_device.URLBase = std::move(str);
 			break;
 		}
