@@ -71,10 +71,9 @@ UPnPDeviceDirectory::discoExplorer()
 		if (code != UPNP_E_SUCCESS) {
 			continue;
 		}
-		std::string sdesc(buf);
 
 		// Update or insert the device
-		ContentDirectoryDescriptor d(tsk->url, sdesc,
+		ContentDirectoryDescriptor d(tsk->url, buf,
 					     time(0), tsk->expires);
 		if (!d.device.ok) {
 			continue;
