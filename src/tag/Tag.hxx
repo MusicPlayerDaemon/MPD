@@ -47,23 +47,23 @@ struct Tag {
 	 */
 	bool has_playlist;
 
+	/** the total number of tag items in the #items array */
+	unsigned short num_items;
+
 	/** an array of tag items */
 	TagItem **items;
-
-	/** the total number of tag items in the #items array */
-	unsigned num_items;
 
 	/**
 	 * Create an empty tag.
 	 */
 	Tag():time(-1), has_playlist(false),
-	      items(nullptr), num_items(0) {}
+	      num_items(0), items(nullptr) {}
 
 	Tag(const Tag &other);
 
 	Tag(Tag &&other)
 		:time(other.time), has_playlist(other.has_playlist),
-		 items(other.items), num_items(other.num_items) {
+		 num_items(other.num_items), items(other.items) {
 		other.items = nullptr;
 		other.num_items = 0;
 	}

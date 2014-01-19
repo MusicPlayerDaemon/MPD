@@ -76,8 +76,8 @@ Tag::Clear()
 
 Tag::Tag(const Tag &other)
 	:time(other.time), has_playlist(other.has_playlist),
-	 items(nullptr),
-	 num_items(other.num_items)
+	 num_items(other.num_items),
+	 items(nullptr)
 {
 	if (num_items > 0) {
 		items = new TagItem *[num_items];
