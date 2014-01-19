@@ -38,6 +38,7 @@
 struct Tag;
 struct TagItem;
 struct Song;
+struct LightSong;
 class DetachedSong;
 
 class SongFilter {
@@ -80,10 +81,10 @@ public:
 		bool Match(const Tag &tag) const;
 
 		gcc_pure
-		bool Match(const Song &song) const;
+		bool Match(const DetachedSong &song) const;
 
 		gcc_pure
-		bool Match(const DetachedSong &song) const;
+		bool Match(const LightSong &song) const;
 	};
 
 private:
@@ -107,10 +108,10 @@ public:
 	bool Match(const Tag &tag) const;
 
 	gcc_pure
-	bool Match(const Song &song) const;
+	bool Match(const DetachedSong &song) const;
 
 	gcc_pure
-	bool Match(const DetachedSong &song) const;
+	bool Match(const LightSong &song) const;
 
 	const std::list<Item> &GetItems() const {
 		return items;

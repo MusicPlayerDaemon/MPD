@@ -22,6 +22,7 @@
 
 #include "DatabasePlugin.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "LightSong.hxx"
 #include "Compiler.h"
 
 #include <cassert>
@@ -35,6 +36,11 @@ class SimpleDatabase : public Database {
 	Directory *root;
 
 	time_t mtime;
+
+	/**
+	 * A buffer for GetSong().
+	 */
+	mutable LightSong light_song;
 
 #ifndef NDEBUG
 	mutable unsigned borrowed_song_count;
@@ -60,9 +66,9 @@ public:
 	virtual bool Open(Error &error) override;
 	virtual void Close() override;
 
-	virtual Song *GetSong(const char *uri_utf8,
-			      Error &error) const override;
-	virtual void ReturnSong(Song *song) const;
+	virtual const LightSong *GetSong(const char *uri_utf8,
+					 Error &error) const override;
+	virtual void ReturnSong(const LightSong *song) const;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,

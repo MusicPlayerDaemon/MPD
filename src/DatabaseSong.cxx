@@ -31,7 +31,7 @@ DatabaseDetachSong(const char *uri, Error &error)
 	if (db == nullptr)
 		return nullptr;
 
-	Song *tmp = db->GetSong(uri, error);
+	const LightSong *tmp = db->GetSong(uri, error);
 	if (tmp == nullptr)
 		return nullptr;
 

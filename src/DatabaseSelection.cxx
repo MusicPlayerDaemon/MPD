@@ -31,7 +31,7 @@ DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 }
 
 bool
-DatabaseSelection::Match(const Song &song) const
+DatabaseSelection::Match(const LightSong &song) const
 {
 	return filter == nullptr || filter->Match(song);
 }

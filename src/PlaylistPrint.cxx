@@ -30,11 +30,13 @@
 #include "DatabasePlugin.hxx"
 #include "Client.hxx"
 #include "InputStream.hxx"
-#include "Song.hxx"
 #include "DetachedSong.hxx"
 #include "fs/Traits.hxx"
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
+
+#define SONG_FILE "file: "
+#define SONG_TIME "Time: "
 
 void
 playlist_print_uris(Client &client, const playlist &playlist)
@@ -118,7 +120,7 @@ PrintSongDetails(Client &client, const char *uri_utf8)
 	if (db == nullptr)
 		return false;
 
-	Song *song = db->GetSong(uri_utf8, IgnoreError());
+	auto *song = db->GetSong(uri_utf8, IgnoreError());
 	if (song == nullptr)
 		return false;
 

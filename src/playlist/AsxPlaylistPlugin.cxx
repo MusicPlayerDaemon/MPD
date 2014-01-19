@@ -21,7 +21,6 @@
 #include "AsxPlaylistPlugin.hxx"
 #include "PlaylistPlugin.hxx"
 #include "MemorySongEnumerator.hxx"
-#include "Song.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"

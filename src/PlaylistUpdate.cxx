@@ -21,7 +21,7 @@
 #include "Playlist.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
-#include "Song.hxx"
+#include "LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
@@ -35,7 +35,7 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 		   from the Database */
 		return false;
 
-	Song *original = db.GetSong(song.GetURI(), IgnoreError());
+	const LightSong *original = db.GetSong(song.GetURI(), IgnoreError());
 	if (original == nullptr)
 		/* not found - shouldn't happen, because the update
 		   thread should ensure that all stale Song instances
@@ -49,7 +49,7 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 	}
 
 	song.SetLastModified(original->mtime);
-	song.SetTag(original->tag);
+	song.SetTag(*original->tag);
 
 	db.ReturnSong(original);
 	return true;

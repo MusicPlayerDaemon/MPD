@@ -29,7 +29,6 @@
 #include "PlayerControl.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "Song.hxx"
 #include "DetachedSong.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"

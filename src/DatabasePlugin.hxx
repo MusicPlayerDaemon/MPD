@@ -35,7 +35,7 @@
 struct config_param;
 struct DatabaseSelection;
 struct db_visitor;
-struct Song;
+struct LightSong;
 class Error;
 class EventLoop;
 class DatabaseListener;
@@ -94,14 +94,14 @@ public:
 	 * @param uri_utf8 the URI of the song within the music
 	 * directory (UTF-8)
 	 */
-	virtual Song *GetSong(const char *uri_utf8,
-			      Error &error) const = 0;
+	virtual const LightSong *GetSong(const char *uri_utf8,
+					 Error &error) const = 0;
 
 	/**
 	 * Mark the song object as "unused".  Call this on objects
 	 * returned by GetSong().
 	 */
-	virtual void ReturnSong(Song *song) const = 0;
+	virtual void ReturnSong(const LightSong *song) const = 0;
 
 	/**
 	 * Visit the selected entities.

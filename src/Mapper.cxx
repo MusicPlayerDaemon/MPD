@@ -218,7 +218,7 @@ map_detached_song_fs(const char *uri_utf8)
 }
 
 DetachedSong
-map_song_detach(const Song &song)
+map_song_detach(const LightSong &song)
 {
 	return DetachedSong(song);
 }

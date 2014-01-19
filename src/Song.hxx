@@ -29,9 +29,7 @@
 #include <assert.h>
 #include <time.h>
 
-#define SONG_FILE	"file: "
-#define SONG_TIME	"Time: "
-
+struct LightSong;
 struct Directory;
 class DetachedSong;
 
@@ -112,7 +110,7 @@ struct Song {
 	std::string GetURI() const;
 
 	gcc_pure
-	double GetDuration() const;
+	LightSong Export() const;
 };
 
 #endif

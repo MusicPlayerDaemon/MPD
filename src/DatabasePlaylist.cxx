@@ -30,7 +30,7 @@
 
 static bool
 AddSong(const char *playlist_path_utf8,
-	Song &song, Error &error)
+	const LightSong &song, Error &error)
 {
 	return spl_append_song(playlist_path_utf8, map_song_detach(song),
 			       error);

@@ -22,6 +22,7 @@
 #include "DatabaseSelection.hxx"
 #include "DatabaseHelpers.hxx"
 #include "Directory.hxx"
+#include "Song.hxx"
 #include "SongFilter.hxx"
 #include "DatabaseSave.hxx"
 #include "DatabaseLock.hxx"
@@ -193,29 +194,34 @@ SimpleDatabase::Close()
 	delete root;
 }
 
-Song *
+const LightSong *
 SimpleDatabase::GetSong(const char *uri, Error &error) const
 {
 	assert(root != nullptr);
+	assert(borrowed_song_count == 0);
 
 	db_lock();
-	Song *song = root->LookupSong(uri);
+	const Song *song = root->LookupSong(uri);
 	db_unlock();
-	if (song == nullptr)
+	if (song == nullptr) {
 		error.Format(db_domain, DB_NOT_FOUND,
 			     "No such song: %s", uri);
+		return nullptr;
+	}
+
+	light_song = song->Export();
+
 #ifndef NDEBUG
-	else
-		++borrowed_song_count;
+	++borrowed_song_count;
 #endif
 
-	return song;
+	return &light_song;
 }
 
 void
-SimpleDatabase::ReturnSong(gcc_unused Song *song) const
+SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 {
-	assert(song != nullptr);
+	assert(song == &light_song);
 
 #ifndef NDEBUG
 	assert(borrowed_song_count > 0);
@@ -247,9 +253,11 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	if (directory == nullptr) {
 		if (visit_song) {
 			Song *song = root->LookupSong(selection.uri.c_str());
-			if (song != nullptr)
-				return !selection.Match(*song) ||
-					visit_song(*song, error);
+			if (song != nullptr) {
+				const LightSong song2 = song->Export();
+				return !selection.Match(song2) ||
+					visit_song(song2, error);
+			}
 		}
 
 		error.Set(db_domain, DB_NOT_FOUND, "No such directory");

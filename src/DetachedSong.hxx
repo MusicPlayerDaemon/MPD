@@ -29,10 +29,10 @@
 
 #include <time.h>
 
-struct Song;
+struct LightSong;
 
 class DetachedSong {
-	friend DetachedSong map_song_detach(const Song &song);
+	friend DetachedSong map_song_detach(const LightSong &song);
 
 	/**
 	 * An UTF-8-encoded URI referring to the song file.  This can
@@ -62,7 +62,7 @@ class DetachedSong {
 	 */
 	unsigned end_ms;
 
-	explicit DetachedSong(const Song &other);
+	explicit DetachedSong(const LightSong &other);
 
 public:
 	explicit DetachedSong(const DetachedSong &other)

@@ -17,17 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Song.hxx"
-#include "directory.h"
-#include "Compiler.h"
+#include "LightSong.hxx"
+#include "tag/Tag.hxx"
 
-#include <stdlib.h>
-
-struct directory detached_root;
-
-Song *
-song_dup_detached(gcc_unused const Song *src)
+double
+LightSong::GetDuration() const
 {
-	abort();
+	if (end_ms > 0)
+		return (end_ms - start_ms) / 1000.0;
+
+	if (tag->time <= 0)
+		return 0;
+
+	return tag->time - start_ms / 1000.0;
 }

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SongPrint.hxx"
-#include "Song.hxx"
+#include "LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "Directory.hxx"
 #include "TimePrint.hxx"
@@ -27,6 +27,8 @@
 #include "Mapper.hxx"
 #include "Client.hxx"
 #include "util/UriUtil.hxx"
+
+#define SONG_FILE "file: "
 
 static void
 song_print_uri(Client &client, const char *uri)
@@ -40,11 +42,11 @@ song_print_uri(Client &client, const char *uri)
 }
 
 void
-song_print_uri(Client &client, const Song &song)
+song_print_uri(Client &client, const LightSong &song)
 {
-	if (song.parent != nullptr && !song.parent->IsRoot()) {
+	if (song.directory != nullptr) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
-			      song.parent->GetPath(), song.uri);
+			      song.directory, song.uri);
 	} else
 		song_print_uri(client, song.uri);
 }
@@ -56,7 +58,7 @@ song_print_uri(Client &client, const DetachedSong &song)
 }
 
 void
-song_print_info(Client &client, const Song &song)
+song_print_info(Client &client, const LightSong &song)
 {
 	song_print_uri(client, song);
 
@@ -74,7 +76,7 @@ song_print_info(Client &client, const Song &song)
 	if (song.mtime > 0)
 		time_print(client, "Last-Modified", song.mtime);
 
-	tag_print(client, song.tag);
+	tag_print(client, *song.tag);
 }
 
 void

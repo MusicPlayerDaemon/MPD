@@ -24,6 +24,7 @@
 #include "DatabaseLock.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
+#include "LightSong.hxx"
 #include "fs/Traits.hxx"
 #include "util/Alloc.hxx"
 #include "util/Error.hxx"
@@ -251,6 +252,20 @@ Directory::Sort()
 		child->Sort();
 }
 
+static LightSong
+ExportSong(const Song &src)
+{
+	LightSong dest;
+	dest.directory = src.parent->IsRoot()
+		? nullptr : src.parent->GetPath();
+	dest.uri = src.uri;
+	dest.tag = &src.tag;
+	dest.mtime = src.mtime;
+	dest.start_ms = src.start_ms;
+	dest.end_ms = src.end_ms;
+	return dest;
+}
+
 bool
 Directory::Walk(bool recursive, const SongFilter *filter,
 		VisitDirectory visit_directory, VisitSong visit_song,
@@ -261,10 +276,12 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 
 	if (visit_song) {
 		Song *song;
-		directory_for_each_song(song, *this)
-			if ((filter == nullptr || filter->Match(*song)) &&
-			    !visit_song(*song, error))
+		directory_for_each_song(song, *this) {
+			const LightSong song2 = ExportSong(*song);
+			if ((filter == nullptr || filter->Match(song2)) &&
+			    !visit_song(song2, error))
 				return false;
+		}
 	}
 
 	if (visit_playlist) {

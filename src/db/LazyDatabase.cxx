@@ -51,7 +51,7 @@ LazyDatabase::Close()
 	}
 }
 
-Song *
+const LightSong *
 LazyDatabase::GetSong(const char *uri, Error &error) const
 {
 	return EnsureOpen(error)
@@ -60,7 +60,7 @@ LazyDatabase::GetSong(const char *uri, Error &error) const
 }
 
 void
-LazyDatabase::ReturnSong(Song *song) const
+LazyDatabase::ReturnSong(const LightSong *song) const
 {
 	assert(open);
 

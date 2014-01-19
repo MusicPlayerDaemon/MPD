@@ -39,7 +39,7 @@ struct sticker_song_find_data {
 };
 
 static void
-sticker_song_find_print_cb(Song &song, const char *value,
+sticker_song_find_print_cb(const LightSong &song, const char *value,
 			   void *user_data)
 {
 	struct sticker_song_find_data *data =
@@ -59,7 +59,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 
 	/* get song song_id key */
 	if (argc == 5 && strcmp(argv[1], "get") == 0) {
-		Song *song = db->GetSong(argv[3], error);
+		const LightSong *song = db->GetSong(argv[3], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
@@ -76,7 +76,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		return CommandResult::OK;
 	/* list song song_id */
 	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
-		Song *song = db->GetSong(argv[3], error);
+		const LightSong *song = db->GetSong(argv[3], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
@@ -90,7 +90,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 		return CommandResult::OK;
 	/* set song song_id id key */
 	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
-		Song *song = db->GetSong(argv[3], error);
+		const LightSong *song = db->GetSong(argv[3], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
@@ -106,7 +106,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 	/* delete song song_id [key] */
 	} else if ((argc == 4 || argc == 5) &&
 		   strcmp(argv[1], "delete") == 0) {
-		Song *song = db->GetSong(argv[3], error);
+		const LightSong *song = db->GetSong(argv[3], error);
 		if (song == nullptr)
 			return print_error(client, error);
 

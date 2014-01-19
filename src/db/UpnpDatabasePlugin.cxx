@@ -31,7 +31,7 @@
 #include "DatabaseError.hxx"
 #include "PlaylistVector.hxx"
 #include "Directory.hxx"
-#include "Song.hxx"
+#include "LightSong.hxx"
 #include "ConfigData.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"
@@ -49,6 +49,31 @@
 
 static const char *const rootid = "0";
 
+class UpnpSong : public LightSong {
+	std::string uri2;
+
+	Tag tag2;
+
+public:
+	explicit UpnpSong(UPnPDirObject &&object)
+		:uri2(std::move(object.url)), tag2(std::move(object.tag)) {
+		directory = nullptr;
+		uri = uri2.c_str();
+		tag = &tag2;
+		mtime = 0;
+		start_ms = end_ms = 0;
+	}
+
+	UpnpSong(UPnPDirObject &&object, const char *_uri)
+		:uri2(_uri), tag2(std::move(object.tag)) {
+		directory = nullptr;
+		uri = uri2.c_str();
+		tag = &tag2;
+		mtime = 0;
+		start_ms = end_ms = 0;
+	}
+};
+
 class UpnpDatabase : public Database {
 	LibUPnP *m_lib;
 	UPnPDeviceDirectory *m_superdir;
@@ -61,9 +86,9 @@ public:
 
 	virtual bool Open(Error &error) override;
 	virtual void Close() override;
-	virtual Song *GetSong(const char *uri_utf8,
-			      Error &error) const override;
-	virtual void ReturnSong(Song *song) const;
+	virtual const LightSong *GetSong(const char *uri_utf8,
+					 Error &error) const override;
+	virtual void ReturnSong(const LightSong *song) const;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
@@ -187,34 +212,20 @@ UpnpDatabase::Close()
 }
 
 void
-UpnpDatabase::ReturnSong(Song *song) const
+UpnpDatabase::ReturnSong(const LightSong *_song) const
 {
-	assert(song != nullptr);
+	assert(_song != nullptr);
 
-	song->Free();
-}
-
-// If uri is empty, we use the object's url instead. This happens
-// when the target of a Visit() is a song, which  only happens when
-// "add"ing AFAIK. Visit() calls us with a null uri so that the url
-// appropriate for fetching is used instead.
-static Song *
-upnpItemToSong(UPnPDirObject &&dirent, const char *uri)
-{
-	if (*uri == 0)
-		uri = dirent.url.c_str();
-
-	Song *s = Song::NewFile(uri, nullptr);
-	s->tag = std::move(dirent.tag);
-	return s;
+	UpnpSong *song = (UpnpSong *)const_cast<LightSong *>(_song);
+	delete song;
 }
 
 // Get song info by path. We can receive either the id path, or the titles
 // one
-Song *
+const LightSong *
 UpnpDatabase::GetSong(const char *uri, Error &error) const
 {
-	Song *song = nullptr;
+	UpnpSong *song = nullptr;
 	auto vpath = stringToTokens(uri, "/", true);
 	if (vpath.size() >= 2) {
 		ContentDirectoryService server;
@@ -232,7 +243,8 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 				      error))
 				return nullptr;
 		}
-		song = upnpItemToSong(std::move(dirent), "");
+
+		song = new UpnpSong(std::move(dirent));
 	}
 	if (song == nullptr)
 		error.Format(db_domain, DB_NOT_FOUND, "No such song: %s", uri);
@@ -357,12 +369,9 @@ visitSong(UPnPDirObject &&meta, const char *path,
 {
 	if (!visit_song)
 		return true;
-	Song *s = upnpItemToSong(std::move(meta), path);
-	if (!selection.Match(*s))
-		return true;
-	bool success = visit_song(*s, error);
-	s->Free();
-	return success;
+
+	const UpnpSong song(std::move(meta), path);
+	return !selection.Match(song) || visit_song(song, error);
 }
 
 /**

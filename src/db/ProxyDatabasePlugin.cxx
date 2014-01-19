@@ -24,11 +24,12 @@
 #include "DatabaseSelection.hxx"
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
-#include "Song.hxx"
+#include "LightSong.hxx"
 #include "SongFilter.hxx"
 #include "Compiler.h"
 #include "ConfigData.hxx"
 #include "tag/TagBuilder.hxx"
+#include "tag/Tag.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "protocol/Ack.hxx"
@@ -43,6 +44,25 @@
 #include <cassert>
 #include <string>
 #include <list>
+
+class ProxySong : public LightSong {
+	Tag tag2;
+
+public:
+	explicit ProxySong(const mpd_song *song);
+};
+
+class AllocatedProxySong : public ProxySong {
+	mpd_song *const song;
+
+public:
+	explicit AllocatedProxySong(mpd_song *_song)
+		:ProxySong(_song), song(_song) {}
+
+	~AllocatedProxySong() {
+		mpd_song_free(song);
+	}
+};
 
 class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 	DatabaseListener &listener;
@@ -79,9 +99,9 @@ public:
 
 	virtual bool Open(Error &error) override;
 	virtual void Close() override;
-	virtual Song *GetSong(const char *uri_utf8,
+	virtual const LightSong *GetSong(const char *uri_utf8,
 				     Error &error) const override;
-	virtual void ReturnSong(Song *song) const;
+	virtual void ReturnSong(const LightSong *song) const;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
@@ -143,6 +163,38 @@ static constexpr struct {
 	{ TAG_MUSICBRAINZ_TRACKID, MPD_TAG_MUSICBRAINZ_TRACKID },
 	{ TAG_NUM_OF_ITEM_TYPES, MPD_TAG_COUNT }
 };
+
+static void
+Copy(TagBuilder &tag, TagType d_tag,
+     const struct mpd_song *song, enum mpd_tag_type s_tag)
+{
+
+	for (unsigned i = 0;; ++i) {
+		const char *value = mpd_song_get_tag(song, s_tag, i);
+		if (value == nullptr)
+			break;
+
+		tag.AddItem(d_tag, value);
+	}
+}
+
+ProxySong::ProxySong(const mpd_song *song)
+{
+	directory = nullptr;
+	uri = mpd_song_get_uri(song);
+	tag = &tag2;
+	mtime = mpd_song_get_last_modified(song);
+	start_ms = mpd_song_get_start(song) * 1000;
+	end_ms = mpd_song_get_end(song) * 1000;
+
+	TagBuilder tag_builder;
+	tag_builder.SetTime(mpd_song_get_duration(song));
+
+	for (const auto *i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
+		Copy(tag_builder, i->d, song, i->s);
+
+	tag_builder.Commit(tag2);
+}
 
 gcc_const
 static enum mpd_tag_type
@@ -424,10 +476,7 @@ ProxyDatabase::OnIdle()
 	SocketMonitor::ScheduleRead();
 }
 
-static Song *
-Convert(const struct mpd_song *song);
-
-Song *
+const LightSong *
 ProxyDatabase::GetSong(const char *uri, Error &error) const
 {
 	// TODO: eliminate the const_cast
@@ -452,18 +501,17 @@ ProxyDatabase::GetSong(const char *uri, Error &error) const
 		return nullptr;
 	}
 
-	Song *song2 = Convert(song);
-	mpd_song_free(song);
-	return song2;
+	return new AllocatedProxySong(song);
 }
 
 void
-ProxyDatabase::ReturnSong(Song *song) const
+ProxyDatabase::ReturnSong(const LightSong *_song) const
 {
-	assert(song != nullptr);
-	assert(song->parent == nullptr);
+	assert(_song != nullptr);
 
-	song->Free();
+	AllocatedProxySong *song = (AllocatedProxySong *)
+		const_cast<LightSong *>(_song);
+	delete song;
 }
 
 static bool
@@ -493,60 +541,23 @@ Visit(struct mpd_connection *connection, Directory &root,
 	return true;
 }
 
-static void
-Copy(TagBuilder &tag, TagType d_tag,
-     const struct mpd_song *song, enum mpd_tag_type s_tag)
-{
-
-	for (unsigned i = 0;; ++i) {
-		const char *value = mpd_song_get_tag(song, s_tag, i);
-		if (value == nullptr)
-			break;
-
-		tag.AddItem(d_tag, value);
-	}
-}
-
-static Song *
-Convert(const struct mpd_song *song)
-{
-	Song *s = Song::NewFile(mpd_song_get_uri(song), nullptr);
-
-	s->mtime = mpd_song_get_last_modified(song);
-	s->start_ms = mpd_song_get_start(song) * 1000;
-	s->end_ms = mpd_song_get_end(song) * 1000;
-
-	TagBuilder tag;
-	tag.SetTime(mpd_song_get_duration(song));
-
-	for (const auto *i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
-		Copy(tag, i->d, song, i->s);
-
-	tag.Commit(s->tag);
-
-	return s;
-}
-
 gcc_pure
 static bool
-Match(const SongFilter *filter, const Song &song)
+Match(const SongFilter *filter, const LightSong &song)
 {
 	return filter == nullptr || filter->Match(song);
 }
 
 static bool
 Visit(const SongFilter *filter,
-      const struct mpd_song *song,
+      const mpd_song *_song,
       VisitSong visit_song, Error &error)
 {
 	if (!visit_song)
 		return true;
 
-	Song *s = Convert(song);
-	bool success = !Match(filter, *s) || visit_song(*s, error);
-	s->Free();
-
-	return success;
+	const ProxySong song(_song);
+	return !Match(filter, song) || visit_song(song, error);
 }
 
 static bool
@@ -664,12 +675,10 @@ SearchSongs(struct mpd_connection *connection,
 	bool result = true;
 	struct mpd_song *song;
 	while (result && (song = mpd_recv_song(connection)) != nullptr) {
-		Song *song2 = Convert(song);
-		mpd_song_free(song);
+		AllocatedProxySong song2(song);
 
-		result = !Match(selection.filter, *song2) ||
-			visit_song(*song2, error);
-		song2->Free();
+		result = !Match(selection.filter, song2) ||
+			visit_song(song2, error);
 	}
 
 	mpd_response_finish(connection);

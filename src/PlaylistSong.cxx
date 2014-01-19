@@ -29,7 +29,6 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"
-#include "Song.hxx"
 
 #include <assert.h>
 #include <string.h>

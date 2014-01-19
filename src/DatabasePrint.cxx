@@ -26,7 +26,7 @@
 #include "Directory.hxx"
 #include "Client.hxx"
 #include "tag/Tag.hxx"
-#include "Song.hxx"
+#include "LightSong.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 
@@ -52,6 +52,17 @@ PrintDirectoryFull(Client &client, const Directory &directory)
 	return true;
 }
 
+static void
+print_playlist_in_directory(Client &client,
+			    const char *directory,
+			    const char *name_utf8)
+{
+	if (directory == nullptr)
+		client_printf(client, "playlist: %s\n", name_utf8);
+	else
+		client_printf(client, "playlist: %s/%s\n",
+			      directory, name_utf8);
+}
 
 static void
 print_playlist_in_directory(Client &client,
@@ -66,25 +77,25 @@ print_playlist_in_directory(Client &client,
 }
 
 static bool
-PrintSongBrief(Client &client, const Song &song)
+PrintSongBrief(Client &client, const LightSong &song)
 {
 	song_print_uri(client, song);
 
-	if (song.tag.has_playlist)
+	if (song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
-		print_playlist_in_directory(client, song.parent, song.uri);
+		print_playlist_in_directory(client, song.directory, song.uri);
 
 	return true;
 }
 
 static bool
-PrintSongFull(Client &client, const Song &song)
+PrintSongFull(Client &client, const LightSong &song)
 {
 	song_print_info(client, song);
 
-	if (song.tag.has_playlist)
+	if (song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
-		print_playlist_in_directory(client, song.parent, song.uri);
+		print_playlist_in_directory(client, song.directory, song.uri);
 
 	return true;
 }
@@ -146,7 +157,7 @@ static void printSearchStats(Client &client, SearchStats *stats)
 }
 
 static bool
-stats_visitor_song(SearchStats &stats, Song &song)
+stats_visitor_song(SearchStats &stats, const LightSong &song)
 {
 	stats.numberOfSongs++;
 	stats.playTime += song.GetDuration();
@@ -195,7 +206,7 @@ printInfoForAllIn(Client &client, const char *uri_utf8,
 }
 
 static bool
-PrintSongURIVisitor(Client &client, Song &song)
+PrintSongURIVisitor(Client &client, const LightSong &song)
 {
 	song_print_uri(client, song);
 

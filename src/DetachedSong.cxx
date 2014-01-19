@@ -19,13 +19,13 @@
 
 #include "config.h"
 #include "DetachedSong.hxx"
-#include "Song.hxx"
+#include "LightSong.hxx"
 #include "util/UriUtil.hxx"
 #include "fs/Traits.hxx"
 
-DetachedSong::DetachedSong(const Song &other)
+DetachedSong::DetachedSong(const LightSong &other)
 	:uri(other.GetURI().c_str()),
-	 tag(other.tag),
+	 tag(*other.tag),
 	 mtime(other.mtime),
 	 start_ms(other.start_ms), end_ms(other.end_ms) {}
 

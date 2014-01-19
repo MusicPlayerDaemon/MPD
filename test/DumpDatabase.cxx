@@ -23,7 +23,7 @@
 #include "DatabaseSelection.hxx"
 #include "DatabaseListener.hxx"
 #include "Directory.hxx"
-#include "Song.hxx"
+#include "LightSong.hxx"
 #include "PlaylistVector.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigData.hxx"
@@ -65,11 +65,11 @@ DumpDirectory(const Directory &directory, Error &)
 }
 
 static bool
-DumpSong(Song &song, Error &)
+DumpSong(const LightSong &song, Error &)
 {
 	cout << "S ";
-	if (song.parent != nullptr && !song.parent->IsRoot())
-		cout << song.parent->path << "/";
+	if (song.directory != nullptr)
+		cout << song.directory << "/";
 	cout << song.uri << endl;
 	return true;
 }

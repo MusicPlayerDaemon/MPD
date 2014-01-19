@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SongFilter.hxx"
 #include "Song.hxx"
+#include "LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "util/ASCII.hxx"
@@ -137,7 +138,19 @@ SongFilter::Item::Match(const Tag &_tag) const
 }
 
 bool
-SongFilter::Item::Match(const Song &song) const
+SongFilter::Item::Match(const DetachedSong &song) const
+{
+	if (tag == LOCATE_TAG_BASE_TYPE)
+		return uri_is_child_or_same(value.c_str(), song.GetURI());
+
+	if (tag == LOCATE_TAG_FILE_TYPE)
+		return StringMatch(song.GetURI());
+
+	return Match(song.GetTag());
+}
+
+bool
+SongFilter::Item::Match(const LightSong &song) const
 {
 	if (tag == LOCATE_TAG_BASE_TYPE) {
 		const auto uri = song.GetURI();
@@ -149,19 +162,7 @@ SongFilter::Item::Match(const Song &song) const
 		return StringMatch(uri.c_str());
 	}
 
-	return Match(song.tag);
-}
-
-bool
-SongFilter::Item::Match(const DetachedSong &song) const
-{
-	if (tag == LOCATE_TAG_BASE_TYPE)
-		return uri_is_child_or_same(value.c_str(), song.GetURI());
-
-	if (tag == LOCATE_TAG_FILE_TYPE)
-		return StringMatch(song.GetURI());
-
-	return Match(song.GetTag());
+	return Match(*song.tag);
 }
 
 SongFilter::SongFilter(unsigned tag, const char *value, bool fold_case)
@@ -207,7 +208,7 @@ SongFilter::Parse(unsigned argc, char *argv[], bool fold_case)
 }
 
 bool
-SongFilter::Match(const Song &song) const
+SongFilter::Match(const DetachedSong &song) const
 {
 	for (const auto &i : items)
 		if (!i.Match(song))
@@ -217,7 +218,7 @@ SongFilter::Match(const Song &song) const
 }
 
 bool
-SongFilter::Match(const DetachedSong &song) const
+SongFilter::Match(const LightSong &song) const
 {
 	for (const auto &i : items)
 		if (!i.Match(song))

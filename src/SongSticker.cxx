@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SongSticker.hxx"
 #include "StickerDatabase.hxx"
+#include "LightSong.hxx"
 #include "Song.hxx"
 #include "Directory.hxx"
 
@@ -29,14 +30,14 @@
 #include <string.h>
 
 std::string
-sticker_song_get_value(const Song &song, const char *name)
+sticker_song_get_value(const LightSong &song, const char *name)
 {
 	const auto uri = song.GetURI();
 	return sticker_load_value("song", uri.c_str(), name);
 }
 
 bool
-sticker_song_set_value(const Song &song,
+sticker_song_set_value(const LightSong &song,
 		       const char *name, const char *value)
 {
 	const auto uri = song.GetURI();
@@ -44,21 +45,21 @@ sticker_song_set_value(const Song &song,
 }
 
 bool
-sticker_song_delete(const Song &song)
+sticker_song_delete(const LightSong &song)
 {
 	const auto uri = song.GetURI();
 	return sticker_delete("song", uri.c_str());
 }
 
 bool
-sticker_song_delete_value(const Song &song, const char *name)
+sticker_song_delete_value(const LightSong &song, const char *name)
 {
 	const auto uri = song.GetURI();
 	return sticker_delete_value("song", uri.c_str(), name);
 }
 
 struct sticker *
-sticker_song_get(const Song &song)
+sticker_song_get(const LightSong &song)
 {
 	const auto uri = song.GetURI();
 	return sticker_load("song", uri.c_str());
@@ -69,7 +70,7 @@ struct sticker_song_find_data {
 	const char *base_uri;
 	size_t base_uri_length;
 
-	void (*func)(Song &song, const char *value,
+	void (*func)(const LightSong &song, const char *value,
 		     void *user_data);
 	void *user_data;
 };
@@ -86,12 +87,12 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 
 	Song *song = data->directory->LookupSong(uri + data->base_uri_length);
 	if (song != nullptr)
-		data->func(*song, value, data->user_data);
+		data->func(song->Export(), value, data->user_data);
 }
 
 bool
 sticker_song_find(Directory &directory, const char *name,
-		  void (*func)(Song &song, const char *value,
+		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data)
 {

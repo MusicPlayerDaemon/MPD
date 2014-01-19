@@ -29,7 +29,7 @@
 #include <functional>
 
 static bool
-AddToQueue(Partition &partition, const Song &song, Error &error)
+AddToQueue(Partition &partition, const LightSong &song, Error &error)
 {
 	PlaylistResult result =
 		partition.playlist.AppendSong(partition.pc,

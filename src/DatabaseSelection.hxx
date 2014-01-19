@@ -25,7 +25,7 @@
 #include <string>
 
 class SongFilter;
-struct Song;
+struct LightSong;
 
 struct DatabaseSelection {
 	/**
@@ -45,7 +45,7 @@ struct DatabaseSelection {
 			  const SongFilter *_filter=nullptr);
 
 	gcc_pure
-	bool Match(const Song &song) const;
+	bool Match(const LightSong &song) const;
 };
 
 #endif

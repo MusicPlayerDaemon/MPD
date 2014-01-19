@@ -23,6 +23,7 @@
 #include "tag/Tag.hxx"
 #include "util/VarSize.hxx"
 #include "DetachedSong.hxx"
+#include "LightSong.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -94,14 +95,16 @@ Song::GetURI() const
 	}
 }
 
-double
-Song::GetDuration() const
+LightSong
+Song::Export() const
 {
-	if (end_ms > 0)
-		return (end_ms - start_ms) / 1000.0;
-
-	if (tag.time <= 0)
-		return 0;
-
-	return tag.time - start_ms / 1000.0;
+	LightSong dest;
+	dest.directory = parent->IsRoot()
+		? nullptr : parent->GetPath();
+	dest.uri = uri;
+	dest.tag = &tag;
+	dest.mtime = mtime;
+	dest.start_ms = start_ms;
+	dest.end_ms = end_ms;
+	return dest;
 }

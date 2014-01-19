@@ -20,7 +20,8 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "tag/Tag.hxx"
-#include "Song.hxx"
+
+#define SONG_TIME "Time: "
 
 void
 tag_save(FILE *file, const Tag &tag)

@@ -20,7 +20,7 @@
 #ifndef MPD_SONG_PRINT_HXX
 #define MPD_SONG_PRINT_HXX
 
-struct Song;
+struct LightSong;
 class DetachedSong;
 class Client;
 
@@ -28,10 +28,10 @@ void
 song_print_info(Client &client, const DetachedSong &song);
 
 void
-song_print_info(Client &client, const Song &song);
+song_print_info(Client &client, const LightSong &song);
 
 void
-song_print_uri(Client &client, const Song &song);
+song_print_uri(Client &client, const LightSong &song);
 
 void
 song_print_uri(Client &client, const DetachedSong &song);

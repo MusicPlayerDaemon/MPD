@@ -23,7 +23,6 @@
 #include "MemorySongEnumerator.hxx"
 #include "ConfigData.hxx"
 #include "InputStream.hxx"
-#include "Song.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"

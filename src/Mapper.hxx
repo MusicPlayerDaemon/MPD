@@ -33,6 +33,7 @@
 class AllocatedPath;
 struct Directory;
 struct Song;
+struct LightSong;
 class DetachedSong;
 
 void
@@ -112,7 +113,7 @@ map_directory_child_fs(const Directory &directory, const char *name);
  */
 gcc_pure
 DetachedSong
-map_song_detach(const Song &song);
+map_song_detach(const LightSong &song);
 
 /**
  * Determines the file system path of a song.  This must not be a

@@ -22,7 +22,6 @@
 #include "PlaylistFile.hxx"
 #include "PlaylistError.hxx"
 #include "Playlist.hxx"
-#include "Song.hxx"
 #include "DetachedSong.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"

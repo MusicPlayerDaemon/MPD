@@ -23,12 +23,12 @@
 #include <functional>
 
 struct Directory;
-struct Song;
+struct LightSong;
 struct PlaylistInfo;
 class Error;
 
 typedef std::function<bool(const Directory &, Error &)> VisitDirectory;
-typedef std::function<bool(struct Song &, Error &)> VisitSong;
+typedef std::function<bool(const LightSong &, Error &)> VisitSong;
 typedef std::function<bool(const PlaylistInfo &, const Directory &,
 			   Error &)> VisitPlaylist;
 
