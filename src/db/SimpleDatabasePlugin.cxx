@@ -206,7 +206,7 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 			     "No such song: %s", uri);
 #ifndef NDEBUG
 	else
-		++const_cast<unsigned &>(borrowed_song_count);
+		++borrowed_song_count;
 #endif
 
 	return song;
@@ -219,7 +219,7 @@ SimpleDatabase::ReturnSong(gcc_unused Song *song) const
 
 #ifndef NDEBUG
 	assert(borrowed_song_count > 0);
-	--const_cast<unsigned &>(borrowed_song_count);
+	--borrowed_song_count;
 #endif
 }
 

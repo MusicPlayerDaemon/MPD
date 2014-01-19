@@ -37,7 +37,7 @@ class SimpleDatabase : public Database {
 	time_t mtime;
 
 #ifndef NDEBUG
-	unsigned borrowed_song_count;
+	mutable unsigned borrowed_song_count;
 #endif
 
 	SimpleDatabase()
