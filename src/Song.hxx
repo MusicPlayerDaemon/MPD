@@ -54,7 +54,7 @@ struct Song {
 	 * the current database plugin does not manage the parent
 	 * directory this way.
 	 */
-	Directory *parent;
+	Directory *const parent;
 
 	time_t mtime;
 
@@ -75,15 +75,15 @@ struct Song {
 	 */
 	char uri[sizeof(int)];
 
-	Song(const char *_uri, size_t uri_length, Directory *parent);
+	Song(const char *_uri, size_t uri_length, Directory &parent);
 	~Song();
 
 	gcc_malloc
-	static Song *NewFrom(DetachedSong &&other, Directory *parent);
+	static Song *NewFrom(DetachedSong &&other, Directory &parent);
 
 	/** allocate a new song with a local file name */
 	gcc_malloc
-	static Song *NewFile(const char *path_utf8, Directory *parent);
+	static Song *NewFile(const char *path_utf8, Directory &parent);
 
 	/**
 	 * allocate a new song structure with a local file name and attempt to
@@ -91,11 +91,7 @@ struct Song {
 	 * data, nullptr is returned.
 	 */
 	gcc_malloc
-	static Song *LoadFile(const char *path_utf8, Directory *parent);
-
-	static Song *LoadFile(const char *path_utf8, Directory &parent) {
-		return LoadFile(path_utf8, &parent);
-	}
+	static Song *LoadFile(const char *path_utf8, Directory &parent);
 
 	void Free();
 

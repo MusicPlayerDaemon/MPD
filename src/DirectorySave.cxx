@@ -145,7 +145,7 @@ directory_load(TextFile &file, Directory &directory, Error &error)
 				return false;
 
 			directory.AddSong(Song::NewFrom(std::move(*song),
-							&directory));
+							directory));
 			delete song;
 		} else if (StringStartsWith(line, PLAYLIST_META_BEGIN)) {
 			const char *name = line + sizeof(PLAYLIST_META_BEGIN) - 1;

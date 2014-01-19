@@ -29,8 +29,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-inline Song::Song(const char *_uri, size_t uri_length, Directory *_parent)
-	:parent(_parent), mtime(0), start_ms(0), end_ms(0)
+inline Song::Song(const char *_uri, size_t uri_length, Directory &_parent)
+	:parent(&_parent), mtime(0), start_ms(0), end_ms(0)
 {
 	memcpy(uri, _uri, uri_length + 1);
 }
@@ -40,7 +40,7 @@ inline Song::~Song()
 }
 
 static Song *
-song_alloc(const char *uri, Directory *parent)
+song_alloc(const char *uri, Directory &parent)
 {
 	size_t uri_length;
 
@@ -54,7 +54,7 @@ song_alloc(const char *uri, Directory *parent)
 }
 
 Song *
-Song::NewFrom(DetachedSong &&other, Directory *parent)
+Song::NewFrom(DetachedSong &&other, Directory &parent)
 {
 	Song *song = song_alloc(other.GetURI(), parent);
 	song->tag = std::move(other.WritableTag());
@@ -65,7 +65,7 @@ Song::NewFrom(DetachedSong &&other, Directory *parent)
 }
 
 Song *
-Song::NewFile(const char *path, Directory *parent)
+Song::NewFile(const char *path, Directory &parent)
 {
 	return song_alloc(path, parent);
 }
@@ -81,7 +81,7 @@ Song::GetURI() const
 {
 	assert(*uri);
 
-	if (parent == nullptr || parent->IsRoot())
+	if (parent->IsRoot())
 		return std::string(uri);
 	else {
 		const char *path = parent->GetPath();

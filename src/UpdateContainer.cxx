@@ -102,7 +102,7 @@ update_container_file(Directory &directory,
 	unsigned int tnum = 0;
 	TagBuilder tag_builder;
 	while ((vtrack = plugin.container_scan(pathname.c_str(), ++tnum)) != nullptr) {
-		Song *song = Song::NewFile(vtrack, contdir);
+		Song *song = Song::NewFile(vtrack, *contdir);
 
 		// shouldn't be necessary but it's there..
 		song->mtime = st->st_mtime;

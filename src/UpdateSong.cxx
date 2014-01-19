@@ -69,7 +69,7 @@ update_song_file2(Directory &directory,
 	if (song == nullptr) {
 		FormatDebug(update_domain, "reading %s/%s",
 			    directory.GetPath(), name);
-		song = Song::LoadFile(name, &directory);
+		song = Song::LoadFile(name, directory);
 		if (song == nullptr) {
 			FormatDebug(update_domain,
 				    "ignoring unrecognized file %s/%s",

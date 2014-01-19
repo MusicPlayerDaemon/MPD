@@ -40,19 +40,18 @@
 #include <sys/stat.h>
 
 Song *
-Song::LoadFile(const char *path_utf8, Directory *parent)
+Song::LoadFile(const char *path_utf8, Directory &parent)
 {
 	Song *song;
 	bool ret;
 
-	assert((parent == nullptr) == PathTraitsUTF8::IsAbsolute(path_utf8));
 	assert(!uri_has_scheme(path_utf8));
 	assert(strchr(path_utf8, '\n') == nullptr);
 
 	song = NewFile(path_utf8, parent);
 
 	//in archive ?
-	if (parent != nullptr && parent->device == DEVICE_INARCHIVE) {
+	if (parent.device == DEVICE_INARCHIVE) {
 		ret = song->UpdateFileInArchive();
 	} else {
 		ret = song->UpdateFile();
