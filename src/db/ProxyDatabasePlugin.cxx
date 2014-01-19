@@ -440,22 +440,20 @@ ProxyDatabase::GetSong(const char *uri, Error &error) const
 	}
 
 	struct mpd_song *song = mpd_recv_song(connection);
-	Song *song2 = song != nullptr
-		? Convert(song)
-		: nullptr;
-	if (song != nullptr)
-		mpd_song_free(song);
-	if (!mpd_response_finish(connection)) {
-		if (song2 != nullptr)
-			song2->Free();
-
-		CheckError(connection, error);
+	if (!mpd_response_finish(connection) &&
+	    !CheckError(connection, error)) {
+		if (song != nullptr)
+			mpd_song_free(song);
 		return nullptr;
 	}
 
-	if (song2 == nullptr)
+	if (song == nullptr) {
 		error.Format(db_domain, DB_NOT_FOUND, "No such song: %s", uri);
+		return nullptr;
+	}
 
+	Song *song2 = Convert(song);
+	mpd_song_free(song);
 	return song2;
 }
 
