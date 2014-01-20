@@ -74,13 +74,13 @@ apply_song_metadata(DetachedSong *dest, const DetachedSong &src)
 }
 
 static DetachedSong *
-playlist_check_load_song(const DetachedSong *song, const char *uri, bool secure)
+playlist_check_load_song(const DetachedSong *song, const char *uri)
 {
 	DetachedSong *dest;
 
 	if (uri_has_scheme(uri)) {
 		dest = new DetachedSong(uri);
-	} else if (PathTraitsUTF8::IsAbsolute(uri) && secure) {
+	} else if (PathTraitsUTF8::IsAbsolute(uri)) {
 		dest = new DetachedSong(uri);
 		if (!dest->Update()) {
 			delete dest;
@@ -142,7 +142,7 @@ playlist_check_translate_song(DetachedSong *song, const char *base_uri,
 		return playlist_check_translate_song(song, nullptr, secure);
 	}
 
-	DetachedSong *dest = playlist_check_load_song(song, uri, secure);
+	DetachedSong *dest = playlist_check_load_song(song, uri);
 	delete song;
 
 	return dest;
