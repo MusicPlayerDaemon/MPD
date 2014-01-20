@@ -186,15 +186,6 @@ ToString(const DetachedSong &song)
 	return result;
 }
 
-static std::string
-ToString(const DetachedSong *song)
-{
-	if (song == nullptr)
-		return "nullptr";
-
-	return ToString(*song);
-}
-
 class TranslateSongTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(TranslateSongTest);
 	CPPUNIT_TEST(TestAbsoluteURI);
@@ -205,76 +196,68 @@ class TranslateSongTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE_END();
 
 	void TestAbsoluteURI() {
-		auto song1 = new DetachedSong("http://example.com/foo.ogg");
-		auto song2 = playlist_check_translate_song(song1, "/ignored", false);
-		CPPUNIT_ASSERT_EQUAL(song1, song2);
+		DetachedSong song1("http://example.com/foo.ogg");
+		auto se = ToString(song1);
+		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/ignored", false));
+		CPPUNIT_ASSERT_EQUAL(se, ToString(song1));
 	}
 
 	void TestInsecure() {
 		/* illegal because secure=false */
-		auto song1 = new DetachedSong(uri1);
-		auto song2 = playlist_check_translate_song(song1, nullptr, false);
-		CPPUNIT_ASSERT_EQUAL((DetachedSong *)nullptr, song2);
+		DetachedSong song1 (uri1);
+		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr, false));
 	}
 
 	void TestSecure() {
-		auto song1 = new DetachedSong(uri1, MakeTag1b());
+		DetachedSong song1(uri1, MakeTag1b());
 		auto s1 = ToString(song1);
 		auto se = ToString(DetachedSong(uri1, MakeTag1c()));
-		auto song2 = playlist_check_translate_song(song1, "/ignored", true);
-		CPPUNIT_ASSERT_EQUAL(se, ToString(song2));
-		delete song2;
+		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/ignored", true));
+		CPPUNIT_ASSERT_EQUAL(se, ToString(song1));
 	}
 
 	void TestInDatabase() {
-		auto song1 = new DetachedSong("doesntexist");
-		auto song2 = playlist_check_translate_song(song1, nullptr, false);
-		CPPUNIT_ASSERT_EQUAL((DetachedSong *)nullptr, song2);
+		DetachedSong song1("doesntexist");
+		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr, false));
 
-		song1 = new DetachedSong(uri2, MakeTag2b());
-		auto s1 = ToString(song1);
+		DetachedSong song2(uri2, MakeTag2b());
+		auto s1 = ToString(song2);
 		auto se = ToString(DetachedSong(uri2, MakeTag2c()));
-		song2 = playlist_check_translate_song(song1, nullptr, false);
+		CPPUNIT_ASSERT(playlist_check_translate_song(song2, nullptr, false));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song2));
-		delete song2;
 
-		song1 = new DetachedSong("/music/foo/bar.ogg", MakeTag2b());
-		s1 = ToString(song1);
+		DetachedSong song3("/music/foo/bar.ogg", MakeTag2b());
+		s1 = ToString(song3);
 		se = ToString(DetachedSong(uri2, MakeTag2c()));
-		song2 = playlist_check_translate_song(song1, nullptr, false);
-		CPPUNIT_ASSERT_EQUAL(se, ToString(song2));
-		delete song2;
+		CPPUNIT_ASSERT(playlist_check_translate_song(song3, nullptr, false));
+		CPPUNIT_ASSERT_EQUAL(se, ToString(song3));
 	}
 
 	void TestRelative() {
 		/* map to music_directory */
-		auto song1 = new DetachedSong("bar.ogg", MakeTag2b());
+		DetachedSong song1("bar.ogg", MakeTag2b());
 		auto s1 = ToString(song1);
 		auto se = ToString(DetachedSong(uri2, MakeTag2c()));
-		auto song2 = playlist_check_translate_song(song1, "/music/foo", false);
-		CPPUNIT_ASSERT_EQUAL(se, ToString(song2));
-		delete song2;
+		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/music/foo", false));
+		CPPUNIT_ASSERT_EQUAL(se, ToString(song1));
 
 		/* illegal because secure=false */
-		song1 = new DetachedSong("bar.ogg", MakeTag2b());
-		song2 = playlist_check_translate_song(song1, "/foo", false);
-		CPPUNIT_ASSERT_EQUAL((DetachedSong *)nullptr, song2);
+		DetachedSong song2("bar.ogg", MakeTag2b());
+		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, "/foo", false));
 
 		/* legal because secure=true */
-		song1 = new DetachedSong("bar.ogg", MakeTag1b());
-		s1 = ToString(song2);
+		DetachedSong song3("bar.ogg", MakeTag1b());
+		s1 = ToString(song3);
 		se = ToString(DetachedSong(uri1, MakeTag1c()));
-		song2 = playlist_check_translate_song(song1, "/foo", true);
-		CPPUNIT_ASSERT_EQUAL(se, ToString(song2));
-		delete song2;
+		CPPUNIT_ASSERT(playlist_check_translate_song(song3, "/foo", true));
+		CPPUNIT_ASSERT_EQUAL(se, ToString(song3));
 
 		/* relative to http:// */
-		song1 = new DetachedSong("bar.ogg", MakeTag2a());
-		s1 = ToString(song1);
+		DetachedSong song4("bar.ogg", MakeTag2a());
+		s1 = ToString(song4);
 		se = ToString(DetachedSong("http://example.com/foo/bar.ogg", MakeTag2a()));
-		song2 = playlist_check_translate_song(song1, "http://example.com/foo", false);
-		CPPUNIT_ASSERT_EQUAL(se, ToString(song2));
-		delete song2;
+		CPPUNIT_ASSERT(playlist_check_translate_song(song4, "http://example.com/foo", false));
+		CPPUNIT_ASSERT_EQUAL(se, ToString(song4));
 	}
 };
 

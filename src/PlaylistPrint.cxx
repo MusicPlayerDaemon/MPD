@@ -156,15 +156,13 @@ playlist_provider_print(Client &client, const char *uri,
 
 	DetachedSong *song;
 	while ((song = e.NextSong()) != nullptr) {
-		song = playlist_check_translate_song(song, base_uri.c_str(),
-						     false);
-		if (song == nullptr)
-			continue;
-
-		if (detail)
-			song_print_info(client, *song);
-		else
-			song_print_uri(client, *song);
+		if (playlist_check_translate_song(*song, base_uri.c_str(),
+						  false)) {
+			if (detail)
+				song_print_info(client, *song);
+			else
+				song_print_uri(client, *song);
+		}
 
 		delete song;
 	}

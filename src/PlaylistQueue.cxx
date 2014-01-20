@@ -48,10 +48,11 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			continue;
 		}
 
-		song = playlist_check_translate_song(song, base_uri.c_str(),
-						     secure);
-		if (song == nullptr)
+		if (!playlist_check_translate_song(*song, base_uri.c_str(),
+						   secure)) {
+			delete song;
 			continue;
+		}
 
 		PlaylistResult result = dest.AppendSong(pc, std::move(*song));
 		delete song;

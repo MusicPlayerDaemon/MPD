@@ -34,83 +34,70 @@
 #include <string.h>
 
 static void
-merge_song_metadata(DetachedSong &dest, const DetachedSong &base,
-		    const DetachedSong &add)
+merge_song_metadata(DetachedSong &add, const DetachedSong &base)
 {
 	{
 		TagBuilder builder(add.GetTag());
 		builder.Complement(base.GetTag());
-		dest.SetTag(builder.Commit());
+		add.SetTag(builder.Commit());
 	}
 
-	dest.SetLastModified(base.GetLastModified());
-	dest.SetStartMS(add.GetStartMS());
-	dest.SetEndMS(add.GetEndMS());
+	add.SetLastModified(base.GetLastModified());
 }
 
-static DetachedSong *
-apply_song_metadata(DetachedSong *dest, const DetachedSong &src)
+static void
+apply_song_metadata(DetachedSong &dest, const DetachedSong &src)
 {
-	assert(dest != nullptr);
-
 	if (!src.GetTag().IsDefined() &&
 	    src.GetStartMS() == 0 && src.GetEndMS() == 0)
-		return dest;
+		return;
 
-	DetachedSong *tmp = new DetachedSong(dest->GetURI());
-	merge_song_metadata(*tmp, *dest, src);
+	merge_song_metadata(dest, src);
 
-	if (dest->GetTag().IsDefined() && dest->GetTag().time > 0 &&
+	if (dest.GetTag().IsDefined() && dest.GetTag().time > 0 &&
 	    src.GetStartMS() > 0 && src.GetEndMS() == 0 &&
-	    src.GetStartMS() / 1000 < (unsigned)dest->GetTag().time)
+	    src.GetStartMS() / 1000 < (unsigned)dest.GetTag().time)
 		/* the range is open-ended, and the playlist plugin
 		   did not know the total length of the song file
 		   (e.g. last track on a CUE file); fix it up here */
-		tmp->WritableTag().time =
-			dest->GetTag().time - src.GetStartMS() / 1000;
-
-	delete dest;
-	return tmp;
+		dest.WritableTag().time =
+			dest.GetTag().time - src.GetStartMS() / 1000;
 }
 
-static DetachedSong *
-playlist_check_load_song(const DetachedSong *song, const char *uri)
+static bool
+playlist_check_load_song(DetachedSong &song)
 {
-	DetachedSong *dest;
+	const char *const uri = song.GetURI();
 
 	if (uri_has_scheme(uri)) {
-		dest = new DetachedSong(uri);
+		return true;
 	} else if (PathTraitsUTF8::IsAbsolute(uri)) {
-		dest = new DetachedSong(uri);
-		if (!dest->Update()) {
-			delete dest;
-			return nullptr;
-		}
-	} else {
-		dest = DatabaseDetachSong(uri, IgnoreError());
-		if (dest == nullptr)
-			return nullptr;
-	}
+		DetachedSong tmp(uri);
+		if (!tmp.Update())
+			return false;
 
-	return apply_song_metadata(dest, *song);
+		apply_song_metadata(song, tmp);
+		return true;
+	} else {
+		DetachedSong *tmp = DatabaseDetachSong(uri, IgnoreError());
+		if (tmp == nullptr)
+			return false;
+
+		apply_song_metadata(song, *tmp);
+		delete tmp;
+		return true;
+	}
 }
 
-DetachedSong *
-playlist_check_translate_song(DetachedSong *song, const char *base_uri,
+bool
+playlist_check_translate_song(DetachedSong &song, const char *base_uri,
 			      bool secure)
 {
-	const char *uri = song->GetURI();
+	const char *const uri = song.GetURI();
 
-	if (uri_has_scheme(uri)) {
-		if (uri_supported_scheme(uri))
-			/* valid remote song */
-			return song;
-		else {
-			/* unsupported remote song */
-			delete song;
-			return nullptr;
-		}
-	}
+	if (uri_has_scheme(uri))
+		/* valid remote song? */
+		return uri_supported_scheme(uri);
 
 	if (base_uri != nullptr && strcmp(base_uri, ".") == 0)
 		/* PathTraitsUTF8::GetParent() returns "." when there
@@ -125,25 +112,20 @@ playlist_check_translate_song(DetachedSong *song, const char *base_uri,
 		assert(suffix != nullptr);
 
 		if (suffix != uri)
-			uri = suffix;
-		else if (!secure) {
+			song.SetURI(std::string(suffix));
+		else if (!secure)
 			/* local files must be relative to the music
 			   directory when "secure" is enabled */
-			delete song;
-			return nullptr;
-		}
+			return false;
 
 		base_uri = nullptr;
 	}
 
 	if (base_uri != nullptr) {
-		song->SetURI(PathTraitsUTF8::Build(base_uri, uri));
+		song.SetURI(PathTraitsUTF8::Build(base_uri, uri));
 		/* repeat the above checks */
 		return playlist_check_translate_song(song, nullptr, secure);
 	}
 
-	DetachedSong *dest = playlist_check_load_song(song, uri);
-	delete song;
-
-	return dest;
+	return playlist_check_load_song(song);
 }

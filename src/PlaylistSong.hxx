@@ -23,15 +23,15 @@
 class DetachedSong;
 
 /**
- * Verifies the song, returns nullptr if it is unsafe.  Translate the
- * song to a new song object within the database, if it is a local
- * file.  The old song object is freed.
+ * Verifies the song, returns false if it is unsafe.  Translate the
+ * song to a song within the database, if it is a local file.
  *
  * @param secure if true, then local files are only allowed if they
  * are relative to base_uri
+ * @return true on success, false if the song should not be used
  */
-DetachedSong *
-playlist_check_translate_song(DetachedSong *song, const char *base_uri,
+bool
+playlist_check_translate_song(DetachedSong &song, const char *base_uri,
 			      bool secure);
 
 #endif
