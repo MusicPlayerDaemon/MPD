@@ -103,7 +103,7 @@ struct queue {
 	/** random number generator for shuffle and random mode */
 	LazyRandomEngine rand;
 
-	queue(unsigned max_length);
+	explicit queue(unsigned max_length);
 
 	/**
 	 * Deinitializes a queue object.  It does not free the queue
