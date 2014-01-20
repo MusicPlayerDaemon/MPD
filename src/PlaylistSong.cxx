@@ -34,30 +34,29 @@
 #include <string.h>
 
 static void
-merge_song_metadata(DetachedSong *dest, const DetachedSong *base,
-		    const DetachedSong *add)
+merge_song_metadata(DetachedSong &dest, const DetachedSong &base,
+		    const DetachedSong &add)
 {
 	{
-		TagBuilder builder(add->GetTag());
-		builder.Complement(base->GetTag());
-		dest->SetTag(builder.Commit());
+		TagBuilder builder(add.GetTag());
+		builder.Complement(base.GetTag());
+		dest.SetTag(builder.Commit());
 	}
 
-	dest->SetLastModified(base->GetLastModified());
-	dest->SetStartMS(add->GetStartMS());
-	dest->SetEndMS(add->GetEndMS());
+	dest.SetLastModified(base.GetLastModified());
+	dest.SetStartMS(add.GetStartMS());
+	dest.SetEndMS(add.GetEndMS());
 }
 
 static DetachedSong *
-apply_song_metadata(DetachedSong *dest, const DetachedSong *src)
+apply_song_metadata(DetachedSong *dest, const DetachedSong &src)
 {
 	DetachedSong *tmp;
 
 	assert(dest != nullptr);
-	assert(src != nullptr);
 
-	if (!src->GetTag().IsDefined() &&
-	    src->GetStartMS() == 0 && src->GetEndMS() == 0)
+	if (!src.GetTag().IsDefined() &&
+	    src.GetStartMS() == 0 && src.GetEndMS() == 0)
 		return dest;
 
 	if (dest->IsInDatabase()) {
@@ -71,20 +70,20 @@ apply_song_metadata(DetachedSong *dest, const DetachedSong *src)
 
 		tmp = new DetachedSong(std::move(path_utf8));
 
-		merge_song_metadata(tmp, dest, src);
+		merge_song_metadata(*tmp, *dest, src);
 	} else {
 		tmp = new DetachedSong(dest->GetURI());
-		merge_song_metadata(tmp, dest, src);
+		merge_song_metadata(*tmp, *dest, src);
 	}
 
 	if (dest->GetTag().IsDefined() && dest->GetTag().time > 0 &&
-	    src->GetStartMS() > 0 && src->GetEndMS() == 0 &&
-	    src->GetStartMS() / 1000 < (unsigned)dest->GetTag().time)
+	    src.GetStartMS() > 0 && src.GetEndMS() == 0 &&
+	    src.GetStartMS() / 1000 < (unsigned)dest->GetTag().time)
 		/* the range is open-ended, and the playlist plugin
 		   did not know the total length of the song file
 		   (e.g. last track on a CUE file); fix it up here */
 		tmp->WritableTag().time =
-			dest->GetTag().time - src->GetStartMS() / 1000;
+			dest->GetTag().time - src.GetStartMS() / 1000;
 
 	delete dest;
 	return tmp;
@@ -109,7 +108,7 @@ playlist_check_load_song(const DetachedSong *song, const char *uri, bool secure)
 			return nullptr;
 	}
 
-	return apply_song_metadata(dest, song);
+	return apply_song_metadata(dest, *song);
 }
 
 DetachedSong *
