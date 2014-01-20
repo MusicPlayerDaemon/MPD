@@ -88,7 +88,11 @@ static constexpr Domain cmdline_domain("cmdline");
 gcc_noreturn
 static void version(void)
 {
-	puts("Music Player Daemon " VERSION "\n"
+	puts("Music Player Daemon " VERSION
+#ifdef GIT_COMMIT
+	     " (" GIT_COMMIT ")"
+#endif
+	     "\n"
 	     "\n"
 	     "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
 	     "Copyright (C) 2008-2014 Max Kellermann <max@duempel.org>\n"

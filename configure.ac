@@ -15,6 +15,10 @@ AC_CONFIG_MACRO_DIR([m4])
 
 AC_DEFINE(PROTOCOL_VERSION, "0.19.0", [The MPD protocol version])
 
+GIT_COMMIT=`GIT_DIR="$srcdir/.git" git describe --dirty --always 2>/dev/null`
+if test x$GIT_COMMIT != x; then
+	AC_DEFINE_UNQUOTED(GIT_COMMIT, ["$GIT_COMMIT"], [The current git commit])
+fi
 
 dnl ---------------------------------------------------------------------------
 dnl Programs
