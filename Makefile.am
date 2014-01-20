@@ -1154,6 +1154,7 @@ C_TESTS = \
 	test/test_byte_reverse \
 	test/test_mixramp \
 	test/test_pcm \
+	test/test_translate_song \
 	test/test_queue_priority
 
 if ENABLE_ARCHIVE
@@ -1622,6 +1623,21 @@ test_test_archive_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTT
 test_test_archive_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_archive_LDADD = \
 	libarchive.a \
+	$(GLIB_LIBS) \
+	$(CPPUNIT_LIBS)
+
+test_test_translate_song_SOURCES = \
+	src/PlaylistSong.cxx \
+	src/DetachedSong.cxx \
+	src/Log.cxx \
+	test/test_translate_song.cxx
+test_test_translate_song_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_translate_song_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_test_translate_song_LDADD = \
+	libtag.a \
+	libfs.a \
+	libsystem.a \
+	libutil.a \
 	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
