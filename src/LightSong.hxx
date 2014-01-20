@@ -47,6 +47,16 @@ struct LightSong {
 	const char *uri;
 
 	/**
+	 * The "real" URI, the one to be used for opening the
+	 * resource.  If this attribute is empty, then #uri (and
+	 * #directory) shall be used.
+	 *
+	 * This attribute is used for songs from the database which
+	 * have a relative URI.
+	 */
+	std::string real_uri;
+
+	/**
 	 * Must not be nullptr.
 	 */
 	const Tag *tag;

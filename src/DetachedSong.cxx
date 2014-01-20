@@ -25,6 +25,7 @@
 
 DetachedSong::DetachedSong(const LightSong &other)
 	:uri(other.GetURI().c_str()),
+	 real_uri(other.real_uri),
 	 tag(*other.tag),
 	 mtime(other.mtime),
 	 start_ms(other.start_ms), end_ms(other.end_ms) {}

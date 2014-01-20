@@ -50,27 +50,18 @@
 static const char *const rootid = "0";
 
 class UpnpSong : public LightSong {
-	std::string uri2;
+	std::string uri2, real_uri2;
 
 	Tag tag2;
 
 public:
-	explicit UpnpSong(UPnPDirObject &&object)
-		:uri2(std::move(object.url)), tag2(std::move(object.tag)) {
-		directory = nullptr;
-		uri = uri2.c_str();
-		tag = &tag2;
-		mtime = 0;
-		start_ms = end_ms = 0;
-	}
-
-	UpnpSong(UPnPDirObject &&object, const char *_uri)
-		:uri2(_uri == nullptr
-		      ? std::move(object.url)
-		      : std::string(_uri)),
+	UpnpSong(UPnPDirObject &&object, std::string &&_uri)
+		:uri2(std::move(_uri)),
+		 real_uri2(std::move(object.url)),
 		 tag2(std::move(object.tag)) {
 		directory = nullptr;
 		uri = uri2.c_str();
+		real_uri = real_uri2.c_str();
 		tag = &tag2;
 		mtime = 0;
 		start_ms = end_ms = 0;
@@ -247,7 +238,7 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 				return nullptr;
 		}
 
-		song = new UpnpSong(std::move(dirent));
+		song = new UpnpSong(std::move(dirent), uri);
 	}
 	if (song == nullptr)
 		error.Format(db_domain, DB_NOT_FOUND, "No such song: %s", uri);
@@ -366,14 +357,14 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 }
 
 static bool
-visitSong(UPnPDirObject &&meta, const char *path,
+visitSong(UPnPDirObject &&meta, std::string &&path,
 	  const DatabaseSelection &selection,
 	  VisitSong visit_song, Error& error)
 {
 	if (!visit_song)
 		return true;
 
-	const UpnpSong song(std::move(meta), path);
+	const UpnpSong song(std::move(meta), std::move(path));
 	return !selection.Match(song) || visit_song(song, error);
 }
 
@@ -382,7 +373,7 @@ visitSong(UPnPDirObject &&meta, const char *path,
  * of "rootid" is arbitrary, any name that is not likely to be a top
  * directory name would fit.
  */
-static const std::string
+static std::string
 songPath(const std::string &servername,
 	 const std::string &objid)
 {
@@ -423,10 +414,9 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 		//    course, 'All Music' is very big.
 		// So we return synthetic and ugly paths based on the object id,
 		// which we later have to detect.
-		std::string path = songPath(server.getFriendlyName(),
-					    dirent.m_id);
-		//BuildPath(server, dirent, path);
-		if (!visitSong(std::move(dirent), path.c_str(),
+		if (!visitSong(std::move(dirent),
+			       songPath(server.getFriendlyName(),
+					dirent.m_id),
 			       selection, visit_song,
 			       error))
 			return false;
@@ -566,7 +556,10 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 				      error))
 				return false;
 
-			if (!visitSong(std::move(dirent), nullptr, selection,
+			std::string path = songPath(server.getFriendlyName(),
+						    dirent.m_id);
+			if (!visitSong(std::move(dirent), path.c_str(),
+				       selection,
 				       visit_song, error))
 				return false;
 		}
@@ -597,7 +590,8 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 		switch (tdirent.item_class) {
 		case UPnPDirObject::ItemClass::MUSIC:
 			if (visit_song)
-				return visitSong(std::move(tdirent), nullptr,
+				return visitSong(std::move(tdirent),
+						 std::string(selection.uri),
 						 selection, visit_song,
 						 error);
 			break;
