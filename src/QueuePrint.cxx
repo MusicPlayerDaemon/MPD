@@ -33,7 +33,7 @@
  * @param end the index of the last song (excluding)
  */
 static void
-queue_print_song_info(Client &client, const queue &queue,
+queue_print_song_info(Client &client, const Queue &queue,
 		      unsigned position)
 {
 	song_print_info(client, queue.Get(position));
@@ -46,7 +46,7 @@ queue_print_song_info(Client &client, const queue &queue,
 }
 
 void
-queue_print_info(Client &client, const queue &queue,
+queue_print_info(Client &client, const Queue &queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
@@ -57,7 +57,7 @@ queue_print_info(Client &client, const queue &queue,
 }
 
 void
-queue_print_uris(Client &client, const queue &queue,
+queue_print_uris(Client &client, const Queue &queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
@@ -70,7 +70,7 @@ queue_print_uris(Client &client, const queue &queue,
 }
 
 void
-queue_print_changes_info(Client &client, const queue &queue,
+queue_print_changes_info(Client &client, const Queue &queue,
 			 uint32_t version)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
@@ -80,7 +80,7 @@ queue_print_changes_info(Client &client, const queue &queue,
 }
 
 void
-queue_print_changes_position(Client &client, const queue &queue,
+queue_print_changes_position(Client &client, const Queue &queue,
 			     uint32_t version)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++)
@@ -90,7 +90,7 @@ queue_print_changes_position(Client &client, const queue &queue,
 }
 
 void
-queue_find(Client &client, const queue &queue,
+queue_find(Client &client, const Queue &queue,
 	   const SongFilter &filter)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {

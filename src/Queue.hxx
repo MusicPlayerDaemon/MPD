@@ -41,7 +41,7 @@ class DetachedSong;
  * - the unique id (which stays the same, regardless of moves)
  * - the order number (which only differs from "position" in random mode)
  */
-struct queue {
+struct Queue {
 	/**
 	 * reserve max_length * HASH_MULT elements in the id
 	 * number space
@@ -103,16 +103,16 @@ struct queue {
 	/** random number generator for shuffle and random mode */
 	LazyRandomEngine rand;
 
-	queue(unsigned max_length);
+	explicit Queue(unsigned max_length);
 
 	/**
 	 * Deinitializes a queue object.  It does not free the queue
 	 * pointer itself.
 	 */
-	~queue();
+	~Queue();
 
-	queue(const queue &other) = delete;
-	queue &operator=(const queue &other) = delete;
+	Queue(const Queue &) = delete;
+	Queue &operator=(const Queue &) = delete;
 
 	unsigned GetLength() const {
 		assert(length <= max_length);

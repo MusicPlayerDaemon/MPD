@@ -12,7 +12,7 @@ Tag::Tag(const Tag &) {}
 void Tag::Clear() {}
 
 static void
-check_descending_priority(const struct queue *queue,
+check_descending_priority(const Queue *queue,
 			  unsigned start_order)
 {
 	assert(start_order < queue->GetLength());
@@ -58,7 +58,7 @@ QueuePriorityTest::TestPriority()
 		DetachedSong("f.ogg"),
 	};
 
-	struct queue queue(32);
+	Queue queue(32);
 
 	for (unsigned i = 0; i < ARRAY_SIZE(songs); ++i)
 		queue.Append(DetachedSong(songs[i]), 0);

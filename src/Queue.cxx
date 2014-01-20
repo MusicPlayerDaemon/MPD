@@ -21,7 +21,7 @@
 #include "Queue.hxx"
 #include "DetachedSong.hxx"
 
-queue::queue(unsigned _max_length)
+Queue::Queue(unsigned _max_length)
 	:max_length(_max_length), length(0),
 	 version(1),
 	 items(new Item[max_length]),
@@ -34,7 +34,7 @@ queue::queue(unsigned _max_length)
 {
 }
 
-queue::~queue()
+Queue::~Queue()
 {
 	Clear();
 
@@ -43,7 +43,7 @@ queue::~queue()
 }
 
 int
-queue::GetNextOrder(unsigned _order) const
+Queue::GetNextOrder(unsigned _order) const
 {
 	assert(_order < length);
 
@@ -60,7 +60,7 @@ queue::GetNextOrder(unsigned _order) const
 }
 
 void
-queue::IncrementVersion()
+Queue::IncrementVersion()
 {
 	static unsigned long max = ((uint32_t) 1 << 31) - 1;
 
@@ -75,7 +75,7 @@ queue::IncrementVersion()
 }
 
 void
-queue::ModifyAtOrder(unsigned _order)
+Queue::ModifyAtOrder(unsigned _order)
 {
 	assert(_order < length);
 
@@ -84,7 +84,7 @@ queue::ModifyAtOrder(unsigned _order)
 }
 
 unsigned
-queue::Append(DetachedSong &&song, uint8_t priority)
+Queue::Append(DetachedSong &&song, uint8_t priority)
 {
 	assert(!IsFull());
 
@@ -103,7 +103,7 @@ queue::Append(DetachedSong &&song, uint8_t priority)
 }
 
 void
-queue::SwapPositions(unsigned position1, unsigned position2)
+Queue::SwapPositions(unsigned position1, unsigned position2)
 {
 	unsigned id1 = items[position1].id;
 	unsigned id2 = items[position2].id;
@@ -118,7 +118,7 @@ queue::SwapPositions(unsigned position1, unsigned position2)
 }
 
 void
-queue::MovePostion(unsigned from, unsigned to)
+Queue::MovePostion(unsigned from, unsigned to)
 {
 	const Item tmp = items[from];
 
@@ -154,7 +154,7 @@ queue::MovePostion(unsigned from, unsigned to)
 }
 
 void
-queue::MoveRange(unsigned start, unsigned end, unsigned to)
+Queue::MoveRange(unsigned start, unsigned end, unsigned to)
 {
 	Item tmp[end - start];
 	// Copy the original block [start,end-1]
@@ -196,7 +196,7 @@ queue::MoveRange(unsigned start, unsigned end, unsigned to)
 }
 
 void
-queue::MoveOrder(unsigned from_order, unsigned to_order)
+Queue::MoveOrder(unsigned from_order, unsigned to_order)
 {
 	assert(from_order < length);
 	assert(to_order <= length);
@@ -215,7 +215,7 @@ queue::MoveOrder(unsigned from_order, unsigned to_order)
 }
 
 void
-queue::DeletePosition(unsigned position)
+Queue::DeletePosition(unsigned position)
 {
 	assert(position < length);
 
@@ -248,7 +248,7 @@ queue::DeletePosition(unsigned position)
 }
 
 void
-queue::Clear()
+Queue::Clear()
 {
 	for (unsigned i = 0; i < length; i++) {
 		Item *item = &items[i];
@@ -262,7 +262,7 @@ queue::Clear()
 }
 
 static void
-queue_sort_order_by_priority(struct queue *queue, unsigned start, unsigned end)
+queue_sort_order_by_priority(Queue *queue, unsigned start, unsigned end)
 {
 	assert(queue != nullptr);
 	assert(queue->random);
@@ -270,8 +270,8 @@ queue_sort_order_by_priority(struct queue *queue, unsigned start, unsigned end)
 	assert(end <= queue->length);
 
 	auto cmp = [queue](unsigned a_pos, unsigned b_pos){
-		const queue::Item &a = queue->items[a_pos];
-		const queue::Item &b = queue->items[b_pos];
+		const Queue::Item &a = queue->items[a_pos];
+		const Queue::Item &b = queue->items[b_pos];
 
 		return a.priority > b.priority;
 	};
@@ -280,7 +280,7 @@ queue_sort_order_by_priority(struct queue *queue, unsigned start, unsigned end)
 }
 
 void
-queue::ShuffleOrderRange(unsigned start, unsigned end)
+Queue::ShuffleOrderRange(unsigned start, unsigned end)
 {
 	assert(random);
 	assert(start <= end);
@@ -295,7 +295,7 @@ queue::ShuffleOrderRange(unsigned start, unsigned end)
  * priority group.
  */
 void
-queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end)
+Queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end)
 {
 	assert(random);
 	assert(start <= end);
@@ -329,13 +329,13 @@ queue::ShuffleOrderRangeWithPriority(unsigned start, unsigned end)
 }
 
 void
-queue::ShuffleOrder()
+Queue::ShuffleOrder()
 {
 	ShuffleOrderRangeWithPriority(0, length);
 }
 
 void
-queue::ShuffleOrderFirst(unsigned start, unsigned end)
+Queue::ShuffleOrderFirst(unsigned start, unsigned end)
 {
 	rand.AutoCreate();
 
@@ -344,7 +344,7 @@ queue::ShuffleOrderFirst(unsigned start, unsigned end)
 }
 
 void
-queue::ShuffleOrderLast(unsigned start, unsigned end)
+Queue::ShuffleOrderLast(unsigned start, unsigned end)
 {
 	rand.AutoCreate();
 
@@ -353,7 +353,7 @@ queue::ShuffleOrderLast(unsigned start, unsigned end)
 }
 
 void
-queue::ShuffleRange(unsigned start, unsigned end)
+Queue::ShuffleRange(unsigned start, unsigned end)
 {
 	assert(start <= end);
 	assert(end <= length);
@@ -369,7 +369,7 @@ queue::ShuffleRange(unsigned start, unsigned end)
 }
 
 unsigned
-queue::FindPriorityOrder(unsigned start_order, uint8_t priority,
+Queue::FindPriorityOrder(unsigned start_order, uint8_t priority,
 			 unsigned exclude_order) const
 {
 	assert(random);
@@ -386,7 +386,7 @@ queue::FindPriorityOrder(unsigned start_order, uint8_t priority,
 }
 
 unsigned
-queue::CountSamePriority(unsigned start_order, uint8_t priority) const
+Queue::CountSamePriority(unsigned start_order, uint8_t priority) const
 {
 	assert(random);
 	assert(start_order <= length);
@@ -402,7 +402,7 @@ queue::CountSamePriority(unsigned start_order, uint8_t priority) const
 }
 
 bool
-queue::SetPriority(unsigned position, uint8_t priority, int after_order)
+Queue::SetPriority(unsigned position, uint8_t priority, int after_order)
 {
 	assert(position < length);
 
@@ -460,7 +460,7 @@ queue::SetPriority(unsigned position, uint8_t priority, int after_order)
 }
 
 bool
-queue::SetPriorityRange(unsigned start_position, unsigned end_position,
+Queue::SetPriorityRange(unsigned start_position, unsigned end_position,
 			uint8_t priority, int after_order)
 {
 	assert(start_position <= end_position);

@@ -32,7 +32,7 @@ struct playlist {
 	/**
 	 * The song queue - it contains the "real" playlist.
 	 */
-	struct queue queue;
+	struct Queue queue;
 
 	/**
 	 * This value is true if the player is currently playing (or
