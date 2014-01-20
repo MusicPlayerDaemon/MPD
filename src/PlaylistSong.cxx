@@ -136,10 +136,10 @@ playlist_check_translate_song(DetachedSong *song, const char *base_uri,
 		base_uri = nullptr;
 	}
 
-	std::string full_uri;
 	if (base_uri != nullptr) {
-		full_uri = PathTraitsUTF8::Build(base_uri, uri);
-		uri = full_uri.c_str();
+		song->SetURI(PathTraitsUTF8::Build(base_uri, uri));
+		/* repeat the above checks */
+		return playlist_check_translate_song(song, nullptr, secure);
 	}
 
 	DetachedSong *dest = playlist_check_load_song(song, uri, secure);
