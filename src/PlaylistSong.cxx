@@ -51,30 +51,14 @@ merge_song_metadata(DetachedSong &dest, const DetachedSong &base,
 static DetachedSong *
 apply_song_metadata(DetachedSong *dest, const DetachedSong &src)
 {
-	DetachedSong *tmp;
-
 	assert(dest != nullptr);
 
 	if (!src.GetTag().IsDefined() &&
 	    src.GetStartMS() == 0 && src.GetEndMS() == 0)
 		return dest;
 
-	if (dest->IsInDatabase()) {
-		const auto path_fs = map_song_fs(*dest);
-		if (path_fs.IsNull())
-			return dest;
-
-		std::string path_utf8 = path_fs.ToUTF8();
-		if (path_utf8.empty())
-			path_utf8 = path_fs.c_str();
-
-		tmp = new DetachedSong(std::move(path_utf8));
-
-		merge_song_metadata(*tmp, *dest, src);
-	} else {
-		tmp = new DetachedSong(dest->GetURI());
-		merge_song_metadata(*tmp, *dest, src);
-	}
+	DetachedSong *tmp = new DetachedSong(dest->GetURI());
+	merge_song_metadata(*tmp, *dest, src);
 
 	if (dest->GetTag().IsDefined() && dest->GetTag().time > 0 &&
 	    src.GetStartMS() > 0 && src.GetEndMS() == 0 &&
