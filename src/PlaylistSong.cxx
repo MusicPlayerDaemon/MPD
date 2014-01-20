@@ -99,10 +99,6 @@ DetachedSong *
 playlist_check_translate_song(DetachedSong *song, const char *base_uri,
 			      bool secure)
 {
-	if (song->IsInDatabase())
-		/* already ok */
-		return song;
-
 	const char *uri = song->GetURI();
 
 	if (uri_has_scheme(uri)) {
