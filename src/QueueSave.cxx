@@ -60,7 +60,7 @@ queue_save_song(FILE *fp, int idx, const Song &song)
 }
 
 void
-queue_save(FILE *fp, const queue &queue)
+queue_save(FILE *fp, const Queue &queue)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
 		uint8_t prio = queue.GetPriorityAtPosition(i);
@@ -72,7 +72,7 @@ queue_save(FILE *fp, const queue &queue)
 }
 
 void
-queue_load_song(TextFile &file, const char *line, queue &queue)
+queue_load_song(TextFile &file, const char *line, Queue &queue)
 {
 	if (queue.IsFull())
 		return;

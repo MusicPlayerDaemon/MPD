@@ -65,7 +65,7 @@ playlist_print_uri(FILE *file, const char *uri)
 }
 
 PlaylistResult
-spl_save_queue(const char *name_utf8, const queue &queue)
+spl_save_queue(const char *name_utf8, const Queue &queue)
 {
 	if (map_spl_path().IsNull())
 		return PlaylistResult::DISABLED;

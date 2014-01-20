@@ -40,7 +40,7 @@
 void
 playlist_print_uris(Client &client, const playlist &playlist)
 {
-	const queue &queue = playlist.queue;
+	const Queue &queue = playlist.queue;
 
 	queue_print_uris(client, queue, 0, queue.GetLength());
 }
@@ -49,7 +49,7 @@ bool
 playlist_print_info(Client &client, const playlist &playlist,
 		    unsigned start, unsigned end)
 {
-	const queue &queue = playlist.queue;
+	const Queue &queue = playlist.queue;
 
 	if (end > queue.GetLength())
 		/* correct the "end" offset */

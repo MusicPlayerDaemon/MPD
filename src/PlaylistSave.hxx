@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 struct Song;
-struct queue;
+struct Queue;
 struct playlist;
 struct PlayerControl;
 class Error;
@@ -40,7 +40,7 @@ playlist_print_uri(FILE *fp, const char *uri);
  * Saves a queue object into a stored playlist file.
  */
 PlaylistResult
-spl_save_queue(const char *name_utf8, const queue &queue);
+spl_save_queue(const char *name_utf8, const Queue &queue);
 
 /**
  * Saves a playlist object into a stored playlist file.

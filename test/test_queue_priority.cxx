@@ -26,7 +26,7 @@ Song::Free()
 }
 
 static void
-check_descending_priority(const struct queue *queue,
+check_descending_priority(const Queue *queue,
 			  unsigned start_order)
 {
 	assert(start_order < queue->GetLength());
@@ -55,7 +55,7 @@ QueuePriorityTest::TestPriority()
 {
 	static Song songs[16];
 
-	struct queue queue(32);
+	Queue queue(32);
 
 	for (unsigned i = 0; i < ARRAY_SIZE(songs); ++i)
 		queue.Append(&songs[i], 0);
