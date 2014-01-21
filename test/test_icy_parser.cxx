@@ -14,6 +14,17 @@
 
 #include <string>
 
+#include <string.h>
+
+static Tag *
+icy_parse_tag(const char *p)
+{
+	char *q = strdup(p);
+	Tag *tag = icy_parse_tag(q, q + strlen(q));
+	free(q);
+	return tag;
+}
+
 static void
 CompareTagTitle(const Tag &tag, const std::string &title)
 {
@@ -51,10 +62,14 @@ public:
 		TestIcyParserTitle("StreamTitle='foo bar'", "foo bar");
 		TestIcyParserTitle("StreamTitle='foo bar';", "foo bar");
 		TestIcyParserTitle("StreamTitle='foo\"bar';", "foo\"bar");
+		TestIcyParserTitle("StreamTitle='foo=bar';", "foo=bar");
 		TestIcyParserTitle("a=b;StreamTitle='foo';", "foo");
 		TestIcyParserTitle("a=;StreamTitle='foo';", "foo");
 		TestIcyParserTitle("a=b;StreamTitle='foo';c=d", "foo");
 		TestIcyParserTitle("a=b;StreamTitle='foo'", "foo");
+		TestIcyParserTitle("a='b;c';StreamTitle='foo;bar'", "foo;bar");
+		TestIcyParserTitle("a='b'c';StreamTitle='foo'bar'", "foo'bar");
+		TestIcyParserTitle("StreamTitle='fo'o'b'ar';a='b'c'd'", "fo'o'b'ar");
 	}
 };
 

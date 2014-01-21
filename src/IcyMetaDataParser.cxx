@@ -81,31 +81,85 @@ icy_add_item(Tag &tag, TagType type, const char *value)
 }
 
 static void
-icy_parse_tag_item(Tag &tag, const char *item)
+icy_parse_tag_item(Tag &tag, const char *name, const char *value)
 {
-	gchar **p = g_strsplit(item, "=", 0);
+	if (strcmp(name, "StreamTitle") == 0)
+		icy_add_item(tag, TAG_TITLE, value);
+	else
+		FormatDebug(icy_metadata_domain,
+			    "unknown icy-tag: '%s'", name);
+}
 
-	if (p[0] != nullptr && p[1] != nullptr) {
-		if (strcmp(p[0], "StreamTitle") == 0)
-			icy_add_item(tag, TAG_TITLE, p[1]);
-		else
-			FormatDebug(icy_metadata_domain,
-				    "unknown icy-tag: '%s'", p[0]);
+/**
+ * Find a single quote that is followed by a semicolon (or by the end
+ * of the string).  If that fails, return the first single quote.  If
+ * that also fails, return #end.
+ */
+static char *
+find_end_quote(char *p, char *const end)
+{
+	char *fallback = std::find(p, end, '\'');
+	if (fallback >= end - 1 || fallback[1] == ';')
+		return fallback;
+
+	p = fallback + 1;
+	while (true) {
+		p = std::find(p, end, '\'');
+		if (p == end)
+			return fallback;
+
+		if (p == end - 1 || p[1] == ';')
+			return p;
+
+		++p;
 	}
-
-	g_strfreev(p);
 }
 
 static Tag *
-icy_parse_tag(const char *p)
+icy_parse_tag(char *p, char *const end)
 {
+	assert(p != nullptr);
+	assert(end != nullptr);
+	assert(p <= end);
+
 	Tag *tag = new Tag();
-	gchar **items = g_strsplit(p, ";", 0);
 
-	for (unsigned i = 0; items[i] != nullptr; ++i)
-		icy_parse_tag_item(*tag, items[i]);
+	while (p != end) {
+		const char *const name = p;
+		char *eq = std::find(p, end, '=');
+		if (eq == end)
+			break;
 
-	g_strfreev(items);
+		*eq = 0;
+		p = eq + 1;
+
+		if (*p != '\'') {
+			/* syntax error; skip to the next semicolon,
+			   try to recover */
+			char *semicolon = std::find(p, end, ';');
+			if (semicolon == end)
+				break;
+			p = semicolon + 1;
+			continue;
+		}
+
+		++p;
+
+		const char *const value = p;
+		char *quote = find_end_quote(p, end);
+		if (quote == end)
+			break;
+
+		*quote = 0;
+		p = quote + 1;
+
+		icy_parse_tag_item(*tag, name, value);
+
+		char *semicolon = std::find(p, end, ';');
+		if (semicolon == end)
+			break;
+		p = semicolon + 1;
+	}
 
 	return tag;
 }
@@ -152,15 +206,11 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 		++length;
 
 	if (meta_position == meta_size) {
-		/* null-terminate the string */
-
-		meta_data[meta_size] = 0;
-
 		/* parse */
 
 		delete tag;
 
-		tag = icy_parse_tag(meta_data);
+		tag = icy_parse_tag(meta_data, meta_data + meta_size);
 		g_free(meta_data);
 
 		/* change back to normal data mode */
