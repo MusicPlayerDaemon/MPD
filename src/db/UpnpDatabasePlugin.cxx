@@ -130,7 +130,7 @@ private:
 
 	bool Namei(ContentDirectoryService &server,
 		   const std::vector<std::string> &vpath,
-		   std::string &oobjid, UPnPDirObject &dirent,
+		   UPnPDirObject &dirent,
 		   Error &error) const;
 
 	/**
@@ -232,8 +232,7 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 	vpath.erase(vpath.begin());
 	UPnPDirObject dirent;
 	if (vpath.front() != rootid) {
-		std::string objid;
-		if (!Namei(server, vpath, objid, dirent, error))
+		if (!Namei(server, vpath, dirent, error))
 			return nullptr;
 	} else {
 		if (!ReadNode(server, vpath.back().c_str(), dirent,
@@ -465,10 +464,9 @@ UpnpDatabase::BuildPath(ContentDirectoryService &server,
 bool
 UpnpDatabase::Namei(ContentDirectoryService &server,
 		    const std::vector<std::string> &vpath,
-		    std::string &oobjid, UPnPDirObject &odirent,
+		    UPnPDirObject &odirent,
 		    Error &error) const
 {
-	oobjid.clear();
 	std::string objid(rootid);
 
 	if (vpath.empty()) {
@@ -476,7 +474,6 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 		if (!ReadNode(server, rootid, odirent, error))
 			return false;
 
-		oobjid = rootid;
 		return true;
 	}
 
@@ -503,7 +500,6 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 			if (i == vpath.size() - 1) {
 				// The last element in the path was found and it's
 				// a container, we're done
-				oobjid = objid;
 				odirent = std::move(*child);
 				return true;
 			}
@@ -513,7 +509,6 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 			// If this is the last path elt, we found the target,
 			// else it does not exist
 			if (i == vpath.size() - 1) {
-				oobjid = objid;
 				odirent = std::move(*child);
 				return true;
 			} else {
@@ -565,9 +560,8 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 	}
 
 	// Translate the target path into an object id and the associated metadata.
-	std::string objid;
 	UPnPDirObject tdirent;
-	if (!Namei(server, vpath, objid, tdirent, error))
+	if (!Namei(server, vpath, tdirent, error))
 		return false;
 
 	/* If recursive is set, this is a search... No use sending it
@@ -575,7 +569,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 	   recursion (1-deep) here, which will handle the "add dir"
 	   case. */
 	if (selection.recursive && selection.filter)
-		return SearchSongs(server, objid.c_str(), selection,
+		return SearchSongs(server, tdirent.m_id.c_str(), selection,
 				   visit_song, error);
 
 	if (tdirent.type == UPnPDirObject::Type::ITEM) {
@@ -610,7 +604,8 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 	   and loop here, but it's not useful as mpd will only return
 	   data to the client when we're done anyway. */
 	UPnPDirContent dirbuf;
-	if (!server.readDir(m_lib->getclh(), objid.c_str(), dirbuf, error))
+	if (!server.readDir(m_lib->getclh(), tdirent.m_id.c_str(), dirbuf,
+			    error))
 		return false;
 
 	for (auto &dirent : dirbuf.objects) {
