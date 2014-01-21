@@ -23,7 +23,7 @@
 #include "Compiler.h"
 
 #include <string>
-#include <vector>
+#include <list>
 
 std::string
 caturl(const std::string& s1, const std::string& s2);
@@ -36,7 +36,7 @@ std::string
 path_getfather(const std::string &s);
 
 gcc_pure
-std::vector<std::string>
+std::list<std::string>
 stringToTokens(const std::string &str,
 	       const char *delims = "/", bool skipinit = true);
 

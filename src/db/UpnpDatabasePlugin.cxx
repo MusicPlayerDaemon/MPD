@@ -105,7 +105,7 @@ protected:
 
 private:
 	bool VisitServer(ContentDirectoryService &server,
-			 const std::vector<std::string> &vpath,
+			 const std::list<std::string> &vpath,
 			 const DatabaseSelection &selection,
 			 VisitDirectory visit_directory,
 			 VisitSong visit_song,
@@ -129,7 +129,7 @@ private:
 			 Error &error) const;
 
 	bool Namei(ContentDirectoryService &server,
-		   const std::vector<std::string> &vpath,
+		   const std::list<std::string> &vpath,
 		   UPnPDirObject &dirent,
 		   Error &error) const;
 
@@ -229,7 +229,8 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 	if (!m_superdir->getServer(vpath.front().c_str(), server, error))
 		return nullptr;
 
-	vpath.erase(vpath.begin());
+	vpath.pop_front();
+
 	UPnPDirObject dirent;
 	if (vpath.front() != rootid) {
 		if (!Namei(server, vpath, dirent, error))
@@ -463,7 +464,7 @@ UpnpDatabase::BuildPath(ContentDirectoryService &server,
 // Take server and internal title pathname and return objid and metadata.
 bool
 UpnpDatabase::Namei(ContentDirectoryService &server,
-		    const std::vector<std::string> &vpath,
+		    const std::list<std::string> &vpath,
 		    UPnPDirObject &odirent,
 		    Error &error) const
 {
@@ -528,7 +529,7 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 // really just one path parameter.
 bool
 UpnpDatabase::VisitServer(ContentDirectoryService &server,
-			  const std::vector<std::string> &vpath,
+			  const std::list<std::string> &vpath,
 			  const DatabaseSelection &selection,
 			  VisitDirectory visit_directory,
 			  VisitSong visit_song,
@@ -706,7 +707,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 
 	// We do have a path: the first element selects the server
 	std::string servername(std::move(vpath.front()));
-	vpath.erase(vpath.begin());
+	vpath.pop_front();
 
 	ContentDirectoryService server;
 	if (!m_superdir->getServer(servername.c_str(), server, error))

@@ -88,11 +88,11 @@ path_getfather(const std::string &s)
 	return father;
 }
 
-std::vector<std::string>
+std::list<std::string>
 stringToTokens(const std::string &str,
 	       const char *delims, bool skipinit)
 {
-	std::vector<std::string> tokens;
+	std::list<std::string> tokens;
 
 	std::string::size_type startPos = 0;
 
