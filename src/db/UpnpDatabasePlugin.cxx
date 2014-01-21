@@ -480,13 +480,14 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 	std::string objid(rootid);
 
 	// Walk the path elements, read each directory and try to find the next one
-	for (unsigned int i = 0; i < vpath.size(); i++) {
+	for (auto i = vpath.begin(), end = vpath.end(), last = std::prev(end);
+	     i != end; ++i) {
 		UPnPDirContent dirbuf;
 		if (!server.readDir(handle, objid.c_str(), dirbuf, error))
 			return false;
 
 		// Look for the name in the sub-container list
-		UPnPDirObject *child = dirbuf.FindObject(vpath[i].c_str());
+		UPnPDirObject *child = dirbuf.FindObject(i->c_str());
 		if (child == nullptr)
 			break;
 
@@ -497,7 +498,7 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 
 		case UPnPDirObject::Type::CONTAINER:
 			objid = child->m_id; // Next readdir target
-			if (i == vpath.size() - 1) {
+			if (i == last) {
 				// The last element in the path was found and it's
 				// a container, we're done
 				odirent = std::move(*child);
@@ -508,7 +509,7 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 		case UPnPDirObject::Type::ITEM:
 			// If this is the last path elt, we found the target,
 			// else it does not exist
-			if (i == vpath.size() - 1) {
+			if (i == last) {
 				odirent = std::move(*child);
 				return true;
 			} else {
