@@ -704,7 +704,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		} else {
 			// Recursive is set: visit each server
 			for (auto& server : servers) {
-				if (!VisitServer(server, std::vector<std::string>(), selection,
+				if (!VisitServer(server, vpath, selection,
 						 visit_directory, visit_song, visit_playlist, error))
 					return false;
 			}
