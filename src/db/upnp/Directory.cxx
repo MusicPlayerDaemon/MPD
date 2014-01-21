@@ -24,6 +24,7 @@
 #include "Tags.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"
+#include "util/NumberParser.hxx"
 
 #include <algorithm>
 #include <string>
@@ -45,12 +46,27 @@ ParseItemClass(const char *name)
 
 gcc_pure
 static int
-ParseDuration(const std::string &duration)
+ParseDuration(const char *duration)
 {
-	const auto v = stringToTokens(duration, ":");
-	if (v.size() != 3)
+	char *endptr;
+
+	unsigned result = ParseUnsigned(duration, &endptr);
+	if (endptr == duration || *endptr != ':')
 		return 0;
-	return atoi(v[0].c_str())*3600 + atoi(v[1].c_str())*60 + atoi(v[2].c_str());
+
+	result *= 60;
+	duration = endptr + 1;
+	result += ParseUnsigned(duration, &endptr);
+	if (endptr == duration || *endptr != ':')
+		return 0;
+
+	result *= 60;
+	duration = endptr + 1;
+	result += ParseUnsigned(duration, &endptr);
+	if (endptr == duration || *endptr != 0)
+		return 0;
+
+	return result;
 }
 
 /**
