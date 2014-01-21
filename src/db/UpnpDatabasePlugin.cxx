@@ -713,7 +713,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	}
 
 	// We do have a path: the first element selects the server
-	std::string servername(vpath.front());
+	std::string servername(std::move(vpath.front()));
 	vpath.erase(vpath.begin());
 
 	ContentDirectoryService server;
