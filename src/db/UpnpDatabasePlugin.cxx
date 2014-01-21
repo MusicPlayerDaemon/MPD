@@ -481,16 +481,18 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 	std::string objid(rootid);
 
 	// Walk the path elements, read each directory and try to find the next one
-	for (auto i = vpath.begin(), end = vpath.end(), last = std::prev(end);
-	     i != end; ++i) {
+	for (auto i = vpath.begin(), last = std::prev(vpath.end());; ++i) {
 		UPnPDirContent dirbuf;
 		if (!server.readDir(handle, objid.c_str(), dirbuf, error))
 			return false;
 
 		// Look for the name in the sub-container list
 		UPnPDirObject *child = dirbuf.FindObject(i->c_str());
-		if (child == nullptr)
-			break;
+		if (child == nullptr) {
+			error.Format(db_domain, DB_NOT_FOUND,
+				     "No such object");
+			return false;
+		}
 
 		switch (child->type) {
 		case UPnPDirObject::Type::UNKNOWN:
@@ -520,9 +522,6 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 			}
 		}
 	}
-
-	error.Format(db_domain, DB_NOT_FOUND, "No such object");
-	return false;
 }
 
 // vpath is a parsed and writeable version of selection.uri. There is
