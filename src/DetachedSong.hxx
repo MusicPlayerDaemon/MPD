@@ -65,7 +65,7 @@ class DetachedSong {
 	explicit DetachedSong(const LightSong &other);
 
 public:
-	explicit DetachedSong(const DetachedSong &other) = default;
+	explicit DetachedSong(const DetachedSong &) = default;
 
 	explicit DetachedSong(const char *_uri)
 		:uri(_uri),
@@ -85,7 +85,7 @@ public:
 		 tag(std::move(_tag)),
 		 mtime(0), start_ms(0), end_ms(0) {}
 
-	DetachedSong(DetachedSong &&other) = default;
+	DetachedSong(DetachedSong &&) = default;
 
 	gcc_pure
 	const char *GetURI() const {
