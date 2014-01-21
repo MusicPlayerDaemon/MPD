@@ -31,6 +31,72 @@
 
 static constexpr Domain soxr_domain("soxr");
 
+static unsigned long soxr_quality_recipe = SOXR_HQ;
+
+static const char *
+soxr_quality_name(unsigned long recipe)
+{
+	switch (recipe) {
+	case SOXR_VHQ:
+		return "Very High Quality";
+	case SOXR_HQ:
+		return "High Quality";
+	case SOXR_MQ:
+		return "Medium Quality";
+	case SOXR_LQ:
+		return "Low Quality";
+	case SOXR_QQ:
+		return "Quick";
+	}
+
+	gcc_unreachable();
+}
+
+static bool
+soxr_parse_converter(const char *converter)
+{
+	assert(converter != nullptr);
+
+	assert(memcmp(converter, "soxr", 4) == 0);
+	if (converter[4] == '\0')
+		return true;
+	if (converter[4] != ' ')
+		return false;
+
+	// converter example is "soxr very high", we want the "very high" part
+	const char *quality = converter + 5;
+	if (strcmp(quality, "very high") == 0)
+		soxr_quality_recipe = SOXR_VHQ;
+	else if (strcmp(quality, "high") == 0)
+		soxr_quality_recipe = SOXR_HQ;
+	else if (strcmp(quality, "medium") == 0)
+		soxr_quality_recipe = SOXR_MQ;
+	else if (strcmp(quality, "low") == 0)
+		soxr_quality_recipe = SOXR_LQ;
+	else if (strcmp(quality, "quick") == 0)
+		soxr_quality_recipe = SOXR_QQ;
+	else
+		return false;
+
+	return true;
+}
+
+bool
+pcm_resample_soxr_global_init(const char *converter, Error &error)
+{
+	if (!soxr_parse_converter(converter)) {
+		error.Format(soxr_domain,
+			    "unknown samplerate converter '%s'", converter);
+		return false;
+	}
+
+	FormatDebug(soxr_domain,
+		    "soxr converter '%s'",
+		    soxr_quality_name(soxr_quality_recipe));
+
+	return true;
+}
+
 AudioFormat
 SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
 		       Error &error)
@@ -39,9 +105,10 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
 	assert(audio_valid_sample_rate(new_sample_rate));
 
 	soxr_error_t e;
+	soxr_quality_spec_t quality = soxr_quality_spec(soxr_quality_recipe, 0);
 	soxr = soxr_create(af.sample_rate, new_sample_rate,
 			   af.channels, &e,
-			   nullptr, nullptr, nullptr);
+			   nullptr, &quality, nullptr);
 	if (soxr == nullptr) {
 		error.Format(soxr_domain,
 			     "soxr initialization has failed: %s", e);

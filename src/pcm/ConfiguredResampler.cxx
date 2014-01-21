@@ -59,9 +59,9 @@ pcm_resampler_global_init(Error &error)
 		return true;
 
 #ifdef HAVE_SOXR
-	if (strcmp(converter, "soxr") == 0) {
+	if (memcmp(converter, "soxr", 4) == 0) {
 		selected_resampler = SelectedResampler::SOXR;
-		return true;
+		return pcm_resample_soxr_global_init(converter, error);
 	}
 #endif
 

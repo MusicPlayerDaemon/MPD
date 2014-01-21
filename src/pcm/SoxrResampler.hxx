@@ -44,4 +44,7 @@ public:
 					   Error &error) override;
 };
 
+bool
+pcm_resample_soxr_global_init(const char *converter, Error &error);
+
 #endif

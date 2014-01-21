@@ -700,10 +700,47 @@ systemctl start mpd.socket</programlisting>
 
               <row>
                 <entry>
+                  "<parameter>soxr very high</parameter>"
+                </entry>
+                <entry>
+                  Use libsoxr with "Very High Quality" setting.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>soxr high</parameter>" or
                   "<parameter>soxr</parameter>"
                 </entry>
                 <entry>
-                  Use libsoxr.
+                  Use libsoxr with "High Quality" setting.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>soxr medium</parameter>"
+                </entry>
+                <entry>
+                  Use libsoxr with "Medium Quality" setting.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>soxr low</parameter>"
+                </entry>
+                <entry>
+                  Use libsoxr with "Low Quality" setting.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>soxr quick</parameter>"
+                </entry>
+                <entry>
+                  Use libsoxr with "Quick" setting.
                 </entry>
               </row>
 
