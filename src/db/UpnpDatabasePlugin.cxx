@@ -65,7 +65,10 @@ public:
 	}
 
 	UpnpSong(UPnPDirObject &&object, const char *_uri)
-		:uri2(_uri), tag2(std::move(object.tag)) {
+		:uri2(_uri == nullptr
+		      ? std::move(object.url)
+		      : std::string(_uri)),
+		 tag2(std::move(object.tag)) {
 		directory = nullptr;
 		uri = uri2.c_str();
 		tag = &tag2;
@@ -563,7 +566,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 				      error))
 				return false;
 
-			if (!visitSong(std::move(dirent), "", selection,
+			if (!visitSong(std::move(dirent), nullptr, selection,
 				       visit_song, error))
 				return false;
 		}
@@ -594,7 +597,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 		switch (tdirent.item_class) {
 		case UPnPDirObject::ItemClass::MUSIC:
 			if (visit_song)
-				return visitSong(std::move(tdirent), "",
+				return visitSong(std::move(tdirent), nullptr,
 						 selection, visit_song,
 						 error);
 			break;
