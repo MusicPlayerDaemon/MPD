@@ -570,10 +570,6 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 	if (!Namei(server, vpath, objid, tdirent, error))
 		return false;
 
-	if (objid.empty())
-		// Not found, not a fatal error
-		return true;
-
 	/* If recursive is set, this is a search... No use sending it
 	   if the filter is empty. In this case, we implement limited
 	   recursion (1-deep) here, which will handle the "add dir"
