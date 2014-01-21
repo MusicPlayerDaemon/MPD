@@ -219,31 +219,29 @@ UpnpDatabase::ReturnSong(const LightSong *_song) const
 const LightSong *
 UpnpDatabase::GetSong(const char *uri, Error &error) const
 {
-	UpnpSong *song = nullptr;
 	auto vpath = stringToTokens(uri, "/", true);
-	if (vpath.size() >= 2) {
-		ContentDirectoryService server;
-		if (!m_superdir->getServer(vpath[0].c_str(), server, error))
-			return nullptr;
-
-		vpath.erase(vpath.begin());
-		UPnPDirObject dirent;
-		if (vpath[0].compare(rootid)) {
-			std::string objid;
-			if (!Namei(server, vpath, objid, dirent, error))
-				return nullptr;
-		} else {
-			if (!ReadNode(server, vpath.back().c_str(), dirent,
-				      error))
-				return nullptr;
-		}
-
-		song = new UpnpSong(std::move(dirent), uri);
-	}
-	if (song == nullptr)
+	if (vpath.size() < 2) {
 		error.Format(db_domain, DB_NOT_FOUND, "No such song: %s", uri);
+		return nullptr;
+	}
 
-	return song;
+	ContentDirectoryService server;
+	if (!m_superdir->getServer(vpath[0].c_str(), server, error))
+		return nullptr;
+
+	vpath.erase(vpath.begin());
+	UPnPDirObject dirent;
+	if (vpath[0].compare(rootid)) {
+		std::string objid;
+		if (!Namei(server, vpath, objid, dirent, error))
+			return nullptr;
+	} else {
+		if (!ReadNode(server, vpath.back().c_str(), dirent,
+			      error))
+			return nullptr;
+	}
+
+	return new UpnpSong(std::move(dirent), uri);
 }
 
 /**
