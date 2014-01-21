@@ -467,8 +467,6 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 		    UPnPDirObject &odirent,
 		    Error &error) const
 {
-	std::string objid(rootid);
-
 	if (vpath.empty()) {
 		// looking for root info
 		if (!ReadNode(server, rootid, odirent, error))
@@ -478,6 +476,8 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 	}
 
 	const UpnpClient_Handle handle = m_lib->getclh();
+
+	std::string objid(rootid);
 
 	// Walk the path elements, read each directory and try to find the next one
 	for (unsigned int i = 0; i < vpath.size(); i++) {
