@@ -494,33 +494,18 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 			return false;
 		}
 
-		switch (child->type) {
-		case UPnPDirObject::Type::UNKNOWN:
-			assert(false);
-			gcc_unreachable();
-
-		case UPnPDirObject::Type::CONTAINER:
-			objid = child->m_id; // Next readdir target
-			if (i == last) {
-				// The last element in the path was found and it's
-				// a container, we're done
-				odirent = std::move(*child);
-				return true;
-			}
-			break;
-
-		case UPnPDirObject::Type::ITEM:
-			// If this is the last path elt, we found the target,
-			// else it does not exist
-			if (i == last) {
-				odirent = std::move(*child);
-				return true;
-			} else {
-				error.Format(db_domain, DB_NOT_FOUND,
-					     "No such object");
-				return false;
-			}
+		if (i == last) {
+			odirent = std::move(*child);
+			return true;
 		}
+
+		if (child->type != UPnPDirObject::Type::CONTAINER) {
+			error.Format(db_domain, DB_NOT_FOUND,
+				     "Not a container");
+			return false;
+		}
+
+		objid = std::move(child->m_id);
 	}
 }
 
