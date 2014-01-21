@@ -226,12 +226,12 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 	}
 
 	ContentDirectoryService server;
-	if (!m_superdir->getServer(vpath[0].c_str(), server, error))
+	if (!m_superdir->getServer(vpath.front().c_str(), server, error))
 		return nullptr;
 
 	vpath.erase(vpath.begin());
 	UPnPDirObject dirent;
-	if (vpath[0].compare(rootid)) {
+	if (vpath.front() != rootid) {
 		std::string objid;
 		if (!Namei(server, vpath, objid, dirent, error))
 			return nullptr;
@@ -433,7 +433,7 @@ UpnpDatabase::ReadNode(ContentDirectoryService &server,
 		return false;
 
 	if (dirbuf.objects.size() == 1) {
-		dirent = std::move(dirbuf.objects[0]);
+		dirent = std::move(dirbuf.objects.front());
 	} else {
 		error.Format(upnp_domain, "Bad resource");
 		return false;
@@ -547,7 +547,7 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 	/* !Note: this *can't* be handled by Namei further down,
 	   because the path is not valid for traversal. Besides, it's
 	   just faster to access the target node directly */
-	if (!vpath.empty() && !vpath[0].compare(rootid)) {
+	if (!vpath.empty() && vpath.front() == rootid) {
 		if (visit_song) {
 			UPnPDirObject dirent;
 			if (!ReadNode(server, vpath.back().c_str(), dirent,
@@ -713,7 +713,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	}
 
 	// We do have a path: the first element selects the server
-	std::string servername(vpath[0]);
+	std::string servername(vpath.front());
 	vpath.erase(vpath.begin());
 
 	ContentDirectoryService server;
