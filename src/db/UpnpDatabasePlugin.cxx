@@ -36,6 +36,7 @@
 #include "tag/TagTable.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "fs/Traits.hxx"
 #include "Log.hxx"
 #include "SongFilter.hxx"
 
@@ -451,9 +452,16 @@ UpnpDatabase::BuildPath(ContentDirectoryService &server,
 		if (!ReadNode(server, pid, dirent, error))
 			return false;
 		pid = dirent.m_pid.c_str();
-		path = dirent.name + (path.empty()? "" : "/" + path);
+
+		if (path.empty())
+			path = dirent.name;
+		else
+			path = PathTraitsUTF8::Build(dirent.name.c_str(),
+						     path.c_str());
 	}
-	path = std::string(server.getFriendlyName()) + "/" + path;
+
+	path = PathTraitsUTF8::Build(server.getFriendlyName(),
+				     path.c_str());
 	return true;
 }
 
@@ -598,7 +606,8 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 
 		case UPnPDirObject::Type::CONTAINER:
 			if (visit_directory) {
-				const std::string uri = selection.uri + "/" + dirent.name;
+				const std::string uri = PathTraitsUTF8::Build(selection.uri.c_str(),
+									      dirent.name.c_str());
 				const LightDirectory d(uri.c_str(), 0);
 				if (!visit_directory(d, error))
 					return false;
@@ -617,8 +626,8 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 
 					std::string p;
 					if (!selection.recursive)
-						p = selection.uri + "/" +
-							dirent.name;
+						p = PathTraitsUTF8::Build(selection.uri.c_str(),
+									  dirent.name.c_str());
 
 					if (!visitSong(std::move(dirent),
 						       p.c_str(),
