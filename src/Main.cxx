@@ -139,7 +139,7 @@ glue_mapper_init(Error &error)
 	if (music_dir.IsNull()) {
 		music_dir = GetUserMusicDir();
 		if (music_dir.IsNull())
-			return false;
+			return true;
 	}
 
 	mapper_init(std::move(music_dir), std::move(playlist_dir));
