@@ -518,6 +518,51 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 	}
 }
 
+static bool
+VisitItem(const UPnPDirObject &object, const char *uri,
+	  const DatabaseSelection &selection,
+	  VisitSong visit_song, VisitPlaylist visit_playlist,
+	  Error &error)
+{
+	assert(object.type == UPnPDirObject::Type::ITEM);
+
+	switch (object.item_class) {
+	case UPnPDirObject::ItemClass::MUSIC:
+		return !visit_song ||
+			visitSong(object, uri,
+				  selection, visit_song, error);
+
+	case UPnPDirObject::ItemClass::PLAYLIST:
+		if (visit_playlist) {
+			/* Note: I've yet to see a
+			   playlist item (playlists
+			   seem to be usually handled
+			   as containers, so I'll
+			   decide what to do when I
+			   see one... */
+		}
+
+		return true;
+
+	case UPnPDirObject::ItemClass::UNKNOWN:
+		return true;
+	}
+
+	assert(false);
+	gcc_unreachable();
+}
+
+static bool
+VisitItem(const UPnPDirObject &object, const std::string &uri,
+	  const DatabaseSelection &selection,
+	  VisitSong visit_song, VisitPlaylist visit_playlist,
+	  Error &error)
+{
+	return VisitItem(object, uri.c_str(),
+			 selection, visit_song, visit_playlist,
+			 error);
+}
+
 // vpath is a parsed and writeable version of selection.uri. There is
 // really just one path parameter.
 bool
@@ -572,31 +617,10 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 		: selection.uri.c_str();
 
 	if (tdirent.type == UPnPDirObject::Type::ITEM) {
-		// Target is a song. Not too sure we ever get there actually, maybe
-		// this is always catched by the special uri test above.
-		switch (tdirent.item_class) {
-		case UPnPDirObject::ItemClass::MUSIC:
-			if (visit_song)
-				return visitSong(std::move(tdirent),
-						 base_uri,
-						 selection, visit_song,
-						 error);
-			break;
-
-		case UPnPDirObject::ItemClass::PLAYLIST:
-			if (visit_playlist) {
-				/* Note: I've yet to see a playlist
-				 item (playlists seem to be usually
-				 handled as containers, so I'll decide
-				 what to do when I see one... */
-			}
-			break;
-
-		case UPnPDirObject::ItemClass::UNKNOWN:
-			break;
-		}
-
-		return true;
+		return VisitItem(tdirent, base_uri,
+				 selection,
+				 visit_song, visit_playlist,
+				 error);
 	}
 
 	/* Target was a a container. Visit it. We could read slices
@@ -625,42 +649,13 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 			break;
 
 		case UPnPDirObject::Type::ITEM:
-			switch (dirent.item_class) {
-			case UPnPDirObject::ItemClass::MUSIC:
-				if (visit_song) {
-					/* We identify songs by giving
-					   them a special path. The Id
-					   is enough to fetch them
-					   from the server anyway. */
-
-					std::string p;
-					if (!selection.recursive)
-						p = PathTraitsUTF8::Build(base_uri,
-									  dirent.name.c_str());
-
-					if (!visitSong(std::move(dirent),
-						       p.c_str(),
-						       selection, visit_song, error))
-						return false;
-				}
-
-				break;
-
-			case UPnPDirObject::ItemClass::PLAYLIST:
-				if (visit_playlist) {
-					/* Note: I've yet to see a
-					   playlist item (playlists
-					   seem to be usually handled
-					   as containers, so I'll
-					   decide what to do when I
-					   see one... */
-				}
-
-				break;
-
-			case UPnPDirObject::ItemClass::UNKNOWN:
-				break;
-			}
+			if (!VisitItem(dirent,
+				       PathTraitsUTF8::Build(base_uri,
+							     dirent.name.c_str()),
+				       selection,
+				       visit_song, visit_playlist,
+				       error))
+				return false;
 		}
 	}
 
