@@ -89,12 +89,26 @@ class UPnPDirParser final : public CommonExpatParser {
 	UPnPDirContent &m_dir;
 
 	std::vector<std::string> m_path;
+
+	/**
+	 * If not equal to #TAG_NUM_OF_ITEM_TYPES, then we're
+	 * currently reading an element containing a tag value.  The
+	 * value is being constructed in #value.
+	 */
+	TagType tag_type;
+
+	/**
+	 * The text inside the current element.
+	 */
+	std::string value;
+
 	UPnPDirObject m_tobj;
 	TagBuilder tag;
 
 public:
 	UPnPDirParser(UPnPDirContent& dir)
-		:m_dir(dir)
+		:m_dir(dir),
+		 tag_type(TAG_NUM_OF_ITEM_TYPES)
 	{
 	}
 
@@ -102,6 +116,15 @@ protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **attrs)
 	{
 		m_path.push_back(name);
+
+		if (m_tobj.type != UPnPDirObject::Type::UNKNOWN &&
+		    tag_type == TAG_NUM_OF_ITEM_TYPES) {
+			tag_type = tag_table_lookup(upnp_tags, name);
+			if (tag_type != TAG_NUM_OF_ITEM_TYPES)
+				return;
+		} else {
+			assert(tag_type == TAG_NUM_OF_ITEM_TYPES);
+		}
 
 		switch (name[0]) {
 		case 'c':
@@ -162,6 +185,19 @@ protected:
 
 	virtual void EndElement(const XML_Char *name)
 	{
+		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
+			assert(m_tobj.type != UPnPDirObject::Type::UNKNOWN);
+
+			tag.AddItem(tag_type, value.c_str());
+
+			if (tag_type == TAG_TITLE)
+				m_tobj.name = titleToPathElt(std::move(value));
+
+			value.clear();
+			tag_type = TAG_NUM_OF_ITEM_TYPES;
+			return;
+		}
+
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
 		    checkobjok()) {
 			tag.Commit(m_tobj.tag);
@@ -173,19 +209,15 @@ protected:
 
 	virtual void CharacterData(const XML_Char *s, int len)
 	{
-		const auto &current = m_path.back();
-		std::string str = trimstring(s, len);
+		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
+			assert(m_tobj.type != UPnPDirObject::Type::UNKNOWN);
 
-		TagType type = tag_table_lookup(upnp_tags,
-						current.c_str());
-		if (type != TAG_NUM_OF_ITEM_TYPES) {
-			tag.AddItem(type, str.c_str());
-
-			if (type == TAG_TITLE)
-				m_tobj.name = titleToPathElt(std::move(str));
-
+			value.append(s, len);
 			return;
 		}
+
+		const auto &current = m_path.back();
+		std::string str = trimstring(s, len);
 
 		switch (current[0]) {
 		case 'r':
