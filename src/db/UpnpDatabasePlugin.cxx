@@ -254,12 +254,10 @@ dquote(std::string &out, const char *in)
 		case '\\':
 		case '"':
 			out.push_back('\\');
-			out.push_back(*in);
 			break;
-
-		default:
-			out.push_back(*in);
 		}
+
+		out.push_back(*in);
 	}
 
 	out.push_back('"');
