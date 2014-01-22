@@ -145,7 +145,7 @@ csvToStrings(const char *s, T &tokens)
 	while (true) {
 		char ch = *s++;
 		if (ch == 0) {
-			tokens.push_back(current);
+			tokens.emplace_back(std::move(current));
 			return true;
 		}
 
@@ -154,7 +154,7 @@ csvToStrings(const char *s, T &tokens)
 			if (ch == 0)
 				return false;
 		} else if (ch == ',') {
-			tokens.push_back(current);
+			tokens.emplace_back(std::move(current));
 			current.clear();
 			continue;
 		}
