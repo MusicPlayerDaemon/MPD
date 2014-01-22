@@ -48,18 +48,6 @@ ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 	}
 }
 
-class DirBResFree {
-public:
-	IXML_Document **rspp;
-	DirBResFree(IXML_Document **_rspp)
-		:rspp(_rspp) {}
-	~DirBResFree()
-	{
-		if (*rspp)
-			ixmlDocument_free(*rspp);
-	}
-};
-
 static bool
 ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response, Error &error)
 {
@@ -106,8 +94,6 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 		return false;
 	}
 
-	DirBResFree cleaner(&response);
-
 	const char *value = ixmlwrap::getFirstElementValue(response, "NumberReturned");
 	didreadp = value != nullptr
 		? ParseUnsigned(value)
@@ -117,10 +103,9 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	if (value != nullptr)
 		totalp = ParseUnsigned(value);
 
-	if (!ReadResultTag(dirbuf, response, error))
-		return false;
-
-	return true;
+	bool success = ReadResultTag(dirbuf, response, error);
+	ixmlDocument_free(response);
+	return success;
 }
 
 bool
@@ -183,8 +168,6 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 			return false;
 		}
 
-		DirBResFree cleaner(&response);
-
 		const char *value =
 			ixmlwrap::getFirstElementValue(response, "NumberReturned");
 		const unsigned count = value != nullptr
@@ -197,7 +180,9 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 		if (value != nullptr)
 			total = ParseUnsigned(value);
 
-		if (!ReadResultTag(dirbuf, response, error))
+		bool success = ReadResultTag(dirbuf, response, error);
+		ixmlDocument_free(response);
+		if (!success)
 			return false;
 
 		if (count == 0)
