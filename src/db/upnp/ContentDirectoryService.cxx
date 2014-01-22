@@ -63,7 +63,7 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				      const char *objectId, unsigned offset,
 				      unsigned count, UPnPDirContent &dirbuf,
 				      unsigned &didreadp, unsigned &totalp,
-				      Error &error)
+				      Error &error) const
 {
 	// Create request
 	char ofbuf[100], cntbuf[100];
@@ -112,7 +112,7 @@ bool
 ContentDirectoryService::readDir(UpnpClient_Handle handle,
 				 const char *objectId,
 				 UPnPDirContent &dirbuf,
-				 Error &error)
+				 Error &error) const
 {
 	unsigned offset = 0, total = -1, count;
 
@@ -132,7 +132,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 				const char *objectId,
 				const char *ss,
 				UPnPDirContent &dirbuf,
-				Error &error)
+				Error &error) const
 {
 	unsigned offset = 0, total = -1, count;
 
@@ -189,7 +189,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 bool
 ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 					       std::list<std::string> &result,
-					       Error &error)
+					       Error &error) const
 {
 	assert(result.empty());
 
@@ -234,7 +234,7 @@ bool
 ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 				     const char *objectId,
 				     UPnPDirContent &dirbuf,
-				     Error &error)
+				     Error &error) const
 {
 	// Create request
 	IXML_Document *request =

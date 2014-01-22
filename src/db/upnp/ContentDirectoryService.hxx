@@ -75,13 +75,13 @@ public:
 	 */
 	bool readDir(UpnpClient_Handle handle,
 		     const char *objectId, UPnPDirContent &dirbuf,
-		     Error &error);
+		     Error &error) const;
 
 	bool readDirSlice(UpnpClient_Handle handle,
 			  const char *objectId, unsigned offset,
 			  unsigned count, UPnPDirContent& dirbuf,
 			  unsigned &didread, unsigned &total,
-			  Error &error);
+			  Error &error) const;
 
 	/** Search the content directory service.
 	 *
@@ -96,7 +96,7 @@ public:
 	bool search(UpnpClient_Handle handle,
 		    const char *objectId, const char *searchstring,
 		    UPnPDirContent &dirbuf,
-		    Error &error);
+		    Error &error) const;
 
 	/** Read metadata for a given node.
 	 *
@@ -106,7 +106,7 @@ public:
 	 */
 	bool getMetadata(UpnpClient_Handle handle,
 			 const char *objectId, UPnPDirContent &dirbuf,
-			 Error &error);
+			 Error &error) const;
 
 	/** Retrieve search capabilities
 	 *
@@ -115,7 +115,7 @@ public:
 	 */
 	bool getSearchCapabilities(UpnpClient_Handle handle,
 				   std::list<std::string> &result,
-				   Error &error);
+				   Error &error) const;
 
 	/** Retrieve the "friendly name" for this server, useful for display. */
 	const char *getFriendlyName() const {

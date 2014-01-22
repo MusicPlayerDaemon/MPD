@@ -103,7 +103,7 @@ protected:
 	bool Configure(const config_param &param, Error &error);
 
 private:
-	bool VisitServer(ContentDirectoryService &server,
+	bool VisitServer(const ContentDirectoryService &server,
 			 const std::list<std::string> &vpath,
 			 const DatabaseSelection &selection,
 			 VisitDirectory visit_directory,
@@ -115,19 +115,19 @@ private:
 	 * Run an UPnP search according to MPD parameters, and
 	 * visit_song the results.
 	 */
-	bool SearchSongs(ContentDirectoryService &server,
+	bool SearchSongs(const ContentDirectoryService &server,
 			 const char *objid,
 			 const DatabaseSelection &selection,
 			 VisitSong visit_song,
 			 Error &error) const;
 
-	bool SearchSongs(ContentDirectoryService &server,
+	bool SearchSongs(const ContentDirectoryService &server,
 			 const char *objid,
 			 const DatabaseSelection &selection,
 			 UPnPDirContent& dirbuf,
 			 Error &error) const;
 
-	bool Namei(ContentDirectoryService &server,
+	bool Namei(const ContentDirectoryService &server,
 		   const std::list<std::string> &vpath,
 		   UPnPDirObject &dirent,
 		   Error &error) const;
@@ -135,7 +135,7 @@ private:
 	/**
 	 * Take server and objid, return metadata.
 	 */
-	bool ReadNode(ContentDirectoryService &server,
+	bool ReadNode(const ContentDirectoryService &server,
 		      const char *objid, UPnPDirObject& dirent,
 		      Error &error) const;
 
@@ -144,7 +144,7 @@ private:
 	 * except easier cause our inodes have a parent id. Not used
 	 * any more actually (see comments in SearchSongs).
 	 */
-	bool BuildPath(ContentDirectoryService &server,
+	bool BuildPath(const ContentDirectoryService &server,
 		       const UPnPDirObject& dirent, std::string &idpath,
 		       Error &error) const;
 };
@@ -266,7 +266,7 @@ dquote(std::string &out, const char *in)
 // Run an UPnP search, according to MPD parameters. Return results as
 // UPnP items
 bool
-UpnpDatabase::SearchSongs(ContentDirectoryService &server,
+UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 			  const char *objid,
 			  const DatabaseSelection &selection,
 			  UPnPDirContent &dirbuf,
@@ -381,7 +381,7 @@ songPath(const std::string &servername,
 }
 
 bool
-UpnpDatabase::SearchSongs(ContentDirectoryService &server,
+UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 			  const char *objid,
 			  const DatabaseSelection &selection,
 			  VisitSong visit_song,
@@ -426,7 +426,7 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 }
 
 bool
-UpnpDatabase::ReadNode(ContentDirectoryService &server,
+UpnpDatabase::ReadNode(const ContentDirectoryService &server,
 		       const char *objid, UPnPDirObject &dirent,
 		       Error &error) const
 {
@@ -445,7 +445,7 @@ UpnpDatabase::ReadNode(ContentDirectoryService &server,
 }
 
 bool
-UpnpDatabase::BuildPath(ContentDirectoryService &server,
+UpnpDatabase::BuildPath(const ContentDirectoryService &server,
 			const UPnPDirObject& idirent,
 			std::string &path,
 			Error &error) const
@@ -472,7 +472,7 @@ UpnpDatabase::BuildPath(ContentDirectoryService &server,
 
 // Take server and internal title pathname and return objid and metadata.
 bool
-UpnpDatabase::Namei(ContentDirectoryService &server,
+UpnpDatabase::Namei(const ContentDirectoryService &server,
 		    const std::list<std::string> &vpath,
 		    UPnPDirObject &odirent,
 		    Error &error) const
@@ -521,7 +521,7 @@ UpnpDatabase::Namei(ContentDirectoryService &server,
 // vpath is a parsed and writeable version of selection.uri. There is
 // really just one path parameter.
 bool
-UpnpDatabase::VisitServer(ContentDirectoryService &server,
+UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 			  const std::list<std::string> &vpath,
 			  const DatabaseSelection &selection,
 			  VisitDirectory visit_directory,
