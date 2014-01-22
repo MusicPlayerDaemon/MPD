@@ -46,11 +46,11 @@ std::string
 caturl(const std::string &s1, const std::string &s2)
 {
 	std::string out(s1);
-	if (out[out.size()-1] == '/') {
-		if (s2[0] == '/')
+	if (out.back() == '/') {
+		if (s2.front() == '/')
 			out.erase(out.size()-1);
 	} else {
-		if (s2[0] != '/')
+		if (s2.front() != '/')
 			out.push_back('/');
 	}
 	out += s2;
@@ -60,7 +60,7 @@ caturl(const std::string &s1, const std::string &s2)
 static void
 path_catslash(std::string &s)
 {
-	if (s.empty() || s[s.length() - 1] != '/')
+	if (s.empty() || s.back() != '/')
 		s += '/';
 }
 
@@ -73,7 +73,7 @@ path_getfather(const std::string &s)
 	if (father.empty())
 		return "./";
 
-	if (father[father.length() - 1] == '/') {
+	if (father.back() == '/') {
 		// Input ends with /. Strip it, handle special case for root
 		if (father.length() == 1)
 			return father;
