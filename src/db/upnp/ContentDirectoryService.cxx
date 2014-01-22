@@ -71,15 +71,15 @@ ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response, Error &error)
 
 inline bool
 ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
-				      const char *objectId, int offset,
-				      int count, UPnPDirContent &dirbuf,
-				      int *didreadp, int *totalp,
+				      const char *objectId, unsigned offset,
+				      unsigned count, UPnPDirContent &dirbuf,
+				      unsigned &didreadp, unsigned &totalp,
 				      Error &error)
 {
 	// Create request
 	char ofbuf[100], cntbuf[100];
-	sprintf(ofbuf, "%d", offset);
-	sprintf(cntbuf, "%d", count);
+	sprintf(ofbuf, "%u", offset);
+	sprintf(cntbuf, "%u", count);
 	// Some devices require an empty SortCriteria, else bad params
 	IXML_Document *request =
 		MakeActionHelper("Browse", m_serviceType.c_str(),
@@ -112,7 +112,7 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	if (value != nullptr)
 		didread = atoi(value);
 
-	if (count == -1 || count == 0) {
+	if (count == 0) {
 		// TODO: what's this?
 		error.Set(upnp_domain, "got -1 or 0 entries");
 		return false;
@@ -120,12 +120,12 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 
 	value = ixmlwrap::getFirstElementValue(response, "TotalMatches");
 	if (value != nullptr)
-		*totalp = atoi(value);
+		totalp = atoi(value);
 
 	if (!ReadResultTag(dirbuf, response, error))
 		return false;
 
-	*didreadp = didread;
+	didreadp = didread;
 	return true;
 }
 
@@ -135,13 +135,13 @@ ContentDirectoryService::readDir(UpnpClient_Handle handle,
 				 UPnPDirContent &dirbuf,
 				 Error &error)
 {
-	int offset = 0;
-	int total = 1000;// Updated on first read.
+	unsigned offset = 0;
+	unsigned total = 1000;// Updated on first read.
 
 	while (offset < total) {
-		int count;
+		unsigned count;
 		if (!readDirSlice(handle, objectId, offset, m_rdreqcnt, dirbuf,
-				  &count, &total, error))
+				  count, total, error))
 			return false;
 
 		offset += count;
@@ -157,8 +157,8 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 				UPnPDirContent &dirbuf,
 				Error &error)
 {
-	int offset = 0;
-	int total = 1000;// Updated on first read.
+	unsigned offset = 0;
+	unsigned total = 1000;// Updated on first read.
 
 	while (offset < total) {
 		char ofbuf[100];

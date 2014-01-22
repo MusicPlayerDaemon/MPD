@@ -78,9 +78,9 @@ public:
 		     Error &error);
 
 	bool readDirSlice(UpnpClient_Handle handle,
-			  const char *objectId, int offset,
-			  int count, UPnPDirContent& dirbuf,
-			  int *didread, int *total,
+			  const char *objectId, unsigned offset,
+			  unsigned count, UPnPDirContent& dirbuf,
+			  unsigned &didread, unsigned &total,
 			  Error &error);
 
 	/** Search the content directory service.
