@@ -350,7 +350,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 }
 
 static bool
-visitSong(const UPnPDirObject &meta, std::string &&path,
+visitSong(const UPnPDirObject &meta, const char *path,
 	  const DatabaseSelection &selection,
 	  VisitSong visit_song, Error& error)
 {
@@ -359,7 +359,7 @@ visitSong(const UPnPDirObject &meta, std::string &&path,
 
 	LightSong song;
 	song.directory = nullptr;
-	song.uri = path.c_str();
+	song.uri = path;
 	song.real_uri = meta.url.c_str();
 	song.tag = &meta.tag;
 	song.mtime = 0;
@@ -414,9 +414,9 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 		//    course, 'All Music' is very big.
 		// So we return synthetic and ugly paths based on the object id,
 		// which we later have to detect.
-		if (!visitSong(std::move(dirent),
-			       songPath(server.getFriendlyName(),
-					dirent.m_id),
+		const std::string path = songPath(server.getFriendlyName(),
+						  dirent.m_id);
+		if (!visitSong(std::move(dirent), path.c_str(),
 			       selection, visit_song,
 			       error))
 			return false;
@@ -574,7 +574,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 		case UPnPDirObject::ItemClass::MUSIC:
 			if (visit_song)
 				return visitSong(std::move(tdirent),
-						 std::string(selection.uri),
+						 selection.uri.c_str(),
 						 selection, visit_song,
 						 error);
 			break;
