@@ -599,11 +599,31 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	   because the path is not valid for traversal. Besides, it's
 	   just faster to access the target node directly */
 	if (!vpath.empty() && vpath.front() == rootid) {
+		switch (vpath.size()) {
+		case 1:
+			return true;
+
+		case 2:
+			break;
+
+		default:
+			error.Format(db_domain, DB_NOT_FOUND,
+				     "Not found");
+			return false;
+		}
+
 		if (visit_song) {
 			UPnPDirObject dirent;
 			if (!ReadNode(server, vpath.back().c_str(), dirent,
 				      error))
 				return false;
+
+			if (dirent.type != UPnPDirObject::Type::ITEM ||
+			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC) {
+				error.Format(db_domain, DB_NOT_FOUND,
+					     "Not found");
+				return false;
+			}
 
 			std::string path = songPath(server.getFriendlyName(),
 						    dirent.m_id);
