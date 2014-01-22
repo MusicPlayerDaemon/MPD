@@ -143,56 +143,26 @@ csvToStrings(const char *s, T &tokens)
 {
 	std::string current;
 	tokens.clear();
-	enum states {TOKEN, ESCAPE};
-	states state = TOKEN;
 
-	while (*s != 0) {
-		const char ch = *s++;
-
-		switch (ch) {
-		case ',':
-			switch(state) {
-			case TOKEN:
-				tokens.push_back(current);
-				current.clear();
-				continue;
-			case ESCAPE:
-				current += ',';
-				state = TOKEN;
-				continue;
-			}
-			break;
-		case '\\':
-			switch(state) {
-			case TOKEN:
-				state=ESCAPE;
-				continue;
-			case ESCAPE:
-				current += '\\';
-				state = TOKEN;
-				continue;
-			}
-			break;
-
-		default:
-			switch(state) {
-			case ESCAPE:
-				state = TOKEN;
-				break;
-			case TOKEN:
-				break;
-			}
-			current += ch;
+	while (true) {
+		char ch = *s++;
+		if (ch == 0) {
+			tokens.push_back(current);
+			return true;
 		}
+
+		if (ch == '\\') {
+			ch = *s++;
+			if (ch == 0)
+				return false;
+		} else if (ch == ',') {
+			tokens.push_back(current);
+			current.clear();
+			continue;
+		}
+
+		current.push_back(ch);
 	}
-	switch(state) {
-	case TOKEN:
-		tokens.push_back(current);
-		break;
-	case ESCAPE:
-		return false;
-	}
-	return true;
 }
 
 template bool csvToStrings<std::list<std::string>>(const char *, std::list<std::string> &);
