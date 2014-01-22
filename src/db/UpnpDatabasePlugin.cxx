@@ -677,24 +677,20 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		if (!m_superdir->getDirServices(servers, error))
 			return false;
 
-		if (!selection.recursive) {
-			// If the path is empty and recursive is not set, synthetize a
-			// pseudo-directory from the list of servers.
+		for (const auto &server : servers) {
 			if (visit_directory) {
-				for (auto& server : servers) {
-					const LightDirectory d(server.getFriendlyName(), 0);
-					if (!visit_directory(d, error))
-						return false;
-				}
-			}
-		} else {
-			// Recursive is set: visit each server
-			for (auto& server : servers) {
-				if (!VisitServer(server, vpath, selection,
-						 visit_directory, visit_song, visit_playlist, error))
+				const LightDirectory d(server.getFriendlyName(), 0);
+				if (!visit_directory(d, error))
 					return false;
 			}
+
+			if (selection.recursive &&
+			    !VisitServer(server, vpath, selection,
+					 visit_directory, visit_song, visit_playlist,
+					 error))
+				return false;
 		}
+
 		return true;
 	}
 
