@@ -114,20 +114,15 @@ ContentDirectoryService::readDir(UpnpClient_Handle handle,
 				 UPnPDirContent &dirbuf,
 				 Error &error)
 {
-	unsigned offset = 0;
-	unsigned total = 1000;// Updated on first read.
+	unsigned offset = 0, total = -1, count;
 
-	while (offset < total) {
-		unsigned count;
+	do {
 		if (!readDirSlice(handle, objectId, offset, m_rdreqcnt, dirbuf,
 				  count, total, error))
 			return false;
 
-		if (count == 0)
-			return true;
-
 		offset += count;
-	}
+	} while (count > 0 && offset < total);
 
 	return true;
 }
@@ -139,10 +134,9 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 				UPnPDirContent &dirbuf,
 				Error &error)
 {
-	unsigned offset = 0;
-	unsigned total = 1000;// Updated on first read.
+	unsigned offset = 0, total = -1, count;
 
-	while (offset < total) {
+	do {
 		char ofbuf[100];
 		sprintf(ofbuf, "%d", offset);
 
@@ -173,7 +167,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 
 		const char *value =
 			ixmlwrap::getFirstElementValue(response, "NumberReturned");
-		const unsigned count = value != nullptr
+		count = value != nullptr
 			? ParseUnsigned(value)
 			: 0;
 
@@ -187,10 +181,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 		ixmlDocument_free(response);
 		if (!success)
 			return false;
-
-		if (count == 0)
-			break;
-	}
+	} while (count > 0 && offset < total);
 
 	return true;
 }
