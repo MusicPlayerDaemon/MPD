@@ -107,15 +107,15 @@ stringToTokens(const std::string &str,
 
 		// Add token to the vector and adjust start
 		if (pos == std::string::npos) {
-			tokens.push_back(str.substr(startPos));
+			tokens.emplace_back(str, startPos);
 			break;
 		} else if (pos == startPos) {
 			// Dont' push empty tokens after first
 			if (tokens.empty())
-				tokens.push_back(std::string());
+				tokens.emplace_back();
 			startPos = ++pos;
 		} else {
-			tokens.push_back(str.substr(startPos, pos - startPos));
+			tokens.emplace_back(str, startPos, pos - startPos);
 			startPos = ++pos;
 		}
 	}
