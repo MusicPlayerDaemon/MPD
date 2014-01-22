@@ -191,12 +191,6 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 			? ParseUnsigned(value)
 			: 0;
 
-		if (count == 0) {
-			// TODO: what's this?
-			error.Set(upnp_domain, "got -1 or 0 entries");
-			return false;
-		}
-
 		offset += count;
 
 		value = ixmlwrap::getFirstElementValue(response, "TotalMatches");
@@ -205,6 +199,9 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 
 		if (!ReadResultTag(dirbuf, response, error))
 			return false;
+
+		if (count == 0)
+			break;
 	}
 
 	return true;
