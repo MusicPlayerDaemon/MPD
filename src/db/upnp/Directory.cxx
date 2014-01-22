@@ -28,17 +28,26 @@
 
 #include <algorithm>
 #include <string>
-#include <vector>
 
 #include <string.h>
 
+gcc_pure gcc_nonnull_all
+static bool
+CompareStringLiteral(const char *literal, const char *value, size_t length)
+{
+	return length == strlen(literal) &&
+		memcmp(literal, value, length) == 0;
+}
+
 gcc_pure
 static UPnPDirObject::ItemClass
-ParseItemClass(const char *name)
+ParseItemClass(const char *name, size_t length)
 {
-	if (strcmp(name, "object.item.audioItem.musicTrack") == 0)
+	if (CompareStringLiteral("object.item.audioItem.musicTrack",
+				 name, length))
 		return UPnPDirObject::ItemClass::MUSIC;
-	else if (strcmp(name, "object.item.playlistItem") == 0)
+	else if (CompareStringLiteral("object.item.playlistItem",
+				      name, length))
 		return UPnPDirObject::ItemClass::PLAYLIST;
 	else
 		return UPnPDirObject::ItemClass::UNKNOWN;
@@ -88,7 +97,11 @@ titleToPathElt(std::string &&s)
 class UPnPDirParser final : public CommonExpatParser {
 	UPnPDirContent &m_dir;
 
-	std::vector<std::string> m_path;
+	enum {
+		NONE,
+		RES,
+		CLASS,
+	} state;
 
 	/**
 	 * If not equal to #TAG_NUM_OF_ITEM_TYPES, then we're
@@ -108,6 +121,7 @@ class UPnPDirParser final : public CommonExpatParser {
 public:
 	UPnPDirParser(UPnPDirContent& dir)
 		:m_dir(dir),
+		 state(NONE),
 		 tag_type(TAG_NUM_OF_ITEM_TYPES)
 	{
 	}
@@ -115,8 +129,6 @@ public:
 protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **attrs)
 	{
-		m_path.push_back(name);
-
 		if (m_tobj.type != UPnPDirObject::Type::UNKNOWN &&
 		    tag_type == TAG_NUM_OF_ITEM_TYPES) {
 			tag_type = tag_table_lookup(upnp_tags, name);
@@ -167,9 +179,15 @@ protected:
 					GetAttribute(attrs, "duration");
 				if (duration != nullptr)
 					tag.SetTime(ParseDuration(duration));
+
+				state = RES;
 			}
 
 			break;
+
+		case 'u':
+			if (strcmp(name, "upnp:class") == 0)
+				state = CLASS;
 		}
 	}
 
@@ -204,7 +222,7 @@ protected:
 			m_dir.objects.push_back(std::move(m_tobj));
 		}
 
-		m_path.pop_back();
+		state = NONE;
 	}
 
 	virtual void CharacterData(const XML_Char *s, int len)
@@ -216,20 +234,16 @@ protected:
 			return;
 		}
 
-		const auto &current = m_path.back();
-		std::string str = trimstring(s, len);
-
-		switch (current[0]) {
-		case 'r':
-			if (!current.compare("res")) {
-				m_tobj.url = std::move(str);
-			}
+		switch (state) {
+		case NONE:
 			break;
-		case 'u':
-			if (current == "upnp:class") {
-				m_tobj.item_class = ParseItemClass(str.c_str());
-				break;
-			}
+
+		case RES:
+			m_tobj.url.assign(s, len);
+			break;
+
+		case CLASS:
+			m_tobj.item_class = ParseItemClass(s, len);
 			break;
 		}
 	}
