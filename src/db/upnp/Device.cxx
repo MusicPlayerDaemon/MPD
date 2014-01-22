@@ -47,7 +47,7 @@ protected:
 
 	virtual void EndElement(const XML_Char *name) {
 		if (!strcmp(name, "service")) {
-			m_device.services.push_back(m_tservice);
+			m_device.services.emplace_back(std::move(m_tservice));
 			m_tservice.clear();
 		}
 
