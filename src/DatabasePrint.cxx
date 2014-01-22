@@ -46,7 +46,9 @@ PrintDirectoryFull(Client &client, const Directory &directory)
 {
 	if (!directory.IsRoot()) {
 		client_printf(client, "directory: %s\n", directory.GetPath());
-		time_print(client, "Last-Modified", directory.mtime);
+
+		if (directory.mtime > 0)
+			time_print(client, "Last-Modified", directory.mtime);
 	}
 
 	return true;
