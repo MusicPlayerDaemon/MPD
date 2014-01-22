@@ -552,17 +552,6 @@ VisitItem(const UPnPDirObject &object, const char *uri,
 	gcc_unreachable();
 }
 
-static bool
-VisitItem(const UPnPDirObject &object, const std::string &uri,
-	  const DatabaseSelection &selection,
-	  VisitSong visit_song, VisitPlaylist visit_playlist,
-	  Error &error)
-{
-	return VisitItem(object, uri.c_str(),
-			 selection, visit_song, visit_playlist,
-			 error);
-}
-
 // vpath is a parsed and writeable version of selection.uri. There is
 // really just one path parameter.
 bool
@@ -632,6 +621,9 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 		return false;
 
 	for (auto &dirent : dirbuf.objects) {
+		const std::string uri = PathTraitsUTF8::Build(base_uri,
+							      dirent.name.c_str());
+
 		switch (dirent.type) {
 		case UPnPDirObject::Type::UNKNOWN:
 			assert(false);
@@ -639,8 +631,6 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 
 		case UPnPDirObject::Type::CONTAINER:
 			if (visit_directory) {
-				const std::string uri = PathTraitsUTF8::Build(base_uri,
-									      dirent.name.c_str());
 				const LightDirectory d(uri.c_str(), 0);
 				if (!visit_directory(d, error))
 					return false;
@@ -649,9 +639,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 			break;
 
 		case UPnPDirObject::Type::ITEM:
-			if (!VisitItem(dirent,
-				       PathTraitsUTF8::Build(base_uri,
-							     dirent.name.c_str()),
+			if (!VisitItem(dirent, uri.c_str(),
 				       selection,
 				       visit_song, visit_playlist,
 				       error))
