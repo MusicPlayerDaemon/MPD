@@ -525,7 +525,11 @@ Visit(struct mpd_connection *connection,
       VisitPlaylist visit_playlist, Error &error)
 {
 	const char *path = mpd_directory_get_path(directory);
+#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
 	time_t mtime = mpd_directory_get_last_modified(directory);
+#else
+	time_t mtime = 0;
+#endif
 
 	if (visit_directory &&
 	    !visit_directory(LightDirectory(path, mtime), error))
