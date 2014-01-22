@@ -45,14 +45,27 @@ trimstring(std::string &s, const char *ws)
 std::string
 caturl(const std::string &s1, const std::string &s2)
 {
-	std::string out(s1);
-	if (out.back() == '/') {
-		if (s2.front() == '/')
-			out.erase(out.size()-1);
-	} else {
-		if (s2.front() != '/')
-			out.push_back('/');
+	if (s2.front() == '/') {
+		/* absolute path: replace the whole URI path in s1 */
+
+		auto i = s1.find("://");
+		if (i == s1.npos)
+			/* no scheme: override s1 completely */
+			return s2;
+
+		/* find the first slash after the host part */
+		i = s1.find('/', i + 3);
+		if (i == s1.npos)
+			/* there's no URI path - simply append s2 */
+			i = s1.length();
+
+		return s1.substr(0, i) + s2;
 	}
+
+	std::string out(s1);
+	if (out.back() != '/')
+		out.push_back('/');
+
 	out += s2;
 	return out;
 }
