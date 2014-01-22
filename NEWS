@@ -4,6 +4,7 @@ ver 0.19 (not yet released)
   - "lsinfo" and "readcomments" allowed for remote files
 * database
   - proxy: forward "idle" events
+  - proxy: copy "Last-Modified" from remote directories
   - upnp: new plugin
 * playlist
   - soundcloud: use https instead of http

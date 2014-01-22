@@ -525,9 +525,10 @@ Visit(struct mpd_connection *connection,
       VisitPlaylist visit_playlist, Error &error)
 {
 	const char *path = mpd_directory_get_path(directory);
+	time_t mtime = mpd_directory_get_last_modified(directory);
 
 	if (visit_directory &&
-	    !visit_directory(LightDirectory(path, 0), error))
+	    !visit_directory(LightDirectory(path, mtime), error))
 		return false;
 
 	if (recursive &&
