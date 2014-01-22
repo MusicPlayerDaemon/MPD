@@ -27,6 +27,7 @@
 #include "Action.hxx"
 #include "util/Error.hxx"
 
+#include <string.h>
 #include <stdio.h>
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
@@ -243,19 +244,22 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 		return false;
 	}
 
-	std::string tbuf = ixmlwrap::getFirstElementValue(response, "SearchCaps");
-	ixmlDocument_free(response);
-
-	if (!tbuf.compare("*")) {
-		result.insert(result.end(), "*");
-	} else if (!tbuf.empty()) {
-		if (!csvToStrings(tbuf.c_str(), result)) {
-			error.Set(upnp_domain, "Bad response");
-			return false;
-		}
+	const char *s = ixmlwrap::getFirstElementValue(response, "SearchCaps");
+	if (s == nullptr || *s == 0) {
+		ixmlDocument_free(response);
+		return true;
 	}
 
-	return true;
+	bool success = true;
+	if (strcmp(s, "*") == 0) {
+		result.insert(result.end(), "*");
+	} else if (!csvToStrings(s, result)) {
+		error.Set(upnp_domain, "Bad response");
+		success = false;
+	}
+
+	ixmlDocument_free(response);
+	return success;
 }
 
 bool
