@@ -296,7 +296,7 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 				if (!cond.empty()) {
 					cond += " and ";
 				}
-				cond += "(";
+				cond += '(';
 				bool first(true);
 				for (const auto& cap : searchcaps) {
 					if (first)
@@ -311,7 +311,7 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 					}
 					dquote(cond, item.GetValue().c_str());
 				}
-				cond += ")";
+				cond += ')';
 			}
 			break;
 
