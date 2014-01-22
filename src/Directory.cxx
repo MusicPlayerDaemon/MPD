@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Directory.hxx"
+#include "LightDirectory.hxx"
 #include "SongFilter.hxx"
 #include "PlaylistVector.hxx"
 #include "DatabaseLock.hxx"
@@ -272,14 +273,14 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 
 	if (visit_playlist) {
 		for (const PlaylistInfo &p : playlists)
-			if (!visit_playlist(p, *this, error))
+			if (!visit_playlist(p, Export(), error))
 				return false;
 	}
 
 	Directory *child;
 	directory_for_each_child(child, *this) {
 		if (visit_directory &&
-		    !visit_directory(*child, error))
+		    !visit_directory(child->Export(), error))
 			return false;
 
 		if (recursive &&
@@ -290,4 +291,10 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 	}
 
 	return true;
+}
+
+LightDirectory
+Directory::Export() const
+{
+	return LightDirectory(GetPath(), mtime);
 }

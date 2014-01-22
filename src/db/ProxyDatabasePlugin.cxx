@@ -23,7 +23,8 @@
 #include "DatabaseListener.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseError.hxx"
-#include "Directory.hxx"
+#include "PlaylistInfo.hxx"
+#include "LightDirectory.hxx"
 #include "LightSong.hxx"
 #include "SongFilter.hxx"
 #include "Compiler.h"
@@ -71,7 +72,6 @@ class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 	unsigned port;
 
 	struct mpd_connection *connection;
-	Directory *root;
 
 	/* this is mutable because GetStats() must be "const" */
 	mutable time_t update_stamp;
@@ -328,7 +328,6 @@ ProxyDatabase::Open(Error &error)
 	if (!Connect(error))
 		return false;
 
-	root = Directory::NewRoot();
 	update_stamp = 0;
 
 	return true;
@@ -337,8 +336,6 @@ ProxyDatabase::Open(Error &error)
 void
 ProxyDatabase::Close()
 {
-	delete root;
-
 	if (connection != nullptr)
 		Disconnect();
 }
@@ -515,13 +512,13 @@ ProxyDatabase::ReturnSong(const LightSong *_song) const
 }
 
 static bool
-Visit(struct mpd_connection *connection, Directory &root, const char *uri,
+Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, const SongFilter *filter,
       VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error);
 
 static bool
-Visit(struct mpd_connection *connection, Directory &root,
+Visit(struct mpd_connection *connection,
       bool recursive, const SongFilter *filter,
       const struct mpd_directory *directory,
       VisitDirectory visit_directory, VisitSong visit_song,
@@ -530,11 +527,11 @@ Visit(struct mpd_connection *connection, Directory &root,
 	const char *path = mpd_directory_get_path(directory);
 
 	if (visit_directory &&
-	    !visit_directory(Directory(path, &root), error))
+	    !visit_directory(LightDirectory(path, 0), error))
 		return false;
 
 	if (recursive &&
-	    !Visit(connection, root, path, recursive, filter,
+	    !Visit(connection, path, recursive, filter,
 		   visit_directory, visit_song, visit_playlist, error))
 		return false;
 
@@ -561,7 +558,7 @@ Visit(const SongFilter *filter,
 }
 
 static bool
-Visit(const struct mpd_playlist *playlist, Directory &root,
+Visit(const struct mpd_playlist *playlist,
       VisitPlaylist visit_playlist, Error &error)
 {
 	if (!visit_playlist)
@@ -570,7 +567,7 @@ Visit(const struct mpd_playlist *playlist, Directory &root,
 	PlaylistInfo p(mpd_playlist_get_path(playlist),
 		       mpd_playlist_get_last_modified(playlist));
 
-	return visit_playlist(p, root, error);
+	return visit_playlist(p, LightDirectory::Root(), error);
 }
 
 class ProxyEntity {
@@ -612,7 +609,7 @@ ReceiveEntities(struct mpd_connection *connection)
 }
 
 static bool
-Visit(struct mpd_connection *connection, Directory &root, const char *uri,
+Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, const SongFilter *filter,
       VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error)
@@ -630,7 +627,7 @@ Visit(struct mpd_connection *connection, Directory &root, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_DIRECTORY:
-			if (!Visit(connection, root, recursive, filter,
+			if (!Visit(connection, recursive, filter,
 				   mpd_entity_get_directory(entity),
 				   visit_directory, visit_song, visit_playlist,
 				   error))
@@ -645,7 +642,7 @@ Visit(struct mpd_connection *connection, Directory &root, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_PLAYLIST:
-			if (!Visit(mpd_entity_get_playlist(entity), root,
+			if (!Visit(mpd_entity_get_playlist(entity),
 				   visit_playlist, error))
 				return false;
 			break;
@@ -702,7 +699,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 		return ::SearchSongs(connection, selection, visit_song, error);
 
 	/* fall back to recursive walk (slow!) */
-	return ::Visit(connection, *root, selection.uri.c_str(),
+	return ::Visit(connection, selection.uri.c_str(),
 		       selection.recursive, selection.filter,
 		       visit_directory, visit_song, visit_playlist,
 		       error);

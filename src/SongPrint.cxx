@@ -21,7 +21,6 @@
 #include "SongPrint.hxx"
 #include "LightSong.hxx"
 #include "DetachedSong.hxx"
-#include "Directory.hxx"
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
 #include "Mapper.hxx"

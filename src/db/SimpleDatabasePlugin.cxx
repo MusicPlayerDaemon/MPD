@@ -21,6 +21,7 @@
 #include "SimpleDatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseHelpers.hxx"
+#include "LightDirectory.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "SongFilter.hxx"
@@ -265,7 +266,7 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	}
 
 	if (selection.recursive && visit_directory &&
-	    !visit_directory(*directory, error))
+	    !visit_directory(directory->Export(), error))
 		return false;
 
 	return directory->Walk(selection.recursive, selection.filter,

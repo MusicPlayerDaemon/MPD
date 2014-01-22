@@ -22,7 +22,7 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseListener.hxx"
-#include "Directory.hxx"
+#include "LightDirectory.hxx"
 #include "LightSong.hxx"
 #include "PlaylistVector.hxx"
 #include "ConfigGlobal.hxx"
@@ -58,9 +58,9 @@ public:
 };
 
 static bool
-DumpDirectory(const Directory &directory, Error &)
+DumpDirectory(const LightDirectory &directory, Error &)
 {
-	cout << "D " << directory.path << endl;
+	cout << "D " << directory.GetPath() << endl;
 	return true;
 }
 
@@ -76,9 +76,10 @@ DumpSong(const LightSong &song, Error &)
 
 static bool
 DumpPlaylist(const PlaylistInfo &playlist,
-	     const Directory &directory, Error &)
+	     const LightDirectory &directory, Error &)
 {
-	cout << "P " << directory.path << "/" << playlist.name.c_str() << endl;
+	cout << "P " << directory.GetPath()
+	     << "/" << playlist.name.c_str() << endl;
 	return true;
 }
 

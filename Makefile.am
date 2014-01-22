@@ -197,6 +197,7 @@ src_mpd_SOURCES = \
 	src/SignalHandlers.cxx src/SignalHandlers.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
 	src/LightSong.cxx src/LightSong.hxx \
+	src/LightDirectory.hxx \
 	src/Song.cxx src/Song.hxx \
 	src/SongUpdate.cxx \
 	src/SongPrint.cxx src/SongPrint.hxx \

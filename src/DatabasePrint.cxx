@@ -23,17 +23,18 @@
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
 #include "TimePrint.hxx"
-#include "Directory.hxx"
 #include "Client.hxx"
 #include "tag/Tag.hxx"
 #include "LightSong.hxx"
+#include "LightDirectory.hxx"
+#include "PlaylistInfo.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 
 #include <functional>
 
 static bool
-PrintDirectoryBrief(Client &client, const Directory &directory)
+PrintDirectoryBrief(Client &client, const LightDirectory &directory)
 {
 	if (!directory.IsRoot())
 		client_printf(client, "directory: %s\n", directory.GetPath());
@@ -42,7 +43,7 @@ PrintDirectoryBrief(Client &client, const Directory &directory)
 }
 
 static bool
-PrintDirectoryFull(Client &client, const Directory &directory)
+PrintDirectoryFull(Client &client, const LightDirectory &directory)
 {
 	if (!directory.IsRoot()) {
 		client_printf(client, "directory: %s\n", directory.GetPath());
@@ -68,7 +69,7 @@ print_playlist_in_directory(Client &client,
 
 static void
 print_playlist_in_directory(Client &client,
-			    const Directory *directory,
+			    const LightDirectory *directory,
 			    const char *name_utf8)
 {
 	if (directory == nullptr || directory->IsRoot())
@@ -105,7 +106,7 @@ PrintSongFull(Client &client, const LightSong &song)
 static bool
 PrintPlaylistBrief(Client &client,
 		   const PlaylistInfo &playlist,
-		   const Directory &directory)
+		   const LightDirectory &directory)
 {
 	print_playlist_in_directory(client, &directory, playlist.name.c_str());
 	return true;
@@ -114,7 +115,7 @@ PrintPlaylistBrief(Client &client,
 static bool
 PrintPlaylistFull(Client &client,
 		  const PlaylistInfo &playlist,
-		  const Directory &directory)
+		  const LightDirectory &directory)
 {
 	print_playlist_in_directory(client, &directory, playlist.name.c_str());
 

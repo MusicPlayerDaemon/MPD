@@ -234,6 +234,9 @@ public:
 		  VisitDirectory visit_directory, VisitSong visit_song,
 		  VisitPlaylist visit_playlist,
 		  Error &error) const;
+
+	gcc_pure
+	LightDirectory Export() const;
 };
 
 static inline bool

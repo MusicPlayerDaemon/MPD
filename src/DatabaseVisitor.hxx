@@ -22,14 +22,14 @@
 
 #include <functional>
 
-struct Directory;
+struct LightDirectory;
 struct LightSong;
 struct PlaylistInfo;
 class Error;
 
-typedef std::function<bool(const Directory &, Error &)> VisitDirectory;
+typedef std::function<bool(const LightDirectory &, Error &)> VisitDirectory;
 typedef std::function<bool(const LightSong &, Error &)> VisitSong;
-typedef std::function<bool(const PlaylistInfo &, const Directory &,
+typedef std::function<bool(const PlaylistInfo &, const LightDirectory &,
 			   Error &)> VisitPlaylist;
 
 typedef std::function<bool(const char *, Error &)> VisitString;

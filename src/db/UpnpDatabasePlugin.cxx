@@ -29,8 +29,7 @@
 #include "DatabasePlugin.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseError.hxx"
-#include "PlaylistVector.hxx"
-#include "Directory.hxx"
+#include "LightDirectory.hxx"
 #include "LightSong.hxx"
 #include "ConfigData.hxx"
 #include "tag/TagBuilder.hxx"
@@ -71,7 +70,6 @@ public:
 class UpnpDatabase : public Database {
 	LibUPnP *m_lib;
 	UPnPDeviceDirectory *m_superdir;
-	Directory *m_root;
 
 public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
@@ -190,7 +188,6 @@ UpnpDatabase::Open(Error &error)
 		return false;
 	}
 
-	m_root = Directory::NewRoot();
 	// Wait for device answers. This should be consistent with the value set
 	// in the lib (currently 2)
 	sleep(2);
@@ -200,7 +197,6 @@ UpnpDatabase::Open(Error &error)
 void
 UpnpDatabase::Close()
 {
-	delete m_root;
 	delete m_superdir;
 	delete m_lib;
 }
@@ -602,9 +598,8 @@ UpnpDatabase::VisitServer(ContentDirectoryService &server,
 
 		case UPnPDirObject::Type::CONTAINER:
 			if (visit_directory) {
-				Directory d((selection.uri + "/" +
-					     dirent.name).c_str(),
-					    m_root);
+				const std::string uri = selection.uri + "/" + dirent.name;
+				const LightDirectory d(uri.c_str(), 0);
 				if (!visit_directory(d, error))
 					return false;
 			}
@@ -673,7 +668,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 			// pseudo-directory from the list of servers.
 			if (visit_directory) {
 				for (auto& server : servers) {
-					Directory d(server.getFriendlyName(), m_root);
+					const LightDirectory d(server.getFriendlyName(), 0);
 					if (!visit_directory(d, error))
 						return false;
 				}
