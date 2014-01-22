@@ -19,12 +19,9 @@
 
 #include "Util.hxx"
 
-#include <string>
-#include <map>
-#include <vector>
-#include <set>
-
 #include <upnp/ixml.h>
+
+#include <assert.h>
 
 /** Get rid of white space at both ends */
 void
@@ -141,8 +138,9 @@ template <class T>
 bool
 csvToStrings(const char *s, T &tokens)
 {
+	assert(tokens.empty());
+
 	std::string current;
-	tokens.clear();
 
 	while (true) {
 		char ch = *s++;
