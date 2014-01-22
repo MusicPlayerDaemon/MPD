@@ -123,6 +123,9 @@ ContentDirectoryService::readDir(UpnpClient_Handle handle,
 				  count, total, error))
 			return false;
 
+		if (count == 0)
+			return true;
+
 		offset += count;
 	}
 
