@@ -40,6 +40,7 @@ stringToTokens(const std::string &str,
 	       const char *delims = "/", bool skipinit = true);
 
 template <class T>
-bool csvToStrings(const std::string& s, T &tokens);
+bool
+csvToStrings(const char *s, T &tokens);
 
 #endif /* _UPNPP_H_X_INCLUDED_ */

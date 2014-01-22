@@ -139,14 +139,17 @@ stringToTokens(const std::string &str,
 
 template <class T>
 bool
-csvToStrings(const std::string &s, T &tokens)
+csvToStrings(const char *s, T &tokens)
 {
 	std::string current;
 	tokens.clear();
 	enum states {TOKEN, ESCAPE};
 	states state = TOKEN;
-	for (unsigned int i = 0; i < s.length(); i++) {
-		switch (s[i]) {
+
+	while (*s != 0) {
+		const char ch = *s++;
+
+		switch (ch) {
 		case ',':
 			switch(state) {
 			case TOKEN:
@@ -179,7 +182,7 @@ csvToStrings(const std::string &s, T &tokens)
 			case TOKEN:
 				break;
 			}
-			current += s[i];
+			current += ch;
 		}
 	}
 	switch(state) {
@@ -193,5 +196,5 @@ csvToStrings(const std::string &s, T &tokens)
 }
 
 //template bool csvToStrings<list<string> >(const string &, list<string> &);
-template bool csvToStrings<std::vector<std::string> >(const std::string &, std::vector<std::string> &);
-template bool csvToStrings<std::set<std::string> >(const std::string &, std::set<std::string> &);
+template bool csvToStrings<std::vector<std::string> >(const char *, std::vector<std::string> &);
+template bool csvToStrings<std::set<std::string> >(const char *, std::set<std::string> &);

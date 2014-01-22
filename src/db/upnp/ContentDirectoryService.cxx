@@ -249,7 +249,7 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 	if (!tbuf.compare("*")) {
 		result.insert(result.end(), "*");
 	} else if (!tbuf.empty()) {
-		if (!csvToStrings(tbuf, result)) {
+		if (!csvToStrings(tbuf.c_str(), result)) {
 			error.Set(upnp_domain, "Bad response");
 			return false;
 		}
