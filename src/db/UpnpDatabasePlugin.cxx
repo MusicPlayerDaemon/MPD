@@ -578,7 +578,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 		case UPnPDirObject::ItemClass::MUSIC:
 			if (visit_song)
 				return visitSong(std::move(tdirent),
-						 selection.uri.c_str(),
+						 base_uri,
 						 selection, visit_song,
 						 error);
 			break;
@@ -615,7 +615,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 
 		case UPnPDirObject::Type::CONTAINER:
 			if (visit_directory) {
-				const std::string uri = PathTraitsUTF8::Build(selection.uri.c_str(),
+				const std::string uri = PathTraitsUTF8::Build(base_uri,
 									      dirent.name.c_str());
 				const LightDirectory d(uri.c_str(), 0);
 				if (!visit_directory(d, error))
@@ -635,7 +635,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 
 					std::string p;
 					if (!selection.recursive)
-						p = PathTraitsUTF8::Build(selection.uri.c_str(),
+						p = PathTraitsUTF8::Build(base_uri,
 									  dirent.name.c_str());
 
 					if (!visitSong(std::move(dirent),
