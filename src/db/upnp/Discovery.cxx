@@ -30,7 +30,7 @@
 #include <string.h>
 
 // The service type string we are looking for.
-static const char *const ContentDirectorySType = "urn:schemas-upnp-org:service:ContentDirectory:1";
+static constexpr char ContentDirectorySType[] = "urn:schemas-upnp-org:service:ContentDirectory:1";
 
 // We don't include a version in comparisons, as we are satisfied with
 // version 1
@@ -38,18 +38,18 @@ gcc_pure
 static bool
 isCDService(const char *st)
 {
-	const size_t sz = strlen(ContentDirectorySType) - 2;
+	constexpr size_t sz = sizeof(ContentDirectorySType) - 3;
 	return memcmp(ContentDirectorySType, st, sz) == 0;
 }
 
 // The type of device we're asking for in search
-static const char *const MediaServerDType = "urn:schemas-upnp-org:device:MediaServer:1";
+static constexpr char MediaServerDType[] = "urn:schemas-upnp-org:device:MediaServer:1";
 
 gcc_pure
 static bool
 isMSDevice(const char *st)
 {
-	const size_t sz = strlen(MediaServerDType) - 2;
+	constexpr size_t sz = sizeof(MediaServerDType) - 3;
 	return memcmp(MediaServerDType, st, sz) == 0;
 }
 
