@@ -219,7 +219,7 @@ protected:
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
 		    checkobjok()) {
 			tag.Commit(m_tobj.tag);
-			m_dir.objects.push_back(std::move(m_tobj));
+			m_dir.objects.emplace_back(std::move(m_tobj));
 		}
 
 		state = NONE;
