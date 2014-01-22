@@ -45,6 +45,8 @@ public:
 
 protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **) {
+		value = nullptr;
+
 		switch (name[0]) {
 		case 'c':
 			if (strcmp(name, "controlURL") == 0)
