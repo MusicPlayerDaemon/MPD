@@ -220,6 +220,8 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 					       std::set<std::string> &result,
 					       Error &error)
 {
+	assert(result.empty());
+
 	IXML_Document *request =
 		UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
 			       0,
@@ -244,7 +246,6 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 	std::string tbuf = ixmlwrap::getFirstElementValue(response, "SearchCaps");
 	ixmlDocument_free(response);
 
-	result.clear();
 	if (!tbuf.compare("*")) {
 		result.insert(result.end(), "*");
 	} else if (!tbuf.empty()) {
