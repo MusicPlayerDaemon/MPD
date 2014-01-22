@@ -37,19 +37,12 @@ class Error;
 struct UPnPService {
 	// e.g. urn:schemas-upnp-org:service:ConnectionManager:1
 	std::string serviceType;
-	// Unique Id inside device: e.g here THE ConnectionManager
-	std::string serviceId; // e.g. urn:upnp-org:serviceId:ConnectionManager
-	std::string SCPDURL; // Service description URL. e.g.: cm.xml
 	std::string controlURL; // e.g.: /upnp/control/cm
-	std::string eventSubURL; // e.g.: /upnp/event/cm
 
 	void clear()
 	{
 		serviceType.clear();
-		serviceId.clear();
-		SCPDURL.clear();
 		controlURL.clear();
-		eventSubURL.clear();
 	}
 };
 

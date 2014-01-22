@@ -66,10 +66,6 @@ protected:
 			if (!current.compare("deviceType"))
 				m_device.deviceType = std::move(str);
 			break;
-		case 'e':
-			if (!current.compare("eventSubURL"))
-				m_tservice.eventSubURL = std::move(str);
-			break;
 		case 'f':
 			if (!current.compare("friendlyName"))
 				m_device.friendlyName = std::move(str);
@@ -83,11 +79,6 @@ protected:
 		case 's':
 			if (!current.compare("serviceType"))
 				m_tservice.serviceType = std::move(str);
-			else if (!current.compare("serviceId"))
-				m_tservice.serviceId = std::move(str);
-		case 'S':
-			if (!current.compare("SCPDURL"))
-				m_tservice.SCPDURL = std::move(str);
 			break;
 		case 'U':
 			if (!current.compare("UDN"))
