@@ -166,7 +166,7 @@ UpnpDatabase::Create(gcc_unused EventLoop &loop,
 	return db;
 }
 
-bool
+inline bool
 UpnpDatabase::Configure(const config_param &, Error &)
 {
 	return true;
