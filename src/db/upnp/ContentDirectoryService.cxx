@@ -188,7 +188,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 
 bool
 ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
-					       std::set<std::string> &result,
+					       std::list<std::string> &result,
 					       Error &error)
 {
 	assert(result.empty());

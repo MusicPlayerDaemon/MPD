@@ -281,7 +281,7 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 	if (selection.filter == nullptr)
 		return true;
 
-	std::set<std::string> searchcaps;
+	std::list<std::string> searchcaps;
 	if (!server.getSearchCapabilities(m_lib->getclh(), searchcaps, error))
 		return false;
 

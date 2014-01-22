@@ -23,7 +23,7 @@
 #include <upnp/upnp.h>
 
 #include <string>
-#include <set>
+#include <list>
 
 class Error;
 class UPnPDevice;
@@ -114,7 +114,7 @@ public:
 	 *     any tag can be used in a search, or a list of usable tag names.
 	 */
 	bool getSearchCapabilities(UpnpClient_Handle handle,
-				   std::set<std::string> &result,
+				   std::list<std::string> &result,
 				   Error &error);
 
 	/** Retrieve the "friendly name" for this server, useful for display. */

@@ -153,7 +153,7 @@ csvToStrings(const char *s, T &tokens)
 		case ',':
 			switch(state) {
 			case TOKEN:
-				tokens.insert(tokens.end(), current);
+				tokens.push_back(current);
 				current.clear();
 				continue;
 			case ESCAPE:
@@ -187,7 +187,7 @@ csvToStrings(const char *s, T &tokens)
 	}
 	switch(state) {
 	case TOKEN:
-		tokens.insert(tokens.end(), current);
+		tokens.push_back(current);
 		break;
 	case ESCAPE:
 		return false;
@@ -195,6 +195,4 @@ csvToStrings(const char *s, T &tokens)
 	return true;
 }
 
-//template bool csvToStrings<list<string> >(const string &, list<string> &);
-template bool csvToStrings<std::vector<std::string> >(const char *, std::vector<std::string> &);
-template bool csvToStrings<std::set<std::string> >(const char *, std::set<std::string> &);
+template bool csvToStrings<std::list<std::string>>(const char *, std::list<std::string> &);
