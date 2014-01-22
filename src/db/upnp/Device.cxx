@@ -33,60 +33,63 @@
  */
 class UPnPDeviceParser final : public CommonExpatParser {
 	UPnPDevice &m_device;
-	std::vector<std::string> m_path;
+
+	std::string *value;
+
 	UPnPService m_tservice;
 
 public:
 	UPnPDeviceParser(UPnPDevice& device)
-		:m_device(device) {}
+		:m_device(device),
+		 value(nullptr) {}
 
 protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **) {
-		m_path.push_back(name);
+		switch (name[0]) {
+		case 'c':
+			if (strcmp(name, "controlURL") == 0)
+				value = &m_tservice.controlURL;
+			break;
+		case 'd':
+			if (strcmp(name, "deviceType") == 0)
+				value = &m_device.deviceType;
+			break;
+		case 'f':
+			if (strcmp(name, "friendlyName") == 0)
+				value = &m_device.friendlyName;
+			break;
+		case 'm':
+			if (strcmp(name, "manufacturer") == 0)
+				value = &m_device.manufacturer;
+			else if (strcmp(name, "modelName") == 0)
+				value = &m_device.modelName;
+			break;
+		case 's':
+			if (strcmp(name, "serviceType") == 0)
+				value = &m_tservice.serviceType;
+			break;
+		case 'U':
+			if (strcmp(name, "UDN") == 0)
+				value = &m_device.UDN;
+			else if (strcmp(name, "URLBase") == 0)
+				value = &m_device.URLBase;
+			break;
+		}
 	}
 
 	virtual void EndElement(const XML_Char *name) {
-		if (!strcmp(name, "service")) {
+		if (value != nullptr) {
+			trimstring(*value);
+			value = nullptr;
+		} else if (!strcmp(name, "service")) {
 			m_device.services.emplace_back(std::move(m_tservice));
 			m_tservice.clear();
 		}
-
-		m_path.pop_back();
 	}
 
 	virtual void CharacterData(const XML_Char *s, int len) {
-		const auto &current = m_path.back();
-		std::string str = trimstring(s, len);
-		switch (current[0]) {
-		case 'c':
-			if (!current.compare("controlURL"))
-				m_tservice.controlURL = std::move(str);
-			break;
-		case 'd':
-			if (!current.compare("deviceType"))
-				m_device.deviceType = std::move(str);
-			break;
-		case 'f':
-			if (!current.compare("friendlyName"))
-				m_device.friendlyName = std::move(str);
-			break;
-		case 'm':
-			if (!current.compare("manufacturer"))
-				m_device.manufacturer = std::move(str);
-			else if (!current.compare("modelName"))
-				m_device.modelName = std::move(str);
-			break;
-		case 's':
-			if (!current.compare("serviceType"))
-				m_tservice.serviceType = std::move(str);
-			break;
-		case 'U':
-			if (!current.compare("UDN"))
-				m_device.UDN = std::move(str);
-			else if (!current.compare("URLBase"))
-				m_device.URLBase = std::move(str);
-			break;
-		}
+		if (value != nullptr)
+			value->append(s, len);
 	}
 };
 
