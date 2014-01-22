@@ -251,9 +251,7 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 	}
 
 	bool success = true;
-	if (strcmp(s, "*") == 0) {
-		result.insert(result.end(), "*");
-	} else if (!csvToStrings(s, result)) {
+	if (!csvToStrings(s, result)) {
 		error.Set(upnp_domain, "Bad response");
 		success = false;
 	}
