@@ -350,14 +350,21 @@ UpnpDatabase::SearchSongs(ContentDirectoryService &server,
 }
 
 static bool
-visitSong(UPnPDirObject &&meta, std::string &&path,
+visitSong(const UPnPDirObject &meta, std::string &&path,
 	  const DatabaseSelection &selection,
 	  VisitSong visit_song, Error& error)
 {
 	if (!visit_song)
 		return true;
 
-	const UpnpSong song(std::move(meta), std::move(path));
+	LightSong song;
+	song.directory = nullptr;
+	song.uri = path.c_str();
+	song.real_uri = meta.url.c_str();
+	song.tag = &meta.tag;
+	song.mtime = 0;
+	song.start_ms = song.end_ms = 0;
+
 	return !selection.Match(song) || visit_song(song, error);
 }
 
