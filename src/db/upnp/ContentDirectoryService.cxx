@@ -69,7 +69,7 @@ ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response, Error &error)
 	return dirbuf.parse(p, error);
 }
 
-bool
+inline bool
 ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				      const char *objectId, int offset,
 				      int count, UPnPDirContent &dirbuf,
