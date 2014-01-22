@@ -88,8 +88,9 @@ UPnPDeviceDirectory::discoExplorer()
 			}
 		}
 
-		const ScopeLock protect(mutex);
+		mutex.lock();
 		directories[std::move(tsk->deviceId)] = std::move(d);
+		mutex.unlock();
 
 		delete tsk;
 	}
