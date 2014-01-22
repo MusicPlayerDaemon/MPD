@@ -250,22 +250,22 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 static void
 dquote(std::string &out, const char *in)
 {
-	out.append(1, '"');
+	out.push_back('"');
 
 	for (; *in != 0; ++in) {
 		switch(*in) {
 		case '\\':
 		case '"':
-			out.append(1, '\\');
-			out.append(1, *in);
+			out.push_back('\\');
+			out.push_back(*in);
 			break;
 
 		default:
-			out.append(1, *in);
+			out.push_back(*in);
 		}
 	}
 
-	out.append(1, '"');
+	out.push_back('"');
 }
 
 // Run an UPnP search, according to MPD parameters. Return results as
