@@ -567,6 +567,10 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 		return SearchSongs(server, tdirent.m_id.c_str(), selection,
 				   visit_song, error);
 
+	const char *const base_uri = selection.uri.empty()
+		? server.getFriendlyName()
+		: selection.uri.c_str();
+
 	if (tdirent.type == UPnPDirObject::Type::ITEM) {
 		// Target is a song. Not too sure we ever get there actually, maybe
 		// this is always catched by the special uri test above.
