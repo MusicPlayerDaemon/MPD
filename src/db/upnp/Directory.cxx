@@ -86,6 +86,8 @@ titleToPathElt(std::string &&s)
  * An XML parser which builds directory contents from DIDL lite input.
  */
 class UPnPDirParser final : public CommonExpatParser {
+	UPnPDirContent &m_dir;
+
 	std::vector<std::string> m_path;
 	UPnPDirObject m_tobj;
 	TagBuilder tag;
@@ -95,7 +97,6 @@ public:
 		:m_dir(dir)
 	{
 	}
-	UPnPDirContent& m_dir;
 
 protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **attrs)
