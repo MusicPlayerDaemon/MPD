@@ -25,6 +25,7 @@
 #include "Directory.hxx"
 #include "Util.hxx"
 #include "Action.hxx"
+#include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 
 #include <string.h>
@@ -107,25 +108,18 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 
 	DirBResFree cleaner(&response);
 
-	int didread = -1;
 	const char *value = ixmlwrap::getFirstElementValue(response, "NumberReturned");
-	if (value != nullptr)
-		didread = atoi(value);
-
-	if (count == 0) {
-		// TODO: what's this?
-		error.Set(upnp_domain, "got -1 or 0 entries");
-		return false;
-	}
+	didreadp = value != nullptr
+		? ParseUnsigned(value)
+		: 0;
 
 	value = ixmlwrap::getFirstElementValue(response, "TotalMatches");
 	if (value != nullptr)
-		totalp = atoi(value);
+		totalp = ParseUnsigned(value);
 
 	if (!ReadResultTag(dirbuf, response, error))
 		return false;
 
-	didreadp = didread;
 	return true;
 }
 
@@ -191,13 +185,13 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 
 		DirBResFree cleaner(&response);
 
-		int count = -1;
 		const char *value =
 			ixmlwrap::getFirstElementValue(response, "NumberReturned");
-		if (value != nullptr)
-			count = atoi(value);
+		const unsigned count = value != nullptr
+			? ParseUnsigned(value)
+			: 0;
 
-		if (count == -1 || count == 0) {
+		if (count == 0) {
 			// TODO: what's this?
 			error.Set(upnp_domain, "got -1 or 0 entries");
 			return false;
@@ -207,7 +201,7 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 
 		value = ixmlwrap::getFirstElementValue(response, "TotalMatches");
 		if (value != nullptr)
-			total = atoi(value);
+			total = ParseUnsigned(value);
 
 		if (!ReadResultTag(dirbuf, response, error))
 			return false;
