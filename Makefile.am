@@ -429,7 +429,7 @@ libdb_plugins_a_SOURCES += \
 	src/db/upnp/Util.cxx src/db/upnp/Util.hxx \
 	src/db/upnp/Action.hxx \
 	src/db/upnp/WorkQueue.hxx \
-	src/db/upnp/Object.hxx
+	src/db/upnp/Object.cxx src/db/upnp/Object.hxx
 DB_LIBS += \
 	$(EXPAT_LIBS) \
 	$(UPNP_LIBS)

@@ -48,6 +48,11 @@ ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 	}
 }
 
+ContentDirectoryService::~ContentDirectoryService()
+{
+	/* this destructor exists here just so it won't get inlined */
+}
+
 static bool
 ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response, Error &error)
 {

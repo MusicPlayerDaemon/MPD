@@ -27,6 +27,11 @@
 
 #include <string.h>
 
+UPnPDevice::~UPnPDevice()
+{
+	/* this destructor exists here just so it won't get inlined */
+}
+
 /**
  * An XML parser which constructs an UPnP device object from the
  * device descriptor.

@@ -36,6 +36,8 @@ class UPnPDirContent {
 public:
 	std::vector<UPnPDirObject> objects;
 
+	~UPnPDirContent();
+
 	gcc_pure
 	UPnPDirObject *FindObject(const char *name) {
 		for (auto &o : objects)

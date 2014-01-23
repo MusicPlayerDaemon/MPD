@@ -75,6 +75,8 @@ public:
 	UPnPDevice(UPnPDevice &&) = default;
 	UPnPDevice &operator=(UPnPDevice &&) = default;
 
+	~UPnPDevice();
+
 	/** Build device from xml description downloaded from discovery
 	 * @param url where the description came from
 	 * @param description the xml device description

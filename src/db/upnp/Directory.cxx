@@ -31,6 +31,11 @@
 
 #include <string.h>
 
+UPnPDirContent::~UPnPDirContent()
+{
+	/* this destructor exists here just so it won't get inlined */
+}
+
 gcc_pure gcc_nonnull_all
 static bool
 CompareStringLiteral(const char *literal, const char *value, size_t length)

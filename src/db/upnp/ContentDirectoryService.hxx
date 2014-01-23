@@ -68,6 +68,8 @@ public:
 	/** An empty one */
 	ContentDirectoryService() = default;
 
+	~ContentDirectoryService();
+
 	/** Read a container's children list into dirbuf.
 	 *
 	 * @param objectId the UPnP object Id for the container. Root has Id "0"

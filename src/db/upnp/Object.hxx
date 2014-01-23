@@ -66,6 +66,9 @@ public:
 
 	UPnPDirObject() = default;
 	UPnPDirObject(UPnPDirObject &&) = default;
+
+	~UPnPDirObject();
+
 	UPnPDirObject &operator=(UPnPDirObject &&) = default;
 
 	void clear()
