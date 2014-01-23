@@ -18,71 +18,66 @@
  */
 
 #include "config.h"
-#include "CuePlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
-#include "SongEnumerator.hxx"
-#include "cue/CueParser.hxx"
+#include "M3uPlaylistPlugin.hxx"
+#include "../PlaylistPlugin.hxx"
+#include "../SongEnumerator.hxx"
+#include "DetachedSong.hxx"
+#include "util/StringUtil.hxx"
 #include "TextInputStream.hxx"
 
-#include <string>
-
-class CuePlaylist final : public SongEnumerator {
-	InputStream &is;
+class M3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
-	CueParser parser;
 
- public:
-	CuePlaylist(InputStream &_is)
-		:is(_is), tis(is) {
+public:
+	M3uPlaylist(InputStream &is)
+		:tis(is) {
 	}
 
 	virtual DetachedSong *NextSong() override;
 };
 
 static SongEnumerator *
-cue_playlist_open_stream(InputStream &is)
+m3u_open_stream(InputStream &is)
 {
-	return new CuePlaylist(is);
+	return new M3uPlaylist(is);
 }
 
 DetachedSong *
-CuePlaylist::NextSong()
+M3uPlaylist::NextSong()
 {
-	DetachedSong *song = parser.Get();
-	if (song != nullptr)
-		return song;
-
 	std::string line;
-	while (tis.ReadLine(line)) {
-		parser.Feed(line.c_str());
-		song = parser.Get();
-		if (song != nullptr)
-			return song;
-	}
+	const char *line_s;
 
-	parser.Finish();
-	return parser.Get();
+	do {
+		if (!tis.ReadLine(line))
+			return nullptr;
+
+		line_s = line.c_str();
+		line_s = strchug_fast(line_s);
+	} while (line_s[0] == '#' || *line_s == 0);
+
+	return new DetachedSong(line_s);
 }
 
-static const char *const cue_playlist_suffixes[] = {
-	"cue",
+static const char *const m3u_suffixes[] = {
+	"m3u",
 	nullptr
 };
 
-static const char *const cue_playlist_mime_types[] = {
-	"application/x-cue",
+static const char *const m3u_mime_types[] = {
+	"audio/x-mpegurl",
 	nullptr
 };
 
-const struct playlist_plugin cue_playlist_plugin = {
-	"cue",
+const struct playlist_plugin m3u_playlist_plugin = {
+	"m3u",
 
 	nullptr,
 	nullptr,
 	nullptr,
-	cue_playlist_open_stream,
+	m3u_open_stream,
 
 	nullptr,
-	cue_playlist_suffixes,
-	cue_playlist_mime_types,
+	m3u_suffixes,
+	m3u_mime_types,
 };

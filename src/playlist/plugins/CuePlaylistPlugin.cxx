@@ -18,66 +18,71 @@
  */
 
 #include "config.h"
-#include "M3uPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
-#include "SongEnumerator.hxx"
-#include "DetachedSong.hxx"
-#include "util/StringUtil.hxx"
+#include "CuePlaylistPlugin.hxx"
+#include "../PlaylistPlugin.hxx"
+#include "../SongEnumerator.hxx"
+#include "cue/CueParser.hxx"
 #include "TextInputStream.hxx"
 
-class M3uPlaylist final : public SongEnumerator {
-	TextInputStream tis;
+#include <string>
 
-public:
-	M3uPlaylist(InputStream &is)
-		:tis(is) {
+class CuePlaylist final : public SongEnumerator {
+	InputStream &is;
+	TextInputStream tis;
+	CueParser parser;
+
+ public:
+	CuePlaylist(InputStream &_is)
+		:is(_is), tis(is) {
 	}
 
 	virtual DetachedSong *NextSong() override;
 };
 
 static SongEnumerator *
-m3u_open_stream(InputStream &is)
+cue_playlist_open_stream(InputStream &is)
 {
-	return new M3uPlaylist(is);
+	return new CuePlaylist(is);
 }
 
 DetachedSong *
-M3uPlaylist::NextSong()
+CuePlaylist::NextSong()
 {
+	DetachedSong *song = parser.Get();
+	if (song != nullptr)
+		return song;
+
 	std::string line;
-	const char *line_s;
+	while (tis.ReadLine(line)) {
+		parser.Feed(line.c_str());
+		song = parser.Get();
+		if (song != nullptr)
+			return song;
+	}
 
-	do {
-		if (!tis.ReadLine(line))
-			return nullptr;
-
-		line_s = line.c_str();
-		line_s = strchug_fast(line_s);
-	} while (line_s[0] == '#' || *line_s == 0);
-
-	return new DetachedSong(line_s);
+	parser.Finish();
+	return parser.Get();
 }
 
-static const char *const m3u_suffixes[] = {
-	"m3u",
+static const char *const cue_playlist_suffixes[] = {
+	"cue",
 	nullptr
 };
 
-static const char *const m3u_mime_types[] = {
-	"audio/x-mpegurl",
+static const char *const cue_playlist_mime_types[] = {
+	"application/x-cue",
 	nullptr
 };
 
-const struct playlist_plugin m3u_playlist_plugin = {
-	"m3u",
+const struct playlist_plugin cue_playlist_plugin = {
+	"cue",
 
 	nullptr,
 	nullptr,
 	nullptr,
-	m3u_open_stream,
+	cue_playlist_open_stream,
 
 	nullptr,
-	m3u_suffixes,
-	m3u_mime_types,
+	cue_playlist_suffixes,
+	cue_playlist_mime_types,
 };

@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "XspfPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
-#include "MemorySongEnumerator.hxx"
+#include "../PlaylistPlugin.hxx"
+#include "../MemorySongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "InputStream.hxx"
 #include "tag/TagBuilder.hxx"

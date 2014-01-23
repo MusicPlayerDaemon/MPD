@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "AsxPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
-#include "MemorySongEnumerator.hxx"
+#include "RssPlaylistPlugin.hxx"
+#include "../PlaylistPlugin.hxx"
+#include "../MemorySongEnumerator.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
@@ -30,7 +30,7 @@
 /**
  * This is the state object for the GLib XML parser.
  */
-struct AsxParser {
+struct RssParser {
 	/**
 	 * The list of songs (in reverse order because that's faster
 	 * while adding).
@@ -41,77 +41,75 @@ struct AsxParser {
 	 * The current position in the XML file.
 	 */
 	enum {
-		ROOT, ENTRY,
+		ROOT, ITEM,
 	} state;
 
 	/**
 	 * The current tag within the "entry" element.  This is only
-	 * valid if state==ENTRY.  TAG_NUM_OF_ITEM_TYPES means there
+	 * valid if state==ITEM.  TAG_NUM_OF_ITEM_TYPES means there
 	 * is no (known) tag.
 	 */
 	TagType tag_type;
 
 	/**
-	 * The current song URI.  It is set by the "ref" element.
+	 * The current song URI.  It is set by the "enclosure"
+	 * element.
 	 */
 	std::string location;
 
 	TagBuilder tag_builder;
 
-	AsxParser()
+	RssParser()
 		:state(ROOT) {}
-
 };
 
 static void XMLCALL
-asx_start_element(void *user_data, const XML_Char *element_name,
+rss_start_element(void *user_data, const XML_Char *element_name,
 		  const XML_Char **atts)
 {
-	AsxParser *parser = (AsxParser *)user_data;
+	RssParser *parser = (RssParser *)user_data;
 
 	switch (parser->state) {
-	case AsxParser::ROOT:
-		if (StringEqualsCaseASCII(element_name, "entry")) {
-			parser->state = AsxParser::ENTRY;
+	case RssParser::ROOT:
+		if (StringEqualsCaseASCII(element_name, "item")) {
+			parser->state = RssParser::ITEM;
 			parser->location.clear();
 			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 		}
 
 		break;
 
-	case AsxParser::ENTRY:
-		if (StringEqualsCaseASCII(element_name, "ref")) {
+	case RssParser::ITEM:
+		if (StringEqualsCaseASCII(element_name, "enclosure")) {
 			const char *href =
-				ExpatParser::GetAttributeCase(atts, "href");
+				ExpatParser::GetAttributeCase(atts, "url");
 			if (href != nullptr)
 				parser->location = href;
-		} else if (StringEqualsCaseASCII(element_name, "author"))
-			/* is that correct?  or should it be COMPOSER
-			   or PERFORMER? */
-			parser->tag_type = TAG_ARTIST;
-		else if (StringEqualsCaseASCII(element_name, "title"))
+		} else if (StringEqualsCaseASCII(element_name, "title"))
 			parser->tag_type = TAG_TITLE;
+		else if (StringEqualsCaseASCII(element_name, "itunes:author"))
+			parser->tag_type = TAG_ARTIST;
 
 		break;
 	}
 }
 
 static void XMLCALL
-asx_end_element(void *user_data, const XML_Char *element_name)
+rss_end_element(void *user_data, const XML_Char *element_name)
 {
-	AsxParser *parser = (AsxParser *)user_data;
+	RssParser *parser = (RssParser *)user_data;
 
 	switch (parser->state) {
-	case AsxParser::ROOT:
+	case RssParser::ROOT:
 		break;
 
-	case AsxParser::ENTRY:
-		if (StringEqualsCaseASCII(element_name, "entry")) {
+	case RssParser::ITEM:
+		if (StringEqualsCaseASCII(element_name, "item")) {
 			if (!parser->location.empty())
 				parser->songs.emplace_front(std::move(parser->location),
 							    parser->tag_builder.Commit());
 
-			parser->state = AsxParser::ROOT;
+			parser->state = RssParser::ROOT;
 		} else
 			parser->tag_type = TAG_NUM_OF_ITEM_TYPES;
 
@@ -120,15 +118,15 @@ asx_end_element(void *user_data, const XML_Char *element_name)
 }
 
 static void XMLCALL
-asx_char_data(void *user_data, const XML_Char *s, int len)
+rss_char_data(void *user_data, const XML_Char *s, int len)
 {
-	AsxParser *parser = (AsxParser *)user_data;
+	RssParser *parser = (RssParser *)user_data;
 
 	switch (parser->state) {
-	case AsxParser::ROOT:
+	case RssParser::ROOT:
 		break;
 
-	case AsxParser::ENTRY:
+	case RssParser::ITEM:
 		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
 			parser->tag_builder.AddItem(parser->tag_type, s, len);
 
@@ -142,14 +140,14 @@ asx_char_data(void *user_data, const XML_Char *s, int len)
  */
 
 static SongEnumerator *
-asx_open_stream(InputStream &is)
+rss_open_stream(InputStream &is)
 {
-	AsxParser parser;
+	RssParser parser;
 
 	{
 		ExpatParser expat(&parser);
-		expat.SetElementHandler(asx_start_element, asx_end_element);
-		expat.SetCharacterDataHandler(asx_char_data);
+		expat.SetElementHandler(rss_start_element, rss_end_element);
+		expat.SetCharacterDataHandler(rss_char_data);
 
 		Error error;
 		if (!expat.Parse(is, error)) {
@@ -162,25 +160,26 @@ asx_open_stream(InputStream &is)
 	return new MemorySongEnumerator(std::move(parser.songs));
 }
 
-static const char *const asx_suffixes[] = {
-	"asx",
+static const char *const rss_suffixes[] = {
+	"rss",
 	nullptr
 };
 
-static const char *const asx_mime_types[] = {
-	"video/x-ms-asf",
+static const char *const rss_mime_types[] = {
+	"application/rss+xml",
+	"text/xml",
 	nullptr
 };
 
-const struct playlist_plugin asx_playlist_plugin = {
-	"asx",
+const struct playlist_plugin rss_playlist_plugin = {
+	"rss",
 
 	nullptr,
 	nullptr,
 	nullptr,
-	asx_open_stream,
+	rss_open_stream,
 
 	nullptr,
-	asx_suffixes,
-	asx_mime_types,
+	rss_suffixes,
+	rss_mime_types,
 };

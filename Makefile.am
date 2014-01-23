@@ -179,11 +179,12 @@ src_mpd_SOURCES = \
 	src/PlaylistTag.cxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \
-	src/PlaylistMapper.cxx src/PlaylistMapper.hxx \
-	src/PlaylistAny.cxx src/PlaylistAny.hxx \
-	src/PlaylistSong.cxx src/PlaylistSong.hxx \
+	src/playlist/PlaylistMapper.cxx src/playlist/PlaylistMapper.hxx \
+	src/playlist/PlaylistAny.cxx src/playlist/PlaylistAny.hxx \
+	src/playlist/PlaylistSong.cxx src/playlist/PlaylistSong.hxx \
 	src/PlaylistState.cxx src/PlaylistState.hxx \
-	src/PlaylistQueue.cxx src/PlaylistQueue.hxx \
+	src/playlist/PlaylistQueue.cxx src/playlist/PlaylistQueue.hxx \
+	src/playlist/Print.cxx src/playlist/Print.hxx \
 	src/PlaylistVector.cxx src/PlaylistVector.hxx \
 	src/PlaylistInfo.hxx \
 	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
@@ -1042,18 +1043,19 @@ endif
 #
 
 libplaylist_plugins_a_SOURCES = \
-	src/PlaylistPlugin.hxx \
-	src/SongEnumerator.hxx \
-	src/MemorySongEnumerator.cxx src/MemorySongEnumerator.hxx \
-	src/playlist/ExtM3uPlaylistPlugin.cxx \
-	src/playlist/ExtM3uPlaylistPlugin.hxx \
-	src/playlist/M3uPlaylistPlugin.cxx \
-	src/playlist/M3uPlaylistPlugin.hxx \
-	src/playlist/CuePlaylistPlugin.cxx \
-	src/playlist/CuePlaylistPlugin.hxx \
-	src/playlist/EmbeddedCuePlaylistPlugin.cxx \
-	src/playlist/EmbeddedCuePlaylistPlugin.hxx \
-	src/PlaylistRegistry.cxx src/PlaylistRegistry.hxx
+	src/playlist/PlaylistPlugin.hxx \
+	src/playlist/SongEnumerator.hxx \
+	src/playlist/MemorySongEnumerator.cxx \
+	src/playlist/MemorySongEnumerator.hxx \
+	src/playlist/plugins/ExtM3uPlaylistPlugin.cxx \
+	src/playlist/plugins/ExtM3uPlaylistPlugin.hxx \
+	src/playlist/plugins/M3uPlaylistPlugin.cxx \
+	src/playlist/plugins/M3uPlaylistPlugin.hxx \
+	src/playlist/plugins/CuePlaylistPlugin.cxx \
+	src/playlist/plugins/CuePlaylistPlugin.hxx \
+	src/playlist/plugins/EmbeddedCuePlaylistPlugin.cxx \
+	src/playlist/plugins/EmbeddedCuePlaylistPlugin.hxx \
+	src/playlist/PlaylistRegistry.cxx src/playlist/PlaylistRegistry.hxx
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(EXPAT_CFLAGS) \
 	$(YAJL_CFLAGS) \
@@ -1066,32 +1068,32 @@ PLAYLIST_LIBS = \
 
 if ENABLE_DESPOTIFY
 libplaylist_plugins_a_SOURCES += \
-	src/playlist/DespotifyPlaylistPlugin.cxx \
-	src/playlist/DespotifyPlaylistPlugin.hxx
+	src/playlist/plugins/DespotifyPlaylistPlugin.cxx \
+	src/playlist/plugins/DespotifyPlaylistPlugin.hxx
 endif
 
 if ENABLE_SOUNDCLOUD
 libplaylist_plugins_a_SOURCES += \
-	src/playlist/SoundCloudPlaylistPlugin.cxx \
-	src/playlist/SoundCloudPlaylistPlugin.hxx
+	src/playlist/plugins/SoundCloudPlaylistPlugin.cxx \
+	src/playlist/plugins/SoundCloudPlaylistPlugin.hxx
 PLAYLIST_LIBS += $(YAJL_LIBS)
 endif
 
 if HAVE_EXPAT
 libplaylist_plugins_a_SOURCES += \
 	src/Expat.cxx src/Expat.hxx \
-	src/playlist/XspfPlaylistPlugin.cxx \
-	src/playlist/XspfPlaylistPlugin.hxx \
-	src/playlist/AsxPlaylistPlugin.cxx \
-	src/playlist/AsxPlaylistPlugin.hxx \
-	src/playlist/RssPlaylistPlugin.cxx \
-	src/playlist/RssPlaylistPlugin.hxx
+	src/playlist/plugins/XspfPlaylistPlugin.cxx \
+	src/playlist/plugins/XspfPlaylistPlugin.hxx \
+	src/playlist/plugins/AsxPlaylistPlugin.cxx \
+	src/playlist/plugins/AsxPlaylistPlugin.hxx \
+	src/playlist/plugins/RssPlaylistPlugin.cxx \
+	src/playlist/plugins/RssPlaylistPlugin.hxx
 endif
 
 if HAVE_GLIB
 libplaylist_plugins_a_SOURCES += \
-	src/playlist/PlsPlaylistPlugin.cxx \
-	src/playlist/PlsPlaylistPlugin.hxx
+	src/playlist/plugins/PlsPlaylistPlugin.cxx \
+	src/playlist/plugins/PlsPlaylistPlugin.hxx
 endif
 
 #
@@ -1634,7 +1636,7 @@ test_test_archive_LDADD = \
 	$(CPPUNIT_LIBS)
 
 test_test_translate_song_SOURCES = \
-	src/PlaylistSong.cxx \
+	src/playlist/PlaylistSong.cxx \
 	src/DetachedSong.cxx \
 	src/Log.cxx \
 	test/test_translate_song.cxx

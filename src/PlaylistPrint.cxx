@@ -20,11 +20,8 @@
 #include "config.h"
 #include "PlaylistPrint.hxx"
 #include "PlaylistFile.hxx"
-#include "PlaylistAny.hxx"
-#include "PlaylistSong.hxx"
 #include "Playlist.hxx"
 #include "QueuePrint.hxx"
-#include "SongEnumerator.hxx"
 #include "SongPrint.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
@@ -142,48 +139,6 @@ spl_print(Client &client, const char *name_utf8, bool detail,
 			client_printf(client, SONG_FILE "%s\n",
 				      uri_utf8.c_str());
 	}
-
-	return true;
-}
-
-static void
-playlist_provider_print(Client &client, const char *uri,
-			SongEnumerator &e, bool detail)
-{
-	const std::string base_uri = uri != nullptr
-		? PathTraitsUTF8::GetParent(uri)
-		: std::string(".");
-
-	DetachedSong *song;
-	while ((song = e.NextSong()) != nullptr) {
-		if (playlist_check_translate_song(*song, base_uri.c_str(),
-						  false)) {
-			if (detail)
-				song_print_info(client, *song);
-			else
-				song_print_uri(client, *song);
-		}
-
-		delete song;
-	}
-}
-
-bool
-playlist_file_print(Client &client, const char *uri, bool detail)
-{
-	Mutex mutex;
-	Cond cond;
-
-	InputStream *is;
-	SongEnumerator *playlist = playlist_open_any(uri, mutex, cond, &is);
-	if (playlist == nullptr)
-		return false;
-
-	playlist_provider_print(client, uri, *playlist, detail);
-	delete playlist;
-
-	if (is != nullptr)
-		is->Close();
 
 	return true;
 }

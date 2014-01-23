@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "PlsPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
-#include "MemorySongEnumerator.hxx"
+#include "../PlaylistPlugin.hxx"
+#include "../MemorySongEnumerator.hxx"
 #include "InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"

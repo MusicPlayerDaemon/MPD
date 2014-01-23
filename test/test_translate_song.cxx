@@ -3,7 +3,7 @@
  */
 
 #include "config.h"
-#include "PlaylistSong.hxx"
+#include "playlist/PlaylistSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"

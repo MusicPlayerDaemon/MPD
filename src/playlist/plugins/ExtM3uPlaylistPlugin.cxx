@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "ExtM3uPlaylistPlugin.hxx"
-#include "PlaylistPlugin.hxx"
-#include "SongEnumerator.hxx"
+#include "../PlaylistPlugin.hxx"
+#include "../SongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"

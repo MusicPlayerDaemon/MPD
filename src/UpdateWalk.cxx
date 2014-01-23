@@ -29,7 +29,7 @@
 #include "Directory.hxx"
 #include "Song.hxx"
 #include "PlaylistVector.hxx"
-#include "PlaylistRegistry.hxx"
+#include "playlist/PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"
 #include "ConfigGlobal.hxx"

@@ -51,7 +51,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
 #include "fs/StandardDirectory.hxx"
-#include "PlaylistRegistry.hxx"
+#include "playlist/PlaylistRegistry.hxx"
 #include "ZeroconfGlue.hxx"
 #include "DecoderList.hxx"
 #include "AudioConfig.hxx"
