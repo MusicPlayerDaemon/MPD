@@ -1325,12 +1325,12 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/TagFile.cxx \
 	src/CheckAudioFormat.cxx \
 	src/TextInputStream.cxx \
+	src/DetachedSong.cxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx
 
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
 	src/ReplayGainInfo.cxx \
-	src/DetachedSong.cxx \
 	src/decoder/FlacMetadata.cxx
 endif
 
