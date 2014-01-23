@@ -54,6 +54,22 @@ isMSDevice(const char *st)
 }
 
 inline void
+UPnPDeviceDirectory::LockAdd(std::string &&id, ContentDirectoryDescriptor &&d)
+{
+	const ScopeLock protect(mutex);
+	directories[std::move(id)] = std::move(d);
+}
+
+inline void
+UPnPDeviceDirectory::LockRemove(const std::string &id)
+{
+	const ScopeLock protect(mutex);
+	auto i = directories.find(id);
+	if (i != directories.end())
+		directories.erase(i);
+}
+
+inline void
 UPnPDeviceDirectory::discoExplorer()
 {
 	for (;;) {
@@ -88,10 +104,7 @@ UPnPDeviceDirectory::discoExplorer()
 			}
 		}
 
-		mutex.lock();
-		directories[std::move(tsk->deviceId)] = std::move(d);
-		mutex.unlock();
-
+		LockAdd(std::move(tsk->deviceId), std::move(d));
 		delete tsk;
 	}
 }
@@ -120,14 +133,10 @@ UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
 inline int
 UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
 {
-
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
 		// Device signals it is going off.
-		const ScopeLock protect(mutex);
-		auto it = directories.find(disco->DeviceId);
-		if (it != directories.end())
-			directories.erase(it);
+		LockRemove(disco->DeviceId);
 	}
 
 	return UPNP_E_SUCCESS;

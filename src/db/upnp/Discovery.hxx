@@ -129,6 +129,9 @@ private:
 	 */
 	bool expireDevices(Error &error);
 
+	void LockAdd(std::string &&id, ContentDirectoryDescriptor &&d);
+	void LockRemove(const std::string &id);
+
 	/**
 	 * Worker routine for the discovery queue. Get messages about
 	 * devices appearing and disappearing, and update the
