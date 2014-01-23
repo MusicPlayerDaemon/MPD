@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "NullEncoderPlugin.hxx"
-#include "EncoderAPI.hxx"
+#include "../EncoderAPI.hxx"
 #include "util/Manual.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "Compiler.h"

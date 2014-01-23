@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FlacEncoderPlugin.hxx"
-#include "EncoderAPI.hxx"
+#include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "ConfigError.hxx"

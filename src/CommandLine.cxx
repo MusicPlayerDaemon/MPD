@@ -43,8 +43,8 @@
 #include "util/OptionParser.hxx"
 
 #ifdef ENABLE_ENCODER
-#include "EncoderList.hxx"
-#include "EncoderPlugin.hxx"
+#include "encoder/EncoderList.hxx"
+#include "encoder/EncoderPlugin.hxx"
 #endif
 
 #ifdef ENABLE_ARCHIVE

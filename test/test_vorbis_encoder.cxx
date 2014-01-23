@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "EncoderList.hxx"
-#include "EncoderPlugin.hxx"
+#include "encoder/EncoderList.hxx"
+#include "encoder/EncoderPlugin.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigData.hxx"
 #include "stdbin.h"

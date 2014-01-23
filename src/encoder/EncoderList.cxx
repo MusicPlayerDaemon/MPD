@@ -20,14 +20,14 @@
 #include "config.h"
 #include "EncoderList.hxx"
 #include "EncoderPlugin.hxx"
-#include "encoder/NullEncoderPlugin.hxx"
-#include "encoder/WaveEncoderPlugin.hxx"
-#include "encoder/VorbisEncoderPlugin.hxx"
-#include "encoder/OpusEncoderPlugin.hxx"
-#include "encoder/FlacEncoderPlugin.hxx"
-#include "encoder/ShineEncoderPlugin.hxx"
-#include "encoder/LameEncoderPlugin.hxx"
-#include "encoder/TwolameEncoderPlugin.hxx"
+#include "plugins/NullEncoderPlugin.hxx"
+#include "plugins/WaveEncoderPlugin.hxx"
+#include "plugins/VorbisEncoderPlugin.hxx"
+#include "plugins/OpusEncoderPlugin.hxx"
+#include "plugins/FlacEncoderPlugin.hxx"
+#include "plugins/ShineEncoderPlugin.hxx"
+#include "plugins/LameEncoderPlugin.hxx"
+#include "plugins/TwolameEncoderPlugin.hxx"
 
 #include <string.h>
 

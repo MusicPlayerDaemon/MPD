@@ -745,55 +745,58 @@ ENCODER_LIBS = \
 libencoder_plugins_a_SOURCES = \
 	src/EncoderAPI.hxx \
 	src/EncoderPlugin.hxx \
-	src/encoder/OggStream.hxx \
-	src/encoder/NullEncoderPlugin.cxx src/encoder/NullEncoderPlugin.hxx \
-	src/EncoderList.cxx src/EncoderList.hxx
+	src/encoder/plugins/OggStream.hxx \
+	src/encoder/plugins/NullEncoderPlugin.cxx \
+	src/encoder/plugins/NullEncoderPlugin.hxx \
+	src/encoder/EncoderList.cxx src/encoder/EncoderList.hxx
 
 if HAVE_OGG_ENCODER
 libencoder_plugins_a_SOURCES += \
-	src/encoder/OggSerial.cxx src/encoder/OggSerial.hxx \
-	src/encoder/OggStream.hxx
+	src/encoder/plugins/OggSerial.cxx \
+	src/encoder/plugins/OggSerial.hxx \
+	src/encoder/plugins/OggStream.hxx
 endif
 
 if ENABLE_WAVE_ENCODER
 libencoder_plugins_a_SOURCES += \
-	src/encoder/WaveEncoderPlugin.cxx \
-	src/encoder/WaveEncoderPlugin.hxx
+	src/encoder/plugins/WaveEncoderPlugin.cxx \
+	src/encoder/plugins/WaveEncoderPlugin.hxx
 endif
 
 if ENABLE_VORBIS_ENCODER
 libencoder_plugins_a_SOURCES += \
-	src/encoder/VorbisEncoderPlugin.cxx \
-	src/encoder/VorbisEncoderPlugin.hxx
+	src/encoder/plugins/VorbisEncoderPlugin.cxx \
+	src/encoder/plugins/VorbisEncoderPlugin.hxx
 endif
 
 if HAVE_OPUS
 libencoder_plugins_a_SOURCES += \
-	src/encoder/OpusEncoderPlugin.cxx \
-	src/encoder/OpusEncoderPlugin.hxx
+	src/encoder/plugins/OpusEncoderPlugin.cxx \
+	src/encoder/plugins/OpusEncoderPlugin.hxx
 endif
 
 if ENABLE_LAME_ENCODER
 libencoder_plugins_a_SOURCES += \
-	src/encoder/LameEncoderPlugin.cxx \
-	src/encoder/LameEncoderPlugin.hxx
+	src/encoder/plugins/LameEncoderPlugin.cxx \
+	src/encoder/plugins/LameEncoderPlugin.hxx
 endif
 
 if ENABLE_TWOLAME_ENCODER
 libencoder_plugins_a_SOURCES += \
-	src/encoder/TwolameEncoderPlugin.cxx \
-	src/encoder/TwolameEncoderPlugin.hxx
+	src/encoder/plugins/TwolameEncoderPlugin.cxx \
+	src/encoder/plugins/TwolameEncoderPlugin.hxx
 endif
 
 if ENABLE_FLAC_ENCODER
 libencoder_plugins_a_SOURCES += \
-	src/encoder/FlacEncoderPlugin.cxx src/encoder/FlacEncoderPlugin.hxx
+	src/encoder/plugins/FlacEncoderPlugin.cxx \
+	src/encoder/plugins/FlacEncoderPlugin.hxx
 endif
 
 if ENABLE_SHINE_ENCODER
 libencoder_plugins_a_SOURCES += \
-	src/encoder/ShineEncoderPlugin.cxx \
-	src/encoder/ShineEncoderPlugin.hxx
+	src/encoder/plugins/ShineEncoderPlugin.cxx \
+	src/encoder/plugins/ShineEncoderPlugin.hxx
 endif
 
 else

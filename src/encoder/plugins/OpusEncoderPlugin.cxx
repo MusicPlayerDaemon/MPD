@@ -21,7 +21,7 @@
 #include "OpusEncoderPlugin.hxx"
 #include "OggStream.hxx"
 #include "OggSerial.hxx"
-#include "EncoderAPI.hxx"
+#include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigError.hxx"
 #include "util/Error.hxx"

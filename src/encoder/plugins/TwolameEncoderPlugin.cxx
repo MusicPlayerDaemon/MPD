@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TwolameEncoderPlugin.hxx"
-#include "EncoderAPI.hxx"
+#include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "ConfigError.hxx"
 #include "util/NumberParser.hxx"
