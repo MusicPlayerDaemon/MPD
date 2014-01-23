@@ -95,14 +95,14 @@ src_mpd_SOURCES = \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx \
-	src/DecoderError.cxx src/DecoderError.hxx \
-	src/DecoderThread.cxx src/DecoderThread.hxx \
-	src/DecoderCommand.hxx \
-	src/DecoderControl.cxx src/DecoderControl.hxx \
-	src/DecoderAPI.cxx src/DecoderAPI.hxx \
-	src/DecoderPlugin.hxx \
-	src/DecoderInternal.cxx src/DecoderInternal.hxx \
-	src/DecoderPrint.cxx src/DecoderPrint.hxx \
+	src/decoder/DecoderError.cxx src/decoder/DecoderError.hxx \
+	src/decoder/DecoderThread.cxx src/decoder/DecoderThread.hxx \
+	src/decoder/DecoderCommand.hxx \
+	src/decoder/DecoderControl.cxx src/decoder/DecoderControl.hxx \
+	src/decoder/DecoderAPI.cxx src/decoder/DecoderAPI.hxx \
+	src/decoder/DecoderPlugin.hxx \
+	src/decoder/DecoderInternal.cxx src/decoder/DecoderInternal.hxx \
+	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
 	src/Directory.cxx src/Directory.hxx \
 	src/DirectorySave.cxx src/DirectorySave.hxx \
 	src/DatabaseSimple.hxx \
@@ -534,17 +534,17 @@ endif
 # decoder plugins
 
 libdecoder_plugins_a_SOURCES = \
-	src/decoder/PcmDecoderPlugin.cxx \
-	src/decoder/PcmDecoderPlugin.hxx \
-	src/decoder/DsdiffDecoderPlugin.cxx \
-	src/decoder/DsdiffDecoderPlugin.hxx \
-	src/decoder/DsfDecoderPlugin.cxx \
-	src/decoder/DsfDecoderPlugin.hxx \
-	src/decoder/DsdLib.cxx \
-	src/decoder/DsdLib.hxx \
-	src/DecoderBuffer.cxx src/DecoderBuffer.hxx \
-	src/DecoderPlugin.cxx \
-	src/DecoderList.cxx src/DecoderList.hxx
+	src/decoder/plugins/PcmDecoderPlugin.cxx \
+	src/decoder/plugins/PcmDecoderPlugin.hxx \
+	src/decoder/plugins/DsdiffDecoderPlugin.cxx \
+	src/decoder/plugins/DsdiffDecoderPlugin.hxx \
+	src/decoder/plugins/DsfDecoderPlugin.cxx \
+	src/decoder/plugins/DsfDecoderPlugin.hxx \
+	src/decoder/plugins/DsdLib.cxx \
+	src/decoder/plugins/DsdLib.hxx \
+	src/decoder/DecoderBuffer.cxx src/decoder/DecoderBuffer.hxx \
+	src/decoder/DecoderPlugin.cxx \
+	src/decoder/DecoderList.cxx src/decoder/DecoderList.hxx
 libdecoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(VORBIS_CFLAGS) $(TREMOR_CFLAGS) \
 	$(patsubst -I%/FLAC,-I%,$(FLAC_CFLAGS)) \
@@ -587,96 +587,96 @@ DECODER_SRC =
 
 if HAVE_MAD
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/MadDecoderPlugin.cxx \
-	src/decoder/MadDecoderPlugin.hxx
+	src/decoder/plugins/MadDecoderPlugin.cxx \
+	src/decoder/plugins/MadDecoderPlugin.hxx
 endif
 
 if HAVE_MPG123
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/Mpg123DecoderPlugin.cxx \
-	src/decoder/Mpg123DecoderPlugin.hxx
+	src/decoder/plugins/Mpg123DecoderPlugin.cxx \
+	src/decoder/plugins/Mpg123DecoderPlugin.hxx
 endif
 
 if HAVE_MPCDEC
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/MpcdecDecoderPlugin.cxx \
-	src/decoder/MpcdecDecoderPlugin.hxx
+	src/decoder/plugins/MpcdecDecoderPlugin.cxx \
+	src/decoder/plugins/MpcdecDecoderPlugin.hxx
 endif
 
 if HAVE_OPUS
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/OggUtil.cxx \
-	src/decoder/OggUtil.hxx \
-	src/decoder/OggSyncState.hxx \
-	src/decoder/OggFind.cxx src/decoder/OggFind.hxx \
-	src/decoder/OpusDomain.cxx src/decoder/OpusDomain.hxx \
-	src/decoder/OpusReader.hxx \
-	src/decoder/OpusHead.hxx \
-	src/decoder/OpusHead.cxx \
-	src/decoder/OpusTags.cxx \
-	src/decoder/OpusTags.hxx \
-	src/decoder/OpusDecoderPlugin.cxx \
-	src/decoder/OpusDecoderPlugin.h
+	src/decoder/plugins/OggUtil.cxx \
+	src/decoder/plugins/OggUtil.hxx \
+	src/decoder/plugins/OggSyncState.hxx \
+	src/decoder/plugins/OggFind.cxx src/decoder/plugins/OggFind.hxx \
+	src/decoder/plugins/OpusDomain.cxx src/decoder/plugins/OpusDomain.hxx \
+	src/decoder/plugins/OpusReader.hxx \
+	src/decoder/plugins/OpusHead.hxx \
+	src/decoder/plugins/OpusHead.cxx \
+	src/decoder/plugins/OpusTags.cxx \
+	src/decoder/plugins/OpusTags.hxx \
+	src/decoder/plugins/OpusDecoderPlugin.cxx \
+	src/decoder/plugins/OpusDecoderPlugin.h
 endif
 
 if HAVE_WAVPACK
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/WavpackDecoderPlugin.cxx \
-	src/decoder/WavpackDecoderPlugin.hxx
+	src/decoder/plugins/WavpackDecoderPlugin.cxx \
+	src/decoder/plugins/WavpackDecoderPlugin.hxx
 endif
 
 if HAVE_ADPLUG
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/AdPlugDecoderPlugin.cxx \
-	src/decoder/AdPlugDecoderPlugin.h
+	src/decoder/plugins/AdPlugDecoderPlugin.cxx \
+	src/decoder/plugins/AdPlugDecoderPlugin.h
 endif
 
 if HAVE_FAAD
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/FaadDecoderPlugin.cxx src/decoder/FaadDecoderPlugin.hxx
+	src/decoder/plugins/FaadDecoderPlugin.cxx src/decoder/plugins/FaadDecoderPlugin.hxx
 endif
 
 if HAVE_XIPH
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/XiphTags.cxx src/decoder/XiphTags.hxx \
-	src/decoder/OggCodec.cxx src/decoder/OggCodec.hxx
+	src/decoder/plugins/XiphTags.cxx src/decoder/plugins/XiphTags.hxx \
+	src/decoder/plugins/OggCodec.cxx src/decoder/plugins/OggCodec.hxx
 endif
 
 if ENABLE_VORBIS_DECODER
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/VorbisDomain.cxx src/decoder/VorbisDomain.hxx \
-	src/decoder/VorbisComments.cxx src/decoder/VorbisComments.hxx \
-	src/decoder/VorbisDecoderPlugin.cxx src/decoder/VorbisDecoderPlugin.h
+	src/decoder/plugins/VorbisDomain.cxx src/decoder/plugins/VorbisDomain.hxx \
+	src/decoder/plugins/VorbisComments.cxx src/decoder/plugins/VorbisComments.hxx \
+	src/decoder/plugins/VorbisDecoderPlugin.cxx src/decoder/plugins/VorbisDecoderPlugin.h
 endif
 
 if HAVE_FLAC
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/FlacInput.cxx src/decoder/FlacInput.hxx \
-	src/decoder/FlacIOHandle.cxx src/decoder/FlacIOHandle.hxx \
-	src/decoder/FlacMetadata.cxx src/decoder/FlacMetadata.hxx \
-	src/decoder/FlacPcm.cxx src/decoder/FlacPcm.hxx \
-	src/decoder/FlacDomain.cxx src/decoder/FlacDomain.hxx \
-	src/decoder/FlacCommon.cxx src/decoder/FlacCommon.hxx \
-	src/decoder/FlacDecoderPlugin.cxx \
-	src/decoder/FlacDecoderPlugin.h
+	src/decoder/plugins/FlacInput.cxx src/decoder/plugins/FlacInput.hxx \
+	src/decoder/plugins/FlacIOHandle.cxx src/decoder/plugins/FlacIOHandle.hxx \
+	src/decoder/plugins/FlacMetadata.cxx src/decoder/plugins/FlacMetadata.hxx \
+	src/decoder/plugins/FlacPcm.cxx src/decoder/plugins/FlacPcm.hxx \
+	src/decoder/plugins/FlacDomain.cxx src/decoder/plugins/FlacDomain.hxx \
+	src/decoder/plugins/FlacCommon.cxx src/decoder/plugins/FlacCommon.hxx \
+	src/decoder/plugins/FlacDecoderPlugin.cxx \
+	src/decoder/plugins/FlacDecoderPlugin.h
 endif
 
 if HAVE_AUDIOFILE
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/AudiofileDecoderPlugin.cxx \
-	src/decoder/AudiofileDecoderPlugin.hxx
+	src/decoder/plugins/AudiofileDecoderPlugin.cxx \
+	src/decoder/plugins/AudiofileDecoderPlugin.hxx
 endif
 
 if ENABLE_MIKMOD_DECODER
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/MikmodDecoderPlugin.cxx \
-	src/decoder/MikmodDecoderPlugin.hxx
+	src/decoder/plugins/MikmodDecoderPlugin.cxx \
+	src/decoder/plugins/MikmodDecoderPlugin.hxx
 endif
 
 if HAVE_MODPLUG
 libmodplug_decoder_plugin_a_SOURCES = \
-	src/decoder/ModplugDecoderPlugin.cxx \
-	src/decoder/ModplugDecoderPlugin.hxx
+	src/decoder/plugins/ModplugDecoderPlugin.cxx \
+	src/decoder/plugins/ModplugDecoderPlugin.hxx
 libmodplug_decoder_plugin_a_CXXFLAGS = $(AM_CXXFLAGS) $(MODPLUG_CFLAGS)
 libmodplug_decoder_plugin_a_CPPFLAGS = $(src_mpd_CPPFLAGS)
 noinst_LIBRARIES += libmodplug_decoder_plugin.a
@@ -685,39 +685,39 @@ endif
 
 if ENABLE_SIDPLAY
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/SidplayDecoderPlugin.cxx \
-	src/decoder/SidplayDecoderPlugin.hxx
+	src/decoder/plugins/SidplayDecoderPlugin.cxx \
+	src/decoder/plugins/SidplayDecoderPlugin.hxx
 endif
 
 if ENABLE_FLUIDSYNTH
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/FluidsynthDecoderPlugin.cxx \
-	src/decoder/FluidsynthDecoderPlugin.hxx
+	src/decoder/plugins/FluidsynthDecoderPlugin.cxx \
+	src/decoder/plugins/FluidsynthDecoderPlugin.hxx
 endif
 
 if ENABLE_WILDMIDI
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/WildmidiDecoderPlugin.cxx \
-	src/decoder/WildmidiDecoderPlugin.hxx
+	src/decoder/plugins/WildmidiDecoderPlugin.cxx \
+	src/decoder/plugins/WildmidiDecoderPlugin.hxx
 endif
 
 if HAVE_FFMPEG
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/FfmpegMetaData.cxx \
-	src/decoder/FfmpegMetaData.hxx \
-	src/decoder/FfmpegDecoderPlugin.cxx \
-	src/decoder/FfmpegDecoderPlugin.hxx
+	src/decoder/plugins/FfmpegMetaData.cxx \
+	src/decoder/plugins/FfmpegMetaData.hxx \
+	src/decoder/plugins/FfmpegDecoderPlugin.cxx \
+	src/decoder/plugins/FfmpegDecoderPlugin.hxx
 endif
 
 if ENABLE_SNDFILE
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/SndfileDecoderPlugin.cxx \
-	src/decoder/SndfileDecoderPlugin.hxx
+	src/decoder/plugins/SndfileDecoderPlugin.cxx \
+	src/decoder/plugins/SndfileDecoderPlugin.hxx
 endif
 
 if HAVE_GME
 libdecoder_plugins_a_SOURCES += \
-	src/decoder/GmeDecoderPlugin.cxx src/decoder/GmeDecoderPlugin.hxx
+	src/decoder/plugins/GmeDecoderPlugin.cxx src/decoder/plugins/GmeDecoderPlugin.hxx
 endif
 
 # encoder plugins
@@ -1348,7 +1348,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
 	src/ReplayGainInfo.cxx \
-	src/decoder/FlacMetadata.cxx
+	src/decoder/plugins/FlacMetadata.cxx
 endif
 
 test_run_decoder_LDADD = \

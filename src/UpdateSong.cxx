@@ -27,7 +27,7 @@
 #include "DatabaseLock.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
-#include "DecoderList.hxx"
+#include "decoder/DecoderList.hxx"
 #include "Log.hxx"
 
 #include <unistd.h>

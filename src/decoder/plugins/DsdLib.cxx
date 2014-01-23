@@ -25,7 +25,7 @@
 
 #include "config.h"
 #include "DsdLib.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "tag/TagId3.hxx"
 #include "util/Error.hxx"

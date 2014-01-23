@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "IOThread.hxx"
-#include "DecoderList.hxx"
-#include "DecoderAPI.hxx"
+#include "decoder/DecoderList.hxx"
+#include "decoder/DecoderAPI.hxx"
 #include "InputInit.hxx"
 #include "InputStream.hxx"
 #include "AudioFormat.hxx"

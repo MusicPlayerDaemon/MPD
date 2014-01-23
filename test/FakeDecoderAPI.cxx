@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "DecoderAPI.hxx"
+#include "decoder/DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
 #include "Compiler.h"

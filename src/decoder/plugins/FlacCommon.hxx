@@ -25,7 +25,7 @@
 #define MPD_FLAC_COMMON_HXX
 
 #include "FlacInput.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "pcm/PcmBuffer.hxx"
 
 #include <FLAC/stream_decoder.h>

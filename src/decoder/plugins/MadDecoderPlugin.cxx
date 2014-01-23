@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MadDecoderPlugin.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "ConfigGlobal.hxx"
 #include "tag/TagId3.hxx"

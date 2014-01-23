@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "decoder/PcmDecoderPlugin.hxx"
-#include "DecoderAPI.hxx"
+#include "PcmDecoderPlugin.hxx"
+#include "../DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
 #include "util/ByteReverse.hxx"

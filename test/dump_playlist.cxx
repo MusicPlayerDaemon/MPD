@@ -23,7 +23,7 @@
 #include "playlist/SongEnumerator.hxx"
 #include "InputStream.hxx"
 #include "ConfigGlobal.hxx"
-#include "DecoderList.hxx"
+#include "decoder/DecoderList.hxx"
 #include "InputInit.hxx"
 #include "IOThread.hxx"
 #include "playlist/PlaylistRegistry.hxx"

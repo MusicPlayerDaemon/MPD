@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "OggUtil.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 
 bool
 OggFeed(ogg_sync_state &oy, Decoder *decoder,

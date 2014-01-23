@@ -22,7 +22,7 @@
 
 #include "config.h"
 #include "FfmpegDecoderPlugin.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "tag/TagHandler.hxx"
 #include "InputStream.hxx"

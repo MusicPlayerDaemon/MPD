@@ -20,7 +20,7 @@
 #include "config.h"
 #include "AdPlugDecoderPlugin.h"
 #include "tag/TagHandler.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"

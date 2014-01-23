@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MikmodDecoderPlugin.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
 #include "system/FatalError.hxx"
 #include "util/Domain.hxx"

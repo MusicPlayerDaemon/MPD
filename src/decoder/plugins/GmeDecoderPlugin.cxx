@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "GmeDecoderPlugin.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Alloc.hxx"

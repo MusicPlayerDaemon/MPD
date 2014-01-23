@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FlacInput.hxx"
 #include "FlacDomain.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"

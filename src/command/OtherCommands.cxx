@@ -30,7 +30,7 @@
 #include "tag/TagHandler.hxx"
 #include "TimePrint.hxx"
 #include "Mapper.hxx"
-#include "DecoderPrint.hxx"
+#include "decoder/DecoderPrint.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"

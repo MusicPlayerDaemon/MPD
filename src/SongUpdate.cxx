@@ -26,7 +26,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
-#include "DecoderList.hxx"
+#include "decoder/DecoderList.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagHandler.hxx"

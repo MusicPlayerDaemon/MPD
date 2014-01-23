@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "PlayerThread.hxx"
-#include "DecoderThread.hxx"
-#include "DecoderControl.hxx"
+#include "decoder/DecoderThread.hxx"
+#include "decoder/DecoderControl.hxx"
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"

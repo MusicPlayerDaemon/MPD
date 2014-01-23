@@ -22,8 +22,8 @@
 #include "fs/Path.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "DecoderList.hxx"
-#include "DecoderPlugin.hxx"
+#include "decoder/DecoderList.hxx"
+#include "decoder/DecoderPlugin.hxx"
 #include "InputStream.hxx"
 #include "thread/Cond.hxx"
 

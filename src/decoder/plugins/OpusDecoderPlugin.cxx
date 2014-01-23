@@ -24,7 +24,7 @@
 #include "OpusTags.hxx"
 #include "OggFind.hxx"
 #include "OggSyncState.hxx"
-#include "DecoderAPI.hxx"
+#include "../DecoderAPI.hxx"
 #include "OggCodec.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
