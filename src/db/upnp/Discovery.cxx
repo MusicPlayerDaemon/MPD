@@ -54,19 +54,32 @@ isMSDevice(const char *st)
 }
 
 inline void
-UPnPDeviceDirectory::LockAdd(std::string &&id, ContentDirectoryDescriptor &&d)
+UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 {
 	const ScopeLock protect(mutex);
-	directories[std::move(id)] = std::move(d);
+
+	for (auto &i : directories) {
+		if (i.id == d.id) {
+			i = std::move(d);
+			return;
+		}
+	}
+
+	directories.emplace_back(std::move(d));
 }
 
 inline void
 UPnPDeviceDirectory::LockRemove(const std::string &id)
 {
 	const ScopeLock protect(mutex);
-	auto i = directories.find(id);
-	if (i != directories.end())
-		directories.erase(i);
+
+	for (auto i = directories.begin(), end = directories.end();
+	     i != end; ++i) {
+		if (i->id == id) {
+			directories.erase(i);
+			break;
+		}
+	}
 }
 
 inline void
@@ -91,7 +104,8 @@ UPnPDeviceDirectory::discoExplorer()
 		}
 
 		// Update or insert the device
-		ContentDirectoryDescriptor d(MonotonicClockS(), tsk->expires);
+		ContentDirectoryDescriptor d(std::move(tsk->deviceId),
+					     MonotonicClockS(), tsk->expires);
 
 		{
 			Error error2;
@@ -104,7 +118,7 @@ UPnPDeviceDirectory::discoExplorer()
 			}
 		}
 
-		LockAdd(std::move(tsk->deviceId), std::move(d));
+		LockAdd(std::move(d));
 		delete tsk;
 	}
 }
@@ -180,7 +194,7 @@ UPnPDeviceDirectory::expireDevices(Error &error)
 
 	for (auto it = directories.begin();
 	     it != directories.end();) {
-		if (now > it->second.expires) {
+		if (now > it->expires) {
 			it = directories.erase(it);
 			didsomething = true;
 		} else {
@@ -263,9 +277,9 @@ UPnPDeviceDirectory::getDirServices(std::vector<ContentDirectoryService> &out,
 
 	for (auto dit = directories.begin();
 	     dit != directories.end(); dit++) {
-		for (const auto &service : dit->second.device.services) {
+		for (const auto &service : dit->device.services) {
 			if (isCDService(service.serviceType.c_str())) {
-				out.emplace_back(dit->second.device, service);
+				out.emplace_back(dit->device, service);
 			}
 		}
 	}
@@ -285,7 +299,7 @@ UPnPDeviceDirectory::getServer(const char *friendlyName,
 	const ScopeLock protect(mutex);
 
 	for (const auto &i : directories) {
-		const auto &device = i.second.device;
+		const auto &device = i.device;
 
 		if (device.friendlyName != friendlyName)
 			continue;

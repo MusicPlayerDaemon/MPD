@@ -27,7 +27,7 @@
 
 #include <upnp/upnp.h>
 
-#include <map>
+#include <list>
 #include <vector>
 #include <string>
 
@@ -63,6 +63,8 @@ class UPnPDeviceDirectory {
 	 */
 	class ContentDirectoryDescriptor {
 	public:
+		std::string id;
+
 		UPnPDevice device;
 
 		/**
@@ -73,8 +75,9 @@ class UPnPDeviceDirectory {
 
 		ContentDirectoryDescriptor() = default;
 
-		ContentDirectoryDescriptor(unsigned last, int exp)
-			:expires(last + exp + 20) {}
+		ContentDirectoryDescriptor(std::string &&_id,
+					   unsigned last, int exp)
+			:id(std::move(_id)), expires(last + exp + 20) {}
 
 		bool Parse(const std::string &url, const char *description,
 			   Error &_error) {
@@ -85,7 +88,7 @@ class UPnPDeviceDirectory {
 	LibUPnP *const lib;
 
 	Mutex mutex;
-	std::map<std::string, ContentDirectoryDescriptor> directories;
+	std::list<ContentDirectoryDescriptor> directories;
 	WorkQueue<DiscoveredTask *> discoveredQueue;
 
 	/**
@@ -129,7 +132,7 @@ private:
 	 */
 	bool expireDevices(Error &error);
 
-	void LockAdd(std::string &&id, ContentDirectoryDescriptor &&d);
+	void LockAdd(ContentDirectoryDescriptor &&d);
 	void LockRemove(const std::string &id);
 
 	/**
