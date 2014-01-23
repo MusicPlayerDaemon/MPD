@@ -123,16 +123,16 @@ src_mpd_SOURCES = \
 	src/FilterPlugin.cxx src/FilterPlugin.hxx \
 	src/FilterInternal.hxx \
 	src/FilterRegistry.cxx src/FilterRegistry.hxx \
-	src/UpdateDomain.cxx src/UpdateDomain.hxx \
-	src/UpdateGlue.cxx src/UpdateGlue.hxx \
-	src/UpdateQueue.cxx src/UpdateQueue.hxx \
-	src/UpdateIO.cxx src/UpdateIO.hxx \
-	src/UpdateDatabase.cxx src/UpdateDatabase.hxx \
-	src/UpdateWalk.cxx src/UpdateWalk.hxx \
-	src/UpdateSong.cxx src/UpdateSong.hxx \
-	src/UpdateContainer.cxx src/UpdateContainer.hxx \
-	src/UpdateInternal.hxx \
-	src/UpdateRemove.cxx src/UpdateRemove.hxx \
+	src/update/UpdateDomain.cxx src/update/UpdateDomain.hxx \
+	src/update/UpdateGlue.cxx src/update/UpdateGlue.hxx \
+	src/update/UpdateQueue.cxx src/update/UpdateQueue.hxx \
+	src/update/UpdateIO.cxx src/update/UpdateIO.hxx \
+	src/update/UpdateDatabase.cxx src/update/UpdateDatabase.hxx \
+	src/update/UpdateWalk.cxx src/update/UpdateWalk.hxx \
+	src/update/UpdateSong.cxx src/update/UpdateSong.hxx \
+	src/update/UpdateContainer.cxx src/update/UpdateContainer.hxx \
+	src/update/UpdateInternal.hxx \
+	src/update/UpdateRemove.cxx src/update/UpdateRemove.hxx \
 	src/Client.cxx src/Client.hxx \
 	src/ClientInternal.hxx \
 	src/ClientEvent.cxx \
@@ -237,10 +237,10 @@ endif
 
 if ENABLE_INOTIFY
 src_mpd_SOURCES += \
-	src/InotifyDomain.cxx src/InotifyDomain.hxx \
-	src/InotifySource.cxx src/InotifySource.hxx \
-	src/InotifyQueue.cxx src/InotifyQueue.hxx \
-	src/InotifyUpdate.cxx src/InotifyUpdate.hxx
+	src/update/InotifyDomain.cxx src/update/InotifyDomain.hxx \
+	src/update/InotifySource.cxx src/update/InotifySource.hxx \
+	src/update/InotifyQueue.cxx src/update/InotifyQueue.hxx \
+	src/update/InotifyUpdate.cxx src/update/InotifyUpdate.hxx
 endif
 
 if ENABLE_SQLITE
@@ -443,7 +443,7 @@ if ENABLE_ARCHIVE
 noinst_LIBRARIES += libarchive.a
 
 src_mpd_SOURCES +=  \
-	src/UpdateArchive.cxx src/UpdateArchive.hxx
+	src/update/UpdateArchive.cxx src/update/UpdateArchive.hxx
 
 libarchive_a_SOURCES = \
 	src/archive/ArchiveDomain.cxx src/archive/ArchiveDomain.hxx \
@@ -1584,8 +1584,8 @@ noinst_PROGRAMS += test/run_inotify
 test_run_inotify_SOURCES = test/run_inotify.cxx \
 	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/InotifyDomain.cxx \
-	src/InotifySource.cxx
+	src/update/InotifyDomain.cxx \
+	src/update/InotifySource.cxx
 test_run_inotify_LDADD = \
 	libevent.a \
 	libsystem.a \

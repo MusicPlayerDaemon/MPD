@@ -19,7 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "UpdateIO.hxx"
-#include "src/UpdateDomain.hxx"
+#include "UpdateDomain.hxx"
 #include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"

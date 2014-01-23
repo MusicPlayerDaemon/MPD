@@ -23,7 +23,7 @@
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistGlobal.hxx"
-#include "UpdateGlue.hxx"
+#include "update/UpdateGlue.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
 #include "PlayerThread.hxx"
@@ -68,7 +68,7 @@
 #include "Stats.hxx"
 
 #ifdef ENABLE_INOTIFY
-#include "InotifyUpdate.hxx"
+#include "update/InotifyUpdate.hxx"
 #endif
 
 #ifdef ENABLE_SQLITE

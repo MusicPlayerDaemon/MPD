@@ -21,7 +21,7 @@
 #include "OtherCommands.hxx"
 #include "DatabaseCommands.hxx"
 #include "CommandError.hxx"
-#include "UpdateGlue.hxx"
+#include "update/UpdateGlue.hxx"
 #include "Directory.hxx"
 #include "DetachedSong.hxx"
 #include "SongPrint.hxx"
