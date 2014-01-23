@@ -26,7 +26,7 @@
 #include "PlaylistState.hxx"
 #include "PlaylistError.hxx"
 #include "Playlist.hxx"
-#include "QueueSave.hxx"
+#include "queue/QueueSave.hxx"
 #include "fs/TextFile.hxx"
 #include "PlayerControl.hxx"
 #include "ConfigGlobal.hxx"

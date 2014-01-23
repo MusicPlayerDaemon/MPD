@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYLIST_HXX
 #define MPD_PLAYLIST_HXX
 
-#include "Queue.hxx"
+#include "queue/Queue.hxx"
 #include "PlaylistError.hxx"
 
 enum TagType : uint8_t;

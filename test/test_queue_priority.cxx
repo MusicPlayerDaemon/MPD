@@ -1,5 +1,5 @@
 #include "config.h"
-#include "Queue.hxx"
+#include "queue/Queue.hxx"
 #include "DetachedSong.hxx"
 #include "util/Macros.hxx"
 

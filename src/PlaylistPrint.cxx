@@ -21,7 +21,7 @@
 #include "PlaylistPrint.hxx"
 #include "PlaylistFile.hxx"
 #include "Playlist.hxx"
-#include "QueuePrint.hxx"
+#include "queue/QueuePrint.hxx"
 #include "SongPrint.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"

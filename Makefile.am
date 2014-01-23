@@ -189,10 +189,10 @@ src_mpd_SOURCES = \
 	src/PlaylistInfo.hxx \
 	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
 	src/PlaylistUpdate.cxx \
-	src/IdTable.hxx \
-	src/Queue.cxx src/Queue.hxx \
-	src/QueuePrint.cxx src/QueuePrint.hxx \
-	src/QueueSave.cxx src/QueueSave.hxx \
+	src/queue/IdTable.hxx \
+	src/queue/Queue.cxx src/queue/Queue.hxx \
+	src/queue/QueuePrint.cxx src/queue/QueuePrint.hxx \
+	src/queue/QueueSave.cxx src/queue/QueueSave.hxx \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/SignalHandlers.cxx src/SignalHandlers.hxx \
@@ -1663,7 +1663,7 @@ test_test_translate_song_LDADD = \
 	$(CPPUNIT_LIBS)
 
 test_test_queue_priority_SOURCES = \
-	src/Queue.cxx \
+	src/queue/Queue.cxx \
 	src/DetachedSong.cxx \
 	test/test_queue_priority.cxx
 test_test_queue_priority_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
