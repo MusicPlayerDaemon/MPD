@@ -24,7 +24,7 @@
 #include "../EncoderAPI.hxx"
 #include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigError.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

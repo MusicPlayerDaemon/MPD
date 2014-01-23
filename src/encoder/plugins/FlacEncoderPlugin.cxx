@@ -22,7 +22,7 @@
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Manual.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"

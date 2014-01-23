@@ -31,7 +31,7 @@
 #include "DatabaseError.hxx"
 #include "LightDirectory.hxx"
 #include "LightSong.hxx"
-#include "ConfigData.hxx"
+#include "config/ConfigData.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"
 #include "util/Error.hxx"

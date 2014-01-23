@@ -21,7 +21,7 @@
 #include "LameEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigError.hxx"
 #include "util/NumberParser.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/Manual.hxx"

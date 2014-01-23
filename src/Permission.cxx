@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "Permission.hxx"
-#include "ConfigData.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
+#include "config/ConfigData.hxx"
+#include "config/ConfigGlobal.hxx"
+#include "config/ConfigOption.hxx"
 #include "system/FatalError.hxx"
 
 #include <algorithm>

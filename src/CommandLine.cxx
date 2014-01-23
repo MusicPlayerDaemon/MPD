@@ -22,7 +22,7 @@
 #include "ls.hxx"
 #include "LogInit.hxx"
 #include "Log.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "DatabaseRegistry.hxx"
 #include "DatabasePlugin.hxx"
 #include "decoder/DecoderList.hxx"

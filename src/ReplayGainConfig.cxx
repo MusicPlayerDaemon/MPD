@@ -20,8 +20,8 @@
 #include "config.h"
 #include "ReplayGainConfig.hxx"
 #include "Idle.hxx"
-#include "ConfigData.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigData.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "system/FatalError.hxx"
 
 #include <assert.h>

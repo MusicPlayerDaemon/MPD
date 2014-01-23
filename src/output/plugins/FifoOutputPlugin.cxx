@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FifoOutputPlugin.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigError.hxx"
 #include "../OutputAPI.hxx"
 #include "Timer.hxx"
 #include "fs/AllocatedPath.hxx"

@@ -25,7 +25,7 @@
 #include "FilterInternal.hxx"
 #include "filter/VolumeFilterPlugin.hxx"
 #include "pcm/Volume.hxx"
-#include "ConfigData.hxx"
+#include "config/ConfigData.hxx"
 #include "util/Error.hxx"
 
 #include <assert.h>

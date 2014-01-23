@@ -28,9 +28,9 @@
 #include "MusicChunk.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
-#include "ConfigData.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
+#include "config/ConfigData.hxx"
+#include "config/ConfigGlobal.hxx"
+#include "config/ConfigOption.hxx"
 #include "notify.hxx"
 
 #include <assert.h>

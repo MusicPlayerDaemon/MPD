@@ -29,7 +29,7 @@
 #include "DatabaseLock.hxx"
 #include "DatabaseError.hxx"
 #include "fs/TextFile.hxx"
-#include "ConfigData.hxx"
+#include "config/ConfigData.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

@@ -21,7 +21,7 @@
 #include "tag/TagId3.hxx"
 #include "tag/TagRva2.hxx"
 #include "ReplayGainInfo.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
 #include "Log.hxx"

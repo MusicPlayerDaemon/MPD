@@ -22,7 +22,7 @@
 #include "../OutputAPI.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/FatalError.hxx"

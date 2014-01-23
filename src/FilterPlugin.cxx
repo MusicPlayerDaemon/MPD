@@ -20,8 +20,8 @@
 #include "config.h"
 #include "FilterPlugin.hxx"
 #include "FilterRegistry.hxx"
-#include "ConfigData.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigData.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 
 #include <assert.h>

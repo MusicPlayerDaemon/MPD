@@ -30,7 +30,7 @@
 #include "EncoderPlugin.hxx"
 #include "AudioFormat.hxx"
 #include "tag/Tag.hxx"
-#include "ConfigData.hxx"
+#include "config/ConfigData.hxx"
 
 // IWYU pragma: end_exports
 

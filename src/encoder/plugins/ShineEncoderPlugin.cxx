@@ -21,7 +21,7 @@
 #include "config.h"
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Manual.hxx"
 #include "util/NumberParser.hxx"
 #include "util/DynamicFifoBuffer.hxx"

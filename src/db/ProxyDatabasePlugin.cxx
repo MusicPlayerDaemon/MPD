@@ -28,7 +28,7 @@
 #include "LightSong.hxx"
 #include "SongFilter.hxx"
 #include "Compiler.h"
-#include "ConfigData.hxx"
+#include "config/ConfigData.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
 #include "util/Error.hxx"

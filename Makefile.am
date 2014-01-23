@@ -489,15 +489,15 @@ endif
 # configuration library
 
 libconf_a_SOURCES = \
-	src/ConfigDefaults.hxx \
-	src/ConfigPath.cxx src/ConfigPath.hxx \
-	src/ConfigData.cxx src/ConfigData.hxx \
-	src/ConfigParser.cxx src/ConfigParser.hxx \
-	src/ConfigGlobal.cxx src/ConfigGlobal.hxx \
-	src/ConfigFile.cxx src/ConfigFile.hxx \
-	src/ConfigTemplates.cxx src/ConfigTemplates.hxx \
-	src/ConfigError.cxx src/ConfigError.hxx \
-	src/ConfigOption.hxx
+	src/config/ConfigDefaults.hxx \
+	src/config/ConfigPath.cxx src/config/ConfigPath.hxx \
+	src/config/ConfigData.cxx src/config/ConfigData.hxx \
+	src/config/ConfigParser.cxx src/config/ConfigParser.hxx \
+	src/config/ConfigGlobal.cxx src/config/ConfigGlobal.hxx \
+	src/config/ConfigFile.cxx src/config/ConfigFile.hxx \
+	src/config/ConfigTemplates.cxx src/config/ConfigTemplates.hxx \
+	src/config/ConfigError.cxx src/config/ConfigError.hxx \
+	src/config/ConfigOption.hxx
 
 # tag plugins
 

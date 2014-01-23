@@ -25,7 +25,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "Riff.hxx"
 #include "Aiff.hxx"
 #include "fs/Path.hxx"

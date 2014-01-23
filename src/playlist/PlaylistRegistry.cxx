@@ -35,8 +35,8 @@
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigData.hxx"
+#include "config/ConfigGlobal.hxx"
+#include "config/ConfigData.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 

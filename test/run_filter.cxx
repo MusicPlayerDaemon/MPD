@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "ConfigData.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigData.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"

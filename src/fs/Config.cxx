@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Config.hxx"
 #include "Charset.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigGlobal.hxx"
 
 #include <glib.h>
 

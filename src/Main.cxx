@@ -61,10 +61,10 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "thread/Id.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigData.hxx"
-#include "ConfigDefaults.hxx"
-#include "ConfigOption.hxx"
+#include "config/ConfigGlobal.hxx"
+#include "config/ConfigData.hxx"
+#include "config/ConfigDefaults.hxx"
+#include "config/ConfigOption.hxx"
 #include "Stats.hxx"
 
 #ifdef ENABLE_INOTIFY

@@ -24,7 +24,7 @@
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
 #include "util/Error.hxx"
-#include "ConfigData.hxx"
+#include "config/ConfigData.hxx"
 #include "Stats.hxx"
 #include "DatabasePlugin.hxx"
 #include "db/SimpleDatabasePlugin.hxx"

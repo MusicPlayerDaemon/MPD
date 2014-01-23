@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PipeOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 

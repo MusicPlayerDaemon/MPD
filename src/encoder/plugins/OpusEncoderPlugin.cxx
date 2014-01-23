@@ -23,7 +23,7 @@
 #include "OggSerial.hxx"
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"

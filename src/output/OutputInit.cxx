@@ -33,8 +33,8 @@
 #include "filter/AutoConvertFilterPlugin.hxx"
 #include "filter/ReplayGainFilterPlugin.hxx"
 #include "filter/ChainFilterPlugin.hxx"
-#include "ConfigError.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigError.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 

@@ -21,7 +21,7 @@
 #include "SoundCloudPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
-#include "ConfigData.hxx"
+#include "config/ConfigData.hxx"
 #include "InputStream.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"

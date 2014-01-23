@@ -20,8 +20,8 @@
 #include "DespotifyUtils.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
+#include "config/ConfigGlobal.hxx"
+#include "config/ConfigOption.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 

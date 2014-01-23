@@ -23,9 +23,9 @@
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
-#include "ConfigData.hxx"
+#include "config/ConfigGlobal.hxx"
+#include "config/ConfigOption.hxx"
+#include "config/ConfigData.hxx"
 
 #include <assert.h>
 #include <string.h>

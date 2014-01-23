@@ -21,10 +21,10 @@
 #include "FilterConfig.hxx"
 #include "filter/ChainFilterPlugin.hxx"
 #include "FilterPlugin.hxx"
-#include "ConfigData.hxx"
-#include "ConfigOption.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigData.hxx"
+#include "config/ConfigOption.hxx"
+#include "config/ConfigGlobal.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 
 #include <algorithm>

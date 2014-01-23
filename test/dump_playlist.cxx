@@ -22,7 +22,7 @@
 #include "DetachedSong.hxx"
 #include "playlist/SongEnumerator.hxx"
 #include "InputStream.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "decoder/DecoderList.hxx"
 #include "InputInit.hxx"
 #include "IOThread.hxx"

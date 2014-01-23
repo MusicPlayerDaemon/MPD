@@ -27,7 +27,7 @@
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
 #include "pcm/PcmConvert.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "util/FifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"

@@ -31,8 +31,8 @@
 #include "system/ByteOrder.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
-#include "ConfigData.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigData.hxx"
+#include "config/ConfigError.hxx"
 
 #include <stdio.h>
 #include <stdint.h>

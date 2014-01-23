@@ -21,7 +21,7 @@
 #include "IOThread.hxx"
 #include "InputInit.hxx"
 #include "InputStream.hxx"
-#include "ConfigGlobal.hxx"
+#include "config/ConfigGlobal.hxx"
 #include "stdbin.h"
 #include "TextInputStream.hxx"
 #include "util/Error.hxx"

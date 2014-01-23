@@ -20,9 +20,9 @@
 #include "config.h"
 #include "ConfiguredResampler.hxx"
 #include "FallbackResampler.hxx"
-#include "ConfigGlobal.hxx"
-#include "ConfigOption.hxx"
-#include "ConfigError.hxx"
+#include "config/ConfigGlobal.hxx"
+#include "config/ConfigOption.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 
 #ifdef HAVE_LIBSAMPLERATE
