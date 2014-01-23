@@ -52,7 +52,7 @@
 #include "fs/Config.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "playlist/PlaylistRegistry.hxx"
-#include "ZeroconfGlue.hxx"
+#include "zeroconf/ZeroconfGlue.hxx"
 #include "decoder/DecoderList.hxx"
 #include "AudioConfig.hxx"
 #include "pcm/PcmConvert.hxx"

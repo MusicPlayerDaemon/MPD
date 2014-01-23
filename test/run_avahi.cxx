@@ -20,7 +20,7 @@
 #include "config.h"
 #include "event/Loop.hxx"
 #include "ShutdownHandler.hxx"
-#include "ZeroconfAvahi.hxx"
+#include "zeroconf/ZeroconfAvahi.hxx"
 
 #include <stdlib.h>
 

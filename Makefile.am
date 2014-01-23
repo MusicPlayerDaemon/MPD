@@ -807,17 +807,17 @@ endif
 
 if HAVE_ZEROCONF
 src_mpd_SOURCES += \
-	src/ZeroconfInternal.hxx \
-	src/ZeroconfGlue.cxx src/ZeroconfGlue.hxx
+	src/zeroconf/ZeroconfInternal.hxx \
+	src/zeroconf/ZeroconfGlue.cxx src/zeroconf/ZeroconfGlue.hxx
 
 if HAVE_AVAHI
 src_mpd_SOURCES += \
-	src/AvahiPoll.cxx src/AvahiPoll.hxx \
-	src/ZeroconfAvahi.cxx src/ZeroconfAvahi.hxx
+	src/zeroconf/AvahiPoll.cxx src/zeroconf/AvahiPoll.hxx \
+	src/zeroconf/ZeroconfAvahi.cxx src/zeroconf/ZeroconfAvahi.hxx
 endif
 
 if HAVE_BONJOUR
-src_mpd_SOURCES += src/ZeroconfBonjour.cxx src/ZeroconfBonjour.hxx
+src_mpd_SOURCES += src/zeroconf/ZeroconfBonjour.cxx src/zeroconf/ZeroconfBonjour.hxx
 endif
 endif
 
@@ -1486,7 +1486,7 @@ test_software_volume_LDADD = \
 
 test_run_avahi_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
-	src/ZeroconfAvahi.cxx src/AvahiPoll.cxx \
+	src/zeroconf/ZeroconfAvahi.cxx src/zeroconf/AvahiPoll.cxx \
 	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
 	test/run_avahi.cxx
 test_run_avahi_CPPFLAGS = $(AM_CPPFLAGS) \
