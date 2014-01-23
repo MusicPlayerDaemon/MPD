@@ -30,6 +30,11 @@ DetachedSong::DetachedSong(const LightSong &other)
 	 mtime(other.mtime),
 	 start_ms(other.start_ms), end_ms(other.end_ms) {}
 
+DetachedSong::~DetachedSong()
+{
+	/* this destructor exists here just so it won't get inlined */
+}
+
 bool
 DetachedSong::IsRemote() const
 {

@@ -97,6 +97,8 @@ public:
 
 	DetachedSong(DetachedSong &&) = default;
 
+	~DetachedSong();
+
 	gcc_pure
 	const char *GetURI() const {
 		return uri.c_str();

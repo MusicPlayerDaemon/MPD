@@ -1235,6 +1235,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/PlaylistVector.cxx src/PlaylistDatabase.cxx \
 	src/DatabaseLock.cxx src/DatabaseSave.cxx \
 	src/Song.cxx src/SongSave.cxx src/SongSort.cxx \
+	src/DetachedSong.cxx \
 	src/TagSave.cxx \
 	src/SongFilter.cxx
 
@@ -1329,6 +1330,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
 	src/ReplayGainInfo.cxx \
+	src/DetachedSong.cxx \
 	src/decoder/FlacMetadata.cxx
 endif
 
@@ -1645,6 +1647,7 @@ test_test_translate_song_LDADD = \
 
 test_test_queue_priority_SOURCES = \
 	src/Queue.cxx \
+	src/DetachedSong.cxx \
 	test/test_queue_priority.cxx
 test_test_queue_priority_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_queue_priority_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
