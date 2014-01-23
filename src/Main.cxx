@@ -37,7 +37,7 @@
 #include "command/AllCommands.hxx"
 #include "Partition.hxx"
 #include "Volume.hxx"
-#include "OutputAll.hxx"
+#include "output/OutputAll.hxx"
 #include "tag/TagConfig.hxx"
 #include "ReplayGainConfig.hxx"
 #include "Idle.hxx"

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "NullOutputPlugin.hxx"
-#include "OutputAPI.hxx"
+#include "../OutputAPI.hxx"
 #include "Timer.hxx"
 
 struct NullOutput {

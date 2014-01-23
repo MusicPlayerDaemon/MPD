@@ -38,7 +38,7 @@
 EventLoop *main_loop;
 
 #ifdef HAVE_PULSE
-#include "output/PulseOutputPlugin.hxx"
+#include "output/plugins/PulseOutputPlugin.hxx"
 
 void
 pulse_output_lock(gcc_unused PulseOutput *po)
@@ -73,7 +73,7 @@ pulse_output_set_volume(gcc_unused PulseOutput *po,
 #endif
 
 #ifdef HAVE_ROAR
-#include "output/RoarOutputPlugin.hxx"
+#include "output/plugins/RoarOutputPlugin.hxx"
 
 int
 roar_output_get_volume(gcc_unused RoarOutput *roar)

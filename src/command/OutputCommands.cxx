@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "OutputCommands.hxx"
-#include "OutputPrint.hxx"
-#include "OutputCommand.hxx"
+#include "output/OutputPrint.hxx"
+#include "output/OutputCommand.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
 

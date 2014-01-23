@@ -28,7 +28,7 @@
 #include "system/FatalError.hxx"
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
-#include "OutputAll.hxx"
+#include "output/OutputAll.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"

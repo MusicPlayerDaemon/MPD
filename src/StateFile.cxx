@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "StateFile.hxx"
-#include "OutputState.hxx"
+#include "output/OutputState.hxx"
 #include "PlaylistState.hxx"
 #include "fs/TextFile.hxx"
 #include "Partition.hxx"

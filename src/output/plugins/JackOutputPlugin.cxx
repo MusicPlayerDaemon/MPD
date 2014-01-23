@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "JackOutputPlugin.hxx"
-#include "OutputAPI.hxx"
+#include "../OutputAPI.hxx"
 #include "ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

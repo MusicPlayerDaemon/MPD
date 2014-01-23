@@ -25,7 +25,7 @@
 #include "UpdateGlue.hxx"
 #include "Client.hxx"
 #include "Volume.hxx"
-#include "OutputAll.hxx"
+#include "output/OutputAll.hxx"
 #include "Partition.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"

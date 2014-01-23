@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "MixerInternal.hxx"
-#include "OutputAPI.hxx"
+#include "output/OutputAPI.hxx"
 #include "GlobalEvents.hxx"
 #include "Main.hxx"
 #include "event/MultiSocketMonitor.hxx"

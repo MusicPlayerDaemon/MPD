@@ -25,7 +25,7 @@
 #ifndef MPD_OUTPUT_HTTPD_INTERNAL_H
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
-#include "OutputInternal.hxx"
+#include "../OutputInternal.hxx"
 #include "Timer.hxx"
 #include "thread/Mutex.hxx"
 #include "event/ServerSocket.hxx"

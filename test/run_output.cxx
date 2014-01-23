@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "OutputControl.hxx"
-#include "OutputInternal.hxx"
-#include "OutputPlugin.hxx"
+#include "output/OutputControl.hxx"
+#include "output/OutputInternal.hxx"
+#include "output/OutputPlugin.hxx"
 #include "ConfigData.hxx"
 #include "ConfigGlobal.hxx"
 #include "ConfigOption.hxx"

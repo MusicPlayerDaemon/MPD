@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "MixerInternal.hxx"
-#include "OutputAPI.hxx"
-#include "output/WinmmOutputPlugin.hxx"
+#include "output/OutputAPI.hxx"
+#include "output/plugins/WinmmOutputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 

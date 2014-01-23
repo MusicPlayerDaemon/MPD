@@ -913,23 +913,23 @@ OUTPUT_LIBS = \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
-	src/OutputAPI.hxx \
-	src/OutputInternal.hxx \
-	src/OutputList.cxx src/OutputList.hxx \
-	src/OutputAll.cxx src/OutputAll.hxx \
-	src/OutputThread.cxx src/OutputThread.hxx \
-	src/OutputError.cxx src/OutputError.hxx \
-	src/OutputControl.cxx src/OutputControl.hxx \
-	src/OutputState.cxx src/OutputState.hxx \
-	src/OutputPrint.cxx src/OutputPrint.hxx \
-	src/OutputCommand.cxx src/OutputCommand.hxx \
-	src/OutputPlugin.cxx src/OutputPlugin.hxx \
-	src/OutputFinish.cxx \
-	src/OutputInit.cxx
+	src/output/OutputAPI.hxx \
+	src/output/OutputInternal.hxx \
+	src/output/OutputList.cxx src/output/OutputList.hxx \
+	src/output/OutputAll.cxx src/output/OutputAll.hxx \
+	src/output/OutputThread.cxx src/output/OutputThread.hxx \
+	src/output/OutputError.cxx src/output/OutputError.hxx \
+	src/output/OutputControl.cxx src/output/OutputControl.hxx \
+	src/output/OutputState.cxx src/output/OutputState.hxx \
+	src/output/OutputPrint.cxx src/output/OutputPrint.hxx \
+	src/output/OutputCommand.cxx src/output/OutputCommand.hxx \
+	src/output/OutputPlugin.cxx src/output/OutputPlugin.hxx \
+	src/output/OutputFinish.cxx \
+	src/output/OutputInit.cxx
 
 liboutput_plugins_a_SOURCES = \
-	src/output/NullOutputPlugin.cxx \
-	src/output/NullOutputPlugin.hxx
+	src/output/plugins/NullOutputPlugin.cxx \
+	src/output/plugins/NullOutputPlugin.hxx
 
 MIXER_LIBS = \
 	libmixer_plugins.a \
@@ -952,88 +952,100 @@ libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 if HAVE_ALSA
 liboutput_plugins_a_SOURCES += \
-	src/output/AlsaOutputPlugin.cxx \
-	src/output/AlsaOutputPlugin.hxx
+	src/output/plugins/AlsaOutputPlugin.cxx \
+	src/output/plugins/AlsaOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += src/mixer/AlsaMixerPlugin.cxx
 endif
 
 if HAVE_ROAR
 liboutput_plugins_a_SOURCES += \
-	src/output/RoarOutputPlugin.cxx src/output/RoarOutputPlugin.hxx
+	src/output/plugins/RoarOutputPlugin.cxx \
+	src/output/plugins/RoarOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += src/mixer/RoarMixerPlugin.cxx
 endif
 
 if HAVE_AO
 liboutput_plugins_a_SOURCES += \
-	src/output/AoOutputPlugin.cxx src/output/AoOutputPlugin.hxx
+	src/output/plugins/AoOutputPlugin.cxx \
+	src/output/plugins/AoOutputPlugin.hxx
 endif
 
 if HAVE_FIFO
 liboutput_plugins_a_SOURCES += \
-	src/output/FifoOutputPlugin.cxx src/output/FifoOutputPlugin.hxx
+	src/output/plugins/FifoOutputPlugin.cxx \
+	src/output/plugins/FifoOutputPlugin.hxx
 endif
 
 if ENABLE_PIPE_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/output/PipeOutputPlugin.cxx src/output/PipeOutputPlugin.hxx
+	src/output/plugins/PipeOutputPlugin.cxx \
+	src/output/plugins/PipeOutputPlugin.hxx
 endif
 
 if HAVE_JACK
 liboutput_plugins_a_SOURCES += \
-	src/output/JackOutputPlugin.cxx src/output/JackOutputPlugin.hxx
+	src/output/plugins/JackOutputPlugin.cxx \
+	src/output/plugins/JackOutputPlugin.hxx
 endif
 
 if HAVE_OSS
 liboutput_plugins_a_SOURCES += \
-	src/output/OssOutputPlugin.cxx \
-	src/output/OssOutputPlugin.hxx
+	src/output/plugins/OssOutputPlugin.cxx \
+	src/output/plugins/OssOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += src/mixer/OssMixerPlugin.cxx
 endif
 
 if HAVE_OPENAL
 liboutput_plugins_a_SOURCES += \
-	src/output/OpenALOutputPlugin.cxx src/output/OpenALOutputPlugin.hxx
+	src/output/plugins/OpenALOutputPlugin.cxx \
+	src/output/plugins/OpenALOutputPlugin.hxx
 endif
 
 if HAVE_OSX
 liboutput_plugins_a_SOURCES += \
-	src/output/OSXOutputPlugin.cxx \
-	src/output/OSXOutputPlugin.hxx
+	src/output/plugins/OSXOutputPlugin.cxx \
+	src/output/plugins/OSXOutputPlugin.hxx
 endif
 
 if HAVE_PULSE
 liboutput_plugins_a_SOURCES += \
-	src/output/PulseOutputPlugin.cxx src/output/PulseOutputPlugin.hxx
+	src/output/plugins/PulseOutputPlugin.cxx \
+	src/output/plugins/PulseOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
 	src/mixer/PulseMixerPlugin.cxx src/mixer/PulseMixerPlugin.hxx
 endif
 
 if HAVE_SHOUT
 liboutput_plugins_a_SOURCES += \
-	src/output/ShoutOutputPlugin.cxx src/output/ShoutOutputPlugin.hxx
+	src/output/plugins/ShoutOutputPlugin.cxx \
+	src/output/plugins/ShoutOutputPlugin.hxx
 endif
 
 if ENABLE_RECORDER_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/output/RecorderOutputPlugin.cxx src/output/RecorderOutputPlugin.hxx
+	src/output/plugins/RecorderOutputPlugin.cxx \
+	src/output/plugins/RecorderOutputPlugin.hxx
 endif
 
 if ENABLE_HTTPD_OUTPUT
 liboutput_plugins_a_SOURCES += \
 	src/IcyMetaDataServer.cxx src/IcyMetaDataServer.hxx \
-	src/output/HttpdInternal.hxx \
-	src/output/HttpdClient.cxx src/output/HttpdClient.hxx \
-	src/output/HttpdOutputPlugin.cxx src/output/HttpdOutputPlugin.hxx
+	src/output/plugins/HttpdInternal.hxx \
+	src/output/plugins/HttpdClient.cxx \
+	src/output/plugins/HttpdClient.hxx \
+	src/output/plugins/HttpdOutputPlugin.cxx \
+	src/output/plugins/HttpdOutputPlugin.hxx
 endif
 
 if ENABLE_SOLARIS_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/output/SolarisOutputPlugin.cxx src/output/SolarisOutputPlugin.hxx
+	src/output/plugins/SolarisOutputPlugin.cxx src/output/plugins/SolarisOutputPlugin.hxx
 endif
 
 if ENABLE_WINMM_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/output/WinmmOutputPlugin.cxx src/output/WinmmOutputPlugin.hxx
+	src/output/plugins/WinmmOutputPlugin.cxx \
+	src/output/plugins/WinmmOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += src/mixer/WinmmMixerPlugin.cxx
 endif
 
@@ -1528,9 +1540,9 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/AudioParser.cxx \
 	src/Timer.cxx \
 	src/Page.cxx \
-	src/OutputError.cxx \
-	src/OutputInit.cxx src/OutputFinish.cxx src/OutputList.cxx \
-	src/OutputPlugin.cxx \
+	src/output/OutputError.cxx \
+	src/output/OutputInit.cxx src/output/OutputFinish.cxx src/output/OutputList.cxx \
+	src/output/OutputPlugin.cxx \
 	src/MixerControl.cxx \
 	src/MixerType.cxx \
 	src/FilterPlugin.cxx \
