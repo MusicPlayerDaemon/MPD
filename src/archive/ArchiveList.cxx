@@ -21,9 +21,9 @@
 #include "ArchiveList.hxx"
 #include "ArchivePlugin.hxx"
 #include "util/StringUtil.hxx"
-#include "archive/Bzip2ArchivePlugin.hxx"
-#include "archive/Iso9660ArchivePlugin.hxx"
-#include "archive/ZzipArchivePlugin.hxx"
+#include "plugins/Bzip2ArchivePlugin.hxx"
+#include "plugins/Iso9660ArchivePlugin.hxx"
+#include "plugins/ZzipArchivePlugin.hxx"
 #include "util/Macros.hxx"
 
 #include <string.h>

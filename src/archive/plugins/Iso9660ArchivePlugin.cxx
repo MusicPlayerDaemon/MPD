@@ -23,9 +23,9 @@
 
 #include "config.h"
 #include "Iso9660ArchivePlugin.hxx"
-#include "ArchivePlugin.hxx"
-#include "ArchiveFile.hxx"
-#include "ArchiveVisitor.hxx"
+#include "../ArchivePlugin.hxx"
+#include "../ArchiveFile.hxx"
+#include "../ArchiveVisitor.hxx"
 #include "InputStream.hxx"
 #include "InputPlugin.hxx"
 #include "util/RefCount.hxx"

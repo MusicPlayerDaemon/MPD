@@ -446,12 +446,12 @@ src_mpd_SOURCES +=  \
 	src/UpdateArchive.cxx src/UpdateArchive.hxx
 
 libarchive_a_SOURCES = \
-	src/ArchiveDomain.cxx src/ArchiveDomain.hxx \
-	src/ArchiveLookup.cxx src/ArchiveLookup.hxx \
-	src/ArchiveList.cxx src/ArchiveList.hxx \
-	src/ArchivePlugin.cxx src/ArchivePlugin.hxx \
-	src/ArchiveVisitor.hxx \
-	src/ArchiveFile.hxx \
+	src/archive/ArchiveDomain.cxx src/archive/ArchiveDomain.hxx \
+	src/archive/ArchiveLookup.cxx src/archive/ArchiveLookup.hxx \
+	src/archive/ArchiveList.cxx src/archive/ArchiveList.hxx \
+	src/archive/ArchivePlugin.cxx src/archive/ArchivePlugin.hxx \
+	src/archive/ArchiveVisitor.hxx \
+	src/archive/ArchiveFile.hxx \
 	src/input/ArchiveInputPlugin.cxx src/input/ArchiveInputPlugin.hxx
 libarchive_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(BZ2_CFLAGS) \
@@ -466,20 +466,20 @@ ARCHIVE_LIBS = \
 
 if HAVE_BZ2
 libarchive_a_SOURCES += \
-	src/archive/Bzip2ArchivePlugin.cxx \
-	src/archive/Bzip2ArchivePlugin.hxx
+	src/archive/plugins/Bzip2ArchivePlugin.cxx \
+	src/archive/plugins/Bzip2ArchivePlugin.hxx
 endif
 
 if HAVE_ZZIP
 libarchive_a_SOURCES += \
-	src/archive/ZzipArchivePlugin.cxx \
-	src/archive/ZzipArchivePlugin.hxx
+	src/archive/plugins/ZzipArchivePlugin.cxx \
+	src/archive/plugins/ZzipArchivePlugin.hxx
 endif
 
 if HAVE_ISO9660
 libarchive_a_SOURCES += \
-	src/archive/Iso9660ArchivePlugin.cxx \
-	src/archive/Iso9660ArchivePlugin.hxx
+	src/archive/plugins/Iso9660ArchivePlugin.cxx \
+	src/archive/plugins/Iso9660ArchivePlugin.hxx
 endif
 
 else

@@ -30,7 +30,7 @@
 #include "Log.hxx"
 
 #ifdef ENABLE_ARCHIVE
-#include "ArchiveList.hxx"
+#include "archive/ArchiveList.hxx"
 #endif
 
 #ifdef HAVE_GLIB

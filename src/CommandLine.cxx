@@ -48,8 +48,8 @@
 #endif
 
 #ifdef ENABLE_ARCHIVE
-#include "ArchiveList.hxx"
-#include "ArchivePlugin.hxx"
+#include "archive/ArchiveList.hxx"
+#include "archive/ArchivePlugin.hxx"
 #endif
 
 #include <stdio.h>

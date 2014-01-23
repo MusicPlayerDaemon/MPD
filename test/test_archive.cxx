@@ -1,5 +1,5 @@
 #include "config.h"
-#include "ArchiveLookup.hxx"
+#include "archive/ArchiveLookup.hxx"
 #include "Compiler.h"
 
 #include <cppunit/TestFixture.h>
