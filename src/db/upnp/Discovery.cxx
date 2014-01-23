@@ -192,6 +192,11 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(LibUPnP *_lib)
 {
 }
 
+UPnPDeviceDirectory::~UPnPDeviceDirectory()
+{
+	/* this destructor exists here just so it won't get inlined */
+}
+
 bool
 UPnPDeviceDirectory::Start(Error &error)
 {

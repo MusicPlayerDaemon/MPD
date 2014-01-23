@@ -102,6 +102,7 @@ class UPnPDeviceDirectory {
 
 public:
 	UPnPDeviceDirectory(LibUPnP *_lib);
+	~UPnPDeviceDirectory();
 
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
