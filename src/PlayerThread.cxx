@@ -33,6 +33,7 @@
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 #include "util/Domain.hxx"
+#include "thread/Name.hxx"
 #include "Log.hxx"
 
 #include <string.h>
@@ -1105,6 +1106,8 @@ static void
 player_task(void *arg)
 {
 	PlayerControl &pc = *(PlayerControl *)arg;
+
+	SetThreadName("player");
 
 	DecoderControl dc(pc.mutex, pc.cond);
 	decoder_thread_start(dc);

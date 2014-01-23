@@ -31,6 +31,7 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "thread/Util.hxx"
+#include "thread/Name.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -578,6 +579,8 @@ static void
 audio_output_task(void *arg)
 {
 	struct audio_output *ao = (struct audio_output *)arg;
+
+	FormatThreadName("output:%s", ao->name);
 
 	SetThreadRealtime();
 

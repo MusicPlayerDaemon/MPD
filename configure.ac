@@ -181,6 +181,13 @@ AC_SEARCH_LIBS([exp], [m],,
 AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
 
+AC_CHECK_LIB([pthread], [pthread_setname_np],
+	[have_pthread_setname_np=yes],
+	[have_pthread_setname_np=no])
+if test x$have_pthread_setname_np = xyes; then
+	AC_DEFINE(HAVE_PTHREAD_SETNAME_NP, 1, [Is pthread_setname_np() available?])
+fi
+
 dnl ---------------------------------------------------------------------------
 dnl Event loop selection
 dnl ---------------------------------------------------------------------------

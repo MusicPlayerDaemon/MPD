@@ -22,6 +22,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
+#include "thread/Name.hxx"
 #include "event/Loop.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
@@ -48,6 +49,8 @@ io_thread_run(void)
 static void
 io_thread_func(gcc_unused void *arg)
 {
+	SetThreadName("io");
+
 	/* lock+unlock to synchronize with io_thread_start(), to be
 	   sure that io.thread is set */
 	io.mutex.lock();

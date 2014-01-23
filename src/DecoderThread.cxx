@@ -34,6 +34,7 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "thread/Name.hxx"
 #include "tag/ApeReplayGain.hxx"
 #include "Log.hxx"
 
@@ -127,7 +128,11 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 
 	decoder.dc.Unlock();
 
+	FormatThreadName("decoder:%s", plugin.name);
+
 	plugin.StreamDecode(decoder, input_stream);
+
+	SetThreadName("decoder");
 
 	decoder.dc.Lock();
 
@@ -155,7 +160,11 @@ decoder_file_decode(const DecoderPlugin &plugin,
 
 	decoder.dc.Unlock();
 
+	FormatThreadName("decoder:%s", plugin.name);
+
 	plugin.FileDecode(decoder, path);
+
+	SetThreadName("decoder");
 
 	decoder.dc.Lock();
 
@@ -420,6 +429,8 @@ static void
 decoder_task(void *arg)
 {
 	DecoderControl &dc = *(DecoderControl *)arg;
+
+	SetThreadName("decoder");
 
 	dc.Lock();
 
