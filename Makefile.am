@@ -133,20 +133,20 @@ src_mpd_SOURCES = \
 	src/update/UpdateContainer.cxx src/update/UpdateContainer.hxx \
 	src/update/UpdateInternal.hxx \
 	src/update/UpdateRemove.cxx src/update/UpdateRemove.hxx \
-	src/Client.cxx src/Client.hxx \
-	src/ClientInternal.hxx \
-	src/ClientEvent.cxx \
-	src/ClientExpire.cxx \
-	src/ClientGlobal.cxx \
-	src/ClientIdle.cxx \
-	src/ClientList.cxx src/ClientList.hxx \
-	src/ClientNew.cxx \
-	src/ClientProcess.cxx \
-	src/ClientRead.cxx \
-	src/ClientWrite.cxx \
-	src/ClientMessage.cxx src/ClientMessage.hxx \
-	src/ClientSubscribe.cxx \
-	src/ClientFile.cxx src/ClientFile.hxx \
+	src/client/Client.cxx src/client/Client.hxx \
+	src/client/ClientInternal.hxx \
+	src/client/ClientEvent.cxx \
+	src/client/ClientExpire.cxx \
+	src/client/ClientGlobal.cxx \
+	src/client/ClientIdle.cxx \
+	src/client/ClientList.cxx src/client/ClientList.hxx \
+	src/client/ClientNew.cxx \
+	src/client/ClientProcess.cxx \
+	src/client/ClientRead.cxx \
+	src/client/ClientWrite.cxx \
+	src/client/ClientMessage.cxx src/client/ClientMessage.hxx \
+	src/client/ClientSubscribe.cxx \
+	src/client/ClientFile.cxx src/client/ClientFile.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/LogInit.cxx src/LogInit.hxx \
 	src/LogBackend.cxx src/LogBackend.hxx \

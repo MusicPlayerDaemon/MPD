@@ -21,7 +21,7 @@
 #include "Listen.hxx"
 #include "Main.hxx"
 #include "Instance.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 #include "config/ConfigData.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"

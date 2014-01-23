@@ -26,7 +26,7 @@
 #include "OutputPrint.hxx"
 #include "OutputAll.hxx"
 #include "OutputInternal.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 
 void
 printAudioDevices(Client &client)

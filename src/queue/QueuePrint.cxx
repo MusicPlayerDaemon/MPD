@@ -22,7 +22,7 @@
 #include "Queue.hxx"
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 
 /**
  * Send detailed information about a range of songs in the queue to a

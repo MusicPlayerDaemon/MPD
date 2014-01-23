@@ -21,7 +21,7 @@
 #include "TagPrint.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagSettings.h"
-#include "Client.hxx"
+#include "client/Client.hxx"
 
 #define SONG_TIME "Time: "
 

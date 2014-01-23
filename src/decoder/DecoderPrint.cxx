@@ -21,7 +21,7 @@
 #include "DecoderPrint.hxx"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 
 #include <functional>
 

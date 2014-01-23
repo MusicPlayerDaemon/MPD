@@ -21,7 +21,7 @@
 #include "ls.hxx"
 #include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 
 #include <assert.h>
 

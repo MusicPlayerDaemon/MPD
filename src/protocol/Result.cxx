@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Result.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 
 #include <assert.h>
 

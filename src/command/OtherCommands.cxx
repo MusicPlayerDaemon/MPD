@@ -43,8 +43,8 @@
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistVector.hxx"
-#include "ClientFile.hxx"
-#include "Client.hxx"
+#include "client/ClientFile.hxx"
+#include "client/Client.hxx"
 #include "Idle.hxx"
 
 #include <assert.h>

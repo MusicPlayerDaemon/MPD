@@ -24,7 +24,7 @@
 #include "DatabasePrint.hxx"
 #include "DatabaseSelection.hxx"
 #include "CommandError.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 #include "tag/Tag.hxx"
 #include "util/Error.hxx"
 #include "SongFilter.hxx"

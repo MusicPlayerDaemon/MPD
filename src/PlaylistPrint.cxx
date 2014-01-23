@@ -25,7 +25,7 @@
 #include "SongPrint.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 #include "InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "fs/Traits.hxx"

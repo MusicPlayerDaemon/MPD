@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Stats.hxx"
 #include "PlayerControl.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 #include "DatabaseSelection.hxx"
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"

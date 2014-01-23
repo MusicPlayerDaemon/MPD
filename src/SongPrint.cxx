@@ -24,7 +24,7 @@
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
 #include "Mapper.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 #include "util/UriUtil.hxx"
 
 #define SONG_FILE "file: "

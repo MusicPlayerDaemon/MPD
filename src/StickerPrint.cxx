@@ -20,7 +20,7 @@
 #include "config.h"
 #include "StickerPrint.hxx"
 #include "StickerDatabase.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 
 void
 sticker_print_value(Client &client,

@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "MessageCommands.hxx"
-#include "Client.hxx"
-#include "ClientList.hxx"
+#include "client/Client.hxx"
+#include "client/ClientList.hxx"
 #include "Instance.hxx"
 #include "Main.hxx"
 #include "protocol/Result.hxx"

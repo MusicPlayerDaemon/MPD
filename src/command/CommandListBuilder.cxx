@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "CommandListBuilder.hxx"
-#include "ClientInternal.hxx"
+#include "client/ClientInternal.hxx"
 
 #include <string.h>
 

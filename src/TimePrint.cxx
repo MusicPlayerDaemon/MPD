@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TimePrint.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 
 void
 time_print(Client &client, const char *name, time_t t)

@@ -31,7 +31,7 @@
 #include "Permission.hxx"
 #include "tag/TagType.h"
 #include "protocol/Result.hxx"
-#include "Client.hxx"
+#include "client/Client.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
 
