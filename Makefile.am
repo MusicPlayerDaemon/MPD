@@ -155,7 +155,7 @@ src_mpd_SOURCES = \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Main.cxx src/Main.hxx \
 	src/Instance.cxx src/Instance.hxx \
-	src/Win32Main.cxx \
+	src/win32/Win32Main.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
 	src/unix/SignalHandlers.cxx src/unix/SignalHandlers.hxx \
 	src/unix/Daemon.cxx src/unix/Daemon.hxx \
@@ -218,14 +218,14 @@ src_mpd_SOURCES = \
 # Windows resource file
 #
 
-src/win/mpd_win32_rc.$(OBJEXT): src/win/mpd_win32_rc.rc
+src/win32/mpd_win32_rc.$(OBJEXT): src/win32/mpd_win32_rc.rc
 	$(WINDRES) -i $< -o $@
 
 if HAVE_WINDOWS
-noinst_DATA = src/win/mpd_win32_rc.rc
+noinst_DATA = src/win32/mpd_win32_rc.rc
 
-src_mpd_DEPENDENCIES = src/win/mpd_win32_rc.$(OBJEXT)
-src_mpd_LDFLAGS = -Wl,src/win/mpd_win32_rc.$(OBJEXT)
+src_mpd_DEPENDENCIES = src/win32/mpd_win32_rc.$(OBJEXT)
+src_mpd_LDFLAGS = -Wl,src/win32/mpd_win32_rc.$(OBJEXT)
 endif
 
 if ENABLE_DESPOTIFY
@@ -1755,4 +1755,4 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	test/test_archive_zzip.sh \
 	$(wildcard scripts/*.sh) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
-	src/win/mpd_win32_rc.rc.in src/win/mpd.ico
+	src/win32/mpd_win32_rc.rc.in src/win32/mpd.ico
