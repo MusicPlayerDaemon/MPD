@@ -30,8 +30,8 @@
 #include "Log.hxx"
 
 #ifdef ENABLE_SQLITE
-#include "StickerDatabase.hxx"
-#include "SongSticker.hxx"
+#include "sticker/StickerDatabase.hxx"
+#include "sticker/SongSticker.hxx"
 #endif
 
 #include <assert.h>

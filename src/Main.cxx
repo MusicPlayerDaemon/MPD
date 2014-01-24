@@ -72,7 +72,7 @@
 #endif
 
 #ifdef ENABLE_SQLITE
-#include "StickerDatabase.hxx"
+#include "sticker/StickerDatabase.hxx"
 #endif
 
 #ifdef ENABLE_ARCHIVE

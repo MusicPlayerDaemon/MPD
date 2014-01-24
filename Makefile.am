@@ -244,9 +244,9 @@ endif
 if ENABLE_SQLITE
 src_mpd_SOURCES += \
 	src/command/StickerCommands.cxx src/command/StickerCommands.hxx \
-	src/StickerDatabase.cxx src/StickerDatabase.hxx \
-	src/StickerPrint.cxx src/StickerPrint.hxx \
-	src/SongSticker.cxx src/SongSticker.hxx
+	src/sticker/StickerDatabase.cxx src/sticker/StickerDatabase.hxx \
+	src/sticker/StickerPrint.cxx src/sticker/StickerPrint.hxx \
+	src/sticker/SongSticker.cxx src/sticker/SongSticker.hxx
 endif
 
 # Generic utility library

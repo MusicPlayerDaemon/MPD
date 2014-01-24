@@ -37,7 +37,7 @@
 
 #ifdef ENABLE_SQLITE
 #include "StickerCommands.hxx"
-#include "StickerDatabase.hxx"
+#include "sticker/StickerDatabase.hxx"
 #endif
 
 #include <assert.h>
