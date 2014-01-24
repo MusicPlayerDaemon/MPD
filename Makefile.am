@@ -157,8 +157,9 @@ src_mpd_SOURCES = \
 	src/Instance.cxx src/Instance.hxx \
 	src/Win32Main.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
-	src/Daemon.cxx src/Daemon.hxx \
-	src/PidFile.hxx \
+	src/unix/SignalHandlers.cxx src/unix/SignalHandlers.hxx \
+	src/unix/Daemon.cxx src/unix/Daemon.hxx \
+	src/unix/PidFile.hxx \
 	src/AudioCompress/compress.c \
 	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
@@ -194,7 +195,6 @@ src_mpd_SOURCES = \
 	src/queue/QueueSave.cxx src/queue/QueueSave.hxx \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
-	src/SignalHandlers.cxx src/SignalHandlers.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
 	src/LightSong.cxx src/LightSong.hxx \
 	src/LightDirectory.hxx \
