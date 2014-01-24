@@ -230,7 +230,8 @@ endif
 
 if ENABLE_DESPOTIFY
 src_mpd_SOURCES += \
-	src/DespotifyUtils.cxx src/DespotifyUtils.hxx
+	src/lib/despotify/DespotifyUtils.cxx \
+	src/lib/despotify/DespotifyUtils.hxx
 endif
 
 if ENABLE_INOTIFY
@@ -1092,7 +1093,7 @@ endif
 
 if HAVE_EXPAT
 libplaylist_plugins_a_SOURCES += \
-	src/Expat.cxx src/Expat.hxx \
+	src/lib/expat/ExpatParser.cxx src/lib/expat/ExpatParser.hxx \
 	src/playlist/plugins/XspfPlaylistPlugin.cxx \
 	src/playlist/plugins/XspfPlaylistPlugin.hxx \
 	src/playlist/plugins/AsxPlaylistPlugin.cxx \
@@ -1256,7 +1257,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/SongFilter.cxx
 
 if HAVE_LIBUPNP
-test_DumpDatabase_SOURCES += src/Expat.cxx
+test_DumpDatabase_SOURCES += src/lib/expat/ExpatParser.cxx
 endif
 
 test_run_input_LDADD = \
@@ -1295,7 +1296,7 @@ test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/input/InputStream.cxx
 
 if ENABLE_DESPOTIFY
-test_visit_archive_SOURCES += src/DespotifyUtils.cxx
+test_visit_archive_SOURCES += src/lib/despotify/DespotifyUtils.cxx
 endif
 
 endif
@@ -1422,11 +1423,11 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	src/AudioCompress/compress.c
 
 if ENABLE_DESPOTIFY
-test_read_tags_SOURCES += src/DespotifyUtils.cxx
-test_run_input_SOURCES += src/DespotifyUtils.cxx
-test_dump_text_file_SOURCES += src/DespotifyUtils.cxx
-test_dump_playlist_SOURCES += src/DespotifyUtils.cxx
-test_run_decoder_SOURCES += src/DespotifyUtils.cxx
+test_read_tags_SOURCES += src/lib/despotify/DespotifyUtils.cxx
+test_run_input_SOURCES += src/lib/despotify/DespotifyUtils.cxx
+test_dump_text_file_SOURCES += src/lib/despotify/DespotifyUtils.cxx
+test_dump_playlist_SOURCES += src/lib/despotify/DespotifyUtils.cxx
+test_run_decoder_SOURCES += src/lib/despotify/DespotifyUtils.cxx
 endif
 
 if ENABLE_ENCODER

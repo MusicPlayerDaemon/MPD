@@ -26,7 +26,7 @@
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "Expat.hxx"
+#include "lib/expat/ExpatParser.hxx"
 #include "Log.hxx"
 
 #include <string.h>

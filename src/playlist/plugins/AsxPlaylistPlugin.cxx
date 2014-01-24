@@ -24,7 +24,7 @@
 #include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
-#include "Expat.hxx"
+#include "lib/expat/ExpatParser.hxx"
 #include "Log.hxx"
 
 /**

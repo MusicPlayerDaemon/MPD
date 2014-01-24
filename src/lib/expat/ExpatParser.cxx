@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "Expat.hxx"
+#include "ExpatParser.hxx"
 #include "input/InputStream.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Directory.hxx"
 #include "Util.hxx"
-#include "Expat.hxx"
+#include "lib/expat/ExpatParser.hxx"
 #include "Tags.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"

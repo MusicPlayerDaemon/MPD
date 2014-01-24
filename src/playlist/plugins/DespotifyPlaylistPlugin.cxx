@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "DespotifyPlaylistPlugin.hxx"
-#include "DespotifyUtils.hxx"
+#include "lib/despotify/DespotifyUtils.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
 #include "tag/Tag.hxx"

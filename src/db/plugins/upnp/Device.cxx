@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Device.hxx"
 #include "Util.hxx"
-#include "Expat.hxx"
+#include "lib/expat/ExpatParser.hxx"
 #include "util/Error.hxx"
 
 #include <stdlib.h>

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "DespotifyInputPlugin.hxx"
-#include "DespotifyUtils.hxx"
+#include "lib/despotify/DespotifyUtils.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "tag/Tag.hxx"
