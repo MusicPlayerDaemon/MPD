@@ -22,42 +22,12 @@
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigData.hxx"
 
 #include <assert.h>
 #include <string.h>
-
-extern constexpr Domain input_domain("input");
-
-/**
- * Find the "input" configuration block for the specified plugin.
- *
- * @param plugin_name the name of the input plugin
- * @return the configuration block, or nullptr if none was configured
- */
-static const struct config_param *
-input_plugin_config(const char *plugin_name, Error &error)
-{
-	const struct config_param *param = nullptr;
-
-	while ((param = config_get_next_param(CONF_INPUT, param)) != nullptr) {
-		const char *name = param->GetBlockValue("plugin");
-		if (name == nullptr) {
-			error.Format(input_domain,
-				     "input configuration without 'plugin' name in line %d",
-				     param->line);
-			return nullptr;
-		}
-
-		if (strcmp(name, plugin_name) == 0)
-			return param;
-	}
-
-	return nullptr;
-}
 
 bool
 input_stream_global_init(Error &error)
@@ -72,11 +42,8 @@ input_stream_global_init(Error &error)
 		assert(plugin->open != nullptr);
 
 		const struct config_param *param =
-			input_plugin_config(plugin->name, error);
+			config_find_block(CONF_INPUT, "plugin", plugin->name);
 		if (param == nullptr) {
-			if (error.IsDefined())
-				return false;
-
 			param = &empty;
 		} else if (!param->GetBlockValue("enabled", true))
 			/* the plugin is disabled in mpd.conf */

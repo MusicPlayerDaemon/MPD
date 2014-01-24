@@ -37,7 +37,6 @@
 #include "util/Macros.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"
-#include "system/FatalError.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -73,32 +72,6 @@ static bool playlist_plugins_enabled[n_playlist_plugins];
 	playlist_plugins_for_each(plugin) \
 		if (playlist_plugins_enabled[playlist_plugin_iterator - playlist_plugins])
 
-/**
- * Find the "playlist" configuration block for the specified plugin.
- *
- * @param plugin_name the name of the playlist plugin
- * @return the configuration block, or nullptr if none was configured
- */
-static const struct config_param *
-playlist_plugin_config(const char *plugin_name)
-{
-	const struct config_param *param = nullptr;
-
-	assert(plugin_name != nullptr);
-
-	while ((param = config_get_next_param(CONF_PLAYLIST_PLUGIN, param)) != nullptr) {
-		const char *name = param->GetBlockValue("name");
-		if (name == nullptr)
-			FormatFatalError("playlist configuration without 'plugin' name in line %d",
-					 param->line);
-
-		if (strcmp(name, plugin_name) == 0)
-			return param;
-	}
-
-	return nullptr;
-}
-
 void
 playlist_list_global_init(void)
 {
@@ -107,7 +80,8 @@ playlist_list_global_init(void)
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
 		const struct config_param *param =
-			playlist_plugin_config(plugin->name);
+			config_find_block(CONF_PLAYLIST_PLUGIN, "name",
+					  plugin->name);
 		if (param == nullptr)
 			param = &empty;
 		else if (!param->GetBlockValue("enabled", true))

@@ -85,6 +85,23 @@ config_get_next_param(ConfigOption option, const struct config_param * last)
 	return param;
 }
 
+const config_param *
+config_find_block(ConfigOption option, const char *key, const char *value)
+{
+	const config_param *param = nullptr;
+	while ((param = config_get_next_param(option, param)) != nullptr) {
+		const char *value2 = param->GetBlockValue(key);
+		if (value2 == nullptr)
+			FormatFatalError("block without '%s' name in line %d",
+					 key, param->line);
+
+		if (strcmp(value2, value) == 0)
+			return param;
+	}
+
+	return nullptr;
+}
+
 const char *
 config_get_string(ConfigOption option, const char *default_value)
 {

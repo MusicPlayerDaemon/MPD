@@ -43,7 +43,6 @@
 #include "plugins/MpcdecDecoderPlugin.hxx"
 #include "plugins/FluidsynthDecoderPlugin.hxx"
 #include "plugins/SidplayDecoderPlugin.hxx"
-#include "system/FatalError.hxx"
 #include "util/Macros.hxx"
 
 #include <string.h>
@@ -126,30 +125,6 @@ decoder_plugin_from_name(const char *name)
 		});
 }
 
-/**
- * Find the "decoder" configuration block for the specified plugin.
- *
- * @param plugin_name the name of the decoder plugin
- * @return the configuration block, or nullptr if none was configured
- */
-static const struct config_param *
-decoder_plugin_config(const char *plugin_name)
-{
-	const struct config_param *param = nullptr;
-
-	while ((param = config_get_next_param(CONF_DECODER, param)) != nullptr) {
-		const char *name = param->GetBlockValue("plugin");
-		if (name == nullptr)
-			FormatFatalError("decoder configuration without 'plugin' name in line %d",
-					 param->line);
-
-		if (strcmp(name, plugin_name) == 0)
-			return param;
-	}
-
-	return nullptr;
-}
-
 void decoder_plugin_init_all(void)
 {
 	struct config_param empty;
@@ -157,7 +132,7 @@ void decoder_plugin_init_all(void)
 	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i) {
 		const DecoderPlugin &plugin = *decoder_plugins[i];
 		const struct config_param *param =
-			decoder_plugin_config(plugin.name);
+			config_find_block(CONF_DECODER, "plugin", plugin.name);
 
 		if (param == nullptr)
 			param = &empty;

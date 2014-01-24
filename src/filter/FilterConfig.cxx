@@ -31,45 +31,17 @@
 
 #include <string.h>
 
-/**
- * Find the "filter" configuration block for the specified name.
- *
- * @param filter_template_name the name of the filter template
- * @param error space to return an error description
- * @return the configuration block, or nullptr if none was configured
- */
-static const struct config_param *
-filter_plugin_config(const char *filter_template_name, Error &error)
-{
-	const struct config_param *param = nullptr;
-
-	while ((param = config_get_next_param(CONF_AUDIO_FILTER, param)) != nullptr) {
-		const char *name = param->GetBlockValue("name");
-		if (name == nullptr) {
-			error.Format(config_domain,
-				     "filter configuration without 'name' name in line %d",
-				     param->line);
-			return nullptr;
-		}
-
-		if (strcmp(name, filter_template_name) == 0)
-			return param;
-	}
-
-	error.Format(config_domain,
-		     "filter template not found: %s",
-		     filter_template_name);
-	return nullptr;
-}
-
 static bool
 filter_chain_append_new(Filter &chain, const char *template_name, Error &error)
 {
 	const struct config_param *cfg =
-		filter_plugin_config(template_name, error);
-	if (cfg == nullptr)
-		// The error has already been set, just stop.
+		config_find_block(CONF_AUDIO_FILTER, "name", template_name);
+	if (cfg == nullptr) {
+		error.Format(config_domain,
+			     "filter template not found: %s",
+			     template_name);
 		return false;
+	}
 
 	// Instantiate one of those filter plugins with the template name as a hint
 	Filter *f = filter_configured_new(*cfg, error);

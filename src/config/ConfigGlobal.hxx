@@ -53,6 +53,17 @@ config_get_param(enum ConfigOption option)
 	return config_get_next_param(option, nullptr);
 }
 
+/**
+ * Find a block with a matching attribute.
+ *
+ * @param option the blocks to search
+ * @param key the attribute name
+ * @param value the expected attribute value
+ */
+gcc_pure
+const config_param *
+config_find_block(ConfigOption option, const char *key, const char *value);
+
 /* Note on gcc_pure: Some of the functions declared pure are not
    really pure in strict sense.  They have side effect such that they
    validate parameter's value and signal an error if it's invalid.
