@@ -70,7 +70,7 @@ host_is_darwin=no
 case "$host_os" in
 mingw32* | windows*)
 	AC_CONFIG_FILES([
-		src/win/mpd_win32_rc.rc
+		src/win32/mpd_win32_rc.rc
 	])
 	AC_CHECK_TOOL(WINDRES, windres)
 	AM_CPPFLAGS="$AM_CPPFLAGS -DWIN32_LEAN_AND_MEAN"
