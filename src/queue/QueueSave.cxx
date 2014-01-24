@@ -23,7 +23,7 @@
 #include "PlaylistError.hxx"
 #include "DetachedSong.hxx"
 #include "SongSave.hxx"
-#include "DatabaseSong.hxx"
+#include "db/DatabaseSong.hxx"
 #include "fs/TextFile.hxx"
 #include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"

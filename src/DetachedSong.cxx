@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "DetachedSong.hxx"
-#include "LightSong.hxx"
+#include "db/LightSong.hxx"
 #include "util/UriUtil.hxx"
 #include "fs/Traits.hxx"
 

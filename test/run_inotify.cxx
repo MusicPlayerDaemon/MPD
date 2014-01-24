@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "ShutdownHandler.hxx"
-#include "update/InotifySource.hxx"
+#include "db/update/InotifySource.hxx"
 #include "event/Loop.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"

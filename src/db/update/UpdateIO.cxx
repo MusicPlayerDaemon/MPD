@@ -20,7 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateIO.hxx"
 #include "UpdateDomain.hxx"
-#include "Directory.hxx"
+#include "db/Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"

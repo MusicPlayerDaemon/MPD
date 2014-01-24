@@ -22,7 +22,7 @@
 #include "PlaylistSave.hxx"
 #include "PlaylistInfo.hxx"
 #include "PlaylistVector.hxx"
-#include "DatabaseSong.hxx"
+#include "db/DatabaseSong.hxx"
 #include "DetachedSong.hxx"
 #include "Mapper.hxx"
 #include "fs/TextFile.hxx"

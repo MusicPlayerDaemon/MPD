@@ -22,7 +22,7 @@
 #include "CommandError.hxx"
 #include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
-#include "update/UpdateGlue.hxx"
+#include "db/update/UpdateGlue.hxx"
 #include "client/Client.hxx"
 #include "Volume.hxx"
 #include "output/OutputAll.hxx"

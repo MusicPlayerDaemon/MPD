@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlaylistSong.hxx"
 #include "Mapper.hxx"
-#include "DatabaseSong.hxx"
+#include "db/DatabaseSong.hxx"
 #include "ls.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"

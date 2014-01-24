@@ -23,13 +23,13 @@
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistGlobal.hxx"
-#include "update/UpdateGlue.hxx"
+#include "db/update/UpdateGlue.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
 #include "PlayerThread.hxx"
 #include "Mapper.hxx"
-#include "DatabaseGlue.hxx"
-#include "DatabaseSimple.hxx"
+#include "db/DatabaseGlue.hxx"
+#include "db/DatabaseSimple.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
 #include "client/Client.hxx"
@@ -68,7 +68,7 @@
 #include "Stats.hxx"
 
 #ifdef ENABLE_INOTIFY
-#include "update/InotifyUpdate.hxx"
+#include "db/update/InotifyUpdate.hxx"
 #endif
 
 #ifdef ENABLE_SQLITE

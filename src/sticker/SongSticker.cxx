@@ -20,9 +20,9 @@
 #include "config.h"
 #include "SongSticker.hxx"
 #include "StickerDatabase.hxx"
-#include "LightSong.hxx"
-#include "Song.hxx"
-#include "Directory.hxx"
+#include "db/LightSong.hxx"
+#include "db/Song.hxx"
+#include "db/Directory.hxx"
 
 #include <glib.h>
 

@@ -102,36 +102,36 @@ src_mpd_SOURCES = \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/DecoderInternal.cxx src/decoder/DecoderInternal.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
-	src/Directory.cxx src/Directory.hxx \
-	src/DirectorySave.cxx src/DirectorySave.hxx \
-	src/DatabaseSimple.hxx \
-	src/DatabaseGlue.cxx src/DatabaseGlue.hxx \
-	src/DatabaseSong.cxx src/DatabaseSong.hxx \
-	src/DatabasePrint.cxx src/DatabasePrint.hxx \
-	src/DatabaseQueue.cxx src/DatabaseQueue.hxx \
-	src/DatabasePlaylist.cxx src/DatabasePlaylist.hxx \
-	src/DatabaseError.cxx src/DatabaseError.hxx \
-	src/DatabaseLock.cxx src/DatabaseLock.hxx \
-	src/DatabaseSave.cxx src/DatabaseSave.hxx \
-	src/DatabasePlugin.hxx \
-	src/DatabaseListener.hxx \
-	src/DatabaseVisitor.hxx \
-	src/DatabaseSelection.cxx src/DatabaseSelection.hxx \
+	src/db/Directory.cxx src/db/Directory.hxx \
+	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
+	src/db/DatabaseSimple.hxx \
+	src/db/DatabaseGlue.cxx src/db/DatabaseGlue.hxx \
+	src/db/DatabaseSong.cxx src/db/DatabaseSong.hxx \
+	src/db/DatabasePrint.cxx src/db/DatabasePrint.hxx \
+	src/db/DatabaseQueue.cxx src/db/DatabaseQueue.hxx \
+	src/db/DatabasePlaylist.cxx src/db/DatabasePlaylist.hxx \
+	src/db/DatabaseError.cxx src/db/DatabaseError.hxx \
+	src/db/DatabaseLock.cxx src/db/DatabaseLock.hxx \
+	src/db/DatabaseSave.cxx src/db/DatabaseSave.hxx \
+	src/db/DatabasePlugin.hxx \
+	src/db/DatabaseListener.hxx \
+	src/db/Visitor.hxx \
+	src/db/Selection.cxx src/db/Selection.hxx \
 	src/ExcludeList.cxx src/ExcludeList.hxx \
 	src/FilterConfig.cxx src/FilterConfig.hxx \
 	src/FilterPlugin.cxx src/FilterPlugin.hxx \
 	src/FilterInternal.hxx \
 	src/FilterRegistry.cxx src/FilterRegistry.hxx \
-	src/update/UpdateDomain.cxx src/update/UpdateDomain.hxx \
-	src/update/UpdateGlue.cxx src/update/UpdateGlue.hxx \
-	src/update/UpdateQueue.cxx src/update/UpdateQueue.hxx \
-	src/update/UpdateIO.cxx src/update/UpdateIO.hxx \
-	src/update/UpdateDatabase.cxx src/update/UpdateDatabase.hxx \
-	src/update/UpdateWalk.cxx src/update/UpdateWalk.hxx \
-	src/update/UpdateSong.cxx src/update/UpdateSong.hxx \
-	src/update/UpdateContainer.cxx src/update/UpdateContainer.hxx \
-	src/update/UpdateInternal.hxx \
-	src/update/UpdateRemove.cxx src/update/UpdateRemove.hxx \
+	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
+	src/db/update/UpdateGlue.cxx src/db/update/UpdateGlue.hxx \
+	src/db/update/UpdateQueue.cxx src/db/update/UpdateQueue.hxx \
+	src/db/update/UpdateIO.cxx src/db/update/UpdateIO.hxx \
+	src/db/update/UpdateDatabase.cxx src/db/update/UpdateDatabase.hxx \
+	src/db/update/UpdateWalk.cxx src/db/update/UpdateWalk.hxx \
+	src/db/update/UpdateSong.cxx src/db/update/UpdateSong.hxx \
+	src/db/update/UpdateContainer.cxx src/db/update/UpdateContainer.hxx \
+	src/db/update/UpdateInternal.hxx \
+	src/db/update/UpdateRemove.cxx src/db/update/UpdateRemove.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
 	src/client/ClientEvent.cxx \
@@ -196,13 +196,13 @@ src_mpd_SOURCES = \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
-	src/LightSong.cxx src/LightSong.hxx \
-	src/LightDirectory.hxx \
-	src/Song.cxx src/Song.hxx \
+	src/db/LightSong.cxx src/db/LightSong.hxx \
+	src/db/LightDirectory.hxx \
+	src/db/Song.cxx src/db/Song.hxx \
 	src/SongUpdate.cxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
-	src/SongSort.cxx src/SongSort.hxx \
+	src/db/SongSort.cxx src/db/SongSort.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx src/Stats.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
@@ -235,10 +235,10 @@ endif
 
 if ENABLE_INOTIFY
 src_mpd_SOURCES += \
-	src/update/InotifyDomain.cxx src/update/InotifyDomain.hxx \
-	src/update/InotifySource.cxx src/update/InotifySource.hxx \
-	src/update/InotifyQueue.cxx src/update/InotifyQueue.hxx \
-	src/update/InotifyUpdate.cxx src/update/InotifyUpdate.hxx
+	src/db/update/InotifyDomain.cxx src/db/update/InotifyDomain.hxx \
+	src/db/update/InotifySource.cxx src/db/update/InotifySource.hxx \
+	src/db/update/InotifyQueue.cxx src/db/update/InotifyQueue.hxx \
+	src/db/update/InotifyUpdate.cxx src/db/update/InotifyUpdate.hxx
 endif
 
 if ENABLE_SQLITE
@@ -400,14 +400,14 @@ libfs_a_SOURCES = \
 # database plugins
 
 libdb_plugins_a_SOURCES = \
-	src/DatabaseRegistry.cxx src/DatabaseRegistry.hxx \
-	src/DatabaseHelpers.cxx src/DatabaseHelpers.hxx \
-	src/db/LazyDatabase.cxx src/db/LazyDatabase.hxx \
-	src/db/SimpleDatabasePlugin.cxx src/db/SimpleDatabasePlugin.hxx
+	src/db/Registry.cxx src/db/Registry.hxx \
+	src/db/Helpers.cxx src/db/Helpers.hxx \
+	src/db/plugins/LazyDatabase.cxx src/db/plugins/LazyDatabase.hxx \
+	src/db/plugins/SimpleDatabasePlugin.cxx src/db/plugins/SimpleDatabasePlugin.hxx
 
 if HAVE_LIBMPDCLIENT
 libdb_plugins_a_SOURCES += \
-	src/db/ProxyDatabasePlugin.cxx src/db/ProxyDatabasePlugin.hxx
+	src/db/plugins/ProxyDatabasePlugin.cxx src/db/plugins/ProxyDatabasePlugin.hxx
 endif
 
 DB_LIBS = \
@@ -416,19 +416,19 @@ DB_LIBS = \
 
 if HAVE_LIBUPNP
 libdb_plugins_a_SOURCES += \
-	src/db/UpnpDatabasePlugin.cxx src/db/UpnpDatabasePlugin.hxx \
-	src/db/upnp/Tags.cxx src/db/upnp/Tags.hxx \
-	src/db/upnp/ContentDirectoryService.cxx src/db/upnp/ContentDirectoryService.hxx \
-	src/db/upnp/Device.cxx src/db/upnp/Device.hxx \
-	src/db/upnp/Directory.cxx src/db/upnp/Directory.hxx \
-	src/db/upnp/Discovery.cxx src/db/upnp/Discovery.hxx \
-	src/db/upnp/Domain.cxx src/db/upnp/Domain.hxx \
-	src/db/upnp/ixmlwrap.cxx src/db/upnp/ixmlwrap.hxx \
-	src/db/upnp/upnpplib.cxx src/db/upnp/upnpplib.hxx \
-	src/db/upnp/Util.cxx src/db/upnp/Util.hxx \
-	src/db/upnp/Action.hxx \
-	src/db/upnp/WorkQueue.hxx \
-	src/db/upnp/Object.cxx src/db/upnp/Object.hxx
+	src/db/plugins/UpnpDatabasePlugin.cxx src/db/plugins/UpnpDatabasePlugin.hxx \
+	src/db/plugins/upnp/Tags.cxx src/db/plugins/upnp/Tags.hxx \
+	src/db/plugins/upnp/ContentDirectoryService.cxx src/db/plugins/upnp/ContentDirectoryService.hxx \
+	src/db/plugins/upnp/Device.cxx src/db/plugins/upnp/Device.hxx \
+	src/db/plugins/upnp/Directory.cxx src/db/plugins/upnp/Directory.hxx \
+	src/db/plugins/upnp/Discovery.cxx src/db/plugins/upnp/Discovery.hxx \
+	src/db/plugins/upnp/Domain.cxx src/db/plugins/upnp/Domain.hxx \
+	src/db/plugins/upnp/ixmlwrap.cxx src/db/plugins/upnp/ixmlwrap.hxx \
+	src/db/plugins/upnp/upnpplib.cxx src/db/plugins/upnp/upnpplib.hxx \
+	src/db/plugins/upnp/Util.cxx src/db/plugins/upnp/Util.hxx \
+	src/db/plugins/upnp/Action.hxx \
+	src/db/plugins/upnp/WorkQueue.hxx \
+	src/db/plugins/upnp/Object.cxx src/db/plugins/upnp/Object.hxx
 DB_LIBS += \
 	$(EXPAT_LIBS) \
 	$(UPNP_LIBS)
@@ -441,7 +441,7 @@ if ENABLE_ARCHIVE
 noinst_LIBRARIES += libarchive.a
 
 src_mpd_SOURCES +=  \
-	src/update/UpdateArchive.cxx src/update/UpdateArchive.hxx
+	src/db/update/UpdateArchive.cxx src/db/update/UpdateArchive.hxx
 
 libarchive_a_SOURCES = \
 	src/archive/ArchiveDomain.cxx src/archive/ArchiveDomain.hxx \
@@ -1244,13 +1244,13 @@ test_DumpDatabase_LDADD = \
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/protocol/Ack.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/DatabaseError.cxx \
-	src/DatabaseRegistry.cxx \
-	src/DatabaseSelection.cxx \
-	src/Directory.cxx src/DirectorySave.cxx \
+	src/db/DatabaseError.cxx \
+	src/db/Registry.cxx \
+	src/db/Selection.cxx \
+	src/db/Directory.cxx src/db/DirectorySave.cxx \
 	src/PlaylistVector.cxx src/PlaylistDatabase.cxx \
-	src/DatabaseLock.cxx src/DatabaseSave.cxx \
-	src/Song.cxx src/SongSave.cxx src/SongSort.cxx \
+	src/db/DatabaseLock.cxx src/db/DatabaseSave.cxx \
+	src/db/Song.cxx src/SongSave.cxx src/db/SongSort.cxx \
 	src/DetachedSong.cxx \
 	src/TagSave.cxx \
 	src/SongFilter.cxx
@@ -1581,8 +1581,8 @@ noinst_PROGRAMS += test/run_inotify
 test_run_inotify_SOURCES = test/run_inotify.cxx \
 	test/ShutdownHandler.cxx test/ShutdownHandler.hxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/update/InotifyDomain.cxx \
-	src/update/InotifySource.cxx
+	src/db/update/InotifyDomain.cxx \
+	src/db/update/InotifySource.cxx
 test_run_inotify_LDADD = \
 	libevent.a \
 	libsystem.a \

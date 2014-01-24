@@ -32,7 +32,7 @@
 #include "DetachedSong.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"
-#include "DatabaseSong.hxx"
+#include "db/DatabaseSong.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>

@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "Playlist.hxx"
-#include "DatabaseGlue.hxx"
-#include "DatabasePlugin.hxx"
-#include "LightSong.hxx"
+#include "db/DatabaseGlue.hxx"
+#include "db/DatabasePlugin.hxx"
+#include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"

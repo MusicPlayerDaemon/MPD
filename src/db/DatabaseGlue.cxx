@@ -20,14 +20,14 @@
 #include "config.h"
 #include "DatabaseGlue.hxx"
 #include "DatabaseSimple.hxx"
-#include "DatabaseRegistry.hxx"
+#include "Registry.hxx"
 #include "DatabaseError.hxx"
 #include "Directory.hxx"
 #include "util/Error.hxx"
 #include "config/ConfigData.hxx"
 #include "Stats.hxx"
 #include "DatabasePlugin.hxx"
-#include "db/SimpleDatabasePlugin.hxx"
+#include "plugins/SimpleDatabasePlugin.hxx"
 
 #include <assert.h>
 #include <string.h>

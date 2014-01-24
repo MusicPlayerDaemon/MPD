@@ -22,7 +22,7 @@
 #include "LightDirectory.hxx"
 #include "SongFilter.hxx"
 #include "PlaylistVector.hxx"
-#include "DatabaseLock.hxx"
+#include "db/DatabaseLock.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "LightSong.hxx"

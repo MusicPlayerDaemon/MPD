@@ -18,12 +18,12 @@
  */
 
 #include "config.h"
-#include "DatabaseRegistry.hxx"
-#include "DatabasePlugin.hxx"
-#include "DatabaseSelection.hxx"
-#include "DatabaseListener.hxx"
-#include "LightDirectory.hxx"
-#include "LightSong.hxx"
+#include "db/Registry.hxx"
+#include "db/DatabasePlugin.hxx"
+#include "db/Selection.hxx"
+#include "db/DatabaseListener.hxx"
+#include "db/LightDirectory.hxx"
+#include "db/LightSong.hxx"
 #include "PlaylistVector.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"

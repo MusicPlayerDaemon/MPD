@@ -23,10 +23,10 @@
 
 #include "config.h"
 #include "Mapper.hxx"
-#include "Directory.hxx"
-#include "Song.hxx"
 #include "DetachedSong.hxx"
-#include "LightSong.hxx"
+#include "db/Directory.hxx"
+#include "db/Song.hxx"
+#include "db/LightSong.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Charset.hxx"

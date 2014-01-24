@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "DatabasePrint.hxx"
-#include "DatabaseSelection.hxx"
+#include "Selection.hxx"
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
 #include "TimePrint.hxx"

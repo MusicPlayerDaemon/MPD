@@ -21,9 +21,9 @@
 #include "UpdateDatabase.hxx"
 #include "UpdateRemove.hxx"
 #include "PlaylistVector.hxx"
-#include "Directory.hxx"
-#include "Song.hxx"
-#include "DatabaseLock.hxx"
+#include "db/Directory.hxx"
+#include "db/Song.hxx"
+#include "db/DatabaseLock.hxx"
 
 #include <assert.h>
 #include <stddef.h>

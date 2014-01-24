@@ -21,7 +21,7 @@
 #define MPD_INSTANCE_HXX
 
 #include "check.h"
-#include "DatabaseListener.hxx"
+#include "db/DatabaseListener.hxx"
 #include "Compiler.h"
 
 class ClientList;

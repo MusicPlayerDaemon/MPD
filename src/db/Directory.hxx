@@ -23,7 +23,7 @@
 #include "check.h"
 #include "util/list.h"
 #include "Compiler.h"
-#include "DatabaseVisitor.hxx"
+#include "db/Visitor.hxx"
 #include "PlaylistVector.hxx"
 
 #include <string>

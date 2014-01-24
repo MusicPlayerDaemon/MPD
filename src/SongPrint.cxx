@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SongPrint.hxx"
-#include "LightSong.hxx"
+#include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"

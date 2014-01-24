@@ -17,25 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_MEMORY_DATABASE_PLUGIN_HXX
-#define MPD_MEMORY_DATABASE_PLUGIN_HXX
+#include "config.h"
+#include "Registry.hxx"
+#include "plugins/SimpleDatabasePlugin.hxx"
+#include "plugins/ProxyDatabasePlugin.hxx"
+#include "plugins/UpnpDatabasePlugin.hxx"
 
-#include "DatabaseVisitor.hxx"
-#include "tag/TagType.h"
+#include <string.h>
 
-class Error;
-class Database;
-struct DatabaseSelection;
-struct DatabaseStats;
-
-bool
-VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		TagType tag_type,
-		VisitString visit_string,
-		Error &error);
-
-bool
-GetStats(const Database &db, const DatabaseSelection &selection,
-	 DatabaseStats &stats, Error &error);
-
+const DatabasePlugin *const database_plugins[] = {
+	&simple_db_plugin,
+#ifdef HAVE_LIBMPDCLIENT
+	&proxy_db_plugin,
 #endif
+#ifdef HAVE_LIBUPNP
+	&upnp_db_plugin,
+#endif
+	nullptr
+};
+
+const DatabasePlugin *
+GetDatabasePluginByName(const char *name)
+{
+	for (auto i = database_plugins; *i != nullptr; ++i)
+		if (strcmp((*i)->name, name) == 0)
+			return *i;
+
+	return nullptr;
+}

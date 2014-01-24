@@ -17,31 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "DatabaseRegistry.hxx"
-#include "db/SimpleDatabasePlugin.hxx"
-#include "db/ProxyDatabasePlugin.hxx"
-#include "db/UpnpDatabasePlugin.hxx"
+#include "Selection.hxx"
+#include "SongFilter.hxx"
 
-#include <string.h>
-
-const DatabasePlugin *const database_plugins[] = {
-	&simple_db_plugin,
-#ifdef HAVE_LIBMPDCLIENT
-	&proxy_db_plugin,
-#endif
-#ifdef HAVE_LIBUPNP
-	&upnp_db_plugin,
-#endif
-	nullptr
-};
-
-const DatabasePlugin *
-GetDatabasePluginByName(const char *name)
+DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
+				     const SongFilter *_filter)
+	:uri(_uri), recursive(_recursive), filter(_filter)
 {
-	for (auto i = database_plugins; *i != nullptr; ++i)
-		if (strcmp((*i)->name, name) == 0)
-			return *i;
+	/* optimization: if the caller didn't specify a base URI, pick
+	   the one from SongFilter */
+	if (uri.empty() && filter != nullptr)
+		uri = filter->GetBase();
+}
 
-	return nullptr;
+bool
+DatabaseSelection::Match(const LightSong &song) const
+{
+	return filter == nullptr || filter->Match(song);
 }

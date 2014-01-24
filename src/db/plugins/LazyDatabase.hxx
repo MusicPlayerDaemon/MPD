@@ -20,7 +20,7 @@
 #ifndef MPD_LAZY_DATABASE_PLUGIN_HXX
 #define MPD_LAZY_DATABASE_PLUGIN_HXX
 
-#include "DatabasePlugin.hxx"
+#include "db/DatabasePlugin.hxx"
 
 /**
  * A wrapper for a #Database object that gets opened on the first

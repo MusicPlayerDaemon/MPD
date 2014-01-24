@@ -26,7 +26,7 @@
 #ifndef MPD_DATABASE_PLUGIN_HXX
 #define MPD_DATABASE_PLUGIN_HXX
 
-#include "DatabaseVisitor.hxx"
+#include "Visitor.hxx"
 #include "tag/TagType.h"
 #include "Compiler.h"
 

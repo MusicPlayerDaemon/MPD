@@ -11,7 +11,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
 #include "Log.hxx"
-#include "DatabaseSong.hxx"
+#include "db/DatabaseSong.hxx"
 #include "Mapper.hxx"
 
 #include <cppunit/TestFixture.h>

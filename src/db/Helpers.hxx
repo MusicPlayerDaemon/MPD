@@ -17,21 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "DatabaseSelection.hxx"
-#include "SongFilter.hxx"
+#ifndef MPD_MEMORY_DATABASE_PLUGIN_HXX
+#define MPD_MEMORY_DATABASE_PLUGIN_HXX
 
-DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
-				     const SongFilter *_filter)
-	:uri(_uri), recursive(_recursive), filter(_filter)
-{
-	/* optimization: if the caller didn't specify a base URI, pick
-	   the one from SongFilter */
-	if (uri.empty() && filter != nullptr)
-		uri = filter->GetBase();
-}
+#include "Visitor.hxx"
+#include "tag/TagType.h"
+
+class Error;
+class Database;
+struct DatabaseSelection;
+struct DatabaseStats;
 
 bool
-DatabaseSelection::Match(const LightSong &song) const
-{
-	return filter == nullptr || filter->Match(song);
-}
+VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
+		TagType tag_type,
+		VisitString visit_string,
+		Error &error);
+
+bool
+GetStats(const Database &db, const DatabaseSelection &selection,
+	 DatabaseStats &stats, Error &error);
+
+#endif

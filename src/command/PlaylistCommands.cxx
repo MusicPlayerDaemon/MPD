@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlaylistCommands.hxx"
-#include "DatabasePlaylist.hxx"
+#include "db/DatabasePlaylist.hxx"
 #include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
 #include "PlaylistSave.hxx"

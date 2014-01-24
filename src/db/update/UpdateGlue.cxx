@@ -24,7 +24,7 @@
 #include "UpdateRemove.hxx"
 #include "UpdateDomain.hxx"
 #include "Mapper.hxx"
-#include "DatabaseSimple.hxx"
+#include "db/DatabaseSimple.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 #include "util/Error.hxx"

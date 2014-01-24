@@ -18,10 +18,10 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "Song.hxx"
 #include "DetachedSong.hxx"
+#include "db/Song.hxx"
+#include "db/Directory.hxx"
 #include "util/UriUtil.hxx"
-#include "Directory.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"

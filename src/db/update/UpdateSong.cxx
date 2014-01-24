@@ -24,9 +24,9 @@
 #include "UpdateDatabase.hxx"
 #include "UpdateContainer.hxx"
 #include "UpdateDomain.hxx"
-#include "DatabaseLock.hxx"
-#include "Directory.hxx"
-#include "Song.hxx"
+#include "db/DatabaseLock.hxx"
+#include "db/Directory.hxx"
+#include "db/Song.hxx"
 #include "decoder/DecoderList.hxx"
 #include "Log.hxx"
 

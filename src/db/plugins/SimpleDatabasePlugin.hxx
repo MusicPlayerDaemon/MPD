@@ -20,9 +20,9 @@
 #ifndef MPD_SIMPLE_DATABASE_PLUGIN_HXX
 #define MPD_SIMPLE_DATABASE_PLUGIN_HXX
 
-#include "DatabasePlugin.hxx"
+#include "db/DatabasePlugin.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "LightSong.hxx"
+#include "db/LightSong.hxx"
 #include "Compiler.h"
 
 #include <cassert>

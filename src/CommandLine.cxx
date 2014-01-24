@@ -23,8 +23,8 @@
 #include "LogInit.hxx"
 #include "Log.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "DatabaseRegistry.hxx"
-#include "DatabasePlugin.hxx"
+#include "db/Registry.hxx"
+#include "db/DatabasePlugin.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "output/OutputList.hxx"
@@ -99,7 +99,7 @@ static void version(void)
 	     "This is free software; see the source for copying conditions.  There is NO\n"
 	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 	     "\n"
-	     "Database plugins:");
+	     "db/Database plugins:");
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);

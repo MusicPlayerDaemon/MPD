@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "SongFilter.hxx"
-#include "Song.hxx"
-#include "LightSong.hxx"
+#include "db/Song.hxx"
+#include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "util/ASCII.hxx"

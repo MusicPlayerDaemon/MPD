@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "CommandError.hxx"
-#include "DatabaseError.hxx"
+#include "db/DatabaseError.hxx"
 #include "protocol/Result.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"

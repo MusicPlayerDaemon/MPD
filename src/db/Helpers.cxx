@@ -17,7 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "DatabaseHelpers.hxx"
+#include "Helpers.hxx"
 #include "DatabasePlugin.hxx"
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
