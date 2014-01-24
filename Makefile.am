@@ -118,10 +118,10 @@ src_mpd_SOURCES = \
 	src/db/Visitor.hxx \
 	src/db/Selection.cxx src/db/Selection.hxx \
 	src/ExcludeList.cxx src/ExcludeList.hxx \
-	src/FilterConfig.cxx src/FilterConfig.hxx \
-	src/FilterPlugin.cxx src/FilterPlugin.hxx \
-	src/FilterInternal.hxx \
-	src/FilterRegistry.cxx src/FilterRegistry.hxx \
+	src/filter/FilterConfig.cxx src/filter/FilterConfig.hxx \
+	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \
+	src/filter/FilterInternal.hxx \
+	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
 	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
 	src/db/update/UpdateGlue.cxx src/db/update/UpdateGlue.hxx \
 	src/db/update/UpdateQueue.cxx src/db/update/UpdateQueue.hxx \
@@ -1112,19 +1112,19 @@ endif
 #
 
 libfilter_plugins_a_SOURCES = \
-	src/filter/NullFilterPlugin.cxx \
-	src/filter/ChainFilterPlugin.cxx \
-	src/filter/ChainFilterPlugin.hxx \
-	src/filter/AutoConvertFilterPlugin.cxx \
-	src/filter/AutoConvertFilterPlugin.hxx \
-	src/filter/ConvertFilterPlugin.cxx \
-	src/filter/ConvertFilterPlugin.hxx \
-	src/filter/RouteFilterPlugin.cxx \
-	src/filter/NormalizeFilterPlugin.cxx \
-	src/filter/ReplayGainFilterPlugin.cxx \
-	src/filter/ReplayGainFilterPlugin.hxx \
-	src/filter/VolumeFilterPlugin.cxx \
-	src/filter/VolumeFilterPlugin.hxx
+	src/filter/plugins/NullFilterPlugin.cxx \
+	src/filter/plugins/ChainFilterPlugin.cxx \
+	src/filter/plugins/ChainFilterPlugin.hxx \
+	src/filter/plugins/AutoConvertFilterPlugin.cxx \
+	src/filter/plugins/AutoConvertFilterPlugin.hxx \
+	src/filter/plugins/ConvertFilterPlugin.cxx \
+	src/filter/plugins/ConvertFilterPlugin.hxx \
+	src/filter/plugins/RouteFilterPlugin.cxx \
+	src/filter/plugins/NormalizeFilterPlugin.cxx \
+	src/filter/plugins/ReplayGainFilterPlugin.cxx \
+	src/filter/plugins/ReplayGainFilterPlugin.hxx \
+	src/filter/plugins/VolumeFilterPlugin.cxx \
+	src/filter/plugins/VolumeFilterPlugin.hxx
 
 FILTER_LIBS = \
 	libfilter_plugins.a \
@@ -1414,7 +1414,7 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
-	src/FilterPlugin.cxx src/FilterRegistry.cxx \
+	src/filter/FilterPlugin.cxx src/filter/FilterRegistry.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
@@ -1542,8 +1542,8 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/output/OutputPlugin.cxx \
 	src/MixerControl.cxx \
 	src/MixerType.cxx \
-	src/FilterPlugin.cxx \
-	src/FilterConfig.cxx \
+	src/filter/FilterPlugin.cxx \
+	src/filter/FilterConfig.cxx \
 	src/AudioCompress/compress.c \
 	src/ReplayGainInfo.cxx
 
@@ -1560,9 +1560,9 @@ test_read_mixer_LDADD = \
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/MixerControl.cxx \
-	src/FilterPlugin.cxx \
+	src/filter/FilterPlugin.cxx \
 	src/AudioFormat.cxx \
-	src/filter/VolumeFilterPlugin.cxx
+	src/filter/plugins/VolumeFilterPlugin.cxx
 
 if ENABLE_BZIP2_TEST
 TESTS += test/test_archive_bzip2.sh

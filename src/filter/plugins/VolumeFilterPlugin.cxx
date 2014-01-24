@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "VolumeFilterPlugin.hxx"
-#include "FilterPlugin.hxx"
-#include "FilterInternal.hxx"
-#include "FilterRegistry.hxx"
+#include "filter/FilterPlugin.hxx"
+#include "filter/FilterInternal.hxx"
+#include "filter/FilterRegistry.hxx"
 #include "pcm/Volume.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"

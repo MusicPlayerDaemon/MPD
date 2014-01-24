@@ -21,7 +21,7 @@
 #include "OutputInternal.hxx"
 #include "OutputPlugin.hxx"
 #include "MixerControl.hxx"
-#include "FilterInternal.hxx"
+#include "filter/FilterInternal.hxx"
 
 #include <assert.h>
 

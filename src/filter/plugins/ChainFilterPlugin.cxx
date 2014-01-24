@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "ChainFilterPlugin.hxx"
-#include "FilterPlugin.hxx"
-#include "FilterInternal.hxx"
-#include "FilterRegistry.hxx"
+#include "filter/FilterPlugin.hxx"
+#include "filter/FilterInternal.hxx"
+#include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

@@ -26,7 +26,7 @@
 #include "OutputError.hxx"
 #include "MixerControl.hxx"
 #include "notify.hxx"
-#include "filter/ReplayGainFilterPlugin.hxx"
+#include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 

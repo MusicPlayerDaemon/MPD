@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "ConvertFilterPlugin.hxx"
-#include "FilterPlugin.hxx"
-#include "FilterInternal.hxx"
-#include "FilterRegistry.hxx"
+#include "filter/FilterPlugin.hxx"
+#include "filter/FilterInternal.hxx"
+#include "filter/FilterRegistry.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "util/Manual.hxx"
 #include "AudioFormat.hxx"

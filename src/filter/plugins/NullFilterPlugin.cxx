@@ -25,9 +25,9 @@
  */
 
 #include "config.h"
-#include "FilterPlugin.hxx"
-#include "FilterInternal.hxx"
-#include "FilterRegistry.hxx"
+#include "filter/FilterPlugin.hxx"
+#include "filter/FilterInternal.hxx"
+#include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "Compiler.h"
 

@@ -32,7 +32,7 @@
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "pcm/PcmConvert.hxx"
-#include "FilterRegistry.hxx"
+#include "filter/FilterRegistry.hxx"
 #include "PlayerControl.hxx"
 #include "stdbin.h"
 #include "util/Error.hxx"

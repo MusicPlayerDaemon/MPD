@@ -23,8 +23,8 @@
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
-#include "FilterPlugin.hxx"
-#include "FilterInternal.hxx"
+#include "filter/FilterPlugin.hxx"
+#include "filter/FilterInternal.hxx"
 #include "pcm/Volume.hxx"
 #include "MixerControl.hxx"
 #include "stdbin.h"
@@ -153,7 +153,7 @@ int main(int argc, char **argv)
 		dest = filter->FilterPCM(buffer, (size_t)nbytes,
 					 &length, error);
 		if (dest == NULL) {
-			LogError(error, "Filter failed");
+			LogError(error, "filter/Filter failed");
 			filter->Close();
 			delete filter;
 			return EXIT_FAILURE;

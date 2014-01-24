@@ -20,7 +20,7 @@
 #include "config.h"
 #include "MixerControl.hxx"
 #include "MixerList.hxx"
-#include "FilterRegistry.hxx"
+#include "filter/FilterRegistry.hxx"
 #include "pcm/Volume.hxx"
 #include "GlobalEvents.hxx"
 #include "Main.hxx"
