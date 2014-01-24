@@ -22,7 +22,7 @@
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
 #include "config/ConfigData.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"

@@ -25,7 +25,7 @@
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "tag/TagHandler.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

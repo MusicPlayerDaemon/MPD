@@ -55,7 +55,6 @@ src_mpd_LDADD = \
 mpd_headers = \
 	src/check.h \
 	src/gerror.h \
-	src/TextInputStream.hxx \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
 	src/open.h \
@@ -210,7 +209,6 @@ src_mpd_SOURCES = \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/TagFile.cxx src/TagFile.hxx \
 	src/TagStream.cxx src/TagStream.hxx \
-	src/TextInputStream.cxx \
 	src/Volume.cxx src/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
@@ -452,7 +450,7 @@ libarchive_a_SOURCES = \
 	src/archive/ArchivePlugin.cxx src/archive/ArchivePlugin.hxx \
 	src/archive/ArchiveVisitor.hxx \
 	src/archive/ArchiveFile.hxx \
-	src/input/ArchiveInputPlugin.cxx src/input/ArchiveInputPlugin.hxx
+	src/input/plugins/ArchiveInputPlugin.cxx src/input/plugins/ArchiveInputPlugin.hxx
 libarchive_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(BZ2_CFLAGS) \
 	$(ISO9660_CFLAGS) \
@@ -826,12 +824,13 @@ endif
 #
 
 libinput_a_SOURCES = \
-	src/InputInit.cxx src/InputInit.hxx \
-	src/InputRegistry.cxx src/InputRegistry.hxx \
-	src/InputStream.cxx src/InputStream.hxx \
-	src/InputPlugin.hxx \
-	src/input/RewindInputPlugin.cxx src/input/RewindInputPlugin.hxx \
-	src/input/FileInputPlugin.cxx src/input/FileInputPlugin.hxx
+	src/input/Init.cxx src/input/Init.hxx \
+	src/input/Registry.cxx src/input/Registry.hxx \
+	src/input/InputStream.cxx src/input/InputStream.hxx \
+	src/input/InputPlugin.hxx \
+	src/input/TextInputStream.cxx src/input/TextInputStream.hxx \
+	src/input/plugins/RewindInputPlugin.cxx src/input/plugins/RewindInputPlugin.hxx \
+	src/input/plugins/FileInputPlugin.cxx src/input/plugins/FileInputPlugin.hxx
 
 libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(CURL_CFLAGS) \
@@ -852,43 +851,43 @@ INPUT_LIBS = \
 
 if HAVE_ALSA
 libinput_a_SOURCES += \
-	src/input/AlsaInputPlugin.cxx \
-	src/input/AlsaInputPlugin.hxx
+	src/input/plugins/AlsaInputPlugin.cxx \
+	src/input/plugins/AlsaInputPlugin.hxx
 INPUT_LIBS += $(ALSA_LIBS)
 endif
 
 
 if ENABLE_CURL
 libinput_a_SOURCES += \
-	src/input/CurlInputPlugin.cxx src/input/CurlInputPlugin.hxx \
+	src/input/plugins/CurlInputPlugin.cxx src/input/plugins/CurlInputPlugin.hxx \
 	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
 endif
 
 if ENABLE_SMBCLIENT
 libinput_a_SOURCES += \
-	src/input/SmbclientInputPlugin.cxx src/input/SmbclientInputPlugin.hxx
+	src/input/plugins/SmbclientInputPlugin.cxx src/input/plugins/SmbclientInputPlugin.hxx
 endif
 
 if ENABLE_CDIO_PARANOIA
 libinput_a_SOURCES += \
-	src/input/CdioParanoiaInputPlugin.cxx \
-	src/input/CdioParanoiaInputPlugin.hxx
+	src/input/plugins/CdioParanoiaInputPlugin.cxx \
+	src/input/plugins/CdioParanoiaInputPlugin.hxx
 endif
 
 if HAVE_FFMPEG
 libinput_a_SOURCES += \
-	src/input/FfmpegInputPlugin.cxx src/input/FfmpegInputPlugin.hxx
+	src/input/plugins/FfmpegInputPlugin.cxx src/input/plugins/FfmpegInputPlugin.hxx
 endif
 
 if ENABLE_MMS
 libinput_a_SOURCES += \
-	src/input/MmsInputPlugin.cxx src/input/MmsInputPlugin.hxx
+	src/input/plugins/MmsInputPlugin.cxx src/input/plugins/MmsInputPlugin.hxx
 endif
 
 if ENABLE_DESPOTIFY
 libinput_a_SOURCES += \
-	src/input/DespotifyInputPlugin.cxx \
-	src/input/DespotifyInputPlugin.hxx
+	src/input/plugins/DespotifyInputPlugin.cxx \
+	src/input/plugins/DespotifyInputPlugin.hxx
 endif
 
 
@@ -1293,7 +1292,7 @@ test_visit_archive_LDADD = \
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
-	src/InputStream.cxx
+	src/input/InputStream.cxx
 
 if ENABLE_DESPOTIFY
 test_visit_archive_SOURCES += src/DespotifyUtils.cxx
@@ -1315,8 +1314,7 @@ test_dump_text_file_LDADD = \
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
-	src/IOThread.cxx \
-	src/TextInputStream.cxx
+	src/IOThread.cxx
 
 test_dump_playlist_LDADD = \
 	$(PLAYLIST_LIBS) \
@@ -1341,7 +1339,6 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/TagSave.cxx \
 	src/TagFile.cxx \
 	src/CheckAudioFormat.cxx \
-	src/TextInputStream.cxx \
 	src/DetachedSong.cxx \
 	src/cue/CueParser.cxx src/cue/CueParser.hxx
 

@@ -21,7 +21,7 @@
 #include "PlsPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"

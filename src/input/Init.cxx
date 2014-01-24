@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "InputInit.hxx"
-#include "InputRegistry.hxx"
+#include "Init.hxx"
+#include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

@@ -23,7 +23,7 @@
 #include "PlaylistSong.hxx"
 #include "SongEnumerator.hxx"
 #include "SongPrint.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Cond.hxx"

@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "RewindInputPlugin.hxx"
-#include "InputStream.hxx"
-#include "InputPlugin.hxx"
+#include "../InputStream.hxx"
+#include "../InputPlugin.hxx"
 
 #include <assert.h>
 #include <string.h>

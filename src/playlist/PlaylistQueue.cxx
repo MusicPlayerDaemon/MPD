@@ -22,7 +22,7 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "SongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "thread/Cond.hxx"

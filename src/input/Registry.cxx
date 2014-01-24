@@ -18,40 +18,40 @@
  */
 
 #include "config.h"
-#include "InputRegistry.hxx"
+#include "Registry.hxx"
 #include "util/Macros.hxx"
-#include "input/FileInputPlugin.hxx"
+#include "plugins/FileInputPlugin.hxx"
 
 #ifdef HAVE_ALSA
-#include "input/AlsaInputPlugin.hxx"
+#include "plugins/AlsaInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_ARCHIVE
-#include "input/ArchiveInputPlugin.hxx"
+#include "plugins/ArchiveInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_CURL
-#include "input/CurlInputPlugin.hxx"
+#include "plugins/CurlInputPlugin.hxx"
 #endif
 
 #ifdef HAVE_FFMPEG
-#include "input/FfmpegInputPlugin.hxx"
+#include "plugins/FfmpegInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_SMBCLIENT
-#include "input/SmbclientInputPlugin.hxx"
+#include "plugins/SmbclientInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_MMS
-#include "input/MmsInputPlugin.hxx"
+#include "plugins/MmsInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_CDIO_PARANOIA
-#include "input/CdioParanoiaInputPlugin.hxx"
+#include "plugins/CdioParanoiaInputPlugin.hxx"
 #endif
 
 #ifdef ENABLE_DESPOTIFY
-#include "input/DespotifyInputPlugin.hxx"
+#include "plugins/DespotifyInputPlugin.hxx"
 #endif
 
 const InputPlugin *const input_plugins[] = {

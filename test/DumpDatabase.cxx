@@ -42,7 +42,7 @@ using std::endl;
 #include <stdlib.h>
 
 #ifdef HAVE_LIBUPNP
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 size_t
 InputStream::LockRead(void *, size_t, Error &)
 {

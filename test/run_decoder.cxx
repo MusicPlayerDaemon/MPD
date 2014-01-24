@@ -21,8 +21,8 @@
 #include "IOThread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderAPI.hxx"
-#include "InputInit.hxx"
-#include "InputStream.hxx"
+#include "input/Init.hxx"
+#include "input/InputStream.hxx"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
 			if (error.IsDefined())
 				LogError(error);
 			else
-				fprintf(stderr, "InputStream::Open() failed\n");
+				fprintf(stderr, "input/InputStream::Open() failed\n");
 
 			return EXIT_FAILURE;
 		}

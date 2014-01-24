@@ -20,7 +20,7 @@
 #ifndef MPD_ALSA_INPUT_PLUGIN_HXX
 #define MPD_ALSA_INPUT_PLUGIN_HXX
 
-#include "InputPlugin.hxx"
+#include "../InputPlugin.hxx"
 
 extern const struct InputPlugin input_plugin_alsa;
 

@@ -26,7 +26,7 @@
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "client/Client.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "fs/Traits.hxx"
 #include "util/Error.hxx"

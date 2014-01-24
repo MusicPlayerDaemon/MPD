@@ -23,7 +23,7 @@
 #include "util/Error.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 

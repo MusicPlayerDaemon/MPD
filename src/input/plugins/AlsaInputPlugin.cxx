@@ -26,8 +26,8 @@
 
 #include "config.h"
 #include "AlsaInputPlugin.hxx"
-#include "InputPlugin.hxx"
-#include "InputStream.hxx"
+#include "../InputPlugin.hxx"
+#include "../InputStream.hxx"
 #include "util/Domain.hxx"
 #include "util/Error.hxx"
 #include "util/StringUtil.hxx"

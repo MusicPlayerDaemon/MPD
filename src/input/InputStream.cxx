@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "InputStream.hxx"
-#include "InputRegistry.hxx"
+#include "Registry.hxx"
 #include "InputPlugin.hxx"
-#include "input/RewindInputPlugin.hxx"
+#include "plugins/RewindInputPlugin.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

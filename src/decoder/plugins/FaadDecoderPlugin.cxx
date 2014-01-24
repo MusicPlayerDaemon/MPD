@@ -21,7 +21,7 @@
 #include "FaadDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "../DecoderBuffer.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/ConstBuffer.hxx"

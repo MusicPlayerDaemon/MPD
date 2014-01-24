@@ -28,7 +28,7 @@
 #include "OggCodec.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 

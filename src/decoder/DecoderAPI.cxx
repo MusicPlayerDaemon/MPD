@@ -29,7 +29,7 @@
 #include "DecoderControl.hxx"
 #include "DecoderInternal.hxx"
 #include "DetachedSong.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 

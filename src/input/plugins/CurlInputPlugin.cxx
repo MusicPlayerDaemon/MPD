@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "CurlInputPlugin.hxx"
-#include "InputStream.hxx"
-#include "InputPlugin.hxx"
+#include "../InputStream.hxx"
+#include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"
 #include "tag/Tag.hxx"

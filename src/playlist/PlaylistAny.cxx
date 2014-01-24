@@ -23,7 +23,7 @@
 #include "PlaylistRegistry.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "Log.hxx"
 
 #include <assert.h>

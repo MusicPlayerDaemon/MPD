@@ -20,7 +20,7 @@
 #include "config.h"
 #include "WavpackDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/ApeTag.hxx"

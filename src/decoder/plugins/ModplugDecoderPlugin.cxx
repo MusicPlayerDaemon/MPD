@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ModplugDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "tag/TagHandler.hxx"
 #include "system/FatalError.hxx"
 #include "util/WritableBuffer.hxx"

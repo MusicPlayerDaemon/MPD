@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PcmDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "util/Error.hxx"
 #include "util/ByteReverse.hxx"
 #include "Log.hxx"

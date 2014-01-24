@@ -45,7 +45,7 @@
 #include "Log.hxx"
 #include "LogInit.hxx"
 #include "GlobalEvents.hxx"
-#include "InputInit.hxx"
+#include "input/Init.hxx"
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
 #include "fs/AllocatedPath.hxx"

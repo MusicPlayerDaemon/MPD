@@ -21,7 +21,7 @@
 #include "FlacInput.hxx"
 #include "FlacDomain.hxx"
 #include "../DecoderAPI.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 #include "Compiler.h"

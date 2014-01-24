@@ -29,7 +29,7 @@
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "DecoderAPI.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"

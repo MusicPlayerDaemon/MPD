@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "SmbclientInputPlugin.hxx"
-#include "InputStream.hxx"
-#include "InputPlugin.hxx"
+#include "../InputStream.hxx"
+#include "../InputPlugin.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 

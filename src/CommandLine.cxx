@@ -29,8 +29,8 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "output/OutputList.hxx"
 #include "output/OutputPlugin.hxx"
-#include "InputRegistry.hxx"
-#include "InputPlugin.hxx"
+#include "input/Registry.hxx"
+#include "input/InputPlugin.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "playlist/PlaylistPlugin.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -148,7 +148,7 @@ static void version(void)
 #endif
 
 	puts("\n"
-	     "Input plugins:");
+	     "input/Input plugins:");
 	input_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
 

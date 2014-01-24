@@ -21,7 +21,7 @@
 #define MPD_OGG_FIND_HXX
 
 #include "check.h"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 
 #include <ogg/ogg.h>
 

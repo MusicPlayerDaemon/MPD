@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "decoder/DecoderAPI.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "util/Error.hxx"
 #include "Compiler.h"
 

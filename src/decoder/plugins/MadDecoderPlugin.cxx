@@ -20,7 +20,7 @@
 #include "config.h"
 #include "MadDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "tag/TagId3.hxx"
 #include "tag/TagRva2.hxx"
@@ -1096,7 +1096,7 @@ mp3_decode(Decoder &decoder, InputStream &input_stream)
 
 		if (decoder_get_command(decoder) == DecoderCommand::NONE)
 			LogError(mad_domain,
-				 "Input does not appear to be a mp3 bit stream");
+				 "input/Input does not appear to be a mp3 bit stream");
 		return;
 	}
 

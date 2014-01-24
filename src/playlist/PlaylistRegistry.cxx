@@ -30,7 +30,7 @@
 #include "plugins/RssPlaylistPlugin.hxx"
 #include "plugins/CuePlaylistPlugin.hxx"
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"

@@ -25,7 +25,7 @@
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
-#include "TextInputStream.hxx"
+#include "input/TextInputStream.hxx"
 
 #include <string.h>
 #include <stdlib.h>

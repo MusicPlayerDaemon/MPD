@@ -21,10 +21,10 @@
 #include "TagSave.hxx"
 #include "DetachedSong.hxx"
 #include "playlist/SongEnumerator.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "decoder/DecoderList.hxx"
-#include "InputInit.hxx"
+#include "input/Init.hxx"
 #include "IOThread.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "playlist/PlaylistPlugin.hxx"
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 				LogError(error);
 			else
 				fprintf(stderr,
-					"InputStream::Open() failed\n");
+					"input/InputStream::Open() failed\n");
 			return 2;
 		}
 

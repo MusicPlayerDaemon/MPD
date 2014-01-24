@@ -22,7 +22,7 @@
 #include "tag/Tag.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "IOThread.hxx"
-#include "InputInit.hxx"
+#include "input/Init.hxx"
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"

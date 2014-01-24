@@ -23,7 +23,7 @@
 #include "../SongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "util/StringUtil.hxx"
-#include "TextInputStream.hxx"
+#include "input/TextInputStream.hxx"
 
 class M3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;

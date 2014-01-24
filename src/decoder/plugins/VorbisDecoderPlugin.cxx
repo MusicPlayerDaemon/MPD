@@ -22,7 +22,7 @@
 #include "VorbisComments.hxx"
 #include "VorbisDomain.hxx"
 #include "../DecoderAPI.hxx"
-#include "InputStream.hxx"
+#include "input/InputStream.hxx"
 #include "OggCodec.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
