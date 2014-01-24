@@ -20,7 +20,7 @@
 
 
 #include "config.h"
-#include "MixerInternal.hxx"
+#include "mixer/MixerInternal.hxx"
 #include "output/plugins/RoarOutputPlugin.hxx"
 #include "Compiler.h"
 

@@ -34,7 +34,7 @@
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
-#include "Volume.hxx"
+#include "mixer/Volume.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"

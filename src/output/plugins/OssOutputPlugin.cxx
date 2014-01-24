@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OssOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "MixerList.hxx"
+#include "mixer/MixerList.hxx"
 #include "system/fd_util.h"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

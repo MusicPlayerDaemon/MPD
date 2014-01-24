@@ -21,7 +21,7 @@
 #include "config.h"
 #include "RoarOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "MixerList.hxx"
+#include "mixer/MixerList.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

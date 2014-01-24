@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "MixerControl.hxx"
-#include "MixerList.hxx"
+#include "mixer/MixerControl.hxx"
+#include "mixer/MixerList.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "pcm/Volume.hxx"
 #include "GlobalEvents.hxx"

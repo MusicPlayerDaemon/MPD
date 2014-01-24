@@ -209,7 +209,7 @@ src_mpd_SOURCES = \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/TagFile.cxx src/TagFile.hxx \
 	src/TagStream.cxx src/TagStream.hxx \
-	src/Volume.cxx src/Volume.hxx \
+	src/mixer/Volume.cxx src/mixer/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
 	src/Timer.cxx
@@ -935,16 +935,16 @@ MIXER_LIBS = \
 	$(PULSE_LIBS)
 
 MIXER_API_SRC = \
-	src/MixerPlugin.hxx \
-	src/MixerList.hxx \
-	src/MixerControl.cxx src/MixerControl.hxx \
-	src/MixerType.cxx src/MixerType.hxx \
-	src/MixerAll.cxx src/MixerAll.hxx \
-	src/MixerInternal.hxx
+	src/mixer/MixerPlugin.hxx \
+	src/mixer/MixerList.hxx \
+	src/mixer/MixerControl.cxx src/mixer/MixerControl.hxx \
+	src/mixer/MixerType.cxx src/mixer/MixerType.hxx \
+	src/mixer/MixerAll.cxx src/mixer/MixerAll.hxx \
+	src/mixer/MixerInternal.hxx
 
 libmixer_plugins_a_SOURCES = \
-	src/mixer/SoftwareMixerPlugin.cxx \
-	src/mixer/SoftwareMixerPlugin.hxx
+	src/mixer/plugins/SoftwareMixerPlugin.cxx \
+	src/mixer/plugins/SoftwareMixerPlugin.hxx
 libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(PULSE_CFLAGS)
@@ -953,14 +953,14 @@ if HAVE_ALSA
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/AlsaOutputPlugin.cxx \
 	src/output/plugins/AlsaOutputPlugin.hxx
-libmixer_plugins_a_SOURCES += src/mixer/AlsaMixerPlugin.cxx
+libmixer_plugins_a_SOURCES += src/mixer/plugins/AlsaMixerPlugin.cxx
 endif
 
 if HAVE_ROAR
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/RoarOutputPlugin.cxx \
 	src/output/plugins/RoarOutputPlugin.hxx
-libmixer_plugins_a_SOURCES += src/mixer/RoarMixerPlugin.cxx
+libmixer_plugins_a_SOURCES += src/mixer/plugins/RoarMixerPlugin.cxx
 endif
 
 if HAVE_AO
@@ -991,7 +991,7 @@ if HAVE_OSS
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/OssOutputPlugin.cxx \
 	src/output/plugins/OssOutputPlugin.hxx
-libmixer_plugins_a_SOURCES += src/mixer/OssMixerPlugin.cxx
+libmixer_plugins_a_SOURCES += src/mixer/plugins/OssMixerPlugin.cxx
 endif
 
 if HAVE_OPENAL
@@ -1011,7 +1011,7 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/PulseOutputPlugin.cxx \
 	src/output/plugins/PulseOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
-	src/mixer/PulseMixerPlugin.cxx src/mixer/PulseMixerPlugin.hxx
+	src/mixer/plugins/PulseMixerPlugin.cxx src/mixer/plugins/PulseMixerPlugin.hxx
 endif
 
 if HAVE_SHOUT
@@ -1045,7 +1045,7 @@ if ENABLE_WINMM_OUTPUT
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/WinmmOutputPlugin.cxx \
 	src/output/plugins/WinmmOutputPlugin.hxx
-libmixer_plugins_a_SOURCES += src/mixer/WinmmMixerPlugin.cxx
+libmixer_plugins_a_SOURCES += src/mixer/plugins/WinmmMixerPlugin.cxx
 endif
 
 
@@ -1540,8 +1540,8 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/output/OutputError.cxx \
 	src/output/OutputInit.cxx src/output/OutputFinish.cxx src/output/OutputList.cxx \
 	src/output/OutputPlugin.cxx \
-	src/MixerControl.cxx \
-	src/MixerType.cxx \
+	src/mixer/MixerControl.cxx \
+	src/mixer/MixerType.cxx \
 	src/filter/FilterPlugin.cxx \
 	src/filter/FilterConfig.cxx \
 	src/AudioCompress/compress.c \
@@ -1559,7 +1559,7 @@ test_read_mixer_LDADD = \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/MixerControl.cxx \
+	src/mixer/MixerControl.cxx \
 	src/filter/FilterPlugin.cxx \
 	src/AudioFormat.cxx \
 	src/filter/plugins/VolumeFilterPlugin.cxx

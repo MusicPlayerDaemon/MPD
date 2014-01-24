@@ -20,7 +20,7 @@
 #include "config.h"
 #include "AlsaOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "MixerList.hxx"
+#include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
 #include "util/Manual.hxx"
 #include "util/Error.hxx"

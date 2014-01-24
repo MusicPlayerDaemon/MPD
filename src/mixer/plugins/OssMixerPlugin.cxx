@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "MixerInternal.hxx"
+#include "mixer/MixerInternal.hxx"
 #include "config/ConfigData.hxx"
 #include "system/fd_util.h"
 #include "util/ASCII.hxx"

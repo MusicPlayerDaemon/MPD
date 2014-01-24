@@ -29,7 +29,7 @@
 #include "OutputAll.hxx"
 #include "OutputInternal.hxx"
 #include "PlayerControl.hxx"
-#include "MixerControl.hxx"
+#include "mixer/MixerControl.hxx"
 #include "Idle.hxx"
 
 extern unsigned audio_output_state_version;

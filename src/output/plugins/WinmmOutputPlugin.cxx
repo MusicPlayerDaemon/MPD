@@ -21,7 +21,7 @@
 #include "WinmmOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "pcm/PcmBuffer.hxx"
-#include "MixerList.hxx"
+#include "mixer/MixerList.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"

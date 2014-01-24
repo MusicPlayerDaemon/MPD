@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OutputInternal.hxx"
 #include "OutputPlugin.hxx"
-#include "MixerControl.hxx"
+#include "mixer/MixerControl.hxx"
 #include "filter/FilterInternal.hxx"
 
 #include <assert.h>

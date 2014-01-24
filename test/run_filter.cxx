@@ -26,7 +26,7 @@
 #include "filter/FilterPlugin.hxx"
 #include "filter/FilterInternal.hxx"
 #include "pcm/Volume.hxx"
-#include "MixerControl.hxx"
+#include "mixer/MixerControl.hxx"
 #include "stdbin.h"
 #include "util/Error.hxx"
 #include "system/FatalError.hxx"

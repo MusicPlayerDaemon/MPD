@@ -23,7 +23,7 @@
 #include "PlaylistState.hxx"
 #include "fs/TextFile.hxx"
 #include "Partition.hxx"
-#include "Volume.hxx"
+#include "mixer/Volume.hxx"
 
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PulseMixerPlugin.hxx"
-#include "MixerInternal.hxx"
+#include "mixer/MixerInternal.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
 #include "GlobalEvents.hxx"
 #include "util/Error.hxx"

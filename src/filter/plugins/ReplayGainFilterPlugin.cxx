@@ -25,7 +25,7 @@
 #include "AudioFormat.hxx"
 #include "ReplayGainInfo.hxx"
 #include "ReplayGainConfig.hxx"
-#include "MixerControl.hxx"
+#include "mixer/MixerControl.hxx"
 #include "pcm/Volume.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "util/ConstBuffer.hxx"

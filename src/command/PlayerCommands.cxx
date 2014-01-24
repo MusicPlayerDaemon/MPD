@@ -24,7 +24,7 @@
 #include "PlaylistPrint.hxx"
 #include "db/update/UpdateGlue.hxx"
 #include "client/Client.hxx"
-#include "Volume.hxx"
+#include "mixer/Volume.hxx"
 #include "output/OutputAll.hxx"
 #include "Partition.hxx"
 #include "protocol/Result.hxx"
