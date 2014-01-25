@@ -866,6 +866,7 @@ endif
 
 if ENABLE_SMBCLIENT
 libinput_a_SOURCES += \
+	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx \
 	src/input/plugins/SmbclientInputPlugin.cxx src/input/plugins/SmbclientInputPlugin.hxx
 endif
 

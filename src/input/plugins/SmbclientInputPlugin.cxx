@@ -19,14 +19,13 @@
 
 #include "config.h"
 #include "SmbclientInputPlugin.hxx"
+#include "lib/smbclient/Init.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 
 #include <libsmbclient.h>
-
-#include <string.h>
 
 class SmbclientInputStream {
 	InputStream base;
@@ -80,19 +79,6 @@ public:
 	}
 };
 
-static void
-mpd_smbc_get_auth_data(gcc_unused const char *srv,
-		       gcc_unused const char *shr,
-		       char *wg, gcc_unused int wglen,
-		       char *un, gcc_unused int unlen,
-		       char *pw, gcc_unused int pwlen)
-{
-	// TODO: implement
-	strcpy(wg, "WORKGROUP");
-	strcpy(un, "foo");
-	strcpy(pw, "bar");
-}
-
 /*
  * InputPlugin methods
  *
@@ -101,11 +87,8 @@ mpd_smbc_get_auth_data(gcc_unused const char *srv,
 static bool
 input_smbclient_init(gcc_unused const config_param &param, Error &error)
 {
-	constexpr int debug = 0;
-	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0) {
-		error.SetErrno("smbc_init() failed");
+	if (!SmbclientInit(error))
 		return false;
-	}
 
 	// TODO: create one global SMBCCTX here?
 
