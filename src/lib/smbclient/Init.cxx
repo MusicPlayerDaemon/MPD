@@ -34,8 +34,8 @@ mpd_smbc_get_auth_data(gcc_unused const char *srv,
 {
 	// TODO: implement
 	strcpy(wg, "WORKGROUP");
-	strcpy(un, "foo");
-	strcpy(pw, "bar");
+	strcpy(un, "");
+	strcpy(pw, "");
 }
 
 bool
