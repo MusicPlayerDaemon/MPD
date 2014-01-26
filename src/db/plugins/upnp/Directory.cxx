@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Directory.hxx"
-#include "Util.hxx"
+#include "lib/upnp/Util.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "Tags.hxx"
 #include "tag/TagBuilder.hxx"

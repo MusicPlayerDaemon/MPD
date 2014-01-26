@@ -216,6 +216,17 @@ src_mpd_SOURCES = \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
 	src/Timer.cxx
 
+UPNP_SOURCES = \
+	src/lib/upnp/Device.cxx src/lib/upnp/Device.hxx \
+	src/lib/upnp/ContentDirectoryService.cxx src/lib/upnp/ContentDirectoryService.hxx \
+	src/lib/upnp/Discovery.cxx src/lib/upnp/Discovery.hxx \
+	src/lib/upnp/Domain.cxx src/lib/upnp/Domain.hxx \
+	src/lib/upnp/ixmlwrap.cxx src/lib/upnp/ixmlwrap.hxx \
+	src/lib/upnp/upnpplib.cxx src/lib/upnp/upnpplib.hxx \
+	src/lib/upnp/Util.cxx src/lib/upnp/Util.hxx \
+	src/lib/upnp/WorkQueue.hxx \
+	src/lib/upnp/Action.hxx
+
 #
 # Windows resource file
 #
@@ -444,18 +455,11 @@ DB_LIBS = \
 
 if HAVE_LIBUPNP
 libdb_plugins_a_SOURCES += \
+	$(UPNP_SOURCES) \
 	src/db/plugins/UpnpDatabasePlugin.cxx src/db/plugins/UpnpDatabasePlugin.hxx \
 	src/db/plugins/upnp/Tags.cxx src/db/plugins/upnp/Tags.hxx \
-	src/db/plugins/upnp/ContentDirectoryService.cxx src/db/plugins/upnp/ContentDirectoryService.hxx \
-	src/db/plugins/upnp/Device.cxx src/db/plugins/upnp/Device.hxx \
+	src/db/plugins/upnp/ContentDirectoryService.cxx \
 	src/db/plugins/upnp/Directory.cxx src/db/plugins/upnp/Directory.hxx \
-	src/db/plugins/upnp/Discovery.cxx src/db/plugins/upnp/Discovery.hxx \
-	src/db/plugins/upnp/Domain.cxx src/db/plugins/upnp/Domain.hxx \
-	src/db/plugins/upnp/ixmlwrap.cxx src/db/plugins/upnp/ixmlwrap.hxx \
-	src/db/plugins/upnp/upnpplib.cxx src/db/plugins/upnp/upnpplib.hxx \
-	src/db/plugins/upnp/Util.cxx src/db/plugins/upnp/Util.hxx \
-	src/db/plugins/upnp/Action.hxx \
-	src/db/plugins/upnp/WorkQueue.hxx \
 	src/db/plugins/upnp/Object.cxx src/db/plugins/upnp/Object.hxx
 DB_LIBS += \
 	$(EXPAT_LIBS) \

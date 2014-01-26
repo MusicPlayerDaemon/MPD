@@ -20,6 +20,8 @@
 #ifndef _UPNPDIR_HXX_INCLUDED_
 #define _UPNPDIR_HXX_INCLUDED_
 
+#include "Compiler.h"
+
 #include <upnp/upnp.h>
 
 #include <string>
