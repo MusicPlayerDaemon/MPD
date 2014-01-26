@@ -69,8 +69,8 @@ public:
 };
 
 class UpnpDatabase : public Database {
-	LibUPnP *m_lib;
-	UPnPDeviceDirectory *m_superdir;
+	LibUPnP *lib;
+	UPnPDeviceDirectory *discovery;
 
 public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
@@ -175,17 +175,17 @@ UpnpDatabase::Configure(const config_param &, Error &)
 bool
 UpnpDatabase::Open(Error &error)
 {
-	m_lib = new LibUPnP();
-	if (!m_lib->ok()) {
-		error.Set(m_lib->GetInitError());
-		delete m_lib;
+	lib = new LibUPnP();
+	if (!lib->ok()) {
+		error.Set(lib->GetInitError());
+		delete lib;
 		return false;
 	}
 
-	m_superdir = new UPnPDeviceDirectory(m_lib);
-	if (!m_superdir->Start(error)) {
-		delete m_superdir;
-		delete m_lib;
+	discovery = new UPnPDeviceDirectory(lib);
+	if (!discovery->Start(error)) {
+		delete discovery;
+		delete lib;
 		return false;
 	}
 
@@ -198,8 +198,8 @@ UpnpDatabase::Open(Error &error)
 void
 UpnpDatabase::Close()
 {
-	delete m_superdir;
-	delete m_lib;
+	delete discovery;
+	delete lib;
 }
 
 void
@@ -223,7 +223,7 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 	}
 
 	ContentDirectoryService server;
-	if (!m_superdir->getServer(vpath.front().c_str(), server, error))
+	if (!discovery->getServer(vpath.front().c_str(), server, error))
 		return nullptr;
 
 	vpath.pop_front();
@@ -277,7 +277,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 		return true;
 
 	std::list<std::string> searchcaps;
-	if (!server.getSearchCapabilities(m_lib->getclh(), searchcaps, error))
+	if (!server.getSearchCapabilities(lib->getclh(), searchcaps, error))
 		return false;
 
 	if (searchcaps.empty())
@@ -344,7 +344,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 		}
 	}
 
-	return server.search(m_lib->getclh(),
+	return server.search(lib->getclh(),
 			     objid, cond.c_str(), dirbuf,
 			     error);
 }
@@ -431,7 +431,7 @@ UpnpDatabase::ReadNode(const ContentDirectoryService &server,
 		       Error &error) const
 {
 	UPnPDirContent dirbuf;
-	if (!server.getMetadata(m_lib->getclh(), objid, dirbuf, error))
+	if (!server.getMetadata(lib->getclh(), objid, dirbuf, error))
 		return false;
 
 	if (dirbuf.objects.size() == 1) {
@@ -485,7 +485,7 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 		return true;
 	}
 
-	const UpnpClient_Handle handle = m_lib->getclh();
+	const UpnpClient_Handle handle = lib->getclh();
 
 	std::string objid(rootid);
 
@@ -663,7 +663,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	   and loop here, but it's not useful as mpd will only return
 	   data to the client when we're done anyway. */
 	UPnPDirContent dirbuf;
-	if (!server.readDir(m_lib->getclh(), tdirent.m_id.c_str(), dirbuf,
+	if (!server.readDir(lib->getclh(), tdirent.m_id.c_str(), dirbuf,
 			    error))
 		return false;
 
@@ -692,7 +692,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	auto vpath = stringToTokens(selection.uri, "/", true);
 	if (vpath.empty()) {
 		std::vector<ContentDirectoryService> servers;
-		if (!m_superdir->getDirServices(servers, error))
+		if (!discovery->getDirServices(servers, error))
 			return false;
 
 		for (const auto &server : servers) {
@@ -717,7 +717,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	vpath.pop_front();
 
 	ContentDirectoryService server;
-	if (!m_superdir->getServer(servername.c_str(), server, error))
+	if (!discovery->getServer(servername.c_str(), server, error))
 		return false;
 
 	return VisitServer(server, vpath, selection,
@@ -734,7 +734,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		return true;
 
 	std::vector<ContentDirectoryService> servers;
-	if (!m_superdir->getDirServices(servers, error))
+	if (!discovery->getDirServices(servers, error))
 		return false;
 
 	std::set<std::string> values;
