@@ -244,7 +244,7 @@ CueParser::Feed2(char *p)
 		}
 
 		state = TRACK;
-		current = new DetachedSong(std::move(filename));
+		current = new DetachedSong(filename);
 		assert(!current->GetTag().IsDefined());
 
 		song_tag = header_tag;
