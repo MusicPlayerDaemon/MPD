@@ -897,6 +897,9 @@ if test x$enable_neighbor_plugins = xauto; then
 	if test x$enable_smbclient = xyes; then
 		enable_neighbor_plugins=yes
 	fi
+	if test x$enable_upnp = xyes; then
+		enable_neighbor_plugins=yes
+	fi
 fi
 
 if test x$enable_neighbor_plugins = xyes; then

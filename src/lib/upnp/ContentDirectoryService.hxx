@@ -121,6 +121,11 @@ public:
 				   std::list<std::string> &result,
 				   Error &error) const;
 
+	gcc_pure
+	std::string GetURI() const {
+		return "upnp://" + m_deviceId + "/" + m_serviceType;
+	}
+
 	/** Retrieve the "friendly name" for this server, useful for display. */
 	const char *getFriendlyName() const {
 		return m_friendlyName.c_str();

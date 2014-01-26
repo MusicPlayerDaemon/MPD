@@ -436,6 +436,15 @@ NEIGHBOR_LIBS = \
 	$(SMBCLIENT_LIBS) \
 	libneighbor.a
 
+if HAVE_LIBUPNP
+libneighbor_a_SOURCES += \
+	$(UPNP_SOURCES) \
+	src/neighbor/plugins/UpnpNeighborPlugin.cxx src/neighbor/plugins/UpnpNeighborPlugin.hxx
+NEIGHBOR_LIBS += \
+	$(EXPAT_LIBS) \
+	$(UPNP_LIBS)
+endif
+
 endif
 
 # database plugins
@@ -1323,16 +1332,30 @@ if ENABLE_NEIGHBOR_PLUGINS
 
 test_run_neighbor_explorer_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
+	src/IOThread.cxx \
 	test/run_neighbor_explorer.cxx
 test_run_neighbor_explorer_LDADD = \
 	$(GLIB_LIBS) \
 	$(NEIGHBOR_LIBS) \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	libtag.a \
 	libconf.a \
 	libevent.a \
 	libfs.a \
 	libsystem.a \
 	libthread.a \
 	libutil.a
+
+if HAVE_LIBUPNP
+test_run_neighbor_explorer_SOURCES += src/lib/expat/ExpatParser.cxx
+endif
+
+if ENABLE_DESPOTIFY
+test_run_neighbor_explorer_SOURCES += \
+	src/lib/despotify/DespotifyUtils.cxx \
+	src/lib/despotify/DespotifyUtils.hxx
+endif
 
 endif
 

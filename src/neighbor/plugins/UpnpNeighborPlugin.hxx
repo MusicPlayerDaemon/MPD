@@ -17,30 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Registry.hxx"
-#include "NeighborPlugin.hxx"
-#include "plugins/SmbclientNeighborPlugin.hxx"
-#include "plugins/UpnpNeighborPlugin.hxx"
+#ifndef MPD_NEIGHBOR_UPNP_HXX
+#define MPD_NEIGHBOR_UPNP_HXX
 
-#include <string.h>
+struct NeighborPlugin;
 
-const NeighborPlugin *const neighbor_plugins[] = {
-#ifdef ENABLE_SMBCLIENT
-	&smbclient_neighbor_plugin,
+extern const NeighborPlugin upnp_neighbor_plugin;
+
 #endif
-#ifdef HAVE_LIBUPNP
-	&upnp_neighbor_plugin,
-#endif
-	nullptr
-};
-
-const NeighborPlugin *
-GetNeighborPluginByName(const char *name)
-{
-	for (auto i = neighbor_plugins; *i != nullptr; ++i)
-		if (strcmp((*i)->name, name) == 0)
-			return *i;
-
-	return nullptr;
-}
