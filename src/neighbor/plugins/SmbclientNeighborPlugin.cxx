@@ -122,12 +122,7 @@ ReadServer(NeighborExplorer::List &list, const smbc_dirent &e)
 	const std::string name(e.name, e.namelen);
 	const std::string comment(e.comment, e.commentlen);
 
-	NeighborInfo info{
-		"smb://" + name,
-		name + " (" + comment + ")",
-	};
-
-	list.emplace_front(std::move(info));
+	list.emplace_front("smb://" + name, name + " (" + comment + ")");
 }
 
 static void

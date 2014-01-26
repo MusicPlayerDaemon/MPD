@@ -25,6 +25,11 @@
 struct NeighborInfo {
 	std::string uri;
 	std::string display_name;
+
+	template<typename U, typename DN>
+	NeighborInfo(U &&_uri, DN &&_display_name)
+		:uri(std::forward<U>(_uri)),
+		 display_name(std::forward<DN>(_display_name)) {}
 };
 
 #endif
