@@ -185,9 +185,6 @@ UpnpDatabase::Open(Error &error)
 		return false;
 	}
 
-	// Wait for device answers. This should be consistent with the value set
-	// in the lib (currently 2)
-	sleep(2);
 	return true;
 }
 
