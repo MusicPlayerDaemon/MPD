@@ -25,8 +25,6 @@
 #include <upnp/ixml.h>
 #include <upnp/upnptools.h>
 
-static LibUPnP *theLib;
-
 LibUPnP::LibUPnP()
 {
 	auto code = UpnpInit(0, 0);
@@ -55,10 +53,6 @@ int
 LibUPnP::o_callback(Upnp_EventType et, void* evp, void* cookie)
 {
 	LibUPnP *ulib = (LibUPnP *)cookie;
-	if (ulib == nullptr) {
-		// Because the asyncsearch calls uses a null cookie.
-		ulib = theLib;
-	}
 
 	if (ulib->handler)
 		ulib->handler(et, evp);
