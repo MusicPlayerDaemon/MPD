@@ -41,7 +41,11 @@ CommandResult
 handle_listneighbors(Client &client,
 		     gcc_unused int argc, gcc_unused char *argv[])
 {
-	assert(instance->neighbors != nullptr);
+	if (instance->neighbors == nullptr) {
+		command_error(client, ACK_ERROR_UNKNOWN,
+			      "No neighbor plugin configured");
+		return CommandResult::ERROR;
+	}
 
 	const auto neighbors = instance->neighbors->GetList();
 	for (const auto &i : neighbors)
