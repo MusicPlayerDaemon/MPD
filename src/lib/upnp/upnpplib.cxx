@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "upnpplib.hxx"
+#include "Callback.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"
 
@@ -37,7 +38,7 @@ LibUPnP::LibUPnP()
 
 	UpnpSetMaxContentLength(2000*1024);
 
-	code = UpnpRegisterClient(o_callback, (void *)this, &m_clh);
+	code = UpnpRegisterClient(o_callback, nullptr, &m_clh);
 	if (code != UPNP_E_SUCCESS) {
 		init_error.Format(upnp_domain, code,
 				  "UpnpRegisterClient() failed: %s",
@@ -52,12 +53,14 @@ LibUPnP::LibUPnP()
 int
 LibUPnP::o_callback(Upnp_EventType et, void* evp, void* cookie)
 {
-	LibUPnP *ulib = (LibUPnP *)cookie;
+	if (cookie == nullptr)
+		/* this is the cookie passed to UpnpRegisterClient();
+		   but can this ever happen?  Will libupnp ever invoke
+		   the registered callback without that cookie? */
+		return UPNP_E_SUCCESS;
 
-	if (ulib->handler)
-		ulib->handler(et, evp);
-
-	return UPNP_E_SUCCESS;
+	UpnpCallback &callback = UpnpCallback::FromUpnpCookie(cookie);
+	return callback.Invoke(et, evp);
 }
 
 LibUPnP::~LibUPnP()

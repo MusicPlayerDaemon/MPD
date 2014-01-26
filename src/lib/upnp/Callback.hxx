@@ -17,43 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LIBUPNP_H_X_INCLUDED_
-#define _LIBUPNP_H_X_INCLUDED_
-
-#include "util/Error.hxx"
+#ifndef MPD_UPNP_CALLBACK_HXX
+#define MPD_UPNP_CALLBACK_HXX
 
 #include <upnp/upnp.h>
 
-/** Our link to libupnp. Initialize and keep the handle around */
-class LibUPnP {
-	Error init_error;
-	UpnpClient_Handle m_clh;
-
-	static int o_callback(Upnp_EventType, void *, void *);
-
+/**
+ * A class that is supposed to be used for libupnp asynchronous
+ * callbacks.
+ */
+class UpnpCallback {
 public:
-	LibUPnP();
-
-	LibUPnP(const LibUPnP &) = delete;
-	LibUPnP &operator=(const LibUPnP &) = delete;
-
-	~LibUPnP();
-
-	/** Check state after initialization */
-	bool ok() const
-	{
-		return !init_error.IsDefined();
+	/**
+	 * Pass this value as "cookie" pointer to libupnp asynchronous
+	 * functions.
+	 */
+	void *GetUpnpCookie() {
+		return this;
 	}
 
-	/** Retrieve init error if state not ok */
-	const Error &GetInitError() const {
-		return init_error;
+	static UpnpCallback &FromUpnpCookie(void *cookie) {
+		return *(UpnpCallback *)cookie;
 	}
 
-	UpnpClient_Handle getclh()
-	{
-		return m_clh;
-	}
+	virtual int Invoke(Upnp_EventType et, void *evp) = 0;
 };
 
-#endif /* _LIBUPNP.H_X_INCLUDED_ */
+#endif

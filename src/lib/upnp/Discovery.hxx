@@ -20,6 +20,7 @@
 #ifndef _UPNPPDISC_H_X_INCLUDED_
 #define _UPNPPDISC_H_X_INCLUDED_
 
+#include "Callback.hxx"
 #include "Device.hxx"
 #include "WorkQueue.hxx"
 #include "thread/Mutex.hxx"
@@ -46,7 +47,7 @@ public:
  * We are only interested in MediaServers with a ContentDirectory service
  * for now, but this could be made more general, by removing the filtering.
  */
-class UPnPDeviceDirectory {
+class UPnPDeviceDirectory final : UpnpCallback {
 	/**
 	 * Each appropriate discovery event (executing in a libupnp thread
 	 * context) queues the following task object for processing by the
@@ -154,6 +155,9 @@ private:
 	int OnAlive(Upnp_Discovery *disco);
 	int OnByeBye(Upnp_Discovery *disco);
 	int cluCallBack(Upnp_EventType et, void *evp);
+
+	/* virtual methods from class UpnpCallback */
+	virtual int Invoke(Upnp_EventType et, void *evp) override;
 };
 
 

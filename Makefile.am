@@ -222,6 +222,7 @@ UPNP_SOURCES = \
 	src/lib/upnp/Discovery.cxx src/lib/upnp/Discovery.hxx \
 	src/lib/upnp/Domain.cxx src/lib/upnp/Domain.hxx \
 	src/lib/upnp/ixmlwrap.cxx src/lib/upnp/ixmlwrap.hxx \
+	src/lib/upnp/Callback.hxx \
 	src/lib/upnp/upnpplib.cxx src/lib/upnp/upnpplib.hxx \
 	src/lib/upnp/Util.cxx src/lib/upnp/Util.hxx \
 	src/lib/upnp/WorkQueue.hxx \

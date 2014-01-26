@@ -184,8 +184,8 @@ UPnPDeviceDirectory::OnByeBye(Upnp_Discovery *disco)
 // thread context.
 // Example: ContentDirectories appearing and disappearing from the network
 // We queue a task for our worker thread(s)
-inline int
-UPnPDeviceDirectory::cluCallBack(Upnp_EventType et, void *evp)
+int
+UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp)
 {
 	switch (et) {
 	case UPNP_DISCOVERY_SEARCH_RESULT:
@@ -254,10 +254,6 @@ UPnPDeviceDirectory::Start(Error &error)
 		return false;
 	}
 
-	lib->SetHandler([this](Upnp_EventType type, void *event){
-			cluCallBack(type, event);
-		});
-
 	return search(error);
 }
 
@@ -271,7 +267,7 @@ UPnPDeviceDirectory::search(Error &error)
 
 	// We search both for device and service just in case.
 	int code = UpnpSearchAsync(lib->getclh(), m_searchTimeout,
-				   ContentDirectorySType, lib);
+				   ContentDirectorySType, GetUpnpCookie());
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
 			     "UpnpSearchAsync() failed: %s",
@@ -280,7 +276,7 @@ UPnPDeviceDirectory::search(Error &error)
 	}
 
 	code = UpnpSearchAsync(lib->getclh(), m_searchTimeout,
-			       MediaServerDType, lib);
+			       MediaServerDType, GetUpnpCookie());
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
 			     "UpnpSearchAsync() failed: %s",
