@@ -217,6 +217,7 @@ src_mpd_SOURCES = \
 	src/Timer.cxx
 
 UPNP_SOURCES = \
+	src/lib/upnp/Init.cxx src/lib/upnp/Init.hxx \
 	src/lib/upnp/Device.cxx src/lib/upnp/Device.hxx \
 	src/lib/upnp/ContentDirectoryService.cxx src/lib/upnp/ContentDirectoryService.hxx \
 	src/lib/upnp/Discovery.cxx src/lib/upnp/Discovery.hxx \

@@ -18,43 +18,56 @@
  */
 
 #include "config.h"
-#include "upnpplib.hxx"
-#include "Callback.hxx"
-#include "Domain.hxx"
 #include "Init.hxx"
-#include "Log.hxx"
+#include "Domain.hxx"
+#include "thread/Mutex.hxx"
+#include "util/Error.hxx"
 
+#include <upnp/upnp.h>
 #include <upnp/upnptools.h>
+#include <upnp/ixml.h>
 
-LibUPnP::LibUPnP()
+static Mutex upnp_init_mutex;
+static unsigned upnp_ref;
+
+static bool
+DoInit(Error &error)
 {
-	if (!UpnpGlobalInit(init_error))
-		return;
-
-	auto code = UpnpRegisterClient(o_callback, nullptr, &m_clh);
+	auto code = UpnpInit(0, 0);
 	if (code != UPNP_E_SUCCESS) {
-		UpnpGlobalFinish();
-		init_error.Format(upnp_domain, code,
-				  "UpnpRegisterClient() failed: %s",
-				  UpnpGetErrorMessage(code));
-		return;
+		error.Format(upnp_domain, code,
+			     "UpnpInit() failed: %s",
+			     UpnpGetErrorMessage(code));
+		return false;
 	}
+
+	UpnpSetMaxContentLength(2000*1024);
+
+	// Servers sometimes make error (e.g.: minidlna returns bad utf-8)
+	ixmlRelaxParser(1);
+
+	return true;
 }
 
-int
-LibUPnP::o_callback(Upnp_EventType et, void* evp, void* cookie)
+bool
+UpnpGlobalInit(Error &error)
 {
-	if (cookie == nullptr)
-		/* this is the cookie passed to UpnpRegisterClient();
-		   but can this ever happen?  Will libupnp ever invoke
-		   the registered callback without that cookie? */
-		return UPNP_E_SUCCESS;
+	const ScopeLock protect(upnp_init_mutex);
 
-	UpnpCallback &callback = UpnpCallback::FromUpnpCookie(cookie);
-	return callback.Invoke(et, evp);
+	if (upnp_ref == 0 && !DoInit(error))
+		return false;
+
+	++upnp_ref;
+	return true;
 }
 
-LibUPnP::~LibUPnP()
+void
+UpnpGlobalFinish()
 {
-	UpnpGlobalFinish();
+	const ScopeLock protect(upnp_init_mutex);
+
+	assert(upnp_ref > 0);
+
+	if (--upnp_ref == 0)
+		UpnpFinish();
 }
