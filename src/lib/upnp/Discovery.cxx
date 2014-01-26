@@ -53,6 +53,24 @@ isMSDevice(const char *st)
 	return memcmp(MediaServerDType, st, sz) == 0;
 }
 
+static void
+AnnounceFoundUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
+{
+	for (const auto &service : device.services)
+		if (isCDService(service.serviceType.c_str()))
+			listener.FoundUPnP(ContentDirectoryService(device,
+								   service));
+}
+
+static void
+AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
+{
+	for (const auto &service : device.services)
+		if (isCDService(service.serviceType.c_str()))
+			listener.LostUPnP(ContentDirectoryService(device,
+								  service));
+}
+
 inline void
 UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 {
@@ -66,6 +84,9 @@ UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 	}
 
 	directories.emplace_back(std::move(d));
+
+	if (listener != nullptr)
+		AnnounceFoundUPnP(*listener, directories.back().device);
 }
 
 inline void
@@ -76,6 +97,9 @@ UPnPDeviceDirectory::LockRemove(const std::string &id)
 	for (auto i = directories.begin(), end = directories.end();
 	     i != end; ++i) {
 		if (i->id == id) {
+			if (listener != nullptr)
+				AnnounceLostUPnP(*listener, i->device);
+
 			directories.erase(i);
 			break;
 		}
@@ -208,8 +232,10 @@ UPnPDeviceDirectory::expireDevices(Error &error)
 	return true;
 }
 
-UPnPDeviceDirectory::UPnPDeviceDirectory(LibUPnP *_lib)
+UPnPDeviceDirectory::UPnPDeviceDirectory(LibUPnP *_lib,
+					 UPnPDiscoveryListener *_listener)
 	:lib(_lib),
+	 listener(_listener),
 	 discoveredQueue("DiscoveredQueue"),
 	 m_searchTimeout(2), m_lastSearch(0)
 {

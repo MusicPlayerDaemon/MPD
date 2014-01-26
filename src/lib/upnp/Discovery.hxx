@@ -34,6 +34,12 @@
 class LibUPnP;
 class ContentDirectoryService;
 
+class UPnPDiscoveryListener {
+public:
+	virtual void FoundUPnP(const ContentDirectoryService &service) = 0;
+	virtual void LostUPnP(const ContentDirectoryService &service) = 0;
+};
+
 /**
  * Manage UPnP discovery and maintain a directory of active devices. Singleton.
  *
@@ -86,6 +92,7 @@ class UPnPDeviceDirectory {
 	};
 
 	LibUPnP *const lib;
+	UPnPDiscoveryListener *const listener;
 
 	Mutex mutex;
 	std::list<ContentDirectoryDescriptor> directories;
@@ -104,7 +111,8 @@ class UPnPDeviceDirectory {
 	unsigned m_lastSearch;
 
 public:
-	UPnPDeviceDirectory(LibUPnP *_lib);
+	UPnPDeviceDirectory(LibUPnP *_lib,
+			    UPnPDiscoveryListener *_listener=nullptr);
 	~UPnPDeviceDirectory();
 
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
