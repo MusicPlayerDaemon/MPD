@@ -18,31 +18,21 @@
  */
 
 #include "config.h"
-#include "upnpplib.hxx"
+#include "ClientInit.hxx"
+#include "Init.hxx"
 #include "Callback.hxx"
 #include "Domain.hxx"
-#include "Init.hxx"
-#include "Log.hxx"
+#include "thread/Mutex.hxx"
+#include "util/Error.hxx"
 
 #include <upnp/upnptools.h>
 
-LibUPnP::LibUPnP()
-{
-	if (!UpnpGlobalInit(init_error))
-		return;
+static Mutex upnp_client_init_mutex;
+static unsigned upnp_client_ref;
+static UpnpClient_Handle upnp_client_handle;
 
-	auto code = UpnpRegisterClient(o_callback, nullptr, &m_clh);
-	if (code != UPNP_E_SUCCESS) {
-		UpnpGlobalFinish();
-		init_error.Format(upnp_domain, code,
-				  "UpnpRegisterClient() failed: %s",
-				  UpnpGetErrorMessage(code));
-		return;
-	}
-}
-
-int
-LibUPnP::o_callback(Upnp_EventType et, void* evp, void* cookie)
+static int
+UpnpClientCallback(Upnp_EventType et, void *evp, void *cookie)
 {
 	if (cookie == nullptr)
 		/* this is the cookie passed to UpnpRegisterClient();
@@ -54,7 +44,50 @@ LibUPnP::o_callback(Upnp_EventType et, void* evp, void* cookie)
 	return callback.Invoke(et, evp);
 }
 
-LibUPnP::~LibUPnP()
+static bool
+DoInit(Error &error)
 {
+	auto code = UpnpRegisterClient(UpnpClientCallback, nullptr,
+				       &upnp_client_handle);
+	if (code != UPNP_E_SUCCESS) {
+		error.Format(upnp_domain, code,
+			     "UpnpRegisterClient() failed: %s",
+			     UpnpGetErrorMessage(code));
+		return false;
+	}
+
+	return true;
+}
+
+bool
+UpnpClientGlobalInit(UpnpClient_Handle &handle, Error &error)
+{
+	if (!UpnpGlobalInit(error))
+		return false;
+
+	upnp_client_init_mutex.lock();
+	bool success = upnp_client_ref > 0 || DoInit(error);
+	upnp_client_init_mutex.unlock();
+
+	if (success) {
+		++upnp_client_ref;
+		handle = upnp_client_handle;
+	} else
+		UpnpGlobalFinish();
+
+	return success;
+}
+
+void
+UpnpClientGlobalFinish()
+{
+	upnp_client_init_mutex.lock();
+
+	assert(upnp_client_ref > 0);
+	if (--upnp_client_ref == 0)
+		UpnpUnRegisterClient(upnp_client_handle);
+
+	upnp_client_init_mutex.unlock();
+
 	UpnpGlobalFinish();
 }

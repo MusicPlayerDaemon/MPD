@@ -17,43 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _LIBUPNP_H_X_INCLUDED_
-#define _LIBUPNP_H_X_INCLUDED_
+#ifndef MPD_UPNP_CLIENT_INIT_HXX
+#define MPD_UPNP_CLIENT_INIT_HXX
 
-#include "util/Error.hxx"
+#include "check.h"
 
 #include <upnp/upnp.h>
 
-/** Our link to libupnp. Initialize and keep the handle around */
-class LibUPnP {
-	Error init_error;
-	UpnpClient_Handle m_clh;
+class Error;
 
-	static int o_callback(Upnp_EventType, void *, void *);
+bool
+UpnpClientGlobalInit(UpnpClient_Handle &handle, Error &error);
 
-public:
-	LibUPnP();
+void
+UpnpClientGlobalFinish();
 
-	LibUPnP(const LibUPnP &) = delete;
-	LibUPnP &operator=(const LibUPnP &) = delete;
-
-	~LibUPnP();
-
-	/** Check state after initialization */
-	bool ok() const
-	{
-		return !init_error.IsDefined();
-	}
-
-	/** Retrieve init error if state not ok */
-	const Error &GetInitError() const {
-		return init_error;
-	}
-
-	UpnpClient_Handle getclh()
-	{
-		return m_clh;
-	}
-};
-
-#endif /* _LIBUPNP.H_X_INCLUDED_ */
+#endif
