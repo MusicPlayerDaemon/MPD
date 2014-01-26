@@ -32,7 +32,6 @@
 #include <vector>
 #include <string>
 
-class LibUPnP;
 class ContentDirectoryService;
 
 class UPnPDiscoveryListener {
@@ -92,7 +91,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		}
 	};
 
-	LibUPnP *const lib;
+	const UpnpClient_Handle handle;
 	UPnPDiscoveryListener *const listener;
 
 	Mutex mutex;
@@ -112,7 +111,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	unsigned m_lastSearch;
 
 public:
-	UPnPDeviceDirectory(LibUPnP *_lib,
+	UPnPDeviceDirectory(UpnpClient_Handle _handle,
 			    UPnPDiscoveryListener *_listener=nullptr);
 	~UPnPDeviceDirectory();
 

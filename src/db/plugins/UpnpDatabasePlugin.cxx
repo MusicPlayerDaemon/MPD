@@ -182,7 +182,7 @@ UpnpDatabase::Open(Error &error)
 		return false;
 	}
 
-	discovery = new UPnPDeviceDirectory(lib);
+	discovery = new UPnPDeviceDirectory(lib->getclh());
 	if (!discovery->Start(error)) {
 		delete discovery;
 		delete lib;

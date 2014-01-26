@@ -21,7 +21,6 @@
 #include "Discovery.hxx"
 #include "Domain.hxx"
 #include "ContentDirectoryService.hxx"
-#include "upnpplib.hxx"
 #include "system/Clock.hxx"
 #include "Log.hxx"
 
@@ -232,9 +231,9 @@ UPnPDeviceDirectory::expireDevices(Error &error)
 	return true;
 }
 
-UPnPDeviceDirectory::UPnPDeviceDirectory(LibUPnP *_lib,
+UPnPDeviceDirectory::UPnPDeviceDirectory(UpnpClient_Handle _handle,
 					 UPnPDiscoveryListener *_listener)
-	:lib(_lib),
+	:handle(_handle),
 	 listener(_listener),
 	 discoveredQueue("DiscoveredQueue"),
 	 m_searchTimeout(2), m_lastSearch(0)
@@ -266,7 +265,7 @@ UPnPDeviceDirectory::search(Error &error)
 	m_lastSearch = now;
 
 	// We search both for device and service just in case.
-	int code = UpnpSearchAsync(lib->getclh(), m_searchTimeout,
+	int code = UpnpSearchAsync(handle, m_searchTimeout,
 				   ContentDirectorySType, GetUpnpCookie());
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
@@ -275,7 +274,7 @@ UPnPDeviceDirectory::search(Error &error)
 		return false;
 	}
 
-	code = UpnpSearchAsync(lib->getclh(), m_searchTimeout,
+	code = UpnpSearchAsync(handle, m_searchTimeout,
 			       MediaServerDType, GetUpnpCookie());
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
