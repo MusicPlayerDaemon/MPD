@@ -81,7 +81,7 @@ NeighborGlue::Open(Error &error)
 	     i != end; ++i) {
 		if (!i->explorer->Open(error)) {
 			/* roll back */
-			for (auto k = ++i; k != end; ++k)
+			for (auto k = explorers.begin(); k != i; ++k)
 				k->explorer->Close();
 			return false;
 		}
