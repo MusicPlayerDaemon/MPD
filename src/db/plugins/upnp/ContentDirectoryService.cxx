@@ -24,6 +24,7 @@
 #include "lib/upnp/Action.hxx"
 #include "Directory.hxx"
 #include "util/NumberParser.hxx"
+#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>

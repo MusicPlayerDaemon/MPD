@@ -137,3 +137,31 @@ uri_is_child_or_same(const char *parent, const char *child)
 {
 	return strcmp(parent, child) == 0 || uri_is_child(parent, child);
 }
+
+std::string
+uri_apply_base(const std::string &uri, const std::string &base)
+{
+	if (uri.front() == '/') {
+		/* absolute path: replace the whole URI path in base */
+
+		auto i = base.find("://");
+		if (i == base.npos)
+			/* no scheme: override base completely */
+			return uri;
+
+		/* find the first slash after the host part */
+		i = base.find('/', i + 3);
+		if (i == base.npos)
+			/* there's no URI path - simply append uri */
+			i = base.length();
+
+		return base.substr(0, i) + uri;
+	}
+
+	std::string out(base);
+	if (out.back() != '/')
+		out.push_back('/');
+
+	out += uri;
+	return out;
+}

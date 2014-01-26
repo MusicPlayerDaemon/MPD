@@ -77,4 +77,12 @@ gcc_pure gcc_nonnull_all
 bool
 uri_is_child_or_same(const char *parent, const char *child);
 
+/**
+ * Translate the given URI in the context of #base.  For example,
+ * uri_apply_base("foo", "http://bar/a/")=="http://bar/a/foo".
+ */
+gcc_pure
+std::string
+uri_apply_base(const std::string &uri, const std::string &base);
+
 #endif
