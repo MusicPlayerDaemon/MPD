@@ -230,12 +230,6 @@ src_mpd_DEPENDENCIES = src/win32/mpd_win32_rc.$(OBJEXT)
 src_mpd_LDFLAGS = -Wl,src/win32/mpd_win32_rc.$(OBJEXT)
 endif
 
-if ENABLE_DESPOTIFY
-src_mpd_SOURCES += \
-	src/lib/despotify/DespotifyUtils.cxx \
-	src/lib/despotify/DespotifyUtils.hxx
-endif
-
 if ENABLE_INOTIFY
 src_mpd_SOURCES += \
 	src/db/update/InotifyDomain.cxx src/db/update/InotifyDomain.hxx \
@@ -921,6 +915,8 @@ endif
 
 if ENABLE_DESPOTIFY
 libinput_a_SOURCES += \
+	src/lib/despotify/DespotifyUtils.cxx \
+	src/lib/despotify/DespotifyUtils.hxx \
 	src/input/plugins/DespotifyInputPlugin.cxx \
 	src/input/plugins/DespotifyInputPlugin.hxx
 endif
@@ -1114,8 +1110,10 @@ PLAYLIST_LIBS = \
 
 if ENABLE_DESPOTIFY
 libplaylist_plugins_a_SOURCES += \
-	src/playlist/plugins/DespotifyPlaylistPlugin.cxx \
-	src/playlist/plugins/DespotifyPlaylistPlugin.hxx
+	src/lib/despotify/DespotifyUtils.cxx \
+	src/lib/despotify/DespotifyUtils.hxx \
+       src/playlist/plugins/DespotifyPlaylistPlugin.cxx \
+       src/playlist/plugins/DespotifyPlaylistPlugin.hxx
 endif
 
 if ENABLE_SOUNDCLOUD
@@ -1350,10 +1348,6 @@ test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/IOThread.cxx \
 	src/input/InputStream.cxx
 
-if ENABLE_DESPOTIFY
-test_visit_archive_SOURCES += src/lib/despotify/DespotifyUtils.cxx
-endif
-
 endif
 
 test_dump_text_file_LDADD = \
@@ -1476,14 +1470,6 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	src/AudioParser.cxx \
 	src/ReplayGainInfo.cxx \
 	src/AudioCompress/compress.c
-
-if ENABLE_DESPOTIFY
-test_read_tags_SOURCES += src/lib/despotify/DespotifyUtils.cxx
-test_run_input_SOURCES += src/lib/despotify/DespotifyUtils.cxx
-test_dump_text_file_SOURCES += src/lib/despotify/DespotifyUtils.cxx
-test_dump_playlist_SOURCES += src/lib/despotify/DespotifyUtils.cxx
-test_run_decoder_SOURCES += src/lib/despotify/DespotifyUtils.cxx
-endif
 
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
