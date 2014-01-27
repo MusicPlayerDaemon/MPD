@@ -1315,7 +1315,7 @@ test_run_neighbor_explorer_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	test/run_neighbor_explorer.cxx
-test_run_neighbor_explorer_LDADD = \
+test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	$(GLIB_LIBS) \
 	$(NEIGHBOR_LIBS) \
 	$(INPUT_LIBS) \
