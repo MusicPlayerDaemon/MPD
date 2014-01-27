@@ -1213,6 +1213,8 @@ sparse-check:
 # Test programs
 #
 
+TEST_SUITE_LOG = build/test-suite.log
+
 if ENABLE_TEST
 
 C_TESTS = \

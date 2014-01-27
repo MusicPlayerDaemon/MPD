@@ -119,6 +119,9 @@ for i in $ac_local_paths; do
 	fi
 done
 
+rm -rf config.cache build
+mkdir build
+
 echo "  $ACLOCAL $ACLOCAL_FLAGS"
 $ACLOCAL $ACLOCAL_FLAGS || exit 1
 

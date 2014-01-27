@@ -8,6 +8,7 @@ VERSION_REVISION=0
 VERSION_EXTRA=0
 
 AC_CONFIG_SRCDIR([src/Main.cxx])
+AC_CONFIG_AUX_DIR(build)
 AM_INIT_AUTOMAKE([foreign 1.11 dist-xz subdir-objects])
 AM_SILENT_RULES
 AC_CONFIG_HEADERS(config.h)
