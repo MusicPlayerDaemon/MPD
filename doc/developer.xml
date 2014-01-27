@@ -159,6 +159,13 @@ foo(const char *abc, int xyz)
       url="http://mailman.blarg.de/listinfo/mpd-devel">subscribe
       here</ulink>)
     </para>
+
+    <para>
+      <command>git pull</command> requests are preferred.  Regular
+      contributors can get <ulink
+      url="http://git.musicpd.org/account-policy.html">an account on
+      git.musicpd.org</ulink>, but any public git repository will do.
+    </para>
   </chapter>
 
   <chapter>
