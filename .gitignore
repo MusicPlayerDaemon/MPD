@@ -32,8 +32,8 @@ ltmain.sh
 missing
 mkinstalldirs
 /test-driver
-mpd
-mpd.service
+/src/mpd
+/systemd/mpd.service
 stamp-h1
 tags
 *~

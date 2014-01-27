@@ -1185,7 +1185,7 @@ FILTER_LIBS = \
 
 if HAVE_SYSTEMD
 systemdsystemunit_DATA = \
-	mpd.service
+	systemd/mpd.service
 endif
 
 #
