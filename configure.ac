@@ -837,7 +837,8 @@ fi
 AM_CONDITIONAL(ENABLE_CURL, test x$enable_curl = xyes)
 
 dnl ----------------------------------- smbclient -----------------------------
-MPD_AUTO_PKG(smbclient, SMBCLIENT, [smbclient >= 0.2],
+MPD_AUTO_PKG_LIB(smbclient, SMBCLIENT, [smbclient >= 0.2],
+	[smbclient], [smbc_init], [-lsmbclient], [],
 	[smbclient input plugin], [libsmbclient not found])
 if test x$enable_smbclient = xyes; then
 	AC_DEFINE(ENABLE_SMBCLIENT, 1, [Define when libsmbclient is used])
