@@ -1188,26 +1188,6 @@ systemdsystemunit_DATA = \
 	systemd/mpd.service
 endif
 
-#
-# Sparse code analysis
-#
-# sparse is a semantic parser
-# URL: git://www.kernel.org/pub/scm/devel/sparse/sparse.git
-#
-
-SPARSE = sparse
-SPARSE_FLAGS =
-SPARSE_CPPFLAGS = $(DEFAULT_INCLUDES) \
-	-I$(shell $(CC) -print-file-name=include) \
-	-I$(shell $(CC) -print-file-name=include-fixed)
-SPARSE_CPPFLAGS += -D__SCHAR_MAX__=127 -D__SHRT_MAX__=32767 \
-	-D__INT_MAX__=2147483647 -D__LONG_MAX__=2147483647
-SPARSE_SRC = $(addprefix $(top_srcdir)/,$(filter %.c,$(src_mpd_SOURCES)))
-sparse-check:
-	$(SPARSE) -I. $(src_mpd_CFLAGS) $(src_mpd_CPPFLAGS) $(SPARSE_FLAGS) $(SPARSE_CPPFLAGS) $(SPARSE_SRC)
-
-.PHONY: sparse-check
-
 
 #
 # Test programs
