@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PlaylistDatabase.hxx"
-#include "PlaylistVector.hxx"
+#include "db/PlaylistVector.hxx"
 #include "fs/TextFile.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"

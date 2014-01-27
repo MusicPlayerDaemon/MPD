@@ -42,7 +42,7 @@
 #include "Stats.hxx"
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
-#include "PlaylistVector.hxx"
+#include "db/PlaylistVector.hxx"
 #include "client/ClientFile.hxx"
 #include "client/Client.hxx"
 #include "Idle.hxx"

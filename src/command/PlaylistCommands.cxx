@@ -24,7 +24,7 @@
 #include "PlaylistPrint.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
-#include "PlaylistVector.hxx"
+#include "db/PlaylistVector.hxx"
 #include "playlist/PlaylistQueue.hxx"
 #include "playlist/Print.hxx"
 #include "TimePrint.hxx"

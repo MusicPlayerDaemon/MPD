@@ -28,7 +28,7 @@
 #include "db/DatabaseSimple.hxx"
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
-#include "PlaylistVector.hxx"
+#include "db/PlaylistVector.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"

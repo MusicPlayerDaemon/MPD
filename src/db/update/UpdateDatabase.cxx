@@ -20,7 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "UpdateDatabase.hxx"
 #include "UpdateRemove.hxx"
-#include "PlaylistVector.hxx"
+#include "db/PlaylistVector.hxx"
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
 #include "db/DatabaseLock.hxx"

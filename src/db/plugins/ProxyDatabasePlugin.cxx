@@ -23,7 +23,7 @@
 #include "db/DatabaseListener.hxx"
 #include "db/Selection.hxx"
 #include "db/DatabaseError.hxx"
-#include "PlaylistInfo.hxx"
+#include "db/PlaylistInfo.hxx"
 #include "db/LightDirectory.hxx"
 #include "db/LightSong.hxx"
 #include "SongFilter.hxx"
