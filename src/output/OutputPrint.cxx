@@ -24,22 +24,20 @@
 
 #include "config.h"
 #include "OutputPrint.hxx"
-#include "OutputAll.hxx"
+#include "MultipleOutputs.hxx"
 #include "OutputInternal.hxx"
 #include "client/Client.hxx"
 
 void
-printAudioDevices(Client &client)
+printAudioDevices(Client &client, const MultipleOutputs &outputs)
 {
-	const unsigned n = audio_output_count();
-
-	for (unsigned i = 0; i < n; ++i) {
-		const struct audio_output *ao = audio_output_get(i);
+	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
+		const audio_output &ao = outputs.Get(i);
 
 		client_printf(client,
 			      "outputid: %i\n"
 			      "outputname: %s\n"
 			      "outputenabled: %i\n",
-			      i, ao->name, ao->enabled);
+			      i, ao.name, ao.enabled);
 	}
 }

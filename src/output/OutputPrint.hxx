@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2003-2014 The Music Player Daemon Project
  * http://www.musicpd.org
@@ -27,8 +26,9 @@
 #define MPD_OUTPUT_PRINT_HXX
 
 class Client;
+class MultipleOutputs;
 
 void
-printAudioDevices(Client &client);
+printAudioDevices(Client &client, const MultipleOutputs &outputs);
 
 #endif

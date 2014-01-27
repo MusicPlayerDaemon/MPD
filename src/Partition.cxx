@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Partition.hxx"
 #include "DetachedSong.hxx"
+#include "output/MultipleOutputs.hxx"
 
 void
 Partition::DatabaseModified()

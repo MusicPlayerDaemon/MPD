@@ -18,11 +18,10 @@
  */
 
 #include "config.h"
-#include "MixerAll.hxx"
+#include "output/MultipleOutputs.hxx"
 #include "MixerControl.hxx"
 #include "MixerInternal.hxx"
 #include "MixerList.hxx"
-#include "output/OutputAll.hxx"
 #include "output/OutputInternal.hxx"
 #include "pcm/Volume.hxx"
 #include "util/Error.hxx"
@@ -34,39 +33,33 @@
 static constexpr Domain mixer_domain("mixer");
 
 static int
-output_mixer_get_volume(unsigned i)
+output_mixer_get_volume(const audio_output &ao)
 {
-	struct audio_output *output;
-	int volume;
-
-	assert(i < audio_output_count());
-
-	output = audio_output_get(i);
-	if (!output->enabled)
+	if (!ao.enabled)
 		return -1;
 
-	Mixer *mixer = output->mixer;
+	Mixer *mixer = ao.mixer;
 	if (mixer == nullptr)
 		return -1;
 
 	Error error;
-	volume = mixer_get_volume(mixer, error);
+	int volume = mixer_get_volume(mixer, error);
 	if (volume < 0 && error.IsDefined())
 		FormatError(error,
 			    "Failed to read mixer for '%s'",
-			    output->name);
+			    ao.name);
 
 	return volume;
 }
 
 int
-mixer_all_get_volume(void)
+MultipleOutputs::GetVolume() const
 {
-	unsigned count = audio_output_count(), ok = 0;
-	int volume, total = 0;
+	unsigned ok = 0;
+	int total = 0;
 
-	for (unsigned i = 0; i < count; i++) {
-		volume = output_mixer_get_volume(i);
+	for (auto ao : outputs) {
+		int volume = output_mixer_get_volume(*ao);
 		if (volume >= 0) {
 			total += volume;
 			++ok;
@@ -80,59 +73,47 @@ mixer_all_get_volume(void)
 }
 
 static bool
-output_mixer_set_volume(unsigned i, unsigned volume)
+output_mixer_set_volume(audio_output &ao, unsigned volume)
 {
-	struct audio_output *output;
-	bool success;
-
-	assert(i < audio_output_count());
 	assert(volume <= 100);
 
-	output = audio_output_get(i);
-	if (!output->enabled)
+	if (!ao.enabled)
 		return false;
 
-	Mixer *mixer = output->mixer;
+	Mixer *mixer = ao.mixer;
 	if (mixer == nullptr)
 		return false;
 
 	Error error;
-	success = mixer_set_volume(mixer, volume, error);
+	bool success = mixer_set_volume(mixer, volume, error);
 	if (!success && error.IsDefined())
 		FormatError(error,
 			    "Failed to set mixer for '%s'",
-			    output->name);
+			    ao.name);
 
 	return success;
 }
 
 bool
-mixer_all_set_volume(unsigned volume)
+MultipleOutputs::SetVolume(unsigned volume)
 {
-	bool success = false;
-	unsigned count = audio_output_count();
-
 	assert(volume <= 100);
 
-	for (unsigned i = 0; i < count; i++)
-		success = output_mixer_set_volume(i, volume)
+	bool success = false;
+	for (auto ao : outputs)
+		success = output_mixer_set_volume(*ao, volume)
 			|| success;
 
 	return success;
 }
 
 static int
-output_mixer_get_software_volume(unsigned i)
+output_mixer_get_software_volume(const audio_output &ao)
 {
-	struct audio_output *output;
-
-	assert(i < audio_output_count());
-
-	output = audio_output_get(i);
-	if (!output->enabled)
+	if (!ao.enabled)
 		return -1;
 
-	Mixer *mixer = output->mixer;
+	Mixer *mixer = ao.mixer;
 	if (mixer == nullptr || !mixer->IsPlugin(software_mixer_plugin))
 		return -1;
 
@@ -140,13 +121,13 @@ output_mixer_get_software_volume(unsigned i)
 }
 
 int
-mixer_all_get_software_volume(void)
+MultipleOutputs::GetSoftwareVolume() const
 {
-	unsigned count = audio_output_count(), ok = 0;
-	int volume, total = 0;
+	unsigned ok = 0;
+	int total = 0;
 
-	for (unsigned i = 0; i < count; i++) {
-		volume = output_mixer_get_software_volume(i);
+	for (auto ao : outputs) {
+		int volume = output_mixer_get_software_volume(*ao);
 		if (volume >= 0) {
 			total += volume;
 			++ok;
@@ -160,16 +141,15 @@ mixer_all_get_software_volume(void)
 }
 
 void
-mixer_all_set_software_volume(unsigned volume)
+MultipleOutputs::SetSoftwareVolume(unsigned volume)
 {
-	unsigned count = audio_output_count();
-
 	assert(volume <= PCM_VOLUME_1);
 
-	for (unsigned i = 0; i < count; i++) {
-		struct audio_output *output = audio_output_get(i);
-		if (output->mixer != nullptr &&
-		    output->mixer->plugin == &software_mixer_plugin)
-			mixer_set_volume(output->mixer, volume, IgnoreError());
+	for (auto ao : outputs) {
+		const auto mixer = ao->mixer;
+
+		if (mixer != nullptr &&
+		    mixer->plugin == &software_mixer_plugin)
+			mixer_set_volume(mixer, volume, IgnoreError());
 	}
 }

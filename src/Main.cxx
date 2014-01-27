@@ -37,7 +37,6 @@
 #include "command/AllCommands.hxx"
 #include "Partition.hxx"
 #include "mixer/Volume.hxx"
-#include "output/OutputAll.hxx"
 #include "tag/TagConfig.hxx"
 #include "ReplayGainConfig.hxx"
 #include "Idle.hxx"
@@ -458,7 +457,7 @@ int mpd_main(int argc, char *argv[])
 	initialize_decoder_and_player();
 	volume_init();
 	initAudioConfig();
-	audio_output_all_init(instance->partition->pc);
+	instance->partition->outputs.Configure(instance->partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
 
@@ -500,7 +499,7 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(instance->partition->playlist.queue.random));
+	instance->partition->outputs.SetReplayGainMode(replay_gain_get_real_mode(instance->partition->playlist.queue.random));
 
 	if (config_get_bool(CONF_AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
@@ -567,7 +566,6 @@ int mpd_main(int argc, char *argv[])
 
 	playlist_list_global_finish();
 	input_stream_global_finish();
-	audio_output_all_finish();
 	mapper_finish();
 	delete instance->partition;
 	command_finish();

@@ -26,9 +26,11 @@
 
 #include <assert.h>
 
-PlayerControl::PlayerControl(unsigned _buffer_chunks,
+PlayerControl::PlayerControl(MultipleOutputs &_outputs,
+			     unsigned _buffer_chunks,
 			     unsigned _buffered_before_play)
-	:buffer_chunks(_buffer_chunks),
+	:outputs(_outputs),
+	 buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
 	 command(PlayerCommand::NONE),
 	 state(PlayerState::STOP),

@@ -24,15 +24,19 @@
 
 #include <stdio.h>
 
+class MultipleOutputs;
+
 void volume_init(void);
 
 gcc_pure
-int volume_level_get(void);
-
-bool volume_level_change(unsigned volume);
+int
+volume_level_get(const MultipleOutputs &outputs);
 
 bool
-read_sw_volume_state(const char *line);
+volume_level_change(MultipleOutputs &outputs, unsigned volume);
+
+bool
+read_sw_volume_state(const char *line, MultipleOutputs &outputs);
 
 void save_sw_volume_state(FILE *fp);
 

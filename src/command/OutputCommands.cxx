@@ -23,18 +23,17 @@
 #include "output/OutputCommand.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
+#include "client/Client.hxx"
+#include "Partition.hxx"
 
 CommandResult
 handle_enableoutput(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned device;
-	bool ret;
-
 	if (!check_unsigned(client, &device, argv[1]))
 		return CommandResult::ERROR;
 
-	ret = audio_output_enable_index(device);
-	if (!ret) {
+	if (!audio_output_enable_index(client.partition.outputs, device)) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "No such audio output");
 		return CommandResult::ERROR;
@@ -47,13 +46,10 @@ CommandResult
 handle_disableoutput(Client &client, gcc_unused int argc, char *argv[])
 {
 	unsigned device;
-	bool ret;
-
 	if (!check_unsigned(client, &device, argv[1]))
 		return CommandResult::ERROR;
 
-	ret = audio_output_disable_index(device);
-	if (!ret) {
+	if (!audio_output_disable_index(client.partition.outputs, device)) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "No such audio output");
 		return CommandResult::ERROR;
@@ -69,7 +65,7 @@ handle_toggleoutput(Client &client, gcc_unused int argc, char *argv[])
 	if (!check_unsigned(client, &device, argv[1]))
 		return CommandResult::ERROR;
 
-	if (!audio_output_toggle_index(device)) {
+	if (!audio_output_toggle_index(client.partition.outputs, device)) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "No such audio output");
 		return CommandResult::ERROR;
@@ -82,7 +78,7 @@ CommandResult
 handle_devices(Client &client,
 	       gcc_unused int argc, gcc_unused char *argv[])
 {
-	printAudioDevices(client);
+	printAudioDevices(client, client.partition.outputs);
 
 	return CommandResult::OK;
 }

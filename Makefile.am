@@ -961,7 +961,7 @@ OUTPUT_API_SRC = \
 	src/output/OutputAPI.hxx \
 	src/output/OutputInternal.hxx \
 	src/output/OutputList.cxx src/output/OutputList.hxx \
-	src/output/OutputAll.cxx src/output/OutputAll.hxx \
+	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
 	src/output/OutputThread.cxx src/output/OutputThread.hxx \
 	src/output/OutputError.cxx src/output/OutputError.hxx \
 	src/output/OutputControl.cxx src/output/OutputControl.hxx \
@@ -985,7 +985,7 @@ MIXER_API_SRC = \
 	src/mixer/MixerList.hxx \
 	src/mixer/MixerControl.cxx src/mixer/MixerControl.hxx \
 	src/mixer/MixerType.cxx src/mixer/MixerType.hxx \
-	src/mixer/MixerAll.cxx src/mixer/MixerAll.hxx \
+	src/mixer/MixerAll.cxx \
 	src/mixer/MixerInternal.hxx
 
 libmixer_plugins_a_SOURCES = \

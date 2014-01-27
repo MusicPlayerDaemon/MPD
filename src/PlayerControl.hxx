@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 
+class MultipleOutputs;
 class DetachedSong;
 
 enum class PlayerState : uint8_t {
@@ -91,6 +92,8 @@ struct player_status {
 };
 
 struct PlayerControl {
+	MultipleOutputs &outputs;
+
 	unsigned buffer_chunks;
 
 	unsigned int buffered_before_play;
@@ -170,7 +173,8 @@ struct PlayerControl {
 	 */
 	bool border_pause;
 
-	PlayerControl(unsigned buffer_chunks,
+	PlayerControl(MultipleOutputs &_outputs,
+		      unsigned buffer_chunks,
 		      unsigned buffered_before_play);
 	~PlayerControl();
 

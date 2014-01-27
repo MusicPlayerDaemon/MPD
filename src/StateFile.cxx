@@ -75,7 +75,7 @@ StateFile::Write()
 	}
 
 	save_sw_volume_state(fp);
-	audio_output_state_save(fp);
+	audio_output_state_save(fp, partition.outputs);
 	playlist_state_save(fp, partition.playlist, partition.pc);
 
 	fclose(fp);
@@ -99,8 +99,8 @@ StateFile::Read()
 
 	const char *line;
 	while ((line = file.ReadLine()) != NULL) {
-		success = read_sw_volume_state(line) ||
-			audio_output_state_read(line) ||
+		success = read_sw_volume_state(line, partition.outputs) ||
+			audio_output_state_read(line, partition.outputs) ||
 			playlist_state_restore(line, file, partition.playlist,
 					       partition.pc);
 		if (!success)

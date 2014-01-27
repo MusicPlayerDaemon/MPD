@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Volume.hxx"
-#include "MixerAll.hxx"
+#include "output/MultipleOutputs.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 #include "util/StringUtil.hxx"
@@ -59,36 +59,40 @@ void volume_init(void)
 	GlobalEvents::Register(GlobalEvents::MIXER, mixer_event_callback);
 }
 
-int volume_level_get(void)
+int
+volume_level_get(const MultipleOutputs &outputs)
 {
 	if (last_hardware_volume >= 0 &&
 	    !hardware_volume_clock.CheckUpdate(1000))
 		/* throttle access to hardware mixers */
 		return last_hardware_volume;
 
-	last_hardware_volume = mixer_all_get_volume();
+	last_hardware_volume = outputs.GetVolume();
 	return last_hardware_volume;
 }
 
-static bool software_volume_change(unsigned volume)
+static bool
+software_volume_change(MultipleOutputs &outputs, unsigned volume)
 {
 	assert(volume <= 100);
 
 	volume_software_set = volume;
-	mixer_all_set_software_volume(volume);
+	outputs.SetSoftwareVolume(volume);
 
 	return true;
 }
 
-static bool hardware_volume_change(unsigned volume)
+static bool
+hardware_volume_change(MultipleOutputs &outputs, unsigned volume)
 {
 	/* reset the cache */
 	last_hardware_volume = -1;
 
-	return mixer_all_set_volume(volume);
+	return outputs.SetVolume(volume);
 }
 
-bool volume_level_change(unsigned volume)
+bool
+volume_level_change(MultipleOutputs &outputs, unsigned volume)
 {
 	assert(volume <= 100);
 
@@ -96,11 +100,11 @@ bool volume_level_change(unsigned volume)
 
 	idle_add(IDLE_MIXER);
 
-	return hardware_volume_change(volume);
+	return hardware_volume_change(outputs, volume);
 }
 
 bool
-read_sw_volume_state(const char *line)
+read_sw_volume_state(const char *line, MultipleOutputs &outputs)
 {
 	char *end = nullptr;
 	long int sv;
@@ -111,7 +115,7 @@ read_sw_volume_state(const char *line)
 	line += sizeof(SW_VOLUME_STATE) - 1;
 	sv = strtol(line, &end, 10);
 	if (*end == 0 && sv >= 0 && sv <= 100)
-		software_volume_change(sv);
+		software_volume_change(outputs, sv);
 	else
 		FormatWarning(volume_domain,
 			      "Can't parse software volume: %s", line);

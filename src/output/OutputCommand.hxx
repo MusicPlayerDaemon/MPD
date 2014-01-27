@@ -27,25 +27,27 @@
 #ifndef MPD_OUTPUT_COMMAND_HXX
 #define MPD_OUTPUT_COMMAND_HXX
 
+class MultipleOutputs;
+
 /**
  * Enables an audio output.  Returns false if the specified output
  * does not exist.
  */
 bool
-audio_output_enable_index(unsigned idx);
+audio_output_enable_index(MultipleOutputs &outputs, unsigned idx);
 
 /**
  * Disables an audio output.  Returns false if the specified output
  * does not exist.
  */
 bool
-audio_output_disable_index(unsigned idx);
+audio_output_disable_index(MultipleOutputs &outputs, unsigned idx);
 
 /**
  * Toggles an audio output.  Returns false if the specified output
  * does not exist.
  */
 bool
-audio_output_toggle_index(unsigned idx);
+audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx);
 
 #endif

@@ -24,7 +24,7 @@
 
 #include "config.h"
 #include "OutputState.hxx"
-#include "OutputAll.hxx"
+#include "MultipleOutputs.hxx"
 #include "OutputInternal.hxx"
 #include "OutputError.hxx"
 #include "Log.hxx"
@@ -38,27 +38,22 @@
 unsigned audio_output_state_version;
 
 void
-audio_output_state_save(FILE *fp)
+audio_output_state_save(FILE *fp, const MultipleOutputs &outputs)
 {
-	unsigned n = audio_output_count();
-
-	assert(n > 0);
-
-	for (unsigned i = 0; i < n; ++i) {
-		const struct audio_output *ao = audio_output_get(i);
+	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
+		const audio_output &ao = outputs.Get(i);
 
 		fprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
-			ao->enabled, ao->name);
+			ao.enabled, ao.name);
 	}
 }
 
 bool
-audio_output_state_read(const char *line)
+audio_output_state_read(const char *line, MultipleOutputs &outputs)
 {
 	long value;
 	char *endptr;
 	const char *name;
-	struct audio_output *ao;
 
 	if (!StringStartsWith(line, AUDIO_DEVICE_STATE))
 		return false;
@@ -74,7 +69,7 @@ audio_output_state_read(const char *line)
 		return true;
 
 	name = endptr + 1;
-	ao = audio_output_find(name);
+	audio_output *ao = outputs.FindByName(name);
 	if (ao == NULL) {
 		FormatDebug(output_domain,
 			    "Ignoring device state for '%s'", name);

@@ -28,7 +28,7 @@
 #include "system/FatalError.hxx"
 #include "CrossFade.hxx"
 #include "PlayerControl.hxx"
-#include "output/OutputAll.hxx"
+#include "output/MultipleOutputs.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
@@ -125,7 +125,7 @@ class Player {
 	/**
 	 * The time stamp of the chunk most recently sent to the
 	 * output thread.  This attribute is only used if
-	 * audio_output_all_get_elapsed_time() didn't return a usable
+	 * MultipleOutputs::GetElapsedTime() didn't return a usable
 	 * value; the output thread can estimate the elapsed time more
 	 * precisely.
 	 */
@@ -228,8 +228,8 @@ private:
 	bool WaitForDecoder();
 
 	/**
-	 * Wrapper for audio_output_all_open().  Upon failure, it pauses the
-	 * player.
+	 * Wrapper for MultipleOutputs::Open().  Upon failure, it
+	 * pauses the player.
 	 *
 	 * @return true on success
 	 */
@@ -393,7 +393,7 @@ Player::OpenOutput()
 	       pc.state == PlayerState::PAUSE);
 
 	Error error;
-	if (audio_output_all_open(play_audio_format, buffer, error)) {
+	if (pc.outputs.Open(play_audio_format, buffer, error)) {
 		output_open = true;
 		paused = false;
 
@@ -444,7 +444,7 @@ Player::CheckDecoderStartup()
 		pc.Unlock();
 
 		if (output_open &&
-		    !audio_output_all_wait(pc, 1))
+		    !pc.outputs.Wait(pc, 1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
 			return true;
@@ -504,7 +504,7 @@ Player::SendSilence()
 	memset(chunk->data, 0, chunk->length);
 
 	Error error;
-	if (!audio_output_all_play(chunk, error)) {
+	if (!pc.outputs.Play(chunk, error)) {
 		LogError(error);
 		buffer.Return(chunk);
 		return false;
@@ -582,7 +582,7 @@ Player::SeekDecoder()
 	/* re-fill the buffer after seeking */
 	buffering = true;
 
-	audio_output_all_cancel();
+	pc.outputs.Cancel();
 
 	return true;
 }
@@ -599,7 +599,7 @@ Player::ProcessCommand()
 
 	case PlayerCommand::UPDATE_AUDIO:
 		pc.Unlock();
-		audio_output_all_enable_disable();
+		pc.outputs.EnableDisable();
 		pc.Lock();
 		pc.CommandFinished();
 		break;
@@ -618,7 +618,7 @@ Player::ProcessCommand()
 
 		paused = !paused;
 		if (paused) {
-			audio_output_all_pause();
+			pc.outputs.Pause();
 			pc.Lock();
 
 			pc.state = PlayerState::PAUSE;
@@ -669,11 +669,11 @@ Player::ProcessCommand()
 	case PlayerCommand::REFRESH:
 		if (output_open && !paused) {
 			pc.Unlock();
-			audio_output_all_check();
+			pc.outputs.Check();
 			pc.Lock();
 		}
 
-		pc.elapsed_time = audio_output_all_get_elapsed_time();
+		pc.elapsed_time = pc.outputs.GetElapsedTime();
 		if (pc.elapsed_time < 0.0)
 			pc.elapsed_time = elapsed_time;
 
@@ -733,7 +733,7 @@ play_chunk(PlayerControl &pc,
 
 	/* send the chunk to the audio outputs */
 
-	if (!audio_output_all_play(chunk, error))
+	if (!pc.outputs.Play(chunk, error))
 		return false;
 
 	pc.total_play_time += (double)chunk->length /
@@ -744,7 +744,7 @@ play_chunk(PlayerControl &pc,
 inline bool
 Player::PlayNextChunk()
 {
-	if (!audio_output_all_wait(pc, 64))
+	if (!pc.outputs.Wait(pc, 64))
 		/* the output pipe is still large enough, don't send
 		   another chunk */
 		return true;
@@ -883,7 +883,7 @@ Player::SongBorder()
 
 	ReplacePipe(dc.pipe);
 
-	audio_output_all_song_border();
+	pc.outputs.SongBorder();
 
 	if (!WaitForDecoder())
 		return false;
@@ -933,7 +933,7 @@ Player::Run()
 		    pc.command == PlayerCommand::EXIT ||
 		    pc.command == PlayerCommand::CLOSE_AUDIO) {
 			pc.Unlock();
-			audio_output_all_cancel();
+			pc.outputs.Cancel();
 			break;
 		}
 
@@ -949,7 +949,7 @@ Player::Run()
 				/* not enough decoded buffer space yet */
 
 				if (!paused && output_open &&
-				    audio_output_all_check() < 4 &&
+				    pc.outputs.Check() < 4 &&
 				    !SendSilence())
 					break;
 
@@ -1029,7 +1029,7 @@ Player::Run()
 			   to the audio output */
 
 			PlayNextChunk();
-		} else if (audio_output_all_check() > 0) {
+		} else if (pc.outputs.Check() > 0) {
 			/* not enough data from decoder, but the
 			   output thread is still busy, so it's
 			   okay */
@@ -1054,7 +1054,7 @@ Player::Run()
 			if (pipe->IsEmpty()) {
 				/* wait for the hardware to finish
 				   playback */
-				audio_output_all_drain();
+				pc.outputs.Drain();
 				break;
 			}
 		} else if (output_open) {
@@ -1130,7 +1130,7 @@ player_task(void *arg)
 
 		case PlayerCommand::STOP:
 			pc.Unlock();
-			audio_output_all_cancel();
+			pc.outputs.Cancel();
 			pc.Lock();
 
 			/* fall through */
@@ -1145,7 +1145,7 @@ player_task(void *arg)
 		case PlayerCommand::CLOSE_AUDIO:
 			pc.Unlock();
 
-			audio_output_all_release();
+			pc.outputs.Release();
 
 			pc.Lock();
 			pc.CommandFinished();
@@ -1156,7 +1156,7 @@ player_task(void *arg)
 
 		case PlayerCommand::UPDATE_AUDIO:
 			pc.Unlock();
-			audio_output_all_enable_disable();
+			pc.outputs.EnableDisable();
 			pc.Lock();
 			pc.CommandFinished();
 			break;
@@ -1166,7 +1166,7 @@ player_task(void *arg)
 
 			dc.Quit();
 
-			audio_output_all_close();
+			pc.outputs.Close();
 
 			player_command_finished(pc);
 			return;

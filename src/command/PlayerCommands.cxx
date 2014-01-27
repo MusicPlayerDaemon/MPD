@@ -25,7 +25,6 @@
 #include "db/update/UpdateGlue.hxx"
 #include "client/Client.hxx"
 #include "mixer/Volume.hxx"
-#include "output/OutputAll.hxx"
 #include "Partition.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
@@ -140,7 +139,7 @@ handle_status(Client &client,
 		      COMMAND_STATUS_PLAYLIST_LENGTH ": %i\n"
 		      COMMAND_STATUS_MIXRAMPDB ": %f\n"
 		      COMMAND_STATUS_STATE ": %s\n",
-		      volume_level_get(),
+		      volume_level_get(client.partition.outputs),
 		      playlist.GetRepeat(),
 		      playlist.GetRandom(),
 		      playlist.GetSingle(),
@@ -277,7 +276,7 @@ handle_random(Client &client, gcc_unused int argc, char *argv[])
 		return CommandResult::ERROR;
 
 	client.partition.SetRandom(status);
-	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(client.partition.GetRandom()));
+	client.partition.outputs.SetReplayGainMode(replay_gain_get_real_mode(client.partition.GetRandom()));
 	return CommandResult::OK;
 }
 
@@ -379,8 +378,7 @@ handle_replay_gain_mode(Client &client,
 		return CommandResult::ERROR;
 	}
 
-	audio_output_all_set_replay_gain_mode(replay_gain_get_real_mode(client.playlist.queue.random));
-
+	client.partition.outputs.SetReplayGainMode(replay_gain_get_real_mode(client.playlist.queue.random));
 	return CommandResult::OK;
 }
 

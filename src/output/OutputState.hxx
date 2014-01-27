@@ -27,11 +27,13 @@
 
 #include <stdio.h>
 
+class MultipleOutputs;
+
 bool
-audio_output_state_read(const char *line);
+audio_output_state_read(const char *line, MultipleOutputs &outputs);
 
 void
-audio_output_state_save(FILE *fp);
+audio_output_state_save(FILE *fp, const MultipleOutputs &outputs);
 
 /**
  * Generates a version number for the current state of the audio

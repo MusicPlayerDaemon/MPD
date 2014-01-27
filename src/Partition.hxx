@@ -21,9 +21,11 @@
 #define MPD_PARTITION_HXX
 
 #include "Playlist.hxx"
+#include "output/MultipleOutputs.hxx"
 #include "PlayerControl.hxx"
 
 struct Instance;
+class MultipleOutputs;
 
 /**
  * A partition of the Music Player Daemon.  It is a separate unit with
@@ -34,6 +36,8 @@ struct Partition {
 
 	struct playlist playlist;
 
+	MultipleOutputs outputs;
+
 	PlayerControl pc;
 
 	Partition(Instance &_instance,
@@ -41,8 +45,7 @@ struct Partition {
 		  unsigned buffer_chunks,
 		  unsigned buffered_before_play)
 		:instance(_instance), playlist(max_length),
-		 pc(buffer_chunks, buffered_before_play) {
-	}
+		 pc(outputs, buffer_chunks, buffered_before_play) {}
 
 	void ClearQueue() {
 		playlist.Clear(pc);

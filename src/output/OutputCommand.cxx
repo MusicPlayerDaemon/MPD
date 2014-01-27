@@ -26,7 +26,7 @@
 
 #include "config.h"
 #include "OutputCommand.hxx"
-#include "OutputAll.hxx"
+#include "MultipleOutputs.hxx"
 #include "OutputInternal.hxx"
 #include "PlayerControl.hxx"
 #include "mixer/MixerControl.hxx"
@@ -35,21 +35,19 @@
 extern unsigned audio_output_state_version;
 
 bool
-audio_output_enable_index(unsigned idx)
+audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
 {
-	struct audio_output *ao;
-
-	if (idx >= audio_output_count())
+	if (idx >= outputs.Size())
 		return false;
 
-	ao = audio_output_get(idx);
-	if (ao->enabled)
+	audio_output &ao = outputs.Get(idx);
+	if (ao.enabled)
 		return true;
 
-	ao->enabled = true;
+	ao.enabled = true;
 	idle_add(IDLE_OUTPUT);
 
-	ao->player_control->UpdateAudio();
+	ao.player_control->UpdateAudio();
 
 	++audio_output_state_version;
 
@@ -57,27 +55,25 @@ audio_output_enable_index(unsigned idx)
 }
 
 bool
-audio_output_disable_index(unsigned idx)
+audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
 {
-	struct audio_output *ao;
-
-	if (idx >= audio_output_count())
+	if (idx >= outputs.Size())
 		return false;
 
-	ao = audio_output_get(idx);
-	if (!ao->enabled)
+	audio_output &ao = outputs.Get(idx);
+	if (!ao.enabled)
 		return true;
 
-	ao->enabled = false;
+	ao.enabled = false;
 	idle_add(IDLE_OUTPUT);
 
-	Mixer *mixer = ao->mixer;
+	Mixer *mixer = ao.mixer;
 	if (mixer != nullptr) {
 		mixer_close(mixer);
 		idle_add(IDLE_MIXER);
 	}
 
-	ao->player_control->UpdateAudio();
+	ao.player_control->UpdateAudio();
 
 	++audio_output_state_version;
 
@@ -85,26 +81,24 @@ audio_output_disable_index(unsigned idx)
 }
 
 bool
-audio_output_toggle_index(unsigned idx)
+audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx)
 {
-	struct audio_output *ao;
-
-	if (idx >= audio_output_count())
+	if (idx >= outputs.Size())
 		return false;
 
-	ao = audio_output_get(idx);
-	const bool enabled = ao->enabled = !ao->enabled;
+	audio_output &ao = outputs.Get(idx);
+	const bool enabled = ao.enabled = !ao.enabled;
 	idle_add(IDLE_OUTPUT);
 
 	if (!enabled) {
-		Mixer *mixer = ao->mixer;
+		Mixer *mixer = ao.mixer;
 		if (mixer != nullptr) {
 			mixer_close(mixer);
 			idle_add(IDLE_MIXER);
 		}
 	}
 
-	ao->player_control->UpdateAudio();
+	ao.player_control->UpdateAudio();
 
 	++audio_output_state_version;
 

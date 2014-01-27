@@ -45,6 +45,7 @@
 #include "db/PlaylistVector.hxx"
 #include "client/ClientFile.hxx"
 #include "client/Client.hxx"
+#include "Partition.hxx"
 #include "Idle.hxx"
 
 #include <assert.h>
@@ -254,7 +255,7 @@ handle_setvol(Client &client, gcc_unused int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	success = volume_level_change(level);
+	success = volume_level_change(client.partition.outputs, level);
 	if (!success) {
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "problems setting volume");
@@ -276,7 +277,7 @@ handle_volume(Client &client, gcc_unused int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	const int old_volume = volume_level_get();
+	const int old_volume = volume_level_get(client.partition.outputs);
 	if (old_volume < 0) {
 		command_error(client, ACK_ERROR_SYSTEM, "No mixer");
 		return CommandResult::ERROR;
@@ -288,7 +289,8 @@ handle_volume(Client &client, gcc_unused int argc, char *argv[])
 	else if (new_volume > 100)
 		new_volume = 100;
 
-	if (new_volume != old_volume && !volume_level_change(new_volume)) {
+	if (new_volume != old_volume &&
+	    !volume_level_change(client.partition.outputs, new_volume)) {
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "problems setting volume");
 		return CommandResult::ERROR;
