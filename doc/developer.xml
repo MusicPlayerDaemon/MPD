@@ -158,4 +158,41 @@ foo(const char *abc, int xyz)
       <email>mpd-devel@musicpd.org</email>
     </para>
   </chapter>
+
+  <chapter>
+    <title>Development Tools</title>
+
+    <section>
+      <title>Clang Static Analyzer</title>
+
+      <para>
+        The <ulink url="http://clang-analyzer.llvm.org/">clang static
+        analyzer</ulink> is a tool that helps find bugs.  To run it on
+        the MPD code base, install LLVM and clang.  Configure MPD to
+        use clang:
+      </para>
+
+      <programlisting>./configure --enable-debug CXX=clang++ CC=clang ...</programlisting>
+
+      <para>
+        It is recommended to use <option>--enable-debug</option>,
+        because the analyzer takes advantage of
+        <function>assert()</function> calls, which are only enabled in
+        the debug build.
+      </para>
+
+      <para>
+        Now run the analyzer:
+      </para>
+
+      <programlisting>scan-build --use-c++=clang++ --use-cc=clang make</programlisting>
+
+      <para>
+        The options <option>--use-c++</option> and
+        <option>--use-cc</option> are necessary because it invokes
+        <command>cc</command> for actually compiling the sources by
+        default.  That breaks, because MPD requires a C99 compiler.
+      </para>
+    </section>
+  </chapter>
 </book>
