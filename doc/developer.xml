@@ -155,7 +155,9 @@ foo(const char *abc, int xyz)
 
     <para>
       Send your patches to the mailing list:
-      <email>mpd-devel@musicpd.org</email>
+      <email>mpd-devel@musicpd.org</email> (<ulink
+      url="http://mailman.blarg.de/listinfo/mpd-devel">subscribe
+      here</ulink>)
     </para>
   </chapter>
 
