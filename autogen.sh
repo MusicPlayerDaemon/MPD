@@ -102,23 +102,6 @@ echo "Generating configuration files for $package, please wait...."
 
 ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I m4"
 
-# /usr/share/aclocal is most likely included by default, already...
-ac_local_paths='
-/usr/local/share/aclocal
-/sw/share/aclocal
-/usr/pkg/share/aclocal
-/opt/share/aclocal
-/usr/gnu/share/aclocal
-'
-
-for i in $ac_local_paths; do
-	if test -d "$i"; then
-		ACLOCAL_FLAGS="$ACLOCAL_FLAGS -I $i"
-		# we probably only want one of these...
-		break
-	fi
-done
-
 rm -rf config.cache build
 mkdir build
 
