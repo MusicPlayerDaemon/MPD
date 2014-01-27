@@ -155,7 +155,7 @@ foo(const char *abc, int xyz)
 
     <para>
       Send your patches to the mailing list:
-      musicpd-dev-team@lists.sourceforge.net
+      mpd-devel@musicpd.org
     </para>
   </chapter>
 </book>

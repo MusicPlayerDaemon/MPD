@@ -1199,6 +1199,7 @@ C_TESTS = \
 	test/test_util \
 	test/test_byte_reverse \
 	test/test_mixramp \
+	test/test_icy_parser \
 	test/test_pcm \
 	test/test_translate_song \
 	test/test_queue_priority
@@ -1663,6 +1664,17 @@ test_test_mixramp_SOURCES = \
 test_test_mixramp_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_mixramp_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_mixramp_LDADD = \
+	$(GLIB_LIBS) \
+	$(CPPUNIT_LIBS)
+
+test_test_icy_parser_SOURCES = \
+	src/Log.cxx src/LogBackend.cxx \
+	test/test_icy_parser.cxx
+test_test_icy_parser_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_icy_parser_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_test_icy_parser_LDADD = \
+	libtag.a \
+	libutil.a \
 	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
