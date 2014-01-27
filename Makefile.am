@@ -288,7 +288,7 @@ libutil_a_SOURCES = \
 	src/util/SliceBuffer.hxx \
 	src/util/HugeAllocator.cxx src/util/HugeAllocator.hxx \
 	src/util/PeakBuffer.cxx src/util/PeakBuffer.hxx \
-	src/util/OptionParser.cxx OptionParser.hxx \
+	src/util/OptionParser.cxx src/util/OptionParser.hxx \
 	src/util/OptionDef.hxx \
 	src/util/list.h \
 	src/util/list_sort.c src/util/list_sort.h \
@@ -785,8 +785,8 @@ ENCODER_LIBS = \
 	$(VORBISENC_LIBS)
 
 libencoder_plugins_a_SOURCES = \
-	src/EncoderAPI.hxx \
-	src/EncoderPlugin.hxx \
+	src/encoder/EncoderAPI.hxx \
+	src/encoder/EncoderPlugin.hxx \
 	src/encoder/plugins/OggStream.hxx \
 	src/encoder/plugins/NullEncoderPlugin.cxx \
 	src/encoder/plugins/NullEncoderPlugin.hxx \
