@@ -51,6 +51,7 @@ const Domain httpd_output_domain("httpd_output");
 inline
 HttpdOutput::HttpdOutput(EventLoop &_loop)
 	:ServerSocket(_loop), DeferredMonitor(_loop),
+	 base(httpd_output_plugin),
 	 encoder(nullptr), unflushed_input(0),
 	 metadata(nullptr)
 {
@@ -136,7 +137,7 @@ HttpdOutput::Configure(const config_param &param, Error &error)
 inline bool
 HttpdOutput::Init(const config_param &param, Error &error)
 {
-	return ao_base_init(&base, &httpd_output_plugin, param, error);
+	return ao_base_init(&base, param, error);
 }
 
 static AudioOutput *

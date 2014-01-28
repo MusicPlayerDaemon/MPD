@@ -46,8 +46,9 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
-AudioOutput::AudioOutput()
-	:enabled(true), really_enabled(false),
+AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
+	:plugin(&_plugin),
+	 enabled(true), really_enabled(false),
 	 open(false),
 	 pause(false),
 	 allow_play(true),
@@ -58,6 +59,10 @@ AudioOutput::AudioOutput()
 	 other_replay_gain_filter(nullptr),
 	 command(AO_COMMAND_NONE)
 {
+	assert(plugin->finish != nullptr);
+	assert(plugin->open != nullptr);
+	assert(plugin->close != nullptr);
+	assert(plugin->play != nullptr);
 }
 
 static const AudioOutputPlugin *
@@ -143,15 +148,9 @@ audio_output_load_mixer(AudioOutput *ao,
 
 bool
 ao_base_init(AudioOutput *ao,
-	     const AudioOutputPlugin *plugin,
 	     const config_param &param, Error &error)
 {
 	assert(ao != nullptr);
-	assert(plugin != nullptr);
-	assert(plugin->finish != nullptr);
-	assert(plugin->open != nullptr);
-	assert(plugin->close != nullptr);
-	assert(plugin->play != nullptr);
 
 	if (!param.IsNull()) {
 		ao->name = param.GetBlockValue(AUDIO_OUTPUT_NAME);
@@ -176,7 +175,6 @@ ao_base_init(AudioOutput *ao,
 		ao->config_audio_format.Clear();
 	}
 
-	ao->plugin = plugin;
 	ao->tags = param.GetBlockValue("tags", true);
 	ao->always_on = param.GetBlockValue("always_on", false);
 	ao->enabled = param.GetBlockValue("enabled", true);

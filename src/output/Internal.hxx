@@ -69,7 +69,7 @@ struct AudioOutput {
 	/**
 	 * The plugin which implements this output device.
 	 */
-	const AudioOutputPlugin *plugin;
+	const AudioOutputPlugin *const plugin;
 
 	/**
 	 * The #mixer object associated with this audio output device.
@@ -264,7 +264,7 @@ struct AudioOutput {
 	 */
 	bool chunk_finished;
 
-	AudioOutput();
+	AudioOutput(const AudioOutputPlugin &_plugin);
 	~AudioOutput();
 };
 
@@ -293,7 +293,6 @@ audio_output_new(const config_param &param,
 
 bool
 ao_base_init(AudioOutput *ao,
-	     const AudioOutputPlugin *plugin,
 	     const config_param &param, Error &error);
 
 void

@@ -45,6 +45,9 @@ struct OSXOutput {
 	Cond condition;
 
 	DynamicFifoBuffer<uint8_t> *buffer;
+
+	OSXOutput()
+		:base(osx_output_plugin) {}
 };
 
 static constexpr Domain osx_output_domain("osx_output");
@@ -81,7 +84,7 @@ static AudioOutput *
 osx_output_init(const config_param &param, Error &error)
 {
 	OSXOutput *oo = new OSXOutput();
-	if (!ao_base_init(&oo->base, &osx_output_plugin, param, error)) {
+	if (!ao_base_init(&oo->base, param, error)) {
 		delete oo;
 		return NULL;
 	}

@@ -47,12 +47,12 @@ struct FifoOutput {
 	Timer *timer;
 
 	FifoOutput()
-		:path(AllocatedPath::Null()), input(-1), output(-1),
+		:base(fifo_output_plugin),
+		 path(AllocatedPath::Null()), input(-1), output(-1),
 		 created(false) {}
 
 	bool Initialize(const config_param &param, Error &error) {
-		return ao_base_init(&base, &fifo_output_plugin, param,
-				    error);
+		return ao_base_init(&base, param, error);
 	}
 
 	bool Create(Error &error);

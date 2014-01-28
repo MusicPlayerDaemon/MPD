@@ -55,6 +55,9 @@ struct PulseOutput {
 	struct pa_stream *stream;
 
 	size_t writable;
+
+	PulseOutput()
+		:base(pulse_output_plugin) {}
 };
 
 static constexpr Domain pulse_output_domain("pulse_output");
@@ -331,7 +334,7 @@ pulse_output_init(const config_param &param, Error &error)
 	g_setenv("PULSE_PROP_media.role", "music", true);
 
 	po = new PulseOutput();
-	if (!ao_base_init(&po->base, &pulse_output_plugin, param, error)) {
+	if (!ao_base_init(&po->base, param, error)) {
 		delete po;
 		return nullptr;
 	}

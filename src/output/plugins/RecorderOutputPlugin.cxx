@@ -57,9 +57,11 @@ struct RecorderOutput {
 	 */
 	char buffer[32768];
 
+	RecorderOutput()
+		:base(recorder_output_plugin) {}
+
 	bool Initialize(const config_param &param, Error &error_r) {
-		return ao_base_init(&base, &recorder_output_plugin, param,
-				    error_r);
+		return ao_base_init(&base, param, error_r);
 	}
 
 	bool Configure(const config_param &param, Error &error);

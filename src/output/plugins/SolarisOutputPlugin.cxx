@@ -57,9 +57,11 @@ struct SolarisOutput {
 
 	int fd;
 
+	SolarisOutput()
+		:base(solaris_output_plugin) {}
+
 	bool Initialize(const config_param &param, Error &error_r) {
-		return ao_base_init(&base, &solaris_output_plugin, param,
-				    error_r);
+		return ao_base_init(&base, param, error_r);
 	}
 };
 

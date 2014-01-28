@@ -54,7 +54,8 @@ struct ShoutOutput final {
 	uint8_t buffer[32768];
 
 	ShoutOutput()
-		:shout_conn(shout_new()),
+		:base(shout_output_plugin),
+		 shout_conn(shout_new()),
 		shout_meta(shout_metadata_new()),
 		quality(-2.0),
 		bitrate(-1),
@@ -68,8 +69,7 @@ struct ShoutOutput final {
 	}
 
 	bool Initialize(const config_param &param, Error &error) {
-		return ao_base_init(&base, &shout_output_plugin, param,
-				    error);
+		return ao_base_init(&base, param, error);
 	}
 
 	bool Configure(const config_param &param, Error &error);

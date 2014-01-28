@@ -42,9 +42,11 @@ struct AoOutput {
 	ao_option *options;
 	ao_device *device;
 
+	AoOutput()
+		:base(ao_output_plugin) {}
+
 	bool Initialize(const config_param &param, Error &error) {
-		return ao_base_init(&base, &ao_output_plugin, param,
-				    error);
+		return ao_base_init(&base, param, error);
 	}
 
 	bool Configure(const config_param &param, Error &error);

@@ -119,12 +119,13 @@ struct AlsaOutput {
 	 */
 	uint8_t *silence;
 
-	AlsaOutput():mode(0), writei(snd_pcm_writei) {
+	AlsaOutput()
+		:base(alsa_output_plugin),
+		 mode(0), writei(snd_pcm_writei) {
 	}
 
 	bool Init(const config_param &param, Error &error) {
-		return ao_base_init(&base, &alsa_output_plugin,
-				    param, error);
+		return ao_base_init(&base, param, error);
 	}
 };
 

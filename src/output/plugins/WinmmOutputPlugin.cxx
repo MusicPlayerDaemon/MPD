@@ -51,6 +51,9 @@ struct WinmmOutput {
 
 	WinmmBuffer buffers[8];
 	unsigned next_buffer;
+
+	WinmmBuffer()
+		:base(winmm_output_plugin) {}
 };
 
 static constexpr Domain winmm_output_domain("winmm_output");
@@ -112,7 +115,7 @@ static AudioOutput *
 winmm_output_init(const config_param &param, Error &error)
 {
 	WinmmOutput *wo = new WinmmOutput();
-	if (!ao_base_init(&wo->base, &winmm_output_plugin, param, error)) {
+	if (!ao_base_init(&wo->base, param, error)) {
 		delete wo;
 		return nullptr;
 	}

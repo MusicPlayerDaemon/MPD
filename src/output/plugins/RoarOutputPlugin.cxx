@@ -50,15 +50,15 @@ class RoarOutput {
 
 public:
 	RoarOutput()
-		:err(ROAR_ERROR_NONE) {}
+		:base(roar_output_plugin),
+		 err(ROAR_ERROR_NONE) {}
 
 	operator AudioOutput *() {
 		return &base;
 	}
 
 	bool Initialize(const config_param &param, Error &error) {
-		return ao_base_init(&base, &roar_output_plugin, param,
-				    error);
+		return ao_base_init(&base, param, error);
 	}
 
 	void Configure(const config_param &param);
