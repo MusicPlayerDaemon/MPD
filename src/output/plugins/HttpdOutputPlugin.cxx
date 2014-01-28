@@ -139,12 +139,12 @@ HttpdOutput::Init(const config_param &param, Error &error)
 	return ao_base_init(&base, &httpd_output_plugin, param, error);
 }
 
-static struct audio_output *
+static AudioOutput *
 httpd_output_init(const config_param &param, Error &error)
 {
 	HttpdOutput *httpd = new HttpdOutput(io_thread_get());
 
-	audio_output *result = httpd->InitAndConfigure(param, error);
+	AudioOutput *result = httpd->InitAndConfigure(param, error);
 	if (result == nullptr)
 		delete httpd;
 
@@ -152,7 +152,7 @@ httpd_output_init(const config_param &param, Error &error)
 }
 
 static void
-httpd_output_finish(struct audio_output *ao)
+httpd_output_finish(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
@@ -276,7 +276,7 @@ HttpdOutput::ReadPage()
 }
 
 static bool
-httpd_output_enable(struct audio_output *ao, Error &error)
+httpd_output_enable(AudioOutput *ao, Error &error)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
@@ -284,7 +284,7 @@ httpd_output_enable(struct audio_output *ao, Error &error)
 }
 
 static void
-httpd_output_disable(struct audio_output *ao)
+httpd_output_disable(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
@@ -329,7 +329,7 @@ HttpdOutput::Open(AudioFormat &audio_format, Error &error)
 }
 
 static bool
-httpd_output_open(struct audio_output *ao, AudioFormat &audio_format,
+httpd_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		  Error &error)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
@@ -358,7 +358,7 @@ HttpdOutput::Close()
 }
 
 static void
-httpd_output_close(struct audio_output *ao)
+httpd_output_close(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
@@ -411,7 +411,7 @@ HttpdOutput::Delay() const
 }
 
 static unsigned
-httpd_output_delay(struct audio_output *ao)
+httpd_output_delay(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
@@ -476,7 +476,7 @@ HttpdOutput::Play(const void *chunk, size_t size, Error &error)
 }
 
 static size_t
-httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
+httpd_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		  Error &error)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
@@ -485,7 +485,7 @@ httpd_output_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 static bool
-httpd_output_pause(struct audio_output *ao)
+httpd_output_pause(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
@@ -548,7 +548,7 @@ HttpdOutput::SendTag(const Tag *tag)
 }
 
 static void
-httpd_output_tag(struct audio_output *ao, const Tag *tag)
+httpd_output_tag(AudioOutput *ao, const Tag *tag)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
@@ -573,7 +573,7 @@ HttpdOutput::CancelAllClients()
 }
 
 static void
-httpd_output_cancel(struct audio_output *ao)
+httpd_output_cancel(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 

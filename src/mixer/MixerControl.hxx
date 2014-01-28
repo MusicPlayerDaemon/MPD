@@ -46,7 +46,7 @@ mixer_close(Mixer *mixer);
 
 /**
  * Close the mixer unless the plugin's "global" flag is set.  This is
- * called when the #audio_output is closed.
+ * called when the #AudioOutput is closed.
  */
 void
 mixer_auto_close(Mixer *mixer);

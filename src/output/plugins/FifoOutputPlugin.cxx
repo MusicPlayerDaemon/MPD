@@ -36,7 +36,7 @@
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
 
 struct FifoOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	AllocatedPath path;
 	std::string path_utf8;
@@ -172,7 +172,7 @@ fifo_open(FifoOutput *fd, Error &error)
 	return fd->Open(error);
 }
 
-static struct audio_output *
+static AudioOutput *
 fifo_output_init(const config_param &param, Error &error)
 {
 	FifoOutput *fd = new FifoOutput();
@@ -204,7 +204,7 @@ fifo_output_init(const config_param &param, Error &error)
 }
 
 static void
-fifo_output_finish(struct audio_output *ao)
+fifo_output_finish(AudioOutput *ao)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 
@@ -214,7 +214,7 @@ fifo_output_finish(struct audio_output *ao)
 }
 
 static bool
-fifo_output_open(struct audio_output *ao, AudioFormat &audio_format,
+fifo_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		 gcc_unused Error &error)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
@@ -225,7 +225,7 @@ fifo_output_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-fifo_output_close(struct audio_output *ao)
+fifo_output_close(AudioOutput *ao)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 
@@ -233,7 +233,7 @@ fifo_output_close(struct audio_output *ao)
 }
 
 static void
-fifo_output_cancel(struct audio_output *ao)
+fifo_output_cancel(AudioOutput *ao)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 	char buf[FIFO_BUFFER_SIZE];
@@ -252,7 +252,7 @@ fifo_output_cancel(struct audio_output *ao)
 }
 
 static unsigned
-fifo_output_delay(struct audio_output *ao)
+fifo_output_delay(AudioOutput *ao)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
 
@@ -262,7 +262,7 @@ fifo_output_delay(struct audio_output *ao)
 }
 
 static size_t
-fifo_output_play(struct audio_output *ao, const void *chunk, size_t size,
+fifo_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		 Error &error)
 {
 	FifoOutput *fd = (FifoOutput *)ao;

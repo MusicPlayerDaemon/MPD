@@ -44,7 +44,7 @@ typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 					snd_pcm_uframes_t size);
 
 struct AlsaOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	Manual<PcmExport> pcm_export;
 
@@ -169,7 +169,7 @@ alsa_configure(AlsaOutput *ad, const config_param &param)
 #endif
 }
 
-static struct audio_output *
+static AudioOutput *
 alsa_init(const config_param &param, Error &error)
 {
 	AlsaOutput *ad = new AlsaOutput();
@@ -185,7 +185,7 @@ alsa_init(const config_param &param, Error &error)
 }
 
 static void
-alsa_finish(struct audio_output *ao)
+alsa_finish(AudioOutput *ao)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
@@ -197,7 +197,7 @@ alsa_finish(struct audio_output *ao)
 }
 
 static bool
-alsa_output_enable(struct audio_output *ao, gcc_unused Error &error)
+alsa_output_enable(AudioOutput *ao, gcc_unused Error &error)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
@@ -206,7 +206,7 @@ alsa_output_enable(struct audio_output *ao, gcc_unused Error &error)
 }
 
 static void
-alsa_output_disable(struct audio_output *ao)
+alsa_output_disable(AudioOutput *ao)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
@@ -671,7 +671,7 @@ alsa_setup_or_dsd(AlsaOutput *ad, AudioFormat &audio_format,
 }
 
 static bool
-alsa_open(struct audio_output *ao, AudioFormat &audio_format, Error &error)
+alsa_open(AudioOutput *ao, AudioFormat &audio_format, Error &error)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
@@ -774,7 +774,7 @@ alsa_recover(AlsaOutput *ad, int err)
 }
 
 static void
-alsa_drain(struct audio_output *ao)
+alsa_drain(AudioOutput *ao)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
@@ -795,7 +795,7 @@ alsa_drain(struct audio_output *ao)
 }
 
 static void
-alsa_cancel(struct audio_output *ao)
+alsa_cancel(AudioOutput *ao)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
@@ -805,7 +805,7 @@ alsa_cancel(struct audio_output *ao)
 }
 
 static void
-alsa_close(struct audio_output *ao)
+alsa_close(AudioOutput *ao)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
@@ -814,7 +814,7 @@ alsa_close(struct audio_output *ao)
 }
 
 static size_t
-alsa_play(struct audio_output *ao, const void *chunk, size_t size,
+alsa_play(AudioOutput *ao, const void *chunk, size_t size,
 	  Error &error)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;

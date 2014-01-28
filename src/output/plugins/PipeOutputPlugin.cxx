@@ -29,7 +29,7 @@
 #include <stdio.h>
 
 struct PipeOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	std::string cmd;
 	FILE *fh;
@@ -61,7 +61,7 @@ PipeOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static struct audio_output *
+static AudioOutput *
 pipe_output_init(const config_param &param, Error &error)
 {
 	PipeOutput *pd = new PipeOutput();
@@ -81,7 +81,7 @@ pipe_output_init(const config_param &param, Error &error)
 }
 
 static void
-pipe_output_finish(struct audio_output *ao)
+pipe_output_finish(AudioOutput *ao)
 {
 	PipeOutput *pd = (PipeOutput *)ao;
 
@@ -90,7 +90,7 @@ pipe_output_finish(struct audio_output *ao)
 }
 
 static bool
-pipe_output_open(struct audio_output *ao,
+pipe_output_open(AudioOutput *ao,
 		 gcc_unused AudioFormat &audio_format,
 		 Error &error)
 {
@@ -107,7 +107,7 @@ pipe_output_open(struct audio_output *ao,
 }
 
 static void
-pipe_output_close(struct audio_output *ao)
+pipe_output_close(AudioOutput *ao)
 {
 	PipeOutput *pd = (PipeOutput *)ao;
 
@@ -115,7 +115,7 @@ pipe_output_close(struct audio_output *ao)
 }
 
 static size_t
-pipe_output_play(struct audio_output *ao, const void *chunk, size_t size,
+pipe_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		 Error &error)
 {
 	PipeOutput *pd = (PipeOutput *)ao;

@@ -38,7 +38,7 @@ struct WinmmBuffer {
 };
 
 struct WinmmOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	UINT device_id;
 	HWAVEOUT handle;
@@ -108,7 +108,7 @@ fail:
 	return false;
 }
 
-static struct audio_output *
+static AudioOutput *
 winmm_output_init(const config_param &param, Error &error)
 {
 	WinmmOutput *wo = new WinmmOutput();
@@ -128,7 +128,7 @@ winmm_output_init(const config_param &param, Error &error)
 }
 
 static void
-winmm_output_finish(struct audio_output *ao)
+winmm_output_finish(AudioOutput *ao)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
@@ -137,7 +137,7 @@ winmm_output_finish(struct audio_output *ao)
 }
 
 static bool
-winmm_output_open(struct audio_output *ao, AudioFormat &audio_format,
+winmm_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		  Error &error)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
@@ -194,7 +194,7 @@ winmm_output_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-winmm_output_close(struct audio_output *ao)
+winmm_output_close(AudioOutput *ao)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
@@ -263,7 +263,7 @@ winmm_drain_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 }
 
 static size_t
-winmm_output_play(struct audio_output *ao, const void *chunk, size_t size, Error &error)
+winmm_output_play(AudioOutput *ao, const void *chunk, size_t size, Error &error)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
@@ -318,7 +318,7 @@ winmm_stop(WinmmOutput *wo)
 }
 
 static void
-winmm_output_drain(struct audio_output *ao)
+winmm_output_drain(AudioOutput *ao)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
@@ -327,7 +327,7 @@ winmm_output_drain(struct audio_output *ao)
 }
 
 static void
-winmm_output_cancel(struct audio_output *ao)
+winmm_output_cancel(AudioOutput *ao)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 

@@ -21,7 +21,7 @@
 #include "OutputPlugin.hxx"
 #include "OutputInternal.hxx"
 
-struct audio_output *
+AudioOutput *
 ao_plugin_init(const AudioOutputPlugin *plugin,
 	       const config_param &param,
 	       Error &error)
@@ -33,13 +33,13 @@ ao_plugin_init(const AudioOutputPlugin *plugin,
 }
 
 void
-ao_plugin_finish(struct audio_output *ao)
+ao_plugin_finish(AudioOutput *ao)
 {
 	ao->plugin->finish(ao);
 }
 
 bool
-ao_plugin_enable(struct audio_output *ao, Error &error_r)
+ao_plugin_enable(AudioOutput *ao, Error &error_r)
 {
 	return ao->plugin->enable != nullptr
 		? ao->plugin->enable(ao, error_r)
@@ -47,27 +47,27 @@ ao_plugin_enable(struct audio_output *ao, Error &error_r)
 }
 
 void
-ao_plugin_disable(struct audio_output *ao)
+ao_plugin_disable(AudioOutput *ao)
 {
 	if (ao->plugin->disable != nullptr)
 		ao->plugin->disable(ao);
 }
 
 bool
-ao_plugin_open(struct audio_output *ao, AudioFormat &audio_format,
+ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format,
 	       Error &error)
 {
 	return ao->plugin->open(ao, audio_format, error);
 }
 
 void
-ao_plugin_close(struct audio_output *ao)
+ao_plugin_close(AudioOutput *ao)
 {
 	ao->plugin->close(ao);
 }
 
 unsigned
-ao_plugin_delay(struct audio_output *ao)
+ao_plugin_delay(AudioOutput *ao)
 {
 	return ao->plugin->delay != nullptr
 		? ao->plugin->delay(ao)
@@ -75,35 +75,35 @@ ao_plugin_delay(struct audio_output *ao)
 }
 
 void
-ao_plugin_send_tag(struct audio_output *ao, const Tag *tag)
+ao_plugin_send_tag(AudioOutput *ao, const Tag *tag)
 {
 	if (ao->plugin->send_tag != nullptr)
 		ao->plugin->send_tag(ao, tag);
 }
 
 size_t
-ao_plugin_play(struct audio_output *ao, const void *chunk, size_t size,
+ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size,
 	       Error &error)
 {
 	return ao->plugin->play(ao, chunk, size, error);
 }
 
 void
-ao_plugin_drain(struct audio_output *ao)
+ao_plugin_drain(AudioOutput *ao)
 {
 	if (ao->plugin->drain != nullptr)
 		ao->plugin->drain(ao);
 }
 
 void
-ao_plugin_cancel(struct audio_output *ao)
+ao_plugin_cancel(AudioOutput *ao)
 {
 	if (ao->plugin->cancel != nullptr)
 		ao->plugin->cancel(ao);
 }
 
 bool
-ao_plugin_pause(struct audio_output *ao)
+ao_plugin_pause(AudioOutput *ao)
 {
 	return ao->plugin->pause != nullptr && ao->plugin->pause(ao);
 }

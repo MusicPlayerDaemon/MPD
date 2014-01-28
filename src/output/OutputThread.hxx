@@ -20,9 +20,9 @@
 #ifndef MPD_OUTPUT_THREAD_HXX
 #define MPD_OUTPUT_THREAD_HXX
 
-struct audio_output;
+struct AudioOutput;
 
 void
-audio_output_thread_start(audio_output *ao);
+audio_output_thread_start(AudioOutput *ao);
 
 #endif

@@ -50,11 +50,11 @@ MultipleOutputs::~MultipleOutputs()
 	}
 }
 
-static audio_output *
+static AudioOutput *
 LoadOutput(PlayerControl &pc, const config_param &param)
 {
 	Error error;
-	audio_output *output = audio_output_new(param, pc, error);
+	AudioOutput *output = audio_output_new(param, pc, error);
 	if (output == nullptr) {
 		if (param.line > 0)
 			FormatFatalError("line %i: %s",
@@ -89,7 +89,7 @@ MultipleOutputs::Configure(PlayerControl &pc)
 	}
 }
 
-audio_output *
+AudioOutput *
 MultipleOutputs::FindByName(const char *name) const
 {
 	for (auto i : outputs)
@@ -146,7 +146,7 @@ MultipleOutputs::AllowPlay()
 }
 
 static void
-audio_output_reset_reopen(struct audio_output *ao)
+audio_output_reset_reopen(AudioOutput *ao)
 {
 	const ScopeLock protect(ao->mutex);
 
@@ -259,7 +259,7 @@ MultipleOutputs::Open(const AudioFormat audio_format,
  */
 gcc_pure
 static bool
-chunk_is_consumed_in(const struct audio_output *ao,
+chunk_is_consumed_in(const AudioOutput *ao,
 		     gcc_unused const MusicPipe *pipe,
 		     const struct music_chunk *chunk)
 {
@@ -299,7 +299,7 @@ MultipleOutputs::ClearTailChunk(gcc_unused const struct music_chunk *chunk,
 	assert(pipe->Contains(chunk));
 
 	for (unsigned i = 0, n = outputs.size(); i != n; ++i) {
-		audio_output *ao = outputs[i];
+		AudioOutput *ao = outputs[i];
 
 		/* this mutex will be unlocked by the caller when it's
 		   ready */

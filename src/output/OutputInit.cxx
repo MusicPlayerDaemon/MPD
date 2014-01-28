@@ -93,7 +93,7 @@ audio_output_mixer_type(const config_param &param)
 }
 
 static Mixer *
-audio_output_load_mixer(struct audio_output *ao,
+audio_output_load_mixer(AudioOutput *ao,
 			const config_param &param,
 			const struct mixer_plugin *plugin,
 			Filter &filter_chain,
@@ -128,7 +128,7 @@ audio_output_load_mixer(struct audio_output *ao,
 }
 
 bool
-ao_base_init(struct audio_output *ao,
+ao_base_init(AudioOutput *ao,
 	     const AudioOutputPlugin *plugin,
 	     const config_param &param, Error &error)
 {
@@ -214,7 +214,7 @@ ao_base_init(struct audio_output *ao,
 }
 
 static bool
-audio_output_setup(struct audio_output *ao, const config_param &param,
+audio_output_setup(AudioOutput *ao, const config_param &param,
 		   Error &error)
 {
 
@@ -279,7 +279,7 @@ audio_output_setup(struct audio_output *ao, const config_param &param,
 	return true;
 }
 
-struct audio_output *
+AudioOutput *
 audio_output_new(const config_param &param,
 		 PlayerControl &pc,
 		 Error &error)
@@ -304,7 +304,7 @@ audio_output_new(const config_param &param,
 		}
 	} else {
 		LogWarning(output_domain,
-			   "No 'audio_output' defined in config file");
+			   "No 'AudioOutput' defined in config file");
 
 		plugin = audio_output_detect(error);
 		if (plugin == nullptr)
@@ -315,7 +315,7 @@ audio_output_new(const config_param &param,
 			      plugin->name);
 	}
 
-	struct audio_output *ao = ao_plugin_init(plugin, param, error);
+	AudioOutput *ao = ao_plugin_init(plugin, param, error);
 	if (ao == nullptr)
 		return nullptr;
 

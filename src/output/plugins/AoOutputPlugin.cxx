@@ -35,7 +35,7 @@ static ao_sample_format OUR_AO_FORMAT_INITIALIZER;
 static unsigned ao_output_ref;
 
 struct AoOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	size_t write_size;
 	int driver;
@@ -152,7 +152,7 @@ AoOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static struct audio_output *
+static AudioOutput *
 ao_output_init(const config_param &param, Error &error)
 {
 	AoOutput *ad = new AoOutput();
@@ -172,7 +172,7 @@ ao_output_init(const config_param &param, Error &error)
 }
 
 static void
-ao_output_finish(struct audio_output *ao)
+ao_output_finish(AudioOutput *ao)
 {
 	AoOutput *ad = (AoOutput *)ao;
 
@@ -187,7 +187,7 @@ ao_output_finish(struct audio_output *ao)
 }
 
 static void
-ao_output_close(struct audio_output *ao)
+ao_output_close(AudioOutput *ao)
 {
 	AoOutput *ad = (AoOutput *)ao;
 
@@ -195,7 +195,7 @@ ao_output_close(struct audio_output *ao)
 }
 
 static bool
-ao_output_open(struct audio_output *ao, AudioFormat &audio_format,
+ao_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	       Error &error)
 {
 	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
@@ -251,7 +251,7 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 }
 
 static size_t
-ao_output_play(struct audio_output *ao, const void *chunk, size_t size,
+ao_output_play(AudioOutput *ao, const void *chunk, size_t size,
 	       Error &error)
 {
 	AoOutput *ad = (AoOutput *)ao;

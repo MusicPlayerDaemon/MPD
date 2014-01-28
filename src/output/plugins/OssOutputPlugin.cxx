@@ -57,7 +57,7 @@
 #endif
 
 struct OssOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 #ifdef AFMT_S24_PACKED
 	Manual<PcmExport> pcm_export;
@@ -149,7 +149,7 @@ oss_output_test_default_device(void)
 	return false;
 }
 
-static struct audio_output *
+static AudioOutput *
 oss_open_default(Error &error)
 {
 	int err[ARRAY_SIZE(default_devices)];
@@ -199,7 +199,7 @@ oss_open_default(Error &error)
 	return NULL;
 }
 
-static struct audio_output *
+static AudioOutput *
 oss_output_init(const config_param &param, Error &error)
 {
 	const char *device = param.GetBlockValue("device");
@@ -218,7 +218,7 @@ oss_output_init(const config_param &param, Error &error)
 }
 
 static void
-oss_output_finish(struct audio_output *ao)
+oss_output_finish(AudioOutput *ao)
 {
 	OssOutput *od = (OssOutput *)ao;
 
@@ -229,7 +229,7 @@ oss_output_finish(struct audio_output *ao)
 #ifdef AFMT_S24_PACKED
 
 static bool
-oss_output_enable(struct audio_output *ao, gcc_unused Error &error)
+oss_output_enable(AudioOutput *ao, gcc_unused Error &error)
 {
 	OssOutput *od = (OssOutput *)ao;
 
@@ -238,7 +238,7 @@ oss_output_enable(struct audio_output *ao, gcc_unused Error &error)
 }
 
 static void
-oss_output_disable(struct audio_output *ao)
+oss_output_disable(AudioOutput *ao)
 {
 	OssOutput *od = (OssOutput *)ao;
 
@@ -680,7 +680,7 @@ oss_reopen(OssOutput *od, Error &error)
 }
 
 static bool
-oss_output_open(struct audio_output *ao, AudioFormat &audio_format,
+oss_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		Error &error)
 {
 	OssOutput *od = (OssOutput *)ao;
@@ -702,7 +702,7 @@ oss_output_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-oss_output_close(struct audio_output *ao)
+oss_output_close(AudioOutput *ao)
 {
 	OssOutput *od = (OssOutput *)ao;
 
@@ -710,7 +710,7 @@ oss_output_close(struct audio_output *ao)
 }
 
 static void
-oss_output_cancel(struct audio_output *ao)
+oss_output_cancel(AudioOutput *ao)
 {
 	OssOutput *od = (OssOutput *)ao;
 
@@ -721,7 +721,7 @@ oss_output_cancel(struct audio_output *ao)
 }
 
 static size_t
-oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
+oss_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		Error &error)
 {
 	OssOutput *od = (OssOutput *)ao;

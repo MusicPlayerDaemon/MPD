@@ -41,9 +41,9 @@ struct notify audio_output_client_notify;
 /**
  * Waits for command completion.
  *
- * @param ao the #audio_output instance; must be locked
+ * @param ao the #AudioOutput instance; must be locked
  */
-static void ao_command_wait(struct audio_output *ao)
+static void ao_command_wait(AudioOutput *ao)
 {
 	while (ao->command != AO_COMMAND_NONE) {
 		ao->mutex.unlock();
@@ -53,12 +53,12 @@ static void ao_command_wait(struct audio_output *ao)
 }
 
 /**
- * Sends a command to the #audio_output object, but does not wait for
+ * Sends a command to the #AudioOutput object, but does not wait for
  * completion.
  *
- * @param ao the #audio_output instance; must be locked
+ * @param ao the #AudioOutput instance; must be locked
  */
-static void ao_command_async(struct audio_output *ao,
+static void ao_command_async(AudioOutput *ao,
 			     enum audio_output_command cmd)
 {
 	assert(ao->command == AO_COMMAND_NONE);
@@ -67,31 +67,31 @@ static void ao_command_async(struct audio_output *ao,
 }
 
 /**
- * Sends a command to the #audio_output object and waits for
+ * Sends a command to the #AudioOutput object and waits for
  * completion.
  *
- * @param ao the #audio_output instance; must be locked
+ * @param ao the #AudioOutput instance; must be locked
  */
 static void
-ao_command(struct audio_output *ao, enum audio_output_command cmd)
+ao_command(AudioOutput *ao, enum audio_output_command cmd)
 {
 	ao_command_async(ao, cmd);
 	ao_command_wait(ao);
 }
 
 /**
- * Lock the #audio_output object and execute the command
+ * Lock the #AudioOutput object and execute the command
  * synchronously.
  */
 static void
-ao_lock_command(struct audio_output *ao, enum audio_output_command cmd)
+ao_lock_command(AudioOutput *ao, enum audio_output_command cmd)
 {
 	const ScopeLock protect(ao->mutex);
 	ao_command(ao, cmd);
 }
 
 void
-audio_output_set_replay_gain_mode(struct audio_output *ao,
+audio_output_set_replay_gain_mode(AudioOutput *ao,
 				  ReplayGainMode mode)
 {
 	if (ao->replay_gain_filter != nullptr)
@@ -101,7 +101,7 @@ audio_output_set_replay_gain_mode(struct audio_output *ao,
 }
 
 void
-audio_output_enable(struct audio_output *ao)
+audio_output_enable(AudioOutput *ao)
 {
 	if (!ao->thread.IsDefined()) {
 		if (ao->plugin->enable == nullptr) {
@@ -119,7 +119,7 @@ audio_output_enable(struct audio_output *ao)
 }
 
 void
-audio_output_disable(struct audio_output *ao)
+audio_output_disable(AudioOutput *ao)
 {
 	if (!ao->thread.IsDefined()) {
 		if (ao->plugin->disable == nullptr)
@@ -139,7 +139,7 @@ audio_output_disable(struct audio_output *ao)
  * Object must be locked (and unlocked) by the caller.
  */
 static bool
-audio_output_open(struct audio_output *ao,
+audio_output_open(AudioOutput *ao,
 		  const AudioFormat audio_format,
 		  const MusicPipe &mp)
 {
@@ -199,7 +199,7 @@ audio_output_open(struct audio_output *ao,
  * the caller.
  */
 static void
-audio_output_close_locked(struct audio_output *ao)
+audio_output_close_locked(AudioOutput *ao)
 {
 	assert(ao != nullptr);
 	assert(ao->allow_play);
@@ -216,7 +216,7 @@ audio_output_close_locked(struct audio_output *ao)
 }
 
 bool
-audio_output_update(struct audio_output *ao,
+audio_output_update(AudioOutput *ao,
 		    const AudioFormat audio_format,
 		    const MusicPipe &mp)
 {
@@ -233,7 +233,7 @@ audio_output_update(struct audio_output *ao,
 }
 
 void
-audio_output_play(struct audio_output *ao)
+audio_output_play(AudioOutput *ao)
 {
 	const ScopeLock protect(ao->mutex);
 
@@ -246,7 +246,7 @@ audio_output_play(struct audio_output *ao)
 	}
 }
 
-void audio_output_pause(struct audio_output *ao)
+void audio_output_pause(AudioOutput *ao)
 {
 	if (ao->mixer != nullptr && ao->plugin->pause == nullptr)
 		/* the device has no pause mode: close the mixer,
@@ -262,7 +262,7 @@ void audio_output_pause(struct audio_output *ao)
 }
 
 void
-audio_output_drain_async(struct audio_output *ao)
+audio_output_drain_async(AudioOutput *ao)
 {
 	const ScopeLock protect(ao->mutex);
 
@@ -271,7 +271,7 @@ audio_output_drain_async(struct audio_output *ao)
 		ao_command_async(ao, AO_COMMAND_DRAIN);
 }
 
-void audio_output_cancel(struct audio_output *ao)
+void audio_output_cancel(AudioOutput *ao)
 {
 	const ScopeLock protect(ao->mutex);
 
@@ -282,7 +282,7 @@ void audio_output_cancel(struct audio_output *ao)
 }
 
 void
-audio_output_allow_play(struct audio_output *ao)
+audio_output_allow_play(AudioOutput *ao)
 {
 	const ScopeLock protect(ao->mutex);
 
@@ -292,7 +292,7 @@ audio_output_allow_play(struct audio_output *ao)
 }
 
 void
-audio_output_release(struct audio_output *ao)
+audio_output_release(AudioOutput *ao)
 {
 	if (ao->always_on)
 		audio_output_pause(ao);
@@ -300,7 +300,7 @@ audio_output_release(struct audio_output *ao)
 		audio_output_close(ao);
 }
 
-void audio_output_close(struct audio_output *ao)
+void audio_output_close(AudioOutput *ao)
 {
 	assert(ao != nullptr);
 	assert(!ao->open || !ao->fail_timer.IsDefined());
@@ -309,7 +309,7 @@ void audio_output_close(struct audio_output *ao)
 	audio_output_close_locked(ao);
 }
 
-void audio_output_finish(struct audio_output *ao)
+void audio_output_finish(AudioOutput *ao)
 {
 	audio_output_close(ao);
 

@@ -37,7 +37,7 @@
 #define NUM_BUFFERS 16
 
 struct OpenALOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	const char *device_name;
 	ALCdevice *device;
@@ -133,7 +133,7 @@ openal_setup_context(OpenALOutput *od, Error &error)
 	return true;
 }
 
-static struct audio_output *
+static AudioOutput *
 openal_init(const config_param &param, Error &error)
 {
 	const char *device_name = param.GetBlockValue("device");
@@ -153,7 +153,7 @@ openal_init(const config_param &param, Error &error)
 }
 
 static void
-openal_finish(struct audio_output *ao)
+openal_finish(AudioOutput *ao)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
 
@@ -162,7 +162,7 @@ openal_finish(struct audio_output *ao)
 }
 
 static bool
-openal_open(struct audio_output *ao, AudioFormat &audio_format,
+openal_open(AudioOutput *ao, AudioFormat &audio_format,
 	    Error &error)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
@@ -196,7 +196,7 @@ openal_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-openal_close(struct audio_output *ao)
+openal_close(AudioOutput *ao)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
 
@@ -208,7 +208,7 @@ openal_close(struct audio_output *ao)
 }
 
 static unsigned
-openal_delay(struct audio_output *ao)
+openal_delay(AudioOutput *ao)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
 
@@ -221,7 +221,7 @@ openal_delay(struct audio_output *ao)
 }
 
 static size_t
-openal_play(struct audio_output *ao, const void *chunk, size_t size,
+openal_play(AudioOutput *ao, const void *chunk, size_t size,
 	    gcc_unused Error &error)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
@@ -253,7 +253,7 @@ openal_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 static void
-openal_cancel(struct audio_output *ao)
+openal_cancel(AudioOutput *ao)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
 

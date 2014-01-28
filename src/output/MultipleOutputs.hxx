@@ -39,11 +39,11 @@ class MusicBuffer;
 class MusicPipe;
 struct music_chunk;
 struct PlayerControl;
-struct audio_output;
+struct AudioOutput;
 class Error;
 
 class MultipleOutputs {
-	std::vector<audio_output *> outputs;
+	std::vector<AudioOutput *> outputs;
 
 	AudioFormat input_audio_format;
 
@@ -86,13 +86,13 @@ public:
 	/**
 	 * Returns the "i"th audio output device.
 	 */
-	const audio_output &Get(unsigned i) const {
+	const AudioOutput &Get(unsigned i) const {
 		assert(i < Size());
 
 		return *outputs[i];
 	}
 
-	audio_output &Get(unsigned i) {
+	AudioOutput &Get(unsigned i) {
 		assert(i < Size());
 
 		return *outputs[i];
@@ -103,7 +103,7 @@ public:
 	 * Returns nullptr if the name does not exist.
 	 */
 	gcc_pure
-	audio_output *FindByName(const char *name) const;
+	AudioOutput *FindByName(const char *name) const;
 
 	/**
 	 * Checks the "enabled" flag of all audio outputs, and if one has

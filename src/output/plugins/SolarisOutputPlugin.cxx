@@ -50,7 +50,7 @@ struct audio_info {
 #endif
 
 struct SolarisOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	/* configuration */
 	const char *device;
@@ -76,7 +76,7 @@ solaris_output_test_default_device(void)
 		access("/dev/audio", W_OK) == 0;
 }
 
-static struct audio_output *
+static AudioOutput *
 solaris_output_init(const config_param &param, Error &error_r)
 {
 	SolarisOutput *so = new SolarisOutput();
@@ -91,7 +91,7 @@ solaris_output_init(const config_param &param, Error &error_r)
 }
 
 static void
-solaris_output_finish(struct audio_output *ao)
+solaris_output_finish(AudioOutput *ao)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 
@@ -100,7 +100,7 @@ solaris_output_finish(struct audio_output *ao)
 }
 
 static bool
-solaris_output_open(struct audio_output *ao, AudioFormat &audio_format,
+solaris_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		    Error &error)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
@@ -151,7 +151,7 @@ solaris_output_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-solaris_output_close(struct audio_output *ao)
+solaris_output_close(AudioOutput *ao)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 
@@ -159,7 +159,7 @@ solaris_output_close(struct audio_output *ao)
 }
 
 static size_t
-solaris_output_play(struct audio_output *ao, const void *chunk, size_t size,
+solaris_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		    Error &error)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
@@ -175,7 +175,7 @@ solaris_output_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 static void
-solaris_output_cancel(struct audio_output *ao)
+solaris_output_cancel(AudioOutput *ao)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 

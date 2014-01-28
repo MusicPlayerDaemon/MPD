@@ -80,7 +80,7 @@ PlayerControl::PlayerControl(gcc_unused MultipleOutputs &_outputs,
 	:outputs(_outputs) {}
 PlayerControl::~PlayerControl() {}
 
-static struct audio_output *
+static AudioOutput *
 load_audio_output(const char *name)
 {
 	const struct config_param *param;
@@ -95,7 +95,7 @@ load_audio_output(const char *name)
 							 32, 4);
 
 	Error error;
-	struct audio_output *ao =
+	AudioOutput *ao =
 		audio_output_new(*param, dummy_player_control, error);
 	if (ao == nullptr)
 		LogError(error);
@@ -104,7 +104,7 @@ load_audio_output(const char *name)
 }
 
 static bool
-run_output(struct audio_output *ao, AudioFormat audio_format)
+run_output(AudioOutput *ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
 
 	/* initialize the audio output */
 
-	struct audio_output *ao = load_audio_output(argv[2]);
+	AudioOutput *ao = load_audio_output(argv[2]);
 	if (ao == NULL)
 		return 1;
 

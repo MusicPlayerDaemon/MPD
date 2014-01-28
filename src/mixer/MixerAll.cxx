@@ -33,7 +33,7 @@
 static constexpr Domain mixer_domain("mixer");
 
 static int
-output_mixer_get_volume(const audio_output &ao)
+output_mixer_get_volume(const AudioOutput &ao)
 {
 	if (!ao.enabled)
 		return -1;
@@ -73,7 +73,7 @@ MultipleOutputs::GetVolume() const
 }
 
 static bool
-output_mixer_set_volume(audio_output &ao, unsigned volume)
+output_mixer_set_volume(AudioOutput &ao, unsigned volume)
 {
 	assert(volume <= 100);
 
@@ -108,7 +108,7 @@ MultipleOutputs::SetVolume(unsigned volume)
 }
 
 static int
-output_mixer_get_software_volume(const audio_output &ao)
+output_mixer_get_software_volume(const AudioOutput &ao)
 {
 	if (!ao.enabled)
 		return -1;

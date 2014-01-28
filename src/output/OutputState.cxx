@@ -41,7 +41,7 @@ void
 audio_output_state_save(FILE *fp, const MultipleOutputs &outputs)
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
-		const audio_output &ao = outputs.Get(i);
+		const AudioOutput &ao = outputs.Get(i);
 
 		fprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
 			ao.enabled, ao.name);
@@ -69,7 +69,7 @@ audio_output_state_read(const char *line, MultipleOutputs &outputs)
 		return true;
 
 	name = endptr + 1;
-	audio_output *ao = outputs.FindByName(name);
+	AudioOutput *ao = outputs.FindByName(name);
 	if (ao == NULL) {
 		FormatDebug(output_domain,
 			    "Ignoring device state for '%s'", name);

@@ -39,7 +39,7 @@
 static constexpr unsigned DEFAULT_CONN_TIMEOUT = 2;
 
 struct ShoutOutput final {
-	struct audio_output base;
+	AudioOutput base;
 
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
@@ -275,7 +275,7 @@ ShoutOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static struct audio_output *
+static AudioOutput *
 my_shout_init_driver(const config_param &param, Error &error)
 {
 	ShoutOutput *sd = new ShoutOutput();
@@ -363,7 +363,7 @@ static void close_shout_conn(ShoutOutput * sd)
 }
 
 static void
-my_shout_finish_driver(struct audio_output *ao)
+my_shout_finish_driver(AudioOutput *ao)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
 
@@ -379,7 +379,7 @@ my_shout_finish_driver(struct audio_output *ao)
 }
 
 static void
-my_shout_drop_buffered_audio(struct audio_output *ao)
+my_shout_drop_buffered_audio(AudioOutput *ao)
 {
 	gcc_unused
 	ShoutOutput *sd = (ShoutOutput *)ao;
@@ -388,7 +388,7 @@ my_shout_drop_buffered_audio(struct audio_output *ao)
 }
 
 static void
-my_shout_close_device(struct audio_output *ao)
+my_shout_close_device(AudioOutput *ao)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
 
@@ -414,7 +414,7 @@ shout_connect(ShoutOutput *sd, Error &error)
 }
 
 static bool
-my_shout_open_device(struct audio_output *ao, AudioFormat &audio_format,
+my_shout_open_device(AudioOutput *ao, AudioFormat &audio_format,
 		     Error &error)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
@@ -437,7 +437,7 @@ my_shout_open_device(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static unsigned
-my_shout_delay(struct audio_output *ao)
+my_shout_delay(AudioOutput *ao)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
 
@@ -449,7 +449,7 @@ my_shout_delay(struct audio_output *ao)
 }
 
 static size_t
-my_shout_play(struct audio_output *ao, const void *chunk, size_t size,
+my_shout_play(AudioOutput *ao, const void *chunk, size_t size,
 	      Error &error)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
@@ -461,7 +461,7 @@ my_shout_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 static bool
-my_shout_pause(struct audio_output *ao)
+my_shout_pause(AudioOutput *ao)
 {
 	static char silence[1020];
 
@@ -494,7 +494,7 @@ shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
 	snprintf(dest, size, "%s - %s", artist, title);
 }
 
-static void my_shout_set_tag(struct audio_output *ao,
+static void my_shout_set_tag(AudioOutput *ao,
 			     const Tag *tag)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;

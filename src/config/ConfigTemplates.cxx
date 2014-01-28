@@ -42,7 +42,7 @@ const ConfigTemplate config_templates[] = {
 	{ "zeroconf_enabled", false, false },
 	{ "password", true, false },
 	{ "default_permissions", false, false },
-	{ "audio_output", true, true },
+	{ "AudioOutput", true, true },
 	{ "audio_output_format", false, false },
 	{ "mixer_type", false, false },
 	{ "replaygain", false, false },

@@ -24,26 +24,26 @@
 
 #include <stddef.h>
 
-struct audio_output;
+struct AudioOutput;
 struct AudioFormat;
 struct config_param;
 class MusicPipe;
 
 void
-audio_output_set_replay_gain_mode(audio_output *ao,
+audio_output_set_replay_gain_mode(AudioOutput *ao,
 				  ReplayGainMode mode);
 
 /**
  * Enables the device.
  */
 void
-audio_output_enable(audio_output *ao);
+audio_output_enable(AudioOutput *ao);
 
 /**
  * Disables the device.
  */
 void
-audio_output_disable(audio_output *ao);
+audio_output_disable(AudioOutput *ao);
 
 /**
  * Opens or closes the device, depending on the "enabled" flag.
@@ -51,18 +51,18 @@ audio_output_disable(audio_output *ao);
  * @return true if the device is open
  */
 bool
-audio_output_update(audio_output *ao,
+audio_output_update(AudioOutput *ao,
 		    AudioFormat audio_format,
 		    const MusicPipe &mp);
 
 void
-audio_output_play(audio_output *ao);
+audio_output_play(AudioOutput *ao);
 
 void
-audio_output_pause(audio_output *ao);
+audio_output_pause(AudioOutput *ao);
 
 void
-audio_output_drain_async(audio_output *ao);
+audio_output_drain_async(AudioOutput *ao);
 
 /**
  * Clear the "allow_play" flag and send the "CANCEL" command
@@ -70,25 +70,25 @@ audio_output_drain_async(audio_output *ao);
  * audio_output_allow_play().
  */
 void
-audio_output_cancel(audio_output *ao);
+audio_output_cancel(AudioOutput *ao);
 
 /**
  * Set the "allow_play" and signal the thread.
  */
 void
-audio_output_allow_play(audio_output *ao);
+audio_output_allow_play(AudioOutput *ao);
 
 void
-audio_output_close(audio_output *ao);
+audio_output_close(AudioOutput *ao);
 
 /**
  * Closes the audio output, but if the "always_on" flag is set, put it
  * into pause mode instead.
  */
 void
-audio_output_release(audio_output *ao);
+audio_output_release(AudioOutput *ao);
 
 void
-audio_output_finish(audio_output *ao);
+audio_output_finish(AudioOutput *ao);
 
 #endif

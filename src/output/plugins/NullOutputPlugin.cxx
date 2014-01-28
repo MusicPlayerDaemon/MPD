@@ -23,7 +23,7 @@
 #include "Timer.hxx"
 
 struct NullOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	bool sync;
 
@@ -39,7 +39,7 @@ struct NullOutput {
 	}
 };
 
-static struct audio_output *
+static AudioOutput *
 null_init(const config_param &param, Error &error)
 {
 	NullOutput *nd = new NullOutput();
@@ -55,7 +55,7 @@ null_init(const config_param &param, Error &error)
 }
 
 static void
-null_finish(struct audio_output *ao)
+null_finish(AudioOutput *ao)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
@@ -64,7 +64,7 @@ null_finish(struct audio_output *ao)
 }
 
 static bool
-null_open(struct audio_output *ao, AudioFormat &audio_format,
+null_open(AudioOutput *ao, AudioFormat &audio_format,
 	  gcc_unused Error &error)
 {
 	NullOutput *nd = (NullOutput *)ao;
@@ -76,7 +76,7 @@ null_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-null_close(struct audio_output *ao)
+null_close(AudioOutput *ao)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
@@ -85,7 +85,7 @@ null_close(struct audio_output *ao)
 }
 
 static unsigned
-null_delay(struct audio_output *ao)
+null_delay(AudioOutput *ao)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
@@ -95,7 +95,7 @@ null_delay(struct audio_output *ao)
 }
 
 static size_t
-null_play(struct audio_output *ao, gcc_unused const void *chunk, size_t size,
+null_play(AudioOutput *ao, gcc_unused const void *chunk, size_t size,
 	  gcc_unused Error &error)
 {
 	NullOutput *nd = (NullOutput *)ao;
@@ -112,7 +112,7 @@ null_play(struct audio_output *ao, gcc_unused const void *chunk, size_t size,
 }
 
 static void
-null_cancel(struct audio_output *ao)
+null_cancel(AudioOutput *ao)
 {
 	NullOutput *nd = (NullOutput *)ao;
 

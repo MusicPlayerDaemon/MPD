@@ -47,7 +47,7 @@ enum class PlayerCommand : uint8_t {
 	CLOSE_AUDIO,
 
 	/**
-	 * At least one audio_output.enabled flag has been modified;
+	 * At least one AudioOutput.enabled flag has been modified;
 	 * commit those changes to the output threads.
 	 */
 	UPDATE_AUDIO,

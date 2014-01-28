@@ -27,6 +27,7 @@
 struct config_param;
 struct AudioFormat;
 struct Tag;
+struct AudioOutput;
 class Error;
 
 /**
@@ -53,13 +54,13 @@ struct AudioOutputPlugin {
 	 * @return nullptr on error, or an opaque pointer to the plugin's
 	 * data
 	 */
-	struct audio_output *(*init)(const config_param &param,
+	AudioOutput *(*init)(const config_param &param,
 				     Error &error);
 
 	/**
 	 * Free resources allocated by this device.
 	 */
-	void (*finish)(struct audio_output *data);
+	void (*finish)(AudioOutput *data);
 
 	/**
 	 * Enable the device.  This may allocate resources, preparing
@@ -69,13 +70,13 @@ struct AudioOutputPlugin {
 	 *
 	 * @return true on success, false on error
 	 */
-	bool (*enable)(struct audio_output *data, Error &error);
+	bool (*enable)(AudioOutput *data, Error &error);
 
 	/**
 	 * Disables the device.  It is closed before this method is
 	 * called.
 	 */
-	void (*disable)(struct audio_output *data);
+	void (*disable)(AudioOutput *data);
 
 	/**
 	 * Really open the device.
@@ -83,13 +84,13 @@ struct AudioOutputPlugin {
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
 	 */
-	bool (*open)(struct audio_output *data, AudioFormat &audio_format,
+	bool (*open)(AudioOutput *data, AudioFormat &audio_format,
 		     Error &error);
 
 	/**
 	 * Close the device.
 	 */
-	void (*close)(struct audio_output *data);
+	void (*close)(AudioOutput *data);
 
 	/**
 	 * Returns a positive number if the output thread shall delay
@@ -99,33 +100,33 @@ struct AudioOutputPlugin {
 	 *
 	 * @return the number of milliseconds to wait
 	 */
-	unsigned (*delay)(struct audio_output *data);
+	unsigned (*delay)(AudioOutput *data);
 
 	/**
 	 * Display metadata for the next chunk.  Optional method,
 	 * because not all devices can display metadata.
 	 */
-	void (*send_tag)(struct audio_output *data, const Tag *tag);
+	void (*send_tag)(AudioOutput *data, const Tag *tag);
 
 	/**
 	 * Play a chunk of audio data.
 	 *
 	 * @return the number of bytes played, or 0 on error
 	 */
-	size_t (*play)(struct audio_output *data,
+	size_t (*play)(AudioOutput *data,
 		       const void *chunk, size_t size,
 		       Error &error);
 
 	/**
 	 * Wait until the device has finished playing.
 	 */
-	void (*drain)(struct audio_output *data);
+	void (*drain)(AudioOutput *data);
 
 	/**
 	 * Try to cancel data which may still be in the device's
 	 * buffers.
 	 */
-	void (*cancel)(struct audio_output *data);
+	void (*cancel)(AudioOutput *data);
 
 	/**
 	 * Pause the device.  If supported, it may perform a special
@@ -138,7 +139,7 @@ struct AudioOutputPlugin {
 	 * @return false on error (output will be closed then), true
 	 * for continue to pause
 	 */
-	bool (*pause)(struct audio_output *data);
+	bool (*pause)(AudioOutput *data);
 
 	/**
 	 * The mixer plugin associated with this output plugin.  This
@@ -158,45 +159,45 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 }
 
 gcc_malloc
-struct audio_output *
+AudioOutput *
 ao_plugin_init(const AudioOutputPlugin *plugin,
 	       const config_param &param,
 	       Error &error);
 
 void
-ao_plugin_finish(struct audio_output *ao);
+ao_plugin_finish(AudioOutput *ao);
 
 bool
-ao_plugin_enable(struct audio_output *ao, Error &error);
+ao_plugin_enable(AudioOutput *ao, Error &error);
 
 void
-ao_plugin_disable(struct audio_output *ao);
+ao_plugin_disable(AudioOutput *ao);
 
 bool
-ao_plugin_open(struct audio_output *ao, AudioFormat &audio_format,
+ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format,
 	       Error &error);
 
 void
-ao_plugin_close(struct audio_output *ao);
+ao_plugin_close(AudioOutput *ao);
 
 gcc_pure
 unsigned
-ao_plugin_delay(struct audio_output *ao);
+ao_plugin_delay(AudioOutput *ao);
 
 void
-ao_plugin_send_tag(struct audio_output *ao, const Tag *tag);
+ao_plugin_send_tag(AudioOutput *ao, const Tag *tag);
 
 size_t
-ao_plugin_play(struct audio_output *ao, const void *chunk, size_t size,
+ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size,
 	       Error &error);
 
 void
-ao_plugin_drain(struct audio_output *ao);
+ao_plugin_drain(AudioOutput *ao);
 
 void
-ao_plugin_cancel(struct audio_output *ao);
+ao_plugin_cancel(AudioOutput *ao);
 
 bool
-ao_plugin_pause(struct audio_output *ao);
+ao_plugin_pause(AudioOutput *ao);
 
 #endif

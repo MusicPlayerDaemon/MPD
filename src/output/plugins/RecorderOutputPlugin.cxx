@@ -35,7 +35,7 @@
 #include <errno.h>
 
 struct RecorderOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	/**
 	 * The configured encoder plugin.
@@ -107,7 +107,7 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static audio_output *
+static AudioOutput *
 recorder_output_init(const config_param &param, Error &error)
 {
 	RecorderOutput *recorder = new RecorderOutput();
@@ -127,7 +127,7 @@ recorder_output_init(const config_param &param, Error &error)
 }
 
 static void
-recorder_output_finish(struct audio_output *ao)
+recorder_output_finish(AudioOutput *ao)
 {
 	RecorderOutput *recorder = (RecorderOutput *)ao;
 
@@ -181,7 +181,7 @@ RecorderOutput::EncoderToFile(Error &error)
 }
 
 static bool
-recorder_output_open(struct audio_output *ao,
+recorder_output_open(AudioOutput *ao,
 		     AudioFormat &audio_format,
 		     Error &error)
 {
@@ -216,7 +216,7 @@ recorder_output_open(struct audio_output *ao,
 }
 
 static void
-recorder_output_close(struct audio_output *ao)
+recorder_output_close(AudioOutput *ao)
 {
 	RecorderOutput *recorder = (RecorderOutput *)ao;
 
@@ -233,7 +233,7 @@ recorder_output_close(struct audio_output *ao)
 }
 
 static size_t
-recorder_output_play(struct audio_output *ao, const void *chunk, size_t size,
+recorder_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		     Error &error)
 {
 	RecorderOutput *recorder = (RecorderOutput *)ao;

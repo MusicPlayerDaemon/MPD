@@ -42,7 +42,7 @@
 #define MPD_PULSE_NAME "Music Player Daemon"
 
 struct PulseOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	const char *name;
 	const char *server;
@@ -323,7 +323,7 @@ pulse_output_setup_context(PulseOutput *po, Error &error)
 	return true;
 }
 
-static struct audio_output *
+static AudioOutput *
 pulse_output_init(const config_param &param, Error &error)
 {
 	PulseOutput *po;
@@ -349,7 +349,7 @@ pulse_output_init(const config_param &param, Error &error)
 }
 
 static void
-pulse_output_finish(struct audio_output *ao)
+pulse_output_finish(AudioOutput *ao)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 
@@ -358,7 +358,7 @@ pulse_output_finish(struct audio_output *ao)
 }
 
 static bool
-pulse_output_enable(struct audio_output *ao, Error &error)
+pulse_output_enable(AudioOutput *ao, Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 
@@ -404,7 +404,7 @@ pulse_output_enable(struct audio_output *ao, Error &error)
 }
 
 static void
-pulse_output_disable(struct audio_output *ao)
+pulse_output_disable(AudioOutput *ao)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 
@@ -548,7 +548,7 @@ pulse_output_setup_stream(PulseOutput *po, const pa_sample_spec *ss,
 }
 
 static bool
-pulse_output_open(struct audio_output *ao, AudioFormat &audio_format,
+pulse_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		  Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;
@@ -616,7 +616,7 @@ pulse_output_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-pulse_output_close(struct audio_output *ao)
+pulse_output_close(AudioOutput *ao)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 	pa_operation *o;
@@ -702,7 +702,7 @@ pulse_output_stream_pause(PulseOutput *po, bool pause,
 }
 
 static unsigned
-pulse_output_delay(struct audio_output *ao)
+pulse_output_delay(AudioOutput *ao)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 	unsigned result = 0;
@@ -720,7 +720,7 @@ pulse_output_delay(struct audio_output *ao)
 }
 
 static size_t
-pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
+pulse_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		  Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;
@@ -785,7 +785,7 @@ pulse_output_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 static void
-pulse_output_cancel(struct audio_output *ao)
+pulse_output_cancel(AudioOutput *ao)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 	pa_operation *o;
@@ -818,7 +818,7 @@ pulse_output_cancel(struct audio_output *ao)
 }
 
 static bool
-pulse_output_pause(struct audio_output *ao)
+pulse_output_pause(AudioOutput *ao)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 

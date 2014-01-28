@@ -40,7 +40,7 @@
 #include <assert.h>
 #include <string.h>
 
-static void ao_command_finished(struct audio_output *ao)
+static void ao_command_finished(AudioOutput *ao)
 {
 	assert(ao->command != AO_COMMAND_NONE);
 	ao->command = AO_COMMAND_NONE;
@@ -51,7 +51,7 @@ static void ao_command_finished(struct audio_output *ao)
 }
 
 static bool
-ao_enable(struct audio_output *ao)
+ao_enable(AudioOutput *ao)
 {
 	Error error;
 	bool success;
@@ -74,10 +74,10 @@ ao_enable(struct audio_output *ao)
 }
 
 static void
-ao_close(struct audio_output *ao, bool drain);
+ao_close(AudioOutput *ao, bool drain);
 
 static void
-ao_disable(struct audio_output *ao)
+ao_disable(AudioOutput *ao)
 {
 	if (ao->open)
 		ao_close(ao, false);
@@ -92,7 +92,7 @@ ao_disable(struct audio_output *ao)
 }
 
 static AudioFormat
-ao_filter_open(struct audio_output *ao, AudioFormat &format,
+ao_filter_open(AudioOutput *ao, AudioFormat &format,
 	       Error &error_r)
 {
 	assert(format.IsValid());
@@ -121,7 +121,7 @@ ao_filter_open(struct audio_output *ao, AudioFormat &format,
 }
 
 static void
-ao_filter_close(struct audio_output *ao)
+ao_filter_close(AudioOutput *ao)
 {
 	if (ao->replay_gain_filter != nullptr)
 		ao->replay_gain_filter->Close();
@@ -132,7 +132,7 @@ ao_filter_close(struct audio_output *ao)
 }
 
 static void
-ao_open(struct audio_output *ao)
+ao_open(AudioOutput *ao)
 {
 	bool success;
 	Error error;
@@ -207,7 +207,7 @@ ao_open(struct audio_output *ao)
 }
 
 static void
-ao_close(struct audio_output *ao, bool drain)
+ao_close(AudioOutput *ao, bool drain)
 {
 	assert(ao->open);
 
@@ -233,7 +233,7 @@ ao_close(struct audio_output *ao, bool drain)
 }
 
 static void
-ao_reopen_filter(struct audio_output *ao)
+ao_reopen_filter(AudioOutput *ao)
 {
 	Error error;
 
@@ -266,7 +266,7 @@ ao_reopen_filter(struct audio_output *ao)
 }
 
 static void
-ao_reopen(struct audio_output *ao)
+ao_reopen(AudioOutput *ao)
 {
 	if (!ao->config_audio_format.IsFullyDefined()) {
 		if (ao->open) {
@@ -297,7 +297,7 @@ ao_reopen(struct audio_output *ao)
  * was issued
  */
 static bool
-ao_wait(struct audio_output *ao)
+ao_wait(AudioOutput *ao)
 {
 	while (true) {
 		unsigned delay = ao_plugin_delay(ao);
@@ -312,7 +312,7 @@ ao_wait(struct audio_output *ao)
 }
 
 static const void *
-ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
+ao_chunk_data(AudioOutput *ao, const struct music_chunk *chunk,
 	      Filter *replay_gain_filter,
 	      unsigned *replay_gain_serial_p,
 	      size_t *length_r)
@@ -352,7 +352,7 @@ ao_chunk_data(struct audio_output *ao, const struct music_chunk *chunk,
 }
 
 static const void *
-ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
+ao_filter_chunk(AudioOutput *ao, const struct music_chunk *chunk,
 		size_t *length_r)
 {
 	size_t length;
@@ -422,7 +422,7 @@ ao_filter_chunk(struct audio_output *ao, const struct music_chunk *chunk,
 }
 
 static bool
-ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
+ao_play_chunk(AudioOutput *ao, const struct music_chunk *chunk)
 {
 	assert(ao != nullptr);
 	assert(ao->filter != nullptr);
@@ -485,7 +485,7 @@ ao_play_chunk(struct audio_output *ao, const struct music_chunk *chunk)
 }
 
 static const struct music_chunk *
-ao_next_chunk(struct audio_output *ao)
+ao_next_chunk(AudioOutput *ao)
 {
 	return ao->chunk != nullptr
 		/* continue the previous play() call */
@@ -503,7 +503,7 @@ ao_next_chunk(struct audio_output *ao)
  * tail of the pipe was already reached
  */
 static bool
-ao_play(struct audio_output *ao)
+ao_play(AudioOutput *ao)
 {
 	bool success;
 	const struct music_chunk *chunk;
@@ -547,7 +547,7 @@ ao_play(struct audio_output *ao)
 	return true;
 }
 
-static void ao_pause(struct audio_output *ao)
+static void ao_pause(AudioOutput *ao)
 {
 	bool ret;
 
@@ -578,7 +578,7 @@ static void ao_pause(struct audio_output *ao)
 static void
 audio_output_task(void *arg)
 {
-	struct audio_output *ao = (struct audio_output *)arg;
+	AudioOutput *ao = (AudioOutput *)arg;
 
 	FormatThreadName("output:%s", ao->name);
 
@@ -680,7 +680,7 @@ audio_output_task(void *arg)
 	}
 }
 
-void audio_output_thread_start(struct audio_output *ao)
+void audio_output_thread_start(AudioOutput *ao)
 {
 	assert(ao->command == AO_COMMAND_NONE);
 

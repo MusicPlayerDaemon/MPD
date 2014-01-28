@@ -42,7 +42,7 @@ enum {
 static const size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
 struct JackOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	/**
 	 * libjack options passed to jack_client_open().
@@ -310,7 +310,7 @@ parse_port_list(const char *source, char **dest, Error &error)
 	return n;
 }
 
-static struct audio_output *
+static AudioOutput *
 mpd_jack_init(const config_param &param, Error &error)
 {
 	JackOutput *jd = new JackOutput();
@@ -389,7 +389,7 @@ mpd_jack_init(const config_param &param, Error &error)
 }
 
 static void
-mpd_jack_finish(struct audio_output *ao)
+mpd_jack_finish(AudioOutput *ao)
 {
 	JackOutput *jd = (JackOutput *)ao;
 
@@ -404,7 +404,7 @@ mpd_jack_finish(struct audio_output *ao)
 }
 
 static bool
-mpd_jack_enable(struct audio_output *ao, Error &error)
+mpd_jack_enable(AudioOutput *ao, Error &error)
 {
 	JackOutput *jd = (JackOutput *)ao;
 
@@ -415,7 +415,7 @@ mpd_jack_enable(struct audio_output *ao, Error &error)
 }
 
 static void
-mpd_jack_disable(struct audio_output *ao)
+mpd_jack_disable(AudioOutput *ao)
 {
 	JackOutput *jd = (JackOutput *)ao;
 
@@ -579,7 +579,7 @@ mpd_jack_start(JackOutput *jd, Error &error)
 }
 
 static bool
-mpd_jack_open(struct audio_output *ao, AudioFormat &audio_format,
+mpd_jack_open(AudioOutput *ao, AudioFormat &audio_format,
 	      Error &error)
 {
 	JackOutput *jd = (JackOutput *)ao;
@@ -604,7 +604,7 @@ mpd_jack_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static void
-mpd_jack_close(gcc_unused struct audio_output *ao)
+mpd_jack_close(gcc_unused AudioOutput *ao)
 {
 	JackOutput *jd = (JackOutput *)ao;
 
@@ -612,7 +612,7 @@ mpd_jack_close(gcc_unused struct audio_output *ao)
 }
 
 static unsigned
-mpd_jack_delay(struct audio_output *ao)
+mpd_jack_delay(AudioOutput *ao)
 {
 	JackOutput *jd = (JackOutput *)ao;
 
@@ -689,7 +689,7 @@ mpd_jack_write_samples(JackOutput *jd, const void *src,
 }
 
 static size_t
-mpd_jack_play(struct audio_output *ao, const void *chunk, size_t size,
+mpd_jack_play(AudioOutput *ao, const void *chunk, size_t size,
 	      Error &error)
 {
 	JackOutput *jd = (JackOutput *)ao;
@@ -734,7 +734,7 @@ mpd_jack_play(struct audio_output *ao, const void *chunk, size_t size,
 }
 
 static bool
-mpd_jack_pause(struct audio_output *ao)
+mpd_jack_pause(AudioOutput *ao)
 {
 	JackOutput *jd = (JackOutput *)ao;
 

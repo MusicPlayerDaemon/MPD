@@ -36,7 +36,7 @@
 #undef new
 
 class RoarOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	std::string host, name;
 
@@ -52,7 +52,7 @@ public:
 	RoarOutput()
 		:err(ROAR_ERROR_NONE) {}
 
-	operator audio_output *() {
+	operator AudioOutput *() {
 		return &base;
 	}
 
@@ -136,7 +136,7 @@ RoarOutput::Configure(const config_param &param)
 		: ROAR_ROLE_MUSIC;
 }
 
-static struct audio_output *
+static AudioOutput *
 roar_init(const config_param &param, Error &error)
 {
 	RoarOutput *self = new RoarOutput();
@@ -151,7 +151,7 @@ roar_init(const config_param &param, Error &error)
 }
 
 static void
-roar_finish(struct audio_output *ao)
+roar_finish(AudioOutput *ao)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 
@@ -227,7 +227,7 @@ RoarOutput::Open(AudioFormat &audio_format, Error &error)
 }
 
 static bool
-roar_open(struct audio_output *ao, AudioFormat &audio_format, Error &error)
+roar_open(AudioOutput *ao, AudioFormat &audio_format, Error &error)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 
@@ -248,7 +248,7 @@ RoarOutput::Close()
 }
 
 static void
-roar_close(struct audio_output *ao)
+roar_close(AudioOutput *ao)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 	self->Close();
@@ -283,7 +283,7 @@ RoarOutput::Cancel()
 }
 
 static void
-roar_cancel(struct audio_output *ao)
+roar_cancel(AudioOutput *ao)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 
@@ -308,7 +308,7 @@ RoarOutput::Play(const void *chunk, size_t size, Error &error)
 }
 
 static size_t
-roar_play(struct audio_output *ao, const void *chunk, size_t size,
+roar_play(AudioOutput *ao, const void *chunk, size_t size,
 	  Error &error)
 {
 	RoarOutput *self = (RoarOutput *)ao;
@@ -403,7 +403,7 @@ RoarOutput::SendTag(const Tag &tag)
 }
 
 static void
-roar_send_tag(struct audio_output *ao, const Tag *meta)
+roar_send_tag(AudioOutput *ao, const Tag *meta)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 	self->SendTag(*meta);

@@ -33,7 +33,7 @@
 #include <CoreServices/CoreServices.h>
 
 struct OSXOutput {
-	struct audio_output base;
+	AudioOutput base;
 
 	/* configuration settings */
 	OSType component_subtype;
@@ -77,7 +77,7 @@ osx_output_configure(OSXOutput *oo, const config_param &param)
 	}
 }
 
-static struct audio_output *
+static AudioOutput *
 osx_output_init(const config_param &param, Error &error)
 {
 	OSXOutput *oo = new OSXOutput();
@@ -92,7 +92,7 @@ osx_output_init(const config_param &param, Error &error)
 }
 
 static void
-osx_output_finish(struct audio_output *ao)
+osx_output_finish(AudioOutput *ao)
 {
 	OSXOutput *oo = (OSXOutput *)ao;
 
@@ -231,7 +231,7 @@ osx_render(void *vdata,
 }
 
 static bool
-osx_output_enable(struct audio_output *ao, Error &error)
+osx_output_enable(AudioOutput *ao, Error &error)
 {
 	OSXOutput *oo = (OSXOutput *)ao;
 
@@ -282,7 +282,7 @@ osx_output_enable(struct audio_output *ao, Error &error)
 }
 
 static void
-osx_output_disable(struct audio_output *ao)
+osx_output_disable(AudioOutput *ao)
 {
 	OSXOutput *oo = (OSXOutput *)ao;
 
@@ -290,7 +290,7 @@ osx_output_disable(struct audio_output *ao)
 }
 
 static void
-osx_output_cancel(struct audio_output *ao)
+osx_output_cancel(AudioOutput *ao)
 {
 	OSXOutput *od = (OSXOutput *)ao;
 
@@ -299,7 +299,7 @@ osx_output_cancel(struct audio_output *ao)
 }
 
 static void
-osx_output_close(struct audio_output *ao)
+osx_output_close(AudioOutput *ao)
 {
 	OSXOutput *od = (OSXOutput *)ao;
 
@@ -310,7 +310,7 @@ osx_output_close(struct audio_output *ao)
 }
 
 static bool
-osx_output_open(struct audio_output *ao, AudioFormat &audio_format,
+osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		Error &error)
 {
 	OSXOutput *od = (OSXOutput *)ao;
@@ -383,7 +383,7 @@ osx_output_open(struct audio_output *ao, AudioFormat &audio_format,
 }
 
 static size_t
-osx_output_play(struct audio_output *ao, const void *chunk, size_t size,
+osx_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		gcc_unused Error &error)
 {
 	OSXOutput *od = (OSXOutput *)ao;

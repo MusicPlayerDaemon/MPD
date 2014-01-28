@@ -26,7 +26,7 @@
 #include <assert.h>
 
 void
-ao_base_finish(struct audio_output *ao)
+ao_base_finish(AudioOutput *ao)
 {
 	assert(!ao->open);
 	assert(!ao->fail_timer.IsDefined());
@@ -41,7 +41,7 @@ ao_base_finish(struct audio_output *ao)
 }
 
 void
-audio_output_free(struct audio_output *ao)
+audio_output_free(AudioOutput *ao)
 {
 	assert(!ao->open);
 	assert(!ao->fail_timer.IsDefined());

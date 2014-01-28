@@ -51,7 +51,7 @@ struct Encoder;
 struct Tag;
 
 class HttpdOutput final : ServerSocket, DeferredMonitor {
-	struct audio_output base;
+	AudioOutput base;
 
 	/**
 	 * True if the audio output is open and accepts client
@@ -157,7 +157,7 @@ public:
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #endif
 
-	static constexpr HttpdOutput *Cast(audio_output *ao) {
+	static constexpr HttpdOutput *Cast(AudioOutput *ao) {
 		return ContainerCast(ao, HttpdOutput, base);
 	}
 
@@ -175,7 +175,7 @@ public:
 
 	bool Configure(const config_param &param, Error &error);
 
-	audio_output *InitAndConfigure(const config_param &param,
+	AudioOutput *InitAndConfigure(const config_param &param,
 				       Error &error) {
 		if (!Init(param, error))
 			return nullptr;

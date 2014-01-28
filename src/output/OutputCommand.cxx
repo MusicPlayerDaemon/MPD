@@ -40,7 +40,7 @@ audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
 	if (idx >= outputs.Size())
 		return false;
 
-	audio_output &ao = outputs.Get(idx);
+	AudioOutput &ao = outputs.Get(idx);
 	if (ao.enabled)
 		return true;
 
@@ -60,7 +60,7 @@ audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
 	if (idx >= outputs.Size())
 		return false;
 
-	audio_output &ao = outputs.Get(idx);
+	AudioOutput &ao = outputs.Get(idx);
 	if (!ao.enabled)
 		return true;
 
@@ -86,7 +86,7 @@ audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx)
 	if (idx >= outputs.Size())
 		return false;
 
-	audio_output &ao = outputs.Get(idx);
+	AudioOutput &ao = outputs.Get(idx);
 	const bool enabled = ao.enabled = !ao.enabled;
 	idle_add(IDLE_OUTPUT);
 

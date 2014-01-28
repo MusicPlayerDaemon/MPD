@@ -60,7 +60,7 @@ enum audio_output_command {
 	AO_COMMAND_KILL
 };
 
-struct audio_output {
+struct AudioOutput {
 	/**
 	 * The device's configured display name.
 	 */
@@ -272,31 +272,31 @@ struct audio_output {
 extern struct notify audio_output_client_notify;
 
 static inline bool
-audio_output_is_open(const struct audio_output *ao)
+audio_output_is_open(const AudioOutput *ao)
 {
 	return ao->open;
 }
 
 static inline bool
-audio_output_command_is_finished(const struct audio_output *ao)
+audio_output_command_is_finished(const AudioOutput *ao)
 {
 	return ao->command == AO_COMMAND_NONE;
 }
 
-struct audio_output *
+AudioOutput *
 audio_output_new(const config_param &param,
 		 PlayerControl &pc,
 		 Error &error);
 
 bool
-ao_base_init(struct audio_output *ao,
+ao_base_init(AudioOutput *ao,
 	     const AudioOutputPlugin *plugin,
 	     const config_param &param, Error &error);
 
 void
-ao_base_finish(struct audio_output *ao);
+ao_base_finish(AudioOutput *ao);
 
 void
-audio_output_free(struct audio_output *ao);
+audio_output_free(AudioOutput *ao);
 
 #endif
