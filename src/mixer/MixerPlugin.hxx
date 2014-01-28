@@ -35,7 +35,7 @@ struct mixer_plugin {
 	/**
          * Alocates and configures a mixer device.
 	 *
-	 * @param ao the pointer returned by audio_output_plugin.init
+	 * @param ao the pointer returned by AudioOutputPlugin.init
 	 * @param param the configuration section
 	 * @param error_r location to store the error occurring, or
 	 * nullptr to ignore errors

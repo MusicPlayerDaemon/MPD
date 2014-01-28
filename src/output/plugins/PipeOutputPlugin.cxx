@@ -128,7 +128,7 @@ pipe_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	return ret;
 }
 
-const struct audio_output_plugin pipe_output_plugin = {
+const struct AudioOutputPlugin pipe_output_plugin = {
 	"pipe",
 	nullptr,
 	pipe_output_init,

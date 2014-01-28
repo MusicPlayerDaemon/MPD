@@ -22,7 +22,7 @@
 #include "OutputInternal.hxx"
 
 struct audio_output *
-ao_plugin_init(const struct audio_output_plugin *plugin,
+ao_plugin_init(const AudioOutputPlugin *plugin,
 	       const config_param &param,
 	       Error &error)
 {

@@ -294,7 +294,7 @@ fifo_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	}
 }
 
-const struct audio_output_plugin fifo_output_plugin = {
+const struct AudioOutputPlugin fifo_output_plugin = {
 	"fifo",
 	nullptr,
 	fifo_output_init,

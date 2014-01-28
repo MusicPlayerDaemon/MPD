@@ -20,6 +20,6 @@
 #ifndef MPD_FIFO_OUTPUT_PLUGIN_HXX
 #define MPD_FIFO_OUTPUT_PLUGIN_HXX
 
-extern const struct audio_output_plugin fifo_output_plugin;
+extern const struct AudioOutputPlugin fifo_output_plugin;
 
 #endif

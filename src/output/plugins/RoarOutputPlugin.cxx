@@ -409,7 +409,7 @@ roar_send_tag(struct audio_output *ao, const Tag *meta)
 	self->SendTag(*meta);
 }
 
-const struct audio_output_plugin roar_output_plugin = {
+const struct AudioOutputPlugin roar_output_plugin = {
 	"roar",
 	nullptr,
 	roar_init,

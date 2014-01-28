@@ -122,7 +122,7 @@ null_cancel(struct audio_output *ao)
 	nd->timer->Reset();
 }
 
-const struct audio_output_plugin null_output_plugin = {
+const struct AudioOutputPlugin null_output_plugin = {
 	"null",
 	nullptr,
 	null_init,

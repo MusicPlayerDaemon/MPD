@@ -20,6 +20,6 @@
 #ifndef MPD_OSX_OUTPUT_PLUGIN_HXX
 #define MPD_OSX_OUTPUT_PLUGIN_HXX
 
-extern const struct audio_output_plugin osx_output_plugin;
+extern const struct AudioOutputPlugin osx_output_plugin;
 
 #endif

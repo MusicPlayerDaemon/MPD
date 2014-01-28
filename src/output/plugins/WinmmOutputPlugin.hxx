@@ -31,7 +31,7 @@
 
 struct WinmmOutput;
 
-extern const struct audio_output_plugin winmm_output_plugin;
+extern const struct AudioOutputPlugin winmm_output_plugin;
 
 gcc_pure
 HWAVEOUT

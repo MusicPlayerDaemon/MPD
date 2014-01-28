@@ -266,7 +266,7 @@ openal_cancel(struct audio_output *ao)
 	od->filled = 0;
 }
 
-const struct audio_output_plugin openal_output_plugin = {
+const struct AudioOutputPlugin openal_output_plugin = {
 	"openal",
 	nullptr,
 	openal_init,

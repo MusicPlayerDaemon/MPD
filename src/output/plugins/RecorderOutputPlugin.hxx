@@ -20,6 +20,6 @@
 #ifndef MPD_RECORDER_OUTPUT_PLUGIN_HXX
 #define MPD_RECORDER_OUTPUT_PLUGIN_HXX
 
-extern const struct audio_output_plugin recorder_output_plugin;
+extern const struct AudioOutputPlugin recorder_output_plugin;
 
 #endif

@@ -22,7 +22,7 @@
 
 class RoarOutput;
 
-extern const struct audio_output_plugin roar_output_plugin;
+extern const struct AudioOutputPlugin roar_output_plugin;
 
 int
 roar_output_get_volume(RoarOutput *roar);

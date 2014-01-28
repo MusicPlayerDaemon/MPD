@@ -243,7 +243,7 @@ recorder_output_play(struct audio_output *ao, const void *chunk, size_t size,
 		? size : 0;
 }
 
-const struct audio_output_plugin recorder_output_plugin = {
+const struct AudioOutputPlugin recorder_output_plugin = {
 	"recorder",
 	nullptr,
 	recorder_output_init,

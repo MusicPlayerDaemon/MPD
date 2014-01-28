@@ -869,7 +869,7 @@ pulse_output_test_default_device(void)
 	return success;
 }
 
-const struct audio_output_plugin pulse_output_plugin = {
+const struct AudioOutputPlugin pulse_output_plugin = {
 	"pulse",
 	pulse_output_test_default_device,
 	pulse_output_init,

@@ -751,7 +751,7 @@ oss_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	}
 }
 
-const struct audio_output_plugin oss_output_plugin = {
+const struct AudioOutputPlugin oss_output_plugin = {
 	"oss",
 	oss_output_test_default_device,
 	oss_output_init,

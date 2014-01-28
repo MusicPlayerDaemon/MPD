@@ -25,7 +25,7 @@ struct PulseMixer;
 struct pa_cvolume;
 class Error;
 
-extern const struct audio_output_plugin pulse_output_plugin;
+extern const struct AudioOutputPlugin pulse_output_plugin;
 
 void
 pulse_output_lock(PulseOutput *po);

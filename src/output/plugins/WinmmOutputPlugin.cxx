@@ -334,7 +334,7 @@ winmm_output_cancel(struct audio_output *ao)
 	winmm_stop(wo);
 }
 
-const struct audio_output_plugin winmm_output_plugin = {
+const struct AudioOutputPlugin winmm_output_plugin = {
 	"winmm",
 	winmm_output_test_default_device,
 	winmm_output_init,

@@ -33,6 +33,7 @@ class Filter;
 class MusicPipe;
 struct config_param;
 struct PlayerControl;
+struct AudioOutputPlugin;
 
 enum audio_output_command {
 	AO_COMMAND_NONE = 0,
@@ -68,7 +69,7 @@ struct audio_output {
 	/**
 	 * The plugin which implements this output device.
 	 */
-	const struct audio_output_plugin *plugin;
+	const AudioOutputPlugin *plugin;
 
 	/**
 	 * The #mixer object associated with this audio output device.
@@ -289,7 +290,7 @@ audio_output_new(const config_param &param,
 
 bool
 ao_base_init(struct audio_output *ao,
-	     const struct audio_output_plugin *plugin,
+	     const AudioOutputPlugin *plugin,
 	     const config_param &param, Error &error);
 
 void

@@ -39,7 +39,7 @@
 
 #include <string.h>
 
-const struct audio_output_plugin *const audio_output_plugins[] = {
+const AudioOutputPlugin *const audio_output_plugins[] = {
 #ifdef HAVE_SHOUT
 	&shout_output_plugin,
 #endif
@@ -89,8 +89,8 @@ const struct audio_output_plugin *const audio_output_plugins[] = {
 	nullptr
 };
 
-const struct audio_output_plugin *
-audio_output_plugin_get(const char *name)
+const AudioOutputPlugin *
+AudioOutputPlugin_get(const char *name)
 {
 	audio_output_plugins_for_each(plugin)
 		if (strcmp(plugin->name, name) == 0)

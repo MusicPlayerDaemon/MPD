@@ -848,7 +848,7 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 	}
 }
 
-const struct audio_output_plugin alsa_output_plugin = {
+const struct AudioOutputPlugin alsa_output_plugin = {
 	"alsa",
 	alsa_test_default_device,
 	alsa_init,

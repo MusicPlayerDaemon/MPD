@@ -746,7 +746,7 @@ mpd_jack_pause(struct audio_output *ao)
 	return true;
 }
 
-const struct audio_output_plugin jack_output_plugin = {
+const struct AudioOutputPlugin jack_output_plugin = {
 	"jack",
 	mpd_jack_test_default_device,
 	mpd_jack_init,

@@ -20,6 +20,6 @@
 #ifndef MPD_NULL_OUTPUT_PLUGIN_HXX
 #define MPD_NULL_OUTPUT_PLUGIN_HXX
 
-extern const struct audio_output_plugin null_output_plugin;
+extern const struct AudioOutputPlugin null_output_plugin;
 
 #endif

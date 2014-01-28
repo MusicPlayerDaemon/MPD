@@ -20,13 +20,15 @@
 #ifndef MPD_OUTPUT_LIST_HXX
 #define MPD_OUTPUT_LIST_HXX
 
-extern const struct audio_output_plugin *const audio_output_plugins[];
+struct AudioOutputPlugin;
 
-const struct audio_output_plugin *
-audio_output_plugin_get(const char *name);
+extern const AudioOutputPlugin *const audio_output_plugins[];
+
+const AudioOutputPlugin *
+AudioOutputPlugin_get(const char *name);
 
 #define audio_output_plugins_for_each(plugin) \
-	for (const struct audio_output_plugin *plugin, \
+	for (const AudioOutputPlugin *plugin, \
 		*const*output_plugin_iterator = &audio_output_plugins[0]; \
 		(plugin = *output_plugin_iterator) != nullptr; ++output_plugin_iterator)
 

@@ -46,7 +46,7 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
-static const struct audio_output_plugin *
+static const AudioOutputPlugin *
 audio_output_detect(Error &error)
 {
 	LogDefault(output_domain, "Attempt to detect audio output device");
@@ -129,7 +129,7 @@ audio_output_load_mixer(struct audio_output *ao,
 
 bool
 ao_base_init(struct audio_output *ao,
-	     const struct audio_output_plugin *plugin,
+	     const AudioOutputPlugin *plugin,
 	     const config_param &param, Error &error)
 {
 	assert(ao != nullptr);
@@ -284,7 +284,7 @@ audio_output_new(const config_param &param,
 		 PlayerControl &pc,
 		 Error &error)
 {
-	const struct audio_output_plugin *plugin;
+	const AudioOutputPlugin *plugin;
 
 	if (!param.IsNull()) {
 		const char *p;
@@ -296,7 +296,7 @@ audio_output_new(const config_param &param,
 			return nullptr;
 		}
 
-		plugin = audio_output_plugin_get(p);
+		plugin = AudioOutputPlugin_get(p);
 		if (plugin == nullptr) {
 			error.Format(config_domain,
 				     "No such audio output plugin: %s", p);

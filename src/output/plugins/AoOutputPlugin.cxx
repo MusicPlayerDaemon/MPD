@@ -267,7 +267,7 @@ ao_output_play(struct audio_output *ao, const void *chunk, size_t size,
 	return size;
 }
 
-const struct audio_output_plugin ao_output_plugin = {
+const struct AudioOutputPlugin ao_output_plugin = {
 	"ao",
 	nullptr,
 	ao_output_init,

@@ -182,7 +182,7 @@ solaris_output_cancel(struct audio_output *ao)
 	ioctl(so->fd, I_FLUSH);
 }
 
-const struct audio_output_plugin solaris_output_plugin = {
+const struct AudioOutputPlugin solaris_output_plugin = {
 	"solaris",
 	solaris_output_test_default_device,
 	solaris_output_init,

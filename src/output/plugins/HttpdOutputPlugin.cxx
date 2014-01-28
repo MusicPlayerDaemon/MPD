@@ -582,7 +582,7 @@ httpd_output_cancel(struct audio_output *ao)
 		});
 }
 
-const struct audio_output_plugin httpd_output_plugin = {
+const struct AudioOutputPlugin httpd_output_plugin = {
 	"httpd",
 	nullptr,
 	httpd_output_init,

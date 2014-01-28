@@ -20,6 +20,6 @@
 #ifndef MPD_ALSA_OUTPUT_PLUGIN_HXX
 #define MPD_ALSA_OUTPUT_PLUGIN_HXX
 
-extern const struct audio_output_plugin alsa_output_plugin;
+extern const struct AudioOutputPlugin alsa_output_plugin;
 
 #endif

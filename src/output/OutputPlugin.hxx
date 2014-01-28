@@ -32,7 +32,7 @@ class Error;
 /**
  * A plugin which controls an audio output device.
  */
-struct audio_output_plugin {
+struct AudioOutputPlugin {
 	/**
 	 * the plugin's name
 	 */
@@ -150,7 +150,7 @@ struct audio_output_plugin {
 };
 
 static inline bool
-ao_plugin_test_default_device(const struct audio_output_plugin *plugin)
+ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 {
 	return plugin->test_default_device != nullptr
 		? plugin->test_default_device()
@@ -159,7 +159,7 @@ ao_plugin_test_default_device(const struct audio_output_plugin *plugin)
 
 gcc_malloc
 struct audio_output *
-ao_plugin_init(const struct audio_output_plugin *plugin,
+ao_plugin_init(const AudioOutputPlugin *plugin,
 	       const config_param &param,
 	       Error &error);
 
