@@ -17,7 +17,6 @@ noinst_LIBRARIES = \
 	libtag.a \
 	libinput.a \
 	libfs.a \
-	libneighbor.a \
 	libdb_plugins.a \
 	libplaylist_plugins.a \
 	libdecoder_plugins.a \
@@ -414,6 +413,8 @@ if ENABLE_NEIGHBOR_PLUGINS
 src_mpd_SOURCES += \
 	src/command/NeighborCommands.cxx \
 	src/command/NeighborCommands.hxx
+
+noinst_LIBRARIES += libneighbor.a
 
 libneighbor_a_SOURCES = \
 	src/neighbor/Registry.cxx src/neighbor/Registry.hxx \
