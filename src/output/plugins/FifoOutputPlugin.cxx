@@ -55,10 +55,6 @@ struct FifoOutput {
 				    error);
 	}
 
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
-
 	bool Create(Error &error);
 	bool Check(Error &error);
 	void Delete();
@@ -195,7 +191,6 @@ fifo_output_init(const config_param &param, Error &error)
 	}
 
 	if (!fifo_open(fd, error)) {
-		fd->Deinitialize();
 		delete fd;
 		return nullptr;
 	}
@@ -209,7 +204,6 @@ fifo_output_finish(AudioOutput *ao)
 	FifoOutput *fd = (FifoOutput *)ao;
 
 	fd->Close();
-	fd->Deinitialize();
 	delete fd;
 }
 

@@ -39,10 +39,6 @@ struct PipeOutput {
 				    error);
 	}
 
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
-
 	bool Configure(const config_param &param, Error &error);
 };
 
@@ -72,7 +68,6 @@ pipe_output_init(const config_param &param, Error &error)
 	}
 
 	if (!pd->Configure(param, error)) {
-		pd->Deinitialize();
 		delete pd;
 		return nullptr;
 	}
@@ -85,7 +80,6 @@ pipe_output_finish(AudioOutput *ao)
 {
 	PipeOutput *pd = (PipeOutput *)ao;
 
-	pd->Deinitialize();
 	delete pd;
 }
 

@@ -119,7 +119,6 @@ winmm_output_init(const config_param &param, Error &error)
 
 	const char *device = param.GetBlockValue("device");
 	if (!get_device_id(device, &wo->device_id, error)) {
-		ao_base_finish(&wo->base);
 		delete wo;
 		return nullptr;
 	}
@@ -132,7 +131,6 @@ winmm_output_finish(AudioOutput *ao)
 {
 	WinmmOutput *wo = (WinmmOutput *)ao;
 
-	ao_base_finish(&wo->base);
 	delete wo;
 }
 

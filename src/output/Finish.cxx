@@ -25,19 +25,18 @@
 
 #include <assert.h>
 
-void
-ao_base_finish(AudioOutput *ao)
+AudioOutput::~AudioOutput()
 {
-	assert(!ao->open);
-	assert(!ao->fail_timer.IsDefined());
-	assert(!ao->thread.IsDefined());
+	assert(!open);
+	assert(!fail_timer.IsDefined());
+	assert(!thread.IsDefined());
 
-	if (ao->mixer != nullptr)
-		mixer_free(ao->mixer);
+	if (mixer != nullptr)
+		mixer_free(mixer);
 
-	delete ao->replay_gain_filter;
-	delete ao->other_replay_gain_filter;
-	delete ao->filter;
+	delete replay_gain_filter;
+	delete other_replay_gain_filter;
+	delete filter;
 }
 
 void

@@ -72,10 +72,6 @@ struct ShoutOutput final {
 				    error);
 	}
 
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
-
 	bool Configure(const config_param &param, Error &error);
 };
 
@@ -285,7 +281,6 @@ my_shout_init_driver(const config_param &param, Error &error)
 	}
 
 	if (!sd->Configure(param, error)) {
-		sd->Deinitialize();
 		delete sd;
 		return nullptr;
 	}
@@ -369,7 +364,6 @@ my_shout_finish_driver(AudioOutput *ao)
 
 	encoder_finish(sd->encoder);
 
-	sd->Deinitialize();
 	delete sd;
 
 	shout_init_count--;

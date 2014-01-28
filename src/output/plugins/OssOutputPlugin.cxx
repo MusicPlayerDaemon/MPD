@@ -84,10 +84,6 @@ struct OssOutput {
 		return ao_base_init(&base, &oss_output_plugin, param,
 				    error_r);
 	}
-
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
 };
 
 static constexpr Domain oss_output_domain("oss_output");
@@ -222,7 +218,6 @@ oss_output_finish(AudioOutput *ao)
 {
 	OssOutput *od = (OssOutput *)ao;
 
-	ao_base_finish(&od->base);
 	delete od;
 }
 

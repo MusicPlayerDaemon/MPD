@@ -62,10 +62,6 @@ struct RecorderOutput {
 				    error_r);
 	}
 
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
-
 	bool Configure(const config_param &param, Error &error);
 
 	bool WriteToFile(const void *data, size_t length, Error &error);
@@ -118,7 +114,6 @@ recorder_output_init(const config_param &param, Error &error)
 	}
 
 	if (!recorder->Configure(param, error)) {
-		recorder->Deinitialize();
 		delete recorder;
 		return nullptr;
 	}
@@ -132,7 +127,6 @@ recorder_output_finish(AudioOutput *ao)
 	RecorderOutput *recorder = (RecorderOutput *)ao;
 
 	encoder_finish(recorder->encoder);
-	recorder->Deinitialize();
 	delete recorder;
 }
 

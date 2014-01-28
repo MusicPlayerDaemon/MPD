@@ -61,10 +61,6 @@ struct SolarisOutput {
 		return ao_base_init(&base, &solaris_output_plugin, param,
 				    error_r);
 	}
-
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
 };
 
 static bool
@@ -95,7 +91,6 @@ solaris_output_finish(AudioOutput *ao)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 
-	so->Deinitialize();
 	delete so;
 }
 

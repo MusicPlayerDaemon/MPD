@@ -156,7 +156,6 @@ httpd_output_finish(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	httpd->Finish();
 	delete httpd;
 }
 

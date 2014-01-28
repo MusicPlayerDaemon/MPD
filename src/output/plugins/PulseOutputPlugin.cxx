@@ -353,7 +353,6 @@ pulse_output_finish(AudioOutput *ao)
 {
 	PulseOutput *po = (PulseOutput *)ao;
 
-	ao_base_finish(&po->base);
 	delete po;
 }
 

@@ -61,10 +61,6 @@ public:
 				    error);
 	}
 
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
-
 	void Configure(const config_param &param);
 
 	bool Open(AudioFormat &audio_format, Error &error);
@@ -155,7 +151,6 @@ roar_finish(AudioOutput *ao)
 {
 	RoarOutput *self = (RoarOutput *)ao;
 
-	self->Deinitialize();
 	delete self;
 }
 

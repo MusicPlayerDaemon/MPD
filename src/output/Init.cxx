@@ -46,6 +46,20 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
+AudioOutput::AudioOutput()
+	:enabled(true), really_enabled(false),
+	 open(false),
+	 pause(false),
+	 allow_play(true),
+	 in_playback_loop(false),
+	 woken_for_play(false),
+	 filter(nullptr),
+	 replay_gain_filter(nullptr),
+	 other_replay_gain_filter(nullptr),
+	 command(AO_COMMAND_NONE)
+{
+}
+
 static const AudioOutputPlugin *
 audio_output_detect(Error &error)
 {
@@ -166,12 +180,6 @@ ao_base_init(AudioOutput *ao,
 	ao->tags = param.GetBlockValue("tags", true);
 	ao->always_on = param.GetBlockValue("always_on", false);
 	ao->enabled = param.GetBlockValue("enabled", true);
-	ao->really_enabled = false;
-	ao->open = false;
-	ao->pause = false;
-	ao->allow_play = true;
-	ao->in_playback_loop = false;
-	ao->woken_for_play = false;
 
 	/* set up the filter chain */
 
@@ -201,12 +209,6 @@ ao_base_init(AudioOutput *ao,
 		FormatError(filter_error,
 			    "Failed to initialize filter chain for '%s'",
 			    ao->name);
-
-	ao->command = AO_COMMAND_NONE;
-
-	ao->mixer = nullptr;
-	ao->replay_gain_filter = nullptr;
-	ao->other_replay_gain_filter = nullptr;
 
 	/* done */
 

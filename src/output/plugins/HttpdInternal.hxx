@@ -169,10 +169,6 @@ public:
 
 	bool Init(const config_param &param, Error &error);
 
-	void Finish() {
-		ao_base_finish(&base);
-	}
-
 	bool Configure(const config_param &param, Error &error);
 
 	AudioOutput *InitAndConfigure(const config_param &param,
@@ -180,10 +176,8 @@ public:
 		if (!Init(param, error))
 			return nullptr;
 
-		if (!Configure(param, error)) {
-			Finish();
+		if (!Configure(param, error))
 			return nullptr;
-		}
 
 		return &base;
 	}

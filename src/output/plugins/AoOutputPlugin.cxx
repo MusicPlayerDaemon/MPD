@@ -47,10 +47,6 @@ struct AoOutput {
 				    error);
 	}
 
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
-
 	bool Configure(const config_param &param, Error &error);
 };
 
@@ -163,7 +159,6 @@ ao_output_init(const config_param &param, Error &error)
 	}
 
 	if (!ad->Configure(param, error)) {
-		ad->Deinitialize();
 		delete ad;
 		return nullptr;
 	}
@@ -177,7 +172,6 @@ ao_output_finish(AudioOutput *ao)
 	AoOutput *ad = (AoOutput *)ao;
 
 	ao_free_options(ad->options);
-	ad->Deinitialize();
 	delete ad;
 
 	ao_output_ref--;

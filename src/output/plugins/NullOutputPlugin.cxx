@@ -33,10 +33,6 @@ struct NullOutput {
 		return ao_base_init(&base, &null_output_plugin, param,
 				    error);
 	}
-
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
 };
 
 static AudioOutput *
@@ -59,7 +55,6 @@ null_finish(AudioOutput *ao)
 {
 	NullOutput *nd = (NullOutput *)ao;
 
-	nd->Deinitialize();
 	delete nd;
 }
 

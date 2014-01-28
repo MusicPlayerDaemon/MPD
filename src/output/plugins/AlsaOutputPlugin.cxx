@@ -126,10 +126,6 @@ struct AlsaOutput {
 		return ao_base_init(&base, &alsa_output_plugin,
 				    param, error);
 	}
-
-	void Deinit() {
-		ao_base_finish(&base);
-	}
 };
 
 static constexpr Domain alsa_output_domain("alsa_output");
@@ -189,7 +185,6 @@ alsa_finish(AudioOutput *ao)
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
-	ad->Deinit();
 	delete ad;
 
 	/* free libasound's config cache */

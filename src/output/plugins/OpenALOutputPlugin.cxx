@@ -52,10 +52,6 @@ struct OpenALOutput {
 		return ao_base_init(&base, &openal_output_plugin, param,
 				    error_r);
 	}
-
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
 };
 
 static constexpr Domain openal_output_domain("openal_output");
@@ -157,7 +153,6 @@ openal_finish(AudioOutput *ao)
 {
 	OpenALOutput *od = (OpenALOutput *)ao;
 
-	od->Deinitialize();
 	delete od;
 }
 

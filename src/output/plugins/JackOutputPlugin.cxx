@@ -83,10 +83,6 @@ struct JackOutput {
 		return ao_base_init(&base, &jack_output_plugin, param,
 				    error_r);
 	}
-
-	void Deinitialize() {
-		ao_base_finish(&base);
-	}
 };
 
 static constexpr Domain jack_output_domain("jack_output");
@@ -399,7 +395,6 @@ mpd_jack_finish(AudioOutput *ao)
 	for (unsigned i = 0; i < jd->num_destination_ports; ++i)
 		g_free(jd->destination_ports[i]);
 
-	jd->Deinitialize();
 	delete jd;
 }
 

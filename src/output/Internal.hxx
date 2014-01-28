@@ -263,6 +263,9 @@ struct AudioOutput {
 	 * Has the output finished playing #chunk?
 	 */
 	bool chunk_finished;
+
+	AudioOutput();
+	~AudioOutput();
 };
 
 /**
@@ -292,9 +295,6 @@ bool
 ao_base_init(AudioOutput *ao,
 	     const AudioOutputPlugin *plugin,
 	     const config_param &param, Error &error);
-
-void
-ao_base_finish(AudioOutput *ao);
 
 void
 audio_output_free(AudioOutput *ao);
