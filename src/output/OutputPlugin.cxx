@@ -35,75 +35,75 @@ ao_plugin_init(const AudioOutputPlugin *plugin,
 void
 ao_plugin_finish(AudioOutput *ao)
 {
-	ao->plugin->finish(ao);
+	ao->plugin.finish(ao);
 }
 
 bool
 ao_plugin_enable(AudioOutput *ao, Error &error_r)
 {
-	return ao->plugin->enable != nullptr
-		? ao->plugin->enable(ao, error_r)
+	return ao->plugin.enable != nullptr
+		? ao->plugin.enable(ao, error_r)
 		: true;
 }
 
 void
 ao_plugin_disable(AudioOutput *ao)
 {
-	if (ao->plugin->disable != nullptr)
-		ao->plugin->disable(ao);
+	if (ao->plugin.disable != nullptr)
+		ao->plugin.disable(ao);
 }
 
 bool
 ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format,
 	       Error &error)
 {
-	return ao->plugin->open(ao, audio_format, error);
+	return ao->plugin.open(ao, audio_format, error);
 }
 
 void
 ao_plugin_close(AudioOutput *ao)
 {
-	ao->plugin->close(ao);
+	ao->plugin.close(ao);
 }
 
 unsigned
 ao_plugin_delay(AudioOutput *ao)
 {
-	return ao->plugin->delay != nullptr
-		? ao->plugin->delay(ao)
+	return ao->plugin.delay != nullptr
+		? ao->plugin.delay(ao)
 		: 0;
 }
 
 void
 ao_plugin_send_tag(AudioOutput *ao, const Tag *tag)
 {
-	if (ao->plugin->send_tag != nullptr)
-		ao->plugin->send_tag(ao, tag);
+	if (ao->plugin.send_tag != nullptr)
+		ao->plugin.send_tag(ao, tag);
 }
 
 size_t
 ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size,
 	       Error &error)
 {
-	return ao->plugin->play(ao, chunk, size, error);
+	return ao->plugin.play(ao, chunk, size, error);
 }
 
 void
 ao_plugin_drain(AudioOutput *ao)
 {
-	if (ao->plugin->drain != nullptr)
-		ao->plugin->drain(ao);
+	if (ao->plugin.drain != nullptr)
+		ao->plugin.drain(ao);
 }
 
 void
 ao_plugin_cancel(AudioOutput *ao)
 {
-	if (ao->plugin->cancel != nullptr)
-		ao->plugin->cancel(ao);
+	if (ao->plugin.cancel != nullptr)
+		ao->plugin.cancel(ao);
 }
 
 bool
 ao_plugin_pause(AudioOutput *ao)
 {
-	return ao->plugin->pause != nullptr && ao->plugin->pause(ao);
+	return ao->plugin.pause != nullptr && ao->plugin.pause(ao);
 }

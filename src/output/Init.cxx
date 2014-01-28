@@ -47,7 +47,7 @@
 #define AUDIO_FILTERS		"filters"
 
 AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
-	:plugin(&_plugin),
+	:plugin(_plugin),
 	 enabled(true), really_enabled(false),
 	 open(false),
 	 pause(false),
@@ -59,10 +59,10 @@ AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
 	 other_replay_gain_filter(nullptr),
 	 command(AO_COMMAND_NONE)
 {
-	assert(plugin->finish != nullptr);
-	assert(plugin->open != nullptr);
-	assert(plugin->close != nullptr);
-	assert(plugin->play != nullptr);
+	assert(plugin.finish != nullptr);
+	assert(plugin.open != nullptr);
+	assert(plugin.close != nullptr);
+	assert(plugin.play != nullptr);
 }
 
 static const AudioOutputPlugin *
@@ -245,7 +245,7 @@ audio_output_setup(AudioOutput *ao, const config_param &param,
 
 	Error mixer_error;
 	ao->mixer = audio_output_load_mixer(ao, param,
-					    ao->plugin->mixer_plugin,
+					    ao->plugin.mixer_plugin,
 					    *ao->filter, mixer_error);
 	if (ao->mixer == nullptr && mixer_error.IsDefined())
 		FormatError(mixer_error,

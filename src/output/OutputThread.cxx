@@ -65,7 +65,7 @@ ao_enable(AudioOutput *ao)
 	if (!success) {
 		FormatError(error,
 			    "Failed to enable \"%s\" [%s]",
-			    ao->name, ao->plugin->name);
+			    ao->name, ao->plugin.name);
 		return false;
 	}
 
@@ -157,7 +157,7 @@ ao_open(AudioOutput *ao)
 		ao_filter_open(ao, ao->in_audio_format, error);
 	if (!filter_audio_format.IsDefined()) {
 		FormatError(error, "Failed to open filter for \"%s\" [%s]",
-			    ao->name, ao->plugin->name);
+			    ao->name, ao->plugin.name);
 
 		ao->fail_timer.Update();
 		return;
@@ -176,7 +176,7 @@ ao_open(AudioOutput *ao)
 
 	if (!success) {
 		FormatError(error, "Failed to open \"%s\" [%s]",
-			    ao->name, ao->plugin->name);
+			    ao->name, ao->plugin.name);
 
 		ao_filter_close(ao);
 		ao->fail_timer.Update();
@@ -186,7 +186,7 @@ ao_open(AudioOutput *ao)
 	if (!convert_filter_set(ao->convert_filter, ao->out_audio_format,
 				error)) {
 		FormatError(error, "Failed to convert for \"%s\" [%s]",
-			    ao->name, ao->plugin->name);
+			    ao->name, ao->plugin.name);
 
 		ao_filter_close(ao);
 		ao->fail_timer.Update();
@@ -197,7 +197,7 @@ ao_open(AudioOutput *ao)
 
 	FormatDebug(output_domain,
 		    "opened plugin=%s name=\"%s\" audio_format=%s",
-		    ao->plugin->name, ao->name,
+		    ao->plugin.name, ao->name,
 		    audio_format_to_string(ao->out_audio_format, &af_string));
 
 	if (ao->in_audio_format != ao->out_audio_format)
@@ -229,7 +229,7 @@ ao_close(AudioOutput *ao, bool drain)
 	ao->mutex.lock();
 
 	FormatDebug(output_domain, "closed plugin=%s name=\"%s\"",
-		    ao->plugin->name, ao->name);
+		    ao->plugin.name, ao->name);
 }
 
 static void
@@ -245,7 +245,7 @@ ao_reopen_filter(AudioOutput *ao)
 				error)) {
 		FormatError(error,
 			    "Failed to open filter for \"%s\" [%s]",
-			    ao->name, ao->plugin->name);
+			    ao->name, ao->plugin.name);
 
 		/* this is a little code duplication fro ao_close(),
 		   but we cannot call this function because we must
@@ -342,7 +342,7 @@ ao_chunk_data(AudioOutput *ao, const struct music_chunk *chunk,
 						     &length, error);
 		if (data == nullptr) {
 			FormatError(error, "\"%s\" [%s] failed to filter",
-				    ao->name, ao->plugin->name);
+				    ao->name, ao->plugin.name);
 			return nullptr;
 		}
 	}
@@ -413,7 +413,7 @@ ao_filter_chunk(AudioOutput *ao, const struct music_chunk *chunk,
 	data = ao->filter->FilterPCM(data, length, &length, error);
 	if (data == nullptr) {
 		FormatError(error, "\"%s\" [%s] failed to filter",
-			    ao->name, ao->plugin->name);
+			    ao->name, ao->plugin.name);
 		return nullptr;
 	}
 
@@ -462,7 +462,7 @@ ao_play_chunk(AudioOutput *ao, const struct music_chunk *chunk)
 		if (nbytes == 0) {
 			/* play()==0 means failure */
 			FormatError(error, "\"%s\" [%s] failed to play",
-				    ao->name, ao->plugin->name);
+				    ao->name, ao->plugin.name);
 
 			ao_close(ao, false);
 

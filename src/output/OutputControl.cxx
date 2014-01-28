@@ -104,7 +104,7 @@ void
 audio_output_enable(AudioOutput *ao)
 {
 	if (!ao->thread.IsDefined()) {
-		if (ao->plugin->enable == nullptr) {
+		if (ao->plugin.enable == nullptr) {
 			/* don't bother to start the thread now if the
 			   device doesn't even have a enable() method;
 			   just assign the variable and we're done */
@@ -122,7 +122,7 @@ void
 audio_output_disable(AudioOutput *ao)
 {
 	if (!ao->thread.IsDefined()) {
-		if (ao->plugin->disable == nullptr)
+		if (ao->plugin.disable == nullptr)
 			ao->really_enabled = false;
 		else
 			/* if there's no thread yet, the device cannot
@@ -248,7 +248,7 @@ audio_output_play(AudioOutput *ao)
 
 void audio_output_pause(AudioOutput *ao)
 {
-	if (ao->mixer != nullptr && ao->plugin->pause == nullptr)
+	if (ao->mixer != nullptr && ao->plugin.pause == nullptr)
 		/* the device has no pause mode: close the mixer,
 		   unless its "global" flag is set (checked by
 		   mixer_auto_close()) */

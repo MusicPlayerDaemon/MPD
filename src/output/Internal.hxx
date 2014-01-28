@@ -69,7 +69,7 @@ struct AudioOutput {
 	/**
 	 * The plugin which implements this output device.
 	 */
-	const AudioOutputPlugin *const plugin;
+	const AudioOutputPlugin &plugin;
 
 	/**
 	 * The #mixer object associated with this audio output device.
