@@ -147,14 +147,11 @@ audio_output_load_mixer(AudioOutput *ao,
 }
 
 bool
-ao_base_init(AudioOutput *ao,
-	     const config_param &param, Error &error)
+AudioOutput::Configure(const config_param &param, Error &error)
 {
-	assert(ao != nullptr);
-
 	if (!param.IsNull()) {
-		ao->name = param.GetBlockValue(AUDIO_OUTPUT_NAME);
-		if (ao->name == nullptr) {
+		name = param.GetBlockValue(AUDIO_OUTPUT_NAME);
+		if (name == nullptr) {
 			error.Set(config_domain,
 				  "Missing \"name\" configuration");
 			return false;
@@ -163,26 +160,26 @@ ao_base_init(AudioOutput *ao,
 		const char *p = param.GetBlockValue(AUDIO_OUTPUT_FORMAT);
 		if (p != nullptr) {
 			bool success =
-				audio_format_parse(ao->config_audio_format,
+				audio_format_parse(config_audio_format,
 						   p, true, error);
 			if (!success)
 				return false;
 		} else
-			ao->config_audio_format.Clear();
+			config_audio_format.Clear();
 	} else {
-		ao->name = "default detected output";
+		name = "default detected output";
 
-		ao->config_audio_format.Clear();
+		config_audio_format.Clear();
 	}
 
-	ao->tags = param.GetBlockValue("tags", true);
-	ao->always_on = param.GetBlockValue("always_on", false);
-	ao->enabled = param.GetBlockValue("enabled", true);
+	tags = param.GetBlockValue("tags", true);
+	always_on = param.GetBlockValue("always_on", false);
+	enabled = param.GetBlockValue("enabled", true);
 
 	/* set up the filter chain */
 
-	ao->filter = filter_chain_new();
-	assert(ao->filter != nullptr);
+	filter = filter_chain_new();
+	assert(filter != nullptr);
 
 	/* create the normalization filter (if configured) */
 
@@ -192,12 +189,12 @@ ao_base_init(AudioOutput *ao,
 				   IgnoreError());
 		assert(normalize_filter != nullptr);
 
-		filter_chain_append(*ao->filter, "normalize",
+		filter_chain_append(*filter, "normalize",
 				    autoconvert_filter_new(normalize_filter));
 	}
 
 	Error filter_error;
-	filter_chain_parse(*ao->filter,
+	filter_chain_parse(*filter,
 			   param.GetBlockValue(AUDIO_FILTERS, ""),
 			   filter_error);
 
@@ -206,7 +203,7 @@ ao_base_init(AudioOutput *ao,
 	if (filter_error.IsDefined())
 		FormatError(filter_error,
 			    "Failed to initialize filter chain for '%s'",
-			    ao->name);
+			    name);
 
 	/* done */
 

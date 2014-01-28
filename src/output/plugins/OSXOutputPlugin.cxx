@@ -84,7 +84,7 @@ static AudioOutput *
 osx_output_init(const config_param &param, Error &error)
 {
 	OSXOutput *oo = new OSXOutput();
-	if (!ao_base_init(&oo->base, param, error)) {
+	if (!oo->base.Configure(param, error)) {
 		delete oo;
 		return NULL;
 	}

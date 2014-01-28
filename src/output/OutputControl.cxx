@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2003-2014 The Music Player Daemon Project
  * http://www.musicpd.org
@@ -19,8 +18,6 @@
  */
 
 #include "config.h"
-#include "OutputControl.hxx"
-#include "OutputThread.hxx"
 #include "Internal.hxx"
 #include "OutputPlugin.hxx"
 #include "Domain.hxx"
@@ -38,126 +35,97 @@ static constexpr unsigned REOPEN_AFTER = 10;
 
 struct notify audio_output_client_notify;
 
-/**
- * Waits for command completion.
- *
- * @param ao the #AudioOutput instance; must be locked
- */
-static void ao_command_wait(AudioOutput *ao)
+void
+AudioOutput::WaitForCommand()
 {
-	while (ao->command != AO_COMMAND_NONE) {
-		ao->mutex.unlock();
+	while (!IsCommandFinished()) {
+		mutex.unlock();
 		audio_output_client_notify.Wait();
-		ao->mutex.lock();
+		mutex.lock();
 	}
 }
 
-/**
- * Sends a command to the #AudioOutput object, but does not wait for
- * completion.
- *
- * @param ao the #AudioOutput instance; must be locked
- */
-static void ao_command_async(AudioOutput *ao,
-			     enum audio_output_command cmd)
+void
+AudioOutput::CommandAsync(audio_output_command cmd)
 {
-	assert(ao->command == AO_COMMAND_NONE);
-	ao->command = cmd;
-	ao->cond.signal();
-}
+	assert(IsCommandFinished());
 
-/**
- * Sends a command to the #AudioOutput object and waits for
- * completion.
- *
- * @param ao the #AudioOutput instance; must be locked
- */
-static void
-ao_command(AudioOutput *ao, enum audio_output_command cmd)
-{
-	ao_command_async(ao, cmd);
-	ao_command_wait(ao);
-}
-
-/**
- * Lock the #AudioOutput object and execute the command
- * synchronously.
- */
-static void
-ao_lock_command(AudioOutput *ao, enum audio_output_command cmd)
-{
-	const ScopeLock protect(ao->mutex);
-	ao_command(ao, cmd);
+	command = cmd;
+	cond.signal();
 }
 
 void
-audio_output_set_replay_gain_mode(AudioOutput *ao,
-				  ReplayGainMode mode)
+AudioOutput::CommandWait(audio_output_command cmd)
 {
-	if (ao->replay_gain_filter != nullptr)
-		replay_gain_filter_set_mode(ao->replay_gain_filter, mode);
-	if (ao->other_replay_gain_filter != nullptr)
-		replay_gain_filter_set_mode(ao->other_replay_gain_filter, mode);
+	CommandAsync(cmd);
+	WaitForCommand();
 }
 
 void
-audio_output_enable(AudioOutput *ao)
+AudioOutput::LockCommandWait(audio_output_command cmd)
 {
-	if (!ao->thread.IsDefined()) {
-		if (ao->plugin.enable == nullptr) {
+	const ScopeLock protect(mutex);
+	CommandWait(cmd);
+}
+
+void
+AudioOutput::SetReplayGainMode(ReplayGainMode mode)
+{
+	if (replay_gain_filter != nullptr)
+		replay_gain_filter_set_mode(replay_gain_filter, mode);
+	if (other_replay_gain_filter != nullptr)
+		replay_gain_filter_set_mode(other_replay_gain_filter, mode);
+}
+
+void
+AudioOutput::LockEnableWait()
+{
+	if (!thread.IsDefined()) {
+		if (plugin.enable == nullptr) {
 			/* don't bother to start the thread now if the
 			   device doesn't even have a enable() method;
 			   just assign the variable and we're done */
-			ao->really_enabled = true;
+			really_enabled = true;
 			return;
 		}
 
-		audio_output_thread_start(ao);
+		StartThread();
 	}
 
-	ao_lock_command(ao, AO_COMMAND_ENABLE);
+	LockCommandWait(AO_COMMAND_ENABLE);
 }
 
 void
-audio_output_disable(AudioOutput *ao)
+AudioOutput::LockDisableWait()
 {
-	if (!ao->thread.IsDefined()) {
-		if (ao->plugin.disable == nullptr)
-			ao->really_enabled = false;
+	if (!thread.IsDefined()) {
+		if (plugin.disable == nullptr)
+			really_enabled = false;
 		else
 			/* if there's no thread yet, the device cannot
 			   be enabled */
-			assert(!ao->really_enabled);
+			assert(!really_enabled);
 
 		return;
 	}
 
-	ao_lock_command(ao, AO_COMMAND_DISABLE);
+	LockCommandWait(AO_COMMAND_DISABLE);
 }
 
-/**
- * Object must be locked (and unlocked) by the caller.
- */
-static bool
-audio_output_open(AudioOutput *ao,
-		  const AudioFormat audio_format,
-		  const MusicPipe &mp)
+inline bool
+AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 {
-	bool open;
-
-	assert(ao != nullptr);
-	assert(ao->allow_play);
+	assert(allow_play);
 	assert(audio_format.IsValid());
 
-	ao->fail_timer.Reset();
+	fail_timer.Reset();
 
-	if (ao->open && audio_format == ao->in_audio_format) {
-		assert(ao->pipe == &mp ||
-		       (ao->always_on && ao->pause));
+	if (open && audio_format == in_audio_format) {
+		assert(pipe == &mp || (always_on && pause));
 
-		if (ao->pause) {
-			ao->chunk = nullptr;
-			ao->pipe = &mp;
+		if (pause) {
+			chunk = nullptr;
+			pipe = &mp;
 
 			/* unpause with the CANCEL command; this is a
 			   hack, but suits well for forcing the thread
@@ -166,160 +134,162 @@ audio_output_open(AudioOutput *ao,
 
 			/* we're not using audio_output_cancel() here,
 			   because that function is asynchronous */
-			ao_command(ao, AO_COMMAND_CANCEL);
+			CommandWait(AO_COMMAND_CANCEL);
 		}
 
 		return true;
 	}
 
-	ao->in_audio_format = audio_format;
-	ao->chunk = nullptr;
+	in_audio_format = audio_format;
+	chunk = nullptr;
 
-	ao->pipe = &mp;
+	pipe = &mp;
 
-	if (!ao->thread.IsDefined())
-		audio_output_thread_start(ao);
+	if (!thread.IsDefined())
+		StartThread();
 
-	ao_command(ao, ao->open ? AO_COMMAND_REOPEN : AO_COMMAND_OPEN);
-	open = ao->open;
+	CommandWait(open ? AO_COMMAND_REOPEN : AO_COMMAND_OPEN);
+	const bool open2 = open;
 
-	if (open && ao->mixer != nullptr) {
+	if (open2 && mixer != nullptr) {
 		Error error;
-		if (!mixer_open(ao->mixer, error))
+		if (!mixer_open(mixer, error))
 			FormatWarning(output_domain,
-				      "Failed to open mixer for '%s'",
-				      ao->name);
+				      "Failed to open mixer for '%s'", name);
 	}
 
-	return open;
+	return open2;
 }
 
-/**
- * Same as audio_output_close(), but expects the lock to be held by
- * the caller.
- */
-static void
-audio_output_close_locked(AudioOutput *ao)
+void
+AudioOutput::CloseWait()
 {
-	assert(ao != nullptr);
-	assert(ao->allow_play);
+	assert(allow_play);
 
-	if (ao->mixer != nullptr)
-		mixer_auto_close(ao->mixer);
+	if (mixer != nullptr)
+		mixer_auto_close(mixer);
 
-	assert(!ao->open || !ao->fail_timer.IsDefined());
+	assert(!open || !fail_timer.IsDefined());
 
-	if (ao->open)
-		ao_command(ao, AO_COMMAND_CLOSE);
+	if (open)
+		CommandWait(AO_COMMAND_CLOSE);
 	else
-		ao->fail_timer.Reset();
+		fail_timer.Reset();
 }
 
 bool
-audio_output_update(AudioOutput *ao,
-		    const AudioFormat audio_format,
-		    const MusicPipe &mp)
+AudioOutput::LockUpdate(const AudioFormat audio_format,
+			const MusicPipe &mp)
 {
-	const ScopeLock protect(ao->mutex);
+	const ScopeLock protect(mutex);
 
-	if (ao->enabled && ao->really_enabled) {
-		if (ao->fail_timer.Check(REOPEN_AFTER * 1000)) {
-			return audio_output_open(ao, audio_format, mp);
+	if (enabled && really_enabled) {
+		if (fail_timer.Check(REOPEN_AFTER * 1000)) {
+			return Open(audio_format, mp);
 		}
-	} else if (audio_output_is_open(ao))
-		audio_output_close_locked(ao);
+	} else if (IsOpen())
+		CloseWait();
 
 	return false;
 }
 
 void
-audio_output_play(AudioOutput *ao)
+AudioOutput::LockPlay()
 {
-	const ScopeLock protect(ao->mutex);
+	const ScopeLock protect(mutex);
 
-	assert(ao->allow_play);
+	assert(allow_play);
 
-	if (audio_output_is_open(ao) && !ao->in_playback_loop &&
-	    !ao->woken_for_play) {
-		ao->woken_for_play = true;
-		ao->cond.signal();
+	if (IsOpen() && !in_playback_loop && !woken_for_play) {
+		woken_for_play = true;
+		cond.signal();
 	}
 }
 
-void audio_output_pause(AudioOutput *ao)
+void
+AudioOutput::LockPauseAsync()
 {
-	if (ao->mixer != nullptr && ao->plugin.pause == nullptr)
+	if (mixer != nullptr && plugin.pause == nullptr)
 		/* the device has no pause mode: close the mixer,
 		   unless its "global" flag is set (checked by
 		   mixer_auto_close()) */
-		mixer_auto_close(ao->mixer);
+		mixer_auto_close(mixer);
 
-	const ScopeLock protect(ao->mutex);
+	const ScopeLock protect(mutex);
 
-	assert(ao->allow_play);
-	if (audio_output_is_open(ao))
-		ao_command_async(ao, AO_COMMAND_PAUSE);
+	assert(allow_play);
+	if (IsOpen())
+		CommandAsync(AO_COMMAND_PAUSE);
 }
 
 void
-audio_output_drain_async(AudioOutput *ao)
+AudioOutput::LockDrainAsync()
 {
-	const ScopeLock protect(ao->mutex);
+	const ScopeLock protect(mutex);
 
-	assert(ao->allow_play);
-	if (audio_output_is_open(ao))
-		ao_command_async(ao, AO_COMMAND_DRAIN);
+	assert(allow_play);
+	if (IsOpen())
+		CommandAsync(AO_COMMAND_DRAIN);
 }
 
-void audio_output_cancel(AudioOutput *ao)
+void
+AudioOutput::LockCancelAsync()
 {
-	const ScopeLock protect(ao->mutex);
+	const ScopeLock protect(mutex);
 
-	if (audio_output_is_open(ao)) {
-		ao->allow_play = false;
-		ao_command_async(ao, AO_COMMAND_CANCEL);
+	if (IsOpen()) {
+		allow_play = false;
+		CommandAsync(AO_COMMAND_CANCEL);
 	}
 }
 
 void
-audio_output_allow_play(AudioOutput *ao)
+AudioOutput::LockAllowPlay()
 {
-	const ScopeLock protect(ao->mutex);
+	const ScopeLock protect(mutex);
 
-	ao->allow_play = true;
-	if (audio_output_is_open(ao))
-		ao->cond.signal();
+	allow_play = true;
+	if (IsOpen())
+		cond.signal();
 }
 
 void
-audio_output_release(AudioOutput *ao)
+AudioOutput::LockRelease()
 {
-	if (ao->always_on)
-		audio_output_pause(ao);
+	if (always_on)
+		LockPauseAsync();
 	else
-		audio_output_close(ao);
+		LockCloseWait();
 }
 
-void audio_output_close(AudioOutput *ao)
+void
+AudioOutput::LockCloseWait()
 {
-	assert(ao != nullptr);
-	assert(!ao->open || !ao->fail_timer.IsDefined());
+	assert(!open || !fail_timer.IsDefined());
 
-	const ScopeLock protect(ao->mutex);
-	audio_output_close_locked(ao);
+	const ScopeLock protect(mutex);
+	CloseWait();
 }
 
-void audio_output_finish(AudioOutput *ao)
+void
+AudioOutput::StopThread()
 {
-	audio_output_close(ao);
+	assert(thread.IsDefined());
+	assert(allow_play);
 
-	assert(!ao->fail_timer.IsDefined());
+	LockCommandWait(AO_COMMAND_KILL);
+	thread.Join();
+}
 
-	if (ao->thread.IsDefined()) {
-		assert(ao->allow_play);
-		ao_lock_command(ao, AO_COMMAND_KILL);
-		ao->thread.Join();
-	}
+void
+AudioOutput::Finish()
+{
+	LockCloseWait();
 
-	audio_output_free(ao);
+	assert(!fail_timer.IsDefined());
+
+	if (thread.IsDefined())
+		StopThread();
+
+	audio_output_free(this);
 }

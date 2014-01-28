@@ -52,7 +52,7 @@ struct OpenALOutput {
 		:base(openal_output_plugin) {}
 
 	bool Initialize(const config_param &param, Error &error_r) {
-		return ao_base_init(&base, param, error_r);
+		return base.Configure(param, error_r);
 	}
 };
 

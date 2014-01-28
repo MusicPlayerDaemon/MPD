@@ -69,7 +69,7 @@ struct ShoutOutput final {
 	}
 
 	bool Initialize(const config_param &param, Error &error) {
-		return ao_base_init(&base, param, error);
+		return base.Configure(param, error);
 	}
 
 	bool Configure(const config_param &param, Error &error);

@@ -334,7 +334,7 @@ pulse_output_init(const config_param &param, Error &error)
 	g_setenv("PULSE_PROP_media.role", "music", true);
 
 	po = new PulseOutput();
-	if (!ao_base_init(&po->base, param, error)) {
+	if (!po->base.Configure(param, error)) {
 		delete po;
 		return nullptr;
 	}

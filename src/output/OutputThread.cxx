@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-#include "OutputThread.hxx"
 #include "Internal.hxx"
 #include "OutputAPI.hxx"
 #include "Domain.hxx"
@@ -680,11 +679,12 @@ audio_output_task(void *arg)
 	}
 }
 
-void audio_output_thread_start(AudioOutput *ao)
+void
+AudioOutput::StartThread()
 {
-	assert(ao->command == AO_COMMAND_NONE);
+	assert(command == AO_COMMAND_NONE);
 
 	Error error;
-	if (!ao->thread.Start(audio_output_task, ao, error))
+	if (!thread.Start(audio_output_task, this, error))
 		FatalError(error);
 }

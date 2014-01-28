@@ -23,6 +23,7 @@
 #include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/PcmDither.hxx"
+#include "ReplayGainInfo.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
@@ -266,6 +267,106 @@ struct AudioOutput {
 
 	AudioOutput(const AudioOutputPlugin &_plugin);
 	~AudioOutput();
+
+	bool Configure(const config_param &param, Error &error);
+
+	void StartThread();
+	void StopThread();
+
+	void Finish();
+
+	bool IsOpen() const {
+		return open;
+	}
+
+	bool IsCommandFinished() const {
+		return command == AO_COMMAND_NONE;
+	}
+
+	/**
+	 * Waits for command completion.
+	 *
+	 * Caller must lock the mutex.
+	 */
+	void WaitForCommand();
+
+	/**
+	 * Sends a command, but does not wait for completion.
+	 *
+	 * Caller must lock the mutex.
+	 */
+	void CommandAsync(audio_output_command cmd);
+
+	/**
+	 * Sends a command to the #AudioOutput object and waits for
+	 * completion.
+	 *
+	 * Caller must lock the mutex.
+	 */
+	void CommandWait(audio_output_command cmd);
+
+	/**
+	 * Lock the #AudioOutput object and execute the command
+	 * synchronously.
+	 */
+	void LockCommandWait(audio_output_command cmd);
+
+	/**
+	 * Enables the device.
+	 */
+	void LockEnableWait();
+
+	/**
+	 * Disables the device.
+	 */
+	void LockDisableWait();
+
+	void LockPauseAsync();
+
+	/**
+	 * Same LockCloseWait(), but expects the lock to be
+	 * held by the caller.
+	 */
+	void CloseWait();
+	void LockCloseWait();
+
+	/**
+	 * Closes the audio output, but if the "always_on" flag is set, put it
+	 * into pause mode instead.
+	 */
+	void LockRelease();
+
+	void SetReplayGainMode(ReplayGainMode mode);
+
+	/**
+	 * Caller must lock the mutex.
+	 */
+	bool Open(const AudioFormat audio_format, const MusicPipe &mp);
+
+	/**
+	 * Opens or closes the device, depending on the "enabled"
+	 * flag.
+	 *
+	 * @return true if the device is open
+	 */
+	bool LockUpdate(const AudioFormat audio_format,
+			const MusicPipe &mp);
+
+	void LockPlay();
+
+	void LockDrainAsync();
+
+	/**
+	 * Clear the "allow_play" flag and send the "CANCEL" command
+	 * asynchronously.  To finish the operation, the caller has to
+	 * call LockAllowPlay().
+	 */
+	void LockCancelAsync();
+
+	/**
+	 * Set the "allow_play" and signal the thread.
+	 */
+	void LockAllowPlay();
 };
 
 /**
@@ -274,26 +375,10 @@ struct AudioOutput {
  */
 extern struct notify audio_output_client_notify;
 
-static inline bool
-audio_output_is_open(const AudioOutput *ao)
-{
-	return ao->open;
-}
-
-static inline bool
-audio_output_command_is_finished(const AudioOutput *ao)
-{
-	return ao->command == AO_COMMAND_NONE;
-}
-
 AudioOutput *
 audio_output_new(const config_param &param,
 		 PlayerControl &pc,
 		 Error &error);
-
-bool
-ao_base_init(AudioOutput *ao,
-	     const config_param &param, Error &error);
 
 void
 audio_output_free(AudioOutput *ao);

@@ -963,9 +963,9 @@ OUTPUT_API_SRC = \
 	src/output/Internal.hxx \
 	src/output/Registry.cxx src/output/Registry.hxx \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
-	src/output/OutputThread.cxx src/output/OutputThread.hxx \
+	src/output/OutputThread.cxx \
 	src/output/Domain.cxx src/output/Domain.hxx \
-	src/output/OutputControl.cxx src/output/OutputControl.hxx \
+	src/output/OutputControl.cxx \
 	src/output/OutputState.cxx src/output/OutputState.hxx \
 	src/output/OutputPrint.cxx src/output/OutputPrint.hxx \
 	src/output/OutputCommand.cxx src/output/OutputCommand.hxx \

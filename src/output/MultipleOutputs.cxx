@@ -21,7 +21,6 @@
 #include "MultipleOutputs.hxx"
 #include "PlayerControl.hxx"
 #include "Internal.hxx"
-#include "OutputControl.hxx"
 #include "Domain.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"
@@ -45,8 +44,8 @@ MultipleOutputs::MultipleOutputs()
 MultipleOutputs::~MultipleOutputs()
 {
 	for (auto i : outputs) {
-		audio_output_disable(i);
-		audio_output_finish(i);
+		i->LockDisableWait();
+		i->Finish();
 	}
 }
 
@@ -111,9 +110,9 @@ MultipleOutputs::EnableDisable()
 
 		if (ao->enabled != enabled) {
 			if (ao->enabled)
-				audio_output_enable(ao);
+				ao->LockEnableWait();
 			else
-				audio_output_disable(ao);
+				ao->LockDisableWait();
 		}
 	}
 }
@@ -123,8 +122,7 @@ MultipleOutputs::AllFinished() const
 {
 	for (auto ao : outputs) {
 		const ScopeLock protect(ao->mutex);
-		if (audio_output_is_open(ao) &&
-		    !audio_output_command_is_finished(ao))
+		if (ao->IsOpen() && !ao->IsCommandFinished())
 			return false;
 	}
 
@@ -142,7 +140,7 @@ void
 MultipleOutputs::AllowPlay()
 {
 	for (auto ao : outputs)
-		audio_output_allow_play(ao);
+		ao->LockAllowPlay();
 }
 
 static void
@@ -169,7 +167,7 @@ MultipleOutputs::Update()
 		return false;
 
 	for (auto ao : outputs)
-		ret = audio_output_update(ao, input_audio_format, *pipe)
+		ret = ao->LockUpdate(input_audio_format, *pipe)
 			|| ret;
 
 	return ret;
@@ -179,7 +177,7 @@ void
 MultipleOutputs::SetReplayGainMode(ReplayGainMode mode)
 {
 	for (auto ao : outputs)
-		audio_output_set_replay_gain_mode(ao, mode);
+		ao->SetReplayGainMode(mode);
 }
 
 bool
@@ -199,7 +197,7 @@ MultipleOutputs::Play(music_chunk *chunk, Error &error)
 	pipe->Push(chunk);
 
 	for (auto ao : outputs)
-		audio_output_play(ao);
+		ao->LockPlay();
 
 	return true;
 }
@@ -387,7 +385,7 @@ MultipleOutputs::Pause()
 	Update();
 
 	for (auto ao : outputs)
-		audio_output_pause(ao);
+		ao->LockPauseAsync();
 
 	WaitAll();
 }
@@ -396,7 +394,7 @@ void
 MultipleOutputs::Drain()
 {
 	for (auto ao : outputs)
-		audio_output_drain_async(ao);
+		ao->LockDrainAsync();
 
 	WaitAll();
 }
@@ -407,7 +405,7 @@ MultipleOutputs::Cancel()
 	/* send the cancel() command to all audio outputs */
 
 	for (auto ao : outputs)
-		audio_output_cancel(ao);
+		ao->LockCancelAsync();
 
 	WaitAll();
 
@@ -430,7 +428,7 @@ void
 MultipleOutputs::Close()
 {
 	for (auto ao : outputs)
-		audio_output_close(ao);
+		ao->LockCloseWait();
 
 	if (pipe != nullptr) {
 		assert(buffer != nullptr);
@@ -451,7 +449,7 @@ void
 MultipleOutputs::Release()
 {
 	for (auto ao : outputs)
-		audio_output_release(ao);
+		ao->LockRelease();
 
 	if (pipe != nullptr) {
 		assert(buffer != nullptr);

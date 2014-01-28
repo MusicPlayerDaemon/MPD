@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-#include "output/OutputControl.hxx"
 #include "output/Internal.hxx"
 #include "output/OutputPlugin.hxx"
 #include "config/ConfigData.hxx"
