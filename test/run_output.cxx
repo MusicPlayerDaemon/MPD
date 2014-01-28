@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "output/OutputControl.hxx"
-#include "output/OutputInternal.hxx"
+#include "output/Internal.hxx"
 #include "output/OutputPlugin.hxx"
 #include "config/ConfigData.hxx"
 #include "config/ConfigGlobal.hxx"

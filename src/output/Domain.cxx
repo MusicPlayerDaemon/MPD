@@ -17,35 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "OutputInternal.hxx"
-#include "OutputPlugin.hxx"
-#include "mixer/MixerControl.hxx"
-#include "filter/FilterInternal.hxx"
+#include "Domain.hxx"
+#include "util/Domain.hxx"
 
-#include <assert.h>
-
-void
-ao_base_finish(AudioOutput *ao)
-{
-	assert(!ao->open);
-	assert(!ao->fail_timer.IsDefined());
-	assert(!ao->thread.IsDefined());
-
-	if (ao->mixer != nullptr)
-		mixer_free(ao->mixer);
-
-	delete ao->replay_gain_filter;
-	delete ao->other_replay_gain_filter;
-	delete ao->filter;
-}
-
-void
-audio_output_free(AudioOutput *ao)
-{
-	assert(!ao->open);
-	assert(!ao->fail_timer.IsDefined());
-	assert(!ao->thread.IsDefined());
-
-	ao_plugin_finish(ao);
-}
+const Domain output_domain("output");

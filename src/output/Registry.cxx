@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "OutputList.hxx"
+#include "Registry.hxx"
 #include "OutputAPI.hxx"
 #include "plugins/AlsaOutputPlugin.hxx"
 #include "plugins/AoOutputPlugin.hxx"

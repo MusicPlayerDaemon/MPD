@@ -960,18 +960,18 @@ OUTPUT_LIBS = \
 
 OUTPUT_API_SRC = \
 	src/output/OutputAPI.hxx \
-	src/output/OutputInternal.hxx \
-	src/output/OutputList.cxx src/output/OutputList.hxx \
+	src/output/Internal.hxx \
+	src/output/Registry.cxx src/output/Registry.hxx \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
 	src/output/OutputThread.cxx src/output/OutputThread.hxx \
-	src/output/OutputError.cxx src/output/OutputError.hxx \
+	src/output/Domain.cxx src/output/Domain.hxx \
 	src/output/OutputControl.cxx src/output/OutputControl.hxx \
 	src/output/OutputState.cxx src/output/OutputState.hxx \
 	src/output/OutputPrint.cxx src/output/OutputPrint.hxx \
 	src/output/OutputCommand.cxx src/output/OutputCommand.hxx \
 	src/output/OutputPlugin.cxx src/output/OutputPlugin.hxx \
-	src/output/OutputFinish.cxx \
-	src/output/OutputInit.cxx
+	src/output/Finish.cxx \
+	src/output/Init.cxx
 
 liboutput_plugins_a_SOURCES = \
 	src/output/plugins/NullOutputPlugin.cxx \
@@ -1590,8 +1590,8 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/AudioParser.cxx \
 	src/Timer.cxx \
 	src/Page.cxx \
-	src/output/OutputError.cxx \
-	src/output/OutputInit.cxx src/output/OutputFinish.cxx src/output/OutputList.cxx \
+	src/output/Domain.cxx \
+	src/output/Init.cxx src/output/Finish.cxx src/output/Registry.cxx \
 	src/output/OutputPlugin.cxx \
 	src/mixer/MixerControl.cxx \
 	src/mixer/MixerType.cxx \

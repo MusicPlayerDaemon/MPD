@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "OutputPlugin.hxx"
-#include "OutputInternal.hxx"
+#include "Internal.hxx"
 
 AudioOutput *
 ao_plugin_init(const AudioOutputPlugin *plugin,

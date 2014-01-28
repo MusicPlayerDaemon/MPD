@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "OutputThread.hxx"
-#include "OutputInternal.hxx"
+#include "Internal.hxx"
 #include "OutputAPI.hxx"
-#include "OutputError.hxx"
+#include "Domain.hxx"
 #include "pcm/PcmMix.hxx"
 #include "notify.hxx"
 #include "filter/FilterInternal.hxx"

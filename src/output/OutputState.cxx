@@ -25,8 +25,8 @@
 #include "config.h"
 #include "OutputState.hxx"
 #include "MultipleOutputs.hxx"
-#include "OutputInternal.hxx"
-#include "OutputError.hxx"
+#include "Internal.hxx"
+#include "Domain.hxx"
 #include "Log.hxx"
 #include "util/StringUtil.hxx"
 

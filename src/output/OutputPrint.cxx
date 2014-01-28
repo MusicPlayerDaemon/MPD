@@ -25,7 +25,7 @@
 #include "config.h"
 #include "OutputPrint.hxx"
 #include "MultipleOutputs.hxx"
-#include "OutputInternal.hxx"
+#include "Internal.hxx"
 #include "client/Client.hxx"
 
 void

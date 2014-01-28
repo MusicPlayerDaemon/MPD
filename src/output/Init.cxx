@@ -18,9 +18,9 @@
  */
 
 #include "config.h"
-#include "OutputInternal.hxx"
-#include "OutputList.hxx"
-#include "OutputError.hxx"
+#include "Internal.hxx"
+#include "Registry.hxx"
+#include "Domain.hxx"
 #include "OutputAPI.hxx"
 #include "filter/FilterConfig.hxx"
 #include "AudioParser.hxx"

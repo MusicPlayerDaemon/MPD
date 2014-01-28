@@ -27,7 +27,7 @@
 #include "db/DatabasePlugin.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
-#include "output/OutputList.hxx"
+#include "output/Registry.hxx"
 #include "output/OutputPlugin.hxx"
 #include "input/Registry.hxx"
 #include "input/InputPlugin.hxx"
