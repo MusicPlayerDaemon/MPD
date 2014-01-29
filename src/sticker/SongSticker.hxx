@@ -72,13 +72,13 @@ sticker_song_get(const LightSong &song);
  *
  * Caller must lock the #db_mutex.
  *
- * @param directory the base directory to search in
+ * @param base_uri the base directory to search in
  * @param name the name of the sticker
  * @return true on success (even if no sticker was found), false on
  * failure
  */
 bool
-sticker_song_find(Directory &directory, const char *name,
+sticker_song_find(const char *base_uri, const char *name,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data);

@@ -124,24 +124,17 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 	/* find song dir key */
 	} else if (argc == 5 && strcmp(argv[1], "find") == 0) {
 		/* "sticker find song a/directory name" */
+
+		const char *const base_uri = argv[3];
+
 		bool success;
 		struct sticker_song_find_data data = {
 			client,
 			argv[4],
 		};
 
-		db_lock();
-		Directory *directory = db_get_directory(argv[3]);
-		if (directory == nullptr) {
-			db_unlock();
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "no such directory");
-			return CommandResult::ERROR;
-		}
-
-		success = sticker_song_find(*directory, data.name,
+		success = sticker_song_find(base_uri, data.name,
 					    sticker_song_find_print_cb, &data);
-		db_unlock();
 		if (!success) {
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set search sticker database");

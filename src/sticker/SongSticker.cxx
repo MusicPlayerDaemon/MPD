@@ -21,8 +21,9 @@
 #include "SongSticker.hxx"
 #include "StickerDatabase.hxx"
 #include "db/LightSong.hxx"
-#include "db/Song.hxx"
-#include "db/Directory.hxx"
+#include "db/DatabaseGlue.hxx"
+#include "db/DatabasePlugin.hxx"
+#include "util/Error.hxx"
 
 #include <glib.h>
 
@@ -66,7 +67,7 @@ sticker_song_get(const LightSong &song)
 }
 
 struct sticker_song_find_data {
-	Directory *directory;
+	const Database *db;
 	const char *base_uri;
 	size_t base_uri_length;
 
@@ -85,24 +86,29 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 		/* should not happen, ignore silently */
 		return;
 
-	Song *song = data->directory->LookupSong(uri + data->base_uri_length);
-	if (song != nullptr)
-		data->func(song->Export(), value, data->user_data);
+	const Database *db = data->db;
+	const LightSong *song = db->GetSong(uri, IgnoreError());
+	if (song != nullptr) {
+		data->func(*song, value, data->user_data);
+		db->ReturnSong(song);
+	}
 }
 
 bool
-sticker_song_find(Directory &directory, const char *name,
+sticker_song_find(const char *base_uri, const char *name,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data)
 {
 	struct sticker_song_find_data data;
-	data.directory = &directory;
+	data.db = GetDatabase();
+	assert(data.db != nullptr);
+
 	data.func = func;
 	data.user_data = user_data;
 
 	char *allocated;
-	data.base_uri = directory.GetPath();
+	data.base_uri = base_uri;
 	if (*data.base_uri != 0)
 		/* append slash to base_uri */
 		data.base_uri = allocated =
