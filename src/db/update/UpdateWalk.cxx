@@ -29,6 +29,7 @@
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
 #include "db/PlaylistVector.hxx"
+#include "db/Uri.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Directory.hxx"
 #include "LightDirectory.hxx"
+#include "Uri.hxx"
 #include "SongFilter.hxx"
 #include "PlaylistVector.hxx"
 #include "db/DatabaseLock.hxx"

@@ -103,6 +103,7 @@ src_mpd_SOURCES = \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/DecoderInternal.cxx src/decoder/DecoderInternal.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
+	src/db/Uri.hxx \
 	src/db/Directory.cxx src/db/Directory.hxx \
 	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
 	src/db/DatabaseSimple.hxx \

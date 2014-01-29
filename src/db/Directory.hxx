@@ -239,10 +239,4 @@ public:
 	LightDirectory Export() const;
 };
 
-static inline bool
-isRootDirectory(const char *name)
-{
-	return name[0] == 0 || (name[0] == '/' && name[1] == 0);
-}
-
 #endif
