@@ -21,11 +21,14 @@
 #define MPD_INOTIFY_UPDATE_HXX
 
 #include "check.h"
+#include "Compiler.h"
+
+class EventLoop;
 
 #ifdef HAVE_INOTIFY_INIT
 
 void
-mpd_inotify_init(unsigned max_depth);
+mpd_inotify_init(EventLoop &loop, unsigned max_depth);
 
 void
 mpd_inotify_finish(void);
@@ -33,7 +36,7 @@ mpd_inotify_finish(void);
 #else /* !HAVE_INOTIFY_INIT */
 
 static inline void
-mpd_inotify_init(gcc_unused unsigned max_depth)
+mpd_inotify_init(gcc_unused EventLoop &loop, gcc_unused unsigned max_depth)
 {
 }
 

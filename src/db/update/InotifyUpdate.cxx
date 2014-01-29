@@ -23,7 +23,6 @@
 #include "InotifyQueue.hxx"
 #include "InotifyDomain.hxx"
 #include "Mapper.hxx"
-#include "Main.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
@@ -286,7 +285,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 }
 
 void
-mpd_inotify_init(unsigned max_depth)
+mpd_inotify_init(EventLoop &loop, unsigned max_depth)
 {
 	LogDebug(inotify_domain, "initializing inotify");
 
@@ -297,7 +296,7 @@ mpd_inotify_init(unsigned max_depth)
 	}
 
 	Error error;
-	inotify_source = InotifySource::Create(*main_loop,
+	inotify_source = InotifySource::Create(loop,
 					       mpd_inotify_callback, nullptr,
 					       error);
 	if (inotify_source == nullptr) {
@@ -321,7 +320,7 @@ mpd_inotify_init(unsigned max_depth)
 
 	recursive_watch_subdirectories(inotify_root, path, 0);
 
-	inotify_queue = new InotifyQueue(*main_loop);
+	inotify_queue = new InotifyQueue(loop);
 
 	LogDebug(inotify_domain, "watching music directory");
 }

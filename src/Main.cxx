@@ -504,7 +504,8 @@ int mpd_main(int argc, char *argv[])
 	if (config_get_bool(CONF_AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
 		if (mapper_has_music_directory())
-			mpd_inotify_init(config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
+			mpd_inotify_init(*main_loop,
+					 config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
 							     G_MAXUINT));
 #else
 		FormatWarning(main_domain,
