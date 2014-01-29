@@ -44,12 +44,12 @@ static constexpr Domain listen_domain("listen");
 
 class ClientListener final : public ServerSocket {
 public:
-	ClientListener():ServerSocket(*main_loop) {}
+	ClientListener(EventLoop &_loop):ServerSocket(_loop) {}
 
 private:
 	virtual void OnAccept(int fd, const sockaddr &address,
 			      size_t address_length, int uid) {
-		client_new(*main_loop, *instance->partition,
+		client_new(GetEventLoop(), *instance->partition,
 			   fd, &address, address_length, uid);
 	}
 };
@@ -101,16 +101,14 @@ listen_systemd_activation(Error &error_r)
 }
 
 bool
-listen_global_init(Error &error)
+listen_global_init(EventLoop &loop, Error &error)
 {
-	assert(main_loop != nullptr);
-
 	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	const struct config_param *param =
 		config_get_next_param(CONF_BIND_TO_ADDRESS, nullptr);
 	bool success;
 
-	listen_socket = new ClientListener();
+	listen_socket = new ClientListener(loop);
 
 	if (listen_systemd_activation(error))
 		return true;

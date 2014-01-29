@@ -20,12 +20,13 @@
 #ifndef MPD_LISTEN_HXX
 #define MPD_LISTEN_HXX
 
+class EventLoop;
 class Error;
 
 extern int listen_port;
 
 bool
-listen_global_init(Error &error);
+listen_global_init(EventLoop &loop, Error &error);
 
 void listen_global_finish(void);
 
