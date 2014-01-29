@@ -18,8 +18,8 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "UpdateDatabase.hxx"
-#include "UpdateRemove.hxx"
+#include "Editor.hxx"
+#include "Remove.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
@@ -29,7 +29,7 @@
 #include <stddef.h>
 
 void
-delete_song(Directory &dir, Song *del)
+DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 {
 	assert(del->parent == &dir);
 
@@ -39,7 +39,7 @@ delete_song(Directory &dir, Song *del)
 	db_unlock(); /* temporary unlock, because update_remove_song() blocks */
 
 	/* now take it out of the playlist (in the main_task) */
-	update_remove_song(del);
+	remove.Remove(del);
 
 	/* finally, all possible references gone, free it */
 	del->Free();
@@ -53,32 +53,32 @@ delete_song(Directory &dir, Song *del)
  *
  * Caller must lock the #db_mutex.
  */
-static void
-clear_directory(Directory &directory)
+inline void
+DatabaseEditor::ClearDirectory(Directory &directory)
 {
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory)
-		delete_directory(child);
+		DeleteDirectory(child);
 
 	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, directory) {
 		assert(song->parent == &directory);
-		delete_song(directory, song);
+		DeleteSong(directory, song);
 	}
 }
 
 void
-delete_directory(Directory *directory)
+DatabaseEditor::DeleteDirectory(Directory *directory)
 {
 	assert(directory->parent != nullptr);
 
-	clear_directory(*directory);
+	ClearDirectory(*directory);
 
 	directory->Delete();
 }
 
 bool
-delete_name_in(Directory &parent, const char *name)
+DatabaseEditor::DeleteNameIn(Directory &parent, const char *name)
 {
 	bool modified = false;
 
@@ -86,13 +86,13 @@ delete_name_in(Directory &parent, const char *name)
 	Directory *directory = parent.FindChild(name);
 
 	if (directory != nullptr) {
-		delete_directory(directory);
+		DeleteDirectory(directory);
 		modified = true;
 	}
 
 	Song *song = parent.FindSong(name);
 	if (song != nullptr) {
-		delete_song(parent, song);
+		DeleteSong(parent, song);
 		modified = true;
 	}
 

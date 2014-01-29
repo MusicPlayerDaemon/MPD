@@ -17,34 +17,41 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_DATABASE_HXX
-#define MPD_UPDATE_DATABASE_HXX
+#ifndef MPD_UPDATE_REMOVE_HXX
+#define MPD_UPDATE_REMOVE_HXX
 
 #include "check.h"
+#include "event/DeferredMonitor.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
-struct Directory;
 struct Song;
 
 /**
- * Caller must lock the #db_mutex.
+ * This class handles #Song removal.  It defers the action to the main
+ * thread to ensure that all references to the #Song are gone.
  */
-void
-delete_song(Directory &parent, Song *song);
+class UpdateRemoveService final : DeferredMonitor {
+	Mutex remove_mutex;
+	Cond remove_cond;
 
-/**
- * Recursively free a directory and all its contents.
- *
- * Caller must lock the #db_mutex.
- */
-void
-delete_directory(Directory *directory);
+	const Song *removed_song;
 
-/**
- * Caller must NOT lock the #db_mutex.
- *
- * @return true if the database was modified
- */
-bool
-delete_name_in(Directory &parent, const char *name);
+public:
+	UpdateRemoveService(EventLoop &_loop)
+		:DeferredMonitor(_loop) {}
+
+	/**
+	 * Sends a signal to the main thread which will in turn remove
+	 * the song: from the sticker database and from the playlist.
+	 * This serialized access is implemented to avoid excessive
+	 * locking.
+	 */
+	void Remove(const Song *song);
+
+private:
+	/* virtual methods from class DeferredMonitor */
+	virtual void RunDeferred() override;
+};
 
 #endif

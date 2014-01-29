@@ -124,15 +124,15 @@ src_mpd_SOURCES = \
 	src/filter/FilterInternal.hxx \
 	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
 	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
-	src/db/update/UpdateGlue.cxx src/db/update/UpdateGlue.hxx \
-	src/db/update/UpdateQueue.cxx src/db/update/UpdateQueue.hxx \
+	src/db/update/Service.cxx src/db/update/Service.hxx \
+	src/db/update/UpdateGlue.cxx \
+	src/db/update/Queue.cxx src/db/update/Queue.hxx \
 	src/db/update/UpdateIO.cxx src/db/update/UpdateIO.hxx \
-	src/db/update/UpdateDatabase.cxx src/db/update/UpdateDatabase.hxx \
-	src/db/update/UpdateWalk.cxx src/db/update/UpdateWalk.hxx \
-	src/db/update/UpdateSong.cxx src/db/update/UpdateSong.hxx \
-	src/db/update/UpdateContainer.cxx src/db/update/UpdateContainer.hxx \
-	src/db/update/UpdateInternal.hxx \
-	src/db/update/UpdateRemove.cxx src/db/update/UpdateRemove.hxx \
+	src/db/update/Editor.cxx src/db/update/Editor.hxx \
+	src/db/update/Walk.cxx src/db/update/Walk.hxx \
+	src/db/update/UpdateSong.cxx \
+	src/db/update/Container.cxx \
+	src/db/update/Remove.cxx src/db/update/Remove.hxx \
 	src/db/update/ExcludeList.cxx src/db/update/ExcludeList.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
@@ -486,7 +486,7 @@ if ENABLE_ARCHIVE
 noinst_LIBRARIES += libarchive.a
 
 src_mpd_SOURCES +=  \
-	src/db/update/UpdateArchive.cxx src/db/update/UpdateArchive.hxx
+	src/db/update/Archive.cxx
 
 libarchive_a_SOURCES = \
 	src/archive/ArchiveDomain.cxx src/archive/ArchiveDomain.hxx \

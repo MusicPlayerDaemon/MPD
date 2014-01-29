@@ -18,15 +18,11 @@
  */
 
 #include "config.h"
-#include "UpdateGlue.hxx"
-#include "UpdateQueue.hxx"
-#include "UpdateWalk.hxx"
-#include "UpdateRemove.hxx"
+#include "Service.hxx"
 #include "UpdateDomain.hxx"
 #include "Mapper.hxx"
 #include "db/DatabaseSimple.hxx"
 #include "Idle.hxx"
-#include "GlobalEvents.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 #include "Main.hxx"
@@ -38,30 +34,8 @@
 
 #include <assert.h>
 
-static enum update_progress {
-	UPDATE_PROGRESS_IDLE = 0,
-	UPDATE_PROGRESS_RUNNING = 1,
-	UPDATE_PROGRESS_DONE = 2
-} progress;
-
-static bool modified;
-
-static Thread update_thread;
-
-static const unsigned update_task_id_max = 1 << 15;
-
-static unsigned update_task_id;
-
-static UpdateQueueItem next;
-
-unsigned
-isUpdatingDB(void)
-{
-	return next.id;
-}
-
-static void
-update_task(gcc_unused void *ctx)
+inline void
+UpdateService::Task()
 {
 	if (!next.path_utf8.empty())
 		FormatDebug(update_domain, "starting: %s",
@@ -71,7 +45,7 @@ update_task(gcc_unused void *ctx)
 
 	SetThreadIdlePriority();
 
-	modified = update_walk(next.path_utf8.c_str(), next.discard);
+	modified = walk.Walk(next.path_utf8.c_str(), next.discard);
 
 	if (modified || !db_exists()) {
 		Error error;
@@ -86,11 +60,18 @@ update_task(gcc_unused void *ctx)
 		LogDebug(update_domain, "finished");
 
 	progress = UPDATE_PROGRESS_DONE;
-	GlobalEvents::Emit(GlobalEvents::UPDATE);
+	DeferredMonitor::Schedule();
 }
 
-static void
-spawn_update_task(UpdateQueueItem &&i)
+void
+UpdateService::Task(void *ctx)
+{
+	UpdateService &service = *(UpdateService *)ctx;
+	return service.Task();
+}
+
+void
+UpdateService::StartThread(UpdateQueueItem &&i)
 {
 	assert(main_thread.IsInside());
 
@@ -100,15 +81,15 @@ spawn_update_task(UpdateQueueItem &&i)
 	next = std::move(i);
 
 	Error error;
-	if (!update_thread.Start(update_task, nullptr, error))
+	if (!update_thread.Start(Task, this, error))
 		FatalError(error);
 
 	FormatDebug(update_domain,
 		    "spawned thread for update job id %i", next.id);
 }
 
-static unsigned
-generate_update_id()
+unsigned
+UpdateService::GenerateId()
 {
 	unsigned id = update_task_id + 1;
 	if (id > update_task_id_max)
@@ -117,7 +98,7 @@ generate_update_id()
 }
 
 unsigned
-update_enqueue(const char *path, bool discard)
+UpdateService::Enqueue(const char *path, bool discard)
 {
 	assert(main_thread.IsInside());
 
@@ -125,16 +106,16 @@ update_enqueue(const char *path, bool discard)
 		return 0;
 
 	if (progress != UPDATE_PROGRESS_IDLE) {
-		const unsigned id = generate_update_id();
-		if (!update_queue_push(path, discard, id))
+		const unsigned id = GenerateId();
+		if (!queue.Push(path, discard, id))
 			return 0;
 
 		update_task_id = id;
 		return id;
 	}
 
-	const unsigned id = update_task_id = generate_update_id();
-	spawn_update_task(UpdateQueueItem(path, discard, id));
+	const unsigned id = update_task_id = GenerateId();
+	StartThread(UpdateQueueItem(path, discard, id));
 
 	idle_add(IDLE_UPDATE);
 
@@ -144,7 +125,8 @@ update_enqueue(const char *path, bool discard)
 /**
  * Called in the main thread after the database update is finished.
  */
-static void update_finished_event(void)
+void
+UpdateService::RunDeferred()
 {
 	assert(progress == UPDATE_PROGRESS_DONE);
 	assert(next.IsDefined());
@@ -158,24 +140,16 @@ static void update_finished_event(void)
 		/* send "idle" events */
 		instance->DatabaseModified();
 
-	auto i = update_queue_shift();
+	auto i = queue.Pop();
 	if (i.IsDefined()) {
 		/* schedule the next path */
-		spawn_update_task(std::move(i));
+		StartThread(std::move(i));
 	} else {
 		progress = UPDATE_PROGRESS_IDLE;
 	}
 }
 
-void update_global_init(void)
+UpdateService::UpdateService(EventLoop &_loop)
+	:DeferredMonitor(_loop), walk(_loop)
 {
-	GlobalEvents::Register(GlobalEvents::UPDATE, update_finished_event);
-
-	update_remove_global_init();
-	update_walk_global_init();
-}
-
-void update_global_finish(void)
-{
-	update_walk_global_finish();
 }

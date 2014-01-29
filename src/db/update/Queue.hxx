@@ -17,12 +17,39 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_INTERNAL_H
-#define MPD_UPDATE_INTERNAL_H
+#ifndef MPD_UPDATE_QUEUE_HXX
+#define MPD_UPDATE_QUEUE_HXX
 
 #include "check.h"
 
-extern bool walk_discard;
-extern bool modified;
+#include <string>
+#include <queue>
+#include <list>
+
+struct UpdateQueueItem {
+	std::string path_utf8;
+	unsigned id;
+	bool discard;
+
+	UpdateQueueItem():id(0) {}
+	UpdateQueueItem(const char *_path, bool _discard,
+			unsigned _id)
+		:path_utf8(_path), id(_id), discard(_discard) {}
+
+	bool IsDefined() const {
+		return id != 0;
+	}
+};
+
+class UpdateQueue {
+	static constexpr unsigned MAX_UPDATE_QUEUE_SIZE = 32;
+
+	std::queue<UpdateQueueItem, std::list<UpdateQueueItem>> update_queue;
+
+public:
+	bool Push(const char *path, bool discard, unsigned id);
+
+	UpdateQueueItem Pop();
+};
 
 #endif

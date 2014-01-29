@@ -20,7 +20,7 @@
 #include "config.h"
 #include "InotifyQueue.hxx"
 #include "InotifyDomain.hxx"
-#include "UpdateGlue.hxx"
+#include "Service.hxx"
 #include "Log.hxx"
 
 #include <string.h>
@@ -40,7 +40,7 @@ InotifyQueue::OnTimeout()
 	while (!queue.empty()) {
 		const char *uri_utf8 = queue.front().c_str();
 
-		id = update_enqueue(uri_utf8, false);
+		id = update.Enqueue(uri_utf8, false);
 		if (id == 0) {
 			/* retry later */
 			ScheduleSeconds(INOTIFY_UPDATE_DELAY_S);

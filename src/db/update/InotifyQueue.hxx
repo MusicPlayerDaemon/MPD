@@ -26,11 +26,16 @@
 #include <list>
 #include <string>
 
+class UpdateService;
+
 class InotifyQueue final : private TimeoutMonitor {
+	UpdateService &update;
+
 	std::list<std::string> queue;
 
 public:
-	InotifyQueue(EventLoop &_loop):TimeoutMonitor(_loop) {}
+	InotifyQueue(EventLoop &_loop, UpdateService &_update)
+		:TimeoutMonitor(_loop), update(_update) {}
 
 	void Enqueue(const char *uri_utf8);
 

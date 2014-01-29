@@ -18,7 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "UpdateRemove.hxx"
+#include "Remove.hxx"
 #include "UpdateDomain.hxx"
 #include "GlobalEvents.hxx"
 #include "thread/Mutex.hxx"
@@ -36,17 +36,12 @@
 
 #include <assert.h>
 
-static const Song *removed_song;
-
-static Mutex remove_mutex;
-static Cond remove_cond;
-
 /**
  * Safely remove a song from the database.  This must be done in the
  * main task, to be sure that there is no pointer left to it.
  */
-static void
-song_remove_event(void)
+void
+UpdateRemoveService::RunDeferred()
 {
 	assert(removed_song != nullptr);
 
@@ -74,19 +69,13 @@ song_remove_event(void)
 }
 
 void
-update_remove_global_init(void)
-{
-	GlobalEvents::Register(GlobalEvents::DELETE, song_remove_event);
-}
-
-void
-update_remove_song(const Song *song)
+UpdateRemoveService::Remove(const Song *song)
 {
 	assert(removed_song == nullptr);
 
 	removed_song = song;
 
-	GlobalEvents::Emit(GlobalEvents::DELETE);
+	DeferredMonitor::Schedule();
 
 	remove_mutex.lock();
 

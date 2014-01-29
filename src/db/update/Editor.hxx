@@ -17,18 +17,44 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_SONG_HXX
-#define MPD_UPDATE_SONG_HXX
+#ifndef MPD_UPDATE_DATABASE_HXX
+#define MPD_UPDATE_DATABASE_HXX
 
 #include "check.h"
-
-#include <sys/stat.h>
+#include "Remove.hxx"
 
 struct Directory;
+struct Song;
+class UpdateRemoveService;
 
-bool
-update_song_file(Directory &directory,
-		 const char *name, const char *suffix,
-		 const struct stat *st);
+class DatabaseEditor final {
+	UpdateRemoveService remove;
+
+public:
+	DatabaseEditor(EventLoop &_loop)
+		:remove(_loop) {}
+
+	/**
+	 * Caller must lock the #db_mutex.
+	 */
+	void DeleteSong(Directory &parent, Song *song);
+
+	/**
+	 * Recursively free a directory and all its contents.
+	 *
+	 * Caller must lock the #db_mutex.
+	 */
+	void DeleteDirectory(Directory *directory);
+
+	/**
+	 * Caller must NOT lock the #db_mutex.
+	 *
+	 * @return true if the database was modified
+	 */
+	bool DeleteNameIn(Directory &parent, const char *name);
+
+private:
+	void ClearDirectory(Directory &directory);
+};
 
 #endif

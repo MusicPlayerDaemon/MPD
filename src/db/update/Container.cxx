@@ -18,9 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "UpdateContainer.hxx"
-#include "UpdateInternal.hxx"
-#include "UpdateDatabase.hxx"
+#include "Walk.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/Directory.hxx"
@@ -33,19 +31,13 @@
 #include "tag/TagBuilder.hxx"
 #include "Log.hxx"
 
+#include <sys/stat.h>
+
 #include <glib.h>
 
-/**
- * Create the specified directory object if it does not exist already
- * or if the #stat object indicates that it has been modified since
- * the last update.  Returns nullptr when it exists already and is
- * unmodified.
- *
- * The caller must lock the database.
- */
-static Directory *
-make_directory_if_modified(Directory &parent, const char *name,
-			   const struct stat *st)
+Directory *
+UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
+				    const struct stat *st)
 {
 	Directory *directory = parent.FindChild(name);
 
@@ -56,7 +48,7 @@ make_directory_if_modified(Directory &parent, const char *name,
 			return nullptr;
 		}
 
-		delete_directory(directory);
+		editor.DeleteDirectory(directory);
 		modified = true;
 	}
 
@@ -73,10 +65,9 @@ SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
 }
 
 bool
-update_container_file(Directory &directory,
-		      const char *name,
-		      const struct stat *st,
-		      const char *suffix)
+UpdateWalk::UpdateContainerFile(Directory &directory,
+				const char *name, const char *suffix,
+				const struct stat *st)
 {
 	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){
 			return SupportsContainerSuffix(plugin, suffix);
@@ -86,7 +77,7 @@ update_container_file(Directory &directory,
 	const DecoderPlugin &plugin = *_plugin;
 
 	db_lock();
-	Directory *contdir = make_directory_if_modified(directory, name, st);
+	Directory *contdir = MakeDirectoryIfModified(directory, name, st);
 	if (contdir == nullptr) {
 		/* not modified */
 		db_unlock();
@@ -128,7 +119,7 @@ update_container_file(Directory &directory,
 
 	if (tnum == 1) {
 		db_lock();
-		delete_directory(contdir);
+		editor.DeleteDirectory(contdir);
 		db_unlock();
 		return false;
 	} else

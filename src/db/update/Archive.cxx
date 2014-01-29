@@ -18,8 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "UpdateArchive.hxx"
-#include "UpdateInternal.hxx"
+#include "Walk.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/Directory.hxx"
@@ -35,10 +34,11 @@
 
 #include <string>
 
+#include <sys/stat.h>
 #include <string.h>
 
-static void
-update_archive_tree(Directory &directory, const char *name)
+void
+UpdateWalk::UpdateArchiveTree(Directory &directory, const char *name)
 {
 	const char *tmp = strchr(name, '/');
 	if (tmp) {
@@ -51,7 +51,7 @@ update_archive_tree(Directory &directory, const char *name)
 		db_unlock();
 
 		//create directories first
-		update_archive_tree(*subdir, tmp+1);
+		UpdateArchiveTree(*subdir, tmp + 1);
 	} else {
 		if (strlen(name) == 0) {
 			LogWarning(update_domain,
@@ -78,6 +78,21 @@ update_archive_tree(Directory &directory, const char *name)
 	}
 }
 
+class UpdateArchiveVisitor final : public ArchiveVisitor {
+	UpdateWalk &walk;
+	Directory *directory;
+
+ public:
+	UpdateArchiveVisitor(UpdateWalk &_walk, Directory *_directory)
+		:walk(_walk), directory(_directory) {}
+
+	virtual void VisitArchiveEntry(const char *path_utf8) override {
+		FormatDebug(update_domain,
+			    "adding archive file: %s", path_utf8);
+		walk.UpdateArchiveTree(*directory, path_utf8);
+	}
+};
+
 /**
  * Updates the file listing from an archive file.
  *
@@ -86,10 +101,10 @@ update_archive_tree(Directory &directory, const char *name)
  * @param st stat() information on the archive file
  * @param plugin the archive plugin which fits this archive type
  */
-static void
-update_archive_file2(Directory &parent, const char *name,
-		     const struct stat *st,
-		     const struct archive_plugin *plugin)
+void
+UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
+			      const struct stat *st,
+			      const archive_plugin &plugin)
 {
 	db_lock();
 	Directory *directory = parent.FindChild(name);
@@ -105,7 +120,7 @@ update_archive_file2(Directory &parent, const char *name,
 
 	/* open archive */
 	Error error;
-	ArchiveFile *file = archive_file_open(plugin, path_fs.c_str(), error);
+	ArchiveFile *file = archive_file_open(&plugin, path_fs.c_str(), error);
 	if (file == nullptr) {
 		LogError(error);
 		return;
@@ -126,44 +141,21 @@ update_archive_file2(Directory &parent, const char *name,
 
 	directory->mtime = st->st_mtime;
 
-	class UpdateArchiveVisitor final : public ArchiveVisitor {
-		Directory *directory;
-
-	public:
-		UpdateArchiveVisitor(Directory *_directory)
-			:directory(_directory) {}
-
-		virtual void VisitArchiveEntry(const char *path_utf8) override {
-			FormatDebug(update_domain,
-				    "adding archive file: %s", path_utf8);
-			update_archive_tree(*directory, path_utf8);
-		}
-	};
-
-	UpdateArchiveVisitor visitor(directory);
+	UpdateArchiveVisitor visitor(*this, directory);
 	file->Visit(visitor);
 	file->Close();
 }
 
 bool
-update_archive_file(Directory &directory,
-		    const char *name, const char *suffix,
-		    const struct stat *st)
+UpdateWalk::UpdateArchiveFile(Directory &directory,
+			      const char *name, const char *suffix,
+			      const struct stat *st)
 {
-#ifdef ENABLE_ARCHIVE
 	const struct archive_plugin *plugin =
 		archive_plugin_from_suffix(suffix);
 	if (plugin == nullptr)
 		return false;
 
-	update_archive_file2(directory, name, st, plugin);
+	UpdateArchiveFile(directory, name, st, *plugin);
 	return true;
-#else
-	(void)directory;
-	(void)name;
-	(void)suffix;
-	(void)st;
-
-	return false;
-#endif
 }

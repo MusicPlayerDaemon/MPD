@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OtherCommands.hxx"
 #include "DatabaseCommands.hxx"
-#include "db/update/UpdateGlue.hxx"
+#include "db/update/Service.hxx"
 #include "CommandError.hxx"
 #include "db/Uri.hxx"
 #include "DetachedSong.hxx"
@@ -46,6 +46,7 @@
 #include "client/ClientFile.hxx"
 #include "client/Client.hxx"
 #include "Partition.hxx"
+#include "Instance.hxx"
 #include "Idle.hxx"
 
 #include <assert.h>
@@ -186,7 +187,6 @@ CommandResult
 handle_update(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *path = "";
-	unsigned ret;
 
 	assert(argc <= 2);
 	if (argc == 2) {
@@ -202,7 +202,13 @@ handle_update(Client &client, gcc_unused int argc, char *argv[])
 		}
 	}
 
-	ret = update_enqueue(path, false);
+	UpdateService *update = client.partition.instance.update;
+	if (update == nullptr) {
+		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+	}
+
+	unsigned ret = update->Enqueue(path, false);
 	if (ret > 0) {
 		client_printf(client, "updating_db: %i\n", ret);
 		return CommandResult::OK;
@@ -217,7 +223,6 @@ CommandResult
 handle_rescan(Client &client, gcc_unused int argc, char *argv[])
 {
 	const char *path = "";
-	unsigned ret;
 
 	assert(argc <= 2);
 	if (argc == 2) {
@@ -230,7 +235,13 @@ handle_rescan(Client &client, gcc_unused int argc, char *argv[])
 		}
 	}
 
-	ret = update_enqueue(path, true);
+	UpdateService *update = client.partition.instance.update;
+	if (update == nullptr) {
+		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+	}
+
+	unsigned ret = update->Enqueue(path, true);
 	if (ret > 0) {
 		client_printf(client, "updating_db: %i\n", ret);
 		return CommandResult::OK;

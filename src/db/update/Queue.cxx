@@ -17,34 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_UPDATE_ARCHIVE_HXX
-#define MPD_UPDATE_ARCHIVE_HXX
-
-#include "check.h"
-#include "Compiler.h"
-
-#include <sys/stat.h>
-
-struct Directory;
-
-#ifdef ENABLE_ARCHIVE
+#include "config.h"
+#include "Queue.hxx"
 
 bool
-update_archive_file(Directory &directory,
-		    const char *name, const char *suffix,
-		    const struct stat *st);
-
-#else
-
-static inline bool
-update_archive_file(gcc_unused Directory &directory,
-		    gcc_unused const char *name,
-		    gcc_unused const char *suffix,
-		    gcc_unused const struct stat *st)
+UpdateQueue::Push(const char *path, bool discard, unsigned id)
 {
-	return false;
+	if (update_queue.size() >= MAX_UPDATE_QUEUE_SIZE)
+		return false;
+
+	update_queue.emplace(path, discard, id);
+	return true;
 }
 
-#endif
+UpdateQueueItem
+UpdateQueue::Pop()
+{
+	if (update_queue.empty())
+		return UpdateQueueItem();
 
-#endif
+	auto i = std::move(update_queue.front());
+	update_queue.pop();
+	return i;
+}

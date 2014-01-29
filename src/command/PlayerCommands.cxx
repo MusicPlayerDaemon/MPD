@@ -22,10 +22,11 @@
 #include "CommandError.hxx"
 #include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
-#include "db/update/UpdateGlue.hxx"
+#include "db/update/Service.hxx"
 #include "client/Client.hxx"
 #include "mixer/Volume.hxx"
 #include "Partition.hxx"
+#include "Instance.hxx"
 #include "protocol/Result.hxx"
 #include "protocol/ArgParser.hxx"
 #include "AudioFormat.hxx"
@@ -111,7 +112,6 @@ handle_status(Client &client,
 	      gcc_unused int argc, gcc_unused char *argv[])
 {
 	const char *state = nullptr;
-	int updateJobId;
 	int song;
 
 	const auto player_status = client.player_control.GetStatus();
@@ -187,7 +187,11 @@ handle_status(Client &client,
 		}
 	}
 
-	if ((updateJobId = isUpdatingDB())) {
+	const UpdateService *update_service = client.partition.instance.update;
+	unsigned updateJobId = update_service != nullptr
+		? update_service->GetId()
+		: 0;
+	if (updateJobId != 0) {
 		client_printf(client,
 			      COMMAND_STATUS_UPDATING_DB ": %i\n",
 			      updateJobId);

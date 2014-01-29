@@ -285,7 +285,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 }
 
 void
-mpd_inotify_init(EventLoop &loop, unsigned max_depth)
+mpd_inotify_init(EventLoop &loop, UpdateService &update, unsigned max_depth)
 {
 	LogDebug(inotify_domain, "initializing inotify");
 
@@ -320,7 +320,7 @@ mpd_inotify_init(EventLoop &loop, unsigned max_depth)
 
 	recursive_watch_subdirectories(inotify_root, path, 0);
 
-	inotify_queue = new InotifyQueue(loop);
+	inotify_queue = new InotifyQueue(loop, update);
 
 	LogDebug(inotify_domain, "watching music directory");
 }

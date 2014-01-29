@@ -24,11 +24,12 @@
 #include "Compiler.h"
 
 class EventLoop;
+class UpdateService;
 
 #ifdef HAVE_INOTIFY_INIT
 
 void
-mpd_inotify_init(EventLoop &loop, unsigned max_depth);
+mpd_inotify_init(EventLoop &loop, UpdateService &update, unsigned max_depth);
 
 void
 mpd_inotify_finish(void);
@@ -36,7 +37,9 @@ mpd_inotify_finish(void);
 #else /* !HAVE_INOTIFY_INIT */
 
 static inline void
-mpd_inotify_init(gcc_unused EventLoop &loop, gcc_unused unsigned max_depth)
+mpd_inotify_init(gcc_unused EventLoop &loop,
+		 gcc_unused UpdateService &update,
+		 gcc_unused unsigned max_depth)
 {
 }
 

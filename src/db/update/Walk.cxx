@@ -18,11 +18,9 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "UpdateWalk.hxx"
+#include "Walk.hxx"
 #include "UpdateIO.hxx"
-#include "UpdateDatabase.hxx"
-#include "UpdateSong.hxx"
-#include "UpdateArchive.hxx"
+#include "Editor.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/DatabaseSimple.hxx"
@@ -49,21 +47,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
-bool walk_discard;
-bool modified;
-
-#ifndef WIN32
-
-static constexpr bool DEFAULT_FOLLOW_INSIDE_SYMLINKS = true;
-static constexpr bool DEFAULT_FOLLOW_OUTSIDE_SYMLINKS = true;
-
-static bool follow_inside_symlinks;
-static bool follow_outside_symlinks;
-
-#endif
-
-void
-update_walk_global_init(void)
+UpdateWalk::UpdateWalk(EventLoop &_loop)
+	:editor(_loop)
 {
 #ifndef WIN32
 	follow_inside_symlinks =
@@ -76,11 +61,6 @@ update_walk_global_init(void)
 #endif
 }
 
-void
-update_walk_global_finish(void)
-{
-}
-
 static void
 directory_set_stat(Directory &dir, const struct stat *st)
 {
@@ -89,9 +69,9 @@ directory_set_stat(Directory &dir, const struct stat *st)
 	dir.have_stat = true;
 }
 
-static void
-remove_excluded_from_directory(Directory &directory,
-			       const ExcludeList &exclude_list)
+inline void
+UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
+					const ExcludeList &exclude_list)
 {
 	db_lock();
 
@@ -100,7 +80,7 @@ remove_excluded_from_directory(Directory &directory,
 		const auto name_fs = AllocatedPath::FromUTF8(child->GetName());
 
 		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
-			delete_directory(child);
+			editor.DeleteDirectory(child);
 			modified = true;
 		}
 	}
@@ -111,7 +91,7 @@ remove_excluded_from_directory(Directory &directory,
 
 		const auto name_fs = AllocatedPath::FromUTF8(song->uri);
 		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
-			delete_song(directory, song);
+			editor.DeleteSong(directory, song);
 			modified = true;
 		}
 	}
@@ -119,8 +99,8 @@ remove_excluded_from_directory(Directory &directory,
 	db_unlock();
 }
 
-static void
-purge_deleted_from_directory(Directory &directory)
+inline void
+UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 {
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, directory) {
@@ -128,7 +108,7 @@ purge_deleted_from_directory(Directory &directory)
 			continue;
 
 		db_lock();
-		delete_directory(child);
+		editor.DeleteDirectory(child);
 		db_unlock();
 
 		modified = true;
@@ -139,7 +119,7 @@ purge_deleted_from_directory(Directory &directory)
 		const auto path = map_song_fs(*song);
 		if (path.IsNull() || !FileExists(path)) {
 			db_lock();
-			delete_song(directory, song);
+			editor.DeleteSong(directory, song);
 			db_unlock();
 
 			modified = true;
@@ -195,10 +175,10 @@ find_inode_ancestor(Directory *parent, ino_t inode, dev_t device)
 	return 0;
 }
 
-static bool
-update_playlist_file2(Directory &directory,
-		      const char *name, const char *suffix,
-		      const struct stat *st)
+inline bool
+UpdateWalk::UpdatePlaylistFile(Directory &directory,
+			       const char *name, const char *suffix,
+			       const struct stat *st)
 {
 	if (!playlist_suffix_supported(suffix))
 		return false;
@@ -212,30 +192,27 @@ update_playlist_file2(Directory &directory,
 	return true;
 }
 
-static bool
-update_regular_file(Directory &directory,
-		    const char *name, const struct stat *st)
+inline bool
+UpdateWalk::UpdateRegularFile(Directory &directory,
+			      const char *name, const struct stat *st)
 {
 	const char *suffix = uri_get_suffix(name);
 	if (suffix == nullptr)
 		return false;
 
-	return update_song_file(directory, name, suffix, st) ||
-		update_archive_file(directory, name, suffix, st) ||
-		update_playlist_file2(directory, name, suffix, st);
+	return UpdateSongFile(directory, name, suffix, st) ||
+		UpdateArchiveFile(directory, name, suffix, st) ||
+		UpdatePlaylistFile(directory, name, suffix, st);
 }
 
-static bool
-update_directory(Directory &directory, const struct stat *st);
-
-static void
-update_directory_child(Directory &directory,
-		       const char *name, const struct stat *st)
+void
+UpdateWalk::UpdateDirectoryChild(Directory &directory,
+				 const char *name, const struct stat *st)
 {
 	assert(strchr(name, '/') == nullptr);
 
 	if (S_ISREG(st->st_mode)) {
-		update_regular_file(directory, name, st);
+		UpdateRegularFile(directory, name, st);
 	} else if (S_ISDIR(st->st_mode)) {
 		if (find_inode_ancestor(&directory, st->st_ino, st->st_dev))
 			return;
@@ -246,9 +223,9 @@ update_directory_child(Directory &directory,
 
 		assert(&directory == subdir->parent);
 
-		if (!update_directory(*subdir, st)) {
+		if (!UpdateDirectory(*subdir, st)) {
 			db_lock();
-			delete_directory(subdir);
+			editor.DeleteDirectory(subdir);
 			db_unlock();
 		}
 	} else {
@@ -268,8 +245,9 @@ static bool skip_path(Path path_fs)
 }
 
 gcc_pure
-static bool
-skip_symlink(const Directory *directory, const char *utf8_name)
+bool
+UpdateWalk::SkipSymlink(const Directory *directory,
+			const char *utf8_name) const
 {
 #ifndef WIN32
 	const auto path_fs = map_directory_child_fs(*directory, utf8_name);
@@ -333,8 +311,8 @@ skip_symlink(const Directory *directory, const char *utf8_name)
 #endif
 }
 
-static bool
-update_directory(Directory &directory, const struct stat *st)
+bool
+UpdateWalk::UpdateDirectory(Directory &directory, const struct stat *st)
 {
 	assert(S_ISDIR(st->st_mode));
 
@@ -358,9 +336,9 @@ update_directory(Directory &directory, const struct stat *st)
 	exclude_list.LoadFile(AllocatedPath::Build(path_fs, ".mpdignore"));
 
 	if (!exclude_list.IsEmpty())
-		remove_excluded_from_directory(directory, exclude_list);
+		RemoveExcludedFromDirectory(directory, exclude_list);
 
-	purge_deleted_from_directory(directory);
+	PurgeDeletedFromDirectory(directory);
 
 	while (reader.ReadEntry()) {
 		std::string utf8;
@@ -375,15 +353,15 @@ update_directory(Directory &directory, const struct stat *st)
 		if (utf8.empty())
 			continue;
 
-		if (skip_symlink(&directory, utf8.c_str())) {
-			modified |= delete_name_in(directory, utf8.c_str());
+		if (SkipSymlink(&directory, utf8.c_str())) {
+			modified |= editor.DeleteNameIn(directory, utf8.c_str());
 			continue;
 		}
 
 		if (stat_directory_child(directory, utf8.c_str(), &st2) == 0)
-			update_directory_child(directory, utf8.c_str(), &st2);
+			UpdateDirectoryChild(directory, utf8.c_str(), &st2);
 		else
-			modified |= delete_name_in(directory, utf8.c_str());
+			modified |= editor.DeleteNameIn(directory, utf8.c_str());
 	}
 
 	directory.mtime = st->st_mtime;
@@ -391,8 +369,8 @@ update_directory(Directory &directory, const struct stat *st)
 	return true;
 }
 
-static Directory *
-directory_make_child_checked(Directory &parent, const char *name_utf8)
+inline Directory *
+UpdateWalk::DirectoryMakeChildChecked(Directory &parent, const char *name_utf8)
 {
 	db_lock();
 	Directory *directory = parent.FindChild(name_utf8);
@@ -406,7 +384,7 @@ directory_make_child_checked(Directory &parent, const char *name_utf8)
 	    find_inode_ancestor(&parent, st.st_ino, st.st_dev))
 		return nullptr;
 
-	if (skip_symlink(&parent, name_utf8))
+	if (SkipSymlink(&parent, name_utf8))
 		return nullptr;
 
 	/* if we're adding directory paths, make sure to delete filenames
@@ -414,7 +392,7 @@ directory_make_child_checked(Directory &parent, const char *name_utf8)
 	db_lock();
 	Song *conflicting = parent.FindSong(name_utf8);
 	if (conflicting)
-		delete_song(parent, conflicting);
+		editor.DeleteSong(parent, conflicting);
 
 	directory = parent.CreateChild(name_utf8);
 	db_unlock();
@@ -423,8 +401,8 @@ directory_make_child_checked(Directory &parent, const char *name_utf8)
 	return directory;
 }
 
-static Directory *
-directory_make_uri_parent_checked(const char *uri)
+inline Directory *
+UpdateWalk::DirectoryMakeUriParentChecked(const char *uri)
 {
 	Directory *directory = db_get_root();
 	char *duplicated = xstrdup(uri);
@@ -436,8 +414,8 @@ directory_make_uri_parent_checked(const char *uri)
 		if (*name_utf8 == 0)
 			continue;
 
-		directory = directory_make_child_checked(*directory,
-							 name_utf8);
+		directory = DirectoryMakeChildChecked(*directory,
+						      name_utf8);
 		if (directory == nullptr)
 			break;
 
@@ -448,37 +426,37 @@ directory_make_uri_parent_checked(const char *uri)
 	return directory;
 }
 
-static void
-update_uri(const char *uri)
+inline void
+UpdateWalk::UpdateUri(const char *uri)
 {
-	Directory *parent = directory_make_uri_parent_checked(uri);
+	Directory *parent = DirectoryMakeUriParentChecked(uri);
 	if (parent == nullptr)
 		return;
 
 	const char *name = PathTraitsUTF8::GetBase(uri);
 
 	struct stat st;
-	if (!skip_symlink(parent, name) &&
+	if (!SkipSymlink(parent, name) &&
 	    stat_directory_child(*parent, name, &st) == 0)
-		update_directory_child(*parent, name, &st);
+		UpdateDirectoryChild(*parent, name, &st);
 	else
-		modified |= delete_name_in(*parent, name);
+		modified |= editor.DeleteNameIn(*parent, name);
 }
 
 bool
-update_walk(const char *path, bool discard)
+UpdateWalk::Walk(const char *path, bool discard)
 {
 	walk_discard = discard;
 	modified = false;
 
 	if (path != nullptr && !isRootDirectory(path)) {
-		update_uri(path);
+		UpdateUri(path);
 	} else {
 		Directory *directory = db_get_root();
 		struct stat st;
 
 		if (stat_directory(*directory, &st) == 0)
-			update_directory(*directory, &st);
+			UpdateDirectory(*directory, &st);
 	}
 
 	return modified;

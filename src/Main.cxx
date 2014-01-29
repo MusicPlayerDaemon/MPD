@@ -23,7 +23,7 @@
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistGlobal.hxx"
-#include "db/update/UpdateGlue.hxx"
+#include "db/update/Service.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
 #include "PlayerThread.hxx"
@@ -448,9 +448,12 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	decoder_plugin_init_all();
-	update_global_init();
 
 	const bool create_db = !glue_db_init_and_load();
+
+	instance->update = db_is_simple()
+		? new UpdateService(*main_loop)
+		: nullptr;
 
 	glue_sticker_init();
 
@@ -490,7 +493,7 @@ int mpd_main(int argc, char *argv[])
 	if (create_db) {
 		/* the database failed to load: recreate the
 		   database */
-		unsigned job = update_enqueue("", true);
+		unsigned job = instance->update->Enqueue("", true);
 		if (job == 0)
 			FatalError("directory update failed");
 	}
@@ -504,8 +507,9 @@ int mpd_main(int argc, char *argv[])
 
 	if (config_get_bool(CONF_AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
-		if (mapper_has_music_directory())
-			mpd_inotify_init(*main_loop,
+		if (mapper_has_music_directory() &&
+		    instance->update != nullptr)
+			mpd_inotify_init(*main_loop, *instance->update,
 					 config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
 							     G_MAXUINT));
 #else
@@ -558,6 +562,8 @@ int mpd_main(int argc, char *argv[])
 	}
 #endif
 
+	delete instance->update;
+
 	const clock_t start = clock();
 	DatabaseGlobalDeinit();
 	FormatDebug(main_domain,
@@ -575,7 +581,6 @@ int mpd_main(int argc, char *argv[])
 	mapper_finish();
 	delete instance->partition;
 	command_finish();
-	update_global_finish();
 	decoder_plugin_deinit_all();
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_deinit_all();

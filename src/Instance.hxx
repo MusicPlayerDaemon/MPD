@@ -29,6 +29,7 @@
 class NeighborGlue;
 #endif
 
+class UpdateService;
 class ClientList;
 struct Partition;
 
@@ -41,6 +42,8 @@ struct Instance final
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	NeighborGlue *neighbors;
 #endif
+
+	UpdateService *update;
 
 	ClientList *client_list;
 

@@ -18,11 +18,8 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "UpdateSong.hxx"
-#include "UpdateInternal.hxx"
+#include "Service.hxx"
 #include "UpdateIO.hxx"
-#include "UpdateDatabase.hxx"
-#include "UpdateContainer.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/Directory.hxx"
@@ -32,10 +29,10 @@
 
 #include <unistd.h>
 
-static void
-update_song_file2(Directory &directory,
-		  const char *name, const struct stat *st,
-		  const char *suffix)
+inline void
+UpdateWalk::UpdateSongFile2(Directory &directory,
+			    const char *name, const char *suffix,
+			    const struct stat *st)
 {
 	db_lock();
 	Song *song = directory.FindSong(name);
@@ -47,7 +44,7 @@ update_song_file2(Directory &directory,
 			    directory.GetPath(), name);
 		if (song != nullptr) {
 			db_lock();
-			delete_song(directory, song);
+			editor.DeleteSong(directory, song);
 			db_unlock();
 		}
 
@@ -56,10 +53,10 @@ update_song_file2(Directory &directory,
 
 	if (!(song != nullptr && st->st_mtime == song->mtime &&
 	      !walk_discard) &&
-	    update_container_file(directory, name, st, suffix)) {
+	    UpdateContainerFile(directory, name, suffix, st)) {
 		if (song != nullptr) {
 			db_lock();
-			delete_song(directory, song);
+			editor.DeleteSong(directory, song);
 			db_unlock();
 		}
 
@@ -92,7 +89,7 @@ update_song_file2(Directory &directory,
 				    "deleting unrecognized file %s/%s",
 				    directory.GetPath(), name);
 			db_lock();
-			delete_song(directory, song);
+			editor.DeleteSong(directory, song);
 			db_unlock();
 		}
 
@@ -101,13 +98,13 @@ update_song_file2(Directory &directory,
 }
 
 bool
-update_song_file(Directory &directory,
-		 const char *name, const char *suffix,
-		 const struct stat *st)
+UpdateWalk::UpdateSongFile(Directory &directory,
+			   const char *name, const char *suffix,
+			   const struct stat *st)
 {
 	if (!decoder_plugins_supports_suffix(suffix))
 		return false;
 
-	update_song_file2(directory, name, st, suffix);
+	UpdateSongFile2(directory, name, suffix, st);
 	return true;
 }
