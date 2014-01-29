@@ -32,6 +32,7 @@
 class Error;
 class Filter;
 class MusicPipe;
+struct music_chunk;
 struct config_param;
 struct PlayerControl;
 struct AudioOutputPlugin;
@@ -235,8 +236,8 @@ struct AudioOutput {
 	const MusicPipe *pipe;
 
 	/**
-	 * This mutex protects #open, #fail_timer, #chunk and
-	 * #chunk_finished.
+	 * This mutex protects #open, #fail_timer, #current_chunk and
+	 * #current_chunk_finished.
 	 */
 	Mutex mutex;
 
@@ -258,12 +259,12 @@ struct AudioOutput {
 	 * #music_buffer, because they are not going to be used by
 	 * this output anymore.
 	 */
-	const struct music_chunk *chunk;
+	const music_chunk *current_chunk;
 
 	/**
-	 * Has the output finished playing #chunk?
+	 * Has the output finished playing #current_chunk?
 	 */
-	bool chunk_finished;
+	bool current_chunk_finished;
 
 	AudioOutput(const AudioOutputPlugin &_plugin);
 	~AudioOutput();

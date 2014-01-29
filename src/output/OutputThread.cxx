@@ -139,7 +139,7 @@ ao_open(AudioOutput *ao)
 
 	assert(!ao->open);
 	assert(ao->pipe != nullptr);
-	assert(ao->chunk == nullptr);
+	assert(ao->current_chunk == nullptr);
 	assert(ao->in_audio_format.IsValid());
 
 	ao->fail_timer.Reset();
@@ -212,7 +212,7 @@ ao_close(AudioOutput *ao, bool drain)
 
 	ao->pipe = nullptr;
 
-	ao->chunk = nullptr;
+	ao->current_chunk = nullptr;
 	ao->open = false;
 
 	ao->mutex.unlock();
@@ -252,7 +252,7 @@ ao_reopen_filter(AudioOutput *ao)
 
 		ao->pipe = nullptr;
 
-		ao->chunk = nullptr;
+		ao->current_chunk = nullptr;
 		ao->open = false;
 		ao->fail_timer.Update();
 
@@ -486,9 +486,9 @@ ao_play_chunk(AudioOutput *ao, const struct music_chunk *chunk)
 static const struct music_chunk *
 ao_next_chunk(AudioOutput *ao)
 {
-	return ao->chunk != nullptr
+	return ao->current_chunk != nullptr
 		/* continue the previous play() call */
-		? ao->chunk->next
+		? ao->current_chunk->next
 		/* get the first chunk from the pipe */
 		: ao->pipe->Peek();
 }
@@ -514,30 +514,30 @@ ao_play(AudioOutput *ao)
 		/* no chunk available */
 		return false;
 
-	ao->chunk_finished = false;
+	ao->current_chunk_finished = false;
 
 	assert(!ao->in_playback_loop);
 	ao->in_playback_loop = true;
 
 	while (chunk != nullptr && ao->command == AO_COMMAND_NONE) {
-		assert(!ao->chunk_finished);
+		assert(!ao->current_chunk_finished);
 
-		ao->chunk = chunk;
+		ao->current_chunk = chunk;
 
 		success = ao_play_chunk(ao, chunk);
 		if (!success) {
-			assert(ao->chunk == nullptr);
+			assert(ao->current_chunk == nullptr);
 			break;
 		}
 
-		assert(ao->chunk == chunk);
+		assert(ao->current_chunk == chunk);
 		chunk = chunk->next;
 	}
 
 	assert(ao->in_playback_loop);
 	ao->in_playback_loop = false;
 
-	ao->chunk_finished = true;
+	ao->current_chunk_finished = true;
 
 	ao->mutex.unlock();
 	ao->player_control->LockSignal();
@@ -637,7 +637,7 @@ audio_output_task(void *arg)
 
 		case AO_COMMAND_DRAIN:
 			if (ao->open) {
-				assert(ao->chunk == nullptr);
+				assert(ao->current_chunk == nullptr);
 				assert(ao->pipe->Peek() == nullptr);
 
 				ao->mutex.unlock();
@@ -649,7 +649,7 @@ audio_output_task(void *arg)
 			continue;
 
 		case AO_COMMAND_CANCEL:
-			ao->chunk = nullptr;
+			ao->current_chunk = nullptr;
 
 			if (ao->open) {
 				ao->mutex.unlock();
@@ -661,7 +661,7 @@ audio_output_task(void *arg)
 			continue;
 
 		case AO_COMMAND_KILL:
-			ao->chunk = nullptr;
+			ao->current_chunk = nullptr;
 			ao_command_finished(ao);
 			ao->mutex.unlock();
 			return;

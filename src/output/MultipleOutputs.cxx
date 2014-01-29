@@ -264,17 +264,18 @@ chunk_is_consumed_in(const AudioOutput *ao,
 	if (!ao->open)
 		return true;
 
-	if (ao->chunk == nullptr)
+	if (ao->current_chunk == nullptr)
 		return false;
 
-	assert(chunk == ao->chunk || pipe->Contains(ao->chunk));
+	assert(chunk == ao->current_chunk ||
+	       pipe->Contains(ao->current_chunk));
 
-	if (chunk != ao->chunk) {
+	if (chunk != ao->current_chunk) {
 		assert(chunk->next != nullptr);
 		return true;
 	}
 
-	return ao->chunk_finished && chunk->next == nullptr;
+	return ao->current_chunk_finished && chunk->next == nullptr;
 }
 
 bool
@@ -309,9 +310,9 @@ MultipleOutputs::ClearTailChunk(gcc_unused const struct music_chunk *chunk,
 			continue;
 		}
 
-		assert(ao->chunk == chunk);
-		assert(ao->chunk_finished);
-		ao->chunk = nullptr;
+		assert(ao->current_chunk == chunk);
+		assert(ao->current_chunk_finished);
+		ao->current_chunk = nullptr;
 	}
 }
 

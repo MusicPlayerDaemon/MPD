@@ -124,7 +124,7 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 		assert(pipe == &mp || (always_on && pause));
 
 		if (pause) {
-			chunk = nullptr;
+			current_chunk = nullptr;
 			pipe = &mp;
 
 			/* unpause with the CANCEL command; this is a
@@ -141,7 +141,7 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	}
 
 	in_audio_format = audio_format;
-	chunk = nullptr;
+	current_chunk = nullptr;
 
 	pipe = &mp;
 
