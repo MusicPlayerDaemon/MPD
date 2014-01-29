@@ -92,28 +92,6 @@ AllocatedPath
 map_uri_fs(const char *uri);
 
 /**
- * Determines the file system path of a directory object.
- *
- * @param directory the directory object
- * @return the path in file system encoding, or nullptr if mapping failed
- */
-gcc_pure
-AllocatedPath
-map_directory_fs(const Directory &directory);
-
-/**
- * Determines the file system path of a directory's child (may be a
- * sub directory or a song).
- *
- * @param directory the parent directory object
- * @param name the child's name in UTF-8
- * @return the path in file system encoding, or nullptr if mapping failed
- */
-gcc_pure
-AllocatedPath
-map_directory_child_fs(const Directory &directory, const char *name);
-
-/**
  * "Detach" the #Song object, i.e. convert it to a #DetachedSong
  * instance.
  */

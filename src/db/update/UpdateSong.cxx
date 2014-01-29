@@ -25,6 +25,7 @@
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
 #include "decoder/DecoderList.hxx"
+#include "storage/FileInfo.hxx"
 #include "Log.hxx"
 
 #include <unistd.h>
@@ -32,13 +33,13 @@
 inline void
 UpdateWalk::UpdateSongFile2(Directory &directory,
 			    const char *name, const char *suffix,
-			    const struct stat *st)
+			    const FileInfo &info)
 {
 	db_lock();
 	Song *song = directory.FindSong(name);
 	db_unlock();
 
-	if (!directory_child_access(directory, name, R_OK)) {
+	if (!directory_child_access(storage, directory, name, R_OK)) {
 		FormatError(update_domain,
 			    "no read permissions on %s/%s",
 			    directory.GetPath(), name);
@@ -48,9 +49,9 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 		return;
 	}
 
-	if (!(song != nullptr && st->st_mtime == song->mtime &&
+	if (!(song != nullptr && info.mtime == song->mtime &&
 	      !walk_discard) &&
-	    UpdateContainerFile(directory, name, suffix, st)) {
+	    UpdateContainerFile(directory, name, suffix, info)) {
 		if (song != nullptr)
 			editor.LockDeleteSong(directory, song);
 
@@ -75,7 +76,7 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 		modified = true;
 		FormatDefault(update_domain, "added %s/%s",
 			      directory.GetPath(), name);
-	} else if (st->st_mtime != song->mtime || walk_discard) {
+	} else if (info.mtime != song->mtime || walk_discard) {
 		FormatDefault(update_domain, "updating %s/%s",
 			      directory.GetPath(), name);
 		if (!song->UpdateFile()) {
@@ -92,11 +93,11 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 bool
 UpdateWalk::UpdateSongFile(Directory &directory,
 			   const char *name, const char *suffix,
-			   const struct stat *st)
+			   const FileInfo &info)
 {
 	if (!decoder_plugins_supports_suffix(suffix))
 		return false;
 
-	UpdateSongFile2(directory, name, suffix, st);
+	UpdateSongFile2(directory, name, suffix, info);
 	return true;
 }

@@ -21,91 +21,84 @@
 #include "UpdateIO.hxx"
 #include "UpdateDomain.hxx"
 #include "db/Directory.hxx"
-#include "Mapper.hxx"
-#include "fs/AllocatedPath.hxx"
+#include "storage/FileInfo.hxx"
+#include "storage/LocalStorage.hxx"
+#include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <errno.h>
 #include <unistd.h>
 
-int
-stat_directory(const Directory &directory, struct stat *st)
+bool
+GetInfo(LocalStorage &storage, const char *uri_utf8, FileInfo &info)
 {
-	const auto path_fs = map_directory_fs(directory);
-	if (path_fs.IsNull())
-		return -1;
-
-	if (!StatFile(path_fs, *st)) {
-		int error = errno;
-		const std::string path_utf8 = path_fs.ToUTF8();
-		FormatErrno(update_domain, error,
-			    "Failed to stat %s", path_utf8.c_str());
-		return -1;
-	}
-
-	return 0;
-}
-
-int
-stat_directory_child(const Directory &parent, const char *name,
-		     struct stat *st)
-{
-	const auto path_fs = map_directory_child_fs(parent, name);
-	if (path_fs.IsNull())
-		return -1;
-
-	if (!StatFile(path_fs, *st)) {
-		int error = errno;
-		const std::string path_utf8 = path_fs.ToUTF8();
-		FormatErrno(update_domain, error,
-			    "Failed to stat %s", path_utf8.c_str());
-		return -1;
-	}
-
-	return 0;
+	Error error;
+	bool success = storage.GetInfo(uri_utf8, true, info, error);
+	if (!success)
+		LogError(error);
+	return success;
 }
 
 bool
-directory_exists(const Directory &directory)
+GetInfo(LocalDirectoryReader &reader, FileInfo &info)
 {
-	const auto path_fs = map_directory_fs(directory);
-	if (path_fs.IsNull())
-		/* invalid path: cannot exist */
+	Error error;
+	bool success = reader.GetInfo(true, info, error);
+	if (!success)
+		LogError(error);
+	return success;
+}
+
+bool
+DirectoryExists(LocalStorage &storage, const Directory &directory)
+{
+	FileInfo info;
+	if (!storage.GetInfo(directory.GetPath(), true, info, IgnoreError()))
 		return false;
 
 	return directory.device == DEVICE_INARCHIVE ||
 		directory.device == DEVICE_CONTAINER
-		? FileExists(path_fs)
-		: DirectoryExists(path_fs);
+		? info.IsRegular()
+		: info.IsDirectory();
+}
+
+static bool
+GetDirectoryChildInfo(LocalStorage &storage, const Directory &directory,
+		      const char *name_utf8, FileInfo &info, Error &error)
+{
+	const auto uri_utf8 = PathTraitsUTF8::Build(directory.GetPath(),
+						    name_utf8);
+	return storage.GetInfo(uri_utf8.c_str(), true, info, error);
 }
 
 bool
-directory_child_is_regular(const Directory &directory,
+directory_child_is_regular(LocalStorage &storage, const Directory &directory,
 			   const char *name_utf8)
 {
-	const auto path_fs = map_directory_child_fs(directory, name_utf8);
-	if (path_fs.IsNull())
-		return false;
-
-	return FileExists(path_fs);
+	FileInfo info;
+	return GetDirectoryChildInfo(storage, directory, name_utf8, info,
+				     IgnoreError()) &&
+		info.IsRegular();
 }
 
 bool
-directory_child_access(const Directory &directory,
+directory_child_access(LocalStorage &storage, const Directory &directory,
 		       const char *name, int mode)
 {
 #ifdef WIN32
 	/* CheckAccess() is useless on WIN32 */
+	(void)storage;
 	(void)directory;
 	(void)name;
 	(void)mode;
 	return true;
 #else
-	const auto path = map_directory_child_fs(directory, name);
+	const auto path = storage.MapChildFS(directory.GetPath(), name);
 	if (path.IsNull())
-		/* something went wrong, but that isn't a permission
-		   problem */
+		/* does not point to local file: silently ignore the
+		   check */
 		return true;
 
 	return CheckAccess(path, mode) || errno != EACCES;

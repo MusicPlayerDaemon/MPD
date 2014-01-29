@@ -23,8 +23,8 @@
 #include "db/DatabaseLock.hxx"
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
-#include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "storage/FileInfo.hxx"
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"
@@ -103,20 +103,24 @@ class UpdateArchiveVisitor final : public ArchiveVisitor {
  */
 void
 UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
-			      const struct stat *st,
+			      const FileInfo &info,
 			      const archive_plugin &plugin)
 {
 	db_lock();
 	Directory *directory = parent.FindChild(name);
 	db_unlock();
 
-	if (directory != nullptr && directory->mtime == st->st_mtime &&
+	if (directory != nullptr && directory->mtime == info.mtime &&
 	    !walk_discard)
 		/* MPD has already scanned the archive, and it hasn't
 		   changed since - don't consider updating it */
 		return;
 
-	const auto path_fs = map_directory_child_fs(parent, name);
+	const auto path_fs = storage.MapChildFS(parent.GetPath(), name);
+	if (path_fs.IsNull())
+		/* not a local file: skip, because the archive API
+		   supports only local files */
+		return;
 
 	/* open archive */
 	Error error;
@@ -141,7 +145,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 		db_unlock();
 	}
 
-	directory->mtime = st->st_mtime;
+	directory->mtime = info.mtime;
 
 	UpdateArchiveVisitor visitor(*this, directory);
 	file->Visit(visitor);
@@ -151,13 +155,13 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 bool
 UpdateWalk::UpdateArchiveFile(Directory &directory,
 			      const char *name, const char *suffix,
-			      const struct stat *st)
+			      const FileInfo &info)
 {
 	const struct archive_plugin *plugin =
 		archive_plugin_from_suffix(suffix);
 	if (plugin == nullptr)
 		return false;
 
-	UpdateArchiveFile(directory, name, st, *plugin);
+	UpdateArchiveFile(directory, name, info, *plugin);
 	return true;
 }

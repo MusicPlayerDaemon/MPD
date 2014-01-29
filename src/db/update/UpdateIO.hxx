@@ -23,24 +23,32 @@
 #include "check.h"
 #include "Compiler.h"
 
-#include <sys/stat.h>
-
 struct Directory;
+struct FileInfo;
+class LocalStorage;
+class LocalDirectoryReader;
 
-int
-stat_directory(const Directory &directory, struct stat *st);
+/**
+ * Wrapper for LocalStorage::GetInfo() that logs errors instead of
+ * returning them.
+ */
+bool
+GetInfo(LocalStorage &storage, const char *uri_utf8, FileInfo &info);
 
-int
-stat_directory_child(const Directory &parent, const char *name,
-		     struct stat *st);
+/**
+ * Wrapper for LocalDirectoryReader::GetInfo() that logs errors
+ * instead of returning them.
+ */
+bool
+GetInfo(LocalDirectoryReader &reader, FileInfo &info);
 
 gcc_pure
 bool
-directory_exists(const Directory &directory);
+DirectoryExists(LocalStorage &storage, const Directory &directory);
 
 gcc_pure
 bool
-directory_child_is_regular(const Directory &directory,
+directory_child_is_regular(LocalStorage &storage, const Directory &directory,
 			   const char *name_utf8);
 
 /**
@@ -48,7 +56,7 @@ directory_child_is_regular(const Directory &directory,
  */
 gcc_pure
 bool
-directory_child_access(const Directory &directory,
+directory_child_access(LocalStorage &storage, const Directory &directory,
 		       const char *name, int mode);
 
 #endif

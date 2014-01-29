@@ -25,8 +25,8 @@
 #include "db/Song.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "decoder/DecoderList.hxx"
-#include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "storage/FileInfo.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
 #include "Log.hxx"
@@ -37,13 +37,13 @@
 
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
-				    const struct stat *st)
+				    const FileInfo &info)
 {
 	Directory *directory = parent.FindChild(name);
 
 	// directory exists already
 	if (directory != nullptr) {
-		if (directory->mtime == st->st_mtime && !walk_discard) {
+		if (directory->mtime == info.mtime && !walk_discard) {
 			/* not modified */
 			return nullptr;
 		}
@@ -53,7 +53,7 @@ UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
 	}
 
 	directory = parent.MakeChild(name);
-	directory->mtime = st->st_mtime;
+	directory->mtime = info.mtime;
 	return directory;
 }
 
@@ -67,7 +67,7 @@ SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
 bool
 UpdateWalk::UpdateContainerFile(Directory &directory,
 				const char *name, const char *suffix,
-				const struct stat *st)
+				const FileInfo &info)
 {
 	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){
 			return SupportsContainerSuffix(plugin, suffix);
@@ -77,7 +77,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	const DecoderPlugin &plugin = *_plugin;
 
 	db_lock();
-	Directory *contdir = MakeDirectoryIfModified(directory, name, st);
+	Directory *contdir = MakeDirectoryIfModified(directory, name, info);
 	if (contdir == nullptr) {
 		/* not modified */
 		db_unlock();
@@ -87,7 +87,13 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	contdir->device = DEVICE_CONTAINER;
 	db_unlock();
 
-	const auto pathname = map_directory_child_fs(directory, name);
+	const auto pathname = storage.MapFS(contdir->GetPath());
+	if (pathname.IsNull()) {
+		/* not a local file: skip, because the container API
+		   supports only local files */
+		editor.LockDeleteDirectory(contdir);
+		return false;
+	}
 
 	char *vtrack;
 	unsigned int tnum = 0;
@@ -96,11 +102,10 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		Song *song = Song::NewFile(vtrack, *contdir);
 
 		// shouldn't be necessary but it's there..
-		song->mtime = st->st_mtime;
+		song->mtime = info.mtime;
 
-		const auto child_path_fs =
-			map_directory_child_fs(*contdir, vtrack);
-
+		const auto child_path_fs = AllocatedPath::Build(pathname,
+								vtrack);
 		plugin.ScanFile(child_path_fs.c_str(),
 				add_tag_handler, &tag_builder);
 

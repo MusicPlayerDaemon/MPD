@@ -193,7 +193,8 @@ map_uri_fs(const char *uri)
 	return AllocatedPath::Build(music_dir_fs, uri_fs);
 }
 
-AllocatedPath
+gcc_pure
+static AllocatedPath
 map_directory_fs(const Directory &directory)
 {
 	assert(!music_dir_fs.IsNull());
@@ -204,7 +205,15 @@ map_directory_fs(const Directory &directory)
 	return map_uri_fs(directory.GetPath());
 }
 
-AllocatedPath
+/**
+ * Determines the file system path of a directory's child (may be a
+ * sub directory or a song).
+ *
+ * @param directory the parent directory object
+ * @param name the child's name in UTF-8
+ * @return the path in file system encoding, or nullptr if mapping failed
+ */
+static AllocatedPath
 map_directory_child_fs(const Directory &directory, const char *name)
 {
 	assert(!music_dir_fs.IsNull());

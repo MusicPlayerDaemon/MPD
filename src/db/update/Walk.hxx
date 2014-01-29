@@ -22,10 +22,12 @@
 
 #include "check.h"
 #include "Editor.hxx"
+#include "storage/LocalStorage.hxx"
 
 #include <sys/stat.h>
 
 struct stat;
+struct FileInfo;
 struct Directory;
 struct archive_plugin;
 class ExcludeList;
@@ -45,6 +47,8 @@ class UpdateWalk final {
 
 	bool walk_discard;
 	bool modified;
+
+	LocalStorage storage;
 
 	DatabaseEditor editor;
 
@@ -68,15 +72,15 @@ private:
 
 	void UpdateSongFile2(Directory &directory,
 			     const char *name, const char *suffix,
-			     const struct stat *st);
+			     const FileInfo &info);
 
 	bool UpdateSongFile(Directory &directory,
 			    const char *name, const char *suffix,
-			    const struct stat *st);
+			    const FileInfo &info);
 
 	bool UpdateContainerFile(Directory &directory,
 				 const char *name, const char *suffix,
-				 const struct stat *st);
+				 const FileInfo &info);
 
 
 #ifdef ENABLE_ARCHIVE
@@ -84,10 +88,10 @@ private:
 
 	bool UpdateArchiveFile(Directory &directory,
 			       const char *name, const char *suffix,
-			       const struct stat *st);
+			       const FileInfo &info);
 
 	void UpdateArchiveFile(Directory &directory, const char *name,
-			       const struct stat *st,
+			       const FileInfo &info,
 			       const archive_plugin &plugin);
 
 
@@ -95,22 +99,22 @@ private:
 	bool UpdateArchiveFile(gcc_unused Directory &directory,
 			       gcc_unused const char *name,
 			       gcc_unused const char *suffix,
-			       gcc_unused const struct stat *st) {
+			       gcc_unused const FileInfo &info) {
 		return false;
 	}
 #endif
 
 	bool UpdatePlaylistFile(Directory &directory,
 				const char *name, const char *suffix,
-				const struct stat *st);
+				const FileInfo &info);
 
 	bool UpdateRegularFile(Directory &directory,
-			       const char *name, const struct stat *st);
+			       const char *name, const FileInfo &info);
 
 	void UpdateDirectoryChild(Directory &directory,
-				  const char *name, const struct stat *st);
+				  const char *name, const FileInfo &info);
 
-	bool UpdateDirectory(Directory &directory, const struct stat *st);
+	bool UpdateDirectory(Directory &directory, const FileInfo &info);
 
 	/**
 	 * Create the specified directory object if it does not exist
@@ -121,9 +125,10 @@ private:
 	 * The caller must lock the database.
 	 */
 	Directory *MakeDirectoryIfModified(Directory &parent, const char *name,
-					   const struct stat *st);
+					   const FileInfo &info);
 
 	Directory *DirectoryMakeChildChecked(Directory &parent,
+					     const char *uri_utf8,
 					     const char *name_utf8);
 
 	Directory *DirectoryMakeUriParentChecked(Directory &root,

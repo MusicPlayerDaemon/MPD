@@ -31,6 +31,7 @@ src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
 src_mpd_LDADD = \
 	$(NEIGHBOR_LIBS) \
 	$(DB_LIBS) \
+	$(STORAGE_LIBS) \
 	$(PLAYLIST_LIBS) \
 	$(AVAHI_LIBS) \
 	$(LIBWRAP_LDFLAGS) \
@@ -409,6 +410,20 @@ libfs_a_SOURCES = \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/DirectoryReader.hxx
+
+# Storage library
+
+if ENABLE_DATABASE
+
+noinst_LIBRARIES += libstorage.a
+
+libstorage_a_SOURCES = \
+	src/storage/LocalStorage.cxx src/storage/LocalStorage.hxx \
+	src/storage/FileInfo.hxx
+
+STORAGE_LIBS = libstorage.a
+
+endif
 
 # neighbor plugins
 
