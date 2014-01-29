@@ -39,254 +39,249 @@
 #include <assert.h>
 #include <string.h>
 
-static void ao_command_finished(AudioOutput *ao)
+void
+AudioOutput::CommandFinished()
 {
-	assert(ao->command != AO_COMMAND_NONE);
-	ao->command = AO_COMMAND_NONE;
+	assert(command != AO_COMMAND_NONE);
+	command = AO_COMMAND_NONE;
 
-	ao->mutex.unlock();
+	mutex.unlock();
 	audio_output_client_notify.Signal();
-	ao->mutex.lock();
+	mutex.lock();
 }
 
-static bool
-ao_enable(AudioOutput *ao)
+inline bool
+AudioOutput::Enable()
 {
-	Error error;
-	bool success;
-
-	if (ao->really_enabled)
+	if (really_enabled)
 		return true;
 
-	ao->mutex.unlock();
-	success = ao_plugin_enable(ao, error);
-	ao->mutex.lock();
+	mutex.unlock();
+	Error error;
+	bool success = ao_plugin_enable(this, error);
+	mutex.lock();
 	if (!success) {
 		FormatError(error,
 			    "Failed to enable \"%s\" [%s]",
-			    ao->name, ao->plugin.name);
+			    name, plugin.name);
 		return false;
 	}
 
-	ao->really_enabled = true;
+	really_enabled = true;
 	return true;
 }
 
-static void
-ao_close(AudioOutput *ao, bool drain);
-
-static void
-ao_disable(AudioOutput *ao)
+inline void
+AudioOutput::Disable()
 {
-	if (ao->open)
-		ao_close(ao, false);
+	if (open)
+		Close(false);
 
-	if (ao->really_enabled) {
-		ao->really_enabled = false;
+	if (really_enabled) {
+		really_enabled = false;
 
-		ao->mutex.unlock();
-		ao_plugin_disable(ao);
-		ao->mutex.lock();
+		mutex.unlock();
+		ao_plugin_disable(this);
+		mutex.lock();
 	}
 }
 
-static AudioFormat
-ao_filter_open(AudioOutput *ao, AudioFormat &format,
-	       Error &error_r)
+inline AudioFormat
+AudioOutput::OpenFilter(AudioFormat &format, Error &error_r)
 {
 	assert(format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
-	if (ao->replay_gain_filter != nullptr &&
-	    !ao->replay_gain_filter->Open(format, error_r).IsDefined())
+	if (replay_gain_filter != nullptr &&
+	    !replay_gain_filter->Open(format, error_r).IsDefined())
 		return AudioFormat::Undefined();
 
-	if (ao->other_replay_gain_filter != nullptr &&
-	    !ao->other_replay_gain_filter->Open(format, error_r).IsDefined()) {
-		if (ao->replay_gain_filter != nullptr)
-			ao->replay_gain_filter->Close();
+	if (other_replay_gain_filter != nullptr &&
+	    !other_replay_gain_filter->Open(format, error_r).IsDefined()) {
+		if (replay_gain_filter != nullptr)
+			replay_gain_filter->Close();
 		return AudioFormat::Undefined();
 	}
 
-	const AudioFormat af = ao->filter->Open(format, error_r);
+	const AudioFormat af = filter->Open(format, error_r);
 	if (!af.IsDefined()) {
-		if (ao->replay_gain_filter != nullptr)
-			ao->replay_gain_filter->Close();
-		if (ao->other_replay_gain_filter != nullptr)
-			ao->other_replay_gain_filter->Close();
+		if (replay_gain_filter != nullptr)
+			replay_gain_filter->Close();
+		if (other_replay_gain_filter != nullptr)
+			other_replay_gain_filter->Close();
 	}
 
 	return af;
 }
 
-static void
-ao_filter_close(AudioOutput *ao)
+void
+AudioOutput::CloseFilter()
 {
-	if (ao->replay_gain_filter != nullptr)
-		ao->replay_gain_filter->Close();
-	if (ao->other_replay_gain_filter != nullptr)
-		ao->other_replay_gain_filter->Close();
+	if (replay_gain_filter != nullptr)
+		replay_gain_filter->Close();
+	if (other_replay_gain_filter != nullptr)
+		other_replay_gain_filter->Close();
 
-	ao->filter->Close();
+	filter->Close();
 }
 
-static void
-ao_open(AudioOutput *ao)
+inline void
+AudioOutput::Open()
 {
 	bool success;
 	Error error;
 	struct audio_format_string af_string;
 
-	assert(!ao->open);
-	assert(ao->pipe != nullptr);
-	assert(ao->current_chunk == nullptr);
-	assert(ao->in_audio_format.IsValid());
+	assert(!open);
+	assert(pipe != nullptr);
+	assert(current_chunk == nullptr);
+	assert(in_audio_format.IsValid());
 
-	ao->fail_timer.Reset();
+	fail_timer.Reset();
 
 	/* enable the device (just in case the last enable has failed) */
 
-	if (!ao_enable(ao))
+	if (!Enable())
 		/* still no luck */
 		return;
 
 	/* open the filter */
 
 	const AudioFormat filter_audio_format =
-		ao_filter_open(ao, ao->in_audio_format, error);
+		OpenFilter(in_audio_format, error);
 	if (!filter_audio_format.IsDefined()) {
 		FormatError(error, "Failed to open filter for \"%s\" [%s]",
-			    ao->name, ao->plugin.name);
+			    name, plugin.name);
 
-		ao->fail_timer.Update();
+		fail_timer.Update();
 		return;
 	}
 
 	assert(filter_audio_format.IsValid());
 
-	ao->out_audio_format = filter_audio_format;
-	ao->out_audio_format.ApplyMask(ao->config_audio_format);
+	out_audio_format = filter_audio_format;
+	out_audio_format.ApplyMask(config_audio_format);
 
-	ao->mutex.unlock();
-	success = ao_plugin_open(ao, ao->out_audio_format, error);
-	ao->mutex.lock();
+	mutex.unlock();
+	success = ao_plugin_open(this, out_audio_format, error);
+	mutex.lock();
 
-	assert(!ao->open);
+	assert(!open);
 
 	if (!success) {
 		FormatError(error, "Failed to open \"%s\" [%s]",
-			    ao->name, ao->plugin.name);
+			    name, plugin.name);
 
-		ao_filter_close(ao);
-		ao->fail_timer.Update();
+		CloseFilter();
+		fail_timer.Update();
 		return;
 	}
 
-	if (!convert_filter_set(ao->convert_filter, ao->out_audio_format,
+	if (!convert_filter_set(convert_filter, out_audio_format,
 				error)) {
 		FormatError(error, "Failed to convert for \"%s\" [%s]",
-			    ao->name, ao->plugin.name);
+			    name, plugin.name);
 
-		ao_filter_close(ao);
-		ao->fail_timer.Update();
+		CloseFilter();
+		fail_timer.Update();
 		return;
 	}
 
-	ao->open = true;
+	open = true;
 
 	FormatDebug(output_domain,
 		    "opened plugin=%s name=\"%s\" audio_format=%s",
-		    ao->plugin.name, ao->name,
-		    audio_format_to_string(ao->out_audio_format, &af_string));
+		    plugin.name, name,
+		    audio_format_to_string(out_audio_format, &af_string));
 
-	if (ao->in_audio_format != ao->out_audio_format)
+	if (in_audio_format != out_audio_format)
 		FormatDebug(output_domain, "converting from %s",
-			    audio_format_to_string(ao->in_audio_format,
+			    audio_format_to_string(in_audio_format,
 						   &af_string));
 }
 
-static void
-ao_close(AudioOutput *ao, bool drain)
+void
+AudioOutput::Close(bool drain)
 {
-	assert(ao->open);
+	assert(open);
 
-	ao->pipe = nullptr;
+	pipe = nullptr;
 
-	ao->current_chunk = nullptr;
-	ao->open = false;
+	current_chunk = nullptr;
+	open = false;
 
-	ao->mutex.unlock();
+	mutex.unlock();
 
 	if (drain)
-		ao_plugin_drain(ao);
+		ao_plugin_drain(this);
 	else
-		ao_plugin_cancel(ao);
+		ao_plugin_cancel(this);
 
-	ao_plugin_close(ao);
-	ao_filter_close(ao);
+	ao_plugin_close(this);
+	CloseFilter();
 
-	ao->mutex.lock();
+	mutex.lock();
 
 	FormatDebug(output_domain, "closed plugin=%s name=\"%s\"",
-		    ao->plugin.name, ao->name);
+		    plugin.name, name);
 }
 
-static void
-ao_reopen_filter(AudioOutput *ao)
+void
+AudioOutput::ReopenFilter()
 {
 	Error error;
 
-	ao_filter_close(ao);
+	CloseFilter();
 	const AudioFormat filter_audio_format =
-		ao_filter_open(ao, ao->in_audio_format, error);
+		OpenFilter(in_audio_format, error);
 	if (!filter_audio_format.IsDefined() ||
-	    !convert_filter_set(ao->convert_filter, ao->out_audio_format,
+	    !convert_filter_set(convert_filter, out_audio_format,
 				error)) {
 		FormatError(error,
 			    "Failed to open filter for \"%s\" [%s]",
-			    ao->name, ao->plugin.name);
+			    name, plugin.name);
 
-		/* this is a little code duplication fro ao_close(),
+		/* this is a little code duplication from Close(),
 		   but we cannot call this function because we must
-		   not call filter_close(ao->filter) again */
+		   not call filter_close(filter) again */
 
-		ao->pipe = nullptr;
+		pipe = nullptr;
 
-		ao->current_chunk = nullptr;
-		ao->open = false;
-		ao->fail_timer.Update();
+		current_chunk = nullptr;
+		open = false;
+		fail_timer.Update();
 
-		ao->mutex.unlock();
-		ao_plugin_close(ao);
-		ao->mutex.lock();
+		mutex.unlock();
+		ao_plugin_close(this);
+		mutex.lock();
 
 		return;
 	}
 }
 
-static void
-ao_reopen(AudioOutput *ao)
+void
+AudioOutput::Reopen()
 {
-	if (!ao->config_audio_format.IsFullyDefined()) {
-		if (ao->open) {
-			const MusicPipe *mp = ao->pipe;
-			ao_close(ao, true);
-			ao->pipe = mp;
+	if (!config_audio_format.IsFullyDefined()) {
+		if (open) {
+			const MusicPipe *mp = pipe;
+			Close(true);
+			pipe = mp;
 		}
 
 		/* no audio format is configured: copy in->out, let
 		   the output's open() method determine the effective
 		   out_audio_format */
-		ao->out_audio_format = ao->in_audio_format;
-		ao->out_audio_format.ApplyMask(ao->config_audio_format);
+		out_audio_format = in_audio_format;
+		out_audio_format.ApplyMask(config_audio_format);
 	}
 
-	if (ao->open)
+	if (open)
 		/* the audio format has changed, and all filters have
 		   to be reconfigured */
-		ao_reopen_filter(ao);
+		ReopenFilter();
 	else
-		ao_open(ao);
+		Open();
 }
 
 /**
@@ -295,17 +290,17 @@ ao_reopen(AudioOutput *ao)
  * @return true if playback should be continued, false if a command
  * was issued
  */
-static bool
-ao_wait(AudioOutput *ao)
+inline bool
+AudioOutput::WaitForDelay()
 {
 	while (true) {
-		unsigned delay = ao_plugin_delay(ao);
+		unsigned delay = ao_plugin_delay(this);
 		if (delay == 0)
 			return true;
 
-		(void)ao->cond.timed_wait(ao->mutex, delay);
+		(void)cond.timed_wait(mutex, delay);
 
-		if (ao->command != AO_COMMAND_NONE)
+		if (command != AO_COMMAND_NONE)
 			return false;
 	}
 }
@@ -420,16 +415,15 @@ ao_filter_chunk(AudioOutput *ao, const struct music_chunk *chunk,
 	return data;
 }
 
-static bool
-ao_play_chunk(AudioOutput *ao, const struct music_chunk *chunk)
+inline bool
+AudioOutput::PlayChunk(const music_chunk *chunk)
 {
-	assert(ao != nullptr);
-	assert(ao->filter != nullptr);
+	assert(filter != nullptr);
 
-	if (ao->tags && gcc_unlikely(chunk->tag != nullptr)) {
-		ao->mutex.unlock();
-		ao_plugin_send_tag(ao, chunk->tag);
-		ao->mutex.lock();
+	if (tags && gcc_unlikely(chunk->tag != nullptr)) {
+		mutex.unlock();
+		ao_plugin_send_tag(this, chunk->tag);
+		mutex.lock();
 	}
 
 	size_t size;
@@ -437,44 +431,44 @@ ao_play_chunk(AudioOutput *ao, const struct music_chunk *chunk)
 	/* workaround -Wmaybe-uninitialized false positive */
 	size = 0;
 #endif
-	const char *data = (const char *)ao_filter_chunk(ao, chunk, &size);
+	const char *data = (const char *)ao_filter_chunk(this, chunk, &size);
 	if (data == nullptr) {
-		ao_close(ao, false);
+		Close(false);
 
 		/* don't automatically reopen this device for 10
 		   seconds */
-		ao->fail_timer.Update();
+		fail_timer.Update();
 		return false;
 	}
 
 	Error error;
 
-	while (size > 0 && ao->command == AO_COMMAND_NONE) {
+	while (size > 0 && command == AO_COMMAND_NONE) {
 		size_t nbytes;
 
-		if (!ao_wait(ao))
+		if (!WaitForDelay())
 			break;
 
-		ao->mutex.unlock();
-		nbytes = ao_plugin_play(ao, data, size, error);
-		ao->mutex.lock();
+		mutex.unlock();
+		nbytes = ao_plugin_play(this, data, size, error);
+		mutex.lock();
 		if (nbytes == 0) {
 			/* play()==0 means failure */
 			FormatError(error, "\"%s\" [%s] failed to play",
-				    ao->name, ao->plugin.name);
+				    name, plugin.name);
 
-			ao_close(ao, false);
+			Close(false);
 
 			/* don't automatically reopen this device for
 			   10 seconds */
-			assert(!ao->fail_timer.IsDefined());
-			ao->fail_timer.Update();
+			assert(!fail_timer.IsDefined());
+			fail_timer.Update();
 
 			return false;
 		}
 
 		assert(nbytes <= size);
-		assert(nbytes % ao->out_audio_format.GetFrameSize() == 0);
+		assert(nbytes % out_audio_format.GetFrameSize() == 0);
 
 		data += nbytes;
 		size -= nbytes;
@@ -483,200 +477,192 @@ ao_play_chunk(AudioOutput *ao, const struct music_chunk *chunk)
 	return true;
 }
 
-static const struct music_chunk *
-ao_next_chunk(AudioOutput *ao)
+inline const music_chunk *
+AudioOutput::GetNextChunk() const
 {
-	return ao->current_chunk != nullptr
+	return current_chunk != nullptr
 		/* continue the previous play() call */
-		? ao->current_chunk->next
+		? current_chunk->next
 		/* get the first chunk from the pipe */
-		: ao->pipe->Peek();
+		: pipe->Peek();
 }
 
-/**
- * Plays all remaining chunks, until the tail of the pipe has been
- * reached (and no more chunks are queued), or until a command is
- * received.
- *
- * @return true if at least one chunk has been available, false if the
- * tail of the pipe was already reached
- */
-static bool
-ao_play(AudioOutput *ao)
+inline bool
+AudioOutput::Play()
 {
-	bool success;
-	const struct music_chunk *chunk;
+	assert(pipe != nullptr);
 
-	assert(ao->pipe != nullptr);
-
-	chunk = ao_next_chunk(ao);
+	const music_chunk *chunk = GetNextChunk();
 	if (chunk == nullptr)
 		/* no chunk available */
 		return false;
 
-	ao->current_chunk_finished = false;
+	current_chunk_finished = false;
 
-	assert(!ao->in_playback_loop);
-	ao->in_playback_loop = true;
+	assert(!in_playback_loop);
+	in_playback_loop = true;
 
-	while (chunk != nullptr && ao->command == AO_COMMAND_NONE) {
-		assert(!ao->current_chunk_finished);
+	while (chunk != nullptr && command == AO_COMMAND_NONE) {
+		assert(!current_chunk_finished);
 
-		ao->current_chunk = chunk;
+		current_chunk = chunk;
 
-		success = ao_play_chunk(ao, chunk);
-		if (!success) {
-			assert(ao->current_chunk == nullptr);
+		if (!PlayChunk(chunk)) {
+			assert(current_chunk == nullptr);
 			break;
 		}
 
-		assert(ao->current_chunk == chunk);
+		assert(current_chunk == chunk);
 		chunk = chunk->next;
 	}
 
-	assert(ao->in_playback_loop);
-	ao->in_playback_loop = false;
+	assert(in_playback_loop);
+	in_playback_loop = false;
 
-	ao->current_chunk_finished = true;
+	current_chunk_finished = true;
 
-	ao->mutex.unlock();
-	ao->player_control->LockSignal();
-	ao->mutex.lock();
+	mutex.unlock();
+	player_control->LockSignal();
+	mutex.lock();
 
 	return true;
 }
 
-static void ao_pause(AudioOutput *ao)
+inline void
+AudioOutput::Pause()
 {
-	bool ret;
+	mutex.unlock();
+	ao_plugin_cancel(this);
+	mutex.lock();
 
-	ao->mutex.unlock();
-	ao_plugin_cancel(ao);
-	ao->mutex.lock();
-
-	ao->pause = true;
-	ao_command_finished(ao);
+	pause = true;
+	CommandFinished();
 
 	do {
-		if (!ao_wait(ao))
+		if (!WaitForDelay())
 			break;
 
-		ao->mutex.unlock();
-		ret = ao_plugin_pause(ao);
-		ao->mutex.lock();
+		mutex.unlock();
+		bool success = ao_plugin_pause(this);
+		mutex.lock();
 
-		if (!ret) {
-			ao_close(ao, false);
+		if (!success) {
+			Close(false);
 			break;
 		}
-	} while (ao->command == AO_COMMAND_NONE);
+	} while (command == AO_COMMAND_NONE);
 
-	ao->pause = false;
+	pause = false;
 }
 
-static void
-audio_output_task(void *arg)
+inline void
+AudioOutput::Task()
 {
-	AudioOutput *ao = (AudioOutput *)arg;
-
-	FormatThreadName("output:%s", ao->name);
+	FormatThreadName("output:%s", name);
 
 	SetThreadRealtime();
 
-	ao->mutex.lock();
+	mutex.lock();
 
 	while (1) {
-		switch (ao->command) {
+		switch (command) {
 		case AO_COMMAND_NONE:
 			break;
 
 		case AO_COMMAND_ENABLE:
-			ao_enable(ao);
-			ao_command_finished(ao);
+			Enable();
+			CommandFinished();
 			break;
 
 		case AO_COMMAND_DISABLE:
-			ao_disable(ao);
-			ao_command_finished(ao);
+			Disable();
+			CommandFinished();
 			break;
 
 		case AO_COMMAND_OPEN:
-			ao_open(ao);
-			ao_command_finished(ao);
+			Open();
+			CommandFinished();
 			break;
 
 		case AO_COMMAND_REOPEN:
-			ao_reopen(ao);
-			ao_command_finished(ao);
+			Reopen();
+			CommandFinished();
 			break;
 
 		case AO_COMMAND_CLOSE:
-			assert(ao->open);
-			assert(ao->pipe != nullptr);
+			assert(open);
+			assert(pipe != nullptr);
 
-			ao_close(ao, false);
-			ao_command_finished(ao);
+			Close(false);
+			CommandFinished();
 			break;
 
 		case AO_COMMAND_PAUSE:
-			if (!ao->open) {
+			if (!open) {
 				/* the output has failed after
 				   audio_output_all_pause() has
 				   submitted the PAUSE command; bail
 				   out */
-				ao_command_finished(ao);
+				CommandFinished();
 				break;
 			}
 
-			ao_pause(ao);
+			Pause();
 			/* don't "break" here: this might cause
-			   ao_play() to be called when command==CLOSE
+			   Play() to be called when command==CLOSE
 			   ends the paused state - "continue" checks
 			   the new command first */
 			continue;
 
 		case AO_COMMAND_DRAIN:
-			if (ao->open) {
-				assert(ao->current_chunk == nullptr);
-				assert(ao->pipe->Peek() == nullptr);
+			if (open) {
+				assert(current_chunk == nullptr);
+				assert(pipe->Peek() == nullptr);
 
-				ao->mutex.unlock();
-				ao_plugin_drain(ao);
-				ao->mutex.lock();
+				mutex.unlock();
+				ao_plugin_drain(this);
+				mutex.lock();
 			}
 
-			ao_command_finished(ao);
+			CommandFinished();
 			continue;
 
 		case AO_COMMAND_CANCEL:
-			ao->current_chunk = nullptr;
+			current_chunk = nullptr;
 
-			if (ao->open) {
-				ao->mutex.unlock();
-				ao_plugin_cancel(ao);
-				ao->mutex.lock();
+			if (open) {
+				mutex.unlock();
+				ao_plugin_cancel(this);
+				mutex.lock();
 			}
 
-			ao_command_finished(ao);
+			CommandFinished();
 			continue;
 
 		case AO_COMMAND_KILL:
-			ao->current_chunk = nullptr;
-			ao_command_finished(ao);
-			ao->mutex.unlock();
+			current_chunk = nullptr;
+			CommandFinished();
+			mutex.unlock();
 			return;
 		}
 
-		if (ao->open && ao->allow_play && ao_play(ao))
+		if (open && allow_play && Play())
 			/* don't wait for an event if there are more
 			   chunks in the pipe */
 			continue;
 
-		if (ao->command == AO_COMMAND_NONE) {
-			ao->woken_for_play = false;
-			ao->cond.wait(ao->mutex);
+		if (command == AO_COMMAND_NONE) {
+			woken_for_play = false;
+			cond.wait(mutex);
 		}
 	}
+}
+
+void
+AudioOutput::Task(void *arg)
+{
+	AudioOutput *ao = (AudioOutput *)arg;
+	ao->Task();
 }
 
 void
@@ -685,6 +671,6 @@ AudioOutput::StartThread()
 	assert(command == AO_COMMAND_NONE);
 
 	Error error;
-	if (!thread.Start(audio_output_task, this, error))
+	if (!thread.Start(Task, this, error))
 		FatalError(error);
 }

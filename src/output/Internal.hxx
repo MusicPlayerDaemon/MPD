@@ -368,6 +368,51 @@ struct AudioOutput {
 	 * Set the "allow_play" and signal the thread.
 	 */
 	void LockAllowPlay();
+
+private:
+	void CommandFinished();
+
+	bool Enable();
+	void Disable();
+
+	void Open();
+	void Close(bool drain);
+	void Reopen();
+
+	AudioFormat OpenFilter(AudioFormat &format, Error &error_r);
+	void CloseFilter();
+	void ReopenFilter();
+
+	/**
+	 * Wait until the output's delay reaches zero.
+	 *
+	 * @return true if playback should be continued, false if a
+	 * command was issued
+	 */
+	bool WaitForDelay();
+
+	gcc_pure
+	const music_chunk *GetNextChunk() const;
+
+	bool PlayChunk(const music_chunk *chunk);
+
+	/**
+	 * Plays all remaining chunks, until the tail of the pipe has
+	 * been reached (and no more chunks are queued), or until a
+	 * command is received.
+	 *
+	 * @return true if at least one chunk has been available,
+	 * false if the tail of the pipe was already reached
+	 */
+	bool Play();
+
+	void Pause();
+
+	/**
+	 * The OutputThread.
+	 */
+	void Task();
+	static void Task(void *arg);
 };
 
 /**
