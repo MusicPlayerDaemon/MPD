@@ -137,8 +137,8 @@ playlist_errno(Error &error)
 
 static bool
 LoadPlaylistFileInfo(PlaylistInfo &info,
-		     const AllocatedPath &parent_path_fs,
-		     const AllocatedPath &name_fs)
+		     const Path parent_path_fs,
+		     const Path name_fs)
 {
 	const char *name_fs_str = name_fs.c_str();
 	size_t name_length = strlen(name_fs_str);
