@@ -341,15 +341,12 @@ UpdateWalk::UpdateDirectory(Directory &directory, const struct stat *st)
 	PurgeDeletedFromDirectory(directory);
 
 	while (reader.ReadEntry()) {
-		std::string utf8;
-		struct stat st2;
-
 		const auto entry = reader.GetEntry();
 
 		if (skip_path(entry) || exclude_list.Check(entry))
 			continue;
 
-		utf8 = entry.ToUTF8();
+		const std::string utf8 = entry.ToUTF8();
 		if (utf8.empty())
 			continue;
 
@@ -358,6 +355,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const struct stat *st)
 			continue;
 		}
 
+		struct stat st2;
 		if (stat_directory_child(directory, utf8.c_str(), &st2) == 0)
 			UpdateDirectoryChild(directory, utf8.c_str(), &st2);
 		else
