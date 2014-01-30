@@ -21,6 +21,7 @@ ver 0.19 (not yet released)
 * threads:
   - the update thread runs at "idle" priority
   - the output thread runs at "real-time" priority
+  - name each thread (for debugging)
 * new resampler option using libsoxr
 
 ver 0.18.8 (not yet released)
