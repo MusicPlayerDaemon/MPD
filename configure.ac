@@ -184,6 +184,8 @@ AC_SEARCH_LIBS([exp], [m],,
 AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
 
+AC_CHECK_HEADERS([sys/prctl.h], AC_CHECK_FUNCS([prctl]))
+
 AC_CHECK_LIB([pthread], [pthread_setname_np],
 	[have_pthread_setname_np=yes],
 	[have_pthread_setname_np=no])

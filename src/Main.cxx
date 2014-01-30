@@ -60,6 +60,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "thread/Id.hxx"
+#include "thread/Slack.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"
 #include "config/ConfigDefaults.hxx"
@@ -522,6 +523,10 @@ int mpd_main(int argc, char *argv[])
 #ifdef WIN32
 	win32_app_started();
 #endif
+
+	/* the MPD frontend does not care about timer slack; set it to
+	   a huge value to allow the kernel to reduce CPU wakeups */
+	SetThreadTimerSlackMS(100);
 
 	/* run the main loop */
 	main_loop->Run();

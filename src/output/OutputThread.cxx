@@ -30,6 +30,7 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "thread/Util.hxx"
+#include "thread/Slack.hxx"
 #include "thread/Name.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
@@ -561,6 +562,7 @@ AudioOutput::Task()
 	FormatThreadName("output:%s", name);
 
 	SetThreadRealtime();
+	SetThreadTimerSlackUS(100);
 
 	mutex.lock();
 
