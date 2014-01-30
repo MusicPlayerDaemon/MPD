@@ -98,6 +98,16 @@ public:
 	}
 
 	gcc_pure gcc_nonnull_all
+	static AllocatedPath Build(Path a, const_pointer b) {
+		return Build(a.c_str(), b);
+	}
+
+	gcc_pure gcc_nonnull_all
+	static AllocatedPath Build(Path a, Path b) {
+		return Build(a, b.c_str());
+	}
+
+	gcc_pure gcc_nonnull_all
 	static AllocatedPath Build(const_pointer a, const AllocatedPath &b) {
 		return Build(a, PathTraitsFS::GetLength(a),
 			     b.value.c_str(), b.value.size());
