@@ -21,7 +21,7 @@
 #define MPD_FS_DIRECTORY_READER_HXX
 
 #include "check.h"
-#include "AllocatedPath.hxx"
+#include "Path.hxx"
 
 #include <dirent.h>
 
@@ -78,9 +78,9 @@ public:
 	/**
 	 * Extracts directory entry that was previously read by #ReadEntry.
 	 */
-	AllocatedPath GetEntry() const {
+	Path GetEntry() const {
 		assert(HasEntry());
-		return AllocatedPath::FromFS(ent->d_name);
+		return Path::FromFS(ent->d_name);
 	}
 };
 
