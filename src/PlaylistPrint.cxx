@@ -110,6 +110,8 @@ playlist_print_changes_position(Client &client,
 	queue_print_changes_position(client, playlist.queue, version);
 }
 
+#ifdef ENABLE_DATABASE
+
 static bool
 PrintSongDetails(Client &client, const char *uri_utf8)
 {
@@ -126,16 +128,24 @@ PrintSongDetails(Client &client, const char *uri_utf8)
 	return true;
 }
 
+#endif
+
 bool
 spl_print(Client &client, const char *name_utf8, bool detail,
 	  Error &error)
 {
+#ifndef ENABLE_DATABASE
+	(void)detail;
+#endif
+
 	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, error);
 	if (contents.empty() && error.IsDefined())
 		return false;
 
 	for (const auto &uri_utf8 : contents) {
+#ifdef ENABLE_DATABASE
 		if (!detail || !PrintSongDetails(client, uri_utf8.c_str()))
+#endif
 			client_printf(client, SONG_FILE "%s\n",
 				      uri_utf8.c_str());
 	}

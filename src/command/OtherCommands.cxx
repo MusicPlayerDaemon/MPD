@@ -19,8 +19,6 @@
 
 #include "config.h"
 #include "OtherCommands.hxx"
-#include "DatabaseCommands.hxx"
-#include "db/update/Service.hxx"
 #include "CommandError.hxx"
 #include "db/Uri.hxx"
 #include "DetachedSong.hxx"
@@ -48,6 +46,11 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "Idle.hxx"
+
+#ifdef ENABLE_DATABASE
+#include "DatabaseCommands.hxx"
+#include "db/update/Service.hxx"
+#endif
 
 #include <assert.h>
 #include <string.h>
@@ -170,14 +173,21 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 		return CommandResult::OK;
 	}
 
+#ifdef ENABLE_DATABASE
 	CommandResult result = handle_lsinfo2(client, argc, argv);
 	if (result != CommandResult::OK)
 		return result;
+#endif
 
 	if (isRootDirectory(uri)) {
 		Error error;
 		const auto &list = ListPlaylistFiles(error);
 		print_spl_list(client, list);
+	} else {
+#ifndef ENABLE_DATABASE
+		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
 	}
 
 	return CommandResult::OK;
@@ -186,6 +196,7 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 static CommandResult
 handle_update(Client &client, int argc, char *argv[], bool discard)
 {
+#ifdef ENABLE_DATABASE
 	const char *path = "";
 
 	assert(argc <= 2);
@@ -217,6 +228,15 @@ handle_update(Client &client, int argc, char *argv[], bool discard)
 			      "already updating");
 		return CommandResult::ERROR;
 	}
+#else
+	(void)client;
+	(void)argc;
+	(void)argv;
+	(void)discard;
+
+	command_error(client, ACK_ERROR_NO_EXIST, "No database");
+	return CommandResult::ERROR;
+#endif
 }
 
 CommandResult
@@ -329,9 +349,11 @@ handle_config(Client &client,
 		return CommandResult::ERROR;
 	}
 
+#ifdef ENABLE_DATABASE
 	const char *path = mapper_get_music_directory_utf8();
 	if (path != nullptr)
 		client_printf(client, "music_directory: %s\n", path);
+#endif
 
 	return CommandResult::OK;
 }

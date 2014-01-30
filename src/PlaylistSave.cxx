@@ -55,10 +55,14 @@ playlist_print_song(FILE *file, const DetachedSong &song)
 void
 playlist_print_uri(FILE *file, const char *uri)
 {
-	auto path = playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
+	auto path =
+#ifdef ENABLE_DATABASE
+		playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
 		!PathTraitsUTF8::IsAbsolute(uri)
 		? map_uri_fs(uri)
-		: AllocatedPath::FromUTF8(uri);
+		:
+#endif
+		AllocatedPath::FromUTF8(uri);
 
 	if (!path.IsNull())
 		fprintf(file, "%s\n", path.c_str());

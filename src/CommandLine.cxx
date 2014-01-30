@@ -23,8 +23,6 @@
 #include "LogInit.hxx"
 #include "Log.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "db/Registry.hxx"
-#include "db/DatabasePlugin.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "output/Registry.hxx"
@@ -41,6 +39,11 @@
 #include "util/Domain.hxx"
 #include "util/OptionDef.hxx"
 #include "util/OptionParser.hxx"
+
+#ifdef ENABLE_DATABASE
+#include "db/Registry.hxx"
+#include "db/DatabasePlugin.hxx"
+#endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 #include "neighbor/Registry.hxx"
@@ -102,12 +105,15 @@ static void version(void)
 	     "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
 	     "Copyright (C) 2008-2014 Max Kellermann <max@duempel.org>\n"
 	     "This is free software; see the source for copying conditions.  There is NO\n"
-	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
-	     "\n"
+	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+
+#ifdef ENABLE_DATABASE
+	puts("\n"
 	     "Database plugins:");
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
+#endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	puts("\n\n"

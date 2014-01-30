@@ -127,12 +127,17 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 	} else if (uri_has_scheme(uri)) {
 		return read_stream_comments(client, uri);
 	} else if (*uri != '/') {
+#ifdef ENABLE_DATABASE
 		path_fs = map_uri_fs(uri);
 		if (path_fs.IsNull()) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "No such file");
 			return CommandResult::ERROR;
 		}
+#else
+		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
 	} else {
 		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
 		return CommandResult::ERROR;

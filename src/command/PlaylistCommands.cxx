@@ -193,9 +193,14 @@ handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 		}
 
 		success = spl_append_uri(uri, playlist, error);
-	} else
+	} else {
+#ifdef ENABLE_DATABASE
 		success = search_add_to_playlist(uri, playlist, nullptr,
 						 error);
+#else
+		success = false;
+#endif
+	}
 
 	if (!success && !error.IsDefined()) {
 		command_error(client, ACK_ERROR_NO_EXIST,

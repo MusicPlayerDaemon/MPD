@@ -243,6 +243,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 		std::string uri_utf8;
 
 		if (!uri_has_scheme(s)) {
+#ifdef ENABLE_DATABASE
 			uri_utf8 = map_fs_to_utf8(s);
 			if (uri_utf8.empty()) {
 				if (PathTraitsFS::IsAbsolute(s)) {
@@ -254,6 +255,9 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 				} else
 					continue;
 			}
+#else
+			continue;
+#endif
 		} else {
 			uri_utf8 = PathToUTF8(s);
 			if (uri_utf8.empty())
@@ -404,6 +408,7 @@ spl_append_uri(const char *url, const char *utf8file, Error &error)
 		return spl_append_song(utf8file, DetachedSong(url),
 				       error);
 	} else {
+#ifdef ENABLE_DATABASE
 		DetachedSong *song = DatabaseDetachSong(url, error);
 		if (song == nullptr)
 			return false;
@@ -411,6 +416,9 @@ spl_append_uri(const char *url, const char *utf8file, Error &error)
 		bool success = spl_append_song(utf8file, *song, error);
 		delete song;
 		return success;
+#else
+		return false;
+#endif
 	}
 }
 

@@ -23,6 +23,8 @@
 #include "Idle.hxx"
 #include "Stats.hxx"
 
+#ifdef ENABLE_DATABASE
+
 void
 Instance::DeleteSong(const char *uri)
 {
@@ -37,6 +39,8 @@ Instance::DatabaseModified()
 	idle_add(IDLE_DATABASE);
 }
 
+#endif
+
 void
 Instance::TagModified()
 {
@@ -49,11 +53,15 @@ Instance::SyncWithPlayer()
 	partition->SyncWithPlayer();
 }
 
+#ifdef ENABLE_DATABASE
+
 void
 Instance::OnDatabaseModified()
 {
 	DatabaseModified();
 }
+
+#endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 

@@ -37,6 +37,8 @@
 static unsigned start_time;
 #endif
 
+#ifdef ENABLE_DATABASE
+
 static DatabaseStats stats;
 
 enum class StatsValidity : uint8_t {
@@ -45,12 +47,16 @@ enum class StatsValidity : uint8_t {
 
 static StatsValidity stats_validity = StatsValidity::INVALID;
 
+#endif
+
 void stats_global_init(void)
 {
 #ifndef WIN32
 	start_time = MonotonicClockS();
 #endif
 }
+
+#ifdef ENABLE_DATABASE
 
 void
 stats_invalidate()
@@ -120,6 +126,8 @@ db_stats_print(Client &client)
 			      (unsigned long)update_stamp);
 }
 
+#endif
+
 void
 stats_print(Client &client)
 {
@@ -133,6 +141,8 @@ stats_print(Client &client)
 #endif
 		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5));
 
+#ifdef ENABLE_DATABASE
 	if (GetDatabase() != nullptr)
 		db_stats_print(client);
+#endif
 }

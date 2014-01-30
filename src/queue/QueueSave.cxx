@@ -110,8 +110,10 @@ queue_load_song(TextFile &file, const char *line, Queue &queue)
 		if (uri_has_scheme(uri)) {
 			song = new DetachedSong(uri);
 		} else {
+#ifdef ENABLE_DATABASE
 			song = DatabaseDetachSong(uri, IgnoreError());
 			if (song == nullptr)
+#endif
 				return;
 		}
 	}

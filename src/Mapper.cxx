@@ -42,6 +42,8 @@
 
 static constexpr Domain mapper_domain("mapper");
 
+#ifdef ENABLE_DATABASE
+
 /**
  * The absolute path of the music directory encoded in UTF-8.
  */
@@ -53,6 +55,8 @@ static size_t music_dir_utf8_length;
  * character set.
  */
 static AllocatedPath music_dir_fs = AllocatedPath::Null();
+
+#endif
 
 /**
  * The absolute path of the playlist directory encoded in the
@@ -91,6 +95,8 @@ check_directory(const char *path_utf8, const AllocatedPath &path_fs)
 			    "No permission to read directory: %s", path_utf8);
 }
 
+#ifdef ENABLE_DATABASE
+
 static void
 mapper_set_music_dir(AllocatedPath &&path)
 {
@@ -104,6 +110,8 @@ mapper_set_music_dir(AllocatedPath &&path)
 
 	check_directory(music_dir_utf8.c_str(), music_dir_fs);
 }
+
+#endif
 
 static void
 mapper_set_playlist_dir(AllocatedPath &&path)
@@ -119,8 +127,12 @@ mapper_set_playlist_dir(AllocatedPath &&path)
 void
 mapper_init(AllocatedPath &&_music_dir, AllocatedPath &&_playlist_dir)
 {
+#ifdef ENABLE_DATABASE
 	if (!_music_dir.IsNull())
 		mapper_set_music_dir(std::move(_music_dir));
+#else
+	(void)_music_dir;
+#endif
 
 	if (!_playlist_dir.IsNull())
 		mapper_set_playlist_dir(std::move(_playlist_dir));
@@ -129,6 +141,8 @@ mapper_init(AllocatedPath &&_music_dir, AllocatedPath &&_playlist_dir)
 void mapper_finish(void)
 {
 }
+
+#ifdef ENABLE_DATABASE
 
 const char *
 mapper_get_music_directory_utf8(void)
@@ -144,16 +158,24 @@ mapper_get_music_directory_fs(void)
 	return music_dir_fs;
 }
 
+#endif
+
 const char *
 map_to_relative_path(const char *path_utf8)
 {
+#ifdef ENABLE_DATABASE
 	return !music_dir_utf8.empty() &&
 		memcmp(path_utf8, music_dir_utf8.c_str(),
 		       music_dir_utf8_length) == 0 &&
 		PathTraitsUTF8::IsSeparator(path_utf8[music_dir_utf8_length])
 		? path_utf8 + music_dir_utf8_length + 1
 		: path_utf8;
+#else
+	return path_utf8;
+#endif
 }
+
+#ifdef ENABLE_DATABASE
 
 AllocatedPath
 map_uri_fs(const char *uri)
@@ -240,14 +262,23 @@ map_song_fs(const Song &song)
 		: map_directory_child_fs(*song.parent, song.uri);
 }
 
+#endif
+
 AllocatedPath
 map_song_fs(const DetachedSong &song)
 {
 	if (song.IsAbsoluteFile())
 		return AllocatedPath::FromUTF8(song.GetRealURI());
-	else
+	else {
+#ifdef ENABLE_DATABASE
 		return map_uri_fs(song.GetURI());
+#else
+		return AllocatedPath::Null();
+#endif
+	}
 }
+
+#ifdef ENABLE_DATABASE
 
 std::string
 map_fs_to_utf8(const char *path_fs)
@@ -260,6 +291,8 @@ map_fs_to_utf8(const char *path_fs)
 
 	return PathToUTF8(path_fs);
 }
+
+#endif
 
 const AllocatedPath &
 map_spl_path(void)

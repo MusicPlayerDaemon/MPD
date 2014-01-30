@@ -22,7 +22,6 @@
 #include "CommandError.hxx"
 #include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
-#include "db/update/Service.hxx"
 #include "client/Client.hxx"
 #include "mixer/Volume.hxx"
 #include "Partition.hxx"
@@ -31,6 +30,10 @@
 #include "protocol/ArgParser.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
+
+#ifdef ENABLE_DATABASE
+#include "db/update/Service.hxx"
+#endif
 
 #define COMMAND_STATUS_STATE            "state"
 #define COMMAND_STATUS_REPEAT           "repeat"
@@ -187,6 +190,7 @@ handle_status(Client &client,
 		}
 	}
 
+#ifdef ENABLE_DATABASE
 	const UpdateService *update_service = client.partition.instance.update;
 	unsigned updateJobId = update_service != nullptr
 		? update_service->GetId()
@@ -196,6 +200,7 @@ handle_status(Client &client,
 			      COMMAND_STATUS_UPDATING_DB ": %i\n",
 			      updateJobId);
 	}
+#endif
 
 	Error error = client.player_control.LockGetError();
 	if (error.IsDefined())

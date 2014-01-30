@@ -23,13 +23,10 @@
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistGlobal.hxx"
-#include "db/update/Service.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
 #include "PlayerThread.hxx"
 #include "Mapper.hxx"
-#include "db/DatabaseGlue.hxx"
-#include "db/DatabaseSimple.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
 #include "client/Client.hxx"
@@ -66,6 +63,12 @@
 #include "config/ConfigDefaults.hxx"
 #include "config/ConfigOption.hxx"
 #include "Stats.hxx"
+
+#ifdef ENABLE_DATABASE
+#include "db/update/Service.hxx"
+#include "db/DatabaseGlue.hxx"
+#include "db/DatabaseSimple.hxx"
+#endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 #include "neighbor/Glue.hxx"
@@ -150,6 +153,8 @@ glue_mapper_init(Error &error)
 	return true;
 }
 
+#ifdef ENABLE_DATABASE
+
 /**
  * Returns the database.  If this function returns false, this has not
  * succeeded, and the caller should create the database after the
@@ -201,6 +206,8 @@ glue_db_init_and_load(void)
 	/* run database update after daemonization? */
 	return !db_is_simple() || db_exists();
 }
+
+#endif
 
 /**
  * Configure and initialize the sticker subsystem.
@@ -449,11 +456,13 @@ int mpd_main(int argc, char *argv[])
 
 	decoder_plugin_init_all();
 
+#ifdef ENABLE_DATABASE
 	const bool create_db = !glue_db_init_and_load();
 
 	instance->update = db_is_simple()
 		? new UpdateService(*main_loop)
 		: nullptr;
+#endif
 
 	glue_sticker_init();
 
@@ -490,6 +499,7 @@ int mpd_main(int argc, char *argv[])
 
 	player_create(instance->partition->pc);
 
+#ifdef ENABLE_DATABASE
 	if (create_db) {
 		/* the database failed to load: recreate the
 		   database */
@@ -497,6 +507,7 @@ int mpd_main(int argc, char *argv[])
 		if (job == 0)
 			FatalError("directory update failed");
 	}
+#endif
 
 	if (!glue_state_file_init(error)) {
 		LogError(error);
@@ -562,6 +573,7 @@ int mpd_main(int argc, char *argv[])
 	}
 #endif
 
+#ifdef ENABLE_DATABASE
 	delete instance->update;
 
 	const clock_t start = clock();
@@ -569,6 +581,7 @@ int mpd_main(int argc, char *argv[])
 	FormatDebug(main_domain,
 		    "db_finish took %f seconds",
 		    ((float)(clock()-start))/CLOCKS_PER_SEC);
+#endif
 
 #ifdef ENABLE_SQLITE
 	sticker_global_finish();
@@ -578,7 +591,11 @@ int mpd_main(int argc, char *argv[])
 
 	playlist_list_global_finish();
 	input_stream_global_finish();
+
+#ifdef ENABLE_DATABASE
 	mapper_finish();
+#endif
+
 	delete instance->partition;
 	command_finish();
 	decoder_plugin_deinit_all();

@@ -39,6 +39,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#ifdef ENABLE_DATABASE
+
 Song *
 Song::LoadFile(const char *path_utf8, Directory &parent)
 {
@@ -64,6 +66,8 @@ Song::LoadFile(const char *path_utf8, Directory &parent)
 	return song;
 }
 
+#endif
+
 /**
  * Attempts to load APE or ID3 tags from the specified file.
  */
@@ -74,6 +78,8 @@ tag_scan_fallback(Path path,
 	return tag_ape_scan2(path, handler, handler_ctx) ||
 		tag_id3_scan(path, handler, handler_ctx);
 }
+
+#ifdef ENABLE_DATABASE
 
 bool
 Song::UpdateFile()
@@ -124,6 +130,8 @@ Song::UpdateFileInArchive()
 	tag_builder.Commit(tag);
 	return true;
 }
+
+#endif
 
 bool
 DetachedSong::Update()

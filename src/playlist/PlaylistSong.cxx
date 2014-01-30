@@ -79,6 +79,7 @@ playlist_check_load_song(DetachedSong &song)
 		apply_song_metadata(song, tmp);
 		return true;
 	} else {
+#ifdef ENABLE_DATABASE
 		DetachedSong *tmp = DatabaseDetachSong(uri, IgnoreError());
 		if (tmp == nullptr)
 			return false;
@@ -86,6 +87,9 @@ playlist_check_load_song(DetachedSong &song)
 		apply_song_metadata(song, *tmp);
 		delete tmp;
 		return true;
+#else
+		return false;
+#endif
 	}
 }
 

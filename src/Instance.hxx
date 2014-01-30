@@ -21,7 +21,6 @@
 #define MPD_INSTANCE_HXX
 
 #include "check.h"
-#include "db/DatabaseListener.hxx"
 #include "Compiler.h"
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -29,25 +28,41 @@
 class NeighborGlue;
 #endif
 
+#ifdef ENABLE_DATABASE
+#include "db/DatabaseListener.hxx"
 class UpdateService;
+#endif
+
 class ClientList;
 struct Partition;
 
 struct Instance final
-	: public DatabaseListener
+#if defined(ENABLE_DATABASE) || defined(ENABLE_NEIGHBOR_PLUGINS)
+	:
+#endif
+#ifdef ENABLE_DATABASE
+	public DatabaseListener
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	, public NeighborListener
+	,
+#endif
+#endif
+#ifdef ENABLE_NEIGHBOR_PLUGINS
+	public NeighborListener
 #endif
 {
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	NeighborGlue *neighbors;
 #endif
 
+#ifdef ENABLE_DATABASE
 	UpdateService *update;
+#endif
 
 	ClientList *client_list;
 
 	Partition *partition;
+
+#ifdef ENABLE_DATABASE
 
 	void DeleteSong(const char *uri);
 
@@ -56,6 +71,8 @@ struct Instance final
 	 * all subsystems.
 	 */
 	void DatabaseModified();
+
+#endif
 
 	/**
 	 * A tag in the play queue has been modified by the player
@@ -69,7 +86,9 @@ struct Instance final
 	void SyncWithPlayer();
 
 private:
+#ifdef ENABLE_DATABASE
 	virtual void OnDatabaseModified();
+#endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	/* virtual methods from class NeighborListener */

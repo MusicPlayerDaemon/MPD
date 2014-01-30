@@ -101,6 +101,7 @@ print_error(Client &client, const Error &error)
 		command_error(client, (ack)error.GetCode(),
 			      "%s", error.GetMessage());
 		return CommandResult::ERROR;
+#ifdef ENABLE_DATABASE
 	} else if (error.IsDomain(db_domain)) {
 		switch ((enum db_error)error.GetCode()) {
 		case DB_DISABLED:
@@ -112,6 +113,7 @@ print_error(Client &client, const Error &error)
 			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
 			return CommandResult::ERROR;
 		}
+#endif
 	} else if (error.IsDomain(errno_domain)) {
 		command_error(client, ACK_ERROR_SYSTEM, "%s",
 			      strerror(error.GetCode()));

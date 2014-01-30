@@ -85,7 +85,9 @@ static const struct command commands[] = {
 	{ "commands", PERMISSION_NONE, 0, 0, handle_commands },
 	{ "config", PERMISSION_ADMIN, 0, 0, handle_config },
 	{ "consume", PERMISSION_CONTROL, 1, 1, handle_consume },
+#ifdef ENABLE_DATABASE
 	{ "count", PERMISSION_READ, 2, -1, handle_count },
+#endif
 	{ "crossfade", PERMISSION_CONTROL, 1, 1, handle_crossfade },
 	{ "currentsong", PERMISSION_READ, 0, 0, handle_currentsong },
 	{ "decoders", PERMISSION_READ, 0, 0, handle_decoders },
@@ -93,13 +95,17 @@ static const struct command commands[] = {
 	{ "deleteid", PERMISSION_CONTROL, 1, 1, handle_deleteid },
 	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },
 	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
+#ifdef ENABLE_DATABASE
 	{ "find", PERMISSION_READ, 2, -1, handle_find },
 	{ "findadd", PERMISSION_READ, 2, -1, handle_findadd},
+#endif
 	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
+#ifdef ENABLE_DATABASE
 	{ "list", PERMISSION_READ, 1, -1, handle_list },
 	{ "listall", PERMISSION_READ, 0, 1, handle_listall },
 	{ "listallinfo", PERMISSION_READ, 0, 1, handle_listallinfo },
+#endif
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	{ "listneighbors", PERMISSION_READ, 0, 0, handle_listneighbors },
 #endif
@@ -146,9 +152,11 @@ static const struct command commands[] = {
 	{ "rescan", PERMISSION_CONTROL, 0, 1, handle_rescan },
 	{ "rm", PERMISSION_CONTROL, 1, 1, handle_rm },
 	{ "save", PERMISSION_CONTROL, 1, 1, handle_save },
+#ifdef ENABLE_DATABASE
 	{ "search", PERMISSION_READ, 2, -1, handle_search },
 	{ "searchadd", PERMISSION_ADD, 2, -1, handle_searchadd },
 	{ "searchaddpl", PERMISSION_CONTROL, 3, -1, handle_searchaddpl },
+#endif
 	{ "seek", PERMISSION_CONTROL, 2, 2, handle_seek },
 	{ "seekcur", PERMISSION_CONTROL, 1, 1, handle_seekcur },
 	{ "seekid", PERMISSION_CONTROL, 2, 2, handle_seekid },

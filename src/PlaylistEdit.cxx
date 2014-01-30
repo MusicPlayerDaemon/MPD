@@ -112,8 +112,10 @@ playlist::AppendURI(PlayerControl &pc,
 	if (uri_has_scheme(uri)) {
 		song = new DetachedSong(uri);
 	} else {
+#ifdef ENABLE_DATABASE
 		song = DatabaseDetachSong(uri, IgnoreError());
 		if (song == nullptr)
+#endif
 			return PlaylistResult::NO_SUCH_SONG;
 	}
 

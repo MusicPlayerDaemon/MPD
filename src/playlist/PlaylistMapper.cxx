@@ -64,6 +64,8 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
 	return playlist_open_path(path_fs.c_str(), mutex, cond, is_r);
 }
 
+#ifdef ENABLE_DATABASE
+
 /**
  * Load a playlist from the configured music directory.
  */
@@ -80,6 +82,8 @@ playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
 	return playlist_open_path(path.c_str(), mutex, cond, is_r);
 }
 
+#endif
+
 SongEnumerator *
 playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond,
 		     InputStream **is_r)
@@ -91,12 +95,14 @@ playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond,
 			return playlist;
 	}
 
+#ifdef ENABLE_DATABASE
 	if (uri_safe_local(uri)) {
 		auto playlist = playlist_open_in_music_dir(uri, mutex, cond,
 							   is_r);
 		if (playlist != nullptr)
 			return playlist;
 	}
+#endif
 
 	return nullptr;
 }

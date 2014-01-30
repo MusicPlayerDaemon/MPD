@@ -17,7 +17,6 @@ noinst_LIBRARIES = \
 	libtag.a \
 	libinput.a \
 	libfs.a \
-	libdb_plugins.a \
 	libplaylist_plugins.a \
 	libdecoder_plugins.a \
 	libfilter_plugins.a \
@@ -85,7 +84,6 @@ src_mpd_SOURCES = \
 	src/command/TagCommands.cxx src/command/TagCommands.hxx \
 	src/command/PlayerCommands.cxx src/command/PlayerCommands.hxx \
 	src/command/PlaylistCommands.cxx src/command/PlaylistCommands.hxx \
-	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
 	src/command/FileCommands.cxx src/command/FileCommands.hxx \
 	src/command/OutputCommands.cxx src/command/OutputCommands.hxx \
 	src/command/MessageCommands.cxx src/command/MessageCommands.hxx \
@@ -103,37 +101,10 @@ src_mpd_SOURCES = \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/DecoderInternal.cxx src/decoder/DecoderInternal.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
-	src/db/Uri.hxx \
-	src/db/Directory.cxx src/db/Directory.hxx \
-	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
-	src/db/DatabaseSimple.hxx \
-	src/db/DatabaseGlue.cxx src/db/DatabaseGlue.hxx \
-	src/db/DatabaseSong.cxx src/db/DatabaseSong.hxx \
-	src/db/DatabasePrint.cxx src/db/DatabasePrint.hxx \
-	src/db/DatabaseQueue.cxx src/db/DatabaseQueue.hxx \
-	src/db/DatabasePlaylist.cxx src/db/DatabasePlaylist.hxx \
-	src/db/DatabaseError.cxx src/db/DatabaseError.hxx \
-	src/db/DatabaseLock.cxx src/db/DatabaseLock.hxx \
-	src/db/DatabaseSave.cxx src/db/DatabaseSave.hxx \
-	src/db/DatabasePlugin.hxx \
-	src/db/DatabaseListener.hxx \
-	src/db/Visitor.hxx \
-	src/db/Selection.cxx src/db/Selection.hxx \
 	src/filter/FilterConfig.cxx src/filter/FilterConfig.hxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \
 	src/filter/FilterInternal.hxx \
 	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
-	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
-	src/db/update/Service.cxx src/db/update/Service.hxx \
-	src/db/update/UpdateGlue.cxx \
-	src/db/update/Queue.cxx src/db/update/Queue.hxx \
-	src/db/update/UpdateIO.cxx src/db/update/UpdateIO.hxx \
-	src/db/update/Editor.cxx src/db/update/Editor.hxx \
-	src/db/update/Walk.cxx src/db/update/Walk.hxx \
-	src/db/update/UpdateSong.cxx \
-	src/db/update/Container.cxx \
-	src/db/update/Remove.cxx src/db/update/Remove.hxx \
-	src/db/update/ExcludeList.cxx src/db/update/ExcludeList.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
 	src/client/ClientEvent.cxx \
@@ -189,8 +160,6 @@ src_mpd_SOURCES = \
 	src/playlist/Print.cxx src/playlist/Print.hxx \
 	src/db/PlaylistVector.cxx src/db/PlaylistVector.hxx \
 	src/db/PlaylistInfo.hxx \
-	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
-	src/PlaylistUpdate.cxx \
 	src/queue/IdTable.hxx \
 	src/queue/Queue.cxx src/queue/Queue.hxx \
 	src/queue/QueuePrint.cxx src/queue/QueuePrint.hxx \
@@ -198,13 +167,9 @@ src_mpd_SOURCES = \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
-	src/db/LightSong.cxx src/db/LightSong.hxx \
-	src/db/LightDirectory.hxx \
-	src/db/Song.cxx src/db/Song.hxx \
 	src/SongUpdate.cxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
-	src/db/SongSort.cxx src/db/SongSort.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
 	src/Stats.cxx src/Stats.hxx \
 	src/TagPrint.cxx src/TagPrint.hxx \
@@ -215,6 +180,44 @@ src_mpd_SOURCES = \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
 	src/Timer.cxx
+
+if ENABLE_DATABASE
+src_mpd_SOURCES += \
+	src/PlaylistUpdate.cxx \
+	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
+	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
+	src/db/LightSong.cxx src/db/LightSong.hxx \
+	src/db/LightDirectory.hxx \
+	src/db/Song.cxx src/db/Song.hxx \
+	src/db/SongSort.cxx src/db/SongSort.hxx \
+	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
+	src/db/update/Service.cxx src/db/update/Service.hxx \
+	src/db/update/UpdateGlue.cxx \
+	src/db/update/Queue.cxx src/db/update/Queue.hxx \
+	src/db/update/UpdateIO.cxx src/db/update/UpdateIO.hxx \
+	src/db/update/Editor.cxx src/db/update/Editor.hxx \
+	src/db/update/Walk.cxx src/db/update/Walk.hxx \
+	src/db/update/UpdateSong.cxx \
+	src/db/update/Container.cxx \
+	src/db/update/Remove.cxx src/db/update/Remove.hxx \
+	src/db/update/ExcludeList.cxx src/db/update/ExcludeList.hxx \
+	src/db/Uri.hxx \
+	src/db/Directory.cxx src/db/Directory.hxx \
+	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
+	src/db/DatabaseSimple.hxx \
+	src/db/DatabaseGlue.cxx src/db/DatabaseGlue.hxx \
+	src/db/DatabaseSong.cxx src/db/DatabaseSong.hxx \
+	src/db/DatabasePrint.cxx src/db/DatabasePrint.hxx \
+	src/db/DatabaseQueue.cxx src/db/DatabaseQueue.hxx \
+	src/db/DatabasePlaylist.cxx src/db/DatabasePlaylist.hxx \
+	src/db/DatabaseError.cxx src/db/DatabaseError.hxx \
+	src/db/DatabaseLock.cxx src/db/DatabaseLock.hxx \
+	src/db/DatabaseSave.cxx src/db/DatabaseSave.hxx \
+	src/db/DatabasePlugin.hxx \
+	src/db/DatabaseListener.hxx \
+	src/db/Visitor.hxx \
+	src/db/Selection.cxx src/db/Selection.hxx
+endif
 
 UPNP_SOURCES = \
 	src/lib/upnp/Init.cxx src/lib/upnp/Init.hxx \
@@ -451,6 +454,10 @@ endif
 
 # database plugins
 
+if ENABLE_DATABASE
+
+noinst_LIBRARIES += libdb_plugins.a
+
 libdb_plugins_a_SOURCES = \
 	src/db/Registry.cxx src/db/Registry.hxx \
 	src/db/Helpers.cxx src/db/Helpers.hxx \
@@ -477,6 +484,8 @@ libdb_plugins_a_SOURCES += \
 DB_LIBS += \
 	$(EXPAT_LIBS) \
 	$(UPNP_LIBS)
+endif
+
 endif
 
 # archive plugins
@@ -1203,8 +1212,11 @@ C_TESTS = \
 	test/test_mixramp \
 	test/test_icy_parser \
 	test/test_pcm \
-	test/test_translate_song \
 	test/test_queue_priority
+
+if ENABLE_DATABASE
+C_TESTS += test/test_translate_song
+endif
 
 if ENABLE_ARCHIVE
 C_TESTS += test/test_archive
@@ -1216,7 +1228,6 @@ noinst_PROGRAMS = \
 	$(C_TESTS) \
 	test/read_conf \
 	test/run_resolver \
-	test/DumpDatabase \
 	test/run_input \
 	test/dump_text_file \
 	test/dump_playlist \
@@ -1227,6 +1238,10 @@ noinst_PROGRAMS = \
 	test/run_convert \
 	test/run_normalize \
 	test/software_volume
+
+if ENABLE_DATABASE
+noinst_PROGRAMS += test/DumpDatabase
+endif
 
 if ENABLE_NEIGHBOR_PLUGINS
 noinst_PROGRAMS += test/run_neighbor_explorer
@@ -1267,6 +1282,8 @@ test_run_resolver_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/run_resolver.cxx
 
+if ENABLE_DATABASE
+
 test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \
 	$(TAG_LIBS) \
@@ -1292,6 +1309,8 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 
 if HAVE_LIBUPNP
 test_DumpDatabase_SOURCES += src/lib/expat/ExpatParser.cxx
+endif
+
 endif
 
 test_run_input_LDADD = \
@@ -1709,6 +1728,8 @@ test_test_archive_LDADD = \
 	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
+if ENABLE_DATABASE
+
 test_test_translate_song_SOURCES = \
 	src/playlist/PlaylistSong.cxx \
 	src/DetachedSong.cxx \
@@ -1723,6 +1744,8 @@ test_test_translate_song_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
+
+endif
 
 test_test_queue_priority_SOURCES = \
 	src/queue/Queue.cxx \

@@ -239,10 +239,22 @@ dnl ---------------------------------------------------------------------------
 dnl Allow tools to be specifically built
 dnl ---------------------------------------------------------------------------
 
+AC_ARG_ENABLE(database,
+	AS_HELP_STRING([--enable-database],
+		[enable support for the music database]),,
+	enable_database=yes)
+AM_CONDITIONAL(ENABLE_DATABASE, test x$enable_database = xyes)
+if test x$enable_database = xyes; then
+	database_auto=auto
+	AC_DEFINE(ENABLE_DATABASE, 1, [Define to enable the music database])
+else
+	database_auto=no
+fi
+
 AC_ARG_ENABLE(libmpdclient,
 	AS_HELP_STRING([--enable-libmpdclient],
 		[enable support for the MPD client]),,
-	enable_libmpdclient=auto)
+	enable_libmpdclient=$database_auto)
 
 AC_ARG_ENABLE(expat,
 	AS_HELP_STRING([--enable-expat],
@@ -252,7 +264,7 @@ AC_ARG_ENABLE(expat,
 AC_ARG_ENABLE(upnp,
 	AS_HELP_STRING([--enable-upnp],
 		[enable UPnP client support (default: auto)]),,
-	enable_upnp=auto)
+	enable_upnp=$database_auto)
 
 AC_ARG_ENABLE(adplug,
 	AS_HELP_STRING([--enable-adplug],
@@ -487,7 +499,7 @@ AC_ARG_ENABLE(solaris_output,
 AC_ARG_ENABLE(sqlite,
 	AS_HELP_STRING([--enable-sqlite],
 		[enable support for the SQLite database]),,
-	[enable_sqlite=auto])
+	[enable_sqlite=$database_auto])
 
 AC_ARG_ENABLE(systemd-daemon,
 	AS_HELP_STRING([--enable-systemd-daemon],

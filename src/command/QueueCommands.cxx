@@ -74,11 +74,16 @@ handle_add(Client &client, gcc_unused int argc, char *argv[])
 		return print_playlist_result(client, result);
 	}
 
+#ifdef ENABLE_DATABASE
 	const DatabaseSelection selection(uri, true);
 	Error error;
 	return AddFromDatabase(client.partition, selection, error)
 		? CommandResult::OK
 		: print_error(client, error);
+#else
+	command_error(client, ACK_ERROR_NO_EXIST, "No database");
+	return CommandResult::ERROR;
+#endif
 }
 
 CommandResult

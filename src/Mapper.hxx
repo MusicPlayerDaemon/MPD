@@ -41,6 +41,8 @@ mapper_init(AllocatedPath &&music_dir, AllocatedPath &&playlist_dir);
 
 void mapper_finish(void);
 
+#ifdef ENABLE_DATABASE
+
 /**
  * Return the absolute path of the music directory encoded in UTF-8 or
  * nullptr if no music directory was configured.
@@ -67,6 +69,8 @@ mapper_has_music_directory(void)
 	return mapper_get_music_directory_utf8() != nullptr;
 }
 
+#endif
+
 /**
  * If the specified absolute path points inside the music directory,
  * this function converts it to a relative path.  If not, it returns
@@ -75,6 +79,8 @@ mapper_has_music_directory(void)
 gcc_pure
 const char *
 map_to_relative_path(const char *path_utf8);
+
+#ifdef ENABLE_DATABASE
 
 /**
  * Determines the absolute file system path of a relative URI.  This
@@ -126,9 +132,13 @@ gcc_pure
 AllocatedPath
 map_song_fs(const Song &song);
 
+#endif
+
 gcc_pure
 AllocatedPath
 map_song_fs(const DetachedSong &song);
+
+#ifdef ENABLE_DATABASE
 
 /**
  * Maps a file system path (relative to the music directory or
@@ -141,6 +151,8 @@ map_song_fs(const DetachedSong &song);
 gcc_pure
 std::string
 map_fs_to_utf8(const char *path_fs);
+
+#endif
 
 /**
  * Returns the playlist directory.
