@@ -18,9 +18,10 @@ ver 0.19 (not yet released)
   - volume: improved software volume dithering
 * encoder:
   - shine: new encoder plugin
+* threads:
+  - the update thread runs at "idle" priority
+  - the output thread runs at "real-time" priority
 * new resampler option using libsoxr
-* the update thread runs at "idle" priority
-* the output thread runs at "real-time" priority
 
 ver 0.18.8 (not yet released)
 * decoder
