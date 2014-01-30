@@ -70,6 +70,8 @@ public:
 	 */
 	AllocatedPath(AllocatedPath &&other):value(std::move(other.value)) {}
 
+	explicit AllocatedPath(Path other):value(other.c_str()) {}
+
 	~AllocatedPath();
 
 	/**
