@@ -119,7 +119,6 @@ src_mpd_SOURCES = \
 	src/db/DatabaseListener.hxx \
 	src/db/Visitor.hxx \
 	src/db/Selection.cxx src/db/Selection.hxx \
-	src/ExcludeList.cxx src/ExcludeList.hxx \
 	src/filter/FilterConfig.cxx src/filter/FilterConfig.hxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \
 	src/filter/FilterInternal.hxx \
@@ -134,6 +133,7 @@ src_mpd_SOURCES = \
 	src/db/update/UpdateContainer.cxx src/db/update/UpdateContainer.hxx \
 	src/db/update/UpdateInternal.hxx \
 	src/db/update/UpdateRemove.cxx src/db/update/UpdateRemove.hxx \
+	src/db/update/ExcludeList.cxx src/db/update/ExcludeList.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
 	src/client/ClientEvent.cxx \
