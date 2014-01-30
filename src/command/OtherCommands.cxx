@@ -183,8 +183,8 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 	return CommandResult::OK;
 }
 
-CommandResult
-handle_update(Client &client, gcc_unused int argc, char *argv[])
+static CommandResult
+handle_update(Client &client, int argc, char *argv[], bool discard)
 {
 	const char *path = "";
 
@@ -208,7 +208,7 @@ handle_update(Client &client, gcc_unused int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	unsigned ret = update->Enqueue(path, false);
+	unsigned ret = update->Enqueue(path, discard);
 	if (ret > 0) {
 		client_printf(client, "updating_db: %i\n", ret);
 		return CommandResult::OK;
@@ -220,36 +220,15 @@ handle_update(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
+handle_update(Client &client, gcc_unused int argc, char *argv[])
+{
+	return handle_update(client, argc, argv, false);
+}
+
+CommandResult
 handle_rescan(Client &client, gcc_unused int argc, char *argv[])
 {
-	const char *path = "";
-
-	assert(argc <= 2);
-	if (argc == 2) {
-		path = argv[1];
-
-		if (!uri_safe_local(path)) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Malformed path");
-			return CommandResult::ERROR;
-		}
-	}
-
-	UpdateService *update = client.partition.instance.update;
-	if (update == nullptr) {
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
-		return CommandResult::ERROR;
-	}
-
-	unsigned ret = update->Enqueue(path, true);
-	if (ret > 0) {
-		client_printf(client, "updating_db: %i\n", ret);
-		return CommandResult::OK;
-	} else {
-		command_error(client, ACK_ERROR_UPDATE_ALREADY,
-			      "already updating");
-		return CommandResult::ERROR;
-	}
+	return handle_update(client, argc, argv, true);
 }
 
 CommandResult
