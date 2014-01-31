@@ -66,7 +66,7 @@ stats_invalidate()
 }
 
 static bool
-stats_update()
+stats_update(const Database &db)
 {
 	switch (stats_validity) {
 	case StatsValidity::INVALID:
@@ -82,7 +82,7 @@ stats_update()
 	Error error;
 
 	const DatabaseSelection selection("", true);
-	if (GetDatabase()->GetStats(selection, stats, error)) {
+	if (db.GetStats(selection, stats, error)) {
 		stats_validity = StatsValidity::VALID;
 		return true;
 	} else {
@@ -94,11 +94,9 @@ stats_update()
 }
 
 static void
-db_stats_print(Client &client)
+db_stats_print(Client &client, const Database &db)
 {
-	assert(GetDatabase() != nullptr);
-
-	if (!stats_update())
+	if (!stats_update(db))
 		return;
 
 	client_printf(client,
@@ -111,7 +109,7 @@ db_stats_print(Client &client)
 		      stats.song_count,
 		      stats.total_duration);
 
-	const time_t update_stamp = GetDatabase()->GetUpdateStamp();
+	const time_t update_stamp = db.GetUpdateStamp();
 	if (update_stamp > 0)
 		client_printf(client,
 			      "db_update: %lu\n",
@@ -134,7 +132,8 @@ stats_print(Client &client)
 		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5));
 
 #ifdef ENABLE_DATABASE
-	if (GetDatabase() != nullptr)
-		db_stats_print(client);
+	const Database *db = GetDatabase();
+	if (db != nullptr)
+		db_stats_print(client, *db);
 #endif
 }
