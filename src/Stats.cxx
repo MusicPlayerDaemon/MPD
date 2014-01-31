@@ -24,7 +24,6 @@
 #include "db/Selection.hxx"
 #include "db/DatabaseGlue.hxx"
 #include "db/DatabasePlugin.hxx"
-#include "db/DatabaseSimple.hxx"
 #include "util/Error.hxx"
 #include "system/Clock.hxx"
 #include "Log.hxx"
@@ -98,13 +97,6 @@ static void
 db_stats_print(Client &client)
 {
 	assert(GetDatabase() != nullptr);
-
-	if (!db_is_simple())
-		/* reload statistics if we're using the "proxy"
-		   database plugin */
-		/* TODO: move this into the "proxy" database plugin as
-		   an "idle" handler */
-		stats_invalidate();
 
 	if (!stats_update())
 		return;
