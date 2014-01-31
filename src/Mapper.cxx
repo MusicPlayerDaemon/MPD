@@ -225,21 +225,6 @@ map_directory_child_fs(const Directory &directory, const char *name)
 	return AllocatedPath::Build(parent_fs, name_fs);
 }
 
-/**
- * Map a song object that was created by song_dup_detached().  It does
- * not have a real parent directory, only the dummy object
- * #detached_root.
- */
-static AllocatedPath
-map_detached_song_fs(const char *uri_utf8)
-{
-	auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
-	if (uri_fs.IsNull())
-		return uri_fs;
-
-	return AllocatedPath::Build(music_dir_fs, uri_fs);
-}
-
 DetachedSong
 map_song_detach(const LightSong &song)
 {
@@ -257,9 +242,9 @@ map_song_detach(const LightSong &song)
 AllocatedPath
 map_song_fs(const Song &song)
 {
-	return song.parent == nullptr
-		? map_detached_song_fs(song.uri)
-		: map_directory_child_fs(*song.parent, song.uri);
+	assert(song.parent != nullptr);
+
+	return map_directory_child_fs(*song.parent, song.uri);
 }
 
 #endif
