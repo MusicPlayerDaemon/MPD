@@ -22,6 +22,7 @@
 #include "Partition.hxx"
 #include "Idle.hxx"
 #include "Stats.hxx"
+#include "db/DatabaseGlue.hxx"
 
 #ifdef ENABLE_DATABASE
 
@@ -35,7 +36,7 @@ void
 Instance::DatabaseModified()
 {
 	stats_invalidate();
-	partition->DatabaseModified();
+	partition->DatabaseModified(*GetDatabase());
 	idle_add(IDLE_DATABASE);
 }
 

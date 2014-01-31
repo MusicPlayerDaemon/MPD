@@ -25,9 +25,9 @@
 #ifdef ENABLE_DATABASE
 
 void
-Partition::DatabaseModified()
+Partition::DatabaseModified(const Database &db)
 {
-	playlist.DatabaseModified();
+	playlist.DatabaseModified(db);
 }
 
 #endif

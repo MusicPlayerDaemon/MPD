@@ -26,6 +26,7 @@
 enum TagType : uint8_t;
 struct PlayerControl;
 class DetachedSong;
+class Database;
 class Error;
 
 struct playlist {
@@ -141,7 +142,7 @@ public:
 	/**
 	 * The database has been modified.  Pull all updates.
 	 */
-	void DatabaseModified();
+	void DatabaseModified(const Database &db);
 #endif
 
 	PlaylistResult AppendSong(PlayerControl &pc,

@@ -178,7 +178,7 @@ struct Partition {
 	 * The database has been modified.  Propagate the change to
 	 * all subsystems.
 	 */
-	void DatabaseModified();
+	void DatabaseModified(const Database &db);
 #endif
 
 	/**

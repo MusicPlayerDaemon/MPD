@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "Playlist.hxx"
-#include "db/DatabaseGlue.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
@@ -56,17 +55,12 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 }
 
 void
-playlist::DatabaseModified()
+playlist::DatabaseModified(const Database &db)
 {
-	const Database *db = GetDatabase();
-	if (db == nullptr)
-		/* how can this ever happen? */
-		return;
-
 	bool modified = false;
 
 	for (unsigned i = 0, n = queue.GetLength(); i != n; ++i) {
-		if (UpdatePlaylistSong(*db, queue.Get(i))) {
+		if (UpdatePlaylistSong(db, queue.Get(i))) {
 			queue.ModifyAtPosition(i);
 			modified = true;
 		}
