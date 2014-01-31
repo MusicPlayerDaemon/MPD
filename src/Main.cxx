@@ -195,22 +195,26 @@ glue_db_init_and_load(void)
 	if (param == nullptr)
 		return true;
 
+	bool is_simple;
 	Error error;
-	if (!DatabaseGlobalInit(*main_loop, *instance, *param, error))
+	instance->database = DatabaseGlobalInit(*main_loop, *instance, *param,
+						is_simple, error);
+	if (instance->database == nullptr)
 		FatalError(error);
 
 	delete allocated;
 
-	if (!DatabaseGlobalOpen(error))
+	if (!instance->database->Open(error))
 		FatalError(error);
 
-	if (!db_is_simple())
+	if (!is_simple)
 		return true;
 
-	instance->update = new UpdateService(*main_loop, db_get_simple());
+	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
+	instance->update = new UpdateService(*main_loop, db);
 
 	/* run database update after daemonization? */
-	return db_exists();
+	return db.FileExists();
 }
 
 #endif
@@ -577,8 +581,8 @@ int mpd_main(int argc, char *argv[])
 
 #ifdef ENABLE_DATABASE
 	delete instance->update;
-
-	DatabaseGlobalDeinit();
+	instance->database->Close();
+	delete instance->database;
 #endif
 
 #ifdef ENABLE_SQLITE

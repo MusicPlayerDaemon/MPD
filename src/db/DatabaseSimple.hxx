@@ -35,10 +35,6 @@ class Error;
 bool
 db_is_simple(void);
 
-gcc_pure
-SimpleDatabase &
-db_get_simple();
-
 /**
  * Returns true if there is a valid database file on the disk.
  *

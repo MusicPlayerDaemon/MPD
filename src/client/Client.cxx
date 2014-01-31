@@ -20,5 +20,17 @@
 #include "config.h"
 #include "ClientInternal.hxx"
 #include "util/Domain.hxx"
+#include "Partition.hxx"
+#include "Instance.hxx"
 
 const Domain client_domain("client");
+
+#ifdef ENABLE_DATABASE
+
+const Database *
+Client::GetDatabase(Error &error) const
+{
+	return partition.instance.GetDatabase(error);
+}
+
+#endif

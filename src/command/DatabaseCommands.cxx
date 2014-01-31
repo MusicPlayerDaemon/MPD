@@ -120,7 +120,7 @@ handle_searchaddpl(Client &client, int argc, char *argv[])
 	}
 
 	Error error;
-	const Database *db = GetDatabase(error);
+	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
 		return print_error(client, error);
 

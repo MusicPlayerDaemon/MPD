@@ -33,6 +33,13 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef ENABLE_DATABASE
+
+SongLoader::SongLoader(const Client &_client)
+	:client(&_client), db(_client.GetDatabase(IgnoreError())) {}
+
+#endif
+
 DetachedSong *
 SongLoader::LoadFile(const char *path_utf8, Error &error) const
 {

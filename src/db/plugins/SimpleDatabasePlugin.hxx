@@ -59,6 +59,9 @@ public:
 
 	bool Save(Error &error);
 
+	/**
+	 * Returns true if there is a valid database file on the disk.
+	 */
 	bool FileExists() const {
 		return mtime > 0;
 	}

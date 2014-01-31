@@ -45,19 +45,16 @@ class SongLoader {
 
 public:
 #ifdef ENABLE_DATABASE
-	SongLoader(const Client *_client, const Database *_db=nullptr)
-		:client(_client), db(_db) {}
-	explicit SongLoader(const Client &_client)
-		:client(&_client), db(nullptr) {}
+	explicit SongLoader(const Client &_client);
 	explicit SongLoader(const Database *_db)
 		:client(nullptr), db(_db) {}
-	explicit SongLoader(std::nullptr_t)
-		:client(nullptr), db(nullptr) {}
+	explicit SongLoader(const Client &_client, const Database *_db)
+		:client(&_client), db(_db) {}
 #else
 	explicit SongLoader(const Client &_client)
 		:client(&_client) {}
-	explicit SongLoader(const Client *_client)
-		:client(_client) {}
+	explicit SongLoader(std::nullptr_t)
+		:client(nullptr) {}
 #endif
 
 	gcc_nonnull_all

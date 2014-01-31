@@ -28,6 +28,9 @@
 #include "sticker/StickerDatabase.hxx"
 #include "CommandError.hxx"
 #include "protocol/Result.hxx"
+#include "client/Client.hxx"
+#include "Partition.hxx"
+#include "Instance.hxx"
 #include "util/Error.hxx"
 
 #include <string.h>
@@ -52,7 +55,7 @@ static CommandResult
 handle_sticker_song(Client &client, int argc, char *argv[])
 {
 	Error error;
-	const Database *db = GetDatabase(error);
+	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
 		return print_error(client, error);
 

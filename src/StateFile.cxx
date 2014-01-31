@@ -23,9 +23,9 @@
 #include "PlaylistState.hxx"
 #include "fs/TextFile.hxx"
 #include "Partition.hxx"
+#include "Instance.hxx"
 #include "mixer/Volume.hxx"
 #include "SongLoader.hxx"
-#include "db/DatabaseGlue.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -98,7 +98,11 @@ StateFile::Read()
 		return;
 	}
 
-	const SongLoader song_loader(nullptr, GetDatabase());
+#ifdef ENABLE_DATABASE
+	const SongLoader song_loader(partition.instance.database);
+#else
+	const SongLoader song_loader(nullptr);
+#endif
 
 	const char *line;
 	while ((line = file.ReadLine()) != NULL) {

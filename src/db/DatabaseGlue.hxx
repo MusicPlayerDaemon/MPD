@@ -32,31 +32,11 @@ class Error;
  * Initialize the database library.
  *
  * @param param the database configuration block
+ * @param is_simple returns whether this is the "simple" database
+ * plugin
  */
-bool
+Database *
 DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
-		   const config_param &param, Error &error);
-
-void
-DatabaseGlobalDeinit(void);
-
-bool
-DatabaseGlobalOpen(Error &error);
-
-/**
- * Returns the global #Database instance.  May return nullptr if this MPD
- * configuration has no database (no music_directory was configured).
- */
-gcc_const
-const Database *
-GetDatabase();
-
-/**
- * Returns the global #Database instance.  May return nullptr if this MPD
- * configuration has no database (no music_directory was configured).
- */
-gcc_pure
-const Database *
-GetDatabase(Error &error);
+		   const config_param &param, bool &is_simple, Error &error);
 
 #endif

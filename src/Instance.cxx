@@ -22,9 +22,17 @@
 #include "Partition.hxx"
 #include "Idle.hxx"
 #include "Stats.hxx"
-#include "db/DatabaseGlue.hxx"
+#include "db/DatabaseError.hxx"
 
 #ifdef ENABLE_DATABASE
+
+Database *
+Instance::GetDatabase(Error &error)
+{
+	if (database == nullptr)
+		error.Set(db_domain, DB_DISABLED, "No database");
+	return database;
+}
 
 void
 Instance::DeleteSong(const char *uri)
@@ -35,8 +43,10 @@ Instance::DeleteSong(const char *uri)
 void
 Instance::DatabaseModified()
 {
+	assert(database != nullptr);
+
 	stats_invalidate();
-	partition->DatabaseModified(*GetDatabase());
+	partition->DatabaseModified(*database);
 	idle_add(IDLE_DATABASE);
 }
 

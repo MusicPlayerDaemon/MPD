@@ -21,8 +21,9 @@
 #include "Stats.hxx"
 #include "PlayerControl.hxx"
 #include "client/Client.hxx"
+#include "Partition.hxx"
+#include "Instance.hxx"
 #include "db/Selection.hxx"
-#include "db/DatabaseGlue.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "util/Error.hxx"
 #include "system/Clock.hxx"
@@ -60,8 +61,6 @@ void stats_global_init(void)
 void
 stats_invalidate()
 {
-	assert(GetDatabase() != nullptr);
-
 	stats_validity = StatsValidity::INVALID;
 }
 
@@ -132,7 +131,7 @@ stats_print(Client &client)
 		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5));
 
 #ifdef ENABLE_DATABASE
-	const Database *db = GetDatabase();
+	const Database *db = client.partition.instance.database;
 	if (db != nullptr)
 		db_stats_print(client, *db);
 #endif

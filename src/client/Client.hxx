@@ -38,6 +38,7 @@ struct sockaddr;
 class EventLoop;
 class Path;
 struct Partition;
+class Database;
 
 class Client final : private FullyBufferedSocket, TimeoutMonitor {
 public:
@@ -168,6 +169,11 @@ public:
 	 * @return true if access is allowed
 	 */
 	bool AllowFile(Path path_fs, Error &error) const;
+
+	/**
+	 * Wrapper for Instance::GetDatabase().
+	 */
+	const Database *GetDatabase(Error &error) const;
 
 private:
 	/* virtual methods from class BufferedSocket */

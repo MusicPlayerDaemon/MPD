@@ -30,9 +30,11 @@ class NeighborGlue;
 
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseListener.hxx"
+class Database;
 class UpdateService;
 #endif
 
+class Error;
 class ClientList;
 struct Partition;
 
@@ -55,6 +57,8 @@ struct Instance final
 #endif
 
 #ifdef ENABLE_DATABASE
+	Database *database;
+
 	UpdateService *update;
 #endif
 
@@ -69,6 +73,12 @@ struct Instance final
 	}
 
 #ifdef ENABLE_DATABASE
+	/**
+	 * Returns the global #Database instance.  May return nullptr
+	 * if this MPD configuration has no database (no
+	 * music_directory was configured).
+	 */
+	Database *GetDatabase(Error &error);
 
 	void DeleteSong(const char *uri);
 

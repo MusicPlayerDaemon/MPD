@@ -19,30 +19,18 @@
 
 #include "config.h"
 #include "DatabaseGlue.hxx"
-#include "DatabaseSimple.hxx"
 #include "Registry.hxx"
 #include "DatabaseError.hxx"
-#include "Directory.hxx"
 #include "util/Error.hxx"
 #include "config/ConfigData.hxx"
-#include "Stats.hxx"
 #include "DatabasePlugin.hxx"
-#include "plugins/SimpleDatabasePlugin.hxx"
 
-#include <assert.h>
 #include <string.h>
 
-static Database *db;
-static bool db_is_open;
-static bool is_simple;
-
-bool
+Database *
 DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
-		   const config_param &param, Error &error)
+		   const config_param &param, bool &is_simple, Error &error)
 {
-	assert(db == nullptr);
-	assert(!db_is_open);
-
 	const char *plugin_name =
 		param.GetBlockValue("plugin", "simple");
 	is_simple = strcmp(plugin_name, "simple") == 0;
@@ -51,79 +39,8 @@ DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
 	if (plugin == nullptr) {
 		error.Format(db_domain,
 			     "No such database plugin: %s", plugin_name);
-		return false;
+		return nullptr;
 	}
 
-	db = plugin->create(loop, listener, param, error);
-	return db != nullptr;
-}
-
-void
-DatabaseGlobalDeinit(void)
-{
-	if (db_is_open)
-		db->Close();
-
-	if (db != nullptr)
-		delete db;
-}
-
-const Database *
-GetDatabase()
-{
-	assert(db == nullptr || db_is_open);
-
-	return db;
-}
-
-const Database *
-GetDatabase(Error &error)
-{
-	assert(db == nullptr || db_is_open);
-
-	if (db == nullptr)
-		error.Set(db_domain, DB_DISABLED, "No database");
-
-	return db;
-}
-
-bool
-db_is_simple(void)
-{
-	assert(db == nullptr || db_is_open);
-
-	return is_simple;
-}
-
-SimpleDatabase &
-db_get_simple()
-{
-	assert(is_simple);
-	assert(db != nullptr);
-
-	return *(SimpleDatabase *)db;
-}
-
-bool
-DatabaseGlobalOpen(Error &error)
-{
-	assert(db != nullptr);
-	assert(!db_is_open);
-
-	if (!db->Open(error))
-		return false;
-
-	db_is_open = true;
-
-	return true;
-}
-
-bool
-db_exists()
-{
-	assert(db != nullptr);
-	assert(db_is_open);
-	assert(db_is_simple());
-
-	return ((SimpleDatabase *)db)->GetUpdateStamp() > 0;
+	return plugin->create(loop, listener, param, error);
 }

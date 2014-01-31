@@ -22,6 +22,7 @@
 #include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "Partition.hxx"
+#include "Instance.hxx"
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"
 #include "Mapper.hxx"
@@ -47,7 +48,7 @@ bool
 AddFromDatabase(Partition &partition, const DatabaseSelection &selection,
 		Error &error)
 {
-	const Database *db = GetDatabase(error);
+	const Database *db = partition.instance.GetDatabase(error);
 	if (db == nullptr)
 		return false;
 

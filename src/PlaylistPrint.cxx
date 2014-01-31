@@ -23,7 +23,8 @@
 #include "Playlist.hxx"
 #include "queue/QueuePrint.hxx"
 #include "SongPrint.hxx"
-#include "db/DatabaseGlue.hxx"
+#include "Partition.hxx"
+#include "Instance.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "client/Client.hxx"
 #include "input/InputStream.hxx"
@@ -115,7 +116,7 @@ playlist_print_changes_position(Client &client,
 static bool
 PrintSongDetails(Client &client, const char *uri_utf8)
 {
-	const Database *db = GetDatabase();
+	const Database *db = client.partition.instance.database;
 	if (db == nullptr)
 		return false;
 

@@ -28,7 +28,6 @@
 #include "LightSong.hxx"
 #include "LightDirectory.hxx"
 #include "PlaylistInfo.hxx"
-#include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 
 #include <functional>
@@ -129,7 +128,7 @@ bool
 db_selection_print(Client &client, const DatabaseSelection &selection,
 		   bool full, Error &error)
 {
-	const Database *db = GetDatabase(error);
+	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -173,7 +172,7 @@ searchStatsForSongsIn(Client &client, const char *name,
 		      const SongFilter *filter,
 		      Error &error)
 {
-	const Database *db = GetDatabase(error);
+	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -229,7 +228,7 @@ listAllUniqueTags(Client &client, int type,
 		  const SongFilter *filter,
 		  Error &error)
 {
-	const Database *db = GetDatabase(error);
+	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
 		return false;
 

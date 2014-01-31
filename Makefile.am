@@ -205,7 +205,6 @@ src_mpd_SOURCES += \
 	src/db/Uri.hxx \
 	src/db/Directory.cxx src/db/Directory.hxx \
 	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
-	src/db/DatabaseSimple.hxx \
 	src/db/DatabaseGlue.cxx src/db/DatabaseGlue.hxx \
 	src/db/DatabaseSong.cxx src/db/DatabaseSong.hxx \
 	src/db/DatabasePrint.cxx src/db/DatabasePrint.hxx \

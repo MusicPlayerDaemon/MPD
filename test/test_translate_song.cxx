@@ -137,6 +137,12 @@ DetachedSong::Update()
 	return false;
 }
 
+const Database *
+Client::GetDatabase(gcc_unused Error &error) const
+{
+	return reinterpret_cast<const Database *>(this);
+}
+
 bool
 Client::AllowFile(gcc_unused Path path_fs, gcc_unused Error &error) const
 {
@@ -220,7 +226,7 @@ class TranslateSongTest : public CppUnit::TestFixture {
 	void TestInsecure() {
 		/* illegal because secure=false */
 		DetachedSong song1 (uri1);
-		const SongLoader loader(reinterpret_cast<const Client *>(1));
+		const SongLoader loader(*reinterpret_cast<const Client *>(1));
 		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr,
 							      loader));
 	}
@@ -261,7 +267,8 @@ class TranslateSongTest : public CppUnit::TestFixture {
 	void TestRelative() {
 		const Database &db = *reinterpret_cast<const Database *>(1);
 		const SongLoader secure_loader(&db);
-		const SongLoader insecure_loader(reinterpret_cast<const Client *>(1), &db);
+		const SongLoader insecure_loader(*reinterpret_cast<const Client *>(1),
+						 &db);
 
 		/* map to music_directory */
 		DetachedSong song1("bar.ogg", MakeTag2b());
