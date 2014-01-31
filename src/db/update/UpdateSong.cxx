@@ -42,11 +42,8 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 		FormatError(update_domain,
 			    "no read permissions on %s/%s",
 			    directory.GetPath(), name);
-		if (song != nullptr) {
-			db_lock();
-			editor.DeleteSong(directory, song);
-			db_unlock();
-		}
+		if (song != nullptr)
+			editor.LockDeleteSong(directory, song);
 
 		return;
 	}
@@ -54,11 +51,8 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 	if (!(song != nullptr && st->st_mtime == song->mtime &&
 	      !walk_discard) &&
 	    UpdateContainerFile(directory, name, suffix, st)) {
-		if (song != nullptr) {
-			db_lock();
-			editor.DeleteSong(directory, song);
-			db_unlock();
-		}
+		if (song != nullptr)
+			editor.LockDeleteSong(directory, song);
 
 		return;
 	}
@@ -88,9 +82,7 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 			FormatDebug(update_domain,
 				    "deleting unrecognized file %s/%s",
 				    directory.GetPath(), name);
-			db_lock();
-			editor.DeleteSong(directory, song);
-			db_unlock();
+			editor.LockDeleteSong(directory, song);
 		}
 
 		modified = true;

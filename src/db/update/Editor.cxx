@@ -47,6 +47,14 @@ DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 	db_lock();
 }
 
+void
+DatabaseEditor::LockDeleteSong(Directory &parent, Song *song)
+{
+	db_lock();
+	DeleteSong(parent, song);
+	db_unlock();
+}
+
 /**
  * Recursively remove all sub directories and songs from a directory,
  * leaving an empty directory.
@@ -75,6 +83,14 @@ DatabaseEditor::DeleteDirectory(Directory *directory)
 	ClearDirectory(*directory);
 
 	directory->Delete();
+}
+
+void
+DatabaseEditor::LockDeleteDirectory(Directory *directory)
+{
+	db_lock();
+	DeleteDirectory(directory);
+	db_unlock();
 }
 
 bool

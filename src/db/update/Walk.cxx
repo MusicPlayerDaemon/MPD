@@ -107,9 +107,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 		if (directory_exists(*child))
 			continue;
 
-		db_lock();
-		editor.DeleteDirectory(child);
-		db_unlock();
+		editor.LockDeleteDirectory(child);
 
 		modified = true;
 	}
@@ -118,9 +116,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 	directory_for_each_song_safe(song, ns, directory) {
 		const auto path = map_song_fs(*song);
 		if (path.IsNull() || !FileExists(path)) {
-			db_lock();
-			editor.DeleteSong(directory, song);
-			db_unlock();
+			editor.LockDeleteSong(directory, song);
 
 			modified = true;
 		}
@@ -223,11 +219,8 @@ UpdateWalk::UpdateDirectoryChild(Directory &directory,
 
 		assert(&directory == subdir->parent);
 
-		if (!UpdateDirectory(*subdir, st)) {
-			db_lock();
-			editor.DeleteDirectory(subdir);
-			db_unlock();
-		}
+		if (!UpdateDirectory(*subdir, st))
+			editor.LockDeleteDirectory(subdir);
 	} else {
 		FormatDebug(update_domain,
 			    "%s is not a directory, archive or music", name);

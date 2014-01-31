@@ -118,9 +118,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	}
 
 	if (tnum == 1) {
-		db_lock();
-		editor.DeleteDirectory(contdir);
-		db_unlock();
+		editor.LockDeleteDirectory(contdir);
 		return false;
 	} else
 		return true;

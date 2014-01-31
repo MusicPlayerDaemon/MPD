@@ -40,11 +40,21 @@ public:
 	void DeleteSong(Directory &parent, Song *song);
 
 	/**
+	 * DeleteSong() with automatic locking.
+	 */
+	void LockDeleteSong(Directory &parent, Song *song);
+
+	/**
 	 * Recursively free a directory and all its contents.
 	 *
 	 * Caller must lock the #db_mutex.
 	 */
 	void DeleteDirectory(Directory *directory);
+
+	/**
+	 * DeleteDirectory() with automatic locking.
+	 */
+	void LockDeleteDirectory(Directory *directory);
 
 	/**
 	 * Caller must NOT lock the #db_mutex.
