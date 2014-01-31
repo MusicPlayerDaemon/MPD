@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Service.hxx"
 #include "UpdateDomain.hxx"
-#include "Mapper.hxx"
 #include "db/DatabaseSimple.hxx"
 #include "Idle.hxx"
 #include "util/Error.hxx"
@@ -102,9 +101,6 @@ UpdateService::Enqueue(const char *path, bool discard)
 {
 	assert(main_thread.IsInside());
 
-	if (!db_is_simple() || !mapper_has_music_directory())
-		return 0;
-
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		const unsigned id = GenerateId();
 		if (!queue.Push(path, discard, id))
@@ -152,4 +148,5 @@ UpdateService::RunDeferred()
 UpdateService::UpdateService(EventLoop &_loop)
 	:DeferredMonitor(_loop), walk(_loop)
 {
+	assert(db_is_simple());
 }
