@@ -123,6 +123,8 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 	ArchiveFile *file = archive_file_open(&plugin, path_fs.c_str(), error);
 	if (file == nullptr) {
 		LogError(error);
+		if (directory != nullptr)
+			editor.LockDeleteDirectory(directory);
 		return;
 	}
 
