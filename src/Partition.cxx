@@ -22,11 +22,15 @@
 #include "DetachedSong.hxx"
 #include "output/MultipleOutputs.hxx"
 
+#ifdef ENABLE_DATABASE
+
 void
 Partition::DatabaseModified()
 {
 	playlist.DatabaseModified();
 }
+
+#endif
 
 void
 Partition::TagModified()

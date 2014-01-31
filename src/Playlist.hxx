@@ -137,10 +137,12 @@ public:
 	 */
 	void TagModified(DetachedSong &&song);
 
+#ifdef ENABLE_DATABASE
 	/**
 	 * The database has been modified.  Pull all updates.
 	 */
 	void DatabaseModified();
+#endif
 
 	PlaylistResult AppendSong(PlayerControl &pc,
 				  DetachedSong &&song,

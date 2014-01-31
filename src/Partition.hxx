@@ -173,11 +173,13 @@ struct Partition {
 		playlist.SetConsume(new_value);
 	}
 
+#ifdef ENABLE_DATABASE
 	/**
 	 * The database has been modified.  Propagate the change to
 	 * all subsystems.
 	 */
 	void DatabaseModified();
+#endif
 
 	/**
 	 * A tag in the play queue has been modified by the player
