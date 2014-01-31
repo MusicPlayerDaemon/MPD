@@ -576,11 +576,7 @@ int mpd_main(int argc, char *argv[])
 #ifdef ENABLE_DATABASE
 	delete instance->update;
 
-	const clock_t start = clock();
 	DatabaseGlobalDeinit();
-	FormatDebug(main_domain,
-		    "db_finish took %f seconds",
-		    ((float)(clock()-start))/CLOCKS_PER_SEC);
 #endif
 
 #ifdef ENABLE_SQLITE
