@@ -90,7 +90,7 @@ stats_update()
 		LogError(error);
 
 		stats_validity = StatsValidity::FAILED;
-		return true;
+		return false;
 	}
 }
 
