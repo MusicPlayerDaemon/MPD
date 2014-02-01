@@ -21,7 +21,6 @@
 #include "DatabasePlaylist.hxx"
 #include "Selection.hxx"
 #include "PlaylistFile.hxx"
-#include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "DetachedSong.hxx"
 #include "Mapper.hxx"
@@ -37,17 +36,14 @@ AddSong(const char *playlist_path_utf8,
 }
 
 bool
-search_add_to_playlist(const char *uri, const char *playlist_path_utf8,
+search_add_to_playlist(const Database &db,
+		       const char *uri, const char *playlist_path_utf8,
 		       const SongFilter *filter,
 		       Error &error)
 {
-	const Database *db = GetDatabase(error);
-	if (db == nullptr)
-		return false;
-
 	const DatabaseSelection selection(uri, true, filter);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddSong, playlist_path_utf8, _1, _2);
-	return db->Visit(selection, f, error);
+	return db.Visit(selection, f, error);
 }

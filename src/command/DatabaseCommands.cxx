@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "DatabaseCommands.hxx"
+#include "db/DatabaseGlue.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "db/DatabasePrint.hxx"
@@ -119,7 +120,11 @@ handle_searchaddpl(Client &client, int argc, char *argv[])
 	}
 
 	Error error;
-	return search_add_to_playlist("", playlist, &filter, error)
+	const Database *db = GetDatabase(error);
+	if (db == nullptr)
+		return print_error(client, error);
+
+	return search_add_to_playlist(*db, "", playlist, &filter, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }

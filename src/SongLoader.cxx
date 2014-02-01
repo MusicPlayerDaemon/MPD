@@ -92,11 +92,12 @@ SongLoader::LoadSong(const char *uri_utf8, Error &error) const
 		/* URI relative to the music directory */
 
 #ifdef ENABLE_DATABASE
-		return DatabaseDetachSong(uri_utf8, error);
-#else
+		if (db != nullptr)
+			return DatabaseDetachSong(*db, uri_utf8, error);
+#endif
+
 		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
 			  "No database");
 		return nullptr;
-#endif
 	}
 }

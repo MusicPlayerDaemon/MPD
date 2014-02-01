@@ -117,7 +117,8 @@ static const char *uri1 = "/foo/bar.ogg";
 static const char *uri2 = "foo/bar.ogg";
 
 DetachedSong *
-DatabaseDetachSong(const char *uri, gcc_unused Error &error)
+DatabaseDetachSong(gcc_unused const Database &db, const char *uri,
+		   gcc_unused Error &error)
 {
 	if (strcmp(uri, uri2) == 0)
 		return new DetachedSong(uri, MakeTag2a());
@@ -236,7 +237,7 @@ class TranslateSongTest : public CppUnit::TestFixture {
 	}
 
 	void TestInDatabase() {
-		const SongLoader loader(nullptr);
+		const SongLoader loader(reinterpret_cast<const Database *>(1));
 
 		DetachedSong song1("doesntexist");
 		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr,
@@ -258,8 +259,9 @@ class TranslateSongTest : public CppUnit::TestFixture {
 	}
 
 	void TestRelative() {
-		const SongLoader secure_loader(nullptr);
-		const SongLoader insecure_loader(reinterpret_cast<const Client *>(1));
+		const Database &db = *reinterpret_cast<const Database *>(1);
+		const SongLoader secure_loader(&db);
+		const SongLoader insecure_loader(reinterpret_cast<const Client *>(1), &db);
 
 		/* map to music_directory */
 		DetachedSong song1("bar.ogg", MakeTag2b());

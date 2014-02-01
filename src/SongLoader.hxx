@@ -20,9 +20,13 @@
 #ifndef MPD_SONG_LOADER_HXX
 #define MPD_SONG_LOADER_HXX
 
+#include "check.h"
 #include "Compiler.h"
 
+#include <cstddef>
+
 class Client;
+class Database;
 class DetachedSong;
 class Error;
 
@@ -35,11 +39,26 @@ class Error;
 class SongLoader {
 	const Client *const client;
 
+#ifdef ENABLE_DATABASE
+	const Database *const db;
+#endif
+
 public:
+#ifdef ENABLE_DATABASE
+	SongLoader(const Client *_client, const Database *_db=nullptr)
+		:client(_client), db(_db) {}
+	explicit SongLoader(const Client &_client)
+		:client(&_client), db(nullptr) {}
+	explicit SongLoader(const Database *_db)
+		:client(nullptr), db(_db) {}
+	explicit SongLoader(std::nullptr_t)
+		:client(nullptr), db(nullptr) {}
+#else
 	explicit SongLoader(const Client &_client)
 		:client(&_client) {}
 	explicit SongLoader(const Client *_client)
 		:client(_client) {}
+#endif
 
 	gcc_nonnull_all
 	DetachedSong *LoadSong(const char *uri_utf8, Error &error) const;

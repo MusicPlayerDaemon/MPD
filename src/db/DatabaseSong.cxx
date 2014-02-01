@@ -19,23 +19,18 @@
 
 #include "config.h"
 #include "DatabaseSong.hxx"
-#include "DatabaseGlue.hxx"
 #include "DatabasePlugin.hxx"
 #include "DetachedSong.hxx"
 #include "Mapper.hxx"
 
 DetachedSong *
-DatabaseDetachSong(const char *uri, Error &error)
+DatabaseDetachSong(const Database &db, const char *uri, Error &error)
 {
-	const Database *db = GetDatabase(error);
-	if (db == nullptr)
-		return nullptr;
-
-	const LightSong *tmp = db->GetSong(uri, error);
+	const LightSong *tmp = db.GetSong(uri, error);
 	if (tmp == nullptr)
 		return nullptr;
 
 	DetachedSong *song = new DetachedSong(map_song_detach(*tmp));
-	db->ReturnSong(tmp);
+	db.ReturnSong(tmp);
 	return song;
 }

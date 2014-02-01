@@ -22,6 +22,7 @@
 
 #include "Compiler.h"
 
+class Database;
 class DetachedSong;
 class Error;
 
@@ -33,6 +34,6 @@ class Error;
  */
 gcc_malloc gcc_nonnull_all
 DetachedSong *
-DatabaseDetachSong(const char *uri, Error &error);
+DatabaseDetachSong(const Database &db, const char *uri, Error &error);
 
 #endif

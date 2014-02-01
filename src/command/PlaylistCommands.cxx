@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PlaylistCommands.hxx"
+#include "db/DatabaseGlue.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
@@ -192,7 +193,11 @@ handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 		success = spl_append_uri(playlist, loader, uri, error);
 	} else {
 #ifdef ENABLE_DATABASE
-		success = search_add_to_playlist(uri, playlist, nullptr,
+		const Database *db = GetDatabase(error);
+		if (db == nullptr)
+			return print_error(client, error);
+
+		success = search_add_to_playlist(*db, uri, playlist, nullptr,
 						 error);
 #else
 		success = false;
