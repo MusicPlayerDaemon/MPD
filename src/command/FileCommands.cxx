@@ -22,7 +22,6 @@
 #include "CommandError.hxx"
 #include "protocol/Ack.hxx"
 #include "protocol/Result.hxx"
-#include "client/ClientFile.hxx"
 #include "client/Client.hxx"
 #include "util/CharUtil.hxx"
 #include "util/UriUtil.hxx"
@@ -122,7 +121,7 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 		}
 
 		Error error;
-		if (!client_allow_file(client, path_fs, error))
+		if (!client.AllowFile(path_fs, error))
 			return print_error(client, error);
 	} else if (uri_has_scheme(uri)) {
 		return read_stream_comments(client, uri);

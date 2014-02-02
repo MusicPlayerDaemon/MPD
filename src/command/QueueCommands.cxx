@@ -25,7 +25,6 @@
 #include "db/Selection.hxx"
 #include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
-#include "client/ClientFile.hxx"
 #include "client/Client.hxx"
 #include "Partition.hxx"
 #include "protocol/ArgParser.hxx"
@@ -56,7 +55,7 @@ handle_add(Client &client, gcc_unused int argc, char *argv[])
 		}
 
 		Error error;
-		if (!client_allow_file(client, path_fs, error))
+		if (!client.AllowFile(path_fs, error))
 			return print_error(client, error);
 
 		result = client.partition.AppendFile(path_utf8);
@@ -104,7 +103,7 @@ handle_addid(Client &client, int argc, char *argv[])
 		}
 
 		Error error;
-		if (!client_allow_file(client, path_fs, error))
+		if (!client.AllowFile(path_fs, error))
 			return print_error(client, error);
 
 		result = client.partition.AppendFile(path_utf8, &added_id);

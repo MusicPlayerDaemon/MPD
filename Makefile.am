@@ -118,7 +118,7 @@ src_mpd_SOURCES = \
 	src/client/ClientWrite.cxx \
 	src/client/ClientMessage.cxx src/client/ClientMessage.hxx \
 	src/client/ClientSubscribe.cxx \
-	src/client/ClientFile.cxx src/client/ClientFile.hxx \
+	src/client/ClientFile.cxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/LogInit.cxx src/LogInit.hxx \
 	src/LogBackend.cxx src/LogBackend.hxx \

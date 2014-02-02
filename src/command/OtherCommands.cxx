@@ -41,7 +41,6 @@
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
 #include "db/PlaylistVector.hxx"
-#include "client/ClientFile.hxx"
 #include "client/Client.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
@@ -143,7 +142,7 @@ handle_lsinfo(Client &client, int argc, char *argv[])
 		}
 
 		Error error;
-		if (!client_allow_file(client, path_fs, error))
+		if (!client.AllowFile(path_fs, error))
 			return print_error(client, error);
 
 		DetachedSong song(path_utf8);

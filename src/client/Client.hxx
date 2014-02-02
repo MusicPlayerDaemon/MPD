@@ -36,6 +36,7 @@
 
 struct sockaddr;
 class EventLoop;
+class Path;
 struct Partition;
 
 class Client final : private FullyBufferedSocket, TimeoutMonitor {
@@ -155,6 +156,18 @@ public:
 	bool Unsubscribe(const char *channel);
 	void UnsubscribeAll();
 	bool PushMessage(const ClientMessage &msg);
+
+	/**
+	 * Is this client allowed to use the specified local file?
+	 *
+	 * Note that this function is vulnerable to timing/symlink attacks.
+	 * We cannot fix this as long as there are plugins that open a file by
+	 * its name, and not by file descriptor / callbacks.
+	 *
+	 * @param path_fs the absolute path name in filesystem encoding
+	 * @return true if access is allowed
+	 */
+	bool AllowFile(Path path_fs, Error &error) const;
 
 private:
 	/* virtual methods from class BufferedSocket */
