@@ -23,6 +23,7 @@
 #include "PlaylistError.hxx"
 #include "Playlist.hxx"
 #include "DetachedSong.hxx"
+#include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -117,19 +118,12 @@ playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
 	if (end_index > contents.size())
 		end_index = contents.size();
 
+	const SongLoader loader(nullptr);
+
 	for (unsigned i = start_index; i < end_index; ++i) {
 		const auto &uri_utf8 = contents[i];
 
-		if (memcmp(uri_utf8.c_str(), "file:///", 8) == 0) {
-			const char *path_utf8 = uri_utf8.c_str() + 7;
-
-			if (playlist.AppendFile(pc, path_utf8) != PlaylistResult::SUCCESS)
-				FormatError(playlist_domain,
-					    "can't add file \"%s\"", path_utf8);
-			continue;
-		}
-
-		if ((playlist.AppendURI(pc, uri_utf8.c_str())) != PlaylistResult::SUCCESS)
+		if ((playlist.AppendURI(pc, loader, uri_utf8.c_str())) != PlaylistResult::SUCCESS)
 			FormatError(playlist_domain,
 				    "can't add file \"%s\"", uri_utf8.c_str());
 	}

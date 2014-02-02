@@ -32,7 +32,7 @@ PlaylistResult
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 bool secure)
+			 const SongLoader &loader)
 {
 	const std::string base_uri = uri != nullptr
 		? PathTraitsUTF8::GetParent(uri)
@@ -49,7 +49,7 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 		}
 
 		if (!playlist_check_translate_song(*song, base_uri.c_str(),
-						   secure)) {
+						   loader)) {
 			delete song;
 			continue;
 		}
@@ -67,7 +67,7 @@ PlaylistResult
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 bool secure)
+			 const SongLoader &loader)
 {
 	Mutex mutex;
 	Cond cond;
@@ -80,7 +80,7 @@ playlist_open_into_queue(const char *uri,
 	PlaylistResult result =
 		playlist_load_into_queue(uri, *playlist,
 					 start_index, end_index,
-					 dest, pc, secure);
+					 dest, pc, loader);
 	delete playlist;
 
 	if (is != nullptr)

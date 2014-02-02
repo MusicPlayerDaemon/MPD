@@ -26,6 +26,7 @@
 
 struct Instance;
 class MultipleOutputs;
+class SongLoader;
 
 /**
  * A partition of the Music Player Daemon.  It is a separate unit with
@@ -51,14 +52,10 @@ struct Partition {
 		playlist.Clear(pc);
 	}
 
-	PlaylistResult AppendFile(const char *path_utf8,
-				  unsigned *added_id=nullptr) {
-		return playlist.AppendFile(pc, path_utf8, added_id);
-	}
-
-	PlaylistResult AppendURI(const char *uri_utf8,
+	PlaylistResult AppendURI(const SongLoader &loader,
+				 const char *uri_utf8,
 				 unsigned *added_id=nullptr) {
-		return playlist.AppendURI(pc, uri_utf8, added_id);
+		return playlist.AppendURI(pc, loader, uri_utf8, added_id);
 	}
 
 	PlaylistResult DeletePosition(unsigned position) {

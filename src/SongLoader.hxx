@@ -17,20 +17,36 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_SONG_HXX
-#define MPD_PLAYLIST_SONG_HXX
+#ifndef MPD_SONG_LOADER_HXX
+#define MPD_SONG_LOADER_HXX
 
-class SongLoader;
+#include "Compiler.h"
+
+class Client;
 class DetachedSong;
+class Error;
 
 /**
- * Verifies the song, returns false if it is unsafe.  Translate the
- * song to a song within the database, if it is a local file.
- *
- * @return true on success, false if the song should not be used
+ * A utility class that loads a #DetachedSong object by its URI.  If
+ * the URI is an absolute local file, it applies security checks via
+ * Client::AllowFile().  If no #Client pointer was specified, then it
+ * is assumed that all local files are allowed.
  */
-bool
-playlist_check_translate_song(DetachedSong &song, const char *base_uri,
-			      const SongLoader &loader);
+class SongLoader {
+	const Client *const client;
+
+public:
+	explicit SongLoader(const Client &_client)
+		:client(&_client) {}
+	explicit SongLoader(const Client *_client)
+		:client(_client) {}
+
+	gcc_nonnull_all
+	DetachedSong *LoadSong(const char *uri_utf8, Error &error) const;
+
+private:
+	gcc_nonnull_all
+	DetachedSong *LoadFile(const char *path_utf8, Error &error) const;
+};
 
 #endif

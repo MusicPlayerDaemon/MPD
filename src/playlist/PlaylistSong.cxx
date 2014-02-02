@@ -20,8 +20,7 @@
 #include "config.h"
 #include "PlaylistSong.hxx"
 #include "Mapper.hxx"
-#include "db/DatabaseSong.hxx"
-#include "ls.hxx"
+#include "SongLoader.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -65,44 +64,22 @@ apply_song_metadata(DetachedSong &dest, const DetachedSong &src)
 }
 
 static bool
-playlist_check_load_song(DetachedSong &song)
+playlist_check_load_song(DetachedSong &song, const SongLoader &loader)
 {
-	const char *const uri = song.GetURI();
-
-	if (uri_has_scheme(uri)) {
-		return true;
-	} else if (PathTraitsUTF8::IsAbsolute(uri)) {
-		DetachedSong tmp(uri);
-		if (!tmp.Update())
-			return false;
-
-		apply_song_metadata(song, tmp);
-		return true;
-	} else {
-#ifdef ENABLE_DATABASE
-		DetachedSong *tmp = DatabaseDetachSong(uri, IgnoreError());
-		if (tmp == nullptr)
-			return false;
-
-		apply_song_metadata(song, *tmp);
-		delete tmp;
-		return true;
-#else
+	DetachedSong *tmp = loader.LoadSong(song.GetURI(), IgnoreError());
+	if (tmp == nullptr)
 		return false;
-#endif
-	}
+
+	song.SetURI(tmp->GetURI());
+	apply_song_metadata(song, *tmp);
+	delete tmp;
+	return true;
 }
 
 bool
 playlist_check_translate_song(DetachedSong &song, const char *base_uri,
-			      bool secure)
+			      const SongLoader &loader)
 {
-	const char *const uri = song.GetURI();
-
-	if (uri_has_scheme(uri))
-		/* valid remote song? */
-		return uri_supported_scheme(uri);
-
 	if (base_uri != nullptr && strcmp(base_uri, ".") == 0)
 		/* PathTraitsUTF8::GetParent() returns "." when there
 		   is no directory name in the given path; clear that
@@ -110,26 +87,10 @@ playlist_check_translate_song(DetachedSong &song, const char *base_uri,
 		   functions */
 		base_uri = nullptr;
 
-	if (PathTraitsUTF8::IsAbsolute(uri)) {
-		/* XXX fs_charset vs utf8? */
-		const char *suffix = map_to_relative_path(uri);
-		assert(suffix != nullptr);
-
-		if (suffix != uri)
-			song.SetURI(std::string(suffix));
-		else if (!secure)
-			/* local files must be relative to the music
-			   directory when "secure" is enabled */
-			return false;
-
-		base_uri = nullptr;
-	}
-
-	if (base_uri != nullptr) {
+	const char *uri = song.GetURI();
+	if (base_uri != nullptr && !uri_has_scheme(uri) &&
+	    !PathTraitsUTF8::IsAbsolute(uri))
 		song.SetURI(PathTraitsUTF8::Build(base_uri, uri));
-		/* repeat the above checks */
-		return playlist_check_translate_song(song, nullptr, secure);
-	}
 
-	return playlist_check_load_song(song);
+	return playlist_check_load_song(song, loader);
 }

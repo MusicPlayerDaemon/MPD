@@ -21,8 +21,9 @@
 #include "QueueCommands.hxx"
 #include "CommandError.hxx"
 #include "db/DatabaseQueue.hxx"
-#include "SongFilter.hxx"
 #include "db/Selection.hxx"
+#include "SongFilter.hxx"
+#include "SongLoader.hxx"
 #include "Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "client/Client.hxx"
@@ -38,38 +39,32 @@
 
 #include <string.h>
 
+static const char *
+translate_uri(Client &client, const char *uri)
+{
+	if (memcmp(uri, "file:///", 8) == 0)
+		/* drop the "file://", leave only an absolute path
+		   (starting with a slash) */
+		return uri + 7;
+
+	if (PathTraitsUTF8::IsAbsolute(uri)) {
+		command_error(client, ACK_ERROR_NO_EXIST, "Malformed URI");
+		return nullptr;
+	}
+
+	return uri;
+}
+
 CommandResult
 handle_add(Client &client, gcc_unused int argc, char *argv[])
 {
-	char *uri = argv[1];
-	PlaylistResult result;
+	const char *const uri = translate_uri(client, argv[1]);
+	if (uri == nullptr)
+		return CommandResult::ERROR;
 
-	if (memcmp(uri, "file:///", 8) == 0) {
-		const char *path_utf8 = uri + 7;
-		const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
-
-		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported file name");
-			return CommandResult::ERROR;
-		}
-
-		Error error;
-		if (!client.AllowFile(path_fs, error))
-			return print_error(client, error);
-
-		result = client.partition.AppendFile(path_utf8);
-		return print_playlist_result(client, result);
-	}
-
-	if (uri_has_scheme(uri)) {
-		if (!uri_supported_scheme(uri)) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported URI scheme");
-			return CommandResult::ERROR;
-		}
-
-		result = client.partition.AppendURI(uri);
+	if (uri_has_scheme(uri) || PathTraitsUTF8::IsAbsolute(uri)) {
+		const SongLoader loader(client);
+		auto result = client.partition.AppendURI(loader, uri);
 		return print_playlist_result(client, result);
 	}
 
@@ -88,34 +83,14 @@ handle_add(Client &client, gcc_unused int argc, char *argv[])
 CommandResult
 handle_addid(Client &client, int argc, char *argv[])
 {
-	char *uri = argv[1];
+	const char *const uri = translate_uri(client, argv[1]);
+	if (uri == nullptr)
+		return CommandResult::ERROR;
+
+	const SongLoader loader(client);
+
 	unsigned added_id;
-	PlaylistResult result;
-
-	if (memcmp(uri, "file:///", 8) == 0) {
-		const char *path_utf8 = uri + 7;
-		const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
-
-		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported file name");
-			return CommandResult::ERROR;
-		}
-
-		Error error;
-		if (!client.AllowFile(path_fs, error))
-			return print_error(client, error);
-
-		result = client.partition.AppendFile(path_utf8, &added_id);
-	} else {
-		if (uri_has_scheme(uri) && !uri_supported_scheme(uri)) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported URI scheme");
-			return CommandResult::ERROR;
-		}
-
-		result = client.partition.AppendURI(uri, &added_id);
-	}
+	auto result = client.partition.AppendURI(loader, uri, &added_id);
 
 	if (result != PlaylistResult::SUCCESS)
 		return print_playlist_result(client, result);

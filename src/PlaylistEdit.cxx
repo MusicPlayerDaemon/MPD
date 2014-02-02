@@ -30,9 +30,8 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"
-#include "Mapper.hxx"
+#include "SongLoader.hxx"
 #include "Idle.hxx"
-#include "db/DatabaseSong.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>
@@ -57,17 +56,6 @@ playlist::Clear(PlayerControl &pc)
 }
 
 PlaylistResult
-playlist::AppendFile(PlayerControl &pc,
-		     const char *path_utf8, unsigned *added_id)
-{
-	DetachedSong song(path_utf8);
-	if (!song.Update())
-		return PlaylistResult::NO_SUCH_SONG;
-
-	return AppendSong(pc, std::move(song), added_id);
-}
-
-PlaylistResult
 playlist::AppendSong(PlayerControl &pc,
 		     DetachedSong &&song, unsigned *added_id)
 {
@@ -81,7 +69,7 @@ playlist::AppendSong(PlayerControl &pc,
 	id = queue.Append(std::move(song), 0);
 
 	if (queue.random) {
-		/* shuffle the new song into the list of remaining
+		/* shuffle the new song into the list of remaning
 		   songs to play */
 
 		unsigned start;
@@ -104,19 +92,19 @@ playlist::AppendSong(PlayerControl &pc,
 
 PlaylistResult
 playlist::AppendURI(PlayerControl &pc,
+		    const SongLoader &loader,
 		    const char *uri, unsigned *added_id)
 {
 	FormatDebug(playlist_domain, "add to playlist: %s", uri);
 
-	DetachedSong *song;
-	if (uri_has_scheme(uri)) {
-		song = new DetachedSong(uri);
-	} else {
-#ifdef ENABLE_DATABASE
-		song = DatabaseDetachSong(uri, IgnoreError());
-		if (song == nullptr)
-#endif
-			return PlaylistResult::NO_SUCH_SONG;
+	Error error;
+	DetachedSong *song = loader.LoadSong(uri, error);
+	if (song == nullptr) {
+		// TODO: return the Error
+		LogError(error);
+		return error.IsDomain(playlist_domain)
+			? PlaylistResult(error.GetCode())
+			: PlaylistResult::NO_SUCH_SONG;
 	}
 
 	PlaylistResult result = AppendSong(pc, std::move(*song), added_id);

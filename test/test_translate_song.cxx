@@ -5,6 +5,8 @@
 #include "config.h"
 #include "playlist/PlaylistSong.hxx"
 #include "DetachedSong.hxx"
+#include "SongLoader.hxx"
+#include "client/Client.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
 #include "util/Domain.hxx"
@@ -12,6 +14,7 @@
 #include "ls.hxx"
 #include "Log.hxx"
 #include "db/DatabaseSong.hxx"
+#include "util/Error.hxx"
 #include "Mapper.hxx"
 
 #include <cppunit/TestFixture.h>
@@ -133,6 +136,15 @@ DetachedSong::Update()
 	return false;
 }
 
+bool
+Client::AllowFile(gcc_unused Path path_fs, gcc_unused Error &error) const
+{
+	/* always return false, so a SongLoader with a non-nullptr
+	   Client pointer will be regarded "insecure", while one with
+	   client==nullptr will allow all files */
+	return false;
+}
+
 static std::string
 ToString(const Tag &tag)
 {
@@ -198,65 +210,84 @@ class TranslateSongTest : public CppUnit::TestFixture {
 	void TestAbsoluteURI() {
 		DetachedSong song1("http://example.com/foo.ogg");
 		auto se = ToString(song1);
-		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/ignored", false));
+		const SongLoader loader(nullptr);
+		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/ignored",
+							     loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song1));
 	}
 
 	void TestInsecure() {
 		/* illegal because secure=false */
 		DetachedSong song1 (uri1);
-		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr, false));
+		const SongLoader loader(reinterpret_cast<const Client *>(1));
+		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr,
+							      loader));
 	}
 
 	void TestSecure() {
 		DetachedSong song1(uri1, MakeTag1b());
 		auto s1 = ToString(song1);
 		auto se = ToString(DetachedSong(uri1, MakeTag1c()));
-		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/ignored", true));
+
+		const SongLoader loader(nullptr);
+		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/ignored",
+							     loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song1));
 	}
 
 	void TestInDatabase() {
+		const SongLoader loader(nullptr);
+
 		DetachedSong song1("doesntexist");
-		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr, false));
+		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr,
+							      loader));
 
 		DetachedSong song2(uri2, MakeTag2b());
 		auto s1 = ToString(song2);
 		auto se = ToString(DetachedSong(uri2, MakeTag2c()));
-		CPPUNIT_ASSERT(playlist_check_translate_song(song2, nullptr, false));
+		CPPUNIT_ASSERT(playlist_check_translate_song(song2, nullptr,
+							     loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song2));
 
 		DetachedSong song3("/music/foo/bar.ogg", MakeTag2b());
 		s1 = ToString(song3);
 		se = ToString(DetachedSong(uri2, MakeTag2c()));
-		CPPUNIT_ASSERT(playlist_check_translate_song(song3, nullptr, false));
+		CPPUNIT_ASSERT(playlist_check_translate_song(song3, nullptr,
+							     loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song3));
 	}
 
 	void TestRelative() {
+		const SongLoader secure_loader(nullptr);
+		const SongLoader insecure_loader(reinterpret_cast<const Client *>(1));
+
 		/* map to music_directory */
 		DetachedSong song1("bar.ogg", MakeTag2b());
 		auto s1 = ToString(song1);
 		auto se = ToString(DetachedSong(uri2, MakeTag2c()));
-		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/music/foo", false));
+		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/music/foo",
+							     insecure_loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song1));
 
 		/* illegal because secure=false */
 		DetachedSong song2("bar.ogg", MakeTag2b());
-		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, "/foo", false));
+		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, "/foo",
+							      insecure_loader));
 
 		/* legal because secure=true */
 		DetachedSong song3("bar.ogg", MakeTag1b());
 		s1 = ToString(song3);
 		se = ToString(DetachedSong(uri1, MakeTag1c()));
-		CPPUNIT_ASSERT(playlist_check_translate_song(song3, "/foo", true));
+		CPPUNIT_ASSERT(playlist_check_translate_song(song3, "/foo",
+							     secure_loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song3));
 
 		/* relative to http:// */
 		DetachedSong song4("bar.ogg", MakeTag2a());
 		s1 = ToString(song4);
 		se = ToString(DetachedSong("http://example.com/foo/bar.ogg", MakeTag2a()));
-		CPPUNIT_ASSERT(playlist_check_translate_song(song4, "http://example.com/foo", false));
+		CPPUNIT_ASSERT(playlist_check_translate_song(song4, "http://example.com/foo",
+							     insecure_loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song4));
 	}
 };

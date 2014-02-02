@@ -25,6 +25,7 @@
 #include "SongPrint.hxx"
 #include "input/InputStream.hxx"
 #include "DetachedSong.hxx"
+#include "SongLoader.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Cond.hxx"
 
@@ -36,10 +37,12 @@ playlist_provider_print(Client &client, const char *uri,
 		? PathTraitsUTF8::GetParent(uri)
 		: std::string(".");
 
+	const SongLoader loader(client);
+
 	DetachedSong *song;
 	while ((song = e.NextSong()) != nullptr) {
 		if (playlist_check_translate_song(*song, base_uri.c_str(),
-						  false)) {
+						  loader)) {
 			if (detail)
 				song_print_info(client, *song);
 			else

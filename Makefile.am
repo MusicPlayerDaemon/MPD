@@ -168,6 +168,7 @@ src_mpd_SOURCES = \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
 	src/SongUpdate.cxx \
+	src/SongLoader.cxx src/SongLoader.hxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
 	src/SongSave.cxx src/SongSave.hxx \
 	src/StateFile.cxx src/StateFile.hxx \
@@ -1732,7 +1733,9 @@ if ENABLE_DATABASE
 
 test_test_translate_song_SOURCES = \
 	src/playlist/PlaylistSong.cxx \
+	src/PlaylistError.cxx \
 	src/DetachedSong.cxx \
+	src/SongLoader.cxx \
 	src/Log.cxx \
 	test/test_translate_song.cxx
 test_test_translate_song_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0

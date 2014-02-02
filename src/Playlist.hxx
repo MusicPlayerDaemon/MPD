@@ -28,6 +28,7 @@ struct PlayerControl;
 class DetachedSong;
 class Database;
 class Error;
+class SongLoader;
 
 struct playlist {
 	/**
@@ -149,17 +150,8 @@ public:
 				  DetachedSong &&song,
 				  unsigned *added_id=nullptr);
 
-	/**
-	 * Appends a local file (outside the music database) to the
-	 * playlist.
-	 *
-	 * Note: the caller is responsible for checking permissions.
-	 */
-	PlaylistResult AppendFile(PlayerControl &pc,
-				  const char *path_utf8,
-				  unsigned *added_id=nullptr);
-
 	PlaylistResult AppendURI(PlayerControl &pc,
+				 const SongLoader &loader,
 				 const char *uri_utf8,
 				 unsigned *added_id=nullptr);
 

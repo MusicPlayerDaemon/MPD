@@ -26,6 +26,7 @@
 
 #include "PlaylistError.hxx"
 
+class SongLoader;
 class SongEnumerator;
 struct playlist;
 struct PlayerControl;
@@ -43,7 +44,7 @@ PlaylistResult
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 bool secure);
+			 const SongLoader &loader);
 
 /**
  * Opens a playlist with a playlist plugin and append to the specified
@@ -53,7 +54,7 @@ PlaylistResult
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 bool secure);
+			 const SongLoader &loader);
 
 #endif
 
