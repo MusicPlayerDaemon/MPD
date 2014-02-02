@@ -129,22 +129,9 @@ playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
 			continue;
 		}
 
-		if ((playlist.AppendURI(pc, uri_utf8.c_str())) != PlaylistResult::SUCCESS) {
-			/* for windows compatibility, convert slashes */
-			char *temp2 = xstrdup(uri_utf8.c_str());
-			char *p = temp2;
-			while (*p) {
-				if (*p == '\\')
-					*p = '/';
-				p++;
-			}
-
-			if (playlist.AppendURI(pc, temp2) != PlaylistResult::SUCCESS)
-				FormatError(playlist_domain,
-					    "can't add file \"%s\"", temp2);
-
-			free(temp2);
-		}
+		if ((playlist.AppendURI(pc, uri_utf8.c_str())) != PlaylistResult::SUCCESS)
+			FormatError(playlist_domain,
+				    "can't add file \"%s\"", uri_utf8.c_str());
 	}
 
 	return true;
