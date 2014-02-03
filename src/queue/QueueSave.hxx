@@ -29,6 +29,7 @@
 
 struct Queue;
 class TextFile;
+class SongLoader;
 
 void
 queue_save(FILE *fp, const Queue &queue);
@@ -37,6 +38,7 @@ queue_save(FILE *fp, const Queue &queue);
  * Loads one song from the state file and appends it to the queue.
  */
 void
-queue_load_song(TextFile &file, const char *line, Queue &queue);
+queue_load_song(TextFile &file, const SongLoader &loader,
+		const char *line, Queue &queue);
 
 #endif

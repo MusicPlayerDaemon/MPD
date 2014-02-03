@@ -24,7 +24,7 @@
 #include "fs/TextFile.hxx"
 #include "Partition.hxx"
 #include "mixer/Volume.hxx"
-
+#include "SongLoader.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -97,11 +97,14 @@ StateFile::Read()
 		return;
 	}
 
+	const SongLoader song_loader(nullptr);
+
 	const char *line;
 	while ((line = file.ReadLine()) != NULL) {
 		success = read_sw_volume_state(line, partition.outputs) ||
 			audio_output_state_read(line, partition.outputs) ||
-			playlist_state_restore(line, file, partition.playlist,
+			playlist_state_restore(line, file, song_loader,
+					       partition.playlist,
 					       partition.pc);
 		if (!success)
 			FormatError(state_file_domain,

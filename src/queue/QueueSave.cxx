@@ -23,10 +23,10 @@
 #include "PlaylistError.hxx"
 #include "DetachedSong.hxx"
 #include "SongSave.hxx"
-#include "db/DatabaseSong.hxx"
+#include "SongLoader.hxx"
+#include "playlist/PlaylistSong.hxx"
 #include "fs/TextFile.hxx"
 #include "util/StringUtil.hxx"
-#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/Traits.hxx"
 #include "Log.hxx"
@@ -69,7 +69,8 @@ queue_save(FILE *fp, const Queue &queue)
 }
 
 void
-queue_load_song(TextFile &file, const char *line, Queue &queue)
+queue_load_song(TextFile &file, const SongLoader &loader,
+		const char *line, Queue &queue)
 {
 	if (queue.IsFull())
 		return;
@@ -87,8 +88,6 @@ queue_load_song(TextFile &file, const char *line, Queue &queue)
 
 	if (StringStartsWith(line, SONG_BEGIN)) {
 		const char *uri = line + sizeof(SONG_BEGIN) - 1;
-		if (!uri_has_scheme(uri) && !PathTraitsUTF8::IsAbsolute(uri))
-			return;
 
 		Error error;
 		song = song_load(file, uri, error);
@@ -107,15 +106,12 @@ queue_load_song(TextFile &file, const char *line, Queue &queue)
 
 		const char *uri = endptr + 1;
 
-		if (uri_has_scheme(uri)) {
-			song = new DetachedSong(uri);
-		} else {
-#ifdef ENABLE_DATABASE
-			song = DatabaseDetachSong(uri, IgnoreError());
-			if (song == nullptr)
-#endif
-				return;
-		}
+		song = new DetachedSong(uri);
+	}
+
+	if (!playlist_check_translate_song(*song, nullptr, loader)) {
+		delete song;
+		return;
 	}
 
 	queue.Append(std::move(*song), priority);

@@ -103,7 +103,8 @@ playlist_state_save(FILE *fp, const struct playlist &playlist,
 }
 
 static void
-playlist_state_load(TextFile &file, struct playlist &playlist)
+playlist_state_load(TextFile &file, const SongLoader &song_loader,
+		    struct playlist &playlist)
 {
 	const char *line = file.ReadLine();
 	if (line == nullptr) {
@@ -112,7 +113,7 @@ playlist_state_load(TextFile &file, struct playlist &playlist)
 	}
 
 	while (!StringStartsWith(line, PLAYLIST_STATE_FILE_PLAYLIST_END)) {
-		queue_load_song(file, line, playlist.queue);
+		queue_load_song(file, song_loader, line, playlist.queue);
 
 		line = file.ReadLine();
 		if (line == nullptr) {
@@ -128,6 +129,7 @@ playlist_state_load(TextFile &file, struct playlist &playlist)
 
 bool
 playlist_state_restore(const char *line, TextFile &file,
+		       const SongLoader &song_loader,
 		       struct playlist &playlist, PlayerControl &pc)
 {
 	int current = -1;
@@ -183,7 +185,7 @@ playlist_state_restore(const char *line, TextFile &file,
 					  (PLAYLIST_STATE_FILE_CURRENT)]));
 		} else if (StringStartsWith(line,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
-			playlist_state_load(file, playlist);
+			playlist_state_load(file, song_loader, playlist);
 		}
 	}
 

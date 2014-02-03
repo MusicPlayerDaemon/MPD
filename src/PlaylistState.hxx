@@ -30,6 +30,7 @@
 struct playlist;
 struct PlayerControl;
 class TextFile;
+class SongLoader;
 
 void
 playlist_state_save(FILE *fp, const playlist &playlist,
@@ -37,6 +38,7 @@ playlist_state_save(FILE *fp, const playlist &playlist,
 
 bool
 playlist_state_restore(const char *line, TextFile &file,
+		       const SongLoader &song_loader,
 		       playlist &playlist, PlayerControl &pc);
 
 /**
