@@ -102,6 +102,7 @@ Song::Export() const
 	dest.directory = parent->IsRoot()
 		? nullptr : parent->GetPath();
 	dest.uri = uri;
+	dest.real_uri = nullptr;
 	dest.tag = &tag;
 	dest.mtime = mtime;
 	dest.start_ms = start_ms;
