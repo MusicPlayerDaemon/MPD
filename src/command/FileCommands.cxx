@@ -125,7 +125,7 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 			return print_error(client, error);
 	} else if (uri_has_scheme(uri)) {
 		return read_stream_comments(client, uri);
-	} else if (*uri != '/') {
+	} else if (!PathTraitsUTF8::IsAbsolute(uri)) {
 #ifdef ENABLE_DATABASE
 		path_fs = map_uri_fs(uri);
 		if (path_fs.IsNull()) {
