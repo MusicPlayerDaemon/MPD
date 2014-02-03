@@ -188,13 +188,8 @@ handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 	bool success;
 	Error error;
 	if (uri_has_scheme(uri)) {
-		if (!uri_supported_scheme(uri)) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported URI scheme");
-			return CommandResult::ERROR;
-		}
-
-		success = spl_append_uri(playlist, uri, error);
+		const SongLoader loader(client);
+		success = spl_append_uri(playlist, loader, uri, error);
 	} else {
 #ifdef ENABLE_DATABASE
 		success = search_add_to_playlist(uri, playlist, nullptr,

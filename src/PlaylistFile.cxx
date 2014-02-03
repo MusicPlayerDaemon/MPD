@@ -22,8 +22,8 @@
 #include "PlaylistSave.hxx"
 #include "db/PlaylistInfo.hxx"
 #include "db/PlaylistVector.hxx"
-#include "db/DatabaseSong.hxx"
 #include "DetachedSong.hxx"
+#include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "fs/TextFile.hxx"
 #include "config/ConfigGlobal.hxx"
@@ -402,24 +402,17 @@ spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 }
 
 bool
-spl_append_uri(const char *utf8file, const char *url, Error &error)
+spl_append_uri(const char *utf8file,
+	       const SongLoader &loader, const char *url,
+	       Error &error)
 {
-	if (uri_has_scheme(url)) {
-		return spl_append_song(utf8file, DetachedSong(url),
-				       error);
-	} else {
-#ifdef ENABLE_DATABASE
-		DetachedSong *song = DatabaseDetachSong(url, error);
-		if (song == nullptr)
-			return false;
-
-		bool success = spl_append_song(utf8file, *song, error);
-		delete song;
-		return success;
-#else
+	DetachedSong *song = loader.LoadSong(url, error);
+	if (song == nullptr)
 		return false;
-#endif
-	}
+
+	bool success = spl_append_song(utf8file, *song, error);
+	delete song;
+	return success;
 }
 
 static bool

@@ -24,6 +24,7 @@
 #include <string>
 
 class DetachedSong;
+class SongLoader;
 class PlaylistVector;
 class Error;
 
@@ -71,7 +72,9 @@ bool
 spl_append_song(const char *utf8path, const DetachedSong &song, Error &error);
 
 bool
-spl_append_uri(const char *path_utf8, const char *uri_utf8, Error &error);
+spl_append_uri(const char *path_utf8,
+	       const SongLoader &loader, const char *uri_utf8,
+	       Error &error);
 
 bool
 spl_rename(const char *utf8from, const char *utf8to, Error &error);
