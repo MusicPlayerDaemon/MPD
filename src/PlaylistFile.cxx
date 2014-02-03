@@ -402,7 +402,7 @@ spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 }
 
 bool
-spl_append_uri(const char *url, const char *utf8file, Error &error)
+spl_append_uri(const char *utf8file, const char *url, Error &error)
 {
 	if (uri_has_scheme(url)) {
 		return spl_append_song(utf8file, DetachedSong(url),

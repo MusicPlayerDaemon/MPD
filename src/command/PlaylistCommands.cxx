@@ -194,7 +194,7 @@ handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 			return CommandResult::ERROR;
 		}
 
-		success = spl_append_uri(uri, playlist, error);
+		success = spl_append_uri(playlist, uri, error);
 	} else {
 #ifdef ENABLE_DATABASE
 		success = search_add_to_playlist(uri, playlist, nullptr,
