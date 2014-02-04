@@ -33,9 +33,6 @@ class EventLoop;
 
 namespace GlobalEvents {
 	enum Event {
-		/** during database update, a song was deleted */
-		DELETE,
-
 		/** an idle event was emitted */
 		IDLE,
 
