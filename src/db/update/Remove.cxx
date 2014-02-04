@@ -20,19 +20,10 @@
 #include "config.h" /* must be first for large file support */
 #include "Remove.hxx"
 #include "UpdateDomain.hxx"
-#include "GlobalEvents.hxx"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "db/Song.hxx"
 #include "db/LightSong.hxx"
-#include "Main.hxx"
-#include "Instance.hxx"
+#include "db/DatabaseListener.hxx"
 #include "Log.hxx"
-
-#ifdef ENABLE_SQLITE
-#include "sticker/StickerDatabase.hxx"
-#include "sticker/SongSticker.hxx"
-#endif
 
 #include <assert.h>
 
@@ -50,16 +41,7 @@ UpdateRemoveService::RunDeferred()
 		FormatDefault(update_domain, "removing %s", uri.c_str());
 	}
 
-#ifdef ENABLE_SQLITE
-	/* if the song has a sticker, remove it */
-	if (sticker_enabled())
-		sticker_song_delete(removed_song->Export());
-#endif
-
-	{
-		const auto uri = removed_song->GetURI();
-		instance->DeleteSong(uri.c_str());
-	}
+	listener.OnDatabaseSongRemoved(removed_song->Export());
 
 	/* clear "removed_song" and send signal to update thread */
 	remove_mutex.lock();

@@ -22,9 +22,15 @@
 #include "Partition.hxx"
 #include "Idle.hxx"
 #include "Stats.hxx"
-#include "db/DatabaseError.hxx"
 
 #ifdef ENABLE_DATABASE
+#include "db/DatabaseError.hxx"
+#include "db/LightSong.hxx"
+
+#ifdef ENABLE_SQLITE
+#include "sticker/StickerDatabase.hxx"
+#include "sticker/SongSticker.hxx"
+#endif
 
 Database *
 Instance::GetDatabase(Error &error)
@@ -32,12 +38,6 @@ Instance::GetDatabase(Error &error)
 	if (database == nullptr)
 		error.Set(db_domain, DB_DISABLED, "No database");
 	return database;
-}
-
-void
-Instance::DeleteSong(const char *uri)
-{
-	partition->DeleteSong(uri);
 }
 
 #endif
@@ -66,6 +66,21 @@ Instance::OnDatabaseModified()
 	stats_invalidate();
 	partition->DatabaseModified(*database);
 	idle_add(IDLE_DATABASE);
+}
+
+void
+Instance::OnDatabaseSongRemoved(const LightSong &song)
+{
+	assert(database != nullptr);
+
+#ifdef ENABLE_SQLITE
+	/* if the song has a sticker, remove it */
+	if (sticker_enabled())
+		sticker_song_delete(song);
+#endif
+
+	const auto uri = song.GetURI();
+	partition->DeleteSong(uri.c_str());
 }
 
 #endif

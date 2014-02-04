@@ -46,8 +46,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
-UpdateWalk::UpdateWalk(EventLoop &_loop)
-	:editor(_loop)
+UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener)
+	:editor(_loop, _listener)
 {
 #ifndef WIN32
 	follow_inside_symlinks =

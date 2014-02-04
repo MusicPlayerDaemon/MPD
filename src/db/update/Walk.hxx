@@ -49,7 +49,7 @@ class UpdateWalk final {
 	DatabaseEditor editor;
 
 public:
-	UpdateWalk(EventLoop &_loop);
+	UpdateWalk(EventLoop &_loop, DatabaseListener &_listener);
 
 	/**
 	 * Returns true if the database was modified.

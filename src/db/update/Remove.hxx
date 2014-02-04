@@ -26,20 +26,23 @@
 #include "thread/Cond.hxx"
 
 struct Song;
+class DatabaseListener;
 
 /**
  * This class handles #Song removal.  It defers the action to the main
  * thread to ensure that all references to the #Song are gone.
  */
 class UpdateRemoveService final : DeferredMonitor {
+	DatabaseListener &listener;
+
 	Mutex remove_mutex;
 	Cond remove_cond;
 
 	const Song *removed_song;
 
 public:
-	UpdateRemoveService(EventLoop &_loop)
-		:DeferredMonitor(_loop) {}
+	UpdateRemoveService(EventLoop &_loop, DatabaseListener &_listener)
+		:DeferredMonitor(_loop), listener(_listener) {}
 
 	/**
 	 * Sends a signal to the main thread which will in turn remove

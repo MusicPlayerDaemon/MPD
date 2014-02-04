@@ -155,6 +155,6 @@ UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
 	:DeferredMonitor(_loop), db(_db), listener(_listener),
 	 progress(UPDATE_PROGRESS_IDLE),
 	 update_task_id(0),
-	 walk(_loop)
+	 walk(_loop, _listener)
 {
 }

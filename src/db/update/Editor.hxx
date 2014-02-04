@@ -31,8 +31,8 @@ class DatabaseEditor final {
 	UpdateRemoveService remove;
 
 public:
-	DatabaseEditor(EventLoop &_loop)
-		:remove(_loop) {}
+	DatabaseEditor(EventLoop &_loop, DatabaseListener &_listener)
+		:remove(_loop, _listener) {}
 
 	/**
 	 * Caller must lock the #db_mutex.

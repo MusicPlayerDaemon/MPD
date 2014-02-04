@@ -20,6 +20,8 @@
 #ifndef MPD_DATABASE_CLIENT_HXX
 #define MPD_DATABASE_CLIENT_HXX
 
+struct LightSong;
+
 /**
  * An object that listens to events from the #Database.
  *
@@ -33,6 +35,12 @@ public:
 	 * runs the #EventLoop.
 	 */
 	virtual void OnDatabaseModified() = 0;
+
+	/**
+	 * During database update, a song is about to be removed from
+	 * the database because the file has disappeared.
+	 */
+	virtual void OnDatabaseSongRemoved(const LightSong &song) = 0;
 };
 
 #endif

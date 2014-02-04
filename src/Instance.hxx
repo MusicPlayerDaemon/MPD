@@ -79,8 +79,6 @@ struct Instance final
 	 * music_directory was configured).
 	 */
 	Database *GetDatabase(Error &error);
-
-	void DeleteSong(const char *uri);
 #endif
 
 	/**
@@ -96,7 +94,8 @@ struct Instance final
 
 private:
 #ifdef ENABLE_DATABASE
-	virtual void OnDatabaseModified();
+	virtual void OnDatabaseModified() override;
+	virtual void OnDatabaseSongRemoved(const LightSong &song) override;
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
