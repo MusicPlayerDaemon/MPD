@@ -32,6 +32,7 @@
 #include "Permission.hxx"
 #include "tag/TagType.h"
 #include "protocol/Result.hxx"
+#include "Partition.hxx"
 #include "client/Client.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
@@ -184,7 +185,8 @@ static const struct command commands[] = {
 static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
 
 static bool
-command_available(gcc_unused const struct command *cmd)
+command_available(gcc_unused const Partition &partition,
+		  gcc_unused const struct command *cmd)
 {
 #ifdef ENABLE_SQLITE
 	if (strcmp(cmd->cmd, "sticker") == 0)
@@ -193,7 +195,7 @@ command_available(gcc_unused const struct command *cmd)
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	if (strcmp(cmd->cmd, "listneighbors") == 0)
-		return neighbor_commands_available();
+		return neighbor_commands_available(partition.instance);
 #endif
 
 	return true;
@@ -211,7 +213,7 @@ handle_commands(Client &client,
 		cmd = &commands[i];
 
 		if (cmd->permission == (permission & cmd->permission) &&
-		    command_available(cmd))
+		    command_available(client.partition, cmd))
 			client_printf(client, "command: %s\n", cmd->cmd);
 	}
 

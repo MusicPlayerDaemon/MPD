@@ -21,7 +21,7 @@
 #include "NeighborCommands.hxx"
 #include "client/Client.hxx"
 #include "Instance.hxx"
-#include "Main.hxx"
+#include "Partition.hxx"
 #include "protocol/Result.hxx"
 #include "neighbor/Glue.hxx"
 #include "neighbor/Info.hxx"
@@ -32,23 +32,24 @@
 #include <assert.h>
 
 bool
-neighbor_commands_available()
+neighbor_commands_available(const Instance &instance)
 {
-	return instance->neighbors != nullptr;
+	return instance.neighbors != nullptr;
 }
 
 CommandResult
 handle_listneighbors(Client &client,
 		     gcc_unused int argc, gcc_unused char *argv[])
 {
-	if (instance->neighbors == nullptr) {
+	const NeighborGlue *const neighbors =
+		client.partition.instance.neighbors;
+	if (neighbors == nullptr) {
 		command_error(client, ACK_ERROR_UNKNOWN,
 			      "No neighbor plugin configured");
 		return CommandResult::ERROR;
 	}
 
-	const auto neighbors = instance->neighbors->GetList();
-	for (const auto &i : neighbors)
+	for (const auto &i : neighbors->GetList())
 		client_printf(client,
 			      "neighbor: %s\n"
 			      "name: %s\n",

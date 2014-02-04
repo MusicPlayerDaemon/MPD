@@ -23,11 +23,12 @@
 #include "CommandResult.hxx"
 #include "Compiler.h"
 
+struct Instance;
 class Client;
 
 gcc_pure
 bool
-neighbor_commands_available();
+neighbor_commands_available(const Instance &instance);
 
 CommandResult
 handle_listneighbors(Client &client, int argc, char *argv[]);
