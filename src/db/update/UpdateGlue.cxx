@@ -147,6 +147,8 @@ UpdateService::RunDeferred()
 }
 
 UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db)
-	:DeferredMonitor(_loop), db(_db), walk(_loop)
+	:DeferredMonitor(_loop), db(_db), progress(UPDATE_PROGRESS_IDLE),
+	 update_task_id(0),
+	 walk(_loop)
 {
 }
