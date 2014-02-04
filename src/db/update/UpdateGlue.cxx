@@ -44,7 +44,8 @@ UpdateService::Task()
 
 	SetThreadIdlePriority();
 
-	modified = walk.Walk(next.path_utf8.c_str(), next.discard);
+	modified = walk.Walk(*db_get_root(), next.path_utf8.c_str(),
+			     next.discard);
 
 	if (modified || !db_exists()) {
 		Error error;

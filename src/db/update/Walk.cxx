@@ -23,7 +23,6 @@
 #include "Editor.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseLock.hxx"
-#include "db/DatabaseSimple.hxx"
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
 #include "db/PlaylistVector.hxx"
@@ -393,9 +392,9 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent, const char *name_utf8)
 }
 
 inline Directory *
-UpdateWalk::DirectoryMakeUriParentChecked(const char *uri)
+UpdateWalk::DirectoryMakeUriParentChecked(Directory &root, const char *uri)
 {
-	Directory *directory = db_get_root();
+	Directory *directory = &root;
 	char *duplicated = xstrdup(uri);
 	char *name_utf8 = duplicated, *slash;
 
@@ -418,9 +417,9 @@ UpdateWalk::DirectoryMakeUriParentChecked(const char *uri)
 }
 
 inline void
-UpdateWalk::UpdateUri(const char *uri)
+UpdateWalk::UpdateUri(Directory &root, const char *uri)
 {
-	Directory *parent = DirectoryMakeUriParentChecked(uri);
+	Directory *parent = DirectoryMakeUriParentChecked(root, uri);
 	if (parent == nullptr)
 		return;
 
@@ -435,19 +434,18 @@ UpdateWalk::UpdateUri(const char *uri)
 }
 
 bool
-UpdateWalk::Walk(const char *path, bool discard)
+UpdateWalk::Walk(Directory &root, const char *path, bool discard)
 {
 	walk_discard = discard;
 	modified = false;
 
 	if (path != nullptr && !isRootDirectory(path)) {
-		UpdateUri(path);
+		UpdateUri(root, path);
 	} else {
-		Directory *directory = db_get_root();
 		struct stat st;
 
-		if (stat_directory(*directory, &st) == 0)
-			UpdateDirectory(*directory, &st);
+		if (stat_directory(root, &st) == 0)
+			UpdateDirectory(root, &st);
 	}
 
 	return modified;

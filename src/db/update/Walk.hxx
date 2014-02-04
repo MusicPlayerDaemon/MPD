@@ -54,7 +54,7 @@ public:
 	/**
 	 * Returns true if the database was modified.
 	 */
-	bool Walk(const char *path, bool discard);
+	bool Walk(Directory &root, const char *path, bool discard);
 
 private:
 	gcc_pure
@@ -126,9 +126,10 @@ private:
 	Directory *DirectoryMakeChildChecked(Directory &parent,
 					     const char *name_utf8);
 
-	Directory *DirectoryMakeUriParentChecked(const char *uri);
+	Directory *DirectoryMakeUriParentChecked(Directory &root,
+						 const char *uri);
 
-	void UpdateUri(const char *uri);
+	void UpdateUri(Directory &root, const char *uri);
 };
 
 #endif
