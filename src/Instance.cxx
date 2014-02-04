@@ -40,16 +40,6 @@ Instance::DeleteSong(const char *uri)
 	partition->DeleteSong(uri);
 }
 
-void
-Instance::DatabaseModified()
-{
-	assert(database != nullptr);
-
-	stats_invalidate();
-	partition->DatabaseModified(*database);
-	idle_add(IDLE_DATABASE);
-}
-
 #endif
 
 void
@@ -69,7 +59,13 @@ Instance::SyncWithPlayer()
 void
 Instance::OnDatabaseModified()
 {
-	DatabaseModified();
+	assert(database != nullptr);
+
+	/* propagate the change to all subsystems */
+
+	stats_invalidate();
+	partition->DatabaseModified(*database);
+	idle_add(IDLE_DATABASE);
 }
 
 #endif

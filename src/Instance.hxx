@@ -81,13 +81,6 @@ struct Instance final
 	Database *GetDatabase(Error &error);
 
 	void DeleteSong(const char *uri);
-
-	/**
-	 * The database has been modified.  Propagate the change to
-	 * all subsystems.
-	 */
-	void DatabaseModified();
-
 #endif
 
 	/**
