@@ -26,6 +26,8 @@
 #include "event/DeferredMonitor.hxx"
 #include "thread/Thread.hxx"
 
+class SimpleDatabase;
+
 /**
  * This class manages the update queue and runs the update thread.
  */
@@ -35,6 +37,8 @@ class UpdateService final : DeferredMonitor {
 		UPDATE_PROGRESS_RUNNING = 1,
 		UPDATE_PROGRESS_DONE = 2
 	};
+
+	SimpleDatabase &db;
 
 	Progress progress;
 
@@ -53,7 +57,7 @@ class UpdateService final : DeferredMonitor {
 	UpdateWalk walk;
 
 public:
-	UpdateService(EventLoop &_loop);
+	UpdateService(EventLoop &_loop, SimpleDatabase &_db);
 
 	/**
 	 * Returns a non-zero job id when we are currently updating

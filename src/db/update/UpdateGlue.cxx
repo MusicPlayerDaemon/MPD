@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Service.hxx"
 #include "UpdateDomain.hxx"
-#include "db/DatabaseSimple.hxx"
+#include "db/plugins/SimpleDatabasePlugin.hxx"
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -44,12 +44,12 @@ UpdateService::Task()
 
 	SetThreadIdlePriority();
 
-	modified = walk.Walk(*db_get_root(), next.path_utf8.c_str(),
+	modified = walk.Walk(*db.GetRoot(), next.path_utf8.c_str(),
 			     next.discard);
 
-	if (modified || !db_exists()) {
+	if (modified || !db.FileExists()) {
 		Error error;
-		if (!db_save(error))
+		if (!db.Save(error))
 			LogError(error, "Failed to save database");
 	}
 
@@ -146,8 +146,7 @@ UpdateService::RunDeferred()
 	}
 }
 
-UpdateService::UpdateService(EventLoop &_loop)
-	:DeferredMonitor(_loop), walk(_loop)
+UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db)
+	:DeferredMonitor(_loop), db(_db), walk(_loop)
 {
-	assert(db_is_simple());
 }

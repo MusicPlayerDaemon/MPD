@@ -95,23 +95,13 @@ db_is_simple(void)
 	return is_simple;
 }
 
-Directory *
-db_get_root(void)
+SimpleDatabase &
+db_get_simple()
 {
+	assert(is_simple);
 	assert(db != nullptr);
-	assert(db_is_simple());
 
-	return ((SimpleDatabase *)db)->GetRoot();
-}
-
-bool
-db_save(Error &error)
-{
-	assert(db != nullptr);
-	assert(db_is_open);
-	assert(db_is_simple());
-
-	return ((SimpleDatabase *)db)->Save(error);
+	return *(SimpleDatabase *)db;
 }
 
 bool

@@ -22,12 +22,9 @@
 
 #include "Compiler.h"
 
-#include <sys/time.h>
-
 struct config_param;
 struct Directory;
-struct db_selection;
-struct db_visitor;
+class SimpleDatabase;
 class Error;
 
 /**
@@ -38,21 +35,9 @@ class Error;
 bool
 db_is_simple(void);
 
-/**
- * Returns the root directory object.  Returns NULL if there is no
- * configured music directory.
- *
- * May only be used if db_is_simple() returns true.
- */
 gcc_pure
-Directory *
-db_get_root(void);
-
-/**
- * May only be used if db_is_simple() returns true.
- */
-bool
-db_save(Error &error);
+SimpleDatabase &
+db_get_simple();
 
 /**
  * Returns true if there is a valid database file on the disk.

@@ -59,6 +59,10 @@ public:
 
 	bool Save(Error &error);
 
+	bool FileExists() const {
+		return mtime > 0;
+	}
+
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
 				const config_param &param,
 				Error &error);

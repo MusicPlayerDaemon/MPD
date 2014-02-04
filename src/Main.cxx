@@ -68,6 +68,7 @@
 #include "db/update/Service.hxx"
 #include "db/DatabaseGlue.hxx"
 #include "db/DatabaseSimple.hxx"
+#include "db/plugins/SimpleDatabasePlugin.hxx"
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -460,7 +461,7 @@ int mpd_main(int argc, char *argv[])
 	const bool create_db = !glue_db_init_and_load();
 
 	instance->update = db_is_simple()
-		? new UpdateService(*main_loop)
+		? new UpdateService(*main_loop, db_get_simple())
 		: nullptr;
 #endif
 
