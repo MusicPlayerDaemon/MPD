@@ -25,6 +25,7 @@
 #include "Partition.hxx"
 #include "mixer/Volume.hxx"
 #include "SongLoader.hxx"
+#include "db/DatabaseGlue.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -97,7 +98,7 @@ StateFile::Read()
 		return;
 	}
 
-	const SongLoader song_loader(nullptr);
+	const SongLoader song_loader(nullptr, GetDatabase());
 
 	const char *line;
 	while ((line = file.ReadLine()) != NULL) {
