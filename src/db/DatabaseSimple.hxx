@@ -49,14 +49,6 @@ Directory *
 db_get_root(void);
 
 /**
- * Caller must lock the #db_mutex.
- */
-gcc_nonnull(1)
-gcc_pure
-Directory *
-db_get_directory(const char *name);
-
-/**
  * May only be used if db_is_simple() returns true.
  */
 bool

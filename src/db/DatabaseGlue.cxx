@@ -104,19 +104,6 @@ db_get_root(void)
 	return ((SimpleDatabase *)db)->GetRoot();
 }
 
-Directory *
-db_get_directory(const char *name)
-{
-	if (db == nullptr)
-		return nullptr;
-
-	Directory *music_root = db_get_root();
-	if (name == nullptr)
-		return music_root;
-
-	return music_root->LookupDirectory(name);
-}
-
 bool
 db_save(Error &error)
 {

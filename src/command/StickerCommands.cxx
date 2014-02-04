@@ -23,7 +23,6 @@
 #include "db/DatabaseLock.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "db/DatabaseGlue.hxx"
-#include "db/DatabaseSimple.hxx"
 #include "sticker/SongSticker.hxx"
 #include "sticker/StickerPrint.hxx"
 #include "sticker/StickerDatabase.hxx"
