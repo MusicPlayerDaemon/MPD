@@ -29,6 +29,7 @@
 
 struct config_param;
 class Mixer;
+class EventLoop;
 class Error;
 
 struct mixer_plugin {
@@ -41,7 +42,8 @@ struct mixer_plugin {
 	 * nullptr to ignore errors
 	 * @return a mixer object, or nullptr on error
 	 */
-	Mixer *(*init)(void *ao, const config_param &param,
+	Mixer *(*init)(EventLoop &event_loop, void *ao,
+		       const config_param &param,
 		       Error &error);
 
 	/**

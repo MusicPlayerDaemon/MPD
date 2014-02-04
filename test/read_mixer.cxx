@@ -35,8 +35,6 @@
 #include <string.h>
 #include <unistd.h>
 
-EventLoop *main_loop;
-
 #ifdef HAVE_PULSE
 #include "output/plugins/PulseOutputPlugin.hxx"
 
@@ -115,10 +113,10 @@ int main(int argc, gcc_unused char **argv)
 	g_thread_init(NULL);
 #endif
 
-	main_loop = new EventLoop;
+	EventLoop event_loop;
 
 	Error error;
-	Mixer *mixer = mixer_new(&alsa_mixer_plugin, nullptr,
+	Mixer *mixer = mixer_new(event_loop, &alsa_mixer_plugin, nullptr,
 				 config_param(), error);
 	if (mixer == NULL) {
 		LogError(error, "mixer_new() failed");
@@ -134,8 +132,6 @@ int main(int argc, gcc_unused char **argv)
 	volume = mixer_get_volume(mixer, error);
 	mixer_close(mixer);
 	mixer_free(mixer);
-
-	delete main_loop;
 
 	assert(volume >= -1 && volume <= 100);
 

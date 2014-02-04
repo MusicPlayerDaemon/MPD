@@ -143,7 +143,8 @@ pulse_mixer_on_change(PulseMixer *pm,
 }
 
 static Mixer *
-pulse_mixer_init(void *ao, gcc_unused const config_param &param,
+pulse_mixer_init(gcc_unused EventLoop &event_loop, void *ao,
+		 gcc_unused const config_param &param,
 		 Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;

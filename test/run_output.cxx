@@ -45,8 +45,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-EventLoop *main_loop;
-
 void
 GlobalEvents::Emit(gcc_unused Event event)
 {
@@ -80,7 +78,7 @@ PlayerControl::PlayerControl(gcc_unused MultipleOutputs &_outputs,
 PlayerControl::~PlayerControl() {}
 
 static AudioOutput *
-load_audio_output(const char *name)
+load_audio_output(EventLoop &event_loop, const char *name)
 {
 	const struct config_param *param;
 
@@ -95,7 +93,8 @@ load_audio_output(const char *name)
 
 	Error error;
 	AudioOutput *ao =
-		audio_output_new(*param, dummy_player_control, error);
+		audio_output_new(event_loop, *param, dummy_player_control,
+				 error);
 	if (ao == nullptr)
 		LogError(error);
 
@@ -189,14 +188,14 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	main_loop = new EventLoop();
+	EventLoop event_loop;
 
 	io_thread_init();
 	io_thread_start();
 
 	/* initialize the audio output */
 
-	AudioOutput *ao = load_audio_output(argv[2]);
+	AudioOutput *ao = load_audio_output(event_loop, argv[2]);
 	if (ao == NULL)
 		return 1;
 
@@ -218,8 +217,6 @@ int main(int argc, char **argv)
 	audio_output_free(ao);
 
 	io_thread_deinit();
-
-	delete main_loop;
 
 	config_global_finish();
 

@@ -67,7 +67,7 @@ struct SoftwareMixer final : public Mixer {
 };
 
 static Mixer *
-software_mixer_init(gcc_unused void *ao,
+software_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused void *ao,
 		    gcc_unused const config_param &param,
 		    gcc_unused Error &error)
 {

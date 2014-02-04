@@ -32,6 +32,7 @@
 class Error;
 class Filter;
 class MusicPipe;
+class EventLoop;
 struct music_chunk;
 struct config_param;
 struct PlayerControl;
@@ -422,7 +423,7 @@ private:
 extern struct notify audio_output_client_notify;
 
 AudioOutput *
-audio_output_new(const config_param &param,
+audio_output_new(EventLoop &event_loop, const config_param &param,
 		 PlayerControl &pc,
 		 Error &error);
 

@@ -96,7 +96,8 @@ OssMixer::Configure(const config_param &param, Error &error)
 }
 
 static Mixer *
-oss_mixer_init(gcc_unused void *ao, const config_param &param,
+oss_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused void *ao,
+	       const config_param &param,
 	       Error &error)
 {
 	OssMixer *om = new OssMixer();

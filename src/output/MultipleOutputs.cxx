@@ -50,10 +50,10 @@ MultipleOutputs::~MultipleOutputs()
 }
 
 static AudioOutput *
-LoadOutput(PlayerControl &pc, const config_param &param)
+LoadOutput(EventLoop &event_loop, PlayerControl &pc, const config_param &param)
 {
 	Error error;
-	AudioOutput *output = audio_output_new(param, pc, error);
+	AudioOutput *output = audio_output_new(event_loop, param, pc, error);
 	if (output == nullptr) {
 		if (param.line > 0)
 			FormatFatalError("line %i: %s",
@@ -67,12 +67,12 @@ LoadOutput(PlayerControl &pc, const config_param &param)
 }
 
 void
-MultipleOutputs::Configure(PlayerControl &pc)
+MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 {
 	const config_param *param = nullptr;
 	while ((param = config_get_next_param(CONF_AUDIO_OUTPUT,
 					      param)) != nullptr) {
-		auto output = LoadOutput(pc, *param);
+		auto output = LoadOutput(event_loop, pc, *param);
 		if (FindByName(output->name) != nullptr)
 			FormatFatalError("output devices with identical "
 					 "names: %s", output->name);
@@ -83,7 +83,7 @@ MultipleOutputs::Configure(PlayerControl &pc)
 	if (outputs.empty()) {
 		/* auto-detect device */
 		const config_param empty;
-		auto output = LoadOutput(pc, empty);
+		auto output = LoadOutput(event_loop, pc, empty);
 		outputs.push_back(output);
 	}
 }

@@ -112,7 +112,7 @@ audio_output_mixer_type(const config_param &param)
 }
 
 static Mixer *
-audio_output_load_mixer(AudioOutput *ao,
+audio_output_load_mixer(EventLoop &event_loop, AudioOutput *ao,
 			const config_param &param,
 			const struct mixer_plugin *plugin,
 			Filter &filter_chain,
@@ -129,10 +129,10 @@ audio_output_load_mixer(AudioOutput *ao,
 		if (plugin == nullptr)
 			return nullptr;
 
-		return mixer_new(plugin, ao, param, error);
+		return mixer_new(event_loop, plugin, ao, param, error);
 
 	case MIXER_TYPE_SOFTWARE:
-		mixer = mixer_new(&software_mixer_plugin, nullptr,
+		mixer = mixer_new(event_loop, &software_mixer_plugin, nullptr,
 				  config_param(),
 				  IgnoreError());
 		assert(mixer != nullptr);
@@ -211,7 +211,8 @@ AudioOutput::Configure(const config_param &param, Error &error)
 }
 
 static bool
-audio_output_setup(AudioOutput *ao, const config_param &param,
+audio_output_setup(EventLoop &event_loop, AudioOutput *ao,
+		   const config_param &param,
 		   Error &error)
 {
 
@@ -241,7 +242,7 @@ audio_output_setup(AudioOutput *ao, const config_param &param,
 	/* set up the mixer */
 
 	Error mixer_error;
-	ao->mixer = audio_output_load_mixer(ao, param,
+	ao->mixer = audio_output_load_mixer(event_loop, ao, param,
 					    ao->plugin.mixer_plugin,
 					    *ao->filter, mixer_error);
 	if (ao->mixer == nullptr && mixer_error.IsDefined())
@@ -277,7 +278,7 @@ audio_output_setup(AudioOutput *ao, const config_param &param,
 }
 
 AudioOutput *
-audio_output_new(const config_param &param,
+audio_output_new(EventLoop &event_loop, const config_param &param,
 		 PlayerControl &pc,
 		 Error &error)
 {
@@ -316,7 +317,7 @@ audio_output_new(const config_param &param,
 	if (ao == nullptr)
 		return nullptr;
 
-	if (!audio_output_setup(ao, param, error)) {
+	if (!audio_output_setup(event_loop, ao, param, error)) {
 		ao_plugin_finish(ao);
 		return nullptr;
 	}

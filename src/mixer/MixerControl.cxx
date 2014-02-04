@@ -25,7 +25,8 @@
 #include <assert.h>
 
 Mixer *
-mixer_new(const struct mixer_plugin *plugin, void *ao,
+mixer_new(EventLoop &event_loop,
+	  const mixer_plugin *plugin, void *ao,
 	  const config_param &param,
 	  Error &error)
 {
@@ -33,7 +34,7 @@ mixer_new(const struct mixer_plugin *plugin, void *ao,
 
 	assert(plugin != nullptr);
 
-	mixer = plugin->init(ao, param, error);
+	mixer = plugin->init(event_loop, ao, param, error);
 
 	assert(mixer == nullptr || mixer->IsPlugin(*plugin));
 

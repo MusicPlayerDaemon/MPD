@@ -21,7 +21,6 @@
 #include "mixer/MixerInternal.hxx"
 #include "output/OutputAPI.hxx"
 #include "GlobalEvents.hxx"
-#include "Main.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "event/Loop.hxx"
@@ -62,6 +61,8 @@ private:
 };
 
 class AlsaMixer final : public Mixer {
+	EventLoop &event_loop;
+
 	const char *device;
 	const char *control;
 	unsigned int index;
@@ -75,7 +76,8 @@ class AlsaMixer final : public Mixer {
 	AlsaMixerMonitor *monitor;
 
 public:
-	AlsaMixer():Mixer(alsa_mixer_plugin) {}
+	AlsaMixer(EventLoop &_event_loop)
+		:Mixer(alsa_mixer_plugin), event_loop(_event_loop) {}
 
 	void Configure(const config_param &param);
 	bool Setup(Error &error);
@@ -162,10 +164,11 @@ AlsaMixer::Configure(const config_param &param)
 }
 
 static Mixer *
-alsa_mixer_init(gcc_unused void *ao, const config_param &param,
+alsa_mixer_init(EventLoop &event_loop, gcc_unused void *ao,
+		const config_param &param,
 		gcc_unused Error &error)
 {
-	AlsaMixer *am = new AlsaMixer();
+	AlsaMixer *am = new AlsaMixer(event_loop);
 	am->Configure(param);
 
 	return am;
@@ -237,7 +240,7 @@ AlsaMixer::Setup(Error &error)
 
 	snd_mixer_elem_set_callback(elem, alsa_mixer_elem_callback);
 
-	monitor = new AlsaMixerMonitor(*main_loop, handle);
+	monitor = new AlsaMixerMonitor(event_loop, handle);
 
 	return true;
 }

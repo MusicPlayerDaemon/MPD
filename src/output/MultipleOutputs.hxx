@@ -37,6 +37,7 @@
 struct AudioFormat;
 class MusicBuffer;
 class MusicPipe;
+class EventLoop;
 struct music_chunk;
 struct PlayerControl;
 struct AudioOutput;
@@ -72,7 +73,7 @@ public:
 	MultipleOutputs();
 	~MultipleOutputs();
 
-	void Configure(PlayerControl &pc);
+	void Configure(EventLoop &event_loop, PlayerControl &pc);
 
 	/**
 	 * Returns the total number of audio output devices, including
