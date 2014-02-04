@@ -20,11 +20,11 @@
 #include "config.h"
 #include "Service.hxx"
 #include "UpdateDomain.hxx"
+#include "db/DatabaseListener.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "Main.hxx"
 #include "Instance.hxx"
 #include "system/FatalError.hxx"
 #include "thread/Id.hxx"
@@ -139,7 +139,7 @@ UpdateService::RunDeferred()
 
 	if (modified)
 		/* send "idle" events */
-		instance->DatabaseModified();
+		listener.OnDatabaseModified();
 
 	auto i = queue.Pop();
 	if (i.IsDefined()) {
@@ -150,8 +150,10 @@ UpdateService::RunDeferred()
 	}
 }
 
-UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db)
-	:DeferredMonitor(_loop), db(_db), progress(UPDATE_PROGRESS_IDLE),
+UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
+			     DatabaseListener &_listener)
+	:DeferredMonitor(_loop), db(_db), listener(_listener),
+	 progress(UPDATE_PROGRESS_IDLE),
 	 update_task_id(0),
 	 walk(_loop)
 {

@@ -211,7 +211,7 @@ glue_db_init_and_load(void)
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
-	instance->update = new UpdateService(*main_loop, db);
+	instance->update = new UpdateService(*main_loop, db, *instance);
 
 	/* run database update after daemonization? */
 	return db.FileExists();
