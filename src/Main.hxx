@@ -26,8 +26,6 @@ struct Instance;
 
 extern ThreadId main_thread;
 
-extern EventLoop *main_loop;
-
 extern Instance *instance;
 
 /**

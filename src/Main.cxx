@@ -110,7 +110,6 @@ static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
 static constexpr Domain main_domain("main");
 
 ThreadId main_thread;
-EventLoop *main_loop;
 
 Instance *instance;
 
@@ -197,7 +196,8 @@ glue_db_init_and_load(void)
 
 	bool is_simple;
 	Error error;
-	instance->database = DatabaseGlobalInit(*main_loop, *instance, *param,
+	instance->database = DatabaseGlobalInit(*instance->event_loop,
+						*instance, *param,
 						is_simple, error);
 	if (instance->database == nullptr)
 		FatalError(error);
@@ -211,7 +211,8 @@ glue_db_init_and_load(void)
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
-	instance->update = new UpdateService(*main_loop, db, *instance);
+	instance->update = new UpdateService(*instance->event_loop, db,
+					     *instance);
 
 	/* run database update after daemonization? */
 	return db.FileExists();
@@ -247,7 +248,8 @@ glue_state_file_init(Error &error)
 		return !error.IsDefined();
 
 	state_file = new StateFile(std::move(path_fs),
-				   *instance->partition, *main_loop);
+				   *instance->partition,
+				   *instance->event_loop);
 	state_file->Read();
 	return true;
 }
@@ -353,7 +355,7 @@ idle_event_emitted(void)
 static void
 shutdown_event_emitted(void)
 {
-	main_loop->Break();
+	instance->event_loop->Break();
 }
 
 #endif
@@ -411,9 +413,9 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	main_thread = ThreadId::GetCurrent();
-	main_loop = new EventLoop();
 
 	instance = new Instance();
+	instance->event_loop = new EventLoop();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
@@ -431,7 +433,7 @@ int mpd_main(int argc, char *argv[])
 	const unsigned max_clients = config_get_positive(CONF_MAX_CONN, 10);
 	instance->client_list = new ClientList(max_clients);
 
-	if (!listen_global_init(*main_loop, error)) {
+	if (!listen_global_init(*instance->event_loop, error)) {
 		LogError(error);
 		return EXIT_FAILURE;
 	}
@@ -439,7 +441,7 @@ int mpd_main(int argc, char *argv[])
 	daemonize_set_user();
 	daemonize_begin(options.daemon);
 
-	GlobalEvents::Initialize(*main_loop);
+	GlobalEvents::Initialize(*instance->event_loop);
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
 #ifdef WIN32
 	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);
@@ -476,7 +478,7 @@ int mpd_main(int argc, char *argv[])
 	initialize_decoder_and_player();
 	volume_init();
 	initAudioConfig();
-	instance->partition->outputs.Configure(*main_loop,
+	instance->partition->outputs.Configure(*instance->event_loop,
 					       instance->partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
@@ -492,7 +494,7 @@ int mpd_main(int argc, char *argv[])
 
 	setup_log_output(options.log_stderr);
 
-	SignalHandlersInit(*main_loop);
+	SignalHandlersInit(*instance->event_loop);
 
 	io_thread_start();
 
@@ -502,7 +504,7 @@ int mpd_main(int argc, char *argv[])
 		FatalError(error);
 #endif
 
-	ZeroconfInit(*main_loop);
+	ZeroconfInit(*instance->event_loop);
 
 	player_create(instance->partition->pc);
 
@@ -527,7 +529,7 @@ int mpd_main(int argc, char *argv[])
 #ifdef ENABLE_INOTIFY
 		if (mapper_has_music_directory() &&
 		    instance->update != nullptr)
-			mpd_inotify_init(*main_loop, *instance->update,
+			mpd_inotify_init(*instance->event_loop, *instance->update,
 					 config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
 							     G_MAXUINT));
 #else
@@ -551,7 +553,7 @@ int mpd_main(int argc, char *argv[])
 	SetThreadTimerSlackMS(100);
 
 	/* run the main loop */
-	main_loop->Run();
+	instance->event_loop->Run();
 
 #ifdef WIN32
 	win32_app_stopping();
@@ -608,8 +610,8 @@ int mpd_main(int argc, char *argv[])
 	config_global_finish();
 	io_thread_deinit();
 	SignalHandlersFinish();
+	delete instance->event_loop;
 	delete instance;
-	delete main_loop;
 	daemonize_finish();
 #ifdef WIN32
 	WSACleanup();

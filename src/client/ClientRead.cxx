@@ -19,7 +19,8 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
-#include "Main.hxx"
+#include "Partition.hxx"
+#include "Instance.hxx"
 #include "event/Loop.hxx"
 #include "util/CharUtil.hxx"
 
@@ -53,7 +54,7 @@ Client::OnSocketInput(void *data, size_t length)
 
 	case CommandResult::KILL:
 		Close();
-		main_loop->Break();
+		partition.instance.event_loop->Break();
 		return InputResult::CLOSED;
 
 	case CommandResult::FINISH:

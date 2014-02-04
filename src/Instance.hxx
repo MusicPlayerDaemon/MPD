@@ -34,6 +34,7 @@ class Database;
 class UpdateService;
 #endif
 
+class EventLoop;
 class Error;
 class ClientList;
 struct Partition;
@@ -52,6 +53,8 @@ struct Instance final
 	public NeighborListener
 #endif
 {
+	EventLoop *event_loop;
+
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	NeighborGlue *neighbors;
 #endif
