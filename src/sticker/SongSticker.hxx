@@ -25,8 +25,8 @@
 #include <string>
 
 struct LightSong;
-struct Directory;
 struct sticker;
+class Database;
 
 /**
  * Returns one value from a song's sticker record.  The caller must
@@ -78,7 +78,7 @@ sticker_song_get(const LightSong &song);
  * failure
  */
 bool
-sticker_song_find(const char *base_uri, const char *name,
+sticker_song_find(const Database &db, const char *base_uri, const char *name,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data);

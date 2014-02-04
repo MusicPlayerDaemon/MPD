@@ -133,7 +133,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 			argv[4],
 		};
 
-		success = sticker_song_find(base_uri, data.name,
+		success = sticker_song_find(*db, base_uri, data.name,
 					    sticker_song_find_print_cb, &data);
 		if (!success) {
 			command_error(client, ACK_ERROR_SYSTEM,

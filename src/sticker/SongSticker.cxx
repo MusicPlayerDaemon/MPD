@@ -21,7 +21,6 @@
 #include "SongSticker.hxx"
 #include "StickerDatabase.hxx"
 #include "db/LightSong.hxx"
-#include "db/DatabaseGlue.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "util/Error.hxx"
 
@@ -95,15 +94,13 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 }
 
 bool
-sticker_song_find(const char *base_uri, const char *name,
+sticker_song_find(const Database &db, const char *base_uri, const char *name,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data)
 {
 	struct sticker_song_find_data data;
-	data.db = GetDatabase();
-	assert(data.db != nullptr);
-
+	data.db = &db;
 	data.func = func;
 	data.user_data = user_data;
 
