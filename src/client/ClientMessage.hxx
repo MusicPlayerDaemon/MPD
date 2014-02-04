@@ -24,6 +24,12 @@
 
 #include <string>
 
+#ifdef WIN32
+/* fuck WIN32! */
+#include <windows.h>
+#undef GetMessage
+#endif
+
 /**
  * A client-to-client message.
  */
