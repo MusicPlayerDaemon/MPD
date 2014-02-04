@@ -31,6 +31,10 @@
 #include "thread/Thread.hxx"
 #include "thread/Util.hxx"
 
+#ifndef NDEBUG
+#include "event/Loop.hxx"
+#endif
+
 #include <assert.h>
 
 inline void
@@ -73,7 +77,7 @@ UpdateService::Task(void *ctx)
 void
 UpdateService::StartThread(UpdateQueueItem &&i)
 {
-	assert(main_thread.IsInside());
+	assert(GetEventLoop().IsInside());
 
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
@@ -100,7 +104,7 @@ UpdateService::GenerateId()
 unsigned
 UpdateService::Enqueue(const char *path, bool discard)
 {
-	assert(main_thread.IsInside());
+	assert(GetEventLoop().IsInside());
 
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		const unsigned id = GenerateId();
