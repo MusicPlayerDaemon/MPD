@@ -115,7 +115,7 @@ int main(int argc, gcc_unused char **argv)
 	g_thread_init(NULL);
 #endif
 
-	main_loop = new EventLoop(EventLoop::Default());
+	main_loop = new EventLoop;
 
 	Error error;
 	Mixer *mixer = mixer_new(&alsa_mixer_plugin, nullptr,

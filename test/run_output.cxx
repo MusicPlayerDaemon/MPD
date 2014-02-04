@@ -189,7 +189,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	main_loop = new EventLoop(EventLoop::Default());
+	main_loop = new EventLoop();
 
 	io_thread_init();
 	io_thread_start();

@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 
 	path = argv[1];
 
-	EventLoop event_loop((EventLoop::Default()));
+	EventLoop event_loop;
 	const ShutdownHandler shutdown_handler(event_loop);
 
 	Error error;

@@ -411,7 +411,7 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	main_thread = ThreadId::GetCurrent();
-	main_loop = new EventLoop(EventLoop::Default());
+	main_loop = new EventLoop();
 
 	instance = new Instance();
 

@@ -115,9 +115,7 @@ class EventLoop final : SocketMonitor
 	ThreadId thread;
 
 public:
-	struct Default {};
-
-	EventLoop(Default dummy=Default());
+	EventLoop();
 	~EventLoop();
 
 	/**

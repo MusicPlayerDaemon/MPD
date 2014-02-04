@@ -28,7 +28,7 @@
 
 #include <algorithm>
 
-EventLoop::EventLoop(Default)
+EventLoop::EventLoop()
 	:SocketMonitor(*this),
 	 now_ms(::MonotonicClockMS()),
 	 quit(false), busy(true),

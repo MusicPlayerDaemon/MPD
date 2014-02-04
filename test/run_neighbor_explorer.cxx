@@ -66,7 +66,7 @@ main(int argc, char **argv)
 
 	/* initialize the core */
 
-	EventLoop loop((EventLoop::Default()));
+	EventLoop loop;
 
 	/* initialize neighbor plugins */
 
