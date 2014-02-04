@@ -24,7 +24,7 @@ class EventLoop;
 
 class ShutdownHandler {
 public:
-	ShutdownHandler(EventLoop &loop);
+	explicit ShutdownHandler(EventLoop &loop);
 	~ShutdownHandler();
 };
 
