@@ -34,7 +34,6 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "protocol/Ack.hxx"
-#include "Main.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/IdleMonitor.hxx"
 #include "Log.hxx"
