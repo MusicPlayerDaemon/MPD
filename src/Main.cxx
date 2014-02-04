@@ -204,8 +204,13 @@ glue_db_init_and_load(void)
 	if (!DatabaseGlobalOpen(error))
 		FatalError(error);
 
+	if (!db_is_simple())
+		return true;
+
+	instance->update = new UpdateService(*main_loop, db_get_simple());
+
 	/* run database update after daemonization? */
-	return !db_is_simple() || db_exists();
+	return db_exists();
 }
 
 #endif
@@ -459,10 +464,6 @@ int mpd_main(int argc, char *argv[])
 
 #ifdef ENABLE_DATABASE
 	const bool create_db = !glue_db_init_and_load();
-
-	instance->update = db_is_simple()
-		? new UpdateService(*main_loop, db_get_simple())
-		: nullptr;
 #endif
 
 	glue_sticker_init();

@@ -62,6 +62,12 @@ struct Instance final
 
 	Partition *partition;
 
+	Instance() {
+#ifdef ENABLE_DATABASE
+		update = nullptr;
+#endif
+	}
+
 #ifdef ENABLE_DATABASE
 
 	void DeleteSong(const char *uri);
