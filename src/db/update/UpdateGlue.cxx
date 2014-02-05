@@ -77,7 +77,7 @@ UpdateService::Task(void *ctx)
 void
 UpdateService::StartThread(UpdateQueueItem &&i)
 {
-	assert(GetEventLoop().IsInside());
+	assert(GetEventLoop().IsInsideOrNull());
 
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
@@ -104,7 +104,7 @@ UpdateService::GenerateId()
 unsigned
 UpdateService::Enqueue(const char *path, bool discard)
 {
-	assert(GetEventLoop().IsInside());
+	assert(GetEventLoop().IsInsideOrNull());
 
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		const unsigned id = GenerateId();
