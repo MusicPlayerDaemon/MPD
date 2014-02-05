@@ -31,6 +31,8 @@ class AllocatedPath;
 
 class StorageDirectoryReader {
 public:
+	StorageDirectoryReader() = default;
+	StorageDirectoryReader(const StorageDirectoryReader &) = delete;
 	virtual ~StorageDirectoryReader() {}
 
 	virtual const char *Read() = 0;
@@ -39,6 +41,8 @@ public:
 
 class Storage {
 public:
+	Storage() = default;
+	Storage(const Storage &) = delete;
 	virtual ~Storage() {}
 
 	virtual bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,

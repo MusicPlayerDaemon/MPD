@@ -56,8 +56,6 @@ public:
 	LocalStorage(const char *_base_utf8, Path _base_fs)
 		:base_utf8(_base_utf8), base_fs(_base_fs) {}
 
-	LocalStorage(const LocalStorage &) = delete;
-
 	/* virtual methods from class Storage */
 	virtual bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
 			     Error &error) override;
