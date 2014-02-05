@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "LocalStorage.hxx"
+#include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "util/Error.hxx"
@@ -210,3 +211,8 @@ CreateLocalStorage(Path base_fs)
 {
 	return new LocalStorage(base_fs);
 }
+
+const StoragePlugin local_storage_plugin = {
+	"local",
+	nullptr,
+};

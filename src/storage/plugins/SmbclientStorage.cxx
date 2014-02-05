@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "SmbclientStorage.hxx"
+#include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "lib/smbclient/Init.hxx"
@@ -178,9 +179,12 @@ SmbclientDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
 	return ::GetInfo(path.c_str(), info, error);
 }
 
-Storage *
-CreateSmbclientStorage(const char *base, Error &error)
+static Storage *
+CreateSmbclientStorageURI(const char *base, Error &error)
 {
+	if (memcmp(base, "smb://", 6) != 0)
+		return nullptr;
+
 	if (!SmbclientInit(error))
 		return nullptr;
 
@@ -200,3 +204,8 @@ CreateSmbclientStorage(const char *base, Error &error)
 
 	return new SmbclientStorage(base, ctx2);
 }
+
+const StoragePlugin smbclient_storage_plugin = {
+	"smbclient",
+	CreateSmbclientStorageURI,
+};

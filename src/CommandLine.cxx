@@ -43,6 +43,8 @@
 #ifdef ENABLE_DATABASE
 #include "db/Registry.hxx"
 #include "db/DatabasePlugin.hxx"
+#include "storage/Registry.hxx"
+#include "storage/StoragePlugin.hxx"
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -112,6 +114,12 @@ static void version(void)
 	     "Database plugins:");
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
+		printf(" %s", (*i)->name);
+
+	puts("\n\n"
+	     "Storage plugins:");
+
+	for (auto i = storage_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
 #endif
 

@@ -22,10 +22,8 @@
 
 #include "check.h"
 
-class Error;
-class Storage;
+struct StoragePlugin;
 
-Storage *
-CreateSmbclientStorage(const char *base, Error &error);
+extern const StoragePlugin smbclient_storage_plugin;
 
 #endif

@@ -17,20 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STORAGE_LOCAL_HXX
-#define MPD_STORAGE_LOCAL_HXX
+#ifndef MPD_STORAGE_REGISTRY_HXX
+#define MPD_STORAGE_REGISTRY_HXX
 
 #include "check.h"
 #include "Compiler.h"
 
 struct StoragePlugin;
 class Storage;
-class Path;
+class Error;
 
-extern const StoragePlugin local_storage_plugin;
+/**
+ * nullptr terminated list of all storage plugins which were enabled at
+ * compile time.
+ */
+extern const StoragePlugin *const storage_plugins[];
 
-gcc_malloc gcc_nonnull_all
+gcc_nonnull_all gcc_pure
+const StoragePlugin *
+GetStoragePluginByName(const char *name);
+
+gcc_nonnull_all gcc_malloc
 Storage *
-CreateLocalStorage(Path base_fs);
+CreateStorageURI(const char *uri, Error &error);
 
 #endif

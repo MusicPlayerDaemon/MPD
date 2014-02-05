@@ -17,20 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_STORAGE_LOCAL_HXX
-#define MPD_STORAGE_LOCAL_HXX
+#ifndef MPD_STORAGE_PLUGIN_HXX
+#define MPD_STORAGE_PLUGIN_HXX
 
 #include "check.h"
-#include "Compiler.h"
 
-struct StoragePlugin;
+class Error;
 class Storage;
-class Path;
 
-extern const StoragePlugin local_storage_plugin;
+struct StoragePlugin {
+	const char *name;
 
-gcc_malloc gcc_nonnull_all
-Storage *
-CreateLocalStorage(Path base_fs);
+	Storage *(*create_uri)(const char *uri, Error &error);
+};
 
 #endif
