@@ -92,7 +92,7 @@ LocalStorage::GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
 	return Stat(path_fs, follow, info, error);
 }
 
-LocalDirectoryReader *
+StorageDirectoryReader *
 LocalStorage::OpenDirectory(const char *uri_utf8, Error &error)
 {
 	AllocatedPath path_fs = MapFS(uri_utf8, error);

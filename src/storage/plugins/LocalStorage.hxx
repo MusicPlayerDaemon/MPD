@@ -60,8 +60,8 @@ public:
 	virtual bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
 			     Error &error) override;
 
-	virtual LocalDirectoryReader *OpenDirectory(const char *uri_utf8,
-						    Error &error) override;
+	virtual StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
+						      Error &error) override;
 
 	virtual std::string MapUTF8(const char *uri_utf8) const override;
 
