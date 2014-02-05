@@ -21,6 +21,7 @@
 #define MPD_UPDATE_IO_HXX
 
 #include "check.h"
+#include "Compiler.h"
 
 #include <sys/stat.h>
 
@@ -33,9 +34,11 @@ int
 stat_directory_child(const Directory &parent, const char *name,
 		     struct stat *st);
 
+gcc_pure
 bool
 directory_exists(const Directory &directory);
 
+gcc_pure
 bool
 directory_child_is_regular(const Directory &directory,
 			   const char *name_utf8);
@@ -43,6 +46,7 @@ directory_child_is_regular(const Directory &directory,
 /**
  * Checks if the given permissions on the mapped file are given.
  */
+gcc_pure
 bool
 directory_child_access(const Directory &directory,
 		       const char *name, int mode);
