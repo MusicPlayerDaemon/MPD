@@ -20,8 +20,8 @@
 #include "config.h"
 #include "PulseMixerPlugin.hxx"
 #include "mixer/MixerInternal.hxx"
+#include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
-#include "GlobalEvents.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -41,9 +41,9 @@ class PulseMixer final : public Mixer {
 	struct pa_cvolume volume;
 
 public:
-	PulseMixer(PulseOutput &_output)
-		:Mixer(pulse_mixer_plugin),
-		output(_output), online(false)
+	PulseMixer(PulseOutput &_output, MixerListener &_listener)
+		:Mixer(pulse_mixer_plugin, _listener),
+		 output(_output), online(false)
 	{
 	}
 
@@ -75,7 +75,7 @@ PulseMixer::Offline()
 
 	online = false;
 
-	GlobalEvents::Emit(GlobalEvents::MIXER);
+	listener.OnMixerVolumeChanged(*this, -1);
 }
 
 inline void
@@ -92,7 +92,7 @@ PulseMixer::VolumeCallback(const pa_sink_input_info *i, int eol)
 	online = true;
 	volume = i->volume;
 
-	GlobalEvents::Emit(GlobalEvents::MIXER);
+	listener.OnMixerVolumeChanged(*this, GetVolume(IgnoreError()));
 }
 
 /**
@@ -165,11 +165,12 @@ pulse_mixer_on_change(PulseMixer &pm,
 
 static Mixer *
 pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
+		 MixerListener &listener,
 		 gcc_unused const config_param &param,
 		 gcc_unused Error &error)
 {
 	PulseOutput &po = (PulseOutput &)ao;
-	PulseMixer *pm = new PulseMixer(po);
+	PulseMixer *pm = new PulseMixer(po, listener);
 
 	pulse_output_set_mixer(po, *pm);
 

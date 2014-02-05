@@ -34,8 +34,8 @@ class WinmmMixer final : public Mixer {
 	WinmmOutput &output;
 
 public:
-	WinmmMixer(WinmmOutput &_output)
-		:Mixer(winmm_mixer_plugin),
+	WinmmMixer(WinmmOutput &_output, MixerListener &_listener)
+		:Mixer(winmm_mixer_plugin, _listener),
 		output(_output) {
 	}
 
@@ -68,10 +68,11 @@ winmm_volume_encode(int volume)
 
 static Mixer *
 winmm_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
+		 MixerListener &listener,
 		 gcc_unused const config_param &param,
 		 gcc_unused Error &error)
 {
-	return new WinmmMixer((WinmmOutput &)ao);
+	return new WinmmMixer((WinmmOutput &)ao, listener);
 }
 
 int

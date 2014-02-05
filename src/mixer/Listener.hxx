@@ -17,44 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Partition.hxx"
-#include "DetachedSong.hxx"
-#include "output/MultipleOutputs.hxx"
-#include "mixer/Volume.hxx"
-#include "Idle.hxx"
+#ifndef MPD_MIXER_LISTENER_HXX
+#define MPD_MIXER_LISTENER_HXX
 
-#ifdef ENABLE_DATABASE
+class Mixer;
 
-void
-Partition::DatabaseModified(const Database &db)
-{
-	playlist.DatabaseModified(db);
-}
+/**
+ * An interface that listens on events from mixer plugins.  The
+ * methods must be thread-safe and non-blocking.
+ */
+class MixerListener {
+public:
+	virtual void OnMixerVolumeChanged(Mixer &mixer, int volume) = 0;
+};
 
 #endif
-
-void
-Partition::TagModified()
-{
-	DetachedSong *song = pc.LockReadTaggedSong();
-	if (song != nullptr) {
-		playlist.TagModified(std::move(*song));
-		delete song;
-	}
-}
-
-void
-Partition::SyncWithPlayer()
-{
-	playlist.SyncWithPlayer(pc);
-}
-
-void
-Partition::OnMixerVolumeChanged(gcc_unused Mixer &mixer, gcc_unused int volume)
-{
-	InvalidateHardwareVolume();
-
-	/* notify clients */
-	idle_add(IDLE_MIXER);
-}

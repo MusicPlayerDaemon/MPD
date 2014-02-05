@@ -1033,6 +1033,7 @@ MIXER_LIBS = \
 	$(PULSE_LIBS)
 
 MIXER_API_SRC = \
+	src/mixer/Listener.hxx \
 	src/mixer/MixerPlugin.hxx \
 	src/mixer/MixerList.hxx \
 	src/mixer/MixerControl.cxx src/mixer/MixerControl.hxx \

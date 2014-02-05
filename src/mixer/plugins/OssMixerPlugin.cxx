@@ -49,7 +49,8 @@ class OssMixer final : public Mixer {
 	int volume_control;
 
 public:
-	OssMixer():Mixer(oss_mixer_plugin) {}
+	OssMixer(MixerListener &_listener)
+		:Mixer(oss_mixer_plugin, _listener) {}
 
 	bool Configure(const config_param &param, Error &error);
 
@@ -98,10 +99,11 @@ OssMixer::Configure(const config_param &param, Error &error)
 
 static Mixer *
 oss_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused AudioOutput &ao,
+	       MixerListener &listener,
 	       const config_param &param,
 	       Error &error)
 {
-	OssMixer *om = new OssMixer();
+	OssMixer *om = new OssMixer(listener);
 
 	if (!om->Configure(param, error)) {
 		delete om;

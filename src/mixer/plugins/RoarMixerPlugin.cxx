@@ -29,9 +29,9 @@ class RoarMixer final : public Mixer {
 	RoarOutput &self;
 
 public:
-	RoarMixer(RoarOutput &_output)
-		:Mixer(roar_mixer_plugin),
-		self(_output) {}
+	RoarMixer(RoarOutput &_output, MixerListener &_listener)
+		:Mixer(roar_mixer_plugin, _listener),
+		 self(_output) {}
 
 	/* virtual methods from class Mixer */
 	virtual bool Open(gcc_unused Error &error) override {
@@ -47,10 +47,11 @@ public:
 
 static Mixer *
 roar_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
+		MixerListener &listener,
 		gcc_unused const config_param &param,
 		gcc_unused Error &error)
 {
-	return new RoarMixer((RoarOutput &)ao);
+	return new RoarMixer((RoarOutput &)ao, listener);
 }
 
 int

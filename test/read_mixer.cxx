@@ -22,7 +22,6 @@
 #include "mixer/MixerList.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "pcm/Volume.hxx"
-#include "GlobalEvents.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
 #include "config/ConfigData.hxx"
@@ -34,11 +33,6 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
-
-void
-GlobalEvents::Emit(gcc_unused Event event)
-{
-}
 
 const struct filter_plugin *
 filter_plugin_by_name(gcc_unused const char *name)
@@ -65,6 +59,7 @@ int main(int argc, gcc_unused char **argv)
 	Error error;
 	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin,
 				 *(AudioOutput *)nullptr,
+				 *(MixerListener *)nullptr,
 				 config_param(), error);
 	if (mixer == NULL) {
 		LogError(error, "mixer_new() failed");

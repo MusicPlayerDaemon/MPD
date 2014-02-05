@@ -38,12 +38,15 @@ struct AudioFormat;
 class MusicBuffer;
 class MusicPipe;
 class EventLoop;
+class MixerListener;
 struct music_chunk;
 struct PlayerControl;
 struct AudioOutput;
 class Error;
 
 class MultipleOutputs {
+	MixerListener &mixer_listener;
+
 	std::vector<AudioOutput *> outputs;
 
 	AudioFormat input_audio_format;
@@ -70,7 +73,7 @@ public:
 	 * Load audio outputs from the configuration file and
 	 * initialize them.
 	 */
-	MultipleOutputs();
+	MultipleOutputs(MixerListener &_mixer_listener);
 	~MultipleOutputs();
 
 	void Configure(EventLoop &event_loop, PlayerControl &pc);

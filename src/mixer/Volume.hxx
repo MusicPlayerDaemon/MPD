@@ -26,7 +26,8 @@
 
 class MultipleOutputs;
 
-void volume_init(void);
+void
+InvalidateHardwareVolume();
 
 gcc_pure
 int

@@ -116,6 +116,7 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 			const config_param &param,
 			const MixerPlugin *plugin,
 			Filter &filter_chain,
+			MixerListener &listener,
 			Error &error)
 {
 	Mixer *mixer;
@@ -129,10 +130,12 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 		if (plugin == nullptr)
 			return nullptr;
 
-		return mixer_new(event_loop, *plugin, ao, param, error);
+		return mixer_new(event_loop, *plugin, ao, listener,
+				 param, error);
 
 	case MIXER_TYPE_SOFTWARE:
 		mixer = mixer_new(event_loop, software_mixer_plugin, ao,
+				  listener,
 				  config_param(),
 				  IgnoreError());
 		assert(mixer != nullptr);
@@ -212,6 +215,7 @@ AudioOutput::Configure(const config_param &param, Error &error)
 
 static bool
 audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
+		   MixerListener &mixer_listener,
 		   const config_param &param,
 		   Error &error)
 {
@@ -244,7 +248,9 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 	Error mixer_error;
 	ao.mixer = audio_output_load_mixer(event_loop, ao, param,
 					   ao.plugin.mixer_plugin,
-					   *ao.filter, mixer_error);
+					   *ao.filter,
+					   mixer_listener,
+					   mixer_error);
 	if (ao.mixer == nullptr && mixer_error.IsDefined())
 		FormatError(mixer_error,
 			    "Failed to initialize hardware mixer for '%s'",
@@ -279,6 +285,7 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 
 AudioOutput *
 audio_output_new(EventLoop &event_loop, const config_param &param,
+		 MixerListener &mixer_listener,
 		 PlayerControl &pc,
 		 Error &error)
 {
@@ -317,7 +324,8 @@ audio_output_new(EventLoop &event_loop, const config_param &param,
 	if (ao == nullptr)
 		return nullptr;
 
-	if (!audio_output_setup(event_loop, *ao, param, error)) {
+	if (!audio_output_setup(event_loop, *ao, mixer_listener,
+				param, error)) {
 		ao_plugin_finish(ao);
 		return nullptr;
 	}

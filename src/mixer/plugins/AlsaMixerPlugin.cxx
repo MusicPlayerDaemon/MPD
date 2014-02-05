@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "mixer/MixerInternal.hxx"
+#include "mixer/Listener.hxx"
 #include "output/OutputAPI.hxx"
-#include "GlobalEvents.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "event/Loop.hxx"
@@ -76,8 +76,9 @@ class AlsaMixer final : public Mixer {
 	AlsaMixerMonitor *monitor;
 
 public:
-	AlsaMixer(EventLoop &_event_loop)
-		:Mixer(alsa_mixer_plugin), event_loop(_event_loop) {}
+	AlsaMixer(EventLoop &_event_loop, MixerListener &_listener)
+		:Mixer(alsa_mixer_plugin, _listener),
+		 event_loop(_event_loop) {}
 
 	virtual ~AlsaMixer();
 
@@ -142,10 +143,15 @@ AlsaMixerMonitor::DispatchSockets()
  */
 
 static int
-alsa_mixer_elem_callback(gcc_unused snd_mixer_elem_t *elem, unsigned mask)
+alsa_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned mask)
 {
-	if (mask & SND_CTL_EVENT_MASK_VALUE)
-		GlobalEvents::Emit(GlobalEvents::MIXER);
+	AlsaMixer &mixer = *(AlsaMixer *)
+		snd_mixer_elem_get_callback_private(elem);
+
+	if (mask & SND_CTL_EVENT_MASK_VALUE) {
+		int volume = mixer.GetVolume(IgnoreError());
+		mixer.listener.OnMixerVolumeChanged(mixer, volume);
+	}
 
 	return 0;
 }
@@ -168,10 +174,11 @@ AlsaMixer::Configure(const config_param &param)
 
 static Mixer *
 alsa_mixer_init(EventLoop &event_loop, gcc_unused AudioOutput &ao,
+		MixerListener &listener,
 		const config_param &param,
 		gcc_unused Error &error)
 {
-	AlsaMixer *am = new AlsaMixer(event_loop);
+	AlsaMixer *am = new AlsaMixer(event_loop, listener);
 	am->Configure(param);
 
 	return am;
@@ -236,6 +243,7 @@ AlsaMixer::Setup(Error &error)
 	snd_mixer_selem_get_playback_volume_range(elem, &volume_min,
 						  &volume_max);
 
+	snd_mixer_elem_set_callback_private(elem, this);
 	snd_mixer_elem_set_callback(elem, alsa_mixer_elem_callback);
 
 	monitor = new AlsaMixerMonitor(event_loop, handle);

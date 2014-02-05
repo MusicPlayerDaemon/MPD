@@ -33,7 +33,6 @@
 #include "client/ClientList.hxx"
 #include "command/AllCommands.hxx"
 #include "Partition.hxx"
-#include "mixer/Volume.hxx"
 #include "tag/TagConfig.hxx"
 #include "ReplayGainConfig.hxx"
 #include "Idle.hxx"
@@ -469,7 +468,6 @@ int mpd_main(int argc, char *argv[])
 
 	command_init();
 	initialize_decoder_and_player();
-	volume_init();
 	initAudioConfig();
 	instance->partition->outputs.Configure(*instance->event_loop,
 					       instance->partition->pc);

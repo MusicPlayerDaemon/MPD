@@ -42,9 +42,6 @@ namespace GlobalEvents {
 		/** the current song's tag has changed */
 		TAG,
 
-		/** a hardware mixer plugin has detected a change */
-		MIXER,
-
 #ifdef WIN32
 		/** shutdown requested */
 		SHUTDOWN,

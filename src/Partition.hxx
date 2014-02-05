@@ -22,6 +22,7 @@
 
 #include "Playlist.hxx"
 #include "output/MultipleOutputs.hxx"
+#include "mixer/Listener.hxx"
 #include "PlayerControl.hxx"
 
 struct Instance;
@@ -32,7 +33,7 @@ class SongLoader;
  * A partition of the Music Player Daemon.  It is a separate unit with
  * a playlist, a player, outputs etc.
  */
-struct Partition {
+struct Partition final : private MixerListener {
 	Instance &instance;
 
 	struct playlist playlist;
@@ -46,6 +47,7 @@ struct Partition {
 		  unsigned buffer_chunks,
 		  unsigned buffered_before_play)
 		:instance(_instance), playlist(max_length),
+		 outputs(*this),
 		 pc(outputs, buffer_chunks, buffered_before_play) {}
 
 	void ClearQueue() {
@@ -188,6 +190,10 @@ struct Partition {
 	 * Synchronize the player with the play queue.
 	 */
 	void SyncWithPlayer();
+
+private:
+	/* virtual methods from class MixerListener */
+	virtual void OnMixerVolumeChanged(Mixer &mixer, int volume) override;
 };
 
 #endif

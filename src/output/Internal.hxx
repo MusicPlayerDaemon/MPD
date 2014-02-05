@@ -33,6 +33,8 @@ class Error;
 class Filter;
 class MusicPipe;
 class EventLoop;
+class Mixer;
+class MixerListener;
 struct music_chunk;
 struct config_param;
 struct PlayerControl;
@@ -79,7 +81,7 @@ struct AudioOutput {
 	 * May be nullptr if none is available, or if software volume is
 	 * configured.
 	 */
-	class Mixer *mixer;
+	Mixer *mixer;
 
 	/**
 	 * Will this output receive tags from the decoder?  The
@@ -424,6 +426,7 @@ extern struct notify audio_output_client_notify;
 
 AudioOutput *
 audio_output_new(EventLoop &event_loop, const config_param &param,
+		 MixerListener &mixer_listener,
 		 PlayerControl &pc,
 		 Error &error);
 

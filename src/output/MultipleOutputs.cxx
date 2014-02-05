@@ -35,8 +35,9 @@
 #include <assert.h>
 #include <string.h>
 
-MultipleOutputs::MultipleOutputs()
-	:buffer(nullptr), pipe(nullptr),
+MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
+	:mixer_listener(_mixer_listener),
+	 buffer(nullptr), pipe(nullptr),
 	 elapsed_time(-1)
 {
 }
@@ -50,10 +51,13 @@ MultipleOutputs::~MultipleOutputs()
 }
 
 static AudioOutput *
-LoadOutput(EventLoop &event_loop, PlayerControl &pc, const config_param &param)
+LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
+	   PlayerControl &pc, const config_param &param)
 {
 	Error error;
-	AudioOutput *output = audio_output_new(event_loop, param, pc, error);
+	AudioOutput *output = audio_output_new(event_loop, param,
+					       mixer_listener,
+					       pc, error);
 	if (output == nullptr) {
 		if (param.line > 0)
 			FormatFatalError("line %i: %s",
@@ -72,7 +76,8 @@ MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 	const config_param *param = nullptr;
 	while ((param = config_get_next_param(CONF_AUDIO_OUTPUT,
 					      param)) != nullptr) {
-		auto output = LoadOutput(event_loop, pc, *param);
+		auto output = LoadOutput(event_loop, mixer_listener,
+					 pc, *param);
 		if (FindByName(output->name) != nullptr)
 			FormatFatalError("output devices with identical "
 					 "names: %s", output->name);
@@ -83,7 +88,8 @@ MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 	if (outputs.empty()) {
 		/* auto-detect device */
 		const config_param empty;
-		auto output = LoadOutput(event_loop, pc, empty);
+		auto output = LoadOutput(event_loop, mixer_listener,
+					 pc, empty);
 		outputs.push_back(output);
 	}
 }

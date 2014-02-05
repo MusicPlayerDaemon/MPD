@@ -26,7 +26,6 @@
 #include "Idle.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
-#include "GlobalEvents.hxx"
 #include "IOThread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
@@ -46,11 +45,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-void
-GlobalEvents::Emit(gcc_unused Event event)
-{
-}
 
 const struct filter_plugin *
 filter_plugin_by_name(gcc_unused const char *name)
@@ -95,7 +89,9 @@ load_audio_output(EventLoop &event_loop, const char *name)
 
 	Error error;
 	AudioOutput *ao =
-		audio_output_new(event_loop, *param, dummy_player_control,
+		audio_output_new(event_loop, *param,
+				 *(MixerListener *)nullptr,
+				 dummy_player_control,
 				 error);
 	if (ao == nullptr)
 		LogError(error);

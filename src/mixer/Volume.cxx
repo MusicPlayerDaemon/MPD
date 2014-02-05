@@ -21,7 +21,6 @@
 #include "Volume.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "Idle.hxx"
-#include "GlobalEvents.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Domain.hxx"
 #include "system/PeriodClock.hxx"
@@ -41,22 +40,11 @@ static int last_hardware_volume = -1;
 /** the age of #last_hardware_volume */
 static PeriodClock hardware_volume_clock;
 
-/**
- * Handler for #GlobalEvents::MIXER.
- */
-static void
-mixer_event_callback(void)
+void
+InvalidateHardwareVolume()
 {
 	/* flush the hardware volume cache */
 	last_hardware_volume = -1;
-
-	/* notify clients */
-	idle_add(IDLE_MIXER);
-}
-
-void volume_init(void)
-{
-	GlobalEvents::Register(GlobalEvents::MIXER, mixer_event_callback);
 }
 
 int

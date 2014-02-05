@@ -52,8 +52,8 @@ class SoftwareMixer final : public Mixer {
 	unsigned volume;
 
 public:
-	SoftwareMixer()
-		:Mixer(software_mixer_plugin),
+	SoftwareMixer(MixerListener &_listener)
+		:Mixer(software_mixer_plugin, _listener),
 		 filter(CreateVolumeFilter()),
 		 owns_filter(true),
 		 volume(100)
@@ -86,10 +86,11 @@ public:
 static Mixer *
 software_mixer_init(gcc_unused EventLoop &event_loop,
 		    gcc_unused AudioOutput &ao,
+		    MixerListener &listener,
 		    gcc_unused const config_param &param,
 		    gcc_unused Error &error)
 {
-	return new SoftwareMixer();
+	return new SoftwareMixer(listener);
 }
 
 bool

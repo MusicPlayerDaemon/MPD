@@ -25,9 +25,13 @@
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
+class MixerListener;
+
 class Mixer {
 public:
 	const MixerPlugin &plugin;
+
+	MixerListener &listener;
 
 	/**
 	 * This mutex protects all of the mixer struct, including its
@@ -47,8 +51,8 @@ public:
 	bool failed;
 
 public:
-	explicit Mixer(const MixerPlugin &_plugin)
-		:plugin(_plugin),
+	explicit Mixer(const MixerPlugin &_plugin, MixerListener &_listener)
+		:plugin(_plugin), listener(_listener),
 		 open(false),
 		 failed(false) {}
 

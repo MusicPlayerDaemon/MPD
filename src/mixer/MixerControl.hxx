@@ -30,10 +30,12 @@ class Mixer;
 class EventLoop;
 struct AudioOutput;
 struct MixerPlugin;
+class MixerListener;
 struct config_param;
 
 Mixer *
 mixer_new(EventLoop &event_loop, const MixerPlugin &plugin, AudioOutput &ao,
+	  MixerListener &listener,
 	  const config_param &param,
 	  Error &error);
 

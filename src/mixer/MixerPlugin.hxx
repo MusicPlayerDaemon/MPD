@@ -30,6 +30,7 @@
 struct config_param;
 struct AudioOutput;
 class Mixer;
+class MixerListener;
 class EventLoop;
 class Error;
 
@@ -44,6 +45,7 @@ struct MixerPlugin {
 	 * @return a mixer object, or nullptr on error
 	 */
 	Mixer *(*init)(EventLoop &event_loop, AudioOutput &ao,
+		       MixerListener &listener,
 		       const config_param &param,
 		       Error &error);
 
