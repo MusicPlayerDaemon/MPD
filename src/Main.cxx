@@ -109,8 +109,6 @@ static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
 
 static constexpr Domain main_domain("main");
 
-ThreadId main_thread;
-
 Instance *instance;
 
 static StateFile *state_file;
@@ -411,8 +409,6 @@ int mpd_main(int argc, char *argv[])
 		LogError(error);
 		return EXIT_FAILURE;
 	}
-
-	main_thread = ThreadId::GetCurrent();
 
 	instance = new Instance();
 	instance->event_loop = new EventLoop();
