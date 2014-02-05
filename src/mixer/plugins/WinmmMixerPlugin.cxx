@@ -104,7 +104,7 @@ winmm_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 	return true;
 }
 
-const struct mixer_plugin winmm_mixer_plugin = {
+const MixerPlugin winmm_mixer_plugin = {
 	winmm_mixer_init,
 	winmm_mixer_finish,
 	nullptr,

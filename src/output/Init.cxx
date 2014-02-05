@@ -114,7 +114,7 @@ audio_output_mixer_type(const config_param &param)
 static Mixer *
 audio_output_load_mixer(EventLoop &event_loop, AudioOutput *ao,
 			const config_param &param,
-			const struct mixer_plugin *plugin,
+			const MixerPlugin *plugin,
 			Filter &filter_chain,
 			Error &error)
 {

@@ -25,11 +25,13 @@
 #ifndef MPD_MIXER_LIST_HXX
 #define MPD_MIXER_LIST_HXX
 
-extern const struct mixer_plugin software_mixer_plugin;
-extern const struct mixer_plugin alsa_mixer_plugin;
-extern const struct mixer_plugin oss_mixer_plugin;
-extern const struct mixer_plugin roar_mixer_plugin;
-extern const struct mixer_plugin pulse_mixer_plugin;
-extern const struct mixer_plugin winmm_mixer_plugin;
+struct MixerPlugin;
+
+extern const MixerPlugin software_mixer_plugin;
+extern const MixerPlugin alsa_mixer_plugin;
+extern const MixerPlugin oss_mixer_plugin;
+extern const MixerPlugin roar_mixer_plugin;
+extern const MixerPlugin pulse_mixer_plugin;
+extern const MixerPlugin winmm_mixer_plugin;
 
 #endif

@@ -215,7 +215,7 @@ pulse_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 	return success;
 }
 
-const struct mixer_plugin pulse_mixer_plugin = {
+const MixerPlugin pulse_mixer_plugin = {
 	pulse_mixer_init,
 	pulse_mixer_finish,
 	nullptr,

@@ -28,11 +28,11 @@
 class Error;
 class Mixer;
 class EventLoop;
-struct mixer_plugin;
+struct MixerPlugin;
 struct config_param;
 
 Mixer *
-mixer_new(EventLoop &event_loop, const mixer_plugin *plugin, void *ao,
+mixer_new(EventLoop &event_loop, const MixerPlugin *plugin, void *ao,
 	  const config_param &param,
 	  Error &error);
 

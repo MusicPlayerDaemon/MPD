@@ -26,7 +26,7 @@
 
 Mixer *
 mixer_new(EventLoop &event_loop,
-	  const mixer_plugin *plugin, void *ao,
+	  const MixerPlugin *plugin, void *ao,
 	  const config_param &param,
 	  Error &error)
 {

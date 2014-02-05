@@ -26,7 +26,7 @@
 
 class Mixer {
 public:
-	const struct mixer_plugin *plugin;
+	const MixerPlugin *plugin;
 
 	/**
 	 * This mutex protects all of the mixer struct, including its
@@ -46,12 +46,12 @@ public:
 	bool failed;
 
 public:
-	Mixer(const mixer_plugin &_plugin)
+	Mixer(const MixerPlugin &_plugin)
 		:plugin(&_plugin),
 		 open(false),
 		 failed(false) {}
 
-	bool IsPlugin(const mixer_plugin &other) const {
+	bool IsPlugin(const MixerPlugin &other) const {
 		return plugin == &other;
 	}
 };

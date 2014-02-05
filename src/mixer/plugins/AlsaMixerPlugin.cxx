@@ -374,7 +374,7 @@ alsa_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 	return am->SetVolume(volume, error);
 }
 
-const struct mixer_plugin alsa_mixer_plugin = {
+const MixerPlugin alsa_mixer_plugin = {
 	alsa_mixer_init,
 	alsa_mixer_finish,
 	alsa_mixer_open,

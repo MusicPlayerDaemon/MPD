@@ -110,7 +110,7 @@ software_mixer_set_volume(Mixer *mixer, unsigned volume,
 	return true;
 }
 
-const struct mixer_plugin software_mixer_plugin = {
+const MixerPlugin software_mixer_plugin = {
 	software_mixer_init,
 	software_mixer_finish,
 	nullptr,

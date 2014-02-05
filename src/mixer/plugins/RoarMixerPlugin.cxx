@@ -64,7 +64,7 @@ roar_mixer_set_volume(Mixer *mixer, unsigned volume,
 	return roar_output_set_volume(self->self, volume);
 }
 
-const struct mixer_plugin roar_mixer_plugin = {
+const MixerPlugin roar_mixer_plugin = {
 	roar_mixer_init,
 	roar_mixer_finish,
 	nullptr,

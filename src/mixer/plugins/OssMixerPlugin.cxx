@@ -231,7 +231,7 @@ oss_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 	return om->SetVolume(volume, error);
 }
 
-const struct mixer_plugin oss_mixer_plugin = {
+const MixerPlugin oss_mixer_plugin = {
 	oss_mixer_init,
 	oss_mixer_finish,
 	oss_mixer_open,

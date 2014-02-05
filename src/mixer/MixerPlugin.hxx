@@ -32,7 +32,7 @@ class Mixer;
 class EventLoop;
 class Error;
 
-struct mixer_plugin {
+struct MixerPlugin {
 	/**
          * Alocates and configures a mixer device.
 	 *

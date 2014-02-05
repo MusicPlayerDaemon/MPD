@@ -28,6 +28,7 @@ struct config_param;
 struct AudioFormat;
 struct Tag;
 struct AudioOutput;
+struct MixerPlugin;
 class Error;
 
 /**
@@ -147,7 +148,7 @@ struct AudioOutputPlugin {
 	 * created, this mixer plugin gets the same #config_param as
 	 * this audio output device.
 	 */
-	const struct mixer_plugin *mixer_plugin;
+	const MixerPlugin *mixer_plugin;
 };
 
 static inline bool
