@@ -21,14 +21,13 @@
 #define MPD_STORAGE_LOCAL_HXX
 
 #include "check.h"
+#include "StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
 
 #include <string>
 
-struct FileInfo;
-
-class LocalDirectoryReader {
+class LocalDirectoryReader final : public StorageDirectoryReader {
 	AllocatedPath base_fs;
 
 	DirectoryReader reader;
@@ -43,12 +42,13 @@ public:
 		return reader.HasFailed();
 	}
 
-	const char *Read();
-
-	bool GetInfo(bool follow, FileInfo &info, Error &error);
+	/* virtual methods from class StorageDirectoryReader */
+	virtual const char *Read() override;
+	virtual bool GetInfo(bool follow, FileInfo &info,
+			     Error &error) override;
 };
 
-class LocalStorage {
+class LocalStorage final : public Storage {
 	const std::string base_utf8;
 	const AllocatedPath base_fs;
 
@@ -58,29 +58,16 @@ public:
 
 	LocalStorage(const LocalStorage &) = delete;
 
-	bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
-		     Error &error);
+	/* virtual methods from class Storage */
+	virtual bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
+			     Error &error) override;
 
-	LocalDirectoryReader *OpenDirectory(const char *uri_utf8,
-					    Error &error);
+	virtual LocalDirectoryReader *OpenDirectory(const char *uri_utf8,
+						    Error &error) override;
 
-	/**
-	 * Map the given relative URI to an absolute URI.
-	 */
-	gcc_pure
-	std::string MapUTF8(const char *uri_utf8) const;
+	virtual std::string MapUTF8(const char *uri_utf8) const override;
 
-	/**
-	 * Map the given relative URI to a local file path.  Returns
-	 * AllocatedPath::Null() on error or if this storage does not
-	 * support local files.
-	 */
-	gcc_pure
-	AllocatedPath MapFS(const char *uri_utf8) const;
-
-	gcc_pure
-	AllocatedPath MapChildFS(const char *uri_utf8,
-				 const char *child_utf8) const;
+	virtual AllocatedPath MapFS(const char *uri_utf8) const override;
 
 private:
 	AllocatedPath MapFS(const char *uri_utf8, Error &error) const;

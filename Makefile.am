@@ -418,6 +418,7 @@ if ENABLE_DATABASE
 noinst_LIBRARIES += libstorage.a
 
 libstorage_a_SOURCES = \
+	src/storage/StorageInterface.cxx src/storage/StorageInterface.hxx \
 	src/storage/LocalStorage.cxx src/storage/LocalStorage.hxx \
 	src/storage/FileInfo.hxx
 

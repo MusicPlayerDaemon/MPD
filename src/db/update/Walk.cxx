@@ -27,7 +27,7 @@
 #include "db/Song.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/Uri.hxx"
-#include "storage/LocalStorage.hxx"
+#include "storage/StorageInterface.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"
@@ -49,7 +49,7 @@
 #include <errno.h>
 
 UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
-		       LocalStorage &_storage)
+		       Storage &_storage)
 	:storage(_storage),
 	 editor(_loop, _listener)
 {
@@ -140,7 +140,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 
 #ifndef WIN32
 static bool
-update_directory_stat(LocalStorage &storage, Directory &directory)
+update_directory_stat(Storage &storage, Directory &directory)
 {
 	FileInfo info;
 	if (!GetInfo(storage, directory.GetPath(), info))
@@ -152,7 +152,7 @@ update_directory_stat(LocalStorage &storage, Directory &directory)
 #endif
 
 static int
-find_inode_ancestor(LocalStorage &storage, Directory *parent,
+find_inode_ancestor(Storage &storage, Directory *parent,
 		    unsigned inode, unsigned device)
 {
 #ifndef WIN32
@@ -320,7 +320,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const FileInfo &info)
 	directory_set_stat(directory, info);
 
 	Error error;
-	LocalDirectoryReader *const reader =
+	StorageDirectoryReader *const reader =
 		storage.OpenDirectory(directory.GetPath(), error);
 	if (reader == nullptr) {
 		LogError(error);

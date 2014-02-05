@@ -25,30 +25,30 @@
 
 struct Directory;
 struct FileInfo;
-class LocalStorage;
-class LocalDirectoryReader;
+class Storage;
+class StorageDirectoryReader;
 
 /**
- * Wrapper for LocalStorage::GetInfo() that logs errors instead of
+ * Wrapper for Storage::GetInfo() that logs errors instead of
  * returning them.
  */
 bool
-GetInfo(LocalStorage &storage, const char *uri_utf8, FileInfo &info);
+GetInfo(Storage &storage, const char *uri_utf8, FileInfo &info);
 
 /**
  * Wrapper for LocalDirectoryReader::GetInfo() that logs errors
  * instead of returning them.
  */
 bool
-GetInfo(LocalDirectoryReader &reader, FileInfo &info);
+GetInfo(StorageDirectoryReader &reader, FileInfo &info);
 
 gcc_pure
 bool
-DirectoryExists(LocalStorage &storage, const Directory &directory);
+DirectoryExists(Storage &storage, const Directory &directory);
 
 gcc_pure
 bool
-directory_child_is_regular(LocalStorage &storage, const Directory &directory,
+directory_child_is_regular(Storage &storage, const Directory &directory,
 			   const char *name_utf8);
 
 /**
@@ -56,7 +56,7 @@ directory_child_is_regular(LocalStorage &storage, const Directory &directory,
  */
 gcc_pure
 bool
-directory_child_access(LocalStorage &storage, const Directory &directory,
+directory_child_access(Storage &storage, const Directory &directory,
 		       const char *name, int mode);
 
 #endif

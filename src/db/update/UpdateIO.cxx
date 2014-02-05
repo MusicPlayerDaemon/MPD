@@ -22,7 +22,7 @@
 #include "UpdateDomain.hxx"
 #include "db/Directory.hxx"
 #include "storage/FileInfo.hxx"
-#include "storage/LocalStorage.hxx"
+#include "storage/StorageInterface.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
@@ -32,7 +32,7 @@
 #include <unistd.h>
 
 bool
-GetInfo(LocalStorage &storage, const char *uri_utf8, FileInfo &info)
+GetInfo(Storage &storage, const char *uri_utf8, FileInfo &info)
 {
 	Error error;
 	bool success = storage.GetInfo(uri_utf8, true, info, error);
@@ -42,7 +42,7 @@ GetInfo(LocalStorage &storage, const char *uri_utf8, FileInfo &info)
 }
 
 bool
-GetInfo(LocalDirectoryReader &reader, FileInfo &info)
+GetInfo(StorageDirectoryReader &reader, FileInfo &info)
 {
 	Error error;
 	bool success = reader.GetInfo(true, info, error);
@@ -52,7 +52,7 @@ GetInfo(LocalDirectoryReader &reader, FileInfo &info)
 }
 
 bool
-DirectoryExists(LocalStorage &storage, const Directory &directory)
+DirectoryExists(Storage &storage, const Directory &directory)
 {
 	FileInfo info;
 	if (!storage.GetInfo(directory.GetPath(), true, info, IgnoreError()))
@@ -65,7 +65,7 @@ DirectoryExists(LocalStorage &storage, const Directory &directory)
 }
 
 static bool
-GetDirectoryChildInfo(LocalStorage &storage, const Directory &directory,
+GetDirectoryChildInfo(Storage &storage, const Directory &directory,
 		      const char *name_utf8, FileInfo &info, Error &error)
 {
 	const auto uri_utf8 = PathTraitsUTF8::Build(directory.GetPath(),
@@ -74,7 +74,7 @@ GetDirectoryChildInfo(LocalStorage &storage, const Directory &directory,
 }
 
 bool
-directory_child_is_regular(LocalStorage &storage, const Directory &directory,
+directory_child_is_regular(Storage &storage, const Directory &directory,
 			   const char *name_utf8)
 {
 	FileInfo info;
@@ -84,7 +84,7 @@ directory_child_is_regular(LocalStorage &storage, const Directory &directory,
 }
 
 bool
-directory_child_access(LocalStorage &storage, const Directory &directory,
+directory_child_access(Storage &storage, const Directory &directory,
 		       const char *name, int mode)
 {
 #ifdef WIN32

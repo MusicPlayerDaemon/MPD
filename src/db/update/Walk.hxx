@@ -29,7 +29,7 @@ struct stat;
 struct FileInfo;
 struct Directory;
 struct archive_plugin;
-class LocalStorage;
+class Storage;
 class ExcludeList;
 
 class UpdateWalk final {
@@ -48,13 +48,13 @@ class UpdateWalk final {
 	bool walk_discard;
 	bool modified;
 
-	LocalStorage &storage;
+	Storage &storage;
 
 	DatabaseEditor editor;
 
 public:
 	UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
-		   LocalStorage &_storage);
+		   Storage &_storage);
 
 	/**
 	 * Returns true if the database was modified.

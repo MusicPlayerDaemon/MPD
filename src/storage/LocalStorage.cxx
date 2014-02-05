@@ -81,14 +81,6 @@ LocalStorage::MapFS(const char *uri_utf8) const
 	return MapFS(uri_utf8, IgnoreError());
 }
 
-AllocatedPath
-LocalStorage::MapChildFS(const char *uri_utf8,
-			 const char *child_utf8) const
-{
-	const auto uri2 = PathTraitsUTF8::Build(uri_utf8, child_utf8);
-	return MapFS(uri2.c_str());
-}
-
 bool
 LocalStorage::GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
 		      Error &error)
