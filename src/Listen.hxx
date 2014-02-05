@@ -22,11 +22,12 @@
 
 class EventLoop;
 class Error;
+struct Partition;
 
 extern int listen_port;
 
 bool
-listen_global_init(EventLoop &loop, Error &error);
+listen_global_init(EventLoop &loop, Partition &partition, Error &error);
 
 void listen_global_finish(void);
 

@@ -432,7 +432,8 @@ int mpd_main(int argc, char *argv[])
 	const unsigned max_clients = config_get_positive(CONF_MAX_CONN, 10);
 	instance->client_list = new ClientList(max_clients);
 
-	if (!listen_global_init(*instance->event_loop, error)) {
+	if (!listen_global_init(*instance->event_loop, *instance->partition,
+				error)) {
 		LogError(error);
 		return EXIT_FAILURE;
 	}

@@ -19,8 +19,6 @@
 
 #include "config.h"
 #include "Listen.hxx"
-#include "Main.hxx"
-#include "Instance.hxx"
 #include "client/Client.hxx"
 #include "config/ConfigData.hxx"
 #include "config/ConfigGlobal.hxx"
@@ -43,13 +41,16 @@ static constexpr Domain listen_domain("listen");
 #define DEFAULT_PORT	6600
 
 class ClientListener final : public ServerSocket {
+	Partition &partition;
+
 public:
-	ClientListener(EventLoop &_loop):ServerSocket(_loop) {}
+	ClientListener(EventLoop &_loop, Partition &_partition)
+		:ServerSocket(_loop), partition(_partition) {}
 
 private:
 	virtual void OnAccept(int fd, const sockaddr &address,
 			      size_t address_length, int uid) {
-		client_new(GetEventLoop(), *instance->partition,
+		client_new(GetEventLoop(), partition,
 			   fd, &address, address_length, uid);
 	}
 };
@@ -101,14 +102,14 @@ listen_systemd_activation(Error &error_r)
 }
 
 bool
-listen_global_init(EventLoop &loop, Error &error)
+listen_global_init(EventLoop &loop, Partition &partition, Error &error)
 {
 	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	const struct config_param *param =
 		config_get_next_param(CONF_BIND_TO_ADDRESS, nullptr);
 	bool success;
 
-	listen_socket = new ClientListener(loop);
+	listen_socket = new ClientListener(loop, partition);
 
 	if (listen_systemd_activation(error))
 		return true;
