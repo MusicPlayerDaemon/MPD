@@ -116,7 +116,7 @@ int main(int argc, gcc_unused char **argv)
 	EventLoop event_loop;
 
 	Error error;
-	Mixer *mixer = mixer_new(event_loop, &alsa_mixer_plugin, nullptr,
+	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin, nullptr,
 				 config_param(), error);
 	if (mixer == NULL) {
 		LogError(error, "mixer_new() failed");

@@ -149,7 +149,7 @@ MultipleOutputs::SetSoftwareVolume(unsigned volume)
 		const auto mixer = ao->mixer;
 
 		if (mixer != nullptr &&
-		    mixer->plugin == &software_mixer_plugin)
+		    &mixer->plugin == &software_mixer_plugin)
 			mixer_set_volume(mixer, volume, IgnoreError());
 	}
 }

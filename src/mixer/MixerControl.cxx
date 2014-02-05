@@ -26,17 +26,13 @@
 
 Mixer *
 mixer_new(EventLoop &event_loop,
-	  const MixerPlugin *plugin, void *ao,
+	  const MixerPlugin &plugin, void *ao,
 	  const config_param &param,
 	  Error &error)
 {
-	Mixer *mixer;
+	Mixer *mixer = plugin.init(event_loop, ao, param, error);
 
-	assert(plugin != nullptr);
-
-	mixer = plugin->init(event_loop, ao, param, error);
-
-	assert(mixer == nullptr || mixer->IsPlugin(*plugin));
+	assert(mixer == nullptr || mixer->IsPlugin(plugin));
 
 	return mixer;
 }
@@ -45,13 +41,12 @@ void
 mixer_free(Mixer *mixer)
 {
 	assert(mixer != nullptr);
-	assert(mixer->plugin != nullptr);
 
 	/* mixers with the "global" flag set might still be open at
 	   this point (see mixer_auto_close()) */
 	mixer_close(mixer);
 
-	mixer->plugin->finish(mixer);
+	mixer->plugin.finish(mixer);
 }
 
 bool
@@ -60,16 +55,15 @@ mixer_open(Mixer *mixer, Error &error)
 	bool success;
 
 	assert(mixer != nullptr);
-	assert(mixer->plugin != nullptr);
 
 	const ScopeLock protect(mixer->mutex);
 
 	if (mixer->open)
 		success = true;
-	else if (mixer->plugin->open == nullptr)
+	else if (mixer->plugin.open == nullptr)
 		success = mixer->open = true;
 	else
-		success = mixer->open = mixer->plugin->open(mixer, error);
+		success = mixer->open = mixer->plugin.open(mixer, error);
 
 	mixer->failed = !success;
 
@@ -80,11 +74,10 @@ static void
 mixer_close_internal(Mixer *mixer)
 {
 	assert(mixer != nullptr);
-	assert(mixer->plugin != nullptr);
 	assert(mixer->open);
 
-	if (mixer->plugin->close != nullptr)
-		mixer->plugin->close(mixer);
+	if (mixer->plugin.close != nullptr)
+		mixer->plugin.close(mixer);
 
 	mixer->open = false;
 }
@@ -93,7 +86,6 @@ void
 mixer_close(Mixer *mixer)
 {
 	assert(mixer != nullptr);
-	assert(mixer->plugin != nullptr);
 
 	const ScopeLock protect(mixer->mutex);
 
@@ -104,7 +96,7 @@ mixer_close(Mixer *mixer)
 void
 mixer_auto_close(Mixer *mixer)
 {
-	if (!mixer->plugin->global)
+	if (!mixer->plugin.global)
 		mixer_close(mixer);
 }
 
@@ -129,14 +121,14 @@ mixer_get_volume(Mixer *mixer, Error &error)
 
 	assert(mixer != nullptr);
 
-	if (mixer->plugin->global && !mixer->failed &&
+	if (mixer->plugin.global && !mixer->failed &&
 	    !mixer_open(mixer, error))
 		return -1;
 
 	const ScopeLock protect(mixer->mutex);
 
 	if (mixer->open) {
-		volume = mixer->plugin->get_volume(mixer, error);
+		volume = mixer->plugin.get_volume(mixer, error);
 		if (volume < 0 && error.IsDefined())
 			mixer_failed(mixer);
 	} else
@@ -151,12 +143,12 @@ mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 	assert(mixer != nullptr);
 	assert(volume <= 100);
 
-	if (mixer->plugin->global && !mixer->failed &&
+	if (mixer->plugin.global && !mixer->failed &&
 	    !mixer_open(mixer, error))
 		return false;
 
 	const ScopeLock protect(mixer->mutex);
 
 	return mixer->open &&
-		mixer->plugin->set_volume(mixer, volume, error);
+		mixer->plugin.set_volume(mixer, volume, error);
 }
