@@ -23,7 +23,7 @@
 #include "db/DatabaseLock.hxx"
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
-#include "storage/LocalStorage.hxx"
+#include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/FileInfo.hxx"
 #include "archive/ArchiveList.hxx"
