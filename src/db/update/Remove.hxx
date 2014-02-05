@@ -42,7 +42,8 @@ class UpdateRemoveService final : DeferredMonitor {
 
 public:
 	UpdateRemoveService(EventLoop &_loop, DatabaseListener &_listener)
-		:DeferredMonitor(_loop), listener(_listener) {}
+		:DeferredMonitor(_loop), listener(_listener),
+		 removed_song(nullptr){}
 
 	/**
 	 * Sends a signal to the main thread which will in turn remove
