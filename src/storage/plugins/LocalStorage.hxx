@@ -21,7 +21,7 @@
 #define MPD_STORAGE_LOCAL_HXX
 
 #include "check.h"
-#include "StorageInterface.hxx"
+#include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
 

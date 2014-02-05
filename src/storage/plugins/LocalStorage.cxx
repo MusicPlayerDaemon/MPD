@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "LocalStorage.hxx"
-#include "FileInfo.hxx"
+#include "storage/FileInfo.hxx"
 #include "util/Error.hxx"
 #include "fs/FileSystem.hxx"
 

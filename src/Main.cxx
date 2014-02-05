@@ -69,7 +69,7 @@
 #include "db/DatabaseGlue.hxx"
 #include "db/DatabaseSimple.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
-#include "storage/LocalStorage.hxx"
+#include "storage/plugins/LocalStorage.hxx"
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
