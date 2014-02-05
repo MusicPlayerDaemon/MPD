@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "Editor.hxx"
-#include "storage/LocalStorage.hxx"
 
 #include <sys/stat.h>
 
@@ -30,6 +29,7 @@ struct stat;
 struct FileInfo;
 struct Directory;
 struct archive_plugin;
+class LocalStorage;
 class ExcludeList;
 
 class UpdateWalk final {
@@ -48,12 +48,13 @@ class UpdateWalk final {
 	bool walk_discard;
 	bool modified;
 
-	LocalStorage storage;
+	LocalStorage &storage;
 
 	DatabaseEditor editor;
 
 public:
-	UpdateWalk(EventLoop &_loop, DatabaseListener &_listener);
+	UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
+		   LocalStorage &_storage);
 
 	/**
 	 * Returns true if the database was modified.

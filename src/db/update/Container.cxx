@@ -23,6 +23,7 @@
 #include "db/DatabaseLock.hxx"
 #include "db/Directory.hxx"
 #include "db/Song.hxx"
+#include "storage/LocalStorage.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "decoder/DecoderList.hxx"
 #include "fs/AllocatedPath.hxx"

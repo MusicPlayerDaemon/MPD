@@ -31,6 +31,7 @@ class NeighborGlue;
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseListener.hxx"
 class Database;
+class LocalStorage;
 class UpdateService;
 #endif
 
@@ -62,6 +63,8 @@ struct Instance final
 #ifdef ENABLE_DATABASE
 	Database *database;
 
+	LocalStorage *storage;
+
 	UpdateService *update;
 #endif
 
@@ -71,6 +74,7 @@ struct Instance final
 
 	Instance() {
 #ifdef ENABLE_DATABASE
+		storage = nullptr;
 		update = nullptr;
 #endif
 	}

@@ -69,6 +69,7 @@
 #include "db/DatabaseGlue.hxx"
 #include "db/DatabaseSimple.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
+#include "storage/LocalStorage.hxx"
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -209,7 +210,10 @@ glue_db_init_and_load(void)
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
+	instance->storage = new LocalStorage(mapper_get_music_directory_utf8(),
+					     mapper_get_music_directory_fs());
 	instance->update = new UpdateService(*instance->event_loop, db,
+					     *instance->storage,
 					     *instance);
 
 	/* run database update after daemonization? */

@@ -27,6 +27,7 @@
 #include "db/Song.hxx"
 #include "db/PlaylistVector.hxx"
 #include "db/Uri.hxx"
+#include "storage/LocalStorage.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "ExcludeList.hxx"
@@ -47,9 +48,9 @@
 #include <stdlib.h>
 #include <errno.h>
 
-UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener)
-	:storage(mapper_get_music_directory_utf8(),
-		 mapper_get_music_directory_fs()),
+UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
+		       LocalStorage &_storage)
+	:storage(_storage),
 	 editor(_loop, _listener)
 {
 #ifndef WIN32

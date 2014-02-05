@@ -61,6 +61,7 @@ class UpdateService final : DeferredMonitor {
 
 public:
 	UpdateService(EventLoop &_loop, SimpleDatabase &_db,
+		      LocalStorage &_storage,
 		      DatabaseListener &_listener);
 
 	/**
