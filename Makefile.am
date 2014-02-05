@@ -422,7 +422,16 @@ libstorage_a_SOURCES = \
 	src/storage/plugins/LocalStorage.cxx src/storage/plugins/LocalStorage.hxx \
 	src/storage/FileInfo.hxx
 
+libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(SMBCLIENT_CFLAGS)
+
 STORAGE_LIBS = libstorage.a
+
+if ENABLE_SMBCLIENT
+libstorage_a_SOURCES += \
+	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx \
+	src/storage/plugins/SmbclientStorage.cxx src/neighbor/plugins/SmbclientStorage.hxx
+endif
 
 endif
 
