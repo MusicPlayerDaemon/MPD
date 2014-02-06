@@ -238,8 +238,9 @@ DetachedSong
 map_song_detach(const LightSong &song)
 {
 	DetachedSong detached(song);
+	assert(detached.IsInDatabase());
 
-	if (detached.IsInDatabase() && !detached.HasRealURI()) {
+	if (!detached.HasRealURI()) {
 		const auto uri = song.GetURI();
 		detached.SetRealURI(PathTraitsUTF8::Build(music_dir_utf8.c_str(),
 							  uri.c_str()));
