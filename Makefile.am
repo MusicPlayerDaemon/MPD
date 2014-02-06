@@ -413,6 +413,9 @@ libfs_a_SOURCES = \
 
 # Storage library
 
+SMBCLIENT_SOURCES = \
+	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx
+
 if ENABLE_DATABASE
 
 noinst_LIBRARIES += libstorage.a
@@ -429,7 +432,7 @@ STORAGE_LIBS = libstorage.a
 
 if ENABLE_SMBCLIENT
 libstorage_a_SOURCES += \
-	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx \
+	$(SMBCLIENT_SOURCES) \
 	src/storage/plugins/SmbclientStorage.cxx src/neighbor/plugins/SmbclientStorage.hxx
 endif
 
@@ -458,7 +461,7 @@ libneighbor_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 if ENABLE_SMBCLIENT
 libneighbor_a_SOURCES += \
-	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx \
+	$(SMBCLIENT_SOURCES) \
 	src/neighbor/plugins/SmbclientNeighborPlugin.cxx src/neighbor/plugins/SmbclientNeighborPlugin.hxx
 endif
 
@@ -946,7 +949,7 @@ endif
 
 if ENABLE_SMBCLIENT
 libinput_a_SOURCES += \
-	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx \
+	$(SMBCLIENT_SOURCES) \
 	src/input/plugins/SmbclientInputPlugin.cxx src/input/plugins/SmbclientInputPlugin.hxx
 endif
 
