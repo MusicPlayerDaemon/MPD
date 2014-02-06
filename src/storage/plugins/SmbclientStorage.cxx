@@ -22,7 +22,9 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "lib/smbclient/Init.hxx"
+#include "lib/smbclient/Mutex.hxx"
 #include "util/Error.hxx"
+#include "thread/Mutex.hxx"
 
 #include <libsmbclient.h>
 
@@ -54,7 +56,9 @@ public:
 		:base(_base), ctx(_ctx) {}
 
 	virtual ~SmbclientStorage() {
+		smbclient_mutex.lock();
 		smbc_free_context(ctx, 1);
+		smbclient_mutex.unlock();
 	}
 
 	/* virtual methods from class Storage */
@@ -82,7 +86,10 @@ static bool
 GetInfo(const char *path, FileInfo &info, Error &error)
 {
 	struct stat st;
-	if (smbc_stat(path, &st) < 0) {
+	smbclient_mutex.lock();
+	bool success = smbc_stat(path, &st) == 0;
+	smbclient_mutex.unlock();
+	if (!success) {
 		error.SetErrno();
 		return false;
 	}
@@ -113,7 +120,9 @@ StorageDirectoryReader *
 SmbclientStorage::OpenDirectory(const char *uri_utf8, Error &error)
 {
 	std::string mapped = MapUTF8(uri_utf8);
+	smbclient_mutex.lock();
 	int handle = smbc_opendir(mapped.c_str());
+	smbclient_mutex.unlock();
 	if (handle < 0) {
 		error.SetErrno();
 		return nullptr;
@@ -133,12 +142,16 @@ SkipNameFS(const char *name)
 
 SmbclientDirectoryReader::~SmbclientDirectoryReader()
 {
+	smbclient_mutex.lock();
 	smbc_close(handle);
+	smbclient_mutex.unlock();
 }
 
 const char *
 SmbclientDirectoryReader::Read()
 {
+	const ScopeLock protect(smbclient_mutex);
+
 	struct smbc_dirent *e;
 	while ((e = smbc_readdir(handle)) != nullptr) {
 		name = e->name;
@@ -163,6 +176,7 @@ CreateSmbclientStorage(const char *base, Error &error)
 	if (!SmbclientInit(error))
 		return nullptr;
 
+	const ScopeLock protect(smbclient_mutex);
 	SMBCCTX *ctx = smbc_new_context();
 	if (ctx == nullptr) {
 		error.SetErrno("smbc_new_context() failed");

@@ -17,39 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Init.hxx"
-#include "Mutex.hxx"
-#include "thread/Mutex.hxx"
-#include "util/Error.hxx"
+#ifndef MPD_SMBCLIENT_MUTEX_HXX
+#define MPD_SMBCLIENT_MUTEX_HXX
 
-#include <libsmbclient.h>
+class Mutex;
 
-#include <string.h>
+/**
+ * Since libsmbclient is not thread-safe, this mutex must be locked
+ * during all libsmbclient function calls.
+ */
+extern Mutex smbclient_mutex;
 
-static void
-mpd_smbc_get_auth_data(gcc_unused const char *srv,
-		       gcc_unused const char *shr,
-		       char *wg, gcc_unused int wglen,
-		       char *un, gcc_unused int unlen,
-		       char *pw, gcc_unused int pwlen)
-{
-	// TODO: implement
-	strcpy(wg, "WORKGROUP");
-	strcpy(un, "");
-	strcpy(pw, "");
-}
-
-bool
-SmbclientInit(Error &error)
-{
-	const ScopeLock protect(smbclient_mutex);
-
-	constexpr int debug = 0;
-	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0) {
-		error.SetErrno("smbc_init() failed");
-		return false;
-	}
-
-	return true;
-}
+#endif

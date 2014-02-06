@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SmbclientInputPlugin.hxx"
 #include "lib/smbclient/Init.hxx"
+#include "lib/smbclient/Mutex.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "util/StringUtil.hxx"
@@ -45,8 +46,10 @@ public:
 	}
 
 	~SmbclientInputStream() {
+		smbclient_mutex.lock();
 		smbc_close(fd);
 		smbc_free_context(ctx, 1);
+		smbclient_mutex.unlock();
 	}
 
 	InputStream *GetBase() {
@@ -58,7 +61,9 @@ public:
 	}
 
 	size_t Read(void *ptr, size_t size, Error &error) {
+		smbclient_mutex.lock();
 		ssize_t nbytes = smbc_read(fd, ptr, size);
+		smbclient_mutex.unlock();
 		if (nbytes < 0) {
 			error.SetErrno("smbc_read() failed");
 			nbytes = 0;
@@ -68,7 +73,9 @@ public:
 	}
 
 	bool Seek(InputStream::offset_type offset, int whence, Error &error) {
+		smbclient_mutex.lock();
 		off_t result = smbc_lseek(fd, offset, whence);
+		smbclient_mutex.unlock();
 		if (result < 0) {
 			error.SetErrno("smbc_lseek() failed");
 			return false;
@@ -104,6 +111,8 @@ input_smbclient_open(const char *uri,
 {
 	if (!StringStartsWith(uri, "smb://"))
 		return nullptr;
+
+	const ScopeLock protect(smbclient_mutex);
 
 	SMBCCTX *ctx = smbc_new_context();
 	if (ctx == nullptr) {

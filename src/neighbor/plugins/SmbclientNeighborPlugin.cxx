@@ -21,6 +21,7 @@
 #include "SmbclientNeighborPlugin.hxx"
 #include "lib/smbclient/Init.hxx"
 #include "lib/smbclient/Domain.hxx"
+#include "lib/smbclient/Mutex.hxx"
 #include "neighbor/NeighborPlugin.hxx"
 #include "neighbor/Explorer.hxx"
 #include "neighbor/Listener.hxx"
@@ -175,6 +176,7 @@ static NeighborExplorer::List
 DetectServers()
 {
 	NeighborExplorer::List list;
+	const ScopeLock protect(smbclient_mutex);
 	ReadServers(list, "smb://");
 	return list;
 }

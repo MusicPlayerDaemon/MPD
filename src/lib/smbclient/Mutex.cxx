@@ -18,38 +18,7 @@
  */
 
 #include "config.h"
-#include "Init.hxx"
 #include "Mutex.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Error.hxx"
 
-#include <libsmbclient.h>
-
-#include <string.h>
-
-static void
-mpd_smbc_get_auth_data(gcc_unused const char *srv,
-		       gcc_unused const char *shr,
-		       char *wg, gcc_unused int wglen,
-		       char *un, gcc_unused int unlen,
-		       char *pw, gcc_unused int pwlen)
-{
-	// TODO: implement
-	strcpy(wg, "WORKGROUP");
-	strcpy(un, "");
-	strcpy(pw, "");
-}
-
-bool
-SmbclientInit(Error &error)
-{
-	const ScopeLock protect(smbclient_mutex);
-
-	constexpr int debug = 0;
-	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0) {
-		error.SetErrno("smbc_init() failed");
-		return false;
-	}
-
-	return true;
-}
+Mutex smbclient_mutex;

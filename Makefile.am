@@ -415,6 +415,7 @@ libfs_a_SOURCES = \
 
 SMBCLIENT_SOURCES = \
 	src/lib/smbclient/Domain.cxx src/lib/smbclient/Domain.hxx \
+	src/lib/smbclient/Mutex.cxx src/lib/smbclient/Mutex.hxx \
 	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx
 
 if ENABLE_DATABASE
