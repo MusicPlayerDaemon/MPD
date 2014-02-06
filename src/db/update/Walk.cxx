@@ -47,6 +47,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <memory>
 
 UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
 		       Storage &_storage)
@@ -320,9 +321,8 @@ UpdateWalk::UpdateDirectory(Directory &directory, const FileInfo &info)
 	directory_set_stat(directory, info);
 
 	Error error;
-	StorageDirectoryReader *const reader =
-		storage.OpenDirectory(directory.GetPath(), error);
-	if (reader == nullptr) {
+	const std::auto_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(directory.GetPath(), error));
+	if (reader.get() == nullptr) {
 		LogError(error);
 		return false;
 	}
