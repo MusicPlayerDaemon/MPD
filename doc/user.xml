@@ -2174,6 +2174,51 @@ systemctl start mpd.socket</programlisting>
       </section>
 
       <section>
+        <title><varname>roar</varname></title>
+
+        <para>
+          The <varname>roar</varname> plugin connects to a <ulink
+          url="http://roaraudio.keep-cool.org/">RoarAudio</ulink>
+          server.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>server</varname>
+                  <parameter>HOSTNAME</parameter>
+                </entry>
+                <entry>
+                  The host name of the RoarAudio server.  If not
+                  specified, then MPD will connect to the default
+                  locations.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>role</varname>
+                  <parameter>ROLE</parameter>
+                </entry>
+                <entry>
+                  The "role" that MPD registers itself as in the
+                  RoarAudio server.  The default is "music".
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
         <title><varname>recorder</varname></title>
 
         <para>

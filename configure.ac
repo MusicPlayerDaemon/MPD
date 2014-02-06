@@ -1345,7 +1345,7 @@ fi
 AM_CONDITIONAL(ENABLE_SHINE_ENCODER, test x$enable_shine_encoder = xyes)
 
 dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
-MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc],
+MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc vorbis],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
 if test x$enable_vorbis_encoder = xyes; then
