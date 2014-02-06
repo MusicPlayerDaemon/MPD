@@ -112,7 +112,7 @@ pcm_resample_fallback_void(PcmBuffer &buffer,
 {
 	const auto typed_src = ConstBuffer<T>::FromVoid(src);
 	return pcm_resample_fallback(buffer, channels, src_rate, typed_src,
-				     dest_rate);
+				     dest_rate).ToVoid();
 }
 
 ConstBuffer<void>
