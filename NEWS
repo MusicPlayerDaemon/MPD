@@ -8,7 +8,7 @@ ver 0.18.8 (not yet released)
 * more robust Icy-Metadata parser
 * fix Solaris build failure
 
-ver 0.18.7 (2013/01/13)
+ver 0.18.7 (2014/01/13)
 * playlist
   - pls: fix crash after parser error
   - soundcloud: fix build failure with libyajl 2.0.1
