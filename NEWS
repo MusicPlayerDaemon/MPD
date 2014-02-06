@@ -1,6 +1,8 @@
 ver 0.18.8 (not yet released)
 * decoder
   - ffmpeg: support libav v10_alpha1
+* encoder
+  - vorbis: fix linker failure
 * more robust Icy-Metadata parser
 * fix Solaris build failure
 
