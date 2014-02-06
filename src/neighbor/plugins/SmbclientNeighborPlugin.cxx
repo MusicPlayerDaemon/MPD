@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SmbclientNeighborPlugin.hxx"
 #include "lib/smbclient/Init.hxx"
+#include "lib/smbclient/Domain.hxx"
 #include "neighbor/NeighborPlugin.hxx"
 #include "neighbor/Explorer.hxx"
 #include "neighbor/Listener.hxx"
@@ -37,8 +38,6 @@
 
 #include <list>
 #include <algorithm>
-
-static constexpr Domain smbclient_domain("smbclient");
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {
 	struct Server {
