@@ -986,56 +986,20 @@ systemctl start mpd.socket</programlisting>
       <title>Input plugins</title>
 
       <section>
-        <title><varname>curl</varname></title>
+        <title><varname>alsa</varname></title>
 
         <para>
-          Opens remote files or streams over HTTP.
+          Allows MPD on Linux to play audio directly from a soundcard using
+          the scheme <filename>alsa://</filename>. Audio is formatted as
+          44.1 kHz 16-bit stereo (CD format). Examples:
         </para>
 
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Setting</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  <varname>proxy</varname>
-                </entry>
-                <entry>
-                  Sets the address of the HTTP proxy server.
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>proxy_user</varname>,
-                  <varname>proxy_password</varname>
-                </entry>
-                <entry>
-                  Configures proxy authentication.
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
-
-      <section>
-        <title><varname>file</varname></title>
-
         <para>
-          Opens local files.
+          <filename>mpc add alsa://</filename> plays audio from device hw:0,0
         </para>
-      </section>
-
-      <section>
-        <title><varname>mms</varname></title>
-
         <para>
-          Plays streams with the MMS protocol.
+          <filename>mpc add alsa://hw:1,0</filename> plays audio from device
+          hw:1,0
         </para>
       </section>
 
@@ -1067,6 +1031,44 @@ systemctl start mpd.socket</programlisting>
                   If the CD drive does not specify a byte order, MPD
                   assumes it is the CPU's native byte order.  This
                   setting allows overriding this.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title><varname>curl</varname></title>
+
+        <para>
+          Opens remote files or streams over HTTP.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>proxy</varname>
+                </entry>
+                <entry>
+                  Sets the address of the HTTP proxy server.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>proxy_user</varname>,
+                  <varname>proxy_password</varname>
+                </entry>
+                <entry>
+                  Configures proxy authentication.
                 </entry>
               </row>
             </tbody>
@@ -1135,6 +1137,22 @@ systemctl start mpd.socket</programlisting>
       </section>
 
       <section>
+        <title><varname>file</varname></title>
+
+        <para>
+          Opens local files.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>mms</varname></title>
+
+        <para>
+          Plays streams with the MMS protocol.
+        </para>
+      </section>
+
+      <section>
         <title><varname>smbclient</varname></title>
 
         <para>
@@ -1145,24 +1163,6 @@ systemctl start mpd.socket</programlisting>
 
         <para>
           <filename>mpc add smb://servername/sharename/filename.ogg</filename>
-        </para>
-      </section>
-
-      <section>
-        <title><varname>alsa</varname></title>
-
-        <para>
-          Allows MPD on Linux to play audio directly from a soundcard using
-          the scheme <filename>alsa://</filename>. Audio is formatted as
-          44.1 kHz 16-bit stereo (CD format). Examples:
-        </para>
-
-        <para>
-          <filename>mpc add alsa://</filename> plays audio from device hw:0,0
-        </para>
-        <para>
-          <filename>mpc add alsa://hw:1,0</filename> plays audio from device
-          hw:1,0
         </para>
       </section>
     </section>
