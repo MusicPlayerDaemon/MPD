@@ -34,8 +34,8 @@
 static Filter *
 CreateVolumeFilter()
 {
-	Error error;
-	return filter_new(&volume_filter_plugin, config_param(), error);
+	return filter_new(&volume_filter_plugin, config_param(),
+			  IgnoreError());
 }
 
 struct SoftwareMixer final : public Mixer {
