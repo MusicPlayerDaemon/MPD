@@ -65,7 +65,7 @@ UpdateWalk::UpdateArchiveTree(Directory &directory, const char *name)
 		Song *song = directory.FindSong(name);
 		db_unlock();
 		if (song == nullptr) {
-			song = Song::LoadFile(name, directory);
+			song = Song::LoadFile(storage, name, directory);
 			if (song != nullptr) {
 				db_lock();
 				directory.AddSong(song);

@@ -21,7 +21,10 @@
 #include "DetachedSong.hxx"
 #include "db/Song.hxx"
 #include "db/Directory.hxx"
+#include "storage/StorageInterface.hxx"
+#include "storage/FileInfo.hxx"
 #include "util/UriUtil.hxx"
+#include "util/Error.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
@@ -42,7 +45,7 @@
 #ifdef ENABLE_DATABASE
 
 Song *
-Song::LoadFile(const char *path_utf8, Directory &parent)
+Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 {
 	assert(!uri_has_scheme(path_utf8));
 	assert(strchr(path_utf8, '\n') == nullptr);
@@ -52,7 +55,7 @@ Song::LoadFile(const char *path_utf8, Directory &parent)
 	//in archive ?
 	bool success = parent.device == DEVICE_INARCHIVE
 		? song->UpdateFileInArchive()
-		: song->UpdateFile();
+		: song->UpdateFile(storage);
 	if (!success) {
 		song->Free();
 		return nullptr;
@@ -77,27 +80,36 @@ tag_scan_fallback(Path path,
 #ifdef ENABLE_DATABASE
 
 bool
-Song::UpdateFile()
+Song::UpdateFile(Storage &storage)
 {
-	const auto path_fs = map_song_fs(*this);
-	if (path_fs.IsNull())
+	const auto &relative_uri = GetURI();
+
+	FileInfo info;
+	if (!storage.GetInfo(relative_uri.c_str(), true, info, IgnoreError()))
 		return false;
 
-	struct stat st;
-	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
+	if (!info.IsRegular())
 		return false;
 
 	TagBuilder tag_builder;
-	if (!tag_file_scan(path_fs,
-			   full_tag_handler, &tag_builder))
-		return false;
 
-	if (tag_builder.IsEmpty())
-		tag_scan_fallback(path_fs, &full_tag_handler,
-				  &tag_builder);
+	const auto path_fs = storage.MapFS(relative_uri.c_str());
+	if (path_fs.IsNull()) {
+		const auto absolute_uri =
+			storage.MapUTF8(relative_uri.c_str());
+		if (!tag_stream_scan(absolute_uri.c_str(),
+				     full_tag_handler, &tag_builder))
+			return false;
+	} else {
+		if (!tag_file_scan(path_fs, full_tag_handler, &tag_builder))
+			return false;
 
-	mtime = st.st_mtime;
+		if (tag_builder.IsEmpty())
+			tag_scan_fallback(path_fs, &full_tag_handler,
+					  &tag_builder);
+	}
 
+	mtime = info.mtime;
 	tag_builder.Commit(tag);
 	return true;
 }

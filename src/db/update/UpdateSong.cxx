@@ -61,7 +61,7 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 	if (song == nullptr) {
 		FormatDebug(update_domain, "reading %s/%s",
 			    directory.GetPath(), name);
-		song = Song::LoadFile(name, directory);
+		song = Song::LoadFile(storage, name, directory);
 		if (song == nullptr) {
 			FormatDebug(update_domain,
 				    "ignoring unrecognized file %s/%s",
@@ -79,7 +79,7 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 	} else if (info.mtime != song->mtime || walk_discard) {
 		FormatDefault(update_domain, "updating %s/%s",
 			      directory.GetPath(), name);
-		if (!song->UpdateFile()) {
+		if (!song->UpdateFile(storage)) {
 			FormatDebug(update_domain,
 				    "deleting unrecognized file %s/%s",
 				    directory.GetPath(), name);

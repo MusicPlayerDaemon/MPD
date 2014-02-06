@@ -32,6 +32,7 @@
 struct LightSong;
 struct Directory;
 class DetachedSong;
+class Storage;
 
 /**
  * A song file inside the configured music directory.
@@ -91,11 +92,12 @@ struct Song {
 	 * data, nullptr is returned.
 	 */
 	gcc_malloc
-	static Song *LoadFile(const char *path_utf8, Directory &parent);
+	static Song *LoadFile(Storage &storage, const char *name_utf8,
+			      Directory &parent);
 
 	void Free();
 
-	bool UpdateFile();
+	bool UpdateFile(Storage &storage);
 	bool UpdateFileInArchive();
 
 	/**
