@@ -46,7 +46,7 @@ public:
 	bool failed;
 
 public:
-	Mixer(const MixerPlugin &_plugin)
+	explicit Mixer(const MixerPlugin &_plugin)
 		:plugin(_plugin),
 		 open(false),
 		 failed(false) {}
