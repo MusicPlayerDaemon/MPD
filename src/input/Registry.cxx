@@ -42,6 +42,10 @@
 #include "plugins/SmbclientInputPlugin.hxx"
 #endif
 
+#ifdef ENABLE_NFS
+#include "plugins/NfsInputPlugin.hxx"
+#endif
+
 #ifdef ENABLE_MMS
 #include "plugins/MmsInputPlugin.hxx"
 #endif
@@ -70,6 +74,9 @@ const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_SMBCLIENT
 	&input_plugin_smbclient,
+#endif
+#ifdef ENABLE_NFS
+	&input_plugin_nfs,
 #endif
 #ifdef ENABLE_MMS
 	&input_plugin_mms,

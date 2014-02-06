@@ -52,6 +52,9 @@ static const char *remoteUrlPrefixes[] = {
 #ifdef ENABLE_SMBCLIENT
 	"smb://",
 #endif
+#ifdef ENABLE_NFS
+	"nfs://",
+#endif
 #ifdef ENABLE_CDIO_PARANOIA
 	"cdda://",
 #endif

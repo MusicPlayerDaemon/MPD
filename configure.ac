@@ -310,6 +310,11 @@ AC_ARG_ENABLE(smbclient,
 		[enable support for libsmbclient (default: auto)]),,
 	[enable_smbclient=auto])
 
+AC_ARG_ENABLE(nfs,
+	AS_HELP_STRING([--enable-nfs],
+		[enable support for libnfs (default: auto)]),,
+	[enable_nfs=auto])
+
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
 		[enable debugging (default: disabled)]),,
@@ -858,6 +863,14 @@ if test x$enable_smbclient = xyes; then
 	AC_DEFINE(ENABLE_SMBCLIENT, 1, [Define when libsmbclient is used])
 fi
 AM_CONDITIONAL(ENABLE_SMBCLIENT, test x$enable_smbclient = xyes)
+
+dnl ----------------------------------- NFS -----------------------------
+MPD_AUTO_PKG(nfs, NFS, [libnfs],
+	[NFS input plugin], [libnfs not found])
+if test x$enable_nfs = xyes; then
+	AC_DEFINE(ENABLE_NFS, 1, [Define when libnfs is used])
+fi
+AM_CONDITIONAL(ENABLE_NFS, test x$enable_nfs = xyes)
 
 dnl --------------------------------- Despotify ---------------------------------
 MPD_AUTO_PKG(despotify, DESPOTIFY, [despotify],

@@ -914,6 +914,7 @@ libinput_a_SOURCES = \
 libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(CURL_CFLAGS) \
 	$(SMBCLIENT_CFLAGS) \
+	$(NFS_CFLAGS) \
 	$(CDIO_PARANOIA_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(DESPOTIFY_CFLAGS) \
@@ -923,6 +924,7 @@ INPUT_LIBS = \
 	libinput.a \
 	$(CURL_LIBS) \
 	$(SMBCLIENT_LIBS) \
+	$(NFS_LIBS) \
 	$(CDIO_PARANOIA_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(DESPOTIFY_LIBS) \
@@ -946,6 +948,11 @@ if ENABLE_SMBCLIENT
 libinput_a_SOURCES += \
 	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx \
 	src/input/plugins/SmbclientInputPlugin.cxx src/input/plugins/SmbclientInputPlugin.hxx
+endif
+
+if ENABLE_NFS
+libinput_a_SOURCES += \
+	src/input/plugins/NfsInputPlugin.cxx src/input/plugins/NfsInputPlugin.hxx
 endif
 
 if ENABLE_CDIO_PARANOIA

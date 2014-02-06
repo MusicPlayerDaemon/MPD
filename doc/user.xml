@@ -1153,6 +1153,35 @@ systemctl start mpd.socket</programlisting>
       </section>
 
       <section>
+        <title><varname>nfs</varname></title>
+
+        <para>
+          Allows MPD to access files on NFSv3 servers without actually
+          mounting them (i.e. in userspace, without help from the
+          kernel's VFS layer).  All URIs with the
+          <filename>nfs://</filename> scheme are used according to
+          <ulink
+          url="http://tools.ietf.org/html/rfc2224">RFC2224</ulink>.
+          Example:
+        </para>
+
+        <para>
+          <filename>mpc add nfs://servername/path/filename.ogg</filename>
+        </para>
+
+        <para>
+          Note that this usually requires enabling the "insecure" flag
+          in the server's <filename>/etc/exports</filename> file,
+          because MPD cannot bind to so-called "privileged" ports.
+          Don't fear: this will not make your file server insecure;
+          the flag was named in a time long ago when privileged ports
+          were thought to be meaningful for security.  By today's
+          standards, NFSv3 is not secure at all, and if you believe it
+          is, you're already doomed.
+        </para>
+      </section>
+
+      <section>
         <title><varname>smbclient</varname></title>
 
         <para>
