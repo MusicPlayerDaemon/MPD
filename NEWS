@@ -1,4 +1,4 @@
-ver 0.18.8 (not yet released)
+ver 0.18.8 (2014/02/07)
 * decoder
   - ffmpeg: support libav v10_alpha1
 * encoder
