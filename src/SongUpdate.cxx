@@ -44,21 +44,16 @@
 Song *
 Song::LoadFile(const char *path_utf8, Directory &parent)
 {
-	Song *song;
-	bool ret;
-
 	assert(!uri_has_scheme(path_utf8));
 	assert(strchr(path_utf8, '\n') == nullptr);
 
-	song = NewFile(path_utf8, parent);
+	Song *song = NewFile(path_utf8, parent);
 
 	//in archive ?
-	if (parent.device == DEVICE_INARCHIVE) {
-		ret = song->UpdateFileInArchive();
-	} else {
-		ret = song->UpdateFile();
-	}
-	if (!ret) {
+	bool success = parent.device == DEVICE_INARCHIVE
+		? song->UpdateFileInArchive()
+		: song->UpdateFile();
+	if (!success) {
 		song->Free();
 		return nullptr;
 	}
