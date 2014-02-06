@@ -99,9 +99,10 @@ StateFile::Read()
 	}
 
 #ifdef ENABLE_DATABASE
-	const SongLoader song_loader(partition.instance.database);
+	const SongLoader song_loader(partition.instance.database,
+				     partition.instance.storage);
 #else
-	const SongLoader song_loader(nullptr);
+	const SongLoader song_loader(nullptr, nullptr);
 #endif
 
 	const char *line;

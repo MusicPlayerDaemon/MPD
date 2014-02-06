@@ -19,24 +19,26 @@
 
 #include "config.h"
 #include "DatabasePlaylist.hxx"
+#include "DatabaseSong.hxx"
 #include "Selection.hxx"
 #include "PlaylistFile.hxx"
 #include "DatabasePlugin.hxx"
 #include "DetachedSong.hxx"
-#include "Mapper.hxx"
+#include "storage/StorageInterface.hxx"
 
 #include <functional>
 
 static bool
-AddSong(const char *playlist_path_utf8,
+AddSong(const Storage &storage, const char *playlist_path_utf8,
 	const LightSong &song, Error &error)
 {
-	return spl_append_song(playlist_path_utf8, map_song_detach(song),
+	return spl_append_song(playlist_path_utf8,
+			       DatabaseDetachSong(storage, song),
 			       error);
 }
 
 bool
-search_add_to_playlist(const Database &db,
+search_add_to_playlist(const Database &db, const Storage &storage,
 		       const char *uri, const char *playlist_path_utf8,
 		       const SongFilter *filter,
 		       Error &error)
@@ -44,6 +46,7 @@ search_add_to_playlist(const Database &db,
 	const DatabaseSelection selection(uri, true, filter);
 
 	using namespace std::placeholders;
-	const auto f = std::bind(AddSong, playlist_path_utf8, _1, _2);
+	const auto f = std::bind(AddSong, std::ref(storage),
+				 playlist_path_utf8, _1, _2);
 	return db.Visit(selection, f, error);
 }

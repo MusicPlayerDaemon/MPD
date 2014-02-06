@@ -36,7 +36,8 @@
 #ifdef ENABLE_DATABASE
 
 SongLoader::SongLoader(const Client &_client)
-	:client(&_client), db(_client.GetDatabase(IgnoreError())) {}
+	:client(&_client), db(_client.GetDatabase(IgnoreError())),
+	 storage(_client.GetStorage()) {}
 
 #endif
 
@@ -100,7 +101,8 @@ SongLoader::LoadSong(const char *uri_utf8, Error &error) const
 
 #ifdef ENABLE_DATABASE
 		if (db != nullptr)
-			return DatabaseDetachSong(*db, uri_utf8, error);
+			return DatabaseDetachSong(*db, *storage,
+						  uri_utf8, error);
 #endif
 
 		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),

@@ -19,22 +19,23 @@
 
 #include "config.h"
 #include "DatabaseQueue.hxx"
-#include "DatabaseGlue.hxx"
+#include "DatabaseSong.hxx"
 #include "DatabasePlugin.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"
-#include "Mapper.hxx"
 
 #include <functional>
 
 static bool
 AddToQueue(Partition &partition, const LightSong &song, Error &error)
 {
+	const Storage &storage = *partition.instance.storage;
 	PlaylistResult result =
 		partition.playlist.AppendSong(partition.pc,
-					      map_song_detach(song),
+					      DatabaseDetachSong(storage,
+								 song),
 					      nullptr);
 	if (result != PlaylistResult::SUCCESS) {
 		error.Set(playlist_domain, int(result), "Playlist error");

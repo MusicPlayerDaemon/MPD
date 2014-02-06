@@ -118,7 +118,7 @@ playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
 	if (end_index > contents.size())
 		end_index = contents.size();
 
-	const SongLoader loader(nullptr);
+	const SongLoader loader(nullptr, nullptr);
 
 	for (unsigned i = start_index; i < end_index; ++i) {
 		const auto &uri_utf8 = contents[i];

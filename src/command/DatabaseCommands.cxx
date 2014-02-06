@@ -124,7 +124,8 @@ handle_searchaddpl(Client &client, int argc, char *argv[])
 	if (db == nullptr)
 		return print_error(client, error);
 
-	return search_add_to_playlist(*db, "", playlist, &filter, error)
+	return search_add_to_playlist(*db, *client.GetStorage(),
+				      "", playlist, &filter, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }

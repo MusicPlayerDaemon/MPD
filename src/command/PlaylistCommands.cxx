@@ -196,7 +196,8 @@ handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 		if (db == nullptr)
 			return print_error(client, error);
 
-		success = search_add_to_playlist(*db, uri, playlist, nullptr,
+		success = search_add_to_playlist(*db, *client.GetStorage(),
+						 uri, playlist, nullptr,
 						 error);
 #else
 		success = false;

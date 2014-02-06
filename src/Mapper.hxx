@@ -92,14 +92,6 @@ AllocatedPath
 map_uri_fs(const char *uri);
 
 /**
- * "Detach" the #Song object, i.e. convert it to a #DetachedSong
- * instance.
- */
-gcc_pure
-DetachedSong
-map_song_detach(const LightSong &song);
-
-/**
  * Determines the file system path of a song.  This must not be a
  * remote song.
  *

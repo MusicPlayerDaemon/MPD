@@ -39,6 +39,7 @@ class EventLoop;
 class Path;
 struct Partition;
 class Database;
+class Storage;
 
 class Client final : private FullyBufferedSocket, TimeoutMonitor {
 public:
@@ -173,7 +174,11 @@ public:
 	/**
 	 * Wrapper for Instance::GetDatabase().
 	 */
+	gcc_pure
 	const Database *GetDatabase(Error &error) const;
+
+	gcc_pure
+	const Storage *GetStorage() const;
 
 private:
 	/* virtual methods from class BufferedSocket */

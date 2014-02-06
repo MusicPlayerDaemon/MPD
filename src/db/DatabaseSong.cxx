@@ -19,18 +19,35 @@
 
 #include "config.h"
 #include "DatabaseSong.hxx"
+#include "LightSong.hxx"
 #include "DatabasePlugin.hxx"
 #include "DetachedSong.hxx"
-#include "Mapper.hxx"
+#include "storage/StorageInterface.hxx"
+
+DetachedSong
+DatabaseDetachSong(const Storage &storage, const LightSong &song)
+{
+	DetachedSong detached(song);
+	assert(detached.IsInDatabase());
+
+	if (!detached.HasRealURI()) {
+		const auto uri = song.GetURI();
+		detached.SetRealURI(storage.MapUTF8(uri.c_str()));
+	}
+
+	return detached;
+}
 
 DetachedSong *
-DatabaseDetachSong(const Database &db, const char *uri, Error &error)
+DatabaseDetachSong(const Database &db, const Storage &storage, const char *uri,
+		   Error &error)
 {
 	const LightSong *tmp = db.GetSong(uri, error);
 	if (tmp == nullptr)
 		return nullptr;
 
-	DetachedSong *song = new DetachedSong(map_song_detach(*tmp));
+	DetachedSong *song = new DetachedSong(DatabaseDetachSong(storage,
+								 *tmp));
 	db.ReturnSong(tmp);
 	return song;
 }

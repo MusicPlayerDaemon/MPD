@@ -117,7 +117,9 @@ static const char *uri1 = "/foo/bar.ogg";
 static const char *uri2 = "foo/bar.ogg";
 
 DetachedSong *
-DatabaseDetachSong(gcc_unused const Database &db, const char *uri,
+DatabaseDetachSong(gcc_unused const Database &db,
+		   gcc_unused const Storage &storage,
+		   const char *uri,
 		   gcc_unused Error &error)
 {
 	if (strcmp(uri, uri2) == 0)
@@ -141,6 +143,12 @@ const Database *
 Client::GetDatabase(gcc_unused Error &error) const
 {
 	return reinterpret_cast<const Database *>(this);
+}
+
+const Storage *
+Client::GetStorage() const
+{
+	return reinterpret_cast<const Storage *>(this);
 }
 
 bool
@@ -217,7 +225,7 @@ class TranslateSongTest : public CppUnit::TestFixture {
 	void TestAbsoluteURI() {
 		DetachedSong song1("http://example.com/foo.ogg");
 		auto se = ToString(song1);
-		const SongLoader loader(nullptr);
+		const SongLoader loader(nullptr, nullptr);
 		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/ignored",
 							     loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song1));
@@ -236,14 +244,15 @@ class TranslateSongTest : public CppUnit::TestFixture {
 		auto s1 = ToString(song1);
 		auto se = ToString(DetachedSong(uri1, MakeTag1c()));
 
-		const SongLoader loader(nullptr);
+		const SongLoader loader(nullptr, nullptr);
 		CPPUNIT_ASSERT(playlist_check_translate_song(song1, "/ignored",
 							     loader));
 		CPPUNIT_ASSERT_EQUAL(se, ToString(song1));
 	}
 
 	void TestInDatabase() {
-		const SongLoader loader(reinterpret_cast<const Database *>(1));
+		const SongLoader loader(reinterpret_cast<const Database *>(1),
+					reinterpret_cast<const Storage *>(2));
 
 		DetachedSong song1("doesntexist");
 		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr,
@@ -266,9 +275,10 @@ class TranslateSongTest : public CppUnit::TestFixture {
 
 	void TestRelative() {
 		const Database &db = *reinterpret_cast<const Database *>(1);
-		const SongLoader secure_loader(&db);
+		const Storage &storage = *reinterpret_cast<const Storage *>(2);
+		const SongLoader secure_loader(&db, &storage);
 		const SongLoader insecure_loader(*reinterpret_cast<const Client *>(1),
-						 &db);
+						 &db, &storage);
 
 		/* map to music_directory */
 		DetachedSong song1("bar.ogg", MakeTag2b());

@@ -234,21 +234,6 @@ map_directory_child_fs(const Directory &directory, const char *name)
 	return AllocatedPath::Build(parent_fs, name_fs);
 }
 
-DetachedSong
-map_song_detach(const LightSong &song)
-{
-	DetachedSong detached(song);
-	assert(detached.IsInDatabase());
-
-	if (!detached.HasRealURI()) {
-		const auto uri = song.GetURI();
-		detached.SetRealURI(PathTraitsUTF8::Build(music_dir_utf8.c_str(),
-							  uri.c_str()));
-	}
-
-	return detached;
-}
-
 AllocatedPath
 map_song_fs(const Song &song)
 {

@@ -33,4 +33,10 @@ Client::GetDatabase(Error &error) const
 	return partition.instance.GetDatabase(error);
 }
 
+const Storage *
+Client::GetStorage() const
+{
+	return partition.instance.storage;
+}
+
 #endif

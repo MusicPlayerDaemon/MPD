@@ -27,6 +27,7 @@
 
 class Client;
 class Database;
+class Storage;
 class DetachedSong;
 class Error;
 
@@ -41,19 +42,21 @@ class SongLoader {
 
 #ifdef ENABLE_DATABASE
 	const Database *const db;
+	const Storage *const storage;
 #endif
 
 public:
 #ifdef ENABLE_DATABASE
 	explicit SongLoader(const Client &_client);
-	explicit SongLoader(const Database *_db)
-		:client(nullptr), db(_db) {}
-	explicit SongLoader(const Client &_client, const Database *_db)
-		:client(&_client), db(_db) {}
+	SongLoader(const Database *_db, const Storage *_storage)
+		:client(nullptr), db(_db), storage(_storage) {}
+	SongLoader(const Client &_client, const Database *_db,
+		   const Storage *_storage)
+		:client(&_client), db(_db), storage(_storage) {}
 #else
 	explicit SongLoader(const Client &_client)
 		:client(&_client) {}
-	explicit SongLoader(std::nullptr_t)
+	explicit SongLoader(std::nullptr_t, std::nullptr_t)
 		:client(nullptr) {}
 #endif
 

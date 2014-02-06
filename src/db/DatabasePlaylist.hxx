@@ -23,12 +23,13 @@
 #include "Compiler.h"
 
 class Database;
+class Storage;
 class SongFilter;
 class Error;
 
-gcc_nonnull(2,3)
+gcc_nonnull(3,4)
 bool
-search_add_to_playlist(const Database &db,
+search_add_to_playlist(const Database &db, const Storage &storage,
 		       const char *uri, const char *path_utf8,
 		       const SongFilter *filter,
 		       Error &error);
