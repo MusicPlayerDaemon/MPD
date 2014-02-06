@@ -24,13 +24,25 @@
 #include "output/plugins/RoarOutputPlugin.hxx"
 #include "Compiler.h"
 
-struct RoarMixer final : public Mixer {
+class RoarMixer final : public Mixer {
 	/** the base mixer class */
 	RoarOutput *self;
 
+public:
 	RoarMixer(RoarOutput *_output)
 		:Mixer(roar_mixer_plugin),
 		self(_output) {}
+
+	/* virtual methods from class Mixer */
+	virtual bool Open(gcc_unused Error &error) override {
+		return true;
+	}
+
+	virtual void Close() override {
+	}
+
+	virtual int GetVolume(Error &error) override;
+	virtual bool SetVolume(unsigned volume, Error &error) override;
 };
 
 static Mixer *
@@ -41,35 +53,19 @@ roar_mixer_init(gcc_unused EventLoop &event_loop, void *ao,
 	return new RoarMixer((RoarOutput *)ao);
 }
 
-static void
-roar_mixer_finish(Mixer *data)
+int
+RoarMixer::GetVolume(gcc_unused Error &error)
 {
-	RoarMixer *self = (RoarMixer *) data;
-
-	delete self;
+	return roar_output_get_volume(self);
 }
 
-static int
-roar_mixer_get_volume(Mixer *mixer, gcc_unused Error &error)
+bool
+RoarMixer::SetVolume(unsigned volume, gcc_unused Error &error)
 {
-	RoarMixer *self = (RoarMixer *)mixer;
-	return roar_output_get_volume(self->self);
-}
-
-static bool
-roar_mixer_set_volume(Mixer *mixer, unsigned volume,
-		      gcc_unused Error &error)
-{
-	RoarMixer *self = (RoarMixer *)mixer;
-	return roar_output_set_volume(self->self, volume);
+	return roar_output_set_volume(self, volume);
 }
 
 const MixerPlugin roar_mixer_plugin = {
 	roar_mixer_init,
-	roar_mixer_finish,
-	nullptr,
-	nullptr,
-	roar_mixer_get_volume,
-	roar_mixer_set_volume,
 	false,
 };

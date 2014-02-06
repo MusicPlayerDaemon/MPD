@@ -34,28 +34,63 @@
 
 #include <assert.h>
 
-struct PulseMixer final : public Mixer {
+class PulseMixer final : public Mixer {
 	PulseOutput *output;
 
 	bool online;
 	struct pa_cvolume volume;
 
+public:
 	PulseMixer(PulseOutput *_output)
 		:Mixer(pulse_mixer_plugin),
 		output(_output), online(false)
 	{
 	}
+
+	virtual ~PulseMixer();
+
+	void Offline();
+	void VolumeCallback(const pa_sink_input_info *i, int eol);
+	void Update(pa_context *context, pa_stream *stream);
+
+	/* virtual methods from class Mixer */
+	virtual bool Open(gcc_unused Error &error) override {
+		return true;
+	}
+
+	virtual void Close() override {
+	}
+
+	virtual int GetVolume(Error &error) override;
+	virtual bool SetVolume(unsigned volume, Error &error) override;
 };
 
 static constexpr Domain pulse_mixer_domain("pulse_mixer");
 
-static void
-pulse_mixer_offline(PulseMixer *pm)
+void
+PulseMixer::Offline()
 {
-	if (!pm->online)
+	if (!online)
 		return;
 
-	pm->online = false;
+	online = false;
+
+	GlobalEvents::Emit(GlobalEvents::MIXER);
+}
+
+inline void
+PulseMixer::VolumeCallback(const pa_sink_input_info *i, int eol)
+{
+	if (eol)
+		return;
+
+	if (i == nullptr) {
+		Offline();
+		return;
+	}
+
+	online = true;
+	volume = i->volume;
 
 	GlobalEvents::Emit(GlobalEvents::MIXER);
 }
@@ -69,39 +104,25 @@ pulse_mixer_volume_cb(gcc_unused pa_context *context, const pa_sink_input_info *
 		      int eol, void *userdata)
 {
 	PulseMixer *pm = (PulseMixer *)userdata;
-
-	if (eol)
-		return;
-
-	if (i == nullptr) {
-		pulse_mixer_offline(pm);
-		return;
-	}
-
-	pm->online = true;
-	pm->volume = i->volume;
-
-	GlobalEvents::Emit(GlobalEvents::MIXER);
+	pm->VolumeCallback(i, eol);
 }
 
-static void
-pulse_mixer_update(PulseMixer *pm,
-		   struct pa_context *context, struct pa_stream *stream)
+inline void
+PulseMixer::Update(pa_context *context, pa_stream *stream)
 {
-	pa_operation *o;
-
 	assert(context != nullptr);
 	assert(stream != nullptr);
 	assert(pa_stream_get_state(stream) == PA_STREAM_READY);
 
-	o = pa_context_get_sink_input_info(context,
-					   pa_stream_get_index(stream),
-					   pulse_mixer_volume_cb, pm);
+	pa_operation *o =
+		pa_context_get_sink_input_info(context,
+					       pa_stream_get_index(stream),
+					       pulse_mixer_volume_cb, this);
 	if (o == nullptr) {
 		FormatError(pulse_mixer_domain,
 			    "pa_context_get_sink_input_info() failed: %s",
 			    pa_strerror(pa_context_errno(context)));
-		pulse_mixer_offline(pm);
+		Offline();
 		return;
 	}
 
@@ -132,14 +153,14 @@ pulse_mixer_on_connect(gcc_unused PulseMixer *pm,
 void
 pulse_mixer_on_disconnect(PulseMixer *pm)
 {
-	pulse_mixer_offline(pm);
+	pm->Offline();
 }
 
 void
 pulse_mixer_on_change(PulseMixer *pm,
 		      struct pa_context *context, struct pa_stream *stream)
 {
-	pulse_mixer_update(pm, context, stream);
+	pm->Update(context, stream);
 }
 
 static Mixer *
@@ -162,65 +183,48 @@ pulse_mixer_init(gcc_unused EventLoop &event_loop, void *ao,
 	return pm;
 }
 
-static void
-pulse_mixer_finish(Mixer *data)
+PulseMixer::~PulseMixer()
 {
-	PulseMixer *pm = (PulseMixer *) data;
-
-	pulse_output_clear_mixer(pm->output, pm);
-
-	delete pm;
+	pulse_output_clear_mixer(output, this);
 }
 
-static int
-pulse_mixer_get_volume(Mixer *mixer, gcc_unused Error &error)
+int
+PulseMixer::GetVolume(gcc_unused Error &error)
 {
-	PulseMixer *pm = (PulseMixer *) mixer;
-	int ret;
+	pulse_output_lock(output);
 
-	pulse_output_lock(pm->output);
-
-	ret = pm->online
-		? (int)((100*(pa_cvolume_avg(&pm->volume)+1))/PA_VOLUME_NORM)
+	int result = online
+		? (int)((100 * (pa_cvolume_avg(&volume) + 1)) / PA_VOLUME_NORM)
 		: -1;
 
-	pulse_output_unlock(pm->output);
+	pulse_output_unlock(output);
 
-	return ret;
+	return result;
 }
 
-static bool
-pulse_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
+bool
+PulseMixer::SetVolume(unsigned new_volume, Error &error)
 {
-	PulseMixer *pm = (PulseMixer *) mixer;
-	struct pa_cvolume cvolume;
-	bool success;
+	pulse_output_lock(output);
 
-	pulse_output_lock(pm->output);
-
-	if (!pm->online) {
-		pulse_output_unlock(pm->output);
+	if (!online) {
+		pulse_output_unlock(output);
 		error.Set(pulse_mixer_domain, "disconnected");
 		return false;
 	}
 
-	pa_cvolume_set(&cvolume, pm->volume.channels,
-		       (pa_volume_t)volume * PA_VOLUME_NORM / 100 + 0.5);
-	success = pulse_output_set_volume(pm->output, &cvolume, error);
+	struct pa_cvolume cvolume;
+	pa_cvolume_set(&cvolume, volume.channels,
+		       (pa_volume_t)new_volume * PA_VOLUME_NORM / 100 + 0.5);
+	bool success = pulse_output_set_volume(output, &cvolume, error);
 	if (success)
-		pm->volume = cvolume;
+		volume = cvolume;
 
-	pulse_output_unlock(pm->output);
-
+	pulse_output_unlock(output);
 	return success;
 }
 
 const MixerPlugin pulse_mixer_plugin = {
 	pulse_mixer_init,
-	pulse_mixer_finish,
-	nullptr,
-	nullptr,
-	pulse_mixer_get_volume,
-	pulse_mixer_set_volume,
 	false,
 };

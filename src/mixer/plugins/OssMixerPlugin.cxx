@@ -41,7 +41,7 @@
 
 #define VOLUME_MIXER_OSS_DEFAULT		"/dev/mixer"
 
-class OssMixer : public Mixer {
+class OssMixer final : public Mixer {
 	const char *device;
 	const char *control;
 
@@ -52,11 +52,12 @@ public:
 	OssMixer():Mixer(oss_mixer_plugin) {}
 
 	bool Configure(const config_param &param, Error &error);
-	bool Open(Error &error);
-	void Close();
 
-	int GetVolume(Error &error);
-	bool SetVolume(unsigned volume, Error &error);
+	/* virtual methods from class Mixer */
+	virtual bool Open(Error &error) override;
+	virtual void Close() override;
+	virtual int GetVolume(Error &error) override;
+	virtual bool SetVolume(unsigned volume, Error &error) override;
 };
 
 static constexpr Domain oss_mixer_domain("oss_mixer");
@@ -110,14 +111,6 @@ oss_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused void *ao,
 	return om;
 }
 
-static void
-oss_mixer_finish(Mixer *data)
-{
-	OssMixer *om = (OssMixer *) data;
-
-	delete om;
-}
-
 void
 OssMixer::Close()
 {
@@ -126,14 +119,7 @@ OssMixer::Close()
 	close(device_fd);
 }
 
-static void
-oss_mixer_close(Mixer *data)
-{
-	OssMixer *om = (OssMixer *) data;
-	om->Close();
-}
-
-inline bool
+bool
 OssMixer::Open(Error &error)
 {
 	device_fd = open_cloexec(device, O_RDONLY, 0);
@@ -163,15 +149,7 @@ OssMixer::Open(Error &error)
 	return true;
 }
 
-static bool
-oss_mixer_open(Mixer *data, Error &error)
-{
-	OssMixer *om = (OssMixer *) data;
-
-	return om->Open(error);
-}
-
-inline int
+int
 OssMixer::GetVolume(Error &error)
 {
 	int left, right, level;
@@ -197,14 +175,7 @@ OssMixer::GetVolume(Error &error)
 	return left;
 }
 
-static int
-oss_mixer_get_volume(Mixer *mixer, Error &error)
-{
-	OssMixer *om = (OssMixer *)mixer;
-	return om->GetVolume(error);
-}
-
-inline bool
+bool
 OssMixer::SetVolume(unsigned volume, Error &error)
 {
 	int level;
@@ -224,19 +195,7 @@ OssMixer::SetVolume(unsigned volume, Error &error)
 	return true;
 }
 
-static bool
-oss_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
-{
-	OssMixer *om = (OssMixer *)mixer;
-	return om->SetVolume(volume, error);
-}
-
 const MixerPlugin oss_mixer_plugin = {
 	oss_mixer_init,
-	oss_mixer_finish,
-	oss_mixer_open,
-	oss_mixer_close,
-	oss_mixer_get_volume,
-	oss_mixer_set_volume,
 	true,
 };

@@ -38,7 +38,7 @@ CreateVolumeFilter()
 			  IgnoreError());
 }
 
-struct SoftwareMixer final : public Mixer {
+class SoftwareMixer final : public Mixer {
 	Filter *filter;
 
 	/**
@@ -51,6 +51,7 @@ struct SoftwareMixer final : public Mixer {
 
 	unsigned volume;
 
+public:
 	SoftwareMixer()
 		:Mixer(software_mixer_plugin),
 		 filter(CreateVolumeFilter()),
@@ -60,10 +61,26 @@ struct SoftwareMixer final : public Mixer {
 		assert(filter != nullptr);
 	}
 
-	~SoftwareMixer() {
+	virtual ~SoftwareMixer() {
 		if (owns_filter)
 			delete filter;
 	}
+
+	Filter *GetFilter();
+
+	/* virtual methods from class Mixer */
+	virtual bool Open(gcc_unused Error &error) override {
+		return true;
+	}
+
+	virtual void Close() override {
+	}
+
+	virtual int GetVolume(gcc_unused Error &error) override {
+		return volume;
+	}
+
+	virtual bool SetVolume(unsigned volume, Error &error) override;
 };
 
 static Mixer *
@@ -74,59 +91,40 @@ software_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused void *ao,
 	return new SoftwareMixer();
 }
 
-static void
-software_mixer_finish(Mixer *data)
+bool
+SoftwareMixer::SetVolume(unsigned new_volume, gcc_unused Error &error)
 {
-	SoftwareMixer *sm = (SoftwareMixer *)data;
+	assert(new_volume <= 100);
 
-	delete sm;
-}
+	if (new_volume >= 100)
+		new_volume = PCM_VOLUME_1;
+	else if (new_volume > 0)
+		new_volume = pcm_float_to_volume((exp(new_volume / 25.0) - 1) /
+						 (54.5981500331F - 1));
 
-static int
-software_mixer_get_volume(Mixer *mixer, gcc_unused Error &error)
-{
-	SoftwareMixer *sm = (SoftwareMixer *)mixer;
-
-	return sm->volume;
-}
-
-static bool
-software_mixer_set_volume(Mixer *mixer, unsigned volume,
-			  gcc_unused Error &error)
-{
-	SoftwareMixer *sm = (SoftwareMixer *)mixer;
-
-	assert(volume <= 100);
-
-	sm->volume = volume;
-
-	if (volume >= 100)
-		volume = PCM_VOLUME_1;
-	else if (volume > 0)
-		volume = pcm_float_to_volume((exp(volume / 25.0) - 1) /
-					     (54.5981500331F - 1));
-
-	volume_filter_set(sm->filter, volume);
+	volume = new_volume;
+	volume_filter_set(filter, new_volume);
 	return true;
 }
 
 const MixerPlugin software_mixer_plugin = {
 	software_mixer_init,
-	software_mixer_finish,
-	nullptr,
-	nullptr,
-	software_mixer_get_volume,
-	software_mixer_set_volume,
 	true,
 };
+
+inline Filter *
+SoftwareMixer::GetFilter()
+{
+	assert(owns_filter);
+
+	owns_filter = false;
+	return filter;
+}
 
 Filter *
 software_mixer_get_filter(Mixer *mixer)
 {
 	SoftwareMixer *sm = (SoftwareMixer *)mixer;
 	assert(sm->IsPlugin(software_mixer_plugin));
-	assert(sm->owns_filter);
-
-	sm->owns_filter = false;
-	return sm->filter;
+	return sm->GetFilter();
 }

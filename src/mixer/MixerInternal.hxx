@@ -23,6 +23,7 @@
 #include "MixerPlugin.hxx"
 #include "MixerList.hxx"
 #include "thread/Mutex.hxx"
+#include "Compiler.h"
 
 class Mixer {
 public:
@@ -53,9 +54,40 @@ public:
 
 	Mixer(const Mixer &) = delete;
 
+	virtual ~Mixer() {}
+
 	bool IsPlugin(const MixerPlugin &other) const {
 		return &plugin == &other;
 	}
+
+	/**
+	 * Open mixer device
+	 *
+	 * @return true on success, false on error
+	 */
+	virtual bool Open(Error &error) = 0;
+
+	/**
+	 * Close mixer device
+	 */
+	virtual void Close() = 0;
+
+	/**
+	 * Reads the current volume.
+	 *
+	 * @return the current volume (0..100 including) or -1 if
+	 * unavailable or on error (error set, mixer will be closed)
+	 */
+	gcc_pure
+	virtual int GetVolume(Error &error) = 0;
+
+	/**
+	 * Sets the volume.
+	 *
+	 * @param volume the new volume (0..100 including) @return
+	 * true on success, false on error
+	 */
+	virtual bool SetVolume(unsigned volume, Error &error) = 0;
 };
 
 #endif

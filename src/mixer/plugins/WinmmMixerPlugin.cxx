@@ -30,13 +30,25 @@
 #include <math.h>
 #include <windows.h>
 
-struct WinmmMixer final : public Mixer {
+class WinmmMixer final : public Mixer {
 	WinmmOutput *output;
 
+public:
 	WinmmMixer(WinmmOutput *_output)
 		:Mixer(winmm_mixer_plugin),
 		output(_output) {
 	}
+
+	/* virtual methods from class Mixer */
+	virtual bool Open(gcc_unused Error &error) override {
+		return true;
+	}
+
+	virtual void Close() override {
+	}
+
+	virtual int GetVolume(Error &error) override;
+	virtual bool SetVolume(unsigned volume, Error &error) override;
 };
 
 static constexpr Domain winmm_mixer_domain("winmm_mixer");
@@ -64,20 +76,11 @@ winmm_mixer_init(gcc_unused EventLoop &event_loop, void *ao,
 	return new WinmmMixer((WinmmOutput *)ao);
 }
 
-static void
-winmm_mixer_finish(Mixer *data)
+int
+WinmmMixer::GetVolume(Error &error)
 {
-	WinmmMixer *wm = (WinmmMixer *)data;
-
-	delete wm;
-}
-
-static int
-winmm_mixer_get_volume(Mixer *mixer, Error &error)
-{
-	WinmmMixer *wm = (WinmmMixer *) mixer;
 	DWORD volume;
-	HWAVEOUT handle = winmm_output_get_handle(wm->output);
+	HWAVEOUT handle = winmm_output_get_handle(output);
 	MMRESULT result = waveOutGetVolume(handle, &volume);
 
 	if (result != MMSYSERR_NOERROR) {
@@ -88,12 +91,11 @@ winmm_mixer_get_volume(Mixer *mixer, Error &error)
 	return winmm_volume_decode(volume);
 }
 
-static bool
-winmm_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
+bool
+WinmmMixer::SetVolume(unsigned volume, Error &error)
 {
-	WinmmMixer *wm = (WinmmMixer *) mixer;
 	DWORD value = winmm_volume_encode(volume);
-	HWAVEOUT handle = winmm_output_get_handle(wm->output);
+	HWAVEOUT handle = winmm_output_get_handle(output);
 	MMRESULT result = waveOutSetVolume(handle, value);
 
 	if (result != MMSYSERR_NOERROR) {
@@ -106,10 +108,5 @@ winmm_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 
 const MixerPlugin winmm_mixer_plugin = {
 	winmm_mixer_init,
-	winmm_mixer_finish,
-	nullptr,
-	nullptr,
-	winmm_mixer_get_volume,
-	winmm_mixer_set_volume,
 	false,
 };

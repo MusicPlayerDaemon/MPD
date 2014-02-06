@@ -79,13 +79,16 @@ public:
 	AlsaMixer(EventLoop &_event_loop)
 		:Mixer(alsa_mixer_plugin), event_loop(_event_loop) {}
 
+	virtual ~AlsaMixer();
+
 	void Configure(const config_param &param);
 	bool Setup(Error &error);
-	bool Open(Error &error);
-	void Close();
 
-	int GetVolume(Error &error);
-	bool SetVolume(unsigned volume, Error &error);
+	/* virtual methods from class Mixer */
+	virtual bool Open(Error &error) override;
+	virtual void Close() override;
+	virtual int GetVolume(Error &error) override;
+	virtual bool SetVolume(unsigned volume, Error &error) override;
 };
 
 static constexpr Domain alsa_mixer_domain("alsa_mixer");
@@ -174,13 +177,8 @@ alsa_mixer_init(EventLoop &event_loop, gcc_unused void *ao,
 	return am;
 }
 
-static void
-alsa_mixer_finish(Mixer *data)
+AlsaMixer::~AlsaMixer()
 {
-	AlsaMixer *am = (AlsaMixer *)data;
-
-	delete am;
-
 	/* free libasound's config cache */
 	snd_config_update_free_global();
 }
@@ -267,14 +265,6 @@ AlsaMixer::Open(Error &error)
 	return true;
 }
 
-static bool
-alsa_mixer_open(Mixer *data, Error &error)
-{
-	AlsaMixer *am = (AlsaMixer *)data;
-
-	return am->Open(error);
-}
-
 inline void
 AlsaMixer::Close()
 {
@@ -284,13 +274,6 @@ AlsaMixer::Close()
 
 	snd_mixer_elem_set_callback(elem, nullptr);
 	snd_mixer_close(handle);
-}
-
-static void
-alsa_mixer_close(Mixer *data)
-{
-	AlsaMixer *am = (AlsaMixer *)data;
-	am->Close();
 }
 
 inline int
@@ -332,13 +315,6 @@ AlsaMixer::GetVolume(Error &error)
 	return ret;
 }
 
-static int
-alsa_mixer_get_volume(Mixer *mixer, Error &error)
-{
-	AlsaMixer *am = (AlsaMixer *)mixer;
-	return am->GetVolume(error);
-}
-
 inline bool
 AlsaMixer::SetVolume(unsigned volume, Error &error)
 {
@@ -367,19 +343,7 @@ AlsaMixer::SetVolume(unsigned volume, Error &error)
 	return true;
 }
 
-static bool
-alsa_mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
-{
-	AlsaMixer *am = (AlsaMixer *)mixer;
-	return am->SetVolume(volume, error);
-}
-
 const MixerPlugin alsa_mixer_plugin = {
 	alsa_mixer_init,
-	alsa_mixer_finish,
-	alsa_mixer_open,
-	alsa_mixer_close,
-	alsa_mixer_get_volume,
-	alsa_mixer_set_volume,
 	true,
 };

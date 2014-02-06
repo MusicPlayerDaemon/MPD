@@ -47,46 +47,6 @@ struct MixerPlugin {
 		       Error &error);
 
 	/**
-	 * Finish and free mixer data
-         */
-	void (*finish)(Mixer *data);
-
-	/**
-	 * Open mixer device
-	 *
-	 * @param error_r location to store the error occurring, or
-	 * nullptr to ignore errors
-	 * @return true on success, false on error
-	 */
-	bool (*open)(Mixer *data, Error &error);
-
-	/**
-	 * Close mixer device
-	 */
-	void (*close)(Mixer *data);
-
-	/**
-	 * Reads the current volume.
-	 *
-	 * @param error_r location to store the error occurring, or
-	 * nullptr to ignore errors
-	 * @return the current volume (0..100 including) or -1 if
-	 * unavailable or on error (error set, mixer will be closed)
-	 */
-	int (*get_volume)(Mixer *mixer, Error &error);
-
-	/**
-	 * Sets the volume.
-	 *
-	 * @param error_r location to store the error occurring, or
-	 * nullptr to ignore errors
-	 * @param volume the new volume (0..100 including)
-	 * @return true on success, false on error
-	 */
-	bool (*set_volume)(Mixer *mixer, unsigned volume,
-			   Error &error);
-
-	/**
 	 * If true, then the mixer is automatically opened, even if
 	 * its audio output is not open.  If false, then the mixer is
 	 * disabled as long as its audio output is closed.

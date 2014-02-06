@@ -20,7 +20,7 @@
 #ifndef MPD_PULSE_MIXER_PLUGIN_HXX
 #define MPD_PULSE_MIXER_PLUGIN_HXX
 
-struct PulseMixer;
+class PulseMixer;
 struct pa_context;
 struct pa_stream;
 

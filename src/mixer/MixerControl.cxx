@@ -46,7 +46,7 @@ mixer_free(Mixer *mixer)
 	   this point (see mixer_auto_close()) */
 	mixer_close(mixer);
 
-	mixer->plugin.finish(mixer);
+	delete mixer;
 }
 
 bool
@@ -58,12 +58,7 @@ mixer_open(Mixer *mixer, Error &error)
 
 	const ScopeLock protect(mixer->mutex);
 
-	if (mixer->open)
-		success = true;
-	else if (mixer->plugin.open == nullptr)
-		success = mixer->open = true;
-	else
-		success = mixer->open = mixer->plugin.open(mixer, error);
+	success = mixer->open || (mixer->open = mixer->Open(error));
 
 	mixer->failed = !success;
 
@@ -76,9 +71,7 @@ mixer_close_internal(Mixer *mixer)
 	assert(mixer != nullptr);
 	assert(mixer->open);
 
-	if (mixer->plugin.close != nullptr)
-		mixer->plugin.close(mixer);
-
+	mixer->Close();
 	mixer->open = false;
 }
 
@@ -128,7 +121,7 @@ mixer_get_volume(Mixer *mixer, Error &error)
 	const ScopeLock protect(mixer->mutex);
 
 	if (mixer->open) {
-		volume = mixer->plugin.get_volume(mixer, error);
+		volume = mixer->GetVolume(error);
 		if (volume < 0 && error.IsDefined())
 			mixer_failed(mixer);
 	} else
@@ -149,6 +142,5 @@ mixer_set_volume(Mixer *mixer, unsigned volume, Error &error)
 
 	const ScopeLock protect(mixer->mutex);
 
-	return mixer->open &&
-		mixer->plugin.set_volume(mixer, volume, error);
+	return mixer->open && mixer->SetVolume(volume, error);
 }
