@@ -35,13 +35,13 @@
 #include <assert.h>
 
 class PulseMixer final : public Mixer {
-	PulseOutput *output;
+	PulseOutput &output;
 
 	bool online;
 	struct pa_cvolume volume;
 
 public:
-	PulseMixer(PulseOutput *_output)
+	PulseMixer(PulseOutput &_output)
 		:Mixer(pulse_mixer_plugin),
 		output(_output), online(false)
 	{
@@ -130,7 +130,7 @@ PulseMixer::Update(pa_context *context, pa_stream *stream)
 }
 
 void
-pulse_mixer_on_connect(gcc_unused PulseMixer *pm,
+pulse_mixer_on_connect(gcc_unused PulseMixer &pm,
 		       struct pa_context *context)
 {
 	pa_operation *o;
@@ -151,41 +151,34 @@ pulse_mixer_on_connect(gcc_unused PulseMixer *pm,
 }
 
 void
-pulse_mixer_on_disconnect(PulseMixer *pm)
+pulse_mixer_on_disconnect(PulseMixer &pm)
 {
-	pm->Offline();
+	pm.Offline();
 }
 
 void
-pulse_mixer_on_change(PulseMixer *pm,
+pulse_mixer_on_change(PulseMixer &pm,
 		      struct pa_context *context, struct pa_stream *stream)
 {
-	pm->Update(context, stream);
+	pm.Update(context, stream);
 }
 
 static Mixer *
-pulse_mixer_init(gcc_unused EventLoop &event_loop, void *ao,
+pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		 gcc_unused const config_param &param,
-		 Error &error)
+		 gcc_unused Error &error)
 {
-	PulseOutput *po = (PulseOutput *)ao;
-
-	if (ao == nullptr) {
-		error.Set(pulse_mixer_domain,
-			  "The pulse mixer cannot work without the audio output");
-		return nullptr;
-	}
-
+	PulseOutput &po = (PulseOutput &)ao;
 	PulseMixer *pm = new PulseMixer(po);
 
-	pulse_output_set_mixer(po, pm);
+	pulse_output_set_mixer(po, *pm);
 
 	return pm;
 }
 
 PulseMixer::~PulseMixer()
 {
-	pulse_output_clear_mixer(output, this);
+	pulse_output_clear_mixer(output, *this);
 }
 
 int

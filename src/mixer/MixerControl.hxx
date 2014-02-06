@@ -28,11 +28,12 @@
 class Error;
 class Mixer;
 class EventLoop;
+struct AudioOutput;
 struct MixerPlugin;
 struct config_param;
 
 Mixer *
-mixer_new(EventLoop &event_loop, const MixerPlugin &plugin, void *ao,
+mixer_new(EventLoop &event_loop, const MixerPlugin &plugin, AudioOutput &ao,
 	  const config_param &param,
 	  Error &error);
 

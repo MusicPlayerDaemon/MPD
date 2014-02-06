@@ -129,10 +129,10 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput *ao,
 		if (plugin == nullptr)
 			return nullptr;
 
-		return mixer_new(event_loop, *plugin, ao, param, error);
+		return mixer_new(event_loop, *plugin, *ao, param, error);
 
 	case MIXER_TYPE_SOFTWARE:
-		mixer = mixer_new(event_loop, software_mixer_plugin, nullptr,
+		mixer = mixer_new(event_loop, software_mixer_plugin, *ao,
 				  config_param(),
 				  IgnoreError());
 		assert(mixer != nullptr);

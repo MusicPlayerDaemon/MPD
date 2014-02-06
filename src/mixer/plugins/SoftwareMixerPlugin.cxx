@@ -84,7 +84,8 @@ public:
 };
 
 static Mixer *
-software_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused void *ao,
+software_mixer_init(gcc_unused EventLoop &event_loop,
+		    gcc_unused AudioOutput &ao,
 		    gcc_unused const config_param &param,
 		    gcc_unused Error &error)
 {

@@ -97,7 +97,7 @@ OssMixer::Configure(const config_param &param, Error &error)
 }
 
 static Mixer *
-oss_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused void *ao,
+oss_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused AudioOutput &ao,
 	       const config_param &param,
 	       Error &error)
 {

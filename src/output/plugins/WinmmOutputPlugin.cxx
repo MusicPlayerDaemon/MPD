@@ -59,9 +59,9 @@ struct WinmmOutput {
 static constexpr Domain winmm_output_domain("winmm_output");
 
 HWAVEOUT
-winmm_output_get_handle(WinmmOutput *output)
+winmm_output_get_handle(WinmmOutput &output)
 {
-	return output->handle;
+	return output.handle;
 }
 
 static bool

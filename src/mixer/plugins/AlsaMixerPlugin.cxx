@@ -167,7 +167,7 @@ AlsaMixer::Configure(const config_param &param)
 }
 
 static Mixer *
-alsa_mixer_init(EventLoop &event_loop, gcc_unused void *ao,
+alsa_mixer_init(EventLoop &event_loop, gcc_unused AudioOutput &ao,
 		const config_param &param,
 		gcc_unused Error &error)
 {

@@ -93,9 +93,9 @@ RoarOutput::GetVolume() const
 }
 
 int
-roar_output_get_volume(RoarOutput *roar)
+roar_output_get_volume(RoarOutput &roar)
 {
-	return roar->GetVolume();
+	return roar.GetVolume();
 }
 
 bool
@@ -115,9 +115,9 @@ RoarOutput::SetVolume(unsigned volume)
 }
 
 bool
-roar_output_set_volume(RoarOutput *roar, unsigned volume)
+roar_output_set_volume(RoarOutput &roar, unsigned volume)
 {
-	return roar->SetVolume(volume);
+	return roar.SetVolume(volume);
 }
 
 inline void

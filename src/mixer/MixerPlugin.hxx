@@ -28,6 +28,7 @@
 #define MPD_MIXER_PLUGIN_HXX
 
 struct config_param;
+struct AudioOutput;
 class Mixer;
 class EventLoop;
 class Error;
@@ -36,13 +37,13 @@ struct MixerPlugin {
 	/**
          * Alocates and configures a mixer device.
 	 *
-	 * @param ao the pointer returned by AudioOutputPlugin.init
+	 * @param ao the associated AudioOutput
 	 * @param param the configuration section
 	 * @param error_r location to store the error occurring, or
 	 * nullptr to ignore errors
 	 * @return a mixer object, or nullptr on error
 	 */
-	Mixer *(*init)(EventLoop &event_loop, void *ao,
+	Mixer *(*init)(EventLoop &event_loop, AudioOutput &ao,
 		       const config_param &param,
 		       Error &error);
 

@@ -31,10 +31,10 @@
 #include <windows.h>
 
 class WinmmMixer final : public Mixer {
-	WinmmOutput *output;
+	WinmmOutput &output;
 
 public:
-	WinmmMixer(WinmmOutput *_output)
+	WinmmMixer(WinmmOutput &_output)
 		:Mixer(winmm_mixer_plugin),
 		output(_output) {
 	}
@@ -67,13 +67,11 @@ winmm_volume_encode(int volume)
 }
 
 static Mixer *
-winmm_mixer_init(gcc_unused EventLoop &event_loop, void *ao,
+winmm_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		 gcc_unused const config_param &param,
 		 gcc_unused Error &error)
 {
-	assert(ao != nullptr);
-
-	return new WinmmMixer((WinmmOutput *)ao);
+	return new WinmmMixer((WinmmOutput &)ao);
 }
 
 int

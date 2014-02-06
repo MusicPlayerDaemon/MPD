@@ -25,9 +25,9 @@ class RoarOutput;
 extern const struct AudioOutputPlugin roar_output_plugin;
 
 int
-roar_output_get_volume(RoarOutput *roar);
+roar_output_get_volume(RoarOutput &roar);
 
 bool
-roar_output_set_volume(RoarOutput *roar, unsigned volume);
+roar_output_set_volume(RoarOutput &roar, unsigned volume);
 
 #endif

@@ -26,10 +26,10 @@
 
 class RoarMixer final : public Mixer {
 	/** the base mixer class */
-	RoarOutput *self;
+	RoarOutput &self;
 
 public:
-	RoarMixer(RoarOutput *_output)
+	RoarMixer(RoarOutput &_output)
 		:Mixer(roar_mixer_plugin),
 		self(_output) {}
 
@@ -46,11 +46,11 @@ public:
 };
 
 static Mixer *
-roar_mixer_init(gcc_unused EventLoop &event_loop, void *ao,
+roar_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		gcc_unused const config_param &param,
 		gcc_unused Error &error)
 {
-	return new RoarMixer((RoarOutput *)ao);
+	return new RoarMixer((RoarOutput &)ao);
 }
 
 int

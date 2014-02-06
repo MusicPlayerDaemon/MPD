@@ -35,59 +35,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef HAVE_PULSE
-#include "output/plugins/PulseOutputPlugin.hxx"
-
-void
-pulse_output_lock(gcc_unused PulseOutput *po)
-{
-}
-
-void
-pulse_output_unlock(gcc_unused PulseOutput *po)
-{
-}
-
-void
-pulse_output_set_mixer(gcc_unused PulseOutput *po,
-		       gcc_unused PulseMixer *pm)
-{
-}
-
-void
-pulse_output_clear_mixer(gcc_unused PulseOutput *po,
-			 gcc_unused PulseMixer *pm)
-{
-}
-
-bool
-pulse_output_set_volume(gcc_unused PulseOutput *po,
-			gcc_unused const struct pa_cvolume *volume,
-			gcc_unused Error &error)
-{
-	return false;
-}
-
-#endif
-
-#ifdef HAVE_ROAR
-#include "output/plugins/RoarOutputPlugin.hxx"
-
-int
-roar_output_get_volume(gcc_unused RoarOutput *roar)
-{
-	return -1;
-}
-
-bool
-roar_output_set_volume(gcc_unused RoarOutput *roar,
-		       gcc_unused unsigned volume)
-{
-	return true;
-}
-
-#endif
-
 void
 GlobalEvents::Emit(gcc_unused Event event)
 {
@@ -116,7 +63,8 @@ int main(int argc, gcc_unused char **argv)
 	EventLoop event_loop;
 
 	Error error;
-	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin, nullptr,
+	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin,
+				 *(AudioOutput *)nullptr,
 				 config_param(), error);
 	if (mixer == NULL) {
 		LogError(error, "mixer_new() failed");

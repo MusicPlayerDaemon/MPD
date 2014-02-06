@@ -25,12 +25,12 @@ struct pa_context;
 struct pa_stream;
 
 void
-pulse_mixer_on_connect(PulseMixer *pm, pa_context *context);
+pulse_mixer_on_connect(PulseMixer &pm, pa_context *context);
 
 void
-pulse_mixer_on_disconnect(PulseMixer *pm);
+pulse_mixer_on_disconnect(PulseMixer &pm);
 
 void
-pulse_mixer_on_change(PulseMixer *pm, pa_context *context, pa_stream *stream);
+pulse_mixer_on_change(PulseMixer &pm, pa_context *context, pa_stream *stream);
 
 #endif
