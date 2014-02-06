@@ -51,6 +51,8 @@ public:
 		 open(false),
 		 failed(false) {}
 
+	Mixer(const Mixer &) = delete;
+
 	bool IsPlugin(const MixerPlugin &other) const {
 		return &plugin == &other;
 	}
