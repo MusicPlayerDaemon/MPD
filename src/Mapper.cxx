@@ -54,8 +54,6 @@ mapper_set_music_dir(AllocatedPath &&path)
 	assert(!path.IsNull());
 
 	music_dir_fs = std::move(path);
-
-	CheckDirectoryReadable(music_dir_fs);
 }
 
 #endif

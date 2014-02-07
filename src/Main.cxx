@@ -46,6 +46,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
 #include "fs/StandardDirectory.hxx"
+#include "fs/CheckFile.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "zeroconf/ZeroconfGlue.hxx"
 #include "decoder/DecoderList.hxx"
@@ -145,8 +146,10 @@ glue_mapper_init(Error &error)
 	if (music_dir.IsNull())
 		music_dir = GetUserMusicDir();
 
-	if (!music_dir.IsNull())
+	if (!music_dir.IsNull()) {
 		music_dir.ChopSeparators();
+		CheckDirectoryReadable(music_dir);
+	}
 
 #ifdef ENABLE_DATABASE
 	if (!music_dir.IsNull()) {
