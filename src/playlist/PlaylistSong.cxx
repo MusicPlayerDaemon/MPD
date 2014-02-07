@@ -19,11 +19,9 @@
 
 #include "config.h"
 #include "PlaylistSong.hxx"
-#include "Mapper.hxx"
 #include "SongLoader.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
-#include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
