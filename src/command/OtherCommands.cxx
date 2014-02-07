@@ -21,13 +21,13 @@
 #include "OtherCommands.hxx"
 #include "CommandError.hxx"
 #include "db/Uri.hxx"
+#include "storage/StorageInterface.hxx"
 #include "DetachedSong.hxx"
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
 #include "TagStream.hxx"
 #include "tag/TagHandler.hxx"
 #include "TimePrint.hxx"
-#include "Mapper.hxx"
 #include "decoder/DecoderPrint.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
@@ -349,9 +349,11 @@ handle_config(Client &client,
 	}
 
 #ifdef ENABLE_DATABASE
-	const char *path = mapper_get_music_directory_utf8();
-	if (path != nullptr)
-		client_printf(client, "music_directory: %s\n", path);
+	const Storage *storage = client.GetStorage();
+	if (storage != nullptr) {
+		const auto path = storage->MapUTF8("");
+		client_printf(client, "music_directory: %s\n", path.c_str());
+	}
 #endif
 
 	return CommandResult::OK;
