@@ -20,15 +20,22 @@
 #ifndef MPD_PLAYLIST_MAPPER_HXX
 #define MPD_PLAYLIST_MAPPER_HXX
 
+#include "check.h"
+
 class Mutex;
 class Cond;
 class SongEnumerator;
+class Storage;
 
 /**
  * Opens a playlist from an URI relative to the playlist or music
  * directory.
  */
 SongEnumerator *
-playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond);
+playlist_mapper_open(const char *uri,
+#ifdef ENABLE_DATABASE
+		     const Storage *storage,
+#endif
+		     Mutex &mutex, Cond &cond);
 
 #endif

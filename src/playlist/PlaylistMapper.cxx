@@ -24,6 +24,7 @@
 #include "PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "storage/StorageInterface.hxx"
 #include "util/UriUtil.hxx"
 
 #include <assert.h>
@@ -57,21 +58,32 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond)
  * Load a playlist from the configured music directory.
  */
 static SongEnumerator *
-playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond)
+playlist_open_in_storage(const char *uri, const Storage *storage,
+			 Mutex &mutex, Cond &cond)
 {
 	assert(uri_safe_local(uri));
 
-	const auto path = map_uri_fs(uri);
-	if (path.IsNull())
+	if (storage == nullptr)
 		return nullptr;
 
-	return playlist_open_path(path.c_str(), mutex, cond);
+	{
+		const auto path = storage->MapFS(uri);
+		if (!path.IsNull())
+			return playlist_open_path(path.c_str(), mutex, cond);
+	}
+
+	const auto uri2 = storage->MapUTF8(uri);
+	return playlist_open_remote(uri, mutex, cond);
 }
 
 #endif
 
 SongEnumerator *
-playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond)
+playlist_mapper_open(const char *uri,
+#ifdef ENABLE_DATABASE
+		     const Storage *storage,
+#endif
+		     Mutex &mutex, Cond &cond)
 {
 	if (spl_valid_name(uri)) {
 		auto playlist = playlist_open_in_playlist_dir(uri,
@@ -82,7 +94,8 @@ playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond)
 
 #ifdef ENABLE_DATABASE
 	if (uri_safe_local(uri)) {
-		auto playlist = playlist_open_in_music_dir(uri, mutex, cond);
+		auto playlist = playlist_open_in_storage(uri, storage,
+							 mutex, cond);
 		if (playlist != nullptr)
 			return playlist;
 	}

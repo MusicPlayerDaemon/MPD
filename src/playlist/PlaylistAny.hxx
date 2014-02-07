@@ -23,6 +23,7 @@
 class Mutex;
 class Cond;
 class SongEnumerator;
+class Storage;
 
 /**
  * Opens a playlist from the specified URI, which can be either an
@@ -30,6 +31,10 @@ class SongEnumerator;
  * music orplaylist directory.
  */
 SongEnumerator *
-playlist_open_any(const char *uri, Mutex &mutex, Cond &cond);
+playlist_open_any(const char *uri,
+#ifdef ENABLE_DATABASE
+		  const Storage *storage,
+#endif
+		  Mutex &mutex, Cond &cond);
 
 #endif

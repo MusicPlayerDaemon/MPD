@@ -24,9 +24,17 @@
 #include "util/UriUtil.hxx"
 
 SongEnumerator *
-playlist_open_any(const char *uri, Mutex &mutex, Cond &cond)
+playlist_open_any(const char *uri,
+#ifdef ENABLE_DATABASE
+		  const Storage *storage,
+#endif
+		  Mutex &mutex, Cond &cond)
 {
 	return uri_has_scheme(uri)
 		? playlist_open_remote(uri, mutex, cond)
-		: playlist_mapper_open(uri, mutex, cond);
+		: playlist_mapper_open(uri,
+#ifdef ENABLE_DATABASE
+				       storage,
+#endif
+				       mutex, cond);
 }

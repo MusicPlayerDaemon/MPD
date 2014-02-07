@@ -60,6 +60,12 @@ public:
 		:client(nullptr) {}
 #endif
 
+#ifdef ENABLE_DATABASE
+	const Storage *GetStorage() const {
+		return storage;
+	}
+#endif
+
 	gcc_nonnull_all
 	DetachedSong *LoadSong(const char *uri_utf8, Error &error) const;
 

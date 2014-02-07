@@ -28,6 +28,10 @@
 #include "thread/Cond.hxx"
 #include "fs/Traits.hxx"
 
+#ifdef ENABLE_DATABASE
+#include "SongLoader.hxx"
+#endif
+
 PlaylistResult
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
@@ -72,7 +76,11 @@ playlist_open_into_queue(const char *uri,
 	Mutex mutex;
 	Cond cond;
 
-	auto playlist = playlist_open_any(uri, mutex, cond);
+	auto playlist = playlist_open_any(uri,
+#ifdef ENABLE_DATABASE
+					  loader.GetStorage(),
+#endif
+					  mutex, cond);
 	if (playlist == nullptr)
 		return PlaylistResult::NO_SUCH_LIST;
 

@@ -28,6 +28,7 @@
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "client/Client.hxx"
 
 static void
 playlist_provider_print(Client &client, const char *uri,
@@ -59,7 +60,11 @@ playlist_file_print(Client &client, const char *uri, bool detail)
 	Mutex mutex;
 	Cond cond;
 
-	SongEnumerator *playlist = playlist_open_any(uri, mutex, cond);
+	SongEnumerator *playlist = playlist_open_any(uri,
+#ifdef ENABLE_DATABASE
+						     client.GetStorage(),
+#endif
+						     mutex, cond);
 	if (playlist == nullptr)
 		return false;
 
