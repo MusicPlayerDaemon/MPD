@@ -191,6 +191,14 @@ systemctl start mpd.socket</programlisting>
         directory, and <varname>follow_inside_symlinks</varname> lets
         you disable symlinks to files inside the music directory.
       </para>
+
+      <para>
+        Instead of using local files, you can use storage plugins to
+        access files on a remote file server.  For example, to use
+        music from the SMB/CIFS server "myfileserver" on the share
+        called "Music", configure the music directory
+        "<parameter>smb://myfileserver/Music</parameter>".
+      </para>
     </section>
 
     <section>
@@ -978,6 +986,31 @@ systemctl start mpd.socket</programlisting>
 
         <para>
           Provides access to UPnP media servers.
+        </para>
+      </section>
+    </section>
+
+    <section>
+      <title>Storage plugins</title>
+
+      <section>
+        <title><varname>local</varname></title>
+
+        <para>
+          The default plugin which gives MPD access to local files.
+          It is used when <varname>music_directory</varname> refers to
+          a local directory.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>smbclient</varname></title>
+
+        <para>
+          Load music files from a SMB/CIFS server.  It used used when
+          <varname>music_directory</varname> contains a
+          <parameter>smb://</parameter> URI, for example
+          "<parameter>smb://myfileserver/Music</parameter>".
         </para>
       </section>
     </section>
