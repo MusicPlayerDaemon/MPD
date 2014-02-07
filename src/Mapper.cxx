@@ -26,16 +26,9 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Charset.hxx"
-#include "fs/FileSystem.hxx"
-#include "fs/DirectoryReader.hxx"
-#include "util/Domain.hxx"
-#include "Log.hxx"
+#include "fs/CheckFile.hxx"
 
 #include <assert.h>
-#include <sys/stat.h>
-#include <errno.h>
-
-static constexpr Domain mapper_domain("mapper");
 
 #ifdef ENABLE_DATABASE
 
@@ -53,37 +46,6 @@ static AllocatedPath music_dir_fs = AllocatedPath::Null();
  */
 static AllocatedPath playlist_dir_fs = AllocatedPath::Null();
 
-static void
-check_directory(const char *path_utf8, const AllocatedPath &path_fs)
-{
-	struct stat st;
-	if (!StatFile(path_fs, st)) {
-		FormatErrno(mapper_domain,
-			    "Failed to stat directory \"%s\"",
-			    path_utf8);
-		return;
-	}
-
-	if (!S_ISDIR(st.st_mode)) {
-		FormatError(mapper_domain,
-			    "Not a directory: %s", path_utf8);
-		return;
-	}
-
-#ifndef WIN32
-	const auto x = AllocatedPath::Build(path_fs, ".");
-	if (!StatFile(x, st) && errno == EACCES)
-		FormatError(mapper_domain,
-			    "No permission to traverse (\"execute\") directory: %s",
-			    path_utf8);
-#endif
-
-	const DirectoryReader reader(path_fs);
-	if (reader.HasFailed() && errno == EACCES)
-		FormatError(mapper_domain,
-			    "No permission to read directory: %s", path_utf8);
-}
-
 #ifdef ENABLE_DATABASE
 
 static void
@@ -93,9 +55,7 @@ mapper_set_music_dir(AllocatedPath &&path)
 
 	music_dir_fs = std::move(path);
 
-	const auto music_dir_utf8 = music_dir_fs.ToUTF8();
-
-	check_directory(music_dir_utf8.c_str(), music_dir_fs);
+	CheckDirectoryReadable(music_dir_fs);
 }
 
 #endif
@@ -107,8 +67,7 @@ mapper_set_playlist_dir(AllocatedPath &&path)
 
 	playlist_dir_fs = std::move(path);
 
-	const auto utf8 = playlist_dir_fs.ToUTF8();
-	check_directory(utf8.c_str(), playlist_dir_fs);
+	CheckDirectoryReadable(playlist_dir_fs);
 }
 
 void

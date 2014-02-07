@@ -410,6 +410,7 @@ libfs_a_SOURCES = \
 	src/fs/TextFile.cxx src/fs/TextFile.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
+	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
 	src/fs/DirectoryReader.hxx
 
 # Storage library
