@@ -25,7 +25,6 @@
 #include "storage/FileInfo.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
@@ -54,7 +53,7 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 
 	//in archive ?
 	bool success = parent.device == DEVICE_INARCHIVE
-		? song->UpdateFileInArchive()
+		? song->UpdateFileInArchive(storage)
 		: song->UpdateFile(storage);
 	if (!success) {
 		song->Free();
@@ -115,7 +114,7 @@ Song::UpdateFile(Storage &storage)
 }
 
 bool
-Song::UpdateFileInArchive()
+Song::UpdateFileInArchive(const Storage &storage)
 {
 	/* check if there's a suffix and a plugin */
 
@@ -126,7 +125,9 @@ Song::UpdateFileInArchive()
 	if (!decoder_plugins_supports_suffix(suffix))
 		return false;
 
-	const auto path_fs = map_song_fs(*this);
+	const auto path_fs = parent->IsRoot()
+		? storage.MapFS(uri)
+		: storage.MapChildFS(parent->GetPath(), uri);
 	if (path_fs.IsNull())
 		return false;
 

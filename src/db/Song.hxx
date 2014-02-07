@@ -98,7 +98,7 @@ struct Song {
 	void Free();
 
 	bool UpdateFile(Storage &storage);
-	bool UpdateFileInArchive();
+	bool UpdateFileInArchive(const Storage &storage);
 
 	/**
 	 * Returns the URI of the song in UTF-8 encoding, including its
