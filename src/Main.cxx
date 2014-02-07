@@ -145,6 +145,16 @@ glue_mapper_init(Error &error)
 	if (music_dir.IsNull())
 		music_dir = GetUserMusicDir();
 
+#ifdef ENABLE_DATABASE
+	if (!music_dir.IsNull()) {
+		const auto music_dir_utf8 = music_dir.ToUTF8();
+		assert(!music_dir_utf8.empty());
+
+		instance->storage = CreateLocalStorage(music_dir_utf8.c_str(),
+						       music_dir);
+	}
+#endif
+
 	mapper_init(std::move(music_dir), std::move(playlist_dir));
 	return true;
 }
@@ -166,7 +176,7 @@ glue_db_init_and_load(void)
 		LogWarning(main_domain,
 			   "Found both 'database' and 'db_file' setting - ignoring the latter");
 
-	if (!mapper_has_music_directory()) {
+	if (instance->storage == nullptr) {
 		if (param != nullptr)
 			LogDefault(main_domain,
 				   "Found database setting without "
@@ -207,8 +217,6 @@ glue_db_init_and_load(void)
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
-	instance->storage = CreateLocalStorage(mapper_get_music_directory_utf8(),
-					       mapper_get_music_directory_fs());
 	instance->update = new UpdateService(*instance->event_loop, db,
 					     *instance->storage,
 					     *instance);
@@ -524,8 +532,7 @@ int mpd_main(int argc, char *argv[])
 
 	if (config_get_bool(CONF_AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
-		if (mapper_has_music_directory() &&
-		    instance->storage != nullptr &&
+		if (instance->storage != nullptr &&
 		    instance->update != nullptr)
 			mpd_inotify_init(*instance->event_loop,
 					 *instance->storage,
