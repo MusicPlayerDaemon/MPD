@@ -101,47 +101,9 @@ read_stream_comments(Client &client, const char *uri)
 
 }
 
-CommandResult
-handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
+static CommandResult
+read_file_comments(Client &client, const Path path_fs)
 {
-	assert(argc == 2);
-
-	const char *const uri = argv[1];
-
-	AllocatedPath path_fs = AllocatedPath::Null();
-
-	if (memcmp(uri, "file:///", 8) == 0) {
-		/* read comments from arbitrary local file */
-		const char *path_utf8 = uri + 7;
-		path_fs = AllocatedPath::FromUTF8(path_utf8);
-		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported file name");
-			return CommandResult::ERROR;
-		}
-
-		Error error;
-		if (!client.AllowFile(path_fs, error))
-			return print_error(client, error);
-	} else if (uri_has_scheme(uri)) {
-		return read_stream_comments(client, uri);
-	} else if (!PathTraitsUTF8::IsAbsolute(uri)) {
-#ifdef ENABLE_DATABASE
-		path_fs = map_uri_fs(uri);
-		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "No such file");
-			return CommandResult::ERROR;
-		}
-#else
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
-		return CommandResult::ERROR;
-#endif
-	} else {
-		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
-		return CommandResult::ERROR;
-	}
-
 	if (!tag_file_scan(path_fs, print_comment_handler, &client)) {
 		command_error(client, ACK_ERROR_NO_EXIST,
 			      "Failed to load file");
@@ -152,4 +114,49 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 	tag_id3_scan(path_fs, &print_comment_handler, &client);
 
 	return CommandResult::OK;
+
+}
+
+CommandResult
+handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
+{
+	assert(argc == 2);
+
+	const char *const uri = argv[1];
+
+	if (memcmp(uri, "file:///", 8) == 0) {
+		/* read comments from arbitrary local file */
+		const char *path_utf8 = uri + 7;
+		AllocatedPath path_fs = AllocatedPath::FromUTF8(path_utf8);
+		if (path_fs.IsNull()) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "unsupported file name");
+			return CommandResult::ERROR;
+		}
+
+		Error error;
+		if (!client.AllowFile(path_fs, error))
+			return print_error(client, error);
+
+		return read_file_comments(client, path_fs);
+	} else if (uri_has_scheme(uri)) {
+		return read_stream_comments(client, uri);
+	} else if (!PathTraitsUTF8::IsAbsolute(uri)) {
+#ifdef ENABLE_DATABASE
+		AllocatedPath path_fs = map_uri_fs(uri);
+		if (path_fs.IsNull()) {
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "No such file");
+			return CommandResult::ERROR;
+		}
+
+		return read_file_comments(client, path_fs);
+#else
+		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
+	} else {
+		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
+		return CommandResult::ERROR;
+	}
 }
