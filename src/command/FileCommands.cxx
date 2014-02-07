@@ -152,14 +152,21 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 #ifdef ENABLE_DATABASE
 		}
 
-		AllocatedPath path_fs = storage->MapFS(uri);
-		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "No such file");
-			return CommandResult::ERROR;
+		{
+			AllocatedPath path_fs = storage->MapFS(uri);
+			if (!path_fs.IsNull())
+				return read_file_comments(client, path_fs);
 		}
 
-		return read_file_comments(client, path_fs);
+		{
+			const std::string uri2 = storage->MapUTF8(uri);
+			if (uri_has_scheme(uri2.c_str()))
+				return read_stream_comments(client,
+							    uri2.c_str());
+		}
+
+		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
+		return CommandResult::ERROR;
 #endif
 	} else {
 		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
