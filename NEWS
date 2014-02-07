@@ -8,6 +8,9 @@ ver 0.19 (not yet released)
   - proxy: forward "idle" events
   - proxy: copy "Last-Modified" from remote directories
   - upnp: new plugin
+* storage
+  - music_directory can point to a remote file server
+  - smbclient: new plugin
 * playlist
   - soundcloud: use https instead of http
   - soundcloud: add default API key

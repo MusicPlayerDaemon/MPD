@@ -55,6 +55,7 @@
 #include "unix/SignalHandlers.hxx"
 #include "unix/Daemon.hxx"
 #include "system/FatalError.hxx"
+#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "thread/Id.hxx"
@@ -63,6 +64,7 @@
 #include "config/ConfigData.hxx"
 #include "config/ConfigDefaults.hxx"
 #include "config/ConfigOption.hxx"
+#include "config/ConfigError.hxx"
 #include "Stats.hxx"
 
 #ifdef ENABLE_DATABASE
@@ -71,6 +73,7 @@
 #include "db/DatabaseSimple.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
 #include "storage/plugins/LocalStorage.hxx"
+#include "storage/Registry.hxx"
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -148,6 +151,15 @@ glue_mapper_init(Error &error)
 static bool
 InitStorage(Error &error)
 {
+	auto uri = config_get_string(CONF_MUSIC_DIR, nullptr);
+	if (uri != nullptr && uri_has_scheme(uri)) {
+		instance->storage = CreateStorageURI(uri, error);
+		if (instance->storage == nullptr && !error.IsDefined())
+			error.Format(config_domain,
+				     "Unrecognized storage URI: %s", uri);
+		return instance->storage != nullptr;
+	}
+
 	auto path_fs = config_get_path(CONF_MUSIC_DIR, error);
 	if (path_fs.IsNull() && error.IsDefined())
 		return false;
