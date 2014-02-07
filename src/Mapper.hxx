@@ -92,25 +92,6 @@ AllocatedPath
 map_uri_fs(const char *uri);
 
 /**
- * Determines the file system path of a song.  This must not be a
- * remote song.
- *
- * @param song the song object
- * @return the path in file system encoding, or nullptr if mapping failed
- */
-gcc_pure
-AllocatedPath
-map_song_fs(const Song &song);
-
-#endif
-
-gcc_pure
-AllocatedPath
-map_song_fs(const DetachedSong &song);
-
-#ifdef ENABLE_DATABASE
-
-/**
  * Maps a file system path (relative to the music directory or
  * absolute) to a relative path in UTF-8 encoding.
  *
