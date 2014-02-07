@@ -261,7 +261,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 	    (mask & IN_ISDIR) != 0) {
 		/* a sub directory was changed: register those in
 		   inotify */
-		const auto &root = mapper_get_music_directory_fs();
+		const auto &root = inotify_root->name;
 
 		const auto path_fs = uri_fs.IsNull()
 			? root
