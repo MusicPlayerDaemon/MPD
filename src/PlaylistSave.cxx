@@ -39,18 +39,13 @@
 void
 playlist_print_song(FILE *file, const DetachedSong &song)
 {
-	if (playlist_saveAbsolutePaths &&
-	    song.IsInDatabase() && song.IsFile()) {
-		const auto path = map_song_fs(song);
-		if (!path.IsNull())
-			fprintf(file, "%s\n", path.c_str());
-	} else {
-		const auto uri_utf8 = song.GetURI();
-		const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
+	const char *uri_utf8 = playlist_saveAbsolutePaths
+		? song.GetRealURI()
+		: song.GetURI();
 
-		if (!uri_fs.IsNull())
-			fprintf(file, "%s\n", uri_fs.c_str());
-	}
+	const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
+	if (!uri_fs.IsNull())
+		fprintf(file, "%s\n", uri_fs.c_str());
 }
 
 void
