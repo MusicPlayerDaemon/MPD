@@ -19,9 +19,58 @@
 
 #include "config.h"
 #include "LocalStorage.hxx"
+#include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "util/Error.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/DirectoryReader.hxx"
+
+#include <string>
+
+class LocalDirectoryReader final : public StorageDirectoryReader {
+	AllocatedPath base_fs;
+
+	DirectoryReader reader;
+
+	std::string name_utf8;
+
+public:
+	LocalDirectoryReader(AllocatedPath &&_base_fs)
+		:base_fs(std::move(_base_fs)), reader(base_fs) {}
+
+	bool HasFailed() {
+		return reader.HasFailed();
+	}
+
+	/* virtual methods from class StorageDirectoryReader */
+	virtual const char *Read() override;
+	virtual bool GetInfo(bool follow, FileInfo &info,
+			     Error &error) override;
+};
+
+class LocalStorage final : public Storage {
+	const std::string base_utf8;
+	const AllocatedPath base_fs;
+
+public:
+	LocalStorage(const char *_base_utf8, Path _base_fs)
+		:base_utf8(_base_utf8), base_fs(_base_fs) {}
+
+	/* virtual methods from class Storage */
+	virtual bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
+			     Error &error) override;
+
+	virtual StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
+						      Error &error) override;
+
+	virtual std::string MapUTF8(const char *uri_utf8) const override;
+
+	virtual AllocatedPath MapFS(const char *uri_utf8) const override;
+
+private:
+	AllocatedPath MapFS(const char *uri_utf8, Error &error) const;
+};
 
 static bool
 Stat(Path path, bool follow, FileInfo &info, Error &error)
@@ -143,4 +192,10 @@ LocalDirectoryReader::GetInfo(bool follow, FileInfo &info, Error &error)
 	const AllocatedPath path_fs =
 		AllocatedPath::Build(base_fs, reader.GetEntry());
 	return Stat(path_fs, follow, info, error);
+}
+
+Storage *
+CreateLocalStorage(const char *base_utf8, Path base_fs)
+{
+	return new LocalStorage(base_utf8, base_fs);
 }

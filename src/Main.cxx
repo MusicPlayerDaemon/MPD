@@ -210,8 +210,8 @@ glue_db_init_and_load(void)
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
-	instance->storage = new LocalStorage(mapper_get_music_directory_utf8(),
-					     mapper_get_music_directory_fs());
+	instance->storage = CreateLocalStorage(mapper_get_music_directory_utf8(),
+					       mapper_get_music_directory_fs());
 	instance->update = new UpdateService(*instance->event_loop, db,
 					     *instance->storage,
 					     *instance);
