@@ -20,22 +20,13 @@
 #include "config.h"
 #include "PlaylistMapper.hxx"
 #include "PlaylistFile.hxx"
+#include "PlaylistStream.hxx"
 #include "PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/UriUtil.hxx"
 
 #include <assert.h>
-
-static SongEnumerator *
-playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond)
-{
-	auto playlist = playlist_list_open_uri(path_fs, mutex, cond);
-	if (playlist == nullptr)
-		playlist = playlist_list_open_path(path_fs, mutex, cond);
-
-	return playlist;
-}
 
 /**
  * Load a playlist from the configured playlist directory.

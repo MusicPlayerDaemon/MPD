@@ -20,7 +20,6 @@
 #include "config.h"
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
-#include "CloseSongEnumerator.hxx"
 #include "plugins/ExtM3uPlaylistPlugin.hxx"
 #include "plugins/M3uPlaylistPlugin.hxx"
 #include "plugins/XspfPlaylistPlugin.hxx"
@@ -221,7 +220,7 @@ playlist_list_open_stream_mime(InputStream &is, const char *full_mime)
 	return playlist_list_open_stream_mime2(is, mime.c_str());
 }
 
-static SongEnumerator *
+SongEnumerator *
 playlist_list_open_stream_suffix(InputStream &is, const char *suffix)
 {
 	assert(suffix != nullptr);
@@ -277,33 +276,4 @@ playlist_suffix_supported(const char *suffix)
 	}
 
 	return false;
-}
-
-SongEnumerator *
-playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond)
-{
-	const char *suffix;
-
-	assert(path_fs != nullptr);
-
-	suffix = uri_get_suffix(path_fs);
-	if (suffix == nullptr || !playlist_suffix_supported(suffix))
-		return nullptr;
-
-	Error error;
-	InputStream *is = InputStream::OpenReady(path_fs, mutex, cond, error);
-	if (is == nullptr) {
-		if (error.IsDefined())
-			LogError(error);
-
-		return nullptr;
-	}
-
-	auto playlist = playlist_list_open_stream_suffix(*is, suffix);
-	if (playlist != nullptr)
-		playlist = new CloseSongEnumerator(playlist, is);
-	else
-		is->Close();
-
-	return playlist;
 }

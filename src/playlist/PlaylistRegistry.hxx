@@ -51,6 +51,9 @@ playlist_list_global_finish(void);
 SongEnumerator *
 playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond);
 
+SongEnumerator *
+playlist_list_open_stream_suffix(InputStream &is, const char *suffix);
+
 /**
  * Opens a playlist from an input stream.
  *
@@ -67,16 +70,5 @@ playlist_list_open_stream(InputStream &is, const char *uri);
  */
 bool
 playlist_suffix_supported(const char *suffix);
-
-/**
- * Opens a playlist from a local file.
- *
- * @param path_fs the path of the playlist file
- * @param is_r on success, an input_stream object is returned here,
- * which must be closed after the playlist_provider object is freed
- * @return a playlist, or nullptr on error
- */
-SongEnumerator *
-playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond);
 
 #endif

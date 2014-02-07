@@ -153,6 +153,7 @@ src_mpd_SOURCES = \
 	src/PlaylistTag.cxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \
+	src/playlist/PlaylistStream.cxx src/playlist/PlaylistStream.hxx \
 	src/playlist/PlaylistMapper.cxx src/playlist/PlaylistMapper.hxx \
 	src/playlist/PlaylistAny.cxx src/playlist/PlaylistAny.hxx \
 	src/playlist/PlaylistSong.cxx src/playlist/PlaylistSong.hxx \

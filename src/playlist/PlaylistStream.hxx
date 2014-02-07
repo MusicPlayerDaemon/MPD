@@ -17,16 +17,29 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "PlaylistAny.hxx"
-#include "PlaylistStream.hxx"
-#include "PlaylistMapper.hxx"
-#include "util/UriUtil.hxx"
+#ifndef MPD_PLAYLIST_STREAM_HXX
+#define MPD_PLAYLIST_STREAM_HXX
 
+#include "Compiler.h"
+
+class Mutex;
+class Cond;
+class SongEnumerator;
+
+/**
+ * Opens a playlist from a local file.
+ *
+ * @param path_fs the path of the playlist file
+ * @param is_r on success, an input_stream object is returned here,
+ * which must be closed after the playlist_provider object is freed
+ * @return a playlist, or nullptr on error
+ */
+gcc_nonnull_all
 SongEnumerator *
-playlist_open_any(const char *uri, Mutex &mutex, Cond &cond)
-{
-	return uri_has_scheme(uri)
-		? playlist_open_remote(uri, mutex, cond)
-		: playlist_mapper_open(uri, mutex, cond);
-}
+playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond);
+
+gcc_nonnull_all
+SongEnumerator *
+playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond);
+
+#endif
