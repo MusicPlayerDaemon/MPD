@@ -78,6 +78,34 @@ GetParentPathImpl(typename Traits::const_pointer p)
 	return typename Traits::string(p, sep);
 }
 
+template<typename Traits>
+typename Traits::const_pointer
+RelativePathImpl(typename Traits::const_pointer base,
+		 typename Traits::const_pointer other)
+{
+	assert(base != nullptr);
+	assert(other != nullptr);
+
+	const auto base_length = Traits::GetLength(base);
+	if (memcmp(base, other, base_length * sizeof(*base)) != 0)
+		/* mismatch */
+		return nullptr;
+
+	other += base_length;
+	if (other != 0) {
+		if (!Traits::IsSeparator(*other))
+			/* mismatch */
+			return nullptr;
+
+		/* skip remaining path separators */
+		do {
+			++other;
+		} while (Traits::IsSeparator(*other));
+	}
+
+	return other;
+}
+
 PathTraitsFS::string
 PathTraitsFS::Build(PathTraitsFS::const_pointer a, size_t a_size,
 		    PathTraitsFS::const_pointer b, size_t b_size)
@@ -97,6 +125,12 @@ PathTraitsFS::GetParent(PathTraitsFS::const_pointer p)
 	return GetParentPathImpl<PathTraitsFS>(p);
 }
 
+PathTraitsFS::const_pointer
+PathTraitsFS::Relative(const_pointer base, const_pointer other)
+{
+	return RelativePathImpl<PathTraitsFS>(base, other);
+}
+
 PathTraitsUTF8::string
 PathTraitsUTF8::Build(PathTraitsUTF8::const_pointer a, size_t a_size,
 		      PathTraitsUTF8::const_pointer b, size_t b_size)
@@ -114,4 +148,10 @@ PathTraitsUTF8::string
 PathTraitsUTF8::GetParent(PathTraitsUTF8::const_pointer p)
 {
 	return GetParentPathImpl<PathTraitsUTF8>(p);
+}
+
+PathTraitsUTF8::const_pointer
+PathTraitsUTF8::Relative(const_pointer base, const_pointer other)
+{
+	return RelativePathImpl<PathTraitsUTF8>(base, other);
 }

@@ -106,6 +106,15 @@ struct PathTraitsFS {
 	static string GetParent(const_pointer p);
 
 	/**
+	 * Determine the relative part of the given path to this
+	 * object, not including the directory separator.  Returns an
+	 * empty string if the given path equals this object or
+	 * nullptr on mismatch.
+	 */
+	gcc_pure gcc_nonnull_all
+	static const_pointer Relative(const_pointer base, const_pointer other);
+
+	/**
 	 * Constructs the path from the given components.
 	 * If either of the components is empty string,
 	 * remaining component is returned unchanged.
@@ -178,6 +187,15 @@ struct PathTraitsUTF8 {
 	 */
 	gcc_pure gcc_nonnull_all
 	static string GetParent(const_pointer p);
+
+	/**
+	 * Determine the relative part of the given path to this
+	 * object, not including the directory separator.  Returns an
+	 * empty string if the given path equals this object or
+	 * nullptr on mismatch.
+	 */
+	gcc_pure gcc_nonnull_all
+	static const_pointer Relative(const_pointer base, const_pointer other);
 
 	/**
 	 * Constructs the path from the given components.

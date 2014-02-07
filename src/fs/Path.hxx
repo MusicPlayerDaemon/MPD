@@ -135,7 +135,9 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const char *RelativeFS(const char *other_fs) const;
+	const char *RelativeFS(const char *other_fs) const {
+		return PathTraitsFS::Relative(value, other_fs);
+	}
 
 	gcc_pure
 	bool IsAbsolute() {
