@@ -27,6 +27,7 @@ ver 0.19 (not yet released)
   - increase kernel timer slack on Linux
   - name each thread (for debugging)
 * new resampler option using libsoxr
+* allow playlist directory without music directory
 
 ver 0.18.8 (2014/02/07)
 * decoder
