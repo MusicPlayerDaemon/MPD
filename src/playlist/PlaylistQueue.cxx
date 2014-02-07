@@ -22,9 +22,9 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
 #include "Playlist.hxx"
-#include "input/InputStream.hxx"
 #include "SongEnumerator.hxx"
 #include "DetachedSong.hxx"
+#include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "fs/Traits.hxx"
 
@@ -72,8 +72,7 @@ playlist_open_into_queue(const char *uri,
 	Mutex mutex;
 	Cond cond;
 
-	InputStream *is;
-	auto playlist = playlist_open_any(uri, mutex, cond, &is);
+	auto playlist = playlist_open_any(uri, mutex, cond);
 	if (playlist == nullptr)
 		return PlaylistResult::NO_SUCH_LIST;
 
@@ -82,9 +81,5 @@ playlist_open_into_queue(const char *uri,
 					 start_index, end_index,
 					 dest, pc, loader);
 	delete playlist;
-
-	if (is != nullptr)
-		is->Close();
-
 	return result;
 }

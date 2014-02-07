@@ -23,10 +23,10 @@
 #include "PlaylistSong.hxx"
 #include "SongEnumerator.hxx"
 #include "SongPrint.hxx"
-#include "input/InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "fs/Traits.hxx"
+#include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
 static void
@@ -59,16 +59,11 @@ playlist_file_print(Client &client, const char *uri, bool detail)
 	Mutex mutex;
 	Cond cond;
 
-	InputStream *is;
-	SongEnumerator *playlist = playlist_open_any(uri, mutex, cond, &is);
+	SongEnumerator *playlist = playlist_open_any(uri, mutex, cond);
 	if (playlist == nullptr)
 		return false;
 
 	playlist_provider_print(client, uri, *playlist, detail);
 	delete playlist;
-
-	if (is != nullptr)
-		is->Close();
-
 	return true;
 }

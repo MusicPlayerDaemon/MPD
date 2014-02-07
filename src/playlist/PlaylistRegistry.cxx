@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PlaylistRegistry.hxx"
 #include "PlaylistPlugin.hxx"
+#include "CloseSongEnumerator.hxx"
 #include "plugins/ExtM3uPlaylistPlugin.hxx"
 #include "plugins/M3uPlaylistPlugin.hxx"
 #include "plugins/XspfPlaylistPlugin.hxx"
@@ -279,8 +280,7 @@ playlist_suffix_supported(const char *suffix)
 }
 
 SongEnumerator *
-playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
-			InputStream **is_r)
+playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond)
 {
 	const char *suffix;
 
@@ -301,7 +301,7 @@ playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
 
 	auto playlist = playlist_list_open_stream_suffix(*is, suffix);
 	if (playlist != nullptr)
-		*is_r = is;
+		playlist = new CloseSongEnumerator(playlist, is);
 	else
 		is->Close();
 

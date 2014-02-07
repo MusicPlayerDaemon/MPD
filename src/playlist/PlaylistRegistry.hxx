@@ -77,7 +77,6 @@ playlist_suffix_supported(const char *suffix);
  * @return a playlist, or nullptr on error
  */
 SongEnumerator *
-playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
-			InputStream **is_r);
+playlist_list_open_path(const char *path_fs, Mutex &mutex, Cond &cond);
 
 #endif

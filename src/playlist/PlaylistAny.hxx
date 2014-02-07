@@ -23,19 +23,13 @@
 class Mutex;
 class Cond;
 class SongEnumerator;
-struct InputStream;
 
 /**
  * Opens a playlist from the specified URI, which can be either an
  * absolute remote URI (with a scheme) or a relative path to the
  * music orplaylist directory.
- *
- * @param is_r on success, an input_stream object may be returned
- * here, which must be closed after the playlist_provider object is
- * freed
  */
 SongEnumerator *
-playlist_open_any(const char *uri, Mutex &mutex, Cond &cond,
-		  InputStream **is_r);
+playlist_open_any(const char *uri, Mutex &mutex, Cond &cond);
 
 #endif

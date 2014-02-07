@@ -21,6 +21,7 @@
 #include "PlaylistAny.hxx"
 #include "PlaylistMapper.hxx"
 #include "PlaylistRegistry.hxx"
+#include "CloseSongEnumerator.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "input/InputStream.hxx"
@@ -29,16 +30,13 @@
 #include <assert.h>
 
 static SongEnumerator *
-playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
-		     InputStream **is_r)
+playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(uri_has_scheme(uri));
 
 	SongEnumerator *playlist = playlist_list_open_uri(uri, mutex, cond);
-	if (playlist != nullptr) {
-		*is_r = nullptr;
+	if (playlist != nullptr)
 		return playlist;
-	}
 
 	Error error;
 	InputStream *is = InputStream::OpenReady(uri, mutex, cond, error);
@@ -55,15 +53,13 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond,
 		return nullptr;
 	}
 
-	*is_r = is;
-	return playlist;
+	return new CloseSongEnumerator(playlist, is);
 }
 
 SongEnumerator *
-playlist_open_any(const char *uri, Mutex &mutex, Cond &cond,
-		  InputStream **is_r)
+playlist_open_any(const char *uri, Mutex &mutex, Cond &cond)
 {
 	return uri_has_scheme(uri)
-		? playlist_open_remote(uri, mutex, cond, is_r)
-		: playlist_mapper_open(uri, mutex, cond, is_r);
+		? playlist_open_remote(uri, mutex, cond)
+		: playlist_mapper_open(uri, mutex, cond);
 }

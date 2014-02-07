@@ -28,14 +28,11 @@
 #include <assert.h>
 
 static SongEnumerator *
-playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
-		   InputStream **is_r)
+playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond)
 {
 	auto playlist = playlist_list_open_uri(path_fs, mutex, cond);
-	if (playlist != nullptr)
-		*is_r = nullptr;
-	else
-		playlist = playlist_list_open_path(path_fs, mutex, cond, is_r);
+	if (playlist == nullptr)
+		playlist = playlist_list_open_path(path_fs, mutex, cond);
 
 	return playlist;
 }
@@ -44,8 +41,7 @@ playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond,
  * Load a playlist from the configured playlist directory.
  */
 static SongEnumerator *
-playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
-			      InputStream **is_r)
+playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(spl_valid_name(uri));
 
@@ -61,7 +57,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
 		AllocatedPath::Build(playlist_directory_fs, uri_fs);
 	assert(!path_fs.IsNull());
 
-	return playlist_open_path(path_fs.c_str(), mutex, cond, is_r);
+	return playlist_open_path(path_fs.c_str(), mutex, cond);
 }
 
 #ifdef ENABLE_DATABASE
@@ -70,8 +66,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond,
  * Load a playlist from the configured music directory.
  */
 static SongEnumerator *
-playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
-			   InputStream **is_r)
+playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(uri_safe_local(uri));
 
@@ -79,26 +74,24 @@ playlist_open_in_music_dir(const char *uri, Mutex &mutex, Cond &cond,
 	if (path.IsNull())
 		return nullptr;
 
-	return playlist_open_path(path.c_str(), mutex, cond, is_r);
+	return playlist_open_path(path.c_str(), mutex, cond);
 }
 
 #endif
 
 SongEnumerator *
-playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond,
-		     InputStream **is_r)
+playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond)
 {
 	if (spl_valid_name(uri)) {
-		auto playlist = playlist_open_in_playlist_dir(uri, mutex, cond,
-							      is_r);
+		auto playlist = playlist_open_in_playlist_dir(uri,
+							      mutex, cond);
 		if (playlist != nullptr)
 			return playlist;
 	}
 
 #ifdef ENABLE_DATABASE
 	if (uri_safe_local(uri)) {
-		auto playlist = playlist_open_in_music_dir(uri, mutex, cond,
-							   is_r);
+		auto playlist = playlist_open_in_music_dir(uri, mutex, cond);
 		if (playlist != nullptr)
 			return playlist;
 	}

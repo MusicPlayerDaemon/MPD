@@ -17,18 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_MAPPER_HXX
-#define MPD_PLAYLIST_MAPPER_HXX
+#ifndef MPD_CLOSE_SONG_ENUMERATOR_HXX
+#define MPD_CLOSE_SONG_ENUMERATOR_HXX
 
-class Mutex;
-class Cond;
-class SongEnumerator;
+#include "SongEnumerator.hxx"
+#include "Compiler.h"
+
+struct InputStream;
 
 /**
- * Opens a playlist from an URI relative to the playlist or music
- * directory.
+ * A #SongEnumerator wrapper that closes an #InputStream automatically
+ * after deleting the #SongEnumerator
  */
-SongEnumerator *
-playlist_mapper_open(const char *uri, Mutex &mutex, Cond &cond);
+class CloseSongEnumerator final : public SongEnumerator {
+	SongEnumerator *const other;
+
+	InputStream *const is;
+
+public:
+	gcc_nonnull_all
+	CloseSongEnumerator(SongEnumerator *_other, InputStream *const _is)
+		:other(_other), is(_is) {}
+
+	virtual ~CloseSongEnumerator();
+
+	virtual DetachedSong *NextSong() override;
+};
 
 #endif
