@@ -28,6 +28,6 @@ class Path;
 
 gcc_malloc gcc_nonnull_all
 Storage *
-CreateLocalStorage(const char *base_utf8, Path base_fs);
+CreateLocalStorage(Path base_fs);
 
 #endif

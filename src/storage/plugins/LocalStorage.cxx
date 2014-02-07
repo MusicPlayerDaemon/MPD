@@ -50,12 +50,15 @@ public:
 };
 
 class LocalStorage final : public Storage {
-	const std::string base_utf8;
 	const AllocatedPath base_fs;
+	const std::string base_utf8;
 
 public:
-	LocalStorage(const char *_base_utf8, Path _base_fs)
-		:base_utf8(_base_utf8), base_fs(_base_fs) {}
+	explicit LocalStorage(Path _base_fs)
+		:base_fs(_base_fs), base_utf8(base_fs.ToUTF8()) {
+		assert(!base_fs.IsNull());
+		assert(!base_utf8.empty());
+	}
 
 	/* virtual methods from class Storage */
 	virtual bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
@@ -203,7 +206,7 @@ LocalDirectoryReader::GetInfo(bool follow, FileInfo &info, Error &error)
 }
 
 Storage *
-CreateLocalStorage(const char *base_utf8, Path base_fs)
+CreateLocalStorage(Path base_fs)
 {
-	return new LocalStorage(base_utf8, base_fs);
+	return new LocalStorage(base_fs);
 }

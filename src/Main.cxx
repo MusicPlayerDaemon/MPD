@@ -162,10 +162,7 @@ InitStorage(Error &error)
 	path_fs.ChopSeparators();
 	CheckDirectoryReadable(path_fs);
 
-	const auto utf8 = path_fs.ToUTF8();
-	assert(!utf8.empty());
-
-	instance->storage = CreateLocalStorage(utf8.c_str(), path_fs);
+	instance->storage = CreateLocalStorage(path_fs);
 	return true;
 }
 

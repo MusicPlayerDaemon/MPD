@@ -38,9 +38,8 @@ uri_supported_scheme(const char *uri)
 	return memcmp(uri, "http://", 7) == 0;
 }
 
-const char *const music_directory = "/music";
-static Storage *const storage = CreateLocalStorage(music_directory,
-						   Path::FromFS(music_directory));
+static const char *const music_directory = "/music";
+static Storage *storage;
 
 static void
 BuildTag(gcc_unused TagBuilder &tag)
@@ -308,6 +307,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TranslateSongTest);
 int
 main(gcc_unused int argc, gcc_unused char **argv)
 {
+	storage = CreateLocalStorage(Path::FromFS(music_directory));
+
 	CppUnit::TextUi::TestRunner runner;
 	auto &registry = CppUnit::TestFactoryRegistry::getRegistry();
 	runner.addTest(registry.makeTest());
