@@ -135,37 +135,39 @@ glue_daemonize_init(const struct options *options, Error &error)
 static bool
 glue_mapper_init(Error &error)
 {
-	auto music_dir = config_get_path(CONF_MUSIC_DIR, error);
-	if (music_dir.IsNull() && error.IsDefined())
-		return false;
-
 	auto playlist_dir = config_get_path(CONF_PLAYLIST_DIR, error);
 	if (playlist_dir.IsNull() && error.IsDefined())
 		return false;
-
-	if (music_dir.IsNull())
-		music_dir = GetUserMusicDir();
-
-	if (!music_dir.IsNull()) {
-		music_dir.ChopSeparators();
-		CheckDirectoryReadable(music_dir);
-	}
-
-#ifdef ENABLE_DATABASE
-	if (!music_dir.IsNull()) {
-		const auto music_dir_utf8 = music_dir.ToUTF8();
-		assert(!music_dir_utf8.empty());
-
-		instance->storage = CreateLocalStorage(music_dir_utf8.c_str(),
-						       music_dir);
-	}
-#endif
 
 	mapper_init(std::move(playlist_dir));
 	return true;
 }
 
 #ifdef ENABLE_DATABASE
+
+static bool
+InitStorage(Error &error)
+{
+	auto path_fs = config_get_path(CONF_MUSIC_DIR, error);
+	if (path_fs.IsNull() && error.IsDefined())
+		return false;
+
+	if (path_fs.IsNull()) {
+		path_fs = GetUserMusicDir();
+		if (path_fs.IsNull())
+			/* no music directory; that's ok */
+			return true;
+	}
+
+	path_fs.ChopSeparators();
+	CheckDirectoryReadable(path_fs);
+
+	const auto utf8 = path_fs.ToUTF8();
+	assert(!utf8.empty());
+
+	instance->storage = CreateLocalStorage(utf8.c_str(), path_fs);
+	return true;
+}
 
 /**
  * Returns the database.  If this function returns false, this has not
@@ -480,6 +482,11 @@ int mpd_main(int argc, char *argv[])
 	decoder_plugin_init_all();
 
 #ifdef ENABLE_DATABASE
+	if (!InitStorage(error)) {
+		LogError(error);
+		return EXIT_FAILURE;
+	}
+
 	const bool create_db = !glue_db_init_and_load();
 #endif
 
