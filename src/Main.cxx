@@ -145,6 +145,9 @@ glue_mapper_init(Error &error)
 	if (music_dir.IsNull())
 		music_dir = GetUserMusicDir();
 
+	if (!music_dir.IsNull())
+		music_dir.ChopSeparators();
+
 #ifdef ENABLE_DATABASE
 	if (!music_dir.IsNull()) {
 		const auto music_dir_utf8 = music_dir.ToUTF8();

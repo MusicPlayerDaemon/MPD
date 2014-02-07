@@ -92,7 +92,6 @@ mapper_set_music_dir(AllocatedPath &&path)
 	assert(!path.IsNull());
 
 	music_dir_fs = std::move(path);
-	music_dir_fs.ChopSeparators();
 
 	const auto music_dir_utf8 = music_dir_fs.ToUTF8();
 
