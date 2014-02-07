@@ -31,7 +31,7 @@
 #include "tag/TagId3.hxx"
 #include "TagStream.hxx"
 #include "TagFile.hxx"
-#include "Mapper.hxx"
+#include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "ls.hxx"
 
@@ -143,7 +143,16 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 		return read_stream_comments(client, uri);
 	} else if (!PathTraitsUTF8::IsAbsolute(uri)) {
 #ifdef ENABLE_DATABASE
-		AllocatedPath path_fs = map_uri_fs(uri);
+		const Storage *storage = client.GetStorage();
+		if (storage == nullptr) {
+#endif
+			command_error(client, ACK_ERROR_NO_EXIST,
+				      "No database");
+			return CommandResult::ERROR;
+#ifdef ENABLE_DATABASE
+		}
+
+		AllocatedPath path_fs = storage->MapFS(uri);
 		if (path_fs.IsNull()) {
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "No such file");
@@ -151,9 +160,6 @@ handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
 		}
 
 		return read_file_comments(client, path_fs);
-#else
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
-		return CommandResult::ERROR;
 #endif
 	} else {
 		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
