@@ -25,7 +25,6 @@
 #include "DecoderPlugin.hxx"
 #include "DetachedSong.hxx"
 #include "system/FatalError.hxx"
-#include "Mapper.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "DecoderAPI.hxx"
@@ -415,11 +414,10 @@ decoder_run(DecoderControl &dc)
 
 	Path path_fs = Path::Null();
 	AllocatedPath path_buffer = AllocatedPath::Null();
-	if (song.IsFile()) {
-		path_buffer = map_song_fs(song);
+	if (PathTraitsUTF8::IsAbsolute(uri_utf8)) {
+		path_buffer = AllocatedPath::FromUTF8(uri_utf8, dc.error);
 		if (path_buffer.IsNull()) {
 			dc.state = DecoderState::ERROR;
-			dc.error.Set(decoder_domain, "Failed to map song");
 			decoder_command_finished_locked(dc);
 			return;
 		}
