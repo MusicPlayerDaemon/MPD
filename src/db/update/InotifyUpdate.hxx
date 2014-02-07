@@ -24,10 +24,12 @@
 #include "Compiler.h"
 
 class EventLoop;
+class Storage;
 class UpdateService;
 
 void
-mpd_inotify_init(EventLoop &loop, UpdateService &update, unsigned max_depth);
+mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
+		 unsigned max_depth);
 
 void
 mpd_inotify_finish(void);

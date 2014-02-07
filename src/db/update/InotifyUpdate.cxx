@@ -22,7 +22,7 @@
 #include "InotifySource.hxx"
 #include "InotifyQueue.hxx"
 #include "InotifyDomain.hxx"
-#include "Mapper.hxx"
+#include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
@@ -290,11 +290,12 @@ mpd_inotify_callback(int wd, unsigned mask,
 }
 
 void
-mpd_inotify_init(EventLoop &loop, UpdateService &update, unsigned max_depth)
+mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
+		 unsigned max_depth)
 {
 	LogDebug(inotify_domain, "initializing inotify");
 
-	const auto &path = mapper_get_music_directory_fs();
+	const auto path = storage.MapFS("");
 	if (path.IsNull()) {
 		LogDebug(inotify_domain, "no music directory configured");
 		return;

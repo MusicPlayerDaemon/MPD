@@ -528,8 +528,11 @@ int mpd_main(int argc, char *argv[])
 	if (config_get_bool(CONF_AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
 		if (mapper_has_music_directory() &&
+		    instance->storage != nullptr &&
 		    instance->update != nullptr)
-			mpd_inotify_init(*instance->event_loop, *instance->update,
+			mpd_inotify_init(*instance->event_loop,
+					 *instance->storage,
+					 *instance->update,
 					 config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
 							     G_MAXUINT));
 #else
