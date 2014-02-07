@@ -62,6 +62,12 @@ struct WatchDirectory {
 
 	WatchDirectory(const WatchDirectory &) = delete;
 	WatchDirectory &operator=(const WatchDirectory &) = delete;
+
+	gcc_pure
+	unsigned GetDepth() const;
+
+	gcc_pure
+	AllocatedPath GetUriFS() const;
 };
 
 static InotifySource *inotify_source;
@@ -127,17 +133,17 @@ remove_watch_directory(WatchDirectory *directory)
 		});
 }
 
-static AllocatedPath
-watch_directory_get_uri_fs(const WatchDirectory *directory)
+AllocatedPath
+WatchDirectory::GetUriFS() const
 {
-	if (directory->parent == nullptr)
+	if (parent == nullptr)
 		return AllocatedPath::Null();
 
-	const auto uri = watch_directory_get_uri_fs(directory->parent);
+	const auto uri = parent->GetUriFS();
 	if (uri.IsNull())
-		return directory->name;
+		return name;
 
-	return AllocatedPath::Build(uri, directory->name);
+	return AllocatedPath::Build(uri, name);
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
@@ -221,11 +227,10 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 }
 
 gcc_pure
-static unsigned
-watch_directory_depth(const WatchDirectory *d)
+unsigned
+WatchDirectory::GetDepth() const
 {
-	assert(d != nullptr);
-
+	const WatchDirectory *d = this;
 	unsigned depth = 0;
 	while ((d = d->parent) != nullptr)
 		++depth;
@@ -245,7 +250,7 @@ mpd_inotify_callback(int wd, unsigned mask,
 	if (directory == nullptr)
 		return;
 
-	const auto uri_fs = watch_directory_get_uri_fs(directory);
+	const auto uri_fs = directory->GetUriFS();
 
 	if ((mask & (IN_DELETE_SELF|IN_MOVE_SELF)) != 0) {
 		remove_watch_directory(directory);
@@ -263,13 +268,13 @@ mpd_inotify_callback(int wd, unsigned mask,
 			: AllocatedPath::Build(root, uri_fs.c_str());
 
 		recursive_watch_subdirectories(directory, path_fs,
-					       watch_directory_depth(directory));
+					       directory->GetDepth());
 	}
 
 	if ((mask & (IN_CLOSE_WRITE|IN_MOVE|IN_DELETE)) != 0 ||
 	    /* at the maximum depth, we watch out for newly created
 	       directories */
-	    (watch_directory_depth(directory) == inotify_max_depth &&
+	    (directory->GetDepth() == inotify_max_depth &&
 	     (mask & (IN_CREATE|IN_ISDIR)) == (IN_CREATE|IN_ISDIR))) {
 		/* a file was changed, or a directory was
 		   moved/deleted: queue a database update */
