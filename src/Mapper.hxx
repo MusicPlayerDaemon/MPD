@@ -33,7 +33,7 @@
 class AllocatedPath;
 
 void
-mapper_init(AllocatedPath &&music_dir, AllocatedPath &&playlist_dir);
+mapper_init(AllocatedPath &&playlist_dir);
 
 void mapper_finish(void);
 

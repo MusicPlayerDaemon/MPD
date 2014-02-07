@@ -161,7 +161,7 @@ glue_mapper_init(Error &error)
 	}
 #endif
 
-	mapper_init(std::move(music_dir), std::move(playlist_dir));
+	mapper_init(std::move(playlist_dir));
 	return true;
 }
 

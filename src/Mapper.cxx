@@ -28,35 +28,19 @@
 #include "fs/Charset.hxx"
 #include "fs/CheckFile.hxx"
 
-#include <assert.h>
-
 #ifdef ENABLE_DATABASE
-
-/**
- * The absolute path of the music directory encoded in the filesystem
- * character set.
- */
-static AllocatedPath music_dir_fs = AllocatedPath::Null();
-
+#include "storage/StorageInterface.hxx"
+#include "Instance.hxx"
+#include "Main.hxx"
 #endif
+
+#include <assert.h>
 
 /**
  * The absolute path of the playlist directory encoded in the
  * filesystem character set.
  */
 static AllocatedPath playlist_dir_fs = AllocatedPath::Null();
-
-#ifdef ENABLE_DATABASE
-
-static void
-mapper_set_music_dir(AllocatedPath &&path)
-{
-	assert(!path.IsNull());
-
-	music_dir_fs = std::move(path);
-}
-
-#endif
 
 static void
 mapper_set_playlist_dir(AllocatedPath &&path)
@@ -69,15 +53,8 @@ mapper_set_playlist_dir(AllocatedPath &&path)
 }
 
 void
-mapper_init(AllocatedPath &&_music_dir, AllocatedPath &&_playlist_dir)
+mapper_init(AllocatedPath &&_playlist_dir)
 {
-#ifdef ENABLE_DATABASE
-	if (!_music_dir.IsNull())
-		mapper_set_music_dir(std::move(_music_dir));
-#else
-	(void)_music_dir;
-#endif
-
 	if (!_playlist_dir.IsNull())
 		mapper_set_playlist_dir(std::move(_playlist_dir));
 }
@@ -94,6 +71,10 @@ map_uri_fs(const char *uri)
 	assert(uri != nullptr);
 	assert(*uri != '/');
 
+	if (instance->storage == nullptr)
+		return AllocatedPath::Null();
+
+	const auto music_dir_fs = instance->storage->MapFS("");
 	if (music_dir_fs.IsNull())
 		return AllocatedPath::Null();
 
@@ -108,6 +89,13 @@ std::string
 map_fs_to_utf8(const char *path_fs)
 {
 	if (PathTraitsFS::IsSeparator(path_fs[0])) {
+		if (instance->storage == nullptr)
+			return std::string();
+
+		const auto music_dir_fs = instance->storage->MapFS("");
+		if (music_dir_fs.IsNull())
+			return std::string();
+
 		path_fs = music_dir_fs.RelativeFS(path_fs);
 		if (path_fs == nullptr || *path_fs == 0)
 			return std::string();
