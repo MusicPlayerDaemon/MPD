@@ -424,8 +424,11 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 	const SampleFormat sample_format =
 		ffmpeg_sample_format(codec_context->sample_fmt);
-	if (sample_format == SampleFormat::UNDEFINED)
+	if (sample_format == SampleFormat::UNDEFINED) {
+		// (error message already done by ffmpeg_sample_format())
+		avformat_close_input(&format_context);
 		return;
+	}
 
 	Error error;
 	AudioFormat audio_format;
