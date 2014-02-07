@@ -282,15 +282,15 @@ decoder_run_stream(Decoder &decoder, const char *uri)
  * decoder_replay_gain().
  */
 static void
-decoder_load_replay_gain(Decoder &decoder, const char *path_fs)
+decoder_load_replay_gain(Decoder &decoder, Path path_fs)
 {
 	ReplayGainInfo info;
-	if (replay_gain_ape_read(Path::FromFS(path_fs), info))
+	if (replay_gain_ape_read(path_fs, info))
 		decoder_replay_gain(decoder, &info);
 }
 
 static bool
-TryDecoderFile(Decoder &decoder, const char *path_fs, const char *suffix,
+TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 	       const DecoderPlugin &plugin)
 {
 	if (!plugin.SupportsSuffix(suffix))
@@ -301,13 +301,13 @@ TryDecoderFile(Decoder &decoder, const char *path_fs, const char *suffix,
 	if (plugin.file_decode != nullptr) {
 		dc.Lock();
 
-		if (decoder_file_decode(plugin, decoder, path_fs))
+		if (decoder_file_decode(plugin, decoder, path_fs.c_str()))
 			return true;
 
 		dc.Unlock();
 	} else if (plugin.stream_decode != nullptr) {
 		InputStream *input_stream =
-			decoder_input_stream_open(dc, path_fs);
+			decoder_input_stream_open(dc, path_fs.c_str());
 		if (input_stream == nullptr)
 			return false;
 
@@ -333,9 +333,9 @@ TryDecoderFile(Decoder &decoder, const char *path_fs, const char *suffix,
  * Try decoding a file.
  */
 static bool
-decoder_run_file(Decoder &decoder, const char *path_fs)
+decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 {
-	const char *suffix = uri_get_suffix(path_fs);
+	const char *suffix = uri_get_suffix(uri_utf8);
 	if (suffix == nullptr)
 		return false;
 
@@ -344,8 +344,10 @@ decoder_run_file(Decoder &decoder, const char *path_fs)
 
 	decoder_load_replay_gain(decoder, path_fs);
 
-	if (decoder_plugins_try([&decoder, path_fs, suffix](const DecoderPlugin &plugin){
-				return TryDecoderFile(decoder, path_fs, suffix,
+	if (decoder_plugins_try([&decoder, path_fs,
+				 suffix](const DecoderPlugin &plugin){
+				return TryDecoderFile(decoder,
+						      path_fs, suffix,
 						      plugin);
 			}))
 		return true;
@@ -356,7 +358,7 @@ decoder_run_file(Decoder &decoder, const char *path_fs)
 
 static void
 decoder_run_song(DecoderControl &dc,
-		 const DetachedSong &song, const char *uri)
+		 const DetachedSong &song, const char *uri, Path path_fs)
 {
 	Decoder decoder(dc, dc.start_ms > 0,
 			new Tag(song.GetTag()));
@@ -366,8 +368,8 @@ decoder_run_song(DecoderControl &dc,
 
 	decoder_command_finished_locked(dc);
 
-	ret = song.IsFile()
-		? decoder_run_file(decoder, uri)
+	ret = !path_fs.IsNull()
+		? decoder_run_file(decoder, uri, path_fs)
 		: decoder_run_stream(decoder, uri);
 
 	dc.Unlock();
@@ -409,19 +411,23 @@ decoder_run(DecoderControl &dc)
 	assert(dc.song != nullptr);
 	const DetachedSong &song = *dc.song;
 
-	const std::string uri = song.IsFile()
-		? map_song_fs(song).c_str()
-		: song.GetRealURI();
+	const char *const uri_utf8 = song.GetRealURI();
 
-	if (uri.empty()) {
-		dc.state = DecoderState::ERROR;
-		dc.error.Set(decoder_domain, "Failed to map song");
+	Path path_fs = Path::Null();
+	AllocatedPath path_buffer = AllocatedPath::Null();
+	if (song.IsFile()) {
+		path_buffer = map_song_fs(song);
+		if (path_buffer.IsNull()) {
+			dc.state = DecoderState::ERROR;
+			dc.error.Set(decoder_domain, "Failed to map song");
+			decoder_command_finished_locked(dc);
+			return;
+		}
 
-		decoder_command_finished_locked(dc);
-		return;
+		path_fs = path_buffer;
 	}
 
-	decoder_run_song(dc, song, uri.c_str());
+	decoder_run_song(dc, song, uri_utf8, path_fs);
 
 }
 
