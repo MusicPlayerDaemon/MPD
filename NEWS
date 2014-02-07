@@ -10,6 +10,7 @@ ver 0.19 (not yet released)
   - upnp: new plugin
 * playlist
   - soundcloud: use https instead of http
+  - soundcloud: add default API key
 * archive
   - read tags from songs in an archive
 * input
