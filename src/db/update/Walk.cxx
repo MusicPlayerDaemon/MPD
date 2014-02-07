@@ -29,13 +29,13 @@
 #include "db/Uri.hxx"
 #include "storage/StorageInterface.hxx"
 #include "playlist/PlaylistRegistry.hxx"
-#include "Mapper.hxx"
 #include "ExcludeList.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/Charset.hxx"
 #include "storage/FileInfo.hxx"
 #include "util/Alloc.hxx"
 #include "util/UriUtil.hxx"
@@ -274,8 +274,13 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 	if (PathTraitsFS::IsAbsolute(target_str)) {
 		/* if the symlink points to an absolute path, see if
 		   that path is inside the music directory */
-		const char *relative = map_to_relative_path(target_str);
-		return relative > target_str
+		const auto target_utf8 = PathToUTF8(target_str);
+		if (target_utf8.empty())
+			return true;
+
+		const char *relative =
+			storage.MapToRelativeUTF8(target_utf8.c_str());
+		return relative != nullptr
 			? !follow_inside_symlinks
 			: !follow_outside_symlinks;
 	}

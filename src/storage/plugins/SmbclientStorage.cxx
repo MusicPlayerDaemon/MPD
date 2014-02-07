@@ -69,6 +69,8 @@ public:
 						      Error &error) override;
 
 	virtual std::string MapUTF8(const char *uri_utf8) const override;
+
+	virtual const char *MapToRelativeUTF8(const char *uri_utf8) const override;
 };
 
 std::string
@@ -80,6 +82,12 @@ SmbclientStorage::MapUTF8(const char *uri_utf8) const
 		return base;
 
 	return PathTraitsUTF8::Build(base.c_str(), uri_utf8);
+}
+
+const char *
+SmbclientStorage::MapToRelativeUTF8(const char *uri_utf8) const
+{
+	return PathTraitsUTF8::Relative(base.c_str(), uri_utf8);
 }
 
 static bool

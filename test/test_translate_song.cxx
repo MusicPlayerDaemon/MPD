@@ -14,6 +14,7 @@
 #include "ls.hxx"
 #include "Log.hxx"
 #include "db/DatabaseSong.hxx"
+#include "storage/plugins/LocalStorage.hxx"
 #include "util/Error.hxx"
 #include "Mapper.hxx"
 
@@ -38,16 +39,8 @@ uri_supported_scheme(const char *uri)
 }
 
 const char *const music_directory = "/music";
-
-const char *
-map_to_relative_path(const char *path_utf8)
-{
-	size_t length = strlen(music_directory);
-	if (memcmp(path_utf8, music_directory, length) == 0 &&
-	    path_utf8[length] == '/')
-		path_utf8 += length + 1;
-	return path_utf8;
-}
+static Storage *const storage = CreateLocalStorage(music_directory,
+						   Path::FromFS(music_directory));
 
 static void
 BuildTag(gcc_unused TagBuilder &tag)
@@ -118,7 +111,7 @@ static const char *uri2 = "foo/bar.ogg";
 
 DetachedSong *
 DatabaseDetachSong(gcc_unused const Database &db,
-		   gcc_unused const Storage &storage,
+		   gcc_unused const Storage &_storage,
 		   const char *uri,
 		   gcc_unused Error &error)
 {
@@ -148,7 +141,7 @@ Client::GetDatabase(gcc_unused Error &error) const
 const Storage *
 Client::GetStorage() const
 {
-	return reinterpret_cast<const Storage *>(this);
+	return ::storage;
 }
 
 bool
@@ -252,7 +245,7 @@ class TranslateSongTest : public CppUnit::TestFixture {
 
 	void TestInDatabase() {
 		const SongLoader loader(reinterpret_cast<const Database *>(1),
-					reinterpret_cast<const Storage *>(2));
+					storage);
 
 		DetachedSong song1("doesntexist");
 		CPPUNIT_ASSERT(!playlist_check_translate_song(song1, nullptr,
@@ -275,10 +268,9 @@ class TranslateSongTest : public CppUnit::TestFixture {
 
 	void TestRelative() {
 		const Database &db = *reinterpret_cast<const Database *>(1);
-		const Storage &storage = *reinterpret_cast<const Storage *>(2);
-		const SongLoader secure_loader(&db, &storage);
+		const SongLoader secure_loader(&db, storage);
 		const SongLoader insecure_loader(*reinterpret_cast<const Client *>(1),
-						 &db, &storage);
+						 &db, storage);
 
 		/* map to music_directory */
 		DetachedSong song1("bar.ogg", MakeTag2b());

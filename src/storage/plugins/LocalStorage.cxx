@@ -68,6 +68,8 @@ public:
 
 	virtual AllocatedPath MapFS(const char *uri_utf8) const override;
 
+	virtual const char *MapToRelativeUTF8(const char *uri_utf8) const override;
+
 private:
 	AllocatedPath MapFS(const char *uri_utf8, Error &error) const;
 };
@@ -128,6 +130,12 @@ AllocatedPath
 LocalStorage::MapFS(const char *uri_utf8) const
 {
 	return MapFS(uri_utf8, IgnoreError());
+}
+
+const char *
+LocalStorage::MapToRelativeUTF8(const char *uri_utf8) const
+{
+	return PathTraitsUTF8::Relative(base_utf8.c_str(), uri_utf8);
 }
 
 bool

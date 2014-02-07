@@ -71,15 +71,6 @@ mapper_has_music_directory(void)
 
 #endif
 
-/**
- * If the specified absolute path points inside the music directory,
- * this function converts it to a relative path.  If not, it returns
- * the unmodified string pointer.
- */
-gcc_pure
-const char *
-map_to_relative_path(const char *path_utf8);
-
 #ifdef ENABLE_DATABASE
 
 /**

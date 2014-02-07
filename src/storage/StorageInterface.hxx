@@ -68,6 +68,14 @@ public:
 	gcc_pure
 	AllocatedPath MapChildFS(const char *uri_utf8,
 				 const char *child_utf8) const;
+
+	/**
+	 * Check if the given URI points inside this storage.  If yes,
+	 * then it returns a relative URI (pointing inside the given
+	 * string); if not, returns nullptr.
+	 */
+	gcc_pure
+	virtual const char *MapToRelativeUTF8(const char *uri_utf8) const = 0;
 };
 
 #endif

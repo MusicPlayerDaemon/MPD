@@ -20,8 +20,8 @@
 #include "config.h"
 #include "SongLoader.hxx"
 #include "client/Client.hxx"
-#include "Mapper.hxx"
 #include "db/DatabaseSong.hxx"
+#include "storage/StorageInterface.hxx"
 #include "ls.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
@@ -45,14 +45,13 @@ DetachedSong *
 SongLoader::LoadFile(const char *path_utf8, Error &error) const
 {
 #ifdef ENABLE_DATABASE
-	/* TODO fs_charset vs utf8? */
-	const char *suffix = map_to_relative_path(path_utf8);
-	assert(suffix != nullptr);
-
-	if (suffix != path_utf8)
-		/* this path was relative to the music directory -
-		   obtain it from the database */
-		return LoadSong(suffix, error);
+	if (storage != nullptr) {
+		const char *suffix = storage->MapToRelativeUTF8(path_utf8);
+		if (suffix != nullptr)
+			/* this path was relative to the music
+			   directory - obtain it from the database */
+			return LoadSong(suffix, error);
+	}
 #endif
 
 	if (client != nullptr) {

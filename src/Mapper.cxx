@@ -160,21 +160,6 @@ mapper_get_music_directory_fs(void)
 
 #endif
 
-const char *
-map_to_relative_path(const char *path_utf8)
-{
-#ifdef ENABLE_DATABASE
-	return !music_dir_utf8.empty() &&
-		memcmp(path_utf8, music_dir_utf8.c_str(),
-		       music_dir_utf8_length) == 0 &&
-		PathTraitsUTF8::IsSeparator(path_utf8[music_dir_utf8_length])
-		? path_utf8 + music_dir_utf8_length + 1
-		: path_utf8;
-#else
-	return path_utf8;
-#endif
-}
-
 #ifdef ENABLE_DATABASE
 
 AllocatedPath

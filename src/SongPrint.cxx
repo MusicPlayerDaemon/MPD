@@ -20,10 +20,10 @@
 #include "config.h"
 #include "SongPrint.hxx"
 #include "db/LightSong.hxx"
+#include "storage/StorageInterface.hxx"
 #include "DetachedSong.hxx"
 #include "TimePrint.hxx"
 #include "TagPrint.hxx"
-#include "Mapper.hxx"
 #include "client/Client.hxx"
 #include "util/UriUtil.hxx"
 
@@ -32,12 +32,20 @@
 static void
 song_print_uri(Client &client, const char *uri)
 {
+#ifdef ENABLE_DATABASE
+	const Storage *storage = client.GetStorage();
+	if (storage != nullptr) {
+		const char *suffix = storage->MapToRelativeUTF8(uri);
+		if (suffix != nullptr)
+			uri = suffix;
+	}
+#endif
+
 	const std::string allocated = uri_remove_auth(uri);
 	if (!allocated.empty())
 		uri = allocated.c_str();
 
-	client_printf(client, "%s%s\n", SONG_FILE,
-		      map_to_relative_path(uri));
+	client_printf(client, "%s%s\n", SONG_FILE, uri);
 }
 
 void
