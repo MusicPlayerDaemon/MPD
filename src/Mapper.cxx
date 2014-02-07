@@ -23,10 +23,6 @@
 
 #include "config.h"
 #include "Mapper.hxx"
-#include "DetachedSong.hxx"
-#include "db/Directory.hxx"
-#include "db/Song.hxx"
-#include "db/LightSong.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Charset.hxx"
@@ -36,19 +32,12 @@
 #include "Log.hxx"
 
 #include <assert.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <errno.h>
 
 static constexpr Domain mapper_domain("mapper");
 
 #ifdef ENABLE_DATABASE
-
-/**
- * The absolute path of the music directory encoded in UTF-8.
- */
-static std::string music_dir_utf8;
-static size_t music_dir_utf8_length;
 
 /**
  * The absolute path of the music directory encoded in the filesystem
@@ -105,8 +94,7 @@ mapper_set_music_dir(AllocatedPath &&path)
 	music_dir_fs = std::move(path);
 	music_dir_fs.ChopSeparators();
 
-	music_dir_utf8 = music_dir_fs.ToUTF8();
-	music_dir_utf8_length = music_dir_utf8.length();
+	const auto music_dir_utf8 = music_dir_fs.ToUTF8();
 
 	check_directory(music_dir_utf8.c_str(), music_dir_fs);
 }
@@ -141,24 +129,6 @@ mapper_init(AllocatedPath &&_music_dir, AllocatedPath &&_playlist_dir)
 void mapper_finish(void)
 {
 }
-
-#ifdef ENABLE_DATABASE
-
-const char *
-mapper_get_music_directory_utf8(void)
-{
-	return music_dir_utf8.empty()
-		? nullptr
-		: music_dir_utf8.c_str();
-}
-
-const AllocatedPath &
-mapper_get_music_directory_fs(void)
-{
-	return music_dir_fs;
-}
-
-#endif
 
 #ifdef ENABLE_DATABASE
 
