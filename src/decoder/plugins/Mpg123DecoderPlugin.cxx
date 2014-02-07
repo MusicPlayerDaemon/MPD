@@ -22,6 +22,7 @@
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -103,7 +104,7 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 }
 
 static void
-mpd_mpg123_file_decode(Decoder &decoder, const char *path_fs)
+mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 {
 	mpg123_handle *handle;
 	int error;
@@ -121,7 +122,7 @@ mpd_mpg123_file_decode(Decoder &decoder, const char *path_fs)
 	}
 
 	AudioFormat audio_format;
-	if (!mpd_mpg123_open(handle, path_fs, audio_format)) {
+	if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format)) {
 		mpg123_delete(handle);
 		return;
 	}
@@ -199,7 +200,7 @@ mpd_mpg123_file_decode(Decoder &decoder, const char *path_fs)
 }
 
 static bool
-mpd_mpg123_scan_file(const char *path_fs,
+mpd_mpg123_scan_file(Path path_fs,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
 	mpg123_handle *handle;
@@ -215,7 +216,7 @@ mpd_mpg123_scan_file(const char *path_fs,
 	}
 
 	AudioFormat audio_format;
-	if (!mpd_mpg123_open(handle, path_fs, audio_format)) {
+	if (!mpd_mpg123_open(handle, path_fs.c_str(), audio_format)) {
 		mpg123_delete(handle);
 		return false;
 	}

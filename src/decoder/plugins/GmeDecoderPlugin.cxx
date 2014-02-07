@@ -22,6 +22,7 @@
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "fs/Path.hxx"
 #include "util/Alloc.hxx"
 #include "util/FormatString.hxx"
 #include "util/UriUtil.hxx"
@@ -51,10 +52,10 @@ static constexpr unsigned GME_BUFFER_SAMPLES =
  * suffix
  */
 static char *
-get_container_name(const char *path_fs)
+get_container_name(Path path_fs)
 {
-	const char *subtune_suffix = uri_get_suffix(path_fs);
-	char *path_container = xstrdup(path_fs);
+	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
+	char *path_container = xstrdup(path_fs.c_str());
 
 	char pat[64];
 	snprintf(pat, sizeof(pat), "%s%s",
@@ -80,9 +81,9 @@ get_container_name(const char *path_fs)
  * is appended.
  */
 static int
-get_song_num(const char *path_fs)
+get_song_num(Path path_fs)
 {
-	const char *subtune_suffix = uri_get_suffix(path_fs);
+	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
 
 	char pat[64];
 	snprintf(pat, sizeof(pat), "%s%s",
@@ -91,8 +92,8 @@ get_song_num(const char *path_fs)
 	GPatternSpec *path_with_subtune = g_pattern_spec_new(pat);
 
 	if (g_pattern_match(path_with_subtune,
-			    strlen(path_fs), path_fs, nullptr)) {
-		char *sub = g_strrstr(path_fs, "/" SUBTUNE_PREFIX);
+			    path_fs.length(), path_fs.data(), nullptr)) {
+		char *sub = g_strrstr(path_fs.c_str(), "/" SUBTUNE_PREFIX);
 		g_pattern_spec_free(path_with_subtune);
 		if (!sub)
 			return 0;
@@ -108,10 +109,11 @@ get_song_num(const char *path_fs)
 }
 
 static char *
-gme_container_scan(const char *path_fs, const unsigned int tnum)
+gme_container_scan(Path path_fs, const unsigned int tnum)
 {
 	Music_Emu *emu;
-	const char *gme_err = gme_open_file(path_fs, &emu, GME_SAMPLE_RATE);
+	const char *gme_err = gme_open_file(path_fs.c_str(), &emu,
+					    GME_SAMPLE_RATE);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return nullptr;
@@ -122,7 +124,7 @@ gme_container_scan(const char *path_fs, const unsigned int tnum)
 	if (num_songs < 2)
 		return nullptr;
 
-	const char *subtune_suffix = uri_get_suffix(path_fs);
+	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
 	if (tnum <= num_songs){
 		return FormatNew(SUBTUNE_PREFIX "%03u.%s",
 				 tnum, subtune_suffix);
@@ -131,7 +133,7 @@ gme_container_scan(const char *path_fs, const unsigned int tnum)
 }
 
 static void
-gme_file_decode(Decoder &decoder, const char *path_fs)
+gme_file_decode(Decoder &decoder, Path path_fs)
 {
 	char *path_container = get_container_name(path_fs);
 
@@ -207,7 +209,7 @@ gme_file_decode(Decoder &decoder, const char *path_fs)
 }
 
 static bool
-gme_scan_file(const char *path_fs,
+gme_scan_file(Path path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
 {
 	char *path_container = get_container_name(path_fs);

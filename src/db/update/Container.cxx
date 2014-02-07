@@ -99,7 +99,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	char *vtrack;
 	unsigned int tnum = 0;
 	TagBuilder tag_builder;
-	while ((vtrack = plugin.container_scan(pathname.c_str(), ++tnum)) != nullptr) {
+	while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
 		Song *song = Song::NewFile(vtrack, *contdir);
 
 		// shouldn't be necessary but it's there..
@@ -107,7 +107,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 
 		const auto child_path_fs = AllocatedPath::Build(pathname,
 								vtrack);
-		plugin.ScanFile(child_path_fs.c_str(),
+		plugin.ScanFile(child_path_fs,
 				add_tag_handler, &tag_builder);
 
 		tag_builder.Commit(song->tag);

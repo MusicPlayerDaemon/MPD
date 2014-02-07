@@ -23,6 +23,7 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -173,7 +174,7 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 }
 
 static bool
-sndfile_scan_file(const char *path_fs,
+sndfile_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	SNDFILE *sf;
@@ -182,14 +183,14 @@ sndfile_scan_file(const char *path_fs,
 
 	info.format = 0;
 
-	sf = sf_open(path_fs, SFM_READ, &info);
+	sf = sf_open(path_fs.c_str(), SFM_READ, &info);
 	if (sf == nullptr)
 		return false;
 
 	if (!audio_valid_sample_rate(info.samplerate)) {
 		sf_close(sf);
 		FormatWarning(sndfile_domain,
-			      "Invalid sample rate in %s", path_fs);
+			      "Invalid sample rate in %s", path_fs.c_str());
 		return false;
 	}
 

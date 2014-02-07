@@ -21,6 +21,7 @@
 #include "SidplayDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
+#include "fs/Path.hxx"
 #include "util/Alloc.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
@@ -120,9 +121,9 @@ sidplay_finish()
  * suffix
  */
 static char *
-get_container_name(const char *path_fs)
+get_container_name(Path path_fs)
 {
-	char *path_container = strdup(path_fs);
+	char *path_container = strdup(path_fs.c_str());
 
 	if(!g_pattern_match(path_with_subtune,
 		strlen(path_container), path_container, nullptr))
@@ -159,7 +160,7 @@ get_song_num(const char *path_fs)
 
 /* get the song length in seconds */
 static int
-get_song_length(const char *path_fs)
+get_song_length(Path path_fs)
 {
 	if (songlength_database == nullptr)
 		return -1;
@@ -175,7 +176,7 @@ get_song_length(const char *path_fs)
 	char md5sum[SIDTUNE_MD5_LENGTH+1];
 	tune.createMD5(md5sum);
 
-	const unsigned song_num = get_song_num(path_fs);
+	const unsigned song_num = get_song_num(path_fs.c_str());
 
 	gsize num_items;
 	gchar **values=g_key_file_get_string_list(songlength_database,
@@ -202,7 +203,7 @@ get_song_length(const char *path_fs)
 }
 
 static void
-sidplay_file_decode(Decoder &decoder, const char *path_fs)
+sidplay_file_decode(Decoder &decoder, Path path_fs)
 {
 	int channels;
 
@@ -216,7 +217,7 @@ sidplay_file_decode(Decoder &decoder, const char *path_fs)
 		return;
 	}
 
-	int song_num=get_song_num(path_fs);
+	const int song_num = get_song_num(path_fs.c_str());
 	tune.selectSong(song_num);
 
 	int song_len=get_song_length(path_fs);
@@ -340,10 +341,10 @@ sidplay_file_decode(Decoder &decoder, const char *path_fs)
 }
 
 static bool
-sidplay_scan_file(const char *path_fs,
+sidplay_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	int song_num=get_song_num(path_fs);
+	const int song_num = get_song_num(path_fs.c_str());
 	char *path_container=get_container_name(path_fs);
 
 	SidTune tune(path_container, nullptr, true);
@@ -389,9 +390,9 @@ sidplay_scan_file(const char *path_fs,
 }
 
 static char *
-sidplay_container_scan(const char *path_fs, const unsigned int tnum)
+sidplay_container_scan(Path path_fs, const unsigned int tnum)
 {
-	SidTune tune(path_fs, nullptr, true);
+	SidTune tune(path_fs.c_str(), nullptr, true);
 	if (!tune)
 		return nullptr;
 

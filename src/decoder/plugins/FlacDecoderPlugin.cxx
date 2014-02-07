@@ -23,6 +23,7 @@
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
 #include "OggCodec.hxx"
+#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -79,11 +80,11 @@ flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 }
 
 static bool
-flac_scan_file(const char *file,
+flac_scan_file(Path path_fs,
 	       const struct tag_handler *handler, void *handler_ctx)
 {
 	FlacMetadataChain chain;
-	if (!chain.Read(file)) {
+	if (!chain.Read(path_fs.c_str())) {
 		FormatDebug(flac_domain,
 			    "Failed to read FLAC tags: %s",
 			    chain.GetStatusString());
@@ -293,11 +294,11 @@ oggflac_init(gcc_unused const config_param &param)
 }
 
 static bool
-oggflac_scan_file(const char *file,
+oggflac_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	FlacMetadataChain chain;
-	if (!chain.ReadOgg(file)) {
+	if (!chain.ReadOgg(path_fs.c_str())) {
 		FormatDebug(flac_domain,
 			    "Failed to read OggFLAC tags: %s",
 			    chain.GetStatusString());

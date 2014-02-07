@@ -23,6 +23,7 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -37,10 +38,12 @@
 
 static constexpr Domain audiofile_domain("audiofile");
 
-static int audiofile_get_duration(const char *file)
+gcc_pure
+static int
+audiofile_get_duration(Path path_fs)
 {
 	int total_time;
-	AFfilehandle af_fp = afOpenFile(file, "r", nullptr);
+	AFfilehandle af_fp = afOpenFile(path_fs.c_str(), "r", nullptr);
 	if (af_fp == AF_NULL_FILEHANDLE) {
 		return -1;
 	}
@@ -227,15 +230,15 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 }
 
 static bool
-audiofile_scan_file(const char *file,
+audiofile_scan_file(Path path_fs,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
-	int total_time = audiofile_get_duration(file);
+	int total_time = audiofile_get_duration(path_fs);
 
 	if (total_time < 0) {
 		FormatWarning(audiofile_domain,
 			      "Failed to get total song time from: %s",
-			      file);
+			      path_fs.c_str());
 		return false;
 	}
 

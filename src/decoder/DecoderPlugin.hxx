@@ -25,6 +25,7 @@
 struct config_param;
 struct InputStream;
 struct tag_handler;
+class Path;
 
 /**
  * Opaque handle which the decoder plugin passes to the functions in
@@ -65,14 +66,14 @@ struct DecoderPlugin {
 	 *
 	 * Either implement this method or stream_decode().
 	 */
-	void (*file_decode)(Decoder &decoder, const char *path_fs);
+	void (*file_decode)(Decoder &decoder, Path path_fs);
 
 	/**
 	 * Scan metadata of a file.
 	 *
 	 * @return false if the operation has failed
 	 */
-	bool (*scan_file)(const char *path_fs,
+	bool (*scan_file)(Path path_fs,
 			  const struct tag_handler *handler,
 			  void *handler_ctx);
 
@@ -95,7 +96,7 @@ struct DecoderPlugin {
 	 * a filename for every single track according to tnum (param 2)
 	 * do not include full pathname here, just the "virtual" file
 	 */
-	char* (*container_scan)(const char *path_fs, const unsigned int tnum);
+	char* (*container_scan)(Path path_fs, const unsigned int tnum);
 
 	/* last element in these arrays must always be a nullptr: */
 	const char *const*suffixes;
@@ -133,14 +134,16 @@ struct DecoderPlugin {
 	/**
 	 * Decode a file.
 	 */
-	void FileDecode(Decoder &decoder, const char *path_fs) const {
+	template<typename P>
+	void FileDecode(Decoder &decoder, P path_fs) const {
 		file_decode(decoder, path_fs);
 	}
 
 	/**
 	 * Read the tag of a file.
 	 */
-	bool ScanFile(const char *path_fs,
+	template<typename P>
+	bool ScanFile(P path_fs,
 		      const tag_handler &handler, void *handler_ctx) const {
 		return scan_file != nullptr
 			? scan_file(path_fs, &handler, handler_ctx)
@@ -160,7 +163,8 @@ struct DecoderPlugin {
 	/**
 	 * return "virtual" tracks in a container
 	 */
-	char *ContainerScan(const char *path, const unsigned int tnum) const {
+	template<typename P>
+	char *ContainerScan(P path, const unsigned int tnum) const {
 		return container_scan(path, tnum);
 	}
 

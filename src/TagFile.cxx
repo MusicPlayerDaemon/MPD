@@ -53,7 +53,7 @@ public:
 	}
 
 	bool ScanFile(const DecoderPlugin &plugin) {
-		return plugin.ScanFile(path_fs.c_str(), handler, handler_ctx);
+		return plugin.ScanFile(path_fs, handler, handler_ctx);
 	}
 
 	bool ScanStream(const DecoderPlugin &plugin) {

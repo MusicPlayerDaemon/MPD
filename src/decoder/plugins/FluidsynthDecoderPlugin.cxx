@@ -21,6 +21,7 @@
 #include "FluidsynthDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
+#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
@@ -92,7 +93,7 @@ fluidsynth_init(const config_param &param)
 }
 
 static void
-fluidsynth_file_decode(Decoder &decoder, const char *path_fs)
+fluidsynth_file_decode(Decoder &decoder, Path path_fs)
 {
 	char setting_sample_rate[] = "synth.sample-rate";
 	/*
@@ -141,7 +142,7 @@ fluidsynth_file_decode(Decoder &decoder, const char *path_fs)
 		return;
 	}
 
-	ret = fluid_player_add(player, path_fs);
+	ret = fluid_player_add(player, path_fs.c_str());
 	if (ret != 0) {
 		LogWarning(fluidsynth_domain, "fluid_player_add() failed");
 		delete_fluid_player(player);
@@ -198,11 +199,11 @@ fluidsynth_file_decode(Decoder &decoder, const char *path_fs)
 }
 
 static bool
-fluidsynth_scan_file(const char *file,
+fluidsynth_scan_file(Path path_fs,
 		     gcc_unused const struct tag_handler *handler,
 		     gcc_unused void *handler_ctx)
 {
-	return fluid_is_midifile(file);
+	return fluid_is_midifile(path_fs.c_str());
 }
 
 static const char *const fluidsynth_suffixes[] = {

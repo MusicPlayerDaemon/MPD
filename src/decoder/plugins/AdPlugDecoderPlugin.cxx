@@ -22,6 +22,7 @@
 #include "tag/TagHandler.hxx"
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
+#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "Log.hxx"
@@ -48,12 +49,12 @@ adplug_init(const config_param &param)
 }
 
 static void
-adplug_file_decode(Decoder &decoder, const char *path_fs)
+adplug_file_decode(Decoder &decoder, Path path_fs)
 {
 	CEmuopl opl(sample_rate, true, true);
 	opl.init();
 
-	CPlayer *player = CAdPlug::factory(path_fs, &opl);
+	CPlayer *player = CAdPlug::factory(path_fs.c_str(), &opl);
 	if (player == nullptr)
 		return;
 
@@ -90,13 +91,13 @@ adplug_scan_tag(TagType type, const std::string &value,
 }
 
 static bool
-adplug_scan_file(const char *path_fs,
+adplug_scan_file(Path path_fs,
 		 const struct tag_handler *handler, void *handler_ctx)
 {
 	CEmuopl opl(sample_rate, true, true);
 	opl.init();
 
-	CPlayer *player = CAdPlug::factory(path_fs, &opl);
+	CPlayer *player = CAdPlug::factory(path_fs.c_str(), &opl);
 	if (player == nullptr)
 		return false;
 

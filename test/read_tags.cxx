@@ -72,7 +72,7 @@ static const struct tag_handler print_handler = {
 
 int main(int argc, char **argv)
 {
-	const char *decoder_name, *path;
+	const char *decoder_name;
 	const struct DecoderPlugin *plugin;
 
 #ifdef HAVE_LOCALE_H
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 	}
 
 	decoder_name = argv[1];
-	path = argv[2];
+	const Path path = Path::FromFS(argv[2]);
 
 #if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
@@ -114,10 +114,11 @@ int main(int argc, char **argv)
 		Mutex mutex;
 		Cond cond;
 
-		InputStream *is = InputStream::OpenReady(path, mutex, cond,
+		InputStream *is = InputStream::OpenReady(path.c_str(),
+							 mutex, cond,
 							 error);
 		if (is == NULL) {
-			FormatError(error, "Failed to open %s", path);
+			FormatError(error, "Failed to open %s", path.c_str());
 			return EXIT_FAILURE;
 		}
 
@@ -135,9 +136,9 @@ int main(int argc, char **argv)
 	}
 
 	if (empty) {
-		tag_ape_scan2(Path::FromFS(path), &print_handler, NULL);
+		tag_ape_scan2(path, &print_handler, NULL);
 		if (empty)
-			tag_id3_scan(Path::FromFS(path), &print_handler, NULL);
+			tag_id3_scan(path, &print_handler, NULL);
 	}
 
 	return 0;

@@ -24,6 +24,7 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/ApeTag.hxx"
+#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
@@ -269,15 +270,16 @@ wavpack_scan_pair(WavpackContext *wpc, const char *name,
  * Reads metainfo from the specified file.
  */
 static bool
-wavpack_scan_file(const char *fname,
+wavpack_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	char error[ERRORLEN];
-	WavpackContext *wpc = WavpackOpenFileInput(fname, error, OPEN_TAGS, 0);
+	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
+						   OPEN_TAGS, 0);
 	if (wpc == nullptr) {
 		FormatError(wavpack_domain,
 			    "failed to open WavPack file \"%s\": %s",
-			    fname, error);
+			    path_fs.c_str(), error);
 		return false;
 	}
 
@@ -525,16 +527,16 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
  * Decodes a file.
  */
 static void
-wavpack_filedecode(Decoder &decoder, const char *fname)
+wavpack_filedecode(Decoder &decoder, Path path_fs)
 {
 	char error[ERRORLEN];
-	WavpackContext *wpc = WavpackOpenFileInput(fname, error,
+	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
 						   OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE,
 						   23);
 	if (wpc == nullptr) {
 		FormatWarning(wavpack_domain,
 			      "failed to open WavPack file \"%s\": %s",
-			      fname, error);
+			      path_fs.c_str(), error);
 		return;
 	}
 

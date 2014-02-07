@@ -25,6 +25,7 @@
 #include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/Path.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
@@ -65,7 +66,7 @@ wildmidi_finish(void)
 }
 
 static void
-wildmidi_file_decode(Decoder &decoder, const char *path_fs)
+wildmidi_file_decode(Decoder &decoder, Path path_fs)
 {
 	static constexpr AudioFormat audio_format = {
 		WILDMIDI_SAMPLE_RATE,
@@ -75,7 +76,7 @@ wildmidi_file_decode(Decoder &decoder, const char *path_fs)
 	midi *wm;
 	const struct _WM_Info *info;
 
-	wm = WildMidi_Open(path_fs);
+	wm = WildMidi_Open(path_fs.c_str());
 	if (wm == nullptr)
 		return;
 
@@ -118,10 +119,10 @@ wildmidi_file_decode(Decoder &decoder, const char *path_fs)
 }
 
 static bool
-wildmidi_scan_file(const char *path_fs,
+wildmidi_scan_file(Path path_fs,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
-	midi *wm = WildMidi_Open(path_fs);
+	midi *wm = WildMidi_Open(path_fs.c_str());
 	if (wm == nullptr)
 		return false;
 

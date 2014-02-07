@@ -23,6 +23,7 @@
 #include "decoder/DecoderAPI.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
+#include "fs/Path.hxx"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
@@ -211,7 +212,7 @@ int main(int argc, char **argv)
 	decoder.initialized = false;
 
 	if (decoder.plugin->file_decode != NULL) {
-		decoder.plugin->FileDecode(decoder, decoder.uri);
+		decoder.plugin->FileDecode(decoder, Path::FromFS(decoder.uri));
 	} else if (decoder.plugin->stream_decode != NULL) {
 		Mutex mutex;
 		Cond cond;

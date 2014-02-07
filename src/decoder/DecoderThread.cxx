@@ -143,13 +143,13 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 
 static bool
 decoder_file_decode(const DecoderPlugin &plugin,
-		    Decoder &decoder, const char *path)
+		    Decoder &decoder, Path path)
 {
 	assert(plugin.file_decode != nullptr);
 	assert(decoder.stream_tag == nullptr);
 	assert(decoder.decoder_tag == nullptr);
-	assert(path != nullptr);
-	assert(PathTraitsFS::IsAbsolute(path));
+	assert(!path.IsNull());
+	assert(path.IsAbsolute());
 	assert(decoder.dc.state == DecoderState::START);
 
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
@@ -300,7 +300,7 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 	if (plugin.file_decode != nullptr) {
 		dc.Lock();
 
-		if (decoder_file_decode(plugin, decoder, path_fs.c_str()))
+		if (decoder_file_decode(plugin, decoder, path_fs))
 			return true;
 
 		dc.Unlock();
