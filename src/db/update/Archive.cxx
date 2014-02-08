@@ -125,7 +125,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 
 	/* open archive */
 	Error error;
-	ArchiveFile *file = archive_file_open(&plugin, path_fs.c_str(), error);
+	ArchiveFile *file = archive_file_open(&plugin, path_fs, error);
 	if (file == nullptr) {
 		LogError(error);
 		if (directory != nullptr)

@@ -26,6 +26,7 @@
 #include "archive/ArchiveFile.hxx"
 #include "../InputPlugin.hxx"
 #include "fs/Traits.hxx"
+#include "fs/Path.hxx"
 #include "util/Alloc.hxx"
 #include "Log.hxx"
 
@@ -69,7 +70,7 @@ input_archive_open(const char *pathname,
 		return nullptr;
 	}
 
-	auto file = archive_file_open(arplug, archive, error);
+	auto file = archive_file_open(arplug, Path::FromFS(archive), error);
 	if (file == nullptr) {
 		free(pname);
 		return nullptr;

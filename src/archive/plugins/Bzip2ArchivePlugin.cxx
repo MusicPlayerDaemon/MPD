@@ -32,6 +32,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "fs/Traits.hxx"
+#include "fs/Path.hxx"
 
 #include <bzlib.h>
 
@@ -49,9 +50,9 @@ public:
 	std::string name;
 	InputStream *const istream;
 
-	Bzip2ArchiveFile(const char *path, InputStream *_is)
+	Bzip2ArchiveFile(Path path, InputStream *_is)
 		:ArchiveFile(bz2_archive_plugin),
-		 name(PathTraitsUTF8::GetBase(path)),
+		 name(PathTraitsFS::GetBase(path.c_str())),
 		 istream(_is) {
 		// remove .bz2 suffix
 		const size_t len = name.length();
@@ -142,11 +143,12 @@ Bzip2InputStream::Close()
 /* archive open && listing routine */
 
 static ArchiveFile *
-bz2_open(const char *pathname, Error &error)
+bz2_open(Path pathname, Error &error)
 {
 	static Mutex mutex;
 	static Cond cond;
-	InputStream *is = InputStream::OpenReady(pathname, mutex, cond, error);
+	InputStream *is = InputStream::OpenReady(pathname.c_str(), mutex, cond,
+						 error);
 	if (is == nullptr)
 		return nullptr;
 

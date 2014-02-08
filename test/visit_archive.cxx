@@ -85,7 +85,7 @@ main(int argc, char **argv)
 
 	int result = EXIT_SUCCESS;
 
-	ArchiveFile *file = archive_file_open(plugin, path.c_str(), error);
+	ArchiveFile *file = archive_file_open(plugin, path, error);
 	if (file != nullptr) {
 		MyArchiveVisitor visitor;
 		file->Visit(visitor);

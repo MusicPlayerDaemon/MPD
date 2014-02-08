@@ -28,6 +28,7 @@
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
 #include "input/InputPlugin.hxx"
+#include "fs/Path.hxx"
 #include "util/RefCount.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -70,12 +71,12 @@ static constexpr Domain zzip_domain("zzip");
 /* archive open && listing routine */
 
 static ArchiveFile *
-zzip_archive_open(const char *pathname, Error &error)
+zzip_archive_open(Path pathname, Error &error)
 {
-	ZZIP_DIR *dir = zzip_dir_open(pathname, nullptr);
+	ZZIP_DIR *dir = zzip_dir_open(pathname.c_str(), nullptr);
 	if (dir == nullptr) {
 		error.Format(zzip_domain, "Failed to open ZIP file %s",
-			     pathname);
+			     pathname.c_str());
 		return nullptr;
 	}
 

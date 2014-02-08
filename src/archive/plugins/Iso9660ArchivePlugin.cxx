@@ -28,6 +28,7 @@
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
 #include "input/InputPlugin.hxx"
+#include "fs/Path.hxx"
 #include "util/RefCount.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -117,13 +118,14 @@ Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
 }
 
 static ArchiveFile *
-iso9660_archive_open(const char *pathname, Error &error)
+iso9660_archive_open(Path pathname, Error &error)
 {
 	/* open archive */
-	auto iso = iso9660_open(pathname);
+	auto iso = iso9660_open(pathname.c_str());
 	if (iso == nullptr) {
 		error.Format(iso9660_domain,
-			     "Failed to open ISO9660 file %s", pathname);
+			     "Failed to open ISO9660 file %s",
+			     pathname.c_str());
 		return nullptr;
 	}
 

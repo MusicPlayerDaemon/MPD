@@ -21,6 +21,7 @@
 #define MPD_ARCHIVE_PLUGIN_HXX
 
 class ArchiveFile;
+class Path;
 class Error;
 
 struct ArchivePlugin {
@@ -44,7 +45,7 @@ struct ArchivePlugin {
 	 * returns pointer to handle used is all operations with this archive
 	 * or nullptr when opening fails
 	 */
-	ArchiveFile *(*open)(const char *path_fs, Error &error);
+	ArchiveFile *(*open)(Path path_fs, Error &error);
 
 	/**
 	 * suffixes handled by this plugin.
@@ -54,7 +55,7 @@ struct ArchivePlugin {
 };
 
 ArchiveFile *
-archive_file_open(const ArchivePlugin *plugin, const char *path,
+archive_file_open(const ArchivePlugin *plugin, Path path,
 		  Error &error);
 
 #endif
