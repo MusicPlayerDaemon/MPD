@@ -1013,6 +1013,18 @@ systemctl start mpd.socket</programlisting>
           "<parameter>smb://myfileserver/Music</parameter>".
         </para>
       </section>
+
+      <section>
+        <title><varname>nfs</varname></title>
+
+        <para>
+          Load music files from a NFS server.  It used used when
+          <varname>music_directory</varname> contains a
+          <parameter>nfs://</parameter> URI according to <ulink
+          url="http://tools.ietf.org/html/rfc2224">RFC2224</ulink>,
+          for example "<parameter>nfs://servername/path</parameter>".
+        </para>
+      </section>
     </section>
 
     <section>

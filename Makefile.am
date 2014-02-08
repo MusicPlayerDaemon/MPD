@@ -432,6 +432,7 @@ libstorage_a_SOURCES = \
 	src/storage/FileInfo.hxx
 
 libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(NFS_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
 STORAGE_LIBS = libstorage.a
@@ -440,6 +441,12 @@ if ENABLE_SMBCLIENT
 libstorage_a_SOURCES += \
 	$(SMBCLIENT_SOURCES) \
 	src/storage/plugins/SmbclientStorage.cxx src/neighbor/plugins/SmbclientStorage.hxx
+endif
+
+if ENABLE_NFS
+libstorage_a_SOURCES += \
+	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx \
+	src/storage/plugins/NfsStorage.cxx src/neighbor/plugins/NfsStorage.hxx
 endif
 
 endif

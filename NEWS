@@ -10,6 +10,7 @@ ver 0.19 (not yet released)
   - upnp: new plugin
 * storage
   - music_directory can point to a remote file server
+  - nfs: new plugin
   - smbclient: new plugin
 * playlist
   - soundcloud: use https instead of http

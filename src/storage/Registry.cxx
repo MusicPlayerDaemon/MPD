@@ -22,6 +22,7 @@
 #include "StoragePlugin.hxx"
 #include "plugins/LocalStorage.hxx"
 #include "plugins/SmbclientStorage.hxx"
+#include "plugins/NfsStorage.hxx"
 #include "util/Error.hxx"
 
 #include <assert.h>
@@ -31,6 +32,9 @@ const StoragePlugin *const storage_plugins[] = {
 	&local_storage_plugin,
 #ifdef ENABLE_SMBCLIENT
 	&smbclient_storage_plugin,
+#endif
+#ifdef ENABLE_NFS
+	&nfs_storage_plugin,
 #endif
 	nullptr
 };
