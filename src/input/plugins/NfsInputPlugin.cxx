@@ -21,9 +21,9 @@
 #include "NfsInputPlugin.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
+#include "lib/nfs/Domain.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 extern "C" {
 #include <nfsc/libnfs.h>
@@ -31,8 +31,6 @@ extern "C" {
 
 #include <sys/stat.h>
 #include <fcntl.h>
-
-static constexpr Domain nfs_domain("nfs");
 
 class NfsInputStream {
 	InputStream base;

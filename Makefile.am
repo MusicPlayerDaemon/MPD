@@ -961,6 +961,7 @@ endif
 
 if ENABLE_NFS
 libinput_a_SOURCES += \
+	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx \
 	src/input/plugins/NfsInputPlugin.cxx src/input/plugins/NfsInputPlugin.hxx
 endif
 
