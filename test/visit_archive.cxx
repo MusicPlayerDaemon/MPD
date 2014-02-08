@@ -77,7 +77,7 @@ main(int argc, char **argv)
 
 	/* open the archive and dump it */
 
-	const archive_plugin *plugin = archive_plugin_from_name(plugin_name);
+	const ArchivePlugin *plugin = archive_plugin_from_name(plugin_name);
 	if (plugin == nullptr) {
 		fprintf(stderr, "No such plugin: %s\n", plugin_name);
 		return EXIT_FAILURE;

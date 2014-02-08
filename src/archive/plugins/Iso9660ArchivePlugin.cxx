@@ -266,7 +266,7 @@ const InputPlugin iso9660_input_plugin = {
 	nullptr,
 };
 
-const struct archive_plugin iso9660_archive_plugin = {
+const ArchivePlugin iso9660_archive_plugin = {
 	"iso",
 	nullptr,
 	nullptr,

@@ -20,6 +20,8 @@
 #ifndef MPD_ARCHIVE_ZZIP_HXX
 #define MPD_ARCHIVE_ZZIP_HXX
 
-extern const struct archive_plugin zzip_archive_plugin;
+struct ArchivePlugin;
+
+extern const ArchivePlugin zzip_archive_plugin;
 
 #endif

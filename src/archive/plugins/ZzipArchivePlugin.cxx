@@ -214,7 +214,7 @@ const InputPlugin zzip_input_plugin = {
 	zzip_input_seek,
 };
 
-const struct archive_plugin zzip_archive_plugin = {
+const ArchivePlugin zzip_archive_plugin = {
 	"zzip",
 	nullptr,
 	nullptr,

@@ -105,7 +105,7 @@ class UpdateArchiveVisitor final : public ArchiveVisitor {
 void
 UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 			      const FileInfo &info,
-			      const archive_plugin &plugin)
+			      const ArchivePlugin &plugin)
 {
 	db_lock();
 	Directory *directory = parent.FindChild(name);
@@ -158,8 +158,7 @@ UpdateWalk::UpdateArchiveFile(Directory &directory,
 			      const char *name, const char *suffix,
 			      const FileInfo &info)
 {
-	const struct archive_plugin *plugin =
-		archive_plugin_from_suffix(suffix);
+	const ArchivePlugin *plugin = archive_plugin_from_suffix(suffix);
 	if (plugin == nullptr)
 		return false;
 

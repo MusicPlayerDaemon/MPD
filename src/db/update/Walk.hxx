@@ -28,7 +28,7 @@
 struct stat;
 struct FileInfo;
 struct Directory;
-struct archive_plugin;
+struct ArchivePlugin;
 class Storage;
 class ExcludeList;
 
@@ -93,7 +93,7 @@ private:
 
 	void UpdateArchiveFile(Directory &directory, const char *name,
 			       const FileInfo &info,
-			       const archive_plugin &plugin);
+			       const ArchivePlugin &plugin);
 
 
 #else

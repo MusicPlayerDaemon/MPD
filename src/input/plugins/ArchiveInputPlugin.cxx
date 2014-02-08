@@ -44,7 +44,7 @@ input_archive_open(const char *pathname,
 		   Mutex &mutex, Cond &cond,
 		   Error &error)
 {
-	const struct archive_plugin *arplug;
+	const ArchivePlugin *arplug;
 	InputStream *is;
 
 	if (!PathTraitsFS::IsAbsolute(pathname))

@@ -282,7 +282,7 @@ const InputPlugin bz2_inputplugin = {
 	nullptr,
 };
 
-const struct archive_plugin bz2_archive_plugin = {
+const ArchivePlugin bz2_archive_plugin = {
 	"bz2",
 	nullptr,
 	nullptr,

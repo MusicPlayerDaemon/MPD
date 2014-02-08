@@ -28,7 +28,7 @@
 
 #include <string.h>
 
-const struct archive_plugin *const archive_plugins[] = {
+const ArchivePlugin *const archive_plugins[] = {
 #ifdef HAVE_BZ2
 	&bz2_archive_plugin,
 #endif
@@ -48,7 +48,7 @@ static bool archive_plugins_enabled[ARRAY_SIZE(archive_plugins) - 1];
 	archive_plugins_for_each(plugin) \
 		if (archive_plugins_enabled[archive_plugin_iterator - archive_plugins])
 
-const struct archive_plugin *
+const ArchivePlugin *
 archive_plugin_from_suffix(const char *suffix)
 {
 	if (suffix == nullptr)
@@ -62,7 +62,7 @@ archive_plugin_from_suffix(const char *suffix)
 	return nullptr;
 }
 
-const struct archive_plugin *
+const ArchivePlugin *
 archive_plugin_from_name(const char *name)
 {
 	archive_plugins_for_each_enabled(plugin)
@@ -75,7 +75,7 @@ archive_plugin_from_name(const char *name)
 void archive_plugin_init_all(void)
 {
 	for (unsigned i = 0; archive_plugins[i] != nullptr; ++i) {
-		const struct archive_plugin *plugin = archive_plugins[i];
+		const ArchivePlugin *plugin = archive_plugins[i];
 		if (plugin->init == nullptr || archive_plugins[i]->init())
 			archive_plugins_enabled[i] = true;
 	}

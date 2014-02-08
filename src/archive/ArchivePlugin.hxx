@@ -23,7 +23,7 @@
 class ArchiveFile;
 class Error;
 
-struct archive_plugin {
+struct ArchivePlugin {
 	const char *name;
 
 	/**
@@ -54,7 +54,7 @@ struct archive_plugin {
 };
 
 ArchiveFile *
-archive_file_open(const struct archive_plugin *plugin, const char *path,
+archive_file_open(const ArchivePlugin *plugin, const char *path,
 		  Error &error);
 
 #endif

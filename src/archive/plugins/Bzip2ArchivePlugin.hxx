@@ -20,6 +20,8 @@
 #ifndef MPD_ARCHIVE_BZ2_HXX
 #define MPD_ARCHIVE_BZ2_HXX
 
-extern const struct archive_plugin bz2_archive_plugin;
+struct ArchivePlugin;
+
+extern const ArchivePlugin bz2_archive_plugin;
 
 #endif

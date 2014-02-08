@@ -23,14 +23,15 @@
 class Mutex;
 class Cond;
 class Error;
+struct ArchivePlugin;
 class ArchiveVisitor;
 struct InputStream;
 
 class ArchiveFile {
 public:
-	const struct archive_plugin &plugin;
+	const ArchivePlugin &plugin;
 
-	ArchiveFile(const struct archive_plugin &_plugin)
+	ArchiveFile(const ArchivePlugin &_plugin)
 		:plugin(_plugin) {}
 
 protected:

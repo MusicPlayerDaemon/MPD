@@ -20,6 +20,8 @@
 #ifndef MPD_ARCHIVE_ISO9660_HXX
 #define MPD_ARCHIVE_ISO9660_HXX
 
-extern const struct archive_plugin iso9660_archive_plugin;
+struct ArchivePlugin;
+
+extern const ArchivePlugin iso9660_archive_plugin;
 
 #endif
