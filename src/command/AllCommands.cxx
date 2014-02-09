@@ -23,6 +23,7 @@
 #include "TagCommands.hxx"
 #include "PlayerCommands.hxx"
 #include "PlaylistCommands.hxx"
+#include "StorageCommands.hxx"
 #include "DatabaseCommands.hxx"
 #include "FileCommands.hxx"
 #include "OutputCommands.hxx"
@@ -117,6 +118,9 @@ static const struct command commands[] = {
 	{ "lsinfo", PERMISSION_READ, 0, 1, handle_lsinfo },
 	{ "mixrampdb", PERMISSION_CONTROL, 1, 1, handle_mixrampdb },
 	{ "mixrampdelay", PERMISSION_CONTROL, 1, 1, handle_mixrampdelay },
+#ifdef ENABLE_DATABASE
+	{ "mount", PERMISSION_ADMIN, 2, 2, handle_mount },
+#endif
 	{ "move", PERMISSION_CONTROL, 2, 2, handle_move },
 	{ "moveid", PERMISSION_CONTROL, 2, 2, handle_moveid },
 	{ "next", PERMISSION_CONTROL, 0, 0, handle_next },

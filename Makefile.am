@@ -188,6 +188,7 @@ if ENABLE_DATABASE
 src_mpd_SOURCES += \
 	src/PlaylistUpdate.cxx \
 	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
+	src/command/StorageCommands.cxx src/command/StorageCommands.hxx \
 	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
 	src/db/LightSong.cxx src/db/LightSong.hxx \
 	src/db/LightDirectory.hxx \
