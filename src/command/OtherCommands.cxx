@@ -33,7 +33,6 @@
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "mixer/Volume.hxx"
-#include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -363,17 +362,19 @@ CommandResult
 handle_idle(Client &client,
 	    gcc_unused int argc, gcc_unused char *argv[])
 {
-	unsigned flags = 0, j;
+	unsigned flags = 0;
 	int i;
-	const char *const* idle_names;
 
-	idle_names = idle_get_names();
 	for (i = 1; i < argc; ++i) {
-		for (j = 0; idle_names[j]; ++j) {
-			if (StringEqualsCaseASCII(argv[i], idle_names[j])) {
-				flags |= (1 << j);
-			}
+		unsigned event = idle_parse_name(argv[i]);
+		if (event == 0) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Unrecognized idle event: %s",
+				      argv[i]);
+			return CommandResult::ERROR;
 		}
+
+		flags |= event;
 	}
 
 	/* No argument means that the client wants to receive everything */

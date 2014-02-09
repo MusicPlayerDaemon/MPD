@@ -4,6 +4,7 @@ ver 0.19 (not yet released)
   - "lsinfo" and "readcomments" allowed for remote files
   - "listneighbors" lists file servers on the local network
   - "playlistadd" supports file:///
+  - "idle" with unrecognized event name fails
 * database
   - proxy: forward "idle" events
   - proxy: copy "Last-Modified" from remote directories

@@ -25,6 +25,8 @@
 #ifndef MPD_IDLE_HXX
 #define MPD_IDLE_HXX
 
+#include "Compiler.h"
+
 /** song database has been updated*/
 static constexpr unsigned IDLE_DATABASE = 0x1;
 
@@ -80,5 +82,13 @@ idle_get(void);
  */
 const char*const*
 idle_get_names(void);
+
+/**
+ * Parse an idle name and return its mask.  Returns 0 if the given
+ * name is unknown.
+ */
+gcc_nonnull_all gcc_pure
+unsigned
+idle_parse_name(const char *name);
 
 #endif
