@@ -71,6 +71,7 @@
 #include "db/DatabaseSimple.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
 #include "storage/Configured.hxx"
+#include "storage/CompositeStorage.hxx"
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -148,8 +149,16 @@ glue_mapper_init(Error &error)
 static bool
 InitStorage(Error &error)
 {
-	instance->storage = CreateConfiguredStorage(error);
-	return !error.IsDefined();
+	Storage *storage = CreateConfiguredStorage(error);
+	if (storage == nullptr)
+		return !error.IsDefined();
+
+	assert(!error.IsDefined());
+
+	CompositeStorage *composite = new CompositeStorage();
+	instance->storage = composite;
+	composite->Mount("", storage);
+	return true;
 }
 
 /**

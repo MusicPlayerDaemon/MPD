@@ -63,6 +63,10 @@ struct Instance final
 #ifdef ENABLE_DATABASE
 	Database *database;
 
+	/**
+	 * This is really a #CompositeStorage.  To avoid heavy include
+	 * dependencies, we declare it as just #Storage.
+	 */
 	Storage *storage;
 
 	UpdateService *update;
