@@ -45,8 +45,6 @@
 #include "IOThread.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Config.hxx"
-#include "fs/StandardDirectory.hxx"
-#include "fs/CheckFile.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "zeroconf/ZeroconfGlue.hxx"
 #include "decoder/DecoderList.hxx"
@@ -72,8 +70,7 @@
 #include "db/DatabaseGlue.hxx"
 #include "db/DatabaseSimple.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
-#include "storage/plugins/LocalStorage.hxx"
-#include "storage/Registry.hxx"
+#include "storage/Configured.hxx"
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -151,31 +148,8 @@ glue_mapper_init(Error &error)
 static bool
 InitStorage(Error &error)
 {
-	auto uri = config_get_string(CONF_MUSIC_DIR, nullptr);
-	if (uri != nullptr && uri_has_scheme(uri)) {
-		instance->storage = CreateStorageURI(uri, error);
-		if (instance->storage == nullptr && !error.IsDefined())
-			error.Format(config_domain,
-				     "Unrecognized storage URI: %s", uri);
-		return instance->storage != nullptr;
-	}
-
-	auto path_fs = config_get_path(CONF_MUSIC_DIR, error);
-	if (path_fs.IsNull() && error.IsDefined())
-		return false;
-
-	if (path_fs.IsNull()) {
-		path_fs = GetUserMusicDir();
-		if (path_fs.IsNull())
-			/* no music directory; that's ok */
-			return true;
-	}
-
-	path_fs.ChopSeparators();
-	CheckDirectoryReadable(path_fs);
-
-	instance->storage = CreateLocalStorage(path_fs);
-	return true;
+	instance->storage = CreateConfiguredStorage(error);
+	return !error.IsDefined();
 }
 
 /**
