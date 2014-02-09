@@ -1,4 +1,6 @@
 ver 0.18.17 (not yet released)
+* decoder
+  - ffmpeg: recognize MIME type audio/aacp
 
 ver 0.18.16 (2014/09/26)
 * fix DSD breakage due to typo in configure.ac
