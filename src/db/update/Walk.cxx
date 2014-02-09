@@ -152,6 +152,12 @@ update_directory_stat(Storage &storage, Directory &directory)
 }
 #endif
 
+/**
+ * Check the ancestors of the given #Directory and see if there's one
+ * with the same device/inode number, building a loop.
+ *
+ * @return 1 if a loop was found, 0 if not, -1 on I/O error
+ */
 static int
 FindAncestorLoop(Storage &storage, Directory *parent,
 		 unsigned inode, unsigned device)
