@@ -163,6 +163,11 @@ FindAncestorLoop(Storage &storage, Directory *parent,
 		 unsigned inode, unsigned device)
 {
 #ifndef WIN32
+	if (device == 0 && inode == 0)
+		/* can't detect loops if the Storage does not support
+		   these numbers */
+		return 0;
+
 	while (parent) {
 		if (!parent->have_stat &&
 		    !update_directory_stat(storage, *parent))
