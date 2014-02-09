@@ -369,9 +369,6 @@ handle_idle(Client &client,
 
 	idle_names = idle_get_names();
 	for (i = 1; i < argc; ++i) {
-		if (!argv[i])
-			continue;
-
 		for (j = 0; idle_names[j]; ++j) {
 			if (StringEqualsCaseASCII(argv[i], idle_names[j])) {
 				flags |= (1 << j);
