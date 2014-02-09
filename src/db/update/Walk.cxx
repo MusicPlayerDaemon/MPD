@@ -153,8 +153,8 @@ update_directory_stat(Storage &storage, Directory &directory)
 #endif
 
 static int
-find_inode_ancestor(Storage &storage, Directory *parent,
-		    unsigned inode, unsigned device)
+FindAncestorLoop(Storage &storage, Directory *parent,
+		 unsigned inode, unsigned device)
 {
 #ifndef WIN32
 	while (parent) {
@@ -218,7 +218,7 @@ UpdateWalk::UpdateDirectoryChild(Directory &directory,
 	if (info.IsRegular()) {
 		UpdateRegularFile(directory, name, info);
 	} else if (info.IsDirectory()) {
-		if (find_inode_ancestor(storage, &directory,
+		if (FindAncestorLoop(storage, &directory,
 					info.inode, info.device))
 			return;
 
@@ -390,7 +390,7 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 
 	FileInfo info;
 	if (!GetInfo(storage, uri_utf8, info) ||
-	    find_inode_ancestor(storage, &parent, info.inode, info.device))
+	    FindAncestorLoop(storage, &parent, info.inode, info.device))
 		return nullptr;
 
 	if (SkipSymlink(&parent, name_utf8))
