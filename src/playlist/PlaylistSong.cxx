@@ -69,6 +69,9 @@ playlist_check_load_song(DetachedSong &song, const SongLoader &loader)
 		return false;
 
 	song.SetURI(tmp->GetURI());
+	if (!song.HasRealURI() && tmp->HasRealURI())
+		song.SetRealURI(tmp->GetRealURI());
+
 	apply_song_metadata(song, *tmp);
 	delete tmp;
 	return true;
