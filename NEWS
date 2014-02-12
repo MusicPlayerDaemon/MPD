@@ -33,6 +33,7 @@ ver 0.19 (not yet released)
   - name each thread (for debugging)
 * new resampler option using libsoxr
 * allow playlist directory without music directory
+* install systemd unit for socket activation
 
 ver 0.18.8 (2014/02/07)
 * decoder

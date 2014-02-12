@@ -135,29 +135,18 @@ apt-get install g++ automake autoconf \
       <para>
         Using <filename>systemd</filename>, you can launch
         <filename>mpd</filename> on demand when the first client
-        attempts to connect.  Create two files in
-        <filename>/etc/systemd/system/</filename>; first
-        <filename>mpd.socket</filename>:
+        attempts to connect.
       </para>
 
-      <programlisting>[Socket]
-ListenStream=/run/mpd.socket
-ListenStream=6600
-[Install]
-WantedBy=sockets.target</programlisting>
-
       <para>
-        Now create <filename>mpd.service</filename>:
+        MPD comes with two <filename>systemd</filename> unit files: a
+        "service" unit and a "socket" unit.  These will only be
+        installed when MPD was configured with
+        <parameter>--with-systemdsystemunitdir=/lib/systemd</parameter>.
       </para>
 
-      <programlisting>[Unit]
-Description=Music Player Daemon
-After=sound.target
-[Service]
-ExecStart=/usr/bin/mpd --stdout --no-daemon</programlisting>
-
       <para>
-        Start the socket:
+        To enable socket activation, type:
       </para>
 
       <programlisting>systemctl enable mpd.socket

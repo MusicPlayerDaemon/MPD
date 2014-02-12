@@ -1250,6 +1250,7 @@ FILTER_LIBS = \
 
 if HAVE_SYSTEMD
 systemdsystemunit_DATA = \
+	systemd/mpd.socket \
 	systemd/mpd.service
 endif
 
