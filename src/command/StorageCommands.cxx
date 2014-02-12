@@ -21,12 +21,62 @@
 #include "StorageCommands.hxx"
 #include "CommandError.hxx"
 #include "protocol/Result.hxx"
+#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "fs/Traits.hxx"
 #include "client/Client.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "storage/Registry.hxx"
 #include "storage/CompositeStorage.hxx"
+
+static void
+print_storage_uri(Client &client, const Storage &storage)
+{
+	std::string uri = storage.MapUTF8("");
+	if (uri.empty())
+		return;
+
+	if (PathTraitsFS::IsAbsolute(uri.c_str())) {
+		/* storage points to local directory */
+
+		if (!client.IsLocal())
+			/* only "local" clients may see local paths
+			   (same policy as with the "config"
+			   command) */
+			return;
+	} else {
+		/* hide username/passwords from client */
+
+		std::string allocated = uri_remove_auth(uri.c_str());
+		if (!allocated.empty())
+			uri = std::move(allocated);
+	}
+
+	client_printf(client, "storage: %s\n", uri.c_str());
+}
+
+CommandResult
+handle_listmounts(Client &client, gcc_unused int argc, gcc_unused char *argv[])
+{
+	Storage *_composite = client.partition.instance.storage;
+	if (_composite == nullptr) {
+		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+	}
+
+	CompositeStorage &composite = *(CompositeStorage *)_composite;
+
+	const auto visitor = [&client](const char *mount_uri,
+				       const Storage &storage){
+		client_printf(client, "mount: %s\n", mount_uri);
+		print_storage_uri(client, storage);
+	};
+
+	composite.VisitMounts(visitor);
+
+	return CommandResult::OK;
+}
 
 CommandResult
 handle_mount(Client &client, gcc_unused int argc, char *argv[])

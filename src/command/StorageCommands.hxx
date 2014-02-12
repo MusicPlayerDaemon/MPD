@@ -25,6 +25,9 @@
 class Client;
 
 CommandResult
+handle_listmounts(Client &client, int argc, char *argv[]);
+
+CommandResult
 handle_mount(Client &client, int argc, char *argv[]);
 
 #endif

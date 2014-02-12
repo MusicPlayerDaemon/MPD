@@ -95,6 +95,18 @@ public:
 	CompositeStorage();
 	virtual ~CompositeStorage();
 
+	/**
+	 * Call the given function for each mounted storage, including
+	 * the root storage.  Passes mount point URI and the a const
+	 * Storage reference to the function.
+	 */
+	template<typename T>
+	void VisitMounts(T t) const {
+		const ScopeLock protect(mutex);
+		std::string uri;
+		VisitMounts(uri, root, t);
+	}
+
 	void Mount(const char *uri, Storage *storage);
 	bool Unmount(const char *uri);
 
@@ -112,6 +124,26 @@ public:
 	virtual const char *MapToRelativeUTF8(const char *uri) const override;
 
 private:
+	template<typename T>
+	void VisitMounts(std::string &uri, const Directory &directory,
+			 T t) const {
+		const Storage *const storage = directory.storage;
+		if (storage != nullptr)
+			t(uri.c_str(), *storage);
+
+		if (!uri.empty())
+			uri.push_back('/');
+
+		const size_t uri_length = uri.length();
+
+		for (const auto &i : directory.children) {
+			uri.resize(uri_length);
+			uri.append(i.first);
+
+			VisitMounts(uri, i.second, t);
+		}
+	}
+
 	gcc_pure
 	FindResult FindStorage(const char *uri) const;
 	FindResult FindStorage(const char *uri, Error &error) const;

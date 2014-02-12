@@ -107,6 +107,7 @@ static const struct command commands[] = {
 	{ "list", PERMISSION_READ, 1, -1, handle_list },
 	{ "listall", PERMISSION_READ, 0, 1, handle_listall },
 	{ "listallinfo", PERMISSION_READ, 0, 1, handle_listallinfo },
+	{ "listmounts", PERMISSION_READ, 0, 0, handle_listmounts },
 #endif
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	{ "listneighbors", PERMISSION_READ, 0, 0, handle_listneighbors },
