@@ -162,10 +162,13 @@ CompositeStorage::Directory::Unmount()
 bool
 CompositeStorage::Directory::Unmount(const char *uri)
 {
+	if (*uri == 0)
+		return Unmount();
+
 	const std::string name = NextSegment(uri);
 
 	auto i = children.find(name);
-	if (i == children.end() || !i->second.Unmount())
+	if (i == children.end() || !i->second.Unmount(uri))
 		return false;
 
 	if (i->second.IsEmpty())
