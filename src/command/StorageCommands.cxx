@@ -113,3 +113,30 @@ handle_mount(Client &client, gcc_unused int argc, char *argv[])
 	idle_add(IDLE_MOUNT);
 	return CommandResult::OK;
 }
+
+CommandResult
+handle_unmount(Client &client, gcc_unused int argc, char *argv[])
+{
+	Storage *_composite = client.partition.instance.storage;
+	if (_composite == nullptr) {
+		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+	}
+
+	CompositeStorage &composite = *(CompositeStorage *)_composite;
+
+	const char *const local_uri = argv[1];
+
+	if (*local_uri == 0) {
+		command_error(client, ACK_ERROR_ARG, "Bad mount point");
+		return CommandResult::ERROR;
+	}
+
+	if (!composite.Unmount(local_uri)) {
+		command_error(client, ACK_ERROR_ARG, "Not a mount point");
+		return CommandResult::ERROR;
+	}
+
+	idle_add(IDLE_MOUNT);
+	return CommandResult::OK;
+}
