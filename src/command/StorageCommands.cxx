@@ -29,6 +29,7 @@
 #include "Instance.hxx"
 #include "storage/Registry.hxx"
 #include "storage/CompositeStorage.hxx"
+#include "Idle.hxx"
 
 static void
 print_storage_uri(Client &client, const Storage &storage)
@@ -109,5 +110,6 @@ handle_mount(Client &client, gcc_unused int argc, char *argv[])
 	}
 
 	composite.Mount(local_uri, storage);
+	idle_add(IDLE_MOUNT);
 	return CommandResult::OK;
 }

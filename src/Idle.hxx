@@ -64,6 +64,9 @@ static constexpr unsigned IDLE_MESSAGE = 0x400;
 /** a neighbor was found or lost */
 static constexpr unsigned IDLE_NEIGHBOR = 0x800;
 
+/** the mount list has changed */
+static constexpr unsigned IDLE_MOUNT = 0x1000;
+
 /**
  * Adds idle flag (with bitwise "or") and queues notifications to all
  * clients.
