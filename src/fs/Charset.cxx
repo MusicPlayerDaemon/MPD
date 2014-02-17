@@ -25,7 +25,9 @@
 #include "Log.hxx"
 #include "Traits.hxx"
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <algorithm>
 
@@ -42,6 +44,7 @@
  */
 static constexpr size_t MPD_PATH_MAX_UTF8 = (MPD_PATH_MAX - 1) * 4 + 1;
 
+#ifdef HAVE_GLIB
 static std::string fs_charset;
 
 gcc_pure
@@ -71,10 +74,16 @@ SetFSCharset(const char *charset)
 		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
 }
 
+#endif
+
 const char *
 GetFSCharset()
 {
+#ifdef HAVE_GLIB
 	return fs_charset.empty() ? "utf-8" : fs_charset.c_str();
+#else
+	return "utf-8";
+#endif
 }
 
 static inline void FixSeparators(std::string &s)
@@ -95,10 +104,13 @@ PathToUTF8(const char *path_fs)
 {
 	assert(path_fs != nullptr);
 
+#ifdef HAVE_GLIB
 	if (fs_charset.empty()) {
+#endif
 		auto result = std::string(path_fs);
 		FixSeparators(result);
 		return result;
+#ifdef HAVE_GLIB
 	}
 
 	GIConv conv = g_iconv_open("utf-8", fs_charset.c_str());
@@ -123,7 +135,10 @@ PathToUTF8(const char *path_fs)
 	auto result_path = std::string(path_utf8, sizeof(path_utf8) - out_left);
 	FixSeparators(result_path);
 	return result_path;
+#endif
 }
+
+#ifdef HAVE_GLIB
 
 char *
 PathFromUTF8(const char *path_utf8)
@@ -137,3 +152,5 @@ PathFromUTF8(const char *path_utf8)
 			 fs_charset.c_str(), "utf-8",
 			 nullptr, nullptr, nullptr);
 }
+
+#endif

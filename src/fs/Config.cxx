@@ -22,16 +22,17 @@
 #include "Charset.hxx"
 #include "config/ConfigGlobal.hxx"
 
-#include <glib.h>
-
 #ifdef WIN32
 #include <windows.h> // for GetACP()
 #include <stdio.h> // for sprintf()
+#elif defined(HAVE_GLIB)
+#include <glib.h>
 #endif
 
 void
 ConfigureFS()
 {
+#if defined(HAVE_GLIB) || defined(WIN32)
 	const char *charset = nullptr;
 
 	charset = config_get_string(CONF_FS_CHARSET, nullptr);
@@ -56,4 +57,5 @@ ConfigureFS()
 
 	if (charset != nullptr)
 		SetFSCharset(charset);
+#endif
 }
