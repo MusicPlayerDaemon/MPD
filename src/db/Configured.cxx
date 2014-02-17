@@ -23,6 +23,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"
 #include "config/ConfigError.hxx"
+#include "util/Error.hxx"
 #include "Log.hxx"
 
 Database *
@@ -32,9 +33,12 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 	const struct config_param *param = config_get_param(CONF_DATABASE);
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
 
-	if (param != nullptr && path != nullptr)
-		LogWarning(config_domain,
-			   "Found both 'database' and 'db_file' setting - ignoring the latter");
+	if (param != nullptr && path != nullptr) {
+		error.Format(config_domain,
+			     "Found both 'database' (line %d) and 'db_file' (line %d) setting",
+			     param->line, path->line);
+		return nullptr;
+	}
 
 	if (!have_storage) {
 		if (param != nullptr)
