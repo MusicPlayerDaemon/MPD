@@ -21,11 +21,15 @@
 #include "TagString.hxx"
 #include "util/Alloc.hxx"
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef HAVE_GLIB
 
 /**
  * Replace invalid sequences with the question mark.
@@ -72,6 +76,8 @@ fix_utf8(const char *str, size_t length)
 	return patch_utf8(str, length, end);
 }
 
+#endif
+
 static bool
 char_is_non_printable(unsigned char ch)
 {
@@ -113,19 +119,23 @@ clear_non_printable(const char *p, size_t length)
 char *
 FixTagString(const char *p, size_t length)
 {
-	char *utf8, *cleared;
+#ifdef HAVE_GLIB
+	// TODO: implement without GLib
 
-	utf8 = fix_utf8(p, length);
+	char *utf8 = fix_utf8(p, length);
 	if (utf8 != nullptr) {
 		p = utf8;
 		length = strlen(p);
 	}
+#endif
 
-	cleared = clear_non_printable(p, length);
+	char *cleared = clear_non_printable(p, length);
+#ifdef HAVE_GLIB
 	if (cleared == nullptr)
 		cleared = utf8;
 	else
 		free(utf8);
+#endif
 
 	return cleared;
 }
