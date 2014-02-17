@@ -51,6 +51,10 @@ gcc_pure
 bool
 StringStartsWith(const char *haystack, const char *needle);
 
+gcc_pure
+bool
+StringEndsWith(const char *haystack, const char *needle);
+
 /**
  * Checks whether a string array contains the specified string.
  *

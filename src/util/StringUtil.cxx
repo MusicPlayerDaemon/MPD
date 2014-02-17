@@ -55,6 +55,17 @@ StringStartsWith(const char *haystack, const char *needle)
 }
 
 bool
+StringEndsWith(const char *haystack, const char *needle)
+{
+	const size_t haystack_length = strlen(haystack);
+	const size_t needle_length = strlen(needle);
+
+	return haystack_length >= needle_length &&
+		memcmp(haystack + haystack_length - needle_length,
+		       needle, needle_length) == 0;
+}
+
+bool
 string_array_contains(const char *const* haystack, const char *needle)
 {
 	assert(haystack != nullptr);

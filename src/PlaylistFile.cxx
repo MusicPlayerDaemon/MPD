@@ -36,10 +36,9 @@
 #include "fs/Charset.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -147,7 +146,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	    memchr(name_fs_str, '\n', name_length) != nullptr)
 		return false;
 
-	if (!g_str_has_suffix(name_fs_str, PLAYLIST_FILE_SUFFIX))
+	if (!StringEndsWith(name_fs_str, PLAYLIST_FILE_SUFFIX))
 		return false;
 
 	const auto path_fs = AllocatedPath::Build(parent_path_fs, name_fs);
