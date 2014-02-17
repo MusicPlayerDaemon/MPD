@@ -67,6 +67,7 @@
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
 #include "db/Configured.hxx"
+#include "db/DatabasePlugin.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
 #include "storage/Configured.hxx"
 #include "storage/CompositeStorage.hxx"
@@ -177,16 +178,23 @@ glue_db_init_and_load(void)
 			return true;
 	}
 
-	if (!InitStorage(error))
-		FatalError(error);
+	if (instance->database->GetPlugin().flags & DatabasePlugin::FLAG_REQUIRE_STORAGE) {
+		if (!InitStorage(error))
+			FatalError(error);
 
-	if (instance->storage == nullptr) {
-		delete instance->database;
-		instance->database = nullptr;
-		LogDefault(config_domain,
-			   "Found database setting without "
-			   "music_directory - disabling database");
-		return true;
+		if (instance->storage == nullptr) {
+			delete instance->database;
+			instance->database = nullptr;
+			LogDefault(config_domain,
+				   "Found database setting without "
+				   "music_directory - disabling database");
+			return true;
+		}
+	} else {
+		if (IsStorageConfigured())
+			LogDefault(config_domain,
+				   "Ignoring the storage configuration "
+				   "because the database does not need it");
 	}
 
 	if (!instance->database->Open(error))

@@ -76,3 +76,9 @@ CreateConfiguredStorage(Error &error)
 
 	return CreateConfiguredStorageLocal(error);
 }
+
+bool
+IsStorageConfigured()
+{
+	return config_get_string(CONF_MUSIC_DIR, nullptr) != nullptr;
+}

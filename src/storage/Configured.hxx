@@ -21,6 +21,7 @@
 #define MPD_STORAGE_CONFIG_HXX
 
 #include "check.h"
+#include "Compiler.h"
 
 class Error;
 class Storage;
@@ -32,5 +33,12 @@ class Storage;
  */
 Storage *
 CreateConfiguredStorage(Error &error);
+
+/**
+ * Returns true if there is configuration for a #Storage instance.
+ */
+gcc_const
+bool
+IsStorageConfigured();
 
 #endif

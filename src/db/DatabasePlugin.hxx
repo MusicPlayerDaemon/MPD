@@ -33,6 +33,12 @@ class DatabaseListener;
 class Database;
 
 struct DatabasePlugin {
+	/**
+	 * This plugin requires a #Storage instance.  It contains only
+	 * cached metadata from files in the #Storage.
+	 */
+	static constexpr unsigned FLAG_REQUIRE_STORAGE = 0x1;
+
 	const char *name;
 
 	unsigned flags;
@@ -43,6 +49,10 @@ struct DatabasePlugin {
 	Database *(*create)(EventLoop &loop, DatabaseListener &listener,
 			    const config_param &param,
 			    Error &error);
+
+	constexpr bool RequireStorage() const {
+		return flags & FLAG_REQUIRE_STORAGE;
+	}
 };
 
 #endif

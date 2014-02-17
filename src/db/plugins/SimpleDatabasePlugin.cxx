@@ -337,6 +337,6 @@ SimpleDatabase::Save(Error &error)
 
 const DatabasePlugin simple_db_plugin = {
 	"simple",
-	0,
+	DatabasePlugin::FLAG_REQUIRE_STORAGE,
 	SimpleDatabase::Create,
 };

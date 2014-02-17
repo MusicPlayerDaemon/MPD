@@ -780,6 +780,6 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 
 const DatabasePlugin proxy_db_plugin = {
 	"proxy",
-	0,
+	DatabasePlugin::FLAG_REQUIRE_STORAGE,
 	ProxyDatabase::Create,
 };
