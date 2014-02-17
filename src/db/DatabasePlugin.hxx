@@ -35,6 +35,8 @@ class Database;
 struct DatabasePlugin {
 	const char *name;
 
+	unsigned flags;
+
 	/**
 	 * Allocates and configures a database.
 	 */

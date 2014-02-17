@@ -776,5 +776,6 @@ UpnpDatabase::GetStats(const DatabaseSelection &,
 
 const DatabasePlugin upnp_db_plugin = {
 	"upnp",
+	0,
 	UpnpDatabase::Create,
 };
