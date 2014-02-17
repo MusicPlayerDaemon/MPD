@@ -1266,9 +1266,12 @@ C_TESTS = \
 	test/test_util \
 	test/test_byte_reverse \
 	test/test_mixramp \
-	test/test_icy_parser \
 	test/test_pcm \
 	test/test_queue_priority
+
+if ENABLE_CURL
+C_TESTS += test/test_icy_parser
+endif
 
 if ENABLE_DATABASE
 C_TESTS += test/test_translate_song
@@ -1744,6 +1747,7 @@ test_test_mixramp_LDADD = \
 	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
+if ENABLE_CURL
 test_test_icy_parser_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/test_icy_parser.cxx
@@ -1754,6 +1758,7 @@ test_test_icy_parser_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
+endif
 
 test_test_pcm_SOURCES = \
 	src/AudioFormat.cxx \
