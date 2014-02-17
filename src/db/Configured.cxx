@@ -28,7 +28,7 @@
 
 Database *
 CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
-			 bool have_storage, bool &is_simple_r, Error &error)
+			 bool &is_simple_r, Error &error)
 {
 	const struct config_param *param = config_get_param(CONF_DATABASE);
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
@@ -37,18 +37,6 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 		error.Format(config_domain,
 			     "Found both 'database' (line %d) and 'db_file' (line %d) setting",
 			     param->line, path->line);
-		return nullptr;
-	}
-
-	if (!have_storage) {
-		if (param != nullptr)
-			LogDefault(config_domain,
-				   "Found database setting without "
-				   "music_directory - disabling database");
-		if (path != nullptr)
-			LogDefault(config_domain,
-				   "Found db_file setting without "
-				   "music_directory - disabling database");
 		return nullptr;
 	}
 

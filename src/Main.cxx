@@ -172,13 +172,24 @@ glue_db_init_and_load(void)
 	Error error;
 	instance->database =
 		CreateConfiguredDatabase(*instance->event_loop, *instance,
-					 instance->storage != nullptr,
 					 is_simple, error);
 	if (instance->database == nullptr) {
 		if (error.IsDefined())
 			FatalError(error);
 		else
 			return true;
+	}
+
+	if (!InitStorage(error))
+		FatalError(error);
+
+	if (instance->storage == nullptr) {
+		delete instance->database;
+		instance->database = nullptr;
+		LogDefault(config_domain,
+			   "Found database setting without "
+			   "music_directory - disabling database");
+		return true;
 	}
 
 	if (!instance->database->Open(error))
@@ -199,10 +210,6 @@ glue_db_init_and_load(void)
 static bool
 InitDatabaseAndStorage()
 {
-	Error error;
-	if (!InitStorage(error))
-		FatalError(error);
-
 	const bool create_db = !glue_db_init_and_load();
 	return create_db;
 }
