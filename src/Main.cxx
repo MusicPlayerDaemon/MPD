@@ -67,7 +67,7 @@
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
-#include "db/DatabaseGlue.hxx"
+#include "db/Configured.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
 #include "storage/Configured.hxx"
 #include "storage/CompositeStorage.hxx"
@@ -168,46 +168,18 @@ InitStorage(Error &error)
 static bool
 glue_db_init_and_load(void)
 {
-	const struct config_param *param = config_get_param(CONF_DATABASE);
-	const struct config_param *path = config_get_param(CONF_DB_FILE);
-
-	if (param != nullptr && path != nullptr)
-		LogWarning(main_domain,
-			   "Found both 'database' and 'db_file' setting - ignoring the latter");
-
-	if (instance->storage == nullptr) {
-		if (param != nullptr)
-			LogDefault(main_domain,
-				   "Found database setting without "
-				   "music_directory - disabling database");
-		if (path != nullptr)
-			LogDefault(main_domain,
-				   "Found db_file setting without "
-				   "music_directory - disabling database");
-		return true;
-	}
-
-	struct config_param *allocated = nullptr;
-
-	if (param == nullptr && path != nullptr) {
-		allocated = new config_param("database", path->line);
-		allocated->AddBlockParam("path", path->value.c_str(),
-					 path->line);
-		param = allocated;
-	}
-
-	if (param == nullptr)
-		return true;
-
 	bool is_simple;
 	Error error;
-	instance->database = DatabaseGlobalInit(*instance->event_loop,
-						*instance, *param,
-						is_simple, error);
-	if (instance->database == nullptr)
-		FatalError(error);
-
-	delete allocated;
+	instance->database =
+		CreateConfiguredDatabase(*instance->event_loop, *instance,
+					 instance->storage != nullptr,
+					 is_simple, error);
+	if (instance->database == nullptr) {
+		if (error.IsDefined())
+			FatalError(error);
+		else
+			return true;
+	}
 
 	if (!instance->database->Open(error))
 		FatalError(error);

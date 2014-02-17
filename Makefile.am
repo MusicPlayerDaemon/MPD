@@ -209,6 +209,7 @@ src_mpd_SOURCES += \
 	src/db/Directory.cxx src/db/Directory.hxx \
 	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
 	src/db/DatabaseGlue.cxx src/db/DatabaseGlue.hxx \
+	src/db/Configured.cxx src/db/Configured.hxx \
 	src/db/DatabaseSong.cxx src/db/DatabaseSong.hxx \
 	src/db/DatabasePrint.cxx src/db/DatabasePrint.hxx \
 	src/db/DatabaseQueue.cxx src/db/DatabaseQueue.hxx \
