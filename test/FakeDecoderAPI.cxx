@@ -23,8 +23,6 @@
 #include "util/Error.hxx"
 #include "Compiler.h"
 
-#include <glib.h>
-
 #include <unistd.h>
 
 void

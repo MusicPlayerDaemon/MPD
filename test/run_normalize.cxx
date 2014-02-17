@@ -30,8 +30,6 @@
 #include "util/Error.hxx"
 #include "stdbin.h"
 
-#include <glib.h>
-
 #include <stddef.h>
 #include <stdio.h>
 #include <unistd.h>

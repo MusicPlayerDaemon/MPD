@@ -32,7 +32,9 @@
 #include "archive/ArchiveList.hxx"
 #endif
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <unistd.h>
 #include <stdio.h>
@@ -79,8 +81,10 @@ int main(int argc, char **argv)
 
 	/* initialize GLib */
 
+#ifdef HAVE_GLIB
 #if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
+#endif
 #endif
 
 	/* initialize MPD */

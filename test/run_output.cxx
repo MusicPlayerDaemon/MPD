@@ -37,7 +37,9 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <assert.h>
 #include <string.h>
@@ -176,8 +178,10 @@ int main(int argc, char **argv)
 
 	AudioFormat audio_format(44100, SampleFormat::S16, 2);
 
+#ifdef HAVE_GLIB
 #if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
+#endif
 #endif
 
 	/* read configuration file (mpd.conf) */
