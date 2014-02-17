@@ -595,8 +595,11 @@ int mpd_main(int argc, char *argv[])
 
 #ifdef ENABLE_DATABASE
 	delete instance->update;
-	instance->database->Close();
-	delete instance->database;
+
+	if (instance->database != nullptr) {
+		instance->database->Close();
+		delete instance->database;
+	}
 #endif
 
 #ifdef ENABLE_SQLITE
