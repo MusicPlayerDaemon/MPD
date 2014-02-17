@@ -45,7 +45,10 @@
 const struct playlist_plugin *const playlist_plugins[] = {
 	&extm3u_playlist_plugin,
 	&m3u_playlist_plugin,
+#ifdef HAVE_GLIB
+	// TODO: enable without GLib
 	&pls_playlist_plugin,
+#endif
 #ifdef HAVE_EXPAT
 	&xspf_playlist_plugin,
 	&asx_playlist_plugin,
