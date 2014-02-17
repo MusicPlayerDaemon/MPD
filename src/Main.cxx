@@ -196,6 +196,17 @@ glue_db_init_and_load(void)
 	return db.FileExists();
 }
 
+static bool
+InitDatabaseAndStorage()
+{
+	Error error;
+	if (!InitStorage(error))
+		FatalError(error);
+
+	const bool create_db = !glue_db_init_and_load();
+	return create_db;
+}
+
 #endif
 
 /**
@@ -445,12 +456,7 @@ int mpd_main(int argc, char *argv[])
 	decoder_plugin_init_all();
 
 #ifdef ENABLE_DATABASE
-	if (!InitStorage(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
-	const bool create_db = !glue_db_init_and_load();
+	const bool create_db = InitDatabaseAndStorage();
 #endif
 
 	glue_sticker_init();
