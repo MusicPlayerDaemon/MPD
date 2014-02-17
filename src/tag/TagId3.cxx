@@ -22,6 +22,7 @@
 #include "TagHandler.hxx"
 #include "TagTable.hxx"
 #include "TagBuilder.hxx"
+#include "util/Alloc.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -117,7 +118,7 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 	}
 
 	id3_utf8_t *utf8_stripped = (id3_utf8_t *)
-		g_strdup(Strip((char *)utf8));
+		xstrdup(Strip((char *)utf8));
 	free(utf8);
 
 	return utf8_stripped;
@@ -166,7 +167,7 @@ tag_id3_import_text_frame(struct id3_tag *tag, const struct id3_frame *frame,
 
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       type, (const char *)utf8);
-		g_free(utf8);
+		free(utf8);
 	}
 }
 
@@ -217,7 +218,7 @@ tag_id3_import_comment_frame(struct id3_tag *tag,
 		return;
 
 	tag_handler_invoke_tag(handler, handler_ctx, type, (const char *)utf8);
-	g_free(utf8);
+	free(utf8);
 }
 
 /**
