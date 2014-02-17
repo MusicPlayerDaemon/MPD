@@ -68,7 +68,6 @@
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
 #include "db/DatabaseGlue.hxx"
-#include "db/DatabaseSimple.hxx"
 #include "db/plugins/SimpleDatabasePlugin.hxx"
 #include "storage/Configured.hxx"
 #include "storage/CompositeStorage.hxx"
