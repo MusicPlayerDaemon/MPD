@@ -40,6 +40,13 @@ strchug_fast(char *p)
 	return const_cast<char *>(strchug_fast((const char *)p));
 }
 
+/**
+ * Skip whitespace at the beginning and terminate the string after the
+ * last non-whitespace character.
+ */
+char *
+Strip(char *p);
+
 gcc_pure
 bool
 StringStartsWith(const char *haystack, const char *needle);

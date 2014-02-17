@@ -1,4 +1,3 @@
-
 /*
  * Copyright (C) 2003-2014 The Music Player Daemon Project
  * http://www.musicpd.org
@@ -27,6 +26,7 @@
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -58,7 +58,7 @@ ExcludeList::LoadFile(Path path_fs)
 		if (p != nullptr)
 			*p = 0;
 
-		p = g_strstrip(line);
+		p = Strip(line);
 		if (*p != 0)
 			patterns.emplace_front(p);
 	}

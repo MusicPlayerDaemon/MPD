@@ -22,6 +22,7 @@
 #include "TagHandler.hxx"
 #include "TagTable.hxx"
 #include "TagBuilder.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -116,7 +117,7 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 	}
 
 	id3_utf8_t *utf8_stripped = (id3_utf8_t *)
-		g_strdup(g_strstrip((gchar *)utf8));
+		g_strdup(Strip((char *)utf8));
 	free(utf8);
 
 	return utf8_stripped;

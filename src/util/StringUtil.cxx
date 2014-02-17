@@ -33,6 +33,20 @@ strchug_fast(const char *p)
 	return p;
 }
 
+char *
+Strip(char *p)
+{
+	p = strchug_fast(p);
+
+	size_t length = strlen(p);
+	while (length > 0 && IsWhitespaceNotNull(p[length - 1]))
+		--length;
+
+	p[length] = 0;
+
+	return p;
+}
+
 bool
 StringStartsWith(const char *haystack, const char *needle)
 {

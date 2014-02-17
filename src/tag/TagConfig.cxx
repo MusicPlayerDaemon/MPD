@@ -26,8 +26,7 @@
 #include "system/FatalError.hxx"
 #include "util/Alloc.hxx"
 #include "util/ASCII.hxx"
-
-#include <glib.h>
+#include "util/StringUtil.hxx"
 
 #include <algorithm>
 
@@ -54,7 +53,7 @@ TagLoadConfig()
 				quit = true;
 			*s = '\0';
 
-			c = g_strstrip(c);
+			c = Strip(c);
 			if (*c == 0)
 				continue;
 
