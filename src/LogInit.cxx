@@ -190,7 +190,9 @@ void setup_log_output(bool use_stdout)
 	close(out_fd);
 	out_fd = -1;
 
+#ifdef HAVE_GLIB
 	SetLogCharset(nullptr);
+#endif
 }
 
 int cycle_log_files(void)

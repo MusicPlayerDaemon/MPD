@@ -20,13 +20,18 @@
 #ifndef MPD_LOG_BACKEND_HXX
 #define MPD_LOG_BACKEND_HXX
 
+#include "check.h"
 #include "LogLevel.hxx"
 
 void
 SetLogThreshold(LogLevel _threshold);
 
+#ifdef HAVE_GLIB
+
 void
 SetLogCharset(const char *_charset);
+
+#endif
 
 void
 EnableLogTimestamp();
