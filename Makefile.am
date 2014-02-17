@@ -1322,9 +1322,9 @@ endif
 
 test_read_conf_LDADD = \
 	libconf.a \
-	libutil.a \
 	libsystem.a \
 	libfs.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
@@ -1543,9 +1543,9 @@ endif
 test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	libconf.a \
-	libutil.a \
 	libsystem.a \
 	libfs.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
@@ -1681,10 +1681,10 @@ test_read_mixer_LDADD = \
 	libmixer_plugins.a \
 	$(OUTPUT_LIBS) \
 	libconf.a \
-	libutil.a \
 	libevent.a \
 	libsystem.a \
 	libfs.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/Log.cxx src/LogBackend.cxx \

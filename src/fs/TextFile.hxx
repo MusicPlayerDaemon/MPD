@@ -23,9 +23,9 @@
 #include "Compiler.h"
 
 #include <stdio.h>
+#include <stddef.h>
 
 class Path;
-typedef struct _GString GString;
 
 class TextFile {
 	static constexpr size_t max_length = 512 * 1024;
@@ -33,7 +33,8 @@ class TextFile {
 
 	FILE *const file;
 
-	GString *const buffer;
+	char *buffer;
+	size_t capacity, length;
 
 public:
 	TextFile(Path path_fs);

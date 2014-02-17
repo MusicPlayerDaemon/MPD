@@ -19,59 +19,63 @@
 
 #include "config.h"
 #include "TextFile.hxx"
+#include "util/Alloc.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 TextFile::TextFile(Path path_fs)
 	:file(FOpen(path_fs, FOpenMode::ReadText)),
-	 buffer(g_string_sized_new(step)) {}
+	 buffer((char *)xalloc(step)), capacity(step), length(0) {}
 
 TextFile::~TextFile()
 {
+	free(buffer);
+
 	if (file != nullptr)
 		fclose(file);
-
-	g_string_free(buffer, true);
 }
 
 char *
 TextFile::ReadLine()
 {
-	gsize length = 0, i;
-	char *p;
-
 	assert(file != nullptr);
-	assert(buffer != nullptr);
-	assert(buffer->allocated_len >= step);
 
-	while (buffer->len < max_length) {
-		p = fgets(buffer->str + length,
-			  buffer->allocated_len - length, file);
+	while (true) {
+		if (length >= capacity) {
+			if (capacity >= max_length)
+				/* too large already - bail out */
+				return nullptr;
+
+			capacity <<= 1;
+			char *new_buffer = (char *)realloc(buffer, capacity);
+			if (new_buffer == nullptr)
+				/* out of memory - bail out */
+				return nullptr;
+		}
+
+		char *p = fgets(buffer + length, capacity - length, file);
 		if (p == nullptr) {
 			if (length == 0 || ferror(file))
 				return nullptr;
 			break;
 		}
 
-		i = strlen(buffer->str + length);
-		length += i;
-		if (i < step - 1 || buffer->str[length - 1] == '\n')
+		length += strlen(buffer + length);
+		if (buffer[length - 1] == '\n')
 			break;
-
-		g_string_set_size(buffer, length + step);
 	}
 
 	/* remove the newline characters */
-	if (buffer->str[length - 1] == '\n')
+	if (buffer[length - 1] == '\n')
 		--length;
-	if (buffer->str[length - 1] == '\r')
+	if (buffer[length - 1] == '\r')
 		--length;
 
-	g_string_set_size(buffer, length);
-	return buffer->str;
+	buffer[length] = 0;
+	length = 0;
+	return buffer;
 }
