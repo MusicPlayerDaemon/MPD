@@ -53,21 +53,13 @@ src_mpd_LDADD = \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
-mpd_headers = \
-	src/check.h \
-	src/AudioCompress/config.h \
-	src/AudioCompress/compress.h \
-	src/open.h \
-	src/Playlist.hxx \
-	src/poison.h \
-	src/TimePrint.cxx src/TimePrint.hxx \
-	src/Timer.hxx
-
 src_mpd_SOURCES = \
-	$(mpd_headers) \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
+	src/check.h \
 	src/Compiler.h \
+	src/open.h \
+	src/poison.h \
 	src/notify.cxx src/notify.hxx \
 	src/AudioConfig.cxx src/AudioConfig.hxx \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
@@ -132,6 +124,8 @@ src_mpd_SOURCES = \
 	src/unix/SignalHandlers.cxx src/unix/SignalHandlers.hxx \
 	src/unix/Daemon.cxx src/unix/Daemon.hxx \
 	src/unix/PidFile.hxx \
+	src/AudioCompress/config.h \
+	src/AudioCompress/compress.h \
 	src/AudioCompress/compress.c \
 	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
@@ -143,7 +137,7 @@ src_mpd_SOURCES = \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx src/PlayerControl.hxx \
-	src/Playlist.cxx \
+	src/Playlist.cxx src/Playlist.hxx \
 	src/PlaylistError.cxx src/PlaylistError.hxx \
 	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
 	src/PlaylistControl.cxx \
@@ -177,10 +171,11 @@ src_mpd_SOURCES = \
 	src/TagSave.cxx src/TagSave.hxx \
 	src/TagFile.cxx src/TagFile.hxx \
 	src/TagStream.cxx src/TagStream.hxx \
+	src/TimePrint.cxx src/TimePrint.hxx \
 	src/mixer/Volume.cxx src/mixer/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx \
-	src/Timer.cxx
+	src/Timer.cxx src/Timer.hxx
 
 if ENABLE_DATABASE
 src_mpd_SOURCES += \
