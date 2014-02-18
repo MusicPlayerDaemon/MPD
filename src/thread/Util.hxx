@@ -33,7 +33,7 @@
 static int
 ioprio_set(int which, int who, int ioprio)
 {
-	return syscall(SYS_ioprio_set, which, who, ioprio);
+	return syscall(__NR_ioprio_set, which, who, ioprio);
 }
 
 static void
