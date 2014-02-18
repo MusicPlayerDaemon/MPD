@@ -35,6 +35,14 @@ ver 0.19 (not yet released)
 * allow playlist directory without music directory
 * install systemd unit for socket activation
 
+ver 0.18.9 (not yet released)
+* decoder
+  - vorbis: fix linker failure when libvorbis/libogg are static
+* encoder
+  - vorbis: fix another linker failure
+* output
+  - pipe: fix hanging child process due to blocked signals
+
 ver 0.18.8 (2014/02/07)
 * decoder
   - ffmpeg: support libav v10_alpha1

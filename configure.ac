@@ -1222,7 +1222,7 @@ if test x$enable_tremor = xyes; then
 	fi
 fi
 
-MPD_AUTO_PKG(vorbis, VORBIS, [vorbis vorbisfile ogg],
+MPD_AUTO_PKG(vorbis, VORBIS, [vorbisfile vorbis ogg],
 	[Ogg Vorbis decoder], [libvorbis not found])
 if test x$enable_vorbis = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support])
@@ -1350,7 +1350,7 @@ fi
 AM_CONDITIONAL(ENABLE_SHINE_ENCODER, test x$enable_shine_encoder = xyes)
 
 dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
-MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc vorbis],
+MPD_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc vorbis ogg],
 	[Ogg Vorbis encoder], [libvorbisenc not found])
 
 if test x$enable_vorbis_encoder = xyes; then

@@ -39,6 +39,10 @@
 
 #include <algorithm>
 
+#ifdef USE_SIGNALFD
+#include <pthread.h>
+#endif
+
 #include <assert.h>
 #include <signal.h>
 
@@ -94,7 +98,21 @@ static std::atomic_bool signal_pending[MAX_SIGNAL];
 
 static Manual<SignalMonitor> monitor;
 
-#ifndef USE_SIGNALFD
+#ifdef USE_SIGNALFD
+
+/**
+ * This is a pthread_atfork() callback that unblocks the signals that
+ * were blocked for our signalfd().  Without this, our child processes
+ * would inherit the blocked signals.
+ */
+static void
+at_fork_child()
+{
+	sigprocmask(SIG_UNBLOCK, &signal_mask, nullptr);
+}
+
+#else
+
 static void
 SignalCallback(int signo)
 {
@@ -103,6 +121,7 @@ SignalCallback(int signo)
 	if (!signal_pending[signo].exchange(true))
 		monitor->WakeUp();
 }
+
 #endif
 
 void
@@ -110,6 +129,8 @@ SignalMonitorInit(EventLoop &loop)
 {
 #ifdef USE_SIGNALFD
 	sigemptyset(&signal_mask);
+
+	pthread_atfork(nullptr, nullptr, at_fork_child);
 #endif
 
 	monitor.Construct(loop);
