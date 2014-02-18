@@ -66,7 +66,6 @@ mpd_headers = \
 
 src_mpd_SOURCES = \
 	$(mpd_headers) \
-	$(DECODER_SRC) \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
 	src/Compiler.h \
@@ -679,8 +678,6 @@ DECODER_LIBS = \
 	$(MPCDEC_LIBS) \
 	$(ADPLUG_LIBS) \
 	$(FAAD_LIBS)
-
-DECODER_SRC =
 
 if HAVE_MAD
 libdecoder_plugins_a_SOURCES += \
