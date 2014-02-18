@@ -41,7 +41,10 @@ class PosixCond {
 	pthread_cond_t cond;
 
 public:
-	constexpr PosixCond():cond(PTHREAD_COND_INITIALIZER) {}
+#ifndef __BIONIC__
+	constexpr
+#endif
+	PosixCond():cond(PTHREAD_COND_INITIALIZER) {}
 
 	PosixCond(const PosixCond &other) = delete;
 	PosixCond &operator=(const PosixCond &other) = delete;

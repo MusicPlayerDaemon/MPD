@@ -41,7 +41,10 @@ class PosixMutex {
 	pthread_mutex_t mutex;
 
 public:
-	constexpr PosixMutex():mutex(PTHREAD_MUTEX_INITIALIZER) {}
+#ifndef __BIONIC__
+	constexpr
+#endif
+	PosixMutex():mutex(PTHREAD_MUTEX_INITIALIZER) {}
 
 	PosixMutex(const PosixMutex &other) = delete;
 	PosixMutex &operator=(const PosixMutex &other) = delete;
