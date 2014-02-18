@@ -21,7 +21,6 @@
 #define MPD_FATAL_ERROR_HXX
 
 #include "check.h"
-#include "gerror.h"
 #include "Compiler.h"
 
 class Error;
@@ -44,12 +43,6 @@ FatalError(const Error &error);
 gcc_noreturn
 void
 FatalError(const char *msg, const Error &error);
-
-#ifdef HAVE_GLIB
-gcc_noreturn
-void
-FatalError(const char *msg, GError *error);
-#endif
 
 /**
  * Call this after a system call has failed that is not supposed to

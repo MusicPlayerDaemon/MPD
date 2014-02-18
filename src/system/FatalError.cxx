@@ -78,16 +78,6 @@ FatalError(const char *msg, const Error &error)
 	FormatFatalError("%s: %s", msg, error.GetMessage());
 }
 
-#ifdef HAVE_GLIB
-
-void
-FatalError(const char *msg, GError *error)
-{
-	FormatFatalError("%s: %s", msg, error->message);
-}
-
-#endif
-
 void
 FatalSystemError(const char *msg)
 {

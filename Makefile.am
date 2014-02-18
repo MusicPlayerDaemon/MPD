@@ -55,7 +55,6 @@ src_mpd_LDADD = \
 
 mpd_headers = \
 	src/check.h \
-	src/gerror.h \
 	src/AudioCompress/config.h \
 	src/AudioCompress/compress.h \
 	src/open.h \
