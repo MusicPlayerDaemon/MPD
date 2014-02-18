@@ -3,6 +3,8 @@ ver 0.18.9 (not yet released)
   - vorbis: fix linker failure when libvorbis/libogg are static
 * encoder
   - vorbis: fix another linker failure
+* output
+  - pipe: fix hanging child process due to blocked signals
 
 ver 0.18.8 (2014/02/07)
 * decoder
