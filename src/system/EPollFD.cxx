@@ -22,6 +22,21 @@
 #include "EPollFD.hxx"
 #include "FatalError.hxx"
 
+#ifdef __BIONIC__
+
+#include <sys/syscall.h>
+#include <fcntl.h>
+
+#define EPOLL_CLOEXEC O_CLOEXEC
+
+static inline int
+epoll_create1(int flags)
+{
+    return syscall(__NR_epoll_create1, flags);
+}
+
+#endif
+
 EPollFD::EPollFD()
 	:fd(::epoll_create1(EPOLL_CLOEXEC))
 {
