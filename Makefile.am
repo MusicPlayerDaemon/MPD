@@ -8,6 +8,7 @@ AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 bin_PROGRAMS = src/mpd
 
 noinst_LIBRARIES = \
+	libmpd.a \
 	libutil.a \
 	libthread.a \
 	libsystem.a \
@@ -23,12 +24,14 @@ noinst_LIBRARIES = \
 	libmixer_plugins.a \
 	liboutput_plugins.a
 
-src_mpd_CPPFLAGS = $(AM_CPPFLAGS) \
+libmpd_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBMPDCLIENT_CFLAGS) \
 	$(AVAHI_CFLAGS) \
 	$(LIBWRAP_CFLAGS) \
 	$(SQLITE_CFLAGS)
+
 src_mpd_LDADD = \
+	libmpd.a \
 	$(NEIGHBOR_LIBS) \
 	$(DB_LIBS) \
 	$(STORAGE_LIBS) \
@@ -54,6 +57,9 @@ src_mpd_LDADD = \
 	$(GLIB_LIBS)
 
 src_mpd_SOURCES = \
+	src/Main.cxx src/Main.hxx
+
+libmpd_a_SOURCES = \
 	$(OUTPUT_API_SRC) \
 	$(MIXER_API_SRC) \
 	src/check.h \
@@ -116,7 +122,6 @@ src_mpd_SOURCES = \
 	src/LogLevel.hxx \
 	src/ls.cxx src/ls.hxx \
 	src/IOThread.cxx src/IOThread.hxx \
-	src/Main.cxx src/Main.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/win32/Win32Main.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
@@ -172,7 +177,7 @@ src_mpd_SOURCES = \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx
 
 if ENABLE_DATABASE
-src_mpd_SOURCES += \
+libmpd_a_SOURCES += \
 	src/PlaylistUpdate.cxx \
 	src/command/StorageCommands.cxx src/command/StorageCommands.hxx \
 	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
@@ -238,7 +243,7 @@ endif
 
 if ENABLE_DATABASE
 if ENABLE_INOTIFY
-src_mpd_SOURCES += \
+libmpd_a_SOURCES += \
 	src/db/update/InotifyDomain.cxx src/db/update/InotifyDomain.hxx \
 	src/db/update/InotifySource.cxx src/db/update/InotifySource.hxx \
 	src/db/update/InotifyQueue.cxx src/db/update/InotifyQueue.hxx \
@@ -247,7 +252,7 @@ endif
 endif
 
 if ENABLE_SQLITE
-src_mpd_SOURCES += \
+libmpd_a_SOURCES += \
 	src/command/StickerCommands.cxx src/command/StickerCommands.hxx \
 	src/sticker/StickerDatabase.cxx src/sticker/StickerDatabase.hxx \
 	src/sticker/StickerPrint.cxx src/sticker/StickerPrint.hxx \
@@ -447,7 +452,7 @@ endif
 
 if ENABLE_NEIGHBOR_PLUGINS
 
-src_mpd_SOURCES += \
+libmpd_a_SOURCES += \
 	src/command/NeighborCommands.cxx \
 	src/command/NeighborCommands.hxx
 
@@ -530,7 +535,7 @@ if ENABLE_ARCHIVE
 
 noinst_LIBRARIES += libarchive.a
 
-src_mpd_SOURCES +=  \
+libmpd_a_SOURCES +=  \
 	src/db/update/Archive.cxx
 
 libarchive_a_SOURCES = \
@@ -892,18 +897,18 @@ endif
 
 
 if HAVE_ZEROCONF
-src_mpd_SOURCES += \
+libmpd_a_SOURCES += \
 	src/zeroconf/ZeroconfInternal.hxx \
 	src/zeroconf/ZeroconfGlue.cxx src/zeroconf/ZeroconfGlue.hxx
 
 if HAVE_AVAHI
-src_mpd_SOURCES += \
+libmpd_a_SOURCES += \
 	src/zeroconf/AvahiPoll.cxx src/zeroconf/AvahiPoll.hxx \
 	src/zeroconf/ZeroconfAvahi.cxx src/zeroconf/ZeroconfAvahi.hxx
 endif
 
 if HAVE_BONJOUR
-src_mpd_SOURCES += src/zeroconf/ZeroconfBonjour.cxx src/zeroconf/ZeroconfBonjour.hxx
+libmpd_a_SOURCES += src/zeroconf/ZeroconfBonjour.cxx src/zeroconf/ZeroconfBonjour.hxx
 endif
 endif
 
