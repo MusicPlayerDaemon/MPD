@@ -88,6 +88,10 @@
 #include "archive/ArchiveList.hxx"
 #endif
 
+#ifdef ANDROID
+#include "org_musicpd_Bridge.h"
+#endif
+
 #ifdef HAVE_GLIB
 #include <glib.h>
 #endif
@@ -365,6 +369,8 @@ shutdown_event_emitted(void)
 
 #endif
 
+#ifndef ANDROID
+
 int main(int argc, char *argv[])
 {
 #ifdef WIN32
@@ -373,6 +379,8 @@ int main(int argc, char *argv[])
 	return mpd_main(argc, argv);
 #endif
 }
+
+#endif
 
 int mpd_main(int argc, char *argv[])
 {
@@ -646,3 +654,14 @@ int mpd_main(int argc, char *argv[])
 	log_deinit();
 	return EXIT_SUCCESS;
 }
+
+#ifdef ANDROID
+
+gcc_visibility_default
+JNIEXPORT void JNICALL
+Java_org_musicpd_Bridge_run(JNIEnv *, jclass)
+{
+	mpd_main(0, nullptr);
+}
+
+#endif

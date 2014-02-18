@@ -5,7 +5,10 @@ AM_CPPFLAGS += -I$(srcdir)/src $(GLIB_CFLAGS)
 
 AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 
+if ANDROID
+else
 bin_PROGRAMS = src/mpd
+endif
 
 noinst_LIBRARIES = \
 	libmpd.a \
@@ -23,6 +26,8 @@ noinst_LIBRARIES = \
 	libfilter_plugins.a \
 	libmixer_plugins.a \
 	liboutput_plugins.a
+
+libmpd_a_DEPENDENCIES =
 
 libmpd_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBMPDCLIENT_CFLAGS) \
@@ -238,9 +243,50 @@ UPNP_SOURCES = \
 #
 
 if ANDROID
-all-local: libmpd.so
-libmpd.so: $(filter %.a,$(src_mpd_LDADD))
-	$(AM_V_CXXLD)$(CXXLD) -Wl,-shared -o $@ $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) $(src_mpd_LDADD) $(LIBS)
+
+noinst_LIBRARIES += libmain.a
+libmain_a_SOURCES = \
+	src/Main.cxx src/Main.hxx
+libmain_a_CPPFLAGS = $(AM_CPPFLAGS) -Iandroid/build/include
+
+all-local: android/build/bin/Main-debug.apk
+clean-local:
+	rm -rf android/build
+
+libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
+	$(AM_V_CXXLD)$(CXXLD) -shared -Wl,--no-undefined,-shared,-Bsymbolic -llog -lz -o $@ $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) src/libmain_a-Main.o $(src_mpd_LDADD) $(LIBS)
+
+android/build/build.xml: android/AndroidManifest.xml
+	rm -rf android/build
+	mkdir -p android/build/include
+	ln -s $(srcdir)/android/AndroidManifest.xml $(srcdir)/android/custom_rules.xml $(srcdir)/android/src $(srcdir)/android/res android/build
+	$(ANDROID_SDK)/tools/android update project --path android/build --target android-9
+
+android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
+	cd android/build && ant compile-jni-classes
+
+android/build/include/org_musicpd_Bridge.h: android/build/bin/classes/org/musicpd/Bridge.class
+	javah -classpath $(ANDROID_SDK)/platforms/android-17/android.jar:android/build/bin/classes -d $(@D) org.musicpd.Bridge
+
+libmpd_a_DEPENDENCIES += android/build/include/org_musicpd_Bridge.h
+
+android/build/libs/armeabi-v7a/libmpd.so: libmpd.so android/build/build.xml
+	mkdir -p $(@D)
+	rm -f $@
+	strip -o $@ $<
+
+android/build/bin/Main-debug.apk: android/build/build.xml android/build/libs/armeabi-v7a/libmpd.so
+	cd android/build && ant nodeps debug
+
+android/build/bin/Main-release-unsigned.apk: android/build/build.xml android/build/libs/armeabi-v7a/libmpd.so
+	cd android/build && ant nodeps release
+
+android/build/bin/Main-release-unaligned.apk: android/build/bin/Main-release-unsigned.apk
+	jarsigner -digestalg SHA1 -sigalg MD5withRSA -storepass:env ANDROID_KEYSTORE_PASS -keystore $(ANDROID_KEYSTORE) -signedjar $@ $< $(ANDROID_KEY_ALIAS)
+
+android/build/bin/Main.apk: android/build/bin/Main-release-unaligned.apk
+	$(ANDROID_SDK)/tools/zipalign -f 4 $< $@
+
 endif
 
 #

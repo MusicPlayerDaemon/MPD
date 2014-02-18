@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name="mpd_rules">
+  <!-- setting these two properties works around a bug in Android
+       SDK's build.xml, which deletes all .class files every time -->
+  <property name="build.last.is.packaging.debug" value="true" />
+  <property name="build.is.packaging.debug" value="true" />
+
+  <target name="compile-jni-classes"
+          depends="-set-debug-mode,-compile"/>
+</project>
