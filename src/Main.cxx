@@ -71,14 +71,13 @@
 #include "db/plugins/SimpleDatabasePlugin.hxx"
 #include "storage/Configured.hxx"
 #include "storage/CompositeStorage.hxx"
+#ifdef ENABLE_INOTIFY
+#include "db/update/InotifyUpdate.hxx"
+#endif
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 #include "neighbor/Glue.hxx"
-#endif
-
-#ifdef ENABLE_INOTIFY
-#include "db/update/InotifyUpdate.hxx"
 #endif
 
 #ifdef ENABLE_SQLITE
@@ -519,6 +518,7 @@ int mpd_main(int argc, char *argv[])
 
 	instance->partition->outputs.SetReplayGainMode(replay_gain_get_real_mode(instance->partition->playlist.queue.random));
 
+#ifdef ENABLE_DATABASE
 	if (config_get_bool(CONF_AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
 		if (instance->storage != nullptr &&
@@ -533,6 +533,7 @@ int mpd_main(int argc, char *argv[])
 			      "inotify: auto_update was disabled. enable during compilation phase");
 #endif
 	}
+#endif
 
 	config_global_check();
 
@@ -557,7 +558,7 @@ int mpd_main(int argc, char *argv[])
 
 	/* cleanup */
 
-#ifdef ENABLE_INOTIFY
+#if defined(ENABLE_DATABASE) && defined(ENABLE_INOTIFY)
 	mpd_inotify_finish();
 #endif
 

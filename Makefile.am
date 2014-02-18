@@ -249,12 +249,14 @@ src_mpd_DEPENDENCIES = src/win32/mpd_win32_rc.$(OBJEXT)
 src_mpd_LDFLAGS = -Wl,src/win32/mpd_win32_rc.$(OBJEXT)
 endif
 
+if ENABLE_DATABASE
 if ENABLE_INOTIFY
 src_mpd_SOURCES += \
 	src/db/update/InotifyDomain.cxx src/db/update/InotifyDomain.hxx \
 	src/db/update/InotifySource.cxx src/db/update/InotifySource.hxx \
 	src/db/update/InotifyQueue.cxx src/db/update/InotifyQueue.hxx \
 	src/db/update/InotifyUpdate.cxx src/db/update/InotifyUpdate.hxx
+endif
 endif
 
 if ENABLE_SQLITE
