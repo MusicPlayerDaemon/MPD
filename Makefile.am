@@ -173,8 +173,7 @@ src_mpd_SOURCES = \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/mixer/Volume.cxx src/mixer/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
-	src/PlaylistFile.cxx src/PlaylistFile.hxx \
-	src/Timer.cxx src/Timer.hxx
+	src/PlaylistFile.cxx src/PlaylistFile.hxx
 
 if ENABLE_DATABASE
 src_mpd_SOURCES += \
@@ -1029,6 +1028,7 @@ OUTPUT_API_SRC = \
 	src/output/Init.cxx
 
 liboutput_plugins_a_SOURCES = \
+	src/output/Timer.cxx src/output/Timer.hxx \
 	src/output/plugins/NullOutputPlugin.cxx \
 	src/output/plugins/NullOutputPlugin.hxx
 
@@ -1659,7 +1659,6 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
-	src/Timer.cxx \
 	src/Page.cxx \
 	src/output/Domain.cxx \
 	src/output/Init.cxx src/output/Finish.cxx src/output/Registry.cxx \

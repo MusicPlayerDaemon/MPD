@@ -20,7 +20,7 @@
 #include "config.h"
 #include "NullOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "Timer.hxx"
+#include "../Timer.hxx"
 
 struct NullOutput {
 	AudioOutput base;

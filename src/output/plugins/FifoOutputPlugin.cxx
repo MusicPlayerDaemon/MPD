@@ -21,7 +21,7 @@
 #include "FifoOutputPlugin.hxx"
 #include "config/ConfigError.hxx"
 #include "../OutputAPI.hxx"
-#include "Timer.hxx"
+#include "../Timer.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
