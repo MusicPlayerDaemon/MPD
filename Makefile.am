@@ -131,7 +131,6 @@ src_mpd_SOURCES = \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
 	src/MusicChunk.cxx src/MusicChunk.hxx \
 	src/Mapper.cxx src/Mapper.hxx \
-	src/Page.cxx src/Page.hxx \
 	src/Partition.cxx src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
@@ -1130,12 +1129,14 @@ endif
 
 if ENABLE_HTTPD_OUTPUT
 liboutput_plugins_a_SOURCES += \
-	src/IcyMetaDataServer.cxx src/IcyMetaDataServer.hxx \
-	src/output/plugins/HttpdInternal.hxx \
-	src/output/plugins/HttpdClient.cxx \
-	src/output/plugins/HttpdClient.hxx \
-	src/output/plugins/HttpdOutputPlugin.cxx \
-	src/output/plugins/HttpdOutputPlugin.hxx
+	src/output/plugins/httpd/IcyMetaDataServer.cxx \
+	src/output/plugins/httpd/IcyMetaDataServer.hxx \
+	src/output/plugins/httpd/Page.cxx src/output/plugins/httpd/Page.hxx \
+	src/output/plugins/httpd/HttpdInternal.hxx \
+	src/output/plugins/httpd/HttpdClient.cxx \
+	src/output/plugins/httpd/HttpdClient.hxx \
+	src/output/plugins/httpd/HttpdOutputPlugin.cxx \
+	src/output/plugins/httpd/HttpdOutputPlugin.hxx
 endif
 
 if ENABLE_SOLARIS_OUTPUT
@@ -1659,7 +1660,6 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
-	src/Page.cxx \
 	src/output/Domain.cxx \
 	src/output/Init.cxx src/output/Finish.cxx src/output/Registry.cxx \
 	src/output/OutputPlugin.cxx \

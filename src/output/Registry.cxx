@@ -23,7 +23,7 @@
 #include "plugins/AlsaOutputPlugin.hxx"
 #include "plugins/AoOutputPlugin.hxx"
 #include "plugins/FifoOutputPlugin.hxx"
-#include "plugins/HttpdOutputPlugin.hxx"
+#include "plugins/httpd/HttpdOutputPlugin.hxx"
 #include "plugins/JackOutputPlugin.hxx"
 #include "plugins/NullOutputPlugin.hxx"
 #include "plugins/OpenALOutputPlugin.hxx"
