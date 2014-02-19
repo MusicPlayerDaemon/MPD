@@ -83,7 +83,6 @@ src_mpd_SOURCES = \
 	src/Idle.cxx src/Idle.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
-	src/cue/CueParser.cxx src/cue/CueParser.hxx \
 	src/decoder/DecoderError.cxx src/decoder/DecoderError.hxx \
 	src/decoder/DecoderThread.cxx src/decoder/DecoderThread.hxx \
 	src/decoder/DecoderCommand.hxx \
@@ -1163,6 +1162,7 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/CloseSongEnumerator.hxx \
 	src/playlist/MemorySongEnumerator.cxx \
 	src/playlist/MemorySongEnumerator.hxx \
+	src/playlist/cue/CueParser.cxx src/playlist/cue/CueParser.hxx \
 	src/playlist/plugins/ExtM3uPlaylistPlugin.cxx \
 	src/playlist/plugins/ExtM3uPlaylistPlugin.hxx \
 	src/playlist/plugins/M3uPlaylistPlugin.cxx \
@@ -1472,8 +1472,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/TagSave.cxx \
 	src/TagFile.cxx \
 	src/CheckAudioFormat.cxx \
-	src/DetachedSong.cxx \
-	src/cue/CueParser.cxx src/cue/CueParser.hxx
+	src/DetachedSong.cxx
 
 if HAVE_FLAC
 test_dump_playlist_SOURCES += \
