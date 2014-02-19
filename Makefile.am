@@ -123,9 +123,6 @@ src_mpd_SOURCES = \
 	src/unix/SignalHandlers.cxx src/unix/SignalHandlers.hxx \
 	src/unix/Daemon.cxx src/unix/Daemon.hxx \
 	src/unix/PidFile.hxx \
-	src/AudioCompress/config.h \
-	src/AudioCompress/compress.h \
-	src/AudioCompress/compress.c \
 	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
@@ -1220,6 +1217,9 @@ endif
 #
 
 libfilter_plugins_a_SOURCES = \
+	src/AudioCompress/config.h \
+	src/AudioCompress/compress.h \
+	src/AudioCompress/compress.c \
 	src/filter/plugins/NullFilterPlugin.cxx \
 	src/filter/plugins/ChainFilterPlugin.cxx \
 	src/filter/plugins/ChainFilterPlugin.hxx \
@@ -1551,8 +1551,7 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
 	src/AudioParser.cxx \
-	src/ReplayGainInfo.cxx \
-	src/AudioCompress/compress.c
+	src/ReplayGainInfo.cxx
 
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
@@ -1622,8 +1621,7 @@ test_run_avahi_LDADD = \
 test_run_normalize_SOURCES = test/run_normalize.cxx \
 	test/stdbin.h \
 	src/CheckAudioFormat.cxx \
-	src/AudioParser.cxx \
-	src/AudioCompress/compress.c
+	src/AudioParser.cxx
 test_run_normalize_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1667,7 +1665,6 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/mixer/MixerType.cxx \
 	src/filter/FilterPlugin.cxx \
 	src/filter/FilterConfig.cxx \
-	src/AudioCompress/compress.c \
 	src/ReplayGainInfo.cxx
 
 test_read_mixer_LDADD = \
