@@ -59,8 +59,8 @@ CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
 bool
 NeighborGlue::Init(EventLoop &loop, NeighborListener &listener, Error &error)
 {
-	const config_param *param = nullptr;
-	while ((param = config_get_next_param(CONF_NEIGHBORS, param))) {
+	for (const config_param *param = config_get_param(CONF_NEIGHBORS);
+	     param != nullptr; param = param->next) {
 		NeighborExplorer *explorer =
 			CreateNeighborExplorer(loop, listener, *param, error);
 		if (explorer == nullptr) {

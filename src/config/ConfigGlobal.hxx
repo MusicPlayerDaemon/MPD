@@ -26,6 +26,7 @@
 class Error;
 class Path;
 class AllocatedPath;
+struct config_param;
 
 void config_global_init(void);
 void config_global_finish(void);
@@ -39,19 +40,9 @@ void config_global_check(void);
 bool
 ReadConfigFile(Path path, Error &error);
 
-/* don't free the returned value
-   set _last_ to nullptr to get first entry */
 gcc_pure
-const struct config_param *
-config_get_next_param(enum ConfigOption option,
-		      const struct config_param *last);
-
-gcc_pure
-static inline const struct config_param *
-config_get_param(enum ConfigOption option)
-{
-	return config_get_next_param(option, nullptr);
-}
+const config_param *
+config_get_param(enum ConfigOption option);
 
 /**
  * Find a block with a matching attribute.

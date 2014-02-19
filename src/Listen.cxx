@@ -105,7 +105,7 @@ listen_global_init(EventLoop &loop, Partition &partition, Error &error)
 {
 	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
 	const struct config_param *param =
-		config_get_next_param(CONF_BIND_TO_ADDRESS, nullptr);
+		config_get_param(CONF_BIND_TO_ADDRESS);
 
 	listen_socket = new ClientListener(loop, partition);
 
@@ -129,10 +129,7 @@ listen_global_init(EventLoop &loop, Partition &partition, Error &error)
 						   param->line);
 				return false;
 			}
-
-			param = config_get_next_param(CONF_BIND_TO_ADDRESS,
-						      param);
-		} while (param != nullptr);
+		} while ((param = param->next) != nullptr);
 	} else {
 		/* no "bind_to_address" configured, bind the
 		   configured port on all interfaces */

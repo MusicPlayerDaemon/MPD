@@ -92,7 +92,7 @@ void initPermissions(void)
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
-	param = config_get_next_param(CONF_PASSWORD, NULL);
+	param = config_get_param(CONF_PASSWORD);
 
 	if (param) {
 		permission_default = 0;
@@ -115,7 +115,7 @@ void initPermissions(void)
 
 			permission_passwords.insert(std::make_pair(std::move(password),
 								   permission));
-		} while ((param = config_get_next_param(CONF_PASSWORD, param)));
+		} while ((param = param->next) != nullptr);
 	}
 
 	param = config_get_param(CONF_DEFAULT_PERMS);

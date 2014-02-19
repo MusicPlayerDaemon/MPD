@@ -74,12 +74,10 @@ void config_global_check(void)
 			Check(p);
 }
 
-const struct config_param *
-config_get_next_param(ConfigOption option, const struct config_param * last)
+const config_param *
+config_get_param(ConfigOption option)
 {
-	config_param *param = last != nullptr
-		? last->next
-		: config_data.params[unsigned(option)];
+	config_param *param = config_data.params[unsigned(option)];
 	if (param != nullptr)
 		param->used = true;
 	return param;
@@ -88,8 +86,8 @@ config_get_next_param(ConfigOption option, const struct config_param * last)
 const config_param *
 config_find_block(ConfigOption option, const char *key, const char *value)
 {
-	const config_param *param = nullptr;
-	while ((param = config_get_next_param(option, param)) != nullptr) {
+	for (const config_param *param = config_get_param(option);
+	     param != nullptr; param = param->next) {
 		const char *value2 = param->GetBlockValue(key);
 		if (value2 == nullptr)
 			FormatFatalError("block without '%s' name in line %d",

@@ -73,9 +73,8 @@ LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
 void
 MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 {
-	const config_param *param = nullptr;
-	while ((param = config_get_next_param(CONF_AUDIO_OUTPUT,
-					      param)) != nullptr) {
+	for (const config_param *param = config_get_param(CONF_AUDIO_OUTPUT);
+	     param != nullptr; param = param->next) {
 		auto output = LoadOutput(event_loop, mixer_listener,
 					 pc, *param);
 		if (FindByName(output->name) != nullptr)
