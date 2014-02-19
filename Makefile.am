@@ -517,7 +517,7 @@ DB_LIBS = \
 if HAVE_LIBUPNP
 libdb_plugins_a_SOURCES += \
 	$(UPNP_SOURCES) \
-	src/db/plugins/UpnpDatabasePlugin.cxx src/db/plugins/UpnpDatabasePlugin.hxx \
+	src/db/plugins/upnp/UpnpDatabasePlugin.cxx src/db/plugins/upnp/UpnpDatabasePlugin.hxx \
 	src/db/plugins/upnp/Tags.cxx src/db/plugins/upnp/Tags.hxx \
 	src/db/plugins/upnp/ContentDirectoryService.cxx \
 	src/db/plugins/upnp/Directory.cxx src/db/plugins/upnp/Directory.hxx \

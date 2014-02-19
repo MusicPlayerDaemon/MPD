@@ -22,7 +22,7 @@
 #include "DatabasePlugin.hxx"
 #include "plugins/SimpleDatabasePlugin.hxx"
 #include "plugins/ProxyDatabasePlugin.hxx"
-#include "plugins/UpnpDatabasePlugin.hxx"
+#include "plugins/upnp/UpnpDatabasePlugin.hxx"
 
 #include <string.h>
 
