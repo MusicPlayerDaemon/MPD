@@ -112,7 +112,7 @@ audio_output_mixer_type(const config_param &param)
 }
 
 static Mixer *
-audio_output_load_mixer(EventLoop &event_loop, AudioOutput *ao,
+audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 			const config_param &param,
 			const MixerPlugin *plugin,
 			Filter &filter_chain,
@@ -129,10 +129,10 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput *ao,
 		if (plugin == nullptr)
 			return nullptr;
 
-		return mixer_new(event_loop, *plugin, *ao, param, error);
+		return mixer_new(event_loop, *plugin, ao, param, error);
 
 	case MIXER_TYPE_SOFTWARE:
-		mixer = mixer_new(event_loop, software_mixer_plugin, *ao,
+		mixer = mixer_new(event_loop, software_mixer_plugin, ao,
 				  config_param(),
 				  IgnoreError());
 		assert(mixer != nullptr);
@@ -211,7 +211,7 @@ AudioOutput::Configure(const config_param &param, Error &error)
 }
 
 static bool
-audio_output_setup(EventLoop &event_loop, AudioOutput *ao,
+audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 		   const config_param &param,
 		   Error &error)
 {
@@ -222,45 +222,45 @@ audio_output_setup(EventLoop &event_loop, AudioOutput *ao,
 		param.GetBlockValue("replay_gain_handler", "software");
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
-		ao->replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-						    param, IgnoreError());
-		assert(ao->replay_gain_filter != nullptr);
+		ao.replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+						   param, IgnoreError());
+		assert(ao.replay_gain_filter != nullptr);
 
-		ao->replay_gain_serial = 0;
+		ao.replay_gain_serial = 0;
 
-		ao->other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-							  param,
-							  IgnoreError());
-		assert(ao->other_replay_gain_filter != nullptr);
+		ao.other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+							 param,
+							 IgnoreError());
+		assert(ao.other_replay_gain_filter != nullptr);
 
-		ao->other_replay_gain_serial = 0;
+		ao.other_replay_gain_serial = 0;
 	} else {
-		ao->replay_gain_filter = nullptr;
-		ao->other_replay_gain_filter = nullptr;
+		ao.replay_gain_filter = nullptr;
+		ao.other_replay_gain_filter = nullptr;
 	}
 
 	/* set up the mixer */
 
 	Error mixer_error;
-	ao->mixer = audio_output_load_mixer(event_loop, ao, param,
-					    ao->plugin.mixer_plugin,
-					    *ao->filter, mixer_error);
-	if (ao->mixer == nullptr && mixer_error.IsDefined())
+	ao.mixer = audio_output_load_mixer(event_loop, ao, param,
+					   ao.plugin.mixer_plugin,
+					   *ao.filter, mixer_error);
+	if (ao.mixer == nullptr && mixer_error.IsDefined())
 		FormatError(mixer_error,
 			    "Failed to initialize hardware mixer for '%s'",
-			    ao->name);
+			    ao.name);
 
 	/* use the hardware mixer for replay gain? */
 
 	if (strcmp(replay_gain_handler, "mixer") == 0) {
-		if (ao->mixer != nullptr)
-			replay_gain_filter_set_mixer(ao->replay_gain_filter,
-						     ao->mixer, 100);
+		if (ao.mixer != nullptr)
+			replay_gain_filter_set_mixer(ao.replay_gain_filter,
+						     ao.mixer, 100);
 		else
 			FormatError(output_domain,
-				    "No such mixer for output '%s'", ao->name);
+				    "No such mixer for output '%s'", ao.name);
 	} else if (strcmp(replay_gain_handler, "software") != 0 &&
-		   ao->replay_gain_filter != nullptr) {
+		   ao.replay_gain_filter != nullptr) {
 		error.Set(config_domain,
 			  "Invalid \"replay_gain_handler\" value");
 		return false;
@@ -268,11 +268,11 @@ audio_output_setup(EventLoop &event_loop, AudioOutput *ao,
 
 	/* the "convert" filter must be the last one in the chain */
 
-	ao->convert_filter = filter_new(&convert_filter_plugin, config_param(),
+	ao.convert_filter = filter_new(&convert_filter_plugin, config_param(),
 					IgnoreError());
-	assert(ao->convert_filter != nullptr);
+	assert(ao.convert_filter != nullptr);
 
-	filter_chain_append(*ao->filter, "convert", ao->convert_filter);
+	filter_chain_append(*ao.filter, "convert", ao.convert_filter);
 
 	return true;
 }
@@ -317,7 +317,7 @@ audio_output_new(EventLoop &event_loop, const config_param &param,
 	if (ao == nullptr)
 		return nullptr;
 
-	if (!audio_output_setup(event_loop, ao, param, error)) {
+	if (!audio_output_setup(event_loop, *ao, param, error)) {
 		ao_plugin_finish(ao);
 		return nullptr;
 	}
