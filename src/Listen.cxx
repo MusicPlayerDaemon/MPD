@@ -77,10 +77,11 @@ listen_add_config_param(unsigned int port,
 	}
 }
 
+#ifdef ENABLE_SYSTEMD_DAEMON
+
 static bool
 listen_systemd_activation(Error &error_r)
 {
-#ifdef ENABLE_SYSTEMD_DAEMON
 	int n = sd_listen_fds(true);
 	if (n <= 0) {
 		if (n < 0)
@@ -95,11 +96,9 @@ listen_systemd_activation(Error &error_r)
 			return false;
 
 	return true;
-#else
-	(void)error_r;
-	return false;
-#endif
 }
+
+#endif
 
 bool
 listen_global_init(EventLoop &loop, Partition &partition, Error &error)
@@ -111,11 +110,13 @@ listen_global_init(EventLoop &loop, Partition &partition, Error &error)
 
 	listen_socket = new ClientListener(loop, partition);
 
+#ifdef ENABLE_SYSTEMD_DAEMON
 	if (listen_systemd_activation(error))
 		return true;
 
 	if (error.IsDefined())
 		return false;
+#endif
 
 	if (param != nullptr) {
 		/* "bind_to_address" is configured, create listeners
