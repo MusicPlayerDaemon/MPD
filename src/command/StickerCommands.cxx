@@ -20,7 +20,6 @@
 #include "config.h"
 #include "StickerCommands.hxx"
 #include "SongPrint.hxx"
-#include "db/DatabaseLock.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "db/DatabaseGlue.hxx"
 #include "sticker/SongSticker.hxx"
