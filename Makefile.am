@@ -174,7 +174,6 @@ src_mpd_SOURCES = \
 if ENABLE_DATABASE
 src_mpd_SOURCES += \
 	src/PlaylistUpdate.cxx \
-	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
 	src/command/StorageCommands.cxx src/command/StorageCommands.hxx \
 	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
 	src/db/LightSong.cxx src/db/LightSong.hxx \
@@ -194,7 +193,6 @@ src_mpd_SOURCES += \
 	src/db/update/ExcludeList.cxx src/db/update/ExcludeList.hxx \
 	src/db/Uri.hxx \
 	src/db/Directory.cxx src/db/Directory.hxx \
-	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
 	src/db/DatabaseGlue.cxx src/db/DatabaseGlue.hxx \
 	src/db/Configured.cxx src/db/Configured.hxx \
 	src/db/DatabaseSong.cxx src/db/DatabaseSong.hxx \
@@ -203,7 +201,6 @@ src_mpd_SOURCES += \
 	src/db/DatabasePlaylist.cxx src/db/DatabasePlaylist.hxx \
 	src/db/DatabaseError.cxx src/db/DatabaseError.hxx \
 	src/db/DatabaseLock.cxx src/db/DatabaseLock.hxx \
-	src/db/DatabaseSave.cxx src/db/DatabaseSave.hxx \
 	src/db/DatabasePlugin.hxx \
 	src/db/DatabaseListener.hxx \
 	src/db/Visitor.hxx \
@@ -493,8 +490,11 @@ if ENABLE_DATABASE
 noinst_LIBRARIES += libdb_plugins.a
 
 libdb_plugins_a_SOURCES = \
+	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
 	src/db/Registry.cxx src/db/Registry.hxx \
 	src/db/Helpers.cxx src/db/Helpers.hxx \
+	src/db/DatabaseSave.cxx src/db/DatabaseSave.hxx \
+	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
 	src/db/plugins/LazyDatabase.cxx src/db/plugins/LazyDatabase.hxx \
 	src/db/plugins/SimpleDatabasePlugin.cxx src/db/plugins/SimpleDatabasePlugin.hxx
 
@@ -1352,9 +1352,9 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/db/DatabaseError.cxx \
 	src/db/Registry.cxx \
 	src/db/Selection.cxx \
-	src/db/Directory.cxx src/db/DirectorySave.cxx \
-	src/db/PlaylistVector.cxx src/PlaylistDatabase.cxx \
-	src/db/DatabaseLock.cxx src/db/DatabaseSave.cxx \
+	src/db/Directory.cxx \
+	src/db/PlaylistVector.cxx \
+	src/db/DatabaseLock.cxx \
 	src/db/Song.cxx src/SongSave.cxx src/db/SongSort.cxx \
 	src/DetachedSong.cxx \
 	src/TagSave.cxx \
