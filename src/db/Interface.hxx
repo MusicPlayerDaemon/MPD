@@ -26,17 +26,31 @@
 
 #include <time.h>
 
+struct DatabasePlugin;
 struct DatabaseStats;
 struct DatabaseSelection;
 struct LightSong;
 class Error;
 
 class Database {
+	const DatabasePlugin &plugin;
+
 public:
+	Database(const DatabasePlugin &_plugin)
+		:plugin(_plugin) {}
+
 	/**
 	 * Free instance data.
          */
 	virtual ~Database() {}
+
+	const DatabasePlugin &GetPlugin() const {
+		return plugin;
+	}
+
+	bool IsPlugin(const DatabasePlugin &other) const {
+		return &plugin == &other;
+	}
 
 	/**
          * Open the database.  Read it into memory if applicable.

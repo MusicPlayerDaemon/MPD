@@ -28,7 +28,7 @@
 
 Database *
 CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
-			 bool &is_simple_r, Error &error)
+			 Error &error)
 {
 	const struct config_param *param = config_get_param(CONF_DATABASE);
 	const struct config_param *path = config_get_param(CONF_DB_FILE);
@@ -53,7 +53,7 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 		return nullptr;
 
 	Database *db = DatabaseGlobalInit(loop, listener, *param,
-					  is_simple_r, error);
+					  error);
 	delete allocated;
 	return db;
 }

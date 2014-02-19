@@ -32,11 +32,9 @@ class Error;
  * Initialize the database library.
  *
  * @param param the database configuration block
- * @param is_simple returns whether this is the "simple" database
- * plugin
  */
 Database *
 DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
-		   const config_param &param, bool &is_simple, Error &error);
+		   const config_param &param, Error &error);
 
 #endif

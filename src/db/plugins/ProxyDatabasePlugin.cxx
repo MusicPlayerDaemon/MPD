@@ -91,7 +91,8 @@ class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 
 public:
 	ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener)
-		:SocketMonitor(_loop), IdleMonitor(_loop),
+		:Database(proxy_db_plugin),
+		 SocketMonitor(_loop), IdleMonitor(_loop),
 		 listener(_listener) {}
 
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,

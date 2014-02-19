@@ -50,8 +50,7 @@ class SimpleDatabase : public Database {
 	mutable unsigned borrowed_song_count;
 #endif
 
-	SimpleDatabase()
-		:path(AllocatedPath::Null()) {}
+	SimpleDatabase();
 
 public:
 	gcc_pure

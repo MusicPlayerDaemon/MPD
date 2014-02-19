@@ -35,8 +35,7 @@ class LazyDatabase final : public Database {
 
 public:
 	gcc_nonnull_all
-	LazyDatabase(Database *_db)
-		:db(_db), open(false) {}
+	LazyDatabase(Database *_db);
 
 	virtual ~LazyDatabase();
 

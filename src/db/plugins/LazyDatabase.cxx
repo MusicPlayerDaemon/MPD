@@ -23,6 +23,9 @@
 
 #include <assert.h>
 
+LazyDatabase::LazyDatabase(Database *_db)
+	:Database(_db->GetPlugin()), db(_db), open(false) {}
+
 LazyDatabase::~LazyDatabase()
 {
 	assert(!open);

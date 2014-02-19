@@ -40,6 +40,10 @@
 
 static constexpr Domain simple_db_domain("simple_db");
 
+inline SimpleDatabase::SimpleDatabase()
+	:Database(simple_db_plugin),
+	 path(AllocatedPath::Null()) {}
+
 Database *
 SimpleDatabase::Create(gcc_unused EventLoop &loop,
 		       gcc_unused DatabaseListener &listener,

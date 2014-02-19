@@ -34,6 +34,6 @@ class Error;
  */
 Database *
 CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
-			 bool &is_simple_r, Error &error);
+			 Error &error);
 
 #endif

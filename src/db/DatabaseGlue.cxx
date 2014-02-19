@@ -29,11 +29,10 @@
 
 Database *
 DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
-		   const config_param &param, bool &is_simple, Error &error)
+		   const config_param &param, Error &error)
 {
 	const char *plugin_name =
 		param.GetBlockValue("plugin", "simple");
-	is_simple = strcmp(plugin_name, "simple") == 0;
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
 	if (plugin == nullptr) {

@@ -75,6 +75,8 @@ class UpnpDatabase : public Database {
 	UPnPDeviceDirectory *discovery;
 
 public:
+	UpnpDatabase():Database(upnp_db_plugin) {}
+
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
 				const config_param &param,
 				Error &error);

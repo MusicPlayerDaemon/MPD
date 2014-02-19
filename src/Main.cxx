@@ -166,11 +166,10 @@ InitStorage(Error &error)
 static bool
 glue_db_init_and_load(void)
 {
-	bool is_simple;
 	Error error;
 	instance->database =
 		CreateConfiguredDatabase(*instance->event_loop, *instance,
-					 is_simple, error);
+					 error);
 	if (instance->database == nullptr) {
 		if (error.IsDefined())
 			FatalError(error);
@@ -193,7 +192,7 @@ glue_db_init_and_load(void)
 	if (!instance->database->Open(error))
 		FatalError(error);
 
-	if (!is_simple)
+	if (!instance->database->IsPlugin(simple_db_plugin))
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
