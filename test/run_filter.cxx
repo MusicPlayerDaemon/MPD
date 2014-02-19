@@ -50,26 +50,11 @@ mixer_set_volume(gcc_unused Mixer *mixer,
 	return true;
 }
 
-static const struct config_param *
-find_named_config_block(ConfigOption option, const char *name)
-{
-	const struct config_param *param = NULL;
-
-	while ((param = config_get_next_param(option, param)) != NULL) {
-		const char *current_name = param->GetBlockValue("name");
-		if (current_name != NULL && strcmp(current_name, name) == 0)
-			return param;
-	}
-
-	return NULL;
-}
-
 static Filter *
 load_filter(const char *name)
 {
-	const struct config_param *param;
-
-	param = find_named_config_block(CONF_AUDIO_FILTER, name);
+	const config_param *param =
+		config_find_block(CONF_AUDIO_FILTER, "name", name);
 	if (param == NULL) {
 		fprintf(stderr, "No such configured filter: %s\n", name);
 		return nullptr;

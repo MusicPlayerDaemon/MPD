@@ -53,20 +53,6 @@ filter_plugin_by_name(gcc_unused const char *name)
 	return NULL;
 }
 
-static const struct config_param *
-find_named_config_block(ConfigOption option, const char *name)
-{
-	const struct config_param *param = NULL;
-
-	while ((param = config_get_next_param(option, param)) != NULL) {
-		const char *current_name = param->GetBlockValue("name");
-		if (current_name != NULL && strcmp(current_name, name) == 0)
-			return param;
-	}
-
-	return NULL;
-}
-
 PlayerControl::PlayerControl(gcc_unused MultipleOutputs &_outputs,
 			     gcc_unused unsigned _buffer_chunks,
 			     gcc_unused unsigned _buffered_before_play)
@@ -76,9 +62,8 @@ PlayerControl::~PlayerControl() {}
 static AudioOutput *
 load_audio_output(EventLoop &event_loop, const char *name)
 {
-	const struct config_param *param;
-
-	param = find_named_config_block(CONF_AUDIO_OUTPUT, name);
+	const config_param *param =
+		config_find_block(CONF_AUDIO_OUTPUT, "name", name);
 	if (param == NULL) {
 		fprintf(stderr, "No such configured audio output: %s\n", name);
 		return nullptr;
