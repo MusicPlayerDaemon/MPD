@@ -1621,6 +1621,7 @@ test_run_avahi_LDADD = \
 test_run_normalize_SOURCES = test/run_normalize.cxx \
 	test/stdbin.h \
 	src/CheckAudioFormat.cxx \
+	src/AudioCompress/compress.c \
 	src/AudioParser.cxx
 test_run_normalize_LDADD = \
 	libutil.a \
