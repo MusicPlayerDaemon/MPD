@@ -28,7 +28,7 @@
 #include "LightSong.hxx"
 #include "LightDirectory.hxx"
 #include "PlaylistInfo.hxx"
-#include "DatabasePlugin.hxx"
+#include "Interface.hxx"
 
 #include <functional>
 

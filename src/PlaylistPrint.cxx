@@ -25,7 +25,7 @@
 #include "SongPrint.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "db/DatabasePlugin.hxx"
+#include "db/Interface.hxx"
 #include "client/Client.hxx"
 #include "input/InputStream.hxx"
 #include "DetachedSong.hxx"

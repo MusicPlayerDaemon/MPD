@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "LazyDatabase.hxx"
+#include "db/Interface.hxx"
 
 #include <assert.h>
 

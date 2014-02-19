@@ -20,14 +20,18 @@
 #ifndef MPD_SIMPLE_DATABASE_PLUGIN_HXX
 #define MPD_SIMPLE_DATABASE_PLUGIN_HXX
 
-#include "db/DatabasePlugin.hxx"
+#include "db/Interface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "db/LightSong.hxx"
 #include "Compiler.h"
 
 #include <cassert>
 
+struct config_param;
 struct Directory;
+struct DatabasePlugin;
+class EventLoop;
+class DatabaseListener;
 
 class SimpleDatabase : public Database {
 	AllocatedPath path;

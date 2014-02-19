@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DatabaseQueue.hxx"
 #include "DatabaseSong.hxx"
-#include "DatabasePlugin.hxx"
+#include "Interface.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "util/Error.hxx"

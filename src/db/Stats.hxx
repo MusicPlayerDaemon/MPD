@@ -17,32 +17,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Registry.hxx"
-#include "DatabasePlugin.hxx"
-#include "plugins/SimpleDatabasePlugin.hxx"
-#include "plugins/ProxyDatabasePlugin.hxx"
-#include "plugins/UpnpDatabasePlugin.hxx"
+#ifndef MPD_DATABASE_STATS_HXX
+#define MPD_DATABASE_STATS_HXX
 
-#include <string.h>
+struct DatabaseStats {
+	/**
+	 * Number of songs.
+	 */
+	unsigned song_count;
 
-const DatabasePlugin *const database_plugins[] = {
-	&simple_db_plugin,
-#ifdef HAVE_LIBMPDCLIENT
-	&proxy_db_plugin,
-#endif
-#ifdef HAVE_LIBUPNP
-	&upnp_db_plugin,
-#endif
-	nullptr
+	/**
+	 * Total duration of all songs (in seconds).
+	 */
+	unsigned long total_duration;
+
+	/**
+	 * Number of distinct artist names.
+	 */
+	unsigned artist_count;
+
+	/**
+	 * Number of distinct album names.
+	 */
+	unsigned album_count;
+
+	void Clear() {
+		song_count = 0;
+		total_duration = 0;
+		artist_count = album_count = 0;
+	}
 };
 
-const DatabasePlugin *
-GetDatabasePluginByName(const char *name)
-{
-	for (auto i = database_plugins; *i != nullptr; ++i)
-		if (strcmp((*i)->name, name) == 0)
-			return *i;
-
-	return nullptr;
-}
+#endif

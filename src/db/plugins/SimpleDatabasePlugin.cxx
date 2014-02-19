@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "SimpleDatabasePlugin.hxx"
+#include "db/DatabasePlugin.hxx"
 #include "db/Selection.hxx"
 #include "db/Helpers.hxx"
 #include "db/LightDirectory.hxx"

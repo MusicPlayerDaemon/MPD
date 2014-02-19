@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ProxyDatabasePlugin.hxx"
+#include "db/Interface.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "db/DatabaseListener.hxx"
 #include "db/Selection.hxx"
@@ -26,6 +27,7 @@
 #include "db/PlaylistInfo.hxx"
 #include "db/LightDirectory.hxx"
 #include "db/LightSong.hxx"
+#include "db/Stats.hxx"
 #include "SongFilter.hxx"
 #include "Compiler.h"
 #include "config/ConfigData.hxx"

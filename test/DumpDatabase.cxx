@@ -20,6 +20,7 @@
 #include "config.h"
 #include "db/Registry.hxx"
 #include "db/DatabasePlugin.hxx"
+#include "db/Interface.hxx"
 #include "db/Selection.hxx"
 #include "db/DatabaseListener.hxx"
 #include "db/LightDirectory.hxx"

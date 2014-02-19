@@ -18,7 +18,8 @@
  */
 
 #include "Helpers.hxx"
-#include "DatabasePlugin.hxx"
+#include "Stats.hxx"
+#include "Interface.hxx"
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
 

@@ -22,7 +22,7 @@
 #include "DatabaseSong.hxx"
 #include "Selection.hxx"
 #include "PlaylistFile.hxx"
-#include "DatabasePlugin.hxx"
+#include "Interface.hxx"
 #include "DetachedSong.hxx"
 #include "storage/StorageInterface.hxx"
 

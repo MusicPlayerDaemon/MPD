@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Playlist.hxx"
-#include "db/DatabasePlugin.hxx"
+#include "db/Interface.hxx"
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"

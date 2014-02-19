@@ -202,6 +202,8 @@ src_mpd_SOURCES += \
 	src/db/DatabaseError.cxx src/db/DatabaseError.hxx \
 	src/db/DatabaseLock.cxx src/db/DatabaseLock.hxx \
 	src/db/DatabasePlugin.hxx \
+	src/db/Interface.hxx \
+	src/db/Stats.hxx \
 	src/db/DatabaseListener.hxx \
 	src/db/Visitor.hxx \
 	src/db/Selection.cxx src/db/Selection.hxx

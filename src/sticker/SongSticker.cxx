@@ -21,7 +21,7 @@
 #include "SongSticker.hxx"
 #include "StickerDatabase.hxx"
 #include "db/LightSong.hxx"
-#include "db/DatabasePlugin.hxx"
+#include "db/Interface.hxx"
 #include "util/Error.hxx"
 
 #include <glib.h>

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "DatabaseSong.hxx"
 #include "LightSong.hxx"
-#include "DatabasePlugin.hxx"
+#include "Interface.hxx"
 #include "DetachedSong.hxx"
 #include "storage/StorageInterface.hxx"
 
