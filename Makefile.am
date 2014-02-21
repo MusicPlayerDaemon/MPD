@@ -1078,6 +1078,17 @@ liboutput_plugins_a_SOURCES += \
 libmixer_plugins_a_SOURCES += src/mixer/plugins/AlsaMixerPlugin.cxx
 endif
 
+if ANDROID
+liboutput_plugins_a_SOURCES += \
+	src/output/plugins/sles/Object.hxx \
+	src/output/plugins/sles/Engine.hxx \
+	src/output/plugins/sles/Play.hxx \
+	src/output/plugins/sles/AndroidSimpleBufferQueue.hxx \
+	src/output/plugins/sles/SlesOutputPlugin.cxx \
+	src/output/plugins/sles/SlesOutputPlugin.hxx
+OUTPUT_LIBS += -lOpenSLES
+endif
+
 if HAVE_ROAR
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/RoarOutputPlugin.cxx \

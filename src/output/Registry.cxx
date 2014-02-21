@@ -34,6 +34,7 @@
 #include "plugins/RecorderOutputPlugin.hxx"
 #include "plugins/RoarOutputPlugin.hxx"
 #include "plugins/ShoutOutputPlugin.hxx"
+#include "plugins/sles/SlesOutputPlugin.hxx"
 #include "plugins/SolarisOutputPlugin.hxx"
 #include "plugins/WinmmOutputPlugin.hxx"
 
@@ -44,6 +45,9 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 	&shout_output_plugin,
 #endif
 	&null_output_plugin,
+#ifdef ANDROID
+	&sles_output_plugin,
+#endif
 #ifdef HAVE_FIFO
 	&fifo_output_plugin,
 #endif
