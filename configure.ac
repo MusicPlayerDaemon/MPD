@@ -72,6 +72,7 @@ AC_CANONICAL_HOST
 
 host_is_unix=yes
 host_is_linux=no
+host_is_android=no
 host_is_darwin=no
 host_is_solaris=no
 host_is_windows=no
@@ -79,6 +80,13 @@ host_is_windows=no
 linux_auto=no
 
 case "$host_os" in
+linux-android*)
+	host_is_android=yes
+	host_is_linux=yes
+	linux_auto=auto
+	AM_CPPFLAGS="$AM_CPPFLAGS -DANDROID"
+	;;
+
 linux*)
 	host_is_linux=yes
 	linux_auto=auto
@@ -104,6 +112,8 @@ solaris*)
 	host_is_solaris=yes
 	;;
 esac
+
+AM_CONDITIONAL([ANDROID], [test x$host_is_android = xyes])
 AM_CONDITIONAL([HAVE_WINDOWS], [test x$host_is_windows = xyes])
 
 if test -z "$prefix" || test "x$prefix" = xNONE; then
