@@ -229,6 +229,16 @@ UPNP_SOURCES = \
 	src/lib/upnp/Action.hxx
 
 #
+# Android native library
+#
+
+if ANDROID
+all-local: libmpd.so
+libmpd.so: $(filter %.a,$(src_mpd_LDADD))
+	$(AM_V_CXXLD)$(CXXLD) -Wl,-shared -o $@ $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) $(src_mpd_LDADD) $(LIBS)
+endif
+
+#
 # Windows resource file
 #
 
