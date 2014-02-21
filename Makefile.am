@@ -769,7 +769,7 @@ libmodplug_decoder_plugin_a_SOURCES = \
 	src/decoder/plugins/ModplugDecoderPlugin.cxx \
 	src/decoder/plugins/ModplugDecoderPlugin.hxx
 libmodplug_decoder_plugin_a_CXXFLAGS = $(AM_CXXFLAGS) $(MODPLUG_CFLAGS)
-libmodplug_decoder_plugin_a_CPPFLAGS = $(src_mpd_CPPFLAGS)
+libmodplug_decoder_plugin_a_CPPFLAGS = $(AM_CPPFLAGS)
 noinst_LIBRARIES += libmodplug_decoder_plugin.a
 DECODER_LIBS += libmodplug_decoder_plugin.a $(MODPLUG_LIBS)
 endif
