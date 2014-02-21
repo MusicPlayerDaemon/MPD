@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 
+class PlayerListener;
 class MultipleOutputs;
 class DetachedSong;
 
@@ -92,6 +93,8 @@ struct player_status {
 };
 
 struct PlayerControl {
+	PlayerListener &listener;
+
 	MultipleOutputs &outputs;
 
 	unsigned buffer_chunks;
@@ -137,8 +140,8 @@ struct PlayerControl {
 	 * A copy of the current #DetachedSong after its tags have
 	 * been updated by the decoder (for example, a radio stream
 	 * that has sent a new tag after switching to the next song).
-	 * This shall be used by the GlobalEvents::TAG handler to
-	 * update the current #DetachedSong in the queue.
+	 * This shall be used by PlayerListener::OnPlayerTagModified()
+	 * to update the current #DetachedSong in the queue.
 	 *
 	 * Protected by #mutex.  Set by the PlayerThread and consumed
 	 * by the main thread.
@@ -173,7 +176,8 @@ struct PlayerControl {
 	 */
 	bool border_pause;
 
-	PlayerControl(MultipleOutputs &_outputs,
+	PlayerControl(PlayerListener &_listener,
+		      MultipleOutputs &_outputs,
 		      unsigned buffer_chunks,
 		      unsigned buffered_before_play);
 	~PlayerControl();

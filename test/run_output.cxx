@@ -53,10 +53,11 @@ filter_plugin_by_name(gcc_unused const char *name)
 	return NULL;
 }
 
-PlayerControl::PlayerControl(gcc_unused MultipleOutputs &_outputs,
+PlayerControl::PlayerControl(PlayerListener &_listener,
+			     MultipleOutputs &_outputs,
 			     gcc_unused unsigned _buffer_chunks,
 			     gcc_unused unsigned _buffered_before_play)
-	:outputs(_outputs) {}
+	:listener(_listener), outputs(_outputs) {}
 PlayerControl::~PlayerControl() {}
 
 static AudioOutput *
@@ -69,7 +70,8 @@ load_audio_output(EventLoop &event_loop, const char *name)
 		return nullptr;
 	}
 
-	static struct PlayerControl dummy_player_control(*(MultipleOutputs *)nullptr,
+	static struct PlayerControl dummy_player_control(*(PlayerListener *)nullptr,
+							 *(MultipleOutputs *)nullptr,
 							 32, 4);
 
 	Error error;

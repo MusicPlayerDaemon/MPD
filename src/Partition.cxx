@@ -23,6 +23,7 @@
 #include "output/MultipleOutputs.hxx"
 #include "mixer/Volume.hxx"
 #include "Idle.hxx"
+#include "GlobalEvents.hxx"
 
 #ifdef ENABLE_DATABASE
 
@@ -48,6 +49,18 @@ void
 Partition::SyncWithPlayer()
 {
 	playlist.SyncWithPlayer(pc);
+}
+
+void
+Partition::OnPlayerSync()
+{
+	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
+}
+
+void
+Partition::OnPlayerTagModified()
+{
+	GlobalEvents::Emit(GlobalEvents::TAG);
 }
 
 void

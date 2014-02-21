@@ -26,10 +26,11 @@
 
 #include <assert.h>
 
-PlayerControl::PlayerControl(MultipleOutputs &_outputs,
+PlayerControl::PlayerControl(PlayerListener &_listener,
+			     MultipleOutputs &_outputs,
 			     unsigned _buffer_chunks,
 			     unsigned _buffered_before_play)
-	:outputs(_outputs),
+	:listener(_listener), outputs(_outputs),
 	 buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
 	 command(PlayerCommand::NONE),

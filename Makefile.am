@@ -137,6 +137,7 @@ libmpd_a_SOURCES = \
 	src/Permission.cxx src/Permission.hxx \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx src/PlayerControl.hxx \
+	src/PlayerListener.hxx \
 	src/Playlist.cxx src/Playlist.hxx \
 	src/PlaylistError.cxx src/PlaylistError.hxx \
 	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \

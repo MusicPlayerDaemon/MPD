@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PlayerThread.hxx"
+#include "PlayerListener.hxx"
 #include "decoder/DecoderThread.hxx"
 #include "decoder/DecoderControl.hxx"
 #include "MusicPipe.hxx"
@@ -31,7 +32,6 @@
 #include "output/MultipleOutputs.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
-#include "GlobalEvents.hxx"
 #include "util/Domain.hxx"
 #include "thread/Name.hxx"
 #include "Log.hxx"
@@ -359,7 +359,7 @@ Player::WaitForDecoder()
 	pc.Unlock();
 
 	/* call syncPlaylistWithQueue() in the main thread */
-	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
+	pc.listener.OnPlayerSync();
 
 	return true;
 }
@@ -696,7 +696,7 @@ update_song_tag(PlayerControl &pc, DetachedSong &song, const Tag &new_tag)
 
 	/* the main thread will update the playlist version when he
 	   receives this event */
-	GlobalEvents::Emit(GlobalEvents::TAG);
+	pc.listener.OnPlayerTagModified();
 
 	/* notify all clients that the tag of the current song has
 	   changed */
@@ -1124,7 +1124,7 @@ player_task(void *arg)
 
 			pc.Unlock();
 			do_play(pc, dc, buffer);
-			GlobalEvents::Emit(GlobalEvents::PLAYLIST);
+			pc.listener.OnPlayerSync();
 			pc.Lock();
 			break;
 
