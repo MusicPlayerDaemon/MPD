@@ -51,7 +51,6 @@
 #include <list>
 
 #include <curl/curl.h>
-#include <glib.h>
 
 #if LIBCURL_VERSION_NUM < 0x071200
 #error libcurl is too old
