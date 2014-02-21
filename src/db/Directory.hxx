@@ -28,10 +28,8 @@
 
 #include <string>
 
-#include <sys/types.h>
-
-#define DEVICE_INARCHIVE (dev_t)(-1)
-#define DEVICE_CONTAINER (dev_t)(-2)
+static constexpr unsigned DEVICE_INARCHIVE = -1;
+static constexpr unsigned DEVICE_CONTAINER = -2;
 
 #define directory_for_each_child(pos, directory) \
 	list_for_each_entry(pos, &(directory).children, siblings)
@@ -81,8 +79,7 @@ struct Directory {
 
 	Directory *parent;
 	time_t mtime;
-	ino_t inode;
-	dev_t device;
+	unsigned inode, device;
 	bool have_stat; /* not needed if ino_t == dev_t == 0 is impossible */
 
 	std::string path;
