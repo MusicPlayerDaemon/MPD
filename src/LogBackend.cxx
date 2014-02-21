@@ -36,6 +36,33 @@
 #include <syslog.h>
 #endif
 
+#ifdef ANDROID
+#include <android/log.h>
+
+static int
+ToAndroidLogLevel(LogLevel log_level)
+{
+	switch (log_level) {
+	case LogLevel::DEBUG:
+		return ANDROID_LOG_DEBUG;
+
+	case LogLevel::INFO:
+	case LogLevel::DEFAULT:
+		return ANDROID_LOG_INFO;
+
+	case LogLevel::WARNING:
+		return ANDROID_LOG_WARN;
+
+	case LogLevel::ERROR:
+		return ANDROID_LOG_ERROR;
+	}
+
+	assert(false);
+	gcc_unreachable();
+}
+
+#else
+
 static LogLevel log_threshold = LogLevel::INFO;
 
 #ifdef HAVE_GLIB
@@ -176,9 +203,16 @@ FileLog(const Domain &domain, const char *message)
 #endif
 }
 
+#endif /* !ANDROID */
+
 void
 Log(const Domain &domain, LogLevel level, const char *msg)
 {
+#ifdef ANDROID
+	__android_log_print(ToAndroidLogLevel(level), "MPD",
+			    "%s: %s", domain.GetName(), msg);
+#else
+
 	if (level < log_threshold)
 		return;
 
@@ -190,4 +224,5 @@ Log(const Domain &domain, LogLevel level, const char *msg)
 #endif
 
 	FileLog(domain, msg);
+#endif /* !ANDROID */
 }

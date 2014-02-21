@@ -49,6 +49,8 @@
 
 static constexpr Domain log_domain("log");
 
+#ifndef ANDROID
+
 static int out_fd;
 static AllocatedPath out_path = AllocatedPath::Null();
 
@@ -101,16 +103,29 @@ parse_log_level(const char *value, unsigned line)
 	}
 }
 
+#endif
+
 void
 log_early_init(bool verbose)
 {
+#ifdef ANDROID
+	(void)verbose;
+#else
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
+#endif
 }
 
 bool
 log_init(bool verbose, bool use_stdout, Error &error)
 {
+#ifdef ANDROID
+	(void)verbose;
+	(void)use_stdout;
+	(void)error;
+
+	return true;
+#else
 	const struct config_param *param;
 
 #ifdef HAVE_GLIB
@@ -151,7 +166,10 @@ log_init(bool verbose, bool use_stdout, Error &error)
 				log_init_file(param->line, error);
 		}
 	}
+#endif
 }
+
+#ifndef ANDROID
 
 static void
 close_log_files(void)
@@ -161,16 +179,22 @@ close_log_files(void)
 #endif
 }
 
+#endif
+
 void
 log_deinit(void)
 {
+#ifndef ANDROID
 	close_log_files();
 	out_path = AllocatedPath::Null();
+#endif
 }
-
 
 void setup_log_output(bool use_stdout)
 {
+#ifdef ANDROID
+	(void)use_stdout;
+#else
 	if (use_stdout)
 		return;
 
@@ -193,10 +217,14 @@ void setup_log_output(bool use_stdout)
 #ifdef HAVE_GLIB
 	SetLogCharset(nullptr);
 #endif
+#endif
 }
 
 int cycle_log_files(void)
 {
+#ifdef ANDROID
+	return 0;
+#else
 	int fd;
 
 	if (out_path.IsNull())
@@ -217,4 +245,5 @@ int cycle_log_files(void)
 	redirect_logs(fd);
 	FormatDebug(log_domain, "Done cycling log files");
 	return 0;
+#endif
 }
