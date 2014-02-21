@@ -87,7 +87,6 @@ libmpd_a_SOURCES = \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
-	src/CommandLine.cxx src/CommandLine.hxx \
 	src/CrossFade.cxx src/CrossFade.hxx \
 	src/decoder/DecoderError.cxx src/decoder/DecoderError.hxx \
 	src/decoder/DecoderThread.cxx src/decoder/DecoderThread.hxx \
@@ -125,9 +124,6 @@ libmpd_a_SOURCES = \
 	src/Instance.cxx src/Instance.hxx \
 	src/win32/Win32Main.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
-	src/unix/SignalHandlers.cxx src/unix/SignalHandlers.hxx \
-	src/unix/Daemon.cxx src/unix/Daemon.hxx \
-	src/unix/PidFile.hxx \
 	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
@@ -176,6 +172,15 @@ libmpd_a_SOURCES = \
 	src/mixer/Volume.cxx src/mixer/Volume.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx
+
+if ANDROID
+else
+libmpd_a_SOURCES += \
+	src/unix/SignalHandlers.cxx src/unix/SignalHandlers.hxx \
+	src/unix/Daemon.cxx src/unix/Daemon.hxx \
+	src/unix/PidFile.hxx \
+	src/CommandLine.cxx src/CommandLine.hxx
+endif
 
 if ENABLE_DATABASE
 libmpd_a_SOURCES += \

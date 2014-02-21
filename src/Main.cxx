@@ -114,6 +114,8 @@ Instance *instance;
 
 static StateFile *state_file;
 
+#ifndef ANDROID
+
 static bool
 glue_daemonize_init(const struct options *options, Error &error)
 {
@@ -130,6 +132,8 @@ glue_daemonize_init(const struct options *options, Error &error)
 
 	return true;
 }
+
+#endif
 
 static bool
 glue_mapper_init(Error &error)
@@ -375,6 +379,7 @@ int mpd_main(int argc, char *argv[])
 	struct options options;
 	Error error;
 
+#ifndef ANDROID
 	daemonize_close_stdin();
 
 #ifdef HAVE_LOCALE_H
@@ -390,11 +395,16 @@ int mpd_main(int argc, char *argv[])
 	g_thread_init(nullptr);
 #endif
 #endif
+#endif
 
 	winsock_init();
 	io_thread_init();
 	config_global_init();
 
+#ifdef ANDROID
+	(void)argc;
+	(void)argv;
+#else
 	if (!parse_cmdline(argc, argv, &options, error)) {
 		LogError(error);
 		return EXIT_FAILURE;
@@ -404,6 +414,7 @@ int mpd_main(int argc, char *argv[])
 		LogError(error);
 		return EXIT_FAILURE;
 	}
+#endif
 
 	stats_global_init();
 	TagLoadConfig();
@@ -440,8 +451,10 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+#ifndef ANDROID
 	daemonize_set_user();
 	daemonize_begin(options.daemon);
+#endif
 
 	GlobalEvents::Initialize(*instance->event_loop);
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
@@ -490,11 +503,13 @@ int mpd_main(int argc, char *argv[])
 
 	playlist_list_global_init();
 
+#ifndef ANDROID
 	daemonize_commit();
 
 	setup_log_output(options.log_stderr);
 
 	SignalHandlersInit(*instance->event_loop);
+#endif
 
 	io_thread_start();
 
@@ -616,10 +631,14 @@ int mpd_main(int argc, char *argv[])
 #endif
 	config_global_finish();
 	io_thread_deinit();
+#ifndef ANDROID
 	SignalHandlersFinish();
+#endif
 	delete instance->event_loop;
 	delete instance;
+#ifndef ANDROID
 	daemonize_finish();
+#endif
 #ifdef WIN32
 	WSACleanup();
 #endif
