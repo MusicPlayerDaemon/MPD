@@ -134,7 +134,7 @@ class Project:
         self.base = m.group(1)
 
         if name is None or version is None:
-            m = re.match(r'^([-\w]+)-(\d[\d.]*)$', self.base)
+            m = re.match(r'^([-\w]+)-(\d[\d.]*[a-z]?)$', self.base)
             if name is None: name = m.group(1)
             if version is None: version = m.group(2)
 
@@ -245,6 +245,14 @@ thirdparty_libs = [
             '--disable-xmms-plugin', '--disable-cpplibs',
         ],
         use_clang=True,
+    ),
+
+    AutotoolsProject(
+        'ftp://ftp.mars.org/pub/mpeg/libmad-0.15.1b.tar.gz',
+        '1be543bc30c56fb6bea1d7bf6a64e66c',
+        'lib/libmad.a',
+        ['--disable-shared', '--enable-static'],
+        autogen=True,
     ),
 
     AutotoolsProject(
