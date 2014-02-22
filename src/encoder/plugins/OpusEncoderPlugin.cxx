@@ -24,14 +24,13 @@
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
+#include "util/Alloc.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
 
 #include <opus.h>
 #include <ogg/ogg.h>
-
-#include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -188,7 +187,7 @@ opus_encoder_open(Encoder *_encoder,
 	encoder->buffer_frames = audio_format.sample_rate / 50;
 	encoder->buffer_size = encoder->frame_size * encoder->buffer_frames;
 	encoder->buffer_position = 0;
-	encoder->buffer = (unsigned char *)g_malloc(encoder->buffer_size);
+	encoder->buffer = (unsigned char *)xalloc(encoder->buffer_size);
 
 	encoder->stream.Initialize(GenerateOggSerial());
 	encoder->packetno = 0;
@@ -202,7 +201,7 @@ opus_encoder_close(Encoder *_encoder)
 	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
 
 	encoder->stream.Deinitialize();
-	g_free(encoder->buffer);
+	free(encoder->buffer);
 	opus_encoder_destroy(encoder->enc);
 }
 
@@ -366,7 +365,7 @@ opus_encoder_generate_tags(struct opus_encoder *encoder)
 	size_t version_length = strlen(version);
 
 	size_t comments_size = 8 + 4 + version_length + 4;
-	unsigned char *comments = (unsigned char *)g_malloc(comments_size);
+	unsigned char *comments = (unsigned char *)xalloc(comments_size);
 	memcpy(comments, "OpusTags", 8);
 	*(uint32_t *)(comments + 8) = ToLE32(version_length);
 	memcpy(comments + 12, version, version_length);
@@ -382,7 +381,7 @@ opus_encoder_generate_tags(struct opus_encoder *encoder)
 	encoder->stream.PacketIn(packet);
 	encoder->stream.Flush();
 
-	g_free(comments);
+	free(comments);
 }
 
 static size_t
