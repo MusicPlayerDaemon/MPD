@@ -237,6 +237,14 @@ thirdparty_libs = [
     ),
 
     AutotoolsProject(
+        'http://downloads.xiph.org/releases/opus/opus-1.1.tar.gz',
+        'c5a8cf7c0b066759542bc4ca46817ac6',
+        'lib/libopus.a',
+        ['--disable-shared', '--enable-static'],
+        use_clang=True,
+    ),
+
+    AutotoolsProject(
         'https://svn.xiph.org/releases/flac/flac-1.3.0.tar.xz',
         '13b5c214cee8373464d3d65dee362cdd',
         'lib/libFLAC.a',
