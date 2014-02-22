@@ -79,8 +79,8 @@ def select_toolchain(use_cxx, use_clang):
 
     cflags = '-Os -g ' + target_arch
     cxxflags = '-Os -g ' + target_arch
-    cppflags = '--sysroot=' + target_root
-    ldflags = '--sysroot=' + target_root
+    cppflags = '--sysroot=' + target_root + ' -I' + root_path + '/include'
+    ldflags = '--sysroot=' + target_root + ' -L' + root_path + '/lib'
     libs = ''
 
     if use_cxx:
