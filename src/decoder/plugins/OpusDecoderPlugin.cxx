@@ -35,8 +35,6 @@
 #include <opus.h>
 #include <ogg/ogg.h>
 
-#include <glib.h>
-
 #include <string.h>
 
 static constexpr opus_int32 opus_sample_rate = 48000;
@@ -105,7 +103,7 @@ public:
 
 MPDOpusDecoder::~MPDOpusDecoder()
 {
-	g_free(output_buffer);
+	delete[] output_buffer;
 
 	if (opus_decoder != nullptr)
 		opus_decoder_destroy(opus_decoder);
@@ -270,9 +268,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	   to hold a quarter second, larger than 120ms required by
 	   libopus */
 	output_size = audio_format.sample_rate / 4;
-	output_buffer = (opus_int16 *)
-		g_malloc(sizeof(*output_buffer) * output_size *
-			 audio_format.channels);
+	output_buffer = new opus_int16[output_size * audio_format.channels];
 
 	return decoder_get_command(decoder);
 }
