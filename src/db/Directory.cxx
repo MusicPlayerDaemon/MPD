@@ -86,20 +86,11 @@ Directory::CreateChild(const char *name_utf8)
 	assert(name_utf8 != nullptr);
 	assert(*name_utf8 != 0);
 
-	char *allocated;
-	const char *path_utf8;
-	if (IsRoot()) {
-		allocated = nullptr;
-		path_utf8 = name_utf8;
-	} else {
-		allocated = g_strconcat(GetPath(),
-					"/", name_utf8, nullptr);
-		path_utf8 = allocated;
-	}
+	std::string path_utf8 = IsRoot()
+		? std::string(name_utf8)
+		: PathTraitsUTF8::Build(GetPath(), name_utf8);
 
-	Directory *child = new Directory(path_utf8, this);
-	g_free(allocated);
-
+	Directory *child = new Directory(std::move(path_utf8), this);
 	list_add_tail(&child->siblings, &children);
 	return child;
 }
