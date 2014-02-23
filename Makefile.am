@@ -16,6 +16,7 @@ noinst_LIBRARIES = \
 	libthread.a \
 	libsystem.a \
 	libevent.a \
+	libicu.a \
 	libpcm.a \
 	libconf.a \
 	libtag.a \
@@ -56,6 +57,7 @@ src_mpd_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
+	$(ICU_LDADD) \
 	libutil.a \
 	libfs.a \
 	$(SYSTEMD_DAEMON_LIBS) \
@@ -409,6 +411,14 @@ libevent_a_SOURCES = \
 	src/event/ServerSocket.cxx src/event/ServerSocket.hxx \
 	src/event/Call.hxx src/event/Call.cxx \
 	src/event/Loop.cxx src/event/Loop.hxx
+
+# UTF-8 library
+
+libicu_a_SOURCES = \
+	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
+	src/lib/icu/Error.cxx src/lib/icu/Error.hxx
+
+ICU_LDADD = libicu.a $(ICU_LIBS)
 
 # PCM library
 
@@ -1426,6 +1436,7 @@ test_DumpDatabase_LDADD = \
 	libevent.a \
 	libsystem.a \
 	libfs.a \
+	$(ICU_LDADD) \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/protocol/Ack.cxx \

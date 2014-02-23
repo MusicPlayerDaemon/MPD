@@ -25,10 +25,7 @@
 #include "tag/Tag.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
-
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
+#include "lib/icu/Collate.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -56,25 +53,10 @@ locate_parse_type(const char *str)
 
 gcc_pure
 static std::string
-CaseFold(const char *p)
-{
-#ifdef HAVE_GLIB
-	char *q = g_utf8_casefold(p, -1);
-	std::string result(q);
-	g_free(q);
-	return result;
-#else
-	// TODO: implement without GLib
-	return p;
-#endif
-}
-
-gcc_pure
-static std::string
 ImportString(const char *p, bool fold_case)
 {
 	return fold_case
-		? CaseFold(p)
+		? IcuCaseFold(p)
 		: std::string(p);
 }
 
@@ -90,17 +72,8 @@ SongFilter::Item::StringMatch(const char *s) const
 	assert(s != nullptr);
 
 	if (fold_case) {
-#ifdef HAVE_GLIB
-		char *p = g_utf8_casefold(s, -1);
-#else
-		// TODO: implement without GLib
-		const char *p = s;
-#endif
-		const bool result = strstr(p, value.c_str()) != NULL;
-#ifdef HAVE_GLIB
-		g_free(p);
-#endif
-		return result;
+		const std::string folded = IcuCaseFold(s);
+		return folded.find(value) != folded.npos;
 	} else {
 		return s == value;
 	}

@@ -21,12 +21,11 @@
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "tag/Tag.hxx"
+#include "lib/icu/Collate.hxx"
 
 extern "C" {
 #include "util/list_sort.h"
 }
-
-#include <glib.h>
 
 #include <stdlib.h>
 
@@ -39,7 +38,7 @@ compare_utf8_string(const char *a, const char *b)
 	if (b == nullptr)
 		return 1;
 
-	return g_utf8_collate(a, b);
+	return IcuCollate(a, b);
 }
 
 /**
@@ -104,7 +103,7 @@ song_cmp(gcc_unused void *priv, struct list_head *_a, struct list_head *_b)
 		return ret;
 
 	/* still no difference?  compare file name */
-	return g_utf8_collate(a->uri, b->uri);
+	return IcuCollate(a->uri, b->uri);
 }
 
 void

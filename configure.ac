@@ -627,6 +627,19 @@ dnl ---------------------------------------------------------------------------
 dnl Mandatory Libraries
 dnl ---------------------------------------------------------------------------
 
+AC_ARG_ENABLE(icu,
+	AS_HELP_STRING([--enable-icu],
+		[enable libicu for Unicode (default: enabled)]),,
+	enable_icu=yes)
+
+if test x$enable_icu = xyes; then
+	PKG_CHECK_MODULES([ICU], [icu-i18n],,
+		[AC_MSG_ERROR([libicu not found])])
+
+	AC_DEFINE(HAVE_ICU, 1, [Define if libicu is used])
+fi
+AM_CONDITIONAL(HAVE_ICU, test x$enable_icu = xyes)
+
 AC_ARG_ENABLE(glib,
 	AS_HELP_STRING([--enable-glib],
 		[enable GLib usage (default: enabled)]),,

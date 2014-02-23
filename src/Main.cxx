@@ -57,6 +57,7 @@
 #include "util/Domain.hxx"
 #include "thread/Id.hxx"
 #include "thread/Slack.hxx"
+#include "lib/icu/Collate.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"
 #include "config/ConfigDefaults.hxx"
@@ -405,6 +406,11 @@ int mpd_main(int argc, char *argv[])
 #endif
 #endif
 
+	if (!IcuCollateInit(error)) {
+		LogError(error);
+		return EXIT_FAILURE;
+	}
+
 	winsock_init();
 	io_thread_init();
 	config_global_init();
@@ -650,6 +656,8 @@ int mpd_main(int argc, char *argv[])
 #ifdef WIN32
 	WSACleanup();
 #endif
+
+	IcuCollateFinish();
 
 	log_deinit();
 	return EXIT_SUCCESS;

@@ -27,6 +27,7 @@
 #include "SongSort.hxx"
 #include "Song.hxx"
 #include "LightSong.hxx"
+#include "lib/icu/Collate.hxx"
 #include "fs/Traits.hxx"
 #include "util/Alloc.hxx"
 #include "util/Error.hxx"
@@ -34,8 +35,6 @@
 extern "C" {
 #include "util/list_sort.h"
 }
-
-#include <glib.h>
 
 #include <assert.h>
 #include <string.h>
@@ -229,7 +228,8 @@ directory_cmp(gcc_unused void *priv,
 {
 	const Directory *a = (const Directory *)_a;
 	const Directory *b = (const Directory *)_b;
-	return g_utf8_collate(a->path.c_str(), b->path.c_str());
+
+	return IcuCollate(a->path.c_str(), b->path.c_str());
 }
 
 void

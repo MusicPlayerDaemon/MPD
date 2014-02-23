@@ -319,6 +319,7 @@ configure = [
     '--enable-silent-rules',
 
     '--disable-glib',
+    '--disable-icu',
 
     # disabled for now because these features require GLib:
     '--disable-database',
