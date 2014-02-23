@@ -41,10 +41,10 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 
-Directory::Directory(const char *_path_utf8, Directory *_parent)
+Directory::Directory(std::string &&_path_utf8, Directory *_parent)
 	:parent(_parent),
 	 mtime(0), have_stat(false),
-	 path(_path_utf8)
+	 path(std::move(_path_utf8))
 {
 	INIT_LIST_HEAD(&children);
 	INIT_LIST_HEAD(&songs);

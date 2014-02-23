@@ -85,7 +85,7 @@ struct Directory {
 	std::string path;
 
 public:
-	Directory(const char *_path_utf8, Directory *_parent);
+	Directory(std::string &&_path_utf8, Directory *_parent);
 	~Directory();
 
 	/**
@@ -93,7 +93,7 @@ public:
 	 */
 	gcc_malloc
 	static Directory *NewRoot() {
-		return new Directory("", nullptr);
+		return new Directory(std::string(), nullptr);
 	}
 
 	/**
