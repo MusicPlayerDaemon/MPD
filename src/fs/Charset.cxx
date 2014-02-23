@@ -80,9 +80,9 @@ const char *
 GetFSCharset()
 {
 #ifdef HAVE_GLIB
-	return fs_charset.empty() ? "utf-8" : fs_charset.c_str();
+	return fs_charset.empty() ? "UTF-8" : fs_charset.c_str();
 #else
-	return "utf-8";
+	return "UTF-8";
 #endif
 }
 
