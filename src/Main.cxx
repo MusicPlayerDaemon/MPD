@@ -557,7 +557,7 @@ int mpd_main(int argc, char *argv[])
 					 *instance->storage,
 					 *instance->update,
 					 config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
-							     G_MAXUINT));
+							     INT_MAX));
 #else
 		FormatWarning(main_domain,
 			      "inotify: auto_update was disabled. enable during compilation phase");
