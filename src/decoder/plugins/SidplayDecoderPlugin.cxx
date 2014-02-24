@@ -22,7 +22,7 @@
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
-#include "util/Alloc.hxx"
+#include "util/FormatString.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
 #include "Log.hxx"
@@ -406,9 +406,7 @@ sidplay_container_scan(Path path_fs, const unsigned int tnum)
 	/* Construct container/tune path names, eg.
 		Delta.sid/tune_001.sid */
 	if(tnum<=info.songs) {
-		char *subtune= g_strdup_printf(
-			SUBTUNE_PREFIX "%03u.sid", tnum);
-		return subtune;
+		return FormatNew(SUBTUNE_PREFIX "%03u.sid", tnum);
 	} else
 		return nullptr;
 }

@@ -34,8 +34,6 @@
 
 #include <sys/stat.h>
 
-#include <glib.h>
-
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
 				    const FileInfo &info)
@@ -120,7 +118,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 
 		FormatDefault(update_domain, "added %s/%s",
 			      directory.GetPath(), vtrack);
-		g_free(vtrack);
+		delete[] vtrack;
 	}
 
 	if (tnum == 1) {

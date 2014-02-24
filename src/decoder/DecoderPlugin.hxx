@@ -95,6 +95,8 @@ struct DecoderPlugin {
 	 * @return nullptr if there are no multiple files
 	 * a filename for every single track according to tnum (param 2)
 	 * do not include full pathname here, just the "virtual" file
+	 *
+	 * Free the return value with delete[].
 	 */
 	char* (*container_scan)(Path path_fs, const unsigned int tnum);
 
