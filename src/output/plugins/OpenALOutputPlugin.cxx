@@ -23,7 +23,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <glib.h>
+#include <unistd.h>
 
 #ifndef __APPLE__
 #include <AL/al.h>
@@ -235,7 +235,7 @@ openal_play(AudioOutput *ao, const void *chunk, size_t size,
 	} else {
 		/* wait for processed buffer */
 		while (!openal_has_processed(od))
-			g_usleep(10);
+			usleep(10);
 
 		alSourceUnqueueBuffers(od->source, 1, &buffer);
 	}
