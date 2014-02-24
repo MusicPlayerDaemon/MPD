@@ -43,6 +43,11 @@
 
 static constexpr unsigned DB_FORMAT = 1;
 
+/**
+ * The oldest database format understood by this MPD version.
+ */
+static constexpr unsigned OLDEST_DB_FORMAT = 1;
+
 void
 db_save_internal(FILE *fp, const Directory &music_root)
 {
@@ -128,7 +133,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 		}
 	}
 
-	if (format != DB_FORMAT) {
+	if (format < OLDEST_DB_FORMAT || format > DB_FORMAT) {
 		error.Set(db_domain,
 			  "Database format mismatch, "
 			  "discarding database file");
