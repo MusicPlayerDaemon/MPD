@@ -26,8 +26,6 @@
 #include "system/SocketError.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <assert.h>
 #include <string.h>
 
@@ -142,7 +140,9 @@ HttpdClient::HandleLine(const char *line)
 bool
 HttpdClient::SendResponse()
 {
-	char buffer[1024];
+	char buffer[1024], *allocated = nullptr;
+	const char *response;
+
 	assert(state == RESPONSE);
 
 	if (dlna_streaming_requested) {
@@ -158,18 +158,14 @@ HttpdClient::SendResponse()
 			 "contentFeatures.dlna.org: DLNA.ORG_OP=01;DLNA.ORG_CI=0\r\n"
 			 "\r\n",
 			 httpd.content_type);
+		response = buffer;
 
 	} else if (metadata_requested) {
-		char *metadata_header =
+		response = allocated =
 			icy_server_metadata_header(httpd.name, httpd.genre,
 						   httpd.website,
 						   httpd.content_type,
 						   metaint);
-
-		g_strlcpy(buffer, metadata_header, sizeof(buffer));
-
-		delete[] metadata_header;
-
        } else { /* revert to a normal HTTP request */
 		snprintf(buffer, sizeof(buffer),
 			 "HTTP/1.1 200 OK\r\n"
@@ -179,9 +175,11 @@ HttpdClient::SendResponse()
 			 "Cache-Control: no-cache, no-store\r\n"
 			 "\r\n",
 			 httpd.content_type);
+		response = buffer;
 	}
 
-	ssize_t nbytes = SocketMonitor::Write(buffer, strlen(buffer));
+	ssize_t nbytes = SocketMonitor::Write(response, strlen(response));
+	delete[] allocated;
 	if (gcc_unlikely(nbytes < 0)) {
 		const SocketErrorMessage msg;
 		FormatWarning(httpd_output_domain,
@@ -321,7 +319,7 @@ HttpdClient::TryWrite()
 				metadata_sent = true;
 			}
 		} else {
-			guchar empty_data = 0;
+			char empty_data = 0;
 
 			ssize_t nbytes = Write(&empty_data, 1);
 			if (nbytes < 0) {
@@ -406,12 +404,12 @@ HttpdClient::PushPage(Page *page)
 void
 HttpdClient::PushMetaData(Page *page)
 {
+	assert(page != nullptr);
+
 	if (metadata) {
 		metadata->Unref();
 		metadata = nullptr;
 	}
-
-	g_return_if_fail (page);
 
 	page->Ref();
 	metadata = page;
