@@ -127,11 +127,15 @@ def download_tarball(url, md5):
 
 class Project:
     def __init__(self, url, md5, installed, name=None, version=None,
+                 base=None,
                  use_cxx=False, use_clang=False):
-        basename = os.path.basename(url)
-        m = re.match(r'^(.+)\.(tar(\.(gz|bz2|xz|lzma))?|zip)$', basename)
-        if not m: raise
-        self.base = m.group(1)
+        if base is None:
+            basename = os.path.basename(url)
+            m = re.match(r'^(.+)\.(tar(\.(gz|bz2|xz|lzma))?|zip)$', basename)
+            if not m: raise
+            self.base = m.group(1)
+        else:
+            self.base = base
 
         if name is None or version is None:
             m = re.match(r'^([-\w]+)-(\d[\d.]*[a-z]?)$', self.base)
