@@ -41,7 +41,7 @@
 #define DIRECTORY_FS_CHARSET "fs_charset: "
 #define DB_TAG_PREFIX "tag: "
 
-static constexpr unsigned DB_FORMAT = 1;
+static constexpr unsigned DB_FORMAT = 2;
 
 /**
  * The oldest database format understood by this MPD version.
