@@ -48,7 +48,7 @@ IcuCollateInit(Error &error)
 	assert(collator == nullptr);
 	assert(!error.IsDefined());
 
-	UErrorCode code;
+	UErrorCode code = U_ZERO_ERROR;
 	collator = ucol_open("", &code);
 	if (collator == nullptr) {
 		error.Format(icu_domain, int(code),
