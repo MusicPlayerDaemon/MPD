@@ -26,8 +26,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
-
 #include <pulse/thread-mainloop.h>
 #include <pulse/context.h>
 #include <pulse/stream.h>
@@ -38,6 +36,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 #define MPD_PULSE_NAME "Music Player Daemon"
 
@@ -327,7 +326,7 @@ pulse_output_init(const config_param &param, Error &error)
 {
 	PulseOutput *po;
 
-	g_setenv("PULSE_PROP_media.role", "music", true);
+	setenv("PULSE_PROP_media.role", "music", true);
 
 	po = new PulseOutput();
 	if (!po->base.Configure(param, error)) {
