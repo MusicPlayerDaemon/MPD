@@ -217,7 +217,7 @@ gme_scan_file(Path path_fs,
 	Music_Emu *emu;
 	const char *gme_err =
 		gme_open_file(path_container, &emu, GME_SAMPLE_RATE);
-	g_free(path_container);
+	free(path_container);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return false;
