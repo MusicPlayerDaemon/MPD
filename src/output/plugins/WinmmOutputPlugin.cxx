@@ -26,8 +26,6 @@
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 
-#include <glib.h>
-
 #include <stdlib.h>
 #include <string.h>
 

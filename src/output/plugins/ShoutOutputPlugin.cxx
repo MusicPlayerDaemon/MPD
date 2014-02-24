@@ -29,7 +29,6 @@
 #include "Log.hxx"
 
 #include <shout/shout.h>
-#include <glib.h>
 
 #include <assert.h>
 #include <stdlib.h>
