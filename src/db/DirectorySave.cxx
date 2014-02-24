@@ -31,18 +31,52 @@
 #include "util/Domain.hxx"
 
 #include <stddef.h>
+#include <string.h>
 
 #define DIRECTORY_DIR "directory: "
+#define DIRECTORY_TYPE "type: "
 #define DIRECTORY_MTIME "mtime: "
 #define DIRECTORY_BEGIN "begin: "
 #define DIRECTORY_END "end: "
 
 static constexpr Domain directory_domain("directory");
 
+gcc_const
+static const char *
+DeviceToTypeString(unsigned device)
+{
+	switch (device) {
+	case DEVICE_INARCHIVE:
+		return "archive";
+
+	case DEVICE_CONTAINER:
+		return "container";
+
+	default:
+		return nullptr;
+	}
+}
+
+gcc_pure
+static unsigned
+ParseTypeString(const char *type)
+{
+	if (strcmp(type, "archive") == 0)
+		return DEVICE_INARCHIVE;
+	else if (strcmp(type, "container") == 0)
+		return DEVICE_CONTAINER;
+	else
+		return 0;
+}
+
 void
 directory_save(FILE *fp, const Directory &directory)
 {
 	if (!directory.IsRoot()) {
+		const char *type = DeviceToTypeString(directory.device);
+		if (type != nullptr)
+			fprintf(fp, DIRECTORY_TYPE "%s\n", type);
+
 		if (directory.mtime != 0)
 			fprintf(fp, DIRECTORY_MTIME "%lu\n",
 				(unsigned long)directory.mtime);
@@ -76,6 +110,9 @@ ParseLine(Directory &directory, const char *line)
 	if (StringStartsWith(line, DIRECTORY_MTIME)) {
 		directory.mtime =
 			ParseUint64(line + sizeof(DIRECTORY_MTIME) - 1);
+	} else if (StringStartsWith(line, DIRECTORY_TYPE)) {
+		directory.device =
+			ParseTypeString(line + sizeof(DIRECTORY_TYPE) - 1);
 	} else
 		return false;
 
