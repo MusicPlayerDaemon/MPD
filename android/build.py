@@ -188,10 +188,13 @@ class Project:
 
 class AutotoolsProject(Project):
     def __init__(self, url, md5, installed, configure_args=[],
-                 autogen=False, **kwargs):
+                 autogen=False,
+                 cppflags='',
+                 **kwargs):
         Project.__init__(self, url, md5, installed, **kwargs)
         self.configure_args = configure_args
         self.autogen = autogen
+        self.cppflags = cppflags
 
     def build(self):
         src = self.unpack()
@@ -210,7 +213,7 @@ class AutotoolsProject(Project):
             'CXX=' + cxx,
             'CFLAGS=' + cflags,
             'CXXFLAGS=' + cxxflags,
-            'CPPFLAGS=' + cppflags,
+            'CPPFLAGS=' + cppflags + ' ' + self.cppflags,
             'LDFLAGS=' + ldflags,
             'LIBS=' + libs,
             'AR=' + ar,
