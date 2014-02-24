@@ -109,7 +109,8 @@ IcuCollate(const char *a, const char *b)
 	assert(collator != nullptr);
 
 #if U_ICU_VERSION_MAJOR_NUM >= 50
-	return (int)ucol_strcollUTF8(collator, a, -1, b, -1, nullptr);
+	UErrorCode code = U_ZERO_ERROR;
+	return (int)ucol_strcollUTF8(collator, a, -1, b, -1, &code);
 #else
 	/* fall back to ucol_strcoll() */
 
