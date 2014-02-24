@@ -70,6 +70,18 @@ directory_save(FILE *fp, const Directory &directory)
 		fprintf(fp, DIRECTORY_END "%s\n", directory.GetPath());
 }
 
+static bool
+ParseLine(Directory &directory, const char *line)
+{
+	if (StringStartsWith(line, DIRECTORY_MTIME)) {
+		directory.mtime =
+			ParseUint64(line + sizeof(DIRECTORY_MTIME) - 1);
+	} else
+		return false;
+
+	return true;
+}
+
 static Directory *
 directory_load_subdir(TextFile &file, Directory &parent, const char *name,
 		      Error &error)
@@ -84,29 +96,23 @@ directory_load_subdir(TextFile &file, Directory &parent, const char *name,
 
 	Directory *directory = parent.CreateChild(name);
 
-	const char *line = file.ReadLine();
-	if (line == nullptr) {
-		error.Set(directory_domain, "Unexpected end of file");
-		directory->Delete();
-		return nullptr;
-	}
-
-	if (StringStartsWith(line, DIRECTORY_MTIME)) {
-		directory->mtime =
-			ParseUint64(line + sizeof(DIRECTORY_MTIME) - 1);
-
-		line = file.ReadLine();
+	while (true) {
+		const char *line = file.ReadLine();
 		if (line == nullptr) {
 			error.Set(directory_domain, "Unexpected end of file");
 			directory->Delete();
 			return nullptr;
 		}
-	}
 
-	if (!StringStartsWith(line, DIRECTORY_BEGIN)) {
-		error.Format(directory_domain, "Malformed line: %s", line);
-		directory->Delete();
-		return nullptr;
+		if (StringStartsWith(line, DIRECTORY_BEGIN))
+			break;
+
+		if (!ParseLine(*directory, line)) {
+			error.Format(directory_domain,
+				     "Malformed line: %s", line);
+			directory->Delete();
+			return nullptr;
+		}
 	}
 
 	success = directory_load(file, *directory, error);
