@@ -367,8 +367,6 @@ pulse_output_enable(AudioOutput *ao, Error &error)
 
 	po->mainloop = pa_threaded_mainloop_new();
 	if (po->mainloop == nullptr) {
-		g_free(po);
-
 		error.Set(pulse_output_domain,
 			  "pa_threaded_mainloop_new() has failed");
 		return false;
