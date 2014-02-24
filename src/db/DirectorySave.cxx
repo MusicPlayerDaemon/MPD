@@ -43,8 +43,9 @@ void
 directory_save(FILE *fp, const Directory &directory)
 {
 	if (!directory.IsRoot()) {
-		fprintf(fp, DIRECTORY_MTIME "%lu\n",
-			(unsigned long)directory.mtime);
+		if (directory.mtime != 0)
+			fprintf(fp, DIRECTORY_MTIME "%lu\n",
+				(unsigned long)directory.mtime);
 
 		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN, directory.GetPath());
 	}
