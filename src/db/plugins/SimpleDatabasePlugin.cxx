@@ -235,17 +235,6 @@ SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 #endif
 }
 
-gcc_pure
-const Directory *
-SimpleDatabase::LookupDirectory(const char *uri) const
-{
-	assert(root != nullptr);
-	assert(uri != nullptr);
-
-	ScopeDatabaseLock protect;
-	return root->LookupDirectory(uri);
-}
-
 bool
 SimpleDatabase::Visit(const DatabaseSelection &selection,
 		      VisitDirectory visit_directory,

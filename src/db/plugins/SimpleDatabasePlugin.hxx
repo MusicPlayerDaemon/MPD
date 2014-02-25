@@ -107,9 +107,6 @@ private:
 	bool Check(Error &error) const;
 
 	bool Load(Error &error);
-
-	gcc_pure
-	const Directory *LookupDirectory(const char *uri) const;
 };
 
 extern const DatabasePlugin simple_db_plugin;
