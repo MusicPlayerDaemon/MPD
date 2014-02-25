@@ -53,6 +53,10 @@ class SimpleDatabase : public Database {
 	SimpleDatabase();
 
 public:
+	static Database *Create(EventLoop &loop, DatabaseListener &listener,
+				const config_param &param,
+				Error &error);
+
 	gcc_pure
 	Directory *GetRoot() {
 		assert(root != NULL);
@@ -68,10 +72,6 @@ public:
 	bool FileExists() const {
 		return mtime > 0;
 	}
-
-	static Database *Create(EventLoop &loop, DatabaseListener &listener,
-				const config_param &param,
-				Error &error);
 
 	virtual bool Open(Error &error) override;
 	virtual void Close() override;
