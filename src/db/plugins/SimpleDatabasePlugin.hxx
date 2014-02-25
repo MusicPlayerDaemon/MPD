@@ -73,6 +73,7 @@ public:
 		return mtime > 0;
 	}
 
+	/* virtual methods from class Database */
 	virtual bool Open(Error &error) override;
 	virtual void Close() override;
 
