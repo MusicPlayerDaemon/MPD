@@ -100,7 +100,7 @@ public:
 		return mtime;
 	}
 
-protected:
+private:
 	bool Configure(const config_param &param, Error &error);
 
 	gcc_pure
