@@ -35,7 +35,8 @@ class DetachedSong;
 class Storage;
 
 /**
- * A song file inside the configured music directory.
+ * A song file inside the configured music directory.  Internal
+ * #SimpleDatabase class.
  */
 struct Song {
 	/**
@@ -51,9 +52,8 @@ struct Song {
 	Tag tag;
 
 	/**
-	 * The #Directory that contains this song.  May be nullptr if
-	 * the current database plugin does not manage the parent
-	 * directory this way.
+	 * The #Directory that contains this song.  Must be
+	 * non-nullptr.  directory this way.
 	 */
 	Directory *const parent;
 
@@ -71,8 +71,7 @@ struct Song {
 	unsigned end_ms;
 
 	/**
-	 * The file name.  If #parent is nullptr, then this is the URI
-	 * relative to the music directory.
+	 * The file name.
 	 */
 	char uri[sizeof(int)];
 
