@@ -194,13 +194,11 @@ Directory::FindSong(const char *name_utf8) const
 Song *
 Directory::LookupSong(const char *uri)
 {
-	char *duplicated, *base;
-
 	assert(holding_db_lock());
 	assert(uri != nullptr);
 
-	duplicated = xstrdup(uri);
-	base = strrchr(duplicated, '/');
+	char *duplicated = xstrdup(uri);
+	char *base = strrchr(duplicated, '/');
 
 	Directory *d = this;
 	if (base != nullptr) {
