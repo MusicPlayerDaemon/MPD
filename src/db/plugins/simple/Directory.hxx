@@ -28,7 +28,17 @@
 
 #include <string>
 
+/**
+ * Virtual directory that is really an archive file or a folder inside
+ * the archive (special value for Directory::device).
+ */
 static constexpr unsigned DEVICE_INARCHIVE = -1;
+
+/**
+ * Virtual directory that is really a song file with one or more "sub"
+ * songs as specified by DecoderPlugin::container_scan() (special
+ * value for Directory::device).
+ */
 static constexpr unsigned DEVICE_CONTAINER = -2;
 
 #define directory_for_each_child(pos, directory) \
