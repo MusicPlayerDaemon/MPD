@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "DatabaseSave.hxx"
-#include "DatabaseLock.hxx"
-#include "DatabaseError.hxx"
+#include "db/DatabaseLock.hxx"
+#include "db/DatabaseError.hxx"
 #include "Directory.hxx"
 #include "DirectorySave.hxx"
 #include "fs/TextFile.hxx"

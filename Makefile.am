@@ -196,8 +196,6 @@ libmpd_a_SOURCES += \
 	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
 	src/db/LightSong.cxx src/db/LightSong.hxx \
 	src/db/LightDirectory.hxx \
-	src/db/Song.cxx src/db/Song.hxx \
-	src/db/SongSort.cxx src/db/SongSort.hxx \
 	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
 	src/db/update/Service.cxx src/db/update/Service.hxx \
 	src/db/update/UpdateGlue.cxx \
@@ -210,7 +208,6 @@ libmpd_a_SOURCES += \
 	src/db/update/Remove.cxx src/db/update/Remove.hxx \
 	src/db/update/ExcludeList.cxx src/db/update/ExcludeList.hxx \
 	src/db/Uri.hxx \
-	src/db/Directory.cxx src/db/Directory.hxx \
 	src/db/DatabaseGlue.cxx src/db/DatabaseGlue.hxx \
 	src/db/Configured.cxx src/db/Configured.hxx \
 	src/db/DatabaseSong.cxx src/db/DatabaseSong.hxx \
@@ -572,10 +569,19 @@ libdb_plugins_a_SOURCES = \
 	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
 	src/db/Registry.cxx src/db/Registry.hxx \
 	src/db/Helpers.cxx src/db/Helpers.hxx \
-	src/db/DatabaseSave.cxx src/db/DatabaseSave.hxx \
-	src/db/DirectorySave.cxx src/db/DirectorySave.hxx \
+	src/db/plugins/simple/DatabaseSave.cxx \
+	src/db/plugins/simple/DatabaseSave.hxx \
+	src/db/plugins/simple/DirectorySave.cxx \
+	src/db/plugins/simple/DirectorySave.hxx \
 	src/db/plugins/LazyDatabase.cxx src/db/plugins/LazyDatabase.hxx \
-	src/db/plugins/SimpleDatabasePlugin.cxx src/db/plugins/SimpleDatabasePlugin.hxx
+	src/db/plugins/simple/Directory.cxx \
+	src/db/plugins/simple/Directory.hxx \
+	src/db/plugins/simple/Song.cxx \
+	src/db/plugins/simple/Song.hxx \
+	src/db/plugins/simple/SongSort.cxx \
+	src/db/plugins/simple/SongSort.hxx \
+	src/db/plugins/simple/SimpleDatabasePlugin.cxx \
+	src/db/plugins/simple/SimpleDatabasePlugin.hxx
 
 if HAVE_LIBMPDCLIENT
 libdb_plugins_a_SOURCES += \
@@ -1444,10 +1450,9 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/db/DatabaseError.cxx \
 	src/db/Registry.cxx \
 	src/db/Selection.cxx \
-	src/db/Directory.cxx \
 	src/db/PlaylistVector.cxx \
 	src/db/DatabaseLock.cxx \
-	src/db/Song.cxx src/SongSave.cxx src/db/SongSort.cxx \
+	src/SongSave.cxx \
 	src/DetachedSong.cxx \
 	src/TagSave.cxx \
 	src/SongFilter.cxx

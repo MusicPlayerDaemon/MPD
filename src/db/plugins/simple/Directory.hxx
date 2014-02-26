@@ -24,7 +24,7 @@
 #include "util/list.h"
 #include "Compiler.h"
 #include "db/Visitor.hxx"
-#include "PlaylistVector.hxx"
+#include "db/PlaylistVector.hxx"
 
 #include <string>
 

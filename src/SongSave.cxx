@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "SongSave.hxx"
-#include "db/Song.hxx"
+#include "db/plugins/simple/Song.hxx"
 #include "DetachedSong.hxx"
 #include "TagSave.hxx"
 #include "fs/TextFile.hxx"

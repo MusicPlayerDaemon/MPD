@@ -20,7 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "Remove.hxx"
 #include "UpdateDomain.hxx"
-#include "db/Song.hxx"
+#include "db/plugins/simple/Song.hxx"
 #include "db/LightSong.hxx"
 #include "db/DatabaseListener.hxx"
 #include "Log.hxx"

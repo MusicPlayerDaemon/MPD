@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYLIST_VECTOR_HXX
 #define MPD_PLAYLIST_VECTOR_HXX
 
-#include "PlaylistInfo.hxx"
+#include "db/PlaylistInfo.hxx"
 #include "Compiler.h"
 
 #include <list>

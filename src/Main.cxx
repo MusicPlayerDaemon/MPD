@@ -69,7 +69,7 @@
 #include "db/update/Service.hxx"
 #include "db/Configured.hxx"
 #include "db/DatabasePlugin.hxx"
-#include "db/plugins/SimpleDatabasePlugin.hxx"
+#include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "storage/Configured.hxx"
 #include "storage/CompositeStorage.hxx"
 #ifdef ENABLE_INOTIFY

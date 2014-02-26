@@ -21,9 +21,9 @@
 #include "Editor.hxx"
 #include "Remove.hxx"
 #include "db/PlaylistVector.hxx"
-#include "db/Directory.hxx"
-#include "db/Song.hxx"
 #include "db/DatabaseLock.hxx"
+#include "db/plugins/simple/Directory.hxx"
+#include "db/plugins/simple/Song.hxx"
 
 #include <assert.h>
 #include <stddef.h>

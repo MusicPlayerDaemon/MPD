@@ -23,7 +23,7 @@
 #include "tag/Tag.hxx"
 #include "util/VarSize.hxx"
 #include "DetachedSong.hxx"
-#include "LightSong.hxx"
+#include "db/LightSong.hxx"
 
 #include <assert.h>
 #include <string.h>

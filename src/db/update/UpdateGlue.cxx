@@ -21,7 +21,7 @@
 #include "Service.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseListener.hxx"
-#include "db/plugins/SimpleDatabasePlugin.hxx"
+#include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"

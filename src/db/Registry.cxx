@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Registry.hxx"
 #include "DatabasePlugin.hxx"
-#include "plugins/SimpleDatabasePlugin.hxx"
+#include "plugins/simple/SimpleDatabasePlugin.hxx"
 #include "plugins/ProxyDatabasePlugin.hxx"
 #include "plugins/upnp/UpnpDatabasePlugin.hxx"
 
