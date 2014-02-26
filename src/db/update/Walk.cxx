@@ -397,8 +397,12 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 	Directory *directory = parent.FindChild(name_utf8);
 	db_unlock();
 
-	if (directory != nullptr)
+	if (directory != nullptr) {
+		if (directory->IsMount())
+			directory = nullptr;
+
 		return directory;
+	}
 
 	FileInfo info;
 	if (!GetInfo(storage, uri_utf8, info) ||

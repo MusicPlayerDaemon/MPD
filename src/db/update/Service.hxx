@@ -28,7 +28,7 @@
 class SimpleDatabase;
 class DatabaseListener;
 class UpdateWalk;
-class Storage;
+class CompositeStorage;
 
 /**
  * This class manages the update queue and runs the update thread.
@@ -41,7 +41,7 @@ class UpdateService final : DeferredMonitor {
 	};
 
 	SimpleDatabase &db;
-	Storage &storage;
+	CompositeStorage &storage;
 
 	DatabaseListener &listener;
 
@@ -63,7 +63,7 @@ class UpdateService final : DeferredMonitor {
 
 public:
 	UpdateService(EventLoop &_loop, SimpleDatabase &_db,
-		      Storage &_storage,
+		      CompositeStorage &_storage,
 		      DatabaseListener &_listener);
 
 	~UpdateService();
@@ -91,6 +91,13 @@ public:
 	 * wait for the thread to exit.
 	 */
 	void CancelAllAsync();
+
+	/**
+	 * Cancel all updates for the given mount point.  If an update
+	 * is already running for it, the method will wait for
+	 * cancellation to complete.
+	 */
+	void CancelMount(const char *uri);
 
 private:
 	/* virtual methods from class DeferredMonitor */

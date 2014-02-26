@@ -57,6 +57,7 @@ struct Song;
 struct db_visitor;
 class SongFilter;
 class Error;
+class Database;
 
 struct Directory {
 	/**
@@ -94,6 +95,12 @@ struct Directory {
 
 	std::string path;
 
+	/**
+	 * If this is not nullptr, then this directory does not really
+	 * exist, but is a mount point for another #Database.
+	 */
+	Database *mounted_database;
+
 public:
 	Directory(std::string &&_path_utf8, Directory *_parent);
 	~Directory();
@@ -104,6 +111,10 @@ public:
 	gcc_malloc
 	static Directory *NewRoot() {
 		return new Directory(std::string(), nullptr);
+	}
+
+	bool IsMount() const {
+		return mounted_database != nullptr;
 	}
 
 	/**

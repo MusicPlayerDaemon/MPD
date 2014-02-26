@@ -42,6 +42,9 @@ UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
 
 	// directory exists already
 	if (directory != nullptr) {
+		if (directory->IsMount())
+			return nullptr;
+
 		if (directory->mtime == info.mtime && !walk_discard) {
 			/* not modified */
 			return nullptr;

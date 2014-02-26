@@ -112,6 +112,10 @@ print_error(Client &client, const Error &error)
 		case DB_NOT_FOUND:
 			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
 			return CommandResult::ERROR;
+
+		case DB_CONFLICT:
+			command_error(client, ACK_ERROR_ARG, "Conflict");
+			return CommandResult::ERROR;
 		}
 #endif
 	} else if (error.IsDomain(errno_domain)) {

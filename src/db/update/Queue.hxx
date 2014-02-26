@@ -21,19 +21,30 @@
 #define MPD_UPDATE_QUEUE_HXX
 
 #include "check.h"
+#include "Compiler.h"
 
 #include <string>
 #include <list>
 
+class SimpleDatabase;
+class Storage;
+
 struct UpdateQueueItem {
+	SimpleDatabase *db;
+	Storage *storage;
+
 	std::string path_utf8;
 	unsigned id;
 	bool discard;
 
 	UpdateQueueItem():id(0) {}
-	UpdateQueueItem(const char *_path, bool _discard,
+
+	UpdateQueueItem(SimpleDatabase &_db,
+			Storage &_storage,
+			const char *_path, bool _discard,
 			unsigned _id)
-		:path_utf8(_path), id(_id), discard(_discard) {}
+		:db(&_db), storage(&_storage), path_utf8(_path),
+		 id(_id), discard(_discard) {}
 
 	bool IsDefined() const {
 		return id != 0;
@@ -46,13 +57,21 @@ class UpdateQueue {
 	std::list<UpdateQueueItem> update_queue;
 
 public:
-	bool Push(const char *path, bool discard, unsigned id);
+	gcc_nonnull_all
+	bool Push(SimpleDatabase &db, Storage &storage,
+		  const char *path, bool discard, unsigned id);
 
 	UpdateQueueItem Pop();
 
 	void Clear() {
 		update_queue.clear();
 	}
+
+	gcc_nonnull_all
+	void Erase(SimpleDatabase &db);
+
+	gcc_nonnull_all
+	void Erase(Storage &storage);
 };
 
 #endif

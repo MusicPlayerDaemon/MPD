@@ -22,7 +22,10 @@
 #include "Walk.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseListener.hxx"
+#include "db/DatabaseLock.hxx"
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
+#include "db/plugins/simple/Directory.hxx"
+#include "storage/CompositeStorage.hxx"
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -39,7 +42,7 @@
 #include <assert.h>
 
 UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
-			     Storage &_storage,
+			     CompositeStorage &_storage,
 			     DatabaseListener &_listener)
 	:DeferredMonitor(_loop),
 	 db(_db), storage(_storage),
@@ -71,6 +74,42 @@ UpdateService::CancelAllAsync()
 		walk->Cancel();
 }
 
+void
+UpdateService::CancelMount(const char *uri)
+{
+	/* determine which (mounted) database will be updated and what
+	   storage will be scanned */
+
+	db_lock();
+	const auto lr = db.GetRoot().LookupDirectory(uri);
+	db_unlock();
+
+	if (!lr.directory->IsMount())
+		return;
+
+	bool cancel_current = false;
+
+	Storage *storage2 = storage.GetMount(uri);
+	if (storage2 != nullptr) {
+		queue.Erase(*storage2);
+		cancel_current = next.IsDefined() && next.storage == storage2;
+	}
+
+	Database &_db2 = *lr.directory->mounted_database;
+	if (_db2.IsPlugin(simple_db_plugin)) {
+		SimpleDatabase &db2 = static_cast<SimpleDatabase &>(_db2);
+		queue.Erase(db2);
+		cancel_current |= next.IsDefined() && next.db == &db2;
+	}
+
+	if (cancel_current && walk != nullptr) {
+		walk->Cancel();
+
+		if (update_thread.IsDefined())
+			update_thread.Join();
+	}
+}
+
 inline void
 UpdateService::Task()
 {
@@ -84,12 +123,12 @@ UpdateService::Task()
 
 	SetThreadIdlePriority();
 
-	modified = walk->Walk(db.GetRoot(), next.path_utf8.c_str(),
+	modified = walk->Walk(next.db->GetRoot(), next.path_utf8.c_str(),
 			      next.discard);
 
-	if (modified || !db.FileExists()) {
+	if (modified || !next.db->FileExists()) {
 		Error error;
-		if (!db.Save(error))
+		if (!next.db->Save(error))
 			LogError(error, "Failed to save database");
 	}
 
@@ -120,7 +159,7 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 	modified = false;
 
 	next = std::move(i);
-	walk = new UpdateWalk(GetEventLoop(), listener, storage);
+	walk = new UpdateWalk(GetEventLoop(), listener, *next.storage);
 
 	Error error;
 	if (!update_thread.Start(Task, this, error))
@@ -144,9 +183,52 @@ UpdateService::Enqueue(const char *path, bool discard)
 {
 	assert(GetEventLoop().IsInsideOrNull());
 
+	/* determine which (mounted) database will be updated and what
+	   storage will be scanned */
+	SimpleDatabase *db2;
+	Storage *storage2;
+
+	db_lock();
+	const auto lr = db.GetRoot().LookupDirectory(path);
+	db_unlock();
+	if (lr.directory->IsMount()) {
+		/* follow the mountpoint, update the mounted
+		   database */
+
+		Database &_db2 = *lr.directory->mounted_database;
+		if (!_db2.IsPlugin(simple_db_plugin))
+			/* cannot update this type of database */
+			return 0;
+
+		db2 = static_cast<SimpleDatabase *>(&_db2);
+
+		if (lr.uri == nullptr) {
+			storage2 = storage.GetMount(path);
+			path = "";
+		} else {
+			assert(lr.uri > path);
+			assert(lr.uri < path + strlen(path));
+			assert(lr.uri[-1] == '/');
+
+			const std::string mountpoint(path, lr.uri - 1);
+			storage2 = storage.GetMount(mountpoint.c_str());
+			path = lr.uri;
+		}
+	} else {
+		/* use the "root" database/storage */
+
+		db2 = &db;
+		storage2 = storage.GetMount("");
+	}
+
+	if (storage2 == nullptr)
+		/* no storage found at this mount point - should not
+		   happen */
+		return 0;
+
 	if (progress != UPDATE_PROGRESS_IDLE) {
 		const unsigned id = GenerateId();
-		if (!queue.Push(path, discard, id))
+		if (!queue.Push(*db2, *storage2, path, discard, id))
 			return 0;
 
 		update_task_id = id;
@@ -154,7 +236,7 @@ UpdateService::Enqueue(const char *path, bool discard)
 	}
 
 	const unsigned id = update_task_id = GenerateId();
-	StartThread(UpdateQueueItem(path, discard, id));
+	StartThread(UpdateQueueItem(*db2, *storage2, path, discard, id));
 
 	idle_add(IDLE_UPDATE);
 
@@ -171,7 +253,10 @@ UpdateService::RunDeferred()
 	assert(next.IsDefined());
 	assert(walk != nullptr);
 
-	update_thread.Join();
+	/* wait for thread to finish only if it wasn't cancelled by
+	   CancelMount() */
+	if (update_thread.IsDefined())
+		update_thread.Join();
 
 	delete walk;
 	walk = nullptr;

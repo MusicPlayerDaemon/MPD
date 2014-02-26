@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "SimpleDatabasePlugin.hxx"
+#include "PrefixedLightSong.hxx"
 #include "db/DatabasePlugin.hxx"
 #include "db/Selection.hxx"
 #include "db/Helpers.hxx"
@@ -32,6 +33,7 @@
 #include "fs/TextFile.hxx"
 #include "config/ConfigData.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/CharUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -42,7 +44,17 @@ static constexpr Domain simple_db_domain("simple_db");
 
 inline SimpleDatabase::SimpleDatabase()
 	:Database(simple_db_plugin),
-	 path(AllocatedPath::Null()) {}
+	 path(AllocatedPath::Null()),
+	 cache_path(AllocatedPath::Null()),
+	 prefixed_light_song(nullptr) {}
+
+inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path)
+	:Database(simple_db_plugin),
+	 path(std::move(_path)),
+	 path_utf8(path.ToUTF8()),
+	 cache_path(AllocatedPath::Null()),
+	 prefixed_light_song(nullptr) {
+}
 
 Database *
 SimpleDatabase::Create(gcc_unused EventLoop &loop,
@@ -70,6 +82,10 @@ SimpleDatabase::Configure(const config_param &param, Error &error)
 	}
 
 	path_utf8 = path.ToUTF8();
+
+	cache_path = param.GetBlockPath("cache_directory", error);
+	if (path.IsNull() && error.IsDefined())
+		return false;
 
 	return true;
 }
@@ -169,6 +185,8 @@ SimpleDatabase::Load(Error &error)
 bool
 SimpleDatabase::Open(Error &error)
 {
+	assert(prefixed_light_song == nullptr);
+
 	root = Directory::NewRoot();
 	mtime = 0;
 
@@ -195,6 +213,7 @@ void
 SimpleDatabase::Close()
 {
 	assert(root != nullptr);
+	assert(prefixed_light_song == nullptr);
 	assert(borrowed_song_count == 0);
 
 	delete root;
@@ -204,11 +223,27 @@ const LightSong *
 SimpleDatabase::GetSong(const char *uri, Error &error) const
 {
 	assert(root != nullptr);
+	assert(prefixed_light_song == nullptr);
 	assert(borrowed_song_count == 0);
 
 	db_lock();
 
 	auto r = root->LookupDirectory(uri);
+
+	if (r.directory->IsMount()) {
+		/* pass the request to the mounted database */
+		db_unlock();
+
+		const LightSong *song =
+			r.directory->mounted_database->GetSong(r.uri, error);
+		if (song == nullptr)
+			return nullptr;
+
+		prefixed_light_song =
+			new PrefixedLightSong(*song, r.directory->GetPath());
+		return prefixed_light_song;
+	}
+
 	if (r.uri == nullptr) {
 		/* it's a directory */
 		db_unlock();
@@ -245,11 +280,17 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 void
 SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 {
-	assert(song == &light_song);
+	assert(song != nullptr);
+	assert(song == &light_song || song == prefixed_light_song);
+
+	delete prefixed_light_song;
+	prefixed_light_song = nullptr;
 
 #ifndef NDEBUG
-	assert(borrowed_song_count > 0);
-	--borrowed_song_count;
+	if (song == &light_song) {
+		assert(borrowed_song_count > 0);
+		--borrowed_song_count;
+	}
 #endif
 }
 
@@ -344,6 +385,104 @@ SimpleDatabase::Save(Error &error)
 	if (StatFile(path, st))
 		mtime = st.st_mtime;
 
+	return true;
+}
+
+bool
+SimpleDatabase::Mount(const char *uri, Database *db, Error &error)
+{
+	assert(uri != nullptr);
+	assert(*uri != 0);
+	assert(db != nullptr);
+
+	ScopeDatabaseLock protect;
+
+	auto r = root->LookupDirectory(uri);
+	if (r.uri == nullptr) {
+		error.Format(db_domain, DB_CONFLICT,
+			     "Already exists: %s", uri);
+		return nullptr;
+	}
+
+	if (strchr(r.uri, '/') != nullptr) {
+		error.Format(db_domain, DB_NOT_FOUND,
+			     "Parent not found: %s", uri);
+		return nullptr;
+	}
+
+	Directory *mnt = r.directory->CreateChild(r.uri);
+	mnt->mounted_database = db;
+	return true;
+}
+
+static constexpr bool
+IsSafeChar(char ch)
+{
+	return IsAlphaNumericASCII(ch) || ch == '-' || ch == '_' || ch == '%';
+}
+
+static constexpr bool
+IsUnsafeChar(char ch)
+{
+	return !IsSafeChar(ch);
+}
+
+bool
+SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
+		      Error &error)
+{
+	if (cache_path.IsNull()) {
+		error.Format(db_domain, DB_NOT_FOUND,
+			     "No 'cache_directory' configured");
+		return nullptr;
+	}
+
+	std::string name(storage_uri);
+	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
+
+	auto db = new SimpleDatabase(AllocatedPath::Build(cache_path,
+							  name.c_str()));
+	if (!db->Open(error)) {
+		delete db;
+		return false;
+	}
+
+	// TODO: update the new database instance?
+
+	if (!Mount(local_uri, db, error)) {
+		db->Close();
+		delete db;
+		return false;
+	}
+
+	return true;
+}
+
+Database *
+SimpleDatabase::LockUmountSteal(const char *uri)
+{
+	ScopeDatabaseLock protect;
+
+	auto r = root->LookupDirectory(uri);
+	if (r.uri != nullptr || !r.directory->IsMount())
+		return nullptr;
+
+	Database *db = r.directory->mounted_database;
+	r.directory->mounted_database = nullptr;
+	r.directory->Delete();
+
+	return db;
+}
+
+bool
+SimpleDatabase::Unmount(const char *uri)
+{
+	Database *db = LockUmountSteal(uri);
+	if (db == nullptr)
+		return false;
+
+	db->Close();
+	delete db;
 	return true;
 }
 

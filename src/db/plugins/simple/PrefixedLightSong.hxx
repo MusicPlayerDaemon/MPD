@@ -17,23 +17,25 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_ERROR_HXX
-#define MPD_DB_ERROR_HXX
+#ifndef MPD_DB_SIMPLE_PREFIXED_LIGHT_SONG_HXX
+#define MPD_DB_SIMPLE_PREFIXED_LIGHT_SONG_HXX
 
-class Domain;
+#include "check.h"
+#include "db/LightSong.hxx"
+#include "fs/Traits.hxx"
 
-enum db_error {
-	/**
-	 * The database is disabled, i.e. none is configured in this
-	 * MPD instance.
-	 */
-	DB_DISABLED,
+#include <string>
 
-	DB_NOT_FOUND,
+class PrefixedLightSong : public LightSong {
+	std::string buffer;
 
-	DB_CONFLICT,
+public:
+	PrefixedLightSong(const LightSong &song, const char *base)
+		:LightSong(song),
+		 buffer(PathTraitsUTF8::Build(base, GetURI().c_str())) {
+		uri = buffer.c_str();
+		directory = nullptr;
+	}
 };
-
-extern const Domain db_domain;
 
 #endif

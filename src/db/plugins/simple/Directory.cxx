@@ -21,10 +21,12 @@
 #include "Directory.hxx"
 #include "SongSort.hxx"
 #include "Song.hxx"
+#include "Mount.hxx"
 #include "db/LightDirectory.hxx"
 #include "db/LightSong.hxx"
 #include "db/Uri.hxx"
 #include "db/DatabaseLock.hxx"
+#include "db/Interface.hxx"
 #include "SongFilter.hxx"
 #include "lib/icu/Collate.hxx"
 #include "fs/Traits.hxx"
@@ -42,7 +44,8 @@ extern "C" {
 Directory::Directory(std::string &&_path_utf8, Directory *_parent)
 	:parent(_parent),
 	 mtime(0), have_stat(false),
-	 path(std::move(_path_utf8))
+	 path(std::move(_path_utf8)),
+	 mounted_database(nullptr)
 {
 	INIT_LIST_HEAD(&children);
 	INIT_LIST_HEAD(&songs);
@@ -50,6 +53,8 @@ Directory::Directory(std::string &&_path_utf8, Directory *_parent)
 
 Directory::~Directory()
 {
+	delete mounted_database;
+
 	Song *song, *ns;
 	directory_for_each_song_safe(song, ns, *this)
 		song->Free();
@@ -113,6 +118,11 @@ Directory::PruneEmpty()
 
 	Directory *child, *n;
 	directory_for_each_child_safe(child, n, *this) {
+		if (child->IsMount())
+			/* never prune mount points; they're always
+			   empty by definition, but that's ok */
+			continue;
+
 		child->PruneEmpty();
 
 		if (child->IsEmpty())
@@ -232,6 +242,22 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 		Error &error) const
 {
 	assert(!error.IsDefined());
+
+	if (IsMount()) {
+		assert(IsEmpty());
+
+		/* TODO: eliminate this unlock/lock; it is necessary
+		   because the child's SimpleDatabasePlugin::Visit()
+		   call will lock it again */
+		db_unlock();
+		bool result = WalkMount(GetPath(), *mounted_database,
+					recursive, filter,
+					visit_directory, visit_song,
+					visit_playlist,
+					error);
+		db_lock();
+		return result;
+	}
 
 	if (visit_song) {
 		Song *song;

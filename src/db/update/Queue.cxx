@@ -21,12 +21,13 @@
 #include "Queue.hxx"
 
 bool
-UpdateQueue::Push(const char *path, bool discard, unsigned id)
+UpdateQueue::Push(SimpleDatabase &db, Storage &storage,
+		  const char *path, bool discard, unsigned id)
 {
 	if (update_queue.size() >= MAX_UPDATE_QUEUE_SIZE)
 		return false;
 
-	update_queue.emplace_back(path, discard, id);
+	update_queue.emplace_back(db, storage, path, discard, id);
 	return true;
 }
 
@@ -39,4 +40,28 @@ UpdateQueue::Pop()
 	auto i = std::move(update_queue.front());
 	update_queue.pop_front();
 	return i;
+}
+
+void
+UpdateQueue::Erase(SimpleDatabase &db)
+{
+	for (auto i = update_queue.begin(), end = update_queue.end();
+	     i != end;) {
+		if (i->db == &db)
+			i = update_queue.erase(i);
+		else
+			++i;
+	}
+}
+
+void
+UpdateQueue::Erase(Storage &storage)
+{
+	for (auto i = update_queue.begin(), end = update_queue.end();
+	     i != end;) {
+		if (i->storage == &storage)
+			i = update_queue.erase(i);
+		else
+			++i;
+	}
 }

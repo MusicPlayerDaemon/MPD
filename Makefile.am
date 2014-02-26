@@ -579,6 +579,9 @@ libdb_plugins_a_SOURCES = \
 	src/db/plugins/simple/Song.hxx \
 	src/db/plugins/simple/SongSort.cxx \
 	src/db/plugins/simple/SongSort.hxx \
+	src/db/plugins/simple/Mount.cxx \
+	src/db/plugins/simple/Mount.hxx \
+	src/db/plugins/simple/PrefixedLightSong.hxx \
 	src/db/plugins/simple/SimpleDatabasePlugin.cxx \
 	src/db/plugins/simple/SimpleDatabasePlugin.hxx
 

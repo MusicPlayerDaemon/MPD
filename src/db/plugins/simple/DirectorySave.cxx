@@ -88,7 +88,8 @@ directory_save(FILE *fp, const Directory &directory)
 	directory_for_each_child(cur, directory) {
 		fprintf(fp, DIRECTORY_DIR "%s\n", cur->GetName());
 
-		directory_save(fp, *cur);
+		if (!cur->IsMount())
+			directory_save(fp, *cur);
 
 		if (ferror(fp))
 			return;

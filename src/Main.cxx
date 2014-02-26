@@ -214,7 +214,7 @@ glue_db_init_and_load(void)
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
 	instance->update = new UpdateService(*instance->event_loop, db,
-					     *instance->storage,
+					     static_cast<CompositeStorage &>(*instance->storage),
 					     *instance);
 
 	/* run database update after daemonization? */

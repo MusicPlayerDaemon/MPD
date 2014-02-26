@@ -17,23 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_ERROR_HXX
-#define MPD_DB_ERROR_HXX
+#ifndef MPD_DB_SIMPLE_MOUNT_HXX
+#define MPD_DB_SIMPLE_MOUNT_HXX
 
-class Domain;
+#include "db/Visitor.hxx"
 
-enum db_error {
-	/**
-	 * The database is disabled, i.e. none is configured in this
-	 * MPD instance.
-	 */
-	DB_DISABLED,
+class Database;
+class SongFilter;
+class Error;
 
-	DB_NOT_FOUND,
-
-	DB_CONFLICT,
-};
-
-extern const Domain db_domain;
+bool
+WalkMount(const char *base, const Database &db,
+	  bool recursive, const SongFilter *filter,
+	  const VisitDirectory &visit_directory, const VisitSong &visit_song,
+	  const VisitPlaylist &visit_playlist,
+	  Error &error);
 
 #endif

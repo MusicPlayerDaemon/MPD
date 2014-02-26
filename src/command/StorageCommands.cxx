@@ -29,6 +29,8 @@
 #include "Instance.hxx"
 #include "storage/Registry.hxx"
 #include "storage/CompositeStorage.hxx"
+#include "db/plugins/simple/SimpleDatabasePlugin.hxx"
+#include "db/update/Service.hxx"
 #include "Idle.hxx"
 
 static void
@@ -98,6 +100,16 @@ handle_mount(Client &client, gcc_unused int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
+	if (strchr(local_uri, '/') != nullptr) {
+		/* allow only top-level mounts for now */
+		/* TODO: eliminate this limitation after ensuring that
+		   UpdateQueue::Erase() really gets called for every
+		   unmount, and no Directory disappears recursively
+		   during database update */
+		command_error(client, ACK_ERROR_ARG, "Bad mount point");
+		return CommandResult::ERROR;
+	}
+
 	Error error;
 	Storage *storage = CreateStorageURI(remote_uri, error);
 	if (storage == nullptr) {
@@ -111,6 +123,23 @@ handle_mount(Client &client, gcc_unused int argc, char *argv[])
 
 	composite.Mount(local_uri, storage);
 	idle_add(IDLE_MOUNT);
+
+#ifdef ENABLE_DATABASE
+	Database *_db = client.partition.instance.database;
+	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
+		SimpleDatabase &db = *(SimpleDatabase *)_db;
+
+		if (!db.Mount(local_uri, remote_uri, error)) {
+			composite.Unmount(local_uri);
+			return print_error(client, error);
+		}
+
+		// TODO: call Instance::OnDatabaseModified()?
+		// TODO: trigger database update?
+		idle_add(IDLE_DATABASE);
+	}
+#endif
+
 	return CommandResult::OK;
 }
 
@@ -132,11 +161,29 @@ handle_unmount(Client &client, gcc_unused int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
+#ifdef ENABLE_DATABASE
+	if (client.partition.instance.update != nullptr)
+		/* ensure that no database update will attempt to work
+		   with the database/storage instances we're about to
+		   destroy here */
+		client.partition.instance.update->CancelMount(local_uri);
+
+	Database *_db = client.partition.instance.database;
+	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
+		SimpleDatabase &db = *(SimpleDatabase *)_db;
+
+		if (db.Unmount(local_uri))
+			// TODO: call Instance::OnDatabaseModified()?
+			idle_add(IDLE_DATABASE);
+	}
+#endif
+
 	if (!composite.Unmount(local_uri)) {
 		command_error(client, ACK_ERROR_ARG, "Not a mount point");
 		return CommandResult::ERROR;
 	}
 
 	idle_add(IDLE_MOUNT);
+
 	return CommandResult::OK;
 }

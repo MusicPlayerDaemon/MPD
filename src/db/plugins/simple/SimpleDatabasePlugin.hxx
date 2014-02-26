@@ -32,14 +32,26 @@ struct Directory;
 struct DatabasePlugin;
 class EventLoop;
 class DatabaseListener;
+class PrefixedLightSong;
 
 class SimpleDatabase : public Database {
 	AllocatedPath path;
 	std::string path_utf8;
 
+	/**
+	 * The path where cache files for Mount() are located.
+	 */
+	AllocatedPath cache_path;
+
 	Directory *root;
 
 	time_t mtime;
+
+	/**
+	 * A buffer for GetSong() when prefixing the #LightSong
+	 * instance from a mounted #Database.
+	 */
+	mutable PrefixedLightSong *prefixed_light_song;
 
 	/**
 	 * A buffer for GetSong().
@@ -51,6 +63,8 @@ class SimpleDatabase : public Database {
 #endif
 
 	SimpleDatabase();
+
+	SimpleDatabase(AllocatedPath &&_path);
 
 public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
@@ -72,6 +86,20 @@ public:
 	bool FileExists() const {
 		return mtime > 0;
 	}
+
+	/**
+	 * @param db the #Database to be mounted; must be "open"; on
+	 * success, this object gains ownership of the given #Database
+	 */
+	gcc_nonnull_all
+	bool Mount(const char *uri, Database *db, Error &error);
+
+	gcc_nonnull_all
+	bool Mount(const char *local_uri, const char *storage_uri,
+		   Error &error);
+
+	gcc_nonnull_all
+	bool Unmount(const char *uri);
 
 	/* virtual methods from class Database */
 	virtual bool Open(Error &error) override;
@@ -107,6 +135,8 @@ private:
 	bool Check(Error &error) const;
 
 	bool Load(Error &error);
+
+	Database *LockUmountSteal(const char *uri);
 };
 
 extern const DatabasePlugin simple_db_plugin;
