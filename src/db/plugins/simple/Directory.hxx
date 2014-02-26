@@ -149,6 +149,21 @@ public:
 		return child;
 	}
 
+	struct LookupResult {
+		/**
+		 * The last directory that was found.  If the given
+		 * URI could not be resolved at all, then this is the
+		 * root directory.
+		 */
+		Directory *directory;
+
+		/**
+		 * The remaining URI part (without leading slash) or
+		 * nullptr if the given URI was consumed completely.
+		 */
+		const char *uri;
+	};
+
 	/**
 	 * Looks up a directory by its relative URI.
 	 *
@@ -156,7 +171,7 @@ public:
 	 * @return the Directory, or nullptr if none was found
 	 */
 	gcc_pure
-	Directory *LookupDirectory(const char *uri);
+	LookupResult LookupDirectory(const char *uri);
 
 	gcc_pure
 	bool IsEmpty() const {

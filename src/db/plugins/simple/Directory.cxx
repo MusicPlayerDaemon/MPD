@@ -120,38 +120,49 @@ Directory::PruneEmpty()
 	}
 }
 
-Directory *
+Directory::LookupResult
 Directory::LookupDirectory(const char *uri)
 {
 	assert(holding_db_lock());
 	assert(uri != nullptr);
 
 	if (isRootDirectory(uri))
-		return this;
+		return { this, nullptr };
 
 	char *duplicated = xstrdup(uri), *name = duplicated;
 
 	Directory *d = this;
-	while (1) {
+	while (true) {
 		char *slash = strchr(name, '/');
-		if (slash == name) {
-			d = nullptr;
+		if (slash == name)
 			break;
-		}
 
 		if (slash != nullptr)
 			*slash = '\0';
 
-		d = d->FindChild(name);
-		if (d == nullptr || slash == nullptr)
+		Directory *tmp = d->FindChild(name);
+		if (tmp == nullptr)
+			/* not found */
 			break;
+
+		d = tmp;
+
+		if (slash == nullptr) {
+			/* found everything */
+			name = nullptr;
+			break;
+		}
 
 		name = slash + 1;
 	}
 
 	free(duplicated);
 
-	return d;
+	const char *rest = name == nullptr
+		? nullptr
+		: uri + (name - duplicated);
+
+	return { d, rest };
 }
 
 void
@@ -197,26 +208,16 @@ Directory::LookupSong(const char *uri)
 	assert(holding_db_lock());
 	assert(uri != nullptr);
 
-	char *duplicated = xstrdup(uri);
-	char *base = strrchr(duplicated, '/');
+	auto r = LookupDirectory(uri);
+	if (r.uri == nullptr)
+		/* it's a directory */
+		return nullptr;
 
-	Directory *d = this;
-	if (base != nullptr) {
-		*base++ = 0;
-		d = d->LookupDirectory(duplicated);
-		if (d == nullptr) {
-			free(duplicated);
-			return nullptr;
-		}
-	} else
-		base = duplicated;
+	if (strchr(r.uri, '/') != nullptr)
+		/* refers to a URI "below" the actual song */
+		return nullptr;
 
-	Song *song = d->FindSong(base);
-	assert(song == nullptr || song->parent == d);
-
-	free(duplicated);
-	return song;
-
+	return r.directory->FindSong(r.uri);
 }
 
 static int

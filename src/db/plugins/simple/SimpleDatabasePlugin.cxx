@@ -244,28 +244,33 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 {
 	ScopeDatabaseLock protect;
 
-	const Directory *directory = root->LookupDirectory(selection.uri.c_str());
-	if (directory == nullptr) {
+	auto r = root->LookupDirectory(selection.uri.c_str());
+	if (r.uri == nullptr) {
+		/* it's a directory */
+
+		if (selection.recursive && visit_directory &&
+		    !visit_directory(r.directory->Export(), error))
+			return false;
+
+		return r.directory->Walk(selection.recursive, selection.filter,
+					 visit_directory, visit_song,
+					 visit_playlist,
+					 error);
+	}
+
+	if (strchr(r.uri, '/') == nullptr) {
 		if (visit_song) {
-			Song *song = root->LookupSong(selection.uri.c_str());
+			Song *song = r.directory->FindSong(r.uri);
 			if (song != nullptr) {
 				const LightSong song2 = song->Export();
 				return !selection.Match(song2) ||
 					visit_song(song2, error);
 			}
 		}
-
-		error.Set(db_domain, DB_NOT_FOUND, "No such directory");
-		return false;
 	}
 
-	if (selection.recursive && visit_directory &&
-	    !visit_directory(directory->Export(), error))
-		return false;
-
-	return directory->Walk(selection.recursive, selection.filter,
-			       visit_directory, visit_song, visit_playlist,
-			       error);
+	error.Set(db_domain, DB_NOT_FOUND, "No such directory");
+	return false;
 }
 
 bool
