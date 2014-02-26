@@ -202,24 +202,6 @@ Directory::FindSong(const char *name_utf8) const
 	return nullptr;
 }
 
-Song *
-Directory::LookupSong(const char *uri)
-{
-	assert(holding_db_lock());
-	assert(uri != nullptr);
-
-	auto r = LookupDirectory(uri);
-	if (r.uri == nullptr)
-		/* it's a directory */
-		return nullptr;
-
-	if (strchr(r.uri, '/') != nullptr)
-		/* refers to a URI "below" the actual song */
-		return nullptr;
-
-	return r.directory->FindSong(r.uri);
-}
-
 static int
 directory_cmp(gcc_unused void *priv,
 	      struct list_head *_a, struct list_head *_b)

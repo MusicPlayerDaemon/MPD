@@ -207,7 +207,25 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 	assert(borrowed_song_count == 0);
 
 	db_lock();
-	const Song *song = root->LookupSong(uri);
+
+	auto r = root->LookupDirectory(uri);
+	if (r.uri == nullptr) {
+		/* it's a directory */
+		db_unlock();
+		error.Format(db_domain, DB_NOT_FOUND,
+			     "No such song: %s", uri);
+		return nullptr;
+	}
+
+	if (strchr(r.uri, '/') != nullptr) {
+		/* refers to a URI "below" the actual song */
+		db_unlock();
+		error.Format(db_domain, DB_NOT_FOUND,
+			     "No such song: %s", uri);
+		return nullptr;
+	}
+
+	const Song *song = r.directory->FindSong(r.uri);
 	db_unlock();
 	if (song == nullptr) {
 		error.Format(db_domain, DB_NOT_FOUND,

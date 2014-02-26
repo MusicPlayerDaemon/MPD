@@ -214,17 +214,6 @@ public:
 	}
 
 	/**
-	 * Looks up a song by its relative URI.
-	 *
-	 * Caller must lock the #db_mutex.
-	 *
-	 * @param uri the relative URI
-	 * @return the song, or nullptr if none was found
-	 */
-	gcc_pure
-	Song *LookupSong(const char *uri);
-
-	/**
 	 * Add a song object to this directory.  Its "parent" attribute must
 	 * be set already.
 	 */
