@@ -58,10 +58,10 @@ public:
 				Error &error);
 
 	gcc_pure
-	Directory *GetRoot() {
+	Directory &GetRoot() {
 		assert(root != NULL);
 
-		return root;
+		return *root;
 	}
 
 	bool Save(Error &error);

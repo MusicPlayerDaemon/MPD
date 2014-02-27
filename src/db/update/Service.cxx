@@ -84,7 +84,7 @@ UpdateService::Task()
 
 	SetThreadIdlePriority();
 
-	modified = walk->Walk(*db.GetRoot(), next.path_utf8.c_str(),
+	modified = walk->Walk(db.GetRoot(), next.path_utf8.c_str(),
 			      next.discard);
 
 	if (modified || !db.FileExists()) {
