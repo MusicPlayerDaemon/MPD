@@ -96,6 +96,17 @@ public:
 	virtual ~CompositeStorage();
 
 	/**
+	 * Get the #Storage at the specified mount point.  Returns
+	 * nullptr if the given URI is not a mount point.
+	 *
+	 * The returned pointer is unprotected.  No other thread is
+	 * allowed to unmount the given mount point while the return
+	 * value is being used.
+	 */
+	gcc_pure gcc_nonnull_all
+	Storage *GetMount(const char *uri);
+
+	/**
 	 * Call the given function for each mounted storage, including
 	 * the root storage.  Passes mount point URI and the a const
 	 * Storage reference to the function.

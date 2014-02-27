@@ -210,6 +210,19 @@ CompositeStorage::~CompositeStorage()
 {
 }
 
+Storage *
+CompositeStorage::GetMount(const char *uri)
+{
+	const ScopeLock protect(mutex);
+
+	auto result = FindStorage(uri);
+	if (*result.uri != 0)
+		/* not a mount point */
+		return nullptr;
+
+	return result.directory->storage;
+}
+
 void
 CompositeStorage::Mount(const char *uri, Storage *storage)
 {
