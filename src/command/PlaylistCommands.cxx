@@ -66,16 +66,14 @@ handle_load(Client &client, int argc, char *argv[])
 	} else if (!check_range(client, &start_index, &end_index, argv[2]))
 		return CommandResult::ERROR;
 
-	const SongLoader loader(client);
-	const PlaylistResult result =
-		playlist_open_into_queue(argv[1],
-					 start_index, end_index,
-					 client.playlist,
-					 client.player_control, loader);
-	if (result != PlaylistResult::NO_SUCH_LIST)
-		return print_playlist_result(client, result);
-
 	Error error;
+	const SongLoader loader(client);
+	if (!playlist_open_into_queue(argv[1],
+				      start_index, end_index,
+				      client.playlist,
+				      client.player_control, loader, error))
+		return print_error(client, error);
+
 	if (playlist_load_spl(client.playlist, client.player_control,
 			      argv[1], start_index, end_index,
 			      error))

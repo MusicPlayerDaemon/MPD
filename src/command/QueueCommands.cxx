@@ -64,8 +64,12 @@ handle_add(Client &client, gcc_unused int argc, char *argv[])
 
 	if (uri_has_scheme(uri) || PathTraitsUTF8::IsAbsolute(uri)) {
 		const SongLoader loader(client);
-		auto result = client.partition.AppendURI(loader, uri);
-		return print_playlist_result(client, result);
+		Error error;
+		unsigned id = client.partition.AppendURI(loader, uri, error);
+		if (id == 0)
+			return print_error(client, error);
+
+		return CommandResult::OK;
 	}
 
 #ifdef ENABLE_DATABASE
@@ -88,18 +92,16 @@ handle_addid(Client &client, int argc, char *argv[])
 		return CommandResult::ERROR;
 
 	const SongLoader loader(client);
-
-	unsigned added_id;
-	auto result = client.partition.AppendURI(loader, uri, &added_id);
-
-	if (result != PlaylistResult::SUCCESS)
-		return print_playlist_result(client, result);
+	Error error;
+	unsigned added_id = client.partition.AppendURI(loader, uri, error);
+	if (added_id == 0)
+		return print_error(client, error);
 
 	if (argc == 3) {
 		unsigned to;
 		if (!check_unsigned(client, &to, argv[2]))
 			return CommandResult::ERROR;
-		result = client.partition.MoveId(added_id, to);
+		PlaylistResult result = client.partition.MoveId(added_id, to);
 		if (result != PlaylistResult::SUCCESS) {
 			CommandResult ret =
 				print_playlist_result(client, result);

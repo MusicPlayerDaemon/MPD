@@ -146,14 +146,20 @@ public:
 	void DatabaseModified(const Database &db);
 #endif
 
-	PlaylistResult AppendSong(PlayerControl &pc,
-				  DetachedSong &&song,
-				  unsigned *added_id=nullptr);
+	/**
+	 * @return the new song id or 0 on error
+	 */
+	unsigned AppendSong(PlayerControl &pc,
+			    DetachedSong &&song,
+			    Error &error);
 
-	PlaylistResult AppendURI(PlayerControl &pc,
-				 const SongLoader &loader,
-				 const char *uri_utf8,
-				 unsigned *added_id=nullptr);
+	/**
+	 * @return the new song id or 0 on error
+	 */
+	unsigned AppendURI(PlayerControl &pc,
+			   const SongLoader &loader,
+			   const char *uri_utf8,
+			   Error &error);
 
 protected:
 	void DeleteInternal(PlayerControl &pc,

@@ -23,7 +23,6 @@
 #include "Interface.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
-#include "util/Error.hxx"
 #include "DetachedSong.hxx"
 
 #include <functional>
@@ -32,17 +31,12 @@ static bool
 AddToQueue(Partition &partition, const LightSong &song, Error &error)
 {
 	const Storage &storage = *partition.instance.storage;
-	PlaylistResult result =
+	unsigned id =
 		partition.playlist.AppendSong(partition.pc,
 					      DatabaseDetachSong(storage,
 								 song),
-					      nullptr);
-	if (result != PlaylistResult::SUCCESS) {
-		error.Set(playlist_domain, int(result), "Playlist error");
-		return false;
-	}
-
-	return true;
+					      error);
+	return id != 0;
 }
 
 bool

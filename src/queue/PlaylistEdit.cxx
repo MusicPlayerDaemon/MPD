@@ -32,7 +32,6 @@
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "Idle.hxx"
-#include "Log.hxx"
 
 #include <stdlib.h>
 
@@ -55,14 +54,16 @@ playlist::Clear(PlayerControl &pc)
 	OnModified();
 }
 
-PlaylistResult
-playlist::AppendSong(PlayerControl &pc,
-		     DetachedSong &&song, unsigned *added_id)
+unsigned
+playlist::AppendSong(PlayerControl &pc, DetachedSong &&song, Error &error)
 {
 	unsigned id;
 
-	if (queue.IsFull())
-		return PlaylistResult::TOO_LARGE;
+	if (queue.IsFull()) {
+		error.Set(playlist_domain, int(PlaylistResult::TOO_LARGE),
+			  "Playlist is too large");
+		return 0;
+	}
 
 	const DetachedSong *const queued_song = GetQueuedSong();
 
@@ -84,30 +85,19 @@ playlist::AppendSong(PlayerControl &pc,
 	UpdateQueuedSong(pc, queued_song);
 	OnModified();
 
-	if (added_id)
-		*added_id = id;
-
-	return PlaylistResult::SUCCESS;
+	return id;
 }
 
-PlaylistResult
-playlist::AppendURI(PlayerControl &pc,
-		    const SongLoader &loader,
-		    const char *uri, unsigned *added_id)
+unsigned
+playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
+		    const char *uri,
+		    Error &error)
 {
-	FormatDebug(playlist_domain, "add to playlist: %s", uri);
-
-	Error error;
 	DetachedSong *song = loader.LoadSong(uri, error);
-	if (song == nullptr) {
-		// TODO: return the Error
-		LogError(error);
-		return error.IsDomain(playlist_domain)
-			? PlaylistResult(error.GetCode())
-			: PlaylistResult::NO_SUCH_SONG;
-	}
+	if (song == nullptr)
+		return 0;
 
-	PlaylistResult result = AppendSong(pc, std::move(*song), added_id);
+	unsigned result = AppendSong(pc, std::move(*song), error);
 	delete song;
 
 	return result;

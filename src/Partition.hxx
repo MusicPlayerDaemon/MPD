@@ -55,10 +55,10 @@ struct Partition final : private PlayerListener, private MixerListener {
 		playlist.Clear(pc);
 	}
 
-	PlaylistResult AppendURI(const SongLoader &loader,
-				 const char *uri_utf8,
-				 unsigned *added_id=nullptr) {
-		return playlist.AppendURI(pc, loader, uri_utf8, added_id);
+	unsigned AppendURI(const SongLoader &loader,
+			   const char *uri_utf8,
+			   Error &error) {
+		return playlist.AppendURI(pc, loader, uri_utf8, error);
 	}
 
 	PlaylistResult DeletePosition(unsigned position) {

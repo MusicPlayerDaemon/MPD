@@ -114,13 +114,16 @@ playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
 		end_index = contents.size();
 
 	const SongLoader loader(nullptr, nullptr);
+	Error error2;
 
 	for (unsigned i = start_index; i < end_index; ++i) {
 		const auto &uri_utf8 = contents[i];
 
-		if ((playlist.AppendURI(pc, loader, uri_utf8.c_str())) != PlaylistResult::SUCCESS)
-			FormatError(playlist_domain,
-				    "can't add file \"%s\"", uri_utf8.c_str());
+		unsigned id = playlist.AppendURI(pc, loader, uri_utf8.c_str(),
+						 error2);
+		if (id == 0)
+			FormatError(error2, "can't add file \"%s\"",
+				    uri_utf8.c_str());
 	}
 
 	return true;

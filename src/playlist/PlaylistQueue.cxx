@@ -27,16 +27,18 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "fs/Traits.hxx"
+#include "util/Error.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "SongLoader.hxx"
 #endif
 
-PlaylistResult
+bool
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 const SongLoader &loader)
+			 const SongLoader &loader,
+			 Error &error)
 {
 	const std::string base_uri = uri != nullptr
 		? PathTraitsUTF8::GetParent(uri)
@@ -58,20 +60,21 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			continue;
 		}
 
-		PlaylistResult result = dest.AppendSong(pc, std::move(*song));
+		unsigned id = dest.AppendSong(pc, std::move(*song), error);
 		delete song;
-		if (result != PlaylistResult::SUCCESS)
-			return result;
+		if (id == 0)
+			return false;
 	}
 
-	return PlaylistResult::SUCCESS;
+	return true;
 }
 
-PlaylistResult
+bool
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 const SongLoader &loader)
+			 const SongLoader &loader,
+			 Error &error)
 {
 	Mutex mutex;
 	Cond cond;
@@ -81,13 +84,16 @@ playlist_open_into_queue(const char *uri,
 					  loader.GetStorage(),
 #endif
 					  mutex, cond);
-	if (playlist == nullptr)
-		return PlaylistResult::NO_SUCH_LIST;
+	if (playlist == nullptr) {
+		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_LIST),
+			  "No such playlist");
+		return false;
+	}
 
-	PlaylistResult result =
+	bool result =
 		playlist_load_into_queue(uri, *playlist,
 					 start_index, end_index,
-					 dest, pc, loader);
+					 dest, pc, loader, error);
 	delete playlist;
 	return result;
 }
