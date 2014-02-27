@@ -198,7 +198,6 @@ libmpd_a_SOURCES += \
 	src/db/LightDirectory.hxx \
 	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \
 	src/db/update/Service.cxx src/db/update/Service.hxx \
-	src/db/update/UpdateGlue.cxx \
 	src/db/update/Queue.cxx src/db/update/Queue.hxx \
 	src/db/update/UpdateIO.cxx src/db/update/UpdateIO.hxx \
 	src/db/update/Editor.cxx src/db/update/Editor.hxx \
