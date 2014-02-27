@@ -358,7 +358,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const FileInfo &info)
 	PurgeDeletedFromDirectory(directory);
 
 	const char *name_utf8;
-	while ((name_utf8 = reader->Read()) != nullptr) {
+	while (!cancel && (name_utf8 = reader->Read()) != nullptr) {
 		if (skip_path(name_utf8))
 			continue;
 

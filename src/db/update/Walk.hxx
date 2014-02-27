@@ -48,6 +48,13 @@ class UpdateWalk final {
 	bool walk_discard;
 	bool modified;
 
+	/**
+	 * Set to true by the main thread when the update thread shall
+	 * cancel as quickly as possible.  Access to this flag is
+	 * unprotected.
+	 */
+	volatile bool cancel;
+
 	Storage &storage;
 
 	DatabaseEditor editor;
@@ -55,6 +62,22 @@ class UpdateWalk final {
 public:
 	UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
 		   Storage &_storage);
+
+	/**
+	 * Cancel the current update and quit the Walk() method as
+	 * soon as possible.
+	 */
+	void Cancel() {
+		cancel = true;
+	}
+
+	/**
+	 * Call from the main thread before starting the update
+	 * thread.
+	 */
+	void Prepare() {
+		cancel = false;
+	}
 
 	/**
 	 * Returns true if the database was modified.

@@ -50,6 +50,10 @@ public:
 	bool Push(const char *path, bool discard, unsigned id);
 
 	UpdateQueueItem Pop();
+
+	void Clear() {
+		update_queue = decltype(update_queue)();
+	}
 };
 
 #endif

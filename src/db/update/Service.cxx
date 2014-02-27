@@ -47,6 +47,23 @@ UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
 {
 }
 
+UpdateService::~UpdateService()
+{
+	CancelAllAsync();
+
+	if (update_thread.IsDefined())
+		update_thread.Join();
+}
+
+void
+UpdateService::CancelAllAsync()
+{
+	assert(GetEventLoop().IsInsideOrNull());
+
+	queue.Clear();
+	walk.Cancel();
+}
+
 inline void
 UpdateService::Task()
 {
@@ -93,6 +110,8 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 	modified = false;
 
 	next = std::move(i);
+
+	walk.Prepare();
 
 	Error error;
 	if (!update_thread.Start(Task, this, error))

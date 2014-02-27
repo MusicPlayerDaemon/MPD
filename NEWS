@@ -9,6 +9,7 @@ ver 0.19 (not yet released)
   - proxy: forward "idle" events
   - proxy: copy "Last-Modified" from remote directories
   - upnp: new plugin
+  - cancel the update on shutdown
 * storage
   - music_directory can point to a remote file server
   - nfs: new plugin

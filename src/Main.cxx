@@ -596,6 +596,9 @@ int mpd_main(int argc, char *argv[])
 
 #if defined(ENABLE_DATABASE) && defined(ENABLE_INOTIFY)
 	mpd_inotify_finish();
+
+	if (instance->update != nullptr)
+		instance->update->CancelAllAsync();
 #endif
 
 	if (state_file != nullptr) {

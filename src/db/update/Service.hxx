@@ -64,6 +64,8 @@ public:
 		      Storage &_storage,
 		      DatabaseListener &_listener);
 
+	~UpdateService();
+
 	/**
 	 * Returns a non-zero job id when we are currently updating
 	 * the database.
@@ -81,6 +83,12 @@ public:
 	 */
 	gcc_nonnull_all
 	unsigned Enqueue(const char *path, bool discard);
+
+	/**
+	 * Clear the queue and cancel the current update.  Does not
+	 * wait for the thread to exit.
+	 */
+	void CancelAllAsync();
 
 private:
 	/* virtual methods from class DeferredMonitor */
