@@ -1,4 +1,6 @@
 ver 0.18.9 (not yet released)
+* protocol
+  - "findadd" requires the "add" permission
 * decoder
   - vorbis: fix linker failure when libvorbis/libogg are static
 * encoder

@@ -90,7 +90,7 @@ static const struct command commands[] = {
 	{ "disableoutput", PERMISSION_ADMIN, 1, 1, handle_disableoutput },
 	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
 	{ "find", PERMISSION_READ, 2, -1, handle_find },
-	{ "findadd", PERMISSION_READ, 2, -1, handle_findadd},
+	{ "findadd", PERMISSION_ADD, 2, -1, handle_findadd},
 	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
 	{ "list", PERMISSION_READ, 1, -1, handle_list },
