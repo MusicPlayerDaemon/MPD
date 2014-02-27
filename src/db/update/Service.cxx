@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Service.hxx"
+#include "Walk.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseListener.hxx"
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
@@ -40,10 +41,12 @@
 UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
 			     Storage &_storage,
 			     DatabaseListener &_listener)
-	:DeferredMonitor(_loop), db(_db), listener(_listener),
+	:DeferredMonitor(_loop),
+	 db(_db), storage(_storage),
+	 listener(_listener),
 	 progress(UPDATE_PROGRESS_IDLE),
 	 update_task_id(0),
-	 walk(_loop, _listener, _storage)
+	 walk(nullptr)
 {
 }
 
@@ -53,6 +56,8 @@ UpdateService::~UpdateService()
 
 	if (update_thread.IsDefined())
 		update_thread.Join();
+
+	delete walk;
 }
 
 void
@@ -61,12 +66,16 @@ UpdateService::CancelAllAsync()
 	assert(GetEventLoop().IsInsideOrNull());
 
 	queue.Clear();
-	walk.Cancel();
+
+	if (walk != nullptr)
+		walk->Cancel();
 }
 
 inline void
 UpdateService::Task()
 {
+	assert(walk != nullptr);
+
 	if (!next.path_utf8.empty())
 		FormatDebug(update_domain, "starting: %s",
 			    next.path_utf8.c_str());
@@ -75,8 +84,8 @@ UpdateService::Task()
 
 	SetThreadIdlePriority();
 
-	modified = walk.Walk(*db.GetRoot(), next.path_utf8.c_str(),
-			     next.discard);
+	modified = walk->Walk(*db.GetRoot(), next.path_utf8.c_str(),
+			      next.discard);
 
 	if (modified || !db.FileExists()) {
 		Error error;
@@ -105,13 +114,13 @@ void
 UpdateService::StartThread(UpdateQueueItem &&i)
 {
 	assert(GetEventLoop().IsInsideOrNull());
+	assert(walk == nullptr);
 
 	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
 
 	next = std::move(i);
-
-	walk.Prepare();
+	walk = new UpdateWalk(GetEventLoop(), listener, storage);
 
 	Error error;
 	if (!update_thread.Start(Task, this, error))
@@ -160,8 +169,13 @@ UpdateService::RunDeferred()
 {
 	assert(progress == UPDATE_PROGRESS_DONE);
 	assert(next.IsDefined());
+	assert(walk != nullptr);
 
 	update_thread.Join();
+
+	delete walk;
+	walk = nullptr;
+
 	next = UpdateQueueItem();
 
 	idle_add(IDLE_UPDATE);

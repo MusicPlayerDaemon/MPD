@@ -72,14 +72,6 @@ public:
 	}
 
 	/**
-	 * Call from the main thread before starting the update
-	 * thread.
-	 */
-	void Prepare() {
-		cancel = false;
-	}
-
-	/**
 	 * Returns true if the database was modified.
 	 */
 	bool Walk(Directory &root, const char *path, bool discard);

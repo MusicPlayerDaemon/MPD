@@ -18,7 +18,7 @@
  */
 
 #include "config.h" /* must be first for large file support */
-#include "Service.hxx"
+#include "Walk.hxx"
 #include "UpdateIO.hxx"
 #include "UpdateDomain.hxx"
 #include "db/DatabaseLock.hxx"

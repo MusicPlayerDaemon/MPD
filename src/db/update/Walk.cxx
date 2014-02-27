@@ -51,7 +51,8 @@
 
 UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
 		       Storage &_storage)
-	:storage(_storage),
+	:cancel(false),
+	 storage(_storage),
 	 editor(_loop, _listener)
 {
 #ifndef WIN32

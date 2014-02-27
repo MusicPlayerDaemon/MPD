@@ -22,12 +22,13 @@
 
 #include "check.h"
 #include "Queue.hxx"
-#include "Walk.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "thread/Thread.hxx"
 
 class SimpleDatabase;
 class DatabaseListener;
+class UpdateWalk;
+class Storage;
 
 /**
  * This class manages the update queue and runs the update thread.
@@ -40,6 +41,7 @@ class UpdateService final : DeferredMonitor {
 	};
 
 	SimpleDatabase &db;
+	Storage &storage;
 
 	DatabaseListener &listener;
 
@@ -57,7 +59,7 @@ class UpdateService final : DeferredMonitor {
 
 	UpdateQueueItem next;
 
-	UpdateWalk walk;
+	UpdateWalk *walk;
 
 public:
 	UpdateService(EventLoop &_loop, SimpleDatabase &_db,
