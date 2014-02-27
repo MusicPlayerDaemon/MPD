@@ -26,7 +26,7 @@ UpdateQueue::Push(const char *path, bool discard, unsigned id)
 	if (update_queue.size() >= MAX_UPDATE_QUEUE_SIZE)
 		return false;
 
-	update_queue.emplace(path, discard, id);
+	update_queue.emplace_back(path, discard, id);
 	return true;
 }
 
@@ -37,6 +37,6 @@ UpdateQueue::Pop()
 		return UpdateQueueItem();
 
 	auto i = std::move(update_queue.front());
-	update_queue.pop();
+	update_queue.pop_front();
 	return i;
 }

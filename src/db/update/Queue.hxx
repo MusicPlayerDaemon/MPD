@@ -23,7 +23,6 @@
 #include "check.h"
 
 #include <string>
-#include <queue>
 #include <list>
 
 struct UpdateQueueItem {
@@ -44,7 +43,7 @@ struct UpdateQueueItem {
 class UpdateQueue {
 	static constexpr unsigned MAX_UPDATE_QUEUE_SIZE = 32;
 
-	std::queue<UpdateQueueItem, std::list<UpdateQueueItem>> update_queue;
+	std::list<UpdateQueueItem> update_queue;
 
 public:
 	bool Push(const char *path, bool discard, unsigned id);
@@ -52,7 +51,7 @@ public:
 	UpdateQueueItem Pop();
 
 	void Clear() {
-		update_queue = decltype(update_queue)();
+		update_queue.clear();
 	}
 };
 
