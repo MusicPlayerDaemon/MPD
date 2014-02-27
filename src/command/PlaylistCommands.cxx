@@ -28,12 +28,12 @@
 #include "SongLoader.hxx"
 #include "playlist/PlaylistQueue.hxx"
 #include "playlist/Print.hxx"
+#include "queue/Playlist.hxx"
 #include "TimePrint.hxx"
 #include "client/Client.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
-#include "Playlist.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 

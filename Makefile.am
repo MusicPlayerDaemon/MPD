@@ -141,19 +141,14 @@ libmpd_a_SOURCES = \
 	src/PlayerThread.cxx src/PlayerThread.hxx \
 	src/PlayerControl.cxx src/PlayerControl.hxx \
 	src/PlayerListener.hxx \
-	src/Playlist.cxx src/Playlist.hxx \
 	src/PlaylistError.cxx src/PlaylistError.hxx \
 	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
-	src/PlaylistControl.cxx \
-	src/PlaylistEdit.cxx \
-	src/PlaylistTag.cxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \
 	src/playlist/PlaylistStream.cxx src/playlist/PlaylistStream.hxx \
 	src/playlist/PlaylistMapper.cxx src/playlist/PlaylistMapper.hxx \
 	src/playlist/PlaylistAny.cxx src/playlist/PlaylistAny.hxx \
 	src/playlist/PlaylistSong.cxx src/playlist/PlaylistSong.hxx \
-	src/PlaylistState.cxx src/PlaylistState.hxx \
 	src/playlist/PlaylistQueue.cxx src/playlist/PlaylistQueue.hxx \
 	src/playlist/Print.cxx src/playlist/Print.hxx \
 	src/db/PlaylistVector.cxx src/db/PlaylistVector.hxx \
@@ -162,6 +157,11 @@ libmpd_a_SOURCES = \
 	src/queue/Queue.cxx src/queue/Queue.hxx \
 	src/queue/QueuePrint.cxx src/queue/QueuePrint.hxx \
 	src/queue/QueueSave.cxx src/queue/QueueSave.hxx \
+	src/queue/Playlist.cxx src/queue/Playlist.hxx \
+	src/queue/PlaylistControl.cxx \
+	src/queue/PlaylistEdit.cxx \
+	src/queue/PlaylistTag.cxx \
+	src/queue/PlaylistState.cxx src/queue/PlaylistState.hxx \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
@@ -191,7 +191,7 @@ endif
 
 if ENABLE_DATABASE
 libmpd_a_SOURCES += \
-	src/PlaylistUpdate.cxx \
+	src/queue/PlaylistUpdate.cxx \
 	src/command/StorageCommands.cxx src/command/StorageCommands.hxx \
 	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
 	src/db/LightSong.cxx src/db/LightSong.hxx \

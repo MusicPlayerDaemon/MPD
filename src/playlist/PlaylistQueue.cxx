@@ -21,7 +21,7 @@
 #include "PlaylistQueue.hxx"
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
-#include "Playlist.hxx"
+#include "queue/Playlist.hxx"
 #include "SongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "thread/Mutex.hxx"

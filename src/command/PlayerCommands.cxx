@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlayerCommands.hxx"
 #include "CommandError.hxx"
-#include "Playlist.hxx"
+#include "queue/Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "client/Client.hxx"
 #include "mixer/Volume.hxx"

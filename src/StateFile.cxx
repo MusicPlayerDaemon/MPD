@@ -20,7 +20,7 @@
 #include "config.h"
 #include "StateFile.hxx"
 #include "output/OutputState.hxx"
-#include "PlaylistState.hxx"
+#include "queue/PlaylistState.hxx"
 #include "fs/TextFile.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"

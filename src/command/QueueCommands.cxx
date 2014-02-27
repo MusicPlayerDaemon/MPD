@@ -24,7 +24,7 @@
 #include "db/Selection.hxx"
 #include "SongFilter.hxx"
 #include "SongLoader.hxx"
-#include "Playlist.hxx"
+#include "queue/Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "client/Client.hxx"
 #include "Partition.hxx"

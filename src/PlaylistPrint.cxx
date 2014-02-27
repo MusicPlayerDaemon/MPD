@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PlaylistPrint.hxx"
 #include "PlaylistFile.hxx"
-#include "Playlist.hxx"
+#include "queue/Playlist.hxx"
 #include "queue/QueuePrint.hxx"
 #include "SongPrint.hxx"
 #include "Partition.hxx"

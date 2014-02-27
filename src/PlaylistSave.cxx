@@ -21,7 +21,7 @@
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistError.hxx"
-#include "Playlist.hxx"
+#include "queue/Playlist.hxx"
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "Mapper.hxx"

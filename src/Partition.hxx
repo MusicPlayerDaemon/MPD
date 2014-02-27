@@ -20,7 +20,7 @@
 #ifndef MPD_PARTITION_HXX
 #define MPD_PARTITION_HXX
 
-#include "Playlist.hxx"
+#include "queue/Playlist.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "mixer/Listener.hxx"
 #include "PlayerControl.hxx"
