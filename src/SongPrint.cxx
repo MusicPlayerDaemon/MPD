@@ -30,44 +30,50 @@
 #define SONG_FILE "file: "
 
 static void
-song_print_uri(Client &client, const char *uri)
+song_print_uri(Client &client, const char *uri, bool base)
 {
+	std::string allocated;
+
+	if (base) {
+		uri = PathTraitsUTF8::GetBase(uri);
+	} else {
 #ifdef ENABLE_DATABASE
-	const Storage *storage = client.GetStorage();
-	if (storage != nullptr) {
-		const char *suffix = storage->MapToRelativeUTF8(uri);
-		if (suffix != nullptr)
-			uri = suffix;
-	}
+		const Storage *storage = client.GetStorage();
+		if (storage != nullptr) {
+			const char *suffix = storage->MapToRelativeUTF8(uri);
+			if (suffix != nullptr)
+				uri = suffix;
+		}
 #endif
 
-	const std::string allocated = uri_remove_auth(uri);
-	if (!allocated.empty())
-		uri = allocated.c_str();
+		allocated = uri_remove_auth(uri);
+		if (!allocated.empty())
+			uri = allocated.c_str();
+	}
 
 	client_printf(client, "%s%s\n", SONG_FILE, uri);
 }
 
 void
-song_print_uri(Client &client, const LightSong &song)
+song_print_uri(Client &client, const LightSong &song, bool base)
 {
-	if (song.directory != nullptr) {
+	if (!base && song.directory != nullptr) {
 		client_printf(client, "%s%s/%s\n", SONG_FILE,
 			      song.directory, song.uri);
 	} else
-		song_print_uri(client, song.uri);
+		song_print_uri(client, song.uri, base);
 }
 
 void
-song_print_uri(Client &client, const DetachedSong &song)
+song_print_uri(Client &client, const DetachedSong &song, bool base)
 {
-	song_print_uri(client, song.GetURI());
+	song_print_uri(client, song.GetURI(), base);
 }
 
 void
-song_print_info(Client &client, const LightSong &song)
+song_print_info(Client &client, const LightSong &song, bool base)
 {
-	song_print_uri(client, song);
+	song_print_uri(client, song, base);
 
 	if (song.end_ms > 0)
 		client_printf(client, "Range: %u.%03u-%u.%03u\n",
@@ -87,9 +93,9 @@ song_print_info(Client &client, const LightSong &song)
 }
 
 void
-song_print_info(Client &client, const DetachedSong &song)
+song_print_info(Client &client, const DetachedSong &song, bool base)
 {
-	song_print_uri(client, song);
+	song_print_uri(client, song, base);
 
 	const unsigned start_ms = song.GetStartMS();
 	const unsigned end_ms = song.GetEndMS();

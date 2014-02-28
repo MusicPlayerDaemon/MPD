@@ -29,10 +29,11 @@ class Error;
 
 /**
  * @param full print attributes/tags
+ * @param base print only base name of songs/directories?
  */
 bool
 db_selection_print(Client &client, const DatabaseSelection &selection,
-		   bool full, Error &error);
+		   bool full, bool base, Error &error);
 
 gcc_nonnull(2)
 bool

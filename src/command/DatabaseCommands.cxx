@@ -32,6 +32,18 @@
 #include "protocol/Result.hxx"
 
 CommandResult
+handle_listfiles_db(Client &client, const char *uri)
+{
+	const DatabaseSelection selection(uri, false);
+
+	Error error;
+	if (!db_selection_print(client, selection, false, true, error))
+		return print_error(client, error);
+
+	return CommandResult::OK;
+}
+
+CommandResult
 handle_lsinfo2(Client &client, int argc, char *argv[])
 {
 	const char *const uri = argc == 2
@@ -42,7 +54,7 @@ handle_lsinfo2(Client &client, int argc, char *argv[])
 	const DatabaseSelection selection(uri, false);
 
 	Error error;
-	if (!db_selection_print(client, selection, true, error))
+	if (!db_selection_print(client, selection, true, false, error))
 		return print_error(client, error);
 
 	return CommandResult::OK;
@@ -60,7 +72,7 @@ handle_match(Client &client, int argc, char *argv[], bool fold_case)
 	const DatabaseSelection selection("", true, &filter);
 
 	Error error;
-	return db_selection_print(client, selection, true, error)
+	return db_selection_print(client, selection, true, false, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }

@@ -40,6 +40,9 @@ CommandResult
 handle_close(Client &client, int argc, char *argv[]);
 
 CommandResult
+handle_listfiles(Client &client, int argc, char *argv[]);
+
+CommandResult
 handle_lsinfo(Client &client, int argc, char *argv[]);
 
 CommandResult

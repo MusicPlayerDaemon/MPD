@@ -23,6 +23,13 @@
 #include "CommandResult.hxx"
 
 class Client;
+class Storage;
+
+CommandResult
+handle_listfiles_storage(Client &client, Storage &storage, const char *uri);
+
+CommandResult
+handle_listfiles_storage(Client &client, const char *uri);
 
 CommandResult
 handle_listmounts(Client &client, int argc, char *argv[]);

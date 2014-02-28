@@ -1,6 +1,6 @@
 ver 0.19 (not yet released)
 * protocol
-  - new commands "addtagid", "cleartagid"
+  - new commands "addtagid", "cleartagid", "listfiles"
   - "lsinfo" and "readcomments" allowed for remote files
   - "listneighbors" lists file servers on the local network
   - "playlistadd" supports file:///

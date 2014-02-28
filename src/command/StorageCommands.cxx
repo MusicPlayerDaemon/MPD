@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define __STDC_FORMAT_MACROS /* for PRIu64 */
+
 #include "config.h"
 #include "StorageCommands.hxx"
 #include "CommandError.hxx"
@@ -29,9 +31,102 @@
 #include "Instance.hxx"
 #include "storage/Registry.hxx"
 #include "storage/CompositeStorage.hxx"
+#include "storage/FileInfo.hxx"
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "db/update/Service.hxx"
+#include "TimePrint.hxx"
 #include "Idle.hxx"
+
+#include <inttypes.h> /* for PRIu64 */
+
+gcc_pure
+static bool
+skip_path(const char *name_utf8)
+{
+	return strchr(name_utf8, '\n') != nullptr;
+}
+
+static bool
+handle_listfiles_storage(Client &client, StorageDirectoryReader &reader,
+			 Error &error)
+{
+	const char *name_utf8;
+	while ((name_utf8 = reader.Read()) != nullptr) {
+		if (skip_path(name_utf8))
+			continue;
+
+		FileInfo info;
+		if (!reader.GetInfo(false, info, error))
+			continue;
+
+		switch (info.type) {
+		case FileInfo::Type::OTHER:
+			/* ignore */
+			continue;
+
+		case FileInfo::Type::REGULAR:
+			client_printf(client, "file: %s\n"
+				      "size: %" PRIu64 "\n",
+				      name_utf8,
+				      info.size);
+			break;
+
+		case FileInfo::Type::DIRECTORY:
+			client_printf(client, "directory: %s\n", name_utf8);
+			break;
+		}
+
+		if (info.mtime != 0)
+			time_print(client, "Last-Modified", info.mtime);
+	}
+
+	return true;
+}
+
+static bool
+handle_listfiles_storage(Client &client, Storage &storage, const char *uri,
+			 Error &error)
+{
+	auto reader = storage.OpenDirectory(uri, error);
+	if (reader == nullptr)
+		return false;
+
+	bool success = handle_listfiles_storage(client, *reader, error);
+	delete reader;
+	return success;
+}
+
+CommandResult
+handle_listfiles_storage(Client &client, Storage &storage, const char *uri)
+{
+	Error error;
+	if (!handle_listfiles_storage(client, storage, uri, error))
+		return print_error(client, error);
+
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_listfiles_storage(Client &client, const char *uri)
+{
+	Error error;
+	Storage *storage = CreateStorageURI(uri, error);
+	if (storage == nullptr) {
+		if (error.IsDefined())
+			return print_error(client, error);
+
+		command_error(client, ACK_ERROR_ARG,
+			      "Unrecognized storage URI");
+		return CommandResult::ERROR;
+	}
+
+	bool success = handle_listfiles_storage(client, *storage, "", error);
+	delete storage;
+	if (!success)
+		return print_error(client, error);
+
+	return CommandResult::OK;
+}
 
 static void
 print_storage_uri(Client &client, const Storage &storage)

@@ -19,6 +19,8 @@
 
 #include "config.h"
 #include "OtherCommands.hxx"
+#include "FileCommands.hxx"
+#include "StorageCommands.hxx"
 #include "CommandError.hxx"
 #include "db/Uri.hxx"
 #include "storage/StorageInterface.hxx"
@@ -110,6 +112,41 @@ print_tag(TagType type, const char *value, void *ctx)
 	Client &client = *(Client *)ctx;
 
 	tag_print(client, type, value);
+}
+
+CommandResult
+handle_listfiles(Client &client, int argc, char *argv[])
+{
+	const char *const uri = argc == 2
+		? argv[1]
+		/* default is root directory */
+		: "";
+
+	if (memcmp(uri, "file:///", 8) == 0)
+		/* list local directory */
+		return handle_listfiles_local(client, uri + 7);
+
+#ifdef ENABLE_DATABASE
+	if (uri_has_scheme(uri))
+		/* use storage plugin to list remote directory */
+		return handle_listfiles_storage(client, uri);
+
+	/* must be a path relative to the configured
+	   music_directory */
+
+	if (client.partition.instance.storage != nullptr)
+		/* if we have a storage instance, obtain a list of
+		   files from it */
+		return handle_listfiles_storage(client,
+						*client.partition.instance.storage,
+						uri);
+
+	/* fall back to entries from database if we have no storage */
+	return handle_listfiles_db(client, uri);
+#else
+	command_error(client, ACK_ERROR_NO_EXIST, "No database");
+	return CommandResult::ERROR;
+#endif
 }
 
 static constexpr tag_handler print_tag_handler = {

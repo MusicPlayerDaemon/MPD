@@ -25,15 +25,15 @@ class DetachedSong;
 class Client;
 
 void
-song_print_info(Client &client, const DetachedSong &song);
+song_print_info(Client &client, const DetachedSong &song, bool base=false);
 
 void
-song_print_info(Client &client, const LightSong &song);
+song_print_info(Client &client, const LightSong &song, bool base=false);
 
 void
-song_print_uri(Client &client, const LightSong &song);
+song_print_uri(Client &client, const LightSong &song, bool base=false);
 
 void
-song_print_uri(Client &client, const DetachedSong &song);
+song_print_uri(Client &client, const DetachedSong &song, bool base=false);
 
 #endif

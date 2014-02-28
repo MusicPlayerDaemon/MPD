@@ -25,6 +25,9 @@
 class Client;
 
 CommandResult
+handle_listfiles_db(Client &client, const char *uri);
+
+CommandResult
 handle_lsinfo2(Client &client, int argc, char *argv[]);
 
 CommandResult

@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define __STDC_FORMAT_MACROS /* for PRIu64 */
+
 #include "config.h"
 #include "FileCommands.hxx"
 #include "CommandError.hxx"
@@ -33,9 +35,79 @@
 #include "TagFile.hxx"
 #include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
+#include "TimePrint.hxx"
 #include "ls.hxx"
 
 #include <assert.h>
+#include <sys/stat.h>
+#include <inttypes.h> /* for PRIu64 */
+
+gcc_pure
+static bool
+SkipNameFS(const char *name_fs)
+{
+	return name_fs[0] == '.' &&
+		(name_fs[1] == 0 ||
+		 (name_fs[1] == '.' && name_fs[2] == 0));
+}
+
+gcc_pure
+static bool
+skip_path(const char *name_fs)
+{
+	return strchr(name_fs, '\n') != nullptr;
+}
+
+CommandResult
+handle_listfiles_local(Client &client, const char *path_utf8)
+{
+	const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
+	if (path_fs.IsNull()) {
+		command_error(client, ACK_ERROR_NO_EXIST,
+			      "unsupported file name");
+		return CommandResult::ERROR;
+	}
+
+	Error error;
+	if (!client.AllowFile(path_fs, error))
+		return print_error(client, error);
+
+	DirectoryReader reader(path_fs);
+	if (reader.HasFailed()) {
+		error.FormatErrno("Failed to open '%s'", path_utf8);
+		return print_error(client, error);
+	}
+
+	while (reader.ReadEntry()) {
+		const Path name_fs = reader.GetEntry();
+		if (SkipNameFS(name_fs.c_str()) || skip_path(name_fs.c_str()))
+			continue;
+
+		std::string name_utf8 = name_fs.ToUTF8();
+		if (name_utf8.empty())
+			continue;
+
+		const AllocatedPath full_fs =
+			AllocatedPath::Build(path_fs, name_fs);
+		struct stat st;
+		if (!StatFile(full_fs, st, false))
+			continue;
+
+		if (S_ISREG(st.st_mode)) {
+			client_printf(client, "file: %s\n"
+				      "size: %" PRIu64 "\n",
+				      name_utf8.c_str(),
+				      uint64_t(st.st_size));
+		} else if (S_ISDIR(st.st_mode))
+			client_printf(client, "directory: %s\n",
+				      name_utf8.c_str());
+
+		time_print(client, "Last-Modified", st.st_mtime);
+	}
+
+	return CommandResult::OK;
+}
 
 gcc_pure
 static bool

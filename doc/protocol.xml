@@ -1600,6 +1600,31 @@ OK
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_listfiles">
+          <term>
+            <cmdsynopsis>
+              <command>listfiles</command>
+              <arg><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Lists the contents of the directory
+              <varname>URI</varname>, including files are not
+              recognized by MPD.  <varname>URI</varname> can be a path
+              relative to the music directory or an URI understood by
+              one of the storage plugins.  The response contains at
+              least one line for each directory entry with the prefix
+              "file: " or "directory: ", and may be followed by file
+              attributes such as "Last-Modified" and "size".
+            </para>
+            <para>
+              For example, "smb://SERVER" returns a list of all shares
+              on the given SMB/CIFS server; "nfs://servername/path"
+              obtains a directory listing from the NFS server.
+            </para>
+          </listitem>
+        </varlistentry>
         <varlistentry id="command_lsinfo">
           <term>
             <cmdsynopsis>
