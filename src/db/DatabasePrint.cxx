@@ -32,11 +32,17 @@
 
 #include <functional>
 
+static void
+PrintDirectoryURI(Client &client, const LightDirectory &directory)
+{
+	client_printf(client, "directory: %s\n", directory.GetPath());
+}
+
 static bool
 PrintDirectoryBrief(Client &client, const LightDirectory &directory)
 {
 	if (!directory.IsRoot())
-		client_printf(client, "directory: %s\n", directory.GetPath());
+		PrintDirectoryURI(client, directory);
 
 	return true;
 }
@@ -45,7 +51,7 @@ static bool
 PrintDirectoryFull(Client &client, const LightDirectory &directory)
 {
 	if (!directory.IsRoot()) {
-		client_printf(client, "directory: %s\n", directory.GetPath());
+		PrintDirectoryURI(client, directory);
 
 		if (directory.mtime > 0)
 			time_print(client, "Last-Modified", directory.mtime);
