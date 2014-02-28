@@ -121,13 +121,10 @@ static constexpr tag_handler print_tag_handler = {
 CommandResult
 handle_lsinfo(Client &client, int argc, char *argv[])
 {
-	const char *uri;
-
-	if (argc == 2)
-		uri = argv[1];
-	else
+	const char *const uri = argc == 2
+		? argv[1]
 		/* default is root directory */
-		uri = "";
+		: "";
 
 	if (memcmp(uri, "file:///", 8) == 0) {
 		/* print information about an arbitrary local file */

@@ -34,13 +34,10 @@
 CommandResult
 handle_lsinfo2(Client &client, int argc, char *argv[])
 {
-	const char *uri;
-
-	if (argc == 2)
-		uri = argv[1];
-	else
+	const char *const uri = argc == 2
+		? argv[1]
 		/* default is root directory */
-		uri = "";
+		: "";
 
 	const DatabaseSelection selection(uri, false);
 
