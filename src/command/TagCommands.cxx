@@ -27,7 +27,7 @@
 #include "Partition.hxx"
 
 CommandResult
-handle_addtagid(Client &client, gcc_unused int argc, char *argv[])
+handle_addtagid(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned song_id;
 	if (!check_unsigned(client, &song_id, argv[1]))
@@ -52,7 +52,7 @@ handle_addtagid(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_cleartagid(Client &client, int argc, char *argv[])
+handle_cleartagid(Client &client, unsigned argc, char *argv[])
 {
 	unsigned song_id;
 	if (!check_unsigned(client, &song_id, argv[1]))

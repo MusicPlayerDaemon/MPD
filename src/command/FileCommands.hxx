@@ -28,6 +28,6 @@ CommandResult
 handle_listfiles_local(Client &client, const char *path_utf8);
 
 CommandResult
-handle_read_comments(Client &client, int argc, char *argv[]);
+handle_read_comments(Client &client, unsigned argc, char *argv[]);
 
 #endif

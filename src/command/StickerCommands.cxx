@@ -51,7 +51,7 @@ sticker_song_find_print_cb(const LightSong &song, const char *value,
 }
 
 static CommandResult
-handle_sticker_song(Client &client, int argc, char *argv[])
+handle_sticker_song(Client &client, unsigned argc, char *argv[])
 {
 	Error error;
 	const Database *db = client.GetDatabase(error);
@@ -150,7 +150,7 @@ handle_sticker_song(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_sticker(Client &client, int argc, char *argv[])
+handle_sticker(Client &client, unsigned argc, char *argv[])
 {
 	assert(argc >= 4);
 

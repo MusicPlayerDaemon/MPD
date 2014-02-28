@@ -31,6 +31,6 @@ bool
 neighbor_commands_available(const Instance &instance);
 
 CommandResult
-handle_listneighbors(Client &client, int argc, char *argv[]);
+handle_listneighbors(Client &client, unsigned argc, char *argv[]);
 
 #endif

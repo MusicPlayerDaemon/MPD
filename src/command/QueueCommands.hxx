@@ -25,60 +25,60 @@
 class Client;
 
 CommandResult
-handle_add(Client &client, int argc, char *argv[]);
+handle_add(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_addid(Client &client, int argc, char *argv[]);
+handle_addid(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_delete(Client &client, int argc, char *argv[]);
+handle_delete(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_deleteid(Client &client, int argc, char *argv[]);
+handle_deleteid(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_playlist(Client &client, int argc, char *argv[]);
+handle_playlist(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_shuffle(Client &client, int argc, char *argv[]);
+handle_shuffle(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_clear(Client &client, int argc, char *argv[]);
+handle_clear(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_plchanges(Client &client, int argc, char *argv[]);
+handle_plchanges(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_plchangesposid(Client &client, int argc, char *argv[]);
+handle_plchangesposid(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_playlistinfo(Client &client, int argc, char *argv[]);
+handle_playlistinfo(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_playlistid(Client &client, int argc, char *argv[]);
+handle_playlistid(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_playlistfind(Client &client, int argc, char *argv[]);
+handle_playlistfind(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_playlistsearch(Client &client, int argc, char *argv[]);
+handle_playlistsearch(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_prio(Client &client, int argc, char *argv[]);
+handle_prio(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_prioid(Client &client, int argc, char *argv[]);
+handle_prioid(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_move(Client &client, int argc, char *argv[]);
+handle_move(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_moveid(Client &client, int argc, char *argv[]);
+handle_moveid(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_swap(Client &client, int argc, char *argv[]);
+handle_swap(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_swapid(Client &client, int argc, char *argv[]);
+handle_swapid(Client &client, unsigned argc, char *argv[]);
 
 #endif

@@ -25,15 +25,15 @@
 class Client;
 
 CommandResult
-handle_enableoutput(Client &client, int argc, char *argv[]);
+handle_enableoutput(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_disableoutput(Client &client, int argc, char *argv[]);
+handle_disableoutput(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_toggleoutput(Client &client, int argc, char *argv[]);
+handle_toggleoutput(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_devices(Client &client, int argc, char *argv[]);
+handle_devices(Client &client, unsigned argc, char *argv[]);
 
 #endif

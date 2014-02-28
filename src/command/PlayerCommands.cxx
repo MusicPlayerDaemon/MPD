@@ -56,7 +56,7 @@
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
 CommandResult
-handle_play(Client &client, int argc, char *argv[])
+handle_play(Client &client, unsigned argc, char *argv[])
 {
 	int song = -1;
 
@@ -67,7 +67,7 @@ handle_play(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_playid(Client &client, int argc, char *argv[])
+handle_playid(Client &client, unsigned argc, char *argv[])
 {
 	int id = -1;
 
@@ -80,7 +80,7 @@ handle_playid(Client &client, int argc, char *argv[])
 
 CommandResult
 handle_stop(Client &client,
-	    gcc_unused int argc, gcc_unused char *argv[])
+	    gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	client.partition.Stop();
 	return CommandResult::OK;
@@ -88,7 +88,7 @@ handle_stop(Client &client,
 
 CommandResult
 handle_currentsong(Client &client,
-		   gcc_unused int argc, gcc_unused char *argv[])
+		   gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	playlist_print_current(client, client.playlist);
 	return CommandResult::OK;
@@ -96,7 +96,7 @@ handle_currentsong(Client &client,
 
 CommandResult
 handle_pause(Client &client,
-	     int argc, char *argv[])
+	     unsigned argc, char *argv[])
 {
 	if (argc == 2) {
 		bool pause_flag;
@@ -112,7 +112,7 @@ handle_pause(Client &client,
 
 CommandResult
 handle_status(Client &client,
-	      gcc_unused int argc, gcc_unused char *argv[])
+	      gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	const char *state = nullptr;
 	int song;
@@ -221,7 +221,7 @@ handle_status(Client &client,
 
 CommandResult
 handle_next(Client &client,
-	    gcc_unused int argc, gcc_unused char *argv[])
+	    gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	playlist &playlist = client.playlist;
 
@@ -238,14 +238,14 @@ handle_next(Client &client,
 
 CommandResult
 handle_previous(Client &client,
-		gcc_unused int argc, gcc_unused char *argv[])
+		gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	client.partition.PlayPrevious();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_repeat(Client &client, gcc_unused int argc, char *argv[])
+handle_repeat(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	bool status;
 	if (!check_bool(client, &status, argv[1]))
@@ -256,7 +256,7 @@ handle_repeat(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_single(Client &client, gcc_unused int argc, char *argv[])
+handle_single(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	bool status;
 	if (!check_bool(client, &status, argv[1]))
@@ -267,7 +267,7 @@ handle_single(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_consume(Client &client, gcc_unused int argc, char *argv[])
+handle_consume(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	bool status;
 	if (!check_bool(client, &status, argv[1]))
@@ -278,7 +278,7 @@ handle_consume(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_random(Client &client, gcc_unused int argc, char *argv[])
+handle_random(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	bool status;
 	if (!check_bool(client, &status, argv[1]))
@@ -291,14 +291,14 @@ handle_random(Client &client, gcc_unused int argc, char *argv[])
 
 CommandResult
 handle_clearerror(gcc_unused Client &client,
-		  gcc_unused int argc, gcc_unused char *argv[])
+		  gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	client.player_control.ClearError();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_seek(Client &client, gcc_unused int argc, char *argv[])
+handle_seek(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned song, seek_time;
 
@@ -313,7 +313,7 @@ handle_seek(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_seekid(Client &client, gcc_unused int argc, char *argv[])
+handle_seekid(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned id, seek_time;
 
@@ -328,7 +328,7 @@ handle_seekid(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_seekcur(Client &client, gcc_unused int argc, char *argv[])
+handle_seekcur(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	const char *p = argv[1];
 	bool relative = *p == '+' || *p == '-';
@@ -342,7 +342,7 @@ handle_seekcur(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_crossfade(Client &client, gcc_unused int argc, char *argv[])
+handle_crossfade(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned xfade_time;
 
@@ -354,7 +354,7 @@ handle_crossfade(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_mixrampdb(Client &client, gcc_unused int argc, char *argv[])
+handle_mixrampdb(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	float db;
 
@@ -366,7 +366,7 @@ handle_mixrampdb(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_mixrampdelay(Client &client, gcc_unused int argc, char *argv[])
+handle_mixrampdelay(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	float delay_secs;
 
@@ -379,7 +379,7 @@ handle_mixrampdelay(Client &client, gcc_unused int argc, char *argv[])
 
 CommandResult
 handle_replay_gain_mode(Client &client,
-			gcc_unused int argc, char *argv[])
+			gcc_unused unsigned argc, char *argv[])
 {
 	if (!replay_gain_set_mode_string(argv[1])) {
 		command_error(client, ACK_ERROR_ARG,
@@ -393,7 +393,7 @@ handle_replay_gain_mode(Client &client,
 
 CommandResult
 handle_replay_gain_status(Client &client,
-			  gcc_unused int argc, gcc_unused char *argv[])
+			  gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	client_printf(client, "replay_gain_mode: %s\n",
 		      replay_gain_get_mode_string());

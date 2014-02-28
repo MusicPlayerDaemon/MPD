@@ -48,7 +48,7 @@ handle_listfiles_db(Client &client, const char *uri)
 }
 
 CommandResult
-handle_lsinfo2(Client &client, int argc, char *argv[])
+handle_lsinfo2(Client &client, unsigned argc, char *argv[])
 {
 	const char *const uri = argc == 2
 		? argv[1]
@@ -65,7 +65,7 @@ handle_lsinfo2(Client &client, int argc, char *argv[])
 }
 
 static CommandResult
-handle_match(Client &client, int argc, char *argv[], bool fold_case)
+handle_match(Client &client, unsigned argc, char *argv[], bool fold_case)
 {
 	ConstBuffer<const char *> args(argv + 1, argc - 1);
 
@@ -84,19 +84,19 @@ handle_match(Client &client, int argc, char *argv[], bool fold_case)
 }
 
 CommandResult
-handle_find(Client &client, int argc, char *argv[])
+handle_find(Client &client, unsigned argc, char *argv[])
 {
 	return handle_match(client, argc, argv, false);
 }
 
 CommandResult
-handle_search(Client &client, int argc, char *argv[])
+handle_search(Client &client, unsigned argc, char *argv[])
 {
 	return handle_match(client, argc, argv, true);
 }
 
 static CommandResult
-handle_match_add(Client &client, int argc, char *argv[], bool fold_case)
+handle_match_add(Client &client, unsigned argc, char *argv[], bool fold_case)
 {
 	ConstBuffer<const char *> args(argv + 1, argc - 1);
 
@@ -114,19 +114,19 @@ handle_match_add(Client &client, int argc, char *argv[], bool fold_case)
 }
 
 CommandResult
-handle_findadd(Client &client, int argc, char *argv[])
+handle_findadd(Client &client, unsigned argc, char *argv[])
 {
 	return handle_match_add(client, argc, argv, false);
 }
 
 CommandResult
-handle_searchadd(Client &client, int argc, char *argv[])
+handle_searchadd(Client &client, unsigned argc, char *argv[])
 {
 	return handle_match_add(client, argc, argv, true);
 }
 
 CommandResult
-handle_searchaddpl(Client &client, int argc, char *argv[])
+handle_searchaddpl(Client &client, unsigned argc, char *argv[])
 {
 	ConstBuffer<const char *> args(argv + 1, argc - 1);
 	const char *playlist = args.shift();
@@ -149,7 +149,7 @@ handle_searchaddpl(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_count(Client &client, int argc, char *argv[])
+handle_count(Client &client, unsigned argc, char *argv[])
 {
 	ConstBuffer<const char *> args(argv + 1, argc - 1);
 
@@ -180,7 +180,7 @@ handle_count(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_listall(Client &client, gcc_unused int argc, char *argv[])
+handle_listall(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	const char *directory = "";
 
@@ -195,7 +195,7 @@ handle_listall(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_list(Client &client, int argc, char *argv[])
+handle_list(Client &client, unsigned argc, char *argv[])
 {
 	ConstBuffer<const char *> args(argv + 1, argc - 1);
 	const char *tag_name = args.shift();
@@ -268,7 +268,7 @@ handle_list(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_listallinfo(Client &client, gcc_unused int argc, char *argv[])
+handle_listallinfo(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	const char *directory = "";
 

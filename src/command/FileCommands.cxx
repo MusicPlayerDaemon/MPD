@@ -201,7 +201,7 @@ read_file_comments(Client &client, const Path path_fs)
 }
 
 CommandResult
-handle_read_comments(Client &client, gcc_unused int argc, char *argv[])
+handle_read_comments(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	assert(argc == 2);
 

@@ -28,33 +28,33 @@ CommandResult
 handle_listfiles_db(Client &client, const char *uri);
 
 CommandResult
-handle_lsinfo2(Client &client, int argc, char *argv[]);
+handle_lsinfo2(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_find(Client &client, int argc, char *argv[]);
+handle_find(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_findadd(Client &client, int argc, char *argv[]);
+handle_findadd(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_search(Client &client, int argc, char *argv[]);
+handle_search(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_searchadd(Client &client, int argc, char *argv[]);
+handle_searchadd(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_searchaddpl(Client &client, int argc, char *argv[]);
+handle_searchaddpl(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_count(Client &client, int argc, char *argv[]);
+handle_count(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_listall(Client &client, int argc, char *argv[]);
+handle_listall(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_list(Client &client, int argc, char *argv[]);
+handle_list(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_listallinfo(Client &client, int argc, char *argv[]);
+handle_listallinfo(Client &client, unsigned argc, char *argv[]);
 
 #endif

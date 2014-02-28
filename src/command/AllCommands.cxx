@@ -60,15 +60,15 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	CommandResult (*handler)(Client &client, int argc, char **argv);
+	CommandResult (*handler)(Client &client, unsigned argc, char **argv);
 };
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, int argc, char *argv[]);
+handle_commands(Client &client, unsigned argc, char *argv[]);
 
 static CommandResult
-handle_not_commands(Client &client, int argc, char *argv[]);
+handle_not_commands(Client &client, unsigned argc, char *argv[]);
 
 /**
  * The command registry.
@@ -215,7 +215,7 @@ command_available(gcc_unused const Partition &partition,
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
 handle_commands(Client &client,
-		gcc_unused int argc, gcc_unused char *argv[])
+		gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	const unsigned permission = client.GetPermission();
 	const struct command *cmd;
@@ -233,7 +233,7 @@ handle_commands(Client &client,
 
 static CommandResult
 handle_not_commands(Client &client,
-		    gcc_unused int argc, gcc_unused char *argv[])
+		    gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	const unsigned permission = client.GetPermission();
 	const struct command *cmd;
@@ -285,10 +285,10 @@ command_lookup(const char *name)
 
 static bool
 command_check_request(const struct command *cmd, Client &client,
-		      unsigned permission, int argc, char *argv[])
+		      unsigned permission, unsigned argc, char *argv[])
 {
-	int min = cmd->min + 1;
-	int max = cmd->max + 1;
+	const unsigned min = cmd->min + 1;
+	const unsigned max = cmd->max + 1;
 
 	if (cmd->permission != (permission & cmd->permission)) {
 		command_error(client, ACK_ERROR_PERMISSION,
@@ -319,7 +319,7 @@ command_check_request(const struct command *cmd, Client &client,
 
 static const struct command *
 command_checked_lookup(Client &client, unsigned permission,
-		       int argc, char *argv[])
+		       unsigned argc, char *argv[])
 {
 	const struct command *cmd;
 

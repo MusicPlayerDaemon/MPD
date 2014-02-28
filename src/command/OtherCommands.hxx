@@ -25,51 +25,51 @@
 class Client;
 
 CommandResult
-handle_urlhandlers(Client &client, int argc, char *argv[]);
+handle_urlhandlers(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_decoders(Client &client, int argc, char *argv[]);
+handle_decoders(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_tagtypes(Client &client, int argc, char *argv[]);
+handle_tagtypes(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_kill(Client &client, int argc, char *argv[]);
+handle_kill(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_close(Client &client, int argc, char *argv[]);
+handle_close(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_listfiles(Client &client, int argc, char *argv[]);
+handle_listfiles(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_lsinfo(Client &client, int argc, char *argv[]);
+handle_lsinfo(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_update(Client &client, int argc, char *argv[]);
+handle_update(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_rescan(Client &client, int argc, char *argv[]);
+handle_rescan(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_setvol(Client &client, int argc, char *argv[]);
+handle_setvol(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_volume(Client &client, int argc, char *argv[]);
+handle_volume(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_stats(Client &client, int argc, char *argv[]);
+handle_stats(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_ping(Client &client, int argc, char *argv[]);
+handle_ping(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_password(Client &client, int argc, char *argv[]);
+handle_password(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_config(Client &client, int argc, char *argv[]);
+handle_config(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_idle(Client &client, int argc, char *argv[]);
+handle_idle(Client &client, unsigned argc, char *argv[]);
 
 #endif

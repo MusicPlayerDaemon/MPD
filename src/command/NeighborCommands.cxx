@@ -39,7 +39,7 @@ neighbor_commands_available(const Instance &instance)
 
 CommandResult
 handle_listneighbors(Client &client,
-		     gcc_unused int argc, gcc_unused char *argv[])
+		     gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	const NeighborGlue *const neighbors =
 		client.partition.instance.neighbors;

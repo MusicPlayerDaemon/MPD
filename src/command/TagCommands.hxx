@@ -25,9 +25,9 @@
 class Client;
 
 CommandResult
-handle_addtagid(Client &client, int argc, char *argv[]);
+handle_addtagid(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_cleartagid(Client &client, int argc, char *argv[]);
+handle_cleartagid(Client &client, unsigned argc, char *argv[]);
 
 #endif

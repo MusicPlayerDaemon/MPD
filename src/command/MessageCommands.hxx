@@ -25,18 +25,18 @@
 class Client;
 
 CommandResult
-handle_subscribe(Client &client, int argc, char *argv[]);
+handle_subscribe(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_unsubscribe(Client &client, int argc, char *argv[]);
+handle_unsubscribe(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_channels(Client &client, int argc, char *argv[]);
+handle_channels(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_read_messages(Client &client, int argc, char *argv[]);
+handle_read_messages(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_send_message(Client &client, int argc, char *argv[]);
+handle_send_message(Client &client, unsigned argc, char *argv[]);
 
 #endif

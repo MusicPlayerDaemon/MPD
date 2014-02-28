@@ -31,7 +31,7 @@
 #include <assert.h>
 
 CommandResult
-handle_subscribe(Client &client, gcc_unused int argc, char *argv[])
+handle_subscribe(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	assert(argc == 2);
 
@@ -61,7 +61,7 @@ handle_subscribe(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_unsubscribe(Client &client, gcc_unused int argc, char *argv[])
+handle_unsubscribe(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	assert(argc == 2);
 
@@ -76,7 +76,7 @@ handle_unsubscribe(Client &client, gcc_unused int argc, char *argv[])
 
 CommandResult
 handle_channels(Client &client,
-		gcc_unused int argc, gcc_unused char *argv[])
+		gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	assert(argc == 1);
 
@@ -93,7 +93,7 @@ handle_channels(Client &client,
 
 CommandResult
 handle_read_messages(Client &client,
-		     gcc_unused int argc, gcc_unused char *argv[])
+		     gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	assert(argc == 1);
 
@@ -110,7 +110,7 @@ handle_read_messages(Client &client,
 
 CommandResult
 handle_send_message(Client &client,
-		    gcc_unused int argc, gcc_unused char *argv[])
+		    gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	assert(argc == 3);
 

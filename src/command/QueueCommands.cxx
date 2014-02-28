@@ -57,7 +57,7 @@ translate_uri(Client &client, const char *uri)
 }
 
 CommandResult
-handle_add(Client &client, gcc_unused int argc, char *argv[])
+handle_add(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	const char *const uri = translate_uri(client, argv[1]);
 	if (uri == nullptr)
@@ -86,7 +86,7 @@ handle_add(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_addid(Client &client, int argc, char *argv[])
+handle_addid(Client &client, unsigned argc, char *argv[])
 {
 	const char *const uri = translate_uri(client, argv[1]);
 	if (uri == nullptr)
@@ -116,7 +116,7 @@ handle_addid(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_delete(Client &client, gcc_unused int argc, char *argv[])
+handle_delete(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned start, end;
 
@@ -128,7 +128,7 @@ handle_delete(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_deleteid(Client &client, gcc_unused int argc, char *argv[])
+handle_deleteid(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned id;
 
@@ -141,7 +141,7 @@ handle_deleteid(Client &client, gcc_unused int argc, char *argv[])
 
 CommandResult
 handle_playlist(Client &client,
-		gcc_unused int argc, gcc_unused char *argv[])
+		gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	playlist_print_uris(client, client.playlist);
 	return CommandResult::OK;
@@ -149,7 +149,7 @@ handle_playlist(Client &client,
 
 CommandResult
 handle_shuffle(gcc_unused Client &client,
-	       gcc_unused int argc, gcc_unused char *argv[])
+	       gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	unsigned start = 0, end = client.playlist.queue.GetLength();
 	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
@@ -161,14 +161,14 @@ handle_shuffle(gcc_unused Client &client,
 
 CommandResult
 handle_clear(gcc_unused Client &client,
-	     gcc_unused int argc, gcc_unused char *argv[])
+	     gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	client.partition.ClearQueue();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_plchanges(Client &client, gcc_unused int argc, char *argv[])
+handle_plchanges(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	uint32_t version;
 
@@ -180,7 +180,7 @@ handle_plchanges(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_plchangesposid(Client &client, gcc_unused int argc, char *argv[])
+handle_plchangesposid(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	uint32_t version;
 
@@ -192,7 +192,7 @@ handle_plchangesposid(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_playlistinfo(Client &client, int argc, char *argv[])
+handle_playlistinfo(Client &client, unsigned argc, char *argv[])
 {
 	unsigned start = 0, end = std::numeric_limits<unsigned>::max();
 	bool ret;
@@ -209,7 +209,7 @@ handle_playlistinfo(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_playlistid(Client &client, int argc, char *argv[])
+handle_playlistid(Client &client, unsigned argc, char *argv[])
 {
 	if (argc >= 2) {
 		unsigned id;
@@ -229,7 +229,7 @@ handle_playlistid(Client &client, int argc, char *argv[])
 }
 
 static CommandResult
-handle_playlist_match(Client &client, int argc, char *argv[],
+handle_playlist_match(Client &client, unsigned argc, char *argv[],
 		      bool fold_case)
 {
 	ConstBuffer<const char *> args(argv + 1, argc - 1);
@@ -245,19 +245,19 @@ handle_playlist_match(Client &client, int argc, char *argv[],
 }
 
 CommandResult
-handle_playlistfind(Client &client, int argc, char *argv[])
+handle_playlistfind(Client &client, unsigned argc, char *argv[])
 {
 	return handle_playlist_match(client, argc, argv, false);
 }
 
 CommandResult
-handle_playlistsearch(Client &client, int argc, char *argv[])
+handle_playlistsearch(Client &client, unsigned argc, char *argv[])
 {
 	return handle_playlist_match(client, argc, argv, true);
 }
 
 CommandResult
-handle_prio(Client &client, int argc, char *argv[])
+handle_prio(Client &client, unsigned argc, char *argv[])
 {
 	unsigned priority;
 
@@ -270,7 +270,7 @@ handle_prio(Client &client, int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	for (int i = 2; i < argc; ++i) {
+	for (unsigned i = 2; i < argc; ++i) {
 		unsigned start_position, end_position;
 		if (!check_range(client, &start_position, &end_position,
 				 argv[i]))
@@ -288,7 +288,7 @@ handle_prio(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_prioid(Client &client, int argc, char *argv[])
+handle_prioid(Client &client, unsigned argc, char *argv[])
 {
 	unsigned priority;
 
@@ -301,7 +301,7 @@ handle_prioid(Client &client, int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	for (int i = 2; i < argc; ++i) {
+	for (unsigned i = 2; i < argc; ++i) {
 		unsigned song_id;
 		if (!check_unsigned(client, &song_id, argv[i]))
 			return CommandResult::ERROR;
@@ -316,7 +316,7 @@ handle_prioid(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_move(Client &client, gcc_unused int argc, char *argv[])
+handle_move(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned start, end;
 	int to;
@@ -332,7 +332,7 @@ handle_move(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_moveid(Client &client, gcc_unused int argc, char *argv[])
+handle_moveid(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned id;
 	int to;
@@ -346,7 +346,7 @@ handle_moveid(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_swap(Client &client, gcc_unused int argc, char *argv[])
+handle_swap(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned song1, song2;
 
@@ -361,7 +361,7 @@ handle_swap(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_swapid(Client &client, gcc_unused int argc, char *argv[])
+handle_swapid(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned id1, id2;
 

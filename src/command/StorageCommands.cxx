@@ -166,7 +166,7 @@ print_storage_uri(Client &client, const Storage &storage)
 }
 
 CommandResult
-handle_listmounts(Client &client, gcc_unused int argc, gcc_unused char *argv[])
+handle_listmounts(Client &client, gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
@@ -188,7 +188,7 @@ handle_listmounts(Client &client, gcc_unused int argc, gcc_unused char *argv[])
 }
 
 CommandResult
-handle_mount(Client &client, gcc_unused int argc, char *argv[])
+handle_mount(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
@@ -250,7 +250,7 @@ handle_mount(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_unmount(Client &client, gcc_unused int argc, char *argv[])
+handle_unmount(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {

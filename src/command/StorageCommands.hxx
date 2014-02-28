@@ -32,12 +32,12 @@ CommandResult
 handle_listfiles_storage(Client &client, const char *uri);
 
 CommandResult
-handle_listmounts(Client &client, int argc, char *argv[]);
+handle_listmounts(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_mount(Client &client, int argc, char *argv[]);
+handle_mount(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
-handle_unmount(Client &client, int argc, char *argv[]);
+handle_unmount(Client &client, unsigned argc, char *argv[]);
 
 #endif

@@ -27,7 +27,7 @@
 #include "Partition.hxx"
 
 CommandResult
-handle_enableoutput(Client &client, gcc_unused int argc, char *argv[])
+handle_enableoutput(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned device;
 	if (!check_unsigned(client, &device, argv[1]))
@@ -43,7 +43,7 @@ handle_enableoutput(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_disableoutput(Client &client, gcc_unused int argc, char *argv[])
+handle_disableoutput(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned device;
 	if (!check_unsigned(client, &device, argv[1]))
@@ -59,7 +59,7 @@ handle_disableoutput(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_toggleoutput(Client &client, gcc_unused int argc, char *argv[])
+handle_toggleoutput(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	unsigned device;
 	if (!check_unsigned(client, &device, argv[1]))
@@ -76,7 +76,7 @@ handle_toggleoutput(Client &client, gcc_unused int argc, char *argv[])
 
 CommandResult
 handle_devices(Client &client,
-	       gcc_unused int argc, gcc_unused char *argv[])
+	       gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	printAudioDevices(client, client.partition.outputs);
 

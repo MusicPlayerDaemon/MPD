@@ -49,14 +49,14 @@ print_spl_list(Client &client, const PlaylistVector &list)
 }
 
 CommandResult
-handle_save(Client &client, gcc_unused int argc, char *argv[])
+handle_save(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	PlaylistResult result = spl_save_playlist(argv[1], client.playlist);
 	return print_playlist_result(client, result);
 }
 
 CommandResult
-handle_load(Client &client, int argc, char *argv[])
+handle_load(Client &client, unsigned argc, char *argv[])
 {
 	unsigned start_index, end_index;
 
@@ -78,7 +78,7 @@ handle_load(Client &client, int argc, char *argv[])
 }
 
 CommandResult
-handle_listplaylist(Client &client, gcc_unused int argc, char *argv[])
+handle_listplaylist(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], false))
 		return CommandResult::OK;
@@ -91,7 +91,7 @@ handle_listplaylist(Client &client, gcc_unused int argc, char *argv[])
 
 CommandResult
 handle_listplaylistinfo(Client &client,
-			gcc_unused int argc, char *argv[])
+			gcc_unused unsigned argc, char *argv[])
 {
 	if (playlist_file_print(client, argv[1], true))
 		return CommandResult::OK;
@@ -103,7 +103,7 @@ handle_listplaylistinfo(Client &client,
 }
 
 CommandResult
-handle_rm(Client &client, gcc_unused int argc, char *argv[])
+handle_rm(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	Error error;
 	return spl_delete(argv[1], error)
@@ -112,7 +112,7 @@ handle_rm(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_rename(Client &client, gcc_unused int argc, char *argv[])
+handle_rename(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	Error error;
 	return spl_rename(argv[1], argv[2], error)
@@ -122,7 +122,7 @@ handle_rename(Client &client, gcc_unused int argc, char *argv[])
 
 CommandResult
 handle_playlistdelete(Client &client,
-		      gcc_unused int argc, char *argv[]) {
+		      gcc_unused unsigned argc, char *argv[]) {
 	char *playlist = argv[1];
 	unsigned from;
 
@@ -136,7 +136,7 @@ handle_playlistdelete(Client &client,
 }
 
 CommandResult
-handle_playlistmove(Client &client, gcc_unused int argc, char *argv[])
+handle_playlistmove(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	char *playlist = argv[1];
 	unsigned from, to;
@@ -153,7 +153,7 @@ handle_playlistmove(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_playlistclear(Client &client, gcc_unused int argc, char *argv[])
+handle_playlistclear(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	Error error;
 	return spl_clear(argv[1], error)
@@ -162,7 +162,7 @@ handle_playlistclear(Client &client, gcc_unused int argc, char *argv[])
 }
 
 CommandResult
-handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
+handle_playlistadd(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	char *playlist = argv[1];
 	char *uri = argv[2];
@@ -197,7 +197,7 @@ handle_playlistadd(Client &client, gcc_unused int argc, char *argv[])
 
 CommandResult
 handle_listplaylists(Client &client,
-		     gcc_unused int argc, gcc_unused char *argv[])
+		     gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	Error error;
 	const auto list = ListPlaylistFiles(error);
