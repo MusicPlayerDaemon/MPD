@@ -61,8 +61,8 @@ TestVolume(G g=G())
 	const auto _dest = ConstBuffer<value_type>::FromVoid(dest);
 	for (unsigned i = 0; i < N; ++i) {
 		const auto expected = (_src[i] + 1) / 2;
-		CPPUNIT_ASSERT(_dest.data[i] >= expected - 4);
-		CPPUNIT_ASSERT(_dest.data[i] <= expected + 4);
+		CPPUNIT_ASSERT(_dest[i] >= expected - 4);
+		CPPUNIT_ASSERT(_dest[i] <= expected + 4);
 	}
 
 	pv.Close();
@@ -119,7 +119,7 @@ PcmVolumeTest::TestVolumeFloat()
 
 	const auto _dest = ConstBuffer<float>::FromVoid(dest);
 	for (unsigned i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_DOUBLES_EQUAL(_src[i] / 2, _dest.data[i], 1);
+		CPPUNIT_ASSERT_DOUBLES_EQUAL(_src[i] / 2, _dest[i], 1);
 
 	pv.Close();
 }

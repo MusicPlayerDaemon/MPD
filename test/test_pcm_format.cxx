@@ -39,7 +39,7 @@ PcmFormatTest::TestFormat8to16()
 	CPPUNIT_ASSERT_EQUAL(N, d.size);
 
 	for (size_t i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(int(src[i]), d.data[i] >> 8);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 8);
 }
 
 void
@@ -54,7 +54,7 @@ PcmFormatTest::TestFormat16to24()
 	CPPUNIT_ASSERT_EQUAL(N, d.size);
 
 	for (size_t i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(int(src[i]), d.data[i] >> 8);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 8);
 }
 
 void
@@ -69,7 +69,7 @@ PcmFormatTest::TestFormat16to32()
 	CPPUNIT_ASSERT_EQUAL(N, d.size);
 
 	for (size_t i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(int(src[i]), d.data[i] >> 16);
+		CPPUNIT_ASSERT_EQUAL(int(src[i]), d[i] >> 16);
 }
 
 void
@@ -84,8 +84,8 @@ PcmFormatTest::TestFormatFloat()
 	CPPUNIT_ASSERT_EQUAL(N, f.size);
 
 	for (size_t i = 0; i != f.size; ++i) {
-		CPPUNIT_ASSERT(f.data[i] >= -1.);
-		CPPUNIT_ASSERT(f.data[i] <= 1.);
+		CPPUNIT_ASSERT(f[i] >= -1.);
+		CPPUNIT_ASSERT(f[i] <= 1.);
 	}
 
 	PcmDither dither;
@@ -96,5 +96,5 @@ PcmFormatTest::TestFormatFloat()
 	CPPUNIT_ASSERT_EQUAL(N, d.size);
 
 	for (size_t i = 0; i < N; ++i)
-		CPPUNIT_ASSERT_EQUAL(src[i], d.data[i]);
+		CPPUNIT_ASSERT_EQUAL(src[i], d[i]);
 }

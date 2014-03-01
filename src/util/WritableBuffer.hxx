@@ -145,6 +145,17 @@ struct WritableBuffer {
 	constexpr const_iterator cend() const {
 		return data + size;
 	}
+
+#ifdef NDEBUG
+	constexpr
+#endif
+	T &operator[](size_type i) const {
+#ifndef NDEBUG
+		assert(i < size);
+#endif
+
+		return data[i];
+	}
 };
 
 #endif

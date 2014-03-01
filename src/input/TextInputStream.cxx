@@ -63,7 +63,7 @@ bool TextInputStream::ReadLine(std::string &line)
 			   the current line */
 			dest = buffer.Write();
 			assert(!dest.IsEmpty());
-			dest.data[0] = '\n';
+			dest[0] = '\n';
 			buffer.Append(1);
 		}
 	} while (p == nullptr);

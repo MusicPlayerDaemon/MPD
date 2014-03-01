@@ -85,7 +85,7 @@ pcm_resample_fallback(PcmBuffer &buffer,
 		while (dest_pos < dest_samples) {
 			unsigned src_pos = dest_pos * src_rate / dest_rate;
 
-			dest_buffer[dest_pos++] = src.data[src_pos];
+			dest_buffer[dest_pos++] = src[src_pos];
 		}
 		break;
 	case 2:
@@ -93,8 +93,8 @@ pcm_resample_fallback(PcmBuffer &buffer,
 			unsigned src_pos = dest_pos * src_rate / dest_rate;
 			src_pos &= ~1;
 
-			dest_buffer[dest_pos++] = src.data[src_pos];
-			dest_buffer[dest_pos++] = src.data[src_pos + 1];
+			dest_buffer[dest_pos++] = src[src_pos];
+			dest_buffer[dest_pos++] = src[src_pos + 1];
 		}
 		break;
 	}

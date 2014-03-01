@@ -39,7 +39,7 @@ PcmChannelsTest::TestChannels16()
 	CPPUNIT_ASSERT_EQUAL(N, dest.size);
 	for (unsigned i = 0; i < N; ++i)
 		CPPUNIT_ASSERT_EQUAL(int16_t((src[i * 2] + src[i * 2 + 1]) / 2),
-				     dest.data[i]);
+				     dest[i]);
 
 	/* mono to stereo */
 
@@ -47,8 +47,8 @@ PcmChannelsTest::TestChannels16()
 	CPPUNIT_ASSERT(!dest.IsNull());
 	CPPUNIT_ASSERT_EQUAL(N * 4, dest.size);
 	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT_EQUAL(src[i], dest.data[i * 2]);
-		CPPUNIT_ASSERT_EQUAL(src[i], dest.data[i * 2 + 1]);
+		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2]);
+		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2 + 1]);
 	}
 }
 
@@ -67,7 +67,7 @@ PcmChannelsTest::TestChannels32()
 	CPPUNIT_ASSERT_EQUAL(N, dest.size);
 	for (unsigned i = 0; i < N; ++i)
 		CPPUNIT_ASSERT_EQUAL(int32_t(((int64_t)src[i * 2] + (int64_t)src[i * 2 + 1]) / 2),
-				     dest.data[i]);
+				     dest[i]);
 
 	/* mono to stereo */
 
@@ -75,7 +75,7 @@ PcmChannelsTest::TestChannels32()
 	CPPUNIT_ASSERT(!dest.IsNull());
 	CPPUNIT_ASSERT_EQUAL(N * 4, dest.size);
 	for (unsigned i = 0; i < N; ++i) {
-		CPPUNIT_ASSERT_EQUAL(src[i], dest.data[i * 2]);
-		CPPUNIT_ASSERT_EQUAL(src[i], dest.data[i * 2 + 1]);
+		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2]);
+		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2 + 1]);
 	}
 }
