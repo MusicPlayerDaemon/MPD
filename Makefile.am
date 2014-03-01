@@ -252,12 +252,17 @@ libjava_a_SOURCES = \
 	src/java/File.cxx src/java/File.hxx \
 	src/java/String.cxx src/java/String.hxx
 
+noinst_LIBRARIES += libandroid.a
+libandroid_a_SOURCES = \
+	src/android/Environment.cxx src/android/Environment.hxx
+libandroid_a_CPPFLAGS = $(AM_CPPFLAGS) -Iandroid/build/include
+
 noinst_LIBRARIES += libmain.a
 libmain_a_SOURCES = \
 	src/Main.cxx src/Main.hxx
 libmain_a_CPPFLAGS = $(AM_CPPFLAGS) -Iandroid/build/include
 
-src_mpd_LDADD += libjava.a
+src_mpd_LDADD += libandroid.a libjava.a
 
 all-local: android/build/bin/Main-debug.apk
 clean-local:

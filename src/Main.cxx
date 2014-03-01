@@ -92,6 +92,7 @@
 #ifdef ANDROID
 #include "java/Global.hxx"
 #include "java/File.hxx"
+#include "android/Environment.hxx"
 #include "org_musicpd_Bridge.h"
 #endif
 
@@ -679,8 +680,11 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass)
 {
 	Java::Init(env);
 	Java::File::Initialise(env);
+	Environment::Initialise(env);
 
 	mpd_main(0, nullptr);
+
+	Environment::Deinitialise(env);
 }
 
 #endif

@@ -20,7 +20,7 @@
 #include "config.h"
 
 // Use X Desktop guidelines where applicable
-#if !defined(__APPLE__) && !defined(WIN32)
+#if !defined(__APPLE__) && !defined(WIN32) && !defined(ANDROID)
 #define USE_XDG
 #endif
 
@@ -45,6 +45,11 @@
 #include "TextFile.hxx"
 #include <string.h>
 #include <utility>
+#endif
+
+#ifdef ANDROID
+#include "java/Global.hxx"
+#include "android/Environment.hxx"
 #endif
 
 #ifndef WIN32
@@ -240,6 +245,14 @@ AllocatedPath GetUserMusicDir()
 	return GetStandardDir(CSIDL_MYMUSIC);	
 #elif defined(USE_XDG)
 	return GetUserDir("XDG_MUSIC_DIR");
+#elif defined(ANDROID)
+	char buffer[1024];
+	if (Environment::getExternalStoragePublicDirectory(buffer,
+							   sizeof(buffer),
+							   "Music") == nullptr)
+		return AllocatedPath::Null();
+
+	return AllocatedPath::FromUTF8(buffer);
 #else
 	return AllocatedPath::Null();
 #endif
