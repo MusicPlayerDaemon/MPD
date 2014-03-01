@@ -94,6 +94,7 @@
 #include "java/File.hxx"
 #include "android/Environment.hxx"
 #include "android/Context.hxx"
+#include "fs/StandardDirectory.hxx"
 #include "org_musicpd_Bridge.h"
 #endif
 
@@ -262,8 +263,20 @@ static bool
 glue_state_file_init(Error &error)
 {
 	auto path_fs = config_get_path(CONF_STATE_FILE, error);
-	if (path_fs.IsNull())
-		return !error.IsDefined();
+	if (path_fs.IsNull()) {
+		if (error.IsDefined())
+			return false;
+
+#ifdef ANDROID
+		const auto cache_dir = GetUserCacheDir();
+		if (cache_dir.IsNull())
+			return true;
+
+		path_fs = AllocatedPath::Build(cache_dir, "state");
+#else
+		return true;
+#endif
+	}
 
 	state_file = new StateFile(std::move(path_fs),
 				   *instance->partition,
