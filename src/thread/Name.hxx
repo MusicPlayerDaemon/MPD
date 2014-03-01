@@ -23,6 +23,8 @@
 #ifdef HAVE_PTHREAD_SETNAME_NP
 #include <pthread.h>
 #include <stdio.h>
+#elif defined(HAVE_PRCTL)
+#include <sys/prctl.h>
 #endif
 
 static inline void
@@ -34,6 +36,8 @@ SetThreadName(const char *name)
 #else
 	pthread_setname_np(pthread_self(), name);
 #endif
+#elif defined(HAVE_PRCTL) && defined(PR_SET_NAME)
+	prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
 #else
 	(void)name;
 #endif
