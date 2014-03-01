@@ -109,10 +109,6 @@ struct ConstBuffer {
 	constexpr const_iterator cend() const {
 		return data + size;
 	}
-
-	constexpr operator ConstBuffer<void>() const {
-		return { data, size };
-	}
 };
 
 #endif
