@@ -39,6 +39,7 @@ static constexpr Domain exclude_list_domain("exclude_list");
 bool
 ExcludeList::LoadFile(Path path_fs)
 {
+#ifdef HAVE_GLIB
 	FILE *file = FOpen(path_fs, FOpenMode::ReadText);
 	if (file == nullptr) {
 		const int e = errno;
@@ -64,6 +65,10 @@ ExcludeList::LoadFile(Path path_fs)
 	}
 
 	fclose(file);
+#else
+	// TODO: implement
+	(void)path_fs;
+#endif
 
 	return true;
 }
@@ -75,9 +80,14 @@ ExcludeList::Check(Path name_fs) const
 
 	/* XXX include full path name in check */
 
+#ifdef HAVE_GLIB
 	for (const auto &i : patterns)
 		if (i.Check(name_fs.c_str()))
 			return true;
+#else
+	// TODO: implement
+	(void)name_fs;
+#endif
 
 	return false;
 }

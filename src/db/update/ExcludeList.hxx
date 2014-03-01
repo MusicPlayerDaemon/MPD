@@ -25,15 +25,19 @@
 #ifndef MPD_EXCLUDE_H
 #define MPD_EXCLUDE_H
 
+#include "check.h"
 #include "Compiler.h"
 
 #include <forward_list>
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 class Path;
 
 class ExcludeList {
+#ifdef HAVE_GLIB
 	class Pattern {
 		GPatternSpec *pattern;
 
@@ -57,11 +61,19 @@ class ExcludeList {
 	};
 
 	std::forward_list<Pattern> patterns;
+#else
+	// TODO: implement
+#endif
 
 public:
 	gcc_pure
 	bool IsEmpty() const {
+#ifdef HAVE_GLIB
 		return patterns.empty();
+#else
+		// TODO: implement
+		return true;
+#endif
 	}
 
 	/**
