@@ -188,15 +188,20 @@ SlesOutput::Open(AudioFormat &audio_format, Error &error)
 		N_BUFFERS,
 	};
 
+	if (audio_format.channels > 2)
+		audio_format.channels = 1;
+
 	SLDataFormat_PCM format_pcm;
 	format_pcm.formatType = SL_DATAFORMAT_PCM;
-	format_pcm.numChannels = 1;
+	format_pcm.numChannels = audio_format.channels;
 	/* from the Android NDK docs: "Note that the field samplesPerSec is
 	   actually in units of milliHz, despite the misleading name." */
 	format_pcm.samplesPerSec = audio_format.sample_rate * 1000u;
 	format_pcm.bitsPerSample = SL_PCMSAMPLEFORMAT_FIXED_16;
 	format_pcm.containerSize = SL_PCMSAMPLEFORMAT_FIXED_16;
-	format_pcm.channelMask = SL_SPEAKER_FRONT_CENTER;
+	format_pcm.channelMask = audio_format.channels == 1
+		? SL_SPEAKER_FRONT_CENTER
+		: SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
 	format_pcm.endianness = IsLittleEndian()
 		? SL_BYTEORDER_LITTLEENDIAN
 		: SL_BYTEORDER_BIGENDIAN;
@@ -311,9 +316,6 @@ SlesOutput::Open(AudioFormat &audio_format, Error &error)
 
 	// TODO: support other sample formats
 	audio_format.format = SampleFormat::S16;
-
-	// TODO: support stereo
-	audio_format.channels = 1;
 
 	return true;
 }
