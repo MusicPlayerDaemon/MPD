@@ -21,6 +21,8 @@
 #include "CharUtil.hxx"
 #include "ASCII.hxx"
 
+#include <algorithm>
+
 #include <assert.h>
 #include <string.h>
 
@@ -63,6 +65,18 @@ StringEndsWith(const char *haystack, const char *needle)
 	return haystack_length >= needle_length &&
 		memcmp(haystack + haystack_length - needle_length,
 		       needle, needle_length) == 0;
+}
+
+char *
+CopyString(char *gcc_restrict dest, const char *gcc_restrict src, size_t size)
+{
+	size_t length = strlen(src);
+	if (length >= size)
+		length = size - 1;
+
+	char *p = std::copy(src, src + length, dest);
+	*p = '\0';
+	return p;
 }
 
 bool

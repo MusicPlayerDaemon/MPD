@@ -242,10 +242,22 @@ UPNP_SOURCES = \
 
 if ANDROID
 
+noinst_LIBRARIES += libjava.a
+libjava_a_SOURCES = \
+	src/java/Class.hxx \
+	src/java/Exception.hxx \
+	src/java/Global.cxx src/java/Global.hxx \
+	src/java/Object.hxx \
+	src/java/Ref.hxx \
+	src/java/File.cxx src/java/File.hxx \
+	src/java/String.cxx src/java/String.hxx
+
 noinst_LIBRARIES += libmain.a
 libmain_a_SOURCES = \
 	src/Main.cxx src/Main.hxx
 libmain_a_CPPFLAGS = $(AM_CPPFLAGS) -Iandroid/build/include
+
+src_mpd_LDADD += libjava.a
 
 all-local: android/build/bin/Main-debug.apk
 clean-local:

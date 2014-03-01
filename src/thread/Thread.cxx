@@ -21,6 +21,10 @@
 #include "Thread.hxx"
 #include "util/Error.hxx"
 
+#ifdef ANDROID
+#include "java/Global.hxx"
+#endif
+
 bool
 Thread::Start(void (*_f)(void *ctx), void *_ctx, Error &error)
 {
@@ -102,6 +106,11 @@ Thread::ThreadProc(void *ctx)
 #endif
 
 	thread.f(thread.ctx);
+
+#ifdef ANDROID
+	Java::DetachCurrentThread();
+#endif
+
 	return nullptr;
 }
 

@@ -90,6 +90,8 @@
 #endif
 
 #ifdef ANDROID
+#include "java/Global.hxx"
+#include "java/File.hxx"
 #include "org_musicpd_Bridge.h"
 #endif
 
@@ -673,8 +675,11 @@ int mpd_main(int argc, char *argv[])
 
 gcc_visibility_default
 JNIEXPORT void JNICALL
-Java_org_musicpd_Bridge_run(JNIEnv *, jclass)
+Java_org_musicpd_Bridge_run(JNIEnv *env, jclass)
 {
+	Java::Init(env);
+	Java::File::Initialise(env);
+
 	mpd_main(0, nullptr);
 }
 
