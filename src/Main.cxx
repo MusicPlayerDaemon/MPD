@@ -430,8 +430,17 @@ int mpd_main(int argc, char *argv[])
 	(void)argc;
 	(void)argv;
 
-	if (!ReadConfigFile(Path::FromFS("/sdcard/mpd.conf"), error))
-		LogError(error);
+	{
+		const auto sdcard = Environment::getExternalStorageDirectory();
+		if (!sdcard.IsNull()) {
+			const auto config_path =
+				AllocatedPath::Build(sdcard, "mpd.conf");
+			if (!ReadConfigFile(config_path, error)) {
+				LogError(error);
+				return EXIT_FAILURE;
+			}
+		}
+	}
 #else
 	if (!parse_cmdline(argc, argv, &options, error)) {
 		LogError(error);
