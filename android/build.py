@@ -59,7 +59,7 @@ target_root = os.path.join(ndk_platform_path, 'arch-' + ndk_arch)
 llvm_triple = 'armv7-none-linux-androideabi'
 
 def select_toolchain(use_cxx, use_clang):
-    global cc, cxx, ar, cflags, cxxflags, cppflags, ldflags, libs
+    global cc, cxx, ar, strip, cflags, cxxflags, cppflags, ldflags, libs
 
     target_arch = '-march=armv7-a -mfloat-abi=softfp'
     if use_clang:
@@ -70,6 +70,7 @@ def select_toolchain(use_cxx, use_clang):
         cc = os.path.join(gcc_toolchain, 'bin', host_arch + '-gcc')
         cxx = os.path.join(gcc_toolchain, 'bin', host_arch + '-g++')
     ar = os.path.join(gcc_toolchain, 'bin', host_arch + '-ar')
+    strip = os.path.join(gcc_toolchain, 'bin', host_arch + '-strip')
 
     libstdcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/gnu-libstdc++', gcc_version)
     libstdcxx_cppflags = '-isystem ' + os.path.join(libstdcxx_path, 'include') + ' -isystem ' + os.path.join(libstdcxx_path, 'libs', android_abi, 'include')
@@ -217,6 +218,7 @@ class AutotoolsProject(Project):
             'LDFLAGS=' + ldflags,
             'LIBS=' + libs,
             'AR=' + ar,
+            'STRIP=' + strip,
             '--host=' + host_arch,
             '--prefix=' + root_path,
             '--with-sysroot=' + target_root,
@@ -311,6 +313,7 @@ configure = [
     'LDFLAGS=' + ldflags,
     'LIBS=' + libs,
     'AR=' + ar,
+    'STRIP=' + strip,
     '--host=' + host_arch,
     '--prefix=' + root_path,
     '--with-sysroot=' + target_root,

@@ -271,7 +271,7 @@ libmpd_a_DEPENDENCIES += android/build/include/org_musicpd_Bridge.h
 android/build/libs/armeabi-v7a/libmpd.so: libmpd.so android/build/build.xml
 	mkdir -p $(@D)
 	rm -f $@
-	strip -o $@ $<
+	$(STRIP) -o $@ $<
 
 android/build/bin/Main-debug.apk: android/build/build.xml android/build/libs/armeabi-v7a/libmpd.so
 	cd android/build && ant nodeps debug
