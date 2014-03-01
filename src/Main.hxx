@@ -21,7 +21,12 @@
 #define MPD_MAIN_HXX
 
 class EventLoop;
+class Context;
 struct Instance;
+
+#ifdef ANDROID
+extern Context *context;
+#endif
 
 extern Instance *instance;
 

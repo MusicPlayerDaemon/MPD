@@ -57,6 +57,6 @@ public class Main extends Activity implements Runnable {
 	}
 
 	@Override public void run() {
-		Bridge.run();
+		Bridge.run(this);
 	}
 }

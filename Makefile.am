@@ -254,6 +254,7 @@ libjava_a_SOURCES = \
 
 noinst_LIBRARIES += libandroid.a
 libandroid_a_SOURCES = \
+	src/android/Context.cxx src/android/Context.hxx \
 	src/android/Environment.cxx src/android/Environment.hxx
 libandroid_a_CPPFLAGS = $(AM_CPPFLAGS) -Iandroid/build/include
 

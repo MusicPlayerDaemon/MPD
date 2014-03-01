@@ -17,13 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.musicpd;
+#include "config.h"
+#include "Context.hxx"
+#include "java/Class.hxx"
+#include "java/File.hxx"
+#include "fs/AllocatedPath.hxx"
 
-import android.content.Context;
+AllocatedPath
+Context::GetCacheDir(JNIEnv *env) const
+{
+	assert(env != nullptr);
 
-/**
- * Bridge to native code.
- */
-public class Bridge {
-	public static native void run(Context context);
+	Java::Class cls(env, env->GetObjectClass(Get()));
+	jmethodID method = env->GetMethodID(cls, "getCacheDir",
+					    "()Ljava/io/File;");
+	assert(method);
+
+	jobject file = env->CallObjectMethod(Get(), method);
+	if (file == nullptr) {
+		env->ExceptionClear();
+		return AllocatedPath::Null();
+	}
+
+	return Java::File::ToAbsolutePath(env, file);
 }

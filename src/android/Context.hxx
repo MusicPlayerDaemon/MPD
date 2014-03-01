@@ -17,13 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.musicpd;
+#ifndef MPD_ANDROID_CONTEXT_HXX
+#define MPD_ANDROID_CONTEXT_HXX
 
-import android.content.Context;
+#include "java/Object.hxx"
 
-/**
- * Bridge to native code.
- */
-public class Bridge {
-	public static native void run(Context context);
-}
+class AllocatedPath;
+
+class Context : public Java::Object {
+public:
+	Context(JNIEnv *env, jobject obj):Java::Object(env, obj) {}
+
+	gcc_pure
+	AllocatedPath GetCacheDir(JNIEnv *env) const;
+};
+
+#endif

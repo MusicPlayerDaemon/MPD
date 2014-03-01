@@ -93,6 +93,7 @@
 #include "java/Global.hxx"
 #include "java/File.hxx"
 #include "android/Environment.hxx"
+#include "android/Context.hxx"
 #include "org_musicpd_Bridge.h"
 #endif
 
@@ -117,6 +118,10 @@ static constexpr unsigned DEFAULT_BUFFER_SIZE = 4096;
 static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
 
 static constexpr Domain main_domain("main");
+
+#ifdef ANDROID
+Context *context;
+#endif
 
 Instance *instance;
 
@@ -679,14 +684,17 @@ int mpd_main(int argc, char *argv[])
 
 gcc_visibility_default
 JNIEXPORT void JNICALL
-Java_org_musicpd_Bridge_run(JNIEnv *env, jclass)
+Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context)
 {
 	Java::Init(env);
 	Java::File::Initialise(env);
 	Environment::Initialise(env);
 
+	context = new Context(env, _context);
+
 	mpd_main(0, nullptr);
 
+	delete context;
 	Environment::Deinitialise(env);
 }
 
