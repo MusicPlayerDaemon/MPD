@@ -91,17 +91,17 @@ public:
  *
  */
 
-static bool
+static InputPlugin::InitResult
 input_smbclient_init(gcc_unused const config_param &param, Error &error)
 {
 	if (!SmbclientInit(error))
-		return false;
+		return InputPlugin::InitResult::UNAVAILABLE;
 
 	// TODO: create one global SMBCCTX here?
 
 	// TODO: evaluate config_param, call smbc_setOption*()
 
-	return true;
+	return InputPlugin::InitResult::SUCCESS;
 }
 
 static InputStream *

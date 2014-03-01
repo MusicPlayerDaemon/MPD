@@ -69,7 +69,7 @@ input_ffmpeg_supported(void)
 	return avio_enum_protocols(&opaque, 0) != nullptr;
 }
 
-static bool
+static InputPlugin::InitResult
 input_ffmpeg_init(gcc_unused const config_param &param,
 		  Error &error)
 {
@@ -78,10 +78,10 @@ input_ffmpeg_init(gcc_unused const config_param &param,
 	/* disable this plugin if there's no registered protocol */
 	if (!input_ffmpeg_supported()) {
 		error.Set(ffmpeg_domain, "No protocol");
-		return false;
+		return InputPlugin::InitResult::UNAVAILABLE;
 	}
 
-	return true;
+	return InputPlugin::InitResult::SUCCESS;
 }
 
 static InputStream *

@@ -87,7 +87,7 @@ static constexpr Domain cdio_domain("cdio");
 
 static bool default_reverse_endian;
 
-static bool
+static InputPlugin::InitResult
 input_cdio_init(const config_param &param, Error &error)
 {
 	const char *value = param.GetBlockValue("default_byte_order");
@@ -100,11 +100,11 @@ input_cdio_init(const config_param &param, Error &error)
 			error.Format(config_domain, 0,
 				     "Unrecognized 'default_byte_order' setting: %s",
 				     value);
-			return false;
+			return InputPlugin::InitResult::ERROR;
 		}
 	}
 
-	return true;
+	return InputPlugin::InitResult::SUCCESS;
 }
 
 static void

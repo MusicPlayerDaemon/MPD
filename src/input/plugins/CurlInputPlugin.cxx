@@ -595,7 +595,7 @@ CurlMulti::OnTimeout()
  *
  */
 
-static bool
+static InputPlugin::InitResult
 input_curl_init(const config_param &param, Error &error)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
@@ -603,7 +603,7 @@ input_curl_init(const config_param &param, Error &error)
 		error.Format(curl_domain, code,
 			     "curl_global_init() failed: %s",
 			     curl_easy_strerror(code));
-		return false;
+		return InputPlugin::InitResult::UNAVAILABLE;
 	}
 
 	const auto version_info = curl_version_info(CURLVERSION_FIRST);
@@ -634,12 +634,14 @@ input_curl_init(const config_param &param, Error &error)
 
 	CURLM *multi = curl_multi_init();
 	if (multi == nullptr) {
+		curl_slist_free_all(http_200_aliases);
+		curl_global_cleanup();
 		error.Set(curl_domain, 0, "curl_multi_init() failed");
-		return false;
+		return InputPlugin::InitResult::UNAVAILABLE;
 	}
 
 	curl_multi = new CurlMulti(io_thread_get(), multi);
-	return true;
+	return InputPlugin::InitResult::SUCCESS;
 }
 
 static void

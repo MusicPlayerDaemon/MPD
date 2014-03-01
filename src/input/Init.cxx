@@ -25,6 +25,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigData.hxx"
+#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -49,12 +50,29 @@ input_stream_global_init(Error &error)
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
-		if (plugin->init == nullptr || plugin->init(*param, error))
+		InputPlugin::InitResult result = plugin->init != nullptr
+			? plugin->init(*param, error)
+			: InputPlugin::InitResult::SUCCESS;
+
+		switch (result) {
+		case InputPlugin::InitResult::SUCCESS:
 			input_plugins_enabled[i] = true;
-		else {
+			break;
+
+		case InputPlugin::InitResult::ERROR:
 			error.FormatPrefix("Failed to initialize input plugin '%s': ",
 					   plugin->name);
 			return false;
+
+		case InputPlugin::InitResult::UNAVAILABLE:
+			if (error.IsDefined()) {
+				FormatError(error,
+					    "Input plugin '%s' is unavailable: ",
+					    plugin->name);
+				error.Clear();
+			}
+
+			break;
 		}
 	}
 

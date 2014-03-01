@@ -26,12 +26,41 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef WIN32
+#include <windows.h>
+/* damn you, windows.h! */
+#ifdef ERROR
+#undef ERROR
+#endif
+#endif
+
 struct config_param;
 struct InputStream;
 class Error;
 struct Tag;
 
 struct InputPlugin {
+	enum class InitResult {
+		/**
+		 * A fatal error has occurred (e.g. misconfiguration).
+		 * The #Error has been set.
+		 */
+		ERROR,
+
+		/**
+		 * The plugin was initialized successfully and is
+		 * ready to be used.
+		 */
+		SUCCESS,
+
+		/**
+		 * The plugin is not available and shall be disabled.
+		 * The #Error may be set describing the situation (to
+		 * be logged).
+		 */
+		UNAVAILABLE,
+	};
+
 	typedef int64_t offset_type;
 
 	const char *name;
@@ -42,7 +71,7 @@ struct InputPlugin {
 	 * @return true on success, false if the plugin should be
 	 * disabled
 	 */
-	bool (*init)(const config_param &param, Error &error);
+	InitResult (*init)(const config_param &param, Error &error);
 
 	/**
 	 * Global deinitialization.  Called once before MPD shuts
