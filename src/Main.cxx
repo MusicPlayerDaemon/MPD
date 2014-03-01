@@ -386,6 +386,9 @@ int main(int argc, char *argv[])
 
 #endif
 
+#ifdef ANDROID
+static inline
+#endif
 int mpd_main(int argc, char *argv[])
 {
 	struct options options;

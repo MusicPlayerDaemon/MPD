@@ -25,6 +25,8 @@ struct Instance;
 
 extern Instance *instance;
 
+#ifndef ANDROID
+
 /**
  * A entry point for application.
  * On non-Windows platforms this is called directly from main()
@@ -32,6 +34,8 @@ extern Instance *instance;
  * after doing some initialization.
  */
 int mpd_main(int argc, char *argv[]);
+
+#endif
 
 #ifdef WIN32
 
