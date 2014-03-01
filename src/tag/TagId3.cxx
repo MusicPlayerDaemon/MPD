@@ -33,7 +33,10 @@
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
+
 #include <id3tag.h>
 
 #include <string>
@@ -90,6 +93,7 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 {
 	id3_utf8_t *utf8;
 
+#ifdef HAVE_GLIB
 	/* use encoding field here? */
 	const char *encoding;
 	if (is_id3v1 &&
@@ -112,10 +116,15 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 		}
 		free(isostr);
 	} else {
+#else
+		(void)is_id3v1;
+#endif
 		utf8 = id3_ucs4_utf8duplicate(ucs4);
 		if (gcc_unlikely(utf8 == nullptr))
 			return nullptr;
+#ifdef HAVE_GLIB
 	}
+#endif
 
 	id3_utf8_t *utf8_stripped = (id3_utf8_t *)
 		xstrdup(Strip((char *)utf8));
