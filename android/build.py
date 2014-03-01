@@ -229,6 +229,40 @@ class AutotoolsProject(Project):
         subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build)
         subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build)
 
+class FfmpegProject(Project):
+    def __init__(self, url, md5, installed, configure_args=[],
+                 autogen=False,
+                 cppflags='',
+                 **kwargs):
+        Project.__init__(self, url, md5, installed, **kwargs)
+        self.configure_args = configure_args
+        self.cppflags = cppflags
+
+    def build(self):
+        src = self.unpack()
+        build = self.make_build_path()
+
+        select_toolchain(use_cxx=self.use_cxx, use_clang=self.use_clang)
+        configure = [
+            os.path.join(src, 'configure'),
+            '--cc=' + cc,
+            '--cxx=' + cxx,
+            '--extra-cflags=' + cflags + ' ' + cppflags + ' ' + self.cppflags,
+            '--extra-cxxflags=' + cxxflags + ' ' + cppflags + ' ' + self.cppflags,
+            '--extra-ldflags=' + ldflags,
+            '--extra-libs=' + libs,
+            '--ar=' + ar,
+            '--enable-cross-compile',
+            '--target-os=linux',
+            '--arch=' + ndk_arch,
+            '--cpu=cortex-a8',
+            '--prefix=' + root_path,
+        ] + self.configure_args
+
+        subprocess.check_call(configure, cwd=build)
+        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build)
+        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build)
+
 # a list of third-party libraries to be used by MPD on Android
 thirdparty_libs = [
     AutotoolsProject(
@@ -278,6 +312,30 @@ thirdparty_libs = [
         'lib/libmad.a',
         ['--disable-shared', '--enable-static'],
         autogen=True,
+    ),
+
+    FfmpegProject(
+        'http://www.ffmpeg.org/releases/ffmpeg-2.1.4.tar.bz2',
+        'dedc28003a77c69432c42ab16e5f6982',
+        'lib/libavcodec.a',
+        [
+            '--disable-shared', '--enable-static',
+            '--enable-gpl',
+            '--enable-small',
+            '--disable-runtime-cpudetect',
+            '--disable-programs',
+            '--disable-doc',
+            '--disable-avdevice',
+            '--disable-swresample',
+            '--disable-swscale',
+            '--disable-postproc',
+            '--disable-avfilter',
+            '--disable-network',
+            '--disable-encoders',
+            '--disable-protocols',
+            '--disable-outdevs',
+            '--disable-filters',
+        ],
     ),
 
     AutotoolsProject(
