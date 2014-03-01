@@ -322,7 +322,6 @@ configure = [
     '--disable-icu',
 
     # disabled for now because these features require GLib:
-    '--disable-database',
     '--disable-httpd-output',
     '--disable-vorbis-encoder',
 
