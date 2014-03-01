@@ -246,13 +246,7 @@ AllocatedPath GetUserMusicDir()
 #elif defined(USE_XDG)
 	return GetUserDir("XDG_MUSIC_DIR");
 #elif defined(ANDROID)
-	char buffer[1024];
-	if (Environment::getExternalStoragePublicDirectory(buffer,
-							   sizeof(buffer),
-							   "Music") == nullptr)
-		return AllocatedPath::Null();
-
-	return AllocatedPath::FromUTF8(buffer);
+	return Environment::getExternalStoragePublicDirectory("Music");
 #else
 	return AllocatedPath::Null();
 #endif

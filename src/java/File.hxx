@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2010-2014 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,8 @@
 
 #include <jni.h>
 
+class AllocatedPath;
+
 namespace Java {
 	/**
 	 * Wrapper for a java.io.File object.
@@ -42,12 +44,22 @@ namespace Java {
 		static jmethodID getAbsolutePath_method;
 
 	public:
+		gcc_nonnull_all
 		static void Initialise(JNIEnv *env);
 
+		gcc_nonnull_all
 		static jstring getAbsolutePath(JNIEnv *env, jobject file) {
 			return (jstring)env->CallObjectMethod(file,
 							      getAbsolutePath_method);
 		}
+
+		/**
+		 * Invoke File.getAbsolutePath() and release the
+		 * specified File reference.
+		 */
+		gcc_pure gcc_nonnull_all
+		static AllocatedPath ToAbsolutePath(JNIEnv *env,
+						    jobject file);
 	};
 }
 

@@ -20,8 +20,11 @@
 #ifndef MPD_ANDROID_ENVIRONMENT_HXX
 #define MPD_ANDROID_ENVIRONMENT_HXX
 
+#include "Compiler.h"
+
 #include <jni.h>
-#include <stddef.h>
+
+class AllocatedPath;
 
 namespace Environment {
 	void Initialise(JNIEnv *env);
@@ -30,10 +33,11 @@ namespace Environment {
 	/**
 	 * Determine the mount point of the external SD card.
 	 */
-	char *getExternalStorageDirectory(char *buffer, size_t max_size);
+	gcc_pure
+	AllocatedPath getExternalStorageDirectory();
 
-	char *getExternalStoragePublicDirectory(char *buffer, size_t max_size,
-						const char *type);
+	gcc_pure
+	AllocatedPath getExternalStoragePublicDirectory(const char *type);
 };
 
 #endif

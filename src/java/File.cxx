@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2010-2014 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,13 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "File.hxx"
 #include "Class.hxx"
+#include "String.hxx"
+#include "Object.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/Limits.hxx"
 
 jmethodID Java::File::getAbsolutePath_method;
 
@@ -39,4 +44,24 @@ Java::File::Initialise(JNIEnv *env)
 
 	getAbsolutePath_method = env->GetMethodID(cls, "getAbsolutePath",
 						  "()Ljava/lang/String;");
+}
+
+AllocatedPath
+Java::File::ToAbsolutePath(JNIEnv *env, jobject _file)
+{
+	assert(env != nullptr);
+	assert(_file != nullptr);
+
+	LocalObject file(env, _file);
+
+	const jstring path = getAbsolutePath(env, file);
+	if (path == nullptr) {
+		env->ExceptionClear();
+		return AllocatedPath::Null();
+	}
+
+	Java::String path2(env, path);
+	char buffer[MPD_PATH_MAX];
+	path2.CopyTo(env, buffer, sizeof(buffer));
+	return AllocatedPath::FromUTF8(buffer);
 }
