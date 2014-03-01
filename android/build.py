@@ -265,6 +265,14 @@ thirdparty_libs = [
     ),
 
     AutotoolsProject(
+        'ftp://ftp.mars.org/pub/mpeg/libid3tag-0.15.1b.tar.gz',
+        'e5808ad997ba32c498803822078748c3',
+        'lib/libid3tag.a',
+        ['--disable-shared', '--enable-static'],
+        autogen=True,
+    ),
+
+    AutotoolsProject(
         'ftp://ftp.mars.org/pub/mpeg/libmad-0.15.1b.tar.gz',
         '1be543bc30c56fb6bea1d7bf6a64e66c',
         'lib/libmad.a',
