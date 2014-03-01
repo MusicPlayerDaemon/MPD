@@ -68,10 +68,7 @@ CreateConfiguredStorage(Error &error)
 	assert(!error.IsDefined());
 
 	auto uri = config_get_string(CONF_MUSIC_DIR, nullptr);
-	if (uri == nullptr)
-		return nullptr;
-
-	if (uri_has_scheme(uri))
+	if (uri != nullptr && uri_has_scheme(uri))
 		return CreateConfiguredStorageUri(uri, error);
 
 	return CreateConfiguredStorageLocal(error);
