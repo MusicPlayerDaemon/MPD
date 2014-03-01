@@ -38,6 +38,40 @@
 #include <assert.h>
 #endif
 
+template<typename T>
+struct ConstBuffer;
+
+template<>
+struct ConstBuffer<void> {
+	typedef size_t size_type;
+	typedef const void *pointer_type;
+	typedef pointer_type const_pointer_type;
+	typedef pointer_type iterator;
+	typedef pointer_type const_iterator;
+
+	pointer_type data;
+	size_type size;
+
+	ConstBuffer() = default;
+
+	constexpr ConstBuffer(std::nullptr_t):data(nullptr), size(0) {}
+
+	constexpr ConstBuffer(pointer_type _data, size_type _size)
+		:data(_data), size(_size) {}
+
+	constexpr static ConstBuffer Null() {
+		return ConstBuffer(nullptr, 0);
+	}
+
+	constexpr bool IsNull() const {
+		return data == nullptr;
+	}
+
+	constexpr bool IsEmpty() const {
+		return size == 0;
+	}
+};
+
 /**
  * A reference to a memory area that is read-only.
  */

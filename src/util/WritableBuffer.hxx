@@ -38,6 +38,40 @@
 #include <assert.h>
 #endif
 
+template<typename T>
+struct WritableBuffer;
+
+template<>
+struct WritableBuffer<void> {
+	typedef size_t size_type;
+	typedef void *pointer_type;
+	typedef const void *const_pointer_type;
+	typedef pointer_type iterator;
+	typedef const_pointer_type const_iterator;
+
+	pointer_type data;
+	size_type size;
+
+	WritableBuffer() = default;
+
+	constexpr WritableBuffer(std::nullptr_t):data(nullptr), size(0) {}
+
+	constexpr WritableBuffer(pointer_type _data, size_type _size)
+		:data(_data), size(_size) {}
+
+	constexpr static WritableBuffer Null() {
+		return { nullptr, 0 };
+	}
+
+	constexpr bool IsNull() const {
+		return data == nullptr;
+	}
+
+	constexpr bool IsEmpty() const {
+		return size == 0;
+	}
+};
+
 /**
  * A reference to a memory area that is writable.
  *
