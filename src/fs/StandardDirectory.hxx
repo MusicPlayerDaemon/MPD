@@ -33,6 +33,13 @@ AllocatedPath GetUserConfigDir();
  */
 AllocatedPath GetUserMusicDir();
 
+/**
+ * Obtains cache directory for the current user.
+ */
+gcc_pure
+AllocatedPath
+GetUserCacheDir();
+
 #ifdef WIN32
 
 /**

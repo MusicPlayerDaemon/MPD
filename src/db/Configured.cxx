@@ -23,15 +23,10 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"
 #include "config/ConfigError.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/StandardDirectory.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-
-#ifdef ANDROID
-#include "Main.hxx"
-#include "android/Context.hxx"
-#include "fs/AllocatedPath.hxx"
-#include "plugins/simple/SimpleDatabasePlugin.hxx"
-#endif
 
 Database *
 CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
@@ -57,12 +52,9 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 	}
 
 	if (param == nullptr) {
-#ifdef ANDROID
-		/* if there is no override, use the Android cache
-		   directory */
+		/* if there is no override, use the cache directory */
 
-		const AllocatedPath cache_dir =
-			context->GetCacheDir(Java::GetEnv());
+		const AllocatedPath cache_dir = GetUserCacheDir();
 		if (cache_dir.IsNull())
 			return nullptr;
 
@@ -71,9 +63,6 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 		allocated = new config_param("database");
 		allocated->AddBlockParam("path", db_file.c_str(), -1);
 		param = allocated;
-#else
-		return nullptr;
-#endif
 	}
 
 	Database *db = DatabaseGlobalInit(loop, listener, *param,

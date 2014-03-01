@@ -34,6 +34,7 @@ ver 0.19 (not yet released)
   - name each thread (for debugging)
 * configuration
   - allow playlist directory without music directory
+  - use XDG to auto-detect "music_directory" and "db_file"
 * new resampler option using libsoxr
 * install systemd unit for socket activation
 * Android port

@@ -50,6 +50,8 @@
 #ifdef ANDROID
 #include "java/Global.hxx"
 #include "android/Environment.hxx"
+#include "android/Context.hxx"
+#include "Main.hxx"
 #endif
 
 #ifndef WIN32
@@ -247,6 +249,18 @@ AllocatedPath GetUserMusicDir()
 	return GetUserDir("XDG_MUSIC_DIR");
 #elif defined(ANDROID)
 	return Environment::getExternalStoragePublicDirectory("Music");
+#else
+	return AllocatedPath::Null();
+#endif
+}
+
+AllocatedPath
+GetUserCacheDir()
+{
+#ifdef USE_XDG
+	return GetUserDir("XDG_CACHE_DIR");
+#elif defined(ANDROID)
+	return context->GetCacheDir(Java::GetEnv());
 #else
 	return AllocatedPath::Null();
 #endif
