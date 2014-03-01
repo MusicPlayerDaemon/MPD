@@ -258,7 +258,7 @@ android/build/build.xml: android/AndroidManifest.xml
 	rm -rf android/build
 	mkdir -p android/build/include
 	ln -s $(srcdir)/android/AndroidManifest.xml $(srcdir)/android/custom_rules.xml $(srcdir)/android/src $(srcdir)/android/res android/build
-	$(ANDROID_SDK)/tools/android update project --path android/build --target android-9
+	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17
 
 android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
 	cd android/build && ant compile-jni-classes
