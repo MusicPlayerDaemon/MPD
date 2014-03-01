@@ -418,6 +418,9 @@ int mpd_main(int argc, char *argv[])
 #ifdef ANDROID
 	(void)argc;
 	(void)argv;
+
+	if (!ReadConfigFile(Path::FromFS("/sdcard/mpd.conf"), error))
+		LogError(error);
 #else
 	if (!parse_cmdline(argc, argv, &options, error)) {
 		LogError(error);
