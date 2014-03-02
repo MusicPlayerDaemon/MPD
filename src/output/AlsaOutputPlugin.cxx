@@ -114,6 +114,18 @@ struct AlsaOutput {
 	unsigned pi_workaround;
 
 	/**
+	 * Do we need to call snd_pcm_prepare() before the next write?
+	 * It means that we put the device to SND_PCM_STATE_SETUP by
+	 * calling snd_pcm_drop().
+	 *
+	 * Without this flag, we could easily recover after a failed
+	 * optimistic write (returning -EBADFD), but the Raspberry Pi
+	 * audio driver is infamous for generating ugly artefacts from
+	 * this.
+	 */
+	bool must_prepare;
+
+	/**
 	 * This buffer gets allocated after opening the ALSA device.
 	 * It contains silence samples, enough to fill one period (see
 	 * #period_frames).
@@ -699,6 +711,8 @@ alsa_open(struct audio_output *ao, AudioFormat &audio_format, Error &error)
 	ad->in_frame_size = audio_format.GetFrameSize();
 	ad->out_frame_size = ad->pcm_export->GetFrameSize(audio_format);
 
+	ad->must_prepare = false;
+
 	return true;
 }
 
@@ -801,6 +815,7 @@ alsa_cancel(struct audio_output *ao)
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
 	ad->period_position = 0;
+	ad->must_prepare = true;
 
 	snd_pcm_drop(ad->pcm);
 }
@@ -821,6 +836,16 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
 	assert(size % ad->in_frame_size == 0);
+
+	if (ad->must_prepare) {
+		ad->must_prepare = false;
+
+		int err = snd_pcm_prepare(ad->pcm);
+		if (err < 0) {
+			error.Set(alsa_output_domain, err, snd_strerror(-err));
+			return 0;
+		}
+	}
 
 	chunk = ad->pcm_export->Export(chunk, size, size);
 
