@@ -39,13 +39,18 @@ ver 0.19 (not yet released)
 * install systemd unit for socket activation
 * Android port
 
-ver 0.18.9 (not yet released)
+ver 0.18.9 (2014/03/02)
+* protocol
+  - "findadd" requires the "add" permission
+* output
+  - alsa: improved workaround for noise after manual song change
 * decoder
   - vorbis: fix linker failure when libvorbis/libogg are static
 * encoder
   - vorbis: fix another linker failure
 * output
   - pipe: fix hanging child process due to blocked signals
+* fix build failure due to missing signal.h include
 
 ver 0.18.8 (2014/02/07)
 * decoder

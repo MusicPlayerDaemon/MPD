@@ -99,7 +99,7 @@ static const struct command commands[] = {
 	{ "enableoutput", PERMISSION_ADMIN, 1, 1, handle_enableoutput },
 #ifdef ENABLE_DATABASE
 	{ "find", PERMISSION_READ, 2, -1, handle_find },
-	{ "findadd", PERMISSION_READ, 2, -1, handle_findadd},
+	{ "findadd", PERMISSION_ADD, 2, -1, handle_findadd},
 #endif
 	{ "idle", PERMISSION_READ, 0, -1, handle_idle },
 	{ "kill", PERMISSION_ADMIN, -1, -1, handle_kill },
