@@ -327,6 +327,7 @@ pulse_output_init(const config_param &param, Error &error)
 	PulseOutput *po;
 
 	setenv("PULSE_PROP_media.role", "music", true);
+	setenv("PULSE_PROP_application.icon_name", "mpd", true);
 
 	po = new PulseOutput();
 	if (!po->base.Configure(param, error)) {
