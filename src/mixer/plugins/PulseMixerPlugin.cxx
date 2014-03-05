@@ -52,6 +52,7 @@ public:
 	void Offline();
 	void VolumeCallback(const pa_sink_input_info *i, int eol);
 	void Update(pa_context *context, pa_stream *stream);
+	int GetVolumeInternal(Error &error);
 
 	/* virtual methods from class Mixer */
 	virtual bool Open(gcc_unused Error &error) override {
@@ -92,7 +93,7 @@ PulseMixer::VolumeCallback(const pa_sink_input_info *i, int eol)
 	online = true;
 	volume = i->volume;
 
-	listener.OnMixerVolumeChanged(*this, GetVolume(IgnoreError()));
+	listener.OnMixerVolumeChanged(*this, GetVolumeInternal(IgnoreError()));
 }
 
 /**
@@ -187,13 +188,21 @@ PulseMixer::GetVolume(gcc_unused Error &error)
 {
 	pulse_output_lock(output);
 
-	int result = online
-		? (int)((100 * (pa_cvolume_avg(&volume) + 1)) / PA_VOLUME_NORM)
-		: -1;
-
+	int result = GetVolumeInternal(error);
 	pulse_output_unlock(output);
 
 	return result;
+}
+
+/**
+ * Pulse mainloop lock must be held by caller
+ */
+int
+PulseMixer::GetVolumeInternal(gcc_unused Error &error)
+{
+	return online ?
+		(int)((100 * (pa_cvolume_avg(&volume) + 1)) / PA_VOLUME_NORM)
+		: -1;
 }
 
 bool
