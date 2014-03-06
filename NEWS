@@ -1,4 +1,6 @@
 ver 0.18.10 (not yet released)
+* decoder
+  - gme: fix memory leak
 
 ver 0.18.9 (2014/03/02)
 * protocol
