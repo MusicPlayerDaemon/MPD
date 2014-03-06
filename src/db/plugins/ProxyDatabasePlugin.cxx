@@ -353,18 +353,18 @@ ProxyDatabase::Connect(Error &error)
 		return false;
 	}
 
+	if (!CheckError(connection, error)) {
+		mpd_connection_free(connection);
+		connection = nullptr;
+
+		return false;
+	}
+
 	idle_received = unsigned(-1);
 	is_idle = false;
 
 	SocketMonitor::Open(mpd_async_get_fd(mpd_connection_get_async(connection)));
 	IdleMonitor::Schedule();
-
-	if (!CheckError(connection, error)) {
-		if (connection != nullptr)
-			Disconnect();
-
-		return false;
-	}
 
 	return true;
 }
