@@ -37,6 +37,7 @@
 
 MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
 	:mixer_listener(_mixer_listener),
+	 input_audio_format(AudioFormat::Undefined()),
 	 buffer(nullptr), pipe(nullptr),
 	 elapsed_time(-1)
 {
