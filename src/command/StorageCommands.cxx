@@ -46,6 +46,13 @@ skip_path(const char *name_utf8)
 	return strchr(name_utf8, '\n') != nullptr;
 }
 
+#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+/* PRIu64 causes bogus compiler warning */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
+
 static bool
 handle_listfiles_storage(Client &client, StorageDirectoryReader &reader,
 			 Error &error)
@@ -82,6 +89,10 @@ handle_listfiles_storage(Client &client, StorageDirectoryReader &reader,
 
 	return true;
 }
+
+#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#pragma GCC diagnostic pop
+#endif
 
 static bool
 handle_listfiles_storage(Client &client, Storage &storage, const char *uri,

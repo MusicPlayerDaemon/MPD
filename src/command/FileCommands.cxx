@@ -59,6 +59,13 @@ skip_path(const char *name_fs)
 	return strchr(name_fs, '\n') != nullptr;
 }
 
+#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+/* PRIu64 causes bogus compiler warning */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
+
 CommandResult
 handle_listfiles_local(Client &client, const char *path_utf8)
 {
@@ -108,6 +115,10 @@ handle_listfiles_local(Client &client, const char *path_utf8)
 
 	return CommandResult::OK;
 }
+
+#if defined(WIN32) && GCC_CHECK_VERSION(4,6)
+#pragma GCC diagnostic pop
+#endif
 
 gcc_pure
 static bool
