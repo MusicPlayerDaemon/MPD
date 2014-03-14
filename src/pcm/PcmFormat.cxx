@@ -60,9 +60,7 @@ static void
 ConvertFromFloat(typename Traits::pointer_type dest,
 		 const float *src, size_t n)
 {
-	constexpr auto bits = Traits::BITS;
-
-	const float factor = 1 << (bits - 1);
+	const float factor = 1 << (Traits::BITS - 1);
 
 	for (size_t i = 0; i != n; ++i) {
 		typename Traits::long_type sample(src[i] * factor);
