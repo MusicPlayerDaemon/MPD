@@ -71,21 +71,6 @@ ConvertFromFloat(typename Traits::pointer_type dest,
 }
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
-static typename Traits::pointer_type
-AllocateFromFloat(PcmBuffer &buffer, const float *src, size_t src_size,
-		  size_t *dest_size_r)
-{
-	constexpr size_t src_sample_size = sizeof(*src);
-	assert(src_size % src_sample_size == 0);
-
-	const size_t num_samples = src_size / src_sample_size;
-	*dest_size_r = num_samples * sizeof(typename Traits::value_type);
-	auto dest = (typename Traits::pointer_type)buffer.Get(*dest_size_r);
-	ConvertFromFloat<F, Traits>(dest, src, src_size / sizeof(*src));
-	return dest;
-}
-
-template<SampleFormat F, class Traits=SampleTraits<F>>
 static WritableBuffer<typename Traits::value_type>
 AllocateFromFloat(PcmBuffer &buffer, ConstBuffer<float> src)
 {
