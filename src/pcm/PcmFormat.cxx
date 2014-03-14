@@ -263,12 +263,7 @@ pcm_allocate_24p32_to_32(PcmBuffer &buffer, ConstBuffer<int32_t> src)
 static ConstBuffer<int32_t>
 pcm_allocate_float_to_32(PcmBuffer &buffer, ConstBuffer<float> src)
 {
-	/* convert to S24_P32 first */
-	auto dest = pcm_allocate_float_to_24(buffer, src);
-
-	/* convert to 32 bit in-place */
-	Convert24To32().Convert(dest.data, dest.data, src.size);
-	return ToConst(dest);
+	return ToConst(AllocateFromFloat<SampleFormat::S32>(buffer, src));
 }
 
 ConstBuffer<int32_t>
