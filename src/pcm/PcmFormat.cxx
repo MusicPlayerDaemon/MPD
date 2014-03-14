@@ -76,8 +76,45 @@ struct Convert32To16 {
 };
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
-struct FloatToInteger
+struct PortableFloatToInteger
 	: PerSampleConvert<FloatToIntegerSampleConvert<F, Traits>> {};
+
+template<SampleFormat F, class Traits=SampleTraits<F>>
+struct FloatToInteger : PortableFloatToInteger<F, Traits> {};
+
+/**
+ * A template class that attempts to use the "optimized" algorithm for
+ * large portions of the buffer, and calls the "portable" algorithm"
+ * for the rest when the last block is not full.
+ */
+template<typename Optimized, typename Portable>
+class GlueOptimizedConvert : Optimized, Portable {
+public:
+	typedef typename Portable::SrcTraits SrcTraits;
+	typedef typename Portable::DstTraits DstTraits;
+
+	void Convert(typename DstTraits::pointer_type out,
+		     typename SrcTraits::const_pointer_type in,
+		     size_t n) const {
+		Optimized::Convert(out, in, n);
+
+		/* use the "portable" algorithm for the trailing
+		   samples */
+		size_t remaining = n % Optimized::BLOCK_SIZE;
+		size_t done = n - remaining;
+		Portable::Convert(out + done, in + done, remaining);
+	}
+};
+
+#ifdef __ARM_NEON__
+#include "Neon.hxx"
+
+template<>
+struct FloatToInteger<SampleFormat::S16, SampleTraits<SampleFormat::S16>>
+	: GlueOptimizedConvert<NeonFloatTo16,
+			       PortableFloatToInteger<SampleFormat::S16>> {};
+
+#endif
 
 template<class C>
 static ConstBuffer<typename C::DstTraits::value_type>

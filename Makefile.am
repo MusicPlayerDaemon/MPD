@@ -452,6 +452,7 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmFormat.cxx src/pcm/PcmFormat.hxx \
 	src/pcm/FloatConvert.hxx \
 	src/pcm/ShiftConvert.hxx \
+	src/pcm/Neon.hxx \
 	src/pcm/FormatConverter.cxx src/pcm/FormatConverter.hxx \
 	src/pcm/ChannelsConverter.cxx src/pcm/ChannelsConverter.hxx \
 	src/pcm/Resampler.hxx \

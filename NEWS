@@ -36,6 +36,7 @@ ver 0.19 (not yet released)
   - allow playlist directory without music directory
   - use XDG to auto-detect "music_directory" and "db_file"
 * new resampler option using libsoxr
+* ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
 
