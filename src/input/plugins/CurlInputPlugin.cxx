@@ -130,7 +130,7 @@ public:
 	}
 };
 
-struct input_curl {
+struct CurlInputStream {
 	InputStream base;
 
 	/* some buffers which were passed to libcurl, which we have
@@ -167,16 +167,16 @@ struct input_curl {
 
 	Error postponed_error;
 
-	input_curl(const char *url, Mutex &mutex, Cond &cond)
+	CurlInputStream(const char *url, Mutex &mutex, Cond &cond)
 		:base(input_plugin_curl, url, mutex, cond),
 		 request_headers(nullptr),
 		 paused(false),
 		 tag(nullptr) {}
 
-	~input_curl();
+	~CurlInputStream();
 
-	input_curl(const input_curl &) = delete;
-	input_curl &operator=(const input_curl &) = delete;
+	CurlInputStream(const CurlInputStream &) = delete;
+	CurlInputStream &operator=(const CurlInputStream &) = delete;
 };
 
 class CurlMulti;
@@ -251,8 +251,8 @@ public:
 		curl_multi_cleanup(multi);
 	}
 
-	bool Add(input_curl *c, Error &error);
-	void Remove(input_curl *c);
+	bool Add(CurlInputStream *c, Error &error);
+	void Remove(CurlInputStream *c);
 
 	/**
 	 * Check for finished HTTP responses.
@@ -322,7 +322,7 @@ CurlMulti::CurlMulti(EventLoop &_loop, CURLM *_multi)
  * Runs in the I/O thread.  No lock needed.
  */
 gcc_pure
-static struct input_curl *
+static CurlInputStream *
 input_curl_find_request(CURL *easy)
 {
 	assert(io_thread_inside());
@@ -332,11 +332,11 @@ input_curl_find_request(CURL *easy)
 	if (code != CURLE_OK)
 		return nullptr;
 
-	return (input_curl *)p;
+	return (CurlInputStream *)p;
 }
 
 static void
-input_curl_resume(struct input_curl *c)
+input_curl_resume(CurlInputStream *c)
 {
 	assert(io_thread_inside());
 
@@ -404,7 +404,7 @@ CurlSocket::OnSocketReady(unsigned flags)
  * Runs in the I/O thread.  No lock needed.
  */
 inline bool
-CurlMulti::Add(struct input_curl *c, Error &error)
+CurlMulti::Add(CurlInputStream *c, Error &error)
 {
 	assert(io_thread_inside());
 	assert(c != nullptr);
@@ -427,7 +427,7 @@ CurlMulti::Add(struct input_curl *c, Error &error)
  * any thread.  Caller must not hold a mutex.
  */
 static bool
-input_curl_easy_add_indirect(struct input_curl *c, Error &error)
+input_curl_easy_add_indirect(CurlInputStream *c, Error &error)
 {
 	assert(c != nullptr);
 	assert(c->easy != nullptr);
@@ -440,7 +440,7 @@ input_curl_easy_add_indirect(struct input_curl *c, Error &error)
 }
 
 inline void
-CurlMulti::Remove(input_curl *c)
+CurlMulti::Remove(CurlInputStream *c)
 {
 	curl_multi_remove_handle(multi, c->easy);
 }
@@ -452,7 +452,7 @@ CurlMulti::Remove(input_curl *c)
  * Runs in the I/O thread.
  */
 static void
-input_curl_easy_free(struct input_curl *c)
+input_curl_easy_free(CurlInputStream *c)
 {
 	assert(io_thread_inside());
 	assert(c != nullptr);
@@ -476,7 +476,7 @@ input_curl_easy_free(struct input_curl *c)
  * The mutex must not be locked.
  */
 static void
-input_curl_easy_free_indirect(struct input_curl *c)
+input_curl_easy_free_indirect(CurlInputStream *c)
 {
 	BlockingCall(io_thread_get(), [c](){
 			input_curl_easy_free(c);
@@ -492,7 +492,7 @@ input_curl_easy_free_indirect(struct input_curl *c)
  * Runs in the I/O thread.  The caller must not hold locks.
  */
 static void
-input_curl_request_done(struct input_curl *c, CURLcode result, long status)
+input_curl_request_done(CurlInputStream *c, CURLcode result, long status)
 {
 	assert(io_thread_inside());
 	assert(c != nullptr);
@@ -518,7 +518,7 @@ input_curl_request_done(struct input_curl *c, CURLcode result, long status)
 static void
 input_curl_handle_done(CURL *easy_handle, CURLcode result)
 {
-	struct input_curl *c = input_curl_find_request(easy_handle);
+	CurlInputStream *c = input_curl_find_request(easy_handle);
 	assert(c != nullptr);
 
 	long status = 0;
@@ -664,7 +664,7 @@ input_curl_finish(void)
  */
 gcc_pure
 static size_t
-curl_total_buffer_size(const struct input_curl *c)
+curl_total_buffer_size(const CurlInputStream *c)
 {
 	size_t total = 0;
 
@@ -674,7 +674,7 @@ curl_total_buffer_size(const struct input_curl *c)
 	return total;
 }
 
-input_curl::~input_curl()
+CurlInputStream::~CurlInputStream()
 {
 	delete tag;
 
@@ -684,7 +684,7 @@ input_curl::~input_curl()
 static bool
 input_curl_check(InputStream *is, Error &error)
 {
-	struct input_curl *c = (struct input_curl *)is;
+	CurlInputStream *c = (CurlInputStream *)is;
 
 	bool success = !c->postponed_error.IsDefined();
 	if (!success) {
@@ -698,7 +698,7 @@ input_curl_check(InputStream *is, Error &error)
 static Tag *
 input_curl_tag(InputStream *is)
 {
-	struct input_curl *c = (struct input_curl *)is;
+	CurlInputStream *c = (CurlInputStream *)is;
 	Tag *tag = c->tag;
 
 	c->tag = nullptr;
@@ -706,7 +706,7 @@ input_curl_tag(InputStream *is)
 }
 
 static bool
-fill_buffer(struct input_curl *c, Error &error)
+fill_buffer(CurlInputStream *c, Error &error)
 {
 	while (c->easy != nullptr && c->buffers.empty())
 		c->base.cond.wait(c->base.mutex);
@@ -771,7 +771,7 @@ read_from_buffer(IcyMetaDataParser &icy, std::list<CurlInputBuffer> &buffers,
 }
 
 static void
-copy_icy_tag(struct input_curl *c)
+copy_icy_tag(CurlInputStream *c)
 {
 	Tag *tag = c->icy.ReadTag();
 
@@ -792,7 +792,7 @@ copy_icy_tag(struct input_curl *c)
 static bool
 input_curl_available(InputStream *is)
 {
-	struct input_curl *c = (struct input_curl *)is;
+	CurlInputStream *c = (CurlInputStream *)is;
 
 	return c->postponed_error.IsDefined() || c->easy == nullptr ||
 		!c->buffers.empty();
@@ -802,7 +802,7 @@ static size_t
 input_curl_read(InputStream *is, void *ptr, size_t size,
 		Error &error)
 {
-	struct input_curl *c = (struct input_curl *)is;
+	CurlInputStream *c = (CurlInputStream *)is;
 	bool success;
 	size_t nbytes = 0;
 	char *dest = (char *)ptr;
@@ -846,7 +846,7 @@ input_curl_read(InputStream *is, void *ptr, size_t size,
 static void
 input_curl_close(InputStream *is)
 {
-	struct input_curl *c = (struct input_curl *)is;
+	CurlInputStream *c = (CurlInputStream *)is;
 
 	delete c;
 }
@@ -854,7 +854,7 @@ input_curl_close(InputStream *is)
 static bool
 input_curl_eof(gcc_unused InputStream *is)
 {
-	struct input_curl *c = (struct input_curl *)is;
+	CurlInputStream *c = (CurlInputStream *)is;
 
 	return c->easy == nullptr && c->buffers.empty();
 }
@@ -863,7 +863,7 @@ input_curl_eof(gcc_unused InputStream *is)
 static size_t
 input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-	struct input_curl *c = (struct input_curl *)stream;
+	CurlInputStream *c = (CurlInputStream *)stream;
 	char name[64];
 
 	size *= nmemb;
@@ -947,7 +947,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 static size_t
 input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-	struct input_curl *c = (struct input_curl *)stream;
+	CurlInputStream *c = (CurlInputStream *)stream;
 
 	size *= nmemb;
 	if (size == 0)
@@ -968,7 +968,7 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 }
 
 static bool
-input_curl_easy_init(struct input_curl *c, Error &error)
+input_curl_easy_init(CurlInputStream *c, Error &error)
 {
 	CURLcode code;
 
@@ -1032,7 +1032,7 @@ input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
 		int whence,
 		Error &error)
 {
-	struct input_curl *c = (struct input_curl *)is;
+	CurlInputStream *c = (CurlInputStream *)is;
 	bool ret;
 
 	assert(is->ready);
@@ -1140,7 +1140,7 @@ input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 	    memcmp(url, "https://", 8) != 0)
 		return nullptr;
 
-	struct input_curl *c = new input_curl(url, mutex, cond);
+	CurlInputStream *c = new CurlInputStream(url, mutex, cond);
 
 	if (!input_curl_easy_init(c, error)) {
 		delete c;
