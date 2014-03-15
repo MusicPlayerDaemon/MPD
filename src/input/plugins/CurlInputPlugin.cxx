@@ -184,6 +184,8 @@ struct CurlInputStream {
 		return easy == nullptr && buffers.empty();
 	}
 
+	bool Seek(InputPlugin::offset_type offset, int whence, Error &error);
+
 	Tag *ReadTag();
 
 	bool IsAvailable() const {
@@ -1063,21 +1065,17 @@ CurlInputStream::InitEasy(Error &error)
 	return true;
 }
 
-static bool
-input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
-		int whence,
-		Error &error)
+inline bool
+CurlInputStream::Seek(InputPlugin::offset_type offset, int whence,
+		      Error &error)
 {
-	CurlInputStream *c = (CurlInputStream *)is;
-	bool ret;
+	assert(base.ready);
 
-	assert(is->ready);
-
-	if (whence == SEEK_SET && offset == is->offset)
+	if (whence == SEEK_SET && offset == base.offset)
 		/* no-op */
 		return true;
 
-	if (!is->seekable)
+	if (!base.seekable)
 		return false;
 
 	/* calculate the absolute offset */
@@ -1087,15 +1085,15 @@ input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
 		break;
 
 	case SEEK_CUR:
-		offset += is->offset;
+		offset += base.offset;
 		break;
 
 	case SEEK_END:
-		if (is->size < 0)
+		if (base.size < 0)
 			/* stream size is not known */
 			return false;
 
-		offset += is->size;
+		offset += base.size;
 		break;
 
 	default:
@@ -1107,65 +1105,73 @@ input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
 
 	/* check if we can fast-forward the buffer */
 
-	while (offset > is->offset && !c->buffers.empty()) {
-		auto &buffer = c->buffers.front();
+	while (offset > base.offset && !buffers.empty()) {
+		auto &buffer = buffers.front();
 		size_t length = buffer.Available();
-		if (offset - is->offset < (InputPlugin::offset_type)length)
-			length = offset - is->offset;
+		if (offset - base.offset < (InputPlugin::offset_type)length)
+			length = offset - base.offset;
 
 		const bool empty = !buffer.Consume(length);
 		if (empty)
-			c->buffers.pop_front();
+			buffers.pop_front();
 
-		is->offset += length;
+		base.offset += length;
 	}
 
-	if (offset == is->offset)
+	if (offset == base.offset)
 		return true;
 
 	/* close the old connection and open a new one */
 
-	c->base.mutex.unlock();
+	base.mutex.unlock();
 
-	c->FreeEasyIndirect();
-	c->buffers.clear();
+	FreeEasyIndirect();
+	buffers.clear();
 
-	is->offset = offset;
-	if (is->offset == is->size) {
+	base.offset = offset;
+	if (base.offset == base.size) {
 		/* seek to EOF: simulate empty result; avoid
 		   triggering a "416 Requested Range Not Satisfiable"
 		   response */
 		return true;
 	}
 
-	ret = c->InitEasy(error);
-	if (!ret)
+	if (!InitEasy(error))
 		return false;
 
 	/* send the "Range" header */
 
-	if (is->offset > 0) {
-		sprintf(c->range, "%lld-", (long long)is->offset);
-		curl_easy_setopt(c->easy, CURLOPT_RANGE, c->range);
+	if (base.offset > 0) {
+		sprintf(range, "%lld-", (long long)base.offset);
+		curl_easy_setopt(easy, CURLOPT_RANGE, range);
 	}
 
-	c->base.ready = false;
+	base.ready = false;
 
-	if (!input_curl_easy_add_indirect(c, error))
+	if (!input_curl_easy_add_indirect(this, error))
 		return false;
 
-	c->base.mutex.lock();
+	base.mutex.lock();
 
-	while (!c->base.ready)
-		c->base.cond.wait(c->base.mutex);
+	while (!base.ready)
+		base.cond.wait(base.mutex);
 
-	if (c->postponed_error.IsDefined()) {
-		error = std::move(c->postponed_error);
-		c->postponed_error.Clear();
+	if (postponed_error.IsDefined()) {
+		error = std::move(postponed_error);
+		postponed_error.Clear();
 		return false;
 	}
 
 	return true;
+}
+
+static bool
+input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
+		int whence,
+		Error &error)
+{
+	CurlInputStream &c = *(CurlInputStream *)is;
+	return c.Seek(offset, whence, error);
 }
 
 static InputStream *
