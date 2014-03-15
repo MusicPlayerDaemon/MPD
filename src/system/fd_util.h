@@ -51,6 +51,9 @@ struct sockaddr;
 extern "C" {
 #endif
 
+int
+fd_set_cloexec(int fd, bool enable);
+
 /**
  * Wrapper for dup(), which sets the CLOEXEC flag on the new
  * descriptor.
