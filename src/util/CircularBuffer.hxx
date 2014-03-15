@@ -99,6 +99,15 @@ public:
 	}
 
 	/**
+	 * Returns the number of elements stored in this buffer.
+	 */
+	constexpr size_type GetSize() const {
+		return head <= tail
+			? tail - head
+			: capacity - head + tail;
+	}
+
+	/**
 	 * Prepares writing.  Returns a buffer range which may be written.
 	 * When you are finished, call Append().
 	 */
