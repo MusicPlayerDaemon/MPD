@@ -510,6 +510,12 @@ SMBCLIENT_SOURCES = \
 	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx
 
 NFS_SOURCES = \
+	src/lib/nfs/Callback.hxx \
+	src/lib/nfs/Cancellable.hxx \
+	src/lib/nfs/Connection.cxx src/lib/nfs/Connection.hxx \
+	src/lib/nfs/Manager.cxx src/lib/nfs/Manager.hxx \
+	src/lib/nfs/Glue.cxx src/lib/nfs/Glue.hxx \
+	src/lib/nfs/FileReader.cxx src/lib/nfs/FileReader.hxx \
 	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx
 
 if ENABLE_DATABASE
