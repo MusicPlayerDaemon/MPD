@@ -1024,6 +1024,7 @@ libinput_a_SOURCES = \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
 	src/input/InputPlugin.hxx \
 	src/input/TextInputStream.cxx src/input/TextInputStream.hxx \
+	src/input/ThreadInputStream.cxx src/input/ThreadInputStream.hxx \
 	src/input/plugins/RewindInputPlugin.cxx src/input/plugins/RewindInputPlugin.hxx \
 	src/input/plugins/FileInputPlugin.cxx src/input/plugins/FileInputPlugin.hxx
 
