@@ -178,6 +178,9 @@ struct CurlInputStream {
 	CurlInputStream(const CurlInputStream &) = delete;
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
 
+	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond,
+				 Error &error);
+
 	bool Check(Error &error);
 
 	bool IsEOF() const {
@@ -1174,6 +1177,20 @@ input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
 	return c.Seek(offset, whence, error);
 }
 
+inline InputStream *
+CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond,
+		      Error &error)
+{
+	CurlInputStream *c = new CurlInputStream(url, mutex, cond);
+
+	if (!c->InitEasy(error) || !input_curl_easy_add_indirect(c, error)) {
+		delete c;
+		return nullptr;
+	}
+
+	return &c->base;
+}
+
 static InputStream *
 input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 		Error &error)
@@ -1182,19 +1199,7 @@ input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 	    memcmp(url, "https://", 8) != 0)
 		return nullptr;
 
-	CurlInputStream *c = new CurlInputStream(url, mutex, cond);
-
-	if (!c->InitEasy(error)) {
-		delete c;
-		return nullptr;
-	}
-
-	if (!input_curl_easy_add_indirect(c, error)) {
-		delete c;
-		return nullptr;
-	}
-
-	return &c->base;
+	return CurlInputStream::Open(url, mutex, cond, error);
 }
 
 const struct InputPlugin input_plugin_curl = {
