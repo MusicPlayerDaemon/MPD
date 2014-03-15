@@ -209,8 +209,7 @@ struct CurlInputStream {
 	 */
 	void FreeEasyIndirect();
 
-	void HeaderReceived(const char *name,
-			    const char *value, const char *end);
+	void HeaderReceived(const char *name, std::string &&value);
 
 	size_t DataReceived(const void *ptr, size_t size);
 
@@ -899,29 +898,20 @@ input_curl_eof(gcc_unused InputStream *is)
 }
 
 inline void
-CurlInputStream::HeaderReceived(const char *name,
-				const char *value, const char *end)
+CurlInputStream::HeaderReceived(const char *name, std::string &&value)
 {
 	if (StringEqualsCaseASCII(name, "accept-ranges")) {
 		/* a stream with icy-metadata is not seekable */
 		if (!icy.IsDefined())
 			base.seekable = true;
 	} else if (StringEqualsCaseASCII(name, "content-length")) {
-		char buffer[64];
-
-		if ((size_t)(end - value) >= sizeof(buffer))
-			return;
-
-		memcpy(buffer, value, end - value);
-		buffer[end - value] = 0;
-
-		base.size = base.offset + ParseUint64(buffer);
+		base.size = base.offset + ParseUint64(value.c_str());
 	} else if (StringEqualsCaseASCII(name, "content-type")) {
-		base.mime.assign(value, end);
+		base.mime = std::move(value);
 	} else if (StringEqualsCaseASCII(name, "icy-name") ||
 		   StringEqualsCaseASCII(name, "ice-name") ||
 		   StringEqualsCaseASCII(name, "x-audiocast-name")) {
-		meta_name.assign(value, end);
+		meta_name = std::move(value);
 
 		delete tag;
 
@@ -930,17 +920,10 @@ CurlInputStream::HeaderReceived(const char *name,
 
 		tag = tag_builder.CommitNew();
 	} else if (StringEqualsCaseASCII(name, "icy-metaint")) {
-		char buffer[64];
-		size_t icy_metaint;
-
-		if ((size_t)(end - value) >= sizeof(buffer) ||
-		    icy.IsDefined())
+		if (icy.IsDefined())
 			return;
 
-		memcpy(buffer, value, end - value);
-		buffer[end - value] = 0;
-
-		icy_metaint = ParseUint64(buffer);
+		size_t icy_metaint = ParseUint64(value.c_str());
 		FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
 
 		if (icy_metaint > 0) {
@@ -985,7 +968,7 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	while (end > value && IsWhitespaceOrNull(end[-1]))
 		--end;
 
-	c.HeaderReceived(name, value, end);
+	c.HeaderReceived(name, std::string(value, end));
 	return size;
 }
 
