@@ -39,7 +39,7 @@ TestVolume(G g=G())
 	PcmVolume pv;
 	CPPUNIT_ASSERT(pv.Open(F, IgnoreError()));
 
-	constexpr size_t N = 256;
+	constexpr size_t N = 509;
 	static value_type zero[N];
 	const auto _src = TestDataBuffer<value_type, N>(g);
 	const ConstBuffer<void> src(_src, sizeof(_src));
@@ -98,7 +98,7 @@ PcmVolumeTest::TestVolumeFloat()
 	PcmVolume pv;
 	CPPUNIT_ASSERT(pv.Open(SampleFormat::FLOAT, IgnoreError()));
 
-	constexpr size_t N = 256;
+	constexpr size_t N = 509;
 	static float zero[N];
 	const auto _src = TestDataBuffer<float, N>(RandomFloat());
 	const ConstBuffer<void> src(_src, sizeof(_src));

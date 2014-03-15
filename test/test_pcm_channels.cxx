@@ -27,7 +27,7 @@
 void
 PcmChannelsTest::TestChannels16()
 {
-	constexpr size_t N = 256;
+	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int16_t, N * 2>();
 
 	PcmBuffer buffer;
@@ -55,7 +55,7 @@ PcmChannelsTest::TestChannels16()
 void
 PcmChannelsTest::TestChannels32()
 {
-	constexpr size_t N = 256;
+	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int32_t, N * 2>();
 
 	PcmBuffer buffer;

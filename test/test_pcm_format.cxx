@@ -29,7 +29,7 @@
 void
 PcmFormatTest::TestFormat8to16()
 {
-	constexpr size_t N = 256;
+	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int8_t, N>();
 
 	PcmBuffer buffer;
@@ -45,7 +45,7 @@ PcmFormatTest::TestFormat8to16()
 void
 PcmFormatTest::TestFormat16to24()
 {
-	constexpr size_t N = 256;
+	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int16_t, N>();
 
 	PcmBuffer buffer;
@@ -60,7 +60,7 @@ PcmFormatTest::TestFormat16to24()
 void
 PcmFormatTest::TestFormat16to32()
 {
-	constexpr size_t N = 256;
+	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int16_t, N>();
 
 	PcmBuffer buffer;
@@ -75,7 +75,7 @@ PcmFormatTest::TestFormat16to32()
 void
 PcmFormatTest::TestFormatFloat()
 {
-	constexpr size_t N = 256;
+	constexpr size_t N = 509;
 	const auto src = TestDataBuffer<int16_t, N>();
 
 	PcmBuffer buffer1, buffer2;

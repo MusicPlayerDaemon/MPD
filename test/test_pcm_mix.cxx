@@ -27,7 +27,7 @@ template<typename T, SampleFormat format, typename G=RandomInt<T>>
 static void
 TestPcmMix(G g=G())
 {
-	constexpr unsigned N = 256;
+	constexpr unsigned N = 509;
 	const auto src1 = TestDataBuffer<T, N>(g);
 	const auto src2 = TestDataBuffer<T, N>(g);
 

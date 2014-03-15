@@ -25,7 +25,7 @@
 void
 PcmPackTest::TestPack24()
 {
-	constexpr unsigned N = 256;
+	constexpr unsigned N = 509;
 	const auto src = TestDataBuffer<int32_t, N>(RandomInt24());
 
 	uint8_t dest[N * 3];
@@ -49,7 +49,7 @@ PcmPackTest::TestPack24()
 void
 PcmPackTest::TestUnpack24()
 {
-	constexpr unsigned N = 256;
+	constexpr unsigned N = 509;
 	const auto src = TestDataBuffer<uint8_t, N * 3>();
 
 	int32_t dest[N];
