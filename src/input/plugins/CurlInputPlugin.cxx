@@ -193,6 +193,8 @@ struct CurlInputStream {
 
 	size_t Read(void *ptr, size_t size, Error &error);
 
+	bool InitEasy(Error &error);
+
 	/**
 	 * Frees the current "libcurl easy" handle, and everything
 	 * associated with it.
@@ -1003,51 +1005,49 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	return c.DataReceived(ptr, size);
 }
 
-static bool
-input_curl_easy_init(CurlInputStream *c, Error &error)
+bool
+CurlInputStream::InitEasy(Error &error)
 {
-	CURLcode code;
-
-	c->easy = curl_easy_init();
-	if (c->easy == nullptr) {
+	easy = curl_easy_init();
+	if (easy == nullptr) {
 		error.Set(curl_domain, "curl_easy_init() failed");
 		return false;
 	}
 
-	curl_easy_setopt(c->easy, CURLOPT_PRIVATE, (void *)c);
-	curl_easy_setopt(c->easy, CURLOPT_USERAGENT,
+	curl_easy_setopt(easy, CURLOPT_PRIVATE, (void *)this);
+	curl_easy_setopt(easy, CURLOPT_USERAGENT,
 			 "Music Player Daemon " VERSION);
-	curl_easy_setopt(c->easy, CURLOPT_HEADERFUNCTION,
+	curl_easy_setopt(easy, CURLOPT_HEADERFUNCTION,
 			 input_curl_headerfunction);
-	curl_easy_setopt(c->easy, CURLOPT_WRITEHEADER, c);
-	curl_easy_setopt(c->easy, CURLOPT_WRITEFUNCTION,
+	curl_easy_setopt(easy, CURLOPT_WRITEHEADER, this);
+	curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION,
 			 input_curl_writefunction);
-	curl_easy_setopt(c->easy, CURLOPT_WRITEDATA, c);
-	curl_easy_setopt(c->easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
-	curl_easy_setopt(c->easy, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(c->easy, CURLOPT_NETRC, 1);
-	curl_easy_setopt(c->easy, CURLOPT_MAXREDIRS, 5);
-	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
-	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error_buffer);
-	curl_easy_setopt(c->easy, CURLOPT_NOPROGRESS, 1l);
-	curl_easy_setopt(c->easy, CURLOPT_NOSIGNAL, 1l);
-	curl_easy_setopt(c->easy, CURLOPT_CONNECTTIMEOUT, 10l);
+	curl_easy_setopt(easy, CURLOPT_WRITEDATA, this);
+	curl_easy_setopt(easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
+	curl_easy_setopt(easy, CURLOPT_FOLLOWLOCATION, 1);
+	curl_easy_setopt(easy, CURLOPT_NETRC, 1);
+	curl_easy_setopt(easy, CURLOPT_MAXREDIRS, 5);
+	curl_easy_setopt(easy, CURLOPT_FAILONERROR, true);
+	curl_easy_setopt(easy, CURLOPT_ERRORBUFFER, error_buffer);
+	curl_easy_setopt(easy, CURLOPT_NOPROGRESS, 1l);
+	curl_easy_setopt(easy, CURLOPT_NOSIGNAL, 1l);
+	curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT, 10l);
 
 	if (proxy != nullptr)
-		curl_easy_setopt(c->easy, CURLOPT_PROXY, proxy);
+		curl_easy_setopt(easy, CURLOPT_PROXY, proxy);
 
 	if (proxy_port > 0)
-		curl_easy_setopt(c->easy, CURLOPT_PROXYPORT, (long)proxy_port);
+		curl_easy_setopt(easy, CURLOPT_PROXYPORT, (long)proxy_port);
 
 	if (proxy_user != nullptr && proxy_password != nullptr) {
 		char proxy_auth_str[1024];
 		snprintf(proxy_auth_str, sizeof(proxy_auth_str),
 			 "%s:%s",
 			 proxy_user, proxy_password);
-		curl_easy_setopt(c->easy, CURLOPT_PROXYUSERPWD, proxy_auth_str);
+		curl_easy_setopt(easy, CURLOPT_PROXYUSERPWD, proxy_auth_str);
 	}
 
-	code = curl_easy_setopt(c->easy, CURLOPT_URL, c->base.uri.c_str());
+	CURLcode code = curl_easy_setopt(easy, CURLOPT_URL, base.uri.c_str());
 	if (code != CURLE_OK) {
 		error.Format(curl_domain, code,
 			     "curl_easy_setopt() failed: %s",
@@ -1055,10 +1055,10 @@ input_curl_easy_init(CurlInputStream *c, Error &error)
 		return false;
 	}
 
-	c->request_headers = nullptr;
-	c->request_headers = curl_slist_append(c->request_headers,
+	request_headers = nullptr;
+	request_headers = curl_slist_append(request_headers,
 					       "Icy-Metadata: 1");
-	curl_easy_setopt(c->easy, CURLOPT_HTTPHEADER, c->request_headers);
+	curl_easy_setopt(easy, CURLOPT_HTTPHEADER, request_headers);
 
 	return true;
 }
@@ -1138,7 +1138,7 @@ input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
 		return true;
 	}
 
-	ret = input_curl_easy_init(c, error);
+	ret = c->InitEasy(error);
 	if (!ret)
 		return false;
 
@@ -1178,7 +1178,7 @@ input_curl_open(const char *url, Mutex &mutex, Cond &cond,
 
 	CurlInputStream *c = new CurlInputStream(url, mutex, cond);
 
-	if (!input_curl_easy_init(c, error)) {
+	if (!c->InitEasy(error)) {
 		delete c;
 		return nullptr;
 	}
