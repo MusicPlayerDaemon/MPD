@@ -108,6 +108,18 @@ public:
 	}
 
 	/**
+	 * Returns the number of elements that can be added to this
+	 * buffer.
+	 */
+	constexpr size_type GetSpace() const {
+		/* space = capacity - size - 1 */
+		return (head <= tail
+			? capacity - tail + head
+			: head - tail)
+			- 1;
+	}
+
+	/**
 	 * Prepares writing.  Returns a buffer range which may be written.
 	 * When you are finished, call Append().
 	 */

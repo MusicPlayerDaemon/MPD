@@ -33,6 +33,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(true, buffer.IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(size_t(0), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(7), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(true, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Write().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(&data[0], buffer.Write().data);
@@ -45,6 +46,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(false, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(size_t(1), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(6), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(size_t(1), buffer.Read().size);
 		CPPUNIT_ASSERT_EQUAL(&data[0], buffer.Read().data);
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Write().IsEmpty());
@@ -58,6 +60,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(true, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(size_t(7), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(0), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(size_t(7), buffer.Read().size);
 		CPPUNIT_ASSERT_EQUAL(&data[0], buffer.Read().data);
 		CPPUNIT_ASSERT_EQUAL(true, buffer.Write().IsEmpty());
@@ -69,6 +72,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(false, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(size_t(6), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(1), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(size_t(6), buffer.Read().size);
 		CPPUNIT_ASSERT_EQUAL(&data[1], buffer.Read().data);
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Write().IsEmpty());
@@ -83,6 +87,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(true, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(size_t(7), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(0), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(size_t(7), buffer.Read().size);
 		CPPUNIT_ASSERT_EQUAL(&data[1], buffer.Read().data);
 		CPPUNIT_ASSERT_EQUAL(true, buffer.Write().IsEmpty());
@@ -94,6 +99,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(false, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(size_t(4), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(3), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(size_t(4), buffer.Read().size);
 		CPPUNIT_ASSERT_EQUAL(&data[4], buffer.Read().data);
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Write().IsEmpty());
@@ -107,6 +113,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(false, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(size_t(6), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(1), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(size_t(4), buffer.Read().size);
 		CPPUNIT_ASSERT_EQUAL(&data[4], buffer.Read().data);
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Write().IsEmpty());
@@ -120,6 +127,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(true, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(size_t(7), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(0), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(size_t(4), buffer.Read().size);
 		CPPUNIT_ASSERT_EQUAL(&data[4], buffer.Read().data);
 		CPPUNIT_ASSERT_EQUAL(true, buffer.Write().IsEmpty());
@@ -131,6 +139,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(false, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(size_t(3), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(4), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(size_t(3), buffer.Read().size);
 		CPPUNIT_ASSERT_EQUAL(&data[0], buffer.Read().data);
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Write().IsEmpty());
@@ -145,6 +154,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL(true, buffer.IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.IsFull());
 		CPPUNIT_ASSERT_EQUAL(size_t(0), buffer.GetSize());
+		CPPUNIT_ASSERT_EQUAL(size_t(7), buffer.GetSpace());
 		CPPUNIT_ASSERT_EQUAL(true, buffer.Read().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(false, buffer.Write().IsEmpty());
 		CPPUNIT_ASSERT_EQUAL(&data[3], buffer.Write().data);
