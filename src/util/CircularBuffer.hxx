@@ -65,18 +65,18 @@ protected:
 	 */
 	size_type tail;
 
-	const size_type size;
+	const size_type capacity;
 	const pointer_type data;
 
 public:
-	constexpr CircularBuffer(pointer_type _data, size_type _size)
-		:head(0), tail(0), size(_size), data(_data) {}
+	constexpr CircularBuffer(pointer_type _data, size_type _capacity)
+		:head(0), tail(0), capacity(_capacity), data(_data) {}
 
 	CircularBuffer(const CircularBuffer &other) = delete;
 
 protected:
 	constexpr size_type Next(size_type i) const {
-		return i + 1 == size
+		return i + 1 == capacity
 			? 0
 			: i + 1;
 	}
@@ -86,8 +86,8 @@ public:
 		head = tail = 0;
 	}
 
-	size_type GetSize() const {
-		return size;
+	constexpr size_type GetCapacity() const {
+		return capacity;
 	}
 
 	constexpr bool IsEmpty() const {
@@ -103,15 +103,15 @@ public:
 	 * When you are finished, call Append().
 	 */
 	Range Write() {
-		assert(head < size);
-		assert(tail < size);
+		assert(head < capacity);
+		assert(tail < capacity);
 
 		size_type end = tail < head
 			? head - 1
 			/* the "head==0" is there so we don't write
 			   the last cell, as this situation cannot be
 			   represented by head/tail */
-			: size - (head == 0);
+			: capacity - (head == 0);
 
 		return Range(data + tail, end - tail);
 	}
@@ -121,15 +121,15 @@ public:
 	 * to the buffer returned by Write().
 	 */
 	void Append(size_type n) {
-		assert(head < size);
-		assert(tail < size);
-		assert(n < size);
-		assert(tail + n <= size);
+		assert(head < capacity);
+		assert(tail < capacity);
+		assert(n < capacity);
+		assert(tail + n <= capacity);
 		assert(head <= tail || tail + n < head);
 
 		tail += n;
 
-		if (tail == size) {
+		if (tail == capacity) {
 			assert(head > 0);
 			tail = 0;
 		}
@@ -140,24 +140,24 @@ public:
 	 * writable, to allow modifications while parsing.
 	 */
 	Range Read() {
-		assert(head < size);
-		assert(tail < size);
+		assert(head < capacity);
+		assert(tail < capacity);
 
-		return Range(data + head, (tail < head ? size : tail) - head);
+		return Range(data + head, (tail < head ? capacity : tail) - head);
 	}
 
 	/**
 	 * Marks a chunk as consumed.
 	 */
 	void Consume(size_type n) {
-		assert(head < size);
-		assert(tail < size);
-		assert(n < size);
-		assert(head + n <= size);
+		assert(head < capacity);
+		assert(tail < capacity);
+		assert(n < capacity);
+		assert(head + n <= capacity);
 		assert(tail < head || head + n <= tail);
 
 		head += n;
-		if (head == size)
+		if (head == capacity)
 			head = 0;
 	}
 };

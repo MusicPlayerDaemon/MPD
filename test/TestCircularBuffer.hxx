@@ -24,6 +24,8 @@ public:
 		int data[N];
 		CircularBuffer<int> buffer(data, N);
 
+		CPPUNIT_ASSERT_EQUAL(size_t(N), buffer.GetCapacity());
+
 		/* '.' = empty; 'O' = occupied; 'X' = blocked */
 
 		/* checks on empty buffer */
