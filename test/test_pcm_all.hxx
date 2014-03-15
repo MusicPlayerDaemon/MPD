@@ -34,8 +34,6 @@ public:
 	void TestDither32();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(PcmDitherTest);
-
 class PcmPackTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(PcmPackTest);
 	CPPUNIT_TEST(TestPack24);
@@ -47,8 +45,6 @@ public:
 	void TestUnpack24();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(PcmPackTest);
-
 class PcmChannelsTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(PcmChannelsTest);
 	CPPUNIT_TEST(TestChannels16);
@@ -59,8 +55,6 @@ public:
 	void TestChannels16();
 	void TestChannels32();
 };
-
-CPPUNIT_TEST_SUITE_REGISTRATION(PcmChannelsTest);
 
 class PcmVolumeTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(PcmVolumeTest);
@@ -79,8 +73,6 @@ public:
 	void TestVolumeFloat();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(PcmVolumeTest);
-
 class PcmFormatTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(PcmFormatTest);
 	CPPUNIT_TEST(TestFormat8to16);
@@ -96,8 +88,6 @@ public:
 	void TestFormatFloat();
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(PcmFormatTest);
-
 class PcmMixTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(PcmMixTest);
 	CPPUNIT_TEST(TestMix8);
@@ -112,7 +102,5 @@ public:
 	void TestMix24();
 	void TestMix32();
 };
-
-CPPUNIT_TEST_SUITE_REGISTRATION(PcmMixTest);
 
 #endif

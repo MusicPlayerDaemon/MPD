@@ -25,6 +25,13 @@
 
 #include <stdlib.h>
 
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmDitherTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmPackTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmChannelsTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmVolumeTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmFormatTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(PcmMixTest);
+
 int
 main(gcc_unused int argc, gcc_unused char **argv)
 {
