@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "util/UriUtil.hxx"
+#include "TestCircularBuffer.hxx"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -50,6 +51,7 @@ public:
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UriUtilTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestCircularBuffer);
 
 int
 main(gcc_unused int argc, gcc_unused char **argv)

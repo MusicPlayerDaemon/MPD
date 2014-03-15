@@ -362,6 +362,7 @@ libutil_a_SOURCES = \
 	src/util/DynamicFifoBuffer.hxx \
 	src/util/ConstBuffer.hxx \
 	src/util/WritableBuffer.hxx \
+	src/util/CircularBuffer.hxx \
 	src/util/LazyRandomEngine.cxx src/util/LazyRandomEngine.hxx \
 	src/util/SliceBuffer.hxx \
 	src/util/HugeAllocator.cxx src/util/HugeAllocator.hxx \
@@ -1832,6 +1833,7 @@ test_run_inotify_LDADD = \
 endif
 
 test_test_util_SOURCES = \
+	test/TestCircularBuffer.hxx \
 	test/test_util.cxx
 test_test_util_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_util_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
