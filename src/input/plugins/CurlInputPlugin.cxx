@@ -153,7 +153,7 @@ struct CurlInputStream {
 	bool paused;
 
 	/** error message provided by libcurl */
-	char error[CURL_ERROR_SIZE];
+	char error_buffer[CURL_ERROR_SIZE];
 
 	/** parser for icy-metadata */
 	IcyMetaDataParser icy;
@@ -503,7 +503,7 @@ input_curl_request_done(CurlInputStream *c, CURLcode result, long status)
 
 	if (result != CURLE_OK) {
 		c->postponed_error.Format(curl_domain, result,
-					  "curl failed: %s", c->error);
+					  "curl failed: %s", c->error_buffer);
 	} else if (status < 200 || status >= 300) {
 		c->postponed_error.Format(http_domain, status,
 					  "got HTTP status %ld",
@@ -992,7 +992,7 @@ input_curl_easy_init(CurlInputStream *c, Error &error)
 	curl_easy_setopt(c->easy, CURLOPT_NETRC, 1);
 	curl_easy_setopt(c->easy, CURLOPT_MAXREDIRS, 5);
 	curl_easy_setopt(c->easy, CURLOPT_FAILONERROR, true);
-	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error);
+	curl_easy_setopt(c->easy, CURLOPT_ERRORBUFFER, c->error_buffer);
 	curl_easy_setopt(c->easy, CURLOPT_NOPROGRESS, 1l);
 	curl_easy_setopt(c->easy, CURLOPT_NOSIGNAL, 1l);
 	curl_easy_setopt(c->easy, CURLOPT_CONNECTTIMEOUT, 10l);
