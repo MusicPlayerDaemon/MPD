@@ -97,4 +97,24 @@ PcmFormatTest::TestFormatFloat()
 
 	for (size_t i = 0; i < N; ++i)
 		CPPUNIT_ASSERT_EQUAL(src[i], d[i]);
+
+	/* check if clamping works */
+	float *writable = const_cast<float *>(f.data);
+	*writable++ = 1.01;
+	*writable++ = 10;
+	*writable++ = -1.01;
+	*writable++ = -10;
+
+	d = pcm_convert_to_16(buffer2, dither,
+			      SampleFormat::FLOAT,
+			      f.ToVoid());
+	CPPUNIT_ASSERT_EQUAL(N, d.size);
+
+	CPPUNIT_ASSERT_EQUAL(32767, int(d[0]));
+	CPPUNIT_ASSERT_EQUAL(32767, int(d[1]));
+	CPPUNIT_ASSERT_EQUAL(-32768, int(d[2]));
+	CPPUNIT_ASSERT_EQUAL(-32768, int(d[3]));
+
+	for (size_t i = 4; i < N; ++i)
+		CPPUNIT_ASSERT_EQUAL(src[i], d[i]);
 }
