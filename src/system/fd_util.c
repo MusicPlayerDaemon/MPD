@@ -29,10 +29,6 @@
 #include "config.h" /* must be first for large file support */
 #include "fd_util.h"
 
-#if !defined(_GNU_SOURCE) && (defined(HAVE_PIPE2) || defined(HAVE_ACCEPT4))
-#define _GNU_SOURCE
-#endif
-
 #include <assert.h>
 #include <unistd.h>
 #include <fcntl.h>

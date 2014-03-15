@@ -42,10 +42,6 @@
 #include <stddef.h>
 
 #ifndef WIN32
-#if !defined(_GNU_SOURCE) && (defined(HAVE_PIPE2) || defined(HAVE_ACCEPT4))
-#define _GNU_SOURCE
-#endif
-
 #include <sys/types.h>
 #endif
 

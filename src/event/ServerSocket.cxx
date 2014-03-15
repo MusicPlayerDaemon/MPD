@@ -18,11 +18,6 @@
  */
 
 #include "config.h"
-
-#ifdef HAVE_STRUCT_UCRED
-#define _GNU_SOURCE 1
-#endif
-
 #include "ServerSocket.hxx"
 #include "system/SocketUtil.hxx"
 #include "system/SocketError.hxx"

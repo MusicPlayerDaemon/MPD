@@ -90,6 +90,9 @@ linux-android*)
 linux*)
 	host_is_linux=yes
 	linux_auto=auto
+
+	dnl allow using all glibc features
+	CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
 	;;
 
 mingw32* | windows*)
