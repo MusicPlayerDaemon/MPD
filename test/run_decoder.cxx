@@ -218,7 +218,7 @@ int main(int argc, char **argv)
 		Cond cond;
 
 		InputStream *is =
-			InputStream::Open(decoder.uri, mutex, cond, error);
+			InputStream::OpenReady(decoder.uri, mutex, cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
 				LogError(error);
