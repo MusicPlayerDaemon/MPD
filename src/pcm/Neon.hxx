@@ -44,13 +44,12 @@
  * @param func the NEON intrinsic
  * @param result the vector variable that gets assigned the result
  * @param vector the input vector
- * @param arg an additional argument that gets passed to each call
  */
-#define neon_x4_b(func, result, vector, arg) do { \
-	result.val[0] = func(vector.val[0], arg); \
-	result.val[1] = func(vector.val[1], arg); \
-	result.val[2] = func(vector.val[2], arg); \
-	result.val[3] = func(vector.val[3], arg); \
+#define neon_x4_b(func, result, vector, ...) do {  \
+	result.val[0] = func(vector.val[0], __VA_ARGS__); \
+	result.val[1] = func(vector.val[1], __VA_ARGS__); \
+	result.val[2] = func(vector.val[2], __VA_ARGS__); \
+	result.val[3] = func(vector.val[3], __VA_ARGS__); \
 } while (0)
 
 /**
