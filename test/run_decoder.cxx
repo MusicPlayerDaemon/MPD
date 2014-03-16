@@ -223,7 +223,7 @@ int main(int argc, char **argv)
 			if (error.IsDefined())
 				LogError(error);
 			else
-				fprintf(stderr, "input/InputStream::Open() failed\n");
+				fprintf(stderr, "InputStream::Open() failed\n");
 
 			return EXIT_FAILURE;
 		}

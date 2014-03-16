@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 				LogError(error);
 			else
 				fprintf(stderr,
-					"input/InputStream::Open() failed\n");
+					"InputStream::Open() failed\n");
 			return 2;
 		}
 
