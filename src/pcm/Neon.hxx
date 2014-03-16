@@ -68,21 +68,16 @@ struct NeonFloatTo16 {
 	static constexpr size_t BLOCK_SIZE = 16;
 
 	void Convert(int16_t *dst, const float *src, const size_t n) const {
-		const float32x4_t factor =
-			vdupq_n_f32(1 << (DstTraits::BITS - 1));
-
 		for (unsigned i = 0; i < n / BLOCK_SIZE;
 		     ++i, src += BLOCK_SIZE, dst += BLOCK_SIZE) {
 			/* load 16 float samples into 4 quad
 			   registers */
 			float32x4x4_t value = vld4q_f32(src);
 
-			/* apply factor */
-			neon_x4_b(vmulq_f32, value, value, factor);
-
 			/* convert to 32 bit integer */
 			int32x4x4_t ivalue;
-			neon_x4_u(vcvtq_s32_f32, ivalue, value);
+			neon_x4_b(vcvtq_n_s32_f32, ivalue, value,
+				  DstTraits::BITS - 1);
 
 			/* convert to 16 bit integer with saturation */
 			int16x4x4_t nvalue;
