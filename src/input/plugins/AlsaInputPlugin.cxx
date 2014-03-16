@@ -97,8 +97,6 @@ public:
 		   Needs to be generalised when/if that decoder is
 		   updated to support other audio formats */
 		base.mime = "audio/x-mpd-cdda-pcm";
-		base.seekable = false;
-		base.size = -1;
 		base.ready = true;
 		frames_to_read = read_buffer_size / frame_size;
 
