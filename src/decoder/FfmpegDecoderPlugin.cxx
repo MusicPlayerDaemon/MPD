@@ -496,7 +496,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 				av_stream->start_time;
 
 			if (av_seek_frame(format_context, audio_stream, where,
-					  AV_TIME_BASE) < 0)
+					  AVSEEK_FLAG_ANY) < 0)
 				decoder_seek_error(decoder);
 			else {
 				avcodec_flush_buffers(codec_context);
