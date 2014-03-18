@@ -63,6 +63,14 @@ struct ConstBuffer<void> {
 		return ConstBuffer(nullptr, 0);
 	}
 
+	constexpr static ConstBuffer<void> FromVoid(ConstBuffer<void> other) {
+		return other;
+	}
+
+	constexpr ConstBuffer<void> ToVoid() const {
+		return *this;
+	}
+
 	constexpr bool IsNull() const {
 		return data == nullptr;
 	}
