@@ -76,11 +76,13 @@ struct NeonFloatTo16 {
 			/* convert to 32 bit integer */
 			int32x4x4_t ivalue;
 			neon_x4_b(vcvtq_n_s32_f32, ivalue, value,
-				  DstTraits::BITS - 1);
+				  30);
 
-			/* convert to 16 bit integer with saturation */
+			/* convert to 16 bit integer with saturation
+			   and rounding */
 			int16x4x4_t nvalue;
-			neon_x4_u(vqmovn_s32, nvalue, ivalue);
+			neon_x4_b(vqrshrn_n_s32, nvalue, ivalue,
+				  30 - DstTraits::BITS + 1);
 
 			/* store result */
 			vst4_s16(dst, nvalue);
