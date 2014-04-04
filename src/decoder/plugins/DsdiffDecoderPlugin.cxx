@@ -355,7 +355,7 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
  */
 static bool
 dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
-		    unsigned channels,
+		    unsigned channels, unsigned sample_rate,
 		    uint64_t chunk_size)
 {
 	uint8_t buffer[8192];
@@ -385,7 +385,8 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 		if (lsbitfirst)
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
-		const auto cmd = decoder_data(decoder, is, buffer, nbytes, 0);
+		const auto cmd = decoder_data(decoder, is, buffer, nbytes,
+					      sample_rate / 1000);
 		switch (cmd) {
 		case DecoderCommand::NONE:
 			break;
@@ -440,6 +441,7 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 		if (chunk_header.id.Equals("DSD ")) {
 			if (!dsdiff_decode_chunk(decoder, is,
 						 metadata.channels,
+						 metadata.sample_rate,
 						 chunk_size))
 					break;
 		} else {

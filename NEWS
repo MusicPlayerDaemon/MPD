@@ -39,6 +39,7 @@ ver 0.19 (not yet released)
   - vorbis, flac, opus: honor DESCRIPTION= tag in Xiph-based files as a comment to the song
   - audiofile: support scanning remote files
   - audiofile: log libaudiofile errors
+  - dsdiff, dsf: report bit rate
   - sndfile: support scanning remote files
   - sndfile: support tags "comment", "album", "track", "genre"
   - mp4v2: support playback of MP4 files.

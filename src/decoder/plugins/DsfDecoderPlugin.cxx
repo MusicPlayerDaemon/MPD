@@ -219,7 +219,7 @@ dsf_to_pcm_order(uint8_t *dest, uint8_t *scratch, size_t nrbytes)
  */
 static bool
 dsf_decode_chunk(Decoder &decoder, InputStream &is,
-		 unsigned channels,
+		 unsigned channels, unsigned sample_rate,
 		 uint64_t chunk_size,
 		 bool bitreverse)
 {
@@ -256,7 +256,8 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 
 		dsf_to_pcm_order(buffer, dsf_scratch_buffer, nbytes);
 
-		const auto cmd = decoder_data(decoder, is, buffer, nbytes, 0);
+		const auto cmd = decoder_data(decoder, is, buffer, nbytes,
+					      sample_rate / 1000);
 		switch (cmd) {
 		case DecoderCommand::NONE:
 			break;
@@ -300,6 +301,7 @@ dsf_stream_decode(Decoder &decoder, InputStream &is)
 	decoder_initialized(decoder, audio_format, false, songtime);
 
 	if (!dsf_decode_chunk(decoder, is, metadata.channels,
+			      metadata.sample_rate,
 			      chunk_size,
 			      metadata.bitreverse))
 		return;
