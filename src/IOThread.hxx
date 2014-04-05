@@ -49,7 +49,7 @@ io_thread_quit(void);
 void
 io_thread_deinit(void);
 
-gcc_pure
+gcc_const
 EventLoop &
 io_thread_get();
 
