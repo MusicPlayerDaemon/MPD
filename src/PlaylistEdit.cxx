@@ -234,12 +234,8 @@ playlist::DeleteInternal(PlayerControl &pc,
 	if (playing && current == (int)songOrder) {
 		const bool paused = pc.GetState() == PlayerState::PAUSE;
 
-		/* the current song is going to be deleted: stop the player */
-
-		pc.Stop();
-		playing = false;
-
-		/* see which song is going to be played instead */
+		/* the current song is going to be deleted: see which
+		   song is going to be played instead */
 
 		current = queue.GetNextOrder(current);
 		if (current == (int)songOrder)
@@ -248,10 +244,12 @@ playlist::DeleteInternal(PlayerControl &pc,
 		if (current >= 0 && !paused)
 			/* play the song after the deleted one */
 			PlayOrder(pc, current);
-		else
-			/* no songs left to play, stop playback
-			   completely */
-			Stop(pc);
+		else {
+			/* stop the player */
+
+			pc.Stop();
+			playing = false;
+		}
 
 		*queued_p = nullptr;
 	} else if (current == (int)songOrder)

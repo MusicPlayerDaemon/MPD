@@ -3,6 +3,7 @@ ver 0.18.10 (not yet released)
   - ffmpeg: fix seeking bug
   - ffmpeg: handle unknown stream start time
   - gme: fix memory leak
+* don't interrupt playback when current song gets deleted
 
 ver 0.18.9 (2014/03/02)
 * protocol
