@@ -55,14 +55,28 @@ sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 {
 	InputStream &is = *(InputStream *)user_data;
 
+	sf_count_t total_bytes = 0;
 	Error error;
-	size_t nbytes = is.LockRead(ptr, count, error);
-	if (nbytes == 0 && error.IsDefined()) {
-		LogError(error);
-		return -1;
-	}
 
-	return nbytes;
+	/* this loop is necessary because libsndfile chokes on partial
+	   reads */
+
+	do {
+		size_t nbytes = is.LockRead((char *)ptr + total_bytes,
+					    count - total_bytes, error);
+		if (nbytes == 0) {
+			if (error.IsDefined()) {
+				LogError(error);
+				return -1;
+			}
+
+			break;
+		}
+
+		total_bytes += nbytes;
+	} while (total_bytes < count);
+
+	return total_bytes;
 }
 
 static sf_count_t
