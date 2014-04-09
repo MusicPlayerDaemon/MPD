@@ -156,6 +156,7 @@ IcuCaseFold(const char *src)
 	uint8_t *dest = new uint8_t[dest_length];
 	ucol_getSortKey(collator, u, u_length,
 			dest, dest_length);
+	delete[] u;
 	std::string result((const char *)dest);
 	delete[] dest;
 #elif defined(HAVE_GLIB)
