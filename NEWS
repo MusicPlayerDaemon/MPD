@@ -1,4 +1,4 @@
-ver 0.18.10 (not yet released)
+ver 0.18.10 (2014/04/10)
 * decoder
   - ffmpeg: fix seeking bug
   - ffmpeg: handle unknown stream start time
