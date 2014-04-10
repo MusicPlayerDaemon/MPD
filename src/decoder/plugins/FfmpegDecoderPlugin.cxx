@@ -197,6 +197,29 @@ time_to_ffmpeg(double t, const AVRational time_base)
 			    time_base);
 }
 
+/**
+ * Replace #AV_NOPTS_VALUE with the given fallback.
+ */
+static constexpr int64_t
+timestamp_fallback(int64_t t, int64_t fallback)
+{
+	return gcc_likely(t != int64_t(AV_NOPTS_VALUE))
+		? t
+		: fallback;
+}
+
+/**
+ * Accessor for AVStream::start_time that replaces AV_NOPTS_VALUE with
+ * zero.  We can't use AV_NOPTS_VALUE in calculations, and we simply
+ * assume that the stream's start time is zero, which appears to be
+ * the best way out of that situation.
+ */
+static int64_t
+start_time_fallback(const AVStream &stream)
+{
+	return timestamp_fallback(stream.start_time, 0);
+}
+
 static void
 copy_interleave_frame2(uint8_t *dest, uint8_t **src,
 		       unsigned nframes, unsigned nchannels,
@@ -263,7 +286,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 {
 	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE)
 		decoder_timestamp(decoder,
-				  time_from_ffmpeg(packet->pts - stream->start_time,
+				  time_from_ffmpeg(packet->pts - start_time_fallback(*stream),
 				  stream->time_base));
 
 	AVPacket packet2 = *packet;
@@ -496,10 +519,10 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 			int64_t where =
 				time_to_ffmpeg(decoder_seek_where(decoder),
 					       av_stream->time_base) +
-				av_stream->start_time;
+				start_time_fallback(*av_stream);
 
 			if (av_seek_frame(format_context, audio_stream, where,
-					  AV_TIME_BASE) < 0)
+					  AVSEEK_FLAG_ANY) < 0)
 				decoder_seek_error(decoder);
 			else {
 				avcodec_flush_buffers(codec_context);

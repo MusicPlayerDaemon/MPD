@@ -41,6 +41,14 @@ ver 0.19 (not yet released)
 * install systemd unit for socket activation
 * Android port
 
+ver 0.18.10 (2014/04/10)
+* decoder
+  - ffmpeg: fix seeking bug
+  - ffmpeg: handle unknown stream start time
+  - gme: fix memory leak
+  - sndfile: work around libsndfile bug on partial read
+* don't interrupt playback when current song gets deleted
+
 ver 0.18.9 (2014/03/02)
 * protocol
   - "findadd" requires the "add" permission

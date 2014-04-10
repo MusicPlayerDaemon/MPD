@@ -120,6 +120,7 @@ gme_container_scan(Path path_fs, const unsigned int tnum)
 	}
 
 	const unsigned num_songs = gme_track_count(emu);
+	gme_delete(emu);
 	/* if it only contains a single tune, don't treat as container */
 	if (num_songs < 2)
 		return nullptr;
