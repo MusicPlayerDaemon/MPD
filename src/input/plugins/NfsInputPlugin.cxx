@@ -29,6 +29,7 @@ extern "C" {
 #include <nfsc/libnfs.h>
 }
 
+#include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
