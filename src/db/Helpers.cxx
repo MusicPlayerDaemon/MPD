@@ -26,6 +26,7 @@
 #include <functional>
 #include <set>
 
+#include <assert.h>
 #include <string.h>
 
 struct StringLess {
@@ -40,12 +41,13 @@ typedef std::set<const char *, StringLess> StringSet;
 static bool
 CollectTags(StringSet &set, TagType tag_type, const LightSong &song)
 {
-	const Tag *tag = song.tag;
+	assert(song.tag != nullptr);
+	const Tag &tag = *song.tag;
 
 	bool found = false;
-	for (unsigned i = 0; i < tag->num_items; ++i) {
-		if (tag->items[i]->type == tag_type) {
-			set.insert(tag->items[i]->value);
+	for (unsigned i = 0; i < tag.num_items; ++i) {
+		if (tag.items[i]->type == tag_type) {
+			set.insert(tag.items[i]->value);
 			found = true;
 		}
 	}
