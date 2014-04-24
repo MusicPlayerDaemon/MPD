@@ -31,6 +31,7 @@
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -231,8 +232,10 @@ static CommandResult
 handle_playlist_match(Client &client, int argc, char *argv[],
 		      bool fold_case)
 {
+	ConstBuffer<const char *> args(argv + 1, argc - 1);
+
 	SongFilter filter;
-	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
+	if (!filter.Parse(args, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}

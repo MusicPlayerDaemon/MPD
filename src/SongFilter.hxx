@@ -35,6 +35,7 @@
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
 
+template<typename T> struct ConstBuffer;
 struct Tag;
 struct TagItem;
 struct Song;
@@ -101,8 +102,7 @@ public:
 	gcc_nonnull(2,3)
 	bool Parse(const char *tag, const char *value, bool fold_case=false);
 
-	gcc_nonnull(3)
-	bool Parse(unsigned argc, char *argv[], bool fold_case=false);
+	bool Parse(ConstBuffer<const char *> args, bool fold_case=false);
 
 	gcc_pure
 	bool Match(const Tag &tag) const;

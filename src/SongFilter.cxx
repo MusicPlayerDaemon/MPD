@@ -22,6 +22,7 @@
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 #include "lib/icu/Collate.hxx"
@@ -181,13 +182,13 @@ SongFilter::Parse(const char *tag_string, const char *value, bool fold_case)
 }
 
 bool
-SongFilter::Parse(unsigned argc, char *argv[], bool fold_case)
+SongFilter::Parse(ConstBuffer<const char *> args, bool fold_case)
 {
-	if (argc == 0 || argc % 2 != 0)
+	if (args.size == 0 || args.size % 2 != 0)
 		return false;
 
-	for (unsigned i = 0; i < argc; i += 2)
-		if (!Parse(argv[i], argv[i + 1], fold_case))
+	for (unsigned i = 0; i < args.size; i += 2)
+		if (!Parse(args[i], args[i + 1], fold_case))
 			return false;
 
 	return true;

@@ -27,6 +27,7 @@
 #include "CommandError.hxx"
 #include "client/Client.hxx"
 #include "tag/Tag.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "SongFilter.hxx"
 #include "protocol/Result.hxx"
@@ -63,8 +64,10 @@ handle_lsinfo2(Client &client, int argc, char *argv[])
 static CommandResult
 handle_match(Client &client, int argc, char *argv[], bool fold_case)
 {
+	ConstBuffer<const char *> args(argv + 1, argc - 1);
+
 	SongFilter filter;
-	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
+	if (!filter.Parse(args, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
@@ -92,8 +95,10 @@ handle_search(Client &client, int argc, char *argv[])
 static CommandResult
 handle_match_add(Client &client, int argc, char *argv[], bool fold_case)
 {
+	ConstBuffer<const char *> args(argv + 1, argc - 1);
+
 	SongFilter filter;
-	if (!filter.Parse(argc - 1, argv + 1, fold_case)) {
+	if (!filter.Parse(args, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
@@ -120,10 +125,11 @@ handle_searchadd(Client &client, int argc, char *argv[])
 CommandResult
 handle_searchaddpl(Client &client, int argc, char *argv[])
 {
-	const char *playlist = argv[1];
+	ConstBuffer<const char *> args(argv + 1, argc - 1);
+	const char *playlist = args.shift();
 
 	SongFilter filter;
-	if (!filter.Parse(argc - 2, argv + 2, true)) {
+	if (!filter.Parse(args, true)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
@@ -142,8 +148,10 @@ handle_searchaddpl(Client &client, int argc, char *argv[])
 CommandResult
 handle_count(Client &client, int argc, char *argv[])
 {
+	ConstBuffer<const char *> args(argv + 1, argc - 1);
+
 	SongFilter filter;
-	if (!filter.Parse(argc - 1, argv + 1, false)) {
+	if (!filter.Parse(args, false)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
@@ -191,8 +199,10 @@ handle_list(Client &client, int argc, char *argv[])
 
 		filter = new SongFilter((unsigned)TAG_ARTIST, argv[2]);
 	} else if (argc > 2) {
+		ConstBuffer<const char *> args(argv + 2, argc - 2);
+
 		filter = new SongFilter();
-		if (!filter->Parse(argc - 2, argv + 2, false)) {
+		if (!filter->Parse(args, false)) {
 			delete filter;
 			command_error(client, ACK_ERROR_ARG,
 				      "not able to parse args");
