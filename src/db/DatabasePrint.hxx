@@ -22,6 +22,8 @@
 
 #include "Compiler.h"
 
+#include <stdint.h>
+
 class SongFilter;
 struct DatabaseSelection;
 class Client;
@@ -51,7 +53,7 @@ searchStatsForSongsIn(Client &client, const char *name,
 		      Error &error);
 
 bool
-listAllUniqueTags(Client &client, unsigned type,
+listAllUniqueTags(Client &client, unsigned type, uint32_t group_mask,
 		  const SongFilter *filter,
 		  Error &error);
 

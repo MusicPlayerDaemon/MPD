@@ -334,11 +334,12 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 
 bool
 SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-				TagType tag_type,
-				VisitString visit_string,
+				TagType tag_type, uint32_t group_mask,
+				VisitTag visit_tag,
 				Error &error) const
 {
-	return ::VisitUniqueTags(*this, selection, tag_type, visit_string,
+	return ::VisitUniqueTags(*this, selection, tag_type, group_mask,
+				 visit_tag,
 				 error);
 }
 

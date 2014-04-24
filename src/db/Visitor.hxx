@@ -25,6 +25,7 @@
 struct LightDirectory;
 struct LightSong;
 struct PlaylistInfo;
+struct Tag;
 class Error;
 
 typedef std::function<bool(const LightDirectory &, Error &)> VisitDirectory;
@@ -32,6 +33,6 @@ typedef std::function<bool(const LightSong &, Error &)> VisitSong;
 typedef std::function<bool(const PlaylistInfo &, const LightDirectory &,
 			   Error &)> VisitPlaylist;
 
-typedef std::function<bool(const char *, Error &)> VisitString;
+typedef std::function<bool(const Tag &, Error &)> VisitTag;
 
 #endif

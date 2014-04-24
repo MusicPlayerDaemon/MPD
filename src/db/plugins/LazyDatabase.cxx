@@ -85,12 +85,13 @@ LazyDatabase::Visit(const DatabaseSelection &selection,
 
 bool
 LazyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-			      TagType tag_type,
-			      VisitString visit_string,
+			      TagType tag_type, uint32_t group_mask,
+			      VisitTag visit_tag,
 			      Error &error) const
 {
 	return EnsureOpen(error) &&
-		db->VisitUniqueTags(selection, tag_type, visit_string, error);
+		db->VisitUniqueTags(selection, tag_type, group_mask, visit_tag,
+				    error);
 }
 
 bool

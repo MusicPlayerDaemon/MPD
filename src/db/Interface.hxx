@@ -25,6 +25,7 @@
 #include "Compiler.h"
 
 #include <time.h>
+#include <stdint.h>
 
 struct DatabasePlugin;
 struct DatabaseStats;
@@ -106,8 +107,8 @@ public:
 	 * Visit all unique tag values.
 	 */
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type,
-				     VisitString visit_string,
+				     TagType tag_type, uint32_t group_mask,
+				     VisitTag visit_tag,
 				     Error &error) const = 0;
 
 	virtual bool GetStats(const DatabaseSelection &selection,

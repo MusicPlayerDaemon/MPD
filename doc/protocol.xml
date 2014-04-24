@@ -1559,6 +1559,9 @@ OK
               <arg choice="opt"><replaceable>FILTERTYPE</replaceable></arg>
               <arg choice="opt"><replaceable>FILTERWHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">group</arg>
+              <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -1573,6 +1576,13 @@ OK
               linkend="command_find"><command>find</command>
               command</link>.
             </para>
+            <para>
+              The <parameter>group</parameter> keyword may be used
+              (repeatedly) to group the results by one or more tags.
+              The following example lists all album names,
+              grouped by their respective (album) artist:
+            </para>
+            <programlisting>list album group albumartist</programlisting>
           </listitem>
         </varlistentry>
 

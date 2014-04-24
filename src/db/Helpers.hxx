@@ -23,6 +23,8 @@
 #include "Visitor.hxx"
 #include "tag/TagType.h"
 
+#include <stdint.h>
+
 class Error;
 class Database;
 struct DatabaseSelection;
@@ -30,8 +32,8 @@ struct DatabaseStats;
 
 bool
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		TagType tag_type,
-		VisitString visit_string,
+		TagType tag_type, uint32_t group_mask,
+		VisitTag visit_tag,
 		Error &error);
 
 bool

@@ -94,8 +94,8 @@ public:
 			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type,
-				     VisitString visit_string,
+				     TagType tag_type, uint32_t group_mask,
+				     VisitTag visit_tag,
 				     Error &error) const override;
 
 	virtual bool GetStats(const DatabaseSelection &selection,
@@ -721,11 +721,13 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 
 bool
 UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-			      TagType tag,
-			      VisitString visit_string,
+			      TagType tag, gcc_unused uint32_t group_mask,
+			      VisitTag visit_tag,
 			      Error &error) const
 {
-	if (!visit_string)
+	// TODO: use group_mask
+
+	if (!visit_tag)
 		return true;
 
 	std::vector<ContentDirectoryService> servers;
@@ -754,9 +756,12 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		}
 	}
 
-	for (const auto& value : values)
-		if (!visit_string(value.c_str(), error))
+	for (const auto& value : values) {
+		TagBuilder builder;
+		builder.AddItem(tag, value.c_str());
+		if (!visit_tag(builder.Commit(), error))
 			return false;
+	}
 
 	return true;
 }

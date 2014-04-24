@@ -32,6 +32,8 @@
 #include "SongFilter.hxx"
 #include "protocol/Result.hxx"
 
+#include <string.h>
+
 CommandResult
 handle_listfiles_db(Client &client, const char *uri)
 {
@@ -191,6 +193,7 @@ handle_list(Client &client, int argc, char *argv[])
 	}
 
 	SongFilter *filter = nullptr;
+	uint32_t group_mask = 0;
 
 	if (args.size == 1) {
 		/* for compatibility with < 0.12.0 */
@@ -202,6 +205,22 @@ handle_list(Client &client, int argc, char *argv[])
 		}
 
 		filter = new SongFilter((unsigned)TAG_ARTIST, args.shift());
+	}
+
+	while (args.size >= 2 &&
+	       strcmp(args[args.size - 2], "group") == 0) {
+		const char *s = args[args.size - 1];
+		TagType gt = tag_name_parse_i(s);
+		if (gt == TAG_NUM_OF_ITEM_TYPES) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Unknown tag type: %s", s);
+			return CommandResult::ERROR;
+		}
+
+		group_mask |= 1u << unsigned(gt);
+
+		args.pop_back();
+		args.pop_back();
 	}
 
 	if (!args.IsEmpty()) {
@@ -216,7 +235,7 @@ handle_list(Client &client, int argc, char *argv[])
 
 	Error error;
 	CommandResult ret =
-		listAllUniqueTags(client, tagType, filter, error)
+		listAllUniqueTags(client, tagType, group_mask, filter, error)
 		? CommandResult::OK
 		: print_error(client, error);
 

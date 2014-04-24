@@ -112,8 +112,8 @@ public:
 			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type,
-				     VisitString visit_string,
+				     TagType tag_type, uint32_t group_mask,
+				     VisitTag visit_tag,
 				     Error &error) const override;
 
 	virtual bool GetStats(const DatabaseSelection &selection,
@@ -715,7 +715,8 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 bool
 ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       TagType tag_type,
-			       VisitString visit_string,
+			       gcc_unused uint32_t group_mask,
+			       VisitTag visit_tag,
 			       Error &error) const
 {
 	// TODO: eliminate the const_cast
@@ -734,6 +735,8 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	if (!SendConstraints(connection, selection))
 		return CheckError(connection, error);
 
+	// TODO: use group_mask
+
 	if (!mpd_search_commit(connection))
 		return CheckError(connection, error);
 
@@ -742,7 +745,9 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	struct mpd_pair *pair;
 	while (result &&
 	       (pair = mpd_recv_pair_tag(connection, tag_type2)) != nullptr) {
-		result = visit_string(pair->value, error);
+		TagBuilder tag;
+		tag.AddItem(tag_type, pair->value);
+		result = visit_tag(tag.Commit(), error);
 		mpd_return_pair(connection, pair);
 	}
 

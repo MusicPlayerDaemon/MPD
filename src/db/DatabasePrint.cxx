@@ -238,14 +238,24 @@ PrintSongURIVisitor(Client &client, const LightSong &song)
 
 static bool
 PrintUniqueTag(Client &client, TagType tag_type,
-	       const char *value)
+	       const Tag &tag)
 {
+	const char *value = tag.GetValue(tag_type);
+	assert(value != nullptr);
 	client_printf(client, "%s: %s\n", tag_item_names[tag_type], value);
+
+	for (unsigned i = 0, n = tag.num_items; i < n; i++) {
+		const TagItem &item = *tag.items[i];
+		if (item.type != tag_type)
+			client_printf(client, "%s: %s\n",
+				      tag_item_names[item.type], item.value);
+	}
+
 	return true;
 }
 
 bool
-listAllUniqueTags(Client &client, unsigned type,
+listAllUniqueTags(Client &client, unsigned type, uint32_t group_mask,
 		  const SongFilter *filter,
 		  Error &error)
 {
@@ -267,6 +277,7 @@ listAllUniqueTags(Client &client, unsigned type,
 		const auto f = std::bind(PrintUniqueTag, std::ref(client),
 					 (TagType)type, _1);
 		return db->VisitUniqueTags(selection, (TagType)type,
+					   group_mask,
 					   f, error);
 	}
 }
