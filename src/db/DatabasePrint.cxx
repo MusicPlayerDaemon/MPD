@@ -173,10 +173,11 @@ struct SearchStats {
 	unsigned long playTime;
 };
 
-static void printSearchStats(Client &client, SearchStats *stats)
+static void
+printSearchStats(Client &client, const SearchStats &stats)
 {
-	client_printf(client, "songs: %u\n", stats->numberOfSongs);
-	client_printf(client, "playtime: %lu\n", stats->playTime);
+	client_printf(client, "songs: %u\n", stats.numberOfSongs);
+	client_printf(client, "playtime: %lu\n", stats.playTime);
 }
 
 static bool
@@ -209,7 +210,7 @@ searchStatsForSongsIn(Client &client, const char *name,
 	if (!db->Visit(selection, f, error))
 		return false;
 
-	printSearchStats(client, &stats);
+	printSearchStats(client, stats);
 	return true;
 }
 
