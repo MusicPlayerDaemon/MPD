@@ -176,8 +176,10 @@ struct SearchStats {
 static void
 printSearchStats(Client &client, const SearchStats &stats)
 {
-	client_printf(client, "songs: %u\n", stats.numberOfSongs);
-	client_printf(client, "playtime: %lu\n", stats.playTime);
+	client_printf(client,
+		      "songs: %u\n"
+		      "playtime: %lu\n",
+		      stats.numberOfSongs, stats.playTime);
 }
 
 static bool
