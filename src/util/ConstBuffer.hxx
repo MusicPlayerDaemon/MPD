@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2014 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -86,6 +86,8 @@ struct ConstBuffer<void> {
 template<typename T>
 struct ConstBuffer {
 	typedef size_t size_type;
+	typedef const T &reference_type;
+	typedef reference_type const_reference_type;
 	typedef const T *pointer_type;
 	typedef pointer_type const_pointer_type;
 	typedef pointer_type iterator;
@@ -155,7 +157,7 @@ struct ConstBuffer {
 #ifdef NDEBUG
 	constexpr
 #endif
-	const T &operator[](size_type i) const {
+	reference_type operator[](size_type i) const {
 #ifndef NDEBUG
 		assert(i < size);
 #endif
