@@ -184,9 +184,9 @@ handle_list(Client &client, int argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	/* for compatibility with < 0.12.0 */
 	SongFilter *filter;
 	if (argc == 3) {
+		/* for compatibility with < 0.12.0 */
 		if (tagType != TAG_ALBUM) {
 			command_error(client, ACK_ERROR_ARG,
 				      "should be \"%s\" for 3 arguments",
