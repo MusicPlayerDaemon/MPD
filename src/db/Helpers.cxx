@@ -39,20 +39,26 @@ struct StringLess {
 typedef std::set<const char *, StringLess> StringSet;
 
 static bool
-CollectTags(StringSet &set, TagType tag_type, const LightSong &song)
+CheckUniqueTag(StringSet &set, const Tag &tag, TagType type)
 {
-	assert(song.tag != nullptr);
-	const Tag &tag = *song.tag;
-
 	bool found = false;
 	for (unsigned i = 0; i < tag.num_items; ++i) {
-		if (tag.items[i]->type == tag_type) {
+		if (tag.items[i]->type == type) {
 			set.insert(tag.items[i]->value);
 			found = true;
 		}
 	}
 
-	if (!found)
+	return found;
+}
+
+static bool
+CollectTags(StringSet &set, TagType tag_type, const LightSong &song)
+{
+	assert(song.tag != nullptr);
+	const Tag &tag = *song.tag;
+
+	if (!CheckUniqueTag(set, tag, tag_type))
 		set.insert("");
 
 	return true;
