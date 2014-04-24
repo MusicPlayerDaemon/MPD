@@ -173,14 +173,9 @@ handle_list(Client &client, int argc, char *argv[])
 {
 	unsigned tagType = locate_parse_type(argv[1]);
 
-	if (tagType == TAG_NUM_OF_ITEM_TYPES) {
+	if (tagType >= TAG_NUM_OF_ITEM_TYPES &&
+	    tagType != LOCATE_TAG_FILE_TYPE) {
 		command_error(client, ACK_ERROR_ARG, "\"%s\" is not known", argv[1]);
-		return CommandResult::ERROR;
-	}
-
-	if (tagType == LOCATE_TAG_ANY_TYPE) {
-		command_error(client, ACK_ERROR_ARG,
-			      "\"any\" is not a valid return tag type");
 		return CommandResult::ERROR;
 	}
 

@@ -261,6 +261,8 @@ listAllUniqueTags(Client &client, unsigned type,
 					 std::ref(client), _1);
 		return db->Visit(selection, f, error);
 	} else {
+		assert(type < TAG_NUM_OF_ITEM_TYPES);
+
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintUniqueTag, std::ref(client),
 					 (TagType)type, _1);
