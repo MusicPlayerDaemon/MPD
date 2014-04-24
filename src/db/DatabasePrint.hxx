@@ -51,7 +51,7 @@ searchStatsForSongsIn(Client &client, const char *name,
 		      Error &error);
 
 bool
-listAllUniqueTags(Client &client, int type,
+listAllUniqueTags(Client &client, unsigned type,
 		  const SongFilter *filter,
 		  Error &error);
 

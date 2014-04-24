@@ -245,7 +245,7 @@ PrintUniqueTag(Client &client, TagType tag_type,
 }
 
 bool
-listAllUniqueTags(Client &client, int type,
+listAllUniqueTags(Client &client, unsigned type,
 		  const SongFilter *filter,
 		  Error &error)
 {
