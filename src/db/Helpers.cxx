@@ -23,6 +23,7 @@
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
+#include "tag/Set.hxx"
 
 #include <functional>
 #include <set>
@@ -38,30 +39,6 @@ struct StringLess {
 };
 
 typedef std::set<const char *, StringLess> StringSet;
-
-struct TagLess {
-	gcc_pure
-	bool operator()(const Tag &a, const Tag &b) const {
-		if (a.num_items != b.num_items)
-			return a.num_items < b.num_items;
-
-		const unsigned n = a.num_items;
-		for (unsigned i = 0; i < n; ++i) {
-			const TagItem &ai = *a.items[i];
-			const TagItem &bi = *b.items[i];
-			if (ai.type != bi.type)
-				return unsigned(ai.type) < unsigned(bi.type);
-
-			const int cmp = strcmp(ai.value, bi.value);
-			if (cmp != 0)
-				return cmp < 0;
-		}
-
-		return false;
-	}
-};
-
-typedef std::set<Tag, TagLess> TagSet;
 
 /**
  * Copy all tag items of the specified type.

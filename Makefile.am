@@ -714,6 +714,7 @@ libtag_a_SOURCES =\
 	src/tag/TagString.cxx src/tag/TagString.hxx \
 	src/tag/TagPool.cxx src/tag/TagPool.hxx \
 	src/tag/TagTable.cxx src/tag/TagTable.hxx \
+	src/tag/Set.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
