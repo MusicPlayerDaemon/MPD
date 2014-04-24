@@ -1550,27 +1550,32 @@ OK
             </para>
           </listitem>
         </varlistentry>
+
         <varlistentry id="command_list">
           <term>
             <cmdsynopsis>
               <command>list</command>
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
-              <arg><replaceable>ARTIST</replaceable></arg>
+              <arg choice="opt"><replaceable>FILTERTYPE</replaceable></arg>
+              <arg choice="opt"><replaceable>FILTERWHAT</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Lists all tags of the specified type.
+              Lists unique tags values of the specified type.
               <varname>TYPE</varname> can be any tag supported by MPD or
               <parameter>file</parameter>.
             </para>
             <para>
-              <varname>ARTIST</varname> is an optional parameter when
-              type is album, this specifies to list albums by an
-              artist.
+              Additional arguments may specify a filter like the one
+              in the <link
+              linkend="command_find"><command>find</command>
+              command</link>.
             </para>
           </listitem>
         </varlistentry>
+
         <varlistentry id="command_listall">
           <term>
             <cmdsynopsis>
