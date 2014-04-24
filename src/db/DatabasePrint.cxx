@@ -169,14 +169,14 @@ db_selection_print(Client &client, const DatabaseSelection &selection,
 }
 
 struct SearchStats {
-	int numberOfSongs;
+	unsigned numberOfSongs;
 	unsigned long playTime;
 };
 
 static void printSearchStats(Client &client, SearchStats *stats)
 {
-	client_printf(client, "songs: %i\n", stats->numberOfSongs);
-	client_printf(client, "playtime: %li\n", stats->playTime);
+	client_printf(client, "songs: %u\n", stats->numberOfSongs);
+	client_printf(client, "playtime: %lu\n", stats->playTime);
 }
 
 static bool
