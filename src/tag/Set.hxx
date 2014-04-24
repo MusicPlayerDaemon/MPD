@@ -26,6 +26,7 @@
 #include <set>
 
 #include <string.h>
+#include <stdint.h>
 
 /**
  * Helper class for #TagSet which compares two #Tag objects.
@@ -55,6 +56,18 @@ struct TagLess {
 /**
  * A set of #Tag objects.
  */
-typedef std::set<Tag, TagLess> TagSet;
+class TagSet : public std::set<Tag, TagLess> {
+public:
+	void InsertUnique(const Tag &tag,
+			  TagType type, uint32_t group_mask);
+
+private:
+	void InsertUnique(const Tag &src, TagType type, const char *value,
+			  uint32_t group_mask);
+
+	bool CheckUnique(TagType dest_type,
+			 const Tag &tag, TagType src_type,
+			 uint32_t group_mask);
+};
 
 #endif
