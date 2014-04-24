@@ -179,16 +179,20 @@ handle_listall(Client &client, gcc_unused int argc, char *argv[])
 CommandResult
 handle_list(Client &client, int argc, char *argv[])
 {
-	unsigned tagType = locate_parse_type(argv[1]);
+	ConstBuffer<const char *> args(argv + 1, argc - 1);
+	const char *tag_name = args.shift();
+	unsigned tagType = locate_parse_type(tag_name);
 
 	if (tagType >= TAG_NUM_OF_ITEM_TYPES &&
 	    tagType != LOCATE_TAG_FILE_TYPE) {
-		command_error(client, ACK_ERROR_ARG, "\"%s\" is not known", argv[1]);
+		command_error(client, ACK_ERROR_ARG,
+			      "Unknown tag type: %s", tag_name);
 		return CommandResult::ERROR;
 	}
 
-	SongFilter *filter;
-	if (argc == 3) {
+	SongFilter *filter = nullptr;
+
+	if (args.size == 1) {
 		/* for compatibility with < 0.12.0 */
 		if (tagType != TAG_ALBUM) {
 			command_error(client, ACK_ERROR_ARG,
@@ -197,10 +201,10 @@ handle_list(Client &client, int argc, char *argv[])
 			return CommandResult::ERROR;
 		}
 
-		filter = new SongFilter((unsigned)TAG_ARTIST, argv[2]);
-	} else if (argc > 2) {
-		ConstBuffer<const char *> args(argv + 2, argc - 2);
+		filter = new SongFilter((unsigned)TAG_ARTIST, args.shift());
+	}
 
+	if (!args.IsEmpty()) {
 		filter = new SongFilter();
 		if (!filter->Parse(args, false)) {
 			delete filter;
@@ -208,8 +212,7 @@ handle_list(Client &client, int argc, char *argv[])
 				      "not able to parse args");
 			return CommandResult::ERROR;
 		}
-	} else
-		filter = nullptr;
+	}
 
 	Error error;
 	CommandResult ret =
