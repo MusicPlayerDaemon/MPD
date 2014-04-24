@@ -164,6 +164,65 @@ struct ConstBuffer {
 
 		return data[i];
 	}
+
+	/**
+	 * Returns a reference to the first element.  Buffer must not
+	 * be empty.
+	 */
+#ifdef NDEBUG
+	constexpr
+#endif
+	reference_type front() const {
+#ifndef NDEBUG
+		assert(!IsEmpty());
+#endif
+		return data[0];
+	}
+
+	/**
+	 * Returns a reference to the last element.  Buffer must not
+	 * be empty.
+	 */
+#ifdef NDEBUG
+	constexpr
+#endif
+	reference_type back() const {
+#ifndef NDEBUG
+		assert(!IsEmpty());
+#endif
+		return data[size - 1];
+	}
+
+	/**
+	 * Remove the first element (by moving the head pointer, does
+	 * not actually modify the buffer).  Buffer must not be empty.
+	 */
+	void pop_front() {
+		assert(!IsEmpty());
+
+		++data;
+		--size;
+	}
+
+	/**
+	 * Remove the last element (by moving the tail pointer, does
+	 * not actually modify the buffer).  Buffer must not be empty.
+	 */
+	void pop_back() {
+		assert(!IsEmpty());
+
+		--size;
+	}
+
+	/**
+	 * Remove the first element and return a reference to it.
+	 * Buffer must not be empty.
+	 */
+	reference_type shift() {
+		reference_type result = front();
+		pop_front();
+		return result;
+	}
 };
 
 #endif
