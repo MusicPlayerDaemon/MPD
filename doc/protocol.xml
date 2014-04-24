@@ -1525,7 +1525,7 @@ OK
               parameters — <parameter>file</parameter> to search by
 
               full path (relative to the music directory),
-              <parameter>in</parameter> to restrict the search to
+              <parameter>base</parameter> to restrict the search to
               songs in the given directory (also relative to the music
               directory) and
               <parameter>any</parameter> to match against all
