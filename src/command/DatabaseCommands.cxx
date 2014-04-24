@@ -173,7 +173,8 @@ handle_listall(Client &client, gcc_unused int argc, char *argv[])
 		directory = argv[1];
 
 	Error error;
-	return printAllIn(client, directory, error)
+	return db_selection_print(client, DatabaseSelection(directory, true),
+				  false, false, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
@@ -253,7 +254,8 @@ handle_listallinfo(Client &client, gcc_unused int argc, char *argv[])
 		directory = argv[1];
 
 	Error error;
-	return printInfoForAllIn(client, directory, error)
+	return db_selection_print(client, DatabaseSelection(directory, true),
+				  true, false, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }

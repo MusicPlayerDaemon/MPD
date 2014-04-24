@@ -216,21 +216,6 @@ searchStatsForSongsIn(Client &client, const char *name,
 	return true;
 }
 
-bool
-printAllIn(Client &client, const char *uri_utf8, Error &error)
-{
-	const DatabaseSelection selection(uri_utf8, true);
-	return db_selection_print(client, selection, false, false, error);
-}
-
-bool
-printInfoForAllIn(Client &client, const char *uri_utf8,
-		  Error &error)
-{
-	const DatabaseSelection selection(uri_utf8, true);
-	return db_selection_print(client, selection, true, false, error);
-}
-
 static bool
 PrintSongURIVisitor(Client &client, const LightSong &song)
 {
