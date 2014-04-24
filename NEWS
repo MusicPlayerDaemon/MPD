@@ -5,6 +5,7 @@ ver 0.19 (not yet released)
   - "listneighbors" lists file servers on the local network
   - "playlistadd" supports file:///
   - "idle" with unrecognized event name fails
+  - "list" on album artist falls back to the artist tag
 * database
   - proxy: forward "idle" events
   - proxy: copy "Last-Modified" from remote directories

@@ -58,7 +58,10 @@ CollectTags(StringSet &set, TagType tag_type, const LightSong &song)
 	assert(song.tag != nullptr);
 	const Tag &tag = *song.tag;
 
-	if (!CheckUniqueTag(set, tag, tag_type))
+	if (!CheckUniqueTag(set, tag, tag_type) &&
+	    (tag_type != TAG_ALBUM_ARTIST ||
+	     /* fall back to "Artist" if no "AlbumArtist" was found */
+	     !CheckUniqueTag(set, tag, TAG_ARTIST)))
 		set.insert("");
 
 	return true;
