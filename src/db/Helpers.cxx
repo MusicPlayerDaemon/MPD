@@ -194,11 +194,19 @@ StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 
 		switch (item.type) {
 		case TAG_ARTIST:
+#if defined(__clang__) || GCC_CHECK_VERSION(4,8)
+			artists.emplace(item.value);
+#else
 			artists.insert(item.value);
+#endif
 			break;
 
 		case TAG_ALBUM:
+#if defined(__clang__) || GCC_CHECK_VERSION(4,8)
+			albums.emplace(item.value);
+#else
 			albums.insert(item.value);
+#endif
 			break;
 
 		default:
