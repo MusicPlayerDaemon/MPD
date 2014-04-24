@@ -219,6 +219,16 @@ TagBuilder::AddItem(TagType type, const char *value)
 }
 
 void
+TagBuilder::AddEmptyItem(TagType type)
+{
+	tag_pool_lock.lock();
+	auto i = tag_pool_get_item(type, "", 0);
+	tag_pool_lock.unlock();
+
+	items.push_back(i);
+}
+
+void
 TagBuilder::RemoveAll()
 {
 	tag_pool_lock.lock();

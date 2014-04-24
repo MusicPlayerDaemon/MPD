@@ -154,6 +154,13 @@ public:
 	void AddItem(TagType type, const char *value);
 
 	/**
+	 * Appends a new tag item with an empty value.  Do not use
+	 * this unless you know what you're doing - because usually,
+	 * empty values are discarded.
+	 */
+	void AddEmptyItem(TagType type);
+
+	/**
 	 * Removes all tag items.
 	 */
 	void RemoveAll();
