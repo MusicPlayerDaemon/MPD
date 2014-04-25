@@ -234,6 +234,13 @@ handle_list(Client &client, int argc, char *argv[])
 		}
 	}
 
+	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
+	    group_mask & (1u << tagType)) {
+		delete filter;
+		command_error(client, ACK_ERROR_ARG, "Conflicting group");
+		return CommandResult::ERROR;
+	}
+
 	Error error;
 	CommandResult ret =
 		listAllUniqueTags(client, tagType, group_mask, filter, error)
