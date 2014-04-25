@@ -17,16 +17,43 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_MEMORY_DATABASE_PLUGIN_HXX
-#define MPD_MEMORY_DATABASE_PLUGIN_HXX
+#include "UniqueTags.hxx"
+#include "Interface.hxx"
+#include "LightSong.hxx"
+#include "tag/Set.hxx"
 
-class Error;
-class Database;
-struct DatabaseSelection;
-struct DatabaseStats;
+#include <functional>
+
+#include <assert.h>
+
+static bool
+CollectTags(TagSet &set, TagType tag_type, uint32_t group_mask,
+	    const LightSong &song)
+{
+	assert(song.tag != nullptr);
+	const Tag &tag = *song.tag;
+
+	set.InsertUnique(tag, tag_type, group_mask);
+	return true;
+}
 
 bool
-GetStats(const Database &db, const DatabaseSelection &selection,
-	 DatabaseStats &stats, Error &error);
+VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
+		TagType tag_type, uint32_t group_mask,
+		VisitTag visit_tag,
+		Error &error)
+{
+	TagSet set;
 
-#endif
+	using namespace std::placeholders;
+	const auto f = std::bind(CollectTags, std::ref(set),
+				 tag_type, group_mask, _1);
+	if (!db.Visit(selection, f, error))
+		return false;
+
+	for (const auto &value : set)
+		if (!visit_tag(value, error))
+			return false;
+
+	return true;
+}

@@ -23,6 +23,7 @@
 #include "db/DatabasePlugin.hxx"
 #include "db/Selection.hxx"
 #include "db/Helpers.hxx"
+#include "db/UniqueTags.hxx"
 #include "db/LightDirectory.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"

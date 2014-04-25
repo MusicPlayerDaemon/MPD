@@ -22,13 +22,9 @@
 #include "Interface.hxx"
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagBuilder.hxx"
-#include "tag/Set.hxx"
 
-#include <functional>
 #include <set>
 
-#include <assert.h>
 #include <string.h>
 
 struct StringLess {
@@ -39,38 +35,6 @@ struct StringLess {
 };
 
 typedef std::set<const char *, StringLess> StringSet;
-
-static bool
-CollectTags(TagSet &set, TagType tag_type, uint32_t group_mask,
-	    const LightSong &song)
-{
-	assert(song.tag != nullptr);
-	const Tag &tag = *song.tag;
-
-	set.InsertUnique(tag, tag_type, group_mask);
-	return true;
-}
-
-bool
-VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		TagType tag_type, uint32_t group_mask,
-		VisitTag visit_tag,
-		Error &error)
-{
-	TagSet set;
-
-	using namespace std::placeholders;
-	const auto f = std::bind(CollectTags, std::ref(set),
-				 tag_type, group_mask, _1);
-	if (!db.Visit(selection, f, error))
-		return false;
-
-	for (const auto &value : set)
-		if (!visit_tag(value, error))
-			return false;
-
-	return true;
-}
 
 static void
 StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,

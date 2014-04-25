@@ -17,16 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_MEMORY_DATABASE_PLUGIN_HXX
-#define MPD_MEMORY_DATABASE_PLUGIN_HXX
+#ifndef MPD_DB_UNIQUE_TAGS_HXX
+#define MPD_DB_UNIQUE_TAGS_HXX
+
+#include "Visitor.hxx"
+#include "tag/TagType.h"
+
+#include <stdint.h>
 
 class Error;
 class Database;
 struct DatabaseSelection;
-struct DatabaseStats;
 
 bool
-GetStats(const Database &db, const DatabaseSelection &selection,
-	 DatabaseStats &stats, Error &error);
+VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
+		TagType tag_type, uint32_t group_mask,
+		VisitTag visit_tag,
+		Error &error);
 
 #endif
