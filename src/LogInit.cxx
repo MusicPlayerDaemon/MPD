@@ -243,6 +243,8 @@ int cycle_log_files(void)
 	}
 
 	redirect_logs(fd);
+	close(fd);
+
 	FormatDebug(log_domain, "Done cycling log files");
 	return 0;
 #endif
