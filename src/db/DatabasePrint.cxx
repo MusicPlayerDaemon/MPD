@@ -169,32 +169,32 @@ db_selection_print(Client &client, const DatabaseSelection &selection,
 }
 
 struct SearchStats {
-	unsigned numberOfSongs;
-	unsigned long playTime;
+	unsigned n_songs;
+	unsigned long total_time_s;
 };
 
 static void
-printSearchStats(Client &client, const SearchStats &stats)
+PrintSearchStats(Client &client, const SearchStats &stats)
 {
 	client_printf(client,
 		      "songs: %u\n"
 		      "playtime: %lu\n",
-		      stats.numberOfSongs, stats.playTime);
+		      stats.n_songs, stats.total_time_s);
 }
 
 static bool
 stats_visitor_song(SearchStats &stats, const LightSong &song)
 {
-	stats.numberOfSongs++;
-	stats.playTime += song.GetDuration();
+	stats.n_songs++;
+	stats.total_time_s += song.GetDuration();
 
 	return true;
 }
 
 bool
-searchStatsForSongsIn(Client &client, const char *name,
-		      const SongFilter *filter,
-		      Error &error)
+PrintSongCount(Client &client, const char *name,
+	       const SongFilter *filter,
+	       Error &error)
 {
 	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
@@ -203,8 +203,8 @@ searchStatsForSongsIn(Client &client, const char *name,
 	const DatabaseSelection selection(name, true, filter);
 
 	SearchStats stats;
-	stats.numberOfSongs = 0;
-	stats.playTime = 0;
+	stats.n_songs = 0;
+	stats.total_time_s = 0;
 
 	using namespace std::placeholders;
 	const auto f = std::bind(stats_visitor_song, std::ref(stats),
@@ -212,7 +212,7 @@ searchStatsForSongsIn(Client &client, const char *name,
 	if (!db->Visit(selection, f, error))
 		return false;
 
-	printSearchStats(client, stats);
+	PrintSearchStats(client, stats);
 	return true;
 }
 
@@ -243,9 +243,9 @@ PrintUniqueTag(Client &client, TagType tag_type,
 }
 
 bool
-listAllUniqueTags(Client &client, unsigned type, uint32_t group_mask,
-		  const SongFilter *filter,
-		  Error &error)
+PrintUniqueTags(Client &client, unsigned type, uint32_t group_mask,
+		const SongFilter *filter,
+		Error &error)
 {
 	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)

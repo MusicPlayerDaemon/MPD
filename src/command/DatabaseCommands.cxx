@@ -159,7 +159,7 @@ handle_count(Client &client, int argc, char *argv[])
 	}
 
 	Error error;
-	return  searchStatsForSongsIn(client, "", &filter, error)
+	return PrintSongCount(client, "", &filter, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
@@ -243,7 +243,7 @@ handle_list(Client &client, int argc, char *argv[])
 
 	Error error;
 	CommandResult ret =
-		listAllUniqueTags(client, tagType, group_mask, filter, error)
+		PrintUniqueTags(client, tagType, group_mask, filter, error)
 		? CommandResult::OK
 		: print_error(client, error);
 

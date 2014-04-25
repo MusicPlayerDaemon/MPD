@@ -39,13 +39,13 @@ db_selection_print(Client &client, const DatabaseSelection &selection,
 
 gcc_nonnull(2)
 bool
-searchStatsForSongsIn(Client &client, const char *name,
-		      const SongFilter *filter,
-		      Error &error);
+PrintSongCount(Client &client, const char *name,
+	       const SongFilter *filter,
+	       Error &error);
 
 bool
-listAllUniqueTags(Client &client, unsigned type, uint32_t group_mask,
-		  const SongFilter *filter,
-		  Error &error);
+PrintUniqueTags(Client &client, unsigned type, uint32_t group_mask,
+		const SongFilter *filter,
+		Error &error);
 
 #endif
