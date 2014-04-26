@@ -194,6 +194,7 @@ libmpd_a_SOURCES += \
 	src/queue/PlaylistUpdate.cxx \
 	src/command/StorageCommands.cxx src/command/StorageCommands.hxx \
 	src/command/DatabaseCommands.cxx src/command/DatabaseCommands.hxx \
+	src/db/Count.cxx src/db/Count.hxx \
 	src/db/LightSong.cxx src/db/LightSong.hxx \
 	src/db/LightDirectory.hxx \
 	src/db/update/UpdateDomain.cxx src/db/update/UpdateDomain.hxx \

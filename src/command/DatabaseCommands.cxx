@@ -23,6 +23,7 @@
 #include "db/DatabaseQueue.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "db/DatabasePrint.hxx"
+#include "db/Count.hxx"
 #include "db/Selection.hxx"
 #include "CommandError.hxx"
 #include "client/Client.hxx"

@@ -17,29 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DB_PRINT_H
-#define MPD_DB_PRINT_H
+#ifndef MPD_DB_COUNT_HXX
+#define MPD_DB_COUNT_HXX
 
 #include "Compiler.h"
 
-#include <stdint.h>
-
-class SongFilter;
-struct DatabaseSelection;
 class Client;
+class SongFilter;
 class Error;
 
-/**
- * @param full print attributes/tags
- * @param base print only base name of songs/directories?
- */
+gcc_nonnull(2)
 bool
-db_selection_print(Client &client, const DatabaseSelection &selection,
-		   bool full, bool base, Error &error);
-
-bool
-PrintUniqueTags(Client &client, unsigned type, uint32_t group_mask,
-		const SongFilter *filter,
-		Error &error);
+PrintSongCount(Client &client, const char *name,
+	       const SongFilter *filter,
+	       Error &error);
 
 #endif
