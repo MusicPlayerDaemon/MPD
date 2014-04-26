@@ -153,14 +153,28 @@ handle_count(Client &client, int argc, char *argv[])
 {
 	ConstBuffer<const char *> args(argv + 1, argc - 1);
 
+	TagType group = TAG_NUM_OF_ITEM_TYPES;
+	if (args.size >= 2 && strcmp(args[args.size - 2], "group") == 0) {
+		const char *s = args[args.size - 1];
+		group = tag_name_parse_i(s);
+		if (group == TAG_NUM_OF_ITEM_TYPES) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Unknown tag type: %s", s);
+			return CommandResult::ERROR;
+		}
+
+		args.pop_back();
+		args.pop_back();
+	}
+
 	SongFilter filter;
-	if (!filter.Parse(args, false)) {
+	if (!args.IsEmpty() && !filter.Parse(args, false)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
 	Error error;
-	return PrintSongCount(client, "", &filter, error)
+	return PrintSongCount(client, "", &filter, group, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }

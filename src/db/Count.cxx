@@ -23,8 +23,10 @@
 #include "Interface.hxx"
 #include "client/Client.hxx"
 #include "LightSong.hxx"
+#include "tag/Set.hxx"
 
 #include <functional>
+#include <map>
 
 struct SearchStats {
 	unsigned n_songs;
@@ -32,6 +34,9 @@ struct SearchStats {
 
 	constexpr SearchStats()
 		:n_songs(0), total_time_s(0) {}
+};
+
+class TagCountMap : public std::map<std::string, SearchStats> {
 };
 
 static void
@@ -43,6 +48,18 @@ PrintSearchStats(Client &client, const SearchStats &stats)
 		      stats.n_songs, stats.total_time_s);
 }
 
+static void
+Print(Client &client, TagType group, const TagCountMap &m)
+{
+	assert(unsigned(group) < TAG_NUM_OF_ITEM_TYPES);
+
+	for (const auto &i : m) {
+		client_printf(client, "%s: %s\n",
+			      tag_item_names[group], i.first.c_str());
+		PrintSearchStats(client, i.second);
+	}
+}
+
 static bool
 stats_visitor_song(SearchStats &stats, const LightSong &song)
 {
@@ -52,9 +69,45 @@ stats_visitor_song(SearchStats &stats, const LightSong &song)
 	return true;
 }
 
+static bool
+CollectGroupCounts(TagCountMap &map, TagType group, const Tag &tag)
+{
+	bool found = false;
+	for (unsigned i = 0; i < tag.num_items; ++i) {
+		const TagItem &item = *tag.items[i];
+
+		if (item.type == group) {
+			auto r = map.insert(std::make_pair(item.value,
+							   SearchStats()));
+			SearchStats &s = r.first->second;
+			++s.n_songs;
+			if (tag.time > 0)
+				s.total_time_s += tag.time;
+
+			found = true;
+		}
+	}
+
+	return found;
+}
+
+static bool
+GroupCountVisitor(TagCountMap &map, TagType group, const LightSong &song)
+{
+	assert(song.tag != nullptr);
+
+	const Tag &tag = *song.tag;
+	if (!CollectGroupCounts(map, group, tag) && group == TAG_ALBUM_ARTIST)
+		/* fall back to "Artist" if no "AlbumArtist" was found */
+		CollectGroupCounts(map, TAG_ARTIST, tag);
+
+	return true;
+}
+
 bool
 PrintSongCount(Client &client, const char *name,
 	       const SongFilter *filter,
+	       TagType group,
 	       Error &error)
 {
 	const Database *db = client.GetDatabase(error);
@@ -63,14 +116,32 @@ PrintSongCount(Client &client, const char *name,
 
 	const DatabaseSelection selection(name, true, filter);
 
-	SearchStats stats;
+	if (group == TAG_NUM_OF_ITEM_TYPES) {
+		/* no grouping */
 
-	using namespace std::placeholders;
-	const auto f = std::bind(stats_visitor_song, std::ref(stats),
-				 _1);
-	if (!db->Visit(selection, f, error))
-		return false;
+		SearchStats stats;
 
-	PrintSearchStats(client, stats);
+		using namespace std::placeholders;
+		const auto f = std::bind(stats_visitor_song, std::ref(stats),
+					 _1);
+		if (!db->Visit(selection, f, error))
+			return false;
+
+		PrintSearchStats(client, stats);
+	} else {
+		/* group by the specified tag: store counts in a
+		   std::map */
+
+		TagCountMap map;
+
+		using namespace std::placeholders;
+		const auto f = std::bind(GroupCountVisitor, std::ref(map),
+					 group, _1);
+		if (!db->Visit(selection, f, error))
+			return false;
+
+		Print(client, group, map);
+	}
+
 	return true;
 }

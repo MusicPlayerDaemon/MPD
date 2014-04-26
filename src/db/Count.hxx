@@ -22,6 +22,9 @@
 
 #include "Compiler.h"
 
+#include <stdint.h>
+
+enum TagType : uint8_t;
 class Client;
 class SongFilter;
 class Error;
@@ -30,6 +33,7 @@ gcc_nonnull(2)
 bool
 PrintSongCount(Client &client, const char *name,
 	       const SongFilter *filter,
+	       TagType group,
 	       Error &error);
 
 #endif

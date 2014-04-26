@@ -1493,12 +1493,15 @@ OK
       <title>The music database</title>
 
       <variablelist>
+
         <varlistentry id="command_count">
           <term>
             <cmdsynopsis>
               <command>count</command>
               <arg choice="req"><replaceable>TAG</replaceable></arg>
               <arg choice="req"><replaceable>NEEDLE</replaceable></arg>
+              <arg choice="opt">group</arg>
+              <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -1506,8 +1509,15 @@ OK
               Counts the number of songs and their total playtime in
               the db matching <varname>TAG</varname> exactly.
             </para>
+            <para>
+              The <parameter>group</parameter> keyword may be used to
+              group the results by a tag.  The following prints
+              per-artist counts:
+            </para>
+            <programlisting>count group artist</programlisting>
           </listitem>
         </varlistentry>
+
         <varlistentry id="command_find">
           <term>
             <cmdsynopsis>

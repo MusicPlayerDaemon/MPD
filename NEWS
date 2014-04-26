@@ -6,7 +6,7 @@ ver 0.19 (not yet released)
   - "playlistadd" supports file:///
   - "idle" with unrecognized event name fails
   - "list" on album artist falls back to the artist tag
-  - "list" allows grouping
+  - "list" and "count" allow grouping
 * database
   - proxy: forward "idle" events
   - proxy: copy "Last-Modified" from remote directories
