@@ -27,9 +27,11 @@ DeferredMonitor::Cancel()
 #ifdef USE_EPOLL
 	pending = false;
 #else
-	const auto id = source_id.exchange(0);
-	if (id != 0)
-		g_source_remove(id);
+	const ScopeLock protect(mutex);
+	if (source_id != 0) {
+		g_source_remove(source_id);
+		source_id = 0;
+	}
 #endif
 }
 
@@ -40,10 +42,9 @@ DeferredMonitor::Schedule()
 	if (!pending.exchange(true))
 		fd.Write();
 #else
-	const unsigned id = loop.AddIdle(Callback, this);
-	const auto old_id = source_id.exchange(id);
-	if (old_id != 0)
-		g_source_remove(old_id);
+	const ScopeLock protect(mutex);
+	if (source_id == 0)
+		source_id = loop.AddIdle(Callback, this);
 #endif
 }
 
@@ -65,9 +66,16 @@ DeferredMonitor::OnSocketReady(unsigned)
 void
 DeferredMonitor::Run()
 {
-	const auto id = source_id.exchange(0);
-	if (id != 0)
-		RunDeferred();
+	{
+		const ScopeLock protect(mutex);
+		if (source_id == 0)
+			/* cancelled */
+			return;
+
+		source_id = 0;
+	}
+
+	RunDeferred();
 }
 
 gboolean

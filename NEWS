@@ -1,4 +1,5 @@
 ver 0.18.11 (not yet released)
+* fix race condition when using GLib event loop (non-Linux)
 
 ver 0.18.10 (2014/04/10)
 * decoder

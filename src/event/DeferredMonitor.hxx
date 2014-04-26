@@ -27,6 +27,7 @@
 #include "SocketMonitor.hxx"
 #include "WakeFD.hxx"
 #else
+#include "thread/Mutex.hxx"
 #include <glib.h>
 #endif
 
@@ -48,7 +49,9 @@ class DeferredMonitor
 #else
 	EventLoop &loop;
 
-	std::atomic<guint> source_id;
+	Mutex mutex;
+
+	guint source_id;
 #endif
 
 public:
