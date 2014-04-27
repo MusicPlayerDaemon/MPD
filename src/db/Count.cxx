@@ -29,6 +29,9 @@
 struct SearchStats {
 	unsigned n_songs;
 	unsigned long total_time_s;
+
+	constexpr SearchStats()
+		:n_songs(0), total_time_s(0) {}
 };
 
 static void
@@ -61,8 +64,6 @@ PrintSongCount(Client &client, const char *name,
 	const DatabaseSelection selection(name, true, filter);
 
 	SearchStats stats;
-	stats.n_songs = 0;
-	stats.total_time_s = 0;
 
 	using namespace std::placeholders;
 	const auto f = std::bind(stats_visitor_song, std::ref(stats),
