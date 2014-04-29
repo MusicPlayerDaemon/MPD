@@ -1608,6 +1608,12 @@ OK
               Lists all songs and directories in
               <varname>URI</varname>.
             </para>
+            <para>
+              Do not use this command.  Do not manage a client-side
+              copy of MPD's database.  That is fragile and adds huge
+              overhead.  It will break with large databases.  Instead,
+              query MPD whenever you need something.
+            </para>
           </listitem>
         </varlistentry>
         <varlistentry id="command_listallinfo">
@@ -1622,6 +1628,12 @@ OK
               Same as <command>listall</command>, except it also
               returns metadata info in the same format as
               <command>lsinfo</command>.
+            </para>
+            <para>
+              Do not use this command.  Do not manage a client-side
+              copy of MPD's database.  That is fragile and adds huge
+              overhead.  It will break with large databases.  Instead,
+              query MPD whenever you need something.
             </para>
           </listitem>
         </varlistentry>
