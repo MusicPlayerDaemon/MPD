@@ -506,6 +506,9 @@ SMBCLIENT_SOURCES = \
 	src/lib/smbclient/Mutex.cxx src/lib/smbclient/Mutex.hxx \
 	src/lib/smbclient/Init.cxx src/lib/smbclient/Init.hxx
 
+NFS_SOURCES = \
+	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx
+
 if ENABLE_DATABASE
 
 noinst_LIBRARIES += libstorage.a
@@ -533,7 +536,7 @@ endif
 
 if ENABLE_NFS
 libstorage_a_SOURCES += \
-	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx \
+	$(NFS_SOURCES) \
 	src/storage/plugins/NfsStorage.cxx src/neighbor/plugins/NfsStorage.hxx
 endif
 
@@ -1072,7 +1075,7 @@ endif
 
 if ENABLE_NFS
 libinput_a_SOURCES += \
-	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx \
+	$(NFS_SOURCES) \
 	src/input/plugins/NfsInputPlugin.cxx src/input/plugins/NfsInputPlugin.hxx
 endif
 
