@@ -37,17 +37,9 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond)
 {
 	assert(spl_valid_name(uri));
 
-	const auto &playlist_directory_fs = map_spl_path();
-	if (playlist_directory_fs.IsNull())
+	const auto path_fs = map_spl_utf8_to_fs(uri);
+	if (path_fs.IsNull())
 		return nullptr;
-
-	const auto uri_fs = AllocatedPath::FromUTF8(uri);
-	if (uri_fs.IsNull())
-		return nullptr;
-
-	const auto path_fs =
-		AllocatedPath::Build(playlist_directory_fs, uri_fs);
-	assert(!path_fs.IsNull());
 
 	return playlist_open_path(path_fs.c_str(), mutex, cond);
 }
