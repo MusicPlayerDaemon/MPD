@@ -99,32 +99,3 @@ spl_save_playlist(const char *name_utf8, const playlist &playlist)
 {
 	return spl_save_queue(name_utf8, playlist.queue);
 }
-
-bool
-playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
-		  const char *name_utf8,
-		  unsigned start_index, unsigned end_index,
-		  Error &error)
-{
-	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, error);
-	if (contents.empty() && error.IsDefined())
-		return false;
-
-	if (end_index > contents.size())
-		end_index = contents.size();
-
-	const SongLoader loader(nullptr, nullptr);
-	Error error2;
-
-	for (unsigned i = start_index; i < end_index; ++i) {
-		const auto &uri_utf8 = contents[i];
-
-		unsigned id = playlist.AppendURI(pc, loader, uri_utf8.c_str(),
-						 error2);
-		if (id == 0)
-			FormatError(error2, "can't add file \"%s\"",
-				    uri_utf8.c_str());
-	}
-
-	return true;
-}

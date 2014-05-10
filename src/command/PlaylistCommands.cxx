@@ -74,23 +74,7 @@ handle_load(Client &client, int argc, char *argv[])
 				      client.player_control, loader, error))
 		return print_error(client, error);
 
-	if (playlist_load_spl(client.playlist, client.player_control,
-			      argv[1], start_index, end_index,
-			      error))
-		return CommandResult::OK;
-
-	if (error.IsDomain(playlist_domain) &&
-	    PlaylistResult(error.GetCode()) == PlaylistResult::BAD_NAME) {
-		/* the message for BAD_NAME is confusing when the
-		   client wants to load a playlist file from the music
-		   directory; patch the Error object to show "no such
-		   playlist" instead */
-		Error error2(playlist_domain, int(PlaylistResult::NO_SUCH_LIST),
-			     error.GetMessage());
-		error = std::move(error2);
-	}
-
-	return print_error(client, error);
+	return CommandResult::OK;
 }
 
 CommandResult

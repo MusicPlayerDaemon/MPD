@@ -48,14 +48,4 @@ spl_save_queue(const char *name_utf8, const Queue &queue);
 PlaylistResult
 spl_save_playlist(const char *name_utf8, const playlist &playlist);
 
-/**
- * Loads a stored playlist file, and append all songs to the global
- * playlist.
- */
-bool
-playlist_load_spl(struct playlist &playlist, PlayerControl &pc,
-		  const char *name_utf8,
-		  unsigned start_index, unsigned end_index,
-		  Error &error);
-
 #endif
