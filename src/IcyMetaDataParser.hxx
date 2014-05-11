@@ -75,6 +75,13 @@ public:
 	 */
 	size_t Meta(const void *data, size_t length);
 
+	/**
+	 * Parse data and eliminate metadata.
+	 *
+	 * @return the number of data bytes remaining in the buffer
+	 */
+	size_t ParseInPlace(void *data, size_t length);
+
 	Tag *ReadTag() {
 		Tag *result = tag;
 		tag = nullptr;

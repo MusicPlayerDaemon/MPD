@@ -1065,6 +1065,7 @@ endif
 
 if ENABLE_CURL
 libinput_a_SOURCES += \
+	src/input/IcyInputStream.cxx src/input/IcyInputStream.hxx \
 	src/input/plugins/CurlInputPlugin.cxx src/input/plugins/CurlInputPlugin.hxx \
 	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
 endif

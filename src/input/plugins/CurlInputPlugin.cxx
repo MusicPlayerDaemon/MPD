@@ -19,13 +19,13 @@
 
 #include "config.h"
 #include "CurlInputPlugin.hxx"
+#include "../IcyInputStream.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
-#include "IcyMetaDataParser.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/TimeoutMonitor.hxx"
 #include "event/Call.hxx"
@@ -93,10 +93,7 @@ struct CurlInputStream final : public InputStream {
 	char error_buffer[CURL_ERROR_SIZE];
 
 	/** parser for icy-metadata */
-	IcyMetaDataParser icy;
-
-	/** the stream name from the icy-name response header */
-	std::string meta_name;
+	IcyInputStream *icy;
 
 	/** the tag object ready to be requested via
 	    InputStream::ReadTag() */
@@ -110,6 +107,7 @@ struct CurlInputStream final : public InputStream {
 		 request_headers(nullptr),
 		 buffer((uint8_t *)_buffer, CURL_MAX_BUFFERED),
 		 paused(false),
+		 icy(new IcyInputStream(this)),
 		 tag(nullptr) {}
 
 	~CurlInputStream();
@@ -154,8 +152,6 @@ struct CurlInputStream final : public InputStream {
 	size_t GetTotalBufferSize() const {
 		return buffer.GetSize();
 	}
-
-	void CopyIcyTag();
 
 	/**
 	 * A HTTP request is finished.
@@ -683,83 +679,19 @@ CurlInputStream::FillBuffer(Error &error)
 	return !buffer.IsEmpty();
 }
 
-static size_t
-read_from_buffer(IcyMetaDataParser &icy, CircularBuffer<uint8_t> &buffer,
-		 void *dest0, size_t length)
-{
-	uint8_t *dest = (uint8_t *)dest0;
-	size_t nbytes = 0;
-
-	while (true) {
-		auto r = buffer.Read();
-		if (r.IsEmpty())
-			break;
-
-		if (r.size > length)
-			r.size = length;
-
-		size_t chunk = icy.Data(r.size);
-		if (chunk > 0) {
-			memcpy(dest, r.data, chunk);
-			buffer.Consume(chunk);
-
-			nbytes += chunk;
-			dest += chunk;
-			length -= chunk;
-
-			if (length == 0)
-				break;
-		}
-
-		r = buffer.Read();
-		if (r.IsEmpty())
-			break;
-
-		chunk = icy.Meta(r.data, r.size);
-		if (chunk > 0) {
-			buffer.Consume(chunk);
-			if (length == 0)
-				break;
-		}
-	}
-
-	return nbytes;
-}
-
-inline void
-CurlInputStream::CopyIcyTag()
-{
-	Tag *new_tag = icy.ReadTag();
-	if (new_tag == nullptr)
-		return;
-
-	delete tag;
-
-	if (!meta_name.empty() && !new_tag->HasType(TAG_NAME)) {
-		TagBuilder tag_builder(std::move(*new_tag));
-		tag_builder.AddItem(TAG_NAME, meta_name.c_str());
-		*new_tag = tag_builder.Commit();
-	}
-
-	tag = new_tag;
-}
-
 size_t
 CurlInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
-	size_t nbytes;
+	if (!FillBuffer(error))
+		return 0;
 
-	do {
-		/* fill the buffer */
+	auto r = buffer.Read();
+	if (r.IsEmpty())
+		return 0;
 
-		if (!FillBuffer(error))
-			return 0;
-
-		nbytes = read_from_buffer(icy, buffer, ptr, read_size);
-	} while (nbytes == 0);
-
-	if (icy.IsDefined())
-		CopyIcyTag();
+	const size_t nbytes = std::min(read_size, r.size);
+	memcpy(ptr, r.data, nbytes);
+	buffer.Consume(nbytes);
 
 	offset += (InputPlugin::offset_type)nbytes;
 
@@ -781,7 +713,7 @@ CurlInputStream::HeaderReceived(const char *name, std::string &&value)
 {
 	if (StringEqualsCaseASCII(name, "accept-ranges")) {
 		/* a stream with icy-metadata is not seekable */
-		if (!icy.IsDefined())
+		if (!icy->IsEnabled())
 			seekable = true;
 	} else if (StringEqualsCaseASCII(name, "content-length")) {
 		size = offset + ParseUint64(value.c_str());
@@ -790,23 +722,21 @@ CurlInputStream::HeaderReceived(const char *name, std::string &&value)
 	} else if (StringEqualsCaseASCII(name, "icy-name") ||
 		   StringEqualsCaseASCII(name, "ice-name") ||
 		   StringEqualsCaseASCII(name, "x-audiocast-name")) {
-		meta_name = std::move(value);
-
 		delete tag;
 
 		TagBuilder tag_builder;
-		tag_builder.AddItem(TAG_NAME, meta_name.c_str());
+		tag_builder.AddItem(TAG_NAME, value.c_str());
 
 		tag = tag_builder.CommitNew();
 	} else if (StringEqualsCaseASCII(name, "icy-metaint")) {
-		if (icy.IsDefined())
+		if (icy->IsEnabled())
 			return;
 
 		size_t icy_metaint = ParseUint64(value.c_str());
 		FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
 
 		if (icy_metaint > 0) {
-			icy.Start(icy_metaint);
+			icy->Enable(icy_metaint);
 
 			/* a stream with icy-metadata is not
 			   seekable */
@@ -1072,7 +1002,7 @@ CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond,
 		return nullptr;
 	}
 
-	return c;
+	return c->icy;
 }
 
 static InputStream *

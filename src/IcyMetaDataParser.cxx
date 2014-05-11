@@ -220,3 +220,32 @@ IcyMetaDataParser::Meta(const void *data, size_t length)
 
 	return length;
 }
+
+size_t
+IcyMetaDataParser::ParseInPlace(void *data, size_t length)
+{
+	uint8_t *const dest0 = (uint8_t *)data;
+	uint8_t *dest = dest0;
+	const uint8_t *src = dest0;
+
+	while (length > 0) {
+		size_t chunk = Data(length);
+		if (chunk > 0) {
+			memmove(dest, src, chunk);
+			dest += chunk;
+			src += chunk;
+			length -= chunk;
+
+			if (length == 0)
+				break;
+		}
+
+		chunk = Meta(src, length);
+		if (chunk > 0) {
+			src += chunk;
+			length -= chunk;
+		}
+	}
+
+	return dest - dest0;
+}
