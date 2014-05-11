@@ -48,8 +48,7 @@ public:
 		 is(nullptr) {}
 
 	~TagFileScan() {
-		if (is != nullptr)
-			is->Close();
+		delete is;
 	}
 
 	bool ScanFile(const DecoderPlugin &plugin) {

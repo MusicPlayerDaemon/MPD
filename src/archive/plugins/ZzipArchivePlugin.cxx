@@ -142,14 +142,6 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 				   _file);
 }
 
-static void
-zzip_input_close(InputStream *is)
-{
-	ZzipInputStream *zis = (ZzipInputStream *)is;
-
-	delete zis;
-}
-
 static size_t
 zzip_input_read(InputStream *is, void *ptr, size_t size,
 		Error &error)
@@ -202,7 +194,6 @@ const InputPlugin zzip_input_plugin = {
 	nullptr,
 	nullptr,
 	nullptr,
-	zzip_input_close,
 	nullptr,
 	nullptr,
 	nullptr,

@@ -73,6 +73,6 @@ tag_stream_scan(const char *uri, const tag_handler &handler, void *ctx)
 		return false;
 
 	bool success = tag_stream_scan(*is, handler, ctx);
-	is->Close();
+	delete is;
 	return success;
 }

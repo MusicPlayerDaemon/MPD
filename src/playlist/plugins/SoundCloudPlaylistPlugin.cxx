@@ -276,7 +276,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 				done = true;
 			} else {
 				mutex.unlock();
-				input_stream->Close();
+				delete input_stream;
 				return -1;
 			}
 		}
@@ -304,7 +304,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	}
 
 	mutex.unlock();
-	input_stream->Close();
+	delete input_stream;
 
 	return 0;
 }

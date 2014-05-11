@@ -61,7 +61,7 @@ public:
 	}
 
 	~Bzip2ArchiveFile() {
-		istream->Close();
+		delete istream;
 	}
 
 	void Ref() {
@@ -102,7 +102,6 @@ struct Bzip2InputStream final : public InputStream {
 	~Bzip2InputStream();
 
 	bool Open(Error &error);
-	void Close();
 };
 
 extern const InputPlugin bz2_inputplugin;
@@ -130,12 +129,6 @@ Bzip2InputStream::Open(Error &error)
 
 	SetReady();
 	return true;
-}
-
-inline void
-Bzip2InputStream::Close()
-{
-	BZ2_bzDecompressEnd(&bzstream);
 }
 
 /* archive open && listing routine */
@@ -166,6 +159,7 @@ Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context,
 
 Bzip2InputStream::~Bzip2InputStream()
 {
+	BZ2_bzDecompressEnd(&bzstream);
 	archive->Unref();
 }
 
@@ -181,15 +175,6 @@ Bzip2ArchiveFile::OpenStream(const char *path,
 	}
 
 	return bis;
-}
-
-static void
-bz2_is_close(InputStream *is)
-{
-	Bzip2InputStream *bis = (Bzip2InputStream *)is;
-
-	bis->Close();
-	delete bis;
 }
 
 static bool
@@ -273,7 +258,6 @@ const InputPlugin bz2_inputplugin = {
 	nullptr,
 	nullptr,
 	nullptr,
-	bz2_is_close,
 	nullptr,
 	nullptr,
 	nullptr,

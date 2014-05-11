@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 	InputStream *is = InputStream::OpenReady(argv[1], mutex, cond, error);
 	if (is != NULL) {
 		ret = dump_input_stream(*is);
-		is->Close();
+		delete is;
 	} else {
 		if (error.IsDefined())
 			LogError(error);

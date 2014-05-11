@@ -24,7 +24,7 @@
 CloseSongEnumerator::~CloseSongEnumerator()
 {
 	delete other;
-	is->Close();
+	delete is;
 }
 
 DetachedSong *

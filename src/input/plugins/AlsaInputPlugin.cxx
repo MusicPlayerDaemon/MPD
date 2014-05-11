@@ -373,13 +373,6 @@ alsa_input_open(const char *uri, Mutex &mutex, Cond &cond, Error &error)
 	return AlsaInputStream::Create(uri, mutex, cond, error);
 }
 
-static void
-alsa_input_close(InputStream *is)
-{
-	AlsaInputStream *ais = (AlsaInputStream *)is;
-	delete ais;
-}
-
 static bool
 alsa_input_available(InputStream *is)
 {
@@ -406,7 +399,6 @@ const struct InputPlugin input_plugin_alsa = {
 	nullptr,
 	nullptr,
 	alsa_input_open,
-	alsa_input_close,
 	nullptr,
 	nullptr,
 	nullptr,

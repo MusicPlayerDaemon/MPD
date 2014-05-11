@@ -61,9 +61,7 @@ class DespotifyInputStream final : public InputStream {
 	}
 
 public:
-	~DespotifyInputStream() {
-		despotify_free_track(track);
-	}
+	~DespotifyInputStream();
 
 	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond,
 				 Error &error);
@@ -146,6 +144,12 @@ static void callback(gcc_unused struct despotify_session* ds,
 	ctx->Callback(sig);
 }
 
+DespotifyInputStream::~DespotifyInputStream()
+{
+	mpd_despotify_unregister_callback(callback);
+	despotify_free_track(track);
+}
+
 inline InputStream *
 DespotifyInputStream::Open(const char *url,
 			   Mutex &mutex, Cond &cond,
@@ -220,15 +224,6 @@ input_despotify_read(InputStream *is, void *ptr, size_t size, Error &error)
 	return ctx->Read(ptr, size, error);
 }
 
-static void
-input_despotify_close(InputStream *is)
-{
-	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
-
-	mpd_despotify_unregister_callback(callback);
-	delete ctx;
-}
-
 static bool
 input_despotify_eof(InputStream *is)
 {
@@ -250,7 +245,6 @@ const InputPlugin input_plugin_despotify = {
 	nullptr,
 	nullptr,
 	input_despotify_open,
-	input_despotify_close,
 	nullptr,
 	nullptr,
 	input_despotify_tag,

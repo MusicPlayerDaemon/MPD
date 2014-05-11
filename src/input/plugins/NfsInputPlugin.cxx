@@ -156,13 +156,6 @@ input_nfs_read(InputStream *is, void *ptr, size_t size,
 	return s.Read(ptr, size, error);
 }
 
-static void
-input_nfs_close(InputStream *is)
-{
-	NfsInputStream *s = (NfsInputStream *)is;
-	delete s;
-}
-
 static bool
 input_nfs_eof(InputStream *is)
 {
@@ -184,7 +177,6 @@ const InputPlugin input_plugin_nfs = {
 	nullptr,
 	nullptr,
 	input_nfs_open,
-	input_nfs_close,
 	nullptr,
 	nullptr,
 	nullptr,

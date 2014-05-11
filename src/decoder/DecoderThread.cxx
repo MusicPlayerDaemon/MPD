@@ -271,7 +271,7 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 		 decoder_run_stream_fallback(decoder, *input_stream));
 
 	dc.Unlock();
-	input_stream->Close();
+	delete input_stream;
 	dc.Lock();
 
 	return success;
@@ -318,7 +318,7 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 
 		dc.Unlock();
 
-		input_stream->Close();
+		delete input_stream;
 
 		if (success) {
 			dc.Lock();

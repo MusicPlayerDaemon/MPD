@@ -50,7 +50,7 @@ playlist_open_path_suffix(const char *path_fs, Mutex &mutex, Cond &cond)
 	if (playlist != nullptr)
 		playlist = new CloseSongEnumerator(playlist, is);
 	else
-		is->Close();
+		delete is;
 
 	return playlist;
 }
@@ -85,7 +85,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond)
 
 	playlist = playlist_list_open_stream(*is, uri);
 	if (playlist == nullptr) {
-		is->Close();
+		delete is;
 		return nullptr;
 	}
 

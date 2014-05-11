@@ -29,6 +29,15 @@
 
 ThreadInputStream::~ThreadInputStream()
 {
+	Lock();
+	close = true;
+	wake_cond.signal();
+	Unlock();
+
+	Cancel();
+
+	thread.Join();
+
 	if (buffer != nullptr) {
 		buffer->Clear();
 		HugeFree(buffer->Write().data, buffer_size);
@@ -170,28 +179,6 @@ ThreadInputStream::Read(InputStream *is, void *ptr, size_t size,
 {
 	ThreadInputStream &tis = *(ThreadInputStream *)is;
 	return tis.Read2(ptr, size, error);
-}
-
-inline void
-ThreadInputStream::Close2()
-{
-	Lock();
-	close = true;
-	wake_cond.signal();
-	Unlock();
-
-	Cancel();
-
-	thread.Join();
-
-	delete this;
-}
-
-void
-ThreadInputStream::Close(InputStream *is)
-{
-	ThreadInputStream &tis = *(ThreadInputStream *)is;
-	tis.Close2();
 }
 
 inline bool

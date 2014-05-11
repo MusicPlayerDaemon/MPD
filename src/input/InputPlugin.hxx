@@ -82,7 +82,6 @@ struct InputPlugin {
 	InputStream *(*open)(const char *uri,
 			     Mutex &mutex, Cond &cond,
 			     Error &error);
-	void (*close)(InputStream *is);
 
 	/**
 	 * Check for errors that may have occurred in the I/O thread.

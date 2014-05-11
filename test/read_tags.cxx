@@ -127,7 +127,7 @@ int main(int argc, char **argv)
 		}
 
 		success = plugin->ScanStream(*is, print_handler, nullptr);
-		is->Close();
+		delete is;
 	}
 
 	decoder_plugin_deinit_all();

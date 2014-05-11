@@ -181,14 +181,6 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 				      statbuf);
 }
 
-static void
-iso9660_input_close(InputStream *is)
-{
-	Iso9660InputStream *iis = (Iso9660InputStream *)is;
-
-	delete iis;
-}
-
 inline size_t
 Iso9660InputStream::Read(void *ptr, size_t read_size, Error &error)
 {
@@ -250,7 +242,6 @@ const InputPlugin iso9660_input_plugin = {
 	nullptr,
 	nullptr,
 	nullptr,
-	iso9660_input_close,
 	nullptr,
 	nullptr,
 	nullptr,

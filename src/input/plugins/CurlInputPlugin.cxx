@@ -805,14 +805,6 @@ input_curl_read(InputStream *is, void *ptr, size_t size,
 	return c.Read(ptr, size, error);
 }
 
-static void
-input_curl_close(InputStream *is)
-{
-	CurlInputStream *c = (CurlInputStream *)is;
-
-	delete c;
-}
-
 static bool
 input_curl_eof(gcc_unused InputStream *is)
 {
@@ -1144,7 +1136,6 @@ const struct InputPlugin input_plugin_curl = {
 	input_curl_init,
 	input_curl_finish,
 	input_curl_open,
-	input_curl_close,
 	input_curl_check,
 	nullptr,
 	input_curl_tag,

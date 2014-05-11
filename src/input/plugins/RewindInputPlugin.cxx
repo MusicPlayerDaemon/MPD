@@ -60,7 +60,7 @@ public:
 	}
 
 	~RewindInputStream() {
-		input->Close();
+		delete input;
 	}
 
 	bool Check(Error &error) {
@@ -120,14 +120,6 @@ private:
 		offset = src->offset;
 	}
 };
-
-static void
-input_rewind_close(InputStream *is)
-{
-	RewindInputStream *r = (RewindInputStream *)is;
-
-	delete r;
-}
 
 static bool
 input_rewind_check(InputStream *is, Error &error)
@@ -263,7 +255,6 @@ const InputPlugin rewind_input_plugin = {
 	nullptr,
 	nullptr,
 	nullptr,
-	input_rewind_close,
 	input_rewind_check,
 	input_rewind_update,
 	input_rewind_tag,

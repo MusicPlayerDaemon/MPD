@@ -134,7 +134,6 @@ private:
 	bool Check2(Error &error);
 	bool Available2();
 	size_t Read2(void *ptr, size_t size, Error &error);
-	void Close2();
 	bool IsEOF2();
 
 public:
@@ -143,7 +142,6 @@ public:
 	static bool Available(InputStream *is);
 	static size_t Read(InputStream *is, void *ptr, size_t size,
 			   Error &error);
-	static void Close(InputStream *is);
 	static bool IsEOF(InputStream *is);
 };
 

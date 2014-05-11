@@ -109,6 +109,13 @@ public:
 	}
 
 	/**
+	 * Close the input stream and free resources.
+	 *
+	 * The caller must not lock the mutex.
+	 */
+	virtual ~InputStream();
+
+	/**
 	 * Opens a new input stream.  You may not access it until the "ready"
 	 * flag is set.
 	 *
@@ -132,13 +139,6 @@ public:
 	static InputStream *OpenReady(const char *uri,
 				      Mutex &mutex, Cond &cond,
 				      Error &error);
-
-	/**
-	 * Close the input stream and free resources.
-	 *
-	 * The caller must not lock the mutex.
-	 */
-	void Close();
 
 	const InputPlugin &GetPlugin() const {
 		return plugin;

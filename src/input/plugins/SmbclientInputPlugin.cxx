@@ -149,13 +149,6 @@ input_smbclient_read(InputStream *is, void *ptr, size_t size,
 	return s.Read(ptr, size, error);
 }
 
-static void
-input_smbclient_close(InputStream *is)
-{
-	SmbclientInputStream *s = (SmbclientInputStream *)is;
-	delete s;
-}
-
 static bool
 input_smbclient_eof(InputStream *is)
 {
@@ -177,7 +170,6 @@ const InputPlugin input_plugin_smbclient = {
 	input_smbclient_init,
 	nullptr,
 	input_smbclient_open,
-	input_smbclient_close,
 	nullptr,
 	nullptr,
 	nullptr,

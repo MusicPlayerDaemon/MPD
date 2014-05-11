@@ -31,6 +31,10 @@
 
 static constexpr Domain input_domain("input");
 
+InputStream::~InputStream()
+{
+}
+
 InputStream *
 InputStream::Open(const char *url,
 		  Mutex &mutex, Cond &cond,
@@ -41,7 +45,6 @@ InputStream::Open(const char *url,
 
 		is = plugin->open(url, mutex, cond, error);
 		if (is != nullptr) {
-			assert(is->plugin.close != nullptr);
 			assert(is->plugin.read != nullptr);
 			assert(is->plugin.eof != nullptr);
 			assert(!is->seekable || is->plugin.seek != nullptr);
@@ -72,7 +75,7 @@ InputStream::OpenReady(const char *uri,
 	mutex.unlock();
 
 	if (!success) {
-		is->Close();
+		delete is;
 		is = nullptr;
 	}
 
@@ -200,12 +203,6 @@ InputStream::LockRead(void *ptr, size_t _size, Error &error)
 
 	const ScopeLock protect(mutex);
 	return Read(ptr, _size, error);
-}
-
-void
-InputStream::Close()
-{
-	plugin.close(this);
 }
 
 bool

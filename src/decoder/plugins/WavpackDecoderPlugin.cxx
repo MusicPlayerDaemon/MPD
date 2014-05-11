@@ -467,7 +467,7 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 	size_t nbytes = decoder_read(decoder, *is_wvc,
 				     &first_byte, sizeof(first_byte));
 	if (nbytes == 0) {
-		is_wvc->Close();
+		delete is_wvc;
 		return nullptr;
 	}
 
@@ -519,7 +519,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 
 	WavpackCloseFile(wpc);
 	if (open_flags & OPEN_WVC) {
-		is_wvc->Close();
+		delete is_wvc;
 	}
 }
 

@@ -105,14 +105,6 @@ input_cdio_init(const config_param &param, Error &error)
 	return InputPlugin::InitResult::SUCCESS;
 }
 
-static void
-input_cdio_close(InputStream *is)
-{
-	CdioParanoiaInputStream *i = (CdioParanoiaInputStream *)is;
-
-	delete i;
-}
-
 struct cdio_uri {
 	char device[64];
 	int track;
@@ -394,7 +386,6 @@ const InputPlugin input_plugin_cdio_paranoia = {
 	input_cdio_init,
 	nullptr,
 	input_cdio_open,
-	input_cdio_close,
 	nullptr,
 	nullptr,
 	nullptr,

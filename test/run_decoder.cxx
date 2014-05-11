@@ -230,7 +230,7 @@ int main(int argc, char **argv)
 
 		decoder.plugin->StreamDecode(decoder, *is);
 
-		is->Close();
+		delete is;
 	} else {
 		fprintf(stderr, "Decoder plugin is not usable\n");
 		return EXIT_FAILURE;

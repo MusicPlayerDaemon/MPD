@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 
 		playlist = playlist_list_open_stream(*is, uri);
 		if (playlist == NULL) {
-			is->Close();
+			delete is;
 			fprintf(stderr, "Failed to open playlist\n");
 			return 2;
 		}
@@ -139,8 +139,7 @@ int main(int argc, char **argv)
 	/* deinitialize everything */
 
 	delete playlist;
-	if (is != NULL)
-		is->Close();
+	delete is;
 
 	decoder_plugin_deinit_all();
 	playlist_list_global_finish();

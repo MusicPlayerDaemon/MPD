@@ -125,14 +125,6 @@ input_ffmpeg_read(InputStream *is, void *ptr, size_t size,
 	return (size_t)ret;
 }
 
-static void
-input_ffmpeg_close(InputStream *is)
-{
-	FfmpegInputStream *i = (FfmpegInputStream *)is;
-
-	delete i;
-}
-
 static bool
 input_ffmpeg_eof(InputStream *is)
 {
@@ -163,7 +155,6 @@ const InputPlugin input_plugin_ffmpeg = {
 	input_ffmpeg_init,
 	nullptr,
 	input_ffmpeg_open,
-	input_ffmpeg_close,
 	nullptr,
 	nullptr,
 	nullptr,

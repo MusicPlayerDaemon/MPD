@@ -123,14 +123,6 @@ input_file_read(InputStream *is, void *ptr, size_t size,
 	return (size_t)nbytes;
 }
 
-static void
-input_file_close(InputStream *is)
-{
-	FileInputStream *fis = (FileInputStream *)is;
-
-	delete fis;
-}
-
 static bool
 input_file_eof(InputStream *is)
 {
@@ -142,7 +134,6 @@ const InputPlugin input_plugin_file = {
 	nullptr,
 	nullptr,
 	input_file_open,
-	input_file_close,
 	nullptr,
 	nullptr,
 	nullptr,

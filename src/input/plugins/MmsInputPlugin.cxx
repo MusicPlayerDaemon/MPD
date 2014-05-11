@@ -106,7 +106,6 @@ const InputPlugin input_plugin_mms = {
 	nullptr,
 	nullptr,
 	input_mms_open,
-	ThreadInputStream::Close,
 	ThreadInputStream::Check,
 	nullptr,
 	nullptr,
