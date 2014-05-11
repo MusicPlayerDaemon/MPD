@@ -57,7 +57,7 @@ bool
 OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
 	       InputStream &is)
 {
-	if (is.size > 0 && is.size - is.offset < 65536)
+	if (is.KnownSize() && is.GetRest() < 65536)
 		return OggFindEOS(oy, os, packet);
 
 	if (!is.CheapSeeking())

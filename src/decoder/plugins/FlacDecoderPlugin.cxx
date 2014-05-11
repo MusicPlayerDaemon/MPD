@@ -145,13 +145,13 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 	if (data->initialized) {
 		/* done */
 		decoder_initialized(data->decoder, data->audio_format,
-				    data->input_stream.seekable,
+				    data->input_stream.IsSeekable(),
 				    (float)data->total_frames /
 				    (float)data->audio_format.sample_rate);
 		return true;
 	}
 
-	if (data->input_stream.seekable)
+	if (data->input_stream.IsSeekable())
 		/* allow the workaround below only for nonseekable
 		   streams*/
 		return false;

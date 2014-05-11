@@ -47,7 +47,7 @@ FlacInput::Read(FLAC__byte buffer[], size_t *bytes)
 FLAC__StreamDecoderSeekStatus
 FlacInput::Seek(FLAC__uint64 absolute_byte_offset)
 {
-	if (!input_stream.seekable)
+	if (!input_stream.IsSeekable())
 		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 
 	::Error error;
@@ -62,20 +62,20 @@ FlacInput::Seek(FLAC__uint64 absolute_byte_offset)
 FLAC__StreamDecoderTellStatus
 FlacInput::Tell(FLAC__uint64 *absolute_byte_offset)
 {
-	if (!input_stream.seekable)
+	if (!input_stream.IsSeekable())
 		return FLAC__STREAM_DECODER_TELL_STATUS_UNSUPPORTED;
 
-	*absolute_byte_offset = (FLAC__uint64)input_stream.offset;
+	*absolute_byte_offset = (FLAC__uint64)input_stream.GetOffset();
 	return FLAC__STREAM_DECODER_TELL_STATUS_OK;
 }
 
 FLAC__StreamDecoderLengthStatus
 FlacInput::Length(FLAC__uint64 *stream_length)
 {
-	if (input_stream.size < 0)
+	if (!input_stream.KnownSize())
 		return FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED;
 
-	*stream_length = (FLAC__uint64)input_stream.size;
+	*stream_length = (FLAC__uint64)input_stream.GetSize();
 	return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
 }
 

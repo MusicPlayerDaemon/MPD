@@ -248,7 +248,7 @@ playlist_list_open_stream_suffix(InputStream &is, const char *suffix)
 SongEnumerator *
 playlist_list_open_stream(InputStream &is, const char *uri)
 {
-	assert(is.ready);
+	assert(is.IsReady());
 
 	const char *const mime = is.GetMimeType();
 	if (mime != nullptr) {

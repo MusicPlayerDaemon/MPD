@@ -88,7 +88,7 @@ static long ogg_tell_cb(void *data)
 {
 	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
 
-	return (long)vis->input_stream->offset;
+	return (long)vis->input_stream->GetOffset();
 }
 
 static const ov_callbacks vorbis_is_callbacks = {

@@ -64,6 +64,7 @@ public:
 	 */
 	Cond &cond;
 
+protected:
 	/**
 	 * indicates whether the stream is ready for reading and
 	 * whether the other attributes in this struct are valid
@@ -80,7 +81,6 @@ public:
 	 */
 	offset_type size;
 
-public:
 	/**
 	 * the current offset within the stream
 	 */
@@ -218,6 +218,13 @@ public:
 	}
 
 	gcc_pure
+	bool KnownSize() const {
+		assert(ready);
+
+		return size >= 0;
+	}
+
+	gcc_pure
 	offset_type GetSize() const {
 		assert(ready);
 
@@ -237,6 +244,15 @@ public:
 		assert(ready);
 
 		return offset;
+	}
+
+	gcc_pure
+	offset_type GetRest() const {
+		assert(ready);
+		assert(size >= 0);
+		assert(offset >= 0);
+
+		return size - offset;
 	}
 
 	gcc_pure

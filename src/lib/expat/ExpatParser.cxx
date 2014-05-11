@@ -51,7 +51,7 @@ ExpatParser::Parse(const char *data, size_t length, bool is_final,
 bool
 ExpatParser::Parse(InputStream &is, Error &error)
 {
-	assert(is.ready);
+	assert(is.IsReady());
 
 	while (true) {
 		char buffer[4096];

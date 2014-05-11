@@ -75,7 +75,7 @@ FlacIOTell(FLAC__IOHandle handle)
 {
 	InputStream *is = (InputStream *)handle;
 
-	return is->offset;
+	return is->GetOffset();
 }
 
 static int

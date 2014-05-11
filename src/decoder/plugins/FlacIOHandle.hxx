@@ -37,7 +37,7 @@ ToFlacIOHandle(InputStream &is)
 static inline const FLAC__IOCallbacks &
 GetFlacIOCallbacks(const InputStream &is)
 {
-	return is.seekable
+	return is.IsSeekable()
 		? flac_io_callbacks_seekable
 		: flac_io_callbacks;
 }

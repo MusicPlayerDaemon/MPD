@@ -377,7 +377,7 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 static uint32_t
 wavpack_input_get_pos(void *id)
 {
-	return wpin(id)->is->offset;
+	return wpin(id)->is->GetOffset();
 }
 
 static int
@@ -406,16 +406,16 @@ wavpack_input_push_back_byte(void *id, int c)
 static uint32_t
 wavpack_input_get_length(void *id)
 {
-	if (wpin(id)->is->size < 0)
+	if (!wpin(id)->is->KnownSize())
 		return 0;
 
-	return wpin(id)->is->size;
+	return wpin(id)->is->GetSize();
 }
 
 static int
 wavpack_input_can_seek(void *id)
 {
-	return wpin(id)->is->seekable;
+	return wpin(id)->is->IsSeekable();
 }
 
 static WavpackStreamReader mpd_is_reader = {
@@ -484,7 +484,7 @@ static void
 wavpack_streamdecode(Decoder &decoder, InputStream &is)
 {
 	int open_flags = OPEN_NORMALIZE;
-	bool can_seek = is.seekable;
+	bool can_seek = is.IsSeekable();
 
 	wavpack_input isp_wvc;
 	InputStream *is_wvc = wavpack_open_wvc(decoder, is.GetURI(),
@@ -492,7 +492,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 					       &isp_wvc);
 	if (is_wvc != nullptr) {
 		open_flags |= OPEN_WVC;
-		can_seek &= is_wvc->seekable;
+		can_seek &= is_wvc->IsSeekable();
 	}
 
 	if (!can_seek) {

@@ -121,12 +121,12 @@ mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 	AvioStream *stream = (AvioStream *)opaque;
 
 	if (whence == AVSEEK_SIZE)
-		return stream->input.size;
+		return stream->input.GetSize();
 
 	if (!stream->input.LockSeek(pos, whence, IgnoreError()))
 		return -1;
 
-	return stream->input.offset;
+	return stream->input.GetOffset();
 }
 
 bool
@@ -135,7 +135,7 @@ AvioStream::Open()
 	io = avio_alloc_context(buffer, sizeof(buffer),
 				false, this,
 				mpd_ffmpeg_stream_read, nullptr,
-				input.seekable
+				input.IsSeekable()
 				? mpd_ffmpeg_stream_seek : nullptr);
 	return io != nullptr;
 }
@@ -481,7 +481,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		: 0;
 
 	decoder_initialized(decoder, audio_format,
-			    input.seekable, total_time);
+			    input.IsSeekable(), total_time);
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 	AVFrame *frame = av_frame_alloc();
