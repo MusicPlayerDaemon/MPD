@@ -79,6 +79,11 @@ struct CdioParanoiaInputStream final : public InputStream {
 		if (cdio != nullptr)
 			cdio_destroy(cdio);
 	}
+
+	/* virtual methods from InputStream */
+	bool IsEOF() override;
+	size_t Read(void *ptr, size_t size, Error &error) override;
+	bool Seek(offset_type offset, int whence, Error &error) override;
 };
 
 static constexpr Domain cdio_domain("cdio");
@@ -266,48 +271,44 @@ input_cdio_open(const char *uri,
 	return i;
 }
 
-static bool
-input_cdio_seek(InputStream *is,
-		InputPlugin::offset_type offset, int whence, Error &error)
+bool
+CdioParanoiaInputStream::Seek(InputPlugin::offset_type new_offset,
+			      int whence, Error &error)
 {
-	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
-
 	/* calculate absolute offset */
 	switch (whence) {
 	case SEEK_SET:
 		break;
 	case SEEK_CUR:
-		offset += cis->offset;
+		new_offset += offset;
 		break;
 	case SEEK_END:
-		offset += cis->size;
+		new_offset += size;
 		break;
 	}
 
-	if (offset < 0 || offset > cis->size) {
+	if (new_offset < 0 || new_offset > size) {
 		error.Format(cdio_domain, "Invalid offset to seek %ld (%ld)",
-			     (long int)offset, (long int)cis->size);
+			     (long int)new_offset, (long int)size);
 		return false;
 	}
 
 	/* simple case */
-	if (offset == cis->offset)
+	if (new_offset == offset)
 		return true;
 
 	/* calculate current LSN */
-	cis->lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
-	cis->offset = offset;
+	lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
+	offset = new_offset;
 
-	cdio_paranoia_seek(cis->para, cis->lsn_from + cis->lsn_relofs, SEEK_SET);
+	cdio_paranoia_seek(para, lsn_from + lsn_relofs, SEEK_SET);
 
 	return true;
 }
 
-static size_t
-input_cdio_read(InputStream *is, void *ptr, size_t length,
-		Error &error)
+size_t
+CdioParanoiaInputStream::Read(void *ptr, size_t length, Error &error)
 {
-	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
 	size_t nbytes = 0;
 	int diff;
 	size_t len, maxwrite;
@@ -319,20 +320,20 @@ input_cdio_read(InputStream *is, void *ptr, size_t length,
 
 
 		/* end of track ? */
-		if (cis->lsn_from + cis->lsn_relofs > cis->lsn_to)
+		if (lsn_from + lsn_relofs > lsn_to)
 			break;
 
 		//current sector was changed ?
-		if (cis->lsn_relofs != cis->buffer_lsn) {
-			rbuf = cdio_paranoia_read(cis->para, nullptr);
+		if (lsn_relofs != buffer_lsn) {
+			rbuf = cdio_paranoia_read(para, nullptr);
 
-			s_err = cdda_errors(cis->drv);
+			s_err = cdda_errors(drv);
 			if (s_err) {
 				FormatError(cdio_domain,
 					    "paranoia_read: %s", s_err);
 				free(s_err);
 			}
-			s_mess = cdda_messages(cis->drv);
+			s_mess = cdda_messages(drv);
 			if (s_mess) {
 				free(s_mess);
 			}
@@ -342,15 +343,15 @@ input_cdio_read(InputStream *is, void *ptr, size_t length,
 				return 0;
 			}
 			//store current buffer
-			memcpy(cis->buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
-			cis->buffer_lsn = cis->lsn_relofs;
+			memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
+			buffer_lsn = lsn_relofs;
 		} else {
 			//use cached sector
-			rbuf = (int16_t*) cis->buffer;
+			rbuf = (int16_t *)buffer;
 		}
 
 		//correct offset
-		diff = cis->offset - cis->lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
+		diff = offset - lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
 
 		assert(diff >= 0 && diff < CDIO_CD_FRAMESIZE_RAW);
 
@@ -364,8 +365,8 @@ input_cdio_read(InputStream *is, void *ptr, size_t length,
 		nbytes += len;
 
 		//update offset
-		cis->offset += len;
-		cis->lsn_relofs = cis->offset / CDIO_CD_FRAMESIZE_RAW;
+		offset += len;
+		lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
 		//update length
 		length -= len;
 	}
@@ -373,12 +374,10 @@ input_cdio_read(InputStream *is, void *ptr, size_t length,
 	return nbytes;
 }
 
-static bool
-input_cdio_eof(InputStream *is)
+bool
+CdioParanoiaInputStream::IsEOF()
 {
-	CdioParanoiaInputStream *cis = (CdioParanoiaInputStream *)is;
-
-	return (cis->lsn_from + cis->lsn_relofs > cis->lsn_to);
+	return lsn_from + lsn_relofs > lsn_to;
 }
 
 const InputPlugin input_plugin_cdio_paranoia = {
@@ -386,11 +385,4 @@ const InputPlugin input_plugin_cdio_paranoia = {
 	input_cdio_init,
 	nullptr,
 	input_cdio_open,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	input_cdio_read,
-	input_cdio_eof,
-	input_cdio_seek,
 };

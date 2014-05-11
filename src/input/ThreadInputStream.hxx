@@ -82,6 +82,12 @@ public:
 	 */
 	InputStream *Start(Error &error);
 
+	/* virtual methods from InputStream */
+	bool Check(Error &error) override final;
+	bool IsEOF() override final;
+	bool IsAvailable() override final;
+	size_t Read(void *ptr, size_t size, Error &error) override final;
+
 protected:
 	void SetMimeType(const char *_mime) {
 		assert(thread.IsInside());
@@ -110,7 +116,7 @@ protected:
 	 *
 	 * @return 0 on end-of-file or on error
 	 */
-	virtual size_t Read(void *ptr, size_t size, Error &error) = 0;
+	virtual size_t ThreadRead(void *ptr, size_t size, Error &error) = 0;
 
 	/**
 	 * Optional deinitialization before leaving the thread.
@@ -130,19 +136,6 @@ protected:
 private:
 	void ThreadFunc();
 	static void ThreadFunc(void *ctx);
-
-	bool Check2(Error &error);
-	bool Available2();
-	size_t Read2(void *ptr, size_t size, Error &error);
-	bool IsEOF2();
-
-public:
-	/* InputPlugin callbacks */
-	static bool Check(InputStream *is, Error &error);
-	static bool Available(InputStream *is);
-	static size_t Read(InputStream *is, void *ptr, size_t size,
-			   Error &error);
-	static bool IsEOF(InputStream *is);
 };
 
 #endif

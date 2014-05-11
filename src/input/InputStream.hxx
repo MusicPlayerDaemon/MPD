@@ -166,13 +166,13 @@ public:
 	 *
 	 * @return false on error
 	 */
-	bool Check(Error &error);
+	virtual bool Check(Error &error);
 
 	/**
 	 * Update the public attributes.  Call before accessing attributes
 	 * such as "ready" or "offset".
 	 */
-	void Update();
+	virtual void Update();
 
 	void SetReady();
 
@@ -272,7 +272,7 @@ public:
 	 * @param offset the relative offset
 	 * @param whence the base of the seek, one of SEEK_SET, SEEK_CUR, SEEK_END
 	 */
-	bool Seek(offset_type offset, int whence, Error &error);
+	virtual bool Seek(offset_type offset, int whence, Error &error);
 
 	/**
 	 * Wrapper for Seek() which locks and unlocks the mutex; the
@@ -293,7 +293,7 @@ public:
 	 * The caller must lock the mutex.
 	 */
 	gcc_pure
-	bool IsEOF();
+	virtual bool IsEOF() = 0;
 
 	/**
 	 * Wrapper for IsEOF() which locks and unlocks the mutex; the
@@ -311,7 +311,7 @@ public:
 	 * nullptr if the tag has not changed since the last call
 	 */
 	gcc_malloc
-	Tag *ReadTag();
+	virtual Tag *ReadTag();
 
 	/**
 	 * Wrapper for ReadTag() which locks and unlocks the mutex;
@@ -328,7 +328,7 @@ public:
 	 * The caller must lock the mutex.
 	 */
 	gcc_pure
-	bool IsAvailable();
+	virtual bool IsAvailable();
 
 	/**
 	 * Reads data from the stream into the caller-supplied buffer.
@@ -342,7 +342,7 @@ public:
 	 * @return the number of bytes read
 	 */
 	gcc_nonnull_all
-	size_t Read(void *ptr, size_t size, Error &error);
+	virtual size_t Read(void *ptr, size_t size, Error &error) = 0;
 
 	/**
 	 * Wrapper for Read() which locks and unlocks the mutex;

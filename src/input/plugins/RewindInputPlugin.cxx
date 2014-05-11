@@ -26,7 +26,12 @@
 #include <string.h>
 #include <stdio.h>
 
-extern const InputPlugin rewind_input_plugin;
+static const InputPlugin rewind_input_plugin = {
+	nullptr,
+	nullptr,
+	nullptr,
+	nullptr,
+};
 
 class RewindInputStream final : public InputStream {
 	InputStream *input;
@@ -63,30 +68,31 @@ public:
 		delete input;
 	}
 
-	bool Check(Error &error) {
+	/* virtual methods from InputStream */
+
+	bool Check(Error &error) override {
 		return input->Check(error);
 	}
 
-	void Update() {
+	void Update() override {
 		if (!ReadingFromBuffer())
 			CopyAttributes();
 	}
 
-	Tag *ReadTag() {
-		return input->ReadTag();
-	}
-
-	bool IsAvailable() {
-		return input->IsAvailable();
-	}
-
-	size_t Read(void *ptr, size_t size, Error &error);
-
-	bool IsEOF() {
+	bool IsEOF() override {
 		return !ReadingFromBuffer() && input->IsEOF();
 	}
 
-	bool Seek(InputPlugin::offset_type offset, int whence, Error &error);
+	Tag *ReadTag() override {
+		return input->ReadTag();
+	}
+
+	bool IsAvailable() override {
+		return input->IsAvailable();
+	}
+
+	size_t Read(void *ptr, size_t size, Error &error) override;
+	bool Seek(offset_type offset, int whence, Error &error) override;
 
 private:
 	/**
@@ -121,39 +127,7 @@ private:
 	}
 };
 
-static bool
-input_rewind_check(InputStream *is, Error &error)
-{
-	RewindInputStream *r = (RewindInputStream *)is;
-
-	return r->Check(error);
-}
-
-static void
-input_rewind_update(InputStream *is)
-{
-	RewindInputStream *r = (RewindInputStream *)is;
-
-	r->Update();
-}
-
-static Tag *
-input_rewind_tag(InputStream *is)
-{
-	RewindInputStream *r = (RewindInputStream *)is;
-
-	return r->ReadTag();
-}
-
-static bool
-input_rewind_available(InputStream *is)
-{
-	RewindInputStream *r = (RewindInputStream *)is;
-
-	return r->IsAvailable();
-}
-
-inline size_t
+size_t
 RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
 	if (ReadingFromBuffer()) {
@@ -193,23 +167,6 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 	}
 }
 
-static size_t
-input_rewind_read(InputStream *is, void *ptr, size_t size,
-		  Error &error)
-{
-	RewindInputStream *r = (RewindInputStream *)is;
-
-	return r->Read(ptr, size, error);
-}
-
-static bool
-input_rewind_eof(InputStream *is)
-{
-	RewindInputStream *r = (RewindInputStream *)is;
-
-	return r->IsEOF();
-}
-
 inline bool
 RewindInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
 			Error &error)
@@ -239,30 +196,6 @@ RewindInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
 		return success;
 	}
 }
-
-static bool
-input_rewind_seek(InputStream *is, InputPlugin::offset_type offset,
-		  int whence,
-		  Error &error)
-{
-	RewindInputStream *r = (RewindInputStream *)is;
-
-	return r->Seek(offset, whence, error);
-}
-
-const InputPlugin rewind_input_plugin = {
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	input_rewind_check,
-	input_rewind_update,
-	input_rewind_tag,
-	input_rewind_available,
-	input_rewind_read,
-	input_rewind_eof,
-	input_rewind_seek,
-};
 
 InputStream *
 input_rewind_open(InputStream *is)

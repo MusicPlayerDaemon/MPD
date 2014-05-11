@@ -56,6 +56,11 @@ struct FfmpegInputStream final : public InputStream {
 	~FfmpegInputStream() {
 		avio_close(h);
 	}
+
+	/* virtual methods from InputStream */
+	bool IsEOF() override;
+	size_t Read(void *ptr, size_t size, Error &error) override;
+	bool Seek(offset_type offset, int whence, Error &error) override;
 };
 
 static constexpr Domain ffmpeg_domain("ffmpeg");
@@ -106,43 +111,35 @@ input_ffmpeg_open(const char *uri,
 	return new FfmpegInputStream(uri, mutex, cond, h);
 }
 
-static size_t
-input_ffmpeg_read(InputStream *is, void *ptr, size_t size,
-		  Error &error)
+size_t
+FfmpegInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
-	FfmpegInputStream *i = (FfmpegInputStream *)is;
-
-	int ret = avio_read(i->h, (unsigned char *)ptr, size);
+	int ret = avio_read(h, (unsigned char *)ptr, read_size);
 	if (ret <= 0) {
 		if (ret < 0)
 			error.Set(ffmpeg_domain, "avio_read() failed");
 
-		i->eof = true;
+		eof = true;
 		return false;
 	}
 
-	is->offset += ret;
+	offset += ret;
 	return (size_t)ret;
 }
 
-static bool
-input_ffmpeg_eof(InputStream *is)
+bool
+FfmpegInputStream::IsEOF()
 {
-	FfmpegInputStream *i = (FfmpegInputStream *)is;
-
-	return i->eof;
+	return eof;
 }
 
-static bool
-input_ffmpeg_seek(InputStream *is, InputPlugin::offset_type offset,
-		  int whence,
-		  Error &error)
+bool
+FfmpegInputStream::Seek(offset_type new_offset, int whence, Error &error)
 {
-	FfmpegInputStream *i = (FfmpegInputStream *)is;
-	int64_t ret = avio_seek(i->h, offset, whence);
+	int64_t ret = avio_seek(h, new_offset, whence);
 
 	if (ret >= 0) {
-		i->eof = false;
+		eof = false;
 		return true;
 	} else {
 		error.Set(ffmpeg_domain, "avio_seek() failed");
@@ -155,11 +152,4 @@ const InputPlugin input_plugin_ffmpeg = {
 	input_ffmpeg_init,
 	nullptr,
 	input_ffmpeg_open,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	input_ffmpeg_read,
-	input_ffmpeg_eof,
-	input_ffmpeg_seek,
 };

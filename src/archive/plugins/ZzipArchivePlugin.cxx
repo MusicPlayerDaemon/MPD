@@ -123,6 +123,11 @@ struct ZzipInputStream final : public InputStream {
 		zzip_file_close(file);
 		archive->Unref();
 	}
+
+	/* virtual methods from InputStream */
+	bool IsEOF() override;
+	size_t Read(void *ptr, size_t size, Error &error) override;
+	bool Seek(offset_type offset, int whence, Error &error) override;
 };
 
 InputStream *
@@ -142,41 +147,32 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 				   _file);
 }
 
-static size_t
-zzip_input_read(InputStream *is, void *ptr, size_t size,
-		Error &error)
+size_t
+ZzipInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
-	ZzipInputStream *zis = (ZzipInputStream *)is;
-	int ret;
-
-	ret = zzip_file_read(zis->file, ptr, size);
+	int ret = zzip_file_read(file, ptr, read_size);
 	if (ret < 0) {
 		error.Set(zzip_domain, "zzip_file_read() has failed");
 		return 0;
 	}
 
-	is->offset = zzip_tell(zis->file);
-
+	offset = zzip_tell(file);
 	return ret;
 }
 
-static bool
-zzip_input_eof(InputStream *is)
+bool
+ZzipInputStream::IsEOF()
 {
-	ZzipInputStream *zis = (ZzipInputStream *)is;
-
-	return (InputPlugin::offset_type)zzip_tell(zis->file) == is->size;
+	return (InputPlugin::offset_type)zzip_tell(file) == size;
 }
 
-static bool
-zzip_input_seek(InputStream *is, InputPlugin::offset_type offset,
-		int whence, Error &error)
+bool
+ZzipInputStream::Seek(offset_type new_offset, int whence, Error &error)
 {
-	ZzipInputStream *zis = (ZzipInputStream *)is;
-	zzip_off_t ofs = zzip_seek(zis->file, offset, whence);
+	zzip_off_t ofs = zzip_seek(file, new_offset, whence);
 	if (ofs != -1) {
 		error.Set(zzip_domain, "zzip_seek() has failed");
-		is->offset = ofs;
+		offset = ofs;
 		return true;
 	}
 	return false;
@@ -194,13 +190,6 @@ const InputPlugin zzip_input_plugin = {
 	nullptr,
 	nullptr,
 	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	zzip_input_read,
-	zzip_input_eof,
-	zzip_input_seek,
 };
 
 const ArchivePlugin zzip_archive_plugin = {

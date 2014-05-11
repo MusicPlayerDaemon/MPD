@@ -48,6 +48,15 @@ struct FileInputStream final : public InputStream {
 	~FileInputStream() {
 		close(fd);
 	}
+
+	/* virtual methods from InputStream */
+
+	bool IsEOF() override {
+		return GetOffset() >= GetSize();
+	}
+
+	size_t Read(void *ptr, size_t size, Error &error) override;
+	bool Seek(offset_type offset, int whence, Error &error) override;
 };
 
 static InputStream *
@@ -89,44 +98,32 @@ input_file_open(const char *filename,
 	return new FileInputStream(filename, fd, st.st_size, mutex, cond);
 }
 
-static bool
-input_file_seek(InputStream *is, InputPlugin::offset_type offset,
-		int whence,
-		Error &error)
+bool
+FileInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
+		      Error &error)
 {
-	FileInputStream *fis = (FileInputStream *)is;
-
-	offset = (InputPlugin::offset_type)lseek(fis->fd, (off_t)offset, whence);
-	if (offset < 0) {
+	new_offset = (InputPlugin::offset_type)lseek(fd, (off_t)new_offset,
+						     whence);
+	if (new_offset < 0) {
 		error.SetErrno("Failed to seek");
 		return false;
 	}
 
-	is->offset = offset;
+	offset = new_offset;
 	return true;
 }
 
-static size_t
-input_file_read(InputStream *is, void *ptr, size_t size,
-		Error &error)
+size_t
+FileInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
-	FileInputStream *fis = (FileInputStream *)is;
-	ssize_t nbytes;
-
-	nbytes = read(fis->fd, ptr, size);
+	ssize_t nbytes = read(fd, ptr, read_size);
 	if (nbytes < 0) {
 		error.SetErrno("Failed to read");
 		return 0;
 	}
 
-	is->offset += nbytes;
+	offset += nbytes;
 	return (size_t)nbytes;
-}
-
-static bool
-input_file_eof(InputStream *is)
-{
-	return is->GetOffset() >= is->GetSize();
 }
 
 const InputPlugin input_plugin_file = {
@@ -134,11 +131,4 @@ const InputPlugin input_plugin_file = {
 	nullptr,
 	nullptr,
 	input_file_open,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	input_file_read,
-	input_file_eof,
-	input_file_seek,
 };

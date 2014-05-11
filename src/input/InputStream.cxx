@@ -45,10 +45,6 @@ InputStream::Open(const char *url,
 
 		is = plugin->open(url, mutex, cond, error);
 		if (is != nullptr) {
-			assert(is->plugin.read != nullptr);
-			assert(is->plugin.eof != nullptr);
-			assert(!is->seekable || is->plugin.seek != nullptr);
-
 			is = input_rewind_open(is);
 
 			return is;
@@ -83,16 +79,14 @@ InputStream::OpenReady(const char *uri,
 }
 
 bool
-InputStream::Check(Error &error)
+InputStream::Check(gcc_unused Error &error)
 {
-	return plugin.check == nullptr || plugin.check(this, error);
+	return true;
 }
 
 void
 InputStream::Update()
 {
-	if (plugin.update != nullptr)
-		plugin.update(this);
 }
 
 void
@@ -130,20 +124,15 @@ InputStream::CheapSeeking() const
 }
 
 bool
-InputStream::Seek(offset_type _offset, int whence, Error &error)
+InputStream::Seek(gcc_unused offset_type new_offset, gcc_unused int whence,
+		  gcc_unused Error &error)
 {
-	if (plugin.seek == nullptr)
-		return false;
-
-	return plugin.seek(this, _offset, whence, error);
+	return false;
 }
 
 bool
 InputStream::LockSeek(offset_type _offset, int whence, Error &error)
 {
-	if (plugin.seek == nullptr)
-		return false;
-
 	const ScopeLock protect(mutex);
 	return Seek(_offset, whence, error);
 }
@@ -163,17 +152,12 @@ InputStream::LockRewind(Error &error)
 Tag *
 InputStream::ReadTag()
 {
-	return plugin.tag != nullptr
-		? plugin.tag(this)
-		: nullptr;
+	return nullptr;
 }
 
 Tag *
 InputStream::LockReadTag()
 {
-	if (plugin.tag == nullptr)
-		return nullptr;
-
 	const ScopeLock protect(mutex);
 	return ReadTag();
 }
@@ -181,18 +165,7 @@ InputStream::LockReadTag()
 bool
 InputStream::IsAvailable()
 {
-	return plugin.available != nullptr
-		? plugin.available(this)
-		: true;
-}
-
-size_t
-InputStream::Read(void *ptr, size_t _size, Error &error)
-{
-	assert(ptr != nullptr);
-	assert(_size > 0);
-
-	return plugin.read(this, ptr, _size, error);
+	return true;
 }
 
 size_t
@@ -203,12 +176,6 @@ InputStream::LockRead(void *ptr, size_t _size, Error &error)
 
 	const ScopeLock protect(mutex);
 	return Read(ptr, _size, error);
-}
-
-bool
-InputStream::IsEOF()
-{
-	return plugin.eof(this);
 }
 
 bool

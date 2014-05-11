@@ -54,33 +54,42 @@ public:
 		nfs_destroy_context(ctx);
 	}
 
-	bool IsEOF() const {
+	/* virtual methods from InputStream */
+
+	bool IsEOF() override {
 		return offset >= size;
 	}
 
-	size_t Read(void *ptr, size_t read_size, Error &error) {
-		int nbytes = nfs_read(ctx, fh, read_size, (char *)ptr);
-		if (nbytes < 0) {
-			error.SetErrno(-nbytes, "nfs_read() failed");
-			nbytes = 0;
-		}
-
-		return nbytes;
-	}
-
-	bool Seek(InputStream::offset_type new_offset, int whence, Error &error) {
-		uint64_t current_offset;
-		int result = nfs_lseek(ctx, fh, new_offset, whence,
-				       &current_offset);
-		if (result < 0) {
-			error.SetErrno(-result, "smbc_lseek() failed");
-			return false;
-		}
-
-		offset = current_offset;
-		return true;
-	}
+	size_t Read(void *ptr, size_t size, Error &error) override;
+	bool Seek(offset_type offset, int whence, Error &error) override;
 };
+
+size_t
+NfsInputStream::Read(void *ptr, size_t read_size, Error &error)
+{
+	int nbytes = nfs_read(ctx, fh, read_size, (char *)ptr);
+	if (nbytes < 0) {
+		error.SetErrno(-nbytes, "nfs_read() failed");
+		nbytes = 0;
+	}
+
+	return nbytes;
+}
+
+bool
+NfsInputStream::Seek(offset_type new_offset, int whence, Error &error)
+{
+	uint64_t current_offset;
+	int result = nfs_lseek(ctx, fh, new_offset, whence,
+			       &current_offset);
+	if (result < 0) {
+		error.SetErrno(-result, "smbc_lseek() failed");
+		return false;
+	}
+
+	offset = current_offset;
+	return true;
+}
 
 /*
  * InputPlugin methods
@@ -148,40 +157,9 @@ input_nfs_open(const char *uri,
 	return new NfsInputStream(uri, mutex, cond, ctx, fh, st.st_size);
 }
 
-static size_t
-input_nfs_read(InputStream *is, void *ptr, size_t size,
-		     Error &error)
-{
-	NfsInputStream &s = *(NfsInputStream *)is;
-	return s.Read(ptr, size, error);
-}
-
-static bool
-input_nfs_eof(InputStream *is)
-{
-	NfsInputStream &s = *(NfsInputStream *)is;
-	return s.IsEOF();
-}
-
-static bool
-input_nfs_seek(InputStream *is,
-		     InputPlugin::offset_type offset, int whence,
-		     Error &error)
-{
-	NfsInputStream &s = *(NfsInputStream *)is;
-	return s.Seek(offset, whence, error);
-}
-
 const InputPlugin input_plugin_nfs = {
 	"nfs",
 	nullptr,
 	nullptr,
 	input_nfs_open,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	input_nfs_read,
-	input_nfs_eof,
-	input_nfs_seek,
 };

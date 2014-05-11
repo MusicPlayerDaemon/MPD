@@ -116,8 +116,8 @@ ThreadInputStream::ThreadFunc(void *ctx)
 	tis.ThreadFunc();
 }
 
-inline bool
-ThreadInputStream::Check2(Error &error)
+bool
+ThreadInputStream::Check(Error &error)
 {
 	if (postponed_error.IsDefined()) {
 		error = std::move(postponed_error);
@@ -128,27 +128,13 @@ ThreadInputStream::Check2(Error &error)
 }
 
 bool
-ThreadInputStream::Check(InputStream *is, Error &error)
-{
-	ThreadInputStream &tis = *(ThreadInputStream *)is;
-	return tis.Check2(error);
-}
-
-inline bool
-ThreadInputStream::Available2()
+ThreadInputStream::IsAvailable()
 {
 	return !buffer->IsEmpty() || eof || postponed_error.IsDefined();
 }
 
-bool
-ThreadInputStream::Available(InputStream *is)
-{
-	ThreadInputStream &tis = *(ThreadInputStream *)is;
-	return tis.Available2();
-}
-
 inline size_t
-ThreadInputStream::Read2(void *ptr, size_t read_size, Error &error)
+ThreadInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
 	while (true) {
 		if (postponed_error.IsDefined()) {
@@ -173,23 +159,8 @@ ThreadInputStream::Read2(void *ptr, size_t read_size, Error &error)
 	}
 }
 
-size_t
-ThreadInputStream::Read(InputStream *is, void *ptr, size_t size,
-			Error &error)
-{
-	ThreadInputStream &tis = *(ThreadInputStream *)is;
-	return tis.Read2(ptr, size, error);
-}
-
-inline bool
-ThreadInputStream::IsEOF2()
+bool
+ThreadInputStream::IsEOF()
 {
 	return eof;
-}
-
-bool
-ThreadInputStream::IsEOF(InputStream *is)
-{
-	ThreadInputStream &tis = *(ThreadInputStream *)is;
-	return tis.IsEOF2();
 }

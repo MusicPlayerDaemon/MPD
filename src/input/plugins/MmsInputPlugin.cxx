@@ -40,7 +40,8 @@ public:
 
 protected:
 	virtual bool Open(gcc_unused Error &error) override;
-	virtual size_t Read(void *ptr, size_t size, Error &error) override;
+	virtual size_t ThreadRead(void *ptr, size_t size,
+				  Error &error) override;
 
 	virtual void Close() {
 		mmsx_close(mms);
@@ -89,7 +90,7 @@ input_mms_open(const char *url,
 }
 
 size_t
-MmsInputStream::Read(void *ptr, size_t read_size, Error &error)
+MmsInputStream::ThreadRead(void *ptr, size_t read_size, Error &error)
 {
 	int nbytes = mmsx_read(nullptr, mms, (char *)ptr, read_size);
 	if (nbytes <= 0) {
@@ -106,11 +107,4 @@ const InputPlugin input_plugin_mms = {
 	nullptr,
 	nullptr,
 	input_mms_open,
-	ThreadInputStream::Check,
-	nullptr,
-	nullptr,
-	ThreadInputStream::Available,
-	ThreadInputStream::Read,
-	ThreadInputStream::IsEOF,
-	nullptr,
 };

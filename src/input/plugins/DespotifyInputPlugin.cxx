@@ -66,13 +66,15 @@ public:
 	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond,
 				 Error &error);
 
-	bool IsEOF() const {
+	void Callback(int sig);
+
+	/* virtual methods from InputStream */
+
+	bool IsEOF() override {
 		return eof;
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error);
-
-	Tag *ReadTag() {
+	Tag *ReadTag() override {
 		if (tag.IsEmpty())
 			return nullptr;
 
@@ -81,7 +83,7 @@ public:
 		return result;
 	}
 
-	void Callback(int sig);
+	size_t Read(void *ptr, size_t size, Error &error) override;
 
 private:
 	void FillBuffer();
@@ -201,7 +203,7 @@ input_despotify_open(const char *url, Mutex &mutex, Cond &cond, Error &error)
 	return DespotifyInputStream::Open(url, mutex, cond, error);
 }
 
-inline size_t
+size_t
 DespotifyInputStream::Read(void *ptr, size_t read_size,
 			   gcc_unused Error &error)
 {
@@ -217,39 +219,9 @@ DespotifyInputStream::Read(void *ptr, size_t read_size,
 	return to_cpy;
 }
 
-static size_t
-input_despotify_read(InputStream *is, void *ptr, size_t size, Error &error)
-{
-	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
-	return ctx->Read(ptr, size, error);
-}
-
-static bool
-input_despotify_eof(InputStream *is)
-{
-	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
-
-	return ctx->IsEOF();
-}
-
-static Tag *
-input_despotify_tag(InputStream *is)
-{
-	DespotifyInputStream *ctx = (DespotifyInputStream *)is;
-
-	return ctx->ReadTag();
-}
-
 const InputPlugin input_plugin_despotify = {
 	"despotify",
 	nullptr,
 	nullptr,
 	input_despotify_open,
-	nullptr,
-	nullptr,
-	input_despotify_tag,
-	nullptr,
-	input_despotify_read,
-	input_despotify_eof,
-	nullptr,
 };

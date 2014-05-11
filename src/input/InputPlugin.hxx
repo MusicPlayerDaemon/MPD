@@ -82,38 +82,6 @@ struct InputPlugin {
 	InputStream *(*open)(const char *uri,
 			     Mutex &mutex, Cond &cond,
 			     Error &error);
-
-	/**
-	 * Check for errors that may have occurred in the I/O thread.
-	 * May be unimplemented for synchronous plugins.
-	 *
-	 * @return false on error
-	 */
-	bool (*check)(InputStream *is, Error &error);
-
-	/**
-	 * Update the public attributes.  Call before access.  Can be
-	 * nullptr if the plugin always keeps its attributes up to date.
-	 */
-	void (*update)(InputStream *is);
-
-	Tag *(*tag)(InputStream *is);
-
-	/**
-	 * Returns true if the next read operation will not block:
-	 * either data is available, or end-of-stream has been
-	 * reached, or an error has occurred.
-	 *
-	 * If this method is unimplemented, then it is assumed that
-	 * reading will never block.
-	 */
-	bool (*available)(InputStream *is);
-
-	size_t (*read)(InputStream *is, void *ptr, size_t size,
-		       Error &error);
-	bool (*eof)(InputStream *is);
-	bool (*seek)(InputStream *is, offset_type offset, int whence,
-		     Error &error);
 };
 
 #endif

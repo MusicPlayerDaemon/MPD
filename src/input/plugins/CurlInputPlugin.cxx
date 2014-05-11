@@ -120,23 +120,6 @@ struct CurlInputStream final : public InputStream {
 	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond,
 				 Error &error);
 
-	bool Check(Error &error);
-
-	bool IsEOF() const {
-		return easy == nullptr && buffer.IsEmpty();
-	}
-
-	bool Seek(InputPlugin::offset_type offset, int whence, Error &error);
-
-	Tag *ReadTag();
-
-	bool IsAvailable() const {
-		return postponed_error.IsDefined() || easy == nullptr ||
-			!buffer.IsEmpty();
-	}
-
-	size_t Read(void *ptr, size_t size, Error &error);
-
 	bool InitEasy(Error &error);
 
 	/**
@@ -180,6 +163,23 @@ struct CurlInputStream final : public InputStream {
 	 * Runs in the I/O thread.  The caller must not hold locks.
 	 */
 	void RequestDone(CURLcode result, long status);
+
+	/* virtual methods from InputStream */
+	bool Check(Error &error) override;
+
+	bool IsEOF() override {
+		return easy == nullptr && buffer.IsEmpty();
+	}
+
+	Tag *ReadTag() override;
+
+	bool IsAvailable() override {
+		return postponed_error.IsDefined() || easy == nullptr ||
+			!buffer.IsEmpty();
+	}
+
+	size_t Read(void *ptr, size_t size, Error &error) override;
+	bool Seek(offset_type offset, int whence, Error &error) override;
 };
 
 class CurlMulti;
@@ -660,26 +660,12 @@ CurlInputStream::Check(Error &error)
 	return success;
 }
 
-static bool
-input_curl_check(InputStream *is, Error &error)
-{
-	CurlInputStream &c = *(CurlInputStream *)is;
-	return c.Check(error);
-}
-
-inline Tag *
+Tag *
 CurlInputStream::ReadTag()
 {
 	Tag *result = tag;
 	tag = nullptr;
 	return result;
-}
-
-static Tag *
-input_curl_tag(InputStream *is)
-{
-	CurlInputStream &c = *(CurlInputStream *)is;
-	return c.ReadTag();
 }
 
 inline bool
@@ -758,14 +744,7 @@ CurlInputStream::CopyIcyTag()
 	tag = new_tag;
 }
 
-static bool
-input_curl_available(InputStream *is)
-{
-	const CurlInputStream &c = *(const CurlInputStream *)is;
-	return c.IsAvailable();
-}
-
-inline size_t
+size_t
 CurlInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
 	size_t nbytes;
@@ -795,21 +774,6 @@ CurlInputStream::Read(void *ptr, size_t read_size, Error &error)
 	}
 
 	return nbytes;
-}
-
-static size_t
-input_curl_read(InputStream *is, void *ptr, size_t size,
-		Error &error)
-{
-	CurlInputStream &c = *(CurlInputStream *)is;
-	return c.Read(ptr, size, error);
-}
-
-static bool
-input_curl_eof(gcc_unused InputStream *is)
-{
-	const CurlInputStream &c = *(const CurlInputStream *)is;
-	return c.IsEOF();
 }
 
 inline void
@@ -1091,15 +1055,6 @@ CurlInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
 	return true;
 }
 
-static bool
-input_curl_seek(InputStream *is, InputPlugin::offset_type offset,
-		int whence,
-		Error &error)
-{
-	CurlInputStream &c = *(CurlInputStream *)is;
-	return c.Seek(offset, whence, error);
-}
-
 inline InputStream *
 CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond,
 		      Error &error)
@@ -1136,11 +1091,4 @@ const struct InputPlugin input_plugin_curl = {
 	input_curl_init,
 	input_curl_finish,
 	input_curl_open,
-	input_curl_check,
-	nullptr,
-	input_curl_tag,
-	input_curl_available,
-	input_curl_read,
-	input_curl_eof,
-	input_curl_seek,
 };

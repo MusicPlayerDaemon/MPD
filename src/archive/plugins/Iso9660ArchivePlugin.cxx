@@ -162,7 +162,9 @@ public:
 		archive.Unref();
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error);
+	/* virtual methods from InputStream */
+	bool IsEOF() override;
+	size_t Read(void *ptr, size_t size, Error &error) override;
 };
 
 InputStream *
@@ -181,7 +183,7 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 				      statbuf);
 }
 
-inline size_t
+size_t
 Iso9660InputStream::Read(void *ptr, size_t read_size, Error &error)
 {
 	int readed = 0;
@@ -216,18 +218,10 @@ Iso9660InputStream::Read(void *ptr, size_t read_size, Error &error)
 	return readed;
 }
 
-static size_t
-iso9660_input_read(InputStream *is, void *ptr, size_t size,
-		   Error &error)
+bool
+Iso9660InputStream::IsEOF()
 {
-	Iso9660InputStream *iis = (Iso9660InputStream *)is;
-	return iis->Read(ptr, size, error);
-}
-
-static bool
-iso9660_input_eof(InputStream *is)
-{
-	return is->offset == is->size;
+	return offset == size;
 }
 
 /* exported structures */
@@ -241,13 +235,6 @@ const InputPlugin iso9660_input_plugin = {
 	nullptr,
 	nullptr,
 	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	iso9660_input_read,
-	iso9660_input_eof,
 	nullptr,
 };
 

@@ -89,11 +89,4 @@ const InputPlugin input_plugin_archive = {
 	nullptr,
 	nullptr,
 	input_archive_open,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
 };

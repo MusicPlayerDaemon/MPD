@@ -102,6 +102,10 @@ struct Bzip2InputStream final : public InputStream {
 	~Bzip2InputStream();
 
 	bool Open(Error &error);
+
+	/* virtual methods from InputStream */
+	bool IsEOF() override;
+	size_t Read(void *ptr, size_t size, Error &error) override;
 };
 
 extern const InputPlugin bz2_inputplugin;
@@ -198,30 +202,26 @@ bz2_fillbuffer(Bzip2InputStream *bis, Error &error)
 	return true;
 }
 
-static size_t
-bz2_is_read(InputStream *is, void *ptr, size_t length,
-	    Error &error)
+size_t
+Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
 {
-	Bzip2InputStream *bis = (Bzip2InputStream *)is;
-	bz_stream *bzstream;
 	int bz_result;
 	size_t nbytes = 0;
 
-	if (bis->eof)
+	if (eof)
 		return 0;
 
-	bzstream = &bis->bzstream;
-	bzstream->next_out = (char *)ptr;
-	bzstream->avail_out = length;
+	bzstream.next_out = (char *)ptr;
+	bzstream.avail_out = length;
 
 	do {
-		if (!bz2_fillbuffer(bis, error))
+		if (!bz2_fillbuffer(this, error))
 			return 0;
 
-		bz_result = BZ2_bzDecompress(bzstream);
+		bz_result = BZ2_bzDecompress(&bzstream);
 
 		if (bz_result == BZ_STREAM_END) {
-			bis->eof = true;
+			eof = true;
 			break;
 		}
 
@@ -230,20 +230,18 @@ bz2_is_read(InputStream *is, void *ptr, size_t length,
 				  "BZ2_bzDecompress() has failed");
 			return 0;
 		}
-	} while (bzstream->avail_out == length);
+	} while (bzstream.avail_out == length);
 
-	nbytes = length - bzstream->avail_out;
-	is->offset += nbytes;
+	nbytes = length - bzstream.avail_out;
+	offset += nbytes;
 
 	return nbytes;
 }
 
-static bool
-bz2_is_eof(InputStream *is)
+bool
+Bzip2InputStream::IsEOF()
 {
-	Bzip2InputStream *bis = (Bzip2InputStream *)is;
-
-	return bis->eof;
+	return eof;
 }
 
 /* exported structures */
@@ -257,13 +255,6 @@ const InputPlugin bz2_inputplugin = {
 	nullptr,
 	nullptr,
 	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	bz2_is_read,
-	bz2_is_eof,
 	nullptr,
 };
 

@@ -116,7 +116,13 @@ public:
 	static InputStream *Create(const char *uri, Mutex &mutex, Cond &cond,
 				   Error &error);
 
-	bool Available() {
+	/* virtual methods from InputStream */
+
+	bool IsEOF() override {
+		return eof;
+	}
+
+	bool IsAvailable() override {
 		if (snd_pcm_avail(capture_handle) > frames_to_read)
 			return true;
 
@@ -126,11 +132,7 @@ public:
 		return false;
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error);
-
-	bool IsEOF() {
-		return eof;
-	}
+	size_t Read(void *ptr, size_t size, Error &error) override;
 
 private:
 	static snd_pcm_t *OpenDevice(const char *device, int rate,
@@ -181,7 +183,7 @@ AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond,
 				   handle, frame_size);
 }
 
-inline size_t
+size_t
 AlsaInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
 	assert(ptr != nullptr);
@@ -373,37 +375,9 @@ alsa_input_open(const char *uri, Mutex &mutex, Cond &cond, Error &error)
 	return AlsaInputStream::Create(uri, mutex, cond, error);
 }
 
-static bool
-alsa_input_available(InputStream *is)
-{
-	AlsaInputStream *ais = (AlsaInputStream *)is;
-	return ais->Available();
-}
-
-static size_t
-alsa_input_read(InputStream *is, void *ptr, size_t size, Error &error)
-{
-	AlsaInputStream *ais = (AlsaInputStream *)is;
-	return ais->Read(ptr, size, error);
-}
-
-static bool
-alsa_input_eof(gcc_unused InputStream *is)
-{
-	AlsaInputStream *ais = (AlsaInputStream *)is;
-	return ais->IsEOF();
-}
-
 const struct InputPlugin input_plugin_alsa = {
 	"alsa",
 	nullptr,
 	nullptr,
 	alsa_input_open,
-	nullptr,
-	nullptr,
-	nullptr,
-	alsa_input_available,
-	alsa_input_read,
-	alsa_input_eof,
-	nullptr,
 };

@@ -50,34 +50,14 @@ public:
 		smbclient_mutex.unlock();
 	}
 
-	bool IsEOF() const {
+	/* virtual methods from InputStream */
+
+	bool IsEOF() override {
 		return offset >= size;
 	}
 
-	size_t Read(void *ptr, size_t read_size, Error &error) {
-		smbclient_mutex.lock();
-		ssize_t nbytes = smbc_read(fd, ptr, read_size);
-		smbclient_mutex.unlock();
-		if (nbytes < 0) {
-			error.SetErrno("smbc_read() failed");
-			nbytes = 0;
-		}
-
-		return nbytes;
-	}
-
-	bool Seek(InputStream::offset_type new_offset, int whence, Error &error) {
-		smbclient_mutex.lock();
-		off_t result = smbc_lseek(fd, new_offset, whence);
-		smbclient_mutex.unlock();
-		if (result < 0) {
-			error.SetErrno("smbc_lseek() failed");
-			return false;
-		}
-
-		offset = result;
-		return true;
-	}
+	size_t Read(void *ptr, size_t size, Error &error) override;
+	bool Seek(offset_type offset, int whence, Error &error) override;
 };
 
 /*
@@ -141,28 +121,34 @@ input_smbclient_open(const char *uri,
 	return new SmbclientInputStream(uri, mutex, cond, ctx, fd, st);
 }
 
-static size_t
-input_smbclient_read(InputStream *is, void *ptr, size_t size,
-		     Error &error)
+size_t
+SmbclientInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
-	SmbclientInputStream &s = *(SmbclientInputStream *)is;
-	return s.Read(ptr, size, error);
+	smbclient_mutex.lock();
+	ssize_t nbytes = smbc_read(fd, ptr, read_size);
+	smbclient_mutex.unlock();
+	if (nbytes < 0) {
+		error.SetErrno("smbc_read() failed");
+		nbytes = 0;
+	}
+
+	return nbytes;
 }
 
-static bool
-input_smbclient_eof(InputStream *is)
+bool
+SmbclientInputStream::Seek(InputStream::offset_type new_offset,
+			   int whence, Error &error)
 {
-	SmbclientInputStream &s = *(SmbclientInputStream *)is;
-	return s.IsEOF();
-}
+	smbclient_mutex.lock();
+	off_t result = smbc_lseek(fd, new_offset, whence);
+	smbclient_mutex.unlock();
+	if (result < 0) {
+		error.SetErrno("smbc_lseek() failed");
+		return false;
+	}
 
-static bool
-input_smbclient_seek(InputStream *is,
-		     InputPlugin::offset_type offset, int whence,
-		     Error &error)
-{
-	SmbclientInputStream &s = *(SmbclientInputStream *)is;
-	return s.Seek(offset, whence, error);
+	offset = result;
+	return true;
 }
 
 const InputPlugin input_plugin_smbclient = {
@@ -170,11 +156,4 @@ const InputPlugin input_plugin_smbclient = {
 	input_smbclient_init,
 	nullptr,
 	input_smbclient_open,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	input_smbclient_read,
-	input_smbclient_eof,
-	input_smbclient_seek,
 };
