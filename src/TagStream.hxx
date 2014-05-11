@@ -22,7 +22,7 @@
 
 #include "check.h"
 
-struct InputStream;
+class InputStream;
 struct tag_handler;
 
 /**

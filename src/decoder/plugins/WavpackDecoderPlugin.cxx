@@ -487,7 +487,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 	bool can_seek = is.seekable;
 
 	wavpack_input isp_wvc;
-	InputStream *is_wvc = wavpack_open_wvc(decoder, is.uri.c_str(),
+	InputStream *is_wvc = wavpack_open_wvc(decoder, is.GetURI(),
 					       is.mutex, is.cond,
 					       &isp_wvc);
 	if (is_wvc != nullptr) {

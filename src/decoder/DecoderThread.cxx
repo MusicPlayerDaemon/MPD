@@ -87,7 +87,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 	dc.Lock();
 
 	is->Update();
-	while (!is->ready &&
+	while (!is->IsReady() &&
 	       dc.command != DecoderCommand::STOP) {
 		dc.Wait();
 
@@ -114,7 +114,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	assert(plugin.stream_decode != nullptr);
 	assert(decoder.stream_tag == nullptr);
 	assert(decoder.decoder_tag == nullptr);
-	assert(input_stream.ready);
+	assert(input_stream.IsReady());
 	assert(decoder.dc.state == DecoderState::START);
 
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
@@ -179,7 +179,8 @@ decoder_check_plugin_mime(const DecoderPlugin &plugin, const InputStream &is)
 {
 	assert(plugin.stream_decode != nullptr);
 
-	return !is.mime.empty() && plugin.SupportsMimeType(is.mime.c_str());
+	const char *mime_type = is.GetMimeType();
+	return mime_type != nullptr && plugin.SupportsMimeType(mime_type);
 }
 
 gcc_pure

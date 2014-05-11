@@ -34,9 +34,11 @@ class Error;
 struct Tag;
 struct InputPlugin;
 
-struct InputStream {
+class InputStream {
+public:
 	typedef int64_t offset_type;
 
+private:
 	/**
 	 * the plugin which implements this input stream
 	 */
@@ -47,6 +49,7 @@ struct InputStream {
 	 */
 	std::string uri;
 
+public:
 	/**
 	 * A mutex that protects the mutable attributes of this object
 	 * and its implementation.  It must be locked before calling
@@ -83,16 +86,19 @@ struct InputStream {
 	 */
 	offset_type size;
 
+public:
 	/**
 	 * the current offset within the stream
 	 */
 	offset_type offset;
 
+private:
 	/**
 	 * the MIME content type of the resource, or empty if unknown.
 	 */
 	std::string mime;
 
+public:
 	InputStream(const InputPlugin &_plugin,
 		    const char *_uri, Mutex &_mutex, Cond &_cond)
 		:plugin(_plugin), uri(_uri),
@@ -134,6 +140,19 @@ struct InputStream {
 	 */
 	void Close();
 
+	const InputPlugin &GetPlugin() const {
+		return plugin;
+	}
+
+	/**
+	 * The absolute URI which was used to open this stream.
+	 *
+	 * No lock necessary for this method.
+	 */
+	const char *GetURI() const {
+		return uri.c_str();
+	}
+
 	void Lock() {
 		mutex.lock();
 	}
@@ -155,11 +174,18 @@ struct InputStream {
 	 */
 	void Update();
 
+	void SetReady();
+
 	/**
-	 * Wait until the stream becomes ready.
+	 * Return whether the stream is ready for reading and whether
+	 * the other attributes in this struct are valid.
 	 *
 	 * The caller must lock the mutex.
 	 */
+	bool IsReady() const {
+		return ready;
+	}
+
 	void WaitReady();
 
 	/**
@@ -169,10 +195,30 @@ struct InputStream {
 	void LockWaitReady();
 
 	gcc_pure
+	bool HasMimeType() const {
+		assert(ready);
+
+		return !mime.empty();
+	}
+
+	gcc_pure
 	const char *GetMimeType() const {
 		assert(ready);
 
 		return mime.empty() ? nullptr : mime.c_str();
+	}
+
+	gcc_nonnull_all
+	void SetMimeType(const char *_mime) {
+		assert(!ready);
+
+		mime = _mime;
+	}
+
+	void SetMimeType(std::string &&_mime) {
+		assert(!ready);
+
+		mime = std::move(_mime);
 	}
 
 	gcc_nonnull_all
@@ -187,6 +233,14 @@ struct InputStream {
 		assert(ready);
 
 		return size;
+	}
+
+	void AddOffset(offset_type delta) {
+		assert(ready);
+		assert(offset >= 0);
+		assert(delta >= 0);
+
+		offset += delta;
 	}
 
 	gcc_pure

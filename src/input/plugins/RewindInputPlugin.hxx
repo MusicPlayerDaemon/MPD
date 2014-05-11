@@ -29,7 +29,7 @@
 
 #include "check.h"
 
-struct InputStream;
+class InputStream;
 
 InputStream *
 input_rewind_open(InputStream *is);

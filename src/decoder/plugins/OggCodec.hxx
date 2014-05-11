@@ -25,7 +25,7 @@
 #define MPD_OGG_CODEC_HXX
 
 struct Decoder;
-struct InputStream;
+class InputStream;
 
 enum ogg_codec {
 	OGG_CODEC_UNKNOWN,

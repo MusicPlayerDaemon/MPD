@@ -23,7 +23,7 @@
 #include <FLAC/stream_decoder.h>
 
 struct Decoder;
-struct InputStream;
+class InputStream;
 
 /**
  * This class wraps an #InputStream in libFLAC stream decoder

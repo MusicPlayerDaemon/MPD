@@ -52,8 +52,8 @@ dump_input_stream(InputStream *is)
 
 	/* print meta data */
 
-	if (!is->mime.empty())
-		fprintf(stderr, "MIME type: %s\n", is->mime.c_str());
+	if (is->HasMimeType())
+		fprintf(stderr, "MIME type: %s\n", is->GetMimeType());
 
 	/* read data and tags from the stream */
 

@@ -52,7 +52,7 @@ struct FfmpegInputStream {
 		   - since avio.h doesn't tell us the MIME type of the
 		   resource, we can't select a decoder plugin, but the
 		   "ffmpeg" plugin is quite good at auto-detection */
-		base.mime = "audio/x-mpd-ffmpeg";
+		base.SetMimeType("audio/x-mpd-ffmpeg");
 	}
 
 	~FfmpegInputStream() {

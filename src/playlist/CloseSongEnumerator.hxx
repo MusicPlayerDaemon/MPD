@@ -23,7 +23,7 @@
 #include "SongEnumerator.hxx"
 #include "Compiler.h"
 
-struct InputStream;
+class InputStream;
 
 /**
  * A #SongEnumerator wrapper that closes an #InputStream automatically

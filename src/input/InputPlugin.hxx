@@ -35,7 +35,7 @@
 #endif
 
 struct config_param;
-struct InputStream;
+class InputStream;
 class Error;
 struct Tag;
 

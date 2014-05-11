@@ -93,6 +93,15 @@ InputStream::Update()
 }
 
 void
+InputStream::SetReady()
+{
+	assert(!ready);
+
+	ready = true;
+	cond.broadcast();
+}
+
+void
 InputStream::WaitReady()
 {
 	while (true) {

@@ -32,7 +32,7 @@
 struct DecoderBuffer;
 
 struct Decoder;
-struct InputStream;
+class InputStream;
 
 template<typename T> struct ConstBuffer;
 

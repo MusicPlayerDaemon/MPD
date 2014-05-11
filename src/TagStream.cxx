@@ -44,10 +44,10 @@ CheckDecoderPlugin(const DecoderPlugin &plugin,
 bool
 tag_stream_scan(InputStream &is, const tag_handler &handler, void *ctx)
 {
-	assert(is.ready);
+	assert(is.IsReady());
 
-	const char *const suffix = uri_get_suffix(is.uri.c_str());
-	const char *const mime = is.mime.empty() ? nullptr : is.mime.c_str();
+	const char *const suffix = uri_get_suffix(is.GetURI());
+	const char *const mime = is.GetMimeType();
 
 	if (suffix == nullptr && mime == nullptr)
 		return false;

@@ -55,7 +55,7 @@ struct RewindInputStream {
 	char buffer[64 * 1024];
 
 	RewindInputStream(InputStream *_input)
-		:base(rewind_input_plugin, _input->uri.c_str(),
+		:base(rewind_input_plugin, _input->GetURI(),
 		      _input->mutex, _input->cond),
 		 input(_input), tail(0) {
 	}
@@ -84,15 +84,16 @@ struct RewindInputStream {
 
 		assert(dest != src);
 
-		bool dest_ready = dest->ready;
+		if (!dest->IsReady() && src->IsReady()) {
+			if (src->HasMimeType())
+				dest->SetMimeType(src->GetMimeType());
 
-		dest->ready = src->ready;
-		dest->seekable = src->seekable;
-		dest->size = src->size;
+			dest->size = src->GetSize();
+			dest->seekable = src->IsSeekable();
+			dest->SetReady();
+		}
+
 		dest->offset = src->offset;
-
-		if (!dest_ready && src->ready)
-			dest->mime = src->mime;
 	}
 };
 
@@ -195,7 +196,7 @@ input_rewind_seek(InputStream *is, InputPlugin::offset_type offset,
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	assert(is->ready);
+	assert(is->IsReady());
 
 	if (whence == SEEK_SET && r->tail > 0 &&
 	    offset <= (InputPlugin::offset_type)r->tail) {
@@ -242,7 +243,7 @@ input_rewind_open(InputStream *is)
 	assert(is != nullptr);
 	assert(is->offset == 0);
 
-	if (is->seekable)
+	if (is->IsReady() && is->IsSeekable())
 		/* seekable resources don't need this plugin */
 		return is;
 

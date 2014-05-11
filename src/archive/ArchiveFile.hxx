@@ -25,7 +25,7 @@ class Cond;
 class Error;
 struct ArchivePlugin;
 class ArchiveVisitor;
-struct InputStream;
+class InputStream;
 
 class ArchiveFile {
 public:

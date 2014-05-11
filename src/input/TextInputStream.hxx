@@ -24,7 +24,7 @@
 
 #include <string>
 
-struct InputStream;
+class InputStream;
 
 class TextInputStream {
 	InputStream &is;

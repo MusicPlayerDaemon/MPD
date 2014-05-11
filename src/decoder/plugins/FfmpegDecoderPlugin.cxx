@@ -385,7 +385,7 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 	AVProbeData avpd;
 	avpd.buf = buffer;
 	avpd.buf_size = nbytes;
-	avpd.filename = is.uri.c_str();
+	avpd.filename = is.GetURI();
 
 	return av_probe_input_format(&avpd, true);
 }
@@ -409,7 +409,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	//ffmpeg works with ours "fileops" helper
 	AVFormatContext *format_context = nullptr;
 	if (mpd_ffmpeg_open_input(&format_context, stream.io,
-				  input.uri.c_str(),
+				  input.GetURI(),
 				  input_format) != 0) {
 		LogError(ffmpeg_domain, "Open failed");
 		return;
@@ -558,7 +558,7 @@ ffmpeg_scan_stream(InputStream &is,
 		return false;
 
 	AVFormatContext *f = nullptr;
-	if (mpd_ffmpeg_open_input(&f, stream.io, is.uri.c_str(),
+	if (mpd_ffmpeg_open_input(&f, stream.io, is.GetURI(),
 				  input_format) != 0)
 		return false;
 

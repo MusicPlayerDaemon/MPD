@@ -87,23 +87,23 @@ public:
 
 protected:
 	void Lock() {
-		base.mutex.lock();
+		base.Lock();
 	}
 
 	void Unlock() {
-		base.mutex.unlock();
+		base.Unlock();
 	}
 
 	const char *GetURI() const {
 		assert(thread.IsInside());
 
-		return base.uri.c_str();
+		return base.GetURI();
 	}
 
 	void SetMimeType(const char *mime) {
 		assert(thread.IsInside());
 
-		base.mime = mime;
+		base.SetMimeType(mime);
 	}
 
 	/* to be implemented by the plugin */

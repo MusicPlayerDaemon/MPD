@@ -23,7 +23,7 @@
 #include "Compiler.h"
 
 struct config_param;
-struct InputStream;
+class InputStream;
 struct tag_handler;
 class Path;
 

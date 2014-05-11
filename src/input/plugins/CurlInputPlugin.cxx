@@ -497,8 +497,7 @@ CurlInputStream::RequestDone(CURLcode result, long status)
 				       status);
 	}
 
-	base.ready = true;
-	base.cond.broadcast();
+	base.SetReady();
 }
 
 static void
@@ -833,7 +832,7 @@ CurlInputStream::HeaderReceived(const char *name, std::string &&value)
 	} else if (StringEqualsCaseASCII(name, "content-length")) {
 		base.size = base.offset + ParseUint64(value.c_str());
 	} else if (StringEqualsCaseASCII(name, "content-type")) {
-		base.mime = std::move(value);
+		base.SetMimeType(std::move(value));
 	} else if (StringEqualsCaseASCII(name, "icy-name") ||
 		   StringEqualsCaseASCII(name, "ice-name") ||
 		   StringEqualsCaseASCII(name, "x-audiocast-name")) {
@@ -987,7 +986,7 @@ CurlInputStream::InitEasy(Error &error)
 		curl_easy_setopt(easy, CURLOPT_PROXYUSERPWD, proxy_auth_str);
 	}
 
-	CURLcode code = curl_easy_setopt(easy, CURLOPT_URL, base.uri.c_str());
+	CURLcode code = curl_easy_setopt(easy, CURLOPT_URL, base.GetURI());
 	if (code != CURLE_OK) {
 		error.Format(curl_domain, code,
 			     "curl_easy_setopt() failed: %s",
@@ -1091,9 +1090,7 @@ CurlInputStream::Seek(InputPlugin::offset_type offset, int whence,
 		return false;
 
 	base.mutex.lock();
-
-	while (!base.ready)
-		base.cond.wait(base.mutex);
+	base.WaitReady();
 
 	if (postponed_error.IsDefined()) {
 		error = std::move(postponed_error);

@@ -58,18 +58,17 @@ ThreadInputStream::Start(Error &error)
 inline void
 ThreadInputStream::ThreadFunc()
 {
-	FormatThreadName("input:%s", base.plugin.name);
+	FormatThreadName("input:%s", base.GetPlugin().name);
 
-	base.mutex.lock();
+	Lock();
 	if (!Open(postponed_error)) {
 		base.cond.broadcast();
-		base.mutex.unlock();
+		Unlock();
 		return;
 	}
 
 	/* we're ready, tell it to our client */
-	base.ready = true;
-	base.cond.broadcast();
+	base.SetReady();
 
 	while (!close) {
 		assert(!postponed_error.IsDefined());
@@ -78,12 +77,12 @@ ThreadInputStream::ThreadFunc()
 		if (w.IsEmpty()) {
 			wake_cond.wait(base.mutex);
 		} else {
-			base.mutex.unlock();
+			Unlock();
 
 			Error error;
 			size_t nbytes = Read(w.data, w.size, error);
 
-			base.mutex.lock();
+			Lock();
 			base.cond.broadcast();
 
 			if (nbytes == 0) {
@@ -96,7 +95,7 @@ ThreadInputStream::ThreadFunc()
 		}
 	}
 
-	base.mutex.unlock();
+	Unlock();
 
 	Close();
 }
@@ -173,10 +172,10 @@ ThreadInputStream::Read(InputStream *is, void *ptr, size_t size,
 inline void
 ThreadInputStream::Close2()
 {
-	base.mutex.lock();
+	Lock();
 	close = true;
 	wake_cond.signal();
-	base.mutex.unlock();
+	Unlock();
 
 	Cancel();
 

@@ -26,7 +26,7 @@
 
 #include <stddef.h>
 
-struct InputStream;
+class InputStream;
 struct Decoder;
 
 /**

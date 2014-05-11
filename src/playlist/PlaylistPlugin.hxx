@@ -21,7 +21,7 @@
 #define MPD_PLAYLIST_PLUGIN_HXX
 
 struct config_param;
-struct InputStream;
+class InputStream;
 struct Tag;
 class Mutex;
 class Cond;

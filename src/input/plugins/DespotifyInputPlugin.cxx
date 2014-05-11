@@ -58,8 +58,8 @@ class DespotifyInputStream {
 		memset(&pcm, 0, sizeof(pcm));
 
 		/* Despotify outputs pcm data */
-		base.mime = "audio/x-mpd-cdda-pcm";
-		base.ready = true;
+		base.SetMimeType("audio/x-mpd-cdda-pcm");
+		base.SetReady();
 	}
 
 public:

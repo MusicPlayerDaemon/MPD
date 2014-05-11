@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 struct Decoder;
-struct InputStream;
+class InputStream;
 
 struct DsdId {
 	char value[4];

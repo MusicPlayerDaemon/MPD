@@ -96,8 +96,9 @@ public:
 		/* this mime type forces use of the PcmDecoderPlugin.
 		   Needs to be generalised when/if that decoder is
 		   updated to support other audio formats */
-		base.mime = "audio/x-mpd-cdda-pcm";
-		base.ready = true;
+		base.SetMimeType("audio/x-mpd-cdda-pcm");
+		base.SetReady();
+
 		frames_to_read = read_buffer_size / frame_size;
 
 		snd_pcm_start(capture_handle);

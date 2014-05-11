@@ -25,7 +25,7 @@
 
 #include <expat.h>
 
-struct InputStream;
+class InputStream;
 class Error;
 
 class ExpatParser final {

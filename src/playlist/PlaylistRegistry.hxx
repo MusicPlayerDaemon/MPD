@@ -23,7 +23,7 @@
 class Mutex;
 class Cond;
 class SongEnumerator;
-struct InputStream;
+class InputStream;
 
 extern const struct playlist_plugin *const playlist_plugins[];
 

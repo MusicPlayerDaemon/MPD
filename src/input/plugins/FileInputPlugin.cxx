@@ -44,7 +44,7 @@ struct FileInputStream {
 		 fd(_fd) {
 		base.size = size;
 		base.seekable = true;
-		base.ready = true;
+		base.SetReady();
 	}
 
 	~FileInputStream() {
@@ -138,7 +138,7 @@ input_file_close(InputStream *is)
 static bool
 input_file_eof(InputStream *is)
 {
-	return is->offset >= is->size;
+	return is->GetOffset() >= is->GetSize();
 }
 
 const InputPlugin input_plugin_file = {
