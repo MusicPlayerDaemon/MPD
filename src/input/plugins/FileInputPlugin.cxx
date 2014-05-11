@@ -33,18 +33,16 @@
 
 static constexpr Domain file_domain("file");
 
-struct FileInputStream {
-	InputStream base;
-
+struct FileInputStream final : public InputStream {
 	int fd;
 
-	FileInputStream(const char *path, int _fd, off_t size,
-			Mutex &mutex, Cond &cond)
-		:base(input_plugin_file, path, mutex, cond),
+	FileInputStream(const char *path, int _fd, off_t _size,
+			Mutex &_mutex, Cond &_cond)
+		:InputStream(input_plugin_file, path, _mutex, _cond),
 		 fd(_fd) {
-		base.size = size;
-		base.seekable = true;
-		base.SetReady();
+		size = _size;
+		seekable = true;
+		SetReady();
 	}
 
 	~FileInputStream() {
@@ -88,9 +86,7 @@ input_file_open(const char *filename,
 	posix_fadvise(fd, (off_t)0, st.st_size, POSIX_FADV_SEQUENTIAL);
 #endif
 
-	FileInputStream *fis = new FileInputStream(filename, fd, st.st_size,
-						   mutex, cond);
-	return &fis->base;
+	return new FileInputStream(filename, fd, st.st_size, mutex, cond);
 }
 
 static bool

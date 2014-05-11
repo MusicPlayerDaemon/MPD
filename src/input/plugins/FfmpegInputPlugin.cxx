@@ -33,26 +33,24 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-struct FfmpegInputStream {
-	InputStream base;
-
+struct FfmpegInputStream final : public InputStream {
 	AVIOContext *h;
 
 	bool eof;
 
-	FfmpegInputStream(const char *uri, Mutex &mutex, Cond &cond,
+	FfmpegInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
 			  AVIOContext *_h)
-		:base(input_plugin_ffmpeg, uri, mutex, cond),
+		:InputStream(input_plugin_ffmpeg, _uri, _mutex, _cond),
 		 h(_h), eof(false) {
-		base.ready = true;
-		base.seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
-		base.size = avio_size(h);
+		seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
+		size = avio_size(h);
 
 		/* hack to make MPD select the "ffmpeg" decoder plugin
 		   - since avio.h doesn't tell us the MIME type of the
 		   resource, we can't select a decoder plugin, but the
 		   "ffmpeg" plugin is quite good at auto-detection */
-		base.SetMimeType("audio/x-mpd-ffmpeg");
+		SetMimeType("audio/x-mpd-ffmpeg");
+		SetReady();
 	}
 
 	~FfmpegInputStream() {
@@ -105,8 +103,7 @@ input_ffmpeg_open(const char *uri,
 		return nullptr;
 	}
 
-	auto *i = new FfmpegInputStream(uri, mutex, cond, h);
-	return &i->base;
+	return new FfmpegInputStream(uri, mutex, cond, h);
 }
 
 static size_t

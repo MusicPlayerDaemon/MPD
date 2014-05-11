@@ -97,25 +97,24 @@ ZzipArchiveFile::Visit(ArchiveVisitor &visitor)
 
 /* single archive handling */
 
-struct ZzipInputStream {
-	InputStream base;
-
+struct ZzipInputStream final : public InputStream {
 	ZzipArchiveFile *archive;
 
 	ZZIP_FILE *file;
 
-	ZzipInputStream(ZzipArchiveFile &_archive, const char *uri,
-			Mutex &mutex, Cond &cond,
+	ZzipInputStream(ZzipArchiveFile &_archive, const char *_uri,
+			Mutex &_mutex, Cond &_cond,
 			ZZIP_FILE *_file)
-		:base(zzip_input_plugin, uri, mutex, cond),
+		:InputStream(zzip_input_plugin, _uri, _mutex, _cond),
 		 archive(&_archive), file(_file) {
-		base.ready = true;
 		//we are seekable (but its not recommendent to do so)
-		base.seekable = true;
+		seekable = true;
 
 		ZZIP_STAT z_stat;
 		zzip_file_stat(file, &z_stat);
-		base.size = z_stat.st_size;
+		size = z_stat.st_size;
+
+		SetReady();
 
 		archive->ref.Increment();
 	}
@@ -138,11 +137,9 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 		return nullptr;
 	}
 
-	ZzipInputStream *zis =
-		new ZzipInputStream(*this, pathname,
-				    mutex, cond,
-				    _file);
-	return &zis->base;
+	return new ZzipInputStream(*this, pathname,
+				   mutex, cond,
+				   _file);
 }
 
 static void

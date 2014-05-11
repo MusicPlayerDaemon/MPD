@@ -88,9 +88,7 @@ public:
 					Error &error) override;
 };
 
-struct Bzip2InputStream {
-	InputStream base;
-
+struct Bzip2InputStream final : public InputStream {
 	Bzip2ArchiveFile *archive;
 
 	bool eof;
@@ -130,7 +128,7 @@ Bzip2InputStream::Open(Error &error)
 		return false;
 	}
 
-	base.ready = true;
+	SetReady();
 	return true;
 }
 
@@ -157,9 +155,10 @@ bz2_open(Path pathname, Error &error)
 
 /* single archive handling */
 
-Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context, const char *uri,
-				   Mutex &mutex, Cond &cond)
-	:base(bz2_inputplugin, uri, mutex, cond),
+Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context,
+				   const char *_uri,
+				   Mutex &_mutex, Cond &_cond)
+	:InputStream(bz2_inputplugin, _uri, _mutex, _cond),
 	 archive(&_context), eof(false)
 {
 	archive->Ref();
@@ -181,7 +180,7 @@ Bzip2ArchiveFile::OpenStream(const char *path,
 		return nullptr;
 	}
 
-	return &bis->base;
+	return bis;
 }
 
 static void

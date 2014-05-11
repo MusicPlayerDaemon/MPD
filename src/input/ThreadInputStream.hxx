@@ -24,7 +24,6 @@
 #include "InputStream.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Cond.hxx"
-#include "util/Cast.hxx"
 #include "util/Error.hxx"
 
 #include <stdint.h>
@@ -40,9 +39,7 @@ template<typename T> class CircularBuffer;
  *
  * This works only for "streams": unknown length, no seeking, no tags.
  */
-class ThreadInputStream {
-	InputStream base;
-
+class ThreadInputStream : public InputStream {
 	Thread thread;
 
 	/**
@@ -71,7 +68,7 @@ public:
 	ThreadInputStream(const InputPlugin &_plugin,
 			  const char *_uri, Mutex &_mutex, Cond &_cond,
 			  size_t _buffer_size)
-		:base(_plugin, _uri, _mutex, _cond),
+		:InputStream(_plugin, _uri, _mutex, _cond),
 		 buffer_size(_buffer_size),
 		 buffer(nullptr),
 		 close(false), eof(false) {}
@@ -86,24 +83,10 @@ public:
 	InputStream *Start(Error &error);
 
 protected:
-	void Lock() {
-		base.Lock();
-	}
-
-	void Unlock() {
-		base.Unlock();
-	}
-
-	const char *GetURI() const {
+	void SetMimeType(const char *_mime) {
 		assert(thread.IsInside());
 
-		return base.GetURI();
-	}
-
-	void SetMimeType(const char *mime) {
-		assert(thread.IsInside());
-
-		base.SetMimeType(mime);
+		InputStream::SetMimeType(_mime);
 	}
 
 	/* to be implemented by the plugin */
@@ -145,20 +128,6 @@ protected:
 	virtual void Cancel() {}
 
 private:
-
-#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winvalid-offsetof"
-#endif
-
-	static constexpr ThreadInputStream *Cast(InputStream *is) {
-		return ContainerCast(is, ThreadInputStream, base);
-	}
-
-#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
-
 	void ThreadFunc();
 	static void ThreadFunc(void *ctx);
 

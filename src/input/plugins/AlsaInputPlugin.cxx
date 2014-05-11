@@ -32,7 +32,7 @@
 #include "util/Error.hxx"
 #include "util/StringUtil.hxx"
 #include "util/ReusableArray.hxx"
-#include "util/Cast.hxx"
+
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
@@ -64,8 +64,9 @@ static constexpr unsigned int default_rate = 44100; // cd quality
  */
 static constexpr size_t read_buffer_size = 4096;
 
-class AlsaInputStream final : MultiSocketMonitor, DeferredMonitor {
-	InputStream base;
+class AlsaInputStream final
+	: public InputStream,
+	  MultiSocketMonitor, DeferredMonitor {
 	snd_pcm_t *capture_handle;
 	size_t frame_size;
 	int frames_to_read;
@@ -81,23 +82,23 @@ class AlsaInputStream final : MultiSocketMonitor, DeferredMonitor {
 
 public:
 	AlsaInputStream(EventLoop &loop,
-			const char *uri, Mutex &mutex, Cond &cond,
+			const char *_uri, Mutex &_mutex, Cond &_cond,
 			snd_pcm_t *_handle, int _frame_size)
-		:MultiSocketMonitor(loop),
+		:InputStream(input_plugin_alsa, _uri, _mutex, _cond),
+		 MultiSocketMonitor(loop),
 		 DeferredMonitor(loop),
-		 base(input_plugin_alsa, uri, mutex, cond),
 		 capture_handle(_handle),
 		 frame_size(_frame_size),
 		 eof(false)
 	{
-		assert(uri != nullptr);
+		assert(_uri != nullptr);
 		assert(_handle != nullptr);
 
 		/* this mime type forces use of the PcmDecoderPlugin.
 		   Needs to be generalised when/if that decoder is
 		   updated to support other audio formats */
-		base.SetMimeType("audio/x-mpd-cdda-pcm");
-		base.SetReady();
+		SetMimeType("audio/x-mpd-cdda-pcm");
+		InputStream::SetReady();
 
 		frames_to_read = read_buffer_size / frame_size;
 
@@ -114,19 +115,6 @@ public:
 
 	static InputStream *Create(const char *uri, Mutex &mutex, Cond &cond,
 				   Error &error);
-
-#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winvalid-offsetof"
-#endif
-
-	static constexpr AlsaInputStream *Cast(InputStream *is) {
-		return ContainerCast(is, AlsaInputStream, base);
-	}
-
-#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	bool Available() {
 		if (snd_pcm_avail(capture_handle) > frames_to_read)
@@ -188,18 +176,17 @@ AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond,
 		return nullptr;
 
 	int frame_size = snd_pcm_format_width(format) / 8 * channels;
-	AlsaInputStream *stream = new AlsaInputStream(io_thread_get(),
-						      uri, mutex, cond,
-						      handle, frame_size);
-	return &stream->base;
+	return new AlsaInputStream(io_thread_get(),
+				   uri, mutex, cond,
+				   handle, frame_size);
 }
 
 inline size_t
-AlsaInputStream::Read(void *ptr, size_t size, Error &error)
+AlsaInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
 	assert(ptr != nullptr);
 
-	int num_frames = size / frame_size;
+	int num_frames = read_size / frame_size;
 	int ret;
 	while ((ret = snd_pcm_readi(capture_handle, ptr, num_frames)) < 0) {
 		if (Recover(ret) < 0) {
@@ -211,7 +198,7 @@ AlsaInputStream::Read(void *ptr, size_t size, Error &error)
 	}
 
 	size_t nbytes = ret * frame_size;
-	base.offset += nbytes;
+	offset += nbytes;
 	return nbytes;
 }
 
@@ -244,9 +231,9 @@ AlsaInputStream::DispatchSockets()
 {
 	waiting = false;
 
-	const ScopeLock protect(base.mutex);
+	const ScopeLock protect(mutex);
 	/* wake up the thread that is waiting for more data */
-	base.cond.broadcast();
+	cond.broadcast();
 }
 
 inline int
@@ -389,28 +376,28 @@ alsa_input_open(const char *uri, Mutex &mutex, Cond &cond, Error &error)
 static void
 alsa_input_close(InputStream *is)
 {
-	AlsaInputStream *ais = AlsaInputStream::Cast(is);
+	AlsaInputStream *ais = (AlsaInputStream *)is;
 	delete ais;
 }
 
 static bool
 alsa_input_available(InputStream *is)
 {
-	AlsaInputStream *ais = AlsaInputStream::Cast(is);
+	AlsaInputStream *ais = (AlsaInputStream *)is;
 	return ais->Available();
 }
 
 static size_t
 alsa_input_read(InputStream *is, void *ptr, size_t size, Error &error)
 {
-	AlsaInputStream *ais = AlsaInputStream::Cast(is);
+	AlsaInputStream *ais = (AlsaInputStream *)is;
 	return ais->Read(ptr, size, error);
 }
 
 static bool
 alsa_input_eof(gcc_unused InputStream *is)
 {
-	AlsaInputStream *ais = AlsaInputStream::Cast(is);
+	AlsaInputStream *ais = (AlsaInputStream *)is;
 	return ais->IsEOF();
 }
 

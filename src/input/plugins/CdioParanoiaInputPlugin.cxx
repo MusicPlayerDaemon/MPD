@@ -50,9 +50,7 @@
 
 #include <cdio/cd_types.h>
 
-struct CdioParanoiaInputStream {
-	InputStream base;
-
+struct CdioParanoiaInputStream final : public InputStream {
 	cdrom_drive_t *drv;
 	CdIo_t *cdio;
 	cdrom_paranoia_t *para;
@@ -65,9 +63,9 @@ struct CdioParanoiaInputStream {
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
 	int buffer_lsn;
 
-	CdioParanoiaInputStream(const char *uri, Mutex &mutex, Cond &cond,
+	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
 				int _trackno)
-		:base(input_plugin_cdio_paranoia, uri, mutex, cond),
+		:InputStream(input_plugin_cdio_paranoia, _uri, _mutex, _cond),
 		 drv(nullptr), cdio(nullptr), para(nullptr),
 		 trackno(_trackno)
 	{
@@ -264,16 +262,16 @@ input_cdio_open(const char *uri,
 	/* seek to beginning of the track */
 	cdio_paranoia_seek(i->para, i->lsn_from, SEEK_SET);
 
-	i->base.ready = true;
-	i->base.seekable = true;
-	i->base.size = (i->lsn_to - i->lsn_from + 1) * CDIO_CD_FRAMESIZE_RAW;
+	i->seekable = true;
+	i->size = (i->lsn_to - i->lsn_from + 1) * CDIO_CD_FRAMESIZE_RAW;
 
 	/* hack to make MPD select the "pcm" decoder plugin */
-	i->base.SetMimeType(reverse_endian
+	i->SetMimeType(reverse_endian
 			    ? "audio/x-mpd-cdda-pcm-reverse"
 			    : "audio/x-mpd-cdda-pcm");
+	i->SetReady();
 
-	return &i->base;
+	return i;
 }
 
 static bool
@@ -287,26 +285,26 @@ input_cdio_seek(InputStream *is,
 	case SEEK_SET:
 		break;
 	case SEEK_CUR:
-		offset += cis->base.offset;
+		offset += cis->offset;
 		break;
 	case SEEK_END:
-		offset += cis->base.size;
+		offset += cis->size;
 		break;
 	}
 
-	if (offset < 0 || offset > cis->base.size) {
+	if (offset < 0 || offset > cis->size) {
 		error.Format(cdio_domain, "Invalid offset to seek %ld (%ld)",
-			     (long int)offset, (long int)cis->base.size);
+			     (long int)offset, (long int)cis->size);
 		return false;
 	}
 
 	/* simple case */
-	if (offset == cis->base.offset)
+	if (offset == cis->offset)
 		return true;
 
 	/* calculate current LSN */
 	cis->lsn_relofs = offset / CDIO_CD_FRAMESIZE_RAW;
-	cis->base.offset = offset;
+	cis->offset = offset;
 
 	cdio_paranoia_seek(cis->para, cis->lsn_from + cis->lsn_relofs, SEEK_SET);
 
@@ -360,7 +358,7 @@ input_cdio_read(InputStream *is, void *ptr, size_t length,
 		}
 
 		//correct offset
-		diff = cis->base.offset - cis->lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
+		diff = cis->offset - cis->lsn_relofs * CDIO_CD_FRAMESIZE_RAW;
 
 		assert(diff >= 0 && diff < CDIO_CD_FRAMESIZE_RAW);
 
@@ -374,8 +372,8 @@ input_cdio_read(InputStream *is, void *ptr, size_t length,
 		nbytes += len;
 
 		//update offset
-		cis->base.offset += len;
-		cis->lsn_relofs = cis->base.offset / CDIO_CD_FRAMESIZE_RAW;
+		cis->offset += len;
+		cis->lsn_relofs = cis->offset / CDIO_CD_FRAMESIZE_RAW;
 		//update length
 		length -= len;
 	}

@@ -36,9 +36,7 @@ extern "C" {
 
 #include <stdio.h>
 
-class DespotifyInputStream {
-	InputStream base;
-
+class DespotifyInputStream final : public InputStream {
 	struct despotify_session *session;
 	struct ds_track *track;
 	Tag tag;
@@ -46,11 +44,11 @@ class DespotifyInputStream {
 	size_t len_available;
 	bool eof;
 
-	DespotifyInputStream(const char *uri,
-			     Mutex &mutex, Cond &cond,
+	DespotifyInputStream(const char *_uri,
+			     Mutex &_mutex, Cond &_cond,
 			     despotify_session *_session,
 			     ds_track *_track)
-		:base(input_plugin_despotify, uri, mutex, cond),
+		:InputStream(input_plugin_despotify, _uri, _mutex, _cond),
 		 session(_session), track(_track),
 		 tag(mpd_despotify_tag_from_track(*track)),
 		 len_available(0), eof(false) {
@@ -58,8 +56,8 @@ class DespotifyInputStream {
 		memset(&pcm, 0, sizeof(pcm));
 
 		/* Despotify outputs pcm data */
-		base.SetMimeType("audio/x-mpd-cdda-pcm");
-		base.SetReady();
+		SetMimeType("audio/x-mpd-cdda-pcm");
+		SetReady();
 	}
 
 public:
@@ -190,7 +188,7 @@ DespotifyInputStream::Open(const char *url,
 		return nullptr;
 	}
 
-	return &ctx->base;
+	return ctx;
 }
 
 static InputStream *
@@ -200,16 +198,17 @@ input_despotify_open(const char *url, Mutex &mutex, Cond &cond, Error &error)
 }
 
 inline size_t
-DespotifyInputStream::Read(void *ptr, size_t size, gcc_unused Error &error)
+DespotifyInputStream::Read(void *ptr, size_t read_size,
+			   gcc_unused Error &error)
 {
 	if (len_available == 0)
 		FillBuffer();
 
-	size_t to_cpy = std::min(size, len_available);
+	size_t to_cpy = std::min(read_size, len_available);
 	memcpy(ptr, pcm.buf, to_cpy);
 	len_available -= to_cpy;
 
-	base.offset += to_cpy;
+	offset += to_cpy;
 
 	return to_cpy;
 }

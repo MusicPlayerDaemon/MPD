@@ -28,21 +28,19 @@
 
 #include <libsmbclient.h>
 
-class SmbclientInputStream {
-	InputStream base;
-
+class SmbclientInputStream final : public InputStream {
 	SMBCCTX *ctx;
 	int fd;
 
 public:
-	SmbclientInputStream(const char *uri,
-			     Mutex &mutex, Cond &cond,
+	SmbclientInputStream(const char *_uri,
+			     Mutex &_mutex, Cond &_cond,
 			     SMBCCTX *_ctx, int _fd, const struct stat &st)
-		:base(input_plugin_smbclient, uri, mutex, cond),
+		:InputStream(input_plugin_smbclient, _uri, _mutex, _cond),
 		 ctx(_ctx), fd(_fd) {
-		base.ready = true;
-		base.seekable = true;
-		base.size = st.st_size;
+		seekable = true;
+		size = st.st_size;
+		SetReady();
 	}
 
 	~SmbclientInputStream() {
@@ -52,17 +50,13 @@ public:
 		smbclient_mutex.unlock();
 	}
 
-	InputStream *GetBase() {
-		return &base;
-	}
-
 	bool IsEOF() const {
-		return base.offset >= base.size;
+		return offset >= size;
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error) {
+	size_t Read(void *ptr, size_t read_size, Error &error) {
 		smbclient_mutex.lock();
-		ssize_t nbytes = smbc_read(fd, ptr, size);
+		ssize_t nbytes = smbc_read(fd, ptr, read_size);
 		smbclient_mutex.unlock();
 		if (nbytes < 0) {
 			error.SetErrno("smbc_read() failed");
@@ -72,16 +66,16 @@ public:
 		return nbytes;
 	}
 
-	bool Seek(InputStream::offset_type offset, int whence, Error &error) {
+	bool Seek(InputStream::offset_type new_offset, int whence, Error &error) {
 		smbclient_mutex.lock();
-		off_t result = smbc_lseek(fd, offset, whence);
+		off_t result = smbc_lseek(fd, new_offset, whence);
 		smbclient_mutex.unlock();
 		if (result < 0) {
 			error.SetErrno("smbc_lseek() failed");
 			return false;
 		}
 
-		base.offset = result;
+		offset = result;
 		return true;
 	}
 };
@@ -144,8 +138,7 @@ input_smbclient_open(const char *uri,
 		return nullptr;
 	}
 
-	auto s = new SmbclientInputStream(uri, mutex, cond, ctx, fd, st);
-	return s->GetBase();
+	return new SmbclientInputStream(uri, mutex, cond, ctx, fd, st);
 }
 
 static size_t

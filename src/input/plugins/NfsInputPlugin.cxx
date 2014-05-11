@@ -33,22 +33,20 @@ extern "C" {
 #include <sys/stat.h>
 #include <fcntl.h>
 
-class NfsInputStream {
-	InputStream base;
-
+class NfsInputStream final : public InputStream {
 	nfs_context *ctx;
 	nfsfh *fh;
 
 public:
-	NfsInputStream(const char *uri,
-		       Mutex &mutex, Cond &cond,
+	NfsInputStream(const char *_uri,
+		       Mutex &_mutex, Cond &_cond,
 		       nfs_context *_ctx, nfsfh *_fh,
-		       InputStream::offset_type size)
-		:base(input_plugin_nfs, uri, mutex, cond),
+		       InputStream::offset_type _size)
+		:InputStream(input_plugin_nfs, _uri, _mutex, _cond),
 		 ctx(_ctx), fh(_fh) {
-		base.ready = true;
-		base.seekable = true;
-		base.size = size;
+		seekable = true;
+		size = _size;
+		SetReady();
 	}
 
 	~NfsInputStream() {
@@ -56,16 +54,12 @@ public:
 		nfs_destroy_context(ctx);
 	}
 
-	InputStream *GetBase() {
-		return &base;
-	}
-
 	bool IsEOF() const {
-		return base.offset >= base.size;
+		return offset >= size;
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error) {
-		int nbytes = nfs_read(ctx, fh, size, (char *)ptr);
+	size_t Read(void *ptr, size_t read_size, Error &error) {
+		int nbytes = nfs_read(ctx, fh, read_size, (char *)ptr);
 		if (nbytes < 0) {
 			error.SetErrno(-nbytes, "nfs_read() failed");
 			nbytes = 0;
@@ -74,15 +68,16 @@ public:
 		return nbytes;
 	}
 
-	bool Seek(InputStream::offset_type offset, int whence, Error &error) {
+	bool Seek(InputStream::offset_type new_offset, int whence, Error &error) {
 		uint64_t current_offset;
-		int result = nfs_lseek(ctx, fh, offset, whence, &current_offset);
+		int result = nfs_lseek(ctx, fh, new_offset, whence,
+				       &current_offset);
 		if (result < 0) {
 			error.SetErrno(-result, "smbc_lseek() failed");
 			return false;
 		}
 
-		base.offset = current_offset;
+		offset = current_offset;
 		return true;
 	}
 };
@@ -150,8 +145,7 @@ input_nfs_open(const char *uri,
 		return nullptr;
 	}
 
-	auto is = new NfsInputStream(uri, mutex, cond, ctx, fh, st.st_size);
-	return is->GetBase();
+	return new NfsInputStream(uri, mutex, cond, ctx, fh, st.st_size);
 }
 
 static size_t

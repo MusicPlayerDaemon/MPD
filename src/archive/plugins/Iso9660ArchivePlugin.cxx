@@ -140,21 +140,19 @@ Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 
 /* single archive handling */
 
-class Iso9660InputStream {
-	InputStream base;
-
+class Iso9660InputStream final : public InputStream {
 	Iso9660ArchiveFile &archive;
 
 	iso9660_stat_t *statbuf;
 
 public:
-	Iso9660InputStream(Iso9660ArchiveFile &_archive, const char *uri,
-			   Mutex &mutex, Cond &cond,
+	Iso9660InputStream(Iso9660ArchiveFile &_archive, const char *_uri,
+			   Mutex &_mutex, Cond &_cond,
 			   iso9660_stat_t *_statbuf)
-		:base(iso9660_input_plugin, uri, mutex, cond),
+		:InputStream(iso9660_input_plugin, _uri, _mutex, _cond),
 		 archive(_archive), statbuf(_statbuf) {
-		base.ready = true;
-		base.size = statbuf->size;
+		size = statbuf->size;
+		SetReady();
 
 		archive.Ref();
 	}
@@ -162,10 +160,6 @@ public:
 	~Iso9660InputStream() {
 		free(statbuf);
 		archive.Unref();
-	}
-
-	InputStream *Get() {
-		return &base;
 	}
 
 	size_t Read(void *ptr, size_t size, Error &error);
@@ -183,10 +177,8 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 		return nullptr;
 	}
 
-	Iso9660InputStream *iis =
-		new Iso9660InputStream(*this, pathname, mutex, cond,
-				       statbuf);
-	return iis->Get();
+	return new Iso9660InputStream(*this, pathname, mutex, cond,
+				      statbuf);
 }
 
 static void
@@ -198,22 +190,22 @@ iso9660_input_close(InputStream *is)
 }
 
 inline size_t
-Iso9660InputStream::Read(void *ptr, size_t size, Error &error)
+Iso9660InputStream::Read(void *ptr, size_t read_size, Error &error)
 {
 	int readed = 0;
 	int no_blocks, cur_block;
-	size_t left_bytes = statbuf->size - base.offset;
+	size_t left_bytes = statbuf->size - offset;
 
-	if (left_bytes < size) {
-		no_blocks = CEILING(left_bytes,ISO_BLOCKSIZE);
+	if (left_bytes < read_size) {
+		no_blocks = CEILING(left_bytes, ISO_BLOCKSIZE);
 	} else {
-		no_blocks = size / ISO_BLOCKSIZE;
+		no_blocks = read_size / ISO_BLOCKSIZE;
 	}
 
 	if (no_blocks == 0)
 		return 0;
 
-	cur_block = base.offset / ISO_BLOCKSIZE;
+	cur_block = offset / ISO_BLOCKSIZE;
 
 	readed = archive.SeekRead(ptr, statbuf->lsn + cur_block,
 				  no_blocks);
@@ -224,11 +216,11 @@ Iso9660InputStream::Read(void *ptr, size_t size, Error &error)
 			     (unsigned long)cur_block);
 		return 0;
 	}
-	if (left_bytes < size) {
+	if (left_bytes < read_size) {
 		readed = left_bytes;
 	}
 
-	base.offset += readed;
+	offset += readed;
 	return readed;
 }
 

@@ -33,8 +33,8 @@ class MmsInputStream final : public ThreadInputStream {
 	mmsx_t *mms;
 
 public:
-	MmsInputStream(const char *uri, Mutex &mutex, Cond &cond)
-		:ThreadInputStream(input_plugin_mms, uri, mutex, cond,
+	MmsInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
+		:ThreadInputStream(input_plugin_mms, _uri, _mutex, _cond,
 				   MMS_BUFFER_SIZE) {
 	}
 
@@ -89,9 +89,9 @@ input_mms_open(const char *url,
 }
 
 size_t
-MmsInputStream::Read(void *ptr, size_t size, Error &error)
+MmsInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
-	int nbytes = mmsx_read(nullptr, mms, (char *)ptr, size);
+	int nbytes = mmsx_read(nullptr, mms, (char *)ptr, read_size);
 	if (nbytes <= 0) {
 		if (nbytes < 0)
 			error.SetErrno("mmsx_read() failed");
