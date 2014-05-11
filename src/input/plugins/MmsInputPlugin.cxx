@@ -34,7 +34,7 @@ class MmsInputStream final : public ThreadInputStream {
 
 public:
 	MmsInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
-		:ThreadInputStream(input_plugin_mms, _uri, _mutex, _cond,
+		:ThreadInputStream(input_plugin_mms.name, _uri, _mutex, _cond,
 				   MMS_BUFFER_SIZE) {
 	}
 

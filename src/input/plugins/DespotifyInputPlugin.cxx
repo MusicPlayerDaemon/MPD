@@ -48,7 +48,7 @@ class DespotifyInputStream final : public InputStream {
 			     Mutex &_mutex, Cond &_cond,
 			     despotify_session *_session,
 			     ds_track *_track)
-		:InputStream(input_plugin_despotify, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
 		 session(_session), track(_track),
 		 tag(mpd_despotify_tag_from_track(*track)),
 		 len_available(0), eof(false) {

@@ -26,13 +26,6 @@
 #include <string.h>
 #include <stdio.h>
 
-static const InputPlugin rewind_input_plugin = {
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-};
-
 class RewindInputStream final : public InputStream {
 	InputStream *input;
 
@@ -59,7 +52,7 @@ class RewindInputStream final : public InputStream {
 
 public:
 	RewindInputStream(InputStream *_input)
-		:InputStream(rewind_input_plugin, _input->GetURI(),
+		:InputStream(_input->GetURI(),
 			     _input->mutex, _input->cond),
 		 input(_input), tail(0) {
 	}

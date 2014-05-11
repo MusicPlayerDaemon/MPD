@@ -106,7 +106,7 @@ struct CurlInputStream final : public InputStream {
 
 	CurlInputStream(const char *_url, Mutex &_mutex, Cond &_cond,
 			void *_buffer)
-		:InputStream(input_plugin_curl, _url, _mutex, _cond),
+		:InputStream(_url, _mutex, _cond),
 		 request_headers(nullptr),
 		 buffer((uint8_t *)_buffer, CURL_MAX_BUFFERED),
 		 paused(false),

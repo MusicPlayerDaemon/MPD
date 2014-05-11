@@ -42,7 +42,7 @@ public:
 		       Mutex &_mutex, Cond &_cond,
 		       nfs_context *_ctx, nfsfh *_fh,
 		       InputStream::offset_type _size)
-		:InputStream(input_plugin_nfs, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
 		 ctx(_ctx), fh(_fh) {
 		seekable = true;
 		size = _size;

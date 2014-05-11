@@ -79,8 +79,6 @@ public:
 					Error &error) override;
 };
 
-extern const InputPlugin iso9660_input_plugin;
-
 static constexpr Domain iso9660_domain("iso9660");
 
 /* archive open && listing routine */
@@ -149,7 +147,7 @@ public:
 	Iso9660InputStream(Iso9660ArchiveFile &_archive, const char *_uri,
 			   Mutex &_mutex, Cond &_cond,
 			   iso9660_stat_t *_statbuf)
-		:InputStream(iso9660_input_plugin, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
 		 archive(_archive), statbuf(_statbuf) {
 		size = statbuf->size;
 		SetReady();
@@ -229,13 +227,6 @@ Iso9660InputStream::IsEOF()
 static const char *const iso9660_archive_extensions[] = {
 	"iso",
 	nullptr
-};
-
-const InputPlugin iso9660_input_plugin = {
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
 };
 
 const ArchivePlugin iso9660_archive_plugin = {

@@ -40,7 +40,7 @@ struct FfmpegInputStream final : public InputStream {
 
 	FfmpegInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
 			  AVIOContext *_h)
-		:InputStream(input_plugin_ffmpeg, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
 		 h(_h), eof(false) {
 		seekable = (h->seekable & AVIO_SEEKABLE_NORMAL) != 0;
 		size = avio_size(h);

@@ -108,8 +108,6 @@ struct Bzip2InputStream final : public InputStream {
 	size_t Read(void *ptr, size_t size, Error &error) override;
 };
 
-extern const InputPlugin bz2_inputplugin;
-
 static constexpr Domain bz2_domain("bz2");
 
 /* single archive handling allocation helpers */
@@ -155,7 +153,7 @@ bz2_open(Path pathname, Error &error)
 Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context,
 				   const char *_uri,
 				   Mutex &_mutex, Cond &_cond)
-	:InputStream(bz2_inputplugin, _uri, _mutex, _cond),
+	:InputStream(_uri, _mutex, _cond),
 	 archive(&_context), eof(false)
 {
 	archive->Ref();
@@ -249,13 +247,6 @@ Bzip2InputStream::IsEOF()
 static const char *const bz2_extensions[] = {
 	"bz2",
 	nullptr
-};
-
-const InputPlugin bz2_inputplugin = {
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
 };
 
 const ArchivePlugin bz2_archive_plugin = {

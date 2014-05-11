@@ -40,6 +40,8 @@ template<typename T> class CircularBuffer;
  * This works only for "streams": unknown length, no seeking, no tags.
  */
 class ThreadInputStream : public InputStream {
+	const char *const plugin;
+
 	Thread thread;
 
 	/**
@@ -65,10 +67,11 @@ class ThreadInputStream : public InputStream {
 	bool eof;
 
 public:
-	ThreadInputStream(const InputPlugin &_plugin,
+	ThreadInputStream(const char *_plugin,
 			  const char *_uri, Mutex &_mutex, Cond &_cond,
 			  size_t _buffer_size)
-		:InputStream(_plugin, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
+		 plugin(_plugin),
 		 buffer_size(_buffer_size),
 		 buffer(nullptr),
 		 close(false), eof(false) {}

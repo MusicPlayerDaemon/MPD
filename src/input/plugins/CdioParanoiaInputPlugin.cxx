@@ -65,7 +65,7 @@ struct CdioParanoiaInputStream final : public InputStream {
 
 	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
 				int _trackno)
-		:InputStream(input_plugin_cdio_paranoia, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
 		 drv(nullptr), cdio(nullptr), para(nullptr),
 		 trackno(_trackno)
 	{

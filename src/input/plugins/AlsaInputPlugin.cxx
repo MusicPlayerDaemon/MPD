@@ -84,7 +84,7 @@ public:
 	AlsaInputStream(EventLoop &loop,
 			const char *_uri, Mutex &_mutex, Cond &_cond,
 			snd_pcm_t *_handle, int _frame_size)
-		:InputStream(input_plugin_alsa, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
 		 MultiSocketMonitor(loop),
 		 DeferredMonitor(loop),
 		 capture_handle(_handle),

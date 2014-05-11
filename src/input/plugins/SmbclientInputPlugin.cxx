@@ -36,7 +36,7 @@ public:
 	SmbclientInputStream(const char *_uri,
 			     Mutex &_mutex, Cond &_cond,
 			     SMBCCTX *_ctx, int _fd, const struct stat &st)
-		:InputStream(input_plugin_smbclient, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
 		 ctx(_ctx), fd(_fd) {
 		seekable = true;
 		size = st.st_size;

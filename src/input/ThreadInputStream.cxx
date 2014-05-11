@@ -67,7 +67,7 @@ ThreadInputStream::Start(Error &error)
 inline void
 ThreadInputStream::ThreadFunc()
 {
-	FormatThreadName("input:%s", GetPlugin().name);
+	FormatThreadName("input:%s", plugin);
 
 	Lock();
 	if (!Open(postponed_error)) {

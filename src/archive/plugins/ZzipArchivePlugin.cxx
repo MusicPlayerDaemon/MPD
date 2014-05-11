@@ -64,8 +64,6 @@ public:
 					Error &error) override;
 };
 
-extern const InputPlugin zzip_input_plugin;
-
 static constexpr Domain zzip_domain("zzip");
 
 /* archive open && listing routine */
@@ -105,7 +103,7 @@ struct ZzipInputStream final : public InputStream {
 	ZzipInputStream(ZzipArchiveFile &_archive, const char *_uri,
 			Mutex &_mutex, Cond &_cond,
 			ZZIP_FILE *_file)
-		:InputStream(zzip_input_plugin, _uri, _mutex, _cond),
+		:InputStream(_uri, _mutex, _cond),
 		 archive(&_archive), file(_file) {
 		//we are seekable (but its not recommendent to do so)
 		seekable = true;
@@ -183,13 +181,6 @@ ZzipInputStream::Seek(offset_type new_offset, int whence, Error &error)
 static const char *const zzip_archive_extensions[] = {
 	"zip",
 	nullptr
-};
-
-const InputPlugin zzip_input_plugin = {
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
 };
 
 const ArchivePlugin zzip_archive_plugin = {

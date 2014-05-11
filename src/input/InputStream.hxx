@@ -32,18 +32,12 @@
 class Cond;
 class Error;
 struct Tag;
-struct InputPlugin;
 
 class InputStream {
 public:
 	typedef int64_t offset_type;
 
 private:
-	/**
-	 * the plugin which implements this input stream
-	 */
-	const InputPlugin &plugin;
-
 	/**
 	 * The absolute URI which was used to open this stream.
 	 */
@@ -99,9 +93,8 @@ private:
 	std::string mime;
 
 public:
-	InputStream(const InputPlugin &_plugin,
-		    const char *_uri, Mutex &_mutex, Cond &_cond)
-		:plugin(_plugin), uri(_uri),
+	InputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
+		:uri(_uri),
 		 mutex(_mutex), cond(_cond),
 		 ready(false), seekable(false),
 		 size(-1), offset(0) {
@@ -139,10 +132,6 @@ public:
 	static InputStream *OpenReady(const char *uri,
 				      Mutex &mutex, Cond &cond,
 				      Error &error);
-
-	const InputPlugin &GetPlugin() const {
-		return plugin;
-	}
 
 	/**
 	 * The absolute URI which was used to open this stream.

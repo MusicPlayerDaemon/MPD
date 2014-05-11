@@ -38,7 +38,7 @@ struct FileInputStream final : public InputStream {
 
 	FileInputStream(const char *path, int _fd, off_t _size,
 			Mutex &_mutex, Cond &_cond)
-		:InputStream(input_plugin_file, path, _mutex, _cond),
+		:InputStream(path, _mutex, _cond),
 		 fd(_fd) {
 		size = _size;
 		seekable = true;
