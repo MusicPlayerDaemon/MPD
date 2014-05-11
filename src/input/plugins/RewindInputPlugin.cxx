@@ -28,7 +28,7 @@
 
 extern const InputPlugin rewind_input_plugin;
 
-struct RewindInputStream {
+class RewindInputStream {
 	InputStream base;
 
 	InputStream *input;
@@ -54,6 +54,7 @@ struct RewindInputStream {
 	 */
 	char buffer[64 * 1024];
 
+public:
 	RewindInputStream(InputStream *_input)
 		:base(rewind_input_plugin, _input->GetURI(),
 		      _input->mutex, _input->cond),
@@ -64,6 +65,36 @@ struct RewindInputStream {
 		input->Close();
 	}
 
+	InputStream *GetBase() {
+		return &base;
+	}
+
+	bool Check(Error &error) {
+		return input->Check(error);
+	}
+
+	void Update() {
+		if (!ReadingFromBuffer())
+			CopyAttributes();
+	}
+
+	Tag *ReadTag() {
+		return input->ReadTag();
+	}
+
+	bool IsAvailable() {
+		return input->IsAvailable();
+	}
+
+	size_t Read(void *ptr, size_t size, Error &error);
+
+	bool IsEOF() {
+		return !ReadingFromBuffer() && input->IsEOF();
+	}
+
+	bool Seek(InputPlugin::offset_type offset, int whence, Error &error);
+
+private:
 	/**
 	 * Are we currently reading from the buffer, and does the
 	 * buffer contain more data for the next read operation?
@@ -110,7 +141,7 @@ input_rewind_check(InputStream *is, Error &error)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	return r->input->Check(error);
+	return r->Check(error);
 }
 
 static void
@@ -118,8 +149,7 @@ input_rewind_update(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	if (!r->ReadingFromBuffer())
-		r->CopyAttributes();
+	r->Update();
 }
 
 static Tag *
@@ -127,7 +157,7 @@ input_rewind_tag(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	return r->input->ReadTag();
+	return r->ReadTag();
 }
 
 static bool
@@ -135,7 +165,47 @@ input_rewind_available(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	return r->input->IsAvailable();
+	return r->IsAvailable();
+}
+
+inline size_t
+RewindInputStream::Read(void *ptr, size_t size, Error &error)
+{
+	if (ReadingFromBuffer()) {
+		/* buffered read */
+
+		assert(head == (size_t)base.offset);
+		assert(tail == (size_t)input->offset);
+
+		if (size > tail - head)
+			size = tail - head;
+
+		memcpy(ptr, buffer + head, size);
+		head += size;
+		base.offset += size;
+
+		return size;
+	} else {
+		/* pass method call to underlying stream */
+
+		size_t nbytes = input->Read(ptr, size, error);
+
+		if (input->offset > (InputPlugin::offset_type)sizeof(buffer))
+			/* disable buffering */
+			tail = 0;
+		else if (tail == (size_t)base.offset) {
+			/* append to buffer */
+
+			memcpy(buffer + tail, ptr, nbytes);
+			tail += nbytes;
+
+			assert(tail == (size_t)input->offset);
+		}
+
+		CopyAttributes();
+
+		return nbytes;
+	}
 }
 
 static size_t
@@ -144,41 +214,7 @@ input_rewind_read(InputStream *is, void *ptr, size_t size,
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	if (r->ReadingFromBuffer()) {
-		/* buffered read */
-
-		assert(r->head == (size_t)is->offset);
-		assert(r->tail == (size_t)r->input->offset);
-
-		if (size > r->tail - r->head)
-			size = r->tail - r->head;
-
-		memcpy(ptr, r->buffer + r->head, size);
-		r->head += size;
-		is->offset += size;
-
-		return size;
-	} else {
-		/* pass method call to underlying stream */
-
-		size_t nbytes = r->input->Read(ptr, size, error);
-
-		if (r->input->offset > (InputPlugin::offset_type)sizeof(r->buffer))
-			/* disable buffering */
-			r->tail = 0;
-		else if (r->tail == (size_t)is->offset) {
-			/* append to buffer */
-
-			memcpy(r->buffer + r->tail, ptr, nbytes);
-			r->tail += nbytes;
-
-			assert(r->tail == (size_t)r->input->offset);
-		}
-
-		r->CopyAttributes();
-
-		return nbytes;
-	}
+	return r->Read(ptr, size, error);
 }
 
 static bool
@@ -186,7 +222,37 @@ input_rewind_eof(InputStream *is)
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	return !r->ReadingFromBuffer() && r->input->IsEOF();
+	return r->IsEOF();
+}
+
+inline bool
+RewindInputStream::Seek(InputPlugin::offset_type offset, int whence,
+			Error &error)
+{
+	assert(base.IsReady());
+
+	if (whence == SEEK_SET && tail > 0 &&
+	    offset <= (InputPlugin::offset_type)tail) {
+		/* buffered seek */
+
+		assert(!ReadingFromBuffer() ||
+		       head == (size_t)base.offset);
+		assert(tail == (size_t)input->offset);
+
+		head = (size_t)offset;
+		base.offset = offset;
+
+		return true;
+	} else {
+		bool success = input->Seek(offset, whence, error);
+		CopyAttributes();
+
+		/* disable the buffer, because input has left the
+		   buffered range now */
+		tail = 0;
+
+		return success;
+	}
 }
 
 static bool
@@ -196,30 +262,7 @@ input_rewind_seek(InputStream *is, InputPlugin::offset_type offset,
 {
 	RewindInputStream *r = (RewindInputStream *)is;
 
-	assert(is->IsReady());
-
-	if (whence == SEEK_SET && r->tail > 0 &&
-	    offset <= (InputPlugin::offset_type)r->tail) {
-		/* buffered seek */
-
-		assert(!r->ReadingFromBuffer() ||
-		       r->head == (size_t)is->offset);
-		assert(r->tail == (size_t)r->input->offset);
-
-		r->head = (size_t)offset;
-		is->offset = offset;
-
-		return true;
-	} else {
-		bool success = r->input->Seek(offset, whence, error);
-		r->CopyAttributes();
-
-		/* disable the buffer, because r->input has left the
-		   buffered range now */
-		r->tail = 0;
-
-		return success;
-	}
+	return r->Seek(offset, whence, error);
 }
 
 const InputPlugin rewind_input_plugin = {
@@ -248,5 +291,5 @@ input_rewind_open(InputStream *is)
 		return is;
 
 	RewindInputStream *c = new RewindInputStream(is);
-	return &c->base;
+	return c->GetBase();
 }
