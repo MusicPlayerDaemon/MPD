@@ -58,16 +58,12 @@ struct CdioParanoiaInputStream final : public InputStream {
 	lsn_t lsn_from, lsn_to;
 	int lsn_relofs;
 
-	int trackno;
-
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
 	int buffer_lsn;
 
-	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
-				int _trackno)
+	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
 		:InputStream(_uri, _mutex, _cond),
-		 drv(nullptr), cdio(nullptr), para(nullptr),
-		 trackno(_trackno)
+		 drv(nullptr), cdio(nullptr), para(nullptr)
 	{
 	}
 
@@ -184,8 +180,7 @@ input_cdio_open(const char *uri,
 		return nullptr;
 
 	CdioParanoiaInputStream *i =
-		new CdioParanoiaInputStream(uri, mutex, cond,
-					    parsed_uri.track);
+		new CdioParanoiaInputStream(uri, mutex, cond);
 
 	/* get list of CD's supporting CD-DA */
 	const AllocatedPath device = parsed_uri.device[0] != 0
@@ -243,9 +238,9 @@ input_cdio_open(const char *uri,
 
 	i->lsn_relofs = 0;
 
-	if (i->trackno >= 0) {
-		i->lsn_from = cdio_get_track_lsn(i->cdio, i->trackno);
-		i->lsn_to = cdio_get_track_last_lsn(i->cdio, i->trackno);
+	if (parsed_uri.track >= 0) {
+		i->lsn_from = cdio_get_track_lsn(i->cdio, parsed_uri.track);
+		i->lsn_to = cdio_get_track_last_lsn(i->cdio, parsed_uri.track);
 	} else {
 		i->lsn_from = 0;
 		i->lsn_to = cdio_get_disc_last_lsn(i->cdio);
