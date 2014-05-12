@@ -197,6 +197,11 @@ input_cdio_open(const char *uri,
 
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
 	i->cdio = cdio_open(device.c_str(), DRIVER_UNKNOWN);
+	if (i->cdio == nullptr) {
+		error.Set(cdio_domain, "Failed to open CD drive");
+		delete i;
+		return nullptr;
+	}
 
 	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, nullptr);
 
