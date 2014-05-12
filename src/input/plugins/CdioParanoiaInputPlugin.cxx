@@ -51,31 +51,48 @@
 #include <cdio/cd_types.h>
 
 struct CdioParanoiaInputStream final : public InputStream {
-	cdrom_drive_t *drv;
-	CdIo_t *cdio;
-	cdrom_paranoia_t *para;
+	cdrom_drive_t *const drv;
+	CdIo_t *const cdio;
+	cdrom_paranoia_t *const para;
 
-	lsn_t lsn_from, lsn_to;
+	const lsn_t lsn_from, lsn_to;
 	int lsn_relofs;
 
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
 	int buffer_lsn;
 
-	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
+	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
+				cdrom_drive_t *_drv, CdIo_t *_cdio,
+				bool reverse_endian,
+				lsn_t _lsn_from, lsn_t _lsn_to)
 		:InputStream(_uri, _mutex, _cond),
-		 drv(nullptr), cdio(nullptr), para(nullptr),
+		 drv(_drv), cdio(_cdio), para(cdio_paranoia_init(drv)),
+		 lsn_from(_lsn_from), lsn_to(_lsn_to),
 		 lsn_relofs(0),
 		 buffer_lsn(-1)
 	{
+		/* Set reading mode for full paranoia, but allow
+		   skipping sectors. */
+		paranoia_modeset(para,
+				 PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
+
+		/* seek to beginning of the track */
+		cdio_paranoia_seek(para, lsn_from, SEEK_SET);
+
+		seekable = true;
+		size = (lsn_to - lsn_from + 1) * CDIO_CD_FRAMESIZE_RAW;
+
+		/* hack to make MPD select the "pcm" decoder plugin */
+		SetMimeType(reverse_endian
+			    ? "audio/x-mpd-cdda-pcm-reverse"
+			    : "audio/x-mpd-cdda-pcm");
+		SetReady();
 	}
 
 	~CdioParanoiaInputStream() {
-		if (para != nullptr)
-			cdio_paranoia_free(para);
-		if (drv != nullptr)
-			cdio_cddap_close_no_free_cdio(drv);
-		if (cdio != nullptr)
-			cdio_destroy(cdio);
+		cdio_paranoia_free(para);
+		cdio_cddap_close_no_free_cdio(drv);
+		cdio_destroy(cdio);
 	}
 
 	/* virtual methods from InputStream */
@@ -181,9 +198,6 @@ input_cdio_open(const char *uri,
 	if (!parse_cdio_uri(&parsed_uri, uri, error))
 		return nullptr;
 
-	CdioParanoiaInputStream *i =
-		new CdioParanoiaInputStream(uri, mutex, cond);
-
 	/* get list of CD's supporting CD-DA */
 	const AllocatedPath device = parsed_uri.device[0] != 0
 		? AllocatedPath::FromFS(parsed_uri.device)
@@ -191,36 +205,34 @@ input_cdio_open(const char *uri,
 	if (device.IsNull()) {
 		error.Set(cdio_domain,
 			  "Unable find or access a CD-ROM drive with an audio CD in it.");
-		delete i;
 		return nullptr;
 	}
 
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
-	i->cdio = cdio_open(device.c_str(), DRIVER_UNKNOWN);
-	if (i->cdio == nullptr) {
+	const auto cdio = cdio_open(device.c_str(), DRIVER_UNKNOWN);
+	if (cdio == nullptr) {
 		error.Set(cdio_domain, "Failed to open CD drive");
-		delete i;
 		return nullptr;
 	}
 
-	i->drv = cdio_cddap_identify_cdio(i->cdio, 1, nullptr);
-
-	if ( !i->drv ) {
+	const auto drv = cdio_cddap_identify_cdio(cdio, 1, nullptr);
+	if (drv == nullptr) {
 		error.Set(cdio_domain, "Unable to identify audio CD disc.");
-		delete i;
+		cdio_destroy(cdio);
 		return nullptr;
 	}
 
-	cdda_verbose_set(i->drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
+	cdda_verbose_set(drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
 
-	if ( 0 != cdio_cddap_open(i->drv) ) {
+	if (0 != cdio_cddap_open(drv)) {
+		cdio_cddap_close_no_free_cdio(drv);
+		cdio_destroy(cdio);
 		error.Set(cdio_domain, "Unable to open disc.");
-		delete i;
 		return nullptr;
 	}
 
 	bool reverse_endian;
-	switch (data_bigendianp(i->drv)) {
+	switch (data_bigendianp(drv)) {
 	case -1:
 		LogDebug(cdio_domain, "drive returns unknown audio data");
 		reverse_endian = default_reverse_endian;
@@ -238,37 +250,24 @@ input_cdio_open(const char *uri,
 
 	default:
 		error.Format(cdio_domain, "Drive returns unknown data type %d",
-			     data_bigendianp(i->drv));
-		delete i;
+			     data_bigendianp(drv));
+		cdio_cddap_close_no_free_cdio(drv);
+		cdio_destroy(cdio);
 		return nullptr;
 	}
 
+	lsn_t lsn_from, lsn_to;
 	if (parsed_uri.track >= 0) {
-		i->lsn_from = cdio_get_track_lsn(i->cdio, parsed_uri.track);
-		i->lsn_to = cdio_get_track_last_lsn(i->cdio, parsed_uri.track);
+		lsn_from = cdio_get_track_lsn(cdio, parsed_uri.track);
+		lsn_to = cdio_get_track_last_lsn(cdio, parsed_uri.track);
 	} else {
-		i->lsn_from = 0;
-		i->lsn_to = cdio_get_disc_last_lsn(i->cdio);
+		lsn_from = 0;
+		lsn_to = cdio_get_disc_last_lsn(cdio);
 	}
 
-	i->para = cdio_paranoia_init(i->drv);
-
-	/* Set reading mode for full paranoia, but allow skipping sectors. */
-	paranoia_modeset(i->para, PARANOIA_MODE_FULL^PARANOIA_MODE_NEVERSKIP);
-
-	/* seek to beginning of the track */
-	cdio_paranoia_seek(i->para, i->lsn_from, SEEK_SET);
-
-	i->seekable = true;
-	i->size = (i->lsn_to - i->lsn_from + 1) * CDIO_CD_FRAMESIZE_RAW;
-
-	/* hack to make MPD select the "pcm" decoder plugin */
-	i->SetMimeType(reverse_endian
-			    ? "audio/x-mpd-cdda-pcm-reverse"
-			    : "audio/x-mpd-cdda-pcm");
-	i->SetReady();
-
-	return i;
+	return new CdioParanoiaInputStream(uri, mutex, cond,
+					   drv, cdio, reverse_endian,
+					   lsn_from, lsn_to);
 }
 
 bool
