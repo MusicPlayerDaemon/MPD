@@ -43,6 +43,11 @@ ver 0.19 (not yet released)
 * install systemd unit for socket activation
 * Android port
 
+ver 0.18.11 (2014/05/12)
+* decoder
+  - opus: fix missing song length on high-latency files
+* fix race condition when using GLib event loop (non-Linux)
+
 ver 0.18.10 (2014/04/10)
 * decoder
   - ffmpeg: fix seeking bug

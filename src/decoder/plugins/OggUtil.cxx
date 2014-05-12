@@ -81,7 +81,7 @@ bool
 OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
 		  Decoder *decoder, InputStream &input_stream)
 {
-	size_t remaining_skipped = 16384;
+	size_t remaining_skipped = 32768;
 
 	while (true) {
 		int r = ogg_sync_pageseek(&oy, &page);
