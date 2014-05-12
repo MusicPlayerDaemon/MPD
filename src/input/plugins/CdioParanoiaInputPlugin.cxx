@@ -64,6 +64,7 @@ struct CdioParanoiaInputStream final : public InputStream {
 	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
 		:InputStream(_uri, _mutex, _cond),
 		 drv(nullptr), cdio(nullptr), para(nullptr),
+		 lsn_relofs(0),
 		 buffer_lsn(-1)
 	{
 	}
@@ -236,8 +237,6 @@ input_cdio_open(const char *uri,
 		delete i;
 		return nullptr;
 	}
-
-	i->lsn_relofs = 0;
 
 	if (parsed_uri.track >= 0) {
 		i->lsn_from = cdio_get_track_lsn(i->cdio, parsed_uri.track);
