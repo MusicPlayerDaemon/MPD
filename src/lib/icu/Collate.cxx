@@ -22,6 +22,7 @@
 
 #ifdef HAVE_ICU
 #include "Error.hxx"
+#include "util/WritableBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -74,18 +75,18 @@ IcuCollateFinish()
 
 #ifdef HAVE_ICU
 
-static UChar *
-UCharFromUTF8(const char *src, int32_t *dest_length)
+static WritableBuffer<UChar>
+UCharFromUTF8(const char *src)
 {
 	assert(src != nullptr);
 
 	const size_t src_length = strlen(src);
-	size_t dest_capacity = src_length + 1;
+	const size_t dest_capacity = src_length;
 	UChar *dest = new UChar[dest_capacity];
 
 	UErrorCode error_code = U_ZERO_ERROR;
-	u_strFromUTF8(dest, dest_capacity,
-		      dest_length,
+	int32_t dest_length;
+	u_strFromUTF8(dest, dest_capacity, &dest_length,
 		      src, src_length,
 		      &error_code);
 	if (U_FAILURE(error_code)) {
@@ -93,7 +94,7 @@ UCharFromUTF8(const char *src, int32_t *dest_length)
 		return nullptr;
 	}
 
-	return dest;
+	return { dest, size_t(dest_length) };
 }
 
 #endif
@@ -114,15 +115,16 @@ IcuCollate(const char *a, const char *b)
 #else
 	/* fall back to ucol_strcoll() */
 
-	UChar *au = UCharFromUTF8(a, nullptr);
-	UChar *bu = UCharFromUTF8(b, nullptr);
+	const auto au = UCharFromUTF8(a);
+	const auto bu = UCharFromUTF8(b);
 
-	int result = au != nullptr && bu != nullptr
-		? (int)ucol_strcoll(collator, au, -1, bu, -1)
+	int result = !au.IsNull() && !bu.IsNull()
+		? (int)ucol_strcoll(collator, au.data, au.size,
+				    bu.data, bu.size)
 		: strcasecmp(a, b);
 
-	delete[] au;
-	delete[] bu;
+	delete[] au.data;
+	delete[] bu.data;
 
 	return result;
 #endif
@@ -141,22 +143,21 @@ IcuCaseFold(const char *src)
 	assert(collator != nullptr);
 	assert(src != nullptr);
 
-	int32_t u_length;
-	UChar *u = UCharFromUTF8(src, &u_length);
-	if (u == nullptr)
+	const auto u = UCharFromUTF8(src);
+	if (u.IsNull())
 		return std::string(src);
 
-	size_t dest_length = ucol_getSortKey(collator, u, u_length,
+	size_t dest_length = ucol_getSortKey(collator, u.data, u.size,
 					     nullptr, 0);
 	if (dest_length == 0) {
-		delete[] u;
+		delete[] u.data;
 		return std::string(src);
 	}
 
 	uint8_t *dest = new uint8_t[dest_length];
-	ucol_getSortKey(collator, u, u_length,
+	ucol_getSortKey(collator, u.data, u.size,
 			dest, dest_length);
-	delete[] u;
+	delete[] u.data;
 	std::string result((const char *)dest);
 	delete[] dest;
 #elif defined(HAVE_GLIB)
