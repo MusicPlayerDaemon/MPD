@@ -1,4 +1,4 @@
-ver 0.18.11 (not yet released)
+ver 0.18.11 (2014/05/12)
 * decoder
   - opus: fix missing song length on high-latency files
 * fix race condition when using GLib event loop (non-Linux)
