@@ -83,7 +83,7 @@ UCharFromUTF8(const char *src, int32_t *dest_length)
 	size_t dest_capacity = src_length + 1;
 	UChar *dest = new UChar[dest_capacity];
 
-	UErrorCode error_code;
+	UErrorCode error_code = U_ZERO_ERROR;
 	u_strFromUTF8(dest, dest_capacity,
 		      dest_length,
 		      src, src_length,
