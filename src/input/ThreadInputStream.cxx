@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "ThreadInputStream.hxx"
-#include "InputPlugin.hxx"
 #include "thread/Name.hxx"
 #include "util/CircularBuffer.hxx"
 #include "util/HugeAllocator.hxx"
