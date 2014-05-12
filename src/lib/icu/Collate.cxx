@@ -23,6 +23,7 @@
 #ifdef HAVE_ICU
 #include "Error.hxx"
 #include "util/WritableBuffer.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -97,6 +98,28 @@ UCharFromUTF8(const char *src)
 	return { dest, size_t(dest_length) };
 }
 
+static WritableBuffer<char>
+UCharToUTF8(ConstBuffer<UChar> src)
+{
+	assert(!src.IsNull());
+
+	/* worst-case estimate */
+	size_t dest_capacity = 4 * src.size;
+
+	char *dest = new char[dest_capacity];
+
+	UErrorCode error_code = U_ZERO_ERROR;
+	int32_t dest_length;
+	u_strToUTF8(dest, dest_capacity, &dest_length, src.data, src.size,
+		    &error_code);
+	if (U_FAILURE(error_code)) {
+		delete[] dest;
+		return nullptr;
+	}
+
+	return { dest, size_t(dest_length) };
+}
+
 #endif
 
 gcc_pure
@@ -147,19 +170,27 @@ IcuCaseFold(const char *src)
 	if (u.IsNull())
 		return std::string(src);
 
-	size_t dest_length = ucol_getSortKey(collator, u.data, u.size,
-					     nullptr, 0);
-	if (dest_length == 0) {
-		delete[] u.data;
+	size_t folded_capacity = u.size * 2u;
+	UChar *folded = new UChar[folded_capacity];
+
+	UErrorCode error_code = U_ZERO_ERROR;
+	size_t folded_length = u_strFoldCase(folded, folded_capacity,
+					   u.data, u.size,
+					   U_FOLD_CASE_DEFAULT,
+					   &error_code);
+	delete[] u.data;
+	if (folded_length == 0 || error_code != U_ZERO_ERROR) {
+		delete[] folded;
 		return std::string(src);
 	}
 
-	uint8_t *dest = new uint8_t[dest_length];
-	ucol_getSortKey(collator, u.data, u.size,
-			dest, dest_length);
-	delete[] u.data;
-	std::string result((const char *)dest);
-	delete[] dest;
+	auto result2 = UCharToUTF8({folded, folded_length});
+	delete[] folded;
+	if (result2.IsNull())
+		return std::string(src);
+
+	std::string result(result2.data, result2.size);
+	delete[] result2.data;
 #elif defined(HAVE_GLIB)
 	char *tmp = g_utf8_casefold(src, -1);
 	std::string result(tmp);
