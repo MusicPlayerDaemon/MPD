@@ -49,6 +49,9 @@ class SoftwareMixer final : public Mixer {
 	 */
 	bool owns_filter;
 
+	/**
+	 * The current volume in percent (0..100).
+	 */
 	unsigned volume;
 
 public:
@@ -93,19 +96,28 @@ software_mixer_init(gcc_unused EventLoop &event_loop,
 	return new SoftwareMixer(listener);
 }
 
+gcc_const
+static unsigned
+PercentVolumeToSoftwareVolume(unsigned volume)
+{
+	assert(volume <= 100);
+
+	if (volume >= 100)
+		return PCM_VOLUME_1;
+	else if (volume > 0)
+		return pcm_float_to_volume((exp(volume / 25.0) - 1) /
+					   (54.5981500331F - 1));
+	else
+		return 0;
+}
+
 bool
 SoftwareMixer::SetVolume(unsigned new_volume, gcc_unused Error &error)
 {
 	assert(new_volume <= 100);
 
-	if (new_volume >= 100)
-		new_volume = PCM_VOLUME_1;
-	else if (new_volume > 0)
-		new_volume = pcm_float_to_volume((exp(new_volume / 25.0) - 1) /
-						 (54.5981500331F - 1));
-
 	volume = new_volume;
-	volume_filter_set(filter, new_volume);
+	volume_filter_set(filter, PercentVolumeToSoftwareVolume(new_volume));
 	return true;
 }
 
