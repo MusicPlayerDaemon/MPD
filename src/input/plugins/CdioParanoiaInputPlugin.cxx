@@ -50,7 +50,7 @@
 
 #include <cdio/cd_types.h>
 
-struct CdioParanoiaInputStream final : public InputStream {
+class CdioParanoiaInputStream final : public InputStream {
 	cdrom_drive_t *const drv;
 	CdIo_t *const cdio;
 	cdrom_paranoia_t *const para;
@@ -61,6 +61,7 @@ struct CdioParanoiaInputStream final : public InputStream {
 	char buffer[CDIO_CD_FRAMESIZE_RAW];
 	int buffer_lsn;
 
+ public:
 	CdioParanoiaInputStream(const char *_uri, Mutex &_mutex, Cond &_cond,
 				cdrom_drive_t *_drv, CdIo_t *_cdio,
 				bool reverse_endian,
