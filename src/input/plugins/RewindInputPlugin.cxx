@@ -19,14 +19,12 @@
 
 #include "config.h"
 #include "RewindInputPlugin.hxx"
-#include "../InputStream.hxx"
+#include "../ProxyInputStream.hxx"
 
 #include <assert.h>
 #include <string.h>
 
-class RewindInputStream final : public InputStream {
-	InputStream *input;
-
+class RewindInputStream final : public ProxyInputStream {
 	/**
 	 * The read position within the buffer.  Undefined as long as
 	 * ReadingFromBuffer() returns false.
@@ -50,36 +48,19 @@ class RewindInputStream final : public InputStream {
 
 public:
 	RewindInputStream(InputStream *_input)
-		:InputStream(_input->GetURI(),
-			     _input->mutex, _input->cond),
-		 input(_input), tail(0) {
-	}
-
-	~RewindInputStream() {
-		delete input;
+		:ProxyInputStream(_input),
+		 tail(0) {
 	}
 
 	/* virtual methods from InputStream */
 
-	bool Check(Error &error) override {
-		return input->Check(error);
-	}
-
 	void Update() override {
 		if (!ReadingFromBuffer())
-			CopyAttributes();
+			ProxyInputStream::Update();
 	}
 
 	bool IsEOF() override {
-		return !ReadingFromBuffer() && input->IsEOF();
-	}
-
-	Tag *ReadTag() override {
-		return input->ReadTag();
-	}
-
-	bool IsAvailable() override {
-		return input->IsAvailable();
+		return !ReadingFromBuffer() && ProxyInputStream::IsEOF();
 	}
 
 	size_t Read(void *ptr, size_t size, Error &error) override;
@@ -91,30 +72,7 @@ private:
 	 * buffer contain more data for the next read operation?
 	 */
 	bool ReadingFromBuffer() const {
-		return tail > 0 && offset < input->GetOffset();
-	}
-
-	/**
-	 * Copy public attributes from the underlying input stream to the
-	 * "rewind" input stream.  This function is called when a method of
-	 * the underlying stream has returned, which may have modified these
-	 * attributes.
-	 */
-	void CopyAttributes() {
-		const InputStream *src = input;
-
-		assert(src != this);
-
-		if (!IsReady() && src->IsReady()) {
-			if (src->HasMimeType())
-				SetMimeType(src->GetMimeType());
-
-			size = src->GetSize();
-			seekable = src->IsSeekable();
-			SetReady();
-		}
-
-		offset = src->GetOffset();
+		return tail > 0 && offset < input.GetOffset();
 	}
 };
 
@@ -125,7 +83,7 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 		/* buffered read */
 
 		assert(head == (size_t)offset);
-		assert(tail == (size_t)input->GetOffset());
+		assert(tail == (size_t)input.GetOffset());
 
 		if (read_size > tail - head)
 			read_size = tail - head;
@@ -138,9 +96,9 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 	} else {
 		/* pass method call to underlying stream */
 
-		size_t nbytes = input->Read(ptr, read_size, error);
+		size_t nbytes = input.Read(ptr, read_size, error);
 
-		if (input->GetOffset() > (offset_type)sizeof(buffer))
+		if (input.GetOffset() > (offset_type)sizeof(buffer))
 			/* disable buffering */
 			tail = 0;
 		else if (tail == (size_t)offset) {
@@ -149,7 +107,7 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 			memcpy(buffer + tail, ptr, nbytes);
 			tail += nbytes;
 
-			assert(tail == (size_t)input->GetOffset());
+			assert(tail == (size_t)input.GetOffset());
 		}
 
 		CopyAttributes();
@@ -158,7 +116,7 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 	}
 }
 
-inline bool
+bool
 RewindInputStream::Seek(offset_type new_offset, int whence,
 			Error &error)
 {
@@ -170,21 +128,18 @@ RewindInputStream::Seek(offset_type new_offset, int whence,
 
 		assert(!ReadingFromBuffer() ||
 		       head == (size_t)offset);
-		assert(tail == (size_t)input->GetOffset());
+		assert(tail == (size_t)input.GetOffset());
 
 		head = (size_t)new_offset;
 		offset = new_offset;
 
 		return true;
 	} else {
-		bool success = input->Seek(new_offset, whence, error);
-		CopyAttributes();
-
 		/* disable the buffer, because input has left the
 		   buffered range now */
 		tail = 0;
 
-		return success;
+		return ProxyInputStream::Seek(new_offset, whence, error);
 	}
 }
 
