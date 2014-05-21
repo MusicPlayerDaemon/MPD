@@ -20,11 +20,9 @@
 #include "config.h"
 #include "RewindInputPlugin.hxx"
 #include "../InputStream.hxx"
-#include "../InputPlugin.hxx"
 
 #include <assert.h>
 #include <string.h>
-#include <stdio.h>
 
 class RewindInputStream final : public InputStream {
 	InputStream *input;
@@ -161,13 +159,13 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 }
 
 inline bool
-RewindInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
+RewindInputStream::Seek(offset_type new_offset, int whence,
 			Error &error)
 {
 	assert(IsReady());
 
 	if (whence == SEEK_SET && tail > 0 &&
-	    new_offset <= (InputPlugin::offset_type)tail) {
+	    new_offset <= (offset_type)tail) {
 		/* buffered seek */
 
 		assert(!ReadingFromBuffer() ||
