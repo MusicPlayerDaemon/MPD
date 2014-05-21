@@ -1027,6 +1027,7 @@ endif
 libinput_a_SOURCES = \
 	src/input/Init.cxx src/input/Init.hxx \
 	src/input/Registry.cxx src/input/Registry.hxx \
+	src/input/Open.cxx \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
 	src/input/InputPlugin.hxx \
 	src/input/TextInputStream.cxx src/input/TextInputStream.hxx \
@@ -1558,7 +1559,7 @@ test_visit_archive_LDADD = \
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
-	src/input/InputStream.cxx
+	src/input/Open.cxx
 
 endif
 

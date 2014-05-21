@@ -19,63 +19,14 @@
 
 #include "config.h"
 #include "InputStream.hxx"
-#include "Registry.hxx"
-#include "InputPlugin.hxx"
-#include "plugins/RewindInputPlugin.hxx"
+#include "thread/Cond.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <assert.h>
 #include <stdio.h> /* for SEEK_SET */
 
-static constexpr Domain input_domain("input");
-
 InputStream::~InputStream()
 {
-}
-
-InputStream *
-InputStream::Open(const char *url,
-		  Mutex &mutex, Cond &cond,
-		  Error &error)
-{
-	input_plugins_for_each_enabled(plugin) {
-		InputStream *is;
-
-		is = plugin->open(url, mutex, cond, error);
-		if (is != nullptr) {
-			is = input_rewind_open(is);
-
-			return is;
-		} else if (error.IsDefined())
-			return nullptr;
-	}
-
-	error.Set(input_domain, "Unrecognized URI");
-	return nullptr;
-}
-
-InputStream *
-InputStream::OpenReady(const char *uri,
-		       Mutex &mutex, Cond &cond,
-		       Error &error)
-{
-	InputStream *is = Open(uri, mutex, cond, error);
-	if (is == nullptr)
-		return nullptr;
-
-	mutex.lock();
-	is->WaitReady();
-	bool success = is->Check(error);
-	mutex.unlock();
-
-	if (!success) {
-		delete is;
-		is = nullptr;
-	}
-
-	return is;
 }
 
 bool
