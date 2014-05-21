@@ -807,7 +807,7 @@ CurlInputStream::DataReceived(const void *ptr, size_t received_size)
 		assert(w.size >= remaining);
 
 		memcpy(w.data, (const uint8_t *)ptr + nbytes, remaining);
-		buffer.Append(received_size);
+		buffer.Append(remaining);
 	}
 
 	ready = true;
