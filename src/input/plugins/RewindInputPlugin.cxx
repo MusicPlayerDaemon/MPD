@@ -194,7 +194,7 @@ InputStream *
 input_rewind_open(InputStream *is)
 {
 	assert(is != nullptr);
-	assert(is->GetOffset() == 0);
+	assert(!is->IsReady() || is->GetOffset() == 0);
 
 	if (is->IsReady() && is->IsSeekable())
 		/* seekable resources don't need this plugin */
