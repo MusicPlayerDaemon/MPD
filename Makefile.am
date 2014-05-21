@@ -1388,6 +1388,7 @@ if ENABLE_TEST
 C_TESTS = \
 	test/test_util \
 	test/test_byte_reverse \
+	test/test_rewind \
 	test/test_mixramp \
 	test/test_pcm \
 	test/test_queue_priority
@@ -1854,6 +1855,18 @@ test_test_byte_reverse_SOURCES = \
 test_test_byte_reverse_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_byte_reverse_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_byte_reverse_LDADD = \
+	libutil.a \
+	$(CPPUNIT_LIBS)
+
+test_test_rewind_SOURCES = \
+	src/Log.cxx src/LogBackend.cxx \
+	test/test_rewind.cxx
+test_test_rewind_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_rewind_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_test_rewind_LDADD = \
+	$(INPUT_LIBS) \
+	libthread.a \
+	libtag.a \
 	libutil.a \
 	$(CPPUNIT_LIBS)
 
