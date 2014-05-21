@@ -955,11 +955,14 @@ CurlInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
 		/* seek to EOF: simulate empty result; avoid
 		   triggering a "416 Requested Range Not Satisfiable"
 		   response */
+		mutex.lock();
 		return true;
 	}
 
-	if (!InitEasy(error))
+	if (!InitEasy(error)) {
+		mutex.lock();
 		return false;
+	}
 
 	/* send the "Range" header */
 
@@ -970,8 +973,10 @@ CurlInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
 
 	ready = false;
 
-	if (!input_curl_easy_add_indirect(this, error))
+	if (!input_curl_easy_add_indirect(this, error)) {
+		mutex.lock();
 		return false;
+	}
 
 	mutex.lock();
 	WaitReady();
