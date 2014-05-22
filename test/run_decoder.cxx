@@ -40,8 +40,6 @@
 #include <stdio.h>
 
 struct Decoder {
-	const char *uri;
-
 	bool initialized;
 };
 
@@ -173,16 +171,14 @@ decoder_mixramp(gcc_unused Decoder &decoder, gcc_unused MixRampInfo &&mix_ramp)
 
 int main(int argc, char **argv)
 {
-	const char *decoder_name;
-
 	if (argc != 3) {
 		fprintf(stderr, "Usage: run_decoder DECODER URI >OUT\n");
 		return EXIT_FAILURE;
 	}
 
 	Decoder decoder;
-	decoder_name = argv[1];
-	decoder.uri = argv[2];
+	const char *const decoder_name = argv[1];
+	const char *const uri = argv[2];
 
 #ifdef HAVE_GLIB
 #if !GLIB_CHECK_VERSION(2,32,0)
@@ -210,13 +206,13 @@ int main(int argc, char **argv)
 	decoder.initialized = false;
 
 	if (plugin->file_decode != nullptr) {
-		plugin->FileDecode(decoder, Path::FromFS(decoder.uri));
+		plugin->FileDecode(decoder, Path::FromFS(uri));
 	} else if (plugin->stream_decode != nullptr) {
 		Mutex mutex;
 		Cond cond;
 
 		InputStream *is =
-			InputStream::OpenReady(decoder.uri, mutex, cond, error);
+			InputStream::OpenReady(uri, mutex, cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
 				LogError(error);
