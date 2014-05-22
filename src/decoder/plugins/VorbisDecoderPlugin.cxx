@@ -171,6 +171,16 @@ vorbis_interleave(float *dest, const float *const*src,
 #endif
 
 /* public */
+
+static bool
+vorbis_init(gcc_unused const config_param &param)
+{
+#ifndef HAVE_TREMOR
+	LogDebug(vorbis_domain, vorbis_version_string());
+#endif
+	return true;
+}
+
 static void
 vorbis_stream_decode(Decoder &decoder,
 		     InputStream &input_stream)
@@ -337,7 +347,7 @@ static const char *const vorbis_mime_types[] = {
 
 const struct DecoderPlugin vorbis_decoder_plugin = {
 	"vorbis",
-	nullptr,
+	vorbis_init,
 	nullptr,
 	vorbis_stream_decode,
 	nullptr,
