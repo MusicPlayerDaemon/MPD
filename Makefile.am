@@ -1866,6 +1866,7 @@ test_test_rewind_SOURCES = \
 test_test_rewind_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_rewind_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_rewind_LDADD = \
+	$(GLIB_LIBS) \
 	$(INPUT_LIBS) \
 	libthread.a \
 	libtag.a \
