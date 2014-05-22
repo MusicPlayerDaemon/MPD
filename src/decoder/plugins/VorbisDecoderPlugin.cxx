@@ -51,18 +51,18 @@
 struct VorbisInputStream {
 	Decoder *const decoder;
 
-	InputStream *const input_stream;
+	InputStream &input_stream;
 	bool seekable;
 
 	VorbisInputStream(Decoder *_decoder, InputStream &_is)
-		:decoder(_decoder), input_stream(&_is),
-		 seekable(input_stream->CheapSeeking()) {}
+		:decoder(_decoder), input_stream(_is),
+		 seekable(input_stream.CheapSeeking()) {}
 };
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
 	VorbisInputStream *vis = (VorbisInputStream *)data;
-	size_t ret = decoder_read(vis->decoder, *vis->input_stream,
+	size_t ret = decoder_read(vis->decoder, vis->input_stream,
 				  ptr, size * nmemb);
 
 	errno = 0;
@@ -78,7 +78,7 @@ static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 	return vis->seekable &&
 		(vis->decoder == nullptr ||
 		 decoder_get_command(*vis->decoder) != DecoderCommand::STOP) &&
-		vis->input_stream->LockSeek(offset, whence, error)
+		vis->input_stream.LockSeek(offset, whence, error)
 		? 0 : -1;
 }
 
@@ -92,7 +92,7 @@ static long ogg_tell_cb(void *data)
 {
 	VorbisInputStream *vis = (VorbisInputStream *)data;
 
-	return (long)vis->input_stream->GetOffset();
+	return (long)vis->input_stream.GetOffset();
 }
 
 static const ov_callbacks vorbis_is_callbacks = {
