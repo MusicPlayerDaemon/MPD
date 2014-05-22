@@ -27,7 +27,6 @@
 #include "fs/Path.hxx"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
-#include "thread/Cond.hxx"
 #include "Log.hxx"
 #include "stdbin.h"
 
@@ -77,11 +76,9 @@ int main(int argc, char **argv)
 	if (plugin->file_decode != nullptr) {
 		plugin->FileDecode(decoder, Path::FromFS(uri));
 	} else if (plugin->stream_decode != nullptr) {
-		Mutex mutex;
-		Cond cond;
-
 		InputStream *is =
-			InputStream::OpenReady(uri, mutex, cond, error);
+			InputStream::OpenReady(uri, decoder.mutex,
+					       decoder.cond, error);
 		if (is == NULL) {
 			if (error.IsDefined())
 				LogError(error);

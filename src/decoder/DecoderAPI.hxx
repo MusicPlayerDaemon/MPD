@@ -40,6 +40,8 @@
 
 // IWYU pragma: end_exports
 
+class Error;
+
 /**
  * Notify the player thread that it has finished initialization and
  * that it has read the song's meta data.
@@ -94,6 +96,14 @@ decoder_seek_where(Decoder &decoder);
  */
 void
 decoder_seek_error(Decoder &decoder);
+
+/**
+ * Open a new #InputStream and wait until it's ready.  Can get
+ * cancelled by DecoderCommand::STOP (returns nullptr without setting
+ * #Error).
+ */
+InputStream *
+decoder_open_uri(Decoder &decoder, const char *uri, Error &error);
 
 /**
  * Blocking read from the input stream.

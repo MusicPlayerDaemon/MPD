@@ -440,7 +440,6 @@ wavpack_input_init(WavpackInput *isp, Decoder &decoder,
 
 static InputStream *
 wavpack_open_wvc(Decoder &decoder, const char *uri,
-		 Mutex &mutex, Cond &cond,
 		 WavpackInput *wpi)
 {
 	/*
@@ -452,28 +451,13 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 
 	char *wvc_url = g_strconcat(uri, "c", nullptr);
 
-	InputStream *is_wvc = InputStream::Open(wvc_url, mutex, cond,
-						IgnoreError());
+	InputStream *is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
 	g_free(wvc_url);
 
 	if (is_wvc == nullptr)
 		return nullptr;
 
-	/*
-	 * And we try to buffer in order to get know
-	 * about a possible 404 error.
-	 */
-	char first_byte;
-	size_t nbytes = decoder_read(decoder, *is_wvc,
-				     &first_byte, sizeof(first_byte));
-	if (nbytes == 0) {
-		delete is_wvc;
-		return nullptr;
-	}
-
-	/* push it back */
 	wavpack_input_init(wpi, decoder, *is_wvc);
-	wpi->last_byte = first_byte;
 	return is_wvc;
 }
 
@@ -488,7 +472,6 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 
 	WavpackInput isp_wvc;
 	InputStream *is_wvc = wavpack_open_wvc(decoder, is.GetURI(),
-					       is.mutex, is.cond,
 					       &isp_wvc);
 	if (is_wvc != nullptr) {
 		open_flags |= OPEN_WVC;

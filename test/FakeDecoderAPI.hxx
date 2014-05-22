@@ -21,8 +21,13 @@
 #define FAKE_DECODER_API_HXX
 
 #include "check.h"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 
 struct Decoder {
+	Mutex mutex;
+	Cond cond;
+
 	bool initialized;
 
 	Decoder()

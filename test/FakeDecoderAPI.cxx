@@ -66,6 +66,12 @@ decoder_seek_error(gcc_unused Decoder &decoder)
 {
 }
 
+InputStream *
+decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
+{
+	return InputStream::OpenReady(uri, decoder.mutex, decoder.cond, error);
+}
+
 size_t
 decoder_read(gcc_unused Decoder *decoder,
 	     InputStream &is,

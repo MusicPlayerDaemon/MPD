@@ -240,6 +240,38 @@ void decoder_seek_error(Decoder & decoder)
 	decoder_command_finished(decoder);
 }
 
+InputStream *
+decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
+{
+	assert(decoder.dc.state == DecoderState::START ||
+	       decoder.dc.state == DecoderState::DECODE);
+
+	DecoderControl &dc = decoder.dc;
+	Mutex &mutex = dc.mutex;
+	Cond &cond = dc.cond;
+
+	InputStream *is = InputStream::Open(uri, mutex, cond, error);
+	if (is == nullptr)
+		return nullptr;
+
+	mutex.lock();
+	while (true) {
+		is->Update();
+		if (is->IsReady()) {
+			mutex.unlock();
+			return is;
+		}
+
+		if (dc.command == DecoderCommand::STOP) {
+			mutex.unlock();
+			delete is;
+			return nullptr;
+		}
+
+		cond.wait(mutex);
+	}
+}
+
 /**
  * Should be read operation be cancelled?  That is the case when the
  * player thread has sent a command such as "STOP".
