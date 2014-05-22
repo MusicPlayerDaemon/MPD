@@ -63,9 +63,9 @@ ProxyInputStream::Update()
 }
 
 bool
-ProxyInputStream::Seek(offset_type new_offset, int whence, Error &error)
+ProxyInputStream::Seek(offset_type new_offset, Error &error)
 {
-	bool success = input.Seek(new_offset, whence, error);
+	bool success = input.Seek(new_offset, error);
 	CopyAttributes();
 	return success;
 }

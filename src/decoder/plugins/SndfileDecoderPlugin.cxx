@@ -41,11 +41,31 @@ sndfile_vio_get_filelen(void *user_data)
 }
 
 static sf_count_t
-sndfile_vio_seek(sf_count_t offset, int whence, void *user_data)
+sndfile_vio_seek(sf_count_t _offset, int whence, void *user_data)
 {
 	InputStream &is = *(InputStream *)user_data;
 
-	if (!is.LockSeek(offset, whence, IgnoreError()))
+	InputStream::offset_type offset = _offset;
+	switch (whence) {
+	case SEEK_SET:
+		break;
+
+	case SEEK_CUR:
+		offset += is.GetOffset();
+		break;
+
+	case SEEK_END:
+		if (!is.KnownSize())
+			return -1;
+
+		offset += is.GetSize();
+		break;
+
+	default:
+		return -1;
+	}
+
+	if (!is.LockSeek(offset, IgnoreError()))
 		return -1;
 
 	return is.GetOffset();

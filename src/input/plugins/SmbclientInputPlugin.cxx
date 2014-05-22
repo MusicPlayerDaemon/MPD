@@ -57,7 +57,7 @@ public:
 	}
 
 	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, int whence, Error &error) override;
+	bool Seek(offset_type offset, Error &error) override;
 };
 
 /*
@@ -136,11 +136,10 @@ SmbclientInputStream::Read(void *ptr, size_t read_size, Error &error)
 }
 
 bool
-SmbclientInputStream::Seek(InputStream::offset_type new_offset,
-			   int whence, Error &error)
+SmbclientInputStream::Seek(offset_type new_offset, Error &error)
 {
 	smbclient_mutex.lock();
-	off_t result = smbc_lseek(fd, new_offset, whence);
+	off_t result = smbc_lseek(fd, new_offset, SEEK_SET);
 	smbclient_mutex.unlock();
 	if (result < 0) {
 		error.SetErrno("smbc_lseek() failed");

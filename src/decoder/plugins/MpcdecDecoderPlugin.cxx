@@ -57,7 +57,7 @@ mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return data->is.LockSeek(offset, SEEK_SET, IgnoreError());
+	return data->is.LockSeek(offset, IgnoreError());
 }
 
 static mpc_int32_t

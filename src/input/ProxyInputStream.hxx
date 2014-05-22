@@ -45,7 +45,7 @@ public:
 	/* virtual methods from InputStream */
 	bool Check(Error &error) override;
 	void Update() override;
-	bool Seek(offset_type new_offset, int whence, Error &error) override;
+	bool Seek(offset_type new_offset, Error &error) override;
 	bool IsEOF() override;
 	Tag *ReadTag() override;
 	bool IsAvailable() override;

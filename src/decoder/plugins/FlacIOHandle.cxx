@@ -62,12 +62,31 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 }
 
 static int
-FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 offset, int whence)
+FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 _offset, int whence)
 {
 	InputStream *is = (InputStream *)handle;
 
-	Error error;
-	return is->LockSeek(offset, whence, error) ? 0 : -1;
+	InputStream::offset_type offset = _offset;
+	switch (whence) {
+	case SEEK_SET:
+		break;
+
+	case SEEK_CUR:
+		offset += is->GetOffset();
+		break;
+
+	case SEEK_END:
+		if (!is->KnownSize())
+			return -1;
+
+		offset += is->GetSize();
+		break;
+
+	default:
+		return -1;
+	}
+
+	return is->LockSeek(offset, IgnoreError()) ? 0 : -1;
 }
 
 static FLAC__int64

@@ -61,7 +61,7 @@ public:
 	}
 
 	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, int whence, Error &error) override;
+	bool Seek(offset_type offset, Error &error) override;
 };
 
 size_t
@@ -77,10 +77,10 @@ NfsInputStream::Read(void *ptr, size_t read_size, Error &error)
 }
 
 bool
-NfsInputStream::Seek(offset_type new_offset, int whence, Error &error)
+NfsInputStream::Seek(offset_type new_offset, Error &error)
 {
 	uint64_t current_offset;
-	int result = nfs_lseek(ctx, fh, new_offset, whence,
+	int result = nfs_lseek(ctx, fh, new_offset, SEEK_SET,
 			       &current_offset);
 	if (result < 0) {
 		error.SetErrno(-result, "smbc_lseek() failed");

@@ -92,7 +92,7 @@ public:
 				     ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		CPPUNIT_ASSERT(ris->Seek(1, SEEK_SET, error));
+		CPPUNIT_ASSERT(ris->Seek(1, error));
 		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(1),
 				     ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
@@ -105,7 +105,7 @@ public:
 				     ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		CPPUNIT_ASSERT(ris->Seek(0, SEEK_SET, error));
+		CPPUNIT_ASSERT(ris->Seek(0, error));
 		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(0),
 				     ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
@@ -135,7 +135,7 @@ public:
 				     ris->GetOffset());
 		CPPUNIT_ASSERT(ris->IsEOF());
 
-		CPPUNIT_ASSERT(ris->Seek(3, SEEK_SET, error));
+		CPPUNIT_ASSERT(ris->Seek(3, error));
 		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(3),
 				     ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());

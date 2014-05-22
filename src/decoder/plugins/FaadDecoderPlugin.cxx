@@ -186,7 +186,7 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 		/* obtain the duration from the ADTS header */
 		float song_length = adts_song_duration(buffer);
 
-		is.LockSeek(tagsize, SEEK_SET, IgnoreError());
+		is.LockSeek(tagsize, IgnoreError());
 
 		decoder_buffer_clear(buffer);
 		decoder_buffer_fill(buffer);

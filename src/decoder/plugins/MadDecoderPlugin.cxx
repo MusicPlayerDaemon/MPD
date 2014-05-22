@@ -208,7 +208,7 @@ inline bool
 MadDecoder::Seek(long offset)
 {
 	Error error;
-	if (!input_stream.LockSeek(offset, SEEK_SET, error))
+	if (!input_stream.LockSeek(offset, error))
 		return false;
 
 	mad_stream_buffer(&stream, input_buffer, 0);

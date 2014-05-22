@@ -41,7 +41,7 @@ OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet);
  */
 bool
 OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
-		    InputStream::offset_type offset, int whence);
+		    InputStream::offset_type offset);
 
 /**
  * Try to find the end-of-stream (EOS) packet.  Seek to the end of the

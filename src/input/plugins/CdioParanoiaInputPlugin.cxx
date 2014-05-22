@@ -99,7 +99,7 @@ class CdioParanoiaInputStream final : public InputStream {
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
 	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, int whence, Error &error) override;
+	bool Seek(offset_type offset, Error &error) override;
 };
 
 static constexpr Domain cdio_domain("cdio");
@@ -272,21 +272,8 @@ input_cdio_open(const char *uri,
 }
 
 bool
-CdioParanoiaInputStream::Seek(InputPlugin::offset_type new_offset,
-			      int whence, Error &error)
+CdioParanoiaInputStream::Seek(offset_type new_offset, Error &error)
 {
-	/* calculate absolute offset */
-	switch (whence) {
-	case SEEK_SET:
-		break;
-	case SEEK_CUR:
-		new_offset += offset;
-		break;
-	case SEEK_END:
-		new_offset += size;
-		break;
-	}
-
 	if (new_offset < 0 || new_offset > size) {
 		error.Format(cdio_domain, "Invalid offset to seek %ld (%ld)",
 			     (long int)new_offset, (long int)size);

@@ -23,7 +23,6 @@
 #include "util/UriUtil.hxx"
 
 #include <assert.h>
-#include <stdio.h> /* for SEEK_SET */
 
 InputStream::~InputStream()
 {
@@ -75,29 +74,17 @@ InputStream::CheapSeeking() const
 }
 
 bool
-InputStream::Seek(gcc_unused offset_type new_offset, gcc_unused int whence,
+InputStream::Seek(gcc_unused offset_type new_offset,
 		  gcc_unused Error &error)
 {
 	return false;
 }
 
 bool
-InputStream::LockSeek(offset_type _offset, int whence, Error &error)
+InputStream::LockSeek(offset_type _offset, Error &error)
 {
 	const ScopeLock protect(mutex);
-	return Seek(_offset, whence, error);
-}
-
-bool
-InputStream::Rewind(Error &error)
-{
-	return Seek(0, SEEK_SET, error);
-}
-
-bool
-InputStream::LockRewind(Error &error)
-{
-	return LockSeek(0, SEEK_SET, error);
+	return Seek(_offset, error);
 }
 
 Tag *

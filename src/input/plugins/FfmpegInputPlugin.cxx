@@ -60,7 +60,7 @@ struct FfmpegInputStream final : public InputStream {
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
 	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, int whence, Error &error) override;
+	bool Seek(offset_type offset, Error &error) override;
 };
 
 static constexpr Domain ffmpeg_domain("ffmpeg");
@@ -134,9 +134,9 @@ FfmpegInputStream::IsEOF()
 }
 
 bool
-FfmpegInputStream::Seek(offset_type new_offset, int whence, Error &error)
+FfmpegInputStream::Seek(offset_type new_offset, Error &error)
 {
-	int64_t ret = avio_seek(h, new_offset, whence);
+	int64_t ret = avio_seek(h, new_offset, SEEK_SET);
 
 	if (ret >= 0) {
 		eof = false;

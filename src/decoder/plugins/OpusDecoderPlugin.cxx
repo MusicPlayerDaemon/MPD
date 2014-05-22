@@ -199,7 +199,7 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
 	ogg_stream_clear(&os);
 
 	/* restore the previous file position */
-	is.Seek(old_offset, SEEK_SET, IgnoreError());
+	is.Seek(old_offset, IgnoreError());
 
 	return result;
 }
@@ -344,7 +344,7 @@ MPDOpusDecoder::Seek(OggSyncState &oy, double where_s)
 	InputStream::offset_type offset(where_granulepos * input_stream.GetSize()
 					/ eos_granulepos);
 
-	if (!OggSeekPageAtOffset(oy, os, input_stream, offset, SEEK_SET))
+	if (!OggSeekPageAtOffset(oy, os, input_stream, offset))
 		return false;
 
 	decoder_timestamp(decoder, where_s);

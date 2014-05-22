@@ -26,7 +26,6 @@
 #include "Log.hxx"
 
 #include <string.h>
-#include <stdio.h> /* for SEEK_SET */
 
 static void
 pcm_stream_decode(Decoder &decoder, InputStream &is)
@@ -76,7 +75,7 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 							decoder_seek_where(decoder));
 
 			Error error;
-			if (is.LockSeek(offset, SEEK_SET, error)) {
+			if (is.LockSeek(offset, error)) {
 				decoder_command_finished(decoder);
 			} else {
 				LogError(error);

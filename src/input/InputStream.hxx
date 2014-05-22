@@ -275,22 +275,26 @@ public:
 	 * The caller must lock the mutex.
 	 *
 	 * @param offset the relative offset
-	 * @param whence the base of the seek, one of SEEK_SET, SEEK_CUR, SEEK_END
 	 */
-	virtual bool Seek(offset_type offset, int whence, Error &error);
+	virtual bool Seek(offset_type offset, Error &error);
 
 	/**
 	 * Wrapper for Seek() which locks and unlocks the mutex; the
 	 * caller must not be holding it already.
 	 */
-	bool LockSeek(offset_type offset, int whence, Error &error);
+	bool LockSeek(offset_type offset, Error &error);
 
 	/**
 	 * Rewind to the beginning of the stream.  This is a wrapper
-	 * for Seek(0, SEEK_SET, error).
+	 * for Seek(0, error).
 	 */
-	bool Rewind(Error &error);
-	bool LockRewind(Error &error);
+	bool Rewind(Error &error) {
+		return Seek(0, error);
+	}
+
+	bool LockRewind(Error &error) {
+		return LockSeek(0, error);
+	}
 
 	/**
 	 * Returns true if the stream has reached end-of-file.

@@ -51,7 +51,7 @@ FlacInput::Seek(FLAC__uint64 absolute_byte_offset)
 		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 
 	::Error error;
-	if (!input_stream.LockSeek(absolute_byte_offset, SEEK_SET, error)) {
+	if (!input_stream.LockSeek(absolute_byte_offset, error)) {
 		LogError(error);
 		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
 	}

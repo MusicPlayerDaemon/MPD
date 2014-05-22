@@ -22,8 +22,6 @@
 #include "OggSyncState.hxx"
 #include "util/Error.hxx"
 
-#include <stdio.h>
-
 bool
 OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
 {
@@ -41,7 +39,7 @@ OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
 
 bool
 OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
-		    InputStream::offset_type offset, int whence)
+		    InputStream::offset_type offset)
 {
 	oy.Reset();
 
@@ -49,7 +47,7 @@ OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
 	   data */
 	ogg_stream_reset(&os);
 
-	return is.LockSeek(offset, whence, IgnoreError()) &&
+	return is.LockSeek(offset, IgnoreError()) &&
 		oy.ExpectPageSeekIn(os);
 }
 
@@ -57,12 +55,15 @@ bool
 OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
 	       InputStream &is)
 {
-	if (is.KnownSize() && is.GetRest() < 65536)
+	if (!is.KnownSize())
+		return false;
+
+	if (is.GetRest() < 65536)
 		return OggFindEOS(oy, os, packet);
 
 	if (!is.CheapSeeking())
 		return false;
 
-	return OggSeekPageAtOffset(oy, os, is, -65536, SEEK_END) &&
+	return OggSeekPageAtOffset(oy, os, is, is.GetSize() - 65536) &&
 		OggFindEOS(oy, os, packet);
 }

@@ -175,7 +175,7 @@ struct CurlInputStream final : public InputStream {
 	}
 
 	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, int whence, Error &error) override;
+	bool Seek(offset_type offset, Error &error) override;
 };
 
 class CurlMulti;
@@ -887,12 +887,11 @@ CurlInputStream::InitEasy(Error &error)
 }
 
 inline bool
-CurlInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
-		      Error &error)
+CurlInputStream::Seek(offset_type new_offset, Error &error)
 {
 	assert(IsReady());
 
-	if (whence == SEEK_SET && new_offset == offset)
+	if (new_offset == offset)
 		/* no-op */
 		return true;
 
@@ -900,26 +899,6 @@ CurlInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
 		return false;
 
 	/* calculate the absolute offset */
-
-	switch (whence) {
-	case SEEK_SET:
-		break;
-
-	case SEEK_CUR:
-		new_offset += offset;
-		break;
-
-	case SEEK_END:
-		if (size < 0)
-			/* stream size is not known */
-			return false;
-
-		new_offset += size;
-		break;
-
-	default:
-		return false;
-	}
 
 	if (new_offset < 0)
 		return false;

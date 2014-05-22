@@ -56,7 +56,7 @@ struct FileInputStream final : public InputStream {
 	}
 
 	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, int whence, Error &error) override;
+	bool Seek(offset_type offset, Error &error) override;
 };
 
 static InputStream *
@@ -99,11 +99,9 @@ input_file_open(const char *filename,
 }
 
 bool
-FileInputStream::Seek(InputPlugin::offset_type new_offset, int whence,
-		      Error &error)
+FileInputStream::Seek(offset_type new_offset, Error &error)
 {
-	new_offset = (InputPlugin::offset_type)lseek(fd, (off_t)new_offset,
-						     whence);
+	new_offset = (offset_type)lseek(fd, (off_t)new_offset, SEEK_SET);
 	if (new_offset < 0) {
 		error.SetErrno("Failed to seek");
 		return false;

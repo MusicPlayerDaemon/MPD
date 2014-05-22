@@ -70,15 +70,37 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 	return ret / size;
 }
 
-static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
+static int ogg_seek_cb(void *data, ogg_int64_t _offset, int whence)
 {
 	VorbisInputStream *vis = (VorbisInputStream *)data;
+	InputStream &is = vis->input_stream;
 
-	Error error;
-	return vis->seekable &&
-		(vis->decoder == nullptr ||
-		 decoder_get_command(*vis->decoder) != DecoderCommand::STOP) &&
-		vis->input_stream.LockSeek(offset, whence, error)
+	if (!vis->seekable ||
+	    (vis->decoder != nullptr &&
+	     decoder_get_command(*vis->decoder) == DecoderCommand::STOP))
+		return -1;
+
+	InputStream::offset_type offset = _offset;
+	switch (whence) {
+	case SEEK_SET:
+		break;
+
+	case SEEK_CUR:
+		offset += is.GetOffset();
+		break;
+
+	case SEEK_END:
+		if (!is.KnownSize())
+			return -1;
+
+		offset += is.GetSize();
+		break;
+
+	default:
+		return -1;
+	}
+
+	return is.LockSeek(offset, IgnoreError())
 		? 0 : -1;
 }
 

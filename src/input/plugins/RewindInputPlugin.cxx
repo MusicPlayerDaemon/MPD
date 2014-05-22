@@ -64,7 +64,7 @@ public:
 	}
 
 	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, int whence, Error &error) override;
+	bool Seek(offset_type offset, Error &error) override;
 
 private:
 	/**
@@ -117,13 +117,12 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 }
 
 bool
-RewindInputStream::Seek(offset_type new_offset, int whence,
+RewindInputStream::Seek(offset_type new_offset,
 			Error &error)
 {
 	assert(IsReady());
 
-	if (whence == SEEK_SET && tail > 0 &&
-	    new_offset <= (offset_type)tail) {
+	if (tail > 0 && new_offset <= (offset_type)tail) {
 		/* buffered seek */
 
 		assert(!ReadingFromBuffer() ||
@@ -139,7 +138,7 @@ RewindInputStream::Seek(offset_type new_offset, int whence,
 		   buffered range now */
 		tail = 0;
 
-		return ProxyInputStream::Seek(new_offset, whence, error);
+		return ProxyInputStream::Seek(new_offset, error);
 	}
 }
 

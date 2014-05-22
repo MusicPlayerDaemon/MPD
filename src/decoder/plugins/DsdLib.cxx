@@ -30,9 +30,7 @@
 #include "tag/TagId3.hxx"
 #include "util/Error.hxx"
 
-#include <unistd.h>
 #include <string.h>
-#include <stdio.h> /* for SEEK_SET, SEEK_CUR */
 
 #ifdef HAVE_ID3TAG
 #include <id3tag.h>
@@ -63,7 +61,7 @@ dsdlib_skip_to(Decoder *decoder, InputStream &is,
 	       int64_t offset)
 {
 	if (is.IsSeekable())
-		return is.Seek(offset, SEEK_SET, IgnoreError());
+		return is.Seek(offset, IgnoreError());
 
 	if (is.GetOffset() > offset)
 		return false;
@@ -96,7 +94,7 @@ dsdlib_skip(Decoder *decoder, InputStream &is,
 		return true;
 
 	if (is.IsSeekable())
-		return is.Seek(delta, SEEK_CUR, IgnoreError());
+		return is.Seek(is.GetOffset() + delta, IgnoreError());
 
 	char buffer[8192];
 	while (delta > 0) {

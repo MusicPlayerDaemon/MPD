@@ -392,13 +392,35 @@ wavpack_input_get_pos(void *id)
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
-	return wpin(id)->is.LockSeek(pos, SEEK_SET, IgnoreError()) ? 0 : -1;
+	return wpin(id)->is.LockSeek(pos, IgnoreError()) ? 0 : -1;
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return wpin(id)->is.LockSeek(delta, mode, IgnoreError()) ? 0 : -1;
+	InputStream &is = wpin(id)->is;
+
+	InputStream::offset_type offset = delta;
+	switch (mode) {
+	case SEEK_SET:
+		break;
+
+	case SEEK_CUR:
+		offset += is.GetOffset();
+		break;
+
+	case SEEK_END:
+		if (!is.KnownSize())
+			return -1;
+
+		offset += is.GetSize();
+		break;
+
+	default:
+		return -1;
+	}
+
+	return is.LockSeek(offset, IgnoreError()) ? 0 : -1;
 }
 
 static int

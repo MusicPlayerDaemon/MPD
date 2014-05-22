@@ -120,10 +120,29 @@ mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 {
 	AvioStream *stream = (AvioStream *)opaque;
 
-	if (whence == AVSEEK_SIZE)
+	switch (whence) {
+	case SEEK_SET:
+		break;
+
+	case SEEK_CUR:
+		pos += stream->input.GetOffset();
+		break;
+
+	case SEEK_END:
+		if (!stream->input.KnownSize())
+			return -1;
+
+		pos += stream->input.GetSize();
+		break;
+
+	case AVSEEK_SIZE:
 		return stream->input.GetSize();
 
-	if (!stream->input.LockSeek(pos, whence, IgnoreError()))
+	default:
+		return -1;
+	}
+
+	if (!stream->input.LockSeek(pos, IgnoreError()))
 		return -1;
 
 	return stream->input.GetOffset();

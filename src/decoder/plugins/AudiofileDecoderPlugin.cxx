@@ -92,13 +92,17 @@ audiofile_file_destroy(AFvirtualfile *vfile)
 }
 
 static AFfileoffset
-audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
+audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset _offset,
+		    int is_relative)
 {
 	InputStream &is = *(InputStream *)vfile->closure;
-	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
+
+	InputStream::offset_type offset = _offset;
+	if (is_relative)
+		offset += is.GetOffset();
 
 	Error error;
-	if (is.LockSeek(offset, whence, error)) {
+	if (is.LockSeek(offset, IgnoreError())) {
 		return is.GetOffset();
 	} else {
 		return -1;
