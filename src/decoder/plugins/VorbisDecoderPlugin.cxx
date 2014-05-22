@@ -49,10 +49,14 @@
 #include <errno.h>
 
 struct VorbisInputStream {
-	Decoder *decoder;
+	Decoder *const decoder;
 
-	InputStream *input_stream;
+	InputStream *const input_stream;
 	bool seekable;
+
+	VorbisInputStream(Decoder *_decoder, InputStream &_is)
+		:decoder(_decoder), input_stream(&_is),
+		 seekable(input_stream->CheapSeeking()) {}
 };
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
@@ -123,17 +127,12 @@ vorbis_strerror(int code)
 }
 
 static bool
-vorbis_is_open(VorbisInputStream *vis, OggVorbis_File *vf,
-	       Decoder *decoder, InputStream &input_stream)
+vorbis_is_open(VorbisInputStream *vis, OggVorbis_File *vf)
 {
-	vis->decoder = decoder;
-	vis->input_stream = &input_stream;
-	vis->seekable = input_stream.CheapSeeking();
-
 	int ret = ov_open_callbacks(vis, vf, nullptr, 0, vorbis_is_callbacks);
 	if (ret < 0) {
-		if (decoder == nullptr ||
-		    decoder_get_command(*decoder) == DecoderCommand::NONE)
+		if (vis->decoder == nullptr ||
+		    decoder_get_command(*vis->decoder) == DecoderCommand::NONE)
 			FormatWarning(vorbis_domain,
 				      "Failed to open Ogg Vorbis stream: %s",
 				      vorbis_strerror(ret));
@@ -192,9 +191,9 @@ vorbis_stream_decode(Decoder &decoder,
 	   moved it */
 	input_stream.LockRewind(IgnoreError());
 
-	VorbisInputStream vis;
+	VorbisInputStream vis(&decoder, input_stream);
 	OggVorbis_File vf;
-	if (!vorbis_is_open(&vis, &vf, &decoder, input_stream))
+	if (!vorbis_is_open(&vis, &vf))
 		return;
 
 	const vorbis_info *vi = ov_info(&vf, -1);
@@ -313,10 +312,10 @@ static bool
 vorbis_scan_stream(InputStream &is,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
-	VorbisInputStream vis;
+	VorbisInputStream vis(nullptr, is);
 	OggVorbis_File vf;
 
-	if (!vorbis_is_open(&vis, &vf, nullptr, is))
+	if (!vorbis_is_open(&vis, &vf))
 		return false;
 
 	tag_handler_invoke_duration(handler, handler_ctx,
