@@ -41,6 +41,9 @@
 
 struct Decoder {
 	bool initialized;
+
+	Decoder()
+		:initialized(false) {}
 };
 
 void
@@ -202,8 +205,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "No such decoder: %s\n", decoder_name);
 		return EXIT_FAILURE;
 	}
-
-	decoder.initialized = false;
 
 	if (plugin->file_decode != nullptr) {
 		plugin->FileDecode(decoder, Path::FromFS(uri));
