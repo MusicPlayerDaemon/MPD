@@ -42,8 +42,6 @@
 struct Decoder {
 	const char *uri;
 
-	const struct DecoderPlugin *plugin;
-
 	bool initialized;
 };
 
@@ -203,17 +201,17 @@ int main(int argc, char **argv)
 
 	decoder_plugin_init_all();
 
-	decoder.plugin = decoder_plugin_from_name(decoder_name);
-	if (decoder.plugin == NULL) {
+	const DecoderPlugin *plugin = decoder_plugin_from_name(decoder_name);
+	if (plugin == nullptr) {
 		fprintf(stderr, "No such decoder: %s\n", decoder_name);
 		return EXIT_FAILURE;
 	}
 
 	decoder.initialized = false;
 
-	if (decoder.plugin->file_decode != NULL) {
-		decoder.plugin->FileDecode(decoder, Path::FromFS(decoder.uri));
-	} else if (decoder.plugin->stream_decode != NULL) {
+	if (plugin->file_decode != nullptr) {
+		plugin->FileDecode(decoder, Path::FromFS(decoder.uri));
+	} else if (plugin->stream_decode != nullptr) {
 		Mutex mutex;
 		Cond cond;
 
@@ -228,7 +226,7 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-		decoder.plugin->StreamDecode(decoder, *is);
+		plugin->StreamDecode(decoder, *is);
 
 		delete is;
 	} else {
