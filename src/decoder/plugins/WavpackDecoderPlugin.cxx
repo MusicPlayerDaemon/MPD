@@ -326,10 +326,13 @@ wavpack_scan_file(Path path_fs,
 
 /* This struct is needed for per-stream last_byte storage. */
 struct WavpackInput {
-	Decoder *decoder;
-	InputStream *is;
+	Decoder *const decoder;
+	InputStream *const is;
 	/* Needed for push_back_byte() */
 	int last_byte;
+
+	constexpr WavpackInput(Decoder &_decoder, InputStream &_is)
+		:decoder(&_decoder), is(&_is), last_byte(EOF) {}
 };
 
 /**
@@ -429,15 +432,6 @@ static WavpackStreamReader mpd_is_reader = {
 	nullptr /* no need to write edited tags */
 };
 
-static void
-wavpack_input_init(WavpackInput *isp, Decoder &decoder,
-		   InputStream &is)
-{
-	isp->decoder = &decoder;
-	isp->is = &is;
-	isp->last_byte = EOF;
-}
-
 static WavpackInput *
 wavpack_open_wvc(Decoder &decoder, const char *uri)
 {
@@ -456,9 +450,7 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 	if (is_wvc == nullptr)
 		return nullptr;
 
-	WavpackInput *wpi = new WavpackInput();
-	wavpack_input_init(wpi, decoder, *is_wvc);
-	return wpi;
+	return new WavpackInput(decoder, *is_wvc);
 }
 
 /*
@@ -480,8 +472,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 		open_flags |= OPEN_STREAMING;
 	}
 
-	WavpackInput isp;
-	wavpack_input_init(&isp, decoder, is);
+	WavpackInput isp(decoder, is);
 
 	char error[ERRORLEN];
 	WavpackContext *wpc =
