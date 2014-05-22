@@ -326,13 +326,13 @@ wavpack_scan_file(Path path_fs,
 
 /* This struct is needed for per-stream last_byte storage. */
 struct WavpackInput {
-	Decoder *const decoder;
-	InputStream *const is;
+	Decoder &decoder;
+	InputStream &is;
 	/* Needed for push_back_byte() */
 	int last_byte;
 
 	constexpr WavpackInput(Decoder &_decoder, InputStream &_is)
-		:decoder(&_decoder), is(&_is), last_byte(EOF) {}
+		:decoder(_decoder), is(_is), last_byte(EOF) {}
 };
 
 /**
@@ -362,7 +362,7 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 	   until the buffer is full */
 	while (bcount > 0) {
 		size_t nbytes = decoder_read(
-			wpin(id)->decoder, *wpin(id)->is, buf, bcount
+			&wpin(id)->decoder, wpin(id)->is, buf, bcount
 		);
 		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
@@ -380,19 +380,19 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 static uint32_t
 wavpack_input_get_pos(void *id)
 {
-	return wpin(id)->is->GetOffset();
+	return wpin(id)->is.GetOffset();
 }
 
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
-	return wpin(id)->is->LockSeek(pos, SEEK_SET, IgnoreError()) ? 0 : -1;
+	return wpin(id)->is.LockSeek(pos, SEEK_SET, IgnoreError()) ? 0 : -1;
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
-	return wpin(id)->is->LockSeek(delta, mode, IgnoreError()) ? 0 : -1;
+	return wpin(id)->is.LockSeek(delta, mode, IgnoreError()) ? 0 : -1;
 }
 
 static int
@@ -409,16 +409,16 @@ wavpack_input_push_back_byte(void *id, int c)
 static uint32_t
 wavpack_input_get_length(void *id)
 {
-	if (!wpin(id)->is->KnownSize())
+	if (!wpin(id)->is.KnownSize())
 		return 0;
 
-	return wpin(id)->is->GetSize();
+	return wpin(id)->is.GetSize();
 }
 
 static int
 wavpack_input_can_seek(void *id)
 {
-	return wpin(id)->is->IsSeekable();
+	return wpin(id)->is.IsSeekable();
 }
 
 static WavpackStreamReader mpd_is_reader = {
@@ -465,7 +465,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 	WavpackInput *wvc = wavpack_open_wvc(decoder, is.GetURI());
 	if (wvc != nullptr) {
 		open_flags |= OPEN_WVC;
-		can_seek &= wvc->is->IsSeekable();
+		can_seek &= wvc->is.IsSeekable();
 	}
 
 	if (!can_seek) {
@@ -490,7 +490,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 	WavpackCloseFile(wpc);
 
 	if (wvc != nullptr) {
-		delete wvc->is;
+		delete &wvc->is;
 		delete wvc;
 	}
 }
