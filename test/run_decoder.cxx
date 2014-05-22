@@ -20,7 +20,8 @@
 #include "config.h"
 #include "IOThread.hxx"
 #include "decoder/DecoderList.hxx"
-#include "decoder/DecoderAPI.hxx"
+#include "decoder/DecoderPlugin.hxx"
+#include "FakeDecoderAPI.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
@@ -38,139 +39,6 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-struct Decoder {
-	bool initialized;
-
-	Decoder()
-		:initialized(false) {}
-};
-
-void
-decoder_initialized(Decoder &decoder,
-		    const AudioFormat audio_format,
-		    gcc_unused bool seekable,
-		    float duration)
-{
-	struct audio_format_string af_string;
-
-	assert(!decoder.initialized);
-	assert(audio_format.IsValid());
-
-	fprintf(stderr, "audio_format=%s duration=%f\n",
-		audio_format_to_string(audio_format, &af_string),
-		duration);
-
-	decoder.initialized = true;
-}
-
-DecoderCommand
-decoder_get_command(gcc_unused Decoder &decoder)
-{
-	return DecoderCommand::NONE;
-}
-
-void
-decoder_command_finished(gcc_unused Decoder &decoder)
-{
-}
-
-double
-decoder_seek_where(gcc_unused Decoder &decoder)
-{
-	return 1.0;
-}
-
-void
-decoder_seek_error(gcc_unused Decoder &decoder)
-{
-}
-
-size_t
-decoder_read(gcc_unused Decoder *decoder,
-	     InputStream &is,
-	     void *buffer, size_t length)
-{
-	return is.LockRead(buffer, length, IgnoreError());
-}
-
-bool
-decoder_read_full(Decoder *decoder, InputStream &is,
-		  void *_buffer, size_t size)
-{
-	uint8_t *buffer = (uint8_t *)_buffer;
-
-	while (size > 0) {
-		size_t nbytes = decoder_read(decoder, is, buffer, size);
-		if (nbytes == 0)
-			return false;
-
-		buffer += nbytes;
-		size -= nbytes;
-	}
-
-	return true;
-}
-
-bool
-decoder_skip(Decoder *decoder, InputStream &is, size_t size)
-{
-	while (size > 0) {
-		char buffer[1024];
-		size_t nbytes = decoder_read(decoder, is, buffer,
-					     std::min(sizeof(buffer), size));
-		if (nbytes == 0)
-			return false;
-
-		size -= nbytes;
-	}
-
-	return true;
-}
-
-void
-decoder_timestamp(gcc_unused Decoder &decoder,
-		  gcc_unused double t)
-{
-}
-
-DecoderCommand
-decoder_data(gcc_unused Decoder &decoder,
-	     gcc_unused InputStream *is,
-	     const void *data, size_t datalen,
-	     gcc_unused uint16_t kbit_rate)
-{
-	gcc_unused ssize_t nbytes = write(1, data, datalen);
-	return DecoderCommand::NONE;
-}
-
-DecoderCommand
-decoder_tag(gcc_unused Decoder &decoder,
-	    gcc_unused InputStream *is,
-	    gcc_unused Tag &&tag)
-{
-	return DecoderCommand::NONE;
-}
-
-void
-decoder_replay_gain(gcc_unused Decoder &decoder,
-		    const ReplayGainInfo *rgi)
-{
-	const ReplayGainTuple *tuple = &rgi->tuples[REPLAY_GAIN_ALBUM];
-	if (tuple->IsDefined())
-		fprintf(stderr, "replay_gain[album]: gain=%f peak=%f\n",
-			tuple->gain, tuple->peak);
-
-	tuple = &rgi->tuples[REPLAY_GAIN_TRACK];
-	if (tuple->IsDefined())
-		fprintf(stderr, "replay_gain[track]: gain=%f peak=%f\n",
-			tuple->gain, tuple->peak);
-}
-
-void
-decoder_mixramp(gcc_unused Decoder &decoder, gcc_unused MixRampInfo &&mix_ramp)
-{
-}
 
 int main(int argc, char **argv)
 {

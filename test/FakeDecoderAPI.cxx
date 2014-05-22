@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "FakeDecoderAPI.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "util/Error.hxx"
@@ -26,11 +27,21 @@
 #include <unistd.h>
 
 void
-decoder_initialized(gcc_unused Decoder &decoder,
-		    gcc_unused const AudioFormat audio_format,
+decoder_initialized(Decoder &decoder,
+		    const AudioFormat audio_format,
 		    gcc_unused bool seekable,
-		    gcc_unused float total_time)
+		    float duration)
 {
+	struct audio_format_string af_string;
+
+	assert(!decoder.initialized);
+	assert(audio_format.IsValid());
+
+	fprintf(stderr, "audio_format=%s duration=%f\n",
+		audio_format_to_string(audio_format, &af_string),
+		duration);
+
+	decoder.initialized = true;
 }
 
 DecoderCommand
