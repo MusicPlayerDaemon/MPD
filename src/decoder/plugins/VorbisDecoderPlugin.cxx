@@ -48,7 +48,7 @@
 
 #include <errno.h>
 
-struct vorbis_input_stream {
+struct VorbisInputStream {
 	Decoder *decoder;
 
 	InputStream *input_stream;
@@ -57,7 +57,7 @@ struct vorbis_input_stream {
 
 static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 {
-	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
+	VorbisInputStream *vis = (VorbisInputStream *)data;
 	size_t ret = decoder_read(vis->decoder, *vis->input_stream,
 				  ptr, size * nmemb);
 
@@ -68,7 +68,7 @@ static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
 
 static int ogg_seek_cb(void *data, ogg_int64_t offset, int whence)
 {
-	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
+	VorbisInputStream *vis = (VorbisInputStream *)data;
 
 	Error error;
 	return vis->seekable &&
@@ -86,7 +86,7 @@ static int ogg_close_cb(gcc_unused void *data)
 
 static long ogg_tell_cb(void *data)
 {
-	struct vorbis_input_stream *vis = (struct vorbis_input_stream *)data;
+	VorbisInputStream *vis = (VorbisInputStream *)data;
 
 	return (long)vis->input_stream->GetOffset();
 }
@@ -123,7 +123,7 @@ vorbis_strerror(int code)
 }
 
 static bool
-vorbis_is_open(struct vorbis_input_stream *vis, OggVorbis_File *vf,
+vorbis_is_open(VorbisInputStream *vis, OggVorbis_File *vf,
 	       Decoder *decoder, InputStream &input_stream)
 {
 	vis->decoder = decoder;
@@ -192,7 +192,7 @@ vorbis_stream_decode(Decoder &decoder,
 	   moved it */
 	input_stream.LockRewind(IgnoreError());
 
-	struct vorbis_input_stream vis;
+	VorbisInputStream vis;
 	OggVorbis_File vf;
 	if (!vorbis_is_open(&vis, &vf, &decoder, input_stream))
 		return;
@@ -313,7 +313,7 @@ static bool
 vorbis_scan_stream(InputStream &is,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
-	struct vorbis_input_stream vis;
+	VorbisInputStream vis;
 	OggVorbis_File vf;
 
 	if (!vorbis_is_open(&vis, &vf, nullptr, is))
