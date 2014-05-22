@@ -438,9 +438,8 @@ wavpack_input_init(WavpackInput *isp, Decoder &decoder,
 	isp->last_byte = EOF;
 }
 
-static InputStream *
-wavpack_open_wvc(Decoder &decoder, const char *uri,
-		 WavpackInput *wpi)
+static WavpackInput *
+wavpack_open_wvc(Decoder &decoder, const char *uri)
 {
 	/*
 	 * As we use dc->utf8url, this function will be bad for
@@ -457,8 +456,9 @@ wavpack_open_wvc(Decoder &decoder, const char *uri,
 	if (is_wvc == nullptr)
 		return nullptr;
 
+	WavpackInput *wpi = new WavpackInput();
 	wavpack_input_init(wpi, decoder, *is_wvc);
-	return is_wvc;
+	return wpi;
 }
 
 /*
@@ -470,12 +470,10 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 	int open_flags = OPEN_NORMALIZE;
 	bool can_seek = is.IsSeekable();
 
-	WavpackInput isp_wvc;
-	InputStream *is_wvc = wavpack_open_wvc(decoder, is.GetURI(),
-					       &isp_wvc);
-	if (is_wvc != nullptr) {
+	WavpackInput *wvc = wavpack_open_wvc(decoder, is.GetURI());
+	if (wvc != nullptr) {
 		open_flags |= OPEN_WVC;
-		can_seek &= is_wvc->IsSeekable();
+		can_seek &= wvc->is->IsSeekable();
 	}
 
 	if (!can_seek) {
@@ -487,9 +485,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 
 	char error[ERRORLEN];
 	WavpackContext *wpc =
-		WavpackOpenFileInputEx(&mpd_is_reader, &isp,
-				       open_flags & OPEN_WVC
-				       ? &isp_wvc : nullptr,
+		WavpackOpenFileInputEx(&mpd_is_reader, &isp, wvc,
 				       error, open_flags, 23);
 
 	if (wpc == nullptr) {
@@ -501,8 +497,10 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 	wavpack_decode(decoder, wpc, can_seek);
 
 	WavpackCloseFile(wpc);
-	if (open_flags & OPEN_WVC) {
-		delete is_wvc;
+
+	if (wvc != nullptr) {
+		delete wvc->is;
+		delete wvc;
 	}
 }
 
