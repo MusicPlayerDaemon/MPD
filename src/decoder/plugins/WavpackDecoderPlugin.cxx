@@ -325,7 +325,7 @@ wavpack_scan_file(Path path_fs,
  */
 
 /* This struct is needed for per-stream last_byte storage. */
-struct wavpack_input {
+struct WavpackInput {
 	Decoder *decoder;
 	InputStream *is;
 	/* Needed for push_back_byte() */
@@ -333,13 +333,13 @@ struct wavpack_input {
 };
 
 /**
- * Little wrapper for struct wavpack_input to cast from void *.
+ * Little wrapper for struct WavpackInput to cast from void *.
  */
-static struct wavpack_input *
+static WavpackInput *
 wpin(void *id)
 {
 	assert(id);
-	return (struct wavpack_input *)id;
+	return (WavpackInput *)id;
 }
 
 static int32_t
@@ -430,7 +430,7 @@ static WavpackStreamReader mpd_is_reader = {
 };
 
 static void
-wavpack_input_init(struct wavpack_input *isp, Decoder &decoder,
+wavpack_input_init(WavpackInput *isp, Decoder &decoder,
 		   InputStream &is)
 {
 	isp->decoder = &decoder;
@@ -441,7 +441,7 @@ wavpack_input_init(struct wavpack_input *isp, Decoder &decoder,
 static InputStream *
 wavpack_open_wvc(Decoder &decoder, const char *uri,
 		 Mutex &mutex, Cond &cond,
-		 struct wavpack_input *wpi)
+		 WavpackInput *wpi)
 {
 	/*
 	 * As we use dc->utf8url, this function will be bad for
@@ -486,7 +486,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 	int open_flags = OPEN_NORMALIZE;
 	bool can_seek = is.IsSeekable();
 
-	wavpack_input isp_wvc;
+	WavpackInput isp_wvc;
 	InputStream *is_wvc = wavpack_open_wvc(decoder, is.GetURI(),
 					       is.mutex, is.cond,
 					       &isp_wvc);
@@ -499,7 +499,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 		open_flags |= OPEN_STREAMING;
 	}
 
-	wavpack_input isp;
+	WavpackInput isp;
 	wavpack_input_init(&isp, decoder, is);
 
 	char error[ERRORLEN];
