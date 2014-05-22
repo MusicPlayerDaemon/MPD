@@ -333,6 +333,8 @@ struct WavpackInput {
 
 	constexpr WavpackInput(Decoder &_decoder, InputStream &_is)
 		:decoder(_decoder), is(_is), last_byte(EOF) {}
+
+	int32_t ReadBytes(void *data, size_t bcount);
 };
 
 /**
@@ -348,12 +350,18 @@ wpin(void *id)
 static int32_t
 wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 {
+	return wpin(id)->ReadBytes(data, bcount);
+}
+
+int32_t
+WavpackInput::ReadBytes(void *data, size_t bcount)
+{
 	uint8_t *buf = (uint8_t *)data;
 	int32_t i = 0;
 
-	if (wpin(id)->last_byte != EOF) {
-		*buf++ = wpin(id)->last_byte;
-		wpin(id)->last_byte = EOF;
+	if (last_byte != EOF) {
+		*buf++ = last_byte;
+		last_byte = EOF;
 		--bcount;
 		++i;
 	}
@@ -361,9 +369,7 @@ wavpack_input_read_bytes(void *id, void *data, int32_t bcount)
 	/* wavpack fails if we return a partial read, so we just wait
 	   until the buffer is full */
 	while (bcount > 0) {
-		size_t nbytes = decoder_read(
-			&wpin(id)->decoder, wpin(id)->is, buf, bcount
-		);
+		size_t nbytes = decoder_read(&decoder, is, buf, bcount);
 		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
 			break;
