@@ -162,8 +162,8 @@ vorbis_interleave(float *dest, const float *const*src,
 {
 	for (const float *const*src_end = src + channels;
 	     src != src_end; ++src, ++dest) {
-		float *d = dest;
-		for (const float *s = *src, *s_end = s + nframes;
+		float *gcc_restrict d = dest;
+		for (const float *gcc_restrict s = *src, *s_end = s + nframes;
 		     s != s_end; ++s, d += channels)
 			*d = *s;
 	}
