@@ -484,7 +484,8 @@ CurlInputStream::RequestDone(CURLcode result, long status)
 				       status);
 	}
 
-	SetReady();
+	if (!IsReady())
+		SetReady();
 }
 
 static void
