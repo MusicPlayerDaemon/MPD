@@ -89,7 +89,8 @@ AsyncInputStream::Check(Error &error)
 bool
 AsyncInputStream::IsEOF()
 {
-	return !open && buffer.IsEmpty();
+	return (KnownSize() && offset >= size) ||
+		(!open && buffer.IsEmpty());
 }
 
 bool
