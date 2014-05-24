@@ -40,13 +40,6 @@
 #include "Log.hxx"
 
 #include <assert.h>
-
-#if defined(WIN32)
-	#include <winsock2.h>
-#else
-	#include <sys/select.h>
-#endif
-
 #include <string.h>
 
 #include <curl/curl.h>
