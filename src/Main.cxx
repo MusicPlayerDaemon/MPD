@@ -661,6 +661,8 @@ int mpd_main(int argc, char *argv[])
 		instance->database->Close();
 		delete instance->database;
 	}
+
+	delete instance->storage;
 #endif
 
 #ifdef ENABLE_SQLITE
