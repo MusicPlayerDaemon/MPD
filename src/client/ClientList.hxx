@@ -25,10 +25,12 @@
 class Client;
 
 class ClientList {
+	typedef std::list<Client *> List;
+
 	const unsigned max_size;
 
 	unsigned size;
-	std::list<Client *> list;
+	List list;
 
 public:
 	ClientList(unsigned _max_size)
@@ -37,11 +39,11 @@ public:
 		CloseAll();
 	}
 
-	std::list<Client *>::iterator begin() {
+	List::iterator begin() {
 		return list.begin();
 	}
 
-	std::list<Client *>::iterator end() {
+	List::iterator end() {
 		return list.end();
 	}
 
