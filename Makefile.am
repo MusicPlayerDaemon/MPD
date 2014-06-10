@@ -370,8 +370,6 @@ libutil_a_SOURCES = \
 	src/util/PeakBuffer.cxx src/util/PeakBuffer.hxx \
 	src/util/OptionParser.cxx src/util/OptionParser.hxx \
 	src/util/OptionDef.hxx \
-	src/util/list.h \
-	src/util/list_sort.c src/util/list_sort.h \
 	src/util/ByteReverse.cxx src/util/ByteReverse.hxx \
 	src/util/bit_reverse.c src/util/bit_reverse.h
 

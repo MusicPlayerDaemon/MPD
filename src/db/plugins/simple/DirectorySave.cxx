@@ -84,20 +84,18 @@ directory_save(FILE *fp, const Directory &directory)
 		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN, directory.GetPath());
 	}
 
-	Directory *cur;
-	directory_for_each_child(cur, directory) {
-		fprintf(fp, DIRECTORY_DIR "%s\n", cur->GetName());
+	for (const auto &child : directory.children) {
+		fprintf(fp, DIRECTORY_DIR "%s\n", child.GetName());
 
-		if (!cur->IsMount())
-			directory_save(fp, *cur);
+		if (!child.IsMount())
+			directory_save(fp, child);
 
 		if (ferror(fp))
 			return;
 	}
 
-	Song *song;
-	directory_for_each_song(song, directory)
-		song_save(fp, *song);
+	for (const auto &song : directory.songs)
+		song_save(fp, song);
 
 	playlist_vector_save(fp, directory.playlists);
 

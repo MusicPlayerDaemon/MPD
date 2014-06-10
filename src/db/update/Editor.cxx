@@ -64,15 +64,14 @@ DatabaseEditor::LockDeleteSong(Directory &parent, Song *song)
 inline void
 DatabaseEditor::ClearDirectory(Directory &directory)
 {
-	Directory *child, *n;
-	directory_for_each_child_safe(child, n, directory)
-		DeleteDirectory(child);
+	directory.ForEachChildSafe([this](Directory &child){
+			DeleteDirectory(&child);
+		});
 
-	Song *song, *ns;
-	directory_for_each_song_safe(song, ns, directory) {
-		assert(song->parent == &directory);
-		DeleteSong(directory, song);
-	}
+	directory.ForEachSongSafe([this, &directory](Song &song){
+			assert(song.parent == &directory);
+			DeleteSong(directory, &song);
+		});
 }
 
 void

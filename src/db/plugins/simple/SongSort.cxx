@@ -23,10 +23,6 @@
 #include "tag/Tag.hxx"
 #include "lib/icu/Collate.hxx"
 
-extern "C" {
-#include "util/list_sort.h"
-}
-
 #include <stdlib.h>
 
 static int
@@ -80,34 +76,33 @@ compare_tag_item(const Tag &a, const Tag &b, TagType type)
 }
 
 /* Only used for sorting/searchin a songvec, not general purpose compares */
-static int
-song_cmp(gcc_unused void *priv, struct list_head *_a, struct list_head *_b)
+gcc_pure
+static bool
+song_cmp(const Song &a, const Song &b)
 {
-	const Song *a = (const Song *)_a;
-	const Song *b = (const Song *)_b;
 	int ret;
 
 	/* first sort by album */
-	ret = compare_string_tag_item(a->tag, b->tag, TAG_ALBUM);
+	ret = compare_string_tag_item(a.tag, b.tag, TAG_ALBUM);
 	if (ret != 0)
-		return ret;
+		return ret < 0;
 
 	/* then sort by disc */
-	ret = compare_tag_item(a->tag, b->tag, TAG_DISC);
+	ret = compare_tag_item(a.tag, b.tag, TAG_DISC);
 	if (ret != 0)
-		return ret;
+		return ret < 0;
 
 	/* then by track number */
-	ret = compare_tag_item(a->tag, b->tag, TAG_TRACK);
+	ret = compare_tag_item(a.tag, b.tag, TAG_TRACK);
 	if (ret != 0)
-		return ret;
+		return ret < 0;
 
 	/* still no difference?  compare file name */
-	return IcuCollate(a->uri, b->uri);
+	return IcuCollate(a.uri, b.uri) < 0;
 }
 
 void
-song_list_sort(struct list_head *songs)
+song_list_sort(SongList &songs)
 {
-	list_sort(nullptr, songs, song_cmp);
+	songs.sort(song_cmp);
 }

@@ -80,26 +80,25 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 {
 	db_lock();
 
-	Directory *child, *n;
-	directory_for_each_child_safe(child, n, directory) {
-		const auto name_fs = AllocatedPath::FromUTF8(child->GetName());
+	directory.ForEachChildSafe([&](Directory &child){
+			const auto name_fs =
+				AllocatedPath::FromUTF8(child.GetName());
 
-		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
-			editor.DeleteDirectory(child);
-			modified = true;
-		}
-	}
+			if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
+				editor.DeleteDirectory(&child);
+				modified = true;
+			}
+		});
 
-	Song *song, *ns;
-	directory_for_each_song_safe(song, ns, directory) {
-		assert(song->parent == &directory);
+	directory.ForEachSongSafe([&](Song &song){
+			assert(song.parent == &directory);
 
-		const auto name_fs = AllocatedPath::FromUTF8(song->uri);
-		if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
-			editor.DeleteSong(directory, song);
-			modified = true;
-		}
-	}
+			const auto name_fs = AllocatedPath::FromUTF8(song.uri);
+			if (name_fs.IsNull() || exclude_list.Check(name_fs)) {
+				editor.DeleteSong(directory, &song);
+				modified = true;
+			}
+		});
 
 	db_unlock();
 }
@@ -107,25 +106,23 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 inline void
 UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 {
-	Directory *child, *n;
-	directory_for_each_child_safe(child, n, directory) {
-		if (DirectoryExists(storage, *child))
-			continue;
+	directory.ForEachChildSafe([&](Directory &child){
+			if (DirectoryExists(storage, child))
+				return;
 
-		editor.LockDeleteDirectory(child);
-
-		modified = true;
-	}
-
-	Song *song, *ns;
-	directory_for_each_song_safe(song, ns, directory) {
-		if (!directory_child_is_regular(storage, directory,
-						song->uri)) {
-			editor.LockDeleteSong(directory, song);
+			editor.LockDeleteDirectory(&child);
 
 			modified = true;
-		}
-	}
+		});
+
+	directory.ForEachSongSafe([&](Song &song){
+			if (!directory_child_is_regular(storage, directory,
+							song.uri)) {
+				editor.LockDeleteSong(directory, &song);
+
+				modified = true;
+			}
+		});
 
 	for (auto i = directory.playlists.begin(),
 		     end = directory.playlists.end();

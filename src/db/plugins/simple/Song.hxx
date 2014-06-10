@@ -20,9 +20,10 @@
 #ifndef MPD_SONG_HXX
 #define MPD_SONG_HXX
 
-#include "util/list.h"
 #include "tag/Tag.hxx"
 #include "Compiler.h"
+
+#include <boost/intrusive/list.hpp>
 
 #include <string>
 
@@ -39,6 +40,16 @@ class Storage;
  * #SimpleDatabase class.
  */
 struct Song {
+	static constexpr auto link_mode = boost::intrusive::normal_link;
+	typedef boost::intrusive::link_mode<link_mode> LinkMode;
+	typedef boost::intrusive::list_member_hook<LinkMode> Hook;
+
+	struct Disposer {
+		void operator()(Song *song) const {
+			song->Free();
+		}
+	};
+
 	/**
 	 * Pointers to the siblings of this directory within the
 	 * parent directory.  It is unused (undefined) if this song is
@@ -47,7 +58,7 @@ struct Song {
 	 * This attribute is protected with the global #db_mutex.
 	 * Read access in the update thread does not need protection.
 	 */
-	struct list_head siblings;
+	Hook siblings;
 
 	Tag tag;
 
@@ -109,5 +120,10 @@ struct Song {
 	gcc_pure
 	LightSong Export() const;
 };
+
+typedef boost::intrusive::list<Song,
+			       boost::intrusive::member_hook<Song, Song::Hook,
+							     &Song::siblings>,
+			       boost::intrusive::constant_time_size<false>> SongList;
 
 #endif

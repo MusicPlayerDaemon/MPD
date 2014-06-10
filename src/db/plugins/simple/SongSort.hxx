@@ -20,9 +20,11 @@
 #ifndef MPD_SONG_SORT_HXX
 #define MPD_SONG_SORT_HXX
 
+#include "Song.hxx"
+
 struct list_head;
 
 void
-song_list_sort(list_head *songs);
+song_list_sort(SongList &songs);
 
 #endif

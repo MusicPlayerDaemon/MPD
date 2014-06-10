@@ -33,10 +33,6 @@
 #include "util/Alloc.hxx"
 #include "util/Error.hxx"
 
-extern "C" {
-#include "util/list_sort.h"
-}
-
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -47,21 +43,14 @@ Directory::Directory(std::string &&_path_utf8, Directory *_parent)
 	 path(std::move(_path_utf8)),
 	 mounted_database(nullptr)
 {
-	INIT_LIST_HEAD(&children);
-	INIT_LIST_HEAD(&songs);
 }
 
 Directory::~Directory()
 {
 	delete mounted_database;
 
-	Song *song, *ns;
-	directory_for_each_song_safe(song, ns, *this)
-		song->Free();
-
-	Directory *child, *n;
-	directory_for_each_child_safe(child, n, *this)
-		delete child;
+	songs.clear_and_dispose(Song::Disposer());
+	children.clear_and_dispose(Disposer());
 }
 
 void
@@ -70,8 +59,8 @@ Directory::Delete()
 	assert(holding_db_lock());
 	assert(parent != nullptr);
 
-	list_del(&siblings);
-	delete this;
+	parent->children.erase_and_dispose(parent->children.iterator_to(*this),
+					   Disposer());
 }
 
 const char *
@@ -94,7 +83,7 @@ Directory::CreateChild(const char *name_utf8)
 		: PathTraitsUTF8::Build(GetPath(), name_utf8);
 
 	Directory *child = new Directory(std::move(path_utf8), this);
-	list_add_tail(&child->siblings, &children);
+	children.push_back(*child);
 	return child;
 }
 
@@ -103,10 +92,9 @@ Directory::FindChild(const char *name) const
 {
 	assert(holding_db_lock());
 
-	const Directory *child;
-	directory_for_each_child(child, *this)
-		if (strcmp(child->GetName(), name) == 0)
-			return child;
+	for (const auto &child : children)
+		if (strcmp(child.GetName(), name) == 0)
+			return &child;
 
 	return nullptr;
 }
@@ -116,17 +104,14 @@ Directory::PruneEmpty()
 {
 	assert(holding_db_lock());
 
-	Directory *child, *n;
-	directory_for_each_child_safe(child, n, *this) {
-		if (child->IsMount())
-			/* never prune mount points; they're always
-			   empty by definition, but that's ok */
-			continue;
-
+	for (auto child = children.begin(), end = children.end();
+	     child != end;) {
 		child->PruneEmpty();
 
 		if (child->IsEmpty())
-			child->Delete();
+			child = children.erase_and_dispose(child, Disposer());
+		else
+			++child;
 	}
 }
 
@@ -182,7 +167,7 @@ Directory::AddSong(Song *song)
 	assert(song != nullptr);
 	assert(song->parent == this);
 
-	list_add_tail(&song->siblings, &songs);
+	songs.push_back(*song);
 }
 
 void
@@ -192,7 +177,7 @@ Directory::RemoveSong(Song *song)
 	assert(song != nullptr);
 	assert(song->parent == this);
 
-	list_del(&song->siblings);
+	songs.erase(songs.iterator_to(*song));
 }
 
 const Song *
@@ -201,25 +186,21 @@ Directory::FindSong(const char *name_utf8) const
 	assert(holding_db_lock());
 	assert(name_utf8 != nullptr);
 
-	Song *song;
-	directory_for_each_song(song, *this) {
-		assert(song->parent == this);
+	for (auto &song : songs) {
+		assert(song.parent == this);
 
-		if (strcmp(song->uri, name_utf8) == 0)
-			return song;
+		if (strcmp(song.uri, name_utf8) == 0)
+			return &song;
 	}
 
 	return nullptr;
 }
 
-static int
-directory_cmp(gcc_unused void *priv,
-	      struct list_head *_a, struct list_head *_b)
+gcc_pure
+static bool
+directory_cmp(const Directory &a, const Directory &b)
 {
-	const Directory *a = (const Directory *)_a;
-	const Directory *b = (const Directory *)_b;
-
-	return IcuCollate(a->path.c_str(), b->path.c_str());
+	return IcuCollate(a.path.c_str(), b.path.c_str()) < 0;
 }
 
 void
@@ -227,12 +208,11 @@ Directory::Sort()
 {
 	assert(holding_db_lock());
 
-	list_sort(nullptr, &children, directory_cmp);
-	song_list_sort(&songs);
+	children.sort(directory_cmp);
+	song_list_sort(songs);
 
-	Directory *child;
-	directory_for_each_child(child, *this)
-		child->Sort();
+	for (auto &child : children)
+		child.Sort();
 }
 
 bool
@@ -260,9 +240,8 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 	}
 
 	if (visit_song) {
-		Song *song;
-		directory_for_each_song(song, *this) {
-			const LightSong song2 = song->Export();
+		for (auto &song : songs){
+			const LightSong song2 = song.Export();
 			if ((filter == nullptr || filter->Match(song2)) &&
 			    !visit_song(song2, error))
 				return false;
@@ -275,16 +254,15 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 				return false;
 	}
 
-	Directory *child;
-	directory_for_each_child(child, *this) {
+	for (auto &child : children) {
 		if (visit_directory &&
-		    !visit_directory(child->Export(), error))
+		    !visit_directory(child.Export(), error))
 			return false;
 
 		if (recursive &&
-		    !child->Walk(recursive, filter,
-				 visit_directory, visit_song, visit_playlist,
-				 error))
+		    !child.Walk(recursive, filter,
+				visit_directory, visit_song, visit_playlist,
+				error))
 			return false;
 	}
 

@@ -21,10 +21,12 @@
 #define MPD_DIRECTORY_HXX
 
 #include "check.h"
-#include "util/list.h"
 #include "Compiler.h"
 #include "db/Visitor.hxx"
 #include "db/PlaylistVector.hxx"
+#include "Song.hxx"
+
+#include <boost/intrusive/list.hpp>
 
 #include <string>
 
@@ -41,25 +43,22 @@ static constexpr unsigned DEVICE_INARCHIVE = -1;
  */
 static constexpr unsigned DEVICE_CONTAINER = -2;
 
-#define directory_for_each_child(pos, directory) \
-	list_for_each_entry(pos, &(directory).children, siblings)
-
-#define directory_for_each_child_safe(pos, n, directory) \
-	list_for_each_entry_safe(pos, n, &(directory).children, siblings)
-
-#define directory_for_each_song(pos, directory) \
-	list_for_each_entry(pos, &(directory).songs, siblings)
-
-#define directory_for_each_song_safe(pos, n, directory) \
-	list_for_each_entry_safe(pos, n, &(directory).songs, siblings)
-
-struct Song;
 struct db_visitor;
 class SongFilter;
 class Error;
 class Database;
 
 struct Directory {
+	static constexpr auto link_mode = boost::intrusive::normal_link;
+	typedef boost::intrusive::link_mode<link_mode> LinkMode;
+	typedef boost::intrusive::list_member_hook<LinkMode> Hook;
+
+	struct Disposer {
+		void operator()(Directory *directory) const {
+			delete directory;
+		}
+	};
+
 	/**
 	 * Pointers to the siblings of this directory within the
 	 * parent directory.  It is unused (undefined) in the root
@@ -68,7 +67,12 @@ struct Directory {
 	 * This attribute is protected with the global #db_mutex.
 	 * Read access in the update thread does not need protection.
 	 */
-	struct list_head siblings;
+	Hook siblings;
+
+	typedef boost::intrusive::member_hook<Directory, Hook,
+					      &Directory::siblings> SiblingsHook;
+	typedef boost::intrusive::list<Directory, SiblingsHook,
+				       boost::intrusive::constant_time_size<false>> List;
 
 	/**
 	 * A doubly linked list of child directories.
@@ -76,7 +80,7 @@ struct Directory {
 	 * This attribute is protected with the global #db_mutex.
 	 * Read access in the update thread does not need protection.
 	 */
-	struct list_head children;
+	List children;
 
 	/**
 	 * A doubly linked list of songs within this directory.
@@ -84,7 +88,7 @@ struct Directory {
 	 * This attribute is protected with the global #db_mutex.
 	 * Read access in the update thread does not need protection.
 	 */
-	struct list_head songs;
+	SongList songs;
 
 	PlaylistVector playlists;
 
@@ -186,8 +190,8 @@ public:
 
 	gcc_pure
 	bool IsEmpty() const {
-		return list_empty(&children) &&
-			list_empty(&songs) &&
+		return children.empty() &&
+			songs.empty() &&
 			playlists.empty();
 	}
 
@@ -208,6 +212,24 @@ public:
 	gcc_pure
 	bool IsRoot() const {
 		return parent == nullptr;
+	}
+
+	template<typename T>
+	void ForEachChildSafe(T &&t) {
+		const auto end = children.end();
+		for (auto i = children.begin(), next = i; i != end; i = next) {
+			next = std::next(i);
+			t(*i);
+		}
+	}
+
+	template<typename T>
+	void ForEachSongSafe(T &&t) {
+		const auto end = songs.end();
+		for (auto i = songs.begin(), next = i; i != end; i = next) {
+			next = std::next(i);
+			t(*i);
+		}
 	}
 
 	/**
