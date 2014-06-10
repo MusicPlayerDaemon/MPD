@@ -19,11 +19,23 @@
 
 #include "config.h"
 #include "Init.hxx"
+#include "Error.hxx"
 #include "Collate.hxx"
+#include "util/Error.hxx"
+
+#include <unicode/uclean.h>
 
 bool
 IcuInit(Error &error)
 {
+	UErrorCode code = U_ZERO_ERROR;
+	u_init(&code);
+	if (U_FAILURE(code)) {
+		error.Format(icu_domain, int(code),
+			     "u_init() failed: %s", u_errorName(code));
+		return false;
+	}
+
 	return IcuCollateInit(error);
 }
 
@@ -31,4 +43,6 @@ void
 IcuFinish()
 {
 	IcuCollateFinish();
+
+	u_cleanup();
 }
