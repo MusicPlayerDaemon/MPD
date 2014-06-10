@@ -57,7 +57,7 @@
 #include "util/Domain.hxx"
 #include "thread/Id.hxx"
 #include "thread/Slack.hxx"
-#include "lib/icu/Collate.hxx"
+#include "lib/icu/Init.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigData.hxx"
 #include "config/ConfigDefaults.hxx"
@@ -430,7 +430,7 @@ int mpd_main(int argc, char *argv[])
 #endif
 #endif
 
-	if (!IcuCollateInit(error)) {
+	if (!IcuInit(error)) {
 		LogError(error);
 		return EXIT_FAILURE;
 	}
@@ -696,7 +696,7 @@ int mpd_main(int argc, char *argv[])
 	WSACleanup();
 #endif
 
-	IcuCollateFinish();
+	IcuFinish();
 
 	log_deinit();
 	return EXIT_SUCCESS;

@@ -43,10 +43,11 @@
 static UCollator *collator;
 #endif
 
+#ifdef HAVE_ICU
+
 bool
 IcuCollateInit(Error &error)
 {
-#ifdef HAVE_ICU
 	assert(collator == nullptr);
 	assert(!error.IsDefined());
 
@@ -57,9 +58,6 @@ IcuCollateInit(Error &error)
 			     "ucol_open() failed: %s", u_errorName(code));
 		return false;
 	}
-#else
-	(void)error;
-#endif
 
 	return true;
 }
@@ -67,14 +65,10 @@ IcuCollateInit(Error &error)
 void
 IcuCollateFinish()
 {
-#ifdef HAVE_ICU
 	assert(collator != nullptr);
 
 	ucol_close(collator);
-#endif
 }
-
-#ifdef HAVE_ICU
 
 static WritableBuffer<UChar>
 UCharFromUTF8(const char *src)

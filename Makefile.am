@@ -434,6 +434,11 @@ libicu_a_SOURCES = \
 	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
 	src/lib/icu/Error.cxx src/lib/icu/Error.hxx
 
+if HAVE_ICU
+libicu_a_SOURCES += \
+	src/lib/icu/Init.cxx src/lib/icu/Init.hxx
+endif
+
 ICU_LDADD = libicu.a $(ICU_LIBS)
 
 # PCM library
