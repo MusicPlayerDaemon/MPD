@@ -27,6 +27,8 @@
 #include "event/TimeoutMonitor.hxx"
 #include "Compiler.h"
 
+#include <boost/intrusive/list.hpp>
+
 #include <set>
 #include <string>
 #include <list>
@@ -41,11 +43,19 @@ struct Partition;
 class Database;
 class Storage;
 
-class Client final : private FullyBufferedSocket, TimeoutMonitor {
+class Client final
+	: FullyBufferedSocket, TimeoutMonitor,
+	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 public:
 	Partition &partition;
 	struct playlist &playlist;
 	struct PlayerControl &player_control;
+
+	struct Disposer {
+		void operator()(Client *client) const {
+			delete client;
+		}
+	};
 
 	unsigned permission;
 

@@ -82,8 +82,8 @@ handle_channels(Client &client,
 
 	std::set<std::string> channels;
 	for (const auto &c : *client.partition.instance.client_list)
-		channels.insert(c->subscriptions.begin(),
-				c->subscriptions.end());
+		channels.insert(c.subscriptions.begin(),
+				c.subscriptions.end());
 
 	for (const auto &channel : channels)
 		client_printf(client, "channel: %s\n", channel.c_str());
@@ -122,8 +122,8 @@ handle_send_message(Client &client,
 
 	bool sent = false;
 	const ClientMessage msg(argv[1], argv[2]);
-	for (const auto &c : *client.partition.instance.client_list)
-		if (c->PushMessage(msg))
+	for (auto &c : *client.partition.instance.client_list)
+		if (c.PushMessage(msg))
 			sent = true;
 
 	if (sent)

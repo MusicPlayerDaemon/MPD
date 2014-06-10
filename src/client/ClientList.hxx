@@ -20,21 +20,21 @@
 #ifndef MPD_CLIENT_LIST_HXX
 #define MPD_CLIENT_LIST_HXX
 
-#include <list>
+#include "Client.hxx"
 
 class Client;
 
 class ClientList {
-	typedef std::list<Client *> List;
+	typedef boost::intrusive::list<Client,
+				       boost::intrusive::constant_time_size<true>> List;
 
 	const unsigned max_size;
 
-	unsigned size;
 	List list;
 
 public:
 	ClientList(unsigned _max_size)
-		:max_size(_max_size), size(0) {}
+		:max_size(_max_size) {}
 	~ClientList() {
 		CloseAll();
 	}
@@ -48,12 +48,11 @@ public:
 	}
 
 	bool IsFull() const {
-		return size >= max_size;
+		return list.size() >= max_size;
 	}
 
 	void Add(Client &client) {
-		list.push_front(&client);
-		++size;
+		list.push_front(client);
 	}
 
 	void Remove(Client &client);

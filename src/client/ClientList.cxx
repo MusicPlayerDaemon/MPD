@@ -28,28 +28,15 @@
 void
 ClientList::Remove(Client &client)
 {
-	assert(size > 0);
 	assert(!list.empty());
 
-	auto i = std::find(list.begin(), list.end(), &client);
-	assert(i != list.end());
-	list.erase(i);
-	--size;
+	list.erase(list.iterator_to(client));
 }
 
 void
 ClientList::CloseAll()
 {
-	while (!list.empty()) {
-		delete list.front();
-		list.pop_front();
-
-#ifndef NDEBUG
-		--size;
-#endif
-	}
-
-	assert(size == 0);
+	list.clear_and_dispose(Client::Disposer());
 }
 
 void
@@ -57,6 +44,6 @@ ClientList::IdleAdd(unsigned flags)
 {
 	assert(flags != 0);
 
-	for (const auto &client : list)
-		client->IdleAdd(flags);
+	for (auto &client : list)
+		client.IdleAdd(flags);
 }
