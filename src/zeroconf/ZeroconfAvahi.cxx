@@ -34,6 +34,8 @@
 #include <avahi-common/malloc.h>
 #include <avahi-common/error.h>
 
+#include <dbus/dbus.h>
+
 static constexpr Domain avahi_domain("avahi");
 
 static char *avahiName;
@@ -272,4 +274,6 @@ AvahiDeinit(void)
 
 	avahi_free(avahiName);
 	avahiName = nullptr;
+
+	dbus_shutdown();
 }

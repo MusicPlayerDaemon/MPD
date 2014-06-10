@@ -297,34 +297,6 @@
    fun:dlclose
 }
 
-# is that a leak in libdbus?
-
-{
-   <insert a suppression name here>
-   Memcheck:Leak
-   fun:?alloc
-   ...
-   obj:*/libdbus-*.so.*
-   fun:avahi_client_new
-}
-
-{
-   <insert a suppression name here>
-   Memcheck:Leak
-   fun:malloc
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   fun:dbus_message_new_error
-   obj:/usr/lib/libdbus-1.so.3.4.0
-   fun:dbus_connection_send_with_reply
-   fun:dbus_connection_send_with_reply_and_block
-   obj:/usr/lib/libavahi-client.so.3.2.4
-   fun:avahi_entry_group_new
-   fun:avahiRegisterService
-   fun:avahiClientCallback
-   obj:/usr/lib/libavahi-client.so.3.2.4
-   fun:avahi_client_new
-}
-
 {
    inet_ntoa
    Memcheck:Leak

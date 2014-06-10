@@ -825,7 +825,7 @@ avahi)
 	;;
 esac
 
-MPD_AUTO_PKG(avahi, AVAHI, [avahi-client],
+MPD_AUTO_PKG(avahi, AVAHI, [avahi-client dbus-1],
 	[avahi client library], [avahi-client not found])
 if test x$enable_avahi = xyes; then
 	AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])
