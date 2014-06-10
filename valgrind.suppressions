@@ -486,6 +486,66 @@
    fun:_dl_init
 }
 
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:index
+   fun:expand_dynamic_string_token
+   fun:fillin_rpath
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:index
+   fun:expand_dynamic_string_token
+   ...
+   fun:do_preload
+}
+
+#
+# libopenal
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:*/libopenal.so*
+   ...
+   fun:_dl_init
+}
+
+#
+# libadplug
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   obj:*/libadplug*.so*
+   ...
+   fun:_dl_init
+}
+
+#
+# libjack
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   obj:*/libjack.so*
+   ...
+   fun:_dl_init
+}
+
 #
 # libsmbclient
 #
@@ -506,4 +566,19 @@
    ...
    fun:smbc_setDebug
    fun:smbc_init
+}
+
+#
+# libgomp
+#
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   ...
+   fun:gomp_init_num_threads
+   ...
+   fun:_dl_init
 }
