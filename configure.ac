@@ -630,6 +630,8 @@ dnl ---------------------------------------------------------------------------
 dnl Mandatory Libraries
 dnl ---------------------------------------------------------------------------
 
+AX_BOOST_BASE([1.46],, [AC_MSG_ERROR([Boost not found])])
+
 AC_ARG_ENABLE(icu,
 	AS_HELP_STRING([--enable-icu],
 		[enable libicu for Unicode (default: enabled)]),,

@@ -105,6 +105,7 @@ apt-get install g++ automake autoconf \
   libsqlite3-dev \
   libsystemd-daemon-dev libwrap0-dev \
   libcppunit-dev xmlto \
+  libboost-dev \
   libglib2.0-dev
       </programlisting>
 

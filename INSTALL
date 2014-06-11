@@ -16,6 +16,8 @@ gcc 4.6 or later - http://gcc.gnu.org/
 clang 3.2 or later - http://clang.llvm.org/
 Any other C++11 compliant compiler should also work.
 
+Boost 1.46 - http://www.boost.org/
+
 GLib 2.28 - http://www.gtk.org/
 General-purpose utility library.
 

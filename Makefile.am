@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign 1.11 dist-xz subdir-objects
 
-AM_CPPFLAGS += -I$(srcdir)/src $(GLIB_CFLAGS)
+AM_CPPFLAGS += -I$(srcdir)/src $(GLIB_CFLAGS) $(BOOST_CPPFLAGS)
 
 AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 
