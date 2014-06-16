@@ -71,7 +71,6 @@ directory_set_stat(Directory &dir, const FileInfo &info)
 {
 	dir.inode = info.inode;
 	dir.device = info.device;
-	dir.have_stat = true;
 }
 
 inline void
@@ -167,7 +166,7 @@ FindAncestorLoop(Storage &storage, Directory *parent,
 		return 0;
 
 	while (parent) {
-		if (!parent->have_stat &&
+		if (parent->device == 0 && parent->inode == 0 &&
 		    !update_directory_stat(storage, *parent))
 			return -1;
 

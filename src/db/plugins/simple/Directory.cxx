@@ -39,7 +39,8 @@
 
 Directory::Directory(std::string &&_path_utf8, Directory *_parent)
 	:parent(_parent),
-	 mtime(0), have_stat(false),
+	 mtime(0),
+	 inode(0), device(0),
 	 path(std::move(_path_utf8)),
 	 mounted_database(nullptr)
 {

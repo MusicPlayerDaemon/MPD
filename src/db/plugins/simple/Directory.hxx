@@ -95,7 +95,6 @@ struct Directory {
 	Directory *parent;
 	time_t mtime;
 	unsigned inode, device;
-	bool have_stat; /* not needed if ino_t == dev_t == 0 is impossible */
 
 	std::string path;
 
