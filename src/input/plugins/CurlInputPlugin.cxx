@@ -777,9 +777,10 @@ CurlInputStream::DoSeek(offset_type new_offset)
 		return;
 	}
 
+	Error error;
 	if (!InitEasy(postponed_error)) {
 		mutex.lock();
-		SeekDone();
+		PostponeError(std::move(error));
 		return;
 	}
 
@@ -790,9 +791,9 @@ CurlInputStream::DoSeek(offset_type new_offset)
 		curl_easy_setopt(easy, CURLOPT_RANGE, range);
 	}
 
-	if (!input_curl_easy_add_indirect(this, postponed_error)) {
+	if (!input_curl_easy_add_indirect(this, error)) {
 		mutex.lock();
-		SeekDone();
+		PostponeError(std::move(error));
 		return;
 	}
 

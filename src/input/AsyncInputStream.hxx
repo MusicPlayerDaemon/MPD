@@ -86,6 +86,8 @@ protected:
 		open = false;
 	}
 
+	void PostponeError(Error &&error);
+
 	bool IsBufferEmpty() const {
 		return buffer.IsEmpty();
 	}

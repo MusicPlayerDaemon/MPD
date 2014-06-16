@@ -63,6 +63,16 @@ AsyncInputStream::Pause()
 	paused = true;
 }
 
+void
+AsyncInputStream::PostponeError(Error &&error)
+{
+	assert(io_thread_inside());
+
+	seek_state = SeekState::NONE;
+	postponed_error = std::move(error);
+	cond.broadcast();
+}
+
 inline void
 AsyncInputStream::Resume()
 {
