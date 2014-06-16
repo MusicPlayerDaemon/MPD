@@ -93,13 +93,23 @@ tag_item_to_slot(TagItem *item)
 	return ContainerCast(item, TagPoolSlot, item);
 }
 
+static inline TagPoolSlot **
+tag_value_slot_p(TagType type, const char *value, size_t length)
+{
+	return &slots[calc_hash_n(type, value, length) % NUM_SLOTS];
+}
+
+static inline TagPoolSlot **
+tag_value_slot_p(TagType type, const char *value)
+{
+	return &slots[calc_hash(type, value) % NUM_SLOTS];
+}
+
 TagItem *
 tag_pool_get_item(TagType type, const char *value, size_t length)
 {
-	TagPoolSlot **slot_p, *slot;
-
-	slot_p = &slots[calc_hash_n(type, value, length) % NUM_SLOTS];
-	for (slot = *slot_p; slot != nullptr; slot = slot->next) {
+	auto slot_p = tag_value_slot_p(type, value, length);
+	for (auto slot = *slot_p; slot != nullptr; slot = slot->next) {
 		if (slot->item.type == type &&
 		    length == strlen(slot->item.value) &&
 		    memcmp(value, slot->item.value, length) == 0 &&
@@ -110,7 +120,7 @@ tag_pool_get_item(TagType type, const char *value, size_t length)
 		}
 	}
 
-	slot = TagPoolSlot::Create(*slot_p, type, value, length);
+	auto slot = TagPoolSlot::Create(*slot_p, type, value, length);
 	*slot_p = slot;
 	return &slot->item;
 }
@@ -129,9 +139,8 @@ tag_pool_dup_item(TagItem *item)
 		/* the reference counter overflows above 0xff;
 		   duplicate the item, and start with 1 */
 		size_t length = strlen(item->value);
-		TagPoolSlot **slot_p =
-			&slots[calc_hash_n(item->type, item->value,
-					   length) % NUM_SLOTS];
+		auto slot_p = tag_value_slot_p(item->type,
+					       item->value, length);
 		slot = TagPoolSlot::Create(*slot_p, item->type,
 					   item->value, strlen(item->value));
 		*slot_p = slot;
@@ -151,7 +160,7 @@ tag_pool_put_item(TagItem *item)
 	if (slot->ref > 0)
 		return;
 
-	for (slot_p = &slots[calc_hash(item->type, item->value) % NUM_SLOTS];
+	for (slot_p = tag_value_slot_p(item->type, item->value);
 	     *slot_p != slot;
 	     slot_p = &(*slot_p)->next) {
 		assert(*slot_p != nullptr);
