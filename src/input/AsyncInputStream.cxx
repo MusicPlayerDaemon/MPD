@@ -245,6 +245,7 @@ AsyncInputStream::RunDeferred()
 	if (seek_state == SeekState::SCHEDULED) {
 		seek_state = SeekState::PENDING;
 		buffer.Clear();
+		paused = false;
 		DoSeek(seek_offset);
 	}
 }
