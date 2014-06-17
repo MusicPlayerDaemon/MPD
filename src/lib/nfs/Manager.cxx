@@ -39,10 +39,19 @@ NfsManager::GetConnection(const char *server, const char *export_name)
 
 	const std::string key = Key(server, export_name);
 
+#if defined(__GNUC__) && !defined(__clang__) && !GCC_CHECK_VERSION(4,8)
+	/* std::map::emplace() not available; this hack uses the move
+	   constructor */
+	auto e = connections.insert(std::make_pair(key,
+						   ManagedConnection(*this, loop,
+								     server,
+								     export_name)));
+#else
 	auto e = connections.emplace(std::piecewise_construct,
 				     std::forward_as_tuple(key),
 				     std::forward_as_tuple(*this, loop,
 							   server,
 							   export_name));
+#endif
 	return e.first->second;
 }

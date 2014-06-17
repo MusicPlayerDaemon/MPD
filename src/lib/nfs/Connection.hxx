@@ -103,6 +103,22 @@ public:
 		 server(_server), export_name(_export_name),
 		 context(nullptr) {}
 
+#if defined(__GNUC__) && !defined(__clang__) && !GCC_CHECK_VERSION(4,8)
+	/* needed for NfsManager::GetConnection() due to lack of
+	   std::map::emplace() */
+	NfsConnection(NfsConnection &&other)
+		:SocketMonitor(((SocketMonitor &)other).GetEventLoop()),
+		 DeferredMonitor(((DeferredMonitor &)other).GetEventLoop()),
+		 server(std::move(other.server)),
+		 export_name(std::move(other.export_name)),
+		 context(nullptr) {
+		assert(other.context == nullptr);
+		assert(other.new_leases.empty());
+		assert(other.active_leases.empty());
+		assert(other.callbacks.IsEmpty());
+	}
+#endif
+
 	~NfsConnection();
 
 	gcc_pure

@@ -41,6 +41,13 @@ class NfsManager {
 			:NfsConnection(_loop, _server, _export_name),
 			 manager(_manager) {}
 
+#if defined(__GNUC__) && !defined(__clang__) && !GCC_CHECK_VERSION(4,8)
+		/* needed due to lack of std::map::emplace() */
+		ManagedConnection(ManagedConnection &&other)
+			:NfsConnection(std::move(other)),
+			 manager(other.manager) {}
+#endif
+
 	protected:
 		/* virtual methods from NfsConnection */
 		void OnNfsConnectionError(Error &&error) override;
