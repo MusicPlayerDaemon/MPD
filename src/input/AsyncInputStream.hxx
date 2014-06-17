@@ -90,6 +90,10 @@ protected:
 		return buffer.IsEmpty();
 	}
 
+	bool IsBufferFull() const {
+		return buffer.IsFull();
+	}
+
 	gcc_pure
 	size_t GetBufferSpace() const {
 		return buffer.GetSpace();
