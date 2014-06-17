@@ -222,11 +222,13 @@ AsyncInputStream::AppendToBuffer(const void *data, size_t append_size)
 	const size_t remaining = append_size - nbytes;
 	if (remaining > 0) {
 		w = buffer.Write();
-		assert(!w.IsEmpty());
-		assert(w.size >= remaining);
 
-		memcpy(w.data, (const uint8_t *)data + nbytes, remaining);
-		buffer.Append(remaining);
+		if (!w.IsEmpty()) {
+			size_t nbytes2 = std::min(w.size, remaining);
+			memcpy(w.data, (const uint8_t *)data + nbytes,
+			       nbytes2);
+			buffer.Append(nbytes2);
+		}
 	}
 
 	if (!IsReady())
