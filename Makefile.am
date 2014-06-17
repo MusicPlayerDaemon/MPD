@@ -437,6 +437,9 @@ libicu_a_SOURCES += \
 	src/lib/icu/Init.cxx src/lib/icu/Init.hxx
 endif
 
+libicu_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(ICU_CFLAGS)
+
 ICU_LDADD = libicu.a $(ICU_LIBS)
 
 # PCM library
