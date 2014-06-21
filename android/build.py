@@ -265,8 +265,8 @@ class FfmpegProject(Project):
 # a list of third-party libraries to be used by MPD on Android
 thirdparty_libs = [
     AutotoolsProject(
-        'http://downloads.xiph.org/releases/ogg/libogg-1.3.1.tar.xz',
-        'ca25d8da0ddfc8c6cbbf78d847a209fe',
+        'http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.xz',
+        '5c3a34309d8b98640827e5d0991a4015',
         'lib/libogg.a',
         ['--disable-shared', '--enable-static'],
     ),
