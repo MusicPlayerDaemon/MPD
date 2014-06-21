@@ -184,6 +184,7 @@ ProxySong::ProxySong(const mpd_song *song)
 {
 	directory = nullptr;
 	uri = mpd_song_get_uri(song);
+	real_uri = nullptr;
 	tag = &tag2;
 	mtime = mpd_song_get_last_modified(song);
 	start_ms = mpd_song_get_start(song) * 1000;
