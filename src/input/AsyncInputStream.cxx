@@ -175,7 +175,8 @@ AsyncInputStream::ReadTag()
 bool
 AsyncInputStream::IsAvailable()
 {
-	return postponed_error.IsDefined() || !open ||
+	return postponed_error.IsDefined() ||
+		IsEOF() ||
 		!buffer.IsEmpty();
 }
 
@@ -191,7 +192,7 @@ AsyncInputStream::Read(void *ptr, size_t read_size, Error &error)
 			return 0;
 
 		r = buffer.Read();
-		if (!r.IsEmpty() || !open)
+		if (!r.IsEmpty() || IsEOF())
 			break;
 
 		cond.wait(mutex);
