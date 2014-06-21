@@ -93,12 +93,14 @@ NfsInputStream::DoRead()
 	if (remaining <= 0)
 		return true;
 
-	if (IsBufferFull()) {
+	const size_t buffer_space = GetBufferSpace();
+	if (buffer_space == 0) {
 		Pause();
 		return true;
 	}
 
-	size_t nbytes = std::min<uint64_t>(remaining, 32768);
+	size_t nbytes = std::min<size_t>(std::min<uint64_t>(remaining, 32768),
+					 buffer_space);
 
 	mutex.unlock();
 	Error error;
