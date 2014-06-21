@@ -314,13 +314,14 @@ thirdparty_libs = [
     ),
 
     FfmpegProject(
-        'http://www.ffmpeg.org/releases/ffmpeg-2.1.4.tar.bz2',
-        'dedc28003a77c69432c42ab16e5f6982',
+        'http://www.ffmpeg.org/releases/ffmpeg-2.2.3.tar.bz2',
+        'dbb5b6b69bd010916f17df0ae596e0b1',
         'lib/libavcodec.a',
         [
             '--disable-shared', '--enable-static',
             '--enable-gpl',
             '--enable-small',
+            '--disable-pthreads',
             '--disable-runtime-cpudetect',
             '--disable-programs',
             '--disable-doc',
