@@ -231,7 +231,6 @@ class AutotoolsProject(Project):
 
 class FfmpegProject(Project):
     def __init__(self, url, md5, installed, configure_args=[],
-                 autogen=False,
                  cppflags='',
                  **kwargs):
         Project.__init__(self, url, md5, installed, **kwargs)
