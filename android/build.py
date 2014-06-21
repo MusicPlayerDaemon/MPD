@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os.path
+import os, os.path
 import sys, shutil, subprocess
 import urllib.request
 import hashlib
@@ -262,6 +262,33 @@ class FfmpegProject(Project):
         subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build)
         subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build)
 
+class BoostProject(Project):
+    def __init__(self, url, md5, installed,
+                 **kwargs):
+        m = re.match(r'.*/boost_(\d+)_(\d+)_(\d+)\.tar\.bz2$', url)
+        version = "%s.%s.%s" % (m.group(1), m.group(2), m.group(3))
+        Project.__init__(self, url, md5, installed,
+                         name='boost', version=version,
+                         **kwargs)
+
+    def build(self):
+        src = self.unpack()
+
+        # install the headers manually; don't build any library
+        # (because right now, we only use header-only libraries)
+        includedir = os.path.join(root_path, 'include')
+        for dirpath, dirnames, filenames in os.walk(os.path.join(src, 'boost')):
+            relpath = dirpath[len(src)+1:]
+            destdir = os.path.join(includedir, relpath)
+            try:
+                os.mkdir(destdir)
+            except:
+                pass
+            for name in filenames:
+                if name[-4:] == '.hpp':
+                    shutil.copyfile(os.path.join(dirpath, name),
+                                    os.path.join(destdir, name))
+
 # a list of third-party libraries to be used by MPD on Android
 thirdparty_libs = [
     AutotoolsProject(
@@ -358,6 +385,12 @@ thirdparty_libs = [
             '--without-ssl', '--without-gnutls', '--without-nss', '--without-libssh2',
         ],
         use_clang=True,
+    ),
+
+    BoostProject(
+        'http://netcologne.dl.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.bz2',
+        'd6eef4b4cacb2183f2bf265a5a03a354',
+        'include/boost/version.hpp',
     ),
 ]
 
