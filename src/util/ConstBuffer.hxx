@@ -138,6 +138,16 @@ struct ConstBuffer {
 		return size == 0;
 	}
 
+	template<typename U>
+	gcc_pure
+	bool Contains(U &&u) const {
+		for (const auto &i : *this)
+			if (u == i)
+				return true;
+
+		return false;
+	}
+
 	constexpr iterator begin() const {
 		return data;
 	}
