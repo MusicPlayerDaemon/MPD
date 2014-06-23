@@ -398,8 +398,13 @@ Convert(const struct mpd_song *song)
 	Song *s = Song::NewDetached(mpd_song_get_uri(song));
 
 	s->mtime = mpd_song_get_last_modified(song);
+
+#if LIBMPDCLIENT_CHECK_VERSION(2,3,0)
 	s->start_ms = mpd_song_get_start(song) * 1000;
 	s->end_ms = mpd_song_get_end(song) * 1000;
+#else
+	s->start_ms = s->end_ms = 0;
+#endif
 
 	TagBuilder tag;
 	tag.SetTime(mpd_song_get_duration(song));
