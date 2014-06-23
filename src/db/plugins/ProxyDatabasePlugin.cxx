@@ -187,8 +187,13 @@ ProxySong::ProxySong(const mpd_song *song)
 	real_uri = nullptr;
 	tag = &tag2;
 	mtime = mpd_song_get_last_modified(song);
+
+#if LIBMPDCLIENT_CHECK_VERSION(2,3,0)
 	start_ms = mpd_song_get_start(song) * 1000;
 	end_ms = mpd_song_get_end(song) * 1000;
+#else
+	start_ms = end_ms = 0;
+#endif
 
 	TagBuilder tag_builder;
 	tag_builder.SetTime(mpd_song_get_duration(song));
