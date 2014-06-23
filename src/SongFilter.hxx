@@ -109,6 +109,11 @@ public:
 		return items;
 	}
 
+	gcc_pure
+	bool IsEmpty() const {
+		return items.empty();
+	}
+
 	/**
 	 * Is there at least one item with "fold case" enabled?
 	 */
@@ -120,6 +125,12 @@ public:
 
 		return false;
 	}
+
+	/**
+	 * Does this filter contain constraints other than "base"?
+	 */
+	gcc_pure
+	bool HasOtherThanBase() const;
 
 	/**
 	 * Returns the "base" specification (if there is one) or an

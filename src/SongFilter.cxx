@@ -203,6 +203,16 @@ SongFilter::Match(const Song &song) const
 	return true;
 }
 
+bool
+SongFilter::HasOtherThanBase() const
+{
+	for (const auto &i : items)
+		if (i.GetTag() != LOCATE_TAG_BASE_TYPE)
+			return true;
+
+	return false;
+}
+
 std::string
 SongFilter::GetBase() const
 {

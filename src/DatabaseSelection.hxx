@@ -45,6 +45,15 @@ struct DatabaseSelection {
 			  const SongFilter *_filter=nullptr);
 
 	gcc_pure
+	bool IsEmpty() const;
+
+	/**
+	 * Does this selection contain constraints other than "base"?
+	 */
+	gcc_pure
+	bool HasOtherThanBase() const;
+
+	gcc_pure
 	bool Match(const Song &song) const;
 };
 
