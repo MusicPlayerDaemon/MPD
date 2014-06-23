@@ -43,6 +43,11 @@ ver 0.19 (not yet released)
 * install systemd unit for socket activation
 * Android port
 
+ver 0.18.12 (not yet released)
+* database
+  - proxy: fix build failure with libmpdclient 2.2
+  - proxy: fix add/search and other commands with libmpdclient < 2.9
+
 ver 0.18.11 (2014/05/12)
 * decoder
   - opus: fix missing song length on high-latency files

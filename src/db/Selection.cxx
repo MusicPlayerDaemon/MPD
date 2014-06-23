@@ -31,6 +31,18 @@ DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 }
 
 bool
+DatabaseSelection::IsEmpty() const
+{
+	return uri.empty() && (filter == nullptr || filter->IsEmpty());
+}
+
+bool
+DatabaseSelection::HasOtherThanBase() const
+{
+	return filter != nullptr && filter->HasOtherThanBase();
+}
+
+bool
 DatabaseSelection::Match(const LightSong &song) const
 {
 	return filter == nullptr || filter->Match(song);

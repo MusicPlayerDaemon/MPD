@@ -695,6 +695,23 @@ SearchSongs(struct mpd_connection *connection,
 	return result && CheckError(connection, error);
 }
 
+/**
+ * Check whether we can use the "base" constraint.  Requires
+ * libmpdclient 2.9 and MPD 0.18.
+ */
+gcc_pure
+static bool
+ServerSupportsSearchBase(const struct mpd_connection *connection)
+{
+#if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
+	return mpd_connection_cmp_server_version(connection, 0, 18, 0) >= 0;
+#else
+	(void)connection;
+
+	return false;
+#endif
+}
+
 bool
 ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     VisitDirectory visit_directory,
@@ -706,7 +723,10 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
 		return nullptr;
 
-	if (!visit_directory && !visit_playlist && selection.recursive)
+	if (!visit_directory && !visit_playlist && selection.recursive &&
+	    (ServerSupportsSearchBase(connection)
+	     ? !selection.IsEmpty()
+	     : selection.HasOtherThanBase()))
 		/* this optimized code path can only be used under
 		   certain conditions */
 		return ::SearchSongs(connection, selection, visit_song, error);
