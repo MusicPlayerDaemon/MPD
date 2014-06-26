@@ -208,7 +208,9 @@ struct ConstBuffer {
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
 	void pop_front() {
+#ifndef NDEBUG
 		assert(!IsEmpty());
+#endif
 
 		++data;
 		--size;
@@ -219,7 +221,9 @@ struct ConstBuffer {
 	 * not actually modify the buffer).  Buffer must not be empty.
 	 */
 	void pop_back() {
+#ifndef NDEBUG
 		assert(!IsEmpty());
+#endif
 
 		--size;
 	}
