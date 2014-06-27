@@ -28,6 +28,8 @@ ver 0.19 (not yet released)
   - smbclient: new input plugin
 * filter
   - volume: improved software volume dithering
+* decoder:
+  - vorbis, flac, opus: honor DESCRIPTION= tag in Xiph-based files as a comment to the song
 * encoder:
   - shine: new encoder plugin
 * threads:
