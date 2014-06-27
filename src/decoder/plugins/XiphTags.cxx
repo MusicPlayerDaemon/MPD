@@ -17,6 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/* This File contains additional Tags for Xiph-Based Formats like Ogg-Vorbis,
+ * Flac and Opus which will be used in addition to the Tags in tag/TagNames.c
+ * see https://www.xiph.org/vorbis/doc/v-comment.html for further Info
+ */
 #include "config.h"
 #include "XiphTags.hxx"
 
