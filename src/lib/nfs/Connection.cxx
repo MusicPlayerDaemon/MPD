@@ -32,6 +32,8 @@ extern "C" {
 
 #include <utility>
 
+#include <poll.h> /* for POLLIN, POLLOUT */
+
 inline bool
 NfsConnection::CancellableCallback::Open(nfs_context *ctx,
 					 const char *path, int flags,
