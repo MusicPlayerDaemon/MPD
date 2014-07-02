@@ -381,11 +381,9 @@ libthread_a_SOURCES = \
 	src/thread/Mutex.hxx \
 	src/thread/PosixMutex.hxx \
 	src/thread/CriticalSection.hxx \
-	src/thread/GLibMutex.hxx \
 	src/thread/Cond.hxx \
 	src/thread/PosixCond.hxx \
 	src/thread/WindowsCond.hxx \
-	src/thread/GLibCond.hxx \
 	src/thread/Thread.cxx src/thread/Thread.hxx \
 	src/thread/Id.hxx
 
