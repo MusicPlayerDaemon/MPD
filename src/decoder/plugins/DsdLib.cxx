@@ -82,6 +82,25 @@ dsdlib_skip(Decoder *decoder, InputStream &is,
 	return decoder_skip(decoder, is, delta);
 }
 
+bool
+dsdlib_valid_freq(uint32_t samplefreq)
+{
+	switch (samplefreq) {
+	case 2822400: /* DSD64, 64xFs, Fs = 44.100kHz */
+	case 3072000: /* DSD64 with Fs = 48.000 kHz */
+	case 5644800:
+	case 6144000:
+	case 11289600:
+	case 12288000:
+	case 22579200:/* DSD512 */
+	case 24576000:
+		return true;
+
+	default:
+		return false;
+	}
+}
+
 #ifdef HAVE_ID3TAG
 void
 dsdlib_tag_id3(InputStream &is,

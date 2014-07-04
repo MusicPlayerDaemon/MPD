@@ -131,7 +131,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	if (dsf_fmt_chunk.version != 1 || dsf_fmt_chunk.formatid != 0
 	    || dsf_fmt_chunk.channeltype != 2
 	    || dsf_fmt_chunk.channelnum != 2
-	    || (samplefreq != 2822400 && samplefreq != 5644800))
+	    || (!dsdlib_valid_freq(samplefreq)))
 		return false;
 
 	uint32_t chblksize = FromLE32(dsf_fmt_chunk.block_size);

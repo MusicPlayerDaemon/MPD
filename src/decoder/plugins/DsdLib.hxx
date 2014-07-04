@@ -67,6 +67,13 @@ dsdlib_skip(Decoder *decoder, InputStream &is,
 	    uint64_t delta);
 
 /**
+ * Check if the sample frequency is a valid DSD frequency.
+ **/
+gcc_const
+bool
+dsdlib_valid_freq(uint32_t samplefreq);
+
+/**
  * Add tags from ID3 tag. All tags commonly found in the ID3 tags of
  * DSF and DSDIFF files are imported
  */

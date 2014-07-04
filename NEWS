@@ -40,6 +40,7 @@ ver 0.19 (not yet released)
   - audiofile: support scanning remote files
   - audiofile: log libaudiofile errors
   - dsdiff, dsf: report bit rate
+  - dsf: support DSD512
   - sndfile: support scanning remote files
   - sndfile: support tags "comment", "album", "track", "genre"
   - mp4v2: support playback of MP4 files.
