@@ -31,6 +31,7 @@
 #include <af_vfs.h>
 
 #include <assert.h>
+#include <stdio.h>
 
 /* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
 #define CHUNK_SIZE		1020
