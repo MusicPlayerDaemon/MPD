@@ -66,19 +66,7 @@ dsdlib_skip_to(Decoder *decoder, InputStream &is,
 	if (uint64_t(is.GetOffset()) > offset)
 		return false;
 
-	char buffer[8192];
-	while (uint64_t(is.GetOffset()) < offset) {
-		size_t length = sizeof(buffer);
-		if (offset - is.GetOffset() < (uint64_t)length)
-			length = offset - is.GetOffset();
-
-		size_t nbytes = decoder_read(decoder, is, buffer, length);
-		if (nbytes == 0)
-			return false;
-	}
-
-	assert(uint64_t(is.GetOffset()) == offset);
-	return true;
+	return dsdlib_skip(decoder, is, offset - is.GetOffset());
 }
 
 /**
@@ -94,20 +82,12 @@ dsdlib_skip(Decoder *decoder, InputStream &is,
 	if (is.IsSeekable())
 		return is.Seek(is.GetOffset() + delta, IgnoreError());
 
-	char buffer[8192];
-	while (delta > 0) {
-		size_t length = sizeof(buffer);
-		if ((uint64_t)length > delta)
-			length = delta;
+	if (delta > 1024 * 1024)
+		/* don't skip more than one megabyte; it would be too
+		   expensive */
+		return false;
 
-		size_t nbytes = decoder_read(decoder, is, buffer, length);
-		if (nbytes == 0)
-			return false;
-
-		delta -= nbytes;
-	}
-
-	return true;
+	return decoder_skip(decoder, is, delta);
 }
 
 #ifdef HAVE_ID3TAG
