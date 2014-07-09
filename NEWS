@@ -4,6 +4,7 @@ ver 0.18.12 (not yet released)
   - proxy: fix add/search and other commands with libmpdclient < 2.9
 * decoder
   - audiofile: improve responsiveness
+  - audiofile: fix WAV stream playback
 
 ver 0.18.11 (2014/05/12)
 * decoder

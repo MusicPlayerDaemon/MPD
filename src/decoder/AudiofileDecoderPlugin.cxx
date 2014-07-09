@@ -43,7 +43,12 @@ struct AudioFileInputStream {
 	InputStream &is;
 
 	size_t Read(void *buffer, size_t size) {
-		return decoder_read(decoder, is, buffer, size);
+		/* libaudiofile does not like partial reads at all,
+		   and wil abort playback; therefore always force full
+		   reads */
+		return decoder_read_full(decoder, is, buffer, size)
+			? size
+			: 0;
 	}
 };
 
