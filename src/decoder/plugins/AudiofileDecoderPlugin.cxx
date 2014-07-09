@@ -114,7 +114,6 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset _offset,
 	if (is_relative)
 		offset += is.GetOffset();
 
-	Error error;
 	if (is.LockSeek(offset, IgnoreError())) {
 		return is.GetOffset();
 	} else {
