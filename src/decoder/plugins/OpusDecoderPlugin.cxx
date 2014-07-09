@@ -36,6 +36,7 @@
 #include <ogg/ogg.h>
 
 #include <string.h>
+#include <stdio.h>
 
 static constexpr opus_int32 opus_sample_rate = 48000;
 

@@ -100,7 +100,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 		  DsfMetaData *metadata)
 {
 	DsfHeader dsf_header;
-	if (!dsdlib_read(decoder, is, &dsf_header, sizeof(dsf_header)) ||
+	if (!decoder_read_full(decoder, is, &dsf_header, sizeof(dsf_header)) ||
 	    !dsf_header.id.Equals("DSD "))
 		return false;
 
@@ -114,7 +114,8 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 
 	/* read the 'fmt ' chunk of the DSF file */
 	DsfFmtChunk dsf_fmt_chunk;
-	if (!dsdlib_read(decoder, is, &dsf_fmt_chunk, sizeof(dsf_fmt_chunk)) ||
+	if (!decoder_read_full(decoder, is,
+			       &dsf_fmt_chunk, sizeof(dsf_fmt_chunk)) ||
 	    !dsf_fmt_chunk.id.Equals("fmt "))
 		return false;
 
@@ -140,7 +141,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 
 	/* read the 'data' chunk of the DSF file */
 	DsfDataChunk data_chunk;
-	if (!dsdlib_read(decoder, is, &data_chunk, sizeof(data_chunk)) ||
+	if (!decoder_read_full(decoder, is, &data_chunk, sizeof(data_chunk)) ||
 	    !data_chunk.id.Equals("data"))
 		return false;
 
@@ -244,10 +245,10 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 			now_size = now_frames * frame_size;
 		}
 
-		size_t nbytes = decoder_read(&decoder, is, buffer, now_size);
-		if (nbytes != now_size)
+		if (!decoder_read_full(&decoder, is, buffer, now_size))
 			return false;
 
+		const size_t nbytes = now_size;
 		chunk_size -= nbytes;
 
 		if (bitreverse)

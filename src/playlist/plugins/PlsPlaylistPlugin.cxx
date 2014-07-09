@@ -31,6 +31,7 @@
 #include <glib.h>
 
 #include <string>
+#include <stdio.h>
 
 #include <stdio.h>
 

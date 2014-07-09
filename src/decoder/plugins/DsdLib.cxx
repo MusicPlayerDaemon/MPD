@@ -45,14 +45,6 @@ DsdId::Equals(const char *s) const
 	return memcmp(value, s, sizeof(value)) == 0;
 }
 
-bool
-dsdlib_read(Decoder *decoder, InputStream &is,
-	    void *data, size_t length)
-{
-	size_t nbytes = decoder_read(decoder, is, data, length);
-	return nbytes == length;
-}
-
 /**
  * Skip the #input_stream to the specified offset.
  */
@@ -123,7 +115,7 @@ dsdlib_tag_id3(InputStream &is,
 	id3_byte_t *dsdid3data;
 	dsdid3data = dsdid3;
 
-	if (!dsdlib_read(nullptr, is, dsdid3data, count))
+	if (!decoder_read_full(nullptr, is, dsdid3data, count))
 		return;
 
 	id3_tag = id3_tag_parse(dsdid3data, count);
