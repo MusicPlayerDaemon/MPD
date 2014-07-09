@@ -38,6 +38,15 @@
 
 static constexpr Domain audiofile_domain("audiofile");
 
+struct AudioFileInputStream {
+	Decoder *const decoder;
+	InputStream &is;
+
+	size_t Read(void *buffer, size_t size) {
+		return decoder_read(decoder, is, buffer, size);
+	}
+};
+
 static int audiofile_get_duration(const char *file)
 {
 	int total_time;
@@ -55,29 +64,26 @@ static int audiofile_get_duration(const char *file)
 static ssize_t
 audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 {
-	InputStream &is = *(InputStream *)vfile->closure;
+	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
 
-	Error error;
-	size_t nbytes = is.LockRead(data, length, error);
-	if (nbytes == 0 && error.IsDefined()) {
-		LogError(error);
-		return -1;
-	}
-
-	return nbytes;
+	return afis.Read(data, length);
 }
 
 static AFfileoffset
 audiofile_file_length(AFvirtualfile *vfile)
 {
-	InputStream &is = *(InputStream *)vfile->closure;
+	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
+	InputStream &is = afis.is;
+
 	return is.GetSize();
 }
 
 static AFfileoffset
 audiofile_file_tell(AFvirtualfile *vfile)
 {
-	InputStream &is = *(InputStream *)vfile->closure;
+	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
+	InputStream &is = afis.is;
+
 	return is.GetOffset();
 }
 
@@ -92,7 +98,9 @@ audiofile_file_destroy(AFvirtualfile *vfile)
 static AFfileoffset
 audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 {
-	InputStream &is = *(InputStream *)vfile->closure;
+	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
+	InputStream &is = afis.is;
+
 	int whence = (is_relative ? SEEK_CUR : SEEK_SET);
 
 	Error error;
@@ -104,10 +112,10 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 }
 
 static AFvirtualfile *
-setup_virtual_fops(InputStream &stream)
+setup_virtual_fops(AudioFileInputStream &afis)
 {
 	AFvirtualfile *vf = new AFvirtualfile();
-	vf->closure = &stream;
+	vf->closure = &afis;
 	vf->write = nullptr;
 	vf->read    = audiofile_file_read;
 	vf->length  = audiofile_file_length;
@@ -174,7 +182,8 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 		return;
 	}
 
-	vf = setup_virtual_fops(is);
+	AudioFileInputStream afis{&decoder, is};
+	vf = setup_virtual_fops(afis);
 
 	af_fp = afOpenVirtualFile(vf, "r", nullptr);
 	if (af_fp == AF_NULL_FILEHANDLE) {
