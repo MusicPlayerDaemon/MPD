@@ -32,6 +32,7 @@ extern "C" {
 
 #include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 static void
 add_song(std::forward_list<DetachedSong> &songs, ds_track &track)
