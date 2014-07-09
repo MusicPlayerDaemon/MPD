@@ -23,6 +23,7 @@
 #include "Compiler.h"
 
 #include <errno.h>
+#include <stdio.h>
 
 static size_t
 FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
