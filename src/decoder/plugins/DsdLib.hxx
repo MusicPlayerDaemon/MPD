@@ -64,11 +64,11 @@ dsdlib_read(Decoder *decoder, InputStream &is,
 
 bool
 dsdlib_skip_to(Decoder *decoder, InputStream &is,
-	       int64_t offset);
+	       uint64_t offset);
 
 bool
 dsdlib_skip(Decoder *decoder, InputStream &is,
-	    int64_t delta);
+	    uint64_t delta);
 
 /**
  * Add tags from ID3 tag. All tags commonly found in the ID3 tags of

@@ -58,18 +58,18 @@ dsdlib_read(Decoder *decoder, InputStream &is,
  */
 bool
 dsdlib_skip_to(Decoder *decoder, InputStream &is,
-	       int64_t offset)
+	       uint64_t offset)
 {
 	if (is.IsSeekable())
 		return is.Seek(offset, IgnoreError());
 
-	if (is.GetOffset() > offset)
+	if (uint64_t(is.GetOffset()) > offset)
 		return false;
 
 	char buffer[8192];
-	while (is.GetOffset() < offset) {
+	while (uint64_t(is.GetOffset()) < offset) {
 		size_t length = sizeof(buffer);
-		if (offset - is.GetOffset() < (int64_t)length)
+		if (offset - is.GetOffset() < (uint64_t)length)
 			length = offset - is.GetOffset();
 
 		size_t nbytes = decoder_read(decoder, is, buffer, length);
@@ -77,7 +77,7 @@ dsdlib_skip_to(Decoder *decoder, InputStream &is,
 			return false;
 	}
 
-	assert(is.GetOffset() == offset);
+	assert(uint64_t(is.GetOffset()) == offset);
 	return true;
 }
 
@@ -86,10 +86,8 @@ dsdlib_skip_to(Decoder *decoder, InputStream &is,
  */
 bool
 dsdlib_skip(Decoder *decoder, InputStream &is,
-	    int64_t delta)
+	    uint64_t delta)
 {
-	assert(delta >= 0);
-
 	if (delta == 0)
 		return true;
 
@@ -99,7 +97,7 @@ dsdlib_skip(Decoder *decoder, InputStream &is,
 	char buffer[8192];
 	while (delta > 0) {
 		size_t length = sizeof(buffer);
-		if ((int64_t)length > delta)
+		if ((uint64_t)length > delta)
 			length = delta;
 
 		size_t nbytes = decoder_read(decoder, is, buffer, length);
