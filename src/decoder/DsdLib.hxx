@@ -59,10 +59,6 @@ public:
 };
 
 bool
-dsdlib_read(Decoder *decoder, InputStream &is,
-	    void *data, size_t length);
-
-bool
 dsdlib_skip_to(Decoder *decoder, InputStream &is,
 	       int64_t offset);
 
