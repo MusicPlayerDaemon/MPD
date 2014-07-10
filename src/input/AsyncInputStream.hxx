@@ -78,14 +78,25 @@ public:
 	size_t Read(void *ptr, size_t read_size, Error &error) final;
 
 protected:
+	/**
+	 * Pass an tag from the I/O thread to the client thread.
+	 */
 	void SetTag(Tag *_tag);
 
 	void Pause();
 
+	/**
+	 * Declare that the underlying stream was closed.  We will
+	 * continue feeding Read() calls from the buffer until it runs
+	 * empty.
+	 */
 	void SetClosed() {
 		open = false;
 	}
 
+	/**
+	 * Pass an error from the I/O thread to the client thread.
+	 */
 	void PostponeError(Error &&error);
 
 	bool IsBufferEmpty() const {
@@ -96,13 +107,24 @@ protected:
 		return buffer.IsFull();
 	}
 
+	/**
+	 * Determine how many bytes can be added to the buffer.
+	 */
 	gcc_pure
 	size_t GetBufferSpace() const {
 		return buffer.GetSpace();
 	}
 
+	/**
+	 * Append data to the buffer.  The size must fit into the
+	 * buffer; see GetBufferSpace().
+	 */
 	void AppendToBuffer(const void *data, size_t append_size);
 
+	/**
+	 * Implement code here that will resume the stream after it
+	 * has been paused due to full input buffer.
+	 */
 	virtual void DoResume() = 0;
 
 	/**
@@ -116,6 +138,10 @@ protected:
 		return seek_state == SeekState::PENDING;
 	}
 
+	/**
+	 * Call this after seeking has finished.  It will notify the
+	 * client thread.
+	 */
 	void SeekDone();
 
 private:
