@@ -254,11 +254,23 @@ AllocatedPath GetUserMusicDir()
 #endif
 }
 
-AllocatedPath
-GetUserCacheDir()
+AllocatedPath GetUserCacheDir()
 {
 #ifdef USE_XDG
-	return GetUserDir("XDG_CACHE_DIR");
+	// Check for $XDG_CACHE_HOME
+	auto cache_home = getenv("XDG_CACHE_HOME");
+	if (IsValidPathString(cache_home) && IsValidDir(cache_home))
+		return AllocatedPath::FromFS(cache_home);
+
+	// Check for $HOME/.cache
+	auto home = GetHomeDir();
+	if (!home.IsNull()) {
+		AllocatedPath fallback = AllocatedPath::Build(home, ".cache");
+		if (IsValidDir(fallback.c_str()))
+			return fallback;
+	}
+
+	return AllocatedPath::Null();
 #elif defined(ANDROID)
 	return context->GetCacheDir(Java::GetEnv());
 #else
