@@ -54,17 +54,24 @@ struct AudioFileInputStream {
 };
 
 gcc_pure
+static double
+audiofile_get_duration(AFfilehandle fh)
+{
+	double frame_count = afGetFrameCount(fh, AF_DEFAULT_TRACK);
+	double rate = afGetRate(fh, AF_DEFAULT_TRACK);
+
+	return frame_count / rate;
+}
+
+gcc_pure
 static int
 audiofile_get_duration(Path path_fs)
 {
-	int total_time;
 	AFfilehandle af_fp = afOpenFile(path_fs.c_str(), "r", nullptr);
 	if (af_fp == AF_NULL_FILEHANDLE) {
 		return -1;
 	}
-	total_time = (int)
-	    ((double)afGetFrameCount(af_fp, AF_DEFAULT_TRACK)
-	     / afGetRate(af_fp, AF_DEFAULT_TRACK));
+	int total_time = int(audiofile_get_duration(af_fp));
 	afCloseFile(af_fp);
 	return total_time;
 }
