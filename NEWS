@@ -30,6 +30,7 @@ ver 0.19 (not yet released)
   - volume: improved software volume dithering
 * decoder:
   - vorbis, flac, opus: honor DESCRIPTION= tag in Xiph-based files as a comment to the song
+  - audiofile: support scanning remote files
 * encoder:
   - shine: new encoder plugin
 * threads:

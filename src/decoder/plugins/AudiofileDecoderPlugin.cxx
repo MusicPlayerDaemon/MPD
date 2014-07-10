@@ -63,19 +63,6 @@ audiofile_get_duration(AFfilehandle fh)
 	return frame_count / rate;
 }
 
-gcc_pure
-static int
-audiofile_get_duration(Path path_fs)
-{
-	AFfilehandle af_fp = afOpenFile(path_fs.c_str(), "r", nullptr);
-	if (af_fp == AF_NULL_FILEHANDLE) {
-		return -1;
-	}
-	int total_time = int(audiofile_get_duration(af_fp));
-	afCloseFile(af_fp);
-	return total_time;
-}
-
 static ssize_t
 audiofile_file_read(AFvirtualfile *vfile, void *data, size_t length)
 {
@@ -250,18 +237,31 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 	afCloseFile(af_fp);
 }
 
-static bool
-audiofile_scan_file(Path path_fs,
-		    const struct tag_handler *handler, void *handler_ctx)
+gcc_pure
+static int
+audiofile_get_duration(InputStream &is)
 {
-	int total_time = audiofile_get_duration(path_fs);
+	if (!is.IsSeekable())
+		return -1;
 
-	if (total_time < 0) {
-		FormatWarning(audiofile_domain,
-			      "Failed to get total song time from: %s",
-			      path_fs.c_str());
+	AudioFileInputStream afis{nullptr, is};
+	AFvirtualfile *vf = setup_virtual_fops(afis);
+	AFfilehandle fh = afOpenVirtualFile(vf, "r", nullptr);
+	if (fh == AF_NULL_FILEHANDLE)
+		return -1;
+
+	int duration = int(audiofile_get_duration(fh));
+	afCloseFile(fh);
+	return duration;
+}
+
+static bool
+audiofile_scan_stream(InputStream &is,
+		      const struct tag_handler *handler, void *handler_ctx)
+{
+	int total_time = audiofile_get_duration(is);
+	if (total_time < 0)
 		return false;
-	}
 
 	tag_handler_invoke_duration(handler, handler_ctx, total_time);
 	return true;
@@ -283,8 +283,8 @@ const struct DecoderPlugin audiofile_decoder_plugin = {
 	nullptr,
 	audiofile_stream_decode,
 	nullptr,
-	audiofile_scan_file,
 	nullptr,
+	audiofile_scan_stream,
 	nullptr,
 	audiofile_suffixes,
 	audiofile_mime_types,
