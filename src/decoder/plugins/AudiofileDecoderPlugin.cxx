@@ -186,10 +186,9 @@ static void
 audiofile_stream_decode(Decoder &decoder, InputStream &is)
 {
 	AFvirtualfile *vf;
-	int fs, frame_count;
+	int fs;
 	AFfilehandle af_fp;
 	AudioFormat audio_format;
-	float total_time;
 	uint16_t bit_rate;
 	int ret;
 	char chunk[CHUNK_SIZE];
@@ -219,9 +218,7 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 		return;
 	}
 
-	frame_count = afGetFrameCount(af_fp, AF_DEFAULT_TRACK);
-
-	total_time = ((float)frame_count / (float)audio_format.sample_rate);
+	const double total_time = audiofile_get_duration(af_fp);
 
 	bit_rate = (uint16_t)(is.GetSize() * 8.0 / total_time / 1000.0 + 0.5);
 
