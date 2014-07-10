@@ -36,6 +36,19 @@
 
 static constexpr Domain audiofile_domain("audiofile");
 
+static void
+audiofile_error_func(long, const char *msg)
+{
+	LogWarning(audiofile_domain, msg);
+}
+
+static bool
+audiofile_init(const config_param &)
+{
+	afSetErrorHandler(audiofile_error_func);
+	return true;
+}
+
 struct AudioFileInputStream {
 	Decoder *const decoder;
 	InputStream &is;
@@ -178,10 +191,8 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 	AFvirtualfile *const vf = setup_virtual_fops(afis);
 
 	const AFfilehandle fh = afOpenVirtualFile(vf, "r", nullptr);
-	if (fh == AF_NULL_FILEHANDLE) {
-		LogWarning(audiofile_domain, "failed to input stream");
+	if (fh == AF_NULL_FILEHANDLE)
 		return;
-	}
 
 	Error error;
 	AudioFormat audio_format;
@@ -275,7 +286,7 @@ static const char *const audiofile_mime_types[] = {
 
 const struct DecoderPlugin audiofile_decoder_plugin = {
 	"audiofile",
-	nullptr,
+	audiofile_init,
 	nullptr,
 	audiofile_stream_decode,
 	nullptr,
