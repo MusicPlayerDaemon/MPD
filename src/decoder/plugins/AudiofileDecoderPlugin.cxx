@@ -34,9 +34,6 @@
 #include <assert.h>
 #include <stdio.h>
 
-/* pick 1020 since its devisible for 8,16,24, and 32-bit audio */
-#define CHUNK_SIZE		1020
-
 static constexpr Domain audiofile_domain("audiofile");
 
 struct AudioFileInputStream {
@@ -172,69 +169,68 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 static void
 audiofile_stream_decode(Decoder &decoder, InputStream &is)
 {
-	AFvirtualfile *vf;
-	int fs;
-	AFfilehandle af_fp;
-	AudioFormat audio_format;
-	uint16_t bit_rate;
-	int ret;
-	char chunk[CHUNK_SIZE];
-
 	if (!is.IsSeekable()) {
 		LogWarning(audiofile_domain, "not seekable");
 		return;
 	}
 
 	AudioFileInputStream afis{&decoder, is};
-	vf = setup_virtual_fops(afis);
+	AFvirtualfile *const vf = setup_virtual_fops(afis);
 
-	af_fp = afOpenVirtualFile(vf, "r", nullptr);
-	if (af_fp == AF_NULL_FILEHANDLE) {
+	const AFfilehandle fh = afOpenVirtualFile(vf, "r", nullptr);
+	if (fh == AF_NULL_FILEHANDLE) {
 		LogWarning(audiofile_domain, "failed to input stream");
 		return;
 	}
 
 	Error error;
+	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format,
-				       afGetRate(af_fp, AF_DEFAULT_TRACK),
-				       audiofile_setup_sample_format(af_fp),
-				       afGetVirtualChannels(af_fp, AF_DEFAULT_TRACK),
+				       afGetRate(fh, AF_DEFAULT_TRACK),
+				       audiofile_setup_sample_format(fh),
+				       afGetVirtualChannels(fh, AF_DEFAULT_TRACK),
 				       error)) {
 		LogError(error);
-		afCloseFile(af_fp);
+		afCloseFile(fh);
 		return;
 	}
 
-	const double total_time = audiofile_get_duration(af_fp);
+	const double total_time = audiofile_get_duration(fh);
 
-	bit_rate = (uint16_t)(is.GetSize() * 8.0 / total_time / 1000.0 + 0.5);
+	const uint16_t kbit_rate = (uint16_t)
+		(is.GetSize() * 8.0 / total_time / 1000.0 + 0.5);
 
-	fs = (int)afGetVirtualFrameSize(af_fp, AF_DEFAULT_TRACK, 1);
+	const unsigned frame_size = (unsigned)
+		afGetVirtualFrameSize(fh, AF_DEFAULT_TRACK, true);
 
 	decoder_initialized(decoder, audio_format, true, total_time);
 
 	DecoderCommand cmd;
 	do {
-		ret = afReadFrames(af_fp, AF_DEFAULT_TRACK, chunk,
-				   CHUNK_SIZE / fs);
-		if (ret <= 0)
+		/* pick 1020 since its divisible for 8,16,24, and
+		   32-bit audio */
+		char chunk[1020];
+		const int nframes =
+			afReadFrames(fh, AF_DEFAULT_TRACK, chunk,
+				     sizeof(chunk) / frame_size);
+		if (nframes <= 0)
 			break;
 
 		cmd = decoder_data(decoder, nullptr,
-				   chunk, ret * fs,
-				   bit_rate);
+				   chunk, nframes * frame_size,
+				   kbit_rate);
 
 		if (cmd == DecoderCommand::SEEK) {
 			AFframecount frame = decoder_seek_where(decoder) *
 				audio_format.sample_rate;
-			afSeekFrame(af_fp, AF_DEFAULT_TRACK, frame);
+			afSeekFrame(fh, AF_DEFAULT_TRACK, frame);
 
 			decoder_command_finished(decoder);
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);
 
-	afCloseFile(af_fp);
+	afCloseFile(fh);
 }
 
 gcc_pure
