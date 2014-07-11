@@ -213,13 +213,21 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 	sf_close(sf);
 }
 
+static void
+sndfile_handle_tag(SNDFILE *sf, int str, TagType tag,
+		   const struct tag_handler *handler, void *handler_ctx)
+{
+	const char *value = sf_get_string(sf, str);
+	if (value != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx, tag, value);
+}
+
 static bool
 sndfile_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
 	SNDFILE *sf;
 	SF_INFO info;
-	const char *p;
 
 	info.format = 0;
 
@@ -237,20 +245,9 @@ sndfile_scan_file(Path path_fs,
 	tag_handler_invoke_duration(handler, handler_ctx,
 				    info.frames / info.samplerate);
 
-	p = sf_get_string(sf, SF_STR_TITLE);
-	if (p != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_TITLE, p);
-
-	p = sf_get_string(sf, SF_STR_ARTIST);
-	if (p != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_ARTIST, p);
-
-	p = sf_get_string(sf, SF_STR_DATE);
-	if (p != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_DATE, p);
+	sndfile_handle_tag(sf, SF_STR_TITLE, TAG_TITLE, handler, handler_ctx);
+	sndfile_handle_tag(sf, SF_STR_ARTIST, TAG_ARTIST, handler, handler_ctx);
+	sndfile_handle_tag(sf, SF_STR_DATE, TAG_DATE, handler, handler_ctx);
 
 	sf_close(sf);
 
