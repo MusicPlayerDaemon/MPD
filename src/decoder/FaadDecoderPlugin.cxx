@@ -217,6 +217,21 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 		return -1;
 }
 
+static NeAACDecHandle
+faad_decoder_new()
+{
+	const NeAACDecHandle decoder = NeAACDecOpen();
+
+	NeAACDecConfigurationPtr config =
+		NeAACDecGetCurrentConfiguration(decoder);
+	config->outputFormat = FAAD_FMT_16BIT;
+	config->downMatrix = 1;
+	config->dontUpSampleImplicitSBR = 0;
+	NeAACDecSetConfiguration(decoder, config);
+
+	return decoder;
+}
+
 /**
  * Wrapper for NeAACDecInit() which works around some API
  * inconsistencies in libfaad.
@@ -297,12 +312,7 @@ faad_get_file_time_float(InputStream &is)
 	if (length < 0) {
 		AudioFormat audio_format;
 
-		NeAACDecHandle decoder = NeAACDecOpen();
-
-		NeAACDecConfigurationPtr config =
-			NeAACDecGetCurrentConfiguration(decoder);
-		config->outputFormat = FAAD_FMT_16BIT;
-		NeAACDecSetConfiguration(decoder, config);
+		NeAACDecHandle decoder = faad_decoder_new();
 
 		decoder_buffer_fill(buffer);
 
@@ -344,14 +354,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 
 	/* create the libfaad decoder */
 
-	const NeAACDecHandle decoder = NeAACDecOpen();
-
-	NeAACDecConfigurationPtr config =
-		NeAACDecGetCurrentConfiguration(decoder);
-	config->outputFormat = FAAD_FMT_16BIT;
-	config->downMatrix = 1;
-	config->dontUpSampleImplicitSBR = 0;
-	NeAACDecSetConfiguration(decoder, config);
+	const NeAACDecHandle decoder = faad_decoder_new();
 
 	while (!decoder_buffer_is_full(buffer) && !is.LockIsEOF() &&
 	       decoder_get_command(mpd_decoder) == DecoderCommand::NONE) {
