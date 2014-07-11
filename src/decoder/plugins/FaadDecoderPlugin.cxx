@@ -360,16 +360,10 @@ faad_get_file_time(InputStream &is)
 }
 
 static void
-faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
+faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
+		   DecoderBuffer *buffer, const NeAACDecHandle decoder)
 {
-	DecoderBuffer *buffer =
-		decoder_buffer_new(&mpd_decoder, is,
-				   FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 	const float total_time = faad_song_duration(buffer, is);
-
-	/* create the libfaad decoder */
-
-	const NeAACDecHandle decoder = faad_decoder_new();
 
 	while (!decoder_buffer_is_full(buffer) && !is.LockIsEOF() &&
 	       decoder_get_command(mpd_decoder) == DecoderCommand::NONE) {
@@ -383,8 +377,6 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	AudioFormat audio_format;
 	if (!faad_decoder_init(decoder, buffer, audio_format, error)) {
 		LogError(error);
-		NeAACDecClose(decoder);
-		decoder_buffer_free(buffer);
 		return;
 	}
 
@@ -448,6 +440,20 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 				   (size_t)frame_info.samples * 2,
 				   bit_rate);
 	} while (cmd != DecoderCommand::STOP);
+}
+
+static void
+faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
+{
+	DecoderBuffer *buffer =
+		decoder_buffer_new(&mpd_decoder, is,
+				   FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
+
+	/* create the libfaad decoder */
+
+	const NeAACDecHandle decoder = faad_decoder_new();
+
+	faad_stream_decode(mpd_decoder, is, buffer, decoder);
 
 	/* cleanup */
 
