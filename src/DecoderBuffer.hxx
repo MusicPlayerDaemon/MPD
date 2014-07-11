@@ -78,6 +78,13 @@ bool
 decoder_buffer_fill(DecoderBuffer *buffer);
 
 /**
+ * How many bytes are stored in the buffer?
+ */
+gcc_pure
+size_t
+decoder_buffer_available(const DecoderBuffer *buffer);
+
+/**
  * Reads data from the buffer.  This data is not yet consumed, you
  * have to call decoder_buffer_consume() to do that.  The returned
  * buffer becomes invalid after a decoder_buffer_fill() or a

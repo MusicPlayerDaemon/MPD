@@ -130,6 +130,12 @@ decoder_buffer_fill(DecoderBuffer *buffer)
 	return true;
 }
 
+size_t
+decoder_buffer_available(const DecoderBuffer *buffer)
+{
+	return buffer->length - buffer->consumed;;
+}
+
 const void *
 decoder_buffer_read(const DecoderBuffer *buffer, size_t *length_r)
 {
