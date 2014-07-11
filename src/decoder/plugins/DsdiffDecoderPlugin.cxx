@@ -67,14 +67,6 @@ struct DsdiffMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;
 	uint64_t chunk_size;
-#ifdef HAVE_ID3TAG
-	InputStream::offset_type id3_offset;
-	uint64_t id3_size;
-#endif
-	/** offset for artist tag */
-	InputStream::offset_type diar_offset;
-	/** offset for title tag */
-	InputStream::offset_type diti_offset;
 };
 
 static bool lsbitfirst;
@@ -247,11 +239,13 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 	if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
 		return false;
 
-	metadata->diar_offset = 0;
-	metadata->diti_offset = 0;
+	/** offset for artist tag */
+	InputStream::offset_type artist_offset = 0;
+	/** offset for title tag */
+	InputStream::offset_type title_offset = 0;
 
 #ifdef HAVE_ID3TAG
-	metadata->id3_offset = 0;
+	InputStream::offset_type id3_offset = 0;
 #endif
 
 	/* Now process all the remaining chunk headers in the stream
@@ -267,20 +261,19 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 		/* DIAR chunk - DSDIFF native tag for Artist */
 		if (chunk_header->id.Equals("DIAR")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->diar_offset = is.GetOffset();
+			artist_offset = is.GetOffset();
 		}
 
 		/* DITI chunk - DSDIFF native tag for Title */
 		if (chunk_header->id.Equals("DITI")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->diti_offset = is.GetOffset();
+			title_offset = is.GetOffset();
 		}
 #ifdef HAVE_ID3TAG
 		/* 'ID3 ' chunk, offspec. Used by sacdextract */
 		if (chunk_header->id.Equals("ID3 ")) {
 			chunk_size = chunk_header->GetSize();
-			metadata->id3_offset = is.GetOffset();
-			metadata->id3_size = chunk_size;
+			id3_offset = is.GetOffset();
 		}
 #endif
 
@@ -291,22 +284,21 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 	/* done processing chunk headers, process tags if any */
 
 #ifdef HAVE_ID3TAG
-	if (metadata->id3_offset != 0)
-	{
+	if (id3_offset != 0) {
 		/* a ID3 tag has preference over the other tags, do not process
 		   other tags if we have one */
-		dsdlib_tag_id3(is, handler, handler_ctx, metadata->id3_offset);
+		dsdlib_tag_id3(is, handler, handler_ctx, id3_offset);
 		return true;
 	}
 #endif
 
-	if (metadata->diar_offset != 0)
+	if (artist_offset != 0)
 		dsdiff_handle_native_tag(is, handler, handler_ctx,
-					 metadata->diar_offset, TAG_ARTIST);
+					 artist_offset, TAG_ARTIST);
 
-	if (metadata->diti_offset != 0)
+	if (title_offset != 0)
 		dsdiff_handle_native_tag(is, handler, handler_ctx,
-					 metadata->diti_offset, TAG_TITLE);
+					 title_offset, TAG_TITLE);
 	return true;
 }
 
