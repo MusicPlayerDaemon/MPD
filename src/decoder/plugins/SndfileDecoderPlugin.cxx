@@ -155,16 +155,12 @@ time_to_frame(float t, const AudioFormat *audio_format)
 static void
 sndfile_stream_decode(Decoder &decoder, InputStream &is)
 {
-	SNDFILE *sf;
 	SF_INFO info;
-	size_t frame_size;
-	sf_count_t read_frames, num_frames;
-	int buffer[4096];
 
 	info.format = 0;
 
 	SndfileInputStream sis{&decoder, is};
-	sf = sf_open_virtual(&vio, SFM_READ, &info, &sis);
+	SNDFILE *const sf = sf_open_virtual(&vio, SFM_READ, &info, &sis);
 	if (sf == nullptr) {
 		LogWarning(sndfile_domain, "sf_open_virtual() failed");
 		return;
@@ -185,12 +181,14 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 	decoder_initialized(decoder, audio_format, info.seekable,
 			    frame_to_time(info.frames, &audio_format));
 
-	frame_size = audio_format.GetFrameSize();
-	read_frames = sizeof(buffer) / frame_size;
+	int buffer[4096];
+
+	const size_t frame_size = audio_format.GetFrameSize();
+	const sf_count_t read_frames = sizeof(buffer) / frame_size;
 
 	DecoderCommand cmd;
 	do {
-		num_frames = sf_readf_int(sf, buffer, read_frames);
+		sf_count_t num_frames = sf_readf_int(sf, buffer, read_frames);
 		if (num_frames <= 0)
 			break;
 
@@ -239,12 +237,11 @@ static bool
 sndfile_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	SNDFILE *sf;
 	SF_INFO info;
 
 	info.format = 0;
 
-	sf = sf_open(path_fs.c_str(), SFM_READ, &info);
+	SNDFILE *const sf = sf_open(path_fs.c_str(), SFM_READ, &info);
 	if (sf == nullptr)
 		return false;
 
