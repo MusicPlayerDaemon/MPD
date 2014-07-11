@@ -69,6 +69,12 @@ decoder_buffer_free(DecoderBuffer *buffer)
 	DeleteVarSize(buffer);
 }
 
+const InputStream &
+decoder_buffer_get_stream(const DecoderBuffer *buffer)
+{
+	return *buffer->is;
+}
+
 bool
 decoder_buffer_is_empty(const DecoderBuffer *buffer)
 {
@@ -121,6 +127,12 @@ decoder_buffer_fill(DecoderBuffer *buffer)
 	assert(buffer->length <= buffer->size);
 
 	return true;
+}
+
+size_t
+decoder_buffer_available(const DecoderBuffer *buffer)
+{
+	return buffer->length - buffer->consumed;;
 }
 
 ConstBuffer<void>
