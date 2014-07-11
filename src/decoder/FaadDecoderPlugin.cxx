@@ -148,9 +148,11 @@ adts_song_duration(DecoderBuffer *buffer)
 		decoder_buffer_consume(buffer, frame_length);
 	}
 
-	float frames_per_second = (float)sample_rate / 1024.0;
-	if (frames_per_second <= 0)
+	if (sample_rate == 0)
 		return -1;
+
+	float frames_per_second = (float)sample_rate / 1024.0;
+	assert(frames_per_second > 0);
 
 	return (float)frames / frames_per_second;
 }
