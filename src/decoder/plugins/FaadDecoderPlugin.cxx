@@ -365,11 +365,8 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
 {
 	const float total_time = faad_song_duration(buffer, is);
 
-	while (!decoder_buffer_is_full(buffer) && !is.LockIsEOF() &&
-	       decoder_get_command(mpd_decoder) == DecoderCommand::NONE) {
-		adts_find_frame(buffer);
-		decoder_buffer_fill(buffer);
-	}
+	if (adts_find_frame(buffer) == 0)
+		return;
 
 	/* initialize it */
 
