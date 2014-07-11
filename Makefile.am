@@ -151,6 +151,7 @@ libmpd_a_SOURCES = \
 	src/playlist/PlaylistSong.cxx src/playlist/PlaylistSong.hxx \
 	src/playlist/PlaylistQueue.cxx src/playlist/PlaylistQueue.hxx \
 	src/playlist/Print.cxx src/playlist/Print.hxx \
+	src/BulkEdit.hxx \
 	src/db/PlaylistVector.cxx src/db/PlaylistVector.hxx \
 	src/db/PlaylistInfo.hxx \
 	src/queue/IdTable.hxx \

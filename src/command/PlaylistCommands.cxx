@@ -26,6 +26,7 @@
 #include "PlaylistFile.hxx"
 #include "db/PlaylistVector.hxx"
 #include "SongLoader.hxx"
+#include "BulkEdit.hxx"
 #include "playlist/PlaylistQueue.hxx"
 #include "playlist/Print.hxx"
 #include "queue/Playlist.hxx"
@@ -65,6 +66,8 @@ handle_load(Client &client, unsigned argc, char *argv[])
 		end_index = unsigned(-1);
 	} else if (!check_range(client, &start_index, &end_index, argv[2]))
 		return CommandResult::ERROR;
+
+	const ScopeBulkEdit bulk_edit(client.partition);
 
 	Error error;
 	const SongLoader loader(client);

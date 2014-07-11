@@ -55,7 +55,7 @@ struct AudioFileInputStream {
 
 	size_t Read(void *buffer, size_t size) {
 		/* libaudiofile does not like partial reads at all,
-		   and wil abort playback; therefore always force full
+		   and will abort playback; therefore always force full
 		   reads */
 		return decoder_read_full(decoder, is, buffer, size)
 			? size
@@ -118,9 +118,11 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset _offset,
 	if (is_relative)
 		offset += is.GetOffset();
 
-	if (is.LockSeek(offset, IgnoreError())) {
+	Error error;
+	if (is.LockSeek(offset, error)) {
 		return is.GetOffset();
 	} else {
+		LogError(error, "Seek failed");
 		return -1;
 	}
 }

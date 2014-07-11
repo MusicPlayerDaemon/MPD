@@ -38,6 +38,12 @@
 void
 playlist::OnModified()
 {
+	if (bulk_edit) {
+		/* postponed to CommitBulk() */
+		bulk_modified = true;
+		return;
+	}
+
 	queue.IncrementVersion();
 
 	idle_add(IDLE_PLAYLIST);
@@ -50,6 +56,35 @@ playlist::Clear(PlayerControl &pc)
 
 	queue.Clear();
 	current = -1;
+
+	OnModified();
+}
+
+void
+playlist::BeginBulk()
+{
+	assert(!bulk_edit);
+
+	bulk_edit = true;
+	bulk_modified = false;
+}
+
+void
+playlist::CommitBulk(PlayerControl &pc)
+{
+	assert(bulk_edit);
+
+	bulk_edit = false;
+	if (!bulk_modified)
+		return;
+
+	if (queued < 0)
+		/* if no song was queued, UpdateQueuedSong() is being
+		   ignored in "bulk" edit mode; now that we have
+		   shuffled all new songs, we can pick a random one
+		   (instead of always picking the first one that was
+		   added) */
+		UpdateQueuedSong(pc, nullptr);
 
 	OnModified();
 }

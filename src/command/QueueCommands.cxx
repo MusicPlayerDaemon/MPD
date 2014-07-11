@@ -28,6 +28,7 @@
 #include "PlaylistPrint.hxx"
 #include "client/Client.hxx"
 #include "Partition.hxx"
+#include "BulkEdit.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
@@ -74,6 +75,8 @@ handle_add(Client &client, gcc_unused unsigned argc, char *argv[])
 	}
 
 #ifdef ENABLE_DATABASE
+	const ScopeBulkEdit bulk_edit(client.partition);
+
 	const DatabaseSelection selection(uri, true);
 	Error error;
 	return AddFromDatabase(client.partition, selection, error)

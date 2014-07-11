@@ -56,6 +56,9 @@ ver 0.18.12 (not yet released)
   - audiofile: improve responsiveness
   - audiofile: fix WAV stream playback
   - dsdiff, dsf: fix stream playback
+  - sndfile: improve responsiveness
+* randomize next song when enabling "random" mode while not playing
+* randomize next song when adding to single-song queue
 
 ver 0.18.11 (2014/05/12)
 * decoder
