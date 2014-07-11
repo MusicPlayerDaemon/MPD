@@ -76,12 +76,6 @@ decoder_buffer_get_stream(const DecoderBuffer *buffer)
 }
 
 bool
-decoder_buffer_is_empty(const DecoderBuffer *buffer)
-{
-	return buffer->consumed == buffer->length;
-}
-
-bool
 decoder_buffer_is_full(const DecoderBuffer *buffer)
 {
 	return buffer->consumed == 0 && buffer->length == buffer->size;
