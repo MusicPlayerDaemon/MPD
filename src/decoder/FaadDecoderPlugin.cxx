@@ -140,6 +140,8 @@ adts_song_duration(DecoderBuffer *buffer)
 			assert(frame_length <= buffer_length);
 
 			sample_rate = adts_sample_rates[(data[2] & 0x3c) >> 2];
+			if (sample_rate == 0)
+				break;
 		}
 
 		decoder_buffer_consume(buffer, frame_length);
