@@ -46,6 +46,18 @@ struct playlist {
 	bool stop_on_error;
 
 	/**
+	 * If true, then a bulk edit has been initiated by
+	 * BeginBulk(), and UpdateQueuedSong() and OnModified() will
+	 * be postponed until CommitBulk()
+	 */
+	bool bulk_edit;
+
+	/**
+	 * Has the queue been modified during bulk edit mode?
+	 */
+	bool bulk_modified;
+
+	/**
 	 * Number of errors since playback was started.  If this
 	 * number exceeds the length of the playlist, MPD gives up,
 	 * because all songs have been tried.
@@ -69,7 +81,9 @@ struct playlist {
 	int queued;
 
 	playlist(unsigned max_length)
-		:queue(max_length), playing(false), current(-1), queued(-1) {
+		:queue(max_length), playing(false),
+		 bulk_edit(false),
+		 current(-1), queued(-1) {
 	}
 
 	~playlist() {
@@ -126,6 +140,9 @@ protected:
 	void UpdateQueuedSong(PlayerControl &pc, const Song *prev);
 
 public:
+	void BeginBulk();
+	void CommitBulk(PlayerControl &pc);
+
 	void Clear(PlayerControl &pc);
 
 	/**

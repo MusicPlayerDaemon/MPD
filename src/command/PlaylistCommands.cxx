@@ -26,6 +26,7 @@
 #include "PlaylistFile.hxx"
 #include "PlaylistVector.hxx"
 #include "PlaylistQueue.hxx"
+#include "BulkEdit.hxx"
 #include "TimePrint.hxx"
 #include "Client.hxx"
 #include "protocol/ArgParser.hxx"
@@ -66,6 +67,8 @@ handle_load(Client &client, int argc, char *argv[])
 		end_index = unsigned(-1);
 	} else if (!check_range(client, &start_index, &end_index, argv[2]))
 		return CommandResult::ERROR;
+
+	const ScopeBulkEdit bulk_edit(client.partition);
 
 	const PlaylistResult result =
 		playlist_open_into_queue(argv[1],

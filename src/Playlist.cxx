@@ -103,6 +103,12 @@ playlist::UpdateQueuedSong(PlayerControl &pc, const Song *prev)
 	if (!playing)
 		return;
 
+	if (prev == nullptr && bulk_edit)
+		/* postponed until CommitBulk() to avoid always
+		   queueing the first song that is being added (in
+		   random mode) */
+		return;
+
 	assert(!queue.IsEmpty());
 	assert((queued < 0) == (prev == nullptr));
 

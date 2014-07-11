@@ -28,6 +28,7 @@
 #include "ClientFile.hxx"
 #include "Client.hxx"
 #include "Partition.hxx"
+#include "BulkEdit.hxx"
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
@@ -72,6 +73,8 @@ handle_add(Client &client, gcc_unused int argc, char *argv[])
 		auto result = client.partition.AppendURI(uri);
 		return print_playlist_result(client, result);
 	}
+
+	const ScopeBulkEdit bulk_edit(client.partition);
 
 	const DatabaseSelection selection(uri, true);
 	Error error;

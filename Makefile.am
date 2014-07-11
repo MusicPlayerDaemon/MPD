@@ -181,6 +181,7 @@ src_mpd_SOURCES = \
 	src/PlaylistInfo.hxx \
 	src/PlaylistDatabase.cxx src/PlaylistDatabase.hxx \
 	src/PlaylistUpdate.cxx \
+	src/BulkEdit.hxx \
 	src/IdTable.hxx \
 	src/Queue.cxx src/Queue.hxx \
 	src/QueuePrint.cxx src/QueuePrint.hxx \

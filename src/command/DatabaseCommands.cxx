@@ -30,6 +30,7 @@
 #include "util/Error.hxx"
 #include "SongFilter.hxx"
 #include "protocol/Result.hxx"
+#include "BulkEdit.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -91,6 +92,8 @@ handle_match_add(Client &client, int argc, char *argv[], bool fold_case)
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
+
+	const ScopeBulkEdit bulk_edit(client.partition);
 
 	const DatabaseSelection selection("", true, &filter);
 	Error error;
