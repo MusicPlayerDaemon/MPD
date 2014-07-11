@@ -36,7 +36,11 @@ struct SndfileInputStream {
 	InputStream &is;
 
 	size_t Read(void *buffer, size_t size) {
-		return decoder_read(decoder, is, buffer, size);
+		/* libsndfile chokes on partial reads; therefore
+		   always force full reads */
+		return decoder_read_full(decoder, is, buffer, size)
+			? size
+			: 0;
 	}
 };
 
@@ -69,21 +73,7 @@ sndfile_vio_read(void *ptr, sf_count_t count, void *user_data)
 {
 	SndfileInputStream &sis = *(SndfileInputStream *)user_data;
 
-	sf_count_t total_bytes = 0;
-
-	/* this loop is necessary because libsndfile chokes on partial
-	   reads */
-
-	do {
-		size_t nbytes = sis.Read((char *)ptr + total_bytes,
-					 count - total_bytes);
-		if (nbytes == 0)
-			return -1;
-
-		total_bytes += nbytes;
-	} while (total_bytes < count);
-
-	return total_bytes;
+	return sis.Read(ptr, count);
 }
 
 static sf_count_t
