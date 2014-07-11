@@ -186,8 +186,7 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 			return -1;
 	}
 
-	if (length >= 2 &&
-	    data[0] == 0xFF && ((data[1] & 0xF6) == 0xF0)) {
+	if (length >= 8 && adts_check_frame(data) > 0) {
 		/* obtain the duration from the ADTS header */
 
 		if (!is.IsSeekable())
