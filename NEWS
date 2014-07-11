@@ -23,6 +23,7 @@ ver 0.19 (not yet released)
   - read tags from songs in an archive
 * input
   - alsa: new input plugin
+  - curl: options "verify_peer" and "verify_host"
   - mms: non-blocking I/O
   - nfs: new input plugin
   - smbclient: new input plugin

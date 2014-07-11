@@ -245,6 +245,8 @@ static struct curl_slist *http_200_aliases;
 static const char *proxy, *proxy_user, *proxy_password;
 static unsigned proxy_port;
 
+static bool verify_peer, verify_host;
+
 static CurlMulti *curl_multi;
 
 static constexpr Domain http_domain("http");
@@ -562,6 +564,9 @@ input_curl_init(const config_param &param, Error &error)
 						   "");
 	}
 
+	verify_peer = param.GetBlockValue("verify_peer", true);
+	verify_host = param.GetBlockValue("verify_host", true);
+
 	CURLM *multi = curl_multi_init();
 	if (multi == nullptr) {
 		curl_slist_free_all(http_200_aliases);
@@ -739,6 +744,9 @@ CurlInputStream::InitEasy(Error &error)
 			 proxy_user, proxy_password);
 		curl_easy_setopt(easy, CURLOPT_PROXYUSERPWD, proxy_auth_str);
 	}
+
+	curl_easy_setopt(easy, CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
+	curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
 
 	CURLcode code = curl_easy_setopt(easy, CURLOPT_URL, GetURI());
 	if (code != CURLE_OK) {

@@ -1106,6 +1106,30 @@ systemctl start mpd.socket</programlisting>
                   Configures proxy authentication.
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>verify_peer</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Verify the peer's SSL certificate?  <ulink
+                  url="http://curl.haxx.se/libcurl/c/CURLOPT_SSL_VERIFYPEER.html">More
+                  information</ulink>.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>verify_host</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Verify the certificate's name against host?  <ulink
+                  url="http://curl.haxx.se/libcurl/c/CURLOPT_SSL_VERIFYHOST.html">More
+                  information</ulink>.
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>
