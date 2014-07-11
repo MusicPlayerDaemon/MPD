@@ -156,4 +156,6 @@ decoder_replay_gain(gcc_unused Decoder &decoder,
 void
 decoder_mixramp(gcc_unused Decoder &decoder, gcc_unused MixRampInfo &&mix_ramp)
 {
+	fprintf(stderr, "MixRamp: start='%s' end='%s'\n",
+		mix_ramp.GetStart(), mix_ramp.GetEnd());
 }
