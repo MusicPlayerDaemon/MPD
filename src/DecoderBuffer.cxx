@@ -70,6 +70,12 @@ decoder_buffer_free(DecoderBuffer *buffer)
 	g_free(buffer);
 }
 
+const InputStream &
+decoder_buffer_get_stream(const DecoderBuffer *buffer)
+{
+	return *buffer->is;
+}
+
 bool
 decoder_buffer_is_empty(const DecoderBuffer *buffer)
 {

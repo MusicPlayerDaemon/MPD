@@ -53,6 +53,10 @@ void
 decoder_buffer_free(DecoderBuffer *buffer);
 
 gcc_pure
+const InputStream &
+decoder_buffer_get_stream(const DecoderBuffer *buffer);
+
+gcc_pure
 bool
 decoder_buffer_is_empty(const DecoderBuffer *buffer);
 
