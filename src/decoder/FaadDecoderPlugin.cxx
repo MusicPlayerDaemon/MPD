@@ -192,9 +192,7 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 		float song_length = adts_song_duration(buffer);
 
 		is.LockSeek(tagsize, SEEK_SET, IgnoreError());
-
 		decoder_buffer_clear(buffer);
-		decoder_buffer_fill(buffer);
 
 		return song_length;
 	} else if (length >= 5 && memcmp(data, "ADIF", 4) == 0) {
