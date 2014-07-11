@@ -234,21 +234,22 @@ static constexpr struct {
 };
 
 static bool
-sndfile_scan_file(Path path_fs,
-		  const struct tag_handler *handler, void *handler_ctx)
+sndfile_scan_stream(InputStream &is,
+		    const struct tag_handler *handler, void *handler_ctx)
 {
 	SF_INFO info;
 
 	info.format = 0;
 
-	SNDFILE *const sf = sf_open(path_fs.c_str(), SFM_READ, &info);
+	SndfileInputStream sis{nullptr, is};
+	SNDFILE *const sf = sf_open_virtual(&vio, SFM_READ, &info, &sis);
 	if (sf == nullptr)
 		return false;
 
 	if (!audio_valid_sample_rate(info.samplerate)) {
 		sf_close(sf);
 		FormatWarning(sndfile_domain,
-			      "Invalid sample rate in %s", path_fs.c_str());
+			      "Invalid sample rate in %s", is.GetURI());
 		return false;
 	}
 
@@ -299,8 +300,8 @@ const struct DecoderPlugin sndfile_decoder_plugin = {
 	nullptr,
 	sndfile_stream_decode,
 	nullptr,
-	sndfile_scan_file,
 	nullptr,
+	sndfile_scan_stream,
 	nullptr,
 	sndfile_suffixes,
 	sndfile_mime_types,
