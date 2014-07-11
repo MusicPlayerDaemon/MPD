@@ -44,8 +44,11 @@ sndfile_vio_seek(sf_count_t offset, int whence, void *user_data)
 {
 	InputStream &is = *(InputStream *)user_data;
 
-	if (!is.LockSeek(offset, whence, IgnoreError()))
+	Error error;
+	if (!is.LockSeek(offset, whence, error)) {
+		LogError(error, "Seek failed");
 		return -1;
+	}
 
 	return is.GetOffset();
 }
