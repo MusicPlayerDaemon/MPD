@@ -34,8 +34,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define AAC_MAX_CHANNELS	6
-
 static const unsigned adts_sample_rates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
 	16000, 12000, 11025, 8000, 7350, 0, 0, 0
@@ -310,7 +308,7 @@ faad_get_file_time_float(InputStream &is)
 	float length;
 
 	buffer = decoder_buffer_new(nullptr, is,
-				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
+				    FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 	length = faad_song_duration(buffer, is);
 
 	if (length < 0) {
@@ -366,7 +364,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	DecoderBuffer *buffer;
 
 	buffer = decoder_buffer_new(&mpd_decoder, is,
-				    FAAD_MIN_STREAMSIZE * AAC_MAX_CHANNELS);
+				    FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 	total_time = faad_song_duration(buffer, is);
 
 	/* create the libfaad decoder */
