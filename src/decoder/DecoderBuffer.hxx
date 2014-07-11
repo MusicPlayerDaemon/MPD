@@ -91,6 +91,13 @@ ConstBuffer<void>
 decoder_buffer_read(const DecoderBuffer *buffer);
 
 /**
+ * Wait until this number of bytes are available.  Returns nullptr on
+ * error.
+ */
+ConstBuffer<void>
+decoder_buffer_need(DecoderBuffer *buffer, size_t min_size);
+
+/**
  * Consume (delete, invalidate) a part of the buffer.  The "nbytes"
  * parameter must not be larger than the length returned by
  * decoder_buffer_read().

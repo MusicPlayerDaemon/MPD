@@ -66,15 +66,10 @@ static size_t
 adts_find_frame(DecoderBuffer *buffer)
 {
 	while (true) {
-		auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
-		if (data.size < 8) {
-			/* not enough data yet */
-			if (!decoder_buffer_fill(buffer))
-				/* failed */
-				return 0;
-
-			continue;
-		}
+		auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 8));
+		if (data.IsNull())
+			/* failed */
+			return 0;
 
 		/* find the 0xff marker */
 		const uint8_t *p = (const uint8_t *)
@@ -100,17 +95,10 @@ adts_find_frame(DecoderBuffer *buffer)
 			continue;
 		}
 
-		if (data.size < frame_length) {
-			/* available buffer size is smaller than the
-			   frame will be - attempt to read more
-			   data */
-			if (!decoder_buffer_fill(buffer)) {
-				/* not enough data; discard this frame
-				   to prevent a possible buffer
-				   overflow */
-				decoder_buffer_clear(buffer);
-			}
-
+		if (decoder_buffer_need(buffer, frame_length).IsNull()) {
+			/* not enough data; discard this frame to
+			   prevent a possible buffer overflow */
+			decoder_buffer_clear(buffer);
 			continue;
 		}
 
@@ -181,9 +169,8 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 	const auto size = is.GetSize();
 	const size_t fileread = size >= 0 ? size : 0;
 
-	decoder_buffer_fill(buffer);
-	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
-	if (data.IsEmpty())
+	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 5));
+	if (data.IsNull())
 		return -1;
 
 	size_t tagsize = 0;
@@ -195,13 +182,11 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 
 		tagsize += 10;
 
-		const bool success = decoder_buffer_skip(buffer, tagsize) &&
-			decoder_buffer_fill(buffer);
-		if (!success)
+		if (!decoder_buffer_skip(buffer, tagsize))
 			return -1;
 
-		data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
-		if (data.IsEmpty())
+		data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 5));
+		if (data.IsNull())
 			return -1;
 	}
 

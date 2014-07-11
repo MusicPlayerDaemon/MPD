@@ -117,19 +117,38 @@ decoder_buffer_fill(DecoderBuffer *buffer)
 	return true;
 }
 
+static const void *
+decoder_buffer_head(const DecoderBuffer *buffer)
+{
+	return buffer->data + buffer->consumed;
+}
+
 size_t
 decoder_buffer_available(const DecoderBuffer *buffer)
 {
-	return buffer->length - buffer->consumed;;
+	return buffer->length - buffer->consumed;
 }
 
 ConstBuffer<void>
 decoder_buffer_read(const DecoderBuffer *buffer)
 {
 	return {
-		buffer->data + buffer->consumed,
-		buffer->length - buffer->consumed
+		decoder_buffer_head(buffer),
+		decoder_buffer_available(buffer),
 	};
+}
+
+ConstBuffer<void>
+decoder_buffer_need(DecoderBuffer *buffer, size_t min_size)
+{
+	while (true) {
+		const auto available = decoder_buffer_available(buffer);
+		if (available >= min_size)
+			return { decoder_buffer_head(buffer), available };
+
+		if (!decoder_buffer_fill(buffer))
+			return nullptr;
+	}
 }
 
 void
