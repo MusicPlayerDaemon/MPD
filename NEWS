@@ -33,6 +33,7 @@ ver 0.19 (not yet released)
   - vorbis, flac, opus: honor DESCRIPTION= tag in Xiph-based files as a comment to the song
   - audiofile: support scanning remote files
   - audiofile: log libaudiofile errors
+  - sndfile: support tags "comment", "album", "track", "genre"
 * encoder:
   - shine: new encoder plugin
 * threads:

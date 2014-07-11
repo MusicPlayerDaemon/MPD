@@ -228,7 +228,11 @@ static constexpr struct {
 } sndfile_tags[] = {
 	{ SF_STR_TITLE, TAG_TITLE },
 	{ SF_STR_ARTIST, TAG_ARTIST },
+	{ SF_STR_COMMENT, TAG_COMMENT },
 	{ SF_STR_DATE, TAG_DATE },
+	{ SF_STR_ALBUM, TAG_ALBUM },
+	{ SF_STR_TRACKNUMBER, TAG_TRACK },
+	{ SF_STR_GENRE, TAG_GENRE },
 };
 
 static bool
