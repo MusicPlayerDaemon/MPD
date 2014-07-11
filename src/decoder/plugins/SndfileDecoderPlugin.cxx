@@ -222,6 +222,15 @@ sndfile_handle_tag(SNDFILE *sf, int str, TagType tag,
 		tag_handler_invoke_tag(handler, handler_ctx, tag, value);
 }
 
+static constexpr struct {
+	int8_t str;
+	TagType tag;
+} sndfile_tags[] = {
+	{ SF_STR_TITLE, TAG_TITLE },
+	{ SF_STR_ARTIST, TAG_ARTIST },
+	{ SF_STR_DATE, TAG_DATE },
+};
+
 static bool
 sndfile_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
@@ -245,9 +254,8 @@ sndfile_scan_file(Path path_fs,
 	tag_handler_invoke_duration(handler, handler_ctx,
 				    info.frames / info.samplerate);
 
-	sndfile_handle_tag(sf, SF_STR_TITLE, TAG_TITLE, handler, handler_ctx);
-	sndfile_handle_tag(sf, SF_STR_ARTIST, TAG_ARTIST, handler, handler_ctx);
-	sndfile_handle_tag(sf, SF_STR_DATE, TAG_DATE, handler, handler_ctx);
+	for (auto i : sndfile_tags)
+		sndfile_handle_tag(sf, i.str, i.tag, handler, handler_ctx);
 
 	sf_close(sf);
 
