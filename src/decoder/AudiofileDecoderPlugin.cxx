@@ -110,6 +110,7 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset offset, int is_relative)
 
 	Error error;
 	if (is.LockSeek(offset, whence, error)) {
+		LogError(error, "Seek failed");
 		return is.GetOffset();
 	} else {
 		return -1;
