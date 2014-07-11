@@ -153,7 +153,7 @@ playlist::PlayNext(PlayerControl &pc)
 			queue.ShuffleOrder();
 
 			/* note that current and queued are
-			   now invalid, but playlist_play_order() will
+			   now invalid, but PlayOrder() will
 			   discard them anyway */
 		}
 
