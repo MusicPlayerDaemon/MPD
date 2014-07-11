@@ -122,6 +122,12 @@ adts_find_frame(DecoderBuffer *buffer)
 static float
 adts_song_duration(DecoderBuffer *buffer)
 {
+	const InputStream &is = decoder_buffer_get_stream(buffer);
+	const bool estimate = !is.CheapSeeking();
+	const auto file_size = is.GetSize();
+	if (estimate && file_size <= 0)
+		return -1;
+
 	unsigned sample_rate = 0;
 
 	/* Read all frames to ensure correct time and bitrate */
@@ -145,6 +151,22 @@ adts_song_duration(DecoderBuffer *buffer)
 		}
 
 		decoder_buffer_consume(buffer, frame_length);
+
+		if (estimate && frames == 128) {
+			/* if this is a remote file, don't slurp the
+			   whole file just for checking the song
+			   duration; instead, stop after some time and
+			   extrapolate the song duration from what we
+			   have until now */
+
+			const auto offset = is.GetOffset()
+				- decoder_buffer_available(buffer);
+			if (offset <= 0)
+				return -1;
+
+			frames = (frames * file_size) / offset;
+			break;
+		}
 	}
 
 	if (sample_rate == 0)
