@@ -294,7 +294,9 @@ playlist::SetRandom(PlayerControl &pc, bool status)
 	if (queue.random) {
 		/* shuffle the queue order, but preserve current */
 
-		const int current_position = GetCurrentPosition();
+		const int current_position = playing
+			? GetCurrentPosition()
+			: -1;
 
 		queue.ShuffleOrder();
 
