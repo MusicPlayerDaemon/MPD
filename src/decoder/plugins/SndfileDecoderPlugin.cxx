@@ -32,6 +32,13 @@
 
 static constexpr Domain sndfile_domain("sndfile");
 
+static bool
+sndfile_init(gcc_unused const config_param &param)
+{
+       LogDebug(sndfile_domain, sf_version_string());
+       return true;
+}
+
 struct SndfileInputStream {
 	Decoder *const decoder;
 	InputStream &is;
@@ -282,7 +289,7 @@ static const char *const sndfile_mime_types[] = {
 
 const struct DecoderPlugin sndfile_decoder_plugin = {
 	"sndfile",
-	nullptr,
+	sndfile_init,
 	nullptr,
 	sndfile_stream_decode,
 	nullptr,
