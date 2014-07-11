@@ -105,7 +105,7 @@ playlist::AppendSong(PlayerControl &pc, DetachedSong &&song, Error &error)
 	id = queue.Append(std::move(song), 0);
 
 	if (queue.random) {
-		/* shuffle the new song into the list of remaning
+		/* shuffle the new song into the list of remaining
 		   songs to play */
 
 		unsigned start;
