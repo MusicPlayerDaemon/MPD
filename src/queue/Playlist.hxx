@@ -225,6 +225,14 @@ public:
 	PlaylistResult SetPriorityId(PlayerControl &pc,
 				     unsigned song_id, uint8_t priority);
 
+	/**
+	 * Sets the start_ms and end_ms attributes on the song
+	 * with the specified id.
+	 */
+	bool SetSongIdRange(PlayerControl &pc, unsigned id,
+			    unsigned start_ms, unsigned end_ms,
+			    Error &error);
+
 	bool AddSongIdTag(unsigned id, TagType tag_type, const char *value,
 			  Error &error);
 	bool ClearSongIdTag(unsigned id, TagType tag_type, Error &error);

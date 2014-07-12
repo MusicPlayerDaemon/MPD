@@ -1213,6 +1213,28 @@ OK
           </listitem>
         </varlistentry>
 
+        <varlistentry id="command_rangeid">
+          <term>
+            <cmdsynopsis>
+              <command>rangeid</command>
+              <arg choice="req"><replaceable>ID</replaceable></arg>
+              <arg choice="req"><replaceable>START:END</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              <footnote id="since_0_19"><simpara>Since MPD
+              0.19</simpara></footnote> Specifies the portion of the
+              song that shall be played.  <varname>START</varname> and
+              <varname>END</varname> are offsets in seconds
+              (fractional seconds allowed); both are optional.
+              Omitting both (i.e. sending just ":") means "remove the
+              range, play everything".  A song that is currently
+              playing cannot be manipulated this way.
+            </para>
+          </listitem>
+        </varlistentry>
+
         <varlistentry id="command_shuffle">
           <term>
             <cmdsynopsis>

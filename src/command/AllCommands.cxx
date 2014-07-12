@@ -150,6 +150,7 @@ static const struct command commands[] = {
 	{ "prio", PERMISSION_CONTROL, 2, -1, handle_prio },
 	{ "prioid", PERMISSION_CONTROL, 2, -1, handle_prioid },
 	{ "random", PERMISSION_CONTROL, 1, 1, handle_random },
+	{ "rangeid", PERMISSION_ADD, 2, 2, handle_rangeid },
 	{ "readcomments", PERMISSION_READ, 1, 1, handle_read_comments },
 	{ "readmessages", PERMISSION_READ, 0, 0, handle_read_messages },
 	{ "rename", PERMISSION_CONTROL, 2, 2, handle_rename },

@@ -31,6 +31,9 @@ CommandResult
 handle_addid(Client &client, unsigned argc, char *argv[]);
 
 CommandResult
+handle_rangeid(Client &client, unsigned argc, char *argv[]);
+
+CommandResult
 handle_delete(Client &client, unsigned argc, char *argv[]);
 
 CommandResult

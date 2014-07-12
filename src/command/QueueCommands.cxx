@@ -34,6 +34,7 @@
 #include "ls.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/UriUtil.hxx"
+#include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
 
@@ -115,6 +116,59 @@ handle_addid(Client &client, unsigned argc, char *argv[])
 	}
 
 	client_printf(client, "Id: %u\n", added_id);
+	return CommandResult::OK;
+}
+
+/**
+ * Parse a string in the form "START:END", both being (optional)
+ * fractional non-negative time offsets in seconds.  Returns both in
+ * integer milliseconds.  Omitted values are zero.
+ */
+static bool
+parse_time_range(const char *p, unsigned &start_ms, unsigned &end_ms)
+{
+	char *endptr;
+
+	const float start = ParseFloat(p, &endptr);
+	if (*endptr != ':' || start < 0)
+		return false;
+
+	start_ms = endptr > p
+		? unsigned(start * 1000u)
+		: 0u;
+
+	p = endptr + 1;
+
+	const float end = ParseFloat(p, &endptr);
+	if (*endptr != 0 || end < 0)
+		return false;
+
+	end_ms = endptr > p
+		? unsigned(end * 1000u)
+		: 0u;
+
+	return end_ms == 0 || end_ms > start_ms;
+}
+
+CommandResult
+handle_rangeid(Client &client, gcc_unused unsigned argc, char *argv[])
+{
+	unsigned id;
+	if (!check_unsigned(client, &id, argv[1]))
+		return CommandResult::ERROR;
+
+	unsigned start_ms, end_ms;
+	if (!parse_time_range(argv[2], start_ms, end_ms)) {
+		command_error(client, ACK_ERROR_ARG, "Bad range");
+		return CommandResult::ERROR;
+	}
+
+	Error error;
+	if (!client.partition.playlist.SetSongIdRange(client.partition.pc,
+						      id, start_ms, end_ms,
+						      error))
+		return print_error(client, error);
+
 	return CommandResult::OK;
 }
 

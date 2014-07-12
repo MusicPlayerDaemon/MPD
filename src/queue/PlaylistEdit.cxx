@@ -431,3 +431,60 @@ playlist::Shuffle(PlayerControl &pc, unsigned start, unsigned end)
 	UpdateQueuedSong(pc, queued_song);
 	OnModified();
 }
+
+bool
+playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
+			 unsigned start_ms, unsigned end_ms,
+			 Error &error)
+{
+	assert(end_ms == 0 || start_ms < end_ms);
+
+	int position = queue.IdToPosition(id);
+	if (position < 0) {
+		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
+			  "No such song");
+		return false;
+	}
+
+	if (playing) {
+		if (position == current) {
+			error.Set(playlist_domain, int(PlaylistResult::DENIED),
+				  "Cannot edit the current song");
+			return false;
+		}
+
+		if (position == queued) {
+			/* if we're manipulating the "queued" song,
+			   the decoder thread may be decoding it
+			   already; cancel that */
+			pc.Cancel();
+			queued = -1;
+		}
+	}
+
+	DetachedSong &song = queue.Get(position);
+	if (song.GetTag().time > 0) {
+		/* validate the offsets */
+
+		const unsigned duration = song.GetTag().time;
+		if (start_ms / 1000u > duration) {
+			error.Set(playlist_domain,
+				  int(PlaylistResult::BAD_RANGE),
+				  "Invalid start offset");
+			return false;
+		}
+
+		if (end_ms / 1000u > duration)
+			end_ms = 0;
+	}
+
+	/* edit it */
+	song.SetStartMS(start_ms);
+	song.SetEndMS(end_ms);
+
+	/* announce the change to all interested subsystems */
+	UpdateQueuedSong(pc, nullptr);
+	queue.ModifyAtPosition(position);
+	OnModified();
+	return true;
+}
