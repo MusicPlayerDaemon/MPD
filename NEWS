@@ -17,6 +17,7 @@ ver 0.19 (not yet released)
   - nfs: new plugin
   - smbclient: new plugin
 * playlist
+  - cue: fix bogus duration of the last track
   - soundcloud: use https instead of http
   - soundcloud: add default API key
 * archive

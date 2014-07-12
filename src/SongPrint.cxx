@@ -114,5 +114,9 @@ song_print_info(Client &client, const DetachedSong &song, bool base)
 	if (song.GetLastModified() > 0)
 		time_print(client, "Last-Modified", song.GetLastModified());
 
-	tag_print(client, song.GetTag());
+	tag_print_values(client, song.GetTag());
+
+	double duration = song.GetDuration();
+	if (duration >= 0)
+		client_printf(client, "Time: %u\n", unsigned(duration + 0.5));
 }
