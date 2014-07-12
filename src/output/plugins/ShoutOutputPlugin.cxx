@@ -470,13 +470,13 @@ shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
 	artist[0] = 0;
 	title[0] = 0;
 
-	for (unsigned i = 0; i < tag->num_items; i++) {
-		switch (tag->items[i]->type) {
+	for (const auto &item : *tag) {
+		switch (item.type) {
 		case TAG_ARTIST:
-			strncpy(artist, tag->items[i]->value, size);
+			strncpy(artist, item.value, size);
 			break;
 		case TAG_TITLE:
-			strncpy(title, tag->items[i]->value, size);
+			strncpy(title, item.value, size);
 			break;
 
 		default:

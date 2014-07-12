@@ -118,9 +118,9 @@ Tag::GetValue(TagType type) const
 {
 	assert(type < TAG_NUM_OF_ITEM_TYPES);
 
-	for (unsigned i = 0; i < num_items; i++)
-		if (items[i]->type == type)
-			return items[i]->value;
+	for (const auto &item : *this)
+		if (item.type == type)
+			return item.value;
 
 	return nullptr;
 }

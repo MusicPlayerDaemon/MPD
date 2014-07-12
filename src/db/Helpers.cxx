@@ -43,9 +43,7 @@ StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 	if (tag.time > 0)
 		stats.total_duration += tag.time;
 
-	for (unsigned i = 0; i < tag.num_items; ++i) {
-		const TagItem &item = *tag.items[i];
-
+	for (const auto &item : tag) {
 		switch (item.type) {
 		case TAG_ARTIST:
 #if defined(__clang__) || GCC_CHECK_VERSION(4,8)

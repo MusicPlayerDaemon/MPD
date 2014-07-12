@@ -73,9 +73,7 @@ static bool
 CollectGroupCounts(TagCountMap &map, TagType group, const Tag &tag)
 {
 	bool found = false;
-	for (unsigned i = 0; i < tag.num_items; ++i) {
-		const TagItem &item = *tag.items[i];
-
+	for (const auto &item : tag) {
 		if (item.type == group) {
 			auto r = map.insert(std::make_pair(item.value,
 							   SearchStats()));

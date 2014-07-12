@@ -160,8 +160,7 @@ ToString(const Tag &tag)
 
 	std::string result = buffer;
 
-	for (unsigned i = 0, n = tag.num_items; i != n; ++i) {
-		const TagItem &item = *tag.items[i];
+	for (const auto &item : tag) {
 		result.push_back('|');
 		result.append(tag_item_names[item.type]);
 		result.push_back('=');

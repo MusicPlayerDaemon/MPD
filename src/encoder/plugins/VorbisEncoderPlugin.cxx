@@ -272,8 +272,7 @@ vorbis_encoder_pre_tag(Encoder *_encoder, gcc_unused Error &error)
 static void
 copy_tag_to_vorbis_comment(vorbis_comment *vc, const Tag *tag)
 {
-	for (unsigned i = 0; i < tag->num_items; i++) {
-		const TagItem &item = *tag->items[i];
+	for (const auto &item : *tag) {
 		char *name = g_ascii_strup(tag_item_names[item.type], -1);
 		vorbis_comment_add_tag(vc, name, item.value);
 		g_free(name);

@@ -92,10 +92,10 @@ SongFilter::Item::Match(const Tag &_tag) const
 	bool visited_types[TAG_NUM_OF_ITEM_TYPES];
 	std::fill_n(visited_types, size_t(TAG_NUM_OF_ITEM_TYPES), false);
 
-	for (unsigned i = 0; i < _tag.num_items; i++) {
-		visited_types[_tag.items[i]->type] = true;
+	for (const auto &i : _tag) {
+		visited_types[i.type] = true;
 
-		if (Match(*_tag.items[i]))
+		if (Match(i))
 			return true;
 	}
 
@@ -112,12 +112,10 @@ SongFilter::Item::Match(const Tag &_tag) const
 		if (tag == TAG_ALBUM_ARTIST && visited_types[TAG_ARTIST]) {
 			/* if we're looking for "album artist", but
 			   only "artist" exists, use that */
-			for (unsigned i = 0; i < _tag.num_items; i++) {
-				const TagItem &item = *_tag.items[i];
+			for (const auto &item : _tag)
 				if (item.type == TAG_ARTIST &&
 				    StringMatch(item.value))
 					return true;
-			}
 		}
 	}
 

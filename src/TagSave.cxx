@@ -32,8 +32,7 @@ tag_save(FILE *file, const Tag &tag)
 	if (tag.has_playlist)
 		fprintf(file, "Playlist: yes\n");
 
-	for (unsigned i = 0; i < tag.num_items; i++)
+	for (const auto &i : tag)
 		fprintf(file, "%s: %s\n",
-			tag_item_names[tag.items[i]->type],
-			tag.items[i]->value);
+			tag_item_names[i.type], i.value);
 }

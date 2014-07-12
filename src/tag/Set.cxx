@@ -30,10 +30,10 @@ CopyTagItem(TagBuilder &dest, TagType dest_type,
 	    const Tag &src, TagType src_type)
 {
 	bool found = false;
-	const unsigned n = src.num_items;
-	for (unsigned i = 0; i < n; ++i) {
-		if (src.items[i]->type == src_type) {
-			dest.AddItem(dest_type, src.items[i]->value);
+
+	for (const auto &item : src) {
+		if (item.type == src_type) {
+			dest.AddItem(dest_type, item.value);
 			found = true;
 		}
 	}
@@ -87,11 +87,10 @@ TagSet::CheckUnique(TagType dest_type,
 		    uint32_t group_mask)
 {
 	bool found = false;
-	for (unsigned i = 0; i < tag.num_items; ++i) {
-		if (tag.items[i]->type == src_type) {
-			InsertUnique(tag, dest_type,
-					tag.items[i]->value,
-					group_mask);
+
+	for (const auto &item : tag) {
+		if (item.type == src_type) {
+			InsertUnique(tag, dest_type, item.value, group_mask);
 			found = true;
 		}
 	}

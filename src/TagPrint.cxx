@@ -47,9 +47,7 @@ void tag_print(Client &client, const Tag &tag)
 	if (tag.time >= 0)
 		client_printf(client, SONG_TIME "%i\n", tag.time);
 
-	for (unsigned i = 0; i < tag.num_items; i++) {
+	for (const auto &i : tag)
 		client_printf(client, "%s: %s\n",
-			      tag_item_names[tag.items[i]->type],
-			      tag.items[i]->value);
-	}
+			      tag_item_names[i.type], i.value);
 }

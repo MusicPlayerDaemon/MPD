@@ -374,20 +374,22 @@ RoarOutput::SendTag(const Tag &tag)
 	vals[0].key = const_cast<char *>("LENGTH");
 	vals[0].value = timebuf;
 
-	for (unsigned i = 0; i < tag.num_items && cnt < 32; i++)
-	{
+	for (const auto &item : tag) {
+		if (cnt >= 32)
+			break;
+
 		bool is_uuid = false;
-		const char *key = roar_tag_convert(tag.items[i]->type,
+		const char *key = roar_tag_convert(item.type,
 						   &is_uuid);
 		if (key != nullptr) {
 			vals[cnt].key = const_cast<char *>(key);
 
 			if (is_uuid) {
 				snprintf(uuid_buf[cnt], sizeof(uuid_buf[0]), "{UUID}%s",
-					 tag.items[i]->value);
+					 item.value);
 				vals[cnt].value = uuid_buf[cnt];
 			} else {
-				vals[cnt].value = tag.items[i]->value;
+				vals[cnt].value = const_cast<char *>(item.value);
 			}
 
 			cnt++;

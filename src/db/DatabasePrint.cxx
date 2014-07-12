@@ -184,12 +184,10 @@ PrintUniqueTag(Client &client, TagType tag_type,
 	assert(value != nullptr);
 	client_printf(client, "%s: %s\n", tag_item_names[tag_type], value);
 
-	for (unsigned i = 0, n = tag.num_items; i < n; i++) {
-		const TagItem &item = *tag.items[i];
+	for (const auto &item : tag)
 		if (item.type != tag_type)
 			client_printf(client, "%s: %s\n",
 				      tag_item_names[item.type], item.value);
-	}
 
 	return true;
 }

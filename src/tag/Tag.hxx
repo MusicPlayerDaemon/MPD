@@ -25,6 +25,7 @@
 #include "Compiler.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include <stddef.h>
 
@@ -136,6 +137,59 @@ struct Tag {
 	 */
 	gcc_pure
 	bool HasType(TagType type) const;
+
+	class const_iterator {
+		friend struct Tag;
+		const TagItem *const*cursor;
+
+		constexpr const_iterator(const TagItem *const*_cursor)
+			:cursor(_cursor) {}
+
+	public:
+		constexpr const TagItem &operator*() const {
+			return **cursor;
+		}
+
+		constexpr const TagItem *operator->() const {
+			return *cursor;
+		}
+
+		const_iterator &operator++() {
+			++cursor;
+			return *this;
+		}
+
+		const_iterator operator++(int) {
+			auto result = cursor++;
+			return const_iterator{result};
+		}
+
+		const_iterator &operator--() {
+			--cursor;
+			return *this;
+		}
+
+		const_iterator operator--(int) {
+			auto result = cursor--;
+			return const_iterator{result};
+		}
+
+		constexpr bool operator==(const_iterator other) const {
+			return cursor == other.cursor;
+		}
+
+		constexpr bool operator!=(const_iterator other) const {
+			return cursor != other.cursor;
+		}
+	};
+
+	const_iterator begin() const {
+		return const_iterator{items};
+	}
+
+	const_iterator end() const {
+		return const_iterator{items + num_items};
+	}
 };
 
 /**
