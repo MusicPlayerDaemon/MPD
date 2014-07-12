@@ -165,23 +165,14 @@ decoder_buffer_consume(DecoderBuffer *buffer, size_t nbytes)
 bool
 decoder_buffer_skip(DecoderBuffer *buffer, size_t nbytes)
 {
-	bool success;
-
-	/* this could probably be optimized by seeking */
-
-	while (true) {
-		auto data = decoder_buffer_read(buffer);
-		if (!data.IsEmpty()) {
-			if (data.size > nbytes)
-				data.size = nbytes;
-			decoder_buffer_consume(buffer, data.size);
-			nbytes -= data.size;
-			if (nbytes == 0)
-				return true;
-		}
-
-		success = decoder_buffer_fill(buffer);
-		if (!success)
-			return false;
+	const size_t available = decoder_buffer_available(buffer);
+	if (available >= nbytes) {
+		decoder_buffer_consume(buffer, nbytes);
+		return true;
 	}
+
+	decoder_buffer_clear(buffer);
+	nbytes -= available;
+
+	return decoder_skip(buffer->decoder, *buffer->is, nbytes);
 }
