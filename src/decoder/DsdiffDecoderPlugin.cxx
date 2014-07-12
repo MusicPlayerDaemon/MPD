@@ -294,7 +294,7 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 
 		if (is.GetOffset() < size) {
 			if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
-				return false;
+				break;
 		}
 	}
 	/* done processing chunk headers, process tags if any */
