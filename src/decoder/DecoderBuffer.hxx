@@ -58,10 +58,6 @@ gcc_pure
 const InputStream &
 decoder_buffer_get_stream(const DecoderBuffer *buffer);
 
-gcc_pure
-bool
-decoder_buffer_is_full(const DecoderBuffer *buffer);
-
 void
 decoder_buffer_clear(DecoderBuffer *buffer);
 
