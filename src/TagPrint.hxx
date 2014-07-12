@@ -33,6 +33,9 @@ void
 tag_print(Client &client, TagType type, const char *value);
 
 void
+tag_print_values(Client &client, const Tag &tag);
+
+void
 tag_print(Client &client, const Tag &tag);
 
 #endif

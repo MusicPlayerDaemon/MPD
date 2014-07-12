@@ -42,12 +42,18 @@ tag_print(Client &client, TagType type, const char *value)
 	client_printf(client, "%s: %s\n", tag_item_names[type], value);
 }
 
+void
+tag_print_values(Client &client, const Tag &tag)
+{
+	for (const auto &i : tag)
+		client_printf(client, "%s: %s\n",
+			      tag_item_names[i.type], i.value);
+}
+
 void tag_print(Client &client, const Tag &tag)
 {
 	if (tag.time >= 0)
 		client_printf(client, SONG_TIME "%i\n", tag.time);
 
-	for (const auto &i : tag)
-		client_printf(client, "%s: %s\n",
-			      tag_item_names[i.type], i.value);
+	tag_print_values(client, tag);
 }
