@@ -50,9 +50,14 @@ queue_save_full_song(FILE *fp, const DetachedSong &song)
 static void
 queue_save_song(FILE *fp, int idx, const DetachedSong &song)
 {
-	if (song.IsInDatabase())
+	if (song.IsInDatabase() &&
+	    song.GetStartMS() == 0 && song.GetEndMS() == 0)
+		/* use the brief format (just the URI) for "full"
+		   database songs */
 		queue_save_database_song(fp, idx, song);
 	else
+		/* use the long format (URI, range, tags) for the
+		   rest, so all metadata survives a MPD restart */
 		queue_save_full_song(fp, song);
 }
 

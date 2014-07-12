@@ -18,6 +18,7 @@ ver 0.19 (not yet released)
   - smbclient: new plugin
 * playlist
   - cue: fix bogus duration of the last track
+  - cue: restore CUE tracks from state file
   - soundcloud: use https instead of http
   - soundcloud: add default API key
 * archive
