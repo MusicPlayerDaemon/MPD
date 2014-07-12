@@ -286,10 +286,9 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 			metadata->id3_size = chunk_size;
 		}
 #endif
-		if (chunk_size != 0) {
-			if (!dsdlib_skip(decoder, is, chunk_size))
-				break;
-		}
+
+		if (!dsdlib_skip(decoder, is, chunk_size))
+			break;
 	} while (dsdiff_read_chunk_header(decoder, is, chunk_header));
 
 	/* done processing chunk headers, process tags if any */
