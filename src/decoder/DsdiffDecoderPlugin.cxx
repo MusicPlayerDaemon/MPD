@@ -260,8 +260,7 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 	/* Now process all the remaining chunk headers in the stream
 	   and record their position and size */
 
-	const auto size = is.GetSize();
-	while (is.GetOffset() < size) {
+	do {
 		uint64_t chunk_size = chunk_header->GetSize();
 
 		/* DIIN chunk, is directly followed by other chunks  */
@@ -291,12 +290,8 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 			if (!dsdlib_skip(decoder, is, chunk_size))
 				break;
 		}
+	} while (dsdiff_read_chunk_header(decoder, is, chunk_header));
 
-		if (is.GetOffset() < size) {
-			if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
-				break;
-		}
-	}
 	/* done processing chunk headers, process tags if any */
 
 #ifdef HAVE_ID3TAG
