@@ -60,6 +60,7 @@ ver 0.18.12 (not yet released)
   - audiofile: improve responsiveness
   - audiofile: fix WAV stream playback
   - dsdiff, dsf: fix stream playback
+  - dsdiff: fix metadata parser bug (uninitialized variables)
   - faad: estimate song duration for remote files
   - sndfile: improve responsiveness
 * randomize next song when enabling "random" mode while not playing
