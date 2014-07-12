@@ -33,23 +33,13 @@
 static void
 merge_song_metadata(DetachedSong &add, const DetachedSong &base)
 {
-	{
+	if (base.GetTag().IsDefined()) {
 		TagBuilder builder(add.GetTag());
 		builder.Complement(base.GetTag());
 		add.SetTag(builder.Commit());
 	}
 
 	add.SetLastModified(base.GetLastModified());
-}
-
-static void
-apply_song_metadata(DetachedSong &dest, const DetachedSong &src)
-{
-	if (!src.GetTag().IsDefined() &&
-	    src.GetStartMS() == 0 && src.GetEndMS() == 0)
-		return;
-
-	merge_song_metadata(dest, src);
 }
 
 static bool
@@ -63,7 +53,7 @@ playlist_check_load_song(DetachedSong &song, const SongLoader &loader)
 	if (!song.HasRealURI() && tmp->HasRealURI())
 		song.SetRealURI(tmp->GetRealURI());
 
-	apply_song_metadata(song, *tmp);
+	merge_song_metadata(song, *tmp);
 	delete tmp;
 	return true;
 }
