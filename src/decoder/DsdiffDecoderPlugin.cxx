@@ -250,8 +250,11 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 	if (!dsdiff_read_chunk_header(decoder, is, chunk_header))
 		return false;
 
+	metadata->diar_offset = 0;
+	metadata->diti_offset = 0;
+
 #ifdef HAVE_ID3TAG
-	metadata->id3_size = 0;
+	metadata->id3_offset = 0;
 #endif
 
 	/* Now process all the remaining chunk headers in the stream
