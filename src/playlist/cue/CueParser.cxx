@@ -270,8 +270,6 @@ CueParser::Feed2(char *p)
 		    previous->GetStartMS() < (unsigned)position_ms) {
 			last_updated = true;
 			previous->SetEndMS(position_ms);
-			previous->WritableTag().time =
-				(previous->GetEndMS() - previous->GetStartMS() + 500) / 1000;
 		}
 
 		current->SetStartMS(position_ms);

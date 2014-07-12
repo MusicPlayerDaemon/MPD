@@ -50,15 +50,6 @@ apply_song_metadata(DetachedSong &dest, const DetachedSong &src)
 		return;
 
 	merge_song_metadata(dest, src);
-
-	if (dest.GetTag().IsDefined() && dest.GetTag().time > 0 &&
-	    src.GetStartMS() > 0 && src.GetEndMS() == 0 &&
-	    src.GetStartMS() / 1000 < (unsigned)dest.GetTag().time)
-		/* the range is open-ended, and the playlist plugin
-		   did not know the total length of the song file
-		   (e.g. last track on a CUE file); fix it up here */
-		dest.WritableTag().time =
-			dest.GetTag().time - src.GetStartMS() / 1000;
 }
 
 static bool
