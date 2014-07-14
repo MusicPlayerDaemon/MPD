@@ -276,8 +276,9 @@ libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 
 android/build/build.xml: android/AndroidManifest.xml
 	rm -rf android/build
-	mkdir -p android/build/include
-	ln -s $(srcdir)/android/AndroidManifest.xml $(srcdir)/android/custom_rules.xml $(srcdir)/android/src $(srcdir)/android/res android/build
+	mkdir -p android/build/include android/build/res
+	ln -s $(srcdir)/android/AndroidManifest.xml $(srcdir)/android/custom_rules.xml $(srcdir)/android/src android/build
+	ln -s $(srcdir)/android/res/values android/build/res
 	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17
 
 android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
@@ -293,7 +294,11 @@ android/build/libs/armeabi-v7a/libmpd.so: libmpd.so android/build/build.xml
 	rm -f $@
 	$(STRIP) -o $@ $<
 
-android/build/bin/Main-debug.apk: android/build/build.xml android/build/libs/armeabi-v7a/libmpd.so
+android/build/res/drawable/icon.png: mpd.svg
+	mkdir -p $(@D)
+	rsvg-convert --width=48 --height=48 $< -o $@
+
+android/build/bin/Main-debug.apk: android/build/build.xml android/build/res/drawable/icon.png android/build/libs/armeabi-v7a/libmpd.so
 	cd android/build && ant nodeps debug
 
 android/build/bin/Main-release-unsigned.apk: android/build/build.xml android/build/libs/armeabi-v7a/libmpd.so
