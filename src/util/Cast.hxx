@@ -35,14 +35,14 @@
 /**
  * Offset the given pointer by the specified number of bytes.
  */
-static constexpr void *
+static inline constexpr void *
 OffsetPointer(void *p, ptrdiff_t offset)
 {
 	return (char *)p + offset;
 }
 
 template<typename T, typename U>
-static constexpr T *
+static inline constexpr T *
 OffsetCast(U *p, ptrdiff_t offset)
 {
 	return reinterpret_cast<T *>(OffsetPointer(p, offset));
