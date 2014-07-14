@@ -30,6 +30,8 @@
 #ifndef CAST_HXX
 #define CAST_HXX
 
+#include "Compiler.h"
+
 #include <stddef.h>
 
 /**
