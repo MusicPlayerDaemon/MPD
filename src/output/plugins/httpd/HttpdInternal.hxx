@@ -152,18 +152,12 @@ public:
 	HttpdOutput(EventLoop &_loop);
 	~HttpdOutput();
 
-#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+	constexpr
 #endif
-
-	static constexpr HttpdOutput *Cast(AudioOutput *ao) {
-		return ContainerCast(ao, HttpdOutput, base);
+	static HttpdOutput *Cast(AudioOutput *ao) {
+		return &ContainerCast(*ao, &HttpdOutput::base);
 	}
-
-#if GCC_CHECK_VERSION(4,6) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 	using DeferredMonitor::GetEventLoop;
 

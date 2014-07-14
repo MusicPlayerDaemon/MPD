@@ -87,10 +87,13 @@ calc_hash(TagType type, const char *p)
 	return hash ^ type;
 }
 
-static inline constexpr TagPoolSlot *
+#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+	constexpr
+#endif
+static inline TagPoolSlot *
 tag_item_to_slot(TagItem *item)
 {
-	return ContainerCast(item, TagPoolSlot, item);
+	return &ContainerCast(*item, &TagPoolSlot::item);
 }
 
 static inline TagPoolSlot **
