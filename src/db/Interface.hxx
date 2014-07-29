@@ -116,6 +116,18 @@ public:
 			      Error &error) const = 0;
 
 	/**
+	 * Update the database.  Returns the job id on success, 0 on
+	 * error (with #Error set) and 0 if not implemented (#Error
+	 * not set).
+	 */
+	virtual unsigned Update(gcc_unused const char *uri_utf8,
+				gcc_unused bool discard,
+				gcc_unused Error &error) {
+		/* not implemented: return 0 and don't set an Error */
+		return 0;
+	}
+
+	/**
 	 * Returns the time stamp of the last database update.
 	 * Returns 0 if that is not not known/available.
 	 */

@@ -49,6 +49,7 @@
 
 #ifdef ENABLE_DATABASE
 #include "DatabaseCommands.hxx"
+#include "db/Interface.hxx"
 #include "db/update/Service.hxx"
 #endif
 
@@ -242,6 +243,25 @@ handle_update(Client &client, UpdateService &update,
 	}
 }
 
+static CommandResult
+handle_update(Client &client, Database &db,
+	      const char *uri_utf8, bool discard)
+{
+	Error error;
+	unsigned id = db.Update(uri_utf8, discard, error);
+	if (id > 0) {
+		client_printf(client, "updating_db: %i\n", id);
+		return CommandResult::OK;
+	} else if (error.IsDefined()) {
+		return print_error(client, error);
+	} else {
+		/* Database::Update() has returned 0 without setting
+		   the Error: the method is not implemented */
+		command_error(client, ACK_ERROR_NO_EXIST, "Not implemented");
+		return CommandResult::ERROR;
+	}
+}
+
 #endif
 
 static CommandResult
@@ -267,6 +287,10 @@ handle_update(Client &client, unsigned argc, char *argv[], bool discard)
 	UpdateService *update = client.partition.instance.update;
 	if (update != nullptr)
 		return handle_update(client, *update, path, discard);
+
+	Database *db = client.partition.instance.database;
+	if (db != nullptr)
+		return handle_update(client, *db, path, discard);
 #else
 	(void)argc;
 	(void)argv;
