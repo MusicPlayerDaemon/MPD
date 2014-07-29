@@ -225,6 +225,25 @@ handle_lsinfo(Client &client, unsigned argc, char *argv[])
 	return CommandResult::OK;
 }
 
+#ifdef ENABLE_DATABASE
+
+static CommandResult
+handle_update(Client &client, UpdateService &update,
+	      const char *uri_utf8, bool discard)
+{
+	unsigned ret = update.Enqueue(uri_utf8, discard);
+	if (ret > 0) {
+		client_printf(client, "updating_db: %i\n", ret);
+		return CommandResult::OK;
+	} else {
+		command_error(client, ACK_ERROR_UPDATE_ALREADY,
+			      "already updating");
+		return CommandResult::ERROR;
+	}
+}
+
+#endif
+
 static CommandResult
 handle_update(Client &client, unsigned argc, char *argv[], bool discard)
 {
@@ -246,29 +265,16 @@ handle_update(Client &client, unsigned argc, char *argv[], bool discard)
 	}
 
 	UpdateService *update = client.partition.instance.update;
-	if (update == nullptr) {
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
-		return CommandResult::ERROR;
-	}
-
-	unsigned ret = update->Enqueue(path, discard);
-	if (ret > 0) {
-		client_printf(client, "updating_db: %i\n", ret);
-		return CommandResult::OK;
-	} else {
-		command_error(client, ACK_ERROR_UPDATE_ALREADY,
-			      "already updating");
-		return CommandResult::ERROR;
-	}
+	if (update != nullptr)
+		return handle_update(client, *update, path, discard);
 #else
-	(void)client;
 	(void)argc;
 	(void)argv;
 	(void)discard;
+#endif
 
 	command_error(client, ACK_ERROR_NO_EXIST, "No database");
 	return CommandResult::ERROR;
-#endif
 }
 
 CommandResult
