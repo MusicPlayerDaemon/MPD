@@ -120,6 +120,9 @@ public:
 			      DatabaseStats &stats,
 			      Error &error) const override;
 
+	virtual unsigned Update(const char *uri_utf8, bool discard,
+				Error &error) override;
+
 	virtual time_t GetUpdateStamp() const override {
 		return update_stamp;
 	}
@@ -807,6 +810,22 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 	mpd_stats_free(stats2);
 
 	return true;
+}
+
+unsigned
+ProxyDatabase::Update(const char *uri_utf8, bool discard,
+		      Error &error)
+{
+	if (!EnsureConnected(error))
+		return 0;
+
+	unsigned id = discard
+		? mpd_run_rescan(connection, uri_utf8)
+		: mpd_run_update(connection, uri_utf8);
+	if (id == 0)
+		CheckError(connection, error);
+
+	return id;
 }
 
 const DatabasePlugin proxy_db_plugin = {

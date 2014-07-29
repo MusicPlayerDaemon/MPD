@@ -9,6 +9,7 @@ ver 0.19 (not yet released)
   - "list" and "count" allow grouping
 * database
   - proxy: forward "idle" events
+  - proxy: forward the "update" command
   - proxy: copy "Last-Modified" from remote directories
   - upnp: new plugin
   - cancel the update on shutdown
