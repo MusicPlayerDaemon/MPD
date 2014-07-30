@@ -307,8 +307,10 @@ android/build/bin/Main-release-unsigned.apk: android/build/build.xml android/bui
 android/build/bin/Main-release-unaligned.apk: android/build/bin/Main-release-unsigned.apk
 	jarsigner -digestalg SHA1 -sigalg MD5withRSA -storepass:env ANDROID_KEYSTORE_PASS -keystore $(ANDROID_KEYSTORE) -signedjar $@ $< $(ANDROID_KEY_ALIAS)
 
+ANDROID_SDK_BUILD_TOOLS_VERSION = 20.0.0
+
 android/build/bin/Main.apk: android/build/bin/Main-release-unaligned.apk
-	$(ANDROID_SDK)/tools/zipalign -f 4 $< $@
+	$(ANDROID_SDK)/build-tools/$(ANDROID_SDK_BUILD_TOOLS_VERSION)/zipalign -f 4 $< $@
 
 endif
 
