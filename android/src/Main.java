@@ -21,14 +21,26 @@ package org.musicpd;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.widget.TextView;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
+import android.widget.TextView;
 import android.util.Log;
 
 public class Main extends Activity implements Runnable {
 	private static final String TAG = "MPD";
 
 	Thread thread;
+
+	TextView textView;
+
+	final Handler quitHandler = new Handler() {
+			public void handleMessage(Message msg) {
+				textView.setText("Music Player Daemon has quit");
+
+				// TODO: what now?  restart?
+			}
+		};
 
 	@Override protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -50,13 +62,14 @@ public class Main extends Activity implements Runnable {
 			thread.start();
 		}
 
-		TextView tv = new TextView(this);
-		tv.setText("Music Player Daemon is running"
-			   + "\nCAUTION: this version is EXPERIMENTAL!");
-		setContentView(tv);
+		textView = new TextView(this);
+		textView.setText("Music Player Daemon is running"
+				 + "\nCAUTION: this version is EXPERIMENTAL!");
+		setContentView(textView);
 	}
 
 	@Override public void run() {
 		Bridge.run(this);
+		quitHandler.sendMessage(quitHandler.obtainMessage());
 	}
 }
