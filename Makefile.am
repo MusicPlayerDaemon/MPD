@@ -503,6 +503,10 @@ endif
 # File system library
 
 libfs_a_SOURCES = \
+	src/fs/output/OutputStream.hxx \
+	src/fs/output/StdoutOutputStream.hxx \
+	src/fs/output/FileOutputStream.cxx src/fs/output/FileOutputStream.hxx \
+	src/fs/output/BufferedOutputStream.cxx src/fs/output/BufferedOutputStream.hxx \
 	src/fs/Domain.cxx src/fs/Domain.hxx \
 	src/fs/Limits.hxx \
 	src/fs/Traits.cxx src/fs/Traits.hxx \
