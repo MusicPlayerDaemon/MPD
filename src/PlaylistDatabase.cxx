@@ -21,6 +21,7 @@
 #include "PlaylistDatabase.hxx"
 #include "db/PlaylistVector.hxx"
 #include "fs/TextFile.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -31,13 +32,13 @@
 static constexpr Domain playlist_database_domain("playlist_database");
 
 void
-playlist_vector_save(FILE *fp, const PlaylistVector &pv)
+playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv)
 {
 	for (const PlaylistInfo &pi : pv)
-		fprintf(fp, PLAYLIST_META_BEGIN "%s\n"
-			"mtime: %li\n"
-			"playlist_end\n",
-			pi.name.c_str(), (long)pi.mtime);
+		os.Format(PLAYLIST_META_BEGIN "%s\n"
+			  "mtime: %li\n"
+			  "playlist_end\n",
+			  pi.name.c_str(), (long)pi.mtime);
 }
 
 bool

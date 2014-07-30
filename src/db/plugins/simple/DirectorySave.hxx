@@ -20,14 +20,13 @@
 #ifndef MPD_DIRECTORY_SAVE_HXX
 #define MPD_DIRECTORY_SAVE_HXX
 
-#include <stdio.h>
-
 struct Directory;
 class TextFile;
+class BufferedOutputStream;
 class Error;
 
 void
-directory_save(FILE *fp, const Directory &directory);
+directory_save(BufferedOutputStream &os, const Directory &directory);
 
 bool
 directory_load(TextFile &file, Directory &directory, Error &error);

@@ -29,6 +29,8 @@
 #include "playlist/PlaylistRegistry.hxx"
 #include "playlist/PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
+#include "fs/output/StdioOutputStream.hxx"
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
@@ -39,6 +41,15 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+
+static void
+tag_save(FILE *file, const Tag &tag)
+{
+	StdioOutputStream sos(file);
+	BufferedOutputStream bos(sos);
+	tag_save(bos, tag);
+	bos.Flush();
+}
 
 int main(int argc, char **argv)
 {

@@ -25,15 +25,14 @@
 #ifndef MPD_PLAYLIST_STATE_HXX
 #define MPD_PLAYLIST_STATE_HXX
 
-#include <stdio.h>
-
 struct playlist;
 struct PlayerControl;
 class TextFile;
+class BufferedOutputStream;
 class SongLoader;
 
 void
-playlist_state_save(FILE *fp, const playlist &playlist,
+playlist_state_save(BufferedOutputStream &os, const playlist &playlist,
 		    PlayerControl &pc);
 
 bool

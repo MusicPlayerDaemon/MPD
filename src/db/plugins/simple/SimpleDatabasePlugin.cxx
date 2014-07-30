@@ -32,6 +32,8 @@
 #include "db/DatabaseLock.hxx"
 #include "db/DatabaseError.hxx"
 #include "fs/TextFile.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
+#include "fs/output/FileOutputStream.hxx"
 #include "config/ConfigData.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
@@ -366,22 +368,16 @@ SimpleDatabase::Save(Error &error)
 
 	LogDebug(simple_db_domain, "writing DB");
 
-	FILE *fp = FOpen(path, FOpenMode::WriteText);
-	if (!fp) {
-		error.FormatErrno("unable to write to db file \"%s\"",
-				  path_utf8.c_str());
+	FileOutputStream fos(path, error);
+	if (!fos.IsDefined())
 		return false;
-	}
 
-	db_save_internal(fp, *root);
+	BufferedOutputStream bos(fos);
 
-	if (ferror(fp)) {
-		error.SetErrno("Failed to write to database file");
-		fclose(fp);
+	db_save_internal(bos, *root);
+
+	if (!bos.Flush(error) || !fos.Commit(error))
 		return false;
-	}
-
-	fclose(fp);
 
 	struct stat st;
 	if (StatFile(path, st))

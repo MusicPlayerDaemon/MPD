@@ -22,9 +22,8 @@
 
 #include "Compiler.h"
 
-#include <stdio.h>
-
 class MultipleOutputs;
+class BufferedOutputStream;
 
 void
 InvalidateHardwareVolume();
@@ -39,7 +38,8 @@ volume_level_change(MultipleOutputs &outputs, unsigned volume);
 bool
 read_sw_volume_state(const char *line, MultipleOutputs &outputs);
 
-void save_sw_volume_state(FILE *fp);
+void
+save_sw_volume_state(BufferedOutputStream &os);
 
 /**
  * Generates a hash number for the current state of the software

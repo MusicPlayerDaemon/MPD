@@ -26,6 +26,7 @@
 #include "SongLoader.hxx"
 #include "playlist/PlaylistSong.hxx"
 #include "fs/TextFile.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/Traits.hxx"
@@ -36,40 +37,41 @@
 #define PRIO_LABEL "Prio: "
 
 static void
-queue_save_database_song(FILE *fp, int idx, const DetachedSong &song)
+queue_save_database_song(BufferedOutputStream &os,
+			 int idx, const DetachedSong &song)
 {
-	fprintf(fp, "%i:%s\n", idx, song.GetURI());
+	os.Format("%i:%s\n", idx, song.GetURI());
 }
 
 static void
-queue_save_full_song(FILE *fp, const DetachedSong &song)
+queue_save_full_song(BufferedOutputStream &os, const DetachedSong &song)
 {
-	song_save(fp, song);
+	song_save(os, song);
 }
 
 static void
-queue_save_song(FILE *fp, int idx, const DetachedSong &song)
+queue_save_song(BufferedOutputStream &os, int idx, const DetachedSong &song)
 {
 	if (song.IsInDatabase() &&
 	    song.GetStartMS() == 0 && song.GetEndMS() == 0)
 		/* use the brief format (just the URI) for "full"
 		   database songs */
-		queue_save_database_song(fp, idx, song);
+		queue_save_database_song(os, idx, song);
 	else
 		/* use the long format (URI, range, tags) for the
 		   rest, so all metadata survives a MPD restart */
-		queue_save_full_song(fp, song);
+		queue_save_full_song(os, song);
 }
 
 void
-queue_save(FILE *fp, const Queue &queue)
+queue_save(BufferedOutputStream &os, const Queue &queue)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
 		uint8_t prio = queue.GetPriorityAtPosition(i);
 		if (prio != 0)
-			fprintf(fp, PRIO_LABEL "%u\n", prio);
+			os.Format(PRIO_LABEL "%u\n", prio);
 
-		queue_save_song(fp, i, queue.Get(i));
+		queue_save_song(os, i, queue.Get(i));
 	}
 }
 

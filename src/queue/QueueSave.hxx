@@ -25,14 +25,13 @@
 #ifndef MPD_QUEUE_SAVE_HXX
 #define MPD_QUEUE_SAVE_HXX
 
-#include <stdio.h>
-
 struct Queue;
+class BufferedOutputStream;
 class TextFile;
 class SongLoader;
 
 void
-queue_save(FILE *fp, const Queue &queue);
+queue_save(BufferedOutputStream &os, const Queue &queue);
 
 /**
  * Loads one song from the state file and appends it to the queue.

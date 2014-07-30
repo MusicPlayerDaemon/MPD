@@ -23,6 +23,7 @@
 #include "db/DatabaseError.hxx"
 #include "Directory.hxx"
 #include "DirectorySave.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "fs/TextFile.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagSettings.h"
@@ -49,20 +50,20 @@ static constexpr unsigned DB_FORMAT = 2;
 static constexpr unsigned OLDEST_DB_FORMAT = 1;
 
 void
-db_save_internal(FILE *fp, const Directory &music_root)
+db_save_internal(BufferedOutputStream &os, const Directory &music_root)
 {
-	fprintf(fp, "%s\n", DIRECTORY_INFO_BEGIN);
-	fprintf(fp, DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
-	fprintf(fp, "%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
-	fprintf(fp, "%s%s\n", DIRECTORY_FS_CHARSET, GetFSCharset());
+	os.Format("%s\n", DIRECTORY_INFO_BEGIN);
+	os.Format(DB_FORMAT_PREFIX "%u\n", DB_FORMAT);
+	os.Format("%s%s\n", DIRECTORY_MPD_VERSION, VERSION);
+	os.Format("%s%s\n", DIRECTORY_FS_CHARSET, GetFSCharset());
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 		if (!ignore_tag_items[i])
-			fprintf(fp, DB_TAG_PREFIX "%s\n", tag_item_names[i]);
+			os.Format(DB_TAG_PREFIX "%s\n", tag_item_names[i]);
 
-	fprintf(fp, "%s\n", DIRECTORY_INFO_END);
+	os.Format("%s\n", DIRECTORY_INFO_END);
 
-	directory_save(fp, music_root);
+	directory_save(os, music_root);
 }
 
 bool

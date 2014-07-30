@@ -28,6 +28,7 @@
 #include "Internal.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "util/StringUtil.hxx"
 
 #include <assert.h>
@@ -38,13 +39,13 @@
 unsigned audio_output_state_version;
 
 void
-audio_output_state_save(FILE *fp, const MultipleOutputs &outputs)
+audio_output_state_save(BufferedOutputStream &os,
+			const MultipleOutputs &outputs)
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const AudioOutput &ao = outputs.Get(i);
 
-		fprintf(fp, AUDIO_DEVICE_STATE "%d:%s\n",
-			ao.enabled, ao.name);
+		os.Format(AUDIO_DEVICE_STATE "%d:%s\n", ao.enabled, ao.name);
 	}
 }
 

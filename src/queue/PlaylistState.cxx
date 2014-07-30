@@ -28,6 +28,7 @@
 #include "Playlist.hxx"
 #include "queue/QueueSave.hxx"
 #include "fs/TextFile.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "PlayerControl.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
@@ -59,47 +60,45 @@
 #define PLAYLIST_BUFFER_SIZE	2*MPD_PATH_MAX
 
 void
-playlist_state_save(FILE *fp, const struct playlist &playlist,
+playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 		    PlayerControl &pc)
 {
 	const auto player_status = pc.GetStatus();
 
-	fputs(PLAYLIST_STATE_FILE_STATE, fp);
+	os.Write(PLAYLIST_STATE_FILE_STATE);
 
 	if (playlist.playing) {
 		switch (player_status.state) {
 		case PlayerState::PAUSE:
-			fputs(PLAYLIST_STATE_FILE_STATE_PAUSE "\n", fp);
+			os.Write(PLAYLIST_STATE_FILE_STATE_PAUSE "\n");
 			break;
 		default:
-			fputs(PLAYLIST_STATE_FILE_STATE_PLAY "\n", fp);
+			os.Write(PLAYLIST_STATE_FILE_STATE_PLAY "\n");
 		}
-		fprintf(fp, PLAYLIST_STATE_FILE_CURRENT "%i\n",
-			playlist.queue.OrderToPosition(playlist.current));
-		fprintf(fp, PLAYLIST_STATE_FILE_TIME "%i\n",
-			(int)player_status.elapsed_time);
+		os.Format(PLAYLIST_STATE_FILE_CURRENT "%i\n",
+			  playlist.queue.OrderToPosition(playlist.current));
+		os.Format(PLAYLIST_STATE_FILE_TIME "%i\n",
+			  (int)player_status.elapsed_time);
 	} else {
-		fputs(PLAYLIST_STATE_FILE_STATE_STOP "\n", fp);
+		os.Write(PLAYLIST_STATE_FILE_STATE_STOP "\n");
 
 		if (playlist.current >= 0)
-			fprintf(fp, PLAYLIST_STATE_FILE_CURRENT "%i\n",
+			os.Format(PLAYLIST_STATE_FILE_CURRENT "%i\n",
 				playlist.queue.OrderToPosition(playlist.current));
 	}
 
-	fprintf(fp, PLAYLIST_STATE_FILE_RANDOM "%i\n", playlist.queue.random);
-	fprintf(fp, PLAYLIST_STATE_FILE_REPEAT "%i\n", playlist.queue.repeat);
-	fprintf(fp, PLAYLIST_STATE_FILE_SINGLE "%i\n", playlist.queue.single);
-	fprintf(fp, PLAYLIST_STATE_FILE_CONSUME "%i\n",
-		playlist.queue.consume);
-	fprintf(fp, PLAYLIST_STATE_FILE_CROSSFADE "%i\n",
-		(int)pc.GetCrossFade());
-	fprintf(fp, PLAYLIST_STATE_FILE_MIXRAMPDB "%f\n",
-		pc.GetMixRampDb());
-	fprintf(fp, PLAYLIST_STATE_FILE_MIXRAMPDELAY "%f\n",
-		pc.GetMixRampDelay());
-	fputs(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n", fp);
-	queue_save(fp, playlist.queue);
-	fputs(PLAYLIST_STATE_FILE_PLAYLIST_END "\n", fp);
+	os.Format(PLAYLIST_STATE_FILE_RANDOM "%i\n", playlist.queue.random);
+	os.Format(PLAYLIST_STATE_FILE_REPEAT "%i\n", playlist.queue.repeat);
+	os.Format(PLAYLIST_STATE_FILE_SINGLE "%i\n", playlist.queue.single);
+	os.Format(PLAYLIST_STATE_FILE_CONSUME "%i\n", playlist.queue.consume);
+	os.Format(PLAYLIST_STATE_FILE_CROSSFADE "%i\n",
+		  (int)pc.GetCrossFade());
+	os.Format(PLAYLIST_STATE_FILE_MIXRAMPDB "%f\n", pc.GetMixRampDb());
+	os.Format(PLAYLIST_STATE_FILE_MIXRAMPDELAY "%f\n",
+		  pc.GetMixRampDelay());
+	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_BEGIN "\n");
+	queue_save(os, playlist.queue);
+	os.Write(PLAYLIST_STATE_FILE_PLAYLIST_END "\n");
 }
 
 static void

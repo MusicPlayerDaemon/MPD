@@ -25,15 +25,15 @@
 #ifndef MPD_OUTPUT_STATE_HXX
 #define MPD_OUTPUT_STATE_HXX
 
-#include <stdio.h>
-
 class MultipleOutputs;
+class BufferedOutputStream;
 
 bool
 audio_output_state_read(const char *line, MultipleOutputs &outputs);
 
 void
-audio_output_state_save(FILE *fp, const MultipleOutputs &outputs);
+audio_output_state_save(BufferedOutputStream &os,
+			const MultipleOutputs &outputs);
 
 /**
  * Generates a version number for the current state of the audio

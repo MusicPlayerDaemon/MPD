@@ -24,6 +24,7 @@
 #include "util/StringUtil.hxx"
 #include "util/Domain.hxx"
 #include "system/PeriodClock.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -110,9 +111,10 @@ read_sw_volume_state(const char *line, MultipleOutputs &outputs)
 	return true;
 }
 
-void save_sw_volume_state(FILE *fp)
+void
+save_sw_volume_state(BufferedOutputStream &os)
 {
-	fprintf(fp, SW_VOLUME_STATE "%u\n", volume_software_set);
+	os.Format(SW_VOLUME_STATE "%u\n", volume_software_set);
 }
 
 unsigned

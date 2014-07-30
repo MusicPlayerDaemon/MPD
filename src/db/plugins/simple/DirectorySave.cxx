@@ -25,6 +25,7 @@
 #include "DetachedSong.hxx"
 #include "PlaylistDatabase.hxx"
 #include "fs/TextFile.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"
@@ -70,37 +71,37 @@ ParseTypeString(const char *type)
 }
 
 void
-directory_save(FILE *fp, const Directory &directory)
+directory_save(BufferedOutputStream &os, const Directory &directory)
 {
 	if (!directory.IsRoot()) {
 		const char *type = DeviceToTypeString(directory.device);
 		if (type != nullptr)
-			fprintf(fp, DIRECTORY_TYPE "%s\n", type);
+			os.Format(DIRECTORY_TYPE "%s\n", type);
 
 		if (directory.mtime != 0)
-			fprintf(fp, DIRECTORY_MTIME "%lu\n",
-				(unsigned long)directory.mtime);
+			os.Format(DIRECTORY_MTIME "%lu\n",
+				  (unsigned long)directory.mtime);
 
-		fprintf(fp, "%s%s\n", DIRECTORY_BEGIN, directory.GetPath());
+		os.Format("%s%s\n", DIRECTORY_BEGIN, directory.GetPath());
 	}
 
 	for (const auto &child : directory.children) {
-		fprintf(fp, DIRECTORY_DIR "%s\n", child.GetName());
+		os.Format(DIRECTORY_DIR "%s\n", child.GetName());
 
 		if (!child.IsMount())
-			directory_save(fp, child);
+			directory_save(os, child);
 
-		if (ferror(fp))
+		if (!os.Check())
 			return;
 	}
 
 	for (const auto &song : directory.songs)
-		song_save(fp, song);
+		song_save(os, song);
 
-	playlist_vector_save(fp, directory.playlists);
+	playlist_vector_save(os, directory.playlists);
 
 	if (!directory.IsRoot())
-		fprintf(fp, DIRECTORY_END "%s\n", directory.GetPath());
+		os.Format(DIRECTORY_END "%s\n", directory.GetPath());
 }
 
 static bool

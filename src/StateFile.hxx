@@ -27,6 +27,8 @@
 #include <string>
 
 struct Partition;
+class OutputStream;
+class BufferedOutputStream;
 
 class StateFile final : private TimeoutMonitor {
 	AllocatedPath path;
@@ -53,6 +55,9 @@ public:
 	void CheckModified();
 
 private:
+	bool Write(OutputStream &os, Error &error);
+	void Write(BufferedOutputStream &os);
+
 	/**
 	 * Save the current state versions for use with IsModified().
 	 */

@@ -20,11 +20,10 @@
 #ifndef MPD_TAG_SAVE_HXX
 #define MPD_TAG_SAVE_HXX
 
-#include <stdio.h>
-
 struct Tag;
+class BufferedOutputStream;
 
 void
-tag_save(FILE *file, const Tag &tag);
+tag_save(BufferedOutputStream &os, const Tag &tag);
 
 #endif

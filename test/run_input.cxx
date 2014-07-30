@@ -28,6 +28,8 @@
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
+#include "fs/output/StdioOutputStream.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
@@ -39,6 +41,15 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+
+static void
+tag_save(FILE *file, const Tag &tag)
+{
+	StdioOutputStream sos(file);
+	BufferedOutputStream bos(sos);
+	tag_save(bos, tag);
+	bos.Flush();
+}
 
 static int
 dump_input_stream(InputStream *is)

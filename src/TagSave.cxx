@@ -20,19 +20,19 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "tag/Tag.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 
 #define SONG_TIME "Time: "
 
 void
-tag_save(FILE *file, const Tag &tag)
+tag_save(BufferedOutputStream &os, const Tag &tag)
 {
 	if (tag.time >= 0)
-		fprintf(file, SONG_TIME "%i\n", tag.time);
+		os.Format(SONG_TIME "%i\n", tag.time);
 
 	if (tag.has_playlist)
-		fprintf(file, "Playlist: yes\n");
+		os.Format("Playlist: yes\n");
 
 	for (const auto &i : tag)
-		fprintf(file, "%s: %s\n",
-			tag_item_names[i.type], i.value);
+		os.Format("%s: %s\n", tag_item_names[i.type], i.value);
 }

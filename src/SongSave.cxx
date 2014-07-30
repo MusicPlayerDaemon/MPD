@@ -23,6 +23,7 @@
 #include "DetachedSong.hxx"
 #include "TagSave.hxx"
 #include "fs/TextFile.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
@@ -38,38 +39,38 @@
 static constexpr Domain song_save_domain("song_save");
 
 static void
-range_save(FILE *file, unsigned start_ms, unsigned end_ms)
+range_save(BufferedOutputStream &os, unsigned start_ms, unsigned end_ms)
 {
 	if (end_ms > 0)
-		fprintf(file, "Range: %u-%u\n", start_ms, end_ms);
+		os.Format("Range: %u-%u\n", start_ms, end_ms);
 	else if (start_ms > 0)
-		fprintf(file, "Range: %u-\n", start_ms);
+		os.Format("Range: %u-\n", start_ms);
 }
 
 void
-song_save(FILE *fp, const Song &song)
+song_save(BufferedOutputStream &os, const Song &song)
 {
-	fprintf(fp, SONG_BEGIN "%s\n", song.uri);
+	os.Format(SONG_BEGIN "%s\n", song.uri);
 
-	range_save(fp, song.start_ms, song.end_ms);
+	range_save(os, song.start_ms, song.end_ms);
 
-	tag_save(fp, song.tag);
+	tag_save(os, song.tag);
 
-	fprintf(fp, SONG_MTIME ": %li\n", (long)song.mtime);
-	fprintf(fp, SONG_END "\n");
+	os.Format(SONG_MTIME ": %li\n", (long)song.mtime);
+	os.Format(SONG_END "\n");
 }
 
 void
-song_save(FILE *fp, const DetachedSong &song)
+song_save(BufferedOutputStream &os, const DetachedSong &song)
 {
-	fprintf(fp, SONG_BEGIN "%s\n", song.GetURI());
+	os.Format(SONG_BEGIN "%s\n", song.GetURI());
 
-	range_save(fp, song.GetStartMS(), song.GetEndMS());
+	range_save(os, song.GetStartMS(), song.GetEndMS());
 
-	tag_save(fp, song.GetTag());
+	tag_save(os, song.GetTag());
 
-	fprintf(fp, SONG_MTIME ": %li\n", (long)song.GetLastModified());
-	fprintf(fp, SONG_END "\n");
+	os.Format(SONG_MTIME ": %li\n", (long)song.GetLastModified());
+	os.Format(SONG_END "\n");
 }
 
 DetachedSong *

@@ -22,6 +22,8 @@
 #include "output/OutputState.hxx"
 #include "queue/PlaylistState.hxx"
 #include "fs/TextFile.hxx"
+#include "fs/output/FileOutputStream.hxx"
+#include "fs/output/BufferedOutputStream.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "mixer/Volume.hxx"
@@ -62,24 +64,34 @@ StateFile::IsModified() const
 								 partition.pc);
 }
 
+inline void
+StateFile::Write(BufferedOutputStream &os)
+{
+	save_sw_volume_state(os);
+	audio_output_state_save(os, partition.outputs);
+	playlist_state_save(os, partition.playlist, partition.pc);
+}
+
+inline bool
+StateFile::Write(OutputStream &os, Error &error)
+{
+	BufferedOutputStream bos(os);
+	Write(bos);
+	return bos.Flush(error);
+}
+
 void
 StateFile::Write()
 {
 	FormatDebug(state_file_domain,
 		    "Saving state file %s", path_utf8.c_str());
 
-	FILE *fp = FOpen(path, FOpenMode::WriteText);
-	if (gcc_unlikely(!fp)) {
-		FormatErrno(state_file_domain, "failed to create %s",
-			    path_utf8.c_str());
+	Error error;
+	FileOutputStream fos(path, error);
+	if (!fos.IsDefined() || !Write(fos, error) || !fos.Commit(error)) {
+		LogError(error);
 		return;
 	}
-
-	save_sw_volume_state(fp);
-	audio_output_state_save(fp, partition.outputs);
-	playlist_state_save(fp, partition.playlist, partition.pc);
-
-	fclose(fp);
 
 	RememberVersions();
 }

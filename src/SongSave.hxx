@@ -20,21 +20,20 @@
 #ifndef MPD_SONG_SAVE_HXX
 #define MPD_SONG_SAVE_HXX
 
-#include <stdio.h>
-
 #define SONG_BEGIN "song_begin: "
 
 struct Song;
 struct Directory;
 class DetachedSong;
+class BufferedOutputStream;
 class TextFile;
 class Error;
 
 void
-song_save(FILE *fp, const Song &song);
+song_save(BufferedOutputStream &os, const Song &song);
 
 void
-song_save(FILE *fp, const DetachedSong &song);
+song_save(BufferedOutputStream &os, const DetachedSong &song);
 
 /**
  * Loads a song from the input file.  Reading stops after the

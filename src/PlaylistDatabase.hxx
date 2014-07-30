@@ -22,16 +22,15 @@
 
 #include "check.h"
 
-#include <stdio.h>
-
 #define PLAYLIST_META_BEGIN "playlist_begin: "
 
 class PlaylistVector;
+class BufferedOutputStream;
 class TextFile;
 class Error;
 
 void
-playlist_vector_save(FILE *fp, const PlaylistVector &pv);
+playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv);
 
 bool
 playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
