@@ -298,10 +298,14 @@ android/build/res/drawable/icon.png: mpd.svg
 	mkdir -p $(@D)
 	rsvg-convert --width=48 --height=48 $< -o $@
 
-android/build/bin/Main-debug.apk: android/build/build.xml android/build/res/drawable/icon.png android/build/libs/armeabi-v7a/libmpd.so
+APK_DEPS = android/build/res/drawable/icon.png \
+	android/build/libs/armeabi-v7a/libmpd.so \
+	android/build/build.xml
+
+android/build/bin/Main-debug.apk: $(APK_DEPS)
 	cd android/build && ant nodeps debug
 
-android/build/bin/Main-release-unsigned.apk: android/build/build.xml android/build/res/drawable/icon.png android/build/libs/armeabi-v7a/libmpd.so
+android/build/bin/Main-release-unsigned.apk: $(APK_DEPS)
 	cd android/build && ant nodeps release
 
 android/build/bin/Main-release-unaligned.apk: android/build/bin/Main-release-unsigned.apk
