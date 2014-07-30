@@ -85,7 +85,7 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length)
 		return "unknown";
 
 #ifdef HAVE_IPV6
-	if (strchr(host, ':') != NULL) {
+	if (strchr(host, ':') != nullptr) {
 		std::string result("[");
 		result.append(host);
 		result.append("]:");
@@ -121,7 +121,7 @@ resolve_host_port(const char *host_port, unsigned default_port,
 		}
 	}
 
-	if (port == NULL) {
+	if (port == nullptr) {
 		/* port is after the colon, but only if it's the only
 		   colon (don't split IPv6 addresses) */
 
@@ -134,13 +134,13 @@ resolve_host_port(const char *host_port, unsigned default_port,
 	}
 
 	char buffer[32];
-	if (port == NULL && default_port != 0) {
+	if (port == nullptr && default_port != 0) {
 		snprintf(buffer, sizeof(buffer), "%u", default_port);
 		port = buffer;
 	}
 
 	if ((flags & AI_PASSIVE) != 0 && strcmp(host, "*") == 0)
-		host = NULL;
+		host = nullptr;
 
 	addrinfo hints;
 	memset(&hints, 0, sizeof(hints));
@@ -154,7 +154,7 @@ resolve_host_port(const char *host_port, unsigned default_port,
 		error.Format(resolver_domain, ret,
 			     "Failed to look up '%s': %s",
 			     host_port, gai_strerror(ret));
-		return NULL;
+		return nullptr;
 	}
 
 	return ai;
