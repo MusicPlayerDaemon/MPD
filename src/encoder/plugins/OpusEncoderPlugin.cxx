@@ -120,7 +120,7 @@ opus_encoder_init(const config_param &param, Error &error)
 	if (!opus_encoder_configure(encoder, param, error)) {
 		/* configuration has failed, roll back and return error */
 		delete encoder;
-		return NULL;
+		return nullptr;
 	}
 
 	return &encoder->encoder;
