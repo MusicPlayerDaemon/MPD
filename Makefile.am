@@ -521,6 +521,13 @@ libfs_a_SOURCES = \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
 	src/fs/DirectoryReader.hxx
+libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
+
+if HAVE_ZLIB
+libfs_a_SOURCES += \
+	src/fs/output/GzipOutputStream.cxx src/fs/output/GzipOutputStream.hxx
+FS_LIBS += $(ZLIB_LIBS)
+endif
 
 # Storage library
 
@@ -1593,6 +1600,16 @@ test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/input/Open.cxx
+
+endif
+
+if HAVE_ZLIB
+
+noinst_PROGRAMS += test/run_gzip
+test_run_gzip_LDADD = \
+	libutil.a \
+	$(FS_LIBS)
+test_run_gzip_SOURCES = test/run_gzip.cxx
 
 endif
 

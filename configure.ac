@@ -329,6 +329,11 @@ AC_ARG_ENABLE(audiofile,
 		[enable audiofile support (WAV and others)]),,
 	enable_audiofile=auto)
 
+AC_ARG_ENABLE(zlib,
+	AS_HELP_STRING([--enable-zlib],
+		[enable zlib support (default: auto)]),,
+	enable_zlib=auto)
+
 AC_ARG_ENABLE(bzip2,
 	AS_HELP_STRING([--enable-bzip2],
 		[enable bzip2 archive support (default: auto)]),,
@@ -1030,6 +1035,16 @@ else
 fi
 
 AM_CONDITIONAL(ENABLE_ISO9660_TEST, test x$MKISOFS != xno)
+
+dnl ---------------------------------- zlib ---------------------------------
+
+MPD_AUTO_PKG(zlib, ZLIB, [zlib],
+	[zlib support], [zlib not found])
+
+AM_CONDITIONAL(HAVE_ZLIB, test x$enable_zlib = xyes)
+if test x$enable_zlib = xyes; then
+	AC_DEFINE(HAVE_ZLIB, 1, [Define to enable zlib support])
+fi
 
 dnl ---------------------------------- libbz2 ---------------------------------
 
