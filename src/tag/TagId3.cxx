@@ -514,7 +514,7 @@ tag_id3_load(Path path_fs, Error &error)
 {
 	FILE *file = FOpen(path_fs, "rb");
 	if (file == nullptr) {
-		error.FormatErrno("Failed to open file %s", path_fs);
+		error.FormatErrno("Failed to open file %s", path_fs.c_str());
 		return nullptr;
 	}
 
