@@ -300,6 +300,7 @@ android/build/res/drawable/icon.png: mpd.svg
 
 APK_DEPS = android/build/res/drawable/icon.png \
 	android/build/libs/armeabi-v7a/libmpd.so \
+	$(wildcard $(srcdir)/android/src/*.java)
 	android/build/build.xml
 
 android/build/bin/Main-debug.apk: $(APK_DEPS)
