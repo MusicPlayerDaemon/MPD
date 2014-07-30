@@ -135,7 +135,7 @@ public:
 	}
 
 	/**
-	 * Write data to the bfufer, growing it as needed.  Returns a
+	 * Write data to the buffer, growing it as needed.  Returns a
 	 * writable pointer.
 	 */
 	pointer_type Write(size_type n) {
