@@ -1,4 +1,4 @@
-ver 0.18.12 (not yet released)
+ver 0.18.12 (2014/07/30)
 * database
   - proxy: fix build failure with libmpdclient 2.2
   - proxy: fix add/search and other commands with libmpdclient < 2.9
