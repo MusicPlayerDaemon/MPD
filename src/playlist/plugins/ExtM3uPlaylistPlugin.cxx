@@ -56,7 +56,7 @@ extm3u_open_stream(InputStream &is)
 		/* no EXTM3U header: fall back to the plain m3u
 		   plugin */
 		delete playlist;
-		return NULL;
+		return nullptr;
 	}
 
 	return playlist;
@@ -110,7 +110,7 @@ ExtM3uPlaylist::NextSong()
 
 	do {
 		if (!tis.ReadLine(line))
-			return NULL;
+			return nullptr;
 
 		line_s = line.c_str();
 
@@ -127,12 +127,12 @@ ExtM3uPlaylist::NextSong()
 
 static const char *const extm3u_suffixes[] = {
 	"m3u",
-	NULL
+	nullptr
 };
 
 static const char *const extm3u_mime_types[] = {
 	"audio/x-mpegurl",
-	NULL
+	nullptr
 };
 
 const struct playlist_plugin extm3u_playlist_plugin = {
