@@ -145,4 +145,30 @@ Error::SetLastError(const char *prefix)
 	SetLastError(GetLastError(), prefix);
 }
 
+void
+Error::FormatLastError(DWORD _code, const char *fmt, ...)
+{
+	char buffer[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, ap);
+	va_end(ap);
+
+	SetLastError(_code, buffer);
+}
+
+void
+Error::FormatLastError(const char *fmt, ...)
+{
+	DWORD _code = GetLastError();
+
+	char buffer[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(buffer, sizeof(buffer), fmt, ap);
+	va_end(ap);
+
+	SetLastError(_code, buffer);
+}
+
 #endif

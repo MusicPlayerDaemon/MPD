@@ -168,6 +168,12 @@ public:
 #ifdef WIN32
 	void SetLastError(DWORD _code, const char *prefix);
 	void SetLastError(const char *prefix);
+
+	gcc_printf(3,4)
+	void FormatLastError(DWORD code, const char *fmt, ...);
+
+	gcc_printf(2,3)
+	void FormatLastError(const char *fmt, ...);
 #endif
 };
 
