@@ -45,7 +45,7 @@ pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
 	       size_t *dest_size_r)
 {
 	assert(audio_valid_channel_count(channels));
-	assert(src != NULL);
+	assert(src != nullptr);
 	assert(src_size > 0);
 	assert(src_size % channels == 0);
 
