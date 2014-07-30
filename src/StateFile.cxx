@@ -106,7 +106,7 @@ StateFile::Read()
 #endif
 
 	const char *line;
-	while ((line = file.ReadLine()) != NULL) {
+	while ((line = file.ReadLine()) != nullptr) {
 		success = read_sw_volume_state(line, partition.outputs) ||
 			audio_output_state_read(line, partition.outputs) ||
 			playlist_state_restore(line, file, song_loader,
