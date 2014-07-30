@@ -166,6 +166,7 @@ public:
 	void FormatErrno(int e, const char *prefix, ...);
 
 #ifdef WIN32
+	void SetLastError(DWORD _code, const char *prefix);
 	void SetLastError(const char *prefix);
 #endif
 };
