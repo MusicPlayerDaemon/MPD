@@ -22,18 +22,18 @@ package org.musicpd;
 import android.util.Log;
 
 public class Loader {
-    private static final String TAG = "MPD";
+	private static final String TAG = "MPD";
 
-    public static boolean loaded = false;
-    public static String error;
+	public static boolean loaded = false;
+	public static String error;
 
-    static {
-        try {
-            System.loadLibrary("mpd");
-            loaded = true;
-        } catch (UnsatisfiedLinkError e) {
-            Log.e(TAG, e.getMessage());
-            error = e.getMessage();
-        }
-    }
+	static {
+		try {
+			System.loadLibrary("mpd");
+			loaded = true;
+		} catch (UnsatisfiedLinkError e) {
+			Log.e(TAG, e.getMessage());
+			error = e.getMessage();
+		}
+	}
 }
