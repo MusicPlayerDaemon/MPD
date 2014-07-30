@@ -151,13 +151,18 @@ public:
 		message.insert(0, prefix);
 	}
 
+	gcc_printf(2,3)
 	void FormatPrefix(const char *fmt, ...);
 
 	void SetErrno(int e);
 	void SetErrno();
 	void SetErrno(int e, const char *prefix);
 	void SetErrno(const char *prefix);
+
+	gcc_printf(2,3)
 	void FormatErrno(const char *prefix, ...);
+
+	gcc_printf(3,4)
 	void FormatErrno(int e, const char *prefix, ...);
 
 #ifdef WIN32
