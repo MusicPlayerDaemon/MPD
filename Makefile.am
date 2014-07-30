@@ -301,7 +301,7 @@ android/build/res/drawable/icon.png: mpd.svg
 android/build/bin/Main-debug.apk: android/build/build.xml android/build/res/drawable/icon.png android/build/libs/armeabi-v7a/libmpd.so
 	cd android/build && ant nodeps debug
 
-android/build/bin/Main-release-unsigned.apk: android/build/build.xml android/build/libs/armeabi-v7a/libmpd.so
+android/build/bin/Main-release-unsigned.apk: android/build/build.xml android/build/res/drawable/icon.png android/build/libs/armeabi-v7a/libmpd.so
 	cd android/build && ant nodeps release
 
 android/build/bin/Main-release-unaligned.apk: android/build/bin/Main-release-unsigned.apk
