@@ -21,7 +21,6 @@
 #define MPD_INOTIFY_SOURCE_HXX
 
 #include "event/SocketMonitor.hxx"
-#include "util/FifoBuffer.hxx"
 
 class Error;
 
@@ -31,8 +30,6 @@ typedef void (*mpd_inotify_callback_t)(int wd, unsigned mask,
 class InotifySource final : private SocketMonitor {
 	mpd_inotify_callback_t callback;
 	void *callback_ctx;
-
-	FifoBuffer<uint8_t, 4096> buffer;
 
 	InotifySource(EventLoop &_loop,
 		      mpd_inotify_callback_t callback, void *ctx, int fd);

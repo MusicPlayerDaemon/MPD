@@ -25,43 +25,45 @@
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
+#include <algorithm>
+
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <errno.h>
+#include <stdint.h>
+#include <limits.h>
 
 bool
 InotifySource::OnSocketReady(gcc_unused unsigned flags)
 {
-	const auto dest = buffer.Write();
-	if (dest.IsEmpty())
-		FatalError("buffer full");
+	uint8_t buffer[4096];
+	static_assert(sizeof(buffer) >= sizeof(struct inotify_event) + NAME_MAX + 1,
+		      "inotify buffer too small");
 
-	ssize_t nbytes = read(Get(), dest.data, dest.size);
+	ssize_t nbytes = read(Get(), buffer, sizeof(buffer));
 	if (nbytes < 0)
 		FatalSystemError("Failed to read from inotify");
 	if (nbytes == 0)
 		FatalError("end of file from inotify");
 
-	buffer.Append(nbytes);
+	const uint8_t *p = buffer, *const end = p + nbytes;
 
 	while (true) {
-		const char *name;
-
-		auto range = buffer.Read();
+		const size_t remaining = end - p;
 		const struct inotify_event *event =
-			(const struct inotify_event *)
-			range.data;
-		if (range.size < sizeof(*event) ||
-		    range.size < sizeof(*event) + event->len)
+			(const struct inotify_event *)p;
+		if (remaining < sizeof(*event) ||
+		    remaining < sizeof(*event) + event->len)
 			break;
 
+		const char *name;
 		if (event->len > 0 && event->name[event->len - 1] == 0)
 			name = event->name;
 		else
 			name = nullptr;
 
 		callback(event->wd, event->mask, name, callback_ctx);
-		buffer.Consume(sizeof(*event) + event->len);
+		p += sizeof(*event) + event->len;
 	}
 
 	return true;
