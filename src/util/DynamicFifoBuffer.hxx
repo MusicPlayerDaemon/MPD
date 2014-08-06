@@ -54,6 +54,7 @@ public:
 
 	using ForeignFifoBuffer<T>::IsEmpty;
 	using ForeignFifoBuffer<T>::IsFull;
+	using ForeignFifoBuffer<T>::GetAvailable;
 	using ForeignFifoBuffer<T>::Read;
 	using ForeignFifoBuffer<T>::Consume;
 	using ForeignFifoBuffer<T>::Write;
@@ -73,7 +74,7 @@ public:
 			/* we already have enough space */
 			return;
 
-		const size_type in_use = Read().size;
+		const size_type in_use = GetAvailable();
 		const size_type required_capacity = in_use + n;
 		size_type new_capacity = GetCapacity();
 		do {
