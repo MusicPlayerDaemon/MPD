@@ -27,9 +27,10 @@
 #include <assert.h>
 #include <string.h>
 
-bool TextInputStream::ReadLine(std::string &line)
+char *
+TextInputStream::ReadLine()
 {
-	const char *src, *p;
+	char *src, *p;
 
 	do {
 		size_t nbytes;
@@ -46,33 +47,33 @@ bool TextInputStream::ReadLine(std::string &line)
 				buffer.Append(nbytes);
 			else if (error.IsDefined()) {
 				LogError(error);
-				return false;
+				return nullptr;
 			}
 		} else
 			nbytes = 0;
 
 		auto src_p = buffer.Read();
 		if (src_p.IsEmpty())
-			return false;
+			return nullptr;
 
 		src = src_p.data;
 
-		p = reinterpret_cast<const char*>(memchr(src, '\n', src_p.size));
+		p = reinterpret_cast<char*>(memchr(src, '\n', src_p.size));
 		if (p == nullptr && nbytes == 0) {
 			/* end of file (or line too long): terminate
 			   the current line */
 			dest = buffer.Write();
 			assert(!dest.IsEmpty());
-			dest[0] = '\n';
-			buffer.Append(1);
+			dest[0] = 0;
+			buffer.Clear();
+			return src;
 		}
 	} while (p == nullptr);
 
-	size_t length = p - src + 1;
+	buffer.Consume(p - src + 1);
+
 	while (p > src && IsWhitespaceOrNull(p[-1]))
 		--p;
-
-	line = std::string(src, p - src);
-	buffer.Consume(length);
-	return true;
+	*p = 0;
+	return src;
 }

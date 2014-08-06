@@ -52,9 +52,9 @@ CuePlaylist::NextSong()
 	if (song != nullptr)
 		return song;
 
-	std::string line;
-	while (tis.ReadLine(line)) {
-		parser.Feed(line.c_str());
+	const char *line;
+	while ((line = tis.ReadLine()) != nullptr) {
+		parser.Feed(line);
 		song = parser.Get();
 		if (song != nullptr)
 			return song;

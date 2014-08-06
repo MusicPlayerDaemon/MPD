@@ -22,8 +22,6 @@
 
 #include "util/StaticFifoBuffer.hxx"
 
-#include <string>
-
 class InputStream;
 
 class TextInputStream {
@@ -46,11 +44,9 @@ public:
 	/**
 	 * Reads the next line from the stream with newline character stripped.
 	 *
-	 * @param line a string to put result to
-	 * @return true if line is read successfully, false on end of file
-	 * or error
+	 * @return a pointer to the line, or nullptr on end-of-file or error
 	 */
-	bool ReadLine(std::string &line);
+	char *ReadLine();
 };
 
 #endif

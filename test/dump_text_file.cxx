@@ -43,9 +43,9 @@
 static void
 dump_text_file(TextInputStream &is)
 {
-	std::string line;
-	while (is.ReadLine(line))
-		printf("'%s'\n", line.c_str());
+	const char *line;
+	while ((line = is.ReadLine()) != nullptr)
+		printf("'%s'\n", line);
 }
 
 static int

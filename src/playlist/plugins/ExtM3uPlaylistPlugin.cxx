@@ -39,9 +39,8 @@ public:
 	}
 
 	bool CheckFirstLine() {
-		std::string line;
-		return tis.ReadLine(line) &&
-			strcmp(line.c_str(), "#EXTM3U") == 0;
+		const char *line = tis.ReadLine();
+		return line != nullptr && strcmp(line, "#EXTM3U") == 0;
 	}
 
 	virtual DetachedSong *NextSong() override;
@@ -105,14 +104,12 @@ DetachedSong *
 ExtM3uPlaylist::NextSong()
 {
 	Tag tag;
-	std::string line;
 	const char *line_s;
 
 	do {
-		if (!tis.ReadLine(line))
+		line_s = tis.ReadLine();
+		if (line_s == nullptr)
 			return nullptr;
-
-		line_s = line.c_str();
 
 		if (StringStartsWith(line_s, "#EXTINF:")) {
 			tag = extm3u_parse_tag(line_s + 8);
