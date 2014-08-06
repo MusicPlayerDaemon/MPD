@@ -59,7 +59,7 @@ src_mpd_LDADD = \
 	libsystem.a \
 	$(ICU_LDADD) \
 	libutil.a \
-	libfs.a \
+	$(FS_LIBS) \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
@@ -501,6 +501,8 @@ libpcm_a_SOURCES += \
 endif
 
 # File system library
+
+FS_LIBS = libfs.a
 
 libfs_a_SOURCES = \
 	src/fs/output/OutputStream.hxx \
@@ -1480,7 +1482,7 @@ endif
 test_read_conf_LDADD = \
 	libconf.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = \
@@ -1504,7 +1506,7 @@ test_DumpDatabase_LDADD = \
 	libutil.a \
 	libevent.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
@@ -1535,7 +1537,7 @@ test_run_input_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
@@ -1557,7 +1559,7 @@ test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	libtag.a \
 	libconf.a \
 	libevent.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libsystem.a \
 	libthread.a \
 	libutil.a
@@ -1585,7 +1587,7 @@ test_visit_archive_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/Log.cxx src/LogBackend.cxx \
@@ -1600,7 +1602,7 @@ test_dump_text_file_LDADD = \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libsystem.a \
 	libthread.a \
 	libutil.a \
@@ -1621,7 +1623,7 @@ test_dump_playlist_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libutil.a \
 	libpcm.a \
 	$(GLIB_LIBS)
@@ -1651,7 +1653,7 @@ test_run_decoder_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
@@ -1676,7 +1678,7 @@ test_read_tags_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
@@ -1701,7 +1703,7 @@ test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	libconf.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.cxx \
@@ -1729,7 +1731,7 @@ test_run_encoder_LDADD = \
 	libpcm.a \
 	libthread.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
@@ -1751,7 +1753,7 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
@@ -1807,7 +1809,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
 	libevent.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libsystem.a \
 	libthread.a \
 	libutil.a \
@@ -1836,7 +1838,7 @@ test_read_mixer_LDADD = \
 	libconf.a \
 	libevent.a \
 	libsystem.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
@@ -1967,7 +1969,7 @@ test_test_translate_song_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declara
 test_test_translate_song_LDADD = \
 	$(STORAGE_LIBS) \
 	libtag.a \
-	libfs.a \
+	$(FS_LIBS) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS) \
