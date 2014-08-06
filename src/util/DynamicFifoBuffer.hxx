@@ -30,14 +30,7 @@
 #ifndef FIFO_BUFFER_HPP
 #define FIFO_BUFFER_HPP
 
-#include "WritableBuffer.hxx"
-
-#include <utility>
-#include <algorithm>
-
-#include <assert.h>
-#include <stddef.h>
-#include <stdint.h>
+#include "ForeignFifoBuffer.hxx"
 
 /**
  * A first-in-first-out buffer: you can append data at the end, and
@@ -45,93 +38,49 @@
  * buffer as needed.  It is not thread safe.
  */
 template<typename T>
-class DynamicFifoBuffer {
+class DynamicFifoBuffer : protected ForeignFifoBuffer<T> {
 public:
-	typedef size_t size_type;
-	typedef WritableBuffer<T> Range;
-	typedef typename Range::pointer_type pointer_type;
-	typedef typename Range::const_pointer_type const_pointer_type;
+	typedef typename ForeignFifoBuffer<T>::size_type size_type;
+	typedef typename ForeignFifoBuffer<T>::pointer_type pointer_type;
+	typedef typename ForeignFifoBuffer<T>::const_pointer_type const_pointer_type;
 
-protected:
-	size_type head, tail, capacity;
-	T *data;
-
-public:
 	explicit DynamicFifoBuffer(size_type _capacity)
-		:head(0), tail(0), capacity(_capacity),
-		 data(new T[capacity]) {}
+		:ForeignFifoBuffer<T>(new T[_capacity], _capacity) {}
 	~DynamicFifoBuffer() {
-		delete[] data;
+		delete[] GetBuffer();
 	}
 
 	DynamicFifoBuffer(const DynamicFifoBuffer &) = delete;
 
-	size_type GetCapacity() {
-		return capacity;
-	}
+	using ForeignFifoBuffer<T>::IsEmpty;
+	using ForeignFifoBuffer<T>::IsFull;
+	using ForeignFifoBuffer<T>::Read;
+	using ForeignFifoBuffer<T>::Consume;
+	using ForeignFifoBuffer<T>::Write;
+	using ForeignFifoBuffer<T>::Append;
 
 	void Grow(size_type new_capacity) {
-		assert(new_capacity > capacity);
+		assert(new_capacity > GetCapacity());
 
+		T *old_data = GetBuffer();
 		T *new_data = new T[new_capacity];
-		std::move(data + head, data + tail, new_data);
-		delete[] data;
-		data = new_data;
-		capacity = new_capacity;
-		tail -= head;
-		head = 0;
-	}
-
-	void Clear() {
-		head = tail = 0;
-	}
-
-	bool IsEmpty() const {
-		return head == tail;
-	}
-
-	bool IsFull() const {
-		return head == 0 && tail == capacity;
-	}
-
-	/**
-	 * Prepares writing.  Returns a buffer range which may be written.
-	 * When you are finished, call append().
-	 */
-	Range Write() {
-		Shift();
-		return Range(data + tail, capacity - tail);
-	}
-
-	/**
-	 * Expands the tail of the buffer, after data has been written to
-	 * the buffer returned by write().
-	 */
-	void Append(size_type n) {
-		assert(tail <= capacity);
-		assert(n <= capacity);
-		assert(tail + n <= capacity);
-
-		tail += n;
+		ForeignFifoBuffer<T>::MoveBuffer(new_data, new_capacity);
+		delete[] old_data;
 	}
 
 	void WantWrite(size_type n) {
-		if (tail + n <= capacity)
-			/* enough space after the tail */
+		if (ForeignFifoBuffer<T>::WantWrite(n))
+			/* we already have enough space */
 			return;
 
-		const size_type in_use = tail - head;
+		const size_type in_use = Read().size;
 		const size_type required_capacity = in_use + n;
-		if (capacity >= required_capacity) {
-			Shift();
-		} else {
-			size_type new_capacity = capacity;
-			do {
-				new_capacity <<= 1;
-			} while (new_capacity < required_capacity);
+		size_type new_capacity = GetCapacity();
+		do {
+			new_capacity <<= 1;
+		} while (new_capacity < required_capacity);
 
-			Grow(new_capacity);
-		}
+		Grow(new_capacity);
 	}
 
 	/**
@@ -140,7 +89,7 @@ public:
 	 */
 	pointer_type Write(size_type n) {
 		WantWrite(n);
-		return data + tail;
+		return Write().data;
 	}
 
 	/**
@@ -151,49 +100,9 @@ public:
 		Append(n);
 	}
 
-	/**
-	 * Return a buffer range which may be read.  The buffer pointer is
-	 * writable, to allow modifications while parsing.
-	 */
-	Range Read() {
-		return Range(data + head, tail - head);
-	}
-
-	/**
-	 * Marks a chunk as consumed.
-	 */
-	void Consume(size_type n) {
-		assert(tail <= capacity);
-		assert(head <= tail);
-		assert(n <= tail);
-		assert(head + n <= tail);
-
-		head += n;
-	}
-
-	size_type Read(pointer_type p, size_type n) {
-		auto range = Read();
-		if (n > range.size)
-			n = range.size;
-		std::copy_n(range.data, n, p);
-		Consume(n);
-		return n;
-	}
-
 protected:
-	void Shift() {
-		if (head == 0)
-			return;
-
-		assert(head <= capacity);
-		assert(tail <= capacity);
-		assert(tail >= head);
-
-		std::move(data + head, data + tail, data);
-
-		tail -= head;
-		head = 0;
-	}
+	using ForeignFifoBuffer<T>::GetBuffer;
+	using ForeignFifoBuffer<T>::GetCapacity;
 };
 
 #endif
