@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2010 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2003-2014 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FIFO_BUFFER_HPP
-#define FIFO_BUFFER_HPP
+#ifndef STATIC_FIFO_BUFFER_HPP
+#define STATIC_FIFO_BUFFER_HPP
 
 #include "WritableBuffer.hxx"
 
@@ -44,7 +44,7 @@
  * buffer as needed.  It is not thread safe.
  */
 template<class T, size_t size>
-class FifoBuffer {
+class StaticFifoBuffer {
 public:
   typedef size_t size_type;
 
@@ -57,7 +57,7 @@ protected:
 
 public:
   constexpr
-  FifoBuffer():head(0), tail(0) {}
+  StaticFifoBuffer():head(0), tail(0) {}
 
 protected:
   void Shift() {

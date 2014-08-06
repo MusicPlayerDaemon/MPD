@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "SocketMonitor.hxx"
-#include "util/FifoBuffer.hxx"
+#include "util/StaticFifoBuffer.hxx"
 
 #include <assert.h>
 #include <stdint.h>
@@ -34,7 +34,7 @@ class EventLoop;
  * A #SocketMonitor specialization that adds an input buffer.
  */
 class BufferedSocket : protected SocketMonitor {
-	FifoBuffer<uint8_t, 8192> input;
+	StaticFifoBuffer<uint8_t, 8192> input;
 
 public:
 	BufferedSocket(int _fd, EventLoop &_loop)

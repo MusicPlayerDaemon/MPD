@@ -28,7 +28,7 @@
 #include "AudioFormat.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "util/FifoBuffer.hxx"
+#include "util/StaticFifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 #include "stdbin.h"
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	FifoBuffer<uint8_t, 4096> buffer;
+	StaticFifoBuffer<uint8_t, 4096> buffer;
 
 	while (true) {
 		{

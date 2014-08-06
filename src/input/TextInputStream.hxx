@@ -20,7 +20,7 @@
 #ifndef MPD_TEXT_INPUT_STREAM_HXX
 #define MPD_TEXT_INPUT_STREAM_HXX
 
-#include "util/FifoBuffer.hxx"
+#include "util/StaticFifoBuffer.hxx"
 
 #include <string>
 
@@ -28,7 +28,7 @@ class InputStream;
 
 class TextInputStream {
 	InputStream &is;
-	FifoBuffer<char, 4096> buffer;
+	StaticFifoBuffer<char, 4096> buffer;
 
 public:
 	/**
