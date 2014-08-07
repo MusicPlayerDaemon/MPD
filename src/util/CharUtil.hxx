@@ -44,12 +44,14 @@ IsASCII(const char ch)
 	return IsASCII((unsigned char)ch);
 }
 
+constexpr
 static inline bool
 IsWhitespaceOrNull(const char ch)
 {
 	return (unsigned char)ch <= 0x20;
 }
 
+constexpr
 static inline bool
 IsWhitespaceNotNull(const char ch)
 {
