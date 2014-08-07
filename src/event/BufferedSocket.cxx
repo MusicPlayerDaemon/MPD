@@ -118,7 +118,7 @@ BufferedSocket::OnSocketReady(unsigned flags)
 		if (!ReadToBuffer() || !ResumeInput())
 			return false;
 
-		if (input.IsFull())
+		if (!input.IsFull())
 			ScheduleRead();
 	}
 
