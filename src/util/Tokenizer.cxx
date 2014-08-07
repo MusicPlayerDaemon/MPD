@@ -67,7 +67,7 @@ Tokenizer::NextWord(Error &error)
 	   whitespace or end-of-string */
 
 	while (*++input != 0) {
-		if (IsWhitespaceOrNull(*input)) {
+		if (IsWhitespaceFast(*input)) {
 			/* a whitespace: the word ends here */
 			*input = 0;
 			/* skip all following spaces, too */
@@ -112,7 +112,7 @@ Tokenizer::NextUnquoted(Error &error)
 	   whitespace or end-of-string */
 
 	while (*++input != 0) {
-		if (IsWhitespaceOrNull(*input)) {
+		if (IsWhitespaceFast(*input)) {
 			/* a whitespace: the word ends here */
 			*input = 0;
 			/* skip all following spaces, too */
@@ -176,7 +176,7 @@ Tokenizer::NextString(Error &error)
 	   line) */
 
 	++input;
-	if (!IsWhitespaceOrNull(*input)) {
+	if (!IsWhitespaceFast(*input)) {
 		error.Set(tokenizer_domain,
 			  "Space expected after closing '\"'");
 		return nullptr;

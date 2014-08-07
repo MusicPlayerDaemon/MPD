@@ -120,7 +120,7 @@ chomp_length(const char *p)
 {
 	size_t length = strlen(p);
 
-	while (length > 0 && IsWhitespaceOrNull(p[length - 1]))
+	while (length > 0 && IsWhitespaceFast(p[length - 1]))
 		--length;
 
 	return (int)length;

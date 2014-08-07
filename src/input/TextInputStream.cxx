@@ -72,7 +72,7 @@ TextInputStream::ReadLine()
 
 	buffer.Consume(p - src + 1);
 
-	while (p > src && IsWhitespaceOrNull(p[-1]))
+	while (p > src && IsWhitespaceFast(p[-1]))
 		--p;
 	*p = 0;
 	return src;

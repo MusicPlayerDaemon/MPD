@@ -39,7 +39,7 @@ Client::OnSocketInput(void *data, size_t length)
 	BufferedSocket::ConsumeInput(newline + 1 - p);
 
 	/* skip whitespace at the end of the line */
-	while (newline > p && IsWhitespaceOrNull(newline[-1]))
+	while (newline > p && IsWhitespaceFast(newline[-1]))
 		--newline;
 
 	/* terminate the string at the end of the line */
