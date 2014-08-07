@@ -27,7 +27,7 @@
 #include <string.h>
 
 const char *
-strchug_fast(const char *p)
+StripLeft(const char *p)
 {
 	while (IsWhitespaceNotNull(*p))
 		++p;
@@ -38,7 +38,7 @@ strchug_fast(const char *p)
 char *
 Strip(char *p)
 {
-	p = strchug_fast(p);
+	p = StripLeft(p);
 
 	size_t length = strlen(p);
 	while (length > 0 && IsWhitespaceNotNull(p[length - 1]))

@@ -129,7 +129,7 @@ static bool
 ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 {
 	// strip leading white space
-	line = strchug_fast(line);
+	line = StripLeft(line);
 
 	// check for end-of-line or comment
 	if (*line == '\0' || *line == '#')
@@ -141,11 +141,11 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 	line += strlen(dir_name);
 
 	// strip equals sign and spaces around it
-	line = strchug_fast(line);
+	line = StripLeft(line);
 	if (*line != '=')
 		return false;
 	++line;
-	line = strchug_fast(line);
+	line = StripLeft(line);
 
 	// check if path is quoted
 	bool quoted = false;

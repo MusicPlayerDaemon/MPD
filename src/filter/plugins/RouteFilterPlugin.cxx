@@ -142,11 +142,11 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 	// A cowardly default, just passthrough stereo
 	const char *routes = param.GetBlockValue("routes", "0>0, 1>1");
 	while (true) {
-		routes = strchug_fast(routes);
+		routes = StripLeft(routes);
 
 		char *endptr;
 		const unsigned source = strtoul(routes, &endptr, 10);
-		endptr = strchug_fast(endptr);
+		endptr = StripLeft(endptr);
 		if (endptr == routes || *endptr != '>') {
 			error.Set(config_domain,
 				  "Malformed 'routes' specification");
@@ -163,10 +163,10 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 		if (source >= min_input_channels)
 			min_input_channels = source + 1;
 
-		routes = strchug_fast(endptr + 1);
+		routes = StripLeft(endptr + 1);
 
 		unsigned dest = strtoul(routes, &endptr, 10);
-		endptr = strchug_fast(endptr);
+		endptr = StripLeft(endptr);
 		if (endptr == routes) {
 			error.Set(config_domain,
 				  "Malformed 'routes' specification");

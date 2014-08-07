@@ -71,7 +71,7 @@ Tokenizer::NextWord(Error &error)
 			/* a whitespace: the word ends here */
 			*input = 0;
 			/* skip all following spaces, too */
-			input = strchug_fast(input + 1);
+			input = StripLeft(input + 1);
 			break;
 		}
 
@@ -116,7 +116,7 @@ Tokenizer::NextUnquoted(Error &error)
 			/* a whitespace: the word ends here */
 			*input = 0;
 			/* skip all following spaces, too */
-			input = strchug_fast(input + 1);
+			input = StripLeft(input + 1);
 			break;
 		}
 
@@ -185,7 +185,7 @@ Tokenizer::NextString(Error &error)
 	/* finish the string and return it */
 
 	*dest = 0;
-	input = strchug_fast(input);
+	input = StripLeft(input);
 	return word;
 }
 

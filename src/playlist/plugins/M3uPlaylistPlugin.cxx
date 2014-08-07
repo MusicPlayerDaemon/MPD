@@ -52,7 +52,7 @@ M3uPlaylist::NextSong()
 		if (line_s == nullptr)
 			return nullptr;
 
-		line_s = strchug_fast(line_s);
+		line_s = StripLeft(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
 	return new DetachedSong(line_s);

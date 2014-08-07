@@ -27,19 +27,16 @@
 /**
  * Returns a pointer to the first non-whitespace character in the
  * string, or to the end of the string.
- *
- * This is a faster version of g_strchug(), because it does not move
- * data.
  */
 gcc_pure
 const char *
-strchug_fast(const char *p);
+StripLeft(const char *p);
 
 gcc_pure
 static inline char *
-strchug_fast(char *p)
+StripLeft(char *p)
 {
-	return const_cast<char *>(strchug_fast((const char *)p));
+	return const_cast<char *>(StripLeft((const char *)p));
 }
 
 /**

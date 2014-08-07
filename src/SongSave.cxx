@@ -94,7 +94,7 @@ song_load(TextFile &file, const char *uri,
 		}
 
 		*colon++ = 0;
-		const char *value = strchug_fast(colon);
+		const char *value = StripLeft(colon);
 
 		TagType type;
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {

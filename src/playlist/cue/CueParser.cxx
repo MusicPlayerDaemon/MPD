@@ -80,7 +80,7 @@ cue_next_quoted(char *p, char **pp)
 static const char *
 cue_next_token(char **pp)
 {
-	char *p = strchug_fast(*pp);
+	char *p = StripLeft(*pp);
 	if (*p == 0)
 		return nullptr;
 
@@ -90,7 +90,7 @@ cue_next_token(char **pp)
 static const char *
 cue_next_value(char **pp)
 {
-	char *p = strchug_fast(*pp);
+	char *p = StripLeft(*pp);
 	if (*p == 0)
 		return nullptr;
 

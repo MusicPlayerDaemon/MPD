@@ -96,7 +96,7 @@ config_read_block(FILE *fp, int *count, char *string, Error &error)
 		}
 
 		(*count)++;
-		line = strchug_fast(line);
+		line = StripLeft(line);
 		if (*line == 0 || *line == CONF_COMMENT)
 			continue;
 
@@ -104,7 +104,7 @@ config_read_block(FILE *fp, int *count, char *string, Error &error)
 			/* end of this block; return from the function
 			   (and from this "while" loop) */
 
-			line = strchug_fast(line + 1);
+			line = StripLeft(line + 1);
 			if (*line != 0 && *line != CONF_COMMENT) {
 				delete ret;
 				error.Format(config_file_domain,
@@ -155,7 +155,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 
 		count++;
 
-		line = strchug_fast(string);
+		line = StripLeft(string);
 		if (*line == 0 || *line == CONF_COMMENT)
 			continue;
 
@@ -205,7 +205,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 				return false;
 			}
 
-			line = strchug_fast(tokenizer.Rest() + 1);
+			line = StripLeft(tokenizer.Rest() + 1);
 			if (*line != 0 && *line != CONF_COMMENT) {
 				error.Format(config_file_domain,
 					     "line %i: Unknown tokens after '{'",
