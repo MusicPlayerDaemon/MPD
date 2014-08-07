@@ -22,7 +22,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "event/Loop.hxx"
-#include "util/CharUtil.hxx"
+#include "util/StringUtil.hxx"
 
 #include <string.h>
 
@@ -39,11 +39,10 @@ Client::OnSocketInput(void *data, size_t length)
 	BufferedSocket::ConsumeInput(newline + 1 - p);
 
 	/* skip whitespace at the end of the line */
-	while (newline > p && IsWhitespaceFast(newline[-1]))
-		--newline;
+	char *end = StripRight(p, newline);
 
 	/* terminate the string at the end of the line */
-	*newline = 0;
+	*end = 0;
 
 	CommandResult result = client_process_line(*this, p);
 	switch (result) {

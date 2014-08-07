@@ -40,7 +40,6 @@
 #endif
 
 #ifdef USE_XDG
-#include "util/CharUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "TextFile.hxx"
 #include <string.h>
@@ -169,9 +168,7 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 		if (line_end == nullptr)
 			return true;
 	} else {
-		line_end = line + strlen(line);
-		while (line < line_end && IsWhitespaceNotNull(line_end[-1]))
-			--line_end;
+		line_end = StripRight(line, line + strlen(line));
 	}
 
 	// check for empty result

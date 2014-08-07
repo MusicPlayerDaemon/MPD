@@ -35,6 +35,24 @@ StripLeft(const char *p)
 	return p;
 }
 
+const char *
+StripLeft(const char *p, const char *end)
+{
+	while (p < end && IsWhitespaceOrNull(*p))
+		++p;
+
+	return p;
+}
+
+const char *
+StripRight(const char *p, const char *end)
+{
+	while (end > p && IsWhitespaceOrNull(end[-1]))
+		--end;
+
+	return end;
+}
+
 size_t
 StripRight(const char *p, size_t length)
 {

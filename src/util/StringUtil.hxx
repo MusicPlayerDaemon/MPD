@@ -39,6 +39,28 @@ StripLeft(char *p)
 	return const_cast<char *>(StripLeft((const char *)p));
 }
 
+gcc_pure
+const char *
+StripLeft(const char *p, const char *end);
+
+/**
+ * Determine the string's end as if it was stripped on the right side.
+ */
+gcc_pure
+const char *
+StripRight(const char *p, const char *end);
+
+/**
+ * Determine the string's end as if it was stripped on the right side.
+ */
+gcc_pure
+static inline char *
+StripRight(char *p, char *end)
+{
+	return const_cast<char *>(StripRight((const char *)p,
+					     (const char *)end));
+}
+
 /**
  * Determine the string's length as if it was stripped on the right
  * side.

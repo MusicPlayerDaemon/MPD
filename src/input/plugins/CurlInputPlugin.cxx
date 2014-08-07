@@ -31,7 +31,7 @@
 #include "event/Call.hxx"
 #include "IOThread.hxx"
 #include "util/ASCII.hxx"
-#include "util/CharUtil.hxx"
+#include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/CircularBuffer.hxx"
 #include "util/HugeAllocator.hxx"
@@ -661,11 +661,8 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 
 	/* strip the value */
 
-	while (value < end && IsWhitespaceOrNull(*value))
-		++value;
-
-	while (end > value && IsWhitespaceOrNull(end[-1]))
-		--end;
+	value = StripLeft(value, end);
+	end = StripRight(value, end);
 
 	c.HeaderReceived(name, std::string(value, end));
 	return size;

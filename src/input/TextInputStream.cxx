@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TextInputStream.hxx"
 #include "InputStream.hxx"
-#include "util/CharUtil.hxx"
+#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -72,8 +72,7 @@ TextInputStream::ReadLine()
 
 	buffer.Consume(p - src + 1);
 
-	while (p > src && IsWhitespaceFast(p[-1]))
-		--p;
-	*p = 0;
+	char *end = StripRight(src, p);
+	*end = 0;
 	return src;
 }
