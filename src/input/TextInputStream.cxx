@@ -21,31 +21,15 @@
 #include "TextInputStream.hxx"
 #include "InputStream.hxx"
 #include "util/Error.hxx"
+#include "util/TextFile.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
-#include <string.h>
-
-char *
-TextInputStream::ReadBufferedLine()
-{
-	auto r = buffer.Read();
-	char *newline = reinterpret_cast<char*>(memchr(r.data, '\n', r.size));
-	if (newline == nullptr)
-		return nullptr;
-
-	buffer.Consume(newline + 1 - r.data);
-
-	if (newline > r.data && newline[-1] == '\r')
-		--newline;
-	*newline = 0;
-	return r.data;
-}
 
 char *
 TextInputStream::ReadLine()
 {
-	char *line = ReadBufferedLine();
+	char *line = ReadBufferedLine(buffer);
 	if (line != nullptr)
 		return line;
 
@@ -76,7 +60,7 @@ TextInputStream::ReadLine()
 			return nullptr;
 		}
 
-		line = ReadBufferedLine();
+		line = ReadBufferedLine(buffer);
 		if (line != nullptr)
 			return line;
 

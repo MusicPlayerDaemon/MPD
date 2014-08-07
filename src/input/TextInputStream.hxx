@@ -47,9 +47,6 @@ public:
 	 * @return a pointer to the line, or nullptr on end-of-file or error
 	 */
 	char *ReadLine();
-
-private:
-	char *ReadBufferedLine();
 };
 
 #endif
