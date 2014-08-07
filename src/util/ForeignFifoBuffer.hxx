@@ -204,6 +204,22 @@ public:
 		return n;
 	}
 
+	/**
+	 * Move as much data as possible from the specified buffer.
+	 *
+	 * @return the number of items moved
+	 */
+	size_type MoveFrom(ForeignFifoBuffer<T> &src) {
+		auto r = src.Read();
+		auto w = Write();
+		size_t n = std::min(r.size, w.size);
+
+		std::move(r.data, r.data + n, w.data);
+		Append(n);
+		src.Consume(n);
+		return n;
+	}
+
 protected:
 	void Shift() {
 		if (head == 0)
