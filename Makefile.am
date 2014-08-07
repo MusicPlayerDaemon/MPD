@@ -506,6 +506,8 @@ endif
 FS_LIBS = libfs.a
 
 libfs_a_SOURCES = \
+	src/fs/io/Reader.hxx \
+	src/fs/io/FileReader.cxx src/fs/io/FileReader.hxx \
 	src/fs/io/TextFile.cxx src/fs/io/TextFile.hxx \
 	src/fs/io/OutputStream.hxx \
 	src/fs/io/StdoutOutputStream.hxx \
