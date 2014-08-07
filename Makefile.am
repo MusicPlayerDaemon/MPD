@@ -799,6 +799,7 @@ libdecoder_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(WAVPACK_CFLAGS) \
 	$(MAD_CFLAGS) \
 	$(MPG123_CFLAGS) \
+	$(MP4V2_CFLAGS) \
 	$(OPUS_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(MPCDEC_CFLAGS) \
@@ -818,6 +819,7 @@ DECODER_LIBS = \
 	$(WAVPACK_LIBS) \
 	$(MAD_LIBS) \
 	$(MPG123_LIBS) \
+	$(MP4V2_LIBS) \
 	$(OPUS_LIBS) \
 	$(FFMPEG_LIBS) \
 	$(MPCDEC_LIBS) \
@@ -920,6 +922,12 @@ libmodplug_decoder_plugin_a_CXXFLAGS = $(AM_CXXFLAGS) $(MODPLUG_CFLAGS)
 libmodplug_decoder_plugin_a_CPPFLAGS = $(AM_CPPFLAGS)
 noinst_LIBRARIES += libmodplug_decoder_plugin.a
 DECODER_LIBS += libmodplug_decoder_plugin.a $(MODPLUG_LIBS)
+endif
+
+if HAVE_MP4V2
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/Mp4v2DecoderPlugin.cxx \
+	src/decoder/plugins/Mp4v2DecoderPlugin.hxx
 endif
 
 if ENABLE_SIDPLAY

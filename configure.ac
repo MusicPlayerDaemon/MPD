@@ -475,6 +475,11 @@ AC_ARG_ENABLE(modplug,
 		[enable modplug decoder plugin]),,
 	enable_modplug=auto)
 
+AC_ARG_ENABLE(mp4v2,
+	AS_HELP_STRING([--enable-mp4v2],
+		[enable libmp4v2 decoder plugin]),,
+	enable_mp4v2=auto)
+
 AC_ARG_ENABLE(mpc,
 	AS_HELP_STRING([--enable-mpc],
 		[disable musepack (MPC) support (default: auto)]),,
@@ -1222,6 +1227,24 @@ if test x$enable_modplug = xyes; then
 fi
 AM_CONDITIONAL(HAVE_MODPLUG, test x$enable_modplug = xyes)
 
+dnl -------------------------------- libmp4v2 ---------------------------------
+if test x$enable_aac = xyes; then
+        MPD_AUTO_LIB(mp4v2, MP4V2, mp4v2, MP4Create, [-lmp4v2], [],
+	                    [mp4v2], [libmp4v2 not found])
+
+        if test x$enable_mp4v2 = xyes; then
+	        AC_DEFINE(HAVE_MP4V2, 1, [Define to use libmp4v2 for MP4 decoding])
+        fi
+else
+     if test x$enable_mp4v2 = xyes; then
+        AC_MSG_ERROR([MP4V2 requires AAC!])
+     fi
+
+     enable_mp4v2 = no
+fi
+
+AM_CONDITIONAL(HAVE_MP4V2, test x$enable_mp4v2 = xyes)
+
 dnl -------------------------------- libopus ----------------------------------
 MPD_AUTO_PKG(opus, OPUS, [opus ogg],
 	[opus decoder plugin], [libopus not found])
@@ -1372,6 +1395,7 @@ if
 	test x$enable_mad = xno &&
 	test x$enable_mikmod = xno; then
 	test x$enable_modplug = xno &&
+	test x$enable_mp4v2 = xno &&
 	test x$enable_mpc = xno &&
 	test x$enable_mpg123 = xno &&
 	test x$enable_opus = xno &&
@@ -1844,6 +1868,7 @@ printf '\n\t'
 results(sndfile, [libsndfile])
 results(mikmod, [MikMod])
 results(modplug, [MODPLUG])
+results(mp4v2, [MP4V2])
 results(mad, [MAD])
 results(mpg123, [MPG123])
 results(mpc, [Musepack])
