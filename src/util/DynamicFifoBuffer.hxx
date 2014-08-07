@@ -52,6 +52,8 @@ public:
 
 	DynamicFifoBuffer(const DynamicFifoBuffer &) = delete;
 
+	using ForeignFifoBuffer<T>::GetCapacity;
+	using ForeignFifoBuffer<T>::Clear;
 	using ForeignFifoBuffer<T>::IsEmpty;
 	using ForeignFifoBuffer<T>::IsFull;
 	using ForeignFifoBuffer<T>::GetAvailable;
@@ -103,7 +105,6 @@ public:
 
 protected:
 	using ForeignFifoBuffer<T>::GetBuffer;
-	using ForeignFifoBuffer<T>::GetCapacity;
 };
 
 #endif
