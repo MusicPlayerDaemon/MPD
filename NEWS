@@ -38,6 +38,7 @@ ver 0.19 (not yet released)
   - audiofile: log libaudiofile errors
   - sndfile: support scanning remote files
   - sndfile: support tags "comment", "album", "track", "genre"
+  - mp4v2: support playback of MP4 files.
 * encoder:
   - shine: new encoder plugin
 * threads:
