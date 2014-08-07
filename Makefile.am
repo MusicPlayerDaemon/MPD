@@ -529,6 +529,7 @@ libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
 
 if HAVE_ZLIB
 libfs_a_SOURCES += \
+	src/fs/io/GunzipReader.cxx src/fs/io/GunzipReader.hxx \
 	src/fs/io/GzipOutputStream.cxx src/fs/io/GzipOutputStream.hxx
 FS_LIBS += $(ZLIB_LIBS)
 endif
@@ -1617,11 +1618,20 @@ endif
 
 if HAVE_ZLIB
 
-noinst_PROGRAMS += test/run_gzip
+noinst_PROGRAMS += test/run_gzip test/run_gunzip
+
 test_run_gzip_LDADD = \
 	libutil.a \
 	$(FS_LIBS)
 test_run_gzip_SOURCES = test/run_gzip.cxx
+
+test_run_gunzip_SOURCES = test/run_gunzip.cxx \
+	src/Log.cxx src/LogBackend.cxx
+test_run_gunzip_LDADD = \
+	$(GLIB_LIBS) \
+	libutil.a \
+	$(FS_LIBS) \
+	libsystem.a
 
 endif
 
