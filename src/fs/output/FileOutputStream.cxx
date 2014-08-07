@@ -20,6 +20,7 @@
 #include "config.h"
 #include "FileOutputStream.hxx"
 #include "fs/FileSystem.hxx"
+#include "system/fd_util.h"
 #include "util/Error.hxx"
 
 #ifdef WIN32
@@ -81,9 +82,9 @@ FileOutputStream::Cancel()
 
 FileOutputStream::FileOutputStream(Path _path, Error &error)
 	:path(_path),
-	 fd(open(path.c_str(),
-		 O_WRONLY|O_CLOEXEC|O_CREAT|O_TRUNC|O_NOCTTY,
-		 0666))
+	 fd(open_cloexec(path.c_str(),
+			 O_WRONLY|O_CREAT|O_TRUNC,
+			 0666))
 {
 	if (fd < 0)
 		error.FormatErrno("Failed to create %s", path.c_str());
