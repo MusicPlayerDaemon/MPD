@@ -40,6 +40,7 @@
 #endif
 
 #ifdef USE_XDG
+#include "util/Error.hxx"
 #include "util/StringUtil.hxx"
 #include "io/TextFile.hxx"
 #include <string.h>
@@ -204,7 +205,7 @@ static AllocatedPath GetUserDir(const char *name)
 	if (config_dir.IsNull())
 		return result;
 	auto dirs_file = AllocatedPath::Build(config_dir, "user-dirs.dirs");
-	TextFile input(dirs_file);
+	TextFile input(dirs_file, IgnoreError());
 	if (input.HasFailed())
 		return result;
 	char *line;

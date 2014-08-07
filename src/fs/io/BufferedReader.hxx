@@ -17,41 +17,58 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TEXT_FILE_HXX
-#define MPD_TEXT_FILE_HXX
+#ifndef MPD_BUFFERED_READER_HXX
+#define MPD_BUFFERED_READER_HXX
 
+#include "check.h"
 #include "Compiler.h"
+#include "util/DynamicFifoBuffer.hxx"
+#include "util/Error.hxx"
 
 #include <stddef.h>
 
-class Path;
+class Reader;
 class Error;
-class FileReader;
-class BufferedReader;
 
-class TextFile {
-	FileReader *const file_reader;
-	BufferedReader *const buffered_reader;
+class BufferedReader {
+	static constexpr size_t MAX_SIZE = 512 * 1024;
+
+	Reader &reader;
+
+	DynamicFifoBuffer<char> buffer;
+
+	Error last_error;
+
+	bool eof;
 
 public:
-	TextFile(Path path_fs, Error &error);
+	BufferedReader(Reader &_reader)
+		:reader(_reader), buffer(4096), eof(false) {}
 
-	TextFile(const TextFile &other) = delete;
-
-	~TextFile();
-
-	bool HasFailed() const {
-		return gcc_unlikely(buffered_reader == nullptr);
+	gcc_pure
+	bool Check() const {
+		return !last_error.IsDefined();
 	}
 
-	/**
-	 * Reads a line from the input file, and strips trailing
-	 * space.  There is a reasonable maximum line length, only to
-	 * prevent denial of service.
-	 *
-	 * @param file the source file, opened in text mode
-	 * @return a pointer to the line, or nullptr on end-of-file or error
-	 */
+	bool Check(Error &error) const {
+		if (last_error.IsDefined()) {
+			error.Set(last_error);
+			return false;
+		} else
+			return true;
+	}
+
+	bool Fill(bool need_more);
+
+	gcc_pure
+	WritableBuffer<void> Read() const {
+		return buffer.Read().ToVoid();
+	}
+
+	void Consume(size_t n) {
+		buffer.Consume(n);
+	}
+
 	char *ReadLine();
 };
 

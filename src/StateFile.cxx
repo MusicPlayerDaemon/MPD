@@ -103,10 +103,10 @@ StateFile::Read()
 
 	FormatDebug(state_file_domain, "Loading state file %s", path_utf8.c_str());
 
-	TextFile file(path);
+	Error error;
+	TextFile file(path, error);
 	if (file.HasFailed()) {
-		FormatErrno(state_file_domain, "failed to open %s",
-			    path_utf8.c_str());
+		LogError(error);
 		return;
 	}
 
