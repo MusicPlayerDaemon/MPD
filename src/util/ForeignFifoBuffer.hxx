@@ -147,7 +147,11 @@ public:
 	 * When you are finished, call append().
 	 */
 	Range Write() {
-		Shift();
+		if (IsEmpty())
+			Clear();
+		else if (tail == capacity)
+			Shift();
+
 		return Range(data + tail, capacity - tail);
 	}
 
