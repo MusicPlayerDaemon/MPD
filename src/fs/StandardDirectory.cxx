@@ -125,8 +125,8 @@ static AllocatedPath GetStandardDir(int folder_id)
 
 static const char home_prefix[] = "$HOME/";
 
-static bool ParseConfigLine(const char *line, const char *dir_name,
-			    AllocatedPath &result_dir)
+static bool
+ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 {
 	// strip leading white space
 	line = strchug_fast(line);
@@ -162,7 +162,7 @@ static bool ParseConfigLine(const char *line, const char *dir_name,
 	}
 
 
-	const char *line_end;
+	char *line_end;
 	// find end of the string
 	if (quoted) {
 		line_end = strrchr(line, '"');
@@ -178,17 +178,19 @@ static bool ParseConfigLine(const char *line, const char *dir_name,
 	if (line == line_end)
 		return true;
 
-	// build the result path	
-	std::string path(line, line_end);
+	*line_end = 0;
+
+	// build the result path
+	const char *path = line;
 
 	auto result = AllocatedPath::Null();
 	if (home_relative) {
 		auto home = GetHomeDir();
 		if (home.IsNull())
 			return true;
-		result = AllocatedPath::Build(home, path.c_str());
+		result = AllocatedPath::Build(home, path);
 	} else {
-		result = AllocatedPath::FromFS(std::move(path));
+		result = AllocatedPath::FromFS(path);
 	}
 
 	if (IsValidDir(result.c_str())) {
@@ -208,7 +210,7 @@ static AllocatedPath GetUserDir(const char *name)
 	TextFile input(dirs_file);
 	if (input.HasFailed())
 		return result;
-	const char *line;
+	char *line;
 	while ((line = input.ReadLine()) != nullptr)
 		if (ParseConfigLine(line, name, result))
 			return result;
