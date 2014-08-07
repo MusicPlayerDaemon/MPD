@@ -1489,8 +1489,8 @@ endif
 
 test_read_conf_LDADD = \
 	libconf.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_conf_SOURCES = \
@@ -1513,8 +1513,8 @@ test_DumpDatabase_LDADD = \
 	libconf.a \
 	libutil.a \
 	libevent.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	$(ICU_LDADD) \
 	$(GLIB_LIBS)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
@@ -1544,8 +1544,8 @@ test_run_input_LDADD = \
 	libutil.a \
 	libevent.a \
 	libthread.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/stdbin.h \
@@ -1594,8 +1594,8 @@ test_visit_archive_LDADD = \
 	libutil.a \
 	libevent.a \
 	libthread.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/Log.cxx src/LogBackend.cxx \
@@ -1640,8 +1640,8 @@ test_dump_playlist_LDADD = \
 	libconf.a \
 	libevent.a \
 	libthread.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
 	libpcm.a \
 	$(GLIB_LIBS)
@@ -1670,8 +1670,8 @@ test_run_decoder_LDADD = \
 	libconf.a \
 	libevent.a \
 	libthread.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
@@ -1695,8 +1695,8 @@ test_read_tags_LDADD = \
 	libconf.a \
 	libevent.a \
 	libthread.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
@@ -1720,8 +1720,8 @@ endif
 test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	libconf.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_filter_SOURCES = test/run_filter.cxx \
@@ -1748,8 +1748,8 @@ test_run_encoder_LDADD = \
 	libconf.a \
 	libpcm.a \
 	libthread.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
@@ -1770,8 +1770,8 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(PCM_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
@@ -1856,8 +1856,8 @@ test_read_mixer_LDADD = \
 	$(OUTPUT_LIBS) \
 	libconf.a \
 	libevent.a \
-	libsystem.a \
 	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_read_mixer_SOURCES = test/read_mixer.cxx \
