@@ -45,14 +45,14 @@ m3u_open_stream(InputStream &is)
 DetachedSong *
 M3uPlaylist::NextSong()
 {
-	const char *line_s;
+	char *line_s;
 
 	do {
 		line_s = tis.ReadLine();
 		if (line_s == nullptr)
 			return nullptr;
 
-		line_s = StripLeft(line_s);
+		line_s = Strip(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
 	return new DetachedSong(line_s);

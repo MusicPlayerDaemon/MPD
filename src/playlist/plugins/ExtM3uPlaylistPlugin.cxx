@@ -104,12 +104,14 @@ DetachedSong *
 ExtM3uPlaylist::NextSong()
 {
 	Tag tag;
-	const char *line_s;
+	char *line_s;
 
 	do {
 		line_s = tis.ReadLine();
 		if (line_s == nullptr)
 			return nullptr;
+
+		StripRight(line_s);
 
 		if (StringStartsWith(line_s, "#EXTINF:")) {
 			tag = extm3u_parse_tag(line_s + 8);

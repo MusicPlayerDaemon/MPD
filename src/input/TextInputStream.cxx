@@ -20,7 +20,6 @@
 #include "config.h"
 #include "TextInputStream.hxx"
 #include "InputStream.hxx"
-#include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -37,8 +36,9 @@ TextInputStream::ReadBufferedLine()
 
 	buffer.Consume(newline + 1 - r.data);
 
-	char *end = StripRight(r.data, newline);
-	*end = 0;
+	if (newline > r.data && newline[-1] == '\r')
+		--newline;
+	*newline = 0;
 	return r.data;
 }
 
