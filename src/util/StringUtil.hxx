@@ -40,6 +40,20 @@ StripLeft(char *p)
 }
 
 /**
+ * Determine the string's length as if it was stripped on the right
+ * side.
+ */
+gcc_pure
+size_t
+StripRight(const char *p, size_t length);
+
+/**
+ * Strip trailing whitespace by null-terminating the string.
+ */
+void
+StripRight(char *p);
+
+/**
  * Skip whitespace at the beginning and terminate the string after the
  * last non-whitespace character.
  */
