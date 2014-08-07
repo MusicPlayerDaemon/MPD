@@ -82,6 +82,13 @@ public:
 		return *this;
 	}
 
+	void Swap(ForeignFifoBuffer<T> &other) {
+		std::swap(head, other.head);
+		std::swap(tail, other.tail);
+		std::swap(capacity, other.capacity);
+		std::swap(data, other.data);
+	}
+
 	constexpr bool IsNull() const {
 		return data == nullptr;
 	}
