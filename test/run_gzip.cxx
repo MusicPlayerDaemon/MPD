@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "fs/output/GzipOutputStream.hxx"
-#include "fs/output/StdioOutputStream.hxx"
+#include "fs/io/GzipOutputStream.hxx"
+#include "fs/io/StdioOutputStream.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>

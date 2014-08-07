@@ -28,7 +28,7 @@
 #include "Internal.hxx"
 #include "Domain.hxx"
 #include "Log.hxx"
-#include "fs/output/BufferedOutputStream.hxx"
+#include "fs/io/BufferedOutputStream.hxx"
 #include "util/StringUtil.hxx"
 
 #include <assert.h>

@@ -506,10 +506,11 @@ endif
 FS_LIBS = libfs.a
 
 libfs_a_SOURCES = \
-	src/fs/output/OutputStream.hxx \
-	src/fs/output/StdoutOutputStream.hxx \
-	src/fs/output/FileOutputStream.cxx src/fs/output/FileOutputStream.hxx \
-	src/fs/output/BufferedOutputStream.cxx src/fs/output/BufferedOutputStream.hxx \
+	src/fs/io/TextFile.cxx src/fs/io/TextFile.hxx \
+	src/fs/io/OutputStream.hxx \
+	src/fs/io/StdoutOutputStream.hxx \
+	src/fs/io/FileOutputStream.cxx src/fs/io/FileOutputStream.hxx \
+	src/fs/io/BufferedOutputStream.cxx src/fs/io/BufferedOutputStream.hxx \
 	src/fs/Domain.cxx src/fs/Domain.hxx \
 	src/fs/Limits.hxx \
 	src/fs/Traits.cxx src/fs/Traits.hxx \
@@ -517,7 +518,6 @@ libfs_a_SOURCES = \
 	src/fs/Charset.cxx src/fs/Charset.hxx \
 	src/fs/Path.cxx src/fs/Path.hxx \
 	src/fs/AllocatedPath.cxx src/fs/AllocatedPath.hxx \
-	src/fs/TextFile.cxx src/fs/TextFile.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
@@ -526,7 +526,7 @@ libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
 
 if HAVE_ZLIB
 libfs_a_SOURCES += \
-	src/fs/output/GzipOutputStream.cxx src/fs/output/GzipOutputStream.hxx
+	src/fs/io/GzipOutputStream.cxx src/fs/io/GzipOutputStream.hxx
 FS_LIBS += $(ZLIB_LIBS)
 endif
 

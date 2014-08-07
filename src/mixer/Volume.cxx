@@ -24,7 +24,7 @@
 #include "util/StringUtil.hxx"
 #include "util/Domain.hxx"
 #include "system/PeriodClock.hxx"
-#include "fs/output/BufferedOutputStream.hxx"
+#include "fs/io/BufferedOutputStream.hxx"
 #include "Log.hxx"
 
 #include <assert.h>

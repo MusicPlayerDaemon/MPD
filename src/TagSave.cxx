@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TagSave.hxx"
 #include "tag/Tag.hxx"
-#include "fs/output/BufferedOutputStream.hxx"
+#include "fs/io/BufferedOutputStream.hxx"
 
 #define SONG_TIME "Time: "
 

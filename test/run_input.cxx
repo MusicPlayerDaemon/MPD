@@ -28,8 +28,8 @@
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
-#include "fs/output/BufferedOutputStream.hxx"
-#include "fs/output/StdioOutputStream.hxx"
+#include "fs/io/BufferedOutputStream.hxx"
+#include "fs/io/StdioOutputStream.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"

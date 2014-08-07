@@ -41,7 +41,7 @@
 
 #ifdef USE_XDG
 #include "util/StringUtil.hxx"
-#include "TextFile.hxx"
+#include "io/TextFile.hxx"
 #include <string.h>
 #include <utility>
 #endif

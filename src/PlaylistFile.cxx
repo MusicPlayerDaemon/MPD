@@ -25,7 +25,7 @@
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "Mapper.hxx"
-#include "fs/TextFile.hxx"
+#include "fs/io/TextFile.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigDefaults.hxx"
