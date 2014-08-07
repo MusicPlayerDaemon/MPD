@@ -21,7 +21,7 @@
 #include "LogBackend.hxx"
 #include "Log.hxx"
 #include "util/Domain.hxx"
-#include "util/CharUtil.hxx"
+#include "util/StringUtil.hxx"
 
 #ifdef HAVE_GLIB
 #include <glib.h>
@@ -119,11 +119,7 @@ static int
 chomp_length(const char *p)
 {
 	size_t length = strlen(p);
-
-	while (length > 0 && IsWhitespaceFast(p[length - 1]))
-		--length;
-
-	return (int)length;
+	return StripRight(p, length);
 }
 
 #ifdef HAVE_SYSLOG

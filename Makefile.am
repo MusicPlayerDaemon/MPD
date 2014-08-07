@@ -1796,6 +1796,7 @@ test_run_avahi_CPPFLAGS = $(AM_CPPFLAGS) \
 test_run_avahi_LDADD = \
 	libevent.a \
 	libsystem.a \
+	libutil.a \
 	$(GLIB_LIBS) \
 	$(AVAHI_LIBS)
 
@@ -1928,6 +1929,7 @@ test_test_mixramp_SOURCES = \
 test_test_mixramp_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_mixramp_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_mixramp_LDADD = \
+	libutil.a \
 	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
@@ -1970,6 +1972,7 @@ test_test_archive_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTT
 test_test_archive_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_archive_LDADD = \
 	libarchive.a \
+	libutil.a \
 	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
