@@ -91,14 +91,13 @@ mp4_get_aac_track(MP4FileHandle handle, NeAACDecHandle decoder,
 		if (!audio_format_init_checked(audio_format, sample_rate,
 					       SampleFormat::S16,
 					       channels,
-					       error)) {
-			error.Set(mp4v2_decoder_domain,
-				  "Invalid audio format");
+					       error))
 			continue;
-		}
 
 		return id;
 	}
+
+	error.Set(mp4v2_decoder_domain, "no valid aac track found");
 
 	return MP4_INVALID_TRACK_ID;
 }
@@ -117,7 +116,6 @@ mp4_faad_new(MP4FileHandle handle, AudioFormat &audio_format, Error &error)
 	const auto track = mp4_get_aac_track(handle, decoder, audio_format, error);
 
 	if (track == MP4_INVALID_TRACK_ID) {
-		LogError(error);
 		NeAACDecClose(decoder);
 		return nullptr;
 	}
@@ -132,7 +130,7 @@ mp4_file_decode(Decoder &mpd_decoder, Path path_fs)
 
 	if (handle == MP4_INVALID_FILE_HANDLE) {
 		FormatError(mp4v2_decoder_domain,
-			  "Unable to open file");
+			  "unable to open file");
 		return;
 	}
 
