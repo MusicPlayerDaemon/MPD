@@ -45,6 +45,7 @@ public:
 	 * @return the number of bytes read into the given buffer or 0
 	 * on error/end-of-stream
 	 */
+	gcc_nonnull_all
 	virtual size_t Read(void *data, size_t size, Error &error) = 0;
 };
 
