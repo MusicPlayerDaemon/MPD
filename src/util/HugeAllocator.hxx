@@ -63,6 +63,28 @@ HugeFree(void *p, size_t size);
 void
 HugeDiscard(void *p, size_t size);
 
+#elif defined(WIN32)
+#include <windows.h>
+
+gcc_malloc
+static inline void *
+HugeAllocate(size_t size)
+{
+	return VirtualAlloc(nullptr, size, MEM_LARGE_PAGES, PAGE_READWRITE);
+}
+
+static inline void
+HugeFree(void *p, gcc_unused size_t size)
+{
+	VirtualFree(p, 0, MEM_RELEASE);
+}
+
+static inline void
+HugeDiscard(void *p, size_t size)
+{
+	VirtualAlloc(p, size, MEM_RESET, PAGE_NOACCESS);
+}
+
 #else
 
 /* not Linux: fall back to standard C calls */
