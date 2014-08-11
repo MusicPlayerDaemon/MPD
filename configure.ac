@@ -1240,7 +1240,7 @@ else
         AC_MSG_ERROR([MP4V2 requires AAC!])
      fi
 
-     enable_mp4v2 = no
+     enable_mp4v2=no
 fi
 
 AM_CONDITIONAL(HAVE_MP4V2, test x$enable_mp4v2 = xyes)
