@@ -1553,7 +1553,7 @@ OK
             <para>
               Finds songs in the db that are exactly
               <varname>WHAT</varname>.  <varname>TYPE</varname> can
-              be any tag supported by MPD, or one of the three special
+              be any tag supported by MPD, or one of the special
               parameters:
             </para>
 
@@ -1576,6 +1576,14 @@ OK
                   <parameter>base</parameter> restricts the search to
                   songs in the given directory (also relative to the
                   music directory)
+                </para>
+              </listitem>
+
+              <listitem>
+                <para>
+                  <parameter>modified-since</parameter> compares the
+                  file's time stamp with the given value (ISO 8601 or
+                  UNIX time stamp)
                 </para>
               </listitem>
             </itemizedlist>

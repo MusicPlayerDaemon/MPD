@@ -26,11 +26,13 @@
 #include <string>
 
 #include <stdint.h>
+#include <time.h>
 
 /**
  * Limit the search to files within the given directory.
  */
 #define LOCATE_TAG_BASE_TYPE (TAG_NUM_OF_ITEM_TYPES + 1)
+#define LOCATE_TAG_MODIFIED_SINCE (TAG_NUM_OF_ITEM_TYPES + 2)
 
 #define LOCATE_TAG_FILE_TYPE	TAG_NUM_OF_ITEM_TYPES+10
 #define LOCATE_TAG_ANY_TYPE     TAG_NUM_OF_ITEM_TYPES+20
@@ -51,9 +53,15 @@ public:
 
 		std::string value;
 
+		/**
+		 * For #LOCATE_TAG_MODIFIED_SINCE
+		 */
+		time_t time;
+
 	public:
 		gcc_nonnull(3)
 		Item(unsigned tag, const char *value, bool fold_case=false);
+		Item(unsigned tag, time_t time);
 
 		Item(const Item &other) = delete;
 		Item(Item &&) = default;

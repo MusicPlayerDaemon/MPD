@@ -7,6 +7,7 @@ ver 0.19 (not yet released)
   - "idle" with unrecognized event name fails
   - "list" on album artist falls back to the artist tag
   - "list" and "count" allow grouping
+  - new "search"/"find" filter "modified-since"
 * database
   - proxy: forward "idle" events
   - proxy: forward the "update" command
