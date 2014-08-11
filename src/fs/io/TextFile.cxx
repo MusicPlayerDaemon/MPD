@@ -61,3 +61,11 @@ TextFile::ReadLine()
 
 	return buffered_reader->ReadLine();
 }
+
+bool
+TextFile::Check(Error &error) const
+{
+	assert(buffered_reader != nullptr);
+
+	return buffered_reader->Check(error);
+}
