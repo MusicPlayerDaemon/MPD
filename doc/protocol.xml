@@ -1554,14 +1554,34 @@ OK
               Finds songs in the db that are exactly
               <varname>WHAT</varname>.  <varname>TYPE</varname> can
               be any tag supported by MPD, or one of the three special
-              parameters — <parameter>file</parameter> to search by
+              parameters:
+            </para>
 
-              full path (relative to the music directory),
-              <parameter>base</parameter> to restrict the search to
-              songs in the given directory (also relative to the music
-              directory) and
-              <parameter>any</parameter> to match against all
-              available tags.  <varname>WHAT</varname> is what to find.
+            <itemizedlist>
+              <listitem>
+                <para>
+                  <parameter>any</parameter> checks all tag values
+                </para>
+              </listitem>
+
+              <listitem>
+                <para>
+                  <parameter>file</parameter> checks the full path
+                  (relative to the music directory)
+                </para>
+              </listitem>
+
+              <listitem>
+                <para>
+                  <parameter>base</parameter> restricts the search to
+                  songs in the given directory (also relative to the
+                  music directory)
+                </para>
+              </listitem>
+            </itemizedlist>
+
+            <para>
+              <varname>WHAT</varname> is what to find.
             </para>
           </listitem>
         </varlistentry>
