@@ -20,6 +20,7 @@
 #include "config.h"
 #include "TextFile.hxx"
 #include "FileReader.hxx"
+#include "AutoGunzipReader.hxx"
 #include "BufferedReader.hxx"
 #include "fs/Path.hxx"
 
@@ -27,8 +28,19 @@
 
 TextFile::TextFile(Path path_fs, Error &error)
 	:file_reader(new FileReader(path_fs, error)),
+#ifdef HAVE_ZLIB
+	 gunzip_reader(file_reader->IsDefined()
+		       ? new AutoGunzipReader(*file_reader)
+		       : nullptr),
+#endif
 	 buffered_reader(file_reader->IsDefined()
-			 ? new BufferedReader(*file_reader)
+			 ? new BufferedReader(*
+#ifdef HAVE_ZLIB
+					      gunzip_reader
+#else
+					      file_reader
+#endif
+					      )
 			 : nullptr)
 {
 }
@@ -36,6 +48,9 @@ TextFile::TextFile(Path path_fs, Error &error)
 TextFile::~TextFile()
 {
 	delete buffered_reader;
+#ifdef HAVE_ZLIB
+	delete gunzip_reader;
+#endif
 	delete file_reader;
 }
 

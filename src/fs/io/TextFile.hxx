@@ -20,6 +20,7 @@
 #ifndef MPD_TEXT_FILE_HXX
 #define MPD_TEXT_FILE_HXX
 
+#include "check.h"
 #include "Compiler.h"
 
 #include <stddef.h>
@@ -27,10 +28,16 @@
 class Path;
 class Error;
 class FileReader;
+class AutoGunzipReader;
 class BufferedReader;
 
 class TextFile {
 	FileReader *const file_reader;
+
+#ifdef HAVE_ZLIB
+	AutoGunzipReader *const gunzip_reader;
+#endif
+
 	BufferedReader *const buffered_reader;
 
 public:
