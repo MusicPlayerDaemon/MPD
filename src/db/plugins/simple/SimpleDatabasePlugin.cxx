@@ -187,7 +187,7 @@ SimpleDatabase::Load(Error &error)
 	if (file.HasFailed())
 		return false;
 
-	if (!db_load_internal(file, *root, error))
+	if (!db_load_internal(file, *root, error) || !file.Check(error))
 		return false;
 
 	struct stat st;
