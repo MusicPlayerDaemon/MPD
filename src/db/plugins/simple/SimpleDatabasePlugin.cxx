@@ -34,6 +34,7 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/FileOutputStream.hxx"
+#include "fs/io/GzipOutputStream.hxx"
 #include "config/ConfigData.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
@@ -48,13 +49,23 @@ static constexpr Domain simple_db_domain("simple_db");
 inline SimpleDatabase::SimpleDatabase()
 	:Database(simple_db_plugin),
 	 path(AllocatedPath::Null()),
+#ifdef HAVE_ZLIB
+	 compress(true),
+#endif
 	 cache_path(AllocatedPath::Null()),
 	 prefixed_light_song(nullptr) {}
 
-inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path)
+inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
+#ifndef HAVE_ZLIB
+				      gcc_unused
+#endif
+				      bool _compress)
 	:Database(simple_db_plugin),
 	 path(std::move(_path)),
 	 path_utf8(path.ToUTF8()),
+#ifdef HAVE_ZLIB
+	 compress(_compress),
+#endif
 	 cache_path(AllocatedPath::Null()),
 	 prefixed_light_song(nullptr) {
 }
@@ -89,6 +100,10 @@ SimpleDatabase::Configure(const config_param &param, Error &error)
 	cache_path = param.GetBlockPath("cache_directory", error);
 	if (path.IsNull() && error.IsDefined())
 		return false;
+
+#ifdef HAVE_ZLIB
+	compress = param.GetBlockValue("compress", compress);
+#endif
 
 	return true;
 }
@@ -369,11 +384,42 @@ SimpleDatabase::Save(Error &error)
 	if (!fos.IsDefined())
 		return false;
 
-	BufferedOutputStream bos(fos);
+	OutputStream *os = &fos;
+
+#ifdef HAVE_ZLIB
+	GzipOutputStream *gzip = nullptr;
+	if (compress) {
+		gzip = new GzipOutputStream(*os, error);
+		if (!gzip->IsDefined()) {
+			delete gzip;
+			return false;
+		}
+
+		os = gzip;
+	}
+#endif
+
+	BufferedOutputStream bos(*os);
 
 	db_save_internal(bos, *root);
 
-	if (!bos.Flush(error) || !fos.Commit(error))
+	if (!bos.Flush(error)) {
+#ifdef HAVE_ZLIB
+		delete gzip;
+#endif
+		return false;
+	}
+
+#ifdef HAVE_ZLIB
+	if (gzip != nullptr) {
+		bool success = gzip->Flush(error);
+		delete gzip;
+		if (!success)
+			return false;
+	}
+#endif
+
+	if (!fos.Commit(error))
 		return false;
 
 	struct stat st;
@@ -435,8 +481,12 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	std::string name(storage_uri);
 	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
 
+#ifndef HAVE_ZLIB
+	constexpr bool compress = false;
+#endif
 	auto db = new SimpleDatabase(AllocatedPath::Build(cache_path,
-							  name.c_str()));
+							  name.c_str()),
+				     compress);
 	if (!db->Open(error)) {
 		delete db;
 		return false;

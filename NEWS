@@ -11,6 +11,7 @@ ver 0.19 (not yet released)
   - proxy: forward "idle" events
   - proxy: forward the "update" command
   - proxy: copy "Last-Modified" from remote directories
+  - simple: compress the database file using gzip
   - upnp: new plugin
   - cancel the update on shutdown
 * storage

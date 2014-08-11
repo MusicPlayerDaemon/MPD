@@ -925,6 +925,18 @@ systemctl start mpd.socket</programlisting>
                   The path of the database file.
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>compress</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Compress the database file using
+                  <filename>gzip</filename>?  Enabled by default (if
+                  built with <filename>zlib</filename>).
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>

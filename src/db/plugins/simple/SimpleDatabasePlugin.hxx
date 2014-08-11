@@ -20,6 +20,7 @@
 #ifndef MPD_SIMPLE_DATABASE_PLUGIN_HXX
 #define MPD_SIMPLE_DATABASE_PLUGIN_HXX
 
+#include "check.h"
 #include "db/Interface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "db/LightSong.hxx"
@@ -37,6 +38,10 @@ class PrefixedLightSong;
 class SimpleDatabase : public Database {
 	AllocatedPath path;
 	std::string path_utf8;
+
+#ifdef HAVE_ZLIB
+	bool compress;
+#endif
 
 	/**
 	 * The path where cache files for Mount() are located.
@@ -64,7 +69,7 @@ class SimpleDatabase : public Database {
 
 	SimpleDatabase();
 
-	SimpleDatabase(AllocatedPath &&_path);
+	SimpleDatabase(AllocatedPath &&_path, bool _compress);
 
 public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
