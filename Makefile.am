@@ -529,6 +529,7 @@ libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
 
 if HAVE_ZLIB
 libfs_a_SOURCES += \
+	src/lib/zlib/Domain.cxx src/lib/zlib/Domain.hxx \
 	src/fs/io/GunzipReader.cxx src/fs/io/GunzipReader.hxx \
 	src/fs/io/GzipOutputStream.cxx src/fs/io/GzipOutputStream.hxx
 FS_LIBS += $(ZLIB_LIBS)

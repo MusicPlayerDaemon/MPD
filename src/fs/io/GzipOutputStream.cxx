@@ -19,10 +19,9 @@
 
 #include "config.h"
 #include "GzipOutputStream.hxx"
+#include "lib/zlib/Domain.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-
-const Domain zlib_domain("zlib");
 
 GzipOutputStream::GzipOutputStream(OutputStream &_next, Error &error)
 	:next(_next)

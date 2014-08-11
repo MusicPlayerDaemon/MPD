@@ -29,8 +29,6 @@
 class Error;
 class Domain;
 
-extern const Domain zlib_domain;
-
 /**
  * A filter that compresses data written to it using zlib, forwarding
  * compressed data in the "gzip" format.

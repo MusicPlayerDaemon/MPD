@@ -19,10 +19,9 @@
 
 #include "config.h"
 #include "GunzipReader.hxx"
+#include "lib/zlib/Domain.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-
-const Domain zlib_domain("zlib");
 
 GunzipReader::GunzipReader(Reader &_next, Error &error)
 	:next(_next), eof(false)

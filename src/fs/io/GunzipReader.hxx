@@ -29,8 +29,6 @@
 class Error;
 class Domain;
 
-extern const Domain zlib_domain;
-
 /**
  * A filter that decompresses data using zlib.
  */
