@@ -22,6 +22,7 @@
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "system/fd_util.h"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
@@ -728,7 +729,9 @@ oss_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		return 0;
 
 #ifdef AFMT_S24_PACKED
-	chunk = od->pcm_export->Export(chunk, size, size);
+	const auto e = od->pcm_export->Export({chunk, size});
+	chunk = e.data;
+	size = e.size;
 #endif
 
 	while (true) {

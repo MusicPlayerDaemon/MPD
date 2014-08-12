@@ -25,6 +25,7 @@
 #include "AudioFormat.hxx"
 
 struct AudioFormat;
+template<typename T> struct ConstBuffer;
 
 /**
  * An object that handles export of PCM samples to some instance
@@ -108,12 +109,9 @@ struct PcmExport {
 	 *
 	 * @param state an initialized and open pcm_export_state object
 	 * @param src the source PCM buffer
-	 * @param src_size the size of #src in bytes
-	 * @param dest_size_r returns the number of bytes of the destination buffer
 	 * @return the destination buffer (may be a pointer to the source buffer)
 	 */
-	const void *Export(const void *src, size_t src_size,
-			   size_t &dest_size_r);
+	ConstBuffer<void> Export(ConstBuffer<void> src);
 
 	/**
 	 * Converts the number of consumed bytes from the pcm_export()

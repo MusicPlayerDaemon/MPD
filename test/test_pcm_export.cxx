@@ -21,6 +21,7 @@
 #include "test_pcm_all.hxx"
 #include "pcm/PcmExport.hxx"
 #include "system/ByteOrder.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <string.h>
 
@@ -33,10 +34,9 @@ PcmExportTest::TestShift8()
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, false, true, false, false);
 
-	size_t dest_size;
-	auto dest = e.Export(src, sizeof(src), dest_size);
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest_size);
-	CPPUNIT_ASSERT(memcmp(dest, expected, dest_size) == 0);
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
 }
 
 void
@@ -67,10 +67,9 @@ PcmExportTest::TestPack24()
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, false, false, true, false);
 
-	size_t dest_size;
-	auto dest = e.Export(src, sizeof(src), dest_size);
-	CPPUNIT_ASSERT_EQUAL(expected_size, dest_size);
-	CPPUNIT_ASSERT(memcmp(dest, expected, dest_size) == 0);
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(expected_size, dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
 }
 
 void
@@ -91,20 +90,19 @@ PcmExportTest::TestReverseEndian()
 	PcmExport e;
 	e.Open(SampleFormat::S8, 2, false, false, false, true);
 
-	size_t dest_size;
-	auto dest = e.Export(src, sizeof(src), dest_size);
-	CPPUNIT_ASSERT_EQUAL(sizeof(src), dest_size);
-	CPPUNIT_ASSERT(memcmp(dest, src, dest_size) == 0);
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(src), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, src, dest.size) == 0);
 
 	e.Open(SampleFormat::S16, 2, false, false, false, true);
-	dest = e.Export(src, sizeof(src), dest_size);
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected2), dest_size);
-	CPPUNIT_ASSERT(memcmp(dest, expected2, dest_size) == 0);
+	dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected2), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected2, dest.size) == 0);
 
 	e.Open(SampleFormat::S32, 2, false, false, false, true);
-	dest = e.Export(src, sizeof(src), dest_size);
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected4), dest_size);
-	CPPUNIT_ASSERT(memcmp(dest, expected4, dest_size) == 0);
+	dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected4), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected4, dest.size) == 0);
 }
 
 void
@@ -125,8 +123,7 @@ PcmExportTest::TestDsdUsb()
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, true, false, false, false);
 
-	size_t dest_size;
-	auto dest = e.Export(src, sizeof(src), dest_size);
-	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest_size);
-	CPPUNIT_ASSERT(memcmp(dest, expected, dest_size) == 0);
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
 }

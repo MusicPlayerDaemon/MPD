@@ -25,6 +25,7 @@
 #include "util/Manual.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/ConstBuffer.hxx"
 #include "Log.hxx"
 
 #include <alsa/asoundlib.h>
@@ -809,7 +810,9 @@ alsa_play(AudioOutput *ao, const void *chunk, size_t size,
 		}
 	}
 
-	chunk = ad->pcm_export->Export(chunk, size, size);
+	const auto e = ad->pcm_export->Export({chunk, size});
+	chunk = e.data;
+	size = e.size;
 
 	assert(size % ad->out_frame_size == 0);
 

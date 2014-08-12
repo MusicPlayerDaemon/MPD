@@ -22,6 +22,7 @@
 #include "PcmDsdUsb.hxx"
 #include "PcmPack.hxx"
 #include "util/ByteReverse.hxx"
+#include "util/ConstBuffer.hxx"
 
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
@@ -71,59 +72,47 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 	return audio_format.GetFrameSize();
 }
 
-const void *
-PcmExport::Export(const void *data, size_t size, size_t &dest_size_r)
+ConstBuffer<void>
+PcmExport::Export(ConstBuffer<void> data)
 {
 	if (dsd_usb)
-		data = pcm_dsd_to_usb(dsd_buffer, channels,
-				      (const uint8_t *)data, size, &size);
+		data.data = pcm_dsd_to_usb(dsd_buffer, channels,
+					   (const uint8_t *)data.data,
+					   data.size, &data.size);
 
 	if (pack24) {
-		assert(size % 4 == 0);
-
-		const size_t num_samples = size / 4;
+		const auto src = ConstBuffer<int32_t>::FromVoid(data);
+		const size_t num_samples = src.size;
 		const size_t dest_size = num_samples * 3;
-
-		const uint8_t *src8 = (const uint8_t *)data;
-		const uint8_t *src_end8 = src8 + size;
 		uint8_t *dest = (uint8_t *)pack_buffer.Get(dest_size);
 		assert(dest != nullptr);
 
-		pcm_pack_24(dest, (const int32_t *)src8,
-			    (const int32_t *)src_end8);
+		pcm_pack_24(dest, src.begin(), src.end());
 
-		data = dest;
-		size = dest_size;
+		data.data = dest;
+		data.size = dest_size;
 	} else if (shift8) {
-		assert(size % 4 == 0);
+		const auto src = ConstBuffer<int32_t>::FromVoid(data);
 
-		const uint8_t *src8 = (const uint8_t *)data;
-		const uint8_t *src_end8 = src8 + size;
-		const uint32_t *src = (const uint32_t *)src8;
-		const uint32_t *const src_end = (const uint32_t *)src_end8;
+		uint32_t *dest = (uint32_t *)pack_buffer.Get(data.size);
+		data.data = dest;
 
-		uint32_t *dest = (uint32_t *)pack_buffer.Get(size);
-		data = dest;
-
-		while (src < src_end)
-			*dest++ = *src++ << 8;
+		for (auto i : src)
+			*dest++ = i << 8;
 	}
-
 
 	if (reverse_endian > 0) {
 		assert(reverse_endian >= 2);
 
-		uint8_t *dest = (uint8_t *)reverse_buffer.Get(size);
+		const auto src = ConstBuffer<uint8_t>::FromVoid(data);
+
+		uint8_t *dest = (uint8_t *)reverse_buffer.Get(data.size);
 		assert(dest != nullptr);
+		data.data = dest;
 
-		const uint8_t *src = (const uint8_t *)data;
-		const uint8_t *src_end = src + size;
-		reverse_bytes(dest, src, src_end, reverse_endian);
-
-		data = dest;
+		reverse_bytes(dest, src.begin(), src.end(), reverse_endian);
 	}
 
-	dest_size_r = size;
 	return data;
 }
 
