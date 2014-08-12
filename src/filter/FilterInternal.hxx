@@ -38,7 +38,7 @@ public:
 	 * Opens the filter, preparing it for FilterPCM().
 	 *
 	 * @param filter the filter object
-	 * @param audio_format the audio format of incoming data; the
+	 * @param af the audio format of incoming data; the
 	 * plugin may modify the object to enforce another input
 	 * format
 	 * @param error location to store the error occurring, or nullptr
@@ -63,7 +63,7 @@ public:
 	 * @param error location to store the error occurring, or nullptr
 	 * to ignore errors.
 	 * @return the destination buffer on success (will be
-	 * invalidated by filter_close() or filter_filter()), nullptr on
+	 * invalidated by Close() or FilterPCM()), nullptr on
 	 * error
 	 */
 	virtual const void *FilterPCM(const void *src, size_t src_size,
