@@ -21,6 +21,7 @@
 #include "PcmDsdUsb.hxx"
 #include "PcmBuffer.hxx"
 #include "AudioFormat.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <assert.h>
 
@@ -38,18 +39,16 @@ pcm_two_dsd_to_usb_marker2(uint8_t a, uint8_t b)
 	return 0xfffa0000 | (a << 8) | b;
 }
 
-
-const uint32_t *
+ConstBuffer<uint32_t>
 pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
-	       const uint8_t *src, size_t src_size,
-	       size_t *dest_size_r)
+	       ConstBuffer<uint8_t> _src)
 {
 	assert(audio_valid_channel_count(channels));
-	assert(src != nullptr);
-	assert(src_size > 0);
-	assert(src_size % channels == 0);
+	assert(!_src.IsNull());
+	assert(_src.size > 0);
+	assert(_src.size % channels == 0);
 
-	const unsigned num_src_samples = src_size;
+	const unsigned num_src_samples = _src.size;
 	const unsigned num_src_frames = num_src_samples / channels;
 
 	/* this rounds down and discards the last odd frame; not
@@ -57,11 +56,10 @@ pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
 	const unsigned num_frames = num_src_frames / 2;
 	const unsigned num_samples = num_frames * channels;
 
-	const size_t dest_size = num_samples * 4;
-	*dest_size_r = dest_size;
-	uint32_t *const dest0 = (uint32_t *)buffer.Get(dest_size),
+	uint32_t *const dest0 = (uint32_t *)buffer.GetT<uint32_t>(num_samples),
 		*dest = dest0;
 
+	auto src = _src.data;
 	for (unsigned i = num_frames / 2; i > 0; --i) {
 		for (unsigned c = channels; c > 0; --c) {
 			/* each 24 bit sample has 16 DSD sample bits
@@ -94,5 +92,5 @@ pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
 		src += channels;
 	}
 
-	return dest0;
+	return { dest0, num_samples };
 }

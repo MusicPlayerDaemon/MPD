@@ -76,9 +76,9 @@ ConstBuffer<void>
 PcmExport::Export(ConstBuffer<void> data)
 {
 	if (dsd_usb)
-		data.data = pcm_dsd_to_usb(dsd_buffer, channels,
-					   (const uint8_t *)data.data,
-					   data.size, &data.size);
+		data = pcm_dsd_to_usb(dsd_buffer, channels,
+				      ConstBuffer<uint8_t>::FromVoid(data))
+			.ToVoid();
 
 	if (pack24) {
 		const auto src = ConstBuffer<int32_t>::FromVoid(data);

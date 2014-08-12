@@ -26,6 +26,7 @@
 #include <stddef.h>
 
 class PcmBuffer;
+template<typename T> struct ConstBuffer;
 
 /**
  * Pack DSD 1 bit samples into (padded) 24 bit PCM samples for
@@ -33,9 +34,8 @@ class PcmBuffer;
  * dCS and others:
  * http://www.sonore.us/DoP_openStandard_1v1.pdf
  */
-const uint32_t *
+ConstBuffer<uint32_t>
 pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
-	       const uint8_t *src, size_t src_size,
-	       size_t *dest_size_r);
+	       ConstBuffer<uint8_t> src);
 
 #endif
