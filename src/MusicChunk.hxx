@@ -116,7 +116,7 @@ struct music_chunk {
 	/**
 	 * Prepares appending to the music chunk.  Returns a buffer
 	 * where you may write into.  After you are finished, call
-	 * music_chunk_expand().
+	 * Expand().
 	 *
 	 * @param chunk the music_chunk object
 	 * @param audio_format the audio format for the appended data;
@@ -132,7 +132,7 @@ struct music_chunk {
 
 	/**
 	 * Increases the length of the chunk after the caller has written to
-	 * the buffer returned by music_chunk_write().
+	 * the buffer returned by Write().
 	 *
 	 * @param chunk the music_chunk object
 	 * @param audio_format the audio format for the appended data; must
