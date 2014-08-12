@@ -31,6 +31,7 @@
 #include "DetachedSong.hxx"
 #include "input/InputStream.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -472,9 +473,8 @@ decoder_data(Decoder &decoder,
 		assert(dc.in_audio_format != dc.out_audio_format);
 
 		Error error;
-		data = decoder.convert->Convert(data, length,
-						&length,
-						error);
+		auto result = decoder.convert->Convert({data, length},
+						       error);
 		if (data == nullptr) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
@@ -482,6 +482,9 @@ decoder_data(Decoder &decoder,
 			LogError(error);
 			return DecoderCommand::STOP;
 		}
+
+		data = result.data;
+		length = result.size;
 	} else {
 		assert(dc.in_audio_format == dc.out_audio_format);
 	}

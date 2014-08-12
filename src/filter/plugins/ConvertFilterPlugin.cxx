@@ -24,6 +24,7 @@
 #include "filter/FilterRegistry.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "util/Manual.hxx"
+#include "util/ConstBuffer.hxx"
 #include "AudioFormat.hxx"
 #include "poison.h"
 
@@ -130,8 +131,9 @@ ConvertFilter::FilterPCM(const void *src, size_t src_size,
 		return src;
 	}
 
-	return state->Convert(src, src_size, dest_size_r,
-			      error);
+	auto result = state->Convert({src, src_size}, error);
+	*dest_size_r = result.size;
+	return result.data;
 }
 
 const struct filter_plugin convert_filter_plugin = {

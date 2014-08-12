@@ -28,6 +28,7 @@
 #include "AudioFormat.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "config/ConfigGlobal.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -48,7 +49,6 @@ config_get_string(gcc_unused enum ConfigOption option,
 int main(int argc, char **argv)
 {
 	AudioFormat in_audio_format, out_audio_format;
-	const void *output;
 
 	if (argc != 3) {
 		fprintf(stderr,
@@ -104,16 +104,15 @@ int main(int argc, char **argv)
 
 		buffer.Consume(src.size);
 
-		size_t length;
-		output = state.Convert(src.data, src.size,
-				       &length, error);
-		if (output == NULL) {
+		auto output = state.Convert({src.data, src.size}, error);
+		if (output.IsNull()) {
 			state.Close();
 			LogError(error, "Failed to convert");
 			return EXIT_FAILURE;
 		}
 
-		gcc_unused ssize_t ignored = write(1, output, length);
+		gcc_unused ssize_t ignored = write(1, output.data,
+						   output.size);
 	}
 
 	state.Close();

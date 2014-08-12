@@ -117,12 +117,9 @@ PcmConvert::Close()
 #endif
 }
 
-const void *
-PcmConvert::Convert(const void *src, size_t src_size,
-		    size_t *dest_size_r,
-		    Error &error)
+ConstBuffer<void>
+PcmConvert::Convert(ConstBuffer<void> buffer, Error &error)
 {
-	ConstBuffer<void> buffer(src, src_size);
 	AudioFormat format = src_format;
 
 	if (format.format == SampleFormat::DSD) {
@@ -164,6 +161,5 @@ PcmConvert::Convert(const void *src, size_t src_size,
 		format.channels = dest_format.channels;
 	}
 
-	*dest_size_r = buffer.size;
-	return buffer.data;
+	return buffer;
 }

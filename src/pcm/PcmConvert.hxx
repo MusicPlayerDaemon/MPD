@@ -70,16 +70,12 @@ public:
 	 *
 	 * @param src_format the source audio format
 	 * @param src the source PCM buffer
-	 * @param src_size the size of #src in bytes
 	 * @param dest_format the requested destination audio format
-	 * @param dest_size_r returns the number of bytes of the destination buffer
 	 * @param error_r location to store the error occurring, or nullptr to
 	 * ignore errors
 	 * @return the destination buffer, or nullptr on error
 	 */
-	const void *Convert(const void *src, size_t src_size,
-			    size_t *dest_size_r,
-			    Error &error);
+	ConstBuffer<void> Convert(ConstBuffer<void> src, Error &error);
 };
 
 bool
