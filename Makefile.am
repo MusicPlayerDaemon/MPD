@@ -1979,6 +1979,7 @@ test_test_pcm_SOURCES = \
 	test/test_pcm_format.cxx \
 	test/test_pcm_volume.cxx \
 	test/test_pcm_mix.cxx \
+	test/test_pcm_export.cxx \
 	test/test_pcm_all.hxx \
 	test/test_pcm_main.cxx
 test_test_pcm_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0

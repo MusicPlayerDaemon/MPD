@@ -103,4 +103,19 @@ public:
 	void TestMix32();
 };
 
+class PcmExportTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(PcmExportTest);
+	CPPUNIT_TEST(TestShift8);
+	CPPUNIT_TEST(TestPack24);
+	CPPUNIT_TEST(TestReverseEndian);
+	CPPUNIT_TEST(TestDsdUsb);
+	CPPUNIT_TEST_SUITE_END();
+
+public:
+	void TestShift8();
+	void TestPack24();
+	void TestReverseEndian();
+	void TestDsdUsb();
+};
+
 #endif
