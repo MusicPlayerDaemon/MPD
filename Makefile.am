@@ -329,7 +329,7 @@ src/win32/mpd_win32_rc.$(OBJEXT): src/win32/mpd_win32_rc.rc
 if HAVE_WINDOWS
 noinst_DATA = src/win32/mpd_win32_rc.rc
 
-src_mpd_DEPENDENCIES = src/win32/mpd_win32_rc.$(OBJEXT)
+EXTRA_src_mpd_DEPENDENCIES = src/win32/mpd_win32_rc.$(OBJEXT)
 src_mpd_LDFLAGS = -Wl,src/win32/mpd_win32_rc.$(OBJEXT)
 endif
 
