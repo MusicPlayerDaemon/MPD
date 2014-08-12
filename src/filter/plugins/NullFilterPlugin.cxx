@@ -30,6 +30,7 @@
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "Compiler.h"
+#include "util/ConstBuffer.hxx"
 
 class NullFilter final : public Filter {
 public:
@@ -40,10 +41,8 @@ public:
 
 	virtual void Close() override {}
 
-	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r,
-				      gcc_unused Error &error) override {
-		*dest_size_r = src_size;
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
+					    gcc_unused Error &error) override {
 		return src;
 	}
 };

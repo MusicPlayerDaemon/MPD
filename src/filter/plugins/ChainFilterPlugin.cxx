@@ -25,6 +25,7 @@
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <list>
 
@@ -54,8 +55,8 @@ public:
 
 	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close();
-	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, Error &error);
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
+					    Error &error);
 
 private:
 	/**
@@ -143,21 +144,18 @@ ChainFilter::Close()
 		child.filter->Close();
 }
 
-const void *
-ChainFilter::FilterPCM(const void *src, size_t src_size,
-		       size_t *dest_size_r, Error &error)
+ConstBuffer<void>
+ChainFilter::FilterPCM(ConstBuffer<void> src, Error &error)
 {
 	for (auto &child : children) {
 		/* feed the output of the previous filter as input
 		   into the current one */
-		src = child.filter->FilterPCM(src, src_size, &src_size,
-					      error);
-		if (src == nullptr)
+		src = child.filter->FilterPCM(src, error);
+		if (src.IsNull())
 			return nullptr;
 	}
 
 	/* return the output of the last filter */
-	*dest_size_r = src_size;
 	return src;
 }
 

@@ -34,6 +34,7 @@
 #include "thread/Name.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 #include "Log.hxx"
 #include "Compiler.h"
 
@@ -306,24 +307,22 @@ AudioOutput::WaitForDelay()
 	}
 }
 
-static const void *
+static ConstBuffer<void>
 ao_chunk_data(AudioOutput *ao, const MusicChunk *chunk,
 	      Filter *replay_gain_filter,
-	      unsigned *replay_gain_serial_p,
-	      size_t *length_r)
+	      unsigned *replay_gain_serial_p)
 {
 	assert(chunk != nullptr);
 	assert(!chunk->IsEmpty());
 	assert(chunk->CheckFormat(ao->in_audio_format));
 
-	const void *data = chunk->data;
-	size_t length = chunk->length;
+	ConstBuffer<void> data(chunk->data, chunk->length);
 
 	(void)ao;
 
-	assert(length % ao->in_audio_format.GetFrameSize() == 0);
+	assert(data.size % ao->in_audio_format.GetFrameSize() == 0);
 
-	if (length > 0 && replay_gain_filter != nullptr) {
+	if (!data.IsEmpty() && replay_gain_filter != nullptr) {
 		if (chunk->replay_gain_serial != *replay_gain_serial_p) {
 			replay_gain_filter_set_info(replay_gain_filter,
 						    chunk->replay_gain_serial != 0
@@ -333,63 +332,48 @@ ao_chunk_data(AudioOutput *ao, const MusicChunk *chunk,
 		}
 
 		Error error;
-		data = replay_gain_filter->FilterPCM(data, length,
-						     &length, error);
-		if (data == nullptr) {
+		data = replay_gain_filter->FilterPCM(data, error);
+		if (data.IsNull())
 			FormatError(error, "\"%s\" [%s] failed to filter",
 				    ao->name, ao->plugin.name);
-			return nullptr;
-		}
 	}
 
-	*length_r = length;
 	return data;
 }
 
-static const void *
-ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk,
-		size_t *length_r)
+static ConstBuffer<void>
+ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk)
 {
-	size_t length;
-	const void *data = ao_chunk_data(ao, chunk, ao->replay_gain_filter,
-					 &ao->replay_gain_serial, &length);
-	if (data == nullptr)
-		return nullptr;
-
-	if (length == 0) {
-		/* empty chunk, nothing to do */
-		*length_r = 0;
+	ConstBuffer<void> data =
+		ao_chunk_data(ao, chunk, ao->replay_gain_filter,
+			      &ao->replay_gain_serial);
+	if (data.IsEmpty())
 		return data;
-	}
 
 	/* cross-fade */
 
 	if (chunk->other != nullptr) {
-		size_t other_length;
-		const void *other_data =
+		ConstBuffer<void> other_data =
 			ao_chunk_data(ao, chunk->other,
 				      ao->other_replay_gain_filter,
-				      &ao->other_replay_gain_serial,
-				      &other_length);
-		if (other_data == nullptr)
+				      &ao->other_replay_gain_serial);
+		if (other_data.IsNull())
 			return nullptr;
 
-		if (other_length == 0) {
-			*length_r = 0;
+		if (other_data.IsEmpty())
 			return data;
-		}
 
 		/* if the "other" chunk is longer, then that trailer
 		   is used as-is, without mixing; it is part of the
 		   "next" song being faded in, and if there's a rest,
 		   it means cross-fading ends here */
 
-		if (length > other_length)
-			length = other_length;
+		if (data.size > other_data.size)
+			data.size = other_data.size;
 
-		void *dest = ao->cross_fade_buffer.Get(other_length);
-		memcpy(dest, other_data, other_length);
-		if (!pcm_mix(ao->cross_fade_dither, dest, data, length,
+		void *dest = ao->cross_fade_buffer.Get(other_data.size);
+		memcpy(dest, other_data.data, other_data.size);
+		if (!pcm_mix(ao->cross_fade_dither, dest, data.data, data.size,
 			     ao->in_audio_format.format,
 			     1.0 - chunk->mix_ratio)) {
 			FormatError(output_domain,
@@ -398,21 +382,20 @@ ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk,
 			return nullptr;
 		}
 
-		data = dest;
-		length = other_length;
+		data.data = dest;
+		data.size = other_data.size;
 	}
 
 	/* apply filter chain */
 
 	Error error;
-	data = ao->filter->FilterPCM(data, length, &length, error);
-	if (data == nullptr) {
+	data = ao->filter->FilterPCM(data, error);
+	if (data.IsNull()) {
 		FormatError(error, "\"%s\" [%s] failed to filter",
 			    ao->name, ao->plugin.name);
 		return nullptr;
 	}
 
-	*length_r = length;
 	return data;
 }
 
@@ -427,13 +410,8 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 		mutex.lock();
 	}
 
-	size_t size;
-#if GCC_CHECK_VERSION(4,7)
-	/* workaround -Wmaybe-uninitialized false positive */
-	size = 0;
-#endif
-	const char *data = (const char *)ao_filter_chunk(this, chunk, &size);
-	if (data == nullptr) {
+	auto data = ConstBuffer<char>::FromVoid(ao_filter_chunk(this, chunk));
+	if (data.IsNull()) {
 		Close(false);
 
 		/* don't automatically reopen this device for 10
@@ -444,14 +422,13 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 
 	Error error;
 
-	while (size > 0 && command == AO_COMMAND_NONE) {
-		size_t nbytes;
-
+	while (!data.IsEmpty() && command == AO_COMMAND_NONE) {
 		if (!WaitForDelay())
 			break;
 
 		mutex.unlock();
-		nbytes = ao_plugin_play(this, data, size, error);
+		size_t nbytes = ao_plugin_play(this, data.data, data.size,
+					       error);
 		mutex.lock();
 		if (nbytes == 0) {
 			/* play()==0 means failure */
@@ -468,11 +445,11 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 			return false;
 		}
 
-		assert(nbytes <= size);
+		assert(nbytes <= data.size);
 		assert(nbytes % out_audio_format.GetFrameSize() == 0);
 
-		data += nbytes;
-		size -= nbytes;
+		data.data += nbytes;
+		data.size -= nbytes;
 	}
 
 	return true;

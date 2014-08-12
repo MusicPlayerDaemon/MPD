@@ -54,9 +54,8 @@ public:
 
 	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close() override;
-	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r,
-				      Error &error) override;
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
+					    Error &error) override;
 };
 
 static Filter *
@@ -119,21 +118,16 @@ ConvertFilter::Close()
 	poison_undefined(&out_audio_format, sizeof(out_audio_format));
 }
 
-const void *
-ConvertFilter::FilterPCM(const void *src, size_t src_size,
-			 size_t *dest_size_r, Error &error)
+ConstBuffer<void>
+ConvertFilter::FilterPCM(ConstBuffer<void> src, Error &error)
 {
 	assert(in_audio_format.IsValid());
 
-	if (!out_audio_format.IsValid()) {
+	if (!out_audio_format.IsValid())
 		/* optimized special case: no-op */
-		*dest_size_r = src_size;
 		return src;
-	}
 
-	auto result = state->Convert({src, src_size}, error);
-	*dest_size_r = result.size;
-	return result.data;
+	return state->Convert(src, error);
 }
 
 const struct filter_plugin convert_filter_plugin = {

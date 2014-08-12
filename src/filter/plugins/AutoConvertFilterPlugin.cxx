@@ -25,6 +25,7 @@
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "config/ConfigData.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <assert.h>
 
@@ -48,9 +49,8 @@ public:
 
 	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close() override;
-	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r,
-				      Error &error) override;
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
+					    Error &error) override;
 };
 
 AudioFormat
@@ -111,17 +111,16 @@ AutoConvertFilter::Close()
 	filter->Close();
 }
 
-const void *
-AutoConvertFilter::FilterPCM(const void *src, size_t src_size,
-			     size_t *dest_size_r, Error &error)
+ConstBuffer<void>
+AutoConvertFilter::FilterPCM(ConstBuffer<void> src, Error &error)
 {
 	if (convert != nullptr) {
-		src = convert->FilterPCM(src, src_size, &src_size, error);
-		if (src == nullptr)
+		src = convert->FilterPCM(src, error);
+		if (src.IsNull())
 			return nullptr;
 	}
 
-	return filter->FilterPCM(src, src_size, dest_size_r, error);
+	return filter->FilterPCM(src, error);
 }
 
 Filter *

@@ -29,6 +29,7 @@
 #include "mixer/MixerControl.hxx"
 #include "stdbin.h"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
@@ -132,23 +133,21 @@ int main(int argc, char **argv)
 
 	while (true) {
 		ssize_t nbytes;
-		size_t length;
-		const void *dest;
 
 		nbytes = read(0, buffer, sizeof(buffer));
 		if (nbytes <= 0)
 			break;
 
-		dest = filter->FilterPCM(buffer, (size_t)nbytes,
-					 &length, error);
-		if (dest == NULL) {
+		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes},
+					      error);
+		if (dest.IsNull()) {
 			LogError(error, "filter/Filter failed");
 			filter->Close();
 			delete filter;
 			return EXIT_FAILURE;
 		}
 
-		nbytes = write(1, dest, length);
+		nbytes = write(1, dest.data, dest.size);
 		if (nbytes < 0) {
 			fprintf(stderr, "Failed to write: %s\n",
 				strerror(errno));

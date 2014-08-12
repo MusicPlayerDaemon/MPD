@@ -45,8 +45,8 @@ public:
 
 	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close();
-	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, Error &error);
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
+					    Error &error) override;
 };
 
 static constexpr Domain volume_domain("pcm_volume");
@@ -73,13 +73,10 @@ VolumeFilter::Close()
 	pv.Close();
 }
 
-const void *
-VolumeFilter::FilterPCM(const void *src, size_t src_size,
-			size_t *dest_size_r, gcc_unused Error &error)
+ConstBuffer<void>
+VolumeFilter::FilterPCM(ConstBuffer<void> src, gcc_unused Error &error)
 {
-	const auto dest = pv.Apply({src, src_size});
-	*dest_size_r = dest.size;
-	return dest.data;
+	return pv.Apply(src);
 }
 
 const struct filter_plugin volume_filter_plugin = {

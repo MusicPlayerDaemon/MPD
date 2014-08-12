@@ -49,6 +49,7 @@
 #include "pcm/PcmBuffer.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <algorithm>
 
@@ -121,8 +122,8 @@ public:
 
 	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
 	virtual void Close();
-	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, Error &error);
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
+					    Error &error) override;
 };
 
 bool
@@ -238,20 +239,19 @@ RouteFilter::Close()
 	output_buffer.Clear();
 }
 
-const void *
-RouteFilter::FilterPCM(const void *src, size_t src_size,
-		       size_t *dest_size_r, gcc_unused Error &error)
+ConstBuffer<void>
+RouteFilter::FilterPCM(ConstBuffer<void> src, gcc_unused Error &error)
 {
-	size_t number_of_frames = src_size / input_frame_size;
+	size_t number_of_frames = src.size / input_frame_size;
 
 	const size_t bytes_per_frame_per_channel = input_format.GetSampleSize();
 
 	// A moving pointer that always refers to channel 0 in the input, at the currently handled frame
-	const uint8_t *base_source = (const uint8_t *)src;
+	const uint8_t *base_source = (const uint8_t *)src.data;
 
 	// Grow our reusable buffer, if needed, and set the moving pointer
-	*dest_size_r = number_of_frames * output_frame_size;
-	void *const result = output_buffer.Get(*dest_size_r);
+	const size_t result_size = number_of_frames * output_frame_size;
+	void *const result = output_buffer.Get(result_size);
 
 	// A moving pointer that always refers to the currently filled channel of the currently handled frame, in the output
 	uint8_t *chan_destination = (uint8_t *)result;
@@ -287,7 +287,7 @@ RouteFilter::FilterPCM(const void *src, size_t src_size,
 	}
 
 	// Here it is, ladies and gentlemen! Rerouted data!
-	return result;
+	return { result, result_size };
 }
 
 const struct filter_plugin route_filter_plugin = {

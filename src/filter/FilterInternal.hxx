@@ -29,6 +29,7 @@
 
 struct AudioFormat;
 class Error;
+template<typename T> struct ConstBuffer;
 
 class Filter {
 public:
@@ -58,17 +59,13 @@ public:
 	 *
 	 * @param filter the filter object
 	 * @param src the input buffer
-	 * @param src_size the size of #src_buffer in bytes
-	 * @param dest_size_r the size of the returned buffer
 	 * @param error location to store the error occurring, or nullptr
 	 * to ignore errors.
 	 * @return the destination buffer on success (will be
 	 * invalidated by Close() or FilterPCM()), nullptr on
 	 * error
 	 */
-	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r,
-				      Error &error) = 0;
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src, Error &error) = 0;
 };
 
 #endif
