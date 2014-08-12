@@ -144,7 +144,7 @@ struct DecoderControl {
 
 	float total_time;
 
-	/** the #music_chunk allocator */
+	/** the #MusicChunk allocator */
 	MusicBuffer *buffer;
 
 	/**

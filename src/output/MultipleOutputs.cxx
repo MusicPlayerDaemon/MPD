@@ -187,7 +187,7 @@ MultipleOutputs::SetReplayGainMode(ReplayGainMode mode)
 }
 
 bool
-MultipleOutputs::Play(music_chunk *chunk, Error &error)
+MultipleOutputs::Play(MusicChunk *chunk, Error &error)
 {
 	assert(buffer != nullptr);
 	assert(pipe != nullptr);
@@ -265,7 +265,7 @@ gcc_pure
 static bool
 chunk_is_consumed_in(const AudioOutput *ao,
 		     gcc_unused const MusicPipe *pipe,
-		     const struct music_chunk *chunk)
+		     const MusicChunk *chunk)
 {
 	if (!ao->open)
 		return true;
@@ -285,7 +285,7 @@ chunk_is_consumed_in(const AudioOutput *ao,
 }
 
 bool
-MultipleOutputs::IsChunkConsumed(const music_chunk *chunk) const
+MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const
 {
 	for (auto ao : outputs) {
 		const ScopeLock protect(ao->mutex);
@@ -297,7 +297,7 @@ MultipleOutputs::IsChunkConsumed(const music_chunk *chunk) const
 }
 
 inline void
-MultipleOutputs::ClearTailChunk(gcc_unused const struct music_chunk *chunk,
+MultipleOutputs::ClearTailChunk(gcc_unused const MusicChunk *chunk,
 				bool *locked)
 {
 	assert(chunk->next == nullptr);
@@ -325,9 +325,9 @@ MultipleOutputs::ClearTailChunk(gcc_unused const struct music_chunk *chunk,
 unsigned
 MultipleOutputs::Check()
 {
-	const struct music_chunk *chunk;
+	const MusicChunk *chunk;
 	bool is_tail;
-	struct music_chunk *shifted;
+	MusicChunk *shifted;
 	bool locked[outputs.size()];
 
 	assert(buffer != nullptr);

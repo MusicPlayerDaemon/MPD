@@ -56,7 +56,7 @@ need_chunks(DecoderControl &dc)
 	return dc.command;
 }
 
-struct music_chunk *
+MusicChunk *
 Decoder::GetChunk()
 {
 	DecoderCommand cmd;

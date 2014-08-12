@@ -23,22 +23,22 @@
 #include "util/SliceBuffer.hxx"
 #include "thread/Mutex.hxx"
 
-struct music_chunk;
+struct MusicChunk;
 
 /**
- * An allocator for #music_chunk objects.
+ * An allocator for #MusicChunk objects.
  */
 class MusicBuffer {
 	/** a mutex which protects #buffer */
 	Mutex mutex;
 
-	SliceBuffer<music_chunk> buffer;
+	SliceBuffer<MusicChunk> buffer;
 
 public:
 	/**
 	 * Creates a new #MusicBuffer object.
 	 *
-	 * @param num_chunks the number of #music_chunk reserved in
+	 * @param num_chunks the number of #MusicChunk reserved in
 	 * this buffer
 	 */
 	MusicBuffer(unsigned num_chunks);
@@ -71,13 +71,13 @@ public:
 	 * @return an empty chunk or nullptr if there are no chunks
 	 * available
 	 */
-	music_chunk *Allocate();
+	MusicChunk *Allocate();
 
 	/**
 	 * Returns a chunk to the buffer.  It can be reused by
 	 * Allocate() then.
 	 */
-	void Return(music_chunk *chunk);
+	void Return(MusicChunk *chunk);
 };
 
 #endif

@@ -387,7 +387,7 @@ decoder_timestamp(Decoder &decoder, double t)
 static DecoderCommand
 do_send_tag(Decoder &decoder, const Tag &tag)
 {
-	struct music_chunk *chunk;
+	MusicChunk *chunk;
 
 	if (decoder.chunk != nullptr) {
 		/* there is a partial chunk - flush it, we want the
@@ -487,7 +487,7 @@ decoder_data(Decoder &decoder,
 	}
 
 	while (length > 0) {
-		struct music_chunk *chunk;
+		MusicChunk *chunk;
 		bool full;
 
 		chunk = decoder.GetChunk();

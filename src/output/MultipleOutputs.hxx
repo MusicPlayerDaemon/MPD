@@ -39,7 +39,7 @@ class MusicBuffer;
 class MusicPipe;
 class EventLoop;
 class MixerListener;
-struct music_chunk;
+struct MusicChunk;
 struct PlayerControl;
 struct AudioOutput;
 class Error;
@@ -119,7 +119,7 @@ public:
 	 * Opens all audio outputs which are not disabled.
 	 *
 	 * @param audio_format the preferred audio format
-	 * @param buffer the #music_buffer where consumed #music_chunk objects
+	 * @param buffer the #music_buffer where consumed #MusicChunk objects
 	 * should be returned
 	 * @return true on success, false on failure
 	 */
@@ -140,14 +140,14 @@ public:
 	void SetReplayGainMode(ReplayGainMode mode);
 
 	/**
-	 * Enqueue a #music_chunk object for playing, i.e. pushes it to a
+	 * Enqueue a #MusicChunk object for playing, i.e. pushes it to a
 	 * #MusicPipe.
 	 *
-	 * @param chunk the #music_chunk object to be played
+	 * @param chunk the #MusicChunk object to be played
 	 * @return true on success, false if no audio output was able to play
 	 * (all closed then)
 	 */
-	bool Play(music_chunk *chunk, Error &error);
+	bool Play(MusicChunk *chunk, Error &error);
 
 	/**
 	 * Checks if the output devices have drained their music pipe, and
@@ -160,7 +160,7 @@ public:
 	/**
 	 * Checks if the size of the #MusicPipe is below the #threshold.  If
 	 * not, it attempts to synchronize with all output threads, and waits
-	 * until another #music_chunk is finished.
+	 * until another #MusicChunk is finished.
 	 *
 	 * @param threshold the maximum number of chunks in the pipe
 	 * @return true if there are less than #threshold chunks in the pipe
@@ -262,14 +262,14 @@ private:
 	/**
 	 * Has this chunk been consumed by all audio outputs?
 	 */
-	bool IsChunkConsumed(const music_chunk *chunk) const;
+	bool IsChunkConsumed(const MusicChunk *chunk) const;
 
 	/**
 	 * There's only one chunk left in the pipe (#pipe), and all
 	 * audio outputs have consumed it already.  Clear the
 	 * reference.
 	 */
-	void ClearTailChunk(const struct music_chunk *chunk, bool *locked);
+	void ClearTailChunk(const MusicChunk *chunk, bool *locked);
 };
 
 #endif

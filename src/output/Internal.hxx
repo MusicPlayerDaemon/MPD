@@ -35,7 +35,7 @@ class MusicPipe;
 class EventLoop;
 class Mixer;
 class MixerListener;
-struct music_chunk;
+struct MusicChunk;
 struct config_param;
 struct PlayerControl;
 struct AudioOutputPlugin;
@@ -257,12 +257,12 @@ struct AudioOutput {
 	PlayerControl *player_control;
 
 	/**
-	 * The #music_chunk which is currently being played.  All
+	 * The #MusicChunk which is currently being played.  All
 	 * chunks before this one may be returned to the
 	 * #music_buffer, because they are not going to be used by
 	 * this output anymore.
 	 */
-	const music_chunk *current_chunk;
+	const MusicChunk *current_chunk;
 
 	/**
 	 * Has the output finished playing #current_chunk?
@@ -395,9 +395,9 @@ private:
 	bool WaitForDelay();
 
 	gcc_pure
-	const music_chunk *GetNextChunk() const;
+	const MusicChunk *GetNextChunk() const;
 
-	bool PlayChunk(const music_chunk *chunk);
+	bool PlayChunk(const MusicChunk *chunk);
 
 	/**
 	 * Plays all remaining chunks, until the tail of the pipe has

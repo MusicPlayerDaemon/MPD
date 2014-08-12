@@ -21,7 +21,7 @@
  *
  * The player thread controls the playback.  It acts as a bridge
  * between the decoder thread and the output thread(s): it receives
- * #music_chunk objects from the decoder, optionally mixes them
+ * #MusicChunk objects from the decoder, optionally mixes them
  * (cross-fading), applies software volume, and sends them to the
  * audio outputs via audio_output_all_play().
  *
@@ -31,7 +31,7 @@
  *
  * The player thread itself does not do any I/O.  It synchronizes with
  * other threads via #GMutex and #GCond objects, and passes
- * #music_chunk instances around in #MusicPipe objects.
+ * #MusicChunk instances around in #MusicPipe objects.
  */
 
 #ifndef MPD_PLAYER_THREAD_HXX

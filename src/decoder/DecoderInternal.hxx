@@ -24,6 +24,7 @@
 #include "util/Error.hxx"
 
 class PcmConvert;
+struct MusicChunk;
 struct DecoderControl;
 struct Tag;
 
@@ -76,7 +77,7 @@ struct Decoder {
 	Tag *decoder_tag;
 
 	/** the chunk currently being written to */
-	struct music_chunk *chunk;
+	MusicChunk *chunk;
 
 	ReplayGainInfo replay_gain_info;
 
@@ -112,7 +113,7 @@ struct Decoder {
 	 *
 	 * @return the chunk, or NULL if we have received a decoder command
 	 */
-	music_chunk *GetChunk();
+	MusicChunk *GetChunk();
 
 	/**
 	 * Flushes the current chunk.

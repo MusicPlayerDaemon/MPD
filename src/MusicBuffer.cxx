@@ -30,7 +30,7 @@ MusicBuffer::MusicBuffer(unsigned num_chunks)
 		FatalError("Failed to allocate buffer");
 }
 
-music_chunk *
+MusicChunk *
 MusicBuffer::Allocate()
 {
 	const ScopeLock protect(mutex);
@@ -38,7 +38,7 @@ MusicBuffer::Allocate()
 }
 
 void
-MusicBuffer::Return(music_chunk *chunk)
+MusicBuffer::Return(MusicChunk *chunk)
 {
 	assert(chunk != nullptr);
 

@@ -484,7 +484,7 @@ Player::SendSilence()
 	assert(output_open);
 	assert(play_audio_format.IsDefined());
 
-	struct music_chunk *chunk = buffer.Allocate();
+	MusicChunk *chunk = buffer.Allocate();
 	if (chunk == nullptr) {
 		LogError(player_domain, "Failed to allocate silence buffer");
 		return false;
@@ -704,7 +704,7 @@ update_song_tag(PlayerControl &pc, DetachedSong &song, const Tag &new_tag)
 }
 
 /**
- * Plays a #music_chunk object (after applying software volume).  If
+ * Plays a #MusicChunk object (after applying software volume).  If
  * it contains a (stream) tag, copy it to the current song, so MPD's
  * playlist reflects the new stream tag.
  *
@@ -712,7 +712,7 @@ update_song_tag(PlayerControl &pc, DetachedSong &song, const Tag &new_tag)
  */
 static bool
 play_chunk(PlayerControl &pc,
-	   DetachedSong &song, struct music_chunk *chunk,
+	   DetachedSong &song, MusicChunk *chunk,
 	   MusicBuffer &buffer,
 	   const AudioFormat format,
 	   Error &error)
@@ -750,11 +750,11 @@ Player::PlayNextChunk()
 		return true;
 
 	unsigned cross_fade_position;
-	struct music_chunk *chunk = nullptr;
+	MusicChunk *chunk = nullptr;
 	if (xfade_state == CrossFadeState::ENABLED && IsDecoderAtNextSong() &&
 	    (cross_fade_position = pipe->GetSize()) <= cross_fade_chunks) {
 		/* perform cross fade */
-		music_chunk *other_chunk = dc.pipe->Shift();
+		MusicChunk *other_chunk = dc.pipe->Shift();
 
 		if (!cross_fading) {
 			/* beginning of the cross fade - adjust
@@ -786,7 +786,7 @@ Player::PlayNextChunk()
 			}
 
 			if (other_chunk->IsEmpty()) {
-				/* the "other" chunk was a music_chunk
+				/* the "other" chunk was a MusicChunk
 				   which had only a tag, but no music
 				   data - we cannot cross-fade that;
 				   but since this happens only at the

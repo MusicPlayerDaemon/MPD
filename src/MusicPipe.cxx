@@ -25,11 +25,11 @@
 #ifndef NDEBUG
 
 bool
-MusicPipe::Contains(const music_chunk *chunk) const
+MusicPipe::Contains(const MusicChunk *chunk) const
 {
 	const ScopeLock protect(mutex);
 
-	for (const struct music_chunk *i = head; i != nullptr; i = i->next)
+	for (const MusicChunk *i = head; i != nullptr; i = i->next)
 		if (i == chunk)
 			return true;
 
@@ -38,12 +38,12 @@ MusicPipe::Contains(const music_chunk *chunk) const
 
 #endif
 
-music_chunk *
+MusicChunk *
 MusicPipe::Shift()
 {
 	const ScopeLock protect(mutex);
 
-	music_chunk *chunk = head;
+	MusicChunk *chunk = head;
 	if (chunk != nullptr) {
 		assert(!chunk->IsEmpty());
 
@@ -62,7 +62,7 @@ MusicPipe::Shift()
 
 #ifndef NDEBUG
 		/* poison the "next" reference */
-		chunk->next = (music_chunk *)(void *)0x01010101;
+		chunk->next = (MusicChunk *)(void *)0x01010101;
 
 		if (size == 0)
 			audio_format.Clear();
@@ -75,14 +75,14 @@ MusicPipe::Shift()
 void
 MusicPipe::Clear(MusicBuffer &buffer)
 {
-	music_chunk *chunk;
+	MusicChunk *chunk;
 
 	while ((chunk = Shift()) != nullptr)
 		buffer.Return(chunk);
 }
 
 void
-MusicPipe::Push(music_chunk *chunk)
+MusicPipe::Push(MusicChunk *chunk)
 {
 	assert(!chunk->IsEmpty());
 	assert(chunk->length == 0 || chunk->audio_format.IsValid());

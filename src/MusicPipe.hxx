@@ -29,19 +29,19 @@
 
 #include <assert.h>
 
-struct music_chunk;
+struct MusicChunk;
 class MusicBuffer;
 
 /**
- * A queue of #music_chunk objects.  One party appends chunks at the
+ * A queue of #MusicChunk objects.  One party appends chunks at the
  * tail, and the other consumes them from the head.
  */
 class MusicPipe {
 	/** the first chunk */
-	music_chunk *head;
+	MusicChunk *head;
 
 	/** a pointer to the tail of the chunk */
-	music_chunk **tail_r;
+	MusicChunk **tail_r;
 
 	/** the current number of chunks */
 	unsigned size;
@@ -87,22 +87,22 @@ public:
 	 * Checks if the specified chunk is enqueued in the music pipe.
 	 */
 	gcc_pure
-	bool Contains(const music_chunk *chunk) const;
+	bool Contains(const MusicChunk *chunk) const;
 #endif
 
 	/**
-	 * Returns the first #music_chunk from the pipe.  Returns
+	 * Returns the first #MusicChunk from the pipe.  Returns
 	 * nullptr if the pipe is empty.
 	 */
 	gcc_pure
-	const music_chunk *Peek() const {
+	const MusicChunk *Peek() const {
 		return head;
 	}
 
 	/**
 	 * Removes the first chunk from the head, and returns it.
 	 */
-	music_chunk *Shift();
+	MusicChunk *Shift();
 
 	/**
 	 * Clears the whole pipe and returns the chunks to the buffer.
@@ -114,7 +114,7 @@ public:
 	/**
 	 * Pushes a chunk to the tail of the pipe.
 	 */
-	void Push(music_chunk *chunk);
+	void Push(MusicChunk *chunk);
 
 	/**
 	 * Returns the number of chunks currently in this pipe.

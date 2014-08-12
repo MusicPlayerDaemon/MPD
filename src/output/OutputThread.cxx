@@ -307,7 +307,7 @@ AudioOutput::WaitForDelay()
 }
 
 static const void *
-ao_chunk_data(AudioOutput *ao, const struct music_chunk *chunk,
+ao_chunk_data(AudioOutput *ao, const MusicChunk *chunk,
 	      Filter *replay_gain_filter,
 	      unsigned *replay_gain_serial_p,
 	      size_t *length_r)
@@ -347,7 +347,7 @@ ao_chunk_data(AudioOutput *ao, const struct music_chunk *chunk,
 }
 
 static const void *
-ao_filter_chunk(AudioOutput *ao, const struct music_chunk *chunk,
+ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk,
 		size_t *length_r)
 {
 	size_t length;
@@ -417,7 +417,7 @@ ao_filter_chunk(AudioOutput *ao, const struct music_chunk *chunk,
 }
 
 inline bool
-AudioOutput::PlayChunk(const music_chunk *chunk)
+AudioOutput::PlayChunk(const MusicChunk *chunk)
 {
 	assert(filter != nullptr);
 
@@ -478,7 +478,7 @@ AudioOutput::PlayChunk(const music_chunk *chunk)
 	return true;
 }
 
-inline const music_chunk *
+inline const MusicChunk *
 AudioOutput::GetNextChunk() const
 {
 	return current_chunk != nullptr
@@ -493,7 +493,7 @@ AudioOutput::Play()
 {
 	assert(pipe != nullptr);
 
-	const music_chunk *chunk = GetNextChunk();
+	const MusicChunk *chunk = GetNextChunk();
 	if (chunk == nullptr)
 		/* no chunk available */
 		return false;

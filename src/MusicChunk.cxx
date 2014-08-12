@@ -24,14 +24,14 @@
 
 #include <assert.h>
 
-music_chunk::~music_chunk()
+MusicChunk::~MusicChunk()
 {
 	delete tag;
 }
 
 #ifndef NDEBUG
 bool
-music_chunk::CheckFormat(const AudioFormat other_format) const
+MusicChunk::CheckFormat(const AudioFormat other_format) const
 {
 	assert(other_format.IsValid());
 
@@ -40,8 +40,8 @@ music_chunk::CheckFormat(const AudioFormat other_format) const
 #endif
 
 WritableBuffer<void>
-music_chunk::Write(const AudioFormat af,
-		   float data_time, uint16_t _bit_rate)
+MusicChunk::Write(const AudioFormat af,
+		  float data_time, uint16_t _bit_rate)
 {
 	assert(CheckFormat(af));
 	assert(length == 0 || audio_format.IsValid());
@@ -67,7 +67,7 @@ music_chunk::Write(const AudioFormat af,
 }
 
 bool
-music_chunk::Expand(const AudioFormat af, size_t _length)
+MusicChunk::Expand(const AudioFormat af, size_t _length)
 {
 	const size_t frame_size = af.GetFrameSize();
 
