@@ -369,7 +369,9 @@ command_process(Client &client, unsigned num, char *line)
 
 		current_command = nullptr;
 
-		return CommandResult::ERROR;
+		/* this client does not speak the MPD protocol; kick
+		   the connection */
+		return CommandResult::FINISH;
 	}
 
 	unsigned argc = 1;
