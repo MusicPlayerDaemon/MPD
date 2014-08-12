@@ -23,6 +23,7 @@
 #include "command/AllCommands.hxx"
 #include "Log.hxx"
 #include "util/StringAPI.hxx"
+#include "util/CharUtil.hxx"
 
 #define CLIENT_LIST_MODE_BEGIN "command_list_begin"
 #define CLIENT_LIST_OK_MODE_BEGIN "command_list_ok_begin"
@@ -118,6 +119,14 @@ client_process_line(Client &client, char *line)
 		} else if (StringIsEqual(line, CLIENT_LIST_OK_MODE_BEGIN)) {
 			client.cmd_list.Begin(true);
 			ret = CommandResult::OK;
+		} else if (IsUpperAlphaASCII(*line)) {
+			/* no valid MPD command begins with an upper
+			   case letter; this could be a badly routed
+			   HTTP request */
+			FormatWarning(client_domain,
+				      "[%u] malformed command \"%s\"",
+				      client.num, line);
+			ret = CommandResult::CLOSE;
 		} else {
 			FormatDebug(client_domain,
 				    "[%u] process command \"%s\"",
