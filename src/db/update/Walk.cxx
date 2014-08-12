@@ -79,7 +79,7 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 		});
 
 	directory.ForEachSongSafe([&](Song &song){
-			assert(song.parent == &directory);
+			assert(&song.parent == &directory);
 
 			const auto name_fs = AllocatedPath::FromUTF8(song.uri.c_str());
 			if (name_fs.IsNull() || exclude_list.Check(name_fs)) {

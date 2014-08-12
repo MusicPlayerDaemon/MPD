@@ -167,7 +167,7 @@ Directory::AddSong(SongPtr song) noexcept
 {
 	assert(holding_db_lock());
 	assert(song != nullptr);
-	assert(song->parent == this);
+	assert(&song->parent == this);
 
 	songs.push_back(*song.release());
 }
@@ -177,7 +177,7 @@ Directory::RemoveSong(Song *song) noexcept
 {
 	assert(holding_db_lock());
 	assert(song != nullptr);
-	assert(song->parent == this);
+	assert(&song->parent == this);
 
 	songs.erase(songs.iterator_to(*song));
 }
@@ -189,7 +189,7 @@ Directory::FindSong(const char *name_utf8) const noexcept
 	assert(name_utf8 != nullptr);
 
 	for (auto &song : songs) {
-		assert(song.parent == this);
+		assert(&song.parent == this);
 
 		if (song.uri == name_utf8)
 			return &song;

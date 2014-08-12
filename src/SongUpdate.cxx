@@ -109,12 +109,11 @@ Song::LoadFromArchive(ArchiveFile &archive, const char *name_utf8,
 bool
 Song::UpdateFileInArchive(ArchiveFile &archive) noexcept
 {
-	assert(parent != nullptr);
-	assert(parent->device == DEVICE_INARCHIVE);
+	assert(parent.device == DEVICE_INARCHIVE);
 
 	std::string path_utf8(uri);
 
-	for (const Directory *directory = parent;
+	for (const Directory *directory = &parent;
 	     directory->parent != nullptr &&
 		     directory->parent->device == DEVICE_INARCHIVE;
 	     directory = directory->parent) {

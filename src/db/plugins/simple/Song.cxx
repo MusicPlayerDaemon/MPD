@@ -26,7 +26,7 @@
 
 inline
 Song::Song(StringView _uri, Directory &_parent) noexcept
-	:parent(&_parent), uri(_uri.data, _uri.size)
+	:parent(_parent), uri(_uri.data, _uri.size)
 {
 }
 
@@ -56,10 +56,10 @@ Song::NewFile(const char *path, Directory &parent) noexcept
 std::string
 Song::GetURI() const noexcept
 {
-	if (parent->IsRoot())
+	if (parent.IsRoot())
 		return uri;
 	else {
-		const char *path = parent->GetPath();
+		const char *path = parent.GetPath();
 
 		std::string result;
 		result.reserve(strlen(path) + 1 + uri.length());
@@ -74,8 +74,8 @@ LightSong
 Song::Export() const noexcept
 {
 	LightSong dest(uri.c_str(), tag);
-	if (!parent->IsRoot())
-		dest.directory = parent->GetPath();
+	if (!parent.IsRoot())
+		dest.directory = parent.GetPath();
 	dest.mtime = mtime;
 	dest.start_time = start_time;
 	dest.end_time = end_time;

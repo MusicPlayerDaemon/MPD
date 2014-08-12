@@ -60,10 +60,9 @@ struct Song {
 	Tag tag;
 
 	/**
-	 * The #Directory that contains this song.  Must be
-	 * non-nullptr.
+	 * The #Directory that contains this song.
 	 */
-	Directory *const parent;
+	Directory &parent;
 
 	/**
 	 * The time stamp of the last file modification.  A negative

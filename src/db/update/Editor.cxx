@@ -29,7 +29,7 @@
 void
 DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 {
-	assert(del->parent == &dir);
+	assert(&del->parent == &dir);
 
 	/* first, prevent traversers in main task from getting this */
 	dir.RemoveSong(del);
@@ -65,7 +65,7 @@ DatabaseEditor::ClearDirectory(Directory &directory)
 		});
 
 	directory.ForEachSongSafe([this, &directory](Song &song){
-			assert(song.parent == &directory);
+			assert(&song.parent == &directory);
 			DeleteSong(directory, &song);
 		});
 }
