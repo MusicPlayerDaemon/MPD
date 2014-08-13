@@ -24,6 +24,8 @@
 #include "util/ByteReverse.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <iterator>
+
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		bool _dsd_usb, bool _shift8, bool _pack, bool _reverse_endian)
