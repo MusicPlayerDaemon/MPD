@@ -1447,7 +1447,7 @@ AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
 
 dnl ------------------------------- Shine Encoder ------------------------------
 
-MPD_AUTO_PKG(shine_encoder, SHINE, [shine >= 3],
+MPD_AUTO_PKG(shine_encoder, SHINE, [shine >= 3.1],
 	[shine encoder], [libshine not found])
 
 if test x$enable_shine_encoder = xyes; then

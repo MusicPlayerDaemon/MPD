@@ -172,8 +172,6 @@ bool
 ShineEncoder::WriteChunk(bool flush)
 {
 	if (flush || input_pos == frame_size) {
-		long written;
-
 		if (flush) {
 			/* fill remaining with 0s */
 			for (; input_pos < frame_size; input_pos++) {
@@ -181,6 +179,7 @@ ShineEncoder::WriteChunk(bool flush)
 			}
 		}
 
+		int written;
 		const uint8_t *out =
 			shine_encode_buffer(shine, stereo, &written);
 
@@ -229,10 +228,11 @@ static bool
 shine_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 {
 	ShineEncoder *encoder = (ShineEncoder *)_encoder;
-	long written;
 
 	/* flush buffers and flush shine */
 	encoder->WriteChunk(true);
+
+	int written;
 	const uint8_t *data = shine_flush(encoder->shine, &written);
 
 	if (written > 0)
