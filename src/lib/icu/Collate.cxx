@@ -38,6 +38,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <strings.h>
 
 #ifdef HAVE_ICU
 static UCollator *collator;
