@@ -219,9 +219,9 @@ dsf_to_pcm_order(uint8_t *dest, uint8_t *scratch, size_t nrbytes)
  */
 static bool
 dsf_decode_chunk(Decoder &decoder, InputStream &is,
-		    unsigned channels,
-		    uint64_t chunk_size,
-		    bool bitreverse)
+		 unsigned channels,
+		 uint64_t chunk_size,
+		 bool bitreverse)
 {
 	uint8_t buffer[8192];
 
