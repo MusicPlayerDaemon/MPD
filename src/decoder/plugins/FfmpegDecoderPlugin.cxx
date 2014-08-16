@@ -452,9 +452,18 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	AVStream *av_stream = format_context->streams[audio_stream];
 
 	AVCodecContext *codec_context = av_stream->codec;
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 25, 0)
+	const AVCodecDescriptor *codec_descriptor =
+		avcodec_descriptor_get(codec_context->codec_id);
+	if (codec_descriptor != nullptr)
+		FormatDebug(ffmpeg_domain, "codec '%s'",
+			    codec_descriptor->name);
+#else
 	if (codec_context->codec_name[0] != 0)
 		FormatDebug(ffmpeg_domain, "codec '%s'",
 			    codec_context->codec_name);
+#endif
 
 	AVCodec *codec = avcodec_find_decoder(codec_context->codec_id);
 

@@ -33,7 +33,7 @@
 #include "Compiler.h"
 
 #include <assert.h>
-#include <string.h>
+#include <strings.h>
 
 /**
  * Determine whether two strings are equal, ignoring case for ASCII
