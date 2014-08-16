@@ -1191,7 +1191,7 @@ player_task(void *arg)
 }
 
 void
-player_create(PlayerControl &pc)
+StartPlayerThread(PlayerControl &pc)
 {
 	assert(!pc.thread.IsDefined());
 

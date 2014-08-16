@@ -40,6 +40,6 @@
 struct PlayerControl;
 
 void
-player_create(PlayerControl &pc);
+StartPlayerThread(PlayerControl &pc);
 
 #endif

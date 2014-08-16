@@ -573,7 +573,7 @@ int mpd_main(int argc, char *argv[])
 
 	ZeroconfInit(*instance->event_loop);
 
-	player_create(instance->partition->pc);
+	StartPlayerThread(instance->partition->pc);
 
 #ifdef ENABLE_DATABASE
 	if (create_db) {
