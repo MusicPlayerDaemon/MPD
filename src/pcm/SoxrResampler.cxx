@@ -28,6 +28,7 @@
 #include <soxr.h>
 
 #include <assert.h>
+#include <string.h>
 
 static constexpr Domain soxr_domain("soxr");
 
