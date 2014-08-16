@@ -1781,6 +1781,63 @@ systemctl start mpd.socket</programlisting>
             </tbody>
           </tgroup>
         </informaltable>
+
+        <para>
+          The according hardware mixer plugin understands the
+          following settings:
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>mixer_device</varname>
+                  <parameter>DEVICE</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    Sets the ALSA mixer device name, defaulting to
+                    <parameter>default</parameter> which lets ALSA
+                    pick a value.
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>mixer_control</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    Choose a mixer control, defaulting to
+                    <parameter>PCM</parameter>.  Type <command>amixer
+                    scontrols</command> to get a list of available
+                    mixer controls.
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>mixer_index</varname>
+                  <parameter>NUMBER</parameter>
+                </entry>
+                <entry>
+                  Choose a mixer control index.  This is necessary if
+                  there is more than one control with the same name.
+                  Defaults to <parameter>0</parameter> (the first
+                  one).
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
@@ -2122,6 +2179,48 @@ systemctl start mpd.socket</programlisting>
                   then MPD will attempt to open
                   <filename>/dev/sound/dsp</filename> and
                   <filename>/dev/dsp</filename>.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>
+          The according hardware mixer plugin understands the
+          following settings:
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>mixer_device</varname>
+                  <parameter>DEVICE</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    Sets the OSS mixer device path, defaulting to
+                    <filename>/dev/mixer</filename>.
+                  </para>
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>mixer_control</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    Choose a mixer control, defaulting to
+                    <parameter>PCM</parameter>.
+                  </para>
                 </entry>
               </row>
             </tbody>
