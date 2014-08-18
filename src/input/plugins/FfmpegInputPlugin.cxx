@@ -143,6 +143,7 @@ FfmpegInputStream::Seek(offset_type new_offset, Error &error)
 		return false;
 	}
 
+	offset = result;
 	eof = false;
 	return true;
 }
