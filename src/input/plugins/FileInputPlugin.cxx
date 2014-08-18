@@ -101,13 +101,13 @@ input_file_open(const char *filename,
 bool
 FileInputStream::Seek(offset_type new_offset, Error &error)
 {
-	new_offset = (offset_type)lseek(fd, (off_t)new_offset, SEEK_SET);
-	if (new_offset < 0) {
+	auto result = lseek(fd, (off_t)new_offset, SEEK_SET);
+	if (result < 0) {
 		error.SetErrno("Failed to seek");
 		return false;
 	}
 
-	offset = new_offset;
+	offset = (offset_type)result;
 	return true;
 }
 

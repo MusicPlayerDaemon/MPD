@@ -35,7 +35,7 @@ struct Tag;
 
 class InputStream {
 public:
-	typedef int64_t offset_type;
+	typedef uint64_t offset_type;
 
 private:
 	/**
@@ -236,8 +236,6 @@ public:
 
 	void AddOffset(offset_type delta) {
 		assert(ready);
-		assert(offset >= 0);
-		assert(delta >= 0);
 
 		offset += delta;
 	}
@@ -253,7 +251,6 @@ public:
 	offset_type GetRest() const {
 		assert(ready);
 		assert(KnownSize());
-		assert(offset >= 0);
 
 		return size - offset;
 	}

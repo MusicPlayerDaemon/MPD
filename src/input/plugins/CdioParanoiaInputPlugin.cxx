@@ -274,7 +274,7 @@ input_cdio_open(const char *uri,
 bool
 CdioParanoiaInputStream::Seek(offset_type new_offset, Error &error)
 {
-	if (new_offset < 0 || new_offset > size) {
+	if (new_offset > size) {
 		error.Format(cdio_domain, "Invalid offset to seek %ld (%ld)",
 			     (long int)new_offset, (long int)size);
 		return false;

@@ -116,9 +116,6 @@ AsyncInputStream::Seek(offset_type new_offset, Error &error)
 	if (!IsSeekable())
 		return false;
 
-	if (new_offset < 0)
-		return false;
-
 	/* check if we can fast-forward the buffer */
 
 	while (new_offset > offset) {
