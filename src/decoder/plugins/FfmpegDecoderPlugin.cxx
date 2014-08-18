@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "FfmpegDecoderPlugin.hxx"
+#include "lib/ffmpeg/Domain.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "tag/TagHandler.hxx"
@@ -46,8 +47,6 @@ extern "C" {
 
 #include <assert.h>
 #include <string.h>
-
-static constexpr Domain ffmpeg_domain("ffmpeg");
 
 /* suppress the ffmpeg compatibility macro */
 #ifdef SampleFormat

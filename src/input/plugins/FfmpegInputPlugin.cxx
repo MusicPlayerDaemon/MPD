@@ -22,11 +22,11 @@
 
 #include "config.h"
 #include "FfmpegInputPlugin.hxx"
+#include "lib/ffmpeg/Domain.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 extern "C" {
 #include <libavformat/avio.h>
@@ -62,8 +62,6 @@ struct FfmpegInputStream final : public InputStream {
 	size_t Read(void *ptr, size_t size, Error &error) override;
 	bool Seek(offset_type offset, Error &error) override;
 };
-
-static constexpr Domain ffmpeg_domain("ffmpeg");
 
 static inline bool
 input_ffmpeg_supported(void)
