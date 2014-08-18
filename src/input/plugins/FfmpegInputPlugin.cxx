@@ -138,13 +138,13 @@ FfmpegInputStream::Seek(offset_type new_offset, Error &error)
 {
 	auto result = avio_seek(h, new_offset, SEEK_SET);
 
-	if (result >= 0) {
-		eof = false;
-		return true;
-	} else {
+	if (result < 0) {
 		error.Set(ffmpeg_domain, "avio_seek() failed");
 		return false;
 	}
+
+	eof = false;
+	return true;
 }
 
 const InputPlugin input_plugin_ffmpeg = {
