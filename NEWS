@@ -31,6 +31,7 @@ ver 0.19 (not yet released)
   - alsa: new input plugin
   - curl: options "verify_peer" and "verify_host"
   - ffmpeg: update offset after seeking
+  - ffmpeg: improved error messages
   - mms: non-blocking I/O
   - nfs: new input plugin
   - smbclient: new input plugin

@@ -23,6 +23,7 @@
 #include "config.h"
 #include "FfmpegInputPlugin.hxx"
 #include "lib/ffmpeg/Domain.hxx"
+#include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "util/StringUtil.hxx"
@@ -101,8 +102,7 @@ input_ffmpeg_open(const char *uri,
 	AVIOContext *h;
 	auto result = avio_open(&h, uri, AVIO_FLAG_READ);
 	if (result != 0) {
-		error.Set(ffmpeg_domain, result,
-			  "libavformat failed to open the URI");
+		SetFfmpegError(error, result);
 		return nullptr;
 	}
 
@@ -115,7 +115,7 @@ FfmpegInputStream::Read(void *ptr, size_t read_size, Error &error)
 	auto result = avio_read(h, (unsigned char *)ptr, read_size);
 	if (result <= 0) {
 		if (result < 0)
-			error.Set(ffmpeg_domain, "avio_read() failed");
+			SetFfmpegError(error, result, "avio_read() failed");
 
 		eof = true;
 		return false;
@@ -137,7 +137,7 @@ FfmpegInputStream::Seek(offset_type new_offset, Error &error)
 	auto result = avio_seek(h, new_offset, SEEK_SET);
 
 	if (result < 0) {
-		error.Set(ffmpeg_domain, "avio_seek() failed");
+		SetFfmpegError(error, result, "avio_seek() failed");
 		return false;
 	}
 
