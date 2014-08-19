@@ -20,7 +20,7 @@
 #include "config.h"
 #include "InputStream.hxx"
 #include "thread/Cond.hxx"
-#include "util/UriUtil.hxx"
+#include "util/StringUtil.hxx"
 
 #include <assert.h>
 
@@ -76,7 +76,8 @@ gcc_pure
 static bool
 ExpensiveSeeking(const char *uri)
 {
-	return uri_has_scheme(uri);
+	return StringStartsWith(uri, "http://") ||
+		StringStartsWith(uri, "https://");
 }
 
 bool
