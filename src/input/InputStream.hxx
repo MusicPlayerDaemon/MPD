@@ -229,6 +229,7 @@ public:
 	gcc_pure
 	offset_type GetSize() const {
 		assert(ready);
+		assert(KnownSize());
 
 		return size;
 	}
