@@ -109,7 +109,7 @@ dsdlib_tag_id3(InputStream &is,
 {
 	assert(tagoffset >= 0);
 
-	if (tagoffset == 0)
+	if (tagoffset == 0 || !is.KnownSize())
 		return;
 
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
