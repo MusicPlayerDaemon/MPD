@@ -339,8 +339,8 @@ MPDOpusDecoder::Seek(OggSyncState &oy, double where_s)
 	/* interpolate the file offset where we expect to find the
 	   given granule position */
 	/* TODO: implement binary search */
-	InputStream::offset_type offset(where_granulepos * input_stream.GetSize()
-					/ eos_granulepos);
+	offset_type offset(where_granulepos * input_stream.GetSize()
+			   / eos_granulepos);
 
 	if (!OggSeekPageAtOffset(oy, os, input_stream, offset))
 		return false;

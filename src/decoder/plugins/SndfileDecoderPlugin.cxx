@@ -70,7 +70,7 @@ sndfile_vio_seek(sf_count_t _offset, int whence, void *user_data)
 	SndfileInputStream &sis = *(SndfileInputStream *)user_data;
 	InputStream &is = sis.is;
 
-	InputStream::offset_type offset = _offset;
+	offset_type offset = _offset;
 	switch (whence) {
 	case SEEK_SET:
 		break;

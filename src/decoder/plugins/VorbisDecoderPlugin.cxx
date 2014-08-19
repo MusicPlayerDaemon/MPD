@@ -80,7 +80,7 @@ static int ogg_seek_cb(void *data, ogg_int64_t _offset, int whence)
 	     decoder_get_command(*vis->decoder) == DecoderCommand::STOP))
 		return -1;
 
-	InputStream::offset_type offset = _offset;
+	offset_type offset = _offset;
 	switch (whence) {
 	case SEEK_SET:
 		break;

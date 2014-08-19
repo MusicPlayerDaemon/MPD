@@ -36,7 +36,7 @@ static constexpr Domain modplug_domain("modplug");
 
 static constexpr size_t MODPLUG_FRAME_SIZE = 4096;
 static constexpr size_t MODPLUG_PREALLOC_BLOCK = 256 * 1024;
-static constexpr InputStream::offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
+static constexpr offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 
 static int modplug_loop_count;
 

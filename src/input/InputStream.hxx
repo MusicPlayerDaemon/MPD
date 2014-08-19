@@ -21,6 +21,7 @@
 #define MPD_INPUT_STREAM_HXX
 
 #include "check.h"
+#include "Offset.hxx"
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
@@ -35,7 +36,7 @@ struct Tag;
 
 class InputStream {
 public:
-	typedef uint64_t offset_type;
+	typedef ::offset_type offset_type;
 
 private:
 	/**

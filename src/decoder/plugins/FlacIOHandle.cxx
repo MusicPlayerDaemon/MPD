@@ -67,7 +67,7 @@ FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 _offset, int whence)
 {
 	InputStream *is = (InputStream *)handle;
 
-	InputStream::offset_type offset = _offset;
+	offset_type offset = _offset;
 	switch (whence) {
 	case SEEK_SET:
 		break;

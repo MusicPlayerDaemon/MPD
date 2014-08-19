@@ -110,14 +110,14 @@ dsdiff_read_payload(Decoder *decoder, InputStream &is,
 static bool
 dsdiff_read_prop_snd(Decoder *decoder, InputStream &is,
 		     DsdiffMetaData *metadata,
-		     InputStream::offset_type end_offset)
+		     offset_type end_offset)
 {
 	DsdiffChunkHeader header;
-	while ((InputStream::offset_type)(is.GetOffset() + sizeof(header)) <= end_offset) {
+	while (offset_type(is.GetOffset() + sizeof(header)) <= end_offset) {
 		if (!dsdiff_read_chunk_header(decoder, is, &header))
 			return false;
 
-		InputStream::offset_type chunk_end_offset = is.GetOffset()
+		offset_type chunk_end_offset = is.GetOffset()
 			+ header.GetSize();
 		if (chunk_end_offset > end_offset)
 			return false;
@@ -171,7 +171,7 @@ dsdiff_read_prop(Decoder *decoder, InputStream &is,
 		 const DsdiffChunkHeader *prop_header)
 {
 	uint64_t prop_size = prop_header->GetSize();
-	InputStream::offset_type end_offset = is.GetOffset() + prop_size;
+	const offset_type end_offset = is.GetOffset() + prop_size;
 
 	DsdId prop_id;
 	if (prop_size < sizeof(prop_id) ||
@@ -188,7 +188,7 @@ dsdiff_read_prop(Decoder *decoder, InputStream &is,
 static void
 dsdiff_handle_native_tag(InputStream &is,
 			 const struct tag_handler *handler,
-			 void *handler_ctx, InputStream::offset_type tagoffset,
+			 void *handler_ctx, offset_type tagoffset,
 			 TagType type)
 {
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
@@ -240,12 +240,12 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 		return false;
 
 	/** offset for artist tag */
-	InputStream::offset_type artist_offset = 0;
+	offset_type artist_offset = 0;
 	/** offset for title tag */
-	InputStream::offset_type title_offset = 0;
+	offset_type title_offset = 0;
 
 #ifdef HAVE_ID3TAG
-	InputStream::offset_type id3_offset = 0;
+	offset_type id3_offset = 0;
 #endif
 
 	/* Now process all the remaining chunk headers in the stream
@@ -334,7 +334,7 @@ dsdiff_read_metadata(Decoder *decoder, InputStream &is,
 		} else {
 			/* ignore unknown chunk */
 			const uint64_t chunk_size = chunk_header->GetSize();
-			InputStream::offset_type chunk_end_offset =
+			const offset_type chunk_end_offset =
 				is.GetOffset() + chunk_size;
 
 			if (!dsdlib_skip_to(decoder, is, chunk_end_offset))

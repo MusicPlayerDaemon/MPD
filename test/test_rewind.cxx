@@ -72,8 +72,7 @@ public:
 		ris->Update();
 		CPPUNIT_ASSERT(ris->IsReady());
 		CPPUNIT_ASSERT(!ris->KnownSize());
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(0),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(0), ris->GetOffset());
 
 		Error error;
 		char buffer[16];
@@ -81,50 +80,43 @@ public:
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('f', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[1]);
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(2),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(2), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
 		nbytes = ris->Read(buffer, 2, error);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL(' ', buffer[1]);
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(4),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(4), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
 		CPPUNIT_ASSERT(ris->Seek(1, error));
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(1),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(1), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
 		nbytes = ris->Read(buffer, 2, error);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[1]);
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(3),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(3), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
 		CPPUNIT_ASSERT(ris->Seek(0, error));
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(0),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(0), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
 		nbytes = ris->Read(buffer, 2, error);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('f', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[1]);
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(2),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(2), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
 		nbytes = ris->Read(buffer, sizeof(buffer), error);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL(' ', buffer[1]);
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(4),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(4), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
 		nbytes = ris->Read(buffer, sizeof(buffer), error);
@@ -132,13 +124,11 @@ public:
 		CPPUNIT_ASSERT_EQUAL('b', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('a', buffer[1]);
 		CPPUNIT_ASSERT_EQUAL('r', buffer[2]);
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(7),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(7), ris->GetOffset());
 		CPPUNIT_ASSERT(ris->IsEOF());
 
 		CPPUNIT_ASSERT(ris->Seek(3, error));
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(3),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(3), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
 		nbytes = ris->Read(buffer, sizeof(buffer), error);
@@ -147,8 +137,7 @@ public:
 		CPPUNIT_ASSERT_EQUAL('b', buffer[1]);
 		CPPUNIT_ASSERT_EQUAL('a', buffer[2]);
 		CPPUNIT_ASSERT_EQUAL('r', buffer[3]);
-		CPPUNIT_ASSERT_EQUAL(InputStream::offset_type(7),
-				     ris->GetOffset());
+		CPPUNIT_ASSERT_EQUAL(offset_type(7), ris->GetOffset());
 		CPPUNIT_ASSERT(ris->IsEOF());
 	}
 };

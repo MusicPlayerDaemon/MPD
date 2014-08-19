@@ -405,7 +405,7 @@ wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 	WavpackInput &wpi = *wpin(id);
 	InputStream &is = wpi.is;
 
-	InputStream::offset_type offset = delta;
+	offset_type offset = delta;
 	switch (mode) {
 	case SEEK_SET:
 		break;

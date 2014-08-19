@@ -70,8 +70,8 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 				       buffer, nbytes, 0)
 			: decoder_get_command(decoder);
 		if (cmd == DecoderCommand::SEEK) {
-			InputStream::offset_type offset(time_to_size *
-							decoder_seek_where(decoder));
+			offset_type offset(time_to_size *
+					   decoder_seek_where(decoder));
 
 			Error error;
 			if (is.LockSeek(offset, error)) {

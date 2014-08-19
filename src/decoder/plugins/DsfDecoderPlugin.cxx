@@ -44,7 +44,7 @@ struct DsfMetaData {
 	bool bitreverse;
 	uint64_t chunk_size;
 #ifdef HAVE_ID3TAG
-	InputStream::offset_type id3_offset;
+	offset_type id3_offset;
 	uint64_t id3_size;
 #endif
 };
@@ -173,7 +173,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	metadata->channels = (unsigned) dsf_fmt_chunk.channelnum;
 	metadata->sample_rate = samplefreq;
 #ifdef HAVE_ID3TAG
-	metadata->id3_offset = (InputStream::offset_type)metadata_offset;
+	metadata->id3_offset = (offset_type)metadata_offset;
 #endif
 	/* check bits per sample format, determine if bitreverse is needed */
 	metadata->bitreverse = dsf_fmt_chunk.bitssample == 1;

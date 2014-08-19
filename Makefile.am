@@ -1090,6 +1090,7 @@ libinput_a_SOURCES = \
 	src/input/Init.cxx src/input/Init.hxx \
 	src/input/Registry.cxx src/input/Registry.hxx \
 	src/input/Open.cxx \
+	src/input/Offset.hxx \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
 	src/input/InputPlugin.hxx \
 	src/input/TextInputStream.cxx src/input/TextInputStream.hxx \

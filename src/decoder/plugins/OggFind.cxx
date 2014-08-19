@@ -20,6 +20,7 @@
 #include "config.h"
 #include "OggFind.hxx"
 #include "OggSyncState.hxx"
+#include "input/InputStream.hxx"
 #include "util/Error.hxx"
 
 bool
@@ -39,7 +40,7 @@ OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
 
 bool
 OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
-		    InputStream::offset_type offset)
+		    offset_type offset)
 {
 	oy.Reset();
 

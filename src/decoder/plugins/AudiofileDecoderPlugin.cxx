@@ -114,7 +114,7 @@ audiofile_file_seek(AFvirtualfile *vfile, AFfileoffset _offset,
 	AudioFileInputStream &afis = *(AudioFileInputStream *)vfile->closure;
 	InputStream &is = afis.is;
 
-	InputStream::offset_type offset = _offset;
+	offset_type offset = _offset;
 	if (is_relative)
 		offset += is.GetOffset();
 

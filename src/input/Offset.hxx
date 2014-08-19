@@ -17,41 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_OGG_FIND_HXX
-#define MPD_OGG_FIND_HXX
+#ifndef MPD_OFFSET_HXX
+#define MPD_OFFSET_HXX
 
 #include "check.h"
-#include "input/Offset.hxx"
 
-#include <ogg/ogg.h>
-
-class OggSyncState;
-class InputStream;
+#include <stdint.h>
 
 /**
- * Skip all pages/packets until an end-of-stream (EOS) packet for the
- * specified stream is found.
- *
- * @return true if the EOS packet was found
+ * A type for absolute offsets in a file.
  */
-bool
-OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet);
-
-/**
- * Seek the #InputStream and find the next Ogg page.
- */
-bool
-OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
-		    offset_type offset);
-
-/**
- * Try to find the end-of-stream (EOS) packet.  Seek to the end of the
- * file if necessary.
- *
- * @return true if the EOS packet was found
- */
-bool
-OggSeekFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet,
-	       InputStream &is);
+typedef uint64_t offset_type;
 
 #endif
