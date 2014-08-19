@@ -40,7 +40,10 @@ ProxyInputStream::CopyAttributes()
 			if (input.HasMimeType())
 				SetMimeType(input.GetMimeType());
 
-			size = input.GetSize();
+			size = input.KnownSize()
+				? input.GetSize()
+				: -1;
+
 			seekable = input.IsSeekable();
 			SetReady();
 		}
