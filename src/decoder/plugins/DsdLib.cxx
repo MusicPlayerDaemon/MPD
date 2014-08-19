@@ -50,12 +50,12 @@ DsdId::Equals(const char *s) const
  */
 bool
 dsdlib_skip_to(Decoder *decoder, InputStream &is,
-	       uint64_t offset)
+	       offset_type offset)
 {
 	if (is.IsSeekable())
 		return is.Seek(offset, IgnoreError());
 
-	if (uint64_t(is.GetOffset()) > offset)
+	if (is.GetOffset() > offset)
 		return false;
 
 	return dsdlib_skip(decoder, is, offset - is.GetOffset());
@@ -66,7 +66,7 @@ dsdlib_skip_to(Decoder *decoder, InputStream &is,
  */
 bool
 dsdlib_skip(Decoder *decoder, InputStream &is,
-	    uint64_t delta)
+	    offset_type delta)
 {
 	if (delta == 0)
 		return true;

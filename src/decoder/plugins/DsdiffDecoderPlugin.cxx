@@ -66,7 +66,7 @@ struct dsdiff_native_tag {
 struct DsdiffMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;
-	uint64_t chunk_size;
+	offset_type chunk_size;
 };
 
 static bool lsbitfirst;
@@ -113,7 +113,7 @@ dsdiff_read_prop_snd(Decoder *decoder, InputStream &is,
 		     offset_type end_offset)
 {
 	DsdiffChunkHeader header;
-	while (offset_type(is.GetOffset() + sizeof(header)) <= end_offset) {
+	while (is.GetOffset() + sizeof(header) <= end_offset) {
 		if (!dsdiff_read_chunk_header(decoder, is, &header))
 			return false;
 
@@ -252,7 +252,7 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 	   and record their position and size */
 
 	do {
-		uint64_t chunk_size = chunk_header->GetSize();
+		offset_type chunk_size = chunk_header->GetSize();
 
 		/* DIIN chunk, is directly followed by other chunks  */
 		if (chunk_header->id.Equals("DIIN"))
@@ -328,12 +328,12 @@ dsdiff_read_metadata(Decoder *decoder, InputStream &is,
 					      chunk_header))
 					return false;
 		} else if (chunk_header->id.Equals("DSD ")) {
-			const uint64_t chunk_size = chunk_header->GetSize();
+			const offset_type chunk_size = chunk_header->GetSize();
 			metadata->chunk_size = chunk_size;
 			return true;
 		} else {
 			/* ignore unknown chunk */
-			const uint64_t chunk_size = chunk_header->GetSize();
+			const offset_type chunk_size = chunk_header->GetSize();
 			const offset_type chunk_end_offset =
 				is.GetOffset() + chunk_size;
 
@@ -356,7 +356,7 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
 static bool
 dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 		    unsigned channels, unsigned sample_rate,
-		    uint64_t chunk_size)
+		    offset_type chunk_size)
 {
 	uint8_t buffer[8192];
 
@@ -370,9 +370,8 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 		/* see how much aligned data from the remaining chunk
 		   fits into the local buffer */
 		size_t now_size = buffer_size;
-		if (chunk_size < (uint64_t)now_size) {
-			unsigned now_frames =
-				(unsigned)chunk_size / frame_size;
+		if (chunk_size < (offset_type)now_size) {
+			unsigned now_frames = chunk_size / frame_size;
 			now_size = now_frames * frame_size;
 		}
 
@@ -425,7 +424,7 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 	}
 
 	/* calculate song time from DSD chunk size and sample frequency */
-	uint64_t chunk_size = metadata.chunk_size;
+	offset_type chunk_size = metadata.chunk_size;
 	float songtime = ((chunk_size / metadata.channels) * 8) /
 			 (float) metadata.sample_rate;
 

@@ -21,6 +21,7 @@
 #define MPD_DECODER_DSDLIB_HXX
 
 #include "system/ByteOrder.hxx"
+#include "input/Offset.hxx"
 #include "Compiler.h"
 
 #include <stddef.h>
@@ -60,11 +61,11 @@ public:
 
 bool
 dsdlib_skip_to(Decoder *decoder, InputStream &is,
-	       uint64_t offset);
+	       offset_type offset);
 
 bool
 dsdlib_skip(Decoder *decoder, InputStream &is,
-	    uint64_t delta);
+	    offset_type delta);
 
 /**
  * Check if the sample frequency is a valid DSD frequency.
