@@ -249,7 +249,7 @@ public:
 	gcc_pure
 	offset_type GetRest() const {
 		assert(ready);
-		assert(size >= 0);
+		assert(KnownSize());
 		assert(offset >= 0);
 
 		return size - offset;
