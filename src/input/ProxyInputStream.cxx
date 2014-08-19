@@ -42,7 +42,7 @@ ProxyInputStream::CopyAttributes()
 
 			size = input.KnownSize()
 				? input.GetSize()
-				: -1;
+				: UNKNOWN_SIZE;
 
 			seekable = input.IsSeekable();
 			SetReady();

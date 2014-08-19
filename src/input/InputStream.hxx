@@ -76,8 +76,10 @@ protected:
 	 */
 	bool seekable;
 
+	static constexpr offset_type UNKNOWN_SIZE = -1;
+
 	/**
-	 * the size of the resource, or -1 if unknown
+	 * the size of the resource, or #UNKNOWN_SIZE if unknown
 	 */
 	offset_type size;
 
@@ -97,7 +99,7 @@ public:
 		:uri(_uri),
 		 mutex(_mutex), cond(_cond),
 		 ready(false), seekable(false),
-		 size(-1), offset(0) {
+		 size(UNKNOWN_SIZE), offset(0) {
 		assert(_uri != nullptr);
 	}
 
@@ -221,7 +223,7 @@ public:
 	bool KnownSize() const {
 		assert(ready);
 
-		return size >= 0;
+		return size != UNKNOWN_SIZE;
 	}
 
 	gcc_pure
