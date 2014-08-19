@@ -161,7 +161,7 @@ ZzipInputStream::Read(void *ptr, size_t read_size, Error &error)
 bool
 ZzipInputStream::IsEOF()
 {
-	return (InputPlugin::offset_type)zzip_tell(file) == size;
+	return offset_type(zzip_tell(file)) == size;
 }
 
 bool

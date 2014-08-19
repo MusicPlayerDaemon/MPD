@@ -61,8 +61,6 @@ struct InputPlugin {
 		UNAVAILABLE,
 	};
 
-	typedef int64_t offset_type;
-
 	const char *name;
 
 	/**
