@@ -54,24 +54,29 @@ modplug_decoder_init(const config_param &param)
 static WritableBuffer<uint8_t>
 mod_loadfile(Decoder *decoder, InputStream &is)
 {
-	const InputStream::offset_type size = is.GetSize();
-
-	if (size == 0) {
-		LogWarning(modplug_domain, "file is empty");
-		return { nullptr, 0 };
-	}
-
-	if (size > MODPLUG_FILE_LIMIT) {
-		LogWarning(modplug_domain, "file too large");
-		return { nullptr, 0 };
-	}
-
 	//known/unknown size, preallocate array, lets read in chunks
 
-	const bool is_stream = size < 0;
+	const bool is_stream = !is.KnownSize();
 
 	WritableBuffer<uint8_t> buffer;
-	buffer.size = is_stream ? MODPLUG_PREALLOC_BLOCK : size;
+	if (is_stream)
+		buffer.size = MODPLUG_PREALLOC_BLOCK;
+	else {
+		const auto size = is.GetSize();
+
+		if (size == 0) {
+			LogWarning(modplug_domain, "file is empty");
+			return { nullptr, 0 };
+		}
+
+		if (size > MODPLUG_FILE_LIMIT) {
+			LogWarning(modplug_domain, "file too large");
+			return { nullptr, 0 };
+		}
+
+		buffer.size = size;
+	}
+
 	buffer.data = new uint8_t[buffer.size];
 
 	uint8_t *const end = buffer.end();
