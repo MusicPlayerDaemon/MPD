@@ -166,9 +166,6 @@ adts_song_duration(DecoderBuffer *buffer)
 static float
 faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 {
-	const auto size = is.GetSize();
-	const size_t fileread = size >= 0 ? size : 0;
-
 	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 5));
 	if (data.IsNull())
 		return -1;
@@ -217,6 +214,8 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 			(data.data[6 + skip_size] << 3) |
 			(data.data[7 + skip_size] & 0xE0);
 
+		const auto size = is.GetSize();
+		const size_t fileread = size >= 0 ? size : 0;
 		if (fileread != 0 && bit_rate != 0)
 			return fileread * 8.0 / bit_rate;
 		else
