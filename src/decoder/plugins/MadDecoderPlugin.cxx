@@ -769,9 +769,9 @@ MadDecoder::RestIncludingThisFrame() const
 inline void
 MadDecoder::FileSizeToSongLength()
 {
-	InputStream::offset_type rest = RestIncludingThisFrame();
+	if (input_stream.KnownSize()) {
+		InputStream::offset_type rest = RestIncludingThisFrame();
 
-	if (rest > 0) {
 		float frame_duration = mp3_frame_duration(&frame);
 
 		total_time = (rest * 8.0) / frame.header.bitrate;
