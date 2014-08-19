@@ -135,6 +135,9 @@ mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
 		break;
 
 	case AVSEEK_SIZE:
+		if (!stream->input.KnownSize())
+			return -1;
+
 		return stream->input.GetSize();
 
 	default:
