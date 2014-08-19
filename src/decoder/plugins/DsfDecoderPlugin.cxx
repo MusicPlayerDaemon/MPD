@@ -171,11 +171,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	metadata->channels = (unsigned) dsf_fmt_chunk.channelnum;
 	metadata->sample_rate = samplefreq;
 #ifdef HAVE_ID3TAG
-	/* metada_offset cannot be bigger then or equal to total file size */
-	if (metadata_offset >= size)
-		metadata->id3_offset = 0;
-	else
-		metadata->id3_offset = (InputStream::offset_type)metadata_offset;
+	metadata->id3_offset = (InputStream::offset_type)metadata_offset;
 #endif
 	/* check bits per sample format, determine if bitreverse is needed */
 	metadata->bitreverse = dsf_fmt_chunk.bitssample == 1;
