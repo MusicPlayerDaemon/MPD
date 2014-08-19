@@ -43,9 +43,8 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 	const double time_to_size = audio_format.GetTimeToSize();
 
 	float total_time = -1;
-	const auto size = is.GetSize();
-	if (size >= 0)
-		total_time = size / time_to_size;
+	if (is.KnownSize())
+		total_time = is.GetSize() / time_to_size;
 
 	decoder_initialized(decoder, audio_format,
 			    is.IsSeekable(), total_time);
