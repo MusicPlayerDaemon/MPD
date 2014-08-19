@@ -67,10 +67,22 @@ InputStream::LockWaitReady()
 	WaitReady();
 }
 
+/**
+ * Is seeking on resources behind this URI "expensive"?  For example,
+ * seeking in a HTTP file requires opening a new connection with a new
+ * HTTP request.
+ */
+gcc_pure
+static bool
+ExpensiveSeeking(const char *uri)
+{
+	return uri_has_scheme(uri);
+}
+
 bool
 InputStream::CheapSeeking() const
 {
-	return IsSeekable() && !uri_has_scheme(uri.c_str());
+	return IsSeekable() && !ExpensiveSeeking(uri.c_str());
 }
 
 bool
