@@ -84,6 +84,9 @@ mpc_getsize_cb(mpc_reader *reader)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
+	if (!data->is.KnownSize())
+		return -1;
+
 	return data->is.GetSize();
 }
 
