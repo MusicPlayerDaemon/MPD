@@ -115,29 +115,23 @@ dsdlib_tag_id3(InputStream &is,
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
 		return;
 
-	struct id3_tag *id3_tag = nullptr;
-	id3_length_t count;
-
 	/* Prevent broken files causing problems */
 	const auto size = is.GetSize();
 	const auto offset = is.GetOffset();
 	if (offset >= size)
 		return;
 
-	count = size - offset;
+	const id3_length_t count = size - offset;
 
 	/* Check and limit id3 tag size to prevent a stack overflow */
 	id3_byte_t dsdid3[4096];
 	if (count == 0 || count > sizeof(dsdid3))
 		return;
 
-	id3_byte_t *dsdid3data;
-	dsdid3data = dsdid3;
-
-	if (!decoder_read_full(nullptr, is, dsdid3data, count))
+	if (!decoder_read_full(nullptr, is, dsdid3, count))
 		return;
 
-	id3_tag = id3_tag_parse(dsdid3data, count);
+	struct id3_tag *id3_tag = id3_tag_parse(dsdid3, count);
 	if (id3_tag == nullptr)
 		return;
 
