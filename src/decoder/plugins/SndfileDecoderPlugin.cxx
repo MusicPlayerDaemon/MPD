@@ -58,6 +58,9 @@ sndfile_vio_get_filelen(void *user_data)
 	SndfileInputStream &sis = *(SndfileInputStream *)user_data;
 	const InputStream &is = sis.is;
 
+	if (!is.KnownSize())
+		return -1;
+
 	return is.GetSize();
 }
 
