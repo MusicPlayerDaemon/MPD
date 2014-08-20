@@ -45,7 +45,6 @@ struct DsfMetaData {
 	offset_type chunk_size;
 #ifdef HAVE_ID3TAG
 	offset_type id3_offset;
-	uint64_t id3_size;
 #endif
 };
 
