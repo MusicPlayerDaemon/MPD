@@ -41,6 +41,8 @@
 
 #include <string.h>
 
+static constexpr unsigned DSF_BLOCK_SIZE = 4096;
+
 struct DsfMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;
@@ -137,7 +139,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 
 	uint32_t chblksize = FromLE32(dsf_fmt_chunk.block_size);
 	/* according to the spec block size should always be 4096 */
-	if (chblksize != 4096)
+	if (chblksize != DSF_BLOCK_SIZE)
 		return false;
 
 	/* read the 'data' chunk of the DSF file */
@@ -197,7 +199,7 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
 static void
 dsf_to_pcm_order(uint8_t *dest, size_t nrbytes)
 {
-	uint8_t scratch[8192];
+	uint8_t scratch[DSF_BLOCK_SIZE * 2];
 	assert(nrbytes <= sizeof(scratch));
 
 	for (size_t i = 0, j = 0; i < nrbytes; i += 2) {
@@ -206,7 +208,7 @@ dsf_to_pcm_order(uint8_t *dest, size_t nrbytes)
 	}
 
 	for (size_t i = 1, j = 0; i < nrbytes; i += 2) {
-		scratch[i] = *(dest+4096+j);
+		scratch[i] = *(dest + DSF_BLOCK_SIZE + j);
 		j++;
 	}
 
@@ -222,7 +224,7 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		 offset_type chunk_size,
 		 bool bitreverse)
 {
-	uint8_t buffer[8192];
+	uint8_t buffer[DSF_BLOCK_SIZE * 2];
 
 	const size_t sample_size = sizeof(buffer[0]);
 	const size_t frame_size = channels * sample_size;
