@@ -224,30 +224,22 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 	const unsigned buffer_frames = sizeof(buffer) / frame_size;
 	const unsigned buffer_samples = buffer_frames * frame_size;
 	const size_t buffer_size = buffer_samples * sample_size;
+	const size_t block_size = buffer_size;
 
-	while (chunk_size >= frame_size) {
-		/* see how much aligned data from the remaining chunk
-		   fits into the local buffer */
-		size_t now_size = buffer_size;
-		if (chunk_size < now_size) {
-			unsigned now_frames = chunk_size / frame_size;
-			now_size = now_frames * frame_size;
-		}
+	while (chunk_size >= block_size) {
+		chunk_size -= block_size;
 
-		if (!decoder_read_full(&decoder, is, buffer, now_size))
+		if (!decoder_read_full(&decoder, is, buffer, block_size))
 			return false;
 
-		const size_t nbytes = now_size;
-		chunk_size -= nbytes;
-
 		if (bitreverse)
-			bit_reverse_buffer(buffer, buffer + nbytes);
+			bit_reverse_buffer(buffer, buffer + block_size);
 
 		uint8_t interleaved_buffer[DSF_BLOCK_SIZE * 2];
-		dsf_to_pcm_order(interleaved_buffer, buffer, nbytes);
+		dsf_to_pcm_order(interleaved_buffer, buffer, block_size);
 
 		const auto cmd = decoder_data(decoder, is,
-					      interleaved_buffer, nbytes,
+					      interleaved_buffer, block_size,
 					      sample_rate / 1000);
 		switch (cmd) {
 		case DecoderCommand::NONE:
