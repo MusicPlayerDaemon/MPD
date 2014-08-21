@@ -63,6 +63,7 @@ ver 0.19 (not yet released)
 
 ver 0.18.13 (not yet released)
 * decoder
+  - dsdiff, dsf: fix endless loop on malformed file
   - ffmpeg: support ffmpeg/libav version 11
 
 ver 0.18.12 (2014/07/30)

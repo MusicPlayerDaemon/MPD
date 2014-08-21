@@ -232,7 +232,7 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 	const unsigned buffer_samples = buffer_frames * frame_size;
 	const size_t buffer_size = buffer_samples * sample_size;
 
-	while (chunk_size > 0) {
+	while (chunk_size >= frame_size) {
 		/* see how much aligned data from the remaining chunk
 		   fits into the local buffer */
 		size_t now_size = buffer_size;
