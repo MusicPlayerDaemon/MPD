@@ -39,6 +39,8 @@
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
 
+#include <string.h>
+
 struct DsfMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;
@@ -208,10 +210,7 @@ dsf_to_pcm_order(uint8_t *dest, size_t nrbytes)
 		j++;
 	}
 
-	for (unsigned i = 0; i < (unsigned)nrbytes; i++) {
-		*dest = scratch[i];
-		dest++;
-	}
+	memcpy(dest, scratch, nrbytes);
 }
 
 /**
