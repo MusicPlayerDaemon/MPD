@@ -200,12 +200,12 @@ dsf_to_pcm_order(uint8_t *dest, size_t nrbytes)
 	uint8_t scratch[8192];
 	assert(nrbytes <= sizeof(scratch));
 
-	for (unsigned i = 0, j = 0; i < (unsigned)nrbytes; i += 2) {
+	for (size_t i = 0, j = 0; i < nrbytes; i += 2) {
 		scratch[i] = *(dest+j);
 		j++;
 	}
 
-	for (unsigned i = 1, j = 0; i < (unsigned) nrbytes; i += 2) {
+	for (size_t i = 1, j = 0; i < nrbytes; i += 2) {
 		scratch[i] = *(dest+4096+j);
 		j++;
 	}
