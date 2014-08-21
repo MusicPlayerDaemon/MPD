@@ -39,8 +39,6 @@
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
 
-#include <string.h>
-
 static constexpr unsigned DSF_BLOCK_SIZE = 4096;
 
 struct DsfMetaData {
@@ -197,22 +195,17 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
  * order.
  */
 static void
-dsf_to_pcm_order(uint8_t *dest, size_t nrbytes)
+dsf_to_pcm_order(uint8_t *dest, const uint8_t *src, size_t nrbytes)
 {
-	uint8_t scratch[DSF_BLOCK_SIZE * 2];
-	assert(nrbytes <= sizeof(scratch));
-
 	for (size_t i = 0, j = 0; i < nrbytes; i += 2) {
-		scratch[i] = *(dest+j);
+		dest[i] = src[j];
 		j++;
 	}
 
 	for (size_t i = 1, j = 0; i < nrbytes; i += 2) {
-		scratch[i] = *(dest + DSF_BLOCK_SIZE + j);
+		dest[i] = src[DSF_BLOCK_SIZE + j];
 		j++;
 	}
-
-	memcpy(dest, scratch, nrbytes);
 }
 
 /**
@@ -250,9 +243,11 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		if (bitreverse)
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
-		dsf_to_pcm_order(buffer, nbytes);
+		uint8_t interleaved_buffer[DSF_BLOCK_SIZE * 2];
+		dsf_to_pcm_order(interleaved_buffer, buffer, nbytes);
 
-		const auto cmd = decoder_data(decoder, is, buffer, nbytes,
+		const auto cmd = decoder_data(decoder, is,
+					      interleaved_buffer, nbytes,
 					      sample_rate / 1000);
 		switch (cmd) {
 		case DecoderCommand::NONE:
