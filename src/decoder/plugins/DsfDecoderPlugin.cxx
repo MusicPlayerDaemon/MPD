@@ -193,8 +193,11 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
  * order.
  */
 static void
-dsf_to_pcm_order(uint8_t *dest, uint8_t *scratch, size_t nrbytes)
+dsf_to_pcm_order(uint8_t *dest, size_t nrbytes)
 {
+	uint8_t scratch[8192];
+	assert(nrbytes <= sizeof(scratch));
+
 	for (unsigned i = 0, j = 0; i < (unsigned)nrbytes; i += 2) {
 		scratch[i] = *(dest+j);
 		j++;
@@ -222,10 +225,6 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 {
 	uint8_t buffer[8192];
 
-	/* scratch buffer for DSF samples to convert to the needed
-	   normal left/right regime of samples */
-	uint8_t dsf_scratch_buffer[8192];
-
 	const size_t sample_size = sizeof(buffer[0]);
 	const size_t frame_size = channels * sample_size;
 	const unsigned buffer_frames = sizeof(buffer) / frame_size;
@@ -250,7 +249,7 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		if (bitreverse)
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
-		dsf_to_pcm_order(buffer, dsf_scratch_buffer, nbytes);
+		dsf_to_pcm_order(buffer, nbytes);
 
 		const auto cmd = decoder_data(decoder, is, buffer, nbytes,
 					      sample_rate / 1000);
