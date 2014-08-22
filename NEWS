@@ -43,6 +43,7 @@ ver 0.19 (not yet released)
   - audiofile: log libaudiofile errors
   - dsdiff, dsf: report bit rate
   - dsf: support DSD512
+  - dsf: support multi-channel files
   - dsf: fix noise at end of malformed file
   - sndfile: support scanning remote files
   - sndfile: support tags "comment", "album", "track", "genre"

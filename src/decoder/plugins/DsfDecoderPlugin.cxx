@@ -39,6 +39,8 @@
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
 
+#include <string.h>
+
 static constexpr unsigned DSF_BLOCK_SIZE = 4096;
 
 struct DsfMetaData {
@@ -188,6 +190,13 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
 		*p = bit_reverse(*p);
 }
 
+static void
+InterleaveDsfBlockMono(uint8_t *gcc_restrict dest,
+		       const uint8_t *gcc_restrict src)
+{
+	memcpy(dest, src, DSF_BLOCK_SIZE);
+}
+
 /**
  * DSF data is build up of alternating 4096 blocks of DSD samples for left and
  * right. Convert the buffer holding 1 block of 4096 DSD left samples and 1
@@ -195,12 +204,43 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
  * order.
  */
 static void
-dsf_to_pcm_order(uint8_t *gcc_restrict dest, const uint8_t *gcc_restrict src)
+InterleaveDsfBlockStereo(uint8_t *gcc_restrict dest,
+			 const uint8_t *gcc_restrict src)
 {
 	for (size_t i = 0; i < DSF_BLOCK_SIZE; ++i) {
 		dest[2 * i] = src[i];
 		dest[2 * i + 1] = src[DSF_BLOCK_SIZE + i];
 	}
+}
+
+static void
+InterleaveDsfBlockChannel(uint8_t *gcc_restrict dest,
+			  const uint8_t *gcc_restrict src,
+			  unsigned channels)
+{
+	for (size_t i = 0; i < DSF_BLOCK_SIZE; ++i, dest += channels, ++src)
+		*dest = *src;
+}
+
+static void
+InterleaveDsfBlockGeneric(uint8_t *gcc_restrict dest,
+			  const uint8_t *gcc_restrict src,
+			  unsigned channels)
+{
+	for (unsigned c = 0; c < channels; ++c, ++dest, src += DSF_BLOCK_SIZE)
+		InterleaveDsfBlockChannel(dest, src, channels);
+}
+
+static void
+InterleaveDsfBlock(uint8_t *gcc_restrict dest, const uint8_t *gcc_restrict src,
+		   unsigned channels)
+{
+	if (channels == 1)
+		InterleaveDsfBlockMono(dest, src);
+	else if (channels == 2)
+		InterleaveDsfBlockStereo(dest, src);
+	else
+		InterleaveDsfBlockGeneric(dest, src, channels);
 }
 
 /**
@@ -212,14 +252,10 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		 offset_type chunk_size,
 		 bool bitreverse)
 {
-	uint8_t buffer[DSF_BLOCK_SIZE * 2];
+	/* worst-case buffer size */
+	uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 
-	const size_t sample_size = sizeof(buffer[0]);
-	const size_t frame_size = channels * sample_size;
-	const unsigned buffer_frames = sizeof(buffer) / frame_size;
-	const unsigned buffer_samples = buffer_frames * frame_size;
-	const size_t buffer_size = buffer_samples * sample_size;
-	const size_t block_size = buffer_size;
+	const size_t block_size = channels * DSF_BLOCK_SIZE;
 
 	while (chunk_size >= block_size) {
 		chunk_size -= block_size;
@@ -230,8 +266,8 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		if (bitreverse)
 			bit_reverse_buffer(buffer, buffer + block_size);
 
-		uint8_t interleaved_buffer[DSF_BLOCK_SIZE * 2];
-		dsf_to_pcm_order(interleaved_buffer, buffer);
+		uint8_t interleaved_buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
+		InterleaveDsfBlock(interleaved_buffer, buffer, channels);
 
 		const auto cmd = decoder_data(decoder, is,
 					      interleaved_buffer, block_size,
