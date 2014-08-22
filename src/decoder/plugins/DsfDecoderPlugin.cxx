@@ -195,16 +195,11 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
  * order.
  */
 static void
-dsf_to_pcm_order(uint8_t *dest, const uint8_t *src, size_t nrbytes)
+dsf_to_pcm_order(uint8_t *gcc_restrict dest, const uint8_t *gcc_restrict src)
 {
-	for (size_t i = 0, j = 0; i < nrbytes; i += 2) {
-		dest[i] = src[j];
-		j++;
-	}
-
-	for (size_t i = 1, j = 0; i < nrbytes; i += 2) {
-		dest[i] = src[DSF_BLOCK_SIZE + j];
-		j++;
+	for (size_t i = 0; i < DSF_BLOCK_SIZE; ++i) {
+		dest[2 * i] = src[i];
+		dest[2 * i + 1] = src[DSF_BLOCK_SIZE + i];
 	}
 }
 
@@ -236,7 +231,7 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 			bit_reverse_buffer(buffer, buffer + block_size);
 
 		uint8_t interleaved_buffer[DSF_BLOCK_SIZE * 2];
-		dsf_to_pcm_order(interleaved_buffer, buffer, block_size);
+		dsf_to_pcm_order(interleaved_buffer, buffer);
 
 		const auto cmd = decoder_data(decoder, is,
 					      interleaved_buffer, block_size,
