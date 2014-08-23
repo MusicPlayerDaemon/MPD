@@ -356,7 +356,7 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
 static bool
 dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 		    unsigned channels, unsigned sample_rate,
-		    offset_type chunk_size)
+		    const offset_type total_bytes)
 {
 	uint8_t buffer[8192];
 
@@ -365,12 +365,13 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 	const unsigned buffer_frames = sizeof(buffer) / frame_size;
 	const size_t buffer_size = buffer_frames * frame_size;
 
-	while (chunk_size >= frame_size) {
+	for (offset_type remaining_bytes = total_bytes;
+	     remaining_bytes >= frame_size;) {
 		/* see how much aligned data from the remaining chunk
 		   fits into the local buffer */
 		size_t now_size = buffer_size;
-		if (chunk_size < (offset_type)now_size) {
-			unsigned now_frames = chunk_size / frame_size;
+		if (remaining_bytes < (offset_type)now_size) {
+			unsigned now_frames = remaining_bytes / frame_size;
 			now_size = now_frames * frame_size;
 		}
 
@@ -378,7 +379,7 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 			return false;
 
 		const size_t nbytes = now_size;
-		chunk_size -= nbytes;
+		remaining_bytes -= nbytes;
 
 		if (lsbitfirst)
 			bit_reverse_buffer(buffer, buffer + nbytes);
