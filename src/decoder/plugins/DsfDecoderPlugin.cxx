@@ -158,11 +158,8 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	data_size -= sizeof(data_chunk);
 
 	/* data_size cannot be bigger or equal to total file size */
-	if (is.KnownSize()) {
-		const offset_type size = is.GetSize();
-		if (data_size >= size)
-			return false;
-	}
+	if (is.KnownSize() && data_size > is.GetRest())
+		return false;
 
 	/* use the sample count from the DSF header as the upper
 	   bound, because some DSF files contain junk at the end of
