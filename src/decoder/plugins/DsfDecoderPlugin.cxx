@@ -42,11 +42,12 @@
 #include <string.h>
 
 static constexpr unsigned DSF_BLOCK_SIZE = 4096;
+static constexpr unsigned DSF_BLOCK_BITS = DSF_BLOCK_SIZE * 8;
 
 struct DsfMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;
-	offset_type chunk_size;
+	offset_type n_blocks;
 #ifdef HAVE_ID3TAG
 	offset_type id3_offset;
 #endif
@@ -170,7 +171,8 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	if (data_size > playable_size)
 		data_size = playable_size;
 
-	metadata->chunk_size = data_size;
+	const size_t block_size = channels * DSF_BLOCK_SIZE;
+	metadata->n_blocks = data_size / block_size;
 	metadata->channels = channels;
 	metadata->sample_rate = samplefreq;
 #ifdef HAVE_ID3TAG
@@ -247,15 +249,13 @@ InterleaveDsfBlock(uint8_t *gcc_restrict dest, const uint8_t *gcc_restrict src,
 static bool
 dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		 unsigned channels, unsigned sample_rate,
-		 offset_type chunk_size,
+		 offset_type n_blocks,
 		 bool bitreverse)
 {
 	/* worst-case buffer size */
 	uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 
 	const size_t block_size = channels * DSF_BLOCK_SIZE;
-
-	const offset_type n_blocks = chunk_size / block_size;
 
 	for (offset_type i = 0; i < n_blocks;) {
 		if (!decoder_read_full(&decoder, is, buffer, block_size))
@@ -306,8 +306,8 @@ dsf_stream_decode(Decoder &decoder, InputStream &is)
 		return;
 	}
 	/* Calculate song time from DSD chunk size and sample frequency */
-	offset_type chunk_size = metadata.chunk_size;
-	float songtime = ((chunk_size / metadata.channels) * 8) /
+	const auto n_blocks = metadata.n_blocks;
+	float songtime = float(n_blocks * DSF_BLOCK_BITS) /
 			 (float) metadata.sample_rate;
 
 	/* success: file was recognized */
@@ -315,7 +315,7 @@ dsf_stream_decode(Decoder &decoder, InputStream &is)
 
 	if (!dsf_decode_chunk(decoder, is, metadata.channels,
 			      metadata.sample_rate,
-			      chunk_size,
+			      n_blocks,
 			      metadata.bitreverse))
 		return;
 }
@@ -338,8 +338,8 @@ dsf_scan_stream(InputStream &is,
 		return false;
 
 	/* calculate song time and add as tag */
-	unsigned songtime = ((metadata.chunk_size / metadata.channels) * 8) /
-			    metadata.sample_rate;
+	unsigned songtime = (metadata.n_blocks * DSF_BLOCK_BITS) /
+		metadata.sample_rate;
 	tag_handler_invoke_duration(handler, handler_ctx, songtime);
 
 #ifdef HAVE_ID3TAG
