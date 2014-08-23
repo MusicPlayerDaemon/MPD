@@ -127,14 +127,16 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 		return false;
 
 	uint32_t samplefreq = FromLE32(dsf_fmt_chunk.sample_freq);
+	const unsigned channels = FromLE32(dsf_fmt_chunk.channelnum);
 
 	/* for now, only support version 1 of the standard, DSD raw stereo
 	   files with a sample freq of 2822400 or 5644800 Hz */
 
-	if (dsf_fmt_chunk.version != 1 || dsf_fmt_chunk.formatid != 0
-	    || dsf_fmt_chunk.channeltype != 2
-	    || dsf_fmt_chunk.channelnum != 2
-	    || (!dsdlib_valid_freq(samplefreq)))
+	if (FromLE32(dsf_fmt_chunk.version) != 1 ||
+	    FromLE32(dsf_fmt_chunk.formatid) != 0 ||
+	    FromLE32(dsf_fmt_chunk.channeltype) != 2 ||
+	    channels != 2 ||
+	    !dsdlib_valid_freq(samplefreq))
 		return false;
 
 	uint32_t chblksize = FromLE32(dsf_fmt_chunk.block_size);
@@ -170,13 +172,13 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 		data_size = playable_size;
 
 	metadata->chunk_size = data_size;
-	metadata->channels = (unsigned) dsf_fmt_chunk.channelnum;
+	metadata->channels = channels;
 	metadata->sample_rate = samplefreq;
 #ifdef HAVE_ID3TAG
 	metadata->id3_offset = metadata_offset;
 #endif
 	/* check bits per sample format, determine if bitreverse is needed */
-	metadata->bitreverse = dsf_fmt_chunk.bitssample == 1;
+	metadata->bitreverse = FromLE32(dsf_fmt_chunk.bitssample) == 1;
 	return true;
 }
 
