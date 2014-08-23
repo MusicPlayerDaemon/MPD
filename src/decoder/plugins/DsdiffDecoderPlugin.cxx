@@ -365,8 +365,9 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 	const unsigned buffer_frames = sizeof(buffer) / frame_size;
 	const size_t buffer_size = buffer_frames * frame_size;
 
+	auto cmd = decoder_get_command(decoder);
 	for (offset_type remaining_bytes = total_bytes;
-	     remaining_bytes >= frame_size;) {
+	     remaining_bytes >= frame_size && cmd != DecoderCommand::STOP;) {
 		/* see how much aligned data from the remaining chunk
 		   fits into the local buffer */
 		size_t now_size = buffer_size;
@@ -384,22 +385,8 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 		if (lsbitfirst)
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
-		const auto cmd = decoder_data(decoder, is, buffer, nbytes,
-					      sample_rate / 1000);
-		switch (cmd) {
-		case DecoderCommand::NONE:
-			break;
-
-		case DecoderCommand::START:
-		case DecoderCommand::STOP:
-			return false;
-
-		case DecoderCommand::SEEK:
-
-			/* Not implemented yet */
-			decoder_seek_error(decoder);
-			break;
-		}
+		cmd = decoder_data(decoder, is, buffer, nbytes,
+				   sample_rate / 1000);
 	}
 
 	return true;
