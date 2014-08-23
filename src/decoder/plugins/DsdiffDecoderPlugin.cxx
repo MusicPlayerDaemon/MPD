@@ -350,6 +350,18 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
 		*p = bit_reverse(*p);
 }
 
+static offset_type
+TimeToFrame(double t, unsigned sample_rate)
+{
+	return offset_type(t * sample_rate / 8);
+}
+
+static offset_type
+TimeToOffset(double t, unsigned channels, unsigned sample_rate)
+{
+	return TimeToFrame(t, sample_rate) * channels;
+}
+
 /**
  * Decode one "DSD" chunk.
  */
@@ -358,6 +370,8 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 		    unsigned channels, unsigned sample_rate,
 		    const offset_type total_bytes)
 {
+	const offset_type start_offset = is.GetOffset();
+
 	uint8_t buffer[8192];
 
 	const size_t sample_size = sizeof(buffer[0]);
@@ -368,6 +382,23 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 	auto cmd = decoder_get_command(decoder);
 	for (offset_type remaining_bytes = total_bytes;
 	     remaining_bytes >= frame_size && cmd != DecoderCommand::STOP;) {
+		if (cmd == DecoderCommand::SEEK) {
+			double t = decoder_seek_where(decoder);
+			offset_type offset = TimeToOffset(t, channels,
+							  sample_rate);
+			if (offset >= total_bytes) {
+				decoder_command_finished(decoder);
+				break;
+			}
+
+			if (dsdlib_skip_to(&decoder, is,
+					   start_offset + offset)) {
+				decoder_command_finished(decoder);
+				remaining_bytes = total_bytes - offset;
+			} else
+				decoder_seek_error(decoder);
+		}
+
 		/* see how much aligned data from the remaining chunk
 		   fits into the local buffer */
 		size_t now_size = buffer_size;
@@ -417,7 +448,7 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 			 (float) metadata.sample_rate;
 
 	/* success: file was recognized */
-	decoder_initialized(decoder, audio_format, false, songtime);
+	decoder_initialized(decoder, audio_format, is.IsSeekable(), songtime);
 
 	/* every iteration of the following loop decodes one "DSD"
 	   chunk from a DFF file */

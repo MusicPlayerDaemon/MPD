@@ -42,7 +42,7 @@ ver 0.19 (not yet released)
   - audiofile: support scanning remote files
   - audiofile: log libaudiofile errors
   - dsdiff, dsf: report bit rate
-  - dsf: implement seeking
+  - dsdiff, dsf: implement seeking
   - dsf: support DSD512
   - dsf: support multi-channel files
   - dsf: fix big-endian bugs
