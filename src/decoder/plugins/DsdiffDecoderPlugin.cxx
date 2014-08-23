@@ -363,8 +363,7 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 	const size_t sample_size = sizeof(buffer[0]);
 	const size_t frame_size = channels * sample_size;
 	const unsigned buffer_frames = sizeof(buffer) / frame_size;
-	const unsigned buffer_samples = buffer_frames * frame_size;
-	const size_t buffer_size = buffer_samples * sample_size;
+	const size_t buffer_size = buffer_frames * frame_size;
 
 	while (chunk_size >= frame_size) {
 		/* see how much aligned data from the remaining chunk
