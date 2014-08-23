@@ -400,7 +400,8 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 			break;
 		}
 	}
-	return dsdlib_skip(&decoder, is, chunk_size);
+
+	return true;
 }
 
 static void
