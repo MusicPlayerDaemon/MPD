@@ -167,7 +167,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	   bound, because some DSF files contain junk at the end of
 	   the "data" chunk */
 	const uint64_t samplecnt = dsf_fmt_chunk.scnt.Read();
-	const offset_type playable_size = samplecnt * 2 / 8;
+	const offset_type playable_size = samplecnt * channels / 8;
 	if (data_size > playable_size)
 		data_size = playable_size;
 
