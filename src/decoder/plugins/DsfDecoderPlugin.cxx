@@ -243,6 +243,12 @@ InterleaveDsfBlock(uint8_t *gcc_restrict dest, const uint8_t *gcc_restrict src,
 		InterleaveDsfBlockGeneric(dest, src, channels);
 }
 
+static offset_type
+TimeToBlock(double t, unsigned sample_rate)
+{
+	return offset_type(t * sample_rate / DSF_BLOCK_BITS);
+}
+
 /**
  * Decode one complete DSF 'data' chunk i.e. a complete song
  */
@@ -253,9 +259,27 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		 bool bitreverse)
 {
 	const size_t block_size = channels * DSF_BLOCK_SIZE;
+	const offset_type start_offset = is.GetOffset();
 
 	auto cmd = decoder_get_command(decoder);
 	for (offset_type i = 0; i < n_blocks && cmd != DecoderCommand::STOP;) {
+		if (cmd == DecoderCommand::SEEK) {
+			double t = decoder_seek_where(decoder);
+			offset_type block = TimeToBlock(t, sample_rate);
+			if (block >= n_blocks) {
+				decoder_command_finished(decoder);
+				break;
+			}
+
+			offset_type offset =
+				start_offset + block * block_size;
+			if (dsdlib_skip_to(&decoder, is, offset)) {
+				decoder_command_finished(decoder);
+				i = block;
+			} else
+				decoder_seek_error(decoder);
+		}
+
 		/* worst-case buffer size */
 		uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 		if (!decoder_read_full(&decoder, is, buffer, block_size))
@@ -298,7 +322,7 @@ dsf_stream_decode(Decoder &decoder, InputStream &is)
 			 (float) metadata.sample_rate;
 
 	/* success: file was recognized */
-	decoder_initialized(decoder, audio_format, false, songtime);
+	decoder_initialized(decoder, audio_format, is.IsSeekable(), songtime);
 
 	dsf_decode_chunk(decoder, is, metadata.channels,
 			 metadata.sample_rate,
