@@ -434,27 +434,10 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 	/* every iteration of the following loop decodes one "DSD"
 	   chunk from a DFF file */
 
-	while (true) {
-		chunk_size = chunk_header.GetSize();
-
-		if (chunk_header.id.Equals("DSD ")) {
-			if (!dsdiff_decode_chunk(decoder, is,
-						 metadata.channels,
-						 metadata.sample_rate,
-						 chunk_size))
-					break;
-		} else {
-			/* ignore other chunks */
-			if (!dsdlib_skip(&decoder, is, chunk_size))
-				break;
-		}
-
-		/* read next chunk header; the first one was read by
-		   dsdiff_read_metadata() */
-		if (!dsdiff_read_chunk_header(&decoder,
-					      is, &chunk_header))
-			break;
-	}
+	dsdiff_decode_chunk(decoder, is,
+			    metadata.channels,
+			    metadata.sample_rate,
+			    chunk_size);
 }
 
 static bool
