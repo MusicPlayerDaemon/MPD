@@ -134,8 +134,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 
 	if (FromLE32(dsf_fmt_chunk.version) != 1 ||
 	    FromLE32(dsf_fmt_chunk.formatid) != 0 ||
-	    FromLE32(dsf_fmt_chunk.channeltype) != 2 ||
-	    channels != 2 ||
+	    !audio_valid_channel_count(channels) ||
 	    !dsdlib_valid_freq(samplefreq))
 		return false;
 
