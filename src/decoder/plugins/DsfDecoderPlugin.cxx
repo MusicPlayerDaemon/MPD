@@ -252,12 +252,11 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		 offset_type n_blocks,
 		 bool bitreverse)
 {
-	/* worst-case buffer size */
-	uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
-
 	const size_t block_size = channels * DSF_BLOCK_SIZE;
 
 	for (offset_type i = 0; i < n_blocks;) {
+		/* worst-case buffer size */
+		uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 		if (!decoder_read_full(&decoder, is, buffer, block_size))
 			return false;
 
