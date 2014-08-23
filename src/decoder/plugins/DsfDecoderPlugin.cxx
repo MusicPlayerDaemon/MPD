@@ -254,7 +254,8 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 {
 	const size_t block_size = channels * DSF_BLOCK_SIZE;
 
-	for (offset_type i = 0; i < n_blocks;) {
+	auto cmd = decoder_get_command(decoder);
+	for (offset_type i = 0; i < n_blocks && cmd != DecoderCommand::STOP;) {
 		/* worst-case buffer size */
 		uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 		if (!decoder_read_full(&decoder, is, buffer, block_size))
@@ -266,25 +267,12 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		uint8_t interleaved_buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 		InterleaveDsfBlock(interleaved_buffer, buffer, channels);
 
-		const auto cmd = decoder_data(decoder, is,
-					      interleaved_buffer, block_size,
-					      sample_rate / 1000);
-		switch (cmd) {
-		case DecoderCommand::NONE:
-			++i;
-			break;
-
-		case DecoderCommand::START:
-		case DecoderCommand::STOP:
-			return false;
-
-		case DecoderCommand::SEEK:
-
-			/* not implemented yet */
-			decoder_seek_error(decoder);
-			break;
-			}
+		cmd = decoder_data(decoder, is,
+				   interleaved_buffer, block_size,
+				   sample_rate / 1000);
+		++i;
 	}
+
 	return true;
 }
 
