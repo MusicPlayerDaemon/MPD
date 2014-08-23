@@ -313,11 +313,10 @@ dsf_stream_decode(Decoder &decoder, InputStream &is)
 	/* success: file was recognized */
 	decoder_initialized(decoder, audio_format, false, songtime);
 
-	if (!dsf_decode_chunk(decoder, is, metadata.channels,
-			      metadata.sample_rate,
-			      n_blocks,
-			      metadata.bitreverse))
-		return;
+	dsf_decode_chunk(decoder, is, metadata.channels,
+			 metadata.sample_rate,
+			 n_blocks,
+			 metadata.bitreverse);
 }
 
 static bool
