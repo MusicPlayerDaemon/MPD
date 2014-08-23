@@ -52,6 +52,8 @@ ver 0.19 (not yet released)
   - mp4v2: support playback of MP4 files.
 * encoder:
   - shine: new encoder plugin
+* output
+  - alsa: support native DSD playback
 * threads:
   - the update thread runs at "idle" priority
   - the output thread runs at "real-time" priority

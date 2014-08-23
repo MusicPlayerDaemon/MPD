@@ -22,6 +22,7 @@
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
+#include "config/ConfigError.hxx"
 #include "util/Manual.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -31,6 +32,11 @@
 #include <alsa/asoundlib.h>
 
 #include <string>
+
+#if SND_LIB_VERSION >= 0x1001c
+/* alsa-lib supports DSD since version 1.0.27.1 */
+#define HAVE_ALSA_DSD
+#endif
 
 static const char default_device[] = "default";
 
@@ -236,8 +242,14 @@ get_bitformat(SampleFormat sample_format)
 {
 	switch (sample_format) {
 	case SampleFormat::UNDEFINED:
-	case SampleFormat::DSD:
 		return SND_PCM_FORMAT_UNKNOWN;
+
+	case SampleFormat::DSD:
+#ifdef HAVE_ALSA_DSD
+		return SND_PCM_FORMAT_DSD_U8;
+#else
+		return SND_PCM_FORMAT_UNKNOWN;
+#endif
 
 	case SampleFormat::S8:
 		return SND_PCM_FORMAT_S8;
