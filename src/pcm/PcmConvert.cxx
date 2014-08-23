@@ -124,8 +124,7 @@ PcmConvert::Convert(ConstBuffer<void> buffer, Error &error)
 
 	if (format.format == SampleFormat::DSD) {
 		auto s = ConstBuffer<uint8_t>::FromVoid(buffer);
-		auto d = dsd.ToFloat(format.channels,
-				     false, s);
+		auto d = dsd.ToFloat(format.channels, s);
 		if (d.IsNull()) {
 			error.Set(pcm_domain,
 				  "DSD to PCM conversion failed");

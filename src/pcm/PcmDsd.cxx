@@ -48,8 +48,7 @@ PcmDsd::Reset()
 }
 
 ConstBuffer<float>
-PcmDsd::ToFloat(unsigned channels, bool lsbfirst,
-		ConstBuffer<uint8_t> src)
+PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src)
 {
 	assert(!src.IsNull());
 	assert(!src.IsEmpty());
@@ -72,7 +71,7 @@ PcmDsd::ToFloat(unsigned channels, bool lsbfirst,
 
 		dsd2pcm_translate(dsd2pcm[c], num_frames,
 				  src.data + c, channels,
-				  lsbfirst, dest + c, channels);
+				  false, dest + c, channels);
 	}
 
 	return { dest, num_samples };

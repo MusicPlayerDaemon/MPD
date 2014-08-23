@@ -41,7 +41,7 @@ public:
 
 	void Reset();
 
-	ConstBuffer<float> ToFloat(unsigned channels, bool lsbfirst,
+	ConstBuffer<float> ToFloat(unsigned channels,
 				   ConstBuffer<uint8_t> src);
 };
 
