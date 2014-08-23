@@ -255,9 +255,9 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 
 	const size_t block_size = channels * DSF_BLOCK_SIZE;
 
-	while (chunk_size >= block_size) {
-		chunk_size -= block_size;
+	const offset_type n_blocks = chunk_size / block_size;
 
+	for (offset_type i = 0; i < n_blocks;) {
 		if (!decoder_read_full(&decoder, is, buffer, block_size))
 			return false;
 
@@ -272,6 +272,7 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 					      sample_rate / 1000);
 		switch (cmd) {
 		case DecoderCommand::NONE:
+			++i;
 			break;
 
 		case DecoderCommand::START:
