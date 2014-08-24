@@ -13,10 +13,10 @@
     </para>
 
     <para>
-      MPD (Music Player Daemon) is, as the name suggests, a server
-      software allowing you to remotely play your music, handle
-      playlists, deliver music (HTTP STREAMS with various
-      sub-protocols) and organizze playlists.
+      <application>MPD</application> (Music Player Daemon) is, as the
+      name suggests, a server software allowing you to remotely play
+      your music, handle playlists, deliver music (HTTP streams with
+      various sub-protocols) and organizze playlists.
     </para>
 
     <para>
@@ -26,8 +26,8 @@
     </para>
 
     <para>
-      MPD supports also Gapless playback, buffered audio output, and
-      crossfading!
+      <application>MPD</application> supports also gapless playback,
+      buffered audio output, and crossfading!
     </para>
 
     <para>
@@ -42,23 +42,26 @@
 
     <para>
       We recommend that you use the software installation routines of
-      your distribution to install MPD.  Most operating systems have a
-      MPD package, which is very easy to install.
+      your distribution to install <application>MPD</application>.
+      Most operating systems have a <application>MPD</application>
+      package, which is very easy to install.
     </para>
 
     <section>
       <title>Installing on Debian/Ubuntu</title>
 
       <para>
-        Install the package <filename>mpd</filename> via APT:
+        Install the package <application>MPD</application> via APT:
       </para>
 
       <programlisting>apt-get install mpd</programlisting>
 
       <para>
-        When installed this way, MPD by default looks for music in
-        /var/lib/mpd/music/; this may not be correct. Look at your
-        /etc/mpd.conf file...
+        When installed this way, <application>MPD</application> by
+        default looks for music in
+        <filename>/var/lib/mpd/music/</filename>; this may not be
+        correct. Look at your <filename>/etc/mpd.conf</filename>
+        file...
       </para>
     </section>
 
@@ -67,8 +70,9 @@
 
       <para>
         Download the source tarball from <ulink
-        url="http://www.musicpd.org/download.html">the MPD home
-        page</ulink> and unpack it:
+        url="http://www.musicpd.org/download.html">the
+        <application>MPD</application> home page</ulink> and unpack
+        it:
       </para>
 
       <programlisting>tar xf mpd-version.tar.xz
@@ -135,14 +139,15 @@ apt-get install g++ automake autoconf \
 
       <para>
         Using <filename>systemd</filename>, you can launch
-        <filename>mpd</filename> on demand when the first client
+        <application>MPD</application> on demand when the first client
         attempts to connect.
       </para>
 
       <para>
-        MPD comes with two <filename>systemd</filename> unit files: a
-        "service" unit and a "socket" unit.  These will only be
-        installed when MPD was configured with
+        <application>MPD</application> comes with two
+        <application>systemd</application> unit files: a "service"
+        unit and a "socket" unit.  These will only be installed when
+        <application>MPD</application> was configured with
         <parameter>--with-systemdsystemunitdir=/lib/systemd</parameter>.
       </para>
 
@@ -154,8 +159,8 @@ apt-get install g++ automake autoconf \
 systemctl start mpd.socket</programlisting>
 
       <para>
-        In this configuration, <filename>mpd</filename> will ignore
-        the <varname>bind_to_address</varname> and
+        In this configuration, <application>MPD</application> will
+        ignore the <varname>bind_to_address</varname> and
         <varname>port</varname> settings.
       </para>
     </section>
@@ -170,16 +175,18 @@ systemctl start mpd.socket</programlisting>
       <para>
         When you play local files, you should organize them within a
         directory called the "music directory".  This is configured in
-        MPD with the <varname>music_directory</varname> setting.
+        <application>MPD</application> with the
+        <varname>music_directory</varname> setting.
       </para>
 
       <para>
-        By default, MPD follows symbolic links in the music directory.
-        This behavior can be switched off:
-        <varname>follow_outside_symlinks</varname> controls whether
-        MPD follows links pointing to files outside of the music
-        directory, and <varname>follow_inside_symlinks</varname> lets
-        you disable symlinks to files inside the music directory.
+        By default, <application>MPD</application> follows symbolic
+        links in the music directory.  This behavior can be switched
+        off: <varname>follow_outside_symlinks</varname> controls
+        whether <application>MPD</application> follows links pointing
+        to files outside of the music directory, and
+        <varname>follow_inside_symlinks</varname> lets you disable
+        symlinks to files inside the music directory.
       </para>
 
       <para>
@@ -365,10 +372,11 @@ systemctl start mpd.socket</programlisting>
 
       <para>
         Audio outputs are devices which actually play the audio chunks
-        produced by MPD.  You can configure any number of audio output
-        devices, but there must be at least one.  If none is
-        configured, MPD attempts to auto-detect.  Usually, this works
-        quite well with ALSA, OSS and on Mac OS X.
+        produced by <application>MPD</application>.  You can configure
+        any number of audio output devices, but there must be at least
+        one.  If none is configured, <application>MPD</application>
+        attempts to auto-detect.  Usually, this works quite well with
+        ALSA, OSS and on Mac OS X.
       </para>
 
       <para>
@@ -457,8 +465,8 @@ systemctl start mpd.socket</programlisting>
               </entry>
               <entry>
                 Specifies whether this audio output is enabled when
-                MPD is started.  By default, all audio outputs are
-                enabled.
+                <application>MPD</application> is started.  By
+                default, all audio outputs are enabled.
               </entry>
             </row>
             <row>
@@ -467,10 +475,10 @@ systemctl start mpd.socket</programlisting>
                 <parameter>yes|no</parameter>
               </entry>
               <entry>
-                If set to "no", then MPD will not send tags to this
-                output.  This is only useful for output plugins that
-                can receive tags, for example the
-                <varname>httpd</varname> output plugin.
+                If set to <parameter>no</parameter>, then <application>MPD</application>
+                will not send tags to this output.  This is only
+                useful for output plugins that can receive tags, for
+                example the <varname>httpd</varname> output plugin.
               </entry>
             </row>
             <row>
@@ -479,10 +487,12 @@ systemctl start mpd.socket</programlisting>
                   <parameter>yes|no</parameter>
               </entry>
               <entry>
-                If set to "yes", then MPD attempts to keep this audio
-                output always open.  This may be useful for streaming
-                servers, when you don't want to disconnect all
-                listeners even when playback is accidentally stopped.
+                If set to <parameter>yes</parameter>, then
+                <application>MPD</application> attempts to keep this
+                audio output always open.  This may be useful for
+                streaming servers, when you don't want to disconnect
+                all listeners even when playback is accidentally
+                stopped.
               </entry>
             </row>
             <row>
@@ -494,8 +504,9 @@ systemctl start mpd.socket</programlisting>
                 Specifies which mixer should be used for this audio
                 output: the hardware mixer (available for ALSA, OSS
                 and PulseAudio), the software mixer or no mixer
-                ("none").  By default, the hardware mixer is used for
-                devices which support it, and none for the others.
+                (<parameter>none</parameter>).  By default, the
+                hardware mixer is used for devices which support it,
+                and none for the others.
               </entry>
             </row>
             <row>
@@ -505,10 +516,11 @@ systemctl start mpd.socket</programlisting>
               </entry>
               <entry>
                 Specifies how replay gain is applied.  The default is
-                "software", which uses an internal software volume
-                control.  "mixer" uses the configured (hardware) mixer
-                control.  "none" disables replay gain on this audio
-                output.
+                <parameter>software</parameter>, which uses an
+                internal software volume control.
+                <parameter>mixer</parameter> uses the configured
+                (hardware) mixer control.  <parameter>none</parameter>
+                disables replay gain on this audio output.
               </entry>
             </row>
           </tbody>
@@ -578,7 +590,8 @@ systemctl start mpd.socket</programlisting>
 
       <para>
         Playlist plugins are used to load remote playlists.  This is
-        not related to MPD's playlist directory.
+        not related to <application>MPD</application>'s playlist
+        directory.
       </para>
 
       <para>
@@ -643,9 +656,10 @@ systemctl start mpd.socket</programlisting>
 
         <para>
           The setting <varname>audio_output_format</varname> forces
-          MPD to use one audio format for all outputs.  Doing that is
-          usually not a good idea.  The values are the same as in
-          <link linkend="ao_format"><varname>format</varname> in the
+          <application>MPD</application> to use one audio format for
+          all outputs.  Doing that is usually not a good idea.  The
+          values are the same as in <link
+          linkend="ao_format"><varname>format</varname> in the
           <varname>audio_output</varname> section</link>.
         </para>
       </section>
@@ -661,9 +675,11 @@ systemctl start mpd.socket</programlisting>
           There are different options, some of them optimized for high
           quality and others for low CPU usage, but you can't have
           both at the same time.  Often, the resampler is the
-          component that is responsible for most of MPD's CPU usage.
-          Since MPD comes with high quality defaults, it may appear
-          that MPD consumes more CPU than other software.
+          component that is responsible for most of
+          <application>MPD</application>'s CPU usage.  Since
+          <application>MPD</application> comes with high quality
+          defaults, it may appear that <application>MPD</application>
+          consumes more CPU than other software.
         </para>
 
         <para>
@@ -675,7 +691,7 @@ systemctl start mpd.socket</programlisting>
           <listitem>
             <para>
               <ulink
-                  url="http://www.mega-nerd.com/SRC/">libsamplerate</ulink>
+              url="http://www.mega-nerd.com/SRC/"><application>libsamplerate</application></ulink>
               a.k.a. Secret Rabbit Code (SRC).
             </para>
           </listitem>
@@ -683,7 +699,7 @@ systemctl start mpd.socket</programlisting>
           <listitem>
             <para>
               <ulink
-              url="http://sourceforge.net/projects/soxr/">libsoxr</ulink>,
+              url="http://sourceforge.net/projects/soxr/"><application>libsoxr</application></ulink>,
               the SoX Resampler library
             </para>
           </listitem>
@@ -691,15 +707,16 @@ systemctl start mpd.socket</programlisting>
           <listitem>
             <para>
               internal: low CPU usage, but very poor quality.  This is
-              the fallback if MPD was compiled without an external
-              resampler.
+              the fallback if <application>MPD</application> was
+              compiled without an external resampler.
             </para>
           </listitem>
         </itemizedlist>
 
         <para>
           The setting <varname>samplerate_converter</varname> controls
-          how MPD shall resample music.  Possible values:
+          how <application>MPD</application> shall resample music.
+          Possible values:
         </para>
 
         <informaltable>
@@ -730,7 +747,8 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>soxr very high</parameter>"
                 </entry>
                 <entry>
-                  Use libsoxr with "Very High Quality" setting.
+                  Use <application>libsoxr</application> with "Very
+                  High Quality" setting.
                 </entry>
               </row>
 
@@ -740,7 +758,8 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>soxr</parameter>"
                 </entry>
                 <entry>
-                  Use libsoxr with "High Quality" setting.
+                  Use <application>libsoxr</application> with "High
+                  Quality" setting.
                 </entry>
               </row>
 
@@ -749,7 +768,8 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>soxr medium</parameter>"
                 </entry>
                 <entry>
-                  Use libsoxr with "Medium Quality" setting.
+                  Use <application>libsoxr</application> with "Medium
+                  Quality" setting.
                 </entry>
               </row>
 
@@ -758,7 +778,8 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>soxr low</parameter>"
                 </entry>
                 <entry>
-                  Use libsoxr with "Low Quality" setting.
+                  Use <application>libsoxr</application> with "Low
+                  Quality" setting.
                 </entry>
               </row>
 
@@ -767,7 +788,8 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>soxr quick</parameter>"
                 </entry>
                 <entry>
-                  Use libsoxr with "Quick" setting.
+                  Use <application>libsoxr</application> with "Quick"
+                  setting.
                 </entry>
               </row>
 
@@ -777,8 +799,9 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>0</parameter>"
                 </entry>
                 <entry>
-                  libsamplerate: Band limited sinc interpolation, best
-                  quality, 97dB SNR, 96% BW.
+                  <application>libsamplerate</application>: Band
+                  limited sinc interpolation, best quality, 97dB SNR,
+                  96% BW.
                 </entry>
               </row>
 
@@ -788,8 +811,9 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>1</parameter>"
                 </entry>
                 <entry>
-                  libsamplerate: Band limited sinc interpolation,
-                  medium quality, 97dB SNR, 90% BW.
+                  <application>libsamplerate</application>: Band
+                  limited sinc interpolation, medium quality, 97dB
+                  SNR, 90% BW.
                 </entry>
               </row>
 
@@ -799,8 +823,9 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>2</parameter>"
                 </entry>
                 <entry>
-                  libsamplerate: Band limited sinc interpolation,
-                  fastest, 97dB SNR, 80% BW.
+                  <application>libsamplerate</application>: Band
+                  limited sinc interpolation, fastest, 97dB SNR, 80%
+                  BW.
                 </entry>
               </row>
 
@@ -810,8 +835,9 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>3</parameter>"
                 </entry>
                 <entry>
-                  libsamplerate: Zero order hold interpolator, very
-                  fast, very poor quality with audible distortions.
+                  <application>libsamplerate</application>: Zero order
+                  hold interpolator, very fast, very poor quality with
+                  audible distortions.
                 </entry>
               </row>
 
@@ -821,8 +847,8 @@ systemctl start mpd.socket</programlisting>
                   "<parameter>4</parameter>"
                 </entry>
                 <entry>
-                  libsamplerate: Linear interpolator, very fast, poor
-                  quality.
+                  <application>libsamplerate</application>: Linear
+                  interpolator, very fast, poor quality.
                 </entry>
               </row>
             </tbody>
@@ -833,14 +859,15 @@ systemctl start mpd.socket</programlisting>
   </chapter>
 
   <chapter>
-    <title>Using MPD</title>
+    <title>Using <application>MPD</application></title>
 
     <section>
       <title>The client</title>
 
       <para>
-        After you have installed, configured and started MPD, you
-        choose a client to control the playback.
+        After you have installed, configured and started
+        <application>MPD</application>, you choose a client to control
+        the playback.
       </para>
 
       <para>
@@ -851,7 +878,8 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <para>
-        The <ulink url="http://www.musicpd.org/clients/">MPD
+        The <ulink
+        url="http://www.musicpd.org/clients/"><application>MPD</application>
         Wiki</ulink> contains an extensive list of clients to choose
         from.
       </para>
@@ -862,10 +890,11 @@ systemctl start mpd.socket</programlisting>
 
       <para>
         The "music directory" is where you store your music files.
-        MPD stores all relevant meta information about all songs in
-        its "database".  Whenever you add, modify or remove songs in
-        the music directory, you have to update the database, for
-        example with <filename>mpc</filename>:
+        <application>MPD</application> stores all relevant meta
+        information about all songs in its "database".  Whenever you
+        add, modify or remove songs in the music directory, you have
+        to update the database, for example with
+        <filename>mpc</filename>:
       </para>
 
       <programlisting>mpc update</programlisting>
@@ -887,9 +916,9 @@ systemctl start mpd.socket</programlisting>
 
       <para>
         The queue (sometimes called "current playlist") is a list of
-        songs to be played by MPD.  To play a song, add it to the
-        queue and start playback.  Most clients offer an interface to
-        edit the queue.
+        songs to be played by <application>MPD</application>.  To play
+        a song, add it to the queue and start playback.  Most clients
+        offer an interface to edit the queue.
       </para>
     </section>
   </chapter>
@@ -946,11 +975,13 @@ systemctl start mpd.socket</programlisting>
         <title><varname>proxy</varname></title>
 
         <para>
-          Provides access to the database of another MPD instance
-          using <filename>libmpdclient</filename>.  This is useful
-          when you run mount the music directory via NFS/SMB, and the
-          file server already runs a MPD instance.  Only the file
-          server needs to update the database.
+          Provides access to the database of another
+          <application>MPD</application> instance using
+          <filename>libmpdclient</filename>.  This is useful when you
+          run mount the music directory via NFS/SMB, and the file
+          server already runs a <application>MPD</application>
+          instance.  Only the file server needs to update the
+          database.
         </para>
 
         <informaltable>
@@ -967,7 +998,8 @@ systemctl start mpd.socket</programlisting>
                   <varname>host</varname>
                 </entry>
                 <entry>
-                  The host name of the "master" MPD instance.
+                  The host name of the "master"
+                  <application>MPD</application> instance.
                 </entry>
               </row>
               <row>
@@ -975,7 +1007,8 @@ systemctl start mpd.socket</programlisting>
                   <varname>port</varname>
                 </entry>
                 <entry>
-                  The port number of the "master" MPD instance.
+                  The port number of the "master"
+                  <application>MPD</application> instance.
                 </entry>
               </row>
             </tbody>
@@ -999,9 +1032,10 @@ systemctl start mpd.socket</programlisting>
         <title><varname>local</varname></title>
 
         <para>
-          The default plugin which gives MPD access to local files.
-          It is used when <varname>music_directory</varname> refers to
-          a local directory.
+          The default plugin which gives
+          <application>MPD</application> access to local files.  It is
+          used when <varname>music_directory</varname> refers to a
+          local directory.
         </para>
       </section>
 
@@ -1036,9 +1070,10 @@ systemctl start mpd.socket</programlisting>
         <title><varname>alsa</varname></title>
 
         <para>
-          Allows MPD on Linux to play audio directly from a soundcard using
-          the scheme <filename>alsa://</filename>. Audio is formatted as
-          44.1 kHz 16-bit stereo (CD format). Examples:
+          Allows <application>MPD</application> on Linux to play audio
+          directly from a soundcard using the scheme
+          <filename>alsa://</filename>. Audio is formatted as 44.1 kHz
+          16-bit stereo (CD format). Examples:
         </para>
 
         <para>
@@ -1075,9 +1110,10 @@ systemctl start mpd.socket</programlisting>
                 <parameter>little_endian|big_endian</parameter>
                 </entry>
                 <entry>
-                  If the CD drive does not specify a byte order, MPD
-                  assumes it is the CPU's native byte order.  This
-                  setting allows overriding this.
+                  If the CD drive does not specify a byte order,
+                  <application>MPD</application> assumes it is the
+                  CPU's native byte order.  This setting allows
+                  overriding this.
                 </entry>
               </row>
             </tbody>
@@ -1227,11 +1263,11 @@ systemctl start mpd.socket</programlisting>
         <title><varname>nfs</varname></title>
 
         <para>
-          Allows MPD to access files on NFSv3 servers without actually
-          mounting them (i.e. in userspace, without help from the
-          kernel's VFS layer).  All URIs with the
-          <filename>nfs://</filename> scheme are used according to
-          <ulink
+          Allows <application>MPD</application> to access files on
+          NFSv3 servers without actually mounting them (i.e. in
+          userspace, without help from the kernel's VFS layer).  All
+          URIs with the <filename>nfs://</filename> scheme are used
+          according to <ulink
           url="http://tools.ietf.org/html/rfc2224">RFC2224</ulink>.
           Example:
         </para>
@@ -1243,12 +1279,12 @@ systemctl start mpd.socket</programlisting>
         <para>
           Note that this usually requires enabling the "insecure" flag
           in the server's <filename>/etc/exports</filename> file,
-          because MPD cannot bind to so-called "privileged" ports.
-          Don't fear: this will not make your file server insecure;
-          the flag was named in a time long ago when privileged ports
-          were thought to be meaningful for security.  By today's
-          standards, NFSv3 is not secure at all, and if you believe it
-          is, you're already doomed.
+          because <application>MPD</application> cannot bind to
+          so-called "privileged" ports.  Don't fear: this will not
+          make your file server insecure; the flag was named in a time
+          long ago when privileged ports were thought to be meaningful
+          for security.  By today's standards, NFSv3 is not secure at
+          all, and if you believe it is, you're already doomed.
         </para>
       </section>
 
@@ -1256,9 +1292,10 @@ systemctl start mpd.socket</programlisting>
         <title><varname>smbclient</varname></title>
 
         <para>
-          Allows MPD to access files on SMB/CIFS servers (e.g. Samba
-          or Microsoft Windows).  All URIs with the
-          <filename>smb://</filename> scheme are used.  Example:
+          Allows <application>MPD</application> to access files on
+          SMB/CIFS servers (e.g. Samba or Microsoft Windows).  All
+          URIs with the <filename>smb://</filename> scheme are used.
+          Example:
         </para>
 
         <para>
@@ -1293,7 +1330,7 @@ systemctl start mpd.socket</programlisting>
                 </entry>
                 <entry>
                   Decode the least significant bit first.  Default is
-                  "no".
+                  <parameter>no</parameter>.
                 </entry>
               </row>
             </tbody>
@@ -1732,10 +1769,11 @@ systemctl start mpd.socket</programlisting>
                 <entry>
                   If set to <parameter>no</parameter>, then
                   <filename>libasound</filename> will not attempt to
-                  resample, handing the responsibility over to MPD.
-                  It is recommended to let MPD resample (with
-                  libsamplerate), because ALSA is quite poor at doing
-                  so.
+                  resample, handing the responsibility over to
+                  <application>MPD</application>.  It is recommended
+                  to let <application>MPD</application> resample (with
+                  <application>libsamplerate</application>), because
+                  ALSA is quite poor at doing so.
                 </entry>
               </row>
               <row>
@@ -1928,15 +1966,19 @@ systemctl start mpd.socket</programlisting>
                 <entry>
                   This specifies the path of the FIFO to write to.
                   Must be an absolute path.  If the path does not
-                  exist, it will be created when MPD is started, and
-                  removed when MPD is stopped.  The FIFO will be
-                  created with the same user and group as MPD is
+                  exist, it will be created when
+                  <application>MPD</application> is started, and
+                  removed when <application>MPD</application> is
+                  stopped.  The FIFO will be created with the same
+                  user and group as <application>MPD</application> is
                   running as.  Default permissions can be modified by
-                  using the builtin shell command "umask".  If a FIFO
-                  already exists at the specified path it will be
-                  reused, and will not be removed when MPD is stopped.
-                  You can use the "mkfifo" command to create this, and
-                  then you may modify the permissions to your liking.
+                  using the builtin shell command
+                  <filename>umask</filename>.  If a FIFO already
+                  exists at the specified path it will be reused, and
+                  will not be removed when
+                  <application>MPD</application> is stopped.  You can
+                  use the "mkfifo" command to create this, and then
+                  you may modify the permissions to your liking.
                 </entry>
               </row>
             </tbody>
@@ -1948,8 +1990,8 @@ systemctl start mpd.socket</programlisting>
         <title><varname>jack</varname></title>
 
         <para>
-          The <varname>jack</varname> plugin connects to a JACK
-          server.
+          The <varname>jack</varname> plugin connects to a
+          <application>JACK</application> server.
         </para>
 
         <informaltable>
@@ -1967,8 +2009,8 @@ systemctl start mpd.socket</programlisting>
                   <parameter>NAME</parameter>
                 </entry>
                 <entry>
-                  The name of the JACK client.  Defaults to "Music
-                  Player Daemon".
+                  The name of the <application>JACK</application>
+                  client.  Defaults to "Music Player Daemon".
                 </entry>
               </row>
               <row>
@@ -1977,7 +2019,8 @@ systemctl start mpd.socket</programlisting>
                   <parameter>NAME</parameter>
                 </entry>
                 <entry>
-                  Optional name of the JACK server.
+                  Optional name of the <application>JACK</application>
+                  server.
                 </entry>
               </row>
               <row>
@@ -1988,7 +2031,8 @@ systemctl start mpd.socket</programlisting>
                 <entry>
                   If set to <parameter>yes</parameter>, then
                   <filename>libjack</filename> will automatically
-                  launch the JACK daemon.  Disabled by default.
+                  launch the <application>JACK</application> daemon.
+                  Disabled by default.
                 </entry>
               </row>
               <row>
@@ -1997,10 +2041,10 @@ systemctl start mpd.socket</programlisting>
                   <parameter>A,B</parameter>
                 </entry>
                 <entry>
-                  The names of the JACK source ports to be created.
-                  By default, the ports "left" and "right" are
-                  created.  To use more ports, you have to tweak this
-                  option.
+                  The names of the <application>JACK</application>
+                  source ports to be created.  By default, the ports
+                  "left" and "right" are created.  To use more ports,
+                  you have to tweak this option.
                 </entry>
               </row>
               <row>
@@ -2009,7 +2053,8 @@ systemctl start mpd.socket</programlisting>
                   <parameter>A,B</parameter>
                 </entry>
                 <entry>
-                  The names of the JACK destination ports to connect to.
+                  The names of the <application>JACK</application>
+                  destination ports to connect to.
                 </entry>
               </row>
               <row>
@@ -2033,8 +2078,9 @@ systemctl start mpd.socket</programlisting>
 
         <para>
           The <varname>httpd</varname> plugin creates a HTTP server,
-          similar to ShoutCast / IceCast.  HTTP streaming clients like
-          <filename>mplayer</filename> can connect to it.
+          similar to <application>ShoutCast</application> /
+          <application>IceCast</application>.  HTTP streaming clients
+          like <application>mplayer</application> can connect to it.
         </para>
 
         <para>
@@ -2176,8 +2222,8 @@ systemctl start mpd.socket</programlisting>
                 </entry>
                 <entry>
                   Sets the path of the PCM device.  If not specified,
-                  then MPD will attempt to open
-                  <filename>/dev/sound/dsp</filename> and
+                  then <application>MPD</application> will attempt to
+                  open <filename>/dev/sound/dsp</filename> and
                   <filename>/dev/dsp</filename>.
                 </entry>
               </row>
@@ -2324,8 +2370,8 @@ systemctl start mpd.socket</programlisting>
                 </entry>
                 <entry>
                   Sets the host name of the PulseAudio server.  By
-                  default, MPD connects to the local PulseAudio
-                  server.
+                  default, <application>MPD</application> connects to
+                  the local PulseAudio server.
                 </entry>
               </row>
               <row>
@@ -2334,8 +2380,8 @@ systemctl start mpd.socket</programlisting>
                   <parameter>NAME</parameter>
                 </entry>
                 <entry>
-                  Specifies the name of the PulseAudio sink MPD should
-                  play on.
+                  Specifies the name of the PulseAudio sink
+                  <application>MPD</application> should play on.
                 </entry>
               </row>
             </tbody>
@@ -2368,8 +2414,8 @@ systemctl start mpd.socket</programlisting>
                 </entry>
                 <entry>
                   The host name of the RoarAudio server.  If not
-                  specified, then MPD will connect to the default
-                  locations.
+                  specified, then <application>MPD</application> will
+                  connect to the default locations.
                 </entry>
               </row>
 
@@ -2379,8 +2425,9 @@ systemctl start mpd.socket</programlisting>
                   <parameter>ROLE</parameter>
                 </entry>
                 <entry>
-                  The "role" that MPD registers itself as in the
-                  RoarAudio server.  The default is "music".
+                  The "role" that <application>MPD</application>
+                  registers itself as in the RoarAudio server.  The
+                  default is "music".
                 </entry>
               </row>
             </tbody>
@@ -2393,8 +2440,8 @@ systemctl start mpd.socket</programlisting>
 
         <para>
           The <varname>recorder</varname> plugin writes the audio
-          played by MPD to a file.  This may be useful for recording
-          radio streams.
+          played by <application>MPD</application> to a file.  This
+          may be useful for recording radio streams.
         </para>
 
         <para>
@@ -2522,7 +2569,8 @@ systemctl start mpd.socket</programlisting>
                   <parameter>URI</parameter>
                 </entry>
                 <entry>
-                  Mounts the MPD stream in the specified URI.
+                  Mounts the <application>MPD</application> stream in
+                  the specified URI.
                 </entry>
               </row>
               <row>
@@ -2588,7 +2636,7 @@ systemctl start mpd.socket</programlisting>
                 </entry>
                 <entry>
                   Specifies whether the stream should be "public".
-                  Default is "no".
+                  Default is <parameter>no</parameter>.
                 </entry>
               </row>
               <row>
@@ -2737,7 +2785,9 @@ mpc load soundcloud://url/https://soundcloud.com/ARTIST/TRACK-NAME
                   <parameter>client_id</parameter>
                 </entry>
                 <entry>
-                  User apikey/client_id can override the MPD token provided by SoundCloud.
+                  User apikey/client_id can override the
+                  <application>MPD</application> token provided by
+                  SoundCloud.
                 </entry>
               </row>
             </tbody>
