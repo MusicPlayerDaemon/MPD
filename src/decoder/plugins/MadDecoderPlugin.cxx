@@ -43,9 +43,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define FRAMES_CUSHION    2000
-
-#define READ_BUFFER_SIZE  40960
+static constexpr unsigned long FRAMES_CUSHION = 2000;
 
 enum mp3_action {
 	DECODE_SKIP = -3,
@@ -61,9 +59,9 @@ enum muteframe {
 };
 
 /* the number of samples of silence the decoder inserts at start */
-#define DECODERDELAY 529
+static constexpr unsigned DECODERDELAY = 529;
 
-#define DEFAULT_GAPLESS_MP3_PLAYBACK true
+static constexpr bool DEFAULT_GAPLESS_MP3_PLAYBACK = true;
 
 static constexpr Domain mad_domain("mad");
 
@@ -72,11 +70,9 @@ static bool gapless_playback;
 static inline int32_t
 mad_fixed_to_24_sample(mad_fixed_t sample)
 {
-	enum {
-		bits = 24,
-		MIN = -MAD_F_ONE,
-		MAX = MAD_F_ONE - 1
-	};
+	static constexpr unsigned bits = 24;
+	static constexpr mad_fixed_t MIN = -MAD_F_ONE;
+	static constexpr mad_fixed_t MAX = MAD_F_ONE - 1;
 
 	/* round */
 	sample = sample + (1L << (MAD_F_FRACBITS - bits));
@@ -109,9 +105,10 @@ mp3_plugin_init(gcc_unused const config_param &param)
 	return true;
 }
 
-#define MP3_DATA_OUTPUT_BUFFER_SIZE 2048
-
 struct MadDecoder {
+	static constexpr size_t READ_BUFFER_SIZE = 40960;
+	static constexpr size_t MP3_DATA_OUTPUT_BUFFER_SIZE = 2048;
+
 	struct mad_stream stream;
 	struct mad_frame frame;
 	struct mad_synth synth;
@@ -501,10 +498,10 @@ MadDecoder::DecodeNextFrame()
 }
 
 /* xing stuff stolen from alsaplayer, and heavily modified by jat */
-#define XI_MAGIC (('X' << 8) | 'i')
-#define NG_MAGIC (('n' << 8) | 'g')
-#define IN_MAGIC (('I' << 8) | 'n')
-#define FO_MAGIC (('f' << 8) | 'o')
+static constexpr unsigned XI_MAGIC = (('X' << 8) | 'i');
+static constexpr unsigned NG_MAGIC = (('n' << 8) | 'g');
+static constexpr unsigned IN_MAGIC = (('I' << 8) | 'n');
+static constexpr unsigned FO_MAGIC = (('f' << 8) | 'o');
 
 enum xing_magic {
 	XING_MAGIC_XING, /* VBR */
@@ -520,12 +517,10 @@ struct xing {
 	enum xing_magic magic;  /* header magic */
 };
 
-enum {
-	XING_FRAMES = 0x00000001L,
-	XING_BYTES  = 0x00000002L,
-	XING_TOC    = 0x00000004L,
-	XING_SCALE  = 0x00000008L
-};
+static const unsigned XING_FRAMES = 1;
+static const unsigned XING_BYTES = 2;
+static const unsigned XING_TOC = 4;
+static const unsigned XING_SCALE = 8;
 
 struct lame_version {
 	unsigned major;
