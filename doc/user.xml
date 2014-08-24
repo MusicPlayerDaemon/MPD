@@ -856,6 +856,53 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
       </section>
     </section>
+
+    <section>
+      <title>Other Settings</title>
+
+      <section>
+        <title>The State File</title>
+
+        <para>
+          The <emphasis>state file</emphasis> is a file where
+          <application>MPD</application> saves and restores its state
+          (play queue, playback position etc.) to keep it persistent
+          across restarts and reboots.  It is an optional setting.
+        </para>
+
+        <para>
+          <application>MPD</application> will attempt to load the
+          state file during startup, and will save it when shutting
+          down the daemon.  Additionally, the state file is refreshed
+          every two minutes (after each state change).
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>state_file</varname>
+                  <parameter>PATH</parameter>
+                </entry>
+                <entry>
+                  Specify the state file location.  The parent
+                  directory must be writable by the
+                  <application>MPD</application> user
+                  (<parameter>+wx</parameter>).
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+    </section>
   </chapter>
 
   <chapter>
