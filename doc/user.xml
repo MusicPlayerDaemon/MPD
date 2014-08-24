@@ -1694,7 +1694,7 @@ systemctl start mpd.socket</programlisting>
     <section>
       <title>Output plugins</title>
 
-      <section>
+      <section id="alsa_output">
         <title><varname>alsa</varname></title>
 
         <para>
@@ -2204,6 +2204,13 @@ systemctl start mpd.socket</programlisting>
         <para>
           The "Open Sound System" plugin is supported on most Unix
           platforms.
+        </para>
+
+        <para>
+          On Linux, <application>OSS</application> has been superseded
+          by <application>ALSA</application>.  Use the <link
+          linkend="alsa_output"><application>ALSA</application> output
+          plugin</link> instead of this one on Linux.
         </para>
 
         <informaltable>
