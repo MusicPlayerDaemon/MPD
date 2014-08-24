@@ -914,6 +914,137 @@ systemctl start mpd.socket</programlisting>
           </tgroup>
         </informaltable>
       </section>
+
+      <section>
+        <title>Resource Limitations</title>
+
+        <para>
+          These settings are various limitations to prevent
+          <application>MPD</application> from using too many
+          resources (denial of service).
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+
+              <row>
+                <entry>
+                  <varname>connection_timeout</varname>
+                  <parameter>SECONDS</parameter>
+                </entry>
+                <entry>
+                  If a client does not send any new data in this time
+                  period, the connection is closed.  Clients waiting
+                  in "idle" mode are excluded from this.  Default is
+                  <parameter>60</parameter>.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>max_connections</varname>
+                  <parameter>NUMBER</parameter>
+                </entry>
+                <entry>
+                  This specifies the maximum number of clients that
+                  can be connected to <application>MPD</application>
+                  at the same time.  Default is
+                  <parameter>5</parameter>.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>max_playlist_length</varname>
+                  <parameter>NUMBER</parameter>
+                </entry>
+                <entry>
+                  The maximum number of songs that can be in the
+                  playlist.  Default is <parameter>16384</parameter>.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>max_command_list_size</varname>
+                  <parameter>KBYTES</parameter>
+                </entry>
+                <entry>
+                  The maximum size a command list.  Default is
+                  <parameter>2048</parameter> (2 MiB).
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>max_output_buffer_size</varname>
+                  <parameter>KBYTES</parameter>
+                </entry>
+                <entry>
+                  The maximum size of the output buffer to a client
+                  (maximum response size).  Default is
+                  <parameter>8192</parameter> (8 MiB).
+                </entry>
+              </row>
+
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title>Buffer Settings</title>
+
+        <para>
+          Do not change these unless you know what you are doing.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+
+              <row>
+                <entry>
+                  <varname>audio_buffer_size</varname>
+                  <parameter>KBYTES</parameter>
+                </entry>
+                <entry>
+                  Adjust the size of the internal audio buffer.
+                  Default is <parameter>4096</parameter> (4 MiB).
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>buffer_before_play</varname>
+                  <parameter>PERCENT</parameter>
+                </entry>
+                <entry>
+                  Control the percentage of the buffer which is filled
+                  before beginning to play.  Increasing this reduces
+                  the chance of audio file skipping, at the cost of
+                  increased time prior to audio playback.  Default is
+                  <parameter>10%</parameter>.
+                </entry>
+              </row>
+
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
     </section>
   </chapter>
 

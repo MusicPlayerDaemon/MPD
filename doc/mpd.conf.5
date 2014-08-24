@@ -151,38 +151,9 @@ This is the gain (in dB) applied to songs with ReplayGain tags.
 .B volume_normalization <yes or no>
 If yes, mpd will normalize the volume of songs as they play.  The default is no.
 .TP
-.B audio_buffer_size <size in KiB>
-This specifies the size of the audio buffer in kibibytes.  The default is 4096,
-large enough for nearly 12 seconds of CD-quality audio.
-.TP
-.B buffer_before_play <0-100%>
-This specifies how much of the audio buffer should be filled before playing a
-song.  Try increasing this if you hear skipping when manually changing songs.
-The default is 10%, a little over 1 second of CD-quality audio with the default
-buffer size.
-.TP
 .B http_proxy_host <hostname>
 This setting is deprecated.  Use the "proxy" setting in the "curl"
 input block.  See MPD user manual for details.
-.TP
-.B connection_timeout <seconds>
-If a client does not send any new data in this time period, the connection is
-closed.  The default is 60.
-.TP
-.B max_connections <number>
-This specifies the maximum number of clients that can be connected to mpd.  The
-default is 5.
-.TP
-.B max_playlist_length <number>
-This specifies the maximum number of songs that can be in the playlist.  The
-default is 16384.
-.TP
-.B max_command_list_size <size in KiB>
-This specifies the maximum size a command list can be.  The default is 2048.
-.TP
-.B max_output_buffer_size <size in KiB>
-This specifies the maximum size of the output buffer to a client.  The default
-is 8192.
 .TP
 .B filesystem_charset <charset>
 This specifies the character set used for the filesystem.  A list of supported

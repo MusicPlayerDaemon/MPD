@@ -373,38 +373,6 @@ input {
 #
 ###############################################################################
 
-
-# MPD Internal Buffering ######################################################
-#
-# This setting adjusts the size of internal decoded audio buffering. Changing
-# this may have undesired effects. Don't change this if you don't know what you
-# are doing.
-#
-#audio_buffer_size		"4096"
-#
-# This setting controls the percentage of the buffer which is filled before 
-# beginning to play. Increasing this reduces the chance of audio file skipping, 
-# at the cost of increased time prior to audio playback.
-#
-#buffer_before_play		"10%"
-#
-###############################################################################
-
-
-# Resource Limitations ########################################################
-#
-# These settings are various limitations to prevent MPD from using too many
-# resources. Generally, these settings should be minimized to prevent security
-# risks, depending on the operating resources.
-#
-#connection_timeout		"60"
-#max_connections		"10"
-#max_playlist_length		"16384"
-#max_command_list_size		"2048"
-#max_output_buffer_size		"8192"
-#
-###############################################################################
-
 # Character Encoding ##########################################################
 #
 # If file or directory names do not display correctly for your locale then you 
