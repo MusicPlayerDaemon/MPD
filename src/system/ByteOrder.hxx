@@ -40,6 +40,16 @@
 /* well-known big-endian */
 #  define IS_LITTLE_ENDIAN false
 #  define IS_BIG_ENDIAN true
+#elif defined(__APPLE__)
+/* compile-time check for MacOS */
+#  include <machine/endian.h>
+#  if BYTE_ORDER == LITTLE_ENDIAN
+#    define IS_LITTLE_ENDIAN true
+#    define IS_BIG_ENDIAN false
+#  else
+#    define IS_LITTLE_ENDIAN false
+#    define IS_BIG_ENDIAN true
+#  endif
 #else
 /* generic compile-time check */
 #  include <endian.h>

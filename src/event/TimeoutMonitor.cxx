@@ -51,5 +51,6 @@ TimeoutMonitor::ScheduleSeconds(unsigned s)
 void
 TimeoutMonitor::Run()
 {
+	active = true;
 	OnTimeout();
 }
