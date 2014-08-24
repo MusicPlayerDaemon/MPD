@@ -96,12 +96,9 @@ mad_fixed_to_24_buffer(int32_t *dest, const struct mad_synth *synth,
 		       unsigned int start, unsigned int end,
 		       unsigned int num_channels)
 {
-	unsigned int i, c;
-
-	for (i = start; i < end; ++i) {
-		for (c = 0; c < num_channels; ++c)
+	for (unsigned i = start; i < end; ++i)
+		for (unsigned c = 0; c < num_channels; ++c)
 			*dest++ = mad_fixed_to_24_sample(synth->pcm.samples[c][i]);
-	}
 }
 
 static bool
@@ -254,22 +251,19 @@ static bool
 parse_id3_replay_gain_info(ReplayGainInfo &rgi,
 			   struct id3_tag *tag)
 {
-	int i;
-	char *key;
-	char *value;
-	struct id3_frame *frame;
 	bool found = false;
 
 	rgi.Clear();
 
-	for (i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
+	struct id3_frame *frame;
+	for (unsigned i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
 		if (frame->nfields < 3)
 			continue;
 
-		key = (char *)
+		char *const key = (char *)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[1]));
-		value = (char *)
+		char *const value = (char *)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 
@@ -302,21 +296,17 @@ gcc_pure
 static MixRampInfo
 parse_id3_mixramp(struct id3_tag *tag)
 {
-	int i;
-	char *key;
-	char *value;
-	struct id3_frame *frame;
-
 	MixRampInfo result;
 
-	for (i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
+	struct id3_frame *frame;
+	for (unsigned i = 0; (frame = id3_tag_findframe(tag, "TXXX", i)); i++) {
 		if (frame->nfields < 3)
 			continue;
 
-		key = (char *)
+		char *const key = (char *)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[1]));
-		value = (char *)
+		char *const value = (char *)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 
@@ -338,13 +328,11 @@ inline void
 MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 {
 #ifdef HAVE_ID3TAG
-	struct id3_tag *id3_tag = nullptr;
-	id3_length_t count;
-	id3_byte_t const *id3_data;
 	id3_byte_t *allocated = nullptr;
 
-	count = stream.bufend - stream.this_frame;
+	const id3_length_t count = stream.bufend - stream.this_frame;
 
+	const id3_byte_t *id3_data;
 	if (tagsize <= count) {
 		id3_data = stream.this_frame;
 		mad_stream_skip(&(stream), tagsize);
@@ -363,7 +351,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		id3_data = allocated;
 	}
 
-	id3_tag = id3_tag_parse(id3_data, tagsize);
+	struct id3_tag *const id3_tag = id3_tag_parse(id3_data, tagsize);
 	if (id3_tag == nullptr) {
 		delete[] allocated;
 		return;
@@ -558,17 +546,12 @@ struct lame {
 static bool
 parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 {
-	unsigned long bits;
-	int bitlen;
-	int bitsleft;
-	int i;
-
-	bitlen = *oldbitlen;
+	int bitlen = *oldbitlen;
 
 	if (bitlen < 16)
 		return false;
 
-	bits = mad_bit_read(ptr, 16);
+	const unsigned long bits = mad_bit_read(ptr, 16);
 	bitlen -= 16;
 
 	if (bits == XI_MAGIC) {
@@ -617,7 +600,8 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 	if (xing->flags & XING_TOC) {
 		if (bitlen < 800)
 			return false;
-		for (i = 0; i < 100; ++i) xing->toc[i] = mad_bit_read(ptr, 8);
+		for (unsigned i = 0; i < 100; ++i)
+			xing->toc[i] = mad_bit_read(ptr, 8);
 		bitlen -= 800;
 	}
 
@@ -630,7 +614,7 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 
 	/* Make sure we consume no less than 120 bytes (960 bits) in hopes that
 	 * the LAME tag is found there, and not right after the Xing header */
-	bitsleft = 960 - ((*oldbitlen) - bitlen);
+	const int bitsleft = 960 - (*oldbitlen - bitlen);
 	if (bitsleft < 0)
 		return false;
 	else if (bitsleft > 0) {
@@ -646,19 +630,12 @@ parse_xing(struct xing *xing, struct mad_bitptr *ptr, int *oldbitlen)
 static bool
 parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 {
-	int adj = 0;
-	int name;
-	int orig;
-	int sign;
-	int gain;
-	int i;
-
 	/* Unlike the xing header, the lame tag has a fixed length.  Fail if
 	 * not all 36 bytes (288 bits) are there. */
 	if (*bitlen < 288)
 		return false;
 
-	for (i = 0; i < 9; i++)
+	for (unsigned i = 0; i < 9; i++)
 		lame->encoder[i] = (char)mad_bit_read(ptr, 8);
 	lame->encoder[9] = '\0';
 
@@ -684,6 +661,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	 * it's impossible to make the proper adjustment for 3.95.
 	 * Fortunately, 3.95 was only out for about a day before 3.95.1 was
 	 * released. -- tmz */
+	int adj = 0;
 	if (lame->version.major < 3 ||
 	    (lame->version.major == 3 && lame->version.minor < 95))
 		adj = 6;
@@ -694,10 +672,10 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	FormatDebug(mad_domain, "LAME peak found: %f", lame->peak);
 
 	lame->track_gain = 0;
-	name = mad_bit_read(ptr, 3); /* gain name */
-	orig = mad_bit_read(ptr, 3); /* gain originator */
-	sign = mad_bit_read(ptr, 1); /* sign bit */
-	gain = mad_bit_read(ptr, 9); /* gain*10 */
+	unsigned name = mad_bit_read(ptr, 3); /* gain name */
+	unsigned orig = mad_bit_read(ptr, 3); /* gain originator */
+	unsigned sign = mad_bit_read(ptr, 1); /* sign bit */
+	unsigned gain = mad_bit_read(ptr, 9); /* gain*10 */
 	if (gain && name == 1 && orig != 0) {
 		lame->track_gain = ((sign ? -gain : gain) / 10.0) + adj;
 		FormatDebug(mad_domain, "LAME track gain found: %f",
@@ -785,17 +763,13 @@ MadDecoder::FileSizeToSongLength()
 inline bool
 MadDecoder::DecodeFirstFrame(Tag **tag)
 {
-	struct xing xing;
-	struct lame lame;
-	struct mad_bitptr ptr;
-	int bitlen;
-	enum mp3_action ret;
-
 	/* stfu gcc */
+	struct xing xing;
 	memset(&xing, 0, sizeof(struct xing));
 	xing.flags = 0;
 
 	while (true) {
+		enum mp3_action ret;
 		do {
 			ret = DecodeNextFrameHeader(tag);
 		} while (ret == DECODE_CONT);
@@ -811,8 +785,8 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 		if (ret == DECODE_OK) break;
 	}
 
-	ptr = stream.anc_ptr;
-	bitlen = stream.anc_bitlen;
+	struct mad_bitptr ptr = stream.anc_ptr;
+	int bitlen = stream.anc_bitlen;
 
 	FileSizeToSongLength();
 
@@ -830,6 +804,7 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 			max_frames = xing.frames;
 		}
 
+		struct lame lame;
 		if (parse_lame(&lame, &ptr, &bitlen)) {
 			if (gapless_playback && input_stream.IsSeekable()) {
 				drop_start_samples = lame.encoder_delay +
@@ -931,9 +906,7 @@ MadDecoder::UpdateTimerNextFrame()
 DecoderCommand
 MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
 {
-	unsigned max_samples;
-
-	max_samples = sizeof(output_buffer) /
+	unsigned max_samples = sizeof(output_buffer) /
 		sizeof(output_buffer[0]) /
 		MAD_NCHANNELS(&frame.header);
 
@@ -1128,9 +1101,7 @@ static bool
 mad_decoder_scan_stream(InputStream &is,
 			const struct tag_handler *handler, void *handler_ctx)
 {
-	int total_time;
-
-	total_time = mad_decoder_total_file_time(is);
+	const int total_time = mad_decoder_total_file_time(is);
 	if (total_time < 0)
 		return false;
 
