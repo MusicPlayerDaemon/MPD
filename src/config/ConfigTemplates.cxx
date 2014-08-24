@@ -32,6 +32,7 @@ const ConfigTemplate config_templates[] = {
 	{ "log_file", false, false },
 	{ "pid_file", false, false },
 	{ "state_file", false, false },
+	{ "state_file_interval", false, false },
 	{ "restore_paused", false, false },
 	{ "user", false, false },
 	{ "group", false, false },

@@ -898,6 +898,18 @@ systemctl start mpd.socket</programlisting>
                   (<parameter>+wx</parameter>).
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>state_file_interval</varname>
+                  <parameter>SECONDS</parameter>
+                </entry>
+                <entry>
+                  Auto-save the state file this number of seconds
+                  after each state change.  Defaults to
+                  <parameter>120</parameter> (2 minutes).
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>

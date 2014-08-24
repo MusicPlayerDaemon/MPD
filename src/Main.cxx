@@ -279,7 +279,10 @@ glue_state_file_init(Error &error)
 #endif
 	}
 
-	state_file = new StateFile(std::move(path_fs),
+	unsigned interval = config_get_unsigned(CONF_STATE_FILE_INTERVAL,
+						StateFile::DEFAULT_INTERVAL);
+
+	state_file = new StateFile(std::move(path_fs), interval,
 				   *instance->partition,
 				   *instance->event_loop);
 	state_file->Read();

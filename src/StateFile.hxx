@@ -34,6 +34,8 @@ class StateFile final : private TimeoutMonitor {
 	const AllocatedPath path;
 	const std::string path_utf8;
 
+	const unsigned interval;
+
 	Partition &partition;
 
 	/**
@@ -44,7 +46,10 @@ class StateFile final : private TimeoutMonitor {
 		prev_playlist_version;
 
 public:
-	StateFile(AllocatedPath &&path, Partition &partition, EventLoop &loop);
+	static constexpr unsigned DEFAULT_INTERVAL = 2 * 60;
+
+	StateFile(AllocatedPath &&path, unsigned interval,
+		  Partition &partition, EventLoop &loop);
 
 	void Read();
 	void Write();

@@ -36,10 +36,11 @@
 
 static constexpr Domain state_file_domain("state_file");
 
-StateFile::StateFile(AllocatedPath &&_path,
+StateFile::StateFile(AllocatedPath &&_path, unsigned _interval,
 		     Partition &_partition, EventLoop &_loop)
 	:TimeoutMonitor(_loop),
 	 path(std::move(_path)), path_utf8(path.ToUTF8()),
+	 interval(_interval),
 	 partition(_partition),
 	 prev_volume_version(0), prev_output_version(0),
 	 prev_playlist_version(0)
@@ -137,7 +138,7 @@ void
 StateFile::CheckModified()
 {
 	if (!IsActive() && IsModified())
-		ScheduleSeconds(2 * 60);
+		ScheduleSeconds(interval);
 }
 
 void
