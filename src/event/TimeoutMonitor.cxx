@@ -64,7 +64,9 @@ TimeoutMonitor::ScheduleSeconds(unsigned s)
 void
 TimeoutMonitor::Run()
 {
-#ifndef USE_EPOLL
+#ifdef USE_EPOLL
+	active = true;
+#else
 	Cancel();
 #endif
 
