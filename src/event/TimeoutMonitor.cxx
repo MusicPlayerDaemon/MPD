@@ -65,7 +65,7 @@ void
 TimeoutMonitor::Run()
 {
 #ifdef USE_EPOLL
-	active = true;
+	active = false;
 #else
 	Cancel();
 #endif
