@@ -1883,7 +1883,8 @@ systemctl start mpd.socket</programlisting>
 
         <para>
           The <varname>ao</varname> plugin uses the portable
-          <filename>libao</filename> library.
+          <filename>libao</filename> library.  Use only if there is no
+          native plugin for your operating system.
         </para>
 
         <informaltable>
@@ -2285,8 +2286,9 @@ systemctl start mpd.socket</programlisting>
         <title><varname>openal</varname></title>
 
         <para>
-          The "OpenAL" plugin uses <filename>libopenal</filename>.
-          It is supported on many platforms.
+          The "OpenAL" plugin uses <filename>libopenal</filename>.  It
+          is supported on many platforms.  Use only if there is no
+          native plugin for your operating system.
         </para>
 
         <informaltable>
