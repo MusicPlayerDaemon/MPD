@@ -31,8 +31,8 @@ class OutputStream;
 class BufferedOutputStream;
 
 class StateFile final : private TimeoutMonitor {
-	AllocatedPath path;
-	std::string path_utf8;
+	const AllocatedPath path;
+	const std::string path_utf8;
 
 	Partition &partition;
 
