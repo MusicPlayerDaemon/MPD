@@ -757,10 +757,8 @@ MadDecoder::FileSizeToSongLength()
 inline bool
 MadDecoder::DecodeFirstFrame(Tag **tag)
 {
-	/* stfu gcc */
 	struct xing xing;
-	memset(&xing, 0, sizeof(struct xing));
-	xing.flags = 0;
+	xing.frames = 0;
 
 	while (true) {
 		enum mp3_action ret;
