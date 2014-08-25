@@ -129,7 +129,6 @@ struct MadDecoder {
 	unsigned int drop_start_samples;
 	unsigned int drop_end_samples;
 	bool found_replay_gain;
-	bool found_xing;
 	bool found_first_frame;
 	bool decoded_first_frame;
 	unsigned long bit_rate;
@@ -186,7 +185,7 @@ MadDecoder::MadDecoder(Decoder *_decoder,
 	 highest_frame(0), max_frames(0), current_frame(0),
 	 drop_start_frames(0), drop_end_frames(0),
 	 drop_start_samples(0), drop_end_samples(0),
-	 found_replay_gain(false), found_xing(false),
+	 found_replay_gain(false),
 	 found_first_frame(false), decoded_first_frame(false),
 	 decoder(_decoder), input_stream(_input_stream),
 	 layer(mad_layer(0))
@@ -789,7 +788,6 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 	 * if an xing tag exists, use that!
 	 */
 	if (parse_xing(&xing, &ptr, &bitlen)) {
-		found_xing = true;
 		mute_frame = MUTEFRAME_SKIP;
 
 		if ((xing.flags & XING_FRAMES) && xing.frames) {
