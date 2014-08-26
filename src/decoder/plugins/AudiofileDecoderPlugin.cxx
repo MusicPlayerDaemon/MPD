@@ -234,8 +234,7 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 				   kbit_rate);
 
 		if (cmd == DecoderCommand::SEEK) {
-			AFframecount frame = decoder_seek_where(decoder) *
-				audio_format.sample_rate;
+			AFframecount frame = decoder_seek_where_frame(decoder);
 			afSeekFrame(fh, AF_DEFAULT_TRACK, frame);
 
 			decoder_command_finished(decoder);
