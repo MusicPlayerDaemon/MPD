@@ -99,7 +99,7 @@ public:
 	DecoderCommand HandleTags(const ogg_packet &packet);
 	DecoderCommand HandleAudio(const ogg_packet &packet);
 
-	bool Seek(OggSyncState &oy, double where);
+	bool Seek(OggSyncState &oy, uint64_t where_frame);
 };
 
 MPDOpusDecoder::~MPDOpusDecoder()
@@ -328,13 +328,13 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 }
 
 bool
-MPDOpusDecoder::Seek(OggSyncState &oy, double where_s)
+MPDOpusDecoder::Seek(OggSyncState &oy, uint64_t where_frame)
 {
 	assert(eos_granulepos > 0);
 	assert(input_stream.IsSeekable());
 	assert(input_stream.KnownSize());
 
-	const ogg_int64_t where_granulepos(where_s * opus_sample_rate);
+	const ogg_int64_t where_granulepos(where_frame);
 
 	/* interpolate the file offset where we expect to find the
 	   given granule position */
@@ -365,7 +365,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 	while (true) {
 		auto cmd = d.HandlePackets();
 		if (cmd == DecoderCommand::SEEK) {
-			if (d.Seek(oy, decoder_seek_where(decoder)))
+			if (d.Seek(oy, decoder_seek_where_frame(decoder)))
 				decoder_command_finished(decoder);
 			else
 				decoder_seek_error(decoder);
