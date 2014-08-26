@@ -1043,10 +1043,8 @@ MadDecoder::Read()
 		}
 
 		if (!skip && ret == DECODE_OK)
-			break;
+			return true;
 	}
-
-	return ret != DECODE_BREAK;
 }
 
 static void
