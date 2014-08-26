@@ -116,8 +116,8 @@ struct MadDecoder {
 	unsigned char input_buffer[READ_BUFFER_SIZE];
 	int32_t output_buffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
 	float total_time;
-	float elapsed_time;
-	float seek_where;
+	unsigned elapsed_time;
+	unsigned seek_where;
 	enum muteframe mute_frame;
 	long *frame_offsets;
 	mad_timer_t *times;
@@ -159,7 +159,7 @@ struct MadDecoder {
 	bool DecodeFirstFrame(Tag **tag);
 
 	gcc_pure
-	long TimeToFrame(double t) const;
+	long TimeToFrame(unsigned t) const;
 
 	void UpdateTimerNextFrame();
 
@@ -847,14 +847,13 @@ mad_decoder_total_file_time(InputStream &is)
 }
 
 long
-MadDecoder::TimeToFrame(double t) const
+MadDecoder::TimeToFrame(unsigned t) const
 {
 	unsigned long i;
 
 	for (i = 0; i < highest_frame; ++i) {
-		double frame_time =
-			mad_timer_count(times[i],
-					MAD_UNITS_MILLISECONDS) / 1000.;
+		unsigned frame_time =
+			mad_timer_count(times[i], MAD_UNITS_MILLISECONDS);
 		if (frame_time >= t)
 			break;
 	}
@@ -885,7 +884,7 @@ MadDecoder::UpdateTimerNextFrame()
 		timer = times[current_frame];
 
 	current_frame++;
-	elapsed_time = mad_timer_count(timer, MAD_UNITS_MILLISECONDS) / 1000.0;
+	elapsed_time = mad_timer_count(timer, MAD_UNITS_MILLISECONDS);
 }
 
 DecoderCommand
@@ -990,7 +989,7 @@ MadDecoder::Read()
 			assert(input_stream.IsSeekable());
 
 			unsigned long j =
-				TimeToFrame(decoder_seek_where(*decoder));
+				TimeToFrame(decoder_seek_where_ms(*decoder));
 			if (j < highest_frame) {
 				if (Seek(frame_offsets[j])) {
 					current_frame = j;
@@ -998,7 +997,7 @@ MadDecoder::Read()
 				} else
 					decoder_seek_error(*decoder);
 			} else {
-				seek_where = decoder_seek_where(*decoder);
+				seek_where = decoder_seek_where_ms(*decoder);
 				mute_frame = MUTEFRAME_SEEK;
 				decoder_command_finished(*decoder);
 			}
