@@ -148,7 +148,7 @@ mp4_file_decode(Decoder &mpd_decoder, Path path_fs)
 
 	/* initialize the MPD core */
 
-	const uint32_t scale = MP4GetTrackTimeScale(handle, track);
+	const MP4Timestamp scale = MP4GetTrackTimeScale(handle, track);
 	const float duration = ((float)MP4GetTrackDuration(handle, track)) / scale + 0.5f;
 	const MP4SampleId num_samples = MP4GetTrackNumberOfSamples(handle, track);
 
@@ -165,9 +165,12 @@ mp4_file_decode(Decoder &mpd_decoder, Path path_fs)
 		unsigned int data_length = 0;
 
 		if (cmd == DecoderCommand::SEEK) {
-			const double offset = decoder_seek_where(mpd_decoder);
-			sample = MP4GetSampleIdFromTime(handle, track,
-							(MP4Timestamp)(offset * (double)scale), 0);
+			const unsigned offset_ms =
+				decoder_seek_where_ms(mpd_decoder);
+			const MP4Timestamp offset = (offset_ms * scale) / 1000;
+
+			sample = MP4GetSampleIdFromTime(handle, track, offset,
+							false);
 			decoder_command_finished(mpd_decoder);
 		}
 
