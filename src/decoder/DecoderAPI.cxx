@@ -220,6 +220,23 @@ double decoder_seek_where(gcc_unused Decoder & decoder)
 	return dc.seek_where;
 }
 
+unsigned
+decoder_seek_where_ms(Decoder &decoder)
+{
+	const DecoderControl &dc = decoder.dc;
+
+	assert(dc.pipe != nullptr);
+
+	if (decoder.initial_seek_running)
+		return dc.start_ms;
+
+	assert(dc.command == DecoderCommand::SEEK);
+
+	decoder.seeking = true;
+
+	return unsigned(dc.seek_where * 1000);
+}
+
 void decoder_seek_error(Decoder & decoder)
 {
 	DecoderControl &dc = decoder.dc;
