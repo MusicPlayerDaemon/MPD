@@ -166,10 +166,7 @@ mod_decode(Decoder &decoder, InputStream &is)
 				   0);
 
 		if (cmd == DecoderCommand::SEEK) {
-			float where = decoder_seek_where(decoder);
-
-			ModPlug_Seek(f, (int)(where * 1000.0));
-
+			ModPlug_Seek(f, decoder_seek_where_ms(decoder));
 			decoder_command_finished(decoder);
 		}
 
