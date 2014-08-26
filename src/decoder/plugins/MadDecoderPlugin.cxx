@@ -432,17 +432,16 @@ MadDecoder::DecodeNextFrameHeader(Tag **tag)
 				return DECODE_CONT;
 			}
 		}
-		if (MAD_RECOVERABLE(stream.error)) {
+
+		if (MAD_RECOVERABLE(stream.error))
 			return DECODE_SKIP;
-		} else {
-			if (stream.error == MAD_ERROR_BUFLEN)
-				return DECODE_CONT;
-			else {
-				FormatWarning(mad_domain,
-					      "unrecoverable frame level error: %s",
-					      mad_stream_errorstr(&stream));
-				return DECODE_BREAK;
-			}
+		else if (stream.error == MAD_ERROR_BUFLEN)
+			return DECODE_CONT;
+		else {
+			FormatWarning(mad_domain,
+				      "unrecoverable frame level error: %s",
+				      mad_stream_errorstr(&stream));
+			return DECODE_BREAK;
 		}
 	}
 
@@ -479,17 +478,16 @@ MadDecoder::DecodeNextFrame()
 				return DECODE_CONT;
 			}
 		}
-		if (MAD_RECOVERABLE(stream.error)) {
+
+		if (MAD_RECOVERABLE(stream.error))
 			return DECODE_SKIP;
-		} else {
-			if (stream.error == MAD_ERROR_BUFLEN)
-				return DECODE_CONT;
-			else {
-				FormatWarning(mad_domain,
-					      "unrecoverable frame level error: %s",
-					      mad_stream_errorstr(&stream));
-				return DECODE_BREAK;
-			}
+		else if (stream.error == MAD_ERROR_BUFLEN)
+			return DECODE_CONT;
+		else {
+			FormatWarning(mad_domain,
+				      "unrecoverable frame level error: %s",
+				      mad_stream_errorstr(&stream));
+			return DECODE_BREAK;
 		}
 	}
 
