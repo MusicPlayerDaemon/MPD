@@ -410,6 +410,20 @@ id3_tag_query(const void *p0, size_t length)
 }
 #endif /* !HAVE_ID3TAG */
 
+static enum mp3_action
+RecoverFrameError(struct mad_stream &stream)
+{
+	if (MAD_RECOVERABLE(stream.error))
+		return DECODE_SKIP;
+	else if (stream.error == MAD_ERROR_BUFLEN)
+		return DECODE_CONT;
+
+	FormatWarning(mad_domain,
+		      "unrecoverable frame level error: %s",
+		      mad_stream_errorstr(&stream));
+	return DECODE_BREAK;
+}
+
 enum mp3_action
 MadDecoder::DecodeNextFrameHeader(Tag **tag)
 {
@@ -433,16 +447,7 @@ MadDecoder::DecodeNextFrameHeader(Tag **tag)
 			}
 		}
 
-		if (MAD_RECOVERABLE(stream.error))
-			return DECODE_SKIP;
-		else if (stream.error == MAD_ERROR_BUFLEN)
-			return DECODE_CONT;
-		else {
-			FormatWarning(mad_domain,
-				      "unrecoverable frame level error: %s",
-				      mad_stream_errorstr(&stream));
-			return DECODE_BREAK;
-		}
+		return RecoverFrameError(stream);
 	}
 
 	enum mad_layer new_layer = frame.header.layer;
@@ -479,16 +484,7 @@ MadDecoder::DecodeNextFrame()
 			}
 		}
 
-		if (MAD_RECOVERABLE(stream.error))
-			return DECODE_SKIP;
-		else if (stream.error == MAD_ERROR_BUFLEN)
-			return DECODE_CONT;
-		else {
-			FormatWarning(mad_domain,
-				      "unrecoverable frame level error: %s",
-				      mad_stream_errorstr(&stream));
-			return DECODE_BREAK;
-		}
+		return RecoverFrameError(stream);
 	}
 
 	return DECODE_OK;
