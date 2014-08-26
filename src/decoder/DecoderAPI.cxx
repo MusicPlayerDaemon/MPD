@@ -237,6 +237,24 @@ decoder_seek_where_ms(Decoder &decoder)
 	return unsigned(dc.seek_where * 1000);
 }
 
+uint64_t
+decoder_seek_where_frame(Decoder &decoder)
+{
+	const DecoderControl &dc = decoder.dc;
+
+	assert(dc.pipe != nullptr);
+
+	if (decoder.initial_seek_running)
+		return uint64_t(dc.start_ms) * dc.in_audio_format.sample_rate
+			/ 1000;
+
+	assert(dc.command == DecoderCommand::SEEK);
+
+	decoder.seeking = true;
+
+	return uint64_t(dc.seek_where * dc.in_audio_format.sample_rate);
+}
+
 void decoder_seek_error(Decoder & decoder)
 {
 	DecoderControl &dc = decoder.dc;
