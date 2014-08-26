@@ -39,7 +39,6 @@
 static constexpr Domain avahi_domain("avahi");
 
 static char *avahiName;
-static bool avahi_running;
 static MyAvahiPoll *avahi_poll;
 static AvahiClient *avahiClient;
 static AvahiEntryGroup *avahiGroup;
@@ -85,7 +84,6 @@ static void avahiGroupCallback(AvahiEntryGroup * g,
 			    avahi_strerror(avahi_client_errno
 					   (avahi_entry_group_get_client(g))));
 		/* Some kind of failure happened while we were registering our services */
-		avahi_running = false;
 		break;
 
 	case AVAHI_ENTRY_GROUP_UNCOMMITED:
@@ -142,7 +140,7 @@ static void avahiRegisterService(AvahiClient * c)
 	return;
 
 fail:
-	avahi_running = false;
+	return;
 }
 
 /* Callback when avahi changes state */
@@ -185,13 +183,11 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 				FormatWarning(avahi_domain,
 					      "Could not reconnect: %s",
 					      avahi_strerror(reason));
-				avahi_running = false;
 			}
 		} else {
 			FormatWarning(avahi_domain,
 				      "Client failure: %s (terminal)",
 				      avahi_strerror(reason));
-			avahi_running = false;
 		}
 		break;
 
@@ -238,8 +234,6 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 		FormatFatalError("Invalid zeroconf_name \"%s\"", serviceName);
 
 	avahiName = avahi_strdup(serviceName);
-
-	avahi_running = true;
 
 	avahi_poll = new MyAvahiPoll(loop);
 
