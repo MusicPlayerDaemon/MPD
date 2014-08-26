@@ -132,10 +132,6 @@ struct AlsaOutput {
 		 mode(0), writei(snd_pcm_writei) {
 	}
 
-	bool Init(const config_param &param, Error &error) {
-		return base.Configure(param, error);
-	}
-
 	bool Configure(const config_param &param, Error &error);
 };
 
@@ -148,8 +144,11 @@ alsa_device(const AlsaOutput *ad)
 }
 
 inline bool
-AlsaOutput::Configure(const config_param &param, gcc_unused Error &error)
+AlsaOutput::Configure(const config_param &param, Error &error)
 {
+	if (!base.Configure(param, error))
+		return false;
+
 	device = param.GetBlockValue("device", "");
 
 	use_mmap = param.GetBlockValue("use_mmap", false);
@@ -183,7 +182,7 @@ alsa_init(const config_param &param, Error &error)
 {
 	AlsaOutput *ad = new AlsaOutput();
 
-	if (!ad->Init(param, error) || !ad->Configure(param, error)) {
+	if (!ad->Configure(param, error)) {
 		delete ad;
 		return nullptr;
 	}
