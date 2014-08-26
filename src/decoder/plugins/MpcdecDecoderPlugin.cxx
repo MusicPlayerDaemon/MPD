@@ -185,8 +185,8 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 	DecoderCommand cmd = DecoderCommand::NONE;
 	do {
 		if (cmd == DecoderCommand::SEEK) {
-			mpc_int64_t where = decoder_seek_where(mpd_decoder) *
-				audio_format.sample_rate;
+			mpc_int64_t where =
+				decoder_seek_where_frame(mpd_decoder);
 			bool success;
 
 			success = mpc_demux_seek_sample(demux, where)
