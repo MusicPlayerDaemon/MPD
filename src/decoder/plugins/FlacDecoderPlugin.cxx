@@ -181,8 +181,7 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 
 		if (cmd == DecoderCommand::SEEK) {
 			FLAC__uint64 seek_sample = t_start +
-				decoder_seek_where(decoder) *
-				data->audio_format.sample_rate;
+				decoder_seek_where_frame(decoder);
 			if (seek_sample >= t_start &&
 			    (t_end == 0 || seek_sample <= t_end) &&
 			    FLAC__stream_decoder_seek_absolute(flac_dec, seek_sample)) {
