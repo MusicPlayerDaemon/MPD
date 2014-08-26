@@ -41,6 +41,7 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
 	const double time_to_size = audio_format.GetTimeToSize();
+	const auto frame_size = audio_format.GetFrameSize();
 
 	float total_time = -1;
 	if (is.KnownSize())
@@ -70,8 +71,8 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 				       buffer, nbytes, 0)
 			: decoder_get_command(decoder);
 		if (cmd == DecoderCommand::SEEK) {
-			offset_type offset(time_to_size *
-					   decoder_seek_where(decoder));
+			uint64_t frame = decoder_seek_where_frame(decoder);
+			offset_type offset = frame * frame_size;
 
 			Error error;
 			if (is.LockSeek(offset, error)) {
