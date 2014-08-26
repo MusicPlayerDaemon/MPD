@@ -978,8 +978,6 @@ MadDecoder::SyncAndSend()
 inline bool
 MadDecoder::Read()
 {
-	enum mp3_action ret;
-
 	UpdateTimerNextFrame();
 
 	switch (mute_frame) {
@@ -995,11 +993,10 @@ MadDecoder::Read()
 	case MUTEFRAME_NONE:
 		cmd = SyncAndSend();
 		if (cmd == DecoderCommand::SEEK) {
-			unsigned long j;
-
 			assert(input_stream.IsSeekable());
 
-			j = TimeToFrame(decoder_seek_where(*decoder));
+			unsigned long j =
+				TimeToFrame(decoder_seek_where(*decoder));
 			if (j < highest_frame) {
 				if (Seek(frame_offsets[j])) {
 					current_frame = j;
@@ -1016,8 +1013,7 @@ MadDecoder::Read()
 	}
 
 	while (true) {
-		bool skip = false;
-
+		enum mp3_action ret;
 		do {
 			Tag *tag = nullptr;
 
@@ -1031,8 +1027,8 @@ MadDecoder::Read()
 		} while (ret == DECODE_CONT);
 		if (ret == DECODE_BREAK)
 			return false;
-		else if (ret == DECODE_SKIP)
-			skip = true;
+
+		const bool skip = ret == DECODE_SKIP;
 
 		if (mute_frame == MUTEFRAME_NONE) {
 			do {
