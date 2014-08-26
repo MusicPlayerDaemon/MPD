@@ -42,7 +42,7 @@ static const char default_device[] = "default";
 
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
-#define MPD_ALSA_RETRY_NR 5
+static constexpr unsigned MPD_ALSA_RETRY_NR = 5;
 
 typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
 					snd_pcm_uframes_t size);
@@ -219,12 +219,12 @@ alsa_output_disable(AudioOutput *ao)
 }
 
 static bool
-alsa_test_default_device(void)
+alsa_test_default_device()
 {
 	snd_pcm_t *handle;
 
 	int ret = snd_pcm_open(&handle, default_device,
-	                       SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
+			       SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 	if (ret) {
 		FormatError(alsa_output_domain,
 			    "Error opening default ALSA device: %s",
@@ -282,7 +282,7 @@ get_bitformat(SampleFormat sample_format)
 static snd_pcm_format_t
 byteswap_bitformat(snd_pcm_format_t fmt)
 {
-	switch(fmt) {
+	switch (fmt) {
 	case SND_PCM_FORMAT_S16_LE: return SND_PCM_FORMAT_S16_BE;
 	case SND_PCM_FORMAT_S24_LE: return SND_PCM_FORMAT_S24_BE;
 	case SND_PCM_FORMAT_S32_LE: return SND_PCM_FORMAT_S32_BE;
@@ -393,7 +393,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 
 	/* if unsupported by the hardware, try other formats */
 
-	static const SampleFormat probe_formats[] = {
+	static constexpr SampleFormat probe_formats[] = {
 		SampleFormat::S24_P32,
 		SampleFormat::S32,
 		SampleFormat::S16,
