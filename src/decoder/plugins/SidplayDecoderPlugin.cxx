@@ -314,8 +314,8 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned data_time = player.time();
-			unsigned target_time = (unsigned)
-				(decoder_seek_where(decoder) * timebase);
+			unsigned target_time =
+				decoder_seek_time(decoder).ToScale(timebase);
 
 			/* can't rewind so return to zero and seek forward */
 			if(target_time<data_time) {

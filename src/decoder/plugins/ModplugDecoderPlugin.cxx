@@ -166,7 +166,7 @@ mod_decode(Decoder &decoder, InputStream &is)
 				   0);
 
 		if (cmd == DecoderCommand::SEEK) {
-			ModPlug_Seek(f, decoder_seek_where_ms(decoder));
+			ModPlug_Seek(f, decoder_seek_time(decoder).ToMS());
 			decoder_command_finished(decoder);
 		}
 

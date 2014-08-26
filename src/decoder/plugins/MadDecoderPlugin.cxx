@@ -67,6 +67,13 @@ static constexpr Domain mad_domain("mad");
 
 static bool gapless_playback;
 
+gcc_const
+static SongTime
+ToSongTime(mad_timer_t t)
+{
+	return SongTime::FromMS(mad_timer_count(t, MAD_UNITS_MILLISECONDS));
+}
+
 static inline int32_t
 mad_fixed_to_24_sample(mad_fixed_t sample)
 {
@@ -116,8 +123,8 @@ struct MadDecoder {
 	unsigned char input_buffer[READ_BUFFER_SIZE];
 	int32_t output_buffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
 	float total_time;
-	unsigned elapsed_time;
-	unsigned seek_where;
+	SongTime elapsed_time;
+	SongTime seek_time;
 	enum muteframe mute_frame;
 	long *frame_offsets;
 	mad_timer_t *times;
@@ -159,7 +166,7 @@ struct MadDecoder {
 	bool DecodeFirstFrame(Tag **tag);
 
 	gcc_pure
-	long TimeToFrame(unsigned t) const;
+	long TimeToFrame(SongTime t) const;
 
 	void UpdateTimerNextFrame();
 
@@ -847,13 +854,12 @@ mad_decoder_total_file_time(InputStream &is)
 }
 
 long
-MadDecoder::TimeToFrame(unsigned t) const
+MadDecoder::TimeToFrame(SongTime t) const
 {
 	unsigned long i;
 
 	for (i = 0; i < highest_frame; ++i) {
-		unsigned frame_time =
-			mad_timer_count(times[i], MAD_UNITS_MILLISECONDS);
+		auto frame_time = ToSongTime(times[i]);
 		if (frame_time >= t)
 			break;
 	}
@@ -884,7 +890,7 @@ MadDecoder::UpdateTimerNextFrame()
 		timer = times[current_frame];
 
 	current_frame++;
-	elapsed_time = mad_timer_count(timer, MAD_UNITS_MILLISECONDS);
+	elapsed_time = ToSongTime(timer);
 }
 
 DecoderCommand
@@ -980,7 +986,7 @@ MadDecoder::Read()
 		mute_frame = MUTEFRAME_NONE;
 		break;
 	case MUTEFRAME_SEEK:
-		if (elapsed_time >= seek_where)
+		if (elapsed_time >= seek_time)
 			mute_frame = MUTEFRAME_NONE;
 		break;
 	case MUTEFRAME_NONE:
@@ -989,7 +995,7 @@ MadDecoder::Read()
 			assert(input_stream.IsSeekable());
 
 			unsigned long j =
-				TimeToFrame(decoder_seek_where_ms(*decoder));
+				TimeToFrame(decoder_seek_time(*decoder));
 			if (j < highest_frame) {
 				if (Seek(frame_offsets[j])) {
 					current_frame = j;
@@ -997,7 +1003,7 @@ MadDecoder::Read()
 				} else
 					decoder_seek_error(*decoder);
 			} else {
-				seek_where = decoder_seek_where_ms(*decoder);
+				seek_time = decoder_seek_time(*decoder);
 				mute_frame = MUTEFRAME_SEEK;
 				decoder_command_finished(*decoder);
 			}

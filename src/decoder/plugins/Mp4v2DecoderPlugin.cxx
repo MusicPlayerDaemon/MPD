@@ -165,9 +165,8 @@ mp4_file_decode(Decoder &mpd_decoder, Path path_fs)
 		unsigned int data_length = 0;
 
 		if (cmd == DecoderCommand::SEEK) {
-			const unsigned offset_ms =
-				decoder_seek_where_ms(mpd_decoder);
-			const MP4Timestamp offset = (offset_ms * scale) / 1000;
+			const MP4Timestamp offset =
+				decoder_seek_time(mpd_decoder).ToScale(scale);
 
 			sample = MP4GetSampleIdFromTime(handle, track, offset,
 							false);

@@ -178,6 +178,7 @@ libmpd_a_SOURCES = \
 	src/TagStream.cxx src/TagStream.hxx \
 	src/TimePrint.cxx src/TimePrint.hxx \
 	src/mixer/Volume.cxx src/mixer/Volume.hxx \
+	src/Chrono.hxx \
 	src/SongFilter.cxx src/SongFilter.hxx \
 	src/PlaylistFile.cxx src/PlaylistFile.hxx
 

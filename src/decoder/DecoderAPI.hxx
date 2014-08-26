@@ -37,6 +37,7 @@
 #include "AudioFormat.hxx"
 #include "MixRampInfo.hxx"
 #include "config/ConfigData.hxx"
+#include "Chrono.hxx"
 
 // IWYU pragma: end_exports
 
@@ -84,21 +85,11 @@ decoder_command_finished(Decoder &decoder);
  * Call this when you have received the DecoderCommand::SEEK command.
  *
  * @param decoder the decoder object
- * @return the destination position for the week
- */
-gcc_pure
-double
-decoder_seek_where(Decoder &decoder);
-
-/**
- * Call this when you have received the DecoderCommand::SEEK command.
- *
- * @param decoder the decoder object
  * @return the destination position for the seek in milliseconds
  */
 gcc_pure
-unsigned
-decoder_seek_where_ms(Decoder &decoder);
+SongTime
+decoder_seek_time(Decoder &decoder);
 
 /**
  * Call this when you have received the DecoderCommand::SEEK command.

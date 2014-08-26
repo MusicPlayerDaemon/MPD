@@ -204,37 +204,21 @@ decoder_command_finished(Decoder &decoder)
 	dc.Unlock();
 }
 
-double decoder_seek_where(gcc_unused Decoder & decoder)
+SongTime
+decoder_seek_time(Decoder &decoder)
 {
 	const DecoderControl &dc = decoder.dc;
 
 	assert(dc.pipe != nullptr);
 
 	if (decoder.initial_seek_running)
-		return dc.start_ms / 1000.;
+		return SongTime(dc.start_ms);
 
 	assert(dc.command == DecoderCommand::SEEK);
 
 	decoder.seeking = true;
 
-	return dc.seek_where;
-}
-
-unsigned
-decoder_seek_where_ms(Decoder &decoder)
-{
-	const DecoderControl &dc = decoder.dc;
-
-	assert(dc.pipe != nullptr);
-
-	if (decoder.initial_seek_running)
-		return dc.start_ms;
-
-	assert(dc.command == DecoderCommand::SEEK);
-
-	decoder.seeking = true;
-
-	return unsigned(dc.seek_where * 1000);
+	return SongTime::FromS(dc.seek_where);
 }
 
 uint64_t
