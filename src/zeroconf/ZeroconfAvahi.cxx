@@ -38,20 +38,23 @@
 
 static constexpr Domain avahi_domain("avahi");
 
-static char *avahiName;
+static char *avahi_name;
 static MyAvahiPoll *avahi_poll;
-static AvahiClient *avahiClient;
-static AvahiEntryGroup *avahiGroup;
+static AvahiClient *avahi_client;
+static AvahiEntryGroup *avahi_group;
 
-static void avahiRegisterService(AvahiClient * c);
+static void
+AvahiRegisterService(AvahiClient *c);
 
-/* Callback when the EntryGroup changes state */
-static void avahiGroupCallback(AvahiEntryGroup * g,
-			       AvahiEntryGroupState state,
-			       gcc_unused void *userdata)
+/**
+ * Callback when the EntryGroup changes state.
+ */
+static void
+AvahiGroupCallback(AvahiEntryGroup *g,
+		   AvahiEntryGroupState state,
+		   gcc_unused void *userdata)
 {
-	char *n;
-	assert(g);
+	assert(g != nullptr);
 
 	FormatDebug(avahi_domain,
 		    "Service group changed to state %d", state);
@@ -61,53 +64,58 @@ static void avahiGroupCallback(AvahiEntryGroup * g,
 		/* The entry group has been established successfully */
 		FormatDefault(avahi_domain,
 			      "Service '%s' successfully established.",
-			      avahiName);
+			      avahi_name);
 		break;
 
 	case AVAHI_ENTRY_GROUP_COLLISION:
 		/* A service name collision happened. Let's pick a new name */
-		n = avahi_alternative_service_name(avahiName);
-		avahi_free(avahiName);
-		avahiName = n;
+		{
+			char *n = avahi_alternative_service_name(avahi_name);
+			avahi_free(avahi_name);
+			avahi_name = n;
+		}
 
 		FormatDefault(avahi_domain,
 			      "Service name collision, renaming service to '%s'",
-			      avahiName);
+			      avahi_name);
 
 		/* And recreate the services */
-		avahiRegisterService(avahi_entry_group_get_client(g));
+		AvahiRegisterService(avahi_entry_group_get_client(g));
 		break;
 
 	case AVAHI_ENTRY_GROUP_FAILURE:
 		FormatError(avahi_domain,
 			    "Entry group failure: %s",
-			    avahi_strerror(avahi_client_errno
-					   (avahi_entry_group_get_client(g))));
-		/* Some kind of failure happened while we were registering our services */
+			    avahi_strerror(avahi_client_errno(avahi_entry_group_get_client(g))));
+		/* Some kind of failure happened while we were
+		   registering our services */
 		break;
 
 	case AVAHI_ENTRY_GROUP_UNCOMMITED:
 		LogDebug(avahi_domain, "Service group is UNCOMMITED");
 		break;
+
 	case AVAHI_ENTRY_GROUP_REGISTERING:
 		LogDebug(avahi_domain, "Service group is REGISTERING");
 	}
 }
 
-/* Registers a new service with avahi */
-static void avahiRegisterService(AvahiClient * c)
+/**
+ * Registers a new service with avahi.
+ */
+static void
+AvahiRegisterService(AvahiClient *c)
 {
-	FormatDebug(avahi_domain, "Registering service %s/%s",
-		    SERVICE_TYPE, avahiName);
+	assert(c != nullptr);
 
-	int ret;
-	assert(c);
+	FormatDebug(avahi_domain, "Registering service %s/%s",
+		    SERVICE_TYPE, avahi_name);
 
 	/* If this is the first time we're called,
 	 * let's create a new entry group */
-	if (!avahiGroup) {
-		avahiGroup = avahi_entry_group_new(c, avahiGroupCallback, nullptr);
-		if (!avahiGroup) {
+	if (!avahi_group) {
+		avahi_group = avahi_entry_group_new(c, AvahiGroupCallback, nullptr);
+		if (!avahi_group) {
 			FormatError(avahi_domain,
 				    "Failed to create avahi EntryGroup: %s",
 				    avahi_strerror(avahi_client_errno(c)));
@@ -119,44 +127,48 @@ static void avahiRegisterService(AvahiClient * c)
 	/* TODO: This currently binds to ALL interfaces.
 	 *       We could maybe add a service per actual bound interface,
 	 *       if that's better. */
-	ret = avahi_entry_group_add_service(avahiGroup,
-					    AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC,
-					    AvahiPublishFlags(0),
-					    avahiName, SERVICE_TYPE, nullptr,
-					    nullptr, listen_port, nullptr);
-	if (ret < 0) {
+	int result = avahi_entry_group_add_service(avahi_group,
+						   AVAHI_IF_UNSPEC,
+						   AVAHI_PROTO_UNSPEC,
+						   AvahiPublishFlags(0),
+						   avahi_name, SERVICE_TYPE,
+						   nullptr, nullptr,
+						   listen_port, nullptr);
+	if (result < 0) {
 		FormatError(avahi_domain, "Failed to add service %s: %s",
-			    SERVICE_TYPE, avahi_strerror(ret));
+			    SERVICE_TYPE, avahi_strerror(result));
 		return;
 	}
 
 	/* Tell the server to register the service group */
-	ret = avahi_entry_group_commit(avahiGroup);
-	if (ret < 0) {
+	result = avahi_entry_group_commit(avahi_group);
+	if (result < 0) {
 		FormatError(avahi_domain, "Failed to commit service group: %s",
-			    avahi_strerror(ret));
+			    avahi_strerror(result));
 		return;
 	}
 }
 
 /* Callback when avahi changes state */
-static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
-				gcc_unused void *userdata)
+static void
+MyAvahiClientCallback(AvahiClient *c, AvahiClientState state,
+		      gcc_unused void *userdata)
 {
-	int reason;
-	assert(c);
+	assert(c != nullptr);
 
 	/* Called whenever the client or server state changes */
 	FormatDebug(avahi_domain, "Client changed to state %d", state);
 
 	switch (state) {
+		int reason;
+
 	case AVAHI_CLIENT_S_RUNNING:
 		LogDebug(avahi_domain, "Client is RUNNING");
 
 		/* The server has startup successfully and registered its host
 		 * name on the network, so it's time to create our services */
-		if (!avahiGroup)
-			avahiRegisterService(c);
+		if (avahi_group == nullptr)
+			AvahiRegisterService(c);
 		break;
 
 	case AVAHI_CLIENT_FAILURE:
@@ -164,38 +176,39 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 		if (reason == AVAHI_ERR_DISCONNECTED) {
 			LogDefault(avahi_domain,
 				   "Client Disconnected, will reconnect shortly");
-			if (avahiGroup) {
-				avahi_entry_group_free(avahiGroup);
-				avahiGroup = nullptr;
+			if (avahi_group != nullptr) {
+				avahi_entry_group_free(avahi_group);
+				avahi_group = nullptr;
 			}
-			if (avahiClient)
-				avahi_client_free(avahiClient);
-			avahiClient =
+
+			if (avahi_client != nullptr)
+				avahi_client_free(avahi_client);
+			avahi_client =
 			    avahi_client_new(avahi_poll,
 					     AVAHI_CLIENT_NO_FAIL,
-					     avahiClientCallback, nullptr,
+					     MyAvahiClientCallback, nullptr,
 					     &reason);
-			if (!avahiClient) {
+			if (avahi_client == nullptr)
 				FormatWarning(avahi_domain,
 					      "Could not reconnect: %s",
 					      avahi_strerror(reason));
-			}
 		} else {
 			FormatWarning(avahi_domain,
 				      "Client failure: %s (terminal)",
 				      avahi_strerror(reason));
 		}
+
 		break;
 
 	case AVAHI_CLIENT_S_COLLISION:
 		LogDebug(avahi_domain, "Client is COLLISION");
 
-		/* Let's drop our registered services. When the server is back
-		 * in AVAHI_SERVER_RUNNING state we will register them
-		 * again with the new host name. */
-		if (avahiGroup) {
+		/* Let's drop our registered services. When the server
+		   is back in AVAHI_SERVER_RUNNING state we will
+		   register them again with the new host name. */
+		if (avahi_group != nullptr) {
 			LogDebug(avahi_domain, "Resetting group");
-			avahi_entry_group_reset(avahiGroup);
+			avahi_entry_group_reset(avahi_group);
 		}
 
 		break;
@@ -208,9 +221,9 @@ static void avahiClientCallback(AvahiClient * c, AvahiClientState state,
 		 * for our own records to register until the host name is
 		 * properly esatblished. */
 
-		if (avahiGroup) {
+		if (avahi_group != nullptr) {
 			LogDebug(avahi_domain, "Resetting group");
-			avahi_entry_group_reset(avahiGroup);
+			avahi_entry_group_reset(avahi_group);
 		}
 
 		break;
@@ -229,15 +242,15 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 	if (!avahi_is_valid_service_name(serviceName))
 		FormatFatalError("Invalid zeroconf_name \"%s\"", serviceName);
 
-	avahiName = avahi_strdup(serviceName);
+	avahi_name = avahi_strdup(serviceName);
 
 	avahi_poll = new MyAvahiPoll(loop);
 
 	int error;
-	avahiClient = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,
-				       avahiClientCallback, nullptr, &error);
-
-	if (!avahiClient) {
+	avahi_client = avahi_client_new(avahi_poll, AVAHI_CLIENT_NO_FAIL,
+					MyAvahiClientCallback, nullptr,
+					&error);
+	if (avahi_client == nullptr) {
 		FormatError(avahi_domain, "Failed to create client: %s",
 			    avahi_strerror(error));
 		AvahiDeinit();
@@ -245,25 +258,25 @@ AvahiInit(EventLoop &loop, const char *serviceName)
 }
 
 void
-AvahiDeinit(void)
+AvahiDeinit()
 {
 	LogDebug(avahi_domain, "Shutting down interface");
 
-	if (avahiGroup) {
-		avahi_entry_group_free(avahiGroup);
-		avahiGroup = nullptr;
+	if (avahi_group != nullptr) {
+		avahi_entry_group_free(avahi_group);
+		avahi_group = nullptr;
 	}
 
-	if (avahiClient) {
-		avahi_client_free(avahiClient);
-		avahiClient = nullptr;
+	if (avahi_client != nullptr) {
+		avahi_client_free(avahi_client);
+		avahi_client = nullptr;
 	}
 
 	delete avahi_poll;
 	avahi_poll = nullptr;
 
-	avahi_free(avahiName);
-	avahiName = nullptr;
+	avahi_free(avahi_name);
+	avahi_name = nullptr;
 
 	dbus_shutdown();
 }
