@@ -111,7 +111,7 @@ static void avahiRegisterService(AvahiClient * c)
 			FormatError(avahi_domain,
 				    "Failed to create avahi EntryGroup: %s",
 				    avahi_strerror(avahi_client_errno(c)));
-			goto fail;
+			return;
 		}
 	}
 
@@ -127,7 +127,7 @@ static void avahiRegisterService(AvahiClient * c)
 	if (ret < 0) {
 		FormatError(avahi_domain, "Failed to add service %s: %s",
 			    SERVICE_TYPE, avahi_strerror(ret));
-		goto fail;
+		return;
 	}
 
 	/* Tell the server to register the service group */
@@ -135,12 +135,8 @@ static void avahiRegisterService(AvahiClient * c)
 	if (ret < 0) {
 		FormatError(avahi_domain, "Failed to commit service group: %s",
 			    avahi_strerror(ret));
-		goto fail;
+		return;
 	}
-	return;
-
-fail:
-	return;
 }
 
 /* Callback when avahi changes state */
