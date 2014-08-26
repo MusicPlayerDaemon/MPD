@@ -258,8 +258,8 @@ vorbis_stream_decode(Decoder &decoder,
 	DecoderCommand cmd = decoder_get_command(decoder);
 	do {
 		if (cmd == DecoderCommand::SEEK) {
-			double seek_where = decoder_seek_where(decoder);
-			if (0 == ov_time_seek_page(&vf, seek_where)) {
+			auto seek_where = decoder_seek_where_frame(decoder);
+			if (0 == ov_pcm_seek_page(&vf, seek_where)) {
 				decoder_command_finished(decoder);
 			} else
 				decoder_seek_error(decoder);
