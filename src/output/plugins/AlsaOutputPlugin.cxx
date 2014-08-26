@@ -129,6 +129,8 @@ struct AlsaOutput {
 	bool Init(const config_param &param, Error &error) {
 		return base.Configure(param, error);
 	}
+
+	bool Configure(const config_param &param, Error &error);
 };
 
 static constexpr Domain alsa_output_domain("alsa_output");
@@ -139,33 +141,35 @@ alsa_device(const AlsaOutput *ad)
 	return ad->device.empty() ? default_device : ad->device.c_str();
 }
 
-static void
-alsa_configure(AlsaOutput *ad, const config_param &param)
+inline bool
+AlsaOutput::Configure(const config_param &param, gcc_unused Error &error)
 {
-	ad->device = param.GetBlockValue("device", "");
+	device = param.GetBlockValue("device", "");
 
-	ad->use_mmap = param.GetBlockValue("use_mmap", false);
+	use_mmap = param.GetBlockValue("use_mmap", false);
 
-	ad->dsd_usb = param.GetBlockValue("dsd_usb", false);
+	dsd_usb = param.GetBlockValue("dsd_usb", false);
 
-	ad->buffer_time = param.GetBlockValue("buffer_time",
+	buffer_time = param.GetBlockValue("buffer_time",
 					      MPD_ALSA_BUFFER_TIME_US);
-	ad->period_time = param.GetBlockValue("period_time", 0u);
+	period_time = param.GetBlockValue("period_time", 0u);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!param.GetBlockValue("auto_resample", true))
-		ad->mode |= SND_PCM_NO_AUTO_RESAMPLE;
+		mode |= SND_PCM_NO_AUTO_RESAMPLE;
 #endif
 
 #ifdef SND_PCM_NO_AUTO_CHANNELS
 	if (!param.GetBlockValue("auto_channels", true))
-		ad->mode |= SND_PCM_NO_AUTO_CHANNELS;
+		mode |= SND_PCM_NO_AUTO_CHANNELS;
 #endif
 
 #ifdef SND_PCM_NO_AUTO_FORMAT
 	if (!param.GetBlockValue("auto_format", true))
-		ad->mode |= SND_PCM_NO_AUTO_FORMAT;
+		mode |= SND_PCM_NO_AUTO_FORMAT;
 #endif
+
+	return true;
 }
 
 static AudioOutput *
@@ -173,12 +177,10 @@ alsa_init(const config_param &param, Error &error)
 {
 	AlsaOutput *ad = new AlsaOutput();
 
-	if (!ad->Init(param, error)) {
+	if (!ad->Init(param, error) || !ad->Configure(param, error)) {
 		delete ad;
 		return nullptr;
 	}
-
-	alsa_configure(ad, param);
 
 	return &ad->base;
 }
