@@ -177,8 +177,7 @@ wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 	while (cmd != DecoderCommand::STOP) {
 		if (cmd == DecoderCommand::SEEK) {
 			if (can_seek) {
-				unsigned where = decoder_seek_where(decoder) *
-					audio_format.sample_rate;
+				auto where = decoder_seek_where_frame(decoder);
 
 				if (WavpackSeekSample(wpc, where)) {
 					decoder_command_finished(decoder);
