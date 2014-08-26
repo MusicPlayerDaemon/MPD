@@ -212,9 +212,9 @@ time_from_ffmpeg(int64_t t, const AVRational time_base)
 
 gcc_const
 static int64_t
-time_to_ffmpeg(double t, const AVRational time_base)
+time_to_ffmpeg(double t_ms, const AVRational time_base)
 {
-	return av_rescale_q((int64_t)(t * 1024), (AVRational){1, 1024},
+	return av_rescale_q(t_ms, (AVRational){1, 1000},
 			    time_base);
 }
 
@@ -547,7 +547,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 		if (cmd == DecoderCommand::SEEK) {
 			int64_t where =
-				time_to_ffmpeg(decoder_seek_where(decoder),
+				time_to_ffmpeg(decoder_seek_where_ms(decoder),
 					       av_stream->time_base) +
 				start_time_fallback(*av_stream);
 
