@@ -244,9 +244,9 @@ InterleaveDsfBlock(uint8_t *gcc_restrict dest, const uint8_t *gcc_restrict src,
 }
 
 static offset_type
-TimeToBlock(double t, unsigned sample_rate)
+FrameToBlock(uint64_t frame)
 {
-	return offset_type(t * sample_rate / DSF_BLOCK_BITS);
+	return frame / DSF_BLOCK_SIZE;
 }
 
 /**
@@ -264,8 +264,8 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 	auto cmd = decoder_get_command(decoder);
 	for (offset_type i = 0; i < n_blocks && cmd != DecoderCommand::STOP;) {
 		if (cmd == DecoderCommand::SEEK) {
-			double t = decoder_seek_where(decoder);
-			offset_type block = TimeToBlock(t, sample_rate);
+			uint64_t frame = decoder_seek_where_frame(decoder);
+			offset_type block = FrameToBlock(frame);
 			if (block >= n_blocks) {
 				decoder_command_finished(decoder);
 				break;
