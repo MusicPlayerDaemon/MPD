@@ -105,8 +105,8 @@ wildmidi_file_decode(Decoder &decoder, Path path_fs)
 		cmd = decoder_data(decoder, nullptr, buffer, len, 0);
 
 		if (cmd == DecoderCommand::SEEK) {
-			unsigned long seek_where = WILDMIDI_SAMPLE_RATE *
-				decoder_seek_where(decoder);
+			unsigned long seek_where =
+				decoder_seek_where_frame(decoder);
 
 			WildMidi_FastSeek(wm, &seek_where);
 			decoder_command_finished(decoder);
