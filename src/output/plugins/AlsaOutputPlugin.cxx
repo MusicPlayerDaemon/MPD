@@ -237,6 +237,11 @@ alsa_test_default_device(void)
 	return true;
 }
 
+/**
+ * Convert MPD's #SampleFormat enum to libasound's snd_pcm_format_t
+ * enum.  Returns SND_PCM_FORMAT_UNKNOWN if there is no according ALSA
+ * PCM format.
+ */
 static snd_pcm_format_t
 get_bitformat(SampleFormat sample_format)
 {
@@ -271,6 +276,10 @@ get_bitformat(SampleFormat sample_format)
 	gcc_unreachable();
 }
 
+/**
+ * Determine the byte-swapped PCM format.  Returns
+ * SND_PCM_FORMAT_UNKNOWN if the format cannot be byte-swapped.
+ */
 static snd_pcm_format_t
 byteswap_bitformat(snd_pcm_format_t fmt)
 {
@@ -292,6 +301,10 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 	}
 }
 
+/**
+ * Check if there is a "packed" version of the give PCM format.
+ * Returns SND_PCM_FORMAT_UNKNOWN if not.
+ */
 static snd_pcm_format_t
 alsa_to_packed_format(snd_pcm_format_t fmt)
 {
@@ -307,6 +320,10 @@ alsa_to_packed_format(snd_pcm_format_t fmt)
 	}
 }
 
+/**
+ * Attempts to configure the specified sample format.  On failure,
+ * fall back to the packed version.
+ */
 static int
 alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			  snd_pcm_format_t fmt, bool *packed_r)
