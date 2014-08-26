@@ -89,7 +89,7 @@ struct PcmExport {
 	 * Open the #pcm_export_state object.
 	 *
 	 * There is no "close" method.  This function may be called multiple
-	 * times to reuse the object, until pcm_export_deinit() is called.
+	 * times to reuse the object.
 	 *
 	 * This function cannot fail.
 	 *
@@ -107,7 +107,6 @@ struct PcmExport {
 	/**
 	 * Export a PCM buffer.
 	 *
-	 * @param state an initialized and open pcm_export_state object
 	 * @param src the source PCM buffer
 	 * @return the destination buffer (may be a pointer to the source buffer)
 	 */
