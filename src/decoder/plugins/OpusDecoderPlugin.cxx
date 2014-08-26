@@ -342,11 +342,7 @@ MPDOpusDecoder::Seek(OggSyncState &oy, double where_s)
 	offset_type offset(where_granulepos * input_stream.GetSize()
 			   / eos_granulepos);
 
-	if (!OggSeekPageAtOffset(oy, os, input_stream, offset))
-		return false;
-
-	decoder_timestamp(decoder, where_s);
-	return true;
+	return OggSeekPageAtOffset(oy, os, input_stream, offset);
 }
 
 static void
