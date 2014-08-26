@@ -146,15 +146,6 @@ frame_to_time(sf_count_t frame, const AudioFormat *audio_format)
 	return (float)frame / (float)audio_format->sample_rate;
 }
 
-/**
- * Converts a timestamp (in seconds) to a frame number.
- */
-static sf_count_t
-time_to_frame(float t, const AudioFormat *audio_format)
-{
-	return (sf_count_t)(t * audio_format->sample_rate);
-}
-
 static void
 sndfile_stream_decode(Decoder &decoder, InputStream &is)
 {
@@ -199,9 +190,7 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 				   buffer, num_frames * frame_size,
 				   0);
 		if (cmd == DecoderCommand::SEEK) {
-			sf_count_t c =
-				time_to_frame(decoder_seek_where(decoder),
-					      &audio_format);
+			sf_count_t c = decoder_seek_where_frame(decoder);
 			c = sf_seek(sf, c, SEEK_SET);
 			if (c < 0)
 				decoder_seek_error(decoder);
