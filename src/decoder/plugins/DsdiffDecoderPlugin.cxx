@@ -351,15 +351,9 @@ bit_reverse_buffer(uint8_t *p, uint8_t *end)
 }
 
 static offset_type
-TimeToFrame(double t, unsigned sample_rate)
+FrameToOffset(uint64_t frame, unsigned channels)
 {
-	return offset_type(t * sample_rate / 8);
-}
-
-static offset_type
-TimeToOffset(double t, unsigned channels, unsigned sample_rate)
-{
-	return TimeToFrame(t, sample_rate) * channels;
+	return frame * channels;
 }
 
 /**
@@ -383,9 +377,8 @@ dsdiff_decode_chunk(Decoder &decoder, InputStream &is,
 	for (offset_type remaining_bytes = total_bytes;
 	     remaining_bytes >= frame_size && cmd != DecoderCommand::STOP;) {
 		if (cmd == DecoderCommand::SEEK) {
-			double t = decoder_seek_where(decoder);
-			offset_type offset = TimeToOffset(t, channels,
-							  sample_rate);
+			uint64_t frame = decoder_seek_where_frame(decoder);
+			offset_type offset = FrameToOffset(frame, channels);
 			if (offset >= total_bytes) {
 				decoder_command_finished(decoder);
 				break;
