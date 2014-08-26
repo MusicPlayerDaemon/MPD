@@ -181,7 +181,7 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 		cmd = decoder_data(decoder, nullptr, buffer, nbytes, info.bitrate);
 
 		if (cmd == DecoderCommand::SEEK) {
-			off_t c = decoder_seek_where(decoder)*audio_format.sample_rate;
+			off_t c = decoder_seek_where_frame(decoder);
 			c = mpg123_seek(handle, c, SEEK_SET);
 			if (c < 0)
 				decoder_seek_error(decoder);
