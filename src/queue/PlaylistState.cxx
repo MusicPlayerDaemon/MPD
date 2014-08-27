@@ -132,7 +132,7 @@ playlist_state_restore(const char *line, TextFile &file,
 		       struct playlist &playlist, PlayerControl &pc)
 {
 	int current = -1;
-	int seek_time = 0;
+	SongTime seek_time = SongTime::zero();
 	bool random_mode = false;
 
 	if (!StringStartsWith(line, PLAYLIST_STATE_FILE_STATE))
@@ -150,8 +150,8 @@ playlist_state_restore(const char *line, TextFile &file,
 
 	while ((line = file.ReadLine()) != nullptr) {
 		if (StringStartsWith(line, PLAYLIST_STATE_FILE_TIME)) {
-			seek_time =
-				atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));
+			unsigned seconds = atoi(&(line[strlen(PLAYLIST_STATE_FILE_TIME)]));
+			seek_time = SongTime::FromS(seconds);
 		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_REPEAT)) {
 			playlist.SetRepeat(pc,
 					   strcmp(&(line[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
@@ -209,7 +209,7 @@ playlist_state_restore(const char *line, TextFile &file,
 
 		if (state == PlayerState::STOP /* && config_option */)
 			playlist.current = current;
-		else if (seek_time == 0)
+		else if (seek_time.count() == 0)
 			playlist.PlayPosition(pc, current);
 		else
 			playlist.SeekSongPosition(pc, current, seek_time);

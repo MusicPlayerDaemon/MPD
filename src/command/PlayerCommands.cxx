@@ -300,11 +300,12 @@ handle_clearerror(gcc_unused Client &client,
 CommandResult
 handle_seek(Client &client, gcc_unused unsigned argc, char *argv[])
 {
-	unsigned song, seek_time;
+	unsigned song;
+	SongTime seek_time;
 
 	if (!check_unsigned(client, &song, argv[1]))
 		return CommandResult::ERROR;
-	if (!check_unsigned(client, &seek_time, argv[2]))
+	if (!ParseCommandArg(client, seek_time, argv[2]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -315,11 +316,12 @@ handle_seek(Client &client, gcc_unused unsigned argc, char *argv[])
 CommandResult
 handle_seekid(Client &client, gcc_unused unsigned argc, char *argv[])
 {
-	unsigned id, seek_time;
+	unsigned id;
+	SongTime seek_time;
 
 	if (!check_unsigned(client, &id, argv[1]))
 		return CommandResult::ERROR;
-	if (!check_unsigned(client, &seek_time, argv[2]))
+	if (!ParseCommandArg(client, seek_time, argv[2]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -332,8 +334,8 @@ handle_seekcur(Client &client, gcc_unused unsigned argc, char *argv[])
 {
 	const char *p = argv[1];
 	bool relative = *p == '+' || *p == '-';
-	int seek_time;
-	if (!check_int(client, &seek_time, p))
+	SignedSongTime seek_time;
+	if (!ParseCommandArg(client, seek_time, p))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =

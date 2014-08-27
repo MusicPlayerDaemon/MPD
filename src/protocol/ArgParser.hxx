@@ -25,6 +25,8 @@
 #include <stdint.h>
 
 class Client;
+class SongTime;
+class SignedSongTime;
 
 bool
 check_uint32(Client &client, uint32_t *dst, const char *s);
@@ -44,5 +46,11 @@ check_bool(Client &client, bool *value_r, const char *s);
 
 bool
 check_float(Client &client, float *value_r, const char *s);
+
+bool
+ParseCommandArg(Client &client, SongTime &value_r, const char *s);
+
+bool
+ParseCommandArg(Client &client, SignedSongTime &value_r, const char *s);
 
 #endif

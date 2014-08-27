@@ -29,6 +29,8 @@ class DetachedSong;
 class Database;
 class Error;
 class SongLoader;
+class SongTime;
+class SignedSongTime;
 
 struct playlist {
 	/**
@@ -251,10 +253,10 @@ public:
 
 	PlaylistResult SeekSongPosition(PlayerControl &pc,
 					unsigned song_position,
-					float seek_time);
+					SongTime seek_time);
 
 	PlaylistResult SeekSongId(PlayerControl &pc,
-				  unsigned song_id, float seek_time);
+				  unsigned song_id, SongTime seek_time);
 
 	/**
 	 * Seek within the current song.  Fails if MPD is not currently
@@ -265,7 +267,7 @@ public:
 	 * current position
 	 */
 	PlaylistResult SeekCurrent(PlayerControl &pc,
-				   float seek_time, bool relative);
+				   SignedSongTime seek_time, bool relative);
 
 	bool GetRepeat() const {
 		return queue.repeat;

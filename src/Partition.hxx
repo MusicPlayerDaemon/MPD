@@ -25,6 +25,7 @@
 #include "mixer/Listener.hxx"
 #include "PlayerControl.hxx"
 #include "PlayerListener.hxx"
+#include "Chrono.hxx"
 
 struct Instance;
 class MultipleOutputs;
@@ -141,15 +142,15 @@ struct Partition final : private PlayerListener, private MixerListener {
 	}
 
 	PlaylistResult SeekSongPosition(unsigned song_position,
-					float seek_time) {
+					SongTime seek_time) {
 		return playlist.SeekSongPosition(pc, song_position, seek_time);
 	}
 
-	PlaylistResult SeekSongId(unsigned song_id, float seek_time) {
+	PlaylistResult SeekSongId(unsigned song_id, SongTime seek_time) {
 		return playlist.SeekSongId(pc, song_id, seek_time);
 	}
 
-	PlaylistResult SeekCurrent(float seek_time, bool relative) {
+	PlaylistResult SeekCurrent(SignedSongTime seek_time, bool relative) {
 		return playlist.SeekCurrent(pc, seek_time, relative);
 	}
 
