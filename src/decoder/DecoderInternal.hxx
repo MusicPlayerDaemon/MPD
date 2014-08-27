@@ -57,7 +57,7 @@ struct Decoder {
 	bool initial_seek_running;
 
 	/**
-	 * This flag is set by decoder_seek_where(), and checked by
+	 * This flag is set by decoder_seek_time(), and checked by
 	 * decoder_command_finished().  It is used to clean up after
 	 * seeking.
 	 */

@@ -105,16 +105,15 @@ DecoderControl::Stop()
 }
 
 bool
-DecoderControl::Seek(double where)
+DecoderControl::Seek(SongTime t)
 {
 	assert(state != DecoderState::START);
-	assert(where >= 0.0);
 
 	if (state == DecoderState::STOP ||
 	    state == DecoderState::ERROR || !seekable)
 		return false;
 
-	seek_where = where;
+	seek_time = t;
 	seek_error = false;
 	LockSynchronousCommand(DecoderCommand::SEEK);
 

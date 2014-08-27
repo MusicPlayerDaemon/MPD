@@ -567,7 +567,7 @@ Player::SeekDecoder()
 	if (where < 0.0)
 		where = 0.0;
 
-	if (!dc.Seek(where + start_ms / 1000.0)) {
+	if (!dc.Seek(SongTime::FromS(where) + SongTime::FromMS(start_ms))) {
 		/* decoder failure */
 		player_command_finished(pc);
 		return false;

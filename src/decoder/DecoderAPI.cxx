@@ -196,7 +196,7 @@ decoder_command_finished(Decoder &decoder)
 
 		dc.pipe->Clear(*dc.buffer);
 
-		decoder.timestamp = dc.seek_where;
+		decoder.timestamp = dc.seek_time.ToDoubleS();
 	}
 
 	dc.command = DecoderCommand::NONE;
@@ -218,7 +218,7 @@ decoder_seek_time(Decoder &decoder)
 
 	decoder.seeking = true;
 
-	return SongTime::FromS(dc.seek_where);
+	return dc.seek_time;
 }
 
 uint64_t
@@ -236,7 +236,7 @@ decoder_seek_where_frame(Decoder &decoder)
 
 	decoder.seeking = true;
 
-	return uint64_t(dc.seek_where * dc.in_audio_format.sample_rate);
+	return dc.seek_time.ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 }
 
 void decoder_seek_error(Decoder & decoder)

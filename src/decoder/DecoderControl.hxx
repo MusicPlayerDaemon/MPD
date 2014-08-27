@@ -26,6 +26,7 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
+#include "Chrono.hxx"
 #include "util/Error.hxx"
 
 #include <assert.h>
@@ -107,7 +108,7 @@ struct DecoderControl {
 
 	bool seek_error;
 	bool seekable;
-	double seek_where;
+	SongTime seek_time;
 
 	/** the format of the song file */
 	AudioFormat in_audio_format;
@@ -365,7 +366,7 @@ public:
 
 	void Stop();
 
-	bool Seek(double where);
+	bool Seek(SongTime t);
 
 	void Quit();
 
