@@ -562,7 +562,7 @@ Player::SeekDecoder()
 	/* send the SEEK command */
 
 	double where = pc.seek_where;
-	if (where > pc.total_time)
+	if (pc.total_time > 0 && where > pc.total_time)
 		where = pc.total_time - 0.1;
 	if (where < 0.0)
 		where = 0.0;
