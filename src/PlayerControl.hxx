@@ -26,6 +26,7 @@
 #include "thread/Thread.hxx"
 #include "util/Error.hxx"
 #include "CrossFade.hxx"
+#include "Chrono.hxx"
 
 #include <stdint.h>
 
@@ -161,7 +162,7 @@ struct PlayerControl {
 	 */
 	DetachedSong *next_song;
 
-	double seek_where;
+	SongTime seek_time;
 
 	CrossFadeSettings cross_fade;
 
@@ -434,7 +435,7 @@ public:
 	 * @return true on success, false on failure (e.g. if MPD isn't
 	 * playing currently)
 	 */
-	bool Seek(DetachedSong *song, float seek_time);
+	bool Seek(DetachedSong *song, SongTime t);
 
 	void SetCrossFade(float cross_fade_seconds);
 

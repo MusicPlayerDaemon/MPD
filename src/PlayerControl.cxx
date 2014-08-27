@@ -221,7 +221,7 @@ PlayerControl::EnqueueSong(DetachedSong *song)
 }
 
 bool
-PlayerControl::Seek(DetachedSong *song, float seek_time)
+PlayerControl::Seek(DetachedSong *song, SongTime t)
 {
 	assert(song != nullptr);
 
@@ -229,7 +229,7 @@ PlayerControl::Seek(DetachedSong *song, float seek_time)
 
 	delete next_song;
 	next_song = song;
-	seek_where = seek_time;
+	seek_time = t;
 	SynchronousCommand(PlayerCommand::SEEK);
 	Unlock();
 

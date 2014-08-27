@@ -293,7 +293,7 @@ Player::StartDecoder(MusicPipe &_pipe)
 
 	unsigned start_ms = pc.next_song->GetStartMS();
 	if (pc.command == PlayerCommand::SEEK)
-		start_ms += (unsigned)(pc.seek_where * 1000);
+		start_ms += pc.seek_time.ToMS();
 
 	dc.Start(new DetachedSong(*pc.next_song),
 		 start_ms, pc.next_song->GetEndMS(),
@@ -561,19 +561,20 @@ Player::SeekDecoder()
 
 	/* send the SEEK command */
 
-	double where = pc.seek_where;
-	if (pc.total_time > 0 && where > pc.total_time)
-		where = pc.total_time - 0.1;
-	if (where < 0.0)
-		where = 0.0;
+	SongTime where = pc.seek_time;
+	if (pc.total_time > 0) {
+		const SongTime total_time = SongTime::FromS(pc.total_time);
+		if (where > total_time)
+			where = total_time;
+	}
 
-	if (!dc.Seek(SongTime::FromS(where) + SongTime::FromMS(start_ms))) {
+	if (!dc.Seek(where + SongTime::FromMS(start_ms))) {
 		/* decoder failure */
 		player_command_finished(pc);
 		return false;
 	}
 
-	elapsed_time = where;
+	elapsed_time = where.ToDoubleS();
 
 	player_command_finished(pc);
 
@@ -923,7 +924,7 @@ Player::Run()
 	pc.state = PlayerState::PLAY;
 
 	if (pc.command == PlayerCommand::SEEK)
-		elapsed_time = pc.seek_where;
+		elapsed_time = pc.seek_time.ToDoubleS();
 
 	pc.CommandFinished();
 

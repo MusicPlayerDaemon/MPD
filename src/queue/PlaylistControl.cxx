@@ -215,7 +215,8 @@ playlist::SeekSongPosition(PlayerControl &pc, unsigned song, float seek_time)
 		queued_song = nullptr;
 	}
 
-	if (!pc.Seek(new DetachedSong(queue.GetOrder(i)), seek_time)) {
+	if (!pc.Seek(new DetachedSong(queue.GetOrder(i)),
+		     SongTime::FromS(seek_time))) {
 		UpdateQueuedSong(pc, queued_song);
 
 		return PlaylistResult::NOT_PLAYING;
