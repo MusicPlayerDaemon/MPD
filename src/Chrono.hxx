@@ -37,6 +37,14 @@ public:
 	template<typename T>
 	explicit constexpr SongTime(T t):Base(t) {}
 
+	/**
+	 * This constructor allows implicit conversion from the base
+	 * class to this class.  It is necessary because all of
+	 * std::chrono::duration's operators return another
+	 * std::chrono::duration and not an instance of this class.
+	 */
+	constexpr SongTime(Base b):Base(b) {}
+
 	static constexpr SongTime FromS(unsigned s) {
 		return SongTime(rep(s) * 1000);
 	}
