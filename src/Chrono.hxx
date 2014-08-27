@@ -61,6 +61,10 @@ public:
 	constexpr T ToScale(unsigned base) const {
 		return count() * T(base) / 1000;
 	}
+
+	constexpr double ToDoubleS() const {
+		return double(count()) / 1000.;
+	};
 };
 
 #endif
