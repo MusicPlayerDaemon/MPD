@@ -57,9 +57,9 @@ public:
 		return count();
 	}
 
-	constexpr unsigned ToScale(unsigned base) const {
-		// TODO: case to 64 bit to avoid integer overflow?
-		return count() * base / 1000;
+	template<typename T=rep>
+	constexpr T ToScale(unsigned base) const {
+		return count() * T(base) / 1000;
 	}
 };
 
