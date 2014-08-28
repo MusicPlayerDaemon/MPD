@@ -434,10 +434,10 @@ playlist::Shuffle(PlayerControl &pc, unsigned start, unsigned end)
 
 bool
 playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
-			 unsigned start_ms, unsigned end_ms,
+			 SongTime start, SongTime end,
 			 Error &error)
 {
-	assert(end_ms == 0 || start_ms < end_ms);
+	assert(end.IsZero() || start < end);
 
 	int position = queue.IdToPosition(id);
 	if (position < 0) {
@@ -467,20 +467,20 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 		/* validate the offsets */
 
 		const unsigned duration = song.GetTag().time;
-		if (start_ms / 1000u > duration) {
+		if (start.ToMS() / 1000u > duration) {
 			error.Set(playlist_domain,
 				  int(PlaylistResult::BAD_RANGE),
 				  "Invalid start offset");
 			return false;
 		}
 
-		if (end_ms / 1000u > duration)
-			end_ms = 0;
+		if (end.ToMS() / 1000u > duration)
+			end = SongTime::zero();
 	}
 
 	/* edit it */
-	song.SetStartTime(SongTime::FromMS(start_ms));
-	song.SetEndTime(SongTime::FromMS(end_ms));
+	song.SetStartTime(start);
+	song.SetEndTime(end);
 
 	/* announce the change to all interested subsystems */
 	UpdateQueuedSong(pc, nullptr);

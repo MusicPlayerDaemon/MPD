@@ -125,7 +125,7 @@ handle_addid(Client &client, unsigned argc, char *argv[])
  * integer milliseconds.  Omitted values are zero.
  */
 static bool
-parse_time_range(const char *p, unsigned &start_ms, unsigned &end_ms)
+parse_time_range(const char *p, SongTime &start_r, SongTime &end_r)
 {
 	char *endptr;
 
@@ -133,9 +133,9 @@ parse_time_range(const char *p, unsigned &start_ms, unsigned &end_ms)
 	if (*endptr != ':' || start < 0)
 		return false;
 
-	start_ms = endptr > p
-		? unsigned(start * 1000u)
-		: 0u;
+	start_r = endptr > p
+		? SongTime::FromS(start)
+		: SongTime::zero();
 
 	p = endptr + 1;
 
@@ -143,11 +143,11 @@ parse_time_range(const char *p, unsigned &start_ms, unsigned &end_ms)
 	if (*endptr != 0 || end < 0)
 		return false;
 
-	end_ms = endptr > p
-		? unsigned(end * 1000u)
-		: 0u;
+	end_r = endptr > p
+		? SongTime::FromS(end)
+		: SongTime::zero();
 
-	return end_ms == 0 || end_ms > start_ms;
+	return end_r.IsZero() || end_r > start_r;
 }
 
 CommandResult
@@ -157,15 +157,15 @@ handle_rangeid(Client &client, gcc_unused unsigned argc, char *argv[])
 	if (!check_unsigned(client, &id, argv[1]))
 		return CommandResult::ERROR;
 
-	unsigned start_ms, end_ms;
-	if (!parse_time_range(argv[2], start_ms, end_ms)) {
+	SongTime start, end;
+	if (!parse_time_range(argv[2], start, end)) {
 		command_error(client, ACK_ERROR_ARG, "Bad range");
 		return CommandResult::ERROR;
 	}
 
 	Error error;
 	if (!client.partition.playlist.SetSongIdRange(client.partition.pc,
-						      id, start_ms, end_ms,
+						      id, start, end,
 						      error))
 		return print_error(client, error);
 
