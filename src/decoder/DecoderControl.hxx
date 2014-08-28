@@ -130,7 +130,7 @@ struct DecoderControl {
 	 * The initial seek position (in milliseconds), e.g. to the
 	 * start of a sub-track described by a CUE file.
 	 *
-	 * This attribute is set by dc_start().
+	 * This attribute is set by Start().
 	 */
 	unsigned start_ms;
 
@@ -139,7 +139,7 @@ struct DecoderControl {
 	 * milliseconds).  0 means don't stop before the end of the
 	 * file.
 	 *
-	 * This attribute is set by dc_start().
+	 * This attribute is set by Start().
 	 */
 	unsigned end_ms;
 
@@ -264,7 +264,7 @@ struct DecoderControl {
 	}
 
 	/**
-	 * Like dc_get_error(), but locks and unlocks the object.
+	 * Like GetError(), but locks and unlocks the object.
 	 */
 	gcc_pure
 	Error LockGetError() const {
