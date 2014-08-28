@@ -179,7 +179,7 @@ decoder_command_finished(Decoder &decoder)
 		assert(dc.pipe->IsEmpty());
 
 		decoder.initial_seek_running = false;
-		decoder.timestamp = dc.start_ms / 1000.;
+		decoder.timestamp = dc.start_time.ToDoubleS();
 		dc.Unlock();
 		return;
 	}
@@ -212,7 +212,7 @@ decoder_seek_time(Decoder &decoder)
 	assert(dc.pipe != nullptr);
 
 	if (decoder.initial_seek_running)
-		return SongTime(dc.start_ms);
+		return dc.start_time;
 
 	assert(dc.command == DecoderCommand::SEEK);
 
@@ -226,17 +226,7 @@ decoder_seek_where_frame(Decoder &decoder)
 {
 	const DecoderControl &dc = decoder.dc;
 
-	assert(dc.pipe != nullptr);
-
-	if (decoder.initial_seek_running)
-		return uint64_t(dc.start_ms) * dc.in_audio_format.sample_rate
-			/ 1000;
-
-	assert(dc.command == DecoderCommand::SEEK);
-
-	decoder.seeking = true;
-
-	return dc.seek_time.ToScale<uint64_t>(dc.in_audio_format.sample_rate);
+	return decoder_seek_time(decoder).ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 }
 
 void decoder_seek_error(Decoder & decoder)
@@ -553,8 +543,8 @@ decoder_data(Decoder &decoder,
 		decoder.timestamp += (double)nbytes /
 			dc.out_audio_format.GetTimeToSize();
 
-		if (dc.end_ms > 0 &&
-		    decoder.timestamp >= dc.end_ms / 1000.0)
+		if (dc.end_time.IsPositive() &&
+		    decoder.timestamp >= dc.end_time.ToDoubleS())
 			/* the end of this range has been reached:
 			   stop decoding */
 			return DecoderCommand::STOP;

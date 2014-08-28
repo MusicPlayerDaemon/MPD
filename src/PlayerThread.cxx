@@ -296,7 +296,7 @@ Player::StartDecoder(MusicPipe &_pipe)
 		start_time += pc.seek_time;
 
 	dc.Start(new DetachedSong(*pc.next_song),
-		 start_time.ToMS(), pc.next_song->GetEndTime().ToMS(),
+		 start_time, pc.next_song->GetEndTime(),
 		 buffer, _pipe);
 }
 

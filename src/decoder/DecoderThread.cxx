@@ -360,7 +360,7 @@ static void
 decoder_run_song(DecoderControl &dc,
 		 const DetachedSong &song, const char *uri, Path path_fs)
 {
-	Decoder decoder(dc, dc.start_ms > 0,
+	Decoder decoder(dc, dc.start_time.IsPositive(),
 			new Tag(song.GetTag()));
 	int ret;
 

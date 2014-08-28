@@ -70,7 +70,7 @@ DecoderControl::IsCurrentSong(const DetachedSong &_song) const
 
 void
 DecoderControl::Start(DetachedSong *_song,
-		      unsigned _start_ms, unsigned _end_ms,
+		      SongTime _start_time, SongTime _end_time,
 		      MusicBuffer &_buffer, MusicPipe &_pipe)
 {
 	assert(_song != nullptr);
@@ -78,8 +78,8 @@ DecoderControl::Start(DetachedSong *_song,
 
 	delete song;
 	song = _song;
-	start_ms = _start_ms;
-	end_ms = _end_ms;
+	start_time = _start_time;
+	end_time = _end_time;
 	buffer = &_buffer;
 	pipe = &_pipe;
 
