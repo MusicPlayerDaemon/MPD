@@ -21,6 +21,7 @@
 #define MPD_CHRONO_HXX
 
 #include <chrono>
+#include <utility>
 #include <cstdint>
 
 /**
@@ -37,13 +38,9 @@ public:
 	template<typename T>
 	explicit constexpr SongTime(T t):Base(t) {}
 
-	/**
-	 * This constructor allows implicit conversion from the base
-	 * class to this class.  It is necessary because all of
-	 * std::chrono::duration's operators return another
-	 * std::chrono::duration and not an instance of this class.
-	 */
-	constexpr SongTime(Base b):Base(b) {}
+	static constexpr SongTime zero() {
+		return SongTime(Base::zero());
+	}
 
 	static constexpr SongTime FromS(unsigned s) {
 		return SongTime(rep(s) * 1000);
@@ -81,6 +78,14 @@ public:
 	constexpr bool IsPositive() const {
 		return count() > 0;
 	}
+
+	constexpr SongTime operator+(const SongTime &other) const {
+		return SongTime(*(const Base *)this + (const Base &)other);
+	}
+
+	constexpr SongTime operator-(const SongTime &other) const {
+		return SongTime(*(const Base *)this - (const Base &)other);
+	}
 };
 
 /**
@@ -97,13 +102,9 @@ public:
 	template<typename T>
 	explicit constexpr SignedSongTime(T t):Base(t) {}
 
-	/**
-	 * This constructor allows implicit conversion from the base
-	 * class to this class.  It is necessary because all of
-	 * std::chrono::duration's operators return another
-	 * std::chrono::duration and not an instance of this class.
-	 */
-	constexpr SignedSongTime(Base b):Base(b) {}
+	static constexpr SignedSongTime zero() {
+		return SignedSongTime(Base::zero());
+	}
 
 	static constexpr SignedSongTime FromS(int s) {
 		return SignedSongTime(rep(s) * 1000);
@@ -144,6 +145,14 @@ public:
 
 	constexpr bool IsNegative() const {
 		return count() < 0;
+	}
+
+	constexpr SignedSongTime operator+(const SignedSongTime &other) const {
+		return SignedSongTime(*(const Base *)this + (const Base &)other);
+	}
+
+	constexpr SignedSongTime operator-(const SignedSongTime &other) const {
+		return SignedSongTime(*(const Base *)this - (const Base &)other);
 	}
 };
 
