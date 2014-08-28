@@ -52,7 +52,7 @@ song_save(BufferedOutputStream &os, const Song &song)
 {
 	os.Format(SONG_BEGIN "%s\n", song.uri);
 
-	range_save(os, song.start_ms, song.end_ms);
+	range_save(os, song.start_time.ToMS(), song.end_time.ToMS());
 
 	tag_save(os, song.tag);
 

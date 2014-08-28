@@ -20,6 +20,7 @@
 #ifndef MPD_SONG_HXX
 #define MPD_SONG_HXX
 
+#include "Chrono.hxx"
 #include "tag/Tag.hxx"
 #include "Compiler.h"
 
@@ -71,15 +72,15 @@ struct Song {
 	time_t mtime;
 
 	/**
-	 * Start of this sub-song within the file in milliseconds.
+	 * Start of this sub-song within the file.
 	 */
-	unsigned start_ms;
+	SongTime start_time;
 
 	/**
-	 * End of this sub-song within the file in milliseconds.
+	 * End of this sub-song within the file.
 	 * Unused if zero.
 	 */
-	unsigned end_ms;
+	SongTime end_time;
 
 	/**
 	 * The file name.

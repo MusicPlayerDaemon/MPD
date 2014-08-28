@@ -30,7 +30,8 @@
 #include <stdlib.h>
 
 inline Song::Song(const char *_uri, size_t uri_length, Directory &_parent)
-	:parent(&_parent), mtime(0), start_ms(0), end_ms(0)
+	:parent(&_parent), mtime(0),
+	 start_time(SongTime::zero()), end_time(SongTime::zero())
 {
 	memcpy(uri, _uri, uri_length + 1);
 }
@@ -59,8 +60,8 @@ Song::NewFrom(DetachedSong &&other, Directory &parent)
 	Song *song = song_alloc(other.GetURI(), parent);
 	song->tag = std::move(other.WritableTag());
 	song->mtime = other.GetLastModified();
-	song->start_ms = other.GetStartTime().ToMS();
-	song->end_ms = other.GetEndTime().ToMS();
+	song->start_time = other.GetStartTime();
+	song->end_time = other.GetEndTime();
 	return song;
 }
 
@@ -105,7 +106,7 @@ Song::Export() const
 	dest.real_uri = nullptr;
 	dest.tag = &tag;
 	dest.mtime = mtime;
-	dest.start_time = SongTime::FromMS(start_ms);
-	dest.end_time = SongTime::FromMS(end_ms);
+	dest.start_time = start_time;
+	dest.end_time = end_time;
 	return dest;
 }
