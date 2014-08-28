@@ -83,4 +83,68 @@ public:
 	}
 };
 
+/**
+ * A variant of #SongTime that is based on a signed integer.  It can
+ * be used for relative values.
+ */
+class SignedSongTime : public std::chrono::duration<std::int32_t, std::milli> {
+	typedef std::chrono::duration<std::int32_t, std::milli> Base;
+	typedef Base::rep rep;
+
+public:
+	SignedSongTime() = default;
+
+	template<typename T>
+	explicit constexpr SignedSongTime(T t):Base(t) {}
+
+	/**
+	 * This constructor allows implicit conversion from the base
+	 * class to this class.  It is necessary because all of
+	 * std::chrono::duration's operators return another
+	 * std::chrono::duration and not an instance of this class.
+	 */
+	constexpr SignedSongTime(Base b):Base(b) {}
+
+	static constexpr SignedSongTime FromS(int s) {
+		return SignedSongTime(rep(s) * 1000);
+	}
+
+	static constexpr SignedSongTime FromS(float s) {
+		return SignedSongTime(rep(s * 1000));
+	}
+
+	static constexpr SignedSongTime FromS(double s) {
+		return SignedSongTime(rep(s * 1000));
+	}
+
+	static constexpr SignedSongTime FromMS(rep ms) {
+		return SignedSongTime(ms);
+	}
+
+	constexpr rep ToMS() const {
+		return count();
+	}
+
+	template<typename T=rep>
+	constexpr T ToScale(unsigned base) const {
+		return count() * T(base) / 1000;
+	}
+
+	constexpr double ToDoubleS() const {
+		return double(count()) / 1000.;
+	};
+
+	constexpr bool IsZero() const {
+		return count() == 0;
+	}
+
+	constexpr bool IsPositive() const {
+		return count() > 0;
+	}
+
+	constexpr bool IsNegative() const {
+		return count() < 0;
+	}
+};
+
 #endif
