@@ -66,7 +66,7 @@ public:
 		real_uri = real_uri2.c_str();
 		tag = &tag2;
 		mtime = 0;
-		start_ms = end_ms = 0;
+		start_time = end_time = SongTime::zero();
 	}
 };
 
@@ -360,7 +360,7 @@ visitSong(const UPnPDirObject &meta, const char *path,
 	song.real_uri = meta.url.c_str();
 	song.tag = &meta.tag;
 	song.mtime = 0;
-	song.start_ms = song.end_ms = 0;
+	song.start_time = song.end_time = SongTime::zero();
 
 	return !selection.Match(song) || visit_song(song, error);
 }

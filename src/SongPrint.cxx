@@ -75,16 +75,19 @@ song_print_info(Client &client, const LightSong &song, bool base)
 {
 	song_print_uri(client, song, base);
 
-	if (song.end_ms > 0)
+	const unsigned start_ms = song.start_time.ToMS();
+	const unsigned end_ms = song.end_time.ToMS();
+
+	if (end_ms > 0)
 		client_printf(client, "Range: %u.%03u-%u.%03u\n",
-			      song.start_ms / 1000,
-			      song.start_ms % 1000,
-			      song.end_ms / 1000,
-			      song.end_ms % 1000);
-	else if (song.start_ms > 0)
+			      start_ms / 1000,
+			      start_ms % 1000,
+			      end_ms / 1000,
+			      end_ms % 1000);
+	else if (start_ms > 0)
 		client_printf(client, "Range: %u.%03u-\n",
-			      song.start_ms / 1000,
-			      song.start_ms % 1000);
+			      start_ms / 1000,
+			      start_ms % 1000);
 
 	if (song.mtime > 0)
 		time_print(client, "Last-Modified", song.mtime);

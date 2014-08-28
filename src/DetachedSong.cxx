@@ -28,8 +28,8 @@ DetachedSong::DetachedSong(const LightSong &other)
 	 real_uri(other.real_uri != nullptr ? other.real_uri : ""),
 	 tag(*other.tag),
 	 mtime(other.mtime),
-	 start_time(SongTime::FromMS(other.start_ms)),
-	 end_time(SongTime::FromMS(other.end_ms)) {}
+	 start_time(other.start_time),
+	 end_time(other.end_time) {}
 
 DetachedSong::~DetachedSong()
 {

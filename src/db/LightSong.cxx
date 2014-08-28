@@ -23,11 +23,11 @@
 double
 LightSong::GetDuration() const
 {
-	if (end_ms > 0)
-		return (end_ms - start_ms) / 1000.0;
+	if (end_time.IsPositive())
+		return (end_time - start_time).ToDoubleS();
 
 	if (tag->time <= 0)
 		return 0;
 
-	return tag->time - start_ms / 1000.0;
+	return tag->time - start_time.ToDoubleS();
 }

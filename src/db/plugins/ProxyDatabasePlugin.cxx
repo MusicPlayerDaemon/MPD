@@ -192,10 +192,10 @@ ProxySong::ProxySong(const mpd_song *song)
 	mtime = mpd_song_get_last_modified(song);
 
 #if LIBMPDCLIENT_CHECK_VERSION(2,3,0)
-	start_ms = mpd_song_get_start(song) * 1000;
-	end_ms = mpd_song_get_end(song) * 1000;
+	start_time = SongTime::FromS(mpd_song_get_start(song));
+	end_time = SongTime::FromS(mpd_song_get_end(song));
 #else
-	start_ms = end_ms = 0;
+	start_time = end_time = SongTime::zero();
 #endif
 
 	TagBuilder tag_builder;

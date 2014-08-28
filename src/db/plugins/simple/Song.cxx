@@ -105,7 +105,7 @@ Song::Export() const
 	dest.real_uri = nullptr;
 	dest.tag = &tag;
 	dest.mtime = mtime;
-	dest.start_ms = start_ms;
-	dest.end_ms = end_ms;
+	dest.start_time = SongTime::FromMS(start_ms);
+	dest.end_time = SongTime::FromMS(end_ms);
 	return dest;
 }
