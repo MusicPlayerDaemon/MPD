@@ -73,6 +73,14 @@ public:
 	constexpr double ToDoubleS() const {
 		return double(count()) / 1000.;
 	};
+
+	constexpr bool IsZero() const {
+		return count() == 0;
+	}
+
+	constexpr bool IsPositive() const {
+		return count() > 0;
+	}
 };
 
 #endif
