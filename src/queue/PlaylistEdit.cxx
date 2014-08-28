@@ -479,8 +479,8 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 	}
 
 	/* edit it */
-	song.SetStartMS(start_ms);
-	song.SetEndMS(end_ms);
+	song.SetStartTime(SongTime::FromMS(start_ms));
+	song.SetEndTime(SongTime::FromMS(end_ms));
 
 	/* announce the change to all interested subsystems */
 	UpdateQueuedSong(pc, nullptr);

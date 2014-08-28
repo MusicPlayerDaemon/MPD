@@ -65,7 +65,7 @@ song_save(BufferedOutputStream &os, const DetachedSong &song)
 {
 	os.Format(SONG_BEGIN "%s\n", song.GetURI());
 
-	range_save(os, song.GetStartMS(), song.GetEndMS());
+	range_save(os, song.GetStartTime().ToMS(), song.GetEndTime().ToMS());
 
 	tag_save(os, song.GetTag());
 
@@ -113,8 +113,8 @@ song_load(TextFile &file, const char *uri,
 				? strtoul(endptr + 1, nullptr, 10)
 				: 0;
 
-			song->SetStartMS(start_ms);
-			song->SetEndMS(end_ms);
+			song->SetStartTime(SongTime::FromMS(start_ms));
+			song->SetEndTime(SongTime::FromMS(end_ms));
 		} else {
 			delete song;
 

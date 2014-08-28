@@ -128,8 +128,8 @@ int main(int argc, char **argv)
 	while ((song = playlist->NextSong()) != NULL) {
 		printf("%s\n", song->GetURI());
 
-		const unsigned start_ms = song->GetStartMS();
-		const unsigned end_ms = song->GetEndMS();
+		const unsigned start_ms = song->GetStartTime().ToMS();
+		const unsigned end_ms = song->GetEndTime().ToMS();
 
 		if (end_ms > 0)
 			printf("range: %u:%02u..%u:%02u\n",

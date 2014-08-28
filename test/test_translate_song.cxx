@@ -185,15 +185,15 @@ ToString(const DetachedSong &song)
 
 	result.push_back('|');
 
-	if (song.GetStartMS() > 0) {
-		sprintf(buffer, "%u", song.GetStartMS());
+	if (song.GetStartTime().IsPositive()) {
+		sprintf(buffer, "%u", song.GetStartTime().ToMS());
 		result.append(buffer);
 	}
 
 	result.push_back('-');
 
-	if (song.GetEndMS() > 0) {
-		sprintf(buffer, "%u", song.GetEndMS());
+	if (song.GetEndTime().IsPositive()) {
+		sprintf(buffer, "%u", song.GetEndTime().ToMS());
 		result.append(buffer);
 	}
 

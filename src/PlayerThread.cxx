@@ -291,12 +291,12 @@ Player::StartDecoder(MusicPipe &_pipe)
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
 
-	unsigned start_ms = pc.next_song->GetStartMS();
+	SongTime start_time = pc.next_song->GetStartTime();
 	if (pc.command == PlayerCommand::SEEK)
-		start_ms += pc.seek_time.ToMS();
+		start_time += pc.seek_time;
 
 	dc.Start(new DetachedSong(*pc.next_song),
-		 start_ms, pc.next_song->GetEndMS(),
+		 start_time.ToMS(), pc.next_song->GetEndTime().ToMS(),
 		 buffer, _pipe);
 }
 
@@ -376,13 +376,13 @@ real_song_duration(const DetachedSong &song, double decoder_duration)
 		   back to Song::GetDuration() */
 		return song.GetDuration();
 
-	const unsigned start_ms = song.GetStartMS();
-	const unsigned end_ms = song.GetEndMS();
+	const SongTime start_time = song.GetStartTime();
+	const SongTime end_time = song.GetEndTime();
 
-	if (end_ms > 0 && end_ms / 1000.0 < decoder_duration)
-		return (end_ms - start_ms) / 1000.0;
+	if (end_time.IsPositive() && end_time.ToDoubleS() < decoder_duration)
+		return (end_time - start_time).ToDoubleS();
 
-	return decoder_duration - start_ms / 1000.0;
+	return decoder_duration - start_time.ToDoubleS();
 }
 
 bool
@@ -518,7 +518,7 @@ Player::SeekDecoder()
 {
 	assert(pc.next_song != nullptr);
 
-	const unsigned start_ms = pc.next_song->GetStartMS();
+	const SongTime start_time = pc.next_song->GetStartTime();
 
 	if (!dc.LockIsCurrentSong(*pc.next_song)) {
 		/* the decoder is already decoding the "next" song -
@@ -568,7 +568,7 @@ Player::SeekDecoder()
 			where = total_time;
 	}
 
-	if (!dc.Seek(where + SongTime::FromMS(start_ms))) {
+	if (!dc.Seek(where + start_time)) {
 		/* decoder failure */
 		player_command_finished(pc);
 		return false;

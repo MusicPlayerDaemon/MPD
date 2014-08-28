@@ -59,8 +59,8 @@ Song::NewFrom(DetachedSong &&other, Directory &parent)
 	Song *song = song_alloc(other.GetURI(), parent);
 	song->tag = std::move(other.WritableTag());
 	song->mtime = other.GetLastModified();
-	song->start_ms = other.GetStartMS();
-	song->end_ms = other.GetEndMS();
+	song->start_ms = other.GetStartTime().ToMS();
+	song->end_ms = other.GetEndTime().ToMS();
 	return song;
 }
 

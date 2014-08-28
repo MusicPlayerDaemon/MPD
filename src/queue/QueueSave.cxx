@@ -53,7 +53,7 @@ static void
 queue_save_song(BufferedOutputStream &os, int idx, const DetachedSong &song)
 {
 	if (song.IsInDatabase() &&
-	    song.GetStartMS() == 0 && song.GetEndMS() == 0)
+	    song.GetStartTime().IsZero() && song.GetEndTime().IsZero())
 		/* use the brief format (just the URI) for "full"
 		   database songs */
 		queue_save_database_song(os, idx, song);

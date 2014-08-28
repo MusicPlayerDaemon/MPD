@@ -267,12 +267,12 @@ CueParser::Feed2(char *p)
 			return;
 
 		if (!last_updated && previous != nullptr &&
-		    previous->GetStartMS() < (unsigned)position_ms) {
+		    previous->GetStartTime().ToMS() < (unsigned)position_ms) {
 			last_updated = true;
-			previous->SetEndMS(position_ms);
+			previous->SetEndTime(SongTime::FromMS(position_ms));
 		}
 
-		current->SetStartMS(position_ms);
+		current->SetStartTime(SongTime::FromMS(position_ms));
 	}
 }
 

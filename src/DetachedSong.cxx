@@ -28,11 +28,12 @@ DetachedSong::DetachedSong(const LightSong &other)
 	 real_uri(other.real_uri != nullptr ? other.real_uri : ""),
 	 tag(*other.tag),
 	 mtime(other.mtime),
-	 start_ms(other.start_ms), end_ms(other.end_ms) {}
+	 start_time(SongTime::FromMS(other.start_ms)),
+	 end_time(SongTime::FromMS(other.end_ms)) {}
 
 DetachedSong::~DetachedSong()
 {
-	/* this destructor exists here just so it won't get inlined */
+	/* this destructor exists here just so it won't  inlined */
 }
 
 bool
@@ -60,8 +61,8 @@ DetachedSong::IsInDatabase() const
 double
 DetachedSong::GetDuration() const
 {
-	if (end_ms > 0)
-		return (end_ms - start_ms) / 1000.0;
+	if (end_time.IsPositive())
+		return (end_time - start_time).ToDoubleS();
 
-	return tag.time - start_ms / 1000.0;
+	return tag.time - start_time.ToDoubleS();
 }

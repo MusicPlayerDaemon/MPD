@@ -97,8 +97,8 @@ song_print_info(Client &client, const DetachedSong &song, bool base)
 {
 	song_print_uri(client, song, base);
 
-	const unsigned start_ms = song.GetStartMS();
-	const unsigned end_ms = song.GetEndMS();
+	const unsigned start_ms = song.GetStartTime().ToMS();
+	const unsigned end_ms = song.GetEndTime().ToMS();
 
 	if (end_ms > 0)
 		client_printf(client, "Range: %u.%03u-%u.%03u\n",

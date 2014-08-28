@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "tag/Tag.hxx"
+#include "Chrono.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -65,15 +66,15 @@ class DetachedSong {
 	time_t mtime;
 
 	/**
-	 * Start of this sub-song within the file in milliseconds.
+	 * Start of this sub-song within the file.
 	 */
-	unsigned start_ms;
+	SongTime start_time;
 
 	/**
-	 * End of this sub-song within the file in milliseconds.
+	 * End of this sub-song within the file.
 	 * Unused if zero.
 	 */
-	unsigned end_ms;
+	SongTime end_time;
 
 	explicit DetachedSong(const LightSong &other);
 
@@ -82,21 +83,25 @@ public:
 
 	explicit DetachedSong(const char *_uri)
 		:uri(_uri),
-		 mtime(0), start_ms(0), end_ms(0) {}
+		 mtime(0),
+		 start_time(SongTime::zero()), end_time(SongTime::zero()) {}
 
 	explicit DetachedSong(const std::string &_uri)
 		:uri(_uri),
-		 mtime(0), start_ms(0), end_ms(0) {}
+		 mtime(0),
+		 start_time(SongTime::zero()), end_time(SongTime::zero()) {}
 
 	explicit DetachedSong(std::string &&_uri)
 		:uri(std::move(_uri)),
-		 mtime(0), start_ms(0), end_ms(0) {}
+		 mtime(0),
+		 start_time(SongTime::zero()), end_time(SongTime::zero()) {}
 
 	template<typename U>
 	DetachedSong(U &&_uri, Tag &&_tag)
 		:uri(std::forward<U>(_uri)),
 		 tag(std::move(_tag)),
-		 mtime(0), start_ms(0), end_ms(0) {}
+		 mtime(0),
+		 start_time(SongTime::zero()), end_time(SongTime::zero()) {}
 
 	DetachedSong(DetachedSong &&) = default;
 
@@ -191,20 +196,20 @@ public:
 		mtime = _value;
 	}
 
-	unsigned GetStartMS() const {
-		return start_ms;
+	SongTime GetStartTime() const {
+		return start_time;
 	}
 
-	void SetStartMS(unsigned _value) {
-		start_ms = _value;
+	void SetStartTime(SongTime _value) {
+		start_time = _value;
 	}
 
-	unsigned GetEndMS() const {
-		return end_ms;
+	SongTime GetEndTime() const {
+		return end_time;
 	}
 
-	void SetEndMS(unsigned _value) {
-		end_ms = _value;
+	void SetEndTime(SongTime _value) {
+		end_time = _value;
 	}
 
 	gcc_pure
