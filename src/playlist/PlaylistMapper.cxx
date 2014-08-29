@@ -65,7 +65,7 @@ playlist_open_in_storage(const char *uri, const Storage *storage,
 	}
 
 	const auto uri2 = storage->MapUTF8(uri);
-	return playlist_open_remote(uri, mutex, cond);
+	return playlist_open_remote(uri2.c_str(), mutex, cond);
 }
 
 #endif
