@@ -219,10 +219,10 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 			(data.data[7 + skip_size] & 0xE0);
 
 		const auto size = is.GetSize();
-		if (bit_rate != 0)
-			return size * 8.0 / bit_rate;
-		else
-			return size;
+		if (bit_rate == 0)
+			return -1;
+
+		return size * 8.0 / bit_rate;
 	} else
 		return -1;
 }
