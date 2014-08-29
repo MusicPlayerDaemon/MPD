@@ -23,6 +23,7 @@
 #include "Compiler.h"
 
 struct AudioFormat;
+class SignedSongTime;
 
 struct CrossFadeSettings {
 	/**
@@ -60,7 +61,7 @@ struct CrossFadeSettings {
 	 * should be disabled for this song change
 	 */
 	gcc_pure
-	unsigned Calculate(float total_time,
+	unsigned Calculate(SignedSongTime total_time,
 			   float replay_gain_db, float replay_gain_prev_db,
 			   const char *mixramp_start,
 			   const char *mixramp_prev_end,

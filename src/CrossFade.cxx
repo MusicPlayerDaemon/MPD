@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "CrossFade.hxx"
+#include "Chrono.hxx"
 #include "MusicChunk.hxx"
 #include "AudioFormat.hxx"
 #include "util/NumberParser.hxx"
@@ -85,7 +86,7 @@ mixramp_interpolate(const char *ramp_list, float required_db)
 }
 
 unsigned
-CrossFadeSettings::Calculate(float total_time,
+CrossFadeSettings::Calculate(SignedSongTime total_time,
 			     float replay_gain_db, float replay_gain_prev_db,
 			     const char *mixramp_start, const char *mixramp_prev_end,
 			     const AudioFormat af,
@@ -95,7 +96,8 @@ CrossFadeSettings::Calculate(float total_time,
 	unsigned int chunks = 0;
 	float chunks_f;
 
-	if (duration < 0 || duration >= total_time ||
+	if (total_time.IsNegative() ||
+	    duration < 0 || duration >= total_time.ToDoubleS() ||
 	    /* we can't crossfade when the audio formats are different */
 	    af != old_format)
 		return 0;

@@ -1001,7 +1001,7 @@ Player::Run()
 			   calculate how many chunks will be required
 			   for it */
 			cross_fade_chunks =
-				pc.cross_fade.Calculate(dc.total_time.ToDoubleS(),
+				pc.cross_fade.Calculate(dc.total_time,
 							dc.replay_gain_db,
 							dc.replay_gain_prev_db,
 							dc.GetMixRampStart(),
