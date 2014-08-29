@@ -114,15 +114,6 @@ public:
 struct Tag;
 struct ReplayGainInfo;
 
-static inline unsigned
-flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
-{
-	assert(stream_info->sample_rate > 0);
-
-	return (stream_info->total_samples + stream_info->sample_rate - 1) /
-		stream_info->sample_rate;
-}
-
 bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
 		       const FLAC__StreamMetadata *block);

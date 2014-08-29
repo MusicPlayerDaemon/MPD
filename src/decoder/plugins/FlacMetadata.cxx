@@ -179,6 +179,16 @@ flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
 				  handler, handler_ctx);
 }
 
+gcc_pure
+static inline SongTime
+flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
+{
+	assert(stream_info->sample_rate > 0);
+
+	return SongTime::FromScale<uint64_t>(stream_info->total_samples,
+					     stream_info->sample_rate);
+}
+
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
 		   const struct tag_handler *handler, void *handler_ctx)

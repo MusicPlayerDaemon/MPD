@@ -42,7 +42,6 @@
 #include <string.h>
 
 static constexpr unsigned DSF_BLOCK_SIZE = 4096;
-static constexpr unsigned DSF_BLOCK_BITS = DSF_BLOCK_SIZE * 8;
 
 struct DsfMetaData {
 	unsigned sample_rate, channels;
@@ -348,8 +347,9 @@ dsf_scan_stream(InputStream &is,
 		return false;
 
 	/* calculate song time and add as tag */
-	unsigned songtime = (metadata.n_blocks * DSF_BLOCK_BITS) /
-		metadata.sample_rate;
+	const auto n_blocks = metadata.n_blocks;
+	auto songtime = SongTime::FromScale<uint64_t>(n_blocks * DSF_BLOCK_SIZE,
+						      audio_format.sample_rate);
 	tag_handler_invoke_duration(handler, handler_ctx, songtime);
 
 #ifdef HAVE_ID3TAG

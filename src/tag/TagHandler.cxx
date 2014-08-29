@@ -23,11 +23,11 @@
 #include "util/ASCII.hxx"
 
 static void
-add_tag_duration(unsigned seconds, void *ctx)
+add_tag_duration(SongTime duration, void *ctx)
 {
 	TagBuilder &tag = *(TagBuilder *)ctx;
 
-	tag.SetDuration(SignedSongTime::FromS(seconds));
+	tag.SetDuration(duration);
 }
 
 static void

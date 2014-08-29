@@ -228,7 +228,7 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 	mpc_demux_exit(demux);
 }
 
-static float
+static SignedSongTime
 mpcdec_get_file_duration(InputStream &is)
 {
 	mpc_decoder_data data(is, nullptr);
@@ -243,25 +243,24 @@ mpcdec_get_file_duration(InputStream &is)
 
 	mpc_demux *demux = mpc_demux_init(&reader);
 	if (demux == nullptr)
-		return -1;
+		return SignedSongTime::Negative();
 
 	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
 	mpc_demux_exit(demux);
 
-	return mpc_streaminfo_get_length(&info);
+	return SongTime::FromS(mpc_streaminfo_get_length(&info));
 }
 
 static bool
 mpcdec_scan_stream(InputStream &is,
 		   const struct tag_handler *handler, void *handler_ctx)
 {
-	float total_time = mpcdec_get_file_duration(is);
-
-	if (total_time < 0)
+	const auto duration = mpcdec_get_file_duration(is);
+	if (duration.IsNegative())
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx, total_time);
+	tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
 	return true;
 }
 

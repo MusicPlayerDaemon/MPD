@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "TagType.h"
+#include "Chrono.hxx"
 
 #include <assert.h>
 
@@ -30,11 +31,11 @@
  */
 struct tag_handler {
 	/**
-	 * Declare the duration of a song, in seconds.  Do not call
+	 * Declare the duration of a song.  Do not call
 	 * this when the duration could not be determined, because
 	 * there is no magic value for "unknown duration".
 	 */
-	void (*duration)(unsigned seconds, void *ctx);
+	void (*duration)(SongTime duration, void *ctx);
 
 	/**
 	 * A tag has been read.
@@ -53,12 +54,12 @@ struct tag_handler {
 
 static inline void
 tag_handler_invoke_duration(const struct tag_handler *handler, void *ctx,
-			  unsigned seconds)
+			    SongTime duration)
 {
 	assert(handler != nullptr);
 
 	if (handler->duration != nullptr)
-		handler->duration(seconds, ctx);
+		handler->duration(duration, ctx);
 }
 
 static inline void

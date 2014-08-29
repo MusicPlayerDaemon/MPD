@@ -438,11 +438,9 @@ faad_scan_stream(InputStream &is,
 	if (!result.first)
 		return false;
 
-	unsigned duration = result.second.IsNegative()
-		? 0
-		: result.second.RoundS();
-
-	tag_handler_invoke_duration(handler, handler_ctx, duration);
+	if (!result.second.IsNegative())
+		tag_handler_invoke_duration(handler, handler_ctx,
+					    SongTime(result.second));
 	return true;
 }
 

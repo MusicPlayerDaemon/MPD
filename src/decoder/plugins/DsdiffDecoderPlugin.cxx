@@ -474,8 +474,9 @@ dsdiff_scan_stream(InputStream &is,
 		return false;
 
 	/* calculate song time and add as tag */
-	unsigned songtime = ((metadata.chunk_size / metadata.channels) * 8) /
-			    metadata.sample_rate;
+	uint64_t n_frames = metadata.chunk_size / audio_format.channels;
+	auto songtime = SongTime::FromScale<uint64_t>(n_frames,
+						      audio_format.sample_rate);
 	tag_handler_invoke_duration(handler, handler_ctx, songtime);
 
 	/* Read additional metadata and created tags if available */

@@ -441,9 +441,12 @@ mpd_opus_scan_stream(InputStream &is,
 		}
 	}
 
-	if (packet.e_o_s || OggSeekFindEOS(oy, os, packet, is))
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    packet.granulepos / opus_sample_rate);
+	if (packet.e_o_s || OggSeekFindEOS(oy, os, packet, is)) {
+		const auto duration =
+			SongTime::FromScale<uint64_t>(packet.granulepos,
+						      opus_sample_rate);
+		tag_handler_invoke_duration(handler, handler_ctx, duration);
+	}
 
 	ogg_stream_clear(&os);
 

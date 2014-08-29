@@ -233,8 +233,11 @@ mpd_mpg123_scan_file(Path path_fs,
 
 	mpg123_delete(handle);
 
-	tag_handler_invoke_duration(handler, handler_ctx,
-				    num_samples / audio_format.sample_rate);
+	const auto duration =
+		SongTime::FromScale<uint64_t>(num_samples,
+					      audio_format.sample_rate);
+
+	tag_handler_invoke_duration(handler, handler_ctx, duration);
 	return true;
 }
 

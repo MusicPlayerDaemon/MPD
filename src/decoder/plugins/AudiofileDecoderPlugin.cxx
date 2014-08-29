@@ -244,19 +244,19 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 }
 
 gcc_pure
-static int
+static SignedSongTime
 audiofile_get_duration(InputStream &is)
 {
 	if (!is.IsSeekable() || !is.KnownSize())
-		return -1;
+		return SignedSongTime::Negative();
 
 	AudioFileInputStream afis{nullptr, is};
 	AFvirtualfile *vf = setup_virtual_fops(afis);
 	AFfilehandle fh = afOpenVirtualFile(vf, "r", nullptr);
 	if (fh == AF_NULL_FILEHANDLE)
-		return -1;
+		return SignedSongTime::Negative();
 
-	int duration = audiofile_get_duration(fh).RoundS();
+	const auto duration = audiofile_get_duration(fh);
 	afCloseFile(fh);
 	return duration;
 }
@@ -265,11 +265,11 @@ static bool
 audiofile_scan_stream(InputStream &is,
 		      const struct tag_handler *handler, void *handler_ctx)
 {
-	int total_time = audiofile_get_duration(is);
-	if (total_time < 0)
+	const auto duration = audiofile_get_duration(is);
+	if (duration.IsNegative())
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx, total_time);
+	tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
 	return true;
 }
 

@@ -609,9 +609,12 @@ ffmpeg_scan_stream(InputStream &is,
 		return false;
 	}
 
-	if (f->duration != (int64_t)AV_NOPTS_VALUE)
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    f->duration / AV_TIME_BASE);
+	if (f->duration != (int64_t)AV_NOPTS_VALUE) {
+		const auto duration =
+			SongTime::FromScale<uint64_t>(f->duration,
+						      AV_TIME_BASE);
+		tag_handler_invoke_duration(handler, handler_ctx, duration);
+	}
 
 	ffmpeg_scan_dictionary(f->metadata, handler, handler_ctx);
 	int idx = ffmpeg_find_audio_stream(f);

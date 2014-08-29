@@ -48,9 +48,9 @@
 static bool empty = true;
 
 static void
-print_duration(unsigned seconds, gcc_unused void *ctx)
+print_duration(SongTime duration, gcc_unused void *ctx)
 {
-	printf("duration=%d\n", seconds);
+	printf("duration=%f\n", duration.ToDoubleS());
 }
 
 static void

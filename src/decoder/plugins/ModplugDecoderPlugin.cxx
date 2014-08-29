@@ -184,7 +184,7 @@ modplug_scan_stream(InputStream &is,
 		return false;
 
 	tag_handler_invoke_duration(handler, handler_ctx,
-				    ModPlug_GetLength(f) / 1000);
+				    SongTime::FromMS(ModPlug_GetLength(f)));
 
 	const char *title = ModPlug_GetName(f);
 	if (title != nullptr)

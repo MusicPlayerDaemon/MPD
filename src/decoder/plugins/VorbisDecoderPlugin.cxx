@@ -347,8 +347,10 @@ vorbis_scan_stream(InputStream &is,
 	if (!vorbis_is_open(&vis, &vf))
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx,
-				    (int)(ov_time_total(&vf, -1) + 0.5));
+	const auto total = ov_time_total(&vf, -1);
+	if (total >= 0)
+		tag_handler_invoke_duration(handler, handler_ctx,
+					    SongTime::FromS(total));
 
 	vorbis_comments_scan(ov_comment(&vf, -1)->user_comments,
 			     handler, handler_ctx);

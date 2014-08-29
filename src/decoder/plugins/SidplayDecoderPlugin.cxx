@@ -388,7 +388,7 @@ sidplay_scan_file(Path path_fs,
 	const auto duration = get_song_length(path_fs);
 	if (!duration.IsNegative())
 		tag_handler_invoke_duration(handler, handler_ctx,
-					    duration.RoundS());
+					    SongTime(duration));
 
 	return true;
 }

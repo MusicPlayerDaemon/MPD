@@ -238,7 +238,7 @@ gme_scan_file(Path path_fs,
 
 	if (ti->length > 0)
 		tag_handler_invoke_duration(handler, handler_ctx,
-					    ti->length / 100);
+					    SongTime::FromMS(ti->length));
 
 	if (ti->song != nullptr) {
 		if (gme_track_count(emu) > 1) {

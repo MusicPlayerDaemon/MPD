@@ -246,8 +246,9 @@ sndfile_scan_stream(InputStream &is,
 		return false;
 	}
 
-	tag_handler_invoke_duration(handler, handler_ctx,
-				    info.frames / info.samplerate);
+	const auto duration =
+		SongTime::FromScale<uint64_t>(info.frames, info.samplerate);
+	tag_handler_invoke_duration(handler, handler_ctx, duration);
 
 	for (auto i : sndfile_tags)
 		sndfile_handle_tag(sf, i.str, i.tag, handler, handler_ctx);

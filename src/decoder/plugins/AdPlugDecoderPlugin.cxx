@@ -102,7 +102,7 @@ adplug_scan_file(Path path_fs,
 		return false;
 
 	tag_handler_invoke_duration(handler, handler_ctx,
-				    player->songlength() / 1000);
+				    SongTime::FromMS(player->songlength()));
 
 	if (handler->tag != nullptr) {
 		adplug_scan_tag(TAG_TITLE, player->gettitle(),

@@ -256,8 +256,10 @@ mp4_scan_file(Path path_fs,
 		return false;
 	}
 
-	const MP4Duration dur = MP4GetTrackDuration(handle, id) /
-		MP4GetTrackTimeScale(handle, id);
+	const MP4Timestamp scale = MP4GetTrackTimeScale(handle, id);
+	const SongTime dur =
+		SongTime::FromScale<uint64_t>(MP4GetTrackDuration(handle, id),
+					      scale);
 	tag_handler_invoke_duration(handler, handler_ctx, dur);
 
 	const MP4Tags* tags = MP4TagsAlloc();
