@@ -99,15 +99,18 @@ db_stats_print(Client &client, const Database &db)
 	if (!stats_update(db))
 		return;
 
+	unsigned total_duration_s =
+		std::chrono::duration_cast<std::chrono::seconds>(stats.total_duration).count();
+
 	client_printf(client,
 		      "artists: %u\n"
 		      "albums: %u\n"
 		      "songs: %u\n"
-		      "db_playtime: %lu\n",
+		      "db_playtime: %u\n",
 		      stats.artist_count,
 		      stats.album_count,
 		      stats.song_count,
-		      stats.total_duration);
+		      total_duration_s);
 
 	const time_t update_stamp = db.GetUpdateStamp();
 	if (update_stamp > 0)

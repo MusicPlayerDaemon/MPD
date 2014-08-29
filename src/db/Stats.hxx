@@ -20,6 +20,8 @@
 #ifndef MPD_DATABASE_STATS_HXX
 #define MPD_DATABASE_STATS_HXX
 
+#include "Chrono.hxx"
+
 struct DatabaseStats {
 	/**
 	 * Number of songs.
@@ -29,7 +31,7 @@ struct DatabaseStats {
 	/**
 	 * Total duration of all songs (in seconds).
 	 */
-	unsigned long total_duration;
+	std::chrono::duration<std::uint64_t, SongTime::period> total_duration;
 
 	/**
 	 * Number of distinct artist names.
@@ -43,7 +45,7 @@ struct DatabaseStats {
 
 	void Clear() {
 		song_count = 0;
-		total_duration = 0;
+		total_duration = total_duration.zero();
 		artist_count = album_count = 0;
 	}
 };

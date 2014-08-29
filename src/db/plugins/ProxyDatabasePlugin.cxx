@@ -807,7 +807,7 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 	update_stamp = (time_t)mpd_stats_get_db_update_time(stats2);
 
 	stats.song_count = mpd_stats_get_number_of_songs(stats2);
-	stats.total_duration = mpd_stats_get_db_play_time(stats2);
+	stats.total_duration = std::chrono::seconds(mpd_stats_get_db_play_time(stats2));
 	stats.artist_count = mpd_stats_get_number_of_artists(stats2);
 	stats.album_count = mpd_stats_get_number_of_albums(stats2);
 	mpd_stats_free(stats2);

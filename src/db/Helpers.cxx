@@ -41,7 +41,7 @@ StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 	      const Tag &tag)
 {
 	if (!tag.duration.IsNegative())
-		stats.total_duration += tag.duration.ToS();
+		stats.total_duration += tag.duration;
 
 	for (const auto &item : tag) {
 		switch (item.type) {
