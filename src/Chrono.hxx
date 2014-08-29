@@ -125,6 +125,10 @@ public:
 		return SignedSongTime(rep(s) * 1000);
 	}
 
+	static constexpr SignedSongTime FromS(unsigned s) {
+		return SignedSongTime(rep(s) * 1000);
+	}
+
 	static constexpr SignedSongTime FromS(float s) {
 		return SignedSongTime(rep(s * 1000));
 	}
