@@ -110,6 +110,11 @@ public:
 	template<typename T>
 	explicit constexpr SignedSongTime(T t):Base(t) {}
 
+	/**
+	 * Allow implicit conversion from SongTime to SignedSongTime.
+	 */
+	constexpr SignedSongTime(SongTime t):Base(t) {}
+
 	static constexpr SignedSongTime zero() {
 		return SignedSongTime(Base::zero());
 	}
