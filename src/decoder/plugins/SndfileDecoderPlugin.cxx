@@ -140,11 +140,10 @@ static SF_VIRTUAL_IO vio = {
 /**
  * Converts a frame number to a timestamp (in seconds).
  */
-static SongTime
-frame_to_time(sf_count_t frame, const AudioFormat *audio_format)
+static constexpr SongTime
+sndfile_duration(const SF_INFO &info)
 {
-	return SongTime::FromScale<uint64_t>(frame,
-					     audio_format->sample_rate);
+	return SongTime::FromScale<uint64_t>(info.frames, info.samplerate);
 }
 
 static void
@@ -174,7 +173,7 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 	}
 
 	decoder_initialized(decoder, audio_format, info.seekable,
-			    frame_to_time(info.frames, &audio_format));
+			    sndfile_duration(info));
 
 	int buffer[4096];
 
@@ -246,9 +245,8 @@ sndfile_scan_stream(InputStream &is,
 		return false;
 	}
 
-	const auto duration =
-		SongTime::FromScale<uint64_t>(info.frames, info.samplerate);
-	tag_handler_invoke_duration(handler, handler_ctx, duration);
+	tag_handler_invoke_duration(handler, handler_ctx,
+				    sndfile_duration(info));
 
 	for (auto i : sndfile_tags)
 		sndfile_handle_tag(sf, i.str, i.tag, handler, handler_ctx);
