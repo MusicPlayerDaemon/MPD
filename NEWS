@@ -8,6 +8,7 @@ ver 0.19 (not yet released)
   - "list" on album artist falls back to the artist tag
   - "list" and "count" allow grouping
   - new "search"/"find" filter "modified-since"
+  - "seek*" allows fractional position
   - close connection after syntax error
 * database
   - proxy: forward "idle" events
