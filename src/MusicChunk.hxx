@@ -20,6 +20,7 @@
 #ifndef MPD_MUSIC_CHUNK_HXX
 #define MPD_MUSIC_CHUNK_HXX
 
+#include "Chrono.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/WritableBuffer.hxx"
 
@@ -62,7 +63,7 @@ struct MusicChunk {
 	uint16_t bit_rate;
 
 	/** the time stamp within the song */
-	float times;
+	SignedSongTime time;
 
 	/**
 	 * An optional tag associated with this chunk (and the
@@ -128,7 +129,8 @@ struct MusicChunk {
 	 * @return a writable buffer, or nullptr if the chunk is full
 	 */
 	WritableBuffer<void> Write(AudioFormat af,
-				   float data_time, uint16_t bit_rate);
+				   SongTime data_time,
+				   uint16_t bit_rate);
 
 	/**
 	 * Increases the length of the chunk after the caller has written to

@@ -341,10 +341,10 @@ MultipleOutputs::Check()
 			   this chunk */
 			return pipe->GetSize();
 
-		if (chunk->length > 0 && chunk->times >= 0.0)
+		if (chunk->length > 0 && !chunk->time.IsNegative())
 			/* only update elapsed_time if the chunk
 			   provides a defined value */
-			elapsed_time = SignedSongTime::FromS(chunk->times);
+			elapsed_time = chunk->time;
 
 		is_tail = chunk->next == nullptr;
 		if (is_tail)

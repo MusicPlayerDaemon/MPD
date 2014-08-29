@@ -512,8 +512,8 @@ decoder_data(Decoder &decoder,
 
 		const auto dest =
 			chunk->Write(dc.out_audio_format,
-				     decoder.timestamp -
-				     dc.song->GetStartTime().ToDoubleS(),
+				     SongTime::FromS(decoder.timestamp) -
+				     dc.song->GetStartTime(),
 				     kbit_rate);
 		if (dest.IsNull()) {
 			/* the chunk is full, flush it */

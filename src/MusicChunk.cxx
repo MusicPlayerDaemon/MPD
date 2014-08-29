@@ -41,17 +41,17 @@ MusicChunk::CheckFormat(const AudioFormat other_format) const
 
 WritableBuffer<void>
 MusicChunk::Write(const AudioFormat af,
-		  float data_time, uint16_t _bit_rate)
+		  SongTime data_time, uint16_t _bit_rate)
 {
 	assert(CheckFormat(af));
 	assert(length == 0 || audio_format.IsValid());
 
 	if (length == 0) {
 		/* if the chunk is empty, nobody has set bitRate and
-		   times yet */
+		   time yet */
 
 		bit_rate = _bit_rate;
-		times = data_time;
+		time = data_time;
 	}
 
 	const size_t frame_size = af.GetFrameSize();

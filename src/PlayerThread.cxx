@@ -499,7 +499,7 @@ Player::SendSilence()
 	   partial frames */
 	unsigned num_frames = sizeof(chunk->data) / frame_size;
 
-	chunk->times = -1.0; /* undefined time stamp */
+	chunk->time = SignedSongTime::Negative(); /* undefined time stamp */
 	chunk->length = num_frames * frame_size;
 	memset(chunk->data, 0, chunk->length);
 
