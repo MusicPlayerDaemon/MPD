@@ -75,6 +75,18 @@ public:
 		return count() * T(scale) / 1000;
 	}
 
+	/**
+	 * Convert a scalar value with the given scale to a #SongTime
+	 * instance.
+	 *
+	 * @param value the input value
+	 * @param scale the value's scale in Hz
+	 */
+	template<typename T=rep>
+	static constexpr SongTime FromScale(T value, unsigned scale) {
+		return SongTime(value * T(1000) / T(scale));
+	}
+
 	constexpr double ToDoubleS() const {
 		return double(count()) / 1000.;
 	};
@@ -161,6 +173,18 @@ public:
 	template<typename T=rep>
 	constexpr T ToScale(unsigned scale) const {
 		return count() * T(scale) / 1000;
+	}
+
+	/**
+	 * Convert a scalar value with the given scale to a
+	 * #SignedSongTime instance.
+	 *
+	 * @param value the input value
+	 * @param scale the value's scale in Hz
+	 */
+	template<typename T=rep>
+	static constexpr SignedSongTime FromScale(T value, unsigned scale) {
+		return SignedSongTime(value * T(1000) / T(scale));
 	}
 
 	constexpr double ToDoubleS() const {
