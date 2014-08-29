@@ -58,6 +58,14 @@ public:
 		return SongTime(ms);
 	}
 
+	constexpr rep ToS() const {
+		return count() / rep(1000);
+	}
+
+	constexpr rep RoundS() const {
+		return (count() + 500) / rep(1000);
+	}
+
 	constexpr rep ToMS() const {
 		return count();
 	}
@@ -127,6 +135,14 @@ public:
 
 	static constexpr SignedSongTime FromMS(rep ms) {
 		return SignedSongTime(ms);
+	}
+
+	constexpr rep ToS() const {
+		return count() / rep(1000);
+	}
+
+	constexpr rep RoundS() const {
+		return (count() + 500) / rep(1000);
 	}
 
 	constexpr rep ToMS() const {
