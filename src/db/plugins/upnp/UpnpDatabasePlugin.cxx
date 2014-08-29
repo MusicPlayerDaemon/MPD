@@ -772,10 +772,7 @@ UpnpDatabase::GetStats(const DatabaseSelection &,
 {
 	/* Note: this gets called before the daemonizing so we can't
 	   reallyopen this would be a problem if we had real stats */
-	stats.song_count = 0;
-	stats.total_duration = 0;
-	stats.artist_count = 0;
-	stats.album_count = 0;
+	stats.Clear();
 	return true;
 }
 
