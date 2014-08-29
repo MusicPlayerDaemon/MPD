@@ -24,6 +24,7 @@
 #include "Queue.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "thread/Thread.hxx"
+#include "Compiler.h"
 
 class SimpleDatabase;
 class DatabaseListener;

@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "Editor.hxx"
+#include "Compiler.h"
 
 #include <sys/stat.h>
 

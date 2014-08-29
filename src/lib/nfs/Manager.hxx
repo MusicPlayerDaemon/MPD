@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "Connection.hxx"
+#include "Compiler.h"
 
 #include <string>
 #include <map>

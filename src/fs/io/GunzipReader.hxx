@@ -23,6 +23,7 @@
 #include "check.h"
 #include "Reader.hxx"
 #include "util/StaticFifoBuffer.hxx"
+#include "Compiler.h"
 
 #include <zlib.h>
 

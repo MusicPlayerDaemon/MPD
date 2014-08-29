@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "Reader.hxx"
+#include "Compiler.h"
 
 #include <stdint.h>
 

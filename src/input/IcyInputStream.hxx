@@ -22,6 +22,7 @@
 
 #include "ProxyInputStream.hxx"
 #include "IcyMetaDataParser.hxx"
+#include "Compiler.h"
 
 struct Tag;
 

@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "OutputStream.hxx"
+#include "Compiler.h"
 
 #include <assert.h>
 #include <zlib.h>

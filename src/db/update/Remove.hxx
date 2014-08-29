@@ -24,6 +24,7 @@
 #include "event/DeferredMonitor.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
+#include "Compiler.h"
 
 struct Song;
 class DatabaseListener;

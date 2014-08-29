@@ -23,6 +23,7 @@
 #include "check.h"
 #include "OutputStream.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "Compiler.h"
 
 #include <assert.h>
 

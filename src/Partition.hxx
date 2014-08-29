@@ -26,6 +26,7 @@
 #include "PlayerControl.hxx"
 #include "PlayerListener.hxx"
 #include "Chrono.hxx"
+#include "Compiler.h"
 
 struct Instance;
 class MultipleOutputs;

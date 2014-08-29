@@ -31,6 +31,7 @@
 #include "event/ServerSocket.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "util/Cast.hxx"
+#include "Compiler.h"
 
 #ifdef _LIBCPP_VERSION
 /* can't use incomplete template arguments with libc++ */

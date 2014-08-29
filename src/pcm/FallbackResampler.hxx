@@ -23,6 +23,7 @@
 #include "Resampler.hxx"
 #include "PcmBuffer.hxx"
 #include "AudioFormat.hxx"
+#include "Compiler.h"
 
 /**
  * A naive resampler that is used when no external library was found
