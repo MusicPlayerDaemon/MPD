@@ -429,7 +429,7 @@ alsa_setup(AlsaOutput *ad, AudioFormat &audio_format,
 	unsigned int channels = audio_format.channels;
 	int err;
 	const char *cmd = nullptr;
-	int retry = MPD_ALSA_RETRY_NR;
+	unsigned retry = MPD_ALSA_RETRY_NR;
 	unsigned int period_time, period_time_ro;
 	unsigned int buffer_time;
 
