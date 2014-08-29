@@ -674,8 +674,8 @@ Player::ProcessCommand()
 			pc.Lock();
 		}
 
-		pc.elapsed_time = pc.outputs.GetElapsedTime() >= 0
-			? SongTime::FromS(pc.outputs.GetElapsedTime())
+		pc.elapsed_time = !pc.outputs.GetElapsedTime().IsNegative()
+			? SongTime(pc.outputs.GetElapsedTime())
 			: elapsed_time;
 
 		pc.CommandFinished();

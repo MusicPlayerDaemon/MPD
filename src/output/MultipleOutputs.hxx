@@ -28,6 +28,7 @@
 
 #include "AudioFormat.hxx"
 #include "ReplayGainInfo.hxx"
+#include "Chrono.hxx"
 #include "Compiler.h"
 
 #include <vector>
@@ -66,7 +67,7 @@ class MultipleOutputs {
 	 * The "elapsed_time" stamp of the most recently finished
 	 * chunk.
 	 */
-	float elapsed_time;
+	SignedSongTime elapsed_time;
 
 public:
 	/**
@@ -194,7 +195,7 @@ public:
 	 * finished yet.
 	 */
 	gcc_pure
-	float GetElapsedTime() const {
+	SignedSongTime GetElapsedTime() const {
 		return elapsed_time;
 	}
 

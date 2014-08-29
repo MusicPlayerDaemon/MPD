@@ -39,7 +39,7 @@ MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
 	:mixer_listener(_mixer_listener),
 	 input_audio_format(AudioFormat::Undefined()),
 	 buffer(nullptr), pipe(nullptr),
-	 elapsed_time(-1)
+	 elapsed_time(SignedSongTime::Negative())
 {
 }
 
@@ -344,7 +344,7 @@ MultipleOutputs::Check()
 		if (chunk->length > 0 && chunk->times >= 0.0)
 			/* only update elapsed_time if the chunk
 			   provides a defined value */
-			elapsed_time = chunk->times;
+			elapsed_time = SignedSongTime::FromS(chunk->times);
 
 		is_tail = chunk->next == nullptr;
 		if (is_tail)
@@ -428,7 +428,7 @@ MultipleOutputs::Cancel()
 
 	/* invalidate elapsed_time */
 
-	elapsed_time = -1.0;
+	elapsed_time = SignedSongTime::Negative();
 }
 
 void
@@ -449,7 +449,7 @@ MultipleOutputs::Close()
 
 	input_audio_format.Clear();
 
-	elapsed_time = -1.0;
+	elapsed_time = SignedSongTime::Negative();
 }
 
 void
@@ -470,7 +470,7 @@ MultipleOutputs::Release()
 
 	input_audio_format.Clear();
 
-	elapsed_time = -1.0;
+	elapsed_time = SignedSongTime::Negative();
 }
 
 void
@@ -478,5 +478,5 @@ MultipleOutputs::SongBorder()
 {
 	/* clear the elapsed_time pointer at the beginning of a new
 	   song */
-	elapsed_time = 0.0;
+	elapsed_time = SignedSongTime::zero();
 }
