@@ -71,8 +71,8 @@ public:
 	}
 
 	template<typename T=rep>
-	constexpr T ToScale(unsigned base) const {
-		return count() * T(base) / 1000;
+	constexpr T ToScale(unsigned scale) const {
+		return count() * T(scale) / 1000;
 	}
 
 	constexpr double ToDoubleS() const {
@@ -159,8 +159,8 @@ public:
 	}
 
 	template<typename T=rep>
-	constexpr T ToScale(unsigned base) const {
-		return count() * T(base) / 1000;
+	constexpr T ToScale(unsigned scale) const {
+		return count() * T(scale) / 1000;
 	}
 
 	constexpr double ToDoubleS() const {
