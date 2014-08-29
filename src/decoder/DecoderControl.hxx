@@ -142,7 +142,7 @@ struct DecoderControl {
 	 */
 	SongTime end_time;
 
-	float total_time;
+	SignedSongTime total_time;
 
 	/** the #MusicChunk allocator */
 	MusicBuffer *buffer;

@@ -450,7 +450,7 @@ Player::CheckDecoderStartup()
 			return true;
 
 		pc.Lock();
-		pc.total_time = real_song_duration(*dc.song, dc.total_time);
+		pc.total_time = real_song_duration(*dc.song, dc.total_time.ToDoubleS());
 		pc.audio_format = dc.in_audio_format;
 		pc.Unlock();
 
@@ -1001,7 +1001,7 @@ Player::Run()
 			   calculate how many chunks will be required
 			   for it */
 			cross_fade_chunks =
-				pc.cross_fade.Calculate(dc.total_time,
+				pc.cross_fade.Calculate(dc.total_time.ToDoubleS(),
 							dc.replay_gain_db,
 							dc.replay_gain_prev_db,
 							dc.GetMixRampStart(),
