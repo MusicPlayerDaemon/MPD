@@ -34,13 +34,16 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/FileOutputStream.hxx"
-#include "fs/io/GzipOutputStream.hxx"
 #include "config/ConfigData.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
+
+#ifdef HAVE_ZLIB
+#include "fs/io/GzipOutputStream.hxx"
+#endif
 
 #include <errno.h>
 
