@@ -22,6 +22,7 @@
 
 #include "TagType.h" // IWYU pragma: export
 #include "TagItem.hxx" // IWYU pragma: export
+#include "Chrono.hxx"
 #include "Compiler.h"
 
 #include <algorithm>
@@ -35,12 +36,10 @@
  */
 struct Tag {
 	/**
-	 * The duration of the song (in seconds).  A value of zero
-	 * means that the length is unknown.  If the duration is
-	 * really between zero and one second, you should round up to
-	 * 1.
+	 * The duration of the song.  A negative value means that the
+	 * length is unknown.
 	 */
-	int time;
+	SignedSongTime duration;
 
 	/**
 	 * Does this file have an embedded playlist (e.g. embedded CUE
@@ -57,13 +56,13 @@ struct Tag {
 	/**
 	 * Create an empty tag.
 	 */
-	Tag():time(-1), has_playlist(false),
+	Tag():duration(SignedSongTime::Negative()), has_playlist(false),
 	      num_items(0), items(nullptr) {}
 
 	Tag(const Tag &other);
 
 	Tag(Tag &&other)
-		:time(other.time), has_playlist(other.has_playlist),
+		:duration(other.duration), has_playlist(other.has_playlist),
 		 num_items(other.num_items), items(other.items) {
 		other.items = nullptr;
 		other.num_items = 0;
@@ -79,7 +78,7 @@ struct Tag {
 	Tag &operator=(const Tag &other) = delete;
 
 	Tag &operator=(Tag &&other) {
-		time = other.time;
+		duration = other.duration;
 		has_playlist = other.has_playlist;
 		std::swap(items, other.items);
 		std::swap(num_items, other.num_items);
@@ -87,8 +86,8 @@ struct Tag {
 	}
 
 	/**
-	 * Returns true if the tag contains no items.  This ignores the "time"
-	 * attribute.
+	 * Returns true if the tag contains no items.  This ignores
+	 * the "duration" attribute.
 	 */
 	bool IsEmpty() const {
 		return num_items == 0;
@@ -98,7 +97,7 @@ struct Tag {
 	 * Returns true if the tag contains any information.
 	 */
 	bool IsDefined() const {
-		return !IsEmpty() || time >= 0;
+		return !IsEmpty() || !duration.IsNegative();
 	}
 
 	/**

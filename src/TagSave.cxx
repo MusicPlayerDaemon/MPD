@@ -27,8 +27,8 @@
 void
 tag_save(BufferedOutputStream &os, const Tag &tag)
 {
-	if (tag.time >= 0)
-		os.Format(SONG_TIME "%i\n", tag.time);
+	if (!tag.duration.IsNegative())
+		os.Format(SONG_TIME "%f\n", tag.duration.ToDoubleS());
 
 	if (tag.has_playlist)
 		os.Format("Playlist: yes\n");

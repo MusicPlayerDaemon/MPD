@@ -27,7 +27,7 @@ add_tag_duration(unsigned seconds, void *ctx)
 {
 	TagBuilder &tag = *(TagBuilder *)ctx;
 
-	tag.SetTime(seconds);
+	tag.SetDuration(SignedSongTime::FromS(seconds));
 }
 
 static void

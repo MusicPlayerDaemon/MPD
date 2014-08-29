@@ -100,7 +100,7 @@ song_load(TextFile &file, const char *uri,
 		if ((type = tag_name_parse(line)) != TAG_NUM_OF_ITEM_TYPES) {
 			tag.AddItem(type, value);
 		} else if (strcmp(line, "Time") == 0) {
-			tag.SetTime(atoi(value));
+			tag.SetDuration(SignedSongTime::FromS(atof(value)));
 		} else if (strcmp(line, "Playlist") == 0) {
 			tag.SetHasPlaylist(strcmp(value, "yes") == 0);
 		} else if (strcmp(line, SONG_MTIME) == 0) {

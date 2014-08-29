@@ -213,7 +213,7 @@ public:
 	}
 
 	gcc_pure
-	double GetDuration() const;
+	SignedSongTime GetDuration() const;
 
 	/**
 	 * Update the #tag and #mtime.

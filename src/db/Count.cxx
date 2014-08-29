@@ -64,7 +64,10 @@ static bool
 stats_visitor_song(SearchStats &stats, const LightSong &song)
 {
 	stats.n_songs++;
-	stats.total_time_s += song.GetDuration();
+
+	const auto duration = song.GetDuration();
+	if (!duration.IsNegative())
+		stats.total_time_s += duration.ToS();
 
 	return true;
 }
@@ -79,8 +82,8 @@ CollectGroupCounts(TagCountMap &map, TagType group, const Tag &tag)
 							   SearchStats()));
 			SearchStats &s = r.first->second;
 			++s.n_songs;
-			if (tag.time > 0)
-				s.total_time_s += tag.time;
+			if (!tag.duration.IsNegative())
+				s.total_time_s += tag.duration.ToS();
 
 			found = true;
 		}

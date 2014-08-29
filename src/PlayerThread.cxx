@@ -349,7 +349,7 @@ Player::WaitForDecoder()
 	decoder_starting = true;
 
 	/* update PlayerControl's song information */
-	pc.total_time = pc.next_song->GetDuration();
+	pc.total_time = pc.next_song->GetDuration().ToDoubleS();
 	pc.bit_rate = 0;
 	pc.audio_format.Clear();
 
@@ -374,7 +374,7 @@ real_song_duration(const DetachedSong &song, double decoder_duration)
 	if (decoder_duration <= 0.0)
 		/* the decoder plugin didn't provide information; fall
 		   back to Song::GetDuration() */
-		return song.GetDuration();
+		return song.GetDuration().ToDoubleS();
 
 	const SongTime start_time = song.GetStartTime();
 	const SongTime end_time = song.GetEndTime();

@@ -89,7 +89,7 @@ extm3u_parse_tag(const char *line)
 		return Tag();
 
 	TagBuilder tag;
-	tag.SetTime(duration);
+	tag.SetDuration(SignedSongTime::FromS(unsigned(duration)));
 
 	/* unfortunately, there is no real specification for the
 	   EXTM3U format, so we must assume that the string after the

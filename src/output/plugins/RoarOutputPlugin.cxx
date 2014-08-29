@@ -363,16 +363,20 @@ RoarOutput::SendTag(const Tag &tag)
 
 	const ScopeLock protect(mutex);
 
-	size_t cnt = 1;
+	size_t cnt = 0;
 	struct roar_keyval vals[32];
 	char uuid_buf[32][64];
 
 	char timebuf[16];
-	snprintf(timebuf, sizeof(timebuf), "%02d:%02d:%02d",
-		 tag.time / 3600, (tag.time % 3600) / 60, tag.time % 60);
+	if (!tag.duration.IsNegative()) {
+		const unsigned seconds = tag.duration.ToS();
+		snprintf(timebuf, sizeof(timebuf), "%02d:%02d:%02d",
+			 seconds / 3600, (seconds % 3600) / 60, seconds % 60);
 
-	vals[0].key = const_cast<char *>("LENGTH");
-	vals[0].value = timebuf;
+		vals[cnt].key = const_cast<char *>("LENGTH");
+		vals[cnt].value = timebuf;
+		++cnt;
+	}
 
 	for (const auto &item : tag) {
 		if (cnt >= 32)

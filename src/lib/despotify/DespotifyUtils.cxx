@@ -105,7 +105,7 @@ mpd_despotify_tag_from_track(const ds_track &track)
 	tag.AddItem(TAG_ALBUM, track.album);
 	tag.AddItem(TAG_DATE, date);
 	tag.AddItem(TAG_COMMENT, comment);
-	tag.SetTime(track.length / 1000);
+	tag.SetDuration(SignedSongTime::FromMS(track.length));
 
 	return tag.Commit();
 }

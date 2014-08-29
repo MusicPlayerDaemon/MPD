@@ -21,6 +21,7 @@
 #define MPD_TAG_BUILDER_HXX
 
 #include "TagType.h"
+#include "Chrono.hxx"
 #include "Compiler.h"
 
 #include <vector>
@@ -35,12 +36,10 @@ struct Tag;
  */
 class TagBuilder {
 	/**
-	 * The duration of the song (in seconds).  A value of zero
-	 * means that the length is unknown.  If the duration is
-	 * really between zero and one second, you should round up to
-	 * 1.
+	 * The duration of the song.  A negative value means that the
+	 * length is unknown.
 	 */
-	int time;
+	SignedSongTime duration;
 
 	/**
 	 * Does this file have an embedded playlist (e.g. embedded CUE
@@ -56,7 +55,7 @@ public:
 	 * Create an empty tag.
 	 */
 	TagBuilder()
-		:time(-1), has_playlist(false) {}
+		:duration(SignedSongTime::Negative()), has_playlist(false) {}
 
 	~TagBuilder() {
 		Clear();
@@ -73,8 +72,8 @@ public:
 	TagBuilder &operator=(Tag &&other);
 
 	/**
-	 * Returns true if the tag contains no items.  This ignores the "time"
-	 * attribute.
+	 * Returns true if the tag contains no items.  This ignores
+	 * the "duration" attribute.
 	 */
 	bool IsEmpty() const {
 		return items.empty();
@@ -85,7 +84,7 @@ public:
 	 */
 	gcc_pure
 	bool IsDefined() const {
-		return time >= 0 || has_playlist || !IsEmpty();
+		return !duration.IsNegative() || has_playlist || !IsEmpty();
 	}
 
 	void Clear();
@@ -109,8 +108,8 @@ public:
 	 */
 	Tag *CommitNew();
 
-	void SetTime(int _time) {
-		time = _time;
+	void SetDuration(SignedSongTime _duration) {
+		duration = _duration;
 	}
 
 	void SetHasPlaylist(bool _has_playlist) {

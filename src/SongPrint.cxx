@@ -119,7 +119,7 @@ song_print_info(Client &client, const DetachedSong &song, bool base)
 
 	tag_print_values(client, song.GetTag());
 
-	double duration = song.GetDuration();
-	if (duration >= 0)
-		client_printf(client, "Time: %u\n", unsigned(duration + 0.5));
+	const auto duration = song.GetDuration();
+	if (!duration.IsNegative())
+		client_printf(client, "Time: %u\n", duration.RoundS());
 }

@@ -87,7 +87,7 @@ struct LightSong {
 	}
 
 	gcc_pure
-	double GetDuration() const;
+	SignedSongTime GetDuration() const;
 };
 
 #endif

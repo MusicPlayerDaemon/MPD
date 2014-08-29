@@ -29,7 +29,7 @@
 #include <stdlib.h>
 
 TagBuilder::TagBuilder(const Tag &other)
-	:time(other.time), has_playlist(other.has_playlist)
+	:duration(other.duration), has_playlist(other.has_playlist)
 {
 	items.reserve(other.num_items);
 
@@ -40,7 +40,7 @@ TagBuilder::TagBuilder(const Tag &other)
 }
 
 TagBuilder::TagBuilder(Tag &&other)
-	:time(other.time), has_playlist(other.has_playlist)
+	:duration(other.duration), has_playlist(other.has_playlist)
 {
 	/* move all TagItem pointers from the Tag object; we don't
 	   need to contact the tag pool, because all we do is move
@@ -58,7 +58,7 @@ TagBuilder &
 TagBuilder::operator=(const TagBuilder &other)
 {
 	/* copy all attributes */
-	time = other.time;
+	duration = other.duration;
 	has_playlist = other.has_playlist;
 	items = other.items;
 
@@ -74,7 +74,7 @@ TagBuilder::operator=(const TagBuilder &other)
 TagBuilder &
 TagBuilder::operator=(TagBuilder &&other)
 {
-	time = other.time;
+	duration = other.duration;
 	has_playlist = other.has_playlist;
 	items = std::move(other.items);
 
@@ -84,7 +84,7 @@ TagBuilder::operator=(TagBuilder &&other)
 TagBuilder &
 TagBuilder::operator=(Tag &&other)
 {
-	time = other.time;
+	duration = other.duration;
 	has_playlist = other.has_playlist;
 
 	/* move all TagItem pointers from the Tag object; we don't
@@ -105,7 +105,7 @@ TagBuilder::operator=(Tag &&other)
 void
 TagBuilder::Clear()
 {
-	time = -1;
+	duration = SignedSongTime::Negative();
 	has_playlist = false;
 	RemoveAll();
 }
@@ -115,7 +115,7 @@ TagBuilder::Commit(Tag &tag)
 {
 	tag.Clear();
 
-	tag.time = time;
+	tag.duration = duration;
 	tag.has_playlist = has_playlist;
 
 	/* move all TagItem pointers to the new Tag object without
@@ -162,8 +162,8 @@ TagBuilder::HasType(TagType type) const
 void
 TagBuilder::Complement(const Tag &other)
 {
-	if (time <= 0)
-		time = other.time;
+	if (duration.IsNegative())
+		duration = other.duration;
 
 	has_playlist |= other.has_playlist;
 

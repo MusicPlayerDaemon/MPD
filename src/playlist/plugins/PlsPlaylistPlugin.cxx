@@ -85,7 +85,7 @@ pls_parser(GKeyFile *keyfile, std::forward_list<DetachedSong> &songs)
 		int length = g_key_file_get_integer(keyfile, "playlist", key,
 						    nullptr);
 		if (length > 0)
-			tag.SetTime(length);
+			tag.SetDuration(SignedSongTime::FromS(length));
 
 		songs.emplace_front(uri, tag.Commit());
 		g_free(uri);

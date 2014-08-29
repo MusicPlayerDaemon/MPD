@@ -59,28 +59,28 @@ ParseItemClass(const char *name, size_t length)
 }
 
 gcc_pure
-static int
+static SignedSongTime
 ParseDuration(const char *duration)
 {
 	char *endptr;
 
 	unsigned result = ParseUnsigned(duration, &endptr);
 	if (endptr == duration || *endptr != ':')
-		return 0;
+		return SignedSongTime::Negative();
 
 	result *= 60;
 	duration = endptr + 1;
 	result += ParseUnsigned(duration, &endptr);
 	if (endptr == duration || *endptr != ':')
-		return 0;
+		return SignedSongTime::Negative();
 
 	result *= 60;
 	duration = endptr + 1;
 	result += ParseUnsigned(duration, &endptr);
 	if (endptr == duration || *endptr != 0)
-		return 0;
+		return SignedSongTime::Negative();
 
-	return result;
+	return SignedSongTime::FromS(result);
 }
 
 /**
@@ -183,7 +183,7 @@ protected:
 				const char *duration =
 					GetAttribute(attrs, "duration");
 				if (duration != nullptr)
-					tag.SetTime(ParseDuration(duration));
+					tag.SetDuration(ParseDuration(duration));
 
 				state = RES;
 			}

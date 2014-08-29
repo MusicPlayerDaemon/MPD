@@ -61,7 +61,7 @@ tag_name_parse_i(const char *name)
 void
 Tag::Clear()
 {
-	time = -1;
+	duration = SignedSongTime::Negative();
 	has_playlist = false;
 
 	tag_pool_lock.lock();
@@ -75,7 +75,7 @@ Tag::Clear()
 }
 
 Tag::Tag(const Tag &other)
-	:time(other.time), has_playlist(other.has_playlist),
+	:duration(other.duration), has_playlist(other.has_playlist),
 	 num_items(other.num_items),
 	 items(nullptr)
 {

@@ -155,10 +155,13 @@ Client::AllowFile(gcc_unused Path path_fs, gcc_unused Error &error) const
 static std::string
 ToString(const Tag &tag)
 {
-	char buffer[64];
-	sprintf(buffer, "%d", tag.time);
+	std::string result;
 
-	std::string result = buffer;
+	if (!tag.duration.IsNegative()) {
+		char buffer[64];
+		sprintf(buffer, "%d", tag.duration.ToMS());
+		result.append(buffer);
+	}
 
 	for (const auto &item : tag) {
 		result.push_back('|');

@@ -58,11 +58,16 @@ DetachedSong::IsInDatabase() const
 	return !uri_has_scheme(_uri) && !PathTraitsUTF8::IsAbsolute(_uri);
 }
 
-double
+SignedSongTime
 DetachedSong::GetDuration() const
 {
-	if (end_time.IsPositive())
-		return (end_time - start_time).ToDoubleS();
+	SongTime a = start_time, b = end_time;
+	if (!b.IsPositive()) {
+		if (tag.duration.IsNegative())
+			return tag.duration;
 
-	return tag.time - start_time.ToDoubleS();
+		b = SongTime(tag.duration);
+	}
+
+	return SignedSongTime(b - a);
 }

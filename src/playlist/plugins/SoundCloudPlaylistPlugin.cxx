@@ -215,7 +215,7 @@ handle_end_map(void *ctx)
 			      soundcloud_config.apikey.c_str(), nullptr);
 
 	TagBuilder tag;
-	tag.SetTime(data->duration / 1000);
+	tag.SetDuration(SignedSongTime::FromMS(data->duration));
 	if (data->title != nullptr)
 		tag.AddItem(TAG_NAME, data->title);
 

@@ -199,7 +199,10 @@ ProxySong::ProxySong(const mpd_song *song)
 #endif
 
 	TagBuilder tag_builder;
-	tag_builder.SetTime(mpd_song_get_duration(song));
+
+	const unsigned duration = mpd_song_get_duration(song);
+	if (duration > 0)
+		tag_builder.SetDuration(SignedSongTime::FromS(duration));
 
 	for (const auto *i = &tag_table[0]; i->d != TAG_NUM_OF_ITEM_TYPES; ++i)
 		Copy(tag_builder, i->d, song, i->s);

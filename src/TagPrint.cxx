@@ -52,8 +52,8 @@ tag_print_values(Client &client, const Tag &tag)
 
 void tag_print(Client &client, const Tag &tag)
 {
-	if (tag.time >= 0)
-		client_printf(client, SONG_TIME "%i\n", tag.time);
+	if (!tag.duration.IsNegative())
+		client_printf(client, SONG_TIME "%i\n", tag.duration.RoundS());
 
 	tag_print_values(client, tag);
 }

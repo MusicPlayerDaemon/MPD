@@ -463,18 +463,19 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 	}
 
 	DetachedSong &song = queue.Get(position);
-	if (song.GetTag().time > 0) {
+
+	const auto duration = song.GetTag().duration;
+	if (!duration.IsNegative()) {
 		/* validate the offsets */
 
-		const unsigned duration = song.GetTag().time;
-		if (start.ToMS() / 1000u > duration) {
+		if (start > duration) {
 			error.Set(playlist_domain,
 				  int(PlaylistResult::BAD_RANGE),
 				  "Invalid start offset");
 			return false;
 		}
 
-		if (end.ToMS() / 1000u > duration)
+		if (end >= duration)
 			end = SongTime::zero();
 	}
 
