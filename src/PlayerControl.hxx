@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYER_H
-#define MPD_PLAYER_H
+#ifndef MPD_PLAYER_CONTROL_HXX
+#define MPD_PLAYER_CONTROL_HXX
 
 #include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
