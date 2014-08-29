@@ -252,7 +252,7 @@ playlist::SeekCurrent(PlayerControl &pc,
 		    status.state != PlayerState::PAUSE)
 			return PlaylistResult::NOT_PLAYING;
 
-		seek_time += SignedSongTime::FromS(status.elapsed_time);
+		seek_time += status.elapsed_time;
 		if (seek_time.IsNegative())
 			seek_time = SignedSongTime::zero();
 	}

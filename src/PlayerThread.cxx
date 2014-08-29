@@ -129,7 +129,7 @@ class Player {
 	 * value; the output thread can estimate the elapsed time more
 	 * precisely.
 	 */
-	float elapsed_time;
+	SongTime elapsed_time;
 
 public:
 	Player(PlayerControl &_pc, DecoderControl &_dc,
@@ -146,7 +146,7 @@ public:
 		 cross_fading(false),
 		 cross_fade_chunks(0),
 		 cross_fade_tag(nullptr),
-		 elapsed_time(0.0) {}
+		 elapsed_time(SongTime::zero()) {}
 
 private:
 	void ClearAndDeletePipe() {
@@ -342,7 +342,7 @@ Player::WaitForDecoder()
 
 	delete song;
 	song = pc.next_song;
-	elapsed_time = 0.0;
+	elapsed_time = SongTime::zero();
 
 	/* set the "starting" flag, which will be cleared by
 	   player_check_decoder_startup() */
@@ -574,7 +574,7 @@ Player::SeekDecoder()
 		return false;
 	}
 
-	elapsed_time = where.ToDoubleS();
+	elapsed_time = where;
 
 	player_command_finished(pc);
 
@@ -674,9 +674,9 @@ Player::ProcessCommand()
 			pc.Lock();
 		}
 
-		pc.elapsed_time = pc.outputs.GetElapsedTime();
-		if (pc.elapsed_time < 0.0)
-			pc.elapsed_time = elapsed_time;
+		pc.elapsed_time = pc.outputs.GetElapsedTime() >= 0
+			? SongTime::FromS(pc.outputs.GetElapsedTime())
+			: elapsed_time;
 
 		pc.CommandFinished();
 		break;
@@ -924,7 +924,7 @@ Player::Run()
 	pc.state = PlayerState::PLAY;
 
 	if (pc.command == PlayerCommand::SEEK)
-		elapsed_time = pc.seek_time.ToDoubleS();
+		elapsed_time = pc.seek_time;
 
 	pc.CommandFinished();
 

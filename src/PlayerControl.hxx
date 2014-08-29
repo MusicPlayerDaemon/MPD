@@ -90,7 +90,7 @@ struct player_status {
 	uint16_t bit_rate;
 	AudioFormat audio_format;
 	SignedSongTime total_time;
-	float elapsed_time;
+	SongTime elapsed_time;
 };
 
 struct PlayerControl {
@@ -152,7 +152,7 @@ struct PlayerControl {
 	uint16_t bit_rate;
 	AudioFormat audio_format;
 	SignedSongTime total_time;
-	float elapsed_time;
+	SongTime elapsed_time;
 
 	/**
 	 * The next queued song.
