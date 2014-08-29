@@ -98,9 +98,9 @@ struct PlayerControl {
 
 	MultipleOutputs &outputs;
 
-	unsigned buffer_chunks;
+	const unsigned buffer_chunks;
 
-	unsigned int buffered_before_play;
+	const unsigned buffered_before_play;
 
 	/**
 	 * The handle of the player thread.

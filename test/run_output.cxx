@@ -55,9 +55,11 @@ filter_plugin_by_name(gcc_unused const char *name)
 
 PlayerControl::PlayerControl(PlayerListener &_listener,
 			     MultipleOutputs &_outputs,
-			     gcc_unused unsigned _buffer_chunks,
-			     gcc_unused unsigned _buffered_before_play)
-	:listener(_listener), outputs(_outputs) {}
+			     unsigned _buffer_chunks,
+			     unsigned _buffered_before_play)
+	:listener(_listener), outputs(_outputs),
+	 buffer_chunks(_buffer_chunks),
+	 buffered_before_play(_buffered_before_play) {}
 PlayerControl::~PlayerControl() {}
 
 static AudioOutput *
