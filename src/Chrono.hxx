@@ -106,6 +106,13 @@ public:
 		return SignedSongTime(Base::zero());
 	}
 
+	/**
+	 * Generate a negative value.
+	 */
+	static constexpr SignedSongTime Negative() {
+		return SignedSongTime(-1);
+	}
+
 	static constexpr SignedSongTime FromS(int s) {
 		return SignedSongTime(rep(s) * 1000);
 	}
