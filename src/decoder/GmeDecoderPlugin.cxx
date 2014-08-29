@@ -235,7 +235,7 @@ gme_scan_file(const char *path_fs,
 
 	if (ti->length > 0)
 		tag_handler_invoke_duration(handler, handler_ctx,
-					    ti->length / 100);
+					    ti->length / 1000);
 
 	if (ti->song != nullptr) {
 		if (gme_track_count(emu) > 1) {

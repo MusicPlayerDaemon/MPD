@@ -2,6 +2,7 @@ ver 0.18.13 (not yet released)
 * decoder
   - dsdiff, dsf: fix endless loop on malformed file
   - ffmpeg: support ffmpeg/libav version 11
+  - gme: fix song duration
 * fix state file saver
 * fix build failure on Darwin
 
