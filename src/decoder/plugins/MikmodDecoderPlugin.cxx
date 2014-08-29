@@ -170,7 +170,8 @@ mikmod_decoder_file_decode(Decoder &decoder, Path path_fs)
 	const AudioFormat audio_format(mikmod_sample_rate, SampleFormat::S16, 2);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, audio_format, false, 0);
+	decoder_initialized(decoder, audio_format, false,
+			    SignedSongTime::Negative());
 
 	Player_Start(handle);
 

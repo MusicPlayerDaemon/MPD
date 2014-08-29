@@ -140,10 +140,11 @@ static SF_VIRTUAL_IO vio = {
 /**
  * Converts a frame number to a timestamp (in seconds).
  */
-static float
+static SongTime
 frame_to_time(sf_count_t frame, const AudioFormat *audio_format)
 {
-	return (float)frame / (float)audio_format->sample_rate;
+	return SongTime::FromScale<uint64_t>(frame,
+					     audio_format->sample_rate);
 }
 
 static void

@@ -40,12 +40,12 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 	const bool reverse_endian = mime != nullptr &&
 		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
-	const double time_to_size = audio_format.GetTimeToSize();
 	const auto frame_size = audio_format.GetFrameSize();
 
-	float total_time = -1;
-	if (is.KnownSize())
-		total_time = is.GetSize() / time_to_size;
+	const auto total_time = is.KnownSize()
+		? SignedSongTime::FromScale<uint64_t>(is.GetSize() / frame_size,
+						      audio_format.sample_rate)
+		: SignedSongTime::Negative();
 
 	decoder_initialized(decoder, audio_format,
 			    is.IsSeekable(), total_time);

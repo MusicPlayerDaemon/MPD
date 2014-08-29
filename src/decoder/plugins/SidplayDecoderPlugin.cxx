@@ -159,11 +159,11 @@ get_song_num(const char *path_fs)
 }
 
 /* get the song length in seconds */
-static int
+static SignedSongTime
 get_song_length(Path path_fs)
 {
 	if (songlength_database == nullptr)
-		return -1;
+		return SignedSongTime::Negative();
 
 	char *sid_file = get_container_name(path_fs);
 	SidTuneMod tune(sid_file);
@@ -171,7 +171,7 @@ get_song_length(Path path_fs)
 	if(!tune) {
 		LogWarning(sidplay_domain,
 			   "failed to load file for calculating md5 sum");
-		return -1;
+		return SignedSongTime::Negative();
 	}
 	char md5sum[SIDTUNE_MD5_LENGTH+1];
 	tune.createMD5(md5sum);
@@ -183,7 +183,7 @@ get_song_length(Path path_fs)
 		"Database", md5sum, &num_items, nullptr);
 	if(!values || song_num>num_items) {
 		g_strfreev(values);
-		return -1;
+		return SignedSongTime::Negative();
 	}
 
 	int minutes=strtol(values[song_num-1], nullptr, 10);
@@ -199,7 +199,7 @@ get_song_length(Path path_fs)
 
 	g_strfreev(values);
 
-	return (minutes*60)+seconds;
+	return SignedSongTime::FromS((minutes * 60) + seconds);
 }
 
 static void
@@ -220,8 +220,9 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	const int song_num = get_song_num(path_fs.c_str());
 	tune.selectSong(song_num);
 
-	int song_len=get_song_length(path_fs);
-	if(song_len==-1) song_len=default_songlength;
+	auto duration = get_song_length(path_fs);
+	if (duration.IsNegative() && default_songlength > 0)
+		duration = SongTime::FromS(default_songlength);
 
 	/* initialize the player */
 
@@ -292,12 +293,14 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	const AudioFormat audio_format(48000, SampleFormat::S16, channels);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, audio_format, true, (float)song_len);
+	decoder_initialized(decoder, audio_format, true, duration);
 
 	/* .. and play */
 
 	const unsigned timebase = player.timebase();
-	song_len *= timebase;
+	const unsigned end = duration.IsNegative()
+		? 0u
+		: duration.ToScale<uint64_t>(timebase);
 
 	DecoderCommand cmd;
 	do {
@@ -334,7 +337,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 			decoder_command_finished(decoder);
 		}
 
-		if (song_len > 0 && player.time() >= (unsigned)song_len)
+		if (end > 0 && player.time() >= end)
 			break;
 
 	} while (cmd != DecoderCommand::STOP);
@@ -382,9 +385,10 @@ sidplay_scan_file(Path path_fs,
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
 
 	/* time */
-	int song_len=get_song_length(path_fs);
-	if (song_len >= 0)
-		tag_handler_invoke_duration(handler, handler_ctx, song_len);
+	const auto duration = get_song_length(path_fs);
+	if (!duration.IsNegative())
+		tag_handler_invoke_duration(handler, handler_ctx,
+					    duration.RoundS());
 
 	return true;
 }

@@ -136,10 +136,12 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 
 	data->frame_size = data->audio_format.GetFrameSize();
 
+	const auto duration = SongTime::FromScale<uint64_t>(data->total_frames,
+							    data->audio_format.sample_rate);
+
 	decoder_initialized(data->decoder, data->audio_format,
 			    data->input_stream.IsSeekable(),
-			    (float)data->total_frames /
-			    (float)data->audio_format.sample_rate);
+			    duration);
 
 	data->initialized = true;
 

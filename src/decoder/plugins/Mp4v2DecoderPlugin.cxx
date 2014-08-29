@@ -149,7 +149,8 @@ mp4_file_decode(Decoder &mpd_decoder, Path path_fs)
 	/* initialize the MPD core */
 
 	const MP4Timestamp scale = MP4GetTrackTimeScale(handle, track);
-	const float duration = ((float)MP4GetTrackDuration(handle, track)) / scale + 0.5f;
+	const SongTime duration = SongTime::FromScale<uint64_t>(MP4GetTrackDuration(handle, track),
+								scale);
 	const MP4SampleId num_samples = MP4GetTrackNumberOfSamples(handle, track);
 
 	decoder_initialized(mpd_decoder, audio_format, true, duration);

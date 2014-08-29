@@ -62,7 +62,7 @@ adplug_file_decode(Decoder &decoder, Path path_fs)
 	assert(audio_format.IsValid());
 
 	decoder_initialized(decoder, audio_format, false,
-		player->songlength() / 1000.);
+			    SongTime::FromMS(player->songlength()));
 
 	int16_t buffer[2048];
 	const unsigned frames_per_buffer = ARRAY_SIZE(buffer) / 2;

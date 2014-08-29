@@ -30,7 +30,7 @@ void
 decoder_initialized(Decoder &decoder,
 		    const AudioFormat audio_format,
 		    gcc_unused bool seekable,
-		    float duration)
+		    SignedSongTime duration)
 {
 	struct audio_format_string af_string;
 
@@ -39,7 +39,7 @@ decoder_initialized(Decoder &decoder,
 
 	fprintf(stderr, "audio_format=%s duration=%f\n",
 		audio_format_to_string(audio_format, &af_string),
-		duration);
+		duration.ToDoubleS());
 
 	decoder.initialized = true;
 }

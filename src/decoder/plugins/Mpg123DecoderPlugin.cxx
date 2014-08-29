@@ -131,9 +131,11 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 
 	/* tell MPD core we're ready */
 
-	decoder_initialized(decoder, audio_format, true,
-			    (float)num_samples /
-			    (float)audio_format.sample_rate);
+	const auto duration =
+		SongTime::FromScale<uint64_t>(num_samples,
+					      audio_format.sample_rate);
+
+	decoder_initialized(decoder, audio_format, true, duration);
 
 	if (mpg123_info(handle, &info) != MPG123_OK) {
 		info.vbr = MPG123_CBR;

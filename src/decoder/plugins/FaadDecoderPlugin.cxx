@@ -107,13 +107,13 @@ adts_find_frame(DecoderBuffer *buffer)
 	}
 }
 
-static float
+static SignedSongTime
 adts_song_duration(DecoderBuffer *buffer)
 {
 	const InputStream &is = decoder_buffer_get_stream(buffer);
 	const bool estimate = !is.CheapSeeking();
 	if (estimate && !is.KnownSize())
-		return -1;
+		return SignedSongTime::Negative();
 
 	unsigned sample_rate = 0;
 
@@ -146,7 +146,7 @@ adts_song_duration(DecoderBuffer *buffer)
 			const auto offset = is.GetOffset()
 				- decoder_buffer_available(buffer);
 			if (offset <= 0)
-				return -1;
+				return SignedSongTime::Negative();
 
 			const auto file_size = is.GetSize();
 			frames = (frames * file_size) / offset;
@@ -155,20 +155,18 @@ adts_song_duration(DecoderBuffer *buffer)
 	}
 
 	if (sample_rate == 0)
-		return -1;
+		return SignedSongTime::Negative();
 
-	float frames_per_second = (float)sample_rate / 1024.0;
-	assert(frames_per_second > 0);
-
-	return (float)frames / frames_per_second;
+	return SignedSongTime::FromScale<uint64_t>(frames * uint64_t(1024),
+						   sample_rate);
 }
 
-static float
+static SignedSongTime
 faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 {
 	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 5));
 	if (data.IsNull())
-		return -1;
+		return SignedSongTime::Negative();
 
 	size_t tagsize = 0;
 	if (data.size >= 10 && !memcmp(data.data, "ID3", 3)) {
@@ -180,20 +178,20 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 		tagsize += 10;
 
 		if (!decoder_buffer_skip(buffer, tagsize))
-			return -1;
+			return SignedSongTime::Negative();
 
 		data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 5));
 		if (data.IsNull())
-			return -1;
+			return SignedSongTime::Negative();
 	}
 
 	if (data.size >= 8 && adts_check_frame(data.data) > 0) {
 		/* obtain the duration from the ADTS header */
 
 		if (!is.IsSeekable())
-			return -1;
+			return SignedSongTime::Negative();
 
-		float song_length = adts_song_duration(buffer);
+		auto song_length = adts_song_duration(buffer);
 
 		is.LockSeek(tagsize, IgnoreError());
 
@@ -204,14 +202,14 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 		/* obtain the duration from the ADIF header */
 
 		if (!is.KnownSize())
-			return -1;
+			return SignedSongTime::Negative();
 
 		size_t skip_size = (data.data[4] & 0x80) ? 9 : 0;
 
 		if (8 + skip_size > data.size)
 			/* not enough data yet; skip parsing this
 			   header */
-			return -1;
+			return SignedSongTime::Negative();
 
 		unsigned bit_rate = ((data.data[4 + skip_size] & 0x0F) << 19) |
 			(data.data[5 + skip_size] << 11) |
@@ -220,11 +218,11 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 
 		const auto size = is.GetSize();
 		if (bit_rate == 0)
-			return -1;
+			return SignedSongTime::Negative();
 
-		return size * 8.0 / bit_rate;
+		return SongTime::FromScale(size, bit_rate / 8);
 	} else
-		return -1;
+		return SignedSongTime::Negative();
 }
 
 static NeAACDecHandle
@@ -301,19 +299,21 @@ faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer *buffer,
 }
 
 /**
- * Get a song file's total playing time in seconds, as a float.
- * Returns 0 if the duration is unknown, and a negative value if the
- * file is invalid.
+ * Determine a song file's total playing time.
+ *
+ * The first return value specifies whether the file was recognized.
+ * The second return value is the duration.
  */
-static float
-faad_get_file_time_float(InputStream &is)
+static std::pair<bool, SignedSongTime>
+faad_get_file_time(InputStream &is)
 {
 	DecoderBuffer *buffer =
 		decoder_buffer_new(nullptr, is,
 				   FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
-	float length = faad_song_duration(buffer, is);
+	auto duration = faad_song_duration(buffer, is);
+	bool recognized = !duration.IsNegative();
 
-	if (length < 0) {
+	if (!recognized) {
 		NeAACDecHandle decoder = faad_decoder_new();
 
 		decoder_buffer_fill(buffer);
@@ -321,36 +321,21 @@ faad_get_file_time_float(InputStream &is)
 		AudioFormat audio_format;
 		if (faad_decoder_init(decoder, buffer, audio_format,
 				      IgnoreError()))
-			length = 0;
+			recognized = true;
 
 		NeAACDecClose(decoder);
 	}
 
 	decoder_buffer_free(buffer);
 
-	return length;
-}
-
-/**
- * Get a song file's total playing time in seconds, as an int.
- * Returns 0 if the duration is unknown, and a negative value if the
- * file is invalid.
- */
-static int
-faad_get_file_time(InputStream &is)
-{
-	float length = faad_get_file_time_float(is);
-	if (length < 0)
-		return -1;
-
-	return int(length + 0.5);
+	return std::make_pair(recognized, duration);
 }
 
 static void
 faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
 		   DecoderBuffer *buffer, const NeAACDecHandle decoder)
 {
-	const float total_time = faad_song_duration(buffer, is);
+	const auto total_time = faad_song_duration(buffer, is);
 
 	if (adts_find_frame(buffer) == 0)
 		return;
@@ -449,11 +434,15 @@ static bool
 faad_scan_stream(InputStream &is,
 		 const struct tag_handler *handler, void *handler_ctx)
 {
-	int file_time = faad_get_file_time(is);
-	if (file_time < 0)
+	auto result = faad_get_file_time(is);
+	if (!result.first)
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx, file_time);
+	unsigned duration = result.second.IsNegative()
+		? 0
+		: result.second.RoundS();
+
+	tag_handler_invoke_duration(handler, handler_ctx, duration);
 	return true;
 }
 

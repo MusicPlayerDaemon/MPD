@@ -153,7 +153,7 @@ mod_decode(Decoder &decoder, InputStream &is)
 
 	decoder_initialized(decoder, audio_format,
 			    is.IsSeekable(),
-			    ModPlug_GetLength(f) / 1000.0);
+			    SongTime::FromMS(ModPlug_GetLength(f)));
 
 	DecoderCommand cmd;
 	do {

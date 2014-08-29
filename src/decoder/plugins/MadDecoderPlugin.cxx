@@ -122,7 +122,7 @@ struct MadDecoder {
 	mad_timer_t timer;
 	unsigned char input_buffer[READ_BUFFER_SIZE];
 	int32_t output_buffer[MP3_DATA_OUTPUT_BUFFER_SIZE];
-	float total_time;
+	SignedSongTime total_time;
 	SongTime elapsed_time;
 	SongTime seek_time;
 	enum muteframe mute_frame;
@@ -713,11 +713,10 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	return true;
 }
 
-static inline float
+static inline SongTime
 mp3_frame_duration(const struct mad_frame *frame)
 {
-	return mad_timer_count(frame->header.duration,
-			       MAD_UNITS_MILLISECONDS) / 1000.0;
+	return ToSongTime(frame->header.duration);
 }
 
 inline offset_type
@@ -745,13 +744,19 @@ MadDecoder::FileSizeToSongLength()
 	if (input_stream.KnownSize()) {
 		offset_type rest = RestIncludingThisFrame();
 
-		float frame_duration = mp3_frame_duration(&frame);
+		const SongTime frame_duration = mp3_frame_duration(&frame);
+		const SongTime duration =
+			SongTime::FromScale<uint64_t>(rest,
+						      frame.header.bitrate / 8);
+		total_time = duration;
 
-		total_time = (rest * 8.0) / frame.header.bitrate;
-		max_frames = total_time / frame_duration + FRAMES_CUSHION;
+		max_frames = (frame_duration.IsPositive()
+			      ? duration.count() / frame_duration.count()
+			      : 0)
+			+ FRAMES_CUSHION;
 	} else {
 		max_frames = FRAMES_CUSHION;
-		total_time = 0;
+		total_time = SignedSongTime::Negative();
 	}
 }
 
@@ -792,7 +797,7 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 		if ((xing.flags & XING_FRAMES) && xing.frames) {
 			mad_timer_t duration = frame.header.duration;
 			mad_timer_multiply(&duration, xing.frames);
-			total_time = ((float)mad_timer_count(duration, MAD_UNITS_MILLISECONDS)) / 1000;
+			total_time = ToSongTime(duration);
 			max_frames = xing.frames;
 		}
 
@@ -844,13 +849,13 @@ MadDecoder::~MadDecoder()
 }
 
 /* this is primarily used for getting total time for tags */
-static int
+static std::pair<bool, SignedSongTime>
 mad_decoder_total_file_time(InputStream &is)
 {
 	MadDecoder data(nullptr, is);
 	return data.DecodeFirstFrame(nullptr)
-		? data.total_time + 0.5
-		: -1;
+		? std::make_pair(true, data.total_time)
+		: std::make_pair(false, SignedSongTime::Negative());
 }
 
 long
@@ -1085,11 +1090,15 @@ static bool
 mad_decoder_scan_stream(InputStream &is,
 			const struct tag_handler *handler, void *handler_ctx)
 {
-	const int total_time = mad_decoder_total_file_time(is);
-	if (total_time < 0)
+	const auto result = mad_decoder_total_file_time(is);
+	if (!result.first)
 		return false;
 
-	tag_handler_invoke_duration(handler, handler_ctx, total_time);
+	unsigned duration = result.second.IsNegative()
+		? 0
+		: result.second.RoundS();
+
+	tag_handler_invoke_duration(handler, handler_ctx, duration);
 	return true;
 }
 

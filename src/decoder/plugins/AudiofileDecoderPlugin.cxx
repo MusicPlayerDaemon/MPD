@@ -64,13 +64,11 @@ struct AudioFileInputStream {
 };
 
 gcc_pure
-static double
+static SongTime
 audiofile_get_duration(AFfilehandle fh)
 {
-	double frame_count = afGetFrameCount(fh, AF_DEFAULT_TRACK);
-	double rate = afGetRate(fh, AF_DEFAULT_TRACK);
-
-	return frame_count / rate;
+	return SongTime::FromScale<uint64_t>(afGetFrameCount(fh, AF_DEFAULT_TRACK),
+					     afGetRate(fh, AF_DEFAULT_TRACK));
 }
 
 static ssize_t
@@ -208,10 +206,10 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 		return;
 	}
 
-	const double total_time = audiofile_get_duration(fh);
+	const auto total_time = audiofile_get_duration(fh);
 
 	const uint16_t kbit_rate = (uint16_t)
-		(is.GetSize() * 8.0 / total_time / 1000.0 + 0.5);
+		(is.GetSize() * uint64_t(8000) / total_time.ToMS());
 
 	const unsigned frame_size = (unsigned)
 		afGetVirtualFrameSize(fh, AF_DEFAULT_TRACK, true);
@@ -258,7 +256,7 @@ audiofile_get_duration(InputStream &is)
 	if (fh == AF_NULL_FILEHANDLE)
 		return -1;
 
-	int duration = int(audiofile_get_duration(fh));
+	int duration = audiofile_get_duration(fh).RoundS();
 	afCloseFile(fh);
 	return duration;
 }

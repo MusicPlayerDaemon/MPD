@@ -160,8 +160,9 @@ wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 		? format_samples_float
 		: format_samples_int;
 
-	const float total_time = float(WavpackGetNumSamples(wpc))
-		/ audio_format.sample_rate;
+	const auto total_time =
+		SongTime::FromScale<uint64_t>(WavpackGetNumSamples(wpc),
+					      audio_format.sample_rate);
 
 	const int bytes_per_sample = WavpackGetBytesPerSample(wpc);
 	const int output_sample_size = audio_format.GetFrameSize();

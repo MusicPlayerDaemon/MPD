@@ -180,7 +180,7 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 
 	decoder_initialized(mpd_decoder, audio_format,
 			    is.IsSeekable(),
-			    mpc_streaminfo_get_length(&info));
+			    SongTime::FromS(mpc_streaminfo_get_length(&info)));
 
 	DecoderCommand cmd = DecoderCommand::NONE;
 	do {

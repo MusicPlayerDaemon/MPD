@@ -437,8 +437,10 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 
 	/* calculate song time from DSD chunk size and sample frequency */
 	offset_type chunk_size = metadata.chunk_size;
-	float songtime = ((chunk_size / metadata.channels) * 8) /
-			 (float) metadata.sample_rate;
+
+	uint64_t n_frames = chunk_size / audio_format.channels;
+	auto songtime = SongTime::FromScale<uint64_t>(n_frames,
+						      audio_format.sample_rate);
 
 	/* success: file was recognized */
 	decoder_initialized(decoder, audio_format, is.IsSeekable(), songtime);

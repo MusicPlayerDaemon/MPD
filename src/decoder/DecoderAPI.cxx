@@ -41,7 +41,7 @@
 void
 decoder_initialized(Decoder &decoder,
 		    const AudioFormat audio_format,
-		    bool seekable, float total_time)
+		    bool seekable, SignedSongTime duration)
 {
 	DecoderControl &dc = decoder.dc;
 	struct audio_format_string af_string;
@@ -59,9 +59,7 @@ decoder_initialized(Decoder &decoder,
 	dc.out_audio_format = getOutputAudioFormat(audio_format);
 
 	dc.seekable = seekable;
-	dc.total_time = total_time > 0
-		? SignedSongTime::FromS(total_time)
-		: SignedSongTime::Negative();
+	dc.total_time = duration;
 
 	FormatDebug(decoder_domain, "audio_format=%s, seekable=%s",
 		    audio_format_to_string(dc.in_audio_format, &af_string),

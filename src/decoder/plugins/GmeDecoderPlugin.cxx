@@ -156,9 +156,9 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
-	const float song_len = ti->length > 0
-		? ti->length / 1000.0
-		: -1.0;
+	const SignedSongTime song_len = ti->length > 0
+		? SignedSongTime::FromMS(ti->length)
+		: SignedSongTime::Negative();
 
 	/* initialize the MPD decoder */
 

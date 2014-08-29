@@ -144,10 +144,14 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 
 	if (data->initialized) {
 		/* done */
+
+		const auto duration2 =
+			SongTime::FromScale<uint64_t>(data->total_frames,
+						      data->audio_format.sample_rate);
+
 		decoder_initialized(data->decoder, data->audio_format,
 				    data->input_stream.IsSeekable(),
-				    (float)data->total_frames /
-				    (float)data->audio_format.sample_rate);
+				    duration2);
 		return true;
 	}
 
