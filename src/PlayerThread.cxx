@@ -349,7 +349,7 @@ Player::WaitForDecoder()
 	decoder_starting = true;
 
 	/* update PlayerControl's song information */
-	pc.total_time = pc.next_song->GetDuration().ToDoubleS();
+	pc.total_time = pc.next_song->GetDuration();
 	pc.bit_rate = 0;
 	pc.audio_format.Clear();
 
@@ -368,21 +368,21 @@ Player::WaitForDecoder()
  * Returns the real duration of the song, comprising the duration
  * indicated by the decoder plugin.
  */
-static double
-real_song_duration(const DetachedSong &song, double decoder_duration)
+static SignedSongTime
+real_song_duration(const DetachedSong &song, SignedSongTime decoder_duration)
 {
-	if (decoder_duration <= 0.0)
+	if (decoder_duration.IsNegative())
 		/* the decoder plugin didn't provide information; fall
 		   back to Song::GetDuration() */
-		return song.GetDuration().ToDoubleS();
+		return song.GetDuration();
 
 	const SongTime start_time = song.GetStartTime();
 	const SongTime end_time = song.GetEndTime();
 
-	if (end_time.IsPositive() && end_time.ToDoubleS() < decoder_duration)
-		return (end_time - start_time).ToDoubleS();
+	if (end_time.IsPositive() && end_time < SongTime(decoder_duration))
+		return SignedSongTime(end_time - start_time);
 
-	return decoder_duration - start_time.ToDoubleS();
+	return SignedSongTime(SongTime(decoder_duration) - start_time);
 }
 
 bool
@@ -450,7 +450,7 @@ Player::CheckDecoderStartup()
 			return true;
 
 		pc.Lock();
-		pc.total_time = real_song_duration(*dc.song, dc.total_time.ToDoubleS());
+		pc.total_time = real_song_duration(*dc.song, dc.total_time);
 		pc.audio_format = dc.in_audio_format;
 		pc.Unlock();
 
@@ -562,8 +562,8 @@ Player::SeekDecoder()
 	/* send the SEEK command */
 
 	SongTime where = pc.seek_time;
-	if (pc.total_time > 0) {
-		const SongTime total_time = SongTime::FromS(pc.total_time);
+	if (!pc.total_time.IsNegative()) {
+		const SongTime total_time(pc.total_time);
 		if (where > total_time)
 			where = total_time;
 	}

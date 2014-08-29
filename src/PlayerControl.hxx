@@ -89,7 +89,7 @@ struct player_status {
 	PlayerState state;
 	uint16_t bit_rate;
 	AudioFormat audio_format;
-	float total_time;
+	SignedSongTime total_time;
 	float elapsed_time;
 };
 
@@ -151,7 +151,7 @@ struct PlayerControl {
 
 	uint16_t bit_rate;
 	AudioFormat audio_format;
-	float total_time;
+	SignedSongTime total_time;
 	float elapsed_time;
 
 	/**

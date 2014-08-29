@@ -176,7 +176,9 @@ handle_status(Client &client,
 			      "elapsed: %1.3f\n"
 			      COMMAND_STATUS_BITRATE ": %u\n",
 			      (int)(player_status.elapsed_time + 0.5),
-			      (int)(player_status.total_time + 0.5),
+			      player_status.total_time.IsNegative()
+			      ? 0u
+			      : unsigned(player_status.total_time.RoundS()),
 			      player_status.elapsed_time,
 			      player_status.bit_rate);
 
