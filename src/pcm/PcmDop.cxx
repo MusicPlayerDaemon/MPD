@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "PcmDsdUsb.hxx"
+#include "PcmDop.hxx"
 #include "PcmBuffer.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
@@ -27,20 +27,20 @@
 
 constexpr
 static inline uint32_t
-pcm_two_dsd_to_usb_marker1(uint8_t a, uint8_t b)
+pcm_two_dsd_to_dop_marker1(uint8_t a, uint8_t b)
 {
 	return 0xff050000 | (a << 8) | b;
 }
 
 constexpr
 static inline uint32_t
-pcm_two_dsd_to_usb_marker2(uint8_t a, uint8_t b)
+pcm_two_dsd_to_dop_marker2(uint8_t a, uint8_t b)
 {
 	return 0xfffa0000 | (a << 8) | b;
 }
 
 ConstBuffer<uint32_t>
-pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
+pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
 	       ConstBuffer<uint8_t> _src)
 {
 	assert(audio_valid_channel_count(channels));
@@ -65,7 +65,7 @@ pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
 			/* each 24 bit sample has 16 DSD sample bits
 			   plus the magic 0x05 marker */
 
-			*dest++ = pcm_two_dsd_to_usb_marker1(src[0], src[channels]);
+			*dest++ = pcm_two_dsd_to_dop_marker1(src[0], src[channels]);
 
 			/* seek the source pointer to the next
 			   channel */
@@ -80,7 +80,7 @@ pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
 			/* each 24 bit sample has 16 DSD sample bits
 			   plus the magic 0xfa marker */
 
-			*dest++ = pcm_two_dsd_to_usb_marker2(src[0], src[channels]);
+			*dest++ = pcm_two_dsd_to_dop_marker2(src[0], src[channels]);
 
 			/* seek the source pointer to the next
 			   channel */

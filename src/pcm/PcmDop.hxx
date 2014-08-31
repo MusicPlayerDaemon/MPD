@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_DSD_USB_HXX
-#define MPD_PCM_DSD_USB_HXX
+#ifndef MPD_PCM_DOP_HXX
+#define MPD_PCM_DOP_HXX
 
 #include "check.h"
 
@@ -30,12 +30,11 @@ template<typename T> struct ConstBuffer;
 
 /**
  * Pack DSD 1 bit samples into (padded) 24 bit PCM samples for
- * playback over USB, according to the proposed standard by 
- * dCS and others:
- * http://www.sonore.us/DoP_openStandard_1v1.pdf
+ * playback over USB, according to the DoP standard:
+ * http://dsd-guide.com/dop-open-standard
  */
 ConstBuffer<uint32_t>
-pcm_dsd_to_usb(PcmBuffer &buffer, unsigned channels,
+pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
 	       ConstBuffer<uint8_t> src);
 
 #endif

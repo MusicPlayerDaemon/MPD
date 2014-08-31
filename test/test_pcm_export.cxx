@@ -106,7 +106,7 @@ PcmExportTest::TestReverseEndian()
 }
 
 void
-PcmExportTest::TestDsdUsb()
+PcmExportTest::TestDop()
 {
 	static constexpr uint8_t src[] = {
 		0x01, 0x23, 0x45, 0x67,

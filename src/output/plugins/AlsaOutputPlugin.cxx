@@ -62,12 +62,11 @@ struct AlsaOutput {
 	bool use_mmap;
 
 	/**
-	 * Enable DSD over USB according to the dCS suggested
-	 * standard?
+	 * Enable DSD over PCM according to the DoP standard standard?
 	 *
-	 * @see http://www.dcsltd.co.uk/page/assets/DSDoverUSB.pdf
+	 * @see http://dsd-guide.com/dop-open-standard
 	 */
-	bool dsd_usb;
+	bool dop;
 
 	/** libasound's buffer_time setting (in microseconds) */
 	unsigned int buffer_time;
@@ -153,7 +152,9 @@ AlsaOutput::Configure(const config_param &param, Error &error)
 
 	use_mmap = param.GetBlockValue("use_mmap", false);
 
-	dsd_usb = param.GetBlockValue("dsd_usb", false);
+	dop = param.GetBlockValue("dop", false) ||
+		/* legacy name from MPD 0.18 and older: */
+		param.GetBlockValue("dsd_usb", false);
 
 	buffer_time = param.GetBlockValue("buffer_time",
 					      MPD_ALSA_BUFFER_TIME_US);
@@ -639,34 +640,34 @@ alsa_setup_dsd(AlsaOutput *ad, const AudioFormat audio_format,
 	       bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
 	       Error &error)
 {
-	assert(ad->dsd_usb);
+	assert(ad->dop);
 	assert(audio_format.format == SampleFormat::DSD);
 
 	/* pass 24 bit to alsa_setup() */
 
-	AudioFormat usb_format = audio_format;
-	usb_format.format = SampleFormat::S24_P32;
-	usb_format.sample_rate /= 2;
+	AudioFormat dop_format = audio_format;
+	dop_format.format = SampleFormat::S24_P32;
+	dop_format.sample_rate /= 2;
 
-	const AudioFormat check = usb_format;
+	const AudioFormat check = dop_format;
 
-	if (!alsa_setup(ad, usb_format, packed_r, reverse_endian_r, error))
+	if (!alsa_setup(ad, dop_format, packed_r, reverse_endian_r, error))
 		return false;
 
-	/* if the device allows only 32 bit, shift all DSD-over-USB
+	/* if the device allows only 32 bit, shift all DoP
 	   samples left by 8 bit and leave the lower 8 bit cleared;
 	   the DSD-over-USB documentation does not specify whether
 	   this is legal, but there is anecdotical evidence that this
 	   is possible (and the only option for some devices) */
-	*shift8_r = usb_format.format == SampleFormat::S32;
-	if (usb_format.format == SampleFormat::S32)
-		usb_format.format = SampleFormat::S24_P32;
+	*shift8_r = dop_format.format == SampleFormat::S32;
+	if (dop_format.format == SampleFormat::S32)
+		dop_format.format = SampleFormat::S24_P32;
 
-	if (usb_format != check) {
+	if (dop_format != check) {
 		/* no bit-perfect playback, which is required
 		   for DSD over USB */
 		error.Format(alsa_output_domain,
-			     "Failed to configure DSD-over-USB on ALSA device \"%s\"",
+			     "Failed to configure DSD-over-PCM on ALSA device \"%s\"",
 			     alsa_device(ad));
 		delete[] ad->silence;
 		return false;
@@ -681,9 +682,9 @@ alsa_setup_or_dsd(AlsaOutput *ad, AudioFormat &audio_format,
 {
 	bool shift8 = false, packed, reverse_endian;
 
-	const bool dsd_usb = ad->dsd_usb &&
+	const bool dop = ad->dop &&
 		audio_format.format == SampleFormat::DSD;
-	const bool success = dsd_usb
+	const bool success = dop
 		? alsa_setup_dsd(ad, audio_format,
 				 &shift8, &packed, &reverse_endian,
 				 error)
@@ -694,7 +695,7 @@ alsa_setup_or_dsd(AlsaOutput *ad, AudioFormat &audio_format,
 
 	ad->pcm_export->Open(audio_format.format,
 			     audio_format.channels,
-			     dsd_usb, shift8, packed, reverse_endian);
+			     dop, shift8, packed, reverse_endian);
 	return true;
 }
 

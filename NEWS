@@ -55,6 +55,7 @@ ver 0.19 (not yet released)
   - shine: new encoder plugin
 * output
   - alsa: support native DSD playback
+  - alsa: rename "DSD over USB" to "DoP"
 * threads:
   - the update thread runs at "idle" priority
   - the output thread runs at "real-time" priority

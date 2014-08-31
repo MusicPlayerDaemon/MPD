@@ -465,7 +465,7 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmConvert.cxx src/pcm/PcmConvert.hxx \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \
 	src/pcm/PcmDsd.cxx src/pcm/PcmDsd.hxx \
-	src/pcm/PcmDsdUsb.cxx src/pcm/PcmDsdUsb.hxx \
+	src/pcm/PcmDop.cxx src/pcm/PcmDop.hxx \
 	src/pcm/Volume.cxx src/pcm/Volume.hxx \
 	src/pcm/PcmMix.cxx src/pcm/PcmMix.hxx \
 	src/pcm/PcmChannels.cxx src/pcm/PcmChannels.hxx \

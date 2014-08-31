@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "PcmExport.hxx"
-#include "PcmDsdUsb.hxx"
+#include "PcmDop.hxx"
 #include "PcmPack.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/ConstBuffer.hxx"
@@ -28,15 +28,15 @@
 
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
-		bool _dsd_usb, bool _shift8, bool _pack, bool _reverse_endian)
+		bool _dop, bool _shift8, bool _pack, bool _reverse_endian)
 {
 	assert(audio_valid_sample_format(sample_format));
-	assert(!_dsd_usb || audio_valid_channel_count(_channels));
+	assert(!_dop || audio_valid_channel_count(_channels));
 
 	channels = _channels;
-	dsd_usb = _dsd_usb && sample_format == SampleFormat::DSD;
-	if (dsd_usb)
-		/* after the conversion to DSD-over-USB, the DSD
+	dop = _dop && sample_format == SampleFormat::DSD;
+	if (dop)
+		/* after the conversion to DoP, the DSD
 		   samples are stuffed inside fake 24 bit samples */
 		sample_format = SampleFormat::S24_P32;
 
@@ -64,7 +64,7 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 		/* packed 24 bit samples (3 bytes per sample) */
 		return audio_format.channels * 3;
 
-	if (dsd_usb)
+	if (dop)
 		/* the DSD-over-USB draft says that DSD 1-bit samples
 		   are enclosed within 24 bit samples, and MPD's
 		   representation of 24 bit is padded to 32 bit (4
@@ -77,8 +77,8 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 ConstBuffer<void>
 PcmExport::Export(ConstBuffer<void> data)
 {
-	if (dsd_usb)
-		data = pcm_dsd_to_usb(dsd_buffer, channels,
+	if (dop)
+		data = pcm_dsd_to_dop(dop_buffer, channels,
 				      ConstBuffer<uint8_t>::FromVoid(data))
 			.ToVoid();
 
@@ -125,8 +125,8 @@ PcmExport::CalcSourceSize(size_t size) const
 		/* 32 bit to 24 bit conversion (4 to 3 bytes) */
 		size = (size / 3) * 4;
 
-	if (dsd_usb)
-		/* DSD over USB doubles the transport size */
+	if (dop)
+		/* DoP doubles the transport size */
 		size /= 2;
 
 	return size;

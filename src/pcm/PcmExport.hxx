@@ -35,11 +35,11 @@ template<typename T> struct ConstBuffer;
 struct PcmExport {
 	/**
 	 * The buffer is used to convert DSD samples to the
-	 * DSD-over-USB format.
+	 * DoP format.
 	 *
-	 * @see #dsd_usb
+	 * @see #dop
 	 */
-	PcmBuffer dsd_buffer;
+	PcmBuffer dop_buffer;
 
 	/**
 	 * The buffer is used to pack samples, removing padding.
@@ -61,11 +61,11 @@ struct PcmExport {
 	uint8_t channels;
 
 	/**
-	 * Convert DSD to DSD-over-USB?  Input format must be
+	 * Convert DSD to DSD-over-PCM (DoP)?  Input format must be
 	 * SampleFormat::DSD and output format must be
 	 * SampleFormat::S24_P32.
 	 */
-	bool dsd_usb;
+	bool dop;
 
 	/**
 	 * Convert (padded) 24 bit samples to 32 bit by shifting 8
@@ -93,10 +93,10 @@ struct PcmExport {
 	 *
 	 * This function cannot fail.
 	 *
-	 * @param channels the number of channels; ignored unless dsd_usb is set
+	 * @param channels the number of channels; ignored unless dop is set
 	 */
 	void Open(SampleFormat sample_format, unsigned channels,
-		  bool dsd_usb, bool shift8, bool pack, bool reverse_endian);
+		  bool dop, bool shift8, bool pack, bool reverse_endian);
 
 	/**
 	 * Calculate the size of one output frame.
