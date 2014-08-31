@@ -1,4 +1,4 @@
-ver 0.18.13 (not yet released)
+ver 0.18.13 (2014/08/31)
 * protocol
   - don't change song on "seekcur" in random mode
 * decoder
