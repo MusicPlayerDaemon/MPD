@@ -52,16 +52,16 @@ MusicChunk::Write(const AudioFormat af,
 
 		bit_rate = _bit_rate;
 		time = data_time;
+
+#ifndef NDEBUG
+		audio_format = af;
+#endif
 	}
 
 	const size_t frame_size = af.GetFrameSize();
 	size_t num_frames = (sizeof(data) - length) / frame_size;
 	if (num_frames == 0)
 		return WritableBuffer<void>::Null();
-
-#ifndef NDEBUG
-	audio_format = af;
-#endif
 
 	return { data + length, num_frames * frame_size };
 }
