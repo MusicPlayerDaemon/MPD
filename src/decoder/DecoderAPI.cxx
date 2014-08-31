@@ -519,9 +519,7 @@ decoder_data(Decoder &decoder,
 			continue;
 		}
 
-		size_t nbytes = dest.size;
-		if (nbytes > length)
-			nbytes = length;
+		const size_t nbytes = std::min(dest.size, length);
 
 		/* copy the buffer */
 
