@@ -513,15 +513,13 @@ decoder_data(Decoder &decoder,
 				     SongTime::FromS(decoder.timestamp) -
 				     dc.song->GetStartTime(),
 				     kbit_rate);
-		if (dest.IsNull()) {
+		if (dest.IsEmpty()) {
 			/* the chunk is full, flush it */
 			decoder.FlushChunk();
 			continue;
 		}
 
 		size_t nbytes = dest.size;
-		assert(nbytes > 0);
-
 		if (nbytes > length)
 			nbytes = length;
 

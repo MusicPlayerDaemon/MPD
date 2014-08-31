@@ -60,9 +60,6 @@ MusicChunk::Write(const AudioFormat af,
 
 	const size_t frame_size = af.GetFrameSize();
 	size_t num_frames = (sizeof(data) - length) / frame_size;
-	if (num_frames == 0)
-		return WritableBuffer<void>::Null();
-
 	return { data + length, num_frames * frame_size };
 }
 
