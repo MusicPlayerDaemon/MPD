@@ -320,8 +320,9 @@ NfsConnection::MountCallback(int status, gcc_unused nfs_context *nfs,
 	mount_finished = true;
 
 	if (status < 0) {
-		postponed_mount_error.Set(nfs_domain, status,
-					  "nfs_mount_async() failed");
+		postponed_mount_error.Format(nfs_domain, status,
+					     "nfs_mount_async() failed: %s",
+					     nfs_get_error(context));
 		return;
 	}
 }
