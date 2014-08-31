@@ -223,7 +223,9 @@ NfsConnection::DestroyContext()
 {
 	assert(context != nullptr);
 
-	SocketMonitor::Cancel();
+	if (SocketMonitor::IsDefined())
+		SocketMonitor::Cancel();
+
 	nfs_destroy_context(context);
 	context = nullptr;
 }
