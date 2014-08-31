@@ -237,6 +237,9 @@ NfsConnection::ScheduleSocket()
 
 	if (!SocketMonitor::IsDefined()) {
 		int _fd = nfs_get_fd(context);
+		if (_fd < 0)
+			return;
+
 		fd_set_cloexec(_fd, true);
 		SocketMonitor::Open(_fd);
 	}
