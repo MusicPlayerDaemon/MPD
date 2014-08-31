@@ -300,6 +300,24 @@ NfsConnection::OnSocketReady(unsigned flags)
 		closed = true;
 
 		BroadcastError(std::move(error));
+	} else if (SocketMonitor::IsDefined() && nfs_get_fd(context) < 0) {
+		/* this happens when rpc_reconnect_requeue() is called
+		   after the connection broke, but autoreconnet was
+		   disabled - nfs_service() returns 0 */
+		Error error;
+		const char *msg = nfs_get_error(context);
+		if (msg == nullptr)
+			error.Set(nfs_domain, "NFS socket disappeared");
+		else
+			error.Format(nfs_domain,
+				     "NFS socket disappeared: %s", msg);
+
+		const ScopeLock protect(mutex);
+
+		DestroyContext();
+		closed = true;
+
+		BroadcastError(std::move(error));
 	}
 
 	assert(in_event);
