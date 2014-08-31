@@ -190,16 +190,11 @@ playlist::PlayPrevious(PlayerControl &pc)
 }
 
 PlaylistResult
-playlist::SeekSongPosition(PlayerControl &pc, unsigned song, float seek_time)
+playlist::SeekSongOrder(PlayerControl &pc, unsigned i, float seek_time)
 {
-	if (!queue.IsValidPosition(song))
-		return PlaylistResult::BAD_RANGE;
+	assert(queue.IsValidOrder(i));
 
 	const Song *queued_song = GetQueuedSong();
-
-	unsigned i = queue.random
-		? queue.PositionToOrder(song)
-		: song;
 
 	pc.ClearError();
 	stop_on_error = true;
@@ -226,6 +221,19 @@ playlist::SeekSongPosition(PlayerControl &pc, unsigned song, float seek_time)
 	UpdateQueuedSong(pc, nullptr);
 
 	return PlaylistResult::SUCCESS;
+}
+
+PlaylistResult
+playlist::SeekSongPosition(PlayerControl &pc, unsigned song, float seek_time)
+{
+	if (!queue.IsValidPosition(song))
+		return PlaylistResult::BAD_RANGE;
+
+	unsigned i = queue.random
+		? queue.PositionToOrder(song)
+		: song;
+
+	return SeekSongOrder(pc, i, seek_time);
 }
 
 PlaylistResult
