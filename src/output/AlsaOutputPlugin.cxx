@@ -802,6 +802,7 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
+	assert(size > 0);
 	assert(size % ad->in_frame_size == 0);
 
 	if (ad->must_prepare) {
@@ -819,6 +820,7 @@ alsa_play(struct audio_output *ao, const void *chunk, size_t size,
 	assert(size % ad->out_frame_size == 0);
 
 	size /= ad->out_frame_size;
+	assert(size > 0);
 
 	while (true) {
 		snd_pcm_sframes_t ret = ad->writei(ad->pcm, chunk, size);
