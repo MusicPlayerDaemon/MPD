@@ -299,10 +299,7 @@ NfsConnection::OnSocketReady(unsigned flags)
 		DestroyContext();
 		closed = true;
 
-		if (!mount_finished)
-			BroadcastMountError(std::move(error));
-		else
-			BroadcastError(std::move(error));
+		BroadcastError(std::move(error));
 	}
 
 	assert(in_event);
