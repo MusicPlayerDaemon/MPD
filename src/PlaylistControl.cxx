@@ -265,5 +265,5 @@ playlist::SeekCurrent(PlayerControl &pc, float seek_time, bool relative)
 	if (seek_time < 0)
 		seek_time = 0;
 
-	return SeekSongPosition(pc, current, seek_time);
+	return SeekSongOrder(pc, current, seek_time);
 }

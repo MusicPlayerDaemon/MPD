@@ -1,4 +1,6 @@
 ver 0.18.13 (not yet released)
+* protocol
+  - don't change song on "seekcur" in random mode
 * decoder
   - dsdiff, dsf: fix endless loop on malformed file
   - ffmpeg: support ffmpeg/libav version 11
