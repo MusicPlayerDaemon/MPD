@@ -170,6 +170,8 @@ NfsInputStream::OnNfsFileError(Error &&error)
 		SeekDone();
 	else if (!IsReady())
 		SetReady();
+	else
+		cond.broadcast();
 }
 
 /*
