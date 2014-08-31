@@ -3,6 +3,8 @@ ver 0.18.13 (not yet released)
   - dsdiff, dsf: fix endless loop on malformed file
   - ffmpeg: support ffmpeg/libav version 11
   - gme: fix song duration
+* output
+  - alsa: fix endless loop at end of file in dsd_usb mode
 * fix state file saver
 * fix build failure on Darwin
 
