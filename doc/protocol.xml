@@ -576,7 +576,12 @@
               </listitem>
               <listitem>
                 <para>
-                  <varname>songs</varname>: number of albums
+                  <varname>albums</varname>: number of albums
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>songs</varname>: number of songs
                 </para>
               </listitem>
               <listitem>

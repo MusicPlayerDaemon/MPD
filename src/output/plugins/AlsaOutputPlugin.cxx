@@ -825,6 +825,7 @@ alsa_play(AudioOutput *ao, const void *chunk, size_t size,
 {
 	AlsaOutput *ad = (AlsaOutput *)ao;
 
+	assert(size > 0);
 	assert(size % ad->in_frame_size == 0);
 
 	if (ad->must_prepare) {
@@ -838,12 +839,22 @@ alsa_play(AudioOutput *ao, const void *chunk, size_t size,
 	}
 
 	const auto e = ad->pcm_export->Export({chunk, size});
+	if (e.size == 0)
+		/* the DoP (DSD over PCM) filter converts two frames
+		   at a time and ignores the last odd frame; if there
+		   was only one frame (e.g. the last frame in the
+		   file), the result is empty; to avoid an endless
+		   loop, bail out here, and pretend the one frame has
+		   been played */
+		return size;
+
 	chunk = e.data;
 	size = e.size;
 
 	assert(size % ad->out_frame_size == 0);
 
 	size /= ad->out_frame_size;
+	assert(size > 0);
 
 	while (true) {
 		snd_pcm_sframes_t ret = ad->writei(ad->pcm, chunk, size);

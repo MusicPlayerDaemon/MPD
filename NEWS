@@ -68,10 +68,16 @@ ver 0.19 (not yet released)
 * install systemd unit for socket activation
 * Android port
 
-ver 0.18.13 (not yet released)
+ver 0.18.13 (2014/08/31)
+* protocol
+  - don't change song on "seekcur" in random mode
+
 * decoder
   - dsdiff, dsf: fix endless loop on malformed file
   - ffmpeg: support ffmpeg/libav version 11
+  - gme: fix song duration
+* output
+  - alsa: fix endless loop at end of file in dsd_usb mode
 * fix state file saver
 * fix build failure on Darwin
 

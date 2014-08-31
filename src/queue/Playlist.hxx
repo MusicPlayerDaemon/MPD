@@ -251,6 +251,10 @@ public:
 
 	void PlayPrevious(PlayerControl &pc);
 
+	PlaylistResult SeekSongOrder(PlayerControl &pc,
+				     unsigned song_order,
+				     SongTime seek_time);
+
 	PlaylistResult SeekSongPosition(PlayerControl &pc,
 					unsigned song_position,
 					SongTime seek_time);

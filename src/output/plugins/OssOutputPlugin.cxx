@@ -724,6 +724,8 @@ oss_output_play(AudioOutput *ao, const void *chunk, size_t size,
 	OssOutput *od = (OssOutput *)ao;
 	ssize_t ret;
 
+	assert(size > 0);
+
 	/* reopen the device since it was closed by dropBufferedAudio */
 	if (od->fd < 0 && !oss_reopen(od, error))
 		return 0;
@@ -733,6 +735,8 @@ oss_output_play(AudioOutput *ao, const void *chunk, size_t size,
 	chunk = e.data;
 	size = e.size;
 #endif
+
+	assert(size > 0);
 
 	while (true) {
 		ret = write(od->fd, chunk, size);
