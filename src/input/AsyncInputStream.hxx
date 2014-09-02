@@ -85,6 +85,10 @@ protected:
 
 	void Pause();
 
+	bool IsPaused() const {
+		return paused;
+	}
+
 	/**
 	 * Declare that the underlying stream was closed.  We will
 	 * continue feeding Read() calls from the buffer until it runs
