@@ -51,13 +51,16 @@ static const size_t NFS_RESUME_AT = 384 * 1024;
 class NfsInputStream final : public AsyncInputStream, NfsFileReader {
 	uint64_t next_offset;
 
+	bool reconnect_on_resume, reconnecting;
+
 public:
 	NfsInputStream(const char *_uri,
 		       Mutex &_mutex, Cond &_cond,
 		       void *_buffer)
 		:AsyncInputStream(_uri, _mutex, _cond,
 				  _buffer, NFS_MAX_BUFFERED,
-				  NFS_RESUME_AT) {}
+				  NFS_RESUME_AT),
+		 reconnect_on_resume(false), reconnecting(false) {}
 
 	virtual ~NfsInputStream() {
 		DeferClose();
@@ -118,6 +121,28 @@ NfsInputStream::DoRead()
 void
 NfsInputStream::DoResume()
 {
+	if (reconnect_on_resume) {
+		/* the NFS connection has died while this stream was
+		   "paused" - attempt to reconnect */
+
+		reconnect_on_resume = false;
+		reconnecting = true;
+
+		mutex.unlock();
+		NfsFileReader::Close();
+
+		Error error;
+		bool success = NfsFileReader::Open(GetURI(), error);
+		mutex.lock();
+
+		if (!success) {
+			postponed_error = std::move(error);
+			cond.broadcast();
+		}
+
+		return;
+	}
+
 	assert(NfsFileReader::IsIdle());
 
 	DoRead();
@@ -139,6 +164,14 @@ void
 NfsInputStream::OnNfsFileOpen(uint64_t _size)
 {
 	const ScopeLock protect(mutex);
+
+	if (reconnecting) {
+		/* reconnect has succeeded */
+
+		reconnecting = false;
+		DoRead();
+		return;
+	}
 
 	size = _size;
 	seekable = true;
@@ -164,6 +197,18 @@ void
 NfsInputStream::OnNfsFileError(Error &&error)
 {
 	const ScopeLock protect(mutex);
+
+	if (IsPaused()) {
+		/* while we're paused, don't report this error to the
+		   client just yet (it might just be timeout, maybe
+		   playback has been paused for quite some time) -
+		   wait until the stream gets resumed and try to
+		   reconnect, to give it another chance */
+
+		reconnect_on_resume = true;
+		return;
+	}
+
 	postponed_error = std::move(error);
 
 	if (IsSeekPending())
