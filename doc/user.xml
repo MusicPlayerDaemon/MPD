@@ -2275,11 +2275,9 @@ systemctl start mpd.socket</programlisting>
         </para>
 
         <para>
-          You must configure either <varname>quality</varname> or
-          <varname>bitrate</varname>.  It is highly recommended to
-          configure a fixed <varname>format</varname>, because a
-          stream cannot switch its audio format on-the-fly when the
-          song changes.
+          It is highly recommended to configure a fixed
+          <varname>format</varname>, because a stream cannot switch
+          its audio format on-the-fly when the song changes.
         </para>
 
         <informaltable>
@@ -2318,26 +2316,6 @@ systemctl start mpd.socket</programlisting>
                 <entry>
                   Chooses an encoder plugin,
                   e.g. <parameter>vorbis</parameter>.
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>quality</varname>
-                  <parameter>Q</parameter>
-                </entry>
-                <entry>
-                  Configures the encoder quality (for VBR) in the
-                  range -1 .. 10.
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>bitrate</varname>
-                  <parameter>BR</parameter>
-                </entry>
-                <entry>
-                  Sets a constant encoder bit rate, in kilobit per
-                  second.
                 </entry>
               </row>
               <row>
@@ -2643,11 +2621,6 @@ systemctl start mpd.socket</programlisting>
           may be useful for recording radio streams.
         </para>
 
-        <para>
-          You must configure either <varname>quality</varname> or
-          <varname>bitrate</varname>.
-        </para>
-
         <informaltable>
           <tgroup cols="2">
             <thead>
@@ -2674,26 +2647,6 @@ systemctl start mpd.socket</programlisting>
                 <entry>
                   Chooses an encoder plugin,
                   e.g. <parameter>vorbis</parameter>.
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>quality</varname>
-                  <parameter>Q</parameter>
-                </entry>
-                <entry>
-                  Configures the encoder quality (for VBR) in the
-                  range -1 .. 10.
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>bitrate</varname>
-                  <parameter>BR</parameter>
-                </entry>
-                <entry>
-                  Sets a constant encoder bit rate, in kilobit per
-                  second.
                 </entry>
               </row>
             </tbody>
