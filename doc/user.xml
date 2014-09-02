@@ -190,10 +190,11 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <para>
-        Instead of using local files, you can use storage plugins to
-        access files on a remote file server.  For example, to use
-        music from the SMB/CIFS server "myfileserver" on the share
-        called "Music", configure the music directory
+        Instead of using local files, you can use <link
+        linkend="storage_plugins">storage plugins</link> to access
+        files on a remote file server.  For example, to use music from
+        the SMB/CIFS server "myfileserver" on the share called
+        "Music", configure the music directory
         "<parameter>smb://myfileserver/Music</parameter>".
       </para>
     </section>
@@ -243,6 +244,11 @@ systemctl start mpd.socket</programlisting>
           </tbody>
         </tgroup>
       </informaltable>
+
+      <para>
+        More information can be found in the <link
+        linkend="database_plugins">database plugin reference</link>.
+      </para>
     </section>
 
     <section>
@@ -299,6 +305,11 @@ systemctl start mpd.socket</programlisting>
           </tbody>
         </tgroup>
       </informaltable>
+
+      <para>
+        More information can be found in the <link
+        linkend="input_plugins">input plugin reference</link>.
+      </para>
     </section>
 
     <section>
@@ -355,19 +366,27 @@ systemctl start mpd.socket</programlisting>
           </tbody>
         </tgroup>
       </informaltable>
+
+      <para>
+        More information can be found in the <link
+        linkend="decoder_plugins">decoder plugin reference</link>.
+      </para>
     </section>
 
     <section>
       <title>Configuring encoder plugins</title>
 
       <para>
-        Encoders are used by some of the output plugins (such as
-        <varname>shout</varname>).  The encoder settings are included
-        in the <varname>audio_output</varname> section.
+        Encoders are used by some of the output plugins (such as <link
+        linkend="shout_output"><varname>shout</varname></link>).  The
+        encoder settings are included in the
+        <varname>audio_output</varname> section.  More information can
+        be found in the <link linkend="encoder_plugins">encoder plugin
+        reference</link>.
       </para>
     </section>
 
-    <section>
+    <section id="audio_output">
       <title>Configuring audio outputs</title>
 
       <para>
@@ -475,10 +494,12 @@ systemctl start mpd.socket</programlisting>
                 <parameter>yes|no</parameter>
               </entry>
               <entry>
-                If set to <parameter>no</parameter>, then <application>MPD</application>
-                will not send tags to this output.  This is only
-                useful for output plugins that can receive tags, for
-                example the <varname>httpd</varname> output plugin.
+                If set to <parameter>no</parameter>, then
+                <application>MPD</application> will not send tags to
+                this output.  This is only useful for output plugins
+                that can receive tags, for example the <link
+                linkend="httpd_output"><varname>httpd</varname></link>
+                output plugin.
               </entry>
             </row>
             <row>
@@ -502,8 +523,11 @@ systemctl start mpd.socket</programlisting>
               </entry>
               <entry>
                 Specifies which mixer should be used for this audio
-                output: the hardware mixer (available for ALSA, OSS
-                and PulseAudio), the software mixer or no mixer
+                output: the hardware mixer (available for <link
+                linkend="alsa_output">ALSA</link>, <link
+                linkend="oss_output">OSS</link> and <link
+                linkend="pulse_output">PulseAudio</link>), the
+                software mixer or no mixer
                 (<parameter>none</parameter>).  By default, the
                 hardware mixer is used for devices which support it,
                 and none for the others.
@@ -646,6 +670,11 @@ systemctl start mpd.socket</programlisting>
           </tbody>
         </tgroup>
       </informaltable>
+
+      <para>
+        More information can be found in the <link
+        linkend="playlist_plugins">playlist plugin reference</link>.
+      </para>
     </section>
 
     <section>
@@ -659,8 +688,9 @@ systemctl start mpd.socket</programlisting>
           <application>MPD</application> to use one audio format for
           all outputs.  Doing that is usually not a good idea.  The
           values are the same as in <link
-          linkend="ao_format"><varname>format</varname> in the
-          <varname>audio_output</varname> section</link>.
+          linkend="ao_format"><varname>format</varname> in the <link
+          linkend="audio_output"><varname>audio_output</varname></link>
+          section</link>.
         </para>
       </section>
 
@@ -1116,7 +1146,7 @@ systemctl start mpd.socket</programlisting>
   <chapter>
     <title>Plugin reference</title>
 
-    <section>
+    <section id="database_plugins">
       <title>Database plugins</title>
 
       <section>
@@ -1215,7 +1245,7 @@ systemctl start mpd.socket</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="storage_plugins">
       <title>Storage plugins</title>
 
       <section>
@@ -1229,7 +1259,7 @@ systemctl start mpd.socket</programlisting>
         </para>
       </section>
 
-      <section>
+      <section id="smbclient_storage">
         <title><varname>smbclient</varname></title>
 
         <para>
@@ -1253,7 +1283,7 @@ systemctl start mpd.socket</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="input_plugins">
       <title>Input plugins</title>
 
       <section>
@@ -1494,7 +1524,7 @@ systemctl start mpd.socket</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="decoder_plugins">
       <title>Decoder plugins</title>
 
       <section>
@@ -1541,7 +1571,8 @@ systemctl start mpd.socket</programlisting>
         <title><varname>fluidsynth</varname></title>
 
         <para>
-          MIDI decoder based on libfluidsynth.
+          MIDI decoder based on <ulink
+          url="http://www.fluidsynth.org/"><application>FluidSynth</application></ulink>.
         </para>
 
         <informaltable>
@@ -1581,7 +1612,8 @@ systemctl start mpd.socket</programlisting>
         <title><varname>mikmod</varname></title>
 
         <para>
-          Module player based on MikMod.
+          Module player based on <ulink
+          url="http://mikmod.sourceforge.net/"><application>MikMod</application></ulink>.
         </para>
 
         <informaltable>
@@ -1621,7 +1653,7 @@ systemctl start mpd.socket</programlisting>
         <title><varname>modplug</varname></title>
 
         <para>
-          Module player based on MODPlug.
+          Module player based on <application>MODPlug</application>.
         </para>
 
         <informaltable>
@@ -1652,7 +1684,8 @@ systemctl start mpd.socket</programlisting>
         <title><varname>wildmidi</varname></title>
 
         <para>
-          MIDI decoder based on libwildmidi.
+          MIDI decoder based on <ulink
+          url="http://www.mindwerks.net/projects/wildmidi/"><application>libwildmidi</application></ulink>.
         </para>
 
         <informaltable>
@@ -1680,14 +1713,15 @@ systemctl start mpd.socket</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="encoder_plugins">
       <title>Encoder plugins</title>
 
       <section>
         <title><varname>flac</varname></title>
 
         <para>
-          Encodes into FLAC (lossless).
+          Encodes into <ulink
+          url="https://xiph.org/flac/">FLAC</ulink> (lossless).
         </para>
 
         <informaltable>
@@ -1718,7 +1752,9 @@ systemctl start mpd.socket</programlisting>
         <title><varname>lame</varname></title>
 
         <para>
-          Encodes into MP3 using the LAME library.
+          Encodes into MP3 using the <ulink
+          url="http://lame.sourceforge.net/"><application>LAME</application></ulink>
+          library.
         </para>
 
         <informaltable>
@@ -1766,7 +1802,9 @@ systemctl start mpd.socket</programlisting>
         <title><varname>shine</varname></title>
 
         <para>
-          Encodes into MP3 using the shine library.
+          Encodes into MP3 using the <ulink
+          url="https://github.com/savonet/shine"><application>Shine</application></ulink>
+          library.
         </para>
 
         <informaltable>
@@ -1795,7 +1833,8 @@ systemctl start mpd.socket</programlisting>
         <title><varname>twolame</varname></title>
 
         <para>
-          Encodes into MP2 using the <filename>twolame</filename>
+          Encodes into MP2 using the <ulink
+          url="http://www.twolame.org/"><application>TwoLAME</application></ulink>
           library.
         </para>
 
@@ -1832,11 +1871,12 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="vorbis_encoder">
         <title><varname>vorbis</varname></title>
 
         <para>
-          Encodes into Ogg Vorbis.
+          Encodes into <ulink url="http://www.vorbis.com/">Ogg
+          Vorbis</ulink>.
         </para>
 
         <informaltable>
@@ -1888,7 +1928,10 @@ systemctl start mpd.socket</programlisting>
         <title><varname>alsa</varname></title>
 
         <para>
-          The "Advanced Linux Sound Architecture" plugin uses
+          The <ulink
+          url="http://www.alsa-project.org/"><application>Advanced
+          Linux Sound Architecture</application>
+          (<application>ALSA</application>)</ulink> plugin uses
           <filename>libasound</filename>.  It is recommended if you
           are using Linux.
         </para>
@@ -2072,9 +2115,10 @@ systemctl start mpd.socket</programlisting>
         <title><varname>ao</varname></title>
 
         <para>
-          The <varname>ao</varname> plugin uses the portable
-          <filename>libao</filename> library.  Use only if there is no
-          native plugin for your operating system.
+          The <varname>ao</varname> plugin uses the portable <ulink
+          url="https://www.xiph.org/ao/"><filename>libao</filename></ulink>
+          library.  Use only if there is no native plugin for your
+          operating system.
         </para>
 
         <informaltable>
@@ -2181,8 +2225,9 @@ systemctl start mpd.socket</programlisting>
         <title><varname>jack</varname></title>
 
         <para>
-          The <varname>jack</varname> plugin connects to a
-          <application>JACK</application> server.
+          The <varname>jack</varname> plugin connects to a <ulink
+          url="http://jackaudio.org/"><application>JACK</application></ulink>
+          server.
         </para>
 
         <informaltable>
@@ -2264,14 +2309,17 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="httpd_output">
         <title><varname>httpd</varname></title>
 
         <para>
           The <varname>httpd</varname> plugin creates a HTTP server,
-          similar to <application>ShoutCast</application> /
-          <application>IceCast</application>.  HTTP streaming clients
-          like <application>mplayer</application> can connect to it.
+          similar to <ulink
+          url="http://www.shoutcast.com/"><application>ShoutCast</application></ulink>
+          / <ulink
+          url="http://icecast.org/"><application>IceCast</application></ulink>.
+          HTTP streaming clients like
+          <application>mplayer</application> can connect to it.
         </para>
 
         <para>
@@ -2314,8 +2362,10 @@ systemctl start mpd.socket</programlisting>
                   <parameter>NAME</parameter>
                 </entry>
                 <entry>
-                  Chooses an encoder plugin,
-                  e.g. <parameter>vorbis</parameter>.
+                  Chooses an encoder plugin.  A list of encoder
+                  plugins can be found in the <link
+                  linkend="encoder_plugins">encoder plugin
+                  reference</link>.
                 </entry>
               </row>
               <row>
@@ -2367,7 +2417,7 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="oss_output">
         <title><varname>oss</varname></title>
 
         <para>
@@ -2454,8 +2504,9 @@ systemctl start mpd.socket</programlisting>
         <title><varname>openal</varname></title>
 
         <para>
-          The "OpenAL" plugin uses <filename>libopenal</filename>.  It
-          is supported on many platforms.  Use only if there is no
+          The "OpenAL" plugin uses <ulink
+          url="http://kcat.strangesoft.net/openal.html"><filename>libopenal</filename></ulink>.
+          It is supported on many platforms.  Use only if there is no
           native plugin for your operating system.
         </para>
 
@@ -2523,11 +2574,12 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="pulse_output">
         <title><varname>pulse</varname></title>
 
         <para>
-          The <varname>pulse</varname> plugin connects to a PulseAudio
+          The <varname>pulse</varname> plugin connects to a <ulink
+          url="http://www.freedesktop.org/wiki/Software/PulseAudio/"><application>PulseAudio</application></ulink>
           server.
         </para>
 
@@ -2546,9 +2598,11 @@ systemctl start mpd.socket</programlisting>
                   <parameter>HOSTNAME</parameter>
                 </entry>
                 <entry>
-                  Sets the host name of the PulseAudio server.  By
+                  Sets the host name of the
+                  <application>PulseAudio</application> server.  By
                   default, <application>MPD</application> connects to
-                  the local PulseAudio server.
+                  the local <application>PulseAudio</application>
+                  server.
                 </entry>
               </row>
               <row>
@@ -2557,7 +2611,8 @@ systemctl start mpd.socket</programlisting>
                   <parameter>NAME</parameter>
                 </entry>
                 <entry>
-                  Specifies the name of the PulseAudio sink
+                  Specifies the name of the
+                  <application>PulseAudio</application> sink
                   <application>MPD</application> should play on.
                 </entry>
               </row>
@@ -2645,8 +2700,10 @@ systemctl start mpd.socket</programlisting>
                   <parameter>NAME</parameter>
                 </entry>
                 <entry>
-                  Chooses an encoder plugin,
-                  e.g. <parameter>vorbis</parameter>.
+                  Chooses an encoder plugin.  A list of encoder
+                  plugins can be found in the <link
+                  linkend="encoder_plugins">encoder plugin
+                  reference</link>.
                 </entry>
               </row>
             </tbody>
@@ -2654,12 +2711,15 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="shout_output">
         <title><varname>shout</varname></title>
 
         <para>
-          The <varname>shout</varname> plugin connects to a ShoutCast
-          or IceCast server.  It forwards tags to this server.
+          The <varname>shout</varname> plugin connects to a <ulink
+          url="http://www.shoutcast.com/"><application>ShoutCast</application></ulink>
+          or <ulink
+          url="http://icecast.org/"><application>IceCast</application></ulink>
+          server.  It forwards tags to this server.
         </para>
 
         <para>
@@ -2681,7 +2741,11 @@ systemctl start mpd.socket</programlisting>
                   <parameter>HOSTNAME</parameter>
                 </entry>
                 <entry>
-                  Sets the host name of the Shoutcast/Icecast server.
+                  Sets the host name of the <ulink
+                  url="http://www.shoutcast.com/"><application>ShoutCast</application></ulink>
+                  / <ulink
+                  url="http://icecast.org/"><application>IceCast</application></ulink>
+                  server.
                 </entry>
               </row>
               <row>
@@ -2710,8 +2774,8 @@ systemctl start mpd.socket</programlisting>
                 </entry>
                 <entry>
                   Specifies the protocol that wil be used to connect
-                  to the icecast/shoutcast server.  The default
-                  is "<parameter>icecast2</parameter>".
+                  to the server.  The default is
+                  "<parameter>icecast2</parameter>".
 
                 </entry>
               </row>
@@ -2797,10 +2861,11 @@ systemctl start mpd.socket</programlisting>
                   <parameter>PLUGIN</parameter>
                 </entry>
                 <entry>
-                  Sets the name of the encoder plugin.  Default is
-                  "vorbis".  "vorbis" and "lame" are valid encoder
-                  plugins (provided that you enabled them at compile
-                  time).
+                  Chooses an encoder plugin.  Default is <link
+                  linkend="vorbis_encoder"><parameter>vorbis</parameter></link>.
+                  A list of encoder plugins can be found in the <link
+                  linkend="encoder_plugins">encoder plugin
+                  reference</link>.
                 </entry>
               </row>
             </tbody>
@@ -2841,7 +2906,7 @@ systemctl start mpd.socket</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="playlist_plugins">
       <title>Playlist plugins</title>
 
       <section>
