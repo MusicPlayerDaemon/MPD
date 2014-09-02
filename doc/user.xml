@@ -680,7 +680,7 @@ systemctl start mpd.socket</programlisting>
     <section id="config_audio_format">
       <title>Audio Format Settings</title>
 
-      <section>
+      <section id="config_global_audio_format">
         <title>Global Audio Format</title>
 
         <para>
@@ -1143,6 +1143,175 @@ systemctl start mpd.socket</programlisting>
     </section>
   </chapter>
 
+  <chapter id="advanced_usage">
+    <title>Advanced usage</title>
+
+    <section id="bit_perfect">
+      <title>Bit-perfect playback</title>
+
+      <para>
+        "Bit-perfect playback" is a phrase used by audiophiles to
+        describe a setup that plays back digital music as-is, without
+        applying any modifications such as resampling, format
+        conversion or software volume.  Naturally, this implies a
+        lossless codec.
+      </para>
+
+      <para>
+        By default, <application>MPD</application> attempts to do
+        bit-perfect playback, unless you tell it not to.  Precondition
+        is a sound chip that supports the audio format of your music
+        files.  If the audio format is not supported,
+        <application>MPD</application> attempts to fall back to the
+        nearest supported audio format, trying to lose as little
+        quality as possible.
+      </para>
+
+      <para>
+        To verify if <application>MPD</application> converts the audio
+        format, enable verbose logging, and watch for these lines:
+      </para>
+
+      <programlisting>decoder: audio_format=44100:24:2, seekable=true
+output: opened plugin=alsa name="An ALSA output" audio_format=44100:16:2
+output: converting from 44100:24:2</programlisting>
+
+      <para>
+        This example shows that a 24 bit file is being played, but the
+        sond chip cannot play 24 bit.  It falls back to 16 bit,
+        discarding 8 bit.
+      </para>
+
+      <para>
+        However, this does not yet prove bit-perfect playback;
+        <application>ALSA</application> may be fooling
+        <application>MPD</application> that the audio format is
+        supported.  To verify the format really being sent to the
+        physical sound chip, try:
+      </para>
+
+      <programlisting>cat /proc/asound/card*/pcm*p/sub*/hw_params
+access: RW_INTERLEAVED
+format: S16_LE
+subformat: STD
+channels: 2
+rate: 44100 (44100/1)
+period_size: 4096
+buffer_size: 16384</programlisting>
+
+      <para>
+        Obey the "format" row, which indicates that the current
+        playback format is 16 bit (signed 16 bit integer, little
+        endian).
+      </para>
+
+      <para>
+        Check list for bit-perfect playback:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            Use the <link linkend="alsa_output">ALSA</link> output
+            plugin.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            Disable sound processing inside
+            <application>ALSA</application> by configuring a
+            "hardware" device (<parameter>hw:0,0</parameter> or
+            similar).
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            Don't use software volume (setting <link
+            linkend="config_audio_outputs"><varname>mixer_type</varname></link>).
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            Don't force <application>MPD</application> to use a
+            specific audio format (settings <link
+            linkend="config_audio_outputs"><varname>format</varname></link>,
+            <link
+            linkend="config_global_audio_format"><varname>audio_output_format</varname></link>).
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            Verify that you are really doing bit-perfect playback
+            using <application>MPD</application>'s verbose log and
+            <filename>/proc/asound/card*/pcm*p/sub*/hw_params</filename>.
+            Some DACs can also indicate the audio format.
+          </para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section id="dsd">
+      <title>Direct Stream Digital (DSD)</title>
+
+      <para>
+        DSD (<ulink
+        url="https://en.wikipedia.org/wiki/Direct_Stream_Digital">Direct
+        Stream Digital</ulink>) is a digital format that stores audio
+        as a sequence of single-bit values at a very high sampling
+        rate.
+      </para>
+
+      <para>
+        <application>MPD</application> understands the file formats
+        <link linkend="dsdiff_decoder"><filename>dff</filename></link>
+        and <link
+        linkend="dsf_decoder"><filename>dsf</filename></link>.  There
+        are three ways to play back DSD:
+      </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>
+            Native DSD playback.  Requires
+            <application>ALSA</application> 1.0.27.1 or later, a sound
+            driver/chip that supports DSD and of course a DAC that
+            supports DSD.
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            DoP (DSD over PCM) playback.  This wraps DSD inside fake
+            24 bit PCM according to the <ulink
+            url="http://dsd-guide.com/dop-open-standard">DoP
+            standard</ulink>.  Requires a DAC that supports DSD.  No
+            support from ALSA and the sound chip required (except for
+            24 bit PCM support).
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>
+            Convert DSD to PCM on-the-fly.
+          </para>
+        </listitem>
+      </itemizedlist>
+
+      <para>
+        Native DSD playback is used automatically if available.  DoP
+        is only used if enabled explicitly using the <link
+        linkend="alsa_output"><varname>dop</varname></link> option,
+        because there is no way for <application>MPD</application> to
+        find out whether the DAC supports it.  DSD to PCM conversion
+        is the fallback if DSD cannot be used directly.
+      </para>
+    </section>
+  </chapter>
+
   <chapter id="plugin_reference">
     <title>Plugin reference</title>
 
@@ -1527,7 +1696,7 @@ systemctl start mpd.socket</programlisting>
     <section id="decoder_plugins">
       <title>Decoder plugins</title>
 
-      <section>
+      <section id="dsdiff_decoder">
         <title><varname>dsdiff</varname></title>
 
         <para>
@@ -1558,7 +1727,7 @@ systemctl start mpd.socket</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="dsf_decoder">
         <title><varname>dsf</varname></title>
 
         <para>
@@ -2041,7 +2210,7 @@ systemctl start mpd.socket</programlisting>
                   If set to <parameter>yes</parameter>, then DSD over
                   PCM according to the <ulink
                   url="http://dsd-guide.com/dop-open-standard">DoP
-                  standard others</ulink> is enabled.  This wraps DSD
+                  standard</ulink> is enabled.  This wraps DSD
                   samples in fake 24 bit PCM, and is understood by
                   some DSD capable products, but may be harmful to
                   other hardware.  Therefore, the default is
