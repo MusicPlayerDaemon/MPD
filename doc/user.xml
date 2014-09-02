@@ -4,7 +4,7 @@
 <book>
   <title>The Music Player Daemon - User's Manual</title>
 
-  <chapter>
+  <chapter id="intro">
     <title>Introduction</title>
 
     <para>
@@ -37,7 +37,7 @@
     </para>
   </chapter>
 
-  <chapter>
+  <chapter id="install">
     <title>Installation</title>
 
     <para>
@@ -47,7 +47,7 @@
       package, which is very easy to install.
     </para>
 
-    <section>
+    <section id="install_debian">
       <title>Installing on Debian/Ubuntu</title>
 
       <para>
@@ -65,7 +65,7 @@
       </para>
     </section>
 
-    <section>
+    <section id="install_source">
       <title>Compiling from source</title>
 
       <para>
@@ -134,7 +134,7 @@ apt-get install g++ automake autoconf \
       <programlisting>make install</programlisting>
     </section>
 
-    <section>
+    <section id="systemd_socket">
       <title><filename>systemd</filename> socket activation</title>
 
       <para>
@@ -166,10 +166,10 @@ systemctl start mpd.socket</programlisting>
     </section>
   </chapter>
 
-  <chapter>
+  <chapter id="config">
     <title>Configuration</title>
 
-    <section>
+    <section id="config_music_directory">
       <title>Configuring the music directory</title>
 
       <para>
@@ -199,7 +199,7 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
-    <section>
+    <section id="config_database_plugins">
       <title>Configuring database plugins</title>
 
       <para>
@@ -251,7 +251,7 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
-    <section>
+    <section id="config_input_plugins">
       <title>Configuring input plugins</title>
 
       <para>
@@ -312,7 +312,7 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
-    <section>
+    <section id="config_decoder_plugins">
       <title>Configuring decoder plugins</title>
 
       <para>
@@ -373,7 +373,7 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
-    <section>
+    <section id="config_encoder_plugins">
       <title>Configuring encoder plugins</title>
 
       <para>
@@ -386,7 +386,7 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
-    <section id="audio_output">
+    <section id="config_audio_outputs">
       <title>Configuring audio outputs</title>
 
       <para>
@@ -552,7 +552,7 @@ systemctl start mpd.socket</programlisting>
       </informaltable>
     </section>
 
-    <section>
+    <section id="config_filters">
       <title>Configuring filters</title>
 
       <para>
@@ -609,7 +609,7 @@ systemctl start mpd.socket</programlisting>
       </informaltable>
     </section>
 
-    <section>
+    <section id="config_playlist_plugins">
       <title>Configuring playlist plugins</title>
 
       <para>
@@ -677,7 +677,7 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
-    <section>
+    <section id="config_audio_format">
       <title>Audio Format Settings</title>
 
       <section>
@@ -689,7 +689,7 @@ systemctl start mpd.socket</programlisting>
           all outputs.  Doing that is usually not a good idea.  The
           values are the same as in <link
           linkend="ao_format"><varname>format</varname> in the <link
-          linkend="audio_output"><varname>audio_output</varname></link>
+          linkend="config_audio_outputs"><varname>audio_output</varname></link>
           section</link>.
         </para>
       </section>
@@ -887,7 +887,7 @@ systemctl start mpd.socket</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="config_other">
       <title>Other Settings</title>
 
       <section>
@@ -1078,10 +1078,10 @@ systemctl start mpd.socket</programlisting>
     </section>
   </chapter>
 
-  <chapter>
+  <chapter id="use">
     <title>Using <application>MPD</application></title>
 
-    <section>
+    <section id="client">
       <title>The client</title>
 
       <para>
@@ -1105,7 +1105,7 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
-    <section>
+    <section id="music_directory_and_database">
       <title>The music directory and the database</title>
 
       <para>
@@ -1131,7 +1131,7 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
-    <section>
+    <section id="queue">
       <title>The queue</title>
 
       <para>
@@ -1143,7 +1143,7 @@ systemctl start mpd.socket</programlisting>
     </section>
   </chapter>
 
-  <chapter>
+  <chapter id="plugin_reference">
     <title>Plugin reference</title>
 
     <section id="database_plugins">
@@ -1921,7 +1921,7 @@ systemctl start mpd.socket</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="output_plugins">
       <title>Output plugins</title>
 
       <section id="alsa_output">

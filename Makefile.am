@@ -2083,7 +2083,7 @@ if HAVE_XMLTO
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
 $(DOCBOOK_HTML): %/index.html: %.xml
-	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html $<
+	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html --stringparam use.id.as.filename=1 $<
 
 else
 
