@@ -4,7 +4,7 @@
 <book>
   <title>The Music Player Daemon protocol</title>
 
-  <chapter>
+  <chapter id="syntax">
     <title>General protocol syntax</title>
 
     <section>
@@ -38,7 +38,7 @@
       </para>
     </section>
 
-    <section>
+    <section id="request_syntax">
       <title>Requests</title>
 
       <cmdsynopsis>
@@ -70,7 +70,7 @@
       </para>
     </section>
 
-    <section>
+    <section id="response_syntax">
       <title>Responses</title>
 
       <para>
@@ -79,7 +79,7 @@
         denote the end of command execution.
       </para>
 
-      <section>
+      <section id="failure_response_syntax">
         <title>Failure responses</title>
 
         <para>
@@ -188,7 +188,7 @@
       </para>
     </section>
 
-    <section>
+    <section id="range_syntax">
       <title>Ranges</title>
 
       <para>
@@ -203,10 +203,10 @@
     </section>
   </chapter>
 
-  <chapter>
+  <chapter id="recipes">
     <title>Recipes</title>
 
-    <section>
+    <section id="queuing_recipe">
       <title>Queuing</title>
 
       <para>
@@ -244,7 +244,7 @@
     </section>
   </chapter>
 
-  <chapter>
+  <chapter id="command_reference">
     <title>Command reference</title>
 
     <note>
@@ -259,7 +259,7 @@
       </para>
     </note>
 
-    <section>
+    <section id="status_commands">
       <title>Querying MPD's status</title>
 
       <variablelist>
@@ -612,7 +612,7 @@
       </variablelist>
     </section>
 
-    <section>
+    <section id="playback_option_commands">
       <title>Playback options</title>
 
       <variablelist>
@@ -795,7 +795,7 @@
       </variablelist>
     </section>
 
-    <section>
+    <section id="playback_commands">
       <title>Controlling playback</title>
 
       <variablelist>
@@ -936,7 +936,7 @@
       </variablelist>
     </section>
 
-    <section>
+    <section id="queue">
       <title>The current playlist</title>
 
       <variablelist>
@@ -1328,7 +1328,7 @@ OK
       </variablelist>
     </section>
 
-    <section>
+    <section id="playlist_files">
       <title>Stored playlists</title>
 
       <para>
@@ -1518,7 +1518,7 @@ OK
       </variablelist>
     </section>
 
-    <section>
+    <section id="database">
       <title>The music database</title>
 
       <variablelist>
@@ -1882,7 +1882,7 @@ OK
       </variablelist>
     </section>
 
-    <section>
+    <section id="stickers">
       <title>Stickers</title>
 
       <para>
@@ -2002,7 +2002,7 @@ OK
       </variablelist>
     </section>
 
-    <section>
+    <section id="connection_commands">
       <title>Connection settings</title>
 
       <variablelist>
@@ -2063,7 +2063,7 @@ OK
       </variablelist>
     </section>
 
-    <section>
+    <section id="output_commands">
       <title>Audio output devices</title>
 
       <variablelist>
@@ -2148,7 +2148,7 @@ OK
       </variablelist>
     </section>
 
-    <section>
+    <section id="reflection_commands">
       <title>Reflection</title>
 
       <variablelist>
@@ -2264,7 +2264,7 @@ suffix: mpc</programlisting>
       </variablelist>
     </section>
 
-    <section>
+    <section id="client_to_client">
       <title>Client to client</title>
 
       <para>
