@@ -148,16 +148,13 @@ static bool
 pulse_wait_for_operation(struct pa_threaded_mainloop *mainloop,
 			 struct pa_operation *operation)
 {
-	pa_operation_state_t state;
-
 	assert(mainloop != nullptr);
 	assert(operation != nullptr);
 
-	state = pa_operation_get_state(operation);
-	while (state == PA_OPERATION_RUNNING) {
+	pa_operation_state_t state;
+	while ((state = pa_operation_get_state(operation))
+	       == PA_OPERATION_RUNNING)
 		pa_threaded_mainloop_wait(mainloop);
-		state = pa_operation_get_state(operation);
-	}
 
 	pa_operation_unref(operation);
 
