@@ -1290,7 +1290,8 @@ buffer_size: 16384</programlisting>
             url="http://dsd-guide.com/dop-open-standard">DoP
             standard</ulink>.  Requires a DAC that supports DSD.  No
             support from ALSA and the sound chip required (except for
-            24 bit PCM support).
+            <link linkend="bit_perfect">bit-perfect</link> 24 bit PCM
+            support).
           </para>
         </listitem>
 
