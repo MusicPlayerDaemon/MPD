@@ -1,6 +1,8 @@
 ver 0.18.14 (not yet released)
 * protocol
   - fix range parser bug on certain 32 bit architectures
+* decoder
+  - audiofile: fix crash after seeking
 
 ver 0.18.13 (2014/08/31)
 * protocol
