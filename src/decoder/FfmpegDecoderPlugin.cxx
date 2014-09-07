@@ -387,6 +387,13 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 	avpd.buf_size = nbytes;
 	avpd.filename = is.uri.c_str();
 
+#ifdef AVPROBE_SCORE_MIME
+	/* this attribute was added in libav/ffmpeg version 11, but
+	   unfortunately it's "uint8_t" instead of "char", and it's
+	   not "const" - wtf? */
+	avpd.mime_type = (uint8_t *)const_cast<char *>(is.GetMimeType());
+#endif
+
 	return av_probe_input_format(&avpd, true);
 }
 
