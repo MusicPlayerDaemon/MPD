@@ -26,6 +26,7 @@
 #include "Song.hxx"
 #include "system/FatalError.hxx"
 #include "Mapper.hxx"
+#include "MusicPipe.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "DecoderAPI.hxx"
@@ -418,9 +419,18 @@ decoder_task(void *arg)
 			dc.replay_gain_prev_db = dc.replay_gain_db;
 			dc.replay_gain_db = 0;
 
-			/* fall through */
+			decoder_run(dc);
+			break;
 
 		case DecoderCommand::SEEK:
+			/* this seek was too late, and the decoder had
+			   already finished; start a new decoder */
+
+			/* we need to clear the pipe here; usually the
+			   PlayerThread is responsible, but it is not
+			   aware that the decoder has finished */
+			dc.pipe->Clear(*dc.buffer);
+
 			decoder_run(dc);
 			break;
 
