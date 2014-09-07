@@ -47,6 +47,7 @@ decoder_initialized(Decoder &decoder,
 
 	assert(dc.state == DecoderState::START);
 	assert(dc.pipe != nullptr);
+	assert(dc.pipe->IsEmpty());
 	assert(decoder.stream_tag == nullptr);
 	assert(decoder.decoder_tag == nullptr);
 	assert(!decoder.seeking);
@@ -404,6 +405,9 @@ decoder_data(Decoder &decoder,
 	if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK ||
 	    length == 0)
 		return cmd;
+
+	assert(!decoder.initial_seek_pending);
+	assert(!decoder.initial_seek_running);
 
 	/* send stream tags */
 

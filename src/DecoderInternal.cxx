@@ -83,6 +83,9 @@ void
 decoder_flush_chunk(Decoder &decoder)
 {
 	DecoderControl &dc = decoder.dc;
+	assert(!decoder.seeking);
+	assert(!decoder.initial_seek_running);
+	assert(!decoder.initial_seek_pending);
 
 	assert(decoder.chunk != nullptr);
 
