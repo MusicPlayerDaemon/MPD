@@ -383,6 +383,12 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 	nbytes -= PADDING;
 
 	AVProbeData avpd;
+
+	/* new versions of ffmpeg may add new attributes, and leaving
+	   them uninitialized may crash; hopefully, zero-initializing
+	   everything we don't know is ok */
+	memset(&avpd, 0, sizeof(avpd));
+
 	avpd.buf = buffer;
 	avpd.buf_size = nbytes;
 	avpd.filename = is.uri.c_str();
