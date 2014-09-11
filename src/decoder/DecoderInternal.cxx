@@ -85,6 +85,9 @@ Decoder::GetChunk()
 void
 Decoder::FlushChunk()
 {
+	assert(!seeking);
+	assert(!initial_seek_running);
+	assert(!initial_seek_pending);
 	assert(chunk != nullptr);
 
 	if (chunk->IsEmpty())

@@ -82,7 +82,7 @@ check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
 		/* compatibility with older MPD versions: specifying
 		   "-1" makes MPD display the whole list */
 		*value_r1 = 0;
-		*value_r2 = std::numeric_limits<unsigned>::max();
+		*value_r2 = std::numeric_limits<int>::max();
 		return true;
 	}
 
@@ -109,7 +109,7 @@ check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
 		}
 
 		if (test == test2)
-			value = std::numeric_limits<unsigned>::max();
+			value = std::numeric_limits<int>::max();
 
 		if (value < 0) {
 			command_error(client, ACK_ERROR_ARG,

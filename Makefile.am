@@ -1458,6 +1458,7 @@ C_TESTS = \
 	test/test_rewind \
 	test/test_mixramp \
 	test/test_pcm \
+	test/test_protocol \
 	test/test_queue_priority
 
 if ENABLE_CURL
@@ -2034,6 +2035,16 @@ test_test_translate_song_LDADD = \
 	$(CPPUNIT_LIBS)
 
 endif
+
+test_test_protocol_SOURCES = \
+	src/protocol/ArgParser.cxx \
+	test/test_protocol.cxx
+test_test_protocol_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_test_protocol_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_test_protocol_LDADD = \
+	libsystem.a \
+	libutil.a \
+	$(CPPUNIT_LIBS)
 
 test_test_queue_priority_SOURCES = \
 	src/queue/Queue.cxx \

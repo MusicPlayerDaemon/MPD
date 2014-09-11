@@ -69,6 +69,14 @@ ver 0.19 (not yet released)
 * install systemd unit for socket activation
 * Android port
 
+ver 0.18.14 (2014/09/11)
+* protocol
+  - fix range parser bug on certain 32 bit architectures
+* decoder
+  - audiofile: fix crash after seeking
+  - ffmpeg: fix crash with ffmpeg/libav version 11
+  - fix assertion failure after seeking
+
 ver 0.18.13 (2014/08/31)
 * protocol
   - don't change song on "seekcur" in random mode

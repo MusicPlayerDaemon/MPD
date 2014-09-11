@@ -64,6 +64,7 @@ tags
 /test/tmp
 /test/run_inotify
 /test/test_queue_priority
+/test/test_protocol
 /test/run_ntp_server
 /test/run_resolver
 /test/run_tcp_connect
