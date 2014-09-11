@@ -1,4 +1,4 @@
-ver 0.18.14 (not yet released)
+ver 0.18.14 (2014/09/11)
 * protocol
   - fix range parser bug on certain 32 bit architectures
 * decoder
