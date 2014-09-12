@@ -587,6 +587,7 @@ input_curl_finish(void)
 		});
 
 	curl_slist_free_all(http_200_aliases);
+	http_200_aliases = nullptr;
 
 	curl_global_cleanup();
 }
