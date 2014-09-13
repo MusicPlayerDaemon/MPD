@@ -41,7 +41,21 @@ class PosixCond {
 	pthread_cond_t cond;
 
 public:
+#ifdef __NetBSD__
+	/* NetBSD's PTHREAD_COND_INITIALIZER is not compatible with
+	   "constexpr" */
+	PosixCond() {
+		pthread_cond_init(&cond, nullptr);
+	}
+
+	~PosixCond() {
+		pthread_cond_destroy(&cond);
+	}
+#else
+	/* optimized constexpr constructor for sane POSIX
+	   implementations */
 	constexpr PosixCond():cond(PTHREAD_COND_INITIALIZER) {}
+#endif
 
 	PosixCond(const PosixCond &other) = delete;
 	PosixCond &operator=(const PosixCond &other) = delete;

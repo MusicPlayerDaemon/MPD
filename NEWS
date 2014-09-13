@@ -1,4 +1,5 @@
 ver 0.18.15 (not yet released)
+* work around build failure on NetBSD
 
 ver 0.18.14 (2014/09/11)
 * protocol

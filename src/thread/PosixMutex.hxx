@@ -41,7 +41,21 @@ class PosixMutex {
 	pthread_mutex_t mutex;
 
 public:
+#ifdef __NetBSD__
+	/* NetBSD's PTHREAD_MUTEX_INITIALIZER is not compatible with
+	   "constexpr" */
+	PosixMutex() {
+		pthread_mutex_init(&mutex, nullptr);
+	}
+
+	~PosixMutex() {
+		pthread_mutex_destroy(&mutex);
+	}
+#else
+	/* optimized constexpr constructor for sane POSIX
+	   implementations */
 	constexpr PosixMutex():mutex(PTHREAD_MUTEX_INITIALIZER) {}
+#endif
 
 	PosixMutex(const PosixMutex &other) = delete;
 	PosixMutex &operator=(const PosixMutex &other) = delete;
