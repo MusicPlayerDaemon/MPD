@@ -278,8 +278,8 @@ libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 android/build/build.xml: android/AndroidManifest.xml
 	rm -rf android/build
 	mkdir -p android/build/include android/build/res
-	ln -s $(srcdir)/android/AndroidManifest.xml $(srcdir)/android/custom_rules.xml $(srcdir)/android/src android/build
-	ln -s $(srcdir)/android/res/values android/build/res
+	ln -s $(abs_srcdir)/android/AndroidManifest.xml $(abs_srcdir)/android/custom_rules.xml $(abs_srcdir)/android/src android/build
+	ln -s $(abs_srcdir)/android/res/values android/build/res
 	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17
 
 android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
