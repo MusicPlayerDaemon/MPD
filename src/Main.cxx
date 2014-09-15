@@ -696,6 +696,7 @@ int mpd_main(int argc, char *argv[])
 #endif
 	delete instance->event_loop;
 	delete instance;
+	instance = nullptr;
 #ifndef ANDROID
 	daemonize_finish();
 #endif
@@ -725,6 +726,14 @@ Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context)
 
 	delete context;
 	Environment::Deinitialise(env);
+}
+
+gcc_visibility_default
+JNIEXPORT void JNICALL
+Java_org_musicpd_Bridge_shutdown(JNIEnv *, jclass)
+{
+	if (instance != nullptr)
+		instance->event_loop->Break();
 }
 
 #endif

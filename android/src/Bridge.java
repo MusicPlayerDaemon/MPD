@@ -26,4 +26,5 @@ import android.content.Context;
  */
 public class Bridge {
 	public static native void run(Context context);
+	public static native void shutdown();
 }
