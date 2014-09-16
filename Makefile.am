@@ -277,8 +277,9 @@ libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 
 android/build/build.xml: android/AndroidManifest.xml
 	rm -rf android/build
-	mkdir -p android/build/include android/build/res
-	ln -s $(abs_srcdir)/android/AndroidManifest.xml $(abs_srcdir)/android/custom_rules.xml $(abs_srcdir)/android/src android/build
+	mkdir -p android/build/include android/build/res android/build/src/org
+	ln -s $(abs_srcdir)/android/AndroidManifest.xml $(abs_srcdir)/android/custom_rules.xml android/build
+	ln -s $(abs_srcdir)/android/src android/build/src/org/musicpd
 	ln -s $(abs_srcdir)/android/res/values android/build/res
 	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17
 
