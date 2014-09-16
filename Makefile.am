@@ -5,6 +5,7 @@ AM_CPPFLAGS += -I$(srcdir)/src $(GLIB_CFLAGS) $(BOOST_CPPFLAGS)
 
 AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 
+APK_NAME = mpd
 if ANDROID
 else
 bin_PROGRAMS = src/mpd
@@ -273,7 +274,7 @@ libmain_a_CPPFLAGS = $(AM_CPPFLAGS) -Iandroid/build/include
 
 src_mpd_LDADD += libandroid.a libjava.a
 
-all-local: android/build/bin/Main-debug.apk
+all-local: android/build/bin/$(APK_NAME)-debug.apk
 clean-local:
 	rm -rf android/build
 
@@ -286,7 +287,7 @@ android/build/build.xml: android/AndroidManifest.xml
 	ln -s $(abs_srcdir)/android/AndroidManifest.xml $(abs_srcdir)/android/custom_rules.xml android/build
 	ln -s $(abs_srcdir)/android/src android/build/src/org/musicpd
 	ln -s $(abs_srcdir)/android/res/values $(abs_srcdir)/android/res/layout android/build/res
-	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17
+	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17 --name $(APK_NAME)
 
 android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
 	cd android/build && ant compile-jni-classes
@@ -310,18 +311,18 @@ APK_DEPS = android/build/res/drawable/icon.png \
 	$(wildcard $(srcdir)/android/src/*.java) \
 	android/build/build.xml
 
-android/build/bin/Main-debug.apk: $(APK_DEPS)
+android/build/bin/$(APK_NAME)-debug.apk: $(APK_DEPS)
 	cd android/build && ant nodeps debug
 
-android/build/bin/Main-release-unsigned.apk: $(APK_DEPS)
+android/build/bin/$(APK_NAME)-release-unsigned.apk: $(APK_DEPS)
 	cd android/build && ant nodeps release
 
-android/build/bin/Main-release-unaligned.apk: android/build/bin/Main-release-unsigned.apk
+android/build/bin/$(APK_NAME)-release-unaligned.apk: android/build/bin/$(APK_NAME)-release-unsigned.apk
 	jarsigner -digestalg SHA1 -sigalg MD5withRSA -storepass:env ANDROID_KEYSTORE_PASS -keystore $(ANDROID_KEYSTORE) -signedjar $@ $< $(ANDROID_KEY_ALIAS)
 
 ANDROID_SDK_BUILD_TOOLS_VERSION = 20.0.0
 
-android/build/bin/Main.apk: android/build/bin/Main-release-unaligned.apk
+android/build/bin/$(APK_NAME).apk: android/build/bin/$(APK_NAME)-release-unaligned.apk
 	$(ANDROID_SDK)/build-tools/$(ANDROID_SDK_BUILD_TOOLS_VERSION)/zipalign -f 4 $< $@
 
 endif
