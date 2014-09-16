@@ -2,4 +2,6 @@
 
 <resources>
   <string name="app_name">MPD</string>
+  <string name="notification_title_mpd_running">Music Player Daemon is running</string>
+  <string name="notification_text_mpd_running">Touch for MPD options.</string>
 </resources>

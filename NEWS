@@ -1,6 +1,9 @@
 ver 0.20.22 (not yet released)
 * storage
   - curl: URL-encode paths
+* Android
+  - now runs as a service
+  - add button to start/stop MPD
 
 ver 0.20.21 (2018/08/17)
 * database

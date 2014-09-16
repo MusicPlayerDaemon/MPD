@@ -19,57 +19,406 @@
 
 package org.musicpd;
 
-import android.app.Activity;
-import android.os.Bundle;
+import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
-import android.widget.TextView;
+import android.os.IBinder;
+import android.os.PowerManager;
+import android.os.RemoteCallbackList;
+import android.os.RemoteException;
 import android.util.Log;
+import android.widget.RemoteViews;
 
-public class Main extends Activity implements Runnable {
-	private static final String TAG = "MPD";
+public class Main extends Service implements Runnable {
+	private static final String TAG = "Main";
+	private static final String REMOTE_ERROR = "MPD process was killed";
+	private static final int MAIN_STATUS_ERROR = -1;
+	private static final int MAIN_STATUS_STOPPED = 0;
+	private static final int MAIN_STATUS_STARTED = 1;
 
-	Thread thread;
+	private static final int MSG_SEND_STATUS = 0;
+	private static final int MSG_SEND_LOG = 1;
 
-	TextView textView;
+	private Thread mThread = null;
+	private int mStatus = MAIN_STATUS_STOPPED;
+	private boolean mAbort = false;
+	private String mError = null;
+	private final RemoteCallbackList<IMainCallback> mCallbacks = new RemoteCallbackList<IMainCallback>();
+	private final IBinder mBinder = new MainStub(this);
+	private PowerManager.WakeLock mWakelock = null;
 
-	final Handler quitHandler = new Handler() {
-			public void handleMessage(Message msg) {
-				textView.setText("Music Player Daemon has quit");
+	static class MainStub extends IMain.Stub {
+		private Main mService;
+		MainStub(Main service) {
+			mService = service;
+		}
+		public void start() {
+			mService.start();
+		}
+		public void stop() {
+			mService.stop();
+		}
+		public void setWakelockEnabled(boolean enabled) {
+			mService.setWakelockEnabled(enabled);
+		}
+		public boolean isRunning() {
+			return mService.isRunning();
+		}
+		public void registerCallback(IMainCallback cb) {
+			mService.registerCallback(cb);
+		}
+		public void unregisterCallback(IMainCallback cb) {
+			mService.unregisterCallback(cb);
+		}
+	}
 
-				// TODO: what now?  restart?
+	private synchronized void sendMessage(int what, int arg1, int arg2, Object obj) {
+		int i = mCallbacks.beginBroadcast();
+		while (i > 0) {
+			i--;
+			final IMainCallback cb = mCallbacks.getBroadcastItem(i);
+			try {
+				switch (what) {
+				case MSG_SEND_STATUS:
+					switch (arg1) {
+					case MAIN_STATUS_ERROR:
+						cb.onError((String)obj);
+						break;
+					case MAIN_STATUS_STOPPED:
+						cb.onStopped();
+						break;
+					case MAIN_STATUS_STARTED:
+						cb.onStarted();
+						break;
+					}
+					break;
+				case MSG_SEND_LOG:
+					cb.onLog(arg1, (String) obj);
+					break;
+				}
+			} catch (RemoteException e) {
+			}
+		}
+		mCallbacks.finishBroadcast();
+	}
+
+	private Bridge.LogListener mLogListener = new Bridge.LogListener() {
+		@Override
+		public void onLog(int priority, String msg) {
+			sendMessage(MSG_SEND_LOG, priority, 0, msg);
+		}
+	};
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		return mBinder;
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		start();
+		if (intent != null && intent.getBooleanExtra("wakelock", false))
+			setWakelockEnabled(true);
+		return START_STICKY;
+	}
+
+	@Override
+	public void run() {
+		if (!Loader.loaded) {
+			final String error = "Failed to load the native MPD libary.\n" +
+				"Report this problem to us, and include the following information:\n" +
+				"SUPPORTED_ABIS=" + String.join(", ", Build.SUPPORTED_ABIS) + "\n" +
+				"PRODUCT=" + Build.PRODUCT + "\n" +
+				"FINGERPRINT=" + Build.FINGERPRINT + "\n" +
+				"error=" + Loader.error;
+			setStatus(MAIN_STATUS_ERROR, error);
+			stopSelf();
+			return;
+		}
+		synchronized (this) {
+			if (mAbort)
+				return;
+			setStatus(MAIN_STATUS_STARTED, null);
+		}
+		Bridge.run(this, mLogListener);
+		setStatus(MAIN_STATUS_STOPPED, null);
+	}
+
+	private synchronized void setStatus(int status, String error) {
+		mStatus = status;
+		mError = error;
+		sendMessage(MSG_SEND_STATUS, mStatus, 0, mError);
+	}
+
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
+	private Notification buildNotificationGB(int title, int text, int icon, PendingIntent contentIntent) {
+		final Notification notification = new Notification();
+		notification.icon = R.drawable.icon;
+		notification.contentView = new RemoteViews(getPackageName(), R.layout.custom_notification_gb);
+		notification.contentView.setImageViewResource(R.id.image, icon);
+		notification.contentView.setTextViewText(R.id.title, getText(title));
+		notification.contentView.setTextViewText(R.id.text, getText(text));
+		notification.contentIntent = contentIntent;
+		return notification;
+	}
+
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	private Notification buildNotificationHC(int title, int text, int icon, PendingIntent contentIntent) {
+		return new Notification.Builder(this)
+				.setContentTitle(getText(title))
+				.setContentText(getText(text))
+				.setSmallIcon(icon)
+				.setContentIntent(contentIntent)
+				.getNotification();
+	}
+
+	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+	private Notification buildNotificationJB(int title, int text, int icon, PendingIntent contentIntent) {
+		return new Notification.Builder(this)
+				.setContentTitle(getText(title))
+				.setContentText(getText(text))
+				.setSmallIcon(icon)
+				.setContentIntent(contentIntent)
+				.build();
+	}
+
+	private void start() {
+		if (mThread != null)
+			return;
+		mThread = new Thread(this);
+		mThread.start();
+
+		final Intent mainIntent = new Intent(this, Settings.class);
+		mainIntent.setAction("android.intent.action.MAIN");
+		mainIntent.addCategory("android.intent.category.LAUNCHER");
+		final PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+				mainIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+		Notification notification;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
+			notification = buildNotificationJB(
+					R.string.notification_title_mpd_running,
+					R.string.notification_text_mpd_running,
+					R.drawable.icon,
+					contentIntent);
+		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+			notification = buildNotificationHC(
+					R.string.notification_title_mpd_running,
+					R.string.notification_text_mpd_running,
+					R.drawable.icon,
+					contentIntent);
+		else
+			notification = buildNotificationGB(
+					R.string.notification_title_mpd_running,
+					R.string.notification_text_mpd_running,
+					R.drawable.icon,
+					contentIntent);
+
+		startForeground(R.string.notification_title_mpd_running, notification);
+		startService(new Intent(this, Main.class));
+	}
+
+	private void stop() {
+		if (mThread != null) {
+			if (mThread.isAlive()) {
+				synchronized (this) {
+					if (mStatus == MAIN_STATUS_STARTED)
+						Bridge.shutdown();
+					else
+						mAbort = true;
+				}
+			}
+			try {
+				mThread.join();
+				mThread = null;
+				mAbort = false;
+			} catch (InterruptedException ie) {}
+		}
+		setWakelockEnabled(false);
+		stopForeground(true);
+		stopSelf();
+	}
+
+	private void setWakelockEnabled(boolean enabled) {
+		if (enabled && mWakelock == null) {
+			PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+			mWakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+			mWakelock.acquire();
+			Log.d(TAG, "Wakelock acquired");
+		} else if (!enabled && mWakelock != null) {
+			mWakelock.release();
+			mWakelock = null;
+			Log.d(TAG, "Wakelock released");
+		}
+	}
+
+	private boolean isRunning() {
+		return mThread != null && mThread.isAlive();
+	}
+
+	private void registerCallback(IMainCallback cb) {
+		if (cb != null) {
+			mCallbacks.register(cb);
+			sendMessage(MSG_SEND_STATUS, mStatus, 0, mError);
+		}
+	}
+
+	private void unregisterCallback(IMainCallback cb) {
+		if (cb != null) {
+			mCallbacks.unregister(cb);
+		}
+	}
+
+	/*
+	 * Client that bind the Main Service in order to send commands and receive callback
+	 */
+	public static class Client {
+
+		public interface Callback {
+			public void onStarted();
+			public void onStopped();
+			public void onError(String error);
+			public void onLog(int priority, String msg);
+		}
+
+		private boolean mBound = false;
+		private final Context mContext;
+		private Callback mCallback;
+		private IMain mIMain = null;
+
+		private final IMainCallback.Stub mICallback = new IMainCallback.Stub() {
+
+			@Override
+			public void onStopped() throws RemoteException {
+				mCallback.onStopped();
+			}
+
+			@Override
+			public void onStarted() throws RemoteException {
+				mCallback.onStarted();
+			}
+
+			@Override
+			public void onError(String error) throws RemoteException {
+				mCallback.onError(error);
+			}
+
+			@Override
+			public void onLog(int priority, String msg) throws RemoteException {
+				mCallback.onLog(priority, msg);
 			}
 		};
 
-	@Override protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+		private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
-		if (!Loader.loaded) {
-			TextView tv = new TextView(this);
-			tv.setText("Failed to load the native MPD libary.\n" +
-				   "Report this problem to us, and include the following information:\n" +
-				   "SUPPORTED_ABIS=" + String.join(", ", Build.SUPPORTED_ABIS) + "\n" +
-				   "PRODUCT=" + Build.PRODUCT + "\n" +
-				   "FINGERPRINT=" + Build.FINGERPRINT + "\n" +
-				   "error=" + Loader.error);
-			setContentView(tv);
-			return;
+			@Override
+			public void onServiceConnected(ComponentName name, IBinder service) {
+				synchronized (this) {
+					mIMain = IMain.Stub.asInterface(service);
+					try {
+						if (mCallback != null)
+							mIMain.registerCallback(mICallback);
+					} catch (RemoteException e) {
+						if (mCallback != null)
+							mCallback.onError(REMOTE_ERROR);
+					}
+				}
+			}
+
+			@Override
+			public void onServiceDisconnected(ComponentName name) {
+				if (mCallback != null)
+					mCallback.onError(REMOTE_ERROR);
+			}
+		};
+
+		public Client(Context context, Callback cb) throws IllegalArgumentException {
+			if (context == null)
+				throw new IllegalArgumentException("Context can't be null");
+			mContext = context;
+			mCallback = cb;
+			mBound = mContext.bindService(new Intent(mContext, Main.class), mServiceConnection, Context.BIND_AUTO_CREATE);
 		}
 
-		if (thread == null || !thread.isAlive()) {
-			thread = new Thread(this, "NativeMain");
-			thread.start();
+		public boolean start() {
+			synchronized (this) {
+				if (mIMain != null) {
+					try {
+						mIMain.start();
+						return true;
+					} catch (RemoteException e) {
+					}
+				}
+				return false;
+			}
 		}
 
-		textView = new TextView(this);
-		textView.setText("Music Player Daemon is running"
-				 + "\nCAUTION: this version is EXPERIMENTAL!");
-		setContentView(textView);
+		public boolean stop() {
+			synchronized (this) {
+				if (mIMain != null) {
+					try {
+						mIMain.stop();
+						return true;
+					} catch (RemoteException e) {
+					}
+				}
+				return false;
+			}
+		}
+
+		public boolean setWakelockEnabled(boolean enabled) {
+			synchronized (this) {
+				if (mIMain != null) {
+					try {
+						mIMain.setWakelockEnabled(enabled);
+						return true;
+					} catch (RemoteException e) {
+					}
+				}
+				return false;
+			}
+		}
+
+		public boolean isRunning() {
+			synchronized (this) {
+				if (mIMain != null) {
+					try {
+						return mIMain.isRunning();
+					} catch (RemoteException e) {
+					}
+				}
+				return false;
+			}
+		}
+
+		public void release() {
+			if (mBound) {
+				synchronized (this) {
+					if (mIMain != null && mICallback != null) {
+						try {
+							if (mCallback != null)
+								mIMain.unregisterCallback(mICallback);
+						} catch (RemoteException e) {
+						}
+					}
+				}
+				mBound = false;
+				mContext.unbindService(mServiceConnection);
+			}
+		}
 	}
 
-	@Override public void run() {
-		Bridge.run(this, null);
-		quitHandler.sendMessage(quitHandler.obtainMessage());
+	/*
+	 * start Main service without any callback
+	 */
+	public static void start(Context context, boolean wakelock) {
+		context.startService(new Intent(context, Main.class).putExtra("wakelock", wakelock));
 	}
 }
