@@ -285,7 +285,7 @@ android/build/build.xml: android/AndroidManifest.xml
 	mkdir -p android/build/include android/build/res android/build/src/org
 	ln -s $(abs_srcdir)/android/AndroidManifest.xml $(abs_srcdir)/android/custom_rules.xml android/build
 	ln -s $(abs_srcdir)/android/src android/build/src/org/musicpd
-	ln -s $(abs_srcdir)/android/res/values android/build/res
+	ln -s $(abs_srcdir)/android/res/values $(abs_srcdir)/android/res/layout android/build/res
 	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17
 
 android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
