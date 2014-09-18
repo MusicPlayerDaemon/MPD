@@ -779,6 +779,15 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	       (pair = mpd_recv_pair_tag(connection, tag_type2)) != nullptr) {
 		TagBuilder tag;
 		tag.AddItem(tag_type, pair->value);
+
+		if (tag.IsEmpty())
+			/* if no tag item has been added, then the
+			   given value was not acceptable
+			   (e.g. empty); forcefully insert an empty
+			   tag in this case, as the caller expects the
+			   given tag type to be present */
+			tag.AddEmptyItem(tag_type);
+
 		result = visit_tag(tag.Commit(), error);
 		mpd_return_pair(connection, pair);
 	}
