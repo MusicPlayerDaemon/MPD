@@ -1,6 +1,7 @@
 ver 0.18.15 (not yet released)
 * command
   - list: reset used size after the list has been processed
+* fix MixRamp
 * work around build failure on NetBSD
 
 ver 0.18.14 (2014/09/11)
