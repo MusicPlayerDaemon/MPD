@@ -150,8 +150,6 @@ gcc_pure
 static SampleFormat
 sndfile_sample_format(const SF_INFO &info)
 {
-	fprintf(stderr, "SNDFILE format=%d\n", info.format & SF_FORMAT_SUBMASK);
-
 	switch (info.format & SF_FORMAT_SUBMASK) {
 	case SF_FORMAT_PCM_S8:
 	case SF_FORMAT_PCM_U8:
