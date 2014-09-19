@@ -195,7 +195,9 @@ systemctl start mpd.socket</programlisting>
         files on a remote file server.  For example, to use music from
         the SMB/CIFS server "myfileserver" on the share called
         "Music", configure the music directory
-        "<parameter>smb://myfileserver/Music</parameter>".
+        "<parameter>smb://myfileserver/Music</parameter>".  For a
+        recipe, read the <link linkend="satellite">Satellite
+        MPD</link> section.
       </para>
     </section>
 
@@ -1078,6 +1080,66 @@ systemctl start mpd.socket</programlisting>
     </section>
   </chapter>
 
+  <chapter id="advanced_config">
+    <title>Advanced configuration</title>
+
+    <section id="satellite">
+      <title>Satellite setup</title>
+
+      <para>
+        <application>MPD</application> runs well on weak machines such
+        as the <ulink url="http://www.raspberrypi.org/">Raspberry
+        Pi</ulink>.  However, such hardware tends to not have storage
+        big enough to hold a music collection.  Mounting music from a
+        file server can be very slow, especially when updating the
+        database.
+      </para>
+
+      <para>
+        One approach for optimization is running
+        <application>MPD</application> on the file server, which not
+        only exports raw files, but also provides access to a readily
+        scanned database.  Example configuration:
+      </para>
+
+      <programlisting>music_directory "nfs://fileserver.local/srv/mp3"
+#music_directory "smb://fileserver.local/mp3"
+
+database {
+    plugin "proxy"
+    host "fileserver.local"
+}
+      </programlisting>
+
+      <para>
+        The <link
+        linkend="config_music_directory"><varname>music_directory</varname></link>
+        setting tells <application>MPD</application> to read files
+        from the given NFS server.  It does this by connecting to the
+        server from userspace.  This does not actually mount the file
+        server into the kernel's virtual file system, and thus
+        requires no kernel cooperation and no special privileges.  It
+        does not even require a kernel with NFS support, only the
+        <link linkend="nfs_storage"><filename>nfs</filename></link>
+        storage plugin (using the <filename>libnfs</filename>
+        userspace library).  The same can be done with SMB/CIFS using
+        the <link
+        linkend="smbclient_storage"><filename>smbclient</filename></link>
+        storage plugin (using <filename>libsmbclient</filename>).
+      </para>
+
+      <para>
+        The <link
+        linkend="config_database_plugins"><varname>database</varname></link>
+        setting tells <application>MPD</application> to pass all
+        database queries on to the <application>MPD</application>
+        instance running on the file server (using the <link
+        linkend="proxy_database"><filename>proxy</filename></link>
+        plugin).
+      </para>
+    </section>
+  </chapter>
+
   <chapter id="use">
     <title>Using <application>MPD</application></title>
 
@@ -1361,7 +1423,7 @@ buffer_size: 16384</programlisting>
         </informaltable>
       </section>
 
-      <section>
+      <section id="proxy_database">
         <title><varname>proxy</varname></title>
 
         <para>
