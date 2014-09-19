@@ -197,7 +197,8 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 	SndfileInputStream sis{&decoder, is};
 	SNDFILE *const sf = sf_open_virtual(&vio, SFM_READ, &info, &sis);
 	if (sf == nullptr) {
-		LogWarning(sndfile_domain, "sf_open_virtual() failed");
+		FormatWarning(sndfile_domain, "sf_open_virtual() failed: %s",
+			      sf_strerror(nullptr));
 		return;
 	}
 
