@@ -146,6 +146,14 @@ sndfile_duration(const SF_INFO &info)
 	return SongTime::FromScale<uint64_t>(info.frames, info.samplerate);
 }
 
+gcc_pure
+static SampleFormat
+sndfile_sample_format(const SF_INFO &info)
+{
+	(void)info;
+	return SampleFormat::S32;
+}
+
 static void
 sndfile_stream_decode(Decoder &decoder, InputStream &is)
 {
@@ -166,7 +174,7 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, info.samplerate,
-				       SampleFormat::S32,
+				       sndfile_sample_format(info),
 				       info.channels, error)) {
 		LogError(error);
 		return;
