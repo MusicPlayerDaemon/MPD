@@ -173,7 +173,7 @@ audiofile_setup_sample_format(AFfilehandle af_fp)
 	}
 
 	afSetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK,
-	                         AF_SAMPFMT_TWOSCOMP, bits);
+				 AF_SAMPFMT_TWOSCOMP, bits);
 	afGetVirtualSampleFormat(af_fp, AF_DEFAULT_TRACK, &fs, &bits);
 
 	return audiofile_bits_to_sample_format(bits);
