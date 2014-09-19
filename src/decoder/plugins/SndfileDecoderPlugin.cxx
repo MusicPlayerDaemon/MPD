@@ -150,14 +150,41 @@ gcc_pure
 static SampleFormat
 sndfile_sample_format(const SF_INFO &info)
 {
-	(void)info;
-	return SampleFormat::S32;
+	fprintf(stderr, "SNDFILE format=%d\n", info.format & SF_FORMAT_SUBMASK);
+
+	switch (info.format & SF_FORMAT_SUBMASK) {
+	case SF_FORMAT_PCM_S8:
+	case SF_FORMAT_PCM_U8:
+	case SF_FORMAT_PCM_16:
+		return SampleFormat::S16;
+
+	case SF_FORMAT_FLOAT:
+	case SF_FORMAT_DOUBLE:
+		return SampleFormat::FLOAT;
+
+	default:
+		return SampleFormat::S32;
+	}
 }
 
 static sf_count_t
-sndfile_read_frames(SNDFILE *sf, void *buffer, sf_count_t n_frames)
+sndfile_read_frames(SNDFILE *sf, SampleFormat format,
+		    void *buffer, sf_count_t n_frames)
 {
-	return sf_readf_int(sf, (int *)buffer, n_frames);
+	switch (format) {
+	case SampleFormat::S16:
+		return sf_readf_short(sf, (short *)buffer, n_frames);
+
+	case SampleFormat::S32:
+		return sf_readf_int(sf, (int *)buffer, n_frames);
+
+	case SampleFormat::FLOAT:
+		return sf_readf_float(sf, (float *)buffer, n_frames);
+
+	default:
+		assert(false);
+		gcc_unreachable();
+	}
 }
 
 static void
@@ -198,6 +225,7 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 	do {
 		sf_count_t num_frames =
 			sndfile_read_frames(sf,
+					    audio_format.format,
 					    buffer, read_frames);
 		if (num_frames <= 0)
 			break;

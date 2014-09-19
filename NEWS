@@ -50,6 +50,8 @@ ver 0.19 (not yet released)
   - dsf: fix noise at end of malformed file
   - sndfile: support scanning remote files
   - sndfile: support tags "comment", "album", "track", "genre"
+  - sndfile: native floating point playback
+  - sndfile: optimized 16 bit playback
   - mp4v2: support playback of MP4 files.
 * encoder:
   - shine: new encoder plugin
