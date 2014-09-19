@@ -1440,7 +1440,7 @@ buffer_size: 16384</programlisting>
         </para>
       </section>
 
-      <section>
+      <section id="nfs_storage">
         <title><varname>nfs</varname></title>
 
         <para>
@@ -1449,6 +1449,26 @@ buffer_size: 16384</programlisting>
           <parameter>nfs://</parameter> URI according to <ulink
           url="http://tools.ietf.org/html/rfc2224">RFC2224</ulink>,
           for example "<parameter>nfs://servername/path</parameter>".
+        </para>
+
+        <para>
+          This plugin uses <ulink
+          url="https://github.com/sahlberg/libnfs"><filename>libnfs</filename></ulink>,
+          which supports only NFS version 3.  Since
+          <application>MPD</application> is not allowed to bind to
+          "privileged ports", the NFS server needs to enable the
+          "insecure" setting; example
+          <filename>/etc/exports</filename>:
+        </para>
+
+        <programlisting>/srv/mp3 192.168.1.55(ro,insecure)</programlisting>
+
+        <para>
+          Don't fear: "insecure" does not mean that your NFS server is
+          insecure.  A few decades ago, people thought the concept of
+          "privileged ports" would make network services "secure",
+          which was a fallacy.  The absence of this obsolete
+          "security" measure means little.
         </para>
       </section>
     </section>
