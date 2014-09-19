@@ -154,6 +154,12 @@ sndfile_sample_format(const SF_INFO &info)
 	return SampleFormat::S32;
 }
 
+static sf_count_t
+sndfile_read_frames(SNDFILE *sf, void *buffer, sf_count_t n_frames)
+{
+	return sf_readf_int(sf, (int *)buffer, n_frames);
+}
+
 static void
 sndfile_stream_decode(Decoder &decoder, InputStream &is)
 {
@@ -183,14 +189,16 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 	decoder_initialized(decoder, audio_format, info.seekable,
 			    sndfile_duration(info));
 
-	int buffer[4096];
+	char buffer[16384];
 
 	const size_t frame_size = audio_format.GetFrameSize();
 	const sf_count_t read_frames = sizeof(buffer) / frame_size;
 
 	DecoderCommand cmd;
 	do {
-		sf_count_t num_frames = sf_readf_int(sf, buffer, read_frames);
+		sf_count_t num_frames =
+			sndfile_read_frames(sf,
+					    buffer, read_frames);
 		if (num_frames <= 0)
 			break;
 
