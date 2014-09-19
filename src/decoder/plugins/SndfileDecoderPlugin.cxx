@@ -200,9 +200,6 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 		return;
 	}
 
-	/* for now, always read 32 bit samples.  Later, we could lower
-	   MPD's CPU usage by reading 16 bit samples with
-	   sf_readf_short() on low-quality source files. */
 	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, info.samplerate,
