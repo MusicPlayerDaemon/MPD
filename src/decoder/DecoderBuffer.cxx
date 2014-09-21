@@ -26,7 +26,7 @@
 #include <assert.h>
 
 struct DecoderBuffer {
-	Decoder *decoder;
+	Decoder *const decoder;
 	InputStream &is;
 
 	DynamicFifoBuffer<uint8_t> buffer;
