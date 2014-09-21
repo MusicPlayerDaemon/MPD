@@ -64,14 +64,14 @@ adplug_file_decode(Decoder &decoder, Path path_fs)
 	decoder_initialized(decoder, audio_format, false,
 			    SongTime::FromMS(player->songlength()));
 
-	int16_t buffer[2048];
-	const unsigned frames_per_buffer = ARRAY_SIZE(buffer) / 2;
 	DecoderCommand cmd;
 
 	do {
 		if (!player->update())
 			break;
 
+		int16_t buffer[2048];
+		constexpr unsigned frames_per_buffer = ARRAY_SIZE(buffer) / 2;
 		opl.update(buffer, frames_per_buffer);
 		cmd = decoder_data(decoder, nullptr,
 				   buffer, sizeof(buffer),
