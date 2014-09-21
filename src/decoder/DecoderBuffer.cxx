@@ -21,33 +21,19 @@
 #include "DecoderBuffer.hxx"
 #include "DecoderAPI.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/VarSize.hxx"
+#include "util/DynamicFifoBuffer.hxx"
 
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
 
 struct DecoderBuffer {
 	Decoder *decoder;
 	InputStream *is;
 
-	/** the allocated size of the buffer */
-	size_t size;
-
-	/** the current length of the buffer */
-	size_t length;
-
-	/** number of bytes already consumed at the beginning of the
-	    buffer */
-	size_t consumed;
-
-	/** the actual buffer (dynamic size) */
-	unsigned char data[sizeof(size_t)];
+	DynamicFifoBuffer<uint8_t> buffer;
 
 	DecoderBuffer(Decoder *_decoder, InputStream &_is,
 		      size_t _size)
-		:decoder(_decoder), is(&_is),
-		 size(_size), length(0), consumed(0) {}
+		:decoder(_decoder), is(&_is), buffer(_size) {}
 };
 
 DecoderBuffer *
@@ -56,9 +42,7 @@ decoder_buffer_new(Decoder *decoder, InputStream &is,
 {
 	assert(size > 0);
 
-	return NewVarSize<DecoderBuffer>(sizeof(DecoderBuffer::data),
-					 size,
-					 decoder, is, size);
+	return new DecoderBuffer(decoder, is, size);
 }
 
 void
@@ -66,7 +50,7 @@ decoder_buffer_free(DecoderBuffer *buffer)
 {
 	assert(buffer != nullptr);
 
-	DeleteVarSize(buffer);
+	delete buffer;
 }
 
 const InputStream &
@@ -78,73 +62,48 @@ decoder_buffer_get_stream(const DecoderBuffer *buffer)
 void
 decoder_buffer_clear(DecoderBuffer *buffer)
 {
-	buffer->length = buffer->consumed = 0;
-}
-
-static void
-decoder_buffer_shift(DecoderBuffer *buffer)
-{
-	assert(buffer->consumed > 0);
-
-	buffer->length -= buffer->consumed;
-	memmove(buffer->data, buffer->data + buffer->consumed, buffer->length);
-	buffer->consumed = 0;
+	buffer->buffer.Clear();
 }
 
 bool
 decoder_buffer_fill(DecoderBuffer *buffer)
 {
-	size_t nbytes;
-
-	if (buffer->consumed > 0)
-		decoder_buffer_shift(buffer);
-
-	if (buffer->length >= buffer->size)
+	auto w = buffer->buffer.Write();
+	if (w.IsEmpty())
 		/* buffer is full */
 		return false;
 
-	nbytes = decoder_read(buffer->decoder, *buffer->is,
-			      buffer->data + buffer->length,
-			      buffer->size - buffer->length);
+	size_t nbytes = decoder_read(buffer->decoder, *buffer->is,
+				     w.data, w.size);
 	if (nbytes == 0)
 		/* end of file, I/O error or decoder command
 		   received */
 		return false;
 
-	buffer->length += nbytes;
-	assert(buffer->length <= buffer->size);
-
+	buffer->buffer.Append(nbytes);
 	return true;
-}
-
-static const void *
-decoder_buffer_head(const DecoderBuffer *buffer)
-{
-	return buffer->data + buffer->consumed;
 }
 
 size_t
 decoder_buffer_available(const DecoderBuffer *buffer)
 {
-	return buffer->length - buffer->consumed;
+	return buffer->buffer.GetAvailable();
 }
 
 ConstBuffer<void>
 decoder_buffer_read(const DecoderBuffer *buffer)
 {
-	return {
-		decoder_buffer_head(buffer),
-		decoder_buffer_available(buffer),
-	};
+	auto r = buffer->buffer.Read();
+	return { r.data, r.size };
 }
 
 ConstBuffer<void>
 decoder_buffer_need(DecoderBuffer *buffer, size_t min_size)
 {
 	while (true) {
-		const auto available = decoder_buffer_available(buffer);
-		if (available >= min_size)
-			return { decoder_buffer_head(buffer), available };
+		const auto r = decoder_buffer_read(buffer);
+		if (r.size >= min_size)
+			return r;
 
 		if (!decoder_buffer_fill(buffer))
 			return nullptr;
@@ -154,25 +113,20 @@ decoder_buffer_need(DecoderBuffer *buffer, size_t min_size)
 void
 decoder_buffer_consume(DecoderBuffer *buffer, size_t nbytes)
 {
-	/* just move the "consumed" pointer - decoder_buffer_shift()
-	   will do the real work later (called by
-	   decoder_buffer_fill()) */
-	buffer->consumed += nbytes;
-
-	assert(buffer->consumed <= buffer->length);
+	buffer->buffer.Consume(nbytes);
 }
 
 bool
 decoder_buffer_skip(DecoderBuffer *buffer, size_t nbytes)
 {
-	const size_t available = decoder_buffer_available(buffer);
-	if (available >= nbytes) {
-		decoder_buffer_consume(buffer, nbytes);
+	const auto r = buffer->buffer.Read();
+	if (r.size >= nbytes) {
+		buffer->buffer.Consume(nbytes);
 		return true;
 	}
 
-	decoder_buffer_clear(buffer);
-	nbytes -= available;
+	buffer->buffer.Clear();
+	nbytes -= r.size;
 
 	return decoder_skip(buffer->decoder, *buffer->is, nbytes);
 }
