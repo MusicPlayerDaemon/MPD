@@ -27,13 +27,13 @@
 
 struct DecoderBuffer {
 	Decoder *decoder;
-	InputStream *is;
+	InputStream &is;
 
 	DynamicFifoBuffer<uint8_t> buffer;
 
 	DecoderBuffer(Decoder *_decoder, InputStream &_is,
 		      size_t _size)
-		:decoder(_decoder), is(&_is), buffer(_size) {}
+		:decoder(_decoder), is(_is), buffer(_size) {}
 };
 
 DecoderBuffer *
@@ -56,7 +56,7 @@ decoder_buffer_free(DecoderBuffer *buffer)
 const InputStream &
 decoder_buffer_get_stream(const DecoderBuffer *buffer)
 {
-	return *buffer->is;
+	return buffer->is;
 }
 
 void
@@ -73,7 +73,7 @@ decoder_buffer_fill(DecoderBuffer *buffer)
 		/* buffer is full */
 		return false;
 
-	size_t nbytes = decoder_read(buffer->decoder, *buffer->is,
+	size_t nbytes = decoder_read(buffer->decoder, buffer->is,
 				     w.data, w.size);
 	if (nbytes == 0)
 		/* end of file, I/O error or decoder command
@@ -128,5 +128,5 @@ decoder_buffer_skip(DecoderBuffer *buffer, size_t nbytes)
 	buffer->buffer.Clear();
 	nbytes -= r.size;
 
-	return decoder_skip(buffer->decoder, *buffer->is, nbytes);
+	return decoder_skip(buffer->decoder, buffer->is, nbytes);
 }
