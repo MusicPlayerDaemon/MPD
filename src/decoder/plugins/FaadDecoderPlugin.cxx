@@ -63,10 +63,10 @@ adts_check_frame(const unsigned char *data)
  * found or if not enough data is available.
  */
 static size_t
-adts_find_frame(DecoderBuffer *buffer)
+adts_find_frame(DecoderBuffer &buffer)
 {
 	while (true) {
-		auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 8));
+		auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(&buffer, 8));
 		if (data.IsNull())
 			/* failed */
 			return 0;
@@ -76,13 +76,13 @@ adts_find_frame(DecoderBuffer *buffer)
 			memchr(data.data, 0xff, data.size);
 		if (p == nullptr) {
 			/* no marker - discard the buffer */
-			decoder_buffer_clear(buffer);
+			decoder_buffer_clear(&buffer);
 			continue;
 		}
 
 		if (p > data.data) {
 			/* discard data before 0xff */
-			decoder_buffer_consume(buffer, p - data.data);
+			decoder_buffer_consume(&buffer, p - data.data);
 			continue;
 		}
 
@@ -91,14 +91,14 @@ adts_find_frame(DecoderBuffer *buffer)
 		if (frame_length == 0) {
 			/* it's just some random 0xff byte; discard it
 			   and continue searching */
-			decoder_buffer_consume(buffer, 1);
+			decoder_buffer_consume(&buffer, 1);
 			continue;
 		}
 
-		if (decoder_buffer_need(buffer, frame_length).IsNull()) {
+		if (decoder_buffer_need(&buffer, frame_length).IsNull()) {
 			/* not enough data; discard this frame to
 			   prevent a possible buffer overflow */
-			decoder_buffer_clear(buffer);
+			decoder_buffer_clear(&buffer);
 			continue;
 		}
 
@@ -108,9 +108,9 @@ adts_find_frame(DecoderBuffer *buffer)
 }
 
 static SignedSongTime
-adts_song_duration(DecoderBuffer *buffer)
+adts_song_duration(DecoderBuffer &buffer)
 {
-	const InputStream &is = decoder_buffer_get_stream(buffer);
+	const InputStream &is = decoder_buffer_get_stream(&buffer);
 	const bool estimate = !is.CheapSeeking();
 	if (estimate && !is.KnownSize())
 		return SignedSongTime::Negative();
@@ -125,7 +125,7 @@ adts_song_duration(DecoderBuffer *buffer)
 			break;
 
 		if (frames == 0) {
-			auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+			auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(&buffer));
 			assert(!data.IsEmpty());
 			assert(frame_length <= data.size);
 
@@ -134,7 +134,7 @@ adts_song_duration(DecoderBuffer *buffer)
 				break;
 		}
 
-		decoder_buffer_consume(buffer, frame_length);
+		decoder_buffer_consume(&buffer, frame_length);
 
 		if (estimate && frames == 128) {
 			/* if this is a remote file, don't slurp the
@@ -144,7 +144,7 @@ adts_song_duration(DecoderBuffer *buffer)
 			   have until now */
 
 			const auto offset = is.GetOffset()
-				- decoder_buffer_available(buffer);
+				- decoder_buffer_available(&buffer);
 			if (offset <= 0)
 				return SignedSongTime::Negative();
 
@@ -162,9 +162,9 @@ adts_song_duration(DecoderBuffer *buffer)
 }
 
 static SignedSongTime
-faad_song_duration(DecoderBuffer *buffer, InputStream &is)
+faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 {
-	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 5));
+	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(&buffer, 5));
 	if (data.IsNull())
 		return SignedSongTime::Negative();
 
@@ -177,10 +177,10 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 
 		tagsize += 10;
 
-		if (!decoder_buffer_skip(buffer, tagsize))
+		if (!decoder_buffer_skip(&buffer, tagsize))
 			return SignedSongTime::Negative();
 
-		data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(buffer, 5));
+		data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_need(&buffer, 5));
 		if (data.IsNull())
 			return SignedSongTime::Negative();
 	}
@@ -195,7 +195,7 @@ faad_song_duration(DecoderBuffer *buffer, InputStream &is)
 
 		is.LockSeek(tagsize, IgnoreError());
 
-		decoder_buffer_clear(buffer);
+		decoder_buffer_clear(&buffer);
 
 		return song_length;
 	} else if (data.size >= 5 && memcmp(data.data, "ADIF", 4) == 0) {
@@ -245,10 +245,10 @@ faad_decoder_new()
  * inconsistencies in libfaad.
  */
 static bool
-faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
+faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer,
 		  AudioFormat &audio_format, Error &error)
 {
-	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(&buffer));
 	if (data.IsEmpty()) {
 		error.Set(faad_decoder_domain, "Empty file");
 		return false;
@@ -274,7 +274,7 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
 		return false;
 	}
 
-	decoder_buffer_consume(buffer, nbytes);
+	decoder_buffer_consume(&buffer, nbytes);
 
 	return audio_format_init_checked(audio_format, sample_rate,
 					 SampleFormat::S16, channels, error);
@@ -285,10 +285,10 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer *buffer,
  * inconsistencies in libfaad.
  */
 static const void *
-faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer *buffer,
+faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer &buffer,
 		    NeAACDecFrameInfo *frame_info)
 {
-	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(buffer));
+	auto data = ConstBuffer<uint8_t>::FromVoid(decoder_buffer_read(&buffer));
 	if (data.IsEmpty())
 		return nullptr;
 
@@ -309,7 +309,7 @@ faad_get_file_time(InputStream &is)
 {
 	DecoderBuffer buffer(nullptr, is,
 			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
-	auto duration = faad_song_duration(&buffer, is);
+	auto duration = faad_song_duration(buffer, is);
 	bool recognized = !duration.IsNegative();
 
 	if (!recognized) {
@@ -318,7 +318,7 @@ faad_get_file_time(InputStream &is)
 		decoder_buffer_fill(&buffer);
 
 		AudioFormat audio_format;
-		if (faad_decoder_init(decoder, &buffer, audio_format,
+		if (faad_decoder_init(decoder, buffer, audio_format,
 				      IgnoreError()))
 			recognized = true;
 
@@ -330,7 +330,7 @@ faad_get_file_time(InputStream &is)
 
 static void
 faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
-		   DecoderBuffer *buffer, const NeAACDecHandle decoder)
+		   DecoderBuffer &buffer, const NeAACDecHandle decoder)
 {
 	const auto total_time = faad_song_duration(buffer, is);
 
@@ -390,7 +390,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
 			break;
 		}
 
-		decoder_buffer_consume(buffer, frame_info.bytesconsumed);
+		decoder_buffer_consume(&buffer, frame_info.bytesconsumed);
 
 		/* update bit rate and position */
 
@@ -418,7 +418,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 
 	const NeAACDecHandle decoder = faad_decoder_new();
 
-	faad_stream_decode(mpd_decoder, is, &buffer, decoder);
+	faad_stream_decode(mpd_decoder, is, buffer, decoder);
 
 	/* cleanup */
 
