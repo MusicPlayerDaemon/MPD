@@ -21,37 +21,8 @@
 #include "DecoderBuffer.hxx"
 #include "DecoderAPI.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/DynamicFifoBuffer.hxx"
 
 #include <assert.h>
-
-struct DecoderBuffer {
-	Decoder *const decoder;
-	InputStream &is;
-
-	DynamicFifoBuffer<uint8_t> buffer;
-
-	DecoderBuffer(Decoder *_decoder, InputStream &_is,
-		      size_t _size)
-		:decoder(_decoder), is(_is), buffer(_size) {}
-};
-
-DecoderBuffer *
-decoder_buffer_new(Decoder *decoder, InputStream &is,
-		   size_t size)
-{
-	assert(size > 0);
-
-	return new DecoderBuffer(decoder, is, size);
-}
-
-void
-decoder_buffer_free(DecoderBuffer *buffer)
-{
-	assert(buffer != nullptr);
-
-	delete buffer;
-}
 
 const InputStream &
 decoder_buffer_get_stream(const DecoderBuffer *buffer)

@@ -308,8 +308,8 @@ static std::pair<bool, SignedSongTime>
 faad_get_file_time(InputStream &is)
 {
 	DecoderBuffer *buffer =
-		decoder_buffer_new(nullptr, is,
-				   FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
+		new DecoderBuffer(nullptr, is,
+				  FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 	auto duration = faad_song_duration(buffer, is);
 	bool recognized = !duration.IsNegative();
 
@@ -326,7 +326,7 @@ faad_get_file_time(InputStream &is)
 		NeAACDecClose(decoder);
 	}
 
-	decoder_buffer_free(buffer);
+	delete buffer;
 
 	return std::make_pair(recognized, duration);
 }
@@ -415,8 +415,8 @@ static void
 faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 {
 	DecoderBuffer *buffer =
-		decoder_buffer_new(&mpd_decoder, is,
-				   FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
+		new DecoderBuffer(&mpd_decoder, is,
+				  FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 
 	/* create the libfaad decoder */
 
@@ -427,7 +427,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	/* cleanup */
 
 	NeAACDecClose(decoder);
-	decoder_buffer_free(buffer);
+	delete buffer;
 }
 
 static bool

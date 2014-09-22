@@ -21,38 +21,37 @@
 #define MPD_DECODER_BUFFER_HXX
 
 #include "Compiler.h"
+#include "util/DynamicFifoBuffer.hxx"
 
 #include <stddef.h>
+
+struct Decoder;
+class InputStream;
+template<typename T> struct ConstBuffer;
 
 /**
  * This objects handles buffered reads in decoder plugins easily.  You
  * create a buffer object, and use its high-level methods to fill and
  * read it.  It will automatically handle shifting the buffer.
  */
-struct DecoderBuffer;
+struct DecoderBuffer {
+	Decoder *const decoder;
+	InputStream &is;
 
-struct Decoder;
-class InputStream;
+	DynamicFifoBuffer<uint8_t> buffer;
 
-template<typename T> struct ConstBuffer;
-
-/**
- * Creates a new buffer.
- *
- * @param decoder the decoder object, used for decoder_read(), may be nullptr
- * @param is the input stream object where we should read from
- * @param size the maximum size of the buffer
- * @return the new decoder_buffer object
- */
-DecoderBuffer *
-decoder_buffer_new(Decoder *decoder, InputStream &is,
-		   size_t size);
-
-/**
- * Frees resources used by the decoder_buffer object.
- */
-void
-decoder_buffer_free(DecoderBuffer *buffer);
+	/**
+	 * Creates a new buffer.
+	 *
+	 * @param _decoder the decoder object, used for decoder_read(),
+	 * may be nullptr
+	 * @param _is the input stream object where we should read from
+	 * @param _size the maximum size of the buffer
+	 */
+	DecoderBuffer(Decoder *_decoder, InputStream &_is,
+		      size_t _size)
+		:decoder(_decoder), is(_is), buffer(_size) {}
+};
 
 gcc_pure
 const InputStream &
