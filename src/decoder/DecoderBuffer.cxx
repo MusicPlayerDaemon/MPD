@@ -20,84 +20,52 @@
 #include "config.h"
 #include "DecoderBuffer.hxx"
 #include "DecoderAPI.hxx"
-#include "util/ConstBuffer.hxx"
 
 #include <assert.h>
 
-const InputStream &
-decoder_buffer_get_stream(const DecoderBuffer *buffer)
-{
-	return buffer->is;
-}
-
-void
-decoder_buffer_clear(DecoderBuffer *buffer)
-{
-	buffer->buffer.Clear();
-}
-
 bool
-decoder_buffer_fill(DecoderBuffer *buffer)
+DecoderBuffer::Fill()
 {
-	auto w = buffer->buffer.Write();
+	auto w = buffer.Write();
 	if (w.IsEmpty())
 		/* buffer is full */
 		return false;
 
-	size_t nbytes = decoder_read(buffer->decoder, buffer->is,
+	size_t nbytes = decoder_read(decoder, is,
 				     w.data, w.size);
 	if (nbytes == 0)
 		/* end of file, I/O error or decoder command
 		   received */
 		return false;
 
-	buffer->buffer.Append(nbytes);
+	buffer.Append(nbytes);
 	return true;
 }
 
-size_t
-decoder_buffer_available(const DecoderBuffer *buffer)
-{
-	return buffer->buffer.GetAvailable();
-}
-
 ConstBuffer<void>
-decoder_buffer_read(const DecoderBuffer *buffer)
-{
-	auto r = buffer->buffer.Read();
-	return { r.data, r.size };
-}
-
-ConstBuffer<void>
-decoder_buffer_need(DecoderBuffer *buffer, size_t min_size)
+DecoderBuffer::Need(size_t min_size)
 {
 	while (true) {
-		const auto r = decoder_buffer_read(buffer);
+		const auto r = Read();
 		if (r.size >= min_size)
 			return r;
 
-		if (!decoder_buffer_fill(buffer))
+		if (!Fill())
 			return nullptr;
 	}
 }
 
-void
-decoder_buffer_consume(DecoderBuffer *buffer, size_t nbytes)
-{
-	buffer->buffer.Consume(nbytes);
-}
-
 bool
-decoder_buffer_skip(DecoderBuffer *buffer, size_t nbytes)
+DecoderBuffer::Skip(size_t nbytes)
 {
-	const auto r = buffer->buffer.Read();
+	const auto r = buffer.Read();
 	if (r.size >= nbytes) {
-		buffer->buffer.Consume(nbytes);
+		buffer.Consume(nbytes);
 		return true;
 	}
 
-	buffer->buffer.Clear();
+	buffer.Clear();
 	nbytes -= r.size;
 
-	return decoder_skip(buffer->decoder, buffer->is, nbytes);
+	return decoder_skip(decoder, is, nbytes);
 }

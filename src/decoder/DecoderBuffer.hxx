@@ -22,12 +22,12 @@
 
 #include "Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <stddef.h>
 
 struct Decoder;
 class InputStream;
-template<typename T> struct ConstBuffer;
 
 /**
  * This objects handles buffered reads in decoder plugins easily.  You
@@ -51,70 +51,66 @@ struct DecoderBuffer {
 	DecoderBuffer(Decoder *_decoder, InputStream &_is,
 		      size_t _size)
 		:decoder(_decoder), is(_is), buffer(_size) {}
+
+	const InputStream &GetStream() const {
+		return is;
+	}
+
+	void Clear() {
+		buffer.Clear();
+	}
+
+	/**
+	 * Read data from the #InputStream and append it to the buffer.
+	 *
+	 * @return true if data was appended; false if there is no
+	 * data available (yet), end of file, I/O error or a decoder
+	 * command was received
+	 */
+	bool Fill();
+
+	/**
+	 * How many bytes are stored in the buffer?
+	 */
+	gcc_pure
+	size_t GetAvailable() const {
+		return buffer.GetAvailable();
+	}
+
+	/**
+	 * Reads data from the buffer.  This data is not yet consumed,
+	 * you have to call Consume() to do that.  The returned buffer
+	 * becomes invalid after a Fill() or a Consume() call.
+	 */
+	ConstBuffer<void> Read() const {
+		auto r = buffer.Read();
+		return { r.data, r.size };
+	}
+
+	/**
+	 * Wait until this number of bytes are available.  Returns nullptr on
+	 * error.
+	 */
+	ConstBuffer<void> Need(size_t min_size);
+
+	/**
+	 * Consume (delete, invalidate) a part of the buffer.  The
+	 * "nbytes" parameter must not be larger than the length
+	 * returned by Read().
+	 *
+	 * @param nbytes the number of bytes to consume
+	 */
+	void Consume(size_t nbytes) {
+		buffer.Consume(nbytes);
+	}
+
+	/**
+	 * Skips the specified number of bytes, discarding its data.
+	 *
+	 * @param nbytes the number of bytes to skip
+	 * @return true on success, false on error
+	 */
+	bool Skip(size_t nbytes);
 };
-
-gcc_pure
-const InputStream &
-decoder_buffer_get_stream(const DecoderBuffer *buffer);
-
-void
-decoder_buffer_clear(DecoderBuffer *buffer);
-
-/**
- * Read data from the input_stream and append it to the buffer.
- *
- * @return true if data was appended; false if there is no data
- * available (yet), end of file, I/O error or a decoder command was
- * received
- */
-bool
-decoder_buffer_fill(DecoderBuffer *buffer);
-
-/**
- * How many bytes are stored in the buffer?
- */
-gcc_pure
-size_t
-decoder_buffer_available(const DecoderBuffer *buffer);
-
-/**
- * Reads data from the buffer.  This data is not yet consumed, you
- * have to call decoder_buffer_consume() to do that.  The returned
- * buffer becomes invalid after a decoder_buffer_fill() or a
- * decoder_buffer_consume() call.
- *
- * @param buffer the decoder_buffer object
- */
-gcc_pure
-ConstBuffer<void>
-decoder_buffer_read(const DecoderBuffer *buffer);
-
-/**
- * Wait until this number of bytes are available.  Returns nullptr on
- * error.
- */
-ConstBuffer<void>
-decoder_buffer_need(DecoderBuffer *buffer, size_t min_size);
-
-/**
- * Consume (delete, invalidate) a part of the buffer.  The "nbytes"
- * parameter must not be larger than the length returned by
- * decoder_buffer_read().
- *
- * @param buffer the decoder_buffer object
- * @param nbytes the number of bytes to consume
- */
-void
-decoder_buffer_consume(DecoderBuffer *buffer, size_t nbytes);
-
-/**
- * Skips the specified number of bytes, discarding its data.
- *
- * @param buffer the decoder_buffer object
- * @param nbytes the number of bytes to skip
- * @return true on success, false on error
- */
-bool
-decoder_buffer_skip(DecoderBuffer *buffer, size_t nbytes);
 
 #endif
