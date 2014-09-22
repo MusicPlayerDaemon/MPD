@@ -74,23 +74,23 @@
 #define USER_CONFIG_FILE_LOCATION_XDG	"mpd/mpd.conf"
 #endif
 
-static const OptionDef opt_kill(
+static constexpr OptionDef opt_kill(
 	"kill", "kill the currently running mpd session");
-static const OptionDef opt_no_config(
+static constexpr OptionDef opt_no_config(
 	"no-config", "don't read from config");
-static const OptionDef opt_no_daemon(
+static constexpr OptionDef opt_no_daemon(
 	"no-daemon", "don't detach from console");
-static const OptionDef opt_stdout(
+static constexpr OptionDef opt_stdout(
 	"stdout", nullptr); // hidden, compatibility with old versions
-static const OptionDef opt_stderr(
+static constexpr OptionDef opt_stderr(
 	"stderr", "print messages to stderr");
-static const OptionDef opt_verbose(
+static constexpr OptionDef opt_verbose(
 	"verbose", 'v', "verbose logging");
-static const OptionDef opt_version(
+static constexpr OptionDef opt_version(
 	"version", 'V', "print version number");
-static const OptionDef opt_help(
+static constexpr OptionDef opt_help(
 	"help", 'h', "show help options");
-static const OptionDef opt_help_alt(
+static constexpr OptionDef opt_help_alt(
 	nullptr, '?', nullptr); // hidden, standard alias for --help
 
 static constexpr Domain cmdline_domain("cmdline");
