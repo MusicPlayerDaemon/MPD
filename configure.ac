@@ -362,7 +362,7 @@ AC_ARG_ENABLE(nfs,
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
 		[enable debugging (default: disabled)]),,
-	enable_debug=no)
+	enable_debug=yes)
 
 AC_ARG_ENABLE(documentation,
 	AS_HELP_STRING([--enable-documentation],
@@ -524,6 +524,11 @@ AC_ARG_ENABLE(recorder-output,
 	AS_HELP_STRING([--enable-recorder-output],
 		[enables the recorder file output plugin (default: disable)]),,
 	[enable_recorder_output=auto])
+
+AC_ARG_ENABLE(sacdiso,
+	AS_HELP_STRING([--enable-sacdiso],
+		[enable SACD ISO support via libsacdiso (default: disable)]),,
+	enable_sacdiso=yes)
 
 AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
@@ -1336,6 +1341,13 @@ fi
 
 AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enable_tremor = xyes)
 
+dnl --------------------------------- sacdiso ---------------------------------
+if test x$enable_sacdiso = xyes; then
+	AC_DEFINE(ENABLE_SACDISO, 1, [Define for SACD ISO support])
+fi
+
+AM_CONDITIONAL(ENABLE_SACDISO, test x$enable_sacdiso = xyes)
+
 dnl --------------------------------- sidplay ---------------------------------
 if test x$enable_sidplay != xno; then
 	# we're not using pkg-config here
@@ -1399,6 +1411,7 @@ if
 	test x$enable_mpc = xno &&
 	test x$enable_mpg123 = xno &&
 	test x$enable_opus = xno &&
+	test x$enable_sacdiso = xno &&
 	test x$enable_sidplay = xno &&
 	test x$enable_tremor = xno &&
 	test x$enable_vorbis = xno &&
@@ -1776,22 +1789,17 @@ if test "x$enable_werror" = xyes; then
 fi
 
 dnl ---------------------------- language features ----------------------------
-AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
-AX_APPEND_COMPILE_FLAGS([-ffast-math])
-AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
+AX_APPEND_COMPILE_FLAGS([-O0])
 
 AC_LANG_PUSH([C++])
-AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
-AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
-AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
+AX_APPEND_COMPILE_FLAGS([-O0])
+
 
 if test x$no_exceptions = xyes; then
 	AX_APPEND_COMPILE_FLAGS([-fno-exceptions])
 	AX_APPEND_COMPILE_FLAGS([-fno-rtti])
 fi
 
-AX_APPEND_COMPILE_FLAGS([-ffast-math])
-AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
 AC_LANG_POP
 
 dnl ---------------------------------- debug ----------------------------------
@@ -1843,6 +1851,7 @@ echo '########### MPD CONFIGURATION ############'
 printf '\nArchive support:\n\t'
 results(bzip2,[bzip2])
 results(iso9660,[ISO9660])
+results(sacdiso,[SACDISO])
 results(zzip,[ZIP])
 
 if test x$with_zeroconf != xno; then

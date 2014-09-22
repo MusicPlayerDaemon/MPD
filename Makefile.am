@@ -277,10 +277,9 @@ libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 
 android/build/build.xml: android/AndroidManifest.xml
 	rm -rf android/build
-	mkdir -p android/build/include android/build/res android/build/src/org
-	ln -s $(abs_srcdir)/android/AndroidManifest.xml $(abs_srcdir)/android/custom_rules.xml android/build
-	ln -s $(abs_srcdir)/android/src android/build/src/org/musicpd
-	ln -s $(abs_srcdir)/android/res/values android/build/res
+	mkdir -p android/build/include android/build/res
+	ln -s $(srcdir)/android/AndroidManifest.xml $(srcdir)/android/custom_rules.xml $(srcdir)/android/src android/build
+	ln -s $(srcdir)/android/res/values android/build/res
 	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17
 
 android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
@@ -809,6 +808,7 @@ libdecoder_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AUDIOFILE_CFLAGS) \
 	$(LIBMIKMOD_CFLAGS) \
 	$(GME_CFLAGS) \
+	$(SACDISO_CFLAGS) \
 	$(SIDPLAY_CFLAGS) \
 	$(FLUIDSYNTH_CFLAGS) \
 	$(WILDMIDI_CFLAGS) \
@@ -829,6 +829,7 @@ DECODER_LIBS = \
 	$(SNDFILE_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(GME_LIBS) \
+	$(SACDISO_LIBS) \
 	$(SIDPLAY_LIBS) \
 	$(FLUIDSYNTH_LIBS) \
 	$(WILDMIDI_LIBS) \
@@ -944,6 +945,40 @@ if HAVE_MP4V2
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/Mp4v2DecoderPlugin.cxx \
 	src/decoder/plugins/Mp4v2DecoderPlugin.hxx
+endif
+
+if ENABLE_SACDISO
+libdecoder_a_SOURCES += \
+	src/lib/sacdiso/libdstdec/config.h \
+	src/lib/sacdiso/libdstdec/conststr.h \
+	src/lib/sacdiso/libdstdec/types.h \
+	src/lib/sacdiso/libdstdec/ccp_calc.h \
+	src/lib/sacdiso/libdstdec/ccp_calc.cpp \
+	src/lib/sacdiso/libdstdec/dst_ac.h \
+	src/lib/sacdiso/libdstdec/dst_ac.cpp \
+	src/lib/sacdiso/libdstdec/dst_data.h \
+	src/lib/sacdiso/libdstdec/dst_data.cpp \
+	src/lib/sacdiso/libdstdec/dst_decoder.h \
+	src/lib/sacdiso/libdstdec/dst_decoder.cpp \
+	src/lib/sacdiso/libdstdec/dst_fram.h \
+	src/lib/sacdiso/libdstdec/dst_fram.cpp \
+	src/lib/sacdiso/libdstdec/dst_init.h \
+	src/lib/sacdiso/libdstdec/dst_init.cpp \
+	src/lib/sacdiso/libdstdec/dst_memory.h \
+	src/lib/sacdiso/libdstdec/dst_unpack.h \
+	src/lib/sacdiso/libdstdec/dst_unpack.cpp \
+	src/lib/sacdiso/endianess.h \
+	src/lib/sacdiso/dst_decoder_mpd.h \
+	src/lib/sacdiso/dst_decoder_mpd.cpp \
+	src/lib/sacdiso/sacd_disc.h \
+	src/lib/sacdiso/sacd_disc.cpp \
+	src/lib/sacdiso/sacd_media.h \
+	src/lib/sacdiso/sacd_media.cpp \
+	src/lib/sacdiso/sacd_reader.h \
+	src/lib/sacdiso/scarletbook.h \
+	src/lib/sacdiso/scarletbook.cpp \
+	src/decoder/plugins/SacdIsoDecoderPlugin.cxx \
+	src/decoder/plugins/SacdIsoDecoderPlugin.hxx
 endif
 
 if ENABLE_SIDPLAY
