@@ -34,12 +34,13 @@ class InputStream;
  * create a buffer object, and use its high-level methods to fill and
  * read it.  It will automatically handle shifting the buffer.
  */
-struct DecoderBuffer {
+class DecoderBuffer {
 	Decoder *const decoder;
 	InputStream &is;
 
 	DynamicFifoBuffer<uint8_t> buffer;
 
+public:
 	/**
 	 * Creates a new buffer.
 	 *
