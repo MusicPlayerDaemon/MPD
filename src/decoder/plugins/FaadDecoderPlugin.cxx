@@ -307,26 +307,23 @@ faad_decoder_decode(NeAACDecHandle decoder, DecoderBuffer *buffer,
 static std::pair<bool, SignedSongTime>
 faad_get_file_time(InputStream &is)
 {
-	DecoderBuffer *buffer =
-		new DecoderBuffer(nullptr, is,
-				  FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
-	auto duration = faad_song_duration(buffer, is);
+	DecoderBuffer buffer(nullptr, is,
+			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
+	auto duration = faad_song_duration(&buffer, is);
 	bool recognized = !duration.IsNegative();
 
 	if (!recognized) {
 		NeAACDecHandle decoder = faad_decoder_new();
 
-		decoder_buffer_fill(buffer);
+		decoder_buffer_fill(&buffer);
 
 		AudioFormat audio_format;
-		if (faad_decoder_init(decoder, buffer, audio_format,
+		if (faad_decoder_init(decoder, &buffer, audio_format,
 				      IgnoreError()))
 			recognized = true;
 
 		NeAACDecClose(decoder);
 	}
-
-	delete buffer;
 
 	return std::make_pair(recognized, duration);
 }
@@ -414,20 +411,18 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
 static void
 faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 {
-	DecoderBuffer *buffer =
-		new DecoderBuffer(&mpd_decoder, is,
-				  FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
+	DecoderBuffer buffer(&mpd_decoder, is,
+			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 
 	/* create the libfaad decoder */
 
 	const NeAACDecHandle decoder = faad_decoder_new();
 
-	faad_stream_decode(mpd_decoder, is, buffer, decoder);
+	faad_stream_decode(mpd_decoder, is, &buffer, decoder);
 
 	/* cleanup */
 
 	NeAACDecClose(decoder);
-	delete buffer;
 }
 
 static bool
