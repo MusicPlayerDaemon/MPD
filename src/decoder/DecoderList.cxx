@@ -26,6 +26,7 @@
 #include "plugins/PcmDecoderPlugin.hxx"
 #include "plugins/DsdiffDecoderPlugin.hxx"
 #include "plugins/DsfDecoderPlugin.hxx"
+#include "plugins/SacdIsoDecoderPlugin.hxx"
 #include "plugins/FlacDecoderPlugin.h"
 #include "plugins/OpusDecoderPlugin.h"
 #include "plugins/VorbisDecoderPlugin.h"
@@ -110,6 +111,9 @@ const struct DecoderPlugin *const decoder_plugins[] = {
 #endif
 #ifdef HAVE_GME
 	&gme_decoder_plugin,
+#endif
+#ifdef ENABLE_SACDISO
+	&sacdiso_decoder_plugin,
 #endif
 	&pcm_decoder_plugin,
 	nullptr
