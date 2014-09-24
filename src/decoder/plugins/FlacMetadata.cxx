@@ -27,31 +27,10 @@
 #include "tag/Tag.hxx"
 #include "tag/VorbisComment.hxx"
 #include "tag/ReplayGain.hxx"
+#include "tag/MixRamp.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
 #include "util/SplitString.hxx"
-
-#include <string.h>
-
-static const char *
-vorbis_comment_value(const FLAC__StreamMetadata *block,
-		     const char *name)
-{
-	int offset =
-		FLAC__metadata_object_vorbiscomment_find_entry_from(block, 0,
-								    name);
-	if (offset < 0)
-		return nullptr;
-
-	size_t name_length = strlen(name);
-
-	const FLAC__StreamMetadata_VorbisComment_Entry &vc =
-		block->data.vorbis_comment.comments[offset];
-	const char *comment = (const char *)vc.entry;
-
-	/* 1 is for '=' */
-	return comment + name_length + 1;
-}
 
 bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
@@ -70,23 +49,19 @@ flac_parse_replay_gain(ReplayGainInfo &rgi,
 	return found;
 }
 
-gcc_pure
-static std::string
-flac_find_string_comment(const FLAC__StreamMetadata *block, const char *cmnt)
-{
-	const char *value = vorbis_comment_value(block, cmnt);
-	if (value == nullptr)
-		return std::string();
-
-	return std::string(value);
-}
-
 MixRampInfo
 flac_parse_mixramp(const FLAC__StreamMetadata *block)
 {
+	const FLAC__StreamMetadata_VorbisComment &vc =
+		block->data.vorbis_comment;
+
 	MixRampInfo mix_ramp;
-	mix_ramp.SetStart(flac_find_string_comment(block, "mixramp_start"));
-	mix_ramp.SetEnd(flac_find_string_comment(block, "mixramp_end"));
+
+	const auto *comments = vc.comments;
+	for (FLAC__uint32 i = 0, n = vc.num_comments; i < n; ++i)
+		ParseMixRampVorbis(mix_ramp,
+				   (const char *)comments[i].entry);
+
 	return mix_ramp;
 }
 

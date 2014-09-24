@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "MixRamp.hxx"
+#include "VorbisComment.hxx"
 #include "MixRampInfo.hxx"
 #include "util/ASCII.hxx"
 
@@ -60,4 +61,19 @@ ParseMixRampTag(MixRampInfo &info, const char *name, const char *value)
 	};
 
 	return ParseMixRampTagTemplate(info, NameValue{name, value});
+}
+
+bool
+ParseMixRampVorbis(MixRampInfo &info, const char *entry)
+{
+	struct VorbisCommentEntry {
+		const char *entry;
+
+		gcc_pure
+		const char *operator[](const char *n) const {
+			return vorbis_comment_value(entry, n);
+		}
+	};
+
+	return ParseMixRampTagTemplate(info, VorbisCommentEntry{entry});
 }

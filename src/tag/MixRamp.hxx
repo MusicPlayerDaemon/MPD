@@ -27,4 +27,7 @@ class MixRampInfo;
 bool
 ParseMixRampTag(MixRampInfo &info, const char *name, const char *value);
 
+bool
+ParseMixRampVorbis(MixRampInfo &info, const char *entry);
+
 #endif
