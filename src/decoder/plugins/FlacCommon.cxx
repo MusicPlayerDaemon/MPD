@@ -101,7 +101,8 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 		if (flac_parse_replay_gain(rgi, block->data.vorbis_comment))
 			decoder_replay_gain(data->decoder, &rgi);
 
-		decoder_mixramp(data->decoder, flac_parse_mixramp(block));
+		decoder_mixramp(data->decoder,
+				flac_parse_mixramp(block->data.vorbis_comment));
 
 		data->tag = flac_vorbis_comments_to_tag(&block->data.vorbis_comment);
 		break;

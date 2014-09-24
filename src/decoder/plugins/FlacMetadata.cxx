@@ -50,11 +50,8 @@ flac_parse_replay_gain(ReplayGainInfo &rgi,
 }
 
 MixRampInfo
-flac_parse_mixramp(const FLAC__StreamMetadata *block)
+flac_parse_mixramp(const FLAC__StreamMetadata_VorbisComment &vc)
 {
-	const FLAC__StreamMetadata_VorbisComment &vc =
-		block->data.vorbis_comment;
-
 	MixRampInfo mix_ramp;
 
 	const auto *comments = vc.comments;
