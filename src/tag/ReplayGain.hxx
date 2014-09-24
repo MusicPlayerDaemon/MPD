@@ -27,4 +27,7 @@ struct ReplayGainInfo;
 bool
 ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value);
 
+bool
+ParseReplayGainVorbis(ReplayGainInfo &info, const char *entry);
+
 #endif

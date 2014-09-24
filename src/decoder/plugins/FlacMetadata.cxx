@@ -26,6 +26,7 @@
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
 #include "tag/VorbisComment.hxx"
+#include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
 #include "util/SplitString.hxx"
@@ -52,37 +53,22 @@ vorbis_comment_value(const FLAC__StreamMetadata *block,
 	return comment + name_length + 1;
 }
 
-static bool
-flac_find_float_comment(const FLAC__StreamMetadata *block,
-			const char *cmnt, float *fl)
-{
-	const char *value = vorbis_comment_value(block, cmnt);
-	if (value == nullptr)
-		return false;
-
-	*fl = (float)atof(value);
-	return true;
-}
-
 bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
 		       const FLAC__StreamMetadata *block)
 {
+	const FLAC__StreamMetadata_VorbisComment &vc =
+		block->data.vorbis_comment;
+
 	rgi.Clear();
 
 	bool found = false;
-	if (flac_find_float_comment(block, "replaygain_album_gain",
-				    &rgi.tuples[REPLAY_GAIN_ALBUM].gain))
-		found = true;
-	if (flac_find_float_comment(block, "replaygain_album_peak",
-				    &rgi.tuples[REPLAY_GAIN_ALBUM].peak))
-		found = true;
-	if (flac_find_float_comment(block, "replaygain_track_gain",
-				    &rgi.tuples[REPLAY_GAIN_TRACK].gain))
-		found = true;
-	if (flac_find_float_comment(block, "replaygain_track_peak",
-				    &rgi.tuples[REPLAY_GAIN_TRACK].peak))
-		found = true;
+
+	const auto *comments = vc.comments;
+	for (FLAC__uint32 i = 0, n = vc.num_comments; i < n; ++i)
+		if (ParseReplayGainVorbis(rgi,
+					  (const char *)comments[i].entry))
+			found = true;
 
 	return found;
 }

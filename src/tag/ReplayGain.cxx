@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ReplayGain.hxx"
+#include "VorbisComment.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
 
@@ -67,4 +68,19 @@ ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value)
 	};
 
 	return ParseReplayGainTagTemplate(info, NameValue{name, value});
+}
+
+bool
+ParseReplayGainVorbis(ReplayGainInfo &info, const char *entry)
+{
+	struct VorbisCommentEntry {
+		const char *entry;
+
+		gcc_pure
+		const char *operator[](const char *n) const {
+			return vorbis_comment_value(entry, n);
+		}
+	};
+
+	return ParseReplayGainTagTemplate(info, VorbisCommentEntry{entry});
 }
