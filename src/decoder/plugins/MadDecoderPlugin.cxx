@@ -26,6 +26,7 @@
 #include "tag/TagRva2.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/ReplayGain.hxx"
+#include "tag/MixRamp.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/StringUtil.hxx"
 #include "util/ASCII.hxx"
@@ -303,11 +304,7 @@ parse_id3_mixramp(struct id3_tag *tag)
 		    id3_ucs4_latin1duplicate(id3_field_getstring
 					     (&frame->fields[2]));
 
-		if (StringEqualsCaseASCII(key, "mixramp_start")) {
-			result.SetStart(value);
-		} else if (StringEqualsCaseASCII(key, "mixramp_end")) {
-			result.SetEnd(value);
-		}
+		ParseMixRampTag(result, key, value);
 
 		free(key);
 		free(value);
