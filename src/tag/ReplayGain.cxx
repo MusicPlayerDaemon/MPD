@@ -18,48 +18,31 @@
  */
 
 #include "config.h"
-#include "ApeReplayGain.hxx"
-#include "ApeLoader.hxx"
 #include "ReplayGain.hxx"
+#include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
-#include "fs/Path.hxx"
 
-#include <string.h>
+#include <assert.h>
 #include <stdlib.h>
 
-static bool
-replay_gain_ape_callback(unsigned long flags, const char *key,
-			 const char *_value, size_t value_length,
-			 ReplayGainInfo &info)
-{
-	/* we only care about utf-8 text tags */
-	if ((flags & (0x3 << 1)) != 0)
-		return false;
-
-	char value[16];
-	if (value_length >= sizeof(value))
-		return false;
-
-	memcpy(value, _value, value_length);
-	value[value_length] = 0;
-
-	return ParseReplayGainTag(info, key, value);
-}
-
 bool
-replay_gain_ape_read(Path path_fs, ReplayGainInfo &info)
+ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value)
 {
-	bool found = false;
+	assert(name != nullptr);
+	assert(value != nullptr);
 
-	auto callback = [&info, &found]
-		(unsigned long flags, const char *key,
-		 const char *value,
-		 size_t value_length) {
-		found |= replay_gain_ape_callback(flags, key,
-						  value, value_length,
-						  info);
+	if (StringEqualsCaseASCII(name, "replaygain_track_gain")) {
+		info.tuples[REPLAY_GAIN_TRACK].gain = atof(value);
 		return true;
-	};
-
-	return tag_ape_scan(path_fs, callback) && found;
+	} else if (StringEqualsCaseASCII(name, "replaygain_album_gain")) {
+		info.tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
+		return true;
+	} else if (StringEqualsCaseASCII(name, "replaygain_track_peak")) {
+		info.tuples[REPLAY_GAIN_TRACK].peak = atof(value);
+		return true;
+	} else if (StringEqualsCaseASCII(name, "replaygain_album_peak")) {
+		info.tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
+		return true;
+	} else
+		return false;
 }
