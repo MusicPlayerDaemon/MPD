@@ -116,7 +116,7 @@ struct ReplayGainInfo;
 
 bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
-		       const FLAC__StreamMetadata *block);
+		       const FLAC__StreamMetadata_VorbisComment &vc);
 
 MixRampInfo
 flac_parse_mixramp(const FLAC__StreamMetadata *block);

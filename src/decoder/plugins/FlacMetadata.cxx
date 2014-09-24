@@ -55,11 +55,8 @@ vorbis_comment_value(const FLAC__StreamMetadata *block,
 
 bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
-		       const FLAC__StreamMetadata *block)
+		       const FLAC__StreamMetadata_VorbisComment &vc)
 {
-	const FLAC__StreamMetadata_VorbisComment &vc =
-		block->data.vorbis_comment;
-
 	rgi.Clear();
 
 	bool found = false;
