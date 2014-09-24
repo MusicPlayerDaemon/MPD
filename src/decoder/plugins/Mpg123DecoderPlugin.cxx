@@ -60,14 +60,10 @@ static bool
 mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		AudioFormat &audio_format)
 {
-	int error;
-	int channels, encoding;
-	long rate;
-
 	/* mpg123_open() wants a writable string :-( */
 	char *const path2 = const_cast<char *>(path_fs);
 
-	error = mpg123_open(handle, path2);
+	int error = mpg123_open(handle, path2);
 	if (error != MPG123_OK) {
 		FormatWarning(mpg123_domain,
 			      "libmpg123 failed to open %s: %s",
@@ -77,6 +73,8 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 
 	/* obtain the audio format */
 
+	long rate;
+	int channels, encoding;
 	error = mpg123_getformat(handle, &rate, &channels, &encoding);
 	if (error != MPG123_OK) {
 		FormatWarning(mpg123_domain,
@@ -106,14 +104,10 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 static void
 mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 {
-	mpg123_handle *handle;
-	int error;
-	off_t num_samples;
-	struct mpg123_frameinfo info;
-
 	/* open the file */
 
-	handle = mpg123_new(nullptr, &error);
+	int error;
+	mpg123_handle *const handle = mpg123_new(nullptr, &error);
 	if (handle == nullptr) {
 		FormatError(mpg123_domain,
 			    "mpg123_new() failed: %s",
@@ -127,7 +121,7 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
-	num_samples = mpg123_length(handle);
+	const off_t num_samples = mpg123_length(handle);
 
 	/* tell MPD core we're ready */
 
@@ -137,6 +131,7 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 
 	decoder_initialized(decoder, audio_format, true, duration);
 
+	struct mpg123_frameinfo info;
 	if (mpg123_info(handle, &info) != MPG123_OK) {
 		info.vbr = MPG123_CBR;
 		info.bitrate = 0;
@@ -156,11 +151,10 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 
 	DecoderCommand cmd;
 	do {
-		unsigned char buffer[8192];
-		size_t nbytes;
-
 		/* decode */
 
+		unsigned char buffer[8192];
+		size_t nbytes;
 		error = mpg123_read(handle, buffer, sizeof(buffer), &nbytes);
 		if (error != MPG123_OK) {
 			if (error != MPG123_DONE)
@@ -205,11 +199,8 @@ static bool
 mpd_mpg123_scan_file(Path path_fs,
 		     const struct tag_handler *handler, void *handler_ctx)
 {
-	mpg123_handle *handle;
 	int error;
-	off_t num_samples;
-
-	handle = mpg123_new(nullptr, &error);
+	mpg123_handle *const handle = mpg123_new(nullptr, &error);
 	if (handle == nullptr) {
 		FormatError(mpg123_domain,
 			    "mpg123_new() failed: %s",
@@ -223,7 +214,7 @@ mpd_mpg123_scan_file(Path path_fs,
 		return false;
 	}
 
-	num_samples = mpg123_length(handle);
+	const off_t num_samples = mpg123_length(handle);
 	if (num_samples <= 0) {
 		mpg123_delete(handle);
 		return false;
