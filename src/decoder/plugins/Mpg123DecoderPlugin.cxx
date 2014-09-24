@@ -22,6 +22,9 @@
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
+#include "tag/ReplayGain.hxx"
+#include "tag/MixRamp.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -102,6 +105,90 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 }
 
 static void
+AddTagItem(TagBuilder &tag, TagType type, const mpg123_string &s)
+{
+	assert(s.p != nullptr);
+	assert(s.size >= s.fill);
+	assert(s.fill > 0);
+
+	tag.AddItem(type, s.p, s.fill - 1);
+}
+
+static void
+AddTagItem(TagBuilder &tag, TagType type, const mpg123_string *s)
+{
+	if (s != nullptr)
+		AddTagItem(tag, type, *s);
+}
+
+static void
+mpd_mpg123_id3v2_tag(Decoder &decoder, const mpg123_id3v2 &id3v2)
+{
+	TagBuilder tag;
+
+	AddTagItem(tag, TAG_TITLE, id3v2.title);
+	AddTagItem(tag, TAG_ARTIST, id3v2.artist);
+	AddTagItem(tag, TAG_ALBUM, id3v2.album);
+	AddTagItem(tag, TAG_DATE, id3v2.year);
+	AddTagItem(tag, TAG_GENRE, id3v2.genre);
+
+	for (size_t i = 0, n = id3v2.comments; i < n; ++i)
+		AddTagItem(tag, TAG_COMMENT, id3v2.comment_list[i].text);
+
+	decoder_tag(decoder, nullptr, tag.Commit());
+}
+
+static void
+mpd_mpg123_id3v2_extras(Decoder &decoder, const mpg123_id3v2 &id3v2)
+{
+	ReplayGainInfo replay_gain;
+	replay_gain.Clear();
+
+	MixRampInfo mix_ramp;
+
+	bool found_replay_gain = false, found_mixramp = false;
+
+	for (size_t i = 0, n = id3v2.extras; i < n; ++i) {
+		if (ParseReplayGainTag(replay_gain,
+				       id3v2.extra[i].description.p,
+				       id3v2.extra[i].text.p))
+			found_replay_gain = true;
+		else if (ParseMixRampTag(mix_ramp,
+					 id3v2.extra[i].description.p,
+					 id3v2.extra[i].text.p))
+			found_mixramp = true;
+	}
+
+	if (found_replay_gain)
+		decoder_replay_gain(decoder, &replay_gain);
+
+	if (found_mixramp)
+		decoder_mixramp(decoder, std::move(mix_ramp));
+}
+
+static void
+mpd_mpg123_id3v2(Decoder &decoder, const mpg123_id3v2 &id3v2)
+{
+	mpd_mpg123_id3v2_tag(decoder, id3v2);
+	mpd_mpg123_id3v2_extras(decoder, id3v2);
+}
+
+static void
+mpd_mpg123_meta(Decoder &decoder, mpg123_handle *const handle)
+{
+	if ((mpg123_meta_check(handle) & MPG123_NEW_ID3) == 0)
+		return;
+
+	mpg123_id3v1 *v1;
+	mpg123_id3v2 *v2;
+	if (mpg123_id3(handle, &v1, &v2) != MPG123_OK)
+		return;
+
+	if (v2 != nullptr)
+		mpd_mpg123_id3v2(decoder, *v2);
+}
+
+static void
 mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 {
 	/* open the file */
@@ -148,9 +235,11 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 	}
 
 	/* the decoder main loop */
-
 	DecoderCommand cmd;
 	do {
+		/* read metadata */
+		mpd_mpg123_meta(decoder, handle);
+
 		/* decode */
 
 		unsigned char buffer[8192];

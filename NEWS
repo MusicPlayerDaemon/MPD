@@ -48,6 +48,7 @@ ver 0.19 (not yet released)
   - dsf: support multi-channel files
   - dsf: fix big-endian bugs
   - dsf: fix noise at end of malformed file
+  - mpg123: support ID3v2, ReplayGain and MixRamp
   - sndfile: support scanning remote files
   - sndfile: support tags "comment", "album", "track", "genre"
   - sndfile: native floating point playback
