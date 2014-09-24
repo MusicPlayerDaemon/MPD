@@ -28,7 +28,7 @@ struct notify {
 	Cond cond;
 	bool pending;
 
-#if !defined(WIN32) && !defined(__BIONIC__)
+#if !defined(WIN32) && !defined(__NetBSD__) && !defined(__BIONIC__)
 	constexpr
 #endif
 	notify():pending(false) {}

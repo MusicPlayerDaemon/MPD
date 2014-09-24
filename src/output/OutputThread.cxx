@@ -371,11 +371,20 @@ ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk)
 		if (data.size > other_data.size)
 			data.size = other_data.size;
 
+		float mix_ratio = chunk->mix_ratio;
+		if (mix_ratio >= 0)
+			/* reverse the mix ratio (because the
+			   arguments to pcm_mix() are reversed), but
+			   only if the mix ratio is non-negative; a
+			   negative mix ratio is a MixRamp special
+			   case */
+			mix_ratio = 1.0 - mix_ratio;
+
 		void *dest = ao->cross_fade_buffer.Get(other_data.size);
 		memcpy(dest, other_data.data, other_data.size);
 		if (!pcm_mix(ao->cross_fade_dither, dest, data.data, data.size,
 			     ao->in_audio_format.format,
-			     1.0 - chunk->mix_ratio)) {
+			     mix_ratio)) {
 			FormatError(output_domain,
 				    "Cannot cross-fade format %s",
 				    sample_format_to_string(ao->in_audio_format.format));
