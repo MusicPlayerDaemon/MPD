@@ -25,24 +25,46 @@
 #include <assert.h>
 #include <stdlib.h>
 
+template<typename T>
+static bool
+ParseReplayGainTagTemplate(ReplayGainInfo &info, const T t)
+{
+	const char *value;
+
+	if ((value = t["replaygain_track_gain"]) != nullptr) {
+		info.tuples[REPLAY_GAIN_TRACK].gain = atof(value);
+		return true;
+	} else if ((value = t["replaygain_album_gain"]) != nullptr) {
+		info.tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
+		return true;
+	} else if ((value = t["replaygain_track_peak"]) != nullptr) {
+		info.tuples[REPLAY_GAIN_TRACK].peak = atof(value);
+		return true;
+	} else if ((value = t["replaygain_album_peak"]) != nullptr) {
+		info.tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
+		return true;
+	} else
+		return false;
+
+}
+
 bool
 ParseReplayGainTag(ReplayGainInfo &info, const char *name, const char *value)
 {
 	assert(name != nullptr);
 	assert(value != nullptr);
 
-	if (StringEqualsCaseASCII(name, "replaygain_track_gain")) {
-		info.tuples[REPLAY_GAIN_TRACK].gain = atof(value);
-		return true;
-	} else if (StringEqualsCaseASCII(name, "replaygain_album_gain")) {
-		info.tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
-		return true;
-	} else if (StringEqualsCaseASCII(name, "replaygain_track_peak")) {
-		info.tuples[REPLAY_GAIN_TRACK].peak = atof(value);
-		return true;
-	} else if (StringEqualsCaseASCII(name, "replaygain_album_peak")) {
-		info.tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
-		return true;
-	} else
-		return false;
+	struct NameValue {
+		const char *name;
+		const char *value;
+
+		gcc_pure
+		const char *operator[](const char *n) const {
+			return StringEqualsCaseASCII(name, n)
+				? value
+				: nullptr;
+		}
+	};
+
+	return ParseReplayGainTagTemplate(info, NameValue{name, value});
 }
