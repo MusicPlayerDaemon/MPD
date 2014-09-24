@@ -25,6 +25,7 @@
 #include "tag/TagTable.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
+#include "tag/VorbisComment.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
 #include "util/SplitString.hxx"
@@ -114,17 +115,7 @@ static const char *
 flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		   const char *name)
 {
-	size_t name_length = strlen(name);
-	const char *comment = (const char*)entry->entry;
-
-	if (!StringEqualsCaseASCII(comment, name, name_length))
-		return nullptr;
-
-	if (comment[name_length] == '=') {
-		return comment + name_length + 1;
-	}
-
-	return nullptr;
+	return vorbis_comment_value((const char *)entry->entry, name);
 }
 
 /**

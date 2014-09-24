@@ -23,25 +23,13 @@
 #include "tag/TagTable.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
+#include "tag/VorbisComment.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
 #include "util/SplitString.hxx"
 
 #include <stddef.h>
-#include <string.h>
 #include <stdlib.h>
-
-static const char *
-vorbis_comment_value(const char *comment, const char *needle)
-{
-	size_t len = strlen(needle);
-
-	if (StringEqualsCaseASCII(comment, needle, len) &&
-	    comment[len] == '=')
-		return comment + len + 1;
-
-	return nullptr;
-}
 
 bool
 vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)
