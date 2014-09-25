@@ -61,8 +61,8 @@ bool sacd_media_file_t::close() {
 	return true;
 }
 
-bool sacd_media_file_t::seek(int64_t position, int mode) {
-	off64_t ret = ::lseek64(fd, (off64_t)position, mode);
+bool sacd_media_file_t::seek(int64_t position) {
+	off64_t ret = ::lseek64(fd, (off64_t)position, SEEK_SET);
 	if (ret < 0) {
 		return false;
 	}
@@ -89,4 +89,77 @@ size_t sacd_media_file_t::read(void* data, size_t size) {
 
 int64_t sacd_media_file_t::skip(int64_t bytes) {
 	return ::lseek64(fd, (off64_t)bytes, SEEK_CUR);
+}
+
+
+sacd_media_stream_t::sacd_media_stream_t() {
+	is = nullptr;
+}
+
+sacd_media_stream_t::~sacd_media_stream_t() {
+	close();
+}
+
+bool sacd_media_stream_t::open(const char* path) {
+	Error error;
+	is = InputStream::OpenReady(path, mutex, cond, error);
+	if (is == nullptr) {
+		if (error.IsDefined()) {
+			LogError(error);
+		}
+		return false;
+	}
+	return true;
+}
+
+bool sacd_media_stream_t::close() {
+	delete is;
+	is = nullptr;
+	return true;
+}
+
+bool sacd_media_stream_t::seek(int64_t position) {
+	Error error;
+	if (is->Seek(position, error)) {
+		return true;
+	}
+	else {
+		if (error.IsDefined()) {
+			LogError(error);
+		}
+		return false;
+	}
+}
+
+int64_t sacd_media_stream_t::get_position() {
+	return is->GetOffset();
+}
+
+int64_t sacd_media_stream_t::get_size() {
+	return is->GetSize();
+}
+
+size_t sacd_media_stream_t::read(void* data, size_t size) {
+	Error error;
+	size_t read_bytes = is->Read(data, size, error);
+	if (read_bytes == 0) {
+		if (error.IsDefined()) {
+			LogError(error);
+		}
+	}
+	return read_bytes;
+}
+
+int64_t sacd_media_stream_t::skip(int64_t bytes) {
+	Error error;
+	int64_t position = is->GetOffset() + bytes;
+	if (is->Seek(position, error)) {
+		return position;
+	}
+	else {
+		if (error.IsDefined()) {
+			LogError(error);
+		}
+		return -1;
+	}
 }

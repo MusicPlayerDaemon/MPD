@@ -20,8 +20,14 @@
 #ifndef _SACD_MEDIA_H_INCLUDED
 #define _SACD_MEDIA_H_INCLUDED
 
+#include "config.h"
 #include <stdint.h>
 #include <stddef.h>
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
+#include "input/InputStream.hxx"
+#include "util/Error.hxx"
+#include "Log.hxx"
 
 class sacd_media_t {
 public:
@@ -29,7 +35,7 @@ public:
 	virtual ~sacd_media_t() {}
 	virtual bool    open(const char* path) = 0;
 	virtual bool    close() = 0;
-	virtual bool    seek(int64_t position, int mode = 0) = 0;
+	virtual bool    seek(int64_t position) = 0;
 	virtual int64_t get_position() = 0;
 	virtual int64_t get_size() = 0;
 	virtual size_t  read(void* data, size_t size) = 0;
@@ -43,7 +49,24 @@ public:
 	~sacd_media_file_t();
 	bool    open(const char* path);
 	bool    close();
-	bool    seek(int64_t position, int mode = 0);
+	bool    seek(int64_t position);
+	int64_t get_position();
+	int64_t get_size();
+	size_t  read(void* data, size_t size);
+	int64_t skip(int64_t bytes);
+};
+
+class sacd_media_stream_t : public sacd_media_t {
+	Mutex mutex;
+	Cond cond;
+	InputStream* is;
+	int fd;
+public:
+	sacd_media_stream_t();
+	~sacd_media_stream_t();
+	bool    open(const char* path);
+	bool    close();
+	bool    seek(int64_t position);
 	int64_t get_position();
 	int64_t get_size();
 	size_t  read(void* data, size_t size);

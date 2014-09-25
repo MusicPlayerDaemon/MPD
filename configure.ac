@@ -362,7 +362,7 @@ AC_ARG_ENABLE(nfs,
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
 		[enable debugging (default: disabled)]),,
-	enable_debug=yes)
+	enable_debug=no)
 
 AC_ARG_ENABLE(documentation,
 	AS_HELP_STRING([--enable-documentation],
@@ -527,7 +527,7 @@ AC_ARG_ENABLE(recorder-output,
 
 AC_ARG_ENABLE(sacdiso,
 	AS_HELP_STRING([--enable-sacdiso],
-		[enable SACD ISO support via libsacdiso (default: disable)]),,
+		[enable SACD ISO support via libsacdiso (default: enable)]),,
 	enable_sacdiso=yes)
 
 AC_ARG_ENABLE(sidplay,
@@ -1789,17 +1789,27 @@ if test "x$enable_werror" = xyes; then
 fi
 
 dnl ---------------------------- language features ----------------------------
-AX_APPEND_COMPILE_FLAGS([-O0])
+AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
+AX_APPEND_COMPILE_FLAGS([-ffast-math])
+AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
 
 AC_LANG_PUSH([C++])
-AX_APPEND_COMPILE_FLAGS([-O0])
-
+AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
+AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
+AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
 
 if test x$no_exceptions = xyes; then
 	AX_APPEND_COMPILE_FLAGS([-fno-exceptions])
 	AX_APPEND_COMPILE_FLAGS([-fno-rtti])
 fi
 
+if test "x$enable_debug" = xyes; then
+	CFLAGS="$CFLAGS -O0"
+	CXXFLAGS="$CXXFLAGS -O0"
+fi
+
+AX_APPEND_COMPILE_FLAGS([-ffast-math])
+AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
 AC_LANG_POP
 
 dnl ---------------------------------- debug ----------------------------------
