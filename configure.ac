@@ -214,6 +214,11 @@ AC_ARG_ENABLE(documentation,
 		[build documentation (default: disable)]),,
 	[enable_documentation=no])
 
+AC_ARG_ENABLE(dsd,
+	AS_HELP_STRING([--enable-dsd],
+		[enable DSD decoder (default: enable)]),,
+	[enable_dsd=yes])
+
 AC_ARG_ENABLE(ffmpeg,
 	AS_HELP_STRING([--enable-ffmpeg],
 		[enable FFMPEG support]),,
@@ -845,6 +850,14 @@ AM_CONDITIONAL(HAVE_AUDIOFILE, test x$enable_audiofile = xyes)
 if test x$enable_audiofile = xyes; then
 	AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support])
 fi
+
+dnl ----------------------------------- DSD -----------------------------------
+
+if test x$enable_dsd = xyes; then
+	AC_DEFINE(HAVE_DSD, 1, [Define for the DSD decoder])
+fi
+
+AM_CONDITIONAL(ENABLE_DSD, test x$enable_dsd = xyes)
 
 dnl ----------------------------------- FAAD ----------------------------------
 AM_PATH_FAAD()
