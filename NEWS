@@ -72,7 +72,10 @@ ver 0.19 (not yet released)
 * install systemd unit for socket activation
 * Android port
 
-ver 0.18.15 (not yet released)
+ver 0.18.16 (2014/09/26)
+* fix DSD breakage due to typo in configure.ac
+
+ver 0.18.15 (2014/09/26)
 * command
   - list: reset used size after the list has been processed
 * fix MixRamp

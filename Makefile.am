@@ -796,12 +796,6 @@ endif
 libdecoder_a_SOURCES = \
 	src/decoder/plugins/PcmDecoderPlugin.cxx \
 	src/decoder/plugins/PcmDecoderPlugin.hxx \
-	src/decoder/plugins/DsdiffDecoderPlugin.cxx \
-	src/decoder/plugins/DsdiffDecoderPlugin.hxx \
-	src/decoder/plugins/DsfDecoderPlugin.cxx \
-	src/decoder/plugins/DsfDecoderPlugin.hxx \
-	src/decoder/plugins/DsdLib.cxx \
-	src/decoder/plugins/DsdLib.hxx \
 	src/decoder/DecoderBuffer.cxx src/decoder/DecoderBuffer.hxx \
 	src/decoder/DecoderPlugin.cxx \
 	src/decoder/DecoderList.cxx src/decoder/DecoderList.hxx
@@ -844,6 +838,16 @@ DECODER_LIBS = \
 	$(MPCDEC_LIBS) \
 	$(ADPLUG_LIBS) \
 	$(FAAD_LIBS)
+
+if ENABLE_DSD
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/DsdiffDecoderPlugin.cxx \
+	src/decoder/plugins/DsdiffDecoderPlugin.hxx \
+	src/decoder/plugins/DsfDecoderPlugin.cxx \
+	src/decoder/plugins/DsfDecoderPlugin.hxx \
+	src/decoder/plugins/DsdLib.cxx \
+	src/decoder/plugins/DsdLib.hxx
+endif
 
 if HAVE_MAD
 libdecoder_a_SOURCES += \
@@ -2061,6 +2065,8 @@ test_test_queue_priority_LDADD = \
 	libutil.a \
 	$(CPPUNIT_LIBS)
 
+if ENABLE_DSD
+
 noinst_PROGRAMS += src/pcm/dsd2pcm/dsd2pcm
 
 src_pcm_dsd2pcm_dsd2pcm_SOURCES = \
@@ -2070,6 +2076,8 @@ src_pcm_dsd2pcm_dsd2pcm_SOURCES = \
 	src/pcm/dsd2pcm/noiseshape.hpp \
 	src/pcm/dsd2pcm/main.cpp
 src_pcm_dsd2pcm_dsd2pcm_LDADD = libutil.a
+
+endif
 
 endif
 
