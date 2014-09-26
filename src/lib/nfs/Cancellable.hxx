@@ -150,6 +150,13 @@ public:
 
 		i->Cancel();
 	}
+
+	CT &Get(reference_type p) {
+		auto i = Find(p);
+		assert(i != list.end());
+
+		return *i;
+	}
 };
 
 #endif

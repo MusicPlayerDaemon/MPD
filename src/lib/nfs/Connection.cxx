@@ -81,9 +81,22 @@ NfsConnection::CancellableCallback::Read(nfs_context *ctx, struct nfsfh *fh,
 }
 
 inline void
+NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh)
+{
+	assert(!open);
+	assert(close_fh == nullptr);
+	assert(fh != nullptr);
+
+	close_fh = fh;
+	Cancel();
+}
+
+inline void
 NfsConnection::CancellableCallback::Callback(int err, void *data)
 {
 	if (!IsCancelled()) {
+		assert(close_fh == nullptr);
+
 		NfsCallback &cb = Get();
 
 		connection.callbacks.Remove(*this);
@@ -98,9 +111,12 @@ NfsConnection::CancellableCallback::Callback(int err, void *data)
 			/* a nfs_open_async() call was cancelled - to
 			   avoid a memory leak, close the newly
 			   allocated file handle immediately */
+			assert(close_fh == nullptr);
+
 			struct nfsfh *fh = (struct nfsfh *)data;
 			connection.Close(fh);
-		}
+		} else if (close_fh != nullptr)
+			connection.DeferClose(close_fh);
 
 		connection.callbacks.Remove(*this);
 	}
@@ -135,6 +151,7 @@ NfsConnection::~NfsConnection()
 	assert(new_leases.empty());
 	assert(active_leases.empty());
 	assert(callbacks.IsEmpty());
+	assert(deferred_close.empty());
 
 	if (context != nullptr)
 		DestroyContext();
@@ -225,6 +242,13 @@ NfsConnection::Close(struct nfsfh *fh)
 }
 
 void
+NfsConnection::CancelAndClose(struct nfsfh *fh, NfsCallback &callback)
+{
+	CancellableCallback &cancel = callbacks.Get(callback);
+	cancel.CancelAndScheduleClose(fh);
+}
+
+void
 NfsConnection::DestroyContext()
 {
 	assert(GetEventLoop().IsInside());
@@ -235,6 +259,15 @@ NfsConnection::DestroyContext()
 
 	nfs_destroy_context(context);
 	context = nullptr;
+}
+
+inline void
+NfsConnection::DeferClose(struct nfsfh *fh)
+{
+	assert(in_event);
+	assert(in_service);
+
+	deferred_close.push_front(fh);
 }
 
 void
@@ -257,6 +290,8 @@ NfsConnection::ScheduleSocket()
 bool
 NfsConnection::OnSocketReady(unsigned flags)
 {
+	assert(deferred_close.empty());
+
 	bool closed = false;
 
 	const bool was_mounted = mount_finished;
@@ -277,6 +312,12 @@ NfsConnection::OnSocketReady(unsigned flags)
 	assert(context != nullptr);
 	assert(in_service);
 	in_service = false;
+
+	while (!deferred_close.empty()) {
+		nfs_close_async(context, deferred_close.front(),
+				DummyCallback, nullptr);
+		deferred_close.pop_front();
+	}
 
 	if (!was_mounted && mount_finished) {
 		if (postponed_mount_error.IsDefined()) {
