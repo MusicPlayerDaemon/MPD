@@ -854,7 +854,7 @@ fi
 dnl ----------------------------------- DSD -----------------------------------
 
 if test x$enable_dsd = xyes; then
-	AC_DEFINE(HAVE_DSD, 1, [Define for the DSD decoder])
+	AC_DEFINE(ENABLE_DSD, 1, [Define for the DSD decoder])
 fi
 
 AM_CONDITIONAL(ENABLE_DSD, test x$enable_dsd = xyes)
