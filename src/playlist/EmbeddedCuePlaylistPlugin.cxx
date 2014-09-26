@@ -171,7 +171,7 @@ static const char *const embcue_playlist_suffixes[] = {
 };
 
 const struct playlist_plugin embcue_playlist_plugin = {
-	"cue",
+	"embcue",
 
 	nullptr,
 	nullptr,
