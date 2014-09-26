@@ -464,8 +464,6 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmBuffer.cxx src/pcm/PcmBuffer.hxx \
 	src/pcm/PcmExport.cxx src/pcm/PcmExport.hxx \
 	src/pcm/PcmConvert.cxx src/pcm/PcmConvert.hxx \
-	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \
-	src/pcm/PcmDsd.cxx src/pcm/PcmDsd.hxx \
 	src/pcm/PcmDop.cxx src/pcm/PcmDop.hxx \
 	src/pcm/Volume.cxx src/pcm/Volume.hxx \
 	src/pcm/PcmMix.cxx src/pcm/PcmMix.hxx \
@@ -492,6 +490,12 @@ PCM_LIBS = \
 	libpcm.a \
 	$(SOXR_LIBS) \
 	$(SAMPLERATE_LIBS)
+
+if ENABLE_DSD
+libpcm_a_SOURCES += \
+	src/pcm/PcmDsd.cxx src/pcm/PcmDsd.hxx \
+	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h
+endif
 
 if HAVE_LIBSAMPLERATE
 libpcm_a_SOURCES += \

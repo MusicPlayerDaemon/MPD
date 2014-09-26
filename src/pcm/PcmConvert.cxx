@@ -109,7 +109,9 @@ PcmConvert::Close()
 	if (enable_resampler)
 		resampler.Close();
 
+#ifdef ENABLE_DSD
 	dsd.Reset();
+#endif
 
 #ifndef NDEBUG
 	src_format.Clear();
@@ -120,6 +122,7 @@ PcmConvert::Close()
 ConstBuffer<void>
 PcmConvert::Convert(ConstBuffer<void> buffer, Error &error)
 {
+#ifdef ENABLE_DSD
 	if (src_format.format == SampleFormat::DSD) {
 		auto s = ConstBuffer<uint8_t>::FromVoid(buffer);
 		auto d = dsd.ToFloat(src_format.channels, s);
@@ -131,6 +134,7 @@ PcmConvert::Convert(ConstBuffer<void> buffer, Error &error)
 
 		buffer = d.ToVoid();
 	}
+#endif
 
 	if (enable_resampler) {
 		buffer = resampler.Resample(buffer, error);
