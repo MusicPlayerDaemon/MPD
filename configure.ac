@@ -1094,27 +1094,6 @@ AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
 
 dnl ------------------------ Post Decoder Plugins Tests -----------------------
 
-if
-	test x$enable_aac = xno &&
-	test x$enable_audiofile = xno &&
-	test x$enable_ffmpeg = xno &&
-	test x$enable_flac = xno &&
-	test x$enable_fluidsynth = xno &&
-	test x$enable_mad = xno &&
-	test x$enable_mikmod = xno; then
-	test x$enable_modplug = xno &&
-	test x$enable_mpc = xno &&
-	test x$enable_mpg123 = xno &&
-	test x$enable_opus = xno &&
-	test x$enable_sidplay = xno &&
-	test x$enable_tremor = xno &&
-	test x$enable_vorbis = xno &&
-	test x$enable_wavpack = xno &&
-	test x$enable_wildmidi = xno &&
-
-		AC_MSG_ERROR([No input plugins supported!])
-fi
-
 AM_CONDITIONAL(HAVE_XIPH,
 	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes || test x$enable_opus = xyes)
 
