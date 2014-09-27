@@ -532,8 +532,8 @@ AC_ARG_ENABLE(recorder-output,
 
 AC_ARG_ENABLE(sacdiso,
 	AS_HELP_STRING([--enable-sacdiso],
-		[enable SACD ISO support via libsacdiso (default: enable)]),,
-	enable_sacdiso=yes)
+		[enable SACD ISO support via libsacdiso (default: disable)]),,
+	enable_sacdiso=no)
 
 AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
