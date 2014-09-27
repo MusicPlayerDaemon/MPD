@@ -236,20 +236,30 @@ void sacd_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 		*/
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE, tag_value.c_str());
 	}
-	tag_value  = (get_track_area_id() == AREA_TWOCH) ? "[2CH] " : "[MCH] ";
-	tag_value += sb->master_text.album_title;
-	if (sb->master_text.album_title)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_ALBUM, tag_value.c_str());
-	if (sb->master_text.album_artist)
+	if (sb->master_text.album_title) {
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_ALBUM, sb->master_text.album_title);
+	}
+	if (sb->master_text.album_artist) {
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST, sb->master_text.album_artist);
-	if (area->area_track_text[track_index].track_type_title)
+	}
+	if (area->area_track_text[track_index].track_type_title) {
+		char track_number_string[4];
+		sprintf(track_number_string, "%02d", track_index + 1);
+		tag_value  = (get_track_area_id() == AREA_TWOCH) ? "2CH - " : "MCH - ";
+		tag_value += track_number_string;
+		tag_value += " - ";
+		tag_value += area->area_track_text[track_index].track_type_title;
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, area->area_track_text[track_index].track_type_title);
-	if (area->area_track_text[track_index].track_type_composer)
+	}
+	if (area->area_track_text[track_index].track_type_composer) {
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_COMPOSER, area->area_track_text[track_index].track_type_composer);
-	if (area->area_track_text[track_index].track_type_performer)
+	}
+	if (area->area_track_text[track_index].track_type_performer) {
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_PERFORMER, area->area_track_text[track_index].track_type_performer);
-	if (area->area_track_text[track_index].track_type_message)
+	}
+	if (area->area_track_text[track_index].track_type_message) {
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_COMMENT, area->area_track_text[track_index].track_type_message);
+	}
 	if (area->area_isrc_genre) {
 		if (area->area_isrc_genre->track_genre[track_index].category == 1) {
 			uint8_t genre = area->area_isrc_genre->track_genre[track_index].genre;
