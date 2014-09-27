@@ -636,7 +636,7 @@ error:
 }
 
 static bool
-alsa_setup_dsd(AlsaOutput *ad, const AudioFormat audio_format,
+alsa_setup_dop(AlsaOutput *ad, const AudioFormat audio_format,
 	       bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
 	       Error &error)
 {
@@ -677,7 +677,7 @@ alsa_setup_dsd(AlsaOutput *ad, const AudioFormat audio_format,
 }
 
 static bool
-alsa_setup_or_dsd(AlsaOutput *ad, AudioFormat &audio_format,
+alsa_setup_or_dop(AlsaOutput *ad, AudioFormat &audio_format,
 		  Error &error)
 {
 	bool shift8 = false, packed, reverse_endian;
@@ -685,7 +685,7 @@ alsa_setup_or_dsd(AlsaOutput *ad, AudioFormat &audio_format,
 	const bool dop = ad->dop &&
 		audio_format.format == SampleFormat::DSD;
 	const bool success = dop
-		? alsa_setup_dsd(ad, audio_format,
+		? alsa_setup_dop(ad, audio_format,
 				 &shift8, &packed, &reverse_endian,
 				 error)
 		: alsa_setup(ad, audio_format, &packed, &reverse_endian,
@@ -717,7 +717,7 @@ alsa_open(AudioOutput *ao, AudioFormat &audio_format, Error &error)
 		    snd_pcm_name(ad->pcm),
 		    snd_pcm_type_name(snd_pcm_type(ad->pcm)));
 
-	if (!alsa_setup_or_dsd(ad, audio_format, error)) {
+	if (!alsa_setup_or_dop(ad, audio_format, error)) {
 		snd_pcm_close(ad->pcm);
 		return false;
 	}

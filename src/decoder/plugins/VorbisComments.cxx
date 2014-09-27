@@ -23,52 +23,25 @@
 #include "tag/TagTable.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
+#include "tag/VorbisComment.hxx"
+#include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
 #include "util/SplitString.hxx"
 
 #include <stddef.h>
-#include <string.h>
 #include <stdlib.h>
-
-static const char *
-vorbis_comment_value(const char *comment, const char *needle)
-{
-	size_t len = strlen(needle);
-
-	if (StringEqualsCaseASCII(comment, needle, len) &&
-	    comment[len] == '=')
-		return comment + len + 1;
-
-	return nullptr;
-}
 
 bool
 vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)
 {
 	rgi.Clear();
 
-	const char *temp;
 	bool found = false;
 
 	while (*comments) {
-		if ((temp =
-		     vorbis_comment_value(*comments, "replaygain_track_gain"))) {
-			rgi.tuples[REPLAY_GAIN_TRACK].gain = atof(temp);
+		if (ParseReplayGainVorbis(rgi, *comments))
 			found = true;
-		} else if ((temp = vorbis_comment_value(*comments,
-							"replaygain_album_gain"))) {
-			rgi.tuples[REPLAY_GAIN_ALBUM].gain = atof(temp);
-			found = true;
-		} else if ((temp = vorbis_comment_value(*comments,
-							"replaygain_track_peak"))) {
-			rgi.tuples[REPLAY_GAIN_TRACK].peak = atof(temp);
-			found = true;
-		} else if ((temp = vorbis_comment_value(*comments,
-							"replaygain_album_peak"))) {
-			rgi.tuples[REPLAY_GAIN_ALBUM].peak = atof(temp);
-			found = true;
-		}
 
 		comments++;
 	}

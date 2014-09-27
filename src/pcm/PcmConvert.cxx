@@ -109,7 +109,9 @@ PcmConvert::Close()
 	if (enable_resampler)
 		resampler.Close();
 
+#ifdef ENABLE_DSD
 	dsd.Reset();
+#endif
 
 #ifndef NDEBUG
 	src_format.Clear();
@@ -120,11 +122,10 @@ PcmConvert::Close()
 ConstBuffer<void>
 PcmConvert::Convert(ConstBuffer<void> buffer, Error &error)
 {
-	AudioFormat format = src_format;
-
-	if (format.format == SampleFormat::DSD) {
+#ifdef ENABLE_DSD
+	if (src_format.format == SampleFormat::DSD) {
 		auto s = ConstBuffer<uint8_t>::FromVoid(buffer);
-		auto d = dsd.ToFloat(format.channels, s);
+		auto d = dsd.ToFloat(src_format.channels, s);
 		if (d.IsNull()) {
 			error.Set(pcm_domain,
 				  "DSD to PCM conversion failed");
@@ -132,32 +133,25 @@ PcmConvert::Convert(ConstBuffer<void> buffer, Error &error)
 		}
 
 		buffer = d.ToVoid();
-		format.format = SampleFormat::FLOAT;
 	}
+#endif
 
 	if (enable_resampler) {
 		buffer = resampler.Resample(buffer, error);
 		if (buffer.IsNull())
 			return nullptr;
-
-		format.format = resampler.GetOutputSampleFormat();
-		format.sample_rate = dest_format.sample_rate;
 	}
 
 	if (enable_format) {
 		buffer = format_converter.Convert(buffer, error);
 		if (buffer.IsNull())
 			return nullptr;
-
-		format.format = dest_format.format;
 	}
 
 	if (enable_channels) {
 		buffer = channels_converter.Convert(buffer, error);
 		if (buffer.IsNull())
 			return nullptr;
-
-		format.channels = dest_format.channels;
 	}
 
 	return buffer;

@@ -48,6 +48,7 @@ ver 0.19 (not yet released)
   - dsf: support multi-channel files
   - dsf: fix big-endian bugs
   - dsf: fix noise at end of malformed file
+  - mpg123: support ID3v2, ReplayGain and MixRamp
   - sndfile: support scanning remote files
   - sndfile: support tags "comment", "album", "track", "genre"
   - sndfile: native floating point playback
@@ -70,6 +71,15 @@ ver 0.19 (not yet released)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.16 (2014/09/26)
+* fix DSD breakage due to typo in configure.ac
+
+ver 0.18.15 (2014/09/26)
+* command
+  - list: reset used size after the list has been processed
+* fix MixRamp
+* work around build failure on NetBSD
 
 ver 0.18.14 (2014/09/11)
 * protocol

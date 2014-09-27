@@ -17,37 +17,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_NOTIFY_HXX
-#define MPD_NOTIFY_HXX
+#ifndef MPD_TAG_MIXRAMP_HXX
+#define MPD_TAG_MIXRAMP_HXX
 
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
+#include "check.h"
 
-struct notify {
-	Mutex mutex;
-	Cond cond;
-	bool pending;
+class MixRampInfo;
 
-#if !defined(WIN32) && !defined(__NetBSD__) && !defined(__BIONIC__)
-	constexpr
-#endif
-	notify():pending(false) {}
+bool
+ParseMixRampTag(MixRampInfo &info, const char *name, const char *value);
 
-	/**
-	 * Wait for a notification.  Return immediately if we have already
-	 * been notified since we last returned from notify_wait().
-	 */
-	void Wait();
-
-	/**
-	 * Notify the thread.  This function never blocks.
-	 */
-	void Signal();
-
-	/**
-	 * Clears a pending notification.
-	 */
-	void Clear();
-};
+bool
+ParseMixRampVorbis(MixRampInfo &info, const char *entry);
 
 #endif

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ApeReplayGain.hxx"
 #include "ApeLoader.hxx"
-#include "ReplayGainInfo.hxx"
+#include "ReplayGain.hxx"
 #include "util/ASCII.hxx"
 #include "fs/Path.hxx"
 
@@ -43,20 +43,7 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 	memcpy(value, _value, value_length);
 	value[value_length] = 0;
 
-	if (StringEqualsCaseASCII(key, "replaygain_track_gain")) {
-		info.tuples[REPLAY_GAIN_TRACK].gain = atof(value);
-		return true;
-	} else if (StringEqualsCaseASCII(key, "replaygain_album_gain")) {
-		info.tuples[REPLAY_GAIN_ALBUM].gain = atof(value);
-		return true;
-	} else if (StringEqualsCaseASCII(key, "replaygain_track_peak")) {
-		info.tuples[REPLAY_GAIN_TRACK].peak = atof(value);
-		return true;
-	} else if (StringEqualsCaseASCII(key, "replaygain_album_peak")) {
-		info.tuples[REPLAY_GAIN_ALBUM].peak = atof(value);
-		return true;
-	} else
-		return false;
+	return ParseReplayGainTag(info, key, value);
 }
 
 bool

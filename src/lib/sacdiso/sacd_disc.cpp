@@ -236,8 +236,10 @@ void sacd_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 		*/
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE, tag_value.c_str());
 	}
+	tag_value  = (get_track_area_id() == AREA_TWOCH) ? "[2CH] " : "[MCH] ";
+	tag_value += sb->master_text.album_title;
 	if (sb->master_text.album_title)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_ALBUM, sb->master_text.album_title);
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_ALBUM, tag_value.c_str());
 	if (sb->master_text.album_artist)
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST, sb->master_text.album_artist);
 	if (area->area_track_text[track_index].track_type_title)

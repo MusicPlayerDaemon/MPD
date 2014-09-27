@@ -20,12 +20,16 @@
 #ifndef PCM_CONVERT_HXX
 #define PCM_CONVERT_HXX
 
-#include "PcmDsd.hxx"
+#include "check.h"
 #include "PcmBuffer.hxx"
 #include "FormatConverter.hxx"
 #include "ChannelsConverter.hxx"
 #include "GlueResampler.hxx"
 #include "AudioFormat.hxx"
+
+#ifdef ENABLE_DSD
+#include "PcmDsd.hxx"
+#endif
 
 #include <stddef.h>
 
@@ -39,7 +43,9 @@ class Domain;
  * conversions.
  */
 class PcmConvert {
+#ifdef ENABLE_DSD
 	PcmDsd dsd;
+#endif
 
 	GluePcmResampler resampler;
 	PcmFormatConverter format_converter;

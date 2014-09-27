@@ -369,6 +369,11 @@ AC_ARG_ENABLE(documentation,
 		[build documentation (default: disable)]),,
 	[enable_documentation=no])
 
+AC_ARG_ENABLE(dsd,
+	AS_HELP_STRING([--enable-dsd],
+		[enable DSD decoder (default: enable)]),,
+	[enable_dsd=yes])
+
 AC_ARG_ENABLE(ffmpeg,
 	AS_HELP_STRING([--enable-ffmpeg],
 		[enable FFMPEG support]),,
@@ -1138,6 +1143,14 @@ if test x$enable_audiofile = xyes; then
 	AC_DEFINE(HAVE_AUDIOFILE, 1, [Define for audiofile support])
 fi
 
+dnl ----------------------------------- DSD -----------------------------------
+
+if test x$enable_dsd = xyes; then
+	AC_DEFINE(ENABLE_DSD, 1, [Define for the DSD decoder])
+fi
+
+AM_CONDITIONAL(ENABLE_DSD, test x$enable_dsd = xyes)
+
 dnl ----------------------------------- FAAD ----------------------------------
 AM_PATH_FAAD()
 
@@ -1398,6 +1411,7 @@ AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
 
 dnl ------------------------ Post Decoder Plugins Tests -----------------------
 
+<<<<<<< HEAD
 if
 	test x$enable_aac = xno &&
 	test x$enable_audiofile = xno &&
@@ -1421,6 +1435,8 @@ if
 		AC_MSG_ERROR([No input plugins supported!])
 fi
 
+=======
+>>>>>>> 3120958a17f1fcbfc90d0c2ee2ede9e31c4cf09d
 AM_CONDITIONAL(HAVE_XIPH,
 	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes || test x$enable_opus = xyes)
 
@@ -1725,27 +1741,6 @@ else
 fi
 
 AM_CONDITIONAL(ENABLE_WINMM_OUTPUT, test x$enable_winmm_output = xyes)
-
-dnl --------------------- Post Audio Output Plugins Tests ---------------------
-if
-	test x$enable_alsa = xno &&
-	test x$enable_roar = xno &&
-	test x$enable_ao = xno &&
-	test x$enable_fifo = xno &&
-	test x$enable_httpd_output = xno &&
-	test x$enable_jack = xno &&
-	test x$enable_openal = xno &&
-	test x$enable_oss = xno &&
-	test x$enable_osx = xno &&
-	test x$enable_pipe_output = xno &&
-	test x$enable_pulse = xno &&
-	test x$enable_recorder_output = xno &&
-	test x$enable_shout = xno &&
-	test x$enable_solaris_output = xno &&
-	test x$enable_winmm_output = xno; then
-
-		AC_MSG_ERROR([No Audio Output types configured!])
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl Documentation

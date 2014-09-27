@@ -8,6 +8,8 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <stdlib.h>
+
 static enum ack last_error = ack(-1);
 
 void

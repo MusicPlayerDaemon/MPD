@@ -463,8 +463,6 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmBuffer.cxx src/pcm/PcmBuffer.hxx \
 	src/pcm/PcmExport.cxx src/pcm/PcmExport.hxx \
 	src/pcm/PcmConvert.cxx src/pcm/PcmConvert.hxx \
-	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h \
-	src/pcm/PcmDsd.cxx src/pcm/PcmDsd.hxx \
 	src/pcm/PcmDop.cxx src/pcm/PcmDop.hxx \
 	src/pcm/Volume.cxx src/pcm/Volume.hxx \
 	src/pcm/PcmMix.cxx src/pcm/PcmMix.hxx \
@@ -491,6 +489,12 @@ PCM_LIBS = \
 	libpcm.a \
 	$(SOXR_LIBS) \
 	$(SAMPLERATE_LIBS)
+
+if ENABLE_DSD
+libpcm_a_SOURCES += \
+	src/pcm/PcmDsd.cxx src/pcm/PcmDsd.hxx \
+	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h
+endif
 
 if HAVE_LIBSAMPLERATE
 libpcm_a_SOURCES += \
@@ -765,6 +769,9 @@ libtag_a_SOURCES =\
 	src/tag/TagPool.cxx src/tag/TagPool.hxx \
 	src/tag/TagTable.cxx src/tag/TagTable.hxx \
 	src/tag/Set.cxx src/tag/Set.hxx \
+	src/tag/VorbisComment.cxx src/tag/VorbisComment.hxx \
+	src/tag/ReplayGain.cxx src/tag/ReplayGain.hxx \
+	src/tag/MixRamp.cxx src/tag/MixRamp.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
@@ -792,12 +799,6 @@ endif
 libdecoder_a_SOURCES = \
 	src/decoder/plugins/PcmDecoderPlugin.cxx \
 	src/decoder/plugins/PcmDecoderPlugin.hxx \
-	src/decoder/plugins/DsdiffDecoderPlugin.cxx \
-	src/decoder/plugins/DsdiffDecoderPlugin.hxx \
-	src/decoder/plugins/DsfDecoderPlugin.cxx \
-	src/decoder/plugins/DsfDecoderPlugin.hxx \
-	src/decoder/plugins/DsdLib.cxx \
-	src/decoder/plugins/DsdLib.hxx \
 	src/decoder/DecoderBuffer.cxx src/decoder/DecoderBuffer.hxx \
 	src/decoder/DecoderPlugin.cxx \
 	src/decoder/DecoderList.cxx src/decoder/DecoderList.hxx
@@ -842,6 +843,16 @@ DECODER_LIBS = \
 	$(MPCDEC_LIBS) \
 	$(ADPLUG_LIBS) \
 	$(FAAD_LIBS)
+
+if ENABLE_DSD
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/DsdiffDecoderPlugin.cxx \
+	src/decoder/plugins/DsdiffDecoderPlugin.hxx \
+	src/decoder/plugins/DsfDecoderPlugin.cxx \
+	src/decoder/plugins/DsfDecoderPlugin.hxx \
+	src/decoder/plugins/DsdLib.cxx \
+	src/decoder/plugins/DsdLib.hxx
+endif
 
 if HAVE_MAD
 libdecoder_a_SOURCES += \
@@ -2093,6 +2104,8 @@ test_test_queue_priority_LDADD = \
 	libutil.a \
 	$(CPPUNIT_LIBS)
 
+if ENABLE_DSD
+
 noinst_PROGRAMS += src/pcm/dsd2pcm/dsd2pcm
 
 src_pcm_dsd2pcm_dsd2pcm_SOURCES = \
@@ -2102,6 +2115,8 @@ src_pcm_dsd2pcm_dsd2pcm_SOURCES = \
 	src/pcm/dsd2pcm/noiseshape.hpp \
 	src/pcm/dsd2pcm/main.cpp
 src_pcm_dsd2pcm_dsd2pcm_LDADD = libutil.a
+
+endif
 
 endif
 

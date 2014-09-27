@@ -17,37 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_NOTIFY_HXX
-#define MPD_NOTIFY_HXX
+#ifndef MPD_TAG_VORBIS_COMMENT_HXX
+#define MPD_TAG_VORBIS_COMMENT_HXX
 
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
+#include "check.h"
+#include "Compiler.h"
 
-struct notify {
-	Mutex mutex;
-	Cond cond;
-	bool pending;
-
-#if !defined(WIN32) && !defined(__NetBSD__) && !defined(__BIONIC__)
-	constexpr
-#endif
-	notify():pending(false) {}
-
-	/**
-	 * Wait for a notification.  Return immediately if we have already
-	 * been notified since we last returned from notify_wait().
-	 */
-	void Wait();
-
-	/**
-	 * Notify the thread.  This function never blocks.
-	 */
-	void Signal();
-
-	/**
-	 * Clears a pending notification.
-	 */
-	void Clear();
-};
+/**
+ * Checks if the specified name matches the entry's name, and if yes,
+ * returns the comment value.
+ */
+gcc_pure
+const char *
+vorbis_comment_value(const char *entry, const char *name);
 
 #endif

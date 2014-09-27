@@ -265,16 +265,25 @@ mp4_scan_file(Path path_fs,
 	const MP4Tags* tags = MP4TagsAlloc();
 	MP4TagsFetch(tags, handle);
 
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_NAME, tags->name);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_ARTIST, tags->artist);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_ALBUM_ARTIST, tags->albumArtist);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_ALBUM, tags->album);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_COMPOSER, tags->composer);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_COMMENT, tags->comments);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_GENRE, tags->genre);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_DATE, tags->releaseDate);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_ARTIST_SORT, tags->sortArtist);
-	mp4_safe_invoke_tag(handler, handler_ctx, TAG_ALBUM_ARTIST_SORT, tags->sortAlbumArtist);
+	static constexpr struct {
+		const char *MP4Tags::*p;
+		TagType tag_type;
+	} mp4v2_tags[] = {
+		{ &MP4Tags::name, TAG_NAME },
+		{ &MP4Tags::artist, TAG_ARTIST },
+		{ &MP4Tags::albumArtist, TAG_ALBUM_ARTIST },
+		{ &MP4Tags::album, TAG_ALBUM },
+		{ &MP4Tags::composer, TAG_COMPOSER },
+		{ &MP4Tags::comments, TAG_COMMENT },
+		{ &MP4Tags::genre, TAG_GENRE },
+		{ &MP4Tags::releaseDate, TAG_DATE },
+		{ &MP4Tags::sortArtist, TAG_ARTIST_SORT },
+		{ &MP4Tags::sortAlbumArtist, TAG_ALBUM_ARTIST_SORT },
+	};
+
+	for (const auto &i : mp4v2_tags)
+		mp4_safe_invoke_tag(handler, handler_ctx,
+				    i.tag_type, tags->*i.p);
 
 	char buff[8]; /* tmp buffer for index to string. */
 	if (tags->track != nullptr) {
