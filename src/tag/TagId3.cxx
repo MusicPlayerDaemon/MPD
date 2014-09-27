@@ -259,6 +259,8 @@ tag_id3_parse_txxx_name(const char *name)
 		{ "MusicBrainz Album Artist Id",
 		  TAG_MUSICBRAINZ_ALBUMARTISTID },
 		{ "MusicBrainz Track Id", TAG_MUSICBRAINZ_TRACKID },
+		{ "MusicBrainz Release Track Id",
+		  TAG_MUSICBRAINZ_RELEASETRACKID },
 		{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 	};
 
