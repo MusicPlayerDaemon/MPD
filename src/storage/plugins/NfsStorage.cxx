@@ -82,10 +82,9 @@ public:
 static std::string
 UriToNfsPath(const char *uri_utf8)
 {
-	std::string path(uri_utf8);
-
 	/* libnfs paths must begin with a slash */
-	path.insert(path.begin(), '/');
+	std::string path("/");
+	path.append(uri_utf8);
 
 	return path;
 }
