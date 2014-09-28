@@ -23,6 +23,7 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "lib/nfs/Domain.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "thread/Mutex.hxx"
 
@@ -41,6 +42,12 @@ class NfsDirectoryReader final : public StorageDirectoryReader {
 	nfsdir *dir;
 
 	nfsdirent *ent;
+
+	/**
+	 * Buffer for Read() which holds the current file name
+	 * converted to UTF-8.
+	 */
+	std::string name_utf8;
 
 public:
 	NfsDirectoryReader(const char *_base, nfs_context *_ctx, nfsdir *_dir)
@@ -80,13 +87,15 @@ public:
 };
 
 static std::string
-UriToNfsPath(const char *uri_utf8)
+UriToNfsPath(const char *_uri_utf8, Error &error)
 {
-	/* libnfs paths must begin with a slash */
-	std::string path("/");
-	path.append(uri_utf8);
+	assert(_uri_utf8 != nullptr);
 
-	return path;
+	/* libnfs paths must begin with a slash */
+	std::string uri_utf8("/");
+	uri_utf8.append(_uri_utf8);
+
+	return AllocatedPath::FromUTF8(uri_utf8.c_str(), error).Steal();
 }
 
 std::string
@@ -134,7 +143,9 @@ bool
 NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
 		    FileInfo &info, Error &error)
 {
-	const std::string path = UriToNfsPath(uri_utf8);
+	const std::string path = UriToNfsPath(uri_utf8, error);
+	if (path.empty())
+		return false;
 
 	return ::GetInfo(ctx, path.c_str(), info, error);
 }
@@ -142,7 +153,9 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
 StorageDirectoryReader *
 NfsStorage::OpenDirectory(const char *uri_utf8, Error &error)
 {
-	const std::string path = UriToNfsPath(uri_utf8);
+	const std::string path = UriToNfsPath(uri_utf8, error);
+	if (path.empty())
+		return nullptr;
 
 	nfsdir *dir;
 	int result = nfs_opendir(ctx, path.c_str(), &dir);
@@ -172,8 +185,17 @@ const char *
 NfsDirectoryReader::Read()
 {
 	while ((ent = nfs_readdir(ctx, dir)) != nullptr) {
-		if (!SkipNameFS(ent->name))
-			return ent->name;
+		const Path name_fs = Path::FromFS(ent->name);
+		if (SkipNameFS(name_fs.c_str()))
+			continue;
+
+		name_utf8 = name_fs.ToUTF8();
+		if (name_utf8.empty())
+			/* ignore files whose name cannot be converted
+			   to UTF-8 */
+			continue;
+
+		return name_utf8.c_str();
 	}
 
 	return nullptr;
