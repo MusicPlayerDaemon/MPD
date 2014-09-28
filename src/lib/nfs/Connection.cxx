@@ -161,7 +161,7 @@ NfsConnection::Open(const char *path, int flags, NfsCallback &callback,
 
 	auto &c = callbacks.Add(callback, *this);
 	if (!c.Open(context, path, flags, error)) {
-		callbacks.RemoveLast();
+		callbacks.Remove(c);
 		return false;
 	}
 
@@ -176,7 +176,7 @@ NfsConnection::Stat(struct nfsfh *fh, NfsCallback &callback, Error &error)
 
 	auto &c = callbacks.Add(callback, *this);
 	if (!c.Stat(context, fh, error)) {
-		callbacks.RemoveLast();
+		callbacks.Remove(c);
 		return false;
 	}
 
@@ -192,7 +192,7 @@ NfsConnection::Read(struct nfsfh *fh, uint64_t offset, size_t size,
 
 	auto &c = callbacks.Add(callback, *this);
 	if (!c.Read(context, fh, offset, size, error)) {
-		callbacks.RemoveLast();
+		callbacks.Remove(c);
 		return false;
 	}
 

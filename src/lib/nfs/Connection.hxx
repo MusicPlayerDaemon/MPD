@@ -41,8 +41,8 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 		NfsConnection &connection;
 
 	public:
-		explicit constexpr CancellableCallback(NfsCallback &_callback,
-						       NfsConnection &_connection)
+		explicit CancellableCallback(NfsCallback &_callback,
+					     NfsConnection &_connection)
 			:CancellablePointer<NfsCallback>(_callback),
 			 connection(_connection) {}
 
