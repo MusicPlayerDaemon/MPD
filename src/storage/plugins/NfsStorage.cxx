@@ -79,6 +79,17 @@ public:
 	virtual const char *MapToRelativeUTF8(const char *uri_utf8) const override;
 };
 
+static std::string
+UriToNfsPath(const char *uri_utf8)
+{
+	std::string path(uri_utf8);
+
+	/* libnfs paths must begin with a slash */
+	path.insert(path.begin(), '/');
+
+	return path;
+}
+
 std::string
 NfsStorage::MapUTF8(const char *uri_utf8) const
 {
@@ -124,9 +135,7 @@ bool
 NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
 		    FileInfo &info, Error &error)
 {
-	/* libnfs paths must begin with a slash */
-	std::string path(uri_utf8);
-	path.insert(path.begin(), '/');
+	const std::string path = UriToNfsPath(uri_utf8);
 
 	return ::GetInfo(ctx, path.c_str(), info, error);
 }
@@ -134,9 +143,7 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
 StorageDirectoryReader *
 NfsStorage::OpenDirectory(const char *uri_utf8, Error &error)
 {
-	/* libnfs paths must begin with a slash */
-	std::string path(uri_utf8);
-	path.insert(path.begin(), '/');
+	const std::string path = UriToNfsPath(uri_utf8);
 
 	nfsdir *dir;
 	int result = nfs_opendir(ctx, path.c_str(), &dir);
