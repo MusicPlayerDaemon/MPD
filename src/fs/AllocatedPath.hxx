@@ -170,6 +170,14 @@ public:
 	}
 
 	/**
+	 * Allows the caller to "steal" the internal value by
+	 * providing a rvalue reference to the std::string attribute.
+	 */
+	std::string &&Steal() {
+		return std::move(value);
+	}
+
+	/**
 	 * Check if this is a "nulled" instance.  A "nulled" instance
 	 * must not be used.
 	 */
