@@ -350,6 +350,9 @@ scan_id3_tag(struct id3_tag *tag,
 			    TAG_ALBUM_ARTIST, handler, handler_ctx);
 	tag_id3_import_text(tag, ID3_FRAME_ARTIST_SORT,
 			    TAG_ARTIST_SORT, handler, handler_ctx);
+
+	tag_id3_import_text(tag, "TSOA", TAG_ALBUM_SORT, handler, handler_ctx);
+
 	tag_id3_import_text(tag, ID3_FRAME_ALBUM_ARTIST_SORT,
 			    TAG_ALBUM_ARTIST_SORT, handler, handler_ctx);
 	tag_id3_import_text(tag, ID3_FRAME_TITLE, TAG_TITLE,
