@@ -39,11 +39,21 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	class CancellableCallback : public CancellablePointer<NfsCallback> {
 		NfsConnection &connection;
 
+		/**
+		 * Is this a nfs_open_async() operation?  If yes, then
+		 * we need to call nfs_close_async() on the new file
+		 * handle as soon as the callback is invoked
+		 * successfully.
+		 */
+		const bool open;
+
 	public:
 		explicit CancellableCallback(NfsCallback &_callback,
-					     NfsConnection &_connection)
+					     NfsConnection &_connection,
+					     bool _open)
 			:CancellablePointer<NfsCallback>(_callback),
-			 connection(_connection) {}
+			 connection(_connection),
+			 open(_open) {}
 
 		bool Open(nfs_context *context, const char *path, int flags,
 			  Error &error);

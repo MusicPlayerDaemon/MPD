@@ -94,6 +94,14 @@ NfsConnection::CancellableCallback::Callback(int err, void *data)
 			cb.OnNfsError(Error(nfs_domain, err,
 					    (const char *)data));
 	} else {
+		if (open) {
+			/* a nfs_open_async() call was cancelled - to
+			   avoid a memory leak, close the newly
+			   allocated file handle immediately */
+			struct nfsfh *fh = (struct nfsfh *)data;
+			connection.Close(fh);
+		}
+
 		connection.callbacks.Remove(*this);
 	}
 }
@@ -157,7 +165,7 @@ NfsConnection::Open(const char *path, int flags, NfsCallback &callback,
 {
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this);
+	auto &c = callbacks.Add(callback, *this, true);
 	if (!c.Open(context, path, flags, error)) {
 		callbacks.Remove(c);
 		return false;
@@ -172,7 +180,7 @@ NfsConnection::Stat(struct nfsfh *fh, NfsCallback &callback, Error &error)
 {
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this);
+	auto &c = callbacks.Add(callback, *this, false);
 	if (!c.Stat(context, fh, error)) {
 		callbacks.Remove(c);
 		return false;
@@ -188,7 +196,7 @@ NfsConnection::Read(struct nfsfh *fh, uint64_t offset, size_t size,
 {
 	assert(!callbacks.Contains(callback));
 
-	auto &c = callbacks.Add(callback, *this);
+	auto &c = callbacks.Add(callback, *this, false);
 	if (!c.Read(context, fh, offset, size, error)) {
 		callbacks.Remove(c);
 		return false;
