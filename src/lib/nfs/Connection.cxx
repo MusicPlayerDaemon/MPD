@@ -22,9 +22,9 @@
 #include "Lease.hxx"
 #include "Domain.hxx"
 #include "Callback.hxx"
+#include "event/Loop.hxx"
 #include "system/fd_util.h"
 #include "util/Error.hxx"
-#include "event/Call.hxx"
 
 extern "C" {
 #include <nfsc/libnfs.h>
@@ -123,14 +123,13 @@ events_to_libnfs(unsigned i)
 
 NfsConnection::~NfsConnection()
 {
+	assert(SocketMonitor::GetEventLoop().IsInside());
 	assert(new_leases.empty());
 	assert(active_leases.empty());
 	assert(callbacks.IsEmpty());
 
 	if (context != nullptr)
-		BlockingCall(SocketMonitor::GetEventLoop(), [this](){
-				DestroyContext();
-			});
+		DestroyContext();
 }
 
 void

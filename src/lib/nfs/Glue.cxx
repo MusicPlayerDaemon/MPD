@@ -21,6 +21,7 @@
 #include "Glue.hxx"
 #include "Manager.hxx"
 #include "IOThread.hxx"
+#include "event/Call.hxx"
 #include "util/Manual.hxx"
 
 static Manual<NfsManager> nfs_glue;
@@ -43,7 +44,7 @@ nfs_finish()
 	if (--in_use > 0)
 		return;
 
-	nfs_glue.Destruct();
+	BlockingCall(io_thread_get(), [](){ nfs_glue.Destruct(); });
 }
 
 NfsConnection &

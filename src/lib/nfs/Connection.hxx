@@ -119,6 +119,9 @@ public:
 	}
 #endif
 
+	/**
+	 * Must be run from EventLoop's thread.
+	 */
 	~NfsConnection();
 
 	gcc_pure
