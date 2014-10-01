@@ -38,8 +38,8 @@ extern "C" {
 class NfsDirectoryReader final : public StorageDirectoryReader {
 	const std::string base;
 
-	nfs_context *ctx;
-	nfsdir *dir;
+	nfs_context *const ctx;
+	nfsdir *const dir;
 
 	nfsdirent *ent;
 
@@ -64,7 +64,7 @@ public:
 class NfsStorage final : public Storage {
 	const std::string base;
 
-	nfs_context *ctx;
+	nfs_context *const ctx;
 
 public:
 	NfsStorage(const char *_base, nfs_context *_ctx)
