@@ -22,12 +22,48 @@
 #include "event/Loop.hxx"
 #include "Log.hxx"
 
+#include <string.h>
+
 void
 NfsManager::ManagedConnection::OnNfsConnectionError(Error &&error)
 {
 	FormatError(error, "NFS error on %s:%s", GetServer(), GetExportName());
 
-	manager.connections.erase(Key(GetServer(), GetExportName()));
+	manager.connections.erase(manager.connections.iterator_to(*this));
+	delete this;
+}
+
+inline bool
+NfsManager::Compare::operator()(const LookupKey a,
+				const ManagedConnection &b) const
+{
+	int result = strcmp(a.server, b.GetServer());
+	if (result != 0)
+		return result < 0;
+
+	result = strcmp(a.export_name, b.GetExportName());
+	return result < 0;
+}
+
+inline bool
+NfsManager::Compare::operator()(const ManagedConnection &a,
+				const LookupKey b) const
+{
+	int result = strcmp(a.GetServer(), b.server);
+	if (result != 0)
+		return result < 0;
+
+	result = strcmp(a.GetExportName(), b.export_name);
+	return result < 0;
+}
+
+NfsManager::~NfsManager()
+{
+	assert(loop.IsInside());
+
+	connections.clear_and_dispose([](ManagedConnection *c){
+			delete c;
+		});
 }
 
 NfsConnection &
@@ -37,21 +73,15 @@ NfsManager::GetConnection(const char *server, const char *export_name)
 	assert(export_name != nullptr);
 	assert(loop.IsInside());
 
-	const std::string key = Key(server, export_name);
-
-#if defined(__GNUC__) && !defined(__clang__) && !GCC_CHECK_VERSION(4,8)
-	/* std::map::emplace() not available; this hack uses the move
-	   constructor */
-	auto e = connections.insert(std::make_pair(key,
-						   ManagedConnection(*this, loop,
-								     server,
-								     export_name)));
-#else
-	auto e = connections.emplace(std::piecewise_construct,
-				     std::forward_as_tuple(key),
-				     std::forward_as_tuple(*this, loop,
-							   server,
-							   export_name));
-#endif
-	return e.first->second;
+	Map::insert_commit_data hint;
+	auto result = connections.insert_check(LookupKey{server, export_name},
+					       Compare(), hint);
+	if (result.second) {
+		auto c = new ManagedConnection(*this, loop,
+					       server, export_name);
+		connections.insert_commit(*c, hint);
+		return *c;
+	} else {
+		return *result.first;
+	}
 }
