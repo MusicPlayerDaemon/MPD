@@ -123,7 +123,7 @@ events_to_libnfs(unsigned i)
 
 NfsConnection::~NfsConnection()
 {
-	assert(SocketMonitor::GetEventLoop().IsInside());
+	assert(GetEventLoop().IsInside());
 	assert(new_leases.empty());
 	assert(active_leases.empty());
 	assert(callbacks.IsEmpty());

@@ -133,6 +133,10 @@ protected:
 	virtual void OnNfsConnectionError(Error &&error) = 0;
 
 private:
+	EventLoop &GetEventLoop() {
+		return SocketMonitor::GetEventLoop();
+	}
+
 	void DestroyContext();
 	bool MountInternal(Error &error);
 	void BroadcastMountSuccess();
