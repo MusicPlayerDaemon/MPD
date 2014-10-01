@@ -135,10 +135,9 @@ NfsConnection::~NfsConnection()
 void
 NfsConnection::AddLease(NfsLease &lease)
 {
-	{
-		const ScopeLock protect(mutex);
-		new_leases.push_back(&lease);
-	}
+	assert(GetEventLoop().IsInside());
+
+	new_leases.push_back(&lease);
 
 	DeferredMonitor::Schedule();
 }
@@ -146,7 +145,7 @@ NfsConnection::AddLease(NfsLease &lease)
 void
 NfsConnection::RemoveLease(NfsLease &lease)
 {
-	const ScopeLock protect(mutex);
+	assert(GetEventLoop().IsInside());
 
 	new_leases.remove(&lease);
 	active_leases.remove(&lease);
@@ -220,6 +219,7 @@ NfsConnection::Close(struct nfsfh *fh)
 void
 NfsConnection::DestroyContext()
 {
+	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
 
 	if (SocketMonitor::IsDefined())
@@ -271,8 +271,6 @@ NfsConnection::OnSocketReady(unsigned flags)
 	in_service = false;
 
 	if (!was_mounted && mount_finished) {
-		const ScopeLock protect(mutex);
-
 		if (postponed_mount_error.IsDefined()) {
 			DestroyContext();
 			closed = true;
@@ -284,8 +282,6 @@ NfsConnection::OnSocketReady(unsigned flags)
 		Error error;
 		error.Format(nfs_domain, "NFS connection has failed: %s",
 			     nfs_get_error(context));
-
-		const ScopeLock protect(mutex);
 
 		DestroyContext();
 		closed = true;
@@ -302,8 +298,6 @@ NfsConnection::OnSocketReady(unsigned flags)
 		else
 			error.Format(nfs_domain,
 				     "NFS socket disappeared: %s", msg);
-
-		const ScopeLock protect(mutex);
 
 		DestroyContext();
 		closed = true;
@@ -379,6 +373,8 @@ NfsConnection::MountInternal(Error &error)
 void
 NfsConnection::BroadcastMountSuccess()
 {
+	assert(GetEventLoop().IsInside());
+
 	while (!new_leases.empty()) {
 		auto i = new_leases.begin();
 		active_leases.splice(active_leases.end(), new_leases, i);
@@ -389,6 +385,8 @@ NfsConnection::BroadcastMountSuccess()
 void
 NfsConnection::BroadcastMountError(Error &&error)
 {
+	assert(GetEventLoop().IsInside());
+
 	while (!new_leases.empty()) {
 		auto l = new_leases.front();
 		new_leases.pop_front();
@@ -401,6 +399,8 @@ NfsConnection::BroadcastMountError(Error &&error)
 void
 NfsConnection::BroadcastError(Error &&error)
 {
+	assert(GetEventLoop().IsInside());
+
 	while (!active_leases.empty()) {
 		auto l = active_leases.front();
 		active_leases.pop_front();
@@ -416,14 +416,11 @@ NfsConnection::RunDeferred()
 	{
 		Error error;
 		if (!MountInternal(error)) {
-			const ScopeLock protect(mutex);
 			BroadcastMountError(std::move(error));
 			return;
 		}
 	}
 
-	if (mount_finished) {
-		const ScopeLock protect(mutex);
+	if (mount_finished)
 		BroadcastMountSuccess();
-	}
 }

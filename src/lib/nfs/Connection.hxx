@@ -22,7 +22,6 @@
 
 #include "Lease.hxx"
 #include "Cancellable.hxx"
-#include "thread/Mutex.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "util/Error.hxx"
@@ -63,8 +62,6 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	std::string server, export_name;
 
 	nfs_context *context;
-
-	Mutex mutex;
 
 	typedef std::list<NfsLease *> LeaseList;
 	LeaseList new_leases, active_leases;
