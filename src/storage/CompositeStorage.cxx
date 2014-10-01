@@ -20,10 +20,13 @@
 #include "config.h"
 #include "CompositeStorage.hxx"
 #include "FileInfo.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
 #include <set>
+
+#include <string.h>
 
 static constexpr Domain composite_domain("composite");
 

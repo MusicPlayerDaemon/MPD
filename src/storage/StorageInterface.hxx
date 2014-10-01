@@ -21,13 +21,13 @@
 #define MPD_STORAGE_INTERFACE_HXX
 
 #include "check.h"
-#include "fs/AllocatedPath.hxx"
-#include "fs/DirectoryReader.hxx"
+#include "Compiler.h"
 
 #include <string>
 
 struct FileInfo;
 class AllocatedPath;
+class Error;
 
 class StorageDirectoryReader {
 public:

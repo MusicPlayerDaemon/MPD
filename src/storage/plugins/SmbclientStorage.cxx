@@ -24,6 +24,7 @@
 #include "storage/FileInfo.hxx"
 #include "lib/smbclient/Init.hxx"
 #include "lib/smbclient/Mutex.hxx"
+#include "fs/Traits.hxx"
 #include "util/Error.hxx"
 #include "thread/Mutex.hxx"
 
