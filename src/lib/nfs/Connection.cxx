@@ -263,7 +263,6 @@ NfsConnection::OnSocketReady(unsigned flags)
 
 	assert(!in_service);
 	in_service = true;
-	postponed_destroy = false;
 
 	int result = nfs_service(context, events_to_libnfs(flags));
 
@@ -271,14 +270,7 @@ NfsConnection::OnSocketReady(unsigned flags)
 	assert(in_service);
 	in_service = false;
 
-	if (postponed_destroy) {
-		/* somebody has called nfs_client_free() while we were inside
-		   nfs_service() */
-		const ScopeLock protect(mutex);
-		DestroyContext();
-		closed = true;
-		// TODO? nfs_client_cleanup_files(client);
-	} else if (!was_mounted && mount_finished) {
+	if (!was_mounted && mount_finished) {
 		const ScopeLock protect(mutex);
 
 		if (postponed_mount_error.IsDefined()) {

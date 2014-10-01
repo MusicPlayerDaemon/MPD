@@ -75,9 +75,7 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	Error postponed_mount_error;
 
 	/**
-	 * True when nfs_service() is being called.  During that,
-	 * nfs_client_free() is postponed, or libnfs will crash.  See
-	 * #postponed_destroy.
+	 * True when nfs_service() is being called.
 	 */
 	bool in_service;
 
@@ -86,12 +84,6 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	 * event updates are omitted.
 	 */
 	bool in_event;
-
-	/**
-	 * True when nfs_client_free() has been called while #in_service
-	 * was true.
-	 */
-	bool postponed_destroy;
 
 	bool mount_finished;
 
