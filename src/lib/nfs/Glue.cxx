@@ -23,23 +23,7 @@
 #include "IOThread.hxx"
 #include "util/Manual.hxx"
 
-class NfsGlue {
-	NfsManager manager;
-
-public:
-	NfsGlue(EventLoop &_loop)
-		:manager(_loop) {}
-
-	~NfsGlue() {
-		//assert(open_uri.empty());
-	}
-
-	NfsConnection &GetConnection(const char *server, const char *export_name) {
-		return manager.GetConnection(server, export_name);
-	}
-};
-
-static Manual<NfsGlue> nfs_glue;
+static Manual<NfsManager> nfs_glue;
 static unsigned in_use;
 
 void
