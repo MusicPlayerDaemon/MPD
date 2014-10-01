@@ -24,6 +24,8 @@
 #include "event/Call.hxx"
 #include "util/Manual.hxx"
 
+#include <assert.h>
+
 static Manual<NfsManager> nfs_glue;
 static unsigned in_use;
 
@@ -50,5 +52,7 @@ nfs_finish()
 NfsConnection &
 nfs_get_connection(const char *server, const char *export_name)
 {
+	assert(io_thread_inside());
+
 	return nfs_glue->GetConnection(server, export_name);
 }
