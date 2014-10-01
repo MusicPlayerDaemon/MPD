@@ -371,10 +371,11 @@ libutil_a_SOURCES = \
 	src/util/SplitString.cxx src/util/SplitString.hxx \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
+	src/util/TextFile.hxx \
 	src/util/UriUtil.cxx src/util/UriUtil.hxx \
 	src/util/Manual.hxx \
 	src/util/RefCount.hxx \
-	src/util/FifoBuffer.hxx \
+	src/util/StaticFifoBuffer.hxx \
 	src/util/ForeignFifoBuffer.hxx \
 	src/util/DynamicFifoBuffer.hxx \
 	src/util/ConstBuffer.hxx \
@@ -394,6 +395,7 @@ libutil_a_SOURCES = \
 libthread_a_SOURCES = \
 	src/thread/Util.hxx \
 	src/thread/Name.hxx \
+	src/thread/Slack.hxx \
 	src/thread/Mutex.hxx \
 	src/thread/PosixMutex.hxx \
 	src/thread/CriticalSection.hxx \
@@ -518,7 +520,7 @@ libfs_a_SOURCES = \
 	src/fs/io/BufferedReader.cxx src/fs/io/BufferedReader.hxx \
 	src/fs/io/TextFile.cxx src/fs/io/TextFile.hxx \
 	src/fs/io/OutputStream.hxx \
-	src/fs/io/StdoutOutputStream.hxx \
+	src/fs/io/StdioOutputStream.hxx \
 	src/fs/io/FileOutputStream.cxx src/fs/io/FileOutputStream.hxx \
 	src/fs/io/BufferedOutputStream.cxx src/fs/io/BufferedOutputStream.hxx \
 	src/fs/Domain.cxx src/fs/Domain.hxx \
@@ -553,6 +555,7 @@ SMBCLIENT_SOURCES = \
 NFS_SOURCES = \
 	src/lib/nfs/Callback.hxx \
 	src/lib/nfs/Cancellable.hxx \
+	src/lib/nfs/Lease.hxx \
 	src/lib/nfs/Connection.cxx src/lib/nfs/Connection.hxx \
 	src/lib/nfs/Manager.cxx src/lib/nfs/Manager.hxx \
 	src/lib/nfs/Glue.cxx src/lib/nfs/Glue.hxx \
@@ -581,13 +584,13 @@ STORAGE_LIBS = libstorage.a
 if ENABLE_SMBCLIENT
 libstorage_a_SOURCES += \
 	$(SMBCLIENT_SOURCES) \
-	src/storage/plugins/SmbclientStorage.cxx src/neighbor/plugins/SmbclientStorage.hxx
+	src/storage/plugins/SmbclientStorage.cxx src/storage/plugins/SmbclientStorage.hxx
 endif
 
 if ENABLE_NFS
 libstorage_a_SOURCES += \
 	$(NFS_SOURCES) \
-	src/storage/plugins/NfsStorage.cxx src/neighbor/plugins/NfsStorage.hxx
+	src/storage/plugins/NfsStorage.cxx src/storage/plugins/NfsStorage.hxx
 endif
 
 endif
