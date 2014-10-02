@@ -34,7 +34,7 @@
 static constexpr Domain file_domain("file");
 
 class FileInputStream final : public InputStream {
-	int fd;
+	const int fd;
 
 public:
 	FileInputStream(const char *path, int _fd, off_t _size,
