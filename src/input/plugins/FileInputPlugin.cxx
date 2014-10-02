@@ -23,7 +23,8 @@
 #include "../InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/Traits.hxx"
+#include "fs/FileSystem.hxx"
+#include "fs/Path.hxx"
 #include "system/fd_util.h"
 #include "open.h"
 
@@ -60,31 +61,29 @@ public:
 	bool Seek(offset_type offset, Error &error) override;
 };
 
-static InputStream *
-input_file_open(const char *filename,
-		Mutex &mutex, Cond &cond,
-		Error &error)
+InputStream *
+OpenFileInputStream(Path path,
+		    Mutex &mutex, Cond &cond,
+		    Error &error)
 {
-	if (!PathTraitsFS::IsAbsolute(filename))
-		return nullptr;
-
-	const int fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
+	const int fd = OpenFile(path, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
 		if (errno != ENOTDIR)
 			error.FormatErrno("Failed to open \"%s\"",
-					  filename);
+					  path.c_str());
 		return nullptr;
 	}
 
 	struct stat st;
 	if (fstat(fd, &st) < 0) {
-		error.FormatErrno("Failed to stat \"%s\"", filename);
+		error.FormatErrno("Failed to stat \"%s\"", path.c_str());
 		close(fd);
 		return nullptr;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
-		error.Format(file_domain, "Not a regular file: %s", filename);
+		error.Format(file_domain, "Not a regular file: %s",
+			     path.c_str());
 		close(fd);
 		return nullptr;
 	}
@@ -93,7 +92,21 @@ input_file_open(const char *filename,
 	posix_fadvise(fd, (off_t)0, st.st_size, POSIX_FADV_SEQUENTIAL);
 #endif
 
-	return new FileInputStream(filename, fd, st.st_size, mutex, cond);
+	return new FileInputStream(path.c_str(), fd, st.st_size, mutex, cond);
+}
+
+static InputStream *
+input_file_open(const char *filename,
+		Mutex &mutex, Cond &cond,
+		Error &error)
+{
+	if (!PathTraitsFS::IsAbsolute(filename))
+		return nullptr;
+
+	/* TODO: the parameter is UTF-8, not filesystem charset */
+	const Path path = Path::FromFS(filename);
+
+	return OpenFileInputStream(path, mutex, cond, error);
 }
 
 bool
