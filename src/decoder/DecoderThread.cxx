@@ -115,9 +115,7 @@ decoder_input_stream_open(DecoderControl &dc, Path path)
 
 	InputStream *is = OpenLocalInputStream(path, dc.mutex, dc.cond, error);
 	if (is == nullptr) {
-		if (error.IsDefined())
-			LogError(error);
-
+		LogError(error);
 		return nullptr;
 	}
 

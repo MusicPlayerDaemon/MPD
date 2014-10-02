@@ -68,9 +68,8 @@ OpenFileInputStream(Path path,
 {
 	const int fd = OpenFile(path, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
-		if (errno != ENOTDIR)
-			error.FormatErrno("Failed to open \"%s\"",
-					  path.c_str());
+		error.FormatErrno("Failed to open \"%s\"",
+				  path.c_str());
 		return nullptr;
 	}
 
@@ -96,17 +95,13 @@ OpenFileInputStream(Path path,
 }
 
 static InputStream *
-input_file_open(const char *filename,
-		Mutex &mutex, Cond &cond,
-		Error &error)
+input_file_open(gcc_unused const char *filename,
+		gcc_unused Mutex &mutex, gcc_unused Cond &cond,
+		gcc_unused Error &error)
 {
-	if (!PathTraitsFS::IsAbsolute(filename))
-		return nullptr;
+	/* dummy method; use OpenFileInputStream() instead */
 
-	/* TODO: the parameter is UTF-8, not filesystem charset */
-	const Path path = Path::FromFS(filename);
-
-	return OpenFileInputStream(path, mutex, cond, error);
+	return nullptr;
 }
 
 bool

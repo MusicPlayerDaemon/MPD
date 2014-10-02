@@ -71,25 +71,14 @@ OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond, Error &error)
 	return is;
 }
 
-/**
- * select correct archive plugin to handle the input stream
- * may allow stacking of archive plugins. for example for handling
- * tar.gz a gzip handler opens file (through inputfile stream)
- * then it opens a tar handler and sets gzip inputstream as
- * parent_stream so tar plugin fetches file data from gzip
- * plugin and gzip fetches file from disk
- */
 static InputStream *
-input_archive_open(const char *pathname,
-		   Mutex &mutex, Cond &cond,
-		   Error &error)
+input_archive_open(gcc_unused const char *filename,
+		gcc_unused Mutex &mutex, gcc_unused Cond &cond,
+		gcc_unused Error &error)
 {
-	if (!PathTraitsFS::IsAbsolute(pathname))
-		return nullptr;
+	/* dummy method; use OpenArchiveInputStream() instead */
 
-	/* TODO: the parameter is UTF-8, not filesystem charset */
-	return OpenArchiveInputStream(Path::FromFS(pathname),
-				      mutex, cond, error);
+	return nullptr;
 }
 
 const InputPlugin input_plugin_archive = {

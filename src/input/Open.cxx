@@ -21,7 +21,10 @@
 #include "InputStream.hxx"
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
+#include "LocalOpen.hxx"
 #include "plugins/RewindInputPlugin.hxx"
+#include "fs/Traits.hxx"
+#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -32,6 +35,11 @@ InputStream::Open(const char *url,
 		  Mutex &mutex, Cond &cond,
 		  Error &error)
 {
+	if (PathTraitsFS::IsAbsolute(url))
+		/* TODO: the parameter is UTF-8, not filesystem charset */
+		return OpenLocalInputStream(Path::FromFS(url),
+					    mutex, cond, error);
+
 	input_plugins_for_each_enabled(plugin) {
 		InputStream *is;
 
