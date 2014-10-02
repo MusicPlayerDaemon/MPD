@@ -122,17 +122,17 @@ public:
 	bool Unmount(const char *uri);
 
 	/* virtual methods from class Storage */
-	virtual bool GetInfo(const char *uri, bool follow, FileInfo &info,
-			     Error &error) override;
+	bool GetInfo(const char *uri, bool follow, FileInfo &info,
+		     Error &error) override;
 
-	virtual StorageDirectoryReader *OpenDirectory(const char *uri,
-						      Error &error) override;
+	StorageDirectoryReader *OpenDirectory(const char *uri,
+					      Error &error) override;
 
-	virtual std::string MapUTF8(const char *uri) const override;
+	std::string MapUTF8(const char *uri) const override;
 
-	virtual AllocatedPath MapFS(const char *uri) const override;
+	AllocatedPath MapFS(const char *uri) const override;
 
-	virtual const char *MapToRelativeUTF8(const char *uri) const override;
+	const char *MapToRelativeUTF8(const char *uri) const override;
 
 private:
 	template<typename T>
