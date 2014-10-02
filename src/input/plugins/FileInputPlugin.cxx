@@ -65,13 +65,10 @@ input_file_open(const char *filename,
 		Mutex &mutex, Cond &cond,
 		Error &error)
 {
-	int fd, ret;
-	struct stat st;
-
 	if (!PathTraitsFS::IsAbsolute(filename))
 		return nullptr;
 
-	fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
+	const int fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
 		if (errno != ENOENT && errno != ENOTDIR)
 			error.FormatErrno("Failed to open \"%s\"",
@@ -79,8 +76,8 @@ input_file_open(const char *filename,
 		return nullptr;
 	}
 
-	ret = fstat(fd, &st);
-	if (ret < 0) {
+	struct stat st;
+	if (fstat(fd, &st) < 0) {
 		error.FormatErrno("Failed to stat \"%s\"", filename);
 		close(fd);
 		return nullptr;
