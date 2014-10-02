@@ -24,6 +24,7 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "fs/Path.hxx"
 #include "Log.hxx"
 
@@ -39,12 +40,9 @@ playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
 		return nullptr;
 
 	Error error;
-	InputStream *is = InputStream::OpenReady(path.c_str(),
-						 mutex, cond, error);
+	InputStream *is = OpenLocalInputStream(path, mutex, cond, error);
 	if (is == nullptr) {
-		if (error.IsDefined())
-			LogError(error);
-
+		LogError(error);
 		return nullptr;
 	}
 
