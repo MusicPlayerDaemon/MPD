@@ -1106,6 +1106,7 @@ libinput_a_SOURCES = \
 	src/input/Init.cxx src/input/Init.hxx \
 	src/input/Registry.cxx src/input/Registry.hxx \
 	src/input/Open.cxx \
+	src/input/LocalOpen.cxx src/input/LocalOpen.hxx \
 	src/input/Offset.hxx \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
 	src/input/InputPlugin.hxx \
