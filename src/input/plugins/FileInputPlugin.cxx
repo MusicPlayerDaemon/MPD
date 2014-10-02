@@ -70,7 +70,7 @@ input_file_open(const char *filename,
 
 	const int fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
-		if (errno != ENOENT && errno != ENOTDIR)
+		if (errno != ENOTDIR)
 			error.FormatErrno("Failed to open \"%s\"",
 					  filename);
 		return nullptr;
