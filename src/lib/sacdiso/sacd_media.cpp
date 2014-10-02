@@ -91,7 +91,6 @@ int64_t sacd_media_file_t::skip(int64_t bytes) {
 	return ::lseek64(fd, (off64_t)bytes, SEEK_CUR);
 }
 
-
 sacd_media_stream_t::sacd_media_stream_t() {
 	is = nullptr;
 }

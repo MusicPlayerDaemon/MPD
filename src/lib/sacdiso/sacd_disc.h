@@ -81,7 +81,7 @@ public:
 	uint32_t get_track_length_lsn();
 	bool is_dst();
 	void set_emaster(bool emaster);
-	virtual bool open(sacd_media_t* sacd_media, uint32_t mode = 0);
+	virtual bool open(sacd_media_t* sacd_media);
 	bool close();
 	void select_area(area_id_e area_id);
 	bool select_track(uint32_t track_index, area_id_e area_id = AREA_BOTH, uint32_t offset = 0);

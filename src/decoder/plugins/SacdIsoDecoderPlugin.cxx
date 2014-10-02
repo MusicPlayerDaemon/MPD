@@ -39,7 +39,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -51,9 +50,10 @@ static constexpr Domain sacdiso_domain("sacdiso");
 
 static constexpr unsigned DST_DECODER_THREADS = 8;
 
-static unsigned param_dstdec_threads;
-static bool     param_edited_master;
-static bool     param_lsbitfirst;
+static unsigned  param_dstdec_threads;
+static bool      param_edited_master;
+static bool      param_lsbitfirst;
+static area_id_e param_preferable_area;
 
 static std::string    sacd_uri;
 static sacd_media_t*  sacd_media  = nullptr;
@@ -136,7 +136,7 @@ sacdiso_update_toc(const char* path) {
 			LogWarning(sacdiso_domain, err.c_str());
 			return false;
 		}
-		if (!sacd_reader->open(sacd_media, (param_edited_master ? MODE_FULL_PLAYBACK : 0))) {
+		if (!sacd_reader->open(sacd_media)) {
 			LogWarning(sacdiso_domain, "sacd_reader->open(...) failed");
 			return false;
 		}
@@ -150,6 +150,16 @@ sacdiso_init(const config_param& param) {
 	param_dstdec_threads = param.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
 	param_edited_master  = param.GetBlockValue("edited_master",  false);
 	param_lsbitfirst     = param.GetBlockValue("lsbitfirst", false);
+	const char* preferable_area = param.GetBlockValue("preferable_area", nullptr);
+	param_preferable_area = AREA_BOTH;
+	if (preferable_area != nullptr) {
+		if (strcmp(preferable_area, "stereo") == 0) {
+			param_preferable_area = AREA_TWOCH;
+		}
+		if (strcmp(preferable_area, "multichannel") == 0) {
+			param_preferable_area = AREA_MULCH;
+		}
+	}
 	return true;
 }
 
@@ -166,16 +176,21 @@ sacdiso_container_scan(Path path_fs, const unsigned int tnum) {
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
 	unsigned track = tnum - 1;
+	if (param_preferable_area == AREA_MULCH) {
+		track += twoch_count;
+	}
 	if (track < twoch_count) {
 		sacd_reader->select_area(AREA_TWOCH);
 	}
 	else {
+		if (param_preferable_area == AREA_TWOCH) {
+			return nullptr;
+		}
 		track -= twoch_count;
 		if (track < mulch_count) {
 			sacd_reader->select_area(AREA_MULCH);
 		}
 		else {
-			LogError(sacdiso_domain, "track index is out of range");
 			return nullptr;
 		}
 	}
@@ -189,174 +204,6 @@ bit_reverse_buffer(uint8_t* p, uint8_t* end) {
 	for (; p < end; ++p) {
 		*p = bit_reverse(*p);
 	}
-}
-
-static void
-sacdiso_stream_decode(Decoder& decoder, InputStream& is) {
-	std::string path_container = get_container_path(is.GetURI());
-	if (!sacdiso_update_toc(path_container.c_str())) {
-		return;
-	}
-	unsigned track = get_subsong(is.GetURI());
-
-	/* initialize reader */
-	sacd_reader->set_emaster(param_edited_master);
-	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
-	if (track < twoch_count) {
-		if (!sacd_reader->select_track(track, AREA_TWOCH, 0)) {
-			LogError(sacdiso_domain, "cannot select track in stereo area");
-			return;
-		}
-	}
-	else {
-		track -= twoch_count;
-		if (track < sacd_reader->get_tracks(AREA_MULCH)) {
-			if (!sacd_reader->select_track(track, AREA_MULCH, 0)) {
-				LogError(sacdiso_domain, "cannot select track in multichannel area");
-				return;
-			}
-		}
-	}
-	int dsd_samplerate = sacd_reader->get_samplerate();
-	int dsd_channels = sacd_reader->get_channels();
-	int dsd_buf_size = dsd_samplerate / 8 / 75 * dsd_channels;
-	int dst_buf_size = dsd_samplerate / 8 / 75 * dsd_channels;
-	std::vector<uint8_t> dsd_buf;
-	std::vector<uint8_t> dst_buf;
-	dsd_buf.resize(param_dstdec_threads * dsd_buf_size);
-	dst_buf.resize(param_dstdec_threads * dst_buf_size);
-
-	/* initialize decoder */
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, dsd_samplerate / 8, SampleFormat::DSD, dsd_channels, error)) {
-		LogError(error);
-		return;
-	}
-	SongTime songtime = SongTime::FromS(sacd_reader->get_duration(track));
-	decoder_initialized(decoder, audio_format, true, songtime);
-
-	/* play */
-	uint8_t* dsd_data;
-	uint8_t* dst_data;
-	size_t dsd_size = 0;
-	size_t dst_size = 0;
-	dst_decoder_t* dst_decoder = nullptr;
-	DecoderCommand cmd = decoder_get_command(decoder);
-	for (;;) {
-		int slot_nr = dst_decoder ? dst_decoder->slot_nr : 0;
-		dsd_data = dsd_buf.data() + dsd_buf_size * slot_nr;
-		dst_data = dst_buf.data() + dst_buf_size * slot_nr;
-		dst_size = dst_buf_size;
-		frame_type_e frame_type;
-		if (sacd_reader->read_frame(dst_data, &dst_size, &frame_type)) {
-			if (dst_size > 0) {
-				if (frame_type == FRAME_INVALID) {
-					dst_size = dst_buf_size;
-					memset(dst_data, 0xAA, dst_size);
-				}
-				if (frame_type == FRAME_DST) {
-					if (!dst_decoder) {
-						if (dst_decoder_create_mt(&dst_decoder, param_dstdec_threads) != 0) {
-							LogError(sacdiso_domain, "dst_decoder_create_mt() failed");
-							break;
-						}
-						if (dst_decoder_init_mt(dst_decoder, sacd_reader->get_channels(), sacd_reader->get_samplerate()) != 0) {
-							LogError(sacdiso_domain, "dst_decoder_init_mt() failed");
-							break;
-						}
-					}
-					dst_decoder_decode_mt(dst_decoder, dst_data, dst_size, &dsd_data, &dsd_size);
-				}
-				else {
-					dsd_data = dst_data;
-					dsd_size = dst_size;
-				}
-				if (dsd_size > 0) {
-					if (param_lsbitfirst) {
-						bit_reverse_buffer(dsd_data, dsd_data + dsd_size);
-					}
-					cmd = decoder_data(decoder, nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
-				}
-			}
-		}
-		else {
-			for (;;) {
-				dst_data = nullptr;
-				dst_size = 0;
-				dsd_data = nullptr;
-				dsd_size = 0;
-				if (dst_decoder) {
-					dst_decoder_decode_mt(dst_decoder, dst_data, dst_size, &dsd_data, &dsd_size);
-				}
-				if (dsd_size > 0) {
-					if (param_lsbitfirst) {
-						bit_reverse_buffer(dsd_data, dsd_data + dsd_size);
-					}
-					cmd = decoder_data(decoder, nullptr, dsd_data, dsd_size, dsd_samplerate / 1000);
-					if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK) {
-						break;
-					}
-				}
-				else {
-					break;
-				}
-			}
-			break;
-		}
-		if (cmd == DecoderCommand::STOP) {
-			break;
-		}
-		if (cmd == DecoderCommand::SEEK) {
-			double seconds = decoder_seek_time(decoder).ToDoubleS();
-			if (sacd_reader->seek(seconds)) {
-				if (dst_decoder) {
-					dst_decoder_flush_mt(dst_decoder);
-				}
-				decoder_command_finished(decoder);
-			}
-			else {
-				decoder_seek_error(decoder);
-			}
-			cmd = decoder_get_command(decoder);
-		}
-	}
-	if (dst_decoder) {
-		dst_decoder_free_mt(dst_decoder);
-		dst_decoder_destroy_mt(dst_decoder);
-		dst_decoder = nullptr;
-	}
-}
-
-static bool
-sacdiso_scan_stream(InputStream& is, const struct tag_handler* handler, void* handler_ctx) {
-	std::string path_container = get_container_path(is.GetURI());
-	if (!sacdiso_update_toc(path_container.c_str())) {
-		return false;
-	}
-	unsigned track = get_subsong(is.GetURI());
-	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
-	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
-	if (track < twoch_count) {
-		sacd_reader->select_area(AREA_TWOCH);
-	}
-	else {
-		track -= twoch_count;
-		if (track < mulch_count) {
-			sacd_reader->select_area(AREA_MULCH);
-		}
-		else {
-			LogError(sacdiso_domain, "subsong index is out of range");
-			return false;
-		}
-	}
-	std::string tag_value = std::to_string(track + 1);
-	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
-	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(sacd_reader->get_duration(track)));
-	sacd_reader->get_info(track, handler, handler_ctx);
-	const char* track_format = sacd_reader->is_dst() ? "DST" : "DSD";
-	tag_handler_invoke_pair(handler, handler_ctx, "codec", track_format);
-	return true;
 }
 
 static void
@@ -545,10 +392,10 @@ const struct DecoderPlugin sacdiso_decoder_plugin = {
 	"sacdiso",
 	sacdiso_init,
 	sacdiso_finish,
-	nullptr, //sacdiso_stream_decode,
+	nullptr,
 	sacdiso_file_decode,
 	sacdiso_scan_file,
-	nullptr, //sacdiso_scan_stream,
+	nullptr,
 	sacdiso_container_scan,
 	sacdiso_suffixes,
 	sacdiso_mime_types,

@@ -22,11 +22,7 @@
 #ifndef _ENDIANESS_H_INCLUDED
 #define _ENDIANESS_H_INCLUDED
 
-#define MAKE_MARKER(a, b, c, d)    ((a) | ((b) << 8) | ((c) << 16) | ((d) << 24))
-
-#define htole16(x)                  (uint16_t) (x)
-#define htole32(x)                  (uint32_t) (x)
-#define htole64(x)                  (uint64_t) (x)
+#define MAKE_MARKER(a, b, c, d) ((a)|((b)<<8)|((c)<<16)|((d)<<24))
 
 #define hton16(x)            \
     ((((x) & 0xff00) >> 8) | \
@@ -46,8 +42,8 @@
      (((x) & 0x000000000000ff00ULL) << 40) | \
      (((x) & 0x00000000000000ffULL) << 56))
 
-#define SWAP16(x)    x = (hton16(x))
-#define SWAP32(x)    x = (hton32(x))
-#define SWAP64(x)    x = (hton64(x))
+#define SWAP16(x) x = (hton16(x))
+#define SWAP32(x) x = (hton32(x))
+#define SWAP64(x) x = (hton64(x))
 
 #endif

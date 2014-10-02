@@ -33,7 +33,7 @@ class sacd_reader_t {
 public:
 	sacd_reader_t() {}
 	virtual ~sacd_reader_t() {}
-	virtual bool open(sacd_media_t* sacd_media, uint32_t mode = 0) = 0;
+	virtual bool open(sacd_media_t* sacd_media) = 0;
 	virtual bool close() = 0;
 	virtual	uint32_t get_tracks() = 0;
 	virtual	uint32_t get_tracks(area_id_e area_id = AREA_BOTH) = 0;

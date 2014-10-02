@@ -193,10 +193,11 @@ double sacd_disc_t::get_duration() {
 }
 
 double sacd_disc_t::get_duration(uint32_t track_index) {
+	scarletbook_area_t* area = get_area(track_area);
 	double track_duration = 0.0;
-	if (get_area(track_area)) {
-		if (track_index < get_area(track_area)->area_toc->track_count) {
-			area_tracklist_time_duration_t duration = get_area(track_area)->area_tracklist_time->duration[track_index];
+	if (area) {
+		if (track_index < area->area_toc->track_count) {
+			area_tracklist_time_duration_t duration = area->area_tracklist_time->duration[track_index];
 			track_duration = duration.minutes * 60.0 + duration.seconds * 1.0 + duration.frames / 75.0;
 		}
 	}
@@ -285,8 +286,8 @@ void sacd_disc_t::set_emaster(bool emaster) {
 	is_emaster = emaster;
 }
 
-bool sacd_disc_t::open(sacd_media_t* sacd_media, uint32_t mode) {
-	this->sacd_media = sacd_media;
+bool sacd_disc_t::open(sacd_media_t* _sacd_media) {
+	sacd_media = _sacd_media;
 	memset(&sb_handle, 0, sizeof(sb_handle));
 	sb_handle.twoch_area_idx = -1;
 	sb_handle.mulch_area_idx = -1;
@@ -817,8 +818,7 @@ bool sacd_disc_t::read_area_toc(int area_idx) {
 			p += SACD_LSN_SIZE;
 		}
 		else if (strncmp((char*)p, "SACDTRL2", 8) == 0) {
-			area_tracklist_time_t* tracklist;
-			tracklist = area->area_tracklist_time = (area_tracklist_time_t*)p;
+			area->area_tracklist_time = (area_tracklist_time_t*)p;
 			p += SACD_LSN_SIZE;
 		}
 		else {

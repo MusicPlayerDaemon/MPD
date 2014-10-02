@@ -32,45 +32,45 @@ using namespace std;
 #define LOG(p1, p2, p3)
 
 static void* DSTDecoderThread(void* threadarg) {
-  frame_slot_t* frame_slot = (frame_slot_t*)threadarg;
-  while (frame_slot->state != SLOT_TERMINATING) {
-    sem_wait(&frame_slot->hEventPut);
-    frame_slot->state = SLOT_RUNNING;
+	frame_slot_t* frame_slot = (frame_slot_t*)threadarg;
+	while (frame_slot->state != SLOT_TERMINATING) {
+		sem_wait(&frame_slot->hEventPut);
+		frame_slot->state = SLOT_RUNNING;
 		Decode(frame_slot->D, frame_slot->dst_data, frame_slot->dsd_data, frame_slot->frame_nr, (int*)&frame_slot->dst_size);
-    frame_slot->state = SLOT_READY;
-    sem_post(&frame_slot->hEventGet);
-  }
-  return 0;
+		frame_slot->state = SLOT_READY;
+		sem_post(&frame_slot->hEventGet);
+	}
+	return 0;
 }
 
 int dst_decoder_create_mt(dst_decoder_t** dst_decoder, int thread_count) {
-  *dst_decoder = (dst_decoder_t*)calloc(1, sizeof(dst_decoder_t));
-  if (*dst_decoder == nullptr)	{
-    LOG(lm_main, LOG_ERROR, ("Could not create DST decoder object"));
-    return -1;
-  }
-  (*dst_decoder)->frame_slots = (frame_slot_t*)calloc(thread_count, sizeof(frame_slot_t));
-  if ((*dst_decoder)->frame_slots == NULL) {
-    *dst_decoder = nullptr;
-    LOG(lm_main, LOG_ERROR, ("Could not create DST decoder slot array"));
-    return -2;
-  }
-  (*dst_decoder)->thread_count  = thread_count;
-  (*dst_decoder)->channel_count = 0;
-  (*dst_decoder)->samplerate    = 0;
-  (*dst_decoder)->slot_nr       = 0;
-  for (int i = 0; i < (*dst_decoder)->thread_count; i++) {
-    frame_slot_t* frame_slot = &(*dst_decoder)->frame_slots[i];
-    frame_slot->D = (DstDec*)malloc(sizeof(DstDec));
-    if (frame_slot->D == nullptr) {
-      LOG(lm_main, LOG_ERROR, ("Could not create DST decoder context"));
-      return -3;
-    }
+	*dst_decoder = (dst_decoder_t*)calloc(1, sizeof(dst_decoder_t));
+	if (*dst_decoder == nullptr)	{
+		LOG(lm_main, LOG_ERROR, ("Could not create DST decoder object"));
+		return -1;
+	}
+	(*dst_decoder)->frame_slots = (frame_slot_t*)calloc(thread_count, sizeof(frame_slot_t));
+	if ((*dst_decoder)->frame_slots == NULL) {
+		*dst_decoder = nullptr;
+		LOG(lm_main, LOG_ERROR, ("Could not create DST decoder slot array"));
+		return -2;
+	}
+	(*dst_decoder)->thread_count  = thread_count;
+	(*dst_decoder)->channel_count = 0;
+	(*dst_decoder)->samplerate    = 0;
+	(*dst_decoder)->slot_nr       = 0;
+	for (int i = 0; i < (*dst_decoder)->thread_count; i++) {
+		frame_slot_t* frame_slot = &(*dst_decoder)->frame_slots[i];
+		frame_slot->D = (DstDec*)malloc(sizeof(DstDec));
+		if (frame_slot->D == nullptr) {
+			LOG(lm_main, LOG_ERROR, ("Could not create DST decoder context"));
+			return -3;
+		}
 		sem_init(&frame_slot->hEventPut, 0, 0);
 		sem_init(&frame_slot->hEventGet, 0, 0);
 		pthread_create(&frame_slot->hThread, nullptr, DSTDecoderThread, (void*)frame_slot);
 	}
-  return 0;
+	return 0;
 }
 
 int dst_decoder_destroy_mt(dst_decoder_t* dst_decoder) {
