@@ -28,6 +28,7 @@
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
 #include "input/InputPlugin.hxx"
+#include "input/LocalOpen.hxx"
 #include "util/RefCount.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -140,8 +141,7 @@ bz2_open(Path pathname, Error &error)
 {
 	static Mutex mutex;
 	static Cond cond;
-	InputStream *is = InputStream::OpenReady(pathname.c_str(), mutex, cond,
-						 error);
+	InputStream *is = OpenLocalInputStream(pathname, mutex, cond, error);
 	if (is == nullptr)
 		return nullptr;
 
