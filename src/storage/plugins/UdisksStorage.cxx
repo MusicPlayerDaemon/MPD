@@ -6,6 +6,8 @@
 #include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "lib/fmt/ExceptionFormatter.hxx"
 #include "lib/fmt/RuntimeError.hxx"
 #include "lib/dbus/Glue.hxx"
@@ -112,6 +114,12 @@ public:
 	}
 
 	std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
+
+	InputStreamPtr OpenFile(std::string_view uri_utf8, Mutex &file_mutex) override {
+		MountWait();
+		const auto path = mounted_storage->MapFS(uri_utf8);
+		return OpenLocalInputStream(path, file_mutex);
+	}
 
 private:
 	void SetMountPoint(Path mount_point);

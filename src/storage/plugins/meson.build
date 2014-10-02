@@ -50,6 +50,8 @@ storage_plugins = static_library(
     expat_dep,
     nfs_dep,
     smbclient_dep,
+    input_glue_dep,
+    archive_glue_dep,
   ],
 )
 

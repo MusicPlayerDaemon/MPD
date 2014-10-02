@@ -214,6 +214,7 @@ if enable_database
   executable(
     'run_storage',
     'run_storage.cxx',
+    '../src/TagSave.cxx',
     include_directories: inc,
     dependencies: [
       event_dep,

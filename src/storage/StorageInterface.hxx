@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include "input/Ptr.hxx"
+#include "thread/Mutex.hxx"
+
 #include <memory>
 #include <string>
 #include <string_view>
@@ -69,4 +72,12 @@ public:
 	 */
 	[[nodiscard]] [[gnu::pure]]
 	virtual std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept = 0;
+
+	/**
+	 * Open a file in this storage as an #InputStream.
+	 *
+	 * Throws on error
+	 */
+	[[nodiscard]]
+	virtual InputStreamPtr OpenFile(std::string_view uri_utf8, Mutex &mutex) = 0;
 };

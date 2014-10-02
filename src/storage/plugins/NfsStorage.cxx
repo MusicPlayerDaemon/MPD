@@ -11,6 +11,7 @@
 #include "lib/nfs/Lease.hxx"
 #include "lib/nfs/Connection.hxx"
 #include "lib/nfs/Glue.hxx"
+#include "input/InputStream.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
@@ -93,6 +94,8 @@ public:
 	[[nodiscard]] std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
 	[[nodiscard]] std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
+
+	InputStreamPtr OpenFile(std::string_view uri_utf8, Mutex &mutex) override;
 
 	/* virtual methods from NfsLease */
 	void OnNfsConnectionReady() noexcept final {
@@ -244,6 +247,14 @@ std::string_view
 NfsStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base, uri_utf8);
+}
+
+InputStreamPtr
+NfsStorage::OpenFile(std::string_view uri_utf8, Mutex &_mutex)
+{
+	// TODO create NfsInputStream directly
+	auto uri = MapUTF8(uri_utf8);
+	return InputStream::Open(uri.c_str(), _mutex);
 }
 
 static void

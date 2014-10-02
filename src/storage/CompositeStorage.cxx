@@ -4,6 +4,7 @@
 #include "CompositeStorage.hxx"
 #include "FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "input/InputStream.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/StringCompare.hxx"
 #include "util/StringSplit.hxx"
@@ -319,4 +320,16 @@ CompositeStorage::MapToRelativeUTF8(std::string_view uri) const noexcept
 		return {};
 
 	return relative_buffer;
+}
+
+InputStreamPtr
+CompositeStorage::OpenFile(std::string_view uri_utf8, Mutex &_mutex)
+{
+	const std::lock_guard<Mutex> lock(mutex);
+
+	auto f = FindStorage(uri_utf8);
+	if (f.directory->storage == nullptr)
+		return nullptr;
+
+	return f.directory->storage->OpenFile(f.uri, _mutex);
 }

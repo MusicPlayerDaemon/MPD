@@ -6,6 +6,9 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "storage/MemoryDirectoryReader.hxx"
+#include "input/InputStream.hxx"
+#include "input/RewindInputStream.hxx"
+#include "input/plugins/CurlInputPlugin.hxx"
 #include "lib/curl/HttpStatusError.hxx"
 #include "lib/curl/Init.hxx"
 #include "lib/curl/Global.hxx"
@@ -52,6 +55,8 @@ public:
 	[[nodiscard]] std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
 	[[nodiscard]] std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
+
+	InputStreamPtr OpenFile(std::string_view uri_utf8, Mutex &mutex) override;
 };
 
 std::string
@@ -69,6 +74,12 @@ CurlStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base,
 					CurlUnescape(uri_utf8));
+}
+
+InputStreamPtr
+CurlStorage::OpenFile(std::string_view uri_utf8, Mutex &mutex)
+{
+	return input_rewind_open(OpenCurlInputStream(MapUTF8(uri_utf8), {}, mutex));
 }
 
 class BlockingHttpRequest : protected CurlResponseHandler {

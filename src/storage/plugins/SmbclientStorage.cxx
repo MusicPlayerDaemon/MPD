@@ -5,6 +5,7 @@
 #include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "input/InputStream.hxx"
 #include "lib/smbclient/Init.hxx"
 #include "lib/smbclient/Context.hxx"
 #include "fs/Traits.hxx"
@@ -63,6 +64,8 @@ public:
 	[[nodiscard]] std::string MapUTF8(std::string_view uri_utf8) const noexcept override;
 
 	[[nodiscard]] std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
+
+	InputStreamPtr OpenFile(std::string_view uri_utf8, Mutex &file_mutex) override;
 };
 
 std::string
@@ -111,6 +114,13 @@ SmbclientStorage::GetInfo(std::string_view uri_utf8, [[maybe_unused]] bool follo
 {
 	const std::string mapped = MapUTF8(uri_utf8);
 	return ::GetInfo(ctx, mutex, mapped.c_str());
+}
+
+InputStreamPtr
+SmbclientStorage::OpenFile(std::string_view uri_utf8, Mutex &file_mutex)
+{
+	auto uri = MapUTF8(uri_utf8);
+	return InputStream::Open(uri.c_str(), file_mutex);
 }
 
 std::unique_ptr<StorageDirectoryReader>

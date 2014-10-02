@@ -5,6 +5,8 @@
 #include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
@@ -49,6 +51,8 @@ public:
 	[[nodiscard]] AllocatedPath MapFS(std::string_view uri_utf8) const noexcept override;
 
 	[[nodiscard]] std::string_view MapToRelativeUTF8(std::string_view uri_utf8) const noexcept override;
+
+	InputStreamPtr OpenFile(std::string_view uri_utf8, Mutex &mutex) override;
 
 private:
 	[[nodiscard]] AllocatedPath MapFSOrThrow(std::string_view uri_utf8) const;
@@ -110,6 +114,16 @@ std::string_view
 LocalStorage::MapToRelativeUTF8(std::string_view uri_utf8) const noexcept
 {
 	return PathTraitsUTF8::Relative(base_utf8, uri_utf8);
+}
+
+InputStreamPtr
+LocalStorage::OpenFile(std::string_view uri_utf8, Mutex &mutex)
+{
+	auto path = MapFS(uri_utf8);
+	if (path == nullptr)
+		return nullptr;
+
+	return OpenLocalInputStream(path, mutex);
 }
 
 StorageFileInfo

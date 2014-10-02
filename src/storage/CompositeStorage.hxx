@@ -127,6 +127,8 @@ public:
 
 	std::string_view MapToRelativeUTF8(std::string_view uri) const noexcept override;
 
+	InputStreamPtr OpenFile(std::string_view uri_utf8, Mutex &mutex) override;
+
 private:
 	template<typename T>
 	void VisitMounts(std::string &uri, const Directory &directory,
