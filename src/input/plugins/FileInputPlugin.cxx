@@ -33,9 +33,10 @@
 
 static constexpr Domain file_domain("file");
 
-struct FileInputStream final : public InputStream {
+class FileInputStream final : public InputStream {
 	int fd;
 
+public:
 	FileInputStream(const char *path, int _fd, off_t _size,
 			Mutex &_mutex, Cond &_cond)
 		:InputStream(path, _mutex, _cond),
