@@ -24,21 +24,23 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "input/InputStream.hxx"
+#include "fs/Path.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
 
 static SongEnumerator *
-playlist_open_path_suffix(const char *path_fs, Mutex &mutex, Cond &cond)
+playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
 {
-	assert(path_fs != nullptr);
+	assert(!path.IsNull());
 
-	const char *suffix = uri_get_suffix(path_fs);
+	const char *suffix = uri_get_suffix(path.c_str());
 	if (suffix == nullptr || !playlist_suffix_supported(suffix))
 		return nullptr;
 
 	Error error;
-	InputStream *is = InputStream::OpenReady(path_fs, mutex, cond, error);
+	InputStream *is = InputStream::OpenReady(path.c_str(),
+						 mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
@@ -56,11 +58,16 @@ playlist_open_path_suffix(const char *path_fs, Mutex &mutex, Cond &cond)
 }
 
 SongEnumerator *
-playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond)
+playlist_open_path(Path path, Mutex &mutex, Cond &cond)
 {
-	auto playlist = playlist_list_open_uri(path_fs, mutex, cond);
+	assert(!path.IsNull());
+
+	const std::string uri_utf8 = path.ToUTF8();
+	auto playlist = !uri_utf8.empty()
+		? playlist_list_open_uri(uri_utf8.c_str(), mutex, cond)
+		: nullptr;
 	if (playlist == nullptr)
-		playlist = playlist_open_path_suffix(path_fs, mutex, cond);
+		playlist = playlist_open_path_suffix(path, mutex, cond);
 
 	return playlist;
 }

@@ -41,7 +41,7 @@ playlist_open_in_playlist_dir(const char *uri, Mutex &mutex, Cond &cond)
 	if (path_fs.IsNull())
 		return nullptr;
 
-	return playlist_open_path(path_fs.c_str(), mutex, cond);
+	return playlist_open_path(path_fs, mutex, cond);
 }
 
 #ifdef ENABLE_DATABASE
@@ -61,7 +61,7 @@ playlist_open_in_storage(const char *uri, const Storage *storage,
 	{
 		const auto path = storage->MapFS(uri);
 		if (!path.IsNull())
-			return playlist_open_path(path.c_str(), mutex, cond);
+			return playlist_open_path(path, mutex, cond);
 	}
 
 	const auto uri2 = storage->MapUTF8(uri);
