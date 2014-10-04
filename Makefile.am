@@ -795,6 +795,8 @@ noinst_LIBRARIES += libffmpeg.a
 libffmpeg_a_SOURCES = \
 	src/lib/ffmpeg/Error.cxx src/lib/ffmpeg/Error.hxx \
 	src/lib/ffmpeg/Domain.cxx src/lib/ffmpeg/Domain.hxx
+libffmpeg_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(FFMPEG_CFLAGS)
 FFMPEG_LIBS2 = libffmpeg.a $(FFMPEG_LIBS)
 endif
 
