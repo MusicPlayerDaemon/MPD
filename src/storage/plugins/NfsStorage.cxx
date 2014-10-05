@@ -23,6 +23,7 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "lib/nfs/Domain.hxx"
+#include "lib/nfs/Base.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "thread/Mutex.hxx"
@@ -255,6 +256,8 @@ CreateNfsStorageURI(const char *base, Error &error)
 		error.SetErrno(-result, "nfs_mount() failed");
 		return nullptr;
 	}
+
+	nfs_set_base(server.c_str(), mount);
 
 	return new NfsStorage(base, ctx);
 }

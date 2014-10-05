@@ -559,6 +559,7 @@ NFS_SOURCES = \
 	src/lib/nfs/Connection.cxx src/lib/nfs/Connection.hxx \
 	src/lib/nfs/Manager.cxx src/lib/nfs/Manager.hxx \
 	src/lib/nfs/Glue.cxx src/lib/nfs/Glue.hxx \
+	src/lib/nfs/Base.cxx src/lib/nfs/Base.hxx \
 	src/lib/nfs/FileReader.cxx src/lib/nfs/FileReader.hxx \
 	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx
 
