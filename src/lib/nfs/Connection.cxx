@@ -35,6 +35,21 @@ extern "C" {
 #include <poll.h> /* for POLLIN, POLLOUT */
 
 inline bool
+NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
+					 const char *path,
+					 Error &error)
+{
+	int result = nfs_stat_async(ctx, path, Callback, this);
+	if (result < 0) {
+		error.Format(nfs_domain, "nfs_stat_async() failed: %s",
+			     nfs_get_error(ctx));
+		return false;
+	}
+
+	return true;
+}
+
+inline bool
 NfsConnection::CancellableCallback::Open(nfs_context *ctx,
 					 const char *path, int flags,
 					 Error &error)
@@ -174,6 +189,21 @@ NfsConnection::RemoveLease(NfsLease &lease)
 
 	new_leases.remove(&lease);
 	active_leases.remove(&lease);
+}
+
+bool
+NfsConnection::Stat(const char *path, NfsCallback &callback, Error &error)
+{
+	assert(!callbacks.Contains(callback));
+
+	auto &c = callbacks.Add(callback, *this, false);
+	if (!c.Stat(context, path, error)) {
+		callbacks.Remove(c);
+		return false;
+	}
+
+	ScheduleSocket();
+	return true;
 }
 
 bool

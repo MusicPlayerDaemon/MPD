@@ -64,6 +64,8 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 			 connection(_connection),
 			 open(_open), close_fh(nullptr) {}
 
+		bool Stat(nfs_context *context, const char *path,
+			  Error &error);
 		bool Open(nfs_context *context, const char *path, int flags,
 			  Error &error);
 		bool Stat(nfs_context *context, struct nfsfh *fh,
@@ -155,6 +157,7 @@ public:
 	void AddLease(NfsLease &lease);
 	void RemoveLease(NfsLease &lease);
 
+	bool Stat(const char *path, NfsCallback &callback, Error &error);
 	bool Open(const char *path, int flags, NfsCallback &callback,
 		  Error &error);
 	bool Stat(struct nfsfh *fh, NfsCallback &callback, Error &error);
