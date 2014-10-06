@@ -115,16 +115,9 @@ NfsStorage::MapToRelativeUTF8(const char *uri_utf8) const
 	return PathTraitsUTF8::Relative(base.c_str(), uri_utf8);
 }
 
-static bool
-GetInfo(nfs_context *ctx, const char *path, FileInfo &info, Error &error)
+static void
+Copy(FileInfo &info, const struct stat &st)
 {
-	struct stat st;
-	int result = nfs_stat(ctx, path, &st);
-	if (result < 0) {
-		error.SetErrno(-result, "nfs_stat() failed");
-		return false;
-	}
-
 	if (S_ISREG(st.st_mode))
 		info.type = FileInfo::Type::REGULAR;
 	else if (S_ISDIR(st.st_mode))
@@ -136,6 +129,19 @@ GetInfo(nfs_context *ctx, const char *path, FileInfo &info, Error &error)
 	info.mtime = st.st_mtime;
 	info.device = st.st_dev;
 	info.inode = st.st_ino;
+}
+
+static bool
+GetInfo(nfs_context *ctx, const char *path, FileInfo &info, Error &error)
+{
+	struct stat st;
+	int result = nfs_stat(ctx, path, &st);
+	if (result < 0) {
+		error.SetErrno(-result, "nfs_stat() failed");
+		return false;
+	}
+
+	Copy(info, st);
 	return true;
 }
 
@@ -201,13 +207,10 @@ NfsDirectoryReader::Read()
 	return nullptr;
 }
 
-bool
-NfsDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
-			    gcc_unused Error &error)
+static void
+Copy(FileInfo &info, const struct nfsdirent &ent)
 {
-	assert(ent != nullptr);
-
-	switch (ent->type) {
+	switch (ent.type) {
 	case NF3REG:
 		info.type = FileInfo::Type::REGULAR;
 		break;
@@ -221,10 +224,19 @@ NfsDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
 		break;
 	}
 
-	info.size = ent->size;
-	info.mtime = ent->mtime.tv_sec;
+	info.size = ent.size;
+	info.mtime = ent.mtime.tv_sec;
 	info.device = 0;
-	info.inode = ent->inode;
+	info.inode = ent.inode;
+}
+
+bool
+NfsDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
+			    gcc_unused Error &error)
+{
+	assert(ent != nullptr);
+
+	Copy(info, *ent);
 	return true;
 }
 
