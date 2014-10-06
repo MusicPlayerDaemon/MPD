@@ -141,6 +141,10 @@ public:
 		return export_name.c_str();
 	}
 
+	EventLoop &GetEventLoop() {
+		return SocketMonitor::GetEventLoop();
+	}
+
 	/**
 	 * Ensure that the connection is established.  The connection
 	 * is kept up while at least one #NfsLease is registered.
@@ -165,10 +169,6 @@ protected:
 	virtual void OnNfsConnectionError(Error &&error) = 0;
 
 private:
-	EventLoop &GetEventLoop() {
-		return SocketMonitor::GetEventLoop();
-	}
-
 	void DestroyContext();
 
 	/**
