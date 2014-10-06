@@ -572,6 +572,7 @@ libstorage_a_SOURCES = \
 	src/storage/Registry.cxx src/storage/Registry.hxx \
 	src/storage/StorageInterface.cxx src/storage/StorageInterface.hxx \
 	src/storage/CompositeStorage.cxx src/storage/CompositeStorage.hxx \
+	src/storage/MemoryDirectoryReader.cxx src/storage/MemoryDirectoryReader.hxx \
 	src/storage/Configured.cxx src/storage/Configured.hxx \
 	src/storage/plugins/LocalStorage.cxx src/storage/plugins/LocalStorage.hxx \
 	src/storage/FileInfo.hxx

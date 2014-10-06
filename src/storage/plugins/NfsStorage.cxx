@@ -22,6 +22,7 @@
 #include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
+#include "storage/MemoryDirectoryReader.hxx"
 #include "lib/nfs/Domain.hxx"
 #include "lib/nfs/Base.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -35,31 +36,6 @@ extern "C" {
 
 #include <sys/stat.h>
 #include <fcntl.h>
-
-class NfsDirectoryReader final : public StorageDirectoryReader {
-	const std::string base;
-
-	nfs_context *const ctx;
-	nfsdir *const dir;
-
-	nfsdirent *ent;
-
-	/**
-	 * Buffer for Read() which holds the current file name
-	 * converted to UTF-8.
-	 */
-	std::string name_utf8;
-
-public:
-	NfsDirectoryReader(const char *_base, nfs_context *_ctx, nfsdir *_dir)
-		:base(_base), ctx(_ctx), dir(_dir) {}
-
-	virtual ~NfsDirectoryReader();
-
-	/* virtual methods from class StorageDirectoryReader */
-	const char *Read() override;
-	bool GetInfo(bool follow, FileInfo &info, Error &error) override;
-};
 
 class NfsStorage final : public Storage {
 	const std::string base;
@@ -156,23 +132,6 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
 	return ::GetInfo(ctx, path.c_str(), info, error);
 }
 
-StorageDirectoryReader *
-NfsStorage::OpenDirectory(const char *uri_utf8, Error &error)
-{
-	const std::string path = UriToNfsPath(uri_utf8, error);
-	if (path.empty())
-		return nullptr;
-
-	nfsdir *dir;
-	int result = nfs_opendir(ctx, path.c_str(), &dir);
-	if (result < 0) {
-		error.SetErrno(-result, "nfs_opendir() failed");
-		return nullptr;
-	}
-
-	return new NfsDirectoryReader(uri_utf8, ctx, dir);
-}
-
 gcc_pure
 static bool
 SkipNameFS(const char *name)
@@ -180,31 +139,6 @@ SkipNameFS(const char *name)
 	return name[0] == '.' &&
 		(name[1] == 0 ||
 		 (name[1] == '.' && name[2] == 0));
-}
-
-NfsDirectoryReader::~NfsDirectoryReader()
-{
-	nfs_closedir(ctx, dir);
-}
-
-const char *
-NfsDirectoryReader::Read()
-{
-	while ((ent = nfs_readdir(ctx, dir)) != nullptr) {
-		const Path name_fs = Path::FromFS(ent->name);
-		if (SkipNameFS(name_fs.c_str()))
-			continue;
-
-		name_utf8 = name_fs.ToUTF8();
-		if (name_utf8.empty())
-			/* ignore files whose name cannot be converted
-			   to UTF-8 */
-			continue;
-
-		return name_utf8.c_str();
-	}
-
-	return nullptr;
 }
 
 static void
@@ -230,14 +164,42 @@ Copy(FileInfo &info, const struct nfsdirent &ent)
 	info.inode = ent.inode;
 }
 
-bool
-NfsDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
-			    gcc_unused Error &error)
+StorageDirectoryReader *
+NfsStorage::OpenDirectory(const char *uri_utf8, Error &error)
 {
-	assert(ent != nullptr);
+	const std::string path = UriToNfsPath(uri_utf8, error);
+	if (path.empty())
+		return nullptr;
 
-	Copy(info, *ent);
-	return true;
+	nfsdir *dir;
+	int result = nfs_opendir(ctx, path.c_str(), &dir);
+	if (result < 0) {
+		error.SetErrno(-result, "nfs_opendir() failed");
+		return nullptr;
+	}
+
+	MemoryStorageDirectoryReader::List entries;
+
+	const struct nfsdirent *ent;
+	while ((ent = nfs_readdir(ctx, dir)) != nullptr) {
+		const Path name_fs = Path::FromFS(ent->name);
+		if (SkipNameFS(name_fs.c_str()))
+			continue;
+
+		std::string name_utf8 = name_fs.ToUTF8();
+		if (name_utf8.empty())
+			/* ignore files whose name cannot be converted
+			   to UTF-8 */
+			continue;
+
+		entries.emplace_front(std::move(name_utf8));
+		Copy(entries.front().info, *ent);
+	}
+
+	nfs_closedir(ctx, dir);
+
+	/* don't reverse the list - order does not matter */
+	return new MemoryStorageDirectoryReader(std::move(entries));
 }
 
 static Storage *
