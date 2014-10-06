@@ -50,6 +50,21 @@ NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 }
 
 inline bool
+NfsConnection::CancellableCallback::OpenDirectory(nfs_context *ctx,
+						  const char *path,
+						  Error &error)
+{
+	int result = nfs_opendir_async(ctx, path, Callback, this);
+	if (result < 0) {
+		error.Format(nfs_domain, "nfs_opendir_async() failed: %s",
+			     nfs_get_error(ctx));
+		return false;
+	}
+
+	return true;
+}
+
+inline bool
 NfsConnection::CancellableCallback::Open(nfs_context *ctx,
 					 const char *path, int flags,
 					 Error &error)
@@ -204,6 +219,34 @@ NfsConnection::Stat(const char *path, NfsCallback &callback, Error &error)
 
 	ScheduleSocket();
 	return true;
+}
+
+bool
+NfsConnection::OpenDirectory(const char *path, NfsCallback &callback,
+			     Error &error)
+{
+	assert(!callbacks.Contains(callback));
+
+	auto &c = callbacks.Add(callback, *this, true);
+	if (!c.OpenDirectory(context, path, error)) {
+		callbacks.Remove(c);
+		return false;
+	}
+
+	ScheduleSocket();
+	return true;
+}
+
+const struct nfsdirent *
+NfsConnection::ReadDirectory(struct nfsdir *dir)
+{
+	return nfs_readdir(context, dir);
+}
+
+void
+NfsConnection::CloseDirectory(struct nfsdir *dir)
+{
+	return nfs_closedir(context, dir);
 }
 
 bool
