@@ -180,7 +180,8 @@ SmbclientDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
 }
 
 static Storage *
-CreateSmbclientStorageURI(const char *base, Error &error)
+CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base,
+			  Error &error)
 {
 	if (memcmp(base, "smb://", 6) != 0)
 		return nullptr;

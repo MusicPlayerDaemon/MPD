@@ -166,7 +166,7 @@ glue_mapper_init(Error &error)
 static bool
 InitStorage(Error &error)
 {
-	Storage *storage = CreateConfiguredStorage(error);
+	Storage *storage = CreateConfiguredStorage(io_thread_get(), error);
 	if (storage == nullptr)
 		return !error.IsDefined();
 

@@ -1589,11 +1589,15 @@ endif
 test_run_storage_LDADD = \
 	$(STORAGE_LIBS) \
 	$(FS_LIBS) \
+	libevent.a \
+	libthread.a \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_storage_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
+	src/IOThread.cxx \
+	test/ScopeIOThread.hxx \
 	test/run_storage.cxx
 
 endif

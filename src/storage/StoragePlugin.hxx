@@ -24,11 +24,13 @@
 
 class Error;
 class Storage;
+class EventLoop;
 
 struct StoragePlugin {
 	const char *name;
 
-	Storage *(*create_uri)(const char *uri, Error &error);
+	Storage *(*create_uri)(EventLoop &event_loop, const char *uri,
+			       Error &error);
 };
 
 #endif

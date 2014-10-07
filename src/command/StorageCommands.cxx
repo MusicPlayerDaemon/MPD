@@ -35,6 +35,7 @@
 #include "db/plugins/simple/SimpleDatabasePlugin.hxx"
 #include "db/update/Service.hxx"
 #include "TimePrint.hxx"
+#include "IOThread.hxx"
 #include "Idle.hxx"
 
 #include <inttypes.h> /* for PRIu64 */
@@ -121,7 +122,7 @@ CommandResult
 handle_listfiles_storage(Client &client, const char *uri)
 {
 	Error error;
-	Storage *storage = CreateStorageURI(uri, error);
+	Storage *storage = CreateStorageURI(io_thread_get(), uri, error);
 	if (storage == nullptr) {
 		if (error.IsDefined())
 			return print_error(client, error);
@@ -217,7 +218,8 @@ handle_mount(Client &client, gcc_unused unsigned argc, char *argv[])
 	}
 
 	Error error;
-	Storage *storage = CreateStorageURI(remote_uri, error);
+	Storage *storage = CreateStorageURI(io_thread_get(), remote_uri,
+					    error);
 	if (storage == nullptr) {
 		if (error.IsDefined())
 			return print_error(client, error);

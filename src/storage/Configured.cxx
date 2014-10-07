@@ -31,9 +31,10 @@
 #include <assert.h>
 
 static Storage *
-CreateConfiguredStorageUri(const char *uri, Error &error)
+CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri,
+			   Error &error)
 {
-	Storage *storage = CreateStorageURI(uri, error);
+	Storage *storage = CreateStorageURI(event_loop, uri, error);
 	if (storage == nullptr && !error.IsDefined())
 		error.Format(config_domain,
 			     "Unrecognized storage URI: %s", uri);
@@ -63,13 +64,13 @@ CreateConfiguredStorageLocal(Error &error)
 }
 
 Storage *
-CreateConfiguredStorage(Error &error)
+CreateConfiguredStorage(EventLoop &event_loop, Error &error)
 {
 	assert(!error.IsDefined());
 
 	auto uri = config_get_string(CONF_MUSIC_DIR, nullptr);
 	if (uri != nullptr && uri_has_scheme(uri))
-		return CreateConfiguredStorageUri(uri, error);
+		return CreateConfiguredStorageUri(event_loop, uri, error);
 
 	return CreateConfiguredStorageLocal(error);
 }

@@ -25,6 +25,7 @@
 
 class Error;
 class Storage;
+class EventLoop;
 
 /**
  * Read storage configuration settings and create a #Storage instance
@@ -32,7 +33,7 @@ class Storage;
  * (no #Error set in that case).
  */
 Storage *
-CreateConfiguredStorage(Error &error);
+CreateConfiguredStorage(EventLoop &event_loop, Error &error);
 
 /**
  * Returns true if there is configuration for a #Storage instance.

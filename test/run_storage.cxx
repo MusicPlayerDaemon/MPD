@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "ScopeIOThread.hxx"
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
@@ -38,7 +39,7 @@ static Storage *
 MakeStorage(const char *uri)
 {
 	Error error;
-	Storage *storage = CreateStorageURI(uri, error);
+	Storage *storage = CreateStorageURI(io_thread_get(), uri, error);
 	if (storage == nullptr) {
 		fprintf(stderr, "%s\n", error.GetMessage());
 		exit(EXIT_FAILURE);
@@ -111,6 +112,8 @@ main(int argc, char **argv)
 
 	const char *const command = argv[1];
 	const char *const storage_uri = argv[2];
+
+	const ScopeIOThread io_thread;
 
 	if (strcmp(command, "ls") == 0) {
 		if (argc != 4) {
