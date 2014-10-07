@@ -1610,6 +1610,7 @@ test_run_input_LDADD = \
 	libsystem.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
+	test/ScopeIOThread.hxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -1660,6 +1661,7 @@ test_visit_archive_LDADD = \
 	libsystem.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
+	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/input/Open.cxx
@@ -1697,6 +1699,7 @@ test_dump_text_file_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
+	test/ScopeIOThread.hxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx
@@ -1718,6 +1721,7 @@ test_dump_playlist_LDADD = \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
+	test/ScopeIOThread.hxx \
 	$(DECODER_SRC) \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -1747,6 +1751,7 @@ test_run_decoder_LDADD = \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
+	test/ScopeIOThread.hxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -1772,6 +1777,7 @@ test_read_tags_LDADD = \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
+	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
@@ -1906,6 +1912,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
+	test/ScopeIOThread.hxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \

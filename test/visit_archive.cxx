@@ -21,7 +21,7 @@
 #include "stdbin.h"
 #include "tag/Tag.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "IOThread.hxx"
+#include "ScopeIOThread.hxx"
 #include "input/Init.hxx"
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
@@ -65,8 +65,7 @@ main(int argc, char **argv)
 
 	config_global_init();
 
-	io_thread_init();
-	io_thread_start();
+	const ScopeIOThread io_thread;
 
 	archive_plugin_init_all();
 
@@ -100,8 +99,6 @@ main(int argc, char **argv)
 	input_stream_global_finish();
 
 	archive_plugin_deinit_all();
-
-	io_thread_deinit();
 
 	config_global_finish();
 

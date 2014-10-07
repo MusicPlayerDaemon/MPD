@@ -25,7 +25,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "decoder/DecoderList.hxx"
 #include "input/Init.hxx"
-#include "IOThread.hxx"
+#include "ScopeIOThread.hxx"
 #include "playlist/PlaylistRegistry.hxx"
 #include "playlist/PlaylistPlugin.hxx"
 #include "fs/Path.hxx"
@@ -82,8 +82,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	io_thread_init();
-	io_thread_start();
+	const ScopeIOThread io_thread;
 
 	if (!input_stream_global_init(error)) {
 		LogError(error);
@@ -155,7 +154,6 @@ int main(int argc, char **argv)
 	decoder_plugin_deinit_all();
 	playlist_list_global_finish();
 	input_stream_global_finish();
-	io_thread_deinit();
 	config_global_finish();
 
 	return 0;
