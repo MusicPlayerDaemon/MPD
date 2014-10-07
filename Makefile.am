@@ -580,7 +580,10 @@ libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(NFS_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
-STORAGE_LIBS = libstorage.a
+STORAGE_LIBS = \
+	$(NFS_LIBS) \
+	$(SMBCLIENT_LIBS) \
+	libstorage.a
 
 if ENABLE_SMBCLIENT
 libstorage_a_SOURCES += \
