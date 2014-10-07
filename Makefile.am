@@ -581,9 +581,9 @@ libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
 STORAGE_LIBS = \
+	libstorage.a \
 	$(NFS_LIBS) \
-	$(SMBCLIENT_LIBS) \
-	libstorage.a
+	$(SMBCLIENT_LIBS)
 
 if ENABLE_SMBCLIENT
 libstorage_a_SOURCES += \
@@ -1514,6 +1514,7 @@ noinst_PROGRAMS = \
 
 if ENABLE_DATABASE
 noinst_PROGRAMS += test/DumpDatabase
+noinst_PROGRAMS += test/run_storage
 endif
 
 if ENABLE_NEIGHBOR_PLUGINS
@@ -1583,6 +1584,16 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 if HAVE_LIBUPNP
 test_DumpDatabase_SOURCES += src/lib/expat/ExpatParser.cxx
 endif
+
+test_run_storage_LDADD = \
+	$(STORAGE_LIBS) \
+	$(FS_LIBS) \
+	libsystem.a \
+	libutil.a \
+	$(GLIB_LIBS)
+test_run_storage_SOURCES = \
+	src/Log.cxx src/LogBackend.cxx \
+	test/run_storage.cxx
 
 endif
 
