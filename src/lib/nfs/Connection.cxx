@@ -464,8 +464,7 @@ NfsConnection::MountCallback(int status, nfs_context *nfs, void *data,
 inline bool
 NfsConnection::MountInternal(Error &error)
 {
-	if (context != nullptr)
-		return true;
+	assert(context == nullptr);
 
 	context = nfs_init_context();
 	if (context == nullptr) {
@@ -535,7 +534,7 @@ NfsConnection::BroadcastError(Error &&error)
 void
 NfsConnection::RunDeferred()
 {
-	{
+	if (context == nullptr) {
 		Error error;
 		if (!MountInternal(error)) {
 			BroadcastMountError(std::move(error));
