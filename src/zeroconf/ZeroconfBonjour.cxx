@@ -26,9 +26,9 @@
 #include "Log.hxx"
 #include "Compiler.h"
 
-#include <glib.h>
-
 #include <dns_sd.h>
+
+#include <arpa/inet.h>
 
 static constexpr Domain bonjour_domain("bonjour");
 
@@ -82,7 +82,7 @@ BonjourInit(EventLoop &loop, const char *service_name)
 	DNSServiceErrorType error = DNSServiceRegister(&dnsReference,
 						       0, 0, service_name,
 						       SERVICE_TYPE, nullptr, nullptr,
-						       g_htons(listen_port), 0,
+						       htons(listen_port), 0,
 						       nullptr,
 						       dnsRegisterCallback,
 						       nullptr);
