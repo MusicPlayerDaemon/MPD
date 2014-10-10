@@ -1892,6 +1892,113 @@ OK
       </variablelist>
     </section>
 
+    <section id="mount">
+      <title>Mounts and neighbors</title>
+
+      <para>
+        A "storage" provides access to files in a directory tree.  The
+        most basic storage plugin is the "local" storage plugin which
+        accesses the local file system, and there are plugins to
+        access NFS and SMB servers.
+      </para>
+
+      <para>
+        Multiple storages can be "mounted" together, similar to the
+        <application>mount</application> command on many operating
+        systems, but without cooperation from the kernel.  No
+        superuser privileges are necessary, beause this mapping exists
+        only inside the <application>MPD</application> process
+      </para>
+
+      <variablelist>
+
+        <varlistentry id="command_mount">
+          <term>
+            <cmdsynopsis>
+              <command>mount</command>
+              <arg choice="req"><replaceable>PATH</replaceable></arg>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+
+          <listitem>
+            <para>
+              Mount the specified remote storage URI at the given
+              path.  Example:
+            </para>
+
+            <programlisting>mount foo nfs://192.168.1.4/export/mp3</programlisting>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_umount">
+          <term>
+            <cmdsynopsis>
+              <command>unmount</command>
+              <arg choice="req"><replaceable>PATH</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+
+          <listitem>
+            <para>
+              Unmounts the specified path.  Example:
+            </para>
+
+            <programlisting>unmount foo</programlisting>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_listmounts">
+          <term>
+            <cmdsynopsis>
+              <command>listmounts</command>
+            </cmdsynopsis>
+          </term>
+
+          <listitem>
+            <para>
+              Queries a list of all mounts.  By default, this contains
+              just the configured <varname>music_directory</varname>.
+              Example:
+            </para>
+
+            <programlisting>listmounts
+mount: 
+storage: /home/foo/music
+mount: foo
+storage: nfs://192.168.1.4/export/mp3
+OK
+</programlisting>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_listneighbors">
+          <term>
+            <cmdsynopsis>
+              <command>listneighbors</command>
+            </cmdsynopsis>
+          </term>
+
+          <listitem>
+            <para>
+              Queries a list of "neighbors" (e.g. accessible file
+              servers on the local net).  Items on that list may be
+              used with the <link
+              linkend="command_mount"><command>mount</command></link>
+              command.  Example:
+            </para>
+
+            <programlisting>listneighbors
+neighbor: smb://FOO
+name: FOO (Samba 4.1.11-Debian)
+OK
+</programlisting>
+          </listitem>
+        </varlistentry>
+
+      </variablelist>
+    </section>
+
     <section id="stickers">
       <title>Stickers</title>
 

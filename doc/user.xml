@@ -253,6 +253,57 @@ systemctl start mpd.socket</programlisting>
       </para>
     </section>
 
+    <section id="config_neighbor_plugins">
+      <title>Configuring neighbor plugins</title>
+
+      <para>
+        All neighbor plugins are disabled by default to avoid unwanted
+        overhead.  To enable (and configure) a plugin, add a
+        <varname>neighbor</varname> block to
+        <filename>mpd.conf</filename>:
+      </para>
+
+      <programlisting>neighbors {
+    plugin "smbclient"
+}
+      </programlisting>
+
+      <para>
+        The following table lists the <varname>neighbor</varname>
+        options valid for all plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>plugin</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>
+        More information can be found in the <link
+        linkend="neighbor_plugins">neighbor plugin reference</link>.
+      </para>
+    </section>
+
     <section id="config_input_plugins">
       <title>Configuring input plugins</title>
 
@@ -1409,6 +1460,18 @@ buffer_size: 16384</programlisting>
 
               <row>
                 <entry>
+                  <varname>cache_directory</varname>
+                </entry>
+                <entry>
+                  The path of the cache directory for additional
+                  storages mounted at runtime.  This setting is
+                  necessary for the <command>mount</command> protocol
+                  command.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
                   <varname>compress</varname>
                   <parameter>yes|no</parameter>
                 </entry>
@@ -1531,6 +1594,26 @@ buffer_size: 16384</programlisting>
           "privileged ports" would make network services "secure",
           which was a fallacy.  The absence of this obsolete
           "security" measure means little.
+        </para>
+      </section>
+    </section>
+
+    <section id="neighbor_plugins">
+      <title>Neighbor plugins</title>
+
+      <section id="smbclient_neighbor">
+        <title><varname>smbclient</varname></title>
+
+        <para>
+          Provides a list of SMB/CIFS servers on the local network.
+        </para>
+      </section>
+
+      <section id="upnp_neighbor">
+        <title><varname>upnp</varname></title>
+
+        <para>
+          Provides a list of UPnP servers on the local network.
         </para>
       </section>
     </section>
