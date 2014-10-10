@@ -38,8 +38,8 @@
 struct PathTraitsFS {
 	typedef std::string string;
 	typedef char value_type;
-	typedef char *pointer;
-	typedef const char *const_pointer;
+	typedef value_type *pointer;
+	typedef const value_type *const_pointer;
 
 #ifdef WIN32
 	static constexpr value_type SEPARATOR = '\\';
@@ -136,8 +136,8 @@ struct PathTraitsFS {
 struct PathTraitsUTF8 {
 	typedef std::string string;
 	typedef char value_type;
-	typedef char *pointer;
-	typedef const char *const_pointer;
+	typedef value_type *pointer;
+	typedef const value_type *const_pointer;
 
 	static constexpr value_type SEPARATOR = '/';
 
