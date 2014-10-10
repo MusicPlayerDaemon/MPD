@@ -366,6 +366,7 @@ libutil_a_SOURCES = \
 	src/util/Domain.hxx \
 	src/util/ReusableArray.hxx \
 	src/util/ASCII.hxx \
+	src/util/UTF8.cxx src/util/UTF8.hxx \
 	src/util/CharUtil.hxx \
 	src/util/NumberParser.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
