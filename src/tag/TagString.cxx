@@ -21,30 +21,53 @@
 #include "TagString.hxx"
 #include "util/Alloc.hxx"
 #include "util/WritableBuffer.hxx"
-
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
+#include "util/UTF8.hxx"
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef HAVE_GLIB
+gcc_pure
+static const char *
+FindInvalidUTF8(const char *p, const char *const end)
+{
+	while (p < end) {
+		const size_t s = SequenceLengthUTF8(*p);
+		if (p + s > end)
+			/* partial sequence at end of string */
+			return p;
+
+		/* now call the other SequenceLengthUTF8() overload
+		   which also validates the continuations */
+		const size_t t = SequenceLengthUTF8(p);
+		assert(s == t);
+		if (t == 0)
+			return p;
+
+		p += s;
+	}
+
+	return nullptr;
+}
 
 /**
  * Replace invalid sequences with the question mark.
  */
 static WritableBuffer<char>
-patch_utf8(const char *src, size_t length, const gchar *end)
+patch_utf8(const char *src, size_t length, const char *_invalid)
 {
 	/* duplicate the string, and replace invalid bytes in that
 	   buffer */
 	char *dest = (char *)xmemdup(src, length);
+	char *const end = dest + length;
 
+	char *invalid = dest + (_invalid - src);
 	do {
-		dest[end - src] = '?';
-	} while (!g_utf8_validate(end + 1, (src + length) - (end + 1), &end));
+		*invalid = '?';
+
+		const char *__invalid = FindInvalidUTF8(invalid + 1, end);
+		invalid = const_cast<char *>(__invalid);
+	} while (invalid != nullptr);
 
 	return { dest, length };
 }
@@ -52,19 +75,14 @@ patch_utf8(const char *src, size_t length, const gchar *end)
 static WritableBuffer<char>
 fix_utf8(const char *str, size_t length)
 {
-	const gchar *end;
-
-	assert(str != nullptr);
-
 	/* check if the string is already valid UTF-8 */
-	if (g_utf8_validate(str, length, &end))
+	const char *invalid = FindInvalidUTF8(str, str + length);
+	if (invalid == nullptr)
 		return nullptr;
 
 	/* no, broken - patch invalid sequences */
-	return patch_utf8(str, length, end);
+	return patch_utf8(str, length, invalid);
 }
-
-#endif
 
 static bool
 char_is_non_printable(unsigned char ch)
@@ -105,23 +123,17 @@ clear_non_printable(const char *p, size_t length)
 WritableBuffer<char>
 FixTagString(const char *p, size_t length)
 {
-#ifdef HAVE_GLIB
-	// TODO: implement without GLib
-
 	auto utf8 = fix_utf8(p, length);
 	if (!utf8.IsNull()) {
 		p = utf8.data;
 		length = utf8.size;
 	}
-#endif
 
 	WritableBuffer<char> cleared = clear_non_printable(p, length);
-#ifdef HAVE_GLIB
 	if (cleared.IsNull())
 		cleared = utf8;
 	else
 		free(utf8.data);
-#endif
 
 	return cleared;
 }
