@@ -25,8 +25,10 @@
 
 #include <stddef.h>
 
-gcc_malloc gcc_nonnull_all
-char *
+template<typename T> struct WritableBuffer;
+
+gcc_nonnull_all
+WritableBuffer<char>
 FixTagString(const char *p, size_t length);
 
 #endif

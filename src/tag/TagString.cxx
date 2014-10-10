@@ -20,6 +20,7 @@
 #include "config.h"
 #include "TagString.hxx"
 #include "util/Alloc.hxx"
+#include "util/WritableBuffer.hxx"
 
 #ifdef HAVE_GLIB
 #include <glib.h>
@@ -34,21 +35,21 @@
 /**
  * Replace invalid sequences with the question mark.
  */
-static char *
+static WritableBuffer<char>
 patch_utf8(const char *src, size_t length, const gchar *end)
 {
 	/* duplicate the string, and replace invalid bytes in that
 	   buffer */
-	char *dest = xstrndup(src, length);
+	char *dest = (char *)xmemdup(src, length);
 
 	do {
 		dest[end - src] = '?';
 	} while (!g_utf8_validate(end + 1, (src + length) - (end + 1), &end));
 
-	return dest;
+	return { dest, length };
 }
 
-static char *
+static WritableBuffer<char>
 fix_utf8(const char *str, size_t length)
 {
 	const gchar *end;
@@ -85,43 +86,41 @@ find_non_printable(const char *p, size_t length)
  * Clears all non-printable characters, convert them to space.
  * Returns nullptr if nothing needs to be cleared.
  */
-static char *
+static WritableBuffer<char>
 clear_non_printable(const char *p, size_t length)
 {
 	const char *first = find_non_printable(p, length);
-	char *dest;
-
 	if (first == nullptr)
 		return nullptr;
 
-	dest = xstrndup(p, length);
+	char *dest = (char *)xmemdup(p, length);
 
 	for (size_t i = first - p; i < length; ++i)
 		if (char_is_non_printable(dest[i]))
 			dest[i] = ' ';
 
-	return dest;
+	return { dest, length };
 }
 
-char *
+WritableBuffer<char>
 FixTagString(const char *p, size_t length)
 {
 #ifdef HAVE_GLIB
 	// TODO: implement without GLib
 
-	char *utf8 = fix_utf8(p, length);
-	if (utf8 != nullptr) {
-		p = utf8;
-		length = strlen(p);
+	auto utf8 = fix_utf8(p, length);
+	if (!utf8.IsNull()) {
+		p = utf8.data;
+		length = utf8.size;
 	}
 #endif
 
-	char *cleared = clear_non_printable(p, length);
+	WritableBuffer<char> cleared = clear_non_printable(p, length);
 #ifdef HAVE_GLIB
-	if (cleared == nullptr)
+	if (cleared.IsNull())
 		cleared = utf8;
 	else
-		free(utf8);
+		free(utf8.data);
 #endif
 
 	return cleared;
