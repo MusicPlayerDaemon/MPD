@@ -33,7 +33,7 @@ patch_utf8(const char *src, size_t length, const gchar *end)
 {
 	/* duplicate the string, and replace invalid bytes in that
 	   buffer */
-	char *dest = g_strdup(src);
+	char *dest = g_strndup(src, length);
 
 	do {
 		dest[end - src] = '?';
