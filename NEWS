@@ -59,6 +59,7 @@ ver 0.19 (not yet released)
 * output
   - alsa: support native DSD playback
   - alsa: rename "DSD over USB" to "DoP"
+  - osx: fix hang after (un)plugging headphones
 * threads:
   - the update thread runs at "idle" priority
   - the output thread runs at "real-time" priority

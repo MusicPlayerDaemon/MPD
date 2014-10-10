@@ -130,6 +130,7 @@ libmpd_a_SOURCES = \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/win32/Win32Main.cxx \
+	src/osx/OSXMain.cxx \
 	src/GlobalEvents.cxx src/GlobalEvents.hxx \
 	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
