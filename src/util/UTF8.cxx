@@ -166,6 +166,86 @@ ValidateUTF8(const char *p)
 	return true;
 }
 
+size_t
+SequenceLengthUTF8(char ch)
+{
+	if (IsASCII(ch))
+		return 1;
+	else if (IsLeading1(ch))
+		/* 1 continuation */
+		return 2;
+	else if (IsLeading2(ch))
+		/* 2 continuations */
+		return 3;
+	else if (IsLeading3(ch))
+		/* 3 continuations */
+		return 4;
+	else if (IsLeading4(ch))
+		/* 4 continuations */
+		return 5;
+	else if (IsLeading5(ch))
+		/* 5 continuations */
+		return 6;
+	else
+		/* continuation without a prefix or some other illegal
+		   start byte */
+		return 0;
+
+}
+
+template<size_t L>
+struct CheckSequenceUTF8 {
+	gcc_pure
+	bool operator()(const char *p) const {
+		return IsContinuation(*p) && CheckSequenceUTF8<L-1>()(p + 1);
+	}
+};
+
+template<>
+struct CheckSequenceUTF8<0u> {
+	constexpr bool operator()(gcc_unused const char *p) const {
+		return true;
+	}
+};
+
+template<size_t L>
+gcc_pure
+static size_t
+InnerSequenceLengthUTF8(const char *p)
+{
+	return CheckSequenceUTF8<L>()(p)
+		? L + 1
+		: 0u;
+}
+
+size_t
+SequenceLengthUTF8(const char *p)
+{
+	const unsigned char ch = *p++;
+
+	if (IsASCII(ch))
+		return 1;
+	else if (IsLeading1(ch))
+		/* 1 continuation */
+		return InnerSequenceLengthUTF8<1>(p);
+	else if (IsLeading2(ch))
+		/* 2 continuations */
+		return InnerSequenceLengthUTF8<2>(p);
+	else if (IsLeading3(ch))
+		/* 3 continuations */
+		return InnerSequenceLengthUTF8<3>(p);
+	else if (IsLeading4(ch))
+		/* 4 continuations */
+		return InnerSequenceLengthUTF8<4>(p);
+	else if (IsLeading5(ch))
+		/* 5 continuations */
+		return InnerSequenceLengthUTF8<5>(p);
+	else
+		/* continuation without a prefix or some other illegal
+		   start byte */
+		return 0;
+}
+
 static const char *
 FindNonASCIIOrZero(const char *p)
 {

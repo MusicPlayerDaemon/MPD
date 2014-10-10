@@ -43,6 +43,22 @@ bool
 ValidateUTF8(const char *p);
 
 /**
+ * @return the number of the sequence beginning with the given
+ * character, or 0 if the character is not a valid start byte
+ */
+gcc_const
+size_t
+SequenceLengthUTF8(char ch);
+
+/**
+ * @return the number of the first sequence in the given string, or 0
+ * if the sequence is malformed
+ */
+gcc_pure
+size_t
+SequenceLengthUTF8(const char *p);
+
+/**
  * Convert the specified string from ISO-8859-1 to UTF-8.
  *
  * @return the UTF-8 version of the source string; may return #src if
