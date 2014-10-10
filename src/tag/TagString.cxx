@@ -52,8 +52,6 @@ static char *
 fix_utf8(const char *str, size_t length)
 {
 	const gchar *end;
-	char *temp;
-	gsize written;
 
 	assert(str != nullptr);
 
@@ -61,18 +59,7 @@ fix_utf8(const char *str, size_t length)
 	if (g_utf8_validate(str, length, &end))
 		return nullptr;
 
-	/* no, it's not - try to import it from ISO-Latin-1 */
-	temp = g_convert(str, length, "utf-8", "iso-8859-1",
-			 nullptr, &written, nullptr);
-	if (temp != nullptr) {
-		/* success! */
-		char *p = xstrdup(temp);
-		g_free(temp);
-		return p;
-	}
-
-	/* no, still broken - there's no medication, just patch
-	   invalid sequences */
+	/* no, broken - patch invalid sequences */
 	return patch_utf8(str, length, end);
 }
 
