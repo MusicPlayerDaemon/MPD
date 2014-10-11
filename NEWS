@@ -1,4 +1,6 @@
 ver 0.19.1 (not yet released)
+* input
+  - mms: fix deadlock bug
 * fix build failure on Mac OS X
 
 ver 0.19 (2014/10/10)

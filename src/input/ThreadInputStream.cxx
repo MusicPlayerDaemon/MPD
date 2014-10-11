@@ -88,7 +88,7 @@ ThreadInputStream::ThreadFunc()
 			Unlock();
 
 			Error error;
-			size_t nbytes = Read(w.data, w.size, error);
+			size_t nbytes = ThreadRead(w.data, w.size, error);
 
 			Lock();
 			cond.broadcast();
