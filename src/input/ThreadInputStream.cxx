@@ -118,6 +118,8 @@ ThreadInputStream::ThreadFunc(void *ctx)
 bool
 ThreadInputStream::Check(Error &error)
 {
+	assert(!thread.IsInside());
+
 	if (postponed_error.IsDefined()) {
 		error = std::move(postponed_error);
 		return false;
@@ -129,12 +131,16 @@ ThreadInputStream::Check(Error &error)
 bool
 ThreadInputStream::IsAvailable()
 {
+	assert(!thread.IsInside());
+
 	return !buffer->IsEmpty() || eof || postponed_error.IsDefined();
 }
 
 inline size_t
 ThreadInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
+	assert(!thread.IsInside());
+
 	while (true) {
 		if (postponed_error.IsDefined()) {
 			error = std::move(postponed_error);
@@ -161,5 +167,7 @@ ThreadInputStream::Read(void *ptr, size_t read_size, Error &error)
 bool
 ThreadInputStream::IsEOF()
 {
+	assert(!thread.IsInside());
+
 	return eof;
 }
