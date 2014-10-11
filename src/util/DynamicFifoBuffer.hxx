@@ -43,6 +43,7 @@ public:
 	typedef typename ForeignFifoBuffer<T>::size_type size_type;
 	typedef typename ForeignFifoBuffer<T>::pointer_type pointer_type;
 	typedef typename ForeignFifoBuffer<T>::const_pointer_type const_pointer_type;
+	typedef typename ForeignFifoBuffer<T>::Range Range;
 
 	explicit DynamicFifoBuffer(size_type _capacity)
 		:ForeignFifoBuffer<T>(new T[_capacity], _capacity) {}
