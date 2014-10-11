@@ -1,3 +1,5 @@
+ver 0.19.11 (not yet released)
+
 ver 0.19 (2014/10/10)
 * protocol
   - new commands "addtagid", "cleartagid", "listfiles", "listmounts",
