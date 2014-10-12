@@ -2194,4 +2194,5 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	test/test_archive_zzip.sh \
 	$(wildcard scripts/*.sh) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
+	systemd/mpd.socket \
 	src/win32/mpd_win32_rc.rc.in src/win32/mpd.ico

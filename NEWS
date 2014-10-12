@@ -2,6 +2,7 @@ ver 0.19.1 (not yet released)
 * input
   - mms: fix deadlock bug
 * fix build failure on Mac OS X
+* add missing file systemd/mpd.socket to tarball
 
 ver 0.19 (2014/10/10)
 * protocol
