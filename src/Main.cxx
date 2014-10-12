@@ -114,6 +114,10 @@
 #include <ws2tcpip.h>
 #endif
 
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+#endif
+
 #include <limits.h>
 
 static constexpr unsigned DEFAULT_BUFFER_SIZE = 4096;
@@ -408,6 +412,8 @@ int main(int argc, char *argv[])
 
 #endif
 
+static int mpd_main_after_fork(struct options);
+
 #ifdef ANDROID
 static inline
 #endif
@@ -510,6 +516,27 @@ int mpd_main(int argc, char *argv[])
 	daemonize_set_user();
 	daemonize_begin(options.daemon);
 #endif
+
+#ifdef __APPLE__
+	/* Runs the OS X native event loop in the main thread, and runs
+	   the rest of mpd_main on a new thread. This lets CoreAudio receive
+	   route change notifications (e.g. plugging or unplugging headphones).
+	   All hardware output on OS X ultimately uses CoreAudio internally.
+	   This must be run after forking; if dispatch is called before forking,
+	   the child process will have a broken internal dispatch state. */
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+		exit(mpd_main_after_fork(options));
+	});
+	dispatch_main();
+	return EXIT_FAILURE; // unreachable, because dispatch_main never returns
+#else
+	return mpd_main_after_fork(options);
+#endif
+}
+
+static int mpd_main_after_fork(struct options options)
+{
+	Error error;
 
 	GlobalEvents::Initialize(*instance->event_loop);
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
