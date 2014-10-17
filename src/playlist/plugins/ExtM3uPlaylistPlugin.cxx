@@ -39,8 +39,12 @@ public:
 	}
 
 	bool CheckFirstLine() {
-		const char *line = tis.ReadLine();
-		return line != nullptr && strcmp(line, "#EXTM3U") == 0;
+		char *line = tis.ReadLine();
+		if (line == nullptr)
+			return false;
+
+		StripRight(line);
+		return strcmp(line, "#EXTM3U") == 0;
 	}
 
 	virtual DetachedSong *NextSong() override;
