@@ -19,120 +19,229 @@
 
 package org.musicpd;
 
+import java.util.LinkedList;
+
 import android.app.Activity;
-import android.os.Build;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 public class Settings extends Activity {
 	private static final String TAG = "Settings";
 	private Main.Client mClient;
-	private TextView mTextView;
-	private ToggleButton mButton;
-	private LinearLayout mLayout;
+	private TextView mTextStatus;
+	private ToggleButton mRunButton;
+	private boolean mFirstRun;
+	private LinkedList<String> mLogListArray = new LinkedList<String>();
+	private ListView mLogListView;
+	private ArrayAdapter<String> mLogListAdapter;
+
+	private static final int MAX_LOGS = 500;
 
 	private static final int MSG_ERROR = 0;
 	private static final int MSG_STOPPED = 1;
 	private static final int MSG_STARTED = 2;
+	private static final int MSG_LOG = 3;
+
+	public static class Preferences {
+		public static final String KEY_RUN_ON_BOOT ="run_on_boot";
+		public static final String KEY_WAKELOCK ="wakelock";
+
+		public static SharedPreferences get(Context context) {
+			return context.getSharedPreferences(TAG, MODE_PRIVATE);
+		}
+
+		public static void putBoolean(Context context, String key, boolean value) {
+			final SharedPreferences prefs = get(context);
+
+			if (prefs == null)
+				return;
+			final Editor editor = prefs.edit();
+			editor.putBoolean(key, value);
+			editor.apply();
+		}
+
+		public static boolean getBoolean(Context context, String key, boolean defValue) {
+			final SharedPreferences prefs = get(context);
+
+			return prefs != null ? prefs.getBoolean(key, defValue) : defValue;
+		}
+	}
 
 	private Handler mHandler = new Handler(new Handler.Callback() {
-
 		@Override
 		public boolean handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_ERROR:
 				Log.d(TAG, "onError");
-				final String error = (String) msg.obj;
-				mTextView.setText("Failed to load the native MPD libary.\n" +
-						  "Report this problem to us, and include the following information:\n" +
-						  "SUPPORTED_ABIS=" + String.join(", ", Build.SUPPORTED_ABIS) + "\n" +
-						  "PRODUCT=" + Build.PRODUCT + "\n" +
-						  "FINGERPRINT=" + Build.FINGERPRINT + "\n" +
-						  "error=" + error);
-				mButton.setChecked(false);
-				mButton.setEnabled(false);
+
+				mClient.release();
+				connectClient();
+
+				mRunButton.setEnabled(false);
+				mRunButton.setChecked(false);
+
+				mTextStatus.setText((String)msg.obj);
+				mFirstRun = true;
 				break;
 			case MSG_STOPPED:
 				Log.d(TAG, "onStopped");
-				if (mButton.isEnabled()) // don't overwrite previous error message
-					mTextView.setText("Music Player Daemon is not running");
-				mButton.setEnabled(true);
-				mButton.setChecked(false);
+				mRunButton.setEnabled(true);
+				if (!mFirstRun && Preferences.getBoolean(Settings.this, Preferences.KEY_RUN_ON_BOOT, false))
+					mRunButton.setChecked(true);
+				else
+					mRunButton.setChecked(false);
+				mFirstRun = true;
 				break;
 			case MSG_STARTED:
 				Log.d(TAG, "onStarted");
-				mTextView.setText("Music Player Daemon is running"
-								  + "\nCAUTION: this version is EXPERIMENTAL!");
-				mButton.setChecked(true);
+				mRunButton.setChecked(true);
+				mFirstRun = true;
+				mTextStatus.setText("CAUTION: this version is EXPERIMENTAL!"); // XXX
+				break;
+			case MSG_LOG:
+				if (mLogListArray.size() > MAX_LOGS)
+					mLogListArray.remove(0);
+				String priority;
+				switch (msg.arg1) {
+				case Log.DEBUG:
+					priority = "D";
+					break;
+				case Log.ERROR:
+					priority = "E";
+					break;
+				case Log.INFO:
+					priority = "I";
+					break;
+				case Log.VERBOSE:
+					priority = "V";
+					break;
+				case Log.WARN:
+					priority = "W";
+					break;
+				default:
+					priority = "";
+				}
+				mLogListArray.add(priority + "/ " + (String)msg.obj);
+				mLogListAdapter.notifyDataSetChanged();
+
 				break;
 			}
 			return true;
 		}
 	});
 
-	private OnCheckedChangeListener mOnCheckedChangeListener = new OnCheckedChangeListener() {
-
+	private final OnCheckedChangeListener mOnRunChangeListener = new OnCheckedChangeListener() {
 		@Override
 		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 			if (mClient != null) {
-				if (isChecked)
+				if (isChecked) {
 					mClient.start();
-				else
+					if (Preferences.getBoolean(Settings.this,
+							Preferences.KEY_WAKELOCK, false))
+						mClient.setWakelockEnabled(true);
+				} else {
 					mClient.stop();
+				}
 			}
+		}
+	};
+
+	private final OnCheckedChangeListener mOnRunOnBootChangeListener = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			Preferences.putBoolean(Settings.this, Preferences.KEY_RUN_ON_BOOT, isChecked);
+			if (isChecked && mClient != null && !mRunButton.isChecked())
+				mRunButton.setChecked(true);
+		}
+	};
+
+	private final OnCheckedChangeListener mOnWakelockChangeListener = new OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			Preferences.putBoolean(Settings.this, Preferences.KEY_WAKELOCK, isChecked);
+			if (mClient != null && mClient.isRunning())
+				mClient.setWakelockEnabled(isChecked);
 		}
 	};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		mTextView = new TextView(this);
-		mTextView.setText("");
+		setContentView(R.layout.settings);
+		mRunButton = (ToggleButton) findViewById(R.id.run);
+		mRunButton.setOnCheckedChangeListener(mOnRunChangeListener);
 
-		mButton = new ToggleButton(this);
-		mButton.setOnCheckedChangeListener(mOnCheckedChangeListener);
+		mTextStatus = (TextView) findViewById(R.id.status);
 
-		mLayout = new LinearLayout(this);
-		mLayout.setOrientation(LinearLayout.VERTICAL);
-		mLayout.addView(mButton);
-		mLayout.addView(mTextView);
+		mLogListAdapter = new ArrayAdapter<String>(this, R.layout.log_item, mLogListArray);
 
-		setContentView(mLayout);
+		mLogListView = (ListView) findViewById(R.id.log_list);
+		mLogListView.setAdapter(mLogListAdapter);
+		mLogListView.setTranscriptMode(ListView.TRANSCRIPT_MODE_NORMAL);
+
+		CheckBox checkbox = (CheckBox) findViewById(R.id.run_on_boot);
+		checkbox.setOnCheckedChangeListener(mOnRunOnBootChangeListener);
+		if (Preferences.getBoolean(this, Preferences.KEY_RUN_ON_BOOT, false))
+			checkbox.setChecked(true);
+
+		checkbox = (CheckBox) findViewById(R.id.wakelock);
+		checkbox.setOnCheckedChangeListener(mOnWakelockChangeListener);
+		if (Preferences.getBoolean(this, Preferences.KEY_WAKELOCK, false))
+			checkbox.setChecked(true);
 
 		super.onCreate(savedInstanceState);
 	}
 
-	@Override
-	protected void onStart() {
+	private void connectClient() {
 		mClient = new Main.Client(this, new Main.Client.Callback() {
+
+			private void removeMessages() {
+				/* don't remove log messages */
+				mHandler.removeMessages(MSG_STOPPED);
+				mHandler.removeMessages(MSG_STARTED);
+				mHandler.removeMessages(MSG_ERROR);
+			}
+
 			@Override
 			public void onStopped() {
-				mHandler.removeCallbacksAndMessages(null);
+				removeMessages();
 				mHandler.sendEmptyMessage(MSG_STOPPED);
 			}
 
 			@Override
 			public void onStarted() {
-				mHandler.removeCallbacksAndMessages(null);
+				removeMessages();
 				mHandler.sendEmptyMessage(MSG_STARTED);
 			}
 
 			@Override
 			public void onError(String error) {
-				mHandler.removeCallbacksAndMessages(null);
+				removeMessages();
 				mHandler.sendMessage(Message.obtain(mHandler, MSG_ERROR, error));
 			}
 
 			@Override
 			public void onLog(int priority, String msg) {
+				mHandler.sendMessage(Message.obtain(mHandler, MSG_LOG, priority, 0, msg));
 			}
 		});
+	}
+
+	@Override
+	protected void onStart() {
+		mFirstRun = false;
+		connectClient();
 		super.onStart();
 	}
 

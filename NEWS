@@ -4,6 +4,7 @@ ver 0.20.22 (not yet released)
 * Android
   - now runs as a service
   - add button to start/stop MPD
+  - add option to auto-start on boot
 
 ver 0.20.21 (2018/08/17)
 * database
