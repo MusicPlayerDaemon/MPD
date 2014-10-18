@@ -33,6 +33,8 @@ TextInputStream::ReadLine()
 	if (line != nullptr)
 		return line;
 
+	buffer.Shift();
+
 	while (true) {
 		auto dest = buffer.Write();
 		if (dest.size < 2) {

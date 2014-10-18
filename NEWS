@@ -3,6 +3,7 @@ ver 0.19.1 (not yet released)
   - mms: fix deadlock bug
 * playlist
   - extm3u: fix Extended M3U detection
+  - m3u, extm3u, cue: fix truncated lines
 * fix build failure on Mac OS X
 * add missing file systemd/mpd.socket to tarball
 
