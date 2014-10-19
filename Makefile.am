@@ -328,7 +328,7 @@ $(ANDROID_XML_RES_COPIES): $(ANDROID_XML_RES)
 	@$(MKDIR_P) $(dir $@)
 	cp $(patsubst android/build/%,$(srcdir)/android/%,$@) $@
 
-android/build/resources.apk: $(ANDROID_XML_RES_COPIES) android/build/res/drawable/icon.png
+android/build/resources.apk: $(ANDROID_XML_RES_COPIES) android/build/res/drawable/icon.png android/build/res/drawable/notification_icon.png
 	@$(MKDIR_P) android/build/gen
 	$(AAPT) package -f -m --auto-add-overlay \
 		--custom-package org.musicpd \
@@ -361,6 +361,9 @@ android/build/lib/$(ANDROID_ABI)/libmpd.so: libmpd.so
 android/build/res/drawable/icon.png: mpd.svg
 	mkdir -p $(@D)
 	rsvg-convert --width=48 --height=48 $< -o $@
+
+android/build/res/drawable/notification_icon.png: android/build/res/drawable/icon.png
+	convert $< -colorspace Gray -gamma 2.2 $@
 
 .DELETE_ON_ERROR: android/build/unsigned.apk
 android/build/unsigned.apk: android/build/classes.dex android/build/resources.apk android/build/lib/$(ANDROID_ABI)/libmpd.so

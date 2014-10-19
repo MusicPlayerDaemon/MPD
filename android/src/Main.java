@@ -206,19 +206,19 @@ public class Main extends Service implements Runnable {
 			notification = buildNotificationJB(
 					R.string.notification_title_mpd_running,
 					R.string.notification_text_mpd_running,
-					R.drawable.icon,
+					R.drawable.notification_icon,
 					contentIntent);
 		else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
 			notification = buildNotificationHC(
 					R.string.notification_title_mpd_running,
 					R.string.notification_text_mpd_running,
-					R.drawable.icon,
+					R.drawable.notification_icon,
 					contentIntent);
 		else
 			notification = buildNotificationGB(
 					R.string.notification_title_mpd_running,
 					R.string.notification_text_mpd_running,
-					R.drawable.icon,
+					R.drawable.notification_icon,
 					contentIntent);
 
 		startForeground(R.string.notification_title_mpd_running, notification);
