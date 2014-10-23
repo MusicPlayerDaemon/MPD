@@ -43,7 +43,7 @@ PcmChannelsConverter::Open(SampleFormat _format,
 	default:
 		error.Format(pcm_domain,
 			     "PCM channel conversion for %s is not implemented",
-			     sample_format_to_string(format));
+			     sample_format_to_string(_format));
 		return false;
 	}
 
