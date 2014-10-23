@@ -46,7 +46,7 @@ class RoarOutput {
 	struct roar_connection con;
 	struct roar_audio_info info;
 	mutable Mutex mutex;
-	volatile bool alive;
+	bool alive;
 
 public:
 	RoarOutput()
