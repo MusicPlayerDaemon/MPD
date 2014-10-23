@@ -383,7 +383,12 @@ private:
 	void Reopen();
 
 	AudioFormat OpenFilter(AudioFormat &format, Error &error_r);
+
+	/**
+	 * Mutex must not be locked.
+	 */
 	void CloseFilter();
+
 	void ReopenFilter();
 
 	/**

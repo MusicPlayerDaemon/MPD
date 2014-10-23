@@ -174,7 +174,10 @@ AudioOutput::Open()
 		FormatError(error, "Failed to open \"%s\" [%s]",
 			    name, plugin.name);
 
+		mutex.unlock();
 		CloseFilter();
+		mutex.lock();
+
 		fail_timer.Update();
 		return;
 	}
@@ -184,7 +187,10 @@ AudioOutput::Open()
 		FormatError(error, "Failed to convert for \"%s\" [%s]",
 			    name, plugin.name);
 
+		mutex.unlock();
 		CloseFilter();
+		mutex.lock();
+
 		fail_timer.Update();
 		return;
 	}
@@ -233,7 +239,10 @@ AudioOutput::ReopenFilter()
 {
 	Error error;
 
+	mutex.unlock();
 	CloseFilter();
+	mutex.lock();
+
 	const AudioFormat filter_audio_format =
 		OpenFilter(in_audio_format, error);
 	if (!filter_audio_format.IsDefined() ||
