@@ -1,4 +1,6 @@
 ver 0.19.2 (not yet released)
+* output
+  - fix memory leak after filter initialization error
 * fix assertion failure on unsupported PCM conversion
 
 ver 0.19.1 (2014/10/19)

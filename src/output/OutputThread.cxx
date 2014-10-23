@@ -188,6 +188,7 @@ AudioOutput::Open()
 			    name, plugin.name);
 
 		mutex.unlock();
+		ao_plugin_close(this);
 		CloseFilter();
 		mutex.lock();
 
