@@ -51,7 +51,7 @@ PcmConvert::~PcmConvert()
 }
 
 bool
-PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
+PcmConvert::Open(const AudioFormat _src_format, const AudioFormat _dest_format,
 		 Error &error)
 {
 	assert(!src_format.IsValid());
