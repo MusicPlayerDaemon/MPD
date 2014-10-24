@@ -74,3 +74,66 @@ xstrndup(const char *s, size_t n)
 
 	return p;
 }
+
+template<typename... Args>
+static inline size_t
+FillLengths(size_t *lengths, const char *a, Args&&... args)
+{
+	return FillLengths(lengths, a) + FillLengths(lengths + 1, args...);
+}
+
+template<>
+inline size_t
+FillLengths(gcc_unused size_t *lengths, const char *a)
+{
+	return *lengths = strlen(a);
+}
+
+template<typename... Args>
+static inline void
+StringCat(char *p, const size_t *lengths, const char *a, Args&&... args)
+{
+	StringCat(p, lengths, a);
+	StringCat(p + *lengths, lengths + 1, args...);
+}
+
+template<>
+inline void
+StringCat(char *p, const size_t *lengths, const char *a)
+{
+	memcpy(p, a, *lengths);
+}
+
+template<typename... Args>
+gcc_malloc gcc_nonnull_all
+static inline char *
+t_xstrcatdup(Args&&... args)
+{
+	constexpr size_t n = sizeof...(args);
+
+	size_t lengths[n];
+	const size_t total = FillLengths(lengths, args...);
+
+	char *p = (char *)xalloc(total + 1);
+	StringCat(p, lengths, args...);
+	p[total] = 0;
+	return p;
+}
+
+char *
+xstrcatdup(const char *a, const char *b)
+{
+	return t_xstrcatdup(a, b);
+}
+
+char *
+xstrcatdup(const char *a, const char *b, const char *c)
+{
+	return t_xstrcatdup(a, b, c);
+}
+
+char *
+xstrcatdup(const char *a, const char *b, const char *c, const char *d)
+{
+	return t_xstrcatdup(a, b, c, d);
+}
