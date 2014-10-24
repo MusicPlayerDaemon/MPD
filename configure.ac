@@ -293,7 +293,9 @@ fi
 AC_ARG_ENABLE(libmpdclient,
 	AS_HELP_STRING([--enable-libmpdclient],
 		[enable support for the MPD client]),,
-	enable_libmpdclient=$database_auto)
+	enable_libmpdclient=auto)
+MPD_DEPENDS([enable_libmpdclient], [enable_database],
+	[Cannot use --enable-libmpdclient with --disable-database])
 
 AC_ARG_ENABLE(expat,
 	AS_HELP_STRING([--enable-expat],
@@ -303,7 +305,9 @@ AC_ARG_ENABLE(expat,
 AC_ARG_ENABLE(upnp,
 	AS_HELP_STRING([--enable-upnp],
 		[enable UPnP client support (default: auto)]),,
-	enable_upnp=$database_auto)
+	enable_upnp=auto)
+MPD_DEPENDS([enable_upnp], [enable_database],
+	[Cannot use --enable-upnp with --disable-database])
 
 AC_ARG_ENABLE(adplug,
 	AS_HELP_STRING([--enable-adplug],
