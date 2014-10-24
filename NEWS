@@ -2,6 +2,7 @@ ver 0.19.2 (not yet released)
 * output
   - fix memory leak after filter initialization error
 * fix assertion failure on unsupported PCM conversion
+* auto-disable plugins that require GLib when --disable-glib is used
 
 ver 0.19.1 (2014/10/19)
 * input

@@ -327,6 +327,8 @@ AC_ARG_ENABLE(ao,
 	AS_HELP_STRING([--enable-ao],
 		[enable support for libao]),,
 	enable_ao=auto)
+MPD_DEPENDS([enable_ao], [enable_glib],
+	[Cannot use --enable-ao with --disable-glib])
 
 AC_ARG_ENABLE(audiofile,
 	AS_HELP_STRING([--enable-audiofile],
@@ -347,6 +349,8 @@ AC_ARG_ENABLE(cdio-paranoia,
 	AS_HELP_STRING([--enable-cdio-paranoia],
 		[enable support for audio CD support]),,
 	enable_cdio_paranoia=auto)
+MPD_DEPENDS([enable_cdio_paranoia], [enable_glib],
+	[Cannot use --enable-cdio-paranoia with --disable-glib])
 
 AC_ARG_ENABLE(curl,
 	AS_HELP_STRING([--enable-curl],
@@ -402,11 +406,15 @@ AC_ARG_ENABLE(gme,
 	AS_HELP_STRING([--enable-gme],
 		[enable Blargg's game music emulator plugin]),,
 	enable_gme=auto)
+MPD_DEPENDS([enable_gme], [enable_glib],
+	[Cannot use --enable-gme with --disable-glib])
 
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
 	[enable_httpd_output=auto])
+MPD_DEPENDS([enable_httpd_output], [enable_glib],
+	[Cannot use --enable-httpd-output with --disable-glib])
 
 AC_ARG_ENABLE(id3,
 	AS_HELP_STRING([--enable-id3],
@@ -432,6 +440,8 @@ AC_ARG_ENABLE(jack,
 	AS_HELP_STRING([--enable-jack],
 		[enable jack support]),,
 	enable_jack=auto)
+MPD_DEPENDS([enable_jack], [enable_glib],
+	[Cannot use --enable-jack with --disable-glib])
 
 AC_SYS_LARGEFILE
 
@@ -444,6 +454,8 @@ AC_ARG_ENABLE(soundcloud,
 	AS_HELP_STRING([--enable-soundcloud],
 		[enable support for soundcloud.com]),,
 	[enable_soundcloud=auto])
+MPD_DEPENDS([enable_soundcloud], [enable_glib],
+	[Cannot use --enable-soundcloud with --disable-glib])
 
 AC_ARG_ENABLE(lame-encoder,
 	AS_HELP_STRING([--enable-lame-encoder],
@@ -538,6 +550,8 @@ AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
 		[enable C64 SID support via libsidplay2]),,
 	enable_sidplay=auto)
+MPD_DEPENDS([enable_sidplay], [enable_glib],
+	[Cannot use --enable-sidplay with --disable-glib])
 
 AC_ARG_ENABLE(shine-encoder,
 	AS_HELP_STRING([--enable-shine-encoder],
@@ -563,6 +577,8 @@ AC_ARG_ENABLE(sqlite,
 	AS_HELP_STRING([--enable-sqlite],
 		[enable support for the SQLite database]),,
 	[enable_sqlite=$database_auto])
+MPD_DEPENDS([enable_sqlite], [enable_glib],
+	[Cannot use --enable-sqlite with --disable-glib])
 
 AC_ARG_ENABLE(systemd-daemon,
 	AS_HELP_STRING([--enable-systemd-daemon],
@@ -603,6 +619,8 @@ AC_ARG_ENABLE(vorbis-encoder,
 	AS_HELP_STRING([--enable-vorbis-encoder],
 		[enable the Ogg Vorbis encoder]),,
 	[enable_vorbis_encoder=auto])
+MPD_DEPENDS([enable_vorbis_encoder], [enable_glib],
+	[Cannot use --enable-vorbis-encoder with --disable-glib])
 
 AC_ARG_ENABLE(wave-encoder,
 	AS_HELP_STRING([--enable-wave-encoder],
@@ -613,6 +631,8 @@ AC_ARG_ENABLE(wavpack,
 	AS_HELP_STRING([--enable-wavpack],
 		[enable WavPack support]),,
 	enable_wavpack=auto)
+MPD_DEPENDS([enable_wavpack], [enable_glib],
+	[Cannot use --enable-wavpack with --disable-glib])
 
 AC_ARG_ENABLE(werror,
 	AS_HELP_STRING([--enable-werror],
