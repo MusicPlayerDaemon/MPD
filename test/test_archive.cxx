@@ -7,8 +7,6 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include <glib.h>
-
 #include <string.h>
 #include <stdlib.h>
 
@@ -29,22 +27,22 @@ ArchiveLookupTest::TestArchiveLookup()
 	char *path = strdup("");
 	CPPUNIT_ASSERT_EQUAL(false,
 			     archive_lookup(path, &archive, &inpath, &suffix));
-	g_free(path);
+	free(path);
 
 	path = strdup(".");
 	CPPUNIT_ASSERT_EQUAL(false,
 			     archive_lookup(path, &archive, &inpath, &suffix));
-	g_free(path);
+	free(path);
 
 	path = strdup("config.h");
 	CPPUNIT_ASSERT_EQUAL(false,
 			     archive_lookup(path, &archive, &inpath, &suffix));
-	g_free(path);
+	free(path);
 
 	path = strdup("src/foo/bar");
 	CPPUNIT_ASSERT_EQUAL(false,
 			     archive_lookup(path, &archive, &inpath, &suffix));
-	g_free(path);
+	free(path);
 
 	path = strdup("Makefile/foo/bar");
 	CPPUNIT_ASSERT_EQUAL(true,
@@ -53,7 +51,7 @@ ArchiveLookupTest::TestArchiveLookup()
 	CPPUNIT_ASSERT_EQUAL(0, strcmp(archive, "Makefile"));
 	CPPUNIT_ASSERT_EQUAL(0, strcmp(inpath, "foo/bar"));
 	CPPUNIT_ASSERT_EQUAL((const char *)nullptr, suffix);
-	g_free(path);
+	free(path);
 
 	path = strdup("config.h/foo/bar");
 	CPPUNIT_ASSERT_EQUAL(true,
@@ -62,7 +60,7 @@ ArchiveLookupTest::TestArchiveLookup()
 	CPPUNIT_ASSERT_EQUAL(0, strcmp(archive, "config.h"));
 	CPPUNIT_ASSERT_EQUAL(0, strcmp(inpath, "foo/bar"));
 	CPPUNIT_ASSERT_EQUAL(0, strcmp(suffix, "h"));
-	g_free(path);
+	free(path);
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArchiveLookupTest);
