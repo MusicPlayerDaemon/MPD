@@ -1851,6 +1851,10 @@ results(ipv6, "IPv6")
 results(tcp, "TCP")
 results(un,[UNIX Domain Sockets])
 
+printf '\nStorage support:\n\t'
+results(nfs, [NFS])
+results(smbclient, [SMB])
+
 printf '\nFile format support:\n\t'
 results(aac, [AAC])
 results(adplug, [AdPlug])
