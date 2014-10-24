@@ -575,8 +575,6 @@ AC_ARG_ENABLE(sqlite,
 	AS_HELP_STRING([--enable-sqlite],
 		[enable support for the SQLite database]),,
 	[enable_sqlite=$database_auto])
-MPD_DEPENDS([enable_sqlite], [enable_glib],
-	[Cannot use --enable-sqlite with --disable-glib])
 
 AC_ARG_ENABLE(systemd-daemon,
 	AS_HELP_STRING([--enable-systemd-daemon],
