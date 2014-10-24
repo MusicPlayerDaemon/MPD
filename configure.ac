@@ -629,8 +629,6 @@ AC_ARG_ENABLE(wavpack,
 	AS_HELP_STRING([--enable-wavpack],
 		[enable WavPack support]),,
 	enable_wavpack=auto)
-MPD_DEPENDS([enable_wavpack], [enable_glib],
-	[Cannot use --enable-wavpack with --disable-glib])
 
 AC_ARG_ENABLE(werror,
 	AS_HELP_STRING([--enable-werror],
