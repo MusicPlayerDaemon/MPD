@@ -33,7 +33,9 @@
 #include "event/Loop.hxx"
 #include "util/Error.hxx"
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <iostream>
 using std::cout;
@@ -107,8 +109,10 @@ main(int argc, char **argv)
 
 	/* initialize GLib */
 
+#ifdef HAVE_GLIB
 #if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(nullptr);
+#endif
 #endif
 
 	/* initialize MPD */
