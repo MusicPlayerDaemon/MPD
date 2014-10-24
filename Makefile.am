@@ -2141,18 +2141,10 @@ user_DATA = $(wildcard doc/user/*.html)
 developerdir = $(docdir)/developer
 developer_DATA = $(wildcard doc/developer/*.html)
 
-if HAVE_XMLTO
-
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
 $(DOCBOOK_HTML): %/index.html: %.xml
 	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html --stringparam use.id.as.filename=1 $<
-
-else
-
-DOCBOOK_HTML =
-
-endif
 
 doc/api/html/index.html: doc/doxygen.conf
 	@$(MKDIR_P) $(@D)

@@ -1733,8 +1733,11 @@ dnl Documentation
 dnl ---------------------------------------------------------------------------
 if test x$enable_documentation = xyes; then
 	AC_PATH_PROG(XMLTO, xmlto)
+	if test x$XMLTO = x; then
+		AC_MSG_ERROR([xmlto not found])
+	fi
+
 	AC_SUBST(XMLTO)
-	AM_CONDITIONAL(HAVE_XMLTO, test x$XMLTO != x)
 
 	AC_PATH_PROG(DOXYGEN, doxygen)
 	if test x$DOXYGEN = x; then
@@ -1742,8 +1745,6 @@ if test x$enable_documentation = xyes; then
 	fi
 
 	AC_SUBST(DOXYGEN)
-else
-	AM_CONDITIONAL(HAVE_XMLTO, false)
 fi
 
 AM_CONDITIONAL(ENABLE_DOCUMENTATION, test x$enable_documentation = xyes)
