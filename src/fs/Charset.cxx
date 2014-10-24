@@ -34,6 +34,8 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef HAVE_GLIB
+
 /**
  * Maximal number of bytes required to represent path name in UTF-8
  * (including nul-terminator).
@@ -44,7 +46,6 @@
  */
 static constexpr size_t MPD_PATH_MAX_UTF8 = (MPD_PATH_MAX - 1) * 4 + 1;
 
-#ifdef HAVE_GLIB
 static std::string fs_charset;
 
 gcc_pure
