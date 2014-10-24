@@ -454,8 +454,6 @@ AC_ARG_ENABLE(soundcloud,
 	AS_HELP_STRING([--enable-soundcloud],
 		[enable support for soundcloud.com]),,
 	[enable_soundcloud=auto])
-MPD_DEPENDS([enable_soundcloud], [enable_glib],
-	[Cannot use --enable-soundcloud with --disable-glib])
 
 AC_ARG_ENABLE(lame-encoder,
 	AS_HELP_STRING([--enable-lame-encoder],

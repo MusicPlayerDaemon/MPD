@@ -25,11 +25,11 @@
 #include "input/InputStream.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
+#include "util/Alloc.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
 #include <yajl/yajl_parse.h>
 
 #include <string>
@@ -60,7 +60,7 @@ soundcloud_init(const config_param &param)
 /**
  * Construct a full soundcloud resolver URL from the given fragment.
  * @param uri uri of a soundcloud page (or just the path)
- * @return Constructed URL. Must be freed with g_free.
+ * @return Constructed URL. Must be freed with free().
  */
 static char *
 soundcloud_resolve(const char* uri)
@@ -68,18 +68,18 @@ soundcloud_resolve(const char* uri)
 	char *u, *ru;
 
 	if (StringStartsWith(uri, "https://")) {
-		u = g_strdup(uri);
+		u = xstrdup(uri);
 	} else if (StringStartsWith(uri, "soundcloud.com")) {
-		u = g_strconcat("https://", uri, nullptr);
+		u = xstrcatdup("https://", uri);
 	} else {
 		/* assume it's just a path on soundcloud.com */
-		u = g_strconcat("https://soundcloud.com/", uri, nullptr);
+		u = xstrcatdup("https://soundcloud.com/", uri);
 	}
 
-	ru = g_strconcat("https://api.soundcloud.com/resolve.json?url=",
-			 u, "&client_id=",
-			 soundcloud_config.apikey.c_str(), nullptr);
-	g_free(u);
+	ru = xstrcatdup("https://api.soundcloud.com/resolve.json?url=",
+			u, "&client_id=",
+			soundcloud_config.apikey.c_str());
+	free(u);
 
 	return ru;
 }
@@ -145,12 +145,12 @@ handle_string(void *ctx, const unsigned char* stringval,
 
 	switch (data->key) {
 	case Title:
-		g_free(data->title);
-		data->title = g_strndup(s, stringlen);
+		free(data->title);
+		data->title = xstrndup(s, stringlen);
 		break;
 	case Stream_URL:
-		g_free(data->stream_url);
-		data->stream_url = g_strndup(s, stringlen);
+		free(data->stream_url);
+		data->stream_url = xstrndup(s, stringlen);
 		data->got_url = 1;
 		break;
 	default:
@@ -211,8 +211,8 @@ handle_end_map(void *ctx)
 	/* got_url == 1, track finished, make it into a song */
 	data->got_url = 0;
 
-	char *u = g_strconcat(data->stream_url, "?client_id=",
-			      soundcloud_config.apikey.c_str(), nullptr);
+	char *u = xstrcatdup(data->stream_url, "?client_id=",
+			     soundcloud_config.apikey.c_str());
 
 	TagBuilder tag;
 	tag.SetDuration(SignedSongTime::FromMS(data->duration));
@@ -220,7 +220,7 @@ handle_end_map(void *ctx)
 		tag.AddItem(TAG_NAME, data->title);
 
 	data->songs.emplace_front(u, tag.Commit());
-	g_free(u);
+	free(u);
 
 	return 1;
 }
@@ -325,24 +325,24 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	char *u = nullptr;
 	if (memcmp(uri, "track/", 6) == 0) {
 		const char *rest = uri + 6;
-		u = g_strconcat("https://api.soundcloud.com/tracks/",
-				rest, ".json?client_id=",
-				soundcloud_config.apikey.c_str(), nullptr);
+		u = xstrcatdup("https://api.soundcloud.com/tracks/",
+			       rest, ".json?client_id=",
+			       soundcloud_config.apikey.c_str());
 	} else if (memcmp(uri, "playlist/", 9) == 0) {
 		const char *rest = uri + 9;
-		u = g_strconcat("https://api.soundcloud.com/playlists/",
-				rest, ".json?client_id=",
-				soundcloud_config.apikey.c_str(), nullptr);
+		u = xstrcatdup("https://api.soundcloud.com/playlists/",
+			       rest, ".json?client_id=",
+			       soundcloud_config.apikey.c_str());
 	} else if (memcmp(uri, "user/", 5) == 0) {
 		const char *rest = uri + 5;
-		u = g_strconcat("https://api.soundcloud.com/users/",
-				rest, "/tracks.json?client_id=",
-				soundcloud_config.apikey.c_str(), nullptr);
+		u = xstrcatdup("https://api.soundcloud.com/users/",
+			       rest, "/tracks.json?client_id=",
+			       soundcloud_config.apikey.c_str());
 	} else if (memcmp(uri, "search/", 7) == 0) {
 		const char *rest = uri + 7;
-		u = g_strconcat("https://api.soundcloud.com/tracks.json?q=",
-				rest, "&client_id=",
-				soundcloud_config.apikey.c_str(), nullptr);
+		u = xstrcatdup("https://api.soundcloud.com/tracks.json?q=",
+			       rest, "&client_id=",
+			       soundcloud_config.apikey.c_str());
 	} else if (memcmp(uri, "url/", 4) == 0) {
 		const char *rest = uri + 4;
 		/* Translate to soundcloud resolver call. libcurl will automatically
@@ -368,10 +368,10 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	int ret = soundcloud_parse_json(u, hand, mutex, cond);
 
-	g_free(u);
+	free(u);
 	yajl_free(hand);
-	g_free(data.title);
-	g_free(data.stream_url);
+	free(data.title);
+	free(data.stream_url);
 
 	if (ret == -1)
 		return nullptr;
