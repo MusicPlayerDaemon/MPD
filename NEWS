@@ -1,5 +1,6 @@
 ver 0.19.2 (not yet released)
 * decoder
+  - faad: remove workaround for ancient libfaad2 ABI bug
   - ffmpeg: recognize MIME type audio/aacp
 * output
   - fix memory leak after filter initialization error
