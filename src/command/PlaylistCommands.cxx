@@ -35,8 +35,16 @@
 #include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
+#include "Mapper.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+
+bool
+playlist_commands_available()
+{
+	return !map_spl_path().IsNull();
+}
 
 static void
 print_spl_list(Client &client, const PlaylistVector &list)

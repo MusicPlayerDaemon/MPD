@@ -21,8 +21,13 @@
 #define MPD_PLAYLIST_COMMANDS_HXX
 
 #include "CommandResult.hxx"
+#include "Compiler.h"
 
 class Client;
+
+gcc_const
+bool
+playlist_commands_available();
 
 CommandResult
 handle_save(Client &client, unsigned argc, char *argv[]);

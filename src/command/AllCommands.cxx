@@ -210,6 +210,16 @@ command_available(gcc_unused const Partition &partition,
 		return neighbor_commands_available(partition.instance);
 #endif
 
+	if (strcmp(cmd->cmd, "save") == 0 ||
+	    strcmp(cmd->cmd, "rm") == 0 ||
+	    strcmp(cmd->cmd, "rename") == 0 ||
+	    strcmp(cmd->cmd, "playlistdelete") == 0 ||
+	    strcmp(cmd->cmd, "playlistmove") == 0 ||
+	    strcmp(cmd->cmd, "playlistclear") == 0 ||
+	    strcmp(cmd->cmd, "playlistadd") == 0 ||
+	    strcmp(cmd->cmd, "listplaylists") == 0)
+		return playlist_commands_available();
+
 	return true;
 }
 
