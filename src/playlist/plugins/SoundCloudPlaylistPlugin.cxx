@@ -35,6 +35,7 @@
 #include <string>
 
 #include <string.h>
+#include <stdlib.h>
 
 static struct {
 	std::string apikey;

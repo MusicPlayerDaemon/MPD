@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 std::string
 sticker_song_get_value(const LightSong &song, const char *name)
