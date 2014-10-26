@@ -135,7 +135,8 @@ ExtM3uPlaylist::NextSong()
 
 static const char *const extm3u_suffixes[] = {
 	"m3u",
-	NULL
+	"m3u8",
+	nullptr
 };
 
 static const char *const extm3u_mime_types[] = {

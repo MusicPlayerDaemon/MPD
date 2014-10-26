@@ -61,6 +61,7 @@ M3uPlaylist::NextSong()
 
 static const char *const m3u_suffixes[] = {
 	"m3u",
+	"m3u8",
 	nullptr
 };
 
