@@ -5,6 +5,7 @@ ver 0.19.2 (not yet released)
 * decoder
   - faad: remove workaround for ancient libfaad2 ABI bug
   - ffmpeg: recognize MIME type audio/aacp
+  - mad: fix negative replay gain values
 * output
   - fix memory leak after filter initialization error
   - fall back to PCM if given DSD sample rate is not supported

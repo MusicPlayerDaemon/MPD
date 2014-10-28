@@ -657,7 +657,7 @@ parse_lame(struct lame *lame, struct mad_bitptr *ptr, int *bitlen)
 	unsigned name = mad_bit_read(ptr, 3); /* gain name */
 	unsigned orig = mad_bit_read(ptr, 3); /* gain originator */
 	unsigned sign = mad_bit_read(ptr, 1); /* sign bit */
-	unsigned gain = mad_bit_read(ptr, 9); /* gain*10 */
+	int gain = mad_bit_read(ptr, 9); /* gain*10 */
 	if (gain && name == 1 && orig != 0) {
 		lame->track_gain = ((sign ? -gain : gain) / 10.0) + adj;
 		FormatDebug(mad_domain, "LAME track gain found: %f",
