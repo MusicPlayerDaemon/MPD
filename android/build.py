@@ -349,7 +349,6 @@ thirdparty_libs = [
             '--enable-gpl',
             '--enable-small',
             '--disable-pthreads',
-            '--disable-runtime-cpudetect',
             '--disable-programs',
             '--disable-doc',
             '--disable-avdevice',
