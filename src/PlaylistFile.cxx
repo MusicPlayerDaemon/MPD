@@ -69,6 +69,10 @@ spl_global_init(void)
 bool
 spl_valid_name(const char *name_utf8)
 {
+	if (*name_utf8 == 0)
+		/* empty name not allowed */
+		return false;
+
 	/*
 	 * Not supporting '/' was done out of laziness, and we should
 	 * really strive to support it in the future.
