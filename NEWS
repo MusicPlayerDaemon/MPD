@@ -1,5 +1,6 @@
 ver 0.19.2 (not yet released)
 * playlist
+  - don't allow empty playlist name
   - m3u: don't ignore unterminated last line
   - m3u: recognize the file suffix ".m3u8"
 * decoder
