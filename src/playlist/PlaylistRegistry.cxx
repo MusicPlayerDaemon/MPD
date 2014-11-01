@@ -139,12 +139,12 @@ static SongEnumerator *
 playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
 			      const bool *tried)
 {
-	const char *suffix;
 	SongEnumerator *playlist = nullptr;
 
 	assert(uri != nullptr);
 
-	suffix = uri_get_suffix(uri);
+	UriSuffixBuffer suffix_buffer;
+	const char *const suffix = uri_get_suffix(uri, suffix_buffer);
 	if (suffix == nullptr)
 		return nullptr;
 
@@ -257,7 +257,10 @@ playlist_list_open_stream(InputStream &is, const char *uri)
 			return playlist;
 	}
 
-	const char *suffix = uri != nullptr ? uri_get_suffix(uri) : nullptr;
+	UriSuffixBuffer suffix_buffer;
+	const char *suffix = uri != nullptr
+		? uri_get_suffix(uri, suffix_buffer)
+		: nullptr;
 	if (suffix != nullptr) {
 		auto playlist = playlist_list_open_stream_suffix(is, suffix);
 		if (playlist != nullptr)

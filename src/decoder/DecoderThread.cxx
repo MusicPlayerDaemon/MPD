@@ -237,7 +237,8 @@ static bool
 decoder_run_stream_locked(Decoder &decoder, InputStream &is,
 			  const char *uri, bool &tried_r)
 {
-	const char *const suffix = uri_get_suffix(uri);
+	UriSuffixBuffer suffix_buffer;
+	const char *const suffix = uri_get_suffix(uri, suffix_buffer);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(decoder_run_stream_plugin,
