@@ -35,6 +35,17 @@ gcc_pure
 const char *
 uri_get_suffix(const char *uri);
 
+struct UriSuffixBuffer {
+	char data[8];
+};
+
+/**
+ * Returns the file name suffix, ignoring the query string.
+ */
+gcc_pure
+const char *
+uri_get_suffix(const char *uri, UriSuffixBuffer &buffer);
+
 /**
  * Returns true if this is a safe "local" URI:
  *

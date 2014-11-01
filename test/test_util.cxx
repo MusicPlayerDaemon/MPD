@@ -33,6 +33,25 @@ public:
 				     uri_get_suffix(".jpg"));
 		CPPUNIT_ASSERT_EQUAL((const char *)nullptr,
 				     uri_get_suffix("/foo/.jpg"));
+
+		/* the first overload does not eliminate the query
+		   string */
+		CPPUNIT_ASSERT_EQUAL(0, strcmp(uri_get_suffix("/foo/bar.jpg?query_string"),
+					       "jpg?query_string"));
+
+		/* ... but the second one does */
+		UriSuffixBuffer buffer;
+		CPPUNIT_ASSERT_EQUAL(0, strcmp(uri_get_suffix("/foo/bar.jpg?query_string",
+							      buffer),
+					       "jpg"));
+
+		/* repeat some of the above tests with the second overload */
+		CPPUNIT_ASSERT_EQUAL((const char *)nullptr,
+				     uri_get_suffix("/foo/bar", buffer));
+		CPPUNIT_ASSERT_EQUAL((const char *)nullptr,
+				     uri_get_suffix("/foo.jpg/bar", buffer));
+		CPPUNIT_ASSERT_EQUAL(0, strcmp(uri_get_suffix("/foo/bar.jpg", buffer),
+					       "jpg"));
 	}
 
 	void TestRemoveAuth() {
