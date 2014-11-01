@@ -720,9 +720,9 @@ CurlInputStream::InitEasy(Error &error)
 			 input_curl_writefunction);
 	curl_easy_setopt(easy, CURLOPT_WRITEDATA, this);
 	curl_easy_setopt(easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
-	curl_easy_setopt(easy, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(easy, CURLOPT_NETRC, 1);
-	curl_easy_setopt(easy, CURLOPT_MAXREDIRS, 5);
+	curl_easy_setopt(easy, CURLOPT_FOLLOWLOCATION, 1l);
+	curl_easy_setopt(easy, CURLOPT_NETRC, 1l);
+	curl_easy_setopt(easy, CURLOPT_MAXREDIRS, 5l);
 	curl_easy_setopt(easy, CURLOPT_FAILONERROR, true);
 	curl_easy_setopt(easy, CURLOPT_ERRORBUFFER, error_buffer);
 	curl_easy_setopt(easy, CURLOPT_NOPROGRESS, 1l);
