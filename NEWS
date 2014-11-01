@@ -3,6 +3,7 @@ ver 0.18.17 (not yet released)
   - don't allow empty playlist name
   - m3u: recognize the file suffix ".m3u8"
 * decoder
+  - ignore URI query string for plugin detection
   - faad: remove workaround for ancient libfaad2 ABI bug
   - ffmpeg: recognize MIME type audio/aacp
 
