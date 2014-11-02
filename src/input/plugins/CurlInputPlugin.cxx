@@ -723,7 +723,7 @@ CurlInputStream::InitEasy(Error &error)
 	curl_easy_setopt(easy, CURLOPT_FOLLOWLOCATION, 1l);
 	curl_easy_setopt(easy, CURLOPT_NETRC, 1l);
 	curl_easy_setopt(easy, CURLOPT_MAXREDIRS, 5l);
-	curl_easy_setopt(easy, CURLOPT_FAILONERROR, true);
+	curl_easy_setopt(easy, CURLOPT_FAILONERROR, 1l);
 	curl_easy_setopt(easy, CURLOPT_ERRORBUFFER, error_buffer);
 	curl_easy_setopt(easy, CURLOPT_NOPROGRESS, 1l);
 	curl_easy_setopt(easy, CURLOPT_NOSIGNAL, 1l);
