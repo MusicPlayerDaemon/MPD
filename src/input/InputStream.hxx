@@ -200,6 +200,10 @@ public:
 		return mime.empty() ? nullptr : mime.c_str();
 	}
 
+	void ClearMimeType() {
+		mime.clear();
+	}
+
 	gcc_nonnull_all
 	void SetMimeType(const char *_mime) {
 		assert(!ready);
