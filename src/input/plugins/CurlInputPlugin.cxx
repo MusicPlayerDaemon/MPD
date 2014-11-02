@@ -109,6 +109,13 @@ struct CurlInputStream final : public AsyncInputStream {
 	 */
 	void FreeEasyIndirect();
 
+	/**
+	 * Called when a new response begins.  This is used to discard
+	 * headers from previous responses (for example authentication
+	 * and redirects).
+	 */
+	void ResponseBoundary();
+
 	void HeaderReceived(const char *name, std::string &&value);
 
 	size_t DataReceived(const void *ptr, size_t size);
@@ -598,6 +605,20 @@ CurlInputStream::~CurlInputStream()
 }
 
 inline void
+CurlInputStream::ResponseBoundary()
+{
+	/* undo all effects of HeaderReceived() because the previous
+	   response was not applicable for this stream */
+
+	seekable = false;
+	size = UNKNOWN_SIZE;
+	ClearMimeType();
+	ClearTag();
+
+	// TODO: reset the IcyInputStream?
+}
+
+inline void
 CurlInputStream::HeaderReceived(const char *name, std::string &&value)
 {
 	if (IsSeekPending())
@@ -645,6 +666,11 @@ input_curl_headerfunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	size *= nmemb;
 
 	const char *header = (const char *)ptr;
+	if (size > 5 && memcmp(header, "HTTP/", 5) == 0) {
+		c.ResponseBoundary();
+		return size;
+	}
+
 	const char *end = header + size;
 
 	char name[64];

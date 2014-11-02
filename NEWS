@@ -1,4 +1,6 @@
 ver 0.19.2 (not yet released)
+* input
+  - curl: fix redirected streams
 * playlist
   - don't allow empty playlist name
   - m3u: don't ignore unterminated last line
