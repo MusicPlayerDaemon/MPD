@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2017 The Music Player Daemon Project
+ * Copyright 2003-2018 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,20 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.musicpd;
+#include "config.h"
+#include "LogListener.hxx"
+#include "java/Class.hxx"
+#include "java/String.hxx"
+#include "util/AllocatedString.hxx"
+#include "util/FormatString.hxx"
 
-import android.content.Context;
+void
+LogListener::OnLog(JNIEnv *env, int priority, const char *fmt, ...) const
+{
+	assert(env != nullptr);
 
-/**
- * Bridge to native code.
- */
-public class Bridge {
+	Java::Class cls(env, env->GetObjectClass(Get()));
 
-	/* used by jni */
-	public interface LogListener {
-		public void onLog(int priority, String msg);
-	}
+	jmethodID method = env->GetMethodID(cls, "onLog",
+					    "(ILjava/lang/String;)V");
 
-	public static native void run(Context context, LogListener logListener);
-	public static native void shutdown();
+	assert(method);
+
+	va_list args;
+	va_start(args, fmt);
+	const auto log = FormatStringV(fmt, args);
+	va_end(args);
+
+	env->CallVoidMethod(Get(), method, priority,
+			    Java::String(env, log.c_str()).Get());
 }

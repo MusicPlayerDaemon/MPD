@@ -25,7 +25,10 @@ class Context;
 struct Instance;
 
 #ifdef ANDROID
+#include "android/LogListener.hxx"
+
 extern Context *context;
+extern LogListener *logListener;
 #endif
 
 extern Instance *instance;

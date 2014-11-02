@@ -69,7 +69,7 @@ public class Main extends Activity implements Runnable {
 	}
 
 	@Override public void run() {
-		Bridge.run(this);
+		Bridge.run(this, null);
 		quitHandler.sendMessage(quitHandler.obtainMessage());
 	}
 }

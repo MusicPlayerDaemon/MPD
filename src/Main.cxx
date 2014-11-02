@@ -92,6 +92,7 @@
 #include "java/File.hxx"
 #include "android/Environment.hxx"
 #include "android/Context.hxx"
+#include "android/LogListener.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "fs/FileSystem.hxx"
 #include "org_musicpd_Bridge.h"
@@ -128,6 +129,7 @@ static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
 
 #ifdef ANDROID
 Context *context;
+LogListener *logListener;
 #endif
 
 Instance *instance;
@@ -676,16 +678,19 @@ try {
 
 gcc_visibility_default
 JNIEXPORT void JNICALL
-Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context)
+Java_org_musicpd_Bridge_run(JNIEnv *env, jclass, jobject _context, jobject _logListener)
 {
 	Java::Init(env);
 	Java::File::Initialise(env);
 	Environment::Initialise(env);
 
 	context = new Context(env, _context);
+	if (_logListener != nullptr)
+		logListener = new LogListener(env, _logListener);
 
 	mpd_main(0, nullptr);
 
+	delete logListener;
 	delete context;
 	Environment::Deinitialise(env);
 }
