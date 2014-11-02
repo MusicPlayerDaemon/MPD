@@ -62,36 +62,7 @@ int main() {
 	CPPFLAGS=$oldcppflags
 fi
 
-if test x$enable_aac = xyes; then
-	oldcflags=$CFLAGS
-	oldlibs=$LIBS
-	oldcppflags=$CPPFLAGS
-	CFLAGS="$CFLAGS $FAAD_CFLAGS -Werror"
-	LIBS="$LIBS $FAAD_LIBS"
-	CPPFLAGS=$CFLAGS
-
-	AC_MSG_CHECKING(for broken libfaad headers)
-	AC_COMPILE_IFELSE([AC_LANG_SOURCE([
-#include <faad.h>
-#include <stddef.h>
-#include <stdint.h>
-
-int main() {
-	unsigned char channels;
-	uint32_t sample_rate;
-
-	NeAACDecInit2(NULL, NULL, 0, &sample_rate, &channels);
-	return 0;
-}
-	])],
-		[AC_MSG_RESULT(correct)],
-		[AC_MSG_RESULT(broken);
-		AC_DEFINE(HAVE_FAAD_LONG, 1, [Define if faad.h uses the broken "unsigned long" pointers])])
-
-	CFLAGS=$oldcflags
-	LIBS=$oldlibs
-	CPPFLAGS=$oldcppflags
-else
+if test x$enable_aac = xno; then
 	FAAD_LIBS=""
 	FAAD_CFLAGS=""
 fi

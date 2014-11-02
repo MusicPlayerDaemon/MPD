@@ -26,6 +26,7 @@
 
 #include <upnp/upnptools.h>
 
+#include <stdlib.h>
 #include <string.h>
 
 // The service type string we are looking for.

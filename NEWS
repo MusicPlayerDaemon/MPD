@@ -4,11 +4,21 @@ ver 0.20 (not yet released)
 * output
   - pulse: set channel map to WAVE-EX
 
-ver 0.19.2 (not yet released)
+ver 0.19.2 (2014/11/02)
+* input
+  - curl: fix redirected streams
+* playlist
+  - don't allow empty playlist name
+  - m3u: don't ignore unterminated last line
+  - m3u: recognize the file suffix ".m3u8"
 * decoder
+  - ignore URI query string for plugin detection
+  - faad: remove workaround for ancient libfaad2 ABI bug
   - ffmpeg: recognize MIME type audio/aacp
+  - mad: fix negative replay gain values
 * output
   - fix memory leak after filter initialization error
+  - fall back to PCM if given DSD sample rate is not supported
 * fix assertion failure on unsupported PCM conversion
 * auto-disable plugins that require GLib when --disable-glib is used
 
@@ -98,6 +108,15 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.17 (2014/11/02)
+* playlist
+  - don't allow empty playlist name
+  - m3u: recognize the file suffix ".m3u8"
+* decoder
+  - ignore URI query string for plugin detection
+  - faad: remove workaround for ancient libfaad2 ABI bug
+  - ffmpeg: recognize MIME type audio/aacp
 
 ver 0.18.16 (2014/09/26)
 * fix DSD breakage due to typo in configure.ac

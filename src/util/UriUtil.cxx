@@ -54,6 +54,23 @@ uri_get_suffix(const char *uri)
 	return suffix;
 }
 
+const char *
+uri_get_suffix(const char *uri, UriSuffixBuffer &buffer)
+{
+	const char *suffix = uri_get_suffix(uri);
+	if (suffix == nullptr)
+		return nullptr;
+
+	const char *q = strchr(suffix, '?');
+	if (q != nullptr && size_t(q - suffix) < sizeof(buffer.data)) {
+		memcpy(buffer.data, suffix, q - suffix);
+		buffer.data[q - suffix] = 0;
+		suffix = buffer.data;
+	}
+
+	return suffix;
+}
+
 static const char *
 verify_uri_segment(const char *p)
 {

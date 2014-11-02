@@ -75,15 +75,4 @@ win32_app_stopping(void);
 
 #endif
 
-#ifdef __APPLE__
-
-/* Runs the OS X native event loop in the main thread, and runs
- * mpd_main on a new thread. This lets CoreAudio receive route
- * change notifications (e.g. plugging or unplugging headphones).
- * All hardware output on OS X ultimately uses CoreAudio internally.
- */
-int osx_main(int argc, char *argv[]);
-
-#endif
-
 #endif
