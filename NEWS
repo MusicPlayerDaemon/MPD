@@ -1,4 +1,4 @@
-ver 0.18.17 (not yet released)
+ver 0.18.17 (2014/11/02)
 * playlist
   - don't allow empty playlist name
   - m3u: recognize the file suffix ".m3u8"
