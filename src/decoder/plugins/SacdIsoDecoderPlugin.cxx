@@ -18,10 +18,10 @@
  */
 
 #include "config.h"
-#include <lib/sacdiso/sacd_media.h>
-#include <lib/sacdiso/sacd_reader.h>
-#include <lib/sacdiso/sacd_disc.h>
-#include <lib/sacdiso/dst_decoder_mpd.h>
+#include <sacd_media.h>
+#include <sacd_reader.h>
+#include <sacd_disc.h>
+#include <dst_decoder_mpd.h>
 #undef MAX_CHANNELS
 #include "SacdIsoDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
@@ -44,6 +44,8 @@
 #include <string.h>
 #include <vector>
 
+using namespace std;
+
 #define SACD_TRACKXXX_FMT "%cC_AUDIO__TRACK%03u.%s"
 
 static constexpr Domain sacdiso_domain("sacdiso");
@@ -53,22 +55,22 @@ static constexpr unsigned DST_DECODER_THREADS = 8;
 static unsigned  param_dstdec_threads;
 static bool      param_edited_master;
 static bool      param_lsbitfirst;
-static area_id_e param_preferable_area;
+static area_id_e param_playable_area;
 
-static std::string    sacd_uri;
+static string         sacd_uri;
 static sacd_media_t*  sacd_media  = nullptr;
 static sacd_reader_t* sacd_reader = nullptr;
 
 static unsigned
 get_container_path_length(const char* path) {
-	std::string container_path = path;
+	string container_path = path;
 	container_path.resize(::strrchr(container_path.c_str(), '/') - container_path.c_str());
 	return container_path.length();
 }
 
-static std::string
+static string
 get_container_path(const char* path) {
-	std::string path_container = path;
+	string path_container = path;
 	unsigned length = get_container_path_length(path);
 	if (length > 0) {
 		path_container.resize(length);
@@ -80,7 +82,7 @@ static unsigned
 get_subsong(const char* path) {
 	unsigned length = get_container_path_length(path);
 	if (length > 0) {
-		const char *ptr = path + length + 1;
+		const char* ptr = path + length + 1;
 		char area = '\0';
 		unsigned track = 0;
 		char suffix[4];
@@ -96,7 +98,7 @@ get_subsong(const char* path) {
 
 static bool
 sacdiso_update_toc(const char* path) {
-	std::string curr_uri = path;
+	string curr_uri = path;
 	if (path != nullptr) {
 		if (!sacd_uri.compare(curr_uri)) {
 			return true;
@@ -129,7 +131,7 @@ sacdiso_update_toc(const char* path) {
 			return false;
 		}
 		if (!sacd_media->open(path)) {
-			std::string err;
+			string err;
 			err  = "sacd_media->open('";
 			err += path;
 			err += "') failed";
@@ -150,14 +152,14 @@ sacdiso_init(const config_param& param) {
 	param_dstdec_threads = param.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
 	param_edited_master  = param.GetBlockValue("edited_master",  false);
 	param_lsbitfirst     = param.GetBlockValue("lsbitfirst", false);
-	const char* preferable_area = param.GetBlockValue("preferable_area", nullptr);
-	param_preferable_area = AREA_BOTH;
-	if (preferable_area != nullptr) {
-		if (strcmp(preferable_area, "stereo") == 0) {
-			param_preferable_area = AREA_TWOCH;
+	const char* playable_area = param.GetBlockValue("playable_area", nullptr);
+	param_playable_area = AREA_BOTH;
+	if (playable_area != nullptr) {
+		if (strcmp(playable_area, "stereo") == 0) {
+			param_playable_area = AREA_TWOCH;
 		}
-		if (strcmp(preferable_area, "multichannel") == 0) {
-			param_preferable_area = AREA_MULCH;
+		if (strcmp(playable_area, "multichannel") == 0) {
+			param_playable_area = AREA_MULCH;
 		}
 	}
 	return true;
@@ -176,14 +178,14 @@ sacdiso_container_scan(Path path_fs, const unsigned int tnum) {
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
 	unsigned track = tnum - 1;
-	if (param_preferable_area == AREA_MULCH) {
+	if (param_playable_area == AREA_MULCH) {
 		track += twoch_count;
 	}
 	if (track < twoch_count) {
 		sacd_reader->select_area(AREA_TWOCH);
 	}
 	else {
-		if (param_preferable_area == AREA_TWOCH) {
+		if (param_playable_area == AREA_TWOCH) {
 			return nullptr;
 		}
 		track -= twoch_count;
@@ -208,7 +210,7 @@ bit_reverse_buffer(uint8_t* p, uint8_t* end) {
 
 static void
 sacdiso_file_decode(Decoder& decoder, Path path_fs) {
-	std::string path_container = get_container_path(path_fs.c_str());
+	string path_container = get_container_path(path_fs.c_str());
 	if (!sacdiso_update_toc(path_container.c_str())) {
 		return;
 	}
@@ -236,8 +238,8 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 	int dsd_channels = sacd_reader->get_channels();
 	int dsd_buf_size = dsd_samplerate / 8 / 75 * dsd_channels;
 	int dst_buf_size = dsd_samplerate / 8 / 75 * dsd_channels;
-	std::vector<uint8_t> dsd_buf;
-	std::vector<uint8_t> dst_buf;
+	vector<uint8_t> dsd_buf;
+	vector<uint8_t> dst_buf;
 	dsd_buf.resize(param_dstdec_threads * dsd_buf_size);
 	dst_buf.resize(param_dstdec_threads * dst_buf_size);
 
@@ -345,7 +347,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 
 static bool
 sacdiso_scan_file(Path path_fs, const struct tag_handler* handler, void* handler_ctx) {
-	std::string path_container = get_container_path(path_fs.c_str());
+	string path_container = get_container_path(path_fs.c_str());
 	if (!sacdiso_update_toc(path_container.c_str())) {
 		return false;
 	}
@@ -365,7 +367,7 @@ sacdiso_scan_file(Path path_fs, const struct tag_handler* handler, void* handler
 			return false;
 		}
 	}
-	std::string tag_value = std::to_string(track + 1);
+	string tag_value = to_string(track + 1);
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
 	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(sacd_reader->get_duration(track)));
 	sacd_reader->get_info(track, handler, handler_ctx);

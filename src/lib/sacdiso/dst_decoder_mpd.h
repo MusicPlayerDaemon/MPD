@@ -1,6 +1,6 @@
 /*
-* SACD Decoder plugin
-* Copyright (c) 2011-2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* MPD SACD Decoder plugin
+* Copyright (c) 2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public

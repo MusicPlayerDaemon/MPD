@@ -1,6 +1,6 @@
 /*
-* SACD Decoder plugin
-* Copyright (c) 2011-2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* MPD SACD Decoder plugin
+* Copyright (c) 2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This module partially uses code from SACD Ripper http://code.google.com/p/sacd-ripper/ project
 *

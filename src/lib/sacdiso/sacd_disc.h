@@ -1,6 +1,6 @@
 /*
-* SACD Decoder plugin
-* Copyright (c) 2011-2013 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* MPD SACD Decoder plugin
+* Copyright (c) 2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This module partially uses code from SACD Ripper http://code.google.com/p/sacd-ripper/ project
 *
@@ -22,7 +22,7 @@
 #ifndef _SACD_DISC_H_INCLUDED
 #define _SACD_DISC_H_INCLUDED
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "endianess.h"
 #include "scarletbook.h"
@@ -81,7 +81,7 @@ public:
 	uint32_t get_track_length_lsn();
 	bool is_dst();
 	void set_emaster(bool emaster);
-	virtual bool open(sacd_media_t* sacd_media);
+	bool open(sacd_media_t* sacd_media);
 	bool close();
 	void select_area(area_id_e area_id);
 	bool select_track(uint32_t track_index, area_id_e area_id = AREA_BOTH, uint32_t offset = 0);

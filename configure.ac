@@ -535,6 +535,11 @@ AC_ARG_ENABLE(sacdiso,
 		[enable SACD ISO support via libsacdiso (default: disable)]),,
 	enable_sacdiso=no)
 
+AC_ARG_ENABLE(dvdaiso,
+	AS_HELP_STRING([--enable-dvdaiso],
+		[enable DVD-Audio support via libdvdaiso (default: disable)]),,
+	enable_dvdaiso=no)
+
 AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
 		[enable C64 SID support via libsidplay2]),,
@@ -1361,6 +1366,13 @@ fi
 
 AM_CONDITIONAL(ENABLE_SACDISO, test x$enable_sacdiso = xyes)
 
+dnl --------------------------------- dvdaiso ---------------------------------
+if test x$enable_dvdaiso = xyes; then
+	AC_DEFINE(ENABLE_DVDAISO, 1, [Define for DVD-Audio support])
+fi
+
+AM_CONDITIONAL(ENABLE_DVDAISO, test x$enable_dvdaiso = xyes)
+
 dnl --------------------------------- sidplay ---------------------------------
 if test x$enable_sidplay != xno; then
 	# we're not using pkg-config here
@@ -1424,6 +1436,7 @@ if
 	test x$enable_mpg123 = xno &&
 	test x$enable_opus = xno &&
 	test x$enable_sacdiso = xno &&
+	test x$enable_dvdaiso = xno &&
 	test x$enable_sidplay = xno &&
 	test x$enable_tremor = xno &&
 	test x$enable_vorbis = xno &&
@@ -1853,6 +1866,7 @@ printf '\nArchive support:\n\t'
 results(bzip2,[bzip2])
 results(iso9660,[ISO9660])
 results(sacdiso,[SACDISO])
+results(dvdaiso,[DVDAISO])
 results(zzip,[ZIP])
 
 if test x$with_zeroconf != xno; then
