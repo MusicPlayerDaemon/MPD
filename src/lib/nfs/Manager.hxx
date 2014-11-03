@@ -24,15 +24,21 @@
 #include "Connection.hxx"
 #include "Compiler.h"
 
-#include <string>
-#include <map>
+#include <boost/intrusive/set.hpp>
 
 /**
  * A manager for NFS connections.  Handles multiple connections to
  * multiple NFS servers.
  */
 class NfsManager {
-	class ManagedConnection final : public NfsConnection {
+	struct LookupKey {
+		const char *server;
+		const char *export_name;
+	};
+
+	class ManagedConnection final
+		: public NfsConnection,
+		  public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 		NfsManager &manager;
 
 	public:
@@ -42,39 +48,44 @@ class NfsManager {
 			:NfsConnection(_loop, _server, _export_name),
 			 manager(_manager) {}
 
-#if defined(__GNUC__) && !defined(__clang__) && !GCC_CHECK_VERSION(4,8)
-		/* needed due to lack of std::map::emplace() */
-		ManagedConnection(ManagedConnection &&other)
-			:NfsConnection(std::move(other)),
-			 manager(other.manager) {}
-#endif
-
 	protected:
 		/* virtual methods from NfsConnection */
 		void OnNfsConnectionError(Error &&error) override;
 	};
 
+	struct Compare {
+		gcc_pure
+		bool operator()(const LookupKey a,
+				const ManagedConnection &b) const;
+
+		gcc_pure
+		bool operator()(const ManagedConnection &a,
+				const LookupKey b) const;
+	};
+
 	EventLoop &loop;
 
 	/**
-	 * Maps server+":"+export_name (see method Key()) to
-	 * #ManagedConnection.
+	 * Maps server and export_name to #ManagedConnection.
 	 */
-	std::map<std::string, ManagedConnection> connections;
+	typedef boost::intrusive::set<ManagedConnection,
+				      boost::intrusive::compare<Compare>,
+				      boost::intrusive::constant_time_size<false>> Map;
+
+	Map connections;
 
 public:
 	NfsManager(EventLoop &_loop)
 		:loop(_loop) {}
 
+	/**
+	 * Must be run from EventLoop's thread.
+	 */
+	~NfsManager();
+
 	gcc_pure
 	NfsConnection &GetConnection(const char *server,
 				     const char *export_name);
-
-private:
-	gcc_pure
-	static std::string Key(const char *server, const char *export_name) {
-		return std::string(server) + ':' + export_name;
-	}
 };
 
 #endif

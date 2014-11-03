@@ -32,26 +32,13 @@
 
 #include <stdlib.h>
 
-/**
- * select correct archive plugin to handle the input stream
- * may allow stacking of archive plugins. for example for handling
- * tar.gz a gzip handler opens file (through inputfile stream)
- * then it opens a tar handler and sets gzip inputstream as
- * parent_stream so tar plugin fetches file data from gzip
- * plugin and gzip fetches file from disk
- */
-static InputStream *
-input_archive_open(const char *pathname,
-		   Mutex &mutex, Cond &cond,
-		   Error &error)
+InputStream *
+OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond, Error &error)
 {
 	const ArchivePlugin *arplug;
 	InputStream *is;
 
-	if (!PathTraitsFS::IsAbsolute(pathname))
-		return nullptr;
-
-	char *pname = strdup(pathname);
+	char *pname = strdup(path.c_str());
 	// archive_lookup will modify pname when true is returned
 	const char *archive, *filename, *suffix;
 	if (!archive_lookup(pname, &archive, &filename, &suffix)) {
@@ -82,6 +69,16 @@ input_archive_open(const char *pathname,
 	file->Close();
 
 	return is;
+}
+
+static InputStream *
+input_archive_open(gcc_unused const char *filename,
+		gcc_unused Mutex &mutex, gcc_unused Cond &cond,
+		gcc_unused Error &error)
+{
+	/* dummy method; use OpenArchiveInputStream() instead */
+
+	return nullptr;
 }
 
 const InputPlugin input_plugin_archive = {

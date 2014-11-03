@@ -25,18 +25,19 @@
 class Mutex;
 class Cond;
 class SongEnumerator;
+class Path;
 
 /**
  * Opens a playlist from a local file.
  *
- * @param path_fs the path of the playlist file
+ * @param path the path of the playlist file
  * @param is_r on success, an input_stream object is returned here,
  * which must be closed after the playlist_provider object is freed
  * @return a playlist, or nullptr on error
  */
 gcc_nonnull_all
 SongEnumerator *
-playlist_open_path(const char *path_fs, Mutex &mutex, Cond &cond);
+playlist_open_path(Path path, Mutex &mutex, Cond &cond);
 
 gcc_nonnull_all
 SongEnumerator *

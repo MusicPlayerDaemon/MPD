@@ -51,7 +51,7 @@ PcmConvert::~PcmConvert()
 }
 
 bool
-PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
+PcmConvert::Open(const AudioFormat _src_format, const AudioFormat _dest_format,
 		 Error &error)
 {
 	assert(!src_format.IsValid());
@@ -59,42 +59,43 @@ PcmConvert::Open(AudioFormat _src_format, AudioFormat _dest_format,
 	assert(_src_format.IsValid());
 	assert(_dest_format.IsValid());
 
-	src_format = _src_format;
-	dest_format = _dest_format;
-
-	AudioFormat format = src_format;
+	AudioFormat format = _src_format;
 	if (format.format == SampleFormat::DSD)
 		format.format = SampleFormat::FLOAT;
 
-	enable_resampler = format.sample_rate != dest_format.sample_rate;
+	enable_resampler = format.sample_rate != _dest_format.sample_rate;
 	if (enable_resampler) {
-		if (!resampler.Open(format, dest_format.sample_rate, error))
+		if (!resampler.Open(format, _dest_format.sample_rate, error))
 			return false;
 
 		format.format = resampler.GetOutputSampleFormat();
-		format.sample_rate = dest_format.sample_rate;
+		format.sample_rate = _dest_format.sample_rate;
 	}
 
-	enable_format = format.format != dest_format.format;
+	enable_format = format.format != _dest_format.format;
 	if (enable_format &&
-	    !format_converter.Open(format.format, dest_format.format, error)) {
+	    !format_converter.Open(format.format, _dest_format.format,
+				   error)) {
 		if (enable_resampler)
 			resampler.Close();
 		return false;
 	}
 
-	format.format = dest_format.format;
+	format.format = _dest_format.format;
 
-	enable_channels = format.channels != dest_format.channels;
+	enable_channels = format.channels != _dest_format.channels;
 	if (enable_channels &&
 	    !channels_converter.Open(format.format, format.channels,
-				     dest_format.channels, error)) {
+				     _dest_format.channels, error)) {
 		if (enable_format)
 			format_converter.Close();
 		if (enable_resampler)
 			resampler.Close();
 		return false;
 	}
+
+	src_format = _src_format;
+	dest_format = _dest_format;
 
 	return true;
 }

@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "IOThread.hxx"
+#include "ScopeIOThread.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
 #include "input/TextInputStream.hxx"
@@ -91,8 +91,7 @@ int main(int argc, char **argv)
 
 	config_global_init();
 
-	io_thread_init();
-	io_thread_start();
+	const ScopeIOThread io_thread;
 
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
@@ -128,8 +127,6 @@ int main(int argc, char **argv)
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_deinit_all();
 #endif
-
-	io_thread_deinit();
 
 	config_global_finish();
 

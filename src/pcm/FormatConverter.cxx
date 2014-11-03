@@ -28,10 +28,30 @@
 
 bool
 PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format,
-			 gcc_unused Error &error)
+			 Error &error)
 {
 	assert(_src_format != SampleFormat::UNDEFINED);
 	assert(_dest_format != SampleFormat::UNDEFINED);
+
+	switch (_dest_format) {
+	case SampleFormat::UNDEFINED:
+		assert(false);
+		gcc_unreachable();
+
+	case SampleFormat::S8:
+	case SampleFormat::DSD:
+		error.Format(pcm_domain,
+			     "PCM conversion from %s to %s is not implemented",
+			     sample_format_to_string(_src_format),
+			     sample_format_to_string(_dest_format));
+		return nullptr;
+
+	case SampleFormat::S16:
+	case SampleFormat::S24_P32:
+	case SampleFormat::S32:
+	case SampleFormat::FLOAT:
+		break;
+	}
 
 	src_format = _src_format;
 	dest_format = _dest_format;
@@ -48,20 +68,14 @@ PcmFormatConverter::Close()
 }
 
 ConstBuffer<void>
-PcmFormatConverter::Convert(ConstBuffer<void> src, Error &error)
+PcmFormatConverter::Convert(ConstBuffer<void> src, gcc_unused Error &error)
 {
 	switch (dest_format) {
 	case SampleFormat::UNDEFINED:
-		assert(false);
-		gcc_unreachable();
-
 	case SampleFormat::S8:
 	case SampleFormat::DSD:
-		error.Format(pcm_domain,
-			     "PCM conversion from %s to %s is not implemented",
-			     sample_format_to_string(src_format),
-			     sample_format_to_string(dest_format));
-		return nullptr;
+		assert(false);
+		gcc_unreachable();
 
 	case SampleFormat::S16:
 		return pcm_convert_to_16(buffer, dither,

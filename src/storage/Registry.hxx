@@ -26,6 +26,7 @@
 struct StoragePlugin;
 class Storage;
 class Error;
+class EventLoop;
 
 /**
  * nullptr terminated list of all storage plugins which were enabled at
@@ -39,6 +40,6 @@ GetStoragePluginByName(const char *name);
 
 gcc_nonnull_all gcc_malloc
 Storage *
-CreateStorageURI(const char *uri, Error &error);
+CreateStorageURI(EventLoop &event_loop, const char *uri, Error &error);
 
 #endif

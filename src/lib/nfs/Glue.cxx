@@ -21,25 +21,12 @@
 #include "Glue.hxx"
 #include "Manager.hxx"
 #include "IOThread.hxx"
+#include "event/Call.hxx"
 #include "util/Manual.hxx"
 
-class NfsGlue {
-	NfsManager manager;
+#include <assert.h>
 
-public:
-	NfsGlue(EventLoop &_loop)
-		:manager(_loop) {}
-
-	~NfsGlue() {
-		//assert(open_uri.empty());
-	}
-
-	NfsConnection &GetConnection(const char *server, const char *export_name) {
-		return manager.GetConnection(server, export_name);
-	}
-};
-
-static Manual<NfsGlue> nfs_glue;
+static Manual<NfsManager> nfs_glue;
 static unsigned in_use;
 
 void
@@ -59,11 +46,14 @@ nfs_finish()
 	if (--in_use > 0)
 		return;
 
-	nfs_glue.Destruct();
+	BlockingCall(io_thread_get(), [](){ nfs_glue.Destruct(); });
 }
 
 NfsConnection &
 nfs_get_connection(const char *server, const char *export_name)
 {
+	assert(in_use > 0);
+	assert(io_thread_inside());
+
 	return nfs_glue->GetConnection(server, export_name);
 }

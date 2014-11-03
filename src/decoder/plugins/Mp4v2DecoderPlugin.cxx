@@ -39,15 +39,7 @@ static MP4TrackId
 mp4_get_aac_track(MP4FileHandle handle, NeAACDecHandle decoder,
 		  AudioFormat &audio_format, Error &error)
 {
-	uint32_t sample_rate;
-#ifdef HAVE_FAAD_LONG
-	/* neaacdec.h declares all arguments as "unsigned long", but
-	   internally expects uint32_t pointers.  To avoid gcc
-	   warnings, use this workaround. */
-	unsigned long *sample_rate_r = (unsigned long*)&sample_rate;
-#else
-	uint32_t *sample_rate_r = sample_rate;
-#endif
+	unsigned long sample_rate;
 
 	const MP4TrackId tracks = MP4GetNumberOfTracks(handle);
 
@@ -80,7 +72,7 @@ mp4_get_aac_track(MP4FileHandle handle, NeAACDecHandle decoder,
 
 		uint8_t channels;
 		int32_t nbytes = NeAACDecInit(decoder, buff, buff_size,
-				       sample_rate_r, &channels);
+					      &sample_rate, &channels);
 
 		free(buff);
 

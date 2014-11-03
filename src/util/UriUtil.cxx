@@ -54,6 +54,23 @@ uri_get_suffix(const char *uri)
 	return suffix;
 }
 
+const char *
+uri_get_suffix(const char *uri, UriSuffixBuffer &buffer)
+{
+	const char *suffix = uri_get_suffix(uri);
+	if (suffix == nullptr)
+		return nullptr;
+
+	const char *q = strchr(suffix, '?');
+	if (q != nullptr && size_t(q - suffix) < sizeof(buffer.data)) {
+		memcpy(buffer.data, suffix, q - suffix);
+		buffer.data[q - suffix] = 0;
+		suffix = buffer.data;
+	}
+
+	return suffix;
+}
+
 static const char *
 verify_uri_segment(const char *p)
 {
@@ -136,4 +153,32 @@ bool
 uri_is_child_or_same(const char *parent, const char *child)
 {
 	return strcmp(parent, child) == 0 || uri_is_child(parent, child);
+}
+
+std::string
+uri_apply_base(const std::string &uri, const std::string &base)
+{
+	if (uri.front() == '/') {
+		/* absolute path: replace the whole URI path in base */
+
+		auto i = base.find("://");
+		if (i == base.npos)
+			/* no scheme: override base completely */
+			return uri;
+
+		/* find the first slash after the host part */
+		i = base.find('/', i + 3);
+		if (i == base.npos)
+			/* there's no URI path - simply append uri */
+			i = base.length();
+
+		return base.substr(0, i) + uri;
+	}
+
+	std::string out(base);
+	if (out.back() != '/')
+		out.push_back('/');
+
+	out += uri;
+	return out;
 }

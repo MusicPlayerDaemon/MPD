@@ -523,7 +523,11 @@ pulse_output_setup_stream(PulseOutput *po, const pa_sample_spec *ss,
 	assert(po != nullptr);
 	assert(po->context != nullptr);
 
-	po->stream = pa_stream_new(po->context, po->name, ss, nullptr);
+	/* WAVE-EX is been adopted as the speaker map for most media files */
+	pa_channel_map chan_map;
+	pa_channel_map_init_auto(&chan_map, ss->channels,
+				 PA_CHANNEL_MAP_WAVEEX);
+	po->stream = pa_stream_new(po->context, po->name, ss, &chan_map);
 	if (po->stream == nullptr) {
 		SetError(error, po->context, "pa_stream_new() has failed");
 		return false;

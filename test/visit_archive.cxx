@@ -21,7 +21,7 @@
 #include "stdbin.h"
 #include "tag/Tag.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "IOThread.hxx"
+#include "ScopeIOThread.hxx"
 #include "input/Init.hxx"
 #include "archive/ArchiveList.hxx"
 #include "archive/ArchivePlugin.hxx"
@@ -30,7 +30,9 @@
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 
+#ifdef HAVE_GLIB
 #include <glib.h>
+#endif
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -57,16 +59,17 @@ main(int argc, char **argv)
 
 	/* initialize GLib */
 
+#ifdef HAVE_GLIB
 #if !GLIB_CHECK_VERSION(2,32,0)
 	g_thread_init(NULL);
+#endif
 #endif
 
 	/* initialize MPD */
 
 	config_global_init();
 
-	io_thread_init();
-	io_thread_start();
+	const ScopeIOThread io_thread;
 
 	archive_plugin_init_all();
 
@@ -100,8 +103,6 @@ main(int argc, char **argv)
 	input_stream_global_finish();
 
 	archive_plugin_deinit_all();
-
-	io_thread_deinit();
 
 	config_global_finish();
 

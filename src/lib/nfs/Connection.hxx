@@ -22,15 +22,19 @@
 
 #include "Lease.hxx"
 #include "Cancellable.hxx"
-#include "thread/Mutex.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "util/Error.hxx"
 
+#include <boost/intrusive/list.hpp>
+
 #include <string>
 #include <list>
+#include <forward_list>
 
 struct nfs_context;
+struct nfsdir;
+struct nfsdirent;
 class NfsCallback;
 
 /**
@@ -40,12 +44,32 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	class CancellableCallback : public CancellablePointer<NfsCallback> {
 		NfsConnection &connection;
 
-	public:
-		explicit constexpr CancellableCallback(NfsCallback &_callback,
-						       NfsConnection &_connection)
-			:CancellablePointer<NfsCallback>(_callback),
-			 connection(_connection) {}
+		/**
+		 * Is this a nfs_open_async() operation?  If yes, then
+		 * we need to call nfs_close_async() on the new file
+		 * handle as soon as the callback is invoked
+		 * successfully.
+		 */
+		const bool open;
 
+		/**
+		 * The file handle scheduled to be closed as soon as
+		 * the operation finishes.
+		 */
+		struct nfsfh *close_fh;
+
+	public:
+		explicit CancellableCallback(NfsCallback &_callback,
+					     NfsConnection &_connection,
+					     bool _open)
+			:CancellablePointer<NfsCallback>(_callback),
+			 connection(_connection),
+			 open(_open), close_fh(nullptr) {}
+
+		bool Stat(nfs_context *context, const char *path,
+			  Error &error);
+		bool OpenDirectory(nfs_context *context, const char *path,
+				   Error &error);
 		bool Open(nfs_context *context, const char *path, int flags,
 			  Error &error);
 		bool Stat(nfs_context *context, struct nfsfh *fh,
@@ -53,6 +77,12 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 		bool Read(nfs_context *context, struct nfsfh *fh,
 			  uint64_t offset, size_t size,
 			  Error &error);
+
+		/**
+		 * Cancel the operation and schedule a call to
+		 * nfs_close_async() with the given file handle.
+		 */
+		void CancelAndScheduleClose(struct nfsfh *fh);
 
 	private:
 		static void Callback(int err, struct nfs_context *nfs,
@@ -64,20 +94,25 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 
 	nfs_context *context;
 
-	Mutex mutex;
-
 	typedef std::list<NfsLease *> LeaseList;
 	LeaseList new_leases, active_leases;
 
 	typedef CancellableList<NfsCallback, CancellableCallback> CallbackList;
 	CallbackList callbacks;
 
+	/**
+	 * A list of NFS file handles (struct nfsfh *) which shall be
+	 * closed as soon as nfs_service() returns.  If we close the
+	 * file handle while in nfs_service(), libnfs may crash, and
+	 * deferring this call to after nfs_service() avoids this
+	 * problem.
+	 */
+	std::forward_list<struct nfsfh *> deferred_close;
+
 	Error postponed_mount_error;
 
 	/**
-	 * True when nfs_service() is being called.  During that,
-	 * nfs_client_free() is postponed, or libnfs will crash.  See
-	 * #postponed_destroy.
+	 * True when nfs_service() is being called.
 	 */
 	bool in_service;
 
@@ -86,12 +121,6 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	 * event updates are omitted.
 	 */
 	bool in_event;
-
-	/**
-	 * True when nfs_client_free() has been called while #in_service
-	 * was true.
-	 */
-	bool postponed_destroy;
 
 	bool mount_finished;
 
@@ -103,22 +132,9 @@ public:
 		 server(_server), export_name(_export_name),
 		 context(nullptr) {}
 
-#if defined(__GNUC__) && !defined(__clang__) && !GCC_CHECK_VERSION(4,8)
-	/* needed for NfsManager::GetConnection() due to lack of
-	   std::map::emplace() */
-	NfsConnection(NfsConnection &&other)
-		:SocketMonitor(((SocketMonitor &)other).GetEventLoop()),
-		 DeferredMonitor(((DeferredMonitor &)other).GetEventLoop()),
-		 server(std::move(other.server)),
-		 export_name(std::move(other.export_name)),
-		 context(nullptr) {
-		assert(other.context == nullptr);
-		assert(other.new_leases.empty());
-		assert(other.active_leases.empty());
-		assert(other.callbacks.IsEmpty());
-	}
-#endif
-
+	/**
+	 * Must be run from EventLoop's thread.
+	 */
 	~NfsConnection();
 
 	gcc_pure
@@ -131,6 +147,10 @@ public:
 		return export_name.c_str();
 	}
 
+	EventLoop &GetEventLoop() {
+		return SocketMonitor::GetEventLoop();
+	}
+
 	/**
 	 * Ensure that the connection is established.  The connection
 	 * is kept up while at least one #NfsLease is registered.
@@ -141,6 +161,13 @@ public:
 	void AddLease(NfsLease &lease);
 	void RemoveLease(NfsLease &lease);
 
+	bool Stat(const char *path, NfsCallback &callback, Error &error);
+
+	bool OpenDirectory(const char *path, NfsCallback &callback,
+			   Error &error);
+	const struct nfsdirent *ReadDirectory(struct nfsdir *dir);
+	void CloseDirectory(struct nfsdir *dir);
+
 	bool Open(const char *path, int flags, NfsCallback &callback,
 		  Error &error);
 	bool Stat(struct nfsfh *fh, NfsCallback &callback, Error &error);
@@ -149,12 +176,19 @@ public:
 	void Cancel(NfsCallback &callback);
 
 	void Close(struct nfsfh *fh);
+	void CancelAndClose(struct nfsfh *fh, NfsCallback &callback);
 
 protected:
 	virtual void OnNfsConnectionError(Error &&error) = 0;
 
 private:
 	void DestroyContext();
+
+	/**
+	 * Invoke nfs_close_async() after nfs_service() returns.
+	 */
+	void DeferClose(struct nfsfh *fh);
+
 	bool MountInternal(Error &error);
 	void BroadcastMountSuccess();
 	void BroadcastMountError(Error &&error);

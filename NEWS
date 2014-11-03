@@ -1,6 +1,40 @@
-ver 0.19 (not yet released)
+ver 0.20 (not yet released)
 * protocol
-  - new commands "addtagid", "cleartagid", "listfiles", "rangeid"
+  - "commands" returns playlist commands only if playlist_directory configured
+* output
+  - pulse: set channel map to WAVE-EX
+
+ver 0.19.2 (2014/11/02)
+* input
+  - curl: fix redirected streams
+* playlist
+  - don't allow empty playlist name
+  - m3u: don't ignore unterminated last line
+  - m3u: recognize the file suffix ".m3u8"
+* decoder
+  - ignore URI query string for plugin detection
+  - faad: remove workaround for ancient libfaad2 ABI bug
+  - ffmpeg: recognize MIME type audio/aacp
+  - mad: fix negative replay gain values
+* output
+  - fix memory leak after filter initialization error
+  - fall back to PCM if given DSD sample rate is not supported
+* fix assertion failure on unsupported PCM conversion
+* auto-disable plugins that require GLib when --disable-glib is used
+
+ver 0.19.1 (2014/10/19)
+* input
+  - mms: fix deadlock bug
+* playlist
+  - extm3u: fix Extended M3U detection
+  - m3u, extm3u, cue: fix truncated lines
+* fix build failure on Mac OS X
+* add missing file systemd/mpd.socket to tarball
+
+ver 0.19 (2014/10/10)
+* protocol
+  - new commands "addtagid", "cleartagid", "listfiles", "listmounts",
+    "listneighbors", "mount", "rangeid", "unmount"
   - "lsinfo" and "readcomments" allowed for remote files
   - "listneighbors" lists file servers on the local network
   - "playlistadd" supports file:///
@@ -59,6 +93,7 @@ ver 0.19 (not yet released)
 * output
   - alsa: support native DSD playback
   - alsa: rename "DSD over USB" to "DoP"
+  - osx: fix hang after (un)plugging headphones
 * threads:
   - the update thread runs at "idle" priority
   - the output thread runs at "real-time" priority
@@ -67,11 +102,21 @@ ver 0.19 (not yet released)
 * configuration
   - allow playlist directory without music directory
   - use XDG to auto-detect "music_directory" and "db_file"
-* add tag "MUSICBRAINZ_RELEASETRACKID"
+* add tags "AlbumSort", "MUSICBRAINZ_RELEASETRACKID"
+* disable global Latin-1 fallback for tag values
 * new resampler option using libsoxr
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.17 (2014/11/02)
+* playlist
+  - don't allow empty playlist name
+  - m3u: recognize the file suffix ".m3u8"
+* decoder
+  - ignore URI query string for plugin detection
+  - faad: remove workaround for ancient libfaad2 ABI bug
+  - ffmpeg: recognize MIME type audio/aacp
 
 ver 0.18.16 (2014/09/26)
 * fix DSD breakage due to typo in configure.ac

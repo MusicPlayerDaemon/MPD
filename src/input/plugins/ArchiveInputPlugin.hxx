@@ -20,6 +20,15 @@
 #ifndef MPD_INPUT_ARCHIVE_HXX
 #define MPD_INPUT_ARCHIVE_HXX
 
+class InputStream;
+class Path;
+class Mutex;
+class Cond;
+class Error;
+
 extern const struct InputPlugin input_plugin_archive;
+
+InputStream *
+OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond, Error &error);
 
 #endif

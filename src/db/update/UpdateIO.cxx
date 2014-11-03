@@ -25,6 +25,7 @@
 #include "storage/StorageInterface.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 

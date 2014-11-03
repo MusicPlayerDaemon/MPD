@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "IOThread.hxx"
+#include "ScopeIOThread.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "input/Init.hxx"
@@ -96,8 +96,7 @@ int main(int argc, char **argv)
 #endif
 #endif
 
-	io_thread_init();
-	io_thread_start();
+	const ScopeIOThread io_thread;
 
 	Error error;
 	if (!input_stream_global_init(error)) {
@@ -132,7 +131,6 @@ int main(int argc, char **argv)
 
 	decoder_plugin_deinit_all();
 	input_stream_global_finish();
-	io_thread_deinit();
 
 	if (!success) {
 		fprintf(stderr, "Failed to read tags\n");

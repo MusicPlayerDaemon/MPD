@@ -23,6 +23,7 @@
 #include "TagPool.hxx"
 #include "TagString.hxx"
 #include "Tag.hxx"
+#include "util/WritableBuffer.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -184,17 +185,17 @@ TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
 	assert(value != nullptr);
 	assert(length > 0);
 
-	char *p = FixTagString(value, length);
-	if (p != nullptr) {
-		value = p;
-		length = strlen(value);
+	auto f = FixTagString(value, length);
+	if (!f.IsNull()) {
+		value = f.data;
+		length = f.size;
 	}
 
 	tag_pool_lock.lock();
 	auto i = tag_pool_get_item(type, value, length);
 	tag_pool_lock.unlock();
 
-	free(p);
+	free(f.data);
 
 	items.push_back(i);
 }

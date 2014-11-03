@@ -28,10 +28,10 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
+#include "util/Alloc.hxx"
 #include "Log.hxx"
 
 #include <wavpack/wavpack.h>
-#include <glib.h>
 
 #include <assert.h>
 #include <stdio.h>
@@ -484,10 +484,10 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 	if (uri == nullptr)
 		return nullptr;
 
-	char *wvc_url = g_strconcat(uri, "c", nullptr);
+	char *wvc_url = xstrcatdup(uri, "c");
 
 	InputStream *is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
-	g_free(wvc_url);
+	free(wvc_url);
 
 	if (is_wvc == nullptr)
 		return nullptr;

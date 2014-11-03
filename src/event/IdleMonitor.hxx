@@ -26,8 +26,7 @@ class EventLoop;
 
 /**
  * An event that runs when the EventLoop has become idle, before
- * waiting for more events.  This class is not thread-safe; all
- * methods must be run from EventLoop's thread.
+ * waiting for more events.
  *
  * This class is not thread-safe, all methods must be called from the
  * thread that runs the #EventLoop, except where explicitly documented

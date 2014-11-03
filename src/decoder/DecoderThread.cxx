@@ -30,6 +30,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "DecoderAPI.hxx"
 #include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "DecoderList.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -103,6 +104,22 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 	}
 
 	dc.Unlock();
+
+	return is;
+}
+
+static InputStream *
+decoder_input_stream_open(DecoderControl &dc, Path path)
+{
+	Error error;
+
+	InputStream *is = OpenLocalInputStream(path, dc.mutex, dc.cond, error);
+	if (is == nullptr) {
+		LogError(error);
+		return nullptr;
+	}
+
+	assert(is->IsReady());
 
 	return is;
 }
@@ -220,7 +237,8 @@ static bool
 decoder_run_stream_locked(Decoder &decoder, InputStream &is,
 			  const char *uri, bool &tried_r)
 {
-	const char *const suffix = uri_get_suffix(uri);
+	UriSuffixBuffer suffix_buffer;
+	const char *const suffix = uri_get_suffix(uri, suffix_buffer);
 
 	using namespace std::placeholders;
 	const auto f = std::bind(decoder_run_stream_plugin,
@@ -308,7 +326,7 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 		dc.Unlock();
 	} else if (plugin.stream_decode != nullptr) {
 		InputStream *input_stream =
-			decoder_input_stream_open(dc, path_fs.c_str());
+			decoder_input_stream_open(dc, path_fs);
 		if (input_stream == nullptr)
 			return false;
 

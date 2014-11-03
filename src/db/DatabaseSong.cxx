@@ -24,6 +24,8 @@
 #include "DetachedSong.hxx"
 #include "storage/StorageInterface.hxx"
 
+#include <assert.h>
+
 DetachedSong
 DatabaseDetachSong(const Storage &storage, const LightSong &song)
 {

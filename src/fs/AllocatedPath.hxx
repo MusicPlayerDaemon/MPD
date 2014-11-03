@@ -61,12 +61,12 @@ class AllocatedPath {
 	}
 public:
 	/**
-	 * Copy a #AllocatedPath object.
+	 * Copy an #AllocatedPath object.
 	 */
 	AllocatedPath(const AllocatedPath &) = default;
 
 	/**
-	 * Move a #AllocatedPath object.
+	 * Move an #AllocatedPath object.
 	 */
 	AllocatedPath(AllocatedPath &&other):value(std::move(other.value)) {}
 
@@ -147,7 +147,7 @@ public:
 	}
 
 	/**
-	 * Convert a UTF-8 C string to a #AllocatedPath instance.
+	 * Convert a UTF-8 C string to an #AllocatedPath instance.
 	 * Returns return a "nulled" instance on error.
 	 */
 	gcc_pure gcc_nonnull_all
@@ -157,16 +157,24 @@ public:
 	static AllocatedPath FromUTF8(const char *path_utf8, Error &error);
 
 	/**
-	 * Copy a #AllocatedPath object.
+	 * Copy an #AllocatedPath object.
 	 */
 	AllocatedPath &operator=(const AllocatedPath &) = default;
 
 	/**
-	 * Move a #AllocatedPath object.
+	 * Move an #AllocatedPath object.
 	 */
 	AllocatedPath &operator=(AllocatedPath &&other) {
 		value = std::move(other.value);
 		return *this;
+	}
+
+	/**
+	 * Allows the caller to "steal" the internal value by
+	 * providing a rvalue reference to the std::string attribute.
+	 */
+	std::string &&Steal() {
+		return std::move(value);
 	}
 
 	/**

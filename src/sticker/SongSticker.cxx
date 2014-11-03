@@ -23,11 +23,11 @@
 #include "db/LightSong.hxx"
 #include "db/Interface.hxx"
 #include "util/Error.hxx"
-
-#include <glib.h>
+#include "util/Alloc.hxx"
 
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 std::string
 sticker_song_get_value(const LightSong &song, const char *name)
@@ -109,7 +109,7 @@ sticker_song_find(const Database &db, const char *base_uri, const char *name,
 	if (*data.base_uri != 0)
 		/* append slash to base_uri */
 		data.base_uri = allocated =
-			g_strconcat(data.base_uri, "/", nullptr);
+			xstrcatdup(data.base_uri, "/");
 	else
 		/* searching in root directory - no trailing slash */
 		allocated = nullptr;
@@ -118,7 +118,7 @@ sticker_song_find(const Database &db, const char *base_uri, const char *name,
 
 	bool success = sticker_find("song", data.base_uri, name,
 				    sticker_song_find_cb, &data);
-	g_free(allocated);
+	free(allocated);
 
 	return success;
 }

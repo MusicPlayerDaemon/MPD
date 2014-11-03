@@ -20,6 +20,7 @@
 #include "config.h"
 #include "FileReader.hxx"
 #include "Glue.hxx"
+#include "Base.hxx"
 #include "Connection.hxx"
 #include "Domain.hxx"
 #include "event/Call.hxx"
@@ -57,11 +58,18 @@ NfsFileReader::Close()
 
 	connection->RemoveLease(*this);
 
-	if (state > State::MOUNT && state != State::IDLE)
-		connection->Cancel(*this);
-
-	if (state > State::OPEN)
+	if (state == State::IDLE)
+		/* no async operation in progress: can close
+		   immediately */
 		connection->Close(fh);
+	else if (state > State::OPEN)
+		/* one async operation in progress: cancel it and
+		   defer the nfs_close_async() call */
+		connection->CancelAndClose(fh, *this);
+	else if (state > State::MOUNT)
+		/* we don't have a file handle yet - just cancel the
+		   async operation */
+		connection->Cancel(*this);
 
 	state = State::INITIAL;
 }
@@ -93,14 +101,23 @@ NfsFileReader::Open(const char *uri, Error &error)
 	server = std::string(uri, slash);
 
 	uri = slash;
-	slash = strrchr(uri + 1, '/');
-	if (slash == nullptr || slash[1] == 0) {
-		error.Set(nfs_domain, "Malformed nfs:// URI");
-		return false;
-	}
 
-	export_name = std::string(uri, slash);
-	path = slash;
+	const char *new_path = nfs_check_base(server.c_str(), uri);
+	if (new_path != nullptr) {
+		export_name = std::string(uri, new_path);
+		if (*new_path == 0)
+			new_path = "/";
+		path = new_path;
+	} else {
+		slash = strrchr(uri + 1, '/');
+		if (slash == nullptr || slash[1] == 0) {
+			error.Set(nfs_domain, "Malformed nfs:// URI");
+			return false;
+		}
+
+		export_name = std::string(uri, slash);
+		path = slash;
+	}
 
 	state = State::DEFER;
 	DeferredMonitor::Schedule();

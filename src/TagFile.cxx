@@ -25,6 +25,7 @@
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "thread/Cond.hxx"
 
 #include <assert.h>
@@ -61,9 +62,9 @@ public:
 
 		/* open the InputStream (if not already open) */
 		if (is == nullptr) {
-			is = InputStream::OpenReady(path_fs.c_str(),
-						    mutex, cond,
-						    IgnoreError());
+			is = OpenLocalInputStream(path_fs,
+						  mutex, cond,
+						  IgnoreError());
 			if (is == nullptr)
 				return false;
 		} else

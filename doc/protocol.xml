@@ -11,11 +11,11 @@
       <title>Protocol overview</title>
 
       <para>
-        The MPD command protocol exchanges line-based text records
-        between client and server over TCP.  Once the client is
-        connected to the server, they conduct a conversation until the
-        client closes the connection. The conversation flow is always
-        initiated by the client.
+        The <application>MPD</application> command protocol exchanges
+        line-based text records between client and server over TCP.
+        Once the client is connected to the server, they conduct a
+        conversation until the client closes the connection. The
+        conversation flow is always initiated by the client.
       </para>
 
       <para>
@@ -210,14 +210,14 @@
       <title>Queuing</title>
 
       <para>
-        Often, users run MPD with "<link
+        Often, users run <application>MPD</application> with "<link
         linkend="command_random">random</link>" enabled, but want to
         be able to insert songs "before" the rest of the playlist.
         That is commonly called "queuing".
       </para>
 
       <para>
-        MPD implements this by allowing the client to specify a
+        <application>MPD</application> implements this by allowing the client to specify a
         "priority" for each song in the playlist (commands <link
         linkend="command_prio"><command>prio</command></link> and
         <link
@@ -227,19 +227,20 @@
       </para>
 
       <para>
-        In "random" mode, MPD maintains an internal randomized
-        sequence of songs.  In this sequence, songs with a higher
-        priority come first, and all songs with the same priority are
-        shuffled (by default, all songs are shuffled, because all have
-        the same priority "0").  When you increase the priority of a
-        song, it is moved to the front of the sequence according to
-        its new priority, but always after the current one.  A song
-        that has been played already (it's "before" the current song
-        in that sequence) will only be scheduled for repeated playback
-        if its priority has become bigger than the priority of the
-        current song.  Decreasing the priority of a song will moved it
-        farther to the end of the sequence.  Changing the priority of
-        the current song has no effect on the sequence.
+        In "random" mode, <application>MPD</application> maintains an
+        internal randomized sequence of songs.  In this sequence,
+        songs with a higher priority come first, and all songs with
+        the same priority are shuffled (by default, all songs are
+        shuffled, because all have the same priority "0").  When you
+        increase the priority of a song, it is moved to the front of
+        the sequence according to its new priority, but always after
+        the current one.  A song that has been played already (it's
+        "before" the current song in that sequence) will only be
+        scheduled for repeated playback if its priority has become
+        bigger than the priority of the current song.  Decreasing the
+        priority of a song will moved it farther to the end of the
+        sequence.  Changing the priority of the current song has no
+        effect on the sequence.
       </para>
     </section>
   </chapter>
@@ -255,12 +256,12 @@
         commands using song ids should be used instead of the commands
         that manipulate and control playback based on playlist
         position. Using song ids is a safer method when multiple
-        clients are interacting with MPD.
+        clients are interacting with <application>MPD</application>.
       </para>
     </note>
 
     <section id="status_commands">
-      <title>Querying MPD's status</title>
+      <title>Querying <application>MPD</application>'s status</title>
 
       <variablelist>
         <varlistentry id="command_clearerror">
@@ -298,12 +299,14 @@
           </term>
           <listitem>
             <para>
-              <footnote id="since_0_14"><simpara>Introduced with MPD 0.14</simpara></footnote>
+              <footnote id="since_0_14"><simpara>Introduced with
+              <application>MPD</application> 0.14</simpara></footnote>
               Waits until there is a noteworthy change in one or more
-              of MPD's subsystems.  As soon as there is one, it lists
-              all changed systems in a line in the format
-              <returnvalue>changed: SUBSYSTEM</returnvalue>, where
-              SUBSYSTEM is one of the following:
+              of <application>MPD</application>'s subsystems.  As soon
+              as there is one, it lists all changed systems in a line
+              in the format <returnvalue>changed:
+              SUBSYSTEM</returnvalue>, where SUBSYSTEM is one of the
+              following:
             </para>
             <itemizedlist>
               <listitem>
@@ -385,14 +388,15 @@
               to wait for events as long as mpd runs.  The
               <command>idle</command> command can be canceled by
               sending the command <command>noidle</command> (no other
-              commands are allowed). MPD will then leave
-              <command>idle</command> mode and print results
-              immediately; might be empty at this time.
+              commands are allowed). <application>MPD</application>
+              will then leave <command>idle</command> mode and print
+              results immediately; might be empty at this time.
             </para>
             <para>
-              If the optional <varname>SUBSYSTEMS</varname> argument is used,
-              MPD will only send notifications when something changed in
-              one of the specified subsytems.
+              If the optional <varname>SUBSYSTEMS</varname> argument
+              is used, <application>MPD</application> will only send
+              notifications when something changed in one of the
+              specified subsytems.
             </para>
           </listitem>
         </varlistentry>
@@ -429,7 +433,7 @@
               <listitem>
                <para>
                 <varname>single</varname>:
-                <footnote id="since_0_15"><simpara>Introduced with MPD 0.15</simpara></footnote>
+                <footnote id="since_0_15"><simpara>Introduced with <application>MPD</application> 0.15</simpara></footnote>
                 <returnvalue>0 or 1</returnvalue>
                </para>
               </listitem>
@@ -504,7 +508,7 @@
               <listitem>
                 <para>
                   <varname>elapsed</varname>:
-                  <footnote id="since_0_16"><simpara>Introduced with MPD 0.16</simpara></footnote>
+                  <footnote id="since_0_16"><simpara>Introduced with <application>MPD</application> 0.16</simpara></footnote>
                   <returnvalue>
                     Total time elapsed within the current song, but
                     with higher resolution.
@@ -745,7 +749,7 @@
               <parameter>album</parameter>,
               <parameter>auto</parameter><footnote
                         id="replay_gain_auto_since_0_16">
-                <simpara>added in MPD 0.16</simpara>
+                <simpara>added in <application>MPD</application> 0.16</simpara>
               </footnote>.
             </para>
             <para>
@@ -1037,7 +1041,7 @@ OK
               at <varname>START:END</varname> to <varname>TO</varname>
               in the playlist.
               <footnote id="range_since_0_15">
-                <simpara>Ranges are supported since MPD 0.15</simpara>
+                <simpara>Ranges are supported since <application>MPD</application> 0.15</simpara>
               </footnote>
             </para>
           </listitem>
@@ -1230,7 +1234,7 @@ OK
           </term>
           <listitem>
             <para>
-              <footnote id="since_0_19"><simpara>Since MPD
+              <footnote id="since_0_19"><simpara>Since <application>MPD</application>
               0.19</simpara></footnote> Specifies the portion of the
               song that shall be played.  <varname>START</varname> and
               <varname>END</varname> are offsets in seconds
@@ -1560,7 +1564,7 @@ OK
             <para>
               Finds songs in the db that are exactly
               <varname>WHAT</varname>.  <varname>TYPE</varname> can
-              be any tag supported by MPD, or one of the special
+              be any tag supported by <application>MPD</application>, or one of the special
               parameters:
             </para>
 
@@ -1634,7 +1638,8 @@ OK
           <listitem>
             <para>
               Lists unique tags values of the specified type.
-              <varname>TYPE</varname> can be any tag supported by MPD or
+              <varname>TYPE</varname> can be any tag supported by
+              <application>MPD</application> or
               <parameter>file</parameter>.
             </para>
             <para>
@@ -1667,9 +1672,11 @@ OK
             </para>
             <para>
               Do not use this command.  Do not manage a client-side
-              copy of MPD's database.  That is fragile and adds huge
-              overhead.  It will break with large databases.  Instead,
-              query MPD whenever you need something.
+              copy of <application>MPD</application>'s database.  That
+              is fragile and adds huge overhead.  It will break with
+              large databases.  Instead, query
+              <application>MPD</application> whenever you need
+              something.
             </para>
           </listitem>
         </varlistentry>
@@ -1688,9 +1695,11 @@ OK
             </para>
             <para>
               Do not use this command.  Do not manage a client-side
-              copy of MPD's database.  That is fragile and adds huge
-              overhead.  It will break with large databases.  Instead,
-              query MPD whenever you need something.
+              copy of <application>MPD</application>'s database.  That
+              is fragile and adds huge overhead.  It will break with
+              large databases.  Instead, query
+              <application>MPD</application> whenever you need
+              something.
             </para>
           </listitem>
         </varlistentry>
@@ -1705,12 +1714,13 @@ OK
             <para>
               Lists the contents of the directory
               <varname>URI</varname>, including files are not
-              recognized by MPD.  <varname>URI</varname> can be a path
-              relative to the music directory or an URI understood by
-              one of the storage plugins.  The response contains at
-              least one line for each directory entry with the prefix
-              "file: " or "directory: ", and may be followed by file
-              attributes such as "Last-Modified" and "size".
+              recognized by <application>MPD</application>.
+              <varname>URI</varname> can be a path relative to the
+              music directory or an URI understood by one of the
+              storage plugins.  The response contains at least one
+              line for each directory entry with the prefix "file: "
+              or "directory: ", and may be followed by file attributes
+              such as "Last-Modified" and "size".
             </para>
             <para>
               For example, "smb://SERVER" returns a list of all shares
@@ -1882,22 +1892,131 @@ OK
       </variablelist>
     </section>
 
+    <section id="mount">
+      <title>Mounts and neighbors</title>
+
+      <para>
+        A "storage" provides access to files in a directory tree.  The
+        most basic storage plugin is the "local" storage plugin which
+        accesses the local file system, and there are plugins to
+        access NFS and SMB servers.
+      </para>
+
+      <para>
+        Multiple storages can be "mounted" together, similar to the
+        <application>mount</application> command on many operating
+        systems, but without cooperation from the kernel.  No
+        superuser privileges are necessary, beause this mapping exists
+        only inside the <application>MPD</application> process
+      </para>
+
+      <variablelist>
+
+        <varlistentry id="command_mount">
+          <term>
+            <cmdsynopsis>
+              <command>mount</command>
+              <arg choice="req"><replaceable>PATH</replaceable></arg>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+
+          <listitem>
+            <para>
+              Mount the specified remote storage URI at the given
+              path.  Example:
+            </para>
+
+            <programlisting>mount foo nfs://192.168.1.4/export/mp3</programlisting>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_umount">
+          <term>
+            <cmdsynopsis>
+              <command>unmount</command>
+              <arg choice="req"><replaceable>PATH</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+
+          <listitem>
+            <para>
+              Unmounts the specified path.  Example:
+            </para>
+
+            <programlisting>unmount foo</programlisting>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_listmounts">
+          <term>
+            <cmdsynopsis>
+              <command>listmounts</command>
+            </cmdsynopsis>
+          </term>
+
+          <listitem>
+            <para>
+              Queries a list of all mounts.  By default, this contains
+              just the configured <varname>music_directory</varname>.
+              Example:
+            </para>
+
+            <programlisting>listmounts
+mount: 
+storage: /home/foo/music
+mount: foo
+storage: nfs://192.168.1.4/export/mp3
+OK
+</programlisting>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_listneighbors">
+          <term>
+            <cmdsynopsis>
+              <command>listneighbors</command>
+            </cmdsynopsis>
+          </term>
+
+          <listitem>
+            <para>
+              Queries a list of "neighbors" (e.g. accessible file
+              servers on the local net).  Items on that list may be
+              used with the <link
+              linkend="command_mount"><command>mount</command></link>
+              command.  Example:
+            </para>
+
+            <programlisting>listneighbors
+neighbor: smb://FOO
+name: FOO (Samba 4.1.11-Debian)
+OK
+</programlisting>
+          </listitem>
+        </varlistentry>
+
+      </variablelist>
+    </section>
+
     <section id="stickers">
       <title>Stickers</title>
 
       <para>
         "Stickers"<footnoteref linkend="since_0_15"/> are pieces of
-        information attached to existing MPD objects (e.g. song files,
+        information attached to existing
+        <application>MPD</application> objects (e.g. song files,
         directories, albums).  Clients can create arbitrary name/value
-        pairs.  MPD itself does not assume any special meaning in
-        them.
+        pairs.  <application>MPD</application> itself does not assume
+        any special meaning in them.
       </para>
 
       <para>
         The goal is to allow clients to share additional (possibly
         dynamic) information about songs, which is neither stored on
         the client (not available to other clients), nor stored in the
-        song files (MPD has no write access).
+        song files (<application>MPD</application> has no write
+        access).
       </para>
 
       <para>
@@ -2014,7 +2133,8 @@ OK
           </term>
           <listitem>
             <para>
-              Closes the connection to MPD.  MPD will try to send the
+              Closes the connection to <application>MPD</application>.
+              <application>MPD</application> will try to send the
               remaining output buffer before it actually closes the
               connection, but that cannot be guaranteed.  This command
               will not generate a response.
@@ -2029,7 +2149,7 @@ OK
           </term>
           <listitem>
             <para>
-              Kills MPD.
+              Kills <application>MPD</application>.
             </para>
           </listitem>
         </varlistentry>

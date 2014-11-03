@@ -22,13 +22,15 @@
 
 #include "Compiler.h"
 
-#include <list>
+#include <boost/intrusive/list.hpp>
+
 #include <algorithm>
 
 #include <assert.h>
 
 template<typename T>
-class CancellablePointer {
+class CancellablePointer
+	: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 public:
 	typedef T *pointer_type;
 	typedef T &reference_type;
@@ -38,7 +40,7 @@ private:
 	pointer_type p;
 
 public:
-	explicit constexpr CancellablePointer(reference_type _p):p(&_p) {}
+	explicit CancellablePointer(reference_type _p):p(&_p) {}
 
 	CancellablePointer(const CancellablePointer &) = delete;
 
@@ -70,7 +72,8 @@ public:
 	typedef typename CT::const_reference_type const_reference_type;
 
 private:
-	typedef std::list<CT> List;
+	typedef boost::intrusive::list<CT,
+				       boost::intrusive::constant_time_size<false>> List;
 	typedef typename List::iterator iterator;
 	typedef typename List::const_iterator const_iterator;
 	List list;
@@ -97,28 +100,14 @@ private:
 		return std::find_if(list.begin(), list.end(), MatchPointer(p));
 	}
 
-	class MatchReference {
-		const CT &c;
-
-	public:
-		constexpr explicit MatchReference(const CT &_c):c(_c) {}
-
-		gcc_pure
-		bool operator()(const CT &a) const {
-			return &a == &c;
-		}
-	};
-
 	gcc_pure
 	iterator Find(CT &c) {
-		return std::find_if(list.begin(), list.end(),
-				    MatchReference(c));
+		return list.iterator_to(c);
 	}
 
 	gcc_pure
 	const_iterator Find(const CT &c) const {
-		return std::find_if(list.begin(), list.end(),
-				    MatchReference(c));
+		return list.iterator_to(c);
 	}
 
 public:
@@ -142,21 +131,9 @@ public:
 	CT &Add(reference_type p, Args&&... args) {
 		assert(Find(p) == list.end());
 
-		list.emplace_back(p, std::forward<Args>(args)...);
-		return list.back();
-	}
-
-	void RemoveLast() {
-		list.pop_back();
-	}
-
-	bool RemoveOptional(CT &ct) {
-		auto i = Find(ct);
-		if (i == list.end())
-			return false;
-
-		list.erase(i);
-		return true;
+		CT *c = new CT(p, std::forward<Args>(args)...);
+		list.push_back(*c);
+		return *c;
 	}
 
 	void Remove(CT &ct) {
@@ -164,6 +141,7 @@ public:
 		assert(i != list.end());
 
 		list.erase(i);
+		delete &ct;
 	}
 
 	void Cancel(reference_type p) {
@@ -171,6 +149,13 @@ public:
 		assert(i != list.end());
 
 		i->Cancel();
+	}
+
+	CT &Get(reference_type p) {
+		auto i = Find(p);
+		assert(i != list.end());
+
+		return *i;
 	}
 };
 

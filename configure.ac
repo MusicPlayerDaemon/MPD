@@ -1,9 +1,9 @@
 AC_PREREQ(2.60)
 
-AC_INIT(mpd, 0.19~git, musicpd-dev-team@lists.sourceforge.net)
+AC_INIT(mpd, 0.20, musicpd-dev-team@lists.sourceforge.net)
 
 VERSION_MAJOR=0
-VERSION_MINOR=19
+VERSION_MINOR=20
 VERSION_REVISION=0
 VERSION_EXTRA=0
 
@@ -293,7 +293,9 @@ fi
 AC_ARG_ENABLE(libmpdclient,
 	AS_HELP_STRING([--enable-libmpdclient],
 		[enable support for the MPD client]),,
-	enable_libmpdclient=$database_auto)
+	enable_libmpdclient=auto)
+MPD_DEPENDS([enable_libmpdclient], [enable_database],
+	[Cannot use --enable-libmpdclient with --disable-database])
 
 AC_ARG_ENABLE(expat,
 	AS_HELP_STRING([--enable-expat],
@@ -303,7 +305,9 @@ AC_ARG_ENABLE(expat,
 AC_ARG_ENABLE(upnp,
 	AS_HELP_STRING([--enable-upnp],
 		[enable UPnP client support (default: auto)]),,
-	enable_upnp=$database_auto)
+	enable_upnp=auto)
+MPD_DEPENDS([enable_upnp], [enable_database],
+	[Cannot use --enable-upnp with --disable-database])
 
 AC_ARG_ENABLE(adplug,
 	AS_HELP_STRING([--enable-adplug],
@@ -323,6 +327,8 @@ AC_ARG_ENABLE(ao,
 	AS_HELP_STRING([--enable-ao],
 		[enable support for libao]),,
 	enable_ao=auto)
+MPD_DEPENDS([enable_ao], [enable_glib],
+	[Cannot use --enable-ao with --disable-glib])
 
 AC_ARG_ENABLE(audiofile,
 	AS_HELP_STRING([--enable-audiofile],
@@ -343,6 +349,8 @@ AC_ARG_ENABLE(cdio-paranoia,
 	AS_HELP_STRING([--enable-cdio-paranoia],
 		[enable support for audio CD support]),,
 	enable_cdio_paranoia=auto)
+MPD_DEPENDS([enable_cdio_paranoia], [enable_glib],
+	[Cannot use --enable-cdio-paranoia with --disable-glib])
 
 AC_ARG_ENABLE(curl,
 	AS_HELP_STRING([--enable-curl],
@@ -398,11 +406,15 @@ AC_ARG_ENABLE(gme,
 	AS_HELP_STRING([--enable-gme],
 		[enable Blargg's game music emulator plugin]),,
 	enable_gme=auto)
+MPD_DEPENDS([enable_gme], [enable_glib],
+	[Cannot use --enable-gme with --disable-glib])
 
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
 	[enable_httpd_output=auto])
+MPD_DEPENDS([enable_httpd_output], [enable_glib],
+	[Cannot use --enable-httpd-output with --disable-glib])
 
 AC_ARG_ENABLE(id3,
 	AS_HELP_STRING([--enable-id3],
@@ -428,6 +440,8 @@ AC_ARG_ENABLE(jack,
 	AS_HELP_STRING([--enable-jack],
 		[enable jack support]),,
 	enable_jack=auto)
+MPD_DEPENDS([enable_jack], [enable_glib],
+	[Cannot use --enable-jack with --disable-glib])
 
 AC_SYS_LARGEFILE
 
@@ -544,6 +558,8 @@ AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
 		[enable C64 SID support via libsidplay2]),,
 	enable_sidplay=auto)
+MPD_DEPENDS([enable_sidplay], [enable_glib],
+	[Cannot use --enable-sidplay with --disable-glib])
 
 AC_ARG_ENABLE(shine-encoder,
 	AS_HELP_STRING([--enable-shine-encoder],
@@ -609,6 +625,8 @@ AC_ARG_ENABLE(vorbis-encoder,
 	AS_HELP_STRING([--enable-vorbis-encoder],
 		[enable the Ogg Vorbis encoder]),,
 	[enable_vorbis_encoder=auto])
+MPD_DEPENDS([enable_vorbis_encoder], [enable_glib],
+	[Cannot use --enable-vorbis-encoder with --disable-glib])
 
 AC_ARG_ENABLE(wave-encoder,
 	AS_HELP_STRING([--enable-wave-encoder],
@@ -1756,8 +1774,11 @@ dnl Documentation
 dnl ---------------------------------------------------------------------------
 if test x$enable_documentation = xyes; then
 	AC_PATH_PROG(XMLTO, xmlto)
+	if test x$XMLTO = x; then
+		AC_MSG_ERROR([xmlto not found])
+	fi
+
 	AC_SUBST(XMLTO)
-	AM_CONDITIONAL(HAVE_XMLTO, test x$XMLTO != x)
 
 	AC_PATH_PROG(DOXYGEN, doxygen)
 	if test x$DOXYGEN = x; then
@@ -1765,8 +1786,6 @@ if test x$enable_documentation = xyes; then
 	fi
 
 	AC_SUBST(DOXYGEN)
-else
-	AM_CONDITIONAL(HAVE_XMLTO, false)
 fi
 
 AM_CONDITIONAL(ENABLE_DOCUMENTATION, test x$enable_documentation = xyes)
@@ -1880,9 +1899,14 @@ results(ipv6, "IPv6")
 results(tcp, "TCP")
 results(un,[UNIX Domain Sockets])
 
+printf '\nStorage support:\n\t'
+results(nfs, [NFS])
+results(smbclient, [SMB])
+
 printf '\nFile format support:\n\t'
 results(aac, [AAC])
 results(adplug, [AdPlug])
+results(dsd, [DSD])
 results(sidplay, [C64 SID])
 results(ffmpeg, [FFMPEG])
 results(flac, [FLAC])

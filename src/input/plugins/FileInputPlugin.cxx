@@ -23,7 +23,8 @@
 #include "../InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/Traits.hxx"
+#include "fs/FileSystem.hxx"
+#include "fs/Path.hxx"
 #include "system/fd_util.h"
 #include "open.h"
 
@@ -33,9 +34,10 @@
 
 static constexpr Domain file_domain("file");
 
-struct FileInputStream final : public InputStream {
-	int fd;
+class FileInputStream final : public InputStream {
+	const int fd;
 
+public:
 	FileInputStream(const char *path, int _fd, off_t _size,
 			Mutex &_mutex, Cond &_cond)
 		:InputStream(path, _mutex, _cond),
@@ -59,34 +61,28 @@ struct FileInputStream final : public InputStream {
 	bool Seek(offset_type offset, Error &error) override;
 };
 
-static InputStream *
-input_file_open(const char *filename,
-		Mutex &mutex, Cond &cond,
-		Error &error)
+InputStream *
+OpenFileInputStream(Path path,
+		    Mutex &mutex, Cond &cond,
+		    Error &error)
 {
-	int fd, ret;
-	struct stat st;
-
-	if (!PathTraitsFS::IsAbsolute(filename))
-		return nullptr;
-
-	fd = open_cloexec(filename, O_RDONLY|O_BINARY, 0);
+	const int fd = OpenFile(path, O_RDONLY|O_BINARY, 0);
 	if (fd < 0) {
-		if (errno != ENOENT && errno != ENOTDIR)
-			error.FormatErrno("Failed to open \"%s\"",
-					  filename);
+		error.FormatErrno("Failed to open \"%s\"",
+				  path.c_str());
 		return nullptr;
 	}
 
-	ret = fstat(fd, &st);
-	if (ret < 0) {
-		error.FormatErrno("Failed to stat \"%s\"", filename);
+	struct stat st;
+	if (fstat(fd, &st) < 0) {
+		error.FormatErrno("Failed to stat \"%s\"", path.c_str());
 		close(fd);
 		return nullptr;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
-		error.Format(file_domain, "Not a regular file: %s", filename);
+		error.Format(file_domain, "Not a regular file: %s",
+			     path.c_str());
 		close(fd);
 		return nullptr;
 	}
@@ -95,7 +91,17 @@ input_file_open(const char *filename,
 	posix_fadvise(fd, (off_t)0, st.st_size, POSIX_FADV_SEQUENTIAL);
 #endif
 
-	return new FileInputStream(filename, fd, st.st_size, mutex, cond);
+	return new FileInputStream(path.c_str(), fd, st.st_size, mutex, cond);
+}
+
+static InputStream *
+input_file_open(gcc_unused const char *filename,
+		gcc_unused Mutex &mutex, gcc_unused Cond &cond,
+		gcc_unused Error &error)
+{
+	/* dummy method; use OpenFileInputStream() instead */
+
+	return nullptr;
 }
 
 bool

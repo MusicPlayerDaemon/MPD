@@ -52,7 +52,7 @@ GetStoragePluginByName(const char *name)
 }
 
 Storage *
-CreateStorageURI(const char *uri, Error &error)
+CreateStorageURI(EventLoop &event_loop, const char *uri, Error &error)
 {
 	assert(!error.IsDefined());
 
@@ -62,7 +62,7 @@ CreateStorageURI(const char *uri, Error &error)
 		if (plugin.create_uri == nullptr)
 			continue;
 
-		Storage *storage = plugin.create_uri(uri, error);
+		Storage *storage = plugin.create_uri(event_loop, uri, error);
 		if (storage != nullptr || error.IsDefined())
 			return storage;
 	}

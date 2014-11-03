@@ -24,6 +24,7 @@
 #include "storage/FileInfo.hxx"
 #include "lib/smbclient/Init.hxx"
 #include "lib/smbclient/Mutex.hxx"
+#include "fs/Traits.hxx"
 #include "util/Error.hxx"
 #include "thread/Mutex.hxx"
 
@@ -42,9 +43,8 @@ public:
 	virtual ~SmbclientDirectoryReader();
 
 	/* virtual methods from class StorageDirectoryReader */
-	virtual const char *Read() override;
-	virtual bool GetInfo(bool follow, FileInfo &info,
-			     Error &error) override;
+	const char *Read() override;
+	bool GetInfo(bool follow, FileInfo &info, Error &error) override;
 };
 
 class SmbclientStorage final : public Storage {
@@ -63,15 +63,15 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	virtual bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
-			     Error &error) override;
+	bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
+		     Error &error) override;
 
-	virtual StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
-						      Error &error) override;
+	StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
+					      Error &error) override;
 
-	virtual std::string MapUTF8(const char *uri_utf8) const override;
+	std::string MapUTF8(const char *uri_utf8) const override;
 
-	virtual const char *MapToRelativeUTF8(const char *uri_utf8) const override;
+	const char *MapToRelativeUTF8(const char *uri_utf8) const override;
 };
 
 std::string
@@ -180,7 +180,8 @@ SmbclientDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
 }
 
 static Storage *
-CreateSmbclientStorageURI(const char *base, Error &error)
+CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base,
+			  Error &error)
 {
 	if (memcmp(base, "smb://", 6) != 0)
 		return nullptr;

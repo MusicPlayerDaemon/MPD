@@ -364,16 +364,18 @@ libutil_a_SOURCES = \
 	src/util/Domain.hxx \
 	src/util/ReusableArray.hxx \
 	src/util/ASCII.hxx \
+	src/util/UTF8.cxx src/util/UTF8.hxx \
 	src/util/CharUtil.hxx \
 	src/util/NumberParser.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
 	src/util/SplitString.cxx src/util/SplitString.hxx \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
+	src/util/TextFile.hxx \
 	src/util/UriUtil.cxx src/util/UriUtil.hxx \
 	src/util/Manual.hxx \
 	src/util/RefCount.hxx \
-	src/util/FifoBuffer.hxx \
+	src/util/StaticFifoBuffer.hxx \
 	src/util/ForeignFifoBuffer.hxx \
 	src/util/DynamicFifoBuffer.hxx \
 	src/util/ConstBuffer.hxx \
@@ -393,6 +395,7 @@ libutil_a_SOURCES = \
 libthread_a_SOURCES = \
 	src/thread/Util.hxx \
 	src/thread/Name.hxx \
+	src/thread/Slack.hxx \
 	src/thread/Mutex.hxx \
 	src/thread/PosixMutex.hxx \
 	src/thread/CriticalSection.hxx \
@@ -517,7 +520,7 @@ libfs_a_SOURCES = \
 	src/fs/io/BufferedReader.cxx src/fs/io/BufferedReader.hxx \
 	src/fs/io/TextFile.cxx src/fs/io/TextFile.hxx \
 	src/fs/io/OutputStream.hxx \
-	src/fs/io/StdoutOutputStream.hxx \
+	src/fs/io/StdioOutputStream.hxx \
 	src/fs/io/FileOutputStream.cxx src/fs/io/FileOutputStream.hxx \
 	src/fs/io/BufferedOutputStream.cxx src/fs/io/BufferedOutputStream.hxx \
 	src/fs/Domain.cxx src/fs/Domain.hxx \
@@ -552,10 +555,13 @@ SMBCLIENT_SOURCES = \
 NFS_SOURCES = \
 	src/lib/nfs/Callback.hxx \
 	src/lib/nfs/Cancellable.hxx \
+	src/lib/nfs/Lease.hxx \
 	src/lib/nfs/Connection.cxx src/lib/nfs/Connection.hxx \
 	src/lib/nfs/Manager.cxx src/lib/nfs/Manager.hxx \
 	src/lib/nfs/Glue.cxx src/lib/nfs/Glue.hxx \
+	src/lib/nfs/Base.cxx src/lib/nfs/Base.hxx \
 	src/lib/nfs/FileReader.cxx src/lib/nfs/FileReader.hxx \
+	src/lib/nfs/Blocking.cxx src/lib/nfs/Blocking.hxx \
 	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx
 
 if ENABLE_DATABASE
@@ -567,6 +573,7 @@ libstorage_a_SOURCES = \
 	src/storage/Registry.cxx src/storage/Registry.hxx \
 	src/storage/StorageInterface.cxx src/storage/StorageInterface.hxx \
 	src/storage/CompositeStorage.cxx src/storage/CompositeStorage.hxx \
+	src/storage/MemoryDirectoryReader.cxx src/storage/MemoryDirectoryReader.hxx \
 	src/storage/Configured.cxx src/storage/Configured.hxx \
 	src/storage/plugins/LocalStorage.cxx src/storage/plugins/LocalStorage.hxx \
 	src/storage/FileInfo.hxx
@@ -575,18 +582,21 @@ libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(NFS_CFLAGS) \
 	$(SMBCLIENT_CFLAGS)
 
-STORAGE_LIBS = libstorage.a
+STORAGE_LIBS = \
+	libstorage.a \
+	$(NFS_LIBS) \
+	$(SMBCLIENT_LIBS)
 
 if ENABLE_SMBCLIENT
 libstorage_a_SOURCES += \
 	$(SMBCLIENT_SOURCES) \
-	src/storage/plugins/SmbclientStorage.cxx src/neighbor/plugins/SmbclientStorage.hxx
+	src/storage/plugins/SmbclientStorage.cxx src/storage/plugins/SmbclientStorage.hxx
 endif
 
 if ENABLE_NFS
 libstorage_a_SOURCES += \
 	$(NFS_SOURCES) \
-	src/storage/plugins/NfsStorage.cxx src/neighbor/plugins/NfsStorage.hxx
+	src/storage/plugins/NfsStorage.cxx src/storage/plugins/NfsStorage.hxx
 endif
 
 endif
@@ -791,6 +801,8 @@ noinst_LIBRARIES += libffmpeg.a
 libffmpeg_a_SOURCES = \
 	src/lib/ffmpeg/Error.cxx src/lib/ffmpeg/Error.hxx \
 	src/lib/ffmpeg/Domain.cxx src/lib/ffmpeg/Domain.hxx
+libffmpeg_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(FFMPEG_CFLAGS)
 FFMPEG_LIBS2 = libffmpeg.a $(FFMPEG_LIBS)
 endif
 
@@ -1203,6 +1215,7 @@ libinput_a_SOURCES = \
 	src/input/Init.cxx src/input/Init.hxx \
 	src/input/Registry.cxx src/input/Registry.hxx \
 	src/input/Open.cxx \
+	src/input/LocalOpen.cxx src/input/LocalOpen.hxx \
 	src/input/Offset.hxx \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
 	src/input/InputPlugin.hxx \
@@ -1604,6 +1617,7 @@ noinst_PROGRAMS = \
 
 if ENABLE_DATABASE
 noinst_PROGRAMS += test/DumpDatabase
+noinst_PROGRAMS += test/run_storage
 endif
 
 if ENABLE_NEIGHBOR_PLUGINS
@@ -1674,6 +1688,20 @@ if HAVE_LIBUPNP
 test_DumpDatabase_SOURCES += src/lib/expat/ExpatParser.cxx
 endif
 
+test_run_storage_LDADD = \
+	$(STORAGE_LIBS) \
+	$(FS_LIBS) \
+	libevent.a \
+	libthread.a \
+	libsystem.a \
+	libutil.a \
+	$(GLIB_LIBS)
+test_run_storage_SOURCES = \
+	src/Log.cxx src/LogBackend.cxx \
+	src/IOThread.cxx \
+	test/ScopeIOThread.hxx \
+	test/run_storage.cxx
+
 endif
 
 test_run_input_LDADD = \
@@ -1688,6 +1716,7 @@ test_run_input_LDADD = \
 	libsystem.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
+	test/ScopeIOThread.hxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -1738,6 +1767,7 @@ test_visit_archive_LDADD = \
 	libsystem.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
+	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/input/Open.cxx
@@ -1775,6 +1805,7 @@ test_dump_text_file_LDADD = \
 	libutil.a \
 	$(GLIB_LIBS)
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
+	test/ScopeIOThread.hxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx
@@ -1796,6 +1827,7 @@ test_dump_playlist_LDADD = \
 	$(GLIB_LIBS)
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
+	test/ScopeIOThread.hxx \
 	$(DECODER_SRC) \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -1825,6 +1857,7 @@ test_run_decoder_LDADD = \
 	$(GLIB_LIBS)
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
+	test/ScopeIOThread.hxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -1850,6 +1883,7 @@ test_read_tags_LDADD = \
 	$(GLIB_LIBS)
 test_read_tags_SOURCES = test/read_tags.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
+	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
@@ -1984,6 +2018,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(GLIB_LIBS)
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
+	test/ScopeIOThread.hxx \
 	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -2205,18 +2240,10 @@ user_DATA = $(wildcard doc/user/*.html)
 developerdir = $(docdir)/developer
 developer_DATA = $(wildcard doc/developer/*.html)
 
-if HAVE_XMLTO
-
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
 $(DOCBOOK_HTML): %/index.html: %.xml
 	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html --stringparam use.id.as.filename=1 $<
-
-else
-
-DOCBOOK_HTML =
-
-endif
 
 doc/api/html/index.html: doc/doxygen.conf
 	@$(MKDIR_P) $(@D)
@@ -2258,4 +2285,5 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	test/test_archive_zzip.sh \
 	$(wildcard scripts/*.sh) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
+	systemd/mpd.socket \
 	src/win32/mpd_win32_rc.rc.in src/win32/mpd.ico

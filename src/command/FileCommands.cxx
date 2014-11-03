@@ -36,6 +36,7 @@
 #include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/DirectoryReader.hxx"
 #include "TimePrint.hxx"
 #include "ls.hxx"
 

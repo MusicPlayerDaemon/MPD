@@ -26,7 +26,7 @@
 #include "Idle.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
-#include "IOThread.hxx"
+#include "ScopeIOThread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
 #include "pcm/PcmConvert.hxx"
@@ -179,8 +179,7 @@ int main(int argc, char **argv)
 
 	EventLoop event_loop;
 
-	io_thread_init();
-	io_thread_start();
+	const ScopeIOThread io_thread;
 
 	/* initialize the audio output */
 
@@ -204,8 +203,6 @@ int main(int argc, char **argv)
 	/* cleanup and exit */
 
 	audio_output_free(ao);
-
-	io_thread_deinit();
 
 	config_global_finish();
 

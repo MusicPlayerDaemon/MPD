@@ -20,6 +20,17 @@
 #ifndef MPD_INPUT_FILE_HXX
 #define MPD_INPUT_FILE_HXX
 
+class InputStream;
+class Path;
+class Mutex;
+class Cond;
+class Error;
+
 extern const struct InputPlugin input_plugin_file;
+
+InputStream *
+OpenFileInputStream(Path path,
+		    Mutex &mutex, Cond &cond,
+		    Error &error);
 
 #endif

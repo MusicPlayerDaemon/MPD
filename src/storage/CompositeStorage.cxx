@@ -20,10 +20,13 @@
 #include "config.h"
 #include "CompositeStorage.hxx"
 #include "FileInfo.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
 #include <set>
+
+#include <string.h>
 
 static constexpr Domain composite_domain("composite");
 
@@ -52,9 +55,8 @@ public:
 	}
 
 	/* virtual methods from class StorageDirectoryReader */
-	virtual const char *Read() override;
-	virtual bool GetInfo(bool follow, FileInfo &info,
-			     Error &error) override;
+	const char *Read() override;
+	bool GetInfo(bool follow, FileInfo &info, Error &error) override;
 };
 
 const char *

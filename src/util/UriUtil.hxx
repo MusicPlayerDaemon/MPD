@@ -42,6 +42,17 @@ gcc_pure
 const char *
 uri_get_suffix(const char *uri);
 
+struct UriSuffixBuffer {
+	char data[8];
+};
+
+/**
+ * Returns the file name suffix, ignoring the query string.
+ */
+gcc_pure
+const char *
+uri_get_suffix(const char *uri, UriSuffixBuffer &buffer);
+
 /**
  * Returns true if this is a safe "local" URI:
  *
@@ -76,5 +87,13 @@ uri_is_child(const char *parent, const char *child);
 gcc_pure gcc_nonnull_all
 bool
 uri_is_child_or_same(const char *parent, const char *child);
+
+/**
+ * Translate the given URI in the context of #base.  For example,
+ * uri_apply_base("foo", "http://bar/a/")=="http://bar/a/foo".
+ */
+gcc_pure
+std::string
+uri_apply_base(const std::string &uri, const std::string &base);
 
 #endif

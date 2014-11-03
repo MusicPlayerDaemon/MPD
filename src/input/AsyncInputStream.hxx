@@ -83,6 +83,10 @@ protected:
 	 */
 	void SetTag(Tag *_tag);
 
+	void ClearTag() {
+		SetTag(nullptr);
+	}
+
 	void Pause();
 
 	bool IsPaused() const {
