@@ -323,6 +323,10 @@ bool sacd_disc_t::open(sacd_media_t* _sacd_media) {
 		return false;
 	}
 	if (sb_handle.master_toc->area_1_toc_1_start) {
+		if (sb_handle.area[sb_handle.area_count].area_data) {
+			free(sb_handle.area[sb_handle.area_count].area_data);
+			sb_handle.area[sb_handle.area_count].area_data = 0;
+		}
 		sb_handle.area[sb_handle.area_count].area_data = (uint8_t*)malloc(sb_handle.master_toc->area_1_toc_size * SACD_LSN_SIZE);
 		if (!sb_handle.area[sb_handle.area_count].area_data) {
 			close();
@@ -338,6 +342,10 @@ bool sacd_disc_t::open(sacd_media_t* _sacd_media) {
 		}
 	}
 	if (sb_handle.master_toc->area_2_toc_1_start) {
+		if (sb_handle.area[sb_handle.area_count].area_data) {
+			free(sb_handle.area[sb_handle.area_count].area_data);
+			sb_handle.area[sb_handle.area_count].area_data = 0;
+		}
 		sb_handle.area[sb_handle.area_count].area_data = (uint8_t*)malloc(sb_handle.master_toc->area_2_toc_size * SACD_LSN_SIZE);
 		if (!sb_handle.area[sb_handle.area_count].area_data) {
 			close();
@@ -698,11 +706,11 @@ bool sacd_disc_t::read_area_toc(int area_idx) {
 	current_charset = area->area_toc->languages[sacd_text_idx].character_set & 0x07;
 
 	if (area_toc->copyright_offset)
-		area->description_phonetic = charset_convert((char*)area_toc + area_toc->copyright_offset, strlen((char*)area_toc + area_toc->copyright_offset), current_charset);
+		area->copyright = charset_convert((char*)area_toc + area_toc->copyright_offset, strlen((char*)area_toc + area_toc->copyright_offset), current_charset);
 	if (area_toc->copyright_phonetic_offset)
-		area->description_phonetic = charset_convert((char*)area_toc + area_toc->copyright_phonetic_offset, strlen((char*)area_toc + area_toc->copyright_phonetic_offset), current_charset);
+		area->copyright_phonetic = charset_convert((char*)area_toc + area_toc->copyright_phonetic_offset, strlen((char*)area_toc + area_toc->copyright_phonetic_offset), current_charset);
 	if (area_toc->area_description_offset)
-		area->description_phonetic = charset_convert((char*)area_toc + area_toc->area_description_offset, strlen((char*)area_toc + area_toc->area_description_offset), current_charset);
+		area->description = charset_convert((char*)area_toc + area_toc->area_description_offset, strlen((char*)area_toc + area_toc->area_description_offset), current_charset);
 	if (area_toc->area_description_phonetic_offset)
 		area->description_phonetic = charset_convert((char*)area_toc + area_toc->area_description_phonetic_offset, strlen((char*)area_toc + area_toc->area_description_phonetic_offset), current_charset);
 
@@ -845,8 +853,8 @@ void sacd_disc_t::free_area(scarletbook_area_t* area) {
 		free_cond(area->area_track_text[i].track_type_message_phonetic);
 		free_cond(area->area_track_text[i].track_type_extra_message_phonetic);
 	}
-	free_cond(area->description);
 	free_cond(area->copyright);
-	free_cond(area->description_phonetic);
 	free_cond(area->copyright_phonetic);
+	free_cond(area->description);
+	free_cond(area->description_phonetic);
 }
