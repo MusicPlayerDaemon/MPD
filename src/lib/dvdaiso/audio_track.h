@@ -59,8 +59,8 @@ public:
 		return track_list[track_index];
 	}
 	int get_track_index(int track_index);
-	void init(dvda_zone_t* dvda_zone, bool downmix, chmode_t chmode, double threshold_time);
-	bool get_audio_stream_info(dvda_zone_t* dvda_zone, int titleset, uint32_t block_no, audio_stream_info_t& audio_stream_info);
+	void init(dvda_zone_t& dvda_zone, bool downmix, chmode_t chmode, double threshold_time);
+	bool get_audio_stream_info(dvda_zone_t& dvda_zone, int titleset, uint32_t block_no, audio_stream_info_t& audio_stream_info);
 };
 
 #endif

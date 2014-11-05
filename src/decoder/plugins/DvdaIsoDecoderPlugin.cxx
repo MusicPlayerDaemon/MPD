@@ -205,10 +205,6 @@ dvdaiso_file_decode(Decoder& decoder, Path path_fs) {
 		size_t pcm_size = pcm_data.size();
 		if (dvda_reader->read_frame(pcm_data.data(), &pcm_size)) {
 			if (pcm_size > 0) {
-				int32_t* p = (int32_t*)pcm_data.data();
-				for (size_t i = 0; i < pcm_size / sizeof(int32_t); i++) {
-					//p[i] >>= 8;
-				}
 				cmd = decoder_data(decoder, nullptr, pcm_data.data(), pcm_size, samplerate / 1000);
 				if (cmd == DecoderCommand::STOP) {
 					break;

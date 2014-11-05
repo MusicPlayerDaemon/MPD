@@ -33,8 +33,6 @@ public:
 	virtual uint32_t get_channels() = 0;
 	virtual uint32_t get_loudspeaker_config() = 0;
 	virtual uint32_t get_samplerate() = 0;
-	virtual uint64_t get_size() = 0;
-	virtual uint64_t get_offset() = 0;
 	virtual double get_duration() = 0;
 	virtual double get_duration(uint32_t track_index) = 0;
 	virtual void get_info(uint32_t track_index, const struct tag_handler* handler, void* handler_ctx) = 0;

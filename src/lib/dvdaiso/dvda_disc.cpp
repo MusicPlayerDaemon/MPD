@@ -31,10 +31,8 @@ static constexpr double SHORT_TRACK_SEC = 2.0;
 static constexpr Domain dvdaiso_domain("dvdaiso");
 
 dvda_disc_t::dvda_disc_t(bool _no_downmixes, bool _no_short_tracks) {
-	f_ps1 = nullptr;
 	dvda_media = nullptr;
 	dvda_filesystem = nullptr;
-	dvda_zone = nullptr;
 	no_downmixes = _no_downmixes;
 	no_short_tracks = _no_short_tracks;
 	audio_stream = nullptr;
@@ -52,14 +50,6 @@ uint32_t dvda_disc_t::get_tracks() {
 	return track_list.size();
 }
 
-uint32_t dvda_disc_t::get_track_index() {
-	return sel_track_index;
-}
-
-uint32_t dvda_disc_t::get_track_length_lsn() {
-	return sel_track_length_lsn;
-}
-
 uint32_t dvda_disc_t::get_channels() {
 	audio_stream_info_t& info = track_list[sel_track_index].audio_stream_info;
 	return info.group1_channels + info.group2_channels;
@@ -71,14 +61,6 @@ uint32_t dvda_disc_t::get_loudspeaker_config() {
 
 uint32_t dvda_disc_t::get_samplerate() {
 	return track_list[sel_track_index].audio_stream_info.group1_samplerate;
-}
-
-uint64_t dvda_disc_t::get_size() {
-	return (uint64_t)sel_track_length_lsn * (uint64_t)sector_size;
-}
-
-uint64_t dvda_disc_t::get_offset() {
-	return (uint64_t)sel_track_current_lsn * (uint64_t)sector_size;
 }
 
 double dvda_disc_t::get_duration() {
@@ -164,14 +146,10 @@ bool dvda_disc_t::open(dvda_media_t* _dvda_media) {
 	if (!dvda_filesystem->mount(dvda_media)) {
 		return false;
 	}
-	dvda_zone = new dvda_zone_t;
-	if (!dvda_zone) {
+	if (!dvda_zone.open(dvda_filesystem)) {
 		return false;
 	}
-	if (!dvda_zone->open(dvda_filesystem)) {
-		return false;
-	}
-	if (!(dvda_zone->get_titlesets() > 0)) {
+	if (!(dvda_zone.titleset_count() > 0)) {
 		return false;
 	}
 	track_list.init(dvda_zone, no_downmixes, CHMODE_BOTH, no_short_tracks ? SHORT_TRACK_SEC : 0.0);
@@ -179,15 +157,8 @@ bool dvda_disc_t::open(dvda_media_t* _dvda_media) {
 }
 
 bool dvda_disc_t::close() {
-	if (f_ps1) {
-		fclose(f_ps1);
-		f_ps1 = nullptr;
-	}
 	track_list.clear();
-	if (dvda_zone) {
-		delete dvda_zone;
-		dvda_zone = nullptr;
-	}
+	dvda_zone.close();
 	if (dvda_filesystem) {
 		delete dvda_filesystem;
 		dvda_filesystem = nullptr;
@@ -200,47 +171,26 @@ bool dvda_disc_t::close() {
 bool dvda_disc_t::select_track(uint32_t track_index, size_t offset) {
 	sel_track_index = track_index;
 	sel_track_offset = offset;
-	audio_track = &track_list[sel_track_index];
-	sel_titleset_index = audio_track->dvda_titleset - 1;
-	track_stream.init(512 * DVD_BLOCK_SIZE, 4 * DVD_BLOCK_SIZE, 256 * DVD_BLOCK_SIZE);
-	stream_block_current = audio_track->block_first;
-	stream_size = (audio_track->block_last + 1 - audio_track->block_first) * DVD_BLOCK_SIZE;
+	audio_track = track_list[sel_track_index];
+	sel_titleset_index = audio_track.dvda_titleset - 1;
+	track_stream.init(512 * DVD_BLOCK_SIZE, 4 * DVD_BLOCK_SIZE, 16 * DVD_BLOCK_SIZE);
+	ps1_data.resize(16 * DVD_BLOCK_SIZE);
+	stream_block_current = audio_track.block_first;
+	stream_size = (audio_track.block_last + 1 - audio_track.block_first) * DVD_BLOCK_SIZE;
 	stream_ps1_info.header.stream_id = UNK_STREAM_ID;
-	stream_duration = audio_track->duration;
+	stream_duration = audio_track.duration;
 	stream_needs_reinit = false;
 	major_sync_0 = false;
-	if (f_ps1) {
-		fclose(f_ps1);
-		f_ps1 = nullptr;
-	}
-	char f_ps1_name[1024];
-	sprintf(f_ps1_name, "/var/tmp/f_ps1_%02d.%s", sel_track_index, (audio_track->audio_stream_info.stream_id == MLP_STREAM_ID) ? "mlp" : "pcm");
-	f_ps1 = fopen(f_ps1_name, "w+b");
 	return true;
 }
 
-
 bool dvda_disc_t::read_frame(uint8_t* frame_data, size_t* frame_size) {
-	static int rd_frames = 0;
-	static int rd_bytes = 0;
-	rd_frames++;
 	decode_run_read_stream_start:
 	if (track_stream.is_ready_to_write() && !stream_needs_reinit) {
 		stream_buffer_read();
 	}
 	int data_size = *frame_size, bytes_decoded = 0;
-	uint8_t* data = track_stream.get_read_ptr();
-	int      size = track_stream.get_read_size();
 	bytes_decoded = (audio_stream ? audio_stream->decode(frame_data, &data_size, track_stream.get_read_ptr(), track_stream.get_read_size()) : 0);
-	rd_bytes += bytes_decoded;
-	if (rd_frames == 112) {
-		int n = track_stream.get_read_size();
-		printf("%d %d", rd_frames, n);
-	}
-	if (bytes_decoded < 0) {
-		int n = track_stream.get_read_size();
-		printf("%d %d", rd_frames, n);
-	}
 	if (bytes_decoded <= 0) {
 		track_stream.move_read_ptr(0);
 		if (bytes_decoded == audio_stream_t::RETCODE_EXCEPT) {
@@ -296,10 +246,10 @@ bool dvda_disc_t::read_frame(uint8_t* frame_data, size_t* frame_size) {
 			goto decode_run_read_stream_start;
 		}
 		else {
-			create_audio_stream(stream_ps1_info, track_stream.get_read_ptr(), track_stream.get_read_size(), audio_track->track_downmix);
+			create_audio_stream(stream_ps1_info, track_stream.get_read_ptr(), track_stream.get_read_size(), audio_track.track_downmix);
 			if (audio_stream) {
 				if (audio_stream->get_downmix()) {
-					audio_stream->set_downmix_coef(audio_track->LR_dmx_coef);
+					audio_stream->set_downmix_coef(audio_track.LR_dmx_coef);
 				}
 				audio_stream->set_check(false);
 				track_stream.move_read_ptr(audio_stream->sync_offset);
@@ -325,16 +275,12 @@ bool dvda_disc_t::seek(double seconds) {
 		delete audio_stream;
 		audio_stream = nullptr;
 	}
-	uint32_t offset = (uint32_t)((seconds / (audio_track->duration + 1.0)) * (double)(audio_track->block_last + 1 - audio_track->block_first));
-	if (offset > audio_track->block_last - audio_track->block_first - 1) {
-		offset = audio_track->block_last - audio_track->block_first - 1;
+	uint32_t offset = (uint32_t)((seconds / (audio_track.duration + 1.0)) * (double)(audio_track.block_last + 1 - audio_track.block_first));
+	if (offset > audio_track.block_last - audio_track.block_first - 1) {
+		offset = audio_track.block_last - audio_track.block_first - 1;
 	}
-	stream_block_current = audio_track->block_first + offset;
+	stream_block_current = audio_track.block_first + offset;
 	stream_ps1_info.header.stream_id = UNK_STREAM_ID;
-	return true;
-}
-
-bool dvda_disc_t::read_blocks_raw(uint32_t lb_start, uint32_t block_count, uint8_t* data) {
 	return true;
 }
 
@@ -385,36 +331,32 @@ void dvda_disc_t::stream_buffer_read() {
 	sub_header_t ps1_info;
 	int blocks_to_read, blocks_read, bytes_written = 0;
 	blocks_to_read = track_stream.get_write_size() / DVD_BLOCK_SIZE;
-	if (stream_block_current <= audio_track->block_last) {
-		if (stream_block_current + blocks_to_read > audio_track->block_last + 1) {
-			blocks_to_read = audio_track->block_last + 1 - stream_block_current;
+	if (stream_block_current <= audio_track.block_last) {
+		if (stream_block_current + blocks_to_read > audio_track.block_last + 1) {
+			blocks_to_read = audio_track.block_last + 1 - stream_block_current;
 		}
-		blocks_read = dvda_zone->get_blocks(sel_titleset_index, stream_block_current, blocks_to_read, track_stream.get_write_ptr());
-		if (f_ps1) {
-			//fwrite(track_stream.get_write_ptr(), blocks_read * DVD_BLOCK_SIZE, 1, f_ps1);
-		}
-		dvda_block_t::get_ps1(track_stream.get_write_ptr(), blocks_read, track_stream.get_write_ptr(), &bytes_written, &ps1_info);
-		if (f_ps1) {
-			fwrite(track_stream.get_write_ptr(), bytes_written, 1, f_ps1);
-		}
+		blocks_read = dvda_zone.get_blocks(sel_titleset_index, stream_block_current, blocks_to_read, track_stream.get_write_ptr());
+		dvda_block_t::get_ps1(track_stream.get_write_ptr(), blocks_read, ps1_data.data(), &bytes_written, &ps1_info);
+		memcpy(track_stream.get_write_ptr(), ps1_data.data(), bytes_written);
+		track_stream.move_write_ptr(bytes_written);
 		if (stream_ps1_info.header.stream_id == UNK_STREAM_ID) {
 			stream_ps1_info = ps1_info;
 		}
-		track_stream.move_write_ptr(bytes_written);
 		if (blocks_read < blocks_to_read) {
 			LogFormat(dvdaiso_domain, LogLevel::ERROR, "DVD-Audio Decoder cannot read track data: titleset = %d, block_number = %d, blocks_to_read = %d", sel_titleset_index, stream_block_current + blocks_read, blocks_to_read - blocks_read);
 		}
 		stream_block_current += blocks_to_read;
-		if (stream_block_current > audio_track->block_last) {
-			int blocks_after_last = dvda_zone->get_titleset(sel_titleset_index)->get_last() - audio_track->block_last;
+		if (stream_block_current > audio_track.block_last) {
+			int blocks_after_last = dvda_zone.get_titleset(sel_titleset_index).get_last() - audio_track.block_last;
 			int blocks_to_sync = blocks_after_last < 8 ? blocks_after_last : 8;
-			if (stream_block_current <= audio_track->block_last + blocks_to_sync) {
-				if (stream_block_current + blocks_to_read > audio_track->block_last + 1 + blocks_to_sync) {
-					blocks_to_read = audio_track->block_last + 1 + blocks_to_sync - stream_block_current;
+			if (stream_block_current <= audio_track.block_last + blocks_to_sync) {
+				if (stream_block_current + blocks_to_read > audio_track.block_last + 1 + blocks_to_sync) {
+					blocks_to_read = audio_track.block_last + 1 + blocks_to_sync - stream_block_current;
 				}
-				blocks_read = dvda_zone->get_blocks(sel_titleset_index, stream_block_current, blocks_to_read, track_stream.get_write_ptr());
+				blocks_read = dvda_zone.get_blocks(sel_titleset_index, stream_block_current, blocks_to_read, track_stream.get_write_ptr());
 				bytes_written = 0;
-				dvda_block_t::get_ps1(track_stream.get_write_ptr(), blocks_read, track_stream.get_write_ptr(), &bytes_written, NULL);
+				dvda_block_t::get_ps1(track_stream.get_write_ptr(), blocks_read, ps1_data.data(), &bytes_written, nullptr);
+				memcpy(track_stream.get_write_ptr(), ps1_data.data(), bytes_written);
 				if (audio_stream) {
 					int major_sync = audio_stream->resync(track_stream.get_write_ptr(), bytes_written);
 					if (major_sync > 0) {

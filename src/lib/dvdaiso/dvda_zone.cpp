@@ -25,30 +25,50 @@
 #include "dvda_zone.h"
 #include "audio_stream.h"
 
-dvda_sector_pointer_t::dvda_sector_pointer_t(dvda_track_t* _dvda_track, ats_track_sector_t* p_ats_track_sector, int _index) {
-	obj_type = DVDATypeSectorPointer;
-	dvda_track = _dvda_track;
+aob_object_t::aob_object_t(dvd_type_e type) : dvda_object_t(type) {
+}
+
+aob_object_t::~aob_object_t() {
+}
+
+double aob_object_t::get_time() {
+	return PTS_TO_SEC(get_length_pts());
+}
+
+
+dvda_sector_pointer_t::dvda_sector_pointer_t(dvda_track_t* _track, ats_track_sector_t* p_ats_track_sector, int _index) : aob_object_t(DVDTypeSectorPointer) {
+	track = _track;
 	index = _index;
 	first = p_ats_track_sector->first;
 	last  = p_ats_track_sector->last;
 }
 
-double dvda_sector_pointer_t::get_time() {
-	return PTS_TO_SEC(get_length_pts());
+dvda_sector_pointer_t::~dvda_sector_pointer_t() {
+}
+
+uint32_t dvda_sector_pointer_t::get_index() {
+	return index;
 }
 
 uint32_t dvda_sector_pointer_t::get_length_pts() {
-	uint32_t denom = dvda_track->get_last() - dvda_track->get_first() + 1;
+	uint32_t denom = track->get_last() - track->get_first() + 1;
 	if (denom) {
-		double pts = (double)dvda_track->get_length_pts() * (double)(last - first + 1) / (double)denom;
+		double pts = (double)track->get_length_pts() * (double)(last - first + 1) / (double)denom;
 		return (uint32_t)pts;
 	}
 	return 0;
 }
 
-dvda_track_t::dvda_track_t(ats_track_timestamp_t* p_ats_track_timestamp, int track) {
-	obj_type       = DVDATypeTrack;
-	this->track    = track;
+uint32_t dvda_sector_pointer_t::get_first() {
+	return first;
+}
+uint32_t dvda_sector_pointer_t::get_last() {
+	return last;
+}
+
+
+dvda_track_t::dvda_track_t(ats_track_timestamp_t* p_ats_track_timestamp, int _track) : aob_object_t(DVDTypeTrack) {
+	track          = _track;
 	index          = p_ats_track_timestamp->n;
 	first_pts      = p_ats_track_timestamp->first_pts;
 	length_pts     = p_ats_track_timestamp->len_in_pts;
@@ -56,50 +76,93 @@ dvda_track_t::dvda_track_t(ats_track_timestamp_t* p_ats_track_timestamp, int tra
 }
 
 dvda_track_t::~dvda_track_t() {
-	for (int i = 0; i < get_sector_pointers(); i++)
-		delete get_sector_pointer(i);
-	dvda_sector_pointers.clear();
+	sector_pointers.clear();
+}
+
+int dvda_track_t::sector_pointer_count() {
+	return sector_pointers.size();
+}
+
+dvda_sector_pointer_t& dvda_track_t::get_sector_pointer(int sector_pointer_index) {
+	return sector_pointers[sector_pointer_index];
+}
+
+void dvda_track_t::append(dvda_sector_pointer_t& dvda_sector_pointer) {
+	sector_pointers.push_back(dvda_sector_pointer);
+}
+
+uint32_t dvda_track_t::get_index() {
+	return index;
+}
+
+int dvda_track_t::get_track() {
+	return track;
+}
+
+int dvda_track_t::get_downmix_matrix() {
+	return downmix_matrix;
+}
+
+uint32_t dvda_track_t::get_length_pts() {
+	return length_pts;
 }
 
 uint32_t dvda_track_t::get_first() {
-	uint32_t sector = (get_sector_pointers() > 0) ? get_sector_pointer(0)->get_first() : 0;
-	for (int i = 1; i < get_sector_pointers(); i++) {
-		dvda_sector_pointer_t* dvda_sector_pointer = get_sector_pointer(i);
-		if (dvda_sector_pointer)
-			sector = (sector < dvda_sector_pointer->get_first()) ? sector : dvda_sector_pointer->get_first();
+	uint32_t sector = (sector_pointer_count() > 0) ? get_sector_pointer(0).get_first() : 0;
+	for (int sp = 1; sp < sector_pointer_count(); sp++) {
+		dvda_sector_pointer_t& sector_pointer = get_sector_pointer(sp);
+		sector = (sector < sector_pointer.get_first()) ? sector : sector_pointer.get_first();
 	}
 	return sector; 
 };
 
 uint32_t dvda_track_t::get_last() {
-	uint32_t sector = (get_sector_pointers() > 0) ? get_sector_pointer(0)->get_last() : 0;
-	for (int i = 1; i < get_sector_pointers(); i++) {
-		dvda_sector_pointer_t* dvda_sector_pointer = get_sector_pointer(i);
-		if (dvda_sector_pointer)
-			sector = (sector > dvda_sector_pointer->get_last()) ? sector : dvda_sector_pointer->get_last();
+	uint32_t sector = (sector_pointer_count() > 0) ? get_sector_pointer(0).get_last() : 0;
+	for (int sp = 1; sp < sector_pointer_count(); sp++) {
+		dvda_sector_pointer_t& sector_pointer = get_sector_pointer(sp);
+		sector = (sector > sector_pointer.get_last()) ? sector : sector_pointer.get_last();
 	}
 	return sector; 
 };
 
-dvda_title_t::dvda_title_t(ats_title_t* p_ats_title, ats_title_idx_t* p_ats_title_idx) {
-	obj_type = DVDATypeTitle;
-	title    = p_ats_title_idx->title_nr;
-	indexes  = p_ats_title->indexes;
-	tracks   = p_ats_title->tracks;
-	length_pts = p_ats_title->len_in_pts;
+
+dvda_title_t::dvda_title_t(ats_title_t* p_ats_title, ats_title_idx_t* p_ats_title_idx) : dvda_object_t(DVDTypeTitle) {
+	ats_title   = p_ats_title_idx->title_nr;
+	ats_indexes = p_ats_title->indexes;
+	ats_tracks  = p_ats_title->tracks;
+	length_pts  = p_ats_title->len_in_pts;
 }
 
 dvda_title_t::~dvda_title_t() {
-	for (int i = 0; i < get_tracks(); i++) {
-		delete get_track(i);
-	}
-	dvda_tracks.clear();
+	tracks.clear();
 }
 
+int dvda_title_t::track_count() {
+	return tracks.size();
+}
+
+dvda_track_t& dvda_title_t::get_track(int track_index) {
+	return tracks[track_index];
+}
+
+void dvda_title_t::append(dvda_track_t& dvda_track) {
+	tracks.push_back(dvda_track);
+}
+
+int dvda_title_t::get_title() {
+	return ats_title;
+}
+
+double dvda_title_t::get_time() {
+	return PTS_TO_SEC(length_pts);
+}
+
+
 dvda_downmix_channel_t* dvda_downmix_matrix_t::get_downmix_channel(int channel, int dmx_channel) {
-	if (channel >= 0 && channel < DOWNMIX_CHANNELS && dmx_channel >= 0 && dmx_channel < 2)
+	if (channel >= 0 && channel < DOWNMIX_CHANNELS && dmx_channel >= 0 && dmx_channel < 2) {
 		return &LR_dmx[channel][dmx_channel];
-	return NULL;
+	}
+	return nullptr;
 }
 
 double dvda_downmix_matrix_t::get_downmix_coef(int channel, int dmx_channel) {
@@ -123,25 +186,65 @@ double dvda_downmix_matrix_t::get_downmix_coef(int channel, int dmx_channel) {
 	return dmx_coef;
 }
 
-bool dvda_titleset_t::open(dvda_zone_t* dvda_zone, int i_titleset) {
-	obj_type = DVDATypeTitleset;
-	this->dvda_zone = dvda_zone;
+dvda_titleset_t::dvda_titleset_t() : dvda_object_t(DVDTypeTitleset) {
+	zone = nullptr;
+}
+
+dvda_titleset_t::~dvda_titleset_t() {
+	if (zone) {
+		close();
+	}
+	titles.clear();
+}
+
+int dvda_titleset_t::title_count() {
+	return titles.size();
+}
+
+dvda_title_t& dvda_titleset_t::get_title(int title_index) {
+	return titles[title_index];
+}
+
+void dvda_titleset_t::append(dvda_title_t& title) {
+	titles.push_back(title);
+}
+
+uint32_t dvda_titleset_t::get_last() {
+	return aobs_last_sector;
+}
+
+bool dvda_titleset_t::is_audio_ts() {
+	return titleset_type == DVDTitlesetAudio;
+}
+
+bool dvda_titleset_t::is_video_ts() {
+	return titleset_type == DVDTitlesetVideo;
+}
+
+double dvda_titleset_t::get_downmix_coef(int matrix, int channel, int dmx_channel) {
+	if (matrix >= 0 && matrix < DOWNMIX_MATRICES) {
+		return downmix_matrices[matrix].get_downmix_coef(channel, dmx_channel);
+	}
+	return 0.0;
+}
+
+bool dvda_titleset_t::open(dvda_zone_t* _zone, int titleset_index) {
 	atsi_mat_t atsi_mat;
-	titleset = i_titleset + 1;
-	dvda_titleset_type = DVDTitlesetUnknown;
+	titleset_type = DVDTitlesetUnknown;
 	char file_name[13];
-	snprintf(file_name, sizeof(file_name), "ATS_%02d_0.IFO", titleset);
-	dvda_fileobject_t* atsi_file = dvda_zone->get_filesystem()->file_open(file_name);
-	if (!atsi_file)
-		return is_open;
+	snprintf(file_name, sizeof(file_name), "ATS_%02d_0.IFO", titleset_index + 1);
+	dvda_fileobject_t* atsi_file = _zone->get_filesystem()->file_open(file_name);
+	if (!atsi_file) {
+		return false;
+	}
 	int64_t atsi_size = atsi_file->get_size();
 	if (atsi_size >= 0x0800) {
 		if (atsi_file->read((char*)&atsi_mat, sizeof(atsi_mat_t)) == sizeof(atsi_mat_t)) {
 			if (memcmp("DVDAUDIO-ATS", atsi_mat.ats_identifier, 12) == 0) {
 				uint32_t aob_offset = 0;
 				for (int i = 0; i < 9; i++) {
-					snprintf(file_name, sizeof(file_name), "ATS_%02d_%01d.AOB", titleset, i + 1);
-					aobs[i].dvda_fileobject = dvda_zone->get_filesystem()->file_open(file_name);
+					snprintf(file_name, sizeof(file_name), "ATS_%02d_%01d.AOB", titleset_index + 1, i + 1);
+					aobs[i].dvda_fileobject = _zone->get_filesystem()->file_open(file_name);
 					if (aobs[i].dvda_fileobject) {
 						int64_t aob_size = aobs[i].dvda_fileobject->get_size();
 						aobs[i].block_first = aob_offset;
@@ -178,10 +281,12 @@ bool dvda_titleset_t::open(dvda_zone_t* dvda_zone, int i_titleset) {
 						downmix_matrices[m].get_downmix_channel(ch, 1)->coef = atsi_mat.ats_downmix_matrices[m].coef[ch].R;
 					}
 				}
-				if (atsi_mat.atsm_vobs == 0)
-					dvda_titleset_type = DVDTitlesetAudio;
-				else
-					dvda_titleset_type = DVDTitlesetVideo;
+				if (atsi_mat.atsm_vobs == 0) {
+					titleset_type = DVDTitlesetAudio;
+				}
+				else {
+					titleset_type = DVDTitlesetVideo;
+				}
 				aobs_last_sector = atsi_mat.ats_last_sector - 2 * (atsi_mat.atsi_last_sector + 1);
 				uint32_t ats_len = (uint32_t)atsi_size - 0x0800;
 				atsi_file->seek(0x0800);
@@ -195,72 +300,81 @@ bool dvda_titleset_t::open(dvda_zone_t* dvda_zone, int i_titleset) {
 					ats_end = ats_buf + ((ats_len < p_audio_pgcit->last_byte + 1) ? ats_len : p_audio_pgcit->last_byte + 1);
 					ats_title_idx_t* p_ats_title_idx = (ats_title_idx_t*)((uint8_t*)p_audio_pgcit + AUDIO_PGCIT_SIZE);
 					for (int i = 0; i < p_audio_pgcit->nr_of_titles; i++) {
-						if ((uint8_t*)&p_ats_title_idx[i] + ATS_TITLE_IDX_SIZE > ats_end)
+						if ((uint8_t*)&p_ats_title_idx[i] + ATS_TITLE_IDX_SIZE > ats_end) {
 							break;
+						}
 						B2N_32(p_ats_title_idx[i].title_table_offset);
 						ats_title_t* p_ats_title = (ats_title_t*)((uint8_t*)p_audio_pgcit + p_ats_title_idx[i].title_table_offset);
-						if ((uint8_t*)p_ats_title + ATS_TITLE_SIZE > ats_end)
+						if ((uint8_t*)p_ats_title + ATS_TITLE_SIZE > ats_end) {
 							break;
+						}
 						B2N_32(p_ats_title->len_in_pts);
 						B2N_16(p_ats_title->track_sector_table_offset);
 						ats_track_timestamp_t* p_ats_track_timestamp = (ats_track_timestamp_t*)((uint8_t*)p_ats_title + ATS_TITLE_SIZE);
 						ats_track_sector_t* p_ats_track_sector = (ats_track_sector_t*)((uint8_t*)p_ats_title + p_ats_title->track_sector_table_offset);
-						dvda_title_t* dvda_title = new dvda_title_t(p_ats_title, &p_ats_title_idx[i]);
-						add_title(dvda_title);
+						dvda_title_t t(p_ats_title, &p_ats_title_idx[i]);
+						append(t);
+						dvda_title_t& title = get_title(i);
 						for (int j = 0; j < p_ats_title->tracks; j++) {
-							if ((uint8_t*)&p_ats_track_timestamp[j] + ATS_TRACK_TIMESTAMP_SIZE > ats_end)
+							if ((uint8_t*)&p_ats_track_timestamp[j] + ATS_TRACK_TIMESTAMP_SIZE > ats_end) {
 								break;
+							}
 							B2N_32(p_ats_track_timestamp[j].first_pts);
 							B2N_32(p_ats_track_timestamp[j].len_in_pts);
-							dvda_track_t* dvda_track = new dvda_track_t(&p_ats_track_timestamp[j], j + 1);
-							dvda_title->add_track(dvda_track);
+							dvda_track_t track(&p_ats_track_timestamp[j], j + 1);
+							title.append(track);
 						}
 						for (int j = 0; j < p_ats_title->indexes; j++) {
-							if ((uint8_t*)&p_ats_track_sector[j] + ATS_TRACK_SECTOR_SIZE > ats_end)
+							if ((uint8_t*)&p_ats_track_sector[j] + ATS_TRACK_SECTOR_SIZE > ats_end) {
 								break;
+							}
 							B2N_32(p_ats_track_sector[j].first);
 							B2N_32(p_ats_track_sector[j].last);
-							for (int k = 0; k < dvda_title->get_tracks(); k++) {
+							for (int k = 0; k < title.track_count(); k++) {
 								int track_curr_idx, track_next_idx;
-								dvda_track_t* dvda_track = dvda_title->get_track(k);
-								track_curr_idx = dvda_track->get_index();
-								track_next_idx = (k < dvda_title->get_tracks() - 1) ? dvda_title->get_track(k + 1)->get_index() : 0;
+								dvda_track_t& track = get_title(i).get_track(k);
+								track_curr_idx = track.get_index();
+								track_next_idx = (k < title.track_count() - 1) ? title.get_track(k + 1).get_index() : 0;
 								if (j + 1 >= track_curr_idx && (j + 1 < track_next_idx || track_next_idx == 0)) {
-									dvda_sector_pointer_t* dvda_sector_pointer = new dvda_sector_pointer_t(dvda_track, &p_ats_track_sector[j], j + 1);
-									dvda_track->add_sector_pointer(dvda_sector_pointer);
+									dvda_sector_pointer_t sector_pointer(&track, &p_ats_track_sector[j], j + 1);
+									track.append(sector_pointer);
 								}
 							}
 						}
-						for (int j = 0; j < dvda_title->get_tracks(); j++) {
-							dvda_track_t* dvda_track = dvda_title->get_track(j);
+						/*
+						for (int j = 0; j < title.track_count(); j++) {
+							dvda_track_t& track = title.get_track(j);
 						}
+						*/
 					}
-					is_open = true;
+					zone = _zone;
 				}
 				delete ats_buf;
 			}
 		}
-		dvda_zone->get_filesystem()->file_close(atsi_file);
+		_zone->get_filesystem()->file_close(atsi_file);
 	}
-	return is_open;
+	return zone != nullptr;
 }
 
-dvda_titleset_t::~dvda_titleset_t() {
-	if (is_open) {
-		close_aobs();
+void dvda_titleset_t::close() {
+	if (zone) {
+		for (int i = 0; i < 9; i++) {
+			if (aobs[i].dvda_fileobject) {
+				aobs[i].dvda_fileobject->close();
+			}
+		}
+		titles.clear();
+		zone = nullptr;
 	}
-	for (int i = 0; i < get_titles(); i++) {
-		delete get_title(i);
-	}
-	dvda_titles.clear();
 }
 
-DVDAERROR dvda_titleset_t::get_block(uint32_t block, uint8_t* buf_ptr) {
+DVDAERROR dvda_titleset_t::get_block(uint32_t block_index, uint8_t* block_data) {
 	for (int i = 0; i < 9; i++) {
-		if (aobs[i].dvda_fileobject && block >= aobs[i].block_first && block <= aobs[i].block_last) {
-			if (!aobs[i].dvda_fileobject->seek((block - aobs[i].block_first) * DVD_BLOCK_SIZE))
+		if (aobs[i].dvda_fileobject && block_index >= aobs[i].block_first && block_index <= aobs[i].block_last) {
+			if (!aobs[i].dvda_fileobject->seek((block_index - aobs[i].block_first) * DVD_BLOCK_SIZE))
 				return DVDAERR_CANNOT_SEEK_ATS_XX_X_AOB;
-			if (aobs[i].dvda_fileobject->read((char*)buf_ptr, DVD_BLOCK_SIZE) != DVD_BLOCK_SIZE)
+			if (aobs[i].dvda_fileobject->read((char*)block_data, DVD_BLOCK_SIZE) != DVD_BLOCK_SIZE)
 				return DVDAERR_CANNOT_READ_ATS_XX_X_AOB;
 			return DVDAERR_OK;
 		}
@@ -268,7 +382,7 @@ DVDAERROR dvda_titleset_t::get_block(uint32_t block, uint8_t* buf_ptr) {
 	return DVDAERR_AOB_BLOCK_NOT_FOUND;
 }
 
-int dvda_titleset_t::get_blocks(uint32_t block_first, uint32_t block_last, uint8_t* buf_ptr) {
+int dvda_titleset_t::get_blocks(uint32_t block_first, uint32_t block_last, uint8_t* block_data) {
 	int blocks_read = 0;
 	int aob_index = -1;
 	for (int i = 0; i < 9; i++) {
@@ -282,19 +396,19 @@ int dvda_titleset_t::get_blocks(uint32_t block_first, uint32_t block_last, uint8
 			if (aobs[aob_index].dvda_fileobject->seek((block_first - aobs[aob_index].block_first) * DVD_BLOCK_SIZE)) {
 				if (block_last <= aobs[aob_index].block_last) {
 					int bytes_to_read = (block_last + 1 - block_first) * DVD_BLOCK_SIZE;
-					int bytes_read = aobs[aob_index].dvda_fileobject->read((char*)buf_ptr, bytes_to_read);
+					int bytes_read = aobs[aob_index].dvda_fileobject->read((char*)block_data, bytes_to_read);
 					blocks_read += bytes_read / DVD_BLOCK_SIZE;
 				}
 				else {
 					int bytes_to_read_1 = (aobs[aob_index].block_last + 1 - block_first) * DVD_BLOCK_SIZE;
-					int bytes_read = aobs[aob_index].dvda_fileobject->read((char*)buf_ptr, bytes_to_read_1);
-					blocks_read += bytes_read / DVD_BLOCK_SIZE;
+					int bytes_read_1 = aobs[aob_index].dvda_fileobject->read((char*)block_data, bytes_to_read_1);
+					blocks_read += bytes_read_1 / DVD_BLOCK_SIZE;
 					if (aob_index + 1 < 9) {
 						if (aobs[aob_index + 1].dvda_fileobject) {
 							if (aobs[aob_index + 1].dvda_fileobject->seek(0)) {
 								int bytes_to_read_2 = (block_last + 1 - aobs[aob_index + 1].block_first) * DVD_BLOCK_SIZE;
-								int bytes_read = aobs[aob_index + 1].dvda_fileobject->read((char*)buf_ptr + blocks_read * DVD_BLOCK_SIZE, bytes_to_read_2);
-								blocks_read += bytes_read / DVD_BLOCK_SIZE;
+								int bytes_read_2 = aobs[aob_index + 1].dvda_fileobject->read((char*)block_data + blocks_read * DVD_BLOCK_SIZE, bytes_to_read_2);
+								blocks_read += bytes_read_2 / DVD_BLOCK_SIZE;
 							}
 						}
 					}
@@ -305,27 +419,42 @@ int dvda_titleset_t::get_blocks(uint32_t block_first, uint32_t block_last, uint8
 	return blocks_read;
 }
 
-void dvda_titleset_t::close_aobs() {
-	for (int i = 0; i < 9; i++) {
-		if (aobs[i].dvda_fileobject) {
-			aobs[i].dvda_fileobject->close();
-		}
-	}
+
+dvda_zone_t::dvda_zone_t() : dvda_object_t(DVDTypeZone) {
+	filesystem = nullptr;
 }
 
-bool dvda_zone_t::open(dvda_filesystem_t* _dvda_filesystem) {
-	if (is_open) {
+dvda_zone_t::~dvda_zone_t() {
+}
+
+dvda_filesystem_t* dvda_zone_t::get_filesystem() {
+	return filesystem;
+}
+
+int dvda_zone_t::titleset_count() {
+	int size;
+	size = titlesets.size();
+	return size;
+}
+
+dvda_titleset_t& dvda_zone_t::get_titleset(int titleset_index) {
+	return titlesets[titleset_index];
+}
+
+void dvda_zone_t::append(dvda_titleset_t& titleset) {
+	titlesets.push_back(titleset);
+}
+
+bool dvda_zone_t::open(dvda_filesystem_t* _filesystem) {
+	if (filesystem) {
 		close();
-		is_open = false;
 	}
-	obj_type = DVDATypeZone;
-	dvda_filesystem = _dvda_filesystem;
 	amgi_mat_t amgi_mat;
 	audio_titlesets = 99;
 	video_titlesets = 99;
-	dvda_fileobject_t* amgi_file = dvda_filesystem->file_open("AUDIO_TS.IFO");
+	dvda_fileobject_t* amgi_file = _filesystem->file_open("AUDIO_TS.IFO");
 	if (amgi_file) {
-		if (amgi_file->read((char*)&amgi_mat, sizeof(amgi_mat_t)) == sizeof(amgi_mat_t)) {
+		if (amgi_file->read( &amgi_mat, sizeof(amgi_mat_t)) == sizeof(amgi_mat_t)) {
 			if (memcmp("DVDAUDIO-AMG", amgi_mat.amg_identifier, 12) == 0) {
 				B2N_32(amgi_mat.amg_last_sector);
 				B2N_32(amgi_mat.amgi_last_sector);
@@ -348,50 +477,45 @@ bool dvda_zone_t::open(dvda_filesystem_t* _dvda_filesystem) {
 				B2N_16(amgi_mat.amgm_subp_attr.lang_code);
 				audio_titlesets = (audio_titlesets < amgi_mat.amg_nr_of_audio_title_sets) ? audio_titlesets : amgi_mat.amg_nr_of_audio_title_sets;
 				video_titlesets = (video_titlesets < amgi_mat.amg_nr_of_video_title_sets) ? video_titlesets : amgi_mat.amg_nr_of_video_title_sets;
-				for (int i_titleset = 0; i_titleset < audio_titlesets; i_titleset++) {
-					dvda_titleset_t* dvda_titleset = new dvda_titleset_t();
-					if (dvda_titleset->open(this, i_titleset))
-						add_titleset(dvda_titleset);
-					else
-						delete dvda_titleset;
+				filesystem = _filesystem;
+				for (int ts = 0; ts < audio_titlesets; ts++) {
+					dvda_titleset_t titleset;
+					if (titleset.open(this, ts)) {
+						append(titleset);
+					}
 				}
-				for (int i_titleset = 0; i_titleset < get_titlesets(); i_titleset++) {
-					dvda_titleset_t* dvda_titleset = get_titleset(i_titleset);
-					for (int i_title = 0; i_title < dvda_titleset->get_titles(); i_title++) {
-						dvda_title_t* dvda_title = dvda_titleset->get_title(i_title);
-						for (int i_track = 0; i_track < dvda_title->get_tracks(); i_track++) {
-							dvda_track_t* dvda_track = dvda_title->get_track(i_track);
-							for (int i_index = 0; i_index < dvda_track->get_sector_pointers(); i_index++) {
-								dvda_sector_pointer_t* dvda_sector_pointer = dvda_track->get_sector_pointer(i_index);
+				/*
+				for (int ts = 0; ts < titleset_count(); ts++) {
+					dvda_titleset_t& titleset = get_titleset(ts);
+					for (int ti = 0; ti < titleset.title_count(); ti++) {
+						dvda_title_t& title = titleset.get_title(ti);
+						for (int tr = 0; tr < title.track_count(); tr++) {
+							dvda_track_t& track = title.get_track(tr);
+							for (int sp = 0; sp < track.sector_pointer_count(); sp++) {
+								dvda_sector_pointer_t& sector_pointer = track.get_sector_pointer(sp);
 							}
 						}
 					}
 				}
-				is_open = true;
+				*/
 			}
 		}
-		dvda_filesystem->file_close(amgi_file);
+		_filesystem->file_close(amgi_file);
 	}
-	return is_open;
+	return filesystem != nullptr;
 }
 
 void dvda_zone_t::close() {
-	if (is_open) {
-		for (int i = 0; i < get_titlesets(); i++) {
-			delete get_titleset(i);
-		}
-		dvda_titlesets.clear();
-		is_open = false;
+	if (filesystem) {
+		titlesets.clear();
+		filesystem = nullptr;
 	}
 }
 
-DVDAERROR dvda_zone_t::get_block(int titleset, uint32_t block_no, uint8_t* buf_ptr) {
-	DVDAERROR err;
-	err = get_titleset(titleset)->get_block(block_no, buf_ptr);
-	return err;
+DVDAERROR dvda_zone_t::get_block(int titleset_index, uint32_t block_index, uint8_t* block_data) {
+	return get_titleset(titleset_index).get_block(block_index, block_data);
 }
 
-int dvda_zone_t::get_blocks(int titleset, uint32_t block_no, int blocks, uint8_t* buf_ptr) {
-	blocks = get_titleset(titleset)->get_blocks(block_no, block_no + blocks - 1, buf_ptr);
-	return blocks;
+int dvda_zone_t::get_blocks(int titleset_index, uint32_t block_index, int block_count, uint8_t* block_data) {
+	return get_titleset(titleset_index).get_blocks(block_index, block_index + block_count - 1, block_data);
 }

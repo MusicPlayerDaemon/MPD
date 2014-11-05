@@ -30,79 +30,52 @@
 
 class dvda_disc_t : public dvda_reader_t {
 private:
-	FILE*                f_ps1;
-	dvda_media_t*        dvda_media;
-	dvda_filesystem_t*   dvda_filesystem;
-	dvda_zone_t*         dvda_zone;
-	track_list_t         track_list;
-	bool                 no_downmixes;
-	bool                 no_short_tracks;
+	dvda_media_t*      dvda_media;
+	dvda_filesystem_t* dvda_filesystem;
+	dvda_zone_t        dvda_zone;
+	track_list_t       track_list;
+	bool               no_downmixes;
+	bool               no_short_tracks;
 
 	stream_buffer_t<uint8_t, int> track_stream;
-	uint64_t                      track_stream_bytes_aob;
-	uint64_t                      track_stream_bytes_ps1;
+	vector<uint8_t>               ps1_data;
 	audio_stream_t*               audio_stream;
-	audio_track_t*                audio_track;
-	uint64_t                      stream_size;
-	double                        stream_duration;
-	sub_header_t                  stream_ps1_info;
-	uint32_t                      stream_block_current;
-	bool                          stream_needs_reinit;
-	bool                          major_sync_0;
-	vector<uint8_t>               pcm_out_buffer;
-	size_t                        pcm_out_buffer_size;
-	unsigned                      pcm_out_channel_map;
-	unsigned                 stream_channel_map;
-	int                      stream_channels;
-	int                      stream_bits;
-	int                      stream_samplerate;
+	audio_track_t                 audio_track;
 
+	uint64_t      stream_size;
+	double        stream_duration;
+	sub_header_t  stream_ps1_info;
+	uint32_t      stream_block_current;
+	bool          stream_needs_reinit;
+	bool          major_sync_0;
+	unsigned      stream_channel_map;
+	int           stream_channels;
+	int           stream_bits;
+	int           stream_samplerate;
 
-
-
-	int                  sel_titleset_index;
-	audio_track_t        sel_audio_track;
-	int                  sel_track_index;
-	size_t               sel_track_offset;
-
-	uint32_t             sel_track_start_lsn;
-	uint32_t             sel_track_length_lsn;
-	uint32_t             sel_track_current_lsn;
-	uint32_t             channel_count;
-	bool                 is_emaster;
-	bool                 is_dst_encoded;
-	//audio_sector_t       audio_sector;
-	//audio_frame_t        frame;
-	int                  frame_info_counter;
-	int                  packet_info_idx;
-	uint8_t              sector_buffer[2048];
-	uint32_t             sector_size;
-	int                  sector_bad_reads;
-	uint8_t*             buffer;
-	int                  buffer_offset;
+	int           sel_titleset_index;
+	int           sel_track_index;
+	size_t        sel_track_offset;
+	uint32_t      sel_track_length_lsn;
 public:
 	dvda_disc_t(bool no_downmixes = false, bool no_short_tracks = false);
 	~dvda_disc_t();
 	uint32_t get_tracks();
-	uint32_t get_track_index();
 	uint32_t get_channels();
 	uint32_t get_loudspeaker_config();
 	uint32_t get_samplerate();
-	uint64_t get_size();
-	uint64_t get_offset();
 	double get_duration();
 	double get_duration(uint32_t track_index);
-	void get_info(uint32_t track_index, const struct tag_handler *handler, void *handler_ctx);
+	void get_info(uint32_t track_index, const struct tag_handler* handler, void* handler_ctx);
 	uint32_t get_track_length_lsn();
 	bool open(dvda_media_t* dvda_media);
 	bool close();
 	bool select_track(uint32_t track_index, size_t offset = 0);
 	bool read_frame(uint8_t* frame_data, size_t* frame_size);
 	bool seek(double seconds);
-	bool read_blocks_raw(uint32_t lb_start, uint32_t block_count, uint8_t* data);
 private:
-	 bool create_audio_stream(sub_header_t& p_ps1_info, uint8_t* p_buf, int p_buf_size, bool p_downmix);
-	 void stream_buffer_read();
+	bool create_audio_stream(sub_header_t& p_ps1_info, uint8_t* p_buf, int p_buf_size, bool p_downmix);
+	void stream_buffer_read();
 };
 
 #endif

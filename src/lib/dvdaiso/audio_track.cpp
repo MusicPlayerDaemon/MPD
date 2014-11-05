@@ -47,23 +47,23 @@ int track_list_t::get_track_index(int track_index) {
 	return -1;
 }
 
-void track_list_t::init(dvda_zone_t* dvda_zone, bool downmix, chmode_t chmode, double threshold_time) {
+void track_list_t::init(dvda_zone_t& dvda_zone, bool downmix, chmode_t chmode, double threshold_time) {
 	int track_number = 1;
-	for (int ts = 0; ts < dvda_zone->get_titlesets(); ts++) {
-		dvda_titleset_t* dvda_titleset = dvda_zone->get_titleset(ts);
-		if (dvda_titleset->is_audio_ts()) {
-			for (int ti = 0; ti < dvda_titleset->get_titles(); ti++) {
-				dvda_title_t* dvda_title = dvda_titleset->get_title(ti);
-				for (int tr = 0; tr < dvda_title->get_tracks(); tr++) {
-					dvda_track_t* dvda_track = dvda_title->get_track(tr);
+	for (int ts = 0; ts < dvda_zone.titleset_count(); ts++) {
+		dvda_titleset_t& titleset = dvda_zone.get_titleset(ts);
+		if (titleset.is_audio_ts()) {
+			for (int ti = 0; ti < titleset.title_count(); ti++) {
+				dvda_title_t& title = titleset.get_title(ti);
+				for (int tr = 0; tr < title.track_count(); tr++) {
+					dvda_track_t& track = title.get_track(tr);
 					audio_track_t audio_track;
 					audio_track.dvda_titleset = ts + 1;
 					audio_track.dvda_title    = ti + 1;
 					audio_track.dvda_track    = tr + 1;
 					audio_track.track_number  = track_number;
-					audio_track.block_first   = dvda_track->get_first();
-					audio_track.block_last    = dvda_track->get_last();
-					audio_track.duration      = dvda_track->get_time();
+					audio_track.block_first   = track.get_first();
+					audio_track.block_last    = track.get_last();
+					audio_track.duration      = track.get_time();
 					if (!(audio_track.duration < threshold_time) && get_audio_stream_info(dvda_zone, ts, audio_track.block_first, audio_track.audio_stream_info)) {
 						audio_track.track_downmix = downmix;
 						audio_track.track_index = get_track_index(ts, ti, tr, audio_track.track_downmix);
@@ -75,11 +75,11 @@ void track_list_t::init(dvda_zone_t* dvda_zone, bool downmix, chmode_t chmode, d
 						}
 						else {
 							if (audio_track.audio_stream_info.stream_id == PCM_STREAM_ID) {
-								int downmix_matrix = dvda_track->get_downmix_matrix();
+								int downmix_matrix = track.get_downmix_matrix();
 								if (downmix_matrix >= 0) {
 									for (int ch = 0; ch < DOWNMIX_CHANNELS; ch++) {
-										audio_track.LR_dmx_coef[ch][0] = dvda_titleset->get_downmix_coef(downmix_matrix, ch, 0);
-										audio_track.LR_dmx_coef[ch][1] = dvda_titleset->get_downmix_coef(downmix_matrix, ch, 1);
+										audio_track.LR_dmx_coef[ch][0] = titleset.get_downmix_coef(downmix_matrix, ch, 0);
+										audio_track.LR_dmx_coef[ch][1] = titleset.get_downmix_coef(downmix_matrix, ch, 1);
 									}
 									audio_track.audio_stream_info.can_downmix = true;
 								}
@@ -98,9 +98,9 @@ void track_list_t::init(dvda_zone_t* dvda_zone, bool downmix, chmode_t chmode, d
 	}
 }
 
-bool track_list_t::get_audio_stream_info(dvda_zone_t* dvda_zone, int titleset, uint32_t block_no, audio_stream_info_t& audio_stream_info) {
+bool track_list_t::get_audio_stream_info(dvda_zone_t& dvda_zone, int titleset, uint32_t block_no, audio_stream_info_t& audio_stream_info) {
 	uint8_t block[SEGMENT_HEADER_BLOCKS * DVD_BLOCK_SIZE];
-	int blocks_read = dvda_zone->get_blocks(titleset, block_no, SEGMENT_HEADER_BLOCKS, block); 
+	int blocks_read = dvda_zone.get_blocks(titleset, block_no, SEGMENT_HEADER_BLOCKS, block);
 	uint8_t ps1_buffer[SEGMENT_HEADER_SIZE];
 	int bytes_written = 0;
 	sub_header_t ps1_info;
