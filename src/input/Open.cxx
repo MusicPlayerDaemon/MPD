@@ -22,13 +22,12 @@
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
 #include "LocalOpen.hxx"
+#include "Domain.hxx"
 #include "plugins/RewindInputPlugin.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-
-static constexpr Domain input_domain("input");
 
 InputStream *
 InputStream::Open(const char *url,
