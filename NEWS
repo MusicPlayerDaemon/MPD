@@ -3,6 +3,7 @@ ver 0.19.3 (not yet released)
   - upnp: fix breakage due to malformed URIs
 * decoder
   - audiofile: fix crash while playing streams
+  - ffmpeg: support opus
 
 ver 0.19.2 (2014/11/02)
 * input
