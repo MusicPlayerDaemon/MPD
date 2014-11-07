@@ -1,4 +1,6 @@
 ver 0.19.3 (not yet released)
+* database
+  - upnp: fix breakage due to malformed URIs
 * decoder
   - audiofile: fix crash while playing streams
 
