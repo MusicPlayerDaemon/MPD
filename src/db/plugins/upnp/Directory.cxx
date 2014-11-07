@@ -129,6 +129,7 @@ public:
 		 state(NONE),
 		 tag_type(TAG_NUM_OF_ITEM_TYPES)
 	{
+		m_tobj.clear();
 	}
 
 protected:

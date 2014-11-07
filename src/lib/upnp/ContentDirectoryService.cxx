@@ -29,7 +29,7 @@
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 						 const UPnPService &service)
-	:m_actionURL(uri_apply_base(device.URLBase, service.controlURL)),
+	:m_actionURL(uri_apply_base(service.controlURL, device.URLBase)),
 	 m_serviceType(service.serviceType),
 	 m_deviceId(device.UDN),
 	 m_friendlyName(device.friendlyName),

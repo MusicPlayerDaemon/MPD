@@ -4,6 +4,13 @@ ver 0.20 (not yet released)
 * output
   - pulse: set channel map to WAVE-EX
 
+ver 0.19.3 (not yet released)
+* database
+  - upnp: fix breakage due to malformed URIs
+* decoder
+  - audiofile: fix crash while playing streams
+  - ffmpeg: support opus
+
 ver 0.19.2 (2014/11/02)
 * input
   - curl: fix redirected streams
