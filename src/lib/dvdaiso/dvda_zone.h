@@ -58,7 +58,7 @@ public:
 class aob_object_t : public dvda_object_t {
 public:
 	aob_object_t(dvd_type_e type = DVDTypeAOB);
-	virtual ~aob_object_t();
+	~aob_object_t();
 	virtual double get_time();
 	virtual uint32_t get_length_pts() = 0;
 	virtual uint32_t get_first() = 0;

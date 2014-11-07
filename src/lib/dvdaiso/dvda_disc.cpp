@@ -201,7 +201,7 @@ bool dvda_disc_t::read_frame(uint8_t* frame_data, size_t* frame_size) {
 		if (decoder_needs_reinit) {
 			if (audio_stream) {
 				delete audio_stream;
-				audio_stream = NULL;
+				audio_stream = nullptr;
 			}
 			LogFormat(dvdaiso_domain, LogLevel::WARNING, "Reinitializing DVD-Audio Decoder: MLP/TrueHD");
 			goto decode_run_read_stream_start;
@@ -211,7 +211,7 @@ bool dvda_disc_t::read_frame(uint8_t* frame_data, size_t* frame_size) {
 				stream_needs_reinit = false;
 				if (audio_stream) {
 					delete audio_stream;
-					audio_stream = NULL;
+					audio_stream = nullptr;
 				}
 				stream_ps1_info.header.stream_id = UNK_STREAM_ID;
 				LogFormat(dvdaiso_domain, LogLevel::WARNING, "Reinitializing DVD-Audio Decoder: PCM");

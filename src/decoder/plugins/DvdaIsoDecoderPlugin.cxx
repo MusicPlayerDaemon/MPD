@@ -225,9 +225,6 @@ dvdaiso_file_decode(Decoder& decoder, Path path_fs) {
 			break;
 		}
 	}
-	if (!dvda_reader->close()) {
-		LogError(dvdaiso_domain, "cannot close stream reader");
-	}
 }
 
 static bool
