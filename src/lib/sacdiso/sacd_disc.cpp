@@ -283,9 +283,12 @@ void sacd_disc_t::set_emaster(bool emaster) {
 
 bool sacd_disc_t::open(sacd_media_t* _sacd_media) {
 	sacd_media = _sacd_media;
+	sb_handle.master_data = nullptr;
+	sb_handle.area_count = 0;
 	sb_handle.twoch_area_idx = -1;
 	sb_handle.mulch_area_idx = -1;
-	sb_handle.area_count = 0;
+	sb_handle.area[0].area_data = nullptr;
+	sb_handle.area[1].area_data = nullptr;
 	char sacdmtoc[8];
 	sector_size = 0;
 	sector_bad_reads = 0;
@@ -365,6 +368,7 @@ bool sacd_disc_t::close() {
 			free(sb_handle.area[sb_handle.twoch_area_idx].area_data);
 			sb_handle.area[sb_handle.twoch_area_idx].area_data = nullptr;
 		}
+		sb_handle.twoch_area_idx = -1;
 	}
 	if (has_multi_channel(&sb_handle))	{
 		free_area(&sb_handle.area[sb_handle.mulch_area_idx]);
@@ -372,6 +376,7 @@ bool sacd_disc_t::close() {
 			free(sb_handle.area[sb_handle.mulch_area_idx].area_data);
 			sb_handle.area[sb_handle.mulch_area_idx].area_data = nullptr;
 		}
+		sb_handle.mulch_area_idx = -1;
 	}
 	sb_handle.area_count = 0;
 	if (sb_handle.master_data) {

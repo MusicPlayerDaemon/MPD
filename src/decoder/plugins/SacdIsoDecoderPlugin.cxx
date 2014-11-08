@@ -75,7 +75,7 @@ get_container_path(const char* path) {
 	if (length >= 4) {
 		container_path.resize(length);
 		const char* c_str = container_path.c_str();
-		if (strcoll(c_str + length - 4, ".dat") != 0 && strcoll(c_str + length - 4, ".iso") != 0) {
+		if (strcasecmp(c_str + length - 4, ".dat") != 0 && strcasecmp(c_str + length - 4, ".iso") != 0) {
 			container_path.resize(0);
 		}
 	}
