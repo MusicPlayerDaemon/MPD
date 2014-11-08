@@ -19,6 +19,7 @@
 
 #include "Set.hxx"
 #include "TagBuilder.hxx"
+#include "TagSettings.h"
 
 #include <assert.h>
 
@@ -109,6 +110,7 @@ TagSet::InsertUnique(const Tag &tag,
 
 	if (!CheckUnique(type, tag, type, group_mask) &&
 	    (type != TAG_ALBUM_ARTIST ||
+	     ignore_tag_items[TAG_ALBUM_ARTIST] ||
 	     /* fall back to "Artist" if no "AlbumArtist" was found */
 	     !CheckUnique(type, tag, TAG_ARTIST, group_mask)))
 		InsertUnique(tag, type, nullptr, group_mask);

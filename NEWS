@@ -1,4 +1,6 @@
 ver 0.19.3 (not yet released)
+* protocol
+  - fix "(null)" result string to "list" when AlbumArtist is disabled
 * database
   - upnp: fix breakage due to malformed URIs
 * decoder
