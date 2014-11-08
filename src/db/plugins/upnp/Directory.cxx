@@ -129,7 +129,7 @@ public:
 		 state(NONE),
 		 tag_type(TAG_NUM_OF_ITEM_TYPES)
 	{
-		m_tobj.clear();
+		m_tobj.Clear();
 	}
 
 protected:
@@ -147,31 +147,31 @@ protected:
 		switch (name[0]) {
 		case 'c':
 			if (!strcmp(name, "container")) {
-				m_tobj.clear();
+				m_tobj.Clear();
 				m_tobj.type = UPnPDirObject::Type::CONTAINER;
 
 				const char *id = GetAttribute(attrs, "id");
 				if (id != nullptr)
-					m_tobj.m_id = id;
+					m_tobj.id = id;
 
 				const char *pid = GetAttribute(attrs, "parentID");
 				if (pid != nullptr)
-					m_tobj.m_pid = pid;
+					m_tobj.parent_id = pid;
 			}
 			break;
 
 		case 'i':
 			if (!strcmp(name, "item")) {
-				m_tobj.clear();
+				m_tobj.Clear();
 				m_tobj.type = UPnPDirObject::Type::ITEM;
 
 				const char *id = GetAttribute(attrs, "id");
 				if (id != nullptr)
-					m_tobj.m_id = id;
+					m_tobj.id = id;
 
 				const char *pid = GetAttribute(attrs, "parentID");
 				if (pid != nullptr)
-					m_tobj.m_pid = pid;
+					m_tobj.parent_id = pid;
 			}
 			break;
 
@@ -198,7 +198,7 @@ protected:
 	}
 
 	bool checkobjok() {
-		if (m_tobj.m_id.empty() || m_tobj.m_pid.empty() ||
+		if (m_tobj.id.empty() || m_tobj.parent_id.empty() ||
 		    m_tobj.name.empty() ||
 		    (m_tobj.type == UPnPDirObject::Type::ITEM &&
 		     m_tobj.item_class == UPnPDirObject::ItemClass::UNKNOWN))

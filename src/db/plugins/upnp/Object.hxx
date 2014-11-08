@@ -50,8 +50,16 @@ public:
 		PLAYLIST,
 	};
 
-	std::string m_id; // ObjectId
-	std::string m_pid; // Parent ObjectId
+	/**
+	 * ObjectId
+	 */
+	std::string id;
+
+	/**
+	 * Parent's ObjectId
+	 */
+	std::string parent_id;
+	
 	std::string url;
 
 	/**
@@ -71,10 +79,9 @@ public:
 
 	UPnPDirObject &operator=(UPnPDirObject &&) = default;
 
-	void clear()
-	{
-		m_id.clear();
-		m_pid.clear();
+	void Clear() {
+		id.clear();
+		parent_id.clear();
 		url.clear();
 		type = Type::UNKNOWN;
 		item_class = ItemClass::UNKNOWN;

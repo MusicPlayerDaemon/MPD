@@ -412,7 +412,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 		// So we return synthetic and ugly paths based on the object id,
 		// which we later have to detect.
 		const std::string path = songPath(server.getFriendlyName(),
-						  dirent.m_id);
+						  dirent.id);
 		if (!visitSong(std::move(dirent), path.c_str(),
 			       selection, visit_song,
 			       error))
@@ -447,13 +447,13 @@ UpnpDatabase::BuildPath(const ContentDirectoryService &server,
 			std::string &path,
 			Error &error) const
 {
-	const char *pid = idirent.m_id.c_str();
+	const char *pid = idirent.id.c_str();
 	path.clear();
 	UPnPDirObject dirent;
 	while (strcmp(pid, rootid) != 0) {
 		if (!ReadNode(server, pid, dirent, error))
 			return false;
-		pid = dirent.m_pid.c_str();
+		pid = dirent.parent_id.c_str();
 
 		if (path.empty())
 			path = dirent.name;
@@ -509,7 +509,7 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 			return false;
 		}
 
-		objid = std::move(child->m_id);
+		objid = std::move(child->id);
 	}
 }
 
@@ -621,7 +621,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 			}
 
 			std::string path = songPath(server.getFriendlyName(),
-						    dirent.m_id);
+						    dirent.id);
 			if (!visitSong(std::move(dirent), path.c_str(),
 				       selection,
 				       visit_song, error))
@@ -640,7 +640,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	   recursion (1-deep) here, which will handle the "add dir"
 	   case. */
 	if (selection.recursive && selection.filter)
-		return SearchSongs(server, tdirent.m_id.c_str(), selection,
+		return SearchSongs(server, tdirent.id.c_str(), selection,
 				   visit_song, error);
 
 	const char *const base_uri = selection.uri.empty()
@@ -658,7 +658,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	   and loop here, but it's not useful as mpd will only return
 	   data to the client when we're done anyway. */
 	UPnPDirContent dirbuf;
-	if (!server.readDir(handle, tdirent.m_id.c_str(), dirbuf,
+	if (!server.readDir(handle, tdirent.id.c_str(), dirbuf,
 			    error))
 		return false;
 
