@@ -197,16 +197,6 @@ protected:
 		}
 	}
 
-	bool checkobjok() {
-		if (m_tobj.id.empty() || m_tobj.parent_id.empty() ||
-		    m_tobj.name.empty() ||
-		    (m_tobj.type == UPnPDirObject::Type::ITEM &&
-		     m_tobj.item_class == UPnPDirObject::ItemClass::UNKNOWN))
-			return false;
-
-		return true;
-	}
-
 	virtual void EndElement(const XML_Char *name)
 	{
 		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
@@ -223,7 +213,7 @@ protected:
 		}
 
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
-		    checkobjok()) {
+		    m_tobj.Check()) {
 			tag.Commit(m_tobj.tag);
 			m_dir.objects.emplace_back(std::move(m_tobj));
 		}

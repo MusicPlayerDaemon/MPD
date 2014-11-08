@@ -21,6 +21,7 @@
 #define MPD_UPNP_OBJECT_HXX
 
 #include "tag/Tag.hxx"
+#include "Compiler.h"
 
 #include <string>
 
@@ -86,6 +87,13 @@ public:
 		type = Type::UNKNOWN;
 		item_class = ItemClass::UNKNOWN;
 		tag.Clear();
+	}
+
+	gcc_pure
+	bool Check() const {
+		return !id.empty() && !parent_id.empty() && !name.empty() &&
+			(type != UPnPDirObject::Type::ITEM ||
+			 item_class != UPnPDirObject::ItemClass::UNKNOWN);
 	}
 };
 
