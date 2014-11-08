@@ -546,12 +546,12 @@ AC_ARG_ENABLE(recorder-output,
 
 AC_ARG_ENABLE(sacdiso,
 	AS_HELP_STRING([--enable-sacdiso],
-		[enable SACD ISO support via libsacdiso (default: disable)]),,
+		[enable Super Audio CD ISO support via libsacdiso (default: disable)]),,
 	enable_sacdiso=no)
 
 AC_ARG_ENABLE(dvdaiso,
 	AS_HELP_STRING([--enable-dvdaiso],
-		[enable DVD-Audio support via libdvdaiso (default: disable)]),,
+		[enable DVD-Audio ISO support via libdvdaiso (default: disable)]),,
 	enable_dvdaiso=no)
 
 AC_ARG_ENABLE(sidplay,
@@ -1379,14 +1379,14 @@ AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enab
 
 dnl --------------------------------- sacdiso ---------------------------------
 if test x$enable_sacdiso = xyes; then
-	AC_DEFINE(ENABLE_SACDISO, 1, [Define for SACD ISO support])
+	AC_DEFINE(ENABLE_SACDISO, 1, [Define for Super Audio ISO support])
 fi
 
 AM_CONDITIONAL(ENABLE_SACDISO, test x$enable_sacdiso = xyes)
 
 dnl --------------------------------- dvdaiso ---------------------------------
 if test x$enable_dvdaiso = xyes; then
-	AC_DEFINE(ENABLE_DVDAISO, 1, [Define for DVD-Audio support])
+	AC_DEFINE(ENABLE_DVDAISO, 1, [Define for DVD-Audio ISO support])
 fi
 
 AM_CONDITIONAL(ENABLE_DVDAISO, test x$enable_dvdaiso = xyes)

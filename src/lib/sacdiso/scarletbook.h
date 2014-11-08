@@ -1,7 +1,7 @@
 /**
  * SACD Ripper - http://code.google.com/p/sacd-ripper/
  *
- * Copyright (c) 2010-2011 by respective authors.
+ * Copyright (c) 2010-2014 by respective authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,9 @@
 #define _SCARLETBOOK_H_INCLUDED
 
 #include <stdint.h>
+#include <string>
+
+using namespace std;
 
 #define SACD_LSN_SIZE                  2048
 #define SACD_SAMPLING_FREQUENCY        2822400
@@ -59,9 +62,9 @@ enum character_set_t {
 };
 
 // string representation for character sets
-extern const char *character_set[];
+extern const char* character_set[];
 
-extern const char *album_genre[];
+extern const char* album_genre[];
 
 enum genre_t {
 	GENRE_NOT_USED               = 0,       // 12
@@ -102,7 +105,7 @@ enum category_t {
 	CATEGORY_JAPANESE = 2
 };
 
-extern const char *album_category[];
+extern const char* album_category[];
 
 enum track_type_t {
 	TRACK_TYPE_TITLE                  = 0x01,
@@ -216,22 +219,22 @@ typedef struct {
 master_sacd_text_t;
 
 typedef struct {
-	char *album_title;
-	char *album_artist;
-	char *album_publisher;
-	char *album_copyright;
-	char *album_title_phonetic;
-	char *album_artist_phonetic;
-	char *album_publisher_phonetic;
-	char *album_copyright_phonetic;
-	char *disc_title;
-	char *disc_artist;
-	char *disc_publisher;
-	char *disc_copyright;
-	char *disc_title_phonetic;
-	char *disc_artist_phonetic;
-	char *disc_publisher_phonetic;
-	char *disc_copyright_phonetic;
+	string album_title;
+	string album_artist;
+	string album_publisher;
+	string album_copyright;
+	string album_title_phonetic;
+	string album_artist_phonetic;
+	string album_publisher_phonetic;
+	string album_copyright_phonetic;
+	string disc_title;
+	string disc_artist;
+	string disc_publisher;
+	string disc_copyright;
+	string disc_title_phonetic;
+	string disc_artist_phonetic;
+	string disc_publisher_phonetic;
+	string disc_copyright_phonetic;
 } 
 master_text_t;
 
@@ -299,20 +302,20 @@ typedef struct {
 area_toc_t;
 
 typedef struct {
-	char *track_type_title;
-	char *track_type_performer;
-	char *track_type_songwriter;
-	char *track_type_composer;
-	char *track_type_arranger;
-	char *track_type_message;
-	char *track_type_extra_message;
-	char *track_type_title_phonetic;
-	char *track_type_performer_phonetic;
-	char *track_type_songwriter_phonetic;
-	char *track_type_composer_phonetic;
-	char *track_type_arranger_phonetic;
-	char *track_type_message_phonetic;
-	char *track_type_extra_message_phonetic;
+	string track_type_title;
+	string track_type_performer;
+	string track_type_songwriter;
+	string track_type_composer;
+	string track_type_arranger;
+	string track_type_message;
+	string track_type_extra_message;
+	string track_type_title_phonetic;
+	string track_type_performer_phonetic;
+	string track_type_songwriter_phonetic;
+	string track_type_composer_phonetic;
+	string track_type_arranger_phonetic;
+	string track_type_message_phonetic;
+	string track_type_extra_message_phonetic;
 } 
 area_track_text_t;
 
@@ -436,27 +439,27 @@ typedef struct {
 audio_sector_t;
 
 typedef struct {
-	uint8_t                 *area_data;
-	area_toc_t              *area_toc;
-	area_tracklist_offset_t *area_tracklist_offset;
-	area_tracklist_time_t   *area_tracklist_time;
-	area_text_t             *area_text;
+	uint8_t*                 area_data;
+	area_toc_t*              area_toc;
+	area_tracklist_offset_t* area_tracklist_offset;
+	area_tracklist_time_t*   area_tracklist_time;
+	area_text_t*             area_text;
 	area_track_text_t        area_track_text[255];      // max of 255 supported tracks
-	area_isrc_genre_t       *area_isrc_genre;
+	area_isrc_genre_t*       area_isrc_genre;
 
-	char                    *description;
-	char                    *copyright;
-	char                    *description_phonetic;
-	char                    *copyright_phonetic;
+	string                   description;
+	string                   copyright;
+	string                   description_phonetic;
+	string                   copyright_phonetic;
 }
 scarletbook_area_t;
 
 typedef struct {
-	void                *sacd;                          // sacd_reader_t
+	void*               sacd;                          // sacd_reader_t
 
-	uint8_t             *master_data;
-	master_toc_t        *master_toc;
-	master_man_t        *master_man;
+	uint8_t*            master_data;
+	master_toc_t*       master_toc;
+	master_man_t*       master_man;
 	master_text_t       master_text;
 
 	int                 twoch_area_idx;

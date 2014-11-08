@@ -32,11 +32,7 @@
 #include <string.h>
 #include "sacd_disc.h"
 
-static inline void free_cond(void* ptr) {
-	if (ptr) {
-		::free(ptr);
-	}
-}
+using namespace std;
 
 static inline int has_two_channel(scarletbook_handle_t* handle) {
 	return handle->twoch_area_idx != -1;
@@ -74,9 +70,9 @@ static codepage_id_t codepage_ids[] = {
 	{28591,  character_set[7]},
 };
 
-static inline char* charset_convert(const char* string, size_t insize, uint8_t codepage_index) {
+static inline string charset_convert(const char* instring, size_t insize, uint8_t codepage_index) {
 	char* conv_string = nullptr;
-	char* utf8_string = nullptr;
+	string utf8_string;
 #ifdef HAVE_GLIB
 	const char* codepage_name = nullptr;
 	if (codepage_index < sizeof(codepage_ids) / sizeof(*codepage_ids)) {
@@ -85,18 +81,15 @@ static inline char* charset_convert(const char* string, size_t insize, uint8_t c
 	gsize bytes_read = 0;
 	gsize bytes_written = 0;
 	GError* error = nullptr;
-	conv_string = g_convert(string, insize, "UTF-8", codepage_name, &bytes_read, &bytes_written, &error);
+	conv_string = g_convert(instring, insize, "UTF-8", codepage_name, &bytes_read, &bytes_written, &error);
 	if (conv_string != nullptr) {
-		utf8_string = (char*)malloc(bytes_written + 1);
-		strcpy(utf8_string, conv_string);
+		utf8_string = conv_string;
 		g_free(conv_string);
 	}
-#else
-	if (conv_string == nullptr) {
-		utf8_string = (char*)malloc(insize + 1);
-		strcpy(utf8_string, string);
-	}
 #endif
+	if (conv_string == nullptr) {
+		utf8_string = instring;
+	}
 	return utf8_string;
 }
 
@@ -114,8 +107,10 @@ static inline int get_channel_count(audio_frame_info_t* frame_info) {
 
 sacd_disc_t::sacd_disc_t() {
 	sacd_media = nullptr;
+	sb_handle.master_data = nullptr;
 	sb_handle.twoch_area_idx = -1;
 	sb_handle.mulch_area_idx = -1;
+	sb_handle.area_count = 0;
 	track_area = AREA_BOTH;
 }
 
@@ -209,35 +204,35 @@ void sacd_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 	if (!(area != nullptr && track_index < get_tracks(track_area))) {
 		return;
 	}
-	std::string tag_value;
+	string tag_value;
 	if (get_handle()->master_toc->album_set_size > 1) {
 		if (get_handle()->master_toc->album_sequence_number > 0) {
-			tag_value = std::to_string(get_handle()->master_toc->album_sequence_number);
+			tag_value = to_string(get_handle()->master_toc->album_sequence_number);
 			tag_handler_invoke_tag(handler, handler_ctx, TAG_DISC, tag_value.c_str());
 		}
 	}
 	scarletbook_handle_t* sb = get_handle();
 	if (sb->master_toc->disc_date_year > 0) {
-		tag_value = std::to_string(sb->master_toc->disc_date_year);
+		tag_value = to_string(sb->master_toc->disc_date_year);
 		/*
 		if (sb->master_toc->disc_date_month > 0) {
 			tag_value += "-";
 			if (sb->master_toc->disc_date_month < 10) {
 				tag_value += "0";
 			}
-			tag_value += std::to_string(sb->master_toc->disc_date_month);
+			tag_value += to_string(sb->master_toc->disc_date_month);
 			if (sb->master_toc->disc_date_day > 0) {
 				tag_value += "-";
 				if (sb->master_toc->disc_date_day < 10) {
 					tag_value += "0";
 				}
-				tag_value += std::to_string(sb->master_toc->disc_date_day);
+				tag_value += to_string(sb->master_toc->disc_date_day);
 			}
 		}
 		*/
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE, tag_value.c_str());
 	}
-	if (sb->master_text.album_title) {
+	if (!sb->master_text.album_title.empty()) {
 		tag_value  = sb->master_text.album_title;
 		tag_value += " (";
 		tag_value += (get_track_area_id() == AREA_TWOCH) ? "2CH" : "MCH";
@@ -246,10 +241,10 @@ void sacd_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 		tag_value += ")";
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_ALBUM, tag_value.c_str());
 	}
-	if (sb->master_text.album_artist) {
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST, sb->master_text.album_artist);
+	if (!sb->master_text.album_artist.empty()) {
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST, sb->master_text.album_artist.c_str());
 	}
-	if (area->area_track_text[track_index].track_type_title) {
+	if (!area->area_track_text[track_index].track_type_title.empty()) {
 		char track_number_string[4];
 		sprintf(track_number_string, "%02d", track_index + 1);
 		tag_value  = (get_track_area_id() == AREA_TWOCH) ? "2CH" : "MCH";
@@ -259,14 +254,14 @@ void sacd_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 		tag_value += area->area_track_text[track_index].track_type_title;
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, tag_value.c_str());
 	}
-	if (area->area_track_text[track_index].track_type_composer) {
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_COMPOSER, area->area_track_text[track_index].track_type_composer);
+	if (!area->area_track_text[track_index].track_type_composer.empty()) {
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_COMPOSER, area->area_track_text[track_index].track_type_composer.c_str());
 	}
-	if (area->area_track_text[track_index].track_type_performer) {
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_PERFORMER, area->area_track_text[track_index].track_type_performer);
+	if (!area->area_track_text[track_index].track_type_performer.empty()) {
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_PERFORMER, area->area_track_text[track_index].track_type_performer.c_str());
 	}
-	if (area->area_track_text[track_index].track_type_message) {
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_COMMENT, area->area_track_text[track_index].track_type_message);
+	if (!area->area_track_text[track_index].track_type_message.empty()) {
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_COMMENT, area->area_track_text[track_index].track_type_message.c_str());
 	}
 	if (area->area_isrc_genre) {
 		if (area->area_isrc_genre->track_genre[track_index].category == 1) {
@@ -288,9 +283,9 @@ void sacd_disc_t::set_emaster(bool emaster) {
 
 bool sacd_disc_t::open(sacd_media_t* _sacd_media) {
 	sacd_media = _sacd_media;
-	memset(&sb_handle, 0, sizeof(sb_handle));
 	sb_handle.twoch_area_idx = -1;
 	sb_handle.mulch_area_idx = -1;
+	sb_handle.area_count = 0;
 	char sacdmtoc[8];
 	sector_size = 0;
 	sector_bad_reads = 0;
@@ -353,6 +348,7 @@ bool sacd_disc_t::open(sacd_media_t* _sacd_media) {
 		}
 		if (!read_blocks_raw(sb_handle.master_toc->area_2_toc_1_start, sb_handle.master_toc->area_2_toc_size, sb_handle.area[sb_handle.area_count].area_data)) {
 			sb_handle.master_toc->area_2_toc_1_start = 0;
+			close();
 			return true;
 		}
 		if (read_area_toc(sb_handle.area_count)) {
@@ -365,33 +361,23 @@ bool sacd_disc_t::open(sacd_media_t* _sacd_media) {
 bool sacd_disc_t::close() {
 	if (has_two_channel(&sb_handle)) {
 		free_area(&sb_handle.area[sb_handle.twoch_area_idx]);
-		free_cond(sb_handle.area[sb_handle.twoch_area_idx].area_data);
+		if (sb_handle.area[sb_handle.twoch_area_idx].area_data) {
+			free(sb_handle.area[sb_handle.twoch_area_idx].area_data);
+			sb_handle.area[sb_handle.twoch_area_idx].area_data = nullptr;
+		}
 	}
 	if (has_multi_channel(&sb_handle))	{
 		free_area(&sb_handle.area[sb_handle.mulch_area_idx]);
-		free_cond(sb_handle.area[sb_handle.mulch_area_idx].area_data);
+		if (sb_handle.area[sb_handle.mulch_area_idx].area_data) {
+			free(sb_handle.area[sb_handle.mulch_area_idx].area_data);
+			sb_handle.area[sb_handle.mulch_area_idx].area_data = nullptr;
+		}
 	}
-	master_text_t* mt = &sb_handle.master_text;
-	free_cond(mt->album_title);
-	free_cond(mt->album_title_phonetic);
-	free_cond(mt->album_artist);
-	free_cond(mt->album_artist_phonetic);
-	free_cond(mt->album_publisher);
-	free_cond(mt->album_publisher_phonetic);
-	free_cond(mt->album_copyright);
-	free_cond(mt->album_copyright_phonetic);
-	free_cond(mt->disc_title);
-	free_cond(mt->disc_title_phonetic);
-	free_cond(mt->disc_artist);
-	free_cond(mt->disc_artist_phonetic);
-	free_cond(mt->disc_publisher);
-	free_cond(mt->disc_publisher_phonetic);
-	free_cond(mt->disc_copyright);
-	free_cond(mt->disc_copyright_phonetic);
+	sb_handle.area_count = 0;
 	if (sb_handle.master_data) {
-		free_cond(sb_handle.master_data);
+		free(sb_handle.master_data);
+		sb_handle.master_data = nullptr;
 	}
-	memset(&sb_handle, 0, sizeof(scarletbook_handle_t));
 	return true;
 }
 
@@ -838,23 +824,5 @@ bool sacd_disc_t::read_area_toc(int area_idx) {
 
 void sacd_disc_t::free_area(scarletbook_area_t* area) {
 	for (uint8_t i = 0; i < area->area_toc->track_count; i++) {
-		free_cond(area->area_track_text[i].track_type_title);
-		free_cond(area->area_track_text[i].track_type_performer);
-		free_cond(area->area_track_text[i].track_type_songwriter);
-		free_cond(area->area_track_text[i].track_type_composer);
-		free_cond(area->area_track_text[i].track_type_arranger);
-		free_cond(area->area_track_text[i].track_type_message);
-		free_cond(area->area_track_text[i].track_type_extra_message);
-		free_cond(area->area_track_text[i].track_type_title_phonetic);
-		free_cond(area->area_track_text[i].track_type_performer_phonetic);
-		free_cond(area->area_track_text[i].track_type_songwriter_phonetic);
-		free_cond(area->area_track_text[i].track_type_composer_phonetic);
-		free_cond(area->area_track_text[i].track_type_arranger_phonetic);
-		free_cond(area->area_track_text[i].track_type_message_phonetic);
-		free_cond(area->area_track_text[i].track_type_extra_message_phonetic);
 	}
-	free_cond(area->copyright);
-	free_cond(area->copyright_phonetic);
-	free_cond(area->description);
-	free_cond(area->description_phonetic);
 }

@@ -46,7 +46,7 @@
 
 using namespace std;
 
-#define SACD_TRACKXXX_FMT "%cC_AUDIO__TRACK%03u.%s"
+static const char* SACD_TRACKXXX_FMT = "%cC_AUDIO__TRACK%03u.%3s";
 
 static constexpr Domain sacdiso_domain("sacdiso");
 
@@ -64,18 +64,22 @@ static sacd_reader_t* sacd_reader = nullptr;
 static unsigned
 get_container_path_length(const char* path) {
 	string container_path = path;
-	container_path.resize(::strrchr(container_path.c_str(), '/') - container_path.c_str());
+	container_path.resize(strrchr(container_path.c_str(), '/') - container_path.c_str());
 	return container_path.length();
 }
 
 static string
 get_container_path(const char* path) {
-	string path_container = path;
+	string container_path = path;
 	unsigned length = get_container_path_length(path);
-	if (length > 0) {
-		path_container.resize(length);
+	if (length >= 4) {
+		container_path.resize(length);
+		const char* c_str = container_path.c_str();
+		if (strcoll(c_str + length - 4, ".dat") != 0 && strcoll(c_str + length - 4, ".iso") != 0) {
+			container_path.resize(0);
+		}
 	}
-	return path_container;
+	return container_path;
 }
 
 static unsigned
@@ -85,7 +89,7 @@ get_subsong(const char* path) {
 		const char* ptr = path + length + 1;
 		char area = '\0';
 		unsigned track = 0;
-		char suffix[4];
+		char suffix[3];
 		sscanf(ptr, SACD_TRACKXXX_FMT, &area, &track, suffix);
 		if (area == 'M') {
 			track += sacd_reader->get_tracks(AREA_TWOCH);
@@ -139,7 +143,7 @@ sacdiso_update_toc(const char* path) {
 			return false;
 		}
 		if (!sacd_reader->open(sacd_media)) {
-			LogWarning(sacdiso_domain, "sacd_reader->open(...) failed");
+			//LogWarning(sacdiso_domain, "sacd_reader->open(...) failed");
 			return false;
 		}
 	}
@@ -348,6 +352,9 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 static bool
 sacdiso_scan_file(Path path_fs, const struct tag_handler* handler, void* handler_ctx) {
 	string path_container = get_container_path(path_fs.c_str());
+	if (path_container.empty()) {
+		return false;
+	}
 	if (!sacdiso_update_toc(path_container.c_str())) {
 		return false;
 	}
@@ -387,7 +394,6 @@ static const char* const sacdiso_mime_types[] = {
 	"application/x-iso",
 	nullptr
 };
-
 
 extern const struct DecoderPlugin sacdiso_decoder_plugin;
 const struct DecoderPlugin sacdiso_decoder_plugin = {

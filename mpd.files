@@ -214,6 +214,8 @@ src/decoder/plugins/FluidsynthDecoderPlugin.cxx
 src/decoder/plugins/FluidsynthDecoderPlugin.hxx
 src/decoder/plugins/GmeDecoderPlugin.cxx
 src/decoder/plugins/GmeDecoderPlugin.hxx
+src/decoder/plugins/IsoDecoderPlugin.cxx
+src/decoder/plugins/IsoDecoderPlugin.hxx
 src/decoder/plugins/MadDecoderPlugin.cxx
 src/decoder/plugins/MadDecoderPlugin.hxx
 src/decoder/plugins/MikmodDecoderPlugin.cxx

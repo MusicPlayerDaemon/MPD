@@ -46,7 +46,7 @@
 
 using namespace std;
 
-#define DVDA_TRACKXXX_FMT "%cC_AUDIO__TRACK%03u.%s"
+static const char* DVDA_TRACKXXX_FMT = "AUDIO_TS__TRACK%03u.%3s";
 
 static constexpr Domain dvdaiso_domain("dvdaiso");
 
@@ -60,18 +60,22 @@ static dvda_reader_t* dvda_reader = nullptr;
 static unsigned
 get_container_path_length(const char* path) {
 	string container_path = path;
-	container_path.resize(::strrchr(container_path.c_str(), '/') - container_path.c_str());
+	container_path.resize(strrchr(container_path.c_str(), '/') - container_path.c_str());
 	return container_path.length();
 }
 
 static string
 get_container_path(const char* path) {
-	string path_container = path;
+	string container_path = path;
 	unsigned length = get_container_path_length(path);
-	if (length > 0) {
-		path_container.resize(length);
+	if (length >= 4) {
+		container_path.resize(length);
+		const char* c_str = container_path.c_str();
+		if (strcoll(c_str + length - 4, ".iso") != 0) {
+			container_path.resize(0);
+		}
 	}
-	return path_container;
+	return container_path;
 }
 
 static unsigned
@@ -79,10 +83,9 @@ get_subsong(const char* path) {
 	unsigned length = get_container_path_length(path);
 	if (length > 0) {
 		const char* ptr = path + length + 1;
-		char area = '\0';
 		unsigned track = 0;
-		char suffix[4];
-		sscanf(ptr, DVDA_TRACKXXX_FMT, &area, &track, suffix);
+		char suffix[3];
+		sscanf(ptr, DVDA_TRACKXXX_FMT, &track, &suffix);
 		return track - 1;
 	}
 	return 0;
@@ -131,7 +134,7 @@ dvdaiso_update_ifo(const char* path) {
 			return false;
 		}
 		if (!dvda_reader->open(dvda_media)) {
-			LogWarning(dvdaiso_domain, "dvda_reader->open(...) failed");
+			//LogWarning(dvdaiso_domain, "dvda_reader->open(...) failed");
 			return false;
 		}
 	}
@@ -167,9 +170,8 @@ dvdaiso_container_scan(Path path_fs, const unsigned int tnum) {
 		LogError(dvdaiso_domain, "cannot select track");
 		return nullptr;
 	}
-	char area = dvda_reader->get_channels() > 2 ? 'M' : '2';
 	const char* suffix = uri_get_suffix(path_fs.c_str());
-	return FormatNew(DVDA_TRACKXXX_FMT, area, track + 1, suffix);
+	return FormatNew(DVDA_TRACKXXX_FMT, track + 1, suffix);
 }
 
 static void
@@ -230,6 +232,9 @@ dvdaiso_file_decode(Decoder& decoder, Path path_fs) {
 static bool
 dvdaiso_scan_file(Path path_fs, const struct tag_handler* handler, void* handler_ctx) {
 	string path_container = get_container_path(path_fs.c_str());
+	if (path_container.empty()) {
+		return false;
+	}
 	if (!dvdaiso_update_ifo(path_container.c_str())) {
 		return false;
 	}
@@ -250,7 +255,6 @@ static const char* const dvdaiso_mime_types[] = {
 	"application/x-iso",
 	nullptr
 };
-
 
 extern const struct DecoderPlugin dvdaiso_decoder_plugin;
 const struct DecoderPlugin dvdaiso_decoder_plugin = {
