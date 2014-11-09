@@ -94,7 +94,11 @@ void dvda_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 	tag_value  = "Unknown Artist";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST, tag_value.c_str());
 
-	tag_value  = "Unknown Track";
+	char track_number_string[4];
+	sprintf(track_number_string, "%02d", track_index + 1);
+	tag_value  = track_number_string;
+	tag_value += " - ";
+	tag_value += "Unknown Track";
 	tag_value += " (";
 	for (int i = 0; i < info.group1_channels; i++) {
 		if (i > 0) {

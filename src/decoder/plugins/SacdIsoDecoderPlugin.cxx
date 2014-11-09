@@ -89,7 +89,7 @@ get_subsong(const char* path) {
 		const char* ptr = path + length + 1;
 		char area = '\0';
 		unsigned track = 0;
-		char suffix[3];
+		char suffix[4];
 		sscanf(ptr, SACD_TRACKXXX_FMT, &area, &track, suffix);
 		if (area == 'M') {
 			track += sacd_reader->get_tracks(AREA_TWOCH);

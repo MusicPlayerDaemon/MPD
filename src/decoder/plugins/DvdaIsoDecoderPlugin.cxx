@@ -84,7 +84,7 @@ get_subsong(const char* path) {
 	if (length > 0) {
 		const char* ptr = path + length + 1;
 		unsigned track = 0;
-		char suffix[3];
+		char suffix[4];
 		sscanf(ptr, DVDA_TRACKXXX_FMT, &track, &suffix);
 		return track - 1;
 	}
