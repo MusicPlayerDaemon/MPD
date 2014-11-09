@@ -89,11 +89,11 @@ ParseDuration(const char *duration)
  * this. Twonky returns directory names (titles) like 'Artist/Album'.
  */
 gcc_pure
-static std::string
+static std::string &&
 TitleToPathSegment(std::string &&s)
 {
 	std::replace(s.begin(), s.end(), '/', '_');
-	return s;
+	return std::move(s);
 }
 
 /**
