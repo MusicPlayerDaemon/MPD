@@ -610,6 +610,10 @@ CurlInputStream::ResponseBoundary()
 	/* undo all effects of HeaderReceived() because the previous
 	   response was not applicable for this stream */
 
+	if (IsSeekPending())
+		/* don't update metadata while seeking */
+		return;
+
 	seekable = false;
 	size = UNKNOWN_SIZE;
 	ClearMimeType();

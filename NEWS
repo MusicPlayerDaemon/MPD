@@ -3,6 +3,8 @@ ver 0.19.3 (not yet released)
   - fix "(null)" result string to "list" when AlbumArtist is disabled
 * database
   - upnp: fix breakage due to malformed URIs
+* input
+  - curl: another fix for redirected streams
 * decoder
   - audiofile: fix crash while playing streams
   - ffmpeg: support opus
