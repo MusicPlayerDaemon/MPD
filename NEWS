@@ -9,6 +9,7 @@ ver 0.19.3 (not yet released)
   - audiofile: fix crash while playing streams
   - audiofile: fix bit rate calculation
   - ffmpeg: support opus
+  - opus: fix bogus duration on streams
 * fix distorted audio with soxr resampler
 * fix build failure on Mac OS X with non-Apple compilers
 
