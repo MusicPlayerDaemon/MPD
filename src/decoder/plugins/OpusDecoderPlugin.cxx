@@ -167,8 +167,10 @@ MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 
 	if (packet.b_o_s)
 		return HandleBOS(packet);
-	else if (opus_decoder == nullptr)
+	else if (opus_decoder == nullptr) {
+		LogDebug(opus_domain, "BOS packet expected");
 		return DecoderCommand::STOP;
+	}
 
 	if (IsOpusTags(packet))
 		return HandleTags(packet);
@@ -229,13 +231,17 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 {
 	assert(packet.b_o_s);
 
-	if (opus_decoder != nullptr || !IsOpusHead(packet))
+	if (opus_decoder != nullptr || !IsOpusHead(packet)) {
+		LogDebug(opus_domain, "BOS packet must be OpusHead");
 		return DecoderCommand::STOP;
+	}
 
 	unsigned channels;
 	if (!ScanOpusHeader(packet.packet, packet.bytes, channels) ||
-	    !audio_valid_channel_count(channels))
+	    !audio_valid_channel_count(channels)) {
+		LogDebug(opus_domain, "Malformed BOS packet");
 		return DecoderCommand::STOP;
+	}
 
 	assert(opus_decoder == nullptr);
 	assert(output_buffer == nullptr);
@@ -307,7 +313,8 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 				  output_buffer, opus_output_buffer_frames,
 				  0);
 	if (nframes < 0) {
-		LogError(opus_domain, opus_strerror(nframes));
+		FormatError(opus_domain, "libopus error: %s",
+			    opus_strerror(nframes));
 		return DecoderCommand::STOP;
 	}
 
