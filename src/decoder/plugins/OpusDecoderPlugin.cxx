@@ -78,7 +78,6 @@ class MPDOpusDecoder {
 	opus_int16 *output_buffer;
 
 	bool os_initialized;
-	bool found_opus;
 
 	int opus_serialno;
 
@@ -92,7 +91,7 @@ public:
 		:decoder(_decoder), input_stream(_input_stream),
 		 opus_decoder(nullptr),
 		 output_buffer(nullptr),
-		 os_initialized(false), found_opus(false) {}
+		 os_initialized(false) {}
 	~MPDOpusDecoder();
 
 	bool ReadFirstPage(OggSyncState &oy);
@@ -168,7 +167,7 @@ MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 
 	if (packet.b_o_s)
 		return HandleBOS(packet);
-	else if (!found_opus)
+	else if (opus_decoder == nullptr)
 		return DecoderCommand::STOP;
 
 	if (IsOpusTags(packet))
@@ -230,7 +229,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 {
 	assert(packet.b_o_s);
 
-	if (found_opus || !IsOpusHead(packet))
+	if (opus_decoder != nullptr || !IsOpusHead(packet))
 		return DecoderCommand::STOP;
 
 	unsigned channels;
@@ -242,7 +241,6 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	assert(output_buffer == nullptr);
 
 	opus_serialno = os.serialno;
-	found_opus = true;
 
 	/* TODO: parse attributes from the OpusHead (sample rate,
 	   channels, ...) */
