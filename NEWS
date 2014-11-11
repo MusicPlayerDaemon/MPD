@@ -10,6 +10,7 @@ ver 0.19.3 (not yet released)
   - audiofile: fix bit rate calculation
   - ffmpeg: support opus
 * fix distorted audio with soxr resampler
+* fix build failure on Mac OS X with non-Apple compilers
 
 ver 0.19.2 (2014/11/02)
 * input
