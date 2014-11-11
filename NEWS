@@ -1,4 +1,4 @@
-ver 0.19.3 (not yet released)
+ver 0.19.3 (2014/11/11)
 * protocol
   - fix "(null)" result string to "list" when AlbumArtist is disabled
 * database
