@@ -100,6 +100,7 @@ public:
 	DecoderCommand HandlePackets();
 	DecoderCommand HandlePacket(const ogg_packet &packet);
 	DecoderCommand HandleBOS(const ogg_packet &packet);
+	DecoderCommand HandleEOS();
 	DecoderCommand HandleTags(const ogg_packet &packet);
 	DecoderCommand HandleAudio(const ogg_packet &packet);
 
@@ -163,7 +164,7 @@ inline DecoderCommand
 MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 {
 	if (packet.e_o_s)
-		return DecoderCommand::STOP;
+		return HandleEOS();
 
 	if (packet.b_o_s)
 		return HandleBOS(packet);
@@ -277,6 +278,12 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 				       * audio_format.channels];
 
 	return decoder_get_command(decoder);
+}
+
+inline DecoderCommand
+MPDOpusDecoder::HandleEOS()
+{
+	return DecoderCommand::STOP;
 }
 
 inline DecoderCommand
