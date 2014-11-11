@@ -40,6 +40,12 @@
 
 static constexpr opus_int32 opus_sample_rate = 48000;
 
+/**
+ * Allocate an output buffer for 16 bit PCM samples big enough to hold
+ * a quarter second, larger than 120ms required by libopus.
+ */
+static constexpr unsigned opus_output_buffer_frames = opus_sample_rate / 4;
+
 gcc_pure
 static bool
 IsOpusHead(const ogg_packet &packet)
@@ -70,7 +76,6 @@ class MPDOpusDecoder {
 
 	OpusDecoder *opus_decoder;
 	opus_int16 *output_buffer;
-	unsigned output_size;
 
 	bool os_initialized;
 	bool found_opus;
@@ -86,7 +91,7 @@ public:
 		       InputStream &_input_stream)
 		:decoder(_decoder), input_stream(_input_stream),
 		 opus_decoder(nullptr),
-		 output_buffer(nullptr), output_size(0),
+		 output_buffer(nullptr),
 		 os_initialized(false), found_opus(false) {}
 	~MPDOpusDecoder();
 
@@ -264,11 +269,8 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 			    eos_granulepos > 0, duration);
 	frame_size = audio_format.GetFrameSize();
 
-	/* allocate an output buffer for 16 bit PCM samples big enough
-	   to hold a quarter second, larger than 120ms required by
-	   libopus */
-	output_size = audio_format.sample_rate / 4;
-	output_buffer = new opus_int16[output_size * audio_format.channels];
+	output_buffer = new opus_int16[opus_output_buffer_frames
+				       * audio_format.channels];
 
 	return decoder_get_command(decoder);
 }
@@ -304,7 +306,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	int nframes = opus_decode(opus_decoder,
 				  (const unsigned char*)packet.packet,
 				  packet.bytes,
-				  output_buffer, output_size,
+				  output_buffer, opus_output_buffer_frames,
 				  0);
 	if (nframes < 0) {
 		LogError(opus_domain, opus_strerror(nframes));
