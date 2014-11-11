@@ -77,6 +77,14 @@ class MPDOpusDecoder {
 	OpusDecoder *opus_decoder;
 	opus_int16 *output_buffer;
 
+	/**
+	 * If non-zero, then a previous Opus stream has been found
+	 * already with this number of channels.  If opus_decoder is
+	 * nullptr, then its end-of-stream packet has been found
+	 * already.
+	 */
+	unsigned previous_channels;
+
 	bool os_initialized;
 
 	int opus_serialno;
@@ -91,6 +99,7 @@ public:
 		:decoder(_decoder), input_stream(_input_stream),
 		 opus_decoder(nullptr),
 		 output_buffer(nullptr),
+		 previous_channels(0),
 		 os_initialized(false) {}
 	~MPDOpusDecoder();
 
@@ -245,7 +254,14 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	}
 
 	assert(opus_decoder == nullptr);
-	assert(output_buffer == nullptr);
+	assert((previous_channels == 0) == (output_buffer == nullptr));
+
+	if (previous_channels != 0 && channels != previous_channels) {
+		FormatWarning(opus_domain,
+			      "Next stream has different channels (%u -> %u)",
+			      previous_channels, channels);
+		return DecoderCommand::STOP;
+	}
 
 	opus_serialno = os.serialno;
 
@@ -261,6 +277,13 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return DecoderCommand::STOP;
 	}
 
+	if (previous_channels != 0) {
+		/* decoder was already initialized by the previous
+		   stream; skip the rest of this method */
+		LogDebug(opus_domain, "Found another stream");
+		return decoder_get_command(decoder);
+	}
+
 	eos_granulepos = LoadEOSGranulePos(input_stream, &decoder,
 					   opus_serialno);
 	const auto duration = eos_granulepos >= 0
@@ -268,6 +291,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 						      opus_sample_rate)
 		: SignedSongTime::Negative();
 
+	previous_channels = channels;
 	const AudioFormat audio_format(opus_sample_rate,
 				       SampleFormat::S16, channels);
 	decoder_initialized(decoder, audio_format,
@@ -283,6 +307,17 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 inline DecoderCommand
 MPDOpusDecoder::HandleEOS()
 {
+	if (eos_granulepos < 0 && previous_channels != 0) {
+		/* allow chaining of (unseekable) streams */
+		assert(opus_decoder != nullptr);
+		assert(output_buffer != nullptr);
+
+		opus_decoder_destroy(opus_decoder);
+		opus_decoder = nullptr;
+
+		return decoder_get_command(decoder);
+	}
+
 	return DecoderCommand::STOP;
 }
 
