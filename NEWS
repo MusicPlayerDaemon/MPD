@@ -1,6 +1,7 @@
 ver 0.18.18 (not yet released)
 * decoder
   - ffmpeg: support opus
+* fix crash on failed filename charset conversion
 
 ver 0.18.17 (2014/11/02)
 * playlist

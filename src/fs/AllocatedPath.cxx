@@ -46,7 +46,11 @@ AllocatedPath::Build(const_pointer a, const_pointer b)
 AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8)
 {
-	return AllocatedPath(Donate(), ::PathFromUTF8(path_utf8));
+	char *path = ::PathFromUTF8(path_utf8);
+	if (path == nullptr)
+		return AllocatedPath::Null();
+
+	return AllocatedPath(Donate(), path);
 }
 
 AllocatedPath
