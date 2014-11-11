@@ -132,6 +132,12 @@ decoder_data(gcc_unused Decoder &decoder,
 	     const void *data, size_t datalen,
 	     gcc_unused uint16_t kbit_rate)
 {
+	static uint16_t prev_kbit_rate;
+	if (kbit_rate != prev_kbit_rate) {
+		prev_kbit_rate = kbit_rate;
+		fprintf(stderr, "%u kbit/s\n", kbit_rate);
+	}
+
 	gcc_unused ssize_t nbytes = write(1, data, datalen);
 	return DecoderCommand::NONE;
 }

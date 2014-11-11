@@ -4,12 +4,22 @@ ver 0.20 (not yet released)
 * output
   - pulse: set channel map to WAVE-EX
 
-ver 0.19.3 (not yet released)
+ver 0.19.3 (2014/11/11)
+* protocol
+  - fix "(null)" result string to "list" when AlbumArtist is disabled
 * database
   - upnp: fix breakage due to malformed URIs
+* input
+  - curl: another fix for redirected streams
 * decoder
   - audiofile: fix crash while playing streams
+  - audiofile: fix bit rate calculation
   - ffmpeg: support opus
+  - opus: fix bogus duration on streams
+  - opus: support chained streams
+  - opus: improved error logging
+* fix distorted audio with soxr resampler
+* fix build failure on Mac OS X with non-Apple compilers
 
 ver 0.19.2 (2014/11/02)
 * input

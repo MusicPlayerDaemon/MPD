@@ -114,7 +114,7 @@
 #include <ws2tcpip.h>
 #endif
 
-#ifdef __APPLE__
+#ifdef __BLOCKS__
 #include <dispatch/dispatch.h>
 #endif
 
@@ -517,7 +517,7 @@ int mpd_main(int argc, char *argv[])
 	daemonize_begin(options.daemon);
 #endif
 
-#ifdef __APPLE__
+#ifdef __BLOCKS__
 	/* Runs the OS X native event loop in the main thread, and runs
 	   the rest of mpd_main on a new thread. This lets CoreAudio receive
 	   route change notifications (e.g. plugging or unplugging headphones).
