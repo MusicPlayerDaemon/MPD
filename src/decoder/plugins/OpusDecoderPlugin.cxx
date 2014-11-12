@@ -510,6 +510,13 @@ static const char *const opus_suffixes[] = {
 };
 
 static const char *const opus_mime_types[] = {
+	/* the official MIME type (RFC 5334) */
+	"audio/ogg",
+
+	/* deprecated (RFC 5334) */
+	"application/ogg",
+
+	/* deprecated; from an early draft */
 	"audio/opus",
 	nullptr
 };

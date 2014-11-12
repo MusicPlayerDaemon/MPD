@@ -1,4 +1,6 @@
 ver 0.19.4 (not yet released)
+* decoder
+  - opus: add MIME types audio/ogg and application/ogg
 
 ver 0.19.3 (2014/11/11)
 * protocol
