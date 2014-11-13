@@ -89,18 +89,18 @@ ParseDuration(const char *duration)
  * this. Twonky returns directory names (titles) like 'Artist/Album'.
  */
 gcc_pure
-static std::string
-titleToPathElt(std::string &&s)
+static std::string &&
+TitleToPathSegment(std::string &&s)
 {
 	std::replace(s.begin(), s.end(), '/', '_');
-	return s;
+	return std::move(s);
 }
 
 /**
  * An XML parser which builds directory contents from DIDL lite input.
  */
 class UPnPDirParser final : public CommonExpatParser {
-	UPnPDirContent &m_dir;
+	UPnPDirContent &directory;
 
 	enum {
 		NONE,
@@ -120,21 +120,22 @@ class UPnPDirParser final : public CommonExpatParser {
 	 */
 	std::string value;
 
-	UPnPDirObject m_tobj;
+	UPnPDirObject object;
 	TagBuilder tag;
 
 public:
-	UPnPDirParser(UPnPDirContent& dir)
-		:m_dir(dir),
+	UPnPDirParser(UPnPDirContent &_directory)
+		:directory(_directory),
 		 state(NONE),
 		 tag_type(TAG_NUM_OF_ITEM_TYPES)
 	{
+		object.Clear();
 	}
 
 protected:
 	virtual void StartElement(const XML_Char *name, const XML_Char **attrs)
 	{
-		if (m_tobj.type != UPnPDirObject::Type::UNKNOWN &&
+		if (object.type != UPnPDirObject::Type::UNKNOWN &&
 		    tag_type == TAG_NUM_OF_ITEM_TYPES) {
 			tag_type = tag_table_lookup(upnp_tags, name);
 			if (tag_type != TAG_NUM_OF_ITEM_TYPES)
@@ -146,31 +147,31 @@ protected:
 		switch (name[0]) {
 		case 'c':
 			if (!strcmp(name, "container")) {
-				m_tobj.clear();
-				m_tobj.type = UPnPDirObject::Type::CONTAINER;
+				object.Clear();
+				object.type = UPnPDirObject::Type::CONTAINER;
 
 				const char *id = GetAttribute(attrs, "id");
 				if (id != nullptr)
-					m_tobj.m_id = id;
+					object.id = id;
 
 				const char *pid = GetAttribute(attrs, "parentID");
 				if (pid != nullptr)
-					m_tobj.m_pid = pid;
+					object.parent_id = pid;
 			}
 			break;
 
 		case 'i':
 			if (!strcmp(name, "item")) {
-				m_tobj.clear();
-				m_tobj.type = UPnPDirObject::Type::ITEM;
+				object.Clear();
+				object.type = UPnPDirObject::Type::ITEM;
 
 				const char *id = GetAttribute(attrs, "id");
 				if (id != nullptr)
-					m_tobj.m_id = id;
+					object.id = id;
 
 				const char *pid = GetAttribute(attrs, "parentID");
 				if (pid != nullptr)
-					m_tobj.m_pid = pid;
+					object.parent_id = pid;
 			}
 			break;
 
@@ -196,25 +197,15 @@ protected:
 		}
 	}
 
-	bool checkobjok() {
-		if (m_tobj.m_id.empty() || m_tobj.m_pid.empty() ||
-		    m_tobj.name.empty() ||
-		    (m_tobj.type == UPnPDirObject::Type::ITEM &&
-		     m_tobj.item_class == UPnPDirObject::ItemClass::UNKNOWN))
-			return false;
-
-		return true;
-	}
-
 	virtual void EndElement(const XML_Char *name)
 	{
 		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
-			assert(m_tobj.type != UPnPDirObject::Type::UNKNOWN);
+			assert(object.type != UPnPDirObject::Type::UNKNOWN);
 
 			tag.AddItem(tag_type, value.c_str());
 
 			if (tag_type == TAG_TITLE)
-				m_tobj.name = titleToPathElt(std::move(value));
+				object.name = TitleToPathSegment(std::move(value));
 
 			value.clear();
 			tag_type = TAG_NUM_OF_ITEM_TYPES;
@@ -222,9 +213,9 @@ protected:
 		}
 
 		if ((!strcmp(name, "container") || !strcmp(name, "item")) &&
-		    checkobjok()) {
-			tag.Commit(m_tobj.tag);
-			m_dir.objects.emplace_back(std::move(m_tobj));
+		    object.Check()) {
+			tag.Commit(object.tag);
+			directory.objects.emplace_back(std::move(object));
 		}
 
 		state = NONE;
@@ -233,7 +224,7 @@ protected:
 	virtual void CharacterData(const XML_Char *s, int len)
 	{
 		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
-			assert(m_tobj.type != UPnPDirObject::Type::UNKNOWN);
+			assert(object.type != UPnPDirObject::Type::UNKNOWN);
 
 			value.append(s, len);
 			return;
@@ -244,11 +235,11 @@ protected:
 			break;
 
 		case RES:
-			m_tobj.url.assign(s, len);
+			object.url.assign(s, len);
 			break;
 
 		case CLASS:
-			m_tobj.item_class = ParseItemClass(s, len);
+			object.item_class = ParseItemClass(s, len);
 			break;
 		}
 	}

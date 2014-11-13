@@ -147,7 +147,8 @@ SoxrPcmResampler::Resample(ConstBuffer<void> src, Error &error)
 
 	const size_t n_frames = src.size / frame_size;
 
-	const size_t o_frames = size_t(n_frames * ratio + 0.5);
+	/* always round up: worst case output buffer size */
+	const size_t o_frames = size_t(n_frames * ratio) + 1;
 
 	float *output_buffer = (float *)buffer.Get(o_frames * frame_size);
 

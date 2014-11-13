@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "AsyncInputStream.hxx"
+#include "Domain.hxx"
 #include "tag/Tag.hxx"
 #include "event/Call.hxx"
 #include "thread/Cond.hxx"
@@ -113,8 +114,10 @@ AsyncInputStream::Seek(offset_type new_offset, Error &error)
 		/* no-op */
 		return true;
 
-	if (!IsSeekable())
+	if (!IsSeekable()) {
+		error.Set(input_domain, "Not seekable");
 		return false;
+	}
 
 	/* check if we can fast-forward the buffer */
 

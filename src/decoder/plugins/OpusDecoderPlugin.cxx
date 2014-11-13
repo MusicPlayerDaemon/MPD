@@ -40,6 +40,12 @@
 
 static constexpr opus_int32 opus_sample_rate = 48000;
 
+/**
+ * Allocate an output buffer for 16 bit PCM samples big enough to hold
+ * a quarter second, larger than 120ms required by libopus.
+ */
+static constexpr unsigned opus_output_buffer_frames = opus_sample_rate / 4;
+
 gcc_pure
 static bool
 IsOpusHead(const ogg_packet &packet)
@@ -70,10 +76,16 @@ class MPDOpusDecoder {
 
 	OpusDecoder *opus_decoder;
 	opus_int16 *output_buffer;
-	unsigned output_size;
+
+	/**
+	 * If non-zero, then a previous Opus stream has been found
+	 * already with this number of channels.  If opus_decoder is
+	 * nullptr, then its end-of-stream packet has been found
+	 * already.
+	 */
+	unsigned previous_channels;
 
 	bool os_initialized;
-	bool found_opus;
 
 	int opus_serialno;
 
@@ -86,8 +98,9 @@ public:
 		       InputStream &_input_stream)
 		:decoder(_decoder), input_stream(_input_stream),
 		 opus_decoder(nullptr),
-		 output_buffer(nullptr), output_size(0),
-		 os_initialized(false), found_opus(false) {}
+		 output_buffer(nullptr),
+		 previous_channels(0),
+		 os_initialized(false) {}
 	~MPDOpusDecoder();
 
 	bool ReadFirstPage(OggSyncState &oy);
@@ -96,6 +109,7 @@ public:
 	DecoderCommand HandlePackets();
 	DecoderCommand HandlePacket(const ogg_packet &packet);
 	DecoderCommand HandleBOS(const ogg_packet &packet);
+	DecoderCommand HandleEOS();
 	DecoderCommand HandleTags(const ogg_packet &packet);
 	DecoderCommand HandleAudio(const ogg_packet &packet);
 
@@ -159,12 +173,14 @@ inline DecoderCommand
 MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 {
 	if (packet.e_o_s)
-		return DecoderCommand::STOP;
+		return HandleEOS();
 
 	if (packet.b_o_s)
 		return HandleBOS(packet);
-	else if (!found_opus)
+	else if (opus_decoder == nullptr) {
+		LogDebug(opus_domain, "BOS packet expected");
 		return DecoderCommand::STOP;
+	}
 
 	if (IsOpusTags(packet))
 		return HandleTags(packet);
@@ -184,7 +200,7 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
 		/* we do this for local files only, because seeking
 		   around remote files is expensive and not worth the
 		   troubl */
-		return -1;
+		return false;
 
 	const auto old_offset = is.GetOffset();
 
@@ -225,19 +241,29 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 {
 	assert(packet.b_o_s);
 
-	if (found_opus || !IsOpusHead(packet))
+	if (opus_decoder != nullptr || !IsOpusHead(packet)) {
+		LogDebug(opus_domain, "BOS packet must be OpusHead");
 		return DecoderCommand::STOP;
+	}
 
 	unsigned channels;
 	if (!ScanOpusHeader(packet.packet, packet.bytes, channels) ||
-	    !audio_valid_channel_count(channels))
+	    !audio_valid_channel_count(channels)) {
+		LogDebug(opus_domain, "Malformed BOS packet");
 		return DecoderCommand::STOP;
+	}
 
 	assert(opus_decoder == nullptr);
-	assert(output_buffer == nullptr);
+	assert((previous_channels == 0) == (output_buffer == nullptr));
+
+	if (previous_channels != 0 && channels != previous_channels) {
+		FormatWarning(opus_domain,
+			      "Next stream has different channels (%u -> %u)",
+			      previous_channels, channels);
+		return DecoderCommand::STOP;
+	}
 
 	opus_serialno = os.serialno;
-	found_opus = true;
 
 	/* TODO: parse attributes from the OpusHead (sample rate,
 	   channels, ...) */
@@ -251,6 +277,13 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return DecoderCommand::STOP;
 	}
 
+	if (previous_channels != 0) {
+		/* decoder was already initialized by the previous
+		   stream; skip the rest of this method */
+		LogDebug(opus_domain, "Found another stream");
+		return decoder_get_command(decoder);
+	}
+
 	eos_granulepos = LoadEOSGranulePos(input_stream, &decoder,
 					   opus_serialno);
 	const auto duration = eos_granulepos >= 0
@@ -258,19 +291,34 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 						      opus_sample_rate)
 		: SignedSongTime::Negative();
 
+	previous_channels = channels;
 	const AudioFormat audio_format(opus_sample_rate,
 				       SampleFormat::S16, channels);
 	decoder_initialized(decoder, audio_format,
 			    eos_granulepos > 0, duration);
 	frame_size = audio_format.GetFrameSize();
 
-	/* allocate an output buffer for 16 bit PCM samples big enough
-	   to hold a quarter second, larger than 120ms required by
-	   libopus */
-	output_size = audio_format.sample_rate / 4;
-	output_buffer = new opus_int16[output_size * audio_format.channels];
+	output_buffer = new opus_int16[opus_output_buffer_frames
+				       * audio_format.channels];
 
 	return decoder_get_command(decoder);
+}
+
+inline DecoderCommand
+MPDOpusDecoder::HandleEOS()
+{
+	if (eos_granulepos < 0 && previous_channels != 0) {
+		/* allow chaining of (unseekable) streams */
+		assert(opus_decoder != nullptr);
+		assert(output_buffer != nullptr);
+
+		opus_decoder_destroy(opus_decoder);
+		opus_decoder = nullptr;
+
+		return decoder_get_command(decoder);
+	}
+
+	return DecoderCommand::STOP;
 }
 
 inline DecoderCommand
@@ -304,10 +352,11 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 	int nframes = opus_decode(opus_decoder,
 				  (const unsigned char*)packet.packet,
 				  packet.bytes,
-				  output_buffer, output_size,
+				  output_buffer, opus_output_buffer_frames,
 				  0);
 	if (nframes < 0) {
-		LogError(opus_domain, opus_strerror(nframes));
+		FormatError(opus_domain, "libopus error: %s",
+			    opus_strerror(nframes));
 		return DecoderCommand::STOP;
 	}
 

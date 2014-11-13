@@ -23,7 +23,7 @@
 #include "Interface.hxx"
 #include "client/Client.hxx"
 #include "LightSong.hxx"
-#include "tag/Set.hxx"
+#include "tag/Tag.hxx"
 
 #include <functional>
 #include <map>
