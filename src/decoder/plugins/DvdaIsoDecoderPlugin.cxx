@@ -50,8 +50,9 @@ static const char* DVDA_TRACKXXX_FMT = "AUDIO_TS__TRACK%03u.%3s";
 
 static constexpr Domain dvdaiso_domain("dvdaiso");
 
-static bool      param_no_downmixes;
-static bool      param_no_short_tracks;
+static bool     param_no_downmixes;
+static bool     param_no_short_tracks;
+static chmode_t param_playable_area;
 
 static string         dvda_uri;
 static dvda_media_t*  dvda_media  = nullptr;
@@ -120,7 +121,7 @@ dvdaiso_update_ifo(const char* path) {
 			LogError(dvdaiso_domain, "new dvda_media_file_t() failed");
 			return false;
 		}
-		dvda_reader = new dvda_disc_t(param_no_downmixes, param_no_short_tracks);
+		dvda_reader = new dvda_disc_t(param_playable_area, param_no_downmixes, param_no_short_tracks);
 		if (!dvda_reader) {
 			LogError(dvdaiso_domain, "new dvda_disc_t() failed");
 			return false;
@@ -145,8 +146,18 @@ dvdaiso_update_ifo(const char* path) {
 static bool
 dvdaiso_init(const config_param& param) {
 	my_av_log_set_callback(mpd_av_log_callback);
-	param_no_downmixes = param.GetBlockValue("no_downmixes",  false);
-	param_no_short_tracks = param.GetBlockValue("no_short_tracks", false);
+	param_no_downmixes = param.GetBlockValue("no_downmixes", true);
+	param_no_short_tracks = param.GetBlockValue("no_short_tracks", true);
+	const char* playable_area = param.GetBlockValue("playable_area", nullptr);
+	param_playable_area = CHMODE_BOTH;
+	if (playable_area != nullptr) {
+		if (strcmp(playable_area, "stereo") == 0) {
+			param_playable_area = CHMODE_TWOCH;
+		}
+		if (strcmp(playable_area, "multichannel") == 0) {
+			param_playable_area = CHMODE_MULCH;
+		}
+	}
 	return true;
 }
 

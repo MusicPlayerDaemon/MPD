@@ -30,9 +30,10 @@ using namespace std;
 static constexpr double SHORT_TRACK_SEC = 2.0;
 static constexpr Domain dvdaiso_domain("dvdaiso");
 
-dvda_disc_t::dvda_disc_t(bool _no_downmixes, bool _no_short_tracks) {
+dvda_disc_t::dvda_disc_t(chmode_t _chmode, bool _no_downmixes, bool _no_short_tracks) {
 	dvda_media = nullptr;
 	dvda_filesystem = nullptr;
+	chmode = _chmode;
 	no_downmixes = _no_downmixes;
 	no_short_tracks = _no_short_tracks;
 	audio_stream = nullptr;
@@ -52,7 +53,7 @@ uint32_t dvda_disc_t::get_tracks() {
 
 uint32_t dvda_disc_t::get_channels() {
 	audio_stream_info_t& info = track_list[sel_track_index].audio_stream_info;
-	return info.group1_channels + info.group2_channels;
+	return !track_list[sel_track_index].track_downmix ? info.group1_channels + info.group2_channels : 2;
 }
 
 uint32_t dvda_disc_t::get_loudspeaker_config() {
@@ -80,61 +81,81 @@ void dvda_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 	}
 	audio_stream_info_t& info = track_list[track_index].audio_stream_info;
 
+	char disc_label[32];
+	bool label_ok = dvda_filesystem->get_name(disc_label);
+	disc_label[31] = '\0';
+
+	string disc_path = dvda_media->get_name();
+	size_t s0 = disc_path.rfind('/');
+	size_t s1 = disc_path.rfind('.');
+	string disc_name;
+	if (s0 != string::npos && s1 != string::npos) {
+		disc_name = disc_path.substr(s0 + 1, s1 - s0 - 1);
+	}
+
 	string tag_value;
-	tag_value = "DVD-Audio";
+	tag_value  = label_ok ? disc_label : "DVD-Audio";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_DISC, tag_value.c_str());
 
-	tag_value  = "Unknown Album";
+	tag_value  = !disc_name.empty() ? disc_name : "Album";
 	tag_value += " (";
 	tag_value += to_string(info.group1_channels + info.group2_channels);
 	tag_value += "CH";
 	tag_value += ")";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_ALBUM, tag_value.c_str());
 
-	tag_value  = "Unknown Artist";
+	tag_value  = "Artist";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST, tag_value.c_str());
 
 	char track_number_string[4];
 	sprintf(track_number_string, "%02d", track_index + 1);
 	tag_value  = track_number_string;
 	tag_value += " - ";
-	tag_value += "Unknown Track";
+	tag_value += "Track " + to_string(track_index + 1);
 	tag_value += " (";
-	for (int i = 0; i < info.group1_channels; i++) {
-		if (i > 0) {
-			tag_value += "-";
-		}
-		tag_value += info.get_channel_name(i);
-	}
-	tag_value += " ";
-	tag_value += to_string(info.group1_bits);
-	tag_value += "/";
-	tag_value += to_string(info.group1_samplerate);
-	if (info.group2_channels > 0) {
-		tag_value += " + ";
-		for (int i = 0; i < info.group2_channels; i++) {
+	if (!track_list[track_index].track_downmix) {
+		for (int i = 0; i < info.group1_channels; i++) {
 			if (i > 0) {
 				tag_value += "-";
 			}
-			tag_value += info.get_channel_name(info.group1_channels + i);
+			tag_value += info.get_channel_name(i);
 		}
 		tag_value += " ";
-		tag_value += to_string(info.group2_bits);
+		tag_value += to_string(info.group1_bits);
 		tag_value += "/";
-		tag_value += to_string(info.group2_samplerate);
+		tag_value += to_string(info.group1_samplerate);
+		if (info.group2_channels > 0) {
+			tag_value += " + ";
+			for (int i = 0; i < info.group2_channels; i++) {
+				if (i > 0) {
+					tag_value += "-";
+				}
+				tag_value += info.get_channel_name(info.group1_channels + i);
+			}
+			tag_value += " ";
+			tag_value += to_string(info.group2_bits);
+			tag_value += "/";
+			tag_value += to_string(info.group2_samplerate);
+		}
+	}
+	else {
+		tag_value += to_string(info.group1_bits);
+		tag_value += "/";
+		tag_value += to_string(info.group1_samplerate);
+		tag_value += " stereo downmix";
 	}
 	tag_value += " ";
-	tag_value += info.stream_id == MLP_STREAM_ID ? (info.stream_type == STREAM_TYPE_MLP ? "MLP" : "TrueHD") : "PCM";;
+	tag_value += info.stream_id == MLP_STREAM_ID ? (info.stream_type == STREAM_TYPE_MLP ? "MLP" : "TrueHD") : "PCM";
 	tag_value += ")";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, tag_value.c_str());
 
-	tag_value  = "Unknown Composer";
+	tag_value  = "Composer";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_COMPOSER, tag_value.c_str());
 
-	tag_value  = "Unknown Performer";
+	tag_value  = "Performer";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_PERFORMER, tag_value.c_str());
 
-	tag_value  = "Unknown Genre";
+	tag_value  = "Genre";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_GENRE, tag_value.c_str());
 }
 
@@ -156,7 +177,11 @@ bool dvda_disc_t::open(dvda_media_t* _dvda_media) {
 	if (!(dvda_zone.titleset_count() > 0)) {
 		return false;
 	}
-	track_list.init(dvda_zone, no_downmixes, CHMODE_BOTH, no_short_tracks ? SHORT_TRACK_SEC : 0.0);
+	double threshold_time = no_short_tracks ? SHORT_TRACK_SEC : 0.0;
+	track_list.init(dvda_zone, false, chmode, threshold_time);
+	if (!no_downmixes) {
+		track_list.init(dvda_zone, true, chmode, threshold_time);
+	}
 	return track_list.size() > 0;
 }
 

@@ -34,6 +34,7 @@ private:
 	dvda_filesystem_t* dvda_filesystem;
 	dvda_zone_t        dvda_zone;
 	track_list_t       track_list;
+	chmode_t           chmode;
 	bool               no_downmixes;
 	bool               no_short_tracks;
 
@@ -58,7 +59,7 @@ private:
 	size_t        sel_track_offset;
 	uint32_t      sel_track_length_lsn;
 public:
-	dvda_disc_t(bool no_downmixes = false, bool no_short_tracks = false);
+	dvda_disc_t(chmode_t chmode = CHMODE_BOTH, bool no_downmixes = false, bool no_short_tracks = false);
 	~dvda_disc_t();
 	uint32_t get_tracks();
 	uint32_t get_channels();

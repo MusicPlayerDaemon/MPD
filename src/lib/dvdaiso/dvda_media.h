@@ -23,11 +23,14 @@
 #include "config.h"
 #include <stdint.h>
 #include <stddef.h>
+#include <string>
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "input/InputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
+
+using namespace std;
 
 enum media_type_t {UNK_TYPE = 0, IFO_TYPE = 1, ISO_TYPE = 2, MLP_TYPE = 3, AOB_TYPE = 4};
 
@@ -35,25 +38,28 @@ class dvda_media_t {
 public:
 	dvda_media_t() {}
 	virtual ~dvda_media_t() {}
+	virtual const char* get_name() = 0;
+	virtual int64_t get_position() = 0;
+	virtual int64_t get_size() = 0;
 	virtual bool    open(const char* path) = 0;
 	virtual bool    close() = 0;
 	virtual bool    seek(int64_t position) = 0;
-	virtual int64_t get_position() = 0;
-	virtual int64_t get_size() = 0;
 	virtual size_t  read(void* data, size_t size) = 0;
 	virtual int64_t skip(int64_t bytes) = 0;
 };
 
 class dvda_media_file_t : public dvda_media_t {
+	string fname;
 	int fd;
 public:
 	dvda_media_file_t();
 	~dvda_media_file_t();
+	const char* get_name();
+	int64_t get_position();
+	int64_t get_size();
 	bool    open(const char* path);
 	bool    close();
 	bool    seek(int64_t position);
-	int64_t get_position();
-	int64_t get_size();
 	size_t  read(void* data, size_t size);
 	int64_t skip(int64_t bytes);
 };
@@ -65,11 +71,12 @@ class dvda_media_stream_t : public dvda_media_t {
 public:
 	dvda_media_stream_t();
 	~dvda_media_stream_t();
+	const char* get_name();
+	int64_t get_position();
+	int64_t get_size();
 	bool    open(const char* path);
 	bool    close();
 	bool    seek(int64_t position);
-	int64_t get_position();
-	int64_t get_size();
 	size_t  read(void* data, size_t size);
 	int64_t skip(int64_t bytes);
 };

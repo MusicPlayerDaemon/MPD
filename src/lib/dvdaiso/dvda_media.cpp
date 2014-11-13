@@ -31,6 +31,24 @@ dvda_media_file_t::~dvda_media_file_t() {
 	close();
 }
 
+const char* dvda_media_file_t::get_name() {
+	return fname.c_str();
+}
+
+int64_t dvda_media_file_t::get_position() {
+	return ::lseek64(fd, 0, SEEK_CUR);
+}
+
+int64_t dvda_media_file_t::get_size() {
+	int ret;
+	struct stat64 st;
+	ret = ::fstat64(fd, &st);
+	if (ret < 0) {
+		return 0;
+	}
+	return st.st_size;
+}
+
 bool dvda_media_file_t::open(const char* path) {
 	int ret;
 	struct stat64 st;
@@ -49,6 +67,7 @@ bool dvda_media_file_t::open(const char* path) {
 		fd = -1;
 		return false;
 	}
+	fname = path;
 	return true;
 }
 
@@ -58,6 +77,7 @@ bool dvda_media_file_t::close() {
 	}
 	::close(fd);
 	fd = -1;
+	fname.clear();
 	return true;
 }
 
@@ -69,20 +89,6 @@ bool dvda_media_file_t::seek(int64_t position) {
 	return true;
 }
 
-int64_t dvda_media_file_t::get_position() {
-	return ::lseek64(fd, 0, SEEK_CUR);
-}
-
-int64_t dvda_media_file_t::get_size() {
-	int ret;
-	struct stat64 st;
-	ret = ::fstat64(fd, &st);
-	if (ret < 0) {
-		return 0;
-	}
-	return st.st_size;
-}
-
 size_t dvda_media_file_t::read(void* data, size_t size) {
 	return ::read(fd, data, size);
 }
@@ -91,12 +97,25 @@ int64_t dvda_media_file_t::skip(int64_t bytes) {
 	return ::lseek64(fd, (off64_t)bytes, SEEK_CUR);
 }
 
+
 dvda_media_stream_t::dvda_media_stream_t() {
 	is = nullptr;
 }
 
 dvda_media_stream_t::~dvda_media_stream_t() {
 	close();
+}
+
+const char* dvda_media_stream_t::get_name() {
+	return is->GetURI();
+}
+
+int64_t dvda_media_stream_t::get_position() {
+	return is->GetOffset();
+}
+
+int64_t dvda_media_stream_t::get_size() {
+	return is->GetSize();
 }
 
 bool dvda_media_stream_t::open(const char* path) {
@@ -128,14 +147,6 @@ bool dvda_media_stream_t::seek(int64_t position) {
 		}
 		return false;
 	}
-}
-
-int64_t dvda_media_stream_t::get_position() {
-	return is->GetOffset();
-}
-
-int64_t dvda_media_stream_t::get_size() {
-	return is->GetSize();
 }
 
 size_t dvda_media_stream_t::read(void* data, size_t size) {
