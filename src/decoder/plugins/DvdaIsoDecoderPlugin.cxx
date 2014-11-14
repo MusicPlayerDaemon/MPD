@@ -46,8 +46,9 @@
 
 using namespace std;
 
-static const char* DVDA_TRACKXXX_FMT = "AUDIO_TS__TRACK%03u.%3s";
+static const char* DVDA_TRACKXXX_FMT = "AUDIO_TS__TRACK%03u%c.%3s";
 
+static constexpr double SHORT_TRACK_SEC = 2.0;
 static constexpr Domain dvdaiso_domain("dvdaiso");
 
 static bool     param_no_downmixes;
@@ -79,17 +80,28 @@ get_container_path(const char* path) {
 	return container_path;
 }
 
-static unsigned
-get_subsong(const char* path) {
+static bool
+get_subsong(const char* path, unsigned* track, bool* downmix) {
 	unsigned length = get_container_path_length(path);
+	int params = 0;
 	if (length > 0) {
 		const char* ptr = path + length + 1;
-		unsigned track = 0;
+		unsigned track_number;
+		char area = '\0';
 		char suffix[4];
-		sscanf(ptr, DVDA_TRACKXXX_FMT, &track, &suffix);
-		return track - 1;
+		params = sscanf(ptr, DVDA_TRACKXXX_FMT, &track_number, &area, &suffix);
+		suffix[3] = '\0';
+		*track = track_number - 1;
+		*downmix = area == 'D';
 	}
-	return 0;
+	return params == 3;
+}
+
+static char*
+new_track(Path path_fs, unsigned track, bool downmix) {
+	const char area = downmix ? 'D' : (dvda_reader->get_channels() > 2 ? 'M' : 'S');
+	const char* suffix = uri_get_suffix(path_fs.c_str());
+	return FormatNew(DVDA_TRACKXXX_FMT, track + 1, area, suffix);
 }
 
 static bool
@@ -121,7 +133,7 @@ dvdaiso_update_ifo(const char* path) {
 			LogError(dvdaiso_domain, "new dvda_media_file_t() failed");
 			return false;
 		}
-		dvda_reader = new dvda_disc_t(param_playable_area, param_no_downmixes, param_no_short_tracks);
+		dvda_reader = new dvda_disc_t();
 		if (!dvda_reader) {
 			LogError(dvdaiso_domain, "new dvda_disc_t() failed");
 			return false;
@@ -172,17 +184,55 @@ dvdaiso_container_scan(Path path_fs, const unsigned int tnum) {
 	if (!dvdaiso_update_ifo(path_fs.c_str())) {
 		return nullptr;
 	}
-	unsigned track = tnum - 1;
-	if (!(track < dvda_reader->get_tracks()))
-	{
-		return nullptr;
+	unsigned tracks = 0;
+	for (unsigned i = 0; i < dvda_reader->get_tracks(); i++) {
+		if (dvda_reader->select_track(i)) {
+			double duration = dvda_reader->get_duration();
+			if (param_no_short_tracks && duration < SHORT_TRACK_SEC) {
+				continue;
+			}
+			switch (param_playable_area) {
+			case CHMODE_MULCH:
+				if (dvda_reader->get_channels() > 2) {
+					tracks++;
+					if (tracks == tnum) {
+						return new_track(path_fs, i, false);
+					}
+				}
+				break;
+			case CHMODE_TWOCH:
+				if (dvda_reader->get_channels() <= 2) {
+					tracks++;
+					if (tracks == tnum) {
+						return new_track(path_fs, i, false);
+					}
+				}
+				if (!param_no_downmixes && dvda_reader->can_downmix()) {
+					tracks++;
+					if (tracks == tnum) {
+						return new_track(path_fs, i, true);
+					}
+				}
+				break;
+			default:
+				tracks++;
+				if (tracks == tnum) {
+					return new_track(path_fs, i, false);
+				}
+				if (!param_no_downmixes && dvda_reader->can_downmix()) {
+					tracks++;
+					if (tracks == tnum) {
+						return new_track(path_fs, i, true);
+					}
+				}
+				break;
+			}
+		}
+		else {
+			LogError(dvdaiso_domain, "cannot select track");
+		}
 	}
-	if (!dvda_reader->select_track(track)) {
-		LogError(dvdaiso_domain, "cannot select track");
-		return nullptr;
-	}
-	const char* suffix = uri_get_suffix(path_fs.c_str());
-	return FormatNew(DVDA_TRACKXXX_FMT, track + 1, suffix);
+	return nullptr;
 }
 
 static void
@@ -191,15 +241,25 @@ dvdaiso_file_decode(Decoder& decoder, Path path_fs) {
 	if (!dvdaiso_update_ifo(path_container.c_str())) {
 		return;
 	}
-	unsigned track = get_subsong(path_fs.c_str());
+
+	unsigned track;
+	bool downmix;
+	if (!get_subsong(path_fs.c_str(), &track, &downmix)) {
+		LogError(dvdaiso_domain, "cannot get track number");
+		return;
+	}
 
 	// initialize reader
 	if (!dvda_reader->select_track(track)) {
 		LogError(dvdaiso_domain, "cannot select track");
 		return;
 	}
+	if (!dvda_reader->set_downmix(downmix)) {
+		LogError(dvdaiso_domain, "cannot downmix track");
+		return;
+	}
 	unsigned samplerate = dvda_reader->get_samplerate();
-	unsigned channels = dvda_reader->get_channels();
+	unsigned channels = dvda_reader->get_downmix() ? 2 : dvda_reader->get_channels();
 	vector<uint8_t> pcm_data(192000);
 
 	// initialize decoder
@@ -249,11 +309,16 @@ dvdaiso_scan_file(Path path_fs, const struct tag_handler* handler, void* handler
 	if (!dvdaiso_update_ifo(path_container.c_str())) {
 		return false;
 	}
-	unsigned track = get_subsong(path_fs.c_str());
+	unsigned track;
+	bool downmix;
+	if (!get_subsong(path_fs.c_str(), &track, &downmix)) {
+		LogError(dvdaiso_domain, "cannot get track number");
+		return false;
+	}
 	string tag_value = to_string(track + 1);
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
 	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(dvda_reader->get_duration(track)));
-	dvda_reader->get_info(track, handler, handler_ctx);
+	dvda_reader->get_info(track, downmix, handler, handler_ctx);
 	return true;
 }
 

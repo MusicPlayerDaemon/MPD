@@ -35,8 +35,11 @@ public:
 	virtual uint32_t get_samplerate() = 0;
 	virtual double get_duration() = 0;
 	virtual double get_duration(uint32_t track_index) = 0;
-	virtual void get_info(uint32_t track_index, const struct tag_handler* handler, void* handler_ctx) = 0;
+	virtual bool can_downmix() = 0;
+	virtual void get_info(uint32_t track_index, bool downmix, const struct tag_handler* handler, void* handler_ctx) = 0;
 	virtual	bool select_track(uint32_t track_index, size_t offset = 0) = 0;
+	virtual	bool get_downmix() = 0;
+	virtual	bool set_downmix(bool downmix) = 0;
 	virtual bool read_frame(uint8_t* frame_data, size_t* frame_size) = 0;
 	virtual bool seek(double seconds) = 0;
 };

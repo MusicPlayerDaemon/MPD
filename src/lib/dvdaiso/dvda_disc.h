@@ -34,9 +34,6 @@ private:
 	dvda_filesystem_t* dvda_filesystem;
 	dvda_zone_t        dvda_zone;
 	track_list_t       track_list;
-	chmode_t           chmode;
-	bool               no_downmixes;
-	bool               no_short_tracks;
 
 	stream_buffer_t<uint8_t, int> track_stream;
 	vector<uint8_t>               ps1_data;
@@ -47,6 +44,7 @@ private:
 	double        stream_duration;
 	sub_header_t  stream_ps1_info;
 	uint32_t      stream_block_current;
+	bool          stream_downmix;
 	bool          stream_needs_reinit;
 	bool          major_sync_0;
 	unsigned      stream_channel_map;
@@ -59,7 +57,7 @@ private:
 	size_t        sel_track_offset;
 	uint32_t      sel_track_length_lsn;
 public:
-	dvda_disc_t(chmode_t chmode = CHMODE_BOTH, bool no_downmixes = false, bool no_short_tracks = false);
+	dvda_disc_t();
 	~dvda_disc_t();
 	uint32_t get_tracks();
 	uint32_t get_channels();
@@ -67,11 +65,14 @@ public:
 	uint32_t get_samplerate();
 	double get_duration();
 	double get_duration(uint32_t track_index);
-	void get_info(uint32_t track_index, const struct tag_handler* handler, void* handler_ctx);
+	bool can_downmix();
+	void get_info(uint32_t track_index, bool downmix, const struct tag_handler* handler, void* handler_ctx);
 	uint32_t get_track_length_lsn();
 	bool open(dvda_media_t* dvda_media);
 	bool close();
 	bool select_track(uint32_t track_index, size_t offset = 0);
+	bool get_downmix();
+	bool set_downmix(bool downmix);
 	bool read_frame(uint8_t* frame_data, size_t* frame_size);
 	bool seek(double seconds);
 private:

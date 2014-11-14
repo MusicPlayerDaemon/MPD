@@ -34,21 +34,7 @@ bool audio_track_t::check_chmode(chmode_t chmode, bool downmix) {
 	return true;
 }
 
-int track_list_t::get_track_index(int titleset, int title, int track, bool downmix) {
-	return (((titleset & 0xff) + 1) << 16) | (((title + 1) & 0xff) << 8) | ((track + 1) & 0xff) | (downmix ? 0x01000000 : 0); 
-}
-
-int track_list_t::get_track_index(int track_index) {
-	for (unsigned int i = 0; i < track_list.size(); i++) {
-		if (track_index == track_list[i].track_index) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-void track_list_t::init(dvda_zone_t& dvda_zone, bool downmix, chmode_t chmode, double threshold_time) {
-	int track_number = 1;
+void track_list_t::init(dvda_zone_t& dvda_zone) {
 	for (int ts = 0; ts < dvda_zone.titleset_count(); ts++) {
 		dvda_titleset_t& titleset = dvda_zone.get_titleset(ts);
 		if (titleset.is_audio_ts()) {
@@ -60,37 +46,21 @@ void track_list_t::init(dvda_zone_t& dvda_zone, bool downmix, chmode_t chmode, d
 					audio_track.dvda_titleset = ts + 1;
 					audio_track.dvda_title    = ti + 1;
 					audio_track.dvda_track    = tr + 1;
-					audio_track.track_number  = track_number;
 					audio_track.block_first   = track.get_first();
 					audio_track.block_last    = track.get_last();
 					audio_track.duration      = track.get_time();
-					if (!(audio_track.duration < threshold_time) && get_audio_stream_info(dvda_zone, ts, audio_track.block_first, audio_track.audio_stream_info)) {
-						audio_track.track_downmix = downmix;
-						audio_track.track_index = get_track_index(ts, ti, tr, audio_track.track_downmix);
-						if (!audio_track.track_downmix) {
-							if (audio_track.check_chmode(chmode, downmix)) {
-								add(audio_track);
-								track_number++;
+					if (get_audio_stream_info(dvda_zone, ts, audio_track.block_first, audio_track.audio_stream_info)) {
+						if (audio_track.audio_stream_info.stream_id == PCM_STREAM_ID) {
+							int downmix_matrix = track.get_downmix_matrix();
+							if (downmix_matrix >= 0) {
+								for (int ch = 0; ch < DOWNMIX_CHANNELS; ch++) {
+									audio_track.LR_dmx_coef[ch][0] = titleset.get_downmix_coef(downmix_matrix, ch, 0);
+									audio_track.LR_dmx_coef[ch][1] = titleset.get_downmix_coef(downmix_matrix, ch, 1);
+								}
+								audio_track.audio_stream_info.can_downmix = true;
 							}
 						}
-						else {
-							if (audio_track.audio_stream_info.stream_id == PCM_STREAM_ID) {
-								int downmix_matrix = track.get_downmix_matrix();
-								if (downmix_matrix >= 0) {
-									for (int ch = 0; ch < DOWNMIX_CHANNELS; ch++) {
-										audio_track.LR_dmx_coef[ch][0] = titleset.get_downmix_coef(downmix_matrix, ch, 0);
-										audio_track.LR_dmx_coef[ch][1] = titleset.get_downmix_coef(downmix_matrix, ch, 1);
-									}
-									audio_track.audio_stream_info.can_downmix = true;
-								}
-							}
-							if (audio_track.audio_stream_info.can_downmix) {
-								if (audio_track.check_chmode(chmode, downmix)) {
-									add(audio_track);
-									track_number++;
-								}
-							}
-						}
+						add(audio_track);
 					}
 				}
 			}

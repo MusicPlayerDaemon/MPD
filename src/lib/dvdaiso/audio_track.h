@@ -31,12 +31,9 @@ public:
 	int                 dvda_titleset;
 	int                 dvda_title;
 	int                 dvda_track;
-	int                 track_index;
-	int                 track_number;
 	uint32_t            block_first;
 	uint32_t            block_last;
 	double              duration;
-	bool                track_downmix;
 	double              LR_dmx_coef[DOWNMIX_CHANNELS][2];
 	audio_stream_info_t audio_stream_info;
 	bool check_chmode(chmode_t chmode, bool downmix);
@@ -45,7 +42,6 @@ public:
 class track_list_t {
 	vector<audio_track_t> track_list;
 public:
-	static int get_track_index(int titleset, int title, int track, bool downmix);
 	size_t size() const {
 		return track_list.size();
 	}
@@ -58,8 +54,7 @@ public:
 	audio_track_t& operator[](int track_index) {
 		return track_list[track_index];
 	}
-	int get_track_index(int track_index);
-	void init(dvda_zone_t& dvda_zone, bool downmix, chmode_t chmode, double threshold_time);
+	void init(dvda_zone_t& dvda_zone);
 	bool get_audio_stream_info(dvda_zone_t& dvda_zone, int titleset, uint32_t block_no, audio_stream_info_t& audio_stream_info);
 };
 

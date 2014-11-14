@@ -27,16 +27,13 @@
 
 using namespace std;
 
-static constexpr double SHORT_TRACK_SEC = 2.0;
 static constexpr Domain dvdaiso_domain("dvdaiso");
 
-dvda_disc_t::dvda_disc_t(chmode_t _chmode, bool _no_downmixes, bool _no_short_tracks) {
+dvda_disc_t::dvda_disc_t() {
 	dvda_media = nullptr;
 	dvda_filesystem = nullptr;
-	chmode = _chmode;
-	no_downmixes = _no_downmixes;
-	no_short_tracks = _no_short_tracks;
 	audio_stream = nullptr;
+	stream_downmix = false;
 	sel_track_index = -1;
 }
 
@@ -53,7 +50,7 @@ uint32_t dvda_disc_t::get_tracks() {
 
 uint32_t dvda_disc_t::get_channels() {
 	audio_stream_info_t& info = track_list[sel_track_index].audio_stream_info;
-	return !track_list[sel_track_index].track_downmix ? info.group1_channels + info.group2_channels : 2;
+	return info.group1_channels + info.group2_channels;
 }
 
 uint32_t dvda_disc_t::get_loudspeaker_config() {
@@ -75,11 +72,18 @@ double dvda_disc_t::get_duration(uint32_t track_index) {
 	return 0.0;
 }
 
-void dvda_disc_t::get_info(uint32_t track_index, const struct tag_handler *handler, void *handler_ctx) {
+bool dvda_disc_t::can_downmix() {
+	return track_list[sel_track_index].audio_stream_info.can_downmix;
+}
+
+void dvda_disc_t::get_info(uint32_t track_index, bool downmix, const struct tag_handler *handler, void *handler_ctx) {
 	if (!(track_index < track_list.size())) {
 		return;
 	}
 	audio_stream_info_t& info = track_list[track_index].audio_stream_info;
+	//int ts = track_list[track_index].dvda_titleset;
+	//int ti = track_list[track_index].dvda_title;
+	int tr = track_list[track_index].dvda_track;
 
 	char disc_label[32];
 	bool label_ok = dvda_filesystem->get_name(disc_label);
@@ -99,21 +103,29 @@ void dvda_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 
 	tag_value  = !disc_name.empty() ? disc_name : "Album";
 	tag_value += " (";
-	tag_value += to_string(info.group1_channels + info.group2_channels);
-	tag_value += "CH";
+	if (!downmix) {
+		tag_value += to_string(info.group1_channels + info.group2_channels);
+		tag_value += "CH";
+	}
+	else {
+		tag_value += "DMX";
+	}
+	tag_value += "-";
+	tag_value += info.stream_id == MLP_STREAM_ID ? (info.stream_type == STREAM_TYPE_MLP ? "MLP" : "TrueHD") : "PCM";
 	tag_value += ")";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_ALBUM, tag_value.c_str());
 
 	tag_value  = "Artist";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST, tag_value.c_str());
 
-	char track_number_string[4];
-	sprintf(track_number_string, "%02d", track_index + 1);
+	char track_number_string[16];
+	//sprintf(track_number_string, "%02d.%02d.%02d", ts, ti, tr);
+	sprintf(track_number_string, "%02d", tr);
 	tag_value  = track_number_string;
 	tag_value += " - ";
-	tag_value += "Track " + to_string(track_index + 1);
+	tag_value += "Track " + to_string(tr);
 	tag_value += " (";
-	if (!track_list[track_index].track_downmix) {
+	if (!(downmix && track_list[track_index].audio_stream_info.can_downmix)) {
 		for (int i = 0; i < info.group1_channels; i++) {
 			if (i > 0) {
 				tag_value += "-";
@@ -139,13 +151,11 @@ void dvda_disc_t::get_info(uint32_t track_index, const struct tag_handler *handl
 		}
 	}
 	else {
+		tag_value += "DMX ";
 		tag_value += to_string(info.group1_bits);
 		tag_value += "/";
 		tag_value += to_string(info.group1_samplerate);
-		tag_value += " stereo downmix";
 	}
-	tag_value += " ";
-	tag_value += info.stream_id == MLP_STREAM_ID ? (info.stream_type == STREAM_TYPE_MLP ? "MLP" : "TrueHD") : "PCM";
 	tag_value += ")";
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, tag_value.c_str());
 
@@ -177,11 +187,7 @@ bool dvda_disc_t::open(dvda_media_t* _dvda_media) {
 	if (!(dvda_zone.titleset_count() > 0)) {
 		return false;
 	}
-	double threshold_time = no_short_tracks ? SHORT_TRACK_SEC : 0.0;
-	track_list.init(dvda_zone, false, chmode, threshold_time);
-	if (!no_downmixes) {
-		track_list.init(dvda_zone, true, chmode, threshold_time);
-	}
+	track_list.init(dvda_zone);
 	return track_list.size() > 0;
 }
 
@@ -210,6 +216,18 @@ bool dvda_disc_t::select_track(uint32_t track_index, size_t offset) {
 	stream_duration = audio_track.duration;
 	stream_needs_reinit = false;
 	major_sync_0 = false;
+	return true;
+}
+
+bool dvda_disc_t::get_downmix() {
+	return stream_downmix;
+}
+
+bool dvda_disc_t::set_downmix(bool downmix) {
+	if (downmix && !audio_track.audio_stream_info.can_downmix) {
+		return false;
+	}
+	stream_downmix = downmix;
 	return true;
 }
 
@@ -275,7 +293,7 @@ bool dvda_disc_t::read_frame(uint8_t* frame_data, size_t* frame_size) {
 			goto decode_run_read_stream_start;
 		}
 		else {
-			create_audio_stream(stream_ps1_info, track_stream.get_read_ptr(), track_stream.get_read_size(), audio_track.track_downmix);
+			create_audio_stream(stream_ps1_info, track_stream.get_read_ptr(), track_stream.get_read_size(), stream_downmix);
 			if (audio_stream) {
 				if (audio_stream->get_downmix()) {
 					audio_stream->set_downmix_coef(audio_track.LR_dmx_coef);
