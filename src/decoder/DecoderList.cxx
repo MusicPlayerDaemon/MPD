@@ -26,7 +26,6 @@
 #include "plugins/PcmDecoderPlugin.hxx"
 #include "plugins/DsdiffDecoderPlugin.hxx"
 #include "plugins/DsfDecoderPlugin.hxx"
-#include "plugins/IsoDecoderPlugin.hxx"
 #include "plugins/SacdIsoDecoderPlugin.hxx"
 #include "plugins/DvdaIsoDecoderPlugin.hxx"
 #include "plugins/FlacDecoderPlugin.h"
@@ -117,19 +116,10 @@ const struct DecoderPlugin *const decoder_plugins[] = {
 	&gme_decoder_plugin,
 #endif
 #ifdef ENABLE_SACDISO
-	#ifndef ENABLE_DVDAISO
-		&sacdiso_decoder_plugin,
-	#endif
+	&sacdiso_decoder_plugin,
 #endif
 #ifdef ENABLE_DVDAISO
-	#ifndef ENABLE_SACDISO
-		&dvdaiso_decoder_plugin,
-	#endif
-#endif
-#ifdef ENABLE_SACDISO
-	#ifdef ENABLE_DVDAISO
-		&iso_decoder_plugin,
-	#endif
+	&dvdaiso_decoder_plugin,
 #endif
 	&pcm_decoder_plugin,
 	nullptr

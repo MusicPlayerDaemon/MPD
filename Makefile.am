@@ -1069,14 +1069,6 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/DvdaIsoDecoderPlugin.hxx
 endif
 
-if ENABLE_SACDISO
-if ENABLE_DVDAISO
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/IsoDecoderPlugin.cxx \
-	src/decoder/plugins/IsoDecoderPlugin.hxx
-endif
-endif
-
 if ENABLE_SIDPLAY
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/SidplayDecoderPlugin.cxx \

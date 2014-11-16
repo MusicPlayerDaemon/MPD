@@ -33,6 +33,7 @@
 #include "Log.hxx"
 
 #include <sys/stat.h>
+#include <vector>
 
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
@@ -71,12 +72,12 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 				const char *name, const char *suffix,
 				const FileInfo &info)
 {
-	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){
-			return SupportsContainerSuffix(plugin, suffix);
-		});
-	if (_plugin == nullptr)
+	std::vector<const DecoderPlugin *> plugins;
+	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
+		if (decoder_plugins_enabled[i] && SupportsContainerSuffix(*decoder_plugins[i], suffix))
+			plugins.push_back(decoder_plugins[i]);
+	if (plugins.size() == 0)
 		return false;
-	const DecoderPlugin &plugin = *_plugin;
 
 	db_lock();
 	Directory *contdir = MakeDirectoryIfModified(directory, name, info);
@@ -97,34 +98,36 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		return false;
 	}
 
-	char *vtrack;
-	unsigned int tnum = 0;
-	TagBuilder tag_builder;
-	while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
-		Song *song = Song::NewFile(vtrack, *contdir);
+	unsigned int tnum_total = 0;
+	for (unsigned i = 0; i < plugins.size(); ++i) {
+		const DecoderPlugin &plugin = *plugins[i];
+		char *vtrack;
+		unsigned int tnum = 0;
+		TagBuilder tag_builder;
+		while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
+			Song *song = Song::NewFile(vtrack, *contdir);
 
-		// shouldn't be necessary but it's there..
-		song->mtime = info.mtime;
+			// shouldn't be necessary but it's there..
+			song->mtime = info.mtime;
 
-		const auto child_path_fs = AllocatedPath::Build(pathname,
-								vtrack);
-		plugin.ScanFile(child_path_fs,
-				add_tag_handler, &tag_builder);
+			const auto child_path_fs = AllocatedPath::Build(pathname,	vtrack);
+			plugin.ScanFile(child_path_fs, add_tag_handler, &tag_builder);
 
-		tag_builder.Commit(song->tag);
+			tag_builder.Commit(song->tag);
 
-		db_lock();
-		contdir->AddSong(song);
-		db_unlock();
+			db_lock();
+			contdir->AddSong(song);
+			db_unlock();
 
-		modified = true;
+			modified = true;
 
-		FormatDefault(update_domain, "added %s/%s",
-			      directory.GetPath(), vtrack);
-		delete[] vtrack;
+			FormatDefault(update_domain, "added %s/%s", directory.GetPath(), vtrack);
+			delete[] vtrack;
+			tnum_total++;
+		}
 	}
 
-	if (tnum == 1) {
+	if (tnum_total == 0) {
 		editor.LockDeleteDirectory(contdir);
 		return false;
 	} else
