@@ -47,7 +47,7 @@ client_allow_file(const Client &client, Path path_fs, Error &error)
 		   instance */
 		return true;
 
-	if (uid <= 0) {
+	if (uid < 0) {
 		/* unauthenticated client */
 		error.Set(ack_domain, ACK_ERROR_PERMISSION, "Access denied");
 		return false;
