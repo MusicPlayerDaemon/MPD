@@ -1558,6 +1558,7 @@ OK
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -1601,6 +1602,13 @@ OK
 
             <para>
               <varname>WHAT</varname> is what to find.
+            </para>
+
+            <para>
+              <varname>window</varname> can be used to query only a
+              portion of the real response.  The parameter is two
+              zero-based record numbers; a start number and an end
+              number.
             </para>
           </listitem>
         </varlistentry>
@@ -1794,6 +1802,7 @@ OK
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>

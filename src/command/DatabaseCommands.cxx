@@ -32,6 +32,7 @@
 #include "util/Error.hxx"
 #include "SongFilter.hxx"
 #include "protocol/Result.hxx"
+#include "protocol/ArgParser.hxx"
 #include "BulkEdit.hxx"
 
 #include <string.h>
@@ -70,6 +71,16 @@ handle_match(Client &client, unsigned argc, char *argv[], bool fold_case)
 {
 	ConstBuffer<const char *> args(argv + 1, argc - 1);
 
+	unsigned window_start = 0, window_end = std::numeric_limits<int>::max();
+	if (args.size >= 2 && strcmp(args[args.size - 2], "window") == 0) {
+		if (!check_range(client, &window_start, &window_end,
+				 args.back()))
+			return CommandResult::ERROR;
+
+		args.pop_back();
+		args.pop_back();
+	}
+
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
@@ -79,7 +90,8 @@ handle_match(Client &client, unsigned argc, char *argv[], bool fold_case)
 	const DatabaseSelection selection("", true, &filter);
 
 	Error error;
-	return db_selection_print(client, selection, true, false, error)
+	return db_selection_print(client, selection, true, false,
+				  window_start, window_end, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }

@@ -147,25 +147,47 @@ PrintPlaylistFull(Client &client, bool base,
 
 bool
 db_selection_print(Client &client, const DatabaseSelection &selection,
-		   bool full, bool base, Error &error)
+		   bool full, bool base,
+		   unsigned window_start, unsigned window_end,
+		   Error &error)
 {
 	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
 		return false;
+
+	unsigned i = 0;
 
 	using namespace std::placeholders;
 	const auto d = selection.filter == nullptr
 		? std::bind(full ? PrintDirectoryFull : PrintDirectoryBrief,
 			    std::ref(client), base, _1)
 		: VisitDirectory();
-	const auto s = std::bind(full ? PrintSongFull : PrintSongBrief,
-				 std::ref(client), base, _1);
+	VisitSong s = std::bind(full ? PrintSongFull : PrintSongBrief,
+				std::ref(client), base, _1);
 	const auto p = selection.filter == nullptr
 		? std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
 			    std::ref(client), base, _1, _2)
 		: VisitPlaylist();
 
+	if (window_start > 0 || window_end < std::numeric_limits<int>::max())
+		s = [s, window_start, window_end, &i](const LightSong &song,
+						      Error &error2){
+			const bool in_window = i >= window_start && i < window_end;
+			++i;
+			return !in_window || s(song, error2);
+		};
+
 	return db->Visit(selection, d, s, p, error);
+}
+
+bool
+db_selection_print(Client &client, const DatabaseSelection &selection,
+		   bool full, bool base,
+		   Error &error)
+{
+	return db_selection_print(client, selection, full, base,
+				  0, std::numeric_limits<int>::max(),
+				  error);
 }
 
 static bool

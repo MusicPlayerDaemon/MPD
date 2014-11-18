@@ -1,6 +1,7 @@
 ver 0.20 (not yet released)
 * protocol
   - "commands" returns playlist commands only if playlist_directory configured
+  - "search"/"find" have a "window" parameter
 * output
   - pulse: set channel map to WAVE-EX
 
