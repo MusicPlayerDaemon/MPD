@@ -1,4 +1,4 @@
-ver 0.18.18 (not yet released)
+ver 0.18.18 (2014/11/18)
 * decoder
   - ffmpeg: support opus
 * fix crash on failed filename charset conversion
