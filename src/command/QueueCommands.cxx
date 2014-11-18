@@ -61,7 +61,16 @@ translate_uri(Client &client, const char *uri)
 CommandResult
 handle_add(Client &client, gcc_unused unsigned argc, char *argv[])
 {
-	const char *const uri = translate_uri(client, argv[1]);
+	const char *uri = argv[1];
+	if (memcmp(uri, "/", 2) == 0)
+		/* this URI is malformed, but some clients are buggy
+		   and use "add /" to add the whole database, which
+		   was never intended to work, but once did; in order
+		   to retain backwards compatibility, work around this
+		   here */
+		uri = "";
+
+	uri = translate_uri(client, uri);
 	if (uri == nullptr)
 		return CommandResult::ERROR;
 

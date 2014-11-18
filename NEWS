@@ -1,4 +1,6 @@
 ver 0.19.4 (not yet released)
+* protocol
+  - workaround for buggy clients that send "add /"
 * decoder
   - opus: add MIME types audio/ogg and application/ogg
 
