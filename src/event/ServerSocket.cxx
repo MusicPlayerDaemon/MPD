@@ -141,7 +141,7 @@ get_remote_uid(int fd)
 	socklen_t len = sizeof (cred);
 
 	if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &cred, &len) < 0)
-		return 0;
+		return -1;
 
 	return cred.uid;
 #else
