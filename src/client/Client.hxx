@@ -127,7 +127,7 @@ public:
 	 * a local (UNIX domain) socket?
 	 */
 	bool IsLocal() const {
-		return uid > 0;
+		return uid >= 0;
 	}
 
 	unsigned GetPermission() const {

@@ -5,6 +5,15 @@ ver 0.20 (not yet released)
 * output
   - pulse: set channel map to WAVE-EX
 
+ver 0.19.4 (2014/11/18)
+* protocol
+  - workaround for buggy clients that send "add /"
+* decoder
+  - ffmpeg: support opus
+  - opus: add MIME types audio/ogg and application/ogg
+* fix crash on failed filename charset conversion
+* fix local socket detection from uid=0 (root)
+
 ver 0.19.3 (2014/11/11)
 * protocol
   - fix "(null)" result string to "list" when AlbumArtist is disabled
@@ -126,6 +135,12 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.18 (2014/11/18)
+* decoder
+  - ffmpeg: support opus
+* fix crash on failed filename charset conversion
+* fix local socket detection from uid=0 (root)
 
 ver 0.18.17 (2014/11/02)
 * playlist

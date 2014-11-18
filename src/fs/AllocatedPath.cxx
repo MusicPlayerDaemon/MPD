@@ -46,7 +46,11 @@ AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8)
 {
 #ifdef HAVE_GLIB
-	return AllocatedPath(Donate(), ::PathFromUTF8(path_utf8));
+	char *path = ::PathFromUTF8(path_utf8);
+	if (path == nullptr)
+		return AllocatedPath::Null();
+
+	return AllocatedPath(Donate(), path);
 #else
 	return FromFS(path_utf8);
 #endif

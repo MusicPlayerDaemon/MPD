@@ -41,7 +41,7 @@ Client::AllowFile(Path path_fs, Error &error) const
 		   instance */
 		return true;
 
-	if (uid <= 0) {
+	if (uid < 0) {
 		/* unauthenticated client */
 		error.Set(ack_domain, ACK_ERROR_PERMISSION, "Access denied");
 		return false;
