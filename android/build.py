@@ -40,8 +40,8 @@ build_arch = 'linux-x86_64'
 os.environ['PKG_CONFIG_LIBDIR'] = os.path.join(root_path, 'lib/pkgconfig')
 
 # select the NDK compiler
-gcc_version = '4.8'
-llvm_version = '3.3'
+gcc_version = '4.9'
+llvm_version = '3.5'
 
 # select the NDK target
 ndk_arch = 'arm'
