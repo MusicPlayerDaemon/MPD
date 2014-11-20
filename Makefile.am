@@ -186,9 +186,14 @@ if ANDROID
 else
 libmpd_a_SOURCES += \
 	src/unix/SignalHandlers.cxx src/unix/SignalHandlers.hxx \
-	src/unix/Daemon.cxx src/unix/Daemon.hxx \
-	src/unix/PidFile.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx
+
+if ENABLE_DAEMON
+libmpd_a_SOURCES += \
+	src/unix/Daemon.cxx src/unix/Daemon.hxx \
+	src/unix/PidFile.hxx
+endif
+
 endif
 
 if ENABLE_DATABASE

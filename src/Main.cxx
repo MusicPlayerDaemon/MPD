@@ -50,7 +50,6 @@
 #include "AudioConfig.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "unix/SignalHandlers.hxx"
-#include "unix/Daemon.hxx"
 #include "system/FatalError.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -64,6 +63,10 @@
 #include "config/ConfigOption.hxx"
 #include "config/ConfigError.hxx"
 #include "Stats.hxx"
+
+#ifdef ENABLE_DAEMON
+#include "unix/Daemon.hxx"
+#endif
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
@@ -133,7 +136,7 @@ Instance *instance;
 
 static StateFile *state_file;
 
-#ifndef ANDROID
+#ifdef ENABLE_DAEMON
 
 static bool
 glue_daemonize_init(const struct options *options, Error &error)
@@ -422,9 +425,11 @@ int mpd_main(int argc, char *argv[])
 	struct options options;
 	Error error;
 
-#ifndef ANDROID
+#ifdef ENABLE_DAEMON
 	daemonize_close_stdin();
+#endif
 
+#ifndef ANDROID
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
@@ -470,7 +475,9 @@ int mpd_main(int argc, char *argv[])
 		LogError(error);
 		return EXIT_FAILURE;
 	}
+#endif
 
+#ifdef ENABLE_DAEMON
 	if (!glue_daemonize_init(&options, error)) {
 		LogError(error);
 		return EXIT_FAILURE;
@@ -512,7 +519,7 @@ int mpd_main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
-#ifndef ANDROID
+#ifdef ENABLE_DAEMON
 	daemonize_set_user();
 	daemonize_begin(options.daemon);
 #endif
@@ -585,9 +592,11 @@ static int mpd_main_after_fork(struct options options)
 
 	playlist_list_global_init();
 
-#ifndef ANDROID
+#ifdef ENABLE_DAEMON
 	daemonize_commit();
+#endif
 
+#ifndef ANDROID
 	setup_log_output(options.log_stderr);
 
 	SignalHandlersInit(*instance->event_loop);
@@ -724,9 +733,11 @@ static int mpd_main_after_fork(struct options options)
 	delete instance->event_loop;
 	delete instance;
 	instance = nullptr;
-#ifndef ANDROID
+
+#ifdef ENABLE_DAEMON
 	daemonize_finish();
 #endif
+
 #ifdef WIN32
 	WSACleanup();
 #endif

@@ -367,6 +367,19 @@ AC_ARG_ENABLE(nfs,
 		[enable support for libnfs (default: auto)]),,
 	[enable_nfs=auto])
 
+default_enable_daemon=yes
+if test x$host_is_android = xyes || test x$host_is_android = xyes; then
+	default_enable_daemon=no
+fi
+AC_ARG_ENABLE(daemon,
+	AS_HELP_STRING([--enable-daemon],
+		[enable daemonization (default: enabled)]),,
+	enable_daemon=$default_enable_daemon)
+AM_CONDITIONAL([ENABLE_DAEMON], [test x$enable_daemon = xyes])
+if test x$enable_daemon = xyes; then
+	AC_DEFINE([ENABLE_DAEMON], 1, [Enable daemonization?])
+fi
+
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
 		[enable debugging (default: disabled)]),,
