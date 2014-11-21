@@ -1899,6 +1899,7 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.cxx \
+	src/config/ConfigError.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/AudioFormat.cxx \
 	src/CheckAudioFormat.cxx \
