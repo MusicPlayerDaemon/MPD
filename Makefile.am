@@ -492,12 +492,12 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmUtils.hxx
 libpcm_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SOXR_CFLAGS) \
-	$(SAMPLERATE_CFLAGS)
+	$(LIBSAMPLERATE_CFLAGS)
 
 PCM_LIBS = \
 	libpcm.a \
 	$(SOXR_LIBS) \
-	$(SAMPLERATE_LIBS)
+	$(LIBSAMPLERATE_LIBS)
 
 if ENABLE_DSD
 libpcm_a_SOURCES += \
@@ -505,12 +505,12 @@ libpcm_a_SOURCES += \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h
 endif
 
-if HAVE_LIBSAMPLERATE
+if ENABLE_LIBSAMPLERATE
 libpcm_a_SOURCES += \
 	src/pcm/LibsamplerateResampler.cxx src/pcm/LibsamplerateResampler.hxx
 endif
 
-if HAVE_SOXR
+if ENABLE_SOXR
 libpcm_a_SOURCES += \
 	src/pcm/SoxrResampler.cxx src/pcm/SoxrResampler.hxx
 endif
@@ -542,7 +542,7 @@ libfs_a_SOURCES = \
 	src/fs/DirectoryReader.hxx
 libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
 
-if HAVE_ZLIB
+if ENABLE_ZLIB
 libfs_a_SOURCES += \
 	src/lib/zlib/Domain.cxx src/lib/zlib/Domain.hxx \
 	src/fs/io/GunzipReader.cxx src/fs/io/GunzipReader.hxx \
@@ -638,7 +638,7 @@ NEIGHBOR_LIBS = \
 	$(SMBCLIENT_LIBS) \
 	libneighbor.a
 
-if HAVE_LIBUPNP
+if ENABLE_UPNP
 libneighbor_a_SOURCES += \
 	$(UPNP_SOURCES) \
 	src/neighbor/plugins/UpnpNeighborPlugin.cxx src/neighbor/plugins/UpnpNeighborPlugin.hxx
@@ -677,7 +677,7 @@ libdb_plugins_a_SOURCES = \
 	src/db/plugins/simple/SimpleDatabasePlugin.cxx \
 	src/db/plugins/simple/SimpleDatabasePlugin.hxx
 
-if HAVE_LIBMPDCLIENT
+if ENABLE_LIBMPDCLIENT
 libdb_plugins_a_SOURCES += \
 	src/db/plugins/ProxyDatabasePlugin.cxx src/db/plugins/ProxyDatabasePlugin.hxx
 endif
@@ -686,7 +686,7 @@ DB_LIBS = \
 	libdb_plugins.a \
 	$(LIBMPDCLIENT_LIBS)
 
-if HAVE_LIBUPNP
+if ENABLE_UPNP
 libdb_plugins_a_SOURCES += \
 	$(UPNP_SOURCES) \
 	src/db/plugins/upnp/UpnpDatabasePlugin.cxx src/db/plugins/upnp/UpnpDatabasePlugin.hxx \
@@ -735,7 +735,7 @@ libarchive_a_SOURCES += \
 	src/archive/plugins/Bzip2ArchivePlugin.hxx
 endif
 
-if HAVE_ZZIP
+if ENABLE_ZZIP
 libarchive_a_SOURCES += \
 	src/archive/plugins/ZzipArchivePlugin.cxx \
 	src/archive/plugins/ZzipArchivePlugin.hxx
@@ -802,7 +802,7 @@ endif
 
 # ffmpeg
 
-if HAVE_FFMPEG
+if ENABLE_FFMPEG
 noinst_LIBRARIES += libffmpeg.a
 libffmpeg_a_SOURCES = \
 	src/lib/ffmpeg/Error.cxx src/lib/ffmpeg/Error.hxx \
@@ -876,7 +876,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/MadDecoderPlugin.hxx
 endif
 
-if HAVE_MPG123
+if ENABLE_MPG123
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/Mpg123DecoderPlugin.cxx \
 	src/decoder/plugins/Mpg123DecoderPlugin.hxx
@@ -888,7 +888,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/MpcdecDecoderPlugin.hxx
 endif
 
-if HAVE_OPUS
+if ENABLE_OPUS
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/OggUtil.cxx \
 	src/decoder/plugins/OggUtil.hxx \
@@ -904,13 +904,13 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/OpusDecoderPlugin.h
 endif
 
-if HAVE_WAVPACK
+if ENABLE_WAVPACK
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/WavpackDecoderPlugin.cxx \
 	src/decoder/plugins/WavpackDecoderPlugin.hxx
 endif
 
-if HAVE_ADPLUG
+if ENABLE_ADPLUG
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/AdPlugDecoderPlugin.cxx \
 	src/decoder/plugins/AdPlugDecoderPlugin.h
@@ -934,7 +934,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/VorbisDecoderPlugin.cxx src/decoder/plugins/VorbisDecoderPlugin.h
 endif
 
-if HAVE_FLAC
+if ENABLE_FLAC
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/FlacInput.cxx src/decoder/plugins/FlacInput.hxx \
 	src/decoder/plugins/FlacIOHandle.cxx src/decoder/plugins/FlacIOHandle.hxx \
@@ -946,7 +946,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/FlacDecoderPlugin.h
 endif
 
-if HAVE_AUDIOFILE
+if ENABLE_AUDIOFILE
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/AudiofileDecoderPlugin.cxx \
 	src/decoder/plugins/AudiofileDecoderPlugin.hxx
@@ -958,7 +958,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/MikmodDecoderPlugin.hxx
 endif
 
-if HAVE_MODPLUG
+if ENABLE_MODPLUG
 libmodplug_decoder_plugin_a_SOURCES = \
 	src/decoder/plugins/ModplugDecoderPlugin.cxx \
 	src/decoder/plugins/ModplugDecoderPlugin.hxx
@@ -992,7 +992,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/WildmidiDecoderPlugin.hxx
 endif
 
-if HAVE_FFMPEG
+if ENABLE_FFMPEG
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/FfmpegMetaData.cxx \
 	src/decoder/plugins/FfmpegMetaData.hxx \
@@ -1055,13 +1055,13 @@ libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/WaveEncoderPlugin.hxx
 endif
 
-if ENABLE_VORBIS_ENCODER
+if ENABLE_VORBISENC
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/VorbisEncoderPlugin.cxx \
 	src/encoder/plugins/VorbisEncoderPlugin.hxx
 endif
 
-if HAVE_OPUS
+if ENABLE_OPUS
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/OpusEncoderPlugin.cxx \
 	src/encoder/plugins/OpusEncoderPlugin.hxx
@@ -1073,7 +1073,7 @@ libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/LameEncoderPlugin.hxx
 endif
 
-if ENABLE_TWOLAME_ENCODER
+if ENABLE_TWOLAME
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/TwolameEncoderPlugin.cxx \
 	src/encoder/plugins/TwolameEncoderPlugin.hxx
@@ -1085,7 +1085,7 @@ libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/FlacEncoderPlugin.hxx
 endif
 
-if ENABLE_SHINE_ENCODER
+if ENABLE_SHINE
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/ShineEncoderPlugin.cxx \
 	src/encoder/plugins/ShineEncoderPlugin.hxx
@@ -1151,7 +1151,7 @@ INPUT_LIBS = \
 	$(DESPOTIFY_LIBS) \
 	$(MMS_LIBS)
 
-if HAVE_ALSA
+if ENABLE_ALSA
 libinput_a_SOURCES += \
 	src/input/plugins/AlsaInputPlugin.cxx \
 	src/input/plugins/AlsaInputPlugin.hxx
@@ -1184,7 +1184,7 @@ libinput_a_SOURCES += \
 	src/input/plugins/CdioParanoiaInputPlugin.hxx
 endif
 
-if HAVE_FFMPEG
+if ENABLE_FFMPEG
 libinput_a_SOURCES += \
 	src/input/plugins/FfmpegInputPlugin.cxx src/input/plugins/FfmpegInputPlugin.hxx
 endif
@@ -1263,7 +1263,7 @@ libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(PULSE_CFLAGS)
 
-if HAVE_ALSA
+if ENABLE_ALSA
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/AlsaOutputPlugin.cxx \
 	src/output/plugins/AlsaOutputPlugin.hxx
@@ -1281,14 +1281,14 @@ liboutput_plugins_a_SOURCES += \
 OUTPUT_LIBS += -lOpenSLES
 endif
 
-if HAVE_ROAR
+if ENABLE_ROAR
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/RoarOutputPlugin.cxx \
 	src/output/plugins/RoarOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += src/mixer/plugins/RoarMixerPlugin.cxx
 endif
 
-if HAVE_AO
+if ENABLE_AO
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/AoOutputPlugin.cxx \
 	src/output/plugins/AoOutputPlugin.hxx
@@ -1306,7 +1306,7 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/PipeOutputPlugin.hxx
 endif
 
-if HAVE_JACK
+if ENABLE_JACK
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/JackOutputPlugin.cxx \
 	src/output/plugins/JackOutputPlugin.hxx
@@ -1331,7 +1331,7 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/OSXOutputPlugin.hxx
 endif
 
-if HAVE_PULSE
+if ENABLE_PULSE
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/PulseOutputPlugin.cxx \
 	src/output/plugins/PulseOutputPlugin.hxx
@@ -1422,7 +1422,7 @@ libplaylist_plugins_a_SOURCES += \
 PLAYLIST_LIBS += $(YAJL_LIBS)
 endif
 
-if HAVE_EXPAT
+if ENABLE_EXPAT
 libplaylist_plugins_a_SOURCES += \
 	src/lib/expat/ExpatParser.cxx src/lib/expat/ExpatParser.hxx \
 	src/playlist/plugins/XspfPlaylistPlugin.cxx \
@@ -1542,7 +1542,7 @@ if HAVE_ID3TAG
 noinst_PROGRAMS += test/dump_rva2
 endif
 
-if HAVE_ALSA
+if ENABLE_ALSA
 # this debug program is still ALSA specific
 noinst_PROGRAMS += test/read_mixer
 endif
@@ -1590,7 +1590,7 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/TagSave.cxx \
 	src/SongFilter.cxx
 
-if HAVE_LIBUPNP
+if ENABLE_UPNP
 test_DumpDatabase_SOURCES += src/lib/expat/ExpatParser.cxx
 endif
 
@@ -1647,7 +1647,7 @@ test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	libthread.a \
 	libutil.a
 
-if HAVE_LIBUPNP
+if ENABLE_UPNP
 test_run_neighbor_explorer_SOURCES += src/lib/expat/ExpatParser.cxx
 endif
 
@@ -1680,7 +1680,7 @@ test_visit_archive_SOURCES = test/visit_archive.cxx \
 
 endif
 
-if HAVE_ZLIB
+if ENABLE_ZLIB
 
 noinst_PROGRAMS += test/run_gzip test/run_gunzip
 
@@ -1742,7 +1742,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	src/DetachedSong.cxx
 
-if HAVE_FLAC
+if ENABLE_FLAC
 test_dump_playlist_SOURCES += \
 	src/ReplayGainInfo.cxx \
 	src/decoder/plugins/FlacMetadata.cxx
@@ -1843,7 +1843,7 @@ test_run_encoder_LDADD = \
 	$(GLIB_LIBS)
 endif
 
-if ENABLE_VORBIS_ENCODER
+if ENABLE_VORBISENC
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	test/stdbin.h \

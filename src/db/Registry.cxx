@@ -28,10 +28,10 @@
 
 const DatabasePlugin *const database_plugins[] = {
 	&simple_db_plugin,
-#ifdef HAVE_LIBMPDCLIENT
+#ifdef ENABLE_LIBMPDCLIENT
 	&proxy_db_plugin,
 #endif
-#ifdef HAVE_LIBUPNP
+#ifdef ENABLE_UPNP
 	&upnp_db_plugin,
 #endif
 	nullptr

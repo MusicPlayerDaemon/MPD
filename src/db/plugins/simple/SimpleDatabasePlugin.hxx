@@ -39,7 +39,7 @@ class SimpleDatabase : public Database {
 	AllocatedPath path;
 	std::string path_utf8;
 
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	bool compress;
 #endif
 

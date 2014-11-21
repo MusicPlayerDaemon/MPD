@@ -34,7 +34,7 @@ class BufferedReader;
 class TextFile {
 	FileReader *const file_reader;
 
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	AutoGunzipReader *const gunzip_reader;
 #endif
 

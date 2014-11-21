@@ -41,7 +41,7 @@ static const char *remoteUrlPrefixes[] = {
 	"mmst://",
 	"mmsu://",
 #endif
-#ifdef HAVE_FFMPEG
+#ifdef ENABLE_FFMPEG
 	"gopher://",
 	"rtp://",
 	"rtsp://",
@@ -61,7 +61,7 @@ static const char *remoteUrlPrefixes[] = {
 #ifdef ENABLE_DESPOTIFY
 	"spt://",
 #endif
-#ifdef HAVE_ALSA
+#ifdef ENABLE_ALSA
 	"alsa://",
 #endif
 	NULL

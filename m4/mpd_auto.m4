@@ -77,3 +77,30 @@ AC_DEFUN([MPD_AUTO_LIB], [
 
 	MPD_AUTO_RESULT([$1], [$7], [$8])
 ])
+
+dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_PKG
+dnl
+dnl Parameters: varname1, varname2, pkg, description, errmsg, default, pre
+AC_DEFUN([MPD_ENABLE_AUTO_PKG], [
+	AC_ARG_ENABLE(translit([$1], [_], [-]),
+		AS_HELP_STRING([--enable-]translit([$1], [_], [-]),
+			[enable $4 (default: auto)]),,
+		[enable_$1=]ifelse([$6], [], [auto], [$6]))
+
+	$7
+
+	MPD_AUTO_PKG($1, $2, $3, $4, $5)
+	if test x$[]enable_$1 = xyes; then
+		AC_DEFINE(ENABLE_$2, 1,
+			[Define to enable $4])
+	fi
+	AM_CONDITIONAL(ENABLE_$2, test x$[]enable_$1 = xyes)
+])
+
+dnl Wrapper for MPD_ENABLE_AUTO_PKG and MPD_DEPENDS
+dnl
+dnl Parameters: varname1, varname2, pkg, description, errmsg, default, dep_variable, dep_errmsg
+AC_DEFUN([MPD_ENABLE_AUTO_PKG_DEPENDS], [
+	MPD_ENABLE_AUTO_PKG([$1], [$2], [$3], [$4], [$5], [$6],
+		[MPD_DEPENDS([enable_$1], [$7], [$8])])
+])

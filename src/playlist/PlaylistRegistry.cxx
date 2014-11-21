@@ -49,7 +49,7 @@ const struct playlist_plugin *const playlist_plugins[] = {
 	// TODO: enable without GLib
 	&pls_playlist_plugin,
 #endif
-#ifdef HAVE_EXPAT
+#ifdef ENABLE_EXPAT
 	&xspf_playlist_plugin,
 	&asx_playlist_plugin,
 	&rss_playlist_plugin,

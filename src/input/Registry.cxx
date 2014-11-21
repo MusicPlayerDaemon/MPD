@@ -22,7 +22,7 @@
 #include "util/Macros.hxx"
 #include "plugins/FileInputPlugin.hxx"
 
-#ifdef HAVE_ALSA
+#ifdef ENABLE_ALSA
 #include "plugins/AlsaInputPlugin.hxx"
 #endif
 
@@ -34,7 +34,7 @@
 #include "plugins/CurlInputPlugin.hxx"
 #endif
 
-#ifdef HAVE_FFMPEG
+#ifdef ENABLE_FFMPEG
 #include "plugins/FfmpegInputPlugin.hxx"
 #endif
 
@@ -60,7 +60,7 @@
 
 const InputPlugin *const input_plugins[] = {
 	&input_plugin_file,
-#ifdef HAVE_ALSA
+#ifdef ENABLE_ALSA
 	&input_plugin_alsa,
 #endif
 #ifdef ENABLE_ARCHIVE
@@ -69,7 +69,7 @@ const InputPlugin *const input_plugins[] = {
 #ifdef ENABLE_CURL
 	&input_plugin_curl,
 #endif
-#ifdef HAVE_FFMPEG
+#ifdef ENABLE_FFMPEG
 	&input_plugin_ffmpeg,
 #endif
 #ifdef ENABLE_SMBCLIENT

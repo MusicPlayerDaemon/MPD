@@ -44,7 +44,7 @@ using std::endl;
 
 #include <stdlib.h>
 
-#ifdef HAVE_LIBUPNP
+#ifdef ENABLE_UPNP
 #include "input/InputStream.hxx"
 size_t
 InputStream::LockRead(void *, size_t, Error &)
