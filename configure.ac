@@ -195,8 +195,19 @@ dnl ---------------------------------------------------------------------------
 
 AC_SEARCH_LIBS([clock_gettime], [rt])
 
-AC_SEARCH_LIBS([syslog], [bsd socket inet],
-	[AC_DEFINE(HAVE_SYSLOG, 1, [Define if syslog() is available])])
+AC_ARG_ENABLE(syslog,
+	AS_HELP_STRING([--enable-syslog],
+		[enable syslog support (default: auto)]),,
+	enable_syslog=auto)
+if test x$enable_syslog != xno; then
+	AC_SEARCH_LIBS([syslog], [bsd socket inet],
+		[found_syslog=yes],
+		[found_syslog=no])
+fi
+MPD_AUTO_RESULT([syslog], [syslog support], [syslog() not available])
+if test x$enable_syslog = xyes; then
+	AC_DEFINE(HAVE_SYSLOG, 1, [Define if syslog() is available])
+fi
 
 AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
