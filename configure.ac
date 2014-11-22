@@ -306,11 +306,6 @@ AC_ARG_ENABLE(bzip2,
 		[enable bzip2 archive support (default: auto)]),,
 	enable_bzip2=auto)
 
-AC_ARG_ENABLE(smbclient,
-	AS_HELP_STRING([--enable-smbclient],
-		[enable support for libsmbclient (default: auto)]),,
-	[enable_smbclient=auto])
-
 default_enable_daemon=yes
 if test x$host_is_android = xyes || test x$host_is_android = xyes; then
 	default_enable_daemon=no
@@ -358,11 +353,6 @@ AC_ARG_ENABLE(httpd-output,
 MPD_DEPENDS([enable_httpd_output], [enable_glib],
 	[Cannot use --enable-httpd-output with --disable-glib])
 
-AC_ARG_ENABLE(id3,
-	AS_HELP_STRING([--enable-id3],
-		[enable id3 support]),,
-	enable_id3=auto)
-
 AC_ARG_ENABLE(inotify,
 	AS_HELP_STRING([--disable-inotify],
 		[disable support Inotify automatic database update (default: enabled) ]),,
@@ -388,11 +378,6 @@ AC_ARG_ENABLE(lame-encoder,
 AC_ARG_ENABLE([libwrap],
 	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
 	[enable_libwrap=auto])
-
-AC_ARG_ENABLE(mad,
-	AS_HELP_STRING([--enable-mad],
-		[enable libmad mp3 decoder plugin]),,
-	enable_mad=auto)
 
 AC_ARG_ENABLE(mikmod,
 	AS_HELP_STRING([--enable-mikmod],
@@ -686,13 +671,9 @@ dnl Metadata Plugins
 dnl ---------------------------------------------------------------------------
 
 dnl -------------------------------- libid3tag --------------------------------
-MPD_AUTO_PKG_LIB(id3, ID3TAG, id3tag, id3tag, id3_file_open, [-lid3tag -lz], [],
+MPD_ENABLE_AUTO_PKG_LIB(id3, ID3TAG,
+	id3tag, id3tag, id3_file_open, [-lid3tag -lz], [],
 	[id3tag], [libid3tag not found])
-if test x$enable_id3 = xyes; then
-	AC_DEFINE(HAVE_ID3TAG, 1, [Define to use id3tag])
-fi
-
-AM_CONDITIONAL(HAVE_ID3TAG, test x$enable_id3 = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Autodiscovery
@@ -780,13 +761,9 @@ MPD_ENABLE_AUTO_PKG(curl, CURL, [libcurl >= 7.18],
 	[libcurl HTTP streaming], [libcurl not found])
 
 dnl ----------------------------------- smbclient -----------------------------
-MPD_AUTO_PKG_LIB(smbclient, SMBCLIENT, [smbclient >= 0.2],
+MPD_ENABLE_AUTO_PKG_LIB(smbclient, SMBCLIENT, [smbclient >= 0.2],
 	[smbclient], [smbc_init], [-lsmbclient], [],
 	[smbclient input plugin], [libsmbclient not found])
-if test x$enable_smbclient = xyes; then
-	AC_DEFINE(ENABLE_SMBCLIENT, 1, [Define when libsmbclient is used])
-fi
-AM_CONDITIONAL(ENABLE_SMBCLIENT, test x$enable_smbclient = xyes)
 
 dnl ----------------------------------- NFS -----------------------------
 MPD_ENABLE_AUTO_PKG(nfs, NFS, [libnfs],
@@ -978,13 +955,9 @@ if test x$enable_gme = xyes; then
 fi
 
 dnl ---------------------------------- libmad ---------------------------------
-MPD_AUTO_PKG_LIB(mad, MAD, [mad],
+MPD_ENABLE_AUTO_PKG_LIB(mad, MAD, [mad],
 	mad, mad_stream_init, [-lmad], [],
 	[libmad MP3 decoder plugin], [libmad not found])
-if test x$enable_mad = xyes; then
-	AC_DEFINE(HAVE_MAD, 1, [Define to use libmad])
-fi
-AM_CONDITIONAL(HAVE_MAD, test x$enable_mad = xyes)
 
 enable_shout2="$enable_shout"
 MPD_AUTO_PKG(shout, SHOUT, [shout],

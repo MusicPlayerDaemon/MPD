@@ -49,7 +49,7 @@
 #include <string.h>
 
 const struct DecoderPlugin *const decoder_plugins[] = {
-#ifdef HAVE_MAD
+#ifdef ENABLE_MAD
 	&mad_decoder_plugin,
 #endif
 #ifdef ENABLE_MPG123

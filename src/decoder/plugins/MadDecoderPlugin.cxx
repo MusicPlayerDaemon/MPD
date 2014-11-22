@@ -36,7 +36,7 @@
 
 #include <mad.h>
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 #include <id3tag.h>
 #endif
 
@@ -251,7 +251,7 @@ MadDecoder::FillBuffer()
 	return true;
 }
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 static bool
 parse_id3_replay_gain_info(ReplayGainInfo &rgi,
 			   struct id3_tag *tag)
@@ -285,7 +285,7 @@ parse_id3_replay_gain_info(ReplayGainInfo &rgi,
 }
 #endif
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 gcc_pure
 static MixRampInfo
 parse_id3_mixramp(struct id3_tag *tag)
@@ -317,7 +317,7 @@ parse_id3_mixramp(struct id3_tag *tag)
 inline void
 MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 {
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	id3_byte_t *allocated = nullptr;
 
 	const id3_length_t count = stream.bufend - stream.this_frame;
@@ -369,7 +369,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 	id3_tag_delete(id3_tag);
 
 	delete[] allocated;
-#else /* !HAVE_ID3TAG */
+#else /* !ENABLE_ID3TAG */
 	(void)mpd_tag;
 
 	/* This code is enabled when libid3tag is disabled.  Instead
@@ -386,7 +386,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 #endif
 }
 
-#ifndef HAVE_ID3TAG
+#ifndef ENABLE_ID3TAG
 /**
  * This function emulates libid3tag when it is disabled.  Instead of
  * doing a real analyzation of the frame, it just checks whether the
@@ -402,7 +402,7 @@ id3_tag_query(const void *p0, size_t length)
 		? (p[8] << 7) + p[9] + 10
 		: 0;
 }
-#endif /* !HAVE_ID3TAG */
+#endif /* !ENABLE_ID3TAG */
 
 static enum mp3_action
 RecoverFrameError(struct mad_stream &stream)

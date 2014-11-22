@@ -32,7 +32,7 @@
 
 #include <string.h>
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 #include <id3tag.h>
 #endif
 
@@ -101,7 +101,7 @@ dsdlib_valid_freq(uint32_t samplefreq)
 	}
 }
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 void
 dsdlib_tag_id3(InputStream &is,
 	       const struct tag_handler *handler,

@@ -47,7 +47,7 @@ struct DsfMetaData {
 	unsigned sample_rate, channels;
 	bool bitreverse;
 	offset_type n_blocks;
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	offset_type id3_offset;
 #endif
 };
@@ -111,7 +111,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	if (sizeof(dsf_header) != chunk_size)
 		return false;
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	const offset_type metadata_offset = dsf_header.pmeta.Read();
 #endif
 
@@ -174,7 +174,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 	metadata->n_blocks = data_size / block_size;
 	metadata->channels = channels;
 	metadata->sample_rate = samplefreq;
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	metadata->id3_offset = metadata_offset;
 #endif
 	/* check bits per sample format, determine if bitreverse is needed */
@@ -352,7 +352,7 @@ dsf_scan_stream(InputStream &is,
 						      audio_format.sample_rate);
 	tag_handler_invoke_duration(handler, handler_ctx, songtime);
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	/* Add available tags from the ID3 tag */
 	dsdlib_tag_id3(is, handler, handler_ctx, metadata.id3_offset);
 #endif

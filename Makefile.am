@@ -792,7 +792,7 @@ libtag_a_SOURCES =\
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
 
-if HAVE_ID3TAG
+if ENABLE_ID3TAG
 libtag_a_SOURCES += \
 	src/tag/TagId3.cxx src/tag/TagId3.hxx \
 	src/tag/TagRva2.cxx src/tag/TagRva2.hxx \
@@ -870,7 +870,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/DsdLib.hxx
 endif
 
-if HAVE_MAD
+if ENABLE_MAD
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/MadDecoderPlugin.cxx \
 	src/decoder/plugins/MadDecoderPlugin.hxx
@@ -1538,7 +1538,7 @@ if ENABLE_ARCHIVE
 noinst_PROGRAMS += test/visit_archive
 endif
 
-if HAVE_ID3TAG
+if ENABLE_ID3TAG
 noinst_PROGRAMS += test/dump_rva2
 endif
 
@@ -1796,7 +1796,7 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	$(DECODER_SRC)
 
-if HAVE_ID3TAG
+if ENABLE_ID3TAG
 test_dump_rva2_LDADD = \
 	$(TAG_LIBS) \
 	libutil.a \

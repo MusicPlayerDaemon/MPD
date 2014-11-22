@@ -29,7 +29,7 @@ struct Tag;
 struct id3_tag;
 class Error;
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 
 bool
 tag_id3_scan(Path path_fs,
