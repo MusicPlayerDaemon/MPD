@@ -199,12 +199,10 @@ AC_ARG_ENABLE(syslog,
 	AS_HELP_STRING([--enable-syslog],
 		[enable syslog support (default: auto)]),,
 	enable_syslog=auto)
-if test x$enable_syslog != xno; then
-	AC_SEARCH_LIBS([syslog], [bsd socket inet],
+MPD_AUTO(syslog, [syslog support], [syslog() not available],
+	[AC_SEARCH_LIBS([syslog], [bsd socket inet],
 		[found_syslog=yes],
-		[found_syslog=no])
-fi
-MPD_AUTO_RESULT([syslog], [syslog support], [syslog() not available])
+		[found_syslog=no])])
 if test x$enable_syslog = xyes; then
 	AC_DEFINE(HAVE_SYSLOG, 1, [Define if syslog() is available])
 fi
@@ -774,14 +772,12 @@ MPD_ENABLE_AUTO_PKG(despotify, DESPOTIFY, [despotify],
 	[Despotify support], [despotify not found])
 
 dnl --------------------------------- Soundcloud ------------------------------
-if test x$enable_soundcloud != xno; then
-	PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
+MPD_AUTO([soundcloud], [soundcloud.com support], [libyajl not found],
+	[PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
 		[found_soundcloud=yes],
 		AC_CHECK_LIB([yajl], [yajl_parse_complete],
 			[found_soundcloud=yes YAJL_CFLAGS=-DHAVE_YAJL1 YAJL_LIBS=-lyajl],
-			[found_soundcloud=no]))
-fi
-MPD_AUTO_RESULT([soundcloud], [soundcloud.com support], [libyajl not found])
+			[found_soundcloud=no]))])
 if test x$enable_soundcloud = xyes; then
 	AC_DEFINE(ENABLE_SOUNDCLOUD, 1, [Define when soundcloud is enabled])
 fi

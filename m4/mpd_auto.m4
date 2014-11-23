@@ -35,30 +35,32 @@ AC_DEFUN([MPD_AUTO_RESULT], [
 	fi
 ])
 
-AC_DEFUN([MPD_AUTO_PKG], [
+dnl Parameters: varname1, description, errmsg, check
+AC_DEFUN([MPD_AUTO], [
 	if test x$[]enable_$1 != xno; then
-		PKG_CHECK_MODULES([$2], [$3],
-			[found_$1=yes],
-			[found_$1=no])
+		$4
 	fi
+	MPD_AUTO_RESULT([$1], [$2], [$3])
+])
 
-	MPD_AUTO_RESULT([$1], [$4], [$5])
+AC_DEFUN([MPD_AUTO_PKG], [
+	MPD_AUTO([$1], [$4], [$5],
+		[PKG_CHECK_MODULES([$2], [$3],
+			[found_$1=yes],
+			[found_$1=no])])
 ])
 
 dnl Check with pkg-config first, fall back to AC_CHECK_LIB.
 dnl
 dnl Parameters: varname1, varname2, pkgname, libname, symname, libs, cflags, description, errmsg
 AC_DEFUN([MPD_AUTO_PKG_LIB], [
-	if test x$[]enable_$1 != xno; then
-		PKG_CHECK_MODULES([$2], [$3],
+	MPD_AUTO([$1], [$8], [$9],
+		[PKG_CHECK_MODULES([$2], [$3],
 			[found_$1=yes],
 			AC_CHECK_LIB($4, $5,
 				[found_$1=yes $2_LIBS='$6' $2_CFLAGS='$7'],
 				[found_$1=no],
-				[$6]))
-	fi
-
-	MPD_AUTO_RESULT([$1], [$8], [$9])
+				[$6]))])
 ])
 
 dnl Wrapper for AC_CHECK_LIB.
@@ -68,14 +70,11 @@ AC_DEFUN([MPD_AUTO_LIB], [
 	AC_SUBST([$2_LIBS], [])
 	AC_SUBST([$2_CFLAGS], [])
 
-	if test x$[]enable_$1 != xno; then
-		AC_CHECK_LIB($3, $4,
+	MPD_AUTO([$1], [$7], [$8],
+		[AC_CHECK_LIB($3, $4,
 			[found_$1=yes $2_LIBS='$5' $2_CFLAGS='$6'],
 			[found_$1=no],
-			[$5])
-	fi
-
-	MPD_AUTO_RESULT([$1], [$7], [$8])
+			[$5])])
 ])
 
 dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_PKG
