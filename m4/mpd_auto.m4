@@ -1,7 +1,7 @@
 AC_DEFUN([MPD_AUTO_ENABLED], [
 	if test x$[]enable_$1 = xauto; then
 		AC_MSG_NOTICE([auto-detected $2])
-		enable_$1=no
+		enable_$1=yes
 	fi
 ])
 
