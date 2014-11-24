@@ -5,6 +5,10 @@ ver 0.20 (not yet released)
 * output
   - pulse: set channel map to WAVE-EX
 
+ver 0.19.5 (not yet released)
+* decoder
+  - dsdiff, dsf, opus: fix deadlock while seeking
+
 ver 0.19.4 (2014/11/18)
 * protocol
   - workaround for buggy clients that send "add /"

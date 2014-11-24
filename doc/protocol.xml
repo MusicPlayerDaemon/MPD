@@ -1533,6 +1533,7 @@ OK
               <command>count</command>
               <arg choice="req"><replaceable>TAG</replaceable></arg>
               <arg choice="req"><replaceable>NEEDLE</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
               <arg choice="opt">group</arg>
               <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
             </cmdsynopsis>

@@ -53,7 +53,7 @@ dsdlib_skip_to(Decoder *decoder, InputStream &is,
 	       offset_type offset)
 {
 	if (is.IsSeekable())
-		return is.Seek(offset, IgnoreError());
+		return is.LockSeek(offset, IgnoreError());
 
 	if (is.GetOffset() > offset)
 		return false;
@@ -72,7 +72,7 @@ dsdlib_skip(Decoder *decoder, InputStream &is,
 		return true;
 
 	if (is.IsSeekable())
-		return is.Seek(is.GetOffset() + delta, IgnoreError());
+		return is.LockSeek(is.GetOffset() + delta, IgnoreError());
 
 	if (delta > 1024 * 1024)
 		/* don't skip more than one megabyte; it would be too
