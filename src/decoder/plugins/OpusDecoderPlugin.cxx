@@ -214,7 +214,7 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
 	ogg_stream_clear(&os);
 
 	/* restore the previous file position */
-	is.Seek(old_offset, IgnoreError());
+	is.LockSeek(old_offset, IgnoreError());
 
 	return result;
 }
