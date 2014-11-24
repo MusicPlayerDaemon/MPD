@@ -186,12 +186,13 @@ zzip_input_seek(InputStream *is, InputPlugin::offset_type offset,
 {
 	ZzipInputStream *zis = (ZzipInputStream *)is;
 	zzip_off_t ofs = zzip_seek(zis->file, offset, whence);
-	if (ofs != -1) {
+	if (ofs < 0) {
 		error.Set(zzip_domain, "zzip_seek() has failed");
-		is->offset = ofs;
-		return true;
+		return false;
 	}
-	return false;
+
+	is->offset = ofs;
+	return true;
 }
 
 /* exported structures */

@@ -1,4 +1,6 @@
 ver 0.18.19 (not yet released)
+* archive
+  - zzip: fix crash after seeking
 
 ver 0.18.18 (2014/11/18)
 * decoder
