@@ -1,6 +1,7 @@
 ver 0.19.5 (not yet released)
 * decoder
   - dsdiff, dsf, opus: fix deadlock while seeking
+  - mp4v2: remove because of incompatible license
 
 ver 0.19.4 (2014/11/18)
 * protocol
