@@ -23,14 +23,16 @@
 #include "check.h"
 #include "Connection.hxx"
 #include "Compiler.h"
+#include "event/IdleMonitor.hxx"
 
 #include <boost/intrusive/set.hpp>
+#include <boost/intrusive/slist.hpp>
 
 /**
  * A manager for NFS connections.  Handles multiple connections to
  * multiple NFS servers.
  */
-class NfsManager {
+class NfsManager final : IdleMonitor {
 	struct LookupKey {
 		const char *server;
 		const char *export_name;
@@ -38,6 +40,7 @@ class NfsManager {
 
 	class ManagedConnection final
 		: public NfsConnection,
+		  public boost::intrusive::slist_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
 		  public boost::intrusive::set_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 		NfsManager &manager;
 
@@ -63,8 +66,6 @@ class NfsManager {
 				const LookupKey b) const;
 	};
 
-	EventLoop &loop;
-
 	/**
 	 * Maps server and export_name to #ManagedConnection.
 	 */
@@ -74,9 +75,18 @@ class NfsManager {
 
 	Map connections;
 
+	typedef boost::intrusive::slist<ManagedConnection> List;
+
+	/**
+	 * A list of "garbage" connection objects.  Their destruction
+	 * is postponed because they were thrown into the garbage list
+	 * when callers on the stack were still using them.
+	 */
+	List garbage;
+
 public:
 	NfsManager(EventLoop &_loop)
-		:loop(_loop) {}
+		:IdleMonitor(_loop) {}
 
 	/**
 	 * Must be run from EventLoop's thread.
@@ -86,6 +96,21 @@ public:
 	gcc_pure
 	NfsConnection &GetConnection(const char *server,
 				     const char *export_name);
+
+private:
+	void ScheduleDelete(ManagedConnection &c) {
+		connections.erase(connections.iterator_to(c));
+		garbage.push_front(c);
+		IdleMonitor::Schedule();
+	}
+
+	/**
+	 * Delete all connections on the #garbage list.
+	 */
+	void CollectGarbage();
+
+	/* virtual methods from IdleMonitor */
+	void OnIdle() override;
 };
 
 #endif

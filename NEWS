@@ -1,4 +1,6 @@
 ver 0.19.5 (not yet released)
+* input
+  - nfs: fix crash on connection failure
 * decoder
   - dsdiff, dsf, opus: fix deadlock while seeking
   - mp4v2: remove because of incompatible license
