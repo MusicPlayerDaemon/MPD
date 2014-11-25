@@ -164,6 +164,8 @@ NfsFileReader::OnNfsConnectionFailed(const Error &error)
 {
 	assert(state == State::MOUNT);
 
+	state = State::INITIAL;
+
 	Error copy;
 	copy.Set(error);
 	OnNfsFileError(std::move(copy));
