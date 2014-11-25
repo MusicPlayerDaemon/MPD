@@ -246,6 +246,30 @@ NfsFileReader::OnNfsCallback(unsigned status, void *data)
 void
 NfsFileReader::OnNfsError(Error &&error)
 {
+	switch (state) {
+	case State::INITIAL:
+	case State::DEFER:
+	case State::MOUNT:
+	case State::IDLE:
+		assert(false);
+		gcc_unreachable();
+
+	case State::OPEN:
+		connection->RemoveLease(*this);
+		state = State::INITIAL;
+		break;
+
+	case State::STAT:
+		connection->RemoveLease(*this);
+		connection->Close(fh);
+		state = State::INITIAL;
+		break;
+
+	case State::READ:
+		state = State::IDLE;
+		break;
+	}
+
 	OnNfsFileError(std::move(error));
 }
 
