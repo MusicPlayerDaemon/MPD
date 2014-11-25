@@ -24,6 +24,7 @@
 #include "Lease.hxx"
 #include "Callback.hxx"
 #include "event/DeferredMonitor.hxx"
+#include "Compiler.h"
 
 #include <string>
 
