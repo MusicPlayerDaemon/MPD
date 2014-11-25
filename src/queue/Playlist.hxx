@@ -145,6 +145,12 @@ protected:
 	 */
 	void UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev);
 
+	/**
+	 * Called when the player thread has started playing the
+	 * "queued" song.
+	 */
+	void QueuedSongStarted(PlayerControl &pc);
+
 public:
 	void BeginBulk();
 	void CommitBulk(PlayerControl &pc);

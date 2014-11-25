@@ -63,24 +63,21 @@ playlist_queue_song_order(playlist &playlist, PlayerControl &pc,
 	pc.EnqueueSong(new DetachedSong(song));
 }
 
-/**
- * Called if the player thread has started playing the "queued" song.
- */
-static void
-playlist_song_started(playlist &playlist, PlayerControl &pc)
+inline void
+playlist::QueuedSongStarted(PlayerControl &pc)
 {
 	assert(pc.next_song == nullptr);
-	assert(playlist.queued >= -1);
+	assert(queued >= -1);
 
 	/* queued song has started: copy queued to current,
 	   and notify the clients */
 
-	int current = playlist.current;
-	playlist.current = playlist.queued;
-	playlist.queued = -1;
+	const int old_current = current;
+	current = queued;
+	queued = -1;
 
-	if(playlist.queue.consume)
-		playlist.DeleteOrder(pc, current);
+	if (queue.consume)
+		DeleteOrder(pc, old_current);
 
 	idle_add(IDLE_PLAYER);
 }
@@ -185,7 +182,7 @@ playlist::SyncWithPlayer(PlayerControl &pc)
 		/* check if the player thread has already started
 		   playing the queued song */
 		if (pc_next_song == nullptr && queued != -1)
-			playlist_song_started(*this, pc);
+			QueuedSongStarted(pc);
 
 		pc.Lock();
 		pc_next_song = pc.next_song;
