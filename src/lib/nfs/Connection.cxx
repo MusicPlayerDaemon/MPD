@@ -327,6 +327,10 @@ NfsConnection::DestroyContext()
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
 
+	/* cancel pending DeferredMonitor that was scheduled to notify
+	   new leases */
+	DeferredMonitor::Cancel();
+
 	if (SocketMonitor::IsDefined())
 		SocketMonitor::Cancel();
 
