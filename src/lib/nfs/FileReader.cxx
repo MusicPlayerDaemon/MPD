@@ -56,7 +56,17 @@ NfsFileReader::Close()
 		return;
 	}
 
+	/* this cancels State::MOUNT */
 	connection->RemoveLease(*this);
+
+	CancelOrClose();
+}
+
+void
+NfsFileReader::CancelOrClose()
+{
+	assert(state != State::INITIAL &&
+	       state != State::DEFER);
 
 	if (state == State::IDLE)
 		/* no async operation in progress: can close

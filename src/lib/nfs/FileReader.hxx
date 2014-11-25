@@ -76,6 +76,12 @@ protected:
 	virtual void OnNfsFileError(Error &&error) = 0;
 
 private:
+	/**
+	 * Cancel the current operation, if any.  The NfsLease must be
+	 * unregistered already.
+	 */
+	void CancelOrClose();
+
 	void OpenCallback(nfsfh *_fh);
 	void StatCallback(const struct stat *st);
 
