@@ -186,7 +186,7 @@ NfsFileReader::OnNfsConnectionDisconnected(const Error &error)
 {
 	assert(state > State::MOUNT);
 
-	state = State::INITIAL;
+	CancelOrClose();
 
 	Error copy;
 	copy.Set(error);
