@@ -182,6 +182,10 @@ handle_status(Client &client,
 			      player_status.elapsed_time.ToDoubleS(),
 			      player_status.bit_rate);
 
+		if (!player_status.total_time.IsNegative())
+			client_printf(client, "duration: %1.3f\n",
+				      player_status.total_time.ToDoubleS());
+
 		if (player_status.audio_format.IsDefined()) {
 			struct audio_format_string af_string;
 

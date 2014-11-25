@@ -517,6 +517,15 @@
               </listitem>
               <listitem>
                 <para>
+                  <varname>duration</varname>:
+                  <footnote id="since_0_20"><simpara>Introduced with <application>MPD</application> 0.20</simpara></footnote>
+                  <returnvalue>
+                    Duration of the current song in seconds.
+                  </returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
                   <varname>bitrate</varname>:
                   <returnvalue>instantaneous bitrate in
                   kbps</returnvalue>
