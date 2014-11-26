@@ -119,9 +119,6 @@ For AdLib playback.
 despotify - https://github.com/SimonKagstrom/despotify
 For Spotify playback.
 
-MP4v2 - https://code.google.com/p/mp4v2/
-For MP4 playback. You will need FAAD2.
-
 
 Optional Miscellaneous Dependencies
 -----------------------------------

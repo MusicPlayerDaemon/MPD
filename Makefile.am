@@ -833,7 +833,6 @@ libdecoder_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(WAVPACK_CFLAGS) \
 	$(MAD_CFLAGS) \
 	$(MPG123_CFLAGS) \
-	$(MP4V2_CFLAGS) \
 	$(OPUS_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(MPCDEC_CFLAGS) \
@@ -853,7 +852,6 @@ DECODER_LIBS = \
 	$(WAVPACK_LIBS) \
 	$(MAD_LIBS) \
 	$(MPG123_LIBS) \
-	$(MP4V2_LIBS) \
 	$(OPUS_LIBS) \
 	$(FFMPEG_LIBS2) \
 	$(MPCDEC_LIBS) \
@@ -966,12 +964,6 @@ libmodplug_decoder_plugin_a_CXXFLAGS = $(AM_CXXFLAGS) $(MODPLUG_CFLAGS)
 libmodplug_decoder_plugin_a_CPPFLAGS = $(AM_CPPFLAGS)
 noinst_LIBRARIES += libmodplug_decoder_plugin.a
 DECODER_LIBS += libmodplug_decoder_plugin.a $(MODPLUG_LIBS)
-endif
-
-if HAVE_MP4V2
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/Mp4v2DecoderPlugin.cxx \
-	src/decoder/plugins/Mp4v2DecoderPlugin.hxx
 endif
 
 if ENABLE_SIDPLAY
@@ -2193,4 +2185,11 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard scripts/*.sh) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	systemd/mpd.socket \
+	android/AndroidManifest.xml \
+	android/build.py \
+	android/custom_rules.xml \
+	android/res/values/strings.xml \
+	android/src/Bridge.java \
+	android/src/Loader.java \
+	android/src/Main.java \
 	src/win32/mpd_win32_rc.rc.in src/win32/mpd.ico

@@ -327,6 +327,10 @@ NfsConnection::DestroyContext()
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
 
+	/* cancel pending DeferredMonitor that was scheduled to notify
+	   new leases */
+	DeferredMonitor::Cancel();
+
 	if (SocketMonitor::IsDefined())
 		SocketMonitor::Cancel();
 
@@ -405,10 +409,10 @@ NfsConnection::OnSocketReady(unsigned flags)
 		error.Format(nfs_domain, "NFS connection has failed: %s",
 			     nfs_get_error(context));
 
+		BroadcastError(std::move(error));
+
 		DestroyContext();
 		closed = true;
-
-		BroadcastError(std::move(error));
 	} else if (SocketMonitor::IsDefined() && nfs_get_fd(context) < 0) {
 		/* this happens when rpc_reconnect_requeue() is called
 		   after the connection broke, but autoreconnet was
@@ -421,10 +425,10 @@ NfsConnection::OnSocketReady(unsigned flags)
 			error.Format(nfs_domain,
 				     "NFS socket disappeared: %s", msg);
 
+		BroadcastError(std::move(error));
+
 		DestroyContext();
 		closed = true;
-
-		BroadcastError(std::move(error));
 	}
 
 	assert(in_event);

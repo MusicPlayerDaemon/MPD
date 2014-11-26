@@ -43,6 +43,8 @@
 
 #include <alsa/asoundlib.h>
 
+#include <atomic>
+
 #include <assert.h>
 #include <string.h>
 

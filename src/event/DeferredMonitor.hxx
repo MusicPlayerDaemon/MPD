@@ -21,9 +21,6 @@
 #define MPD_SOCKET_DEFERRED_MONITOR_HXX
 
 #include "check.h"
-#include "Compiler.h"
-
-#include <atomic>
 
 class EventLoop;
 
