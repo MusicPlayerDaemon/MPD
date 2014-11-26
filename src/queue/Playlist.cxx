@@ -68,6 +68,7 @@ playlist::QueuedSongStarted(PlayerControl &pc)
 {
 	assert(pc.next_song == nullptr);
 	assert(queued >= -1);
+	assert(current >= 0);
 
 	/* queued song has started: copy queued to current,
 	   and notify the clients */
