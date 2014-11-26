@@ -1,4 +1,4 @@
-ver 0.19.5 (not yet released)
+ver 0.19.5 (2014/11/26)
 * input
   - nfs: fix crash on connection failure
 * archive
