@@ -146,10 +146,21 @@ protected:
 	void UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev);
 
 	/**
+	 * Queue a song, addressed by its order number.
+	 */
+	void QueueSongOrder(PlayerControl &pc, unsigned order);
+
+	/**
 	 * Called when the player thread has started playing the
 	 * "queued" song.
 	 */
 	void QueuedSongStarted(PlayerControl &pc);
+
+	/**
+	 * The player has stopped for some reason.  Check the error,
+	 * and decide whether to re-start playback.
+	 */
+	void ResumePlayback(PlayerControl &pc);
 
 public:
 	void BeginBulk();
