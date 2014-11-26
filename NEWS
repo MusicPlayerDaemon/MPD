@@ -1,4 +1,4 @@
-ver 0.18.19 (not yet released)
+ver 0.18.19 (2014/11/26)
 * archive
   - zzip: fix crash after seeking
 
