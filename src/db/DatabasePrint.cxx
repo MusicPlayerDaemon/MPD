@@ -169,7 +169,8 @@ db_selection_print(Client &client, const DatabaseSelection &selection,
 			    std::ref(client), base, _1, _2)
 		: VisitPlaylist();
 
-	if (window_start > 0 || window_end < std::numeric_limits<int>::max())
+	if (window_start > 0 ||
+	    window_end < (unsigned)std::numeric_limits<int>::max())
 		s = [s, window_start, window_end, &i](const LightSong &song,
 						      Error &error2){
 			const bool in_window = i >= window_start && i < window_end;
