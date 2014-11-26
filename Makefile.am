@@ -2179,4 +2179,11 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard scripts/*.sh) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	systemd/mpd.socket \
+	android/AndroidManifest.xml \
+	android/build.py \
+	android/custom_rules.xml \
+	android/res/values/strings.xml \
+	android/src/Bridge.java \
+	android/src/Loader.java \
+	android/src/Main.java \
 	src/win32/mpd_win32_rc.rc.in src/win32/mpd.ico
