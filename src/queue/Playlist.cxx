@@ -60,6 +60,12 @@ playlist::QueueSongOrder(PlayerControl &pc, unsigned order)
 	pc.EnqueueSong(new DetachedSong(song));
 }
 
+void
+playlist::SongStarted()
+{
+	assert(current >= 0);
+}
+
 inline void
 playlist::QueuedSongStarted(PlayerControl &pc)
 {
@@ -78,6 +84,8 @@ playlist::QueuedSongStarted(PlayerControl &pc)
 		DeleteOrder(pc, old_current);
 
 	idle_add(IDLE_PLAYER);
+
+	SongStarted();
 }
 
 const DetachedSong *
@@ -152,6 +160,8 @@ playlist::PlayOrder(PlayerControl &pc, int order)
 
 	pc.Play(new DetachedSong(song));
 	current = order;
+
+	SongStarted();
 }
 
 void
