@@ -1,6 +1,8 @@
 ver 0.19.5 (not yet released)
 * input
   - nfs: fix crash on connection failure
+* archive
+  - zzip: fix crash after seeking
 * decoder
   - dsdiff, dsf, opus: fix deadlock while seeking
   - mp4v2: remove because of incompatible license
@@ -135,6 +137,10 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.19 (2014/11/26)
+* archive
+  - zzip: fix crash after seeking
 
 ver 0.18.18 (2014/11/18)
 * decoder
