@@ -64,6 +64,10 @@ void
 playlist::SongStarted()
 {
 	assert(current >= 0);
+
+	/* reset a song's "priority" when playback starts */
+	if (queue.SetPriority(queue.OrderToPosition(current), 0, -1, false))
+		OnModified();
 }
 
 inline void
