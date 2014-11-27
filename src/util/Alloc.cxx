@@ -84,7 +84,7 @@ FillLengths(size_t *lengths, const char *a, Args&&... args)
 
 template<>
 inline size_t
-FillLengths(gcc_unused size_t *lengths, const char *a)
+FillLengths(size_t *lengths, const char *a)
 {
 	return *lengths = strlen(a);
 }
