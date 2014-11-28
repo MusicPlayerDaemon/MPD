@@ -114,7 +114,7 @@ public:
 	}
 };
 
-#if defined(__clang__) || GCC_VERSION >= 40700
+#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
 #pragma GCC diagnostic pop
 #endif
 
