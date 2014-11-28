@@ -314,8 +314,8 @@ thirdparty_libs = [
     ),
 
     AutotoolsProject(
-        'https://svn.xiph.org/releases/flac/flac-1.3.0.tar.xz',
-        '13b5c214cee8373464d3d65dee362cdd',
+        'http://downloads.xiph.org/releases/flac/flac-1.3.1.tar.xz',
+        'b9922c9a0378c88d3e901b234f852698',
         'lib/libFLAC.a',
         [
             '--disable-shared', '--enable-static',
