@@ -28,8 +28,13 @@
 #define GCC_VERSION 0
 #endif
 
+/**
+ * Are we building with the specified version of gcc (not clang or any
+ * other compiler) or newer?
+ */
 #define GCC_CHECK_VERSION(major, minor) \
-	(defined(__GNUC__) && GCC_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
+	(defined(__GNUC__) && !defined(__clang__) && \
+	 GCC_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
 
 /**
  * Are we building with clang (any version) or at least the specified
@@ -138,7 +143,7 @@
 
 #endif /* ! GCC_UNUSED >= 40300 */
 
-#if GCC_CHECK_VERSION(4,6) && !defined(__clang__)
+#if GCC_CHECK_VERSION(4,6)
 #define gcc_flatten __attribute__((flatten))
 #else
 #define gcc_flatten

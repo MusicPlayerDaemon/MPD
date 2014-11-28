@@ -111,7 +111,7 @@ AllocatedPath::ChopSeparators()
 	while (l >= 2 && PathTraitsFS::IsSeparator(p[l - 1])) {
 		--l;
 
-#if GCC_CHECK_VERSION(4,7) && !defined(__clang__)
+#if GCC_CHECK_VERSION(4,7)
 		value.pop_back();
 #else
 		value.erase(value.end() - 1, value.end());
