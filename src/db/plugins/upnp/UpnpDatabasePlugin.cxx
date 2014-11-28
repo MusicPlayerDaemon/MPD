@@ -749,7 +749,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 
 			const char *value = dirent.tag.GetValue(tag);
 			if (value != nullptr) {
-#if defined(__clang__) || GCC_CHECK_VERSION(4,8)
+#if CLANG_OR_GCC_VERSION(4,8)
 				values.emplace(value);
 #else
 				values.insert(value);

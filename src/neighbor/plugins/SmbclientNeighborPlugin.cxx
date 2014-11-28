@@ -216,7 +216,7 @@ SmbclientNeighborExplorer::Run()
 			prev = i;
 		} else {
 			/* can't see it anymore: move to "lost" */
-#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+#if CLANG_OR_GCC_VERSION(4,7)
 			lost.splice_after(lost.before_begin(), list, prev);
 #else
 			/* the forward_list::splice_after() lvalue

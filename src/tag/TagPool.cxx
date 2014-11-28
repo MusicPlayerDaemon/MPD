@@ -91,7 +91,7 @@ calc_hash(TagType type, const char *p)
 	return hash ^ type;
 }
 
-#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+#if CLANG_OR_GCC_VERSION(4,7)
 	constexpr
 #endif
 static inline TagPoolSlot *

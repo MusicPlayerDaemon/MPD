@@ -32,6 +32,13 @@
 	(defined(__GNUC__) && GCC_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
 
 /**
+ * Are we building with clang (any version) or at least the specified
+ * gcc version?
+ */
+#define CLANG_OR_GCC_VERSION(major, minor) \
+	(defined(__clang__) || GCC_CHECK_VERSION(major, minor))
+
+/**
  * Are we building with gcc (not clang or any other compiler) and a
  * version older than the specified one?
  */
@@ -59,7 +66,7 @@
 	(defined(__clang__) && \
 	 CLANG_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
 
-#if GCC_CHECK_VERSION(4,0)
+#if CLANG_OR_GCC_VERSION(4,0)
 
 /* GCC 4.x */
 
@@ -119,7 +126,7 @@
 
 #endif
 
-#if GCC_CHECK_VERSION(4,3)
+#if CLANG_OR_GCC_VERSION(4,3)
 
 #define gcc_hot __attribute__((hot))
 #define gcc_cold __attribute__((cold))
@@ -140,7 +147,7 @@
 #ifndef __cplusplus
 /* plain C99 has "restrict" */
 #define gcc_restrict restrict
-#elif GCC_CHECK_VERSION(4,0)
+#elif CLANG_OR_GCC_VERSION(4,0)
 /* "__restrict__" is a GCC extension for C++ */
 #define gcc_restrict __restrict__
 #else
@@ -158,7 +165,7 @@
 #define final
 #endif
 
-#if defined(__clang__) || GCC_CHECK_VERSION(4,8)
+#if CLANG_OR_GCC_VERSION(4,8)
 #define gcc_alignas(T, fallback) alignas(T)
 #else
 #define gcc_alignas(T, fallback) gcc_aligned(fallback)

@@ -153,7 +153,7 @@ public:
 	HttpdOutput(EventLoop &_loop);
 	~HttpdOutput();
 
-#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+#if CLANG_OR_GCC_VERSION(4,7)
 	constexpr
 #endif
 	static HttpdOutput *Cast(AudioOutput *ao) {

@@ -84,7 +84,7 @@ ContainerAttributeOffset(const A C::*p)
  * Cast the given pointer to a struct member to its parent structure.
  */
 template<class C, class A>
-#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+#if CLANG_OR_GCC_VERSION(4,7)
 constexpr
 #endif
 static inline C &
@@ -97,7 +97,7 @@ ContainerCast(A &a, A C::*member)
  * Cast the given pointer to a struct member to its parent structure.
  */
 template<class C, class A>
-#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+#if CLANG_OR_GCC_VERSION(4,7)
 constexpr
 #endif
 static inline const C &
