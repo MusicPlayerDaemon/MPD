@@ -20,22 +20,20 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#define GCC_MAKE_VERSION(major, minor, patchlevel) ((major) * 10000 + (minor) * 100 + patchlevel)
+
 #define GCC_CHECK_VERSION(major, minor) \
   (defined(__GNUC__) &&                                                 \
    (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
 
 #ifdef __GNUC__
-#define GCC_VERSION (__GNUC__ * 10000 \
-                     + __GNUC_MINOR__ * 100 \
-                     + __GNUC_PATCHLEVEL__)
+#define GCC_VERSION GCC_MAKE_VERSION(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__)
 #else
 #define GCC_VERSION 0
 #endif
 
 #ifdef __clang__
-#  define CLANG_VERSION (__clang_major__ * 10000 \
-			 + __clang_minor__ * 100 \
-			 + __clang_patchlevel__)
+#  define CLANG_VERSION GCC_MAKE_VERSION(__clang_major__, __clang_minor__, __clang_patchlevel__)
 #  if __clang_major__ < 3
 #    error Sorry, your clang version is too old.  You need at least version 3.1.
 #  endif
