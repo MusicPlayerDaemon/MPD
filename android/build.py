@@ -341,8 +341,8 @@ thirdparty_libs = [
     ),
 
     FfmpegProject(
-        'http://www.ffmpeg.org/releases/ffmpeg-2.2.3.tar.bz2',
-        'dbb5b6b69bd010916f17df0ae596e0b1',
+        'http://ffmpeg.org/releases/ffmpeg-2.4.3.tar.bz2',
+        '8da635baff57d7ab704b1daca5a99b47',
         'lib/libavcodec.a',
         [
             '--disable-shared', '--enable-static',
@@ -366,8 +366,8 @@ thirdparty_libs = [
     ),
 
     AutotoolsProject(
-        'http://curl.haxx.se/download/curl-7.37.0.tar.lzma',
-        '54bfd1eb5214f604186d6f5ac61c7781',
+        'http://curl.haxx.se/download/curl-7.39.0.tar.lzma',
+        'e9aa6dec29920eba8ef706ea5823bad7',
         'lib/libcurl.a',
         [
             '--disable-shared', '--enable-static',
