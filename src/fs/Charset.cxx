@@ -91,7 +91,7 @@ SetFSCharset(const char *charset, Error &error)
 const char *
 GetFSCharset()
 {
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 	return fs_charset.empty() ? "UTF-8" : fs_charset.c_str();
 #else
 	return "UTF-8";

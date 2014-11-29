@@ -32,7 +32,7 @@
 bool
 ConfigureFS(Error &error)
 {
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 	const char *charset = nullptr;
 
 	charset = config_get_string(CONF_FS_CHARSET, nullptr);

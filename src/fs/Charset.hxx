@@ -25,6 +25,10 @@
 
 #include <string>
 
+#ifdef HAVE_GLIB
+#define HAVE_FS_CHARSET
+#endif
+
 class Error;
 
 /**

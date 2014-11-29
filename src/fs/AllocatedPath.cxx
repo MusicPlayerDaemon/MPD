@@ -45,7 +45,7 @@ AllocatedPath::~AllocatedPath() {}
 AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8)
 {
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 	char *path = ::PathFromUTF8(path_utf8);
 	if (path == nullptr)
 		return AllocatedPath::Null();
