@@ -61,3 +61,11 @@ ConfigureFS(Error &error)
 	return true;
 #endif
 }
+
+void
+DeinitFS()
+{
+#ifdef HAVE_FS_CHARSET
+	DeinitFSCharset();
+#endif
+}

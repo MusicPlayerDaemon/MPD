@@ -88,6 +88,11 @@ SetFSCharset(const char *charset, Error &error)
 
 #endif
 
+void
+DeinitFSCharset()
+{
+}
+
 const char *
 GetFSCharset()
 {

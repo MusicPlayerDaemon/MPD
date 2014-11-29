@@ -722,6 +722,8 @@ static int mpd_main_after_fork(struct options options)
 	mapper_finish();
 #endif
 
+	DeinitFS();
+
 	delete instance->partition;
 	command_finish();
 	decoder_plugin_deinit_all();

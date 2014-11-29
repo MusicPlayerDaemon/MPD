@@ -30,4 +30,7 @@ class Error;
 bool
 ConfigureFS(Error &error);
 
+void
+DeinitFS();
+
 #endif

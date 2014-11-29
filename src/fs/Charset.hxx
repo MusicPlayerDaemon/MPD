@@ -41,6 +41,9 @@ GetFSCharset();
 bool
 SetFSCharset(const char *charset, Error &error);
 
+void
+DeinitFSCharset();
+
 /**
  * Convert the path to UTF-8.
  * Returns empty string on error.
