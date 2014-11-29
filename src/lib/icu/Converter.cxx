@@ -19,13 +19,29 @@
 
 #include "config.h"
 #include "Converter.hxx"
+#include "Error.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "util/Macros.hxx"
+#include "util/WritableBuffer.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <string.h>
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_ICU
+#include "Util.hxx"
+#include <unicode/ucnv.h>
+#elif defined(HAVE_GLIB)
+#include "util/Domain.hxx"
 static constexpr Domain g_iconv_domain("g_iconv");
+#endif
+
+#ifdef HAVE_ICU
+
+IcuConverter::~IcuConverter()
+{
+	ucnv_close(converter);
+}
+
 #endif
 
 #ifdef HAVE_ICU_CONVERTER
@@ -33,6 +49,18 @@ static constexpr Domain g_iconv_domain("g_iconv");
 IcuConverter *
 IcuConverter::Create(const char *charset, Error &error)
 {
+#ifdef HAVE_ICU
+	UErrorCode code = U_ZERO_ERROR;
+	UConverter *converter = ucnv_open(charset, &code);
+	if (converter == nullptr) {
+		error.Format(icu_domain, int(code),
+			     "Failed to initialize charset '%s': %s",
+			     charset, u_errorName(code));
+		return nullptr;
+	}
+
+	return new IcuConverter(converter);
+#elif defined(HAVE_GLIB)
 	GIConv to = g_iconv_open("utf-8", charset);
 	GIConv from = g_iconv_open(charset, "utf-8");
 	if (to == (GIConv)-1 || from == (GIConv)-1) {
@@ -46,7 +74,11 @@ IcuConverter::Create(const char *charset, Error &error)
 	}
 
 	return new IcuConverter(to, from);
+#endif
 }
+
+#ifdef HAVE_ICU
+#elif defined(HAVE_GLIB)
 
 static std::string
 DoConvert(GIConv conv, const char *src)
@@ -66,16 +98,72 @@ DoConvert(GIConv conv, const char *src)
 	return std::string(buffer, sizeof(buffer) - out_left);
 }
 
+#endif
+
 std::string
 IcuConverter::ToUTF8(const char *s) const
 {
+#ifdef HAVE_ICU
+	const ScopeLock protect(mutex);
+
+	ucnv_resetToUnicode(converter);
+
+	// TODO: dynamic buffer?
+	UChar buffer[4096], *target = buffer;
+	const char *source = s;
+
+	UErrorCode code = U_ZERO_ERROR;
+
+	ucnv_toUnicode(converter, &target, buffer + ARRAY_SIZE(buffer),
+		       &source, source + strlen(source),
+		       nullptr, true, &code);
+	if (code != U_ZERO_ERROR)
+		return std::string();
+
+	const size_t target_length = target - buffer;
+	const auto u = UCharToUTF8({buffer, target_length});
+	if (u.IsNull())
+		return std::string();
+
+	std::string result(u.data, u.size);
+	delete[] u.data;
+	return result;
+
+#elif defined(HAVE_GLIB)
 	return DoConvert(to_utf8, s);
+#endif
 }
 
 std::string
 IcuConverter::FromUTF8(const char *s) const
 {
+#ifdef HAVE_ICU
+	const ScopeLock protect(mutex);
+
+	const auto u = UCharFromUTF8(s);
+	if (u.IsNull())
+		return std::string();
+
+	ucnv_resetFromUnicode(converter);
+
+	// TODO: dynamic buffer?
+	char buffer[4096], *target = buffer;
+	const UChar *source = u.data;
+	UErrorCode code = U_ZERO_ERROR;
+
+	ucnv_fromUnicode(converter, &target, buffer + ARRAY_SIZE(buffer),
+			 &source, u.end(),
+			 nullptr, true, &code);
+	delete[] u.data;
+
+	if (code != U_ZERO_ERROR)
+		return std::string();
+
+	return std::string(buffer, target);
+
+#elif defined(HAVE_GLIB)
 	return DoConvert(from_utf8, s);
+#endif
 }
 
 #endif

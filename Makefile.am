@@ -465,7 +465,11 @@ libicu_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ICU_CFLAGS)
 
 ICU_LDADD = libicu.a $(ICU_LIBS)
+
+if HAVE_ICU
+else
 ICU_LDADD += $(GLIB_LIBS)
+endif
 
 # PCM library
 

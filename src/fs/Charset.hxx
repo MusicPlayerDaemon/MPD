@@ -25,7 +25,7 @@
 
 #include <string>
 
-#ifdef HAVE_GLIB
+#if defined(HAVE_ICU) || defined(HAVE_GLIB)
 #define HAVE_FS_CHARSET
 #endif
 
