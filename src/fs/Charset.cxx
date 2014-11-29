@@ -35,7 +35,7 @@
 #include <assert.h>
 #include <string.h>
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 
 static constexpr Domain convert_domain("convert");
 
@@ -121,13 +121,13 @@ PathToUTF8(const char *path_fs)
 {
 	assert(path_fs != nullptr);
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 	if (fs_charset.empty()) {
 #endif
 		auto result = std::string(path_fs);
 		FixSeparators(result);
 		return result;
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 	}
 
 	GIConv conv = g_iconv_open("utf-8", fs_charset.c_str());
@@ -155,7 +155,7 @@ PathToUTF8(const char *path_fs)
 #endif
 }
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 
 char *
 PathFromUTF8(const char *path_utf8)
