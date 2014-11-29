@@ -25,6 +25,8 @@
 
 #include <string>
 
+class Error;
+
 /**
  * Gets file system character set name.
  */
@@ -32,8 +34,8 @@ gcc_const
 const char *
 GetFSCharset();
 
-void
-SetFSCharset(const char *charset);
+bool
+SetFSCharset(const char *charset, Error &error);
 
 /**
  * Convert the path to UTF-8.

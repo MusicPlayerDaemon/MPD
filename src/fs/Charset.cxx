@@ -21,9 +21,10 @@
 #include "Charset.hxx"
 #include "Domain.hxx"
 #include "Limits.hxx"
-#include "system/FatalError.hxx"
 #include "Log.hxx"
 #include "Traits.hxx"
+#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #ifdef HAVE_GLIB
 #include <glib.h>
@@ -35,6 +36,8 @@
 #include <string.h>
 
 #ifdef HAVE_GLIB
+
+static constexpr Domain convert_domain("convert");
 
 /**
  * Maximal number of bytes required to represent path name in UTF-8
@@ -50,29 +53,37 @@ static std::string fs_charset;
 
 gcc_pure
 static bool
-IsSupportedCharset(const char *charset)
+CheckCharset(const char *charset, Error &error)
 {
 	/* convert a space to check if the charset is valid */
-	char *test = g_convert(" ", 1, charset, "UTF-8", nullptr, nullptr, nullptr);
-	if (test == nullptr)
+	GError *error2 = nullptr;
+	char *test = g_convert(" ", 1, charset, "UTF-8", nullptr, nullptr, &error2);
+	if (test == nullptr) {
+		error.Set(convert_domain, error2->code, error2->message);
+		g_error_free(error2);
 		return false;
+	}
 
 	g_free(test);
 	return true;
 }
 
-void
-SetFSCharset(const char *charset)
+bool
+SetFSCharset(const char *charset, Error &error)
 {
 	assert(charset != nullptr);
 
-	if (!IsSupportedCharset(charset))
-		FormatFatalError("invalid filesystem charset: %s", charset);
+	if (!CheckCharset(charset, error)) {
+		error.FormatPrefix("Failed to initialize filesystem charset '%s': ",
+				   charset);
+		return false;
+	}
 
 	fs_charset = charset;
 
 	FormatDebug(path_domain,
 		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
+	return true;
 }
 
 #endif

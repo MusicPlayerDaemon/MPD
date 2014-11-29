@@ -22,10 +22,12 @@
 
 #include "check.h"
 
+class Error;
+
 /**
  * Performs global one-time initialization of this class.
  */
-void
-ConfigureFS();
+bool
+ConfigureFS(Error &error);
 
 #endif

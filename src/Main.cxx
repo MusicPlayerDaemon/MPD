@@ -551,7 +551,10 @@ static int mpd_main_after_fork(struct options options)
 	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);
 #endif
 
-	ConfigureFS();
+	if (!ConfigureFS(error)) {
+		LogError(error);
+		return EXIT_FAILURE;
+	}
 
 	if (!glue_mapper_init(error)) {
 		LogError(error);

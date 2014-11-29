@@ -29,8 +29,8 @@
 #include <glib.h>
 #endif
 
-void
-ConfigureFS()
+bool
+ConfigureFS(Error &error)
 {
 #ifdef HAVE_GLIB
 	const char *charset = nullptr;
@@ -55,7 +55,9 @@ ConfigureFS()
 #endif
 	}
 
-	if (charset != nullptr)
-		SetFSCharset(charset);
+	return charset == nullptr || SetFSCharset(charset, error);
+#else
+	(void)error;
+	return true;
 #endif
 }
