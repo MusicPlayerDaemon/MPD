@@ -57,9 +57,9 @@ src_mpd_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
-	$(ICU_LDADD) \
 	libutil.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
@@ -452,6 +452,7 @@ libevent_a_SOURCES = \
 
 libicu_a_SOURCES = \
 	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
+	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx \
 	src/lib/icu/Error.cxx src/lib/icu/Error.hxx
 
 if HAVE_ICU
@@ -1542,6 +1543,7 @@ endif
 test_read_conf_LDADD = \
 	libconf.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1589,6 +1591,7 @@ endif
 test_run_storage_LDADD = \
 	$(STORAGE_LIBS) \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
@@ -1611,6 +1614,7 @@ test_run_input_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
@@ -1635,6 +1639,7 @@ test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	libconf.a \
 	libevent.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libthread.a \
 	libutil.a
@@ -1662,6 +1667,7 @@ test_visit_archive_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
@@ -1687,6 +1693,7 @@ test_run_gunzip_LDADD = \
 	$(GLIB_LIBS) \
 	libutil.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a
 
 endif
@@ -1698,6 +1705,7 @@ test_dump_text_file_LDADD = \
 	libconf.a \
 	libevent.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libthread.a \
 	libutil.a \
@@ -1719,6 +1727,7 @@ test_dump_playlist_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	libpcm.a \
@@ -1750,6 +1759,7 @@ test_run_decoder_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1776,6 +1786,7 @@ test_read_tags_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1802,6 +1813,7 @@ test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	libconf.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1830,6 +1842,7 @@ test_run_encoder_LDADD = \
 	libpcm.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1852,6 +1865,7 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1911,6 +1925,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libconf.a \
 	libevent.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libthread.a \
 	libutil.a \
@@ -1940,6 +1955,7 @@ test_read_mixer_LDADD = \
 	libconf.a \
 	libevent.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -2075,6 +2091,7 @@ test_test_translate_song_LDADD = \
 	$(STORAGE_LIBS) \
 	libtag.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS) \
