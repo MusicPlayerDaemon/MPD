@@ -24,21 +24,6 @@
 #include "util/Error.hxx"
 #include "Compiler.h"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
-#include <string.h>
-
-#ifdef HAVE_GLIB
-
-inline AllocatedPath::AllocatedPath(Donate, pointer _value)
-	:value(_value) {
-	g_free(_value);
-}
-
-#endif
-
 /* no inlining, please */
 AllocatedPath::~AllocatedPath() {}
 
@@ -46,11 +31,7 @@ AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8)
 {
 #ifdef HAVE_FS_CHARSET
-	char *path = ::PathFromUTF8(path_utf8);
-	if (path == nullptr)
-		return AllocatedPath::Null();
-
-	return AllocatedPath(Donate(), path);
+	return AllocatedPath(::PathFromUTF8(path_utf8));
 #else
 	return FromFS(path_utf8);
 #endif

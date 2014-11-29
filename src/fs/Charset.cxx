@@ -157,13 +157,13 @@ PathToUTF8(const char *path_fs)
 
 #ifdef HAVE_FS_CHARSET
 
-char *
+std::string
 PathFromUTF8(const char *path_utf8)
 {
 	assert(path_utf8 != nullptr);
 
 	if (fs_charset.empty())
-		return g_strdup(path_utf8);
+		return path_utf8;
 
 	return g_convert(path_utf8, -1,
 			 fs_charset.c_str(), "utf-8",

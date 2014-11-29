@@ -44,13 +44,6 @@ class AllocatedPath {
 
 	string value;
 
-	struct Donate {};
-
-	/**
-	 * Donate the allocated pointer to a new #AllocatedPath object.
-	 */
-	AllocatedPath(Donate, pointer _value);
-
 	AllocatedPath(const_pointer _value):value(_value) {}
 
 	AllocatedPath(string &&_value):value(std::move(_value)) {}

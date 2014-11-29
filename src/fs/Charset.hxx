@@ -52,8 +52,12 @@ gcc_pure gcc_nonnull_all
 std::string
 PathToUTF8(const char *path_fs);
 
-gcc_malloc gcc_nonnull_all
-char *
+/**
+ * Convert the path from UTF-8.
+ * Returns empty string on error.
+ */
+gcc_pure gcc_nonnull_all
+std::string
 PathFromUTF8(const char *path_utf8);
 
 #endif
