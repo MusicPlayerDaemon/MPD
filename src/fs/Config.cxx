@@ -32,7 +32,7 @@
 void
 ConfigureFS()
 {
-#if defined(HAVE_GLIB) || defined(WIN32)
+#ifdef HAVE_GLIB
 	const char *charset = nullptr;
 
 	charset = config_get_string(CONF_FS_CHARSET, nullptr);
