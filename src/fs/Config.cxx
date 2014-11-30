@@ -46,7 +46,7 @@ ConfigureFS(Error &error)
 		static char win_charset[13];
 		sprintf(win_charset, "cp%u", GetACP());
 		charset = win_charset;
-#else
+#elif defined(HAVE_GLIB)
 		const gchar **encodings;
 		g_get_filename_charsets(&encodings);
 
