@@ -51,6 +51,7 @@ IcuConverter::Create(const char *charset, Error &error)
 static std::string
 DoConvert(GIConv conv, const char *src)
 {
+	// TODO: dynamic buffer?
 	char buffer[4096];
 	char *in = const_cast<char *>(src);
 	char *out = buffer;
