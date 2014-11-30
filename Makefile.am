@@ -457,6 +457,7 @@ libicu_a_SOURCES = \
 
 if HAVE_ICU
 libicu_a_SOURCES += \
+	src/lib/icu/Util.cxx src/lib/icu/Util.hxx \
 	src/lib/icu/Init.cxx src/lib/icu/Init.hxx
 endif
 
