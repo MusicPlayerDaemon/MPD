@@ -250,6 +250,26 @@ ScanGmeInfo(const gme_info_t &info, int song_num, int track_count,
 }
 
 static bool
+ScanMusicEmu(Music_Emu *emu, int song_num,
+	     const struct tag_handler *handler, void *handler_ctx)
+{
+	gme_info_t *ti;
+	const char *gme_err = gme_track_info(emu, &ti, song_num);
+	if (gme_err != nullptr) {
+		LogWarning(gme_domain, gme_err);
+		return false;
+	}
+
+	assert(ti != nullptr);
+
+	ScanGmeInfo(*ti, song_num, gme_track_count(emu),
+		    handler, handler_ctx);
+
+	gme_free_info(ti);
+	return true;
+}
+
+static bool
 gme_scan_file(Path path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
 {
@@ -266,23 +286,11 @@ gme_scan_file(Path path_fs,
 
 	const int song_num = get_song_num(path_fs);
 
-	gme_info_t *ti;
-	gme_err = gme_track_info(emu, &ti, song_num);
-	if (gme_err != nullptr) {
-		LogWarning(gme_domain, gme_err);
-		gme_delete(emu);
-		return false;
-	}
+	const bool result = ScanMusicEmu(emu, song_num, handler, handler_ctx);
 
-	assert(ti != nullptr);
-
-	ScanGmeInfo(*ti, song_num, gme_track_count(emu),
-		    handler, handler_ctx);
-
-	gme_free_info(ti);
 	gme_delete(emu);
 
-	return true;
+	return result;
 }
 
 static const char *const gme_suffixes[] = {
