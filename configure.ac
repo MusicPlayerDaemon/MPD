@@ -780,9 +780,8 @@ AM_CONDITIONAL(ENABLE_SOUNDCLOUD, test x$enable_soundcloud = xyes)
 AC_SUBST(YAJL_LIBS)
 
 dnl ---------------------------------- cdio ---------------------------------
-MPD_ENABLE_AUTO_PKG_DEPENDS(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
-	[libcdio_paranoia input plugin], [libcdio_paranoia not found], [],
-	[enable_glib], [Cannot use --enable-cdio-paranoia with --disable-glib])
+MPD_ENABLE_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
+	[libcdio_paranoia input plugin], [libcdio_paranoia not found])
 if test x$enable_cdio_paranoia = xyes; then
 	AC_CHECK_HEADERS(cdio/paranoia/paranoia.h)
 fi

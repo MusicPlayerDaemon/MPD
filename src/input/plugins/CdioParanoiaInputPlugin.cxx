@@ -39,7 +39,6 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
-#include <glib.h>
 #include <assert.h>
 
 #ifdef HAVE_CDIO_PARANOIA_PARANOIA_H
@@ -149,7 +148,7 @@ parse_cdio_uri(struct cdio_uri *dest, const char *src, Error &error)
 	const char *slash = strrchr(src, '/');
 	if (slash == nullptr) {
 		/* play the whole CD in the specified drive */
-		g_strlcpy(dest->device, src, sizeof(dest->device));
+		CopyString(dest->device, src, sizeof(dest->device));
 		dest->track = -1;
 		return true;
 	}
