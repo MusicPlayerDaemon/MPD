@@ -22,8 +22,8 @@
 #include "Page.hxx"
 #include "tag/Tag.hxx"
 #include "util/FormatString.hxx"
-
-#include <glib.h>
+#include "util/StringUtil.hxx"
+#include "util/Macros.hxx"
 
 #include <string.h>
 
@@ -95,25 +95,14 @@ icy_server_metadata_page(const Tag &tag, const TagType *types)
 
 	// Length + Metadata - "StreamTitle='';StreamUrl='';" = 4081 - 28
 	char stream_title[(1 + 255 - 28) * 16];
+	char *p = stream_title, *const end = stream_title + ARRAY_SIZE(stream_title);
 	stream_title[0] =  '\0';
-	unsigned position = 0;
 
-	while (position < sizeof(stream_title) && item <= last_item) {
-		size_t length = 0;
+	while (p < end && item <= last_item) {
+		p = CopyString(p, tag_items[item++], end - p);
 
-		length = g_strlcpy(stream_title + position,
-				   tag_items[item++],
-				   sizeof(stream_title) - position);
-
-		position += length;
-
-		if (item <= last_item) {
-			length = g_strlcpy(stream_title + position,
-					   " - ",
-					   sizeof(stream_title) - position);
-
-			position += length;
-		}
+		if (item <= last_item)
+			p = CopyString(p, " - ", end - p);
 	}
 
 	char *icy_string = icy_server_metadata_string(stream_title, "");

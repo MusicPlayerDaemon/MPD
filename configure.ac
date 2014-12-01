@@ -348,8 +348,6 @@ AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
 	[enable_httpd_output=auto])
-MPD_DEPENDS([enable_httpd_output], [enable_glib],
-	[Cannot use --enable-httpd-output with --disable-glib])
 
 AC_ARG_ENABLE(inotify,
 	AS_HELP_STRING([--disable-inotify],
