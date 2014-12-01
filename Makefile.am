@@ -465,6 +465,7 @@ libicu_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ICU_CFLAGS)
 
 ICU_LDADD = libicu.a $(ICU_LIBS)
+ICU_LDADD += $(GLIB_LIBS)
 
 # PCM library
 
@@ -1484,7 +1485,8 @@ C_TESTS = \
 	test/test_mixramp \
 	test/test_pcm \
 	test/test_protocol \
-	test/test_queue_priority
+	test/test_queue_priority \
+	test/TestIcu
 
 if ENABLE_CURL
 C_TESTS += test/test_icy_parser
@@ -2118,6 +2120,15 @@ test_test_queue_priority_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_H
 test_test_queue_priority_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_queue_priority_LDADD = \
 	libsystem.a \
+	libutil.a \
+	$(CPPUNIT_LIBS)
+
+test_TestIcu_SOURCES = \
+	test/TestIcu.cxx
+test_TestIcu_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_TestIcu_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_TestIcu_LDADD = \
+	$(ICU_LDADD) \
 	libutil.a \
 	$(CPPUNIT_LIBS)
 
