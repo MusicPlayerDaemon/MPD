@@ -80,7 +80,8 @@ get_container_name(Path path_fs)
  * returns tune number from file.nsf/tune_xxx.* style path or 0 if no subtune
  * is appended.
  */
-static int
+gcc_pure
+static unsigned
 get_song_num(Path path_fs)
 {
 	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
@@ -100,6 +101,8 @@ get_song_num(Path path_fs)
 
 		sub += strlen("/" SUBTUNE_PREFIX);
 		int song_num = strtol(sub, nullptr, 10);
+		if (song_num < 1)
+			return 0;
 
 		return song_num - 1;
 	} else {
@@ -148,7 +151,7 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 	}
 
 	gme_info_t *ti;
-	const int song_num = get_song_num(path_fs);
+	const unsigned song_num = get_song_num(path_fs);
 	gme_err = gme_track_info(emu, &ti, song_num);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
@@ -210,7 +213,7 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 }
 
 static void
-ScanGmeInfo(const gme_info_t &info, int song_num, int track_count,
+ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 	    const struct tag_handler *handler, void *handler_ctx)
 {
 	if (info.length > 0)
@@ -222,7 +225,7 @@ ScanGmeInfo(const gme_info_t &info, int song_num, int track_count,
 			/* start numbering subtunes from 1 */
 			char tag_title[1024];
 			snprintf(tag_title, sizeof(tag_title),
-				 "%s (%d/%d)",
+				 "%s (%u/%d)",
 				 info.song, song_num + 1,
 				 track_count);
 			tag_handler_invoke_tag(handler, handler_ctx,
@@ -250,7 +253,7 @@ ScanGmeInfo(const gme_info_t &info, int song_num, int track_count,
 }
 
 static bool
-ScanMusicEmu(Music_Emu *emu, int song_num,
+ScanMusicEmu(Music_Emu *emu, unsigned song_num,
 	     const struct tag_handler *handler, void *handler_ctx)
 {
 	gme_info_t *ti;
@@ -284,7 +287,7 @@ gme_scan_file(Path path_fs,
 		return false;
 	}
 
-	const int song_num = get_song_num(path_fs);
+	const unsigned song_num = get_song_num(path_fs);
 
 	const bool result = ScanMusicEmu(emu, song_num, handler, handler_ctx);
 
