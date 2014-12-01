@@ -58,12 +58,12 @@ static char *
 icy_server_metadata_string(const char *stream_title, const char* stream_url)
 {
 	// The leading n is a placeholder for the length information
-	gchar *icy_metadata = FormatNew("nStreamTitle='%s';"
-					"StreamUrl='%s';",
-					stream_title,
-					stream_url);
+	char *icy_metadata = FormatNew("nStreamTitle='%s';"
+				       "StreamUrl='%s';",
+				       stream_title,
+				       stream_url);
 
-	guint meta_length = strlen(icy_metadata);
+	size_t meta_length = strlen(icy_metadata);
 
 	meta_length--; // subtract placeholder
 
@@ -82,24 +82,24 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 Page *
 icy_server_metadata_page(const Tag &tag, const TagType *types)
 {
-	const gchar *tag_items[TAG_NUM_OF_ITEM_TYPES];
+	const char *tag_items[TAG_NUM_OF_ITEM_TYPES];
 
-	gint last_item = -1;
+	int last_item = -1;
 	while (*types != TAG_NUM_OF_ITEM_TYPES) {
-		const gchar *tag_item = tag.GetValue(*types++);
+		const char *tag_item = tag.GetValue(*types++);
 		if (tag_item)
 			tag_items[++last_item] = tag_item;
 	}
 
-	gint item = 0;
+	int item = 0;
 
 	// Length + Metadata - "StreamTitle='';StreamUrl='';" = 4081 - 28
-	gchar stream_title[(1 + 255 - 28) * 16];
+	char stream_title[(1 + 255 - 28) * 16];
 	stream_title[0] =  '\0';
-	guint position = 0;
+	unsigned position = 0;
 
 	while (position < sizeof(stream_title) && item <= last_item) {
-		gint length = 0;
+		size_t length = 0;
 
 		length = g_strlcpy(stream_title + position,
 				   tag_items[item++],
@@ -116,7 +116,7 @@ icy_server_metadata_page(const Tag &tag, const TagType *types)
 		}
 	}
 
-	gchar *icy_string = icy_server_metadata_string(stream_title, "");
+	char *icy_string = icy_server_metadata_string(stream_title, "");
 
 	if (icy_string == nullptr)
 		return nullptr;
