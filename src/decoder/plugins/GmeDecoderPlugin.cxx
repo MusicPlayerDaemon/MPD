@@ -209,6 +209,46 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 	gme_delete(emu);
 }
 
+static void
+ScanGmeInfo(const gme_info_t &info, int song_num, int track_count,
+	    const struct tag_handler *handler, void *handler_ctx)
+{
+	if (info.length > 0)
+		tag_handler_invoke_duration(handler, handler_ctx,
+					    SongTime::FromMS(info.length));
+
+	if (info.song != nullptr) {
+		if (track_count > 1) {
+			/* start numbering subtunes from 1 */
+			char tag_title[1024];
+			snprintf(tag_title, sizeof(tag_title),
+				 "%s (%d/%d)",
+				 info.song, song_num + 1,
+				 track_count);
+			tag_handler_invoke_tag(handler, handler_ctx,
+					       TAG_TITLE, tag_title);
+		} else
+			tag_handler_invoke_tag(handler, handler_ctx,
+					       TAG_TITLE, info.song);
+	}
+
+	if (info.author != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_ARTIST, info.author);
+
+	if (info.game != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_ALBUM, info.game);
+
+	if (info.comment != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_COMMENT, info.comment);
+
+	if (info.copyright != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_DATE, info.copyright);
+}
+
 static bool
 gme_scan_file(Path path_fs,
 	      const struct tag_handler *handler, void *handler_ctx)
@@ -236,40 +276,8 @@ gme_scan_file(Path path_fs,
 
 	assert(ti != nullptr);
 
-	if (ti->length > 0)
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    SongTime::FromMS(ti->length));
-
-	if (ti->song != nullptr) {
-		if (gme_track_count(emu) > 1) {
-			/* start numbering subtunes from 1 */
-			char tag_title[1024];
-			snprintf(tag_title, sizeof(tag_title),
-				 "%s (%d/%d)",
-				 ti->song, song_num + 1,
-				 gme_track_count(emu));
-			tag_handler_invoke_tag(handler, handler_ctx,
-					       TAG_TITLE, tag_title);
-		} else
-			tag_handler_invoke_tag(handler, handler_ctx,
-					       TAG_TITLE, ti->song);
-	}
-
-	if (ti->author != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_ARTIST, ti->author);
-
-	if (ti->game != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_ALBUM, ti->game);
-
-	if (ti->comment != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_COMMENT, ti->comment);
-
-	if (ti->copyright != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_DATE, ti->copyright);
+	ScanGmeInfo(*ti, song_num, gme_track_count(emu),
+		    handler, handler_ctx);
 
 	gme_free_info(ti);
 	gme_delete(emu);
