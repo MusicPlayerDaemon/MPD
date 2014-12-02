@@ -530,7 +530,7 @@ libfs_a_SOURCES = \
 	src/fs/Traits.cxx src/fs/Traits.hxx \
 	src/fs/Config.cxx src/fs/Config.hxx \
 	src/fs/Charset.cxx src/fs/Charset.hxx \
-	src/fs/Path.cxx src/fs/Path.hxx \
+	src/fs/Path.cxx src/fs/Path2.cxx src/fs/Path.hxx \
 	src/fs/AllocatedPath.cxx src/fs/AllocatedPath.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
