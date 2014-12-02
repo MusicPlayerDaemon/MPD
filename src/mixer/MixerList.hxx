@@ -27,6 +27,7 @@
 
 struct MixerPlugin;
 
+extern const MixerPlugin null_mixer_plugin;
 extern const MixerPlugin software_mixer_plugin;
 extern const MixerPlugin alsa_mixer_plugin;
 extern const MixerPlugin oss_mixer_plugin;

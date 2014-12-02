@@ -126,6 +126,10 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 	case MixerType::UNKNOWN:
 		return nullptr;
 
+	case MixerType::NULL_:
+		return mixer_new(event_loop, null_mixer_plugin, ao, listener,
+				 param, error);
+
 	case MixerType::HARDWARE:
 		if (plugin == nullptr)
 			return nullptr;

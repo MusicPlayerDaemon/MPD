@@ -34,6 +34,8 @@ mixer_type_parse(const char *input)
 		return MixerType::HARDWARE;
 	else if (strcmp(input, "software") == 0)
 		return MixerType::SOFTWARE;
+	else if (strcmp(input, "null") == 0)
+		return MixerType::NULL_;
 	else
 		return MixerType::UNKNOWN;
 }

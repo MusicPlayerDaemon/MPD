@@ -1256,6 +1256,7 @@ MIXER_API_SRC = \
 	src/mixer/MixerInternal.hxx
 
 libmixer_plugins_a_SOURCES = \
+	src/mixer/plugins/NullMixerPlugin.cxx \
 	src/mixer/plugins/SoftwareMixerPlugin.cxx \
 	src/mixer/plugins/SoftwareMixerPlugin.hxx
 libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \

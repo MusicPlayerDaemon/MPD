@@ -27,6 +27,9 @@ enum class MixerType {
 	/** mixer disabled */
 	NONE,
 
+	/** "null" mixer (virtual fake) */
+	NULL_,
+
 	/** software mixer with pcm_volume() */
 	SOFTWARE,
 

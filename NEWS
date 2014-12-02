@@ -7,6 +7,8 @@ ver 0.20 (not yet released)
   - ape: drop support for non-standard tag "album artist"
 * output
   - pulse: set channel map to WAVE-EX
+* mixer
+  - null: new plugin
 * reset song priority on playback
 
 ver 0.19.5 (2014/11/26)
