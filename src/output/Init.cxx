@@ -93,7 +93,7 @@ audio_output_detect(Error &error)
  * mixer_enabled, if the mixer_type setting is not configured.
  */
 gcc_pure
-static enum mixer_type
+static MixerType
 audio_output_mixer_type(const config_param &param)
 {
 	/* read the local "mixer_type" setting */

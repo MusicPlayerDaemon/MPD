@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <string.h>
 
-enum mixer_type
+MixerType
 mixer_type_parse(const char *input)
 {
 	assert(input != NULL);

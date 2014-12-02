@@ -20,7 +20,7 @@
 #ifndef MPD_MIXER_TYPE_HXX
 #define MPD_MIXER_TYPE_HXX
 
-enum mixer_type {
+enum MixerType {
 	/** parser error */
 	MIXER_TYPE_UNKNOWN,
 
@@ -35,13 +35,13 @@ enum mixer_type {
 };
 
 /**
- * Parses a "mixer_type" setting from the configuration file.
+ * Parses a #MixerType setting from the configuration file.
  *
  * @param input the configured string value; must not be NULL
- * @return a #mixer_type value; MIXER_TYPE_UNKNOWN means #input could
+ * @return a #MixerType value; MIXER_TYPE_UNKNOWN means #input could
  * not be parsed
  */
-enum mixer_type
+MixerType
 mixer_type_parse(const char *input);
 
 #endif
