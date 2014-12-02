@@ -29,6 +29,8 @@
 #include <assert.h>
 #include <string.h>
 
+class AllocatedPath;
+
 /**
  * A path name in the native file system character set.
  *
@@ -127,6 +129,22 @@ public:
 	 */
 	gcc_pure
 	std::string ToUTF8() const;
+
+	/**
+	 * Determine the "base" file name.
+	 * The return value points inside this object.
+	 */
+	gcc_pure
+	Path GetBase() const {
+		return FromFS(PathTraitsFS::GetBase(value));
+	}
+
+	/**
+	 * Gets directory name of this path.
+	 * Returns a "nulled" instance on error.
+	 */
+	gcc_pure
+	AllocatedPath GetDirectoryName() const;
 
 	/**
 	 * Determine the relative part of the given path to this
