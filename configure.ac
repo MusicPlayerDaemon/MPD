@@ -341,8 +341,6 @@ AC_ARG_ENABLE(gme,
 	AS_HELP_STRING([--enable-gme],
 		[enable Blargg's game music emulator plugin]),,
 	enable_gme=auto)
-MPD_DEPENDS([enable_gme], [enable_glib],
-	[Cannot use --enable-gme with --disable-glib])
 
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],

@@ -23,6 +23,7 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/Alloc.hxx"
 #include "util/FormatString.hxx"
 #include "util/UriUtil.hxx"
@@ -30,7 +31,6 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#include <glib.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,9 +48,26 @@ static constexpr unsigned GME_BUFFER_SAMPLES =
 	GME_BUFFER_FRAMES * GME_CHANNELS;
 
 struct GmeContainerPath {
-	char *path;
+	AllocatedPath path;
 	unsigned track;
 };
+
+gcc_pure
+static unsigned
+ParseSubtuneName(const char *base)
+{
+	if (memcmp(base, SUBTUNE_PREFIX, sizeof(SUBTUNE_PREFIX) - 1) != 0)
+		return 0;
+
+	base += sizeof(SUBTUNE_PREFIX) - 1;
+
+	char *endptr;
+	auto track = strtoul(base, &endptr, 10);
+	if (endptr == base || *endptr != '.')
+		return 0;
+
+	return track;
+}
 
 /**
  * returns the file path stripped of any /tune_xxx.* subtune suffix
@@ -59,33 +76,13 @@ struct GmeContainerPath {
 static GmeContainerPath
 ParseContainerPath(Path path_fs)
 {
-	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
-	char *path_container = xstrdup(path_fs.c_str());
+	const Path base = path_fs.GetBase();
+	unsigned track;
+	if (base.IsNull() ||
+	    (track = ParseSubtuneName(base.c_str())) < 1)
+		return { AllocatedPath(path_fs), 0 };
 
-	char pat[64];
-	snprintf(pat, sizeof(pat), "%s%s",
-		 "*/" SUBTUNE_PREFIX "???.",
-		 subtune_suffix);
-	GPatternSpec *path_with_subtune = g_pattern_spec_new(pat);
-	if (!g_pattern_match(path_with_subtune,
-			     strlen(path_container), path_container, nullptr)) {
-		g_pattern_spec_free(path_with_subtune);
-		return { path_container, 0 };
-	}
-
-	unsigned track = 0;
-
-	char *sub = g_strrstr(path_container, "/" SUBTUNE_PREFIX);
-	if (sub != nullptr) {
-		*sub = '\0';
-		sub += strlen("/" SUBTUNE_PREFIX);
-		int song_num = strtol(sub, nullptr, 10);
-		if (song_num >= 1)
-			track = song_num - 1;
-	}
-
-	g_pattern_spec_free(path_with_subtune);
-	return { path_container, track };
+	return { path_fs.GetDirectoryName(), track - 1 };
 }
 
 static char *
@@ -120,8 +117,7 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 
 	Music_Emu *emu;
 	const char *gme_err =
-		gme_open_file(container.path, &emu, GME_SAMPLE_RATE);
-	free(container.path);
+		gme_open_file(container.path.c_str(), &emu, GME_SAMPLE_RATE);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return;
@@ -256,8 +252,7 @@ gme_scan_file(Path path_fs,
 
 	Music_Emu *emu;
 	const char *gme_err =
-		gme_open_file(container.path, &emu, GME_SAMPLE_RATE);
-	free(container.path);
+		gme_open_file(container.path.c_str(), &emu, GME_SAMPLE_RATE);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
 		return false;
