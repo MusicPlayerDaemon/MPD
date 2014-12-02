@@ -103,7 +103,7 @@ audio_output_mixer_type(const config_param &param)
 
 	/* try the local "mixer_enabled" setting next (deprecated) */
 	if (!param.GetBlockValue("mixer_enabled", true))
-		return MIXER_TYPE_NONE;
+		return MixerType::NONE;
 
 	/* fall back to the global "mixer_type" setting (also
 	   deprecated) */
@@ -122,18 +122,18 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 	Mixer *mixer;
 
 	switch (audio_output_mixer_type(param)) {
-	case MIXER_TYPE_NONE:
-	case MIXER_TYPE_UNKNOWN:
+	case MixerType::NONE:
+	case MixerType::UNKNOWN:
 		return nullptr;
 
-	case MIXER_TYPE_HARDWARE:
+	case MixerType::HARDWARE:
 		if (plugin == nullptr)
 			return nullptr;
 
 		return mixer_new(event_loop, *plugin, ao, listener,
 				 param, error);
 
-	case MIXER_TYPE_SOFTWARE:
+	case MixerType::SOFTWARE:
 		mixer = mixer_new(event_loop, software_mixer_plugin, ao,
 				  listener,
 				  config_param(),
