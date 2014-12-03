@@ -21,13 +21,13 @@
 #include "JackOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "config/ConfigError.hxx"
+#include "util/SplitString.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
 
-#include <glib.h>
 #include <jack/jack.h>
 #include <jack/types.h>
 #include <jack/ringbuffer.h>
@@ -56,10 +56,10 @@ struct JackOutput {
 
 	/* configuration */
 
-	char *source_ports[MAX_PORTS];
+	std::string source_ports[MAX_PORTS];
 	unsigned num_source_ports;
 
-	char *destination_ports[MAX_PORTS];
+	std::string destination_ports[MAX_PORTS];
 	unsigned num_destination_ports;
 
 	size_t ringbuffer_size;
@@ -261,13 +261,13 @@ mpd_jack_connect(JackOutput *jd, Error &error)
 
 	for (unsigned i = 0; i < jd->num_source_ports; ++i) {
 		jd->ports[i] = jack_port_register(jd->client,
-						  jd->source_ports[i],
+						  jd->source_ports[i].c_str(),
 						  JACK_DEFAULT_AUDIO_TYPE,
 						  JackPortIsOutput, 0);
 		if (jd->ports[i] == nullptr) {
 			error.Format(jack_output_domain,
 				     "Cannot register output port \"%s\"",
-				     jd->source_ports[i]);
+				     jd->source_ports[i].c_str());
 			mpd_jack_disconnect(jd);
 			return false;
 		}
@@ -283,22 +283,18 @@ mpd_jack_test_default_device(void)
 }
 
 static unsigned
-parse_port_list(const char *source, char **dest, Error &error)
+parse_port_list(const char *source, std::string dest[], Error &error)
 {
-	char **list = g_strsplit(source, ",", 0);
 	unsigned n = 0;
-
-	for (n = 0; list[n] != nullptr; ++n) {
+	for (auto &&i : SplitString(source, ',')) {
 		if (n >= MAX_PORTS) {
 			error.Set(config_domain,
 				  "too many port names");
 			return 0;
 		}
 
-		dest[n] = list[n];
+		dest[n++] = std::move(i);
 	}
-
-	g_free(list);
 
 	if (n == 0) {
 		error.Format(config_domain,
@@ -391,12 +387,6 @@ static void
 mpd_jack_finish(AudioOutput *ao)
 {
 	JackOutput *jd = (JackOutput *)ao;
-
-	for (unsigned i = 0; i < jd->num_source_ports; ++i)
-		g_free(jd->source_ports[i]);
-
-	for (unsigned i = 0; i < jd->num_destination_ports; ++i)
-		g_free(jd->destination_ports[i]);
 
 	delete jd;
 }
@@ -505,8 +495,8 @@ mpd_jack_start(JackOutput *jd, Error &error)
 		/* use the configured output ports */
 
 		num_destination_ports = jd->num_destination_ports;
-		memcpy(destination_ports, jd->destination_ports,
-		       num_destination_ports * sizeof(*destination_ports));
+		for (unsigned i = 0; i < num_destination_ports; ++i)
+			destination_ports[i] = jd->destination_ports[i].c_str();
 
 		jports = nullptr;
 	}

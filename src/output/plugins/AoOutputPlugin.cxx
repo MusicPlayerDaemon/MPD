@@ -21,12 +21,12 @@
 #include "AoOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "util/DivideString.hxx"
+#include "util/SplitString.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <ao/ao.h>
-#include <glib.h>
 
 #include <string.h>
 
@@ -127,22 +127,18 @@ AoOutput::Configure(const config_param &param, Error &error)
 
 	value = param.GetBlockValue("options", nullptr);
 	if (value != nullptr) {
-		gchar **_options = g_strsplit(value, ";", 0);
-
-		for (unsigned i = 0; _options[i] != nullptr; ++i) {
-			const DivideString ss(_options[i], '=');
+		for (const auto &i : SplitString(value, ';')) {
+			const DivideString ss(i.c_str(), '=');
 
 			if (!ss.IsDefined()) {
 				error.Format(ao_output_domain,
 					     "problems parsing options \"%s\"",
-					     _options[i]);
+					     i.c_str());
 				return false;
 			}
 
 			ao_append_option(&options, ss.GetFirst(), ss.GetSecond());
 		}
-
-		g_strfreev(_options);
 	}
 
 	return true;

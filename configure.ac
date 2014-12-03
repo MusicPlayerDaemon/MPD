@@ -1237,9 +1237,8 @@ fi
 AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
 
 dnl ----------------------------------- JACK ----------------------------------
-MPD_ENABLE_AUTO_PKG_DEPENDS(jack, JACK, [jack >= 0.100],
-	[JACK output plugin], [libjack not found], [],
-	[enable_glib], [Cannot use --enable-jack with --disable-glib])
+MPD_ENABLE_AUTO_PKG(jack, JACK, [jack >= 0.100],
+	[JACK output plugin], [libjack not found])
 
 if test x$enable_jack = xyes; then
 	# check whether jack_set_info_function() is available
@@ -1252,9 +1251,8 @@ if test x$enable_jack = xyes; then
 fi
 
 dnl ---------------------------------- libao ----------------------------------
-MPD_ENABLE_AUTO_PKG_DEPENDS(ao, AO, [ao],
-	[libao output plugin], [libao not found], [],
-	[enable_glib], [Cannot use --enable-ao with --disable-glib])
+MPD_ENABLE_AUTO_PKG(ao, AO, [ao],
+	[libao output plugin], [libao not found])
 
 dnl ---------------------------------- OpenAL ---------------------------------
 AC_SUBST(OPENAL_CFLAGS,"")
