@@ -27,7 +27,7 @@
 #include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
-#include "util/SplitString.hxx"
+#include "util/DivideString.hxx"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -74,7 +74,7 @@ vorbis_scan_comment(const char *comment,
 		    const struct tag_handler *handler, void *handler_ctx)
 {
 	if (handler->pair != nullptr) {
-		const SplitString split(comment, '=');
+		const DivideString split(comment, '=');
 		if (split.IsDefined() && !split.IsEmpty())
 			tag_handler_invoke_pair(handler, handler_ctx,
 						split.GetFirst(),

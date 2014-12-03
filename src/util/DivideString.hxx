@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SPLIT_STRING_HXX
-#define MPD_SPLIT_STRING_HXX
+#ifndef MPD_DIVIDE_STRING_HXX
+#define MPD_DIVIDE_STRING_HXX
 
 #include "Compiler.h"
 
@@ -28,14 +28,14 @@
  * Split a given constant string at a separator character.  Duplicates
  * the first part to be able to null-terminate it.
  */
-class SplitString {
+class DivideString {
 	char *first;
 	const char *second;
 
 public:
-	SplitString(const char *s, char separator);
+	DivideString(const char *s, char separator);
 
-	~SplitString() {
+	~DivideString() {
 		delete[] first;
 	}
 

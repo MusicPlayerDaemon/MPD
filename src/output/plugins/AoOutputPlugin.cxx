@@ -20,7 +20,7 @@
 #include "config.h"
 #include "AoOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "util/SplitString.hxx"
+#include "util/DivideString.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -130,7 +130,7 @@ AoOutput::Configure(const config_param &param, Error &error)
 		gchar **_options = g_strsplit(value, ";", 0);
 
 		for (unsigned i = 0; _options[i] != nullptr; ++i) {
-			const SplitString ss(_options[i], '=');
+			const DivideString ss(_options[i], '=');
 
 			if (!ss.IsDefined()) {
 				error.Format(ao_output_domain,

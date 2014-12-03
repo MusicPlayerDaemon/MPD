@@ -17,11 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "SplitString.hxx"
+#include "DivideString.hxx"
 
 #include <string.h>
 
-SplitString::SplitString(const char *s, char separator)
+DivideString::DivideString(const char *s, char separator)
 	:first(nullptr)
 {
 	const char *x = strchr(s, separator);

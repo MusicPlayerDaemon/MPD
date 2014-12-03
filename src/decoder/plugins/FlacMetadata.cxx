@@ -30,7 +30,7 @@
 #include "tag/MixRamp.hxx"
 #include "ReplayGainInfo.hxx"
 #include "util/ASCII.hxx"
-#include "util/SplitString.hxx"
+#include "util/DivideString.hxx"
 
 bool
 flac_parse_replay_gain(ReplayGainInfo &rgi,
@@ -97,7 +97,7 @@ flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 {
 	if (handler->pair != nullptr) {
 		const char *comment = (const char *)entry->entry;
-		const SplitString split(comment, '=');
+		const DivideString split(comment, '=');
 		if (split.IsDefined() && !split.IsEmpty())
 			tag_handler_invoke_pair(handler, handler_ctx,
 						split.GetFirst(),
