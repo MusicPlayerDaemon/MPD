@@ -2001,6 +2001,7 @@ test_run_inotify_LDADD = \
 endif
 
 test_test_util_SOURCES = \
+	test/UriUtilTest.hxx \
 	test/TestCircularBuffer.hxx \
 	test/test_util.cxx
 test_test_util_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
