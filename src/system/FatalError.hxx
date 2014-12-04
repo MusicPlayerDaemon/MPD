@@ -23,6 +23,10 @@
 #include "check.h"
 #include "Compiler.h"
 
+#ifdef WIN32
+#include <windef.h>
+#endif
+
 class Error;
 
 /**
@@ -52,6 +56,14 @@ FatalError(const char *msg, const Error &error);
 gcc_noreturn
 void
 FatalSystemError(const char *msg);
+
+#ifdef WIN32
+
+gcc_noreturn
+void
+FatalSystemError(const char *msg, DWORD code);
+
+#endif
 
 gcc_noreturn
 void

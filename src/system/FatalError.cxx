@@ -74,23 +74,31 @@ FatalError(const char *msg, const Error &error)
 	FormatFatalError("%s: %s", msg, error.GetMessage());
 }
 
+#ifdef WIN32
+
+void
+FatalSystemError(const char *msg, DWORD code)
+{
+	char buffer[256];
+	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
+		       FORMAT_MESSAGE_IGNORE_INSERTS,
+		       nullptr, code, 0,
+		       buffer, sizeof(buffer), nullptr);
+	FormatFatalError("%s: %s", msg, buffer);
+}
+
+#endif
+
 void
 FatalSystemError(const char *msg)
 {
-	const char *system_error;
 #ifdef WIN32
-       char buffer[256];
-       FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
-                      FORMAT_MESSAGE_IGNORE_INSERTS,
-                      nullptr, GetLastError(), 0,
-		      buffer, sizeof(buffer), nullptr);
-       system_error = buffer;
+	FatalSystemError(msg, GetLastError());
 #else
-	system_error = strerror(errno);
-#endif
-
+	const char *system_error = strerror(errno);
 	FormatError(fatal_error_domain, "%s: %s", msg, system_error);
 	Abort();
+#endif
 }
 
 void
