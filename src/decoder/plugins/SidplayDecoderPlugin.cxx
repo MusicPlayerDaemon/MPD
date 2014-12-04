@@ -141,12 +141,10 @@ get_song_length(const SidplayContainerPath &container)
 			   "failed to load file for calculating md5 sum");
 		return SignedSongTime::Negative();
 	}
-	char md5sum[SIDTUNE_MD5_LENGTH+1];
-	tune.createMD5(md5sum);
 
-	const unsigned song_num = container.track;
+	tune.selectSong(container.track);
 
-	const auto length = songlength_database->length(md5sum, song_num);
+	const auto length = songlength_database->length(tune);
 	if (length < 0)
 		return SignedSongTime::Negative();
 
