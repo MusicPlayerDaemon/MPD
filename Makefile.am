@@ -1397,6 +1397,8 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/plugins/CuePlaylistPlugin.hxx \
 	src/playlist/plugins/EmbeddedCuePlaylistPlugin.cxx \
 	src/playlist/plugins/EmbeddedCuePlaylistPlugin.hxx \
+	src/playlist/plugins/PlsPlaylistPlugin.cxx \
+	src/playlist/plugins/PlsPlaylistPlugin.hxx \
 	src/playlist/PlaylistRegistry.cxx src/playlist/PlaylistRegistry.hxx
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(EXPAT_CFLAGS) \
@@ -1432,12 +1434,6 @@ libplaylist_plugins_a_SOURCES += \
 	src/playlist/plugins/AsxPlaylistPlugin.hxx \
 	src/playlist/plugins/RssPlaylistPlugin.cxx \
 	src/playlist/plugins/RssPlaylistPlugin.hxx
-endif
-
-if HAVE_GLIB
-libplaylist_plugins_a_SOURCES += \
-	src/playlist/plugins/PlsPlaylistPlugin.cxx \
-	src/playlist/plugins/PlsPlaylistPlugin.hxx
 endif
 
 #

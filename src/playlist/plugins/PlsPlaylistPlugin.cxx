@@ -21,121 +21,142 @@
 #include "PlsPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
-#include "input/InputStream.hxx"
+#include "input/TextInputStream.hxx"
 #include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"
+#include "util/ASCII.hxx"
+#include "util/StringUtil.hxx"
+#include "util/DivideString.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "Log.hxx"
-
-#include <glib.h>
 
 #include <string>
-#include <stdio.h>
 
-#include <stdio.h>
+#include <stdlib.h>
 
 static constexpr Domain pls_domain("pls");
 
-static void
-pls_parser(GKeyFile *keyfile, std::forward_list<DetachedSong> &songs)
+static bool
+FindPlaylistSection(TextInputStream &is)
 {
-	gchar *value;
-	GError *error = nullptr;
-	int num_entries = g_key_file_get_integer(keyfile, "playlist",
-						 "NumberOfEntries", &error);
-	if (error) {
-		FormatError(pls_domain,
-			    "Invalid PLS file: '%s'", error->message);
-		g_error_free(error);
-		error = nullptr;
+	char *line;
+	while ((line = is.ReadLine()) != nullptr) {
+		line = Strip(line);
+		if (StringEqualsCaseASCII(line, "[playlist]"))
+			return true;
+	}
 
-		/* Hack to work around shoutcast failure to comform to spec */
-		num_entries = g_key_file_get_integer(keyfile, "playlist",
-						     "numberofentries", &error);
-		if (error) {
-			g_error_free(error);
-			error = nullptr;
+	return false;
+}
+
+static bool
+ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
+{
+	assert(songs.empty());
+
+	if (!FindPlaylistSection(is))
+		return false;
+
+	unsigned n_entries = 0;
+
+	struct Entry {
+		std::string file, title;
+		int length;
+
+		Entry():length(-1) {}
+	};
+
+	static constexpr unsigned MAX_ENTRIES = 65536;
+
+	std::vector<Entry> entries;
+
+	char *line;
+	while ((line = is.ReadLine()) != nullptr) {
+		line = Strip(line);
+
+		if (*line == 0 || *line == ';')
+			continue;
+
+		if (*line == '[')
+			/* another section starts; we only want
+			   [Playlist], so stop here */
+			break;
+
+		const DivideString ds(line, '=', true);
+		if (!ds.IsDefined())
+			continue;
+
+		const char *const name = ds.GetFirst();
+		const char *const value = ds.GetSecond();
+
+		if (StringEqualsCaseASCII(name, "NumberOfEntries")) {
+			n_entries = strtoul(value, nullptr, 10);
+			if (n_entries == 0)
+				/* empty file - nothing remains to be
+				   done */
+				return true;
+
+			if (n_entries > MAX_ENTRIES)
+				n_entries = MAX_ENTRIES;
+			entries.resize(n_entries);
+		} else if (StringEqualsCaseASCII(name, "File", 4)) {
+			unsigned i = strtoul(name + 4, nullptr, 10);
+			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
+				if (entries.size() < i)
+					entries.resize(i);
+				entries[i - 1].file = value;
+			}
+		} else if (StringEqualsCaseASCII(name, "Title", 5)) {
+			unsigned i = strtoul(name + 5, nullptr, 10);
+			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
+				if (entries.size() < i)
+					entries.resize(i);
+				entries[i - 1].title = value;
+			}
+		} else if (StringEqualsCaseASCII(name, "Length", 6)) {
+			unsigned i = strtoul(name + 6, nullptr, 10);
+			if (i >= 1 && i <= (n_entries > 0 ? n_entries : MAX_ENTRIES)) {
+				if (entries.size() < i)
+					entries.resize(i);
+				entries[i - 1].length = atoi(value);
+			}
 		}
 	}
 
-	for (; num_entries > 0; --num_entries) {
-		char key[64];
-		sprintf(key, "File%u", num_entries);
-		char *uri = g_key_file_get_string(keyfile, "playlist", key,
-						  &error);
-		if(error) {
-			FormatError(pls_domain, "Invalid PLS entry %s: '%s'",
-				    key, error->message);
-			g_error_free(error);
-			return;
-		}
+	if (n_entries == 0)
+		/* no "NumberOfEntries" found */
+		return false;
+
+	auto i = songs.before_begin();
+	for (const auto &entry : entries) {
+		const char *uri = entry.file.c_str();
 
 		TagBuilder tag;
+		if (!entry.title.empty())
+			tag.AddItem(TAG_TITLE, entry.title.c_str());
 
-		sprintf(key, "Title%u", num_entries);
-		value = g_key_file_get_string(keyfile, "playlist", key,
-					      nullptr);
-		if (value != nullptr)
-			tag.AddItem(TAG_TITLE, value);
+		if (entry.length > 0)
+			tag.SetDuration(SignedSongTime::FromS(entry.length));
 
-		g_free(value);
-
-		sprintf(key, "Length%u", num_entries);
-		int length = g_key_file_get_integer(keyfile, "playlist", key,
-						    nullptr);
-		if (length > 0)
-			tag.SetDuration(SignedSongTime::FromS(length));
-
-		songs.emplace_front(uri, tag.Commit());
-		g_free(uri);
+		i = songs.emplace_after(i, uri, tag.Commit());
 	}
 
+	return true;
+}
+
+static bool
+ParsePls(InputStream &is, std::forward_list<DetachedSong> &songs)
+{
+	TextInputStream tis(is);
+	return ParsePls(tis, songs);
 }
 
 static SongEnumerator *
 pls_open_stream(InputStream &is)
 {
-	GError *error = nullptr;
-	Error error2;
-
-	std::string kf_data;
-
-	do {
-		char buffer[1024];
-		size_t nbytes = is.LockRead(buffer, sizeof(buffer), error2);
-		if (nbytes == 0) {
-			if (error2.IsDefined()) {
-				LogError(error2);
-				return nullptr;
-			}
-
-			break;
-		}
-
-		kf_data.append(buffer, nbytes);
-		/* Limit to 64k */
-	} while (kf_data.length() < 65536);
-
-	if (kf_data.empty()) {
-		LogWarning(pls_domain, "KeyFile parser failed: No Data");
-		return nullptr;
-	}
-
-	GKeyFile *keyfile = g_key_file_new();
-	if (!g_key_file_load_from_data(keyfile,
-				       kf_data.data(), kf_data.length(),
-				       G_KEY_FILE_NONE, &error)) {
-		FormatError(pls_domain,
-			    "KeyFile parser failed: %s", error->message);
-		g_error_free(error);
-		g_key_file_free(keyfile);
-		return nullptr;
-	}
-
 	std::forward_list<DetachedSong> songs;
-	pls_parser(keyfile, songs);
-	g_key_file_free(keyfile);
+	if (!ParsePls(is, songs))
+		return nullptr;
 
 	return new MemorySongEnumerator(std::move(songs));
 }
