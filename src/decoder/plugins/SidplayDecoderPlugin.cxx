@@ -22,6 +22,7 @@
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/FormatString.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
@@ -40,7 +41,6 @@
 
 static constexpr Domain sidplay_domain("sidplay");
 
-static GPatternSpec *path_with_subtune;
 static const char *songlength_file;
 static GKeyFile *songlength_database;
 
@@ -99,9 +99,6 @@ sidplay_init(const config_param &param)
 	all_files_are_containers =
 		param.GetBlockValue("all_files_are_containers", true);
 
-	path_with_subtune=g_pattern_spec_new(
-			"*/" SUBTUNE_PREFIX "???.sid");
-
 	filter_setting = param.GetBlockValue("filter", true);
 
 	return true;
@@ -110,52 +107,46 @@ sidplay_init(const config_param &param)
 static void
 sidplay_finish()
 {
-	g_pattern_spec_free(path_with_subtune);
-
 	if(songlength_database)
 		g_key_file_free(songlength_database);
 }
 
-/**
- * returns the file path stripped of any /tune_xxx.sid subtune
- * suffix
- */
-static char *
-get_container_name(Path path_fs)
+struct SidplayContainerPath {
+	AllocatedPath path;
+	unsigned track;
+};
+
+gcc_pure
+static unsigned
+ParseSubtuneName(const char *base)
 {
-	char *path_container = strdup(path_fs.c_str());
+	if (memcmp(base, SUBTUNE_PREFIX, sizeof(SUBTUNE_PREFIX) - 1) != 0)
+		return 0;
 
-	if(!g_pattern_match(path_with_subtune,
-		strlen(path_container), path_container, nullptr))
-		return path_container;
+	base += sizeof(SUBTUNE_PREFIX) - 1;
 
-	char *ptr=g_strrstr(path_container, "/" SUBTUNE_PREFIX);
-	if(ptr) *ptr='\0';
+	char *endptr;
+	auto track = strtoul(base, &endptr, 10);
+	if (endptr == base || *endptr != '.')
+		return 0;
 
-	return path_container;
+	return track;
 }
 
 /**
- * returns tune number from file.sid/tune_xxx.sid style path or 1 if
- * no subtune is appended
+ * returns the file path stripped of any /tune_xxx.* subtune suffix
+ * and the track number (or 1 if no "tune_xxx" suffix is present).
  */
-static unsigned
-get_song_num(const char *path_fs)
+static SidplayContainerPath
+ParseContainerPath(Path path_fs)
 {
-	if(g_pattern_match(path_with_subtune,
-		strlen(path_fs), path_fs, nullptr)) {
-		char *sub=g_strrstr(path_fs, "/" SUBTUNE_PREFIX);
-		if(!sub) return 1;
+	const Path base = path_fs.GetBase();
+	unsigned track;
+	if (base.IsNull() ||
+	    (track = ParseSubtuneName(base.c_str())) < 1)
+		return { AllocatedPath(path_fs), 1 };
 
-		sub+=strlen("/" SUBTUNE_PREFIX);
-		int song_num=strtol(sub, nullptr, 10);
-
-		if (errno == EINVAL)
-			return 1;
-		else
-			return song_num;
-	} else
-		return 1;
+	return { path_fs.GetDirectoryName(), track };
 }
 
 /* get the song length in seconds */
@@ -165,10 +156,9 @@ get_song_length(Path path_fs)
 	if (songlength_database == nullptr)
 		return SignedSongTime::Negative();
 
-	char *sid_file = get_container_name(path_fs);
-	SidTuneMod tune(sid_file);
-	free(sid_file);
-	if(!tune) {
+	const auto container = ParseContainerPath(path_fs);
+	SidTuneMod tune(container.path.c_str());
+ 	if(!tune) {
 		LogWarning(sidplay_domain,
 			   "failed to load file for calculating md5 sum");
 		return SignedSongTime::Negative();
@@ -176,7 +166,7 @@ get_song_length(Path path_fs)
 	char md5sum[SIDTUNE_MD5_LENGTH+1];
 	tune.createMD5(md5sum);
 
-	const unsigned song_num = get_song_num(path_fs.c_str());
+	const unsigned song_num = container.track;
 
 	gsize num_items;
 	gchar **values=g_key_file_get_string_list(songlength_database,
@@ -209,15 +199,14 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 	/* load the tune */
 
-	char *path_container=get_container_name(path_fs);
-	SidTune tune(path_container, nullptr, true);
-	free(path_container);
+	const auto container = ParseContainerPath(path_fs);
+	SidTune tune(container.path.c_str(), nullptr, true);
 	if (!tune) {
 		LogWarning(sidplay_domain, "failed to load file");
 		return;
 	}
 
-	const int song_num = get_song_num(path_fs.c_str());
+	const int song_num = container.track;
 	tune.selectSong(song_num);
 
 	auto duration = get_song_length(path_fs);
@@ -347,11 +336,10 @@ static bool
 sidplay_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	const int song_num = get_song_num(path_fs.c_str());
-	char *path_container=get_container_name(path_fs);
+	const auto container = ParseContainerPath(path_fs);
+	const unsigned song_num = container.track;
 
-	SidTune tune(path_container, nullptr, true);
-	free(path_container);
+	SidTune tune(container.path.c_str(), nullptr, true);
 	if (!tune)
 		return false;
 
