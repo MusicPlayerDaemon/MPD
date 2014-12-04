@@ -122,15 +122,13 @@ console_handler(DWORD event)
 
 int win32_main(int argc, char *argv[])
 {
-	DWORD error_code;
-
 	service_argc = argc;
 	service_argv = argv;
 
 	if (StartServiceCtrlDispatcher(service_registry))
 		return 0; /* run as service successefully */
 
-	error_code = GetLastError();
+	const DWORD error_code = GetLastError();
 	if (error_code == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
 		/* running as console app */
 		running.store(false);
