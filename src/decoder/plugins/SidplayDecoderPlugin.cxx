@@ -25,7 +25,9 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/FormatString.hxx"
 #include "util/Domain.hxx"
+#include "util/Error.hxx"
 #include "system/ByteOrder.hxx"
+#include "system/FatalError.hxx"
 #include "Log.hxx"
 
 #include <errno.h>
@@ -49,16 +51,16 @@ static unsigned default_songlength;
 static bool filter_setting;
 
 static GKeyFile *
-sidplay_load_songlength_db(const char *path)
+sidplay_load_songlength_db(const Path path)
 {
 	GError *error = nullptr;
 	gchar *data;
 	gsize size;
 
-	if (!g_file_get_contents(path, &data, &size, &error)) {
+	if (!g_file_get_contents(path.c_str(), &data, &size, &error)) {
 		FormatError(sidplay_domain,
 			    "unable to read songlengths file %s: %s",
-			    path, error->message);
+			    path.c_str(), error->message);
 		g_error_free(error);
 		return nullptr;
 	}
@@ -75,7 +77,7 @@ sidplay_load_songlength_db(const char *path)
 	if (!success) {
 		FormatError(sidplay_domain,
 			    "unable to parse songlengths file %s: %s",
-			    path, error->message);
+			    path.c_str(), error->message);
 		g_error_free(error);
 		g_key_file_free(db);
 		return nullptr;
@@ -89,9 +91,12 @@ static bool
 sidplay_init(const config_param &param)
 {
 	/* read the songlengths database file */
-	const char *songlength_file = param.GetBlockValue("songlength_database");
-	if (songlength_file != nullptr)
-		songlength_database = sidplay_load_songlength_db(songlength_file);
+	Error error;
+	const auto database_path = param.GetBlockPath("songlength_database", error);
+	if (!database_path.IsNull())
+		songlength_database = sidplay_load_songlength_db(database_path);
+	else if (error.IsDefined())
+		FatalError(error);
 
 	default_songlength = param.GetBlockValue("default_songlength", 0u);
 
