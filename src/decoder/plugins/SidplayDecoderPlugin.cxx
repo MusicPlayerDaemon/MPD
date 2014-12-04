@@ -130,19 +130,12 @@ ParseContainerPath(Path path_fs)
 
 /* get the song length in seconds */
 static SignedSongTime
-get_song_length(const SidplayContainerPath &container)
+get_song_length(SidTuneMod &tune)
 {
+	assert(tune);
+
 	if (songlength_database == nullptr)
 		return SignedSongTime::Negative();
-
-	SidTuneMod tune(container.path.c_str());
- 	if(!tune) {
-		LogWarning(sidplay_domain,
-			   "failed to load file for calculating md5 sum");
-		return SignedSongTime::Negative();
-	}
-
-	tune.selectSong(container.track);
 
 	const auto length = songlength_database->length(tune);
 	if (length < 0)
@@ -159,7 +152,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	/* load the tune */
 
 	const auto container = ParseContainerPath(path_fs);
-	SidTune tune(container.path.c_str(), nullptr, true);
+	SidTuneMod tune(container.path.c_str());
 	if (!tune) {
 		LogWarning(sidplay_domain, "failed to load file");
 		return;
@@ -168,7 +161,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	const int song_num = container.track;
 	tune.selectSong(song_num);
 
-	auto duration = get_song_length(container);
+	auto duration = get_song_length(tune);
 	if (duration.IsNegative() && default_songlength > 0)
 		duration = SongTime::FromS(default_songlength);
 
@@ -298,9 +291,11 @@ sidplay_scan_file(Path path_fs,
 	const auto container = ParseContainerPath(path_fs);
 	const unsigned song_num = container.track;
 
-	SidTune tune(container.path.c_str(), nullptr, true);
+	SidTuneMod tune(container.path.c_str());
 	if (!tune)
 		return false;
+
+	tune.selectSong(song_num);
 
 	const SidTuneInfo &info = tune.getInfo();
 
@@ -332,7 +327,7 @@ sidplay_scan_file(Path path_fs,
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
 
 	/* time */
-	const auto duration = get_song_length(container);
+	const auto duration = get_song_length(tune);
 	if (!duration.IsNegative())
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    SongTime(duration));
