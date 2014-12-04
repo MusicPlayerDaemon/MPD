@@ -40,7 +40,7 @@ static SERVICE_STATUS_HANDLE service_handle;
 static void WINAPI
 service_main(DWORD argc, CHAR *argv[]);
 
-static SERVICE_TABLE_ENTRY service_registry[] = {
+static constexpr SERVICE_TABLE_ENTRY service_registry[] = {
 	{service_name, service_main},
 	{nullptr, nullptr}
 };
