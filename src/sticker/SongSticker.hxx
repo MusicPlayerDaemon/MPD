@@ -29,8 +29,7 @@ struct sticker;
 class Database;
 
 /**
- * Returns one value from a song's sticker record.  The caller must
- * free the return value with g_free().
+ * Returns one value from a song's sticker record.
  */
 gcc_pure
 std::string
