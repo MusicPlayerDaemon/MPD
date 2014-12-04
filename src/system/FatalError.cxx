@@ -23,10 +23,6 @@
 #include "util/Domain.hxx"
 #include "LogV.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <unistd.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -83,7 +79,12 @@ FatalSystemError(const char *msg)
 {
 	const char *system_error;
 #ifdef WIN32
-	system_error = g_win32_error_message(GetLastError());
+       char buffer[256];
+       FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
+                      FORMAT_MESSAGE_IGNORE_INSERTS,
+                      nullptr, GetLastError(), 0,
+		      buffer, sizeof(buffer), nullptr);
+       system_error = buffer;
 #else
 	system_error = strerror(errno);
 #endif
