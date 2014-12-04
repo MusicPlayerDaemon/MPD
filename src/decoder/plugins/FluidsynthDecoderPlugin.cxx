@@ -35,7 +35,7 @@ static unsigned sample_rate;
 static const char *soundfont_path;
 
 /**
- * Convert a fluidsynth log level to a GLib log level.
+ * Convert a fluidsynth log level to a MPD log level.
  */
 static LogLevel
 fluidsynth_level_to_mpd(enum fluid_log_level level)
@@ -61,7 +61,7 @@ fluidsynth_level_to_mpd(enum fluid_log_level level)
 }
 
 /**
- * The fluidsynth logging callback.  It forwards messages to the GLib
+ * The fluidsynth logging callback.  It forwards messages to the MPD
  * logging library.
  */
 static void

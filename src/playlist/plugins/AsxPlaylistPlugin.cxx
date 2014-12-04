@@ -28,7 +28,7 @@
 #include "Log.hxx"
 
 /**
- * This is the state object for the GLib XML parser.
+ * This is the state object for our XML parser.
  */
 struct AsxParser {
 	/**

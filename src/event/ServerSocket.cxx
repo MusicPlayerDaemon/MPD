@@ -198,7 +198,7 @@ OneServerSocket::Open(Error &error)
 	if (!path.IsNull())
 		chmod(path.c_str(), 0666);
 
-	/* register in the GLib main loop */
+	/* register in the EventLoop */
 
 	SetFD(_fd);
 
