@@ -2017,6 +2017,64 @@ buffer_size: 16384</programlisting>
         </informaltable>
       </section>
 
+      <section id="sidplay_decoder">
+        <title><varname>sidplay</varname></title>
+
+        <para>
+          C64 SID decoder based on
+          <application>libsidplay</application>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>songlength_database</varname>
+                  <parameter>PATH</parameter>
+                </entry>
+                <entry>
+                  Location of your songlengths file, as distributed
+                  with the HVSC.  The <varname>sidplay</varname>
+                  plugin checks this for matching MD5 fingerprints.
+                  See <ulink
+                  url="http://www.c64.org/HVSC/DOCUMENTS/Songlengths.faq">http://www.c64.org/HVSC/DOCUMENTS/Songlengths.faq</ulink>.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>default_songlength</varname>
+                  <parameter>SECONDS</parameter>
+                </entry>
+                <entry>
+                  This is the default playing time in seconds for
+                  songs not in the songlength database, or in case
+                  you're not using a database.  A value of 0 means
+                  play indefinitely.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>filter</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Turns the SID filter emulation on or off.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
       <section>
         <title><varname>wildmidi</varname></title>
 
