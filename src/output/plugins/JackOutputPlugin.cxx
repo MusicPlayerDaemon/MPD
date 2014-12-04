@@ -32,6 +32,7 @@
 #include <jack/types.h>
 #include <jack/ringbuffer.h>
 
+#include <unistd.h> /* for usleep() */
 #include <stdlib.h>
 #include <string.h>
 
@@ -719,7 +720,7 @@ mpd_jack_play(AudioOutput *ao, const void *chunk, size_t size,
 
 		/* XXX do something more intelligent to
 		   synchronize */
-		g_usleep(1000);
+		usleep(1000);
 	}
 
 	space /= jack_sample_size;
