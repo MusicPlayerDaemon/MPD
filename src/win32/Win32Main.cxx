@@ -29,8 +29,6 @@
 #include <cstdlib>
 #include <atomic>
 
-#include <glib.h>
-
 #include <windows.h>
 
 static int service_argc;
@@ -82,19 +80,12 @@ service_dispatcher(gcc_unused DWORD control, gcc_unused DWORD event_type,
 static void WINAPI
 service_main(gcc_unused DWORD argc, gcc_unused CHAR *argv[])
 {
-	DWORD error_code;
-	gchar* error_message;
-
 	service_handle =
 		RegisterServiceCtrlHandlerEx(service_name,
 					     service_dispatcher, nullptr);
 
-	if (service_handle == 0) {
-		error_code = GetLastError();
-		error_message = g_win32_error_message(error_code);
-		FormatFatalError("RegisterServiceCtrlHandlerEx() failed: %s",
-				 error_message);
-	}
+	if (service_handle == 0)
+		FatalSystemError("RegisterServiceCtrlHandlerEx() failed");
 
 	service_notify_status(SERVICE_START_PENDING);
 	mpd_main(service_argc, service_argv);
@@ -132,7 +123,6 @@ console_handler(DWORD event)
 int win32_main(int argc, char *argv[])
 {
 	DWORD error_code;
-	gchar* error_message;
 
 	service_argc = argc;
 	service_argv = argv;
@@ -149,9 +139,7 @@ int win32_main(int argc, char *argv[])
 		return mpd_main(argc, argv);
 	}
 
-	error_message = g_win32_error_message(error_code);
-	FormatFatalError("StartServiceCtrlDispatcher() failed: %s",
-			 error_message);
+	FatalSystemError("StartServiceCtrlDispatcher() failed", error_code);
 }
 
 void win32_app_started()
