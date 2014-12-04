@@ -10,6 +10,7 @@ ver 0.20 (not yet released)
 * mixer
   - null: new plugin
 * reset song priority on playback
+* remove dependency on GLib
 
 ver 0.19.5 (2014/11/26)
 * input

@@ -518,13 +518,18 @@ AM_CONDITIONAL(HAVE_ICU, test x$enable_icu = xyes)
 
 AC_ARG_ENABLE(glib,
 	AS_HELP_STRING([--enable-glib],
-		[enable GLib usage (default: enabled)]),,
-	enable_glib=yes)
+		[enable GLib (default: auto)]),,
+	enable_glib=auto)
+
+if test x$enable_glib != xno; then
+	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.28 gthread-2.0],
+		[found_glib=yes],
+		[found_glib=no])
+
+	MPD_AUTO_RESULT([glib], [Glib], [GLib not found])
+fi
 
 if test x$enable_glib = xyes; then
-	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.28 gthread-2.0],,
-		[AC_MSG_ERROR([GLib 2.28 is required])])
-
 	if test x$GCC = xyes; then
 		# suppress warnings in the GLib headers
 		GLIB_CFLAGS=`echo $GLIB_CFLAGS |sed -e 's,-I/,-isystem /,g'`
@@ -532,6 +537,7 @@ if test x$enable_glib = xyes; then
 
 	AC_DEFINE(HAVE_GLIB, 1, [Define if GLib is used])
 fi
+
 AM_CONDITIONAL(HAVE_GLIB, test x$enable_glib = xyes)
 
 dnl ---------------------------------------------------------------------------
