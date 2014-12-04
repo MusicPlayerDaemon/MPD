@@ -41,7 +41,6 @@
 
 static constexpr Domain sidplay_domain("sidplay");
 
-static const char *songlength_file;
 static GKeyFile *songlength_database;
 
 static bool all_files_are_containers;
@@ -90,7 +89,7 @@ static bool
 sidplay_init(const config_param &param)
 {
 	/* read the songlengths database file */
-	songlength_file = param.GetBlockValue("songlength_database");
+	const char *songlength_file = param.GetBlockValue("songlength_database");
 	if (songlength_file != nullptr)
 		songlength_database = sidplay_load_songlength_db(songlength_file);
 
