@@ -33,7 +33,11 @@ class DivideString {
 	const char *second;
 
 public:
-	DivideString(const char *s, char separator);
+	/**
+	 * @param strip strip the first part and left-strip the second
+	 * part?
+	 */
+	DivideString(const char *s, char separator, bool strip=false);
 
 	~DivideString() {
 		delete[] first;

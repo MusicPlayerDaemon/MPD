@@ -15,6 +15,7 @@ class DivideStringTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST(TestBasic);
 	CPPUNIT_TEST(TestEmpty);
 	CPPUNIT_TEST(TestFail);
+	CPPUNIT_TEST(TestStrip);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -40,5 +41,14 @@ public:
 		constexpr char input[] = "foo!bar";
 		const DivideString ds(input, '.');
 		CPPUNIT_ASSERT(!ds.IsDefined());
+	}
+
+	void TestStrip() {
+		constexpr char input[] = " foo\t.\nbar\r";
+		const DivideString ds(input, '.', true);
+		CPPUNIT_ASSERT(ds.IsDefined());
+		CPPUNIT_ASSERT(!ds.IsEmpty());
+		CPPUNIT_ASSERT_EQUAL(0, strcmp(ds.GetFirst(), "foo"));
+		CPPUNIT_ASSERT_EQUAL(input + 7, ds.GetSecond());
 	}
 };

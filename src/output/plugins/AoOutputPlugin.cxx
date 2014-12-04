@@ -128,7 +128,7 @@ AoOutput::Configure(const config_param &param, Error &error)
 	value = param.GetBlockValue("options", nullptr);
 	if (value != nullptr) {
 		for (const auto &i : SplitString(value, ';')) {
-			const DivideString ss(i.c_str(), '=');
+			const DivideString ss(i.c_str(), '=', true);
 
 			if (!ss.IsDefined()) {
 				error.Format(ao_output_domain,
