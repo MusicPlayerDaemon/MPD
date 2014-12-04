@@ -151,12 +151,11 @@ ParseContainerPath(Path path_fs)
 
 /* get the song length in seconds */
 static SignedSongTime
-get_song_length(Path path_fs)
+get_song_length(const SidplayContainerPath &container)
 {
 	if (songlength_database == nullptr)
 		return SignedSongTime::Negative();
 
-	const auto container = ParseContainerPath(path_fs);
 	SidTuneMod tune(container.path.c_str());
  	if(!tune) {
 		LogWarning(sidplay_domain,
@@ -209,7 +208,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	const int song_num = container.track;
 	tune.selectSong(song_num);
 
-	auto duration = get_song_length(path_fs);
+	auto duration = get_song_length(container);
 	if (duration.IsNegative() && default_songlength > 0)
 		duration = SongTime::FromS(default_songlength);
 
@@ -373,7 +372,7 @@ sidplay_scan_file(Path path_fs,
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
 
 	/* time */
-	const auto duration = get_song_length(path_fs);
+	const auto duration = get_song_length(container);
 	if (!duration.IsNegative())
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    SongTime(duration));
