@@ -30,8 +30,6 @@
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
-#include <errno.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include <sidplay/sidplay2.h>
