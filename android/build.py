@@ -423,10 +423,6 @@ configure = [
     '--disable-glib',
     '--disable-icu',
 
-    # disabled for now because these features require GLib:
-    '--disable-httpd-output',
-    '--disable-vorbis-encoder',
-
 ] + configure_args
 
 subprocess.check_call(configure)
