@@ -412,8 +412,6 @@ AC_ARG_ENABLE(sidplay,
 	AS_HELP_STRING([--enable-sidplay],
 		[enable C64 SID support via libsidplay2]),,
 	enable_sidplay=auto)
-MPD_DEPENDS([enable_sidplay], [enable_glib],
-	[Cannot use --enable-sidplay with --disable-glib])
 
 AC_ARG_ENABLE(shout,
 	AS_HELP_STRING([--enable-shout],
