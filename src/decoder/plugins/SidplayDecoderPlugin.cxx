@@ -33,57 +33,35 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <glib.h>
 
 #include <sidplay/sidplay2.h>
 #include <sidplay/builders/resid.h>
 #include <sidplay/utils/SidTuneMod.h>
+#include <sidplay/utils/SidDatabase.h>
 
 #define SUBTUNE_PREFIX "tune_"
 
 static constexpr Domain sidplay_domain("sidplay");
 
-static GKeyFile *songlength_database;
+static SidDatabase *songlength_database;
 
 static bool all_files_are_containers;
 static unsigned default_songlength;
 
 static bool filter_setting;
 
-static GKeyFile *
+static SidDatabase *
 sidplay_load_songlength_db(const Path path)
 {
-	GError *error = nullptr;
-	gchar *data;
-	gsize size;
-
-	if (!g_file_get_contents(path.c_str(), &data, &size, &error)) {
+	SidDatabase *db = new SidDatabase();
+	if (db->open(path.c_str()) < 0) {
 		FormatError(sidplay_domain,
 			    "unable to read songlengths file %s: %s",
-			    path.c_str(), error->message);
-		g_error_free(error);
+			    path.c_str(), db->error());
+		delete db;
 		return nullptr;
 	}
 
-	/* replace any ; comment characters with # */
-	for (gsize i = 0; i < size; i++)
-		if (data[i] == ';')
-			data[i] = '#';
-
-	GKeyFile *db = g_key_file_new();
-	bool success = g_key_file_load_from_data(db, data, size,
-						 G_KEY_FILE_NONE, &error);
-	g_free(data);
-	if (!success) {
-		FormatError(sidplay_domain,
-			    "unable to parse songlengths file %s: %s",
-			    path.c_str(), error->message);
-		g_error_free(error);
-		g_key_file_free(db);
-		return nullptr;
-	}
-
-	g_key_file_set_list_separator(db, ' ');
 	return db;
 }
 
@@ -111,8 +89,7 @@ sidplay_init(const config_param &param)
 static void
 sidplay_finish()
 {
-	if(songlength_database)
-		g_key_file_free(songlength_database);
+	delete songlength_database;
 }
 
 struct SidplayContainerPath {
@@ -171,28 +148,11 @@ get_song_length(const SidplayContainerPath &container)
 
 	const unsigned song_num = container.track;
 
-	gsize num_items;
-	gchar **values=g_key_file_get_string_list(songlength_database,
-		"Database", md5sum, &num_items, nullptr);
-	if(!values || song_num>num_items) {
-		g_strfreev(values);
+	const auto length = songlength_database->length(md5sum, song_num);
+	if (length < 0)
 		return SignedSongTime::Negative();
-	}
 
-	int minutes=strtol(values[song_num-1], nullptr, 10);
-	if(errno==EINVAL) minutes=0;
-
-	int seconds;
-	char *ptr=strchr(values[song_num-1], ':');
-	if(ptr) {
-		seconds=strtol(ptr+1, nullptr, 10);
-		if(errno==EINVAL) seconds=0;
-	} else
-		seconds=0;
-
-	g_strfreev(values);
-
-	return SignedSongTime::FromS((minutes * 60) + seconds);
+	return SignedSongTime::FromS(length);
 }
 
 static void
