@@ -2,16 +2,11 @@
  * Unit tests for class CircularBuffer.
  */
 
-#include "config.h"
+#include "check.h"
 #include "util/CircularBuffer.hxx"
 
 #include <cppunit/TestFixture.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
-
-#include <string.h>
-#include <stdlib.h>
 
 class TestCircularBuffer : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(TestCircularBuffer);
