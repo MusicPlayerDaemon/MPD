@@ -3,6 +3,7 @@
  */
 
 #include "config.h"
+#include "DivideStringTest.hxx"
 #include "UriUtilTest.hxx"
 #include "TestCircularBuffer.hxx"
 
@@ -13,6 +14,7 @@
 
 #include <stdlib.h>
 
+CPPUNIT_TEST_SUITE_REGISTRATION(DivideStringTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(UriUtilTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestCircularBuffer);
 
