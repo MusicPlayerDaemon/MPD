@@ -25,13 +25,12 @@
 #include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
+#include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
 #include <vorbis/vorbisenc.h>
-
-#include <glib.h>
 
 struct vorbis_encoder {
 	/** the base class */
@@ -273,9 +272,9 @@ static void
 copy_tag_to_vorbis_comment(vorbis_comment *vc, const Tag &tag)
 {
 	for (const auto &item : tag) {
-		char *name = g_ascii_strup(tag_item_names[item.type], -1);
+		char name[64];
+		ToUpperASCII(name, tag_item_names[item.type], sizeof(name));
 		vorbis_comment_add_tag(vc, name, item.value);
-		g_free(name);
 	}
 }
 

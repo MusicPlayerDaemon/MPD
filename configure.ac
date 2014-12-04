@@ -1145,9 +1145,8 @@ MPD_ENABLE_AUTO_PKG(shine_encoder, SHINE, [shine >= 3.1],
 	[shine encoder], [libshine not found])
 
 dnl ---------------------------- Ogg Vorbis Encoder ---------------------------
-MPD_ENABLE_AUTO_PKG_DEPENDS(vorbis_encoder, VORBISENC, [vorbisenc vorbis ogg],
-	[Ogg Vorbis encoder], [libvorbisenc not found], [],
-	[enable_glib], [Cannot use --enable-vorbis-encoder with --disable-glib])
+MPD_ENABLE_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc vorbis ogg],
+	[Ogg Vorbis encoder], [libvorbisenc not found])
 
 dnl ------------------------------- LAME Encoder ------------------------------
 
