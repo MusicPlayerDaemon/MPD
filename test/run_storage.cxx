@@ -24,10 +24,6 @@
 #include "storage/FileInfo.hxx"
 #include "util/Error.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <memory>
 
 #include <unistd.h>
@@ -101,14 +97,6 @@ main(int argc, char **argv)
 		fprintf(stderr, "Usage: run_storage COMMAND URI ...\n");
 		return EXIT_FAILURE;
 	}
-
-	/* initialize GLib */
-
-#ifdef HAVE_GLIB
-#if !GLIB_CHECK_VERSION(2,32,0)
-	g_thread_init(NULL);
-#endif
-#endif
 
 	const char *const command = argv[1];
 	const char *const storage_uri = argv[2];

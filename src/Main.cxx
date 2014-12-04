@@ -437,11 +437,6 @@ int mpd_main(int argc, char *argv[])
 
 #ifdef HAVE_GLIB
 	g_set_application_name("Music Player Daemon");
-
-#if !GLIB_CHECK_VERSION(2,32,0)
-	/* enable GLib's thread safety code */
-	g_thread_init(nullptr);
-#endif
 #endif
 #endif
 

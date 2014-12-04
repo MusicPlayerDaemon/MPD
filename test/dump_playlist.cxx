@@ -35,10 +35,6 @@
 #include "thread/Cond.hxx"
 #include "Log.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -63,14 +59,6 @@ int main(int argc, char **argv)
 
 	const Path config_path = Path::FromFS(argv[1]);
 	uri = argv[2];
-
-	/* initialize GLib */
-
-#ifdef HAVE_GLIB
-#if !GLIB_CHECK_VERSION(2,32,0)
-	g_thread_init(NULL);
-#endif
-#endif
 
 	/* initialize MPD */
 

@@ -32,10 +32,6 @@
 #include "thread/Cond.hxx"
 #include "Log.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -89,12 +85,6 @@ int main(int argc, char **argv)
 
 	decoder_name = argv[1];
 	const Path path = Path::FromFS(argv[2]);
-
-#ifdef HAVE_GLIB
-#if !GLIB_CHECK_VERSION(2,32,0)
-	g_thread_init(NULL);
-#endif
-#endif
 
 	const ScopeIOThread io_thread;
 

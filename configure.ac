@@ -522,7 +522,7 @@ AC_ARG_ENABLE(glib,
 	enable_glib=auto)
 
 if test x$enable_glib != xno; then
-	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.28 gthread-2.0],
+	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.32],
 		[found_glib=yes],
 		[found_glib=no])
 

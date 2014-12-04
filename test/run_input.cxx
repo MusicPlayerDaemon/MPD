@@ -35,10 +35,6 @@
 #include "archive/ArchiveList.hxx"
 #endif
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -104,14 +100,6 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Usage: run_input URI\n");
 		return EXIT_FAILURE;
 	}
-
-	/* initialize GLib */
-
-#ifdef HAVE_GLIB
-#if !GLIB_CHECK_VERSION(2,32,0)
-	g_thread_init(NULL);
-#endif
-#endif
 
 	/* initialize MPD */
 
