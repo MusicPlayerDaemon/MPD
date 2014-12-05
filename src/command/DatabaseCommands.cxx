@@ -50,12 +50,10 @@ handle_listfiles_db(Client &client, const char *uri)
 }
 
 CommandResult
-handle_lsinfo2(Client &client, unsigned argc, char *argv[])
+handle_lsinfo2(Client &client, ConstBuffer<const char *> args)
 {
-	const char *const uri = argc == 2
-		? argv[1]
-		/* default is root directory */
-		: "";
+	/* default is root directory */
+	const char *const uri = args.IsEmpty() ? "" : args.front();
 
 	const DatabaseSelection selection(uri, false);
 
@@ -67,10 +65,8 @@ handle_lsinfo2(Client &client, unsigned argc, char *argv[])
 }
 
 static CommandResult
-handle_match(Client &client, unsigned argc, char *argv[], bool fold_case)
+handle_match(Client &client, ConstBuffer<const char *> args, bool fold_case)
 {
-	ConstBuffer<const char *> args(argv + 1, argc - 1);
-
 	unsigned window_start = 0, window_end = std::numeric_limits<int>::max();
 	if (args.size >= 2 && strcmp(args[args.size - 2], "window") == 0) {
 		if (!check_range(client, &window_start, &window_end,
@@ -97,22 +93,20 @@ handle_match(Client &client, unsigned argc, char *argv[], bool fold_case)
 }
 
 CommandResult
-handle_find(Client &client, unsigned argc, char *argv[])
+handle_find(Client &client, ConstBuffer<const char *> args)
 {
-	return handle_match(client, argc, argv, false);
+	return handle_match(client, args, false);
 }
 
 CommandResult
-handle_search(Client &client, unsigned argc, char *argv[])
+handle_search(Client &client, ConstBuffer<const char *> args)
 {
-	return handle_match(client, argc, argv, true);
+	return handle_match(client, args, true);
 }
 
 static CommandResult
-handle_match_add(Client &client, unsigned argc, char *argv[], bool fold_case)
+handle_match_add(Client &client, ConstBuffer<const char *> args, bool fold_case)
 {
-	ConstBuffer<const char *> args(argv + 1, argc - 1);
-
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
@@ -129,21 +123,20 @@ handle_match_add(Client &client, unsigned argc, char *argv[], bool fold_case)
 }
 
 CommandResult
-handle_findadd(Client &client, unsigned argc, char *argv[])
+handle_findadd(Client &client, ConstBuffer<const char *> args)
 {
-	return handle_match_add(client, argc, argv, false);
+	return handle_match_add(client, args, false);
 }
 
 CommandResult
-handle_searchadd(Client &client, unsigned argc, char *argv[])
+handle_searchadd(Client &client, ConstBuffer<const char *> args)
 {
-	return handle_match_add(client, argc, argv, true);
+	return handle_match_add(client, args, true);
 }
 
 CommandResult
-handle_searchaddpl(Client &client, unsigned argc, char *argv[])
+handle_searchaddpl(Client &client, ConstBuffer<const char *> args)
 {
-	ConstBuffer<const char *> args(argv + 1, argc - 1);
 	const char *playlist = args.shift();
 
 	SongFilter filter;
@@ -164,10 +157,8 @@ handle_searchaddpl(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_count(Client &client, unsigned argc, char *argv[])
+handle_count(Client &client, ConstBuffer<const char *> args)
 {
-	ConstBuffer<const char *> args(argv + 1, argc - 1);
-
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
 	if (args.size >= 2 && strcmp(args[args.size - 2], "group") == 0) {
 		const char *s = args[args.size - 1];
@@ -195,24 +186,21 @@ handle_count(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_listall(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_listall(Client &client, ConstBuffer<const char *> args)
 {
-	const char *directory = "";
-
-	if (argc == 2)
-		directory = argv[1];
+	/* default is root directory */
+	const char *const uri = args.IsEmpty() ? "" : args.front();
 
 	Error error;
-	return db_selection_print(client, DatabaseSelection(directory, true),
+	return db_selection_print(client, DatabaseSelection(uri, true),
 				  false, false, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
 
 CommandResult
-handle_list(Client &client, unsigned argc, char *argv[])
+handle_list(Client &client, ConstBuffer<const char *> args)
 {
-	ConstBuffer<const char *> args(argv + 1, argc - 1);
 	const char *tag_name = args.shift();
 	unsigned tagType = locate_parse_type(tag_name);
 
@@ -283,15 +271,13 @@ handle_list(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_listallinfo(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_listallinfo(Client &client, ConstBuffer<const char *> args)
 {
-	const char *directory = "";
-
-	if (argc == 2)
-		directory = argv[1];
+	/* default is root directory */
+	const char *const uri = args.IsEmpty() ? "" : args.front();
 
 	Error error;
-	return db_selection_print(client, DatabaseSelection(directory, true),
+	return db_selection_print(client, DatabaseSelection(uri, true),
 				  true, false, error)
 		? CommandResult::OK
 		: print_error(client, error);

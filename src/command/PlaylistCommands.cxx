@@ -39,6 +39,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 
 bool
 playlist_commands_available()
@@ -58,28 +59,28 @@ print_spl_list(Client &client, const PlaylistVector &list)
 }
 
 CommandResult
-handle_save(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_save(Client &client, ConstBuffer<const char *> args)
 {
-	PlaylistResult result = spl_save_playlist(argv[1], client.playlist);
+	PlaylistResult result = spl_save_playlist(args.front(), client.playlist);
 	return print_playlist_result(client, result);
 }
 
 CommandResult
-handle_load(Client &client, unsigned argc, char *argv[])
+handle_load(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned start_index, end_index;
 
-	if (argc < 3) {
+	if (args.size < 2) {
 		start_index = 0;
 		end_index = unsigned(-1);
-	} else if (!check_range(client, &start_index, &end_index, argv[2]))
+	} else if (!check_range(client, &start_index, &end_index, args[1]))
 		return CommandResult::ERROR;
 
 	const ScopeBulkEdit bulk_edit(client.partition);
 
 	Error error;
 	const SongLoader loader(client);
-	if (!playlist_open_into_queue(argv[1],
+	if (!playlist_open_into_queue(args.front(),
 				      start_index, end_index,
 				      client.playlist,
 				      client.player_control, loader, error))
@@ -89,94 +90,104 @@ handle_load(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_listplaylist(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_listplaylist(Client &client, ConstBuffer<const char *> args)
 {
-	if (playlist_file_print(client, argv[1], false))
+	const char *const name = args.front();
+
+	if (playlist_file_print(client, name, false))
 		return CommandResult::OK;
 
 	Error error;
-	return spl_print(client, argv[1], false, error)
+	return spl_print(client, name, false, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
 
 CommandResult
-handle_listplaylistinfo(Client &client,
-			gcc_unused unsigned argc, char *argv[])
+handle_listplaylistinfo(Client &client, ConstBuffer<const char *> args)
 {
-	if (playlist_file_print(client, argv[1], true))
+	const char *const name = args.front();
+
+	if (playlist_file_print(client, name, true))
 		return CommandResult::OK;
 
 	Error error;
-	return spl_print(client, argv[1], true, error)
+	return spl_print(client, name, true, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
 
 CommandResult
-handle_rm(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_rm(Client &client, ConstBuffer<const char *> args)
 {
+	const char *const name = args.front();
+
 	Error error;
-	return spl_delete(argv[1], error)
+	return spl_delete(name, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
 
 CommandResult
-handle_rename(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_rename(Client &client, ConstBuffer<const char *> args)
 {
+	const char *const old_name = args[0];
+	const char *const new_name = args[1];
+
 	Error error;
-	return spl_rename(argv[1], argv[2], error)
+	return spl_rename(old_name, new_name, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
 
 CommandResult
-handle_playlistdelete(Client &client,
-		      gcc_unused unsigned argc, char *argv[]) {
-	char *playlist = argv[1];
+handle_playlistdelete(Client &client, ConstBuffer<const char *> args)
+{
+	const char *const name = args[0];
 	unsigned from;
 
-	if (!check_unsigned(client, &from, argv[2]))
+	if (!check_unsigned(client, &from, args[1]))
 		return CommandResult::ERROR;
 
 	Error error;
-	return spl_remove_index(playlist, from, error)
+	return spl_remove_index(name, from, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
 
 CommandResult
-handle_playlistmove(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_playlistmove(Client &client, ConstBuffer<const char *> args)
 {
-	char *playlist = argv[1];
+	const char *const name = args.front();
 	unsigned from, to;
 
-	if (!check_unsigned(client, &from, argv[2]))
+	if (!check_unsigned(client, &from, args[1]))
 		return CommandResult::ERROR;
-	if (!check_unsigned(client, &to, argv[3]))
+	if (!check_unsigned(client, &to, args[2]))
 		return CommandResult::ERROR;
 
 	Error error;
-	return spl_move_index(playlist, from, to, error)
+	return spl_move_index(name, from, to, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
 
 CommandResult
-handle_playlistclear(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_playlistclear(Client &client, ConstBuffer<const char *> args)
 {
+	const char *const name = args.front();
+
 	Error error;
-	return spl_clear(argv[1], error)
+	return spl_clear(name, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }
 
 CommandResult
-handle_playlistadd(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_playlistadd(Client &client, ConstBuffer<const char *> args)
 {
-	char *playlist = argv[1];
-	char *uri = argv[2];
+	const char *const playlist = args[0];
+	const char *const uri = args[1];
 
 	bool success;
 	Error error;
@@ -207,8 +218,7 @@ handle_playlistadd(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_listplaylists(Client &client,
-		     gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_listplaylists(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	Error error;
 	const auto list = ListPlaylistFiles(error);

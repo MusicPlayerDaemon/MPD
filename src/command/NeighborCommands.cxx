@@ -25,6 +25,7 @@
 #include "protocol/Result.hxx"
 #include "neighbor/Glue.hxx"
 #include "neighbor/Info.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <set>
 #include <string>
@@ -38,8 +39,7 @@ neighbor_commands_available(const Instance &instance)
 }
 
 CommandResult
-handle_listneighbors(Client &client,
-		     gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_listneighbors(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	const NeighborGlue *const neighbors =
 		client.partition.instance.neighbors;

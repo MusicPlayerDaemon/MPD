@@ -24,6 +24,7 @@
 #include "Instance.hxx"
 #include "Partition.hxx"
 #include "protocol/Result.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <set>
 #include <string>
@@ -31,11 +32,12 @@
 #include <assert.h>
 
 CommandResult
-handle_subscribe(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_subscribe(Client &client, ConstBuffer<const char *> args)
 {
-	assert(argc == 2);
+	assert(args.size == 1);
+	const char *const channel_name = args[0];
 
-	switch (client.Subscribe(argv[1])) {
+	switch (client.Subscribe(channel_name)) {
 	case Client::SubscribeResult::OK:
 		return CommandResult::OK;
 
@@ -61,11 +63,12 @@ handle_subscribe(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_unsubscribe(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_unsubscribe(Client &client, ConstBuffer<const char *> args)
 {
-	assert(argc == 2);
+	assert(args.size == 1);
+	const char *const channel_name = args[0];
 
-	if (client.Unsubscribe(argv[1]))
+	if (client.Unsubscribe(channel_name))
 		return CommandResult::OK;
 	else {
 		command_error(client, ACK_ERROR_NO_EXIST,
@@ -75,10 +78,9 @@ handle_unsubscribe(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_channels(Client &client,
-		gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_channels(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
-	assert(argc == 1);
+	assert(args.IsEmpty());
 
 	std::set<std::string> channels;
 	for (const auto &c : *client.partition.instance.client_list)
@@ -93,9 +95,9 @@ handle_channels(Client &client,
 
 CommandResult
 handle_read_messages(Client &client,
-		     gcc_unused unsigned argc, gcc_unused char *argv[])
+		     gcc_unused ConstBuffer<const char *> args)
 {
-	assert(argc == 1);
+	assert(args.IsEmpty());
 
 	while (!client.messages.empty()) {
 		const ClientMessage &msg = client.messages.front();
@@ -109,19 +111,21 @@ handle_read_messages(Client &client,
 }
 
 CommandResult
-handle_send_message(Client &client,
-		    gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_send_message(Client &client, ConstBuffer<const char *> args)
 {
-	assert(argc == 3);
+	assert(args.size == 2);
 
-	if (!client_message_valid_channel_name(argv[1])) {
+	const char *const channel_name = args[0];
+	const char *const message_text = args[1];
+
+	if (!client_message_valid_channel_name(channel_name)) {
 		command_error(client, ACK_ERROR_ARG,
 			      "invalid channel name");
 		return CommandResult::ERROR;
 	}
 
 	bool sent = false;
-	const ClientMessage msg(argv[1], argv[2]);
+	const ClientMessage msg(channel_name, message_text);
 	for (auto &c : *client.partition.instance.client_list)
 		if (c.PushMessage(msg))
 			sent = true;

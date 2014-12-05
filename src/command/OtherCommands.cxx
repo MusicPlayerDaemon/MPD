@@ -37,6 +37,7 @@
 #include "mixer/Volume.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
 #include "Permission.hxx"
@@ -68,8 +69,7 @@ print_spl_list(Client &client, const PlaylistVector &list)
 }
 
 CommandResult
-handle_urlhandlers(Client &client,
-		   gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_urlhandlers(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	if (client.IsLocal())
 		client_puts(client, "handler: file://\n");
@@ -78,31 +78,27 @@ handle_urlhandlers(Client &client,
 }
 
 CommandResult
-handle_decoders(Client &client,
-		gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_decoders(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	decoder_list_print(client);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_tagtypes(Client &client,
-		gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_tagtypes(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	tag_print_types(client);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_kill(gcc_unused Client &client,
-	    gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_kill(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	return CommandResult::KILL;
 }
 
 CommandResult
-handle_close(gcc_unused Client &client,
-	     gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_close(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	return CommandResult::FINISH;
 }
@@ -116,12 +112,10 @@ print_tag(TagType type, const char *value, void *ctx)
 }
 
 CommandResult
-handle_listfiles(Client &client, unsigned argc, char *argv[])
+handle_listfiles(Client &client, ConstBuffer<const char *> args)
 {
-	const char *const uri = argc == 2
-		? argv[1]
-		/* default is root directory */
-		: "";
+	/* default is root directory */
+	const char *const uri = args.IsEmpty() ? "" : args.front();
 
 	if (memcmp(uri, "file:///", 8) == 0)
 		/* list local directory */
@@ -157,12 +151,10 @@ static constexpr tag_handler print_tag_handler = {
 };
 
 CommandResult
-handle_lsinfo(Client &client, unsigned argc, char *argv[])
+handle_lsinfo(Client &client, ConstBuffer<const char *> args)
 {
-	const char *const uri = argc == 2
-		? argv[1]
-		/* default is root directory */
-		: "";
+	/* default is root directory */
+	const char *const uri = args.IsEmpty() ? "" : args.front();
 
 	if (memcmp(uri, "file:///", 8) == 0) {
 		/* print information about an arbitrary local file */
@@ -207,7 +199,7 @@ handle_lsinfo(Client &client, unsigned argc, char *argv[])
 	}
 
 #ifdef ENABLE_DATABASE
-	CommandResult result = handle_lsinfo2(client, argc, argv);
+	CommandResult result = handle_lsinfo2(client, args);
 	if (result != CommandResult::OK)
 		return result;
 #endif
@@ -265,14 +257,14 @@ handle_update(Client &client, Database &db,
 #endif
 
 static CommandResult
-handle_update(Client &client, unsigned argc, char *argv[], bool discard)
+handle_update(Client &client, ConstBuffer<const char *> args, bool discard)
 {
 #ifdef ENABLE_DATABASE
 	const char *path = "";
 
-	assert(argc <= 2);
-	if (argc == 2) {
-		path = argv[1];
+	assert(args.size <= 1);
+	if (!args.IsEmpty()) {
+		path = args.front();
 
 		if (*path == 0 || strcmp(path, "/") == 0)
 			/* backwards compatibility with MPD 0.15 */
@@ -292,8 +284,7 @@ handle_update(Client &client, unsigned argc, char *argv[], bool discard)
 	if (db != nullptr)
 		return handle_update(client, *db, path, discard);
 #else
-	(void)argc;
-	(void)argv;
+	(void)args;
 	(void)discard;
 #endif
 
@@ -302,24 +293,24 @@ handle_update(Client &client, unsigned argc, char *argv[], bool discard)
 }
 
 CommandResult
-handle_update(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_update(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
-	return handle_update(client, argc, argv, false);
+	return handle_update(client, args, false);
 }
 
 CommandResult
-handle_rescan(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_rescan(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
-	return handle_update(client, argc, argv, true);
+	return handle_update(client, args, true);
 }
 
 CommandResult
-handle_setvol(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_setvol(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned level;
 	bool success;
 
-	if (!check_unsigned(client, &level, argv[1]))
+	if (!check_unsigned(client, &level, args.front()))
 		return CommandResult::ERROR;
 
 	if (level > 100) {
@@ -338,10 +329,10 @@ handle_setvol(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_volume(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_volume(Client &client, ConstBuffer<const char *> args)
 {
 	int relative;
-	if (!check_int(client, &relative, argv[1]))
+	if (!check_int(client, &relative, args.front()))
 		return CommandResult::ERROR;
 
 	if (relative < -100 || relative > 100) {
@@ -372,26 +363,24 @@ handle_volume(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_stats(Client &client,
-	     gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_stats(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	stats_print(client);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_ping(gcc_unused Client &client,
-	    gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_ping(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_password(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_password(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned permission = 0;
 
-	if (getPermissionFromPassword(argv[1], &permission) < 0) {
+	if (getPermissionFromPassword(args.front(), &permission) < 0) {
 		command_error(client, ACK_ERROR_PASSWORD, "incorrect password");
 		return CommandResult::ERROR;
 	}
@@ -402,8 +391,7 @@ handle_password(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_config(Client &client,
-	      gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_config(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	if (!client.IsLocal()) {
 		command_error(client, ACK_ERROR_PERMISSION,
@@ -423,17 +411,16 @@ handle_config(Client &client,
 }
 
 CommandResult
-handle_idle(Client &client,
-	    gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_idle(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned flags = 0;
 
-	for (unsigned i = 1; i < argc; ++i) {
-		unsigned event = idle_parse_name(argv[i]);
+	for (const char *i : args) {
+		unsigned event = idle_parse_name(i);
 		if (event == 0) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Unrecognized idle event: %s",
-				      argv[i]);
+				      i);
 			return CommandResult::ERROR;
 		}
 

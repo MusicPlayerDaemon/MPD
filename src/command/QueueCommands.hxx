@@ -23,65 +23,66 @@
 #include "CommandResult.hxx"
 
 class Client;
+template<typename T> struct ConstBuffer;
 
 CommandResult
-handle_add(Client &client, unsigned argc, char *argv[]);
+handle_add(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_addid(Client &client, unsigned argc, char *argv[]);
+handle_addid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_rangeid(Client &client, unsigned argc, char *argv[]);
+handle_rangeid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_delete(Client &client, unsigned argc, char *argv[]);
+handle_delete(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_deleteid(Client &client, unsigned argc, char *argv[]);
+handle_deleteid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_playlist(Client &client, unsigned argc, char *argv[]);
+handle_playlist(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_shuffle(Client &client, unsigned argc, char *argv[]);
+handle_shuffle(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_clear(Client &client, unsigned argc, char *argv[]);
+handle_clear(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_plchanges(Client &client, unsigned argc, char *argv[]);
+handle_plchanges(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_plchangesposid(Client &client, unsigned argc, char *argv[]);
+handle_plchangesposid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_playlistinfo(Client &client, unsigned argc, char *argv[]);
+handle_playlistinfo(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_playlistid(Client &client, unsigned argc, char *argv[]);
+handle_playlistid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_playlistfind(Client &client, unsigned argc, char *argv[]);
+handle_playlistfind(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_playlistsearch(Client &client, unsigned argc, char *argv[]);
+handle_playlistsearch(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_prio(Client &client, unsigned argc, char *argv[]);
+handle_prio(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_prioid(Client &client, unsigned argc, char *argv[]);
+handle_prioid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_move(Client &client, unsigned argc, char *argv[]);
+handle_move(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_moveid(Client &client, unsigned argc, char *argv[]);
+handle_moveid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_swap(Client &client, unsigned argc, char *argv[]);
+handle_swap(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_swapid(Client &client, unsigned argc, char *argv[]);
+handle_swapid(Client &client, ConstBuffer<const char *> args);
 
 #endif

@@ -24,6 +24,7 @@
 
 class Client;
 class Storage;
+template<typename T> struct ConstBuffer;
 
 CommandResult
 handle_listfiles_storage(Client &client, Storage &storage, const char *uri);
@@ -32,12 +33,12 @@ CommandResult
 handle_listfiles_storage(Client &client, const char *uri);
 
 CommandResult
-handle_listmounts(Client &client, unsigned argc, char *argv[]);
+handle_listmounts(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_mount(Client &client, unsigned argc, char *argv[]);
+handle_mount(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_unmount(Client &client, unsigned argc, char *argv[]);
+handle_unmount(Client &client, ConstBuffer<const char *> args);
 
 #endif

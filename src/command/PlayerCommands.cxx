@@ -30,6 +30,7 @@
 #include "protocol/ArgParser.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
+#include "util/ConstBuffer.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
@@ -56,22 +57,22 @@
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
 CommandResult
-handle_play(Client &client, unsigned argc, char *argv[])
+handle_play(Client &client, ConstBuffer<const char *> args)
 {
 	int song = -1;
 
-	if (argc == 2 && !check_int(client, &song, argv[1]))
+	if (!args.IsEmpty() && !check_int(client, &song, args.front()))
 		return CommandResult::ERROR;
 	PlaylistResult result = client.partition.PlayPosition(song);
 	return print_playlist_result(client, result);
 }
 
 CommandResult
-handle_playid(Client &client, unsigned argc, char *argv[])
+handle_playid(Client &client, ConstBuffer<const char *> args)
 {
 	int id = -1;
 
-	if (argc == 2 && !check_int(client, &id, argv[1]))
+	if (!args.IsEmpty() && !check_int(client, &id, args.front()))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.PlayId(id);
@@ -79,28 +80,25 @@ handle_playid(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_stop(Client &client,
-	    gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_stop(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	client.partition.Stop();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_currentsong(Client &client,
-		   gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_currentsong(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	playlist_print_current(client, client.playlist);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_pause(Client &client,
-	     unsigned argc, char *argv[])
+handle_pause(Client &client, ConstBuffer<const char *> args)
 {
-	if (argc == 2) {
+	if (!args.IsEmpty()) {
 		bool pause_flag;
-		if (!check_bool(client, &pause_flag, argv[1]))
+		if (!check_bool(client, &pause_flag, args.front()))
 			return CommandResult::ERROR;
 
 		client.player_control.SetPause(pause_flag);
@@ -111,8 +109,7 @@ handle_pause(Client &client,
 }
 
 CommandResult
-handle_status(Client &client,
-	      gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_status(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	const char *state = nullptr;
 	int song;
@@ -226,8 +223,7 @@ handle_status(Client &client,
 }
 
 CommandResult
-handle_next(Client &client,
-	    gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_next(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	playlist &playlist = client.playlist;
 
@@ -243,18 +239,17 @@ handle_next(Client &client,
 }
 
 CommandResult
-handle_previous(Client &client,
-		gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_previous(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	client.partition.PlayPrevious();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_repeat(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_repeat(Client &client, ConstBuffer<const char *> args)
 {
 	bool status;
-	if (!check_bool(client, &status, argv[1]))
+	if (!check_bool(client, &status, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.SetRepeat(status);
@@ -262,10 +257,10 @@ handle_repeat(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_single(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_single(Client &client, ConstBuffer<const char *> args)
 {
 	bool status;
-	if (!check_bool(client, &status, argv[1]))
+	if (!check_bool(client, &status, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.SetSingle(status);
@@ -273,10 +268,10 @@ handle_single(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_consume(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_consume(Client &client, ConstBuffer<const char *> args)
 {
 	bool status;
-	if (!check_bool(client, &status, argv[1]))
+	if (!check_bool(client, &status, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.SetConsume(status);
@@ -284,10 +279,10 @@ handle_consume(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_random(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_random(Client &client, ConstBuffer<const char *> args)
 {
 	bool status;
-	if (!check_bool(client, &status, argv[1]))
+	if (!check_bool(client, &status, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.SetRandom(status);
@@ -296,22 +291,21 @@ handle_random(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_clearerror(gcc_unused Client &client,
-		  gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_clearerror(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	client.player_control.ClearError();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_seek(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_seek(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned song;
 	SongTime seek_time;
 
-	if (!check_unsigned(client, &song, argv[1]))
+	if (!check_unsigned(client, &song, args[0]))
 		return CommandResult::ERROR;
-	if (!ParseCommandArg(client, seek_time, argv[2]))
+	if (!ParseCommandArg(client, seek_time, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -320,14 +314,14 @@ handle_seek(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_seekid(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_seekid(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned id;
 	SongTime seek_time;
 
-	if (!check_unsigned(client, &id, argv[1]))
+	if (!check_unsigned(client, &id, args[0]))
 		return CommandResult::ERROR;
-	if (!ParseCommandArg(client, seek_time, argv[2]))
+	if (!ParseCommandArg(client, seek_time, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -336,9 +330,9 @@ handle_seekid(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_seekcur(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_seekcur(Client &client, ConstBuffer<const char *> args)
 {
-	const char *p = argv[1];
+	const char *p = args.front();
 	bool relative = *p == '+' || *p == '-';
 	SignedSongTime seek_time;
 	if (!ParseCommandArg(client, seek_time, p))
@@ -350,11 +344,11 @@ handle_seekcur(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_crossfade(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_crossfade(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned xfade_time;
 
-	if (!check_unsigned(client, &xfade_time, argv[1]))
+	if (!check_unsigned(client, &xfade_time, args.front()))
 		return CommandResult::ERROR;
 	client.player_control.SetCrossFade(xfade_time);
 
@@ -362,11 +356,11 @@ handle_crossfade(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_mixrampdb(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_mixrampdb(Client &client, ConstBuffer<const char *> args)
 {
 	float db;
 
-	if (!check_float(client, &db, argv[1]))
+	if (!check_float(client, &db, args.front()))
 		return CommandResult::ERROR;
 	client.player_control.SetMixRampDb(db);
 
@@ -374,11 +368,11 @@ handle_mixrampdb(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_mixrampdelay(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_mixrampdelay(Client &client, ConstBuffer<const char *> args)
 {
 	float delay_secs;
 
-	if (!check_float(client, &delay_secs, argv[1]))
+	if (!check_float(client, &delay_secs, args.front()))
 		return CommandResult::ERROR;
 	client.player_control.SetMixRampDelay(delay_secs);
 
@@ -386,10 +380,9 @@ handle_mixrampdelay(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_replay_gain_mode(Client &client,
-			gcc_unused unsigned argc, char *argv[])
+handle_replay_gain_mode(Client &client, ConstBuffer<const char *> args)
 {
-	if (!replay_gain_set_mode_string(argv[1])) {
+	if (!replay_gain_set_mode_string(args.front())) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Unrecognized replay gain mode");
 		return CommandResult::ERROR;
@@ -400,8 +393,7 @@ handle_replay_gain_mode(Client &client,
 }
 
 CommandResult
-handle_replay_gain_status(Client &client,
-			  gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_replay_gain_status(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	client_printf(client, "replay_gain_mode: %s\n",
 		      replay_gain_get_mode_string());

@@ -31,6 +31,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <string.h>
 
@@ -51,20 +52,22 @@ sticker_song_find_print_cb(const LightSong &song, const char *value,
 }
 
 static CommandResult
-handle_sticker_song(Client &client, unsigned argc, char *argv[])
+handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 {
 	Error error;
 	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
 		return print_error(client, error);
 
+	const char *const cmd = args.front();
+
 	/* get song song_id key */
-	if (argc == 5 && strcmp(argv[1], "get") == 0) {
-		const LightSong *song = db->GetSong(argv[3], error);
+	if (args.size == 4 && strcmp(cmd, "get") == 0) {
+		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
-		const auto value = sticker_song_get_value(*song, argv[4]);
+		const auto value = sticker_song_get_value(*song, args[3]);
 		db->ReturnSong(song);
 		if (value.empty()) {
 			command_error(client, ACK_ERROR_NO_EXIST,
@@ -72,12 +75,12 @@ handle_sticker_song(Client &client, unsigned argc, char *argv[])
 			return CommandResult::ERROR;
 		}
 
-		sticker_print_value(client, argv[4], value.c_str());
+		sticker_print_value(client, args[3], value.c_str());
 
 		return CommandResult::OK;
 	/* list song song_id */
-	} else if (argc == 4 && strcmp(argv[1], "list") == 0) {
-		const LightSong *song = db->GetSong(argv[3], error);
+	} else if (args.size == 3 && strcmp(cmd, "list") == 0) {
+		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
@@ -90,12 +93,12 @@ handle_sticker_song(Client &client, unsigned argc, char *argv[])
 
 		return CommandResult::OK;
 	/* set song song_id id key */
-	} else if (argc == 6 && strcmp(argv[1], "set") == 0) {
-		const LightSong *song = db->GetSong(argv[3], error);
+	} else if (args.size == 5 && strcmp(cmd, "set") == 0) {
+		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
-		bool ret = sticker_song_set_value(*song, argv[4], argv[5]);
+		bool ret = sticker_song_set_value(*song, args[3], args[4]);
 		db->ReturnSong(song);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
@@ -105,15 +108,15 @@ handle_sticker_song(Client &client, unsigned argc, char *argv[])
 
 		return CommandResult::OK;
 	/* delete song song_id [key] */
-	} else if ((argc == 4 || argc == 5) &&
-		   strcmp(argv[1], "delete") == 0) {
-		const LightSong *song = db->GetSong(argv[3], error);
+	} else if ((args.size == 3 || args.size == 4) &&
+		   strcmp(cmd, "delete") == 0) {
+		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
 			return print_error(client, error);
 
-		bool ret = argc == 4
+		bool ret = args.size == 3
 			? sticker_song_delete(*song)
-			: sticker_song_delete_value(*song, argv[4]);
+			: sticker_song_delete_value(*song, args[3]);
 		db->ReturnSong(song);
 		if (!ret) {
 			command_error(client, ACK_ERROR_SYSTEM,
@@ -123,15 +126,15 @@ handle_sticker_song(Client &client, unsigned argc, char *argv[])
 
 		return CommandResult::OK;
 	/* find song dir key */
-	} else if (argc == 5 && strcmp(argv[1], "find") == 0) {
+	} else if (args.size == 4 && strcmp(cmd, "find") == 0) {
 		/* "sticker find song a/directory name" */
 
-		const char *const base_uri = argv[3];
+		const char *const base_uri = args[2];
 
 		bool success;
 		struct sticker_song_find_data data = {
 			client,
-			argv[4],
+			args[3],
 		};
 
 		success = sticker_song_find(*db, base_uri, data.name,
@@ -150,9 +153,9 @@ handle_sticker_song(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_sticker(Client &client, unsigned argc, char *argv[])
+handle_sticker(Client &client, ConstBuffer<const char *> args)
 {
-	assert(argc >= 4);
+	assert(args.size >= 3);
 
 	if (!sticker_enabled()) {
 		command_error(client, ACK_ERROR_UNKNOWN,
@@ -160,8 +163,8 @@ handle_sticker(Client &client, unsigned argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	if (strcmp(argv[2], "song") == 0)
-		return handle_sticker_song(client, argc, argv);
+	if (strcmp(args[1], "song") == 0)
+		return handle_sticker_song(client, args);
 	else {
 		command_error(client, ACK_ERROR_ARG,
 			      "unknown sticker domain");

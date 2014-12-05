@@ -23,68 +23,69 @@
 #include "CommandResult.hxx"
 
 class Client;
+template<typename T> struct ConstBuffer;
 
 CommandResult
-handle_play(Client &client, unsigned argc, char *argv[]);
+handle_play(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_playid(Client &client, unsigned argc, char *argv[]);
+handle_playid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_stop(Client &client, unsigned argc, char *argv[]);
+handle_stop(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_currentsong(Client &client, unsigned argc, char *argv[]);
+handle_currentsong(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_pause(Client &client, unsigned argc, char *argv[]);
+handle_pause(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_status(Client &client, unsigned argc, char *argv[]);
+handle_status(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_next(Client &client, unsigned argc, char *argv[]);
+handle_next(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_previous(Client &client, unsigned argc, char *avg[]);
+handle_previous(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_repeat(Client &client, unsigned argc, char *argv[]);
+handle_repeat(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_single(Client &client, unsigned argc, char *argv[]);
+handle_single(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_consume(Client &client, unsigned argc, char *argv[]);
+handle_consume(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_random(Client &client, unsigned argc, char *argv[]);
+handle_random(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_clearerror(Client &client, unsigned argc, char *argv[]);
+handle_clearerror(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_seek(Client &client, unsigned argc, char *argv[]);
+handle_seek(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_seekid(Client &client, unsigned argc, char *argv[]);
+handle_seekid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_seekcur(Client &client, unsigned argc, char *argv[]);
+handle_seekcur(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_crossfade(Client &client, unsigned argc, char *argv[]);
+handle_crossfade(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_mixrampdb(Client &client, unsigned argc, char *argv[]);
+handle_mixrampdb(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_mixrampdelay(Client &client, unsigned argc, char *argv[]);
+handle_mixrampdelay(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_replay_gain_mode(Client &client, unsigned argc, char *argv[]);
+handle_replay_gain_mode(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_replay_gain_status(Client &client, unsigned argc, char *argv[]);
+handle_replay_gain_status(Client &client, ConstBuffer<const char *> args);
 
 #endif
