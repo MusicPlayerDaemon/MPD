@@ -75,7 +75,7 @@ handle_not_commands(Client &client, unsigned argc, char *argv[]);
  *
  * This array must be sorted!
  */
-static const struct command commands[] = {
+static constexpr struct command commands[] = {
 	{ "add", PERMISSION_ADD, 1, 1, handle_add },
 	{ "addid", PERMISSION_ADD, 1, 2, handle_addid },
 	{ "addtagid", PERMISSION_ADD, 3, 3, handle_addtagid },
