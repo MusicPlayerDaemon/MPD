@@ -229,10 +229,9 @@ handle_commands(Client &client,
 		gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	const unsigned permission = client.GetPermission();
-	const struct command *cmd;
 
 	for (unsigned i = 0; i < num_commands; ++i) {
-		cmd = &commands[i];
+		const struct command *cmd = &commands[i];
 
 		if (cmd->permission == (permission & cmd->permission) &&
 		    command_available(client.partition, cmd))
@@ -247,10 +246,9 @@ handle_not_commands(Client &client,
 		    gcc_unused unsigned argc, gcc_unused char *argv[])
 {
 	const unsigned permission = client.GetPermission();
-	const struct command *cmd;
 
 	for (unsigned i = 0; i < num_commands; ++i) {
-		cmd = &commands[i];
+		const struct command *cmd = &commands[i];
 
 		if (cmd->permission != (permission & cmd->permission))
 			client_printf(client, "command: %s\n", cmd->cmd);
@@ -276,13 +274,12 @@ static const struct command *
 command_lookup(const char *name)
 {
 	unsigned a = 0, b = num_commands, i;
-	int cmp;
 
 	/* binary search */
 	do {
 		i = (a + b) / 2;
 
-		cmp = strcmp(name, commands[i].cmd);
+		const auto cmp = strcmp(name, commands[i].cmd);
 		if (cmp == 0)
 			return &commands[i];
 		else if (cmp < 0)
@@ -332,14 +329,12 @@ static const struct command *
 command_checked_lookup(Client &client, unsigned permission,
 		       unsigned argc, char *argv[])
 {
-	const struct command *cmd;
-
 	current_command = "";
 
 	if (argc == 0)
 		return nullptr;
 
-	cmd = command_lookup(argv[0]);
+	const struct command *cmd = command_lookup(argv[0]);
 	if (cmd == nullptr) {
 		command_error(client, ACK_ERROR_UNKNOWN,
 			      "unknown command \"%s\"", argv[0]);
@@ -358,15 +353,14 @@ CommandResult
 command_process(Client &client, unsigned num, char *line)
 {
 	Error error;
-	char *argv[COMMAND_ARGV_MAX] = { nullptr };
-	const struct command *cmd;
-	CommandResult ret = CommandResult::ERROR;
 
 	command_list_num = num;
 
 	/* get the command name (first word on the line) */
 
 	Tokenizer tokenizer(line);
+
+	char *argv[COMMAND_ARGV_MAX] = { nullptr };
 	argv[0] = tokenizer.NextWord(error);
 	if (argv[0] == nullptr) {
 		current_command = "";
@@ -412,10 +406,13 @@ command_process(Client &client, unsigned num, char *line)
 
 	/* look up and invoke the command handler */
 
-	cmd = command_checked_lookup(client, client.GetPermission(),
-				     argc, argv);
-	if (cmd)
-		ret = cmd->handler(client, argc, argv);
+	const struct command *cmd =
+		command_checked_lookup(client, client.GetPermission(),
+				       argc, argv);
+
+	CommandResult ret = cmd
+		? cmd->handler(client, argc, argv)
+		: CommandResult::ERROR;
 
 	current_command = nullptr;
 	command_list_num = 0;
