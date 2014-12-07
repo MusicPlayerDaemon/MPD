@@ -145,6 +145,11 @@ static void version(void)
 		});
 
 	puts("\n"
+	     "Tag plugins:\n"
+#ifdef ENABLE_ID3TAG
+	     " id3tag"
+#endif
+	     "\n\n"
 	     "Output plugins:");
 	audio_output_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
