@@ -76,7 +76,7 @@ get_container_path(const char* path) {
 		container_path.resize(length);
 		const char* c_str = container_path.c_str();
 		if (strcasecmp(c_str + length - 4, ".dff") != 0) {
-			container_path.resize(0);
+			container_path = path;
 		}
 	}
 	return container_path;
@@ -181,6 +181,9 @@ dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
 	}
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
+	if (twoch_count + mulch_count == 1) {
+		return nullptr;
+	}
 	unsigned track = tnum - 1;
 	if (param_playable_area == AREA_MULCH) {
 		track += twoch_count;
@@ -218,11 +221,12 @@ dsdiff_file_decode(Decoder& decoder, Path path_fs) {
 	if (!dsdiff_update_toc(path_container.c_str())) {
 		return;
 	}
-	unsigned track = get_subsong(path_fs.c_str());
+	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
+	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
+	unsigned track = (twoch_count + mulch_count > 1) ? get_subsong(path_fs.c_str()) : 0;
 
 	// initialize reader
 	sacd_reader->set_emaster(param_edited_master);
-	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	if (track < twoch_count) {
 		if (!sacd_reader->select_track(track, AREA_TWOCH, 0)) {
 			LogError(dsdiff_domain, "cannot select track in stereo area");
@@ -358,9 +362,9 @@ dsdiff_scan_file(Path path_fs, const struct tag_handler* handler, void* handler_
 	if (!dsdiff_update_toc(path_container.c_str())) {
 		return false;
 	}
-	unsigned track = get_subsong(path_fs.c_str());
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
+	unsigned track = (twoch_count + mulch_count > 1) ? get_subsong(path_fs.c_str()) : 0;
 	if (track < twoch_count) {
 		sacd_reader->select_area(AREA_TWOCH);
 	}

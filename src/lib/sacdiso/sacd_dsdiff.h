@@ -63,7 +63,8 @@ public:
 class track_t {
 public:
 	double start_time;
-	double stop_time;
+	double stop_time1; // not edited master mode
+	double stop_time2; // for edited master mode
 };
 
 class id3tags_t {

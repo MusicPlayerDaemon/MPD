@@ -74,15 +74,13 @@ uint64_t sacd_dsdiff_t::get_offset() {
 }
 
 double sacd_dsdiff_t::get_duration() {
-	if (current_track < track_index.size()) {
-		return track_index[current_track].stop_time - track_index[current_track].start_time;
-	}
-	return 0.0;
+	return get_duration(current_track);
 }
 
-double sacd_dsdiff_t::get_duration(uint32_t subsong) {
-	if (subsong < track_index.size()) {
-		return track_index[subsong].stop_time - track_index[subsong].start_time;
+double sacd_dsdiff_t::get_duration(uint32_t _track_index) {
+	if (_track_index < track_index.size()) {
+		double stop_time = is_emaster ? track_index[current_track].stop_time2 : track_index[current_track].stop_time1;
+		return stop_time - track_index[_track_index].start_time;
 	}
 	return 0.0;
 }
@@ -199,7 +197,7 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 			sacd_media->skip(ck.get_size());
 			track_t s;
 			s.start_time = 0.0;
-			s.stop_time  = frame_count / framerate;
+			s.stop_time1 = s.stop_time2 = (double)frame_count / framerate;
 			track_index.push_back(s);
 		}
 		else if (ck.has_id("DST ")) {
@@ -224,7 +222,7 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 			sacd_media->seek(data_offset + data_size);
 			track_t s;
 			s.start_time = 0.0;
-			s.stop_time = (double)frame_count / framerate;
+			s.stop_time1 = s.stop_time2 = (double)frame_count / framerate;
 			track_index.push_back(s);
 		}
 		else if (ck.has_id("DSTI")) {
@@ -258,19 +256,19 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 							start_mark_count++;
 							if (track_index.size() > 0) {
 								track_index[track_index.size() - 1].start_time = MARK_TIME(m);
-								track_index[track_index.size() - 1].stop_time  = (double)frame_count / framerate;
+								track_index[track_index.size() - 1].stop_time2  = (double)frame_count / framerate;
+								track_index[track_index.size() - 1].stop_time1  = track_index[track_index.size() - 1].stop_time2;
 								if (track_index.size() - 1 > 0) {
-									if (track_index[track_index.size() - 2].stop_time > track_index[track_index.size() - 1].start_time) {
-										track_index[track_index.size() - 2].stop_time =  track_index[track_index.size() - 1].start_time;
+									if (track_index[track_index.size() - 2].stop_time2 > track_index[track_index.size() - 1].start_time) {
+										track_index[track_index.size() - 2].stop_time2 =  track_index[track_index.size() - 1].start_time;
+										track_index[track_index.size() - 2].stop_time1 =  track_index[track_index.size() - 2].stop_time2;
 									}
 								}
 							}
 							break;
 						case TrackStop:
-							if (!is_emaster) {
-								if (track_index.size() > 0) {
-									track_index[track_index.size() - 1].stop_time = MARK_TIME(m);
-								}
+							if (track_index.size() > 0) {
+								track_index[track_index.size() - 1].stop_time1 = MARK_TIME(m);
 							}
 							break;
 						}
@@ -309,6 +307,7 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 		}
 	}
 	sacd_media->seek(data_offset);
+	set_emaster(false);
 	index_id3tags();
 	return track_index.size() > 0;
 }
@@ -337,7 +336,7 @@ bool sacd_dsdiff_t::select_track(uint32_t _track_index, area_id_e area_id, uint3
 	if (_track_index < track_index.size()) {
 		current_track = _track_index;
 		double t0 = track_index[current_track].start_time;
-		double t1 = track_index[current_track].stop_time;
+		double t1 = is_emaster ? track_index[current_track].stop_time2 : track_index[current_track].stop_time1;
 		uint64_t offset = (uint64_t)(t0 * framerate / frame_count * data_size) + _offset;
 		uint64_t size = (uint64_t)(t1 * framerate / frame_count * data_size) - offset;
 		if (is_dst_encoded) {
