@@ -77,6 +77,8 @@ tags
 /test/test_vorbis_encoder
 /test/DumpDatabase
 
+/lib/
+
 /*.tar.gz
 /*.tar.bz2
 /*.tar.xz

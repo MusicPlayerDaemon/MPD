@@ -48,6 +48,7 @@
 
 AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
 	:plugin(_plugin),
+	 mixer(nullptr),
 	 enabled(true), really_enabled(false),
 	 open(false),
 	 pause(false),

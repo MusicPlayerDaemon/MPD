@@ -12,6 +12,14 @@ ver 0.20 (not yet released)
 * reset song priority on playback
 * remove dependency on GLib
 
+ver 0.19.6 (2014/12/08)
+* decoder
+  - ffmpeg: support FFmpeg 2.5
+* fix build failure with musl
+* android
+  - update libFLAC to 1.3.1
+  - update FFmpeg to 2.5
+
 ver 0.19.5 (2014/11/26)
 * input
   - nfs: fix crash on connection failure
@@ -151,6 +159,11 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.20 (2014/12/08)
+* decoder
+  - ffmpeg: support FFmpeg 2.5
+* fix build failure with musl
 
 ver 0.18.19 (2014/11/26)
 * archive
