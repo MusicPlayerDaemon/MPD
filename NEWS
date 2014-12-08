@@ -1,4 +1,4 @@
-ver 0.18.20 (not yet released)
+ver 0.18.20 (2014/12/08)
 * decoder
   - ffmpeg: support FFmpeg 2.5
 * fix build failure with musl
