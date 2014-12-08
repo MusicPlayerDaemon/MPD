@@ -82,18 +82,17 @@ AC_DEFUN([MPD_FORMAT_DEFAULT],
 		index([$1], [$]), [-1], [$1],
 		[auto])])
 
-dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_PKG
+dnl Wrapper for AC_ARG_ENABLE, AC_DEFINE and AM_CONDITIONAL
 dnl
-dnl Parameters: varname1, varname2, pkg, description, errmsg, default, pre
-AC_DEFUN([MPD_ENABLE_AUTO_PKG], [
+dnl Parameters: varname1, varname2, description, default, check
+AC_DEFUN([MPD_ARG_ENABLE], [
 	AC_ARG_ENABLE(translit([$1], [_], [-]),
 		AS_HELP_STRING([--enable-]translit([$1], [_], [-]),
-			[enable $4 (default: ]MPD_FORMAT_DEFAULT([$6])[)]),,
-		[enable_$1=]ifelse([$6], [], [auto], [$6]))
+			[enable $3 (default: ]MPD_FORMAT_DEFAULT([$4])[)]),,
+		[enable_$1=]ifelse([$4], [], [auto], [$4]))
 
-	$7
+	$5
 
-	MPD_AUTO_PKG($1, $2, $3, $4, $5)
 	if test x$[]enable_$1 = xyes; then
 		AC_DEFINE(ENABLE_$2, 1,
 			[Define to enable $4])
@@ -101,23 +100,24 @@ AC_DEFUN([MPD_ENABLE_AUTO_PKG], [
 	AM_CONDITIONAL(ENABLE_$2, test x$[]enable_$1 = xyes)
 ])
 
+dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_PKG
+dnl
+dnl Parameters: varname1, varname2, pkg, description, errmsg, default, pre
+AC_DEFUN([MPD_ENABLE_AUTO_PKG], [
+	MPD_ARG_ENABLE([$1], [$2], [$4], [$6], [
+		$7
+		MPD_AUTO_PKG($1, $2, $3, $4, $5)
+	])
+])
+
 dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_PKG_LIB
 dnl
 dnl Parameters: varname1, varname2, pkg, libname, symname, libs, cflags, description, errmsg, default, pre
 AC_DEFUN([MPD_ENABLE_AUTO_PKG_LIB], [
-	AC_ARG_ENABLE(translit([$1], [_], [-]),
-		AS_HELP_STRING([--enable-]translit([$1], [_], [-]),
-			[enable $4 (default: ]MPD_FORMAT_DEFAULT([$10])[)]),,
-		[enable_$1=]ifelse([$10], [], [auto], [$10]))
-
-	$11
-
-	MPD_AUTO_PKG_LIB($1, $2, $3, $4, $5, $6, $7, $8, $9)
-	if test x$[]enable_$1 = xyes; then
-		AC_DEFINE(ENABLE_$2, 1,
-			[Define to enable $4])
-	fi
-	AM_CONDITIONAL(ENABLE_$2, test x$[]enable_$1 = xyes)
+	MPD_ARG_ENABLE([$1], [$2], [$4], [$10], [
+		$11
+		MPD_AUTO_PKG_LIB($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	])
 ])
 
 dnl Wrapper for MPD_ENABLE_AUTO_PKG and MPD_DEPENDS
