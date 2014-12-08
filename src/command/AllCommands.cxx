@@ -360,7 +360,7 @@ command_process(Client &client, unsigned num, char *line)
 
 	Tokenizer tokenizer(line);
 
-	char *argv[COMMAND_ARGV_MAX] = { nullptr };
+	char *argv[COMMAND_ARGV_MAX];
 	argv[0] = tokenizer.NextWord(error);
 	if (argv[0] == nullptr) {
 		current_command = "";
