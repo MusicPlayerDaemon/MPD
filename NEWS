@@ -1,4 +1,5 @@
 ver 0.18.20 (not yet released)
+* fix build failure with musl
 
 ver 0.18.19 (2014/11/26)
 * archive
