@@ -4,6 +4,7 @@ ver 0.19.6 (not yet released)
 * fix build failure with musl
 * android
   - update libFLAC to 1.3.1
+  - update FFmpeg to 2.5
 
 ver 0.19.5 (2014/11/26)
 * input

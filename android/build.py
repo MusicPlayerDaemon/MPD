@@ -341,8 +341,8 @@ thirdparty_libs = [
     ),
 
     FfmpegProject(
-        'http://ffmpeg.org/releases/ffmpeg-2.4.3.tar.bz2',
-        '8da635baff57d7ab704b1daca5a99b47',
+        'http://ffmpeg.org/releases/ffmpeg-2.5.tar.bz2',
+        '4346fe710cc6bdd981f6534d2420d1ab',
         'lib/libavcodec.a',
         [
             '--disable-shared', '--enable-static',
