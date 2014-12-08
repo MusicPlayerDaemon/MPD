@@ -107,10 +107,10 @@ static void version(void)
 	       "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
 	       "Copyright (C) 2008-2014 Max Kellermann <max@duempel.org>\n"
 	       "This is free software; see the source for copying conditions.  There is NO\n"
-	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 
 #ifdef ENABLE_DATABASE
-	printf("\n"
+	       "\n"
 	       "Database plugins:\n");
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
@@ -121,16 +121,20 @@ static void version(void)
 
 	for (auto i = storage_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
+
+	printf("\n"
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	printf("\n\n"
+	       "\n"
 	       "Neighbor plugins:\n");
 	for (auto i = neighbor_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
+
+	printf("\n"
 #endif
 
-	printf("\n\n"
+	       "\n"
 	       "Decoders plugins:\n");
 
 	decoder_plugins_for_each([](const DecoderPlugin &plugin){
@@ -153,18 +157,18 @@ static void version(void)
 	       "Output plugins:\n");
 	audio_output_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
-	printf("\n");
+	printf("\n"
 
 #ifdef ENABLE_ENCODER
-	printf("\n"
+	       "\n"
 	       "Encoder plugins:\n");
 	encoder_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
-	printf("\n");
+	printf("\n"
 #endif
 
 #ifdef ENABLE_ARCHIVE
-	printf("\n"
+	       "\n"
 	       "Archive plugins:\n");
 	archive_plugins_for_each(plugin) {
 		printf(" [%s]", plugin->name);
@@ -176,9 +180,11 @@ static void version(void)
 
 		printf("\n");
 	}
+
+	printf(""
 #endif
 
-	printf("\n"
+	       "\n"
 	       "Input plugins:\n");
 	input_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
