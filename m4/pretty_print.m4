@@ -1,8 +1,6 @@
 AC_DEFUN([results], [
-	var="`echo '$'enable_$1`"
-
 	printf '('
-	if eval "test x$var = xyes"; then
+	if test x$[]enable_$1 = xyes; then
 		printf '+'
 	else
 		printf '-'
