@@ -75,7 +75,7 @@ public:
 #ifdef WIN32
 		return ::GetCurrentThreadId();
 #else
-		return ::pthread_self();
+		return pthread_self();
 #endif
 	}
 
@@ -84,7 +84,7 @@ public:
 #ifdef WIN32
 		return id == other.id;
 #else
-		return ::pthread_equal(id, other.id);
+		return pthread_equal(id, other.id);
 #endif
 	}
 

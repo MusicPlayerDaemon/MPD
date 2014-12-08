@@ -423,10 +423,15 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 	avpd.filename = is.GetURI();
 
 #ifdef AVPROBE_SCORE_MIME
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(56, 5, 1)
 	/* this attribute was added in libav/ffmpeg version 11, but
 	   unfortunately it's "uint8_t" instead of "char", and it's
 	   not "const" - wtf? */
 	avpd.mime_type = (uint8_t *)const_cast<char *>(is.GetMimeType());
+#else
+	/* API problem fixed in FFmpeg 2.5 */
+	avpd.mime_type = is.GetMimeType();
+#endif
 #endif
 
 	return av_probe_input_format(&avpd, true);
