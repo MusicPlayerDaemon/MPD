@@ -384,23 +384,25 @@ command_process(Client &client, unsigned num, char *line)
 
 	/* now parse the arguments (quoted or unquoted) */
 
-	while (argc < COMMAND_ARGV_MAX &&
-	       (argv[argc] =
-		tokenizer.NextParam(error)) != nullptr)
-		++argc;
+	while (true) {
+		if (argc == COMMAND_ARGV_MAX) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Too many arguments");
+			current_command = nullptr;
+			return CommandResult::ERROR;
+		}
 
-	/* some error checks */
+		char *a = tokenizer.NextParam(error);
+		if (a == nullptr) {
+			if (tokenizer.IsEnd())
+				break;
 
-	if (argc >= COMMAND_ARGV_MAX) {
-		command_error(client, ACK_ERROR_ARG, "Too many arguments");
-		current_command = nullptr;
-		return CommandResult::ERROR;
-	}
+			command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
+			current_command = nullptr;
+			return CommandResult::ERROR;
+		}
 
-	if (!tokenizer.IsEnd()) {
-		command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
-		current_command = nullptr;
-		return CommandResult::ERROR;
+		argv[argc++] = a;
 	}
 
 	/* look up and invoke the command handler */
