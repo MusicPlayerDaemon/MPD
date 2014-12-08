@@ -57,8 +57,10 @@ const struct playlist_plugin *const playlist_plugins[] = {
 #ifdef ENABLE_SOUNDCLOUD
 	&soundcloud_playlist_plugin,
 #endif
+#ifdef ENABLE_CUE
 	&cue_playlist_plugin,
 	&embcue_playlist_plugin,
+#endif
 	nullptr
 };
 

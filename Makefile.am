@@ -1389,15 +1389,10 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/CloseSongEnumerator.hxx \
 	src/playlist/MemorySongEnumerator.cxx \
 	src/playlist/MemorySongEnumerator.hxx \
-	src/playlist/cue/CueParser.cxx src/playlist/cue/CueParser.hxx \
 	src/playlist/plugins/ExtM3uPlaylistPlugin.cxx \
 	src/playlist/plugins/ExtM3uPlaylistPlugin.hxx \
 	src/playlist/plugins/M3uPlaylistPlugin.cxx \
 	src/playlist/plugins/M3uPlaylistPlugin.hxx \
-	src/playlist/plugins/CuePlaylistPlugin.cxx \
-	src/playlist/plugins/CuePlaylistPlugin.hxx \
-	src/playlist/plugins/EmbeddedCuePlaylistPlugin.cxx \
-	src/playlist/plugins/EmbeddedCuePlaylistPlugin.hxx \
 	src/playlist/plugins/PlsPlaylistPlugin.cxx \
 	src/playlist/plugins/PlsPlaylistPlugin.hxx \
 	src/playlist/PlaylistRegistry.cxx src/playlist/PlaylistRegistry.hxx
@@ -1410,6 +1405,15 @@ PLAYLIST_LIBS = \
 	libplaylist_plugins.a \
 	$(EXPAT_LIBS) \
 	$(FLAC_LIBS)
+
+if ENABLE_CUE
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/cue/CueParser.cxx src/playlist/cue/CueParser.hxx \
+	src/playlist/plugins/CuePlaylistPlugin.cxx \
+	src/playlist/plugins/CuePlaylistPlugin.hxx \
+	src/playlist/plugins/EmbeddedCuePlaylistPlugin.cxx \
+	src/playlist/plugins/EmbeddedCuePlaylistPlugin.hxx
+endif
 
 if ENABLE_DESPOTIFY
 libplaylist_plugins_a_SOURCES += \
