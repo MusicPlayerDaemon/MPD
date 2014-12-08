@@ -98,40 +98,40 @@ static constexpr Domain cmdline_domain("cmdline");
 gcc_noreturn
 static void version(void)
 {
-	puts("Music Player Daemon " VERSION
+	printf("Music Player Daemon " VERSION
 #ifdef GIT_COMMIT
-	     " (" GIT_COMMIT ")"
+	       " (" GIT_COMMIT ")"
 #endif
-	     "\n"
-	     "\n"
-	     "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-	     "Copyright (C) 2008-2014 Max Kellermann <max@duempel.org>\n"
-	     "This is free software; see the source for copying conditions.  There is NO\n"
-	     "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
+	       "\n"
+	       "\n"
+	       "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
+	       "Copyright (C) 2008-2014 Max Kellermann <max@duempel.org>\n"
+	       "This is free software; see the source for copying conditions.  There is NO\n"
+	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 
 #ifdef ENABLE_DATABASE
-	puts("\n"
-	     "Database plugins:");
+	printf("\n"
+	       "Database plugins:\n");
 
 	for (auto i = database_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
 
-	puts("\n\n"
-	     "Storage plugins:");
+	printf("\n\n"
+	       "Storage plugins:\n");
 
 	for (auto i = storage_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	puts("\n\n"
-	     "Neighbor plugins:");
+	printf("\n\n"
+	       "Neighbor plugins:\n");
 	for (auto i = neighbor_plugins; *i != nullptr; ++i)
 		printf(" %s", (*i)->name);
 #endif
 
-	puts("\n\n"
-	     "Decoders plugins:");
+	printf("\n\n"
+	       "Decoders plugins:\n");
 
 	decoder_plugins_for_each([](const DecoderPlugin &plugin){
 			printf(" [%s]", plugin.name);
@@ -141,31 +141,31 @@ static void version(void)
 				for (; *suffixes != nullptr; ++suffixes)
 					printf(" %s", *suffixes);
 
-			puts("");
+			printf("\n");
 		});
 
-	puts("\n"
-	     "Tag plugins:\n"
+	printf("\n"
+	       "Tag plugins:\n"
 #ifdef ENABLE_ID3TAG
-	     " id3tag"
+	       " id3tag"
 #endif
-	     "\n\n"
-	     "Output plugins:");
+	       "\n\n"
+	       "Output plugins:\n");
 	audio_output_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
-	puts("");
+	printf("\n");
 
 #ifdef ENABLE_ENCODER
-	puts("\n"
-	     "Encoder plugins:");
+	printf("\n"
+	       "Encoder plugins:\n");
 	encoder_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
-	puts("");
+	printf("\n");
 #endif
 
 #ifdef ENABLE_ARCHIVE
-	puts("\n"
-	     "Archive plugins:");
+	printf("\n"
+	       "Archive plugins:\n");
 	archive_plugins_for_each(plugin) {
 		printf(" [%s]", plugin->name);
 
@@ -174,22 +174,22 @@ static void version(void)
 			for (; *suffixes != nullptr; ++suffixes)
 				printf(" %s", *suffixes);
 
-		puts("");
+		printf("\n");
 	}
 #endif
 
-	puts("\n"
-	     "Input plugins:");
+	printf("\n"
+	       "Input plugins:\n");
 	input_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
 
-	puts("\n\n"
-	     "Playlist plugins:");
+	printf("\n\n"
+	       "Playlist plugins:\n");
 	playlist_plugins_for_each(plugin)
 		printf(" %s", plugin->name);
 
-	puts("\n\n"
-	     "Protocols:");
+	printf("\n\n"
+	       "Protocols:\n");
 	print_supported_uri_schemes_to_fp(stdout);
 
 	exit(EXIT_SUCCESS);
@@ -211,12 +211,12 @@ static void PrintOption(const OptionDef &opt)
 gcc_noreturn
 static void help(void)
 {
-	puts("Usage:\n"
-	     "  mpd [OPTION...] [path/to/mpd.conf]\n"
-	     "\n"
-	     "Music Player Daemon - a daemon for playing music.\n"
-	     "\n"
-	     "Options:");
+	printf("Usage:\n"
+	       "  mpd [OPTION...] [path/to/mpd.conf]\n"
+	       "\n"
+	       "Music Player Daemon - a daemon for playing music.\n"
+	       "\n"
+	       "Options:\n");
 
 	PrintOption(opt_help);
 	PrintOption(opt_kill);
