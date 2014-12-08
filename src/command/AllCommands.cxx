@@ -357,11 +357,13 @@ command_process(Client &client, unsigned num, char *line)
 	command_list_num = num;
 
 	/* get the command name (first word on the line) */
+	/* we have to set current_command because command_error()
+	   expects it to be set */
 
 	Tokenizer tokenizer(line);
 
 	char *argv[COMMAND_ARGV_MAX];
-	argv[0] = tokenizer.NextWord(error);
+	current_command = argv[0] = tokenizer.NextWord(error);
 	if (argv[0] == nullptr) {
 		current_command = "";
 		if (tokenizer.IsEnd())
@@ -387,10 +389,7 @@ command_process(Client &client, unsigned num, char *line)
 		tokenizer.NextParam(error)) != nullptr)
 		++argc;
 
-	/* some error checks; we have to set current_command because
-	   command_error() expects it to be set */
-
-	current_command = argv[0];
+	/* some error checks */
 
 	if (argc >= COMMAND_ARGV_MAX) {
 		command_error(client, ACK_ERROR_ARG, "Too many arguments");
