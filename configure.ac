@@ -666,7 +666,7 @@ dnl ---------------------------------------------------------------------------
 dnl -------------------------------- libid3tag --------------------------------
 MPD_ENABLE_AUTO_PKG_LIB(id3, ID3TAG,
 	id3tag, id3tag, id3_file_open, [-lid3tag -lz], [],
-	[id3tag], [libid3tag not found])
+	[ID3 support using libid3tag], [libid3tag not found])
 
 dnl ---------------------------------------------------------------------------
 dnl Autodiscovery
