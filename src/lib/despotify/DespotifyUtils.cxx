@@ -88,23 +88,30 @@ mpd_despotify_tag_from_track(const ds_track &track)
 
 	TagBuilder tag;
 
-	char tracknum[20];
-	snprintf(tracknum, sizeof(tracknum), "%d", track.tracknumber);
+	{
+		char tracknum[20];
+		snprintf(tracknum, sizeof(tracknum), "%d", track.tracknumber);
+		tag.AddItem(TAG_TRACK, tracknum);
+	}
 
-	char date[20];
-	snprintf(date, sizeof(date), "%d", track.year);
+	{
+		char date[20];
+		snprintf(date, sizeof(date), "%d", track.year);
+		tag.AddItem(TAG_DATE, date);
+	}
 
-	char comment[80];
-	snprintf(comment, sizeof(comment), "Bitrate %d Kbps, %sgeo restricted",
-		 track.file_bitrate / 1000,
-		 track.geo_restricted ? "" : "not ");
+	{
+		char comment[80];
+		snprintf(comment, sizeof(comment),
+			 "Bitrate %d Kbps, %sgeo restricted",
+			 track.file_bitrate / 1000,
+			 track.geo_restricted ? "" : "not ");
+		tag.AddItem(TAG_COMMENT, comment);
+	}
 
 	tag.AddItem(TAG_TITLE, track.title);
 	tag.AddItem(TAG_ARTIST, track.artist->name);
-	tag.AddItem(TAG_TRACK, tracknum);
 	tag.AddItem(TAG_ALBUM, track.album);
-	tag.AddItem(TAG_DATE, date);
-	tag.AddItem(TAG_COMMENT, comment);
 	tag.SetDuration(SignedSongTime::FromMS(track.length));
 
 	return tag.Commit();
