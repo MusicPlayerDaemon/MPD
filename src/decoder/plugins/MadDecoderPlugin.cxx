@@ -504,10 +504,10 @@ struct xing {
 	enum xing_magic magic;  /* header magic */
 };
 
-static const unsigned XING_FRAMES = 1;
-static const unsigned XING_BYTES = 2;
-static const unsigned XING_TOC = 4;
-static const unsigned XING_SCALE = 8;
+static constexpr unsigned XING_FRAMES = 1;
+static constexpr unsigned XING_BYTES = 2;
+static constexpr unsigned XING_TOC = 4;
+static constexpr unsigned XING_SCALE = 8;
 
 struct lame_version {
 	unsigned major;
