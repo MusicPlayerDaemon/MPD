@@ -468,16 +468,6 @@ AC_ARG_WITH(zeroconf,
 		[enable zeroconf backend (default=auto)]),,
 	with_zeroconf="auto")
 
-AC_ARG_WITH(tremor-libraries,
-	AS_HELP_STRING([--with-tremor-libraries=DIR],
-		[directory where Tremor library is installed (optional)]),,
-	tremor_libraries="")
-
-AC_ARG_WITH(tremor-includes,
-	AS_HELP_STRING([--with-tremor-includes=DIR],
-		[directory where Tremor header files are installed (optional)]),,
-	tremor_includes="")
-
 dnl ---------------------------------------------------------------------------
 dnl Mandatory Libraries
 dnl ---------------------------------------------------------------------------
@@ -1000,6 +990,10 @@ fi
 AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
 dnl -------------------------------- Ogg Tremor -------------------------------
+
+AC_ARG_VAR([TREMOR_CFLAGS], [C compiler flags for Tremor])
+AC_ARG_VAR([TREMOR_LIBS], [linker flags for Tremor])
+
 if test x$with_tremor = xyes || test x$with_tremor = xno; then
 	enable_tremor="$with_tremor"
 	tremor_prefix=""
@@ -1009,16 +1003,15 @@ else
 fi
 
 if test x$enable_tremor = xyes; then
-	if test "x$tremor_libraries" != "x" ; then
-		TREMOR_LIBS="-L$tremor_libraries"
-	elif test "x$tremor_prefix" != "x" ; then
-		TREMOR_LIBS="-L$tremor_prefix/lib"
-	fi
-	TREMOR_LIBS="$TREMOR_LIBS -lvorbisidec"
-	if test "x$tremor_includes" != "x" ; then
-		TREMOR_CFLAGS="-I$tremor_includes"
-	elif test "x$tremor_prefix" != "x" ; then
+	if test x$TREMOR_CFLAGS = x && test x$tremor_prefix != x; then
 		TREMOR_CFLAGS="-I$tremor_prefix/include"
+	fi
+	if test x$TREMOR_LIBS = x; then
+		TREMOR_LIBS="-lvorbisidec"
+
+		if test x$tremor_prefix != x; then
+			TREMOR_LIBS="-L$tremor_prefix/lib $TREMOR_LIBS"
+		fi
 	fi
 
 	MPD_WITH_LIBRARY([TREMOR],
@@ -1032,9 +1025,6 @@ else
 	TREMOR_CFLAGS=
 	TREMOR_LIBS=
 fi
-
-AC_SUBST(TREMOR_CFLAGS)
-AC_SUBST(TREMOR_LIBS)
 
 dnl -------------------------------- Ogg Vorbis -------------------------------
 
