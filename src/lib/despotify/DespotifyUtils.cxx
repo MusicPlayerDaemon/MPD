@@ -23,6 +23,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "util/Domain.hxx"
+#include "util/Macros.hxx"
 #include "Log.hxx"
 
 extern "C" {
@@ -42,9 +43,7 @@ static void
 callback(struct despotify_session* ds, int sig,
 	 void *data, gcc_unused void *callback_data)
 {
-	size_t i;
-
-	for (i = 0; i < sizeof(registered_callbacks) / sizeof(registered_callbacks[0]); i++) {
+	for (size_t i = 0; i < ARRAY_SIZE(registered_callbacks); ++i) {
 		void (*cb)(struct despotify_session *, int, void *, void *) = registered_callbacks[i];
 		void *cb_data = registered_callback_data[i];
 
@@ -56,10 +55,7 @@ callback(struct despotify_session* ds, int sig,
 bool mpd_despotify_register_callback(void (*cb)(struct despotify_session *, int, void *, void *),
 		void *cb_data)
 {
-	size_t i;
-
-	for (i = 0; i < sizeof(registered_callbacks) / sizeof(registered_callbacks[0]); i++) {
-
+	for (size_t i = 0; i < ARRAY_SIZE(registered_callbacks); ++i) {
 		if (!registered_callbacks[i]) {
 			registered_callbacks[i] = cb;
 			registered_callback_data[i] = cb_data;
@@ -73,10 +69,7 @@ bool mpd_despotify_register_callback(void (*cb)(struct despotify_session *, int,
 
 void mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, int, void *, void *))
 {
-	size_t i;
-
-	for (i = 0; i < sizeof(registered_callbacks) / sizeof(registered_callbacks[0]); i++) {
-
+	for (size_t i = 0; i < ARRAY_SIZE(registered_callbacks); ++i) {
 		if (registered_callbacks[i] == cb) {
 			registered_callbacks[i] = nullptr;
 		}
