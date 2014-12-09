@@ -12,6 +12,10 @@ ver 0.20 (not yet released)
 * reset song priority on playback
 * remove dependency on GLib
 
+ver 0.19.7 (not yet released)
+* playlist
+  - don't skip non-existent songs in "listplaylist"
+
 ver 0.19.6 (2014/12/08)
 * decoder
   - ffmpeg: support FFmpeg 2.5
