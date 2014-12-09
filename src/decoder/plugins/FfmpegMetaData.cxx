@@ -25,7 +25,7 @@
 #include "tag/TagTable.hxx"
 #include "tag/TagHandler.hxx"
 
-static const struct tag_table ffmpeg_tags[] = {
+static constexpr struct tag_table ffmpeg_tags[] = {
 	{ "year", TAG_DATE },
 	{ "author-sort", TAG_ARTIST_SORT },
 	{ "album_artist", TAG_ALBUM_ARTIST },
