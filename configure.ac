@@ -433,11 +433,6 @@ AC_ARG_ENABLE(test,
 		[build the test programs (default: disabled)]),,
 	enable_test=no)
 
-AC_ARG_WITH(tremor,
-	AS_HELP_STRING([--with-tremor=PFX],
-		[use Tremor (vorbisidec) integer Ogg Vorbis decoder (with optional prefix)]),,
-	with_tremor=no)
-
 AC_ARG_ENABLE(un,
 	AS_HELP_STRING([--disable-un],
 		[disable support for clients connecting via unix domain sockets (default: enable)]),,
@@ -990,6 +985,11 @@ fi
 AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 
 dnl -------------------------------- Ogg Tremor -------------------------------
+
+AC_ARG_WITH(tremor,
+	AS_HELP_STRING([--with-tremor=PFX],
+		[use Tremor (vorbisidec) integer Ogg Vorbis decoder (with optional prefix)]),,
+	with_tremor=no)
 
 AC_ARG_VAR([TREMOR_CFLAGS], [C compiler flags for Tremor])
 AC_ARG_VAR([TREMOR_LIBS], [linker flags for Tremor])
