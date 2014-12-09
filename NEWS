@@ -1,4 +1,6 @@
 ver 0.19.7 (not yet released)
+* playlist
+  - don't skip non-existent songs in "listplaylist"
 
 ver 0.19.6 (2014/12/08)
 * decoder
