@@ -84,8 +84,8 @@ public:
 	void Destruct() {
 		assert(initialized);
 
-		T *t = (T *)data;
-		t->T::~T();
+		T &t = Get();
+		t.T::~T();
 
 #ifndef NDEBUG
 		initialized = false;
