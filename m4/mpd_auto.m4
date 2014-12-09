@@ -114,7 +114,7 @@ dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_PKG_LIB
 dnl
 dnl Parameters: varname1, varname2, pkg, libname, symname, libs, cflags, description, errmsg, default, pre
 AC_DEFUN([MPD_ENABLE_AUTO_PKG_LIB], [
-	MPD_ARG_ENABLE([$1], [$2], [$4], [$10], [
+	MPD_ARG_ENABLE([$1], [$2], [$8], [$10], [
 		$11
 		MPD_AUTO_PKG_LIB($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	])
