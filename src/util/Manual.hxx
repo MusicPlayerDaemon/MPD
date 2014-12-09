@@ -95,13 +95,15 @@ public:
 	T &Get() {
 		assert(initialized);
 
-		return *(T *)data;
+		void *p = static_cast<void *>(data);
+		return *static_cast<T *>(p);
 	}
 
 	const T &Get() const {
 		assert(initialized);
 
-		return *(const T *)data;
+		const void *p = static_cast<const void *>(data);
+		return *static_cast<const T *>(p);
 	}
 
 	operator T &() {
