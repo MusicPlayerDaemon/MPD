@@ -198,12 +198,8 @@ LIBS="$PTHREAD_LIBS $LIBS"
 AM_CFLAGS="$AM_CFLAGS $PTHREAD_CFLAGS"
 AM_CXXFLAGS="$AM_CXXFLAGS $PTHREAD_CFLAGS"
 
-AC_CHECK_LIB([pthread], [pthread_setname_np],
-	[have_pthread_setname_np=yes],
-	[have_pthread_setname_np=no])
-if test x$have_pthread_setname_np = xyes; then
-	AC_DEFINE(HAVE_PTHREAD_SETNAME_NP, 1, [Is pthread_setname_np() available?])
-fi
+MPD_WITH_LIBRARY([PTHREAD],
+	[AC_CHECK_FUNCS([pthread_setname_np])])
 
 AC_SEARCH_LIBS([clock_gettime], [rt])
 
