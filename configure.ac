@@ -1021,11 +1021,9 @@ if test x$enable_tremor = xyes; then
 	fi
 
 	MPD_WITH_LIBRARY([TREMOR],
-		[AC_CHECK_FUNC([ov_read],, enable_tremor=no;
-			AC_MSG_WARN([vorbisidec lib needed for ogg support with tremor -- disabling ogg support]))])
-fi
+		[AC_CHECK_FUNC([ov_read],,
+			[AC_MSG_ERROR([libvorbisidec not found])])])
 
-if test x$enable_tremor = xyes; then
 	AC_DEFINE(HAVE_TREMOR,1,
 		[Define to use tremor (libvorbisidec) for ogg support])
 	AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support])
