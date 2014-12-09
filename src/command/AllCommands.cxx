@@ -35,6 +35,7 @@
 #include "protocol/Result.hxx"
 #include "Partition.hxx"
 #include "client/Client.hxx"
+#include "util/Macros.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
@@ -195,7 +196,7 @@ static constexpr struct command commands[] = {
 	{ "volume", PERMISSION_CONTROL, 1, 1, handle_volume },
 };
 
-static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
+static constexpr unsigned num_commands = ARRAY_SIZE(commands);
 
 static bool
 command_available(gcc_unused const Partition &partition,
