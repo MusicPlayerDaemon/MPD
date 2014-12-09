@@ -47,13 +47,15 @@ callback(struct despotify_session* ds, int sig,
 		void (*cb)(struct despotify_session *, int, void *, void *) = registered_callbacks[i];
 		void *cb_data = registered_callback_data[i];
 
-		if (cb)
+		if (cb != nullptr)
 			cb(ds, sig, data, cb_data);
 	}
 }
 
-bool mpd_despotify_register_callback(void (*cb)(struct despotify_session *, int, void *, void *),
-		void *cb_data)
+bool
+mpd_despotify_register_callback(void (*cb)(struct despotify_session *, int,
+					   void *, void *),
+				void *cb_data)
 {
 	for (size_t i = 0; i < ARRAY_SIZE(registered_callbacks); ++i) {
 		if (!registered_callbacks[i]) {
@@ -67,7 +69,9 @@ bool mpd_despotify_register_callback(void (*cb)(struct despotify_session *, int,
 	return false;
 }
 
-void mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, int, void *, void *))
+void
+mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, int,
+					     void *, void *))
 {
 	for (size_t i = 0; i < ARRAY_SIZE(registered_callbacks); ++i) {
 		if (registered_callbacks[i] == cb) {
@@ -79,19 +83,22 @@ void mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, in
 Tag
 mpd_despotify_tag_from_track(const ds_track &track)
 {
-	char tracknum[20];
-	char comment[80];
-	char date[20];
-
 	if (!track.has_meta_data)
 		return Tag();
 
 	TagBuilder tag;
+
+	char tracknum[20];
 	snprintf(tracknum, sizeof(tracknum), "%d", track.tracknumber);
+
+	char date[20];
 	snprintf(date, sizeof(date), "%d", track.year);
+
+	char comment[80];
 	snprintf(comment, sizeof(comment), "Bitrate %d Kbps, %sgeo restricted",
 		 track.file_bitrate / 1000,
 		 track.geo_restricted ? "" : "not ");
+
 	tag.AddItem(TAG_TITLE, track.title);
 	tag.AddItem(TAG_ARTIST, track.artist->name);
 	tag.AddItem(TAG_TRACK, tracknum);
@@ -103,18 +110,16 @@ mpd_despotify_tag_from_track(const ds_track &track)
 	return tag.Commit();
 }
 
-struct despotify_session *mpd_despotify_get_session(void)
+struct despotify_session *
+mpd_despotify_get_session()
 {
-	const char *user;
-	const char *passwd;
-	bool high_bitrate;
-
 	if (g_session)
 		return g_session;
 
-	user = config_get_string(CONF_DESPOTIFY_USER, nullptr);
-	passwd = config_get_string(CONF_DESPOTIFY_PASSWORD, nullptr);
-	high_bitrate = config_get_bool(CONF_DESPOTIFY_HIGH_BITRATE, true);
+	const char *const user =
+		config_get_string(CONF_DESPOTIFY_USER, nullptr);
+	const char *const passwd =
+		config_get_string(CONF_DESPOTIFY_PASSWORD, nullptr);
 
 	if (user == nullptr || passwd == nullptr) {
 		LogDebug(despotify_domain,
@@ -127,6 +132,8 @@ struct despotify_session *mpd_despotify_get_session(void)
 		return nullptr;
 	}
 
+	const bool high_bitrate =
+		config_get_bool(CONF_DESPOTIFY_HIGH_BITRATE, true);
 	g_session = despotify_init_client(callback, nullptr,
 					  high_bitrate, true);
 	if (!g_session) {

@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DESPOTIFY_H
-#define MPD_DESPOTIFY_H
+#ifndef MPD_DESPOTIFY_UTILS_HXX
+#define MPD_DESPOTIFY_UTILS_HXX
 
 struct Tag;
 struct despotify_session;
@@ -35,7 +35,8 @@ extern const class Domain despotify_domain;
  * @return a pointer to the despotify session, or nullptr if it can't
  *         be initialized (e.g., if the configuration isn't supplied)
  */
-struct despotify_session *mpd_despotify_get_session(void);
+struct despotify_session *
+mpd_despotify_get_session();
 
 /**
  * Create a MPD tags structure from a spotify track
@@ -57,15 +58,19 @@ mpd_despotify_tag_from_track(const ds_track &track);
  *
  * @return true if the callback could be registered
  */
-bool mpd_despotify_register_callback(void (*cb)(struct despotify_session *, int, void *, void *),
-		void *cb_data);
+bool
+mpd_despotify_register_callback(void (*cb)(struct despotify_session *, int,
+					   void *, void *),
+				void *cb_data);
 
 /**
  * Unregister a despotify callback.
  *
  * @param cb the callback to unregister.
  */
-void mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, int, void *, void *));
+void
+mpd_despotify_unregister_callback(void (*cb)(struct despotify_session *, int,
+					     void *, void *));
 
 #endif
 
