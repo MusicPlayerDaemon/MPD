@@ -923,7 +923,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/AdPlugDecoderPlugin.h
 endif
 
-if HAVE_FAAD
+if ENABLE_FAAD
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/FaadDecoderPlugin.cxx src/decoder/plugins/FaadDecoderPlugin.hxx
 endif

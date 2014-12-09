@@ -876,9 +876,8 @@ fi
 AM_CONDITIONAL(ENABLE_DSD, test x$enable_dsd = xyes)
 
 dnl ----------------------------------- FAAD ----------------------------------
-AM_PATH_FAAD()
-
-AM_CONDITIONAL(HAVE_FAAD, test x$enable_aac = xyes)
+MPD_ENABLE_AUTO_LIB(aac, FAAD, faad, NeAACDecOpen, [-lfaad], [],
+	[FAAD decoder plugin], [libfaad not found])
 
 dnl ---------------------------------- ffmpeg ---------------------------------
 MPD_ENABLE_AUTO_PKG(ffmpeg, FFMPEG,

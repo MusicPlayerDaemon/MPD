@@ -74,7 +74,7 @@ const struct DecoderPlugin *const decoder_plugins[] = {
 	&dsdiff_decoder_plugin,
 	&dsf_decoder_plugin,
 #endif
-#ifdef HAVE_FAAD
+#ifdef ENABLE_FAAD
 	&faad_decoder_plugin,
 #endif
 #ifdef ENABLE_MPCDEC
