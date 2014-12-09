@@ -1002,6 +1002,7 @@ AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
 dnl -------------------------------- Ogg Tremor -------------------------------
 if test x$with_tremor = xyes || test x$with_tremor = xno; then
 	enable_tremor="$with_tremor"
+	tremor_prefix=""
 else
 	tremor_prefix="$with_tremor"
 	enable_tremor=yes
