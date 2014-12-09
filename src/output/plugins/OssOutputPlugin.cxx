@@ -124,7 +124,7 @@ oss_stat_device(const char *device, int *errno_r)
 	return OSS_STAT_NO_ERROR;
 }
 
-static const char *default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
+static const char *const default_devices[] = { "/dev/sound/dsp", "/dev/dsp" };
 
 static bool
 oss_output_test_default_device(void)
@@ -380,7 +380,7 @@ oss_setup_sample_rate(int fd, AudioFormat &audio_format,
 		break;
 	}
 
-	static const int sample_rates[] = { 48000, 44100, 0 };
+	static constexpr int sample_rates[] = { 48000, 44100, 0 };
 	for (unsigned i = 0; sample_rates[i] != 0; ++i) {
 		sample_rate = sample_rates[i];
 		if (sample_rate == (int)audio_format.sample_rate)
@@ -572,7 +572,7 @@ oss_setup_sample_format(int fd, AudioFormat &audio_format,
 	/* the requested sample format is not available - probe for
 	   other formats supported by MPD */
 
-	static const SampleFormat sample_formats[] = {
+	static constexpr SampleFormat sample_formats[] = {
 		SampleFormat::S24_P32,
 		SampleFormat::S32,
 		SampleFormat::S16,
