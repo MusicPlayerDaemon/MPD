@@ -193,6 +193,18 @@ dnl ---------------------------------------------------------------------------
 dnl Header/Library Checks
 dnl ---------------------------------------------------------------------------
 
+AX_PTHREAD
+LIBS="$PTHREAD_LIBS $LIBS"
+AM_CFLAGS="$AM_CFLAGS $PTHREAD_CFLAGS"
+AM_CXXFLAGS="$AM_CXXFLAGS $PTHREAD_CFLAGS"
+
+AC_CHECK_LIB([pthread], [pthread_setname_np],
+	[have_pthread_setname_np=yes],
+	[have_pthread_setname_np=no])
+if test x$have_pthread_setname_np = xyes; then
+	AC_DEFINE(HAVE_PTHREAD_SETNAME_NP, 1, [Is pthread_setname_np() available?])
+fi
+
 AC_SEARCH_LIBS([clock_gettime], [rt])
 
 AC_ARG_ENABLE(syslog,
@@ -228,18 +240,6 @@ AC_CHECK_HEADERS(locale.h)
 AC_CHECK_HEADERS(valgrind/memcheck.h)
 
 AC_CHECK_HEADERS([sys/prctl.h], AC_CHECK_FUNCS([prctl]))
-
-AX_PTHREAD
-LIBS="$PTHREAD_LIBS $LIBS"
-AM_CFLAGS="$AM_CFLAGS $PTHREAD_CFLAGS"
-AM_CXXFLAGS="$AM_CXXFLAGS $PTHREAD_CFLAGS"
-
-AC_CHECK_LIB([pthread], [pthread_setname_np],
-	[have_pthread_setname_np=yes],
-	[have_pthread_setname_np=no])
-if test x$have_pthread_setname_np = xyes; then
-	AC_DEFINE(HAVE_PTHREAD_SETNAME_NP, 1, [Is pthread_setname_np() available?])
-fi
 
 dnl ---------------------------------------------------------------------------
 dnl Event loop selection
