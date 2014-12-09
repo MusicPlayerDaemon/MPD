@@ -738,7 +738,7 @@ ARCHIVE_LIBS = \
 	$(ISO9660_LIBS) \
 	$(ZZIP_LIBS)
 
-if HAVE_BZ2
+if ENABLE_BZ2
 libarchive_a_SOURCES += \
 	src/archive/plugins/Bzip2ArchivePlugin.cxx \
 	src/archive/plugins/Bzip2ArchivePlugin.hxx
@@ -889,7 +889,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/Mpg123DecoderPlugin.hxx
 endif
 
-if HAVE_MPCDEC
+if ENABLE_MPCDEC
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/MpcdecDecoderPlugin.cxx \
 	src/decoder/plugins/MpcdecDecoderPlugin.hxx
@@ -1068,7 +1068,7 @@ libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/OpusEncoderPlugin.hxx
 endif
 
-if ENABLE_LAME_ENCODER
+if ENABLE_LAME
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/LameEncoderPlugin.cxx \
 	src/encoder/plugins/LameEncoderPlugin.hxx

@@ -295,11 +295,6 @@ else
 	database_auto=no
 fi
 
-AC_ARG_ENABLE(bzip2,
-	AS_HELP_STRING([--enable-bzip2],
-		[enable bzip2 archive support (default: auto)]),,
-	enable_bzip2=auto)
-
 default_enable_daemon=yes
 if test x$host_is_android = xyes || test x$host_is_android = xyes; then
 	default_enable_daemon=no
@@ -360,11 +355,6 @@ AC_ARG_ENABLE(soundcloud,
 		[enable support for soundcloud.com]),,
 	[enable_soundcloud=auto])
 
-AC_ARG_ENABLE(lame-encoder,
-	AS_HELP_STRING([--enable-lame-encoder],
-		[enable the LAME mp3 encoder]),,
-	enable_lame_encoder=auto)
-
 AC_ARG_ENABLE([libwrap],
 	AS_HELP_STRING([--enable-libwrap], [use libwrap]),,
 	[enable_libwrap=auto])
@@ -373,11 +363,6 @@ AC_ARG_ENABLE(mikmod,
 	AS_HELP_STRING([--enable-mikmod],
 		[enable the mikmod decoder (default: disable)]),,
 	enable_mikmod=no)
-
-AC_ARG_ENABLE(mpc,
-	AS_HELP_STRING([--enable-mpc],
-		[disable musepack (MPC) support (default: auto)]),,
-	enable_mpc=auto)
 
 AC_ARG_ENABLE(openal,
 	AS_HELP_STRING([--enable-openal],
@@ -448,11 +433,6 @@ AC_ARG_ENABLE(werror,
 	AS_HELP_STRING([--enable-werror],
 		[treat warnings as errors (default: disabled)]),,
 	enable_werror=no)
-
-AC_ARG_ENABLE(wildmidi,
-	AS_HELP_STRING([--enable-wildmidi],
-		[enable MIDI support via wildmidi (default: auto)]),,
-	enable_wildmidi=auto)
 
 AC_ARG_WITH(zeroconf,
 	AS_HELP_STRING([--with-zeroconf=@<:@auto|avahi|bonjour|no@:>@],
@@ -823,13 +803,10 @@ MPD_ENABLE_AUTO_PKG(zlib, ZLIB, [zlib],
 
 dnl ---------------------------------- libbz2 ---------------------------------
 
-MPD_AUTO_LIB(bzip2, BZ2, bz2, BZ2_bzDecompressInit, [-lbz2], [],
-	[bzip2], [libbz2 not found])
+MPD_ENABLE_AUTO_LIB(bzip2, BZ2, bz2, BZ2_bzDecompressInit, [-lbz2], [],
+	[bzip2 archive plugin], [libbz2 not found])
 
-AM_CONDITIONAL(HAVE_BZ2, test x$enable_bzip2 = xyes)
 if test x$enable_bzip2 = xyes; then
-	AC_DEFINE(HAVE_BZ2, 1, [Define to have bz2 archive support])
-
 	AC_PATH_PROG(BZIP2, bzip2, no)
 else
 	BZIP2="no"
@@ -973,12 +950,8 @@ MPD_ENABLE_AUTO_PKG(sndfile, SNDFILE, [sndfile],
 
 dnl --------------------------------- musepack --------------------------------
 
-MPD_AUTO_LIB(mpc, MPCDEC, mpcdec, mpc_demux_init, [-lmpcdec], [],
-	[mpcdec], [libmpcdec not found])
-if test x$enable_mpc = xyes; then
-	AC_DEFINE(HAVE_MPCDEC, 1, [Define to use libmpcdec for MPC decoding])
-fi
-AM_CONDITIONAL(HAVE_MPCDEC, test x$enable_mpc = xyes)
+MPD_ENABLE_AUTO_LIB(mpc, MPCDEC, mpcdec, mpc_demux_init, [-lmpcdec], [],
+	[Musepack decoder plugin], [libmpcdec not found])
 
 dnl -------------------------------- Ogg Tremor -------------------------------
 
@@ -1080,13 +1053,8 @@ MPD_ENABLE_AUTO_PKG(wavpack, WAVPACK, [wavpack],
 	[WavPack decoder plugin], [libwavpack not found])
 
 dnl --------------------------------- WildMidi --------------------------------
-MPD_AUTO_LIB(wildmidi, WILDMIDI, WildMidi, WildMidi_Init, [-lWildMidi], [],
-	[wildmidi], [libwildmidi not found])
-if test x$enable_wildmidi = xyes; then
-	AC_DEFINE(ENABLE_WILDMIDI, 1, [Define for wildmidi support])
-fi
-
-AM_CONDITIONAL(ENABLE_WILDMIDI, test x$enable_wildmidi = xyes)
+MPD_ENABLE_AUTO_LIB(wildmidi, WILDMIDI, WildMidi, WildMidi_Init, [-lWildMidi], [],
+	[WildMidi decoder plugin], [libwildmidi not found])
 
 dnl ------------------------ Post Decoder Plugins Tests -----------------------
 
@@ -1138,13 +1106,8 @@ MPD_ENABLE_AUTO_PKG(vorbis_encoder, VORBISENC, [vorbisenc vorbis ogg],
 
 dnl ------------------------------- LAME Encoder ------------------------------
 
-MPD_AUTO_LIB(lame_encoder, LAME, mp3lame, lame_init, [-lmp3lame], [],
-	[libmp3lame], [libmp3lame not found])
-if test x$enable_lame_encoder = xyes; then
-	AC_DEFINE(ENABLE_LAME_ENCODER, 1,
-		[Define to enable the lame encoder plugin])
-fi
-AM_CONDITIONAL(ENABLE_LAME_ENCODER, test x$enable_lame_encoder = xyes)
+MPD_ENABLE_AUTO_LIB(lame_encoder, LAME, mp3lame, lame_init, [-lmp3lame], [],
+	[LAME encoder plugin], [libmp3lame not found])
 
 dnl ----------------------------- TwoLAME Encoder -----------------------------
 MPD_ENABLE_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],

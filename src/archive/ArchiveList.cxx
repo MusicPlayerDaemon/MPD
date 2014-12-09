@@ -29,7 +29,7 @@
 #include <string.h>
 
 const ArchivePlugin *const archive_plugins[] = {
-#ifdef HAVE_BZ2
+#ifdef ENABLE_BZ2
 	&bz2_archive_plugin,
 #endif
 #ifdef ENABLE_ZZIP

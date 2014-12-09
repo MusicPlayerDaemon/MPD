@@ -39,7 +39,7 @@ const EncoderPlugin *const encoder_plugins[] = {
 #ifdef ENABLE_OPUS
 	&opus_encoder_plugin,
 #endif
-#ifdef ENABLE_LAME_ENCODER
+#ifdef ENABLE_LAME
 	&lame_encoder_plugin,
 #endif
 #ifdef ENABLE_TWOLAME

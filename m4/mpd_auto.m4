@@ -120,6 +120,16 @@ AC_DEFUN([MPD_ENABLE_AUTO_PKG_LIB], [
 	])
 ])
 
+dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_LIB
+dnl
+dnl Parameters: varname1, varname2, libname, symname, libs, cflags, description, errmsg, default, pre
+AC_DEFUN([MPD_ENABLE_AUTO_LIB], [
+	MPD_ARG_ENABLE([$1], [$2], [$7], [$9], [
+		$10
+		MPD_AUTO_LIB($1, $2, $3, $4, $5, $6, $7, $8)
+	])
+])
+
 dnl Wrapper for MPD_ENABLE_AUTO_PKG and MPD_DEPENDS
 dnl
 dnl Parameters: varname1, varname2, pkg, description, errmsg, default, dep_variable, dep_errmsg
