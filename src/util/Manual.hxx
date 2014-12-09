@@ -93,10 +93,14 @@ public:
 	}
 
 	T &Get() {
+		assert(initialized);
+
 		return *(T *)data;
 	}
 
 	const T &Get() const {
+		assert(initialized);
+
 		return *(const T *)data;
 	}
 
