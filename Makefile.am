@@ -331,14 +331,14 @@ endif
 # Windows resource file
 #
 
-src/win32/mpd_win32_rc.$(OBJEXT): src/win32/mpd_win32_rc.rc
+win32/res/mpd.$(OBJEXT): %.$(OBJEXT): %.rc
 	$(WINDRES) -i $< -o $@
 
 if HAVE_WINDOWS
-noinst_DATA = src/win32/mpd_win32_rc.rc
+noinst_DATA = win32/res/mpd.rc
 
-EXTRA_src_mpd_DEPENDENCIES = src/win32/mpd_win32_rc.$(OBJEXT)
-src_mpd_LDFLAGS = -Wl,src/win32/mpd_win32_rc.$(OBJEXT)
+EXTRA_src_mpd_DEPENDENCIES = win32/res/mpd.$(OBJEXT)
+src_mpd_LDFLAGS = -Wl,win32/res/mpd.$(OBJEXT)
 endif
 
 if ENABLE_DATABASE
@@ -2231,4 +2231,4 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	android/src/Bridge.java \
 	android/src/Loader.java \
 	android/src/Main.java \
-	src/win32/mpd_win32_rc.rc.in src/win32/mpd.ico
+	win32/res/mpd.rc.in win32/res/mpd.ico

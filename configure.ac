@@ -97,7 +97,7 @@ linux*)
 
 mingw32* | windows*)
 	AC_CONFIG_FILES([
-		src/win32/mpd_win32_rc.rc
+		win32/res/mpd.rc
 	])
 	AC_CHECK_TOOL(WINDRES, windres)
 	AM_CPPFLAGS="$AM_CPPFLAGS -DWIN32_LEAN_AND_MEAN"
