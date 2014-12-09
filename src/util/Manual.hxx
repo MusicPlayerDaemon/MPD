@@ -92,20 +92,28 @@ public:
 #endif
 	}
 
-	operator T &() {
+	T &Get() {
 		return *(T *)data;
 	}
 
-	operator const T &() const {
+	const T &Get() const {
 		return *(const T *)data;
 	}
 
+	operator T &() {
+		return Get();
+	}
+
+	operator const T &() const {
+		return Get();
+	}
+
 	T *operator->() {
-		return (T *)data;
+		return &Get();
 	}
 
 	const T *operator->() const {
-		return (T *)data;
+		return &Get();
 	}
 };
 
