@@ -39,8 +39,7 @@ struct ReplayGainTuple {
 		peak = 0.0;
 	}
 
-	gcc_pure
-	bool IsDefined() const {
+	constexpr bool IsDefined() const {
 		return gain > -100;
 	}
 
