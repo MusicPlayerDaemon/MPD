@@ -51,6 +51,11 @@ struct ReplayGainTuple {
 struct ReplayGainInfo {
 	ReplayGainTuple tuples[2];
 
+	constexpr bool IsDefined() const {
+		return tuples[REPLAY_GAIN_ALBUM].IsDefined() ||
+			tuples[REPLAY_GAIN_TRACK].IsDefined();
+	}
+
 	void Clear() {
 		tuples[REPLAY_GAIN_ALBUM].Clear();
 		tuples[REPLAY_GAIN_TRACK].Clear();
