@@ -62,14 +62,16 @@ void
 ffmpeg_scan_dictionary(AVDictionary *dict,
 		       const struct tag_handler *handler, void *handler_ctx)
 {
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		ffmpeg_copy_metadata(TagType(i), dict, tag_item_names[i],
-				     handler, handler_ctx);
+	if (handler->tag != nullptr) {
+		for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
+			ffmpeg_copy_metadata(TagType(i), dict, tag_item_names[i],
+					     handler, handler_ctx);
 
-	for (const struct tag_table *i = ffmpeg_tags;
-	     i->name != nullptr; ++i)
-		ffmpeg_copy_metadata(i->type, dict, i->name,
-				     handler, handler_ctx);
+		for (const struct tag_table *i = ffmpeg_tags;
+		     i->name != nullptr; ++i)
+			ffmpeg_copy_metadata(i->type, dict, i->name,
+					     handler, handler_ctx);
+	}
 
 	if (handler->pair != nullptr)
 		ffmpeg_scan_pairs(dict, handler, handler_ctx);
