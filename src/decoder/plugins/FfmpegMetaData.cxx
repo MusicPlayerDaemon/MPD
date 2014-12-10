@@ -36,9 +36,9 @@ static const struct tag_table ffmpeg_tags[] = {
 };
 
 static void
-ffmpeg_copy_metadata(TagType type,
-		     AVDictionary *m, const char *name,
-		     const struct tag_handler *handler, void *handler_ctx)
+FfmpegScanTag(TagType type,
+	      AVDictionary *m, const char *name,
+	      const struct tag_handler *handler, void *handler_ctx)
 {
 	AVDictionaryEntry *mt = nullptr;
 
@@ -48,8 +48,8 @@ ffmpeg_copy_metadata(TagType type,
 }
 
 static void
-ffmpeg_scan_pairs(AVDictionary *dict,
-		  const struct tag_handler *handler, void *handler_ctx)
+FfmpegScanPairs(AVDictionary *dict,
+		const struct tag_handler *handler, void *handler_ctx)
 {
 	AVDictionaryEntry *i = nullptr;
 
@@ -59,20 +59,20 @@ ffmpeg_scan_pairs(AVDictionary *dict,
 }
 
 void
-ffmpeg_scan_dictionary(AVDictionary *dict,
-		       const struct tag_handler *handler, void *handler_ctx)
+FfmpegScanDictionary(AVDictionary *dict,
+		     const struct tag_handler *handler, void *handler_ctx)
 {
 	if (handler->tag != nullptr) {
 		for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-			ffmpeg_copy_metadata(TagType(i), dict, tag_item_names[i],
-					     handler, handler_ctx);
+			FfmpegScanTag(TagType(i), dict, tag_item_names[i],
+				      handler, handler_ctx);
 
 		for (const struct tag_table *i = ffmpeg_tags;
 		     i->name != nullptr; ++i)
-			ffmpeg_copy_metadata(i->type, dict, i->name,
-					     handler, handler_ctx);
+			FfmpegScanTag(i->type, dict, i->name,
+				      handler, handler_ctx);
 	}
 
 	if (handler->pair != nullptr)
-		ffmpeg_scan_pairs(dict, handler, handler_ctx);
+		FfmpegScanPairs(dict, handler, handler_ctx);
 }

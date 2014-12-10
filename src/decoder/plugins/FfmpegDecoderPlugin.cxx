@@ -711,11 +711,11 @@ ffmpeg_scan_stream(InputStream &is,
 		tag_handler_invoke_duration(handler, handler_ctx, duration);
 	}
 
-	ffmpeg_scan_dictionary(f->metadata, handler, handler_ctx);
+	FfmpegScanDictionary(f->metadata, handler, handler_ctx);
 	int idx = ffmpeg_find_audio_stream(*f);
 	if (idx >= 0)
-		ffmpeg_scan_dictionary(f->streams[idx]->metadata,
-				       handler, handler_ctx);
+		FfmpegScanDictionary(f->streams[idx]->metadata,
+				     handler, handler_ctx);
 
 	avformat_close_input(&f);
 	return true;

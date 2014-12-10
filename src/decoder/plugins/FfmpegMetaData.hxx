@@ -32,7 +32,7 @@ extern "C" {
 struct tag_handler;
 
 void
-ffmpeg_scan_dictionary(AVDictionary *dict,
-		       const tag_handler *handler, void *handler_ctx);
+FfmpegScanDictionary(AVDictionary *dict,
+		     const tag_handler *handler, void *handler_ctx);
 
 #endif
