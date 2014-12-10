@@ -25,6 +25,10 @@
 #include "tag/TagTable.hxx"
 #include "tag/TagHandler.hxx"
 
+extern "C" {
+#include <libavutil/dict.h>
+}
+
 static constexpr struct tag_table ffmpeg_tags[] = {
 	{ "year", TAG_DATE },
 	{ "author-sort", TAG_ARTIST_SORT },
