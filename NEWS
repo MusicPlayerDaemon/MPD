@@ -6,7 +6,7 @@ ver 0.20 (not yet released)
 * tags
   - ape: drop support for non-standard tag "album artist"
 * decoder
-  - ffmpeg: support ReplayGain
+  - ffmpeg: support ReplayGain and MixRamp
 * output
   - pulse: set channel map to WAVE-EX
 * mixer
