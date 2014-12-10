@@ -26,6 +26,8 @@
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/ReplayGain.hxx"
+#include "tag/MixRamp.hxx"
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
@@ -438,6 +440,58 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 }
 
 static void
+FfmpegParseMetaData(AVDictionary &dict, ReplayGainInfo &rg, MixRampInfo &mr)
+{
+	AVDictionaryEntry *i = nullptr;
+
+	while ((i = av_dict_get(&dict, "", i,
+				AV_DICT_IGNORE_SUFFIX)) != nullptr) {
+		const char *name = i->key;
+		const char *value = i->value;
+
+		if (!ParseReplayGainTag(rg, name, value))
+			ParseMixRampTag(mr, name, value);
+	}
+}
+
+static void
+FfmpegParseMetaData(const AVStream &stream,
+		    ReplayGainInfo &rg, MixRampInfo &mr)
+{
+	FfmpegParseMetaData(*stream.metadata, rg, mr);
+}
+
+static void
+FfmpegParseMetaData(const AVFormatContext &format_context, int audio_stream,
+		    ReplayGainInfo &rg, MixRampInfo &mr)
+{
+	FfmpegParseMetaData(*format_context.metadata, rg, mr);
+
+	if (audio_stream >= 0)
+		FfmpegParseMetaData(*format_context.streams[audio_stream],
+				    rg, mr);
+}
+
+static void
+FfmpegParseMetaData(Decoder &decoder,
+		    const AVFormatContext &format_context, int audio_stream)
+{
+	ReplayGainInfo rg;
+	rg.Clear();
+
+	MixRampInfo mr;
+	mr.Clear();
+
+	FfmpegParseMetaData(format_context, audio_stream, rg, mr);
+
+	if (rg.IsDefined())
+		decoder_replay_gain(decoder, &rg);
+
+	if (mr.IsDefined())
+		decoder_mixramp(decoder, std::move(mr));
+}
+
+static void
 ffmpeg_decode(Decoder &decoder, InputStream &input)
 {
 	AVInputFormat *input_format = ffmpeg_probe(&decoder, input);
@@ -540,6 +594,8 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 	decoder_initialized(decoder, audio_format,
 			    input.IsSeekable(), total_time);
+
+	FfmpegParseMetaData(decoder, *format_context, audio_stream);
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 	AVFrame *frame = av_frame_alloc();

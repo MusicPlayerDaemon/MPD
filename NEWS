@@ -5,6 +5,8 @@ ver 0.20 (not yet released)
   - report song duration with milliseconds precision
 * tags
   - ape: drop support for non-standard tag "album artist"
+* decoder
+  - ffmpeg: support ReplayGain
 * output
   - pulse: set channel map to WAVE-EX
 * mixer
