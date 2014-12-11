@@ -332,20 +332,20 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		int len = avcodec_decode_audio4(codec_context,
 						frame, &got_frame,
 						&packet2);
-		if (len >= 0 && got_frame) {
+		if (len < 0) {
+			/* if error, we skip the frame */
+			LogDefault(ffmpeg_domain,
+				   "decoding failed, frame skipped");
+			break;
+		}
+
+		if (got_frame) {
 			audio_size = copy_interleave_frame(codec_context,
 							   frame,
 							   &output_buffer,
 							   buffer, buffer_size);
 			if (audio_size < 0)
 				len = audio_size;
-		}
-
-		if (len < 0) {
-			/* if error, we skip the frame */
-			LogDefault(ffmpeg_domain,
-				   "decoding failed, frame skipped");
-			break;
 		}
 
 		packet2.data += len;
