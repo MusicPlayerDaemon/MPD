@@ -1,4 +1,6 @@
 ver 0.18.21 (not yet released)
+* decoder
+  - ffmpeg: fix time stamp underflow
 
 ver 0.18.20 (2014/12/08)
 * decoder
