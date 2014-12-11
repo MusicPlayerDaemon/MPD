@@ -492,6 +492,23 @@ FfmpegParseMetaData(Decoder &decoder,
 }
 
 static void
+FfmpegScanMetadata(const AVStream &stream,
+		   const tag_handler &handler, void *handler_ctx)
+{
+	FfmpegScanDictionary(stream.metadata, &handler, handler_ctx);
+}
+
+static void
+FfmpegScanMetadata(const AVFormatContext &format_context, int audio_stream,
+		   const tag_handler &handler, void *handler_ctx)
+{
+	FfmpegScanDictionary(format_context.metadata, &handler, handler_ctx);
+	if (audio_stream >= 0)
+		FfmpegScanMetadata(*format_context.streams[audio_stream],
+				   handler, handler_ctx);
+}
+
+static void
 ffmpeg_decode(Decoder &decoder, InputStream &input)
 {
 	AVInputFormat *input_format = ffmpeg_probe(&decoder, input);
@@ -690,11 +707,8 @@ ffmpeg_scan_stream(InputStream &is,
 		tag_handler_invoke_duration(handler, handler_ctx, duration);
 	}
 
-	FfmpegScanDictionary(f->metadata, handler, handler_ctx);
 	int idx = ffmpeg_find_audio_stream(f);
-	if (idx >= 0)
-		FfmpegScanDictionary(f->streams[idx]->metadata,
-				     handler, handler_ctx);
+	FfmpegScanMetadata(*f, idx, *handler, handler_ctx);
 
 	avformat_close_input(&f);
 	return true;
