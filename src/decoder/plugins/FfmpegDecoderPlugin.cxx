@@ -25,6 +25,7 @@
 #include "lib/ffmpeg/Domain.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
+#include "tag/TagBuilder.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
@@ -508,6 +509,40 @@ FfmpegScanMetadata(const AVFormatContext &format_context, int audio_stream,
 				   handler, handler_ctx);
 }
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
+
+static void
+FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
+	      TagBuilder &tag)
+{
+	FfmpegScanMetadata(format_context, audio_stream,
+			   full_tag_handler, &tag);
+}
+
+/**
+ * Check if a new stream tag was received and pass it to
+ * decoder_tag().
+ */
+static void
+FfmpegCheckTag(Decoder &decoder, InputStream &is,
+	       AVFormatContext &format_context, int audio_stream)
+{
+	AVStream &stream = *format_context.streams[audio_stream];
+	if ((stream.event_flags & AVSTREAM_EVENT_FLAG_METADATA_UPDATED) == 0)
+		/* no new metadata */
+		return;
+
+	/* clear the flag */
+	stream.event_flags &= ~AVSTREAM_EVENT_FLAG_METADATA_UPDATED;
+
+	TagBuilder tag;
+	FfmpegScanTag(format_context, audio_stream, tag);
+	if (!tag.IsEmpty())
+		decoder_tag(decoder, is, tag.Commit());
+}
+
+#endif
+
 static void
 ffmpeg_decode(Decoder &decoder, InputStream &input)
 {
@@ -634,6 +669,10 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		if (av_read_frame(format_context, &packet) < 0)
 			/* end of file */
 			break;
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
+		FfmpegCheckTag(decoder, input, *format_context, audio_stream);
+#endif
 
 		if (packet.stream_index == audio_stream)
 			cmd = ffmpeg_send_packet(decoder, input,
