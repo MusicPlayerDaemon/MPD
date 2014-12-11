@@ -370,11 +370,8 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 					  time_from_ffmpeg(pts, stream.time_base));
 	}
 
-	uint8_t *output_buffer = nullptr;
-
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (packet.size > 0 && cmd == DecoderCommand::NONE) {
-		int audio_size = 0;
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(&codec_context,
 						frame, &got_frame,
@@ -386,6 +383,8 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 			break;
 		}
 
+		uint8_t *output_buffer = nullptr;
+		int audio_size = 0;
 		if (got_frame) {
 			audio_size = copy_interleave_frame(codec_context,
 							   *frame,
