@@ -690,7 +690,7 @@ dnl ---------------------------------------------------------------------------
 
 dnl ---------------------------------- sqlite ---------------------------------
 
-MPD_ENABLE_AUTO_PKG(sqlite, SQLITE, [sqlite3],
+MPD_ENABLE_AUTO_PKG(sqlite, SQLITE, [sqlite3 >= 3.7.3],
 	[SQLite database support], [sqlite not found],
 	[$database_auto])
 

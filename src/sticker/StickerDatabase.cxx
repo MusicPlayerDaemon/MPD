@@ -32,10 +32,6 @@
 #include <sqlite3.h>
 #include <assert.h>
 
-#if SQLITE_VERSION_NUMBER < 3003009
-#define sqlite3_prepare_v2 sqlite3_prepare
-#endif
-
 struct sticker {
 	std::map<std::string, std::string> table;
 };
