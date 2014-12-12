@@ -20,17 +20,16 @@
 #include "config.h"
 #include "StickerDatabase.hxx"
 #include "lib/sqlite/Domain.hxx"
+#include "lib/sqlite/Util.hxx"
 #include "fs/Path.hxx"
 #include "Idle.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "Log.hxx"
 
 #include <string>
 #include <map>
 
-#include <sqlite3.h>
 #include <assert.h>
 
 struct sticker {
@@ -77,14 +76,6 @@ static const char sticker_sql_create[] =
 
 static sqlite3 *sticker_db;
 static sqlite3_stmt *sticker_stmt[ARRAY_SIZE(sticker_sql)];
-
-static constexpr Domain sticker_domain("sticker");
-
-static void
-LogError(sqlite3 *db, const char *msg)
-{
-	FormatError(sticker_domain, "%s: %s", msg, sqlite3_errmsg(db));
-}
 
 static sqlite3_stmt *
 sticker_prepare(const char *sql, Error &error)
@@ -163,41 +154,6 @@ bool
 sticker_enabled()
 {
 	return sticker_db != nullptr;
-}
-
-static bool
-Bind(sqlite3_stmt *stmt, unsigned i, const char *value)
-{
-	int result = sqlite3_bind_text(stmt, i, value, -1, nullptr);
-	if (result != SQLITE_OK) {
-		LogError(sticker_db, "sqlite3_bind_text() failed");
-		return false;
-	}
-
-	return true;
-}
-
-template<typename... Args>
-static bool
-BindAll2(gcc_unused sqlite3_stmt *stmt, gcc_unused unsigned i)
-{
-	assert(int(i - 1) == sqlite3_bind_parameter_count(stmt));
-	return true;
-}
-
-template<typename... Args>
-static bool
-BindAll2(sqlite3_stmt *stmt, unsigned i, const char *value, Args&&... args)
-{
-	return Bind(stmt, i, value) &&
-		BindAll2(stmt, i + 1, std::forward<Args>(args)...);
-}
-
-template<typename... Args>
-static bool
-BindAll(sqlite3_stmt *stmt, Args&&... args)
-{
-	return BindAll2(stmt, 1, std::forward<Args>(args)...);
 }
 
 std::string
