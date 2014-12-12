@@ -138,13 +138,29 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 
 		return CommandResult::OK;
 	/* find song dir key */
-	} else if (args.size == 4 && strcmp(cmd, "find") == 0) {
+	} else if ((args.size == 4 || args.size == 6) &&
+		   strcmp(cmd, "find") == 0) {
 		/* "sticker find song a/directory name" */
 
 		const char *const base_uri = args[2];
 
 		StickerOperator op = StickerOperator::EXISTS;
 		const char *value = nullptr;
+
+		if (args.size == 6) {
+			/* match the value */
+
+			const char *op_s = args[4];
+			value = args[5];
+
+			if (strcmp(op_s, "=") == 0)
+				op = StickerOperator::EQUALS;
+			else {
+				command_error(client, ACK_ERROR_ARG,
+					      "bad operator");
+				return CommandResult::ERROR;
+			}
+		}
 
 		bool success;
 		struct sticker_song_find_data data = {

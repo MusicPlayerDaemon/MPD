@@ -2138,6 +2138,25 @@ OK
             </para>
           </listitem>
         </varlistentry>
+
+        <varlistentry id="command_sticker_find_equals">
+          <term>
+            <cmdsynopsis>
+              <command>sticker</command>
+              <arg choice="plain">find</arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+              <arg choice="plain">=</arg>
+              <arg choice="req"><replaceable>VALUE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Searches for stickers with the given value.
+            </para>
+          </listitem>
+        </varlistentry>
       </variablelist>
     </section>
 

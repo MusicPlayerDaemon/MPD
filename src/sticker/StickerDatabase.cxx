@@ -43,6 +43,7 @@ enum sticker_sql {
 	STICKER_SQL_DELETE,
 	STICKER_SQL_DELETE_VALUE,
 	STICKER_SQL_FIND,
+	STICKER_SQL_FIND_VALUE,
 };
 
 static const char *const sticker_sql[] = {
@@ -60,6 +61,9 @@ static const char *const sticker_sql[] = {
 	"DELETE FROM sticker WHERE type=? AND uri=? AND name=?",
 	//[STICKER_SQL_FIND] =
 	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=?",
+
+	//[STICKER_SQL_FIND_VALUE] =
+	"SELECT uri,value FROM sticker WHERE type=? AND uri LIKE (? || '%') AND name=? AND value=?",
 };
 
 static const char sticker_sql_create[] =
@@ -383,9 +387,12 @@ BindFind(const char *type, const char *base_uri, const char *name,
 	case StickerOperator::EXISTS:
 		return BindAllOrNull(error, sticker_stmt[STICKER_SQL_FIND],
 				     type, base_uri, name);
-	}
 
-	(void)value;
+	case StickerOperator::EQUALS:
+		return BindAllOrNull(error,
+				     sticker_stmt[STICKER_SQL_FIND_VALUE],
+				     type, base_uri, name, value);
+	}
 
 	assert(false);
 	gcc_unreachable();

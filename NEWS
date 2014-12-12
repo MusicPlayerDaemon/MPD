@@ -3,6 +3,7 @@ ver 0.20 (not yet released)
   - "commands" returns playlist commands only if playlist_directory configured
   - "search"/"find" have a "window" parameter
   - report song duration with milliseconds precision
+  - "sticker find" can match sticker values
 * tags
   - ape, ogg: drop support for non-standard tag "album artist"
     affected filetypes: vorbis, flac, opus & all files with ape2 tags

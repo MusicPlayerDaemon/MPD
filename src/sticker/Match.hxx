@@ -26,6 +26,12 @@ enum class StickerOperator {
 	 * "value" parameter is ignored (must be nullptr).
 	 */
 	EXISTS,
+
+	/**
+	 * Matches if a sticker with the specified name and value
+	 * exists.
+	 */
+	EQUALS,
 };
 
 #endif
