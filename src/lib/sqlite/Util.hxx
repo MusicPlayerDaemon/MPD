@@ -137,6 +137,17 @@ ExecuteChanges(sqlite3_stmt *stmt)
 	return sqlite3_changes(sqlite3_db_handle(stmt));
 }
 
+/**
+ * Wrapper for ExecuteChanges() that returns true if at least one row
+ * was modified.  Returns false if nothing was modified or if an error
+ * occurred.
+ */
+static inline bool
+ExecuteModified(sqlite3_stmt *stmt)
+{
+	return ExecuteChanges(stmt) > 0;
+}
+
 template<typename F>
 static inline bool
 ExecuteForEach(sqlite3_stmt *stmt, F &&f)

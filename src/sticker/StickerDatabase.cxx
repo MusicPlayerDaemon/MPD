@@ -224,15 +224,14 @@ sticker_update_value(const char *type, const char *uri,
 	if (!BindAll(stmt, value, type, uri, name))
 		return false;
 
-	int ret = ExecuteChanges(stmt);
-	if (ret < 0)
-		return false;
+	bool modified = ExecuteModified(stmt);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
 
-	idle_add(IDLE_STICKER);
-	return ret > 0;
+	if (modified)
+		idle_add(IDLE_STICKER);
+	return modified;
 }
 
 static bool
@@ -291,14 +290,14 @@ sticker_delete(const char *type, const char *uri)
 	if (!BindAll(stmt, type, uri))
 		return false;
 
-	if (!ExecuteCommand(stmt))
-		return false;
+	bool modified = ExecuteModified(stmt);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
 
-	idle_add(IDLE_STICKER);
-	return true;
+	if (modified)
+		idle_add(IDLE_STICKER);
+	return modified;
 }
 
 bool
@@ -313,15 +312,14 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	if (!BindAll(stmt, type, uri, name))
 		return false;
 
-	int ret = ExecuteChanges(stmt);
-	if (ret < 0)
-		return false;
+	bool modified = ExecuteModified(stmt);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
 
-	idle_add(IDLE_STICKER);
-	return ret > 0;
+	if (modified)
+		idle_add(IDLE_STICKER);
+	return modified;
 }
 
 void
