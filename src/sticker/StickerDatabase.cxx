@@ -149,7 +149,7 @@ sticker_global_init(Path path, Error &error)
 }
 
 void
-sticker_global_finish(void)
+sticker_global_finish()
 {
 	if (sticker_db == nullptr)
 		/* not configured */
@@ -165,7 +165,7 @@ sticker_global_finish(void)
 }
 
 bool
-sticker_enabled(void)
+sticker_enabled()
 {
 	return sticker_db != nullptr;
 }

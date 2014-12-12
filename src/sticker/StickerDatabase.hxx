@@ -62,14 +62,14 @@ sticker_global_init(Path path, Error &error);
  * Close the sticker database.
  */
 void
-sticker_global_finish(void);
+sticker_global_finish();
 
 /**
  * Returns true if the sticker database is configured and available.
  */
 gcc_const
 bool
-sticker_enabled(void);
+sticker_enabled();
 
 /**
  * Returns one value from an object's sticker record.  Returns an
