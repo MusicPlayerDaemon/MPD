@@ -92,10 +92,8 @@ LogError(sqlite3 *db, const char *msg)
 static sqlite3_stmt *
 sticker_prepare(const char *sql, Error &error)
 {
-	int ret;
 	sqlite3_stmt *stmt;
-
-	ret = sqlite3_prepare_v2(sticker_db, sql, -1, &stmt, nullptr);
+	int ret = sqlite3_prepare_v2(sticker_db, sql, -1, &stmt, nullptr);
 	if (ret != SQLITE_OK) {
 		error.Format(sticker_domain, ret,
 			     "sqlite3_prepare_v2() failed: %s",
@@ -209,7 +207,6 @@ std::string
 sticker_load_value(const char *type, const char *uri, const char *name)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_GET];
-	int ret;
 
 	assert(sticker_enabled());
 	assert(type != nullptr);
@@ -224,6 +221,7 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	if (!BindAll(stmt, type, uri, name))
 		return std::string();
 
+	int ret;
 	do {
 		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
@@ -250,7 +248,6 @@ sticker_list_values(std::map<std::string, std::string> &table,
 		    const char *type, const char *uri)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_LIST];
-	int ret;
 
 	assert(type != nullptr);
 	assert(uri != nullptr);
@@ -261,6 +258,7 @@ sticker_list_values(std::map<std::string, std::string> &table,
 	if (!BindAll(stmt, type, uri))
 		return false;
 
+	int ret;
 	do {
 		ret = sqlite3_step(stmt);
 		switch (ret) {
@@ -294,7 +292,6 @@ sticker_update_value(const char *type, const char *uri,
 		     const char *name, const char *value)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_UPDATE];
-	int ret;
 
 	assert(type != nullptr);
 	assert(uri != nullptr);
@@ -309,6 +306,7 @@ sticker_update_value(const char *type, const char *uri,
 	if (!BindAll(stmt, value, type, uri, name))
 		return false;
 
+	int ret;
 	do {
 		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
@@ -332,7 +330,6 @@ sticker_insert_value(const char *type, const char *uri,
 		     const char *name, const char *value)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_INSERT];
-	int ret;
 
 	assert(type != nullptr);
 	assert(uri != nullptr);
@@ -347,6 +344,7 @@ sticker_insert_value(const char *type, const char *uri,
 	if (!BindAll(stmt, type, uri, name, value))
 		return false;
 
+	int ret;
 	do {
 		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
@@ -385,7 +383,6 @@ bool
 sticker_delete(const char *type, const char *uri)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_DELETE];
-	int ret;
 
 	assert(sticker_enabled());
 	assert(type != nullptr);
@@ -396,6 +393,7 @@ sticker_delete(const char *type, const char *uri)
 	if (!BindAll(stmt, type, uri))
 		return false;
 
+	int ret;
 	do {
 		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
@@ -416,7 +414,6 @@ bool
 sticker_delete_value(const char *type, const char *uri, const char *name)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_DELETE_VALUE];
-	int ret;
 
 	assert(sticker_enabled());
 	assert(type != nullptr);
@@ -427,6 +424,7 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	if (!BindAll(stmt, type, uri, name))
 		return false;
 
+	int ret;
 	do {
 		ret = sqlite3_step(stmt);
 	} while (ret == SQLITE_BUSY);
@@ -493,7 +491,6 @@ sticker_find(const char *type, const char *base_uri, const char *name,
 	     void *user_data)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_FIND];
-	int ret;
 
 	assert(type != nullptr);
 	assert(name != nullptr);
@@ -508,6 +505,7 @@ sticker_find(const char *type, const char *base_uri, const char *name,
 	if (!BindAll(stmt, type, base_uri, name))
 		return false;
 
+	int ret;
 	do {
 		ret = sqlite3_step(stmt);
 		switch (ret) {
