@@ -172,21 +172,9 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	if (!BindAll(stmt, type, uri, name))
 		return std::string();
 
-	int ret;
-	do {
-		ret = sqlite3_step(stmt);
-	} while (ret == SQLITE_BUSY);
-
 	std::string value;
-	if (ret == SQLITE_ROW) {
-		/* record found */
+	if (ExecuteRow(stmt))
 		value = (const char*)sqlite3_column_text(stmt, 0);
-	} else if (ret == SQLITE_DONE) {
-		/* no record found */
-	} else {
-		/* error */
-		LogError(sticker_db, "sqlite3_step() failed");
-	}
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
@@ -207,33 +195,16 @@ sticker_list_values(std::map<std::string, std::string> &table,
 	if (!BindAll(stmt, type, uri))
 		return false;
 
-	int ret;
-	do {
-		ret = sqlite3_step(stmt);
-		switch (ret) {
-			const char *name, *value;
-
-		case SQLITE_ROW:
-			name = (const char*)sqlite3_column_text(stmt, 0);
-			value = (const char*)sqlite3_column_text(stmt, 1);
-
+	const bool success = ExecuteForEach(stmt, [stmt, &table](){
+			const char *name = (const char *)sqlite3_column_text(stmt, 0);
+			const char *value = (const char *)sqlite3_column_text(stmt, 1);
 			table.insert(std::make_pair(name, value));
-			break;
-		case SQLITE_DONE:
-			break;
-		case SQLITE_BUSY:
-			/* no op */
-			break;
-		default:
-			LogError(sticker_db, "sqlite3_step() failed");
-			return false;
-		}
-	} while (ret != SQLITE_DONE);
+		});
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
 
-	return true;
+	return success;
 }
 
 static bool
@@ -253,17 +224,9 @@ sticker_update_value(const char *type, const char *uri,
 	if (!BindAll(stmt, value, type, uri, name))
 		return false;
 
-	int ret;
-	do {
-		ret = sqlite3_step(stmt);
-	} while (ret == SQLITE_BUSY);
-
-	if (ret != SQLITE_DONE) {
-		LogError(sticker_db, "sqlite3_step() failed");
+	int ret = ExecuteChanges(stmt);
+	if (ret < 0)
 		return false;
-	}
-
-	ret = sqlite3_changes(sticker_db);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
@@ -289,19 +252,11 @@ sticker_insert_value(const char *type, const char *uri,
 	if (!BindAll(stmt, type, uri, name, value))
 		return false;
 
-	int ret;
-	do {
-		ret = sqlite3_step(stmt);
-	} while (ret == SQLITE_BUSY);
-
-	if (ret != SQLITE_DONE) {
-		LogError(sticker_db, "sqlite3_step() failed");
+	if (!ExecuteCommand(stmt))
 		return false;
-	}
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
-
 
 	idle_add(IDLE_STICKER);
 	return true;
@@ -336,15 +291,8 @@ sticker_delete(const char *type, const char *uri)
 	if (!BindAll(stmt, type, uri))
 		return false;
 
-	int ret;
-	do {
-		ret = sqlite3_step(stmt);
-	} while (ret == SQLITE_BUSY);
-
-	if (ret != SQLITE_DONE) {
-		LogError(sticker_db, "sqlite3_step() failed");
+	if (!ExecuteCommand(stmt))
 		return false;
-	}
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
@@ -365,17 +313,9 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	if (!BindAll(stmt, type, uri, name))
 		return false;
 
-	int ret;
-	do {
-		ret = sqlite3_step(stmt);
-	} while (ret == SQLITE_BUSY);
-
-	if (ret != SQLITE_DONE) {
-		LogError(sticker_db, "sqlite3_step() failed");
+	int ret = ExecuteChanges(stmt);
+	if (ret < 0)
 		return false;
-	}
-
-	ret = sqlite3_changes(sticker_db);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
@@ -444,28 +384,14 @@ sticker_find(const char *type, const char *base_uri, const char *name,
 	if (!BindAll(stmt, type, base_uri, name))
 		return false;
 
-	int ret;
-	do {
-		ret = sqlite3_step(stmt);
-		switch (ret) {
-		case SQLITE_ROW:
+	const bool success = ExecuteForEach(stmt, [stmt, func, user_data](){
 			func((const char*)sqlite3_column_text(stmt, 0),
 			     (const char*)sqlite3_column_text(stmt, 1),
 			     user_data);
-			break;
-		case SQLITE_DONE:
-			break;
-		case SQLITE_BUSY:
-			/* no op */
-			break;
-		default:
-			LogError(sticker_db, "sqlite3_step() failed");
-			return false;
-		}
-	} while (ret != SQLITE_DONE);
+		});
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
 
-	return true;
+	return success;
 }

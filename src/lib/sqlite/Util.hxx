@@ -77,4 +77,84 @@ BindAll(sqlite3_stmt *stmt, Args&&... args)
 	return BindAll2(stmt, 1, std::forward<Args>(args)...);
 }
 
+/**
+ * Call sqlite3_stmt() repepatedly until something other than
+ * SQLITE_BUSY is returned.
+ */
+static int
+ExecuteBusy(sqlite3_stmt *stmt)
+{
+	int result;
+	do {
+		result = sqlite3_step(stmt);
+	} while (result == SQLITE_BUSY);
+
+	return result;
+}
+
+/**
+ * Wrapper for ExecuteBusy() that returns true on SQLITE_ROW.
+ */
+static bool
+ExecuteRow(sqlite3_stmt *stmt)
+{
+	int result = ExecuteBusy(stmt);
+	if (result == SQLITE_ROW)
+		return true;
+
+	if (result != SQLITE_DONE)
+		LogError(sqlite_domain, "sqlite3_step() failed");
+
+	return false;
+}
+
+/**
+ * Wrapper for ExecuteBusy() that interprets everything other than
+ * SQLITE_DONE as error.
+ */
+static bool
+ExecuteCommand(sqlite3_stmt *stmt)
+{
+	int result = ExecuteBusy(stmt);
+	if (result != SQLITE_DONE) {
+		LogError(stmt, "sqlite3_step() failed");
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Wrapper for ExecuteCommand() that returns the number of rows
+ * modified via sqlite3_changes().  Returns -1 on error.
+ */
+static inline int
+ExecuteChanges(sqlite3_stmt *stmt)
+{
+	if (!ExecuteCommand(stmt))
+		return -1;
+
+	return sqlite3_changes(sqlite3_db_handle(stmt));
+}
+
+template<typename F>
+static inline bool
+ExecuteForEach(sqlite3_stmt *stmt, F &&f)
+{
+	while (true) {
+		switch (ExecuteBusy(stmt)) {
+		case SQLITE_ROW:
+			f();
+			break;
+
+		case SQLITE_DONE:
+			return true;
+
+		default:
+			LogError(sqlite_domain, "sqlite3_step() failed");
+			return false;
+		}
+	}
+}
+
 #endif
