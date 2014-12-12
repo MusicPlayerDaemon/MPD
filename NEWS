@@ -4,7 +4,9 @@ ver 0.20 (not yet released)
   - "search"/"find" have a "window" parameter
   - report song duration with milliseconds precision
 * tags
-  - ape: drop support for non-standard tag "album artist"
+  - ape, ogg: drop support for non-standard tag "album artist"
+    affected filetypes: vorbis, flac, opus & all files with ape2 tags
+    (most importantly some mp3s)
 * decoder
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
