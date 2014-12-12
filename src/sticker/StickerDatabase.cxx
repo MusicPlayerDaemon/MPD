@@ -251,14 +251,14 @@ sticker_insert_value(const char *type, const char *uri,
 	if (!BindAll(stmt, type, uri, name, value))
 		return false;
 
-	if (!ExecuteCommand(stmt))
-		return false;
+	bool success = ExecuteCommand(stmt);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
 
-	idle_add(IDLE_STICKER);
-	return true;
+	if (success)
+		idle_add(IDLE_STICKER);
+	return success;
 }
 
 bool
