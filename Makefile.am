@@ -354,6 +354,7 @@ endif
 if ENABLE_SQLITE
 libmpd_a_SOURCES += \
 	src/command/StickerCommands.cxx src/command/StickerCommands.hxx \
+	src/lib/sqlite/Domain.cxx src/lib/sqlite/Domain.hxx \
 	src/sticker/StickerDatabase.cxx src/sticker/StickerDatabase.hxx \
 	src/sticker/StickerPrint.cxx src/sticker/StickerPrint.hxx \
 	src/sticker/SongSticker.cxx src/sticker/SongSticker.hxx

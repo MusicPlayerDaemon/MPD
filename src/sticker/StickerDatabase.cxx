@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "StickerDatabase.hxx"
+#include "lib/sqlite/Domain.hxx"
 #include "fs/Path.hxx"
 #include "Idle.hxx"
 #include "util/Error.hxx"
@@ -91,7 +92,7 @@ sticker_prepare(const char *sql, Error &error)
 	sqlite3_stmt *stmt;
 	int ret = sqlite3_prepare_v2(sticker_db, sql, -1, &stmt, nullptr);
 	if (ret != SQLITE_OK) {
-		error.Format(sticker_domain, ret,
+		error.Format(sqlite_domain, ret,
 			     "sqlite3_prepare_v2() failed: %s",
 			     sqlite3_errmsg(sticker_db));
 		return nullptr;
@@ -112,9 +113,9 @@ sticker_global_init(Path path, Error &error)
 	ret = sqlite3_open(path.c_str(), &sticker_db);
 	if (ret != SQLITE_OK) {
 		const std::string utf8 = path.ToUTF8();
-		error.Format(sticker_domain, ret,
-			    "Failed to open sqlite database '%s': %s",
-			    utf8.c_str(), sqlite3_errmsg(sticker_db));
+		error.Format(sqlite_domain, ret,
+			     "Failed to open sqlite database '%s': %s",
+			     utf8.c_str(), sqlite3_errmsg(sticker_db));
 		return false;
 	}
 
@@ -123,7 +124,7 @@ sticker_global_init(Path path, Error &error)
 	ret = sqlite3_exec(sticker_db, sticker_sql_create,
 			   nullptr, nullptr, nullptr);
 	if (ret != SQLITE_OK) {
-		error.Format(sticker_domain, ret,
+		error.Format(sqlite_domain, ret,
 			     "Failed to create sticker table: %s",
 			     sqlite3_errmsg(sticker_db));
 		return false;
