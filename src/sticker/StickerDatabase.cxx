@@ -212,8 +212,6 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	if (*name == 0)
 		return std::string();
 
-	sqlite3_reset(stmt);
-
 	if (!BindAll(stmt, type, uri, name))
 		return std::string();
 
@@ -248,8 +246,6 @@ sticker_list_values(std::map<std::string, std::string> &table,
 	assert(type != nullptr);
 	assert(uri != nullptr);
 	assert(sticker_enabled());
-
-	sqlite3_reset(stmt);
 
 	if (!BindAll(stmt, type, uri))
 		return false;
@@ -297,8 +293,6 @@ sticker_update_value(const char *type, const char *uri,
 
 	assert(sticker_enabled());
 
-	sqlite3_reset(stmt);
-
 	if (!BindAll(stmt, value, type, uri, name))
 		return false;
 
@@ -334,8 +328,6 @@ sticker_insert_value(const char *type, const char *uri,
 	assert(value != nullptr);
 
 	assert(sticker_enabled());
-
-	sqlite3_reset(stmt);
 
 	if (!BindAll(stmt, type, uri, name, value))
 		return false;
@@ -384,8 +376,6 @@ sticker_delete(const char *type, const char *uri)
 	assert(type != nullptr);
 	assert(uri != nullptr);
 
-	sqlite3_reset(stmt);
-
 	if (!BindAll(stmt, type, uri))
 		return false;
 
@@ -414,8 +404,6 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	assert(sticker_enabled());
 	assert(type != nullptr);
 	assert(uri != nullptr);
-
-	sqlite3_reset(stmt);
 
 	if (!BindAll(stmt, type, uri, name))
 		return false;
@@ -492,8 +480,6 @@ sticker_find(const char *type, const char *base_uri, const char *name,
 	assert(name != nullptr);
 	assert(func != nullptr);
 	assert(sticker_enabled());
-
-	sqlite3_reset(stmt);
 
 	if (base_uri == nullptr)
 		base_uri = "";
