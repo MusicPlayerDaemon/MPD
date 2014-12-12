@@ -143,6 +143,9 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 
 		const char *const base_uri = args[2];
 
+		StickerOperator op = StickerOperator::EXISTS;
+		const char *value = nullptr;
+
 		bool success;
 		struct sticker_song_find_data data = {
 			client,
@@ -150,6 +153,7 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 		};
 
 		success = sticker_song_find(*db, base_uri, data.name,
+					    op, value,
 					    sticker_song_find_print_cb, &data,
 					    error);
 		if (!success) {

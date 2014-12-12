@@ -97,6 +97,7 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 
 bool
 sticker_song_find(const Database &db, const char *base_uri, const char *name,
+		  StickerOperator op, const char *value,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data,
@@ -119,7 +120,7 @@ sticker_song_find(const Database &db, const char *base_uri, const char *name,
 
 	data.base_uri_length = strlen(data.base_uri);
 
-	bool success = sticker_find("song", data.base_uri, name,
+	bool success = sticker_find("song", data.base_uri, name, op, value,
 				    sticker_song_find_cb, &data,
 				    error);
 	free(allocated);

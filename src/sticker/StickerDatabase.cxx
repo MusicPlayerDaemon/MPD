@@ -370,6 +370,7 @@ sticker_load(const char *type, const char *uri, Error &error)
 
 static sqlite3_stmt *
 BindFind(const char *type, const char *base_uri, const char *name,
+	 StickerOperator op, const char *value,
 	 Error &error)
 {
 	assert(type != nullptr);
@@ -378,12 +379,21 @@ BindFind(const char *type, const char *base_uri, const char *name,
 	if (base_uri == nullptr)
 		base_uri = "";
 
-	return BindAllOrNull(error, sticker_stmt[STICKER_SQL_FIND],
-			     type, base_uri, name);
+	switch (op) {
+	case StickerOperator::EXISTS:
+		return BindAllOrNull(error, sticker_stmt[STICKER_SQL_FIND],
+				     type, base_uri, name);
+	}
+
+	(void)value;
+
+	assert(false);
+	gcc_unreachable();
 }
 
 bool
 sticker_find(const char *type, const char *base_uri, const char *name,
+	     StickerOperator op, const char *value,
 	     void (*func)(const char *uri, const char *value,
 			  void *user_data),
 	     void *user_data,
@@ -392,7 +402,8 @@ sticker_find(const char *type, const char *base_uri, const char *name,
 	assert(func != nullptr);
 	assert(sticker_enabled());
 
-	sqlite3_stmt *const stmt = BindFind(type, base_uri, name, error);
+	sqlite3_stmt *const stmt = BindFind(type, base_uri, name, op, value,
+					    error);
 	if (stmt == nullptr)
 		return false;
 

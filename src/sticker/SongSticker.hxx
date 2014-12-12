@@ -20,6 +20,7 @@
 #ifndef MPD_SONG_STICKER_HXX
 #define MPD_SONG_STICKER_HXX
 
+#include "Match.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -30,7 +31,8 @@ class Database;
 class Error;
 
 /**
- * Returns one value from a song's sticker record.
+ * Returns one value from a song's sticker record.  The caller must
+ * free the return value with g_free().
  */
 gcc_pure
 std::string
@@ -81,6 +83,7 @@ sticker_song_get(const LightSong &song, Error &error);
  */
 bool
 sticker_song_find(const Database &db, const char *base_uri, const char *name,
+		  StickerOperator op, const char *value,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
 		  void *user_data,

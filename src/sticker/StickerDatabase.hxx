@@ -42,6 +42,7 @@
 #ifndef MPD_STICKER_DATABASE_HXX
 #define MPD_STICKER_DATABASE_HXX
 
+#include "Match.hxx"
 #include "Compiler.h"
 
 #include <string>
@@ -154,11 +155,14 @@ sticker_load(const char *type, const char *uri,
  * @param base_uri the URI prefix of the resources, or nullptr if all
  * resources should be searched
  * @param name the name of the sticker
+ * @param op the comparison operator
+ * @param value the operand
  * @return true on success (even if no sticker was found), false on
  * failure
  */
 bool
 sticker_find(const char *type, const char *base_uri, const char *name,
+	     StickerOperator op, const char *value,
 	     void (*func)(const char *uri, const char *value,
 			  void *user_data),
 	     void *user_data,
