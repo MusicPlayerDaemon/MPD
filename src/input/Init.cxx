@@ -67,7 +67,7 @@ input_stream_global_init(Error &error)
 		case InputPlugin::InitResult::UNAVAILABLE:
 			if (error.IsDefined()) {
 				FormatError(error,
-					    "Input plugin '%s' is unavailable: ",
+					    "Input plugin '%s' is unavailable",
 					    plugin->name);
 				error.Clear();
 			}
