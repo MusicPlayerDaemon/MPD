@@ -368,6 +368,20 @@ sticker_load(const char *type, const char *uri, Error &error)
 	return new sticker(std::move(s));
 }
 
+static sqlite3_stmt *
+BindFind(const char *type, const char *base_uri, const char *name,
+	 Error &error)
+{
+	assert(type != nullptr);
+	assert(name != nullptr);
+
+	if (base_uri == nullptr)
+		base_uri = "";
+
+	return BindAllOrNull(error, sticker_stmt[STICKER_SQL_FIND],
+			     type, base_uri, name);
+}
+
 bool
 sticker_find(const char *type, const char *base_uri, const char *name,
 	     void (*func)(const char *uri, const char *value,
@@ -375,17 +389,11 @@ sticker_find(const char *type, const char *base_uri, const char *name,
 	     void *user_data,
 	     Error &error)
 {
-	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_FIND];
-
-	assert(type != nullptr);
-	assert(name != nullptr);
 	assert(func != nullptr);
 	assert(sticker_enabled());
 
-	if (base_uri == nullptr)
-		base_uri = "";
-
-	if (!BindAll(error, stmt, type, base_uri, name))
+	sqlite3_stmt *const stmt = BindFind(type, base_uri, name, error);
+	if (stmt == nullptr)
 		return false;
 
 	const bool success = ExecuteForEach(stmt, error,

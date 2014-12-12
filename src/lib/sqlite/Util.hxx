@@ -81,6 +81,19 @@ BindAll(Error &error, sqlite3_stmt *stmt, Args&&... args)
 }
 
 /**
+ * Wrapper for BindAll() that returns the specified sqlite3_stmt* on
+ * success and nullptr on error.
+ */
+template<typename... Args>
+static sqlite3_stmt *
+BindAllOrNull(Error &error, sqlite3_stmt *stmt, Args&&... args)
+{
+	return BindAll(error, stmt, std::forward<Args>(args)...)
+		? stmt
+		: nullptr;
+}
+
+/**
  * Call sqlite3_stmt() repepatedly until something other than
  * SQLITE_BUSY is returned.
  */
