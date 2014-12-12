@@ -2155,6 +2155,11 @@ OK
             <para>
               Searches for stickers with the given value.
             </para>
+
+            <para>
+              Other supported operators are:
+              "<function>&lt;</function>", "<function>&gt;</function>"
+            </para>
           </listitem>
         </varlistentry>
       </variablelist>

@@ -155,6 +155,10 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 
 			if (strcmp(op_s, "=") == 0)
 				op = StickerOperator::EQUALS;
+			else if (strcmp(op_s, "<") == 0)
+				op = StickerOperator::LESS_THAN;
+			else if (strcmp(op_s, ">") == 0)
+				op = StickerOperator::GREATER_THAN;
 			else {
 				command_error(client, ACK_ERROR_ARG,
 					      "bad operator");

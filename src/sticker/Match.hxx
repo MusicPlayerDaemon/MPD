@@ -32,6 +32,18 @@ enum class StickerOperator {
 	 * exists.
 	 */
 	EQUALS,
+
+	/**
+	 * Matches if a sticker with the specified name exists with a
+	 * value smaller than the specified one.
+	 */
+	LESS_THAN,
+
+	/**
+	 * Matches if a sticker with the specified name exists with a
+	 * value bigger than the specified one.
+	 */
+	GREATER_THAN,
 };
 
 #endif
