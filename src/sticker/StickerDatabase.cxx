@@ -25,7 +25,6 @@
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
-#include "Log.hxx"
 
 #include <string>
 #include <map>
@@ -157,7 +156,8 @@ sticker_enabled()
 }
 
 std::string
-sticker_load_value(const char *type, const char *uri, const char *name)
+sticker_load_value(const char *type, const char *uri, const char *name,
+		   Error &error)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_GET];
 
@@ -169,11 +169,11 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 	if (*name == 0)
 		return std::string();
 
-	if (!BindAll(stmt, type, uri, name))
+	if (!BindAll(error, stmt, type, uri, name))
 		return std::string();
 
 	std::string value;
-	if (ExecuteRow(stmt))
+	if (ExecuteRow(stmt, error))
 		value = (const char*)sqlite3_column_text(stmt, 0);
 
 	sqlite3_reset(stmt);
@@ -184,7 +184,8 @@ sticker_load_value(const char *type, const char *uri, const char *name)
 
 static bool
 sticker_list_values(std::map<std::string, std::string> &table,
-		    const char *type, const char *uri)
+		    const char *type, const char *uri,
+		    Error &error)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_LIST];
 
@@ -192,10 +193,10 @@ sticker_list_values(std::map<std::string, std::string> &table,
 	assert(uri != nullptr);
 	assert(sticker_enabled());
 
-	if (!BindAll(stmt, type, uri))
+	if (!BindAll(error, stmt, type, uri))
 		return false;
 
-	const bool success = ExecuteForEach(stmt, [stmt, &table](){
+	const bool success = ExecuteForEach(stmt, error, [stmt, &table](){
 			const char *name = (const char *)sqlite3_column_text(stmt, 0);
 			const char *value = (const char *)sqlite3_column_text(stmt, 1);
 			table.insert(std::make_pair(name, value));
@@ -209,7 +210,8 @@ sticker_list_values(std::map<std::string, std::string> &table,
 
 static bool
 sticker_update_value(const char *type, const char *uri,
-		     const char *name, const char *value)
+		     const char *name, const char *value,
+		     Error &error)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_UPDATE];
 
@@ -221,10 +223,10 @@ sticker_update_value(const char *type, const char *uri,
 
 	assert(sticker_enabled());
 
-	if (!BindAll(stmt, value, type, uri, name))
+	if (!BindAll(error, stmt, value, type, uri, name))
 		return false;
 
-	bool modified = ExecuteModified(stmt);
+	bool modified = ExecuteModified(stmt, error);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
@@ -236,7 +238,8 @@ sticker_update_value(const char *type, const char *uri,
 
 static bool
 sticker_insert_value(const char *type, const char *uri,
-		     const char *name, const char *value)
+		     const char *name, const char *value,
+		     Error &error)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_INSERT];
 
@@ -248,10 +251,10 @@ sticker_insert_value(const char *type, const char *uri,
 
 	assert(sticker_enabled());
 
-	if (!BindAll(stmt, type, uri, name, value))
+	if (!BindAll(error, stmt, type, uri, name, value))
 		return false;
 
-	bool success = ExecuteCommand(stmt);
+	bool success = ExecuteCommand(stmt, error);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
@@ -263,7 +266,8 @@ sticker_insert_value(const char *type, const char *uri,
 
 bool
 sticker_store_value(const char *type, const char *uri,
-		    const char *name, const char *value)
+		    const char *name, const char *value,
+		    Error &error)
 {
 	assert(sticker_enabled());
 	assert(type != nullptr);
@@ -274,12 +278,12 @@ sticker_store_value(const char *type, const char *uri,
 	if (*name == 0)
 		return false;
 
-	return sticker_update_value(type, uri, name, value) ||
-		sticker_insert_value(type, uri, name, value);
+	return sticker_update_value(type, uri, name, value, error) ||
+		sticker_insert_value(type, uri, name, value, error);
 }
 
 bool
-sticker_delete(const char *type, const char *uri)
+sticker_delete(const char *type, const char *uri, Error &error)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_DELETE];
 
@@ -287,10 +291,10 @@ sticker_delete(const char *type, const char *uri)
 	assert(type != nullptr);
 	assert(uri != nullptr);
 
-	if (!BindAll(stmt, type, uri))
+	if (!BindAll(error, stmt, type, uri))
 		return false;
 
-	bool modified = ExecuteModified(stmt);
+	bool modified = ExecuteModified(stmt, error);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
@@ -301,7 +305,8 @@ sticker_delete(const char *type, const char *uri)
 }
 
 bool
-sticker_delete_value(const char *type, const char *uri, const char *name)
+sticker_delete_value(const char *type, const char *uri, const char *name,
+		     Error &error)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_DELETE_VALUE];
 
@@ -309,10 +314,10 @@ sticker_delete_value(const char *type, const char *uri, const char *name)
 	assert(type != nullptr);
 	assert(uri != nullptr);
 
-	if (!BindAll(stmt, type, uri, name))
+	if (!BindAll(error, stmt, type, uri, name))
 		return false;
 
-	bool modified = ExecuteModified(stmt);
+	bool modified = ExecuteModified(stmt, error);
 
 	sqlite3_reset(stmt);
 	sqlite3_clear_bindings(stmt);
@@ -349,11 +354,11 @@ sticker_foreach(const sticker &sticker,
 }
 
 struct sticker *
-sticker_load(const char *type, const char *uri)
+sticker_load(const char *type, const char *uri, Error &error)
 {
 	sticker s;
 
-	if (!sticker_list_values(s.table, type, uri))
+	if (!sticker_list_values(s.table, type, uri, error))
 		return nullptr;
 
 	if (s.table.empty())
@@ -367,7 +372,8 @@ bool
 sticker_find(const char *type, const char *base_uri, const char *name,
 	     void (*func)(const char *uri, const char *value,
 			  void *user_data),
-	     void *user_data)
+	     void *user_data,
+	     Error &error)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_FIND];
 
@@ -379,10 +385,11 @@ sticker_find(const char *type, const char *base_uri, const char *name,
 	if (base_uri == nullptr)
 		base_uri = "";
 
-	if (!BindAll(stmt, type, base_uri, name))
+	if (!BindAll(error, stmt, type, base_uri, name))
 		return false;
 
-	const bool success = ExecuteForEach(stmt, [stmt, func, user_data](){
+	const bool success = ExecuteForEach(stmt, error,
+					    [stmt, func, user_data](){
 			func((const char*)sqlite3_column_text(stmt, 0),
 			     (const char*)sqlite3_column_text(stmt, 1),
 			     user_data);

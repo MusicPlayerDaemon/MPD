@@ -76,7 +76,8 @@ sticker_enabled();
  * empty string if the value doesn't exist.
  */
 std::string
-sticker_load_value(const char *type, const char *uri, const char *name);
+sticker_load_value(const char *type, const char *uri, const char *name,
+		   Error &error);
 
 /**
  * Sets a sticker value in the specified object.  Overwrites existing
@@ -84,21 +85,24 @@ sticker_load_value(const char *type, const char *uri, const char *name);
  */
 bool
 sticker_store_value(const char *type, const char *uri,
-		    const char *name, const char *value);
+		    const char *name, const char *value,
+		    Error &error);
 
 /**
  * Deletes a sticker from the database.  All sticker values of the
  * specified object are deleted.
  */
 bool
-sticker_delete(const char *type, const char *uri);
+sticker_delete(const char *type, const char *uri,
+	       Error &error);
 
 /**
  * Deletes a sticker value.  Fails if no sticker with this name
  * exists.
  */
 bool
-sticker_delete_value(const char *type, const char *uri, const char *name);
+sticker_delete_value(const char *type, const char *uri, const char *name,
+		     Error &error);
 
 /**
  * Frees resources held by the sticker object.
@@ -140,7 +144,8 @@ sticker_foreach(const sticker &sticker,
  * @return a sticker object, or nullptr on error or if there is no sticker
  */
 sticker *
-sticker_load(const char *type, const char *uri);
+sticker_load(const char *type, const char *uri,
+	     Error &error);
 
 /**
  * Finds stickers with the specified name below the specified URI.
@@ -156,6 +161,7 @@ bool
 sticker_find(const char *type, const char *base_uri, const char *name,
 	     void (*func)(const char *uri, const char *value,
 			  void *user_data),
-	     void *user_data);
+	     void *user_data,
+	     Error &error);
 
 #endif

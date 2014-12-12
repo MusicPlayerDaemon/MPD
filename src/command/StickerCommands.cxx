@@ -67,9 +67,13 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 		if (song == nullptr)
 			return print_error(client, error);
 
-		const auto value = sticker_song_get_value(*song, args[3]);
+		const auto value = sticker_song_get_value(*song, args[3],
+							  error);
 		db->ReturnSong(song);
 		if (value.empty()) {
+			if (error.IsDefined())
+				return print_error(client, error);
+
 			command_error(client, ACK_ERROR_NO_EXIST,
 				      "no such sticker");
 			return CommandResult::ERROR;
@@ -84,12 +88,13 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 		if (song == nullptr)
 			return print_error(client, error);
 
-		sticker *sticker = sticker_song_get(*song);
+		sticker *sticker = sticker_song_get(*song, error);
 		db->ReturnSong(song);
 		if (sticker) {
 			sticker_print(client, *sticker);
 			sticker_free(sticker);
-		}
+		} else if (error.IsDefined())
+			return print_error(client, error);
 
 		return CommandResult::OK;
 	/* set song song_id id key */
@@ -98,9 +103,13 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 		if (song == nullptr)
 			return print_error(client, error);
 
-		bool ret = sticker_song_set_value(*song, args[3], args[4]);
+		bool ret = sticker_song_set_value(*song, args[3], args[4],
+						  error);
 		db->ReturnSong(song);
 		if (!ret) {
+			if (error.IsDefined())
+				return print_error(client, error);
+
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set sticker value");
 			return CommandResult::ERROR;
@@ -115,10 +124,13 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 			return print_error(client, error);
 
 		bool ret = args.size == 3
-			? sticker_song_delete(*song)
-			: sticker_song_delete_value(*song, args[3]);
+			? sticker_song_delete(*song, error)
+			: sticker_song_delete_value(*song, args[3], error);
 		db->ReturnSong(song);
 		if (!ret) {
+			if (error.IsDefined())
+				return print_error(client, error);
+
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "no such sticker");
 			return CommandResult::ERROR;
@@ -138,8 +150,12 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 		};
 
 		success = sticker_song_find(*db, base_uri, data.name,
-					    sticker_song_find_print_cb, &data);
+					    sticker_song_find_print_cb, &data,
+					    error);
 		if (!success) {
+			if (error.IsDefined())
+				return print_error(client, error);
+
 			command_error(client, ACK_ERROR_SYSTEM,
 				      "failed to set search sticker database");
 			return CommandResult::ERROR;

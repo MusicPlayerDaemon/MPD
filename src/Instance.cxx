@@ -22,6 +22,7 @@
 #include "Partition.hxx"
 #include "Idle.hxx"
 #include "Stats.hxx"
+#include "util/Error.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseError.hxx"
@@ -76,7 +77,7 @@ Instance::OnDatabaseSongRemoved(const LightSong &song)
 #ifdef ENABLE_SQLITE
 	/* if the song has a sticker, remove it */
 	if (sticker_enabled())
-		sticker_song_delete(song);
+		sticker_song_delete(song, IgnoreError());
 #endif
 
 	const auto uri = song.GetURI();

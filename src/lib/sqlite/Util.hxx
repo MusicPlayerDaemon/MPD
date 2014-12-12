@@ -21,30 +21,31 @@
 #define MPD_SQLITE_UTIL_HXX
 
 #include "Domain.hxx"
-#include "Log.hxx"
+#include "util/Error.hxx"
 
 #include <sqlite3.h>
 
 #include <assert.h>
 
 static void
-LogError(sqlite3 *db, const char *msg)
+SetError(Error &error, sqlite3 *db, int code, const char *msg)
 {
-	FormatError(sqlite_domain, "%s: %s", msg, sqlite3_errmsg(db));
+	error.Format(sqlite_domain, code, "%s: %s",
+		     msg, sqlite3_errmsg(db));
 }
 
 static void
-LogError(sqlite3_stmt *stmt, const char *msg)
+SetError(Error &error, sqlite3_stmt *stmt, int code, const char *msg)
 {
-	LogError(sqlite3_db_handle(stmt), msg);
+	SetError(error, sqlite3_db_handle(stmt), code, msg);
 }
 
 static bool
-Bind(sqlite3_stmt *stmt, unsigned i, const char *value)
+Bind(sqlite3_stmt *stmt, unsigned i, const char *value, Error &error)
 {
 	int result = sqlite3_bind_text(stmt, i, value, -1, nullptr);
 	if (result != SQLITE_OK) {
-		LogError(stmt, "sqlite3_bind_text() failed");
+		SetError(error, stmt, result, "sqlite3_bind_text() failed");
 		return false;
 	}
 
@@ -53,7 +54,8 @@ Bind(sqlite3_stmt *stmt, unsigned i, const char *value)
 
 template<typename... Args>
 static bool
-BindAll2(gcc_unused sqlite3_stmt *stmt, gcc_unused unsigned i)
+BindAll2(gcc_unused Error &error, gcc_unused sqlite3_stmt *stmt,
+	 gcc_unused unsigned i)
 {
 	assert(int(i - 1) == sqlite3_bind_parameter_count(stmt));
 
@@ -62,19 +64,20 @@ BindAll2(gcc_unused sqlite3_stmt *stmt, gcc_unused unsigned i)
 
 template<typename... Args>
 static bool
-BindAll2(sqlite3_stmt *stmt, unsigned i, const char *value, Args&&... args)
+BindAll2(Error &error, sqlite3_stmt *stmt, unsigned i,
+	 const char *value, Args&&... args)
 {
-	return Bind(stmt, i, value) &&
-		BindAll2(stmt, i + 1, std::forward<Args>(args)...);
+	return Bind(stmt, i, value, error) &&
+		BindAll2(error, stmt, i + 1, std::forward<Args>(args)...);
 }
 
 template<typename... Args>
 static bool
-BindAll(sqlite3_stmt *stmt, Args&&... args)
+BindAll(Error &error, sqlite3_stmt *stmt, Args&&... args)
 {
 	assert(int(sizeof...(args)) == sqlite3_bind_parameter_count(stmt));
 
-	return BindAll2(stmt, 1, std::forward<Args>(args)...);
+	return BindAll2(error, stmt, 1, std::forward<Args>(args)...);
 }
 
 /**
@@ -96,14 +99,14 @@ ExecuteBusy(sqlite3_stmt *stmt)
  * Wrapper for ExecuteBusy() that returns true on SQLITE_ROW.
  */
 static bool
-ExecuteRow(sqlite3_stmt *stmt)
+ExecuteRow(sqlite3_stmt *stmt, Error &error)
 {
 	int result = ExecuteBusy(stmt);
 	if (result == SQLITE_ROW)
 		return true;
 
 	if (result != SQLITE_DONE)
-		LogError(sqlite_domain, "sqlite3_step() failed");
+		SetError(error, stmt, result, "sqlite3_step() failed");
 
 	return false;
 }
@@ -113,11 +116,11 @@ ExecuteRow(sqlite3_stmt *stmt)
  * SQLITE_DONE as error.
  */
 static bool
-ExecuteCommand(sqlite3_stmt *stmt)
+ExecuteCommand(sqlite3_stmt *stmt, Error &error)
 {
 	int result = ExecuteBusy(stmt);
 	if (result != SQLITE_DONE) {
-		LogError(stmt, "sqlite3_step() failed");
+		SetError(error, stmt, result, "sqlite3_step() failed");
 		return false;
 	}
 
@@ -129,9 +132,9 @@ ExecuteCommand(sqlite3_stmt *stmt)
  * modified via sqlite3_changes().  Returns -1 on error.
  */
 static inline int
-ExecuteChanges(sqlite3_stmt *stmt)
+ExecuteChanges(sqlite3_stmt *stmt, Error &error)
 {
-	if (!ExecuteCommand(stmt))
+	if (!ExecuteCommand(stmt, error))
 		return -1;
 
 	return sqlite3_changes(sqlite3_db_handle(stmt));
@@ -143,17 +146,18 @@ ExecuteChanges(sqlite3_stmt *stmt)
  * occurred.
  */
 static inline bool
-ExecuteModified(sqlite3_stmt *stmt)
+ExecuteModified(sqlite3_stmt *stmt, Error &error)
 {
-	return ExecuteChanges(stmt) > 0;
+	return ExecuteChanges(stmt, error) > 0;
 }
 
 template<typename F>
 static inline bool
-ExecuteForEach(sqlite3_stmt *stmt, F &&f)
+ExecuteForEach(sqlite3_stmt *stmt, Error &error, F &&f)
 {
 	while (true) {
-		switch (ExecuteBusy(stmt)) {
+		int result = ExecuteBusy(stmt);
+		switch (result) {
 		case SQLITE_ROW:
 			f();
 			break;
@@ -162,7 +166,7 @@ ExecuteForEach(sqlite3_stmt *stmt, F &&f)
 			return true;
 
 		default:
-			LogError(sqlite_domain, "sqlite3_step() failed");
+			SetError(error, stmt, result, "sqlite3_step() failed");
 			return false;
 		}
 	}

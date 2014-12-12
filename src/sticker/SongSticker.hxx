@@ -27,13 +27,14 @@
 struct LightSong;
 struct sticker;
 class Database;
+class Error;
 
 /**
  * Returns one value from a song's sticker record.
  */
 gcc_pure
 std::string
-sticker_song_get_value(const LightSong &song, const char *name);
+sticker_song_get_value(const LightSong &song, const char *name, Error &error);
 
 /**
  * Sets a sticker value in the specified song.  Overwrites existing
@@ -41,20 +42,22 @@ sticker_song_get_value(const LightSong &song, const char *name);
  */
 bool
 sticker_song_set_value(const LightSong &song,
-		       const char *name, const char *value);
+		       const char *name, const char *value,
+		       Error &error);
 
 /**
  * Deletes a sticker from the database.  All values are deleted.
  */
 bool
-sticker_song_delete(const LightSong &song);
+sticker_song_delete(const LightSong &song, Error &error);
 
 /**
  * Deletes a sticker value.  Does nothing if the sticker did not
  * exist.
  */
 bool
-sticker_song_delete_value(const LightSong &song, const char *name);
+sticker_song_delete_value(const LightSong &song, const char *name,
+			  Error &error);
 
 /**
  * Loads the sticker for the specified song.
@@ -63,7 +66,7 @@ sticker_song_delete_value(const LightSong &song, const char *name);
  * @return a sticker object, or NULL on error or if there is no sticker
  */
 sticker *
-sticker_song_get(const LightSong &song);
+sticker_song_get(const LightSong &song, Error &error);
 
 /**
  * Finds stickers with the specified name below the specified
@@ -80,6 +83,7 @@ bool
 sticker_song_find(const Database &db, const char *base_uri, const char *name,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
-		  void *user_data);
+		  void *user_data,
+		  Error &error);
 
 #endif
