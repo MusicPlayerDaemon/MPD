@@ -157,6 +157,12 @@ public:
 
 		return *i;
 	}
+
+	template<typename F>
+	void ForEach(F &&f) {
+		for (CT &i : list)
+			f(i);
+	}
 };
 
 #endif
