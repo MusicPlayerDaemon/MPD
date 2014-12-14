@@ -391,7 +391,7 @@ NfsConnection::DestroyContext()
 	DeferredMonitor::Cancel();
 
 	if (SocketMonitor::IsDefined())
-		SocketMonitor::Cancel();
+		SocketMonitor::Steal();
 
 	callbacks.ForEach([](CancellableCallback &c){
 			c.PrepareDestroyContext();
