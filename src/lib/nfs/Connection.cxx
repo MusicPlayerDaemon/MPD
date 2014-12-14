@@ -156,8 +156,10 @@ NfsConnection::CancellableCallback::Callback(int err, void *data)
 			   allocated file handle immediately */
 			assert(close_fh == nullptr);
 
-			struct nfsfh *fh = (struct nfsfh *)data;
-			connection.Close(fh);
+			if (err >= 0) {
+				struct nfsfh *fh = (struct nfsfh *)data;
+				connection.Close(fh);
+			}
 		} else if (close_fh != nullptr)
 			connection.DeferClose(close_fh);
 
