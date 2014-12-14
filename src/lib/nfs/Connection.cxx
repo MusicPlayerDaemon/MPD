@@ -133,6 +133,17 @@ NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh)
 }
 
 inline void
+NfsConnection::CancellableCallback::PrepareDestroyContext()
+{
+	assert(IsCancelled());
+
+	if (close_fh != nullptr) {
+		connection.InternalClose(close_fh);
+		close_fh = nullptr;
+	}
+}
+
+inline void
 NfsConnection::CancellableCallback::Callback(int err, void *data)
 {
 	assert(connection.GetEventLoop().IsInside());
@@ -369,6 +380,10 @@ NfsConnection::DestroyContext()
 
 	if (SocketMonitor::IsDefined())
 		SocketMonitor::Cancel();
+
+	callbacks.ForEach([](CancellableCallback &c){
+			c.PrepareDestroyContext();
+		});
 
 	nfs_destroy_context(context);
 	context = nullptr;

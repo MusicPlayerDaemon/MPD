@@ -1,6 +1,7 @@
 ver 0.19.7 (not yet released)
 * input
   - nfs: fix crash while canceling a failing file open operation
+  - nfs: fix memory leak on connection failure
 * playlist
   - don't skip non-existent songs in "listplaylist"
 * fix memory allocator bug on Windows

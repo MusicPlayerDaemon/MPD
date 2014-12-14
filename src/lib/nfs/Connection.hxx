@@ -84,6 +84,13 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 		 */
 		void CancelAndScheduleClose(struct nfsfh *fh);
 
+		/**
+		 * Called by NfsConnection::DestroyContext() right
+		 * before nfs_destroy_context().  This object is given
+		 * a chance to prepare for the latter.
+		 */
+		void PrepareDestroyContext();
+
 	private:
 		static void Callback(int err, struct nfs_context *nfs,
 				     void *data, void *private_data);
