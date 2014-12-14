@@ -380,6 +380,8 @@ NfsConnection::DeferClose(struct nfsfh *fh)
 	assert(GetEventLoop().IsInside());
 	assert(in_event);
 	assert(in_service);
+	assert(context != nullptr);
+	assert(fh != nullptr);
 
 	deferred_close.push_front(fh);
 }
