@@ -483,7 +483,7 @@ NfsConnection::OnSocketReady(unsigned flags)
 
 		DestroyContext();
 		closed = true;
-	} else if (SocketMonitor::IsDefined() && nfs_get_fd(context) < 0) {
+	} else if (nfs_get_fd(context) < 0) {
 		/* this happens when rpc_reconnect_requeue() is called
 		   after the connection broke, but autoreconnect was
 		   disabled - nfs_service() returns 0 */
