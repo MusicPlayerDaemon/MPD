@@ -20,7 +20,9 @@
 #include "config.h"
 #include "Blocking.hxx"
 #include "Connection.hxx"
+#include "Domain.hxx"
 #include "event/Call.hxx"
+#include "util/Error.hxx"
 
 bool
 BlockingNfsOperation::Run(Error &_error)
@@ -31,7 +33,10 @@ BlockingNfsOperation::Run(Error &_error)
 		    [this](){ connection.AddLease(*this); });
 
 	/* wait for completion */
-	LockWaitFinished();
+	if (!LockWaitFinished()) {
+		_error.Set(nfs_domain, 0, "Timeout");
+		return false;
+	}
 
 	/* check for error */
 	if (error.IsDefined()) {

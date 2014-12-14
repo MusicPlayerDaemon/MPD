@@ -4,6 +4,8 @@ ver 0.19.7 (not yet released)
   - nfs: fix memory leak on connection failure
   - nfs: fix reconnect after mount failure
   - nfs: implement mount timeout (60 seconds)
+* storage
+  - nfs: implement I/O timeout (60 seconds)
 * playlist
   - don't skip non-existent songs in "listplaylist"
 * fix memory allocator bug on Windows
