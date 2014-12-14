@@ -62,6 +62,10 @@ protected:
 	Error postponed_error;
 
 public:
+	/**
+	 * @param _buffer a buffer allocated with HugeAllocate(); the
+	 * destructor will free it using HugeFree()
+	 */
 	AsyncInputStream(const char *_url,
 			 Mutex &_mutex, Cond &_cond,
 			 void *_buffer, size_t _buffer_size,
