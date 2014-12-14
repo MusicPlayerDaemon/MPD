@@ -39,6 +39,8 @@ NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 					 const char *path,
 					 Error &error)
 {
+	assert(connection.GetEventLoop().IsInside());
+
 	int result = nfs_stat_async(ctx, path, Callback, this);
 	if (result < 0) {
 		error.Format(nfs_domain, "nfs_stat_async() failed: %s",
@@ -54,6 +56,8 @@ NfsConnection::CancellableCallback::OpenDirectory(nfs_context *ctx,
 						  const char *path,
 						  Error &error)
 {
+	assert(connection.GetEventLoop().IsInside());
+
 	int result = nfs_opendir_async(ctx, path, Callback, this);
 	if (result < 0) {
 		error.Format(nfs_domain, "nfs_opendir_async() failed: %s",
@@ -69,6 +73,8 @@ NfsConnection::CancellableCallback::Open(nfs_context *ctx,
 					 const char *path, int flags,
 					 Error &error)
 {
+	assert(connection.GetEventLoop().IsInside());
+
 	int result = nfs_open_async(ctx, path, flags,
 				    Callback, this);
 	if (result < 0) {
@@ -85,6 +91,8 @@ NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 					 struct nfsfh *fh,
 					 Error &error)
 {
+	assert(connection.GetEventLoop().IsInside());
+
 	int result = nfs_fstat_async(ctx, fh, Callback, this);
 	if (result < 0) {
 		error.Format(nfs_domain, "nfs_fstat_async() failed: %s",
@@ -100,6 +108,8 @@ NfsConnection::CancellableCallback::Read(nfs_context *ctx, struct nfsfh *fh,
 					 uint64_t offset, size_t size,
 					 Error &error)
 {
+	assert(connection.GetEventLoop().IsInside());
+
 	int result = nfs_pread_async(ctx, fh, offset, size, Callback, this);
 	if (result < 0) {
 		error.Format(nfs_domain, "nfs_pread_async() failed: %s",
@@ -113,6 +123,7 @@ NfsConnection::CancellableCallback::Read(nfs_context *ctx, struct nfsfh *fh,
 inline void
 NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh)
 {
+	assert(connection.GetEventLoop().IsInside());
 	assert(!open);
 	assert(close_fh == nullptr);
 	assert(fh != nullptr);
@@ -124,6 +135,8 @@ NfsConnection::CancellableCallback::CancelAndScheduleClose(struct nfsfh *fh)
 inline void
 NfsConnection::CancellableCallback::Callback(int err, void *data)
 {
+	assert(connection.GetEventLoop().IsInside());
+
 	if (!IsCancelled()) {
 		assert(close_fh == nullptr);
 
@@ -209,6 +222,7 @@ NfsConnection::RemoveLease(NfsLease &lease)
 bool
 NfsConnection::Stat(const char *path, NfsCallback &callback, Error &error)
 {
+	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, false);
@@ -225,6 +239,7 @@ bool
 NfsConnection::OpenDirectory(const char *path, NfsCallback &callback,
 			     Error &error)
 {
+	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, true);
@@ -240,12 +255,16 @@ NfsConnection::OpenDirectory(const char *path, NfsCallback &callback,
 const struct nfsdirent *
 NfsConnection::ReadDirectory(struct nfsdir *dir)
 {
+	assert(GetEventLoop().IsInside());
+
 	return nfs_readdir(context, dir);
 }
 
 void
 NfsConnection::CloseDirectory(struct nfsdir *dir)
 {
+	assert(GetEventLoop().IsInside());
+
 	return nfs_closedir(context, dir);
 }
 
@@ -253,6 +272,7 @@ bool
 NfsConnection::Open(const char *path, int flags, NfsCallback &callback,
 		    Error &error)
 {
+	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, true);
@@ -268,6 +288,7 @@ NfsConnection::Open(const char *path, int flags, NfsCallback &callback,
 bool
 NfsConnection::Stat(struct nfsfh *fh, NfsCallback &callback, Error &error)
 {
+	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, false);
@@ -284,6 +305,7 @@ bool
 NfsConnection::Read(struct nfsfh *fh, uint64_t offset, size_t size,
 		    NfsCallback &callback, Error &error)
 {
+	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, false);
@@ -310,6 +332,8 @@ DummyCallback(int, struct nfs_context *, void *, void *)
 void
 NfsConnection::Close(struct nfsfh *fh)
 {
+	assert(GetEventLoop().IsInside());
+
 	nfs_close_async(context, fh, DummyCallback, nullptr);
 	ScheduleSocket();
 }
@@ -341,6 +365,7 @@ NfsConnection::DestroyContext()
 inline void
 NfsConnection::DeferClose(struct nfsfh *fh)
 {
+	assert(GetEventLoop().IsInside());
 	assert(in_event);
 	assert(in_service);
 
@@ -350,6 +375,7 @@ NfsConnection::DeferClose(struct nfsfh *fh)
 void
 NfsConnection::ScheduleSocket()
 {
+	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
 
 	if (!SocketMonitor::IsDefined()) {
@@ -367,6 +393,7 @@ NfsConnection::ScheduleSocket()
 bool
 NfsConnection::OnSocketReady(unsigned flags)
 {
+	assert(GetEventLoop().IsInside());
 	assert(deferred_close.empty());
 
 	bool closed = false;
@@ -444,6 +471,7 @@ inline void
 NfsConnection::MountCallback(int status, gcc_unused nfs_context *nfs,
 			     gcc_unused void *data)
 {
+	assert(GetEventLoop().IsInside());
 	assert(context == nfs);
 
 	mount_finished = true;
@@ -468,6 +496,7 @@ NfsConnection::MountCallback(int status, nfs_context *nfs, void *data,
 inline bool
 NfsConnection::MountInternal(Error &error)
 {
+	assert(GetEventLoop().IsInside());
 	assert(context == nullptr);
 
 	context = nfs_init_context();
@@ -538,6 +567,8 @@ NfsConnection::BroadcastError(Error &&error)
 void
 NfsConnection::RunDeferred()
 {
+	assert(GetEventLoop().IsInside());
+
 	if (context == nullptr) {
 		Error error;
 		if (!MountInternal(error)) {
