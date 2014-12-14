@@ -187,6 +187,11 @@ private:
 	void DestroyContext();
 
 	/**
+	 * Wrapper for nfs_close_async().
+	 */
+	void InternalClose(struct nfsfh *fh);
+
+	/**
 	 * Invoke nfs_close_async() after nfs_service() returns.
 	 */
 	void DeferClose(struct nfsfh *fh);

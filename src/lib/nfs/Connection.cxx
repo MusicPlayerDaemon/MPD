@@ -331,12 +331,22 @@ DummyCallback(int, struct nfs_context *, void *, void *)
 {
 }
 
+inline void
+NfsConnection::InternalClose(struct nfsfh *fh)
+{
+	assert(GetEventLoop().IsInside());
+	assert(context != nullptr);
+	assert(fh != nullptr);
+
+	nfs_close_async(context, fh, DummyCallback, nullptr);
+}
+
 void
 NfsConnection::Close(struct nfsfh *fh)
 {
 	assert(GetEventLoop().IsInside());
 
-	nfs_close_async(context, fh, DummyCallback, nullptr);
+	InternalClose(fh);
 	ScheduleSocket();
 }
 
@@ -424,8 +434,7 @@ NfsConnection::OnSocketReady(unsigned flags)
 #endif
 
 	while (!deferred_close.empty()) {
-		nfs_close_async(context, deferred_close.front(),
-				DummyCallback, nullptr);
+		InternalClose(deferred_close.front());
 		deferred_close.pop_front();
 	}
 
