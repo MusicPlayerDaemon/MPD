@@ -23,6 +23,7 @@
 #include "Lease.hxx"
 #include "Cancellable.hxx"
 #include "event/SocketMonitor.hxx"
+#include "event/TimeoutMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "util/Error.hxx"
 
@@ -40,7 +41,7 @@ class NfsCallback;
 /**
  * An asynchronous connection to a NFS server.
  */
-class NfsConnection : SocketMonitor, DeferredMonitor {
+class NfsConnection : SocketMonitor, TimeoutMonitor, DeferredMonitor {
 	class CancellableCallback : public CancellablePointer<NfsCallback> {
 		NfsConnection &connection;
 
@@ -142,7 +143,8 @@ public:
 	gcc_nonnull_all
 	NfsConnection(EventLoop &_loop,
 		      const char *_server, const char *_export_name)
-		:SocketMonitor(_loop), DeferredMonitor(_loop),
+		:SocketMonitor(_loop), TimeoutMonitor(_loop),
+		 DeferredMonitor(_loop),
 		 server(_server), export_name(_export_name),
 		 context(nullptr) {}
 
@@ -226,6 +228,9 @@ private:
 
 	/* virtual methods from SocketMonitor */
 	virtual bool OnSocketReady(unsigned flags) override;
+
+	/* virtual methods from TimeoutMonitor */
+	void OnTimeout() final;
 
 	/* virtual methods from DeferredMonitor */
 	virtual void RunDeferred() override;

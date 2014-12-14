@@ -34,6 +34,8 @@ extern "C" {
 
 #include <poll.h> /* for POLLIN, POLLOUT */
 
+static constexpr unsigned NFS_MOUNT_TIMEOUT = 60;
+
 inline bool
 NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 					 const char *path,
@@ -379,6 +381,11 @@ NfsConnection::DestroyContext()
 	in_destroy = true;
 #endif
 
+	if (!mount_finished) {
+		assert(TimeoutMonitor::IsActive());
+		TimeoutMonitor::Cancel();
+	}
+
 	/* cancel pending DeferredMonitor that was scheduled to notify
 	   new leases */
 	DeferredMonitor::Cancel();
@@ -528,6 +535,9 @@ NfsConnection::MountCallback(int status, gcc_unused nfs_context *nfs,
 
 	mount_finished = true;
 
+	assert(TimeoutMonitor::IsActive() || in_destroy);
+	TimeoutMonitor::Cancel();
+
 	if (status < 0) {
 		postponed_mount_error.Format(nfs_domain, status,
 					     "nfs_mount_async() failed: %s",
@@ -559,6 +569,8 @@ NfsConnection::MountInternal(Error &error)
 
 	postponed_mount_error.Clear();
 	mount_finished = false;
+
+	TimeoutMonitor::ScheduleSeconds(NFS_MOUNT_TIMEOUT);
 
 #ifndef NDEBUG
 	in_service = false;
@@ -618,6 +630,18 @@ NfsConnection::BroadcastError(Error &&error)
 	}
 
 	BroadcastMountError(std::move(error));
+}
+
+void
+NfsConnection::OnTimeout()
+{
+	assert(GetEventLoop().IsInside());
+	assert(!mount_finished);
+
+	mount_finished = true;
+	DestroyContext();
+
+	BroadcastMountError(Error(nfs_domain, "Mount timeout"));
 }
 
 void
