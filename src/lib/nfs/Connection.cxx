@@ -485,7 +485,7 @@ NfsConnection::OnSocketReady(unsigned flags)
 		closed = true;
 	} else if (SocketMonitor::IsDefined() && nfs_get_fd(context) < 0) {
 		/* this happens when rpc_reconnect_requeue() is called
-		   after the connection broke, but autoreconnet was
+		   after the connection broke, but autoreconnect was
 		   disabled - nfs_service() returns 0 */
 		Error error;
 		const char *msg = nfs_get_error(context);
