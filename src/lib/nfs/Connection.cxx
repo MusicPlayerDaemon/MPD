@@ -501,6 +501,8 @@ NfsConnection::OnSocketReady(unsigned flags)
 		closed = true;
 	}
 
+	assert(context == nullptr || nfs_get_fd(context) >= 0);
+
 #ifndef NDEBUG
 	assert(in_event);
 	in_event = false;
