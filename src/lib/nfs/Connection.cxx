@@ -404,20 +404,11 @@ NfsConnection::ScheduleSocket()
 	SocketMonitor::Schedule(libnfs_to_events(nfs_which_events(context)));
 }
 
-bool
-NfsConnection::OnSocketReady(unsigned flags)
+inline int
+NfsConnection::Service(unsigned flags)
 {
 	assert(GetEventLoop().IsInside());
-	assert(deferred_close.empty());
-
-	bool closed = false;
-
-	const bool was_mounted = mount_finished;
-	if (!mount_finished)
-		/* until the mount is finished, the NFS client may use
-		   various sockets, therefore we unregister and
-		   re-register it each time */
-		SocketMonitor::Steal();
+	assert(context != nullptr);
 
 #ifndef NDEBUG
 	assert(!in_event);
@@ -434,6 +425,26 @@ NfsConnection::OnSocketReady(unsigned flags)
 	assert(in_service);
 	in_service = false;
 #endif
+
+	return result;
+}
+
+bool
+NfsConnection::OnSocketReady(unsigned flags)
+{
+	assert(GetEventLoop().IsInside());
+	assert(deferred_close.empty());
+
+	bool closed = false;
+
+	const bool was_mounted = mount_finished;
+	if (!mount_finished)
+		/* until the mount is finished, the NFS client may use
+		   various sockets, therefore we unregister and
+		   re-register it each time */
+		SocketMonitor::Steal();
+
+	const int result = Service(flags);
 
 	while (!deferred_close.empty()) {
 		InternalClose(deferred_close.front());

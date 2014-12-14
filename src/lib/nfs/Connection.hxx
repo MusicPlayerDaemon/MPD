@@ -207,6 +207,11 @@ private:
 
 	void ScheduleSocket();
 
+	/**
+	 * Wrapper for nfs_service().
+	 */
+	int Service(unsigned flags);
+
 	/* virtual methods from SocketMonitor */
 	virtual bool OnSocketReady(unsigned flags) override;
 
