@@ -374,6 +374,11 @@ NfsConnection::DestroyContext()
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
 
+#ifndef NDEBUG
+	assert(!in_destroy);
+	in_destroy = true;
+#endif
+
 	/* cancel pending DeferredMonitor that was scheduled to notify
 	   new leases */
 	DeferredMonitor::Cancel();
@@ -558,6 +563,7 @@ NfsConnection::MountInternal(Error &error)
 #ifndef NDEBUG
 	in_service = false;
 	in_event = false;
+	in_destroy = false;
 #endif
 
 	if (nfs_mount_async(context, server.c_str(), export_name.c_str(),

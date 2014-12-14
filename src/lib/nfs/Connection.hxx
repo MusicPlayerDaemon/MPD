@@ -129,6 +129,11 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	 * event updates are omitted.
 	 */
 	bool in_event;
+
+	/**
+	 * True when DestroyContext() is being called.
+	 */
+	bool in_destroy;
 #endif
 
 	bool mount_finished;
