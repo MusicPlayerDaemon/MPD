@@ -407,17 +407,21 @@ NfsConnection::OnSocketReady(unsigned flags)
 		   re-register it each time */
 		SocketMonitor::Steal();
 
+#ifndef NDEBUG
 	assert(!in_event);
 	in_event = true;
 
 	assert(!in_service);
 	in_service = true;
+#endif
 
 	int result = nfs_service(context, events_to_libnfs(flags));
 
+#ifndef NDEBUG
 	assert(context != nullptr);
 	assert(in_service);
 	in_service = false;
+#endif
 
 	while (!deferred_close.empty()) {
 		nfs_close_async(context, deferred_close.front(),
@@ -460,8 +464,10 @@ NfsConnection::OnSocketReady(unsigned flags)
 		closed = true;
 	}
 
+#ifndef NDEBUG
 	assert(in_event);
 	in_event = false;
+#endif
 
 	if (context != nullptr)
 		ScheduleSocket();
@@ -509,8 +515,11 @@ NfsConnection::MountInternal(Error &error)
 
 	postponed_mount_error.Clear();
 	mount_finished = false;
+
+#ifndef NDEBUG
 	in_service = false;
 	in_event = false;
+#endif
 
 	if (nfs_mount_async(context, server.c_str(), export_name.c_str(),
 			    MountCallback, this) != 0) {

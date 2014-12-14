@@ -111,6 +111,7 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 
 	Error postponed_mount_error;
 
+#ifndef NDEBUG
 	/**
 	 * True when nfs_service() is being called.
 	 */
@@ -121,6 +122,7 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	 * event updates are omitted.
 	 */
 	bool in_event;
+#endif
 
 	bool mount_finished;
 
