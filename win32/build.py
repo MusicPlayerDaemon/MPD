@@ -18,9 +18,6 @@ src_path = os.path.join(lib_path, 'src')
 build_path = os.path.join(lib_path, 'build')
 root_path = os.path.join(lib_path, 'root')
 
-# build host configuration
-build_arch = 'linux-x86_64'
-
 # redirect pkg-config to use our root directory instead of the default
 # one on the build host
 os.environ['PKG_CONFIG_LIBDIR'] = os.path.join(root_path, 'lib/pkgconfig')
