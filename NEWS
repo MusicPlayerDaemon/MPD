@@ -1,4 +1,6 @@
 ver 0.18.21 (not yet released)
+* playlist
+  - embcue: fix filename suffix detection
 * decoder
   - ffmpeg: fix time stamp underflow
 

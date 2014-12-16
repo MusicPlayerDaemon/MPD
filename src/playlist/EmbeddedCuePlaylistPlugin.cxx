@@ -178,7 +178,7 @@ const struct playlist_plugin embcue_playlist_plugin = {
 	embcue_playlist_open_uri,
 	nullptr,
 
-	embcue_playlist_suffixes,
 	nullptr,
+	embcue_playlist_suffixes,
 	nullptr,
 };
