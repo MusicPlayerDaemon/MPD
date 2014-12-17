@@ -22,6 +22,16 @@ if not os.path.isdir(ndk_path):
     print("NDK not found in", ndk_path, file=sys.stderr)
     sys.exit(1)
 
+# select the NDK target
+ndk_arch = 'arm'
+host_arch = 'arm-linux-androideabi'
+android_abi = 'armeabi-v7a'
+ndk_platform = 'android-14'
+
+# select the NDK compiler
+gcc_version = '4.9'
+llvm_version = '3.5'
+
 # the path to the MPD sources
 mpd_path = os.path.dirname(os.path.dirname(sys.argv[0]))
 
@@ -29,8 +39,9 @@ mpd_path = os.path.dirname(os.path.dirname(sys.argv[0]))
 lib_path = os.path.abspath('lib')
 tarball_path = lib_path
 src_path = os.path.join(lib_path, 'src')
-build_path = os.path.join(lib_path, 'build')
-root_path = os.path.join(lib_path, 'root')
+arch_path = os.path.join(lib_path, host_arch)
+build_path = os.path.join(arch_path, 'build')
+root_path = os.path.join(arch_path, 'root')
 
 # build host configuration
 build_arch = 'linux-x86_64'
@@ -38,16 +49,6 @@ build_arch = 'linux-x86_64'
 # redirect pkg-config to use our root directory instead of the default
 # one on the build host
 os.environ['PKG_CONFIG_LIBDIR'] = os.path.join(root_path, 'lib/pkgconfig')
-
-# select the NDK compiler
-gcc_version = '4.9'
-llvm_version = '3.5'
-
-# select the NDK target
-ndk_arch = 'arm'
-host_arch = 'arm-linux-androideabi'
-android_abi = 'armeabi-v7a'
-ndk_platform = 'android-14'
 
 # set up the NDK toolchain
 
