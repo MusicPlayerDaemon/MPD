@@ -44,6 +44,14 @@ dvda_disc_t::~dvda_disc_t() {
 	}
 }
 
+dvda_filesystem_t* dvda_disc_t::get_filesystem() {
+	return dvda_filesystem;
+}
+
+audio_track_t* dvda_disc_t::get_track(uint32_t track_index) {
+	return track_index < get_tracks() ? &track_list[track_index] : nullptr;
+}
+
 uint32_t dvda_disc_t::get_tracks() {
 	return track_list.size();
 }

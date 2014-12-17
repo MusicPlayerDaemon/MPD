@@ -1,5 +1,5 @@
 /*
-* SACD Decoder plugin
+* MPD SACD Decoder plugin
 * Copyright (c) 2011-2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
@@ -162,10 +162,10 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 						return false;
 					}
 					if (id.has_id("DSD ")) {
-						is_dst_encoded = 0;
+						is_dst_encoded = false;
 					}
 					if (id.has_id("DST ")) {
-						is_dst_encoded = 1;
+						is_dst_encoded = true;
 					}
 					sacd_media->skip(ck.get_size() - sizeof(id));
 				}
@@ -256,12 +256,12 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 							start_mark_count++;
 							if (track_index.size() > 0) {
 								track_index[track_index.size() - 1].start_time = MARK_TIME(m);
-								track_index[track_index.size() - 1].stop_time2  = (double)frame_count / framerate;
-								track_index[track_index.size() - 1].stop_time1  = track_index[track_index.size() - 1].stop_time2;
+								track_index[track_index.size() - 1].stop_time2 = (double)frame_count / framerate;
+								track_index[track_index.size() - 1].stop_time1 = track_index[track_index.size() - 1].stop_time2;
 								if (track_index.size() - 1 > 0) {
 									if (track_index[track_index.size() - 2].stop_time2 > track_index[track_index.size() - 1].start_time) {
-										track_index[track_index.size() - 2].stop_time2 =  track_index[track_index.size() - 1].start_time;
-										track_index[track_index.size() - 2].stop_time1 =  track_index[track_index.size() - 2].stop_time2;
+										track_index[track_index.size() - 2].stop_time2 = track_index[track_index.size() - 1].start_time;
+										track_index[track_index.size() - 2].stop_time1 = track_index[track_index.size() - 2].stop_time2;
 									}
 								}
 							}

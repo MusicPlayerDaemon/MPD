@@ -21,6 +21,7 @@
 #include <sacd_media.h>
 #include <sacd_reader.h>
 #include <sacd_disc.h>
+#include <sacd_metabase.h>
 #include <dst_decoder_mpd.h>
 #undef MAX_CHANNELS
 #include "SacdIsoDecoderPlugin.hxx"
@@ -56,10 +57,13 @@ static unsigned  param_dstdec_threads;
 static bool      param_edited_master;
 static bool      param_lsbitfirst;
 static area_id_e param_playable_area;
+static string    param_tags_path;
+static bool      param_tags_with_iso;
 
-static string         sacd_uri;
-static sacd_media_t*  sacd_media  = nullptr;
-static sacd_reader_t* sacd_reader = nullptr;
+static string           sacd_uri;
+static sacd_media_t*    sacd_media    = nullptr;
+static sacd_reader_t*   sacd_reader   = nullptr;
+static sacd_metabase_t* sacd_metabase = nullptr;
 
 static unsigned
 get_container_path_length(const char* path) {
@@ -123,6 +127,10 @@ sacdiso_update_toc(const char* path) {
 		delete sacd_media;
 		sacd_media = nullptr;
 	}
+	if (sacd_metabase != nullptr) {
+		delete sacd_metabase;
+		sacd_metabase = nullptr;
+	}
 	if (path != nullptr) {
 		sacd_media = new sacd_media_stream_t();
 		if (!sacd_media) {
@@ -146,6 +154,15 @@ sacdiso_update_toc(const char* path) {
 			//LogWarning(sacdiso_domain, "sacd_reader->open(...) failed");
 			return false;
 		}
+		if (!param_tags_path.empty() || param_tags_with_iso) {
+			string tags_file;
+			if (param_tags_with_iso) {
+				tags_file = path;
+				tags_file.resize(tags_file.rfind('.') + 1);
+				tags_file.append("xml");
+			}
+			sacd_metabase = new sacd_metabase_t(reinterpret_cast<sacd_disc_t*>(sacd_reader), param_tags_path.empty() ? nullptr : param_tags_path.c_str(), tags_file.empty() ? nullptr : tags_file.c_str());
+		}
 	}
 	sacd_uri = curr_uri;
 	return true;
@@ -154,7 +171,7 @@ sacdiso_update_toc(const char* path) {
 static bool
 sacdiso_init(const config_param& param) {
 	param_dstdec_threads = param.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
-	param_edited_master  = param.GetBlockValue("edited_master",  false);
+	param_edited_master  = param.GetBlockValue("edited_master", false);
 	param_lsbitfirst     = param.GetBlockValue("lsbitfirst", false);
 	const char* playable_area = param.GetBlockValue("playable_area", nullptr);
 	param_playable_area = AREA_BOTH;
@@ -166,6 +183,8 @@ sacdiso_init(const config_param& param) {
 			param_playable_area = AREA_MULCH;
 		}
 	}
+	param_tags_path = param.GetBlockValue("tags_path", "");
+	param_tags_with_iso = param.GetBlockValue("tags_with_iso", false);
 	return true;
 }
 
@@ -377,9 +396,9 @@ sacdiso_scan_file(Path path_fs, const struct tag_handler* handler, void* handler
 	string tag_value = to_string(track + 1);
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
 	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(sacd_reader->get_duration(track)));
-	sacd_reader->get_info(track, handler, handler_ctx);
-	const char* track_format = sacd_reader->is_dst() ? "DST" : "DSD";
-	tag_handler_invoke_pair(handler, handler_ctx, "codec", track_format);
+	if (!sacd_metabase || (sacd_metabase && !sacd_metabase->get_info(track, handler, handler_ctx))) {
+		sacd_reader->get_info(track, handler, handler_ctx);
+	}
 	return true;
 }
 

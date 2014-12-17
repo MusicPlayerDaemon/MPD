@@ -77,7 +77,7 @@ public:
 	uint64_t get_offset();
 	double get_duration();
 	double get_duration(uint32_t track_index);
-	void get_info(uint32_t subsong, const struct tag_handler *handler, void *handler_ctx);
+	void get_info(uint32_t track_index, const struct tag_handler *handler, void *handler_ctx);
 	uint32_t get_track_length_lsn();
 	bool is_dst();
 	void set_emaster(bool emaster);

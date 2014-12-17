@@ -1,7 +1,7 @@
-/**
+/*
  * SACD Ripper - http://code.google.com/p/sacd-ripper/
  *
- * Copyright (c) 2010-2011 by respective authors.
+ * Copyright (c) 2010-2014 by respective authors.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  *
  */
 
-#include "scarletbook.h"
+#include  "scarletbook.h"
 
 const char* character_set[] = {
 	"US-ASCII",

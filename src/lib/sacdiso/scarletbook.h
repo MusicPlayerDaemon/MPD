@@ -1,4 +1,4 @@
-/**
+/*
  * SACD Ripper - http://code.google.com/p/sacd-ripper/
  *
  * Copyright (c) 2010-2014 by respective authors.

@@ -59,6 +59,8 @@ private:
 public:
 	dvda_disc_t();
 	~dvda_disc_t();
+	dvda_filesystem_t* get_filesystem();
+	audio_track_t* get_track(uint32_t track_index);
 	uint32_t get_tracks();
 	uint32_t get_channels();
 	uint32_t get_loudspeaker_config();

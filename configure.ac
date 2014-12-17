@@ -1380,6 +1380,7 @@ AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enab
 dnl --------------------------------- sacdiso ---------------------------------
 if test x$enable_sacdiso = xyes; then
 	AC_DEFINE(ENABLE_SACDISO, 1, [Define for Super Audio ISO support])
+	AC_SUBST(SACDISO_LIBS,"-lssl -lcrypto")
 fi
 
 AM_CONDITIONAL(ENABLE_SACDISO, test x$enable_sacdiso = xyes)
@@ -1387,6 +1388,7 @@ AM_CONDITIONAL(ENABLE_SACDISO, test x$enable_sacdiso = xyes)
 dnl --------------------------------- dvdaiso ---------------------------------
 if test x$enable_dvdaiso = xyes; then
 	AC_DEFINE(ENABLE_DVDAISO, 1, [Define for DVD-Audio ISO support])
+	AC_SUBST(DVDAISO_LIBS,"-lssl -lcrypto")
 fi
 
 AM_CONDITIONAL(ENABLE_DVDAISO, test x$enable_dvdaiso = xyes)

@@ -891,6 +891,8 @@ libdecoder_a_SOURCES += \
 	src/lib/sacdiso/sacd_dsdiff.cpp \
 	src/lib/sacdiso/sacd_media.h \
 	src/lib/sacdiso/sacd_media.cpp \
+	src/lib/sacdiso/sacd_metabase.h \
+	src/lib/sacdiso/sacd_metabase.cpp \
 	src/lib/sacdiso/sacd_reader.h \
 	src/lib/sacdiso/scarletbook.h \
 	src/lib/sacdiso/scarletbook.cpp \
@@ -1060,6 +1062,8 @@ libdecoder_a_SOURCES += \
 	src/lib/dvdaiso/dvda_filesystem.cpp \
 	src/lib/dvdaiso/dvda_media.h \
 	src/lib/dvdaiso/dvda_media.cpp \
+	src/lib/dvdaiso/dvda_metabase.h \
+	src/lib/dvdaiso/dvda_metabase.cpp \
 	src/lib/dvdaiso/dvda_readed.h \
 	src/lib/dvdaiso/dvda_zone.h \
 	src/lib/dvdaiso/dvda_zone.cpp \
