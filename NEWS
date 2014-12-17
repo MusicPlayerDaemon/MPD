@@ -1,4 +1,4 @@
-ver 0.19.7 (not yet released)
+ver 0.19.7 (2014/12/17)
 * input
   - nfs: fix crash while canceling a failing file open operation
   - nfs: fix memory leak on connection failure
