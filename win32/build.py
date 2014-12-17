@@ -10,6 +10,10 @@ configure_args = sys.argv[1:]
 
 host_arch = 'i686-w64-mingw32'
 
+if configure_args[0] == '--64':
+    configure_args = configure_args[1:]
+    host_arch = 'x86_64-w64-mingw32'
+
 # the path to the MPD sources
 mpd_path = os.path.dirname(os.path.dirname(sys.argv[0]))
 
