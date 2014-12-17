@@ -7,7 +7,10 @@ ver 0.19.7 (not yet released)
 * storage
   - nfs: implement I/O timeout (60 seconds)
 * playlist
+  - embcue: fix filename suffix detection
   - don't skip non-existent songs in "listplaylist"
+* decoder
+  - ffmpeg: fix time stamp underflow
 * fix memory allocator bug on Windows
 
 ver 0.19.6 (2014/12/08)
@@ -157,6 +160,12 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.21 (2014/12/17)
+* playlist
+  - embcue: fix filename suffix detection
+* decoder
+  - ffmpeg: fix time stamp underflow
 
 ver 0.18.20 (2014/12/08)
 * decoder

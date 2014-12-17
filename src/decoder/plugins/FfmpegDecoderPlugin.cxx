@@ -313,10 +313,13 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   AVFrame *frame,
 		   uint8_t **buffer, int *buffer_size)
 {
-	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE)
-		decoder_timestamp(decoder,
-				  time_from_ffmpeg(packet->pts - start_time_fallback(*stream),
-				  stream->time_base));
+	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE) {
+		auto start = start_time_fallback(*stream);
+		if (packet->pts >= start)
+			decoder_timestamp(decoder,
+					  time_from_ffmpeg(packet->pts - start,
+							   stream->time_base));
+	}
 
 	AVPacket packet2 = *packet;
 
