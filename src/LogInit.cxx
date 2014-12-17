@@ -111,6 +111,9 @@ log_early_init(bool verbose)
 #ifdef ANDROID
 	(void)verbose;
 #else
+	/* force stderr to be line-buffered */
+	setvbuf(stderr, nullptr, _IOLBF, 0);
+
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
 #endif
