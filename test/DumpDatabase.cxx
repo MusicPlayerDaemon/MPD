@@ -33,10 +33,6 @@
 #include "event/Loop.hxx"
 #include "util/Error.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <iostream>
 using std::cout;
 using std::cerr;
@@ -44,7 +40,7 @@ using std::endl;
 
 #include <stdlib.h>
 
-#ifdef HAVE_LIBUPNP
+#ifdef ENABLE_UPNP
 #include "input/InputStream.hxx"
 size_t
 InputStream::LockRead(void *, size_t, Error &)
@@ -106,14 +102,6 @@ main(int argc, char **argv)
 		cerr << "No such database plugin: " << plugin_name << endl;
 		return EXIT_FAILURE;
 	}
-
-	/* initialize GLib */
-
-#ifdef HAVE_GLIB
-#if !GLIB_CHECK_VERSION(2,32,0)
-	g_thread_init(nullptr);
-#endif
-#endif
 
 	/* initialize MPD */
 

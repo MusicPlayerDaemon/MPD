@@ -25,11 +25,11 @@
 #include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 
-#ifdef HAVE_LIBSAMPLERATE
+#ifdef ENABLE_LIBSAMPLERATE
 #include "LibsamplerateResampler.hxx"
 #endif
 
-#ifdef HAVE_SOXR
+#ifdef ENABLE_SOXR
 #include "SoxrResampler.hxx"
 #endif
 
@@ -38,11 +38,11 @@
 enum class SelectedResampler {
 	FALLBACK,
 
-#ifdef HAVE_LIBSAMPLERATE
+#ifdef ENABLE_LIBSAMPLERATE
 	LIBSAMPLERATE,
 #endif
 
-#ifdef HAVE_SOXR
+#ifdef ENABLE_SOXR
 	SOXR,
 #endif
 };
@@ -58,14 +58,14 @@ pcm_resampler_global_init(Error &error)
 	if (strcmp(converter, "internal") == 0)
 		return true;
 
-#ifdef HAVE_SOXR
+#ifdef ENABLE_SOXR
 	if (memcmp(converter, "soxr", 4) == 0) {
 		selected_resampler = SelectedResampler::SOXR;
 		return pcm_resample_soxr_global_init(converter, error);
 	}
 #endif
 
-#ifdef HAVE_LIBSAMPLERATE
+#ifdef ENABLE_LIBSAMPLERATE
 	selected_resampler = SelectedResampler::LIBSAMPLERATE;
 	return pcm_resample_lsr_global_init(converter, error);
 #endif
@@ -86,12 +86,12 @@ pcm_resampler_create()
 	case SelectedResampler::FALLBACK:
 		return new FallbackPcmResampler();
 
-#ifdef HAVE_LIBSAMPLERATE
+#ifdef ENABLE_LIBSAMPLERATE
 	case SelectedResampler::LIBSAMPLERATE:
 		return new LibsampleratePcmResampler();
 #endif
 
-#ifdef HAVE_SOXR
+#ifdef ENABLE_SOXR
 	case SelectedResampler::SOXR:
 		return new SoxrPcmResampler();
 #endif

@@ -25,15 +25,16 @@
 #include "protocol/Result.hxx"
 #include "tag/Tag.hxx"
 #include "Partition.hxx"
+#include "util/ConstBuffer.hxx"
 
 CommandResult
-handle_addtagid(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_addtagid(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned song_id;
-	if (!check_unsigned(client, &song_id, argv[1]))
+	if (!check_unsigned(client, &song_id, args.front()))
 		return CommandResult::ERROR;
 
-	const char *const tag_name = argv[2];
+	const char *const tag_name = args[1];
 	const TagType tag_type = tag_name_parse_i(tag_name);
 	if (tag_type == TAG_NUM_OF_ITEM_TYPES) {
 		command_error(client, ACK_ERROR_ARG,
@@ -41,7 +42,7 @@ handle_addtagid(Client &client, gcc_unused unsigned argc, char *argv[])
 		return CommandResult::ERROR;
 	}
 
-	const char *const value = argv[3];
+	const char *const value = args[2];
 
 	Error error;
 	if (!client.partition.playlist.AddSongIdTag(song_id, tag_type, value,
@@ -52,15 +53,15 @@ handle_addtagid(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_cleartagid(Client &client, unsigned argc, char *argv[])
+handle_cleartagid(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned song_id;
-	if (!check_unsigned(client, &song_id, argv[1]))
+	if (!check_unsigned(client, &song_id, args.front()))
 		return CommandResult::ERROR;
 
 	TagType tag_type = TAG_NUM_OF_ITEM_TYPES;
-	if (argc >= 3) {
-		const char *const tag_name = argv[2];
+	if (args.size >= 2) {
+		const char *const tag_name = args[1];
 		tag_type = tag_name_parse_i(tag_name);
 		if (tag_type == TAG_NUM_OF_ITEM_TYPES) {
 			command_error(client, ACK_ERROR_ARG,

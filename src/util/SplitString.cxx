@@ -18,20 +18,42 @@
  */
 
 #include "SplitString.hxx"
+#include "StringUtil.hxx"
 
 #include <string.h>
 
-SplitString::SplitString(const char *s, char separator)
-	:first(nullptr)
+std::forward_list<std::string>
+SplitString(const char *s, char separator, bool strip)
 {
-	const char *x = strchr(s, separator);
-	if (x == nullptr)
-		return;
+	if (strip)
+		s = StripLeft(s);
 
-	size_t length = x - s;
-	second = x + 1;
+	std::forward_list<std::string> list;
+	if (*s == 0)
+		return list;
 
-	first = new char[length + 1];
-	memcpy(first, s, length);
-	first[length] = 0;
+	auto i = list.before_begin();
+
+	while (true) {
+		const char *next = strchr(s, separator);
+		if (next == nullptr)
+			break;
+
+		const char *end = next++;
+		if (strip)
+			end = StripRight(s, end);
+
+		i = list.emplace_after(i, s, end);
+
+		s = next;
+		if (strip)
+			s = StripLeft(s);
+	}
+
+	const char *end = s + strlen(s);
+	if (strip)
+		end = StripRight(s, end);
+
+	list.emplace_after(i, s, end);
+	return list;
 }

@@ -340,10 +340,13 @@ struct Queue {
 	/**
 	 * Shuffles a (position) range in the queue.  The songs are physically
 	 * shuffled, not by using the "order" mapping.
+	 *
+	 * @param reorder false to suppress updating the order list
 	 */
 	void ShuffleRange(unsigned start, unsigned end);
 
-	bool SetPriority(unsigned position, uint8_t priority, int after_order);
+	bool SetPriority(unsigned position, uint8_t priority, int after_order,
+			 bool reorder=true);
 
 	bool SetPriorityRange(unsigned start_position, unsigned end_position,
 			      uint8_t priority, int after_order);

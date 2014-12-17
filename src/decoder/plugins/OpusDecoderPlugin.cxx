@@ -214,7 +214,7 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
 	ogg_stream_clear(&os);
 
 	/* restore the previous file position */
-	is.Seek(old_offset, IgnoreError());
+	is.LockSeek(old_offset, IgnoreError());
 
 	return result;
 }
@@ -510,6 +510,13 @@ static const char *const opus_suffixes[] = {
 };
 
 static const char *const opus_mime_types[] = {
+	/* the official MIME type (RFC 5334) */
+	"audio/ogg",
+
+	/* deprecated (RFC 5334) */
+	"application/ogg",
+
+	/* deprecated; from an early draft */
 	"audio/opus",
 	nullptr
 };

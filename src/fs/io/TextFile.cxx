@@ -28,14 +28,14 @@
 
 TextFile::TextFile(Path path_fs, Error &error)
 	:file_reader(new FileReader(path_fs, error)),
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	 gunzip_reader(file_reader->IsDefined()
 		       ? new AutoGunzipReader(*file_reader)
 		       : nullptr),
 #endif
 	 buffered_reader(file_reader->IsDefined()
 			 ? new BufferedReader(*
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 					      gunzip_reader
 #else
 					      file_reader
@@ -48,7 +48,7 @@ TextFile::TextFile(Path path_fs, Error &error)
 TextFile::~TextFile()
 {
 	delete buffered_reader;
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	delete gunzip_reader;
 #endif
 	delete file_reader;

@@ -41,8 +41,8 @@ public:
 	}
 
 	/**
-	 * Creates a new inotify source and registers it in the GLib main
-	 * loop.
+	 * Creates a new inotify source and registers it in the
+	 * #EventLoop.
 	 *
 	 * @param a callback invoked for events received from the kernel
 	 */

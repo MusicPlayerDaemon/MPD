@@ -22,8 +22,8 @@
 #include "Page.hxx"
 #include "tag/Tag.hxx"
 #include "util/FormatString.hxx"
-
-#include <glib.h>
+#include "util/StringUtil.hxx"
+#include "util/Macros.hxx"
 
 #include <string.h>
 
@@ -57,16 +57,13 @@ icy_server_metadata_header(const char *name,
 static char *
 icy_server_metadata_string(const char *stream_title, const char* stream_url)
 {
-	gchar *icy_metadata;
-	guint meta_length;
-
 	// The leading n is a placeholder for the length information
-	icy_metadata = FormatNew("nStreamTitle='%s';"
-				 "StreamUrl='%s';",
-				 stream_title,
-				 stream_url);
+	char *icy_metadata = FormatNew("nStreamTitle='%s';"
+				       "StreamUrl='%s';",
+				       stream_title,
+				       stream_url);
 
-	meta_length = strlen(icy_metadata);
+	size_t meta_length = strlen(icy_metadata);
 
 	meta_length--; // subtract placeholder
 
@@ -85,43 +82,30 @@ icy_server_metadata_string(const char *stream_title, const char* stream_url)
 Page *
 icy_server_metadata_page(const Tag &tag, const TagType *types)
 {
-	const gchar *tag_items[TAG_NUM_OF_ITEM_TYPES];
-	gint last_item, item;
-	guint position;
-	gchar *icy_string;
-	gchar stream_title[(1 + 255 - 28) * 16]; // Length + Metadata -
-						 // "StreamTitle='';StreamUrl='';"
-						 // = 4081 - 28
-	stream_title[0] =  '\0';
+	const char *tag_items[TAG_NUM_OF_ITEM_TYPES];
 
-	last_item = -1;
-
+	int last_item = -1;
 	while (*types != TAG_NUM_OF_ITEM_TYPES) {
-		const gchar *tag_item = tag.GetValue(*types++);
+		const char *tag_item = tag.GetValue(*types++);
 		if (tag_item)
 			tag_items[++last_item] = tag_item;
 	}
 
-	position = item = 0;
-	while (position < sizeof(stream_title) && item <= last_item) {
-		gint length = 0;
+	int item = 0;
 
-		length = g_strlcpy(stream_title + position,
-				   tag_items[item++],
-				   sizeof(stream_title) - position);
+	// Length + Metadata - "StreamTitle='';StreamUrl='';" = 4081 - 28
+	char stream_title[(1 + 255 - 28) * 16];
+	char *p = stream_title, *const end = stream_title + ARRAY_SIZE(stream_title);
+	stream_title[0] =  '\0';
 
-		position += length;
+	while (p < end && item <= last_item) {
+		p = CopyString(p, tag_items[item++], end - p);
 
-		if (item <= last_item) {
-			length = g_strlcpy(stream_title + position,
-					   " - ",
-					   sizeof(stream_title) - position);
-
-			position += length;
-		}
+		if (item <= last_item)
+			p = CopyString(p, " - ", end - p);
 	}
 
-	icy_string = icy_server_metadata_string(stream_title, "");
+	char *icy_string = icy_server_metadata_string(stream_title, "");
 
 	if (icy_string == nullptr)
 		return nullptr;

@@ -28,7 +28,7 @@
  */
 
 #ifndef JAVA_FILE_HXX
-#define JAVA_FILE_HPP
+#define JAVA_FILE_HXX
 
 #include "Object.hxx"
 

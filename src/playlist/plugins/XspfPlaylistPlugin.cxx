@@ -34,7 +34,7 @@
 static constexpr Domain xspf_domain("xspf");
 
 /**
- * This is the state object for the GLib XML parser.
+ * This is the state object for our XML parser.
  */
 struct XspfParser {
 	/**

@@ -23,11 +23,12 @@
 #include "CommandResult.hxx"
 
 class Client;
+template<typename T> struct ConstBuffer;
 
 CommandResult
-handle_addtagid(Client &client, unsigned argc, char *argv[]);
+handle_addtagid(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_cleartagid(Client &client, unsigned argc, char *argv[]);
+handle_cleartagid(Client &client, ConstBuffer<const char *> args);
 
 #endif

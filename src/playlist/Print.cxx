@@ -43,12 +43,13 @@ playlist_provider_print(Client &client, const char *uri,
 	DetachedSong *song;
 	while ((song = e.NextSong()) != nullptr) {
 		if (playlist_check_translate_song(*song, base_uri.c_str(),
-						  loader)) {
-			if (detail)
-				song_print_info(client, *song);
-			else
-				song_print_uri(client, *song);
-		}
+						  loader) &&
+		    detail)
+			song_print_info(client, *song);
+		else
+			/* fallback if no detail was requested or no
+			   detail was available */
+			song_print_uri(client, *song);
 
 		delete song;
 	}

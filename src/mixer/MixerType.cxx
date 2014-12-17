@@ -23,17 +23,19 @@
 #include <assert.h>
 #include <string.h>
 
-enum mixer_type
+MixerType
 mixer_type_parse(const char *input)
 {
 	assert(input != NULL);
 
 	if (strcmp(input, "none") == 0 || strcmp(input, "disabled") == 0)
-		return MIXER_TYPE_NONE;
+		return MixerType::NONE;
 	else if (strcmp(input, "hardware") == 0)
-		return MIXER_TYPE_HARDWARE;
+		return MixerType::HARDWARE;
 	else if (strcmp(input, "software") == 0)
-		return MIXER_TYPE_SOFTWARE;
+		return MixerType::SOFTWARE;
+	else if (strcmp(input, "null") == 0)
+		return MixerType::NULL_;
 	else
-		return MIXER_TYPE_UNKNOWN;
+		return MixerType::UNKNOWN;
 }

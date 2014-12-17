@@ -29,7 +29,7 @@ const NeighborPlugin *const neighbor_plugins[] = {
 #ifdef ENABLE_SMBCLIENT
 	&smbclient_neighbor_plugin,
 #endif
-#ifdef HAVE_LIBUPNP
+#ifdef ENABLE_UPNP
 	&upnp_neighbor_plugin,
 #endif
 	nullptr

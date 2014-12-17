@@ -25,12 +25,13 @@
 
 struct Instance;
 class Client;
+template<typename T> struct ConstBuffer;
 
 gcc_pure
 bool
 neighbor_commands_available(const Instance &instance);
 
 CommandResult
-handle_listneighbors(Client &client, unsigned argc, char *argv[]);
+handle_listneighbors(Client &client, ConstBuffer<const char *> args);
 
 #endif

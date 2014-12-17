@@ -240,7 +240,8 @@
         bigger than the priority of the current song.  Decreasing the
         priority of a song will moved it farther to the end of the
         sequence.  Changing the priority of the current song has no
-        effect on the sequence.
+        effect on the sequence.  During playback, a song's priority is
+        reset to zero.
       </para>
     </section>
   </chapter>
@@ -512,6 +513,15 @@
                   <returnvalue>
                     Total time elapsed within the current song, but
                     with higher resolution.
+                  </returnvalue>
+                </para>
+              </listitem>
+              <listitem>
+                <para>
+                  <varname>duration</varname>:
+                  <footnote id="since_0_20"><simpara>Introduced with <application>MPD</application> 0.20</simpara></footnote>
+                  <returnvalue>
+                    Duration of the current song in seconds.
                   </returnvalue>
                 </para>
               </listitem>
@@ -1533,6 +1543,7 @@ OK
               <command>count</command>
               <arg choice="req"><replaceable>TAG</replaceable></arg>
               <arg choice="req"><replaceable>NEEDLE</replaceable></arg>
+              <arg choice="opt"><replaceable>...</replaceable></arg>
               <arg choice="opt">group</arg>
               <arg choice="opt"><replaceable>GROUPTYPE</replaceable></arg>
             </cmdsynopsis>
@@ -1558,6 +1569,7 @@ OK
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -1601,6 +1613,13 @@ OK
 
             <para>
               <varname>WHAT</varname> is what to find.
+            </para>
+
+            <para>
+              <varname>window</varname> can be used to query only a
+              portion of the real response.  The parameter is two
+              zero-based record numbers; a start number and an end
+              number.
             </para>
           </listitem>
         </varlistentry>
@@ -1794,6 +1813,7 @@ OK
               <arg choice="req"><replaceable>TYPE</replaceable></arg>
               <arg choice="req"><replaceable>WHAT</replaceable></arg>
               <arg choice="opt"><replaceable>...</replaceable></arg>
+              <arg choice="opt">window <replaceable>START</replaceable>:<replaceable>END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -2115,6 +2135,30 @@ OK
               specified name, below the specified directory (URI).
               For each matching song, it prints the URI and that one
               sticker's value.
+            </para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry id="command_sticker_find_equals">
+          <term>
+            <cmdsynopsis>
+              <command>sticker</command>
+              <arg choice="plain">find</arg>
+              <arg choice="req"><replaceable>TYPE</replaceable></arg>
+              <arg choice="req"><replaceable>URI</replaceable></arg>
+              <arg choice="req"><replaceable>NAME</replaceable></arg>
+              <arg choice="plain">=</arg>
+              <arg choice="req"><replaceable>VALUE</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Searches for stickers with the given value.
+            </para>
+
+            <para>
+              Other supported operators are:
+              "<function>&lt;</function>", "<function>&gt;</function>"
             </para>
           </listitem>
         </varlistentry>

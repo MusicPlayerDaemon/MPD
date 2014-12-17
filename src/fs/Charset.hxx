@@ -25,6 +25,12 @@
 
 #include <string>
 
+#if defined(HAVE_ICU) || defined(HAVE_GLIB)
+#define HAVE_FS_CHARSET
+#endif
+
+class Error;
+
 /**
  * Gets file system character set name.
  */
@@ -32,8 +38,11 @@ gcc_const
 const char *
 GetFSCharset();
 
+bool
+SetFSCharset(const char *charset, Error &error);
+
 void
-SetFSCharset(const char *charset);
+DeinitFSCharset();
 
 /**
  * Convert the path to UTF-8.
@@ -43,8 +52,12 @@ gcc_pure gcc_nonnull_all
 std::string
 PathToUTF8(const char *path_fs);
 
-gcc_malloc gcc_nonnull_all
-char *
+/**
+ * Convert the path from UTF-8.
+ * Returns empty string on error.
+ */
+gcc_pure gcc_nonnull_all
+std::string
 PathFromUTF8(const char *path_utf8);
 
 #endif

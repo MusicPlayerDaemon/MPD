@@ -38,6 +38,7 @@ void config_global_finish(void)
 {
 	for (auto i : config_data.params)
 		delete i;
+	config_data.params.fill(0);
 }
 
 void config_global_init(void)

@@ -30,10 +30,6 @@
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -56,14 +52,6 @@ main(int argc, char **argv)
 
 	const char *plugin_name = argv[1];
 	const Path path = Path::FromFS(argv[2]);
-
-	/* initialize GLib */
-
-#ifdef HAVE_GLIB
-#if !GLIB_CHECK_VERSION(2,32,0)
-	g_thread_init(NULL);
-#endif
-#endif
 
 	/* initialize MPD */
 

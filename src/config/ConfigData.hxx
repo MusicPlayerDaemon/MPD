@@ -109,7 +109,7 @@ struct config_param {
 				  const char *default_value=nullptr) const;
 
 	/**
-	 * Same as config_dup_path(), but looks up the setting in the
+	 * Same as config_get_path(), but looks up the setting in the
 	 * specified block.
 	 */
 	AllocatedPath GetBlockPath(const char *name, const char *default_value,

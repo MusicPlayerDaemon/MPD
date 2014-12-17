@@ -20,28 +20,31 @@
 #ifndef MPD_MIXER_TYPE_HXX
 #define MPD_MIXER_TYPE_HXX
 
-enum mixer_type {
+enum class MixerType {
 	/** parser error */
-	MIXER_TYPE_UNKNOWN,
+	UNKNOWN,
 
 	/** mixer disabled */
-	MIXER_TYPE_NONE,
+	NONE,
+
+	/** "null" mixer (virtual fake) */
+	NULL_,
 
 	/** software mixer with pcm_volume() */
-	MIXER_TYPE_SOFTWARE,
+	SOFTWARE,
 
 	/** hardware mixer (output's plugin) */
-	MIXER_TYPE_HARDWARE,
+	HARDWARE,
 };
 
 /**
- * Parses a "mixer_type" setting from the configuration file.
+ * Parses a #MixerType setting from the configuration file.
  *
- * @param input the configured string value; must not be NULL
- * @return a #mixer_type value; MIXER_TYPE_UNKNOWN means #input could
- * not be parsed
+ * @param input the configured string value; must not be NULL @return
+ * a #MixerType value; #MixerType::UNKNOWN means #input could not be
+ * parsed
  */
-enum mixer_type
+MixerType
 mixer_type_parse(const char *input);
 
 #endif

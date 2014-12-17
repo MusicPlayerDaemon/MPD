@@ -25,7 +25,10 @@
 #include "lib/ffmpeg/Domain.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
+#include "tag/TagBuilder.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/ReplayGain.hxx"
+#include "tag/MixRamp.hxx"
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
@@ -320,29 +323,28 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 
 	AVPacket packet2 = *packet;
 
-	uint8_t *output_buffer;
-
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (packet2.size > 0 && cmd == DecoderCommand::NONE) {
-		int audio_size = 0;
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(codec_context,
 						frame, &got_frame,
 						&packet2);
-		if (len >= 0 && got_frame) {
+		if (len < 0) {
+			/* if error, we skip the frame */
+			LogDefault(ffmpeg_domain,
+				   "decoding failed, frame skipped");
+			break;
+		}
+
+		uint8_t *output_buffer;
+		int audio_size = 0;
+		if (got_frame) {
 			audio_size = copy_interleave_frame(codec_context,
 							   frame,
 							   &output_buffer,
 							   buffer, buffer_size);
 			if (audio_size < 0)
 				len = audio_size;
-		}
-
-		if (len < 0) {
-			/* if error, we skip the frame */
-			LogDefault(ffmpeg_domain,
-				   "decoding failed, frame skipped");
-			break;
 		}
 
 		packet2.data += len;
@@ -423,14 +425,122 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 	avpd.filename = is.GetURI();
 
 #ifdef AVPROBE_SCORE_MIME
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(56, 5, 1)
 	/* this attribute was added in libav/ffmpeg version 11, but
 	   unfortunately it's "uint8_t" instead of "char", and it's
 	   not "const" - wtf? */
 	avpd.mime_type = (uint8_t *)const_cast<char *>(is.GetMimeType());
+#else
+	/* API problem fixed in FFmpeg 2.5 */
+	avpd.mime_type = is.GetMimeType();
+#endif
 #endif
 
 	return av_probe_input_format(&avpd, true);
 }
+
+static void
+FfmpegParseMetaData(AVDictionary &dict, ReplayGainInfo &rg, MixRampInfo &mr)
+{
+	AVDictionaryEntry *i = nullptr;
+
+	while ((i = av_dict_get(&dict, "", i,
+				AV_DICT_IGNORE_SUFFIX)) != nullptr) {
+		const char *name = i->key;
+		const char *value = i->value;
+
+		if (!ParseReplayGainTag(rg, name, value))
+			ParseMixRampTag(mr, name, value);
+	}
+}
+
+static void
+FfmpegParseMetaData(const AVStream &stream,
+		    ReplayGainInfo &rg, MixRampInfo &mr)
+{
+	FfmpegParseMetaData(*stream.metadata, rg, mr);
+}
+
+static void
+FfmpegParseMetaData(const AVFormatContext &format_context, int audio_stream,
+		    ReplayGainInfo &rg, MixRampInfo &mr)
+{
+	FfmpegParseMetaData(*format_context.metadata, rg, mr);
+
+	if (audio_stream >= 0)
+		FfmpegParseMetaData(*format_context.streams[audio_stream],
+				    rg, mr);
+}
+
+static void
+FfmpegParseMetaData(Decoder &decoder,
+		    const AVFormatContext &format_context, int audio_stream)
+{
+	ReplayGainInfo rg;
+	rg.Clear();
+
+	MixRampInfo mr;
+	mr.Clear();
+
+	FfmpegParseMetaData(format_context, audio_stream, rg, mr);
+
+	if (rg.IsDefined())
+		decoder_replay_gain(decoder, &rg);
+
+	if (mr.IsDefined())
+		decoder_mixramp(decoder, std::move(mr));
+}
+
+static void
+FfmpegScanMetadata(const AVStream &stream,
+		   const tag_handler &handler, void *handler_ctx)
+{
+	FfmpegScanDictionary(stream.metadata, &handler, handler_ctx);
+}
+
+static void
+FfmpegScanMetadata(const AVFormatContext &format_context, int audio_stream,
+		   const tag_handler &handler, void *handler_ctx)
+{
+	FfmpegScanDictionary(format_context.metadata, &handler, handler_ctx);
+	if (audio_stream >= 0)
+		FfmpegScanMetadata(*format_context.streams[audio_stream],
+				   handler, handler_ctx);
+}
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
+
+static void
+FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
+	      TagBuilder &tag)
+{
+	FfmpegScanMetadata(format_context, audio_stream,
+			   full_tag_handler, &tag);
+}
+
+/**
+ * Check if a new stream tag was received and pass it to
+ * decoder_tag().
+ */
+static void
+FfmpegCheckTag(Decoder &decoder, InputStream &is,
+	       AVFormatContext &format_context, int audio_stream)
+{
+	AVStream &stream = *format_context.streams[audio_stream];
+	if ((stream.event_flags & AVSTREAM_EVENT_FLAG_METADATA_UPDATED) == 0)
+		/* no new metadata */
+		return;
+
+	/* clear the flag */
+	stream.event_flags &= ~AVSTREAM_EVENT_FLAG_METADATA_UPDATED;
+
+	TagBuilder tag;
+	FfmpegScanTag(format_context, audio_stream, tag);
+	if (!tag.IsEmpty())
+		decoder_tag(decoder, is, tag.Commit());
+}
+
+#endif
 
 static void
 ffmpeg_decode(Decoder &decoder, InputStream &input)
@@ -536,6 +646,8 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	decoder_initialized(decoder, audio_format,
 			    input.IsSeekable(), total_time);
 
+	FfmpegParseMetaData(decoder, *format_context, audio_stream);
+
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 	AVFrame *frame = av_frame_alloc();
 #else
@@ -556,6 +668,10 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		if (av_read_frame(format_context, &packet) < 0)
 			/* end of file */
 			break;
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
+		FfmpegCheckTag(decoder, input, *format_context, audio_stream);
+#endif
 
 		if (packet.stream_index == audio_stream)
 			cmd = ffmpeg_send_packet(decoder, input,
@@ -629,11 +745,8 @@ ffmpeg_scan_stream(InputStream &is,
 		tag_handler_invoke_duration(handler, handler_ctx, duration);
 	}
 
-	ffmpeg_scan_dictionary(f->metadata, handler, handler_ctx);
 	int idx = ffmpeg_find_audio_stream(f);
-	if (idx >= 0)
-		ffmpeg_scan_dictionary(f->streams[idx]->metadata,
-				       handler, handler_ctx);
+	FfmpegScanMetadata(*f, idx, *handler, handler_ctx);
 
 	avformat_close_input(&f);
 	return true;

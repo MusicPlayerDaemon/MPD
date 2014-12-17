@@ -22,67 +22,44 @@
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/FormatString.hxx"
 #include "util/Domain.hxx"
+#include "util/Error.hxx"
 #include "system/ByteOrder.hxx"
+#include "system/FatalError.hxx"
 #include "Log.hxx"
 
-#include <errno.h>
-#include <stdlib.h>
 #include <string.h>
-#include <glib.h>
 
 #include <sidplay/sidplay2.h>
 #include <sidplay/builders/resid.h>
 #include <sidplay/utils/SidTuneMod.h>
+#include <sidplay/utils/SidDatabase.h>
 
 #define SUBTUNE_PREFIX "tune_"
 
 static constexpr Domain sidplay_domain("sidplay");
 
-static GPatternSpec *path_with_subtune;
-static const char *songlength_file;
-static GKeyFile *songlength_database;
+static SidDatabase *songlength_database;
 
 static bool all_files_are_containers;
 static unsigned default_songlength;
 
 static bool filter_setting;
 
-static GKeyFile *
-sidplay_load_songlength_db(const char *path)
+static SidDatabase *
+sidplay_load_songlength_db(const Path path)
 {
-	GError *error = nullptr;
-	gchar *data;
-	gsize size;
-
-	if (!g_file_get_contents(path, &data, &size, &error)) {
+	SidDatabase *db = new SidDatabase();
+	if (db->open(path.c_str()) < 0) {
 		FormatError(sidplay_domain,
 			    "unable to read songlengths file %s: %s",
-			    path, error->message);
-		g_error_free(error);
+			    path.c_str(), db->error());
+		delete db;
 		return nullptr;
 	}
 
-	/* replace any ; comment characters with # */
-	for (gsize i = 0; i < size; i++)
-		if (data[i] == ';')
-			data[i] = '#';
-
-	GKeyFile *db = g_key_file_new();
-	bool success = g_key_file_load_from_data(db, data, size,
-						 G_KEY_FILE_NONE, &error);
-	g_free(data);
-	if (!success) {
-		FormatError(sidplay_domain,
-			    "unable to parse songlengths file %s: %s",
-			    path, error->message);
-		g_error_free(error);
-		g_key_file_free(db);
-		return nullptr;
-	}
-
-	g_key_file_set_list_separator(db, ' ');
 	return db;
 }
 
@@ -90,17 +67,17 @@ static bool
 sidplay_init(const config_param &param)
 {
 	/* read the songlengths database file */
-	songlength_file = param.GetBlockValue("songlength_database");
-	if (songlength_file != nullptr)
-		songlength_database = sidplay_load_songlength_db(songlength_file);
+	Error error;
+	const auto database_path = param.GetBlockPath("songlength_database", error);
+	if (!database_path.IsNull())
+		songlength_database = sidplay_load_songlength_db(database_path);
+	else if (error.IsDefined())
+		FatalError(error);
 
 	default_songlength = param.GetBlockValue("default_songlength", 0u);
 
 	all_files_are_containers =
 		param.GetBlockValue("all_files_are_containers", true);
-
-	path_with_subtune=g_pattern_spec_new(
-			"*/" SUBTUNE_PREFIX "???.sid");
 
 	filter_setting = param.GetBlockValue("filter", true);
 
@@ -110,96 +87,61 @@ sidplay_init(const config_param &param)
 static void
 sidplay_finish()
 {
-	g_pattern_spec_free(path_with_subtune);
-
-	if(songlength_database)
-		g_key_file_free(songlength_database);
+	delete songlength_database;
 }
 
-/**
- * returns the file path stripped of any /tune_xxx.sid subtune
- * suffix
- */
-static char *
-get_container_name(Path path_fs)
-{
-	char *path_container = strdup(path_fs.c_str());
+struct SidplayContainerPath {
+	AllocatedPath path;
+	unsigned track;
+};
 
-	if(!g_pattern_match(path_with_subtune,
-		strlen(path_container), path_container, nullptr))
-		return path_container;
-
-	char *ptr=g_strrstr(path_container, "/" SUBTUNE_PREFIX);
-	if(ptr) *ptr='\0';
-
-	return path_container;
-}
-
-/**
- * returns tune number from file.sid/tune_xxx.sid style path or 1 if
- * no subtune is appended
- */
+gcc_pure
 static unsigned
-get_song_num(const char *path_fs)
+ParseSubtuneName(const char *base)
 {
-	if(g_pattern_match(path_with_subtune,
-		strlen(path_fs), path_fs, nullptr)) {
-		char *sub=g_strrstr(path_fs, "/" SUBTUNE_PREFIX);
-		if(!sub) return 1;
+	if (memcmp(base, SUBTUNE_PREFIX, sizeof(SUBTUNE_PREFIX) - 1) != 0)
+		return 0;
 
-		sub+=strlen("/" SUBTUNE_PREFIX);
-		int song_num=strtol(sub, nullptr, 10);
+	base += sizeof(SUBTUNE_PREFIX) - 1;
 
-		if (errno == EINVAL)
-			return 1;
-		else
-			return song_num;
-	} else
-		return 1;
+	char *endptr;
+	auto track = strtoul(base, &endptr, 10);
+	if (endptr == base || *endptr != '.')
+		return 0;
+
+	return track;
+}
+
+/**
+ * returns the file path stripped of any /tune_xxx.* subtune suffix
+ * and the track number (or 1 if no "tune_xxx" suffix is present).
+ */
+static SidplayContainerPath
+ParseContainerPath(Path path_fs)
+{
+	const Path base = path_fs.GetBase();
+	unsigned track;
+	if (base.IsNull() ||
+	    (track = ParseSubtuneName(base.c_str())) < 1)
+		return { AllocatedPath(path_fs), 1 };
+
+	return { path_fs.GetDirectoryName(), track };
 }
 
 /* get the song length in seconds */
 static SignedSongTime
-get_song_length(Path path_fs)
+get_song_length(SidTuneMod &tune)
 {
+	assert(tune);
+
 	if (songlength_database == nullptr)
 		return SignedSongTime::Negative();
 
-	char *sid_file = get_container_name(path_fs);
-	SidTuneMod tune(sid_file);
-	free(sid_file);
-	if(!tune) {
-		LogWarning(sidplay_domain,
-			   "failed to load file for calculating md5 sum");
+	const auto length = songlength_database->length(tune);
+	if (length < 0)
 		return SignedSongTime::Negative();
-	}
-	char md5sum[SIDTUNE_MD5_LENGTH+1];
-	tune.createMD5(md5sum);
 
-	const unsigned song_num = get_song_num(path_fs.c_str());
-
-	gsize num_items;
-	gchar **values=g_key_file_get_string_list(songlength_database,
-		"Database", md5sum, &num_items, nullptr);
-	if(!values || song_num>num_items) {
-		g_strfreev(values);
-		return SignedSongTime::Negative();
-	}
-
-	int minutes=strtol(values[song_num-1], nullptr, 10);
-	if(errno==EINVAL) minutes=0;
-
-	int seconds;
-	char *ptr=strchr(values[song_num-1], ':');
-	if(ptr) {
-		seconds=strtol(ptr+1, nullptr, 10);
-		if(errno==EINVAL) seconds=0;
-	} else
-		seconds=0;
-
-	g_strfreev(values);
-
-	return SignedSongTime::FromS((minutes * 60) + seconds);
+	return SignedSongTime::FromS(length);
 }
 
 static void
@@ -209,18 +151,17 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 	/* load the tune */
 
-	char *path_container=get_container_name(path_fs);
-	SidTune tune(path_container, nullptr, true);
-	free(path_container);
+	const auto container = ParseContainerPath(path_fs);
+	SidTuneMod tune(container.path.c_str());
 	if (!tune) {
 		LogWarning(sidplay_domain, "failed to load file");
 		return;
 	}
 
-	const int song_num = get_song_num(path_fs.c_str());
+	const int song_num = container.track;
 	tune.selectSong(song_num);
 
-	auto duration = get_song_length(path_fs);
+	auto duration = get_song_length(tune);
 	if (duration.IsNegative() && default_songlength > 0)
 		duration = SongTime::FromS(default_songlength);
 
@@ -347,13 +288,14 @@ static bool
 sidplay_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
 {
-	const int song_num = get_song_num(path_fs.c_str());
-	char *path_container=get_container_name(path_fs);
+	const auto container = ParseContainerPath(path_fs);
+	const unsigned song_num = container.track;
 
-	SidTune tune(path_container, nullptr, true);
-	free(path_container);
+	SidTuneMod tune(container.path.c_str());
 	if (!tune)
 		return false;
+
+	tune.selectSong(song_num);
 
 	const SidTuneInfo &info = tune.getInfo();
 
@@ -385,7 +327,7 @@ sidplay_scan_file(Path path_fs,
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
 
 	/* time */
-	const auto duration = get_song_length(path_fs);
+	const auto duration = get_song_length(tune);
 	if (!duration.IsNegative())
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    SongTime(duration));

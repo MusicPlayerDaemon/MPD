@@ -402,7 +402,8 @@ Queue::CountSamePriority(unsigned start_order, uint8_t priority) const
 }
 
 bool
-Queue::SetPriority(unsigned position, uint8_t priority, int after_order)
+Queue::SetPriority(unsigned position, uint8_t priority, int after_order,
+		   bool reorder)
 {
 	assert(position < length);
 
@@ -414,7 +415,7 @@ Queue::SetPriority(unsigned position, uint8_t priority, int after_order)
 	item->version = version;
 	item->priority = priority;
 
-	if (!random)
+	if (!random || !reorder)
 		/* don't reorder if not in random mode */
 		return true;
 

@@ -23,8 +23,9 @@
 #include "CommandResult.hxx"
 
 class Client;
+template<typename T> struct ConstBuffer;
 
 CommandResult
-handle_sticker(Client &client, unsigned argc, char *argv[]);
+handle_sticker(Client &client, ConstBuffer<const char *> args);
 
 #endif

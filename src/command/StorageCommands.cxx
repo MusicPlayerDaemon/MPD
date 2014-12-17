@@ -25,6 +25,7 @@
 #include "protocol/Result.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
 #include "Partition.hxx"
@@ -167,7 +168,7 @@ print_storage_uri(Client &client, const Storage &storage)
 }
 
 CommandResult
-handle_listmounts(Client &client, gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_listmounts(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
@@ -189,7 +190,7 @@ handle_listmounts(Client &client, gcc_unused unsigned argc, gcc_unused char *arg
 }
 
 CommandResult
-handle_mount(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_mount(Client &client, ConstBuffer<const char *> args)
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
@@ -199,8 +200,8 @@ handle_mount(Client &client, gcc_unused unsigned argc, char *argv[])
 
 	CompositeStorage &composite = *(CompositeStorage *)_composite;
 
-	const char *const local_uri = argv[1];
-	const char *const remote_uri = argv[2];
+	const char *const local_uri = args[0];
+	const char *const remote_uri = args[1];
 
 	if (*local_uri == 0) {
 		command_error(client, ACK_ERROR_ARG, "Bad mount point");
@@ -252,7 +253,7 @@ handle_mount(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_unmount(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_unmount(Client &client, ConstBuffer<const char *> args)
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
@@ -262,7 +263,7 @@ handle_unmount(Client &client, gcc_unused unsigned argc, char *argv[])
 
 	CompositeStorage &composite = *(CompositeStorage *)_composite;
 
-	const char *const local_uri = argv[1];
+	const char *const local_uri = args.front();
 
 	if (*local_uri == 0) {
 		command_error(client, ACK_ERROR_ARG, "Bad mount point");

@@ -19,6 +19,7 @@
 
 #include "ConfigTemplates.hxx"
 #include "ConfigOption.hxx"
+#include "util/Macros.hxx"
 
 #include <string.h>
 
@@ -81,8 +82,7 @@ const ConfigTemplate config_templates[] = {
 	{ "neighbors", true, true },
 };
 
-static constexpr unsigned n_config_templates =
-	sizeof(config_templates) / sizeof(config_templates[0]);
+static constexpr unsigned n_config_templates = ARRAY_SIZE(config_templates);
 
 static_assert(n_config_templates == unsigned(CONF_MAX),
 	      "Wrong number of config_templates");

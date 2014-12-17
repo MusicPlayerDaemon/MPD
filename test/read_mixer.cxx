@@ -28,10 +28,6 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
@@ -51,12 +47,6 @@ int main(int argc, gcc_unused char **argv)
 		fprintf(stderr, "Usage: read_mixer PLUGIN\n");
 		return EXIT_FAILURE;
 	}
-
-#ifdef HAVE_GLIB
-#if !GLIB_CHECK_VERSION(2,32,0)
-	g_thread_init(NULL);
-#endif
-#endif
 
 	EventLoop event_loop;
 

@@ -59,9 +59,18 @@ translate_uri(Client &client, const char *uri)
 }
 
 CommandResult
-handle_add(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_add(Client &client, ConstBuffer<const char *> args)
 {
-	const char *const uri = translate_uri(client, argv[1]);
+	const char *uri = args.front();
+	if (memcmp(uri, "/", 2) == 0)
+		/* this URI is malformed, but some clients are buggy
+		   and use "add /" to add the whole database, which
+		   was never intended to work, but once did; in order
+		   to retain backwards compatibility, work around this
+		   here */
+		uri = "";
+
+	uri = translate_uri(client, uri);
 	if (uri == nullptr)
 		return CommandResult::ERROR;
 
@@ -90,9 +99,9 @@ handle_add(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_addid(Client &client, unsigned argc, char *argv[])
+handle_addid(Client &client, ConstBuffer<const char *> args)
 {
-	const char *const uri = translate_uri(client, argv[1]);
+	const char *const uri = translate_uri(client, args.front());
 	if (uri == nullptr)
 		return CommandResult::ERROR;
 
@@ -102,9 +111,9 @@ handle_addid(Client &client, unsigned argc, char *argv[])
 	if (added_id == 0)
 		return print_error(client, error);
 
-	if (argc == 3) {
+	if (args.size == 2) {
 		unsigned to;
-		if (!check_unsigned(client, &to, argv[2]))
+		if (!check_unsigned(client, &to, args[1]))
 			return CommandResult::ERROR;
 		PlaylistResult result = client.partition.MoveId(added_id, to);
 		if (result != PlaylistResult::SUCCESS) {
@@ -151,14 +160,14 @@ parse_time_range(const char *p, SongTime &start_r, SongTime &end_r)
 }
 
 CommandResult
-handle_rangeid(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_rangeid(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned id;
-	if (!check_unsigned(client, &id, argv[1]))
+	if (!check_unsigned(client, &id, args.front()))
 		return CommandResult::ERROR;
 
 	SongTime start, end;
-	if (!parse_time_range(argv[2], start, end)) {
+	if (!parse_time_range(args[1], start, end)) {
 		command_error(client, ACK_ERROR_ARG, "Bad range");
 		return CommandResult::ERROR;
 	}
@@ -173,11 +182,11 @@ handle_rangeid(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_delete(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_delete(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned start, end;
 
-	if (!check_range(client, &start, &end, argv[1]))
+	if (!check_range(client, &start, &end, args.front()))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.DeleteRange(start, end);
@@ -185,11 +194,11 @@ handle_delete(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_deleteid(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_deleteid(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned id;
 
-	if (!check_unsigned(client, &id, argv[1]))
+	if (!check_unsigned(client, &id, args.front()))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.DeleteId(id);
@@ -197,19 +206,17 @@ handle_deleteid(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_playlist(Client &client,
-		gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_playlist(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	playlist_print_uris(client, client.playlist);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_shuffle(gcc_unused Client &client,
-	       gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_shuffle(gcc_unused Client &client, ConstBuffer<const char *> args)
 {
 	unsigned start = 0, end = client.playlist.queue.GetLength();
-	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
+	if (args.size == 1 && !check_range(client, &start, &end, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.Shuffle(start, end);
@@ -217,19 +224,18 @@ handle_shuffle(gcc_unused Client &client,
 }
 
 CommandResult
-handle_clear(gcc_unused Client &client,
-	     gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_clear(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	client.partition.ClearQueue();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_plchanges(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_plchanges(Client &client, ConstBuffer<const char *> args)
 {
 	uint32_t version;
 
-	if (!check_uint32(client, &version, argv[1]))
+	if (!check_uint32(client, &version, args.front()))
 		return CommandResult::ERROR;
 
 	playlist_print_changes_info(client, client.playlist, version);
@@ -237,11 +243,11 @@ handle_plchanges(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_plchangesposid(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_plchangesposid(Client &client, ConstBuffer<const char *> args)
 {
 	uint32_t version;
 
-	if (!check_uint32(client, &version, argv[1]))
+	if (!check_uint32(client, &version, args.front()))
 		return CommandResult::ERROR;
 
 	playlist_print_changes_position(client, client.playlist, version);
@@ -249,12 +255,12 @@ handle_plchangesposid(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_playlistinfo(Client &client, unsigned argc, char *argv[])
+handle_playlistinfo(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned start = 0, end = std::numeric_limits<unsigned>::max();
 	bool ret;
 
-	if (argc == 2 && !check_range(client, &start, &end, argv[1]))
+	if (args.size == 1 && !check_range(client, &start, &end, args.front()))
 		return CommandResult::ERROR;
 
 	ret = playlist_print_info(client, client.playlist, start, end);
@@ -266,11 +272,11 @@ handle_playlistinfo(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_playlistid(Client &client, unsigned argc, char *argv[])
+handle_playlistid(Client &client, ConstBuffer<const char *> args)
 {
-	if (argc >= 2) {
+	if (!args.IsEmpty()) {
 		unsigned id;
-		if (!check_unsigned(client, &id, argv[1]))
+		if (!check_unsigned(client, &id, args.front()))
 			return CommandResult::ERROR;
 
 		bool ret = playlist_print_id(client, client.playlist, id);
@@ -286,11 +292,9 @@ handle_playlistid(Client &client, unsigned argc, char *argv[])
 }
 
 static CommandResult
-handle_playlist_match(Client &client, unsigned argc, char *argv[],
+handle_playlist_match(Client &client, ConstBuffer<const char *> args,
 		      bool fold_case)
 {
-	ConstBuffer<const char *> args(argv + 1, argc - 1);
-
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
 		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
@@ -302,35 +306,35 @@ handle_playlist_match(Client &client, unsigned argc, char *argv[],
 }
 
 CommandResult
-handle_playlistfind(Client &client, unsigned argc, char *argv[])
+handle_playlistfind(Client &client, ConstBuffer<const char *> args)
 {
-	return handle_playlist_match(client, argc, argv, false);
+	return handle_playlist_match(client, args, false);
 }
 
 CommandResult
-handle_playlistsearch(Client &client, unsigned argc, char *argv[])
+handle_playlistsearch(Client &client, ConstBuffer<const char *> args)
 {
-	return handle_playlist_match(client, argc, argv, true);
+	return handle_playlist_match(client, args, true);
 }
 
 CommandResult
-handle_prio(Client &client, unsigned argc, char *argv[])
+handle_prio(Client &client, ConstBuffer<const char *> args)
 {
+	const char *const priority_string = args.shift();
 	unsigned priority;
 
-	if (!check_unsigned(client, &priority, argv[1]))
+	if (!check_unsigned(client, &priority, priority_string))
 		return CommandResult::ERROR;
 
 	if (priority > 0xff) {
 		command_error(client, ACK_ERROR_ARG,
-			      "Priority out of range: %s", argv[1]);
+			      "Priority out of range: %s", priority_string);
 		return CommandResult::ERROR;
 	}
 
-	for (unsigned i = 2; i < argc; ++i) {
+	for (const char *i : args) {
 		unsigned start_position, end_position;
-		if (!check_range(client, &start_position, &end_position,
-				 argv[i]))
+		if (!check_range(client, &start_position, &end_position, i))
 			return CommandResult::ERROR;
 
 		PlaylistResult result =
@@ -345,22 +349,23 @@ handle_prio(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_prioid(Client &client, unsigned argc, char *argv[])
+handle_prioid(Client &client, ConstBuffer<const char *> args)
 {
+	const char *const priority_string = args.shift();
 	unsigned priority;
 
-	if (!check_unsigned(client, &priority, argv[1]))
+	if (!check_unsigned(client, &priority, priority_string))
 		return CommandResult::ERROR;
 
 	if (priority > 0xff) {
 		command_error(client, ACK_ERROR_ARG,
-			      "Priority out of range: %s", argv[1]);
+			      "Priority out of range: %s", priority_string);
 		return CommandResult::ERROR;
 	}
 
-	for (unsigned i = 2; i < argc; ++i) {
+	for (const char *i : args) {
 		unsigned song_id;
-		if (!check_unsigned(client, &song_id, argv[i]))
+		if (!check_unsigned(client, &song_id, i))
 			return CommandResult::ERROR;
 
 		PlaylistResult result =
@@ -373,14 +378,14 @@ handle_prioid(Client &client, unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_move(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_move(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned start, end;
 	int to;
 
-	if (!check_range(client, &start, &end, argv[1]))
+	if (!check_range(client, &start, &end, args[0]))
 		return CommandResult::ERROR;
-	if (!check_int(client, &to, argv[2]))
+	if (!check_int(client, &to, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -389,27 +394,27 @@ handle_move(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_moveid(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_moveid(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned id;
 	int to;
 
-	if (!check_unsigned(client, &id, argv[1]))
+	if (!check_unsigned(client, &id, args[0]))
 		return CommandResult::ERROR;
-	if (!check_int(client, &to, argv[2]))
+	if (!check_int(client, &to, args[1]))
 		return CommandResult::ERROR;
 	PlaylistResult result = client.partition.MoveId(id, to);
 	return print_playlist_result(client, result);
 }
 
 CommandResult
-handle_swap(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_swap(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned song1, song2;
 
-	if (!check_unsigned(client, &song1, argv[1]))
+	if (!check_unsigned(client, &song1, args[0]))
 		return CommandResult::ERROR;
-	if (!check_unsigned(client, &song2, argv[2]))
+	if (!check_unsigned(client, &song2, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -418,13 +423,13 @@ handle_swap(Client &client, gcc_unused unsigned argc, char *argv[])
 }
 
 CommandResult
-handle_swapid(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_swapid(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned id1, id2;
 
-	if (!check_unsigned(client, &id1, argv[1]))
+	if (!check_unsigned(client, &id1, args[0]))
 		return CommandResult::ERROR;
-	if (!check_unsigned(client, &id2, argv[2]))
+	if (!check_unsigned(client, &id2, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.SwapIds(id1, id2);

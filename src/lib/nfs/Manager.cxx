@@ -29,8 +29,10 @@ NfsManager::ManagedConnection::OnNfsConnectionError(Error &&error)
 {
 	FormatError(error, "NFS error on %s:%s", GetServer(), GetExportName());
 
-	manager.connections.erase(manager.connections.iterator_to(*this));
-	delete this;
+	/* defer deletion so the caller
+	   (i.e. NfsConnection::OnSocketReady()) can still use this
+	   object */
+	manager.ScheduleDelete(*this);
 }
 
 inline bool
@@ -59,7 +61,9 @@ NfsManager::Compare::operator()(const ManagedConnection &a,
 
 NfsManager::~NfsManager()
 {
-	assert(loop.IsInside());
+	assert(GetEventLoop().IsInside());
+
+	CollectGarbage();
 
 	connections.clear_and_dispose([](ManagedConnection *c){
 			delete c;
@@ -71,17 +75,33 @@ NfsManager::GetConnection(const char *server, const char *export_name)
 {
 	assert(server != nullptr);
 	assert(export_name != nullptr);
-	assert(loop.IsInside());
+	assert(GetEventLoop().IsInside());
 
 	Map::insert_commit_data hint;
 	auto result = connections.insert_check(LookupKey{server, export_name},
 					       Compare(), hint);
 	if (result.second) {
-		auto c = new ManagedConnection(*this, loop,
+		auto c = new ManagedConnection(*this, GetEventLoop(),
 					       server, export_name);
 		connections.insert_commit(*c, hint);
 		return *c;
 	} else {
 		return *result.first;
 	}
+}
+
+void
+NfsManager::CollectGarbage()
+{
+	assert(GetEventLoop().IsInside());
+
+	garbage.clear_and_dispose([](ManagedConnection *c){
+			delete c;
+		});
+}
+
+void
+NfsManager::OnIdle()
+{
+	CollectGarbage();
 }

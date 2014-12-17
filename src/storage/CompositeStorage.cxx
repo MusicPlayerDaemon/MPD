@@ -137,7 +137,7 @@ CompositeStorage::Directory::Make(const char *uri)
 	Directory *directory = this;
 	while (*uri != 0) {
 		const std::string name = NextSegment(uri);
-#if defined(__clang__) || GCC_CHECK_VERSION(4,8)
+#if CLANG_OR_GCC_VERSION(4,8)
 		auto i = directory->children.emplace(std::move(name),
 						     Directory());
 #else

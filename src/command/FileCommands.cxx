@@ -25,6 +25,7 @@
 #include "protocol/Ack.hxx"
 #include "protocol/Result.hxx"
 #include "client/Client.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/CharUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -202,11 +203,10 @@ read_file_comments(Client &client, const Path path_fs)
 }
 
 CommandResult
-handle_read_comments(Client &client, gcc_unused unsigned argc, char *argv[])
+handle_read_comments(Client &client, ConstBuffer<const char *> args)
 {
-	assert(argc == 2);
-
-	const char *const uri = argv[1];
+	assert(args.size == 1);
+	const char *const uri = args.front();
 
 	if (memcmp(uri, "file:///", 8) == 0) {
 		/* read comments from arbitrary local file */

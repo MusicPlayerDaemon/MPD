@@ -30,7 +30,7 @@
   * is detected at runtime and displayed as a urlhandler if the client is
   * connected by IPC socket.
   */
-static const char *remoteUrlPrefixes[] = {
+static const char *const remoteUrlPrefixes[] = {
 #if defined(ENABLE_CURL)
 	"http://",
 	"https://",
@@ -41,7 +41,7 @@ static const char *remoteUrlPrefixes[] = {
 	"mmst://",
 	"mmsu://",
 #endif
-#ifdef HAVE_FFMPEG
+#ifdef ENABLE_FFMPEG
 	"gopher://",
 	"rtp://",
 	"rtsp://",
@@ -61,7 +61,7 @@ static const char *remoteUrlPrefixes[] = {
 #ifdef ENABLE_DESPOTIFY
 	"spt://",
 #endif
-#ifdef HAVE_ALSA
+#ifdef ENABLE_ALSA
 	"alsa://",
 #endif
 	NULL
@@ -69,7 +69,7 @@ static const char *remoteUrlPrefixes[] = {
 
 void print_supported_uri_schemes_to_fp(FILE *fp)
 {
-	const char **prefixes = remoteUrlPrefixes;
+	const char *const*prefixes = remoteUrlPrefixes;
 
 #ifdef HAVE_UN
 	fprintf(fp, " file://");
@@ -83,7 +83,7 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 
 void print_supported_uri_schemes(Client &client)
 {
-	const char **prefixes = remoteUrlPrefixes;
+	const char *const *prefixes = remoteUrlPrefixes;
 
 	while (*prefixes) {
 		client_printf(client, "handler: %s\n", *prefixes);
@@ -93,7 +93,7 @@ void print_supported_uri_schemes(Client &client)
 
 bool uri_supported_scheme(const char *uri)
 {
-	const char **urlPrefixes = remoteUrlPrefixes;
+	const char *const*urlPrefixes = remoteUrlPrefixes;
 
 	assert(uri_has_scheme(uri));
 

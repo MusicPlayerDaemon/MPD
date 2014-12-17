@@ -35,8 +35,10 @@
 #include "protocol/Result.hxx"
 #include "Partition.hxx"
 #include "client/Client.hxx"
+#include "util/Macros.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerCommands.hxx"
@@ -60,22 +62,22 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	CommandResult (*handler)(Client &client, unsigned argc, char **argv);
+	CommandResult (*handler)(Client &client, ConstBuffer<const char *> args);
 };
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, unsigned argc, char *argv[]);
+handle_commands(Client &client, ConstBuffer<const char *> args);
 
 static CommandResult
-handle_not_commands(Client &client, unsigned argc, char *argv[]);
+handle_not_commands(Client &client, ConstBuffer<const char *> args);
 
 /**
  * The command registry.
  *
  * This array must be sorted!
  */
-static const struct command commands[] = {
+static constexpr struct command commands[] = {
 	{ "add", PERMISSION_ADD, 1, 1, handle_add },
 	{ "addid", PERMISSION_ADD, 1, 2, handle_addid },
 	{ "addtagid", PERMISSION_ADD, 3, 3, handle_addtagid },
@@ -194,7 +196,7 @@ static const struct command commands[] = {
 	{ "volume", PERMISSION_CONTROL, 1, 1, handle_volume },
 };
 
-static const unsigned num_commands = sizeof(commands) / sizeof(commands[0]);
+static constexpr unsigned num_commands = ARRAY_SIZE(commands);
 
 static bool
 command_available(gcc_unused const Partition &partition,
@@ -225,14 +227,12 @@ command_available(gcc_unused const Partition &partition,
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client,
-		gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_commands(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	const unsigned permission = client.GetPermission();
-	const struct command *cmd;
 
 	for (unsigned i = 0; i < num_commands; ++i) {
-		cmd = &commands[i];
+		const struct command *cmd = &commands[i];
 
 		if (cmd->permission == (permission & cmd->permission) &&
 		    command_available(client.partition, cmd))
@@ -243,14 +243,12 @@ handle_commands(Client &client,
 }
 
 static CommandResult
-handle_not_commands(Client &client,
-		    gcc_unused unsigned argc, gcc_unused char *argv[])
+handle_not_commands(Client &client, gcc_unused ConstBuffer<const char *> args)
 {
 	const unsigned permission = client.GetPermission();
-	const struct command *cmd;
 
 	for (unsigned i = 0; i < num_commands; ++i) {
-		cmd = &commands[i];
+		const struct command *cmd = &commands[i];
 
 		if (cmd->permission != (permission & cmd->permission))
 			client_printf(client, "command: %s\n", cmd->cmd);
@@ -276,13 +274,12 @@ static const struct command *
 command_lookup(const char *name)
 {
 	unsigned a = 0, b = num_commands, i;
-	int cmp;
 
 	/* binary search */
 	do {
 		i = (a + b) / 2;
 
-		cmp = strcmp(name, commands[i].cmd);
+		const auto cmp = strcmp(name, commands[i].cmd);
 		if (cmp == 0)
 			return &commands[i];
 		else if (cmp < 0)
@@ -296,11 +293,8 @@ command_lookup(const char *name)
 
 static bool
 command_check_request(const struct command *cmd, Client &client,
-		      unsigned permission, unsigned argc, char *argv[])
+		      unsigned permission, ConstBuffer<const char *> args)
 {
-	const unsigned min = cmd->min + 1;
-	const unsigned max = cmd->max + 1;
-
 	if (cmd->permission != (permission & cmd->permission)) {
 		command_error(client, ACK_ERROR_PERMISSION,
 			      "you don't have permission for \"%s\"",
@@ -308,21 +302,24 @@ command_check_request(const struct command *cmd, Client &client,
 		return false;
 	}
 
-	if (min == 0)
+	const int min = cmd->min;
+	const int max = cmd->max;
+
+	if (min < 0)
 		return true;
 
-	if (min == max && max != argc) {
+	if (min == max && unsigned(max) != args.size) {
 		command_error(client, ACK_ERROR_ARG,
 			      "wrong number of arguments for \"%s\"",
-			      argv[0]);
+			      cmd->cmd);
 		return false;
-	} else if (argc < min) {
+	} else if (args.size < unsigned(min)) {
 		command_error(client, ACK_ERROR_ARG,
-			      "too few arguments for \"%s\"", argv[0]);
+			      "too few arguments for \"%s\"", cmd->cmd);
 		return false;
-	} else if (argc > max && max /* != 0 */ ) {
+	} else if (max >= 0 && args.size > unsigned(max)) {
 		command_error(client, ACK_ERROR_ARG,
-			      "too many arguments for \"%s\"", argv[0]);
+			      "too many arguments for \"%s\"", cmd->cmd);
 		return false;
 	} else
 		return true;
@@ -330,25 +327,20 @@ command_check_request(const struct command *cmd, Client &client,
 
 static const struct command *
 command_checked_lookup(Client &client, unsigned permission,
-		       unsigned argc, char *argv[])
+		       const char *cmd_name, ConstBuffer<const char *> args)
 {
-	const struct command *cmd;
-
 	current_command = "";
 
-	if (argc == 0)
-		return nullptr;
-
-	cmd = command_lookup(argv[0]);
+	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
 		command_error(client, ACK_ERROR_UNKNOWN,
-			      "unknown command \"%s\"", argv[0]);
+			      "unknown command \"%s\"", cmd_name);
 		return nullptr;
 	}
 
 	current_command = cmd->cmd;
 
-	if (!command_check_request(cmd, client, permission, argc, argv))
+	if (!command_check_request(cmd, client, permission, args))
 		return nullptr;
 
 	return cmd;
@@ -358,17 +350,18 @@ CommandResult
 command_process(Client &client, unsigned num, char *line)
 {
 	Error error;
-	char *argv[COMMAND_ARGV_MAX] = { nullptr };
-	const struct command *cmd;
-	CommandResult ret = CommandResult::ERROR;
 
 	command_list_num = num;
 
 	/* get the command name (first word on the line) */
+	/* we have to set current_command because command_error()
+	   expects it to be set */
 
 	Tokenizer tokenizer(line);
-	argv[0] = tokenizer.NextWord(error);
-	if (argv[0] == nullptr) {
+
+	const char *const cmd_name = current_command =
+		tokenizer.NextWord(error);
+	if (cmd_name == nullptr) {
 		current_command = "";
 		if (tokenizer.IsEnd())
 			command_error(client, ACK_ERROR_UNKNOWN,
@@ -384,38 +377,41 @@ command_process(Client &client, unsigned num, char *line)
 		return CommandResult::FINISH;
 	}
 
-	unsigned argc = 1;
+	char *argv[COMMAND_ARGV_MAX];
+	ConstBuffer<const char *> args(argv, 0);
 
 	/* now parse the arguments (quoted or unquoted) */
 
-	while (argc < COMMAND_ARGV_MAX &&
-	       (argv[argc] =
-		tokenizer.NextParam(error)) != nullptr)
-		++argc;
+	while (true) {
+		if (args.size == COMMAND_ARGV_MAX) {
+			command_error(client, ACK_ERROR_ARG,
+				      "Too many arguments");
+			current_command = nullptr;
+			return CommandResult::ERROR;
+		}
 
-	/* some error checks; we have to set current_command because
-	   command_error() expects it to be set */
+		char *a = tokenizer.NextParam(error);
+		if (a == nullptr) {
+			if (tokenizer.IsEnd())
+				break;
 
-	current_command = argv[0];
+			command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
+			current_command = nullptr;
+			return CommandResult::ERROR;
+		}
 
-	if (argc >= COMMAND_ARGV_MAX) {
-		command_error(client, ACK_ERROR_ARG, "Too many arguments");
-		current_command = nullptr;
-		return CommandResult::ERROR;
-	}
-
-	if (!tokenizer.IsEnd()) {
-		command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
-		current_command = nullptr;
-		return CommandResult::ERROR;
+		argv[args.size++] = a;
 	}
 
 	/* look up and invoke the command handler */
 
-	cmd = command_checked_lookup(client, client.GetPermission(),
-				     argc, argv);
-	if (cmd)
-		ret = cmd->handler(client, argc, argv);
+	const struct command *cmd =
+		command_checked_lookup(client, client.GetPermission(),
+				       cmd_name, args);
+
+	CommandResult ret = cmd
+		? cmd->handler(client, args)
+		: CommandResult::ERROR;
 
 	current_command = nullptr;
 	command_list_num = 0;

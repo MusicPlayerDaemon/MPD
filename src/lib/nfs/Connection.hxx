@@ -23,6 +23,7 @@
 #include "Lease.hxx"
 #include "Cancellable.hxx"
 #include "event/SocketMonitor.hxx"
+#include "event/TimeoutMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "util/Error.hxx"
 
@@ -40,7 +41,7 @@ class NfsCallback;
 /**
  * An asynchronous connection to a NFS server.
  */
-class NfsConnection : SocketMonitor, DeferredMonitor {
+class NfsConnection : SocketMonitor, TimeoutMonitor, DeferredMonitor {
 	class CancellableCallback : public CancellablePointer<NfsCallback> {
 		NfsConnection &connection;
 
@@ -84,6 +85,13 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 		 */
 		void CancelAndScheduleClose(struct nfsfh *fh);
 
+		/**
+		 * Called by NfsConnection::DestroyContext() right
+		 * before nfs_destroy_context().  This object is given
+		 * a chance to prepare for the latter.
+		 */
+		void PrepareDestroyContext();
+
 	private:
 		static void Callback(int err, struct nfs_context *nfs,
 				     void *data, void *private_data);
@@ -111,6 +119,7 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 
 	Error postponed_mount_error;
 
+#ifndef NDEBUG
 	/**
 	 * True when nfs_service() is being called.
 	 */
@@ -122,13 +131,20 @@ class NfsConnection : SocketMonitor, DeferredMonitor {
 	 */
 	bool in_event;
 
+	/**
+	 * True when DestroyContext() is being called.
+	 */
+	bool in_destroy;
+#endif
+
 	bool mount_finished;
 
 public:
 	gcc_nonnull_all
 	NfsConnection(EventLoop &_loop,
 		      const char *_server, const char *_export_name)
-		:SocketMonitor(_loop), DeferredMonitor(_loop),
+		:SocketMonitor(_loop), TimeoutMonitor(_loop),
+		 DeferredMonitor(_loop),
 		 server(_server), export_name(_export_name),
 		 context(nullptr) {}
 
@@ -185,6 +201,11 @@ private:
 	void DestroyContext();
 
 	/**
+	 * Wrapper for nfs_close_async().
+	 */
+	void InternalClose(struct nfsfh *fh);
+
+	/**
 	 * Invoke nfs_close_async() after nfs_service() returns.
 	 */
 	void DeferClose(struct nfsfh *fh);
@@ -200,8 +221,16 @@ private:
 
 	void ScheduleSocket();
 
+	/**
+	 * Wrapper for nfs_service().
+	 */
+	int Service(unsigned flags);
+
 	/* virtual methods from SocketMonitor */
 	virtual bool OnSocketReady(unsigned flags) override;
+
+	/* virtual methods from TimeoutMonitor */
+	void OnTimeout() final;
 
 	/* virtual methods from DeferredMonitor */
 	virtual void RunDeferred() override;

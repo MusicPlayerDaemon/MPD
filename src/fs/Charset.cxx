@@ -21,66 +21,52 @@
 #include "Charset.hxx"
 #include "Domain.hxx"
 #include "Limits.hxx"
-#include "system/FatalError.hxx"
 #include "Log.hxx"
 #include "Traits.hxx"
-
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
+#include "lib/icu/Converter.hxx"
+#include "util/Error.hxx"
 
 #include <algorithm>
 
 #include <assert.h>
 #include <string.h>
 
-#ifdef HAVE_GLIB
-
-/**
- * Maximal number of bytes required to represent path name in UTF-8
- * (including nul-terminator).
- * This value is a rought estimate of upper bound.
- * It's based on path name limit in bytes (MPD_PATH_MAX)
- * and assumption that some weird encoding could represent some UTF-8 4 byte
- * sequences with single byte.
- */
-static constexpr size_t MPD_PATH_MAX_UTF8 = (MPD_PATH_MAX - 1) * 4 + 1;
+#ifdef HAVE_FS_CHARSET
 
 static std::string fs_charset;
 
-gcc_pure
-static bool
-IsSupportedCharset(const char *charset)
-{
-	/* convert a space to check if the charset is valid */
-	char *test = g_convert(" ", 1, charset, "UTF-8", nullptr, nullptr, nullptr);
-	if (test == nullptr)
-		return false;
+static IcuConverter *fs_converter;
 
-	g_free(test);
-	return true;
-}
-
-void
-SetFSCharset(const char *charset)
+bool
+SetFSCharset(const char *charset, Error &error)
 {
 	assert(charset != nullptr);
+	assert(fs_converter == nullptr);
 
-	if (!IsSupportedCharset(charset))
-		FormatFatalError("invalid filesystem charset: %s", charset);
-
-	fs_charset = charset;
+	fs_converter = IcuConverter::Create(charset, error);
+	if (fs_converter == nullptr)
+		return false;
 
 	FormatDebug(path_domain,
 		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
+	return true;
 }
 
 #endif
 
+void
+DeinitFSCharset()
+{
+#ifdef HAVE_ICU_CONVERTER
+	delete fs_converter;
+	fs_converter = nullptr;
+#endif
+}
+
 const char *
 GetFSCharset()
 {
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 	return fs_charset.empty() ? "UTF-8" : fs_charset.c_str();
 #else
 	return "UTF-8";
@@ -105,53 +91,32 @@ PathToUTF8(const char *path_fs)
 {
 	assert(path_fs != nullptr);
 
-#ifdef HAVE_GLIB
-	if (fs_charset.empty()) {
+#ifdef HAVE_FS_CHARSET
+	if (fs_converter == nullptr) {
 #endif
 		auto result = std::string(path_fs);
 		FixSeparators(result);
 		return result;
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 	}
 
-	GIConv conv = g_iconv_open("utf-8", fs_charset.c_str());
-	if (conv == reinterpret_cast<GIConv>(-1))
-		return std::string();
-
-	// g_iconv() does not need nul-terminator,
-	// std::string could be created without it too.
-	char path_utf8[MPD_PATH_MAX_UTF8 - 1];
-	char *in = const_cast<char *>(path_fs);
-	char *out = path_utf8;
-	size_t in_left = strlen(path_fs);
-	size_t out_left = sizeof(path_utf8);
-
-	size_t ret = g_iconv(conv, &in, &in_left, &out, &out_left);
-
-	g_iconv_close(conv);
-
-	if (ret == static_cast<size_t>(-1) || in_left > 0)
-		return std::string();
-
-	auto result_path = std::string(path_utf8, sizeof(path_utf8) - out_left);
+	auto result_path = fs_converter->ToUTF8(path_fs);
 	FixSeparators(result_path);
 	return result_path;
 #endif
 }
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_FS_CHARSET
 
-char *
+std::string
 PathFromUTF8(const char *path_utf8)
 {
 	assert(path_utf8 != nullptr);
 
-	if (fs_charset.empty())
-		return g_strdup(path_utf8);
+	if (fs_converter == nullptr)
+		return path_utf8;
 
-	return g_convert(path_utf8, -1,
-			 fs_charset.c_str(), "utf-8",
-			 nullptr, nullptr, nullptr);
+	return fs_converter->FromUTF8(path_utf8);
 }
 
 #endif

@@ -385,29 +385,3 @@ input {
 #id3v1_encoding			"ISO-8859-1"
 #
 ###############################################################################
-
-
-# SIDPlay decoder #############################################################
-#
-# songlength_database:
-#  Location of your songlengths file, as distributed with the HVSC.
-#  The sidplay plugin checks this for matching MD5 fingerprints.
-#  See http://www.c64.org/HVSC/DOCUMENTS/Songlengths.faq
-#
-# default_songlength:
-#  This is the default playing time in seconds for songs not in the
-#  songlength database, or in case you're not using a database.
-#  A value of 0 means play indefinitely.
-#
-# filter:
-#  Turns the SID filter emulation on or off.
-#
-#decoder {
-#	plugin			"sidplay"
-#	songlength_database	"/media/C64Music/DOCUMENTS/Songlengths.txt"
-#	default_songlength	"120"
-#	filter "true"
-#}
-#
-###############################################################################
-

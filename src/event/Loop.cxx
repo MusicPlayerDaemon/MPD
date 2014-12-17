@@ -179,9 +179,10 @@ EventLoop::Run()
 		mutex.lock();
 		HandleDeferred();
 		busy = false;
+		const bool _again = again;
 		mutex.unlock();
 
-		if (again)
+		if (_again)
 			/* re-evaluate timers because one of the
 			   IdleMonitors may have added a new
 			   timeout */

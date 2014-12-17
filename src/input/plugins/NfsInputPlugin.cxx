@@ -28,10 +28,6 @@
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 
-extern "C" {
-#include <nfsc/libnfs.h>
-}
-
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>

@@ -70,7 +70,8 @@ gcc_malloc
 static inline void *
 HugeAllocate(size_t size)
 {
-	return VirtualAlloc(nullptr, size, MEM_LARGE_PAGES, PAGE_READWRITE);
+	// TODO: use MEM_LARGE_PAGES
+	return VirtualAlloc(nullptr, size, MEM_RESERVE, PAGE_READWRITE);
 }
 
 static inline void

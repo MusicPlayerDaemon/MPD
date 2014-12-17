@@ -17,9 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DECODER_MP4V2_HXX
-#define MPD_DECODER_MP4V2_HXX
+#ifndef MPD_SQLITE_DOMAIN_HXX
+#define MPD_SQLITE_DOMAIN_HXX
 
-extern const struct DecoderPlugin mp4v2_decoder_plugin;
+class Domain;
+
+extern const Domain sqlite_domain;
 
 #endif

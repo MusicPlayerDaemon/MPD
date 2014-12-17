@@ -122,5 +122,8 @@ song_print_info(Client &client, const DetachedSong &song, bool base)
 
 	const auto duration = song.GetDuration();
 	if (!duration.IsNegative())
-		client_printf(client, "Time: %u\n", duration.RoundS());
+		client_printf(client, "Time: %i\n"
+			      "duration: %1.3f\n",
+			      duration.RoundS(),
+			      duration.ToDoubleS());
 }

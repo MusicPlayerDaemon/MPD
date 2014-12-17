@@ -75,6 +75,8 @@ xstrndup(const char *s, size_t n)
 	return p;
 }
 
+#if CLANG_OR_GCC_VERSION(4,7)
+
 template<typename... Args>
 static inline size_t
 FillLengths(size_t *lengths, const char *a, Args&&... args)
@@ -84,7 +86,7 @@ FillLengths(size_t *lengths, const char *a, Args&&... args)
 
 template<>
 inline size_t
-FillLengths(gcc_unused size_t *lengths, const char *a)
+FillLengths(size_t *lengths, const char *a)
 {
 	return *lengths = strlen(a);
 }
@@ -104,11 +106,14 @@ StringCat(char *p, const size_t *lengths, const char *a)
 	memcpy(p, a, *lengths);
 }
 
+#endif
+
 template<typename... Args>
 gcc_malloc gcc_nonnull_all
 static inline char *
 t_xstrcatdup(Args&&... args)
 {
+#if CLANG_OR_GCC_VERSION(4,7)
 	constexpr size_t n = sizeof...(args);
 
 	size_t lengths[n];
@@ -118,6 +123,22 @@ t_xstrcatdup(Args&&... args)
 	StringCat(p, lengths, args...);
 	p[total] = 0;
 	return p;
+#else
+	/* fallback implementation for gcc 4.6, because that old
+	   compiler is too buggy to compile the above template
+	   functions */
+	const char *const argv[] = { args... };
+
+	size_t total = 0;
+	for (auto i : argv)
+		total += strlen(i);
+
+	char *p = (char *)xalloc(total + 1), *q = p;
+	for (auto i : argv)
+		q = stpcpy(q, i);
+
+	return p;
+#endif
 }
 
 char *

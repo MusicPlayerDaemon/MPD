@@ -23,20 +23,21 @@
 #include "CommandResult.hxx"
 
 class Client;
+template<typename T> struct ConstBuffer;
 
 CommandResult
-handle_subscribe(Client &client, unsigned argc, char *argv[]);
+handle_subscribe(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_unsubscribe(Client &client, unsigned argc, char *argv[]);
+handle_unsubscribe(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_channels(Client &client, unsigned argc, char *argv[]);
+handle_channels(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_read_messages(Client &client, unsigned argc, char *argv[]);
+handle_read_messages(Client &client, ConstBuffer<const char *> args);
 
 CommandResult
-handle_send_message(Client &client, unsigned argc, char *argv[]);
+handle_send_message(Client &client, ConstBuffer<const char *> args);
 
 #endif

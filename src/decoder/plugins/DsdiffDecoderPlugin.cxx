@@ -244,7 +244,7 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 	/** offset for title tag */
 	offset_type title_offset = 0;
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	offset_type id3_offset = 0;
 #endif
 
@@ -269,7 +269,7 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 			chunk_size = chunk_header->GetSize();
 			title_offset = is.GetOffset();
 		}
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 		/* 'ID3 ' chunk, offspec. Used by sacdextract */
 		if (chunk_header->id.Equals("ID3 ")) {
 			chunk_size = chunk_header->GetSize();
@@ -283,7 +283,7 @@ dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 
 	/* done processing chunk headers, process tags if any */
 
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	if (id3_offset != 0) {
 		/* a ID3 tag has preference over the other tags, do not process
 		   other tags if we have one */

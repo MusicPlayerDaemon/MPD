@@ -5,6 +5,7 @@ AM_CPPFLAGS += -I$(srcdir)/src $(GLIB_CFLAGS) $(BOOST_CPPFLAGS)
 
 AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 
+APK_NAME = mpd
 if ANDROID
 else
 bin_PROGRAMS = src/mpd
@@ -57,9 +58,9 @@ src_mpd_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
-	$(ICU_LDADD) \
 	libutil.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
 
@@ -186,9 +187,14 @@ if ANDROID
 else
 libmpd_a_SOURCES += \
 	src/unix/SignalHandlers.cxx src/unix/SignalHandlers.hxx \
-	src/unix/Daemon.cxx src/unix/Daemon.hxx \
-	src/unix/PidFile.hxx \
 	src/CommandLine.cxx src/CommandLine.hxx
+
+if ENABLE_DAEMON
+libmpd_a_SOURCES += \
+	src/unix/Daemon.cxx src/unix/Daemon.hxx \
+	src/unix/PidFile.hxx
+endif
+
 endif
 
 if ENABLE_DATABASE
@@ -268,7 +274,7 @@ libmain_a_CPPFLAGS = $(AM_CPPFLAGS) -Iandroid/build/include
 
 src_mpd_LDADD += libandroid.a libjava.a
 
-all-local: android/build/bin/Main-debug.apk
+all-local: android/build/bin/$(APK_NAME)-debug.apk
 clean-local:
 	rm -rf android/build
 
@@ -277,10 +283,11 @@ libmpd.so: $(filter %.a,$(src_mpd_LDADD)) libmain.a
 
 android/build/build.xml: android/AndroidManifest.xml
 	rm -rf android/build
-	mkdir -p android/build/include android/build/res
-	ln -s $(srcdir)/android/AndroidManifest.xml $(srcdir)/android/custom_rules.xml $(srcdir)/android/src android/build
-	ln -s $(srcdir)/android/res/values android/build/res
-	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17
+	mkdir -p android/build/include android/build/res android/build/src/org
+	ln -s $(abs_srcdir)/android/AndroidManifest.xml $(abs_srcdir)/android/custom_rules.xml android/build
+	ln -s $(abs_srcdir)/android/src android/build/src/org/musicpd
+	ln -s $(abs_srcdir)/android/res/values $(abs_srcdir)/android/res/layout android/build/res
+	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17 --name $(APK_NAME)
 
 android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
 	cd android/build && ant compile-jni-classes
@@ -304,18 +311,18 @@ APK_DEPS = android/build/res/drawable/icon.png \
 	$(wildcard $(srcdir)/android/src/*.java) \
 	android/build/build.xml
 
-android/build/bin/Main-debug.apk: $(APK_DEPS)
+android/build/bin/$(APK_NAME)-debug.apk: $(APK_DEPS)
 	cd android/build && ant nodeps debug
 
-android/build/bin/Main-release-unsigned.apk: $(APK_DEPS)
+android/build/bin/$(APK_NAME)-release-unsigned.apk: $(APK_DEPS)
 	cd android/build && ant nodeps release
 
-android/build/bin/Main-release-unaligned.apk: android/build/bin/Main-release-unsigned.apk
+android/build/bin/$(APK_NAME)-release-unaligned.apk: android/build/bin/$(APK_NAME)-release-unsigned.apk
 	jarsigner -digestalg SHA1 -sigalg MD5withRSA -storepass:env ANDROID_KEYSTORE_PASS -keystore $(ANDROID_KEYSTORE) -signedjar $@ $< $(ANDROID_KEY_ALIAS)
 
 ANDROID_SDK_BUILD_TOOLS_VERSION = 20.0.0
 
-android/build/bin/Main.apk: android/build/bin/Main-release-unaligned.apk
+android/build/bin/$(APK_NAME).apk: android/build/bin/$(APK_NAME)-release-unaligned.apk
 	$(ANDROID_SDK)/build-tools/$(ANDROID_SDK_BUILD_TOOLS_VERSION)/zipalign -f 4 $< $@
 
 endif
@@ -324,14 +331,14 @@ endif
 # Windows resource file
 #
 
-src/win32/mpd_win32_rc.$(OBJEXT): src/win32/mpd_win32_rc.rc
+win32/res/mpd.$(OBJEXT): %.$(OBJEXT): %.rc
 	$(WINDRES) -i $< -o $@
 
 if HAVE_WINDOWS
-noinst_DATA = src/win32/mpd_win32_rc.rc
+noinst_DATA = win32/res/mpd.rc
 
-EXTRA_src_mpd_DEPENDENCIES = src/win32/mpd_win32_rc.$(OBJEXT)
-src_mpd_LDFLAGS = -Wl,src/win32/mpd_win32_rc.$(OBJEXT)
+EXTRA_src_mpd_DEPENDENCIES = win32/res/mpd.$(OBJEXT)
+src_mpd_LDFLAGS = -Wl,win32/res/mpd.$(OBJEXT)
 endif
 
 if ENABLE_DATABASE
@@ -347,6 +354,9 @@ endif
 if ENABLE_SQLITE
 libmpd_a_SOURCES += \
 	src/command/StickerCommands.cxx src/command/StickerCommands.hxx \
+	src/lib/sqlite/Domain.cxx src/lib/sqlite/Domain.hxx \
+	src/lib/sqlite/Util.hxx \
+	src/sticker/Match.hxx \
 	src/sticker/StickerDatabase.cxx src/sticker/StickerDatabase.hxx \
 	src/sticker/StickerPrint.cxx src/sticker/StickerPrint.hxx \
 	src/sticker/SongSticker.cxx src/sticker/SongSticker.hxx
@@ -368,6 +378,7 @@ libutil_a_SOURCES = \
 	src/util/CharUtil.hxx \
 	src/util/NumberParser.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
+	src/util/DivideString.cxx src/util/DivideString.hxx \
 	src/util/SplitString.cxx src/util/SplitString.hxx \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
@@ -446,10 +457,12 @@ libevent_a_SOURCES = \
 
 libicu_a_SOURCES = \
 	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
+	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx \
 	src/lib/icu/Error.cxx src/lib/icu/Error.hxx
 
 if HAVE_ICU
 libicu_a_SOURCES += \
+	src/lib/icu/Util.cxx src/lib/icu/Util.hxx \
 	src/lib/icu/Init.cxx src/lib/icu/Init.hxx
 endif
 
@@ -457,6 +470,11 @@ libicu_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ICU_CFLAGS)
 
 ICU_LDADD = libicu.a $(ICU_LIBS)
+
+if HAVE_ICU
+else
+ICU_LDADD += $(GLIB_LIBS)
+endif
 
 # PCM library
 
@@ -486,12 +504,12 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmUtils.hxx
 libpcm_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(SOXR_CFLAGS) \
-	$(SAMPLERATE_CFLAGS)
+	$(LIBSAMPLERATE_CFLAGS)
 
 PCM_LIBS = \
 	libpcm.a \
 	$(SOXR_LIBS) \
-	$(SAMPLERATE_LIBS)
+	$(LIBSAMPLERATE_LIBS)
 
 if ENABLE_DSD
 libpcm_a_SOURCES += \
@@ -499,12 +517,12 @@ libpcm_a_SOURCES += \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h
 endif
 
-if HAVE_LIBSAMPLERATE
+if ENABLE_LIBSAMPLERATE
 libpcm_a_SOURCES += \
 	src/pcm/LibsamplerateResampler.cxx src/pcm/LibsamplerateResampler.hxx
 endif
 
-if HAVE_SOXR
+if ENABLE_SOXR
 libpcm_a_SOURCES += \
 	src/pcm/SoxrResampler.cxx src/pcm/SoxrResampler.hxx
 endif
@@ -528,7 +546,7 @@ libfs_a_SOURCES = \
 	src/fs/Traits.cxx src/fs/Traits.hxx \
 	src/fs/Config.cxx src/fs/Config.hxx \
 	src/fs/Charset.cxx src/fs/Charset.hxx \
-	src/fs/Path.cxx src/fs/Path.hxx \
+	src/fs/Path.cxx src/fs/Path2.cxx src/fs/Path.hxx \
 	src/fs/AllocatedPath.cxx src/fs/AllocatedPath.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
@@ -536,7 +554,7 @@ libfs_a_SOURCES = \
 	src/fs/DirectoryReader.hxx
 libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
 
-if HAVE_ZLIB
+if ENABLE_ZLIB
 libfs_a_SOURCES += \
 	src/lib/zlib/Domain.cxx src/lib/zlib/Domain.hxx \
 	src/fs/io/GunzipReader.cxx src/fs/io/GunzipReader.hxx \
@@ -632,7 +650,7 @@ NEIGHBOR_LIBS = \
 	$(SMBCLIENT_LIBS) \
 	libneighbor.a
 
-if HAVE_LIBUPNP
+if ENABLE_UPNP
 libneighbor_a_SOURCES += \
 	$(UPNP_SOURCES) \
 	src/neighbor/plugins/UpnpNeighborPlugin.cxx src/neighbor/plugins/UpnpNeighborPlugin.hxx
@@ -671,7 +689,7 @@ libdb_plugins_a_SOURCES = \
 	src/db/plugins/simple/SimpleDatabasePlugin.cxx \
 	src/db/plugins/simple/SimpleDatabasePlugin.hxx
 
-if HAVE_LIBMPDCLIENT
+if ENABLE_LIBMPDCLIENT
 libdb_plugins_a_SOURCES += \
 	src/db/plugins/ProxyDatabasePlugin.cxx src/db/plugins/ProxyDatabasePlugin.hxx
 endif
@@ -680,7 +698,7 @@ DB_LIBS = \
 	libdb_plugins.a \
 	$(LIBMPDCLIENT_LIBS)
 
-if HAVE_LIBUPNP
+if ENABLE_UPNP
 libdb_plugins_a_SOURCES += \
 	$(UPNP_SOURCES) \
 	src/db/plugins/upnp/UpnpDatabasePlugin.cxx src/db/plugins/upnp/UpnpDatabasePlugin.hxx \
@@ -723,13 +741,13 @@ ARCHIVE_LIBS = \
 	$(ISO9660_LIBS) \
 	$(ZZIP_LIBS)
 
-if HAVE_BZ2
+if ENABLE_BZ2
 libarchive_a_SOURCES += \
 	src/archive/plugins/Bzip2ArchivePlugin.cxx \
 	src/archive/plugins/Bzip2ArchivePlugin.hxx
 endif
 
-if HAVE_ZZIP
+if ENABLE_ZZIP
 libarchive_a_SOURCES += \
 	src/archive/plugins/ZzipArchivePlugin.cxx \
 	src/archive/plugins/ZzipArchivePlugin.hxx
@@ -786,7 +804,7 @@ libtag_a_SOURCES =\
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
 
-if HAVE_ID3TAG
+if ENABLE_ID3TAG
 libtag_a_SOURCES += \
 	src/tag/TagId3.cxx src/tag/TagId3.hxx \
 	src/tag/TagRva2.cxx src/tag/TagRva2.hxx \
@@ -796,7 +814,7 @@ endif
 
 # ffmpeg
 
-if HAVE_FFMPEG
+if ENABLE_FFMPEG
 noinst_LIBRARIES += libffmpeg.a
 libffmpeg_a_SOURCES = \
 	src/lib/ffmpeg/Error.cxx src/lib/ffmpeg/Error.hxx \
@@ -829,7 +847,6 @@ libdecoder_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(WAVPACK_CFLAGS) \
 	$(MAD_CFLAGS) \
 	$(MPG123_CFLAGS) \
-	$(MP4V2_CFLAGS) \
 	$(OPUS_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
 	$(MPCDEC_CFLAGS) \
@@ -851,7 +868,6 @@ DECODER_LIBS = \
 	$(WAVPACK_LIBS) \
 	$(MAD_LIBS) \
 	$(MPG123_LIBS) \
-	$(MP4V2_LIBS) \
 	$(OPUS_LIBS) \
 	$(FFMPEG_LIBS2) \
 	$(MPCDEC_LIBS) \
@@ -904,25 +920,25 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/DsdLib.hxx
 endif
 
-if HAVE_MAD
+if ENABLE_MAD
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/MadDecoderPlugin.cxx \
 	src/decoder/plugins/MadDecoderPlugin.hxx
 endif
 
-if HAVE_MPG123
+if ENABLE_MPG123
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/Mpg123DecoderPlugin.cxx \
 	src/decoder/plugins/Mpg123DecoderPlugin.hxx
 endif
 
-if HAVE_MPCDEC
+if ENABLE_MPCDEC
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/MpcdecDecoderPlugin.cxx \
 	src/decoder/plugins/MpcdecDecoderPlugin.hxx
 endif
 
-if HAVE_OPUS
+if ENABLE_OPUS
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/OggUtil.cxx \
 	src/decoder/plugins/OggUtil.hxx \
@@ -938,19 +954,19 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/OpusDecoderPlugin.h
 endif
 
-if HAVE_WAVPACK
+if ENABLE_WAVPACK
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/WavpackDecoderPlugin.cxx \
 	src/decoder/plugins/WavpackDecoderPlugin.hxx
 endif
 
-if HAVE_ADPLUG
+if ENABLE_ADPLUG
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/AdPlugDecoderPlugin.cxx \
 	src/decoder/plugins/AdPlugDecoderPlugin.h
 endif
 
-if HAVE_FAAD
+if ENABLE_FAAD
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/FaadDecoderPlugin.cxx src/decoder/plugins/FaadDecoderPlugin.hxx
 endif
@@ -968,7 +984,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/VorbisDecoderPlugin.cxx src/decoder/plugins/VorbisDecoderPlugin.h
 endif
 
-if HAVE_FLAC
+if ENABLE_FLAC
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/FlacInput.cxx src/decoder/plugins/FlacInput.hxx \
 	src/decoder/plugins/FlacIOHandle.cxx src/decoder/plugins/FlacIOHandle.hxx \
@@ -980,7 +996,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/FlacDecoderPlugin.h
 endif
 
-if HAVE_AUDIOFILE
+if ENABLE_AUDIOFILE
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/AudiofileDecoderPlugin.cxx \
 	src/decoder/plugins/AudiofileDecoderPlugin.hxx
@@ -992,7 +1008,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/MikmodDecoderPlugin.hxx
 endif
 
-if HAVE_MODPLUG
+if ENABLE_MODPLUG
 libmodplug_decoder_plugin_a_SOURCES = \
 	src/decoder/plugins/ModplugDecoderPlugin.cxx \
 	src/decoder/plugins/ModplugDecoderPlugin.hxx
@@ -1002,10 +1018,41 @@ noinst_LIBRARIES += libmodplug_decoder_plugin.a
 DECODER_LIBS += libmodplug_decoder_plugin.a $(MODPLUG_LIBS)
 endif
 
-if HAVE_MP4V2
+if ENABLE_SIDPLAY
 libdecoder_a_SOURCES += \
-	src/decoder/plugins/Mp4v2DecoderPlugin.cxx \
-	src/decoder/plugins/Mp4v2DecoderPlugin.hxx
+	src/decoder/plugins/SidplayDecoderPlugin.cxx \
+	src/decoder/plugins/SidplayDecoderPlugin.hxx
+endif
+
+if ENABLE_FLUIDSYNTH
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/FluidsynthDecoderPlugin.cxx \
+	src/decoder/plugins/FluidsynthDecoderPlugin.hxx
+endif
+
+if ENABLE_WILDMIDI
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/WildmidiDecoderPlugin.cxx \
+	src/decoder/plugins/WildmidiDecoderPlugin.hxx
+endif
+
+if ENABLE_FFMPEG
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/FfmpegMetaData.cxx \
+	src/decoder/plugins/FfmpegMetaData.hxx \
+	src/decoder/plugins/FfmpegDecoderPlugin.cxx \
+	src/decoder/plugins/FfmpegDecoderPlugin.hxx
+endif
+
+if ENABLE_SNDFILE
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/SndfileDecoderPlugin.cxx \
+	src/decoder/plugins/SndfileDecoderPlugin.hxx
+endif
+
+if HAVE_GME
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/GmeDecoderPlugin.cxx src/decoder/plugins/GmeDecoderPlugin.hxx
 endif
 
 if ENABLE_SACDISO
@@ -1076,43 +1123,6 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/DvdaIsoDecoderPlugin.hxx
 endif
 
-if ENABLE_SIDPLAY
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/SidplayDecoderPlugin.cxx \
-	src/decoder/plugins/SidplayDecoderPlugin.hxx
-endif
-
-if ENABLE_FLUIDSYNTH
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/FluidsynthDecoderPlugin.cxx \
-	src/decoder/plugins/FluidsynthDecoderPlugin.hxx
-endif
-
-if ENABLE_WILDMIDI
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/WildmidiDecoderPlugin.cxx \
-	src/decoder/plugins/WildmidiDecoderPlugin.hxx
-endif
-
-if HAVE_FFMPEG
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/FfmpegMetaData.cxx \
-	src/decoder/plugins/FfmpegMetaData.hxx \
-	src/decoder/plugins/FfmpegDecoderPlugin.cxx \
-	src/decoder/plugins/FfmpegDecoderPlugin.hxx
-endif
-
-if ENABLE_SNDFILE
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/SndfileDecoderPlugin.cxx \
-	src/decoder/plugins/SndfileDecoderPlugin.hxx
-endif
-
-if HAVE_GME
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/GmeDecoderPlugin.cxx src/decoder/plugins/GmeDecoderPlugin.hxx
-endif
-
 # encoder plugins
 
 if ENABLE_ENCODER
@@ -1157,25 +1167,25 @@ libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/WaveEncoderPlugin.hxx
 endif
 
-if ENABLE_VORBIS_ENCODER
+if ENABLE_VORBISENC
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/VorbisEncoderPlugin.cxx \
 	src/encoder/plugins/VorbisEncoderPlugin.hxx
 endif
 
-if HAVE_OPUS
+if ENABLE_OPUS
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/OpusEncoderPlugin.cxx \
 	src/encoder/plugins/OpusEncoderPlugin.hxx
 endif
 
-if ENABLE_LAME_ENCODER
+if ENABLE_LAME
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/LameEncoderPlugin.cxx \
 	src/encoder/plugins/LameEncoderPlugin.hxx
 endif
 
-if ENABLE_TWOLAME_ENCODER
+if ENABLE_TWOLAME
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/TwolameEncoderPlugin.cxx \
 	src/encoder/plugins/TwolameEncoderPlugin.hxx
@@ -1187,7 +1197,7 @@ libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/FlacEncoderPlugin.hxx
 endif
 
-if ENABLE_SHINE_ENCODER
+if ENABLE_SHINE
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/ShineEncoderPlugin.cxx \
 	src/encoder/plugins/ShineEncoderPlugin.hxx
@@ -1253,7 +1263,7 @@ INPUT_LIBS = \
 	$(DESPOTIFY_LIBS) \
 	$(MMS_LIBS)
 
-if HAVE_ALSA
+if ENABLE_ALSA
 libinput_a_SOURCES += \
 	src/input/plugins/AlsaInputPlugin.cxx \
 	src/input/plugins/AlsaInputPlugin.hxx
@@ -1286,7 +1296,7 @@ libinput_a_SOURCES += \
 	src/input/plugins/CdioParanoiaInputPlugin.hxx
 endif
 
-if HAVE_FFMPEG
+if ENABLE_FFMPEG
 libinput_a_SOURCES += \
 	src/input/plugins/FfmpegInputPlugin.cxx src/input/plugins/FfmpegInputPlugin.hxx
 endif
@@ -1359,13 +1369,14 @@ MIXER_API_SRC = \
 	src/mixer/MixerInternal.hxx
 
 libmixer_plugins_a_SOURCES = \
+	src/mixer/plugins/NullMixerPlugin.cxx \
 	src/mixer/plugins/SoftwareMixerPlugin.cxx \
 	src/mixer/plugins/SoftwareMixerPlugin.hxx
 libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(PULSE_CFLAGS)
 
-if HAVE_ALSA
+if ENABLE_ALSA
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/AlsaOutputPlugin.cxx \
 	src/output/plugins/AlsaOutputPlugin.hxx
@@ -1383,14 +1394,14 @@ liboutput_plugins_a_SOURCES += \
 OUTPUT_LIBS += -lOpenSLES
 endif
 
-if HAVE_ROAR
+if ENABLE_ROAR
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/RoarOutputPlugin.cxx \
 	src/output/plugins/RoarOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += src/mixer/plugins/RoarMixerPlugin.cxx
 endif
 
-if HAVE_AO
+if ENABLE_AO
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/AoOutputPlugin.cxx \
 	src/output/plugins/AoOutputPlugin.hxx
@@ -1408,7 +1419,7 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/PipeOutputPlugin.hxx
 endif
 
-if HAVE_JACK
+if ENABLE_JACK
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/JackOutputPlugin.cxx \
 	src/output/plugins/JackOutputPlugin.hxx
@@ -1433,7 +1444,7 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/OSXOutputPlugin.hxx
 endif
 
-if HAVE_PULSE
+if ENABLE_PULSE
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/PulseOutputPlugin.cxx \
 	src/output/plugins/PulseOutputPlugin.hxx
@@ -1489,15 +1500,12 @@ libplaylist_plugins_a_SOURCES = \
 	src/playlist/CloseSongEnumerator.hxx \
 	src/playlist/MemorySongEnumerator.cxx \
 	src/playlist/MemorySongEnumerator.hxx \
-	src/playlist/cue/CueParser.cxx src/playlist/cue/CueParser.hxx \
 	src/playlist/plugins/ExtM3uPlaylistPlugin.cxx \
 	src/playlist/plugins/ExtM3uPlaylistPlugin.hxx \
 	src/playlist/plugins/M3uPlaylistPlugin.cxx \
 	src/playlist/plugins/M3uPlaylistPlugin.hxx \
-	src/playlist/plugins/CuePlaylistPlugin.cxx \
-	src/playlist/plugins/CuePlaylistPlugin.hxx \
-	src/playlist/plugins/EmbeddedCuePlaylistPlugin.cxx \
-	src/playlist/plugins/EmbeddedCuePlaylistPlugin.hxx \
+	src/playlist/plugins/PlsPlaylistPlugin.cxx \
+	src/playlist/plugins/PlsPlaylistPlugin.hxx \
 	src/playlist/PlaylistRegistry.cxx src/playlist/PlaylistRegistry.hxx
 libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(EXPAT_CFLAGS) \
@@ -1508,6 +1516,15 @@ PLAYLIST_LIBS = \
 	libplaylist_plugins.a \
 	$(EXPAT_LIBS) \
 	$(FLAC_LIBS)
+
+if ENABLE_CUE
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/cue/CueParser.cxx src/playlist/cue/CueParser.hxx \
+	src/playlist/plugins/CuePlaylistPlugin.cxx \
+	src/playlist/plugins/CuePlaylistPlugin.hxx \
+	src/playlist/plugins/EmbeddedCuePlaylistPlugin.cxx \
+	src/playlist/plugins/EmbeddedCuePlaylistPlugin.hxx
+endif
 
 if ENABLE_DESPOTIFY
 libplaylist_plugins_a_SOURCES += \
@@ -1524,7 +1541,7 @@ libplaylist_plugins_a_SOURCES += \
 PLAYLIST_LIBS += $(YAJL_LIBS)
 endif
 
-if HAVE_EXPAT
+if ENABLE_EXPAT
 libplaylist_plugins_a_SOURCES += \
 	src/lib/expat/ExpatParser.cxx src/lib/expat/ExpatParser.hxx \
 	src/playlist/plugins/XspfPlaylistPlugin.cxx \
@@ -1533,12 +1550,6 @@ libplaylist_plugins_a_SOURCES += \
 	src/playlist/plugins/AsxPlaylistPlugin.hxx \
 	src/playlist/plugins/RssPlaylistPlugin.cxx \
 	src/playlist/plugins/RssPlaylistPlugin.hxx
-endif
-
-if HAVE_GLIB
-libplaylist_plugins_a_SOURCES += \
-	src/playlist/plugins/PlsPlaylistPlugin.cxx \
-	src/playlist/plugins/PlsPlaylistPlugin.hxx
 endif
 
 #
@@ -1592,7 +1603,8 @@ C_TESTS = \
 	test/test_mixramp \
 	test/test_pcm \
 	test/test_protocol \
-	test/test_queue_priority
+	test/test_queue_priority \
+	test/TestIcu
 
 if ENABLE_CURL
 C_TESTS += test/test_icy_parser
@@ -1640,11 +1652,11 @@ if ENABLE_ARCHIVE
 noinst_PROGRAMS += test/visit_archive
 endif
 
-if HAVE_ID3TAG
+if ENABLE_ID3TAG
 noinst_PROGRAMS += test/dump_rva2
 endif
 
-if HAVE_ALSA
+if ENABLE_ALSA
 # this debug program is still ALSA specific
 noinst_PROGRAMS += test/read_mixer
 endif
@@ -1652,6 +1664,7 @@ endif
 test_read_conf_LDADD = \
 	libconf.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1692,13 +1705,14 @@ test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/TagSave.cxx \
 	src/SongFilter.cxx
 
-if HAVE_LIBUPNP
+if ENABLE_UPNP
 test_DumpDatabase_SOURCES += src/lib/expat/ExpatParser.cxx
 endif
 
 test_run_storage_LDADD = \
 	$(STORAGE_LIBS) \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
@@ -1721,6 +1735,7 @@ test_run_input_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
@@ -1745,11 +1760,12 @@ test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 	libconf.a \
 	libevent.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libthread.a \
 	libutil.a
 
-if HAVE_LIBUPNP
+if ENABLE_UPNP
 test_run_neighbor_explorer_SOURCES += src/lib/expat/ExpatParser.cxx
 endif
 
@@ -1772,6 +1788,7 @@ test_visit_archive_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
@@ -1782,7 +1799,7 @@ test_visit_archive_SOURCES = test/visit_archive.cxx \
 
 endif
 
-if HAVE_ZLIB
+if ENABLE_ZLIB
 
 noinst_PROGRAMS += test/run_gzip test/run_gunzip
 
@@ -1797,6 +1814,7 @@ test_run_gunzip_LDADD = \
 	$(GLIB_LIBS) \
 	libutil.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a
 
 endif
@@ -1808,6 +1826,7 @@ test_dump_text_file_LDADD = \
 	libconf.a \
 	libevent.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libthread.a \
 	libutil.a \
@@ -1829,6 +1848,7 @@ test_dump_playlist_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	libpcm.a \
@@ -1844,7 +1864,7 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	src/DetachedSong.cxx
 
-if HAVE_FLAC
+if ENABLE_FLAC
 test_dump_playlist_SOURCES += \
 	src/ReplayGainInfo.cxx \
 	src/decoder/plugins/FlacMetadata.cxx
@@ -1860,6 +1880,7 @@ test_run_decoder_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1886,6 +1907,7 @@ test_read_tags_LDADD = \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1898,7 +1920,7 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	$(DECODER_SRC)
 
-if HAVE_ID3TAG
+if ENABLE_ID3TAG
 test_dump_rva2_LDADD = \
 	$(TAG_LIBS) \
 	libutil.a \
@@ -1912,6 +1934,7 @@ test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	libconf.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -1940,12 +1963,13 @@ test_run_encoder_LDADD = \
 	libpcm.a \
 	libthread.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
 endif
 
-if ENABLE_VORBIS_ENCODER
+if ENABLE_VORBISENC
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	test/stdbin.h \
@@ -1962,6 +1986,7 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -2001,6 +2026,7 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.cxx \
+	src/config/ConfigError.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/AudioFormat.cxx \
 	src/CheckAudioFormat.cxx \
@@ -2020,6 +2046,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libconf.a \
 	libevent.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libthread.a \
 	libutil.a \
@@ -2049,6 +2076,7 @@ test_read_mixer_LDADD = \
 	libconf.a \
 	libevent.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS)
@@ -2086,6 +2114,9 @@ test_run_inotify_LDADD = \
 endif
 
 test_test_util_SOURCES = \
+	test/DivideStringTest.hxx \
+	test/SplitStringTest.hxx \
+	test/UriUtilTest.hxx \
 	test/TestCircularBuffer.hxx \
 	test/test_util.cxx
 test_test_util_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
@@ -2184,6 +2215,7 @@ test_test_translate_song_LDADD = \
 	$(STORAGE_LIBS) \
 	libtag.a \
 	$(FS_LIBS) \
+	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
 	$(GLIB_LIBS) \
@@ -2209,6 +2241,15 @@ test_test_queue_priority_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_H
 test_test_queue_priority_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_queue_priority_LDADD = \
 	libsystem.a \
+	libutil.a \
+	$(CPPUNIT_LIBS)
+
+test_TestIcu_SOURCES = \
+	test/TestIcu.cxx
+test_TestIcu_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_TestIcu_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_TestIcu_LDADD = \
+	$(ICU_LDADD) \
 	libutil.a \
 	$(CPPUNIT_LIBS)
 
@@ -2294,4 +2335,11 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard scripts/*.sh) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	systemd/mpd.socket \
-	src/win32/mpd_win32_rc.rc.in src/win32/mpd.ico
+	android/AndroidManifest.xml \
+	android/build.py \
+	android/custom_rules.xml \
+	android/res/values/strings.xml \
+	android/src/Bridge.java \
+	android/src/Loader.java \
+	android/src/Main.java \
+	win32/res/mpd.rc.in win32/res/mpd.ico

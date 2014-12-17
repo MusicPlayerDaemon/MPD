@@ -35,10 +35,6 @@
 #include "archive/ArchiveList.hxx"
 #endif
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -54,11 +50,6 @@ tag_save(FILE *file, const Tag &tag)
 static int
 dump_input_stream(InputStream *is)
 {
-	Error error;
-	char buffer[4096];
-	size_t num_read;
-	ssize_t num_written;
-
 	is->Lock();
 
 	/* print meta data */
@@ -76,7 +67,9 @@ dump_input_stream(InputStream *is)
 			delete tag;
 		}
 
-		num_read = is->Read(buffer, sizeof(buffer), error);
+		Error error;
+		char buffer[4096];
+		size_t num_read = is->Read(buffer, sizeof(buffer), error);
 		if (num_read == 0) {
 			if (error.IsDefined())
 				LogError(error);
@@ -84,11 +77,12 @@ dump_input_stream(InputStream *is)
 			break;
 		}
 
-		num_written = write(1, buffer, num_read);
+		ssize_t num_written = write(1, buffer, num_read);
 		if (num_written <= 0)
 			break;
 	}
 
+	Error error;
 	if (!is->Check(error)) {
 		LogError(error);
 		is->Unlock();
@@ -102,22 +96,10 @@ dump_input_stream(InputStream *is)
 
 int main(int argc, char **argv)
 {
-	Error error;
-	InputStream *is;
-	int ret;
-
 	if (argc != 2) {
 		fprintf(stderr, "Usage: run_input URI\n");
 		return EXIT_FAILURE;
 	}
-
-	/* initialize GLib */
-
-#ifdef HAVE_GLIB
-#if !GLIB_CHECK_VERSION(2,32,0)
-	g_thread_init(NULL);
-#endif
-#endif
 
 	/* initialize MPD */
 
@@ -129,6 +111,7 @@ int main(int argc, char **argv)
 	archive_plugin_init_all();
 #endif
 
+	Error error;
 	if (!input_stream_global_init(error)) {
 		LogError(error);
 		return 2;
@@ -139,7 +122,8 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	is = InputStream::OpenReady(argv[1], mutex, cond, error);
+	InputStream *is = InputStream::OpenReady(argv[1], mutex, cond, error);
+	int ret;
 	if (is != NULL) {
 		ret = dump_input_stream(is);
 		delete is;

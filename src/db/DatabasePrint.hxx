@@ -38,6 +38,12 @@ db_selection_print(Client &client, const DatabaseSelection &selection,
 		   bool full, bool base, Error &error);
 
 bool
+db_selection_print(Client &client, const DatabaseSelection &selection,
+		   bool full, bool base,
+		   unsigned window_start, unsigned window_end,
+		   Error &error);
+
+bool
 PrintUniqueTags(Client &client, unsigned type, uint32_t group_mask,
 		const SongFilter *filter,
 		Error &error);

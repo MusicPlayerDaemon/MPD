@@ -146,6 +146,7 @@ private:
 
 		const ScopeLock protect(mutex);
 		state = _state;
+		last_error.Clear();
 		last_error.Set(error);
 		cond.broadcast();
 	}

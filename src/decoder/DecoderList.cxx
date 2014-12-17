@@ -39,7 +39,6 @@
 #include "plugins/MadDecoderPlugin.hxx"
 #include "plugins/SndfileDecoderPlugin.hxx"
 #include "plugins/Mpg123DecoderPlugin.hxx"
-#include "plugins/Mp4v2DecoderPlugin.hxx"
 #include "plugins/WildmidiDecoderPlugin.hxx"
 #include "plugins/MikmodDecoderPlugin.hxx"
 #include "plugins/ModplugDecoderPlugin.hxx"
@@ -51,47 +50,42 @@
 #include <string.h>
 
 const struct DecoderPlugin *const decoder_plugins[] = {
-#ifdef HAVE_MAD
+#ifdef ENABLE_MAD
 	&mad_decoder_plugin,
 #endif
-#ifdef HAVE_MPG123
+#ifdef ENABLE_MPG123
 	&mpg123_decoder_plugin,
-#endif
-#ifdef HAVE_MP4V2
-	&mp4v2_decoder_plugin,
 #endif
 #ifdef ENABLE_VORBIS_DECODER
 	&vorbis_decoder_plugin,
 #endif
-#if defined(HAVE_FLAC)
+#ifdef ENABLE_FLAC
 	&oggflac_decoder_plugin,
-#endif
-#ifdef HAVE_FLAC
 	&flac_decoder_plugin,
 #endif
-#ifdef HAVE_OPUS
+#ifdef ENABLE_OPUS
 	&opus_decoder_plugin,
 #endif
 #ifdef ENABLE_SNDFILE
 	&sndfile_decoder_plugin,
 #endif
-#ifdef HAVE_AUDIOFILE
+#ifdef ENABLE_AUDIOFILE
 	&audiofile_decoder_plugin,
 #endif
 #ifdef ENABLE_DSD
 	&dff_decoder_plugin,
 	&dsf_decoder_plugin,
 #endif
-#ifdef HAVE_FAAD
+#ifdef ENABLE_FAAD
 	&faad_decoder_plugin,
 #endif
-#ifdef HAVE_MPCDEC
+#ifdef ENABLE_MPCDEC
 	&mpcdec_decoder_plugin,
 #endif
-#ifdef HAVE_WAVPACK
+#ifdef ENABLE_WAVPACK
 	&wavpack_decoder_plugin,
 #endif
-#ifdef HAVE_MODPLUG
+#ifdef ENABLE_MODPLUG
 	&modplug_decoder_plugin,
 #endif
 #ifdef ENABLE_MIKMOD_DECODER
@@ -106,10 +100,10 @@ const struct DecoderPlugin *const decoder_plugins[] = {
 #ifdef ENABLE_FLUIDSYNTH
 	&fluidsynth_decoder_plugin,
 #endif
-#ifdef HAVE_ADPLUG
+#ifdef ENABLE_ADPLUG
 	&adplug_decoder_plugin,
 #endif
-#ifdef HAVE_FFMPEG
+#ifdef ENABLE_FFMPEG
 	&ffmpeg_decoder_plugin,
 #endif
 #ifdef HAVE_GME

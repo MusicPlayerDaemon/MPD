@@ -54,13 +54,13 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #ifdef ENABLE_PIPE_OUTPUT
 	&pipe_output_plugin,
 #endif
-#ifdef HAVE_ALSA
+#ifdef ENABLE_ALSA
 	&alsa_output_plugin,
 #endif
-#ifdef HAVE_ROAR
+#ifdef ENABLE_ROAR
 	&roar_output_plugin,
 #endif
-#ifdef HAVE_AO
+#ifdef ENABLE_AO
 	&ao_output_plugin,
 #endif
 #ifdef HAVE_OSS
@@ -75,10 +75,10 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #ifdef ENABLE_SOLARIS_OUTPUT
 	&solaris_output_plugin,
 #endif
-#ifdef HAVE_PULSE
+#ifdef ENABLE_PULSE
 	&pulse_output_plugin,
 #endif
-#ifdef HAVE_JACK
+#ifdef ENABLE_JACK
 	&jack_output_plugin,
 #endif
 #ifdef ENABLE_HTTPD_OUTPUT

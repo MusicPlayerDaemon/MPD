@@ -29,21 +29,15 @@
 #include <glib.h>
 #endif
 
-void
-ConfigureFS()
+bool
+ConfigureFS(Error &error)
 {
-#if defined(HAVE_GLIB) || defined(WIN32)
+#ifdef HAVE_FS_CHARSET
 	const char *charset = nullptr;
 
 	charset = config_get_string(CONF_FS_CHARSET, nullptr);
 	if (charset == nullptr) {
-#ifndef WIN32
-		const gchar **encodings;
-		g_get_filename_charsets(&encodings);
-
-		if (encodings[0] != nullptr && *encodings[0] != '\0')
-			charset = encodings[0];
-#else
+#ifdef WIN32
 		/* Glib claims that file system encoding is always utf-8
 		 * on native Win32 (i.e. not Cygwin).
 		 * However this is true only if <gstdio.h> helpers are used.
@@ -52,10 +46,26 @@ ConfigureFS()
 		static char win_charset[13];
 		sprintf(win_charset, "cp%u", GetACP());
 		charset = win_charset;
+#elif defined(HAVE_GLIB)
+		const gchar **encodings;
+		g_get_filename_charsets(&encodings);
+
+		if (encodings[0] != nullptr && *encodings[0] != '\0')
+			charset = encodings[0];
 #endif
 	}
 
-	if (charset != nullptr)
-		SetFSCharset(charset);
+	return charset == nullptr || SetFSCharset(charset, error);
+#else
+	(void)error;
+	return true;
+#endif
+}
+
+void
+DeinitFS()
+{
+#ifdef HAVE_FS_CHARSET
+	DeinitFSCharset();
 #endif
 }

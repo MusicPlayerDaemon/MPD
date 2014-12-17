@@ -114,4 +114,12 @@ gcc_pure
 bool
 string_array_contains(const char *const* haystack, const char *needle);
 
+/**
+ * Convert the specified ASCII string (0x00..0x7f) to upper case.
+ *
+ * @param size the destination buffer size
+ */
+void
+ToUpperASCII(char *dest, const char *src, size_t size);
+
 #endif

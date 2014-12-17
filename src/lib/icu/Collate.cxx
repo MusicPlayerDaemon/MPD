@@ -21,6 +21,7 @@
 #include "Collate.hxx"
 
 #ifdef HAVE_ICU
+#include "Util.hxx"
 #include "Error.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/ConstBuffer.hxx"
@@ -69,50 +70,6 @@ IcuCollateFinish()
 	assert(collator != nullptr);
 
 	ucol_close(collator);
-}
-
-static WritableBuffer<UChar>
-UCharFromUTF8(const char *src)
-{
-	assert(src != nullptr);
-
-	const size_t src_length = strlen(src);
-	const size_t dest_capacity = src_length;
-	UChar *dest = new UChar[dest_capacity];
-
-	UErrorCode error_code = U_ZERO_ERROR;
-	int32_t dest_length;
-	u_strFromUTF8(dest, dest_capacity, &dest_length,
-		      src, src_length,
-		      &error_code);
-	if (U_FAILURE(error_code)) {
-		delete[] dest;
-		return nullptr;
-	}
-
-	return { dest, size_t(dest_length) };
-}
-
-static WritableBuffer<char>
-UCharToUTF8(ConstBuffer<UChar> src)
-{
-	assert(!src.IsNull());
-
-	/* worst-case estimate */
-	size_t dest_capacity = 4 * src.size;
-
-	char *dest = new char[dest_capacity];
-
-	UErrorCode error_code = U_ZERO_ERROR;
-	int32_t dest_length;
-	u_strToUTF8(dest, dest_capacity, &dest_length, src.data, src.size,
-		    &error_code);
-	if (U_FAILURE(error_code)) {
-		delete[] dest;
-		return nullptr;
-	}
-
-	return { dest, size_t(dest_length) };
 }
 
 #endif

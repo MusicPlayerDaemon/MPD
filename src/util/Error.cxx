@@ -32,7 +32,7 @@
 #include "Domain.hxx"
 
 #ifdef WIN32
-#include <glib.h>
+#include <windows.h>
 #endif
 
 #include <errno.h>
@@ -135,7 +135,11 @@ Error::FormatErrno(const char *fmt, ...)
 void
 Error::SetLastError(DWORD _code, const char *prefix)
 {
-	const char *msg = g_win32_error_message(_code);
+	char msg[256];
+	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
+		       FORMAT_MESSAGE_IGNORE_INSERTS,
+		       nullptr, _code, 0, msg, sizeof(msg), nullptr);
+
 	Format(win32_domain, int(_code), "%s: %s", prefix, msg);
 }
 

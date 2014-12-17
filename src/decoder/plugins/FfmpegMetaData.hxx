@@ -20,19 +20,11 @@
 #ifndef MPD_FFMPEG_METADATA_HXX
 #define MPD_FFMPEG_METADATA_HXX
 
-extern "C" {
-#include <libavutil/dict.h>
-}
-
-/* suppress the ffmpeg compatibility macro */
-#ifdef SampleFormat
-#undef SampleFormat
-#endif
-
+struct AVDictionary;
 struct tag_handler;
 
 void
-ffmpeg_scan_dictionary(AVDictionary *dict,
-		       const tag_handler *handler, void *handler_ctx);
+FfmpegScanDictionary(AVDictionary *dict,
+		     const tag_handler *handler, void *handler_ctx);
 
 #endif

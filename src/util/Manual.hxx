@@ -35,13 +35,13 @@
 #include <new>
 #include <utility>
 
-#if !defined(__clang__) && __GNUC__ && !GCC_CHECK_VERSION(4,8)
+#if GCC_OLDER_THAN(4,8)
 #include <type_traits>
 #endif
 
 #include <assert.h>
 
-#if defined(__clang__) || GCC_CHECK_VERSION(4,7)
+#if CLANG_OR_GCC_VERSION(4,7)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
@@ -54,12 +54,7 @@
  */
 template<class T>
 class Manual {
-#if !defined(__clang__) && __GNUC__ && !GCC_CHECK_VERSION(4,8)
-	/* no alignas() on gcc < 4.8: apply worst-case fallback */
-	__attribute__((aligned(8)))
-#else
-	alignas(T)
-#endif
+	gcc_alignas(T, 8)
 	char data[sizeof(T)];
 
 #ifndef NDEBUG
@@ -89,32 +84,46 @@ public:
 	void Destruct() {
 		assert(initialized);
 
-		T *t = (T *)data;
-		t->T::~T();
+		T &t = Get();
+		t.T::~T();
 
 #ifndef NDEBUG
 		initialized = false;
 #endif
 	}
 
+	T &Get() {
+		assert(initialized);
+
+		void *p = static_cast<void *>(data);
+		return *static_cast<T *>(p);
+	}
+
+	const T &Get() const {
+		assert(initialized);
+
+		const void *p = static_cast<const void *>(data);
+		return *static_cast<const T *>(p);
+	}
+
 	operator T &() {
-		return *(T *)data;
+		return Get();
 	}
 
 	operator const T &() const {
-		return *(const T *)data;
+		return Get();
 	}
 
 	T *operator->() {
-		return (T *)data;
+		return &Get();
 	}
 
 	const T *operator->() const {
-		return (T *)data;
+		return &Get();
 	}
 };
 
-#if defined(__clang__) || GCC_VERSION >= 40700
+#if CLANG_OR_GCC_VERSION(4,7)
 #pragma GCC diagnostic pop
 #endif
 

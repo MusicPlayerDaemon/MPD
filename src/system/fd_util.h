@@ -103,7 +103,7 @@ socketpair_cloexec_nonblock(int domain, int type, int protocol, int sv[2]);
 
 #endif
 
-#ifdef HAVE_LIBMPDCLIENT
+#ifdef ENABLE_LIBMPDCLIENT
 /* Avoid symbol conflict with statically linked libmpdclient */
 #define socket_cloexec_nonblock socket_cloexec_nonblock_noconflict
 #endif

@@ -41,7 +41,7 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 #include "fs/io/GzipOutputStream.hxx"
 #endif
 
@@ -52,21 +52,21 @@ static constexpr Domain simple_db_domain("simple_db");
 inline SimpleDatabase::SimpleDatabase()
 	:Database(simple_db_plugin),
 	 path(AllocatedPath::Null()),
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	 compress(true),
 #endif
 	 cache_path(AllocatedPath::Null()),
 	 prefixed_light_song(nullptr) {}
 
 inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
-#ifndef HAVE_ZLIB
+#ifndef ENABLE_ZLIB
 				      gcc_unused
 #endif
 				      bool _compress)
 	:Database(simple_db_plugin),
 	 path(std::move(_path)),
 	 path_utf8(path.ToUTF8()),
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	 compress(_compress),
 #endif
 	 cache_path(AllocatedPath::Null()),
@@ -104,7 +104,7 @@ SimpleDatabase::Configure(const config_param &param, Error &error)
 	if (path.IsNull() && error.IsDefined())
 		return false;
 
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	compress = param.GetBlockValue("compress", compress);
 #endif
 
@@ -389,7 +389,7 @@ SimpleDatabase::Save(Error &error)
 
 	OutputStream *os = &fos;
 
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	GzipOutputStream *gzip = nullptr;
 	if (compress) {
 		gzip = new GzipOutputStream(*os, error);
@@ -407,13 +407,13 @@ SimpleDatabase::Save(Error &error)
 	db_save_internal(bos, *root);
 
 	if (!bos.Flush(error)) {
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 		delete gzip;
 #endif
 		return false;
 	}
 
-#ifdef HAVE_ZLIB
+#ifdef ENABLE_ZLIB
 	if (gzip != nullptr) {
 		bool success = gzip->Flush(error);
 		delete gzip;
@@ -484,7 +484,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	std::string name(storage_uri);
 	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
 
-#ifndef HAVE_ZLIB
+#ifndef ENABLE_ZLIB
 	constexpr bool compress = false;
 #endif
 	auto db = new SimpleDatabase(AllocatedPath::Build(cache_path,

@@ -1,8 +1,60 @@
 ver 0.20 (not yet released)
 * protocol
   - "commands" returns playlist commands only if playlist_directory configured
+  - "search"/"find" have a "window" parameter
+  - report song duration with milliseconds precision
+  - "sticker find" can match sticker values
+* tags
+  - ape, ogg: drop support for non-standard tag "album artist"
+    affected filetypes: vorbis, flac, opus & all files with ape2 tags
+    (most importantly some mp3s)
+* decoder
+  - ffmpeg: support ReplayGain and MixRamp
+  - ffmpeg: support stream tags
 * output
   - pulse: set channel map to WAVE-EX
+* mixer
+  - null: new plugin
+* reset song priority on playback
+* remove dependency on GLib
+
+ver 0.19.7 (not yet released)
+* input
+  - nfs: fix crash while canceling a failing file open operation
+  - nfs: fix memory leak on connection failure
+  - nfs: fix reconnect after mount failure
+  - nfs: implement mount timeout (60 seconds)
+* storage
+  - nfs: implement I/O timeout (60 seconds)
+* playlist
+  - don't skip non-existent songs in "listplaylist"
+* fix memory allocator bug on Windows
+
+ver 0.19.6 (2014/12/08)
+* decoder
+  - ffmpeg: support FFmpeg 2.5
+* fix build failure with musl
+* android
+  - update libFLAC to 1.3.1
+  - update FFmpeg to 2.5
+
+ver 0.19.5 (2014/11/26)
+* input
+  - nfs: fix crash on connection failure
+* archive
+  - zzip: fix crash after seeking
+* decoder
+  - dsdiff, dsf, opus: fix deadlock while seeking
+  - mp4v2: remove because of incompatible license
+
+ver 0.19.4 (2014/11/18)
+* protocol
+  - workaround for buggy clients that send "add /"
+* decoder
+  - ffmpeg: support opus
+  - opus: add MIME types audio/ogg and application/ogg
+* fix crash on failed filename charset conversion
+* fix local socket detection from uid=0 (root)
 
 ver 0.19.3 (2014/11/11)
 * protocol
@@ -125,6 +177,21 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.20 (2014/12/08)
+* decoder
+  - ffmpeg: support FFmpeg 2.5
+* fix build failure with musl
+
+ver 0.18.19 (2014/11/26)
+* archive
+  - zzip: fix crash after seeking
+
+ver 0.18.18 (2014/11/18)
+* decoder
+  - ffmpeg: support opus
+* fix crash on failed filename charset conversion
+* fix local socket detection from uid=0 (root)
 
 ver 0.18.17 (2014/11/02)
 * playlist

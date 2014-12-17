@@ -23,8 +23,6 @@
 #include "tag/TagSettings.h"
 #include "client/Client.hxx"
 
-#define SONG_TIME "Time: "
-
 void tag_print_types(Client &client)
 {
 	int i;
@@ -53,7 +51,10 @@ tag_print_values(Client &client, const Tag &tag)
 void tag_print(Client &client, const Tag &tag)
 {
 	if (!tag.duration.IsNegative())
-		client_printf(client, SONG_TIME "%i\n", tag.duration.RoundS());
+		client_printf(client, "Time: %i\n"
+			      "duration: %1.3f\n",
+			      tag.duration.RoundS(),
+			      tag.duration.ToDoubleS());
 
 	tag_print_values(client, tag);
 }
