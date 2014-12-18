@@ -307,7 +307,7 @@ copy_interleave_frame(const AVCodecContext &codec_context,
 
 static DecoderCommand
 ffmpeg_send_packet(Decoder &decoder, InputStream &is,
-		   const AVPacket &packet,
+		   AVPacket packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
 		   AVFrame &frame,
@@ -321,22 +321,20 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 							   stream.time_base));
 	}
 
-	AVPacket packet2 = packet;
-
 	DecoderCommand cmd = DecoderCommand::NONE;
-	while (packet2.size > 0 && cmd == DecoderCommand::NONE) {
+	while (packet.size > 0 && cmd == DecoderCommand::NONE) {
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(&codec_context,
 						&frame, &got_frame,
-						&packet2);
+						&packet);
 		if (len < 0) {
 			/* if error, we skip the frame */
 			LogFfmpegError(len, "decoding failed, frame skipped");
 			break;
 		}
 
-		packet2.data += len;
-		packet2.size -= len;
+		packet.data += len;
+		packet.size -= len;
 
 		if (!got_frame)
 			continue;
