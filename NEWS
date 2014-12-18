@@ -1,4 +1,6 @@
 ver 0.19.18 (not yet released)
+* decoder
+  - ffmpeg: log detailed error message
 
 ver 0.19.17 (2016/07/09)
 * decoder

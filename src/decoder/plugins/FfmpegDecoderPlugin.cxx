@@ -23,6 +23,7 @@
 #include "config.h"
 #include "FfmpegDecoderPlugin.hxx"
 #include "lib/ffmpeg/Domain.hxx"
+#include "lib/ffmpeg/LogError.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "tag/TagHandler.hxx"
@@ -379,8 +380,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 						&packet);
 		if (len < 0) {
 			/* if error, we skip the frame */
-			LogDefault(ffmpeg_domain,
-				   "decoding failed, frame skipped");
+			LogFfmpegError(len, "decoding failed, frame skipped");
 			break;
 		}
 
@@ -394,6 +394,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 			if (audio_size < 0) {
 				/* this must be a serious error,
 				   e.g. OOM */
+				LogFfmpegError(audio_size);
 				return DecoderCommand::STOP;
 			}
 		}
