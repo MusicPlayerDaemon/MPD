@@ -335,23 +335,23 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 			break;
 		}
 
-		uint8_t *output_buffer = nullptr;
-		int audio_size = 0;
-		if (got_frame) {
-			audio_size = copy_interleave_frame(codec_context,
-							   frame,
-							   &output_buffer,
-							   buffer);
-			if (audio_size < 0) {
-				/* this must be a serious error,
-				   e.g. OOM */
-				LogFfmpegError(audio_size);
-				return DecoderCommand::STOP;
-			}
-		}
-
 		packet2.data += len;
 		packet2.size -= len;
+
+		if (!got_frame)
+			continue;
+
+		uint8_t *output_buffer = nullptr;
+		int audio_size =
+			copy_interleave_frame(codec_context, frame,
+					      &output_buffer,
+					      buffer);
+		if (audio_size < 0) {
+			/* this must be a serious error,
+			   e.g. OOM */
+			LogFfmpegError(audio_size);
+			return DecoderCommand::STOP;
+		}
 
 		if (audio_size <= 0)
 			continue;
