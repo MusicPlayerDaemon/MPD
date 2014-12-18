@@ -682,7 +682,6 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	avformat_close_input(&format_context);
 }
 
-//no tag reading in ffmpeg, check if playable
 static bool
 ffmpeg_scan_stream(InputStream &is,
 		   const struct tag_handler *handler, void *handler_ctx)
