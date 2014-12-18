@@ -196,10 +196,10 @@ ffmpeg_init(gcc_unused const config_param &param)
 
 gcc_pure
 static int
-ffmpeg_find_audio_stream(const AVFormatContext *format_context)
+ffmpeg_find_audio_stream(const AVFormatContext &format_context)
 {
-	for (unsigned i = 0; i < format_context->nb_streams; ++i)
-		if (format_context->streams[i]->codec->codec_type ==
+	for (unsigned i = 0; i < format_context.nb_streams; ++i)
+		if (format_context.streams[i]->codec->codec_type ==
 		    AVMEDIA_TYPE_AUDIO)
 			return i;
 
@@ -273,33 +273,33 @@ copy_interleave_frame2(uint8_t *dest, uint8_t **src,
  * Copy PCM data from a AVFrame to an interleaved buffer.
  */
 static int
-copy_interleave_frame(const AVCodecContext *codec_context,
-		      const AVFrame *frame,
+copy_interleave_frame(const AVCodecContext &codec_context,
+		      const AVFrame &frame,
 		      uint8_t **output_buffer,
 		      FfmpegBuffer &global_buffer)
 {
 	int plane_size;
 	const int data_size =
 		av_samples_get_buffer_size(&plane_size,
-					   codec_context->channels,
-					   frame->nb_samples,
-					   codec_context->sample_fmt, 1);
+					   codec_context.channels,
+					   frame.nb_samples,
+					   codec_context.sample_fmt, 1);
 	if (data_size <= 0)
 		return data_size;
 
-	if (av_sample_fmt_is_planar(codec_context->sample_fmt) &&
-	    codec_context->channels > 1) {
+	if (av_sample_fmt_is_planar(codec_context.sample_fmt) &&
+	    codec_context.channels > 1) {
 		*output_buffer = global_buffer.GetT<uint8_t>(data_size);
 		if (*output_buffer == nullptr)
 			/* Not enough memory - shouldn't happen */
 			return AVERROR(ENOMEM);
 
-		copy_interleave_frame2(*output_buffer, frame->extended_data,
-				       frame->nb_samples,
-				       codec_context->channels,
-				       av_get_bytes_per_sample(codec_context->sample_fmt));
+		copy_interleave_frame2(*output_buffer, frame.extended_data,
+				       frame.nb_samples,
+				       codec_context.channels,
+				       av_get_bytes_per_sample(codec_context.sample_fmt));
 	} else {
-		*output_buffer = frame->extended_data[0];
+		*output_buffer = frame.extended_data[0];
 	}
 
 	return data_size;
@@ -307,27 +307,27 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 
 static DecoderCommand
 ffmpeg_send_packet(Decoder &decoder, InputStream &is,
-		   const AVPacket *packet,
-		   AVCodecContext *codec_context,
-		   const AVStream *stream,
-		   AVFrame *frame,
+		   const AVPacket &packet,
+		   AVCodecContext &codec_context,
+		   const AVStream &stream,
+		   AVFrame &frame,
 		   FfmpegBuffer &buffer)
 {
-	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE) {
-		auto start = start_time_fallback(*stream);
-		if (packet->pts >= start)
+	if (packet.pts >= 0 && packet.pts != (int64_t)AV_NOPTS_VALUE) {
+		auto start = start_time_fallback(stream);
+		if (packet.pts >= start)
 			decoder_timestamp(decoder,
-					  time_from_ffmpeg(packet->pts - start,
-							   stream->time_base));
+					  time_from_ffmpeg(packet.pts - start,
+							   stream.time_base));
 	}
 
-	AVPacket packet2 = *packet;
+	AVPacket packet2 = packet;
 
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (packet2.size > 0 && cmd == DecoderCommand::NONE) {
 		int got_frame = 0;
-		int len = avcodec_decode_audio4(codec_context,
-						frame, &got_frame,
+		int len = avcodec_decode_audio4(&codec_context,
+						&frame, &got_frame,
 						&packet2);
 		if (len < 0) {
 			/* if error, we skip the frame */
@@ -358,7 +358,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 
 		cmd = decoder_data(decoder, is,
 				   output_buffer, audio_size,
-				   codec_context->bit_rate / 1000);
+				   codec_context.bit_rate / 1000);
 	}
 	return cmd;
 }
@@ -578,7 +578,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
-	int audio_stream = ffmpeg_find_audio_stream(format_context);
+	int audio_stream = ffmpeg_find_audio_stream(*format_context);
 	if (audio_stream == -1) {
 		LogError(ffmpeg_domain, "No audio stream inside");
 		avformat_close_input(&format_context);
@@ -677,9 +677,9 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 		if (packet.stream_index == audio_stream)
 			cmd = ffmpeg_send_packet(decoder, input,
-						 &packet, codec_context,
-						 av_stream,
-						 frame,
+						 packet, *codec_context,
+						 *av_stream,
+						 *frame,
 						 interleaved_buffer);
 		else
 			cmd = decoder_get_command(decoder);
@@ -745,7 +745,7 @@ ffmpeg_scan_stream(InputStream &is,
 		tag_handler_invoke_duration(handler, handler_ctx, duration);
 	}
 
-	int idx = ffmpeg_find_audio_stream(f);
+	int idx = ffmpeg_find_audio_stream(*f);
 	FfmpegScanMetadata(*f, idx, *handler, handler_ctx);
 
 	avformat_close_input(&f);
