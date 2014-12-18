@@ -23,6 +23,7 @@
 #include "config.h"
 #include "FfmpegDecoderPlugin.hxx"
 #include "lib/ffmpeg/Domain.hxx"
+#include "lib/ffmpeg/LogError.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "tag/TagBuilder.hxx"
@@ -335,8 +336,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 						&packet2);
 		if (len < 0) {
 			/* if error, we skip the frame */
-			LogDefault(ffmpeg_domain,
-				   "decoding failed, frame skipped");
+			LogFfmpegError(len, "decoding failed, frame skipped");
 			break;
 		}
 
