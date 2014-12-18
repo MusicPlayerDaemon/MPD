@@ -24,6 +24,7 @@
 #include "FfmpegDecoderPlugin.hxx"
 #include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/LogError.hxx"
+#include "lib/ffmpeg/Buffer.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "tag/TagHandler.hxx"
@@ -281,7 +282,7 @@ static int
 copy_interleave_frame(const AVCodecContext &codec_context,
 		      const AVFrame &frame,
 		      uint8_t **output_buffer,
-		      uint8_t **global_buffer, int *global_buffer_size)
+		      FfmpegBuffer &global_buffer)
 {
 	int plane_size;
 	const int data_size =
@@ -294,17 +295,11 @@ copy_interleave_frame(const AVCodecContext &codec_context,
 
 	if (av_sample_fmt_is_planar(codec_context.sample_fmt) &&
 	    codec_context.channels > 1) {
-		if(*global_buffer_size < data_size) {
-			av_freep(global_buffer);
+		*output_buffer = global_buffer.GetT<uint8_t>(data_size);
+		if (*output_buffer == nullptr)
+			/* Not enough memory - shouldn't happen */
+			return AVERROR(ENOMEM);
 
-			*global_buffer = (uint8_t*)av_malloc(data_size);
-
-			if (!*global_buffer)
-				/* Not enough memory - shouldn't happen */
-				return AVERROR(ENOMEM);
-			*global_buffer_size = data_size;
-		}
-		*output_buffer = *global_buffer;
 		copy_interleave_frame2(*output_buffer, frame.extended_data,
 				       frame.nb_samples,
 				       codec_context.channels,
@@ -356,7 +351,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   const AVStream &stream,
 		   AVFrame *frame,
 		   uint64_t min_frame, size_t pcm_frame_size,
-		   uint8_t **buffer, int *buffer_size)
+		   FfmpegBuffer &buffer)
 {
 	size_t skip_bytes = 0;
 
@@ -390,7 +385,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 			audio_size = copy_interleave_frame(codec_context,
 							   *frame,
 							   &output_buffer,
-							   buffer, buffer_size);
+							   buffer);
 			if (audio_size < 0) {
 				/* this must be a serious error,
 				   e.g. OOM */
@@ -619,8 +614,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
-	uint8_t *interleaved_buffer = nullptr;
-	int interleaved_buffer_size = 0;
+	FfmpegBuffer interleaved_buffer;
 
 	uint64_t min_frame = 0;
 
@@ -638,7 +632,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 						 *av_stream,
 						 frame,
 						 min_frame, audio_format.GetFrameSize(),
-						 &interleaved_buffer, &interleaved_buffer_size);
+						 interleaved_buffer);
 			min_frame = 0;
 		} else
 			cmd = decoder_get_command(decoder);
@@ -677,7 +671,6 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 #else
 	av_freep(&frame);
 #endif
-	av_freep(&interleaved_buffer);
 
 	avcodec_close(codec_context);
 	avformat_close_input(&format_context);
