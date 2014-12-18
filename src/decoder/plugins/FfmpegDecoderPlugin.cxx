@@ -23,6 +23,7 @@
 #include "config.h"
 #include "FfmpegDecoderPlugin.hxx"
 #include "lib/ffmpeg/Domain.hxx"
+#include "lib/ffmpeg/Error.hxx"
 #include "lib/ffmpeg/LogError.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
 #include "../DecoderAPI.hxx"
@@ -278,27 +279,35 @@ copy_interleave_frame2(uint8_t *dest, uint8_t **src,
 /**
  * Copy PCM data from a AVFrame to an interleaved buffer.
  */
-static int
+static size_t
 copy_interleave_frame(const AVCodecContext &codec_context,
 		      const AVFrame &frame,
 		      uint8_t **output_buffer,
-		      FfmpegBuffer &global_buffer)
+		      FfmpegBuffer &global_buffer,
+		      Error &error)
 {
+	assert(frame.nb_samples > 0);
+
 	int plane_size;
 	const int data_size =
 		av_samples_get_buffer_size(&plane_size,
 					   codec_context.channels,
 					   frame.nb_samples,
 					   codec_context.sample_fmt, 1);
-	if (data_size <= 0)
-		return data_size;
+	assert(data_size != 0);
+	if (data_size < 0) {
+		SetFfmpegError(error, data_size);
+		return 0;
+	}
 
 	if (av_sample_fmt_is_planar(codec_context.sample_fmt) &&
 	    codec_context.channels > 1) {
 		*output_buffer = global_buffer.GetT<uint8_t>(data_size);
-		if (*output_buffer == nullptr)
+		if (*output_buffer == nullptr) {
 			/* Not enough memory - shouldn't happen */
-			return AVERROR(ENOMEM);
+			error.SetErrno(ENOMEM);
+			return 0;
+		}
 
 		copy_interleave_frame2(*output_buffer, frame.extended_data,
 				       frame.nb_samples,
@@ -367,6 +376,8 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 					  time_from_ffmpeg(pts, stream.time_base));
 	}
 
+	Error error;
+
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (packet.size > 0 && cmd == DecoderCommand::NONE) {
 		int got_frame = 0;
@@ -382,27 +393,24 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		packet.data += len;
 		packet.size -= len;
 
-		if (!got_frame)
+		if (!got_frame || frame->nb_samples <= 0)
 			continue;
 
 		uint8_t *output_buffer = nullptr;
-		int audio_size =
+		size_t audio_size =
 			copy_interleave_frame(codec_context, *frame,
 					      &output_buffer,
-					      buffer);
-		if (audio_size < 0) {
+					      buffer, error);
+		if (audio_size == 0) {
 			/* this must be a serious error,
 			   e.g. OOM */
-			LogFfmpegError(audio_size);
+			LogError(error);
 			return DecoderCommand::STOP;
 		}
 
-		if (audio_size <= 0)
-			continue;
-
 		const uint8_t *data = output_buffer;
 		if (skip_bytes > 0) {
-			if (skip_bytes >= size_t(audio_size)) {
+			if (skip_bytes >= audio_size) {
 				skip_bytes -= audio_size;
 				continue;
 			}
