@@ -198,6 +198,7 @@ ffmpeg_init(gcc_unused const config_param &param)
 	return true;
 }
 
+gcc_pure
 static int
 ffmpeg_find_audio_stream(const AVFormatContext &format_context)
 {
@@ -252,7 +253,7 @@ timestamp_fallback(int64_t t, int64_t fallback)
  * assume that the stream's start time is zero, which appears to be
  * the best way out of that situation.
  */
-static int64_t
+static constexpr int64_t
 start_time_fallback(const AVStream &stream)
 {
 	return timestamp_fallback(stream.start_time, 0);
