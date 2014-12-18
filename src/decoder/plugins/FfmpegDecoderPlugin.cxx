@@ -31,6 +31,7 @@
 #include "tag/TagHandler.hxx"
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "LogV.hxx"
@@ -279,10 +280,9 @@ copy_interleave_frame2(uint8_t *dest, uint8_t **src,
 /**
  * Copy PCM data from a AVFrame to an interleaved buffer.
  */
-static size_t
+static ConstBuffer<void>
 copy_interleave_frame(const AVCodecContext &codec_context,
 		      const AVFrame &frame,
-		      uint8_t **output_buffer,
 		      FfmpegBuffer &global_buffer,
 		      Error &error)
 {
@@ -300,24 +300,26 @@ copy_interleave_frame(const AVCodecContext &codec_context,
 		return 0;
 	}
 
+	void *output_buffer;
 	if (av_sample_fmt_is_planar(codec_context.sample_fmt) &&
 	    codec_context.channels > 1) {
-		*output_buffer = global_buffer.GetT<uint8_t>(data_size);
-		if (*output_buffer == nullptr) {
+		output_buffer = global_buffer.GetT<uint8_t>(data_size);
+		if (output_buffer == nullptr) {
 			/* Not enough memory - shouldn't happen */
 			error.SetErrno(ENOMEM);
 			return 0;
 		}
 
-		copy_interleave_frame2(*output_buffer, frame.extended_data,
+		copy_interleave_frame2((uint8_t *)output_buffer,
+				       frame.extended_data,
 				       frame.nb_samples,
 				       codec_context.channels,
 				       av_get_bytes_per_sample(codec_context.sample_fmt));
 	} else {
-		*output_buffer = frame.extended_data[0];
+		output_buffer = frame.extended_data[0];
 	}
 
-	return data_size;
+	return { output_buffer, (size_t)data_size };
 }
 
 /**
@@ -396,32 +398,30 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		if (!got_frame || frame->nb_samples <= 0)
 			continue;
 
-		uint8_t *output_buffer = nullptr;
-		size_t audio_size =
+		auto output_buffer =
 			copy_interleave_frame(codec_context, *frame,
-					      &output_buffer,
 					      buffer, error);
-		if (audio_size == 0) {
+		if (output_buffer.IsNull()) {
 			/* this must be a serious error,
 			   e.g. OOM */
 			LogError(error);
 			return DecoderCommand::STOP;
 		}
 
-		const uint8_t *data = output_buffer;
 		if (skip_bytes > 0) {
-			if (skip_bytes >= audio_size) {
-				skip_bytes -= audio_size;
+			if (skip_bytes >= output_buffer.size) {
+				skip_bytes -= output_buffer.size;
 				continue;
 			}
 
-			data += skip_bytes;
-			audio_size -= skip_bytes;
+			output_buffer.data =
+				(const uint8_t *)output_buffer.data + skip_bytes;
+			output_buffer.size -= skip_bytes;
 			skip_bytes = 0;
 		}
 
 		cmd = decoder_data(decoder, is,
-				   data, audio_size,
+				   output_buffer.data, output_buffer.size,
 				   codec_context.bit_rate / 1000);
 	}
 	return cmd;
