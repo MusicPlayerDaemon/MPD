@@ -272,7 +272,7 @@ copy_interleave_frame2(uint8_t *dest, uint8_t **src,
 }
 
 /**
- * Copy PCM data from a AVFrame to an interleaved buffer.
+ * Copy PCM data from a non-empty AVFrame to an interleaved buffer.
  */
 static ConstBuffer<void>
 copy_interleave_frame(const AVCodecContext &codec_context,
@@ -316,6 +316,10 @@ copy_interleave_frame(const AVCodecContext &codec_context,
 	return { output_buffer, (size_t)data_size };
 }
 
+/**
+ * Decode an #AVPacket and send the resulting PCM data to the decoder
+ * API.
+ */
 static DecoderCommand
 ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   AVPacket packet,
