@@ -29,6 +29,7 @@
 #include "lib/ffmpeg/Buffer.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
+#include "FfmpegIo.hxx"
 #include "tag/TagHandler.hxx"
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
@@ -83,90 +84,6 @@ mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
 		const Domain d(domain);
 		LogFormatV(d, import_ffmpeg_level(level), fmt, vl);
 	}
-}
-
-struct AvioStream {
-	Decoder *const decoder;
-	InputStream &input;
-
-	AVIOContext *io;
-
-	AvioStream(Decoder *_decoder, InputStream &_input)
-		:decoder(_decoder), input(_input), io(nullptr) {}
-
-	~AvioStream() {
-		if (io != nullptr) {
-			av_free(io->buffer);
-			av_free(io);
-		}
-	}
-
-	bool Open();
-};
-
-static int
-mpd_ffmpeg_stream_read(void *opaque, uint8_t *buf, int size)
-{
-	AvioStream *stream = (AvioStream *)opaque;
-
-	return decoder_read(stream->decoder, stream->input,
-			    (void *)buf, size);
-}
-
-static int64_t
-mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
-{
-	AvioStream *stream = (AvioStream *)opaque;
-
-	switch (whence) {
-	case SEEK_SET:
-		break;
-
-	case SEEK_CUR:
-		pos += stream->input.GetOffset();
-		break;
-
-	case SEEK_END:
-		if (!stream->input.KnownSize())
-			return -1;
-
-		pos += stream->input.GetSize();
-		break;
-
-	case AVSEEK_SIZE:
-		if (!stream->input.KnownSize())
-			return -1;
-
-		return stream->input.GetSize();
-
-	default:
-		return -1;
-	}
-
-	if (!stream->input.LockSeek(pos, IgnoreError()))
-		return -1;
-
-	return stream->input.GetOffset();
-}
-
-bool
-AvioStream::Open()
-{
-	constexpr size_t BUFFER_SIZE = 8192;
-	auto buffer = (unsigned char *)av_malloc(BUFFER_SIZE);
-	if (buffer == nullptr)
-		return false;
-
-	io = avio_alloc_context(buffer, BUFFER_SIZE,
-				false, this,
-				mpd_ffmpeg_stream_read, nullptr,
-				input.IsSeekable()
-				? mpd_ffmpeg_stream_seek : nullptr);
-	/* If avio_alloc_context() fails, who frees the buffer?  The
-	   libavformat API documentation does not specify this, it
-	   only says that AVIOContext.buffer must be freed in the end,
-	   however no AVIOContext exists in that failure code path. */
-	return io != nullptr;
 }
 
 /**
