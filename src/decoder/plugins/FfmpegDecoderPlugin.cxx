@@ -20,6 +20,7 @@
 /* necessary because libavutil/common.h uses UINT64_C */
 #define __STDC_CONSTANT_MACROS
 
+#include "lib/ffmpeg/Time.hxx"
 #include "config.h"
 #include "FfmpegDecoderPlugin.hxx"
 #include "lib/ffmpeg/Domain.hxx"
@@ -45,7 +46,6 @@ extern "C" {
 #include <libavformat/avio.h>
 #include <libavutil/avutil.h>
 #include <libavutil/log.h>
-#include <libavutil/mathematics.h>
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 #include <libavutil/frame.h>
@@ -54,11 +54,6 @@ extern "C" {
 
 #include <assert.h>
 #include <string.h>
-
-/* suppress the ffmpeg compatibility macro */
-#ifdef SampleFormat
-#undef SampleFormat
-#endif
 
 static LogLevel
 import_ffmpeg_level(int level)
@@ -208,43 +203,6 @@ ffmpeg_find_audio_stream(const AVFormatContext &format_context)
 	return -1;
 }
 
-gcc_const
-static double
-time_from_ffmpeg(int64_t t, const AVRational time_base)
-{
-	assert(t != (int64_t)AV_NOPTS_VALUE);
-
-	return (double)av_rescale_q(t, time_base, (AVRational){1, 1024})
-		/ (double)1024;
-}
-
-template<typename Ratio>
-static constexpr AVRational
-RatioToAVRational()
-{
-	return { Ratio::num, Ratio::den };
-}
-
-gcc_const
-static int64_t
-time_to_ffmpeg(SongTime t, const AVRational time_base)
-{
-	return av_rescale_q(t.count(),
-			    RatioToAVRational<SongTime::period>(),
-			    time_base);
-}
-
-/**
- * Replace #AV_NOPTS_VALUE with the given fallback.
- */
-static constexpr int64_t
-timestamp_fallback(int64_t t, int64_t fallback)
-{
-	return gcc_likely(t != int64_t(AV_NOPTS_VALUE))
-		? t
-		: fallback;
-}
-
 /**
  * Accessor for AVStream::start_time that replaces AV_NOPTS_VALUE with
  * zero.  We can't use AV_NOPTS_VALUE in calculations, and we simply
@@ -254,7 +212,7 @@ timestamp_fallback(int64_t t, int64_t fallback)
 static constexpr int64_t
 start_time_fallback(const AVStream &stream)
 {
-	return timestamp_fallback(stream.start_time, 0);
+	return FfmpegTimestampFallback(stream.start_time, 0);
 }
 
 static void
@@ -332,8 +290,8 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		auto start = start_time_fallback(stream);
 		if (packet.pts >= start)
 			decoder_timestamp(decoder,
-					  time_from_ffmpeg(packet.pts - start,
-							   stream.time_base));
+					  FfmpegTimeToDouble(packet.pts - start,
+							     stream.time_base));
 	}
 
 	Error error;
@@ -698,8 +656,8 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 		if (cmd == DecoderCommand::SEEK) {
 			int64_t where =
-				time_to_ffmpeg(decoder_seek_time(decoder),
-					       av_stream->time_base) +
+				ToFfmpegTime(decoder_seek_time(decoder),
+					     av_stream->time_base) +
 				start_time_fallback(*av_stream);
 
 			if (av_seek_frame(format_context, audio_stream, where,
