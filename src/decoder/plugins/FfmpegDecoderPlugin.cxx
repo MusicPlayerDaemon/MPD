@@ -436,10 +436,10 @@ static void
 FfmpegParseMetaData(const AVFormatContext &format_context, int audio_stream,
 		    ReplayGainInfo &rg, MixRampInfo &mr)
 {
-	FfmpegParseMetaData(*format_context.metadata, rg, mr);
+	assert(audio_stream >= 0);
 
-	if (audio_stream >= 0)
-		FfmpegParseMetaData(*format_context.streams[audio_stream],
+	FfmpegParseMetaData(*format_context.metadata, rg, mr);
+	FfmpegParseMetaData(*format_context.streams[audio_stream],
 				    rg, mr);
 }
 
