@@ -1001,6 +1001,8 @@ endif
 
 if ENABLE_FFMPEG
 libdecoder_a_SOURCES += \
+	src/decoder/plugins/FfmpegIo.cxx \
+	src/decoder/plugins/FfmpegIo.hxx \
 	src/decoder/plugins/FfmpegMetaData.cxx \
 	src/decoder/plugins/FfmpegMetaData.hxx \
 	src/decoder/plugins/FfmpegDecoderPlugin.cxx \
