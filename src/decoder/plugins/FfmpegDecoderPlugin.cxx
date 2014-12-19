@@ -278,7 +278,7 @@ copy_interleave_frame2(uint8_t *dest, uint8_t **src,
 }
 
 /**
- * Copy PCM data from a AVFrame to an interleaved buffer.
+ * Copy PCM data from a non-empty AVFrame to an interleaved buffer.
  */
 static ConstBuffer<void>
 copy_interleave_frame(const AVCodecContext &codec_context,
@@ -351,6 +351,9 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
 }
 
 /**
+ * Decode an #AVPacket and send the resulting PCM data to the decoder
+ * API.
+ *
  * @param min_frame skip all data before this PCM frame number; this
  * is used after seeking to skip data in an AVPacket until the exact
  * desired time stamp has been reached
