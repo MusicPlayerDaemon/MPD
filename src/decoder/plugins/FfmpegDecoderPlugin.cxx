@@ -405,44 +405,23 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 }
 
 static void
-ffmpeg_decode(Decoder &decoder, InputStream &input)
+FfmpegDecode(Decoder &decoder, InputStream &input,
+	     AVFormatContext &format_context)
 {
-	AVInputFormat *input_format = ffmpeg_probe(&decoder, input);
-	if (input_format == nullptr)
-		return;
-
-	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
-		    input_format->name, input_format->long_name);
-
-	AvioStream stream(&decoder, input);
-	if (!stream.Open()) {
-		LogError(ffmpeg_domain, "Failed to open stream");
-		return;
-	}
-
-	AVFormatContext *format_context =
-		FfmpegOpenInput(stream.io, input.GetURI(), input_format);
-	if (format_context == nullptr) {
-		LogError(ffmpeg_domain, "Open failed");
-		return;
-	}
-
 	const int find_result =
-		avformat_find_stream_info(format_context, nullptr);
+		avformat_find_stream_info(&format_context, nullptr);
 	if (find_result < 0) {
 		LogError(ffmpeg_domain, "Couldn't find stream info");
-		avformat_close_input(&format_context);
 		return;
 	}
 
-	int audio_stream = ffmpeg_find_audio_stream(*format_context);
+	int audio_stream = ffmpeg_find_audio_stream(format_context);
 	if (audio_stream == -1) {
 		LogError(ffmpeg_domain, "No audio stream inside");
-		avformat_close_input(&format_context);
 		return;
 	}
 
-	AVStream &av_stream = *format_context->streams[audio_stream];
+	AVStream &av_stream = *format_context.streams[audio_stream];
 
 	AVCodecContext *codec_context = av_stream.codec;
 	const auto &codec_params = GetCodecParameters(av_stream);
@@ -463,7 +442,6 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 	if (!codec) {
 		LogError(ffmpeg_domain, "Unsupported audio codec");
-		avformat_close_input(&format_context);
 		return;
 	}
 
@@ -471,7 +449,6 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		ffmpeg_sample_format(GetSampleFormat(codec_params));
 	if (sample_format == SampleFormat::UNDEFINED) {
 		// (error message already done by ffmpeg_sample_format())
-		avformat_close_input(&format_context);
 		return;
 	}
 
@@ -482,7 +459,6 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 				       sample_format,
 				       codec_params.channels, error)) {
 		LogError(error);
-		avformat_close_input(&format_context);
 		return;
 	}
 
@@ -494,7 +470,6 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	const int open_result = avcodec_open2(codec_context, codec, nullptr);
 	if (open_result < 0) {
 		LogError(ffmpeg_domain, "Could not open codec");
-		avformat_close_input(&format_context);
 		return;
 	}
 
@@ -511,7 +486,6 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 #endif
 	if (!frame) {
 		LogError(ffmpeg_domain, "Could not allocate frame");
-		avformat_close_input(&format_context);
 		return;
 	}
 
@@ -530,7 +504,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 			/* AVSEEK_FLAG_BACKWARD asks FFmpeg to seek to
 			   the packet boundary before the seek time
 			   stamp, not after */
-			if (av_seek_frame(format_context, audio_stream, where,
+			if (av_seek_frame(&format_context, audio_stream, where,
 					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
 				decoder_seek_error(decoder);
 			else {
@@ -541,7 +515,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		}
 
 		AVPacket packet;
-		if (av_read_frame(format_context, &packet) < 0)
+		if (av_read_frame(&format_context, &packet) < 0)
 			/* end of file */
 			break;
 
@@ -573,7 +547,59 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 #endif
 
 	avcodec_close(codec_context);
+}
+
+static void
+ffmpeg_decode(Decoder &decoder, InputStream &input)
+{
+	AVInputFormat *input_format = ffmpeg_probe(&decoder, input);
+	if (input_format == nullptr)
+		return;
+
+	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
+		    input_format->name, input_format->long_name);
+
+	AvioStream stream(&decoder, input);
+	if (!stream.Open()) {
+		LogError(ffmpeg_domain, "Failed to open stream");
+		return;
+	}
+
+	AVFormatContext *format_context =
+		FfmpegOpenInput(stream.io, input.GetURI(), input_format);
+	if (format_context == nullptr) {
+		LogError(ffmpeg_domain, "Open failed");
+		return;
+	}
+
+	FfmpegDecode(decoder, input, *format_context);
+
 	avformat_close_input(&format_context);
+}
+
+static bool
+FfmpegScanStream(AVFormatContext &format_context,
+		 const struct tag_handler &handler, void *handler_ctx)
+{
+	const int find_result =
+		avformat_find_stream_info(&format_context, nullptr);
+	if (find_result < 0)
+		return false;
+
+	if (format_context.duration != (int64_t)AV_NOPTS_VALUE) {
+		const auto duration =
+			SongTime::FromScale<uint64_t>(format_context.duration,
+						      AV_TIME_BASE);
+		tag_handler_invoke_duration(&handler, handler_ctx, duration);
+	}
+
+	FfmpegScanDictionary(format_context.metadata, &handler, handler_ctx);
+	int idx = ffmpeg_find_audio_stream(format_context);
+	if (idx >= 0)
+		FfmpegScanDictionary(format_context.streams[idx]->metadata,
+				     &handler, handler_ctx);
+
+	return FfmpegScanStream(format_context, handler, handler_ctx);
 }
 
 static bool
@@ -593,28 +619,9 @@ ffmpeg_scan_stream(InputStream &is,
 	if (f == nullptr)
 		return false;
 
-	const int find_result =
-		avformat_find_stream_info(f, nullptr);
-	if (find_result < 0) {
-		avformat_close_input(&f);
-		return false;
-	}
-
-	if (f->duration != (int64_t)AV_NOPTS_VALUE) {
-		const auto duration =
-			SongTime::FromScale<uint64_t>(f->duration,
-						      AV_TIME_BASE);
-		tag_handler_invoke_duration(handler, handler_ctx, duration);
-	}
-
-	FfmpegScanDictionary(f->metadata, handler, handler_ctx);
-	int idx = ffmpeg_find_audio_stream(*f);
-	if (idx >= 0)
-		FfmpegScanDictionary(f->streams[idx]->metadata,
-				     handler, handler_ctx);
-
+	bool result = FfmpegScanStream(*f, *handler, handler_ctx);
 	avformat_close_input(&f);
-	return true;
+	return result;
 }
 
 /**
