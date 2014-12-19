@@ -100,8 +100,7 @@ struct AvioStream {
 		:decoder(_decoder), input(_input), io(nullptr) {}
 
 	~AvioStream() {
-		if (io != nullptr)
-			av_free(io);
+		av_free(io);
 	}
 
 	bool Open();
