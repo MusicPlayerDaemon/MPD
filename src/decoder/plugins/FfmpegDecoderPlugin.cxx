@@ -418,7 +418,6 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
-	//ffmpeg works with ours "fileops" helper
 	AVFormatContext *format_context = nullptr;
 	if (mpd_ffmpeg_open_input(&format_context, stream.io,
 				  input.GetURI(),
