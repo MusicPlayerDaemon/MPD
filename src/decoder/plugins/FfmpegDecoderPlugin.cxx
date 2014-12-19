@@ -530,23 +530,23 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		return;
 	}
 
-	AVStream *av_stream = format_context.streams[audio_stream];
+	AVStream &av_stream = *format_context.streams[audio_stream];
 
-	AVCodecContext *codec_context = av_stream->codec;
+	AVCodecContext &codec_context = *av_stream.codec;
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 25, 0)
 	const AVCodecDescriptor *codec_descriptor =
-		avcodec_descriptor_get(codec_context->codec_id);
+		avcodec_descriptor_get(codec_context.codec_id);
 	if (codec_descriptor != nullptr)
 		FormatDebug(ffmpeg_domain, "codec '%s'",
 			    codec_descriptor->name);
 #else
-	if (codec_context->codec_name[0] != 0)
+	if (codec_context.codec_name[0] != 0)
 		FormatDebug(ffmpeg_domain, "codec '%s'",
-			    codec_context->codec_name);
+			    codec_context.codec_name);
 #endif
 
-	AVCodec *codec = avcodec_find_decoder(codec_context->codec_id);
+	AVCodec *codec = avcodec_find_decoder(codec_context.codec_id);
 
 	if (!codec) {
 		LogError(ffmpeg_domain, "Unsupported audio codec");
@@ -554,7 +554,7 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 	}
 
 	const SampleFormat sample_format =
-		ffmpeg_sample_format(codec_context->sample_fmt);
+		ffmpeg_sample_format(codec_context.sample_fmt);
 	if (sample_format == SampleFormat::UNDEFINED) {
 		// (error message already done by ffmpeg_sample_format())
 		return;
@@ -563,9 +563,9 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format,
-				       codec_context->sample_rate,
+				       codec_context.sample_rate,
 				       sample_format,
-				       codec_context->channels, error)) {
+				       codec_context.channels, error)) {
 		LogError(error);
 		return;
 	}
@@ -575,7 +575,7 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 	   values into AVCodecContext.channels - a change that will be
 	   reverted later by avcodec_decode_audio3() */
 
-	const int open_result = avcodec_open2(codec_context, codec, nullptr);
+	const int open_result = avcodec_open2(&codec_context, codec, nullptr);
 	if (open_result < 0) {
 		LogError(ffmpeg_domain, "Could not open codec");
 		return;
@@ -617,8 +617,8 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 
 		if (packet.stream_index == audio_stream)
 			cmd = ffmpeg_send_packet(decoder, input,
-						 packet, *codec_context,
-						 *av_stream,
+						 packet, codec_context,
+						 av_stream,
 						 *frame,
 						 interleaved_buffer);
 		else
@@ -629,14 +629,14 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		if (cmd == DecoderCommand::SEEK) {
 			int64_t where =
 				ToFfmpegTime(decoder_seek_time(decoder),
-					     av_stream->time_base) +
-				start_time_fallback(*av_stream);
+					     av_stream.time_base) +
+				start_time_fallback(av_stream);
 
 			if (av_seek_frame(&format_context, audio_stream, where,
 					  AVSEEK_FLAG_ANY) < 0)
 				decoder_seek_error(decoder);
 			else {
-				avcodec_flush_buffers(codec_context);
+				avcodec_flush_buffers(&codec_context);
 				decoder_command_finished(decoder);
 			}
 		}
@@ -650,7 +650,7 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 	av_free(frame);
 #endif
 
-	avcodec_close(codec_context);
+	avcodec_close(&codec_context);
 }
 
 static void
