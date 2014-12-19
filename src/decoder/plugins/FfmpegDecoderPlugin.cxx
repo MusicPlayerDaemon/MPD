@@ -321,7 +321,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   AVPacket &&packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
-		   AVFrame *frame,
+		   AVFrame &frame,
 		   uint64_t min_frame, size_t pcm_frame_size,
 		   FfmpegBuffer &buffer)
 {
@@ -346,7 +346,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 	while (packet.size > 0 && cmd == DecoderCommand::NONE) {
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(&codec_context,
-						frame, &got_frame,
+						&frame, &got_frame,
 						&packet);
 		if (len < 0) {
 			/* if error, we skip the frame */
@@ -357,11 +357,11 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		packet.data += len;
 		packet.size -= len;
 
-		if (!got_frame || frame->nb_samples <= 0)
+		if (!got_frame || frame.nb_samples <= 0)
 			continue;
 
 		auto output_buffer =
-			copy_interleave_frame(codec_context, *frame,
+			copy_interleave_frame(codec_context, frame,
 					      buffer, error);
 		if (output_buffer.IsNull()) {
 			/* this must be a serious error,
@@ -394,7 +394,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   const AVPacket &packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
-		   AVFrame *frame,
+		   AVFrame &frame,
 		   uint64_t min_frame, size_t pcm_frame_size,
 		   FfmpegBuffer &buffer)
 {
@@ -527,9 +527,9 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
-	AVStream *av_stream = format_context->streams[audio_stream];
+	AVStream &av_stream = *format_context->streams[audio_stream];
 
-	AVCodecContext *codec_context = av_stream->codec;
+	AVCodecContext *codec_context = av_stream.codec;
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 25, 0)
 	const AVCodecDescriptor *codec_descriptor =
@@ -617,8 +617,8 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 			cmd = ffmpeg_send_packet(decoder, input,
 						 packet,
 						 *codec_context,
-						 *av_stream,
-						 frame,
+						 av_stream,
+						 *frame,
 						 min_frame, audio_format.GetFrameSize(),
 						 interleaved_buffer);
 			min_frame = 0;
@@ -634,8 +634,8 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		if (cmd == DecoderCommand::SEEK) {
 			int64_t where =
 				ToFfmpegTime(decoder_seek_time(decoder),
-					     av_stream->time_base) +
-				start_time_fallback(*av_stream);
+					     av_stream.time_base) +
+				start_time_fallback(av_stream);
 
 			/* AVSEEK_FLAG_BACKWARD asks FFmpeg to seek to
 			   the packet boundary before the seek time
