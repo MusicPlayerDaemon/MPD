@@ -698,7 +698,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 #elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
 	avcodec_free_frame(&frame);
 #else
-	av_freep(&frame);
+	av_free(frame);
 #endif
 
 	avcodec_close(codec_context);
