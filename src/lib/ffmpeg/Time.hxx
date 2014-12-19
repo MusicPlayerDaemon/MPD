@@ -53,6 +53,34 @@ RatioToAVRational()
 	return { Ratio::num, Ratio::den };
 }
 
+/**
+ * Convert a FFmpeg time stamp to a #SongTime.
+ */
+gcc_const
+static inline SongTime
+FromFfmpegTime(int64_t t, const AVRational time_base)
+{
+	assert(t != (int64_t)AV_NOPTS_VALUE);
+
+	return SongTime::FromMS(av_rescale_q(t, time_base,
+					     (AVRational){1, 1000}));
+}
+
+/**
+ * Convert a FFmpeg time stamp to a #SignedSongTime.
+ */
+gcc_const
+static inline SignedSongTime
+FromFfmpegTimeChecked(int64_t t, const AVRational time_base)
+{
+	return t != (int64_t)AV_NOPTS_VALUE
+		? SignedSongTime(FromFfmpegTime(t, time_base))
+		: SignedSongTime::Negative();
+}
+
+/**
+ * Convert a #SongTime to a FFmpeg time stamp with the given base.
+ */
 gcc_const
 static inline int64_t
 ToFfmpegTime(SongTime t, const AVRational time_base)
