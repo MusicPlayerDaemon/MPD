@@ -362,10 +362,8 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 static AVInputFormat *
 ffmpeg_probe(Decoder *decoder, InputStream &is)
 {
-	enum {
-		BUFFER_SIZE = 16384,
-		PADDING = 16,
-	};
+	constexpr size_t BUFFER_SIZE = 16384;
+	constexpr size_t PADDING = 16;
 
 	unsigned char buffer[BUFFER_SIZE];
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
