@@ -473,10 +473,11 @@ static void
 FfmpegScanMetadata(const AVFormatContext &format_context, int audio_stream,
 		   const tag_handler &handler, void *handler_ctx)
 {
+	assert(audio_stream >= 0);
+
 	FfmpegScanDictionary(format_context.metadata, &handler, handler_ctx);
-	if (audio_stream >= 0)
-		FfmpegScanMetadata(*format_context.streams[audio_stream],
-				   handler, handler_ctx);
+	FfmpegScanMetadata(*format_context.streams[audio_stream],
+			   handler, handler_ctx);
 }
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
@@ -691,6 +692,10 @@ FfmpegScanStream(AVFormatContext &format_context,
 	if (find_result < 0)
 		return false;
 
+	const int audio_stream = ffmpeg_find_audio_stream(format_context);
+	if (audio_stream < 0)
+		return false;
+
 	if (format_context.duration != (int64_t)AV_NOPTS_VALUE) {
 		const auto duration =
 			SongTime::FromScale<uint64_t>(format_context.duration,
@@ -698,8 +703,7 @@ FfmpegScanStream(AVFormatContext &format_context,
 		tag_handler_invoke_duration(&handler, handler_ctx, duration);
 	}
 
-	int idx = ffmpeg_find_audio_stream(format_context);
-	FfmpegScanMetadata(format_context, idx, handler, handler_ctx);
+	FfmpegScanMetadata(format_context, audio_stream, handler, handler_ctx);
 
 	return true;
 }
