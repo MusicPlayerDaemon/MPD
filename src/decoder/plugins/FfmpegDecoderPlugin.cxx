@@ -514,6 +514,146 @@ FfmpegCheckTag(Decoder &decoder, InputStream &is,
 #endif
 
 static void
+FfmpegDecode(Decoder &decoder, InputStream &input,
+	     AVFormatContext &format_context)
+{
+	const int find_result =
+		avformat_find_stream_info(&format_context, nullptr);
+	if (find_result < 0) {
+		LogError(ffmpeg_domain, "Couldn't find stream info");
+		return;
+	}
+
+	int audio_stream = ffmpeg_find_audio_stream(format_context);
+	if (audio_stream == -1) {
+		LogError(ffmpeg_domain, "No audio stream inside");
+		return;
+	}
+
+	AVStream *av_stream = format_context.streams[audio_stream];
+
+	AVCodecContext *codec_context = av_stream->codec;
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 25, 0)
+	const AVCodecDescriptor *codec_descriptor =
+		avcodec_descriptor_get(codec_context->codec_id);
+	if (codec_descriptor != nullptr)
+		FormatDebug(ffmpeg_domain, "codec '%s'",
+			    codec_descriptor->name);
+#else
+	if (codec_context->codec_name[0] != 0)
+		FormatDebug(ffmpeg_domain, "codec '%s'",
+			    codec_context->codec_name);
+#endif
+
+	AVCodec *codec = avcodec_find_decoder(codec_context->codec_id);
+
+	if (!codec) {
+		LogError(ffmpeg_domain, "Unsupported audio codec");
+		return;
+	}
+
+	const SampleFormat sample_format =
+		ffmpeg_sample_format(codec_context->sample_fmt);
+	if (sample_format == SampleFormat::UNDEFINED) {
+		// (error message already done by ffmpeg_sample_format())
+		return;
+	}
+
+	Error error;
+	AudioFormat audio_format;
+	if (!audio_format_init_checked(audio_format,
+				       codec_context->sample_rate,
+				       sample_format,
+				       codec_context->channels, error)) {
+		LogError(error);
+		return;
+	}
+
+	/* the audio format must be read from AVCodecContext by now,
+	   because avcodec_open() has been demonstrated to fill bogus
+	   values into AVCodecContext.channels - a change that will be
+	   reverted later by avcodec_decode_audio3() */
+
+	const int open_result = avcodec_open2(codec_context, codec, nullptr);
+	if (open_result < 0) {
+		LogError(ffmpeg_domain, "Could not open codec");
+		return;
+	}
+
+	const SignedSongTime total_time =
+		format_context.duration != (int64_t)AV_NOPTS_VALUE
+		? SignedSongTime::FromScale<uint64_t>(format_context.duration,
+						      AV_TIME_BASE)
+		: SignedSongTime::Negative();
+
+	decoder_initialized(decoder, audio_format,
+			    input.IsSeekable(), total_time);
+
+	FfmpegParseMetaData(decoder, format_context, audio_stream);
+
+#if LIBAVUTIL_VERSION_MAJOR >= 53
+	AVFrame *frame = av_frame_alloc();
+#else
+	AVFrame *frame = avcodec_alloc_frame();
+#endif
+	if (!frame) {
+		LogError(ffmpeg_domain, "Could not allocate frame");
+		return;
+	}
+
+	FfmpegBuffer interleaved_buffer;
+
+	DecoderCommand cmd;
+	do {
+		AVPacket packet;
+		if (av_read_frame(&format_context, &packet) < 0)
+			/* end of file */
+			break;
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
+		FfmpegCheckTag(decoder, input, format_context, audio_stream);
+#endif
+
+		if (packet.stream_index == audio_stream)
+			cmd = ffmpeg_send_packet(decoder, input,
+						 packet, *codec_context,
+						 *av_stream,
+						 *frame,
+						 interleaved_buffer);
+		else
+			cmd = decoder_get_command(decoder);
+
+		av_free_packet(&packet);
+
+		if (cmd == DecoderCommand::SEEK) {
+			int64_t where =
+				ToFfmpegTime(decoder_seek_time(decoder),
+					     av_stream->time_base) +
+				start_time_fallback(*av_stream);
+
+			if (av_seek_frame(&format_context, audio_stream, where,
+					  AVSEEK_FLAG_ANY) < 0)
+				decoder_seek_error(decoder);
+			else {
+				avcodec_flush_buffers(codec_context);
+				decoder_command_finished(decoder);
+			}
+		}
+	} while (cmd != DecoderCommand::STOP);
+
+#if LIBAVUTIL_VERSION_MAJOR >= 53
+	av_frame_free(&frame);
+#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
+	avcodec_free_frame(&frame);
+#else
+	av_free(frame);
+#endif
+
+	avcodec_close(codec_context);
+}
+
+static void
 ffmpeg_decode(Decoder &decoder, InputStream &input)
 {
 	AVInputFormat *input_format = ffmpeg_probe(&decoder, input);
@@ -538,148 +678,30 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
-	const int find_result =
-		avformat_find_stream_info(format_context, nullptr);
-	if (find_result < 0) {
-		LogError(ffmpeg_domain, "Couldn't find stream info");
-		avformat_close_input(&format_context);
-		return;
-	}
-
-	int audio_stream = ffmpeg_find_audio_stream(*format_context);
-	if (audio_stream == -1) {
-		LogError(ffmpeg_domain, "No audio stream inside");
-		avformat_close_input(&format_context);
-		return;
-	}
-
-	AVStream *av_stream = format_context->streams[audio_stream];
-
-	AVCodecContext *codec_context = av_stream->codec;
-
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 25, 0)
-	const AVCodecDescriptor *codec_descriptor =
-		avcodec_descriptor_get(codec_context->codec_id);
-	if (codec_descriptor != nullptr)
-		FormatDebug(ffmpeg_domain, "codec '%s'",
-			    codec_descriptor->name);
-#else
-	if (codec_context->codec_name[0] != 0)
-		FormatDebug(ffmpeg_domain, "codec '%s'",
-			    codec_context->codec_name);
-#endif
-
-	AVCodec *codec = avcodec_find_decoder(codec_context->codec_id);
-
-	if (!codec) {
-		LogError(ffmpeg_domain, "Unsupported audio codec");
-		avformat_close_input(&format_context);
-		return;
-	}
-
-	const SampleFormat sample_format =
-		ffmpeg_sample_format(codec_context->sample_fmt);
-	if (sample_format == SampleFormat::UNDEFINED) {
-		// (error message already done by ffmpeg_sample_format())
-		avformat_close_input(&format_context);
-		return;
-	}
-
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format,
-				       codec_context->sample_rate,
-				       sample_format,
-				       codec_context->channels, error)) {
-		LogError(error);
-		avformat_close_input(&format_context);
-		return;
-	}
-
-	/* the audio format must be read from AVCodecContext by now,
-	   because avcodec_open() has been demonstrated to fill bogus
-	   values into AVCodecContext.channels - a change that will be
-	   reverted later by avcodec_decode_audio3() */
-
-	const int open_result = avcodec_open2(codec_context, codec, nullptr);
-	if (open_result < 0) {
-		LogError(ffmpeg_domain, "Could not open codec");
-		avformat_close_input(&format_context);
-		return;
-	}
-
-	const SignedSongTime total_time =
-		format_context->duration != (int64_t)AV_NOPTS_VALUE
-		? SignedSongTime::FromScale<uint64_t>(format_context->duration,
-						      AV_TIME_BASE)
-		: SignedSongTime::Negative();
-
-	decoder_initialized(decoder, audio_format,
-			    input.IsSeekable(), total_time);
-
-	FfmpegParseMetaData(decoder, *format_context, audio_stream);
-
-#if LIBAVUTIL_VERSION_MAJOR >= 53
-	AVFrame *frame = av_frame_alloc();
-#else
-	AVFrame *frame = avcodec_alloc_frame();
-#endif
-	if (!frame) {
-		LogError(ffmpeg_domain, "Could not allocate frame");
-		avformat_close_input(&format_context);
-		return;
-	}
-
-	FfmpegBuffer interleaved_buffer;
-
-	DecoderCommand cmd;
-	do {
-		AVPacket packet;
-		if (av_read_frame(format_context, &packet) < 0)
-			/* end of file */
-			break;
-
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
-		FfmpegCheckTag(decoder, input, *format_context, audio_stream);
-#endif
-
-		if (packet.stream_index == audio_stream)
-			cmd = ffmpeg_send_packet(decoder, input,
-						 packet, *codec_context,
-						 *av_stream,
-						 *frame,
-						 interleaved_buffer);
-		else
-			cmd = decoder_get_command(decoder);
-
-		av_free_packet(&packet);
-
-		if (cmd == DecoderCommand::SEEK) {
-			int64_t where =
-				ToFfmpegTime(decoder_seek_time(decoder),
-					     av_stream->time_base) +
-				start_time_fallback(*av_stream);
-
-			if (av_seek_frame(format_context, audio_stream, where,
-					  AVSEEK_FLAG_ANY) < 0)
-				decoder_seek_error(decoder);
-			else {
-				avcodec_flush_buffers(codec_context);
-				decoder_command_finished(decoder);
-			}
-		}
-	} while (cmd != DecoderCommand::STOP);
-
-#if LIBAVUTIL_VERSION_MAJOR >= 53
-	av_frame_free(&frame);
-#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
-	avcodec_free_frame(&frame);
-#else
-	av_free(frame);
-#endif
-
-	avcodec_close(codec_context);
+	FfmpegDecode(decoder, input, *format_context);
 	avformat_close_input(&format_context);
+}
+
+static bool
+FfmpegScanStream(AVFormatContext &format_context,
+		 const struct tag_handler &handler, void *handler_ctx)
+{
+	const int find_result =
+		avformat_find_stream_info(&format_context, nullptr);
+	if (find_result < 0)
+		return false;
+
+	if (format_context.duration != (int64_t)AV_NOPTS_VALUE) {
+		const auto duration =
+			SongTime::FromScale<uint64_t>(format_context.duration,
+						      AV_TIME_BASE);
+		tag_handler_invoke_duration(&handler, handler_ctx, duration);
+	}
+
+	int idx = ffmpeg_find_audio_stream(format_context);
+	FfmpegScanMetadata(format_context, idx, handler, handler_ctx);
+
+	return true;
 }
 
 static bool
@@ -699,25 +721,9 @@ ffmpeg_scan_stream(InputStream &is,
 				  input_format) != 0)
 		return false;
 
-	const int find_result =
-		avformat_find_stream_info(f, nullptr);
-	if (find_result < 0) {
-		avformat_close_input(&f);
-		return false;
-	}
-
-	if (f->duration != (int64_t)AV_NOPTS_VALUE) {
-		const auto duration =
-			SongTime::FromScale<uint64_t>(f->duration,
-						      AV_TIME_BASE);
-		tag_handler_invoke_duration(handler, handler_ctx, duration);
-	}
-
-	int idx = ffmpeg_find_audio_stream(*f);
-	FfmpegScanMetadata(*f, idx, *handler, handler_ctx);
-
+	bool result = FfmpegScanStream(*f, *handler, handler_ctx);
 	avformat_close_input(&f);
-	return true;
+	return result;
 }
 
 /**
