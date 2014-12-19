@@ -36,6 +36,9 @@ extern "C" {
 #undef SampleFormat
 #endif
 
+/**
+ * Convert a FFmpeg time stamp to a floating point value (in seconds).
+ */
 gcc_const
 static inline double
 FfmpegTimeToDouble(int64_t t, const AVRational time_base)
@@ -46,6 +49,9 @@ FfmpegTimeToDouble(int64_t t, const AVRational time_base)
 		/ (double)1024;
 }
 
+/**
+ * Convert a std::ratio to a #AVRational.
+ */
 template<typename Ratio>
 static inline constexpr AVRational
 RatioToAVRational()
@@ -53,6 +59,9 @@ RatioToAVRational()
 	return { Ratio::num, Ratio::den };
 }
 
+/**
+ * Convert a #SongTime to a FFmpeg time stamp with the given base.
+ */
 gcc_const
 static inline int64_t
 ToFfmpegTime(SongTime t, const AVRational time_base)
