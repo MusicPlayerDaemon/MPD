@@ -26,6 +26,7 @@
 #include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/Error.hxx"
 #include "lib/ffmpeg/LogError.hxx"
+#include "lib/ffmpeg/LogCallback.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
@@ -53,39 +54,6 @@ extern "C" {
 #include <assert.h>
 #include <string.h>
 
-static LogLevel
-import_ffmpeg_level(int level)
-{
-	if (level <= AV_LOG_FATAL)
-		return LogLevel::ERROR;
-
-	if (level <= AV_LOG_WARNING)
-		return LogLevel::WARNING;
-
-	if (level <= AV_LOG_INFO)
-		return LogLevel::INFO;
-
-	return LogLevel::DEBUG;
-}
-
-static void
-mpd_ffmpeg_log_callback(gcc_unused void *ptr, int level,
-			const char *fmt, va_list vl)
-{
-	const AVClass * cls = nullptr;
-
-	if (ptr != nullptr)
-		cls = *(const AVClass *const*)ptr;
-
-	if (cls != nullptr) {
-		char domain[64];
-		snprintf(domain, sizeof(domain), "%s/%s",
-			 ffmpeg_domain.GetName(), cls->item_name(ptr));
-		const Domain d(domain);
-		LogFormatV(d, import_ffmpeg_level(level), fmt, vl);
-	}
-}
-
 /**
  * API compatibility wrapper for av_open_input_stream() and
  * avformat_open_input().
@@ -108,7 +76,7 @@ mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
 static bool
 ffmpeg_init(gcc_unused const config_param &param)
 {
-	av_log_set_callback(mpd_ffmpeg_log_callback);
+	av_log_set_callback(FfmpegLogCallback);
 
 	av_register_all();
 	return true;

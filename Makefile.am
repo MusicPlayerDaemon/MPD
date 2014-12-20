@@ -802,6 +802,7 @@ libffmpeg_a_SOURCES = \
 	src/lib/ffmpeg/Time.hxx \
 	src/lib/ffmpeg/Buffer.hxx \
 	src/lib/ffmpeg/LogError.cxx src/lib/ffmpeg/LogError.hxx \
+	src/lib/ffmpeg/LogCallback.cxx src/lib/ffmpeg/LogCallback.hxx \
 	src/lib/ffmpeg/Error.cxx src/lib/ffmpeg/Error.hxx \
 	src/lib/ffmpeg/Domain.cxx src/lib/ffmpeg/Domain.hxx
 libffmpeg_a_CPPFLAGS = $(AM_CPPFLAGS) \
