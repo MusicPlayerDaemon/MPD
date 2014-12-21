@@ -26,7 +26,7 @@
 #include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/Error.hxx"
 #include "lib/ffmpeg/LogError.hxx"
-#include "lib/ffmpeg/LogCallback.hxx"
+#include "lib/ffmpeg/Init.hxx"
 #include "lib/ffmpeg/Buffer.hxx"
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
@@ -76,9 +76,7 @@ mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
 static bool
 ffmpeg_init(gcc_unused const config_param &param)
 {
-	av_log_set_callback(FfmpegLogCallback);
-
-	av_register_all();
+	FfmpegInit();
 	return true;
 }
 
