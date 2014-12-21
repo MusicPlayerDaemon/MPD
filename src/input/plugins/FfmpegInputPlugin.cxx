@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "FfmpegInputPlugin.hxx"
+#include "lib/ffmpeg/Init.hxx"
 #include "lib/ffmpeg/Domain.hxx"
 #include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
@@ -31,7 +32,6 @@
 
 extern "C" {
 #include <libavformat/avio.h>
-#include <libavformat/avformat.h>
 }
 
 struct FfmpegInputStream final : public InputStream {
@@ -75,7 +75,7 @@ static InputPlugin::InitResult
 input_ffmpeg_init(gcc_unused const config_param &param,
 		  Error &error)
 {
-	av_register_all();
+	FfmpegInit();
 
 	/* disable this plugin if there's no registered protocol */
 	if (!input_ffmpeg_supported()) {
