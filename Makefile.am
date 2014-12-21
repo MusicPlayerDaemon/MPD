@@ -817,6 +817,7 @@ endif
 if ENABLE_FFMPEG
 noinst_LIBRARIES += libffmpeg.a
 libffmpeg_a_SOURCES = \
+	src/lib/ffmpeg/Init.cxx src/lib/ffmpeg/Init.hxx \
 	src/lib/ffmpeg/Time.hxx \
 	src/lib/ffmpeg/Buffer.hxx \
 	src/lib/ffmpeg/LogError.cxx src/lib/ffmpeg/LogError.hxx \
