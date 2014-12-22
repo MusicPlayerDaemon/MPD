@@ -1017,7 +1017,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/SndfileDecoderPlugin.hxx
 endif
 
-if HAVE_GME
+if ENABLE_GME
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/GmeDecoderPlugin.cxx src/decoder/plugins/GmeDecoderPlugin.hxx
 endif

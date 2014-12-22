@@ -104,7 +104,7 @@ const struct DecoderPlugin *const decoder_plugins[] = {
 #ifdef ENABLE_FFMPEG
 	&ffmpeg_decoder_plugin,
 #endif
-#ifdef HAVE_GME
+#ifdef ENABLE_GME
 	&gme_decoder_plugin,
 #endif
 	&pcm_decoder_plugin,

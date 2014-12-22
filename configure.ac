@@ -328,11 +328,6 @@ AC_ARG_ENABLE(fifo,
 		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
 
-AC_ARG_ENABLE(gme,
-	AS_HELP_STRING([--enable-gme],
-		[enable Blargg's game music emulator plugin]),,
-	enable_gme=auto)
-
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
@@ -894,12 +889,10 @@ MPD_ENABLE_AUTO_PKG(fluidsynth, FLUIDSYNTH, [fluidsynth >= 1.1],
 	[fluidsynth MIDI decoder plugin], [fluidsynth not found])
 
 dnl ---------------------------------- libgme ---------------------------------
-MPD_AUTO_PKG_LIB(gme, GME, [libgme], gme, gme_open_file, [-lgme -lstdc++], [],
-	[gme decoder plugin], [libgme not found])
-AM_CONDITIONAL(HAVE_GME, test x$enable_gme = xyes)
-if test x$enable_gme = xyes; then
-	AC_DEFINE(HAVE_GME, 1, [Define for gme support])
-fi
+
+MPD_ENABLE_AUTO_PKG_LIB(gme, GME, [libgme],
+	gme, gme_open_file, [-lgme -lstdc++], [],
+	[Game Music Emulator decoder plugin], [libgme not found])
 
 dnl ---------------------------------- libmad ---------------------------------
 MPD_ENABLE_AUTO_PKG_LIB(mad, MAD, [mad],
