@@ -45,6 +45,13 @@ struct AvioStream {
 	~AvioStream();
 
 	bool Open();
+
+private:
+	int Read(void *buffer, int size);
+	int64_t Seek(int64_t pos, int whence);
+
+	static int _Read(void *opaque, uint8_t *buf, int size);
+	static int64_t _Seek(void *opaque, int64_t pos, int whence);
 };
 
 #endif

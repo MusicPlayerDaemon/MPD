@@ -31,49 +31,60 @@ AvioStream::~AvioStream()
 	av_free(io);
 }
 
-static int
-mpd_ffmpeg_stream_read(void *opaque, uint8_t *buf, int size)
+inline int
+AvioStream::Read(void *dest, int size)
 {
-	AvioStream *stream = (AvioStream *)opaque;
-
-	return decoder_read(stream->decoder, stream->input,
-			    (void *)buf, size);
+	return decoder_read(decoder, input, dest, size);
 }
 
-static int64_t
-mpd_ffmpeg_stream_seek(void *opaque, int64_t pos, int whence)
+inline int64_t
+AvioStream::Seek(int64_t pos, int whence)
 {
-	AvioStream *stream = (AvioStream *)opaque;
-
 	switch (whence) {
 	case SEEK_SET:
 		break;
 
 	case SEEK_CUR:
-		pos += stream->input.GetOffset();
+		pos += input.GetOffset();
 		break;
 
 	case SEEK_END:
-		if (!stream->input.KnownSize())
+		if (!input.KnownSize())
 			return -1;
 
-		pos += stream->input.GetSize();
+		pos += input.GetSize();
 		break;
 
 	case AVSEEK_SIZE:
-		if (!stream->input.KnownSize())
+		if (!input.KnownSize())
 			return -1;
 
-		return stream->input.GetSize();
+		return input.GetSize();
 
 	default:
 		return -1;
 	}
 
-	if (!stream->input.LockSeek(pos, IgnoreError()))
+	if (!input.LockSeek(pos, IgnoreError()))
 		return -1;
 
-	return stream->input.GetOffset();
+	return input.GetOffset();
+}
+
+int
+AvioStream::_Read(void *opaque, uint8_t *buf, int size)
+{
+	AvioStream &stream = *(AvioStream *)opaque;
+
+	return stream.Read(buf, size);
+}
+
+int64_t
+AvioStream::_Seek(void *opaque, int64_t pos, int whence)
+{
+	AvioStream &stream = *(AvioStream *)opaque;
+
+	return stream.Seek(pos, whence);
 }
 
 bool
@@ -81,8 +92,7 @@ AvioStream::Open()
 {
 	io = avio_alloc_context(buffer, sizeof(buffer),
 				false, this,
-				mpd_ffmpeg_stream_read, nullptr,
-				input.IsSeekable()
-				? mpd_ffmpeg_stream_seek : nullptr);
+				_Read, nullptr,
+				input.IsSeekable() ? _Seek : nullptr);
 	return io != nullptr;
 }
