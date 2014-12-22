@@ -95,7 +95,7 @@ AC_DEFUN([MPD_ARG_ENABLE], [
 
 	if test x$[]enable_$1 = xyes; then
 		AC_DEFINE(ENABLE_$2, 1,
-			[Define to enable $4])
+			[Define to enable $3])
 	fi
 	AM_CONDITIONAL(ENABLE_$2, test x$[]enable_$1 = xyes)
 ])
