@@ -753,7 +753,7 @@ libarchive_a_SOURCES += \
 	src/archive/plugins/ZzipArchivePlugin.hxx
 endif
 
-if HAVE_ISO9660
+if ENABLE_ISO9660
 libarchive_a_SOURCES += \
 	src/archive/plugins/Iso9660ArchivePlugin.cxx \
 	src/archive/plugins/Iso9660ArchivePlugin.hxx

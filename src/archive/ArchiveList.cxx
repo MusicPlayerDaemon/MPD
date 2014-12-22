@@ -35,7 +35,7 @@ const ArchivePlugin *const archive_plugins[] = {
 #ifdef ENABLE_ZZIP
 	&zzip_archive_plugin,
 #endif
-#ifdef HAVE_ISO9660
+#ifdef ENABLE_ISO9660
 	&iso9660_archive_plugin,
 #endif
 	nullptr
