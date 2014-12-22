@@ -54,23 +54,19 @@ extern "C" {
 #include <assert.h>
 #include <string.h>
 
-/**
- * API compatibility wrapper for av_open_input_stream() and
- * avformat_open_input().
- */
-static int
-mpd_ffmpeg_open_input(AVFormatContext **ic_ptr,
-		      AVIOContext *pb,
-		      const char *filename,
-		      AVInputFormat *fmt)
+static AVFormatContext *
+FfmpegOpenInput(AVIOContext *pb,
+		const char *filename,
+		AVInputFormat *fmt)
 {
 	AVFormatContext *context = avformat_alloc_context();
 	if (context == nullptr)
-		return AVERROR(ENOMEM);
+		return nullptr;
 
 	context->pb = pb;
-	*ic_ptr = context;
-	return avformat_open_input(ic_ptr, filename, fmt, nullptr);
+
+	avformat_open_input(&context, filename, fmt, nullptr);
+	return context;
 }
 
 static bool
@@ -384,10 +380,9 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
-	AVFormatContext *format_context = nullptr;
-	if (mpd_ffmpeg_open_input(&format_context, stream.io,
-				  input.GetURI(),
-				  input_format) != 0) {
+	AVFormatContext *format_context =
+		FfmpegOpenInput(stream.io, input.GetURI(), input_format);
+	if (format_context == nullptr) {
 		LogError(ffmpeg_domain, "Open failed");
 		return;
 	}
@@ -553,9 +548,9 @@ ffmpeg_scan_stream(InputStream &is,
 	if (!stream.Open())
 		return false;
 
-	AVFormatContext *f = nullptr;
-	if (mpd_ffmpeg_open_input(&f, stream.io, is.GetURI(),
-				  input_format) != 0)
+	AVFormatContext *f =
+		FfmpegOpenInput(stream.io, is.GetURI(), input_format);
+	if (f == nullptr)
 		return false;
 
 	const int find_result =
