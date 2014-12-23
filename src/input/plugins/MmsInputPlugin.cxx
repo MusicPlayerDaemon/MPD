@@ -92,6 +92,13 @@ input_mms_open(const char *url,
 size_t
 MmsInputStream::ThreadRead(void *ptr, size_t read_size, Error &error)
 {
+	/* unfortunately, mmsx_read() blocks until the whole buffer
+	   has been filled; to avoid big latencies, limit the size of
+	   each chunk we read to a reasonable size */
+	constexpr size_t MAX_CHUNK = 16384;
+	if (read_size > MAX_CHUNK)
+		read_size = MAX_CHUNK;
+
 	int nbytes = mmsx_read(nullptr, mms, (char *)ptr, read_size);
 	if (nbytes <= 0) {
 		if (nbytes < 0)
