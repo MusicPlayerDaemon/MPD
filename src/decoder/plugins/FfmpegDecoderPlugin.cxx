@@ -59,8 +59,8 @@ extern "C" {
 
 static AVFormatContext *
 FfmpegOpenInput(AVIOContext *pb,
-		      const char *filename,
-		      AVInputFormat *fmt)
+		const char *filename,
+		AVInputFormat *fmt)
 {
 	AVFormatContext *context = avformat_alloc_context();
 	if (context == nullptr)
