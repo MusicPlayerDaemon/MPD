@@ -18,6 +18,12 @@ ver 0.20 (not yet released)
 * reset song priority on playback
 * remove dependency on GLib
 
+ver 0.19.8 (not yet released)
+* input
+  - mms: reduce delay at the beginning of playback
+* decoder
+  - dsdiff, dsf: allow ID3 tags larger than 4 kB
+
 ver 0.19.7 (2014/12/17)
 * input
   - nfs: fix crash while canceling a failing file open operation
