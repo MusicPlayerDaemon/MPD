@@ -3,6 +3,7 @@ ver 0.19.8 (not yet released)
   - mms: reduce delay at the beginning of playback
 * decoder
   - dsdiff, dsf: allow ID3 tags larger than 4 kB
+  - ffmpeg: support interleaved floating point
 
 ver 0.19.7 (2014/12/17)
 * input
