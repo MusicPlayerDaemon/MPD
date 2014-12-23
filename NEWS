@@ -1,3 +1,5 @@
+ver 0.19.8 (not yet released)
+
 ver 0.19.7 (2014/12/17)
 * input
   - nfs: fix crash while canceling a failing file open operation
