@@ -32,6 +32,7 @@
 #include "util/Alloc.hxx"
 
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef HAVE_ID3TAG
 #include <id3tag.h>
