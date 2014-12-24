@@ -116,10 +116,11 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 	if (nframes <= 0)
 		return 0;
 
+	jack_nframes_t available = mpd_jack_available(jd);
+
 	if (jd->pause) {
 		/* empty the ring buffers */
 
-		const jack_nframes_t available = mpd_jack_available(jd);
 		for (unsigned i = 0; i < jd->audio_format.channels; ++i)
 			jack_ringbuffer_read_advance(jd->ringbuffer[i],
 						     available * jack_sample_size);
@@ -138,7 +139,6 @@ mpd_jack_process(jack_nframes_t nframes, void *arg)
 		return 0;
 	}
 
-	jack_nframes_t available = mpd_jack_available(jd);
 	if (available > nframes)
 		available = nframes;
 
