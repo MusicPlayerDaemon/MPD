@@ -36,9 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum {
-	MAX_PORTS = 16,
-};
+static constexpr unsigned MAX_PORTS = 16;
 
 static const size_t jack_sample_size = sizeof(jack_default_audio_sample_t);
 
