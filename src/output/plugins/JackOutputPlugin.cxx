@@ -157,8 +157,7 @@ JackOutput::Process(jack_nframes_t nframes)
 				(jack_default_audio_sample_t *)
 				jack_port_get_buffer(ports[i], nframes);
 
-			for (jack_nframes_t f = 0; f < nframes; ++f)
-				out[f] = 0.0;
+			std::fill_n(out, nframes, 0.0);
 		}
 
 		return;
@@ -181,9 +180,8 @@ JackOutput::Process(jack_nframes_t nframes)
 		jack_ringbuffer_read(ringbuffer[i],
 				     (char *)out, available * jack_sample_size);
 
-		for (jack_nframes_t f = available; f < nframes; ++f)
-			/* ringbuffer underrun, fill with silence */
-			out[f] = 0.0;
+		/* ringbuffer underrun, fill with silence */
+		std::fill(out + available, out + nframes, 0.0);
 	}
 
 	/* generate silence for the unused source ports */
@@ -199,8 +197,7 @@ JackOutput::Process(jack_nframes_t nframes)
 			   buffer */
 			continue;
 
-		for (jack_nframes_t f = 0; f < nframes; ++f)
-			out[f] = 0.0;
+		std::fill_n(out, nframes, 0.0);
 	}
 }
 
@@ -540,8 +537,8 @@ JackOutput::Start(Error &error)
 	if (audio_format.channels >= 2 && num_dports == 1) {
 		/* mix stereo signal on one speaker */
 
-		while (num_dports < audio_format.channels)
-			dports[num_dports++] = dports[0];
+		std::fill(dports + num_dports, dports + audio_format.channels,
+			  dports[0]);
 	} else if (num_dports > audio_format.channels) {
 		if (audio_format.channels == 1 && num_dports > 2) {
 			/* mono input file: connect the one source
