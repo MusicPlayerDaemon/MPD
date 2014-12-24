@@ -111,7 +111,7 @@ struct JackOutput {
 
 	void Process(jack_nframes_t nframes);
 
-	void WriteSamples(const void *src, unsigned num_samples);
+	void WriteSamples(const void *src, size_t n_frames);
 	size_t Play(const void *chunk, size_t size, Error &error);
 };
 
@@ -637,11 +637,11 @@ mpd_jack_delay(AudioOutput *ao)
 }
 
 inline void
-JackOutput::WriteSamples(const void *_src, unsigned num_samples)
+JackOutput::WriteSamples(const void *_src, size_t n_frames)
 {
 	const float *src = (const float *)_src;
 
-	while (num_samples-- > 0) {
+	while (n_frames-- > 0) {
 		for (unsigned i = 0; i < audio_format.channels; ++i, ++src) {
 			jack_ringbuffer_write(ringbuffer[i],
 					      (const char *)src,
