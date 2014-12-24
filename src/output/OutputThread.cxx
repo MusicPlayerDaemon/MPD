@@ -45,8 +45,8 @@
 void
 AudioOutput::CommandFinished()
 {
-	assert(command != AO_COMMAND_NONE);
-	command = AO_COMMAND_NONE;
+	assert(command != AudioOutputCommand::NONE);
+	command = AudioOutputCommand::NONE;
 
 	mutex.unlock();
 	audio_output_client_notify.Signal();
@@ -342,7 +342,7 @@ AudioOutput::WaitForDelay()
 
 		(void)cond.timed_wait(mutex, delay);
 
-		if (command != AO_COMMAND_NONE)
+		if (command != AudioOutputCommand::NONE)
 			return false;
 	}
 }
@@ -471,7 +471,7 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 
 	Error error;
 
-	while (!data.IsEmpty() && command == AO_COMMAND_NONE) {
+	while (!data.IsEmpty() && command == AudioOutputCommand::NONE) {
 		if (!WaitForDelay())
 			break;
 
@@ -529,7 +529,7 @@ AudioOutput::Play()
 	assert(!in_playback_loop);
 	in_playback_loop = true;
 
-	while (chunk != nullptr && command == AO_COMMAND_NONE) {
+	while (chunk != nullptr && command == AudioOutputCommand::NONE) {
 		assert(!current_chunk_finished);
 
 		current_chunk = chunk;
@@ -577,7 +577,7 @@ AudioOutput::Pause()
 			Close(false);
 			break;
 		}
-	} while (command == AO_COMMAND_NONE);
+	} while (command == AudioOutputCommand::NONE);
 
 	pause = false;
 }
@@ -594,30 +594,30 @@ AudioOutput::Task()
 
 	while (1) {
 		switch (command) {
-		case AO_COMMAND_NONE:
+		case AudioOutputCommand::NONE:
 			break;
 
-		case AO_COMMAND_ENABLE:
+		case AudioOutputCommand::ENABLE:
 			Enable();
 			CommandFinished();
 			break;
 
-		case AO_COMMAND_DISABLE:
+		case AudioOutputCommand::DISABLE:
 			Disable();
 			CommandFinished();
 			break;
 
-		case AO_COMMAND_OPEN:
+		case AudioOutputCommand::OPEN:
 			Open();
 			CommandFinished();
 			break;
 
-		case AO_COMMAND_REOPEN:
+		case AudioOutputCommand::REOPEN:
 			Reopen();
 			CommandFinished();
 			break;
 
-		case AO_COMMAND_CLOSE:
+		case AudioOutputCommand::CLOSE:
 			assert(open);
 			assert(pipe != nullptr);
 
@@ -625,7 +625,7 @@ AudioOutput::Task()
 			CommandFinished();
 			break;
 
-		case AO_COMMAND_PAUSE:
+		case AudioOutputCommand::PAUSE:
 			if (!open) {
 				/* the output has failed after
 				   audio_output_all_pause() has
@@ -642,7 +642,7 @@ AudioOutput::Task()
 			   the new command first */
 			continue;
 
-		case AO_COMMAND_DRAIN:
+		case AudioOutputCommand::DRAIN:
 			if (open) {
 				assert(current_chunk == nullptr);
 				assert(pipe->Peek() == nullptr);
@@ -655,7 +655,7 @@ AudioOutput::Task()
 			CommandFinished();
 			continue;
 
-		case AO_COMMAND_CANCEL:
+		case AudioOutputCommand::CANCEL:
 			current_chunk = nullptr;
 
 			if (open) {
@@ -667,7 +667,7 @@ AudioOutput::Task()
 			CommandFinished();
 			continue;
 
-		case AO_COMMAND_KILL:
+		case AudioOutputCommand::KILL:
 			current_chunk = nullptr;
 			CommandFinished();
 			mutex.unlock();
@@ -679,7 +679,7 @@ AudioOutput::Task()
 			   chunks in the pipe */
 			continue;
 
-		if (command == AO_COMMAND_NONE) {
+		if (command == AudioOutputCommand::NONE) {
 			woken_for_play = false;
 			cond.wait(mutex);
 		}
@@ -696,7 +696,7 @@ AudioOutput::Task(void *arg)
 void
 AudioOutput::StartThread()
 {
-	assert(command == AO_COMMAND_NONE);
+	assert(command == AudioOutputCommand::NONE);
 
 	Error error;
 	if (!thread.Start(Task, this, error))

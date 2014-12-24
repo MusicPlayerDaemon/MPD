@@ -58,7 +58,7 @@ AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
 	 filter(nullptr),
 	 replay_gain_filter(nullptr),
 	 other_replay_gain_filter(nullptr),
-	 command(AO_COMMAND_NONE)
+	 command(AudioOutputCommand::NONE)
 {
 	assert(plugin.finish != nullptr);
 	assert(plugin.open != nullptr);

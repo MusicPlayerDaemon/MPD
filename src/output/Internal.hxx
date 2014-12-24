@@ -40,29 +40,29 @@ struct config_param;
 struct PlayerControl;
 struct AudioOutputPlugin;
 
-enum audio_output_command {
-	AO_COMMAND_NONE = 0,
-	AO_COMMAND_ENABLE,
-	AO_COMMAND_DISABLE,
-	AO_COMMAND_OPEN,
+enum class AudioOutputCommand {
+	NONE,
+	ENABLE,
+	DISABLE,
+	OPEN,
 
 	/**
 	 * This command is invoked when the input audio format
 	 * changes.
 	 */
-	AO_COMMAND_REOPEN,
+	REOPEN,
 
-	AO_COMMAND_CLOSE,
-	AO_COMMAND_PAUSE,
+	CLOSE,
+	PAUSE,
 
 	/**
 	 * Drains the internal (hardware) buffers of the device.  This
 	 * operation may take a while to complete.
 	 */
-	AO_COMMAND_DRAIN,
+	DRAIN,
 
-	AO_COMMAND_CANCEL,
-	AO_COMMAND_KILL
+	CANCEL,
+	KILL
 };
 
 struct AudioOutput {
@@ -231,7 +231,7 @@ struct AudioOutput {
 	/**
 	 * The next command to be performed by the output thread.
 	 */
-	enum audio_output_command command;
+	AudioOutputCommand command;
 
 	/**
 	 * The music pipe which provides music chunks to be played.
@@ -284,7 +284,7 @@ struct AudioOutput {
 	}
 
 	bool IsCommandFinished() const {
-		return command == AO_COMMAND_NONE;
+		return command == AudioOutputCommand::NONE;
 	}
 
 	/**
@@ -299,7 +299,7 @@ struct AudioOutput {
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void CommandAsync(audio_output_command cmd);
+	void CommandAsync(AudioOutputCommand cmd);
 
 	/**
 	 * Sends a command to the #AudioOutput object and waits for
@@ -307,13 +307,13 @@ struct AudioOutput {
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void CommandWait(audio_output_command cmd);
+	void CommandWait(AudioOutputCommand cmd);
 
 	/**
 	 * Lock the #AudioOutput object and execute the command
 	 * synchronously.
 	 */
-	void LockCommandWait(audio_output_command cmd);
+	void LockCommandWait(AudioOutputCommand cmd);
 
 	/**
 	 * Enables the device.
