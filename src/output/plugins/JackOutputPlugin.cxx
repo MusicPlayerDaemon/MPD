@@ -658,7 +658,7 @@ JackOutput::WriteSamples(const float *src, size_t n_frames)
 
 		if (e.len < space)
 			/* send data symmetrically */
-			space = e->len;
+			space = e.len;
 
 		dest[i] = (float *)e.buf;
 	}
