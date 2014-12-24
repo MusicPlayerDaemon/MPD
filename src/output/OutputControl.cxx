@@ -46,7 +46,7 @@ AudioOutput::WaitForCommand()
 }
 
 void
-AudioOutput::CommandAsync(AudioOutputCommand cmd)
+AudioOutput::CommandAsync(Command cmd)
 {
 	assert(IsCommandFinished());
 
@@ -55,14 +55,14 @@ AudioOutput::CommandAsync(AudioOutputCommand cmd)
 }
 
 void
-AudioOutput::CommandWait(AudioOutputCommand cmd)
+AudioOutput::CommandWait(Command cmd)
 {
 	CommandAsync(cmd);
 	WaitForCommand();
 }
 
 void
-AudioOutput::LockCommandWait(AudioOutputCommand cmd)
+AudioOutput::LockCommandWait(Command cmd)
 {
 	const ScopeLock protect(mutex);
 	CommandWait(cmd);
@@ -92,7 +92,7 @@ AudioOutput::LockEnableWait()
 		StartThread();
 	}
 
-	LockCommandWait(AudioOutputCommand::ENABLE);
+	LockCommandWait(Command::ENABLE);
 }
 
 void
@@ -109,7 +109,7 @@ AudioOutput::LockDisableWait()
 		return;
 	}
 
-	LockCommandWait(AudioOutputCommand::DISABLE);
+	LockCommandWait(Command::DISABLE);
 }
 
 inline bool
@@ -134,7 +134,7 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 
 			/* we're not using audio_output_cancel() here,
 			   because that function is asynchronous */
-			CommandWait(AudioOutputCommand::CANCEL);
+			CommandWait(Command::CANCEL);
 		}
 
 		return true;
@@ -149,8 +149,8 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 		StartThread();
 
 	CommandWait(open
-		    ? AudioOutputCommand::REOPEN
-		    : AudioOutputCommand::OPEN);
+		    ? Command::REOPEN
+		    : Command::OPEN);
 	const bool open2 = open;
 
 	if (open2 && mixer != nullptr) {
@@ -174,7 +174,7 @@ AudioOutput::CloseWait()
 	assert(!open || !fail_timer.IsDefined());
 
 	if (open)
-		CommandWait(AudioOutputCommand::CLOSE);
+		CommandWait(Command::CLOSE);
 	else
 		fail_timer.Reset();
 }
@@ -221,7 +221,7 @@ AudioOutput::LockPauseAsync()
 
 	assert(allow_play);
 	if (IsOpen())
-		CommandAsync(AudioOutputCommand::PAUSE);
+		CommandAsync(Command::PAUSE);
 }
 
 void
@@ -231,7 +231,7 @@ AudioOutput::LockDrainAsync()
 
 	assert(allow_play);
 	if (IsOpen())
-		CommandAsync(AudioOutputCommand::DRAIN);
+		CommandAsync(Command::DRAIN);
 }
 
 void
@@ -241,7 +241,7 @@ AudioOutput::LockCancelAsync()
 
 	if (IsOpen()) {
 		allow_play = false;
-		CommandAsync(AudioOutputCommand::CANCEL);
+		CommandAsync(Command::CANCEL);
 	}
 }
 
@@ -279,7 +279,7 @@ AudioOutput::StopThread()
 	assert(thread.IsDefined());
 	assert(allow_play);
 
-	LockCommandWait(AudioOutputCommand::KILL);
+	LockCommandWait(Command::KILL);
 	thread.Join();
 }
 
