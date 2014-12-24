@@ -643,15 +643,14 @@ mpd_jack_delay(AudioOutput *ao)
 inline size_t
 JackOutput::WriteSamples(const float *src, size_t n_frames)
 {
+	const unsigned n_channels = audio_format.channels;
 	const size_t result = n_frames;
 
-	while (n_frames-- > 0) {
-		for (unsigned i = 0; i < audio_format.channels; ++i, ++src) {
+	while (n_frames-- > 0)
+		for (unsigned i = 0; i < n_channels; ++i, ++src)
 			jack_ringbuffer_write(ringbuffer[i],
 					      (const char *)src,
 					      sizeof(*src));
-		}
-	}
 
 	return result;
 }
