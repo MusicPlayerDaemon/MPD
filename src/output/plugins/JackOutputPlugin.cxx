@@ -239,12 +239,11 @@ mpd_jack_disconnect(JackOutput *jd)
 static bool
 mpd_jack_connect(JackOutput *jd, Error &error)
 {
-	jack_status_t status;
-
 	assert(jd != nullptr);
 
 	jd->shutdown = false;
 
+	jack_status_t status;
 	jd->client = jack_client_open(jd->name, jd->options, &status,
 				      jd->server_name);
 	if (jd->client == nullptr) {
@@ -313,8 +312,6 @@ mpd_jack_init(const config_param &param, Error &error)
 		return nullptr;
 	}
 
-	const char *value;
-
 	jd->options = JackNullOption;
 
 	jd->name = param.GetBlockValue("client_name", nullptr);
@@ -334,7 +331,7 @@ mpd_jack_init(const config_param &param, Error &error)
 
 	/* configure the source ports */
 
-	value = param.GetBlockValue("source_ports", "left,right");
+	const char *value = param.GetBlockValue("source_ports", "left,right");
 	jd->num_source_ports = parse_port_list(value,
 					       jd->source_ports, error);
 	if (jd->num_source_ports == 0)
@@ -438,10 +435,6 @@ mpd_jack_stop(JackOutput *jd)
 static bool
 mpd_jack_start(JackOutput *jd, Error &error)
 {
-	const char *destination_ports[MAX_PORTS], **jports;
-	const char *duplicate_port = nullptr;
-	unsigned num_destination_ports;
-
 	assert(jd->client != nullptr);
 	assert(jd->audio_format.channels <= jd->num_source_ports);
 
@@ -465,6 +458,8 @@ mpd_jack_start(JackOutput *jd, Error &error)
 		return false;
 	}
 
+	const char *destination_ports[MAX_PORTS], **jports;
+	unsigned num_destination_ports;
 	if (jd->num_destination_ports == 0) {
 		/* no output ports were configured - ask libjack for
 		   defaults */
@@ -501,6 +496,7 @@ mpd_jack_start(JackOutput *jd, Error &error)
 
 	assert(num_destination_ports > 0);
 
+	const char *duplicate_port = nullptr;
 	if (jd->audio_format.channels >= 2 && num_destination_ports == 1) {
 		/* mix stereo signal on one speaker */
 
@@ -617,12 +613,10 @@ static void
 mpd_jack_write_samples_16(JackOutput *jd, const int16_t *src,
 			  unsigned num_samples)
 {
-	jack_default_audio_sample_t sample;
-	unsigned i;
-
 	while (num_samples-- > 0) {
-		for (i = 0; i < jd->audio_format.channels; ++i) {
-			sample = sample_16_to_jack(*src++);
+		for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
+			jack_default_audio_sample_t sample =
+				sample_16_to_jack(*src++);
 			jack_ringbuffer_write(jd->ringbuffer[i],
 					      (const char *)&sample,
 					      sizeof(sample));
@@ -640,12 +634,11 @@ static void
 mpd_jack_write_samples_24(JackOutput *jd, const int32_t *src,
 			  unsigned num_samples)
 {
-	jack_default_audio_sample_t sample;
-	unsigned i;
 
 	while (num_samples-- > 0) {
-		for (i = 0; i < jd->audio_format.channels; ++i) {
-			sample = sample_24_to_jack(*src++);
+		for (unsigned i = 0; i < jd->audio_format.channels; ++i) {
+			jack_default_audio_sample_t sample =
+				sample_24_to_jack(*src++);
 			jack_ringbuffer_write(jd->ringbuffer[i],
 					      (const char *)&sample,
 					      sizeof(sample));
@@ -679,14 +672,14 @@ mpd_jack_play(AudioOutput *ao, const void *chunk, size_t size,
 	      Error &error)
 {
 	JackOutput *jd = (JackOutput *)ao;
-	const size_t frame_size = jd->audio_format.GetFrameSize();
-	size_t space = 0, space1;
 
 	jd->pause = false;
 
+	const size_t frame_size = jd->audio_format.GetFrameSize();
 	assert(size % frame_size == 0);
 	size /= frame_size;
 
+	size_t space = 0;
 	while (true) {
 		if (jd->shutdown) {
 			error.Set(jack_output_domain,
@@ -697,7 +690,8 @@ mpd_jack_play(AudioOutput *ao, const void *chunk, size_t size,
 
 		space = jack_ringbuffer_write_space(jd->ringbuffer[0]);
 		for (unsigned i = 1; i < jd->audio_format.channels; ++i) {
-			space1 = jack_ringbuffer_write_space(jd->ringbuffer[i]);
+			unsigned space1 =
+				jack_ringbuffer_write_space(jd->ringbuffer[i]);
 			if (space > space1)
 				/* send data symmetrically */
 				space = space1;
