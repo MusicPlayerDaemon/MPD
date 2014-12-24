@@ -647,13 +647,20 @@ JackOutput::WriteSamples(const float *src, size_t n_frames)
 
 	const unsigned n_channels = audio_format.channels;
 
-	size_t space = jack_ringbuffer_write_space(ringbuffer[0]);
-	for (unsigned i = 1; i < n_channels; ++i) {
-		size_t space1 =
-			jack_ringbuffer_write_space(ringbuffer[i]);
-		if (space1 < space)
+	float *dest[MAX_CHANNELS];
+	size_t space = -1;
+	for (unsigned i = 0; i < n_channels; ++i) {
+		jack_ringbuffer_data_t d[2];
+		jack_ringbuffer_get_write_vector(ringbuffer[i], d);
+
+		/* choose the first non-empty writable area */
+		const jack_ringbuffer_data_t &e = d[d[0].len == 0];
+
+		if (e.len < space)
 			/* send data symmetrically */
-			space = space1;
+			space = e->len;
+
+		dest[i] = (float *)e.buf;
 	}
 
 	space /= jack_sample_size;
@@ -663,10 +670,13 @@ JackOutput::WriteSamples(const float *src, size_t n_frames)
 	const size_t result = n_frames = std::min(space, n_frames);
 
 	while (n_frames-- > 0)
-		for (unsigned i = 0; i < n_channels; ++i, ++src)
-			jack_ringbuffer_write(ringbuffer[i],
-					      (const char *)src,
-					      sizeof(*src));
+		for (unsigned i = 0; i < n_channels; ++i)
+			*dest[i]++ = *src++;
+
+	const size_t per_channel_advance = result * jack_sample_size;
+	for (unsigned i = 0; i < n_channels; ++i)
+		jack_ringbuffer_write_advance(ringbuffer[i],
+					      per_channel_advance);
 
 	return result;
 }
