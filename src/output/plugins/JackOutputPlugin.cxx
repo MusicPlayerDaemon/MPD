@@ -111,8 +111,6 @@ struct JackOutput {
 
 	void Process(jack_nframes_t nframes);
 
-	void WriteSamples16(const int16_t *src, unsigned num_samples);
-	void WriteSamples24(const int32_t *src, unsigned num_samples);
 	void WriteSamples(const void *src, unsigned num_samples);
 	size_t Play(const void *chunk, size_t size, Error &error);
 };
@@ -228,9 +226,10 @@ set_audioformat(JackOutput *jd, AudioFormat &audio_format)
 	else if (audio_format.channels > jd->num_source_ports)
 		audio_format.channels = 2;
 
-	if (audio_format.format != SampleFormat::S16 &&
-	    audio_format.format != SampleFormat::S24_P32)
-		audio_format.format = SampleFormat::S24_P32;
+	/* JACK uses 32 bit float in the range [-1 .. 1] - just like
+	   MPD's SampleFormat::FLOAT*/
+	static_assert(jack_sample_size == sizeof(float), "Expected float32");
+	audio_format.format = SampleFormat::FLOAT;
 }
 
 static void
@@ -637,62 +636,17 @@ mpd_jack_delay(AudioOutput *ao)
 		: 0;
 }
 
-static inline jack_default_audio_sample_t
-sample_16_to_jack(int16_t sample)
-{
-	return sample / (jack_default_audio_sample_t)(1 << (16 - 1));
-}
-
 inline void
-JackOutput::WriteSamples16(const int16_t *src, unsigned num_samples)
+JackOutput::WriteSamples(const void *_src, unsigned num_samples)
 {
-	while (num_samples-- > 0) {
-		for (unsigned i = 0; i < audio_format.channels; ++i) {
-			jack_default_audio_sample_t sample =
-				sample_16_to_jack(*src++);
-			jack_ringbuffer_write(ringbuffer[i],
-					      (const char *)&sample,
-					      sizeof(sample));
-		}
-	}
-}
-
-static inline jack_default_audio_sample_t
-sample_24_to_jack(int32_t sample)
-{
-	return sample / (jack_default_audio_sample_t)(1 << (24 - 1));
-}
-
-inline void
-JackOutput::WriteSamples24(const int32_t *src, unsigned num_samples)
-{
+	const float *src = (const float *)_src;
 
 	while (num_samples-- > 0) {
-		for (unsigned i = 0; i < audio_format.channels; ++i) {
-			jack_default_audio_sample_t sample =
-				sample_24_to_jack(*src++);
+		for (unsigned i = 0; i < audio_format.channels; ++i, ++src) {
 			jack_ringbuffer_write(ringbuffer[i],
-					      (const char *)&sample,
-					      sizeof(sample));
+					      (const char *)src,
+					      sizeof(*src));
 		}
-	}
-}
-
-inline void
-JackOutput::WriteSamples(const void *src, unsigned num_samples)
-{
-	switch (audio_format.format) {
-	case SampleFormat::S16:
-		WriteSamples16((const int16_t *)src, num_samples);
-		break;
-
-	case SampleFormat::S24_P32:
-		WriteSamples24((const int32_t *)src, num_samples);
-		break;
-
-	default:
-		assert(false);
-		gcc_unreachable();
 	}
 }
 
