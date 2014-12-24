@@ -145,16 +145,18 @@ JackOutput::Process(jack_nframes_t nframes)
 
 	jack_nframes_t available = GetAvailable();
 
+	const unsigned n_channels = audio_format.channels;
+
 	if (pause) {
 		/* empty the ring buffers */
 
-		for (unsigned i = 0; i < audio_format.channels; ++i)
+		for (unsigned i = 0; i < n_channels; ++i)
 			jack_ringbuffer_read_advance(ringbuffer[i],
 						     available * jack_sample_size);
 
 		/* generate silence while MPD is paused */
 
-		for (unsigned i = 0; i < audio_format.channels; ++i) {
+		for (unsigned i = 0; i < n_channels; ++i) {
 			jack_default_audio_sample_t *out =
 				(jack_default_audio_sample_t *)
 				jack_port_get_buffer(ports[i], nframes);
@@ -168,7 +170,7 @@ JackOutput::Process(jack_nframes_t nframes)
 	if (available > nframes)
 		available = nframes;
 
-	for (unsigned i = 0; i < audio_format.channels; ++i) {
+	for (unsigned i = 0; i < n_channels; ++i) {
 		jack_default_audio_sample_t *out =
 			(jack_default_audio_sample_t *)
 			jack_port_get_buffer(ports[i], nframes);
@@ -188,7 +190,7 @@ JackOutput::Process(jack_nframes_t nframes)
 
 	/* generate silence for the unused source ports */
 
-	for (unsigned i = audio_format.channels; i < num_source_ports; ++i) {
+	for (unsigned i = n_channels; i < num_source_ports; ++i) {
 		jack_default_audio_sample_t *out =
 			(jack_default_audio_sample_t *)
 			jack_port_get_buffer(ports[i], nframes);
