@@ -114,7 +114,7 @@ struct JackOutput {
 	/**
 	 * @return the number of frames that were written
 	 */
-	size_t WriteSamples(const void *src, size_t n_frames);
+	size_t WriteSamples(const float *src, size_t n_frames);
 
 	size_t Play(const void *chunk, size_t size, Error &error);
 };
@@ -641,11 +641,9 @@ mpd_jack_delay(AudioOutput *ao)
 }
 
 inline size_t
-JackOutput::WriteSamples(const void *_src, size_t n_frames)
+JackOutput::WriteSamples(const float *src, size_t n_frames)
 {
 	const size_t result = n_frames;
-
-	const float *src = (const float *)_src;
 
 	while (n_frames-- > 0) {
 		for (unsigned i = 0; i < audio_format.channels; ++i, ++src) {
@@ -697,7 +695,7 @@ JackOutput::Play(const void *chunk, size_t size, Error &error)
 	if (space < size)
 		size = space;
 
-	return WriteSamples(chunk, size) * frame_size;
+	return WriteSamples((const float *)chunk, size) * frame_size;
 }
 
 static size_t
