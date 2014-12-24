@@ -643,8 +643,24 @@ mpd_jack_delay(AudioOutput *ao)
 inline size_t
 JackOutput::WriteSamples(const float *src, size_t n_frames)
 {
+	assert(n_frames > 0);
+
 	const unsigned n_channels = audio_format.channels;
-	const size_t result = n_frames;
+
+	size_t space = jack_ringbuffer_write_space(ringbuffer[0]);
+	for (unsigned i = 1; i < n_channels; ++i) {
+		size_t space1 =
+			jack_ringbuffer_write_space(ringbuffer[i]);
+		if (space1 < space)
+			/* send data symmetrically */
+			space = space1;
+	}
+
+	space /= jack_sample_size;
+	if (space == 0)
+		return 0;
+
+	const size_t result = n_frames = std::min(space, n_frames);
 
 	while (n_frames-- > 0)
 		for (unsigned i = 0; i < n_channels; ++i, ++src)
@@ -664,7 +680,6 @@ JackOutput::Play(const void *chunk, size_t size, Error &error)
 	assert(size % frame_size == 0);
 	size /= frame_size;
 
-	size_t space = 0;
 	while (true) {
 		if (shutdown) {
 			error.Set(jack_output_domain,
@@ -673,28 +688,15 @@ JackOutput::Play(const void *chunk, size_t size, Error &error)
 			return 0;
 		}
 
-		space = jack_ringbuffer_write_space(ringbuffer[0]);
-		for (unsigned i = 1; i < audio_format.channels; ++i) {
-			unsigned space1 =
-				jack_ringbuffer_write_space(ringbuffer[i]);
-			if (space > space1)
-				/* send data symmetrically */
-				space = space1;
-		}
-
-		if (space >= jack_sample_size)
-			break;
+		size_t frames_written =
+			WriteSamples((const float *)chunk, size);
+		if (frames_written > 0)
+			return frames_written * frame_size;
 
 		/* XXX do something more intelligent to
 		   synchronize */
 		usleep(1000);
 	}
-
-	space /= jack_sample_size;
-	if (space < size)
-		size = space;
-
-	return WriteSamples((const float *)chunk, size) * frame_size;
 }
 
 static size_t
