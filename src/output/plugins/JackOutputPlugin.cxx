@@ -21,6 +21,7 @@
 #include "JackOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "config/ConfigError.hxx"
+#include "util/ConstBuffer.hxx"
 #include "util/SplitString.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -137,6 +138,71 @@ JackOutput::GetAvailable() const
 	return min / jack_sample_size;
 }
 
+/**
+ * Call jack_ringbuffer_read_advance() on all buffers in the list.
+ */
+static void
+MultiReadAdvance(ConstBuffer<jack_ringbuffer_t *> buffers,
+		 size_t size)
+{
+	for (auto *i : buffers)
+		jack_ringbuffer_read_advance(i, size);
+}
+
+/**
+ * Write a specific amount of "silence" to the given port.
+ */
+static void
+WriteSilence(jack_port_t &port, jack_nframes_t nframes)
+{
+	jack_default_audio_sample_t *out =
+		(jack_default_audio_sample_t *)
+		jack_port_get_buffer(&port, nframes);
+	if (out == nullptr)
+		/* workaround for libjack1 bug: if the server
+		   connection fails, the process callback is invoked
+		   anyway, but unable to get a buffer */
+			return;
+
+	std::fill_n(out, nframes, 0.0);
+}
+
+/**
+ * Write a specific amount of "silence" to all ports in the list.
+ */
+static void
+MultiWriteSilence(ConstBuffer<jack_port_t *> ports, jack_nframes_t nframes)
+{
+	for (auto *i : ports)
+		WriteSilence(*i, nframes);
+}
+
+/**
+ * Copy data from the buffer to the port.  If the buffer underruns,
+ * fill with silence.
+ */
+static void
+Copy(jack_port_t &dest, jack_nframes_t nframes,
+     jack_ringbuffer_t &src, jack_nframes_t available)
+{
+	jack_default_audio_sample_t *out =
+		(jack_default_audio_sample_t *)
+		jack_port_get_buffer(&dest, nframes);
+	if (out == nullptr)
+		/* workaround for libjack1 bug: if the server
+		   connection fails, the process callback is
+		   invoked anyway, but unable to get a
+		   buffer */
+		return;
+
+	/* copy from buffer to port */
+	jack_ringbuffer_read(&src, (char *)out,
+			     available * jack_sample_size);
+
+	/* ringbuffer underrun, fill with silence */
+	std::fill(out + available, out + nframes, 0.0);
+}
+
 inline void
 JackOutput::Process(jack_nframes_t nframes)
 {
@@ -150,19 +216,12 @@ JackOutput::Process(jack_nframes_t nframes)
 	if (pause) {
 		/* empty the ring buffers */
 
-		for (unsigned i = 0; i < n_channels; ++i)
-			jack_ringbuffer_read_advance(ringbuffer[i],
-						     available * jack_sample_size);
+		MultiReadAdvance({ringbuffer, n_channels},
+				 available * jack_sample_size);
 
 		/* generate silence while MPD is paused */
 
-		for (unsigned i = 0; i < n_channels; ++i) {
-			jack_default_audio_sample_t *out =
-				(jack_default_audio_sample_t *)
-				jack_port_get_buffer(ports[i], nframes);
-
-			std::fill_n(out, nframes, 0.0);
-		}
+		MultiWriteSilence({ports, n_channels}, nframes);
 
 		return;
 	}
@@ -170,39 +229,13 @@ JackOutput::Process(jack_nframes_t nframes)
 	if (available > nframes)
 		available = nframes;
 
-	for (unsigned i = 0; i < n_channels; ++i) {
-		jack_default_audio_sample_t *out =
-			(jack_default_audio_sample_t *)
-			jack_port_get_buffer(ports[i], nframes);
-		if (out == nullptr)
-			/* workaround for libjack1 bug: if the server
-			   connection fails, the process callback is
-			   invoked anyway, but unable to get a
-			   buffer */
-			continue;
-
-		jack_ringbuffer_read(ringbuffer[i],
-				     (char *)out, available * jack_sample_size);
-
-		/* ringbuffer underrun, fill with silence */
-		std::fill(out + available, out + nframes, 0.0);
-	}
+	for (unsigned i = 0; i < n_channels; ++i)
+		Copy(*ports[i], nframes, *ringbuffer[i], available);
 
 	/* generate silence for the unused source ports */
 
-	for (unsigned i = n_channels; i < num_source_ports; ++i) {
-		jack_default_audio_sample_t *out =
-			(jack_default_audio_sample_t *)
-			jack_port_get_buffer(ports[i], nframes);
-		if (out == nullptr)
-			/* workaround for libjack1 bug: if the server
-			   connection fails, the process callback is
-			   invoked anyway, but unable to get a
-			   buffer */
-			continue;
-
-		std::fill_n(out, nframes, 0.0);
-	}
+	MultiWriteSilence({ports + n_channels, num_source_ports - n_channels},
+			  nframes);
 }
 
 static int
