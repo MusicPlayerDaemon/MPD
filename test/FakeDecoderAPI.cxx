@@ -145,8 +145,13 @@ decoder_data(gcc_unused Decoder &decoder,
 DecoderCommand
 decoder_tag(gcc_unused Decoder &decoder,
 	    gcc_unused InputStream *is,
-	    gcc_unused Tag &&tag)
+	    Tag &&tag)
 {
+	fprintf(stderr, "TAG: duration=%f\n", tag.duration.ToDoubleS());
+
+	for (const auto &i : tag)
+		fprintf(stderr, "  %s=%s\n", tag_item_names[i.type], i.value);
+
 	return DecoderCommand::NONE;
 }
 
