@@ -21,11 +21,10 @@
 #define MPD_FFMPEG_BUFFER_HXX
 
 extern "C" {
-#include <libavutil/avutil.h>
+#include <libavutil/mem.h>
 
 #if LIBAVUTIL_VERSION_INT >= AV_VERSION_INT(52, 18, 0)
 #define HAVE_AV_FAST_MALLOC
-#include <libavutil/mem.h>
 #else
 #include <libavcodec/avcodec.h>
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(52, 25, 0)
