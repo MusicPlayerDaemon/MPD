@@ -75,7 +75,7 @@ ao_plugin_delay(AudioOutput *ao)
 }
 
 void
-ao_plugin_send_tag(AudioOutput *ao, const Tag *tag)
+ao_plugin_send_tag(AudioOutput *ao, const Tag &tag)
 {
 	if (ao->plugin.send_tag != nullptr)
 		ao->plugin.send_tag(ao, tag);

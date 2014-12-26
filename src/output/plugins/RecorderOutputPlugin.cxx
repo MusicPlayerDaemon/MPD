@@ -257,11 +257,11 @@ RecorderOutput::SendTag(const Tag &tag)
 }
 
 static void
-recorder_output_send_tag(AudioOutput *ao, const Tag *tag)
+recorder_output_send_tag(AudioOutput *ao, const Tag &tag)
 {
 	RecorderOutput &recorder = *(RecorderOutput *)ao;
 
-	recorder.SendTag(*tag);
+	recorder.SendTag(tag);
 }
 
 static size_t

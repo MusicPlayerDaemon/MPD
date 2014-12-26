@@ -250,7 +250,7 @@ public:
 
 	bool EncodeAndPlay(const void *chunk, size_t size, Error &error);
 
-	void SendTag(const Tag *tag);
+	void SendTag(const Tag &tag);
 
 	size_t Play(const void *chunk, size_t size, Error &error);
 

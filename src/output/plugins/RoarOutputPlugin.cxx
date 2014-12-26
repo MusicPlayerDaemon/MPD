@@ -407,10 +407,10 @@ RoarOutput::SendTag(const Tag &tag)
 }
 
 static void
-roar_send_tag(AudioOutput *ao, const Tag *meta)
+roar_send_tag(AudioOutput *ao, const Tag &meta)
 {
 	RoarOutput *self = (RoarOutput *)ao;
-	self->SendTag(*meta);
+	self->SendTag(meta);
 }
 
 const struct AudioOutputPlugin roar_output_plugin = {

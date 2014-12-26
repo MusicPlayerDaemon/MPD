@@ -462,7 +462,7 @@ my_shout_pause(AudioOutput *ao)
 }
 
 static void
-shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
+shout_tag_to_metadata(const Tag &tag, char *dest, size_t size)
 {
 	char artist[size];
 	char title[size];
@@ -470,7 +470,7 @@ shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
 	artist[0] = 0;
 	title[0] = 0;
 
-	for (const auto &item : *tag) {
+	for (const auto &item : tag) {
 		switch (item.type) {
 		case TAG_ARTIST:
 			strncpy(artist, item.value, size);
@@ -488,7 +488,7 @@ shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
 }
 
 static void my_shout_set_tag(AudioOutput *ao,
-			     const Tag *tag)
+			     const Tag &tag)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
 
@@ -498,7 +498,7 @@ static void my_shout_set_tag(AudioOutput *ao,
 		Error error;
 		if (!encoder_pre_tag(sd->encoder, error) ||
 		    !write_page(sd, error) ||
-		    !encoder_tag(sd->encoder, tag, error)) {
+		    !encoder_tag(sd->encoder, &tag, error)) {
 			LogError(error);
 			return;
 		}

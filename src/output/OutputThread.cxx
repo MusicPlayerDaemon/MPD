@@ -455,7 +455,7 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 
 	if (tags && gcc_unlikely(chunk->tag != nullptr)) {
 		mutex.unlock();
-		ao_plugin_send_tag(this, chunk->tag);
+		ao_plugin_send_tag(this, *chunk->tag);
 		mutex.lock();
 	}
 
