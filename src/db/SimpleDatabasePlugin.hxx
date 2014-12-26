@@ -61,7 +61,7 @@ public:
 
 	virtual Song *GetSong(const char *uri_utf8,
 			      Error &error) const override;
-	virtual void ReturnSong(Song *song) const;
+	void ReturnSong(Song *song) const override;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,

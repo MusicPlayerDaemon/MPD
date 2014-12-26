@@ -120,10 +120,11 @@ public:
 	 */
 	bool Configure(const config_param &param, Error &error);
 
-	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
-	virtual void Close();
-	virtual const void *FilterPCM(const void *src, size_t src_size,
-				      size_t *dest_size_r, Error &error);
+	/* virtual methods from class Filter */
+	AudioFormat Open(AudioFormat &af, Error &error) override;
+	void Close() override;
+	const void *FilterPCM(const void *src, size_t src_size,
+			      size_t *dest_size_r, Error &error) override;
 };
 
 bool
