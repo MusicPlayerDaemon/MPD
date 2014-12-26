@@ -122,7 +122,10 @@ InputStream::IsAvailable()
 size_t
 InputStream::LockRead(void *ptr, size_t _size, Error &error)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(ptr != nullptr);
+#endif
 	assert(_size > 0);
 
 	const ScopeLock protect(mutex);

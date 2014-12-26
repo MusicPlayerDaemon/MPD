@@ -77,7 +77,10 @@ SongLoader::LoadFile(const char *path_utf8, Error &error) const
 DetachedSong *
 SongLoader::LoadSong(const char *uri_utf8, Error &error) const
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(uri_utf8 != nullptr);
+#endif
 
 	if (memcmp(uri_utf8, "file:///", 8) == 0)
 		/* absolute path */

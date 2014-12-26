@@ -43,7 +43,7 @@ protected:
 	virtual size_t ThreadRead(void *ptr, size_t size,
 				  Error &error) override;
 
-	virtual void Close() {
+	void Close() override {
 		mmsx_close(mms);
 	}
 };

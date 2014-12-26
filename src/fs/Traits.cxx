@@ -52,7 +52,10 @@ template<typename Traits>
 typename Traits::const_pointer
 GetBasePathImpl(typename Traits::const_pointer p)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(p != nullptr);
+#endif
 
 	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
 	return sep != nullptr
@@ -64,7 +67,10 @@ template<typename Traits>
 typename Traits::string
 GetParentPathImpl(typename Traits::const_pointer p)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(p != nullptr);
+#endif
 
 	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
 	if (sep == nullptr)

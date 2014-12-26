@@ -44,7 +44,7 @@ PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format,
 			     "PCM conversion from %s to %s is not implemented",
 			     sample_format_to_string(_src_format),
 			     sample_format_to_string(_dest_format));
-		return nullptr;
+		return false;
 
 	case SampleFormat::S16:
 	case SampleFormat::S24_P32:

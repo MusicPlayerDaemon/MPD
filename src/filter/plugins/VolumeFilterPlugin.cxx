@@ -43,10 +43,11 @@ public:
 		pv.SetVolume(_volume);
 	}
 
-	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
-	virtual void Close();
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-					    Error &error) override;
+	/* virtual methods from class Filter */
+	AudioFormat Open(AudioFormat &af, Error &error) override;
+	void Close() override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
+				    Error &error) override;
 };
 
 static constexpr Domain volume_domain("pcm_volume");

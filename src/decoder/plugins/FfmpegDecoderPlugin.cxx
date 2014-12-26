@@ -232,6 +232,7 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 	case AV_SAMPLE_FMT_S32P:
 		return SampleFormat::S32;
 
+	case AV_SAMPLE_FMT_FLT:
 	case AV_SAMPLE_FMT_FLTP:
 		return SampleFormat::FLOAT;
 
