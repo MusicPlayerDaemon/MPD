@@ -592,7 +592,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 {
 	// TODO: eliminate the const_cast
 	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return nullptr;
+		return false;
 
 	if (!visit_directory && !visit_playlist && selection.recursive &&
 	    (ServerSupportsSearchBase(connection)
@@ -617,7 +617,7 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 {
 	// TODO: eliminate the const_cast
 	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return nullptr;
+		return false;
 
 	enum mpd_tag_type tag_type2 = Convert(tag_type);
 	if (tag_type2 == MPD_TAG_COUNT) {
@@ -657,7 +657,7 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 
 	// TODO: eliminate the const_cast
 	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return nullptr;
+		return false;
 
 	struct mpd_stats *stats2 =
 		mpd_run_stats(connection);

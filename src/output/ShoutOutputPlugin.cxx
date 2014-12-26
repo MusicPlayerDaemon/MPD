@@ -114,7 +114,7 @@ ShoutOutput::Configure(const config_param &param, Error &error)
 	if (!audio_format.IsFullyDefined()) {
 		error.Set(config_domain,
 			  "Need full audio format specification");
-		return nullptr;
+		return false;
 	}
 
 	const char *host = require_block_string(param, "host");
