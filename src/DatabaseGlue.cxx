@@ -112,13 +112,12 @@ db_get_root(void)
 Directory *
 db_get_directory(const char *name)
 {
+	assert(name != nullptr);
+
 	if (db == nullptr)
 		return nullptr;
 
 	Directory *music_root = db_get_root();
-	if (name == nullptr)
-		return music_root;
-
 	return music_root->LookupDirectory(name);
 }
 
