@@ -85,7 +85,7 @@ public:
 	virtual void Close() override;
 	virtual const LightSong *GetSong(const char *uri_utf8,
 					 Error &error) const override;
-	virtual void ReturnSong(const LightSong *song) const;
+	void ReturnSong(const LightSong *song) const override;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
@@ -101,7 +101,9 @@ public:
 	virtual bool GetStats(const DatabaseSelection &selection,
 			      DatabaseStats &stats,
 			      Error &error) const override;
-	virtual time_t GetUpdateStamp() const {return 0;}
+	time_t GetUpdateStamp() const override {
+		return 0;
+	}
 
 protected:
 	bool Configure(const config_param &param, Error &error);
