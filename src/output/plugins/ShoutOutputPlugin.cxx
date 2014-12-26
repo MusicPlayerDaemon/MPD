@@ -498,7 +498,7 @@ static void my_shout_set_tag(AudioOutput *ao,
 		Error error;
 		if (!encoder_pre_tag(sd->encoder, error) ||
 		    !write_page(sd, error) ||
-		    !encoder_tag(sd->encoder, &tag, error)) {
+		    !encoder_tag(sd->encoder, tag, error)) {
 			LogError(error);
 			return;
 		}

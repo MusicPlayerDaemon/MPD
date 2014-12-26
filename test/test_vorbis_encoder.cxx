@@ -90,7 +90,7 @@ main(gcc_unused int argc, gcc_unused char **argv)
 		tag_builder.Commit(tag);
 	}
 
-	success = encoder_tag(encoder, &tag, IgnoreError());
+	success = encoder_tag(encoder, tag, IgnoreError());
 	assert(success);
 
 	encoder_to_stdout(*encoder);

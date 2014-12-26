@@ -252,7 +252,7 @@ RecorderOutput::SendTag(const Tag &tag)
 	Error error;
 	if (!encoder_pre_tag(encoder, error) ||
 	    !EncoderToFile(error) ||
-	    !encoder_tag(encoder, &tag, error))
+	    !encoder_tag(encoder, tag, error))
 		LogError(error);
 }
 

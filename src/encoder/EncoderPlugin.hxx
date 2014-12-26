@@ -65,7 +65,7 @@ struct EncoderPlugin {
 
 	bool (*pre_tag)(Encoder *encoder, Error &error);
 
-	bool (*tag)(Encoder *encoder, const Tag *tag,
+	bool (*tag)(Encoder *encoder, const Tag &tag,
 		    Error &error);
 
 	bool (*write)(Encoder *encoder,
@@ -240,7 +240,7 @@ encoder_pre_tag(Encoder *encoder, Error &error)
  * @return true on success
  */
 static inline bool
-encoder_tag(Encoder *encoder, const Tag *tag, Error &error)
+encoder_tag(Encoder *encoder, const Tag &tag, Error &error)
 {
 	assert(encoder->open);
 	assert(!encoder->pre_tag);
