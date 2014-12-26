@@ -66,6 +66,9 @@ struct RecorderOutput {
 
 	bool Configure(const config_param &param, Error &error);
 
+	bool Open(AudioFormat &audio_format, Error &error);
+	void Close();
+
 	bool WriteToFile(const void *data, size_t length, Error &error);
 
 	/**
@@ -176,56 +179,68 @@ RecorderOutput::EncoderToFile(Error &error)
 	}
 }
 
-static bool
-recorder_output_open(AudioOutput *ao,
-		     AudioFormat &audio_format,
-		     Error &error)
+inline bool
+RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 {
-	RecorderOutput *recorder = (RecorderOutput *)ao;
-
 	/* create the output file */
 
-	recorder->fd = open_cloexec(recorder->path,
-				    O_CREAT|O_WRONLY|O_TRUNC|O_BINARY,
-				    0666);
-	if (recorder->fd < 0) {
-		error.FormatErrno("Failed to create '%s'", recorder->path);
+	fd = open_cloexec(path,
+			  O_CREAT|O_WRONLY|O_TRUNC|O_BINARY,
+			  0666);
+	if (fd < 0) {
+		error.FormatErrno("Failed to create '%s'", path);
 		return false;
 	}
 
 	/* open the encoder */
 
-	if (!encoder_open(recorder->encoder, audio_format, error)) {
-		close(recorder->fd);
-		unlink(recorder->path);
+	if (!encoder_open(encoder, audio_format, error)) {
+		close(fd);
+		unlink(path);
 		return false;
 	}
 
-	if (!recorder->EncoderToFile(error)) {
-		encoder_close(recorder->encoder);
-		close(recorder->fd);
-		unlink(recorder->path);
+	if (!EncoderToFile(error)) {
+		encoder_close(encoder);
+		close(fd);
+		unlink(path);
 		return false;
 	}
 
 	return true;
 }
 
-static void
-recorder_output_close(AudioOutput *ao)
+static bool
+recorder_output_open(AudioOutput *ao,
+		     AudioFormat &audio_format,
+		     Error &error)
 {
-	RecorderOutput *recorder = (RecorderOutput *)ao;
+	RecorderOutput &recorder = *(RecorderOutput *)ao;
 
+	return recorder.Open(audio_format, error);
+}
+
+inline void
+RecorderOutput::Close()
+{
 	/* flush the encoder and write the rest to the file */
 
-	if (encoder_end(recorder->encoder, IgnoreError()))
-		recorder->EncoderToFile(IgnoreError());
+	if (encoder_end(encoder, IgnoreError()))
+		EncoderToFile(IgnoreError());
 
 	/* now really close everything */
 
-	encoder_close(recorder->encoder);
+	encoder_close(encoder);
 
-	close(recorder->fd);
+	close(fd);
+}
+
+static void
+recorder_output_close(AudioOutput *ao)
+{
+	RecorderOutput &recorder = *(RecorderOutput *)ao;
+
+	recorder.Close();
 }
 
 static size_t
