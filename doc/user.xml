@@ -110,7 +110,7 @@ apt-get install g++ automake autoconf \
   libsystemd-daemon-dev libwrap0-dev \
   libcppunit-dev xmlto \
   libboost-dev \
-  libglib2.0-dev
+  libglib2.0-dev libicu-dev
       </programlisting>
 
       <para>
