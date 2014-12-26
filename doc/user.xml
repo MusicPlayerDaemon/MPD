@@ -89,7 +89,7 @@ cd mpd-version</programlisting>
       </para>
 
       <programlisting>
-apt-get install g++ automake autoconf \
+apt-get install g++ \
   libmad0-dev libmpg123-dev libid3tag0-dev \
   libflac-dev libvorbis-dev libopus-dev \
   libadplug-dev libaudiofile-dev libsndfile1-dev libfaad-dev \
