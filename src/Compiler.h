@@ -52,6 +52,13 @@
 #  warning Untested compiler.  Use at your own risk!
 #endif
 
+/**
+ * Are we building with the specified version of clang or newer?
+ */
+#define CLANG_CHECK_VERSION(major, minor) \
+	(defined(__clang__) && \
+	 CLANG_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
+
 #if GCC_CHECK_VERSION(4,0)
 
 /* GCC 4.x */
