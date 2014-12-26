@@ -14,6 +14,7 @@ ver 0.20 (not yet released)
 * output
   - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX
+  - recorder: record tags
 * mixer
   - null: new plugin
 * reset song priority on playback

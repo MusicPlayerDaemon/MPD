@@ -23,6 +23,7 @@
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "config/ConfigError.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/fd_util.h"
@@ -75,6 +76,8 @@ struct RecorderOutput {
 	 * Writes pending data from the encoder to the output file.
 	 */
 	bool EncoderToFile(Error &error);
+
+	void SendTag(const Tag &tag);
 };
 
 static constexpr Domain recorder_output_domain("recorder_output");
@@ -243,6 +246,24 @@ recorder_output_close(AudioOutput *ao)
 	recorder.Close();
 }
 
+inline void
+RecorderOutput::SendTag(const Tag &tag)
+{
+	Error error;
+	if (!encoder_pre_tag(encoder, error) ||
+	    !EncoderToFile(error) ||
+	    !encoder_tag(encoder, &tag, error))
+		LogError(error);
+}
+
+static void
+recorder_output_send_tag(AudioOutput *ao, const Tag *tag)
+{
+	RecorderOutput &recorder = *(RecorderOutput *)ao;
+
+	recorder.SendTag(*tag);
+}
+
 static size_t
 recorder_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		     Error &error)
@@ -264,7 +285,7 @@ const struct AudioOutputPlugin recorder_output_plugin = {
 	recorder_output_open,
 	recorder_output_close,
 	nullptr,
-	nullptr,
+	recorder_output_send_tag,
 	recorder_output_play,
 	nullptr,
 	nullptr,
