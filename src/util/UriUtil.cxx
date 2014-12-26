@@ -140,8 +140,11 @@ uri_remove_auth(const char *uri)
 bool
 uri_is_child(const char *parent, const char *child)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(parent != nullptr);
 	assert(child != nullptr);
+#endif
 
 	const size_t parent_length = strlen(parent);
 	return memcmp(parent, child, parent_length) == 0 &&

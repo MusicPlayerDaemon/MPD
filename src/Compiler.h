@@ -20,32 +20,44 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#define GCC_CHECK_VERSION(major, minor) \
-  (defined(__GNUC__) &&                                                 \
-   (__GNUC__ > (major) || (__GNUC__ == (major) && __GNUC_MINOR__ >= (minor))))
+#define GCC_MAKE_VERSION(major, minor, patchlevel) ((major) * 10000 + (minor) * 100 + patchlevel)
 
 #ifdef __GNUC__
-#define GCC_VERSION (__GNUC__ * 10000 \
-                     + __GNUC_MINOR__ * 100 \
-                     + __GNUC_PATCHLEVEL__)
+#define GCC_VERSION GCC_MAKE_VERSION(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__)
 #else
 #define GCC_VERSION 0
 #endif
 
+#define GCC_CHECK_VERSION(major, minor) \
+	(defined(__GNUC__) && GCC_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
+
+/**
+ * Are we building with gcc (not clang or any other compiler) and a
+ * version older than the specified one?
+ */
+#define GCC_OLDER_THAN(major, minor) \
+	(defined(__GNUC__) && !defined(__clang__) && \
+	 GCC_VERSION < GCC_MAKE_VERSION(major, minor, 0))
+
 #ifdef __clang__
-#  define CLANG_VERSION (__clang_major__ * 10000 \
-			 + __clang_minor__ * 100 \
-			 + __clang_patchlevel__)
+#  define CLANG_VERSION GCC_MAKE_VERSION(__clang_major__, __clang_minor__, __clang_patchlevel__)
 #  if __clang_major__ < 3
 #    error Sorry, your clang version is too old.  You need at least version 3.1.
 #  endif
 #elif defined(__GNUC__)
-#  if !GCC_CHECK_VERSION(4,6)
+#  if GCC_OLDER_THAN(4,6)
 #    error Sorry, your gcc version is too old.  You need at least version 4.6.
 #  endif
 #else
 #  warning Untested compiler.  Use at your own risk!
 #endif
+
+/**
+ * Are we building with the specified version of clang or newer?
+ */
+#define CLANG_CHECK_VERSION(major, minor) \
+	(defined(__clang__) && \
+	 CLANG_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
 
 #if GCC_CHECK_VERSION(4,0)
 
@@ -141,7 +153,7 @@
 #if defined(__cplusplus)
 
 /* support for C++11 "override" was added in gcc 4.7 */
-#if !defined(__clang__) && !GCC_CHECK_VERSION(4,7)
+#if GCC_OLDER_THAN(4,7)
 #define override
 #define final
 #endif

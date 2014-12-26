@@ -110,9 +110,9 @@ public:
 	virtual bool Open(Error &error) override;
 	virtual void Close() override;
 
-	virtual const LightSong *GetSong(const char *uri_utf8,
-					 Error &error) const override;
-	virtual void ReturnSong(const LightSong *song) const;
+	const LightSong *GetSong(const char *uri_utf8,
+				 Error &error) const override;
+	void ReturnSong(const LightSong *song) const override;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,

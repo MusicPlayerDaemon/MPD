@@ -4,6 +4,7 @@ ver 0.19.8 (not yet released)
 * decoder
   - dsdiff, dsf: allow ID3 tags larger than 4 kB
   - ffmpeg: support interleaved floating point
+* fix clang 3.6 warnings
 
 ver 0.19.7 (2014/12/17)
 * input
@@ -167,6 +168,9 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.22 (not yet released)
+* fix clang 3.6 warnings
 
 ver 0.18.21 (2014/12/17)
 * playlist
