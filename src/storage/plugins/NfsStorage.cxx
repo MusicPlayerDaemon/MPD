@@ -288,7 +288,7 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
 		return false;
 
 	if (!WaitConnected(error))
-		return nullptr;
+		return false;
 
 	NfsGetInfoOperation operation(*connection, path.c_str(), info);
 	return operation.Run(error);
