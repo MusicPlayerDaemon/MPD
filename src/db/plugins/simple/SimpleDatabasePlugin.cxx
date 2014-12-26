@@ -435,9 +435,12 @@ SimpleDatabase::Save(Error &error)
 bool
 SimpleDatabase::Mount(const char *uri, Database *db, Error &error)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(uri != nullptr);
-	assert(*uri != 0);
 	assert(db != nullptr);
+#endif
+	assert(*uri != 0);
 
 	ScopeDatabaseLock protect;
 

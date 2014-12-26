@@ -121,8 +121,11 @@ gcc_pure
 int
 IcuCollate(const char *a, const char *b)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(a != nullptr);
 	assert(b != nullptr);
+#endif
 
 #ifdef HAVE_ICU
 	assert(collator != nullptr);
@@ -159,7 +162,10 @@ IcuCaseFold(const char *src)
 {
 #ifdef HAVE_ICU
 	assert(collator != nullptr);
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(src != nullptr);
+#endif
 
 	const auto u = UCharFromUTF8(src);
 	if (u.IsNull())
