@@ -43,8 +43,11 @@ gcc_pure gcc_nonnull_all
 static inline bool
 StringEqualsCaseASCII(const char *a, const char *b)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(a != nullptr);
 	assert(b != nullptr);
+#endif
 
 	/* note: strcasecmp() depends on the locale, but for ASCII-only
 	   strings, it's safe to use */
@@ -55,8 +58,11 @@ gcc_pure gcc_nonnull_all
 static inline bool
 StringEqualsCaseASCII(const char *a, const char *b, size_t n)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(a != nullptr);
 	assert(b != nullptr);
+#endif
 
 	/* note: strcasecmp() depends on the locale, but for ASCII-only
 	   strings, it's safe to use */

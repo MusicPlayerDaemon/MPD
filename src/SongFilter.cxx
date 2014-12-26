@@ -78,7 +78,10 @@ SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
 bool
 SongFilter::Item::StringMatch(const char *s) const
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(s != nullptr);
+#endif
 
 	if (fold_case) {
 		char *p = g_utf8_casefold(s, -1);

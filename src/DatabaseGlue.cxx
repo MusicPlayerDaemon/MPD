@@ -112,7 +112,10 @@ db_get_root(void)
 Directory *
 db_get_directory(const char *name)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(name != nullptr);
+#endif
 
 	if (db == nullptr)
 		return nullptr;

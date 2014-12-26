@@ -25,7 +25,10 @@
 const char *
 PathTraits::GetBaseUTF8(const char *p)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(p != nullptr);
+#endif
 
 	const char *slash = strrchr(p, SEPARATOR_UTF8);
 	return slash != nullptr
@@ -36,7 +39,10 @@ PathTraits::GetBaseUTF8(const char *p)
 std::string
 PathTraits::GetParentUTF8(const char *p)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(p != nullptr);
+#endif
 
 	const char *slash = strrchr(p, SEPARATOR_UTF8);
 	return slash != nullptr

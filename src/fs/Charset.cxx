@@ -79,7 +79,10 @@ GetFSCharset()
 std::string
 PathToUTF8(const char *path_fs)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(path_fs != nullptr);
+#endif
 
 	if (fs_charset.empty())
 		return std::string(path_fs);
@@ -109,7 +112,10 @@ PathToUTF8(const char *path_fs)
 char *
 PathFromUTF8(const char *path_utf8)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(path_utf8 != nullptr);
+#endif
 
 	if (fs_charset.empty())
 		return g_strdup(path_utf8);

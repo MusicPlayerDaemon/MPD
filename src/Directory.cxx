@@ -40,7 +40,10 @@ extern "C" {
 inline Directory *
 Directory::Allocate(const char *path)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(path != nullptr);
+#endif
 
 	const size_t path_size = strlen(path) + 1;
 	Directory *directory =
