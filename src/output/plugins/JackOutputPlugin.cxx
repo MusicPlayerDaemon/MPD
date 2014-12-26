@@ -390,7 +390,7 @@ JackOutput::Configure(const config_param &param, Error &error)
 	const char *value = param.GetBlockValue("source_ports", "left,right");
 	num_source_ports = parse_port_list(value, source_ports, error);
 	if (num_source_ports == 0)
-		return nullptr;
+		return false;
 
 	/* configure the destination ports */
 
@@ -408,7 +408,7 @@ JackOutput::Configure(const config_param &param, Error &error)
 		num_destination_ports =
 			parse_port_list(value, destination_ports, error);
 		if (num_destination_ports == 0)
-			return nullptr;
+			return false;
 	} else {
 		num_destination_ports = 0;
 	}
