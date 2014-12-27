@@ -42,6 +42,14 @@ struct PipeOutput {
 	}
 
 	bool Configure(const config_param &param, Error &error);
+	bool Open(AudioFormat &audio_format, Error &error);
+
+	void Close() {
+		pclose(fh);
+	}
+
+	size_t Play(const void *chunk, size_t size, Error &error);
+
 };
 
 static constexpr Domain pipe_output_domain("pipe_output");
@@ -85,43 +93,52 @@ pipe_output_finish(AudioOutput *ao)
 	delete pd;
 }
 
-static bool
-pipe_output_open(AudioOutput *ao,
-		 gcc_unused AudioFormat &audio_format,
-		 Error &error)
+inline bool
+PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &error)
 {
-	PipeOutput *pd = (PipeOutput *)ao;
-
-	pd->fh = popen(pd->cmd.c_str(), "w");
-	if (pd->fh == nullptr) {
+	fh = popen(cmd.c_str(), "w");
+	if (fh == nullptr) {
 		error.FormatErrno("Error opening pipe \"%s\"",
-				  pd->cmd.c_str());
+				  cmd.c_str());
 		return false;
 	}
 
 	return true;
 }
 
+static bool
+pipe_output_open(AudioOutput *ao, AudioFormat &audio_format, Error &error)
+{
+	PipeOutput &po = *(PipeOutput *)ao;
+
+	return po.Open(audio_format, error);
+}
+
 static void
 pipe_output_close(AudioOutput *ao)
 {
-	PipeOutput *pd = (PipeOutput *)ao;
+	PipeOutput &po = *(PipeOutput *)ao;
 
-	pclose(pd->fh);
+	po.Close();
+}
+
+inline size_t
+PipeOutput::Play(const void *chunk, size_t size, Error &error)
+{
+	size_t nbytes = fwrite(chunk, 1, size, fh);
+	if (nbytes == 0)
+		error.SetErrno("Write error on pipe");
+
+	return nbytes;
 }
 
 static size_t
 pipe_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		 Error &error)
 {
-	PipeOutput *pd = (PipeOutput *)ao;
-	size_t ret;
+	PipeOutput &po = *(PipeOutput *)ao;
 
-	ret = fwrite(chunk, 1, size, pd->fh);
-	if (ret == 0)
-		error.SetErrno("Write error on pipe");
-
-	return ret;
+	return po.Play(chunk, size, error);
 }
 
 const struct AudioOutputPlugin pipe_output_plugin = {
