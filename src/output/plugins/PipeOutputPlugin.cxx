@@ -28,7 +28,7 @@
 
 #include <stdio.h>
 
-struct PipeOutput {
+class PipeOutput {
 	AudioOutput base;
 
 	std::string cmd;
@@ -39,6 +39,7 @@ struct PipeOutput {
 
 	bool Configure(const config_param &param, Error &error);
 
+public:
 	static AudioOutput *Create(const config_param &param, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
