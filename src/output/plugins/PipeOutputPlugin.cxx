@@ -37,11 +37,8 @@ struct PipeOutput {
 	PipeOutput()
 		:base(pipe_output_plugin) {}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
-	}
-
 	bool Configure(const config_param &param, Error &error);
+
 	bool Open(AudioFormat &audio_format, Error &error);
 
 	void Close() {
@@ -57,6 +54,9 @@ static constexpr Domain pipe_output_domain("pipe_output");
 inline bool
 PipeOutput::Configure(const config_param &param, Error &error)
 {
+	if (!base.Configure(param, error))
+		return false;
+
 	cmd = param.GetBlockValue("command", "");
 	if (cmd.empty()) {
 		error.Set(config_domain,
@@ -71,11 +71,6 @@ static AudioOutput *
 pipe_output_init(const config_param &param, Error &error)
 {
 	PipeOutput *pd = new PipeOutput();
-
-	if (!pd->Initialize(param, error)) {
-		delete pd;
-		return nullptr;
-	}
 
 	if (!pd->Configure(param, error)) {
 		delete pd;
