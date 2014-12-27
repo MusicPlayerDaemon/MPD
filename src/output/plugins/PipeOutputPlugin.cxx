@@ -39,6 +39,8 @@ struct PipeOutput {
 
 	bool Configure(const config_param &param, Error &error);
 
+	static AudioOutput *Create(const config_param &param, Error &error);
+
 	bool Open(AudioFormat &audio_format, Error &error);
 
 	void Close() {
@@ -67,17 +69,23 @@ PipeOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static AudioOutput *
-pipe_output_init(const config_param &param, Error &error)
+inline AudioOutput *
+PipeOutput::Create(const config_param &param, Error &error)
 {
-	PipeOutput *pd = new PipeOutput();
+	PipeOutput *po = new PipeOutput();
 
-	if (!pd->Configure(param, error)) {
-		delete pd;
+	if (!po->Configure(param, error)) {
+		delete po;
 		return nullptr;
 	}
 
-	return &pd->base;
+	return &po->base;
+}
+
+static AudioOutput *
+pipe_output_init(const config_param &param, Error &error)
+{
+	return PipeOutput::Create(param, error);
 }
 
 static void
