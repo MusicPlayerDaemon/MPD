@@ -55,15 +55,15 @@ public:
 	int GetVolumeInternal(Error &error);
 
 	/* virtual methods from class Mixer */
-	virtual bool Open(gcc_unused Error &error) override {
+	bool Open(gcc_unused Error &error) override {
 		return true;
 	}
 
-	virtual void Close() override {
+	void Close() override {
 	}
 
-	virtual int GetVolume(Error &error) override;
-	virtual bool SetVolume(unsigned volume, Error &error) override;
+	int GetVolume(Error &error) override;
+	bool SetVolume(unsigned volume, Error &error) override;
 };
 
 static constexpr Domain pulse_mixer_domain("pulse_mixer");
