@@ -21,6 +21,7 @@
 #include "PulseOutputPlugin.hxx"
 #include "lib/pulse/Domain.hxx"
 #include "lib/pulse/Error.hxx"
+#include "lib/pulse/LogError.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
@@ -618,9 +619,8 @@ pulse_output_close(AudioOutput *ao)
 		o = pa_stream_drain(po->stream,
 				    pulse_output_stream_success_cb, po);
 		if (o == nullptr) {
-			FormatWarning(pulse_domain,
-				      "pa_stream_drain() has failed: %s",
-				      pa_strerror(pa_context_errno(po->context)));
+			LogPulseError(po->context,
+				      "pa_stream_drain() has failed");
 		} else
 			pulse_wait_for_operation(po->mainloop, o);
 	}
@@ -797,9 +797,7 @@ pulse_output_cancel(AudioOutput *ao)
 
 	o = pa_stream_flush(po->stream, pulse_output_stream_success_cb, po);
 	if (o == nullptr) {
-		FormatWarning(pulse_domain,
-			      "pa_stream_flush() has failed: %s",
-			      pa_strerror(pa_context_errno(po->context)));
+		LogPulseError(po->context, "pa_stream_flush() has failed");
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return;
 	}

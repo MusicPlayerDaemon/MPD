@@ -1351,6 +1351,7 @@ libmixer_plugins_a_SOURCES += \
 
 noinst_LIBRARIES += libpulse.a
 libpulse_a_SOURCES = \
+	src/lib/pulse/LogError.cxx src/lib/pulse/LogError.hxx \
 	src/lib/pulse/Error.cxx src/lib/pulse/Error.hxx \
 	src/lib/pulse/Domain.cxx src/lib/pulse/Domain.hxx
 libpulse_a_CPPFLAGS = $(AM_CPPFLAGS) $(PULSE_CFLAGS)

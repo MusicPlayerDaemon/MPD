@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PulseMixerPlugin.hxx"
 #include "lib/pulse/Domain.hxx"
+#include "lib/pulse/LogError.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
@@ -30,7 +31,6 @@
 #include <pulse/introspect.h>
 #include <pulse/stream.h>
 #include <pulse/subscribe.h>
-#include <pulse/error.h>
 
 #include <assert.h>
 
@@ -118,9 +118,8 @@ PulseMixer::Update(pa_context *context, pa_stream *stream)
 					       pa_stream_get_index(stream),
 					       pulse_mixer_volume_cb, this);
 	if (o == nullptr) {
-		FormatError(pulse_domain,
-			    "pa_context_get_sink_input_info() failed: %s",
-			    pa_strerror(pa_context_errno(context)));
+		LogPulseError(context,
+			      "pa_context_get_sink_input_info() failed");
 		Offline();
 		return;
 	}
@@ -140,9 +139,8 @@ pulse_mixer_on_connect(gcc_unused PulseMixer &pm,
 				 (pa_subscription_mask_t)PA_SUBSCRIPTION_MASK_SINK_INPUT,
 				 nullptr, nullptr);
 	if (o == nullptr) {
-		FormatError(pulse_domain,
-			    "pa_context_subscribe() failed: %s",
-			    pa_strerror(pa_context_errno(context)));
+		LogPulseError(context,
+			      "pa_context_subscribe() failed");
 		return;
 	}
 
