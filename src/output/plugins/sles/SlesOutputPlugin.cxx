@@ -35,7 +35,7 @@
 #include <SLES/OpenSLES_Android.h>
 
 class SlesOutput {
-	friend AudioOutputWrapper<SlesOutput>;
+	friend struct AudioOutputWrapper<SlesOutput>;
 
 	static constexpr unsigned N_BUFFERS = 3;
 	static constexpr size_t BUFFER_SIZE = 65536;

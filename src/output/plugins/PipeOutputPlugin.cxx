@@ -30,7 +30,7 @@
 #include <stdio.h>
 
 class PipeOutput {
-	friend AudioOutputWrapper<PipeOutput>;
+	friend struct AudioOutputWrapper<PipeOutput>;
 
 	AudioOutput base;
 
