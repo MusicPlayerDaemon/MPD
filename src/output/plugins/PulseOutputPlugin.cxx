@@ -330,7 +330,6 @@ pulse_output_init(const config_param &param, Error &error)
 
 	po->mixer = nullptr;
 	po->mainloop = nullptr;
-	po->context = nullptr;
 	po->stream = nullptr;
 
 	return &po->base;
@@ -350,7 +349,6 @@ pulse_output_enable(AudioOutput *ao, Error &error)
 	PulseOutput *po = (PulseOutput *)ao;
 
 	assert(po->mainloop == nullptr);
-	assert(po->context == nullptr);
 
 	/* create the libpulse mainloop and start the thread */
 
