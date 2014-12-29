@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PipeOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -29,6 +30,8 @@
 #include <stdio.h>
 
 class PipeOutput {
+	friend AudioOutputWrapper<PipeOutput>;
+
 	AudioOutput base;
 
 	std::string cmd;
@@ -40,7 +43,7 @@ class PipeOutput {
 	bool Configure(const config_param &param, Error &error);
 
 public:
-	static AudioOutput *Create(const config_param &param, Error &error);
+	static PipeOutput *Create(const config_param &param, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
 
@@ -70,7 +73,7 @@ PipeOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-inline AudioOutput *
+inline PipeOutput *
 PipeOutput::Create(const config_param &param, Error &error)
 {
 	PipeOutput *po = new PipeOutput();
@@ -80,21 +83,7 @@ PipeOutput::Create(const config_param &param, Error &error)
 		return nullptr;
 	}
 
-	return &po->base;
-}
-
-static AudioOutput *
-pipe_output_init(const config_param &param, Error &error)
-{
-	return PipeOutput::Create(param, error);
-}
-
-static void
-pipe_output_finish(AudioOutput *ao)
-{
-	PipeOutput *pd = (PipeOutput *)ao;
-
-	delete pd;
+	return po;
 }
 
 inline bool
@@ -110,22 +99,6 @@ PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &error)
 	return true;
 }
 
-static bool
-pipe_output_open(AudioOutput *ao, AudioFormat &audio_format, Error &error)
-{
-	PipeOutput &po = *(PipeOutput *)ao;
-
-	return po.Open(audio_format, error);
-}
-
-static void
-pipe_output_close(AudioOutput *ao)
-{
-	PipeOutput &po = *(PipeOutput *)ao;
-
-	po.Close();
-}
-
 inline size_t
 PipeOutput::Play(const void *chunk, size_t size, Error &error)
 {
@@ -136,27 +109,20 @@ PipeOutput::Play(const void *chunk, size_t size, Error &error)
 	return nbytes;
 }
 
-static size_t
-pipe_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		 Error &error)
-{
-	PipeOutput &po = *(PipeOutput *)ao;
-
-	return po.Play(chunk, size, error);
-}
+typedef AudioOutputWrapper<PipeOutput> Wrapper;
 
 const struct AudioOutputPlugin pipe_output_plugin = {
 	"pipe",
 	nullptr,
-	pipe_output_init,
-	pipe_output_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	pipe_output_open,
-	pipe_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
 	nullptr,
-	pipe_output_play,
+	&Wrapper::Play,
 	nullptr,
 	nullptr,
 	nullptr,

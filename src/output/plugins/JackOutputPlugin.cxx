@@ -20,6 +20,7 @@
 #include "config.h"
 #include "JackOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "config/ConfigError.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/SplitString.hxx"
@@ -100,6 +101,10 @@ struct JackOutput {
 
 	bool Open(AudioFormat &new_audio_format, Error &error);
 
+	void Close() {
+		Stop();
+	}
+
 	bool Start(Error &error);
 	void Stop();
 
@@ -117,7 +122,15 @@ struct JackOutput {
 	 */
 	size_t WriteSamples(const float *src, size_t n_frames);
 
+	unsigned Delay() const {
+		return base.pause && pause && !shutdown
+			? 1000
+			: 0;
+	}
+
 	size_t Play(const void *chunk, size_t size, Error &error);
+
+	bool Pause();
 };
 
 static constexpr Domain jack_output_domain("jack_output");
@@ -468,30 +481,6 @@ mpd_jack_init(const config_param &param, Error &error)
 	return &jd->base;
 }
 
-static void
-mpd_jack_finish(AudioOutput *ao)
-{
-	JackOutput *jd = (JackOutput *)ao;
-
-	delete jd;
-}
-
-static bool
-mpd_jack_enable(AudioOutput *ao, Error &error)
-{
-	JackOutput &jo = *(JackOutput *)ao;
-
-	return jo.Enable(error);
-}
-
-static void
-mpd_jack_disable(AudioOutput *ao)
-{
-	JackOutput &jo = *(JackOutput *)ao;
-
-	jo.Disable();
-}
-
 /**
  * Stops the playback on the JACK connection.
  */
@@ -648,33 +637,6 @@ JackOutput::Open(AudioFormat &new_audio_format, Error &error)
 	return Start(error);
 }
 
-static bool
-mpd_jack_open(AudioOutput *ao, AudioFormat &audio_format,
-	      Error &error)
-{
-	JackOutput &jo = *(JackOutput *)ao;
-
-	return jo.Open(audio_format, error);
-}
-
-static void
-mpd_jack_close(AudioOutput *ao)
-{
-	JackOutput &jo = *(JackOutput *)ao;
-
-	jo.Stop();
-}
-
-static unsigned
-mpd_jack_delay(AudioOutput *ao)
-{
-	JackOutput *jd = (JackOutput *)ao;
-
-	return jd->base.pause && jd->pause && !jd->shutdown
-		? 1000
-		: 0;
-}
-
 inline size_t
 JackOutput::WriteSamples(const float *src, size_t n_frames)
 {
@@ -744,42 +706,33 @@ JackOutput::Play(const void *chunk, size_t size, Error &error)
 	}
 }
 
-static size_t
-mpd_jack_play(AudioOutput *ao, const void *chunk, size_t size,
-	      Error &error)
+inline bool
+JackOutput::Pause()
 {
-	JackOutput &jo = *(JackOutput *)ao;
-
-	return jo.Play(chunk, size, error);
-}
-
-static bool
-mpd_jack_pause(AudioOutput *ao)
-{
-	JackOutput *jd = (JackOutput *)ao;
-
-	if (jd->shutdown)
+	if (shutdown)
 		return false;
 
-	jd->pause = true;
+	pause = true;
 
 	return true;
 }
+
+typedef AudioOutputWrapper<JackOutput> Wrapper;
 
 const struct AudioOutputPlugin jack_output_plugin = {
 	"jack",
 	mpd_jack_test_default_device,
 	mpd_jack_init,
-	mpd_jack_finish,
-	mpd_jack_enable,
-	mpd_jack_disable,
-	mpd_jack_open,
-	mpd_jack_close,
-	mpd_jack_delay,
+	&Wrapper::Finish,
+	&Wrapper::Enable,
+	&Wrapper::Disable,
+	&Wrapper::Open,
+	&Wrapper::Close,
+	&Wrapper::Delay,
 	nullptr,
-	mpd_jack_play,
+	&Wrapper::Play,
 	nullptr,
 	nullptr,
-	mpd_jack_pause,
+	&Wrapper::Pause,
 	nullptr,
 };

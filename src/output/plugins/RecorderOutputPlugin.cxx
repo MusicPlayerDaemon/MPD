@@ -20,6 +20,7 @@
 #include "config.h"
 #include "RecorderOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "config/ConfigError.hxx"
@@ -213,16 +214,6 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 	return true;
 }
 
-static bool
-recorder_output_open(AudioOutput *ao,
-		     AudioFormat &audio_format,
-		     Error &error)
-{
-	RecorderOutput &recorder = *(RecorderOutput *)ao;
-
-	return recorder.Open(audio_format, error);
-}
-
 inline void
 RecorderOutput::Close()
 {
@@ -236,14 +227,6 @@ RecorderOutput::Close()
 	encoder_close(encoder);
 
 	close(fd);
-}
-
-static void
-recorder_output_close(AudioOutput *ao)
-{
-	RecorderOutput &recorder = *(RecorderOutput *)ao;
-
-	recorder.Close();
 }
 
 inline void
@@ -275,6 +258,8 @@ recorder_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		? size : 0;
 }
 
+typedef AudioOutputWrapper<RecorderOutput> Wrapper;
+
 const struct AudioOutputPlugin recorder_output_plugin = {
 	"recorder",
 	nullptr,
@@ -282,8 +267,8 @@ const struct AudioOutputPlugin recorder_output_plugin = {
 	recorder_output_finish,
 	nullptr,
 	nullptr,
-	recorder_output_open,
-	recorder_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
 	recorder_output_send_tag,
 	recorder_output_play,
