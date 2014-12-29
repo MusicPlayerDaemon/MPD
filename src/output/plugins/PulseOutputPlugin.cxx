@@ -57,7 +57,9 @@ struct PulseOutput {
 	size_t writable;
 
 	PulseOutput()
-		:base(pulse_output_plugin) {}
+		:base(pulse_output_plugin),
+		 mixer(nullptr),
+		 mainloop(nullptr), stream(nullptr) {}
 };
 
 void
@@ -327,10 +329,6 @@ pulse_output_init(const config_param &param, Error &error)
 	po->name = param.GetBlockValue("name", "mpd_pulse");
 	po->server = param.GetBlockValue("server");
 	po->sink = param.GetBlockValue("sink");
-
-	po->mixer = nullptr;
-	po->mainloop = nullptr;
-	po->stream = nullptr;
 
 	return &po->base;
 }
