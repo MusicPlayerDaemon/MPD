@@ -19,11 +19,11 @@
 
 #include "config.h"
 #include "PulseMixerPlugin.hxx"
+#include "lib/pulse/Domain.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <pulse/context.h>
@@ -65,8 +65,6 @@ public:
 	int GetVolume(Error &error) override;
 	bool SetVolume(unsigned volume, Error &error) override;
 };
-
-static constexpr Domain pulse_mixer_domain("pulse_mixer");
 
 void
 PulseMixer::Offline()
@@ -120,7 +118,7 @@ PulseMixer::Update(pa_context *context, pa_stream *stream)
 					       pa_stream_get_index(stream),
 					       pulse_mixer_volume_cb, this);
 	if (o == nullptr) {
-		FormatError(pulse_mixer_domain,
+		FormatError(pulse_domain,
 			    "pa_context_get_sink_input_info() failed: %s",
 			    pa_strerror(pa_context_errno(context)));
 		Offline();
@@ -142,7 +140,7 @@ pulse_mixer_on_connect(gcc_unused PulseMixer &pm,
 				 (pa_subscription_mask_t)PA_SUBSCRIPTION_MASK_SINK_INPUT,
 				 nullptr, nullptr);
 	if (o == nullptr) {
-		FormatError(pulse_mixer_domain,
+		FormatError(pulse_domain,
 			    "pa_context_subscribe() failed: %s",
 			    pa_strerror(pa_context_errno(context)));
 		return;
@@ -212,7 +210,7 @@ PulseMixer::SetVolume(unsigned new_volume, Error &error)
 
 	if (!online) {
 		pulse_output_unlock(output);
-		error.Set(pulse_mixer_domain, "disconnected");
+		error.Set(pulse_domain, "disconnected");
 		return false;
 	}
 

@@ -19,11 +19,11 @@
 
 #include "config.h"
 #include "PulseOutputPlugin.hxx"
+#include "lib/pulse/Domain.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <pulse/thread-mainloop.h>
@@ -59,13 +59,11 @@ struct PulseOutput {
 		:base(pulse_output_plugin) {}
 };
 
-static constexpr Domain pulse_output_domain("pulse_output");
-
 static void
 SetError(Error &error, pa_context *context, const char *msg)
 {
 	const int e = pa_context_errno(context);
-	error.Format(pulse_output_domain, e, "%s: %s", msg, pa_strerror(e));
+	error.Format(pulse_domain, e, "%s: %s", msg, pa_strerror(e));
 }
 
 void
@@ -120,7 +118,7 @@ pulse_output_set_volume(PulseOutput &po, const pa_cvolume *volume,
 
 	if (po.context == nullptr || po.stream == nullptr ||
 	    pa_stream_get_state(po.stream) != PA_STREAM_READY) {
-		error.Set(pulse_output_domain, "disconnected");
+		error.Set(pulse_domain, "disconnected");
 		return false;
 	}
 
@@ -301,7 +299,7 @@ pulse_output_setup_context(PulseOutput *po, Error &error)
 	po->context = pa_context_new(pa_threaded_mainloop_get_api(po->mainloop),
 				     MPD_PULSE_NAME);
 	if (po->context == nullptr) {
-		error.Set(pulse_output_domain, "pa_context_new() has failed");
+		error.Set(pulse_domain, "pa_context_new() has failed");
 		return false;
 	}
 
@@ -364,7 +362,7 @@ pulse_output_enable(AudioOutput *ao, Error &error)
 
 	po->mainloop = pa_threaded_mainloop_new();
 	if (po->mainloop == nullptr) {
-		error.Set(pulse_output_domain,
+		error.Set(pulse_domain,
 			  "pa_threaded_mainloop_new() has failed");
 		return false;
 	}
@@ -376,7 +374,7 @@ pulse_output_enable(AudioOutput *ao, Error &error)
 		pa_threaded_mainloop_free(po->mainloop);
 		po->mainloop = nullptr;
 
-		error.Set(pulse_output_domain,
+		error.Set(pulse_domain,
 			  "pa_threaded_mainloop_start() has failed");
 		return false;
 	}
@@ -626,7 +624,7 @@ pulse_output_close(AudioOutput *ao)
 		o = pa_stream_drain(po->stream,
 				    pulse_output_stream_success_cb, po);
 		if (o == nullptr) {
-			FormatWarning(pulse_output_domain,
+			FormatWarning(pulse_domain,
 				      "pa_stream_drain() has failed: %s",
 				      pa_strerror(pa_context_errno(po->context)));
 		} else
@@ -749,7 +747,7 @@ pulse_output_play(AudioOutput *ao, const void *chunk, size_t size,
 	while (po->writable == 0) {
 		if (pa_stream_is_suspended(po->stream)) {
 			pa_threaded_mainloop_unlock(po->mainloop);
-			error.Set(pulse_output_domain, "suspended");
+			error.Set(pulse_domain, "suspended");
 			return 0;
 		}
 
@@ -757,7 +755,7 @@ pulse_output_play(AudioOutput *ao, const void *chunk, size_t size,
 
 		if (pa_stream_get_state(po->stream) != PA_STREAM_READY) {
 			pa_threaded_mainloop_unlock(po->mainloop);
-			error.Set(pulse_output_domain, "disconnected");
+			error.Set(pulse_domain, "disconnected");
 			return 0;
 		}
 	}
@@ -803,7 +801,7 @@ pulse_output_cancel(AudioOutput *ao)
 
 	o = pa_stream_flush(po->stream, pulse_output_stream_success_cb, po);
 	if (o == nullptr) {
-		FormatWarning(pulse_output_domain,
+		FormatWarning(pulse_domain,
 			      "pa_stream_flush() has failed: %s",
 			      pa_strerror(pa_context_errno(po->context)));
 		pa_threaded_mainloop_unlock(po->mainloop);

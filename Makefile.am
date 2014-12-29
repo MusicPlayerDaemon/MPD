@@ -1231,7 +1231,6 @@ OUTPUT_LIBS = \
 	$(ROAR_LIBS) \
 	$(JACK_LIBS) \
 	$(OPENAL_LIBS) \
-	$(PULSE_LIBS) \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
@@ -1256,7 +1255,7 @@ liboutput_plugins_a_SOURCES = \
 
 MIXER_LIBS = \
 	libmixer_plugins.a \
-	$(PULSE_LIBS)
+	$(PULSE_LIBS2)
 
 MIXER_API_SRC = \
 	src/mixer/Listener.hxx \
@@ -1349,6 +1348,13 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/PulseOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
 	src/mixer/plugins/PulseMixerPlugin.cxx src/mixer/plugins/PulseMixerPlugin.hxx
+
+noinst_LIBRARIES += libpulse.a
+libpulse_a_SOURCES = \
+	src/lib/pulse/Domain.cxx src/lib/pulse/Domain.hxx
+libpulse_a_CPPFLAGS = $(AM_CPPFLAGS) $(PULSE_CFLAGS)
+PULSE_LIBS2 = libpulse.a $(PULSE_LIBS)
+OUTPUT_LIBS += $(PULSE_LIBS2)
 endif
 
 if HAVE_SHOUT
