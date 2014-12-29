@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PulseOutputPlugin.hxx"
 #include "lib/pulse/Domain.hxx"
+#include "lib/pulse/Error.hxx"
 #include "../OutputAPI.hxx"
 #include "mixer/MixerList.hxx"
 #include "mixer/plugins/PulseMixerPlugin.hxx"
@@ -31,7 +32,6 @@
 #include <pulse/stream.h>
 #include <pulse/introspect.h>
 #include <pulse/subscribe.h>
-#include <pulse/error.h>
 #include <pulse/version.h>
 
 #include <assert.h>
@@ -58,13 +58,6 @@ struct PulseOutput {
 	PulseOutput()
 		:base(pulse_output_plugin) {}
 };
-
-static void
-SetError(Error &error, pa_context *context, const char *msg)
-{
-	const int e = pa_context_errno(context);
-	error.Format(pulse_domain, e, "%s: %s", msg, pa_strerror(e));
-}
 
 void
 pulse_output_lock(PulseOutput &po)
@@ -126,8 +119,8 @@ pulse_output_set_volume(PulseOutput &po, const pa_cvolume *volume,
 					     pa_stream_get_index(po.stream),
 					     volume, nullptr, nullptr);
 	if (o == nullptr) {
-		SetError(error, po.context,
-			 "failed to set PulseAudio volume");
+		SetPulseError(error, po.context,
+			      "failed to set PulseAudio volume");
 		return false;
 	}
 
@@ -237,8 +230,8 @@ pulse_output_connect(PulseOutput *po, Error &error)
 
 	if (pa_context_connect(po->context, po->server,
 			       (pa_context_flags_t)0, nullptr) < 0) {
-		SetError(error, po->context,
-			 "pa_context_connect() has failed");
+		SetPulseError(error, po->context,
+			      "pa_context_connect() has failed");
 		return false;
 	}
 
@@ -437,7 +430,7 @@ pulse_output_wait_connection(PulseOutput *po, Error &error)
 		case PA_CONTEXT_TERMINATED:
 		case PA_CONTEXT_FAILED:
 			/* failure */
-			SetError(error, po->context, "failed to connect");
+			SetPulseError(error, po->context, "failed to connect");
 			pulse_output_delete_context(po);
 			return false;
 
@@ -527,7 +520,8 @@ pulse_output_setup_stream(PulseOutput *po, const pa_sample_spec *ss,
 				 PA_CHANNEL_MAP_WAVEEX);
 	po->stream = pa_stream_new(po->context, po->name, ss, &chan_map);
 	if (po->stream == nullptr) {
-		SetError(error, po->context, "pa_stream_new() has failed");
+		SetPulseError(error, po->context,
+			      "pa_stream_new() has failed");
 		return false;
 	}
 
@@ -599,8 +593,8 @@ pulse_output_open(AudioOutput *ao, AudioFormat &audio_format,
 				       nullptr, nullptr) < 0) {
 		pulse_output_delete_stream(po);
 
-		SetError(error, po->context,
-			 "pa_stream_connect_playback() has failed");
+		SetPulseError(error, po->context,
+			      "pa_stream_connect_playback() has failed");
 		pa_threaded_mainloop_unlock(po->mainloop);
 		return false;
 	}
@@ -657,8 +651,8 @@ pulse_output_wait_stream(PulseOutput *po, Error &error)
 		case PA_STREAM_FAILED:
 		case PA_STREAM_TERMINATED:
 		case PA_STREAM_UNCONNECTED:
-			SetError(error, po->context,
-				 "failed to connect the stream");
+			SetPulseError(error, po->context,
+				      "failed to connect the stream");
 			return false;
 
 		case PA_STREAM_CREATING:
@@ -684,12 +678,14 @@ pulse_output_stream_pause(PulseOutput *po, bool pause,
 	o = pa_stream_cork(po->stream, pause,
 			   pulse_output_stream_success_cb, po);
 	if (o == nullptr) {
-		SetError(error, po->context, "pa_stream_cork() has failed");
+		SetPulseError(error, po->context,
+			      "pa_stream_cork() has failed");
 		return false;
 	}
 
 	if (!pulse_wait_for_operation(po->mainloop, o)) {
-		SetError(error, po->context, "pa_stream_cork() has failed");
+		SetPulseError(error, po->context,
+			      "pa_stream_cork() has failed");
 		return false;
 	}
 
@@ -772,7 +768,7 @@ pulse_output_play(AudioOutput *ao, const void *chunk, size_t size,
 				     0, PA_SEEK_RELATIVE);
 	pa_threaded_mainloop_unlock(po->mainloop);
 	if (result < 0) {
-		SetError(error, po->context, "pa_stream_write() failed");
+		SetPulseError(error, po->context, "pa_stream_write() failed");
 		return 0;
 	}
 
