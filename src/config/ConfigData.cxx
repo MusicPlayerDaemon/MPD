@@ -80,7 +80,7 @@ config_param::GetBlockParam(const char *name) const
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 const char *
@@ -152,7 +152,7 @@ bool
 config_param::GetBlockValue(const char *name, bool default_value) const
 {
 	const block_param *bp = GetBlockParam(name);
-	if (bp == NULL)
+	if (bp == nullptr)
 		return default_value;
 
 	return bp->GetBoolValue();
