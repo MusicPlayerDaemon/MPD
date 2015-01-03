@@ -37,7 +37,7 @@
 /* should be enough for buffer size = 2048 */
 #define NUM_BUFFERS 16
 
-struct OpenALOutput {
+class OpenALOutput {
 	friend struct AudioOutputWrapper<OpenALOutput>;
 
 	AudioOutput base;
