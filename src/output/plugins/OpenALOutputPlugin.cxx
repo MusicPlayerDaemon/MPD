@@ -34,11 +34,11 @@
 #include <OpenAL/alc.h>
 #endif
 
-/* should be enough for buffer size = 2048 */
-#define NUM_BUFFERS 16
-
 class OpenALOutput {
 	friend struct AudioOutputWrapper<OpenALOutput>;
+
+	/* should be enough for buffer size = 2048 */
+	static constexpr unsigned NUM_BUFFERS = 16;
 
 	AudioOutput base;
 
