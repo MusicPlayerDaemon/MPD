@@ -92,7 +92,7 @@ public:
 	void OnStreamWrite(size_t nbytes);
 
 	void OnStreamSuccess() {
-		pa_threaded_mainloop_signal(mainloop, 0);
+		Signal();
 	}
 
 	gcc_const
@@ -135,6 +135,10 @@ private:
 	 * Caller must lock the main loop.
 	 */
 	void DeleteContext();
+
+	void Signal() {
+		pa_threaded_mainloop_signal(mainloop, 0);
+	}
 
 	/**
 	 * Check if the context is (already) connected, and waits if
@@ -299,7 +303,7 @@ PulseOutput::OnContextStateChanged(pa_context_state_t new_state)
 		if (mixer != nullptr)
 			pulse_mixer_on_connect(*mixer, context);
 
-		pa_threaded_mainloop_signal(mainloop, 0);
+		Signal();
 		break;
 
 	case PA_CONTEXT_TERMINATED:
@@ -309,7 +313,7 @@ PulseOutput::OnContextStateChanged(pa_context_state_t new_state)
 
 		/* the caller thread might be waiting for these
 		   states */
-		pa_threaded_mainloop_signal(mainloop, 0);
+		Signal();
 		break;
 
 	case PA_CONTEXT_UNCONNECTED:
@@ -549,7 +553,7 @@ PulseOutput::OnStreamSuspended(gcc_unused pa_stream *_stream)
 
 	/* wake up the main loop to break out of the loop in
 	   pulse_output_play() */
-	pa_threaded_mainloop_signal(mainloop, 0);
+	Signal();
 }
 
 static void
@@ -573,7 +577,7 @@ PulseOutput::OnStreamStateChanged(pa_stream *_stream,
 		if (mixer != nullptr)
 			pulse_mixer_on_change(*mixer, context, _stream);
 
-		pa_threaded_mainloop_signal(mainloop, 0);
+		Signal();
 		break;
 
 	case PA_STREAM_FAILED:
@@ -581,7 +585,7 @@ PulseOutput::OnStreamStateChanged(pa_stream *_stream,
 		if (mixer != nullptr)
 			pulse_mixer_on_disconnect(*mixer);
 
-		pa_threaded_mainloop_signal(mainloop, 0);
+		Signal();
 		break;
 
 	case PA_STREAM_UNCONNECTED:
@@ -604,7 +608,7 @@ PulseOutput::OnStreamWrite(size_t nbytes)
 	assert(mainloop != nullptr);
 
 	writable = nbytes;
-	pa_threaded_mainloop_signal(mainloop, 0);
+	Signal();
 }
 
 static void
