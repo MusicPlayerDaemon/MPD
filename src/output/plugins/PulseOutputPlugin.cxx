@@ -66,6 +66,7 @@ struct PulseOutput {
 	static bool TestDefaultDevice();
 
 	bool Configure(const config_param &param, Error &error);
+	static PulseOutput *Create(const config_param &param, Error &error);
 
 	bool Enable(Error &error);
 	void Disable();
@@ -381,21 +382,19 @@ PulseOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static AudioOutput *
-pulse_output_init(const config_param &param, Error &error)
+PulseOutput *
+PulseOutput::Create(const config_param &param, Error &error)
 {
-	PulseOutput *po;
-
 	setenv("PULSE_PROP_media.role", "music", true);
 	setenv("PULSE_PROP_application.icon_name", "mpd", true);
 
-	po = new PulseOutput();
+	auto *po = new PulseOutput();
 	if (!po->Configure(param, error)) {
 		delete po;
 		return nullptr;
 	}
 
-	return &po->base;
+	return po;
 }
 
 inline bool
@@ -849,8 +848,7 @@ inline bool
 PulseOutput::TestDefaultDevice()
 {
 	const config_param empty;
-	PulseOutput *po = (PulseOutput *)
-		pulse_output_init(empty, IgnoreError());
+	PulseOutput *po = PulseOutput::Create(empty, IgnoreError());
 	if (po == nullptr)
 		return false;
 
@@ -870,7 +868,7 @@ typedef AudioOutputWrapper<PulseOutput> Wrapper;
 const struct AudioOutputPlugin pulse_output_plugin = {
 	"pulse",
 	pulse_output_test_default_device,
-	pulse_output_init,
+	&Wrapper::Init,
 	&Wrapper::Finish,
 	&Wrapper::Enable,
 	&Wrapper::Disable,
