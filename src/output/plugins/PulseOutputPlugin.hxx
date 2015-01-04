@@ -20,7 +20,7 @@
 #ifndef MPD_PULSE_OUTPUT_PLUGIN_HXX
 #define MPD_PULSE_OUTPUT_PLUGIN_HXX
 
-struct PulseOutput;
+class PulseOutput;
 class PulseMixer;
 struct pa_cvolume;
 class Error;

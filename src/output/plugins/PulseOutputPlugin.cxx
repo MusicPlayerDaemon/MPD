@@ -42,7 +42,9 @@
 
 #define MPD_PULSE_NAME "Music Player Daemon"
 
-struct PulseOutput {
+class PulseOutput {
+	friend struct AudioOutputWrapper<PulseOutput>;
+
 	AudioOutput base;
 
 	const char *name;
