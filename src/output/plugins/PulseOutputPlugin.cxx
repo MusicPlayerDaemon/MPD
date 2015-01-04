@@ -62,6 +62,37 @@ struct PulseOutput {
 		 mixer(nullptr),
 		 mainloop(nullptr), stream(nullptr) {}
 
+public:
+	void SetMixer(PulseMixer &_mixer);
+
+	void ClearMixer(gcc_unused PulseMixer &old_mixer) {
+		assert(mixer == &old_mixer);
+
+		mixer = nullptr;
+	}
+
+	bool SetVolume(const pa_cvolume &volume, Error &error);
+
+	void Lock() {
+		pa_threaded_mainloop_lock(mainloop);
+	}
+
+	void Unlock() {
+		pa_threaded_mainloop_unlock(mainloop);
+	}
+
+	void OnContextStateChanged(pa_context_state_t new_state);
+	void OnServerLayoutChanged(pa_subscription_event_type_t t,
+				   uint32_t idx);
+	void OnStreamSuspended(pa_stream *_stream);
+	void OnStreamStateChanged(pa_stream *_stream,
+				  pa_stream_state_t new_state);
+	void OnStreamWrite(size_t nbytes);
+
+	void OnStreamSuccess() {
+		pa_threaded_mainloop_signal(mainloop, 0);
+	}
+
 	gcc_const
 	static bool TestDefaultDevice();
 
@@ -146,70 +177,79 @@ private:
 void
 pulse_output_lock(PulseOutput &po)
 {
-	pa_threaded_mainloop_lock(po.mainloop);
+	po.Lock();
 }
 
 void
 pulse_output_unlock(PulseOutput &po)
 {
-	pa_threaded_mainloop_unlock(po.mainloop);
+	po.Unlock();
+}
+
+inline void
+PulseOutput::SetMixer(PulseMixer &_mixer)
+{
+	assert(mixer == nullptr);
+
+	mixer = &_mixer;
+
+	if (mainloop == nullptr)
+		return;
+
+	pa_threaded_mainloop_lock(mainloop);
+
+	if (context != nullptr &&
+	    pa_context_get_state(context) == PA_CONTEXT_READY) {
+		pulse_mixer_on_connect(_mixer, context);
+
+		if (stream != nullptr &&
+		    pa_stream_get_state(stream) == PA_STREAM_READY)
+			pulse_mixer_on_change(_mixer, context, stream);
+	}
+
+	pa_threaded_mainloop_unlock(mainloop);
 }
 
 void
 pulse_output_set_mixer(PulseOutput &po, PulseMixer &pm)
 {
-	assert(po.mixer == nullptr);
-
-	po.mixer = &pm;
-
-	if (po.mainloop == nullptr)
-		return;
-
-	pa_threaded_mainloop_lock(po.mainloop);
-
-	if (po.context != nullptr &&
-	    pa_context_get_state(po.context) == PA_CONTEXT_READY) {
-		pulse_mixer_on_connect(pm, po.context);
-
-		if (po.stream != nullptr &&
-		    pa_stream_get_state(po.stream) == PA_STREAM_READY)
-			pulse_mixer_on_change(pm, po.context, po.stream);
-	}
-
-	pa_threaded_mainloop_unlock(po.mainloop);
+	po.SetMixer(pm);
 }
 
 void
-pulse_output_clear_mixer(PulseOutput &po, gcc_unused PulseMixer &pm)
+pulse_output_clear_mixer(PulseOutput &po, PulseMixer &pm)
 {
-	assert(po.mixer == &pm);
-
-	po.mixer = nullptr;
+	po.ClearMixer(pm);
 }
 
-bool
-pulse_output_set_volume(PulseOutput &po, const pa_cvolume *volume,
-			Error &error)
+inline bool
+PulseOutput::SetVolume(const pa_cvolume &volume, Error &error)
 {
-	pa_operation *o;
-
-	if (po.context == nullptr || po.stream == nullptr ||
-	    pa_stream_get_state(po.stream) != PA_STREAM_READY) {
+	if (context == nullptr || stream == nullptr ||
+	    pa_stream_get_state(stream) != PA_STREAM_READY) {
 		error.Set(pulse_domain, "disconnected");
 		return false;
 	}
 
-	o = pa_context_set_sink_input_volume(po.context,
-					     pa_stream_get_index(po.stream),
-					     volume, nullptr, nullptr);
+	pa_operation *o =
+		pa_context_set_sink_input_volume(context,
+						 pa_stream_get_index(stream),
+						 &volume, nullptr, nullptr);
 	if (o == nullptr) {
-		SetPulseError(error, po.context,
+		SetPulseError(error, context,
 			      "failed to set PulseAudio volume");
 		return false;
 	}
 
 	pa_operation_unref(o);
 	return true;
+}
+
+bool
+pulse_output_set_volume(PulseOutput &po, const pa_cvolume *volume,
+			Error &error)
+{
+	return po.SetVolume(*volume, error);
 }
 
 /**
@@ -244,32 +284,30 @@ static void
 pulse_output_stream_success_cb(gcc_unused pa_stream *s,
 			       gcc_unused int success, void *userdata)
 {
-	PulseOutput *po = (PulseOutput *)userdata;
+	PulseOutput &po = *(PulseOutput *)userdata;
 
-	pa_threaded_mainloop_signal(po->mainloop, 0);
+	po.OnStreamSuccess();
 }
 
-static void
-pulse_output_context_state_cb(struct pa_context *context, void *userdata)
+inline void
+PulseOutput::OnContextStateChanged(pa_context_state_t new_state)
 {
-	PulseOutput *po = (PulseOutput *)userdata;
-
-	switch (pa_context_get_state(context)) {
+	switch (new_state) {
 	case PA_CONTEXT_READY:
-		if (po->mixer != nullptr)
-			pulse_mixer_on_connect(*po->mixer, context);
+		if (mixer != nullptr)
+			pulse_mixer_on_connect(*mixer, context);
 
-		pa_threaded_mainloop_signal(po->mainloop, 0);
+		pa_threaded_mainloop_signal(mainloop, 0);
 		break;
 
 	case PA_CONTEXT_TERMINATED:
 	case PA_CONTEXT_FAILED:
-		if (po->mixer != nullptr)
-			pulse_mixer_on_disconnect(*po->mixer);
+		if (mixer != nullptr)
+			pulse_mixer_on_disconnect(*mixer);
 
 		/* the caller thread might be waiting for these
 		   states */
-		pa_threaded_mainloop_signal(po->mainloop, 0);
+		pa_threaded_mainloop_signal(mainloop, 0);
 		break;
 
 	case PA_CONTEXT_UNCONNECTED:
@@ -281,24 +319,40 @@ pulse_output_context_state_cb(struct pa_context *context, void *userdata)
 }
 
 static void
-pulse_output_subscribe_cb(pa_context *context,
-			  pa_subscription_event_type_t t,
-			  uint32_t idx, void *userdata)
+pulse_output_context_state_cb(struct pa_context *context, void *userdata)
 {
-	PulseOutput *po = (PulseOutput *)userdata;
+	PulseOutput &po = *(PulseOutput *)userdata;
+
+	po.OnContextStateChanged(pa_context_get_state(context));
+}
+
+inline void
+PulseOutput::OnServerLayoutChanged(pa_subscription_event_type_t t,
+				   uint32_t idx)
+{
 	pa_subscription_event_type_t facility =
 		pa_subscription_event_type_t(t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK);
 	pa_subscription_event_type_t type =
 		pa_subscription_event_type_t(t & PA_SUBSCRIPTION_EVENT_TYPE_MASK);
 
-	if (po->mixer != nullptr &&
+	if (mixer != nullptr &&
 	    facility == PA_SUBSCRIPTION_EVENT_SINK_INPUT &&
-	    po->stream != nullptr &&
-	    pa_stream_get_state(po->stream) == PA_STREAM_READY &&
-	    idx == pa_stream_get_index(po->stream) &&
+	    stream != nullptr &&
+	    pa_stream_get_state(stream) == PA_STREAM_READY &&
+	    idx == pa_stream_get_index(stream) &&
 	    (type == PA_SUBSCRIPTION_EVENT_NEW ||
 	     type == PA_SUBSCRIPTION_EVENT_CHANGE))
-		pulse_mixer_on_change(*po->mixer, context, po->stream);
+		pulse_mixer_on_change(*mixer, context, stream);
+}
+
+static void
+pulse_output_subscribe_cb(gcc_unused pa_context *context,
+			  pa_subscription_event_type_t t,
+			  uint32_t idx, void *userdata)
+{
+	PulseOutput &po = *(PulseOutput *)userdata;
+
+	po.OnServerLayoutChanged(t, idx);
 }
 
 inline bool
@@ -485,42 +539,47 @@ PulseOutput::WaitConnection(Error &error)
 	}
 }
 
-static void
-pulse_output_stream_suspended_cb(gcc_unused pa_stream *stream, void *userdata)
+inline void
+PulseOutput::OnStreamSuspended(gcc_unused pa_stream *_stream)
 {
-	PulseOutput *po = (PulseOutput *)userdata;
-
-	assert(stream == po->stream || po->stream == nullptr);
-	assert(po->mainloop != nullptr);
+	assert(_stream == stream || stream == nullptr);
+	assert(mainloop != nullptr);
 
 	/* wake up the main loop to break out of the loop in
 	   pulse_output_play() */
-	pa_threaded_mainloop_signal(po->mainloop, 0);
+	pa_threaded_mainloop_signal(mainloop, 0);
 }
 
 static void
-pulse_output_stream_state_cb(pa_stream *stream, void *userdata)
+pulse_output_stream_suspended_cb(pa_stream *stream, void *userdata)
 {
-	PulseOutput *po = (PulseOutput *)userdata;
+	PulseOutput &po = *(PulseOutput *)userdata;
 
-	assert(stream == po->stream || po->stream == nullptr);
-	assert(po->mainloop != nullptr);
-	assert(po->context != nullptr);
+	po.OnStreamSuspended(stream);
+}
 
-	switch (pa_stream_get_state(stream)) {
+inline void
+PulseOutput::OnStreamStateChanged(pa_stream *_stream,
+				  pa_stream_state_t new_state)
+{
+	assert(_stream == stream || stream == nullptr);
+	assert(mainloop != nullptr);
+	assert(context != nullptr);
+
+	switch (new_state) {
 	case PA_STREAM_READY:
-		if (po->mixer != nullptr)
-			pulse_mixer_on_change(*po->mixer, po->context, stream);
+		if (mixer != nullptr)
+			pulse_mixer_on_change(*mixer, context, _stream);
 
-		pa_threaded_mainloop_signal(po->mainloop, 0);
+		pa_threaded_mainloop_signal(mainloop, 0);
 		break;
 
 	case PA_STREAM_FAILED:
 	case PA_STREAM_TERMINATED:
-		if (po->mixer != nullptr)
-			pulse_mixer_on_disconnect(*po->mixer);
+		if (mixer != nullptr)
+			pulse_mixer_on_disconnect(*mixer);
 
-		pa_threaded_mainloop_signal(po->mainloop, 0);
+		pa_threaded_mainloop_signal(mainloop, 0);
 		break;
 
 	case PA_STREAM_UNCONNECTED:
@@ -530,15 +589,29 @@ pulse_output_stream_state_cb(pa_stream *stream, void *userdata)
 }
 
 static void
+pulse_output_stream_state_cb(pa_stream *stream, void *userdata)
+{
+	PulseOutput &po = *(PulseOutput *)userdata;
+
+	return po.OnStreamStateChanged(stream, pa_stream_get_state(stream));
+}
+
+inline void
+PulseOutput::OnStreamWrite(size_t nbytes)
+{
+	assert(mainloop != nullptr);
+
+	writable = nbytes;
+	pa_threaded_mainloop_signal(mainloop, 0);
+}
+
+static void
 pulse_output_stream_write_cb(gcc_unused pa_stream *stream, size_t nbytes,
 			     void *userdata)
 {
-	PulseOutput *po = (PulseOutput *)userdata;
+	PulseOutput &po = *(PulseOutput *)userdata;
 
-	assert(po->mainloop != nullptr);
-
-	po->writable = nbytes;
-	pa_threaded_mainloop_signal(po->mainloop, 0);
+	return po.OnStreamWrite(nbytes);
 }
 
 inline bool
