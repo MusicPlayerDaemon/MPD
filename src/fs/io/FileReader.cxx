@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FileReader.hxx"
-#include "system/fd_util.h"
+#include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 
 #ifdef WIN32
@@ -64,9 +64,9 @@ FileReader::Close()
 
 FileReader::FileReader(Path _path, Error &error)
 	:path(_path),
-	 fd(open_cloexec(path.c_str(),
-			 O_RDONLY,
-			 0))
+	 fd(OpenFile(path,
+		     O_RDONLY,
+		     0))
 {
 	if (fd < 0)
 		error.FormatErrno("Failed to open %s", path.c_str());
