@@ -25,6 +25,8 @@
 #include "encoder/EncoderList.hxx"
 #include "config/ConfigError.hxx"
 #include "Log.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/fd_util.h"
@@ -47,7 +49,7 @@ struct RecorderOutput {
 	/**
 	 * The destination file name.
 	 */
-	const char *path;
+	AllocatedPath path;
 
 	/**
 	 * The destination file descriptor.
@@ -60,7 +62,8 @@ struct RecorderOutput {
 	char buffer[32768];
 
 	RecorderOutput()
-		:base(recorder_output_plugin) {}
+		:base(recorder_output_plugin),
+		 path(AllocatedPath::Null()) {}
 
 	bool Initialize(const config_param &param, Error &error_r) {
 		return base.Configure(param, error_r);
@@ -97,9 +100,10 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 		return false;
 	}
 
-	path = param.GetBlockValue("path");
-	if (path == nullptr) {
-		error.Set(config_domain, "'path' not configured");
+	path = param.GetBlockPath("path", error);
+	if (path.IsNull()) {
+		if (!error.IsDefined())
+			error.Set(config_domain, "'path' not configured");
 		return false;
 	}
 
@@ -158,7 +162,8 @@ RecorderOutput::WriteToFile(const void *_data, size_t length, Error &error)
 				  "write() returned 0");
 			return false;
 		} else if (errno != EINTR) {
-			error.FormatErrno("Failed to write to '%s'", path);
+			error.FormatErrno("Failed to write to '%s'",
+					  path.c_str());
 			return false;
 		}
 	}
@@ -188,11 +193,11 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 {
 	/* create the output file */
 
-	fd = open_cloexec(path,
-			  O_CREAT|O_WRONLY|O_TRUNC|O_BINARY,
-			  0666);
+	fd = OpenFile(path,
+		      O_CREAT|O_WRONLY|O_TRUNC|O_BINARY,
+		      0666);
 	if (fd < 0) {
-		error.FormatErrno("Failed to create '%s'", path);
+		error.FormatErrno("Failed to create '%s'", path.c_str());
 		return false;
 	}
 
@@ -200,14 +205,14 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 
 	if (!encoder_open(encoder, audio_format, error)) {
 		close(fd);
-		unlink(path);
+		RemoveFile(path);
 		return false;
 	}
 
 	if (!EncoderToFile(error)) {
 		encoder_close(encoder);
 		close(fd);
-		unlink(path);
+		RemoveFile(path);
 		return false;
 	}
 
