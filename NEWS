@@ -18,6 +18,7 @@ ver 0.20 (not yet released)
 * mixer
   - null: new plugin
 * reset song priority on playback
+* write database and state file atomically
 * remove dependency on GLib
 
 ver 0.19.8 (not yet released)

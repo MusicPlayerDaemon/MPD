@@ -42,6 +42,14 @@ class FileOutputStream final : public OutputStream {
 	int fd;
 #endif
 
+#ifdef HAVE_LINKAT
+	/**
+	 * Was O_TMPFILE used?  If yes, then linkat() must be used to
+	 * create a link to this file.
+	 */
+	bool is_tmpfile;
+#endif
+
 public:
 	FileOutputStream(Path _path, Error &error);
 
