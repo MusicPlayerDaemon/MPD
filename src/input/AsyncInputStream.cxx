@@ -160,6 +160,11 @@ AsyncInputStream::SeekDone()
 	assert(io_thread_inside());
 	assert(IsSeekPending());
 
+	/* we may have reached end-of-file previously, and the
+	   connection may have been closed already; however after
+	   seeking successfully, the connection must be alive again */
+	open = true;
+
 	seek_state = SeekState::NONE;
 	cond.broadcast();
 }

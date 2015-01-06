@@ -22,11 +22,13 @@ ver 0.20 (not yet released)
 
 ver 0.19.8 (not yet released)
 * input
+  - curl: fix bug after rewinding from end-of-file
   - mms: reduce delay at the beginning of playback
 * decoder
   - dsdiff, dsf: allow ID3 tags larger than 4 kB
   - ffmpeg: support interleaved floating point
 * fix clang 3.6 warnings
+* fix build failure on NetBSD
 
 ver 0.19.7 (2014/12/17)
 * input
