@@ -21,10 +21,10 @@
 #define MPD_THREAD_NAME_HXX
 
 #ifdef HAVE_PTHREAD_SETNAME_NP
-#include <pthread.h>
-#include <stdio.h>
+#  include <pthread.h>
+#  include <stdio.h>
 #elif defined(HAVE_PRCTL)
-#include <sys/prctl.h>
+#  include <sys/prctl.h>
 #endif
 
 static inline void
