@@ -20,7 +20,7 @@
 #ifndef MPD_THREAD_NAME_HXX
 #define MPD_THREAD_NAME_HXX
 
-#ifdef HAVE_PTHREAD_SETNAME_NP
+#if defined(HAVE_PTHREAD_SETNAME_NP) && !defined(__NetBSD__)
 #  define HAVE_THREAD_NAME
 #  include <pthread.h>
 #  include <stdio.h>
@@ -34,7 +34,11 @@
 static inline void
 SetThreadName(const char *name)
 {
-#ifdef HAVE_PTHREAD_SETNAME_NP
+#if defined(HAVE_PTHREAD_SETNAME_NP) && !defined(__NetBSD__)
+	/* not using pthread_setname_np() on NetBSD because it
+	   requires a non-const pointer argument, which we don't have
+	   here */
+
 #ifdef __APPLE__
 	pthread_setname_np(name);
 #else
