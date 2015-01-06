@@ -1533,6 +1533,7 @@ noinst_PROGRAMS = \
 	test/read_conf \
 	test/run_resolver \
 	test/run_input \
+	test/WriteFile \
 	test/dump_text_file \
 	test/dump_playlist \
 	test/run_decoder \
@@ -1726,6 +1727,16 @@ test_run_gunzip_LDADD = \
 	libsystem.a
 
 endif
+
+test_WriteFile_LDADD = \
+	$(FS_LIBS) \
+	$(ICU_LDADD) \
+	libsystem.a \
+	libutil.a \
+	$(GLIB_LIBS)
+test_WriteFile_SOURCES = \
+	src/Log.cxx src/LogBackend.cxx \
+	test/WriteFile.cxx
 
 test_dump_text_file_LDADD = \
 	$(INPUT_LIBS) \
