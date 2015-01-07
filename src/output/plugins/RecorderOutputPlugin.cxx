@@ -249,7 +249,9 @@ RecorderOutput::Commit(Error &error)
 inline void
 RecorderOutput::Close()
 {
-	Commit(IgnoreError());
+	Error error;
+	if (!Commit(error))
+		LogError(error);
 }
 
 inline void
