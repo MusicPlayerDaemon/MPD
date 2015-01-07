@@ -67,6 +67,12 @@ struct AudioOutputWrapper {
 		return t.Delay();
 	}
 
+	gcc_pure
+	static void SendTag(AudioOutput *ao, const Tag &tag) {
+		T &t = Cast(*ao);
+		t.SendTag(tag);
+	}
+
 	static size_t Play(AudioOutput *ao, const void *chunk, size_t size,
 			   Error &error) {
 		T &t = Cast(*ao);

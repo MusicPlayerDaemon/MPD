@@ -227,14 +227,6 @@ RecorderOutput::SendTag(const Tag &tag)
 		LogError(error);
 }
 
-static void
-recorder_output_send_tag(AudioOutput *ao, const Tag &tag)
-{
-	RecorderOutput &recorder = *(RecorderOutput *)ao;
-
-	recorder.SendTag(tag);
-}
-
 inline size_t
 RecorderOutput::Play(const void *chunk, size_t size, Error &error)
 {
@@ -255,7 +247,7 @@ const struct AudioOutputPlugin recorder_output_plugin = {
 	&Wrapper::Open,
 	&Wrapper::Close,
 	nullptr,
-	recorder_output_send_tag,
+	&Wrapper::SendTag,
 	&Wrapper::Play,
 	nullptr,
 	nullptr,
