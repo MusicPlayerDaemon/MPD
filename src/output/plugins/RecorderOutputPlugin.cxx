@@ -28,7 +28,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <assert.h>
 
@@ -85,8 +84,6 @@ private:
 	 */
 	bool Commit(Error &error);
 };
-
-static constexpr Domain recorder_output_domain("recorder_output");
 
 inline bool
 RecorderOutput::Configure(const config_param &param, Error &error)
