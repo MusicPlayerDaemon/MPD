@@ -80,9 +80,9 @@ struct OssOutput {
 	 */
 	int oss_format;
 
-	OssOutput()
+	OssOutput(const char *_device=nullptr)
 		:base(oss_output_plugin),
-		 fd(-1), device(nullptr) {}
+		 fd(-1), device(_device) {}
 
 	bool Initialize(const config_param &param, Error &error_r) {
 		return base.Configure(param, error_r);
@@ -193,13 +193,12 @@ oss_open_default(Error &error)
 	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR) {
-			OssOutput *od = new OssOutput();
+			OssOutput *od = new OssOutput(default_devices[i]);
 			if (!od->Initialize(empty, error)) {
 				delete od;
 				return NULL;
 			}
 
-			od->device = default_devices[i];
 			return od;
 		}
 	}
