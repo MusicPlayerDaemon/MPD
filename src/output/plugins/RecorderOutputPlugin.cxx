@@ -69,6 +69,8 @@ struct RecorderOutput {
 		return base.Configure(param, error_r);
 	}
 
+	static RecorderOutput *Create(const config_param &param, Error &error);
+
 	bool Configure(const config_param &param, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
@@ -82,6 +84,8 @@ struct RecorderOutput {
 	bool EncoderToFile(Error &error);
 
 	void SendTag(const Tag &tag);
+
+	size_t Play(const void *chunk, size_t size, Error &error);
 };
 
 static constexpr Domain recorder_output_domain("recorder_output");
@@ -116,8 +120,8 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static AudioOutput *
-recorder_output_init(const config_param &param, Error &error)
+RecorderOutput *
+RecorderOutput::Create(const config_param &param, Error &error)
 {
 	RecorderOutput *recorder = new RecorderOutput();
 
@@ -131,7 +135,7 @@ recorder_output_init(const config_param &param, Error &error)
 		return nullptr;
 	}
 
-	return &recorder->base;
+	return recorder;
 }
 
 static void
@@ -252,14 +256,11 @@ recorder_output_send_tag(AudioOutput *ao, const Tag &tag)
 	recorder.SendTag(tag);
 }
 
-static size_t
-recorder_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		     Error &error)
+inline size_t
+RecorderOutput::Play(const void *chunk, size_t size, Error &error)
 {
-	RecorderOutput *recorder = (RecorderOutput *)ao;
-
-	return encoder_write(recorder->encoder, chunk, size, error) &&
-		recorder->EncoderToFile(error)
+	return encoder_write(encoder, chunk, size, error) &&
+		EncoderToFile(error)
 		? size : 0;
 }
 
@@ -268,7 +269,7 @@ typedef AudioOutputWrapper<RecorderOutput> Wrapper;
 const struct AudioOutputPlugin recorder_output_plugin = {
 	"recorder",
 	nullptr,
-	recorder_output_init,
+	&Wrapper::Init,
 	recorder_output_finish,
 	nullptr,
 	nullptr,
@@ -276,7 +277,7 @@ const struct AudioOutputPlugin recorder_output_plugin = {
 	&Wrapper::Close,
 	nullptr,
 	recorder_output_send_tag,
-	recorder_output_play,
+	&Wrapper::Play,
 	nullptr,
 	nullptr,
 	nullptr,
