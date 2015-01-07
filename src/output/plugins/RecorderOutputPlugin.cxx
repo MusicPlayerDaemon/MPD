@@ -26,17 +26,11 @@
 #include "config/ConfigError.hxx"
 #include "Log.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/io/FileOutputStream.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "system/fd_util.h"
-#include "open.h"
 
 #include <assert.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <errno.h>
 
 struct RecorderOutput {
 	AudioOutput base;
@@ -52,9 +46,9 @@ struct RecorderOutput {
 	AllocatedPath path;
 
 	/**
-	 * The destination file descriptor.
+	 * The destination file.
 	 */
-	int fd;
+	FileOutputStream *file;
 
 	/**
 	 * The buffer for encoder_read().
@@ -75,8 +69,6 @@ struct RecorderOutput {
 
 	bool Open(AudioFormat &audio_format, Error &error);
 	void Close();
-
-	bool WriteToFile(const void *data, size_t length, Error &error);
 
 	/**
 	 * Writes pending data from the encoder to the output file.
@@ -154,35 +146,10 @@ recorder_output_finish(AudioOutput *ao)
 }
 
 inline bool
-RecorderOutput::WriteToFile(const void *_data, size_t length, Error &error)
-{
-	assert(length > 0);
-
-	const uint8_t *data = (const uint8_t *)_data, *end = data + length;
-
-	while (true) {
-		ssize_t nbytes = write(fd, data, end - data);
-		if (nbytes > 0) {
-			data += nbytes;
-			if (data == end)
-				return true;
-		} else if (nbytes == 0) {
-			/* shouldn't happen for files */
-			error.Set(recorder_output_domain,
-				  "write() returned 0");
-			return false;
-		} else if (errno != EINTR) {
-			error.FormatErrno("Failed to write to '%s'",
-					  path.c_str());
-			return false;
-		}
-	}
-}
-
-inline bool
 RecorderOutput::EncoderToFile(Error &error)
 {
-	assert(fd >= 0);
+	assert(file != nullptr);
+	assert(file->IsDefined());
 
 	while (true) {
 		/* read from the encoder */
@@ -193,7 +160,7 @@ RecorderOutput::EncoderToFile(Error &error)
 
 		/* write everything into the file */
 
-		if (!WriteToFile(buffer, size, error))
+		if (!file->Write(buffer, size, error))
 			return false;
 	}
 }
@@ -203,26 +170,22 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 {
 	/* create the output file */
 
-	fd = OpenFile(path,
-		      O_CREAT|O_WRONLY|O_TRUNC|O_BINARY,
-		      0666);
-	if (fd < 0) {
-		error.FormatErrno("Failed to create '%s'", path.c_str());
+	file = new FileOutputStream(path, error);
+	if (!file->IsDefined()) {
+		delete file;
 		return false;
 	}
 
 	/* open the encoder */
 
 	if (!encoder_open(encoder, audio_format, error)) {
-		close(fd);
-		RemoveFile(path);
+		delete file;
 		return false;
 	}
 
 	if (!EncoderToFile(error)) {
 		encoder_close(encoder);
-		close(fd);
-		RemoveFile(path);
+		delete file;
 		return false;
 	}
 
@@ -241,7 +204,10 @@ RecorderOutput::Commit(Error &error)
 
 	encoder_close(encoder);
 
-	close(fd);
+	if (success && !file->Commit(error))
+		success = false;
+
+	delete file;
 
 	return success;
 }
