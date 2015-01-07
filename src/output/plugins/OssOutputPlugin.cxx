@@ -58,7 +58,9 @@
 #include "util/Manual.hxx"
 #endif
 
-struct OssOutput {
+class OssOutput {
+	friend struct AudioOutputWrapper<OssOutput>;
+
 	AudioOutput base;
 
 #ifdef AFMT_S24_PACKED
@@ -80,6 +82,7 @@ struct OssOutput {
 	 */
 	int oss_format;
 
+public:
 	OssOutput(const char *_device=nullptr)
 		:base(oss_output_plugin),
 		 fd(-1), device(_device) {}
