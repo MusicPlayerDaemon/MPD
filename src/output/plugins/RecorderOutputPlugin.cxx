@@ -86,6 +86,12 @@ struct RecorderOutput {
 	void SendTag(const Tag &tag);
 
 	size_t Play(const void *chunk, size_t size, Error &error);
+
+private:
+	/**
+	 * Finish the encoder and commit the file.
+	 */
+	bool Commit(Error &error);
 };
 
 static constexpr Domain recorder_output_domain("recorder_output");
@@ -223,19 +229,27 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 	return true;
 }
 
-inline void
-RecorderOutput::Close()
+inline bool
+RecorderOutput::Commit(Error &error)
 {
 	/* flush the encoder and write the rest to the file */
 
-	if (encoder_end(encoder, IgnoreError()))
-		EncoderToFile(IgnoreError());
+	bool success = encoder_end(encoder, error) &&
+		EncoderToFile(error);
 
 	/* now really close everything */
 
 	encoder_close(encoder);
 
 	close(fd);
+
+	return success;
+}
+
+inline void
+RecorderOutput::Close()
+{
+	Commit(IgnoreError());
 }
 
 inline void
