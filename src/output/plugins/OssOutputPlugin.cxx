@@ -451,7 +451,8 @@ sample_format_to_oss(SampleFormat format)
 #endif
 	}
 
-	return AFMT_QUERY;
+	assert(false);
+	gcc_unreachable();
 }
 
 /**
