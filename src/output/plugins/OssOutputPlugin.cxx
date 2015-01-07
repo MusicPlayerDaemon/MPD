@@ -199,7 +199,7 @@ oss_open_default(Error &error)
 			OssOutput *od = new OssOutput(default_devices[i]);
 			if (!od->Initialize(empty, error)) {
 				delete od;
-				return NULL;
+				return nullptr;
 			}
 
 			return od;
@@ -232,18 +232,18 @@ oss_open_default(Error &error)
 
 	error.Set(oss_output_domain,
 		  "error trying to open default OSS device");
-	return NULL;
+	return nullptr;
 }
 
 inline OssOutput *
 OssOutput::Create(const config_param &param, Error &error)
 {
 	const char *device = param.GetBlockValue("device");
-	if (device != NULL) {
+	if (device != nullptr) {
 		OssOutput *od = new OssOutput();
 		if (!od->Initialize(param, error)) {
 			delete od;
-			return NULL;
+			return nullptr;
 		}
 
 		od->device = device;
@@ -280,8 +280,8 @@ oss_try_ioctl_r(int fd, unsigned long request, int *value_r,
 		const char *msg, Error &error)
 {
 	assert(fd >= 0);
-	assert(value_r != NULL);
-	assert(msg != NULL);
+	assert(value_r != nullptr);
+	assert(msg != nullptr);
 	assert(!error.IsDefined());
 
 	int ret = ioctl(fd, request, value_r);
