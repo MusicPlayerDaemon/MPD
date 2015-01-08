@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ShoutOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "config/ConfigError.hxx"

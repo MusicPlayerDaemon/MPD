@@ -21,6 +21,7 @@
 #include "RecorderOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
+#include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "config/ConfigError.hxx"

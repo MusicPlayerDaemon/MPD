@@ -20,6 +20,7 @@
 #include "config.h"
 #include "encoder/EncoderList.hxx"
 #include "encoder/EncoderPlugin.hxx"
+#include "encoder/EncoderInterface.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
 #include "config/ConfigData.hxx"

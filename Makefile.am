@@ -1047,6 +1047,7 @@ ENCODER_LIBS = \
 
 libencoder_plugins_a_SOURCES = \
 	src/encoder/EncoderAPI.hxx \
+	src/encoder/EncoderInterface.hxx \
 	src/encoder/EncoderPlugin.hxx \
 	src/encoder/plugins/OggStream.hxx \
 	src/encoder/plugins/NullEncoderPlugin.cxx \
