@@ -64,7 +64,7 @@ class RecorderOutput {
 
 	~RecorderOutput() {
 		if (encoder != nullptr)
-			encoder_finish(encoder);
+			encoder->Dispose();
 	}
 
 	bool Initialize(const config_param &param, Error &error_r) {
@@ -175,13 +175,13 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 
 	/* open the encoder */
 
-	if (!encoder_open(encoder, audio_format, error)) {
+	if (!encoder->Open(audio_format, error)) {
 		delete file;
 		return false;
 	}
 
 	if (!EncoderToFile(error)) {
-		encoder_close(encoder);
+		encoder->Close();
 		delete file;
 		return false;
 	}
@@ -199,7 +199,7 @@ RecorderOutput::Commit(Error &error)
 
 	/* now really close everything */
 
-	encoder_close(encoder);
+	encoder->Close();
 
 	if (success && !file->Commit(error))
 		success = false;

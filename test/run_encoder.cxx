@@ -90,7 +90,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (!encoder_open(encoder, audio_format, error)) {
+	if (!encoder->Open(audio_format, error)) {
 		LogError(error, "Failed to open encoder");
 		return EXIT_FAILURE;
 	}
@@ -116,6 +116,6 @@ int main(int argc, char **argv)
 
 	encoder_to_stdout(*encoder);
 
-	encoder_close(encoder);
-	encoder_finish(encoder);
+	encoder->Close();
+	encoder->Dispose();
 }

@@ -64,7 +64,7 @@ HttpdOutput::~HttpdOutput()
 		metadata->Unref();
 
 	if (encoder != nullptr)
-		encoder_finish(encoder);
+		encoder->Dispose();
 
 }
 
@@ -295,7 +295,7 @@ httpd_output_disable(AudioOutput *ao)
 inline bool
 HttpdOutput::OpenEncoder(AudioFormat &audio_format, Error &error)
 {
-	if (!encoder_open(encoder, audio_format, error))
+	if (!encoder->Open(audio_format, error))
 		return false;
 
 	/* we have to remember the encoder header, i.e. the first
@@ -355,7 +355,7 @@ HttpdOutput::Close()
 	if (header != nullptr)
 		header->Unref();
 
-	encoder_close(encoder);
+	encoder->Close();
 }
 
 static void

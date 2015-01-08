@@ -63,7 +63,7 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	/* open the encoder */
 
 	AudioFormat audio_format(44100, SampleFormat::S16, 2);
-	success = encoder_open(encoder, audio_format, IgnoreError());
+	success = encoder->Open(audio_format, IgnoreError());
 	assert(success);
 
 	encoder_to_stdout(*encoder);
@@ -108,6 +108,6 @@ main(gcc_unused int argc, gcc_unused char **argv)
 
 	encoder_to_stdout(*encoder);
 
-	encoder_close(encoder);
-	encoder_finish(encoder);
+	encoder->Close();
+	encoder->Dispose();
 }

@@ -346,7 +346,7 @@ static void close_shout_conn(ShoutOutput * sd)
 		if (encoder_end(sd->encoder, IgnoreError()))
 			write_page(sd, IgnoreError());
 
-		encoder_close(sd->encoder);
+		sd->encoder->Close();
 	}
 
 	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
@@ -362,7 +362,7 @@ my_shout_finish_driver(AudioOutput *ao)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
 
-	encoder_finish(sd->encoder);
+	sd->encoder->Dispose();
 
 	delete sd;
 
@@ -416,13 +416,13 @@ my_shout_open_device(AudioOutput *ao, AudioFormat &audio_format,
 	if (!shout_connect(sd, error))
 		return false;
 
-	if (!encoder_open(sd->encoder, audio_format, error)) {
+	if (!sd->encoder->Open(audio_format, error)) {
 		shout_close(sd->shout_conn);
 		return false;
 	}
 
 	if (!write_page(sd, error)) {
-		encoder_close(sd->encoder);
+		sd->encoder->Close();
 		shout_close(sd->shout_conn);
 		return false;
 	}

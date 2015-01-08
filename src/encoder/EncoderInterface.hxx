@@ -37,67 +37,57 @@ struct Encoder {
 		, open(false)
 #endif
 	{}
+
+
+	/**
+	 * Frees an #Encoder object.
+	 */
+	void Dispose() {
+		assert(!open);
+
+		plugin.finish(this);
+	}
+
+	/**
+	 * Opens the object.  You must call this prior to using it.
+	 * Before you free it, you must call Close().  You may open
+	 * and close (reuse) one encoder any number of times.
+	 *
+	 * After this function returns successfully and before the
+	 * first encoder_write() call, you should invoke
+	 * encoder_read() to obtain the file header.
+	 *
+	 * @param audio_format the encoder's input audio format; the plugin
+	 * may modify the struct to adapt it to its abilities
+	 * @return true on success
+	 */
+	bool Open(AudioFormat &audio_format, Error &error) {
+		assert(!open);
+
+		bool success = plugin.open(this, audio_format, error);
+#ifndef NDEBUG
+		open = success;
+		pre_tag = tag = end = false;
+#endif
+		return success;
+	}
+
+
+	/**
+	 * Closes the object.  This disables the encoder, and readies
+	 * it for reusal by calling Open() again.
+	 */
+	void Close() {
+		assert(open);
+
+		if (plugin.close != nullptr)
+			plugin.close(this);
+
+#ifndef NDEBUG
+		open = false;
+#endif
+	}
 };
-
-/**
- * Frees an encoder object.
- *
- * @param encoder the encoder
- */
-static inline void
-encoder_finish(Encoder *encoder)
-{
-	assert(!encoder->open);
-
-	encoder->plugin.finish(encoder);
-}
-
-/**
- * Opens an encoder object.  You must call this prior to using it.
- * Before you free it, you must call encoder_close().  You may open
- * and close (reuse) one encoder any number of times.
- *
- * After this function returns successfully and before the first
- * encoder_write() call, you should invoke encoder_read() to obtain
- * the file header.
- *
- * @param encoder the encoder
- * @param audio_format the encoder's input audio format; the plugin
- * may modify the struct to adapt it to its abilities
- * @return true on success
- */
-static inline bool
-encoder_open(Encoder *encoder, AudioFormat &audio_format,
-	     Error &error)
-{
-	assert(!encoder->open);
-
-	bool success = encoder->plugin.open(encoder, audio_format, error);
-#ifndef NDEBUG
-	encoder->open = success;
-	encoder->pre_tag = encoder->tag = encoder->end = false;
-#endif
-	return success;
-}
-
-/**
- * Closes an encoder object.  This disables the encoder, and readies
- * it for reusal by calling encoder_open() again.
- *
- * @param encoder the encoder
- */
-static inline void
-encoder_close(Encoder *encoder)
-{
-	assert(encoder->open);
-
-	if (encoder->plugin.close != nullptr)
-		encoder->plugin.close(encoder);
-
-#ifndef NDEBUG
-	encoder->open = false;
-#endif
-}
 
 /**
  * Ends the stream: flushes the encoder object, generate an
@@ -105,7 +95,7 @@ encoder_close(Encoder *encoder)
  * currently be buffered available by encoder_read().
  *
  * After this function has been called, the encoder may not be usable
- * for more data, and only encoder_read() and encoder_close() can be
+ * for more data, and only encoder_read() and Encoder::Close() can be
  * called.
  *
  * @param encoder the encoder
