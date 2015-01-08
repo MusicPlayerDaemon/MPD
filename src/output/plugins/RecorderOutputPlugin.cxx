@@ -56,7 +56,13 @@ struct RecorderOutput {
 
 	RecorderOutput()
 		:base(recorder_output_plugin),
+		 encoder(nullptr),
 		 path(AllocatedPath::Null()) {}
+
+	~RecorderOutput() {
+		if (encoder != nullptr)
+			encoder_finish(encoder);
+	}
 
 	bool Initialize(const config_param &param, Error &error_r) {
 		return base.Configure(param, error_r);
@@ -131,15 +137,6 @@ RecorderOutput::Create(const config_param &param, Error &error)
 	}
 
 	return recorder;
-}
-
-static void
-recorder_output_finish(AudioOutput *ao)
-{
-	RecorderOutput *recorder = (RecorderOutput *)ao;
-
-	encoder_finish(recorder->encoder);
-	delete recorder;
 }
 
 inline bool
@@ -241,7 +238,7 @@ const struct AudioOutputPlugin recorder_output_plugin = {
 	"recorder",
 	nullptr,
 	&Wrapper::Init,
-	recorder_output_finish,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
 	&Wrapper::Open,
