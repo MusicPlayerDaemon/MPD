@@ -31,7 +31,9 @@
 
 #include <assert.h>
 
-struct RecorderOutput {
+class RecorderOutput {
+	friend struct AudioOutputWrapper<RecorderOutput>;
+
 	AudioOutput base;
 
 	/**
