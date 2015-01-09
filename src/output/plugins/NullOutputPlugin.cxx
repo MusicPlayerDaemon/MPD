@@ -23,13 +23,16 @@
 #include "../Wrapper.hxx"
 #include "../Timer.hxx"
 
-struct NullOutput {
+class NullOutput {
+	friend struct AudioOutputWrapper<NullOutput>;
+
 	AudioOutput base;
 
 	bool sync;
 
 	Timer *timer;
 
+public:
 	NullOutput()
 		:base(null_output_plugin) {}
 
