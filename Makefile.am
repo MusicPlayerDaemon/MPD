@@ -399,6 +399,7 @@ libutil_a_SOURCES = \
 	src/util/OptionParser.cxx src/util/OptionParser.hxx \
 	src/util/OptionDef.hxx \
 	src/util/ByteReverse.cxx src/util/ByteReverse.hxx \
+	src/util/format.c src/util/format.h \
 	src/util/bit_reverse.c src/util/bit_reverse.h
 
 # Multi-threading library
@@ -797,6 +798,7 @@ libtag_a_SOURCES =\
 	src/tag/TagPool.cxx src/tag/TagPool.hxx \
 	src/tag/TagTable.cxx src/tag/TagTable.hxx \
 	src/tag/Set.cxx src/tag/Set.hxx \
+	src/tag/Format.cxx src/tag/Format.hxx \
 	src/tag/VorbisComment.cxx src/tag/VorbisComment.hxx \
 	src/tag/ReplayGain.cxx src/tag/ReplayGain.hxx \
 	src/tag/MixRamp.cxx src/tag/MixRamp.hxx \

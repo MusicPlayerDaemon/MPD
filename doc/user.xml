@@ -3091,6 +3091,50 @@ buffer_size: 16384</programlisting>
                   Write to this file.
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>format_path</varname>
+                  <parameter>P</parameter>
+                </entry>
+                <entry>
+                  <para>
+                    An alternative to <varname>path</varname> which
+                    provides a format string referring to tag values.
+                    Every time a new song starts or a new tag gets
+                    received from a radio station, a new file is
+                    opened.  If the format does not render a file
+                    name, nothing is recorded.
+                  </para>
+
+                  <para>
+                    A tag name enclosed in percent signs ('%') is
+                    replaced with the tag value.  Example:
+                    <parameter>~/.mpd/recorder/%artist% -
+                    %title%.ogg</parameter>
+                  </para>
+
+                  <para>
+                    Square brackets can be used to group a substring.
+                    If none of the tags referred in the group can be
+                    found, the whole group is omitted.  Example:
+                    <parameter>[~/.mpd/recorder/[%artist% -
+                    ]%title%.ogg]</parameter> (this omits the dash
+                    when no artist tag exists; if title also doesn't
+                    exist, no file is written)
+                  </para>
+
+                  <para>
+                    The operators "|" (logical "or") and "&amp;"
+                    (logical "and") can be used to select portions of
+                    the format string depending on the existing tag
+                    values.  Example:
+                    <parameter>~/.mpd/recorder/[%title|%name%].ogg</parameter>
+                    (use the "name" tag if no title exists)
+                  </para>
+                </entry>
+              </row>
+
               <row>
                 <entry>
                   <varname>encoder</varname>
