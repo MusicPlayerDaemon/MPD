@@ -238,7 +238,7 @@
         "before" the current song in that sequence) will only be
         scheduled for repeated playback if its priority has become
         bigger than the priority of the current song.  Decreasing the
-        priority of a song will moved it farther to the end of the
+        priority of a song will move it farther to the end of the
         sequence.  Changing the priority of the current song has no
         effect on the sequence.  During playback, a song's priority is
         reset to zero.
