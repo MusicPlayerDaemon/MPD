@@ -34,7 +34,6 @@ struct LightSong;
 class Storage;
 
 class DetachedSong {
-	friend DetachedSong map_song_detach(const LightSong &song);
 	friend DetachedSong DatabaseDetachSong(const Storage &db,
 					       const LightSong &song);
 
