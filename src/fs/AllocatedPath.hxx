@@ -162,6 +162,16 @@ public:
 		return *this;
 	}
 
+	gcc_pure
+	bool operator==(const AllocatedPath &other) const {
+		return value == other.value;
+	}
+
+	gcc_pure
+	bool operator!=(const AllocatedPath &other) const {
+		return value != other.value;
+	}
+
 	/**
 	 * Allows the caller to "steal" the internal value by
 	 * providing a rvalue reference to the std::string attribute.
