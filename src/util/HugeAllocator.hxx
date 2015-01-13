@@ -71,7 +71,9 @@ static inline void *
 HugeAllocate(size_t size)
 {
 	// TODO: use MEM_LARGE_PAGES
-	return VirtualAlloc(nullptr, size, MEM_RESERVE, PAGE_READWRITE);
+	return VirtualAlloc(nullptr, size,
+			    MEM_COMMIT|MEM_RESERVE,
+			    PAGE_READWRITE);
 }
 
 static inline void

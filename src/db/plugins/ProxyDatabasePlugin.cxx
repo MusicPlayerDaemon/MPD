@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -103,7 +103,7 @@ public:
 	virtual void Close() override;
 	virtual const LightSong *GetSong(const char *uri_utf8,
 				     Error &error) const override;
-	virtual void ReturnSong(const LightSong *song) const;
+	void ReturnSong(const LightSong *song) const override;
 
 	virtual bool Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
@@ -731,7 +731,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 {
 	// TODO: eliminate the const_cast
 	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return nullptr;
+		return false;
 
 	if (!visit_directory && !visit_playlist && selection.recursive &&
 	    (ServerSupportsSearchBase(connection)
@@ -757,7 +757,7 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 {
 	// TODO: eliminate the const_cast
 	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return nullptr;
+		return false;
 
 	enum mpd_tag_type tag_type2 = Convert(tag_type);
 	if (tag_type2 == MPD_TAG_COUNT) {
@@ -810,7 +810,7 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 
 	// TODO: eliminate the const_cast
 	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return nullptr;
+		return false;
 
 	struct mpd_stats *stats2 =
 		mpd_run_stats(connection);

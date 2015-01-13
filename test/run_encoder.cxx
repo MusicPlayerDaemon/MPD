@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "encoder/EncoderList.hxx"
 #include "encoder/EncoderPlugin.hxx"
+#include "encoder/EncoderInterface.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
 #include "config/ConfigData.hxx"
@@ -89,7 +90,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (!encoder_open(encoder, audio_format, error)) {
+	if (!encoder->Open(audio_format, error)) {
 		LogError(error, "Failed to open encoder");
 		return EXIT_FAILURE;
 	}
@@ -115,6 +116,6 @@ int main(int argc, char **argv)
 
 	encoder_to_stdout(*encoder);
 
-	encoder_close(encoder);
-	encoder_finish(encoder);
+	encoder->Close();
+	encoder->Dispose();
 }

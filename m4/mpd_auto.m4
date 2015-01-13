@@ -93,11 +93,7 @@ AC_DEFUN([MPD_ARG_ENABLE], [
 
 	$5
 
-	if test x$[]enable_$1 = xyes; then
-		AC_DEFINE(ENABLE_$2, 1,
-			[Define to enable $4])
-	fi
-	AM_CONDITIONAL(ENABLE_$2, test x$[]enable_$1 = xyes)
+	MPD_DEFINE_CONDITIONAL(enable_$1, ENABLE_$2, [$3])
 ])
 
 dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_PKG

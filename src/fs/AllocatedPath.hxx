@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -160,6 +160,16 @@ public:
 	AllocatedPath &operator=(AllocatedPath &&other) {
 		value = std::move(other.value);
 		return *this;
+	}
+
+	gcc_pure
+	bool operator==(const AllocatedPath &other) const {
+		return value == other.value;
+	}
+
+	gcc_pure
+	bool operator!=(const AllocatedPath &other) const {
+		return value != other.value;
 	}
 
 	/**

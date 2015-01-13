@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -159,6 +159,11 @@ AsyncInputStream::SeekDone()
 {
 	assert(io_thread_inside());
 	assert(IsSeekPending());
+
+	/* we may have reached end-of-file previously, and the
+	   connection may have been closed already; however after
+	   seeking successfully, the connection must be alive again */
+	open = true;
 
 	seek_state = SeekState::NONE;
 	cond.broadcast();

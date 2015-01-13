@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,14 @@ class FileOutputStream final : public OutputStream {
 	HANDLE handle;
 #else
 	int fd;
+#endif
+
+#ifdef HAVE_LINKAT
+	/**
+	 * Was O_TMPFILE used?  If yes, then linkat() must be used to
+	 * create a link to this file.
+	 */
+	bool is_tmpfile;
 #endif
 
 public:

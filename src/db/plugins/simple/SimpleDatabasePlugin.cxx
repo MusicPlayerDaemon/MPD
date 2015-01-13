@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -435,9 +435,12 @@ SimpleDatabase::Save(Error &error)
 bool
 SimpleDatabase::Mount(const char *uri, Database *db, Error &error)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(uri != nullptr);
-	assert(*uri != 0);
 	assert(db != nullptr);
+#endif
+	assert(*uri != 0);
 
 	ScopeDatabaseLock protect;
 
@@ -445,13 +448,13 @@ SimpleDatabase::Mount(const char *uri, Database *db, Error &error)
 	if (r.uri == nullptr) {
 		error.Format(db_domain, DB_CONFLICT,
 			     "Already exists: %s", uri);
-		return nullptr;
+		return false;
 	}
 
 	if (strchr(r.uri, '/') != nullptr) {
 		error.Format(db_domain, DB_NOT_FOUND,
 			     "Parent not found: %s", uri);
-		return nullptr;
+		return false;
 	}
 
 	Directory *mnt = r.directory->CreateChild(r.uri);
@@ -478,7 +481,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	if (cache_path.IsNull()) {
 		error.Format(db_domain, DB_NOT_FOUND,
 			     "No 'cache_directory' configured");
-		return nullptr;
+		return false;
 	}
 
 	std::string name(storage_uri);

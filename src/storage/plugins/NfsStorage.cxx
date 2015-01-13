@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -288,7 +288,7 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
 		return false;
 
 	if (!WaitConnected(error))
-		return nullptr;
+		return false;
 
 	NfsGetInfoOperation operation(*connection, path.c_str(), info);
 	return operation.Run(error);

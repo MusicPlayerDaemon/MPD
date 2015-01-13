@@ -753,7 +753,7 @@ libarchive_a_SOURCES += \
 	src/archive/plugins/ZzipArchivePlugin.hxx
 endif
 
-if HAVE_ISO9660
+if ENABLE_ISO9660
 libarchive_a_SOURCES += \
 	src/archive/plugins/Iso9660ArchivePlugin.cxx \
 	src/archive/plugins/Iso9660ArchivePlugin.hxx
@@ -817,6 +817,11 @@ endif
 if ENABLE_FFMPEG
 noinst_LIBRARIES += libffmpeg.a
 libffmpeg_a_SOURCES = \
+	src/lib/ffmpeg/Init.cxx src/lib/ffmpeg/Init.hxx \
+	src/lib/ffmpeg/Time.hxx \
+	src/lib/ffmpeg/Buffer.hxx \
+	src/lib/ffmpeg/LogError.cxx src/lib/ffmpeg/LogError.hxx \
+	src/lib/ffmpeg/LogCallback.cxx src/lib/ffmpeg/LogCallback.hxx \
 	src/lib/ffmpeg/Error.cxx src/lib/ffmpeg/Error.hxx \
 	src/lib/ffmpeg/Domain.cxx src/lib/ffmpeg/Domain.hxx
 libffmpeg_a_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -1038,6 +1043,8 @@ endif
 
 if ENABLE_FFMPEG
 libdecoder_a_SOURCES += \
+	src/decoder/plugins/FfmpegIo.cxx \
+	src/decoder/plugins/FfmpegIo.hxx \
 	src/decoder/plugins/FfmpegMetaData.cxx \
 	src/decoder/plugins/FfmpegMetaData.hxx \
 	src/decoder/plugins/FfmpegDecoderPlugin.cxx \
@@ -1050,7 +1057,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/SndfileDecoderPlugin.hxx
 endif
 
-if HAVE_GME
+if ENABLE_GME
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/GmeDecoderPlugin.cxx src/decoder/plugins/GmeDecoderPlugin.hxx
 endif
@@ -1148,6 +1155,7 @@ ENCODER_LIBS = \
 
 libencoder_plugins_a_SOURCES = \
 	src/encoder/EncoderAPI.hxx \
+	src/encoder/EncoderInterface.hxx \
 	src/encoder/EncoderPlugin.hxx \
 	src/encoder/plugins/OggStream.hxx \
 	src/encoder/plugins/NullEncoderPlugin.cxx \
@@ -1332,12 +1340,12 @@ OUTPUT_LIBS = \
 	$(ROAR_LIBS) \
 	$(JACK_LIBS) \
 	$(OPENAL_LIBS) \
-	$(PULSE_LIBS) \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
 	src/output/OutputAPI.hxx \
 	src/output/Internal.hxx \
+	src/output/Wrapper.hxx \
 	src/output/Registry.cxx src/output/Registry.hxx \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
 	src/output/OutputThread.cxx \
@@ -1357,7 +1365,7 @@ liboutput_plugins_a_SOURCES = \
 
 MIXER_LIBS = \
 	libmixer_plugins.a \
-	$(PULSE_LIBS)
+	$(PULSE_LIBS2)
 
 MIXER_API_SRC = \
 	src/mixer/Listener.hxx \
@@ -1450,6 +1458,15 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/PulseOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
 	src/mixer/plugins/PulseMixerPlugin.cxx src/mixer/plugins/PulseMixerPlugin.hxx
+
+noinst_LIBRARIES += libpulse.a
+libpulse_a_SOURCES = \
+	src/lib/pulse/LogError.cxx src/lib/pulse/LogError.hxx \
+	src/lib/pulse/Error.cxx src/lib/pulse/Error.hxx \
+	src/lib/pulse/Domain.cxx src/lib/pulse/Domain.hxx
+libpulse_a_CPPFLAGS = $(AM_CPPFLAGS) $(PULSE_CFLAGS)
+PULSE_LIBS2 = libpulse.a $(PULSE_LIBS)
+OUTPUT_LIBS += $(PULSE_LIBS2)
 endif
 
 if HAVE_SHOUT
@@ -1625,6 +1642,7 @@ noinst_PROGRAMS = \
 	test/read_conf \
 	test/run_resolver \
 	test/run_input \
+	test/WriteFile \
 	test/dump_text_file \
 	test/dump_playlist \
 	test/run_decoder \
@@ -1818,6 +1836,16 @@ test_run_gunzip_LDADD = \
 	libsystem.a
 
 endif
+
+test_WriteFile_LDADD = \
+	$(FS_LIBS) \
+	$(ICU_LDADD) \
+	libsystem.a \
+	libutil.a \
+	$(GLIB_LIBS)
+test_WriteFile_SOURCES = \
+	src/Log.cxx src/LogBackend.cxx \
+	test/WriteFile.cxx
 
 test_dump_text_file_LDADD = \
 	$(INPUT_LIBS) \

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -107,7 +107,7 @@ struct AudioOutputPlugin {
 	 * Display metadata for the next chunk.  Optional method,
 	 * because not all devices can display metadata.
 	 */
-	void (*send_tag)(AudioOutput *data, const Tag *tag);
+	void (*send_tag)(AudioOutput *data, const Tag &tag);
 
 	/**
 	 * Play a chunk of audio data.
@@ -186,7 +186,7 @@ unsigned
 ao_plugin_delay(AudioOutput *ao);
 
 void
-ao_plugin_send_tag(AudioOutput *ao, const Tag *tag);
+ao_plugin_send_tag(AudioOutput *ao, const Tag &tag);
 
 size_t
 ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size,

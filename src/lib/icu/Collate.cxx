@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -78,8 +78,11 @@ gcc_pure
 int
 IcuCollate(const char *a, const char *b)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(a != nullptr);
 	assert(b != nullptr);
+#endif
 
 #ifdef HAVE_ICU
 	assert(collator != nullptr);
@@ -116,7 +119,10 @@ IcuCaseFold(const char *src)
 {
 #ifdef HAVE_ICU
 	assert(collator != nullptr);
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(src != nullptr);
+#endif
 
 	const auto u = UCharFromUTF8(src);
 	if (u.IsNull())

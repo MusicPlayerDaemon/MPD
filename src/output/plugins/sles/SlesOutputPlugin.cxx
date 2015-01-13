@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "Play.hxx"
 #include "AndroidSimpleBufferQueue.hxx"
 #include "../../OutputAPI.hxx"
+#include "../../Wrapper.hxx"
 #include "util/Macros.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -34,6 +35,8 @@
 #include <SLES/OpenSLES_Android.h>
 
 class SlesOutput {
+	friend struct AudioOutputWrapper<SlesOutput>;
+
 	static constexpr unsigned N_BUFFERS = 3;
 	static constexpr size_t BUFFER_SIZE = 65536;
 
@@ -455,85 +458,22 @@ sles_output_init(const config_param &param, Error &error)
 	return *sles;
 }
 
-static void
-sles_output_finish(AudioOutput *ao)
-{
-	SlesOutput *sles = (SlesOutput *)ao;
-
-	delete sles;
-}
-
-static bool
-sles_output_open(AudioOutput *ao, AudioFormat &audio_format, Error &error)
-{
-	SlesOutput &sles = *(SlesOutput *)ao;
-
-	return sles.Open(audio_format, error);
-}
-
-static void
-sles_output_close(AudioOutput *ao)
-{
-	SlesOutput &sles = *(SlesOutput *)ao;
-
-	sles.Close();
-}
-
-static unsigned
-sles_output_delay(AudioOutput *ao)
-{
-	SlesOutput &sles = *(SlesOutput *)ao;
-
-	return sles.Delay();
-}
-
-static size_t
-sles_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		 Error &error)
-{
-	SlesOutput &sles = *(SlesOutput *)ao;
-
-	return sles.Play(chunk, size, error);
-}
-
-static void
-sles_output_drain(AudioOutput *ao)
-{
-	SlesOutput &sles = *(SlesOutput *)ao;
-
-	sles.Drain();
-}
-
-static void
-sles_output_cancel(AudioOutput *ao)
-{
-	SlesOutput &sles = *(SlesOutput *)ao;
-
-	sles.Cancel();
-}
-
-static bool
-sles_output_pause(AudioOutput *ao)
-{
-	SlesOutput &sles = *(SlesOutput *)ao;
-
-	return sles.Pause();
-}
+typedef AudioOutputWrapper<SlesOutput> Wrapper;
 
 const struct AudioOutputPlugin sles_output_plugin = {
 	"sles",
 	sles_test_default_device,
 	sles_output_init,
-	sles_output_finish,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	sles_output_open,
-	sles_output_close,
-	sles_output_delay,
+	&Wrapper::Open,
+	&Wrapper::Close,
+	&Wrapper::Delay,
 	nullptr,
-	sles_output_play,
-	sles_output_drain,
-	sles_output_cancel,
-	sles_output_pause,
+	&Wrapper::Play,
+	&Wrapper::Drain,
+	&Wrapper::Cancel,
+	&Wrapper::Pause,
 	nullptr,
 };

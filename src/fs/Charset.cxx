@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -89,7 +89,10 @@ static inline void FixSeparators(std::string &s)
 std::string
 PathToUTF8(const char *path_fs)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(path_fs != nullptr);
+#endif
 
 #ifdef HAVE_FS_CHARSET
 	if (fs_converter == nullptr) {
@@ -111,7 +114,10 @@ PathToUTF8(const char *path_fs)
 std::string
 PathFromUTF8(const char *path_utf8)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(path_utf8 != nullptr);
+#endif
 
 	if (fs_converter == nullptr)
 		return path_utf8;

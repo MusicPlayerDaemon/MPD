@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -250,7 +250,7 @@ public:
 
 	bool EncodeAndPlay(const void *chunk, size_t size, Error &error);
 
-	void SendTag(const Tag *tag);
+	void SendTag(const Tag &tag);
 
 	size_t Play(const void *chunk, size_t size, Error &error);
 

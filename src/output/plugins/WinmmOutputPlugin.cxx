@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -55,6 +55,18 @@ struct WinmmOutput {
 };
 
 static constexpr Domain winmm_output_domain("winmm_output");
+
+static void
+SetWaveOutError(Error &error, MMRESULT result, const char *prefix)
+{
+	char buffer[256];
+	if (waveOutGetErrorTextA(result, buffer,
+				 ARRAY_SIZE(buffer)) == MMSYSERR_NOERROR)
+		error.Format(winmm_output_domain, int(result),
+			     "%s: %s", prefix, buffer);
+	else
+		error.Set(winmm_output_domain, int(result), prefix);
+}
 
 HWAVEOUT
 winmm_output_get_handle(WinmmOutput &output)
@@ -179,7 +191,7 @@ winmm_output_open(AudioOutput *ao, AudioFormat &audio_format,
 				      (DWORD_PTR)wo->event, 0, CALLBACK_EVENT);
 	if (result != MMSYSERR_NOERROR) {
 		CloseHandle(wo->event);
-		error.Set(winmm_output_domain, "waveOutOpen() failed");
+		SetWaveOutError(error, result, "waveOutOpen() failed");
 		return false;
 	}
 
@@ -225,8 +237,8 @@ winmm_set_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 	MMRESULT result = waveOutPrepareHeader(wo->handle, &buffer->hdr,
 					       sizeof(buffer->hdr));
 	if (result != MMSYSERR_NOERROR) {
-		error.Set(winmm_output_domain, result,
-			  "waveOutPrepareHeader() failed");
+		SetWaveOutError(error, result,
+				"waveOutPrepareHeader() failed");
 		return false;
 	}
 
@@ -251,8 +263,8 @@ winmm_drain_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 		if (result == MMSYSERR_NOERROR)
 			return true;
 		else if (result != WAVERR_STILLPLAYING) {
-			error.Set(winmm_output_domain, result,
-				  "waveOutUnprepareHeader() failed");
+			SetWaveOutError(error, result,
+					"waveOutUnprepareHeader() failed");
 			return false;
 		}
 
@@ -278,8 +290,7 @@ winmm_output_play(AudioOutput *ao, const void *chunk, size_t size, Error &error)
 	if (result != MMSYSERR_NOERROR) {
 		waveOutUnprepareHeader(wo->handle, &buffer->hdr,
 				       sizeof(buffer->hdr));
-		error.Set(winmm_output_domain, result,
-			  "waveOutWrite() failed");
+		SetWaveOutError(error, result, "waveOutWrite() failed");
 		return 0;
 	}
 

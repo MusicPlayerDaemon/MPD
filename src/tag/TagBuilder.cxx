@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -182,7 +182,10 @@ TagBuilder::Complement(const Tag &other)
 inline void
 TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(value != nullptr);
+#endif
 	assert(length > 0);
 
 	auto f = FixTagString(value, length);
@@ -203,7 +206,10 @@ TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
 void
 TagBuilder::AddItem(TagType type, const char *value, size_t length)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(value != nullptr);
+#endif
 
 	if (length == 0 || ignore_tag_items[type])
 		return;
@@ -214,7 +220,10 @@ TagBuilder::AddItem(TagType type, const char *value, size_t length)
 void
 TagBuilder::AddItem(TagType type, const char *value)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(value != nullptr);
+#endif
 
 	AddItem(type, value, strlen(value));
 }

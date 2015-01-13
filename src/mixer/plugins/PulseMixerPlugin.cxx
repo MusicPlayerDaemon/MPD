@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,18 +19,18 @@
 
 #include "config.h"
 #include "PulseMixerPlugin.hxx"
+#include "lib/pulse/Domain.hxx"
+#include "lib/pulse/LogError.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <pulse/context.h>
 #include <pulse/introspect.h>
 #include <pulse/stream.h>
 #include <pulse/subscribe.h>
-#include <pulse/error.h>
 
 #include <assert.h>
 
@@ -55,18 +55,16 @@ public:
 	int GetVolumeInternal(Error &error);
 
 	/* virtual methods from class Mixer */
-	virtual bool Open(gcc_unused Error &error) override {
+	bool Open(gcc_unused Error &error) override {
 		return true;
 	}
 
-	virtual void Close() override {
+	void Close() override {
 	}
 
-	virtual int GetVolume(Error &error) override;
-	virtual bool SetVolume(unsigned volume, Error &error) override;
+	int GetVolume(Error &error) override;
+	bool SetVolume(unsigned volume, Error &error) override;
 };
-
-static constexpr Domain pulse_mixer_domain("pulse_mixer");
 
 void
 PulseMixer::Offline()
@@ -120,9 +118,8 @@ PulseMixer::Update(pa_context *context, pa_stream *stream)
 					       pa_stream_get_index(stream),
 					       pulse_mixer_volume_cb, this);
 	if (o == nullptr) {
-		FormatError(pulse_mixer_domain,
-			    "pa_context_get_sink_input_info() failed: %s",
-			    pa_strerror(pa_context_errno(context)));
+		LogPulseError(context,
+			      "pa_context_get_sink_input_info() failed");
 		Offline();
 		return;
 	}
@@ -142,9 +139,8 @@ pulse_mixer_on_connect(gcc_unused PulseMixer &pm,
 				 (pa_subscription_mask_t)PA_SUBSCRIPTION_MASK_SINK_INPUT,
 				 nullptr, nullptr);
 	if (o == nullptr) {
-		FormatError(pulse_mixer_domain,
-			    "pa_context_subscribe() failed: %s",
-			    pa_strerror(pa_context_errno(context)));
+		LogPulseError(context,
+			      "pa_context_subscribe() failed");
 		return;
 	}
 
@@ -212,7 +208,7 @@ PulseMixer::SetVolume(unsigned new_volume, Error &error)
 
 	if (!online) {
 		pulse_output_unlock(output);
-		error.Set(pulse_mixer_domain, "disconnected");
+		error.Set(pulse_domain, "disconnected");
 		return false;
 	}
 

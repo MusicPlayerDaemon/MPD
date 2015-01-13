@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -178,7 +178,7 @@ const struct playlist_plugin embcue_playlist_plugin = {
 	embcue_playlist_open_uri,
 	nullptr,
 
-	embcue_playlist_suffixes,
 	nullptr,
+	embcue_playlist_suffixes,
 	nullptr,
 };

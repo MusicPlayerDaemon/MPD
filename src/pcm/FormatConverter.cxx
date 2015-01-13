@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format,
 			     "PCM conversion from %s to %s is not implemented",
 			     sample_format_to_string(_src_format),
 			     sample_format_to_string(_dest_format));
-		return nullptr;
+		return false;
 
 	case SampleFormat::S16:
 	case SampleFormat::S24_P32:

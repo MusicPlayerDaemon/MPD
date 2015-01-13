@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,7 @@
 #include "HttpdInternal.hxx"
 #include "HttpdClient.hxx"
 #include "output/OutputAPI.hxx"
+#include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "system/Resolver.hxx"
@@ -63,7 +64,7 @@ HttpdOutput::~HttpdOutput()
 		metadata->Unref();
 
 	if (encoder != nullptr)
-		encoder_finish(encoder);
+		encoder->Dispose();
 
 }
 
@@ -294,7 +295,7 @@ httpd_output_disable(AudioOutput *ao)
 inline bool
 HttpdOutput::OpenEncoder(AudioFormat &audio_format, Error &error)
 {
-	if (!encoder_open(encoder, audio_format, error))
+	if (!encoder->Open(audio_format, error))
 		return false;
 
 	/* we have to remember the encoder header, i.e. the first
@@ -354,7 +355,7 @@ HttpdOutput::Close()
 	if (header != nullptr)
 		header->Unref();
 
-	encoder_close(encoder);
+	encoder->Close();
 }
 
 static void
@@ -499,10 +500,8 @@ httpd_output_pause(AudioOutput *ao)
 }
 
 inline void
-HttpdOutput::SendTag(const Tag *tag)
+HttpdOutput::SendTag(const Tag &tag)
 {
-	assert(tag != nullptr);
-
 	if (encoder->plugin.tag != nullptr) {
 		/* embed encoder tags */
 
@@ -538,7 +537,7 @@ HttpdOutput::SendTag(const Tag *tag)
 			TAG_NUM_OF_ITEM_TYPES
 		};
 
-		metadata = icy_server_metadata_page(*tag, &types[0]);
+		metadata = icy_server_metadata_page(tag, &types[0]);
 		if (metadata != nullptr) {
 			const ScopeLock protect(mutex);
 			for (auto &client : clients)
@@ -548,7 +547,7 @@ HttpdOutput::SendTag(const Tag *tag)
 }
 
 static void
-httpd_output_tag(AudioOutput *ao, const Tag *tag)
+httpd_output_tag(AudioOutput *ao, const Tag &tag)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 

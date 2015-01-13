@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -80,7 +80,7 @@ config_param::GetBlockParam(const char *name) const
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 const char *
@@ -152,7 +152,7 @@ bool
 config_param::GetBlockValue(const char *name, bool default_value) const
 {
 	const block_param *bp = GetBlockParam(name);
-	if (bp == NULL)
+	if (bp == nullptr)
 		return default_value;
 
 	return bp->GetBoolValue();

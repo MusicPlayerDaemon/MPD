@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,17 +20,25 @@
 #ifndef MPD_THREAD_NAME_HXX
 #define MPD_THREAD_NAME_HXX
 
-#ifdef HAVE_PTHREAD_SETNAME_NP
-#include <pthread.h>
-#include <stdio.h>
+#if defined(HAVE_PTHREAD_SETNAME_NP) && !defined(__NetBSD__)
+#  define HAVE_THREAD_NAME
+#  include <pthread.h>
+#  include <stdio.h>
 #elif defined(HAVE_PRCTL)
-#include <sys/prctl.h>
+#  include <sys/prctl.h>
+#  ifdef PR_SET_NAME
+#    define HAVE_THREAD_NAME
+#  endif
 #endif
 
 static inline void
 SetThreadName(const char *name)
 {
-#ifdef HAVE_PTHREAD_SETNAME_NP
+#if defined(HAVE_PTHREAD_SETNAME_NP) && !defined(__NetBSD__)
+	/* not using pthread_setname_np() on NetBSD because it
+	   requires a non-const pointer argument, which we don't have
+	   here */
+
 #ifdef __APPLE__
 	pthread_setname_np(name);
 #else
@@ -47,7 +55,7 @@ template<typename... Args>
 static inline void
 FormatThreadName(const char *fmt, gcc_unused Args&&... args)
 {
-#ifdef HAVE_PTHREAD_SETNAME_NP
+#ifdef HAVE_THREAD_NAME
 	char buffer[16];
 	snprintf(buffer, sizeof(buffer), fmt, args...);
 	SetThreadName(buffer);

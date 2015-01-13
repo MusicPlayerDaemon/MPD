@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,25 +20,65 @@
 #include "config.h"
 #include "NullOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "../Timer.hxx"
 
-struct NullOutput {
+class NullOutput {
+	friend struct AudioOutputWrapper<NullOutput>;
+
 	AudioOutput base;
 
 	bool sync;
 
 	Timer *timer;
 
+public:
 	NullOutput()
 		:base(null_output_plugin) {}
 
 	bool Initialize(const config_param &param, Error &error) {
 		return base.Configure(param, error);
 	}
+
+	static NullOutput *Create(const config_param &param, Error &error);
+
+	bool Open(AudioFormat &audio_format, gcc_unused Error &error) {
+		if (sync)
+			timer = new Timer(audio_format);
+
+		return true;
+	}
+
+	void Close() {
+		if (sync)
+			delete timer;
+	}
+
+	unsigned Delay() const {
+		return sync && timer->IsStarted()
+			? timer->GetDelay()
+			: 0;
+	}
+
+	size_t Play(gcc_unused const void *chunk, size_t size,
+		    gcc_unused Error &error) {
+		if (sync) {
+			if (!timer->IsStarted())
+				timer->Start();
+			timer->Add(size);
+		}
+
+		return size;
+	}
+
+	void Cancel() {
+		if (sync)
+			timer->Reset();
+	}
 };
 
-static AudioOutput *
-null_init(const config_param &param, Error &error)
+inline NullOutput *
+NullOutput::Create(const config_param &param, Error &error)
 {
 	NullOutput *nd = new NullOutput();
 
@@ -49,90 +89,25 @@ null_init(const config_param &param, Error &error)
 
 	nd->sync = param.GetBlockValue("sync", true);
 
-	return &nd->base;
+	return nd;
 }
 
-static void
-null_finish(AudioOutput *ao)
-{
-	NullOutput *nd = (NullOutput *)ao;
-
-	delete nd;
-}
-
-static bool
-null_open(AudioOutput *ao, AudioFormat &audio_format,
-	  gcc_unused Error &error)
-{
-	NullOutput *nd = (NullOutput *)ao;
-
-	if (nd->sync)
-		nd->timer = new Timer(audio_format);
-
-	return true;
-}
-
-static void
-null_close(AudioOutput *ao)
-{
-	NullOutput *nd = (NullOutput *)ao;
-
-	if (nd->sync)
-		delete nd->timer;
-}
-
-static unsigned
-null_delay(AudioOutput *ao)
-{
-	NullOutput *nd = (NullOutput *)ao;
-
-	return nd->sync && nd->timer->IsStarted()
-		? nd->timer->GetDelay()
-		: 0;
-}
-
-static size_t
-null_play(AudioOutput *ao, gcc_unused const void *chunk, size_t size,
-	  gcc_unused Error &error)
-{
-	NullOutput *nd = (NullOutput *)ao;
-	Timer *timer = nd->timer;
-
-	if (!nd->sync)
-		return size;
-
-	if (!timer->IsStarted())
-		timer->Start();
-	timer->Add(size);
-
-	return size;
-}
-
-static void
-null_cancel(AudioOutput *ao)
-{
-	NullOutput *nd = (NullOutput *)ao;
-
-	if (!nd->sync)
-		return;
-
-	nd->timer->Reset();
-}
+typedef AudioOutputWrapper<NullOutput> Wrapper;
 
 const struct AudioOutputPlugin null_output_plugin = {
 	"null",
 	nullptr,
-	null_init,
-	null_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	null_open,
-	null_close,
-	null_delay,
+	&Wrapper::Open,
+	&Wrapper::Close,
+	&Wrapper::Delay,
 	nullptr,
-	null_play,
+	&Wrapper::Play,
 	nullptr,
-	null_cancel,
+	&Wrapper::Cancel,
 	nullptr,
 	nullptr,
 };

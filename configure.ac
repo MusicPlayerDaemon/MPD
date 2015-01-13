@@ -219,7 +219,7 @@ AC_SEARCH_LIBS([socket], [socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 
 if test x$host_is_linux = xyes; then
-	AC_CHECK_FUNCS(pipe2 accept4)
+	AC_CHECK_FUNCS(pipe2 accept4 linkat)
 fi
 
 AC_CHECK_FUNCS(getpwnam_r getpwuid_r)
@@ -287,10 +287,10 @@ AC_ARG_ENABLE(database,
 	AS_HELP_STRING([--enable-database],
 		[enable support for the music database]),,
 	enable_database=yes)
-AM_CONDITIONAL(ENABLE_DATABASE, test x$enable_database = xyes)
+MPD_DEFINE_CONDITIONAL(enable_database, ENABLE_DATABASE,
+	[the music database])
 if test x$enable_database = xyes; then
 	database_auto=auto
-	AC_DEFINE(ENABLE_DATABASE, 1, [Define to enable the music database])
 else
 	database_auto=no
 fi
@@ -303,10 +303,7 @@ AC_ARG_ENABLE(daemon,
 	AS_HELP_STRING([--enable-daemon],
 		[enable daemonization (default: enabled)]),,
 	enable_daemon=$default_enable_daemon)
-AM_CONDITIONAL([ENABLE_DAEMON], [test x$enable_daemon = xyes])
-if test x$enable_daemon = xyes; then
-	AC_DEFINE([ENABLE_DAEMON], 1, [Enable daemonization?])
-fi
+MPD_DEFINE_CONDITIONAL(enable_daemon, ENABLE_DAEMON, [Enable daemonization?])
 
 AC_ARG_ENABLE(debug,
 	AS_HELP_STRING([--enable-debug],
@@ -327,11 +324,6 @@ AC_ARG_ENABLE(fifo,
 	AS_HELP_STRING([--disable-fifo],
 		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
-
-AC_ARG_ENABLE(gme,
-	AS_HELP_STRING([--enable-gme],
-		[enable Blargg's game music emulator plugin]),,
-	enable_gme=auto)
 
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
@@ -482,10 +474,9 @@ AC_ARG_ENABLE(icu,
 if test x$enable_icu = xyes; then
 	PKG_CHECK_MODULES([ICU], [icu-i18n],,
 		[AC_MSG_ERROR([libicu not found])])
-
-	AC_DEFINE(HAVE_ICU, 1, [Define if libicu is used])
 fi
-AM_CONDITIONAL(HAVE_ICU, test x$enable_icu = xyes)
+
+MPD_DEFINE_CONDITIONAL(enable_icu, HAVE_ICU, [libicu])
 
 AC_ARG_ENABLE(glib,
 	AS_HELP_STRING([--enable-glib],
@@ -505,11 +496,9 @@ if test x$enable_glib = xyes; then
 		# suppress warnings in the GLib headers
 		GLIB_CFLAGS=`echo $GLIB_CFLAGS |sed -e 's,-I/,-isystem /,g'`
 	fi
-
-	AC_DEFINE(HAVE_GLIB, 1, [Define if GLib is used])
 fi
 
-AM_CONDITIONAL(HAVE_GLIB, test x$enable_glib = xyes)
+MPD_DEFINE_CONDITIONAL(enable_glib, HAVE_GLIB, [GLib])
 
 dnl ---------------------------------------------------------------------------
 dnl Protocol Options
@@ -592,10 +581,7 @@ if test x$ac_cv_func_inotify_init = xno; then
 	enable_inotify=no
 fi
 
-if test x$enable_inotify = xyes; then
-	AC_DEFINE([ENABLE_INOTIFY], 1, [Define to enable inotify support])
-fi
-AM_CONDITIONAL(ENABLE_INOTIFY, test x$enable_inotify = xyes)
+MPD_DEFINE_CONDITIONAL(enable_inotify, ENABLE_INOTIFY, [inotify support])
 
 dnl --------------------------------- libwrap ---------------------------------
 if test x$enable_libwrap != xno; then
@@ -663,11 +649,10 @@ esac
 MPD_AUTO_PKG(avahi, AVAHI, [avahi-client dbus-1],
 	[avahi client library], [avahi-client not found])
 if test x$enable_avahi = xyes; then
-	AC_DEFINE([HAVE_AVAHI], 1, [Define to enable Avahi Zeroconf support])
 	with_zeroconf=avahi
 fi
 
-AM_CONDITIONAL(HAVE_AVAHI, test x$enable_avahi = xyes)
+MPD_DEFINE_CONDITIONAL(enable_avahi, HAVE_AVAHI, [Avahi Zeroconf])
 
 enable_bounjour=no
 if test x$with_zeroconf != xno; then
@@ -742,10 +727,8 @@ MPD_AUTO([soundcloud], [soundcloud.com support], [libyajl not found],
 	[PKG_CHECK_MODULES([YAJL], [yajl >= 2.0],
 		[found_soundcloud=yes],
 		[found_soundcloud=no])])
-if test x$enable_soundcloud = xyes; then
-	AC_DEFINE(ENABLE_SOUNDCLOUD, 1, [Define when soundcloud is enabled])
-fi
-AM_CONDITIONAL(ENABLE_SOUNDCLOUD, test x$enable_soundcloud = xyes)
+MPD_DEFINE_CONDITIONAL(enable_soundcloud, ENABLE_SOUNDCLOUD,
+	[soundcloud.com support])
 
 dnl ---------------------------------- cdio ---------------------------------
 MPD_ENABLE_AUTO_PKG(cdio_paranoia, CDIO_PARANOIA, [libcdio_paranoia],
@@ -781,11 +764,8 @@ if test x$enable_neighbor_plugins = xauto; then
 	fi
 fi
 
-if test x$enable_neighbor_plugins = xyes; then
-	AC_DEFINE(ENABLE_NEIGHBOR_PLUGINS, 1,
-		[Define to enable support for neighbor discovery])
-fi
-AM_CONDITIONAL(ENABLE_NEIGHBOR_PLUGINS, test x$enable_neighbor_plugins = xyes)
+MPD_DEFINE_CONDITIONAL(enable_neighbor_plugins, ENABLE_NEIGHBOR_PLUGINS,
+	[neighbor discovery])
 
 dnl ---------------------------------------------------------------------------
 dnl Archive Plugins
@@ -795,10 +775,7 @@ dnl --------------------------------- iso9660 ---------------------------------
 MPD_ENABLE_AUTO_PKG(iso9660, ISO9660, [libiso9660],
 	[libiso9660 archive plugin], [libiso9660 not found])
 
-AM_CONDITIONAL(HAVE_ISO9660, test x$enable_iso9660 = xyes)
 if test x$enable_iso9660 = xyes; then
-	AC_DEFINE(HAVE_ISO9660, 1, [Define to have ISO9660 archive support])
-
 	AC_PATH_PROG(MKISOFS, mkisofs, no)
 else
 	MKISOFS="no"
@@ -858,12 +835,11 @@ if
 	test x$enable_zzip = xyes ||
 	test x$enable_iso9660 = xyes; then
 		enable_archive=yes
-		AC_DEFINE(ENABLE_ARCHIVE, 1, [The archive API is available])
 else
 	enable_archive=no
 fi
 
-AM_CONDITIONAL(ENABLE_ARCHIVE, test x$enable_archive = xyes)
+MPD_DEFINE_CONDITIONAL(enable_archive, ENABLE_ARCHIVE, [the archive API])
 
 dnl ---------------------------------------------------------------------------
 dnl Decoder Plugins
@@ -879,11 +855,7 @@ MPD_ENABLE_AUTO_PKG(audiofile, AUDIOFILE, [audiofile >= 0.3],
 
 dnl ----------------------------------- DSD -----------------------------------
 
-if test x$enable_dsd = xyes; then
-	AC_DEFINE(ENABLE_DSD, 1, [Define for the DSD decoder])
-fi
-
-AM_CONDITIONAL(ENABLE_DSD, test x$enable_dsd = xyes)
+MPD_DEFINE_CONDITIONAL(enable_dsd, ENABLE_DSD, [DSD decoder])
 
 dnl ----------------------------------- FAAD ----------------------------------
 MPD_ENABLE_AUTO_LIB(aac, FAAD, faad, NeAACDecOpen, [-lfaad], [],
@@ -907,12 +879,10 @@ MPD_ENABLE_AUTO_PKG(fluidsynth, FLUIDSYNTH, [fluidsynth >= 1.1],
 	[fluidsynth MIDI decoder plugin], [fluidsynth not found])
 
 dnl ---------------------------------- libgme ---------------------------------
-MPD_AUTO_PKG_LIB(gme, GME, [libgme], gme, gme_open_file, [-lgme -lstdc++], [],
-	[gme decoder plugin], [libgme not found])
-AM_CONDITIONAL(HAVE_GME, test x$enable_gme = xyes)
-if test x$enable_gme = xyes; then
-	AC_DEFINE(HAVE_GME, 1, [Define for gme support])
-fi
+
+MPD_ENABLE_AUTO_PKG_LIB(gme, GME, [libgme],
+	gme, gme_open_file, [-lgme -lstdc++], [],
+	[Game Music Emulator decoder plugin], [libgme not found])
 
 dnl ---------------------------------- libmad ---------------------------------
 MPD_ENABLE_AUTO_PKG_LIB(mad, MAD, [mad],
@@ -1137,11 +1107,8 @@ else
 fi
 
 dnl ------------------------------- FLAC Encoder ------------------------------
-if test x$enable_flac_encoder = xyes; then
-	AC_DEFINE(ENABLE_FLAC_ENCODER, 1,
-		[Define to enable the FLAC encoder plugin])
-fi
-AM_CONDITIONAL(ENABLE_FLAC_ENCODER, test x$enable_flac_encoder = xyes)
+MPD_DEFINE_CONDITIONAL(enable_flac_encoder, ENABLE_FLAC_ENCODER,
+	[FLAC encoder plugin])
 
 dnl ------------------------------- Shine Encoder ------------------------------
 
@@ -1162,11 +1129,8 @@ MPD_ENABLE_AUTO_PKG(twolame_encoder, TWOLAME, [twolame],
 	[TwoLAME encoder plugin], [libtwolame not found])
 
 dnl ------------------------------- WAVE Encoder ------------------------------
-AM_CONDITIONAL(ENABLE_WAVE_ENCODER, test x$enable_wave_encoder = xyes)
-if test x$enable_wave_encoder = xyes; then
-	AC_DEFINE(ENABLE_WAVE_ENCODER, 1,
-		[Define to enable the PCM wave encoder plugin])
-fi
+MPD_DEFINE_CONDITIONAL(enable_wave_encoder, ENABLE_WAVE_ENCODER,
+	[PCM wave encoder plugin])
 
 dnl --------------------------- encoder plugins test --------------------------
 if test x$enable_vorbis_encoder != xno ||
@@ -1187,11 +1151,9 @@ else
 	fi
 fi
 
-if test x$enable_encoder = xyes; then
-	AC_DEFINE(ENABLE_ENCODER, 1,
-		[Define to enable the encoder plugins])
-fi
-AM_CONDITIONAL(ENABLE_ENCODER, test x$enable_encoder = xyes)
+MPD_DEFINE_CONDITIONAL(enable_encoder, ENABLE_ENCODER,
+		[the encoder plugins])
+
 AM_CONDITIONAL(HAVE_OGG_ENCODER, test x$enable_vorbis_encoder = xyes || test x$enable_opus = xyes)
 
 dnl ---------------------------------------------------------------------------
@@ -1210,12 +1172,12 @@ MPD_ENABLE_AUTO_PKG(roar, ROAR, [libroar >= 0.4.0],
 dnl ----------------------------------- FIFO ----------------------------------
 if test x$enable_fifo = xyes; then
 	AC_CHECK_FUNC([mkfifo],
-		[enable_fifo=yes;AC_DEFINE([HAVE_FIFO], 1,
-			[Define to enable support for writing audio to a FIFO])],
+		[enable_fifo=yes],
 		[enable_fifo=no;AC_MSG_WARN([mkfifo not found -- disabling support for writing audio to a FIFO])])
 fi
 
-AM_CONDITIONAL(HAVE_FIFO, test x$enable_fifo = xyes)
+MPD_DEFINE_CONDITIONAL(enable_fifo, HAVE_FIFO,
+	[support for writing audio to a FIFO])
 
 dnl ------------------------------- HTTPD Output ------------------------------
 if test x$enable_httpd_output = xauto; then
@@ -1229,10 +1191,8 @@ if test x$enable_httpd_output = xauto; then
 	fi
 fi
 
-if test x$enable_httpd_output = xyes; then
-	AC_DEFINE(ENABLE_HTTPD_OUTPUT, 1, [Define to enable the HTTP server output])
-fi
-AM_CONDITIONAL(ENABLE_HTTPD_OUTPUT, test x$enable_httpd_output = xyes)
+MPD_DEFINE_CONDITIONAL(enable_httpd_output, ENABLE_HTTPD_OUTPUT,
+	[the HTTP server output])
 
 dnl ----------------------------------- JACK ----------------------------------
 MPD_ENABLE_AUTO_PKG(jack, JACK, [jack >= 0.100],
@@ -1272,21 +1232,17 @@ else
 		[OpenAL output plugin], [OpenAL not found])
 fi
 
-if test x$enable_openal = xyes; then
-	AC_DEFINE(HAVE_OPENAL, 1, [Define for OpenAL support])
-fi
-
-AM_CONDITIONAL(HAVE_OPENAL, test x$enable_openal = xyes)
+MPD_DEFINE_CONDITIONAL(enable_openal, HAVE_OPENAL, [OpenAL support])
 
 dnl ---------------------------- Open Sound System ----------------------------
 if test x$enable_oss = xyes; then
 	AC_CHECK_HEADER(sys/soundcard.h,
-		[enable_oss=yes;AC_DEFINE(HAVE_OSS,1,[Define to enable OSS])],
+		[enable_oss=yes],
 		[AC_MSG_WARN(Soundcard headers not found -- disabling OSS support);
 			enable_oss=no])
 fi
 
-AM_CONDITIONAL(HAVE_OSS, test x$enable_oss = xyes)
+MPD_DEFINE_CONDITIONAL(enable_oss, HAVE_OSS, [Open Sound System])
 
 dnl ----------------------------------- OSX -----------------------------------
 if test x$enable_osx = xyes; then
@@ -1297,11 +1253,8 @@ fi
 AM_CONDITIONAL(HAVE_OSX, test x$enable_osx = xyes)
 
 dnl ------------------------------- Pipe Output -------------------------------
-if test x$enable_pipe_output = xyes; then
-	AC_DEFINE([ENABLE_PIPE_OUTPUT], 1,
-		[Define to enable support for writing audio to a pipe])
-fi
-AM_CONDITIONAL(ENABLE_PIPE_OUTPUT, test x$enable_pipe_output = xyes)
+MPD_DEFINE_CONDITIONAL(enable_pipe_output, ENABLE_PIPE_OUTPUT,
+		[support for writing audio to a pipe])
 
 dnl -------------------------------- PulseAudio -------------------------------
 MPD_ENABLE_AUTO_PKG(pulse, PULSE, [libpulse >= 0.9.16],
@@ -1319,10 +1272,8 @@ if test x$enable_recorder_output = xauto; then
 	fi
 fi
 
-if test x$enable_recorder_output = xyes; then
-	AC_DEFINE(ENABLE_RECORDER_OUTPUT, 1, [Define to enable the recorder output])
-fi
-AM_CONDITIONAL(ENABLE_RECORDER_OUTPUT, test x$enable_recorder_output = xyes)
+MPD_DEFINE_CONDITIONAL(enable_recorder_output, ENABLE_RECORDER_OUTPUT,
+	[the recorder output])
 
 dnl -------------------------------- SHOUTcast --------------------------------
 if test x$enable_shout = xauto; then
@@ -1336,18 +1287,13 @@ if test x$enable_shout = xauto; then
 	fi
 fi
 
-if test x$enable_shout = xyes; then
-	AC_DEFINE(HAVE_SHOUT, 1, [Define to enable the shoutcast output])
-fi
-AM_CONDITIONAL(HAVE_SHOUT, test x$enable_shout = xyes)
+MPD_DEFINE_CONDITIONAL(enable_shout, HAVE_SHOUT,
+	[shoutcast output])
 
 dnl --------------------------------- Solaris ---------------------------------
 
-if test x$enable_solaris_output = xyes; then
-	AC_DEFINE(ENABLE_SOLARIS_OUTPUT, 1, [Define to enable Solaris /dev/audio support])
-fi
-
-AM_CONDITIONAL(ENABLE_SOLARIS_OUTPUT, test x$enable_solaris_output = xyes)
+MPD_DEFINE_CONDITIONAL(enable_solaris_output, ENABLE_SOLARIS_OUTPUT,
+	[Solaris /dev/audio support])
 
 dnl --------------------------------- WinMM ---------------------------------
 

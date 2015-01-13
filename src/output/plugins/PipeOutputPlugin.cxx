@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "PipeOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -28,7 +29,9 @@
 
 #include <stdio.h>
 
-struct PipeOutput {
+class PipeOutput {
+	friend struct AudioOutputWrapper<PipeOutput>;
+
 	AudioOutput base;
 
 	std::string cmd;
@@ -37,11 +40,19 @@ struct PipeOutput {
 	PipeOutput()
 		:base(pipe_output_plugin) {}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
+	bool Configure(const config_param &param, Error &error);
+
+public:
+	static PipeOutput *Create(const config_param &param, Error &error);
+
+	bool Open(AudioFormat &audio_format, Error &error);
+
+	void Close() {
+		pclose(fh);
 	}
 
-	bool Configure(const config_param &param, Error &error);
+	size_t Play(const void *chunk, size_t size, Error &error);
+
 };
 
 static constexpr Domain pipe_output_domain("pipe_output");
@@ -49,6 +60,9 @@ static constexpr Domain pipe_output_domain("pipe_output");
 inline bool
 PipeOutput::Configure(const config_param &param, Error &error)
 {
+	if (!base.Configure(param, error))
+		return false;
+
 	cmd = param.GetBlockValue("command", "");
 	if (cmd.empty()) {
 		error.Set(config_domain,
@@ -59,83 +73,56 @@ PipeOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static AudioOutput *
-pipe_output_init(const config_param &param, Error &error)
+inline PipeOutput *
+PipeOutput::Create(const config_param &param, Error &error)
 {
-	PipeOutput *pd = new PipeOutput();
+	PipeOutput *po = new PipeOutput();
 
-	if (!pd->Initialize(param, error)) {
-		delete pd;
+	if (!po->Configure(param, error)) {
+		delete po;
 		return nullptr;
 	}
 
-	if (!pd->Configure(param, error)) {
-		delete pd;
-		return nullptr;
-	}
-
-	return &pd->base;
+	return po;
 }
 
-static void
-pipe_output_finish(AudioOutput *ao)
+inline bool
+PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &error)
 {
-	PipeOutput *pd = (PipeOutput *)ao;
-
-	delete pd;
-}
-
-static bool
-pipe_output_open(AudioOutput *ao,
-		 gcc_unused AudioFormat &audio_format,
-		 Error &error)
-{
-	PipeOutput *pd = (PipeOutput *)ao;
-
-	pd->fh = popen(pd->cmd.c_str(), "w");
-	if (pd->fh == nullptr) {
+	fh = popen(cmd.c_str(), "w");
+	if (fh == nullptr) {
 		error.FormatErrno("Error opening pipe \"%s\"",
-				  pd->cmd.c_str());
+				  cmd.c_str());
 		return false;
 	}
 
 	return true;
 }
 
-static void
-pipe_output_close(AudioOutput *ao)
+inline size_t
+PipeOutput::Play(const void *chunk, size_t size, Error &error)
 {
-	PipeOutput *pd = (PipeOutput *)ao;
-
-	pclose(pd->fh);
-}
-
-static size_t
-pipe_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		 Error &error)
-{
-	PipeOutput *pd = (PipeOutput *)ao;
-	size_t ret;
-
-	ret = fwrite(chunk, 1, size, pd->fh);
-	if (ret == 0)
+	size_t nbytes = fwrite(chunk, 1, size, fh);
+	if (nbytes == 0)
 		error.SetErrno("Write error on pipe");
 
-	return ret;
+	return nbytes;
 }
+
+typedef AudioOutputWrapper<PipeOutput> Wrapper;
 
 const struct AudioOutputPlugin pipe_output_plugin = {
 	"pipe",
 	nullptr,
-	pipe_output_init,
-	pipe_output_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	pipe_output_open,
-	pipe_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
 	nullptr,
-	pipe_output_play,
+	&Wrapper::Play,
 	nullptr,
 	nullptr,
 	nullptr,

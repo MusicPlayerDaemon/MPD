@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,21 +20,21 @@
 #include "config.h"
 #include "RecorderOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
+#include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "config/ConfigError.hxx"
+#include "Log.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "fs/io/FileOutputStream.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
-#include "system/fd_util.h"
-#include "open.h"
 
 #include <assert.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <errno.h>
 
-struct RecorderOutput {
+class RecorderOutput {
+	friend struct AudioOutputWrapper<RecorderOutput>;
+
 	AudioOutput base;
 
 	/**
@@ -45,12 +45,12 @@ struct RecorderOutput {
 	/**
 	 * The destination file name.
 	 */
-	const char *path;
+	AllocatedPath path;
 
 	/**
-	 * The destination file descriptor.
+	 * The destination file.
 	 */
-	int fd;
+	FileOutputStream *file;
 
 	/**
 	 * The buffer for encoder_read().
@@ -58,23 +58,41 @@ struct RecorderOutput {
 	char buffer[32768];
 
 	RecorderOutput()
-		:base(recorder_output_plugin) {}
+		:base(recorder_output_plugin),
+		 encoder(nullptr),
+		 path(AllocatedPath::Null()) {}
+
+	~RecorderOutput() {
+		if (encoder != nullptr)
+			encoder->Dispose();
+	}
 
 	bool Initialize(const config_param &param, Error &error_r) {
 		return base.Configure(param, error_r);
 	}
 
+	static RecorderOutput *Create(const config_param &param, Error &error);
+
 	bool Configure(const config_param &param, Error &error);
 
-	bool WriteToFile(const void *data, size_t length, Error &error);
+	bool Open(AudioFormat &audio_format, Error &error);
+	void Close();
 
 	/**
 	 * Writes pending data from the encoder to the output file.
 	 */
 	bool EncoderToFile(Error &error);
-};
 
-static constexpr Domain recorder_output_domain("recorder_output");
+	void SendTag(const Tag &tag);
+
+	size_t Play(const void *chunk, size_t size, Error &error);
+
+private:
+	/**
+	 * Finish the encoder and commit the file.
+	 */
+	bool Commit(Error &error);
+};
 
 inline bool
 RecorderOutput::Configure(const config_param &param, Error &error)
@@ -90,9 +108,10 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 		return false;
 	}
 
-	path = param.GetBlockValue("path");
-	if (path == nullptr) {
-		error.Set(config_domain, "'path' not configured");
+	path = param.GetBlockPath("path", error);
+	if (path.IsNull()) {
+		if (!error.IsDefined())
+			error.Set(config_domain, "'path' not configured");
 		return false;
 	}
 
@@ -105,8 +124,8 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static AudioOutput *
-recorder_output_init(const config_param &param, Error &error)
+RecorderOutput *
+RecorderOutput::Create(const config_param &param, Error &error)
 {
 	RecorderOutput *recorder = new RecorderOutput();
 
@@ -120,47 +139,14 @@ recorder_output_init(const config_param &param, Error &error)
 		return nullptr;
 	}
 
-	return &recorder->base;
-}
-
-static void
-recorder_output_finish(AudioOutput *ao)
-{
-	RecorderOutput *recorder = (RecorderOutput *)ao;
-
-	encoder_finish(recorder->encoder);
-	delete recorder;
-}
-
-inline bool
-RecorderOutput::WriteToFile(const void *_data, size_t length, Error &error)
-{
-	assert(length > 0);
-
-	const uint8_t *data = (const uint8_t *)_data, *end = data + length;
-
-	while (true) {
-		ssize_t nbytes = write(fd, data, end - data);
-		if (nbytes > 0) {
-			data += nbytes;
-			if (data == end)
-				return true;
-		} else if (nbytes == 0) {
-			/* shouldn't happen for files */
-			error.Set(recorder_output_domain,
-				  "write() returned 0");
-			return false;
-		} else if (errno != EINTR) {
-			error.FormatErrno("Failed to write to '%s'", path);
-			return false;
-		}
-	}
+	return recorder;
 }
 
 inline bool
 RecorderOutput::EncoderToFile(Error &error)
 {
-	assert(fd >= 0);
+	assert(file != nullptr);
+	assert(file->IsDefined());
 
 	while (true) {
 		/* read from the encoder */
@@ -171,86 +157,98 @@ RecorderOutput::EncoderToFile(Error &error)
 
 		/* write everything into the file */
 
-		if (!WriteToFile(buffer, size, error))
+		if (!file->Write(buffer, size, error))
 			return false;
 	}
 }
 
-static bool
-recorder_output_open(AudioOutput *ao,
-		     AudioFormat &audio_format,
-		     Error &error)
+inline bool
+RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 {
-	RecorderOutput *recorder = (RecorderOutput *)ao;
-
 	/* create the output file */
 
-	recorder->fd = open_cloexec(recorder->path,
-				    O_CREAT|O_WRONLY|O_TRUNC|O_BINARY,
-				    0666);
-	if (recorder->fd < 0) {
-		error.FormatErrno("Failed to create '%s'", recorder->path);
+	file = new FileOutputStream(path, error);
+	if (!file->IsDefined()) {
+		delete file;
 		return false;
 	}
 
 	/* open the encoder */
 
-	if (!encoder_open(recorder->encoder, audio_format, error)) {
-		close(recorder->fd);
-		unlink(recorder->path);
+	if (!encoder->Open(audio_format, error)) {
+		delete file;
 		return false;
 	}
 
-	if (!recorder->EncoderToFile(error)) {
-		encoder_close(recorder->encoder);
-		close(recorder->fd);
-		unlink(recorder->path);
+	if (!EncoderToFile(error)) {
+		encoder->Close();
+		delete file;
 		return false;
 	}
 
 	return true;
 }
 
-static void
-recorder_output_close(AudioOutput *ao)
+inline bool
+RecorderOutput::Commit(Error &error)
 {
-	RecorderOutput *recorder = (RecorderOutput *)ao;
-
 	/* flush the encoder and write the rest to the file */
 
-	if (encoder_end(recorder->encoder, IgnoreError()))
-		recorder->EncoderToFile(IgnoreError());
+	bool success = encoder_end(encoder, error) &&
+		EncoderToFile(error);
 
 	/* now really close everything */
 
-	encoder_close(recorder->encoder);
+	encoder->Close();
 
-	close(recorder->fd);
+	if (success && !file->Commit(error))
+		success = false;
+
+	delete file;
+
+	return success;
 }
 
-static size_t
-recorder_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		     Error &error)
+inline void
+RecorderOutput::Close()
 {
-	RecorderOutput *recorder = (RecorderOutput *)ao;
+	Error error;
+	if (!Commit(error))
+		LogError(error);
+}
 
-	return encoder_write(recorder->encoder, chunk, size, error) &&
-		recorder->EncoderToFile(error)
+inline void
+RecorderOutput::SendTag(const Tag &tag)
+{
+	Error error;
+	if (!encoder_pre_tag(encoder, error) ||
+	    !EncoderToFile(error) ||
+	    !encoder_tag(encoder, tag, error))
+		LogError(error);
+}
+
+inline size_t
+RecorderOutput::Play(const void *chunk, size_t size, Error &error)
+{
+	return encoder_write(encoder, chunk, size, error) &&
+		EncoderToFile(error)
 		? size : 0;
 }
+
+typedef AudioOutputWrapper<RecorderOutput> Wrapper;
 
 const struct AudioOutputPlugin recorder_output_plugin = {
 	"recorder",
 	nullptr,
-	recorder_output_init,
-	recorder_output_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	recorder_output_open,
-	recorder_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
-	nullptr,
-	recorder_output_play,
+	&Wrapper::SendTag,
+	&Wrapper::Play,
 	nullptr,
 	nullptr,
 	nullptr,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -77,7 +77,10 @@ SongFilter::Item::Item(unsigned _tag, time_t _time)
 bool
 SongFilter::Item::StringMatch(const char *s) const
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(s != nullptr);
+#endif
 
 	if (fold_case) {
 		const std::string folded = IcuCaseFold(s);

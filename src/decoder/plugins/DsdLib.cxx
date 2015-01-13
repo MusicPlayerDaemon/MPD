@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,8 +29,10 @@
 #include "input/InputStream.hxx"
 #include "tag/TagId3.hxx"
 #include "util/Error.hxx"
+#include "util/Alloc.hxx"
 
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef ENABLE_ID3TAG
 #include <id3tag.h>
@@ -123,22 +125,27 @@ dsdlib_tag_id3(InputStream &is,
 
 	const id3_length_t count = size - offset;
 
-	/* Check and limit id3 tag size to prevent a stack overflow */
-	id3_byte_t dsdid3[4096];
-	if (count == 0 || count > sizeof(dsdid3))
+	if (count < 10 || count > 256*1024)
 		return;
 
-	if (!decoder_read_full(nullptr, is, dsdid3, count))
-		return;
+	id3_byte_t *const id3_buf = static_cast<id3_byte_t*>(xalloc(count));
 
-	struct id3_tag *id3_tag = id3_tag_parse(dsdid3, count);
-	if (id3_tag == nullptr)
+	if (!decoder_read_full(nullptr, is, id3_buf, count)) {
+		free(id3_buf);
 		return;
+	}
+
+	struct id3_tag *id3_tag = id3_tag_parse(id3_buf, count);
+	if (id3_tag == nullptr) {
+		free(id3_buf);
+		return;
+	}
 
 	scan_id3_tag(id3_tag, handler, handler_ctx);
 
 	id3_tag_delete(id3_tag);
 
+	free(id3_buf);
 	return;
 }
 #endif

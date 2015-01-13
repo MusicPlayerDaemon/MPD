@@ -12,13 +12,26 @@ ver 0.20 (not yet released)
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
 * output
+  - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX
+  - recorder: record tags
 * mixer
   - null: new plugin
 * reset song priority on playback
+* write database and state file atomically
 * remove dependency on GLib
 
-ver 0.19.7 (not yet released)
+ver 0.19.8 (not yet released)
+* input
+  - curl: fix bug after rewinding from end-of-file
+  - mms: reduce delay at the beginning of playback
+* decoder
+  - dsdiff, dsf: allow ID3 tags larger than 4 kB
+  - ffmpeg: support interleaved floating point
+* fix clang 3.6 warnings
+* fix build failure on NetBSD
+
+ver 0.19.7 (2014/12/17)
 * input
   - nfs: fix crash while canceling a failing file open operation
   - nfs: fix memory leak on connection failure
@@ -27,7 +40,10 @@ ver 0.19.7 (not yet released)
 * storage
   - nfs: implement I/O timeout (60 seconds)
 * playlist
+  - embcue: fix filename suffix detection
   - don't skip non-existent songs in "listplaylist"
+* decoder
+  - ffmpeg: fix time stamp underflow
 * fix memory allocator bug on Windows
 
 ver 0.19.6 (2014/12/08)
@@ -177,6 +193,15 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.22 (not yet released)
+* fix clang 3.6 warnings
+
+ver 0.18.21 (2014/12/17)
+* playlist
+  - embcue: fix filename suffix detection
+* decoder
+  - ffmpeg: fix time stamp underflow
 
 ver 0.18.20 (2014/12/08)
 * decoder

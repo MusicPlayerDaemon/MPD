@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -279,7 +279,7 @@ copy_tag_to_vorbis_comment(vorbis_comment *vc, const Tag &tag)
 }
 
 static bool
-vorbis_encoder_tag(Encoder *_encoder, const Tag *tag,
+vorbis_encoder_tag(Encoder *_encoder, const Tag &tag,
 		   gcc_unused Error &error)
 {
 	struct vorbis_encoder &encoder = *(struct vorbis_encoder *)_encoder;
@@ -288,7 +288,7 @@ vorbis_encoder_tag(Encoder *_encoder, const Tag *tag,
 	/* write the vorbis_comment object */
 
 	vorbis_comment_init(&comment);
-	copy_tag_to_vorbis_comment(&comment, *tag);
+	copy_tag_to_vorbis_comment(&comment, tag);
 
 	/* reset ogg_stream_state and begin a new stream */
 

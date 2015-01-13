@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -260,14 +260,13 @@ fifo_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		 Error &error)
 {
 	FifoOutput *fd = (FifoOutput *)ao;
-	ssize_t bytes;
 
 	if (!fd->timer->IsStarted())
 		fd->timer->Start();
 	fd->timer->Add(size);
 
 	while (true) {
-		bytes = write(fd->output, chunk, size);
+		ssize_t bytes = write(fd->output, chunk, size);
 		if (bytes > 0)
 			return (size_t)bytes;
 

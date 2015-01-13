@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -111,6 +111,9 @@ log_early_init(bool verbose)
 #ifdef ANDROID
 	(void)verbose;
 #else
+	/* force stderr to be line-buffered */
+	setvbuf(stderr, nullptr, _IOLBF, 0);
+
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
 #endif

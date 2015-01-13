@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,6 @@ struct LightSong;
 class Storage;
 
 class DetachedSong {
-	friend DetachedSong map_song_detach(const LightSong &song);
 	friend DetachedSong DatabaseDetachSong(const Storage &db,
 					       const LightSong &song);
 

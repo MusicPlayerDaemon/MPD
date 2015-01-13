@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "OpenALOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -33,10 +34,12 @@
 #include <OpenAL/alc.h>
 #endif
 
-/* should be enough for buffer size = 2048 */
-#define NUM_BUFFERS 16
+class OpenALOutput {
+	friend struct AudioOutputWrapper<OpenALOutput>;
 
-struct OpenALOutput {
+	/* should be enough for buffer size = 2048 */
+	static constexpr unsigned NUM_BUFFERS = 16;
+
 	AudioOutput base;
 
 	const char *device_name;
@@ -51,9 +54,47 @@ struct OpenALOutput {
 	OpenALOutput()
 		:base(openal_output_plugin) {}
 
-	bool Initialize(const config_param &param, Error &error_r) {
-		return base.Configure(param, error_r);
+	bool Configure(const config_param &param, Error &error);
+
+	static OpenALOutput *Create(const config_param &param, Error &error);
+
+	bool Open(AudioFormat &audio_format, Error &error);
+
+	void Close();
+
+	gcc_pure
+	unsigned Delay() const {
+		return filled < NUM_BUFFERS || HasProcessed()
+			? 0
+			/* we don't know exactly how long we must wait
+			   for the next buffer to finish, so this is a
+			   random guess: */
+			: 50;
 	}
+
+	size_t Play(const void *chunk, size_t size, Error &error);
+
+	void Cancel();
+
+private:
+	gcc_pure
+	ALint GetSourceI(ALenum param) const {
+		ALint value;
+		alGetSourcei(source, param, &value);
+		return value;
+	}
+
+	gcc_pure
+	bool HasProcessed() const {
+		return GetSourceI(AL_BUFFERS_PROCESSED) > 0;
+	}
+
+	gcc_pure
+	bool IsPlaying() const {
+		return GetSourceI(AL_SOURCE_STATE) == AL_PLAYING;
+	}
+
+	bool SetupContext(Error &error);
 };
 
 static constexpr Domain openal_output_domain("openal_output");
@@ -83,200 +124,154 @@ openal_audio_format(AudioFormat &audio_format)
 	}
 }
 
-gcc_pure
-static inline ALint
-openal_get_source_i(const OpenALOutput *od, ALenum param)
+inline bool
+OpenALOutput::SetupContext(Error &error)
 {
-	ALint value;
-	alGetSourcei(od->source, param, &value);
-	return value;
-}
+	device = alcOpenDevice(device_name);
 
-gcc_pure
-static inline bool
-openal_has_processed(const OpenALOutput *od)
-{
-	return openal_get_source_i(od, AL_BUFFERS_PROCESSED) > 0;
-}
-
-gcc_pure
-static inline ALint
-openal_is_playing(const OpenALOutput *od)
-{
-	return openal_get_source_i(od, AL_SOURCE_STATE) == AL_PLAYING;
-}
-
-static bool
-openal_setup_context(OpenALOutput *od, Error &error)
-{
-	od->device = alcOpenDevice(od->device_name);
-
-	if (od->device == nullptr) {
+	if (device == nullptr) {
 		error.Format(openal_output_domain,
 			     "Error opening OpenAL device \"%s\"",
-			     od->device_name);
+			     device_name);
 		return false;
 	}
 
-	od->context = alcCreateContext(od->device, nullptr);
+	context = alcCreateContext(device, nullptr);
 
-	if (od->context == nullptr) {
+	if (context == nullptr) {
 		error.Format(openal_output_domain,
 			     "Error creating context for \"%s\"",
-			     od->device_name);
-		alcCloseDevice(od->device);
+			     device_name);
+		alcCloseDevice(device);
 		return false;
 	}
 
 	return true;
 }
 
-static AudioOutput *
-openal_init(const config_param &param, Error &error)
+inline bool
+OpenALOutput::Configure(const config_param &param, Error &error)
 {
-	const char *device_name = param.GetBlockValue("device");
-	if (device_name == nullptr) {
-		device_name = alcGetString(nullptr, ALC_DEFAULT_DEVICE_SPECIFIER);
-	}
+	if (!base.Configure(param, error))
+		return false;
 
-	OpenALOutput *od = new OpenALOutput();
-	if (!od->Initialize(param, error)) {
-		delete od;
+	device_name = param.GetBlockValue("device");
+	if (device_name == nullptr)
+		device_name = alcGetString(nullptr,
+					   ALC_DEFAULT_DEVICE_SPECIFIER);
+
+	return true;
+}
+
+inline OpenALOutput *
+OpenALOutput::Create(const config_param &param, Error &error)
+{
+	OpenALOutput *oo = new OpenALOutput();
+
+	if (!oo->Configure(param, error)) {
+		delete oo;
 		return nullptr;
 	}
 
-	od->device_name = device_name;
-
-	return &od->base;
+	return oo;
 }
 
-static void
-openal_finish(AudioOutput *ao)
+inline bool
+OpenALOutput::Open(AudioFormat &audio_format, Error &error)
 {
-	OpenALOutput *od = (OpenALOutput *)ao;
+	format = openal_audio_format(audio_format);
 
-	delete od;
-}
-
-static bool
-openal_open(AudioOutput *ao, AudioFormat &audio_format,
-	    Error &error)
-{
-	OpenALOutput *od = (OpenALOutput *)ao;
-
-	od->format = openal_audio_format(audio_format);
-
-	if (!openal_setup_context(od, error)) {
+	if (!SetupContext(error))
 		return false;
-	}
 
-	alcMakeContextCurrent(od->context);
-	alGenBuffers(NUM_BUFFERS, od->buffers);
+	alcMakeContextCurrent(context);
+	alGenBuffers(NUM_BUFFERS, buffers);
 
 	if (alGetError() != AL_NO_ERROR) {
 		error.Set(openal_output_domain, "Failed to generate buffers");
 		return false;
 	}
 
-	alGenSources(1, &od->source);
+	alGenSources(1, &source);
 
 	if (alGetError() != AL_NO_ERROR) {
 		error.Set(openal_output_domain, "Failed to generate source");
-		alDeleteBuffers(NUM_BUFFERS, od->buffers);
+		alDeleteBuffers(NUM_BUFFERS, buffers);
 		return false;
 	}
 
-	od->filled = 0;
-	od->frequency = audio_format.sample_rate;
+	filled = 0;
+	frequency = audio_format.sample_rate;
 
 	return true;
 }
 
-static void
-openal_close(AudioOutput *ao)
+inline void
+OpenALOutput::Close()
 {
-	OpenALOutput *od = (OpenALOutput *)ao;
-
-	alcMakeContextCurrent(od->context);
-	alDeleteSources(1, &od->source);
-	alDeleteBuffers(NUM_BUFFERS, od->buffers);
-	alcDestroyContext(od->context);
-	alcCloseDevice(od->device);
+	alcMakeContextCurrent(context);
+	alDeleteSources(1, &source);
+	alDeleteBuffers(NUM_BUFFERS, buffers);
+	alcDestroyContext(context);
+	alcCloseDevice(device);
 }
 
-static unsigned
-openal_delay(AudioOutput *ao)
+inline size_t
+OpenALOutput::Play(const void *chunk, size_t size, gcc_unused Error &error)
 {
-	OpenALOutput *od = (OpenALOutput *)ao;
+	if (alcGetCurrentContext() != context)
+		alcMakeContextCurrent(context);
 
-	return od->filled < NUM_BUFFERS || openal_has_processed(od)
-		? 0
-		/* we don't know exactly how long we must wait for the
-		   next buffer to finish, so this is a random
-		   guess: */
-		: 50;
-}
-
-static size_t
-openal_play(AudioOutput *ao, const void *chunk, size_t size,
-	    gcc_unused Error &error)
-{
-	OpenALOutput *od = (OpenALOutput *)ao;
 	ALuint buffer;
-
-	if (alcGetCurrentContext() != od->context) {
-		alcMakeContextCurrent(od->context);
-	}
-
-	if (od->filled < NUM_BUFFERS) {
+	if (filled < NUM_BUFFERS) {
 		/* fill all buffers */
-		buffer = od->buffers[od->filled];
-		od->filled++;
+		buffer = buffers[filled];
+		filled++;
 	} else {
 		/* wait for processed buffer */
-		while (!openal_has_processed(od))
+		while (!HasProcessed())
 			usleep(10);
 
-		alSourceUnqueueBuffers(od->source, 1, &buffer);
+		alSourceUnqueueBuffers(source, 1, &buffer);
 	}
 
-	alBufferData(buffer, od->format, chunk, size, od->frequency);
-	alSourceQueueBuffers(od->source, 1, &buffer);
+	alBufferData(buffer, format, chunk, size, frequency);
+	alSourceQueueBuffers(source, 1, &buffer);
 
-	if (!openal_is_playing(od))
-		alSourcePlay(od->source);
+	if (!IsPlaying())
+		alSourcePlay(source);
 
 	return size;
 }
 
-static void
-openal_cancel(AudioOutput *ao)
+inline void
+OpenALOutput::Cancel()
 {
-	OpenALOutput *od = (OpenALOutput *)ao;
-
-	od->filled = 0;
-	alcMakeContextCurrent(od->context);
-	alSourceStop(od->source);
+	filled = 0;
+	alcMakeContextCurrent(context);
+	alSourceStop(source);
 
 	/* force-unqueue all buffers */
-	alSourcei(od->source, AL_BUFFER, 0);
-	od->filled = 0;
+	alSourcei(source, AL_BUFFER, 0);
+	filled = 0;
 }
+
+typedef AudioOutputWrapper<OpenALOutput> Wrapper;
 
 const struct AudioOutputPlugin openal_output_plugin = {
 	"openal",
 	nullptr,
-	openal_init,
-	openal_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	openal_open,
-	openal_close,
-	openal_delay,
+	&Wrapper::Open,
+	&Wrapper::Close,
+	&Wrapper::Delay,
 	nullptr,
-	openal_play,
+	&Wrapper::Play,
 	nullptr,
-	openal_cancel,
+	&Wrapper::Cancel,
 	nullptr,
 	nullptr,
 };

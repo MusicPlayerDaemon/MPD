@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * Copyright (C) 2010-2011 Philipp 'ph3-der-loewe' Schafft
  * Copyright (C) 2010-2011 Hans-Kristian 'maister' Arntzen
  *
@@ -21,6 +21,7 @@
 #include "config.h"
 #include "RoarOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Error.hxx"
@@ -36,6 +37,8 @@
 #undef new
 
 class RoarOutput {
+	friend struct AudioOutputWrapper<RoarOutput>;
+
 	AudioOutput base;
 
 	std::string host, name;
@@ -147,14 +150,6 @@ roar_init(const config_param &param, Error &error)
 }
 
 static void
-roar_finish(AudioOutput *ao)
-{
-	RoarOutput *self = (RoarOutput *)ao;
-
-	delete self;
-}
-
-static void
 roar_use_audio_format(struct roar_audio_info *info,
 		      AudioFormat &audio_format)
 {
@@ -221,14 +216,6 @@ RoarOutput::Open(AudioFormat &audio_format, Error &error)
 	return true;
 }
 
-static bool
-roar_open(AudioOutput *ao, AudioFormat &audio_format, Error &error)
-{
-	RoarOutput *self = (RoarOutput *)ao;
-
-	return self->Open(audio_format, error);
-}
-
 inline void
 RoarOutput::Close()
 {
@@ -240,13 +227,6 @@ RoarOutput::Close()
 		roar_vs_close(vss, ROAR_VS_TRUE, &err);
 	vss = nullptr;
 	roar_disconnect(&con);
-}
-
-static void
-roar_close(AudioOutput *ao)
-{
-	RoarOutput *self = (RoarOutput *)ao;
-	self->Close();
 }
 
 inline void
@@ -277,14 +257,6 @@ RoarOutput::Cancel()
 	alive = true;
 }
 
-static void
-roar_cancel(AudioOutput *ao)
-{
-	RoarOutput *self = (RoarOutput *)ao;
-
-	self->Cancel();
-}
-
 inline size_t
 RoarOutput::Play(const void *chunk, size_t size, Error &error)
 {
@@ -300,14 +272,6 @@ RoarOutput::Play(const void *chunk, size_t size, Error &error)
 	}
 
 	return nbytes;
-}
-
-static size_t
-roar_play(AudioOutput *ao, const void *chunk, size_t size,
-	  Error &error)
-{
-	RoarOutput *self = (RoarOutput *)ao;
-	return self->Play(chunk, size, error);
 }
 
 static const char*
@@ -407,26 +371,28 @@ RoarOutput::SendTag(const Tag &tag)
 }
 
 static void
-roar_send_tag(AudioOutput *ao, const Tag *meta)
+roar_send_tag(AudioOutput *ao, const Tag &meta)
 {
 	RoarOutput *self = (RoarOutput *)ao;
-	self->SendTag(*meta);
+	self->SendTag(meta);
 }
+
+typedef AudioOutputWrapper<RoarOutput> Wrapper;
 
 const struct AudioOutputPlugin roar_output_plugin = {
 	"roar",
 	nullptr,
 	roar_init,
-	roar_finish,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	roar_open,
-	roar_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
 	roar_send_tag,
-	roar_play,
+	&Wrapper::Play,
 	nullptr,
-	roar_cancel,
+	&Wrapper::Cancel,
 	nullptr,
 	&roar_mixer_plugin,
 };

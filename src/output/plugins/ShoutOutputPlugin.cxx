@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ShoutOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "config/ConfigError.hxx"
@@ -109,7 +110,7 @@ ShoutOutput::Configure(const config_param &param, Error &error)
 	if (!audio_format.IsFullyDefined()) {
 		error.Set(config_domain,
 			  "Need full audio format specification");
-		return nullptr;
+		return false;
 	}
 
 	const char *host = require_block_string(param, "host");
@@ -345,7 +346,7 @@ static void close_shout_conn(ShoutOutput * sd)
 		if (encoder_end(sd->encoder, IgnoreError()))
 			write_page(sd, IgnoreError());
 
-		encoder_close(sd->encoder);
+		sd->encoder->Close();
 	}
 
 	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
@@ -361,7 +362,7 @@ my_shout_finish_driver(AudioOutput *ao)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
 
-	encoder_finish(sd->encoder);
+	sd->encoder->Dispose();
 
 	delete sd;
 
@@ -415,13 +416,13 @@ my_shout_open_device(AudioOutput *ao, AudioFormat &audio_format,
 	if (!shout_connect(sd, error))
 		return false;
 
-	if (!encoder_open(sd->encoder, audio_format, error)) {
+	if (!sd->encoder->Open(audio_format, error)) {
 		shout_close(sd->shout_conn);
 		return false;
 	}
 
 	if (!write_page(sd, error)) {
-		encoder_close(sd->encoder);
+		sd->encoder->Close();
 		shout_close(sd->shout_conn);
 		return false;
 	}
@@ -462,7 +463,7 @@ my_shout_pause(AudioOutput *ao)
 }
 
 static void
-shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
+shout_tag_to_metadata(const Tag &tag, char *dest, size_t size)
 {
 	char artist[size];
 	char title[size];
@@ -470,7 +471,7 @@ shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
 	artist[0] = 0;
 	title[0] = 0;
 
-	for (const auto &item : *tag) {
+	for (const auto &item : tag) {
 		switch (item.type) {
 		case TAG_ARTIST:
 			strncpy(artist, item.value, size);
@@ -488,7 +489,7 @@ shout_tag_to_metadata(const Tag *tag, char *dest, size_t size)
 }
 
 static void my_shout_set_tag(AudioOutput *ao,
-			     const Tag *tag)
+			     const Tag &tag)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
 

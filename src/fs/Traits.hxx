@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -57,7 +57,11 @@ struct PathTraitsFS {
 
 	gcc_pure gcc_nonnull_all
 	static const_pointer FindLastSeparator(const_pointer p) {
+#if !CLANG_CHECK_VERSION(3,6)
+		/* disabled on clang due to -Wtautological-pointer-compare */
 		assert(p != nullptr);
+#endif
+
 #ifdef WIN32
 		const_pointer pos = p + GetLength(p);
 		while (p != pos && !IsSeparator(*pos))
@@ -77,7 +81,11 @@ struct PathTraitsFS {
 
 	gcc_pure gcc_nonnull_all
 	static bool IsAbsolute(const_pointer p) {
+#if !CLANG_CHECK_VERSION(3,6)
+		/* disabled on clang due to -Wtautological-pointer-compare */
 		assert(p != nullptr);
+#endif
+
 #ifdef WIN32
 		if (IsDrive(p) && IsSeparator(p[2]))
 			return true;
@@ -147,7 +155,11 @@ struct PathTraitsUTF8 {
 
 	gcc_pure gcc_nonnull_all
 	static const_pointer FindLastSeparator(const_pointer p) {
+#if !CLANG_CHECK_VERSION(3,6)
+		/* disabled on clang due to -Wtautological-pointer-compare */
 		assert(p != nullptr);
+#endif
+
 		return strrchr(p, SEPARATOR);
 	}
 
@@ -160,7 +172,11 @@ struct PathTraitsUTF8 {
 
 	gcc_pure gcc_nonnull_all
 	static bool IsAbsolute(const_pointer p) {
+#if !CLANG_CHECK_VERSION(3,6)
+		/* disabled on clang due to -Wtautological-pointer-compare */
 		assert(p != nullptr);
+#endif
+
 #ifdef WIN32
 		if (IsDrive(p) && IsSeparator(p[2]))
 			return true;

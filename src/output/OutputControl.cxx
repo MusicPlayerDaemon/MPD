@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -46,7 +46,7 @@ AudioOutput::WaitForCommand()
 }
 
 void
-AudioOutput::CommandAsync(audio_output_command cmd)
+AudioOutput::CommandAsync(Command cmd)
 {
 	assert(IsCommandFinished());
 
@@ -55,14 +55,14 @@ AudioOutput::CommandAsync(audio_output_command cmd)
 }
 
 void
-AudioOutput::CommandWait(audio_output_command cmd)
+AudioOutput::CommandWait(Command cmd)
 {
 	CommandAsync(cmd);
 	WaitForCommand();
 }
 
 void
-AudioOutput::LockCommandWait(audio_output_command cmd)
+AudioOutput::LockCommandWait(Command cmd)
 {
 	const ScopeLock protect(mutex);
 	CommandWait(cmd);
@@ -92,7 +92,7 @@ AudioOutput::LockEnableWait()
 		StartThread();
 	}
 
-	LockCommandWait(AO_COMMAND_ENABLE);
+	LockCommandWait(Command::ENABLE);
 }
 
 void
@@ -109,7 +109,7 @@ AudioOutput::LockDisableWait()
 		return;
 	}
 
-	LockCommandWait(AO_COMMAND_DISABLE);
+	LockCommandWait(Command::DISABLE);
 }
 
 inline bool
@@ -134,7 +134,7 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 
 			/* we're not using audio_output_cancel() here,
 			   because that function is asynchronous */
-			CommandWait(AO_COMMAND_CANCEL);
+			CommandWait(Command::CANCEL);
 		}
 
 		return true;
@@ -148,7 +148,9 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	if (!thread.IsDefined())
 		StartThread();
 
-	CommandWait(open ? AO_COMMAND_REOPEN : AO_COMMAND_OPEN);
+	CommandWait(open
+		    ? Command::REOPEN
+		    : Command::OPEN);
 	const bool open2 = open;
 
 	if (open2 && mixer != nullptr) {
@@ -172,7 +174,7 @@ AudioOutput::CloseWait()
 	assert(!open || !fail_timer.IsDefined());
 
 	if (open)
-		CommandWait(AO_COMMAND_CLOSE);
+		CommandWait(Command::CLOSE);
 	else
 		fail_timer.Reset();
 }
@@ -219,7 +221,7 @@ AudioOutput::LockPauseAsync()
 
 	assert(allow_play);
 	if (IsOpen())
-		CommandAsync(AO_COMMAND_PAUSE);
+		CommandAsync(Command::PAUSE);
 }
 
 void
@@ -229,7 +231,7 @@ AudioOutput::LockDrainAsync()
 
 	assert(allow_play);
 	if (IsOpen())
-		CommandAsync(AO_COMMAND_DRAIN);
+		CommandAsync(Command::DRAIN);
 }
 
 void
@@ -239,7 +241,7 @@ AudioOutput::LockCancelAsync()
 
 	if (IsOpen()) {
 		allow_play = false;
-		CommandAsync(AO_COMMAND_CANCEL);
+		CommandAsync(Command::CANCEL);
 	}
 }
 
@@ -277,7 +279,7 @@ AudioOutput::StopThread()
 	assert(thread.IsDefined());
 	assert(allow_play);
 
-	LockCommandWait(AO_COMMAND_KILL);
+	LockCommandWait(Command::KILL);
 	thread.Join();
 }
 

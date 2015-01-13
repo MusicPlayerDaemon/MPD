@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -76,7 +76,10 @@ idle_get_names(void)
 unsigned
 idle_parse_name(const char *name)
 {
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(name != nullptr);
+#endif
 
 	for (unsigned i = 0; idle_names[i] != nullptr; ++i)
 		if (StringEqualsCaseASCII(name, idle_names[i]))

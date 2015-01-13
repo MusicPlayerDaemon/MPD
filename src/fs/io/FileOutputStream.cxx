@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 #include "config.h"
 #include "FileOutputStream.hxx"
 #include "fs/FileSystem.hxx"
-#include "system/fd_util.h"
 #include "util/Error.hxx"
 
 #ifdef WIN32
@@ -80,14 +79,47 @@ FileOutputStream::Cancel()
 #include <unistd.h>
 #include <errno.h>
 
-FileOutputStream::FileOutputStream(Path _path, Error &error)
-	:path(_path),
-	 fd(open_cloexec(path.c_str(),
-			 O_WRONLY|O_CREAT|O_TRUNC,
-			 0666))
+#ifdef HAVE_LINKAT
+#ifndef O_TMPFILE
+/* supported since Linux 3.11 */
+#define __O_TMPFILE 020000000
+#define O_TMPFILE (__O_TMPFILE | O_DIRECTORY)
+#include <stdio.h>
+#endif
+
+/**
+ * Open a file using Linux's O_TMPFILE for writing the given file.
+ */
+static int
+OpenTempFile(Path path)
 {
-	if (fd < 0)
-		error.FormatErrno("Failed to create %s", path.c_str());
+	const auto directory = path.GetDirectoryName();
+	if (directory.IsNull())
+		return -1;
+
+	return OpenFile(directory, O_TMPFILE|O_WRONLY, 0666);
+}
+
+#endif /* HAVE_LINKAT */
+
+FileOutputStream::FileOutputStream(Path _path, Error &error)
+	:path(_path)
+{
+#ifdef HAVE_LINKAT
+	/* try Linux's O_TMPFILE first */
+	fd = OpenTempFile(path);
+	is_tmpfile = fd >= 0;
+	if (!is_tmpfile) {
+#endif
+		/* fall back to plain POSIX */
+		fd = OpenFile(path,
+			      O_WRONLY|O_CREAT|O_TRUNC,
+			      0666);
+		if (fd < 0)
+			error.FormatErrno("Failed to create %s", path.c_str());
+#ifdef HAVE_LINKAT
+	}
+#endif
 }
 
 bool
@@ -113,6 +145,22 @@ FileOutputStream::Commit(Error &error)
 {
 	assert(IsDefined());
 
+#if HAVE_LINKAT
+	if (is_tmpfile) {
+		RemoveFile(path);
+
+		/* hard-link the temporary file to the final path */
+		char fd_path[64];
+		snprintf(fd_path, sizeof(fd_path), "/proc/self/fd/%d", fd);
+		if (linkat(AT_FDCWD, fd_path, AT_FDCWD, path.c_str(),
+			   AT_SYMLINK_FOLLOW) < 0) {
+			error.FormatErrno("Failed to commit %s", path.c_str());
+			close(fd);
+			return false;
+		}
+	}
+#endif
+
 	bool success = close(fd) == 0;
 	fd = -1;
 	if (!success)
@@ -129,7 +177,10 @@ FileOutputStream::Cancel()
 	close(fd);
 	fd = -1;
 
-	RemoveFile(path);
+#ifdef HAVE_LINKAT
+	if (!is_tmpfile)
+#endif
+		RemoveFile(path);
 }
 
 #endif

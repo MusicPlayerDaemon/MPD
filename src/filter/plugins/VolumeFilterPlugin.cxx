@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,10 +43,11 @@ public:
 		pv.SetVolume(_volume);
 	}
 
-	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
-	virtual void Close();
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-					    Error &error) override;
+	/* virtual methods from class Filter */
+	AudioFormat Open(AudioFormat &af, Error &error) override;
+	void Close() override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
+				    Error &error) override;
 };
 
 static constexpr Domain volume_domain("pcm_volume");

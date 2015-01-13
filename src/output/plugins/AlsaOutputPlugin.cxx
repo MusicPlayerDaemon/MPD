@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "AlsaOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
 #include "config/ConfigError.hxx"
@@ -131,16 +132,47 @@ struct AlsaOutput {
 		 mode(0), writei(snd_pcm_writei) {
 	}
 
+	~AlsaOutput() {
+		/* free libasound's config cache */
+		snd_config_update_free_global();
+	}
+
+	gcc_pure
+	const char *GetDevice() {
+		return device.empty() ? default_device : device.c_str();
+	}
+
 	bool Configure(const config_param &param, Error &error);
+	static AlsaOutput *Create(const config_param &param, Error &error);
+
+	bool Enable(Error &error);
+	void Disable();
+
+	bool Open(AudioFormat &audio_format, Error &error);
+	void Close();
+
+	size_t Play(const void *chunk, size_t size, Error &error);
+	void Drain();
+	void Cancel();
+
+private:
+	bool SetupDop(AudioFormat audio_format,
+		      bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
+		      Error &error);
+	bool SetupOrDop(AudioFormat &audio_format, Error &error);
+
+	int Recover(int err);
+
+	/**
+	 * Write silence to the ALSA device.
+	 */
+	void WriteSilence(snd_pcm_uframes_t nframes) {
+		writei(pcm, silence, nframes);
+	}
+
 };
 
 static constexpr Domain alsa_output_domain("alsa_output");
-
-static const char *
-alsa_device(const AlsaOutput *ad)
-{
-	return ad->device.empty() ? default_device : ad->device.c_str();
-}
 
 inline bool
 AlsaOutput::Configure(const config_param &param, Error &error)
@@ -178,8 +210,8 @@ AlsaOutput::Configure(const config_param &param, Error &error)
 	return true;
 }
 
-static AudioOutput *
-alsa_init(const config_param &param, Error &error)
+inline AlsaOutput *
+AlsaOutput::Create(const config_param &param, Error &error)
 {
 	AlsaOutput *ad = new AlsaOutput();
 
@@ -188,35 +220,20 @@ alsa_init(const config_param &param, Error &error)
 		return nullptr;
 	}
 
-	return &ad->base;
+	return ad;
 }
 
-static void
-alsa_finish(AudioOutput *ao)
+inline bool
+AlsaOutput::Enable(gcc_unused Error &error)
 {
-	AlsaOutput *ad = (AlsaOutput *)ao;
-
-	delete ad;
-
-	/* free libasound's config cache */
-	snd_config_update_free_global();
-}
-
-static bool
-alsa_output_enable(AudioOutput *ao, gcc_unused Error &error)
-{
-	AlsaOutput *ad = (AlsaOutput *)ao;
-
-	ad->pcm_export.Construct();
+	pcm_export.Construct();
 	return true;
 }
 
-static void
-alsa_output_disable(AudioOutput *ao)
+inline void
+AlsaOutput::Disable()
 {
-	AlsaOutput *ad = (AlsaOutput *)ao;
-
-	ad->pcm_export.Destruct();
+	pcm_export.Destruct();
 }
 
 static bool
@@ -450,7 +467,7 @@ configure_hw:
 		if (err < 0) {
 			FormatWarning(alsa_output_domain,
 				      "Cannot set mmap'ed mode on ALSA device \"%s\": %s",
-				      alsa_device(ad), snd_strerror(-err));
+				      ad->GetDevice(), snd_strerror(-err));
 			LogWarning(alsa_output_domain,
 				   "Falling back to direct write mode");
 			ad->use_mmap = false;
@@ -472,7 +489,7 @@ configure_hw:
 	if (err < 0) {
 		error.Format(alsa_output_domain, err,
 			     "ALSA device \"%s\" does not support format %s: %s",
-			     alsa_device(ad),
+			     ad->GetDevice(),
 			     sample_format_to_string(audio_format.format),
 			     snd_strerror(-err));
 		return false;
@@ -489,7 +506,7 @@ configure_hw:
 	if (err < 0) {
 		error.Format(alsa_output_domain, err,
 			     "ALSA device \"%s\" does not support %i channels: %s",
-			     alsa_device(ad), (int)audio_format.channels,
+			     ad->GetDevice(), (int)audio_format.channels,
 			     snd_strerror(-err));
 		return false;
 	}
@@ -500,7 +517,7 @@ configure_hw:
 	if (err < 0 || sample_rate == 0) {
 		error.Format(alsa_output_domain, err,
 			     "ALSA device \"%s\" does not support %u Hz audio",
-			     alsa_device(ad), audio_format.sample_rate);
+			     ad->GetDevice(), audio_format.sample_rate);
 		return false;
 	}
 	audio_format.sample_rate = sample_rate;
@@ -631,16 +648,16 @@ configure_hw:
 error:
 	error.Format(alsa_output_domain, err,
 		     "Error opening ALSA device \"%s\" (%s): %s",
-		     alsa_device(ad), cmd, snd_strerror(-err));
+		     ad->GetDevice(), cmd, snd_strerror(-err));
 	return false;
 }
 
-static bool
-alsa_setup_dop(AlsaOutput *ad, const AudioFormat audio_format,
-	       bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
-	       Error &error)
+inline bool
+AlsaOutput::SetupDop(const AudioFormat audio_format,
+		     bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
+		     Error &error)
 {
-	assert(ad->dop);
+	assert(dop);
 	assert(audio_format.format == SampleFormat::DSD);
 
 	/* pass 24 bit to alsa_setup() */
@@ -651,7 +668,7 @@ alsa_setup_dop(AlsaOutput *ad, const AudioFormat audio_format,
 
 	const AudioFormat check = dop_format;
 
-	if (!alsa_setup(ad, dop_format, packed_r, reverse_endian_r, error))
+	if (!alsa_setup(this, dop_format, packed_r, reverse_endian_r, error))
 		return false;
 
 	/* if the device allows only 32 bit, shift all DoP
@@ -668,102 +685,91 @@ alsa_setup_dop(AlsaOutput *ad, const AudioFormat audio_format,
 		   for DSD over USB */
 		error.Format(alsa_output_domain,
 			     "Failed to configure DSD-over-PCM on ALSA device \"%s\"",
-			     alsa_device(ad));
-		delete[] ad->silence;
+			     GetDevice());
+		delete[] silence;
 		return false;
 	}
 
 	return true;
 }
 
-static bool
-alsa_setup_or_dop(AlsaOutput *ad, AudioFormat &audio_format,
-		  Error &error)
+inline bool
+AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
 {
 	bool shift8 = false, packed, reverse_endian;
 
-	const bool dop = ad->dop &&
+	const bool dop2 = dop &&
 		audio_format.format == SampleFormat::DSD;
-	const bool success = dop
-		? alsa_setup_dop(ad, audio_format,
-				 &shift8, &packed, &reverse_endian,
-				 error)
-		: alsa_setup(ad, audio_format, &packed, &reverse_endian,
+	const bool success = dop2
+		? SetupDop(audio_format,
+			   &shift8, &packed, &reverse_endian,
+			   error)
+		: alsa_setup(this, audio_format, &packed, &reverse_endian,
 			     error);
 	if (!success)
 		return false;
 
-	ad->pcm_export->Open(audio_format.format,
-			     audio_format.channels,
-			     dop, shift8, packed, reverse_endian);
+	pcm_export->Open(audio_format.format,
+			 audio_format.channels,
+			 dop2, shift8, packed, reverse_endian);
 	return true;
 }
 
-static bool
-alsa_open(AudioOutput *ao, AudioFormat &audio_format, Error &error)
+inline bool
+AlsaOutput::Open(AudioFormat &audio_format, Error &error)
 {
-	AlsaOutput *ad = (AlsaOutput *)ao;
-
-	int err = snd_pcm_open(&ad->pcm, alsa_device(ad),
-			       SND_PCM_STREAM_PLAYBACK, ad->mode);
+	int err = snd_pcm_open(&pcm, GetDevice(),
+			       SND_PCM_STREAM_PLAYBACK, mode);
 	if (err < 0) {
 		error.Format(alsa_output_domain, err,
 			    "Failed to open ALSA device \"%s\": %s",
-			    alsa_device(ad), snd_strerror(err));
+			    GetDevice(), snd_strerror(err));
 		return false;
 	}
 
 	FormatDebug(alsa_output_domain, "opened %s type=%s",
-		    snd_pcm_name(ad->pcm),
-		    snd_pcm_type_name(snd_pcm_type(ad->pcm)));
+		    snd_pcm_name(pcm),
+		    snd_pcm_type_name(snd_pcm_type(pcm)));
 
-	if (!alsa_setup_or_dop(ad, audio_format, error)) {
-		snd_pcm_close(ad->pcm);
+	if (!SetupOrDop(audio_format, error)) {
+		snd_pcm_close(pcm);
 		return false;
 	}
 
-	ad->in_frame_size = audio_format.GetFrameSize();
-	ad->out_frame_size = ad->pcm_export->GetFrameSize(audio_format);
+	in_frame_size = audio_format.GetFrameSize();
+	out_frame_size = pcm_export->GetFrameSize(audio_format);
 
-	ad->must_prepare = false;
+	must_prepare = false;
 
 	return true;
 }
 
-/**
- * Write silence to the ALSA device.
- */
-static void
-alsa_write_silence(AlsaOutput *ad, snd_pcm_uframes_t nframes)
-{
-	ad->writei(ad->pcm, ad->silence, nframes);
-}
-
-static int
-alsa_recover(AlsaOutput *ad, int err)
+inline int
+AlsaOutput::Recover(int err)
 {
 	if (err == -EPIPE) {
 		FormatDebug(alsa_output_domain,
-			    "Underrun on ALSA device \"%s\"", alsa_device(ad));
+			    "Underrun on ALSA device \"%s\"",
+			    GetDevice());
 	} else if (err == -ESTRPIPE) {
 		FormatDebug(alsa_output_domain,
 			    "ALSA device \"%s\" was suspended",
-			    alsa_device(ad));
+			    GetDevice());
 	}
 
-	switch (snd_pcm_state(ad->pcm)) {
+	switch (snd_pcm_state(pcm)) {
 	case SND_PCM_STATE_PAUSED:
-		err = snd_pcm_pause(ad->pcm, /* disable */ 0);
+		err = snd_pcm_pause(pcm, /* disable */ 0);
 		break;
 	case SND_PCM_STATE_SUSPENDED:
-		err = snd_pcm_resume(ad->pcm);
+		err = snd_pcm_resume(pcm);
 		if (err == -EAGAIN)
 			return 0;
 		/* fall-through to snd_pcm_prepare: */
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
-		ad->period_position = 0;
-		err = snd_pcm_prepare(ad->pcm);
+		period_position = 0;
+		err = snd_pcm_prepare(pcm);
 		break;
 	case SND_PCM_STATE_DISCONNECTED:
 		break;
@@ -779,67 +785,58 @@ alsa_recover(AlsaOutput *ad, int err)
 	return err;
 }
 
-static void
-alsa_drain(AudioOutput *ao)
+inline void
+AlsaOutput::Drain()
 {
-	AlsaOutput *ad = (AlsaOutput *)ao;
-
-	if (snd_pcm_state(ad->pcm) != SND_PCM_STATE_RUNNING)
+	if (snd_pcm_state(pcm) != SND_PCM_STATE_RUNNING)
 		return;
 
-	if (ad->period_position > 0) {
+	if (period_position > 0) {
 		/* generate some silence to finish the partial
 		   period */
 		snd_pcm_uframes_t nframes =
-			ad->period_frames - ad->period_position;
-		alsa_write_silence(ad, nframes);
+			period_frames - period_position;
+		WriteSilence(nframes);
 	}
 
-	snd_pcm_drain(ad->pcm);
+	snd_pcm_drain(pcm);
 
-	ad->period_position = 0;
+	period_position = 0;
 }
 
-static void
-alsa_cancel(AudioOutput *ao)
+inline void
+AlsaOutput::Cancel()
 {
-	AlsaOutput *ad = (AlsaOutput *)ao;
+	period_position = 0;
+	must_prepare = true;
 
-	ad->period_position = 0;
-	ad->must_prepare = true;
-
-	snd_pcm_drop(ad->pcm);
+	snd_pcm_drop(pcm);
 }
 
-static void
-alsa_close(AudioOutput *ao)
+inline void
+AlsaOutput::Close()
 {
-	AlsaOutput *ad = (AlsaOutput *)ao;
-
-	snd_pcm_close(ad->pcm);
-	delete[] ad->silence;
+	snd_pcm_close(pcm);
+	delete[] silence;
 }
 
-static size_t
-alsa_play(AudioOutput *ao, const void *chunk, size_t size,
-	  Error &error)
+inline size_t
+AlsaOutput::Play(const void *chunk, size_t size, Error &error)
 {
-	AlsaOutput *ad = (AlsaOutput *)ao;
-
 	assert(size > 0);
-	assert(size % ad->in_frame_size == 0);
+	assert(size % in_frame_size == 0);
 
-	if (ad->must_prepare) {
-		ad->must_prepare = false;
+	if (must_prepare) {
+		must_prepare = false;
 
-		int err = snd_pcm_prepare(ad->pcm);
+		int err = snd_pcm_prepare(pcm);
 		if (err < 0) {
 			error.Set(alsa_output_domain, err, snd_strerror(-err));
 			return 0;
 		}
 	}
 
-	const auto e = ad->pcm_export->Export({chunk, size});
+	const auto e = pcm_export->Export({chunk, size});
 	if (e.size == 0)
 		/* the DoP (DSD over PCM) filter converts two frames
 		   at a time and ignores the last odd frame; if there
@@ -852,43 +849,45 @@ alsa_play(AudioOutput *ao, const void *chunk, size_t size,
 	chunk = e.data;
 	size = e.size;
 
-	assert(size % ad->out_frame_size == 0);
+	assert(size % out_frame_size == 0);
 
-	size /= ad->out_frame_size;
+	size /= out_frame_size;
 	assert(size > 0);
 
 	while (true) {
-		snd_pcm_sframes_t ret = ad->writei(ad->pcm, chunk, size);
+		snd_pcm_sframes_t ret = writei(pcm, chunk, size);
 		if (ret > 0) {
-			ad->period_position = (ad->period_position + ret)
-				% ad->period_frames;
+			period_position = (period_position + ret)
+				% period_frames;
 
-			size_t bytes_written = ret * ad->out_frame_size;
-			return ad->pcm_export->CalcSourceSize(bytes_written);
+			size_t bytes_written = ret * out_frame_size;
+			return pcm_export->CalcSourceSize(bytes_written);
 		}
 
 		if (ret < 0 && ret != -EAGAIN && ret != -EINTR &&
-		    alsa_recover(ad, ret) < 0) {
+		    Recover(ret) < 0) {
 			error.Set(alsa_output_domain, ret, snd_strerror(-ret));
 			return 0;
 		}
 	}
 }
 
+typedef AudioOutputWrapper<AlsaOutput> Wrapper;
+
 const struct AudioOutputPlugin alsa_output_plugin = {
 	"alsa",
 	alsa_test_default_device,
-	alsa_init,
-	alsa_finish,
-	alsa_output_enable,
-	alsa_output_disable,
-	alsa_open,
-	alsa_close,
+	&Wrapper::Init,
+	&Wrapper::Finish,
+	&Wrapper::Enable,
+	&Wrapper::Disable,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
 	nullptr,
-	alsa_play,
-	alsa_drain,
-	alsa_cancel,
+	&Wrapper::Play,
+	&Wrapper::Drain,
+	&Wrapper::Cancel,
 	nullptr,
 
 	&alsa_mixer_plugin,

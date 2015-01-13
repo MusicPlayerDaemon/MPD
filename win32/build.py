@@ -8,6 +8,12 @@ import re
 
 configure_args = sys.argv[1:]
 
+host_arch = 'i686-w64-mingw32'
+
+if configure_args[0] == '--64':
+    configure_args = configure_args[1:]
+    host_arch = 'x86_64-w64-mingw32'
+
 # the path to the MPD sources
 mpd_path = os.path.dirname(os.path.dirname(sys.argv[0]))
 
@@ -15,17 +21,14 @@ mpd_path = os.path.dirname(os.path.dirname(sys.argv[0]))
 lib_path = os.path.abspath('lib')
 tarball_path = lib_path
 src_path = os.path.join(lib_path, 'src')
-build_path = os.path.join(lib_path, 'build')
-root_path = os.path.join(lib_path, 'root')
-
-# build host configuration
-build_arch = 'linux-x86_64'
+arch_path = os.path.join(lib_path, host_arch)
+build_path = os.path.join(arch_path, 'build')
+root_path = os.path.join(arch_path, 'root')
 
 # redirect pkg-config to use our root directory instead of the default
 # one on the build host
 os.environ['PKG_CONFIG_LIBDIR'] = os.path.join(root_path, 'lib/pkgconfig')
 
-host_arch = 'i686-w64-mingw32'
 gcc_toolchain = '/usr'
 
 def select_toolchain():

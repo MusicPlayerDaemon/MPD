@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@ const ArchivePlugin *const archive_plugins[] = {
 #ifdef ENABLE_ZZIP
 	&zzip_archive_plugin,
 #endif
-#ifdef HAVE_ISO9660
+#ifdef ENABLE_ISO9660
 	&iso9660_archive_plugin,
 #endif
 	nullptr
