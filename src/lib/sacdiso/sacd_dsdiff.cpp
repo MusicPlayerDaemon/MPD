@@ -19,11 +19,12 @@
 
 #include "config.h"
 
-#ifdef HAVE_ID3TAG
+#include "tag/TagId3.hxx"
+
+#ifdef ENABLE_ID3TAG
 #include <id3tag.h>
 #endif
 
-#include "tag/TagId3.hxx"
 #include "sacd_dsdiff.h"
 
 #define MARK_TIME(m) ((double)m.hours * 60 * 60 + (double)m.minutes * 60 + (double)m.seconds + ((double)m.samples + (double)m.offset) / (double)samplerate)
@@ -453,7 +454,7 @@ uint64_t sacd_dsdiff_t::get_dsti_for_frame(uint32_t frame_nr) {
 }
 
 void sacd_dsdiff_t::get_id3tags(uint32_t _track_index, const struct tag_handler* handler, void* handler_ctx) {
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	if (id3tags[_track_index].size > 0) {
 		id3_byte_t* dsdid3 = (id3_byte_t*)&id3tags[_track_index].data[0];
 		const id3_length_t count = id3tags[_track_index].size;
@@ -467,7 +468,7 @@ void sacd_dsdiff_t::get_id3tags(uint32_t _track_index, const struct tag_handler*
 }
 
 void sacd_dsdiff_t::index_id3tags() {
-#ifdef HAVE_ID3TAG
+#ifdef ENABLE_ID3TAG
 	/*
 	for (uint32_t i = 0; i < id3tags.size(); i++) {
 		if (id3tags[i].size > 0) {

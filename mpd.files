@@ -222,8 +222,6 @@ src/decoder/plugins/MikmodDecoderPlugin.cxx
 src/decoder/plugins/MikmodDecoderPlugin.hxx
 src/decoder/plugins/ModplugDecoderPlugin.cxx
 src/decoder/plugins/ModplugDecoderPlugin.hxx
-src/decoder/plugins/Mp4v2DecoderPlugin.cxx
-src/decoder/plugins/Mp4v2DecoderPlugin.hxx
 src/decoder/plugins/MpcdecDecoderPlugin.cxx
 src/decoder/plugins/MpcdecDecoderPlugin.hxx
 src/decoder/plugins/Mpg123DecoderPlugin.cxx
@@ -393,6 +391,7 @@ src/fs/FileSystem.hxx
 src/fs/Limits.hxx
 src/fs/Path.cxx
 src/fs/Path.hxx
+src/fs/Path2.cxx
 src/fs/StandardDirectory.cxx
 src/fs/StandardDirectory.hxx
 src/fs/Traits.cxx
@@ -512,10 +511,14 @@ src/lib/ffmpeg/Error.cxx
 src/lib/ffmpeg/Error.hxx
 src/lib/icu/Collate.cxx
 src/lib/icu/Collate.hxx
+src/lib/icu/Converter.cxx
+src/lib/icu/Converter.hxx
 src/lib/icu/Error.cxx
 src/lib/icu/Error.hxx
 src/lib/icu/Init.cxx
 src/lib/icu/Init.hxx
+src/lib/icu/Util.cxx
+src/lib/icu/Util.hxx
 src/lib/nfs/Base.cxx
 src/lib/nfs/Base.hxx
 src/lib/nfs/Blocking.cxx
@@ -572,6 +575,9 @@ src/lib/smbclient/Init.cxx
 src/lib/smbclient/Init.hxx
 src/lib/smbclient/Mutex.cxx
 src/lib/smbclient/Mutex.hxx
+src/lib/sqlite/Domain.cxx
+src/lib/sqlite/Domain.hxx
+src/lib/sqlite/Util.hxx
 src/lib/upnp/Action.hxx
 src/lib/upnp/Callback.hxx
 src/lib/upnp/ClientInit.cxx
@@ -594,6 +600,7 @@ src/lib/upnp/WorkQueue.hxx
 src/lib/zlib/Domain.cxx
 src/lib/zlib/Domain.hxx
 src/mixer/plugins/AlsaMixerPlugin.cxx
+src/mixer/plugins/NullMixerPlugin.cxx
 src/mixer/plugins/OssMixerPlugin.cxx
 src/mixer/plugins/PulseMixerPlugin.cxx
 src/mixer/plugins/PulseMixerPlugin.hxx
@@ -807,6 +814,7 @@ src/queue/QueuePrint.cxx
 src/queue/QueuePrint.hxx
 src/queue/QueueSave.cxx
 src/queue/QueueSave.hxx
+src/sticker/Match.hxx
 src/sticker/SongSticker.cxx
 src/sticker/SongSticker.hxx
 src/sticker/StickerDatabase.cxx
@@ -923,6 +931,8 @@ src/util/CharUtil.hxx
 src/util/CircularBuffer.hxx
 src/util/Clamp.hxx
 src/util/ConstBuffer.hxx
+src/util/DivideString.cxx
+src/util/DivideString.hxx
 src/util/Domain.hxx
 src/util/DynamicFifoBuffer.hxx
 src/util/Error.cxx
