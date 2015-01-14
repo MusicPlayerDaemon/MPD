@@ -80,7 +80,7 @@ double sacd_dsdiff_t::get_duration() {
 
 double sacd_dsdiff_t::get_duration(uint32_t _track_index) {
 	if (_track_index < track_index.size()) {
-		double stop_time = is_emaster ? track_index[current_track].stop_time2 : track_index[current_track].stop_time1;
+		double stop_time = is_emaster ? track_index[_track_index].stop_time2 : track_index[_track_index].stop_time1;
 		return stop_time - track_index[_track_index].start_time;
 	}
 	return 0.0;
