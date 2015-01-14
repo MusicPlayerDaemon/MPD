@@ -167,11 +167,9 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 {
 	/* create the output file */
 
-	file = new FileOutputStream(path, error);
-	if (!file->IsDefined()) {
-		delete file;
+	file = FileOutputStream::Create(path, error);
+	if (file == nullptr)
 		return false;
-	}
 
 	/* open the encoder */
 

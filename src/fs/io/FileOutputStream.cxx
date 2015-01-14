@@ -22,6 +22,18 @@
 #include "fs/FileSystem.hxx"
 #include "util/Error.hxx"
 
+FileOutputStream *
+FileOutputStream::Create(Path path, Error &error)
+{
+	FileOutputStream *f = new FileOutputStream(path, error);
+	if (!f->IsDefined()) {
+		delete f;
+		f = nullptr;
+	}
+
+	return f;
+}
+
 #ifdef WIN32
 
 FileOutputStream::FileOutputStream(Path _path, Error &error)
