@@ -21,28 +21,18 @@
 #include "encoder/EncoderList.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderInterface.hxx"
+#include "encoder/ToOutputStream.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
 #include "config/ConfigData.hxx"
+#include "fs/io/StdioOutputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "stdbin.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <unistd.h>
-
-static void
-encoder_to_stdout(Encoder &encoder)
-{
-	size_t length;
-	static char buffer[32768];
-
-	while ((length = encoder_read(&encoder, buffer, sizeof(buffer))) > 0) {
-		gcc_unused ssize_t ignored = write(1, buffer, length);
-	}
-}
 
 int main(int argc, char **argv)
 {
@@ -95,7 +85,12 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	encoder_to_stdout(*encoder);
+	StdioOutputStream os(stdout);
+
+	if (!EncoderToOutputStream(os, *encoder, error)) {
+		LogError(error);
+		return EXIT_FAILURE;
+	}
 
 	/* do it */
 
@@ -106,7 +101,10 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-		encoder_to_stdout(*encoder);
+		if (!EncoderToOutputStream(os, *encoder, error)) {
+			LogError(error);
+			return EXIT_FAILURE;
+		}
 	}
 
 	if (!encoder_end(encoder, error)) {
@@ -114,7 +112,10 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	encoder_to_stdout(*encoder);
+	if (!EncoderToOutputStream(os, *encoder, error)) {
+		LogError(error);
+		return EXIT_FAILURE;
+	}
 
 	encoder->Close();
 	encoder->Dispose();
