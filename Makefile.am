@@ -49,8 +49,8 @@ src_mpd_LDADD = \
 	$(DECODER_LIBS) \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
-	$(TAG_LIBS) \
 	$(OUTPUT_LIBS) \
+	$(TAG_LIBS) \
 	$(FILTER_LIBS) \
 	$(ENCODER_LIBS) \
 	$(MIXER_LIBS) \
