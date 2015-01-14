@@ -1,4 +1,4 @@
-ver 0.19.8 (not yet released)
+ver 0.19.8 (2015/01/14)
 * input
   - curl: fix bug after rewinding from end-of-file
   - mms: reduce delay at the beginning of playback
