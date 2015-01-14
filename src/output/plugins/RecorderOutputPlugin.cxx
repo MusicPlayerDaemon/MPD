@@ -21,6 +21,7 @@
 #include "RecorderOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
+#include "encoder/ToOutputStream.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
@@ -51,11 +52,6 @@ class RecorderOutput {
 	 * The destination file.
 	 */
 	FileOutputStream *file;
-
-	/**
-	 * The buffer for encoder_read().
-	 */
-	char buffer[32768];
 
 	RecorderOutput()
 		:base(recorder_output_plugin),
@@ -148,18 +144,7 @@ RecorderOutput::EncoderToFile(Error &error)
 	assert(file != nullptr);
 	assert(file->IsDefined());
 
-	while (true) {
-		/* read from the encoder */
-
-		size_t size = encoder_read(encoder, buffer, sizeof(buffer));
-		if (size == 0)
-			return true;
-
-		/* write everything into the file */
-
-		if (!file->Write(buffer, size, error))
-			return false;
-	}
+	return EncoderToOutputStream(*file, *encoder, error);
 }
 
 inline bool
