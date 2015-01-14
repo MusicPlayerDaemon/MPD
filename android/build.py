@@ -33,7 +33,7 @@ gcc_version = '4.9'
 llvm_version = '3.5'
 
 # the path to the MPD sources
-mpd_path = os.path.dirname(os.path.dirname(sys.argv[0]))
+mpd_path = os.path.dirname(os.path.dirname(sys.argv[0])) or '.'
 
 # output directories
 lib_path = os.path.abspath('lib')
