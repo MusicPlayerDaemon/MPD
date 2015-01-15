@@ -128,7 +128,7 @@ ToUpperASCII(char ch)
 
 /**
  * Convert the specified ASCII character (0x00..0x7f) to lower case.
- * Unlike toupper(), it ignores the system locale.
+ * Unlike tolower(), it ignores the system locale.
  */
 constexpr
 static inline char
