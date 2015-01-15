@@ -71,6 +71,7 @@ class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 
 	std::string host;
 	unsigned port;
+	bool keepalive;
 
 	struct mpd_connection *connection;
 
@@ -336,6 +337,7 @@ ProxyDatabase::Configure(const config_param &param, gcc_unused Error &error)
 {
 	host = param.GetBlockValue("host", "");
 	port = param.GetBlockValue("port", 0u);
+	keepalive = param.GetBlockValue("keepalive", false);
 
 	return true;
 }
@@ -375,6 +377,10 @@ ProxyDatabase::Connect(Error &error)
 
 		return false;
 	}
+
+#if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
+	mpd_connection_set_keepalive(connection, keepalive);
+#endif
 
 	idle_received = unsigned(-1);
 	is_idle = false;

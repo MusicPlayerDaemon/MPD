@@ -1530,6 +1530,19 @@ buffer_size: 16384</programlisting>
                   <application>MPD</application> instance.
                 </entry>
               </row>
+              <row>
+                <entry>
+                  <varname>keepalive</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Send TCP keepalive packets to the "master"
+                  <application>MPD</application> instance?  This option can
+                  help avoid certain firewalls dropping inactive
+                  connections, at the expensive of a very small amount of
+                  additional network traffic.  Disabled by default.
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>

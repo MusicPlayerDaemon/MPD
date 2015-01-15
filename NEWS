@@ -21,6 +21,8 @@ ver 0.20 (not yet released)
 * reset song priority on playback
 * write database and state file atomically
 * remove dependency on GLib
+* database
+  - proxy: add TCP keepalive option
 
 ver 0.19.8 (2015/01/14)
 * input
