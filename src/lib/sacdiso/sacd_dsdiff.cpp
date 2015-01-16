@@ -97,7 +97,7 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 	ID id;
 	bool skip_emaster_chunks = false; // if true plays as the single track
 	uint32_t start_mark_count = 0;
-	uint64_t id3_ofs = 0, id3_size = 0;
+	id3tags_t t_old;
 	track_index.resize(0);
 	id3tags.resize(0);
 	if (!sacd_media->seek(0)) {
@@ -178,9 +178,11 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 					sacd_media->skip(ck.get_size() - sizeof(loudspeaker_config));
 				}
 				else if (ck.has_id("ID3 ")) {
-					id3_ofs = sacd_media->get_position();
-					id3_size = ck.get_size();
-					sacd_media->skip(ck.get_size());
+					t_old.index  = 0;
+					t_old.offset = sacd_media->get_position();
+					t_old.size   = ck.get_size();
+					t_old.data.resize((uint32_t)ck.get_size());
+					sacd_media->read(t_old.data.data(), t_old.data.size());
 				}
 				else {
 					sacd_media->skip(ck.get_size());
@@ -299,12 +301,8 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
 		sacd_media->skip(sacd_media->get_position() & 1);
 	}
 	if (id3tags.size() == 0) {
-		if (id3_size > 0) {
-			id3tags_t t;
-			t.index  = 0;
-			t.offset = id3_ofs;
-			t.size   = id3_size;
-			id3tags.push_back(t);
+		if (t_old.size > 0) {
+			id3tags.push_back(t_old);
 		}
 	}
 	sacd_media->seek(data_offset);
