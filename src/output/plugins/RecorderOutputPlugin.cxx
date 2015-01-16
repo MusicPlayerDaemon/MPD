@@ -21,16 +21,23 @@
 #include "RecorderOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
+#include "tag/Format.hxx"
+#include "encoder/ToOutputStream.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "config/ConfigError.hxx"
+#include "config/ConfigPath.hxx"
 #include "Log.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <assert.h>
+#include <stdlib.h>
+
+static constexpr Domain recorder_domain("recorder");
 
 class RecorderOutput {
 	friend struct AudioOutputWrapper<RecorderOutput>;
@@ -48,14 +55,21 @@ class RecorderOutput {
 	AllocatedPath path;
 
 	/**
+	 * A string that will be used with FormatTag() to build the
+	 * destination path.
+	 */
+	std::string format_path;
+
+	/**
+	 * The #AudioFormat that is currently active.  This is used
+	 * for switching to another file.
+	 */
+	AudioFormat effective_audio_format;
+
+	/**
 	 * The destination file.
 	 */
 	FileOutputStream *file;
-
-	/**
-	 * The buffer for encoder_read().
-	 */
-	char buffer[32768];
 
 	RecorderOutput()
 		:base(recorder_output_plugin),
@@ -88,10 +102,18 @@ class RecorderOutput {
 	size_t Play(const void *chunk, size_t size, Error &error);
 
 private:
+	gcc_pure
+	bool HasDynamicPath() const {
+		return !format_path.empty();
+	}
+
 	/**
 	 * Finish the encoder and commit the file.
 	 */
 	bool Commit(Error &error);
+
+	void FinishFormat();
+	bool ReopenFormat(AllocatedPath &&new_path, Error &error);
 };
 
 inline bool
@@ -109,9 +131,20 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 	}
 
 	path = param.GetBlockPath("path", error);
-	if (path.IsNull()) {
-		if (!error.IsDefined())
-			error.Set(config_domain, "'path' not configured");
+	if (error.IsDefined())
+		return false;
+
+	const char *fmt = param.GetBlockValue("format_path", nullptr);
+	if (fmt != nullptr)
+		format_path = fmt;
+
+	if (path.IsNull() && fmt == nullptr) {
+		error.Set(config_domain, "'path' not configured");
+		return false;
+	}
+
+	if (!path.IsNull() && fmt != nullptr) {
+		error.Set(config_domain, "Cannot have both 'path' and 'format_path'");
 		return false;
 	}
 
@@ -148,18 +181,7 @@ RecorderOutput::EncoderToFile(Error &error)
 	assert(file != nullptr);
 	assert(file->IsDefined());
 
-	while (true) {
-		/* read from the encoder */
-
-		size_t size = encoder_read(encoder, buffer, sizeof(buffer));
-		if (size == 0)
-			return true;
-
-		/* write everything into the file */
-
-		if (!file->Write(buffer, size, error))
-			return false;
-	}
+	return EncoderToOutputStream(*file, *encoder, error);
 }
 
 inline bool
@@ -167,10 +189,18 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 {
 	/* create the output file */
 
-	file = new FileOutputStream(path, error);
-	if (!file->IsDefined()) {
-		delete file;
-		return false;
+	if (!HasDynamicPath()) {
+		assert(!path.IsNull());
+
+		file = FileOutputStream::Create(path, error);
+		if (file == nullptr)
+			return false;
+	} else {
+		/* don't open the file just yet; wait until we have
+		   a tag that we can use to build the path */
+		assert(path.IsNull());
+
+		file = nullptr;
 	}
 
 	/* open the encoder */
@@ -180,10 +210,19 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 		return false;
 	}
 
-	if (!EncoderToFile(error)) {
+	if (!HasDynamicPath()) {
+		if (!EncoderToFile(error)) {
+			encoder->Close();
+			delete file;
+			return false;
+		}
+	} else {
+		/* remember the AudioFormat for ReopenFormat() */
+		effective_audio_format = audio_format;
+
+		/* close the encoder for now; it will be opened as
+		   soon as we have received a tag */
 		encoder->Close();
-		delete file;
-		return false;
 	}
 
 	return true;
@@ -192,6 +231,8 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 inline bool
 RecorderOutput::Commit(Error &error)
 {
+	assert(!path.IsNull());
+
 	/* flush the encoder and write the rest to the file */
 
 	bool success = encoder_end(encoder, error) &&
@@ -212,14 +253,108 @@ RecorderOutput::Commit(Error &error)
 inline void
 RecorderOutput::Close()
 {
+	if (file == nullptr) {
+		/* not currently encoding to a file; nothing needs to
+		   be done now */
+		assert(HasDynamicPath());
+		assert(path.IsNull());
+		return;
+	}
+
 	Error error;
 	if (!Commit(error))
 		LogError(error);
+
+	if (HasDynamicPath()) {
+		assert(!path.IsNull());
+		path.SetNull();
+	}
+}
+
+void
+RecorderOutput::FinishFormat()
+{
+	assert(HasDynamicPath());
+
+	if (file == nullptr)
+		return;
+
+	Error error;
+	if (!Commit(error))
+		LogError(error);
+
+	file = nullptr;
+	path.SetNull();
+}
+
+inline bool
+RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
+{
+	assert(HasDynamicPath());
+	assert(path.IsNull());
+	assert(file == nullptr);
+
+	FileOutputStream *new_file =
+		FileOutputStream::Create(new_path, error);
+	if (new_file == nullptr)
+		return false;
+
+	AudioFormat new_audio_format = effective_audio_format;
+	if (!encoder->Open(new_audio_format, error)) {
+		delete new_file;
+		return false;
+	}
+
+	/* reopening the encoder must always result in the same
+	   AudioFormat as before */
+	assert(new_audio_format == effective_audio_format);
+
+	if (!EncoderToOutputStream(*new_file, *encoder, error)) {
+		encoder->Close();
+		delete new_file;
+		return false;
+	}
+
+	path = std::move(new_path);
+	file = new_file;
+
+	FormatDebug(recorder_domain, "Recording to \"%s\"", path.c_str());
+
+	return true;
 }
 
 inline void
 RecorderOutput::SendTag(const Tag &tag)
 {
+	if (HasDynamicPath()) {
+		char *p = FormatTag(tag, format_path.c_str());
+		if (p == nullptr || *p == 0) {
+			/* no path could be composed with this tag:
+			   don't write a file */
+			free(p);
+			FinishFormat();
+			return;
+		}
+
+		Error error;
+		AllocatedPath new_path = ParsePath(p, error);
+		free(p);
+		if (new_path.IsNull()) {
+			LogError(error);
+			FinishFormat();
+			return;
+		}
+
+		if (new_path != path) {
+			FinishFormat();
+
+			if (!ReopenFormat(std::move(new_path), error)) {
+				LogError(error);
+				return;
+			}
+		}
+	}
+
 	Error error;
 	if (!encoder_pre_tag(encoder, error) ||
 	    !EncoderToFile(error) ||
@@ -230,6 +365,14 @@ RecorderOutput::SendTag(const Tag &tag)
 inline size_t
 RecorderOutput::Play(const void *chunk, size_t size, Error &error)
 {
+	if (file == nullptr) {
+		/* not currently encoding to a file; discard incoming
+		   data */
+		assert(HasDynamicPath());
+		assert(path.IsNull());
+		return size;
+	}
+
 	return encoder_write(encoder, chunk, size, error) &&
 		EncoderToFile(error)
 		? size : 0;

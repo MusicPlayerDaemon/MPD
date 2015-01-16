@@ -15,13 +15,16 @@ ver 0.20 (not yet released)
   - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX
   - recorder: record tags
+  - recorder: allow dynamic file names
 * mixer
   - null: new plugin
 * reset song priority on playback
 * write database and state file atomically
 * remove dependency on GLib
+* database
+  - proxy: add TCP keepalive option
 
-ver 0.19.8 (not yet released)
+ver 0.19.8 (2015/01/14)
 * input
   - curl: fix bug after rewinding from end-of-file
   - mms: reduce delay at the beginning of playback
@@ -194,7 +197,7 @@ ver 0.19 (2014/10/10)
 * install systemd unit for socket activation
 * Android port
 
-ver 0.18.22 (not yet released)
+ver 0.18.22 (2014/01/14)
 * fix clang 3.6 warnings
 
 ver 0.18.21 (2014/12/17)

@@ -58,6 +58,7 @@ public:
 			Cancel();
 	}
 
+	static FileOutputStream *Create(Path path, Error &error);
 
 	bool IsDefined() const {
 #ifdef WIN32
