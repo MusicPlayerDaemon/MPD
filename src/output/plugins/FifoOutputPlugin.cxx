@@ -37,7 +37,9 @@
 
 #define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
 
-struct FifoOutput {
+class FifoOutput {
+	friend struct AudioOutputWrapper<FifoOutput>;
+
 	AudioOutput base;
 
 	AllocatedPath path;
@@ -48,6 +50,7 @@ struct FifoOutput {
 	bool created;
 	Timer *timer;
 
+public:
 	FifoOutput()
 		:base(fifo_output_plugin),
 		 path(AllocatedPath::Null()), input(-1), output(-1),
