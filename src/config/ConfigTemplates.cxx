@@ -86,6 +86,7 @@ const ConfigTemplate config_block_templates[] = {
 	{ "decoder", true },
 	{ "input", true },
 	{ "playlist_plugin", true },
+	{ "resampler", false },
 	{ "filter", true },
 	{ "database", false },
 	{ "neighbors", true },

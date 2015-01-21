@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SoxrResampler.hxx"
 #include "AudioFormat.hxx"
+#include "config/Block.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -62,18 +63,11 @@ soxr_quality_name(unsigned long recipe)
 
 gcc_pure
 static unsigned long
-soxr_parse_converter(const char *converter)
+soxr_parse_quality(const char *quality)
 {
-	assert(converter != nullptr);
-
-	assert(memcmp(converter, "soxr", 4) == 0);
-	if (converter[4] == '\0')
+	if (quality == nullptr)
 		return SOXR_DEFAULT_RECIPE;
-	if (converter[4] != ' ')
-		return SOXR_INVALID_RECIPE;
 
-	// converter example is "soxr very high", we want the "very high" part
-	const char *quality = converter + 5;
 	if (strcmp(quality, "very high") == 0)
 		return SOXR_VHQ;
 	else if (strcmp(quality, "high") == 0)
@@ -89,12 +83,16 @@ soxr_parse_converter(const char *converter)
 }
 
 bool
-pcm_resample_soxr_global_init(const char *converter, Error &error)
+pcm_resample_soxr_global_init(const ConfigBlock &block, Error &error)
 {
-	unsigned long recipe = soxr_parse_converter(converter);
+	const char *quality_string = block.GetBlockValue("quality");
+	unsigned long recipe = soxr_parse_quality(quality_string);
 	if (recipe == SOXR_INVALID_RECIPE) {
+		assert(quality_string != nullptr);
+
 		error.Format(soxr_domain,
-			     "unknown samplerate converter '%s'", converter);
+			     "unknown quality setting '%s' in line %d",
+			     quality_string, block.line);
 		return false;
 	}
 

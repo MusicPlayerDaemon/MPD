@@ -25,6 +25,7 @@
 #include "Compiler.h"
 
 struct AudioFormat;
+struct ConfigBlock;
 
 /**
  * A resampler using soxr.
@@ -46,6 +47,6 @@ public:
 };
 
 bool
-pcm_resample_soxr_global_init(const char *converter, Error &error);
+pcm_resample_soxr_global_init(const ConfigBlock &block, Error &error);
 
 #endif

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "LibsamplerateResampler.hxx"
+#include "config/Block.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -63,8 +64,9 @@ lsr_parse_converter(const char *s)
 }
 
 bool
-pcm_resample_lsr_global_init(const char *converter, Error &error)
+pcm_resample_lsr_global_init(const ConfigBlock &block, Error &error)
 {
+	const char *converter = block.GetBlockValue("type", "2");
 	if (!lsr_parse_converter(converter)) {
 		error.Format(libsamplerate_domain,
 			     "unknown samplerate converter '%s'", converter);

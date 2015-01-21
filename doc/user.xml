@@ -771,150 +771,9 @@ systemctl start mpd.socket</programlisting>
 
         <para>
           Check the <link linkend="resampler_plugins">resampler plugin
-          reference</link> for a list of resamplers.
+          reference</link> for a list of resamplers and how to
+          configure them.
         </para>
-
-        <para>
-          The setting <varname>samplerate_converter</varname> controls
-          how <application>MPD</application> shall resample music.
-          Possible values:
-        </para>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>
-                  Value
-                </entry>
-                <entry>
-                  Description
-                </entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  "<parameter>internal</parameter>"
-                </entry>
-                <entry>
-                  The internal resampler.  Low CPU usage, but very
-                  poor quality.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr very high</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "Very
-                  High Quality" setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr high</parameter>" or
-                  "<parameter>soxr</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "High
-                  Quality" setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr medium</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "Medium
-                  Quality" setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr low</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "Low
-                  Quality" setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr quick</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "Quick"
-                  setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>Best Sinc Interpolator</parameter>" or
-                  "<parameter>0</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Band
-                  limited sinc interpolation, best quality, 97dB SNR,
-                  96% BW.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>Medium Sinc Interpolator</parameter>" or
-                  "<parameter>1</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Band
-                  limited sinc interpolation, medium quality, 97dB
-                  SNR, 90% BW.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>Fastest Sinc Interpolator</parameter>" or
-                  "<parameter>2</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Band
-                  limited sinc interpolation, fastest, 97dB SNR, 80%
-                  BW.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>ZOH Sinc Interpolator</parameter>" or
-                  "<parameter>3</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Zero order
-                  hold interpolator, very fast, very poor quality with
-                  audible distortions.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>Linear Interpolator</parameter>" or
-                  "<parameter>4</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Linear
-                  interpolator, very fast, poor quality.
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
       </section>
     </section>
 
@@ -2308,6 +2167,46 @@ buffer_size: 16384</programlisting>
     <section id="resampler_plugins">
       <title>Resampler plugins</title>
 
+      <para>
+        The resampler can be configured in a block named
+        <varname>resampler</varname>, for example:
+      </para>
+
+      <programlisting>resampler {
+  plugin "soxr"
+  quality "very high"
+}</programlisting>
+
+      <para>
+        The following table lists the <varname>resampler</varname>
+        options valid for all plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>plugin</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
       <section id="internal_resampler">
         <title><varname>internal</varname></title>
 
@@ -2327,6 +2226,107 @@ buffer_size: 16384</programlisting>
           url="http://www.mega-nerd.com/SRC/"><application>libsamplerate</application></ulink>
           a.k.a. Secret Rabbit Code (SRC).
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  Name
+                </entry>
+                <entry>
+                  Description
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>type</varname>
+                </entry>
+                <entry>
+                  The interpolator type.  See below for a list of
+                  known types.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>
+          The following converter types are provided by
+          <application>libsamplerate</application>:
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  Type
+                </entry>
+                <entry>
+                  Description
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  "<parameter>Best Sinc Interpolator</parameter>" or
+                  "<parameter>0</parameter>"
+                </entry>
+                <entry>
+                  Band limited sinc interpolation, best quality, 97dB
+                  SNR, 96% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Medium Sinc Interpolator</parameter>" or
+                  "<parameter>1</parameter>"
+                </entry>
+                <entry>
+                  Band limited sinc interpolation, medium quality,
+                  97dB SNR, 90% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Fastest Sinc Interpolator</parameter>" or
+                  "<parameter>2</parameter>"
+                </entry>
+                <entry>
+                  Band limited sinc interpolation, fastest, 97dB SNR,
+                  80% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>ZOH Sinc Interpolator</parameter>" or
+                  "<parameter>3</parameter>"
+                </entry>
+                <entry>
+                  Zero order hold interpolator, very fast, very poor
+                  quality with audible distortions.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Linear Interpolator</parameter>" or
+                  "<parameter>4</parameter>"
+                </entry>
+                <entry>
+                  Linear interpolator, very fast, poor quality.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section id="soxr_resampler">
@@ -2337,6 +2337,64 @@ buffer_size: 16384</programlisting>
           url="http://sourceforge.net/projects/soxr/"><application>libsoxr</application></ulink>,
           the SoX Resampler library
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  Name
+                </entry>
+                <entry>
+                  Description
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>quality</varname>
+                </entry>
+                <entry>
+                  The <application>libsoxr</application> quality
+                  setting.  Valid values are:
+
+                  <itemizedlist>
+                    <listitem>
+                      <para>
+                        "<parameter>very high</parameter>"
+                      </para>
+                    </listitem>
+
+                    <listitem>
+                      <para>
+                        "<parameter>high</parameter>" (the default)
+                      </para>
+                    </listitem>
+
+                    <listitem>
+                      <para>
+                        "<parameter>medium</parameter>"
+                      </para>
+                    </listitem>
+
+                    <listitem>
+                      <para>
+                        "<parameter>low</parameter>"
+                      </para>
+                    </listitem>
+
+                    <listitem>
+                      <para>
+                        "<parameter>quick</parameter>"
+                      </para>
+                    </listitem>
+                  </itemizedlist>
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
     </section>
 

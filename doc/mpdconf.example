@@ -325,13 +325,6 @@ input {
 #	mixer_type      "none"			# optional
 #}
 #
-# If MPD has been compiled with libsamplerate support, this setting specifies 
-# the sample rate converter to use.  Possible values can be found in the 
-# mpd.conf man page or the libsamplerate documentation. By default, this is
-# setting is disabled.
-#
-#samplerate_converter		"Fastest Sinc Interpolator"
-#
 ###############################################################################
 
 
