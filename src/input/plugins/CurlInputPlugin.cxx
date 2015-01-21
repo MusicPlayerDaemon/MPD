@@ -649,7 +649,10 @@ CurlInputStream::HeaderReceived(const char *name, std::string &&value)
 			return;
 
 		size_t icy_metaint = ParseUint64(value.c_str());
+#ifndef WIN32
+		/* Windows doesn't know "%z" */
 		FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
+#endif
 
 		if (icy_metaint > 0) {
 			icy->Enable(icy_metaint);
