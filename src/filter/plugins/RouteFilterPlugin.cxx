@@ -41,7 +41,7 @@
 
 #include "config.h"
 #include "config/ConfigError.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "AudioFormat.hxx"
 #include "filter/FilterPlugin.hxx"
 #include "filter/FilterInternal.hxx"
@@ -114,11 +114,11 @@ public:
 	 *  a>b, c>d, e>f, ...
 	 * where a... are non-unique, non-negative integers
 	 * and input channel a gets copied to output channel b, etc.
-	 * @param param the configuration block to read
+	 * @param block the configuration block to read
 	 * @param filter a route_filter whose min_channels and sources[] to set
 	 * @return true on success, false on error
 	 */
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	/* virtual methods from class Filter */
 	AudioFormat Open(AudioFormat &af, Error &error) override;
@@ -128,7 +128,7 @@ public:
 };
 
 bool
-RouteFilter::Configure(const config_param &param, Error &error) {
+RouteFilter::Configure(const ConfigBlock &block, Error &error) {
 
 	/* TODO:
 	 * With a more clever way of marking "don't copy to output N",
@@ -142,7 +142,7 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 	min_output_channels = 0;
 
 	// A cowardly default, just passthrough stereo
-	const char *routes = param.GetBlockValue("routes", "0>0, 1>1");
+	const char *routes = block.GetBlockValue("routes", "0>0, 1>1");
 	while (true) {
 		routes = StripLeft(routes);
 
@@ -205,10 +205,10 @@ RouteFilter::Configure(const config_param &param, Error &error) {
 }
 
 static Filter *
-route_filter_init(const config_param &param, Error &error)
+route_filter_init(const ConfigBlock &block, Error &error)
 {
 	RouteFilter *filter = new RouteFilter();
-	if (!filter->Configure(param, error)) {
+	if (!filter->Configure(block, error)) {
 		delete filter;
 		return nullptr;
 	}

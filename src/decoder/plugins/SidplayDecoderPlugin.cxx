@@ -64,22 +64,22 @@ sidplay_load_songlength_db(const Path path)
 }
 
 static bool
-sidplay_init(const config_param &param)
+sidplay_init(const ConfigBlock &block)
 {
 	/* read the songlengths database file */
 	Error error;
-	const auto database_path = param.GetBlockPath("songlength_database", error);
+	const auto database_path = block.GetBlockPath("songlength_database", error);
 	if (!database_path.IsNull())
 		songlength_database = sidplay_load_songlength_db(database_path);
 	else if (error.IsDefined())
 		FatalError(error);
 
-	default_songlength = param.GetBlockValue("default_songlength", 0u);
+	default_songlength = block.GetBlockValue("default_songlength", 0u);
 
 	all_files_are_containers =
-		param.GetBlockValue("all_files_are_containers", true);
+		block.GetBlockValue("all_files_are_containers", true);
 
-	filter_setting = param.GetBlockValue("filter", true);
+	filter_setting = block.GetBlockValue("filter", true);
 
 	return true;
 }

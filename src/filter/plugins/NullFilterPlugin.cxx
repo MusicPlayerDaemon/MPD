@@ -48,7 +48,7 @@ public:
 };
 
 static Filter *
-null_filter_init(gcc_unused const config_param &param,
+null_filter_init(gcc_unused const ConfigBlock &block,
 		 gcc_unused Error &error)
 {
 	return new NullFilter();

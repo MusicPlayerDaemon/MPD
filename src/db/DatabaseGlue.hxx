@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-struct config_param;
+struct ConfigBlock;
 class EventLoop;
 class DatabaseListener;
 class Database;
@@ -35,6 +35,6 @@ class Error;
  */
 Database *
 DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
-		   const config_param &param, Error &error);
+		   const ConfigBlock &block, Error &error);
 
 #endif

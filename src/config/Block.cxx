@@ -20,8 +20,12 @@
 #include "config.h"
 #include "Block.hxx"
 #include "ConfigParser.hxx"
+#include "ConfigPath.hxx"
 #include "system/FatalError.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "util/Error.hxx"
 
+#include <assert.h>
 #include <stdlib.h>
 
 int
@@ -56,4 +60,97 @@ BlockParam::GetBoolValue() const
 				 name.c_str(), line);
 
 	return value2;
+}
+
+ConfigBlock::~ConfigBlock()
+{
+	delete next;
+}
+
+const BlockParam *
+ConfigBlock::GetBlockParam(const char *name) const
+{
+	for (const auto &i : block_params) {
+		if (i.name == name) {
+			i.used = true;
+			return &i;
+		}
+	}
+
+	return nullptr;
+}
+
+const char *
+ConfigBlock::GetBlockValue(const char *name, const char *default_value) const
+{
+	const BlockParam *bp = GetBlockParam(name);
+	if (bp == nullptr)
+		return default_value;
+
+	return bp->value.c_str();
+}
+
+AllocatedPath
+ConfigBlock::GetBlockPath(const char *name, const char *default_value,
+			   Error &error) const
+{
+	assert(!error.IsDefined());
+
+	int line2 = line;
+	const char *s;
+
+	const BlockParam *bp = GetBlockParam(name);
+	if (bp != nullptr) {
+		line2 = bp->line;
+		s = bp->value.c_str();
+	} else {
+		if (default_value == nullptr)
+			return AllocatedPath::Null();
+
+		s = default_value;
+	}
+
+	AllocatedPath path = ParsePath(s, error);
+	if (gcc_unlikely(path.IsNull()))
+		error.FormatPrefix("Invalid path in \"%s\" at line %i: ",
+				   name, line2);
+
+	return path;
+}
+
+AllocatedPath
+ConfigBlock::GetBlockPath(const char *name, Error &error) const
+{
+	return GetBlockPath(name, nullptr, error);
+}
+
+int
+ConfigBlock::GetBlockValue(const char *name, int default_value) const
+{
+	const BlockParam *bp = GetBlockParam(name);
+	if (bp == nullptr)
+		return default_value;
+
+	return bp->GetIntValue();
+}
+
+unsigned
+ConfigBlock::GetBlockValue(const char *name, unsigned default_value) const
+{
+	const BlockParam *bp = GetBlockParam(name);
+	if (bp == nullptr)
+		return default_value;
+
+	return bp->GetUnsignedValue();
+}
+
+gcc_pure
+bool
+ConfigBlock::GetBlockValue(const char *name, bool default_value) const
+{
+	const BlockParam *bp = GetBlockParam(name);
+	if (bp == nullptr)
+		return default_value;
+
+	return bp->GetBoolValue();
 }

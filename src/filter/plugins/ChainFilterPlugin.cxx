@@ -70,7 +70,7 @@ private:
 static constexpr Domain chain_filter_domain("chain_filter");
 
 static Filter *
-chain_filter_init(gcc_unused const config_param &param,
+chain_filter_init(gcc_unused const ConfigBlock &block,
 		  gcc_unused Error &error)
 {
 	return new ChainFilter();

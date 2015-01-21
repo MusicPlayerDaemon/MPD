@@ -21,7 +21,7 @@
 #include "SoundCloudPlaylistPlugin.hxx"
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "input/InputStream.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
@@ -44,10 +44,10 @@ static struct {
 static constexpr Domain soundcloud_domain("soundcloud");
 
 static bool
-soundcloud_init(const config_param &param)
+soundcloud_init(const ConfigBlock &block)
 {
 	// APIKEY for MPD application, registered under DarkFox' account.
-	soundcloud_config.apikey = param.GetBlockValue("apikey", "a25e51780f7f86af0afa91f241d091f8");
+	soundcloud_config.apikey = block.GetBlockValue("apikey", "a25e51780f7f86af0afa91f241d091f8");
 	if (soundcloud_config.apikey.empty()) {
 		LogDebug(soundcloud_domain,
 			 "disabling the soundcloud playlist plugin "

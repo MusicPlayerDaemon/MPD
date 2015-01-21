@@ -53,18 +53,18 @@ struct TwolameEncoder final {
 
 	TwolameEncoder():encoder(twolame_encoder_plugin) {}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 };
 
 static constexpr Domain twolame_encoder_domain("twolame_encoder");
 
 bool
-TwolameEncoder::Configure(const config_param &param, Error &error)
+TwolameEncoder::Configure(const ConfigBlock &block, Error &error)
 {
 	const char *value;
 	char *endptr;
 
-	value = param.GetBlockValue("quality");
+	value = block.GetBlockValue("quality");
 	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
@@ -78,7 +78,7 @@ TwolameEncoder::Configure(const config_param &param, Error &error)
 			return false;
 		}
 
-		if (param.GetBlockValue("bitrate") != nullptr) {
+		if (block.GetBlockValue("bitrate") != nullptr) {
 			error.Set(config_domain,
 				  "quality and bitrate are both defined");
 			return false;
@@ -86,7 +86,7 @@ TwolameEncoder::Configure(const config_param &param, Error &error)
 	} else {
 		/* a bit rate was configured */
 
-		value = param.GetBlockValue("bitrate");
+		value = block.GetBlockValue("bitrate");
 		if (value == nullptr) {
 			error.Set(config_domain,
 				  "neither bitrate nor quality defined");
@@ -107,15 +107,15 @@ TwolameEncoder::Configure(const config_param &param, Error &error)
 }
 
 static Encoder *
-twolame_encoder_init(const config_param &param, Error &error_r)
+twolame_encoder_init(const ConfigBlock &block, Error &error_r)
 {
 	FormatDebug(twolame_encoder_domain,
 		    "libtwolame version %s", get_twolame_version());
 
 	TwolameEncoder *encoder = new TwolameEncoder();
 
-	/* load configuration from "param" */
-	if (!encoder->Configure(param, error_r)) {
+	/* load configuration from "block" */
+	if (!encoder->Configure(block, error_r)) {
 		/* configuration has failed, roll back and return error */
 		delete encoder;
 		return nullptr;

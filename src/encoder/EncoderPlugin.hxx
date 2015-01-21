@@ -24,14 +24,14 @@
 
 struct Encoder;
 struct AudioFormat;
-struct config_param;
+struct ConfigBlock;
 struct Tag;
 class Error;
 
 struct EncoderPlugin {
 	const char *name;
 
-	Encoder *(*init)(const config_param &param,
+	Encoder *(*init)(const ConfigBlock &block,
 			 Error &error);
 
 	void (*finish)(Encoder *encoder);
@@ -69,10 +69,10 @@ struct EncoderPlugin {
  * @return an encoder object on success, nullptr on failure
  */
 static inline Encoder *
-encoder_init(const EncoderPlugin &plugin, const config_param &param,
+encoder_init(const EncoderPlugin &plugin, const ConfigBlock &block,
 	     Error &error_r)
 {
-	return plugin.init(param, error_r);
+	return plugin.init(block, error_r);
 }
 
 #endif

@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "mixer/MixerInternal.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "system/fd_util.h"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
@@ -52,7 +52,7 @@ public:
 	OssMixer(MixerListener &_listener)
 		:Mixer(oss_mixer_plugin, _listener) {}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	/* virtual methods from class Mixer */
 	virtual bool Open(Error &error) override;
@@ -79,10 +79,10 @@ oss_find_mixer(const char *name)
 }
 
 inline bool
-OssMixer::Configure(const config_param &param, Error &error)
+OssMixer::Configure(const ConfigBlock &block, Error &error)
 {
-	device = param.GetBlockValue("mixer_device", VOLUME_MIXER_OSS_DEFAULT);
-	control = param.GetBlockValue("mixer_control");
+	device = block.GetBlockValue("mixer_device", VOLUME_MIXER_OSS_DEFAULT);
+	control = block.GetBlockValue("mixer_control");
 
 	if (control != NULL) {
 		volume_control = oss_find_mixer(control);
@@ -100,12 +100,12 @@ OssMixer::Configure(const config_param &param, Error &error)
 static Mixer *
 oss_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused AudioOutput &ao,
 	       MixerListener &listener,
-	       const config_param &param,
+	       const ConfigBlock &block,
 	       Error &error)
 {
 	OssMixer *om = new OssMixer(listener);
 
-	if (!om->Configure(param, error)) {
+	if (!om->Configure(block, error)) {
 		delete om;
 		return nullptr;
 	}

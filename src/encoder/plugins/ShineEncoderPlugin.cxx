@@ -53,7 +53,7 @@ struct ShineEncoder {
 
 	ShineEncoder():encoder(shine_encoder_plugin){}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	bool Setup(Error &error);
 
@@ -63,22 +63,21 @@ struct ShineEncoder {
 static constexpr Domain shine_encoder_domain("shine_encoder");
 
 inline bool
-ShineEncoder::Configure(const config_param &param,
-			 gcc_unused Error &error)
+ShineEncoder::Configure(const ConfigBlock &block, gcc_unused Error &error)
 {
 	shine_set_config_mpeg_defaults(&config.mpeg);
-	config.mpeg.bitr = param.GetBlockValue("bitrate", 128);
+	config.mpeg.bitr = block.GetBlockValue("bitrate", 128);
 
 	return true;
 }
 
 static Encoder *
-shine_encoder_init(const config_param &param, Error &error)
+shine_encoder_init(const ConfigBlock &block, Error &error)
 {
 	ShineEncoder *encoder = new ShineEncoder();
 
-	/* load configuration from "param" */
-	if (!encoder->Configure(param, error)) {
+	/* load configuration from "block" */
+	if (!encoder->Configure(block, error)) {
 		/* configuration has failed, roll back and return error */
 		delete encoder;
 		return nullptr;

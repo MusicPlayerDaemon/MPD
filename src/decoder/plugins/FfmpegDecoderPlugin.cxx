@@ -73,7 +73,7 @@ FfmpegOpenInput(AVIOContext *pb,
 }
 
 static bool
-ffmpeg_init(gcc_unused const config_param &param)
+ffmpeg_init(gcc_unused const ConfigBlock &block)
 {
 	FfmpegInit();
 	return true;

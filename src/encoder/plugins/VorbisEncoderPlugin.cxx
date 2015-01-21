@@ -58,9 +58,9 @@ static constexpr Domain vorbis_encoder_domain("vorbis_encoder");
 
 static bool
 vorbis_encoder_configure(struct vorbis_encoder &encoder,
-			 const config_param &param, Error &error)
+			 const ConfigBlock &block, Error &error)
 {
-	const char *value = param.GetBlockValue("quality");
+	const char *value = block.GetBlockValue("quality");
 	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
@@ -76,7 +76,7 @@ vorbis_encoder_configure(struct vorbis_encoder &encoder,
 			return false;
 		}
 
-		if (param.GetBlockValue("bitrate") != nullptr) {
+		if (block.GetBlockValue("bitrate") != nullptr) {
 			error.Set(config_domain,
 				  "quality and bitrate are both defined");
 			return false;
@@ -84,7 +84,7 @@ vorbis_encoder_configure(struct vorbis_encoder &encoder,
 	} else {
 		/* a bit rate was configured */
 
-		value = param.GetBlockValue("bitrate");
+		value = block.GetBlockValue("bitrate");
 		if (value == nullptr) {
 			error.Set(config_domain,
 				  "neither bitrate nor quality defined");
@@ -106,12 +106,12 @@ vorbis_encoder_configure(struct vorbis_encoder &encoder,
 }
 
 static Encoder *
-vorbis_encoder_init(const config_param &param, Error &error)
+vorbis_encoder_init(const ConfigBlock &block, Error &error)
 {
 	vorbis_encoder *encoder = new vorbis_encoder();
 
-	/* load configuration from "param" */
-	if (!vorbis_encoder_configure(*encoder, param, error)) {
+	/* load configuration from "block" */
+	if (!vorbis_encoder_configure(*encoder, block, error)) {
 		/* configuration has failed, roll back and return error */
 		delete encoder;
 		return nullptr;

@@ -34,7 +34,7 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/FileOutputStream.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
 #include "util/Error.hxx"
@@ -76,10 +76,10 @@ inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 Database *
 SimpleDatabase::Create(gcc_unused EventLoop &loop,
 		       gcc_unused DatabaseListener &listener,
-		       const config_param &param, Error &error)
+		       const ConfigBlock &block, Error &error)
 {
 	SimpleDatabase *db = new SimpleDatabase();
-	if (!db->Configure(param, error)) {
+	if (!db->Configure(block, error)) {
 		delete db;
 		db = nullptr;
 	}
@@ -88,9 +88,9 @@ SimpleDatabase::Create(gcc_unused EventLoop &loop,
 }
 
 bool
-SimpleDatabase::Configure(const config_param &param, Error &error)
+SimpleDatabase::Configure(const ConfigBlock &block, Error &error)
 {
-	path = param.GetBlockPath("path", error);
+	path = block.GetBlockPath("path", error);
 	if (path.IsNull()) {
 		if (!error.IsDefined())
 			error.Set(simple_db_domain,
@@ -100,12 +100,12 @@ SimpleDatabase::Configure(const config_param &param, Error &error)
 
 	path_utf8 = path.ToUTF8();
 
-	cache_path = param.GetBlockPath("cache_directory", error);
+	cache_path = block.GetBlockPath("cache_directory", error);
 	if (path.IsNull() && error.IsDefined())
 		return false;
 
 #ifdef ENABLE_ZLIB
-	compress = param.GetBlockValue("compress", compress);
+	compress = block.GetBlockValue("compress", compress);
 #endif
 
 	return true;

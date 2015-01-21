@@ -20,7 +20,7 @@
 #ifndef MPD_PLAYLIST_PLUGIN_HXX
 #define MPD_PLAYLIST_PLUGIN_HXX
 
-struct config_param;
+struct ConfigBlock;
 class InputStream;
 struct Tag;
 class Mutex;
@@ -38,7 +38,7 @@ struct playlist_plugin {
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
 	 */
-	bool (*init)(const config_param &param);
+	bool (*init)(const ConfigBlock &block);
 
 	/**
 	 * Deinitialize a plugin which was initialized successfully.
@@ -75,10 +75,10 @@ struct playlist_plugin {
  */
 static inline bool
 playlist_plugin_init(const struct playlist_plugin *plugin,
-		     const config_param &param)
+		     const ConfigBlock &block)
 {
 	return plugin->init != nullptr
-		? plugin->init(param)
+		? plugin->init(block)
 		: true;
 }
 

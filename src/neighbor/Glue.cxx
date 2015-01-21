@@ -24,8 +24,8 @@
 #include "NeighborPlugin.hxx"
 #include "Info.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/Param.hxx"
 #include "config/ConfigError.hxx"
+#include "config/Block.hxx"
 #include "util/Error.hxx"
 
 NeighborGlue::Explorer::~Explorer()
@@ -37,9 +37,9 @@ NeighborGlue::~NeighborGlue() {}
 
 static NeighborExplorer *
 CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
-		       const config_param &param, Error &error)
+		       const ConfigBlock &block, Error &error)
 {
-	const char *plugin_name = param.GetBlockValue("plugin");
+	const char *plugin_name = block.GetBlockValue("plugin");
 	if (plugin_name == nullptr) {
 		error.Set(config_domain,
 			  "Missing \"plugin\" configuration");
@@ -53,18 +53,18 @@ CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
 		return nullptr;
 	}
 
-	return plugin->create(loop, listener, param, error);
+	return plugin->create(loop, listener, block, error);
 }
 
 bool
 NeighborGlue::Init(EventLoop &loop, NeighborListener &listener, Error &error)
 {
-	for (const auto *param = config_get_param(ConfigOption::NEIGHBORS);
-	     param != nullptr; param = param->next) {
+	for (const auto *block = config_get_block(ConfigBlockOption::NEIGHBORS);
+	     block != nullptr; block = block->next) {
 		NeighborExplorer *explorer =
-			CreateNeighborExplorer(loop, listener, *param, error);
+			CreateNeighborExplorer(loop, listener, *block, error);
 		if (explorer == nullptr) {
-			error.FormatPrefix("Line %i: ", param->line);
+			error.FormatPrefix("Line %i: ", block->line);
 			return false;
 		}
 

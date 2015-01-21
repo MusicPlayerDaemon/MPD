@@ -37,7 +37,7 @@
 static constexpr Domain mpg123_domain("mpg123");
 
 static bool
-mpd_mpg123_init(gcc_unused const config_param &param)
+mpd_mpg123_init(gcc_unused const ConfigBlock &block)
 {
 	mpg123_init();
 

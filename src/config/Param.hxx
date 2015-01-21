@@ -20,14 +20,10 @@
 #ifndef MPD_CONFIG_PARAM_HXX
 #define MPD_CONFIG_PARAM_HXX
 
-#include "Block.hxx"
+#include "check.h"
 #include "Compiler.h"
 
 #include <string>
-#include <vector>
-
-class AllocatedPath;
-class Error;
 
 struct config_param {
 	/**
@@ -39,8 +35,6 @@ struct config_param {
 	std::string value;
 
 	int line;
-
-	std::vector<BlockParam> block_params;
 
 	/**
 	 * This flag is false when nobody has queried the value of
@@ -68,37 +62,6 @@ struct config_param {
 	bool IsNull() const {
 		return line < 0;
 	}
-
-	gcc_nonnull_all
-	void AddBlockParam(const char *_name, const char *_value,
-			   int _line=-1) {
-		block_params.emplace_back(_name, _value, _line);
-	}
-
-	gcc_nonnull_all gcc_pure
-	const BlockParam *GetBlockParam(const char *_name) const;
-
-	gcc_pure
-	const char *GetBlockValue(const char *name,
-				  const char *default_value=nullptr) const;
-
-	/**
-	 * Same as config_get_path(), but looks up the setting in the
-	 * specified block.
-	 */
-	AllocatedPath GetBlockPath(const char *name, const char *default_value,
-				   Error &error) const;
-
-	AllocatedPath GetBlockPath(const char *name, Error &error) const;
-
-	gcc_pure
-	int GetBlockValue(const char *name, int default_value) const;
-
-	gcc_pure
-	unsigned GetBlockValue(const char *name, unsigned default_value) const;
-
-	gcc_pure
-	bool GetBlockValue(const char *name, bool default_value) const;
 };
 
 #endif

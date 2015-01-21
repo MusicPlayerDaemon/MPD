@@ -20,11 +20,17 @@
 #include "config.h"
 #include "Data.hxx"
 #include "Param.hxx"
+#include "Block.hxx"
 
 void
 ConfigData::Clear()
 {
 	for (auto &i : params) {
+		delete i;
+		i = nullptr;
+	}
+
+	for (auto &i : blocks) {
 		delete i;
 		i = nullptr;
 	}

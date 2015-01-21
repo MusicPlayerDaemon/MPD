@@ -36,7 +36,7 @@ class EventLoop;
 class Mixer;
 class MixerListener;
 struct MusicChunk;
-struct config_param;
+struct ConfigBlock;
 struct PlayerControl;
 struct AudioOutputPlugin;
 
@@ -272,7 +272,7 @@ struct AudioOutput {
 	AudioOutput(const AudioOutputPlugin &_plugin);
 	~AudioOutput();
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	void StartThread();
 	void StopThread();
@@ -430,7 +430,7 @@ private:
 extern struct notify audio_output_client_notify;
 
 AudioOutput *
-audio_output_new(EventLoop &event_loop, const config_param &param,
+audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 		 MixerListener &mixer_listener,
 		 PlayerControl &pc,
 		 Error &error);

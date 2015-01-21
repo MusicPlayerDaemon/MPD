@@ -163,7 +163,7 @@ pulse_mixer_on_change(PulseMixer &pm,
 static Mixer *
 pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		 MixerListener &listener,
-		 gcc_unused const config_param &param,
+		 gcc_unused const ConfigBlock &block,
 		 gcc_unused Error &error)
 {
 	PulseOutput &po = (PulseOutput &)ao;

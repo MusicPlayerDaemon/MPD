@@ -26,7 +26,7 @@
 #include "Internal.hxx"
 #include "AudioFormat.hxx"
 #include "tag/Tag.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 
 // IWYU pragma: end_exports
 

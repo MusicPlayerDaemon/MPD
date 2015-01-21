@@ -40,10 +40,10 @@ class PipeOutput {
 	PipeOutput()
 		:base(pipe_output_plugin) {}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 public:
-	static PipeOutput *Create(const config_param &param, Error &error);
+	static PipeOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
 
@@ -58,12 +58,12 @@ public:
 static constexpr Domain pipe_output_domain("pipe_output");
 
 inline bool
-PipeOutput::Configure(const config_param &param, Error &error)
+PipeOutput::Configure(const ConfigBlock &block, Error &error)
 {
-	if (!base.Configure(param, error))
+	if (!base.Configure(block, error))
 		return false;
 
-	cmd = param.GetBlockValue("command", "");
+	cmd = block.GetBlockValue("command", "");
 	if (cmd.empty()) {
 		error.Set(config_domain,
 			  "No \"command\" parameter specified");
@@ -74,11 +74,11 @@ PipeOutput::Configure(const config_param &param, Error &error)
 }
 
 inline PipeOutput *
-PipeOutput::Create(const config_param &param, Error &error)
+PipeOutput::Create(const ConfigBlock &block, Error &error)
 {
 	PipeOutput *po = new PipeOutput();
 
-	if (!po->Configure(param, error)) {
+	if (!po->Configure(block, error)) {
 		delete po;
 		return nullptr;
 	}

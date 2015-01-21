@@ -36,7 +36,7 @@
 #include "tag/Tag.hxx"
 #include "AudioFormat.hxx"
 #include "MixRampInfo.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "Chrono.hxx"
 
 // IWYU pragma: end_exports

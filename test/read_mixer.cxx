@@ -24,7 +24,7 @@
 #include "pcm/Volume.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -54,7 +54,7 @@ int main(int argc, gcc_unused char **argv)
 	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin,
 				 *(AudioOutput *)nullptr,
 				 *(MixerListener *)nullptr,
-				 config_param(), error);
+				 ConfigBlock(), error);
 	if (mixer == NULL) {
 		LogError(error, "mixer_new() failed");
 		return EXIT_FAILURE;

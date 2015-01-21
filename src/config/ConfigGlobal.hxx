@@ -27,6 +27,7 @@ class Error;
 class Path;
 class AllocatedPath;
 struct config_param;
+struct ConfigBlock;
 
 void config_global_init(void);
 void config_global_finish(void);
@@ -44,6 +45,10 @@ gcc_pure
 const config_param *
 config_get_param(enum ConfigOption option);
 
+gcc_pure
+const ConfigBlock *
+config_get_block(enum ConfigBlockOption option);
+
 /**
  * Find a block with a matching attribute.
  *
@@ -52,8 +57,8 @@ config_get_param(enum ConfigOption option);
  * @param value the expected attribute value
  */
 gcc_pure
-const config_param *
-config_find_block(ConfigOption option, const char *key, const char *value);
+const ConfigBlock *
+config_find_block(ConfigBlockOption option, const char *key, const char *value);
 
 /* Note on gcc_pure: Some of the functions declared pure are not
    really pure in strict sense.  They have side effect such that they

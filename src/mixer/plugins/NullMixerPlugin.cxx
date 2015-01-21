@@ -55,7 +55,7 @@ static Mixer *
 null_mixer_init(gcc_unused EventLoop &event_loop,
 		gcc_unused AudioOutput &ao,
 		MixerListener &listener,
-		gcc_unused const config_param &param,
+		gcc_unused const ConfigBlock &block,
 		gcc_unused Error &error)
 {
 	return new NullMixer(listener);

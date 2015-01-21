@@ -24,7 +24,7 @@
 #include "util/Error.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -33,7 +33,7 @@
 bool
 input_stream_global_init(Error &error)
 {
-	const config_param empty;
+	const ConfigBlock empty;
 
 	for (unsigned i = 0; input_plugins[i] != nullptr; ++i) {
 		const InputPlugin *plugin = input_plugins[i];
@@ -42,17 +42,17 @@ input_stream_global_init(Error &error)
 		assert(*plugin->name != 0);
 		assert(plugin->open != nullptr);
 
-		const struct config_param *param =
-			config_find_block(ConfigOption::INPUT, "plugin",
+		const auto *block =
+			config_find_block(ConfigBlockOption::INPUT, "plugin",
 					  plugin->name);
-		if (param == nullptr) {
-			param = &empty;
-		} else if (!param->GetBlockValue("enabled", true))
+		if (block == nullptr) {
+			block = &empty;
+		} else if (!block->GetBlockValue("enabled", true))
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
 		InputPlugin::InitResult result = plugin->init != nullptr
-			? plugin->init(*param, error)
+			? plugin->init(*block, error)
 			: InputPlugin::InitResult::SUCCESS;
 
 		switch (result) {

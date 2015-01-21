@@ -27,7 +27,7 @@
 #ifndef MPD_MIXER_PLUGIN_HXX
 #define MPD_MIXER_PLUGIN_HXX
 
-struct config_param;
+struct ConfigBlock;
 struct AudioOutput;
 class Mixer;
 class MixerListener;
@@ -46,7 +46,7 @@ struct MixerPlugin {
 	 */
 	Mixer *(*init)(EventLoop &event_loop, AudioOutput &ao,
 		       MixerListener &listener,
-		       const config_param &param,
+		       const ConfigBlock &block,
 		       Error &error);
 
 	/**

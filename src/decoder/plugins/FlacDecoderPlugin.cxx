@@ -291,7 +291,7 @@ flac_decode(Decoder &decoder, InputStream &input_stream)
 }
 
 static bool
-oggflac_init(gcc_unused const config_param &param)
+oggflac_init(gcc_unused const ConfigBlock &block)
 {
 	return !!FLAC_API_SUPPORTS_OGG_FLAC;
 }

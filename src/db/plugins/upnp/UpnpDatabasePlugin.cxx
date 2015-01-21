@@ -33,7 +33,7 @@
 #include "db/LightDirectory.hxx"
 #include "db/LightSong.hxx"
 #include "db/Stats.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"
 #include "util/Error.hxx"
@@ -78,7 +78,7 @@ public:
 	UpnpDatabase():Database(upnp_db_plugin) {}
 
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
-				const config_param &param,
+				const ConfigBlock &block,
 				Error &error);
 
 	virtual bool Open(Error &error) override;
@@ -106,7 +106,7 @@ public:
 	}
 
 protected:
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 private:
 	bool VisitServer(const ContentDirectoryService &server,
@@ -158,10 +158,10 @@ private:
 Database *
 UpnpDatabase::Create(gcc_unused EventLoop &loop,
 		     gcc_unused DatabaseListener &listener,
-		     const config_param &param, Error &error)
+		     const ConfigBlock &block, Error &error)
 {
 	UpnpDatabase *db = new UpnpDatabase();
-	if (!db->Configure(param, error)) {
+	if (!db->Configure(block, error)) {
 		delete db;
 		return nullptr;
 	}
@@ -173,7 +173,7 @@ UpnpDatabase::Create(gcc_unused EventLoop &loop,
 }
 
 inline bool
-UpnpDatabase::Configure(const config_param &, Error &)
+UpnpDatabase::Configure(const ConfigBlock &, Error &)
 {
 	return true;
 }

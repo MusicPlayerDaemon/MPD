@@ -24,7 +24,7 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>
@@ -70,7 +70,7 @@ AutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
 	if (in_audio_format != child_audio_format) {
 		/* yes - create a convert_filter */
 
-		const config_param empty;
+		const ConfigBlock empty;
 		convert = filter_new(&convert_filter_plugin, empty, error);
 		if (convert == nullptr) {
 			filter->Close();

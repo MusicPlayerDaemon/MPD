@@ -23,7 +23,7 @@
 #include "../IcyInputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "event/SocketMonitor.hxx"
@@ -535,7 +535,7 @@ CurlMulti::OnTimeout()
  */
 
 static InputPlugin::InitResult
-input_curl_init(const config_param &param, Error &error)
+input_curl_init(const ConfigBlock &block, Error &error)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK) {
@@ -557,10 +557,10 @@ input_curl_init(const config_param &param, Error &error)
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
 
-	proxy = param.GetBlockValue("proxy");
-	proxy_port = param.GetBlockValue("proxy_port", 0u);
-	proxy_user = param.GetBlockValue("proxy_user");
-	proxy_password = param.GetBlockValue("proxy_password");
+	proxy = block.GetBlockValue("proxy");
+	proxy_port = block.GetBlockValue("proxy_port", 0u);
+	proxy_user = block.GetBlockValue("proxy_user");
+	proxy_password = block.GetBlockValue("proxy_password");
 
 	if (proxy == nullptr) {
 		/* deprecated proxy configuration */
@@ -571,8 +571,8 @@ input_curl_init(const config_param &param, Error &error)
 						   "");
 	}
 
-	verify_peer = param.GetBlockValue("verify_peer", true);
-	verify_host = param.GetBlockValue("verify_host", true);
+	verify_peer = block.GetBlockValue("verify_peer", true);
+	verify_host = block.GetBlockValue("verify_host", true);
 
 	CURLM *multi = curl_multi_init();
 	if (multi == nullptr) {

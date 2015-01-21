@@ -25,9 +25,11 @@
 #include <array>
 
 struct config_param;
+struct ConfigBlock;
 
 struct ConfigData {
 	std::array<config_param *, std::size_t(ConfigOption::MAX)> params;
+	std::array<ConfigBlock *, std::size_t(ConfigBlockOption::MAX)> blocks;
 
 	void Clear();
 };

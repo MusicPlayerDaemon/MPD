@@ -91,11 +91,11 @@ public:
 		return &base;
 	}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
+	bool Initialize(const ConfigBlock &block, Error &error) {
+		return base.Configure(block, error);
 	}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
 	void Close();
@@ -129,7 +129,7 @@ private:
 static constexpr Domain sles_domain("sles");
 
 inline bool
-SlesOutput::Configure(const config_param &, Error &)
+SlesOutput::Configure(const ConfigBlock &, Error &)
 {
 	return true;
 }
@@ -445,12 +445,12 @@ sles_test_default_device()
 }
 
 static AudioOutput *
-sles_output_init(const config_param &param, Error &error)
+sles_output_init(const ConfigBlock &block, Error &error)
 {
 	SlesOutput *sles = new SlesOutput();
 
-	if (!sles->Initialize(param, error) ||
-	    !sles->Configure(param, error)) {
+	if (!sles->Initialize(block, error) ||
+	    !sles->Configure(block, error)) {
 		delete sles;
 		return nullptr;
 	}

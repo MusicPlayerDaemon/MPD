@@ -91,17 +91,17 @@ HttpdOutput::Unbind()
 }
 
 inline bool
-HttpdOutput::Configure(const config_param &param, Error &error)
+HttpdOutput::Configure(const ConfigBlock &block, Error &error)
 {
 	/* read configuration */
-	name = param.GetBlockValue("name", "Set name in config");
-	genre = param.GetBlockValue("genre", "Set genre in config");
-	website = param.GetBlockValue("website", "Set website in config");
+	name = block.GetBlockValue("name", "Set name in config");
+	genre = block.GetBlockValue("genre", "Set genre in config");
+	website = block.GetBlockValue("website", "Set website in config");
 
-	unsigned port = param.GetBlockValue("port", 8000u);
+	unsigned port = block.GetBlockValue("port", 8000u);
 
 	const char *encoder_name =
-		param.GetBlockValue("encoder", "vorbis");
+		block.GetBlockValue("encoder", "vorbis");
 	const auto encoder_plugin = encoder_plugin_get(encoder_name);
 	if (encoder_plugin == nullptr) {
 		error.Format(httpd_output_domain,
@@ -109,11 +109,11 @@ HttpdOutput::Configure(const config_param &param, Error &error)
 		return false;
 	}
 
-	clients_max = param.GetBlockValue("max_clients", 0u);
+	clients_max = block.GetBlockValue("max_clients", 0u);
 
 	/* set up bind_to_address */
 
-	const char *bind_to_address = param.GetBlockValue("bind_to_address");
+	const char *bind_to_address = block.GetBlockValue("bind_to_address");
 	bool success = bind_to_address != nullptr &&
 		strcmp(bind_to_address, "any") != 0
 		? AddHost(bind_to_address, port, error)
@@ -123,7 +123,7 @@ HttpdOutput::Configure(const config_param &param, Error &error)
 
 	/* initialize encoder */
 
-	encoder = encoder_init(*encoder_plugin, param, error);
+	encoder = encoder_init(*encoder_plugin, block, error);
 	if (encoder == nullptr)
 		return false;
 
@@ -136,17 +136,17 @@ HttpdOutput::Configure(const config_param &param, Error &error)
 }
 
 inline bool
-HttpdOutput::Init(const config_param &param, Error &error)
+HttpdOutput::Init(const ConfigBlock &block, Error &error)
 {
-	return base.Configure(param, error);
+	return base.Configure(block, error);
 }
 
 static AudioOutput *
-httpd_output_init(const config_param &param, Error &error)
+httpd_output_init(const ConfigBlock &block, Error &error)
 {
 	HttpdOutput *httpd = new HttpdOutput(io_thread_get());
 
-	AudioOutput *result = httpd->InitAndConfigure(param, error);
+	AudioOutput *result = httpd->InitAndConfigure(block, error);
 	if (result == nullptr)
 		delete httpd;
 

@@ -32,7 +32,7 @@
 static constexpr Domain sndfile_domain("sndfile");
 
 static bool
-sndfile_init(gcc_unused const config_param &param)
+sndfile_init(gcc_unused const ConfigBlock &block)
 {
        LogDebug(sndfile_domain, sf_version_string());
        return true;

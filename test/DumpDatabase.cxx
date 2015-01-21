@@ -28,6 +28,7 @@
 #include "db/PlaylistVector.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "tag/TagConfig.hxx"
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"
@@ -121,12 +122,12 @@ main(int argc, char **argv)
 	/* do it */
 
 	const auto *path = config_get_param(ConfigOption::DB_FILE);
-	config_param param("database", path != nullptr ? path->line : -1);
+	ConfigBlock block(path != nullptr ? path->line : -1);
 	if (path != nullptr)
-		param.AddBlockParam("path", path->value.c_str(), path->line);
+		block.AddBlockParam("path", path->value.c_str(), path->line);
 
 	Database *db = plugin->create(event_loop, database_listener,
-				      param, error);
+				      block, error);
 
 	if (db == nullptr) {
 		cerr << error.GetMessage() << endl;

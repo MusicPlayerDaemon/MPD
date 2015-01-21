@@ -87,11 +87,11 @@ public:
 		:base(oss_output_plugin),
 		 fd(-1), device(_device) {}
 
-	bool Initialize(const config_param &param, Error &error_r) {
-		return base.Configure(param, error_r);
+	bool Initialize(const ConfigBlock &block, Error &error_r) {
+		return base.Configure(block, error_r);
 	}
 
-	static OssOutput *Create(const config_param &param, Error &error);
+	static OssOutput *Create(const ConfigBlock &block, Error &error);
 
 #ifdef AFMT_S24_PACKED
 	bool Enable(gcc_unused Error &error) {
@@ -192,7 +192,7 @@ oss_open_default(Error &error)
 	int err[ARRAY_SIZE(default_devices)];
 	enum oss_stat ret[ARRAY_SIZE(default_devices)];
 
-	const config_param empty;
+	const ConfigBlock empty;
 	for (int i = ARRAY_SIZE(default_devices); --i >= 0; ) {
 		ret[i] = oss_stat_device(default_devices[i], &err[i]);
 		if (ret[i] == OSS_STAT_NO_ERROR) {
@@ -236,12 +236,12 @@ oss_open_default(Error &error)
 }
 
 inline OssOutput *
-OssOutput::Create(const config_param &param, Error &error)
+OssOutput::Create(const ConfigBlock &block, Error &error)
 {
-	const char *device = param.GetBlockValue("device");
+	const char *device = block.GetBlockValue("device");
 	if (device != nullptr) {
 		OssOutput *od = new OssOutput();
-		if (!od->Initialize(param, error)) {
+		if (!od->Initialize(block, error)) {
 			delete od;
 			return nullptr;
 		}

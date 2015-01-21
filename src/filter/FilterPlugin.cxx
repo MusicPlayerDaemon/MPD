@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FilterPlugin.hxx"
 #include "FilterRegistry.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 
@@ -28,20 +28,20 @@
 
 Filter *
 filter_new(const struct filter_plugin *plugin,
-	   const config_param &param, Error &error)
+	   const ConfigBlock &block, Error &error)
 {
 	assert(plugin != nullptr);
 	assert(!error.IsDefined());
 
-	return plugin->init(param, error);
+	return plugin->init(block, error);
 }
 
 Filter *
-filter_configured_new(const config_param &param, Error &error)
+filter_configured_new(const ConfigBlock &block, Error &error)
 {
 	assert(!error.IsDefined());
 
-	const char *plugin_name = param.GetBlockValue("plugin");
+	const char *plugin_name = block.GetBlockValue("plugin");
 	if (plugin_name == nullptr) {
 		error.Set(config_domain, "No filter plugin specified");
 		return nullptr;
@@ -54,5 +54,5 @@ filter_configured_new(const config_param &param, Error &error)
 		return nullptr;
 	}
 
-	return filter_new(plugin, param, error);
+	return filter_new(plugin, block, error);
 }

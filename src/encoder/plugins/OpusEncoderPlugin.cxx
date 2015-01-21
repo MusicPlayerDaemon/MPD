@@ -73,9 +73,9 @@ static constexpr Domain opus_encoder_domain("opus_encoder");
 
 static bool
 opus_encoder_configure(struct opus_encoder *encoder,
-		       const config_param &param, Error &error)
+		       const ConfigBlock &block, Error &error)
 {
-	const char *value = param.GetBlockValue("bitrate", "auto");
+	const char *value = block.GetBlockValue("bitrate", "auto");
 	if (strcmp(value, "auto") == 0)
 		encoder->bitrate = OPUS_AUTO;
 	else if (strcmp(value, "max") == 0)
@@ -90,13 +90,13 @@ opus_encoder_configure(struct opus_encoder *encoder,
 		}
 	}
 
-	encoder->complexity = param.GetBlockValue("complexity", 10u);
+	encoder->complexity = block.GetBlockValue("complexity", 10u);
 	if (encoder->complexity > 10) {
 		error.Format(config_domain, "Invalid complexity");
 		return false;
 	}
 
-	value = param.GetBlockValue("signal", "auto");
+	value = block.GetBlockValue("signal", "auto");
 	if (strcmp(value, "auto") == 0)
 		encoder->signal = OPUS_AUTO;
 	else if (strcmp(value, "voice") == 0)
@@ -112,12 +112,12 @@ opus_encoder_configure(struct opus_encoder *encoder,
 }
 
 static Encoder *
-opus_encoder_init(const config_param &param, Error &error)
+opus_encoder_init(const ConfigBlock &block, Error &error)
 {
 	opus_encoder *encoder = new opus_encoder();
 
-	/* load configuration from "param" */
-	if (!opus_encoder_configure(encoder, param, error)) {
+	/* load configuration from "block" */
+	if (!opus_encoder_configure(encoder, block, error)) {
 		/* configuration has failed, roll back and return error */
 		delete encoder;
 		return nullptr;

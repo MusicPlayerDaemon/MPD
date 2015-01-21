@@ -23,76 +23,105 @@
 
 #include <string.h>
 
-const ConfigTemplate config_templates[] = {
-	{ "music_directory", false, false },
-	{ "playlist_directory", false, false },
-	{ "follow_inside_symlinks", false, false },
-	{ "follow_outside_symlinks", false, false },
-	{ "db_file", false, false },
-	{ "sticker_file", false, false },
-	{ "log_file", false, false },
-	{ "pid_file", false, false },
-	{ "state_file", false, false },
-	{ "state_file_interval", false, false },
-	{ "restore_paused", false, false },
-	{ "user", false, false },
-	{ "group", false, false },
-	{ "bind_to_address", true, false },
-	{ "port", false, false },
-	{ "log_level", false, false },
-	{ "zeroconf_name", false, false },
-	{ "zeroconf_enabled", false, false },
-	{ "password", true, false },
-	{ "default_permissions", false, false },
-	{ "audio_output", true, true },
-	{ "audio_output_format", false, false },
-	{ "mixer_type", false, false },
-	{ "replaygain", false, false },
-	{ "replaygain_preamp", false, false },
-	{ "replaygain_missing_preamp", false, false },
-	{ "replaygain_limit", false, false },
-	{ "volume_normalization", false, false },
-	{ "samplerate_converter", false, false },
-	{ "audio_buffer_size", false, false },
-	{ "buffer_before_play", false, false },
-	{ "http_proxy_host", false, false },
-	{ "http_proxy_port", false, false },
-	{ "http_proxy_user", false, false },
-	{ "http_proxy_password", false, false },
-	{ "connection_timeout", false, false },
-	{ "max_connections", false, false },
-	{ "max_playlist_length", false, false },
-	{ "max_command_list_size", false, false },
-	{ "max_output_buffer_size", false, false },
-	{ "filesystem_charset", false, false },
-	{ "id3v1_encoding", false, false },
-	{ "metadata_to_use", false, false },
-	{ "save_absolute_paths_in_playlists", false, false },
-	{ "decoder", true, true },
-	{ "input", true, true },
-	{ "gapless_mp3_playback", false, false },
-	{ "playlist_plugin", true, true },
-	{ "auto_update", false, false },
-	{ "auto_update_depth", false, false },
-	{ "despotify_user", false, false },
-	{ "despotify_password", false, false},
-	{ "despotify_high_bitrate", false, false },
-	{ "filter", true, true },
-	{ "database", false, true },
-	{ "neighbors", true, true },
+const ConfigTemplate config_param_templates[] = {
+	{ "music_directory", false },
+	{ "playlist_directory", false },
+	{ "follow_inside_symlinks", false },
+	{ "follow_outside_symlinks", false },
+	{ "db_file", false },
+	{ "sticker_file", false },
+	{ "log_file", false },
+	{ "pid_file", false },
+	{ "state_file", false },
+	{ "state_file_interval", false },
+	{ "restore_paused", false },
+	{ "user", false },
+	{ "group", false },
+	{ "bind_to_address", true },
+	{ "port", false },
+	{ "log_level", false },
+	{ "zeroconf_name", false },
+	{ "zeroconf_enabled", false },
+	{ "password", true },
+	{ "default_permissions", false },
+	{ "audio_output_format", false },
+	{ "mixer_type", false },
+	{ "replaygain", false },
+	{ "replaygain_preamp", false },
+	{ "replaygain_missing_preamp", false },
+	{ "replaygain_limit", false },
+	{ "volume_normalization", false },
+	{ "samplerate_converter", false },
+	{ "audio_buffer_size", false },
+	{ "buffer_before_play", false },
+	{ "http_proxy_host", false },
+	{ "http_proxy_port", false },
+	{ "http_proxy_user", false },
+	{ "http_proxy_password", false },
+	{ "connection_timeout", false },
+	{ "max_connections", false },
+	{ "max_playlist_length", false },
+	{ "max_command_list_size", false },
+	{ "max_output_buffer_size", false },
+	{ "filesystem_charset", false },
+	{ "id3v1_encoding", false },
+	{ "metadata_to_use", false },
+	{ "save_absolute_paths_in_playlists", false },
+	{ "gapless_mp3_playback", false },
+	{ "auto_update", false },
+	{ "auto_update_depth", false },
+	{ "despotify_user", false },
+	{ "despotify_password", false },
+	{ "despotify_high_bitrate", false },
 };
 
-static constexpr unsigned n_config_templates = ARRAY_SIZE(config_templates);
+static constexpr unsigned n_config_param_templates =
+	ARRAY_SIZE(config_param_templates);
 
-static_assert(n_config_templates == unsigned(ConfigOption::MAX),
-	      "Wrong number of config_templates");
+static_assert(n_config_param_templates == unsigned(ConfigOption::MAX),
+	      "Wrong number of config_param_templates");
+
+const ConfigTemplate config_block_templates[] = {
+	{ "audio_output", true },
+	{ "decoder", true },
+	{ "input", true },
+	{ "playlist_plugin", true },
+	{ "filter", true },
+	{ "database", false },
+	{ "neighbors", true },
+};
+
+static constexpr unsigned n_config_block_templates =
+	ARRAY_SIZE(config_block_templates);
+
+static_assert(n_config_block_templates == unsigned(ConfigBlockOption::MAX),
+	      "Wrong number of config_block_templates");
+
+gcc_pure
+static inline unsigned
+ParseConfigTemplateName(const ConfigTemplate templates[], unsigned count,
+			const char *name)
+{
+	unsigned i = 0;
+	for (; i < count; ++i)
+		if (strcmp(templates[i].name, name) == 0)
+			break;
+
+	return i;
+}
 
 ConfigOption
 ParseConfigOptionName(const char *name)
 {
-	for (unsigned i = 0; i < n_config_templates; ++i)
-		if (strcmp(config_templates[i].name, name) == 0)
-			return ConfigOption(i);
+	return ConfigOption(ParseConfigTemplateName(config_param_templates,
+						    n_config_param_templates,
+						    name));
+}
 
-	return ConfigOption::MAX;
+ConfigBlockOption
+ParseConfigBlockOptionName(const char *name)
+{
+	return ConfigBlockOption(ParseConfigTemplateName(config_block_templates,
+							 n_config_block_templates,
+							 name));
 }

@@ -51,8 +51,8 @@ struct FifoOutput {
 		 path(AllocatedPath::Null()), input(-1), output(-1),
 		 created(false) {}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
+	bool Initialize(const ConfigBlock &block, Error &error) {
+		return base.Configure(block, error);
 	}
 
 	bool Create(Error &error);
@@ -169,11 +169,11 @@ fifo_open(FifoOutput *fd, Error &error)
 }
 
 static AudioOutput *
-fifo_output_init(const config_param &param, Error &error)
+fifo_output_init(const ConfigBlock &block, Error &error)
 {
 	FifoOutput *fd = new FifoOutput();
 
-	fd->path = param.GetBlockPath("path", error);
+	fd->path = block.GetBlockPath("path", error);
 	if (fd->path.IsNull()) {
 		delete fd;
 
@@ -185,7 +185,7 @@ fifo_output_init(const config_param &param, Error &error)
 
 	fd->path_utf8 = fd->path.ToUTF8();
 
-	if (!fd->Initialize(param, error)) {
+	if (!fd->Initialize(block, error)) {
 		delete fd;
 		return nullptr;
 	}

@@ -38,11 +38,11 @@ static constexpr Domain wildmidi_domain("wildmidi");
 static constexpr unsigned WILDMIDI_SAMPLE_RATE = 48000;
 
 static bool
-wildmidi_init(const config_param &param)
+wildmidi_init(const ConfigBlock &block)
 {
 	Error error;
 	const AllocatedPath path =
-		param.GetBlockPath("config_file",
+		block.GetBlockPath("config_file",
 				   "/etc/timidity/timidity.cfg",
 				   error);
 	if (path.IsNull())

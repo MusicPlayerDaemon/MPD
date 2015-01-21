@@ -21,6 +21,7 @@
 #include "ConfigFile.hxx"
 #include "Data.hxx"
 #include "Param.hxx"
+#include "Block.hxx"
 #include "ConfigTemplates.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringUtil.hxx"
@@ -38,7 +39,7 @@ static constexpr char CONF_COMMENT = '#';
 static constexpr Domain config_file_domain("config_file");
 
 static bool
-config_read_name_value(struct config_param *param, char *input, unsigned line,
+config_read_name_value(ConfigBlock &block, char *input, unsigned line,
 		       Error &error)
 {
 	Tokenizer tokenizer(input);
@@ -65,7 +66,7 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 		return false;
 	}
 
-	const BlockParam *bp = param->GetBlockParam(name);
+	const BlockParam *bp = block.GetBlockParam(name);
 	if (bp != nullptr) {
 		error.Format(config_file_domain,
 			     "\"%s\" is duplicate, first defined on line %i",
@@ -73,14 +74,14 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 		return false;
 	}
 
-	param->AddBlockParam(name, value, line);
+	block.AddBlockParam(name, value, line);
 	return true;
 }
 
-static struct config_param *
+static ConfigBlock *
 config_read_block(BufferedReader &reader, Error &error)
 {
-	struct config_param *ret = new config_param(reader.GetLineNumber());
+	auto *ret = new ConfigBlock(reader.GetLineNumber());
 
 	while (true) {
 		char *line = reader.ReadLine();
@@ -115,7 +116,7 @@ config_read_block(BufferedReader &reader, Error &error)
 
 		/* parse name and value */
 
-		if (!config_read_name_value(ret, line, reader.GetLineNumber(),
+		if (!config_read_name_value(*ret, line, reader.GetLineNumber(),
 					    error)) {
 			assert(*line != 0);
 			delete ret;
@@ -123,6 +124,64 @@ config_read_block(BufferedReader &reader, Error &error)
 			return nullptr;
 		}
 	}
+}
+
+gcc_nonnull_all
+static void
+Append(ConfigBlock *&head, ConfigBlock *p)
+{
+	assert(p->next == nullptr);
+
+	auto **i = &head;
+	while (*i != nullptr)
+		i = &(*i)->next;
+
+	*i = p;
+}
+
+static bool
+ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
+		const char *name, ConfigOption o,
+		Tokenizer &tokenizer,
+		Error &error)
+{
+	const unsigned i = unsigned(o);
+	const ConfigTemplate &option = config_block_templates[i];
+	ConfigBlock *&head = config_data.blocks[i];
+
+	if (head != nullptr && !option.repeatable) {
+		ConfigBlock *block = head;
+		error.Format(config_file_domain,
+			     "config parameter \"%s\" is first defined "
+			     "on line %d and redefined on line %u\n",
+			     name, block->line,
+			     reader.GetLineNumber());
+		return false;
+	}
+
+	/* now parse the block or the value */
+
+	if (tokenizer.CurrentChar() != '{') {
+		error.Format(config_file_domain,
+			     "line %u: '{' expected",
+			     reader.GetLineNumber());
+		return false;
+	}
+
+	char *line = StripLeft(tokenizer.Rest() + 1);
+	if (*line != 0 && *line != CONF_COMMENT) {
+		error.Format(config_file_domain,
+			     "line %u: Unknown tokens after '{'",
+			     reader.GetLineNumber());
+		return false;
+	}
+
+	auto *param = config_read_block(reader, error);
+	if (param == nullptr)
+		return false;
+
+	Append(head, param);
+	return true;
 }
 
 gcc_nonnull_all
@@ -145,7 +204,7 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 		Error &error)
 {
 	const unsigned i = unsigned(o);
-	const ConfigTemplate &option = config_templates[i];
+	const ConfigTemplate &option = config_param_templates[i];
 	config_param *&head = config_data.params[i];
 
 	if (head != nullptr && !option.repeatable) {
@@ -160,57 +219,28 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 
 	/* now parse the block or the value */
 
-	struct config_param *param;
-	if (option.block) {
-		/* it's a block, call config_read_block() */
-
-		if (tokenizer.CurrentChar() != '{') {
+	const char *value = tokenizer.NextString(error);
+	if (value == nullptr) {
+		if (tokenizer.IsEnd())
 			error.Format(config_file_domain,
-				     "line %u: '{' expected",
+				     "line %u: Value missing",
 				     reader.GetLineNumber());
-			return false;
-		}
+		else
+			error.FormatPrefix("line %u: ",
+					   reader.GetLineNumber());
 
-		char *line = StripLeft(tokenizer.Rest() + 1);
-		if (*line != 0 && *line != CONF_COMMENT) {
-			error.Format(config_file_domain,
-				     "line %u: Unknown tokens after '{'",
-				     reader.GetLineNumber());
-			return false;
-		}
-
-		param = config_read_block(reader, error);
-		if (param == nullptr) {
-			return false;
-		}
-	} else {
-		/* a string value */
-
-		const char *value = tokenizer.NextString(error);
-		if (value == nullptr) {
-			if (tokenizer.IsEnd())
-				error.Format(config_file_domain,
-					     "line %u: Value missing",
-					     reader.GetLineNumber());
-			else
-				error.FormatPrefix("line %u: ",
-						   reader.GetLineNumber());
-
-			return false;
-		}
-
-		if (!tokenizer.IsEnd() &&
-		    tokenizer.CurrentChar() != CONF_COMMENT) {
-			error.Format(config_file_domain,
-				     "line %u: Unknown tokens after value",
-				     reader.GetLineNumber());
-			return false;
-		}
-
-		param = new config_param(value,
-					 reader.GetLineNumber());
+		return false;
 	}
 
+	if (!tokenizer.IsEnd() &&
+	    tokenizer.CurrentChar() != CONF_COMMENT) {
+		error.Format(config_file_domain,
+			     "line %u: Unknown tokens after value",
+			     reader.GetLineNumber());
+		return false;
+	}
+
+	auto *param = new config_param(value, reader.GetLineNumber());
 	Append(head, param);
 	return true;
 }
@@ -242,8 +272,13 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 		   "repeatable" flag */
 
 		const ConfigOption o = ParseConfigOptionName(name);
+		ConfigBlockOption bo;
 		if (o != ConfigOption::MAX) {
 			if (!ReadConfigParam(config_data, reader, name, o,
+					     tokenizer, error))
+				return false;
+		} else if ((bo = ParseConfigBlockOptionName(name)) != ConfigBlockOption::MAX) {
+			if (!ReadConfigBlock(config_data, reader, name, o,
 					     tokenizer, error))
 				return false;
 		} else {

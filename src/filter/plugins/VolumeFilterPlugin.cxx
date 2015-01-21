@@ -53,7 +53,7 @@ public:
 static constexpr Domain volume_domain("pcm_volume");
 
 static Filter *
-volume_filter_init(gcc_unused const config_param &param,
+volume_filter_init(gcc_unused const ConfigBlock &block,
 		   gcc_unused Error &error)
 {
 	return new VolumeFilter();

@@ -24,7 +24,7 @@
 #include "encoder/ToOutputStream.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -60,11 +60,11 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	config_param param;
-	param.AddBlockParam("quality", "5.0", -1);
+	ConfigBlock block;
+	block.AddBlockParam("quality", "5.0", -1);
 
 	Error error;
-	const auto encoder = encoder_init(*plugin, param, error);
+	const auto encoder = encoder_init(*plugin, block, error);
 	if (encoder == NULL) {
 		LogError(error, "Failed to initialize encoder");
 		return EXIT_FAILURE;

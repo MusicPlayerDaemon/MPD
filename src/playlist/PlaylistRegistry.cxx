@@ -36,7 +36,7 @@
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/Param.hxx"
+#include "config/Block.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -77,12 +77,12 @@ static bool playlist_plugins_enabled[n_playlist_plugins];
 void
 playlist_list_global_init(void)
 {
-	const config_param empty;
+	const ConfigBlock empty;
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
 		const auto *param =
-			config_find_block(ConfigOption::PLAYLIST_PLUGIN,
+			config_find_block(ConfigBlockOption::PLAYLIST_PLUGIN,
 					  "name", plugin->name);
 		if (param == nullptr)
 			param = &empty;

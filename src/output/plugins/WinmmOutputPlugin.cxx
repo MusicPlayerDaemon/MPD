@@ -122,15 +122,15 @@ fail:
 }
 
 static AudioOutput *
-winmm_output_init(const config_param &param, Error &error)
+winmm_output_init(const ConfigBlock &block, Error &error)
 {
 	WinmmOutput *wo = new WinmmOutput();
-	if (!wo->base.Configure(param, error)) {
+	if (!wo->base.Configure(block, error)) {
 		delete wo;
 		return nullptr;
 	}
 
-	const char *device = param.GetBlockValue("device");
+	const char *device = block.GetBlockValue("device");
 	if (!get_device_id(device, &wo->device_id, error)) {
 		delete wo;
 		return nullptr;

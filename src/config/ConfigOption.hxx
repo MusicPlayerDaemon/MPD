@@ -49,7 +49,6 @@ enum class ConfigOption {
 	ZEROCONF_ENABLED,
 	PASSWORD,
 	DEFAULT_PERMS,
-	AUDIO_OUTPUT,
 	AUDIO_OUTPUT_FORMAT,
 	MIXER_TYPE,
 	REPLAYGAIN,
@@ -73,15 +72,20 @@ enum class ConfigOption {
 	ID3V1_ENCODING,
 	METADATA_TO_USE,
 	SAVE_ABSOLUTE_PATHS,
-	DECODER,
-	INPUT,
 	GAPLESS_MP3_PLAYBACK,
-	PLAYLIST_PLUGIN,
 	AUTO_UPDATE,
 	AUTO_UPDATE_DEPTH,
 	DESPOTIFY_USER,
 	DESPOTIFY_PASSWORD,
 	DESPOTIFY_HIGH_BITRATE,
+	MAX
+};
+
+enum class ConfigBlockOption {
+	AUDIO_OUTPUT,
+	DECODER,
+	INPUT,
+	PLAYLIST_PLUGIN,
 	AUDIO_FILTER,
 	DATABASE,
 	NEIGHBORS,
@@ -98,5 +102,12 @@ enum class ConfigOption {
 gcc_pure
 enum ConfigOption
 ParseConfigOptionName(const char *name);
+
+/**
+ * @return #ConfigOption::MAX if not found
+ */
+gcc_pure
+enum ConfigBlockOption
+ParseConfigBlockOptionName(const char *name);
 
 #endif

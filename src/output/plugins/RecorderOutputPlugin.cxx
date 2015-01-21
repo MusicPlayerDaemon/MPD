@@ -81,13 +81,13 @@ class RecorderOutput {
 			encoder->Dispose();
 	}
 
-	bool Initialize(const config_param &param, Error &error_r) {
-		return base.Configure(param, error_r);
+	bool Initialize(const ConfigBlock &block, Error &error_r) {
+		return base.Configure(block, error_r);
 	}
 
-	static RecorderOutput *Create(const config_param &param, Error &error);
+	static RecorderOutput *Create(const ConfigBlock &block, Error &error);
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
 	void Close();
@@ -117,12 +117,12 @@ private:
 };
 
 inline bool
-RecorderOutput::Configure(const config_param &param, Error &error)
+RecorderOutput::Configure(const ConfigBlock &block, Error &error)
 {
 	/* read configuration */
 
 	const char *encoder_name =
-		param.GetBlockValue("encoder", "vorbis");
+		block.GetBlockValue("encoder", "vorbis");
 	const auto encoder_plugin = encoder_plugin_get(encoder_name);
 	if (encoder_plugin == nullptr) {
 		error.Format(config_domain,
@@ -130,11 +130,11 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 		return false;
 	}
 
-	path = param.GetBlockPath("path", error);
+	path = block.GetBlockPath("path", error);
 	if (error.IsDefined())
 		return false;
 
-	const char *fmt = param.GetBlockValue("format_path", nullptr);
+	const char *fmt = block.GetBlockValue("format_path", nullptr);
 	if (fmt != nullptr)
 		format_path = fmt;
 
@@ -150,7 +150,7 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 
 	/* initialize encoder */
 
-	encoder = encoder_init(*encoder_plugin, param, error);
+	encoder = encoder_init(*encoder_plugin, block, error);
 	if (encoder == nullptr)
 		return false;
 
@@ -158,16 +158,16 @@ RecorderOutput::Configure(const config_param &param, Error &error)
 }
 
 RecorderOutput *
-RecorderOutput::Create(const config_param &param, Error &error)
+RecorderOutput::Create(const ConfigBlock &block, Error &error)
 {
 	RecorderOutput *recorder = new RecorderOutput();
 
-	if (!recorder->Initialize(param, error)) {
+	if (!recorder->Initialize(block, error)) {
 		delete recorder;
 		return nullptr;
 	}
 
-	if (!recorder->Configure(param, error)) {
+	if (!recorder->Configure(block, error)) {
 		delete recorder;
 		return nullptr;
 	}

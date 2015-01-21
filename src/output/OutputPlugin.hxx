@@ -24,7 +24,7 @@
 
 #include <stddef.h>
 
-struct config_param;
+struct ConfigBlock;
 struct AudioFormat;
 struct Tag;
 struct AudioOutput;
@@ -55,8 +55,7 @@ struct AudioOutputPlugin {
 	 * @return nullptr on error, or an opaque pointer to the plugin's
 	 * data
 	 */
-	AudioOutput *(*init)(const config_param &param,
-				     Error &error);
+	AudioOutput *(*init)(const ConfigBlock &block, Error &error);
 
 	/**
 	 * Free resources allocated by this device.
@@ -162,7 +161,7 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 gcc_malloc
 AudioOutput *
 ao_plugin_init(const AudioOutputPlugin *plugin,
-	       const config_param &param,
+	       const ConfigBlock &block,
 	       Error &error);
 
 void

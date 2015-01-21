@@ -46,11 +46,11 @@ struct AoOutput {
 	AoOutput()
 		:base(ao_output_plugin) {}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
+	bool Initialize(const ConfigBlock &block, Error &error) {
+		return base.Configure(block, error);
 	}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 };
 
 static constexpr Domain ao_output_domain("ao_output");
@@ -90,20 +90,20 @@ ao_output_error(Error &error_r)
 }
 
 inline bool
-AoOutput::Configure(const config_param &param, Error &error)
+AoOutput::Configure(const ConfigBlock &block, Error &error)
 {
 	const char *value;
 
 	options = nullptr;
 
-	write_size = param.GetBlockValue("write_size", 1024u);
+	write_size = block.GetBlockValue("write_size", 1024u);
 
 	if (ao_output_ref == 0) {
 		ao_initialize();
 	}
 	ao_output_ref++;
 
-	value = param.GetBlockValue("driver", "default");
+	value = block.GetBlockValue("driver", "default");
 	if (0 == strcmp(value, "default"))
 		driver = ao_default_driver_id();
 	else
@@ -123,9 +123,9 @@ AoOutput::Configure(const config_param &param, Error &error)
 	}
 
 	FormatDebug(ao_output_domain, "using ao driver \"%s\" for \"%s\"\n",
-		    ai->short_name, param.GetBlockValue("name", nullptr));
+		    ai->short_name, block.GetBlockValue("name", nullptr));
 
-	value = param.GetBlockValue("options", nullptr);
+	value = block.GetBlockValue("options", nullptr);
 	if (value != nullptr) {
 		for (const auto &i : SplitString(value, ';')) {
 			const DivideString ss(i.c_str(), '=', true);
@@ -145,16 +145,16 @@ AoOutput::Configure(const config_param &param, Error &error)
 }
 
 static AudioOutput *
-ao_output_init(const config_param &param, Error &error)
+ao_output_init(const ConfigBlock &block, Error &error)
 {
 	AoOutput *ad = new AoOutput();
 
-	if (!ad->Initialize(param, error)) {
+	if (!ad->Initialize(block, error)) {
 		delete ad;
 		return nullptr;
 	}
 
-	if (!ad->Configure(param, error)) {
+	if (!ad->Configure(block, error)) {
 		delete ad;
 		return nullptr;
 	}

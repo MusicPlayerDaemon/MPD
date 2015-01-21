@@ -142,8 +142,8 @@ struct AlsaOutput {
 		return device.empty() ? default_device : device.c_str();
 	}
 
-	bool Configure(const config_param &param, Error &error);
-	static AlsaOutput *Create(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
+	static AlsaOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Enable(Error &error);
 	void Disable();
@@ -175,35 +175,35 @@ private:
 static constexpr Domain alsa_output_domain("alsa_output");
 
 inline bool
-AlsaOutput::Configure(const config_param &param, Error &error)
+AlsaOutput::Configure(const ConfigBlock &block, Error &error)
 {
-	if (!base.Configure(param, error))
+	if (!base.Configure(block, error))
 		return false;
 
-	device = param.GetBlockValue("device", "");
+	device = block.GetBlockValue("device", "");
 
-	use_mmap = param.GetBlockValue("use_mmap", false);
+	use_mmap = block.GetBlockValue("use_mmap", false);
 
-	dop = param.GetBlockValue("dop", false) ||
+	dop = block.GetBlockValue("dop", false) ||
 		/* legacy name from MPD 0.18 and older: */
-		param.GetBlockValue("dsd_usb", false);
+		block.GetBlockValue("dsd_usb", false);
 
-	buffer_time = param.GetBlockValue("buffer_time",
+	buffer_time = block.GetBlockValue("buffer_time",
 					      MPD_ALSA_BUFFER_TIME_US);
-	period_time = param.GetBlockValue("period_time", 0u);
+	period_time = block.GetBlockValue("period_time", 0u);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
-	if (!param.GetBlockValue("auto_resample", true))
+	if (!block.GetBlockValue("auto_resample", true))
 		mode |= SND_PCM_NO_AUTO_RESAMPLE;
 #endif
 
 #ifdef SND_PCM_NO_AUTO_CHANNELS
-	if (!param.GetBlockValue("auto_channels", true))
+	if (!block.GetBlockValue("auto_channels", true))
 		mode |= SND_PCM_NO_AUTO_CHANNELS;
 #endif
 
 #ifdef SND_PCM_NO_AUTO_FORMAT
-	if (!param.GetBlockValue("auto_format", true))
+	if (!block.GetBlockValue("auto_format", true))
 		mode |= SND_PCM_NO_AUTO_FORMAT;
 #endif
 
@@ -211,11 +211,11 @@ AlsaOutput::Configure(const config_param &param, Error &error)
 }
 
 inline AlsaOutput *
-AlsaOutput::Create(const config_param &param, Error &error)
+AlsaOutput::Create(const ConfigBlock &block, Error &error)
 {
 	AlsaOutput *ad = new AlsaOutput();
 
-	if (!ad->Configure(param, error)) {
+	if (!ad->Configure(block, error)) {
 		delete ad;
 		return nullptr;
 	}

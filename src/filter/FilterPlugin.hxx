@@ -26,7 +26,7 @@
 #ifndef MPD_FILTER_PLUGIN_HXX
 #define MPD_FILTER_PLUGIN_HXX
 
-struct config_param;
+struct ConfigBlock;
 class Filter;
 class Error;
 
@@ -36,7 +36,7 @@ struct filter_plugin {
 	/**
          * Allocates and configures a filter.
 	 */
-	Filter *(*init)(const config_param &param, Error &error);
+	Filter *(*init)(const ConfigBlock &block, Error &error);
 };
 
 /**
@@ -50,7 +50,7 @@ struct filter_plugin {
  */
 Filter *
 filter_new(const struct filter_plugin *plugin,
-	   const config_param &param, Error &error);
+	   const ConfigBlock &block, Error &error);
 
 /**
  * Creates a new filter, loads configuration and the plugin name from
@@ -62,6 +62,6 @@ filter_new(const struct filter_plugin *plugin,
  * @return a new filter object, or nullptr on error
  */
 Filter *
-filter_configured_new(const config_param &param, Error &error);
+filter_configured_new(const ConfigBlock &block, Error &error);
 
 #endif
