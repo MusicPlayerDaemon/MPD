@@ -59,8 +59,10 @@ BufferedReader::ReadLine()
 {
 	do {
 		char *line = ReadBufferedLine(buffer);
-		if (line != nullptr)
+		if (line != nullptr) {
+			++line_number;
 			return line;
+		}
 	} while (Fill(true));
 
 	if (last_error.IsDefined() || !eof || buffer.IsEmpty())
@@ -78,5 +80,6 @@ BufferedReader::ReadLine()
 
 	char *line = buffer.Read().data;
 	buffer.Clear();
+	++line_number;
 	return line;
 }

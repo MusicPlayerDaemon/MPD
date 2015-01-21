@@ -78,9 +78,9 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 }
 
 static struct config_param *
-config_read_block(BufferedReader &reader, int *count, Error &error)
+config_read_block(BufferedReader &reader, Error &error)
 {
-	struct config_param *ret = new config_param(*count);
+	struct config_param *ret = new config_param(reader.GetLineNumber());
 
 	while (true) {
 		char *line = reader.ReadLine();
@@ -93,7 +93,6 @@ config_read_block(BufferedReader &reader, int *count, Error &error)
 			return nullptr;
 		}
 
-		(*count)++;
 		line = StripLeft(line);
 		if (*line == 0 || *line == CONF_COMMENT)
 			continue;
@@ -106,8 +105,8 @@ config_read_block(BufferedReader &reader, int *count, Error &error)
 			if (*line != 0 && *line != CONF_COMMENT) {
 				delete ret;
 				error.Format(config_file_domain,
-					     "line %i: Unknown tokens after '}'",
-					     *count);
+					     "line %y: Unknown tokens after '}'",
+					     reader.GetLineNumber());
 				return nullptr;
 			}
 
@@ -116,10 +115,11 @@ config_read_block(BufferedReader &reader, int *count, Error &error)
 
 		/* parse name and value */
 
-		if (!config_read_name_value(ret, line, *count, error)) {
+		if (!config_read_name_value(ret, line, reader.GetLineNumber(),
+					    error)) {
 			assert(*line != 0);
 			delete ret;
-			error.FormatPrefix("line %i: ", *count);
+			error.FormatPrefix("line %u: ", reader.GetLineNumber());
 			return nullptr;
 		}
 	}
@@ -141,7 +141,6 @@ Append(config_param *&head, config_param *p)
 static bool
 ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 {
-	int count = 0;
 	struct config_param *param;
 
 	while (true) {
@@ -150,8 +149,6 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 			return true;
 
 		const char *name, *value;
-
-		count++;
 
 		line = StripLeft(line);
 		if (*line == 0 || *line == CONF_COMMENT)
@@ -164,7 +161,7 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 		name = tokenizer.NextWord(error);
 		if (name == nullptr) {
 			assert(!tokenizer.IsEnd());
-			error.FormatPrefix("line %i: ", count);
+			error.FormatPrefix("line %u: ", reader.GetLineNumber());
 			return false;
 		}
 
@@ -175,7 +172,8 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 		if (o == ConfigOption::MAX) {
 			error.Format(config_file_domain,
 				     "unrecognized parameter in config file at "
-				     "line %i: %s\n", count, name);
+				     "line %u: %s\n",
+				     reader.GetLineNumber(), name);
 			return false;
 		}
 
@@ -187,8 +185,9 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 			param = head;
 			error.Format(config_file_domain,
 				     "config parameter \"%s\" is first defined "
-				     "on line %i and redefined on line %i\n",
-				     name, param->line, count);
+				     "on line %d and redefined on line %u\n",
+				     name, param->line,
+				     reader.GetLineNumber());
 			return false;
 		}
 
@@ -199,19 +198,20 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 
 			if (tokenizer.CurrentChar() != '{') {
 				error.Format(config_file_domain,
-					     "line %i: '{' expected", count);
+					     "line %u: '{' expected",
+					     reader.GetLineNumber());
 				return false;
 			}
 
 			line = StripLeft(tokenizer.Rest() + 1);
 			if (*line != 0 && *line != CONF_COMMENT) {
 				error.Format(config_file_domain,
-					     "line %i: Unknown tokens after '{'",
-					     count);
+					     "line %u: Unknown tokens after '{'",
+					     reader.GetLineNumber());
 				return false;
 			}
 
-			param = config_read_block(reader, &count, error);
+			param = config_read_block(reader, error);
 			if (param == nullptr) {
 				return false;
 			}
@@ -222,10 +222,11 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 			if (value == nullptr) {
 				if (tokenizer.IsEnd())
 					error.Format(config_file_domain,
-						     "line %i: Value missing",
-						     count);
+						     "line %u: Value missing",
+						     reader.GetLineNumber());
 				else
-					error.FormatPrefix("line %i: ", count);
+					error.FormatPrefix("line %u: ",
+							   reader.GetLineNumber());
 
 				return false;
 			}
@@ -233,12 +234,13 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 			if (!tokenizer.IsEnd() &&
 			    tokenizer.CurrentChar() != CONF_COMMENT) {
 				error.Format(config_file_domain,
-					     "line %i: Unknown tokens after value",
-					     count);
+					     "line %u: Unknown tokens after value",
+					     reader.GetLineNumber());
 				return false;
 			}
 
-			param = new config_param(value, count);
+			param = new config_param(value,
+						 reader.GetLineNumber());
 		}
 
 		Append(head, param);
