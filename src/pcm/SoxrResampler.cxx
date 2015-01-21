@@ -41,6 +41,7 @@ static constexpr unsigned long SOXR_DEFAULT_RECIPE = SOXR_HQ;
 static constexpr unsigned long SOXR_INVALID_RECIPE = -1;
 
 static soxr_quality_spec_t soxr_quality;
+static soxr_runtime_spec_t soxr_runtime;
 
 static const char *
 soxr_quality_name(unsigned long recipe)
@@ -102,6 +103,9 @@ pcm_resample_soxr_global_init(const ConfigBlock &block, Error &error)
 		    "soxr converter '%s'",
 		    soxr_quality_name(recipe));
 
+	const unsigned n_threads = 1;
+	soxr_runtime = soxr_runtime_spec(n_threads);
+
 	return true;
 }
 
@@ -115,7 +119,7 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
 	soxr_error_t e;
 	soxr = soxr_create(af.sample_rate, new_sample_rate,
 			   af.channels, &e,
-			   nullptr, &soxr_quality, nullptr);
+			   nullptr, &soxr_quality, &soxr_runtime);
 	if (soxr == nullptr) {
 		error.Format(soxr_domain,
 			     "soxr initialization has failed: %s", e);
