@@ -38,7 +38,7 @@ struct config_param {
 
 	std::string value;
 
-	unsigned int line;
+	int line;
 
 	std::vector<BlockParam> block_params;
 
@@ -66,7 +66,7 @@ struct config_param {
 	 * configuration file.
 	 */
 	bool IsNull() const {
-		return line == unsigned(-1);
+		return line < 0;
 	}
 
 	gcc_nonnull_all

@@ -97,7 +97,7 @@ require_block_string(const config_param &param, const char *name)
 	const char *value = param.GetBlockValue(name);
 	if (value == nullptr)
 		FormatFatalError("no \"%s\" defined for shout device defined "
-				 "at line %u\n", name, param.line);
+				 "at line %d\n", name, param.line);
 
 	return value;
 }

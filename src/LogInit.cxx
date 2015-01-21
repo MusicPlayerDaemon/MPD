@@ -72,14 +72,14 @@ open_log_file(void)
 }
 
 static bool
-log_init_file(unsigned line, Error &error)
+log_init_file(int line, Error &error)
 {
 	assert(!out_path.IsNull());
 
 	out_fd = open_log_file();
 	if (out_fd < 0) {
 		const std::string out_path_utf8 = out_path.ToUTF8();
-		error.FormatErrno("failed to open log file \"%s\" (config line %u)",
+		error.FormatErrno("failed to open log file \"%s\" (config line %d)",
 				  out_path_utf8.c_str(), line);
 		return false;
 	}
@@ -89,7 +89,7 @@ log_init_file(unsigned line, Error &error)
 }
 
 static inline LogLevel
-parse_log_level(const char *value, unsigned line)
+parse_log_level(const char *value, int line)
 {
 	if (0 == strcmp(value, "default"))
 		return LogLevel::DEFAULT;
@@ -98,7 +98,7 @@ parse_log_level(const char *value, unsigned line)
 	else if (0 == strcmp(value, "verbose"))
 		return LogLevel::DEBUG;
 	else {
-		FormatFatalError("unknown log level \"%s\" at line %u",
+		FormatFatalError("unknown log level \"%s\" at line %d",
 				 value, line);
 	}
 }
