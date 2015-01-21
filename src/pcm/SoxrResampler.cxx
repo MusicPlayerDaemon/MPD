@@ -34,7 +34,12 @@ static constexpr Domain soxr_domain("soxr");
 
 static constexpr unsigned long SOXR_DEFAULT_RECIPE = SOXR_HQ;
 
-static unsigned long soxr_quality_recipe = SOXR_DEFAULT_RECIPE;
+/**
+ * Special value for "invalid argument".
+ */
+static constexpr unsigned long SOXR_INVALID_RECIPE = -1;
+
+static unsigned long soxr_quality_recipe;
 
 static const char *
 soxr_quality_name(unsigned long recipe)
@@ -55,39 +60,39 @@ soxr_quality_name(unsigned long recipe)
 	gcc_unreachable();
 }
 
-static bool
+gcc_pure
+static unsigned long
 soxr_parse_converter(const char *converter)
 {
 	assert(converter != nullptr);
 
 	assert(memcmp(converter, "soxr", 4) == 0);
 	if (converter[4] == '\0')
-		return true;
+		return SOXR_DEFAULT_RECIPE;
 	if (converter[4] != ' ')
-		return false;
+		return SOXR_INVALID_RECIPE;
 
 	// converter example is "soxr very high", we want the "very high" part
 	const char *quality = converter + 5;
 	if (strcmp(quality, "very high") == 0)
-		soxr_quality_recipe = SOXR_VHQ;
+		return SOXR_VHQ;
 	else if (strcmp(quality, "high") == 0)
-		soxr_quality_recipe = SOXR_HQ;
+		return SOXR_HQ;
 	else if (strcmp(quality, "medium") == 0)
-		soxr_quality_recipe = SOXR_MQ;
+		return SOXR_MQ;
 	else if (strcmp(quality, "low") == 0)
-		soxr_quality_recipe = SOXR_LQ;
+		return SOXR_LQ;
 	else if (strcmp(quality, "quick") == 0)
-		soxr_quality_recipe = SOXR_QQ;
+		return SOXR_QQ;
 	else
-		return false;
-
-	return true;
+		return SOXR_INVALID_RECIPE;
 }
 
 bool
 pcm_resample_soxr_global_init(const char *converter, Error &error)
 {
-	if (!soxr_parse_converter(converter)) {
+	soxr_quality_recipe = soxr_parse_converter(converter);
+	if (soxr_quality_recipe == SOXR_INVALID_RECIPE) {
 		error.Format(soxr_domain,
 			     "unknown samplerate converter '%s'", converter);
 		return false;
