@@ -48,7 +48,7 @@ struct config_param {
 	 */
 	bool used;
 
-	config_param(int _line=-1)
+	explicit config_param(int _line=-1)
 		:next(nullptr), line(_line), used(false) {}
 
 	gcc_nonnull_all
