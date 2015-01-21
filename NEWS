@@ -21,6 +21,7 @@ ver 0.20 (not yet released)
 * resampler
   - new block "resampler" in configuration file
     replacing the old "samplerate_converter" setting
+  - soxr: allow multi-threaded resampling
 * reset song priority on playback
 * write database and state file atomically
 * remove dependency on GLib

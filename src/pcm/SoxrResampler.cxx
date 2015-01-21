@@ -103,7 +103,7 @@ pcm_resample_soxr_global_init(const ConfigBlock &block, Error &error)
 		    "soxr converter '%s'",
 		    soxr_quality_name(recipe));
 
-	const unsigned n_threads = 1;
+	const unsigned n_threads = block.GetBlockValue("threads", 1);
 	soxr_runtime = soxr_runtime_spec(n_threads);
 
 	return true;

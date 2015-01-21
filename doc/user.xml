@@ -2392,6 +2392,17 @@ buffer_size: 16384</programlisting>
                   </itemizedlist>
                 </entry>
               </row>
+
+              <row>
+                <entry>
+                  <varname>threads</varname>
+                </entry>
+                <entry>
+                  The number of <application>libsoxr</application>
+                  threads.  "0" means "automatic".  The default is "1"
+                  which disables multi-threading.
+                </entry>
+              </row>
             </tbody>
           </tgroup>
         </informaltable>
