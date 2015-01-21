@@ -20,6 +20,7 @@
 #ifndef MPD_CONFIG_DATA_HXX
 #define MPD_CONFIG_DATA_HXX
 
+#include "Block.hxx"
 #include "ConfigOption.hxx"
 #include "Compiler.h"
 
@@ -29,31 +30,6 @@
 
 class AllocatedPath;
 class Error;
-
-struct block_param {
-	std::string name;
-	std::string value;
-	int line;
-
-	/**
-	 * This flag is false when nobody has queried the value of
-	 * this option yet.
-	 */
-	mutable bool used;
-
-	gcc_nonnull_all
-	block_param(const char *_name, const char *_value, int _line=-1)
-		:name(_name), value(_value), line(_line), used(false) {}
-
-	gcc_pure
-	int GetIntValue() const;
-
-	gcc_pure
-	unsigned GetUnsignedValue() const;
-
-	gcc_pure
-	bool GetBoolValue() const;
-};
 
 struct config_param {
 	/**

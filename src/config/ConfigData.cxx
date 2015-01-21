@@ -19,48 +19,12 @@
 
 #include "config.h"
 #include "ConfigData.hxx"
-#include "ConfigParser.hxx"
 #include "ConfigPath.hxx"
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "system/FatalError.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
-
-int
-block_param::GetIntValue() const
-{
-	char *endptr;
-	long value2 = strtol(value.c_str(), &endptr, 0);
-	if (*endptr != 0)
-		FormatFatalError("Not a valid number in line %i", line);
-
-	return value2;
-}
-
-unsigned
-block_param::GetUnsignedValue() const
-{
-	char *endptr;
-	unsigned long value2 = strtoul(value.c_str(), &endptr, 0);
-	if (*endptr != 0)
-		FormatFatalError("Not a valid number in line %i", line);
-
-	return (unsigned)value2;
-}
-
-bool
-block_param::GetBoolValue() const
-{
-	bool value2;
-	if (!get_bool(value.c_str(), &value2))
-		FormatFatalError("%s is not a boolean value (yes, true, 1) or "
-				 "(no, false, 0) on line %i\n",
-				 name.c_str(), line);
-
-	return value2;
-}
 
 config_param::config_param(const char *_value, int _line)
 	:next(nullptr), value(_value), line(_line), used(false) {}

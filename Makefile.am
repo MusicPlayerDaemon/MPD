@@ -770,6 +770,7 @@ libconf_a_SOURCES = \
 	src/config/ConfigDefaults.hxx \
 	src/config/ConfigPath.cxx src/config/ConfigPath.hxx \
 	src/config/ConfigData.cxx src/config/ConfigData.hxx \
+	src/config/Block.cxx src/config/Block.hxx \
 	src/config/ConfigParser.cxx src/config/ConfigParser.hxx \
 	src/config/ConfigGlobal.cxx src/config/ConfigGlobal.hxx \
 	src/config/ConfigFile.cxx src/config/ConfigFile.hxx \
