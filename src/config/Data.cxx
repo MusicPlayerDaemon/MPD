@@ -24,7 +24,8 @@
 void
 ConfigData::Clear()
 {
-	for (auto i : params)
+	for (auto &i : params) {
 		delete i;
-	params.fill(nullptr);
+		i = nullptr;
+	}
 }
