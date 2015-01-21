@@ -25,7 +25,7 @@
 #include <stdlib.h>
 
 int
-block_param::GetIntValue() const
+BlockParam::GetIntValue() const
 {
 	char *endptr;
 	long value2 = strtol(value.c_str(), &endptr, 0);
@@ -36,7 +36,7 @@ block_param::GetIntValue() const
 }
 
 unsigned
-block_param::GetUnsignedValue() const
+BlockParam::GetUnsignedValue() const
 {
 	char *endptr;
 	unsigned long value2 = strtoul(value.c_str(), &endptr, 0);
@@ -47,7 +47,7 @@ block_param::GetUnsignedValue() const
 }
 
 bool
-block_param::GetBoolValue() const
+BlockParam::GetBoolValue() const
 {
 	bool value2;
 	if (!get_bool(value.c_str(), &value2))

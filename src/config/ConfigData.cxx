@@ -34,7 +34,7 @@ config_param::~config_param()
 	delete next;
 }
 
-const block_param *
+const BlockParam *
 config_param::GetBlockParam(const char *name) const
 {
 	for (const auto &i : block_params) {
@@ -50,7 +50,7 @@ config_param::GetBlockParam(const char *name) const
 const char *
 config_param::GetBlockValue(const char *name, const char *default_value) const
 {
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)
 		return default_value;
 
@@ -66,7 +66,7 @@ config_param::GetBlockPath(const char *name, const char *default_value,
 	int line2 = line;
 	const char *s;
 
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp != nullptr) {
 		line2 = bp->line;
 		s = bp->value.c_str();
@@ -94,7 +94,7 @@ config_param::GetBlockPath(const char *name, Error &error) const
 int
 config_param::GetBlockValue(const char *name, int default_value) const
 {
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)
 		return default_value;
 
@@ -104,7 +104,7 @@ config_param::GetBlockValue(const char *name, int default_value) const
 unsigned
 config_param::GetBlockValue(const char *name, unsigned default_value) const
 {
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)
 		return default_value;
 
@@ -115,7 +115,7 @@ gcc_pure
 bool
 config_param::GetBlockValue(const char *name, bool default_value) const
 {
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)
 		return default_value;
 

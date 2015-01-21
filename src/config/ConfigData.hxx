@@ -42,7 +42,7 @@ struct config_param {
 
 	unsigned int line;
 
-	std::vector<block_param> block_params;
+	std::vector<BlockParam> block_params;
 
 	/**
 	 * This flag is false when nobody has queried the value of
@@ -78,7 +78,7 @@ struct config_param {
 	}
 
 	gcc_nonnull_all gcc_pure
-	const block_param *GetBlockParam(const char *_name) const;
+	const BlockParam *GetBlockParam(const char *_name) const;
 
 	gcc_pure
 	const char *GetBlockValue(const char *name,

@@ -25,7 +25,7 @@
 
 #include <string>
 
-struct block_param {
+struct BlockParam {
 	std::string name;
 	std::string value;
 	int line;
@@ -37,7 +37,7 @@ struct block_param {
 	mutable bool used;
 
 	gcc_nonnull_all
-	block_param(const char *_name, const char *_value, int _line=-1)
+	BlockParam(const char *_name, const char *_value, int _line=-1)
 		:name(_name), value(_value), line(_line), used(false) {}
 
 	gcc_pure

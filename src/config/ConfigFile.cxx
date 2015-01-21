@@ -67,7 +67,7 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 		return false;
 	}
 
-	const struct block_param *bp = param->GetBlockParam(name);
+	const BlockParam *bp = param->GetBlockParam(name);
 	if (bp != nullptr) {
 		error.Format(config_file_domain,
 			     "\"%s\" is duplicate, first defined on line %i",
