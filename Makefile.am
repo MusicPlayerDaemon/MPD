@@ -769,7 +769,7 @@ endif
 libconf_a_SOURCES = \
 	src/config/ConfigDefaults.hxx \
 	src/config/ConfigPath.cxx src/config/ConfigPath.hxx \
-	src/config/Data.hxx \
+	src/config/Data.cxx src/config/Data.hxx \
 	src/config/Block.cxx src/config/Block.hxx \
 	src/config/Param.cxx src/config/Param.hxx \
 	src/config/ConfigParser.cxx src/config/ConfigParser.hxx \

@@ -17,19 +17,14 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONFIG_DATA_HXX
-#define MPD_CONFIG_DATA_HXX
+#include "config.h"
+#include "Data.hxx"
+#include "Param.hxx"
 
-#include "ConfigOption.hxx"
-
-#include <array>
-
-struct config_param;
-
-struct ConfigData {
-	std::array<config_param *, std::size_t(CONF_MAX)> params;
-
-	void Clear();
-};
-
-#endif
+void
+ConfigData::Clear()
+{
+	for (auto i : params)
+		delete i;
+	params.fill(nullptr);
+}

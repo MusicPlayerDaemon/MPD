@@ -37,9 +37,7 @@ static ConfigData config_data;
 
 void config_global_finish(void)
 {
-	for (auto i : config_data.params)
-		delete i;
-	config_data.params.fill(0);
+	config_data.Clear();
 }
 
 void config_global_init(void)
