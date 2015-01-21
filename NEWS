@@ -1,4 +1,5 @@
 ver 0.19.9 (not yet released)
+* fix build failure with uClibc
 
 ver 0.19.8 (2015/01/14)
 * input

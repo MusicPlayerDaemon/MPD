@@ -23,12 +23,15 @@
 #if defined(HAVE_PTHREAD_SETNAME_NP) && !defined(__NetBSD__)
 #  define HAVE_THREAD_NAME
 #  include <pthread.h>
-#  include <stdio.h>
 #elif defined(HAVE_PRCTL)
 #  include <sys/prctl.h>
 #  ifdef PR_SET_NAME
 #    define HAVE_THREAD_NAME
 #  endif
+#endif
+
+#ifdef HAVE_THREAD_NAME
+#  include <stdio.h>
 #endif
 
 static inline void
