@@ -26,15 +26,12 @@
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/Limits.hxx"
 #include "fs/Path.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/io/FileReader.hxx"
+#include "fs/io/BufferedReader.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
-#include <stdio.h>
-
-static constexpr size_t MAX_STRING_SIZE = MPD_PATH_MAX + 80;
 
 static constexpr char CONF_COMMENT = '#';
 
@@ -81,18 +78,18 @@ config_read_name_value(struct config_param *param, char *input, unsigned line,
 }
 
 static struct config_param *
-config_read_block(FILE *fp, int *count, char *string, Error &error)
+config_read_block(BufferedReader &reader, int *count, Error &error)
 {
 	struct config_param *ret = new config_param(*count);
 
 	while (true) {
-		char *line;
-
-		line = fgets(string, MAX_STRING_SIZE, fp);
+		char *line = reader.ReadLine();
 		if (line == nullptr) {
 			delete ret;
-			error.Set(config_file_domain,
-				  "Expected '}' before end-of-file");
+
+			if (reader.Check(error))
+				error.Set(config_file_domain,
+					  "Expected '}' before end-of-file");
 			return nullptr;
 		}
 
@@ -142,21 +139,21 @@ Append(config_param *&head, config_param *p)
 }
 
 static bool
-ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
+ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 {
-	assert(fp != nullptr);
-
-	char string[MAX_STRING_SIZE + 1];
 	int count = 0;
 	struct config_param *param;
 
-	while (fgets(string, MAX_STRING_SIZE, fp)) {
-		char *line;
+	while (true) {
+		char *line = reader.ReadLine();
+		if (line == nullptr)
+			return true;
+
 		const char *name, *value;
 
 		count++;
 
-		line = StripLeft(string);
+		line = StripLeft(line);
 		if (*line == 0 || *line == CONF_COMMENT)
 			continue;
 
@@ -214,7 +211,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 				return false;
 			}
 
-			param = config_read_block(fp, &count, string, error);
+			param = config_read_block(reader, &count, error);
 			if (param == nullptr) {
 				return false;
 			}
@@ -246,8 +243,6 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 
 		Append(head, param);
 	}
-
-	return true;
 }
 
 bool
@@ -258,13 +253,11 @@ ReadConfigFile(ConfigData &config_data, Path path, Error &error)
 
 	FormatDebug(config_file_domain, "loading file %s", path_utf8.c_str());
 
-	FILE *fp = FOpen(path, FOpenMode::ReadText);
-	if (fp == nullptr) {
-		error.FormatErrno("Failed to open %s", path_utf8.c_str());
+	FileReader file(path, error);
+	if (!file.IsDefined())
 		return false;
-	}
 
-	bool result = ReadConfigFile(config_data, fp, error);
-	fclose(fp);
-	return result;
+	BufferedReader reader(file);
+	return ReadConfigFile(config_data, reader, error) &&
+		reader.Check(error);
 }
