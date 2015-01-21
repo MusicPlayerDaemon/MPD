@@ -87,7 +87,7 @@ pcm_resample_soxr_global_init(const char *converter, Error &error)
 {
 	if (!soxr_parse_converter(converter)) {
 		error.Format(soxr_domain,
-			    "unknown samplerate converter '%s'", converter);
+			     "unknown samplerate converter '%s'", converter);
 		return false;
 	}
 
