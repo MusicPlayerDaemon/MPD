@@ -51,7 +51,7 @@ static Filter *
 load_filter(const char *name)
 {
 	const config_param *param =
-		config_find_block(CONF_AUDIO_FILTER, "name", name);
+		config_find_block(ConfigOption::AUDIO_FILTER, "name", name);
 	if (param == NULL) {
 		fprintf(stderr, "No such configured filter: %s\n", name);
 		return nullptr;

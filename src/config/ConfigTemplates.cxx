@@ -84,7 +84,7 @@ const ConfigTemplate config_templates[] = {
 
 static constexpr unsigned n_config_templates = ARRAY_SIZE(config_templates);
 
-static_assert(n_config_templates == unsigned(CONF_MAX),
+static_assert(n_config_templates == unsigned(ConfigOption::MAX),
 	      "Wrong number of config_templates");
 
 ConfigOption
@@ -94,5 +94,5 @@ ParseConfigOptionName(const char *name)
 		if (strcmp(config_templates[i].name, name) == 0)
 			return ConfigOption(i);
 
-	return CONF_MAX;
+	return ConfigOption::MAX;
 }

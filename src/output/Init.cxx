@@ -108,7 +108,7 @@ audio_output_mixer_type(const config_param &param)
 
 	/* fall back to the global "mixer_type" setting (also
 	   deprecated) */
-	return mixer_type_parse(config_get_string(CONF_MIXER_TYPE,
+	return mixer_type_parse(config_get_string(ConfigOption::MIXER_TYPE,
 						  "hardware"));
 }
 
@@ -191,7 +191,7 @@ AudioOutput::Configure(const config_param &param, Error &error)
 
 	/* create the normalization filter (if configured) */
 
-	if (config_get_bool(CONF_VOLUME_NORMALIZATION, false)) {
+	if (config_get_bool(ConfigOption::VOLUME_NORMALIZATION, false)) {
 		Filter *normalize_filter =
 			filter_new(&normalize_filter_plugin, config_param(),
 				   IgnoreError());

@@ -141,12 +141,12 @@ static StateFile *state_file;
 static bool
 glue_daemonize_init(const struct options *options, Error &error)
 {
-	auto pid_file = config_get_path(CONF_PID_FILE, error);
+	auto pid_file = config_get_path(ConfigOption::PID_FILE, error);
 	if (pid_file.IsNull() && error.IsDefined())
 		return false;
 
-	daemonize_init(config_get_string(CONF_USER, nullptr),
-		       config_get_string(CONF_GROUP, nullptr),
+	daemonize_init(config_get_string(ConfigOption::USER, nullptr),
+		       config_get_string(ConfigOption::GROUP, nullptr),
 		       std::move(pid_file));
 
 	if (options->kill)
@@ -160,7 +160,7 @@ glue_daemonize_init(const struct options *options, Error &error)
 static bool
 glue_mapper_init(Error &error)
 {
-	auto playlist_dir = config_get_path(CONF_PLAYLIST_DIR, error);
+	auto playlist_dir = config_get_path(ConfigOption::PLAYLIST_DIR, error);
 	if (playlist_dir.IsNull() && error.IsDefined())
 		return false;
 
@@ -255,7 +255,7 @@ glue_sticker_init(void)
 {
 #ifdef ENABLE_SQLITE
 	Error error;
-	auto sticker_file = config_get_path(CONF_STICKER_FILE, error);
+	auto sticker_file = config_get_path(ConfigOption::STICKER_FILE, error);
 	if (sticker_file.IsNull()) {
 		if (error.IsDefined())
 			FatalError(error);
@@ -270,7 +270,7 @@ glue_sticker_init(void)
 static bool
 glue_state_file_init(Error &error)
 {
-	auto path_fs = config_get_path(CONF_STATE_FILE, error);
+	auto path_fs = config_get_path(ConfigOption::STATE_FILE, error);
 	if (path_fs.IsNull()) {
 		if (error.IsDefined())
 			return false;
@@ -286,8 +286,9 @@ glue_state_file_init(Error &error)
 #endif
 	}
 
-	unsigned interval = config_get_unsigned(CONF_STATE_FILE_INTERVAL,
-						StateFile::DEFAULT_INTERVAL);
+	const unsigned interval =
+		config_get_unsigned(ConfigOption::STATE_FILE_INTERVAL,
+				    StateFile::DEFAULT_INTERVAL);
 
 	state_file = new StateFile(std::move(path_fs), interval,
 				   *instance->partition,
@@ -324,7 +325,7 @@ initialize_decoder_and_player(void)
 	const struct config_param *param;
 
 	size_t buffer_size;
-	param = config_get_param(CONF_AUDIO_BUFFER_SIZE);
+	param = config_get_param(ConfigOption::AUDIO_BUFFER_SIZE);
 	if (param != nullptr) {
 		char *test;
 		long tmp = strtol(param->value.c_str(), &test, 10);
@@ -345,7 +346,7 @@ initialize_decoder_and_player(void)
 				 (unsigned long)buffer_size);
 
 	float perc;
-	param = config_get_param(CONF_BUFFER_BEFORE_PLAY);
+	param = config_get_param(ConfigOption::BUFFER_BEFORE_PLAY);
 	if (param != nullptr) {
 		char *test;
 		perc = strtod(param->value.c_str(), &test);
@@ -363,7 +364,7 @@ initialize_decoder_and_player(void)
 		buffered_before_play = buffered_chunks;
 
 	const unsigned max_length =
-		config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
+		config_get_positive(ConfigOption::MAX_PLAYLIST_LENGTH,
 				    DEFAULT_PLAYLIST_MAX_LENGTH);
 
 	instance->partition = new Partition(*instance,
@@ -503,7 +504,8 @@ int mpd_main(int argc, char *argv[])
 	}
 #endif
 
-	const unsigned max_clients = config_get_positive(CONF_MAX_CONN, 10);
+	const unsigned max_clients =
+		config_get_positive(ConfigOption::MAX_CONN, 10);
 	instance->client_list = new ClientList(max_clients);
 
 	initialize_decoder_and_player();
@@ -630,14 +632,14 @@ static int mpd_main_after_fork(struct options options)
 	instance->partition->outputs.SetReplayGainMode(replay_gain_get_real_mode(instance->partition->playlist.queue.random));
 
 #ifdef ENABLE_DATABASE
-	if (config_get_bool(CONF_AUTO_UPDATE, false)) {
+	if (config_get_bool(ConfigOption::AUTO_UPDATE, false)) {
 #ifdef ENABLE_INOTIFY
 		if (instance->storage != nullptr &&
 		    instance->update != nullptr)
 			mpd_inotify_init(*instance->event_loop,
 					 *instance->storage,
 					 *instance->update,
-					 config_get_unsigned(CONF_AUTO_UPDATE_DEPTH,
+					 config_get_unsigned(ConfigOption::AUTO_UPDATE_DEPTH,
 							     INT_MAX));
 #else
 		FormatWarning(main_domain,

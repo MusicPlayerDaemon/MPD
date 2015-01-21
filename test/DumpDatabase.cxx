@@ -120,7 +120,7 @@ main(int argc, char **argv)
 
 	/* do it */
 
-	const struct config_param *path = config_get_param(CONF_DB_FILE);
+	const auto *path = config_get_param(ConfigOption::DB_FILE);
 	config_param param("database", path != nullptr ? path->line : -1);
 	if (path != nullptr)
 		param.AddBlockParam("path", path->value.c_str(), path->line);

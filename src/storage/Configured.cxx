@@ -44,7 +44,7 @@ CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri,
 static AllocatedPath
 GetConfiguredMusicDirectory(Error &error)
 {
-	AllocatedPath path = config_get_path(CONF_MUSIC_DIR, error);
+	AllocatedPath path = config_get_path(ConfigOption::MUSIC_DIR, error);
 	if (path.IsNull() && !error.IsDefined())
 		path = GetUserMusicDir();
 
@@ -68,7 +68,7 @@ CreateConfiguredStorage(EventLoop &event_loop, Error &error)
 {
 	assert(!error.IsDefined());
 
-	auto uri = config_get_string(CONF_MUSIC_DIR, nullptr);
+	auto uri = config_get_string(ConfigOption::MUSIC_DIR, nullptr);
 	if (uri != nullptr && uri_has_scheme(uri))
 		return CreateConfiguredStorageUri(event_loop, uri, error);
 
@@ -78,5 +78,5 @@ CreateConfiguredStorage(EventLoop &event_loop, Error &error)
 bool
 IsStorageConfigured()
 {
-	return config_get_string(CONF_MUSIC_DIR, nullptr) != nullptr;
+	return config_get_string(ConfigOption::MUSIC_DIR, nullptr) != nullptr;
 }

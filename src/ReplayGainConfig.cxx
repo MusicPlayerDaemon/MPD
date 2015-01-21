@@ -81,7 +81,8 @@ replay_gain_set_mode_string(const char *p)
 
 void replay_gain_global_init(void)
 {
-	const struct config_param *param = config_get_param(CONF_REPLAYGAIN);
+	const struct config_param *param =
+		config_get_param(ConfigOption::REPLAYGAIN);
 
 	if (param != nullptr &&
 	    !replay_gain_set_mode_string(param->value.c_str())) {
@@ -89,7 +90,7 @@ void replay_gain_global_init(void)
 				 param->value.c_str(), param->line);
 	}
 
-	param = config_get_param(CONF_REPLAYGAIN_PREAMP);
+	param = config_get_param(ConfigOption::REPLAYGAIN_PREAMP);
 
 	if (param) {
 		char *test;
@@ -110,7 +111,7 @@ void replay_gain_global_init(void)
 		replay_gain_preamp = pow(10, f / 20.0);
 	}
 
-	param = config_get_param(CONF_REPLAYGAIN_MISSING_PREAMP);
+	param = config_get_param(ConfigOption::REPLAYGAIN_MISSING_PREAMP);
 
 	if (param) {
 		char *test;
@@ -131,7 +132,8 @@ void replay_gain_global_init(void)
 		replay_gain_missing_preamp = pow(10, f / 20.0);
 	}
 
-	replay_gain_limit = config_get_bool(CONF_REPLAYGAIN_LIMIT, DEFAULT_REPLAYGAIN_LIMIT);
+	replay_gain_limit = config_get_bool(ConfigOption::REPLAYGAIN_LIMIT,
+					    DEFAULT_REPLAYGAIN_LIMIT);
 }
 
 ReplayGainMode

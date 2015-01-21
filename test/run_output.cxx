@@ -62,7 +62,7 @@ static AudioOutput *
 load_audio_output(EventLoop &event_loop, const char *name)
 {
 	const config_param *param =
-		config_find_block(CONF_AUDIO_OUTPUT, "name", name);
+		config_find_block(ConfigOption::AUDIO_OUTPUT, "name", name);
 	if (param == NULL) {
 		fprintf(stderr, "No such configured audio output: %s\n", name);
 		return nullptr;

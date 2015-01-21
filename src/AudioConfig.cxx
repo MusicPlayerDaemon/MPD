@@ -39,7 +39,7 @@ getOutputAudioFormat(AudioFormat inAudioFormat)
 
 void initAudioConfig(void)
 {
-	const struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
+	const struct config_param *param = config_get_param(ConfigOption::AUDIO_OUTPUT_FORMAT);
 
 	if (param == nullptr)
 		return;

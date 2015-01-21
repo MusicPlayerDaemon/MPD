@@ -31,15 +31,15 @@ size_t client_max_output_buffer_size;
 
 void client_manager_init(void)
 {
-	client_timeout = config_get_positive(CONF_CONN_TIMEOUT,
+	client_timeout = config_get_positive(ConfigOption::CONN_TIMEOUT,
 					     CLIENT_TIMEOUT_DEFAULT);
 	client_max_command_list_size =
-		config_get_positive(CONF_MAX_COMMAND_LIST_SIZE,
+		config_get_positive(ConfigOption::MAX_COMMAND_LIST_SIZE,
 				    CLIENT_MAX_COMMAND_LIST_DEFAULT / 1024)
 		* 1024;
 
 	client_max_output_buffer_size =
-		config_get_positive(CONF_MAX_OUTPUT_BUFFER_SIZE,
+		config_get_positive(ConfigOption::MAX_OUTPUT_BUFFER_SIZE,
 				    CLIENT_MAX_OUTPUT_BUFFER_SIZE_DEFAULT / 1024)
 		* 1024;
 }

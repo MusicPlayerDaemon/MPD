@@ -35,7 +35,8 @@ static bool
 filter_chain_append_new(Filter &chain, const char *template_name, Error &error)
 {
 	const struct config_param *cfg =
-		config_find_block(CONF_AUDIO_FILTER, "name", template_name);
+		config_find_block(ConfigOption::AUDIO_FILTER, "name",
+				  template_name);
 	if (cfg == nullptr) {
 		error.Format(config_domain,
 			     "filter template not found: %s",

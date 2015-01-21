@@ -35,7 +35,8 @@
 void
 TagLoadConfig()
 {
-	const char *value = config_get_string(CONF_METADATA_TO_USE, nullptr);
+	const char *value = config_get_string(ConfigOption::METADATA_TO_USE,
+					      nullptr);
 	if (value == nullptr)
 		return;
 

@@ -92,7 +92,7 @@ void initPermissions(void)
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;
 
-	param = config_get_param(CONF_PASSWORD);
+	param = config_get_param(ConfigOption::PASSWORD);
 
 	if (param) {
 		permission_default = 0;
@@ -118,7 +118,7 @@ void initPermissions(void)
 		} while ((param = param->next) != nullptr);
 	}
 
-	param = config_get_param(CONF_DEFAULT_PERMS);
+	param = config_get_param(ConfigOption::DEFAULT_PERMS);
 
 	if (param)
 		permission_default = parsePermissions(param->value.c_str());

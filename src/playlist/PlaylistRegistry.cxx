@@ -81,9 +81,9 @@ playlist_list_global_init(void)
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
-		const struct config_param *param =
-			config_find_block(CONF_PLAYLIST_PLUGIN, "name",
-					  plugin->name);
+		const auto *param =
+			config_find_block(ConfigOption::PLAYLIST_PLUGIN,
+					  "name", plugin->name);
 		if (param == nullptr)
 			param = &empty;
 		else if (!param->GetBlockValue("enabled", true))

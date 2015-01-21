@@ -139,14 +139,14 @@ log_init(bool verbose, bool use_stdout, Error &error)
 
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
-	else if ((param = config_get_param(CONF_LOG_LEVEL)) != nullptr)
+	else if ((param = config_get_param(ConfigOption::LOG_LEVEL)) != nullptr)
 		SetLogThreshold(parse_log_level(param->value.c_str(),
 						param->line));
 
 	if (use_stdout) {
 		return true;
 	} else {
-		param = config_get_param(CONF_LOG_FILE);
+		param = config_get_param(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
 #ifdef HAVE_SYSLOG
 			/* no configuration: default to syslog (if
@@ -164,7 +164,7 @@ log_init(bool verbose, bool use_stdout, Error &error)
 			return true;
 #endif
 		} else {
-			out_path = config_get_path(CONF_LOG_FILE, error);
+			out_path = config_get_path(ConfigOption::LOG_FILE, error);
 			return !out_path.IsNull() &&
 				log_init_file(param->line, error);
 		}

@@ -43,7 +43,8 @@ input_stream_global_init(Error &error)
 		assert(plugin->open != nullptr);
 
 		const struct config_param *param =
-			config_find_block(CONF_INPUT, "plugin", plugin->name);
+			config_find_block(ConfigOption::INPUT, "plugin",
+					  plugin->name);
 		if (param == nullptr) {
 			param = &empty;
 		} else if (!param->GetBlockValue("enabled", true))

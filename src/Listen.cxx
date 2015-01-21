@@ -103,9 +103,9 @@ listen_systemd_activation(Error &error_r)
 bool
 listen_global_init(EventLoop &loop, Partition &partition, Error &error)
 {
-	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
+	int port = config_get_positive(ConfigOption::PORT, DEFAULT_PORT);
 	const struct config_param *param =
-		config_get_param(CONF_BIND_TO_ADDRESS);
+		config_get_param(ConfigOption::BIND_TO_ADDRESS);
 
 	listen_socket = new ClientListener(loop, partition);
 

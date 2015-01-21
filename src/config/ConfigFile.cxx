@@ -175,7 +175,7 @@ ReadConfigFile(ConfigData &config_data, FILE *fp, Error &error)
 		   "repeatable" flag */
 
 		const ConfigOption o = ParseConfigOptionName(name);
-		if (o == CONF_MAX) {
+		if (o == ConfigOption::MAX) {
 			error.Format(config_file_domain,
 				     "unrecognized parameter in config file at "
 				     "line %i: %s\n", count, name);

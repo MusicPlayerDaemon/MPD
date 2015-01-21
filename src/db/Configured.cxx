@@ -32,8 +32,8 @@ Database *
 CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 			 Error &error)
 {
-	const struct config_param *param = config_get_param(CONF_DATABASE);
-	const struct config_param *path = config_get_param(CONF_DB_FILE);
+	const auto *param = config_get_param(ConfigOption::DATABASE);
+	const auto *path = config_get_param(ConfigOption::DB_FILE);
 
 	if (param != nullptr && path != nullptr) {
 		error.Format(config_domain,

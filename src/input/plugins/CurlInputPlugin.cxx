@@ -564,10 +564,10 @@ input_curl_init(const config_param &param, Error &error)
 
 	if (proxy == nullptr) {
 		/* deprecated proxy configuration */
-		proxy = config_get_string(CONF_HTTP_PROXY_HOST, nullptr);
-		proxy_port = config_get_positive(CONF_HTTP_PROXY_PORT, 0);
-		proxy_user = config_get_string(CONF_HTTP_PROXY_USER, nullptr);
-		proxy_password = config_get_string(CONF_HTTP_PROXY_PASSWORD,
+		proxy = config_get_string(ConfigOption::HTTP_PROXY_HOST, nullptr);
+		proxy_port = config_get_positive(ConfigOption::HTTP_PROXY_PORT, 0);
+		proxy_user = config_get_string(ConfigOption::HTTP_PROXY_USER, nullptr);
+		proxy_password = config_get_string(ConfigOption::HTTP_PROXY_PASSWORD,
 						   "");
 	}
 

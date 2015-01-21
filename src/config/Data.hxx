@@ -27,7 +27,7 @@
 struct config_param;
 
 struct ConfigData {
-	std::array<config_param *, std::size_t(CONF_MAX)> params;
+	std::array<config_param *, std::size_t(ConfigOption::MAX)> params;
 
 	void Clear();
 };

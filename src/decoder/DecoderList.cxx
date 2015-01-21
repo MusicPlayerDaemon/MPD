@@ -132,7 +132,8 @@ void decoder_plugin_init_all(void)
 	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i) {
 		const DecoderPlugin &plugin = *decoder_plugins[i];
 		const struct config_param *param =
-			config_find_block(CONF_DECODER, "plugin", plugin.name);
+			config_find_block(ConfigOption::DECODER, "plugin",
+					  plugin.name);
 
 		if (param == nullptr)
 			param = &empty;

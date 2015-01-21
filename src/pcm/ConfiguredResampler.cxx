@@ -53,7 +53,7 @@ bool
 pcm_resampler_global_init(Error &error)
 {
 	const char *converter =
-		config_get_string(CONF_SAMPLERATE_CONVERTER, "");
+		config_get_string(ConfigOption::SAMPLERATE_CONVERTER, "");
 
 	if (strcmp(converter, "internal") == 0)
 		return true;

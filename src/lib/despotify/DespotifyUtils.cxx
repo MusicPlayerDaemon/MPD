@@ -124,9 +124,9 @@ mpd_despotify_get_session()
 		return g_session;
 
 	const char *const user =
-		config_get_string(CONF_DESPOTIFY_USER, nullptr);
+		config_get_string(ConfigOption::DESPOTIFY_USER, nullptr);
 	const char *const passwd =
-		config_get_string(CONF_DESPOTIFY_PASSWORD, nullptr);
+		config_get_string(ConfigOption::DESPOTIFY_PASSWORD, nullptr);
 
 	if (user == nullptr || passwd == nullptr) {
 		LogDebug(despotify_domain,
@@ -140,7 +140,7 @@ mpd_despotify_get_session()
 	}
 
 	const bool high_bitrate =
-		config_get_bool(CONF_DESPOTIFY_HIGH_BITRATE, true);
+		config_get_bool(ConfigOption::DESPOTIFY_HIGH_BITRATE, true);
 	g_session = despotify_init_client(callback, nullptr,
 					  high_bitrate, true);
 	if (!g_session) {

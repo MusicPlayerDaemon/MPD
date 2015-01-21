@@ -99,7 +99,8 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
 	/* use encoding field here? */
 	const char *encoding;
 	if (is_id3v1 &&
-	    (encoding = config_get_string(CONF_ID3V1_ENCODING, nullptr)) != nullptr) {
+	    (encoding = config_get_string(ConfigOption::ID3V1_ENCODING,
+					  nullptr)) != nullptr) {
 		id3_latin1_t *isostr = id3_ucs4_latin1duplicate(ucs4);
 		if (gcc_unlikely(isostr == nullptr))
 			return nullptr;
