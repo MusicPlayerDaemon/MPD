@@ -39,7 +39,7 @@ static constexpr unsigned long SOXR_DEFAULT_RECIPE = SOXR_HQ;
  */
 static constexpr unsigned long SOXR_INVALID_RECIPE = -1;
 
-static unsigned long soxr_quality_recipe;
+static soxr_quality_spec_t soxr_quality;
 
 static const char *
 soxr_quality_name(unsigned long recipe)
@@ -91,16 +91,18 @@ soxr_parse_converter(const char *converter)
 bool
 pcm_resample_soxr_global_init(const char *converter, Error &error)
 {
-	soxr_quality_recipe = soxr_parse_converter(converter);
-	if (soxr_quality_recipe == SOXR_INVALID_RECIPE) {
+	unsigned long recipe = soxr_parse_converter(converter);
+	if (recipe == SOXR_INVALID_RECIPE) {
 		error.Format(soxr_domain,
 			     "unknown samplerate converter '%s'", converter);
 		return false;
 	}
 
+	soxr_quality = soxr_quality_spec(recipe, 0);
+
 	FormatDebug(soxr_domain,
 		    "soxr converter '%s'",
-		    soxr_quality_name(soxr_quality_recipe));
+		    soxr_quality_name(recipe));
 
 	return true;
 }
@@ -113,10 +115,9 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
 	assert(audio_valid_sample_rate(new_sample_rate));
 
 	soxr_error_t e;
-	soxr_quality_spec_t quality = soxr_quality_spec(soxr_quality_recipe, 0);
 	soxr = soxr_create(af.sample_rate, new_sample_rate,
 			   af.channels, &e,
-			   nullptr, &quality, nullptr);
+			   nullptr, &soxr_quality, nullptr);
 	if (soxr == nullptr) {
 		error.Format(soxr_domain,
 			     "soxr initialization has failed: %s", e);
