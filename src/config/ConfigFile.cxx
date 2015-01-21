@@ -34,9 +34,9 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define MAX_STRING_SIZE	MPD_PATH_MAX+80
+static constexpr size_t MAX_STRING_SIZE = MPD_PATH_MAX + 80;
 
-#define CONF_COMMENT		'#'
+static constexpr char CONF_COMMENT = '#';
 
 static constexpr Domain config_file_domain("config_file");
 
