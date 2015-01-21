@@ -32,7 +32,9 @@
 
 static constexpr Domain soxr_domain("soxr");
 
-static unsigned long soxr_quality_recipe = SOXR_HQ;
+static constexpr unsigned long SOXR_DEFAULT_RECIPE = SOXR_HQ;
+
+static unsigned long soxr_quality_recipe = SOXR_DEFAULT_RECIPE;
 
 static const char *
 soxr_quality_name(unsigned long recipe)
