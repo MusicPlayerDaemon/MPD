@@ -21,6 +21,7 @@
 #include "ConfigGlobal.hxx"
 #include "ConfigParser.hxx"
 #include "ConfigData.hxx"
+#include "Param.hxx"
 #include "ConfigFile.hxx"
 #include "ConfigPath.hxx"
 #include "ConfigError.hxx"

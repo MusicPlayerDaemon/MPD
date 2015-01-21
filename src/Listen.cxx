@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Listen.hxx"
 #include "client/Client.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "event/ServerSocket.hxx"

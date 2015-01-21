@@ -21,7 +21,7 @@
 #include "FilterConfig.hxx"
 #include "plugins/ChainFilterPlugin.hxx"
 #include "FilterPlugin.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigError.hxx"

@@ -23,7 +23,7 @@
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/ToOutputStream.hxx"
 #include "AudioFormat.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"

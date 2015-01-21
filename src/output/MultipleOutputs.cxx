@@ -27,7 +27,7 @@
 #include "MusicChunk.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "notify.hxx"

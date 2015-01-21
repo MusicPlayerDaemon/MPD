@@ -24,7 +24,7 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>

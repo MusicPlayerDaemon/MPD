@@ -30,7 +30,7 @@
 #include "db/Stats.hxx"
 #include "SongFilter.hxx"
 #include "Compiler.h"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
 #include "util/Error.hxx"

@@ -33,7 +33,7 @@
 #include "db/LightDirectory.hxx"
 #include "db/LightSong.hxx"
 #include "db/Stats.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"
 #include "util/Error.hxx"

@@ -24,7 +24,7 @@
 #include "encoder/ToOutputStream.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"

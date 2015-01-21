@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ReplayGainConfig.hxx"
 #include "Idle.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "system/FatalError.hxx"
 

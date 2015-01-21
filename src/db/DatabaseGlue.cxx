@@ -22,7 +22,7 @@
 #include "Registry.hxx"
 #include "DatabaseError.hxx"
 #include "util/Error.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "DatabasePlugin.hxx"
 
 #include <string.h>

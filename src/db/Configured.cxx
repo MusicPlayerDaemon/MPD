@@ -21,7 +21,7 @@
 #include "Configured.hxx"
 #include "DatabaseGlue.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/StandardDirectory.hxx"

@@ -34,7 +34,7 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/FileOutputStream.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
 #include "util/Error.hxx"

@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "ConfigData.hxx"
+#include "Param.hxx"
 #include "ConfigPath.hxx"
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"

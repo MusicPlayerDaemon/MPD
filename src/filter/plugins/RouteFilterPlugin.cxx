@@ -41,7 +41,7 @@
 
 #include "config.h"
 #include "config/ConfigError.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "AudioFormat.hxx"
 #include "filter/FilterPlugin.hxx"
 #include "filter/FilterInternal.hxx"

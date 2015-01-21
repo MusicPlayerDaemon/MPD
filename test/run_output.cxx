@@ -20,7 +20,7 @@
 #include "config.h"
 #include "output/Internal.hxx"
 #include "output/OutputPlugin.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "Idle.hxx"

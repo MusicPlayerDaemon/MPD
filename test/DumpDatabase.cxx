@@ -27,7 +27,7 @@
 #include "db/LightSong.hxx"
 #include "db/PlaylistVector.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "tag/TagConfig.hxx"
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"

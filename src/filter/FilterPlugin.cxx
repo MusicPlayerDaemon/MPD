@@ -20,7 +20,7 @@
 #include "config.h"
 #include "FilterPlugin.hxx"
 #include "FilterRegistry.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 

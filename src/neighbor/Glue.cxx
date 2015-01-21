@@ -24,7 +24,7 @@
 #include "NeighborPlugin.hxx"
 #include "Info.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Error.hxx"
 

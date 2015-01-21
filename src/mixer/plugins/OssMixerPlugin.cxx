@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "mixer/MixerInternal.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "system/fd_util.h"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"

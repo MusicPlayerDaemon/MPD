@@ -21,7 +21,7 @@
 #include "LogInit.hxx"
 #include "LogBackend.hxx"
 #include "Log.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "system/FatalError.hxx"

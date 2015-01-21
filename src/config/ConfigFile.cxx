@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ConfigFile.hxx"
 #include "ConfigData.hxx"
+#include "Param.hxx"
 #include "ConfigTemplates.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringUtil.hxx"

@@ -36,7 +36,7 @@
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "Log.hxx"
 
 #include <assert.h>

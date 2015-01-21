@@ -21,7 +21,7 @@
 #include "AudioConfig.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "util/Error.hxx"

@@ -24,7 +24,7 @@
 #include "util/Error.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "Log.hxx"
 
 #include <assert.h>

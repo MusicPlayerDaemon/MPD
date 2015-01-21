@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"

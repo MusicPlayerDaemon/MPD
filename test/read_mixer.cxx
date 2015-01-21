@@ -24,7 +24,7 @@
 #include "pcm/Volume.hxx"
 #include "Main.hxx"
 #include "event/Loop.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 

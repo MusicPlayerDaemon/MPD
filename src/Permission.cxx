@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Permission.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "system/FatalError.hxx"
