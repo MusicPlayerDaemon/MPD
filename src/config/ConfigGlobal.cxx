@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ConfigGlobal.hxx"
 #include "ConfigParser.hxx"
-#include "ConfigData.hxx"
+#include "Data.hxx"
 #include "Param.hxx"
 #include "ConfigFile.hxx"
 #include "ConfigPath.hxx"

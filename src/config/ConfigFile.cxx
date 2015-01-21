@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "ConfigFile.hxx"
-#include "ConfigData.hxx"
+#include "Data.hxx"
 #include "Param.hxx"
 #include "ConfigTemplates.hxx"
 #include "util/Tokenizer.hxx"
