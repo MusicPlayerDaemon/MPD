@@ -141,7 +141,7 @@ Append(ConfigBlock *&head, ConfigBlock *p)
 
 static bool
 ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
-		const char *name, ConfigOption o,
+		const char *name, ConfigBlockOption o,
 		Tokenizer &tokenizer,
 		Error &error)
 {
@@ -278,7 +278,7 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 					     tokenizer, error))
 				return false;
 		} else if ((bo = ParseConfigBlockOptionName(name)) != ConfigBlockOption::MAX) {
-			if (!ReadConfigBlock(config_data, reader, name, o,
+			if (!ReadConfigBlock(config_data, reader, name, bo,
 					     tokenizer, error))
 				return false;
 		} else {
