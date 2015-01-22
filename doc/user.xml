@@ -770,35 +770,9 @@ systemctl start mpd.socket</programlisting>
         </para>
 
         <para>
-          The following resamplers are available (if enabled at
-          compile time):
+          Check the <link linkend="resampler_plugins">resampler plugin
+          reference</link> for a list of resamplers.
         </para>
-
-        <itemizedlist>
-          <listitem>
-            <para>
-              <ulink
-              url="http://www.mega-nerd.com/SRC/"><application>libsamplerate</application></ulink>
-              a.k.a. Secret Rabbit Code (SRC).
-            </para>
-          </listitem>
-
-          <listitem>
-            <para>
-              <ulink
-              url="http://sourceforge.net/projects/soxr/"><application>libsoxr</application></ulink>,
-              the SoX Resampler library
-            </para>
-          </listitem>
-
-          <listitem>
-            <para>
-              internal: low CPU usage, but very poor quality.  This is
-              the fallback if <application>MPD</application> was
-              compiled without an external resampler.
-            </para>
-          </listitem>
-        </itemizedlist>
 
         <para>
           The setting <varname>samplerate_converter</varname> controls
@@ -2327,6 +2301,41 @@ buffer_size: 16384</programlisting>
 
         <para>
           Encodes into WAV (lossless).
+        </para>
+      </section>
+    </section>
+
+    <section id="resampler_plugins">
+      <title>Resampler plugins</title>
+
+      <section id="internal_resampler">
+        <title><varname>internal</varname></title>
+
+        <para>
+          A resampler built into <application>MPD</application>.  Its
+          quality is very poor, but its CPU usage is low.  This is the
+          fallback if <application>MPD</application> was compiled
+          without an external resampler.
+        </para>
+      </section>
+
+      <section id="libsamplerate_resampler">
+        <title><varname>libsamplerate</varname></title>
+
+        <para>
+          A resampler using <ulink
+          url="http://www.mega-nerd.com/SRC/"><application>libsamplerate</application></ulink>
+          a.k.a. Secret Rabbit Code (SRC).
+        </para>
+      </section>
+
+      <section id="soxr_resampler">
+        <title><varname>soxr</varname></title>
+
+        <para>
+          A resampler using <ulink
+          url="http://sourceforge.net/projects/soxr/"><application>libsoxr</application></ulink>,
+          the SoX Resampler library
         </para>
       </section>
     </section>
