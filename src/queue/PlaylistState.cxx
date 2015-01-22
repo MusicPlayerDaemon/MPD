@@ -32,7 +32,6 @@
 #include "PlayerControl.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "fs/Limits.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "Log.hxx"
@@ -56,8 +55,6 @@
 #define PLAYLIST_STATE_FILE_STATE_PLAY		"play"
 #define PLAYLIST_STATE_FILE_STATE_PAUSE		"pause"
 #define PLAYLIST_STATE_FILE_STATE_STOP		"stop"
-
-#define PLAYLIST_BUFFER_SIZE	2*MPD_PATH_MAX
 
 void
 playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
