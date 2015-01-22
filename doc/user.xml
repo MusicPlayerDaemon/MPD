@@ -3192,6 +3192,11 @@ buffer_size: 16384</programlisting>
                   <para>
                     An alternative to <varname>path</varname> which
                     provides a format string referring to tag values.
+
+                    The special tag <varname>iso8601</varname> emits
+                    the current date and time in <ulink
+                    url="https://en.wikipedia.org/wiki/ISO_8601">ISO8601</ulink>
+                    format (UTC).
                     Every time a new song starts or a new tag gets
                     received from a radio station, a new file is
                     opened.  If the format does not render a file

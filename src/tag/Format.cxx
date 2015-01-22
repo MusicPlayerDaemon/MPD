@@ -26,6 +26,7 @@
 #include <algorithm>
 
 #include <string.h>
+#include <time.h>
 
 struct FormatTagContext {
 	const Tag &tag;
@@ -82,6 +83,32 @@ TagGetter(const void *object, const char *name)
 {
 	const auto &_ctx = *(const FormatTagContext *)object;
 	auto &ctx = const_cast<FormatTagContext &>(_ctx);
+
+	if (strcmp(name, "iso8601") == 0) {
+		time_t t = time(nullptr);
+#ifdef WIN32
+		const struct tm *tm2 = gmtime(&t);
+#else
+		struct tm tm;
+		const struct tm *tm2 = gmtime_r(&t, &tm);
+#endif
+		if (tm2 == nullptr)
+			return "";
+
+		strftime(ctx.buffer, sizeof(ctx.buffer),
+#ifdef WIN32
+			 /* kludge: use underscore instead of colon on
+			    Windows because colons are not allowed in
+			    file names, and this library is mostly
+			    used to generate file names */
+			 "%Y-%m-%dT%H_%M_%SZ",
+#else
+			 "%FT%TZ",
+#endif
+			 tm2);
+		return ctx.buffer;
+	}
+
 	const Tag &tag = ctx.tag;
 
 	TagType tag_type = tag_name_parse_i(name);
