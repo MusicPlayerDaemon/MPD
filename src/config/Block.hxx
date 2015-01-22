@@ -90,6 +90,11 @@ struct ConfigBlock {
 		return line < 0;
 	}
 
+	gcc_pure
+	bool IsEmpty() const {
+		return block_params.empty();
+	}
+
 	gcc_nonnull_all
 	void AddBlockParam(const char *_name, const char *_value,
 			   int _line=-1) {
