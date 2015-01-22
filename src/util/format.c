@@ -74,7 +74,8 @@ skip_format(const char *p)
 static bool
 is_name_char(char ch)
 {
-	return ch >= 'a' && ch <= 'z';
+	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
+		(ch >= '0' && ch <= '9') || ch == '_';
 }
 
 static char *
