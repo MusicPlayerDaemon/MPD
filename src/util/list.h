@@ -30,6 +30,10 @@
 #pragma GCC diagnostic ignored "-Wlanguage-extension-token"
 #endif
 
+#if defined(__GNUC__) && __GNUC__ >= 5
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
+#endif
+
 /**
  * container_of - cast a member of a structure out to the containing structure
  * @ptr:	the pointer to the member.
