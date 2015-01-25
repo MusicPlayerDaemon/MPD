@@ -43,23 +43,28 @@ static constexpr unsigned long SOXR_INVALID_RECIPE = -1;
 static soxr_quality_spec_t soxr_quality;
 static soxr_runtime_spec_t soxr_runtime;
 
+static constexpr struct {
+	unsigned long recipe;
+	const char *name;
+} soxr_quality_table[] = {
+	{ SOXR_VHQ, "very high" },
+	{ SOXR_HQ, "high" },
+	{ SOXR_MQ, "medium" },
+	{ SOXR_LQ, "low" },
+	{ SOXR_QQ, "quick" },
+	{ SOXR_INVALID_RECIPE, nullptr }
+};
+
+gcc_const
 static const char *
 soxr_quality_name(unsigned long recipe)
 {
-	switch (recipe) {
-	case SOXR_VHQ:
-		return "Very High Quality";
-	case SOXR_HQ:
-		return "High Quality";
-	case SOXR_MQ:
-		return "Medium Quality";
-	case SOXR_LQ:
-		return "Low Quality";
-	case SOXR_QQ:
-		return "Quick";
-	}
+	for (const auto *i = soxr_quality_table;; ++i) {
+		assert(i->name != nullptr);
 
-	gcc_unreachable();
+		if (i->recipe == recipe)
+			return i->name;
+	}
 }
 
 gcc_pure
@@ -69,18 +74,11 @@ soxr_parse_quality(const char *quality)
 	if (quality == nullptr)
 		return SOXR_DEFAULT_RECIPE;
 
-	if (strcmp(quality, "very high") == 0)
-		return SOXR_VHQ;
-	else if (strcmp(quality, "high") == 0)
-		return SOXR_HQ;
-	else if (strcmp(quality, "medium") == 0)
-		return SOXR_MQ;
-	else if (strcmp(quality, "low") == 0)
-		return SOXR_LQ;
-	else if (strcmp(quality, "quick") == 0)
-		return SOXR_QQ;
-	else
-		return SOXR_INVALID_RECIPE;
+	for (const auto *i = soxr_quality_table; i->name != nullptr; ++i)
+		if (strcmp(i->name, "very high") == 0)
+			return i->recipe;
+
+	return SOXR_INVALID_RECIPE;
 }
 
 bool
