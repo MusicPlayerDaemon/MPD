@@ -315,9 +315,8 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <programlisting>input {
-    plugin "despotify"
-    user "foo"
-    password "bar"
+    plugin "curl"
+    proxy "proxy.local"
 }
       </programlisting>
 
@@ -1581,66 +1580,6 @@ buffer_size: 16384</programlisting>
                   Verify the certificate's name against host?  <ulink
                   url="http://curl.haxx.se/libcurl/c/CURLOPT_SSL_VERIFYHOST.html">More
                   information</ulink>.
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
-
-      <section>
-        <title><varname>despotify</varname></title>
-
-        <para>
-          Plays <ulink url="http://www.spotify.com">Spotify</ulink> tracks using the despotify
-          library. The despotify plugin uses a <filename>spt://</filename> URI and a Spotify
-          URL. So for example, you can add a song with:
-        </para>
-        
-        <para>
-          <filename>mpc add spt://spotify:track:5qENVY0YEdZ7fiuOax70x1</filename>
-        </para>
-        
-        <para>
-          You need a Spotify premium account to use this plugin, and you need
-          to setup username and password in the configuration file. The
-          configuration settings are global since the despotify playlist plugin
-          use the same settings.
-        </para>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Setting</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  <varname>despotify_user</varname>
-                </entry>
-                <entry>
-                  Sets up the Spotify username (required)
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>despotify_password</varname>
-                </entry>
-                <entry>
-                  Sets up the Spotify password (required)
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>despotify_high_bitrate</varname>
-                </entry>
-                <entry>
-                  Set up if high bitrate should be used for Spotify tunes.
-                  High bitrate sounds better but slow systems can have problems
-                  with playback (default yes).
                 </entry>
               </row>
             </tbody>
@@ -3486,70 +3425,6 @@ buffer_size: 16384</programlisting>
           playlist files.
         </para>
       </section>
-
-      <section>
-        <title><varname>despotify</varname></title>
-
-        <para>
-          Adds <ulink url="http://www.spotify.com/">Spotify</ulink>
-          playlists. Spotify playlists use the <filename>spt://</filename> URI,
-          and a Spotify playlist URL. So for example, you can load a playlist
-          with
-        </para>
-        
-        <para>
-          <filename>mpc load spt://spotify:user:simon.kagstrom:playlist:3SUwkOe5VbVHysZcidEZtH</filename>
-        </para>
-        
-        <para>
-          See the despotify input plugin for configuration options (username
-          and password needs to be setup)
-        </para>
-      </section>
-
-      <section>
-        <title><varname>soundcloud</varname></title>
-
-        <para>
-          Adds <ulink url="https://www.soundcloud.com/">Soundcloud</ulink>
-          playlists. SoundCloud playlists use the <filename>soundcloud://</filename> URI,
-          and with a number of arguments, you may load different playlists with
-        </para>
-
-        <programlisting>
-mpc load soundcloud://track/TRACK_ID
-mpc load soundcloud://playlist/PLAYLIST_ID
-mpc load soundcloud://user/USERNAME
-mpc load soundcloud://search/SEARCH_QUERY
-mpc load soundcloud://url/https://soundcloud.com/ARTIST/TRACK-NAME
-        </programlisting>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Setting</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  <varname>apikey</varname>
-                  <parameter>client_id</parameter>
-                </entry>
-                <entry>
-                  User apikey/client_id can override the
-                  <application>MPD</application> token provided by
-                  SoundCloud.
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-
-      </section>
-
     </section>
   </chapter>
 </book>

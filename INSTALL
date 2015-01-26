@@ -113,9 +113,6 @@ For WavPack playback.
 libadplug - http://adplug.sourceforge.net/
 For AdLib playback.
 
-despotify - https://github.com/SimonKagstrom/despotify
-For Spotify playback.
-
 
 Optional Miscellaneous Dependencies
 -----------------------------------

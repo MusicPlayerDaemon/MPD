@@ -17,6 +17,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "Alloc.hxx"
 
 #include <stdlib.h>
@@ -62,14 +63,14 @@ xstrdup(const char *s)
 char *
 xstrndup(const char *s, size_t n)
 {
-#ifdef WIN32
-	char *p = (char *)xalloc(n + 1);
-	memcpy(p, s, n);
-	p[n] = 0;
-#else
+#ifdef HAVE_STRNDUP
 	char *p = strndup(s, n);
 	if (gcc_unlikely(p == nullptr))
 		oom();
+#else
+	char *p = (char *)xalloc(n + 1);
+	memcpy(p, s, n);
+	p[n] = 0;
 #endif
 
 	return p;

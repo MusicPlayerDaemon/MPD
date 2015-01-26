@@ -28,6 +28,10 @@ ver 0.20 (not yet released)
 * database
   - proxy: add TCP keepalive option
 
+ver 0.19.9 (not yet released)
+* fix build failure with uClibc
+* fix build failure on non-POSIX operating systems
+
 ver 0.19.8 (2015/01/14)
 * input
   - curl: fix bug after rewinding from end-of-file
@@ -200,6 +204,11 @@ ver 0.19 (2014/10/10)
 * ARM NEON optimizations
 * install systemd unit for socket activation
 * Android port
+
+ver 0.18.23 (not yet released)
+* despotify: remove defunct plugin
+* fix gcc 5.0 warnings
+
 
 ver 0.18.22 (2014/01/14)
 * fix clang 3.6 warnings

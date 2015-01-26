@@ -1151,7 +1151,7 @@ OK
           </term>
           <listitem>
             <para>
-              Searches case-sensitively for partial matches in the
+              Searches case-insensitively for partial matches in the
               current playlist.
             </para>
           </listitem>
