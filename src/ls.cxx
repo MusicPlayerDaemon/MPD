@@ -55,9 +55,6 @@ static const char *remoteUrlPrefixes[] = {
 #ifdef ENABLE_CDIO_PARANOIA
 	"cdda://",
 #endif
-#ifdef ENABLE_DESPOTIFY
-	"spt://",
-#endif
 	NULL
 };
 

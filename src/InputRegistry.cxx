@@ -42,10 +42,6 @@
 #include "input/CdioParanoiaInputPlugin.hxx"
 #endif
 
-#ifdef ENABLE_DESPOTIFY
-#include "input/DespotifyInputPlugin.hxx"
-#endif
-
 const InputPlugin *const input_plugins[] = {
 	&input_plugin_file,
 #ifdef ENABLE_ARCHIVE
@@ -62,9 +58,6 @@ const InputPlugin *const input_plugins[] = {
 #endif
 #ifdef ENABLE_CDIO_PARANOIA
 	&input_plugin_cdio_paranoia,
-#endif
-#ifdef ENABLE_DESPOTIFY
-	&input_plugin_despotify,
 #endif
 	nullptr
 };

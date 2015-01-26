@@ -276,11 +276,6 @@ AC_ARG_ENABLE(jack,
 
 AC_SYS_LARGEFILE
 
-AC_ARG_ENABLE(despotify,
-	AS_HELP_STRING([--enable-despotify],
-		[enable support for despotify (default: disable)]),,
-	[enable_despotify=no])
-
 AC_ARG_ENABLE(soundcloud,
 	AS_HELP_STRING([--enable-soundcloud],
 		[enable support for soundcloud.com]),,
@@ -724,14 +719,6 @@ if test x$enable_curl = xyes; then
 	AC_DEFINE(ENABLE_CURL, 1, [Define when libcurl is used for HTTP streaming])
 fi
 AM_CONDITIONAL(ENABLE_CURL, test x$enable_curl = xyes)
-
-dnl --------------------------------- Despotify ---------------------------------
-MPD_AUTO_PKG(despotify, DESPOTIFY, [despotify],
-	[Despotify support], [despotify not found])
-if test x$enable_despotify = xyes; then
-	AC_DEFINE(ENABLE_DESPOTIFY, 1, [Define when despotify is enabled])
-fi
-AM_CONDITIONAL(ENABLE_DESPOTIFY, test x$enable_despotify = xyes)
 
 dnl --------------------------------- Soundcloud ------------------------------
 if test x$enable_soundcloud != xno; then
@@ -1588,7 +1575,6 @@ fi
 printf '\nStreaming support:\n\t'
 results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
-results(despotify,[Despotify])
 results(soundcloud,[Soundcloud])
 printf '\n\t'
 results(mms,[MMS])

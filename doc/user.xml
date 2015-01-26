@@ -220,9 +220,8 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <programlisting>input {
-    plugin "despotify"
-    user "foo"
-    password "bar"
+    plugin "curl"
+    proxy "proxy.local"
 }
       </programlisting>
 
@@ -836,66 +835,6 @@ systemctl start mpd.socket</programlisting>
                   If the CD drive does not specify a byte order, MPD
                   assumes it is the CPU's native byte order.  This
                   setting allows overriding this.
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
-
-      <section>
-        <title><varname>despotify</varname></title>
-
-        <para>
-          Plays <ulink url="http://www.spotify.com">Spotify</ulink> tracks using the despotify
-          library. The despotify plugin uses a <filename>spt://</filename> URI and a Spotify
-          URL. So for example, you can add a song with:
-        </para>
-        
-        <para>
-          <filename>mpc add spt://spotify:track:5qENVY0YEdZ7fiuOax70x1</filename>
-        </para>
-        
-        <para>
-          You need a Spotify premium account to use this plugin, and you need
-          to setup username and password in the configuration file. The
-          configuration settings are global since the despotify playlist plugin
-          use the same settings.
-        </para>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Setting</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  <varname>despotify_user</varname>
-                </entry>
-                <entry>
-                  Sets up the Spotify username (required)
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>despotify_password</varname>
-                </entry>
-                <entry>
-                  Sets up the Spotify password (required)
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>despotify_high_bitrate</varname>
-                </entry>
-                <entry>
-                  Set up if high bitrate should be used for Spotify tunes.
-                  High bitrate sounds better but slow systems can have problems
-                  with playback (default yes).
                 </entry>
               </row>
             </tbody>
@@ -2193,27 +2132,6 @@ systemctl start mpd.socket</programlisting>
           playlist files.
         </para>
       </section>
-
-      <section>
-        <title><varname>despotify</varname></title>
-
-        <para>
-          Adds <ulink url="http://www.spotify.com/">Spotify</ulink>
-          playlists. Spotify playlists use the <filename>spt://</filename> URI,
-          and a Spotify playlist URL. So for example, you can load a playlist
-          with
-        </para>
-        
-        <para>
-          <filename>mpc load spt://spotify:user:simon.kagstrom:playlist:3SUwkOe5VbVHysZcidEZtH</filename>
-        </para>
-        
-        <para>
-          See the despotify input plugin for configuration options (username
-          and password needs to be setup)
-        </para>
-      </section>
-
     </section>
   </chapter>
 </book>

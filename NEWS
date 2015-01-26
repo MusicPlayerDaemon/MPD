@@ -1,4 +1,5 @@
 ver 0.18.23 (not yet released)
+* despotify: remove defunct plugin
 * fix gcc 5.0 warnings
 
 ver 0.18.22 (2014/01/14)

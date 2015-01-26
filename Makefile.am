@@ -221,11 +221,6 @@ EXTRA_src_mpd_DEPENDENCIES = src/win32/mpd_win32_rc.$(OBJEXT)
 src_mpd_LDFLAGS = -Wl,src/win32/mpd_win32_rc.$(OBJEXT)
 endif
 
-if ENABLE_DESPOTIFY
-src_mpd_SOURCES += \
-	src/DespotifyUtils.cxx src/DespotifyUtils.hxx
-endif
-
 if ENABLE_INOTIFY
 src_mpd_SOURCES += \
 	src/InotifyDomain.cxx src/InotifyDomain.hxx \
@@ -770,7 +765,6 @@ libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(CURL_CFLAGS) \
 	$(CDIO_PARANOIA_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
-	$(DESPOTIFY_CFLAGS) \
 	$(MMS_CFLAGS)
 
 INPUT_LIBS = \
@@ -778,7 +772,6 @@ INPUT_LIBS = \
 	$(CURL_LIBS) \
 	$(CDIO_PARANOIA_LIBS) \
 	$(FFMPEG_LIBS) \
-	$(DESPOTIFY_LIBS) \
 	$(MMS_LIBS)
 
 if ENABLE_CURL
@@ -801,12 +794,6 @@ endif
 if ENABLE_MMS
 libinput_a_SOURCES += \
 	src/input/MmsInputPlugin.cxx src/input/MmsInputPlugin.hxx
-endif
-
-if ENABLE_DESPOTIFY
-libinput_a_SOURCES += \
-	src/input/DespotifyInputPlugin.cxx \
-	src/input/DespotifyInputPlugin.hxx
 endif
 
 
@@ -988,12 +975,6 @@ libplaylist_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 PLAYLIST_LIBS = \
 	libplaylist_plugins.a \
 	$(FLAC_LIBS)
-
-if ENABLE_DESPOTIFY
-libplaylist_plugins_a_SOURCES += \
-	src/playlist/DespotifyPlaylistPlugin.cxx \
-	src/playlist/DespotifyPlaylistPlugin.hxx
-endif
 
 if ENABLE_SOUNDCLOUD
 libplaylist_plugins_a_SOURCES += \
@@ -1185,10 +1166,6 @@ test_visit_archive_SOURCES = test/visit_archive.cxx \
 	src/IOThread.cxx \
 	src/InputStream.cxx
 
-if ENABLE_DESPOTIFY
-test_visit_archive_SOURCES += src/DespotifyUtils.cxx
-endif
-
 endif
 
 test_dump_text_file_LDADD = \
@@ -1312,14 +1289,6 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 	src/AudioParser.cxx \
 	src/ReplayGainInfo.cxx \
 	src/AudioCompress/compress.c
-
-if ENABLE_DESPOTIFY
-test_read_tags_SOURCES += src/DespotifyUtils.cxx
-test_run_input_SOURCES += src/DespotifyUtils.cxx
-test_dump_text_file_SOURCES += src/DespotifyUtils.cxx
-test_dump_playlist_SOURCES += src/DespotifyUtils.cxx
-test_run_decoder_SOURCES += src/DespotifyUtils.cxx
-endif
 
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder

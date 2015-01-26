@@ -23,7 +23,6 @@
 #include "playlist/ExtM3uPlaylistPlugin.hxx"
 #include "playlist/M3uPlaylistPlugin.hxx"
 #include "playlist/XspfPlaylistPlugin.hxx"
-#include "playlist/DespotifyPlaylistPlugin.hxx"
 #include "playlist/SoundCloudPlaylistPlugin.hxx"
 #include "playlist/PlsPlaylistPlugin.hxx"
 #include "playlist/AsxPlaylistPlugin.hxx"
@@ -52,9 +51,6 @@ const struct playlist_plugin *const playlist_plugins[] = {
 	&pls_playlist_plugin,
 	&asx_playlist_plugin,
 	&rss_playlist_plugin,
-#ifdef ENABLE_DESPOTIFY
-	&despotify_playlist_plugin,
-#endif
 #ifdef ENABLE_SOUNDCLOUD
 	&soundcloud_playlist_plugin,
 #endif
