@@ -15,7 +15,7 @@ if configure_args[0] == '--64':
     host_arch = 'x86_64-w64-mingw32'
 
 # the path to the MPD sources
-mpd_path = os.path.dirname(os.path.dirname(sys.argv[0])) or '.'
+mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..'))
 
 # output directories
 lib_path = os.path.abspath('lib')
