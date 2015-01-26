@@ -206,6 +206,7 @@ if test x$host_is_linux = xyes; then
 fi
 
 AC_CHECK_FUNCS(getpwnam_r getpwuid_r)
+AC_CHECK_FUNCS(strndup)
 
 if test x$host_is_linux = xyes; then
 	MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
