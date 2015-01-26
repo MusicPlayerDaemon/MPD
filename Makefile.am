@@ -1125,7 +1125,6 @@ libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(NFS_CFLAGS) \
 	$(CDIO_PARANOIA_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
-	$(DESPOTIFY_CFLAGS) \
 	$(MMS_CFLAGS)
 
 INPUT_LIBS = \
@@ -1135,7 +1134,6 @@ INPUT_LIBS = \
 	$(NFS_LIBS) \
 	$(CDIO_PARANOIA_LIBS) \
 	$(FFMPEG_LIBS2) \
-	$(DESPOTIFY_LIBS) \
 	$(MMS_LIBS)
 
 if HAVE_ALSA
@@ -1180,15 +1178,6 @@ if ENABLE_MMS
 libinput_a_SOURCES += \
 	src/input/plugins/MmsInputPlugin.cxx src/input/plugins/MmsInputPlugin.hxx
 endif
-
-if ENABLE_DESPOTIFY
-libinput_a_SOURCES += \
-	src/lib/despotify/DespotifyUtils.cxx \
-	src/lib/despotify/DespotifyUtils.hxx \
-	src/input/plugins/DespotifyInputPlugin.cxx \
-	src/input/plugins/DespotifyInputPlugin.hxx
-endif
-
 
 liboutput_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AO_CFLAGS) \
@@ -1393,14 +1382,6 @@ PLAYLIST_LIBS = \
 	libplaylist_plugins.a \
 	$(EXPAT_LIBS) \
 	$(FLAC_LIBS)
-
-if ENABLE_DESPOTIFY
-libplaylist_plugins_a_SOURCES += \
-	src/lib/despotify/DespotifyUtils.cxx \
-	src/lib/despotify/DespotifyUtils.hxx \
-       src/playlist/plugins/DespotifyPlaylistPlugin.cxx \
-       src/playlist/plugins/DespotifyPlaylistPlugin.hxx
-endif
 
 if ENABLE_SOUNDCLOUD
 libplaylist_plugins_a_SOURCES += \
@@ -1636,12 +1617,6 @@ test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 
 if HAVE_LIBUPNP
 test_run_neighbor_explorer_SOURCES += src/lib/expat/ExpatParser.cxx
-endif
-
-if ENABLE_DESPOTIFY
-test_run_neighbor_explorer_SOURCES += \
-	src/lib/despotify/DespotifyUtils.cxx \
-	src/lib/despotify/DespotifyUtils.hxx
 endif
 
 endif

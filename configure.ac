@@ -446,11 +446,6 @@ MPD_DEPENDS([enable_jack], [enable_glib],
 
 AC_SYS_LARGEFILE
 
-AC_ARG_ENABLE(despotify,
-	AS_HELP_STRING([--enable-despotify],
-		[enable support for despotify (default: disable)]),,
-	[enable_despotify=no])
-
 AC_ARG_ENABLE(soundcloud,
 	AS_HELP_STRING([--enable-soundcloud],
 		[enable support for soundcloud.com]),,
@@ -979,14 +974,6 @@ if test x$enable_nfs = xyes; then
 	AC_DEFINE(ENABLE_NFS, 1, [Define when libnfs is used])
 fi
 AM_CONDITIONAL(ENABLE_NFS, test x$enable_nfs = xyes)
-
-dnl --------------------------------- Despotify ---------------------------------
-MPD_AUTO_PKG(despotify, DESPOTIFY, [despotify],
-	[Despotify support], [despotify not found])
-if test x$enable_despotify = xyes; then
-	AC_DEFINE(ENABLE_DESPOTIFY, 1, [Define when despotify is enabled])
-fi
-AM_CONDITIONAL(ENABLE_DESPOTIFY, test x$enable_despotify = xyes)
 
 dnl --------------------------------- Soundcloud ------------------------------
 if test x$enable_soundcloud != xno; then
@@ -1904,7 +1891,6 @@ printf '\nStreaming support:\n\t'
 results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
 results(smbclient,[SMBCLIENT])
-results(despotify,[Despotify])
 results(soundcloud,[Soundcloud])
 printf '\n\t'
 results(mms,[MMS])

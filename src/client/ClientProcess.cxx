@@ -41,7 +41,7 @@ client_process_command_list(Client &client, bool list_ok,
 
 		FormatDebug(client_domain, "process command \"%s\"", cmd);
 		ret = command_process(client, num++, cmd);
-		FormatDebug(client_domain, "command returned %i", ret);
+		FormatDebug(client_domain, "command returned %i", int(ret));
 		if (ret != CommandResult::OK || client.IsExpired())
 			break;
 		else if (list_ok)
@@ -90,7 +90,7 @@ client_process_line(Client &client, char *line)
 							  std::move(cmd_list));
 			FormatDebug(client_domain,
 				    "[%u] process command "
-				    "list returned %i", client.num, ret);
+				    "list returned %i", client.num, int(ret));
 
 			if (ret == CommandResult::CLOSE ||
 			    client.IsExpired())
@@ -126,7 +126,7 @@ client_process_line(Client &client, char *line)
 			ret = command_process(client, 0, line);
 			FormatDebug(client_domain,
 				    "[%u] command returned %i",
-				    client.num, ret);
+				    client.num, int(ret));
 
 			if (ret == CommandResult::CLOSE ||
 			    client.IsExpired())

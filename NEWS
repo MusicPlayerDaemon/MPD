@@ -175,6 +175,11 @@ ver 0.19 (2014/10/10)
 * install systemd unit for socket activation
 * Android port
 
+ver 0.18.23 (not yet released)
+* despotify: remove defunct plugin
+* fix gcc 5.0 warnings
+
+
 ver 0.18.22 (2014/01/14)
 * fix clang 3.6 warnings
 
