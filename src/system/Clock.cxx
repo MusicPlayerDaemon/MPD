@@ -40,8 +40,8 @@ MonotonicClockMS(void)
 	if (base.denom == 0)
 		(void)mach_timebase_info(&base);
 
-	return (unsigned)((mach_absolute_time() * base.numer)
-			  / (1000000 * base.denom));
+	return (unsigned)(((double)mach_absolute_time() * base.numer)
+			  / base.denom / 1000000);
 #elif defined(CLOCK_MONOTONIC)
 	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -82,8 +82,8 @@ MonotonicClockUS(void)
 	if (base.denom == 0)
 		(void)mach_timebase_info(&base);
 
-	return ((uint64_t)mach_absolute_time() * (uint64_t)base.numer)
-		/ (1000 * (uint64_t)base.denom);
+	return (uint64_t)(((double)mach_absolute_time() * base.numer)
+		/ base.denom / 1000);
 #elif defined(CLOCK_MONOTONIC)
 	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
