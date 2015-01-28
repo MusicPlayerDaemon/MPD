@@ -60,7 +60,7 @@ sticker_song_delete_value(const LightSong &song, const char *name,
 	return sticker_delete_value("song", uri.c_str(), name, error);
 }
 
-struct sticker *
+Sticker *
 sticker_song_get(const LightSong &song, Error &error)
 {
 	const auto uri = song.GetURI();

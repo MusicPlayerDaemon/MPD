@@ -38,7 +38,7 @@ print_sticker_cb(const char *name, const char *value, void *data)
 }
 
 void
-sticker_print(Client &client, const sticker &sticker)
+sticker_print(Client &client, const Sticker &sticker)
 {
 	sticker_foreach(sticker, print_sticker_cb, &client);
 }
