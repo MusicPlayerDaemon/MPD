@@ -125,27 +125,26 @@ dsdlib_tag_id3(InputStream &is,
 
 	const id3_length_t count = size - offset;
 
-	if (count < 10 || count > 256*1024)
+	if (count < 10 || count > 1024 * 1024)
 		return;
 
-	id3_byte_t *const id3_buf = static_cast<id3_byte_t*>(xalloc(count));
+	id3_byte_t *const id3_buf = new id3_byte_t[count];
+	if (id3_buf == nullptr)
+		return;
 
 	if (!decoder_read_full(nullptr, is, id3_buf, count)) {
-		free(id3_buf);
+		delete[] id3_buf;
 		return;
 	}
 
 	struct id3_tag *id3_tag = id3_tag_parse(id3_buf, count);
-	if (id3_tag == nullptr) {
-		free(id3_buf);
+	delete[] id3_buf;
+	if (id3_tag == nullptr)
 		return;
-	}
 
 	scan_id3_tag(id3_tag, handler, handler_ctx);
 
 	id3_tag_delete(id3_tag);
-
-	free(id3_buf);
 	return;
 }
 #endif
