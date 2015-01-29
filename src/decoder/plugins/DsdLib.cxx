@@ -128,15 +128,17 @@ dsdlib_tag_id3(InputStream &is,
 	if (count < 10 || count > 1024 * 1024)
 		return;
 
-	id3_byte_t *const id3_buf = static_cast<id3_byte_t*>(xalloc(count));
+	id3_byte_t *const id3_buf = new id3_byte_t[count];
+	if (id3_buf == nullptr)
+		return;
 
 	if (!decoder_read_full(nullptr, is, id3_buf, count)) {
-		free(id3_buf);
+		delete[] id3_buf;
 		return;
 	}
 
 	struct id3_tag *id3_tag = id3_tag_parse(id3_buf, count);
-	free(id3_buf);
+	delete[] id3_buf;
 	if (id3_tag == nullptr)
 		return;
 
