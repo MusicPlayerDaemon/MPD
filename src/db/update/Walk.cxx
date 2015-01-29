@@ -334,7 +334,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const FileInfo &info)
 	directory_set_stat(directory, info);
 
 	Error error;
-	const std::auto_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(directory.GetPath(), error));
+	const std::unique_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(directory.GetPath(), error));
 	if (reader.get() == nullptr) {
 		LogError(error);
 		return false;
