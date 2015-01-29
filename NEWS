@@ -1,4 +1,6 @@
 ver 0.19.9 (not yet released)
+* decoder
+  - dsdiff, dsf: raise ID3 tag limit to 1 MB
 * fix build failure with uClibc
 * fix build failure on non-POSIX operating systems
 

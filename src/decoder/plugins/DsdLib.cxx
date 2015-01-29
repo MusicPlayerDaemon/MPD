@@ -125,7 +125,7 @@ dsdlib_tag_id3(InputStream &is,
 
 	const id3_length_t count = size - offset;
 
-	if (count < 10 || count > 256*1024)
+	if (count < 10 || count > 1024 * 1024)
 		return;
 
 	id3_byte_t *const id3_buf = static_cast<id3_byte_t*>(xalloc(count));
