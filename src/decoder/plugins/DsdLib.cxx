@@ -136,16 +136,13 @@ dsdlib_tag_id3(InputStream &is,
 	}
 
 	struct id3_tag *id3_tag = id3_tag_parse(id3_buf, count);
-	if (id3_tag == nullptr) {
-		free(id3_buf);
+	free(id3_buf);
+	if (id3_tag == nullptr)
 		return;
-	}
 
 	scan_id3_tag(id3_tag, handler, handler_ctx);
 
 	id3_tag_delete(id3_tag);
-
-	free(id3_buf);
 	return;
 }
 #endif
