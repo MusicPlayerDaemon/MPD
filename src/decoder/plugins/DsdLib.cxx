@@ -117,12 +117,14 @@ dsdlib_tag_id3(InputStream &is,
 	if (tagoffset >= size)
 		return;
 
-	const id3_length_t count = size - tagoffset;
-	if (count < 10 || count > 1024 * 1024)
+	const auto count64 = size - tagoffset;
+	if (count64 < 10 || count64 > 1024 * 1024)
 		return;
 
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
 		return;
+
+	const id3_length_t count = count64;
 
 	id3_byte_t *const id3_buf = new id3_byte_t[count];
 	if (id3_buf == nullptr)
