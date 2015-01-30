@@ -28,8 +28,6 @@ noinst_LIBRARIES = \
 	libmixer_plugins.a \
 	liboutput_plugins.a
 
-libmpd_a_DEPENDENCIES =
-
 libmpd_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBMPDCLIENT_CFLAGS) \
 	$(AVAHI_CFLAGS) \
@@ -289,7 +287,7 @@ android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java andr
 android/build/include/org_musicpd_Bridge.h: android/build/bin/classes/org/musicpd/Bridge.class
 	javah -classpath $(ANDROID_SDK)/platforms/android-17/android.jar:android/build/bin/classes -d $(@D) org.musicpd.Bridge
 
-libmpd_a_DEPENDENCIES += android/build/include/org_musicpd_Bridge.h
+BUILT_SOURCES = android/build/include/org_musicpd_Bridge.h
 
 android/build/libs/armeabi-v7a/libmpd.so: libmpd.so android/build/build.xml
 	mkdir -p $(@D)
