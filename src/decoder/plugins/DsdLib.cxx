@@ -117,11 +117,10 @@ dsdlib_tag_id3(InputStream &is,
 
 	/* Prevent broken files causing problems */
 	const auto size = is.GetSize();
-	const auto offset = is.GetOffset();
-	if (offset >= size)
+	if (tagoffset >= size)
 		return;
 
-	const id3_length_t count = size - offset;
+	const id3_length_t count = size - tagoffset;
 
 	if (count < 10 || count > 1024 * 1024)
 		return;
