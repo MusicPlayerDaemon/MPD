@@ -112,17 +112,16 @@ dsdlib_tag_id3(InputStream &is,
 	if (tagoffset == 0 || !is.KnownSize())
 		return;
 
-	if (!dsdlib_skip_to(nullptr, is, tagoffset))
-		return;
-
 	/* Prevent broken files causing problems */
 	const auto size = is.GetSize();
 	if (tagoffset >= size)
 		return;
 
 	const id3_length_t count = size - tagoffset;
-
 	if (count < 10 || count > 1024 * 1024)
+		return;
+
+	if (!dsdlib_skip_to(nullptr, is, tagoffset))
 		return;
 
 	id3_byte_t *const id3_buf = new id3_byte_t[count];
