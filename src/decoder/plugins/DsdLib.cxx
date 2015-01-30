@@ -107,10 +107,8 @@ dsdlib_valid_freq(uint32_t samplefreq)
 void
 dsdlib_tag_id3(InputStream &is,
 	       const struct tag_handler *handler,
-	       void *handler_ctx, int64_t tagoffset)
+	       void *handler_ctx, offset_type tagoffset)
 {
-	assert(tagoffset >= 0);
-
 	if (tagoffset == 0 || !is.KnownSize())
 		return;
 
