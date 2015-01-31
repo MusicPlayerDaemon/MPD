@@ -322,7 +322,7 @@ wavpack_scan_file(Path path_fs,
 }
 
 /*
- * mpd input_stream <=> WavpackStreamReader wrapper callbacks
+ * #InputStream <=> WavpackStreamReader wrapper callbacks
  */
 
 /* This struct is needed for per-stream last_byte storage. */

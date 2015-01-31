@@ -53,7 +53,7 @@ struct DecoderPlugin {
 	void (*finish)(void);
 
 	/**
-	 * Decode a stream (data read from an #input_stream object).
+	 * Decode a stream (data read from an #InputStream object).
 	 *
 	 * Either implement this method or file_decode().  If
 	 * possible, it is recommended to implement this method,

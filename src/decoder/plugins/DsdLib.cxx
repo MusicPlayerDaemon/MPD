@@ -48,7 +48,7 @@ DsdId::Equals(const char *s) const
 }
 
 /**
- * Skip the #input_stream to the specified offset.
+ * Skip the #InputStream to the specified offset.
  */
 bool
 dsdlib_skip_to(Decoder *decoder, InputStream &is,
@@ -64,7 +64,7 @@ dsdlib_skip_to(Decoder *decoder, InputStream &is,
 }
 
 /**
- * Skip some bytes from the #input_stream.
+ * Skip some bytes from the #InputStream.
  */
 bool
 dsdlib_skip(Decoder *decoder, InputStream &is,

@@ -125,7 +125,7 @@ sndfile_vio_tell(void *user_data)
 }
 
 /**
- * This SF_VIRTUAL_IO implementation wraps MPD's #input_stream to a
+ * This SF_VIRTUAL_IO implementation wraps MPD's #InputStream to a
  * libsndfile stream.
  */
 static SF_VIRTUAL_IO vio = {

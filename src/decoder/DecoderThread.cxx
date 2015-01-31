@@ -60,14 +60,14 @@ decoder_command_finished_locked(DecoderControl &dc)
 }
 
 /**
- * Opens the input stream with input_stream::Open(), and waits until
+ * Opens the input stream with InputStream::Open(), and waits until
  * the stream gets ready.  If a decoder STOP command is received
  * during that, it cancels the operation (but does not close the
  * stream).
  *
  * Unlock the decoder before calling this function.
  *
- * @return an input_stream on success or if #DecoderCommand::STOP is
+ * @return an InputStream on success or if #DecoderCommand::STOP is
  * received, nullptr on error
  */
 static InputStream *

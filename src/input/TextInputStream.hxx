@@ -30,10 +30,10 @@ class TextInputStream {
 
 public:
 	/**
-	 * Wraps an existing #input_stream object into a #TextInputStream,
+	 * Wraps an existing #InputStream object into a #TextInputStream,
 	 * to read its contents as text lines.
 	 *
-	 * @param _is an open #input_stream object
+	 * @param _is an open #InputStream object
 	 */
 	explicit TextInputStream(InputStream &_is)
 		:is(_is) {}

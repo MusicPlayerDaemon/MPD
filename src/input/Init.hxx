@@ -23,13 +23,13 @@
 class Error;
 
 /**
- * Initializes this library and all input_stream implementations.
+ * Initializes this library and all #InputStream implementations.
  */
 bool
 input_stream_global_init(Error &error);
 
 /**
- * Deinitializes this library and all input_stream implementations.
+ * Deinitializes this library and all #InputStream implementations.
  */
 void input_stream_global_finish(void);
 
