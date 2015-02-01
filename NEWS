@@ -3,7 +3,7 @@ ver 0.18.23 (not yet released)
 * fix clock integer overflow on OS X
 * fix gcc 5.0 warnings
 
-ver 0.18.22 (2014/01/14)
+ver 0.18.22 (2015/01/14)
 * fix clang 3.6 warnings
 
 ver 0.18.21 (2014/12/17)
