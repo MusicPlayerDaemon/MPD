@@ -97,6 +97,8 @@ public:
 
 	bool Configure(const ConfigBlock &block, Error &error);
 
+	static SlesOutput *Create(const ConfigBlock &block, Error &error);
+
 	bool Open(AudioFormat &audio_format, Error &error);
 	void Close();
 
@@ -444,8 +446,8 @@ sles_test_default_device()
 	return true;
 }
 
-static AudioOutput *
-sles_output_init(const ConfigBlock &block, Error &error)
+inline SlesOutput *
+SlesOutput::Create(const ConfigBlock &block, Error &error)
 {
 	SlesOutput *sles = new SlesOutput();
 
@@ -455,7 +457,7 @@ sles_output_init(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return *sles;
+	return sles;
 }
 
 typedef AudioOutputWrapper<SlesOutput> Wrapper;
@@ -463,7 +465,7 @@ typedef AudioOutputWrapper<SlesOutput> Wrapper;
 const struct AudioOutputPlugin sles_output_plugin = {
 	"sles",
 	sles_test_default_device,
-	sles_output_init,
+	&Wrapper::Init,
 	&Wrapper::Finish,
 	nullptr,
 	nullptr,
