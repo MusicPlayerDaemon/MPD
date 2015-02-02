@@ -222,7 +222,7 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 	}
 
 	ContentDirectoryService server;
-	if (!discovery->getServer(vpath.front().c_str(), server, error))
+	if (!discovery->GetServer(vpath.front().c_str(), server, error))
 		return nullptr;
 
 	vpath.pop_front();
@@ -689,7 +689,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	auto vpath = stringToTokens(selection.uri, "/", true);
 	if (vpath.empty()) {
 		std::vector<ContentDirectoryService> servers;
-		if (!discovery->getDirServices(servers, error))
+		if (!discovery->GetDirectories(servers, error))
 			return false;
 
 		for (const auto &server : servers) {
@@ -714,7 +714,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	vpath.pop_front();
 
 	ContentDirectoryService server;
-	if (!discovery->getServer(servername.c_str(), server, error))
+	if (!discovery->GetServer(servername.c_str(), server, error))
 		return false;
 
 	return VisitServer(server, vpath, selection,
@@ -733,7 +733,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		return true;
 
 	std::vector<ContentDirectoryService> servers;
-	if (!discovery->getDirServices(servers, error))
+	if (!discovery->GetDirectories(servers, error))
 		return false;
 
 	std::set<std::string> values;

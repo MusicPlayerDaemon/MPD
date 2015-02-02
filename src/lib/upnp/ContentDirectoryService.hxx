@@ -62,7 +62,8 @@ public:
 	/**
 	 * Construct by copying data from device and service objects.
 	 *
-	 * The discovery service does this: use getDirServices()
+	 * The discovery service does this: use
+	 * UPnPDeviceDirectory::GetDirectories()
 	 */
 	ContentDirectoryService(const UPnPDevice &device,
 				const UPnPService &service);

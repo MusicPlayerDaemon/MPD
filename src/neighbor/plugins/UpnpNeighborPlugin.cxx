@@ -100,7 +100,7 @@ UpnpNeighborExplorer::GetList() const
 
 	{
 		Error error;
-		if (!discovery->getDirServices(tmp, error))
+		if (!discovery->GetDirectories(tmp, error))
 			LogError(error);
 	}
 
