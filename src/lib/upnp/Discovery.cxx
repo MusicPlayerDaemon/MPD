@@ -212,7 +212,6 @@ UPnPDeviceDirectory::Invoke(Upnp_EventType et, void *evp)
 bool
 UPnPDeviceDirectory::ExpireDevices(Error &error)
 {
-	const ScopeLock protect(mutex);
 	const unsigned now = MonotonicClockS();
 	bool didsomething = false;
 
@@ -291,11 +290,10 @@ bool
 UPnPDeviceDirectory::GetDirectories(std::vector<ContentDirectoryService> &out,
 				    Error &error)
 {
-	// Has locking, do it before our own lock
+	const ScopeLock protect(mutex);
+
 	if (!ExpireDevices(error))
 		return false;
-
-	const ScopeLock protect(mutex);
 
 	for (auto dit = directories.begin();
 	     dit != directories.end(); dit++) {
@@ -314,11 +312,10 @@ UPnPDeviceDirectory::GetServer(const char *friendly_name,
 			       ContentDirectoryService &server,
 			       Error &error)
 {
-	// Has locking, do it before our own lock
+	const ScopeLock protect(mutex);
+
 	if (!ExpireDevices(error))
 		return false;
-
-	const ScopeLock protect(mutex);
 
 	for (const auto &i : directories) {
 		const auto &device = i.device;

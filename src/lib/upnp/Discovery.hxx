@@ -138,6 +138,8 @@ private:
 	 * Look at the devices and get rid of those which have not
 	 * been seen for too long. We do this when listing the top
 	 * directory.
+	 *
+	 * Caller must lock #mutex.
 	 */
 	bool ExpireDevices(Error &error);
 
