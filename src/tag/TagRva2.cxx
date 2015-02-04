@@ -38,20 +38,20 @@ enum class Rva2Channel : uint8_t {
 	SUBWOOFER = 0x08
 };
 
-struct rva2_data {
+struct Rva2Data {
 	Rva2Channel type;
 	uint8_t volume_adjustment[2];
 	uint8_t peak_bits;
 };
 
 static inline id3_length_t
-rva2_peak_bytes(const struct rva2_data *data)
+rva2_peak_bytes(const Rva2Data *data)
 {
 	return (data->peak_bits + 7) / 8;
 }
 
 static inline int
-rva2_fixed_volume_adjustment(const struct rva2_data *data)
+rva2_fixed_volume_adjustment(const Rva2Data *data)
 {
 	signed int voladj_fixed;
 	voladj_fixed = (data->volume_adjustment[0] << 8) |
@@ -61,7 +61,7 @@ rva2_fixed_volume_adjustment(const struct rva2_data *data)
 }
 
 static inline float
-rva2_float_volume_adjustment(const struct rva2_data *data)
+rva2_float_volume_adjustment(const Rva2Data *data)
 {
 	/*
 	 * "The volume adjustment is encoded as a fixed point decibel
@@ -74,7 +74,7 @@ rva2_float_volume_adjustment(const struct rva2_data *data)
 
 static inline bool
 rva2_apply_data(ReplayGainInfo &rgi,
-		const struct rva2_data *data, const id3_latin1_t *id)
+		const Rva2Data *data, const id3_latin1_t *id)
 {
 	if (data->type != Rva2Channel::MASTER_VOLUME)
 		return false;
@@ -117,7 +117,7 @@ rva2_apply_frame(ReplayGainInfo &replay_gain_info,
 	 */
 
 	while (length >= 4) {
-		const struct rva2_data *d = (const struct rva2_data *)data;
+		const Rva2Data *d = (const Rva2Data *)data;
 		unsigned int peak_bytes = rva2_peak_bytes(d);
 		if (4 + peak_bytes > length)
 			break;
