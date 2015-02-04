@@ -26,20 +26,20 @@
 #include <stdint.h>
 #include <string.h>
 
-enum rva2_channel {
-	CHANNEL_OTHER = 0x00,
-	CHANNEL_MASTER_VOLUME = 0x01,
-	CHANNEL_FRONT_RIGHT = 0x02,
-	CHANNEL_FRONT_LEFT = 0x03,
-	CHANNEL_BACK_RIGHT = 0x04,
-	CHANNEL_BACK_LEFT = 0x05,
-	CHANNEL_FRONT_CENTRE = 0x06,
-	CHANNEL_BACK_CENTRE = 0x07,
-	CHANNEL_SUBWOOFER = 0x08
+enum class Rva2Channel : uint8_t {
+	OTHER = 0x00,
+	MASTER_VOLUME = 0x01,
+	FRONT_RIGHT = 0x02,
+	FRONT_LEFT = 0x03,
+	BACK_RIGHT = 0x04,
+	BACK_LEFT = 0x05,
+	FRONT_CENTRE = 0x06,
+	BACK_CENTRE = 0x07,
+	SUBWOOFER = 0x08
 };
 
 struct rva2_data {
-	uint8_t type;
+	Rva2Channel type;
 	uint8_t volume_adjustment[2];
 	uint8_t peak_bits;
 };
@@ -76,7 +76,7 @@ static inline bool
 rva2_apply_data(ReplayGainInfo &rgi,
 		const struct rva2_data *data, const id3_latin1_t *id)
 {
-	if (data->type != CHANNEL_MASTER_VOLUME)
+	if (data->type != Rva2Channel::MASTER_VOLUME)
 		return false;
 
 	float volume_adjustment = rva2_float_volume_adjustment(data);
