@@ -2,7 +2,9 @@ ver 0.19.9 (not yet released)
 * decoder
   - dsdiff, dsf: raise ID3 tag limit to 1 MB
 * playlist: fix loading duplicate tag types from state file
+* despotify: remove defunct plugin
 * fix clock integer overflow on OS X
+* fix gcc 5.0 warnings
 * fix build failure with uClibc
 * fix build failure on non-POSIX operating systems
 * fix dependency issue on parallel Android build
@@ -181,12 +183,12 @@ ver 0.19 (2014/10/10)
 * install systemd unit for socket activation
 * Android port
 
-ver 0.18.23 (not yet released)
+ver 0.18.23 (2015/02/06)
 * despotify: remove defunct plugin
+* fix clock integer overflow on OS X
 * fix gcc 5.0 warnings
 
-
-ver 0.18.22 (2014/01/14)
+ver 0.18.22 (2015/01/14)
 * fix clang 3.6 warnings
 
 ver 0.18.21 (2014/12/17)
