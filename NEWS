@@ -1,4 +1,4 @@
-ver 0.18.23 (not yet released)
+ver 0.18.23 (2015/02/06)
 * despotify: remove defunct plugin
 * fix clock integer overflow on OS X
 * fix gcc 5.0 warnings
