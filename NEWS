@@ -1,4 +1,4 @@
-ver 0.19.9 (not yet released)
+ver 0.19.9 (2015/02/06)
 * decoder
   - dsdiff, dsf: raise ID3 tag limit to 1 MB
 * playlist: fix loading duplicate tag types from state file
