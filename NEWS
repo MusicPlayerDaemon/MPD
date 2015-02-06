@@ -1,6 +1,7 @@
 ver 0.19.9 (not yet released)
 * decoder
   - dsdiff, dsf: raise ID3 tag limit to 1 MB
+* playlist: fix loading duplicate tag types from state file
 * fix clock integer overflow on OS X
 * fix build failure with uClibc
 * fix build failure on non-POSIX operating systems
