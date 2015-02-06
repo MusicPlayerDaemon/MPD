@@ -73,6 +73,7 @@ FileOutputStream::Commit(gcc_unused Error &error)
 	assert(IsDefined());
 
 	CloseHandle(handle);
+	handle = INVALID_HANDLE_VALUE;
 	return true;
 }
 
@@ -82,6 +83,7 @@ FileOutputStream::Cancel()
 	assert(IsDefined());
 
 	CloseHandle(handle);
+	handle = INVALID_HANDLE_VALUE;
 	RemoveFile(path);
 }
 
