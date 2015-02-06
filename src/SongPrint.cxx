@@ -52,14 +52,14 @@ song_print_uri(Client &client, const char *uri, bool base)
 			uri = allocated.c_str();
 	}
 
-	client_printf(client, "%s%s\n", SONG_FILE, uri);
+	client_printf(client, SONG_FILE "%s\n", uri);
 }
 
 void
 song_print_uri(Client &client, const LightSong &song, bool base)
 {
 	if (!base && song.directory != nullptr) {
-		client_printf(client, "%s%s/%s\n", SONG_FILE,
+		client_printf(client, SONG_FILE "%s/%s\n",
 			      song.directory, song.uri);
 	} else
 		song_print_uri(client, song.uri, base);
