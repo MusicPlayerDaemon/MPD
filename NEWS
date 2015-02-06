@@ -6,6 +6,7 @@ ver 0.19.9 (not yet released)
 * fix build failure with uClibc
 * fix build failure on non-POSIX operating systems
 * fix dependency issue on parallel Android build
+* fix database/state file saving on Windows
 
 ver 0.19.8 (2015/01/14)
 * input
