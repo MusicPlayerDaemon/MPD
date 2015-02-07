@@ -29,6 +29,7 @@ extern int listen_port;
 bool
 listen_global_init(EventLoop &loop, Partition &partition, Error &error);
 
-void listen_global_finish(void);
+void
+listen_global_finish();
 
 #endif
