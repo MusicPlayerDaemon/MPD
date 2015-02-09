@@ -1772,7 +1772,7 @@ OK
             <para>
               Clients that are connected via UNIX domain socket may
               use this command to read the tags of an arbitrary local
-              file (URI beginning with "file:///").
+              file (URI is an absolute path).
             </para>
           </listitem>
         </varlistentry>
@@ -1787,8 +1787,7 @@ OK
             <para>
               Read "comments" (i.e. key-value pairs) from the file
               specified by "URI".  This "URI" can be a path relative
-              to the music directory or a URL in the form
-              "file:///foo/bar.ogg".
+              to the music directory or an absolute path.
             </para>
             <para>
               This command may be used to list metadata of remote
