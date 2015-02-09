@@ -76,13 +76,15 @@ GetFSCharset()
 static inline std::string &&
 FixSeparators(std::string &&s)
 {
-#ifdef WIN32
 	// For whatever reason GCC can't convert constexpr to value reference.
 	// This leads to link errors when passing separators directly.
 	auto from = PathTraitsFS::SEPARATOR;
 	auto to = PathTraitsUTF8::SEPARATOR;
-	std::replace(s.begin(), s.end(), from, to);
-#endif
+
+	if (from != to)
+		/* convert backslash to slash on WIN32 */
+		std::replace(s.begin(), s.end(), from, to);
+
 	return std::move(s);
 }
 
