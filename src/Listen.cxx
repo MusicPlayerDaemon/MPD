@@ -48,8 +48,8 @@ public:
 		:ServerSocket(_loop), partition(_partition) {}
 
 private:
-	virtual void OnAccept(int fd, const sockaddr &address,
-			      size_t address_length, int uid) {
+	void OnAccept(int fd, const sockaddr &address,
+		      size_t address_length, int uid) override {
 		client_new(GetEventLoop(), partition,
 			   fd, &address, address_length, uid);
 	}
