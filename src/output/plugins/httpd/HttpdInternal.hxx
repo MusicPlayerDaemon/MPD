@@ -259,8 +259,7 @@ public:
 private:
 	virtual void RunDeferred() override;
 
-	virtual void OnAccept(int fd, const sockaddr &address,
-			      size_t address_length, int uid) override;
+	void OnAccept(int fd, SocketAddress address, int uid) override;
 };
 
 extern const class Domain httpd_output_domain;

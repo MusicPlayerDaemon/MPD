@@ -24,7 +24,7 @@
 
 #include <stddef.h>
 
-struct sockaddr;
+class SocketAddress;
 class EventLoop;
 class Error;
 class AllocatedPath;
@@ -51,7 +51,7 @@ public:
 	}
 
 private:
-	OneServerSocket &AddAddress(const sockaddr &address, size_t length);
+	OneServerSocket &AddAddress(SocketAddress address);
 
 	/**
 	 * Add a listener on a port on all IPv4 interfaces.
@@ -111,8 +111,7 @@ public:
 	void Close();
 
 protected:
-	virtual void OnAccept(int fd, const sockaddr &address,
-			      size_t address_length, int uid) = 0;
+	virtual void OnAccept(int fd, SocketAddress address, int uid) = 0;
 };
 
 #endif

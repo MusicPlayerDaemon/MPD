@@ -23,6 +23,7 @@
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
+#include "net/SocketAddress.hxx"
 #include "event/ServerSocket.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -48,10 +49,9 @@ public:
 		:ServerSocket(_loop), partition(_partition) {}
 
 private:
-	void OnAccept(int fd, const sockaddr &address,
-		      size_t address_length, int uid) override {
+	void OnAccept(int fd, SocketAddress address, int uid) override {
 		client_new(GetEventLoop(), partition,
-			   fd, &address, address_length, uid);
+			   fd, address, uid);
 	}
 };
 

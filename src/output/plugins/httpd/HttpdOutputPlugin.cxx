@@ -26,6 +26,7 @@
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
 #include "net/Resolver.hxx"
+#include "net/SocketAddress.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "system/fd_util.h"
@@ -201,16 +202,14 @@ HttpdOutput::RunDeferred()
 }
 
 void
-HttpdOutput::OnAccept(int fd, const sockaddr &address,
-		      size_t address_length, gcc_unused int uid)
+HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 {
 	/* the listener socket has become readable - a client has
 	   connected */
 
 #ifdef HAVE_LIBWRAP
-	if (address.sa_family != AF_UNIX) {
-		const auto hostaddr = sockaddr_to_string(&address,
-							 address_length);
+	if (address.GetFamily() != AF_UNIX) {
+		const auto hostaddr = sockaddr_to_string(address);
 		// TODO: shall we obtain the program name from argv[0]?
 		const char *progname = "mpd";
 
@@ -230,7 +229,6 @@ HttpdOutput::OnAccept(int fd, const sockaddr &address,
 	}
 #else
 	(void)address;
-	(void)address_length;
 #endif	/* HAVE_WRAP */
 
 	const ScopeLock protect(mutex);

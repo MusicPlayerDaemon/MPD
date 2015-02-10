@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Resolver.hxx"
+#include "SocketAddress.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -43,13 +44,14 @@
 const Domain resolver_domain("resolver");
 
 std::string
-sockaddr_to_string(const struct sockaddr *sa, size_t length)
+sockaddr_to_string(SocketAddress address)
 {
 #ifdef HAVE_UN
-	if (sa->sa_family == AF_UNIX) {
+	if (address.GetFamily() == AF_UNIX) {
 		/* return path of UNIX domain sockets */
-		const sockaddr_un &s_un = *(const sockaddr_un *)sa;
-		if (length < sizeof(s_un) || s_un.sun_path[0] == 0)
+		const sockaddr_un &s_un = *(const sockaddr_un *)
+			address.GetAddress();
+		if (address.GetSize() < sizeof(s_un) || s_un.sun_path[0] == 0)
 			return "local";
 
 		return s_un.sun_path;
@@ -57,14 +59,15 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length)
 #endif
 
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
-	const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)sa;
+	const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)
+		address.GetAddress();
 	struct sockaddr_in a4;
 #endif
 	int ret;
 	char host[NI_MAXHOST], serv[NI_MAXSERV];
 
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
-	if (sa->sa_family == AF_INET6 &&
+	if (address.GetFamily() == AF_INET6 &&
 	    IN6_IS_ADDR_V4MAPPED(&a6->sin6_addr)) {
 		/* convert "::ffff:127.0.0.1" to "127.0.0.1" */
 
@@ -74,12 +77,12 @@ sockaddr_to_string(const struct sockaddr *sa, size_t length)
 		       sizeof(a4.sin_addr));
 		a4.sin_port = a6->sin6_port;
 
-		sa = (const struct sockaddr *)&a4;
-		length = sizeof(a4);
+		address = { (const struct sockaddr *)&a4, sizeof(a4) };
 	}
 #endif
 
-	ret = getnameinfo(sa, length, host, sizeof(host), serv, sizeof(serv),
+	ret = getnameinfo(address.GetAddress(), address.GetSize(),
+			  host, sizeof(host), serv, sizeof(serv),
 			  NI_NUMERICHOST|NI_NUMERICSERV);
 	if (ret != 0)
 		return "unknown";

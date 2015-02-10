@@ -36,7 +36,7 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-struct sockaddr;
+class SocketAddress;
 class EventLoop;
 class Path;
 struct Partition;
@@ -204,7 +204,7 @@ void client_manager_init(void);
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   int fd, const sockaddr *sa, size_t sa_length, int uid);
+	   int fd, SocketAddress address, int uid);
 
 /**
  * Write a C string to the client.

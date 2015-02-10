@@ -19,17 +19,11 @@
 
 #include "config.h"
 #include "SocketUtil.hxx"
+#include "SocketAddress.hxx"
 #include "SocketError.hxx"
 #include "system/fd_util.h"
 
 #include <unistd.h>
-
-#ifndef WIN32
-#include <sys/socket.h>
-#else
-#include <ws2tcpip.h>
-#include <winsock.h>
-#endif
 
 #ifdef HAVE_IPV6
 #include <string.h>
@@ -37,7 +31,7 @@
 
 int
 socket_bind_listen(int domain, int type, int protocol,
-		   const struct sockaddr *address, size_t address_length,
+		   SocketAddress address,
 		   int backlog,
 		   Error &error)
 {
@@ -60,7 +54,7 @@ socket_bind_listen(int domain, int type, int protocol,
 		return -1;
 	}
 
-	ret = bind(fd, address, address_length);
+	ret = bind(fd, address.GetAddress(), address.GetSize());
 	if (ret < 0) {
 		SetSocketError(error);
 		close_socket(fd);

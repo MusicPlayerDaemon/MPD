@@ -26,10 +26,10 @@
 
 #include <stddef.h>
 
-struct sockaddr;
 struct addrinfo;
 class Error;
 class Domain;
+class SocketAddress;
 
 extern const Domain resolver_domain;
 
@@ -42,7 +42,7 @@ extern const Domain resolver_domain;
  */
 gcc_pure
 std::string
-sockaddr_to_string(const sockaddr *sa, size_t length);
+sockaddr_to_string(SocketAddress address);
 
 /**
  * Resolve a specification in the form "host", "host:port",
