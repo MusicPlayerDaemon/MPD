@@ -43,19 +43,27 @@
 
 const Domain resolver_domain("resolver");
 
+#ifdef HAVE_UN
+
+static std::string
+LocalAddressToString(const struct sockaddr_un &s_un, size_t size)
+{
+	if (size < sizeof(s_un) || s_un.sun_path[0] == 0)
+		return "local";
+
+	return s_un.sun_path;
+}
+
+#endif
+
 std::string
 sockaddr_to_string(SocketAddress address)
 {
 #ifdef HAVE_UN
-	if (address.GetFamily() == AF_UNIX) {
+	if (address.GetFamily() == AF_UNIX)
 		/* return path of UNIX domain sockets */
-		const sockaddr_un &s_un = *(const sockaddr_un *)
-			address.GetAddress();
-		if (address.GetSize() < sizeof(s_un) || s_un.sun_path[0] == 0)
-			return "local";
-
-		return s_un.sun_path;
-	}
+		return LocalAddressToString(*(const sockaddr_un *)address.GetAddress(),
+					    address.GetSize());
 #endif
 
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
