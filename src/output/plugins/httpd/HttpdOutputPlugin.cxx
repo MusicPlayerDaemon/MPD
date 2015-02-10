@@ -25,7 +25,7 @@
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
-#include "system/Resolver.hxx"
+#include "net/Resolver.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "system/fd_util.h"

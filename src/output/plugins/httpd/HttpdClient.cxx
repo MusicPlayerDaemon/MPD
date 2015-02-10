@@ -23,7 +23,7 @@
 #include "util/ASCII.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
-#include "system/SocketError.hxx"
+#include "net/SocketError.hxx"
 #include "Log.hxx"
 
 #include <assert.h>

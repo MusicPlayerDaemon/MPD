@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "ServerSocket.hxx"
-#include "system/SocketUtil.hxx"
-#include "system/SocketError.hxx"
+#include "net/SocketUtil.hxx"
+#include "net/SocketError.hxx"
+#include "net/Resolver.hxx"
 #include "event/SocketMonitor.hxx"
-#include "system/Resolver.hxx"
 #include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"

@@ -15,6 +15,7 @@ noinst_LIBRARIES = \
 	libmpd.a \
 	libutil.a \
 	libthread.a \
+	libnet.a \
 	libsystem.a \
 	libevent.a \
 	libicu.a \
@@ -55,6 +56,7 @@ src_mpd_LDADD = \
 	libconf.a \
 	libevent.a \
 	libthread.a \
+	libnet.a \
 	libsystem.a \
 	libutil.a \
 	$(FS_LIBS) \
@@ -415,15 +417,19 @@ libthread_a_SOURCES = \
 	src/thread/Thread.cxx src/thread/Thread.hxx \
 	src/thread/Id.hxx
 
+# Networking library
+
+libnet_a_SOURCES = \
+	src/net/Resolver.cxx src/net/Resolver.hxx \
+	src/net/SocketUtil.cxx src/net/SocketUtil.hxx \
+	src/net/SocketError.cxx src/net/SocketError.hxx
+
 # System library
 
 libsystem_a_SOURCES = \
 	src/system/ByteOrder.hxx \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
 	src/system/fd_util.c src/system/fd_util.h \
-	src/system/SocketUtil.cxx src/system/SocketUtil.hxx \
-	src/system/SocketError.cxx src/system/SocketError.hxx \
-	src/system/Resolver.cxx src/system/Resolver.hxx \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
 	src/system/SignalFD.cxx src/system/SignalFD.hxx \
@@ -1567,7 +1573,7 @@ test_read_conf_SOURCES = \
 	test/read_conf.cxx
 
 test_run_resolver_LDADD = \
-	libsystem.a \
+	libnet.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_resolver_SOURCES = \
@@ -1948,6 +1954,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libevent.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
+	libnet.a \
 	libsystem.a \
 	libthread.a \
 	libutil.a \

@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "system/Resolver.hxx"
+#include "net/Resolver.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 

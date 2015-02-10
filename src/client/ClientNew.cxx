@@ -23,7 +23,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "system/fd_util.h"
-#include "system/Resolver.hxx"
+#include "net/Resolver.hxx"
 #include "Permission.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
