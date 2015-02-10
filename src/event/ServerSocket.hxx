@@ -28,12 +28,6 @@ struct sockaddr;
 class EventLoop;
 class Error;
 class AllocatedPath;
-
-typedef void (*server_socket_callback_t)(int fd,
-					 const struct sockaddr *address,
-					 size_t address_length, int uid,
-					 void *ctx);
-
 class OneServerSocket;
 
 /**
