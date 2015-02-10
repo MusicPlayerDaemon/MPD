@@ -39,7 +39,7 @@ FileOutputStream::Create(Path path, Error &error)
 FileOutputStream::FileOutputStream(Path _path, Error &error)
 	:path(_path),
 	 handle(CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
-			   TRUNCATE_EXISTING,
+			   CREATE_ALWAYS,
 			   FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			   nullptr))
 {
