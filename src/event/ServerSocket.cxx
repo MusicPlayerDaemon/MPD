@@ -52,8 +52,6 @@
 #include <netdb.h>
 #endif
 
-#define DEFAULT_PORT	6600
-
 class OneServerSocket final : private SocketMonitor {
 	ServerSocket &parent;
 
