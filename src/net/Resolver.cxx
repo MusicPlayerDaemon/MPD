@@ -23,6 +23,8 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
+#include <algorithm>
+
 #ifndef WIN32
 #include <sys/socket.h>
 #include <netdb.h>
@@ -48,10 +50,26 @@ const Domain resolver_domain("resolver");
 static std::string
 LocalAddressToString(const struct sockaddr_un &s_un, size_t size)
 {
-	if (size < sizeof(s_un) || s_un.sun_path[0] == 0)
+	const size_t prefix_size = (size_t)
+		((struct sockaddr_un *)nullptr)->sun_path;
+	assert(size >= prefix_size);
+
+	size_t result_length = size - prefix_size;
+
+	/* remove the trailing null terminator */
+	if (result_length > 0 && s_un.sun_path[result_length - 1] == 0)
+		--result_length;
+
+	if (result_length == 0)
 		return "local";
 
-	return s_un.sun_path;
+	std::string result(s_un.sun_path, result_length);
+
+	/* replace all null bytes with '@'; this also handles abstract
+	   addresses (Linux specific) */
+	std::replace(result.begin(), result.end(), '\0', '@');
+
+	return result;
 }
 
 #endif
