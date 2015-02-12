@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2013 Max Kellermann <max@duempel.org>,
+ * Copyright (C) 2011-2015 Max Kellermann <max@duempel.org>,
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +29,8 @@
 
 #ifndef BYTE_ORDER_HXX
 #define BYTE_ORDER_HXX
+
+#include "Compiler.h"
 
 #include <stdint.h>
 
@@ -75,23 +77,53 @@ IsBigEndian()
 }
 
 static inline constexpr uint16_t
+GenericByteSwap16(uint16_t value)
+{
+	return (value >> 8) | (value << 8);
+}
+
+static inline constexpr uint32_t
+GenericByteSwap32(uint32_t value)
+{
+	return (value >> 24) | ((value >> 8) & 0x0000ff00) |
+		((value << 8) & 0x00ff0000) | (value << 24);
+}
+
+static inline constexpr uint64_t
+GenericByteSwap64(uint64_t value)
+{
+	return uint64_t(GenericByteSwap32(uint32_t(value >> 32)))
+		| (uint64_t(GenericByteSwap32(value)) << 32);
+}
+
+static inline constexpr uint16_t
 ByteSwap16(uint16_t value)
 {
-  return (value >> 8) | (value << 8);
+#if CLANG_OR_GCC_VERSION(4,8)
+	return __builtin_bswap16(value);
+#else
+	return GenericByteSwap16(value);
+#endif
 }
 
 static inline constexpr uint32_t
 ByteSwap32(uint32_t value)
 {
-  return (value >> 24) | ((value >> 8) & 0x0000ff00) |
-    ((value << 8) & 0x00ff0000) | (value << 24);
+#if CLANG_OR_GCC_VERSION(4,3)
+	return __builtin_bswap32(value);
+#else
+	return GenericByteSwap32(value);
+#endif
 }
 
 static inline constexpr uint64_t
 ByteSwap64(uint64_t value)
 {
-  return uint64_t(ByteSwap32(uint32_t(value >> 32)))
-    | (uint64_t(ByteSwap32(value)) << 32);
+#if CLANG_OR_GCC_VERSION(4,3)
+	return __builtin_bswap64(value);
+#else
+	return GenericByteSwap64(value);
+#endif
 }
 
 /**
