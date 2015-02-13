@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ServerSocket.hxx"
+#include "net/StaticSocketAddress.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
@@ -148,10 +149,10 @@ get_remote_uid(int fd)
 inline void
 OneServerSocket::Accept()
 {
-	struct sockaddr_storage peer_address;
+	StaticSocketAddress peer_address;
 	size_t peer_address_length = sizeof(peer_address);
 	int peer_fd =
-		accept_cloexec_nonblock(Get(), (struct sockaddr*)&peer_address,
+		accept_cloexec_nonblock(Get(), peer_address,
 					&peer_address_length);
 	if (peer_fd < 0) {
 		const SocketErrorMessage msg;
@@ -160,6 +161,8 @@ OneServerSocket::Accept()
 		return;
 	}
 
+	peer_address.SetSize(peer_address_length);
+
 	if (socket_keepalive(peer_fd)) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
@@ -167,8 +170,7 @@ OneServerSocket::Accept()
 			    (const char *)msg);
 	}
 
-	parent.OnAccept(peer_fd,
-			{ (const sockaddr *)&peer_address, socklen_t(peer_address_length) },
+	parent.OnAccept(peer_fd, peer_address,
 			get_remote_uid(peer_fd));
 }
 
@@ -293,16 +295,18 @@ ServerSocket::AddFD(int fd, Error &error)
 {
 	assert(fd >= 0);
 
-	struct sockaddr_storage address;
+	StaticSocketAddress address;
 	socklen_t address_length = sizeof(address);
-	if (getsockname(fd, (struct sockaddr *)&address,
+	if (getsockname(fd, address,
 			&address_length) < 0) {
 		SetSocketError(error);
 		error.AddPrefix("Failed to get socket address: ");
 		return false;
 	}
 
-	OneServerSocket &s = AddAddress({(const sockaddr *)&address, address_length});
+	address.SetSize(address_length);
+
+	OneServerSocket &s = AddAddress(address);
 	s.SetFD(fd);
 
 	return true;
