@@ -173,11 +173,11 @@ dvdaiso_update_ifo(const char* path) {
 }
 
 static bool
-dvdaiso_init(const config_param& param) {
+dvdaiso_init(const ConfigBlock& block) {
 	my_av_log_set_callback(mpd_av_log_callback);
-	param_no_downmixes = param.GetBlockValue("no_downmixes", true);
-	param_no_short_tracks = param.GetBlockValue("no_short_tracks", true);
-	const char* playable_area = param.GetBlockValue("playable_area", nullptr);
+	param_no_downmixes = block.GetBlockValue("no_downmixes", true);
+	param_no_short_tracks = block.GetBlockValue("no_short_tracks", true);
+	const char* playable_area = block.GetBlockValue("playable_area", nullptr);
 	param_playable_area = CHMODE_BOTH;
 	if (playable_area != nullptr) {
 		if (strcmp(playable_area, "stereo") == 0) {
@@ -187,8 +187,8 @@ dvdaiso_init(const config_param& param) {
 			param_playable_area = CHMODE_MULCH;
 		}
 	}
-	param_tags_path = param.GetBlockValue("tags_path", "");
-	param_tags_with_iso = param.GetBlockValue("tags_with_iso", false);
+	param_tags_path = block.GetBlockValue("tags_path", "");
+	param_tags_with_iso = block.GetBlockValue("tags_with_iso", false);
 	return true;
 }
 

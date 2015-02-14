@@ -169,11 +169,11 @@ sacdiso_update_toc(const char* path) {
 }
 
 static bool
-sacdiso_init(const config_param& param) {
-	param_dstdec_threads = param.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
-	param_edited_master  = param.GetBlockValue("edited_master", false);
-	param_lsbitfirst     = param.GetBlockValue("lsbitfirst", false);
-	const char* playable_area = param.GetBlockValue("playable_area", nullptr);
+sacdiso_init(const ConfigBlock& block) {
+	param_dstdec_threads = block.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
+	param_edited_master  = block.GetBlockValue("edited_master", false);
+	param_lsbitfirst     = block.GetBlockValue("lsbitfirst", false);
+	const char* playable_area = block.GetBlockValue("playable_area", nullptr);
 	param_playable_area = AREA_BOTH;
 	if (playable_area != nullptr) {
 		if (strcmp(playable_area, "stereo") == 0) {
@@ -183,8 +183,8 @@ sacdiso_init(const config_param& param) {
 			param_playable_area = AREA_MULCH;
 		}
 	}
-	param_tags_path = param.GetBlockValue("tags_path", "");
-	param_tags_with_iso = param.GetBlockValue("tags_with_iso", false);
+	param_tags_path = block.GetBlockValue("tags_path", "");
+	param_tags_with_iso = block.GetBlockValue("tags_with_iso", false);
 	return true;
 }
 

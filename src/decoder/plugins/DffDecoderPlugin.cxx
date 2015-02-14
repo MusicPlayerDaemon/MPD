@@ -152,11 +152,11 @@ dsdiff_update_toc(const char* path) {
 }
 
 static bool
-dsdiff_init(const config_param& param) {
-	param_dstdec_threads = param.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
-	param_edited_master  = param.GetBlockValue("edited_master",  false);
-	param_lsbitfirst     = param.GetBlockValue("lsbitfirst", false);
-	const char* playable_area = param.GetBlockValue("playable_area", nullptr);
+dsdiff_init(const ConfigBlock& block) {
+	param_dstdec_threads = block.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
+	param_edited_master  = block.GetBlockValue("edited_master",  false);
+	param_lsbitfirst     = block.GetBlockValue("lsbitfirst", false);
+	const char* playable_area = block.GetBlockValue("playable_area", nullptr);
 	param_playable_area = AREA_BOTH;
 	if (playable_area != nullptr) {
 		if (strcmp(playable_area, "stereo") == 0) {
