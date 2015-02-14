@@ -21,7 +21,7 @@
 #include "LogInit.hxx"
 #include "LogBackend.hxx"
 #include "Log.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "system/FatalError.hxx"
@@ -72,14 +72,14 @@ open_log_file(void)
 }
 
 static bool
-log_init_file(unsigned line, Error &error)
+log_init_file(int line, Error &error)
 {
 	assert(!out_path.IsNull());
 
 	out_fd = open_log_file();
 	if (out_fd < 0) {
 		const std::string out_path_utf8 = out_path.ToUTF8();
-		error.FormatErrno("failed to open log file \"%s\" (config line %u)",
+		error.FormatErrno("failed to open log file \"%s\" (config line %d)",
 				  out_path_utf8.c_str(), line);
 		return false;
 	}
@@ -89,7 +89,7 @@ log_init_file(unsigned line, Error &error)
 }
 
 static inline LogLevel
-parse_log_level(const char *value, unsigned line)
+parse_log_level(const char *value, int line)
 {
 	if (0 == strcmp(value, "default"))
 		return LogLevel::DEFAULT;
@@ -98,7 +98,7 @@ parse_log_level(const char *value, unsigned line)
 	else if (0 == strcmp(value, "verbose"))
 		return LogLevel::DEBUG;
 	else {
-		FormatFatalError("unknown log level \"%s\" at line %u",
+		FormatFatalError("unknown log level \"%s\" at line %d",
 				 value, line);
 	}
 }
@@ -139,14 +139,14 @@ log_init(bool verbose, bool use_stdout, Error &error)
 
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
-	else if ((param = config_get_param(CONF_LOG_LEVEL)) != nullptr)
+	else if ((param = config_get_param(ConfigOption::LOG_LEVEL)) != nullptr)
 		SetLogThreshold(parse_log_level(param->value.c_str(),
 						param->line));
 
 	if (use_stdout) {
 		return true;
 	} else {
-		param = config_get_param(CONF_LOG_FILE);
+		param = config_get_param(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
 #ifdef HAVE_SYSLOG
 			/* no configuration: default to syslog (if
@@ -164,7 +164,7 @@ log_init(bool verbose, bool use_stdout, Error &error)
 			return true;
 #endif
 		} else {
-			out_path = config_get_path(CONF_LOG_FILE, error);
+			out_path = config_get_path(ConfigOption::LOG_FILE, error);
 			return !out_path.IsNull() &&
 				log_init_file(param->line, error);
 		}

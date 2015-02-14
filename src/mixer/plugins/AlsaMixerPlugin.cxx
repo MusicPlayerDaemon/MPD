@@ -82,7 +82,7 @@ public:
 
 	virtual ~AlsaMixer();
 
-	void Configure(const config_param &param);
+	void Configure(const ConfigBlock &block);
 	bool Setup(Error &error);
 
 	/* virtual methods from class Mixer */
@@ -162,24 +162,24 @@ alsa_mixer_elem_callback(snd_mixer_elem_t *elem, unsigned mask)
  */
 
 inline void
-AlsaMixer::Configure(const config_param &param)
+AlsaMixer::Configure(const ConfigBlock &block)
 {
-	device = param.GetBlockValue("mixer_device",
+	device = block.GetBlockValue("mixer_device",
 				     VOLUME_MIXER_ALSA_DEFAULT);
-	control = param.GetBlockValue("mixer_control",
+	control = block.GetBlockValue("mixer_control",
 				      VOLUME_MIXER_ALSA_CONTROL_DEFAULT);
-	index = param.GetBlockValue("mixer_index",
+	index = block.GetBlockValue("mixer_index",
 				    VOLUME_MIXER_ALSA_INDEX_DEFAULT);
 }
 
 static Mixer *
 alsa_mixer_init(EventLoop &event_loop, gcc_unused AudioOutput &ao,
 		MixerListener &listener,
-		const config_param &param,
+		const ConfigBlock &block,
 		gcc_unused Error &error)
 {
 	AlsaMixer *am = new AlsaMixer(event_loop, listener);
-	am->Configure(param);
+	am->Configure(block);
 
 	return am;
 }

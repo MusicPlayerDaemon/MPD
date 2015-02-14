@@ -91,11 +91,13 @@ public:
 		return &base;
 	}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
+	bool Initialize(const ConfigBlock &block, Error &error) {
+		return base.Configure(block, error);
 	}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
+
+	static SlesOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
 	void Close();
@@ -129,7 +131,7 @@ private:
 static constexpr Domain sles_domain("sles");
 
 inline bool
-SlesOutput::Configure(const config_param &, Error &)
+SlesOutput::Configure(const ConfigBlock &, Error &)
 {
 	return true;
 }
@@ -444,18 +446,18 @@ sles_test_default_device()
 	return true;
 }
 
-static AudioOutput *
-sles_output_init(const config_param &param, Error &error)
+inline SlesOutput *
+SlesOutput::Create(const ConfigBlock &block, Error &error)
 {
 	SlesOutput *sles = new SlesOutput();
 
-	if (!sles->Initialize(param, error) ||
-	    !sles->Configure(param, error)) {
+	if (!sles->Initialize(block, error) ||
+	    !sles->Configure(block, error)) {
 		delete sles;
 		return nullptr;
 	}
 
-	return *sles;
+	return sles;
 }
 
 typedef AudioOutputWrapper<SlesOutput> Wrapper;
@@ -463,7 +465,7 @@ typedef AudioOutputWrapper<SlesOutput> Wrapper;
 const struct AudioOutputPlugin sles_output_plugin = {
 	"sles",
 	sles_test_default_device,
-	sles_output_init,
+	&Wrapper::Init,
 	&Wrapper::Finish,
 	nullptr,
 	nullptr,

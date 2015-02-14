@@ -28,10 +28,10 @@ Mixer *
 mixer_new(EventLoop &event_loop,
 	  const MixerPlugin &plugin, AudioOutput &ao,
 	  MixerListener &listener,
-	  const config_param &param,
+	  const ConfigBlock &block,
 	  Error &error)
 {
-	Mixer *mixer = plugin.init(event_loop, ao, listener, param, error);
+	Mixer *mixer = plugin.init(event_loop, ao, listener, block, error);
 
 	assert(mixer == nullptr || mixer->IsPlugin(plugin));
 

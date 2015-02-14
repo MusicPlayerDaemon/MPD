@@ -26,9 +26,7 @@
 #ifndef MPD_SOCKET_UTIL_HXX
 #define MPD_SOCKET_UTIL_HXX
 
-#include <stddef.h>
-
-struct sockaddr;
+class SocketAddress;
 class Error;
 
 /**
@@ -47,7 +45,7 @@ class Error;
  */
 int
 socket_bind_listen(int domain, int type, int protocol,
-		   const struct sockaddr *address, size_t address_length,
+		   SocketAddress address,
 		   int backlog,
 		   Error &error);
 

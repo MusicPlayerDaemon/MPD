@@ -83,7 +83,7 @@ struct JackOutput {
 	JackOutput()
 		:base(jack_output_plugin) {}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	bool Connect(Error &error);
 
@@ -376,14 +376,14 @@ parse_port_list(const char *source, std::string dest[], Error &error)
 }
 
 bool
-JackOutput::Configure(const config_param &param, Error &error)
+JackOutput::Configure(const ConfigBlock &block, Error &error)
 {
-	if (!base.Configure(param, error))
+	if (!base.Configure(block, error))
 		return false;
 
 	options = JackNullOption;
 
-	name = param.GetBlockValue("client_name", nullptr);
+	name = block.GetBlockValue("client_name", nullptr);
 	if (name != nullptr)
 		options = jack_options_t(options | JackUseExactName);
 	else
@@ -391,30 +391,30 @@ JackOutput::Configure(const config_param &param, Error &error)
 		   care about the JackUseExactName option */
 		name = "Music Player Daemon";
 
-	server_name = param.GetBlockValue("server_name", nullptr);
+	server_name = block.GetBlockValue("server_name", nullptr);
 	if (server_name != nullptr)
 		options = jack_options_t(options | JackServerName);
 
-	if (!param.GetBlockValue("autostart", false))
+	if (!block.GetBlockValue("autostart", false))
 		options = jack_options_t(options | JackNoStartServer);
 
 	/* configure the source ports */
 
-	const char *value = param.GetBlockValue("source_ports", "left,right");
+	const char *value = block.GetBlockValue("source_ports", "left,right");
 	num_source_ports = parse_port_list(value, source_ports, error);
 	if (num_source_ports == 0)
 		return false;
 
 	/* configure the destination ports */
 
-	value = param.GetBlockValue("destination_ports", nullptr);
+	value = block.GetBlockValue("destination_ports", nullptr);
 	if (value == nullptr) {
 		/* compatibility with MPD < 0.16 */
-		value = param.GetBlockValue("ports", nullptr);
+		value = block.GetBlockValue("ports", nullptr);
 		if (value != nullptr)
 			FormatWarning(jack_output_domain,
 				      "deprecated option 'ports' in line %d",
-				      param.line);
+				      block.line);
 	}
 
 	if (value != nullptr) {
@@ -432,9 +432,9 @@ JackOutput::Configure(const config_param &param, Error &error)
 			      "number of source ports (%u) mismatches the "
 			      "number of destination ports (%u) in line %d",
 			      num_source_ports, num_destination_ports,
-			      param.line);
+			      block.line);
 
-	ringbuffer_size = param.GetBlockValue("ringbuffer_size", 32768u);
+	ringbuffer_size = block.GetBlockValue("ringbuffer_size", 32768u);
 
 	return true;
 }
@@ -463,11 +463,11 @@ JackOutput::Disable()
 }
 
 static AudioOutput *
-mpd_jack_init(const config_param &param, Error &error)
+mpd_jack_init(const ConfigBlock &block, Error &error)
 {
 	JackOutput *jd = new JackOutput();
 
-	if (!jd->Configure(param, error)) {
+	if (!jd->Configure(block, error)) {
 		delete jd;
 		return nullptr;
 	}

@@ -315,9 +315,8 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <programlisting>input {
-    plugin "despotify"
-    user "foo"
-    password "bar"
+    plugin "curl"
+    proxy "proxy.local"
 }
       </programlisting>
 
@@ -770,177 +769,10 @@ systemctl start mpd.socket</programlisting>
         </para>
 
         <para>
-          The following resamplers are available (if enabled at
-          compile time):
+          Check the <link linkend="resampler_plugins">resampler plugin
+          reference</link> for a list of resamplers and how to
+          configure them.
         </para>
-
-        <itemizedlist>
-          <listitem>
-            <para>
-              <ulink
-              url="http://www.mega-nerd.com/SRC/"><application>libsamplerate</application></ulink>
-              a.k.a. Secret Rabbit Code (SRC).
-            </para>
-          </listitem>
-
-          <listitem>
-            <para>
-              <ulink
-              url="http://sourceforge.net/projects/soxr/"><application>libsoxr</application></ulink>,
-              the SoX Resampler library
-            </para>
-          </listitem>
-
-          <listitem>
-            <para>
-              internal: low CPU usage, but very poor quality.  This is
-              the fallback if <application>MPD</application> was
-              compiled without an external resampler.
-            </para>
-          </listitem>
-        </itemizedlist>
-
-        <para>
-          The setting <varname>samplerate_converter</varname> controls
-          how <application>MPD</application> shall resample music.
-          Possible values:
-        </para>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>
-                  Value
-                </entry>
-                <entry>
-                  Description
-                </entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  "<parameter>internal</parameter>"
-                </entry>
-                <entry>
-                  The internal resampler.  Low CPU usage, but very
-                  poor quality.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr very high</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "Very
-                  High Quality" setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr high</parameter>" or
-                  "<parameter>soxr</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "High
-                  Quality" setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr medium</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "Medium
-                  Quality" setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr low</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "Low
-                  Quality" setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>soxr quick</parameter>"
-                </entry>
-                <entry>
-                  Use <application>libsoxr</application> with "Quick"
-                  setting.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>Best Sinc Interpolator</parameter>" or
-                  "<parameter>0</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Band
-                  limited sinc interpolation, best quality, 97dB SNR,
-                  96% BW.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>Medium Sinc Interpolator</parameter>" or
-                  "<parameter>1</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Band
-                  limited sinc interpolation, medium quality, 97dB
-                  SNR, 90% BW.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>Fastest Sinc Interpolator</parameter>" or
-                  "<parameter>2</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Band
-                  limited sinc interpolation, fastest, 97dB SNR, 80%
-                  BW.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>ZOH Sinc Interpolator</parameter>" or
-                  "<parameter>3</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Zero order
-                  hold interpolator, very fast, very poor quality with
-                  audible distortions.
-                </entry>
-              </row>
-
-              <row>
-                <entry>
-                  "<parameter>Linear Interpolator</parameter>" or
-                  "<parameter>4</parameter>"
-                </entry>
-                <entry>
-                  <application>libsamplerate</application>: Linear
-                  interpolator, very fast, poor quality.
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
       </section>
     </section>
 
@@ -1756,66 +1588,6 @@ buffer_size: 16384</programlisting>
       </section>
 
       <section>
-        <title><varname>despotify</varname></title>
-
-        <para>
-          Plays <ulink url="http://www.spotify.com">Spotify</ulink> tracks using the despotify
-          library. The despotify plugin uses a <filename>spt://</filename> URI and a Spotify
-          URL. So for example, you can add a song with:
-        </para>
-        
-        <para>
-          <filename>mpc add spt://spotify:track:5qENVY0YEdZ7fiuOax70x1</filename>
-        </para>
-        
-        <para>
-          You need a Spotify premium account to use this plugin, and you need
-          to setup username and password in the configuration file. The
-          configuration settings are global since the despotify playlist plugin
-          use the same settings.
-        </para>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Setting</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  <varname>despotify_user</varname>
-                </entry>
-                <entry>
-                  Sets up the Spotify username (required)
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>despotify_password</varname>
-                </entry>
-                <entry>
-                  Sets up the Spotify password (required)
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  <varname>despotify_high_bitrate</varname>
-                </entry>
-                <entry>
-                  Set up if high bitrate should be used for Spotify tunes.
-                  High bitrate sounds better but slow systems can have problems
-                  with playback (default yes).
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-      </section>
-
-      <section>
         <title><varname>file</varname></title>
 
         <para>
@@ -2328,6 +2100,251 @@ buffer_size: 16384</programlisting>
         <para>
           Encodes into WAV (lossless).
         </para>
+      </section>
+    </section>
+
+    <section id="resampler_plugins">
+      <title>Resampler plugins</title>
+
+      <para>
+        The resampler can be configured in a block named
+        <varname>resampler</varname>, for example:
+      </para>
+
+      <programlisting>resampler {
+  plugin "soxr"
+  quality "very high"
+}</programlisting>
+
+      <para>
+        The following table lists the <varname>resampler</varname>
+        options valid for all plugins:
+      </para>
+
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>
+                Name
+              </entry>
+              <entry>
+                Description
+              </entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>plugin</varname>
+              </entry>
+              <entry>
+                The name of the plugin.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <section id="internal_resampler">
+        <title><varname>internal</varname></title>
+
+        <para>
+          A resampler built into <application>MPD</application>.  Its
+          quality is very poor, but its CPU usage is low.  This is the
+          fallback if <application>MPD</application> was compiled
+          without an external resampler.
+        </para>
+      </section>
+
+      <section id="libsamplerate_resampler">
+        <title><varname>libsamplerate</varname></title>
+
+        <para>
+          A resampler using <ulink
+          url="http://www.mega-nerd.com/SRC/"><application>libsamplerate</application></ulink>
+          a.k.a. Secret Rabbit Code (SRC).
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  Name
+                </entry>
+                <entry>
+                  Description
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>type</varname>
+                </entry>
+                <entry>
+                  The interpolator type.  See below for a list of
+                  known types.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>
+          The following converter types are provided by
+          <application>libsamplerate</application>:
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  Type
+                </entry>
+                <entry>
+                  Description
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  "<parameter>Best Sinc Interpolator</parameter>" or
+                  "<parameter>0</parameter>"
+                </entry>
+                <entry>
+                  Band limited sinc interpolation, best quality, 97dB
+                  SNR, 96% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Medium Sinc Interpolator</parameter>" or
+                  "<parameter>1</parameter>"
+                </entry>
+                <entry>
+                  Band limited sinc interpolation, medium quality,
+                  97dB SNR, 90% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Fastest Sinc Interpolator</parameter>" or
+                  "<parameter>2</parameter>"
+                </entry>
+                <entry>
+                  Band limited sinc interpolation, fastest, 97dB SNR,
+                  80% BW.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>ZOH Sinc Interpolator</parameter>" or
+                  "<parameter>3</parameter>"
+                </entry>
+                <entry>
+                  Zero order hold interpolator, very fast, very poor
+                  quality with audible distortions.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  "<parameter>Linear Interpolator</parameter>" or
+                  "<parameter>4</parameter>"
+                </entry>
+                <entry>
+                  Linear interpolator, very fast, poor quality.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section id="soxr_resampler">
+        <title><varname>soxr</varname></title>
+
+        <para>
+          A resampler using <ulink
+          url="http://sourceforge.net/projects/soxr/"><application>libsoxr</application></ulink>,
+          the SoX Resampler library
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>
+                  Name
+                </entry>
+                <entry>
+                  Description
+                </entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>quality</varname>
+                </entry>
+                <entry>
+                  The <application>libsoxr</application> quality
+                  setting.  Valid values are:
+
+                  <itemizedlist>
+                    <listitem>
+                      <para>
+                        "<parameter>very high</parameter>"
+                      </para>
+                    </listitem>
+
+                    <listitem>
+                      <para>
+                        "<parameter>high</parameter>" (the default)
+                      </para>
+                    </listitem>
+
+                    <listitem>
+                      <para>
+                        "<parameter>medium</parameter>"
+                      </para>
+                    </listitem>
+
+                    <listitem>
+                      <para>
+                        "<parameter>low</parameter>"
+                      </para>
+                    </listitem>
+
+                    <listitem>
+                      <para>
+                        "<parameter>quick</parameter>"
+                      </para>
+                    </listitem>
+                  </itemizedlist>
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>threads</varname>
+                </entry>
+                <entry>
+                  The number of <application>libsoxr</application>
+                  threads.  "0" means "automatic".  The default is "1"
+                  which disables multi-threading.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
     </section>
 
@@ -3114,6 +3131,11 @@ buffer_size: 16384</programlisting>
                   <para>
                     An alternative to <varname>path</varname> which
                     provides a format string referring to tag values.
+
+                    The special tag <varname>iso8601</varname> emits
+                    the current date and time in <ulink
+                    url="https://en.wikipedia.org/wiki/ISO_8601">ISO8601</ulink>
+                    format (UTC).
                     Every time a new song starts or a new tag gets
                     received from a radio station, a new file is
                     opened.  If the format does not render a file
@@ -3403,70 +3425,6 @@ buffer_size: 16384</programlisting>
           playlist files.
         </para>
       </section>
-
-      <section>
-        <title><varname>despotify</varname></title>
-
-        <para>
-          Adds <ulink url="http://www.spotify.com/">Spotify</ulink>
-          playlists. Spotify playlists use the <filename>spt://</filename> URI,
-          and a Spotify playlist URL. So for example, you can load a playlist
-          with
-        </para>
-        
-        <para>
-          <filename>mpc load spt://spotify:user:simon.kagstrom:playlist:3SUwkOe5VbVHysZcidEZtH</filename>
-        </para>
-        
-        <para>
-          See the despotify input plugin for configuration options (username
-          and password needs to be setup)
-        </para>
-      </section>
-
-      <section>
-        <title><varname>soundcloud</varname></title>
-
-        <para>
-          Adds <ulink url="https://www.soundcloud.com/">Soundcloud</ulink>
-          playlists. SoundCloud playlists use the <filename>soundcloud://</filename> URI,
-          and with a number of arguments, you may load different playlists with
-        </para>
-
-        <programlisting>
-mpc load soundcloud://track/TRACK_ID
-mpc load soundcloud://playlist/PLAYLIST_ID
-mpc load soundcloud://user/USERNAME
-mpc load soundcloud://search/SEARCH_QUERY
-mpc load soundcloud://url/https://soundcloud.com/ARTIST/TRACK-NAME
-        </programlisting>
-
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry>Setting</entry>
-                <entry>Description</entry>
-              </row>
-            </thead>
-            <tbody>
-              <row>
-                <entry>
-                  <varname>apikey</varname>
-                  <parameter>client_id</parameter>
-                </entry>
-                <entry>
-                  User apikey/client_id can override the
-                  <application>MPD</application> token provided by
-                  SoundCloud.
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
-
-      </section>
-
     </section>
   </chapter>
 </book>

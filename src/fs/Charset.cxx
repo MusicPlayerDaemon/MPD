@@ -73,17 +73,19 @@ GetFSCharset()
 #endif
 }
 
-static inline void FixSeparators(std::string &s)
+static inline std::string &&
+FixSeparators(std::string &&s)
 {
-#ifdef WIN32
 	// For whatever reason GCC can't convert constexpr to value reference.
 	// This leads to link errors when passing separators directly.
 	auto from = PathTraitsFS::SEPARATOR;
 	auto to = PathTraitsUTF8::SEPARATOR;
-	std::replace(s.begin(), s.end(), from, to);
-#else
-	(void)s;
-#endif
+
+	if (from != to)
+		/* convert backslash to slash on WIN32 */
+		std::replace(s.begin(), s.end(), from, to);
+
+	return std::move(s);
 }
 
 std::string
@@ -95,17 +97,12 @@ PathToUTF8(const char *path_fs)
 #endif
 
 #ifdef HAVE_FS_CHARSET
-	if (fs_converter == nullptr) {
+	if (fs_converter == nullptr)
 #endif
-		auto result = std::string(path_fs);
-		FixSeparators(result);
-		return result;
+		return FixSeparators(path_fs);
 #ifdef HAVE_FS_CHARSET
-	}
 
-	auto result_path = fs_converter->ToUTF8(path_fs);
-	FixSeparators(result_path);
-	return result_path;
+	return FixSeparators(fs_converter->ToUTF8(path_fs));
 #endif
 }
 

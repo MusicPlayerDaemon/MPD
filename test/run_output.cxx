@@ -20,7 +20,7 @@
 #include "config.h"
 #include "output/Internal.hxx"
 #include "output/OutputPlugin.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "Idle.hxx"
@@ -61,8 +61,8 @@ PlayerControl::~PlayerControl() {}
 static AudioOutput *
 load_audio_output(EventLoop &event_loop, const char *name)
 {
-	const config_param *param =
-		config_find_block(CONF_AUDIO_OUTPUT, "name", name);
+	const auto *param = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
+					      "name", name);
 	if (param == NULL) {
 		fprintf(stderr, "No such configured audio output: %s\n", name);
 		return nullptr;

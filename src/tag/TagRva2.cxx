@@ -26,42 +26,42 @@
 #include <stdint.h>
 #include <string.h>
 
-enum rva2_channel {
-	CHANNEL_OTHER = 0x00,
-	CHANNEL_MASTER_VOLUME = 0x01,
-	CHANNEL_FRONT_RIGHT = 0x02,
-	CHANNEL_FRONT_LEFT = 0x03,
-	CHANNEL_BACK_RIGHT = 0x04,
-	CHANNEL_BACK_LEFT = 0x05,
-	CHANNEL_FRONT_CENTRE = 0x06,
-	CHANNEL_BACK_CENTRE = 0x07,
-	CHANNEL_SUBWOOFER = 0x08
+enum class Rva2Channel : uint8_t {
+	OTHER = 0x00,
+	MASTER_VOLUME = 0x01,
+	FRONT_RIGHT = 0x02,
+	FRONT_LEFT = 0x03,
+	BACK_RIGHT = 0x04,
+	BACK_LEFT = 0x05,
+	FRONT_CENTRE = 0x06,
+	BACK_CENTRE = 0x07,
+	SUBWOOFER = 0x08
 };
 
-struct rva2_data {
-	uint8_t type;
+struct Rva2Data {
+	Rva2Channel type;
 	uint8_t volume_adjustment[2];
 	uint8_t peak_bits;
 };
 
 static inline id3_length_t
-rva2_peak_bytes(const struct rva2_data *data)
+rva2_peak_bytes(const Rva2Data &data)
 {
-	return (data->peak_bits + 7) / 8;
+	return (data.peak_bits + 7) / 8;
 }
 
 static inline int
-rva2_fixed_volume_adjustment(const struct rva2_data *data)
+rva2_fixed_volume_adjustment(const Rva2Data &data)
 {
 	signed int voladj_fixed;
-	voladj_fixed = (data->volume_adjustment[0] << 8) |
-		data->volume_adjustment[1];
+	voladj_fixed = (data.volume_adjustment[0] << 8) |
+		data.volume_adjustment[1];
 	voladj_fixed |= -(voladj_fixed & 0x8000);
 	return voladj_fixed;
 }
 
 static inline float
-rva2_float_volume_adjustment(const struct rva2_data *data)
+rva2_float_volume_adjustment(const Rva2Data &data)
 {
 	/*
 	 * "The volume adjustment is encoded as a fixed point decibel
@@ -74,9 +74,9 @@ rva2_float_volume_adjustment(const struct rva2_data *data)
 
 static inline bool
 rva2_apply_data(ReplayGainInfo &rgi,
-		const struct rva2_data *data, const id3_latin1_t *id)
+		const Rva2Data &data, const id3_latin1_t *id)
 {
-	if (data->type != CHANNEL_MASTER_VOLUME)
+	if (data.type != Rva2Channel::MASTER_VOLUME)
 		return false;
 
 	float volume_adjustment = rva2_float_volume_adjustment(data);
@@ -117,7 +117,7 @@ rva2_apply_frame(ReplayGainInfo &replay_gain_info,
 	 */
 
 	while (length >= 4) {
-		const struct rva2_data *d = (const struct rva2_data *)data;
+		const Rva2Data &d = *(const Rva2Data *)data;
 		unsigned int peak_bytes = rva2_peak_bytes(d);
 		if (4 + peak_bytes > length)
 			break;

@@ -26,7 +26,7 @@
 #ifndef MPD_DATABASE_PLUGIN_HXX
 #define MPD_DATABASE_PLUGIN_HXX
 
-struct config_param;
+struct ConfigBlock;
 class Error;
 class EventLoop;
 class DatabaseListener;
@@ -47,7 +47,7 @@ struct DatabasePlugin {
 	 * Allocates and configures a database.
 	 */
 	Database *(*create)(EventLoop &loop, DatabaseListener &listener,
-			    const config_param &param,
+			    const ConfigBlock &block,
 			    Error &error);
 
 	constexpr bool RequireStorage() const {

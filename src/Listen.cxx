@@ -20,9 +20,10 @@
 #include "config.h"
 #include "Listen.hxx"
 #include "client/Client.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
+#include "net/SocketAddress.hxx"
 #include "event/ServerSocket.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -48,10 +49,9 @@ public:
 		:ServerSocket(_loop), partition(_partition) {}
 
 private:
-	virtual void OnAccept(int fd, const sockaddr &address,
-			      size_t address_length, int uid) {
+	void OnAccept(int fd, SocketAddress address, int uid) override {
 		client_new(GetEventLoop(), partition,
-			   fd, &address, address_length, uid);
+			   fd, address, uid);
 	}
 };
 
@@ -103,9 +103,9 @@ listen_systemd_activation(Error &error_r)
 bool
 listen_global_init(EventLoop &loop, Partition &partition, Error &error)
 {
-	int port = config_get_positive(CONF_PORT, DEFAULT_PORT);
+	int port = config_get_positive(ConfigOption::PORT, DEFAULT_PORT);
 	const struct config_param *param =
-		config_get_param(CONF_BIND_TO_ADDRESS);
+		config_get_param(ConfigOption::BIND_TO_ADDRESS);
 
 	listen_socket = new ClientListener(loop, partition);
 

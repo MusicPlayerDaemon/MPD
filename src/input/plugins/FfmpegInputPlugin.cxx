@@ -72,7 +72,7 @@ input_ffmpeg_supported(void)
 }
 
 static InputPlugin::InitResult
-input_ffmpeg_init(gcc_unused const config_param &param,
+input_ffmpeg_init(gcc_unused const ConfigBlock &block,
 		  Error &error)
 {
 	FfmpegInit();

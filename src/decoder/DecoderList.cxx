@@ -21,7 +21,7 @@
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "plugins/AudiofileDecoderPlugin.hxx"
 #include "plugins/PcmDecoderPlugin.hxx"
 #include "plugins/DffDecoderPlugin.hxx"
@@ -135,12 +135,13 @@ decoder_plugin_from_name(const char *name)
 
 void decoder_plugin_init_all(void)
 {
-	struct config_param empty;
+	ConfigBlock empty;
 
 	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i) {
 		const DecoderPlugin &plugin = *decoder_plugins[i];
-		const struct config_param *param =
-			config_find_block(CONF_DECODER, "plugin", plugin.name);
+		const auto *param =
+			config_find_block(ConfigBlockOption::DECODER, "plugin",
+					  plugin.name);
 
 		if (param == nullptr)
 			param = &empty;

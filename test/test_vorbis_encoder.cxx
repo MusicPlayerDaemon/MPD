@@ -23,7 +23,7 @@
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/ToOutputStream.hxx"
 #include "AudioFormat.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
@@ -45,10 +45,10 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	const auto plugin = encoder_plugin_get("vorbis");
 	assert(plugin != NULL);
 
-	config_param param;
-	param.AddBlockParam("quality", "5.0", -1);
+	ConfigBlock block;
+	block.AddBlockParam("quality", "5.0", -1);
 
-	const auto encoder = encoder_init(*plugin, param, IgnoreError());
+	const auto encoder = encoder_init(*plugin, block, IgnoreError());
 	assert(encoder != NULL);
 
 	/* open the encoder */

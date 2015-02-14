@@ -22,14 +22,16 @@
 
 #include "util/Cast.hxx"
 
+struct ConfigBlock;
+
 template<class T>
 struct AudioOutputWrapper {
 	static T &Cast(AudioOutput &ao) {
 		return ContainerCast(ao, &T::base);
 	}
 
-	static AudioOutput *Init(const config_param &param, Error &error) {
-		T *t = T::Create(param, error);
+	static AudioOutput *Init(const ConfigBlock &block, Error &error) {
+		T *t = T::Create(block, error);
 		return t != nullptr
 			? &t->base
 			: nullptr;

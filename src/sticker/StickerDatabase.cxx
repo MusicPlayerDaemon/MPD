@@ -31,7 +31,7 @@
 
 #include <assert.h>
 
-struct sticker {
+struct Sticker {
 	std::map<std::string, std::string> table;
 };
 
@@ -340,13 +340,13 @@ sticker_delete_value(const char *type, const char *uri, const char *name,
 }
 
 void
-sticker_free(struct sticker *sticker)
+sticker_free(Sticker *sticker)
 {
 	delete sticker;
 }
 
 const char *
-sticker_get_value(const struct sticker &sticker, const char *name)
+sticker_get_value(const Sticker &sticker, const char *name)
 {
 	auto i = sticker.table.find(name);
 	if (i == sticker.table.end())
@@ -356,7 +356,7 @@ sticker_get_value(const struct sticker &sticker, const char *name)
 }
 
 void
-sticker_foreach(const sticker &sticker,
+sticker_foreach(const Sticker &sticker,
 		void (*func)(const char *name, const char *value,
 			     void *user_data),
 		void *user_data)
@@ -365,10 +365,10 @@ sticker_foreach(const sticker &sticker,
 		func(i.first.c_str(), i.second.c_str(), user_data);
 }
 
-struct sticker *
+Sticker *
 sticker_load(const char *type, const char *uri, Error &error)
 {
-	sticker s;
+	Sticker s;
 
 	if (!sticker_list_values(s.table, type, uri, error))
 		return nullptr;
@@ -377,7 +377,7 @@ sticker_load(const char *type, const char *uri, Error &error)
 		/* don't return empty sticker objects */
 		return nullptr;
 
-	return new sticker(std::move(s));
+	return new Sticker(std::move(s));
 }
 
 static sqlite3_stmt *

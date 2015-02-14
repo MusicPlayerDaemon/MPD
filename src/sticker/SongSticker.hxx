@@ -26,7 +26,7 @@
 #include <string>
 
 struct LightSong;
-struct sticker;
+struct Sticker;
 class Database;
 class Error;
 
@@ -67,7 +67,7 @@ sticker_song_delete_value(const LightSong &song, const char *name,
  * @param song the song object
  * @return a sticker object, or NULL on error or if there is no sticker
  */
-sticker *
+Sticker *
 sticker_song_get(const LightSong &song, Error &error);
 
 /**

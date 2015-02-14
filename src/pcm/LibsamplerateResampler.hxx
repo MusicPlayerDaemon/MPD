@@ -27,6 +27,8 @@
 
 #include <samplerate.h>
 
+struct ConfigBlock;
+
 /**
  * A resampler using libsamplerate.
  */
@@ -51,6 +53,6 @@ private:
 };
 
 bool
-pcm_resample_lsr_global_init(const char *converter, Error &error);
+pcm_resample_lsr_global_init(const ConfigBlock &block, Error &error);
 
 #endif

@@ -273,7 +273,7 @@ SmbclientNeighborExplorer::ThreadFunc(void *ctx)
 static NeighborExplorer *
 smbclient_neighbor_create(gcc_unused EventLoop &loop,
 			  NeighborListener &listener,
-			  gcc_unused const config_param &param,
+			  gcc_unused const ConfigBlock &block,
 			  gcc_unused Error &error)
 {
 	if (!SmbclientInit(error))

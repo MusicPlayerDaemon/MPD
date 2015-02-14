@@ -28,7 +28,7 @@
 
 #include <cassert>
 
-struct config_param;
+struct ConfigBlock;
 struct Directory;
 struct DatabasePlugin;
 class EventLoop;
@@ -73,7 +73,7 @@ class SimpleDatabase : public Database {
 
 public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
-				const config_param &param,
+				const ConfigBlock &block,
 				Error &error);
 
 	gcc_pure
@@ -134,7 +134,7 @@ public:
 	}
 
 private:
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	gcc_pure
 	bool Check(Error &error) const;

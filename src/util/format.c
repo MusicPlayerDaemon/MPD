@@ -71,6 +71,13 @@ skip_format(const char *p)
 	return p;
 }
 
+static bool
+is_name_char(char ch)
+{
+	return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') ||
+		(ch >= '0' && ch <= '9') || ch == '_';
+}
+
 static char *
 format_object2(const char *format, const char **last, const void *object,
 	       const char *(*getter)(const void *object, const char *name))
@@ -181,7 +188,7 @@ format_object2(const char *format, const char **last, const void *object,
 			/* find the extent of this format specifier
 			   (stop at \0, ' ', or esc) */
 			const char *end = p + 1;
-			while (*end >= 'a' && *end <= 'z')
+			while (is_name_char(*end))
 				++end;
 
 			const size_t length = end - p + 1;

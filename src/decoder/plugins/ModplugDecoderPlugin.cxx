@@ -41,12 +41,12 @@ static constexpr offset_type MODPLUG_FILE_LIMIT = 100 * 1024 * 1024;
 static int modplug_loop_count;
 
 static bool
-modplug_decoder_init(const config_param &param)
+modplug_decoder_init(const ConfigBlock &block)
 {
-	modplug_loop_count = param.GetBlockValue("loop_count", 0);
+	modplug_loop_count = block.GetBlockValue("loop_count", 0);
 	if (modplug_loop_count < -1)
 		FormatFatalError("Invalid loop count in line %d: %i",
-				 param.line, modplug_loop_count);
+				 block.line, modplug_loop_count);
 
 	return true;
 }

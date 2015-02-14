@@ -17,9 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PLAYLIST_DESPOTIFY_PLAYLIST_PLUGIN_HXX
-#define MPD_PLAYLIST_DESPOTIFY_PLAYLIST_PLUGIN_HXX
+#include "config.h"
+#include "Data.hxx"
+#include "Param.hxx"
+#include "Block.hxx"
 
-extern const struct playlist_plugin despotify_playlist_plugin;
+void
+ConfigData::Clear()
+{
+	for (auto &i : params) {
+		delete i;
+		i = nullptr;
+	}
 
-#endif
+	for (auto &i : blocks) {
+		delete i;
+		i = nullptr;
+	}
+}

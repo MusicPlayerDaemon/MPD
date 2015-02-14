@@ -57,11 +57,11 @@ UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
 {
 #ifndef WIN32
 	follow_inside_symlinks =
-		config_get_bool(CONF_FOLLOW_INSIDE_SYMLINKS,
+		config_get_bool(ConfigOption::FOLLOW_INSIDE_SYMLINKS,
 				DEFAULT_FOLLOW_INSIDE_SYMLINKS);
 
 	follow_outside_symlinks =
-		config_get_bool(CONF_FOLLOW_OUTSIDE_SYMLINKS,
+		config_get_bool(ConfigOption::FOLLOW_OUTSIDE_SYMLINKS,
 				DEFAULT_FOLLOW_OUTSIDE_SYMLINKS);
 #endif
 }
@@ -334,7 +334,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const FileInfo &info)
 	directory_set_stat(directory, info);
 
 	Error error;
-	const std::auto_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(directory.GetPath(), error));
+	const std::unique_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(directory.GetPath(), error));
 	if (reader.get() == nullptr) {
 		LogError(error);
 		return false;

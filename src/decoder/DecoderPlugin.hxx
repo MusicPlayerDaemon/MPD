@@ -22,7 +22,7 @@
 
 #include "Compiler.h"
 
-struct config_param;
+struct ConfigBlock;
 class InputStream;
 struct tag_handler;
 class Path;
@@ -44,7 +44,7 @@ struct DecoderPlugin {
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
 	 */
-	bool (*init)(const config_param &param);
+	bool (*init)(const ConfigBlock &block);
 
 	/**
 	 * Deinitialize a decoder plugin which was initialized
@@ -53,7 +53,7 @@ struct DecoderPlugin {
 	void (*finish)(void);
 
 	/**
-	 * Decode a stream (data read from an #input_stream object).
+	 * Decode a stream (data read from an #InputStream object).
 	 *
 	 * Either implement this method or file_decode().  If
 	 * possible, it is recommended to implement this method,
@@ -112,9 +112,9 @@ struct DecoderPlugin {
 	 * @return true if the plugin was initialized successfully, false if
 	 * the plugin is not available
 	 */
-	bool Init(const config_param &param) const {
+	bool Init(const ConfigBlock &block) const {
 		return init != nullptr
-			? init(param)
+			? init(block)
 			: true;
 	}
 

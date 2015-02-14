@@ -17,9 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef INPUT_DESPOTIFY_HXX
-#define INPUT_DESPOTIFY_HXX
+#ifndef MPD_CONFIG_DATA_HXX
+#define MPD_CONFIG_DATA_HXX
 
-extern const struct InputPlugin input_plugin_despotify;
+#include "ConfigOption.hxx"
+
+#include <array>
+
+struct config_param;
+struct ConfigBlock;
+
+struct ConfigData {
+	std::array<config_param *, std::size_t(ConfigOption::MAX)> params;
+	std::array<ConfigBlock *, std::size_t(ConfigBlockOption::MAX)> blocks;
+
+	void Clear();
+};
 
 #endif

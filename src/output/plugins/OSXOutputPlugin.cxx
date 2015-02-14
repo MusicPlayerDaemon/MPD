@@ -61,9 +61,9 @@ osx_output_test_default_device(void)
 }
 
 static void
-osx_output_configure(OSXOutput *oo, const config_param &param)
+osx_output_configure(OSXOutput *oo, const ConfigBlock &block)
 {
-	const char *device = param.GetBlockValue("device");
+	const char *device = block.GetBlockValue("device");
 
 	if (device == nullptr || 0 == strcmp(device, "default")) {
 		oo->component_subtype = kAudioUnitSubType_DefaultOutput;
@@ -81,15 +81,15 @@ osx_output_configure(OSXOutput *oo, const config_param &param)
 }
 
 static AudioOutput *
-osx_output_init(const config_param &param, Error &error)
+osx_output_init(const ConfigBlock &block, Error &error)
 {
 	OSXOutput *oo = new OSXOutput();
-	if (!oo->base.Configure(param, error)) {
+	if (!oo->base.Configure(block, error)) {
 		delete oo;
 		return nullptr;
 	}
 
-	osx_output_configure(oo, param);
+	osx_output_configure(oo, block);
 
 	return &oo->base;
 }

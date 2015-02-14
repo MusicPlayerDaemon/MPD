@@ -98,8 +98,8 @@ public:
 	gcc_const
 	static bool TestDefaultDevice();
 
-	bool Configure(const config_param &param, Error &error);
-	static PulseOutput *Create(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
+	static PulseOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Enable(Error &error);
 	void Disable();
@@ -430,26 +430,26 @@ PulseOutput::SetupContext(Error &error)
 }
 
 inline bool
-PulseOutput::Configure(const config_param &param, Error &error)
+PulseOutput::Configure(const ConfigBlock &block, Error &error)
 {
-	if (!base.Configure(param, error))
+	if (!base.Configure(block, error))
 		return false;
 
-	name = param.GetBlockValue("name", "mpd_pulse");
-	server = param.GetBlockValue("server");
-	sink = param.GetBlockValue("sink");
+	name = block.GetBlockValue("name", "mpd_pulse");
+	server = block.GetBlockValue("server");
+	sink = block.GetBlockValue("sink");
 
 	return true;
 }
 
 PulseOutput *
-PulseOutput::Create(const config_param &param, Error &error)
+PulseOutput::Create(const ConfigBlock &block, Error &error)
 {
 	setenv("PULSE_PROP_media.role", "music", true);
 	setenv("PULSE_PROP_application.icon_name", "mpd", true);
 
 	auto *po = new PulseOutput();
-	if (!po->Configure(param, error)) {
+	if (!po->Configure(block, error)) {
 		delete po;
 		return nullptr;
 	}
@@ -926,7 +926,7 @@ PulseOutput::Pause()
 inline bool
 PulseOutput::TestDefaultDevice()
 {
-	const config_param empty;
+	const ConfigBlock empty;
 	PulseOutput *po = PulseOutput::Create(empty, IgnoreError());
 	if (po == nullptr)
 		return false;

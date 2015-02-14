@@ -72,9 +72,9 @@ struct DsdiffMetaData {
 static bool lsbitfirst;
 
 static bool
-dsdiff_init(const config_param &param)
+dsdiff_init(const ConfigBlock &block)
 {
-	lsbitfirst = param.GetBlockValue("lsbitfirst", false);
+	lsbitfirst = block.GetBlockValue("lsbitfirst", false);
 	return true;
 }
 

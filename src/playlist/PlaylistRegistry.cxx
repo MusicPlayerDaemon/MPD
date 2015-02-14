@@ -23,7 +23,6 @@
 #include "plugins/ExtM3uPlaylistPlugin.hxx"
 #include "plugins/M3uPlaylistPlugin.hxx"
 #include "plugins/XspfPlaylistPlugin.hxx"
-#include "plugins/DespotifyPlaylistPlugin.hxx"
 #include "plugins/SoundCloudPlaylistPlugin.hxx"
 #include "plugins/PlsPlaylistPlugin.hxx"
 #include "plugins/AsxPlaylistPlugin.hxx"
@@ -36,7 +35,7 @@
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -50,9 +49,6 @@ const struct playlist_plugin *const playlist_plugins[] = {
 	&xspf_playlist_plugin,
 	&asx_playlist_plugin,
 	&rss_playlist_plugin,
-#endif
-#ifdef ENABLE_DESPOTIFY
-	&despotify_playlist_plugin,
 #endif
 #ifdef ENABLE_SOUNDCLOUD
 	&soundcloud_playlist_plugin,
@@ -77,13 +73,13 @@ static bool playlist_plugins_enabled[n_playlist_plugins];
 void
 playlist_list_global_init(void)
 {
-	const config_param empty;
+	const ConfigBlock empty;
 
 	for (unsigned i = 0; playlist_plugins[i] != nullptr; ++i) {
 		const struct playlist_plugin *plugin = playlist_plugins[i];
-		const struct config_param *param =
-			config_find_block(CONF_PLAYLIST_PLUGIN, "name",
-					  plugin->name);
+		const auto *param =
+			config_find_block(ConfigBlockOption::PLAYLIST_PLUGIN,
+					  "name", plugin->name);
 		if (param == nullptr)
 			param = &empty;
 		else if (!param->GetBlockValue("enabled", true))

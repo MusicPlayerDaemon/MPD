@@ -60,11 +60,11 @@ public:
 		return &base;
 	}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
+	bool Initialize(const ConfigBlock &block, Error &error) {
+		return base.Configure(block, error);
 	}
 
-	void Configure(const config_param &param);
+	void Configure(const ConfigBlock &block);
 
 	bool Open(AudioFormat &audio_format, Error &error);
 	void Close();
@@ -124,28 +124,28 @@ roar_output_set_volume(RoarOutput &roar, unsigned volume)
 }
 
 inline void
-RoarOutput::Configure(const config_param &param)
+RoarOutput::Configure(const ConfigBlock &block)
 {
-	host = param.GetBlockValue("server", "");
-	name = param.GetBlockValue("name", "MPD");
+	host = block.GetBlockValue("server", "");
+	name = block.GetBlockValue("name", "MPD");
 
-	const char *_role = param.GetBlockValue("role", "music");
+	const char *_role = block.GetBlockValue("role", "music");
 	role = _role != nullptr
 		? roar_str2role(_role)
 		: ROAR_ROLE_MUSIC;
 }
 
 static AudioOutput *
-roar_init(const config_param &param, Error &error)
+roar_init(const ConfigBlock &block, Error &error)
 {
 	RoarOutput *self = new RoarOutput();
 
-	if (!self->Initialize(param, error)) {
+	if (!self->Initialize(block, error)) {
 		delete self;
 		return nullptr;
 	}
 
-	self->Configure(param);
+	self->Configure(block);
 	return *self;
 }
 

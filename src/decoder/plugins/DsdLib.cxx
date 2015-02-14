@@ -48,7 +48,7 @@ DsdId::Equals(const char *s) const
 }
 
 /**
- * Skip the #input_stream to the specified offset.
+ * Skip the #InputStream to the specified offset.
  */
 bool
 dsdlib_skip_to(Decoder *decoder, InputStream &is,
@@ -64,7 +64,7 @@ dsdlib_skip_to(Decoder *decoder, InputStream &is,
 }
 
 /**
- * Skip some bytes from the #input_stream.
+ * Skip some bytes from the #InputStream.
  */
 bool
 dsdlib_skip(Decoder *decoder, InputStream &is,
@@ -107,45 +107,42 @@ dsdlib_valid_freq(uint32_t samplefreq)
 void
 dsdlib_tag_id3(InputStream &is,
 	       const struct tag_handler *handler,
-	       void *handler_ctx, int64_t tagoffset)
+	       void *handler_ctx, offset_type tagoffset)
 {
-	assert(tagoffset >= 0);
-
 	if (tagoffset == 0 || !is.KnownSize())
+		return;
+
+	/* Prevent broken files causing problems */
+	const auto size = is.GetSize();
+	if (tagoffset >= size)
+		return;
+
+	const auto count64 = size - tagoffset;
+	if (count64 < 10 || count64 > 1024 * 1024)
 		return;
 
 	if (!dsdlib_skip_to(nullptr, is, tagoffset))
 		return;
 
-	/* Prevent broken files causing problems */
-	const auto size = is.GetSize();
-	const auto offset = is.GetOffset();
-	if (offset >= size)
+	const id3_length_t count = count64;
+
+	id3_byte_t *const id3_buf = new id3_byte_t[count];
+	if (id3_buf == nullptr)
 		return;
-
-	const id3_length_t count = size - offset;
-
-	if (count < 10 || count > 256*1024)
-		return;
-
-	id3_byte_t *const id3_buf = static_cast<id3_byte_t*>(xalloc(count));
 
 	if (!decoder_read_full(nullptr, is, id3_buf, count)) {
-		free(id3_buf);
+		delete[] id3_buf;
 		return;
 	}
 
 	struct id3_tag *id3_tag = id3_tag_parse(id3_buf, count);
-	if (id3_tag == nullptr) {
-		free(id3_buf);
+	delete[] id3_buf;
+	if (id3_tag == nullptr)
 		return;
-	}
 
 	scan_id3_tag(id3_tag, handler, handler_ctx);
 
 	id3_tag_delete(id3_tag);
-
-	free(id3_buf);
 	return;
 }
 #endif

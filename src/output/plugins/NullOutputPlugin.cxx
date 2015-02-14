@@ -36,11 +36,11 @@ public:
 	NullOutput()
 		:base(null_output_plugin) {}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
+	bool Initialize(const ConfigBlock &block, Error &error) {
+		return base.Configure(block, error);
 	}
 
-	static NullOutput *Create(const config_param &param, Error &error);
+	static NullOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Open(AudioFormat &audio_format, gcc_unused Error &error) {
 		if (sync)
@@ -78,16 +78,16 @@ public:
 };
 
 inline NullOutput *
-NullOutput::Create(const config_param &param, Error &error)
+NullOutput::Create(const ConfigBlock &block, Error &error)
 {
 	NullOutput *nd = new NullOutput();
 
-	if (!nd->Initialize(param, error)) {
+	if (!nd->Initialize(block, error)) {
 		delete nd;
 		return nullptr;
 	}
 
-	nd->sync = param.GetBlockValue("sync", true);
+	nd->sync = block.GetBlockValue("sync", true);
 
 	return nd;
 }

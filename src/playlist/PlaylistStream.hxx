@@ -31,7 +31,7 @@ class Path;
  * Opens a playlist from a local file.
  *
  * @param path the path of the playlist file
- * @param is_r on success, an input_stream object is returned here,
+ * @param is_r on success, an #InputStream object is returned here,
  * which must be closed after the playlist_provider object is freed
  * @return a playlist, or nullptr on error
  */

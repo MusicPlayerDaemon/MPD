@@ -20,7 +20,9 @@
 #include "config.h"
 #include "ConfigGlobal.hxx"
 #include "ConfigParser.hxx"
-#include "ConfigData.hxx"
+#include "Data.hxx"
+#include "Param.hxx"
+#include "Block.hxx"
 #include "ConfigFile.hxx"
 #include "ConfigPath.hxx"
 #include "ConfigError.hxx"
@@ -36,9 +38,7 @@ static ConfigData config_data;
 
 void config_global_finish(void)
 {
-	for (auto i : config_data.params)
-		delete i;
-	config_data.params.fill(0);
+	config_data.Clear();
 }
 
 void config_global_init(void)
@@ -52,15 +52,15 @@ ReadConfigFile(Path path, Error &error)
 }
 
 static void
-Check(const config_param *param)
+Check(const ConfigBlock &block)
 {
-	if (!param->used)
-		/* this whole config_param was not queried at all -
+	if (!block.used)
+		/* this whole block was not queried at all -
 		   the feature might be disabled at compile time?
 		   Silently ignore it here. */
 		return;
 
-	for (const auto &i : param->block_params) {
+	for (const auto &i : block.block_params) {
 		if (!i.used)
 			FormatWarning(config_domain,
 				      "option '%s' on line %i was not recognized",
@@ -70,9 +70,9 @@ Check(const config_param *param)
 
 void config_global_check(void)
 {
-	for (auto i : config_data.params)
-		for (const config_param *p = i; p != nullptr; p = p->next)
-			Check(p);
+	for (auto i : config_data.blocks)
+		for (const auto *p = i; p != nullptr; p = p->next)
+			Check(*p);
 }
 
 const config_param *
@@ -84,18 +84,27 @@ config_get_param(ConfigOption option)
 	return param;
 }
 
-const config_param *
-config_find_block(ConfigOption option, const char *key, const char *value)
+const ConfigBlock *
+config_get_block(ConfigBlockOption option)
 {
-	for (const config_param *param = config_get_param(option);
-	     param != nullptr; param = param->next) {
-		const char *value2 = param->GetBlockValue(key);
+	ConfigBlock *block = config_data.blocks[unsigned(option)];
+	if (block != nullptr)
+		block->used = true;
+	return block;
+}
+
+const ConfigBlock *
+config_find_block(ConfigBlockOption option, const char *key, const char *value)
+{
+	for (const auto *block = config_get_block(option);
+	     block != nullptr; block = block->next) {
+		const char *value2 = block->GetBlockValue(key);
 		if (value2 == nullptr)
 			FormatFatalError("block without '%s' name in line %d",
-					 key, param->line);
+					 key, block->line);
 
 		if (strcmp(value2, value) == 0)
-			return param;
+			return block;
 	}
 
 	return nullptr;

@@ -33,7 +33,7 @@
 #include "db/LightDirectory.hxx"
 #include "db/LightSong.hxx"
 #include "db/Stats.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"
 #include "util/Error.hxx"
@@ -78,7 +78,7 @@ public:
 	UpnpDatabase():Database(upnp_db_plugin) {}
 
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
-				const config_param &param,
+				const ConfigBlock &block,
 				Error &error);
 
 	virtual bool Open(Error &error) override;
@@ -106,7 +106,7 @@ public:
 	}
 
 protected:
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 private:
 	bool VisitServer(const ContentDirectoryService &server,
@@ -158,10 +158,10 @@ private:
 Database *
 UpnpDatabase::Create(gcc_unused EventLoop &loop,
 		     gcc_unused DatabaseListener &listener,
-		     const config_param &param, Error &error)
+		     const ConfigBlock &block, Error &error)
 {
 	UpnpDatabase *db = new UpnpDatabase();
-	if (!db->Configure(param, error)) {
+	if (!db->Configure(block, error)) {
 		delete db;
 		return nullptr;
 	}
@@ -173,7 +173,7 @@ UpnpDatabase::Create(gcc_unused EventLoop &loop,
 }
 
 inline bool
-UpnpDatabase::Configure(const config_param &, Error &)
+UpnpDatabase::Configure(const ConfigBlock &, Error &)
 {
 	return true;
 }
@@ -222,7 +222,7 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 	}
 
 	ContentDirectoryService server;
-	if (!discovery->getServer(vpath.front().c_str(), server, error))
+	if (!discovery->GetServer(vpath.front().c_str(), server, error))
 		return nullptr;
 
 	vpath.pop_front();
@@ -689,7 +689,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	auto vpath = stringToTokens(selection.uri, "/", true);
 	if (vpath.empty()) {
 		std::vector<ContentDirectoryService> servers;
-		if (!discovery->getDirServices(servers, error))
+		if (!discovery->GetDirectories(servers, error))
 			return false;
 
 		for (const auto &server : servers) {
@@ -714,7 +714,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	vpath.pop_front();
 
 	ContentDirectoryService server;
-	if (!discovery->getServer(servername.c_str(), server, error))
+	if (!discovery->GetServer(servername.c_str(), server, error))
 		return false;
 
 	return VisitServer(server, vpath, selection,
@@ -733,7 +733,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		return true;
 
 	std::vector<ContentDirectoryService> servers;
-	if (!discovery->getDirServices(servers, error))
+	if (!discovery->GetDirectories(servers, error))
 		return false;
 
 	std::set<std::string> values;

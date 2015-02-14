@@ -27,7 +27,6 @@
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
 #include "pcm/PcmConvert.hxx"
-#include "config/ConfigGlobal.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
 #include "util/Error.hxx"
@@ -38,13 +37,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-const char *
-config_get_string(gcc_unused enum ConfigOption option,
-		  const char *default_value)
-{
-	return default_value;
-}
 
 int main(int argc, char **argv)
 {

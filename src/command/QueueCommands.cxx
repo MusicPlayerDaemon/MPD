@@ -43,17 +43,12 @@
 #include <string.h>
 
 static const char *
-translate_uri(Client &client, const char *uri)
+translate_uri(const char *uri)
 {
 	if (memcmp(uri, "file:///", 8) == 0)
 		/* drop the "file://", leave only an absolute path
 		   (starting with a slash) */
 		return uri + 7;
-
-	if (PathTraitsUTF8::IsAbsolute(uri)) {
-		command_error(client, ACK_ERROR_NO_EXIST, "Malformed URI");
-		return nullptr;
-	}
 
 	return uri;
 }
@@ -70,9 +65,7 @@ handle_add(Client &client, ConstBuffer<const char *> args)
 		   here */
 		uri = "";
 
-	uri = translate_uri(client, uri);
-	if (uri == nullptr)
-		return CommandResult::ERROR;
+	uri = translate_uri(uri);
 
 	if (uri_has_scheme(uri) || PathTraitsUTF8::IsAbsolute(uri)) {
 		const SongLoader loader(client);
@@ -101,9 +94,7 @@ handle_add(Client &client, ConstBuffer<const char *> args)
 CommandResult
 handle_addid(Client &client, ConstBuffer<const char *> args)
 {
-	const char *const uri = translate_uri(client, args.front());
-	if (uri == nullptr)
-		return CommandResult::ERROR;
+	const char *const uri = translate_uri(args.front());
 
 	const SongLoader loader(client);
 	Error error;

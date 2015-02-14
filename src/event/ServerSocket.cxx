@@ -19,10 +19,12 @@
 
 #include "config.h"
 #include "ServerSocket.hxx"
-#include "system/SocketUtil.hxx"
-#include "system/SocketError.hxx"
+#include "net/StaticSocketAddress.hxx"
+#include "net/SocketAddress.hxx"
+#include "net/SocketUtil.hxx"
+#include "net/SocketError.hxx"
+#include "net/Resolver.hxx"
 #include "event/SocketMonitor.hxx"
-#include "system/Resolver.hxx"
 #include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
@@ -52,8 +54,6 @@
 #include <netdb.h>
 #endif
 
-#define DEFAULT_PORT	6600
-
 class OneServerSocket final : private SocketMonitor {
 	ServerSocket &parent;
 
@@ -61,29 +61,28 @@ class OneServerSocket final : private SocketMonitor {
 
 	AllocatedPath path;
 
-	size_t address_length;
-	struct sockaddr *address;
+	SocketAddress address;
 
 public:
 	OneServerSocket(EventLoop &_loop, ServerSocket &_parent,
 			unsigned _serial,
-			const struct sockaddr *_address,
-			size_t _address_length)
+			SocketAddress _address)
 		:SocketMonitor(_loop),
 		 parent(_parent), serial(_serial),
 		 path(AllocatedPath::Null()),
-		 address_length(_address_length),
-		 address((sockaddr *)xmemdup(_address, _address_length))
+		 address((sockaddr *)xmemdup(_address.GetAddress(),
+					     _address.GetSize()),
+			 _address.GetSize())
 	{
-		assert(_address != nullptr);
-		assert(_address_length > 0);
+		assert(!_address.IsNull());
+		assert(_address.GetSize() > 0);
 	}
 
 	OneServerSocket(const OneServerSocket &other) = delete;
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
 	~OneServerSocket() {
-		free(address);
+		free(const_cast<struct sockaddr *>(address.GetAddress()));
 
 		if (IsDefined())
 			Close();
@@ -106,7 +105,7 @@ public:
 
 	gcc_pure
 	std::string ToString() const {
-		return sockaddr_to_string(address, address_length);
+		return sockaddr_to_string(address);
 	}
 
 	void SetFD(int _fd) {
@@ -150,10 +149,10 @@ get_remote_uid(int fd)
 inline void
 OneServerSocket::Accept()
 {
-	struct sockaddr_storage peer_address;
+	StaticSocketAddress peer_address;
 	size_t peer_address_length = sizeof(peer_address);
 	int peer_fd =
-		accept_cloexec_nonblock(Get(), (struct sockaddr*)&peer_address,
+		accept_cloexec_nonblock(Get(), peer_address,
 					&peer_address_length);
 	if (peer_fd < 0) {
 		const SocketErrorMessage msg;
@@ -162,6 +161,8 @@ OneServerSocket::Accept()
 		return;
 	}
 
+	peer_address.SetSize(peer_address_length);
+
 	if (socket_keepalive(peer_fd)) {
 		const SocketErrorMessage msg;
 		FormatError(server_socket_domain,
@@ -169,9 +170,8 @@ OneServerSocket::Accept()
 			    (const char *)msg);
 	}
 
-	parent.OnAccept(peer_fd,
-			(const sockaddr &)peer_address,
-			peer_address_length, get_remote_uid(peer_fd));
+	parent.OnAccept(peer_fd, peer_address,
+			get_remote_uid(peer_fd));
 }
 
 bool
@@ -186,9 +186,9 @@ OneServerSocket::Open(Error &error)
 {
 	assert(!IsDefined());
 
-	int _fd = socket_bind_listen(address->sa_family,
+	int _fd = socket_bind_listen(address.GetFamily(),
 				     SOCK_STREAM, 0,
-				     address, address_length, 5,
+				     address, 5,
 				     error);
 	if (_fd < 0)
 		return false;
@@ -282,10 +282,10 @@ ServerSocket::Close()
 }
 
 OneServerSocket &
-ServerSocket::AddAddress(const sockaddr &address, size_t address_length)
+ServerSocket::AddAddress(SocketAddress address)
 {
 	sockets.emplace_back(loop, *this, next_serial,
-			     &address, address_length);
+			     address);
 
 	return sockets.back();
 }
@@ -295,17 +295,18 @@ ServerSocket::AddFD(int fd, Error &error)
 {
 	assert(fd >= 0);
 
-	struct sockaddr_storage address;
+	StaticSocketAddress address;
 	socklen_t address_length = sizeof(address);
-	if (getsockname(fd, (struct sockaddr *)&address,
+	if (getsockname(fd, address,
 			&address_length) < 0) {
 		SetSocketError(error);
 		error.AddPrefix("Failed to get socket address: ");
 		return false;
 	}
 
-	OneServerSocket &s = AddAddress((const sockaddr &)address,
-					address_length);
+	address.SetSize(address_length);
+
+	OneServerSocket &s = AddAddress(address);
 	s.SetFD(fd);
 
 	return true;
@@ -322,7 +323,7 @@ ServerSocket::AddPortIPv4(unsigned port)
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = INADDR_ANY;
 
-	AddAddress((const sockaddr &)sin, sizeof(sin));
+	AddAddress({(const sockaddr *)&sin, sizeof(sin)});
 }
 
 #ifdef HAVE_IPV6
@@ -335,7 +336,7 @@ ServerSocket::AddPortIPv6(unsigned port)
 	sin.sin6_port = htons(port);
 	sin.sin6_family = AF_INET6;
 
-	AddAddress((const sockaddr &)sin, sizeof(sin));
+	AddAddress({(const sockaddr *)&sin, sizeof(sin)});
 }
 
 /**
@@ -394,7 +395,7 @@ ServerSocket::AddHost(const char *hostname, unsigned port, Error &error)
 		return false;
 
 	for (const struct addrinfo *i = ai; i != nullptr; i = i->ai_next)
-		AddAddress(*i->ai_addr, i->ai_addrlen);
+		AddAddress(SocketAddress(i->ai_addr, i->ai_addrlen));
 
 	freeaddrinfo(ai);
 
@@ -428,7 +429,7 @@ ServerSocket::AddPath(AllocatedPath &&path, Error &error)
 	s_un.sun_family = AF_UNIX;
 	memcpy(s_un.sun_path, path.c_str(), path_length + 1);
 
-	OneServerSocket &s = AddAddress((const sockaddr &)s_un, sizeof(s_un));
+	OneServerSocket &s = AddAddress({(const sockaddr *)&s_un, sizeof(s_un)});
 	s.SetPath(std::move(path));
 
 	return true;

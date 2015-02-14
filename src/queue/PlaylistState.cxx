@@ -32,7 +32,6 @@
 #include "PlayerControl.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "fs/Limits.hxx"
 #include "util/CharUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "Log.hxx"
@@ -56,8 +55,6 @@
 #define PLAYLIST_STATE_FILE_STATE_PLAY		"play"
 #define PLAYLIST_STATE_FILE_STATE_PAUSE		"pause"
 #define PLAYLIST_STATE_FILE_STATE_STOP		"stop"
-
-#define PLAYLIST_BUFFER_SIZE	2*MPD_PATH_MAX
 
 void
 playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
@@ -195,7 +192,7 @@ playlist_state_restore(const char *line, TextFile &file,
 			current = 0;
 
 		if (state == PlayerState::PLAY &&
-		    config_get_bool(CONF_RESTORE_PAUSED, false))
+		    config_get_bool(ConfigOption::RESTORE_PAUSED, false))
 			/* the user doesn't want MPD to auto-start
 			   playback after startup; fall back to
 			   "pause" */

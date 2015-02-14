@@ -55,13 +55,13 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	 */
 	struct DiscoveredTask {
 		std::string url;
-		std::string deviceId;
+		std::string device_id;
 		unsigned expires; // Seconds valid
 
 		DiscoveredTask(const Upnp_Discovery *disco)
 			:url(disco->Location),
-			  deviceId(disco->DeviceId),
-			  expires(disco->Expires) {}
+			 device_id(disco->DeviceId),
+			 expires(disco->Expires) {}
 	};
 
 	/**
@@ -97,19 +97,19 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 	Mutex mutex;
 	std::list<ContentDirectoryDescriptor> directories;
-	WorkQueue<DiscoveredTask *> discoveredQueue;
+	WorkQueue<DiscoveredTask *> queue;
 
 	/**
 	 * The UPnP device search timeout, which should actually be
 	 * called delay because it's the base of a random delay that
 	 * the devices apply to avoid responding all at the same time.
 	 */
-	int m_searchTimeout;
+	int search_timeout;
 
 	/**
 	 * The MonotonicClockS() time stamp of the last search.
 	 */
-	unsigned m_lastSearch;
+	unsigned last_search;
 
 public:
 	UPnPDeviceDirectory(UpnpClient_Handle _handle,
@@ -122,24 +122,26 @@ public:
 	bool Start(Error &error);
 
 	/** Retrieve the directory services currently seen on the network */
-	bool getDirServices(std::vector<ContentDirectoryService> &, Error &);
+	bool GetDirectories(std::vector<ContentDirectoryService> &, Error &);
 
 	/**
 	 * Get server by friendly name.
 	 */
-	bool getServer(const char *friendlyName,
+	bool GetServer(const char *friendly_name,
 		       ContentDirectoryService &server,
 		       Error &error);
 
 private:
-	bool search(Error &error);
+	bool Search(Error &error);
 
 	/**
 	 * Look at the devices and get rid of those which have not
 	 * been seen for too long. We do this when listing the top
 	 * directory.
+	 *
+	 * Caller must lock #mutex.
 	 */
-	bool expireDevices(Error &error);
+	bool ExpireDevices(Error &error);
 
 	void LockAdd(ContentDirectoryDescriptor &&d);
 	void LockRemove(const std::string &id);
@@ -149,12 +151,11 @@ private:
 	 * devices appearing and disappearing, and update the
 	 * directory pool accordingly.
 	 */
-	static void *discoExplorer(void *);
-	void discoExplorer();
+	static void *Explore(void *);
+	void Explore();
 
 	int OnAlive(Upnp_Discovery *disco);
 	int OnByeBye(Upnp_Discovery *disco);
-	int cluCallBack(Upnp_EventType et, void *evp);
 
 	/* virtual methods from class UpnpCallback */
 	virtual int Invoke(Upnp_EventType et, void *evp) override;

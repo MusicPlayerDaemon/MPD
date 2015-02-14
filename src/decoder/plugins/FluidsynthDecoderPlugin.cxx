@@ -73,17 +73,17 @@ fluidsynth_mpd_log_function(int level, char *message, gcc_unused void *data)
 }
 
 static bool
-fluidsynth_init(const config_param &param)
+fluidsynth_init(const ConfigBlock &block)
 {
 	Error error;
 
-	sample_rate = param.GetBlockValue("sample_rate", 48000u);
+	sample_rate = block.GetBlockValue("sample_rate", 48000u);
 	if (!audio_check_sample_rate(sample_rate, error)) {
 		LogError(error);
 		return false;
 	}
 
-	soundfont_path = param.GetBlockValue("soundfont",
+	soundfont_path = block.GetBlockValue("soundfont",
 					     "/usr/share/sounds/sf2/FluidR3_GM.sf2");
 
 	fluid_set_log_function(LAST_LOG_LEVEL,

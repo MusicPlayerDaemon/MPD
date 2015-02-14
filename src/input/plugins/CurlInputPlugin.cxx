@@ -23,7 +23,7 @@
 #include "../IcyInputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "event/SocketMonitor.hxx"
@@ -535,7 +535,7 @@ CurlMulti::OnTimeout()
  */
 
 static InputPlugin::InitResult
-input_curl_init(const config_param &param, Error &error)
+input_curl_init(const ConfigBlock &block, Error &error)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK) {
@@ -557,22 +557,22 @@ input_curl_init(const config_param &param, Error &error)
 
 	http_200_aliases = curl_slist_append(http_200_aliases, "ICY 200 OK");
 
-	proxy = param.GetBlockValue("proxy");
-	proxy_port = param.GetBlockValue("proxy_port", 0u);
-	proxy_user = param.GetBlockValue("proxy_user");
-	proxy_password = param.GetBlockValue("proxy_password");
+	proxy = block.GetBlockValue("proxy");
+	proxy_port = block.GetBlockValue("proxy_port", 0u);
+	proxy_user = block.GetBlockValue("proxy_user");
+	proxy_password = block.GetBlockValue("proxy_password");
 
 	if (proxy == nullptr) {
 		/* deprecated proxy configuration */
-		proxy = config_get_string(CONF_HTTP_PROXY_HOST, nullptr);
-		proxy_port = config_get_positive(CONF_HTTP_PROXY_PORT, 0);
-		proxy_user = config_get_string(CONF_HTTP_PROXY_USER, nullptr);
-		proxy_password = config_get_string(CONF_HTTP_PROXY_PASSWORD,
+		proxy = config_get_string(ConfigOption::HTTP_PROXY_HOST, nullptr);
+		proxy_port = config_get_positive(ConfigOption::HTTP_PROXY_PORT, 0);
+		proxy_user = config_get_string(ConfigOption::HTTP_PROXY_USER, nullptr);
+		proxy_password = config_get_string(ConfigOption::HTTP_PROXY_PASSWORD,
 						   "");
 	}
 
-	verify_peer = param.GetBlockValue("verify_peer", true);
-	verify_host = param.GetBlockValue("verify_host", true);
+	verify_peer = block.GetBlockValue("verify_peer", true);
+	verify_host = block.GetBlockValue("verify_host", true);
 
 	CURLM *multi = curl_multi_init();
 	if (multi == nullptr) {
@@ -649,7 +649,10 @@ CurlInputStream::HeaderReceived(const char *name, std::string &&value)
 			return;
 
 		size_t icy_metaint = ParseUint64(value.c_str());
+#ifndef WIN32
+		/* Windows doesn't know "%z" */
 		FormatDebug(curl_domain, "icy-metaint=%zu", icy_metaint);
+#endif
 
 		if (icy_metaint > 0) {
 			icy->Enable(icy_metaint);

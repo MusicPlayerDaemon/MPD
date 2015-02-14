@@ -34,7 +34,7 @@
 #endif
 #endif
 
-struct config_param;
+struct ConfigBlock;
 class InputStream;
 class Error;
 struct Tag;
@@ -69,7 +69,7 @@ struct InputPlugin {
 	 * @return true on success, false if the plugin should be
 	 * disabled
 	 */
-	InitResult (*init)(const config_param &param, Error &error);
+	InitResult (*init)(const ConfigBlock &block, Error &error);
 
 	/**
 	 * Global deinitialization.  Called once before MPD shuts

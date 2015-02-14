@@ -88,7 +88,7 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 		if (song == nullptr)
 			return print_error(client, error);
 
-		sticker *sticker = sticker_song_get(*song, error);
+		Sticker *sticker = sticker_song_get(*song, error);
 		db->ReturnSong(song);
 		if (sticker) {
 			sticker_print(client, *sticker);

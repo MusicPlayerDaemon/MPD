@@ -35,7 +35,7 @@ ConfigureFS(Error &error)
 #ifdef HAVE_FS_CHARSET
 	const char *charset = nullptr;
 
-	charset = config_get_string(CONF_FS_CHARSET, nullptr);
+	charset = config_get_string(ConfigOption::FS_CHARSET, nullptr);
 	if (charset == nullptr) {
 #ifdef WIN32
 		/* Glib claims that file system encoding is always utf-8

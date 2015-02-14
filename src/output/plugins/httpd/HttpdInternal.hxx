@@ -42,7 +42,7 @@
 #include <queue>
 #include <list>
 
-struct config_param;
+struct ConfigBlock;
 class Error;
 class EventLoop;
 class ServerSocket;
@@ -162,16 +162,16 @@ public:
 
 	using DeferredMonitor::GetEventLoop;
 
-	bool Init(const config_param &param, Error &error);
+	bool Init(const ConfigBlock &block, Error &error);
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
-	AudioOutput *InitAndConfigure(const config_param &param,
+	AudioOutput *InitAndConfigure(const ConfigBlock &block,
 				       Error &error) {
-		if (!Init(param, error))
+		if (!Init(block, error))
 			return nullptr;
 
-		if (!Configure(param, error))
+		if (!Configure(block, error))
 			return nullptr;
 
 		return &base;
@@ -259,8 +259,7 @@ public:
 private:
 	virtual void RunDeferred() override;
 
-	virtual void OnAccept(int fd, const sockaddr &address,
-			      size_t address_length, int uid) override;
+	void OnAccept(int fd, SocketAddress address, int uid) override;
 };
 
 extern const class Domain httpd_output_domain;

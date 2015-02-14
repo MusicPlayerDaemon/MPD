@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SoxrResampler.hxx"
 #include "AudioFormat.hxx"
+#include "config/Block.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -32,68 +33,76 @@
 
 static constexpr Domain soxr_domain("soxr");
 
-static unsigned long soxr_quality_recipe = SOXR_HQ;
+static constexpr unsigned long SOXR_DEFAULT_RECIPE = SOXR_HQ;
 
+/**
+ * Special value for "invalid argument".
+ */
+static constexpr unsigned long SOXR_INVALID_RECIPE = -1;
+
+static soxr_quality_spec_t soxr_quality;
+static soxr_runtime_spec_t soxr_runtime;
+
+static constexpr struct {
+	unsigned long recipe;
+	const char *name;
+} soxr_quality_table[] = {
+	{ SOXR_VHQ, "very high" },
+	{ SOXR_HQ, "high" },
+	{ SOXR_MQ, "medium" },
+	{ SOXR_LQ, "low" },
+	{ SOXR_QQ, "quick" },
+	{ SOXR_INVALID_RECIPE, nullptr }
+};
+
+gcc_const
 static const char *
 soxr_quality_name(unsigned long recipe)
 {
-	switch (recipe) {
-	case SOXR_VHQ:
-		return "Very High Quality";
-	case SOXR_HQ:
-		return "High Quality";
-	case SOXR_MQ:
-		return "Medium Quality";
-	case SOXR_LQ:
-		return "Low Quality";
-	case SOXR_QQ:
-		return "Quick";
-	}
+	for (const auto *i = soxr_quality_table;; ++i) {
+		assert(i->name != nullptr);
 
-	gcc_unreachable();
+		if (i->recipe == recipe)
+			return i->name;
+	}
 }
 
-static bool
-soxr_parse_converter(const char *converter)
+gcc_pure
+static unsigned long
+soxr_parse_quality(const char *quality)
 {
-	assert(converter != nullptr);
+	if (quality == nullptr)
+		return SOXR_DEFAULT_RECIPE;
 
-	assert(memcmp(converter, "soxr", 4) == 0);
-	if (converter[4] == '\0')
-		return true;
-	if (converter[4] != ' ')
-		return false;
+	for (const auto *i = soxr_quality_table; i->name != nullptr; ++i)
+		if (strcmp(i->name, "very high") == 0)
+			return i->recipe;
 
-	// converter example is "soxr very high", we want the "very high" part
-	const char *quality = converter + 5;
-	if (strcmp(quality, "very high") == 0)
-		soxr_quality_recipe = SOXR_VHQ;
-	else if (strcmp(quality, "high") == 0)
-		soxr_quality_recipe = SOXR_HQ;
-	else if (strcmp(quality, "medium") == 0)
-		soxr_quality_recipe = SOXR_MQ;
-	else if (strcmp(quality, "low") == 0)
-		soxr_quality_recipe = SOXR_LQ;
-	else if (strcmp(quality, "quick") == 0)
-		soxr_quality_recipe = SOXR_QQ;
-	else
-		return false;
-
-	return true;
+	return SOXR_INVALID_RECIPE;
 }
 
 bool
-pcm_resample_soxr_global_init(const char *converter, Error &error)
+pcm_resample_soxr_global_init(const ConfigBlock &block, Error &error)
 {
-	if (!soxr_parse_converter(converter)) {
+	const char *quality_string = block.GetBlockValue("quality");
+	unsigned long recipe = soxr_parse_quality(quality_string);
+	if (recipe == SOXR_INVALID_RECIPE) {
+		assert(quality_string != nullptr);
+
 		error.Format(soxr_domain,
-			    "unknown samplerate converter '%s'", converter);
+			     "unknown quality setting '%s' in line %d",
+			     quality_string, block.line);
 		return false;
 	}
 
+	soxr_quality = soxr_quality_spec(recipe, 0);
+
 	FormatDebug(soxr_domain,
 		    "soxr converter '%s'",
-		    soxr_quality_name(soxr_quality_recipe));
+		    soxr_quality_name(recipe));
+
+	const unsigned n_threads = block.GetBlockValue("threads", 1);
+	soxr_runtime = soxr_runtime_spec(n_threads);
 
 	return true;
 }
@@ -106,10 +115,9 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
 	assert(audio_valid_sample_rate(new_sample_rate));
 
 	soxr_error_t e;
-	soxr_quality_spec_t quality = soxr_quality_spec(soxr_quality_recipe, 0);
 	soxr = soxr_create(af.sample_rate, new_sample_rate,
 			   af.channels, &e,
-			   nullptr, &quality, nullptr);
+			   nullptr, &soxr_quality, &soxr_runtime);
 	if (soxr == nullptr) {
 		error.Format(soxr_domain,
 			     "soxr initialization has failed: %s", e);

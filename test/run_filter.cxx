@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
@@ -50,8 +50,8 @@ mixer_set_volume(gcc_unused Mixer *mixer,
 static Filter *
 load_filter(const char *name)
 {
-	const config_param *param =
-		config_find_block(CONF_AUDIO_FILTER, "name", name);
+	const auto *param = config_find_block(ConfigBlockOption::AUDIO_FILTER,
+					      "name", name);
 	if (param == NULL) {
 		fprintf(stderr, "No such configured filter: %s\n", name);
 		return nullptr;

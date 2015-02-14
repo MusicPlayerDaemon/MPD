@@ -17,20 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_CONFIG_DATA_HXX
-#define MPD_CONFIG_DATA_HXX
+#ifndef MPD_CONFIG_BLOCK_HXX
+#define MPD_CONFIG_BLOCK_HXX
 
-#include "ConfigOption.hxx"
+#include "check.h"
+#include "Param.hxx"
 #include "Compiler.h"
 
 #include <string>
-#include <array>
 #include <vector>
 
-class AllocatedPath;
 class Error;
+class AllocatedPath;
 
-struct block_param {
+struct BlockParam {
 	std::string name;
 	std::string value;
 	int line;
@@ -42,7 +42,7 @@ struct block_param {
 	mutable bool used;
 
 	gcc_nonnull_all
-	block_param(const char *_name, const char *_value, int _line=-1)
+	BlockParam(const char *_name, const char *_value, int _line=-1)
 		:name(_name), value(_value), line(_line), used(false) {}
 
 	gcc_pure
@@ -55,18 +55,16 @@ struct block_param {
 	bool GetBoolValue() const;
 };
 
-struct config_param {
+struct ConfigBlock {
 	/**
-	 * The next config_param with the same name.  The destructor
+	 * The next #ConfigBlock with the same name.  The destructor
 	 * deletes the whole chain.
 	 */
-	struct config_param *next;
+	ConfigBlock *next;
 
-	std::string value;
+	int line;
 
-	unsigned int line;
-
-	std::vector<block_param> block_params;
+	std::vector<BlockParam> block_params;
 
 	/**
 	 * This flag is false when nobody has queried the value of
@@ -74,17 +72,14 @@ struct config_param {
 	 */
 	bool used;
 
-	config_param(int _line=-1)
+	explicit ConfigBlock(int _line=-1)
 		:next(nullptr), line(_line), used(false) {}
 
-	gcc_nonnull_all
-	config_param(const char *_value, int _line=-1);
+	ConfigBlock(const ConfigBlock &) = delete;
 
-	config_param(const config_param &) = delete;
+	~ConfigBlock();
 
-	~config_param();
-
-	config_param &operator=(const config_param &) = delete;
+	ConfigBlock &operator=(const ConfigBlock &) = delete;
 
 	/**
 	 * Determine if this is a "null" instance, i.e. an empty
@@ -92,7 +87,12 @@ struct config_param {
 	 * configuration file.
 	 */
 	bool IsNull() const {
-		return line == unsigned(-1);
+		return line < 0;
+	}
+
+	gcc_pure
+	bool IsEmpty() const {
+		return block_params.empty();
 	}
 
 	gcc_nonnull_all
@@ -102,7 +102,7 @@ struct config_param {
 	}
 
 	gcc_nonnull_all gcc_pure
-	const block_param *GetBlockParam(const char *_name) const;
+	const BlockParam *GetBlockParam(const char *_name) const;
 
 	gcc_pure
 	const char *GetBlockValue(const char *name,
@@ -125,10 +125,6 @@ struct config_param {
 
 	gcc_pure
 	bool GetBlockValue(const char *name, bool default_value) const;
-};
-
-struct ConfigData {
-	std::array<config_param *, std::size_t(CONF_MAX)> params;
 };
 
 #endif

@@ -27,7 +27,7 @@
 #include "MusicChunk.hxx"
 #include "system/FatalError.hxx"
 #include "util/Error.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "notify.hxx"
@@ -53,16 +53,16 @@ MultipleOutputs::~MultipleOutputs()
 
 static AudioOutput *
 LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
-	   PlayerControl &pc, const config_param &param)
+	   PlayerControl &pc, const ConfigBlock &block)
 {
 	Error error;
-	AudioOutput *output = audio_output_new(event_loop, param,
+	AudioOutput *output = audio_output_new(event_loop, block,
 					       mixer_listener,
 					       pc, error);
 	if (output == nullptr) {
-		if (param.line > 0)
+		if (block.line > 0)
 			FormatFatalError("line %i: %s",
-					 param.line,
+					 block.line,
 					 error.GetMessage());
 		else
 			FatalError(error);
@@ -74,7 +74,7 @@ LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
 void
 MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 {
-	for (const config_param *param = config_get_param(CONF_AUDIO_OUTPUT);
+	for (const auto *param = config_get_block(ConfigBlockOption::AUDIO_OUTPUT);
 	     param != nullptr; param = param->next) {
 		auto output = LoadOutput(event_loop, mixer_listener,
 					 pc, *param);
@@ -87,7 +87,7 @@ MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 
 	if (outputs.empty()) {
 		/* auto-detect device */
-		const config_param empty;
+		const ConfigBlock empty;
 		auto output = LoadOutput(event_loop, mixer_listener,
 					 pc, empty);
 		outputs.push_back(output);

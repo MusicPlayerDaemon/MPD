@@ -21,6 +21,7 @@
 #include "FifoOutputPlugin.hxx"
 #include "config/ConfigError.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "../Timer.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
@@ -51,9 +52,15 @@ struct FifoOutput {
 		 path(AllocatedPath::Null()), input(-1), output(-1),
 		 created(false) {}
 
-	bool Initialize(const config_param &param, Error &error) {
-		return base.Configure(param, error);
+	~FifoOutput() {
+		Close();
 	}
+
+	bool Initialize(const ConfigBlock &block, Error &error) {
+		return base.Configure(block, error);
+	}
+
+	static FifoOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Create(Error &error);
 	bool Check(Error &error);
@@ -61,6 +68,10 @@ struct FifoOutput {
 
 	bool Open(Error &error);
 	void Close();
+
+	unsigned Delay() const;
+	size_t Play(const void *chunk, size_t size, Error &error);
+	void Cancel();
 };
 
 static constexpr Domain fifo_output_domain("fifo_output");
@@ -162,18 +173,12 @@ FifoOutput::Open(Error &error)
 	return true;
 }
 
-static bool
-fifo_open(FifoOutput *fd, Error &error)
-{
-	return fd->Open(error);
-}
-
-static AudioOutput *
-fifo_output_init(const config_param &param, Error &error)
+inline FifoOutput *
+FifoOutput::Create(const ConfigBlock &block, Error &error)
 {
 	FifoOutput *fd = new FifoOutput();
 
-	fd->path = param.GetBlockPath("path", error);
+	fd->path = block.GetBlockPath("path", error);
 	if (fd->path.IsNull()) {
 		delete fd;
 
@@ -185,26 +190,17 @@ fifo_output_init(const config_param &param, Error &error)
 
 	fd->path_utf8 = fd->path.ToUTF8();
 
-	if (!fd->Initialize(param, error)) {
+	if (!fd->Initialize(block, error)) {
 		delete fd;
 		return nullptr;
 	}
 
-	if (!fifo_open(fd, error)) {
+	if (!fd->Open(error)) {
 		delete fd;
 		return nullptr;
 	}
 
-	return &fd->base;
-}
-
-static void
-fifo_output_finish(AudioOutput *ao)
-{
-	FifoOutput *fd = (FifoOutput *)ao;
-
-	fd->Close();
-	delete fd;
+	return fd;
 }
 
 static bool
@@ -226,47 +222,41 @@ fifo_output_close(AudioOutput *ao)
 	delete fd->timer;
 }
 
-static void
-fifo_output_cancel(AudioOutput *ao)
+inline void
+FifoOutput::Cancel()
 {
-	FifoOutput *fd = (FifoOutput *)ao;
 	char buf[FIFO_BUFFER_SIZE];
 	int bytes = 1;
 
-	fd->timer->Reset();
+	timer->Reset();
 
 	while (bytes > 0 && errno != EINTR)
-		bytes = read(fd->input, buf, FIFO_BUFFER_SIZE);
+		bytes = read(input, buf, FIFO_BUFFER_SIZE);
 
 	if (bytes < 0 && errno != EAGAIN) {
 		FormatErrno(fifo_output_domain,
 			    "Flush of FIFO \"%s\" failed",
-			    fd->path_utf8.c_str());
+			    path_utf8.c_str());
 	}
 }
 
-static unsigned
-fifo_output_delay(AudioOutput *ao)
+inline unsigned
+FifoOutput::Delay() const
 {
-	FifoOutput *fd = (FifoOutput *)ao;
-
-	return fd->timer->IsStarted()
-		? fd->timer->GetDelay()
+	return timer->IsStarted()
+		? timer->GetDelay()
 		: 0;
 }
 
-static size_t
-fifo_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		 Error &error)
+inline size_t
+FifoOutput::Play(const void *chunk, size_t size, Error &error)
 {
-	FifoOutput *fd = (FifoOutput *)ao;
-
-	if (!fd->timer->IsStarted())
-		fd->timer->Start();
-	fd->timer->Add(size);
+	if (!timer->IsStarted())
+		timer->Start();
+	timer->Add(size);
 
 	while (true) {
-		ssize_t bytes = write(fd->output, chunk, size);
+		ssize_t bytes = write(output, chunk, size);
 		if (bytes > 0)
 			return (size_t)bytes;
 
@@ -274,33 +264,35 @@ fifo_output_play(AudioOutput *ao, const void *chunk, size_t size,
 			switch (errno) {
 			case EAGAIN:
 				/* The pipe is full, so empty it */
-				fifo_output_cancel(&fd->base);
+				Cancel();
 				continue;
 			case EINTR:
 				continue;
 			}
 
 			error.FormatErrno("Failed to write to FIFO %s",
-					  fd->path_utf8.c_str());
+					  path_utf8.c_str());
 			return 0;
 		}
 	}
 }
 
+typedef AudioOutputWrapper<FifoOutput> Wrapper;
+
 const struct AudioOutputPlugin fifo_output_plugin = {
 	"fifo",
 	nullptr,
-	fifo_output_init,
-	fifo_output_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
 	fifo_output_open,
 	fifo_output_close,
-	fifo_output_delay,
+	&Wrapper::Delay,
 	nullptr,
-	fifo_output_play,
+	&Wrapper::Play,
 	nullptr,
-	fifo_output_cancel,
+	&Wrapper::Cancel,
 	nullptr,
 	nullptr,
 };

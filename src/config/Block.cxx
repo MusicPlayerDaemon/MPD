@@ -18,18 +18,18 @@
  */
 
 #include "config.h"
-#include "ConfigData.hxx"
+#include "Block.hxx"
 #include "ConfigParser.hxx"
 #include "ConfigPath.hxx"
-#include "util/Error.hxx"
-#include "fs/AllocatedPath.hxx"
 #include "system/FatalError.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "util/Error.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
 
 int
-block_param::GetIntValue() const
+BlockParam::GetIntValue() const
 {
 	char *endptr;
 	long value2 = strtol(value.c_str(), &endptr, 0);
@@ -40,7 +40,7 @@ block_param::GetIntValue() const
 }
 
 unsigned
-block_param::GetUnsignedValue() const
+BlockParam::GetUnsignedValue() const
 {
 	char *endptr;
 	unsigned long value2 = strtoul(value.c_str(), &endptr, 0);
@@ -51,7 +51,7 @@ block_param::GetUnsignedValue() const
 }
 
 bool
-block_param::GetBoolValue() const
+BlockParam::GetBoolValue() const
 {
 	bool value2;
 	if (!get_bool(value.c_str(), &value2))
@@ -62,16 +62,13 @@ block_param::GetBoolValue() const
 	return value2;
 }
 
-config_param::config_param(const char *_value, int _line)
-	:next(nullptr), value(_value), line(_line), used(false) {}
-
-config_param::~config_param()
+ConfigBlock::~ConfigBlock()
 {
 	delete next;
 }
 
-const block_param *
-config_param::GetBlockParam(const char *name) const
+const BlockParam *
+ConfigBlock::GetBlockParam(const char *name) const
 {
 	for (const auto &i : block_params) {
 		if (i.name == name) {
@@ -84,9 +81,9 @@ config_param::GetBlockParam(const char *name) const
 }
 
 const char *
-config_param::GetBlockValue(const char *name, const char *default_value) const
+ConfigBlock::GetBlockValue(const char *name, const char *default_value) const
 {
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)
 		return default_value;
 
@@ -94,7 +91,7 @@ config_param::GetBlockValue(const char *name, const char *default_value) const
 }
 
 AllocatedPath
-config_param::GetBlockPath(const char *name, const char *default_value,
+ConfigBlock::GetBlockPath(const char *name, const char *default_value,
 			   Error &error) const
 {
 	assert(!error.IsDefined());
@@ -102,7 +99,7 @@ config_param::GetBlockPath(const char *name, const char *default_value,
 	int line2 = line;
 	const char *s;
 
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp != nullptr) {
 		line2 = bp->line;
 		s = bp->value.c_str();
@@ -122,15 +119,15 @@ config_param::GetBlockPath(const char *name, const char *default_value,
 }
 
 AllocatedPath
-config_param::GetBlockPath(const char *name, Error &error) const
+ConfigBlock::GetBlockPath(const char *name, Error &error) const
 {
 	return GetBlockPath(name, nullptr, error);
 }
 
 int
-config_param::GetBlockValue(const char *name, int default_value) const
+ConfigBlock::GetBlockValue(const char *name, int default_value) const
 {
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)
 		return default_value;
 
@@ -138,9 +135,9 @@ config_param::GetBlockValue(const char *name, int default_value) const
 }
 
 unsigned
-config_param::GetBlockValue(const char *name, unsigned default_value) const
+ConfigBlock::GetBlockValue(const char *name, unsigned default_value) const
 {
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)
 		return default_value;
 
@@ -149,9 +146,9 @@ config_param::GetBlockValue(const char *name, unsigned default_value) const
 
 gcc_pure
 bool
-config_param::GetBlockValue(const char *name, bool default_value) const
+ConfigBlock::GetBlockValue(const char *name, bool default_value) const
 {
-	const block_param *bp = GetBlockParam(name);
+	const BlockParam *bp = GetBlockParam(name);
 	if (bp == nullptr)
 		return default_value;
 

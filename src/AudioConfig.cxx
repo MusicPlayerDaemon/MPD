@@ -21,7 +21,7 @@
 #include "AudioConfig.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "util/Error.hxx"
@@ -39,7 +39,7 @@ getOutputAudioFormat(AudioFormat inAudioFormat)
 
 void initAudioConfig(void)
 {
-	const struct config_param *param = config_get_param(CONF_AUDIO_OUTPUT_FORMAT);
+	const struct config_param *param = config_get_param(ConfigOption::AUDIO_OUTPUT_FORMAT);
 
 	if (param == nullptr)
 		return;

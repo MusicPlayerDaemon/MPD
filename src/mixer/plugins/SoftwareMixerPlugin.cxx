@@ -25,7 +25,7 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "pcm/Volume.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "util/Error.hxx"
 
 #include <assert.h>
@@ -34,7 +34,7 @@
 static Filter *
 CreateVolumeFilter()
 {
-	return filter_new(&volume_filter_plugin, config_param(),
+	return filter_new(&volume_filter_plugin, ConfigBlock(),
 			  IgnoreError());
 }
 
@@ -90,7 +90,7 @@ static Mixer *
 software_mixer_init(gcc_unused EventLoop &event_loop,
 		    gcc_unused AudioOutput &ao,
 		    MixerListener &listener,
-		    gcc_unused const config_param &param,
+		    gcc_unused const ConfigBlock &block,
 		    gcc_unused Error &error)
 {
 	return new SoftwareMixer(listener);

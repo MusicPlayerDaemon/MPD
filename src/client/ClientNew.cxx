@@ -23,7 +23,8 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "system/fd_util.h"
-#include "system/Resolver.hxx"
+#include "net/SocketAddress.hxx"
+#include "net/Resolver.hxx"
 #include "Permission.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -58,15 +59,15 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 
 void
 client_new(EventLoop &loop, Partition &partition,
-	   int fd, const struct sockaddr *sa, size_t sa_length, int uid)
+	   int fd, SocketAddress address, int uid)
 {
 	static unsigned int next_client_num;
-	const auto remote = sockaddr_to_string(sa, sa_length);
+	const auto remote = sockaddr_to_string(address);
 
 	assert(fd >= 0);
 
 #ifdef HAVE_LIBWRAP
-	if (sa->sa_family != AF_UNIX) {
+	if (address.GetFamily() != AF_UNIX) {
 		// TODO: shall we obtain the program name from argv[0]?
 		const char *progname = "mpd";
 

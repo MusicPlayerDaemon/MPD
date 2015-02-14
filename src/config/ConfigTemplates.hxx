@@ -23,9 +23,9 @@
 struct ConfigTemplate {
 	const char *const name;
 	const bool repeatable;
-	const bool block;
 };
 
-extern const ConfigTemplate config_templates[];
+extern const ConfigTemplate config_param_templates[];
+extern const ConfigTemplate config_block_templates[];
 
 #endif

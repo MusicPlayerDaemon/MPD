@@ -53,11 +53,12 @@ bool playlist_saveAbsolutePaths = DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS;
 void
 spl_global_init(void)
 {
-	playlist_max_length = config_get_positive(CONF_MAX_PLAYLIST_LENGTH,
-						  DEFAULT_PLAYLIST_MAX_LENGTH);
+	playlist_max_length =
+		config_get_positive(ConfigOption::MAX_PLAYLIST_LENGTH,
+				    DEFAULT_PLAYLIST_MAX_LENGTH);
 
 	playlist_saveAbsolutePaths =
-		config_get_bool(CONF_SAVE_ABSOLUTE_PATHS,
+		config_get_bool(ConfigOption::SAVE_ABSOLUTE_PATHS,
 				DEFAULT_PLAYLIST_SAVE_ABSOLUTE_PATHS);
 }
 

@@ -202,11 +202,22 @@ read_file_comments(Client &client, const Path path_fs)
 
 }
 
+static const char *
+translate_uri(const char *uri)
+{
+	if (memcmp(uri, "file:///", 8) == 0)
+		/* drop the "file://", leave only an absolute path
+		   (starting with a slash) */
+		return uri + 7;
+
+	return uri;
+}
+
 CommandResult
 handle_read_comments(Client &client, ConstBuffer<const char *> args)
 {
 	assert(args.size == 1);
-	const char *const uri = args.front();
+	const char *const uri = translate_uri(args.front());
 
 	if (memcmp(uri, "file:///", 8) == 0) {
 		/* read comments from arbitrary local file */

@@ -14,7 +14,7 @@ AM_SILENT_RULES
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_DEFINE(PROTOCOL_VERSION, "0.19.0", [The MPD protocol version])
+AC_DEFINE(PROTOCOL_VERSION, "0.20.0", [The MPD protocol version])
 
 GIT_COMMIT=`GIT_DIR="$srcdir/.git" git describe --dirty --always 2>/dev/null`
 if test x$GIT_COMMIT != x; then
@@ -223,6 +223,7 @@ if test x$host_is_linux = xyes; then
 fi
 
 AC_CHECK_FUNCS(getpwnam_r getpwuid_r)
+AC_CHECK_FUNCS(strndup)
 
 if test x$host_is_linux = xyes; then
 	MPD_OPTIONAL_FUNC(eventfd, eventfd, USE_EVENTFD)
@@ -717,10 +718,6 @@ MPD_ENABLE_AUTO_PKG_LIB(smbclient, SMBCLIENT, [smbclient >= 0.2],
 dnl ----------------------------------- NFS -----------------------------
 MPD_ENABLE_AUTO_PKG(nfs, NFS, [libnfs],
 	[NFS input plugin], [libnfs not found])
-
-dnl --------------------------------- Despotify ---------------------------------
-MPD_ENABLE_AUTO_PKG(despotify, DESPOTIFY, [despotify],
-	[Despotify support], [despotify not found])
 
 dnl --------------------------------- Soundcloud ------------------------------
 MPD_AUTO([soundcloud], [soundcloud.com support], [libyajl not found],
@@ -1512,7 +1509,6 @@ printf '\nStreaming support:\n\t'
 results(cdio_paranoia, [CDIO_PARANOIA])
 results(curl,[CURL])
 results(smbclient,[SMBCLIENT])
-results(despotify,[Despotify])
 results(soundcloud,[Soundcloud])
 printf '\n\t'
 results(mms,[MMS])

@@ -41,9 +41,12 @@ class BufferedReader {
 
 	bool eof;
 
+	unsigned line_number;
+
 public:
 	BufferedReader(Reader &_reader)
-		:reader(_reader), buffer(4096), eof(false) {}
+		:reader(_reader), buffer(4096), eof(false),
+		 line_number(0) {}
 
 	gcc_pure
 	bool Check() const {
@@ -70,6 +73,10 @@ public:
 	}
 
 	char *ReadLine();
+
+	unsigned GetLineNumber() const {
+		return line_number;
+	}
 };
 
 #endif

@@ -23,13 +23,13 @@
 
 AudioOutput *
 ao_plugin_init(const AudioOutputPlugin *plugin,
-	       const config_param &param,
+	       const ConfigBlock &block,
 	       Error &error)
 {
 	assert(plugin != nullptr);
 	assert(plugin->init != nullptr);
 
-	return plugin->init(param, error);
+	return plugin->init(block, error);
 }
 
 void

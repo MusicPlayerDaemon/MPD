@@ -43,7 +43,7 @@ audiofile_error_func(long, const char *msg)
 }
 
 static bool
-audiofile_init(const config_param &)
+audiofile_init(const ConfigBlock &)
 {
 	afSetErrorHandler(audiofile_error_func);
 	return true;

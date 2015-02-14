@@ -30,7 +30,7 @@
 #include "db/Stats.hxx"
 #include "SongFilter.hxx"
 #include "Compiler.h"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
 #include "util/Error.hxx"
@@ -97,7 +97,7 @@ public:
 		 listener(_listener) {}
 
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
-				const config_param &param,
+				const ConfigBlock &block,
 				Error &error);
 
 	virtual bool Open(Error &error) override;
@@ -129,7 +129,7 @@ public:
 	}
 
 private:
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
 	bool Connect(Error &error);
 	bool CheckConnection(Error &error);
@@ -321,10 +321,10 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 
 Database *
 ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
-		      const config_param &param, Error &error)
+		      const ConfigBlock &block, Error &error)
 {
 	ProxyDatabase *db = new ProxyDatabase(loop, listener);
-	if (!db->Configure(param, error)) {
+	if (!db->Configure(block, error)) {
 		delete db;
 		db = nullptr;
 	}
@@ -333,11 +333,11 @@ ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
 }
 
 bool
-ProxyDatabase::Configure(const config_param &param, gcc_unused Error &error)
+ProxyDatabase::Configure(const ConfigBlock &block, gcc_unused Error &error)
 {
-	host = param.GetBlockValue("host", "");
-	port = param.GetBlockValue("port", 0u);
-	keepalive = param.GetBlockValue("keepalive", false);
+	host = block.GetBlockValue("host", "");
+	port = block.GetBlockValue("port", 0u);
+	keepalive = block.GetBlockValue("keepalive", false);
 
 	return true;
 }

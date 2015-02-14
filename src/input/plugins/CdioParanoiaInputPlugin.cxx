@@ -31,7 +31,7 @@
 #include "system/ByteOrder.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
-#include "config/ConfigData.hxx"
+#include "config/Block.hxx"
 #include "config/ConfigError.hxx"
 
 #include <stdio.h>
@@ -106,9 +106,9 @@ static constexpr Domain cdio_domain("cdio");
 static bool default_reverse_endian;
 
 static InputPlugin::InitResult
-input_cdio_init(const config_param &param, Error &error)
+input_cdio_init(const ConfigBlock &block, Error &error)
 {
-	const char *value = param.GetBlockValue("default_byte_order");
+	const char *value = block.GetBlockValue("default_byte_order");
 	if (value != nullptr) {
 		if (strcmp(value, "little_endian") == 0)
 			default_reverse_endian = IsBigEndian();

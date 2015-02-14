@@ -194,7 +194,7 @@ vorbis_interleave(float *dest, const float *const*src,
 /* public */
 
 static bool
-vorbis_init(gcc_unused const config_param &param)
+vorbis_init(gcc_unused const ConfigBlock &block)
 {
 #ifndef HAVE_TREMOR
 	LogDebug(vorbis_domain, vorbis_version_string());

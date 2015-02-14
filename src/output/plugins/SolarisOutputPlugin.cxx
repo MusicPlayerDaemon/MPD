@@ -60,8 +60,8 @@ struct SolarisOutput {
 	SolarisOutput()
 		:base(solaris_output_plugin) {}
 
-	bool Initialize(const config_param &param, Error &error_r) {
-		return base.Configure(param, error_r);
+	bool Initialize(const ConfigBlock &block, Error &error_r) {
+		return base.Configure(block, error_r);
 	}
 };
 
@@ -75,15 +75,15 @@ solaris_output_test_default_device(void)
 }
 
 static AudioOutput *
-solaris_output_init(const config_param &param, Error &error_r)
+solaris_output_init(const ConfigBlock &block, Error &error_r)
 {
 	SolarisOutput *so = new SolarisOutput();
-	if (!so->Initialize(param, error_r)) {
+	if (!so->Initialize(block, error_r)) {
 		delete so;
 		return nullptr;
 	}
 
-	so->device = param.GetBlockValue("device", "/dev/audio");
+	so->device = block.GetBlockValue("device", "/dev/audio");
 
 	return &so->base;
 }

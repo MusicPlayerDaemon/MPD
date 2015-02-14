@@ -15,6 +15,7 @@ noinst_LIBRARIES = \
 	libmpd.a \
 	libutil.a \
 	libthread.a \
+	libnet.a \
 	libsystem.a \
 	libevent.a \
 	libicu.a \
@@ -28,8 +29,6 @@ noinst_LIBRARIES = \
 	libfilter_plugins.a \
 	libmixer_plugins.a \
 	liboutput_plugins.a
-
-libmpd_a_DEPENDENCIES =
 
 libmpd_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(LIBMPDCLIENT_CFLAGS) \
@@ -57,6 +56,7 @@ src_mpd_LDADD = \
 	libconf.a \
 	libevent.a \
 	libthread.a \
+	libnet.a \
 	libsystem.a \
 	libutil.a \
 	$(FS_LIBS) \
@@ -289,13 +289,13 @@ android/build/build.xml: android/AndroidManifest.xml
 	ln -s $(abs_srcdir)/android/res/values $(abs_srcdir)/android/res/layout android/build/res
 	$(ANDROID_SDK)/tools/android update project --path android/build --target android-17 --name $(APK_NAME)
 
-android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml
+android/build/bin/classes/org/musicpd/Bridge.class: android/src/Bridge.java android/build/build.xml android/build/res/drawable/icon.png
 	cd android/build && ant compile-jni-classes
 
 android/build/include/org_musicpd_Bridge.h: android/build/bin/classes/org/musicpd/Bridge.class
 	javah -classpath $(ANDROID_SDK)/platforms/android-17/android.jar:android/build/bin/classes -d $(@D) org.musicpd.Bridge
 
-libmpd_a_DEPENDENCIES += android/build/include/org_musicpd_Bridge.h
+BUILT_SOURCES = android/build/include/org_musicpd_Bridge.h
 
 android/build/libs/armeabi-v7a/libmpd.so: libmpd.so android/build/build.xml
 	mkdir -p $(@D)
@@ -417,15 +417,21 @@ libthread_a_SOURCES = \
 	src/thread/Thread.cxx src/thread/Thread.hxx \
 	src/thread/Id.hxx
 
+# Networking library
+
+libnet_a_SOURCES = \
+	src/net/Resolver.cxx src/net/Resolver.hxx \
+	src/net/StaticSocketAddress.cxx src/net/StaticSocketAddress.hxx \
+	src/net/SocketAddress.cxx src/net/SocketAddress.hxx \
+	src/net/SocketUtil.cxx src/net/SocketUtil.hxx \
+	src/net/SocketError.cxx src/net/SocketError.hxx
+
 # System library
 
 libsystem_a_SOURCES = \
 	src/system/ByteOrder.hxx \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
 	src/system/fd_util.c src/system/fd_util.h \
-	src/system/SocketUtil.cxx src/system/SocketUtil.hxx \
-	src/system/SocketError.cxx src/system/SocketError.hxx \
-	src/system/Resolver.cxx src/system/Resolver.hxx \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
 	src/system/SignalFD.cxx src/system/SignalFD.hxx \
@@ -769,7 +775,9 @@ endif
 libconf_a_SOURCES = \
 	src/config/ConfigDefaults.hxx \
 	src/config/ConfigPath.cxx src/config/ConfigPath.hxx \
-	src/config/ConfigData.cxx src/config/ConfigData.hxx \
+	src/config/Data.cxx src/config/Data.hxx \
+	src/config/Block.cxx src/config/Block.hxx \
+	src/config/Param.cxx src/config/Param.hxx \
 	src/config/ConfigParser.cxx src/config/ConfigParser.hxx \
 	src/config/ConfigGlobal.cxx src/config/ConfigGlobal.hxx \
 	src/config/ConfigFile.cxx src/config/ConfigFile.hxx \
@@ -1261,7 +1269,6 @@ libinput_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(NFS_CFLAGS) \
 	$(CDIO_PARANOIA_CFLAGS) \
 	$(FFMPEG_CFLAGS) \
-	$(DESPOTIFY_CFLAGS) \
 	$(MMS_CFLAGS)
 
 INPUT_LIBS = \
@@ -1271,7 +1278,6 @@ INPUT_LIBS = \
 	$(NFS_LIBS) \
 	$(CDIO_PARANOIA_LIBS) \
 	$(FFMPEG_LIBS2) \
-	$(DESPOTIFY_LIBS) \
 	$(MMS_LIBS)
 
 if ENABLE_ALSA
@@ -1316,15 +1322,6 @@ if ENABLE_MMS
 libinput_a_SOURCES += \
 	src/input/plugins/MmsInputPlugin.cxx src/input/plugins/MmsInputPlugin.hxx
 endif
-
-if ENABLE_DESPOTIFY
-libinput_a_SOURCES += \
-	src/lib/despotify/DespotifyUtils.cxx \
-	src/lib/despotify/DespotifyUtils.hxx \
-	src/input/plugins/DespotifyInputPlugin.cxx \
-	src/input/plugins/DespotifyInputPlugin.hxx
-endif
-
 
 liboutput_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AO_CFLAGS) \
@@ -1546,14 +1543,6 @@ libplaylist_plugins_a_SOURCES += \
 	src/playlist/plugins/EmbeddedCuePlaylistPlugin.hxx
 endif
 
-if ENABLE_DESPOTIFY
-libplaylist_plugins_a_SOURCES += \
-	src/lib/despotify/DespotifyUtils.cxx \
-	src/lib/despotify/DespotifyUtils.hxx \
-       src/playlist/plugins/DespotifyPlaylistPlugin.cxx \
-       src/playlist/plugins/DespotifyPlaylistPlugin.hxx
-endif
-
 if ENABLE_SOUNDCLOUD
 libplaylist_plugins_a_SOURCES += \
 	src/playlist/plugins/SoundCloudPlaylistPlugin.cxx \
@@ -1694,7 +1683,7 @@ test_read_conf_SOURCES = \
 	test/read_conf.cxx
 
 test_run_resolver_LDADD = \
-	libsystem.a \
+	libnet.a \
 	libutil.a \
 	$(GLIB_LIBS)
 test_run_resolver_SOURCES = \
@@ -1788,12 +1777,6 @@ test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
 
 if ENABLE_UPNP
 test_run_neighbor_explorer_SOURCES += src/lib/expat/ExpatParser.cxx
-endif
-
-if ENABLE_DESPOTIFY
-test_run_neighbor_explorer_SOURCES += \
-	src/lib/despotify/DespotifyUtils.cxx \
-	src/lib/despotify/DespotifyUtils.hxx
 endif
 
 endif
@@ -2057,14 +2040,17 @@ test_run_normalize_LDADD = \
 	$(GLIB_LIBS)
 
 test_run_convert_SOURCES = test/run_convert.cxx \
-	src/config/ConfigError.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/AudioFormat.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
 test_run_convert_LDADD = \
 	$(PCM_LIBS) \
+	libconf.a \
+	$(FS_LIBS) \
+	libsystem.a \
 	libutil.a \
+	$(ICU_LDADD) \
 	$(GLIB_LIBS)
 
 test_run_output_LDADD = $(MPD_LIBS) \
@@ -2078,6 +2064,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libevent.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
+	libnet.a \
 	libsystem.a \
 	libthread.a \
 	libutil.a \

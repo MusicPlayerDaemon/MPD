@@ -221,7 +221,7 @@ NfsInputStream::OnNfsFileError(Error &&error)
  */
 
 static InputPlugin::InitResult
-input_nfs_init(const config_param &, Error &)
+input_nfs_init(const ConfigBlock &, Error &)
 {
 	nfs_init();
 	return InputPlugin::InitResult::SUCCESS;

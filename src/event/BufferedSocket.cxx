@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "BufferedSocket.hxx"
-#include "system/SocketError.hxx"
+#include "net/SocketError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Compiler.h"

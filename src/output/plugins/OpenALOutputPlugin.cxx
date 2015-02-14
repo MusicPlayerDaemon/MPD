@@ -54,9 +54,9 @@ class OpenALOutput {
 	OpenALOutput()
 		:base(openal_output_plugin) {}
 
-	bool Configure(const config_param &param, Error &error);
+	bool Configure(const ConfigBlock &block, Error &error);
 
-	static OpenALOutput *Create(const config_param &param, Error &error);
+	static OpenALOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
 
@@ -150,12 +150,12 @@ OpenALOutput::SetupContext(Error &error)
 }
 
 inline bool
-OpenALOutput::Configure(const config_param &param, Error &error)
+OpenALOutput::Configure(const ConfigBlock &block, Error &error)
 {
-	if (!base.Configure(param, error))
+	if (!base.Configure(block, error))
 		return false;
 
-	device_name = param.GetBlockValue("device");
+	device_name = block.GetBlockValue("device");
 	if (device_name == nullptr)
 		device_name = alcGetString(nullptr,
 					   ALC_DEFAULT_DEVICE_SPECIFIER);
@@ -164,11 +164,11 @@ OpenALOutput::Configure(const config_param &param, Error &error)
 }
 
 inline OpenALOutput *
-OpenALOutput::Create(const config_param &param, Error &error)
+OpenALOutput::Create(const ConfigBlock &block, Error &error)
 {
 	OpenALOutput *oo = new OpenALOutput();
 
-	if (!oo->Configure(param, error)) {
+	if (!oo->Configure(block, error)) {
 		delete oo;
 		return nullptr;
 	}
