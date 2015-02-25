@@ -87,7 +87,7 @@ void
 AllocatedPath::ChopSeparators()
 {
 	size_t l = length();
-	const char *p = data();
+	const auto *p = data();
 
 	while (l >= 2 && PathTraitsFS::IsSeparator(p[l - 1])) {
 		--l;

@@ -112,7 +112,7 @@ static inline AllocatedPath SafePathFromFS(PathTraitsFS::const_pointer dir)
 #ifdef WIN32
 static AllocatedPath GetStandardDir(int folder_id)
 {
-	std::array<char, MAX_PATH> dir;
+	std::array<PathTraitsFS::value_type, MAX_PATH> dir;
 	auto ret = SHGetFolderPath(nullptr, folder_id | CSIDL_FLAG_DONT_VERIFY,
 				   nullptr, SHGFP_TYPE_CURRENT, dir.data());
 	if (FAILED(ret))
@@ -287,7 +287,7 @@ AllocatedPath GetSystemConfigDir()
 
 AllocatedPath GetAppBaseDir()
 {
-	std::array<char, MAX_PATH> app;
+	std::array<PathTraitsFS::value_type, MAX_PATH> app;
 	auto ret = GetModuleFileName(nullptr, app.data(), app.size());
 
 	// Check for error

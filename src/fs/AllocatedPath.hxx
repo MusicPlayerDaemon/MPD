@@ -176,7 +176,7 @@ public:
 	 * Allows the caller to "steal" the internal value by
 	 * providing a rvalue reference to the std::string attribute.
 	 */
-	std::string &&Steal() {
+	string &&Steal() {
 		return std::move(value);
 	}
 

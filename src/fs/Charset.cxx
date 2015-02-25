@@ -22,7 +22,6 @@
 #include "Domain.hxx"
 #include "Limits.hxx"
 #include "Log.hxx"
-#include "Traits.hxx"
 #include "lib/icu/Converter.hxx"
 #include "util/Error.hxx"
 
@@ -73,13 +72,13 @@ GetFSCharset()
 #endif
 }
 
-static inline std::string &&
-FixSeparators(std::string &&s)
+static inline PathTraitsUTF8::string &&
+FixSeparators(PathTraitsUTF8::string &&s)
 {
 	// For whatever reason GCC can't convert constexpr to value reference.
 	// This leads to link errors when passing separators directly.
-	auto from = PathTraitsFS::SEPARATOR;
 	auto to = PathTraitsUTF8::SEPARATOR;
+	decltype(to) from = PathTraitsFS::SEPARATOR;
 
 	if (from != to)
 		/* convert backslash to slash on WIN32 */
@@ -88,8 +87,8 @@ FixSeparators(std::string &&s)
 	return std::move(s);
 }
 
-std::string
-PathToUTF8(const char *path_fs)
+PathTraitsUTF8::string
+PathToUTF8(PathTraitsFS::const_pointer path_fs)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -108,8 +107,8 @@ PathToUTF8(const char *path_fs)
 
 #ifdef HAVE_FS_CHARSET
 
-std::string
-PathFromUTF8(const char *path_utf8)
+PathTraitsFS::string
+PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */

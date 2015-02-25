@@ -42,7 +42,7 @@ class Path {
 	typedef PathTraitsFS::pointer pointer;
 	typedef PathTraitsFS::const_pointer const_pointer;
 
-	const char *value;
+	const_pointer value;
 
 	constexpr Path(const_pointer _value):value(_value) {}
 
@@ -100,7 +100,7 @@ public:
 	size_t length() const {
 		assert(value != nullptr);
 
-		return strlen(value);
+		return PathTraitsFS::GetLength(value);
 	}
 
 	/**
@@ -153,7 +153,7 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const char *RelativeFS(const char *other_fs) const {
+	const_pointer RelativeFS(const_pointer other_fs) const {
 		return PathTraitsFS::Relative(value, other_fs);
 	}
 
