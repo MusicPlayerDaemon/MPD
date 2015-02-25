@@ -25,6 +25,7 @@
 #include "Traits.hxx"
 #include "Path.hxx"
 
+#include <cstddef>
 #include <utility>
 #include <string>
 
@@ -44,6 +45,7 @@ class AllocatedPath {
 
 	string value;
 
+	AllocatedPath(std::nullptr_t):value() {}
 	AllocatedPath(const_pointer _value):value(_value) {}
 
 	AllocatedPath(string &&_value):value(std::move(_value)) {}
@@ -75,7 +77,7 @@ public:
 	 */
 	gcc_const
 	static AllocatedPath Null() {
-		return AllocatedPath("");
+		return AllocatedPath(nullptr);
 	}
 
 	gcc_pure
