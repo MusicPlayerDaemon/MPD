@@ -34,34 +34,14 @@ class AllocatedPath;
 
 namespace FOpenMode {
 	/**
-	 * Open mode for reading text files.
-	 */
-	constexpr PathTraitsFS::const_pointer ReadText = "r";
-
-	/**
-	 * Open mode for reading binary files.
-	 */
-	constexpr PathTraitsFS::const_pointer ReadBinary = "rb";
-
-	/**
 	 * Open mode for writing text files.
 	 */
 	constexpr PathTraitsFS::const_pointer WriteText = "w";
 
 	/**
-	 * Open mode for writing binary files.
-	 */
-	constexpr PathTraitsFS::const_pointer WriteBinary = "wb";
-
-	/**
 	 * Open mode for appending text files.
 	 */
 	constexpr PathTraitsFS::const_pointer AppendText = "a";
-
-	/**
-	 * Open mode for appending binary files.
-	 */
-	constexpr PathTraitsFS::const_pointer AppendBinary = "ab";
 }
 
 /**
