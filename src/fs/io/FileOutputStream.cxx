@@ -43,8 +43,11 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 			   FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			   nullptr))
 {
-	if (handle == INVALID_HANDLE_VALUE)
-		error.FormatLastError("Failed to create %s", path.c_str());
+	if (handle == INVALID_HANDLE_VALUE) {
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to create %s",
+				      path_utf8.c_str());
+	}
 }
 
 bool
@@ -54,13 +57,17 @@ FileOutputStream::Write(const void *data, size_t size, Error &error)
 
 	DWORD nbytes;
 	if (!WriteFile(handle, data, size, &nbytes, nullptr)) {
-		error.FormatLastError("Failed to write to %s", path.c_str());
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to write to %s",
+				      path_utf8.c_str());
 		return false;
 	}
 
 	if (size_t(nbytes) != size) {
+		const auto path_utf8 = path.ToUTF8();
 		error.FormatLastError(ERROR_DISK_FULL,
-				      "Failed to write to %s", path.c_str());
+				      "Failed to write to %s",
+				      path_utf8.c_str());
 		return false;
 	}
 

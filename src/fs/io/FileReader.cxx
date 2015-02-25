@@ -30,8 +30,10 @@ FileReader::FileReader(Path _path, Error &error)
 			   nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
 			   nullptr))
 {
-	if (handle == INVALID_HANDLE_VALUE)
-		error.FormatLastError("Failed to open %s", path.c_str());
+	if (handle == INVALID_HANDLE_VALUE) {
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to open %s", path_utf8.c_str());
+	}
 }
 
 size_t
@@ -41,7 +43,9 @@ FileReader::Read(void *data, size_t size, Error &error)
 
 	DWORD nbytes;
 	if (!ReadFile(handle, data, size, &nbytes, nullptr)) {
-		error.FormatLastError("Failed to read from %s", path.c_str());
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to read from %s",
+				      path_utf8.c_str());
 		nbytes = 0;
 	}
 
