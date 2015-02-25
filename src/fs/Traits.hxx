@@ -47,6 +47,8 @@ struct PathTraitsFS {
 	static constexpr value_type SEPARATOR = '/';
 #endif
 
+	static constexpr const_pointer CURRENT_DIRECTORY = ".";
+
 	static constexpr bool IsSeparator(value_type ch) {
 		return
 #ifdef WIN32
@@ -148,6 +150,8 @@ struct PathTraitsUTF8 {
 	typedef const value_type *const_pointer;
 
 	static constexpr value_type SEPARATOR = '/';
+
+	static constexpr const_pointer CURRENT_DIRECTORY = ".";
 
 	static constexpr bool IsSeparator(value_type ch) {
 		return ch == SEPARATOR;

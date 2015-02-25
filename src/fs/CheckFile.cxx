@@ -47,7 +47,8 @@ CheckDirectoryReadable(Path path_fs)
 	}
 
 #ifndef WIN32
-	const auto x = AllocatedPath::Build(path_fs, ".");
+	const auto x = AllocatedPath::Build(path_fs,
+					    PathTraitsFS::CURRENT_DIRECTORY);
 	if (!StatFile(x, st) && errno == EACCES)
 		FormatError(config_domain,
 			    "No permission to traverse (\"execute\") directory: %s",

@@ -74,7 +74,7 @@ GetParentPathImpl(typename Traits::const_pointer p)
 
 	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
 	if (sep == nullptr)
-		return typename Traits::string(".");
+		return typename Traits::string(Traits::CURRENT_DIRECTORY);
 	if (sep == p)
 		return typename Traits::string(p, p + 1);
 #ifdef WIN32
