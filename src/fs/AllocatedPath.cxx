@@ -30,7 +30,7 @@ AllocatedPath::~AllocatedPath() {}
 AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8)
 {
-#ifdef HAVE_FS_CHARSET
+#if defined(HAVE_FS_CHARSET) || defined(WIN32)
 	return AllocatedPath(::PathFromUTF8(path_utf8));
 #else
 	return FromFS(path_utf8);

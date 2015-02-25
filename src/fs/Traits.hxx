@@ -43,7 +43,11 @@
  * This class describes the nature of a native filesystem path.
  */
 struct PathTraitsFS {
+#ifdef WIN32
+	typedef std::wstring string;
+#else
 	typedef std::string string;
+#endif
 	typedef string::traits_type char_traits;
 	typedef char_traits::char_type value_type;
 	typedef value_type *pointer;

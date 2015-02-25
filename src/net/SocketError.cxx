@@ -20,6 +20,7 @@
 #include "config.h"
 #include "SocketError.hxx"
 #include "util/Domain.hxx"
+#include "util/Macros.hxx"
 
 #include <string.h>
 
@@ -29,13 +30,31 @@ const Domain socket_domain("socket");
 
 SocketErrorMessage::SocketErrorMessage(socket_error_t code)
 {
+#ifdef _UNICODE
+	wchar_t buffer[ARRAY_SIZE(msg)];
+#else
+	auto *buffer = msg;
+#endif
+
 	DWORD nbytes = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
 				     FORMAT_MESSAGE_IGNORE_INSERTS |
 				     FORMAT_MESSAGE_MAX_WIDTH_MASK,
-				     NULL, code, 0,
-				     (LPSTR)msg, sizeof(msg), NULL);
-	if (nbytes == 0)
+				     nullptr, code, 0,
+				     buffer, ARRAY_SIZE(msg), nullptr);
+	if (nbytes == 0) {
 		strcpy(msg, "Unknown error");
+		return;
+	}
+
+#ifdef _UNICODE
+	auto length = WideCharToMultiByte(CP_UTF8, 0, buffer, -1,
+					  msg, ARRAY_SIZE(msg),
+					  nullptr, nullptr);
+	if (length <= 0) {
+		strcpy(msg, "WideCharToMultiByte() error");
+		return;
+	}
+#endif
 }
 
 #else

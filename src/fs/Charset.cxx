@@ -25,6 +25,10 @@
 #include "lib/icu/Converter.hxx"
 #include "util/Error.hxx"
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include <algorithm>
 
 #include <assert.h>
@@ -95,6 +99,24 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 	assert(path_fs != nullptr);
 #endif
 
+#ifdef WIN32
+	int length = WideCharToMultiByte(CP_UTF8, 0, path_fs, -1, nullptr, 0,
+					 nullptr, nullptr);
+	if (length <= 0)
+		return PathTraitsUTF8::string();
+
+	char *buffer = new char[length];
+	length = WideCharToMultiByte(CP_UTF8, 0, path_fs, -1, buffer, length,
+				     nullptr, nullptr);
+	if (length <= 0) {
+		delete[] buffer;
+		return PathTraitsUTF8::string();
+	}
+
+	PathTraitsUTF8::string result(buffer);
+	delete[] buffer;
+	return FixSeparators(std::move(result));
+#else
 #ifdef HAVE_FS_CHARSET
 	if (fs_converter == nullptr)
 #endif
@@ -103,9 +125,10 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 
 	return FixSeparators(fs_converter->ToUTF8(path_fs));
 #endif
+#endif
 }
 
-#ifdef HAVE_FS_CHARSET
+#if defined(HAVE_FS_CHARSET) || defined(WIN32)
 
 PathTraitsFS::string
 PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
@@ -115,10 +138,29 @@ PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
 	assert(path_utf8 != nullptr);
 #endif
 
+#ifdef WIN32
+	int length = MultiByteToWideChar(CP_UTF8, 0, path_utf8, -1,
+					 nullptr, 0);
+	if (length <= 0)
+		return PathTraitsFS::string();
+
+	wchar_t *buffer = new wchar_t[length];
+	length = MultiByteToWideChar(CP_UTF8, 0, path_utf8, -1,
+				     buffer, length);
+	if (length <= 0) {
+		delete[] buffer;
+		return PathTraitsFS::string();
+	}
+
+	PathTraitsFS::string result(buffer);
+	delete[] buffer;
+	return std::move(result);
+#else
 	if (fs_converter == nullptr)
 		return path_utf8;
 
 	return fs_converter->FromUTF8(path_utf8);
+#endif
 }
 
 #endif

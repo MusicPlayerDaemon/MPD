@@ -22,6 +22,11 @@
 
 #include "check.h"
 #include "Path.hxx"
+#include "util/Macros.hxx"
+
+#ifdef _UNICODE
+#include <windows.h>
+#endif
 
 /**
  * A path name that uses the regular (narrow) "char".  This is used to
@@ -32,10 +37,25 @@ class NarrowPath {
 	typedef char value_type;
 	typedef const char *const_pointer;
 
+#ifdef _UNICODE
+	char value[PATH_MAX];
+#else
 	const_pointer value;
+#endif
 
 public:
+#ifdef _UNICODE
+	explicit NarrowPath(Path _path) {
+		auto result = WideCharToMultiByte(CP_ACP, 0,
+						  _path.c_str(), -1,
+						  value, ARRAY_SIZE(value),
+						  nullptr, nullptr);
+		if (result < 0)
+			value[0] = 0;
+	}
+#else
 	explicit NarrowPath(Path _path):value(_path.c_str()) {}
+#endif
 
 	operator const_pointer() const {
 		return value;

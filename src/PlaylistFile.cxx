@@ -268,7 +268,17 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
+#ifdef _UNICODE
+		wchar_t buffer[MAX_PATH];
+		auto result = MultiByteToWideChar(CP_ACP, 0, s, -1,
+						  buffer, ARRAY_SIZE(buffer));
+		if (result <= 0)
+			continue;
+
+		const Path path = Path::FromFS(buffer);
+#else
 		const Path path = Path::FromFS(s);
+#endif
 
 		std::string uri_utf8;
 
