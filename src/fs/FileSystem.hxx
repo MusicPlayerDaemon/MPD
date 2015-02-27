@@ -26,9 +26,14 @@
 
 #include "Path.hxx"
 
+#ifdef WIN32
+#include <fileapi.h>
+#endif
+
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+
 
 class AllocatedPath;
 
@@ -128,8 +133,15 @@ CheckAccess(Path path, int mode)
 static inline bool
 FileExists(Path path, bool follow_symlinks = true)
 {
+#ifdef WIN32
+	(void)follow_symlinks;
+
+	const auto a = GetFileAttributes(path.c_str());
+	return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_NORMAL);
+#else
 	struct stat buf;
 	return StatFile(path, buf, follow_symlinks) && S_ISREG(buf.st_mode);
+#endif
 }
 
 /**
@@ -138,8 +150,15 @@ FileExists(Path path, bool follow_symlinks = true)
 static inline bool
 DirectoryExists(Path path, bool follow_symlinks = true)
 {
+#ifdef WIN32
+	(void)follow_symlinks;
+
+	const auto a = GetFileAttributes(path.c_str());
+	return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
+#else
 	struct stat buf;
 	return StatFile(path, buf, follow_symlinks) && S_ISDIR(buf.st_mode);
+#endif
 }
 
 /**
@@ -149,8 +168,7 @@ static inline bool
 PathExists(Path path)
 {
 #ifdef WIN32
-	struct stat buf;
-	return StatFile(path, buf);
+	return GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
 	return CheckAccess(path, F_OK);
 #endif
