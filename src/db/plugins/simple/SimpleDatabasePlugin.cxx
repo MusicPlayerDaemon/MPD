@@ -117,7 +117,7 @@ SimpleDatabase::Check(Error &error) const
 	assert(!path.IsNull());
 
 	/* Check if the file exists */
-	if (!CheckAccess(path)) {
+	if (!PathExists(path)) {
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
