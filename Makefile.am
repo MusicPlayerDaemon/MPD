@@ -728,6 +728,7 @@ if ENABLE_ARCHIVE
 noinst_LIBRARIES += libarchive.a
 
 libmpd_a_SOURCES +=  \
+	src/TagArchive.cxx src/TagArchive.hxx \
 	src/db/update/Archive.cxx
 
 libarchive_a_SOURCES = \

@@ -37,6 +37,10 @@
 #include "TagFile.hxx"
 #include "TagStream.hxx"
 
+#ifdef ENABLE_ARCHIVE
+#include "TagArchive.hxx"
+#endif
+
 #include <assert.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -140,7 +144,7 @@ Song::UpdateFileInArchive(const Storage &storage)
 		return false;
 
 	TagBuilder tag_builder;
-	if (!tag_stream_scan(path_fs.c_str(), full_tag_handler, &tag_builder))
+	if (!tag_archive_scan(path_fs, full_tag_handler, &tag_builder))
 		return false;
 
 	tag_builder.Commit(tag);
