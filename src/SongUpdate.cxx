@@ -27,7 +27,7 @@
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "decoder/DecoderList.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
@@ -148,8 +148,8 @@ DetachedSong::Update()
 		const AllocatedPath path_fs =
 			AllocatedPath::FromUTF8(GetRealURI());
 
-		struct stat st;
-		if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
+		FileInfo fi;
+		if (!GetFileInfo(path_fs, fi) || !fi.IsRegular())
 			return false;
 
 		TagBuilder tag_builder;
@@ -160,7 +160,7 @@ DetachedSong::Update()
 			tag_scan_fallback(path_fs, &full_tag_handler,
 					  &tag_builder);
 
-		mtime = st.st_mtime;
+		mtime = fi.GetModificationTime();
 		tag_builder.Commit(tag);
 		return true;
 	} else if (IsRemote()) {

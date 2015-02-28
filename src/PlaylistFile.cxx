@@ -35,6 +35,7 @@
 #include "fs/Traits.hxx"
 #include "fs/Charset.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
@@ -178,8 +179,8 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		return false;
 
 	const auto path_fs = AllocatedPath::Build(parent_path_fs, name_fs);
-	struct stat st;
-	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
+	FileInfo fi;
+	if (!GetFileInfo(path_fs, fi) || !fi.IsRegular())
 		return false;
 
 	std::string name(name_fs_str,
@@ -189,7 +190,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		return false;
 
 	info.name = std::move(name_utf8);
-	info.mtime = st.st_mtime;
+	info.mtime = fi.GetModificationTime();
 	return true;
 }
 

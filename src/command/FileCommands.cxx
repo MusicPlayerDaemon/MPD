@@ -36,7 +36,7 @@
 #include "TagFile.hxx"
 #include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "TimePrint.hxx"
 #include "ls.hxx"
@@ -99,22 +99,22 @@ handle_listfiles_local(Client &client, const char *path_utf8)
 
 		const AllocatedPath full_fs =
 			AllocatedPath::Build(path_fs, name_fs);
-		struct stat st;
-		if (!StatFile(full_fs, st, false))
+		FileInfo fi;
+		if (!GetFileInfo(full_fs, fi, false))
 			continue;
 
-		if (S_ISREG(st.st_mode)) {
+		if (fi.IsRegular())
 			client_printf(client, "file: %s\n"
 				      "size: %" PRIu64 "\n",
 				      name_utf8.c_str(),
-				      uint64_t(st.st_size));
-		} else if (S_ISDIR(st.st_mode))
+				      fi.GetSize());
+		else if (fi.IsDirectory())
 			client_printf(client, "directory: %s\n",
 				      name_utf8.c_str());
 		else
 			continue;
 
-		time_print(client, "Last-Modified", st.st_mtime);
+		time_print(client, "Last-Modified", fi.GetModificationTime());
 	}
 
 	return CommandResult::OK;

@@ -34,6 +34,7 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/FileOutputStream.hxx"
+#include "fs/FileInfo.hxx"
 #include "config/Block.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
@@ -124,15 +125,13 @@ SimpleDatabase::Check(Error &error) const
 		const auto dirPath = path.GetDirectoryName();
 
 		/* Check that the parent part of the path is a directory */
-		struct stat st;
-		if (!StatFile(dirPath, st)) {
-			error.FormatErrno("Couldn't stat parent directory of db file "
-					  "\"%s\"",
-					  path_utf8.c_str());
+		FileInfo fi;
+		if (!GetFileInfo(dirPath, fi, error)) {
+			error.AddPrefix("On parent directory of db file: ");
 			return false;
 		}
 
-		if (!S_ISDIR(st.st_mode)) {
+		if (!fi.IsDirectory()) {
 			error.Format(simple_db_domain,
 				     "Couldn't create db file \"%s\" because the "
 				     "parent path is not a directory",
@@ -154,14 +153,11 @@ SimpleDatabase::Check(Error &error) const
 	}
 
 	/* Path exists, now check if it's a regular file */
-	struct stat st;
-	if (!StatFile(path, st)) {
-		error.FormatErrno("Couldn't stat db file \"%s\"",
-				  path_utf8.c_str());
+	FileInfo fi;
+	if (!GetFileInfo(path, fi, error))
 		return false;
-	}
 
-	if (!S_ISREG(st.st_mode)) {
+	if (!fi.IsRegular()) {
 		error.Format(simple_db_domain,
 			     "db file \"%s\" is not a regular file",
 			     path_utf8.c_str());
@@ -193,9 +189,9 @@ SimpleDatabase::Load(Error &error)
 	if (!db_load_internal(file, *root, error) || !file.Check(error))
 		return false;
 
-	struct stat st;
-	if (StatFile(path, st))
-		mtime = st.st_mtime;
+	FileInfo fi;
+	if (GetFileInfo(path, fi))
+		mtime = fi.GetModificationTime();
 
 	return true;
 }
@@ -425,9 +421,9 @@ SimpleDatabase::Save(Error &error)
 	if (!fos.Commit(error))
 		return false;
 
-	struct stat st;
-	if (StatFile(path, st))
-		mtime = st.st_mtime;
+	FileInfo fi;
+	if (GetFileInfo(path, fi))
+		mtime = fi.GetModificationTime();
 
 	return true;
 }

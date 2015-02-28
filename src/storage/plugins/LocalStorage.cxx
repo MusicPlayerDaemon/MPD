@@ -23,7 +23,7 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "util/Error.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
 
@@ -81,26 +81,25 @@ private:
 static bool
 Stat(Path path, bool follow, StorageFileInfo &info, Error &error)
 {
-	struct stat st;
-	if (!StatFile(path, st, follow)) {
-		error.SetErrno();
-
-		const auto path_utf8 = path.ToUTF8();
-		error.FormatPrefix("Failed to stat %s: ", path_utf8.c_str());
+	FileInfo src;
+	if (!GetFileInfo(path, src, follow, error))
 		return false;
-	}
 
-	if (S_ISREG(st.st_mode))
+	if (src.IsRegular())
 		info.type = StorageFileInfo::Type::REGULAR;
-	else if (S_ISDIR(st.st_mode))
+	else if (src.IsDirectory())
 		info.type = StorageFileInfo::Type::DIRECTORY;
 	else
 		info.type = StorageFileInfo::Type::OTHER;
 
-	info.size = st.st_size;
-	info.mtime = st.st_mtime;
-	info.device = st.st_dev;
-	info.inode = st.st_ino;
+	info.size = src.GetSize();
+	info.mtime = src.GetModificationTime();
+#ifdef WIN32
+	info.device = info.inode = 0;
+#else
+	info.device = src.GetDevice();
+	info.inode = src.GetInode();
+#endif
 	return true;
 }
 

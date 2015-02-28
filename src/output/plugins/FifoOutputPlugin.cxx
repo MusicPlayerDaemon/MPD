@@ -25,6 +25,7 @@
 #include "../Timer.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -105,8 +106,8 @@ FifoOutput::Close()
 		output = -1;
 	}
 
-	struct stat st;
-	if (created && StatFile(path, st))
+	FileInfo fi;
+	if (created && GetFileInfo(path, fi))
 		Delete();
 }
 

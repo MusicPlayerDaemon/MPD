@@ -556,6 +556,7 @@ libfs_a_SOURCES = \
 	src/fs/Path.cxx src/fs/Path2.cxx src/fs/Path.hxx \
 	src/fs/AllocatedPath.cxx src/fs/AllocatedPath.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
+	src/fs/FileInfo.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
 	src/fs/DirectoryReader.hxx
