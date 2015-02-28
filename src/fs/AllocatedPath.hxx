@@ -249,7 +249,9 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const char *Relative(const char *other_fs) const;
+	const char *Relative(const char *other_fs) const {
+		return PathTraitsFS::Relative(c_str(), other_fs);
+	}
 
 	/**
 	 * Chop trailing directory separators.

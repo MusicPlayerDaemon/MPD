@@ -61,28 +61,6 @@ AllocatedPath::ToUTF8() const
 	return ::PathToUTF8(c_str());
 }
 
-const char *
-AllocatedPath::Relative(const char *other_fs) const
-{
-	const size_t l = length();
-	if (memcmp(data(), other_fs, l) != 0)
-		return nullptr;
-
-	other_fs += l;
-	if (*other_fs != 0) {
-		if (!PathTraitsFS::IsSeparator(*other_fs))
-			/* mismatch */
-			return nullptr;
-
-		/* skip remaining path separators */
-		do {
-			++other_fs;
-		} while (PathTraitsFS::IsSeparator(*other_fs));
-	}
-
-	return other_fs;
-}
-
 void
 AllocatedPath::ChopSeparators()
 {
