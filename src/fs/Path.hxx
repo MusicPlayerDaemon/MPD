@@ -153,7 +153,7 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const_pointer RelativeFS(const_pointer other_fs) const {
+	const_pointer Relative(const_pointer other_fs) const {
 		return PathTraitsFS::Relative(value, other_fs);
 	}
 

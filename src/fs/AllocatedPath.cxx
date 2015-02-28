@@ -62,7 +62,7 @@ AllocatedPath::ToUTF8() const
 }
 
 const char *
-AllocatedPath::RelativeFS(const char *other_fs) const
+AllocatedPath::Relative(const char *other_fs) const
 {
 	const size_t l = length();
 	if (memcmp(data(), other_fs, l) != 0)

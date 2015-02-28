@@ -249,7 +249,7 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const char *RelativeFS(const char *other_fs) const;
+	const char *Relative(const char *other_fs) const;
 
 	/**
 	 * Chop trailing directory separators.
