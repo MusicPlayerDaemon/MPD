@@ -47,7 +47,7 @@
 
 gcc_pure
 static bool
-SkipNameFS(const char *name_fs)
+SkipNameFS(PathTraitsFS::const_pointer name_fs)
 {
 	return name_fs[0] == '.' &&
 		(name_fs[1] == 0 ||
@@ -56,7 +56,7 @@ SkipNameFS(const char *name_fs)
 
 gcc_pure
 static bool
-skip_path(const char *name_fs)
+skip_path(PathTraitsFS::const_pointer name_fs)
 {
 	return strchr(name_fs, '\n') != nullptr;
 }
