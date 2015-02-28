@@ -76,22 +76,21 @@ RenameFile(Path oldpath, Path newpath)
 	return rename(oldpath.c_str(), newpath.c_str()) == 0;
 }
 
+#ifndef WIN32
+
 /**
  * Wrapper for stat() that uses #Path names.
  */
 static inline bool
 StatFile(Path file, struct stat &buf, bool follow_symlinks = true)
 {
-#ifdef WIN32
-	(void)follow_symlinks;
-	return stat(file.c_str(), &buf) == 0;
-#else
 	int ret = follow_symlinks
 		? stat(file.c_str(), &buf)
 		: lstat(file.c_str(), &buf);
 	return ret == 0;
-#endif
 }
+
+#endif
 
 /**
  * Wrapper for unlink() that uses #Path names.
