@@ -52,9 +52,13 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 	Song *song = NewFile(path_utf8, parent);
 
 	//in archive ?
-	bool success = parent.device == DEVICE_INARCHIVE
+	bool success =
+#ifdef ENABLE_ARCHIVE
+		parent.device == DEVICE_INARCHIVE
 		? song->UpdateFileInArchive(storage)
-		: song->UpdateFile(storage);
+		:
+#endif
+		song->UpdateFile(storage);
 	if (!success) {
 		song->Free();
 		return nullptr;
@@ -112,6 +116,10 @@ Song::UpdateFile(Storage &storage)
 	tag_builder.Commit(tag);
 	return true;
 }
+
+#endif
+
+#ifdef ENABLE_ARCHIVE
 
 bool
 Song::UpdateFileInArchive(const Storage &storage)
