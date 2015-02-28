@@ -98,7 +98,7 @@ map_fs_to_utf8(Path _path_fs)
 		if (music_dir_fs.IsNull())
 			return std::string();
 
-		path_fs = music_dir_fs.Relative(path_fs);
+		path_fs = music_dir_fs.Relative(_path_fs);
 		if (path_fs == nullptr || *path_fs == 0)
 			return std::string();
 	}
