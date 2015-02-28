@@ -33,7 +33,7 @@
 inline void
 UpdateWalk::UpdateSongFile2(Directory &directory,
 			    const char *name, const char *suffix,
-			    const FileInfo &info)
+			    const StorageFileInfo &info)
 {
 	db_lock();
 	Song *song = directory.FindSong(name);
@@ -93,7 +93,7 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 bool
 UpdateWalk::UpdateSongFile(Directory &directory,
 			   const char *name, const char *suffix,
-			   const FileInfo &info)
+			   const StorageFileInfo &info)
 {
 	if (!decoder_plugins_supports_suffix(suffix))
 		return false;

@@ -104,7 +104,7 @@ class UpdateArchiveVisitor final : public ArchiveVisitor {
  */
 void
 UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
-			      const FileInfo &info,
+			      const StorageFileInfo &info,
 			      const ArchivePlugin &plugin)
 {
 	db_lock();
@@ -156,7 +156,7 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 bool
 UpdateWalk::UpdateArchiveFile(Directory &directory,
 			      const char *name, const char *suffix,
-			      const FileInfo &info)
+			      const StorageFileInfo &info)
 {
 	const ArchivePlugin *plugin = archive_plugin_from_suffix(suffix);
 	if (plugin == nullptr)

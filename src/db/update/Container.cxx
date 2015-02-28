@@ -36,7 +36,7 @@
 
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
-				    const FileInfo &info)
+				    const StorageFileInfo &info)
 {
 	Directory *directory = parent.FindChild(name);
 
@@ -69,7 +69,7 @@ SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
 bool
 UpdateWalk::UpdateContainerFile(Directory &directory,
 				const char *name, const char *suffix,
-				const FileInfo &info)
+				const StorageFileInfo &info)
 {
 	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){
 			return SupportsContainerSuffix(plugin, suffix);

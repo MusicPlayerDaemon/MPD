@@ -36,7 +36,7 @@ public:
 	struct Entry {
 		std::string name;
 
-		FileInfo info;
+		StorageFileInfo info;
 
 		template<typename N>
 		explicit Entry(N &&_name):name(std::forward<N>(_name)) {}
@@ -61,7 +61,8 @@ public:
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
-	bool GetInfo(bool follow, FileInfo &info, Error &error) override;
+	bool GetInfo(bool follow, StorageFileInfo &info,
+		     Error &error) override;
 };
 
 #endif

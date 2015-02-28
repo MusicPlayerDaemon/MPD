@@ -83,7 +83,7 @@ Song::UpdateFile(Storage &storage)
 {
 	const auto &relative_uri = GetURI();
 
-	FileInfo info;
+	StorageFileInfo info;
 	if (!storage.GetInfo(relative_uri.c_str(), true, info, IgnoreError()))
 		return false;
 

@@ -56,7 +56,7 @@ Ls(Storage &storage, const char *path)
 
 	const char *name;
 	while ((name = dir->Read()) != nullptr) {
-		FileInfo info;
+		StorageFileInfo info;
 		if (!dir->GetInfo(false, info, error)) {
 			printf("Error on %s: %s\n", name, error.GetMessage());
 			error.Clear();
@@ -65,15 +65,15 @@ Ls(Storage &storage, const char *path)
 
 		const char *type = "unk";
 		switch (info.type) {
-		case FileInfo::Type::OTHER:
+		case StorageFileInfo::Type::OTHER:
 			type = "oth";
 			break;
 
-		case FileInfo::Type::REGULAR:
+		case StorageFileInfo::Type::REGULAR:
 			type = "reg";
 			break;
 
-		case FileInfo::Type::DIRECTORY:
+		case StorageFileInfo::Type::DIRECTORY:
 			type = "dir";
 			break;
 		}

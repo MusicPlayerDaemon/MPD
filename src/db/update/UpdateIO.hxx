@@ -24,7 +24,7 @@
 #include "Compiler.h"
 
 struct Directory;
-struct FileInfo;
+struct StorageFileInfo;
 class Storage;
 class StorageDirectoryReader;
 
@@ -33,14 +33,14 @@ class StorageDirectoryReader;
  * returning them.
  */
 bool
-GetInfo(Storage &storage, const char *uri_utf8, FileInfo &info);
+GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info);
 
 /**
  * Wrapper for LocalDirectoryReader::GetInfo() that logs errors
  * instead of returning them.
  */
 bool
-GetInfo(StorageDirectoryReader &reader, FileInfo &info);
+GetInfo(StorageDirectoryReader &reader, StorageFileInfo &info);
 
 gcc_pure
 bool

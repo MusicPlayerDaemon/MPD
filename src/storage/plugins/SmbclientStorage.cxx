@@ -44,7 +44,8 @@ public:
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
-	bool GetInfo(bool follow, FileInfo &info, Error &error) override;
+	bool GetInfo(bool follow, StorageFileInfo &info,
+		     Error &error) override;
 };
 
 class SmbclientStorage final : public Storage {
@@ -63,7 +64,7 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
+	bool GetInfo(const char *uri_utf8, bool follow, StorageFileInfo &info,
 		     Error &error) override;
 
 	StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
@@ -92,7 +93,7 @@ SmbclientStorage::MapToRelativeUTF8(const char *uri_utf8) const
 }
 
 static bool
-GetInfo(const char *path, FileInfo &info, Error &error)
+GetInfo(const char *path, StorageFileInfo &info, Error &error)
 {
 	struct stat st;
 	smbclient_mutex.lock();
@@ -104,11 +105,11 @@ GetInfo(const char *path, FileInfo &info, Error &error)
 	}
 
 	if (S_ISREG(st.st_mode))
-		info.type = FileInfo::Type::REGULAR;
+		info.type = StorageFileInfo::Type::REGULAR;
 	else if (S_ISDIR(st.st_mode))
-		info.type = FileInfo::Type::DIRECTORY;
+		info.type = StorageFileInfo::Type::DIRECTORY;
 	else
-		info.type = FileInfo::Type::OTHER;
+		info.type = StorageFileInfo::Type::OTHER;
 
 	info.size = st.st_size;
 	info.mtime = st.st_mtime;
@@ -119,7 +120,7 @@ GetInfo(const char *path, FileInfo &info, Error &error)
 
 bool
 SmbclientStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
-			  FileInfo &info, Error &error)
+			  StorageFileInfo &info, Error &error)
 {
 	const std::string mapped = MapUTF8(uri_utf8);
 	return ::GetInfo(mapped.c_str(), info, error);
@@ -172,7 +173,8 @@ SmbclientDirectoryReader::Read()
 }
 
 bool
-SmbclientDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
+SmbclientDirectoryReader::GetInfo(gcc_unused bool follow,
+				  StorageFileInfo &info,
 				  Error &error)
 {
 	const std::string path = PathTraitsUTF8::Build(base.c_str(), name);

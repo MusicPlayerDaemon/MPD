@@ -25,7 +25,7 @@
 #include <time.h>
 #include <stdint.h>
 
-struct FileInfo {
+struct StorageFileInfo {
 	enum class Type : uint8_t {
 		OTHER,
 		REGULAR,

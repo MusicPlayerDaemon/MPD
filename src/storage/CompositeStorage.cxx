@@ -56,7 +56,7 @@ public:
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
-	bool GetInfo(bool follow, FileInfo &info, Error &error) override;
+	bool GetInfo(bool follow, StorageFileInfo &info, Error &error) override;
 };
 
 const char *
@@ -81,7 +81,7 @@ CompositeDirectoryReader::Read()
 }
 
 bool
-CompositeDirectoryReader::GetInfo(bool follow, FileInfo &info,
+CompositeDirectoryReader::GetInfo(bool follow, StorageFileInfo &info,
 				  Error &error)
 {
 	if (other != nullptr)
@@ -89,7 +89,7 @@ CompositeDirectoryReader::GetInfo(bool follow, FileInfo &info,
 
 	assert(current != names.end());
 
-	info.type = FileInfo::Type::DIRECTORY;
+	info.type = StorageFileInfo::Type::DIRECTORY;
 	info.mtime = 0;
 	info.device = 0;
 	info.inode = 0;
@@ -275,7 +275,7 @@ CompositeStorage::FindStorage(const char *uri, Error &error) const
 }
 
 bool
-CompositeStorage::GetInfo(const char *uri, bool follow, FileInfo &info,
+CompositeStorage::GetInfo(const char *uri, bool follow, StorageFileInfo &info,
 			  Error &error)
 {
 	const ScopeLock protect(mutex);
@@ -288,7 +288,7 @@ CompositeStorage::GetInfo(const char *uri, bool follow, FileInfo &info,
 	const Directory *directory = f.directory->Find(f.uri);
 	if (directory != nullptr) {
 		error.Clear();
-		info.type = FileInfo::Type::DIRECTORY;
+		info.type = StorageFileInfo::Type::DIRECTORY;
 		info.mtime = 0;
 		info.device = 0;
 		info.inode = 0;

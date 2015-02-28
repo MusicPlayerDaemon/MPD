@@ -46,7 +46,8 @@ public:
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
-	bool GetInfo(bool follow, FileInfo &info, Error &error) override;
+	bool GetInfo(bool follow, StorageFileInfo &info,
+		     Error &error) override;
 };
 
 class LocalStorage final : public Storage {
@@ -61,7 +62,7 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	bool GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
+	bool GetInfo(const char *uri_utf8, bool follow, StorageFileInfo &info,
 		     Error &error) override;
 
 	StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
@@ -78,7 +79,7 @@ private:
 };
 
 static bool
-Stat(Path path, bool follow, FileInfo &info, Error &error)
+Stat(Path path, bool follow, StorageFileInfo &info, Error &error)
 {
 	struct stat st;
 	if (!StatFile(path, st, follow)) {
@@ -90,11 +91,11 @@ Stat(Path path, bool follow, FileInfo &info, Error &error)
 	}
 
 	if (S_ISREG(st.st_mode))
-		info.type = FileInfo::Type::REGULAR;
+		info.type = StorageFileInfo::Type::REGULAR;
 	else if (S_ISDIR(st.st_mode))
-		info.type = FileInfo::Type::DIRECTORY;
+		info.type = StorageFileInfo::Type::DIRECTORY;
 	else
-		info.type = FileInfo::Type::OTHER;
+		info.type = StorageFileInfo::Type::OTHER;
 
 	info.size = st.st_size;
 	info.mtime = st.st_mtime;
@@ -142,7 +143,7 @@ LocalStorage::MapToRelativeUTF8(const char *uri_utf8) const
 }
 
 bool
-LocalStorage::GetInfo(const char *uri_utf8, bool follow, FileInfo &info,
+LocalStorage::GetInfo(const char *uri_utf8, bool follow, StorageFileInfo &info,
 		      Error &error)
 {
 	AllocatedPath path_fs = MapFS(uri_utf8, error);
@@ -198,7 +199,7 @@ LocalDirectoryReader::Read()
 }
 
 bool
-LocalDirectoryReader::GetInfo(bool follow, FileInfo &info, Error &error)
+LocalDirectoryReader::GetInfo(bool follow, StorageFileInfo &info, Error &error)
 {
 	const AllocatedPath path_fs =
 		AllocatedPath::Build(base_fs, reader.GetEntry());

@@ -33,7 +33,7 @@
 #include <unistd.h>
 
 bool
-GetInfo(Storage &storage, const char *uri_utf8, FileInfo &info)
+GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info)
 {
 	Error error;
 	bool success = storage.GetInfo(uri_utf8, true, info, error);
@@ -43,7 +43,7 @@ GetInfo(Storage &storage, const char *uri_utf8, FileInfo &info)
 }
 
 bool
-GetInfo(StorageDirectoryReader &reader, FileInfo &info)
+GetInfo(StorageDirectoryReader &reader, StorageFileInfo &info)
 {
 	Error error;
 	bool success = reader.GetInfo(true, info, error);
@@ -55,7 +55,7 @@ GetInfo(StorageDirectoryReader &reader, FileInfo &info)
 bool
 DirectoryExists(Storage &storage, const Directory &directory)
 {
-	FileInfo info;
+	StorageFileInfo info;
 	if (!storage.GetInfo(directory.GetPath(), true, info, IgnoreError()))
 		return false;
 
@@ -67,7 +67,7 @@ DirectoryExists(Storage &storage, const Directory &directory)
 
 static bool
 GetDirectoryChildInfo(Storage &storage, const Directory &directory,
-		      const char *name_utf8, FileInfo &info, Error &error)
+		      const char *name_utf8, StorageFileInfo &info, Error &error)
 {
 	const auto uri_utf8 = PathTraitsUTF8::Build(directory.GetPath(),
 						    name_utf8);
@@ -78,7 +78,7 @@ bool
 directory_child_is_regular(Storage &storage, const Directory &directory,
 			   const char *name_utf8)
 {
-	FileInfo info;
+	StorageFileInfo info;
 	return GetDirectoryChildInfo(storage, directory, name_utf8, info,
 				     IgnoreError()) &&
 		info.IsRegular();

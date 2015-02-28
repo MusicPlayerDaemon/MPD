@@ -64,23 +64,23 @@ handle_listfiles_storage(Client &client, StorageDirectoryReader &reader,
 		if (skip_path(name_utf8))
 			continue;
 
-		FileInfo info;
+		StorageFileInfo info;
 		if (!reader.GetInfo(false, info, error))
 			continue;
 
 		switch (info.type) {
-		case FileInfo::Type::OTHER:
+		case StorageFileInfo::Type::OTHER:
 			/* ignore */
 			continue;
 
-		case FileInfo::Type::REGULAR:
+		case StorageFileInfo::Type::REGULAR:
 			client_printf(client, "file: %s\n"
 				      "size: %" PRIu64 "\n",
 				      name_utf8,
 				      info.size);
 			break;
 
-		case FileInfo::Type::DIRECTORY:
+		case StorageFileInfo::Type::DIRECTORY:
 			client_printf(client, "directory: %s\n", name_utf8);
 			break;
 		}

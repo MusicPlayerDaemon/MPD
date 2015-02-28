@@ -67,7 +67,7 @@ UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
 }
 
 static void
-directory_set_stat(Directory &dir, const FileInfo &info)
+directory_set_stat(Directory &dir, const StorageFileInfo &info)
 {
 	dir.inode = info.inode;
 	dir.device = info.device;
@@ -140,7 +140,7 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 static bool
 update_directory_stat(Storage &storage, Directory &directory)
 {
-	FileInfo info;
+	StorageFileInfo info;
 	if (!GetInfo(storage, directory.GetPath(), info))
 		return false;
 
@@ -190,7 +190,7 @@ FindAncestorLoop(Storage &storage, Directory *parent,
 inline bool
 UpdateWalk::UpdatePlaylistFile(Directory &directory,
 			       const char *name, const char *suffix,
-			       const FileInfo &info)
+			       const StorageFileInfo &info)
 {
 	if (!playlist_suffix_supported(suffix))
 		return false;
@@ -206,7 +206,7 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 
 inline bool
 UpdateWalk::UpdateRegularFile(Directory &directory,
-			      const char *name, const FileInfo &info)
+			      const char *name, const StorageFileInfo &info)
 {
 	const char *suffix = uri_get_suffix(name);
 	if (suffix == nullptr)
@@ -219,7 +219,7 @@ UpdateWalk::UpdateRegularFile(Directory &directory,
 
 void
 UpdateWalk::UpdateDirectoryChild(Directory &directory,
-				 const char *name, const FileInfo &info)
+				 const char *name, const StorageFileInfo &info)
 {
 	assert(strchr(name, '/') == nullptr);
 
@@ -327,7 +327,7 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 }
 
 bool
-UpdateWalk::UpdateDirectory(Directory &directory, const FileInfo &info)
+UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
 {
 	assert(info.IsDirectory());
 
@@ -370,7 +370,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const FileInfo &info)
 			continue;
 		}
 
-		FileInfo info2;
+		StorageFileInfo info2;
 		if (!GetInfo(*reader, info2)) {
 			modified |= editor.DeleteNameIn(directory, name_utf8);
 			continue;
@@ -400,7 +400,7 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 		return directory;
 	}
 
-	FileInfo info;
+	StorageFileInfo info;
 	if (!GetInfo(storage, uri_utf8, info) ||
 	    FindAncestorLoop(storage, &parent, info.inode, info.device))
 		return nullptr;
@@ -462,7 +462,7 @@ UpdateWalk::UpdateUri(Directory &root, const char *uri)
 		return;
 	}
 
-	FileInfo info;
+	StorageFileInfo info;
 	if (!GetInfo(storage, uri, info)) {
 		modified |= editor.DeleteNameIn(*parent, name);
 		return;
@@ -480,7 +480,7 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard)
 	if (path != nullptr && !isRootDirectory(path)) {
 		UpdateUri(root, path);
 	} else {
-		FileInfo info;
+		StorageFileInfo info;
 		if (!GetInfo(storage, "", info))
 			return false;
 
