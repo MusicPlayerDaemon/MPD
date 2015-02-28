@@ -30,15 +30,16 @@
 #include <atomic>
 
 #include <windows.h>
+#include <tchar.h>
 
 static int service_argc;
 static char **service_argv;
-static char service_name[] = "";
+static TCHAR service_name[] = _T("");
 static std::atomic_bool running;
 static SERVICE_STATUS_HANDLE service_handle;
 
 static void WINAPI
-service_main(DWORD argc, CHAR *argv[]);
+service_main(DWORD argc, LPTSTR argv[]);
 
 static constexpr SERVICE_TABLE_ENTRY service_registry[] = {
 	{service_name, service_main},
@@ -78,7 +79,7 @@ service_dispatcher(gcc_unused DWORD control, gcc_unused DWORD event_type,
 }
 
 static void WINAPI
-service_main(gcc_unused DWORD argc, gcc_unused CHAR *argv[])
+service_main(gcc_unused DWORD argc, gcc_unused LPTSTR argv[])
 {
 	service_handle =
 		RegisterServiceCtrlHandlerEx(service_name,
@@ -132,7 +133,7 @@ int win32_main(int argc, char *argv[])
 	if (error_code == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT) {
 		/* running as console app */
 		running.store(false);
-		SetConsoleTitle("Music Player Daemon");
+		SetConsoleTitle(_T("Music Player Daemon"));
 		SetConsoleCtrlHandler(console_handler, TRUE);
 		return mpd_main(argc, argv);
 	}
