@@ -98,7 +98,7 @@ RelativePathImpl(typename Traits::const_pointer base,
 		return nullptr;
 
 	other += base_length;
-	if (other != 0) {
+	if (*other != 0) {
 		if (!Traits::IsSeparator(*other))
 			/* mismatch */
 			return nullptr;
