@@ -111,6 +111,8 @@ handle_listfiles_local(Client &client, const char *path_utf8)
 		} else if (S_ISDIR(st.st_mode))
 			client_printf(client, "directory: %s\n",
 				      name_utf8.c_str());
+		else
+			continue;
 
 		time_print(client, "Last-Modified", st.st_mtime);
 	}
