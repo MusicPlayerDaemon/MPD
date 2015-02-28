@@ -86,8 +86,10 @@ map_uri_fs(const char *uri)
 }
 
 std::string
-map_fs_to_utf8(const char *path_fs)
+map_fs_to_utf8(Path _path_fs)
 {
+	auto path_fs = _path_fs.c_str();
+
 	if (PathTraitsFS::IsSeparator(path_fs[0])) {
 		if (instance->storage == nullptr)
 			return std::string();

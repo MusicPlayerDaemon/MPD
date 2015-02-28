@@ -268,13 +268,15 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
+		const Path path = Path::FromFS(s);
+
 		std::string uri_utf8;
 
 		if (!uri_has_scheme(s)) {
 #ifdef ENABLE_DATABASE
-			uri_utf8 = map_fs_to_utf8(s);
+			uri_utf8 = map_fs_to_utf8(path);
 			if (uri_utf8.empty()) {
-				if (PathTraitsFS::IsAbsolute(s)) {
+				if (path.IsAbsolute()) {
 					uri_utf8 = PathToUTF8(s);
 					if (uri_utf8.empty())
 						continue;
@@ -287,7 +289,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 			continue;
 #endif
 		} else {
-			uri_utf8 = PathToUTF8(s);
+			uri_utf8 = path.ToUTF8();
 			if (uri_utf8.empty())
 				continue;
 		}

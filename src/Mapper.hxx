@@ -30,6 +30,7 @@
 
 #define PLAYLIST_FILE_SUFFIX ".m3u"
 
+class Path;
 class AllocatedPath;
 
 void
@@ -58,7 +59,7 @@ map_uri_fs(const char *uri);
  */
 gcc_pure
 std::string
-map_fs_to_utf8(const char *path_fs);
+map_fs_to_utf8(Path path_fs);
 
 #endif
 
