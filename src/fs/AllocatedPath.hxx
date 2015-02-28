@@ -257,7 +257,7 @@ public:
 	void ChopSeparators();
 
 	gcc_pure
-	bool IsAbsolute() {
+	bool IsAbsolute() const {
 		return PathTraitsFS::IsAbsolute(c_str());
 	}
 };
