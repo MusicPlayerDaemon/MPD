@@ -1635,12 +1635,12 @@ test_run_input_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
-	libutil.a \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/ScopeIOThread.hxx \
@@ -1682,12 +1682,12 @@ test_visit_archive_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
-	libutil.a \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	test/ScopeIOThread.hxx \

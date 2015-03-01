@@ -35,7 +35,7 @@ playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
 {
 	assert(!path.IsNull());
 
-	const char *suffix = uri_get_suffix(path.c_str());
+	const char *suffix = path.GetSuffix();
 	if (suffix == nullptr || !playlist_suffix_supported(suffix))
 		return nullptr;
 

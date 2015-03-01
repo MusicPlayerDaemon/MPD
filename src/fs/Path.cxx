@@ -20,9 +20,16 @@
 #include "config.h"
 #include "Path.hxx"
 #include "Charset.hxx"
+#include "util/UriUtil.hxx"
 
 std::string
 Path::ToUTF8() const
 {
 	return ::PathToUTF8(c_str());
+}
+
+const char *
+Path::GetSuffix() const
+{
+	return uri_get_suffix(c_str());
 }

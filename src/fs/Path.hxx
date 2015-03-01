@@ -161,6 +161,9 @@ public:
 	bool IsAbsolute() const {
 		return PathTraitsFS::IsAbsolute(c_str());
 	}
+
+	gcc_pure
+	const char *GetSuffix() const;
 };
 
 #endif
