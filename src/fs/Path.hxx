@@ -123,6 +123,16 @@ public:
 	}
 
 	/**
+	 * Does the path contain a newline character?  (Which is
+	 * usually rejected by MPD because its protocol cannot
+	 * transfer newline characters).
+	 */
+	gcc_pure
+	bool HasNewline() const {
+		return strchr(value, '\n') != nullptr;
+	}
+
+	/**
 	 * Convert the path to UTF-8.
 	 * Returns empty string on error or if this instance is "nulled"
 	 * (#IsNull returns true).

@@ -169,11 +169,13 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		     const Path parent_path_fs,
 		     const Path name_fs)
 {
+	if (name_fs.HasNewline())
+		return false;
+
 	const auto *const name_fs_str = name_fs.c_str();
 	const size_t name_length = name_fs.length();
 
-	if (name_length < ARRAY_SIZE(PLAYLIST_FILE_SUFFIX) ||
-	    memchr(name_fs_str, '\n', name_length) != nullptr)
+	if (name_length < ARRAY_SIZE(PLAYLIST_FILE_SUFFIX))
 		return false;
 
 	if (!StringEndsWith(name_fs_str, PLAYLIST_FILE_SUFFIX))
