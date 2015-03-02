@@ -96,6 +96,21 @@ StringEndsWith(const char *haystack, const char *needle)
 		       needle, needle_length) == 0;
 }
 
+const char *
+FindStringSuffix(const char *p, const char *suffix)
+{
+	const size_t p_length = strlen(p);
+	const size_t suffix_length = strlen(suffix);
+
+	if (p_length < suffix_length)
+		return nullptr;
+
+	const char *q = p + p_length - suffix_length;
+	return memcmp(q, suffix, suffix_length) == 0
+		? q
+		: nullptr;
+}
+
 char *
 CopyString(char *gcc_restrict dest, const char *gcc_restrict src, size_t size)
 {

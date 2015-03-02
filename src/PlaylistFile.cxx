@@ -173,12 +173,9 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		return false;
 
 	const auto *const name_fs_str = name_fs.c_str();
-	const size_t name_length = name_fs.length();
-
-	if (name_length < ARRAY_SIZE(PLAYLIST_FILE_SUFFIX))
-		return false;
-
-	if (!StringEndsWith(name_fs_str, PLAYLIST_FILE_SUFFIX))
+	const auto *const name_fs_end =
+		FindStringSuffix(name_fs_str, PLAYLIST_FILE_SUFFIX);
+	if (name_fs_end == nullptr)
 		return false;
 
 	FileInfo fi;
@@ -186,8 +183,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	    !fi.IsRegular())
 		return false;
 
-	PathTraitsFS::string name(name_fs_str,
-				  name_length + 1 - ARRAY_SIZE(PLAYLIST_FILE_SUFFIX));
+	PathTraitsFS::string name(name_fs_str, name_fs_end);
 	std::string name_utf8 = PathToUTF8(name.c_str());
 	if (name_utf8.empty())
 		return false;
