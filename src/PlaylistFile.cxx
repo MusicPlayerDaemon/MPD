@@ -37,6 +37,7 @@
 #include "fs/FileSystem.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "util/Macros.hxx"
 #include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -168,10 +169,10 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		     const Path parent_path_fs,
 		     const Path name_fs)
 {
-	const char *name_fs_str = name_fs.c_str();
-	size_t name_length = strlen(name_fs_str);
+	const auto *const name_fs_str = name_fs.c_str();
+	const size_t name_length = name_fs.length();
 
-	if (name_length < sizeof(PLAYLIST_FILE_SUFFIX) ||
+	if (name_length < ARRAY_SIZE(PLAYLIST_FILE_SUFFIX) ||
 	    memchr(name_fs_str, '\n', name_length) != nullptr)
 		return false;
 
@@ -183,8 +184,8 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	if (!GetFileInfo(path_fs, fi) || !fi.IsRegular())
 		return false;
 
-	std::string name(name_fs_str,
-			 name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
+	PathTraitsFS::string name(name_fs_str,
+				  name_length + 1 - ARRAY_SIZE(PLAYLIST_FILE_SUFFIX));
 	std::string name_utf8 = PathToUTF8(name.c_str());
 	if (name_utf8.empty())
 		return false;
