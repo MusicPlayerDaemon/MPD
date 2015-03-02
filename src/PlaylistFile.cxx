@@ -181,9 +181,9 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	if (!StringEndsWith(name_fs_str, PLAYLIST_FILE_SUFFIX))
 		return false;
 
-	const auto path_fs = AllocatedPath::Build(parent_path_fs, name_fs);
 	FileInfo fi;
-	if (!GetFileInfo(path_fs, fi) || !fi.IsRegular())
+	if (!GetFileInfo(AllocatedPath::Build(parent_path_fs, name_fs), fi) ||
+	    !fi.IsRegular())
 		return false;
 
 	PathTraitsFS::string name(name_fs_str,
