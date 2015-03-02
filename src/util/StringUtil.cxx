@@ -103,7 +103,7 @@ CopyString(char *gcc_restrict dest, const char *gcc_restrict src, size_t size)
 	if (length >= size)
 		length = size - 1;
 
-	char *p = std::copy(src, src + length, dest);
+	char *p = std::copy_n(src, length, dest);
 	*p = '\0';
 	return p;
 }
