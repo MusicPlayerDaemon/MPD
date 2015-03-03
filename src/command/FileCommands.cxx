@@ -56,9 +56,9 @@ SkipNameFS(PathTraitsFS::const_pointer name_fs)
 
 gcc_pure
 static bool
-skip_path(PathTraitsFS::const_pointer name_fs)
+skip_path(Path name_fs)
 {
-	return strchr(name_fs, '\n') != nullptr;
+	return name_fs.HasNewline();
 }
 
 #if defined(WIN32) && GCC_CHECK_VERSION(4,6)
@@ -90,7 +90,7 @@ handle_listfiles_local(Client &client, const char *path_utf8)
 
 	while (reader.ReadEntry()) {
 		const Path name_fs = reader.GetEntry();
-		if (SkipNameFS(name_fs.c_str()) || skip_path(name_fs.c_str()))
+		if (SkipNameFS(name_fs.c_str()) || skip_path(name_fs))
 			continue;
 
 		std::string name_utf8 = name_fs.ToUTF8();
