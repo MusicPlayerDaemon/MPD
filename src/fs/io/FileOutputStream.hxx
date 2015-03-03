@@ -25,6 +25,10 @@
 #include "fs/AllocatedPath.hxx"
 #include "Compiler.h"
 
+#ifndef WIN32
+#include "system/FileDescriptor.hxx"
+#endif
+
 #include <assert.h>
 
 #ifdef WIN32
@@ -39,7 +43,7 @@ class FileOutputStream final : public OutputStream {
 #ifdef WIN32
 	HANDLE handle;
 #else
-	int fd;
+	FileDescriptor fd;
 #endif
 
 #ifdef HAVE_LINKAT
@@ -64,7 +68,7 @@ public:
 #ifdef WIN32
 		return handle != INVALID_HANDLE_VALUE;
 #else
-		return fd >= 0;
+		return fd.IsDefined();
 #endif
 	}
 
