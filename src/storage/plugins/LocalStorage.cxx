@@ -172,7 +172,7 @@ LocalStorage::OpenDirectory(const char *uri_utf8, Error &error)
 
 gcc_pure
 static bool
-SkipNameFS(const char *name_fs)
+SkipNameFS(PathTraitsFS::const_pointer name_fs)
 {
 	return name_fs[0] == '.' &&
 		(name_fs[1] == 0 ||
