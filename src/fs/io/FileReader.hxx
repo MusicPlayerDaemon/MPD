@@ -61,6 +61,8 @@ public:
 
 	void Close();
 
+	bool Seek(off_t offset, Error &error);
+
 	/* virtual methods from class Reader */
 	size_t Read(void *data, size_t size, Error &error) override;
 };

@@ -52,6 +52,19 @@ FileReader::Read(void *data, size_t size, Error &error)
 	return nbytes;
 }
 
+bool
+FileReader::Seek(off_t offset, Error &error)
+{
+	assert(IsDefined());
+
+	auto result = SetFilePointer(handle, offset, nullptr, FILE_BEGIN);
+	const bool success = result != INVALID_SET_FILE_POINTER;
+	if (!success)
+		error.SetLastError("Failed to seek");
+
+	return success;
+}
+
 void
 FileReader::Close()
 {
@@ -88,6 +101,19 @@ FileReader::Read(void *data, size_t size, Error &error)
 	}
 
 	return nbytes;
+}
+
+bool
+FileReader::Seek(off_t offset, Error &error)
+{
+	assert(IsDefined());
+
+	auto result = lseek(fd, offset, SEEK_SET);
+	const bool success = result >= 0;
+	if (!success)
+		error.SetErrno("Failed to seek");
+
+	return success;
 }
 
 void
