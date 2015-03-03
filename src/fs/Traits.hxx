@@ -37,7 +37,8 @@
  */
 struct PathTraitsFS {
 	typedef std::string string;
-	typedef char value_type;
+	typedef string::traits_type char_traits;
+	typedef char_traits::char_type value_type;
 	typedef value_type *pointer;
 	typedef const value_type *const_pointer;
 
@@ -97,7 +98,7 @@ struct PathTraitsFS {
 
 	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer p) {
-		return strlen(p);
+		return char_traits::length(p);
 	}
 
 	/**
@@ -145,7 +146,8 @@ struct PathTraitsFS {
  */
 struct PathTraitsUTF8 {
 	typedef std::string string;
-	typedef char value_type;
+	typedef string::traits_type char_traits;
+	typedef char_traits::char_type value_type;
 	typedef value_type *pointer;
 	typedef const value_type *const_pointer;
 
@@ -190,7 +192,7 @@ struct PathTraitsUTF8 {
 
 	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer p) {
-		return strlen(p);
+		return char_traits::length(p);
 	}
 
 	/**
