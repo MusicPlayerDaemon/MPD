@@ -44,7 +44,7 @@ struct playlist_plugin {
 	 * Deinitialize a plugin which was initialized successfully.
 	 * Optional method.
 	 */
-	void (*finish)(void);
+	void (*finish)();
 
 	/**
 	 * Opens the playlist on the specified URI.  This URI has

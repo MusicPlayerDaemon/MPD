@@ -28,8 +28,10 @@ static constexpr unsigned PERMISSION_ADMIN = 8;
 
 int getPermissionFromPassword(char const* password, unsigned* permission);
 
-unsigned getDefaultPermissions(void);
+unsigned
+getDefaultPermissions();
 
-void initPermissions(void);
+void
+initPermissions();
 
 #endif

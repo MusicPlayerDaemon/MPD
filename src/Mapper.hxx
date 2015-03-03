@@ -36,7 +36,8 @@ class AllocatedPath;
 void
 mapper_init(AllocatedPath &&playlist_dir);
 
-void mapper_finish(void);
+void
+mapper_finish();
 
 #ifdef ENABLE_DATABASE
 
@@ -68,7 +69,7 @@ map_fs_to_utf8(Path path_fs);
  */
 gcc_const
 const AllocatedPath &
-map_spl_path(void);
+map_spl_path();
 
 /**
  * Maps a playlist name (without the ".m3u" suffix) to a file system

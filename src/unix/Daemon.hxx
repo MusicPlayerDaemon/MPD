@@ -33,10 +33,10 @@ daemonize_init(const char *user, const char *group, AllocatedPath &&pidfile)
 
 #ifndef WIN32
 void
-daemonize_finish(void);
+daemonize_finish();
 #else
 static inline void
-daemonize_finish(void)
+daemonize_finish()
 { /* nop */ }
 #endif
 
@@ -46,11 +46,11 @@ daemonize_finish(void)
  */
 #ifndef WIN32
 void
-daemonize_kill(void);
+daemonize_kill();
 #else
 #include "system/FatalError.hxx"
 static inline void
-daemonize_kill(void)
+daemonize_kill()
 {
 	FatalError("--kill is not available on WIN32");
 }
@@ -61,10 +61,10 @@ daemonize_kill(void)
  */
 #ifndef WIN32
 void
-daemonize_close_stdin(void);
+daemonize_close_stdin();
 #else
 static inline void
-daemonize_close_stdin(void) {}
+daemonize_close_stdin() {}
 #endif
 
 /**
@@ -72,10 +72,10 @@ daemonize_close_stdin(void) {}
  */
 #ifndef WIN32
 void
-daemonize_set_user(void);
+daemonize_set_user();
 #else
 static inline void
-daemonize_set_user(void)
+daemonize_set_user()
 { /* nop */ }
 #endif
 

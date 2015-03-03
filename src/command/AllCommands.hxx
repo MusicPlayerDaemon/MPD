@@ -24,9 +24,11 @@
 
 class Client;
 
-void command_init(void);
+void
+command_init();
 
-void command_finish(void);
+void
+command_finish();
 
 CommandResult
 command_process(Client &client, unsigned num, char *line);

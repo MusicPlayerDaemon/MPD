@@ -37,13 +37,13 @@ extern const struct playlist_plugin *const playlist_plugins[];
  * Initializes all playlist plugins.
  */
 void
-playlist_list_global_init(void);
+playlist_list_global_init();
 
 /**
  * Deinitializes all playlist plugins.
  */
 void
-playlist_list_global_finish(void);
+playlist_list_global_finish();
 
 /**
  * Opens a playlist by its URI.

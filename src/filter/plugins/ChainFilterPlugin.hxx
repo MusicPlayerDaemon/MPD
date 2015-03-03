@@ -33,7 +33,7 @@ class Filter;
  * Creates a new filter chain.
  */
 Filter *
-filter_chain_new(void);
+filter_chain_new();
 
 /**
  * Appends a new filter at the end of the filter chain.  You must call

@@ -39,9 +39,11 @@ const ArchivePlugin *
 archive_plugin_from_name(const char *name);
 
 /* this is where we "load" all the "plugins" ;-) */
-void archive_plugin_init_all(void);
+void
+archive_plugin_init_all();
 
 /* this is where we "unload" all the "plugins" */
-void archive_plugin_deinit_all(void);
+void
+archive_plugin_deinit_all();
 
 #endif

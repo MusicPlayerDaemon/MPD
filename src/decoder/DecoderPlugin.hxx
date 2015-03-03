@@ -50,7 +50,7 @@ struct DecoderPlugin {
 	 * Deinitialize a decoder plugin which was initialized
 	 * successfully.  Optional method.
 	 */
-	void (*finish)(void);
+	void (*finish)();
 
 	/**
 	 * Decode a stream (data read from an #InputStream object).

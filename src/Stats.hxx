@@ -22,7 +22,8 @@
 
 class Client;
 
-void stats_global_init(void);
+void
+stats_global_init();
 
 void
 stats_invalidate();

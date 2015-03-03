@@ -44,7 +44,7 @@ struct AudioOutputPlugin {
 	 * Test if this plugin can provide a default output, in case
 	 * none has been configured.  This method is optional.
 	 */
-	bool (*test_default_device)(void);
+	bool (*test_default_device)();
 
 	/**
 	 * Configure and initialize the device, but do not open it

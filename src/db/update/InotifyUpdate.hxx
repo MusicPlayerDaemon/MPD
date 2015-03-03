@@ -32,6 +32,6 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 		 unsigned max_depth);
 
 void
-mpd_inotify_finish(void);
+mpd_inotify_finish();
 
 #endif

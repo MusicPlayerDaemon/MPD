@@ -257,7 +257,8 @@ handle_not_commands(Client &client, gcc_unused ConstBuffer<const char *> args)
 	return CommandResult::OK;
 }
 
-void command_init(void)
+void
+command_init()
 {
 #ifndef NDEBUG
 	/* ensure that the command list is sorted */
@@ -266,7 +267,8 @@ void command_init(void)
 #endif
 }
 
-void command_finish(void)
+void
+command_finish()
 {
 }
 

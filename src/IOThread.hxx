@@ -25,7 +25,7 @@
 class EventLoop;
 
 void
-io_thread_init(void);
+io_thread_init();
 
 void
 io_thread_start();
@@ -36,7 +36,7 @@ io_thread_start();
  * only.
  */
 void
-io_thread_run(void);
+io_thread_run();
 
 /**
  * Ask the I/O thread to quit, but does not wait for it.  Usually, you
@@ -44,10 +44,10 @@ io_thread_run(void);
  * includes this.
  */
 void
-io_thread_quit(void);
+io_thread_quit();
 
 void
-io_thread_deinit(void);
+io_thread_deinit();
 
 gcc_const
 EventLoop &
@@ -58,6 +58,6 @@ io_thread_get();
  */
 gcc_pure
 bool
-io_thread_inside(void);
+io_thread_inside();
 
 #endif

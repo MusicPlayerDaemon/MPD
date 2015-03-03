@@ -31,6 +31,7 @@ input_stream_global_init(Error &error);
 /**
  * Deinitializes this library and all #InputStream implementations.
  */
-void input_stream_global_finish(void);
+void
+input_stream_global_finish();
 
 #endif
