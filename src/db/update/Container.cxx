@@ -106,8 +106,11 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		// shouldn't be necessary but it's there..
 		song->mtime = info.mtime;
 
+		const auto vtrack_fs = AllocatedPath::FromUTF8(vtrack);
+		// TODO: check vtrack_fs.IsNull()
+
 		const auto child_path_fs = AllocatedPath::Build(pathname,
-								vtrack);
+								vtrack_fs);
 		plugin.ScanFile(child_path_fs,
 				add_tag_handler, &tag_builder);
 
