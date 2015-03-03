@@ -49,6 +49,20 @@ class FileReader final : public Reader {
 public:
 	FileReader(Path _path, Error &error);
 
+#ifdef WIN32
+	FileReader(FileReader &&other)
+		:path(std::move(other.path)),
+		 handle(other.handle) {
+		other.handle = INVALID_HANDLE_VALUE;
+	}
+#else
+	FileReader(FileReader &&other)
+		:path(std::move(other.path)),
+		 fd(other.fd) {
+		other.fd.SetUndefined();
+	}
+#endif
+
 	~FileReader() {
 		if (IsDefined())
 			Close();
