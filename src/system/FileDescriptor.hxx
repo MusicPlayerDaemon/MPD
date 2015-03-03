@@ -133,8 +133,8 @@ public:
 	 * "undefined" object.  After this call, IsDefined() is guaranteed
 	 * to return false, and this object may be reused.
 	 */
-	void Close() {
-		::close(Steal());
+	bool Close() {
+		return ::close(Steal()) == 0;
 	}
 
 	/**
