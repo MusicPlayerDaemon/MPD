@@ -23,10 +23,8 @@
 #include "../InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/FileSystem.hxx"
 #include "fs/Path.hxx"
-#include "system/fd_util.h"
-#include "open.h"
+#include "system/FileDescriptor.hxx"
 
 #include <sys/stat.h>
 #include <unistd.h>
@@ -35,10 +33,10 @@
 static constexpr Domain file_domain("file");
 
 class FileInputStream final : public InputStream {
-	const int fd;
+	FileDescriptor fd;
 
 public:
-	FileInputStream(const char *path, int _fd, off_t _size,
+	FileInputStream(const char *path, FileDescriptor _fd, off_t _size,
 			Mutex &_mutex, Cond &_cond)
 		:InputStream(path, _mutex, _cond),
 		 fd(_fd) {
@@ -48,7 +46,7 @@ public:
 	}
 
 	~FileInputStream() {
-		close(fd);
+		fd.Close();
 	}
 
 	/* virtual methods from InputStream */
@@ -66,29 +64,29 @@ OpenFileInputStream(Path path,
 		    Mutex &mutex, Cond &cond,
 		    Error &error)
 {
-	const int fd = OpenFile(path, O_RDONLY|O_BINARY, 0);
-	if (fd < 0) {
+	FileDescriptor fd;
+	if (!fd.OpenReadOnly(path.c_str())) {
 		error.FormatErrno("Failed to open \"%s\"",
 				  path.c_str());
 		return nullptr;
 	}
 
 	struct stat st;
-	if (fstat(fd, &st) < 0) {
+	if (fstat(fd.Get(), &st) < 0) {
 		error.FormatErrno("Failed to stat \"%s\"", path.c_str());
-		close(fd);
+		fd.Close();
 		return nullptr;
 	}
 
 	if (!S_ISREG(st.st_mode)) {
 		error.Format(file_domain, "Not a regular file: %s",
 			     path.c_str());
-		close(fd);
+		fd.Close();
 		return nullptr;
 	}
 
 #ifdef POSIX_FADV_SEQUENTIAL
-	posix_fadvise(fd, (off_t)0, st.st_size, POSIX_FADV_SEQUENTIAL);
+	posix_fadvise(fd.Get(), (off_t)0, st.st_size, POSIX_FADV_SEQUENTIAL);
 #endif
 
 	return new FileInputStream(path.c_str(), fd, st.st_size, mutex, cond);
@@ -107,7 +105,7 @@ input_file_open(gcc_unused const char *filename,
 bool
 FileInputStream::Seek(offset_type new_offset, Error &error)
 {
-	auto result = lseek(fd, (off_t)new_offset, SEEK_SET);
+	auto result = fd.Seek((off_t)new_offset);
 	if (result < 0) {
 		error.SetErrno("Failed to seek");
 		return false;
@@ -120,7 +118,7 @@ FileInputStream::Seek(offset_type new_offset, Error &error)
 size_t
 FileInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
-	ssize_t nbytes = read(fd, ptr, read_size);
+	ssize_t nbytes = fd.Read(ptr, read_size);
 	if (nbytes < 0) {
 		error.SetErrno("Failed to read");
 		return 0;

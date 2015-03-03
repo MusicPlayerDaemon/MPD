@@ -20,46 +20,35 @@
 #include "config.h"
 #ifdef USE_EVENTFD
 #include "EventFD.hxx"
-#include "system/fd_util.h"
 #include "system/FatalError.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
-#include <unistd.h>
-
 #include <sys/eventfd.h>
 
 EventFD::EventFD()
-	:fd(eventfd_cloexec_nonblock(0, 0))
 {
-	if (fd < 0)
+	if (!fd.CreateEventFD(0))
 		FatalSystemError("eventfd() failed");
-}
-
-EventFD::~EventFD()
-{
-	assert(fd >= 0);
-
-	close(fd);
 }
 
 bool
 EventFD::Read()
 {
-	assert(fd >= 0);
+	assert(fd.IsDefined());
 
 	eventfd_t value;
-	return read(fd, &value, sizeof(value)) == (ssize_t)sizeof(value);
+	return fd.Read(&value, sizeof(value)) == (ssize_t)sizeof(value);
 }
 
 void
 EventFD::Write()
 {
-	assert(fd >= 0);
+	assert(fd.IsDefined());
 
 	static constexpr eventfd_t value = 1;
 	gcc_unused ssize_t nbytes =
-		write(fd, &value, sizeof(value));
+		fd.Write(&value, sizeof(value));
 }
 
 #endif /* USE_EVENTFD */

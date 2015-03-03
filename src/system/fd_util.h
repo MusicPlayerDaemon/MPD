@@ -91,28 +91,6 @@ int
 accept_cloexec_nonblock(int fd, struct sockaddr *address,
 			size_t *address_length_r);
 
-#ifdef HAVE_INOTIFY_INIT
-
-/**
- * Wrapper for inotify_init(), which sets the CLOEXEC flag (atomically
- * if supported by the OS).
- */
-int
-inotify_init_cloexec(void);
-
-#endif
-
-#ifdef USE_EVENTFD
-
-/**
- * Wrapper for eventfd() which sets the flags CLOEXEC and NONBLOCK
- * flag (atomically if supported by the OS).
- */
-int
-eventfd_cloexec_nonblock(unsigned initval, int flags);
-
-#endif
-
 /**
  * Portable wrapper for close(); use closesocket() on WIN32/WinSock.
  */

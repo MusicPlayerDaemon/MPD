@@ -21,6 +21,7 @@
 #define MPD_SIGNAL_FD_HXX
 
 #include "check.h"
+#include "FileDescriptor.hxx"
 
 #include <signal.h>
 
@@ -28,7 +29,7 @@
  * A class that wraps signalfd().
  */
 class SignalFD {
-	int fd;
+	FileDescriptor fd;
 
 public:
 	SignalFD():fd(-1) {}
@@ -48,7 +49,7 @@ public:
 	void Close();
 
 	int Get() const {
-		return fd;
+		return fd.Get();
 	}
 
 	/**

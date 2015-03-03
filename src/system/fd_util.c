@@ -41,10 +41,6 @@
 #include <sys/socket.h>
 #endif
 
-#ifdef HAVE_INOTIFY_INIT
-#include <sys/inotify.h>
-#endif
-
 #ifdef USE_EVENTFD
 #include <sys/eventfd.h>
 #endif
@@ -199,38 +195,6 @@ accept_cloexec_nonblock(int fd, struct sockaddr *address,
 
 	return ret;
 }
-
-#ifdef HAVE_INOTIFY_INIT
-
-int
-inotify_init_cloexec(void)
-{
-	int fd;
-
-#ifdef HAVE_INOTIFY_INIT1
-	fd = inotify_init1(IN_CLOEXEC);
-	if (fd >= 0 || errno != ENOSYS)
-		return fd;
-#endif
-
-	fd = inotify_init();
-	if (fd >= 0)
-		fd_set_cloexec(fd, true);
-
-	return fd;
-}
-
-#endif
-
-#ifdef USE_EVENTFD
-
-int
-eventfd_cloexec_nonblock(unsigned initval, int flags)
-{
-	return eventfd(initval, flags | EFD_CLOEXEC | EFD_NONBLOCK);
-}
-
-#endif
 
 int
 close_socket(int fd)

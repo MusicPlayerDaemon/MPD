@@ -57,9 +57,9 @@ src_mpd_LDADD = \
 	libevent.a \
 	libthread.a \
 	libnet.a \
+	$(FS_LIBS) \
 	libsystem.a \
 	libutil.a \
-	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
@@ -431,6 +431,7 @@ libnet_a_SOURCES = \
 libsystem_a_SOURCES = \
 	src/system/ByteOrder.hxx \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
+	src/system/FileDescriptor.cxx src/system/FileDescriptor.hxx \
 	src/system/fd_util.c src/system/fd_util.h \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \

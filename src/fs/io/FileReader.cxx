@@ -75,17 +75,11 @@ FileReader::Close()
 
 #else
 
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-
 FileReader::FileReader(Path _path, Error &error)
-	:path(_path),
-	 fd(OpenFile(path,
-		     O_RDONLY,
-		     0))
+	:path(_path)
 {
-	if (fd < 0)
+	fd.OpenReadOnly(path.c_str());
+	if (!fd.IsDefined())
 		error.FormatErrno("Failed to open %s", path.c_str());
 }
 
@@ -94,7 +88,7 @@ FileReader::Read(void *data, size_t size, Error &error)
 {
 	assert(IsDefined());
 
-	ssize_t nbytes = read(fd, data, size);
+	ssize_t nbytes = fd.Read(data, size);
 	if (nbytes < 0) {
 		error.FormatErrno("Failed to read from %s", path.c_str());
 		nbytes = 0;
@@ -108,7 +102,7 @@ FileReader::Seek(off_t offset, Error &error)
 {
 	assert(IsDefined());
 
-	auto result = lseek(fd, offset, SEEK_SET);
+	auto result = fd.Seek(offset);
 	const bool success = result >= 0;
 	if (!success)
 		error.SetErrno("Failed to seek");
@@ -121,8 +115,7 @@ FileReader::Close()
 {
 	assert(IsDefined());
 
-	close(fd);
-	fd = -1;
+	fd.Close();
 }
 
 #endif
