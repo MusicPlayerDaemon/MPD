@@ -78,6 +78,12 @@ public:
 #endif
 	}
 
+#ifndef WIN32
+	FileDescriptor GetFD() const {
+		return fd;
+	}
+#endif
+
 	void Close();
 
 	bool GetFileInfo(FileInfo &info, Error &error) const;
