@@ -93,7 +93,7 @@ public:
 	bool Open(const char *pathname, int flags);
 	bool OpenReadOnly(const char *pathname);
 
-#ifdef HAVE_POSIX
+#ifndef WIN32
 	bool OpenNonBlocking(const char *pathname);
 
 	static bool CreatePipe(FileDescriptor &r, FileDescriptor &w);
@@ -160,7 +160,7 @@ public:
 		return ::write(fd, buffer, length);
 	}
 
-#ifdef HAVE_POSIX
+#ifndef WIN32
 	int Poll(short events, int timeout) const;
 
 	int WaitReadable(int timeout) const;
