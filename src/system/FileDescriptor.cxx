@@ -60,14 +60,14 @@
 bool
 FileDescriptor::Open(const char *pathname, int flags)
 {
-	fd = ::open(pathname, flags);
+	fd = ::open(pathname, flags | O_NOCTTY | O_CLOEXEC);
 	return IsDefined();
 }
 
 bool
 FileDescriptor::OpenReadOnly(const char *pathname)
 {
-	return Open(pathname, O_RDONLY | O_NOCTTY | O_CLOEXEC);
+	return Open(pathname, O_RDONLY);
 }
 
 #ifndef WIN32
@@ -75,7 +75,7 @@ FileDescriptor::OpenReadOnly(const char *pathname)
 bool
 FileDescriptor::OpenNonBlocking(const char *pathname)
 {
-	return Open(pathname, O_RDWR | O_NOCTTY | O_CLOEXEC | O_NONBLOCK);
+	return Open(pathname, O_RDWR | O_NONBLOCK);
 }
 
 bool
