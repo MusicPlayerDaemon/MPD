@@ -27,7 +27,7 @@
 #include "system/FileDescriptor.hxx"
 
 #include <sys/stat.h>
-#include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 
 static constexpr Domain file_domain("file");
