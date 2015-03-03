@@ -55,25 +55,11 @@ int
 fd_set_cloexec(int fd, bool enable);
 
 /**
- * Wrapper for dup(), which sets the CLOEXEC flag on the new
- * descriptor.
- */
-int
-dup_cloexec(int oldfd);
-
-/**
  * Wrapper for open(), which sets the CLOEXEC flag (atomically if
  * supported by the OS).
  */
 int
 open_cloexec(const char *path_fs, int flags, int mode);
-
-/**
- * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
- */
-int
-pipe_cloexec(int fd[2]);
 
 /**
  * Wrapper for pipe(), which sets the CLOEXEC flag (atomically if
@@ -84,24 +70,6 @@ pipe_cloexec(int fd[2]);
  */
 int
 pipe_cloexec_nonblock(int fd[2]);
-
-#ifndef WIN32
-
-/**
- * Wrapper for socketpair(), which sets the CLOEXEC flag (atomically
- * if supported by the OS).
- */
-int
-socketpair_cloexec(int domain, int type, int protocol, int sv[2]);
-
-/**
- * Wrapper for socketpair(), which sets the flags CLOEXEC and NONBLOCK
- * (atomically if supported by the OS).
- */
-int
-socketpair_cloexec_nonblock(int domain, int type, int protocol, int sv[2]);
-
-#endif
 
 #ifdef ENABLE_LIBMPDCLIENT
 /* Avoid symbol conflict with statically linked libmpdclient */
@@ -122,20 +90,6 @@ socket_cloexec_nonblock(int domain, int type, int protocol);
 int
 accept_cloexec_nonblock(int fd, struct sockaddr *address,
 			size_t *address_length_r);
-
-
-#ifndef WIN32
-
-struct msghdr;
-
-/**
- * Wrapper for recvmsg(), which sets the CLOEXEC flag (atomically if
- * supported by the OS).
- */
-ssize_t
-recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags);
-
-#endif
 
 #ifdef HAVE_INOTIFY_INIT
 
