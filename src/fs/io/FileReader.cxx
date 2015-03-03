@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FileReader.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "util/Error.hxx"
 
 #ifdef WIN32
@@ -34,6 +34,14 @@ FileReader::FileReader(Path _path, Error &error)
 		const auto path_utf8 = path.ToUTF8();
 		error.FormatLastError("Failed to open %s", path_utf8.c_str());
 	}
+}
+
+bool
+FileReader::GetFileInfo(FileInfo &info, Error &error) const
+{
+	assert(IsDefined());
+
+	return ::GetFileInfo(path, info, error);
 }
 
 size_t
@@ -81,6 +89,19 @@ FileReader::FileReader(Path _path, Error &error)
 	fd.OpenReadOnly(path.c_str());
 	if (!fd.IsDefined())
 		error.FormatErrno("Failed to open %s", path.c_str());
+}
+
+bool
+FileReader::GetFileInfo(FileInfo &info, Error &error) const
+{
+	assert(IsDefined());
+
+	const bool success = fstat(fd.Get(), &info.st) == 0;
+	if (!success)
+		error.FormatErrno("Failed to access %s",
+				  path.ToUTF8().c_str());
+
+	return success;
 }
 
 size_t

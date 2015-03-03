@@ -36,6 +36,7 @@
 #endif
 
 class Path;
+class FileInfo;
 
 class FileReader final : public Reader {
 	AllocatedPath path;
@@ -78,6 +79,8 @@ public:
 	}
 
 	void Close();
+
+	bool GetFileInfo(FileInfo &info, Error &error) const;
 
 	bool Seek(off_t offset, Error &error);
 

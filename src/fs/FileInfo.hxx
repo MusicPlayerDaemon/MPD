@@ -54,6 +54,7 @@ class FileInfo {
 				bool follow_symlinks);
 	friend bool GetFileInfo(Path path, FileInfo &info,
 				Error &error);
+	friend class FileReader;
 
 #ifdef WIN32
 	WIN32_FILE_ATTRIBUTE_DATA data;
