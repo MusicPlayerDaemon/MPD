@@ -101,6 +101,16 @@ struct PathTraitsFS {
 		return char_traits::length(p);
 	}
 
+	gcc_pure gcc_nonnull_all
+	static const_pointer Find(const_pointer p, size_t n, value_type ch) {
+		return char_traits::find(p, n, ch);
+	}
+
+	gcc_pure gcc_nonnull_all
+	static const_pointer Find(const_pointer p, value_type ch) {
+		return strchr(p, ch);
+	}
+
 	/**
 	 * Determine the "base" file name of the given native path.
 	 * The return value points inside the given string.
@@ -193,6 +203,16 @@ struct PathTraitsUTF8 {
 	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer p) {
 		return char_traits::length(p);
+	}
+
+	gcc_pure gcc_nonnull_all
+	static const_pointer Find(const_pointer p, size_t n, value_type ch) {
+		return char_traits::find(p, n, ch);
+	}
+
+	gcc_pure gcc_nonnull_all
+	static const_pointer Find(const_pointer p, value_type ch) {
+		return strchr(p, ch);
 	}
 
 	/**

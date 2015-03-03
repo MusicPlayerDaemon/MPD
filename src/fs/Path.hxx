@@ -129,7 +129,7 @@ public:
 	 */
 	gcc_pure
 	bool HasNewline() const {
-		return strchr(value, '\n') != nullptr;
+		return PathTraitsFS::Find(value, '\n') != nullptr;
 	}
 
 	/**
