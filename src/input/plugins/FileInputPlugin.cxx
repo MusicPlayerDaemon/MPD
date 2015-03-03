@@ -89,7 +89,9 @@ OpenFileInputStream(Path path,
 	posix_fadvise(fd.Get(), (off_t)0, st.st_size, POSIX_FADV_SEQUENTIAL);
 #endif
 
-	return new FileInputStream(path.c_str(), fd, st.st_size, mutex, cond);
+	return new FileInputStream(path.ToUTF8().c_str(),
+				   fd, st.st_size,
+				   mutex, cond);
 }
 
 static InputStream *
