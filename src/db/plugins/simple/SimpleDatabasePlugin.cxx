@@ -483,11 +483,15 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	std::string name(storage_uri);
 	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
 
+	const auto name_fs = AllocatedPath::FromUTF8(name.c_str(), error);
+	if (name_fs.IsNull())
+		return false;
+
 #ifndef ENABLE_ZLIB
 	constexpr bool compress = false;
 #endif
 	auto db = new SimpleDatabase(AllocatedPath::Build(cache_path,
-							  name.c_str()),
+							  name_fs.c_str()),
 				     compress);
 	if (!db->Open(error)) {
 		delete db;
