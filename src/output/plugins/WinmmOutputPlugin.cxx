@@ -25,6 +25,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
+#include "util/StringUtil.hxx"
 
 #include <stdlib.h>
 #include <string.h>
@@ -109,7 +110,7 @@ get_device_id(const char *device_name, UINT *device_id, Error &error)
 			continue;
 		/* szPname is only 32 chars long, so it is often truncated.
 		   Use partial match to work around this. */
-		if (strstr(device_name, caps.szPname) == device_name) {
+		if (StringStartsWith(device_name, caps.szPname)) {
 			*device_id = i;
 			return true;
 		}
