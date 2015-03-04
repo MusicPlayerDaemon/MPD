@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MPD_ASCII_HXX
-#define MPD_ASCII_HXX
+#ifndef ASCII_HXX
+#define ASCII_HXX
 
 #include "Compiler.h"
 
