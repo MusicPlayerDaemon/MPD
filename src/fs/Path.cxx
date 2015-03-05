@@ -21,6 +21,7 @@
 #include "Path.hxx"
 #include "Charset.hxx"
 #include "util/UriUtil.hxx"
+#include "util/StringUtil.hxx"
 
 std::string
 Path::ToUTF8() const
@@ -31,5 +32,10 @@ Path::ToUTF8() const
 Path::const_pointer
 Path::GetSuffix() const
 {
-	return uri_get_suffix(c_str());
+	const auto base = GetBase().c_str();
+	const auto *dot = StringFindLast(base, '.');
+	if (dot == nullptr || dot == base)
+		return nullptr;
+
+	return dot + 1;
 }
