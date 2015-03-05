@@ -55,7 +55,11 @@ namespace FOpenMode {
 static inline FILE *
 FOpen(Path file, PathTraitsFS::const_pointer mode)
 {
+#ifdef WIN32
+	return _tfopen(file.c_str(), mode);
+#else
 	return fopen(file.c_str(), mode);
+#endif
 }
 
 /**
@@ -64,7 +68,11 @@ FOpen(Path file, PathTraitsFS::const_pointer mode)
 static inline int
 OpenFile(Path file, int flags, int mode)
 {
+#ifdef WIN32
+	return _topen(file.c_str(), flags, mode);
+#else
 	return open_cloexec(file.c_str(), flags, mode);
+#endif
 }
 
 /**
@@ -73,7 +81,11 @@ OpenFile(Path file, int flags, int mode)
 static inline bool
 RenameFile(Path oldpath, Path newpath)
 {
+#ifdef WIN32
+	return _trename(oldpath.c_str(), newpath.c_str()) == 0;
+#else
 	return rename(oldpath.c_str(), newpath.c_str()) == 0;
+#endif
 }
 
 #ifndef WIN32
@@ -98,7 +110,11 @@ StatFile(Path file, struct stat &buf, bool follow_symlinks = true)
 static inline bool
 RemoveFile(Path file)
 {
+#ifdef WIN32
+	return _tunlink(file.c_str()) == 0;
+#else
 	return unlink(file.c_str()) == 0;
+#endif
 }
 
 /**

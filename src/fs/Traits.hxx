@@ -26,13 +26,18 @@
 
 #ifdef WIN32
 #include "util/CharUtil.hxx"
+#include <tchar.h>
 #endif
 
 #include <string>
 
 #include <assert.h>
 
+#ifdef WIN32
+#define PATH_LITERAL(s) _T(s)
+#else
 #define PATH_LITERAL(s) (s)
+#endif
 
 /**
  * This class describes the nature of a native filesystem path.
