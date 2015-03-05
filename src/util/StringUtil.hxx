@@ -24,6 +24,10 @@
 
 #include <stddef.h>
 
+#ifdef _UNICODE
+#include "WStringUtil.hxx"
+#endif
+
 gcc_pure
 bool
 StringStartsWith(const char *haystack, const char *needle);
