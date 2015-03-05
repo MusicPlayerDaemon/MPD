@@ -34,7 +34,7 @@ InputStream::Open(const char *url,
 		  Mutex &mutex, Cond &cond,
 		  Error &error)
 {
-	if (PathTraitsFS::IsAbsolute(url))
+	if (PathTraitsUTF8::IsAbsolute(url))
 		/* TODO: the parameter is UTF-8, not filesystem charset */
 		return OpenLocalInputStream(Path::FromFS(url),
 					    mutex, cond, error);
