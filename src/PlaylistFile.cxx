@@ -276,7 +276,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 			uri_utf8 = map_fs_to_utf8(path);
 			if (uri_utf8.empty()) {
 				if (path.IsAbsolute()) {
-					uri_utf8 = PathToUTF8(s);
+					uri_utf8 = path.ToUTF8();
 					if (uri_utf8.empty())
 						continue;
 				} else
