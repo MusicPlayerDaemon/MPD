@@ -318,7 +318,8 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
 	path = std::move(new_path);
 	file = new_file;
 
-	FormatDebug(recorder_domain, "Recording to \"%s\"", path.c_str());
+	FormatDebug(recorder_domain, "Recording to \"%s\"",
+		    path.ToUTF8().c_str());
 
 	return true;
 }
