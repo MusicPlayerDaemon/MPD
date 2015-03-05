@@ -279,8 +279,6 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 					uri_utf8 = PathToUTF8(s);
 					if (uri_utf8.empty())
 						continue;
-
-					uri_utf8.insert(0, "file://");
 				} else
 					continue;
 			}
