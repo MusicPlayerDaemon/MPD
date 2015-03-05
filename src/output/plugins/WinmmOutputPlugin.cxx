@@ -96,8 +96,13 @@ get_device_id(const char *device_name, UINT *device_id, Error &error)
 	char *endptr;
 	UINT id = strtoul(device_name, &endptr, 0);
 	if (endptr > device_name && *endptr == 0) {
-		if (id >= numdevs)
-			goto fail;
+		if (id >= numdevs) {
+			error.Format(winmm_output_domain,
+				     "device \"%s\" is not found",
+				     device_name);
+			return false;
+		}
+
 		*device_id = id;
 		return true;
 	}
@@ -116,7 +121,6 @@ get_device_id(const char *device_name, UINT *device_id, Error &error)
 		}
 	}
 
-fail:
 	error.Format(winmm_output_domain,
 		     "device \"%s\" is not found", device_name);
 	return false;
