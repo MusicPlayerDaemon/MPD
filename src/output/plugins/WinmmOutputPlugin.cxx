@@ -22,6 +22,7 @@
 #include "../OutputAPI.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "mixer/MixerList.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
@@ -108,6 +109,11 @@ get_device_id(const char *device_name, UINT *device_id, Error &error)
 	}
 
 	/* check for device name */
+	const AllocatedPath device_name_fs =
+		AllocatedPath::FromUTF8(device_name, error);
+	if (device_name_fs.IsNull())
+		return false;
+
 	for (UINT i = 0; i < numdevs; i++) {
 		WAVEOUTCAPS caps;
 		MMRESULT result = waveOutGetDevCaps(i, &caps, sizeof(caps));
@@ -115,7 +121,7 @@ get_device_id(const char *device_name, UINT *device_id, Error &error)
 			continue;
 		/* szPname is only 32 chars long, so it is often truncated.
 		   Use partial match to work around this. */
-		if (StringStartsWith(device_name, caps.szPname)) {
+		if (StringStartsWith(device_name_fs.c_str(), caps.szPname)) {
 			*device_id = i;
 			return true;
 		}
