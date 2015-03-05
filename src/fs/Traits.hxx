@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "Compiler.h"
+#include "util/StringAPI.hxx"
 
 #ifdef WIN32
 #include "util/CharUtil.hxx"
@@ -29,7 +30,6 @@
 
 #include <string>
 
-#include <string.h>
 #include <assert.h>
 
 /**
@@ -71,7 +71,7 @@ struct PathTraitsFS {
 			--pos;
 		return IsSeparator(*pos) ? pos : nullptr;
 #else
-		return strrchr(p, SEPARATOR);
+		return StringFindLast(p, SEPARATOR);
 #endif
 	}
 
@@ -98,17 +98,12 @@ struct PathTraitsFS {
 
 	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer p) {
-		return char_traits::length(p);
-	}
-
-	gcc_pure gcc_nonnull_all
-	static const_pointer Find(const_pointer p, size_t n, value_type ch) {
-		return char_traits::find(p, n, ch);
+		return StringLength(p);
 	}
 
 	gcc_pure gcc_nonnull_all
 	static const_pointer Find(const_pointer p, value_type ch) {
-		return strchr(p, ch);
+		return StringFind(p, ch);
 	}
 
 	/**
@@ -202,17 +197,12 @@ struct PathTraitsUTF8 {
 
 	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer p) {
-		return char_traits::length(p);
-	}
-
-	gcc_pure gcc_nonnull_all
-	static const_pointer Find(const_pointer p, size_t n, value_type ch) {
-		return char_traits::find(p, n, ch);
+		return StringLength(p);
 	}
 
 	gcc_pure gcc_nonnull_all
 	static const_pointer Find(const_pointer p, value_type ch) {
-		return strchr(p, ch);
+		return StringFind(p, ch);
 	}
 
 	/**
