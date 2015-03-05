@@ -41,7 +41,7 @@ public:
 		if (file == nullptr) {
 			const std::string utf8 = path.ToUTF8();
 			FormatFatalSystemError("Failed to create pid file \"%s\"",
-					       path.c_str());
+					       utf8.c_str());
 		}
 	}
 
