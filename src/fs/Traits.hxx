@@ -32,6 +32,8 @@
 
 #include <assert.h>
 
+#define PATH_LITERAL(s) (s)
+
 /**
  * This class describes the nature of a native filesystem path.
  */
@@ -48,7 +50,7 @@ struct PathTraitsFS {
 	static constexpr value_type SEPARATOR = '/';
 #endif
 
-	static constexpr const_pointer CURRENT_DIRECTORY = ".";
+	static constexpr const_pointer CURRENT_DIRECTORY = PATH_LITERAL(".");
 
 	static constexpr bool IsSeparator(value_type ch) {
 		return

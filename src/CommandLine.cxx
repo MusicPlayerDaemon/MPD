@@ -66,12 +66,12 @@
 #include <stdlib.h>
 
 #ifdef WIN32
-#define CONFIG_FILE_LOCATION		"mpd\\mpd.conf"
-#define APP_CONFIG_FILE_LOCATION	"conf\\mpd.conf"
+#define CONFIG_FILE_LOCATION PATH_LITERAL("mpd\\mpd.conf")
+#define APP_CONFIG_FILE_LOCATION PATH_LITERAL("conf\\mpd.conf")
 #else
-#define USER_CONFIG_FILE_LOCATION1	".mpdconf"
-#define USER_CONFIG_FILE_LOCATION2	".mpd/mpd.conf"
-#define USER_CONFIG_FILE_LOCATION_XDG	"mpd/mpd.conf"
+#define USER_CONFIG_FILE_LOCATION1 PATH_LITERAL(".mpdconf")
+#define USER_CONFIG_FILE_LOCATION2 PATH_LITERAL(".mpd/mpd.conf")
+#define USER_CONFIG_FILE_LOCATION_XDG PATH_LITERAL("mpd/mpd.conf")
 #endif
 
 static constexpr OptionDef opt_kill(

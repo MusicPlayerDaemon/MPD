@@ -174,7 +174,8 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 
 	const auto *const name_fs_str = name_fs.c_str();
 	const auto *const name_fs_end =
-		FindStringSuffix(name_fs_str, PLAYLIST_FILE_SUFFIX);
+		FindStringSuffix(name_fs_str,
+				 PATH_LITERAL(PLAYLIST_FILE_SUFFIX));
 	if (name_fs_end == nullptr)
 		return false;
 

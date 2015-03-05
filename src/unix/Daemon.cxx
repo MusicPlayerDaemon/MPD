@@ -71,7 +71,7 @@ daemonize_kill(void)
 	if (pidfile.IsNull())
 		FatalError("no pid_file specified in the config file");
 
-	fp = FOpen(pidfile, "r");
+	fp = FOpen(pidfile, PATH_LITERAL("r"));
 	if (fp == nullptr) {
 		const std::string utf8 = pidfile.ToUTF8();
 		FormatFatalSystemError("Unable to open pid file \"%s\"",

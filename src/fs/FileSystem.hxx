@@ -41,12 +41,12 @@ namespace FOpenMode {
 	/**
 	 * Open mode for writing text files.
 	 */
-	constexpr PathTraitsFS::const_pointer WriteText = "w";
+	constexpr PathTraitsFS::const_pointer WriteText = PATH_LITERAL("w");
 
 	/**
 	 * Open mode for appending text files.
 	 */
-	constexpr PathTraitsFS::const_pointer AppendText = "a";
+	constexpr PathTraitsFS::const_pointer AppendText = PATH_LITERAL("a");
 }
 
 /**
