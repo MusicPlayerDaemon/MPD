@@ -35,8 +35,12 @@ playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
 {
 	assert(!path.IsNull());
 
-	const char *suffix = path.GetSuffix();
-	if (suffix == nullptr || !playlist_suffix_supported(suffix))
+	const auto *suffix = path.GetSuffix();
+	if (suffix == nullptr)
+		return nullptr;
+
+	const auto suffix_utf8 = Path::FromFS(suffix).ToUTF8();
+	if (!playlist_suffix_supported(suffix_utf8.c_str()))
 		return nullptr;
 
 	Error error;
@@ -46,7 +50,8 @@ playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
 		return nullptr;
 	}
 
-	auto playlist = playlist_list_open_stream_suffix(*is, suffix);
+	auto playlist = playlist_list_open_stream_suffix(*is,
+							 suffix_utf8.c_str());
 	if (playlist != nullptr)
 		playlist = new CloseSongEnumerator(playlist, is);
 	else
