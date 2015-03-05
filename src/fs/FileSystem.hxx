@@ -152,7 +152,8 @@ FileExists(Path path, bool follow_symlinks = true)
 	(void)follow_symlinks;
 
 	const auto a = GetFileAttributes(path.c_str());
-	return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_NORMAL);
+	return a != INVALID_FILE_ATTRIBUTES &&
+		(a & (FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_DEVICE)) == 0;
 #else
 	struct stat buf;
 	return StatFile(path, buf, follow_symlinks) && S_ISREG(buf.st_mode);

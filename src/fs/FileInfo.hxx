@@ -65,7 +65,8 @@ class FileInfo {
 public:
 	bool IsRegular() const {
 #ifdef WIN32
-		return data.dwFileAttributes & FILE_ATTRIBUTE_NORMAL;
+		return (data.dwFileAttributes &
+			(FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_DEVICE)) == 0;
 #else
 		return S_ISREG(st.st_mode);
 #endif
