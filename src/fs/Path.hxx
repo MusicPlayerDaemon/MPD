@@ -173,7 +173,7 @@ public:
 	}
 
 	gcc_pure
-	const char *GetSuffix() const;
+	const_pointer GetSuffix() const;
 };
 
 #endif

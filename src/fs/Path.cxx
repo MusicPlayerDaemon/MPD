@@ -28,7 +28,7 @@ Path::ToUTF8() const
 	return ::PathToUTF8(c_str());
 }
 
-const char *
+Path::const_pointer
 Path::GetSuffix() const
 {
 	return uri_get_suffix(c_str());
