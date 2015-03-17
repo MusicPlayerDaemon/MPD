@@ -19,7 +19,7 @@
 
 /** \file
  *
- * Functions which manipulate a #mixer object.
+ * Functions which manipulate a #Mixer object.
  */
 
 #ifndef MPD_MIXER_CONTROL_HXX

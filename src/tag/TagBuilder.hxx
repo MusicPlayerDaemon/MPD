@@ -138,7 +138,7 @@ public:
 	 *
 	 * @param type the type of the new tag item
 	 * @param value the value of the tag item (not null-terminated)
-	 * @param len the length of #value
+	 * @param length the length of #value
 	 */
 	gcc_nonnull_all
 	void AddItem(TagType type, const char *value, size_t length);

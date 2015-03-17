@@ -31,7 +31,7 @@ class Error;
 /**
  * Initialize the database library.
  *
- * @param param the database configuration block
+ * @param block the database configuration block
  */
 Database *
 DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,

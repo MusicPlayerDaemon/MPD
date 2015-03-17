@@ -99,8 +99,8 @@ struct AudioFormat {
 	}
 
 	/**
-	 * Clears the #audio_format object, i.e. sets all attributes to an
-	 * undefined (invalid) value.
+	 * Clears the object, i.e. sets all attributes to an undefined
+	 * (invalid) value.
 	 */
 	void Clear() {
 		sample_rate = 0;
@@ -185,8 +185,6 @@ audio_valid_sample_rate(unsigned sample_rate)
 
 /**
  * Checks whether the sample format is valid.
- *
- * @param bits the number of significant bits per sample
  */
 static inline bool
 audio_valid_sample_format(SampleFormat format)
@@ -289,10 +287,10 @@ AudioFormat::GetTimeToSize() const
 }
 
 /**
- * Renders a #sample_format enum into a string, e.g. for printing it
+ * Renders a #SampleFormat enum into a string, e.g. for printing it
  * in a log file.
  *
- * @param format a #sample_format enum value
+ * @param format a #SampleFormat enum value
  * @return the string
  */
 gcc_pure gcc_malloc
@@ -300,12 +298,12 @@ const char *
 sample_format_to_string(SampleFormat format);
 
 /**
- * Renders the #audio_format object into a string, e.g. for printing
+ * Renders the #AudioFormat object into a string, e.g. for printing
  * it in a log file.
  *
- * @param af the #audio_format object
+ * @param af the #AudioFormat object
  * @param s a buffer to print into
- * @return the string, or nullptr if the #audio_format object is invalid
+ * @return the string, or nullptr if the #AudioFormat object is invalid
  */
 gcc_pure gcc_malloc
 const char *

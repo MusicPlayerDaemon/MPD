@@ -350,7 +350,6 @@ public:
 	 *
 	 * The caller must lock the mutex.
 	 *
-	 * @param is the InputStream object
 	 * @param ptr the buffer to read into
 	 * @param size the maximum number of bytes to read
 	 * @return the number of bytes read

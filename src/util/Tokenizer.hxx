@@ -71,7 +71,7 @@ public:
 	/**
 	 * Reads the next unquoted word from the input string.
 	 *
-	 * @param error_r if this function returns nullptr and **input_p!=0, it
+	 * @param error if this function returns nullptr and **input_p!=0, it
 	 * provides an #Error object in this argument
 	 * @return a pointer to the null-terminated word, or nullptr
 	 * on error or end of line
@@ -83,9 +83,7 @@ public:
 	 * escapes the following character.  This function modifies the input
 	 * string.
 	 *
-	 * @param input_p the input string; this function returns a pointer to
-	 * the first non-whitespace character of the following token
-	 * @param error_r if this function returns nullptr and **input_p!=0, it
+	 * @param error if this function returns nullptr and **input_p!=0, it
 	 * provides an #Error object in this argument
 	 * @return a pointer to the null-terminated string, or nullptr on error
 	 * or end of line
@@ -97,7 +95,7 @@ public:
 	 * input.  This is a wrapper for NextUnquoted() and
 	 * NextString().
 	 *
-	 * @param error_r if this function returns nullptr and
+	 * @param error if this function returns nullptr and
 	 * **input_p!=0, it provides an #Error object in
 	 * this argument
 	 * @return a pointer to the null-terminated string, or nullptr

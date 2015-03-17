@@ -38,9 +38,9 @@ replay_gain_filter_set_mixer(Filter *_filter, Mixer *mixer,
 			     unsigned base);
 
 /**
- * Sets a new #replay_gain_info at the beginning of a new song.
+ * Sets a new #ReplayGainInfo at the beginning of a new song.
  *
- * @param info the new #replay_gain_info value, or nullptr if no replay
+ * @param info the new #ReplayGainInfo value, or nullptr if no replay
  * gain data is available for the current song
  */
 void

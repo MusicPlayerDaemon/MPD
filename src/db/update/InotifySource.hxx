@@ -46,7 +46,8 @@ public:
 	 * Creates a new inotify source and registers it in the
 	 * #EventLoop.
 	 *
-	 * @param a callback invoked for events received from the kernel
+	 * @param callback a callback invoked for events received from
+	 * the kernel
 	 */
 	static InotifySource *Create(EventLoop &_loop,
 				     mpd_inotify_callback_t callback,

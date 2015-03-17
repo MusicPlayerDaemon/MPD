@@ -74,11 +74,8 @@ public:
 	/**
 	 * Converts PCM data between two audio formats.
 	 *
-	 * @param src_format the source audio format
 	 * @param src the source PCM buffer
-	 * @param dest_format the requested destination audio format
-	 * @param error_r location to store the error occurring, or nullptr to
-	 * ignore errors
+	 * @param error location to store the error occurring
 	 * @return the destination buffer, or nullptr on error
 	 */
 	ConstBuffer<void> Convert(ConstBuffer<void> src, Error &error);

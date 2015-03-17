@@ -33,9 +33,8 @@ class PcmDither;
  * Converts PCM samples to 16 bit.  If the source format is 24 bit,
  * then dithering is applied.
  *
- * @param buffer a PcmBuffer object
- * @param dither a pcm_dither object for 24-to-16 conversion
- * @param bits the number of in the source buffer
+ * @param buffer a #PcmBuffer object
+ * @param dither a #PcmDither object for 24-to-16 conversion
  * @param src the source PCM buffer
  * @return the destination buffer
  */
@@ -47,8 +46,7 @@ pcm_convert_to_16(PcmBuffer &buffer, PcmDither &dither,
 /**
  * Converts PCM samples to 24 bit (32 bit alignment).
  *
- * @param buffer a PcmBuffer object
- * @param bits the number of in the source buffer
+ * @param buffer a #PcmBuffer object
  * @param src the source PCM buffer
  * @return the destination buffer
  */
@@ -60,8 +58,7 @@ pcm_convert_to_24(PcmBuffer &buffer,
 /**
  * Converts PCM samples to 32 bit.
  *
- * @param buffer a PcmBuffer object
- * @param bits the number of in the source buffer
+ * @param buffer a #PcmBuffer object
  * @param src the source PCM buffer
  * @return the destination buffer
  */
@@ -73,11 +70,8 @@ pcm_convert_to_32(PcmBuffer &buffer,
 /**
  * Converts PCM samples to 32 bit floating point.
  *
- * @param buffer a PcmBuffer object
- * @param bits the number of in the source buffer
+ * @param buffer a #PcmBuffer object
  * @param src the source PCM buffer
- * @param src_size the size of #src in bytes
- * @param dest_size_r returns the number of bytes of the destination buffer
  * @return the destination buffer
  */
 gcc_pure

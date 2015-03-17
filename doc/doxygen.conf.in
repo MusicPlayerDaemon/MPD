@@ -1104,7 +1104,7 @@ INCLUDE_FILE_PATTERNS  =
 # undefined via #undef or recursively expanded use the := operator
 # instead of the = operator.
 
-PREDEFINED             =
+PREDEFINED             = GCC_CHECK_VERSION(major,minor)=0 CLANG_OR_GCC_VERSION(major,minor)=0 GCC_OLDER_THAN(major,minor)=0
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then
 # this tag can be used to specify a list of macro names that should be expanded.

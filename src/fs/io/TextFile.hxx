@@ -59,7 +59,6 @@ public:
 	 * Use Check() after nullptr has been returned to check
 	 * whether an error occurred or end-of-file has been reached.
 	 *
-	 * @param file the source file, opened in text mode
 	 * @return a pointer to the line, or nullptr on end-of-file or error
 	 */
 	char *ReadLine();

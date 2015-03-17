@@ -58,10 +58,7 @@ public:
 	 * Resamples a block of PCM data.
 	 *
 	 * @param src the input buffer
-	 * @param src_size the size of #src_buffer in bytes
-	 * @param dest_size_r the size of the returned buffer
-	 * @param error location to store the error occurring, or nullptr
-	 * to ignore errors.
+	 * @param error location to store the error occurring
 	 * @return the destination buffer on success (will be
 	 * invalidated by filter_close() or filter_filter()), nullptr on
 	 * error

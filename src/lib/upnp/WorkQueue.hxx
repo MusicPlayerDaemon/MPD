@@ -66,10 +66,7 @@ class WorkQueue {
 
 public:
 	/** Create a WorkQueue
-	 * @param name for message printing
-	 * @param hi number of tasks on queue before clients blocks. Default 0
-	 *    meaning no limit. hi == -1 means that the queue is disabled.
-	 * @param lo minimum count of tasks before worker starts. Default 1.
+	 * @param _name for message printing
 	 */
 	WorkQueue(const char *_name)
 		:name(_name),
@@ -86,7 +83,7 @@ public:
 	/** Start the worker threads.
 	 *
 	 * @param nworkers number of threads copies to start.
-	 * @param start_routine thread function. It should loop
+	 * @param workproc thread function. It should loop
 	 *      taking (QueueWorker::take()) and executing tasks.
 	 * @param arg initial parameter to thread function.
 	 * @return true if ok.
