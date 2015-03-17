@@ -1199,17 +1199,6 @@ HIDE_UNDOC_RELATIONS   = YES
 
 HAVE_DOT               = NO
 
-# By default doxygen will write a font called FreeSans.ttf to the output
-# directory and reference it in all dot files that doxygen generates. This
-# font does not include all possible unicode characters however, so when you need
-# these (or just want a differently looking font) you can specify the font name
-# using DOT_FONTNAME. You need need to make sure dot is able to find the font,
-# which can be done by putting it in a standard location or by setting the
-# DOTFONTPATH environment variable or by setting DOT_FONTPATH to the directory
-# containing the font.
-
-DOT_FONTNAME           = FreeSans
-
 # By default doxygen will tell dot to use the output directory to look for the
 # FreeSans.ttf font (which doxygen will put there itself). If you specify a
 # different font using DOT_FONTNAME you can set the path where dot
