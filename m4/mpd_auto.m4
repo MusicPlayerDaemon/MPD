@@ -1,3 +1,4 @@
+dnl Parameters: varname1, description
 AC_DEFUN([MPD_AUTO_ENABLED], [
 	if test x$[]enable_$1 = xauto; then
 		AC_MSG_NOTICE([auto-detected $2])
@@ -5,6 +6,7 @@ AC_DEFUN([MPD_AUTO_ENABLED], [
 	fi
 ])
 
+dnl Parameters: varname1, description, errmsg
 AC_DEFUN([MPD_AUTO_DISABLED], [
 	if test x$[]enable_$1 = xauto; then
 		AC_MSG_WARN([$3 -- disabling $2])
@@ -23,6 +25,10 @@ AC_DEFUN([MPD_AUTO_PRE], [
 	fi
 ])
 
+dnl Evaluate a check's result.  Abort if the feature was requested
+dnl explicitly but is unavailable.
+dnl
+dnl Parameters: varname1, description, errmsg
 AC_DEFUN([MPD_AUTO_RESULT], [
 	if test x$[]enable_$1 = xno; then
 		found_$1=no
@@ -35,6 +41,9 @@ AC_DEFUN([MPD_AUTO_RESULT], [
 	fi
 ])
 
+dnl Invoke a check if its configuration is "yes" or "auto" and call
+dnl MPD_AUTO_RESULT.
+dnl
 dnl Parameters: varname1, description, errmsg, check
 AC_DEFUN([MPD_AUTO], [
 	if test x$[]enable_$1 != xno; then
@@ -43,6 +52,9 @@ AC_DEFUN([MPD_AUTO], [
 	MPD_AUTO_RESULT([$1], [$2], [$3])
 ])
 
+dnl Wrapper for MPD_AUTO and PKG_CHECK_MODULES.
+dnl
+dnl Parameters: varname1, varname2, pkgname, description, errmsg
 AC_DEFUN([MPD_AUTO_PKG], [
 	MPD_AUTO([$1], [$4], [$5],
 		[PKG_CHECK_MODULES([$2], [$3],
@@ -77,6 +89,12 @@ AC_DEFUN([MPD_AUTO_LIB], [
 			[$5])])
 ])
 
+dnl Convert the given string into a string for the "default value" in
+dnl the help text.  If the string is a literal, then it is returned
+dnl as-is; if it contains a variable reference, just "auto" is
+dnl emitted.
+dnl
+dnl Parameters: varname1
 AC_DEFUN([MPD_FORMAT_DEFAULT],
 	[ifelse([$1], [], [auto],
 		index([$1], [$]), [-1], [$1],
