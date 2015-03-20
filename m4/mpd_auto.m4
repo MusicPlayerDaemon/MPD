@@ -114,6 +114,15 @@ AC_DEFUN([MPD_ARG_ENABLE], [
 	MPD_DEFINE_CONDITIONAL(enable_$1, ENABLE_$2, [$3])
 ])
 
+dnl Wrapper for MPD_ARG_ENABLE and MPD_AUTO
+dnl
+dnl Parameters: varname1, varname2, description, errmsg, default, check
+AC_DEFUN([MPD_ENABLE_AUTO], [
+	MPD_ARG_ENABLE([$1], [$2], [$3], [$5], [
+		MPD_AUTO([$1], [$3], [$4], [$6])
+	])
+])
+
 dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_PKG
 dnl
 dnl Parameters: varname1, varname2, pkg, description, errmsg, default, pre
