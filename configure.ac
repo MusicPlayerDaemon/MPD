@@ -542,9 +542,16 @@ if
 	AC_MSG_ERROR([No client interfaces configured!])
 fi
 
-MPD_ENABLE_AUTO_PKG(systemd_daemon, SYSTEMD_DAEMON, libsystemd-daemon,
-	[systemd socket activation], [libsystemd-daemon not found],
-	[$linux_auto])
+MPD_ENABLE_AUTO(systemd_daemon, SYSTEMD_DAEMON, [systemd socket activation],
+	[libsystemd not found], [$linux_auto], [
+	dnl Check for libsystemd and fall back to (the older)
+	dnl libsystemd-daemon
+	PKG_CHECK_MODULES([SYSTEMD_DAEMON], [libsystemd],
+		[found_systemd_daemon=yes],
+		[PKG_CHECK_MODULES([SYSTEMD_DAEMON], [libsystemd-daemon],
+			[found_systemd_daemon=yes],
+			[found_systemd_daemon=no])])
+])
 
 dnl ---------------------------------------------------------------------------
 dnl LIBC Features

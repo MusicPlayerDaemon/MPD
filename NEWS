@@ -26,6 +26,7 @@ ver 0.20 (not yet released)
 * reset song priority on playback
 * write database and state file atomically
 * remove dependency on GLib
+* support libsystemd (instead of the older libsystemd-daemon)
 * database
   - proxy: add TCP keepalive option
 
