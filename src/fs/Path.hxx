@@ -42,7 +42,7 @@ class Path {
 	typedef PathTraitsFS::pointer pointer;
 	typedef PathTraitsFS::const_pointer const_pointer;
 
-	const char *value;
+	const_pointer value;
 
 	constexpr Path(const_pointer _value):value(_value) {}
 
@@ -100,7 +100,7 @@ public:
 	size_t length() const {
 		assert(value != nullptr);
 
-		return strlen(value);
+		return PathTraitsFS::GetLength(value);
 	}
 
 	/**
@@ -120,6 +120,16 @@ public:
 	gcc_pure
 	const_pointer data() const {
 		return value;
+	}
+
+	/**
+	 * Does the path contain a newline character?  (Which is
+	 * usually rejected by MPD because its protocol cannot
+	 * transfer newline characters).
+	 */
+	gcc_pure
+	bool HasNewline() const {
+		return PathTraitsFS::Find(value, '\n') != nullptr;
 	}
 
 	/**
@@ -153,14 +163,17 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const char *RelativeFS(const char *other_fs) const {
-		return PathTraitsFS::Relative(value, other_fs);
+	const_pointer Relative(Path other_fs) const {
+		return PathTraitsFS::Relative(c_str(), other_fs.c_str());
 	}
 
 	gcc_pure
-	bool IsAbsolute() {
+	bool IsAbsolute() const {
 		return PathTraitsFS::IsAbsolute(c_str());
 	}
+
+	gcc_pure
+	const_pointer GetSuffix() const;
 };
 
 #endif

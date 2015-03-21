@@ -43,7 +43,7 @@ struct filter_plugin {
  * Creates a new instance of the specified filter plugin.
  *
  * @param plugin the filter plugin
- * @param param optional configuration section
+ * @param block configuration section
  * @param error location to store the error occurring, or nullptr to
  * ignore errors.
  * @return a new filter object, or nullptr on error
@@ -56,7 +56,7 @@ filter_new(const struct filter_plugin *plugin,
  * Creates a new filter, loads configuration and the plugin name from
  * the specified configuration section.
  *
- * @param param the configuration section
+ * @param block the configuration section
  * @param error location to store the error occurring, or nullptr to
  * ignore errors.
  * @return a new filter object, or nullptr on error

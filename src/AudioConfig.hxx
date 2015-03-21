@@ -26,6 +26,7 @@ AudioFormat
 getOutputAudioFormat(AudioFormat inFormat);
 
 /* make sure initPlayerData is called before this function!! */
-void initAudioConfig(void);
+void
+initAudioConfig();
 
 #endif

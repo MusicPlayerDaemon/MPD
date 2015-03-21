@@ -32,13 +32,13 @@ struct ArchivePlugin {
 	 * have/need one this must false if there is an error and
 	 * true otherwise
 	 */
-	bool (*init)(void);
+	bool (*init)();
 
 	/**
 	 * optional, set this to nullptr if the archive plugin doesn't
 	 * have/need one
 	 */
-	void (*finish)(void);
+	void (*finish)();
 
 	/**
 	 * tryes to open archive file and associates handle with archive

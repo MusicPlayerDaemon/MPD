@@ -120,7 +120,7 @@ public:
 	 * Opens all audio outputs which are not disabled.
 	 *
 	 * @param audio_format the preferred audio format
-	 * @param buffer the #music_buffer where consumed #MusicChunk objects
+	 * @param _buffer the #music_buffer where consumed #MusicChunk objects
 	 * should be returned
 	 * @return true on success, false on failure
 	 */

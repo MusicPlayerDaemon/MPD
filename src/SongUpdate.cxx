@@ -27,7 +27,7 @@
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "decoder/DecoderList.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
@@ -36,6 +36,10 @@
 #include "tag/ApeTag.hxx"
 #include "TagFile.hxx"
 #include "TagStream.hxx"
+
+#ifdef ENABLE_ARCHIVE
+#include "TagArchive.hxx"
+#endif
 
 #include <assert.h>
 #include <string.h>
@@ -52,9 +56,13 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 	Song *song = NewFile(path_utf8, parent);
 
 	//in archive ?
-	bool success = parent.device == DEVICE_INARCHIVE
+	bool success =
+#ifdef ENABLE_ARCHIVE
+		parent.device == DEVICE_INARCHIVE
 		? song->UpdateFileInArchive(storage)
-		: song->UpdateFile(storage);
+		:
+#endif
+		song->UpdateFile(storage);
 	if (!success) {
 		song->Free();
 		return nullptr;
@@ -83,7 +91,7 @@ Song::UpdateFile(Storage &storage)
 {
 	const auto &relative_uri = GetURI();
 
-	FileInfo info;
+	StorageFileInfo info;
 	if (!storage.GetInfo(relative_uri.c_str(), true, info, IgnoreError()))
 		return false;
 
@@ -113,6 +121,10 @@ Song::UpdateFile(Storage &storage)
 	return true;
 }
 
+#endif
+
+#ifdef ENABLE_ARCHIVE
+
 bool
 Song::UpdateFileInArchive(const Storage &storage)
 {
@@ -132,7 +144,7 @@ Song::UpdateFileInArchive(const Storage &storage)
 		return false;
 
 	TagBuilder tag_builder;
-	if (!tag_stream_scan(path_fs.c_str(), full_tag_handler, &tag_builder))
+	if (!tag_archive_scan(path_fs, full_tag_handler, &tag_builder))
 		return false;
 
 	tag_builder.Commit(tag);
@@ -148,8 +160,8 @@ DetachedSong::Update()
 		const AllocatedPath path_fs =
 			AllocatedPath::FromUTF8(GetRealURI());
 
-		struct stat st;
-		if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
+		FileInfo fi;
+		if (!GetFileInfo(path_fs, fi) || !fi.IsRegular())
 			return false;
 
 		TagBuilder tag_builder;
@@ -160,7 +172,7 @@ DetachedSong::Update()
 			tag_scan_fallback(path_fs, &full_tag_handler,
 					  &tag_builder);
 
-		mtime = st.st_mtime;
+		mtime = fi.GetModificationTime();
 		tag_builder.Commit(tag);
 		return true;
 	} else if (IsRemote()) {

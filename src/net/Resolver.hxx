@@ -36,9 +36,6 @@ extern const Domain resolver_domain;
 /**
  * Converts the specified socket address into a string in the form
  * "IP:PORT".
- *
- * @param sa the sockaddr struct
- * @param length the length of #sa in bytes
  */
 gcc_pure
 std::string

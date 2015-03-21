@@ -23,32 +23,28 @@
 #include "../InputPlugin.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/FileSystem.hxx"
 #include "fs/Path.hxx"
-#include "system/fd_util.h"
-#include "open.h"
+#include "fs/FileInfo.hxx"
+#include "fs/io/FileReader.hxx"
+#include "system/FileDescriptor.hxx"
 
 #include <sys/stat.h>
-#include <unistd.h>
+#include <fcntl.h>
 #include <errno.h>
 
 static constexpr Domain file_domain("file");
 
 class FileInputStream final : public InputStream {
-	const int fd;
+	FileReader reader;
 
 public:
-	FileInputStream(const char *path, int _fd, off_t _size,
+	FileInputStream(const char *path, FileReader &&_reader, off_t _size,
 			Mutex &_mutex, Cond &_cond)
 		:InputStream(path, _mutex, _cond),
-		 fd(_fd) {
+		 reader(std::move(_reader)) {
 		size = _size;
 		seekable = true;
 		SetReady();
-	}
-
-	~FileInputStream() {
-		close(fd);
 	}
 
 	/* virtual methods from InputStream */
@@ -66,32 +62,28 @@ OpenFileInputStream(Path path,
 		    Mutex &mutex, Cond &cond,
 		    Error &error)
 {
-	const int fd = OpenFile(path, O_RDONLY|O_BINARY, 0);
-	if (fd < 0) {
-		error.FormatErrno("Failed to open \"%s\"",
-				  path.c_str());
+	FileReader reader(path, error);
+	if (!reader.IsDefined())
 		return nullptr;
-	}
 
-	struct stat st;
-	if (fstat(fd, &st) < 0) {
-		error.FormatErrno("Failed to stat \"%s\"", path.c_str());
-		close(fd);
+	FileInfo info;
+	if (!reader.GetFileInfo(info, error))
 		return nullptr;
-	}
 
-	if (!S_ISREG(st.st_mode)) {
+	if (!info.IsRegular()) {
 		error.Format(file_domain, "Not a regular file: %s",
 			     path.c_str());
-		close(fd);
 		return nullptr;
 	}
 
 #ifdef POSIX_FADV_SEQUENTIAL
-	posix_fadvise(fd, (off_t)0, st.st_size, POSIX_FADV_SEQUENTIAL);
+	posix_fadvise(reader.GetFD().Get(), (off_t)0, info.GetSize(),
+		      POSIX_FADV_SEQUENTIAL);
 #endif
 
-	return new FileInputStream(path.c_str(), fd, st.st_size, mutex, cond);
+	return new FileInputStream(path.ToUTF8().c_str(),
+				   std::move(reader), info.GetSize(),
+				   mutex, cond);
 }
 
 static InputStream *
@@ -107,24 +99,19 @@ input_file_open(gcc_unused const char *filename,
 bool
 FileInputStream::Seek(offset_type new_offset, Error &error)
 {
-	auto result = lseek(fd, (off_t)new_offset, SEEK_SET);
-	if (result < 0) {
-		error.SetErrno("Failed to seek");
+	if (!reader.Seek((off_t)new_offset, error))
 		return false;
-	}
 
-	offset = (offset_type)result;
+	offset = new_offset;
 	return true;
 }
 
 size_t
 FileInputStream::Read(void *ptr, size_t read_size, Error &error)
 {
-	ssize_t nbytes = read(fd, ptr, read_size);
-	if (nbytes < 0) {
-		error.SetErrno("Failed to read");
+	ssize_t nbytes = reader.Read(ptr, read_size, error);
+	if (nbytes < 0)
 		return 0;
-	}
 
 	offset += nbytes;
 	return (size_t)nbytes;

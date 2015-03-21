@@ -21,7 +21,7 @@
 #include "Client.hxx"
 #include "protocol/Ack.hxx"
 #include "fs/Path.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "util/Error.hxx"
 
 #include <sys/stat.h>
@@ -47,13 +47,11 @@ Client::AllowFile(Path path_fs, Error &error) const
 		return false;
 	}
 
-	struct stat st;
-	if (!StatFile(path_fs, st)) {
-		error.SetErrno();
+	FileInfo fi;
+	if (!GetFileInfo(path_fs, fi, error))
 		return false;
-	}
 
-	if (st.st_uid != (uid_t)uid && (st.st_mode & 0444) != 0444) {
+	if (fi.GetUid() != (uid_t)uid && (fi.GetMode() & 0444) != 0444) {
 		/* client is not owner */
 		error.Set(ack_domain, ACK_ERROR_PERMISSION, "Access denied");
 		return false;

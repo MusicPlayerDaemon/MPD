@@ -26,42 +26,27 @@
 
 #include "Path.hxx"
 
+#ifdef WIN32
+#include <fileapi.h>
+#endif
+
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
+
 
 class AllocatedPath;
 
 namespace FOpenMode {
 	/**
-	 * Open mode for reading text files.
-	 */
-	constexpr PathTraitsFS::const_pointer ReadText = "r";
-
-	/**
-	 * Open mode for reading binary files.
-	 */
-	constexpr PathTraitsFS::const_pointer ReadBinary = "rb";
-
-	/**
 	 * Open mode for writing text files.
 	 */
-	constexpr PathTraitsFS::const_pointer WriteText = "w";
-
-	/**
-	 * Open mode for writing binary files.
-	 */
-	constexpr PathTraitsFS::const_pointer WriteBinary = "wb";
+	constexpr PathTraitsFS::const_pointer WriteText = PATH_LITERAL("w");
 
 	/**
 	 * Open mode for appending text files.
 	 */
-	constexpr PathTraitsFS::const_pointer AppendText = "a";
-
-	/**
-	 * Open mode for appending binary files.
-	 */
-	constexpr PathTraitsFS::const_pointer AppendBinary = "ab";
+	constexpr PathTraitsFS::const_pointer AppendText = PATH_LITERAL("a");
 }
 
 /**
@@ -70,7 +55,11 @@ namespace FOpenMode {
 static inline FILE *
 FOpen(Path file, PathTraitsFS::const_pointer mode)
 {
+#ifdef WIN32
+	return _tfopen(file.c_str(), mode);
+#else
 	return fopen(file.c_str(), mode);
+#endif
 }
 
 /**
@@ -79,7 +68,11 @@ FOpen(Path file, PathTraitsFS::const_pointer mode)
 static inline int
 OpenFile(Path file, int flags, int mode)
 {
+#ifdef WIN32
+	return _topen(file.c_str(), flags, mode);
+#else
 	return open_cloexec(file.c_str(), flags, mode);
+#endif
 }
 
 /**
@@ -88,8 +81,14 @@ OpenFile(Path file, int flags, int mode)
 static inline bool
 RenameFile(Path oldpath, Path newpath)
 {
+#ifdef WIN32
+	return _trename(oldpath.c_str(), newpath.c_str()) == 0;
+#else
 	return rename(oldpath.c_str(), newpath.c_str()) == 0;
+#endif
 }
+
+#ifndef WIN32
 
 /**
  * Wrapper for stat() that uses #Path names.
@@ -97,16 +96,13 @@ RenameFile(Path oldpath, Path newpath)
 static inline bool
 StatFile(Path file, struct stat &buf, bool follow_symlinks = true)
 {
-#ifdef WIN32
-	(void)follow_symlinks;
-	return stat(file.c_str(), &buf) == 0;
-#else
 	int ret = follow_symlinks
 		? stat(file.c_str(), &buf)
 		: lstat(file.c_str(), &buf);
 	return ret == 0;
-#endif
 }
+
+#endif
 
 /**
  * Wrapper for unlink() that uses #Path names.
@@ -114,7 +110,11 @@ StatFile(Path file, struct stat &buf, bool follow_symlinks = true)
 static inline bool
 RemoveFile(Path file)
 {
+#ifdef WIN32
+	return _tunlink(file.c_str()) == 0;
+#else
 	return unlink(file.c_str()) == 0;
+#endif
 }
 
 /**
@@ -143,27 +143,21 @@ CheckAccess(Path path, int mode)
 #endif
 
 /**
- * Checks is specified path exists and accessible.
- */
-static inline bool
-CheckAccess(Path path)
-{
-#ifdef WIN32
-	struct stat buf;
-	return StatFile(path, buf);
-#else
-	return CheckAccess(path, F_OK);
-#endif
-}
-
-/**
  * Checks if #Path exists and is a regular file.
  */
 static inline bool
 FileExists(Path path, bool follow_symlinks = true)
 {
+#ifdef WIN32
+	(void)follow_symlinks;
+
+	const auto a = GetFileAttributes(path.c_str());
+	return a != INVALID_FILE_ATTRIBUTES &&
+		(a & (FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_DEVICE)) == 0;
+#else
 	struct stat buf;
 	return StatFile(path, buf, follow_symlinks) && S_ISREG(buf.st_mode);
+#endif
 }
 
 /**
@@ -172,18 +166,28 @@ FileExists(Path path, bool follow_symlinks = true)
 static inline bool
 DirectoryExists(Path path, bool follow_symlinks = true)
 {
+#ifdef WIN32
+	(void)follow_symlinks;
+
+	const auto a = GetFileAttributes(path.c_str());
+	return a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_DIRECTORY);
+#else
 	struct stat buf;
 	return StatFile(path, buf, follow_symlinks) && S_ISDIR(buf.st_mode);
+#endif
 }
 
 /**
  * Checks if #Path exists.
  */
 static inline bool
-PathExists(Path path, bool follow_symlinks = true)
+PathExists(Path path)
 {
-	struct stat buf;
-	return StatFile(path, buf, follow_symlinks);
+#ifdef WIN32
+	return GetFileAttributes(path.c_str()) != INVALID_FILE_ATTRIBUTES;
+#else
+	return CheckAccess(path, F_OK);
+#endif
 }
 
 #endif

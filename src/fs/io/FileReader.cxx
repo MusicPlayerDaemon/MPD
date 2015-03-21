@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "FileReader.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "util/Error.hxx"
 
 #ifdef WIN32
@@ -30,8 +30,18 @@ FileReader::FileReader(Path _path, Error &error)
 			   nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
 			   nullptr))
 {
-	if (handle == INVALID_HANDLE_VALUE)
-		error.FormatLastError("Failed to open %s", path.c_str());
+	if (handle == INVALID_HANDLE_VALUE) {
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to open %s", path_utf8.c_str());
+	}
+}
+
+bool
+FileReader::GetFileInfo(FileInfo &info, Error &error) const
+{
+	assert(IsDefined());
+
+	return ::GetFileInfo(path, info, error);
 }
 
 size_t
@@ -41,11 +51,26 @@ FileReader::Read(void *data, size_t size, Error &error)
 
 	DWORD nbytes;
 	if (!ReadFile(handle, data, size, &nbytes, nullptr)) {
-		error.FormatLastError("Failed to read from %s", path.c_str());
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to read from %s",
+				      path_utf8.c_str());
 		nbytes = 0;
 	}
 
 	return nbytes;
+}
+
+bool
+FileReader::Seek(off_t offset, Error &error)
+{
+	assert(IsDefined());
+
+	auto result = SetFilePointer(handle, offset, nullptr, FILE_BEGIN);
+	const bool success = result != INVALID_SET_FILE_POINTER;
+	if (!success)
+		error.SetLastError("Failed to seek");
+
+	return success;
 }
 
 void
@@ -58,18 +83,25 @@ FileReader::Close()
 
 #else
 
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
-
 FileReader::FileReader(Path _path, Error &error)
-	:path(_path),
-	 fd(OpenFile(path,
-		     O_RDONLY,
-		     0))
+	:path(_path)
 {
-	if (fd < 0)
+	fd.OpenReadOnly(path.c_str());
+	if (!fd.IsDefined())
 		error.FormatErrno("Failed to open %s", path.c_str());
+}
+
+bool
+FileReader::GetFileInfo(FileInfo &info, Error &error) const
+{
+	assert(IsDefined());
+
+	const bool success = fstat(fd.Get(), &info.st) == 0;
+	if (!success)
+		error.FormatErrno("Failed to access %s",
+				  path.ToUTF8().c_str());
+
+	return success;
 }
 
 size_t
@@ -77,7 +109,7 @@ FileReader::Read(void *data, size_t size, Error &error)
 {
 	assert(IsDefined());
 
-	ssize_t nbytes = read(fd, data, size);
+	ssize_t nbytes = fd.Read(data, size);
 	if (nbytes < 0) {
 		error.FormatErrno("Failed to read from %s", path.c_str());
 		nbytes = 0;
@@ -86,13 +118,25 @@ FileReader::Read(void *data, size_t size, Error &error)
 	return nbytes;
 }
 
+bool
+FileReader::Seek(off_t offset, Error &error)
+{
+	assert(IsDefined());
+
+	auto result = fd.Seek(offset);
+	const bool success = result >= 0;
+	if (!success)
+		error.SetErrno("Failed to seek");
+
+	return success;
+}
+
 void
 FileReader::Close()
 {
 	assert(IsDefined());
 
-	close(fd);
-	fd = -1;
+	fd.Close();
 }
 
 #endif

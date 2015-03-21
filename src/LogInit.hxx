@@ -37,10 +37,11 @@ bool
 log_init(bool verbose, bool use_stdout, Error &error);
 
 void
-log_deinit(void);
+log_deinit();
 
 void setup_log_output(bool use_stdout);
 
-int cycle_log_files(void);
+int
+cycle_log_files();
 
 #endif /* LOG_H */

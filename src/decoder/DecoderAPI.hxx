@@ -197,7 +197,6 @@ decoder_data(Decoder &decoder, InputStream &is,
  * This function is called by the decoder plugin when it has
  * successfully decoded a tag.
  *
- * @param decoder the decoder object
  * @param is an input stream which is buffering while we are waiting
  * for the player
  * @param tag the tag to send
@@ -216,9 +215,8 @@ decoder_tag(Decoder &decoder, InputStream &is, Tag &&tag)
 /**
  * Set replay gain values for the following chunks.
  *
- * @param decoder the decoder object
- * @param rgi the replay_gain_info object; may be nullptr to invalidate
- * the previous replay gain values
+ * @param replay_gain_info the replay_gain_info object; may be nullptr
+ * to invalidate the previous replay gain values
  */
 void
 decoder_replay_gain(Decoder &decoder,
@@ -226,10 +224,6 @@ decoder_replay_gain(Decoder &decoder,
 
 /**
  * Store MixRamp tags.
- *
- * @param decoder the decoder object
- * @param mixramp_start the mixramp_start tag; may be nullptr to invalidate
- * @param mixramp_end the mixramp_end tag; may be nullptr to invalidate
  */
 void
 decoder_mixramp(Decoder &decoder, MixRampInfo &&mix_ramp);

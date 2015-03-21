@@ -59,10 +59,14 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 		if (cache_dir.IsNull())
 			return nullptr;
 
-		const auto db_file = AllocatedPath::Build(cache_dir, "mpd.db");
+		const auto db_file = AllocatedPath::Build(cache_dir,
+							  PATH_LITERAL("mpd.db"));
+		const auto db_file_utf8 = db_file.ToUTF8();
+		if (db_file_utf8.empty())
+			return nullptr;
 
 		allocated = new ConfigBlock();
-		allocated->AddBlockParam("path", db_file.c_str(), -1);
+		allocated->AddBlockParam("path", db_file_utf8.c_str(), -1);
 		param = allocated;
 	}
 

@@ -23,33 +23,29 @@
 #include "FatalError.hxx"
 
 #include <assert.h>
-#include <unistd.h>
 #include <sys/signalfd.h>
 
 void
 SignalFD::Create(const sigset_t &mask)
 {
-	fd = ::signalfd(fd, &mask, SFD_NONBLOCK|SFD_CLOEXEC);
-	if (fd < 0)
+	if (!fd.CreateSignalFD(&mask))
 		FatalSystemError("signalfd() failed");
 }
 
 void
 SignalFD::Close()
 {
-	if (fd >= 0) {
-		::close(fd);
-		fd = -1;
-	}
+	if (fd.IsDefined())
+		fd.Close();
 }
 
 int
 SignalFD::Read()
 {
-	assert(fd >= 0);
+	assert(fd.IsDefined());
 
 	signalfd_siginfo info;
-	return read(fd, &info, sizeof(info)) > 0
+	return fd.Read(&info, sizeof(info)) > 0
 		? info.ssi_signo
 		: -1;
 }

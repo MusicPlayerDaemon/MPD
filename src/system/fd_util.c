@@ -41,10 +41,6 @@
 #include <sys/socket.h>
 #endif
 
-#ifdef HAVE_INOTIFY_INIT
-#include <sys/inotify.h>
-#endif
-
 #ifdef USE_EVENTFD
 #include <sys/eventfd.h>
 #endif
@@ -106,16 +102,6 @@ fd_set_nonblock(int fd)
 }
 
 int
-dup_cloexec(int oldfd)
-{
-	int newfd = dup(oldfd);
-	if (newfd >= 0)
-		fd_set_nonblock(newfd);
-
-	return newfd;
-}
-
-int
 open_cloexec(const char *path_fs, int flags, int mode)
 {
 	int fd;
@@ -133,30 +119,6 @@ open_cloexec(const char *path_fs, int flags, int mode)
 		fd_set_cloexec(fd, true);
 
 	return fd;
-}
-
-int
-pipe_cloexec(int fd[2])
-{
-#ifdef WIN32
-	return _pipe(fd, 512, _O_BINARY);
-#else
-	int ret;
-
-#ifdef HAVE_PIPE2
-	ret = pipe2(fd, O_CLOEXEC);
-	if (ret >= 0 || errno != ENOSYS)
-		return ret;
-#endif
-
-	ret = pipe(fd);
-	if (ret >= 0) {
-		fd_set_cloexec(fd[0], true);
-		fd_set_cloexec(fd[1], true);
-	}
-
-	return ret;
-#endif
 }
 
 int
@@ -185,53 +147,6 @@ pipe_cloexec_nonblock(int fd[2])
 	return ret;
 #endif
 }
-
-#ifndef WIN32
-
-int
-socketpair_cloexec(int domain, int type, int protocol, int sv[2])
-{
-	int ret;
-
-#ifdef SOCK_CLOEXEC
-	ret = socketpair(domain, type | SOCK_CLOEXEC, protocol, sv);
-	if (ret >= 0 || errno != EINVAL)
-		return ret;
-#endif
-
-	ret = socketpair(domain, type, protocol, sv);
-	if (ret >= 0) {
-		fd_set_cloexec(sv[0], true);
-		fd_set_cloexec(sv[1], true);
-	}
-
-	return ret;
-}
-
-int
-socketpair_cloexec_nonblock(int domain, int type, int protocol, int sv[2])
-{
-	int ret;
-
-#if defined(SOCK_CLOEXEC) && defined(SOCK_NONBLOCK)
-	ret = socketpair(domain, type | SOCK_CLOEXEC | SOCK_NONBLOCK, protocol,
-			 sv);
-	if (ret >= 0 || errno != EINVAL)
-		return ret;
-#endif
-
-	ret = socketpair(domain, type, protocol, sv);
-	if (ret >= 0) {
-		fd_set_cloexec(sv[0], true);
-		fd_set_nonblock(sv[0]);
-		fd_set_cloexec(sv[1], true);
-		fd_set_nonblock(sv[1]);
-	}
-
-	return ret;
-}
-
-#endif
 
 int
 socket_cloexec_nonblock(int domain, int type, int protocol)
@@ -280,65 +195,6 @@ accept_cloexec_nonblock(int fd, struct sockaddr *address,
 
 	return ret;
 }
-
-#ifndef WIN32
-
-ssize_t
-recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags)
-{
-#ifdef MSG_CMSG_CLOEXEC
-	flags |= MSG_CMSG_CLOEXEC;
-#endif
-
-	ssize_t result = recvmsg(sockfd, msg, flags);
-	if (result >= 0) {
-		struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg);
-		while (cmsg != NULL) {
-			if (cmsg->cmsg_type == SCM_RIGHTS) {
-				const int *fd_p = (const int *)CMSG_DATA(cmsg);
-				fd_set_cloexec(*fd_p, true);
-			}
-
-			cmsg = CMSG_NXTHDR(msg, cmsg);
-		}
-	}
-
-	return result;
-}
-
-#endif
-
-#ifdef HAVE_INOTIFY_INIT
-
-int
-inotify_init_cloexec(void)
-{
-	int fd;
-
-#ifdef HAVE_INOTIFY_INIT1
-	fd = inotify_init1(IN_CLOEXEC);
-	if (fd >= 0 || errno != ENOSYS)
-		return fd;
-#endif
-
-	fd = inotify_init();
-	if (fd >= 0)
-		fd_set_cloexec(fd, true);
-
-	return fd;
-}
-
-#endif
-
-#ifdef USE_EVENTFD
-
-int
-eventfd_cloexec_nonblock(unsigned initval, int flags)
-{
-	return eventfd(initval, flags | EFD_CLOEXEC | EFD_NONBLOCK);
-}
-
-#endif
 
 int
 close_socket(int fd)

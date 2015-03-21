@@ -50,7 +50,7 @@ struct DecoderPlugin {
 	 * Deinitialize a decoder plugin which was initialized
 	 * successfully.  Optional method.
 	 */
-	void (*finish)(void);
+	void (*finish)();
 
 	/**
 	 * Decode a stream (data read from an #InputStream object).
@@ -107,8 +107,7 @@ struct DecoderPlugin {
 	/**
 	 * Initialize a decoder plugin.
 	 *
-	 * @param param a configuration block for this plugin, or nullptr if none
-	 * is configured
+	 * @param block a configuration block for this plugin
 	 * @return true if the plugin was initialized successfully, false if
 	 * the plugin is not available
 	 */

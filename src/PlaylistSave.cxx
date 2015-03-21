@@ -29,6 +29,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/NarrowPath.hxx"
 #include "util/Alloc.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -45,7 +46,7 @@ playlist_print_song(FILE *file, const DetachedSong &song)
 
 	const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
 	if (!uri_fs.IsNull())
-		fprintf(file, "%s\n", uri_fs.c_str());
+		fprintf(file, "%s\n", NarrowPath(uri_fs).c_str());
 }
 
 void
@@ -61,7 +62,7 @@ playlist_print_uri(FILE *file, const char *uri)
 		AllocatedPath::FromUTF8(uri);
 
 	if (!path.IsNull())
-		fprintf(file, "%s\n", path.c_str());
+		fprintf(file, "%s\n", NarrowPath(path).c_str());
 }
 
 PlaylistResult

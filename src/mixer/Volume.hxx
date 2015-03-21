@@ -49,6 +49,6 @@ save_sw_volume_state(BufferedOutputStream &os);
  */
 gcc_pure
 unsigned
-sw_volume_state_get_hash(void);
+sw_volume_state_get_hash();
 
 #endif

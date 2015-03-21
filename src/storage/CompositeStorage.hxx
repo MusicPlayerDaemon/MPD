@@ -122,7 +122,7 @@ public:
 	bool Unmount(const char *uri);
 
 	/* virtual methods from class Storage */
-	bool GetInfo(const char *uri, bool follow, FileInfo &info,
+	bool GetInfo(const char *uri, bool follow, StorageFileInfo &info,
 		     Error &error) override;
 
 	StorageDirectoryReader *OpenDirectory(const char *uri,

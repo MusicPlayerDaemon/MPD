@@ -61,7 +61,7 @@ win32_main(int argc, char *argv[]);
  * This function should be called just before entering main loop.
  */
 void
-win32_app_started(void);
+win32_app_started();
 
 /**
  * When running as a service reports to service control manager
@@ -71,7 +71,7 @@ win32_app_started(void);
  * This function should be called just after leaving main loop.
  */
 void
-win32_app_stopping(void);
+win32_app_stopping();
 
 #endif
 

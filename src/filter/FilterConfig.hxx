@@ -34,7 +34,7 @@ class Error;
  * configured filter sections.
  * @param chain the chain to append filters on
  * @param spec the filter chain specification
- * @param error_r space to return an error description
+ * @param error space to return an error description
  * @return true on success
  */
 bool

@@ -34,6 +34,7 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/FileOutputStream.hxx"
+#include "fs/FileInfo.hxx"
 #include "config/Block.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
@@ -117,22 +118,20 @@ SimpleDatabase::Check(Error &error) const
 	assert(!path.IsNull());
 
 	/* Check if the file exists */
-	if (!CheckAccess(path)) {
+	if (!PathExists(path)) {
 		/* If the file doesn't exist, we can't check if we can write
 		 * it, so we are going to try to get the directory path, and
 		 * see if we can write a file in that */
 		const auto dirPath = path.GetDirectoryName();
 
 		/* Check that the parent part of the path is a directory */
-		struct stat st;
-		if (!StatFile(dirPath, st)) {
-			error.FormatErrno("Couldn't stat parent directory of db file "
-					  "\"%s\"",
-					  path_utf8.c_str());
+		FileInfo fi;
+		if (!GetFileInfo(dirPath, fi, error)) {
+			error.AddPrefix("On parent directory of db file: ");
 			return false;
 		}
 
-		if (!S_ISDIR(st.st_mode)) {
+		if (!fi.IsDirectory()) {
 			error.Format(simple_db_domain,
 				     "Couldn't create db file \"%s\" because the "
 				     "parent path is not a directory",
@@ -154,14 +153,11 @@ SimpleDatabase::Check(Error &error) const
 	}
 
 	/* Path exists, now check if it's a regular file */
-	struct stat st;
-	if (!StatFile(path, st)) {
-		error.FormatErrno("Couldn't stat db file \"%s\"",
-				  path_utf8.c_str());
+	FileInfo fi;
+	if (!GetFileInfo(path, fi, error))
 		return false;
-	}
 
-	if (!S_ISREG(st.st_mode)) {
+	if (!fi.IsRegular()) {
 		error.Format(simple_db_domain,
 			     "db file \"%s\" is not a regular file",
 			     path_utf8.c_str());
@@ -193,9 +189,9 @@ SimpleDatabase::Load(Error &error)
 	if (!db_load_internal(file, *root, error) || !file.Check(error))
 		return false;
 
-	struct stat st;
-	if (StatFile(path, st))
-		mtime = st.st_mtime;
+	FileInfo fi;
+	if (GetFileInfo(path, fi))
+		mtime = fi.GetModificationTime();
 
 	return true;
 }
@@ -425,9 +421,9 @@ SimpleDatabase::Save(Error &error)
 	if (!fos.Commit(error))
 		return false;
 
-	struct stat st;
-	if (StatFile(path, st))
-		mtime = st.st_mtime;
+	FileInfo fi;
+	if (GetFileInfo(path, fi))
+		mtime = fi.GetModificationTime();
 
 	return true;
 }
@@ -487,11 +483,15 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	std::string name(storage_uri);
 	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
 
+	const auto name_fs = AllocatedPath::FromUTF8(name.c_str(), error);
+	if (name_fs.IsNull())
+		return false;
+
 #ifndef ENABLE_ZLIB
 	constexpr bool compress = false;
 #endif
 	auto db = new SimpleDatabase(AllocatedPath::Build(cache_path,
-							  name.c_str()),
+							  name_fs.c_str()),
 				     compress);
 	if (!db->Open(error)) {
 		delete db;

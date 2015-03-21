@@ -33,7 +33,7 @@ struct playlist_plugin {
 	/**
 	 * Initialize the plugin.  Optional method.
 	 *
-	 * @param param a configuration block for this plugin, or nullptr
+	 * @param block a configuration block for this plugin, or nullptr
 	 * if none is configured
 	 * @return true if the plugin was initialized successfully,
 	 * false if the plugin is not available
@@ -44,7 +44,7 @@ struct playlist_plugin {
 	 * Deinitialize a plugin which was initialized successfully.
 	 * Optional method.
 	 */
-	void (*finish)(void);
+	void (*finish)();
 
 	/**
 	 * Opens the playlist on the specified URI.  This URI has
@@ -68,7 +68,7 @@ struct playlist_plugin {
 /**
  * Initialize a plugin.
  *
- * @param param a configuration block for this plugin, or nullptr if none
+ * @param block a configuration block for this plugin, or nullptr if none
  * is configured
  * @return true if the plugin was initialized successfully, false if
  * the plugin is not available

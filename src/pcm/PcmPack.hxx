@@ -35,7 +35,6 @@
  *
  * @param dest the destination buffer (array of triples)
  * @param src the source buffer
- * @param num_samples the number of samples to convert
  */
 void
 pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end);
@@ -46,7 +45,6 @@ pcm_pack_24(uint8_t *dest, const int32_t *src, const int32_t *src_end);
  *
  * @param dest the destination buffer
  * @param src the source buffer (array of triples)
- * @param num_samples the number of samples to convert
  */
 void
 pcm_unpack_24(int32_t *dest, const uint8_t *src, const uint8_t *src_end);

@@ -27,7 +27,7 @@
 #include <sys/stat.h>
 
 struct stat;
-struct FileInfo;
+struct StorageFileInfo;
 struct Directory;
 struct ArchivePlugin;
 class Storage;
@@ -89,15 +89,15 @@ private:
 
 	void UpdateSongFile2(Directory &directory,
 			     const char *name, const char *suffix,
-			     const FileInfo &info);
+			     const StorageFileInfo &info);
 
 	bool UpdateSongFile(Directory &directory,
 			    const char *name, const char *suffix,
-			    const FileInfo &info);
+			    const StorageFileInfo &info);
 
 	bool UpdateContainerFile(Directory &directory,
 				 const char *name, const char *suffix,
-				 const FileInfo &info);
+				 const StorageFileInfo &info);
 
 
 #ifdef ENABLE_ARCHIVE
@@ -105,10 +105,10 @@ private:
 
 	bool UpdateArchiveFile(Directory &directory,
 			       const char *name, const char *suffix,
-			       const FileInfo &info);
+			       const StorageFileInfo &info);
 
 	void UpdateArchiveFile(Directory &directory, const char *name,
-			       const FileInfo &info,
+			       const StorageFileInfo &info,
 			       const ArchivePlugin &plugin);
 
 
@@ -116,22 +116,24 @@ private:
 	bool UpdateArchiveFile(gcc_unused Directory &directory,
 			       gcc_unused const char *name,
 			       gcc_unused const char *suffix,
-			       gcc_unused const FileInfo &info) {
+			       gcc_unused const StorageFileInfo &info) {
 		return false;
 	}
 #endif
 
 	bool UpdatePlaylistFile(Directory &directory,
 				const char *name, const char *suffix,
-				const FileInfo &info);
+				const StorageFileInfo &info);
 
 	bool UpdateRegularFile(Directory &directory,
-			       const char *name, const FileInfo &info);
+			       const char *name, const StorageFileInfo &info);
 
 	void UpdateDirectoryChild(Directory &directory,
-				  const char *name, const FileInfo &info);
+				  const char *name,
+				  const StorageFileInfo &info);
 
-	bool UpdateDirectory(Directory &directory, const FileInfo &info);
+	bool UpdateDirectory(Directory &directory,
+			     const StorageFileInfo &info);
 
 	/**
 	 * Create the specified directory object if it does not exist
@@ -142,7 +144,7 @@ private:
 	 * The caller must lock the database.
 	 */
 	Directory *MakeDirectoryIfModified(Directory &parent, const char *name,
-					   const FileInfo &info);
+					   const StorageFileInfo &info);
 
 	Directory *DirectoryMakeChildChecked(Directory &parent,
 					     const char *uri_utf8,

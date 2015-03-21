@@ -72,8 +72,7 @@ public:
 	 * Add a listener on a port on all interfaces.
 	 *
 	 * @param port the TCP port
-	 * @param error_r location to store the error occurring, or nullptr to
-	 * ignore errors
+	 * @param error location to store the error occurring
 	 * @return true on success
 	 */
 	bool AddPort(unsigned port, Error &error);
@@ -84,8 +83,7 @@ public:
 	 *
 	 * @param hostname the host name to be resolved
 	 * @param port the TCP port
-	 * @param error_r location to store the error occurring, or nullptr to
-	 * ignore errors
+	 * @param error location to store the error occurring
 	 * @return true on success
 	 */
 	bool AddHost(const char *hostname, unsigned port, Error &error);
@@ -94,8 +92,7 @@ public:
 	 * Add a listener on a Unix domain socket.
 	 *
 	 * @param path the absolute socket path
-	 * @param error_r location to store the error occurring, or nullptr to
-	 * ignore errors
+	 * @param error location to store the error occurring
 	 * @return true on success
 	 */
 	bool AddPath(AllocatedPath &&path, Error &error);

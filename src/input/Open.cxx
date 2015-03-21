@@ -26,6 +26,7 @@
 #include "plugins/RewindInputPlugin.hxx"
 #include "fs/Traits.hxx"
 #include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -34,10 +35,14 @@ InputStream::Open(const char *url,
 		  Mutex &mutex, Cond &cond,
 		  Error &error)
 {
-	if (PathTraitsFS::IsAbsolute(url))
-		/* TODO: the parameter is UTF-8, not filesystem charset */
-		return OpenLocalInputStream(Path::FromFS(url),
+	if (PathTraitsUTF8::IsAbsolute(url)) {
+		const auto path = AllocatedPath::FromUTF8(url, error);
+		if (path.IsNull())
+			return nullptr;
+
+		return OpenLocalInputStream(path,
 					    mutex, cond, error);
+	}
 
 	input_plugins_for_each_enabled(plugin) {
 		InputStream *is;

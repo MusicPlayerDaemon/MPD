@@ -64,15 +64,14 @@ struct EncoderPlugin {
  * Creates a new encoder object.
  *
  * @param plugin the encoder plugin
- * @param param optional configuration
  * @param error location to store the error occurring, or nullptr to ignore errors.
  * @return an encoder object on success, nullptr on failure
  */
 static inline Encoder *
 encoder_init(const EncoderPlugin &plugin, const ConfigBlock &block,
-	     Error &error_r)
+	     Error &error)
 {
-	return plugin.init(block, error_r);
+	return plugin.init(block, error);
 }
 
 #endif

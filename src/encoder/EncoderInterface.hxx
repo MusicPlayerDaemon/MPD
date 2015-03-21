@@ -144,7 +144,6 @@ encoder_flush(Encoder *encoder, Error &error)
  * a new one.
  *
  * @param encoder the encoder
- * @param tag the tag object
  * @return true on success
  */
 static inline bool
@@ -243,7 +242,6 @@ encoder_read(Encoder *encoder, void *dest, size_t length)
 /**
  * Get mime type of encoded content.
  *
- * @param plugin the encoder plugin
  * @return an constant string, nullptr on failure
  */
 static inline const char *

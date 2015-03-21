@@ -43,8 +43,11 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 			   FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			   nullptr))
 {
-	if (handle == INVALID_HANDLE_VALUE)
-		error.FormatLastError("Failed to create %s", path.c_str());
+	if (handle == INVALID_HANDLE_VALUE) {
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to create %s",
+				      path_utf8.c_str());
+	}
 }
 
 bool
@@ -54,13 +57,17 @@ FileOutputStream::Write(const void *data, size_t size, Error &error)
 
 	DWORD nbytes;
 	if (!WriteFile(handle, data, size, &nbytes, nullptr)) {
-		error.FormatLastError("Failed to write to %s", path.c_str());
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to write to %s",
+				      path_utf8.c_str());
 		return false;
 	}
 
 	if (size_t(nbytes) != size) {
+		const auto path_utf8 = path.ToUTF8();
 		error.FormatLastError(ERROR_DISK_FULL,
-				      "Failed to write to %s", path.c_str());
+				      "Failed to write to %s",
+				      path_utf8.c_str());
 		return false;
 	}
 
@@ -104,14 +111,14 @@ FileOutputStream::Cancel()
 /**
  * Open a file using Linux's O_TMPFILE for writing the given file.
  */
-static int
-OpenTempFile(Path path)
+static bool
+OpenTempFile(FileDescriptor &fd, Path path)
 {
 	const auto directory = path.GetDirectoryName();
 	if (directory.IsNull())
-		return -1;
+		return false;
 
-	return OpenFile(directory, O_TMPFILE|O_WRONLY, 0666);
+	return fd.Open(directory.c_str(), O_TMPFILE|O_WRONLY, 0666);
 }
 
 #endif /* HAVE_LINKAT */
@@ -121,15 +128,13 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 {
 #ifdef HAVE_LINKAT
 	/* try Linux's O_TMPFILE first */
-	fd = OpenTempFile(path);
-	is_tmpfile = fd >= 0;
+	is_tmpfile = OpenTempFile(fd, path);
 	if (!is_tmpfile) {
 #endif
 		/* fall back to plain POSIX */
-		fd = OpenFile(path,
-			      O_WRONLY|O_CREAT|O_TRUNC,
-			      0666);
-		if (fd < 0)
+		if (!fd.Open(path.c_str(),
+			     O_WRONLY|O_CREAT|O_TRUNC,
+			     0666))
 			error.FormatErrno("Failed to create %s", path.c_str());
 #ifdef HAVE_LINKAT
 	}
@@ -141,7 +146,7 @@ FileOutputStream::Write(const void *data, size_t size, Error &error)
 {
 	assert(IsDefined());
 
-	ssize_t nbytes = write(fd, data, size);
+	ssize_t nbytes = fd.Write(data, size);
 	if (nbytes < 0) {
 		error.FormatErrno("Failed to write to %s", path.c_str());
 		return false;
@@ -165,18 +170,18 @@ FileOutputStream::Commit(Error &error)
 
 		/* hard-link the temporary file to the final path */
 		char fd_path[64];
-		snprintf(fd_path, sizeof(fd_path), "/proc/self/fd/%d", fd);
+		snprintf(fd_path, sizeof(fd_path), "/proc/self/fd/%d",
+			 fd.Get());
 		if (linkat(AT_FDCWD, fd_path, AT_FDCWD, path.c_str(),
 			   AT_SYMLINK_FOLLOW) < 0) {
 			error.FormatErrno("Failed to commit %s", path.c_str());
-			close(fd);
+			fd.Close();
 			return false;
 		}
 	}
 #endif
 
-	bool success = close(fd) == 0;
-	fd = -1;
+	bool success = fd.Close();
 	if (!success)
 		error.FormatErrno("Failed to commit %s", path.c_str());
 
@@ -188,8 +193,7 @@ FileOutputStream::Cancel()
 {
 	assert(IsDefined());
 
-	close(fd);
-	fd = -1;
+	fd.Close();
 
 #ifdef HAVE_LINKAT
 	if (!is_tmpfile)

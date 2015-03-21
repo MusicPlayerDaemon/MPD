@@ -35,7 +35,9 @@
 #include "fs/Traits.hxx"
 #include "fs/Charset.hxx"
 #include "fs/FileSystem.hxx"
+#include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "util/Macros.hxx"
 #include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -167,29 +169,28 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 		     const Path parent_path_fs,
 		     const Path name_fs)
 {
-	const char *name_fs_str = name_fs.c_str();
-	size_t name_length = strlen(name_fs_str);
-
-	if (name_length < sizeof(PLAYLIST_FILE_SUFFIX) ||
-	    memchr(name_fs_str, '\n', name_length) != nullptr)
+	if (name_fs.HasNewline())
 		return false;
 
-	if (!StringEndsWith(name_fs_str, PLAYLIST_FILE_SUFFIX))
+	const auto *const name_fs_str = name_fs.c_str();
+	const auto *const name_fs_end =
+		FindStringSuffix(name_fs_str,
+				 PATH_LITERAL(PLAYLIST_FILE_SUFFIX));
+	if (name_fs_end == nullptr)
 		return false;
 
-	const auto path_fs = AllocatedPath::Build(parent_path_fs, name_fs);
-	struct stat st;
-	if (!StatFile(path_fs, st) || !S_ISREG(st.st_mode))
+	FileInfo fi;
+	if (!GetFileInfo(AllocatedPath::Build(parent_path_fs, name_fs), fi) ||
+	    !fi.IsRegular())
 		return false;
 
-	std::string name(name_fs_str,
-			 name_length + 1 - sizeof(PLAYLIST_FILE_SUFFIX));
+	PathTraitsFS::string name(name_fs_str, name_fs_end);
 	std::string name_utf8 = PathToUTF8(name.c_str());
 	if (name_utf8.empty())
 		return false;
 
 	info.name = std::move(name_utf8);
-	info.mtime = st.st_mtime;
+	info.mtime = fi.GetModificationTime();
 	return true;
 }
 
@@ -267,18 +268,28 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 		if (*s == 0 || *s == PLAYLIST_COMMENT)
 			continue;
 
+#ifdef _UNICODE
+		wchar_t buffer[MAX_PATH];
+		auto result = MultiByteToWideChar(CP_ACP, 0, s, -1,
+						  buffer, ARRAY_SIZE(buffer));
+		if (result <= 0)
+			continue;
+
+		const Path path = Path::FromFS(buffer);
+#else
+		const Path path = Path::FromFS(s);
+#endif
+
 		std::string uri_utf8;
 
 		if (!uri_has_scheme(s)) {
 #ifdef ENABLE_DATABASE
-			uri_utf8 = map_fs_to_utf8(s);
+			uri_utf8 = map_fs_to_utf8(path);
 			if (uri_utf8.empty()) {
-				if (PathTraitsFS::IsAbsolute(s)) {
-					uri_utf8 = PathToUTF8(s);
+				if (path.IsAbsolute()) {
+					uri_utf8 = path.ToUTF8();
 					if (uri_utf8.empty())
 						continue;
-
-					uri_utf8.insert(0, "file://");
 				} else
 					continue;
 			}
@@ -286,7 +297,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 			continue;
 #endif
 		} else {
-			uri_utf8 = PathToUTF8(s);
+			uri_utf8 = path.ToUTF8();
 			if (uri_utf8.empty())
 				continue;
 		}

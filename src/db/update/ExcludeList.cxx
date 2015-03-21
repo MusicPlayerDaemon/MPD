@@ -25,36 +25,45 @@
 #include "config.h"
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/io/TextFile.hxx"
 #include "util/StringUtil.hxx"
-#include "util/Domain.hxx"
+#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
 
-static constexpr Domain exclude_list_domain("exclude_list");
+#ifdef HAVE_GLIB
+
+gcc_pure
+static bool
+IsFileNotFound(const Error &error)
+{
+#ifdef WIN32
+	return error.IsDomain(win32_domain) &&
+		error.GetCode() == ERROR_FILE_NOT_FOUND;
+#else
+	return error.IsDomain(errno_domain) && error.GetCode() == ENOENT;
+#endif
+}
+
+#endif
 
 bool
 ExcludeList::LoadFile(Path path_fs)
 {
 #ifdef HAVE_GLIB
-	FILE *file = FOpen(path_fs, FOpenMode::ReadText);
-	if (file == nullptr) {
-		const int e = errno;
-		if (e != ENOENT) {
-			const auto path_utf8 = path_fs.ToUTF8();
-			FormatErrno(exclude_list_domain,
-				    "Failed to open %s",
-				    path_utf8.c_str());
-		}
-
+	Error error;
+	TextFile file(path_fs, error);
+	if (file.HasFailed()) {
+		if (!IsFileNotFound(error))
+			LogError(error);
 		return false;
 	}
 
-	char line[1024];
-	while (fgets(line, sizeof(line), file) != nullptr) {
+	char *line;
+	while ((line = file.ReadLine()) != nullptr) {
 		char *p = strchr(line, '#');
 		if (p != nullptr)
 			*p = 0;
@@ -63,8 +72,6 @@ ExcludeList::LoadFile(Path path_fs)
 		if (*p != 0)
 			patterns.emplace_front(p);
 	}
-
-	fclose(file);
 #else
 	// TODO: implement
 	(void)path_fs;

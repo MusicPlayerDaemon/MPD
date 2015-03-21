@@ -34,10 +34,12 @@ const struct DecoderPlugin *
 decoder_plugin_from_name(const char *name);
 
 /* this is where we "load" all the "plugins" ;-) */
-void decoder_plugin_init_all(void);
+void
+decoder_plugin_init_all();
 
 /* this is where we "unload" all the "plugins" */
-void decoder_plugin_deinit_all(void);
+void
+decoder_plugin_deinit_all();
 
 template<typename F>
 static inline const DecoderPlugin *

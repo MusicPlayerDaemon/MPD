@@ -22,8 +22,7 @@
 
 #include "check.h"
 #include "Compiler.h"
-
-#include <string>
+#include "Traits.hxx"
 
 #if defined(HAVE_ICU) || defined(HAVE_GLIB)
 #define HAVE_FS_CHARSET
@@ -49,15 +48,15 @@ DeinitFSCharset();
  * Returns empty string on error.
  */
 gcc_pure gcc_nonnull_all
-std::string
-PathToUTF8(const char *path_fs);
+PathTraitsUTF8::string
+PathToUTF8(PathTraitsFS::const_pointer path_fs);
 
 /**
  * Convert the path from UTF-8.
  * Returns empty string on error.
  */
 gcc_pure gcc_nonnull_all
-std::string
-PathFromUTF8(const char *path_utf8);
+PathTraitsFS::string
+PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8);
 
 #endif

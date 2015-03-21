@@ -42,7 +42,7 @@
  * example when you want to store a variable-length string as the last
  * attribute without the overhead of a second allocation.
  *
- * @param T a struct/class with a variable-size last attribute
+ * @tparam T a struct/class with a variable-size last attribute
  * @param declared_tail_size the declared size of the last element in
  * #T
  * @param real_tail_size the real required size of the last element in

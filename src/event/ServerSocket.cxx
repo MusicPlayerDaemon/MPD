@@ -59,7 +59,9 @@ class OneServerSocket final : private SocketMonitor {
 
 	const unsigned serial;
 
+#ifdef HAVE_UN
 	AllocatedPath path;
+#endif
 
 	SocketAddress address;
 
@@ -69,7 +71,9 @@ public:
 			SocketAddress _address)
 		:SocketMonitor(_loop),
 		 parent(_parent), serial(_serial),
+#ifdef HAVE_UN
 		 path(AllocatedPath::Null()),
+#endif
 		 address((sockaddr *)xmemdup(_address.GetAddress(),
 					     _address.GetSize()),
 			 _address.GetSize())
@@ -92,11 +96,13 @@ public:
 		return serial;
 	}
 
+#ifdef HAVE_UN
 	void SetPath(AllocatedPath &&_path) {
 		assert(path.IsNull());
 
 		path = std::move(_path);
 	}
+#endif
 
 	bool Open(Error &error);
 
@@ -193,10 +199,12 @@ OneServerSocket::Open(Error &error)
 	if (_fd < 0)
 		return false;
 
+#ifdef HAVE_UN
 	/* allow everybody to connect */
 
 	if (!path.IsNull())
 		chmod(path.c_str(), 0666);
+#endif
 
 	/* register in the EventLoop */
 

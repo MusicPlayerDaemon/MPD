@@ -33,11 +33,10 @@
 #include "Log.hxx"
 
 #include <sys/stat.h>
-#include <vector>
 
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
-				    const FileInfo &info)
+				    const StorageFileInfo &info)
 {
 	Directory *directory = parent.FindChild(name);
 
@@ -70,14 +69,14 @@ SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
 bool
 UpdateWalk::UpdateContainerFile(Directory &directory,
 				const char *name, const char *suffix,
-				const FileInfo &info)
+				const StorageFileInfo &info)
 {
-	std::vector<const DecoderPlugin *> plugins;
-	for (unsigned i = 0; decoder_plugins[i] != nullptr; ++i)
-		if (decoder_plugins_enabled[i] && SupportsContainerSuffix(*decoder_plugins[i], suffix))
-			plugins.push_back(decoder_plugins[i]);
-	if (plugins.size() == 0)
+	const DecoderPlugin *_plugin = decoder_plugins_find([suffix](const DecoderPlugin &plugin){
+			return SupportsContainerSuffix(plugin, suffix);
+		});
+	if (_plugin == nullptr)
 		return false;
+	const DecoderPlugin &plugin = *_plugin;
 
 	db_lock();
 	Directory *contdir = MakeDirectoryIfModified(directory, name, info);
@@ -98,36 +97,37 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		return false;
 	}
 
-	unsigned int tnum_total = 0;
-	for (unsigned i = 0; i < plugins.size(); ++i) {
-		const DecoderPlugin &plugin = *plugins[i];
-		char *vtrack;
-		unsigned int tnum = 0;
-		TagBuilder tag_builder;
-		while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
-			Song *song = Song::NewFile(vtrack, *contdir);
+	char *vtrack;
+	unsigned int tnum = 0;
+	TagBuilder tag_builder;
+	while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
+		Song *song = Song::NewFile(vtrack, *contdir);
 
-			// shouldn't be necessary but it's there..
-			song->mtime = info.mtime;
+		// shouldn't be necessary but it's there..
+		song->mtime = info.mtime;
 
-			const auto child_path_fs = AllocatedPath::Build(pathname,	vtrack);
-			plugin.ScanFile(child_path_fs, add_tag_handler, &tag_builder);
+		const auto vtrack_fs = AllocatedPath::FromUTF8(vtrack);
+		// TODO: check vtrack_fs.IsNull()
 
-			tag_builder.Commit(song->tag);
+		const auto child_path_fs = AllocatedPath::Build(pathname,
+								vtrack_fs);
+		plugin.ScanFile(child_path_fs,
+				add_tag_handler, &tag_builder);
 
-			db_lock();
-			contdir->AddSong(song);
-			db_unlock();
+		tag_builder.Commit(song->tag);
 
-			modified = true;
+		db_lock();
+		contdir->AddSong(song);
+		db_unlock();
 
-			FormatDefault(update_domain, "added %s/%s", directory.GetPath(), vtrack);
-			delete[] vtrack;
-			tnum_total++;
-		}
+		modified = true;
+
+		FormatDefault(update_domain, "added %s/%s",
+			      directory.GetPath(), vtrack);
+		delete[] vtrack;
 	}
 
-	if (tnum_total == 0) {
+	if (tnum == 1) {
 		editor.LockDeleteDirectory(contdir);
 		return false;
 	} else

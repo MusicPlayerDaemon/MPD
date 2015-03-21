@@ -124,7 +124,7 @@ class HttpdClient final : BufferedSocket {
 public:
 	/**
 	 * @param httpd the HTTP output device
-	 * @param fd the socket file descriptor
+	 * @param _fd the socket file descriptor
 	 */
 	HttpdClient(HttpdOutput &httpd, int _fd, EventLoop &_loop,
 		    bool _metadata_supported);

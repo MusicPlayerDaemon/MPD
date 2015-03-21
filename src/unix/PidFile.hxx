@@ -37,11 +37,11 @@ public:
 		if (path.IsNull())
 			return;
 
-		file = FOpen(path, "w");
+		file = FOpen(path, FOpenMode::WriteText);
 		if (file == nullptr) {
 			const std::string utf8 = path.ToUTF8();
 			FormatFatalSystemError("Failed to create pid file \"%s\"",
-					       path.c_str());
+					       utf8.c_str());
 		}
 	}
 

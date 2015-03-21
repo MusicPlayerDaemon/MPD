@@ -29,14 +29,18 @@ class AllocatedPath;
 struct config_param;
 struct ConfigBlock;
 
-void config_global_init(void);
-void config_global_finish(void);
+void
+config_global_init();
+
+void
+config_global_finish();
 
 /**
  * Call this function after all configuration has been evaluated.  It
  * checks for unused parameters, and logs warnings.
  */
-void config_global_check(void);
+void
+config_global_check();
 
 bool
 ReadConfigFile(Path path, Error &error);

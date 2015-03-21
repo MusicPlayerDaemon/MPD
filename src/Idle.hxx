@@ -78,13 +78,13 @@ idle_add(unsigned flags);
  * Atomically reads and resets the global idle flags value.
  */
 unsigned
-idle_get(void);
+idle_get();
 
 /**
  * Get idle names
  */
 const char*const*
-idle_get_names(void);
+idle_get_names();
 
 /**
  * Parse an idle name and return its mask.  Returns 0 if the given

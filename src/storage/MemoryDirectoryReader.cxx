@@ -37,7 +37,8 @@ MemoryStorageDirectoryReader::Read()
 }
 
 bool
-MemoryStorageDirectoryReader::GetInfo(gcc_unused bool follow, FileInfo &info,
+MemoryStorageDirectoryReader::GetInfo(gcc_unused bool follow,
+				      StorageFileInfo &info,
 				      gcc_unused Error &error)
 {
 	assert(!first);

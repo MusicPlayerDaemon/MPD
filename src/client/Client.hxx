@@ -200,7 +200,8 @@ private:
 	virtual void OnTimeout() override;
 };
 
-void client_manager_init(void);
+void
+client_manager_init();
 
 void
 client_new(EventLoop &loop, Partition &partition,

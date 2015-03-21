@@ -21,7 +21,7 @@
 #include "CheckFile.hxx"
 #include "Log.hxx"
 #include "config/ConfigError.hxx"
-#include "FileSystem.hxx"
+#include "FileInfo.hxx"
 #include "Path.hxx"
 #include "AllocatedPath.hxx"
 #include "DirectoryReader.hxx"
@@ -32,31 +32,37 @@
 void
 CheckDirectoryReadable(Path path_fs)
 {
-	struct stat st;
-	if (!StatFile(path_fs, st)) {
-		FormatErrno(config_domain,
-			    "Failed to stat directory \"%s\"",
-			    path_fs.c_str());
+	Error error;
+
+	FileInfo fi;
+	if (!GetFileInfo(path_fs, fi, error)) {
+		LogError(error);
 		return;
 	}
 
-	if (!S_ISDIR(st.st_mode)) {
+	if (!fi.IsDirectory()) {
+		const auto path_utf8 = path_fs.ToUTF8();
 		FormatError(config_domain,
-			    "Not a directory: %s", path_fs.c_str());
+			    "Not a directory: %s", path_utf8.c_str());
 		return;
 	}
 
 #ifndef WIN32
-	const auto x = AllocatedPath::Build(path_fs, ".");
-	if (!StatFile(x, st) && errno == EACCES)
+	const auto x = AllocatedPath::Build(path_fs,
+					    PathTraitsFS::CURRENT_DIRECTORY);
+	if (!GetFileInfo(x, fi) && errno == EACCES) {
+		const auto path_utf8 = path_fs.ToUTF8();
 		FormatError(config_domain,
 			    "No permission to traverse (\"execute\") directory: %s",
-			    path_fs.c_str());
+			    path_utf8.c_str());
+	}
 #endif
 
 	const DirectoryReader reader(path_fs);
-	if (reader.HasFailed() && errno == EACCES)
+	if (reader.HasFailed() && errno == EACCES) {
+		const auto path_utf8 = path_fs.ToUTF8();
 		FormatError(config_domain,
-			    "No permission to read directory: %s", path_fs.c_str());
-
+			    "No permission to read directory: %s",
+			    path_utf8.c_str());
+	}
 }

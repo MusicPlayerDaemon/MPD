@@ -86,7 +86,7 @@ struct PcmExport {
 	uint8_t reverse_endian;
 
 	/**
-	 * Open the #pcm_export_state object.
+	 * Open the object.
 	 *
 	 * There is no "close" method.  This function may be called multiple
 	 * times to reuse the object.

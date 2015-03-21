@@ -75,7 +75,7 @@ struct InputPlugin {
 	 * Global deinitialization.  Called once before MPD shuts
 	 * down (only if init() has returned true).
 	 */
-	void (*finish)(void);
+	void (*finish)();
 
 	InputStream *(*open)(const char *uri,
 			     Mutex &mutex, Cond &cond,

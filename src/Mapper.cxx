@@ -86,9 +86,9 @@ map_uri_fs(const char *uri)
 }
 
 std::string
-map_fs_to_utf8(const char *path_fs)
+map_fs_to_utf8(Path path_fs)
 {
-	if (PathTraitsFS::IsSeparator(path_fs[0])) {
+	if (path_fs.IsAbsolute()) {
 		if (instance->storage == nullptr)
 			return std::string();
 
@@ -96,12 +96,14 @@ map_fs_to_utf8(const char *path_fs)
 		if (music_dir_fs.IsNull())
 			return std::string();
 
-		path_fs = music_dir_fs.RelativeFS(path_fs);
-		if (path_fs == nullptr || *path_fs == 0)
+		auto relative = music_dir_fs.Relative(path_fs);
+		if (relative == nullptr || *relative == 0)
 			return std::string();
+
+		path_fs = Path::FromFS(relative);
 	}
 
-	return PathToUTF8(path_fs);
+	return path_fs.ToUTF8();
 }
 
 #endif

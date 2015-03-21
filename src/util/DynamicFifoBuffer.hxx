@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2003-2015 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FIFO_BUFFER_HPP
-#define FIFO_BUFFER_HPP
+#ifndef DYNAMIC_FIFO_BUFFER_HXX
+#define DYNAMIC_FIFO_BUFFER_HXX
 
 #include "ForeignFifoBuffer.hxx"
 

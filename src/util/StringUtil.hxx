@@ -24,6 +24,38 @@
 
 #include <stddef.h>
 
+#ifdef _UNICODE
+#include "WStringUtil.hxx"
+#endif
+
+gcc_pure
+bool
+StringStartsWith(const char *haystack, const char *needle);
+
+gcc_pure
+bool
+StringEndsWith(const char *haystack, const char *needle);
+
+/**
+ * Check if the given string ends with the specified suffix.  If yes,
+ * returns the position of the suffix, and nullptr otherwise.
+ */
+gcc_pure
+const char *
+FindStringSuffix(const char *p, const char *suffix);
+
+/**
+ * Copy a string.  If the buffer is too small, then the string is
+ * truncated.  This is a safer version of strncpy().
+ *
+ * @param size the size of the destination buffer (including the null
+ * terminator)
+ * @return a pointer to the null terminator
+ */
+gcc_nonnull_all
+char *
+CopyString(char *dest, const char *src, size_t size);
+
 /**
  * Returns a pointer to the first non-whitespace character in the
  * string, or to the end of the string.
@@ -81,26 +113,6 @@ StripRight(char *p);
  */
 char *
 Strip(char *p);
-
-gcc_pure
-bool
-StringStartsWith(const char *haystack, const char *needle);
-
-gcc_pure
-bool
-StringEndsWith(const char *haystack, const char *needle);
-
-/**
- * Copy a string.  If the buffer is too small, then the string is
- * truncated.  This is a safer version of strncpy().
- *
- * @param size the size of the destination buffer (including the null
- * terminator)
- * @return a pointer to the null terminator
- */
-gcc_nonnull_all
-char *
-CopyString(char *dest, const char *src, size_t size);
 
 /**
  * Checks whether a string array contains the specified string.

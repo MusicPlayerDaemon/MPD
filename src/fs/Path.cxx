@@ -20,9 +20,22 @@
 #include "config.h"
 #include "Path.hxx"
 #include "Charset.hxx"
+#include "util/UriUtil.hxx"
+#include "util/StringUtil.hxx"
 
 std::string
 Path::ToUTF8() const
 {
 	return ::PathToUTF8(c_str());
+}
+
+Path::const_pointer
+Path::GetSuffix() const
+{
+	const auto base = GetBase().c_str();
+	const auto *dot = StringFindLast(base, '.');
+	if (dot == nullptr || dot == base)
+		return nullptr;
+
+	return dot + 1;
 }

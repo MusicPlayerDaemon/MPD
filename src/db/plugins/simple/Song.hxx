@@ -20,6 +20,7 @@
 #ifndef MPD_SONG_HXX
 #define MPD_SONG_HXX
 
+#include "check.h"
 #include "Chrono.hxx"
 #include "tag/Tag.hxx"
 #include "Compiler.h"
@@ -109,7 +110,10 @@ struct Song {
 	void Free();
 
 	bool UpdateFile(Storage &storage);
+
+#ifdef ENABLE_ARCHIVE
 	bool UpdateFileInArchive(const Storage &storage);
+#endif
 
 	/**
 	 * Returns the URI of the song in UTF-8 encoding, including its

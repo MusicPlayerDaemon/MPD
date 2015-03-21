@@ -22,22 +22,34 @@
 
 #include "check.h"
 #include "Compiler.h"
+#include "util/StringAPI.hxx"
 
 #ifdef WIN32
 #include "util/CharUtil.hxx"
+#include <tchar.h>
 #endif
 
 #include <string>
 
-#include <string.h>
 #include <assert.h>
+
+#ifdef WIN32
+#define PATH_LITERAL(s) _T(s)
+#else
+#define PATH_LITERAL(s) (s)
+#endif
 
 /**
  * This class describes the nature of a native filesystem path.
  */
 struct PathTraitsFS {
+#ifdef WIN32
+	typedef std::wstring string;
+#else
 	typedef std::string string;
-	typedef char value_type;
+#endif
+	typedef string::traits_type char_traits;
+	typedef char_traits::char_type value_type;
 	typedef value_type *pointer;
 	typedef const value_type *const_pointer;
 
@@ -46,6 +58,8 @@ struct PathTraitsFS {
 #else
 	static constexpr value_type SEPARATOR = '/';
 #endif
+
+	static constexpr const_pointer CURRENT_DIRECTORY = PATH_LITERAL(".");
 
 	static constexpr bool IsSeparator(value_type ch) {
 		return
@@ -68,7 +82,7 @@ struct PathTraitsFS {
 			--pos;
 		return IsSeparator(*pos) ? pos : nullptr;
 #else
-		return strrchr(p, SEPARATOR);
+		return StringFindLast(p, SEPARATOR);
 #endif
 	}
 
@@ -95,7 +109,12 @@ struct PathTraitsFS {
 
 	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer p) {
-		return strlen(p);
+		return StringLength(p);
+	}
+
+	gcc_pure gcc_nonnull_all
+	static const_pointer Find(const_pointer p, value_type ch) {
+		return StringFind(p, ch);
 	}
 
 	/**
@@ -143,11 +162,14 @@ struct PathTraitsFS {
  */
 struct PathTraitsUTF8 {
 	typedef std::string string;
-	typedef char value_type;
+	typedef string::traits_type char_traits;
+	typedef char_traits::char_type value_type;
 	typedef value_type *pointer;
 	typedef const value_type *const_pointer;
 
 	static constexpr value_type SEPARATOR = '/';
+
+	static constexpr const_pointer CURRENT_DIRECTORY = ".";
 
 	static constexpr bool IsSeparator(value_type ch) {
 		return ch == SEPARATOR;
@@ -186,7 +208,12 @@ struct PathTraitsUTF8 {
 
 	gcc_pure gcc_nonnull_all
 	static size_t GetLength(const_pointer p) {
-		return strlen(p);
+		return StringLength(p);
+	}
+
+	gcc_pure gcc_nonnull_all
+	static const_pointer Find(const_pointer p, value_type ch) {
+		return StringFind(p, ch);
 	}
 
 	/**

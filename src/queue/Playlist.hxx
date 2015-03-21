@@ -295,7 +295,7 @@ public:
 	 * Seek within the current song.  Fails if MPD is not currently
 	 * playing.
 	 *
-	 * @param time the time in seconds
+	 * @param seek_time the time
 	 * @param relative if true, then the specified time is relative to the
 	 * current position
 	 */

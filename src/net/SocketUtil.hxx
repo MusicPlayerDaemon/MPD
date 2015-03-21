@@ -37,7 +37,6 @@ class Error;
  * @param type the socket type, e.g. SOCK_STREAM
  * @param protocol the protocol, usually 0 to let the kernel choose
  * @param address the address to listen on
- * @param address_length the size of #address
  * @param backlog the backlog parameter for the listen() system call
  * @param error location to store the error occurring, or NULL to
  * ignore errors

@@ -36,7 +36,7 @@ extern bool playlist_saveAbsolutePaths;
  * Perform some global initialization, e.g. load configuration values.
  */
 void
-spl_global_init(void);
+spl_global_init();
 
 /**
  * Determines whether the specified string is a valid name for a

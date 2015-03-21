@@ -521,7 +521,7 @@ tag_id3_riff_aiff_load(FILE *file)
 struct id3_tag *
 tag_id3_load(Path path_fs, Error &error)
 {
-	FILE *file = FOpen(path_fs, "rb");
+	FILE *file = FOpen(path_fs, PATH_LITERAL("rb"));
 	if (file == nullptr) {
 		error.FormatErrno("Failed to open file %s", path_fs.c_str());
 		return nullptr;

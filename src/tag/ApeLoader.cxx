@@ -103,7 +103,7 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 bool
 tag_ape_scan(Path path_fs, ApeTagCallback callback)
 {
-	FILE *fp = FOpen(path_fs, "rb");
+	FILE *fp = FOpen(path_fs, PATH_LITERAL("rb"));
 	if (fp == nullptr)
 		return false;
 

@@ -57,9 +57,9 @@ src_mpd_LDADD = \
 	libevent.a \
 	libthread.a \
 	libnet.a \
+	$(FS_LIBS) \
 	libsystem.a \
 	libutil.a \
-	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	$(SYSTEMD_DAEMON_LIBS) \
 	$(GLIB_LIBS)
@@ -378,6 +378,9 @@ libutil_a_SOURCES = \
 	src/util/CharUtil.hxx \
 	src/util/NumberParser.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
+	src/util/WStringUtil.cxx src/util/WStringUtil.hxx \
+	src/util/StringAPI.hxx \
+	src/util/WStringAPI.hxx \
 	src/util/DivideString.cxx src/util/DivideString.hxx \
 	src/util/SplitString.cxx src/util/SplitString.hxx \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
@@ -431,6 +434,7 @@ libnet_a_SOURCES = \
 libsystem_a_SOURCES = \
 	src/system/ByteOrder.hxx \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
+	src/system/FileDescriptor.cxx src/system/FileDescriptor.hxx \
 	src/system/fd_util.c src/system/fd_util.h \
 	src/system/EventPipe.cxx src/system/EventPipe.hxx \
 	src/system/EventFD.cxx src/system/EventFD.hxx \
@@ -555,7 +559,9 @@ libfs_a_SOURCES = \
 	src/fs/Charset.cxx src/fs/Charset.hxx \
 	src/fs/Path.cxx src/fs/Path2.cxx src/fs/Path.hxx \
 	src/fs/AllocatedPath.cxx src/fs/AllocatedPath.hxx \
+	src/fs/NarrowPath.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
+	src/fs/FileInfo.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
 	src/fs/DirectoryReader.hxx
@@ -727,6 +733,7 @@ if ENABLE_ARCHIVE
 noinst_LIBRARIES += libarchive.a
 
 libmpd_a_SOURCES +=  \
+	src/TagArchive.cxx src/TagArchive.hxx \
 	src/db/update/Archive.cxx
 
 libarchive_a_SOURCES = \
@@ -1741,12 +1748,12 @@ test_run_input_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
-	libutil.a \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_run_input_SOURCES = test/run_input.cxx \
 	test/ScopeIOThread.hxx \
@@ -1788,12 +1795,12 @@ test_visit_archive_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
-	libutil.a \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
+	libutil.a \
 	$(GLIB_LIBS)
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	test/ScopeIOThread.hxx \

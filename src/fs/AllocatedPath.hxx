@@ -25,6 +25,7 @@
 #include "Traits.hxx"
 #include "Path.hxx"
 
+#include <cstddef>
 #include <utility>
 #include <string>
 
@@ -44,6 +45,7 @@ class AllocatedPath {
 
 	string value;
 
+	AllocatedPath(std::nullptr_t):value() {}
 	AllocatedPath(const_pointer _value):value(_value) {}
 
 	AllocatedPath(string &&_value):value(std::move(_value)) {}
@@ -75,7 +77,7 @@ public:
 	 */
 	gcc_const
 	static AllocatedPath Null() {
-		return AllocatedPath("");
+		return AllocatedPath(nullptr);
 	}
 
 	gcc_pure
@@ -176,7 +178,7 @@ public:
 	 * Allows the caller to "steal" the internal value by
 	 * providing a rvalue reference to the std::string attribute.
 	 */
-	std::string &&Steal() {
+	string &&Steal() {
 		return std::move(value);
 	}
 
@@ -247,7 +249,9 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const char *RelativeFS(const char *other_fs) const;
+	const_pointer Relative(Path other_fs) const {
+		return PathTraitsFS::Relative(c_str(), other_fs.c_str());
+	}
 
 	/**
 	 * Chop trailing directory separators.
@@ -255,7 +259,7 @@ public:
 	void ChopSeparators();
 
 	gcc_pure
-	bool IsAbsolute() {
+	bool IsAbsolute() const {
 		return PathTraitsFS::IsAbsolute(c_str());
 	}
 };
