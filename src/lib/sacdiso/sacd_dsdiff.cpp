@@ -385,8 +385,14 @@ bool sacd_dsdiff_t::read_frame(uint8_t* frame_data, size_t* frame_size, frame_ty
 				}
 				break;
 			}
-			else if (ck.has_id("DSTC") && ck.get_size() <= (uint64_t)*frame_size) {
-				if (sacd_media->read(&ck, sizeof(ck)) == sizeof(ck)) {
+			else if (ck.has_id("DSTC") && ck.get_size() == 4) {
+				uint32_t crc;
+				if (ck.get_size() == sizeof(crc)) {
+					if (sacd_media->read(&crc, sizeof(crc)) != sizeof(crc)) {
+						break;
+					}
+				}
+				else {
 					sacd_media->skip(ck.get_size());
 					sacd_media->skip(ck.get_size() & 1);
 				}
