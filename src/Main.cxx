@@ -106,6 +106,10 @@
 #include <glib.h>
 #endif
 
+#ifdef ENABLE_SYSTEMD_DAEMON
+#include <systemd/sd-daemon.h>
+#endif
+
 #include <stdlib.h>
 
 #ifdef HAVE_LOCALE_H
@@ -661,6 +665,10 @@ static int mpd_main_after_fork(struct options options)
 	/* the MPD frontend does not care about timer slack; set it to
 	   a huge value to allow the kernel to reduce CPU wakeups */
 	SetThreadTimerSlackMS(100);
+
+#ifdef ENABLE_SYSTEMD_DAEMON
+	sd_notify(0, "READY=1");
+#endif
 
 	/* run the main loop */
 	instance->event_loop->Run();
