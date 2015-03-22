@@ -41,17 +41,22 @@ bool
 BufferedOutputStream::Write(const void *data, size_t size)
 {
 	if (gcc_unlikely(last_error.IsDefined()))
+		/* the stream has already failed */
 		return false;
 
+	/* try to append to the current buffer */
 	if (AppendToBuffer(data, size))
 		return true;
 
+	/* not enough room in the buffer - flush it */
 	if (!Flush())
 		return false;
 
+	/* see if there's now enough room */
 	if (AppendToBuffer(data, size))
 		return true;
 
+	/* too large for the buffer: direct write */
 	return os.Write(data, size, last_error);
 }
 

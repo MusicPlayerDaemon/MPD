@@ -30,6 +30,14 @@
 class OutputStream;
 class Error;
 
+/**
+ * An #OutputStream wrapper that buffers its output to reduce the
+ * number of OutputStream::Write() calls.
+ *
+ * It simplifies error handling by managing an #Error attribute.
+ * Invoke any number of writes, and check for errors in the end using
+ * Check().
+ */
 class BufferedOutputStream {
 	OutputStream &os;
 
@@ -47,11 +55,18 @@ public:
 	gcc_printf(2,3)
 	bool Format(const char *fmt, ...);
 
+	/**
+	 * Returns false if an error has occurred.
+	 */
 	gcc_pure
 	bool Check() const {
 		return !last_error.IsDefined();
 	}
 
+	/**
+	 * Returns false if an error has occurred.  In that case, a
+	 * copy of the #Error is returned.
+	 */
 	bool Check(Error &error) const {
 		if (last_error.IsDefined()) {
 			error.Set(last_error);
@@ -60,6 +75,9 @@ public:
 			return true;
 	}
 
+	/**
+	 * Write buffer contents to the #OutputStream.
+	 */
 	bool Flush();
 
 	bool Flush(Error &error);
