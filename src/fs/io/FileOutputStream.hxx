@@ -38,7 +38,7 @@
 class Path;
 
 class FileOutputStream final : public OutputStream {
-	AllocatedPath path;
+	const AllocatedPath path;
 
 #ifdef WIN32
 	HANDLE handle;
