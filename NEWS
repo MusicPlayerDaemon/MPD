@@ -1,4 +1,6 @@
 ver 0.19.10 (not yet released)
+* encoder
+  - opus: fix bogus granulepos
 
 ver 0.19.9 (2015/02/06)
 * decoder

@@ -66,7 +66,7 @@ struct opus_encoder {
 
 	ogg_int64_t granulepos;
 
-	opus_encoder():encoder(opus_encoder_plugin) {}
+	opus_encoder():encoder(opus_encoder_plugin), granulepos(0) {}
 };
 
 static constexpr Domain opus_encoder_domain("opus_encoder");
