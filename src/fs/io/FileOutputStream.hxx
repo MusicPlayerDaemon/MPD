@@ -135,4 +135,16 @@ public:
 	void Cancel();
 };
 
+class AppendFileOutputStream final : public BaseFileOutputStream {
+public:
+	AppendFileOutputStream(Path _path, Error &error);
+
+	~AppendFileOutputStream() {
+		if (IsDefined())
+			Close();
+	}
+
+	bool Commit(Error &error);
+};
+
 #endif

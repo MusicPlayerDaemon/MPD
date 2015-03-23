@@ -197,4 +197,59 @@ FileOutputStream::Cancel()
 		RemoveFile(GetPath());
 }
 
+#ifdef WIN32
+
+FileOutputStream::FileOutputStream(Path _path, Error &error)
+	:path(_path),
+	 handle(CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
+			   CREATE_ALWAYS,
+			   FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+			   nullptr))
+{
+	if (handle == INVALID_HANDLE_VALUE) {
+		const auto path_utf8 = path.ToUTF8();
+		error.FormatLastError("Failed to create %s",
+				      path_utf8.c_str());
+	}
+}
+
+#else
+
+AppendFileOutputStream::AppendFileOutputStream(Path _path, Error &error)
+	:BaseFileOutputStream(_path)
+{
+#ifdef WIN32
+	SetHandle(CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
+			     OPEN_EXISTING,
+			     FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+			     nullptr))
+	if (!IsDefined())
+		error.FormatLastError("Failed to append to %s",
+				      GetPath().ToUTF8().c_str());
+#else
+	if (!SetFD().Open(GetPath().c_str(),
+			  O_WRONLY|O_APPEND))
+		error.FormatErrno("Failed to append to %s",
+				  GetPath().c_str());
+#endif
+}
+
+#endif
+
+bool
+AppendFileOutputStream::Commit(gcc_unused Error &error)
+{
+	assert(IsDefined());
+
+#ifdef WIN32
+	return Close();
+#else
+	bool success = Close();
+	if (!success)
+		error.FormatErrno("Failed to commit %s", GetPath().c_str());
+
+	return success;
+#endif
+}
+
 #endif
