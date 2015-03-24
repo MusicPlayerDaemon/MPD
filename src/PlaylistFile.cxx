@@ -109,7 +109,7 @@ spl_check_name(const char *name_utf8, Error &error)
 	return true;
 }
 
-static AllocatedPath
+AllocatedPath
 spl_map_to_fs(const char *name_utf8, Error &error)
 {
 	if (spl_map(error).IsNull() || !spl_check_name(name_utf8, error))
@@ -136,7 +136,7 @@ IsNotFoundError(const Error &error)
 #endif
 }
 
-static void
+void
 TranslatePlaylistError(Error &error)
 {
 	if (IsNotFoundError(error)) {

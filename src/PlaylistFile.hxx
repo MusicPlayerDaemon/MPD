@@ -27,6 +27,7 @@ class DetachedSong;
 class SongLoader;
 class PlaylistVector;
 class Error;
+class AllocatedPath;
 
 typedef std::vector<std::string> PlaylistFileContents;
 
@@ -44,6 +45,12 @@ spl_global_init();
  */
 bool
 spl_valid_name(const char *name_utf8);
+
+AllocatedPath
+spl_map_to_fs(const char *name_utf8, Error &error);
+
+void
+TranslatePlaylistError(Error &error);
 
 /**
  * Returns a list of stored_playlist_info struct pointers.  Returns
