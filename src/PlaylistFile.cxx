@@ -225,9 +225,6 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 {
 	assert(utf8path != nullptr);
 
-	if (spl_map(error).IsNull())
-		return false;
-
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
@@ -249,9 +246,6 @@ PlaylistFileContents
 LoadPlaylistFile(const char *utf8path, Error &error)
 {
 	PlaylistFileContents contents;
-
-	if (spl_map(error).IsNull())
-		return contents;
 
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
@@ -345,9 +339,6 @@ spl_move_index(const char *utf8path, unsigned src, unsigned dest,
 bool
 spl_clear(const char *utf8path, Error &error)
 {
-	if (spl_map(error).IsNull())
-		return false;
-
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
@@ -404,9 +395,6 @@ spl_remove_index(const char *utf8path, unsigned pos, Error &error)
 bool
 spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 {
-	if (spl_map(error).IsNull())
-		return false;
-
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
@@ -481,9 +469,6 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs,
 bool
 spl_rename(const char *utf8from, const char *utf8to, Error &error)
 {
-	if (spl_map(error).IsNull())
-		return false;
-
 	const auto from_path_fs = spl_map_to_fs(utf8from, error);
 	if (from_path_fs.IsNull())
 		return false;
