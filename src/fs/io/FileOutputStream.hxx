@@ -97,7 +97,8 @@ protected:
 
 #ifdef WIN32
 	bool SeekEOF() {
-		return SetFilePointer(handle, 0, nullptr, FILE_END);
+		return SetFilePointer(handle, 0, nullptr,
+				      FILE_END) != 0xffffffff;
 	}
 #endif
 
