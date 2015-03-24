@@ -20,12 +20,15 @@
 #include "config.h"
 #include "PlaylistFile.hxx"
 #include "PlaylistSave.hxx"
+#include "PlaylistError.hxx"
 #include "db/PlaylistInfo.hxx"
 #include "db/PlaylistVector.hxx"
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "fs/io/TextFile.hxx"
+#include "fs/io/FileOutputStream.hxx"
+#include "fs/io/BufferedOutputStream.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigDefaults.hxx"
@@ -229,17 +232,18 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 	if (path_fs.IsNull())
 		return false;
 
-	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
-	if (file == nullptr) {
-		playlist_errno(error);
+	FileOutputStream fos(path_fs, error);
+	if (!fos.IsDefined()) {
+		TranslatePlaylistError(error);
 		return false;
 	}
 
-	for (const auto &uri_utf8 : contents)
-		playlist_print_uri(file, uri_utf8.c_str());
+	BufferedOutputStream bos(fos);
 
-	fclose(file);
-	return true;
+	for (const auto &uri_utf8 : contents)
+		playlist_print_uri(bos, uri_utf8.c_str());
+
+	return bos.Flush(error) && fos.Commit(error);
 }
 
 PlaylistFileContents
@@ -399,29 +403,24 @@ spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 	if (path_fs.IsNull())
 		return false;
 
-	FILE *file = FOpen(path_fs, FOpenMode::AppendText);
-	if (file == nullptr) {
-		playlist_errno(error);
+	AppendFileOutputStream fos(path_fs, error);
+	if (!fos.IsDefined()) {
+		TranslatePlaylistError(error);
 		return false;
 	}
 
-	struct stat st;
-	if (fstat(fileno(file), &st) < 0) {
-		playlist_errno(error);
-		fclose(file);
-		return false;
-	}
-
-	if (st.st_size / off_t(MPD_PATH_MAX + 1) >= (off_t)playlist_max_length) {
-		fclose(file);
+	if (fos.Tell() / (MPD_PATH_MAX + 1) >= playlist_max_length) {
 		error.Set(playlist_domain, int(PlaylistResult::TOO_LARGE),
 			  "Stored playlist is too large");
 		return false;
 	}
 
-	playlist_print_song(file, song);
+	BufferedOutputStream bos(fos);
 
-	fclose(file);
+	playlist_print_song(bos, song);
+
+	if (!bos.Flush(error) || !fos.Commit(error))
+		return false;
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return true;

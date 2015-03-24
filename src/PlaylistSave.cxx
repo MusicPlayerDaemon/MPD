@@ -30,6 +30,8 @@
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/NarrowPath.hxx"
+#include "fs/io/FileOutputStream.hxx"
+#include "fs/io/BufferedOutputStream.hxx"
 #include "util/Alloc.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -38,7 +40,7 @@
 #include <string.h>
 
 void
-playlist_print_song(FILE *file, const DetachedSong &song)
+playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
 {
 	const char *uri_utf8 = playlist_saveAbsolutePaths
 		? song.GetRealURI()
@@ -46,11 +48,11 @@ playlist_print_song(FILE *file, const DetachedSong &song)
 
 	const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
 	if (!uri_fs.IsNull())
-		fprintf(file, "%s\n", NarrowPath(uri_fs).c_str());
+		os.Format("%s\n", NarrowPath(uri_fs).c_str());
 }
 
 void
-playlist_print_uri(FILE *file, const char *uri)
+playlist_print_uri(BufferedOutputStream &os, const char *uri)
 {
 	auto path =
 #ifdef ENABLE_DATABASE
@@ -62,7 +64,7 @@ playlist_print_uri(FILE *file, const char *uri)
 		AllocatedPath::FromUTF8(uri);
 
 	if (!path.IsNull())
-		fprintf(file, "%s\n", NarrowPath(path).c_str());
+		os.Format("%s\n", NarrowPath(path).c_str());
 }
 
 bool
@@ -78,18 +80,19 @@ spl_save_queue(const char *name_utf8, const Queue &queue, Error &error)
 		return false;
 	}
 
-	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
-
-	if (file == nullptr) {
-		error.FormatErrno("Failed to open %s",
-				  path_fs.ToUTF8().c_str());
+	FileOutputStream fos(path_fs, error);
+	if (!fos.IsDefined()) {
+		TranslatePlaylistError(error);
 		return false;
 	}
 
-	for (unsigned i = 0; i < queue.GetLength(); i++)
-		playlist_print_song(file, queue.Get(i));
+	BufferedOutputStream bos(fos);
 
-	fclose(file);
+	for (unsigned i = 0; i < queue.GetLength(); i++)
+		playlist_print_song(bos, queue.Get(i));
+
+	if (!bos.Flush(error) || !fos.Commit(error))
+		return false;
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return true;

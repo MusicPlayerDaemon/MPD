@@ -20,21 +20,17 @@
 #ifndef MPD_PLAYLIST_SAVE_H
 #define MPD_PLAYLIST_SAVE_H
 
-#include "PlaylistError.hxx"
-
-#include <stdio.h>
-
 struct Queue;
 struct playlist;
-struct PlayerControl;
+class BufferedOutputStream;
 class DetachedSong;
 class Error;
 
 void
-playlist_print_song(FILE *file, const DetachedSong &song);
+playlist_print_song(BufferedOutputStream &os, const DetachedSong &song);
 
 void
-playlist_print_uri(FILE *fp, const char *uri);
+playlist_print_uri(BufferedOutputStream &os, const char *uri);
 
 /**
  * Saves a queue object into a stored playlist file.
