@@ -95,6 +95,12 @@ protected:
 #endif
 	}
 
+#ifdef WIN32
+	bool SeekEOF() {
+		return SetFilePointer(handle, 0, nullptr, FILE_END);
+	}
+#endif
+
 public:
 	bool IsDefined() const {
 #ifdef WIN32

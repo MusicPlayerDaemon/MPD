@@ -226,6 +226,12 @@ AppendFileOutputStream::AppendFileOutputStream(Path _path, Error &error)
 	if (!IsDefined())
 		error.FormatLastError("Failed to append to %s",
 				      GetPath().ToUTF8().c_str());
+
+	if (!SeekEOF()) {
+		error.FormatLastError("Failed seek end-of-file of %s",
+				      GetPath().ToUTF8().c_str());
+		Close();
+	}
 #else
 	if (!SetFD().Open(GetPath().c_str(),
 			  O_WRONLY|O_APPEND))
