@@ -61,8 +61,10 @@ print_spl_list(Client &client, const PlaylistVector &list)
 CommandResult
 handle_save(Client &client, ConstBuffer<const char *> args)
 {
-	PlaylistResult result = spl_save_playlist(args.front(), client.playlist);
-	return print_playlist_result(client, result);
+	Error error;
+	return spl_save_playlist(args.front(), client.playlist, error)
+		? CommandResult::OK
+		: print_error(client, error);
 }
 
 CommandResult

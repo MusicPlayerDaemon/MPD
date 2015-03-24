@@ -65,26 +65,26 @@ playlist_print_uri(FILE *file, const char *uri)
 		fprintf(file, "%s\n", NarrowPath(path).c_str());
 }
 
-PlaylistResult
-spl_save_queue(const char *name_utf8, const Queue &queue)
+bool
+spl_save_queue(const char *name_utf8, const Queue &queue, Error &error)
 {
-	if (map_spl_path().IsNull())
-		return PlaylistResult::DISABLED;
-
-	if (!spl_valid_name(name_utf8))
-		return PlaylistResult::BAD_NAME;
-
-	const auto path_fs = map_spl_utf8_to_fs(name_utf8);
+	const auto path_fs = spl_map_to_fs(name_utf8, error);
 	if (path_fs.IsNull())
-		return PlaylistResult::BAD_NAME;
+		return false;
 
-	if (FileExists(path_fs))
-		return PlaylistResult::LIST_EXISTS;
+	if (FileExists(path_fs)) {
+		error.Set(playlist_domain, int(PlaylistResult::LIST_EXISTS),
+			  "Playlist already exists");
+		return false;
+	}
 
 	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
 
-	if (file == nullptr)
-		return PlaylistResult::ERRNO;
+	if (file == nullptr) {
+		error.FormatErrno("Failed to open %s",
+				  path_fs.ToUTF8().c_str());
+		return false;
+	}
 
 	for (unsigned i = 0; i < queue.GetLength(); i++)
 		playlist_print_song(file, queue.Get(i));
@@ -92,11 +92,12 @@ spl_save_queue(const char *name_utf8, const Queue &queue)
 	fclose(file);
 
 	idle_add(IDLE_STORED_PLAYLIST);
-	return PlaylistResult::SUCCESS;
+	return true;
 }
 
-PlaylistResult
-spl_save_playlist(const char *name_utf8, const playlist &playlist)
+bool
+spl_save_playlist(const char *name_utf8, const playlist &playlist,
+		  Error &error)
 {
-	return spl_save_queue(name_utf8, playlist.queue);
+	return spl_save_queue(name_utf8, playlist.queue, error);
 }

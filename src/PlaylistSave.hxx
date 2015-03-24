@@ -39,13 +39,14 @@ playlist_print_uri(FILE *fp, const char *uri);
 /**
  * Saves a queue object into a stored playlist file.
  */
-PlaylistResult
-spl_save_queue(const char *name_utf8, const Queue &queue);
+bool
+spl_save_queue(const char *name_utf8, const Queue &queue, Error &error);
 
 /**
  * Saves a playlist object into a stored playlist file.
  */
-PlaylistResult
-spl_save_playlist(const char *name_utf8, const playlist &playlist);
+bool
+spl_save_playlist(const char *name_utf8, const playlist &playlist,
+		  Error &error);
 
 #endif
