@@ -114,6 +114,9 @@ public:
 		return path;
 	}
 
+	gcc_pure
+	uint64_t Tell() const;
+
 	/* virtual methods from class OutputStream */
 	bool Write(const void *data, size_t size, Error &error) override;
 };

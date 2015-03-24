@@ -48,6 +48,17 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 				      GetPath().ToUTF8().c_str());
 }
 
+uint64_t
+BaseFileOutputStream::Tell() const
+{
+	LONG high = 0;
+	DWORD low = SetFilePointer(handle, 0, &high, FILE_CURRENT);
+	if (low == 0xffffffff)
+		return 0;
+
+	return uint64_t(high) << 32 | uint64_t(low);
+}
+
 bool
 BaseFileOutputStream::Write(const void *data, size_t size, Error &error)
 {
@@ -134,6 +145,12 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 #ifdef HAVE_LINKAT
 	}
 #endif
+}
+
+uint64_t
+BaseFileOutputStream::Tell() const
+{
+	return fd.Tell();
 }
 
 bool
