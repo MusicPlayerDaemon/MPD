@@ -25,6 +25,7 @@
 #include "config.h"
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/io/TextFile.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
@@ -89,7 +90,7 @@ ExcludeList::Check(Path name_fs) const
 
 #ifdef HAVE_GLIB
 	for (const auto &i : patterns)
-		if (i.Check(name_fs.c_str()))
+		if (i.Check(NarrowPath(name_fs).c_str()))
 			return true;
 #else
 	// TODO: implement
