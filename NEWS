@@ -4,6 +4,7 @@ ver 0.19.19 (not yet released)
   - wildmidi: support libWildMidi 0.4
 * output
   - pulse: support 32 bit, 24 bit and floating point playback
+* support non-x86 NetBSD
 * fix clang 3.9 warnings
 
 ver 0.19.18 (2016/08/05)
