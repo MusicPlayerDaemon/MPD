@@ -300,8 +300,8 @@ thirdparty_libs = [
     ),
 
     AutotoolsProject(
-        'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.4.tar.xz',
-        '55f2288055e44754275a17c9a2497391',
+        'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz',
+        '28cb28097c07a735d6af56e598e1c90f',
         'lib/libvorbis.a',
         ['--disable-shared', '--enable-static'],
     ),
@@ -342,8 +342,8 @@ thirdparty_libs = [
     ),
 
     FfmpegProject(
-        'http://ffmpeg.org/releases/ffmpeg-2.5.tar.bz2',
-        '4346fe710cc6bdd981f6534d2420d1ab',
+        'http://ffmpeg.org/releases/ffmpeg-2.6.2.tar.bz2',
+        'e75d598921285d6775f20164a91936ac',
         'lib/libavcodec.a',
         [
             '--disable-shared', '--enable-static',
@@ -366,8 +366,8 @@ thirdparty_libs = [
     ),
 
     AutotoolsProject(
-        'http://curl.haxx.se/download/curl-7.39.0.tar.lzma',
-        'e9aa6dec29920eba8ef706ea5823bad7',
+        'http://curl.haxx.se/download/curl-7.42.1.tar.lzma',
+        'f1e460020a99da039b153e4bf0cd8600',
         'lib/libcurl.a',
         [
             '--disable-shared', '--enable-static',
