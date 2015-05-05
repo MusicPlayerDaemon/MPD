@@ -388,8 +388,8 @@ thirdparty_libs = [
     ),
 
     BoostProject(
-        'http://netcologne.dl.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.bz2',
-        'd6eef4b4cacb2183f2bf265a5a03a354',
+        'http://netcologne.dl.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2',
+        'b8839650e61e9c1c0a89f371dd475546',
         'include/boost/version.hpp',
     ),
 ]
