@@ -3,6 +3,8 @@ ver 0.19.10 (not yet released)
   - smbclient: fix DFF playback
 * encoder
   - opus: fix bogus granulepos
+* neighbor
+  - nfs: fix deadlock when connecting
 
 ver 0.19.9 (2015/02/06)
 * decoder

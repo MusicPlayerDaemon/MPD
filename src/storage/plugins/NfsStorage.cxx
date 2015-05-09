@@ -177,6 +177,8 @@ private:
 				mutex.unlock();
 				DeferredMonitor::Schedule();
 				mutex.lock();
+				if (state == State::INITIAL)
+					cond.wait(mutex);
 				break;
 
 			case State::CONNECTING:
@@ -188,8 +190,6 @@ private:
 				error.Set(last_error);
 				return false;
 			}
-
-			cond.wait(mutex);
 		}
 	}
 
