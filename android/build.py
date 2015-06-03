@@ -37,7 +37,7 @@ mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..
 
 # output directories
 lib_path = os.path.abspath('lib')
-tarball_path = lib_path
+tarball_path = os.path.join(lib_path, 'download')
 src_path = os.path.join(lib_path, 'src')
 arch_path = os.path.join(lib_path, host_arch)
 build_path = os.path.join(arch_path, 'build')
