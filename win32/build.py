@@ -121,16 +121,20 @@ class Project:
         except FileNotFoundError:
             return False
 
-    def unpack(self):
-        global src_path
+    def unpack(self, out_of_tree=True):
+        global src_path, build_path
         tarball = self.download()
-        path = os.path.join(src_path, self.base)
+        if out_of_tree:
+            parent_path = src_path
+        else:
+            parent_path = build_path
+        path = os.path.join(parent_path, self.base)
         try:
             shutil.rmtree(path)
         except FileNotFoundError:
             pass
-        os.makedirs(src_path, exist_ok=True)
-        subprocess.check_call(['/bin/tar', 'xfC', tarball, src_path])
+        os.makedirs(parent_path, exist_ok=True)
+        subprocess.check_call(['/bin/tar', 'xfC', tarball, parent_path])
         return path
 
     def make_build_path(self):
@@ -189,9 +193,7 @@ class ZlibProject(Project):
         Project.__init__(self, url, md5, installed, **kwargs)
 
     def build(self):
-        src = self.unpack()
-
-        build = self.make_build_path()
+        src = self.unpack(out_of_tree=False)
 
         select_toolchain()
         subprocess.check_call(['/usr/bin/make', '--quiet',
