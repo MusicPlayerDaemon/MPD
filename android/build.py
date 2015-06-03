@@ -37,8 +37,13 @@ mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..
 
 # output directories
 lib_path = os.path.abspath('lib')
-tarball_path = os.path.join(lib_path, 'download')
-src_path = os.path.join(lib_path, 'src')
+
+shared_path = lib_path
+if 'MPD_SHARED_LIB' in os.environ:
+    shared_path = os.environ['MPD_SHARED_LIB']
+tarball_path = os.path.join(shared_path, 'download')
+src_path = os.path.join(shared_path, 'src')
+
 arch_path = os.path.join(lib_path, host_arch)
 build_path = os.path.join(arch_path, 'build')
 root_path = os.path.join(arch_path, 'root')
