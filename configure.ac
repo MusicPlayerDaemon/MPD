@@ -425,6 +425,11 @@ AC_ARG_ENABLE(un,
 		[disable support for clients connecting via unix domain sockets (default: enable)]),,
 	[enable_un=$host_is_unix])
 
+AC_ARG_ENABLE(lazyusf,
+	AS_HELP_STRING([--enable-lazyusf],
+		[enable usf support via lazyusf]),,
+	enable_lazyusf=auto)
+
 AC_ARG_ENABLE(vorbis,
 	AS_HELP_STRING([--enable-vorbis],
 		[enable Ogg Vorbis decoder]),,
@@ -889,6 +894,13 @@ if test x$enable_mikmod = xyes; then
 fi
 
 AM_CONDITIONAL(ENABLE_MIKMOD_DECODER, test x$enable_mikmod = xyes)
+
+dnl -------------------------------- usf --------------------------------------
+MPD_ENABLE_AUTO_LIB(lazyusf, LAZYUSF, lazyusf, usf_render, [-llazyusf -lpsflib], [],
+        [usf decoder plugin], [liblazyusf or psflib not found])
+
+#MPD_ENABLE_AUTO_LIB(psflib, PSFLIB, psflib, psf_load, [-lpsflib], [],
+                    #[psf file plugin], [psflib not found])
 
 dnl -------------------------------- libmodplug -------------------------------
 MPD_ENABLE_AUTO_PKG(modplug, MODPLUG, [libmodplug],
@@ -1391,6 +1403,7 @@ printf '\n\t'
 results(sndfile, [libsndfile])
 results(mikmod, [MikMod])
 results(modplug, [MODPLUG])
+results(lazyusf, [lazyusf])
 results(mad, [MAD])
 results(mpg123, [MPG123])
 results(mpc, [Musepack])

@@ -796,6 +796,7 @@ libarchive_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 ARCHIVE_LIBS = \
 	libarchive.a \
+	$(PSFLIB_LIBS) \
 	$(BZ2_LIBS) \
 	$(ISO9660_LIBS) \
 	$(ZZIP_LIBS)
@@ -910,6 +911,7 @@ libdecoder_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AUDIOFILE_CFLAGS) \
 	$(LIBMIKMOD_CFLAGS) \
 	$(GME_CFLAGS) \
+	$(LAZYUSF_CFLAGS) \
 	$(SIDPLAY_CFLAGS) \
 	$(FLUIDSYNTH_CFLAGS) \
 	$(WILDMIDI_CFLAGS) \
@@ -929,6 +931,7 @@ DECODER_LIBS = \
 	$(SNDFILE_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(GME_LIBS) \
+	$(LAZYUSF_LIBS) \
 	$(SIDPLAY_LIBS) \
 	$(FLUIDSYNTH_LIBS) \
 	$(WILDMIDI_LIBS) \
@@ -1037,6 +1040,12 @@ if ENABLE_MIKMOD_DECODER
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/MikmodDecoderPlugin.cxx \
 	src/decoder/plugins/MikmodDecoderPlugin.hxx
+endif
+
+if ENABLE_LAZYUSF
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/UsfDecoderPlugin.cxx \
+	src/decoder/plugins/UsfDecoderPlugin.hxx
 endif
 
 if ENABLE_MODPLUG
