@@ -597,8 +597,12 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 					       av_stream->time_base) +
 				start_time_fallback(*av_stream);
 
+			/* AVSEEK_FLAG_BACKWARD asks FFmpeg to seek to
+			   the packet boundary before the seek time
+			   stamp, not after */
+
 			if (av_seek_frame(format_context, audio_stream, where,
-					  AVSEEK_FLAG_ANY) < 0)
+					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
 				decoder_seek_error(decoder);
 			else {
 				avcodec_flush_buffers(codec_context);
