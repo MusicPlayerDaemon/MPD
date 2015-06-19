@@ -321,18 +321,44 @@ StreamRelativePts(const AVPacket &packet, const AVStream &stream)
 	return pts - start;
 }
 
+/**
+ * Convert a non-negative stream-relative time stamp in
+ * AVStream::time_base units to a PCM frame number.
+ */
+gcc_pure
+static uint64_t
+PtsToPcmFrame(uint64_t pts, const AVStream &stream,
+	      const AVCodecContext &codec_context)
+{
+	return av_rescale_q(pts, stream.time_base, codec_context.time_base);
+}
+
+/**
+ * @param min_frame skip all data before this PCM frame number; this
+ * is used after seeking to skip data in an AVPacket until the exact
+ * desired time stamp has been reached
+ */
 static DecoderCommand
 ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   const AVPacket *packet,
 		   AVCodecContext *codec_context,
 		   const AVStream *stream,
 		   AVFrame *frame,
+		   uint64_t min_frame, size_t pcm_frame_size,
 		   uint8_t **buffer, int *buffer_size)
 {
+	size_t skip_bytes = 0;
+
 	const auto pts = StreamRelativePts(*packet, *stream);
 	if (pts >= 0) {
-		decoder_timestamp(decoder,
-				  time_from_ffmpeg(pts, stream->time_base));
+		if (min_frame > 0) {
+			auto cur_frame = PtsToPcmFrame(pts, *stream,
+						       *codec_context);
+			if (cur_frame < min_frame)
+				skip_bytes = pcm_frame_size * (min_frame - cur_frame);
+		} else
+			decoder_timestamp(decoder,
+					  time_from_ffmpeg(pts, stream->time_base));
 	}
 
 	AVPacket packet2 = *packet;
@@ -368,8 +394,20 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		if (audio_size <= 0)
 			continue;
 
+		const uint8_t *data = output_buffer;
+		if (skip_bytes > 0) {
+			if (skip_bytes >= size_t(audio_size)) {
+				skip_bytes -= audio_size;
+				continue;
+			}
+
+			data += skip_bytes;
+			audio_size -= skip_bytes;
+			skip_bytes = 0;
+		}
+
 		cmd = decoder_data(decoder, is,
-				   output_buffer, audio_size,
+				   data, audio_size,
 				   codec_context->bit_rate / 1000);
 	}
 	return cmd;
@@ -573,6 +611,8 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	uint8_t *interleaved_buffer = nullptr;
 	int interleaved_buffer_size = 0;
 
+	uint64_t min_frame = 0;
+
 	DecoderCommand cmd;
 	do {
 		AVPacket packet;
@@ -580,13 +620,15 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 			/* end of file */
 			break;
 
-		if (packet.stream_index == audio_stream)
+		if (packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(decoder, input,
 						 &packet, codec_context,
 						 av_stream,
 						 frame,
+						 min_frame, audio_format.GetFrameSize(),
 						 &interleaved_buffer, &interleaved_buffer_size);
-		else
+			min_frame = 0;
+		} else
 			cmd = decoder_get_command(decoder);
 
 		av_free_packet(&packet);
@@ -606,6 +648,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 				decoder_seek_error(decoder);
 			else {
 				avcodec_flush_buffers(codec_context);
+				min_frame = decoder_seek_where_frame(decoder);
 				decoder_command_finished(decoder);
 			}
 		}

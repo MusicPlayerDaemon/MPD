@@ -2,6 +2,8 @@ ver 0.19.10 (not yet released)
 * input
   - curl: fix deadlock on small responses
   - smbclient: fix DFF playback
+* decoder
+  - ffmpeg: improve seeking accuracy
 * encoder
   - opus: fix bogus granulepos
 * neighbor
