@@ -305,6 +305,22 @@ copy_interleave_frame(const AVCodecContext *codec_context,
 	return data_size;
 }
 
+/**
+ * Convert AVPacket::pts to a stream-relative time stamp (still in
+ * AVStream::time_base units).  Returns a negative value on error.
+ */
+gcc_pure
+static int64_t
+StreamRelativePts(const AVPacket &packet, const AVStream &stream)
+{
+	auto pts = packet.pts;
+	if (pts < 0 || pts == int64_t(AV_NOPTS_VALUE))
+		return -1;
+
+	auto start = start_time_fallback(stream);
+	return pts - start;
+}
+
 static DecoderCommand
 ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   const AVPacket *packet,
@@ -313,12 +329,10 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   AVFrame *frame,
 		   uint8_t **buffer, int *buffer_size)
 {
-	if (packet->pts >= 0 && packet->pts != (int64_t)AV_NOPTS_VALUE) {
-		auto start = start_time_fallback(*stream);
-		if (packet->pts >= start)
-			decoder_timestamp(decoder,
-					  time_from_ffmpeg(packet->pts - start,
-							   stream->time_base));
+	const auto pts = StreamRelativePts(*packet, *stream);
+	if (pts >= 0) {
+		decoder_timestamp(decoder,
+				  time_from_ffmpeg(pts, stream->time_base));
 	}
 
 	AVPacket packet2 = *packet;
