@@ -453,6 +453,8 @@ CurlInputStream::RequestDone(CURLcode result, long status)
 		SeekDone();
 	else if (!IsReady())
 		SetReady();
+	else
+		cond.broadcast();
 }
 
 static void
