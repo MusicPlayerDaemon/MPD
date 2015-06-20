@@ -566,7 +566,7 @@ decoder_tag(Decoder &decoder, InputStream *is,
 	/* save the tag */
 
 	delete decoder.decoder_tag;
-	decoder.decoder_tag = new Tag(tag);
+	decoder.decoder_tag = new Tag(std::move(tag));
 
 	/* check for a new stream tag */
 
