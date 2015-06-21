@@ -612,6 +612,12 @@ Player::ProcessCommand()
 
 		queued = true;
 		pc.CommandFinished();
+
+		pc.Unlock();
+		if (dc.LockIsIdle())
+			StartDecoder(*new MusicPipe());
+		pc.Lock();
+
 		break;
 
 	case PlayerCommand::PAUSE:
