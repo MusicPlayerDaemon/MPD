@@ -163,8 +163,40 @@ copy_interleave_frame(const AVCodecContext &codec_context,
 }
 
 /**
+ * Convert AVPacket::pts to a stream-relative time stamp (still in
+ * AVStream::time_base units).  Returns a negative value on error.
+ */
+gcc_pure
+static int64_t
+StreamRelativePts(const AVPacket &packet, const AVStream &stream)
+{
+	auto pts = packet.pts;
+	if (pts < 0 || pts == int64_t(AV_NOPTS_VALUE))
+		return -1;
+
+	auto start = start_time_fallback(stream);
+	return pts - start;
+}
+
+/**
+ * Convert a non-negative stream-relative time stamp in
+ * AVStream::time_base units to a PCM frame number.
+ */
+gcc_pure
+static uint64_t
+PtsToPcmFrame(uint64_t pts, const AVStream &stream,
+	      const AVCodecContext &codec_context)
+{
+	return av_rescale_q(pts, stream.time_base, codec_context.time_base);
+}
+
+/**
  * Decode an #AVPacket and send the resulting PCM data to the decoder
  * API.
+ *
+ * @param min_frame skip all data before this PCM frame number; this
+ * is used after seeking to skip data in an AVPacket until the exact
+ * desired time stamp has been reached
  */
 static DecoderCommand
 ffmpeg_send_packet(Decoder &decoder, InputStream &is,
@@ -172,13 +204,21 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
 		   AVFrame &frame,
+		   uint64_t min_frame, size_t pcm_frame_size,
 		   FfmpegBuffer &buffer)
 {
-	if (packet.pts >= 0 && packet.pts != (int64_t)AV_NOPTS_VALUE) {
-		auto start = start_time_fallback(stream);
-		if (packet.pts >= start)
+	size_t skip_bytes = 0;
+
+	const auto pts = StreamRelativePts(packet, stream);
+	if (pts >= 0) {
+		if (min_frame > 0) {
+			auto cur_frame = PtsToPcmFrame(pts, stream,
+						       codec_context);
+			if (cur_frame < min_frame)
+				skip_bytes = pcm_frame_size * (min_frame - cur_frame);
+		} else
 			decoder_timestamp(decoder,
-					  FfmpegTimeToDouble(packet.pts - start,
+					  FfmpegTimeToDouble(pts,
 							     stream.time_base));
 	}
 
@@ -210,6 +250,18 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 			   e.g. OOM */
 			LogError(error);
 			return DecoderCommand::STOP;
+		}
+
+		if (skip_bytes > 0) {
+			if (skip_bytes >= output_buffer.size) {
+				skip_bytes -= output_buffer.size;
+				continue;
+			}
+
+			output_buffer.data =
+				(const uint8_t *)output_buffer.data + skip_bytes;
+			output_buffer.size -= skip_bytes;
+			skip_bytes = 0;
 		}
 
 		cmd = decoder_data(decoder, is,
@@ -489,6 +541,8 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 
 	FfmpegBuffer interleaved_buffer;
 
+	uint64_t min_frame = 0;
+
 	DecoderCommand cmd;
 	do {
 		AVPacket packet;
@@ -500,13 +554,15 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		FfmpegCheckTag(decoder, input, format_context, audio_stream);
 #endif
 
-		if (packet.stream_index == audio_stream)
+		if (packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(decoder, input,
 						 packet, codec_context,
 						 av_stream,
 						 *frame,
+						 min_frame, audio_format.GetFrameSize(),
 						 interleaved_buffer);
-		else
+			min_frame = 0;
+		} else
 			cmd = decoder_get_command(decoder);
 
 		av_free_packet(&packet);
@@ -517,11 +573,15 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 					     av_stream.time_base) +
 				start_time_fallback(av_stream);
 
+			/* AVSEEK_FLAG_BACKWARD asks FFmpeg to seek to
+			   the packet boundary before the seek time
+			   stamp, not after */
 			if (av_seek_frame(&format_context, audio_stream, where,
-					  AVSEEK_FLAG_ANY) < 0)
+					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
 				decoder_seek_error(decoder);
 			else {
 				avcodec_flush_buffers(&codec_context);
+				min_frame = decoder_seek_where_frame(decoder);
 				decoder_command_finished(decoder);
 			}
 		}

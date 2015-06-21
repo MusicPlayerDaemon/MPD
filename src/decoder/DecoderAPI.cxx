@@ -433,8 +433,11 @@ update_stream_tag(Decoder &decoder, InputStream *is)
 
 		/* no stream tag present - submit the song tag
 		   instead */
-		decoder.song_tag = nullptr;
-	}
+	} else
+		/* discard the song tag; we don't need it */
+		delete decoder.song_tag;
+
+	decoder.song_tag = nullptr;
 
 	delete decoder.stream_tag;
 	decoder.stream_tag = tag;
@@ -566,7 +569,7 @@ decoder_tag(Decoder &decoder, InputStream *is,
 	/* save the tag */
 
 	delete decoder.decoder_tag;
-	decoder.decoder_tag = new Tag(tag);
+	decoder.decoder_tag = new Tag(std::move(tag));
 
 	/* check for a new stream tag */
 

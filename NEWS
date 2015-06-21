@@ -30,6 +30,21 @@ ver 0.20 (not yet released)
 * database
   - proxy: add TCP keepalive option
 
+ver 0.19.10 (2015/06/21)
+* input
+  - curl: fix deadlock on small responses
+  - smbclient: fix DFF playback
+* decoder
+  - ffmpeg: improve seeking accuracy
+  - fix stuck stream tags
+* encoder
+  - opus: fix bogus granulepos
+* output
+  - fix failure to open device right after booting
+* neighbor
+  - nfs: fix deadlock when connecting
+* fix "single" mode breakage due to queue edits
+
 ver 0.19.9 (2015/02/06)
 * decoder
   - dsdiff, dsf: raise ID3 tag limit to 1 MB
