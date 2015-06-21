@@ -380,7 +380,11 @@ decoder_run_song(DecoderControl &dc,
 		 const DetachedSong &song, const char *uri, Path path_fs)
 {
 	Decoder decoder(dc, dc.start_time.IsPositive(),
-			new Tag(song.GetTag()));
+			/* pass the song tag only if it's
+			   authoritative, i.e. if it's a local file -
+			   tags on "stream" songs are just remembered
+			   from the last time we played it*/
+			song.IsFile() ? new Tag(song.GetTag()) : nullptr);
 	int ret;
 
 	dc.state = DecoderState::START;

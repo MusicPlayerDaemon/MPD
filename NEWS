@@ -4,6 +4,7 @@ ver 0.19.10 (not yet released)
   - smbclient: fix DFF playback
 * decoder
   - ffmpeg: improve seeking accuracy
+  - fix stuck stream tags
 * encoder
   - opus: fix bogus granulepos
 * output
