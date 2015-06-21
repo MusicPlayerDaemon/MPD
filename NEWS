@@ -1,4 +1,4 @@
-ver 0.19.10 (not yet released)
+ver 0.19.10 (2015/06/21)
 * input
   - curl: fix deadlock on small responses
   - smbclient: fix DFF playback
