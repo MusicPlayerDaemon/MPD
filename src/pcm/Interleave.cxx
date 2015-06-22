@@ -51,6 +51,14 @@ PcmInterleaveT(T *gcc_restrict dest,
 	}
 }
 
+static void
+PcmInterleave16(int16_t *gcc_restrict dest,
+		const ConstBuffer<const int16_t *> src,
+		size_t n_frames)
+{
+	PcmInterleaveT(dest, src, n_frames);
+}
+
 void
 PcmInterleave32(int32_t *gcc_restrict dest,
 		const ConstBuffer<const int32_t *> src,
@@ -65,6 +73,13 @@ PcmInterleave(void *gcc_restrict dest,
 	      size_t n_frames, size_t sample_size)
 {
 	switch (sample_size) {
+	case 2:
+		PcmInterleave16((int16_t *)dest,
+				ConstBuffer<const int16_t *>((const int16_t *const*)src.data,
+							     src.size),
+				n_frames);
+		break;
+
 	case 4:
 		PcmInterleave32((int32_t *)dest,
 				ConstBuffer<const int32_t *>((const int32_t *const*)src.data,
