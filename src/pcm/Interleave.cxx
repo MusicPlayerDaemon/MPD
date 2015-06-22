@@ -38,10 +38,29 @@ GenericPcmInterleave(uint8_t *gcc_restrict dest,
 
 template<typename T>
 static void
+PcmInterleaveStereo(T *gcc_restrict dest,
+		    const T *gcc_restrict src1,
+		    const T *gcc_restrict src2,
+		    size_t n_frames)
+{
+	for (size_t i = 0; i != n_frames; ++i) {
+		*dest++ = *src1++;
+		*dest++ = *src2++;
+	}
+}
+
+template<typename T>
+static void
 PcmInterleaveT(T *gcc_restrict dest,
 	       const ConstBuffer<const T *> src,
 	       size_t n_frames)
 {
+	switch (src.size) {
+	case 2:
+		PcmInterleaveStereo(dest, src[0], src[1], n_frames);
+		return;
+	}
+
 	for (const auto *s : src) {
 		auto *d = dest++;
 
