@@ -38,7 +38,7 @@ class Glob {
 	GPatternSpec *pattern;
 
 public:
-	Glob(const char *_pattern)
+	explicit Glob(const char *_pattern)
 		:pattern(g_pattern_spec_new(_pattern)) {}
 
 	Glob(Glob &&other)
