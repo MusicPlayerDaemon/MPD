@@ -26,13 +26,6 @@
 void
 SetLogThreshold(LogLevel _threshold);
 
-#ifdef HAVE_GLIB
-
-void
-SetLogCharset(const char *_charset);
-
-#endif
-
 void
 EnableLogTimestamp();
 

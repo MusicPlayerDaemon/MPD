@@ -23,10 +23,6 @@
 #include "util/Domain.hxx"
 #include "util/StringUtil.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -65,10 +61,6 @@ ToAndroidLogLevel(LogLevel log_level)
 
 static LogLevel log_threshold = LogLevel::INFO;
 
-#ifdef HAVE_GLIB
-static const char *log_charset;
-#endif
-
 static bool enable_timestamp;
 
 #ifdef HAVE_SYSLOG
@@ -80,16 +72,6 @@ SetLogThreshold(LogLevel _threshold)
 {
 	log_threshold = _threshold;
 }
-
-#ifdef HAVE_GLIB
-
-void
-SetLogCharset(const char *_charset)
-{
-	log_charset = _charset;
-}
-
-#endif
 
 void
 EnableLogTimestamp()
@@ -175,20 +157,6 @@ LogFinishSysLog()
 static void
 FileLog(const Domain &domain, const char *message)
 {
-#ifdef HAVE_GLIB
-	char *converted;
-
-	if (log_charset != nullptr) {
-		converted = g_convert_with_fallback(message, -1,
-						    log_charset, "utf-8",
-						    nullptr, nullptr,
-						    nullptr, nullptr);
-		if (converted != nullptr)
-			message = converted;
-	} else
-		converted = nullptr;
-#endif
-
 	fprintf(stderr, "%s%s: %.*s\n",
 		enable_timestamp ? log_date() : "",
 		domain.GetName(),
@@ -198,10 +166,6 @@ FileLog(const Domain &domain, const char *message)
 	/* force-flush the log file, because setvbuf() does not seem
 	   to have an effect on WIN32 */
 	fflush(stderr);
-#endif
-
-#ifdef HAVE_GLIB
-	g_free(converted);
 #endif
 }
 

@@ -25,6 +25,7 @@ ver 0.20 (not yet released)
   - soxr: allow multi-threaded resampling
 * reset song priority on playback
 * write database and state file atomically
+* always write UTF-8 to the log file.
 * remove dependency on GLib
 * support libsystemd (instead of the older libsystemd-daemon)
 * database

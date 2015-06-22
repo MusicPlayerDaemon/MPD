@@ -31,10 +31,6 @@
 #include "util/Domain.hxx"
 #include "system/FatalError.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <assert.h>
 #include <string.h>
 #include <fcntl.h>
@@ -131,12 +127,6 @@ log_init(bool verbose, bool use_stdout, Error &error)
 #else
 	const struct config_param *param;
 
-#ifdef HAVE_GLIB
-	const char *charset;
-	g_get_charset(&charset);
-	SetLogCharset(charset);
-#endif
-
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
 	else if ((param = config_get_param(ConfigOption::LOG_LEVEL)) != nullptr)
@@ -216,10 +206,6 @@ void setup_log_output(bool use_stdout)
 	redirect_logs(out_fd);
 	close(out_fd);
 	out_fd = -1;
-
-#ifdef HAVE_GLIB
-	SetLogCharset(nullptr);
-#endif
 #endif
 }
 
