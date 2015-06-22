@@ -74,7 +74,7 @@ ExcludeList::LoadFile(Path path_fs)
 			patterns.emplace_front(p);
 	}
 #else
-	// TODO: implement
+	/* not implemented */
 	(void)path_fs;
 #endif
 
@@ -93,7 +93,7 @@ ExcludeList::Check(Path name_fs) const
 		if (i.Check(NarrowPath(name_fs).c_str()))
 			return true;
 #else
-	// TODO: implement
+	/* not implemented */
 	(void)name_fs;
 #endif
 

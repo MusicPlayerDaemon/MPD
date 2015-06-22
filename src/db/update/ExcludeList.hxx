@@ -38,8 +38,6 @@ class Path;
 class ExcludeList {
 #ifdef HAVE_CLASS_GLOB
 	std::forward_list<Glob> patterns;
-#else
-	// TODO: implement
 #endif
 
 public:
@@ -48,7 +46,7 @@ public:
 #ifdef HAVE_CLASS_GLOB
 		return patterns.empty();
 #else
-		// TODO: implement
+		/* not implemented */
 		return true;
 #endif
 	}
