@@ -24,7 +24,7 @@
 #include "Compiler.h"
 #include "Traits.hxx"
 
-#if defined(HAVE_ICU) || defined(HAVE_GLIB)
+#if (defined(HAVE_ICU) || defined(HAVE_GLIB)) && !defined(WIN32)
 #define HAVE_FS_CHARSET
 #endif
 

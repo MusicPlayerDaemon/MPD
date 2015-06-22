@@ -22,10 +22,7 @@
 #include "Charset.hxx"
 #include "config/ConfigGlobal.hxx"
 
-#ifdef WIN32
-#include <windows.h> // for GetACP()
-#include <stdio.h> // for sprintf()
-#elif defined(HAVE_GLIB)
+#ifdef HAVE_GLIB
 #include <glib.h>
 #endif
 
@@ -37,16 +34,7 @@ ConfigureFS(Error &error)
 
 	charset = config_get_string(ConfigOption::FS_CHARSET, nullptr);
 	if (charset == nullptr) {
-#ifdef WIN32
-		/* Glib claims that file system encoding is always utf-8
-		 * on native Win32 (i.e. not Cygwin).
-		 * However this is true only if <gstdio.h> helpers are used.
-		 * MPD uses regular <stdio.h> functions.
-		 * Those functions use encoding determined by GetACP(). */
-		static char win_charset[13];
-		sprintf(win_charset, "cp%u", GetACP());
-		charset = win_charset;
-#elif defined(HAVE_GLIB)
+#ifdef HAVE_GLIB
 		const gchar **encodings;
 		g_get_filename_charsets(&encodings);
 

@@ -71,6 +71,8 @@ GetFSCharset()
 {
 #ifdef HAVE_FS_CHARSET
 	return fs_charset.empty() ? "UTF-8" : fs_charset.c_str();
+#elif defined(WIN32)
+	return "ACP";
 #else
 	return "UTF-8";
 #endif
