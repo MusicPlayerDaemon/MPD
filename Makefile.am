@@ -1514,6 +1514,7 @@ C_TESTS = \
 	test/test_pcm \
 	test/test_protocol \
 	test/test_queue_priority \
+	test/TestFs \
 	test/TestIcu
 
 if ENABLE_CURL
@@ -2162,6 +2163,14 @@ test_test_queue_priority_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declara
 test_test_queue_priority_LDADD = \
 	libsystem.a \
 	libutil.a \
+	$(CPPUNIT_LIBS)
+
+test_TestFs_SOURCES = \
+	test/TestFs.cxx
+test_TestFs_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
+test_TestFs_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
+test_TestFs_LDADD = \
+	$(FS_LIBS) \
 	$(CPPUNIT_LIBS)
 
 test_TestIcu_SOURCES = \
