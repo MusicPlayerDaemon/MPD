@@ -103,6 +103,23 @@ public:
 	void TestMix32();
 };
 
+class PcmInterleaveTest : public CppUnit::TestFixture {
+	CPPUNIT_TEST_SUITE(PcmInterleaveTest);
+	CPPUNIT_TEST(TestInterleave8);
+	CPPUNIT_TEST(TestInterleave16);
+	CPPUNIT_TEST(TestInterleave24);
+	CPPUNIT_TEST(TestInterleave32);
+	CPPUNIT_TEST(TestInterleave64);
+	CPPUNIT_TEST_SUITE_END();
+
+public:
+	void TestInterleave8();
+	void TestInterleave16();
+	void TestInterleave24();
+	void TestInterleave32();
+	void TestInterleave64();
+};
+
 class PcmExportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(PcmExportTest);
 	CPPUNIT_TEST(TestShift8);
