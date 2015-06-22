@@ -478,8 +478,27 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 	uint64_t min_frame = 0;
 
-	DecoderCommand cmd;
-	do {
+	DecoderCommand cmd = decoder_get_command(decoder);
+	while (cmd != DecoderCommand::STOP) {
+		if (cmd == DecoderCommand::SEEK) {
+			int64_t where =
+				ToFfmpegTime(decoder_seek_time(decoder),
+					     av_stream.time_base) +
+				start_time_fallback(av_stream);
+
+			/* AVSEEK_FLAG_BACKWARD asks FFmpeg to seek to
+			   the packet boundary before the seek time
+			   stamp, not after */
+			if (av_seek_frame(format_context, audio_stream, where,
+					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
+				decoder_seek_error(decoder);
+			else {
+				avcodec_flush_buffers(codec_context);
+				min_frame = decoder_seek_where_frame(decoder);
+				decoder_command_finished(decoder);
+			}
+		}
+
 		AVPacket packet;
 		if (av_read_frame(format_context, &packet) < 0)
 			/* end of file */
@@ -502,27 +521,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 #else
 		av_free_packet(&packet);
 #endif
-
-		if (cmd == DecoderCommand::SEEK) {
-			int64_t where =
-				ToFfmpegTime(decoder_seek_time(decoder),
-					     av_stream.time_base) +
-				start_time_fallback(av_stream);
-
-			/* AVSEEK_FLAG_BACKWARD asks FFmpeg to seek to
-			   the packet boundary before the seek time
-			   stamp, not after */
-
-			if (av_seek_frame(format_context, audio_stream, where,
-					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
-				decoder_seek_error(decoder);
-			else {
-				avcodec_flush_buffers(codec_context);
-				min_frame = decoder_seek_where_frame(decoder);
-				decoder_command_finished(decoder);
-			}
-		}
-	} while (cmd != DecoderCommand::STOP);
+	}
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 	av_frame_free(&frame);
