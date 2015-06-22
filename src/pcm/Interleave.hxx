@@ -21,13 +21,14 @@
 #define MPD_PCM_INTERLEAVE_HXX
 
 #include "check.h"
+#include "Compiler.h"
 #include "util/ConstBuffer.hxx"
 
 /**
  * Interleave planar PCM samples from #src to #dest.
  */
 void
-PcmInterleave(void *dest, ConstBuffer<const void *> src,
+PcmInterleave(void *gcc_restrict dest, ConstBuffer<const void *> src,
 	      size_t n_frames, size_t sample_size);
 
 #endif

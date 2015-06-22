@@ -24,7 +24,8 @@
 #include <string.h>
 
 static void
-GenericPcmInterleave(uint8_t *dest, ConstBuffer<const uint8_t *> src,
+GenericPcmInterleave(uint8_t *gcc_restrict dest,
+		     ConstBuffer<const uint8_t *> src,
 		     size_t n_frames, size_t sample_size)
 {
 	for (size_t frame = 0; frame < n_frames; ++frame) {
@@ -37,7 +38,8 @@ GenericPcmInterleave(uint8_t *dest, ConstBuffer<const uint8_t *> src,
 }
 
 void
-PcmInterleave(void *dest, ConstBuffer<const void *> src,
+PcmInterleave(void *gcc_restrict dest,
+	      ConstBuffer<const void *> src,
 	      size_t n_frames, size_t sample_size)
 {
 	GenericPcmInterleave((uint8_t *)dest,
