@@ -31,6 +31,7 @@
 #include "../DecoderAPI.hxx"
 #include "FfmpegMetaData.hxx"
 #include "FfmpegIo.hxx"
+#include "pcm/Interleave.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/ReplayGain.hxx"
@@ -103,20 +104,6 @@ start_time_fallback(const AVStream &stream)
 	return FfmpegTimestampFallback(stream.start_time, 0);
 }
 
-static void
-copy_interleave_frame2(uint8_t *dest, uint8_t **src,
-		       unsigned nframes, unsigned nchannels,
-		       unsigned sample_size)
-{
-	for (unsigned frame = 0; frame < nframes; ++frame) {
-		for (unsigned channel = 0; channel < nchannels; ++channel) {
-			memcpy(dest, src[channel] + frame * sample_size,
-			       sample_size);
-			dest += sample_size;
-		}
-	}
-}
-
 /**
  * Copy PCM data from a non-empty AVFrame to an interleaved buffer.
  */
@@ -150,11 +137,11 @@ copy_interleave_frame(const AVCodecContext &codec_context,
 			return 0;
 		}
 
-		copy_interleave_frame2((uint8_t *)output_buffer,
-				       frame.extended_data,
-				       frame.nb_samples,
-				       codec_context.channels,
-				       av_get_bytes_per_sample(codec_context.sample_fmt));
+		PcmInterleave(output_buffer,
+			      ConstBuffer<const void *>((const void *const*)frame.extended_data,
+							codec_context.channels),
+			      frame.nb_samples,
+			      av_get_bytes_per_sample(codec_context.sample_fmt));
 	} else {
 		output_buffer = frame.extended_data[0];
 	}
