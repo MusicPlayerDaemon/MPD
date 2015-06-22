@@ -263,7 +263,7 @@ vorbis_stream_decode(Decoder &decoder,
 	unsigned kbit_rate = 0;
 
 	DecoderCommand cmd = decoder_get_command(decoder);
-	do {
+	while (cmd != DecoderCommand::STOP) {
 		if (cmd == DecoderCommand::SEEK) {
 			auto seek_where = decoder_seek_where_frame(decoder);
 			if (0 == ov_pcm_seek_page(&vf, seek_where)) {
@@ -332,7 +332,7 @@ vorbis_stream_decode(Decoder &decoder,
 		cmd = decoder_data(decoder, input_stream,
 				   buffer, nbytes,
 				   kbit_rate);
-	} while (cmd != DecoderCommand::STOP);
+	}
 
 	ov_clear(&vf);
 }
