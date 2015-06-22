@@ -563,6 +563,7 @@ libfs_a_SOURCES = \
 	src/fs/NarrowPath.hxx \
 	src/fs/FileSystem.cxx src/fs/FileSystem.hxx \
 	src/fs/FileInfo.hxx \
+	src/fs/Glob.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
 	src/fs/DirectoryReader.hxx

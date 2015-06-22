@@ -35,7 +35,7 @@
 #include <string.h>
 #include <errno.h>
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_CLASS_GLOB
 
 gcc_pure
 static bool
@@ -54,7 +54,7 @@ IsFileNotFound(const Error &error)
 bool
 ExcludeList::LoadFile(Path path_fs)
 {
-#ifdef HAVE_GLIB
+#ifdef HAVE_CLASS_GLOB
 	Error error;
 	TextFile file(path_fs, error);
 	if (file.HasFailed()) {
@@ -88,7 +88,7 @@ ExcludeList::Check(Path name_fs) const
 
 	/* XXX include full path name in check */
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_CLASS_GLOB
 	for (const auto &i : patterns)
 		if (i.Check(NarrowPath(name_fs).c_str()))
 			return true;

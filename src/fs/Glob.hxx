@@ -17,53 +17,45 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * The .mpdignore backend code.
- *
- */
-
-#ifndef MPD_EXCLUDE_H
-#define MPD_EXCLUDE_H
+#ifndef MPD_FS_GLOB_XX
+#define MPD_FS_GLOB_XX
 
 #include "check.h"
+
+#ifdef HAVE_GLIB
+#define HAVE_CLASS_GLOB
+#include <glib.h>
+#endif
+
+#ifdef HAVE_CLASS_GLOB
 #include "Compiler.h"
-#include "fs/Glob.hxx"
 
-#ifdef HAVE_CLASS_GLOB
-#include <forward_list>
-#endif
-
-class Path;
-
-class ExcludeList {
-#ifdef HAVE_CLASS_GLOB
-	std::forward_list<Glob> patterns;
-#else
-	// TODO: implement
-#endif
+/**
+ * A pattern that matches file names.  It may contain shell wildcards
+ * (asterisk and question mark).
+ */
+class Glob {
+	GPatternSpec *pattern;
 
 public:
-	gcc_pure
-	bool IsEmpty() const {
-#ifdef HAVE_CLASS_GLOB
-		return patterns.empty();
-#else
-		// TODO: implement
-		return true;
-#endif
+	Glob(const char *_pattern)
+		:pattern(g_pattern_spec_new(_pattern)) {}
+
+	Glob(Glob &&other)
+		:pattern(other.pattern) {
+		other.pattern = nullptr;
 	}
 
-	/**
-	 * Loads and parses a .mpdignore file.
-	 */
-	bool LoadFile(Path path_fs);
+	~Glob() {
+		g_pattern_spec_free(pattern);
+	}
 
-	/**
-	 * Checks whether one of the patterns in the .mpdignore file matches
-	 * the specified file name.
-	 */
-	bool Check(Path name_fs) const;
+	gcc_pure
+	bool Check(const char *name_fs) const {
+		return g_pattern_match_string(pattern, name_fs);
+	}
 };
 
+#endif
 
 #endif
