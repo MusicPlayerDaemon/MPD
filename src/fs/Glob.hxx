@@ -22,7 +22,11 @@
 
 #include "check.h"
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_FNMATCH
+#define HAVE_CLASS_GLOB
+#include <string>
+#include <fnmatch.h>
+#elif defined(HAVE_GLIB)
 #define HAVE_CLASS_GLOB
 #include <glib.h>
 #endif
@@ -35,9 +39,20 @@
  * (asterisk and question mark).
  */
 class Glob {
+#ifdef HAVE_FNMATCH
+	std::string pattern;
+#else
 	GPatternSpec *pattern;
+#endif
 
 public:
+#ifdef HAVE_FNMATCH
+	explicit Glob(const char *_pattern)
+		:pattern(_pattern) {}
+
+	Glob(Glob &&other)
+		:pattern(std::move(other.pattern)) {}
+#else
 	explicit Glob(const char *_pattern)
 		:pattern(g_pattern_spec_new(_pattern)) {}
 
@@ -49,10 +64,15 @@ public:
 	~Glob() {
 		g_pattern_spec_free(pattern);
 	}
+#endif
 
 	gcc_pure
 	bool Check(const char *name_fs) const {
+#ifdef HAVE_FNMATCH
+		return fnmatch(pattern.c_str(), name_fs, 0) == 0;
+#else
 		return g_pattern_match_string(pattern, name_fs);
+#endif
 	}
 };
 
