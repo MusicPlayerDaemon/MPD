@@ -38,7 +38,7 @@ uri_supported_scheme(const char *uri)
 	return memcmp(uri, "http://", 7) == 0;
 }
 
-static const char *const music_directory = "/music";
+static constexpr auto music_directory = PATH_LITERAL("/music");
 static Storage *storage;
 
 static void
