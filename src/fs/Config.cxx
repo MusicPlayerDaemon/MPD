@@ -22,10 +22,6 @@
 #include "Charset.hxx"
 #include "config/ConfigGlobal.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 bool
 ConfigureFS(Error &error)
 {
@@ -33,16 +29,6 @@ ConfigureFS(Error &error)
 	const char *charset = nullptr;
 
 	charset = config_get_string(ConfigOption::FS_CHARSET, nullptr);
-	if (charset == nullptr) {
-#ifdef HAVE_GLIB
-		const gchar **encodings;
-		g_get_filename_charsets(&encodings);
-
-		if (encodings[0] != nullptr && *encodings[0] != '\0')
-			charset = encodings[0];
-#endif
-	}
-
 	return charset == nullptr || SetFSCharset(charset, error);
 #else
 	(void)error;
