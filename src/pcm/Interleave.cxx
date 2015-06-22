@@ -36,10 +36,11 @@ GenericPcmInterleave(uint8_t *gcc_restrict dest,
 	}
 }
 
-void
-PcmInterleave32(int32_t *gcc_restrict dest,
-		const ConstBuffer<const int32_t *> src,
-		size_t n_frames)
+template<typename T>
+static void
+PcmInterleaveT(T *gcc_restrict dest,
+	       const ConstBuffer<const T *> src,
+	       size_t n_frames)
 {
 	for (const auto *s : src) {
 		auto *d = dest++;
@@ -48,6 +49,14 @@ PcmInterleave32(int32_t *gcc_restrict dest,
 		     s != s_end; ++s, d += src.size)
 			*d = *s;
 	}
+}
+
+void
+PcmInterleave32(int32_t *gcc_restrict dest,
+		const ConstBuffer<const int32_t *> src,
+		size_t n_frames)
+{
+	PcmInterleaveT(dest, src, n_frames);
 }
 
 void
