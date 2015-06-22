@@ -578,6 +578,11 @@ libfs_a_SOURCES += \
 FS_LIBS += $(ZLIB_LIBS)
 endif
 
+if HAVE_WINDOWS
+# for PathMatchSpec()
+FS_LIBS += -lshlwapi
+endif
+
 # Storage library
 
 SMBCLIENT_SOURCES = \

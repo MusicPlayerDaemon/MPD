@@ -26,6 +26,10 @@
 #define HAVE_CLASS_GLOB
 #include <string>
 #include <fnmatch.h>
+#elif defined(WIN32)
+#define HAVE_CLASS_GLOB
+#include <string>
+#include <shlwapi.h>
 #elif defined(HAVE_GLIB)
 #define HAVE_CLASS_GLOB
 #include <glib.h>
@@ -39,14 +43,14 @@
  * (asterisk and question mark).
  */
 class Glob {
-#ifdef HAVE_FNMATCH
+#if defined(HAVE_FNMATCH) || defined(WIN32)
 	std::string pattern;
 #else
 	GPatternSpec *pattern;
 #endif
 
 public:
-#ifdef HAVE_FNMATCH
+#if defined(HAVE_FNMATCH) || defined(WIN32)
 	explicit Glob(const char *_pattern)
 		:pattern(_pattern) {}
 
@@ -70,6 +74,8 @@ public:
 	bool Check(const char *name_fs) const {
 #ifdef HAVE_FNMATCH
 		return fnmatch(pattern.c_str(), name_fs, 0) == 0;
+#elif defined(WIN32)
+		return PathMatchSpecA(name_fs, pattern.c_str());
 #else
 		return g_pattern_match_string(pattern, name_fs);
 #endif
