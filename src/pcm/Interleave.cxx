@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Interleave.hxx"
 
-#include <stdint.h>
 #include <string.h>
 
 static void
@@ -38,12 +37,36 @@ GenericPcmInterleave(uint8_t *gcc_restrict dest,
 }
 
 void
+PcmInterleave32(int32_t *gcc_restrict dest,
+		const ConstBuffer<const int32_t *> src,
+		size_t n_frames)
+{
+	for (const auto *s : src) {
+		auto *d = dest++;
+
+		for (const auto *const s_end = s + n_frames;
+		     s != s_end; ++s, d += src.size)
+			*d = *s;
+	}
+}
+
+void
 PcmInterleave(void *gcc_restrict dest,
 	      ConstBuffer<const void *> src,
 	      size_t n_frames, size_t sample_size)
 {
-	GenericPcmInterleave((uint8_t *)dest,
-			     ConstBuffer<const uint8_t *>((const uint8_t *const*)src.data,
-							  src.size),
-			     n_frames, sample_size);
+	switch (sample_size) {
+	case 4:
+		PcmInterleave32((int32_t *)dest,
+				ConstBuffer<const int32_t *>((const int32_t *const*)src.data,
+							     src.size),
+				n_frames);
+		break;
+
+	default:
+		GenericPcmInterleave((uint8_t *)dest,
+				     ConstBuffer<const uint8_t *>((const uint8_t *const*)src.data,
+								  src.size),
+				     n_frames, sample_size);
+	}
 }

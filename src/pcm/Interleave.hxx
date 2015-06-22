@@ -24,11 +24,31 @@
 #include "Compiler.h"
 #include "util/ConstBuffer.hxx"
 
+#include <stdint.h>
+
 /**
  * Interleave planar PCM samples from #src to #dest.
  */
 void
 PcmInterleave(void *gcc_restrict dest, ConstBuffer<const void *> src,
 	      size_t n_frames, size_t sample_size);
+
+/**
+ * A variant of PcmInterleave() that assumes 32 bit samples (4 bytes
+ * per sample).
+ */
+void
+PcmInterleave32(int32_t *gcc_restrict dest, ConstBuffer<const int32_t *> src,
+		size_t n_frames);
+
+static inline void
+PcmInterleaveFloat(float *gcc_restrict dest, ConstBuffer<const float *> src,
+		   size_t n_frames)
+{
+	PcmInterleave32((int32_t *)dest,
+			ConstBuffer<const int32_t *>((const int32_t *const*)src.data,
+						      src.size),
+			n_frames);
+}
 
 #endif

@@ -24,6 +24,7 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "OggCodec.hxx"
+#include "pcm/Interleave.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "CheckAudioFormat.hxx"
@@ -181,13 +182,8 @@ static void
 vorbis_interleave(float *dest, const float *const*src,
 		  unsigned nframes, unsigned channels)
 {
-	for (const float *const*src_end = src + channels;
-	     src != src_end; ++src, ++dest) {
-		float *gcc_restrict d = dest;
-		for (const float *gcc_restrict s = *src, *s_end = s + nframes;
-		     s != s_end; ++s, d += channels)
-			*d = *s;
-	}
+	PcmInterleaveFloat(dest, ConstBuffer<const float *>(src, channels),
+			   nframes);
 }
 #endif
 
