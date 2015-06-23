@@ -37,6 +37,12 @@
 #include <ctype.h>
 #endif
 
+#ifdef WIN32
+#include "Win32.hxx"
+#include "util/AllocatedString.hxx"
+#include <windows.h>
+#endif
+
 #include <assert.h>
 #include <string.h>
 #include <strings.h>
@@ -107,6 +113,26 @@ IcuCollate(const char *a, const char *b)
 	return result;
 #endif
 
+#elif defined(WIN32)
+	const auto wa = MultiByteToWideChar(CP_UTF8, a);
+	const auto wb = MultiByteToWideChar(CP_UTF8, b);
+	if (wa.IsNull())
+		return wb.IsNull() ? 0 : -1;
+	else if (wb.IsNull())
+		return 1;
+
+	auto result = CompareStringEx(LOCALE_NAME_INVARIANT,
+				      LINGUISTIC_IGNORECASE,
+				      wa.c_str(), -1,
+				      wb.c_str(), -1,
+				      nullptr, nullptr, 0);
+	if (result != 0)
+		/* "To maintain the C runtime convention of comparing
+		   strings, the value 2 can be subtracted from a
+		   nonzero return value." */
+		result -= 2;
+
+	return result;
 #elif defined(HAVE_GLIB)
 	return g_utf8_collate(a, b);
 #else
