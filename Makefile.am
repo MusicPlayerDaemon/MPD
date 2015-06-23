@@ -479,6 +479,11 @@ libicu_a_SOURCES += \
 	src/lib/icu/Init.cxx src/lib/icu/Init.hxx
 endif
 
+if HAVE_WINDOWS
+libicu_a_SOURCES += \
+	src/lib/icu/Win32.cxx src/lib/icu/Win32.hxx
+endif
+
 libicu_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ICU_CFLAGS)
 
