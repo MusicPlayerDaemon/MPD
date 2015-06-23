@@ -27,7 +27,6 @@
 #include <string>
 
 #include <assert.h>
-#include <string.h>
 
 class AllocatedPath;
 
