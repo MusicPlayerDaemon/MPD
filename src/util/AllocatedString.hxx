@@ -77,7 +77,6 @@ public:
 	}
 
 	AllocatedString &operator=(AllocatedString &&src) {
-		*(StringPointer<T> *)this = std::move(src);
 		std::swap(value, src.value);
 		return *this;
 	}
