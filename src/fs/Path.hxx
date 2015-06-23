@@ -98,9 +98,9 @@ public:
 	 */
 	gcc_pure
 	size_t length() const {
-		assert(value != nullptr);
+		assert(!IsNull());
 
-		return PathTraitsFS::GetLength(value);
+		return PathTraitsFS::GetLength(c_str());
 	}
 
 	/**
@@ -119,7 +119,7 @@ public:
 	 */
 	gcc_pure
 	const_pointer data() const {
-		return value;
+		return c_str();
 	}
 
 	/**
@@ -129,7 +129,7 @@ public:
 	 */
 	gcc_pure
 	bool HasNewline() const {
-		return PathTraitsFS::Find(value, '\n') != nullptr;
+		return PathTraitsFS::Find(c_str(), '\n') != nullptr;
 	}
 
 	/**
@@ -146,7 +146,7 @@ public:
 	 */
 	gcc_pure
 	Path GetBase() const {
-		return FromFS(PathTraitsFS::GetBase(value));
+		return FromFS(PathTraitsFS::GetBase(c_str()));
 	}
 
 	/**
