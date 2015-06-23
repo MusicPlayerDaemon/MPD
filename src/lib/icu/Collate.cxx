@@ -136,7 +136,7 @@ IcuCollate(const char *a, const char *b)
 #elif defined(HAVE_GLIB)
 	return g_utf8_collate(a, b);
 #else
-	return strcasecmp(a, b);
+	return strcoll(a, b);
 #endif
 }
 

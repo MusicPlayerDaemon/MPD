@@ -438,6 +438,7 @@ int mpd_main(int argc, char *argv[])
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
+	setlocale(LC_COLLATE, "");
 #endif
 
 #ifdef HAVE_GLIB
