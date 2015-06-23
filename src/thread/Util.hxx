@@ -30,6 +30,8 @@
 #ifndef THREAD_UTIL_HXX
 #define THREAD_UTIL_HXX
 
+#include "util/Error.hxx"
+
 #ifdef __linux__
 #include <sched.h>
 #include <sys/syscall.h>
@@ -81,9 +83,11 @@ SetThreadIdlePriority()
 
 /**
  * Raise the current thread's priority to "real-time" (very high).
+ * @param[out]	error	Receives error information on failure
+ * @return	true on success (always true on non-linux systems)
  */
-static inline void
-SetThreadRealtime()
+static inline bool
+SetThreadRealtime(Error& error)
 {
 #ifdef __linux__
 	struct sched_param sched_param;
@@ -94,8 +98,15 @@ SetThreadRealtime()
 	policy |= SCHED_RESET_ON_FORK;
 #endif
 
-	sched_setscheduler(0, policy, &sched_param);
-#endif
+	if(sched_setscheduler(0, policy, &sched_param)==0) {
+		return true;
+	} else {
+		error.FormatErrno("sched_setscheduler failed");
+		return false;
+	}
+#else
+	return true; // on non-linux systems, we pretend it worked
+#endif	// __linux__
 };
 
 #endif

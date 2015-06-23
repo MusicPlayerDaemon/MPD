@@ -593,7 +593,12 @@ AudioOutput::Task()
 {
 	FormatThreadName("output:%s", name);
 
-	SetThreadRealtime();
+	Error error;
+	if(!SetThreadRealtime(error)) {
+		LogError(error);
+		LogWarning(output_domain,
+			"OutputThread could not get realtime scheduling, continuing anyway");
+	}
 	SetThreadTimerSlackUS(100);
 
 	mutex.lock();
