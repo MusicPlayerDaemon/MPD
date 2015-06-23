@@ -25,7 +25,11 @@
 #include "util/Macros.hxx"
 
 #ifdef _UNICODE
+#include "lib/icu/Win32.hxx"
+#include "util/AllocatedString.hxx"
 #include <windows.h>
+#else
+#include "util/StringPointer.hxx"
 #endif
 
 /**
@@ -34,35 +38,33 @@
  * that accepts only "const char *".
  */
 class NarrowPath {
-	typedef char value_type;
-	typedef const char *const_pointer;
-
 #ifdef _UNICODE
-	char value[PATH_MAX];
+	typedef AllocatedString<> Value;
 #else
-	const_pointer value;
+	typedef StringPointer<> Value;
 #endif
+	typedef typename Value::const_pointer const_pointer;
+
+	Value value;
 
 public:
 #ifdef _UNICODE
-	explicit NarrowPath(Path _path) {
-		auto result = WideCharToMultiByte(CP_ACP, 0,
-						  _path.c_str(), -1,
-						  value, ARRAY_SIZE(value),
-						  nullptr, nullptr);
-		if (result < 0)
-			value[0] = 0;
+	explicit NarrowPath(Path _path)
+		:value(WideCharToMultiByte(CP_ACP, _path.c_str())) {
+		if (value.IsNull())
+			/* fall back to empty string */
+			value = Value::Empty();
 	}
 #else
 	explicit NarrowPath(Path _path):value(_path.c_str()) {}
 #endif
 
 	operator const_pointer() const {
-		return value;
+		return c_str();
 	}
 
 	const_pointer c_str() const {
-		return value;
+		return value.c_str();
 	}
 };
 
