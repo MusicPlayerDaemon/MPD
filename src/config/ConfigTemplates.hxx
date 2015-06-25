@@ -23,6 +23,10 @@
 struct ConfigTemplate {
 	const char *const name;
 	const bool repeatable;
+
+	constexpr ConfigTemplate(const char *_name,
+				 bool _repeatable=false)
+		:name(_name), repeatable(_repeatable) {}
 };
 
 extern const ConfigTemplate config_param_templates[];
