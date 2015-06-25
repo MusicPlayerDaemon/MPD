@@ -82,6 +82,8 @@ SongFilter::Item::StringMatch(const char *s) const
 	assert(s != nullptr);
 #endif
 
+	assert(tag != LOCATE_TAG_MODIFIED_SINCE);
+
 	if (fold_case) {
 		const std::string folded = IcuCaseFold(s);
 		return folded.find(value) != folded.npos;
