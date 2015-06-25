@@ -89,6 +89,10 @@ public:
 		return value;
 	}
 
+	bool empty() const {
+		return *value == 0;
+	}
+
 	pointer Steal() {
 		pointer result = value;
 		value = nullptr;
