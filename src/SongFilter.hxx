@@ -20,10 +20,10 @@
 #ifndef MPD_SONG_FILTER_HXX
 #define MPD_SONG_FILTER_HXX
 
+#include "util/AllocatedString.hxx"
 #include "Compiler.h"
 
 #include <list>
-#include <string>
 
 #include <stdint.h>
 #include <time.h>
@@ -51,7 +51,7 @@ public:
 
 		bool fold_case;
 
-		std::string value;
+		AllocatedString<> value;
 
 		/**
 		 * For #LOCATE_TAG_MODIFIED_SINCE

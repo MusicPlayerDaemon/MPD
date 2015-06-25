@@ -22,6 +22,7 @@
 #include "Error.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 
@@ -80,7 +81,7 @@ IcuConverter::Create(const char *charset, Error &error)
 #ifdef HAVE_ICU
 #elif defined(HAVE_GLIB)
 
-static std::string
+static AllocatedString<char>
 DoConvert(GIConv conv, const char *src)
 {
 	// TODO: dynamic buffer?
@@ -93,14 +94,14 @@ DoConvert(GIConv conv, const char *src)
 	size_t n = g_iconv(conv, &in, &in_left, &out, &out_left);
 
 	if (n == static_cast<size_t>(-1) || in_left > 0)
-		return std::string();
+		return nullptr;
 
-	return std::string(buffer, sizeof(buffer) - out_left);
+	return AllocatedString::Duplicate(buffer, sizeof(buffer) - out_left);
 }
 
 #endif
 
-std::string
+AllocatedString<char>
 IcuConverter::ToUTF8(const char *s) const
 {
 #ifdef HAVE_ICU
@@ -118,23 +119,16 @@ IcuConverter::ToUTF8(const char *s) const
 		       &source, source + strlen(source),
 		       nullptr, true, &code);
 	if (code != U_ZERO_ERROR)
-		return std::string();
+		return nullptr;
 
 	const size_t target_length = target - buffer;
-	const auto u = UCharToUTF8({buffer, target_length});
-	if (u.IsNull())
-		return std::string();
-
-	std::string result(u.data, u.size);
-	delete[] u.data;
-	return result;
-
+	return UCharToUTF8({buffer, target_length});
 #elif defined(HAVE_GLIB)
 	return DoConvert(to_utf8, s);
 #endif
 }
 
-std::string
+AllocatedString<char>
 IcuConverter::FromUTF8(const char *s) const
 {
 #ifdef HAVE_ICU
@@ -142,7 +136,7 @@ IcuConverter::FromUTF8(const char *s) const
 
 	const auto u = UCharFromUTF8(s);
 	if (u.IsNull())
-		return std::string();
+		return nullptr;
 
 	ucnv_resetFromUnicode(converter);
 
@@ -157,9 +151,9 @@ IcuConverter::FromUTF8(const char *s) const
 	delete[] u.data;
 
 	if (code != U_ZERO_ERROR)
-		return std::string();
+		return nullptr;
 
-	return std::string(buffer, target);
+	return AllocatedString<>::Duplicate(buffer, target);
 
 #elif defined(HAVE_GLIB)
 	return DoConvert(from_utf8, s);

@@ -33,13 +33,13 @@
 
 #ifdef HAVE_ICU_CONVERTER
 
-#include <string>
-
 class Error;
 
 #ifdef HAVE_ICU
 struct UConverter;
 #endif
+
+template<typename T> class AllocatedString;
 
 /**
  * This class can convert strings with a certain character set to and
@@ -77,17 +77,19 @@ public:
 
 	/**
 	 * Convert the string to UTF-8.
-	 * Returns empty string on error.
+	 *
+	 * Returns AllocatedString::Null() on error.
 	 */
 	gcc_pure gcc_nonnull_all
-	std::string ToUTF8(const char *s) const;
+	AllocatedString<char> ToUTF8(const char *s) const;
 
 	/**
 	 * Convert the string from UTF-8.
-	 * Returns empty string on error.
+	 *
+	 * Returns AllocatedString::Null() on error.
 	 */
 	gcc_pure gcc_nonnull_all
-	std::string FromUTF8(const char *s) const;
+	AllocatedString<char> FromUTF8(const char *s) const;
 };
 
 #endif

@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Collate.hxx"
+#include "util/AllocatedString.hxx"
 
 #ifdef HAVE_ICU
 #include "Util.hxx"
@@ -140,7 +141,7 @@ IcuCollate(const char *a, const char *b)
 #endif
 }
 
-std::string
+AllocatedString<>
 IcuCaseFold(const char *src)
 {
 #ifdef HAVE_ICU
@@ -152,7 +153,7 @@ IcuCaseFold(const char *src)
 
 	const auto u = UCharFromUTF8(src);
 	if (u.IsNull())
-		return std::string(src);
+		return AllocatedString<>::Duplicate(src);
 
 	size_t folded_capacity = u.size * 2u;
 	UChar *folded = new UChar[folded_capacity];
@@ -165,20 +166,17 @@ IcuCaseFold(const char *src)
 	delete[] u.data;
 	if (folded_length == 0 || error_code != U_ZERO_ERROR) {
 		delete[] folded;
-		return std::string(src);
+		return AllocatedString<>::Duplicate(src);
 	}
 
-	auto result2 = UCharToUTF8({folded, folded_length});
+	auto result = UCharToUTF8({folded, folded_length});
 	delete[] folded;
-	if (result2.IsNull())
-		return std::string(src);
-
-	std::string result(result2.data, result2.size);
-	delete[] result2.data;
+	return result;
 #elif defined(HAVE_GLIB)
 	char *tmp = g_utf8_casefold(src, -1);
-	std::string result(tmp);
+	auto result = AllocatedString<>::Duplicate(tmp);
 	g_free(tmp);
+	return result;
 #else
 	size_t size = strlen(src) + 1;
 	auto buffer = new char[size];
@@ -194,9 +192,7 @@ IcuCaseFold(const char *src)
 	assert(nbytes < size);
 	assert(buffer[nbytes] == 0);
 
-	std::string result(buffer, nbytes);
-	delete[] buffer;
+	return AllocatedString<>::Donate(buffer);
 #endif
-	return result;
 }
 

@@ -116,7 +116,11 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 		return FixSeparators(path_fs);
 #ifdef HAVE_FS_CHARSET
 
-	return FixSeparators(fs_converter->ToUTF8(path_fs));
+	const auto buffer = fs_converter->ToUTF8(path_fs);
+	if (buffer.IsNull())
+		return PathTraitsUTF8::string();
+
+	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
 #endif
 #endif
 }
@@ -141,7 +145,11 @@ PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
 	if (fs_converter == nullptr)
 		return path_utf8;
 
-	return fs_converter->FromUTF8(path_utf8);
+	const auto buffer = fs_converter->FromUTF8(path_utf8);
+	if (buffer.IsNull())
+		return PathTraitsFS::string();
+
+	return PathTraitsFS::string(buffer.c_str());
 #endif
 }
 
