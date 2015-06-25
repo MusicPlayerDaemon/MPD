@@ -180,8 +180,22 @@ IcuCaseFold(const char *src)
 	std::string result(tmp);
 	g_free(tmp);
 #else
-	std::string result(src);
-	std::transform(result.begin(), result.end(), result.begin(), tolower);
+	size_t size = strlen(src) + 1;
+	auto buffer = new char[size];
+	size_t nbytes = strxfrm(buffer, src, size);
+	if (nbytes >= size) {
+		/* buffer too small - reallocate and try again */
+		delete[] buffer;
+		size = nbytes + 1;
+		buffer = new char[size];
+		nbytes = strxfrm(buffer, src, size);
+	}
+
+	assert(nbytes < size);
+	assert(buffer[nbytes] == 0);
+
+	std::string result(buffer, nbytes);
+	delete[] buffer;
 #endif
 	return result;
 }
