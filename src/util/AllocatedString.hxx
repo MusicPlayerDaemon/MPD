@@ -33,6 +33,7 @@
 #include "StringPointer.hxx"
 
 #include <utility>
+#include <algorithm>
 
 /**
  * A string pointer whose memory is managed by this class.
@@ -76,6 +77,22 @@ public:
 		return Donate(p);
 	}
 
+	static AllocatedString Duplicate(const_pointer src);
+
+	static AllocatedString Duplicate(const_pointer begin,
+					 const_pointer end) {
+		auto p = new value_type[end - begin + 1];
+		*std::copy(begin, end, p) = 0;
+		return Donate(p);
+	}
+
+	static AllocatedString Duplicate(const_pointer begin,
+					 size_t length) {
+		auto p = new value_type[length];
+		*std::copy_n(begin, length, p) = 0;
+		return Donate(p);
+	}
+
 	AllocatedString &operator=(AllocatedString &&src) {
 		std::swap(value, src.value);
 		return *this;
@@ -97,6 +114,10 @@ public:
 		pointer result = value;
 		value = nullptr;
 		return result;
+	}
+
+	AllocatedString Clone() const {
+		return Duplicate(c_str());
 	}
 };
 
