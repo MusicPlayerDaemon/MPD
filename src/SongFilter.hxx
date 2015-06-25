@@ -76,8 +76,8 @@ public:
 			return fold_case;
 		}
 
-		const std::string &GetValue() const {
-			return value;
+		const char *GetValue() const {
+			return value.c_str();
 		}
 
 		gcc_pure gcc_nonnull(2)
@@ -149,11 +149,11 @@ public:
 	bool HasOtherThanBase() const;
 
 	/**
-	 * Returns the "base" specification (if there is one) or an
-	 * empty string.
+	 * Returns the "base" specification (if there is one) or
+	 * nullptr.
 	 */
 	gcc_pure
-	std::string GetBase() const;
+	const char *GetBase() const;
 };
 
 /**

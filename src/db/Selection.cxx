@@ -26,8 +26,11 @@ DatabaseSelection::DatabaseSelection(const char *_uri, bool _recursive,
 {
 	/* optimization: if the caller didn't specify a base URI, pick
 	   the one from SongFilter */
-	if (uri.empty() && filter != nullptr)
-		uri = filter->GetBase();
+	if (uri.empty() && filter != nullptr) {
+		auto base = filter->GetBase();
+		if (base != nullptr)
+			uri = base;
+	}
 }
 
 bool

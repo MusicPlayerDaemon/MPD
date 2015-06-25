@@ -303,7 +303,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 					} else {
 						cond += " = ";
 					}
-					dquote(cond, item.GetValue().c_str());
+					dquote(cond, item.GetValue());
 				}
 				cond += ')';
 			}
@@ -339,7 +339,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 			} else {
 				cond += " = ";
 			}
-			dquote(cond, item.GetValue().c_str());
+			dquote(cond, item.GetValue());
 		}
 	}
 

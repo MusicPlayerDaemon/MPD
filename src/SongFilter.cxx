@@ -300,12 +300,12 @@ SongFilter::HasOtherThanBase() const
 	return false;
 }
 
-std::string
+const char *
 SongFilter::GetBase() const
 {
 	for (const auto &i : items)
 		if (i.GetTag() == LOCATE_TAG_BASE_TYPE)
 			return i.GetValue();
 
-	return std::string();
+	return nullptr;
 }
