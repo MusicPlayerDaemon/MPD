@@ -9,6 +9,8 @@ ver 0.20 (not yet released)
   - ape, ogg: drop support for non-standard tag "album artist"
     affected filetypes: vorbis, flac, opus & all files with ape2 tags
     (most importantly some mp3s)
+  - id3: remove the "id3v1_encoding" setting; by definition, all ID3v1 tags
+    are ISO-Latin-1
 * decoder
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags

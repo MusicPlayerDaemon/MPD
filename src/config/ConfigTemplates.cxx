@@ -64,7 +64,7 @@ const ConfigTemplate config_param_templates[] = {
 	{ "max_command_list_size" },
 	{ "max_output_buffer_size" },
 	{ "filesystem_charset" },
-	{ "id3v1_encoding" },
+	{ "id3v1_encoding", false, true },
 	{ "metadata_to_use" },
 	{ "save_absolute_paths_in_playlists" },
 	{ "gapless_mp3_playback" },

@@ -156,12 +156,6 @@ This specifies the character set used for the filesystem.  A list of supported
 character sets can be obtained by running "iconv \-l".  The default is
 determined from the locale when the db was originally created.
 .TP
-.B id3v1_encoding <charset>
-This specifies the character set which ID3v1 tags are encoded in.  A list of
-supported character sets can be obtained by running "iconv \-l".  The default is
-to let libid3tag convert them (from ISO-8859-1, as the standard specifies) and
-do no additional conversion.
-.TP
 .B gapless_mp3_playback <yes or no>
 This specifies whether to support gapless playback of MP3s which have the
 necessary headers.  Useful if your MP3s have headers with incorrect
