@@ -159,9 +159,9 @@ IcuCaseFold(const char *src)
 
 	UErrorCode error_code = U_ZERO_ERROR;
 	size_t folded_length = u_strFoldCase(folded, folded_capacity,
-					   u.data, u.size,
-					   U_FOLD_CASE_DEFAULT,
-					   &error_code);
+					     u.data, u.size,
+					     U_FOLD_CASE_DEFAULT,
+					     &error_code);
 	delete[] u.data;
 	if (folded_length == 0 || error_code != U_ZERO_ERROR) {
 		delete[] folded;
