@@ -70,9 +70,9 @@ const ConfigTemplate config_param_templates[] = {
 	{ "gapless_mp3_playback" },
 	{ "auto_update" },
 	{ "auto_update_depth" },
-	{ "despotify_user" },
-	{ "despotify_password" },
-	{ "despotify_high_bitrate" },
+	{ "despotify_user", false, true },
+	{ "despotify_password", false, true },
+	{ "despotify_high_bitrate", false, true },
 };
 
 static constexpr unsigned n_config_param_templates =

@@ -24,9 +24,14 @@ struct ConfigTemplate {
 	const char *const name;
 	const bool repeatable;
 
+	// TODO: print warning when a deprecated option is used
+	const bool deprecated;
+
 	constexpr ConfigTemplate(const char *_name,
-				 bool _repeatable=false)
-		:name(_name), repeatable(_repeatable) {}
+				 bool _repeatable=false,
+				 bool _deprecated=false)
+		:name(_name), repeatable(_repeatable),
+		 deprecated(_deprecated) {}
 };
 
 extern const ConfigTemplate config_param_templates[];
