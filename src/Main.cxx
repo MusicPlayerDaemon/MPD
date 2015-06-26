@@ -102,10 +102,6 @@
 #include "org_musicpd_Bridge.h"
 #endif
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #ifdef ENABLE_SYSTEMD_DAEMON
 #include <systemd/sd-daemon.h>
 #endif
@@ -439,10 +435,6 @@ int mpd_main(int argc, char *argv[])
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
 	setlocale(LC_COLLATE, "");
-#endif
-
-#ifdef HAVE_GLIB
-	g_set_application_name("Music Player Daemon");
 #endif
 #endif
 
