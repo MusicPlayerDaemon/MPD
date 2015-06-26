@@ -106,7 +106,7 @@ static void version(void)
 	       "\n"
 	       "\n"
 	       "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-	       "Copyright (C) 2008-2014 Max Kellermann <max@duempel.org>\n"
+	       "Copyright (C) 2008-2015 Max Kellermann <max@duempel.org>\n"
 	       "This is free software; see the source for copying conditions.  There is NO\n"
 	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 
