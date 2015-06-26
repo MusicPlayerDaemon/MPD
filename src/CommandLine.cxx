@@ -215,6 +215,9 @@ static void version(void)
 #ifdef USE_EPOLL
 	       " epoll"
 #endif
+#ifdef HAVE_ICONV
+	       " iconv"
+#endif
 #ifdef HAVE_ICU
 	       " icu"
 #endif

@@ -26,6 +26,9 @@
 #ifdef HAVE_ICU
 #include "thread/Mutex.hxx"
 #define HAVE_ICU_CONVERTER
+#elif defined(HAVE_ICONV)
+#include <iconv.h>
+#define HAVE_ICU_CONVERTER
 #elif defined(HAVE_GLIB)
 #include <glib.h>
 #define HAVE_ICU_CONVERTER
@@ -56,6 +59,11 @@ class IcuConverter {
 	UConverter *const converter;
 
 	IcuConverter(UConverter *_converter):converter(_converter) {}
+#elif defined(HAVE_ICONV)
+	const iconv_t to_utf8, from_utf8;
+
+	IcuConverter(iconv_t _to, iconv_t _from)
+		:to_utf8(_to), from_utf8(_from) {}
 #elif defined(HAVE_GLIB)
 	const GIConv to_utf8, from_utf8;
 
@@ -66,6 +74,11 @@ class IcuConverter {
 public:
 #ifdef HAVE_ICU
 	~IcuConverter();
+#elif defined(HAVE_ICONV)
+	~IcuConverter() {
+		iconv_close(to_utf8);
+		iconv_close(from_utf8);
+	}
 #elif defined(HAVE_GLIB)
 	~IcuConverter() {
 		g_iconv_close(to_utf8);

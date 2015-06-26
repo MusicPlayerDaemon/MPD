@@ -472,6 +472,10 @@ fi
 
 MPD_DEFINE_CONDITIONAL(enable_icu, HAVE_ICU, [libicu])
 
+if test x$enable_icu != xyes; then
+	AC_CHECK_FUNCS(iconv)
+fi
+
 AC_ARG_ENABLE(glib,
 	AS_HELP_STRING([--enable-glib],
 		[enable GLib (default: auto)]),,

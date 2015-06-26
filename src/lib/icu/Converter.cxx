@@ -31,6 +31,9 @@
 #ifdef HAVE_ICU
 #include "Util.hxx"
 #include <unicode/ucnv.h>
+#elif defined(HAVE_ICONV)
+#include "util/Domain.hxx"
+static constexpr Domain iconv_domain("iconv");
 #elif defined(HAVE_GLIB)
 #include "util/Domain.hxx"
 static constexpr Domain g_iconv_domain("g_iconv");
@@ -61,6 +64,20 @@ IcuConverter::Create(const char *charset, Error &error)
 	}
 
 	return new IcuConverter(converter);
+#elif defined(HAVE_ICONV)
+	iconv_t to = iconv_open("utf-8", charset);
+	iconv_t from = iconv_open(charset, "utf-8");
+	if (to == (iconv_t)-1 || from == (iconv_t)-1) {
+		error.FormatErrno("Failed to initialize charset '%s'",
+				  charset);
+		if (to != (iconv_t)-1)
+			iconv_close(to);
+		if (from != (iconv_t)-1)
+			iconv_close(from);
+		return nullptr;
+	}
+
+	return new IcuConverter(to, from);
 #elif defined(HAVE_GLIB)
 	GIConv to = g_iconv_open("utf-8", charset);
 	GIConv from = g_iconv_open(charset, "utf-8");
@@ -79,6 +96,26 @@ IcuConverter::Create(const char *charset, Error &error)
 }
 
 #ifdef HAVE_ICU
+#elif defined(HAVE_ICONV)
+
+static AllocatedString<char>
+DoConvert(iconv_t conv, const char *src)
+{
+	// TODO: dynamic buffer?
+	char buffer[4096];
+	char *in = const_cast<char *>(src);
+	char *out = buffer;
+	size_t in_left = strlen(src);
+	size_t out_left = sizeof(buffer);
+
+	size_t n = iconv(conv, &in, &in_left, &out, &out_left);
+
+	if (n == static_cast<size_t>(-1) || in_left > 0)
+		return nullptr;
+
+	return AllocatedString<>::Duplicate(buffer, sizeof(buffer) - out_left);
+}
+
 #elif defined(HAVE_GLIB)
 
 static AllocatedString<char>
@@ -123,7 +160,7 @@ IcuConverter::ToUTF8(const char *s) const
 
 	const size_t target_length = target - buffer;
 	return UCharToUTF8({buffer, target_length});
-#elif defined(HAVE_GLIB)
+#elif defined(HAVE_ICONV) || defined(HAVE_GLIB)
 	return DoConvert(to_utf8, s);
 #endif
 }
@@ -155,7 +192,7 @@ IcuConverter::FromUTF8(const char *s) const
 
 	return AllocatedString<>::Duplicate(buffer, target);
 
-#elif defined(HAVE_GLIB)
+#elif defined(HAVE_ICONV) || defined(HAVE_GLIB)
 	return DoConvert(from_utf8, s);
 #endif
 }
