@@ -34,9 +34,6 @@
 #elif defined(HAVE_ICONV)
 #include "util/Domain.hxx"
 static constexpr Domain iconv_domain("iconv");
-#elif defined(HAVE_GLIB)
-#include "util/Domain.hxx"
-static constexpr Domain g_iconv_domain("g_iconv");
 #endif
 
 #ifdef HAVE_ICU
@@ -78,20 +75,6 @@ IcuConverter::Create(const char *charset, Error &error)
 	}
 
 	return new IcuConverter(to, from);
-#elif defined(HAVE_GLIB)
-	GIConv to = g_iconv_open("utf-8", charset);
-	GIConv from = g_iconv_open(charset, "utf-8");
-	if (to == (GIConv)-1 || from == (GIConv)-1) {
-		if (to != (GIConv)-1)
-			g_iconv_close(to);
-		if (from != (GIConv)-1)
-			g_iconv_close(from);
-		error.Format(g_iconv_domain,
-			     "Failed to initialize charset '%s'", charset);
-		return nullptr;
-	}
-
-	return new IcuConverter(to, from);
 #endif
 }
 
@@ -109,26 +92,6 @@ DoConvert(iconv_t conv, const char *src)
 	size_t out_left = sizeof(buffer);
 
 	size_t n = iconv(conv, &in, &in_left, &out, &out_left);
-
-	if (n == static_cast<size_t>(-1) || in_left > 0)
-		return nullptr;
-
-	return AllocatedString<>::Duplicate(buffer, sizeof(buffer) - out_left);
-}
-
-#elif defined(HAVE_GLIB)
-
-static AllocatedString<char>
-DoConvert(GIConv conv, const char *src)
-{
-	// TODO: dynamic buffer?
-	char buffer[4096];
-	char *in = const_cast<char *>(src);
-	char *out = buffer;
-	size_t in_left = strlen(src);
-	size_t out_left = sizeof(buffer);
-
-	size_t n = g_iconv(conv, &in, &in_left, &out, &out_left);
 
 	if (n == static_cast<size_t>(-1) || in_left > 0)
 		return nullptr;
@@ -160,7 +123,7 @@ IcuConverter::ToUTF8(const char *s) const
 
 	const size_t target_length = target - buffer;
 	return UCharToUTF8({buffer, target_length});
-#elif defined(HAVE_ICONV) || defined(HAVE_GLIB)
+#elif defined(HAVE_ICONV)
 	return DoConvert(to_utf8, s);
 #endif
 }
@@ -192,7 +155,7 @@ IcuConverter::FromUTF8(const char *s) const
 
 	return AllocatedString<>::Duplicate(buffer, target);
 
-#elif defined(HAVE_ICONV) || defined(HAVE_GLIB)
+#elif defined(HAVE_ICONV)
 	return DoConvert(from_utf8, s);
 #endif
 }

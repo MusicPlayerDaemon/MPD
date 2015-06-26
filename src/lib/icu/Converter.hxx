@@ -29,9 +29,6 @@
 #elif defined(HAVE_ICONV)
 #include <iconv.h>
 #define HAVE_ICU_CONVERTER
-#elif defined(HAVE_GLIB)
-#include <glib.h>
-#define HAVE_ICU_CONVERTER
 #endif
 
 #ifdef HAVE_ICU_CONVERTER
@@ -64,11 +61,6 @@ class IcuConverter {
 
 	IcuConverter(iconv_t _to, iconv_t _from)
 		:to_utf8(_to), from_utf8(_from) {}
-#elif defined(HAVE_GLIB)
-	const GIConv to_utf8, from_utf8;
-
-	IcuConverter(GIConv _to, GIConv _from)
-		:to_utf8(_to), from_utf8(_from) {}
 #endif
 
 public:
@@ -78,11 +70,6 @@ public:
 	~IcuConverter() {
 		iconv_close(to_utf8);
 		iconv_close(from_utf8);
-	}
-#elif defined(HAVE_GLIB)
-	~IcuConverter() {
-		g_iconv_close(to_utf8);
-		g_iconv_close(from_utf8);
 	}
 #endif
 
