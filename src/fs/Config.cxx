@@ -26,9 +26,7 @@ bool
 ConfigureFS(Error &error)
 {
 #ifdef HAVE_FS_CHARSET
-	const char *charset = nullptr;
-
-	charset = config_get_string(ConfigOption::FS_CHARSET, nullptr);
+	const char *charset = config_get_string(ConfigOption::FS_CHARSET);
 	return charset == nullptr || SetFSCharset(charset, error);
 #else
 	(void)error;

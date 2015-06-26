@@ -70,7 +70,7 @@ GetHome(Error &error)
 static AllocatedPath
 GetConfiguredHome(Error &error)
 {
-	const char *user = config_get_string(ConfigOption::USER, nullptr);
+	const char *user = config_get_string(ConfigOption::USER);
 	return user != nullptr
 		? GetHome(user, error)
 		: GetHome(error);

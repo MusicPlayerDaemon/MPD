@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 
 	ConfigOption option = ParseConfigOptionName(name);
 	const char *value = option != ConfigOption::MAX
-		? config_get_string(option, nullptr)
+		? config_get_string(option)
 		: nullptr;
 	int ret;
 	if (value != NULL) {
