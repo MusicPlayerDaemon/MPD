@@ -96,7 +96,7 @@ DoConvert(GIConv conv, const char *src)
 	if (n == static_cast<size_t>(-1) || in_left > 0)
 		return nullptr;
 
-	return AllocatedString::Duplicate(buffer, sizeof(buffer) - out_left);
+	return AllocatedString<>::Duplicate(buffer, sizeof(buffer) - out_left);
 }
 
 #endif
