@@ -150,6 +150,14 @@ static void version(void)
 		});
 
 	printf("\n"
+	       "Filters:\n"
+#ifdef ENABLE_LIBSAMPLERATE
+	       " libsamplerate"
+#endif
+#ifdef ENABLE_SOXR
+	       " soxr"
+#endif
+	       "\n\n"
 	       "Tag plugins:\n"
 #ifdef ENABLE_ID3TAG
 	       " id3tag"
@@ -198,6 +206,34 @@ static void version(void)
 	printf("\n\n"
 	       "Protocols:\n");
 	print_supported_uri_schemes_to_fp(stdout);
+
+	printf("\n"
+	       "Other features:\n"
+#ifdef HAVE_AVAHI
+	       " avahi"
+#endif
+#ifdef USE_EPOLL
+	       " epoll"
+#endif
+#ifdef HAVE_ICU
+	       " icu"
+#endif
+#ifdef ENABLE_INOTIFY
+	       " inotify"
+#endif
+#ifdef HAVE_IPV6
+	       " ipv6"
+#endif
+#ifdef ENABLE_SYSTEMD_DAEMON
+	       " systemd"
+#endif
+#ifdef HAVE_TCP
+	       " tcp"
+#endif
+#ifdef HAVE_UN
+	       " un"
+#endif
+	       "\n");
 
 	exit(EXIT_SUCCESS);
 }
