@@ -31,8 +31,6 @@
 
 #include <unicode/ucol.h>
 #include <unicode/ustring.h>
-#elif defined(HAVE_GLIB)
-#include <glib.h>
 #else
 #include <algorithm>
 #include <ctype.h>
@@ -134,8 +132,6 @@ IcuCollate(const char *a, const char *b)
 		result -= 2;
 
 	return result;
-#elif defined(HAVE_GLIB)
-	return g_utf8_collate(a, b);
 #else
 	return strcoll(a, b);
 #endif
@@ -201,11 +197,6 @@ IcuCaseFold(const char *src)
 
 	return result;
 
-#elif defined(HAVE_GLIB)
-	char *tmp = g_utf8_casefold(src, -1);
-	auto result = AllocatedString<>::Duplicate(tmp);
-	g_free(tmp);
-	return result;
 #else
 	size_t size = strlen(src) + 1;
 	auto buffer = new char[size];
