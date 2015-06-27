@@ -482,28 +482,6 @@ if test x$enable_iconv = xyes; then
 	AC_CHECK_FUNCS(iconv)
 fi
 
-AC_ARG_ENABLE(glib,
-	AS_HELP_STRING([--enable-glib],
-		[enable GLib (default: auto)]),,
-	enable_glib=auto)
-
-if test x$enable_glib != xno; then
-	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.32],
-		[found_glib=yes],
-		[found_glib=no])
-
-	MPD_AUTO_RESULT([glib], [Glib], [GLib not found])
-fi
-
-if test x$enable_glib = xyes; then
-	if test x$GCC = xyes; then
-		# suppress warnings in the GLib headers
-		GLIB_CFLAGS=`echo $GLIB_CFLAGS |sed -e 's,-I/,-isystem /,g'`
-	fi
-fi
-
-MPD_DEFINE_CONDITIONAL(enable_glib, HAVE_GLIB, [GLib])
-
 dnl ---------------------------------------------------------------------------
 dnl Protocol Options
 dnl ---------------------------------------------------------------------------

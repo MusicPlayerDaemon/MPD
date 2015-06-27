@@ -112,7 +112,7 @@ apt-get install g++ \
   libsystemd-daemon-dev libwrap0-dev \
   libcppunit-dev xmlto \
   libboost-dev \
-  libglib2.0-dev libicu-dev
+  libicu-dev
       </programlisting>
 
       <para>

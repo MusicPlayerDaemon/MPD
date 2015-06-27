@@ -1,7 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 AUTOMAKE_OPTIONS = foreign 1.11 dist-xz subdir-objects
 
-AM_CPPFLAGS += -I$(srcdir)/src $(GLIB_CFLAGS) $(BOOST_CPPFLAGS)
+AM_CPPFLAGS += -I$(srcdir)/src $(BOOST_CPPFLAGS)
 
 AM_CPPFLAGS += -DSYSTEM_CONFIG_FILE_LOCATION='"$(sysconfdir)/mpd.conf"'
 
@@ -61,8 +61,7 @@ src_mpd_LDADD = \
 	libsystem.a \
 	libutil.a \
 	$(ICU_LDADD) \
-	$(SYSTEMD_DAEMON_LIBS) \
-	$(GLIB_LIBS)
+	$(SYSTEMD_DAEMON_LIBS)
 
 src_mpd_SOURCES = \
 	src/Main.cxx src/Main.hxx
@@ -488,11 +487,6 @@ libicu_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ICU_CFLAGS)
 
 ICU_LDADD = libicu.a $(ICU_LIBS)
-
-if HAVE_ICU
-else
-ICU_LDADD += $(GLIB_LIBS)
-endif
 
 # PCM library
 
@@ -1590,16 +1584,14 @@ test_read_conf_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_read_conf_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/read_conf.cxx
 
 test_run_resolver_LDADD = \
 	libnet.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_run_resolver_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/run_resolver.cxx
@@ -1614,8 +1606,7 @@ test_DumpDatabase_LDADD = \
 	libevent.a \
 	$(FS_LIBS) \
 	libsystem.a \
-	$(ICU_LDADD) \
-	$(GLIB_LIBS)
+	$(ICU_LDADD)
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/protocol/Ack.cxx \
 	src/Log.cxx src/LogBackend.cxx \
@@ -1640,8 +1631,7 @@ test_run_storage_LDADD = \
 	libevent.a \
 	libthread.a \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_run_storage_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
@@ -1660,8 +1650,7 @@ test_run_input_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_run_input_SOURCES = test/run_input.cxx \
 	test/ScopeIOThread.hxx \
 	test/stdbin.h \
@@ -1676,7 +1665,6 @@ test_run_neighbor_explorer_SOURCES = \
 	src/IOThread.cxx \
 	test/run_neighbor_explorer.cxx
 test_run_neighbor_explorer_LDADD = $(AM_LDADD) \
-	$(GLIB_LIBS) \
 	$(NEIGHBOR_LIBS) \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
@@ -1707,8 +1695,7 @@ test_visit_archive_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_visit_archive_SOURCES = test/visit_archive.cxx \
 	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
@@ -1729,7 +1716,6 @@ test_run_gzip_SOURCES = test/run_gzip.cxx
 test_run_gunzip_SOURCES = test/run_gunzip.cxx \
 	src/Log.cxx src/LogBackend.cxx
 test_run_gunzip_LDADD = \
-	$(GLIB_LIBS) \
 	libutil.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
@@ -1741,8 +1727,7 @@ test_WriteFile_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_WriteFile_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/WriteFile.cxx
@@ -1757,8 +1742,7 @@ test_dump_text_file_LDADD = \
 	$(ICU_LDADD) \
 	libsystem.a \
 	libthread.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/ScopeIOThread.hxx \
 	test/stdbin.h \
@@ -1779,8 +1763,7 @@ test_dump_playlist_LDADD = \
 	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
-	libpcm.a \
-	$(GLIB_LIBS)
+	libpcm.a
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
@@ -1810,8 +1793,7 @@ test_run_decoder_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
@@ -1837,8 +1819,7 @@ test_read_tags_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_read_tags_SOURCES = test/read_tags.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
@@ -1851,8 +1832,7 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 if ENABLE_ID3TAG
 test_dump_rva2_LDADD = \
 	$(TAG_LIBS) \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_dump_rva2_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/dump_rva2.cxx
@@ -1864,8 +1844,7 @@ test_run_filter_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/stdbin.h \
@@ -1893,8 +1872,7 @@ test_run_encoder_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 endif
 
 if ENABLE_VORBISENC
@@ -1916,8 +1894,7 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 endif
 
 test_software_volume_SOURCES = test/software_volume.cxx \
@@ -1927,8 +1904,7 @@ test_software_volume_SOURCES = test/software_volume.cxx \
 	src/AudioParser.cxx
 test_software_volume_LDADD = \
 	$(PCM_LIBS) \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 
 test_run_avahi_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
@@ -1941,7 +1917,6 @@ test_run_avahi_LDADD = \
 	libevent.a \
 	libsystem.a \
 	libutil.a \
-	$(GLIB_LIBS) \
 	$(AVAHI_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \
@@ -1950,8 +1925,7 @@ test_run_normalize_SOURCES = test/run_normalize.cxx \
 	src/AudioCompress/compress.c \
 	src/AudioParser.cxx
 test_run_normalize_LDADD = \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 
 test_run_convert_SOURCES = test/run_convert.cxx \
 	src/Log.cxx src/LogBackend.cxx \
@@ -1964,8 +1938,7 @@ test_run_convert_LDADD = \
 	$(FS_LIBS) \
 	libsystem.a \
 	libutil.a \
-	$(ICU_LDADD) \
-	$(GLIB_LIBS)
+	$(ICU_LDADD)
 
 test_run_output_LDADD = $(MPD_LIBS) \
 	$(PCM_LIBS) \
@@ -1981,8 +1954,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libnet.a \
 	libsystem.a \
 	libthread.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/ScopeIOThread.hxx \
@@ -2010,8 +1982,7 @@ test_read_mixer_LDADD = \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/mixer/MixerControl.cxx \
@@ -2041,8 +2012,7 @@ test_run_inotify_SOURCES = test/run_inotify.cxx \
 test_run_inotify_LDADD = \
 	libevent.a \
 	libsystem.a \
-	libutil.a \
-	$(GLIB_LIBS)
+	libutil.a
 endif
 
 test_test_util_SOURCES = \
@@ -2071,7 +2041,6 @@ test_test_rewind_SOURCES = \
 test_test_rewind_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_rewind_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_rewind_LDADD = \
-	$(GLIB_LIBS) \
 	$(INPUT_LIBS) \
 	libthread.a \
 	libtag.a \
@@ -2085,7 +2054,6 @@ test_test_mixramp_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTT
 test_test_mixramp_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_mixramp_LDADD = \
 	libutil.a \
-	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
 if ENABLE_CURL
@@ -2097,7 +2065,6 @@ test_test_icy_parser_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declaration
 test_test_icy_parser_LDADD = \
 	libtag.a \
 	libutil.a \
-	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 endif
 
@@ -2119,8 +2086,7 @@ test_test_pcm_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_pcm_LDADD = \
 	$(PCM_LIBS) \
 	libutil.a \
-	$(CPPUNIT_LIBS) \
-	$(GLIB_LIBS)
+	$(CPPUNIT_LIBS)
 
 test_test_archive_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
@@ -2130,7 +2096,6 @@ test_test_archive_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_archive_LDADD = \
 	libarchive.a \
 	libutil.a \
-	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
 if ENABLE_DATABASE
@@ -2151,7 +2116,6 @@ test_test_translate_song_LDADD = \
 	$(ICU_LDADD) \
 	libsystem.a \
 	libutil.a \
-	$(GLIB_LIBS) \
 	$(CPPUNIT_LIBS)
 
 endif

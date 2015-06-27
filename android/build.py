@@ -425,7 +425,6 @@ configure = [
 
     '--enable-silent-rules',
 
-    '--disable-glib',
     '--disable-icu',
 
 ] + configure_args
