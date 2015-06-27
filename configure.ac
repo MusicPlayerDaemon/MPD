@@ -462,14 +462,10 @@ CPPFLAGS="$CPPFLAGS_SAVED"
 
 AC_ARG_ENABLE(icu,
 	AS_HELP_STRING([--enable-icu],
-		[enable libicu for Unicode (default: enabled)]),,
-	enable_icu=yes)
+		[enable libicu for Unicode (default: auto)]),,
+	enable_icu=auto)
 
-if test x$enable_icu = xyes; then
-	PKG_CHECK_MODULES([ICU], [icu-i18n],,
-		[AC_MSG_ERROR([libicu not found])])
-fi
-
+MPD_AUTO_PKG(icu, ICU, [icu-i18n], [libicu], [libicu not found])
 MPD_DEFINE_CONDITIONAL(enable_icu, HAVE_ICU, [libicu])
 
 if test x$enable_icu != xyes; then
