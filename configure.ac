@@ -468,7 +468,17 @@ AC_ARG_ENABLE(icu,
 MPD_AUTO_PKG(icu, ICU, [icu-i18n], [libicu], [libicu not found])
 MPD_DEFINE_CONDITIONAL(enable_icu, HAVE_ICU, [libicu])
 
-if test x$enable_icu != xyes; then
+AC_ARG_ENABLE(iconv,
+	AS_HELP_STRING([--enable-iconv],
+		[enable iconv for character set conversion (default: auto)]),,
+	enable_iconv=yes)
+
+if test x$enable_icu = xyes; then
+	dnl We don't need iconv() if we have libicu
+	enable_iconv=no
+fi
+
+if test x$enable_iconv = xyes; then
 	AC_CHECK_FUNCS(iconv)
 fi
 
