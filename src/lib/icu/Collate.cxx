@@ -172,6 +172,35 @@ IcuCaseFold(const char *src)
 	auto result = UCharToUTF8({folded, folded_length});
 	delete[] folded;
 	return result;
+
+#elif defined(WIN32)
+	const auto u = MultiByteToWideChar(CP_UTF8, src);
+	if (u.IsNull())
+		return AllocatedString<>::Duplicate(src);
+
+	const int size = LCMapStringEx(LOCALE_NAME_INVARIANT,
+				       LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
+				       u.c_str(), -1, nullptr, 0,
+				       nullptr, nullptr, 0);
+	if (size <= 0)
+		return AllocatedString<>::Duplicate(src);
+
+	auto buffer = new wchar_t[size];
+	if (LCMapStringEx(LOCALE_NAME_INVARIANT,
+			  LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
+			  u.c_str(), -1, buffer, size,
+			  nullptr, nullptr, 0) <= 0) {
+		delete[] buffer;
+		return AllocatedString<>::Duplicate(src);
+	}
+
+	auto result = WideCharToMultiByte(CP_UTF8, buffer);
+	delete[] buffer;
+	if (result.IsNull())
+		return AllocatedString<>::Duplicate(src);
+
+	return result;
+
 #elif defined(HAVE_GLIB)
 	char *tmp = g_utf8_casefold(src, -1);
 	auto result = AllocatedString<>::Duplicate(tmp);
