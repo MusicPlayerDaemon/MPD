@@ -1,5 +1,6 @@
 [Unit]
 Description=Music Player Daemon
+Documentation=man:mpd(1) man:mpd.conf(5)
 After=network.target sound.target
 
 [Service]
