@@ -35,13 +35,6 @@
 #include "Compiler.h"
 
 #include <assert.h>
-#include <stdint.h>
-
-#ifdef WIN32
-#include <winsock2.h>
-#else
-#include <sys/socket.h>
-#endif
 
 /**
  * An OO wrapper for struct sockaddr_storage.
