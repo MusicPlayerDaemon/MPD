@@ -42,8 +42,6 @@
 #include <sys/socket.h>
 #endif
 
-struct ifaddrs;
-
 /**
  * An OO wrapper for struct sockaddr_storage.
  */
