@@ -64,7 +64,7 @@ public:
 				     size);
 	}
 
-#ifdef HAVE_UN
+#if defined(HAVE_UN) && !defined(__BIONIC__)
 	/**
 	 * Make this a "local" address (UNIX domain socket).
 	 */
