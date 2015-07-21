@@ -31,7 +31,6 @@
 #define STATIC_SOCKET_ADDRESS_HXX
 
 #include "SocketAddress.hxx"
-#include "Features.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
@@ -56,13 +55,6 @@ public:
 		return SocketAddress(reinterpret_cast<const struct sockaddr *>(&address),
 				     size);
 	}
-
-#if defined(HAVE_UN) && !defined(__BIONIC__)
-	/**
-	 * Make this a "local" address (UNIX domain socket).
-	 */
-	void SetLocal(const char *path);
-#endif
 
 	operator struct sockaddr *() {
 		return reinterpret_cast<struct sockaddr *>(&address);
