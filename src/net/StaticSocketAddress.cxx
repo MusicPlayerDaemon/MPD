@@ -44,7 +44,7 @@
 StaticSocketAddress &
 StaticSocketAddress::operator=(SocketAddress other)
 {
-	size = std::min(size_t(other.GetSize()), GetCapacity());
+	size = std::min(other.GetSize(), GetCapacity());
 	memcpy(&address, other.GetAddress(), size);
 	return *this;
 }

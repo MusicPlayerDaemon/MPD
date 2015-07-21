@@ -46,7 +46,11 @@
  * An OO wrapper for struct sockaddr_storage.
  */
 class StaticSocketAddress {
-	size_t size;
+public:
+	typedef SocketAddress::size_type size_type;
+
+private:
+	size_type size;
 	struct sockaddr_storage address;
 
 public:
@@ -74,17 +78,17 @@ public:
 		return reinterpret_cast<const struct sockaddr *>(&address);
 	}
 
-	constexpr size_t GetCapacity() const {
+	constexpr size_type GetCapacity() const {
 		return sizeof(address);
 	}
 
-	size_t GetSize() const {
+	size_type GetSize() const {
 		return size;
 	}
 
-	void SetSize(size_t _size) {
+	void SetSize(size_type _size) {
 		assert(_size > 0);
-		assert(_size <= sizeof(address));
+		assert(size_t(_size) <= sizeof(address));
 
 		size = _size;
 	}
