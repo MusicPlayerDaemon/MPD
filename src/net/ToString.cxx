@@ -82,11 +82,6 @@ sockaddr_to_string(SocketAddress address)
 	const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)
 		address.GetAddress();
 	struct sockaddr_in a4;
-#endif
-	int ret;
-	char host[NI_MAXHOST], serv[NI_MAXSERV];
-
-#if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
 	if (address.GetFamily() == AF_INET6 &&
 	    IN6_IS_ADDR_V4MAPPED(&a6->sin6_addr)) {
 		/* convert "::ffff:127.0.0.1" to "127.0.0.1" */
@@ -101,9 +96,10 @@ sockaddr_to_string(SocketAddress address)
 	}
 #endif
 
-	ret = getnameinfo(address.GetAddress(), address.GetSize(),
-			  host, sizeof(host), serv, sizeof(serv),
-			  NI_NUMERICHOST|NI_NUMERICSERV);
+	char host[NI_MAXHOST], serv[NI_MAXSERV];
+	int ret = getnameinfo(address.GetAddress(), address.GetSize(),
+			      host, sizeof(host), serv, sizeof(serv),
+			      NI_NUMERICHOST|NI_NUMERICSERV);
 	if (ret != 0)
 		return "unknown";
 
