@@ -24,6 +24,7 @@
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
 #include "net/Resolver.hxx"
+#include "net/ToString.hxx"
 #include "event/SocketMonitor.hxx"
 #include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"

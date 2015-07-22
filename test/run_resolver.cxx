@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "net/Resolver.hxx"
+#include "net/ToString.hxx"
 #include "net/SocketAddress.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"

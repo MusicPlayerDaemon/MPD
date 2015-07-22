@@ -17,31 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_RESOLVER_HXX
-#define MPD_RESOLVER_HXX
+#ifndef NET_TO_STRING_HXX
+#define NET_TO_STRING_HXX
 
 #include "check.h"
 #include "Compiler.h"
 
-struct addrinfo;
-class Error;
-class Domain;
+#include <string>
 
-extern const Domain resolver_domain;
+class SocketAddress;
 
 /**
- * Resolve a specification in the form "host", "host:port",
- * "[host]:port".  This is a convenience wrapper for getaddrinfo().
- *
- * @param default_port a default port number that will be used if none
- * is given in the string (if applicable); pass 0 to go without a
- * default
- * @return an #addrinfo linked list that must be freed with
- * freeaddrinfo(), or NULL on error
+ * Converts the specified socket address into a string in the form
+ * "IP:PORT".
  */
-addrinfo *
-resolve_host_port(const char *host_port, unsigned default_port,
-		  int flags, int socktype,
-		  Error &error);
+gcc_pure
+std::string
+sockaddr_to_string(SocketAddress address);
 
 #endif

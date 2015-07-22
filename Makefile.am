@@ -424,6 +424,7 @@ libthread_a_SOURCES = \
 # Networking library
 
 libnet_a_SOURCES = \
+	src/net/ToString.cxx src/net/ToString.hxx \
 	src/net/Resolver.cxx src/net/Resolver.hxx \
 	src/net/StaticSocketAddress.cxx src/net/StaticSocketAddress.hxx \
 	src/net/SocketAddress.cxx src/net/SocketAddress.hxx \

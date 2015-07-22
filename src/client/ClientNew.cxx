@@ -24,7 +24,7 @@
 #include "Instance.hxx"
 #include "system/fd_util.h"
 #include "net/SocketAddress.hxx"
-#include "net/Resolver.hxx"
+#include "net/ToString.hxx"
 #include "Permission.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
