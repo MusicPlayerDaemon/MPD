@@ -429,21 +429,12 @@ bool
 ServerSocket::AddPath(AllocatedPath &&path, Error &error)
 {
 #ifdef HAVE_UN
-	struct sockaddr_un s_un;
+	(void)error;
 
-	const size_t path_length = path.length();
-	if (path_length >= sizeof(s_un.sun_path)) {
-		error.Set(server_socket_domain,
-			  "UNIX socket path is too long");
-		return false;
-	}
+	AllocatedSocketAddress address;
+	address.SetLocal(path.c_str());
 
-	RemoveFile(path);
-
-	s_un.sun_family = AF_UNIX;
-	memcpy(s_un.sun_path, path.c_str(), path_length + 1);
-
-	OneServerSocket &s = AddAddress({(const sockaddr *)&s_un, sizeof(s_un)});
+	OneServerSocket &s = AddAddress(std::move(address));
 	s.SetPath(std::move(path));
 
 	return true;
