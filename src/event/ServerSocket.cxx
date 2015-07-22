@@ -159,7 +159,7 @@ OneServerSocket::Accept()
 	StaticSocketAddress peer_address;
 	size_t peer_address_length = sizeof(peer_address);
 	int peer_fd =
-		accept_cloexec_nonblock(Get(), peer_address,
+		accept_cloexec_nonblock(Get(), peer_address.GetAddress(),
 					&peer_address_length);
 	if (peer_fd < 0) {
 		const SocketErrorMessage msg;
@@ -306,7 +306,7 @@ ServerSocket::AddFD(int fd, Error &error)
 
 	StaticSocketAddress address;
 	socklen_t address_length = sizeof(address);
-	if (getsockname(fd, address,
+	if (getsockname(fd, address.GetAddress(),
 			&address_length) < 0) {
 		SetSocketError(error);
 		error.AddPrefix("Failed to get socket address: ");

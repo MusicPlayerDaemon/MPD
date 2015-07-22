@@ -56,11 +56,11 @@ public:
 				     size);
 	}
 
-	operator struct sockaddr *() {
+	struct sockaddr *GetAddress() {
 		return reinterpret_cast<struct sockaddr *>(&address);
 	}
 
-	operator const struct sockaddr *() const {
+	const struct sockaddr *GetAddress() const {
 		return reinterpret_cast<const struct sockaddr *>(&address);
 	}
 
