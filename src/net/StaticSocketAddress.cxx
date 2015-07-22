@@ -41,10 +41,3 @@ StaticSocketAddress::operator=(SocketAddress other)
 	memcpy(&address, other.GetAddress(), size);
 	return *this;
 }
-
-bool
-StaticSocketAddress::operator==(const StaticSocketAddress &other) const
-{
-	return size == other.size &&
-		memcmp(&address, &other.address, size) == 0;
-}
