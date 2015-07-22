@@ -33,6 +33,6 @@ class SocketAddress;
  */
 gcc_pure
 std::string
-sockaddr_to_string(SocketAddress address);
+ToString(SocketAddress address);
 
 #endif

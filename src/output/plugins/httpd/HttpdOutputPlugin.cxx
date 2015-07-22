@@ -209,7 +209,7 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 
 #ifdef HAVE_LIBWRAP
 	if (address.GetFamily() != AF_UNIX) {
-		const auto hostaddr = sockaddr_to_string(address);
+		const auto hostaddr = ToString(address);
 		// TODO: shall we obtain the program name from argv[0]?
 		const char *progname = "mpd";
 

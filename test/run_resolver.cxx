@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 	}
 
 	for (const struct addrinfo *i = ai; i != NULL; i = i->ai_next) {
-		const auto s = sockaddr_to_string({i->ai_addr, i->ai_addrlen});
+		const auto s = ToString({i->ai_addr, i->ai_addrlen});
 		printf("%s\n", s.c_str());
 	}
 

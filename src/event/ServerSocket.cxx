@@ -112,7 +112,7 @@ public:
 
 	gcc_pure
 	std::string ToString() const {
-		return sockaddr_to_string(address);
+		return ::ToString(address);
 	}
 
 	void SetFD(int _fd) {

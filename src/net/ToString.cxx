@@ -102,7 +102,7 @@ UnmapV4(SocketAddress src, struct sockaddr_in &buffer)
 #endif
 
 std::string
-sockaddr_to_string(SocketAddress address)
+ToString(SocketAddress address)
 {
 #ifdef HAVE_UN
 	if (address.GetFamily() == AF_UNIX)
