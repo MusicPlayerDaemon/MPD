@@ -25,6 +25,7 @@
 #include <stddef.h>
 
 class SocketAddress;
+class AllocatedSocketAddress;
 class EventLoop;
 class Error;
 class AllocatedPath;
@@ -52,6 +53,7 @@ public:
 
 private:
 	OneServerSocket &AddAddress(SocketAddress address);
+	OneServerSocket &AddAddress(AllocatedSocketAddress &&address);
 
 	/**
 	 * Add a listener on a port on all IPv4 interfaces.

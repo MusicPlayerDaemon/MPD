@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ServerSocket.hxx"
 #include "net/StaticSocketAddress.hxx"
+#include "net/AllocatedSocketAddress.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
@@ -64,31 +65,26 @@ class OneServerSocket final : private SocketMonitor {
 	AllocatedPath path;
 #endif
 
-	SocketAddress address;
+	const AllocatedSocketAddress address;
 
 public:
+	template<typename A>
 	OneServerSocket(EventLoop &_loop, ServerSocket &_parent,
 			unsigned _serial,
-			SocketAddress _address)
+			A &&_address)
 		:SocketMonitor(_loop),
 		 parent(_parent), serial(_serial),
 #ifdef HAVE_UN
 		 path(AllocatedPath::Null()),
 #endif
-		 address((sockaddr *)xmemdup(_address.GetAddress(),
-					     _address.GetSize()),
-			 _address.GetSize())
+		 address(std::forward<A>(_address))
 	{
-		assert(!_address.IsNull());
-		assert(_address.GetSize() > 0);
 	}
 
 	OneServerSocket(const OneServerSocket &other) = delete;
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
 	~OneServerSocket() {
-		free(const_cast<struct sockaddr *>(address.GetAddress()));
-
 		if (IsDefined())
 			Close();
 	}
@@ -295,6 +291,15 @@ ServerSocket::AddAddress(SocketAddress address)
 {
 	sockets.emplace_back(loop, *this, next_serial,
 			     address);
+
+	return sockets.back();
+}
+
+OneServerSocket &
+ServerSocket::AddAddress(AllocatedSocketAddress &&address)
+{
+	sockets.emplace_back(loop, *this, next_serial,
+			     std::move(address));
 
 	return sockets.back();
 }
