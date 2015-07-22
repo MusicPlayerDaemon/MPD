@@ -68,6 +68,39 @@ LocalAddressToString(const struct sockaddr_un &s_un, size_t size)
 
 #endif
 
+#if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
+
+gcc_pure
+static bool
+IsV4Mapped(SocketAddress address)
+{
+	if (address.GetFamily() != AF_INET6)
+		return false;
+
+	const auto &a6 = *(const struct sockaddr_in6 *)address.GetAddress();
+	return IN6_IS_ADDR_V4MAPPED(&a6.sin6_addr);
+}
+
+/**
+ * Convert "::ffff:127.0.0.1" to "127.0.0.1".
+ */
+static SocketAddress
+UnmapV4(SocketAddress src, struct sockaddr_in &buffer)
+{
+	assert(IsV4Mapped(src));
+
+	const auto &src6 = *(const struct sockaddr_in6 *)src.GetAddress();
+	memset(&buffer, 0, sizeof(buffer));
+	buffer.sin_family = AF_INET;
+	memcpy(&buffer.sin_addr, ((const char *)&src6.sin6_addr) + 12,
+	       sizeof(buffer.sin_addr));
+	buffer.sin_port = src6.sin6_port;
+
+	return { (const struct sockaddr *)&buffer, sizeof(buffer) };
+}
+
+#endif
+
 std::string
 sockaddr_to_string(SocketAddress address)
 {
@@ -79,21 +112,9 @@ sockaddr_to_string(SocketAddress address)
 #endif
 
 #if defined(HAVE_IPV6) && defined(IN6_IS_ADDR_V4MAPPED)
-	const struct sockaddr_in6 *a6 = (const struct sockaddr_in6 *)
-		address.GetAddress();
-	struct sockaddr_in a4;
-	if (address.GetFamily() == AF_INET6 &&
-	    IN6_IS_ADDR_V4MAPPED(&a6->sin6_addr)) {
-		/* convert "::ffff:127.0.0.1" to "127.0.0.1" */
-
-		memset(&a4, 0, sizeof(a4));
-		a4.sin_family = AF_INET;
-		memcpy(&a4.sin_addr, ((const char *)&a6->sin6_addr) + 12,
-		       sizeof(a4.sin_addr));
-		a4.sin_port = a6->sin6_port;
-
-		address = { (const struct sockaddr *)&a4, sizeof(a4) };
-	}
+	struct sockaddr_in in_buffer;
+	if (IsV4Mapped(address))
+		address = UnmapV4(address, in_buffer);
 #endif
 
 	char host[NI_MAXHOST], serv[NI_MAXSERV];
