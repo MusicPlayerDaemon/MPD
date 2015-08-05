@@ -136,8 +136,6 @@ mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
 static void
 mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 {
-	MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
-
 	mpc_decoder_data data(is, &mpd_decoder);
 
 	mpc_reader reader;
@@ -199,6 +197,7 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 
 		mpc_uint32_t vbr_update_bits = 0;
 
+		MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 		mpc_frame_info frame;
 		frame.buffer = (MPC_SAMPLE_FORMAT *)sample_buffer;
 		mpc_status status = mpc_demux_decode(demux, &frame);
