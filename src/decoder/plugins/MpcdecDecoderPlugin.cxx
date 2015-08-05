@@ -193,8 +193,6 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 				decoder_seek_error(mpd_decoder);
 		}
 
-		mpc_uint32_t vbr_update_bits = 0;
-
 		MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
 		mpc_frame_info frame;
 		frame.buffer = (MPC_SAMPLE_FORMAT *)sample_buffer;
@@ -214,8 +212,8 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 		MpcdecSampleTraits::value_type chunk[ARRAY_SIZE(sample_buffer)];
 		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
-		long bit_rate = vbr_update_bits * audio_format.sample_rate
-			/ 1152 / 1000;
+		long bit_rate = unsigned(frame.bits) * audio_format.sample_rate
+			/ (1000 * frame.samples);
 
 		cmd = decoder_data(mpd_decoder, is,
 				   chunk, ret * sizeof(chunk[0]),

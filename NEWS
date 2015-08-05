@@ -14,6 +14,7 @@ ver 0.20 (not yet released)
 * decoder
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
+  - mpcdec: read the bit rate
 * output
   - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX
