@@ -26,6 +26,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
+#include "util/Clamp.hxx"
 #include "Log.hxx"
 
 #include <mpc/mpcdec.h>
@@ -117,12 +118,7 @@ mpc_to_mpd_sample(MPC_SAMPLE_FORMAT sample)
 	val = sample * float_scale;
 #endif
 
-	if (val < clip_min)
-		val = clip_min;
-	else if (val > clip_max)
-		val = clip_max;
-
-	return val;
+	return Clamp(val, clip_min, clip_max);
 }
 
 static void
