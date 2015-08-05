@@ -22,6 +22,7 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
+#include "pcm/Traits.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -42,6 +43,9 @@ struct mpc_decoder_data {
 };
 
 static constexpr Domain mpcdec_domain("mpcdec");
+
+static constexpr SampleFormat mpcdec_sample_format = SampleFormat::S24_P32;
+typedef SampleTraits<mpcdec_sample_format> MpcdecSampleTraits;
 
 static mpc_int32_t
 mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)
@@ -92,18 +96,15 @@ mpc_getsize_cb(mpc_reader *reader)
 }
 
 /* this _looks_ performance-critical, don't de-inline -- eric */
-static inline int32_t
+static inline MpcdecSampleTraits::value_type
 mpc_to_mpd_sample(MPC_SAMPLE_FORMAT sample)
 {
 	/* only doing 16-bit audio for now */
-	int32_t val;
+	MpcdecSampleTraits::value_type val;
 
-	enum {
-		bits = 24,
-	};
-
-	const int clip_min = -1 << (bits - 1);
-	const int clip_max = (1 << (bits - 1)) - 1;
+	constexpr int bits = MpcdecSampleTraits::BITS;
+	constexpr auto clip_min = MpcdecSampleTraits::MIN;
+	constexpr auto clip_max = MpcdecSampleTraits::MAX;
 
 #ifdef MPC_FIXED_POINT
 	const int shift = bits - MPC_FIXED_POINT_SCALE_SHIFT;
@@ -122,7 +123,8 @@ mpc_to_mpd_sample(MPC_SAMPLE_FORMAT sample)
 }
 
 static void
-mpc_to_mpd_buffer(int32_t *dest, const MPC_SAMPLE_FORMAT *src,
+mpc_to_mpd_buffer(MpcdecSampleTraits::pointer_type dest,
+		  const MPC_SAMPLE_FORMAT *src,
 		  unsigned num_samples)
 {
 	while (num_samples-- > 0)
@@ -156,7 +158,7 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format, info.sample_freq,
-				       SampleFormat::S24_P32,
+				       mpcdec_sample_format,
 				       info.channels, error)) {
 		LogError(error);
 		mpc_demux_exit(demux);
@@ -209,7 +211,7 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 		mpc_uint32_t ret = frame.samples;
 		ret *= info.channels;
 
-		int32_t chunk[ARRAY_SIZE(sample_buffer)];
+		MpcdecSampleTraits::value_type chunk[ARRAY_SIZE(sample_buffer)];
 		mpc_to_mpd_buffer(chunk, sample_buffer, ret);
 
 		long bit_rate = vbr_update_bits * audio_format.sample_rate
