@@ -226,12 +226,11 @@ FifoOutput::Close()
 inline void
 FifoOutput::Cancel()
 {
-	char buf[FIFO_BUFFER_SIZE];
-
 	timer->Reset();
 
 	ssize_t bytes;
 	do {
+		char buf[FIFO_BUFFER_SIZE];
 		bytes = read(input, buf, FIFO_BUFFER_SIZE);
 	} while (bytes > 0 && errno != EINTR);
 
