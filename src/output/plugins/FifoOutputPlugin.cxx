@@ -54,7 +54,7 @@ struct FifoOutput {
 		 created(false) {}
 
 	~FifoOutput() {
-		Close();
+		CloseFifo();
 	}
 
 	bool Initialize(const ConfigBlock &block, Error &error) {
@@ -67,8 +67,8 @@ struct FifoOutput {
 	bool Check(Error &error);
 	void Delete();
 
-	bool Open(Error &error);
-	void Close();
+	bool OpenFifo(Error &error);
+	void CloseFifo();
 
 	unsigned Delay() const;
 	size_t Play(const void *chunk, size_t size, Error &error);
@@ -94,7 +94,7 @@ FifoOutput::Delete()
 }
 
 void
-FifoOutput::Close()
+FifoOutput::CloseFifo()
 {
 	if (input >= 0) {
 		close(input);
@@ -150,7 +150,7 @@ FifoOutput::Check(Error &error)
 }
 
 inline bool
-FifoOutput::Open(Error &error)
+FifoOutput::OpenFifo(Error &error)
 {
 	if (!Check(error))
 		return false;
@@ -159,7 +159,7 @@ FifoOutput::Open(Error &error)
 	if (input < 0) {
 		error.FormatErrno("Could not open FIFO \"%s\" for reading",
 				  path_utf8.c_str());
-		Close();
+		CloseFifo();
 		return false;
 	}
 
@@ -167,7 +167,7 @@ FifoOutput::Open(Error &error)
 	if (output < 0) {
 		error.FormatErrno("Could not open FIFO \"%s\" for writing",
 				  path_utf8.c_str());
-		Close();
+		CloseFifo();
 		return false;
 	}
 
@@ -196,7 +196,7 @@ FifoOutput::Create(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	if (!fd->Open(error)) {
+	if (!fd->OpenFifo(error)) {
 		delete fd;
 		return nullptr;
 	}
