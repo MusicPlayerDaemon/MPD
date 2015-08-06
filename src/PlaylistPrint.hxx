@@ -23,15 +23,18 @@
 #include <stdint.h>
 
 struct playlist;
+struct Partition;
 class SongFilter;
 class Client;
+class Response;
 class Error;
 
 /**
  * Sends the whole playlist to the client, song URIs only.
  */
 void
-playlist_print_uris(Client &client, const playlist &playlist);
+playlist_print_uris(Response &r, Partition &partition,
+		    const playlist &playlist);
 
 /**
  * Sends a range of the playlist to the client, including all known
@@ -40,7 +43,8 @@ playlist_print_uris(Client &client, const playlist &playlist);
  * This function however fails when the start offset is invalid.
  */
 bool
-playlist_print_info(Client &client, const playlist &playlist,
+playlist_print_info(Response &r, Partition &partition,
+		    const playlist &playlist,
 		    unsigned start, unsigned end);
 
 /**
@@ -49,8 +53,8 @@ playlist_print_info(Client &client, const playlist &playlist,
  * @return true on suite, false if there is no such song
  */
 bool
-playlist_print_id(Client &client, const playlist &playlist,
-		  unsigned id);
+playlist_print_id(Response &r, Partition &partition,
+		  const playlist &playlist, unsigned id);
 
 /**
  * Sends the current song to the client.
@@ -58,20 +62,22 @@ playlist_print_id(Client &client, const playlist &playlist,
  * @return true on success, false if there is no current song
  */
 bool
-playlist_print_current(Client &client, const playlist &playlist);
+playlist_print_current(Response &r, Partition &partition,
+		       const playlist &playlist);
 
 /**
  * Find songs in the playlist.
  */
 void
-playlist_print_find(Client &client, const playlist &playlist,
+playlist_print_find(Response &r, Partition &partition,
+		    const playlist &playlist,
 		    const SongFilter &filter);
 
 /**
  * Print detailed changes since the specified playlist version.
  */
 void
-playlist_print_changes_info(Client &client,
+playlist_print_changes_info(Response &r, Partition &partition,
 			    const playlist &playlist,
 			    uint32_t version);
 
@@ -79,7 +85,7 @@ playlist_print_changes_info(Client &client,
  * Print changes since the specified playlist version, position only.
  */
 void
-playlist_print_changes_position(Client &client,
+playlist_print_changes_position(Response &r,
 				const playlist &playlist,
 				uint32_t version);
 
@@ -92,7 +98,8 @@ playlist_print_changes_position(Client &client,
  * @return true on success, false if the playlist does not exist
  */
 bool
-spl_print(Client &client, const char *name_utf8, bool detail,
+spl_print(Response &r, Partition &partition,
+	  const char *name_utf8, bool detail,
 	  Error &error);
 
 #endif

@@ -22,23 +22,23 @@
 #include "Request.hxx"
 #include "output/OutputPrint.hxx"
 #include "output/OutputCommand.hxx"
-#include "protocol/Result.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
 #include "util/ConstBuffer.hxx"
 
 CommandResult
 handle_enableoutput(Client &client, Request args)
 {
-	assert(args.size == 1);
+	Response r(client);
 
+	assert(args.size == 1);
 	unsigned device;
-	if (!args.Parse(0, device, client))
+	if (!args.Parse(0, device, r))
 		return CommandResult::ERROR;
 
 	if (!audio_output_enable_index(client.partition.outputs, device)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "No such audio output");
+		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
 
@@ -48,15 +48,15 @@ handle_enableoutput(Client &client, Request args)
 CommandResult
 handle_disableoutput(Client &client, Request args)
 {
-	assert(args.size == 1);
+	Response r(client);
 
+	assert(args.size == 1);
 	unsigned device;
-	if (!args.Parse(0, device, client))
+	if (!args.Parse(0, device, r))
 		return CommandResult::ERROR;
 
 	if (!audio_output_disable_index(client.partition.outputs, device)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "No such audio output");
+		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
 
@@ -66,15 +66,15 @@ handle_disableoutput(Client &client, Request args)
 CommandResult
 handle_toggleoutput(Client &client, Request args)
 {
-	assert(args.size == 1);
+	Response r(client);
 
+	assert(args.size == 1);
 	unsigned device;
-	if (!args.Parse(0, device, client))
+	if (!args.Parse(0, device, r))
 		return CommandResult::ERROR;
 
 	if (!audio_output_toggle_index(client.partition.outputs, device)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "No such audio output");
+		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
 
@@ -86,7 +86,8 @@ handle_devices(Client &client, gcc_unused Request args)
 {
 	assert(args.IsEmpty());
 
-	printAudioDevices(client, client.partition.outputs);
+	Response r(client);
+	printAudioDevices(r, client.partition.outputs);
 
 	return CommandResult::OK;
 }

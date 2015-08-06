@@ -22,18 +22,23 @@
 
 struct LightSong;
 class DetachedSong;
-class Client;
+class Response;
+struct Partition;
 
 void
-song_print_info(Client &client, const DetachedSong &song, bool base=false);
+song_print_info(Response &r, Partition &partition,
+		const DetachedSong &song, bool base=false);
 
 void
-song_print_info(Client &client, const LightSong &song, bool base=false);
+song_print_info(Response &r, Partition &partition,
+		const LightSong &song, bool base=false);
 
 void
-song_print_uri(Client &client, const LightSong &song, bool base=false);
+song_print_uri(Response &r, Partition &partition,
+	       const LightSong &song, bool base=false);
 
 void
-song_print_uri(Client &client, const DetachedSong &song, bool base=false);
+song_print_uri(Response &r, Partition &partition,
+	       const DetachedSong &song, bool base=false);
 
 #endif

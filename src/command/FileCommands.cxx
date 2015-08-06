@@ -24,8 +24,8 @@
 #include "Request.hxx"
 #include "CommandError.hxx"
 #include "protocol/Ack.hxx"
-#include "protocol/Result.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/CharUtil.hxx"
 #include "util/UriUtil.hxx"
@@ -72,21 +72,22 @@ skip_path(Path name_fs)
 CommandResult
 handle_listfiles_local(Client &client, const char *path_utf8)
 {
+	Response r(client);
+
 	const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
 	if (path_fs.IsNull()) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "unsupported file name");
+		r.Error(ACK_ERROR_NO_EXIST, "unsupported file name");
 		return CommandResult::ERROR;
 	}
 
 	Error error;
 	if (!client.AllowFile(path_fs, error))
-		return print_error(client, error);
+		return print_error(r, error);
 
 	DirectoryReader reader(path_fs);
 	if (reader.HasFailed()) {
 		error.FormatErrno("Failed to open '%s'", path_utf8);
-		return print_error(client, error);
+		return print_error(r, error);
 	}
 
 	while (reader.ReadEntry()) {
@@ -105,17 +106,16 @@ handle_listfiles_local(Client &client, const char *path_utf8)
 			continue;
 
 		if (fi.IsRegular())
-			client_printf(client, "file: %s\n"
-				      "size: %" PRIu64 "\n",
-				      name_utf8.c_str(),
-				      fi.GetSize());
+			r.Format("file: %s\n"
+				 "size: %" PRIu64 "\n",
+				 name_utf8.c_str(),
+				 fi.GetSize());
 		else if (fi.IsDirectory())
-			client_printf(client, "directory: %s\n",
-				      name_utf8.c_str());
+			r.Format("directory: %s\n", name_utf8.c_str());
 		else
 			continue;
 
-		time_print(client, "Last-Modified", fi.GetModificationTime());
+		time_print(r, "Last-Modified", fi.GetModificationTime());
 	}
 
 	return CommandResult::OK;
@@ -158,10 +158,10 @@ IsValidValue(const char *p)
 static void
 print_pair(const char *key, const char *value, void *ctx)
 {
-	Client &client = *(Client *)ctx;
+	auto &r = *(Response *)ctx;
 
 	if (IsValidName(key) && IsValidValue(value))
-		client_printf(client, "%s: %s\n", key, value);
+		r.Format("%s: %s\n", key, value);
 }
 
 static constexpr tag_handler print_comment_handler = {
@@ -171,17 +171,15 @@ static constexpr tag_handler print_comment_handler = {
 };
 
 static CommandResult
-read_stream_comments(Client &client, const char *uri)
+read_stream_comments(Response &r, const char *uri)
 {
 	if (!uri_supported_scheme(uri)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "unsupported URI scheme");
+		r.Error(ACK_ERROR_NO_EXIST, "unsupported URI scheme");
 		return CommandResult::ERROR;
 	}
 
-	if (!tag_stream_scan(uri, print_comment_handler, &client)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "Failed to load file");
+	if (!tag_stream_scan(uri, print_comment_handler, &r)) {
+		r.Error(ACK_ERROR_NO_EXIST, "Failed to load file");
 		return CommandResult::ERROR;
 	}
 
@@ -190,16 +188,15 @@ read_stream_comments(Client &client, const char *uri)
 }
 
 static CommandResult
-read_file_comments(Client &client, const Path path_fs)
+read_file_comments(Response &r, const Path path_fs)
 {
-	if (!tag_file_scan(path_fs, print_comment_handler, &client)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "Failed to load file");
+	if (!tag_file_scan(path_fs, print_comment_handler, &r)) {
+		r.Error(ACK_ERROR_NO_EXIST, "Failed to load file");
 		return CommandResult::ERROR;
 	}
 
-	tag_ape_scan2(path_fs, &print_comment_handler, &client);
-	tag_id3_scan(path_fs, &print_comment_handler, &client);
+	tag_ape_scan2(path_fs, &print_comment_handler, &r);
+	tag_id3_scan(path_fs, &print_comment_handler, &r);
 
 	return CommandResult::OK;
 
@@ -219,6 +216,8 @@ translate_uri(const char *uri)
 CommandResult
 handle_read_comments(Client &client, Request args)
 {
+	Response r(client);
+
 	assert(args.size == 1);
 	const char *const uri = translate_uri(args.front());
 
@@ -227,25 +226,23 @@ handle_read_comments(Client &client, Request args)
 		const char *path_utf8 = uri + 7;
 		AllocatedPath path_fs = AllocatedPath::FromUTF8(path_utf8);
 		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported file name");
+			r.Error(ACK_ERROR_NO_EXIST, "unsupported file name");
 			return CommandResult::ERROR;
 		}
 
 		Error error;
 		if (!client.AllowFile(path_fs, error))
-			return print_error(client, error);
+			return print_error(r, error);
 
-		return read_file_comments(client, path_fs);
+		return read_file_comments(r, path_fs);
 	} else if (uri_has_scheme(uri)) {
-		return read_stream_comments(client, uri);
+		return read_stream_comments(r, uri);
 	} else if (!PathTraitsUTF8::IsAbsolute(uri)) {
 #ifdef ENABLE_DATABASE
 		const Storage *storage = client.GetStorage();
 		if (storage == nullptr) {
 #endif
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "No database");
+			r.Error(ACK_ERROR_NO_EXIST, "No database");
 			return CommandResult::ERROR;
 #ifdef ENABLE_DATABASE
 		}
@@ -253,21 +250,20 @@ handle_read_comments(Client &client, Request args)
 		{
 			AllocatedPath path_fs = storage->MapFS(uri);
 			if (!path_fs.IsNull())
-				return read_file_comments(client, path_fs);
+				return read_file_comments(r, path_fs);
 		}
 
 		{
 			const std::string uri2 = storage->MapUTF8(uri);
 			if (uri_has_scheme(uri2.c_str()))
-				return read_stream_comments(client,
-							    uri2.c_str());
+				return read_stream_comments(r, uri2.c_str());
 		}
 
-		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
+		r.Error(ACK_ERROR_NO_EXIST, "No such file");
 		return CommandResult::ERROR;
 #endif
 	} else {
-		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
+		r.Error(ACK_ERROR_NO_EXIST, "No such file");
 		return CommandResult::ERROR;
 	}
 }

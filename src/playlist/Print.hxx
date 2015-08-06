@@ -20,17 +20,20 @@
 #ifndef MPD_PLAYLIST__PRINT_HXX
 #define MPD_PLAYLIST__PRINT_HXX
 
-class Client;
+class Response;
+class SongLoader;
+struct Partition;
 
 /**
  * Send the playlist file to the client.
  *
- * @param client the client which requested the playlist
  * @param uri the URI of the playlist file in UTF-8 encoding
  * @param detail true if all details should be printed
  * @return true on success, false if the playlist does not exist
  */
 bool
-playlist_file_print(Client &client, const char *uri, bool detail);
+playlist_file_print(Response &r, Partition &partition,
+		    const SongLoader &loader,
+		    const char *uri, bool detail);
 
 #endif

@@ -21,18 +21,18 @@
 #define MPD_STICKER_PRINT_HXX
 
 struct Sticker;
-class Client;
+class Response;
 
 /**
  * Sends one sticker value to the client.
  */
 void
-sticker_print_value(Client &client, const char *name, const char *value);
+sticker_print_value(Response &r, const char *name, const char *value);
 
 /**
  * Sends all sticker values to the client.
  */
 void
-sticker_print(Client &client, const Sticker &sticker);
+sticker_print(Response &r, const Sticker &sticker);
 
 #endif

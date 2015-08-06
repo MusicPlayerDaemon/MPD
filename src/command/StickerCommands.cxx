@@ -27,8 +27,8 @@
 #include "sticker/StickerPrint.hxx"
 #include "sticker/StickerDatabase.hxx"
 #include "CommandError.hxx"
-#include "protocol/Result.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "util/Error.hxx"
@@ -37,7 +37,8 @@
 #include <string.h>
 
 struct sticker_song_find_data {
-	Client &client;
+	Response &r;
+	Partition &partition;
 	const char *name;
 };
 
@@ -48,17 +49,17 @@ sticker_song_find_print_cb(const LightSong &song, const char *value,
 	struct sticker_song_find_data *data =
 		(struct sticker_song_find_data *)user_data;
 
-	song_print_uri(data->client, song);
-	sticker_print_value(data->client, data->name, value);
+	song_print_uri(data->r, data->partition, song);
+	sticker_print_value(data->r, data->name, value);
 }
 
 static CommandResult
-handle_sticker_song(Client &client, Request args)
+handle_sticker_song(Response &r, Partition &partition, Request args)
 {
 	Error error;
-	const Database *db = client.GetDatabase(error);
+	const Database *db = partition.GetDatabase(error);
 	if (db == nullptr)
-		return print_error(client, error);
+		return print_error(r, error);
 
 	const char *const cmd = args.front();
 
@@ -66,53 +67,52 @@ handle_sticker_song(Client &client, Request args)
 	if (args.size == 4 && strcmp(cmd, "get") == 0) {
 		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
-			return print_error(client, error);
+			return print_error(r, error);
 
 		const auto value = sticker_song_get_value(*song, args[3],
 							  error);
 		db->ReturnSong(song);
 		if (value.empty()) {
 			if (error.IsDefined())
-				return print_error(client, error);
+				return print_error(r, error);
 
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "no such sticker");
+			r.Error(ACK_ERROR_NO_EXIST, "no such sticker");
 			return CommandResult::ERROR;
 		}
 
-		sticker_print_value(client, args[3], value.c_str());
+		sticker_print_value(r, args[3], value.c_str());
 
 		return CommandResult::OK;
 	/* list song song_id */
 	} else if (args.size == 3 && strcmp(cmd, "list") == 0) {
 		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
-			return print_error(client, error);
+			return print_error(r, error);
 
 		Sticker *sticker = sticker_song_get(*song, error);
 		db->ReturnSong(song);
 		if (sticker) {
-			sticker_print(client, *sticker);
+			sticker_print(r, *sticker);
 			sticker_free(sticker);
 		} else if (error.IsDefined())
-			return print_error(client, error);
+			return print_error(r, error);
 
 		return CommandResult::OK;
 	/* set song song_id id key */
 	} else if (args.size == 5 && strcmp(cmd, "set") == 0) {
 		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
-			return print_error(client, error);
+			return print_error(r, error);
 
 		bool ret = sticker_song_set_value(*song, args[3], args[4],
 						  error);
 		db->ReturnSong(song);
 		if (!ret) {
 			if (error.IsDefined())
-				return print_error(client, error);
+				return print_error(r, error);
 
-			command_error(client, ACK_ERROR_SYSTEM,
-				      "failed to set sticker value");
+			r.Error(ACK_ERROR_SYSTEM,
+				"failed to set sticker value");
 			return CommandResult::ERROR;
 		}
 
@@ -122,7 +122,7 @@ handle_sticker_song(Client &client, Request args)
 		   strcmp(cmd, "delete") == 0) {
 		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
-			return print_error(client, error);
+			return print_error(r, error);
 
 		bool ret = args.size == 3
 			? sticker_song_delete(*song, error)
@@ -130,10 +130,9 @@ handle_sticker_song(Client &client, Request args)
 		db->ReturnSong(song);
 		if (!ret) {
 			if (error.IsDefined())
-				return print_error(client, error);
+				return print_error(r, error);
 
-			command_error(client, ACK_ERROR_SYSTEM,
-				      "no such sticker");
+			r.Error(ACK_ERROR_SYSTEM, "no such sticker");
 			return CommandResult::ERROR;
 		}
 
@@ -161,14 +160,14 @@ handle_sticker_song(Client &client, Request args)
 			else if (strcmp(op_s, ">") == 0)
 				op = StickerOperator::GREATER_THAN;
 			else {
-				command_error(client, ACK_ERROR_ARG,
-					      "bad operator");
+				r.Error(ACK_ERROR_ARG, "bad operator");
 				return CommandResult::ERROR;
 			}
 		}
 
 		struct sticker_song_find_data data = {
-			client,
+			r,
+			partition,
 			args[3],
 		};
 
@@ -177,16 +176,16 @@ handle_sticker_song(Client &client, Request args)
 				       sticker_song_find_print_cb, &data,
 				       error)) {
 			if (error.IsDefined())
-				return print_error(client, error);
+				return print_error(r, error);
 
-			command_error(client, ACK_ERROR_SYSTEM,
-				      "failed to set search sticker database");
+			r.Error(ACK_ERROR_SYSTEM,
+				"failed to set search sticker database");
 			return CommandResult::ERROR;
 		}
 
 		return CommandResult::OK;
 	} else {
-		command_error(client, ACK_ERROR_ARG, "bad request");
+		r.Error(ACK_ERROR_ARG, "bad request");
 		return CommandResult::ERROR;
 	}
 }
@@ -194,19 +193,19 @@ handle_sticker_song(Client &client, Request args)
 CommandResult
 handle_sticker(Client &client, Request args)
 {
+	Response r(client);
+
 	assert(args.size >= 3);
 
 	if (!sticker_enabled()) {
-		command_error(client, ACK_ERROR_UNKNOWN,
-			      "sticker database is disabled");
+		r.Error(ACK_ERROR_UNKNOWN, "sticker database is disabled");
 		return CommandResult::ERROR;
 	}
 
 	if (strcmp(args[1], "song") == 0)
-		return handle_sticker_song(client, args);
+		return handle_sticker_song(r, client.partition, args);
 	else {
-		command_error(client, ACK_ERROR_ARG,
-			      "unknown sticker domain");
+		r.Error(ACK_ERROR_ARG, "unknown sticker domain");
 		return CommandResult::ERROR;
 	}
 }

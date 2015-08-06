@@ -22,9 +22,9 @@
 #include "Request.hxx"
 #include "client/Client.hxx"
 #include "client/ClientList.hxx"
+#include "client/Response.hxx"
 #include "Instance.hxx"
 #include "Partition.hxx"
-#include "protocol/Result.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <set>
@@ -35,6 +35,8 @@
 CommandResult
 handle_subscribe(Client &client, Request args)
 {
+	Response r(client);
+
 	assert(args.size == 1);
 	const char *const channel_name = args[0];
 
@@ -43,18 +45,15 @@ handle_subscribe(Client &client, Request args)
 		return CommandResult::OK;
 
 	case Client::SubscribeResult::INVALID:
-		command_error(client, ACK_ERROR_ARG,
-			      "invalid channel name");
+		r.Error(ACK_ERROR_ARG, "invalid channel name");
 		return CommandResult::ERROR;
 
 	case Client::SubscribeResult::ALREADY:
-		command_error(client, ACK_ERROR_EXIST,
-			      "already subscribed to this channel");
+		r.Error(ACK_ERROR_EXIST, "already subscribed to this channel");
 		return CommandResult::ERROR;
 
 	case Client::SubscribeResult::FULL:
-		command_error(client, ACK_ERROR_EXIST,
-			      "subscription list is full");
+		r.Error(ACK_ERROR_EXIST, "subscription list is full");
 		return CommandResult::ERROR;
 	}
 
@@ -66,14 +65,15 @@ handle_subscribe(Client &client, Request args)
 CommandResult
 handle_unsubscribe(Client &client, Request args)
 {
+	Response r(client);
+
 	assert(args.size == 1);
 	const char *const channel_name = args[0];
 
 	if (client.Unsubscribe(channel_name))
 		return CommandResult::OK;
 	else {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "not subscribed to this channel");
+		r.Error(ACK_ERROR_NO_EXIST, "not subscribed to this channel");
 		return CommandResult::ERROR;
 	}
 }
@@ -88,8 +88,9 @@ handle_channels(Client &client, gcc_unused Request args)
 		channels.insert(c.subscriptions.begin(),
 				c.subscriptions.end());
 
+	Response r(client);
 	for (const auto &channel : channels)
-		client_printf(client, "channel: %s\n", channel.c_str());
+		r.Format("channel: %s\n", channel.c_str());
 
 	return CommandResult::OK;
 }
@@ -100,11 +101,12 @@ handle_read_messages(Client &client,
 {
 	assert(args.IsEmpty());
 
+	Response r(client);
 	while (!client.messages.empty()) {
 		const ClientMessage &msg = client.messages.front();
 
-		client_printf(client, "channel: %s\nmessage: %s\n",
-			      msg.GetChannel(), msg.GetMessage());
+		r.Format("channel: %s\nmessage: %s\n",
+			 msg.GetChannel(), msg.GetMessage());
 		client.messages.pop_front();
 	}
 
@@ -119,9 +121,9 @@ handle_send_message(Client &client, Request args)
 	const char *const channel_name = args[0];
 	const char *const message_text = args[1];
 
+	Response r(client);
 	if (!client_message_valid_channel_name(channel_name)) {
-		command_error(client, ACK_ERROR_ARG,
-			      "invalid channel name");
+		r.Error(ACK_ERROR_ARG, "invalid channel name");
 		return CommandResult::ERROR;
 	}
 
@@ -134,8 +136,8 @@ handle_send_message(Client &client, Request args)
 	if (sent)
 		return CommandResult::OK;
 	else {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "nobody is subscribed to this channel");
+		r.Error(ACK_ERROR_NO_EXIST,
+			"nobody is subscribed to this channel");
 		return CommandResult::ERROR;
 	}
 }

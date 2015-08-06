@@ -32,7 +32,6 @@
 #include "tag/TagHandler.hxx"
 #include "TimePrint.hxx"
 #include "decoder/DecoderPrint.hxx"
-#include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "mixer/Volume.hxx"
 #include "util/UriUtil.hxx"
@@ -44,6 +43,7 @@
 #include "PlaylistFile.hxx"
 #include "db/PlaylistVector.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "Idle.hxx"
@@ -58,36 +58,39 @@
 #include <string.h>
 
 static void
-print_spl_list(Client &client, const PlaylistVector &list)
+print_spl_list(Response &r, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
-		client_printf(client, "playlist: %s\n", i.name.c_str());
+		r.Format("playlist: %s\n", i.name.c_str());
 
 		if (i.mtime > 0)
-			time_print(client, "Last-Modified", i.mtime);
+			time_print(r, "Last-Modified", i.mtime);
 	}
 }
 
 CommandResult
 handle_urlhandlers(Client &client, gcc_unused Request args)
 {
+	Response r(client);
 	if (client.IsLocal())
-		client_puts(client, "handler: file://\n");
-	print_supported_uri_schemes(client);
+		r.Format("handler: file://\n");
+	print_supported_uri_schemes(r);
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_decoders(Client &client, gcc_unused Request args)
 {
-	decoder_list_print(client);
+	Response r(client);
+	decoder_list_print(r);
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_tagtypes(Client &client, gcc_unused Request args)
 {
-	tag_print_types(client);
+	Response r(client);
+	tag_print_types(r);
 	return CommandResult::OK;
 }
 
@@ -106,14 +109,16 @@ handle_close(gcc_unused Client &client, gcc_unused Request args)
 static void
 print_tag(TagType type, const char *value, void *ctx)
 {
-	Client &client = *(Client *)ctx;
+	auto &r = *(Response *)ctx;
 
-	tag_print(client, type, value);
+	tag_print(r, type, value);
 }
 
 CommandResult
 handle_listfiles(Client &client, Request args)
 {
+	Response r(client);
+
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
@@ -124,7 +129,7 @@ handle_listfiles(Client &client, Request args)
 #ifdef ENABLE_DATABASE
 	if (uri_has_scheme(uri))
 		/* use storage plugin to list remote directory */
-		return handle_listfiles_storage(client, uri);
+		return handle_listfiles_storage(r, uri);
 
 	/* must be a path relative to the configured
 	   music_directory */
@@ -132,14 +137,14 @@ handle_listfiles(Client &client, Request args)
 	if (client.partition.instance.storage != nullptr)
 		/* if we have a storage instance, obtain a list of
 		   files from it */
-		return handle_listfiles_storage(client,
+		return handle_listfiles_storage(r,
 						*client.partition.instance.storage,
 						uri);
 
 	/* fall back to entries from database if we have no storage */
 	return handle_listfiles_db(client, uri);
 #else
-	command_error(client, ACK_ERROR_NO_EXIST, "No database");
+	r.Error(ACK_ERROR_NO_EXIST, "No database");
 	return CommandResult::ERROR;
 #endif
 }
@@ -156,42 +161,40 @@ handle_lsinfo(Client &client, Request args)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
+	Response r(client);
+
 	if (memcmp(uri, "file:///", 8) == 0) {
 		/* print information about an arbitrary local file */
 		const char *path_utf8 = uri + 7;
 		const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
 
 		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported file name");
+			r.Error(ACK_ERROR_NO_EXIST, "unsupported file name");
 			return CommandResult::ERROR;
 		}
 
 		Error error;
 		if (!client.AllowFile(path_fs, error))
-			return print_error(client, error);
+			return print_error(r, error);
 
 		DetachedSong song(path_utf8);
 		if (!song.Update()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "No such file");
+			r.Error(ACK_ERROR_NO_EXIST, "No such file");
 			return CommandResult::ERROR;
 		}
 
-		song_print_info(client, song);
+		song_print_info(r, client.partition, song);
 		return CommandResult::OK;
 	}
 
 	if (uri_has_scheme(uri)) {
 		if (!uri_supported_scheme(uri)) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported URI scheme");
+			r.Error(ACK_ERROR_NO_EXIST, "unsupported URI scheme");
 			return CommandResult::ERROR;
 		}
 
-		if (!tag_stream_scan(uri, print_tag_handler, &client)) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "No such file");
+		if (!tag_stream_scan(uri, print_tag_handler, &r)) {
+			r.Error(ACK_ERROR_NO_EXIST, "No such file");
 			return CommandResult::ERROR;
 		}
 
@@ -207,10 +210,10 @@ handle_lsinfo(Client &client, Request args)
 	if (isRootDirectory(uri)) {
 		Error error;
 		const auto &list = ListPlaylistFiles(error);
-		print_spl_list(client, list);
+		print_spl_list(r, list);
 	} else {
 #ifndef ENABLE_DATABASE
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
 #endif
 	}
@@ -224,13 +227,14 @@ static CommandResult
 handle_update(Client &client, UpdateService &update,
 	      const char *uri_utf8, bool discard)
 {
+	Response r(client);
+
 	unsigned ret = update.Enqueue(uri_utf8, discard);
 	if (ret > 0) {
-		client_printf(client, "updating_db: %i\n", ret);
+		r.Format("updating_db: %i\n", ret);
 		return CommandResult::OK;
 	} else {
-		command_error(client, ACK_ERROR_UPDATE_ALREADY,
-			      "already updating");
+		r.Error(ACK_ERROR_UPDATE_ALREADY, "already updating");
 		return CommandResult::ERROR;
 	}
 }
@@ -239,17 +243,19 @@ static CommandResult
 handle_update(Client &client, Database &db,
 	      const char *uri_utf8, bool discard)
 {
+	Response r(client);
+
 	Error error;
 	unsigned id = db.Update(uri_utf8, discard, error);
 	if (id > 0) {
-		client_printf(client, "updating_db: %i\n", id);
+		r.Format("updating_db: %i\n", id);
 		return CommandResult::OK;
 	} else if (error.IsDefined()) {
-		return print_error(client, error);
+		return print_error(r, error);
 	} else {
 		/* Database::Update() has returned 0 without setting
 		   the Error: the method is not implemented */
-		command_error(client, ACK_ERROR_NO_EXIST, "Not implemented");
+		r.Error(ACK_ERROR_NO_EXIST, "Not implemented");
 		return CommandResult::ERROR;
 	}
 }
@@ -259,6 +265,8 @@ handle_update(Client &client, Database &db,
 static CommandResult
 handle_update(Client &client, Request args, bool discard)
 {
+	Response r(client);
+
 #ifdef ENABLE_DATABASE
 	const char *path = "";
 
@@ -270,8 +278,7 @@ handle_update(Client &client, Request args, bool discard)
 			/* backwards compatibility with MPD 0.15 */
 			path = "";
 		else if (!uri_safe_local(path)) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Malformed path");
+			r.Error(ACK_ERROR_ARG, "Malformed path");
 			return CommandResult::ERROR;
 		}
 	}
@@ -288,7 +295,7 @@ handle_update(Client &client, Request args, bool discard)
 	(void)discard;
 #endif
 
-	command_error(client, ACK_ERROR_NO_EXIST, "No database");
+	r.Error(ACK_ERROR_NO_EXIST, "No database");
 	return CommandResult::ERROR;
 }
 
@@ -307,13 +314,14 @@ handle_rescan(Client &client, gcc_unused Request args)
 CommandResult
 handle_setvol(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned level;
-	if (!args.Parse(0, level, client, 100))
+	if (!args.Parse(0, level, r, 100))
 		return CommandResult::ERROR;
 
 	if (!volume_level_change(client.partition.outputs, level)) {
-		command_error(client, ACK_ERROR_SYSTEM,
-			      "problems setting volume");
+		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
 		return CommandResult::ERROR;
 	}
 
@@ -323,13 +331,15 @@ handle_setvol(Client &client, Request args)
 CommandResult
 handle_volume(Client &client, Request args)
 {
+	Response r(client);
+
 	int relative;
-	if (!args.Parse(0, relative, client,  -100, 100))
+	if (!args.Parse(0, relative, r,  -100, 100))
 		return CommandResult::ERROR;
 
 	const int old_volume = volume_level_get(client.partition.outputs);
 	if (old_volume < 0) {
-		command_error(client, ACK_ERROR_SYSTEM, "No mixer");
+		r.Error(ACK_ERROR_SYSTEM, "No mixer");
 		return CommandResult::ERROR;
 	}
 
@@ -341,8 +351,7 @@ handle_volume(Client &client, Request args)
 
 	if (new_volume != old_volume &&
 	    !volume_level_change(client.partition.outputs, new_volume)) {
-		command_error(client, ACK_ERROR_SYSTEM,
-			      "problems setting volume");
+		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
 		return CommandResult::ERROR;
 	}
 
@@ -352,7 +361,8 @@ handle_volume(Client &client, Request args)
 CommandResult
 handle_stats(Client &client, gcc_unused Request args)
 {
-	stats_print(client);
+	Response r(client);
+	stats_print(r, client.partition);
 	return CommandResult::OK;
 }
 
@@ -365,10 +375,11 @@ handle_ping(gcc_unused Client &client, gcc_unused Request args)
 CommandResult
 handle_password(Client &client, Request args)
 {
-	unsigned permission = 0;
+	Response r(client);
 
+	unsigned permission = 0;
 	if (getPermissionFromPassword(args.front(), &permission) < 0) {
-		command_error(client, ACK_ERROR_PASSWORD, "incorrect password");
+		r.Error(ACK_ERROR_PASSWORD, "incorrect password");
 		return CommandResult::ERROR;
 	}
 
@@ -380,9 +391,11 @@ handle_password(Client &client, Request args)
 CommandResult
 handle_config(Client &client, gcc_unused Request args)
 {
+	Response r(client);
+
 	if (!client.IsLocal()) {
-		command_error(client, ACK_ERROR_PERMISSION,
-			      "Command only permitted to local clients");
+		r.Error(ACK_ERROR_PERMISSION,
+			"Command only permitted to local clients");
 		return CommandResult::ERROR;
 	}
 
@@ -390,7 +403,7 @@ handle_config(Client &client, gcc_unused Request args)
 	const Storage *storage = client.GetStorage();
 	if (storage != nullptr) {
 		const auto path = storage->MapUTF8("");
-		client_printf(client, "music_directory: %s\n", path.c_str());
+		r.Format("music_directory: %s\n", path.c_str());
 	}
 #endif
 
@@ -400,14 +413,14 @@ handle_config(Client &client, gcc_unused Request args)
 CommandResult
 handle_idle(Client &client, Request args)
 {
-	unsigned flags = 0;
+	Response r(client);
 
+	unsigned flags = 0;
 	for (const char *i : args) {
 		unsigned event = idle_parse_name(i);
 		if (event == 0) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Unrecognized idle event: %s",
-				      i);
+			r.FormatError(ACK_ERROR_ARG,
+				      "Unrecognized idle event: %s", i);
 			return CommandResult::ERROR;
 		}
 

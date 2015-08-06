@@ -19,9 +19,9 @@
 
 #include "config.h"
 #include "ls.hxx"
+#include "client/Response.hxx"
 #include "util/StringUtil.hxx"
 #include "util/UriUtil.hxx"
-#include "client/Client.hxx"
 
 #include <assert.h>
 
@@ -78,12 +78,13 @@ void print_supported_uri_schemes_to_fp(FILE *fp)
 	fprintf(fp,"\n");
 }
 
-void print_supported_uri_schemes(Client &client)
+void
+print_supported_uri_schemes(Response &r)
 {
 	const char *const *prefixes = remoteUrlPrefixes;
 
 	while (*prefixes) {
-		client_printf(client, "handler: %s\n", *prefixes);
+		r.Format("handler: %s\n", *prefixes);
 		prefixes++;
 	}
 }

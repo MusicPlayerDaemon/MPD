@@ -25,12 +25,13 @@
 class Client;
 class Storage;
 class Request;
+class Response;
 
 CommandResult
-handle_listfiles_storage(Client &client, Storage &storage, const char *uri);
+handle_listfiles_storage(Response &r, Storage &storage, const char *uri);
 
 CommandResult
-handle_listfiles_storage(Client &client, const char *uri);
+handle_listfiles_storage(Response &r, const char *uri);
 
 CommandResult
 handle_listmounts(Client &client, Request args);

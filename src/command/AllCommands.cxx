@@ -36,6 +36,7 @@
 #include "protocol/Result.hxx"
 #include "Partition.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "util/Macros.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
@@ -226,36 +227,48 @@ command_available(gcc_unused const Partition &partition,
 	return true;
 }
 
-/* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, gcc_unused Request args)
+PrintAvailableCommands(Response &r, const Partition &partition,
+		     unsigned permission)
 {
-	const unsigned permission = client.GetPermission();
-
 	for (unsigned i = 0; i < num_commands; ++i) {
 		const struct command *cmd = &commands[i];
 
 		if (cmd->permission == (permission & cmd->permission) &&
-		    command_available(client.partition, cmd))
-			client_printf(client, "command: %s\n", cmd->cmd);
+		    command_available(partition, cmd))
+			r.Format("command: %s\n", cmd->cmd);
 	}
 
 	return CommandResult::OK;
 }
 
 static CommandResult
-handle_not_commands(Client &client, gcc_unused Request args)
+PrintUnavailableCommands(Response &r, unsigned permission)
 {
-	const unsigned permission = client.GetPermission();
-
 	for (unsigned i = 0; i < num_commands; ++i) {
 		const struct command *cmd = &commands[i];
 
 		if (cmd->permission != (permission & cmd->permission))
-			client_printf(client, "command: %s\n", cmd->cmd);
+			r.Format("command: %s\n", cmd->cmd);
 	}
 
 	return CommandResult::OK;
+}
+
+/* don't be fooled, this is the command handler for "commands" command */
+static CommandResult
+handle_commands(Client &client, gcc_unused Request args)
+{
+	Response r(client);
+	return PrintAvailableCommands(r, client.partition,
+				      client.GetPermission());
+}
+
+static CommandResult
+handle_not_commands(Client &client, gcc_unused Request args)
+{
+	Response r(client);
+	return PrintUnavailableCommands(r, client.GetPermission());
 }
 
 void
@@ -299,7 +312,8 @@ command_check_request(const struct command *cmd, Client &client,
 		      unsigned permission, Request args)
 {
 	if (cmd->permission != (permission & cmd->permission)) {
-		command_error(client, ACK_ERROR_PERMISSION,
+		Response r(client);
+		r.FormatError(ACK_ERROR_PERMISSION,
 			      "you don't have permission for \"%s\"",
 			      cmd->cmd);
 		return false;
@@ -312,16 +326,19 @@ command_check_request(const struct command *cmd, Client &client,
 		return true;
 
 	if (min == max && unsigned(max) != args.size) {
-		command_error(client, ACK_ERROR_ARG,
+		Response r(client);
+		r.FormatError(ACK_ERROR_ARG,
 			      "wrong number of arguments for \"%s\"",
 			      cmd->cmd);
 		return false;
 	} else if (args.size < unsigned(min)) {
-		command_error(client, ACK_ERROR_ARG,
+		Response r(client);
+		r.FormatError(ACK_ERROR_ARG,
 			      "too few arguments for \"%s\"", cmd->cmd);
 		return false;
 	} else if (max >= 0 && args.size > unsigned(max)) {
-		command_error(client, ACK_ERROR_ARG,
+		Response r(client);
+		r.FormatError(ACK_ERROR_ARG,
 			      "too many arguments for \"%s\"", cmd->cmd);
 		return false;
 	} else
@@ -336,7 +353,8 @@ command_checked_lookup(Client &client, unsigned permission,
 
 	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
-		command_error(client, ACK_ERROR_UNKNOWN,
+		Response r(client);
+		r.FormatError(ACK_ERROR_UNKNOWN,
 			      "unknown command \"%s\"", cmd_name);
 		return nullptr;
 	}
@@ -357,7 +375,7 @@ command_process(Client &client, unsigned num, char *line)
 	command_list_num = num;
 
 	/* get the command name (first word on the line) */
-	/* we have to set current_command because command_error()
+	/* we have to set current_command because Response::Error()
 	   expects it to be set */
 
 	Tokenizer tokenizer(line);
@@ -366,12 +384,12 @@ command_process(Client &client, unsigned num, char *line)
 		tokenizer.NextWord(error);
 	if (cmd_name == nullptr) {
 		current_command = "";
+
+		Response r(client);
 		if (tokenizer.IsEnd())
-			command_error(client, ACK_ERROR_UNKNOWN,
-				      "No command given");
+			r.FormatError(ACK_ERROR_UNKNOWN, "No command given");
 		else
-			command_error(client, ACK_ERROR_UNKNOWN,
-				      "%s", error.GetMessage());
+			r.Error(ACK_ERROR_UNKNOWN, error.GetMessage());
 
 		current_command = nullptr;
 
@@ -387,8 +405,8 @@ command_process(Client &client, unsigned num, char *line)
 
 	while (true) {
 		if (args.size == COMMAND_ARGV_MAX) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Too many arguments");
+			Response r(client);
+			r.Error(ACK_ERROR_ARG, "Too many arguments");
 			current_command = nullptr;
 			return CommandResult::ERROR;
 		}
@@ -398,7 +416,8 @@ command_process(Client &client, unsigned num, char *line)
 			if (tokenizer.IsEnd())
 				break;
 
-			command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
+			Response r(client);
+			r.Error(ACK_ERROR_UNKNOWN, error.GetMessage());
 			current_command = nullptr;
 			return CommandResult::ERROR;
 		}

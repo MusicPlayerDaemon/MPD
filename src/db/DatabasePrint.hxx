@@ -26,7 +26,9 @@
 
 class SongFilter;
 struct DatabaseSelection;
+struct Partition;
 class Client;
+class Response;
 class Error;
 
 /**
@@ -34,17 +36,20 @@ class Error;
  * @param base print only base name of songs/directories?
  */
 bool
-db_selection_print(Client &client, const DatabaseSelection &selection,
+db_selection_print(Response &r, Partition &partition,
+		   const DatabaseSelection &selection,
 		   bool full, bool base, Error &error);
 
 bool
-db_selection_print(Client &client, const DatabaseSelection &selection,
+db_selection_print(Response &r, Partition &partition,
+		   const DatabaseSelection &selection,
 		   bool full, bool base,
 		   unsigned window_start, unsigned window_end,
 		   Error &error);
 
 bool
-PrintUniqueTags(Client &client, unsigned type, uint32_t group_mask,
+PrintUniqueTags(Response &r, Partition &partition,
+		unsigned type, uint32_t group_mask,
 		const SongFilter *filter,
 		Error &error);
 

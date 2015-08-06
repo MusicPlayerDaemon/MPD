@@ -33,7 +33,7 @@
 #include "queue/Playlist.hxx"
 #include "TimePrint.hxx"
 #include "client/Client.hxx"
-#include "protocol/Result.hxx"
+#include "client/Response.hxx"
 #include "ls.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -48,30 +48,33 @@ playlist_commands_available()
 }
 
 static void
-print_spl_list(Client &client, const PlaylistVector &list)
+print_spl_list(Response &r, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
-		client_printf(client, "playlist: %s\n", i.name.c_str());
+		r.Format("playlist: %s\n", i.name.c_str());
 
 		if (i.mtime > 0)
-			time_print(client, "Last-Modified", i.mtime);
+			time_print(r, "Last-Modified", i.mtime);
 	}
 }
 
 CommandResult
 handle_save(Client &client, Request args)
 {
+	Response r(client);
 	Error error;
 	return spl_save_playlist(args.front(), client.playlist, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
 handle_load(Client &client, Request args)
 {
+	Response r(client);
+
 	RangeArg range = RangeArg::All();
-	if (!args.ParseOptional(1, range, client))
+	if (!args.ParseOptional(1, range, r))
 		return CommandResult::ERROR;
 
 	const ScopeBulkEdit bulk_edit(client.partition);
@@ -82,7 +85,7 @@ handle_load(Client &client, Request args)
 				      range.start, range.end,
 				      client.playlist,
 				      client.player_control, loader, error))
-		return print_error(client, error);
+		return print_error(r, error);
 
 	return CommandResult::OK;
 }
@@ -90,97 +93,114 @@ handle_load(Client &client, Request args)
 CommandResult
 handle_listplaylist(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const name = args.front();
 
-	if (playlist_file_print(client, name, false))
+	if (playlist_file_print(r, client.partition, SongLoader(client),
+				name, false))
 		return CommandResult::OK;
 
 	Error error;
-	return spl_print(client, name, false, error)
+	return spl_print(r, client.partition, name, false, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
 handle_listplaylistinfo(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const name = args.front();
 
-	if (playlist_file_print(client, name, true))
+	if (playlist_file_print(r, client.partition, SongLoader(client),
+				name, true))
 		return CommandResult::OK;
 
 	Error error;
-	return spl_print(client, name, true, error)
+	return spl_print(r, client.partition, name, true, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
 handle_rm(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const name = args.front();
 
 	Error error;
 	return spl_delete(name, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
 handle_rename(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const old_name = args[0];
 	const char *const new_name = args[1];
 
 	Error error;
 	return spl_rename(old_name, new_name, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
 handle_playlistdelete(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const name = args[0];
 	unsigned from;
-	if (!args.Parse(1, from, client))
+	if (!args.Parse(1, from, r))
 		return CommandResult::ERROR;
 
 	Error error;
 	return spl_remove_index(name, from, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
 handle_playlistmove(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const name = args.front();
 	unsigned from, to;
-	if (!args.Parse(1, from, client) ||
-	    !args.Parse(2, to, client))
+	if (!args.Parse(1, from, r) || !args.Parse(2, to, r))
 		return CommandResult::ERROR;
 
 	Error error;
 	return spl_move_index(name, from, to, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
 handle_playlistclear(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const name = args.front();
 
 	Error error;
 	return spl_clear(name, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
 handle_playlistadd(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const playlist = args[0];
 	const char *const uri = args[1];
 
@@ -193,7 +213,7 @@ handle_playlistadd(Client &client, Request args)
 #ifdef ENABLE_DATABASE
 		const Database *db = client.GetDatabase(error);
 		if (db == nullptr)
-			return print_error(client, error);
+			return print_error(r, error);
 
 		success = search_add_to_playlist(*db, *client.GetStorage(),
 						 uri, playlist, nullptr,
@@ -204,22 +224,23 @@ handle_playlistadd(Client &client, Request args)
 	}
 
 	if (!success && !error.IsDefined()) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "directory or file not found");
+		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");
 		return CommandResult::ERROR;
 	}
 
-	return success ? CommandResult::OK : print_error(client, error);
+	return success ? CommandResult::OK : print_error(r, error);
 }
 
 CommandResult
 handle_listplaylists(Client &client, gcc_unused Request args)
 {
+	Response r(client);
+
 	Error error;
 	const auto list = ListPlaylistFiles(error);
 	if (list.empty() && error.IsDefined())
-		return print_error(client, error);
+		return print_error(r, error);
 
-	print_spl_list(client, list);
+	print_spl_list(r, list);
 	return CommandResult::OK;
 }

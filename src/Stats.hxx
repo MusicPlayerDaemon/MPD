@@ -20,7 +20,8 @@
 #ifndef MPD_STATS_HXX
 #define MPD_STATS_HXX
 
-class Client;
+class Response;
+struct Partition;
 
 void
 stats_global_init();
@@ -29,6 +30,6 @@ void
 stats_invalidate();
 
 void
-stats_print(Client &client);
+stats_print(Response &r, const Partition &partition);
 
 #endif

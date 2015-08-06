@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "TimePrint.hxx"
-#include "client/Client.hxx"
+#include "client/Response.hxx"
 
 void
-time_print(Client &client, const char *name, time_t t)
+time_print(Response &r, const char *name, time_t t)
 {
 #ifdef WIN32
 	const struct tm *tm2 = gmtime(&t);
@@ -41,5 +41,5 @@ time_print(Client &client, const char *name, time_t t)
 		 "%FT%TZ",
 #endif
 		 tm2);
-	client_printf(client, "%s: %s\n", name, buffer);
+	r.Format("%s: %s\n", name, buffer);
 }

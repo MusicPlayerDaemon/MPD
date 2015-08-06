@@ -18,43 +18,55 @@
  */
 
 #include "config.h"
-#include "TagPrint.hxx"
-#include "tag/Tag.hxx"
-#include "tag/TagSettings.h"
-#include "client/Response.hxx"
+#include "Response.hxx"
+#include "Client.hxx"
+#include "protocol/Result.hxx"
+#include "util/FormatString.hxx"
 
-void
-tag_print_types(Response &r)
+#include <string.h>
+
+bool
+Response::Write(const void *data, size_t length)
 {
-	int i;
+	return client.Write(data, length);
+}
 
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (!ignore_tag_items[i])
-			r.Format("tagtype: %s\n", tag_item_names[i]);
-	}
+bool
+Response::Write(const char *data)
+{
+	return Write(data, strlen(data));
+}
+
+bool
+Response::FormatV(const char *fmt, va_list args)
+{
+	char *p = FormatNewV(fmt, args);
+	bool success = Write(p);
+	delete[] p;
+	return success;
+}
+
+bool
+Response::Format(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	bool success = FormatV(fmt, args);
+	va_end(args);
+	return success;
 }
 
 void
-tag_print(Response &r, TagType type, const char *value)
+Response::Error(enum ack code, const char *msg)
 {
-	r.Format("%s: %s\n", tag_item_names[type], value);
+	command_error(client, code, "%s", msg);
 }
 
 void
-tag_print_values(Response &r, const Tag &tag)
+Response::FormatError(enum ack code, const char *fmt, ...)
 {
-	for (const auto &i : tag)
-		r.Format("%s: %s\n", tag_item_names[i.type], i.value);
-}
-
-void
-tag_print(Response &r, const Tag &tag)
-{
-	if (!tag.duration.IsNegative())
-		r.Format("Time: %i\n"
-			 "duration: %1.3f\n",
-			 tag.duration.RoundS(),
-			 tag.duration.ToDoubleS());
-
-	tag_print_values(r, tag);
+	va_list args;
+	va_start(args, fmt);
+	command_error_v(client, code, fmt, args);
+	va_end(args);
 }

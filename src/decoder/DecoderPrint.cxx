@@ -21,35 +21,35 @@
 #include "DecoderPrint.hxx"
 #include "DecoderList.hxx"
 #include "DecoderPlugin.hxx"
-#include "client/Client.hxx"
+#include "client/Response.hxx"
 
 #include <functional>
 
 #include <assert.h>
 
 static void
-decoder_plugin_print(Client &client,
+decoder_plugin_print(Response &r,
 		     const DecoderPlugin &plugin)
 {
 	const char *const*p;
 
 	assert(plugin.name != nullptr);
 
-	client_printf(client, "plugin: %s\n", plugin.name);
+	r.Format("plugin: %s\n", plugin.name);
 
 	if (plugin.suffixes != nullptr)
 		for (p = plugin.suffixes; *p != nullptr; ++p)
-			client_printf(client, "suffix: %s\n", *p);
+			r.Format("suffix: %s\n", *p);
 
 	if (plugin.mime_types != nullptr)
 		for (p = plugin.mime_types; *p != nullptr; ++p)
-			client_printf(client, "mime_type: %s\n", *p);
+			r.Format("mime_type: %s\n", *p);
 }
 
 void
-decoder_list_print(Client &client)
+decoder_list_print(Response &r)
 {
 	using namespace std::placeholders;
-	const auto f = std::bind(decoder_plugin_print, std::ref(client), _1);
+	const auto f = std::bind(decoder_plugin_print, std::ref(r), _1);
 	decoder_plugins_for_each_enabled(f);
 }

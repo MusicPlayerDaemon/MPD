@@ -20,9 +20,9 @@
 #ifndef MPD_DECODER_PRINT_HXX
 #define MPD_DECODER_PRINT_HXX
 
-class Client;
+class Response;
 
 void
-decoder_list_print(Client &client);
+decoder_list_print(Response &r);
 
 #endif

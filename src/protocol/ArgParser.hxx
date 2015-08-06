@@ -26,19 +26,19 @@
 
 #include <stdint.h>
 
-class Client;
+class Response;
 class SongTime;
 class SignedSongTime;
 
 bool
-check_uint32(Client &client, uint32_t *dst, const char *s);
+ParseCommandArg32(Response &r, uint32_t &value_r, const char *s);
 
 bool
-ParseCommandArg(Client &client, int &value_r, const char *s,
+ParseCommandArg(Response &r, int &value_r, const char *s,
 		int min_value, int max_value);
 
 bool
-ParseCommandArg(Client &client, int &value_r, const char *s);
+ParseCommandArg(Response &r, int &value_r, const char *s);
 
 struct RangeArg {
 	unsigned start, end;
@@ -54,25 +54,25 @@ struct RangeArg {
 };
 
 bool
-ParseCommandArg(Client &client, RangeArg &value_r, const char *s);
+ParseCommandArg(Response &r, RangeArg &value_r, const char *s);
 
 bool
-ParseCommandArg(Client &client, unsigned &value_r, const char *s,
+ParseCommandArg(Response &r, unsigned &value_r, const char *s,
 		unsigned max_value);
 
 bool
-ParseCommandArg(Client &client, unsigned &value_r, const char *s);
+ParseCommandArg(Response &r, unsigned &value_r, const char *s);
 
 bool
-ParseCommandArg(Client &client, bool &value_r, const char *s);
+ParseCommandArg(Response &r, bool &value_r, const char *s);
 
 bool
-ParseCommandArg(Client &client, float &value_r, const char *s);
+ParseCommandArg(Response &r, float &value_r, const char *s);
 
 bool
-ParseCommandArg(Client &client, SongTime &value_r, const char *s);
+ParseCommandArg(Response &r, SongTime &value_r, const char *s);
 
 bool
-ParseCommandArg(Client &client, SignedSongTime &value_r, const char *s);
+ParseCommandArg(Response &r, SignedSongTime &value_r, const char *s);
 
 #endif

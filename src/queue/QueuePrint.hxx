@@ -28,27 +28,28 @@
 #include <stdint.h>
 
 struct Queue;
+struct Partition;
 class SongFilter;
-class Client;
+class Response;
 
 void
-queue_print_info(Client &client, const Queue &queue,
+queue_print_info(Response &r, Partition &partition, const Queue &queue,
 		 unsigned start, unsigned end);
 
 void
-queue_print_uris(Client &client, const Queue &queue,
+queue_print_uris(Response &r, Partition &partition, const Queue &queue,
 		 unsigned start, unsigned end);
 
 void
-queue_print_changes_info(Client &client, const Queue &queue,
+queue_print_changes_info(Response &r, Partition &partition, const Queue &queue,
 			 uint32_t version);
 
 void
-queue_print_changes_position(Client &client, const Queue &queue,
+queue_print_changes_position(Response &r, const Queue &queue,
 			     uint32_t version);
 
 void
-queue_find(Client &client, const Queue &queue,
+queue_find(Response &response, Partition &partition, const Queue &queue,
 	   const SongFilter &filter);
 
 #endif

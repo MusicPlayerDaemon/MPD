@@ -25,10 +25,10 @@
 #ifndef MPD_OUTPUT_PRINT_HXX
 #define MPD_OUTPUT_PRINT_HXX
 
-class Client;
+class Response;
 class MultipleOutputs;
 
 void
-printAudioDevices(Client &client, const MultipleOutputs &outputs);
+printAudioDevices(Response &r, const MultipleOutputs &outputs);
 
 #endif

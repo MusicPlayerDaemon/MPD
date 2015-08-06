@@ -28,9 +28,9 @@
 #include "queue/Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
 #include "BulkEdit.hxx"
-#include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/UriUtil.hxx"
@@ -56,6 +56,8 @@ translate_uri(const char *uri)
 CommandResult
 handle_add(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *uri = args.front();
 	if (memcmp(uri, "/", 2) == 0)
 		/* this URI is malformed, but some clients are buggy
@@ -72,7 +74,7 @@ handle_add(Client &client, Request args)
 		Error error;
 		unsigned id = client.partition.AppendURI(loader, uri, error);
 		if (id == 0)
-			return print_error(client, error);
+			return print_error(r, error);
 
 		return CommandResult::OK;
 	}
@@ -84,9 +86,9 @@ handle_add(Client &client, Request args)
 	Error error;
 	return AddFromDatabase(client.partition, selection, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 #else
-	command_error(client, ACK_ERROR_NO_EXIST, "No database");
+	r.Error(ACK_ERROR_NO_EXIST, "No database");
 	return CommandResult::ERROR;
 #endif
 }
@@ -94,29 +96,31 @@ handle_add(Client &client, Request args)
 CommandResult
 handle_addid(Client &client, Request args)
 {
+	Response r(client);
+
 	const char *const uri = translate_uri(args.front());
 
 	const SongLoader loader(client);
 	Error error;
 	unsigned added_id = client.partition.AppendURI(loader, uri, error);
 	if (added_id == 0)
-		return print_error(client, error);
+		return print_error(r, error);
 
 	if (args.size == 2) {
 		unsigned to;
-		if (!args.Parse(1, to, client))
+		if (!args.Parse(1, to, r))
 			return CommandResult::ERROR;
 
 		PlaylistResult result = client.partition.MoveId(added_id, to);
 		if (result != PlaylistResult::SUCCESS) {
 			CommandResult ret =
-				print_playlist_result(client, result);
+				print_playlist_result(r, result);
 			client.partition.DeleteId(added_id);
 			return ret;
 		}
 	}
 
-	client_printf(client, "Id: %u\n", added_id);
+	r.Format("Id: %u\n", added_id);
 	return CommandResult::OK;
 }
 
@@ -154,13 +158,15 @@ parse_time_range(const char *p, SongTime &start_r, SongTime &end_r)
 CommandResult
 handle_rangeid(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned id;
-	if (!args.Parse(0, id, client))
+	if (!args.Parse(0, id, r))
 		return CommandResult::ERROR;
 
 	SongTime start, end;
 	if (!parse_time_range(args[1], start, end)) {
-		command_error(client, ACK_ERROR_ARG, "Bad range");
+		r.Error(ACK_ERROR_ARG, "Bad range");
 		return CommandResult::ERROR;
 	}
 
@@ -168,7 +174,7 @@ handle_rangeid(Client &client, Request args)
 	if (!client.partition.playlist.SetSongIdRange(client.partition.pc,
 						      id, start, end,
 						      error))
-		return print_error(client, error);
+		return print_error(r, error);
 
 	return CommandResult::OK;
 }
@@ -176,37 +182,44 @@ handle_rangeid(Client &client, Request args)
 CommandResult
 handle_delete(Client &client, Request args)
 {
+	Response r(client);
+
 	RangeArg range;
-	if (!args.Parse(0, range, client))
+	if (!args.Parse(0, range, r))
 		return CommandResult::ERROR;
 
 	auto result = client.partition.DeleteRange(range.start, range.end);
-	return print_playlist_result(client, result);
+	return print_playlist_result(r, result);
 }
 
 CommandResult
 handle_deleteid(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned id;
-	if (!args.Parse(0, id, client))
+	if (!args.Parse(0, id, r))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.DeleteId(id);
-	return print_playlist_result(client, result);
+	return print_playlist_result(r, result);
 }
 
 CommandResult
 handle_playlist(Client &client, gcc_unused Request args)
 {
-	playlist_print_uris(client, client.playlist);
+	Response r(client);
+	playlist_print_uris(r, client.partition, client.playlist);
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_shuffle(gcc_unused Client &client, Request args)
 {
+	Response r(client);
+
 	RangeArg range = RangeArg::All();
-	if (!args.ParseOptional(0, range, client))
+	if (!args.ParseOptional(0, range, r))
 		return CommandResult::ERROR;
 
 	client.partition.Shuffle(range.start, range.end);
@@ -223,37 +236,42 @@ handle_clear(gcc_unused Client &client, gcc_unused Request args)
 CommandResult
 handle_plchanges(Client &client, Request args)
 {
-	uint32_t version;
+	Response r(client);
 
-	if (!check_uint32(client, &version, args.front()))
+	uint32_t version;
+	if (!ParseCommandArg32(r, version, args.front()))
 		return CommandResult::ERROR;
 
-	playlist_print_changes_info(client, client.playlist, version);
+	playlist_print_changes_info(r, client.partition,
+				    client.playlist, version);
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_plchangesposid(Client &client, Request args)
 {
-	uint32_t version;
+	Response r(client);
 
-	if (!check_uint32(client, &version, args.front()))
+	uint32_t version;
+	if (!ParseCommandArg32(r, version, args.front()))
 		return CommandResult::ERROR;
 
-	playlist_print_changes_position(client, client.playlist, version);
+	playlist_print_changes_position(r, client.playlist, version);
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_playlistinfo(Client &client, Request args)
 {
+	Response r(client);
+
 	RangeArg range = RangeArg::All();
-	if (!args.ParseOptional(0, range, client))
+	if (!args.ParseOptional(0, range, r))
 		return CommandResult::ERROR;
 
-	if (!playlist_print_info(client, client.playlist,
+	if (!playlist_print_info(r, client.partition, client.playlist,
 				 range.start, range.end))
-		return print_playlist_result(client,
+		return print_playlist_result(r,
 					     PlaylistResult::BAD_RANGE);
 
 	return CommandResult::OK;
@@ -262,17 +280,19 @@ handle_playlistinfo(Client &client, Request args)
 CommandResult
 handle_playlistid(Client &client, Request args)
 {
+	Response r(client);
+
 	if (!args.IsEmpty()) {
 		unsigned id;
-		if (!args.Parse(0, id, client))
+		if (!args.Parse(0, id, r))
 			return CommandResult::ERROR;
 
-		bool ret = playlist_print_id(client, client.playlist, id);
+		bool ret = playlist_print_id(r, client.partition,
+					     client.playlist, id);
 		if (!ret)
-			return print_playlist_result(client,
-						     PlaylistResult::NO_SUCH_SONG);
+			return print_playlist_result(r, PlaylistResult::NO_SUCH_SONG);
 	} else {
-		playlist_print_info(client, client.playlist,
+		playlist_print_info(r, client.partition, client.playlist,
 				    0, std::numeric_limits<unsigned>::max());
 	}
 
@@ -283,13 +303,15 @@ static CommandResult
 handle_playlist_match(Client &client, Request args,
 		      bool fold_case)
 {
+	Response r(client);
+
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
-		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
+		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
-	playlist_print_find(client, client.playlist, filter);
+	playlist_print_find(r, client.partition, client.playlist, filter);
 	return CommandResult::OK;
 }
 
@@ -308,13 +330,15 @@ handle_playlistsearch(Client &client, Request args)
 CommandResult
 handle_prio(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned priority;
-	if (!args.ParseShift(0, priority, client, 0xff))
+	if (!args.ParseShift(0, priority, r, 0xff))
 		return CommandResult::ERROR;
 
 	for (const char *i : args) {
 		RangeArg range;
-		if (!ParseCommandArg(client, range, i))
+		if (!ParseCommandArg(r, range, i))
 			return CommandResult::ERROR;
 
 		PlaylistResult result =
@@ -322,7 +346,7 @@ handle_prio(Client &client, Request args)
 							  range.end,
 							  priority);
 		if (result != PlaylistResult::SUCCESS)
-			return print_playlist_result(client, result);
+			return print_playlist_result(r, result);
 	}
 
 	return CommandResult::OK;
@@ -331,19 +355,21 @@ handle_prio(Client &client, Request args)
 CommandResult
 handle_prioid(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned priority;
-	if (!args.ParseShift(0, priority, client, 0xff))
+	if (!args.ParseShift(0, priority, r, 0xff))
 		return CommandResult::ERROR;
 
 	for (const char *i : args) {
 		unsigned song_id;
-		if (!ParseCommandArg(client, song_id, i))
+		if (!ParseCommandArg(r, song_id, i))
 			return CommandResult::ERROR;
 
 		PlaylistResult result =
 			client.partition.SetPriorityId(song_id, priority);
 		if (result != PlaylistResult::SUCCESS)
-			return print_playlist_result(client, result);
+			return print_playlist_result(r, result);
 	}
 
 	return CommandResult::OK;
@@ -352,52 +378,56 @@ handle_prioid(Client &client, Request args)
 CommandResult
 handle_move(Client &client, Request args)
 {
+	Response r(client);
+
 	RangeArg range;
 	int to;
 
-	if (!args.Parse(0, range, client) ||
-	    !args.Parse(1, to, client))
+	if (!args.Parse(0, range, r) || !args.Parse(1, to, r))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
 		client.partition.MoveRange(range.start, range.end, to);
-	return print_playlist_result(client, result);
+	return print_playlist_result(r, result);
 }
 
 CommandResult
 handle_moveid(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned id;
 	int to;
-	if (!args.Parse(0, id, client) ||
-	    !args.Parse(1, to, client))
+	if (!args.Parse(0, id, r) || !args.Parse(1, to, r))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.MoveId(id, to);
-	return print_playlist_result(client, result);
+	return print_playlist_result(r, result);
 }
 
 CommandResult
 handle_swap(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned song1, song2;
-	if (!args.Parse(0, song1, client) ||
-	    !args.Parse(1, song2, client))
+	if (!args.Parse(0, song1, r) || !args.Parse(1, song2, r))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
 		client.partition.SwapPositions(song1, song2);
-	return print_playlist_result(client, result);
+	return print_playlist_result(r, result);
 }
 
 CommandResult
 handle_swapid(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned id1, id2;
-	if (!args.Parse(0, id1, client) ||
-	    !args.Parse(1, id2, client))
+	if (!args.Parse(0, id1, r) || !args.Parse(1, id2, r))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.SwapIds(id1, id2);
-	return print_playlist_result(client, result);
+	return print_playlist_result(r, result);
 }

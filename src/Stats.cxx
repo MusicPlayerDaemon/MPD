@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Stats.hxx"
 #include "PlayerControl.hxx"
-#include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "db/Selection.hxx"
@@ -94,7 +94,7 @@ stats_update(const Database &db)
 }
 
 static void
-db_stats_print(Client &client, const Database &db)
+db_stats_print(Response &r, const Database &db)
 {
 	if (!stats_update(db))
 		return;
@@ -102,41 +102,38 @@ db_stats_print(Client &client, const Database &db)
 	unsigned total_duration_s =
 		std::chrono::duration_cast<std::chrono::seconds>(stats.total_duration).count();
 
-	client_printf(client,
-		      "artists: %u\n"
-		      "albums: %u\n"
-		      "songs: %u\n"
-		      "db_playtime: %u\n",
-		      stats.artist_count,
-		      stats.album_count,
-		      stats.song_count,
-		      total_duration_s);
+	r.Format("artists: %u\n"
+		 "albums: %u\n"
+		 "songs: %u\n"
+		 "db_playtime: %u\n",
+		 stats.artist_count,
+		 stats.album_count,
+		 stats.song_count,
+		 total_duration_s);
 
 	const time_t update_stamp = db.GetUpdateStamp();
 	if (update_stamp > 0)
-		client_printf(client,
-			      "db_update: %lu\n",
-			      (unsigned long)update_stamp);
+		r.Format("db_update: %lu\n",
+			 (unsigned long)update_stamp);
 }
 
 #endif
 
 void
-stats_print(Client &client)
+stats_print(Response &r, const Partition &partition)
 {
-	client_printf(client,
-		      "uptime: %u\n"
-		      "playtime: %lu\n",
+	r.Format("uptime: %u\n"
+		 "playtime: %lu\n",
 #ifdef WIN32
-		      GetProcessUptimeS(),
+		 GetProcessUptimeS(),
 #else
-		      MonotonicClockS() - start_time,
+		 MonotonicClockS() - start_time,
 #endif
-		      (unsigned long)(client.player_control.GetTotalPlayTime() + 0.5));
+		 (unsigned long)(partition.pc.GetTotalPlayTime() + 0.5));
 
 #ifdef ENABLE_DATABASE
-	const Database *db = client.partition.instance.database;
+	const Database *db = partition.instance.database;
 	if (db != nullptr)
-		db_stats_print(client, *db);
+		db_stats_print(r, *db);
 #endif
 }

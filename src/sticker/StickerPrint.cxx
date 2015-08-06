@@ -20,25 +20,25 @@
 #include "config.h"
 #include "StickerPrint.hxx"
 #include "StickerDatabase.hxx"
-#include "client/Client.hxx"
+#include "client/Response.hxx"
 
 void
-sticker_print_value(Client &client,
+sticker_print_value(Response &r,
 		    const char *name, const char *value)
 {
-	client_printf(client, "sticker: %s=%s\n", name, value);
+	r.Format("sticker: %s=%s\n", name, value);
 }
 
 static void
 print_sticker_cb(const char *name, const char *value, void *data)
 {
-	Client &client = *(Client *)data;
+	auto &r = *(Response *)data;
 
-	sticker_print_value(client, name, value);
+	sticker_print_value(r, name, value);
 }
 
 void
-sticker_print(Client &client, const Sticker &sticker)
+sticker_print(Response &r, const Sticker &sticker)
 {
-	sticker_foreach(sticker, print_sticker_cb, &client);
+	sticker_foreach(sticker, print_sticker_cb, &r);
 }

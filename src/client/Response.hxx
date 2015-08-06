@@ -17,26 +17,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_PRINT_HXX
-#define MPD_TAG_PRINT_HXX
+#ifndef MPD_RESPONSE_HXX
+#define MPD_RESPONSE_HXX
 
-#include <stdint.h>
+#include "check.h"
+#include "protocol/Ack.hxx"
 
-enum TagType : uint8_t;
+#include <stddef.h>
+#include <stdarg.h>
 
-struct Tag;
-class Response;
+class Client;
 
-void
-tag_print_types(Response &response);
+class Response {
+	Client &client;
 
-void
-tag_print(Response &response, TagType type, const char *value);
+public:
+	explicit Response(Client &_client):client(_client) {}
 
-void
-tag_print_values(Response &response, const Tag &tag);
+	Response(const Response &) = delete;
+	Response &operator=(const Response &) = delete;
 
-void
-tag_print(Response &response, const Tag &tag);
+	bool Write(const void *data, size_t length);
+	bool Write(const char *data);
+	bool FormatV(const char *fmt, va_list args);
+	bool Format(const char *fmt, ...);
+
+	void Error(enum ack code, const char *msg);
+	void FormatError(enum ack code, const char *fmt, ...);
+};
 
 #endif

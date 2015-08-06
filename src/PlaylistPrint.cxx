@@ -27,6 +27,7 @@
 #include "Instance.hxx"
 #include "db/Interface.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "input/InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "fs/Traits.hxx"
@@ -37,15 +38,17 @@
 #define SONG_TIME "Time: "
 
 void
-playlist_print_uris(Client &client, const playlist &playlist)
+playlist_print_uris(Response &r, Partition &partition,
+		    const playlist &playlist)
 {
 	const Queue &queue = playlist.queue;
 
-	queue_print_uris(client, queue, 0, queue.GetLength());
+	queue_print_uris(r, partition, queue, 0, queue.GetLength());
 }
 
 bool
-playlist_print_info(Client &client, const playlist &playlist,
+playlist_print_info(Response &r, Partition &partition,
+		    const playlist &playlist,
 		    unsigned start, unsigned end)
 {
 	const Queue &queue = playlist.queue;
@@ -58,12 +61,12 @@ playlist_print_info(Client &client, const playlist &playlist,
 		/* an invalid "start" offset is fatal */
 		return false;
 
-	queue_print_info(client, queue, start, end);
+	queue_print_info(r, partition, queue, start, end);
 	return true;
 }
 
 bool
-playlist_print_id(Client &client, const playlist &playlist,
+playlist_print_id(Response &r, Partition &partition, const playlist &playlist,
 		  unsigned id)
 {
 	int position;
@@ -73,50 +76,53 @@ playlist_print_id(Client &client, const playlist &playlist,
 		/* no such song */
 		return false;
 
-	return playlist_print_info(client, playlist, position, position + 1);
+	return playlist_print_info(r, partition,
+				   playlist, position, position + 1);
 }
 
 bool
-playlist_print_current(Client &client, const playlist &playlist)
+playlist_print_current(Response &r, Partition &partition,
+		       const playlist &playlist)
 {
 	int current_position = playlist.GetCurrentPosition();
 	if (current_position < 0)
 		return false;
 
-	queue_print_info(client, playlist.queue,
+	queue_print_info(r, partition, playlist.queue,
 			 current_position, current_position + 1);
 	return true;
 }
 
 void
-playlist_print_find(Client &client, const playlist &playlist,
+playlist_print_find(Response &r, Partition &partition,
+		    const playlist &playlist,
 		    const SongFilter &filter)
 {
-	queue_find(client, playlist.queue, filter);
+	queue_find(r, partition, playlist.queue, filter);
 }
 
 void
-playlist_print_changes_info(Client &client,
+playlist_print_changes_info(Response &r, Partition &partition,
 			    const playlist &playlist,
 			    uint32_t version)
 {
-	queue_print_changes_info(client, playlist.queue, version);
+	queue_print_changes_info(r, partition, playlist.queue, version);
 }
 
 void
-playlist_print_changes_position(Client &client,
+playlist_print_changes_position(Response &r,
 				const playlist &playlist,
 				uint32_t version)
 {
-	queue_print_changes_position(client, playlist.queue, version);
+	queue_print_changes_position(r, playlist.queue, version);
 }
 
 #ifdef ENABLE_DATABASE
 
 static bool
-PrintSongDetails(Client &client, const char *uri_utf8)
+PrintSongDetails(Response &r, Partition &partition, const char *uri_utf8)
 {
-	const Database *db = client.partition.instance.database;
+	const Database *db = partition.instance.database;
 	if (db == nullptr)
 		return false;
 
@@ -124,7 +130,7 @@ PrintSongDetails(Client &client, const char *uri_utf8)
 	if (song == nullptr)
 		return false;
 
-	song_print_info(client, *song);
+	song_print_info(r, partition, *song);
 	db->ReturnSong(song);
 	return true;
 }
@@ -132,7 +138,8 @@ PrintSongDetails(Client &client, const char *uri_utf8)
 #endif
 
 bool
-spl_print(Client &client, const char *name_utf8, bool detail,
+spl_print(Response &r, Partition &partition,
+	  const char *name_utf8, bool detail,
 	  Error &error)
 {
 #ifndef ENABLE_DATABASE
@@ -145,10 +152,10 @@ spl_print(Client &client, const char *name_utf8, bool detail,
 
 	for (const auto &uri_utf8 : contents) {
 #ifdef ENABLE_DATABASE
-		if (!detail || !PrintSongDetails(client, uri_utf8.c_str()))
+		if (!detail || !PrintSongDetails(r, partition,
+						 uri_utf8.c_str()))
 #endif
-			client_printf(client, SONG_FILE "%s\n",
-				      uri_utf8.c_str());
+			r.Format(SONG_FILE "%s\n", uri_utf8.c_str());
 	}
 
 	return true;

@@ -23,12 +23,12 @@
 #include "StorageCommands.hxx"
 #include "Request.hxx"
 #include "CommandError.hxx"
-#include "protocol/Result.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "storage/Registry.hxx"
@@ -57,7 +57,7 @@ skip_path(const char *name_utf8)
 #endif
 
 static bool
-handle_listfiles_storage(Client &client, StorageDirectoryReader &reader,
+handle_listfiles_storage(Response &r, StorageDirectoryReader &reader,
 			 Error &error)
 {
 	const char *name_utf8;
@@ -75,19 +75,19 @@ handle_listfiles_storage(Client &client, StorageDirectoryReader &reader,
 			continue;
 
 		case StorageFileInfo::Type::REGULAR:
-			client_printf(client, "file: %s\n"
-				      "size: %" PRIu64 "\n",
-				      name_utf8,
-				      info.size);
+			r.Format("file: %s\n"
+				 "size: %" PRIu64 "\n",
+				 name_utf8,
+				 info.size);
 			break;
 
 		case StorageFileInfo::Type::DIRECTORY:
-			client_printf(client, "directory: %s\n", name_utf8);
+			r.Format("directory: %s\n", name_utf8);
 			break;
 		}
 
 		if (info.mtime != 0)
-			time_print(client, "Last-Modified", info.mtime);
+			time_print(r, "Last-Modified", info.mtime);
 	}
 
 	return true;
@@ -98,52 +98,51 @@ handle_listfiles_storage(Client &client, StorageDirectoryReader &reader,
 #endif
 
 static bool
-handle_listfiles_storage(Client &client, Storage &storage, const char *uri,
+handle_listfiles_storage(Response &r, Storage &storage, const char *uri,
 			 Error &error)
 {
 	auto reader = storage.OpenDirectory(uri, error);
 	if (reader == nullptr)
 		return false;
 
-	bool success = handle_listfiles_storage(client, *reader, error);
+	bool success = handle_listfiles_storage(r, *reader, error);
 	delete reader;
 	return success;
 }
 
 CommandResult
-handle_listfiles_storage(Client &client, Storage &storage, const char *uri)
+handle_listfiles_storage(Response &r, Storage &storage, const char *uri)
 {
 	Error error;
-	if (!handle_listfiles_storage(client, storage, uri, error))
-		return print_error(client, error);
+	if (!handle_listfiles_storage(r, storage, uri, error))
+		return print_error(r, error);
 
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_listfiles_storage(Client &client, const char *uri)
+handle_listfiles_storage(Response &r, const char *uri)
 {
 	Error error;
 	Storage *storage = CreateStorageURI(io_thread_get(), uri, error);
 	if (storage == nullptr) {
 		if (error.IsDefined())
-			return print_error(client, error);
+			return print_error(r, error);
 
-		command_error(client, ACK_ERROR_ARG,
-			      "Unrecognized storage URI");
+		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
 		return CommandResult::ERROR;
 	}
 
-	bool success = handle_listfiles_storage(client, *storage, "", error);
+	bool success = handle_listfiles_storage(r, *storage, "", error);
 	delete storage;
 	if (!success)
-		return print_error(client, error);
+		return print_error(r, error);
 
 	return CommandResult::OK;
 }
 
 static void
-print_storage_uri(Client &client, const Storage &storage)
+print_storage_uri(Client &client, Response &r, const Storage &storage)
 {
 	std::string uri = storage.MapUTF8("");
 	if (uri.empty())
@@ -165,24 +164,26 @@ print_storage_uri(Client &client, const Storage &storage)
 			uri = std::move(allocated);
 	}
 
-	client_printf(client, "storage: %s\n", uri.c_str());
+	r.Format("storage: %s\n", uri.c_str());
 }
 
 CommandResult
 handle_listmounts(Client &client, gcc_unused Request args)
 {
+	Response r(client);
+
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
 	}
 
 	CompositeStorage &composite = *(CompositeStorage *)_composite;
 
-	const auto visitor = [&client](const char *mount_uri,
-				       const Storage &storage){
-		client_printf(client, "mount: %s\n", mount_uri);
-		print_storage_uri(client, storage);
+	const auto visitor = [&client, &r](const char *mount_uri,
+					   const Storage &storage){
+		r.Format("mount: %s\n", mount_uri);
+		print_storage_uri(client, r, storage);
 	};
 
 	composite.VisitMounts(visitor);
@@ -193,9 +194,11 @@ handle_listmounts(Client &client, gcc_unused Request args)
 CommandResult
 handle_mount(Client &client, Request args)
 {
+	Response r(client);
+
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
 	}
 
@@ -205,7 +208,7 @@ handle_mount(Client &client, Request args)
 	const char *const remote_uri = args[1];
 
 	if (*local_uri == 0) {
-		command_error(client, ACK_ERROR_ARG, "Bad mount point");
+		r.Error(ACK_ERROR_ARG, "Bad mount point");
 		return CommandResult::ERROR;
 	}
 
@@ -215,7 +218,7 @@ handle_mount(Client &client, Request args)
 		   UpdateQueue::Erase() really gets called for every
 		   unmount, and no Directory disappears recursively
 		   during database update */
-		command_error(client, ACK_ERROR_ARG, "Bad mount point");
+		r.Error(ACK_ERROR_ARG, "Bad mount point");
 		return CommandResult::ERROR;
 	}
 
@@ -224,10 +227,9 @@ handle_mount(Client &client, Request args)
 					    error);
 	if (storage == nullptr) {
 		if (error.IsDefined())
-			return print_error(client, error);
+			return print_error(r, error);
 
-		command_error(client, ACK_ERROR_ARG,
-			      "Unrecognized storage URI");
+		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
 		return CommandResult::ERROR;
 	}
 
@@ -241,7 +243,7 @@ handle_mount(Client &client, Request args)
 
 		if (!db.Mount(local_uri, remote_uri, error)) {
 			composite.Unmount(local_uri);
-			return print_error(client, error);
+			return print_error(r, error);
 		}
 
 		// TODO: call Instance::OnDatabaseModified()?
@@ -256,9 +258,11 @@ handle_mount(Client &client, Request args)
 CommandResult
 handle_unmount(Client &client, Request args)
 {
+	Response r(client);
+
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
 	}
 
@@ -267,7 +271,7 @@ handle_unmount(Client &client, Request args)
 	const char *const local_uri = args.front();
 
 	if (*local_uri == 0) {
-		command_error(client, ACK_ERROR_ARG, "Bad mount point");
+		r.Error(ACK_ERROR_ARG, "Bad mount point");
 		return CommandResult::ERROR;
 	}
 
@@ -289,7 +293,7 @@ handle_unmount(Client &client, Request args)
 #endif
 
 	if (!composite.Unmount(local_uri)) {
-		command_error(client, ACK_ERROR_ARG, "Not a mount point");
+		r.Error(ACK_ERROR_ARG, "Not a mount point");
 		return CommandResult::ERROR;
 	}
 

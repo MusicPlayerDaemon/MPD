@@ -122,6 +122,7 @@ libmpd_a_SOURCES = \
 	src/client/ClientMessage.cxx src/client/ClientMessage.hxx \
 	src/client/ClientSubscribe.cxx \
 	src/client/ClientFile.cxx \
+	src/client/Response.cxx src/client/Response.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/LogInit.cxx src/LogInit.hxx \
 	src/LogBackend.cxx src/LogBackend.hxx \

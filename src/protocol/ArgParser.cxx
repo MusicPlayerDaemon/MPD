@@ -19,27 +19,26 @@
 
 #include "config.h"
 #include "ArgParser.hxx"
-#include "Result.hxx"
 #include "Chrono.hxx"
+#include "client/Response.hxx"
 
 #include <stdlib.h>
 
 bool
-check_uint32(Client &client, uint32_t *dst, const char *s)
+ParseCommandArg32(Response &r, uint32_t &value_r, const char *s)
 {
 	char *test;
 
-	*dst = strtoul(s, &test, 10);
+	value_r = strtoul(s, &test, 10);
 	if (test == s || *test != '\0') {
-		command_error(client, ACK_ERROR_ARG,
-			      "Integer expected: %s", s);
+		r.FormatError(ACK_ERROR_ARG, "Integer expected: %s", s);
 		return false;
 	}
 	return true;
 }
 
 bool
-ParseCommandArg(Client &client, int &value_r, const char *s,
+ParseCommandArg(Response &r, int &value_r, const char *s,
 		int min_value, int max_value)
 {
 	char *test;
@@ -47,14 +46,12 @@ ParseCommandArg(Client &client, int &value_r, const char *s,
 
 	value = strtol(s, &test, 10);
 	if (test == s || *test != '\0') {
-		command_error(client, ACK_ERROR_ARG,
-			      "Integer expected: %s", s);
+		r.FormatError(ACK_ERROR_ARG, "Integer expected: %s", s);
 		return false;
 	}
 
 	if (value < min_value || value > max_value) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Number too large: %s", s);
+		r.FormatError(ACK_ERROR_ARG, "Number too large: %s", s);
 		return false;
 	}
 
@@ -63,22 +60,22 @@ ParseCommandArg(Client &client, int &value_r, const char *s,
 }
 
 bool
-ParseCommandArg(Client &client, int &value_r, const char *s)
+ParseCommandArg(Response &r, int &value_r, const char *s)
 {
-	return ParseCommandArg(client, value_r, s,
+	return ParseCommandArg(r, value_r, s,
 			       std::numeric_limits<int>::min(),
 			       std::numeric_limits<int>::max());
 }
 
 bool
-ParseCommandArg(Client &client, RangeArg &value_r, const char *s)
+ParseCommandArg(Response &r, RangeArg &value_r, const char *s)
 {
 	char *test, *test2;
 	long value;
 
 	value = strtol(s, &test, 10);
 	if (test == s || (*test != '\0' && *test != ':')) {
-		command_error(client, ACK_ERROR_ARG,
+		r.FormatError(ACK_ERROR_ARG,
 			      "Integer or range expected: %s", s);
 		return false;
 	}
@@ -92,14 +89,12 @@ ParseCommandArg(Client &client, RangeArg &value_r, const char *s)
 	}
 
 	if (value < 0) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Number is negative: %s", s);
+		r.FormatError(ACK_ERROR_ARG, "Number is negative: %s", s);
 		return false;
 	}
 
 	if (unsigned(value) > std::numeric_limits<unsigned>::max()) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Number too large: %s", s);
+		r.FormatError(ACK_ERROR_ARG, "Number too large: %s", s);
 		return false;
 	}
 
@@ -108,7 +103,7 @@ ParseCommandArg(Client &client, RangeArg &value_r, const char *s)
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
 		if (*test2 != '\0') {
-			command_error(client, ACK_ERROR_ARG,
+			r.FormatError(ACK_ERROR_ARG,
 				      "Integer or range expected: %s", s);
 			return false;
 		}
@@ -117,13 +112,13 @@ ParseCommandArg(Client &client, RangeArg &value_r, const char *s)
 			value = std::numeric_limits<int>::max();
 
 		if (value < 0) {
-			command_error(client, ACK_ERROR_ARG,
+			r.FormatError(ACK_ERROR_ARG,
 				      "Number is negative: %s", s);
 			return false;
 		}
 
 		if (unsigned(value) > std::numeric_limits<unsigned>::max()) {
-			command_error(client, ACK_ERROR_ARG,
+			r.FormatError(ACK_ERROR_ARG,
 				      "Number too large: %s", s);
 			return false;
 		}
@@ -137,7 +132,7 @@ ParseCommandArg(Client &client, RangeArg &value_r, const char *s)
 }
 
 bool
-ParseCommandArg(Client &client, unsigned &value_r, const char *s,
+ParseCommandArg(Response &r, unsigned &value_r, const char *s,
 		unsigned max_value)
 {
 	unsigned long value;
@@ -145,13 +140,12 @@ ParseCommandArg(Client &client, unsigned &value_r, const char *s,
 
 	value = strtoul(s, &endptr, 10);
 	if (endptr == s || *endptr != 0) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Integer expected: %s", s);
+		r.FormatError(ACK_ERROR_ARG, "Integer expected: %s", s);
 		return false;
 	}
 
 	if (value > max_value) {
-		command_error(client, ACK_ERROR_ARG,
+		r.FormatError(ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
 	}
@@ -161,21 +155,21 @@ ParseCommandArg(Client &client, unsigned &value_r, const char *s,
 }
 
 bool
-ParseCommandArg(Client &client, unsigned &value_r, const char *s)
+ParseCommandArg(Response &r, unsigned &value_r, const char *s)
 {
-	return ParseCommandArg(client, value_r, s,
+	return ParseCommandArg(r, value_r, s,
 			       std::numeric_limits<unsigned>::max());
 }
 
 bool
-ParseCommandArg(Client &client, bool &value_r, const char *s)
+ParseCommandArg(Response &r, bool &value_r, const char *s)
 {
 	long value;
 	char *endptr;
 
 	value = strtol(s, &endptr, 10);
 	if (endptr == s || *endptr != 0 || (value != 0 && value != 1)) {
-		command_error(client, ACK_ERROR_ARG,
+		r.FormatError(ACK_ERROR_ARG,
 			      "Boolean (0/1) expected: %s", s);
 		return false;
 	}
@@ -185,15 +179,14 @@ ParseCommandArg(Client &client, bool &value_r, const char *s)
 }
 
 bool
-ParseCommandArg(Client &client, float &value_r, const char *s)
+ParseCommandArg(Response &r, float &value_r, const char *s)
 {
 	float value;
 	char *endptr;
 
 	value = strtof(s, &endptr);
 	if (endptr == s || *endptr != 0) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Float expected: %s", s);
+		r.FormatError(ACK_ERROR_ARG, "Float expected: %s", s);
 		return false;
 	}
 
@@ -202,10 +195,10 @@ ParseCommandArg(Client &client, float &value_r, const char *s)
 }
 
 bool
-ParseCommandArg(Client &client, SongTime &value_r, const char *s)
+ParseCommandArg(Response &r, SongTime &value_r, const char *s)
 {
 	float value;
-	bool success = ParseCommandArg(client, value, s) && value >= 0;
+	bool success = ParseCommandArg(r, value, s) && value >= 0;
 	if (success)
 		value_r = SongTime::FromS(value);
 
@@ -213,10 +206,10 @@ ParseCommandArg(Client &client, SongTime &value_r, const char *s)
 }
 
 bool
-ParseCommandArg(Client &client, SignedSongTime &value_r, const char *s)
+ParseCommandArg(Response &r, SignedSongTime &value_r, const char *s)
 {
 	float value;
-	bool success = ParseCommandArg(client, value, s);
+	bool success = ParseCommandArg(r, value, s);
 	if (success)
 		value_r = SignedSongTime::FromS(value);
 

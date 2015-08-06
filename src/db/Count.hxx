@@ -25,13 +25,14 @@
 #include <stdint.h>
 
 enum TagType : uint8_t;
-class Client;
+struct Partition;
+class Response;
 class SongFilter;
 class Error;
 
-gcc_nonnull(2)
+gcc_nonnull(3)
 bool
-PrintSongCount(Client &client, const char *name,
+PrintSongCount(Response &r, const Partition &partition, const char *name,
 	       const SongFilter *filter,
 	       TagType group,
 	       Error &error);

@@ -22,7 +22,7 @@
 #include "Request.hxx"
 #include "CommandError.hxx"
 #include "client/Client.hxx"
-#include "protocol/Result.hxx"
+#include "client/Response.hxx"
 #include "tag/Tag.hxx"
 #include "Partition.hxx"
 #include "util/ConstBuffer.hxx"
@@ -30,15 +30,16 @@
 CommandResult
 handle_addtagid(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned song_id;
-	if (!args.Parse(0, song_id, client))
+	if (!args.Parse(0, song_id, r))
 		return CommandResult::ERROR;
 
 	const char *const tag_name = args[1];
 	const TagType tag_type = tag_name_parse_i(tag_name);
 	if (tag_type == TAG_NUM_OF_ITEM_TYPES) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Unknown tag type: %s", tag_name);
+		r.FormatError(ACK_ERROR_ARG, "Unknown tag type: %s", tag_name);
 		return CommandResult::ERROR;
 	}
 
@@ -47,7 +48,7 @@ handle_addtagid(Client &client, Request args)
 	Error error;
 	if (!client.partition.playlist.AddSongIdTag(song_id, tag_type, value,
 						    error))
-		return print_error(client, error);
+		return print_error(r, error);
 
 	return CommandResult::OK;
 }
@@ -55,8 +56,10 @@ handle_addtagid(Client &client, Request args)
 CommandResult
 handle_cleartagid(Client &client, Request args)
 {
+	Response r(client);
+
 	unsigned song_id;
-	if (!args.Parse(0, song_id, client))
+	if (!args.Parse(0, song_id, r))
 		return CommandResult::ERROR;
 
 	TagType tag_type = TAG_NUM_OF_ITEM_TYPES;
@@ -64,7 +67,7 @@ handle_cleartagid(Client &client, Request args)
 		const char *const tag_name = args[1];
 		tag_type = tag_name_parse_i(tag_name);
 		if (tag_type == TAG_NUM_OF_ITEM_TYPES) {
-			command_error(client, ACK_ERROR_ARG,
+			r.FormatError(ACK_ERROR_ARG,
 				      "Unknown tag type: %s", tag_name);
 			return CommandResult::ERROR;
 		}
@@ -73,7 +76,7 @@ handle_cleartagid(Client &client, Request args)
 	Error error;
 	if (!client.partition.playlist.ClearSongIdTag(song_id, tag_type,
 						      error))
-		return print_error(client, error);
+		return print_error(r, error);
 
 	return CommandResult::OK;
 }

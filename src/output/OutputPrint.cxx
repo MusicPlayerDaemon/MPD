@@ -26,18 +26,17 @@
 #include "OutputPrint.hxx"
 #include "MultipleOutputs.hxx"
 #include "Internal.hxx"
-#include "client/Client.hxx"
+#include "client/Response.hxx"
 
 void
-printAudioDevices(Client &client, const MultipleOutputs &outputs)
+printAudioDevices(Response &r, const MultipleOutputs &outputs)
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const AudioOutput &ao = outputs.Get(i);
 
-		client_printf(client,
-			      "outputid: %i\n"
-			      "outputname: %s\n"
-			      "outputenabled: %i\n",
-			      i, ao.name, ao.enabled);
+		r.Format("outputid: %i\n"
+			 "outputname: %s\n"
+			 "outputenabled: %i\n",
+			 i, ao.name, ao.enabled);
 	}
 }

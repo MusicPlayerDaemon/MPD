@@ -28,7 +28,7 @@
 
 #include <assert.h>
 
-class Client;
+class Response;
 
 class Request : public ConstBuffer<const char *> {
 	typedef ConstBuffer<const char *> Base;
@@ -45,26 +45,26 @@ public:
 	}
 
 	template<typename T, typename... Args>
-	bool Parse(unsigned idx, T &value_r, Client &client,
+	bool Parse(unsigned idx, T &value_r, Response &r,
 		   Args&&... args) {
 		assert(idx < size);
 
-		return ParseCommandArg(client, value_r, data[idx],
+		return ParseCommandArg(r, value_r, data[idx],
 				       std::forward<Args>(args)...);
 	}
 
 	template<typename T, typename... Args>
-	bool ParseOptional(unsigned idx, T &value_r, Client &client,
+	bool ParseOptional(unsigned idx, T &value_r, Response &r,
 			   Args&&... args) {
 		return idx >= size ||
-			Parse(idx, value_r, client,
+			Parse(idx, value_r, r,
 			      std::forward<Args>(args)...);
 	}
 
 	template<typename T, typename... Args>
-	bool ParseShift(unsigned idx, T &value_r, Client &client,
+	bool ParseShift(unsigned idx, T &value_r, Response &r,
 			Args&&... args) {
-		bool success = Parse(idx, value_r, client,
+		bool success = Parse(idx, value_r, r,
 				     std::forward<Args>(args)...);
 		shift();
 		return success;

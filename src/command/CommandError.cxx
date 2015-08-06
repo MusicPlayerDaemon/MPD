@@ -20,7 +20,7 @@
 #include "config.h"
 #include "CommandError.hxx"
 #include "db/DatabaseError.hxx"
-#include "protocol/Result.hxx"
+#include "client/Response.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -29,57 +29,55 @@
 #include <errno.h>
 
 CommandResult
-print_playlist_result(Client &client, PlaylistResult result)
+print_playlist_result(Response &r, PlaylistResult result)
 {
 	switch (result) {
 	case PlaylistResult::SUCCESS:
 		return CommandResult::OK;
 
 	case PlaylistResult::ERRNO:
-		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      strerror(errno));
+		r.Error(ACK_ERROR_SYSTEM, strerror(errno));
 		return CommandResult::ERROR;
 
 	case PlaylistResult::DENIED:
-		command_error(client, ACK_ERROR_PERMISSION, "Access denied");
+		r.Error(ACK_ERROR_PERMISSION, "Access denied");
 		return CommandResult::ERROR;
 
 	case PlaylistResult::NO_SUCH_SONG:
-		command_error(client, ACK_ERROR_NO_EXIST, "No such song");
+		r.Error(ACK_ERROR_NO_EXIST, "No such song");
 		return CommandResult::ERROR;
 
 	case PlaylistResult::NO_SUCH_LIST:
-		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
+		r.Error(ACK_ERROR_NO_EXIST, "No such playlist");
 		return CommandResult::ERROR;
 
 	case PlaylistResult::LIST_EXISTS:
-		command_error(client, ACK_ERROR_EXIST,
-			      "Playlist already exists");
+		r.Error(ACK_ERROR_EXIST, "Playlist already exists");
 		return CommandResult::ERROR;
 
 	case PlaylistResult::BAD_NAME:
-		command_error(client, ACK_ERROR_ARG,
-			      "playlist name is invalid: "
-			      "playlist names may not contain slashes,"
-			      " newlines or carriage returns");
+		r.Error(ACK_ERROR_ARG,
+			"playlist name is invalid: "
+			"playlist names may not contain slashes,"
+			" newlines or carriage returns");
 		return CommandResult::ERROR;
 
 	case PlaylistResult::BAD_RANGE:
-		command_error(client, ACK_ERROR_ARG, "Bad song index");
+		r.Error(ACK_ERROR_ARG, "Bad song index");
 		return CommandResult::ERROR;
 
 	case PlaylistResult::NOT_PLAYING:
-		command_error(client, ACK_ERROR_PLAYER_SYNC, "Not playing");
+		r.Error(ACK_ERROR_PLAYER_SYNC, "Not playing");
 		return CommandResult::ERROR;
 
 	case PlaylistResult::TOO_LARGE:
-		command_error(client, ACK_ERROR_PLAYLIST_MAX,
-			      "playlist is at the max size");
+		r.Error(ACK_ERROR_PLAYLIST_MAX,
+			"playlist is at the max size");
 		return CommandResult::ERROR;
 
 	case PlaylistResult::DISABLED:
-		command_error(client, ACK_ERROR_UNKNOWN,
-			      "stored playlist support is disabled");
+		r.Error(ACK_ERROR_UNKNOWN,
+			"stored playlist support is disabled");
 		return CommandResult::ERROR;
 	}
 
@@ -88,42 +86,39 @@ print_playlist_result(Client &client, PlaylistResult result)
 }
 
 CommandResult
-print_error(Client &client, const Error &error)
+print_error(Response &r, const Error &error)
 {
 	assert(error.IsDefined());
 
 	LogError(error);
 
 	if (error.IsDomain(playlist_domain)) {
-		return print_playlist_result(client,
+		return print_playlist_result(r,
 					     PlaylistResult(error.GetCode()));
 	} else if (error.IsDomain(ack_domain)) {
-		command_error(client, (ack)error.GetCode(),
-			      "%s", error.GetMessage());
+		r.Error((ack)error.GetCode(), error.GetMessage());
 		return CommandResult::ERROR;
 #ifdef ENABLE_DATABASE
 	} else if (error.IsDomain(db_domain)) {
 		switch ((enum db_error)error.GetCode()) {
 		case DB_DISABLED:
-			command_error(client, ACK_ERROR_NO_EXIST, "%s",
-				      error.GetMessage());
+			r.Error(ACK_ERROR_NO_EXIST, error.GetMessage());
 			return CommandResult::ERROR;
 
 		case DB_NOT_FOUND:
-			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
+			r.Error(ACK_ERROR_NO_EXIST, "Not found");
 			return CommandResult::ERROR;
 
 		case DB_CONFLICT:
-			command_error(client, ACK_ERROR_ARG, "Conflict");
+			r.Error(ACK_ERROR_ARG, "Conflict");
 			return CommandResult::ERROR;
 		}
 #endif
 	} else if (error.IsDomain(errno_domain)) {
-		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      strerror(error.GetCode()));
+		r.Error(ACK_ERROR_SYSTEM, strerror(error.GetCode()));
 		return CommandResult::ERROR;
 	}
 
-	command_error(client, ACK_ERROR_UNKNOWN, "error");
+	r.Error(ACK_ERROR_UNKNOWN, "error");
 	return CommandResult::ERROR;
 }
