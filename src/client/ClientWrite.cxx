@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "ClientInternal.hxx"
+#include "Client.hxx"
 #include "util/FormatString.hxx"
 
 #include <string.h>
