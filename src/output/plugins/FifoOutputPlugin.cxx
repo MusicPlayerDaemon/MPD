@@ -35,8 +35,6 @@
 #include <errno.h>
 #include <unistd.h>
 
-#define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
-
 class FifoOutput {
 	friend struct AudioOutputWrapper<FifoOutput>;
 
@@ -230,8 +228,8 @@ FifoOutput::Cancel()
 
 	ssize_t bytes;
 	do {
-		char buf[FIFO_BUFFER_SIZE];
-		bytes = read(input, buf, FIFO_BUFFER_SIZE);
+		char buffer[16384];
+		bytes = read(input, buffer, sizeof(buffer));
 	} while (bytes > 0 && errno != EINTR);
 
 	if (bytes < 0 && errno != EAGAIN) {
