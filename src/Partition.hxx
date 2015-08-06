@@ -177,6 +177,13 @@ struct Partition final : private PlayerListener, private MixerListener {
 
 #ifdef ENABLE_DATABASE
 	/**
+	 * Returns the global #Database instance.  May return nullptr
+	 * if this MPD configuration has no database (no
+	 * music_directory was configured).
+	 */
+	const Database *GetDatabase(Error &error) const;
+
+	/**
 	 * The database has been modified.  Propagate the change to
 	 * all subsystems.
 	 */
