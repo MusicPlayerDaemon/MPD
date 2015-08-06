@@ -70,6 +70,9 @@ struct FifoOutput {
 	bool OpenFifo(Error &error);
 	void CloseFifo();
 
+	bool Open(AudioFormat &audio_format, Error &error);
+	void Close();
+
 	unsigned Delay() const;
 	size_t Play(const void *chunk, size_t size, Error &error);
 	void Cancel();
@@ -204,23 +207,17 @@ FifoOutput::Create(const ConfigBlock &block, Error &error)
 	return fd;
 }
 
-static bool
-fifo_output_open(AudioOutput *ao, AudioFormat &audio_format,
-		 gcc_unused Error &error)
+bool
+FifoOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 {
-	FifoOutput *fd = (FifoOutput *)ao;
-
-	fd->timer = new Timer(audio_format);
-
+	timer = new Timer(audio_format);
 	return true;
 }
 
-static void
-fifo_output_close(AudioOutput *ao)
+void
+FifoOutput::Close()
 {
-	FifoOutput *fd = (FifoOutput *)ao;
-
-	delete fd->timer;
+	delete timer;
 }
 
 inline void
@@ -287,8 +284,8 @@ const struct AudioOutputPlugin fifo_output_plugin = {
 	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	fifo_output_open,
-	fifo_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	&Wrapper::Delay,
 	nullptr,
 	&Wrapper::Play,
