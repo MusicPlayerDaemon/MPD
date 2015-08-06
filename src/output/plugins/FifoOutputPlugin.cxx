@@ -227,12 +227,13 @@ inline void
 FifoOutput::Cancel()
 {
 	char buf[FIFO_BUFFER_SIZE];
-	int bytes = 1;
+	int bytes;
 
 	timer->Reset();
 
-	while (bytes > 0 && errno != EINTR)
+	do {
 		bytes = read(input, buf, FIFO_BUFFER_SIZE);
+	} while (bytes > 0 && errno != EINTR);
 
 	if (bytes < 0 && errno != EAGAIN) {
 		FormatErrno(fifo_output_domain,
