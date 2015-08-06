@@ -23,30 +23,24 @@
 
 #include <string.h>
 
-/**
- * Write a block of data to the client.
- */
-static void
-client_write(Client &client, const char *data, size_t length)
+bool
+Client::Write(const void *data, size_t length)
 {
 	/* if the client is going to be closed, do nothing */
-	if (client.IsExpired() || length == 0)
-		return;
-
-	client.Write(data, length);
+	return !IsExpired() && FullyBufferedSocket::Write(data, length);
 }
 
 void
 client_puts(Client &client, const char *s)
 {
-	client_write(client, s, strlen(s));
+	client.Write(s, strlen(s));
 }
 
 void
 client_vprintf(Client &client, const char *fmt, va_list args)
 {
 	char *p = FormatNewV(fmt, args);
-	client_write(client, p, strlen(p));
+	client.Write(p, strlen(p));
 	delete[] p;
 }
 
