@@ -284,7 +284,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 	dst_decoder_t* dst_decoder = nullptr;
 	DecoderCommand cmd = decoder_get_command(decoder);
 	for (;;) {
-		int slot_nr = dst_decoder ? dst_decoder->slot_nr : 0;
+		int slot_nr = dst_decoder ? dst_decoder->get_slot_nr() : 0;
 		dsd_data = dsd_buf.data() + dsd_buf_size * slot_nr;
 		dst_data = dst_buf.data() + dst_buf_size * slot_nr;
 		dst_size = dst_buf_size;
@@ -297,16 +297,17 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 				}
 				if (frame_type == FRAME_DST) {
 					if (!dst_decoder) {
-						if (dst_decoder_create_mt(&dst_decoder, param_dstdec_threads) != 0) {
-							LogError(sacdiso_domain, "dst_decoder_create_mt() failed");
+						dst_decoder = new dst_decoder_t(param_dstdec_threads);
+						if (!dst_decoder) {
+							LogError(sacdiso_domain, "new dst_decoder_t() failed");
 							break;
 						}
-						if (dst_decoder_init_mt(dst_decoder, sacd_reader->get_channels(), sacd_reader->get_samplerate()) != 0) {
-							LogError(sacdiso_domain, "dst_decoder_init_mt() failed");
+						if (dst_decoder->init(sacd_reader->get_channels(), sacd_reader->get_samplerate(), sacd_reader->get_framerate()) != 0) {
+							LogError(sacdiso_domain, "dst_decoder_t.init() failed");
 							break;
 						}
 					}
-					dst_decoder_decode_mt(dst_decoder, dst_data, dst_size, &dsd_data, &dsd_size);
+					dst_decoder->decode(dst_data, dst_size, &dsd_data, &dsd_size);
 				}
 				else {
 					dsd_data = dst_data;
@@ -327,7 +328,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 				dsd_data = nullptr;
 				dsd_size = 0;
 				if (dst_decoder) {
-					dst_decoder_decode_mt(dst_decoder, dst_data, dst_size, &dsd_data, &dsd_size);
+					dst_decoder->decode(dst_data, dst_size, &dsd_data, &dsd_size);
 				}
 				if (dsd_size > 0) {
 					if (param_lsbitfirst) {
@@ -350,9 +351,6 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 		if (cmd == DecoderCommand::SEEK) {
 			double seconds = decoder_seek_time(decoder).ToDoubleS();
 			if (sacd_reader->seek(seconds)) {
-				if (dst_decoder) {
-					dst_decoder_flush_mt(dst_decoder);
-				}
 				decoder_command_finished(decoder);
 			}
 			else {
@@ -362,8 +360,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 		}
 	}
 	if (dst_decoder) {
-		dst_decoder_free_mt(dst_decoder);
-		dst_decoder_destroy_mt(dst_decoder);
+		delete dst_decoder;
 		dst_decoder = nullptr;
 	}
 }
