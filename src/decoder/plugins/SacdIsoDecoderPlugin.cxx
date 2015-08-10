@@ -257,10 +257,11 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 			}
 		}
 	}
-	int dsd_samplerate = sacd_reader->get_samplerate();
 	int dsd_channels = sacd_reader->get_channels();
-	int dsd_buf_size = dsd_samplerate / 8 / 75 * dsd_channels;
-	int dst_buf_size = dsd_samplerate / 8 / 75 * dsd_channels;
+	int dsd_samplerate = sacd_reader->get_samplerate();
+	int dsd_framerate = sacd_reader->get_framerate();
+	int dsd_buf_size = dsd_samplerate / 8 / dsd_framerate * dsd_channels;
+	int dst_buf_size = dsd_samplerate / 8 / dsd_framerate * dsd_channels;
 	vector<uint8_t> dsd_buf;
 	vector<uint8_t> dst_buf;
 	dsd_buf.resize(param_dstdec_threads * dsd_buf_size);
@@ -302,7 +303,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 							LogError(sacdiso_domain, "new dst_decoder_t() failed");
 							break;
 						}
-						if (dst_decoder->init(sacd_reader->get_channels(), sacd_reader->get_samplerate(), sacd_reader->get_framerate()) != 0) {
+						if (dst_decoder->init(dsd_channels, dsd_samplerate, dsd_framerate) != 0) {
 							LogError(sacdiso_domain, "dst_decoder_t.init() failed");
 							break;
 						}
