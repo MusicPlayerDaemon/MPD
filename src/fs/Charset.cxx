@@ -24,8 +24,10 @@
 #include "Log.hxx"
 #include "lib/icu/Converter.hxx"
 #include "util/Error.hxx"
+#include "util/AllocatedString.hxx"
 
 #ifdef WIN32
+#include "lib/icu/Win32.hxx"
 #include <windows.h>
 #endif
 
@@ -71,6 +73,8 @@ GetFSCharset()
 {
 #ifdef HAVE_FS_CHARSET
 	return fs_charset.empty() ? "UTF-8" : fs_charset.c_str();
+#elif defined(WIN32)
+	return "ACP";
 #else
 	return "UTF-8";
 #endif
@@ -100,22 +104,11 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 #endif
 
 #ifdef WIN32
-	int length = WideCharToMultiByte(CP_UTF8, 0, path_fs, -1, nullptr, 0,
-					 nullptr, nullptr);
-	if (length <= 0)
+	const auto buffer = WideCharToMultiByte(CP_UTF8, path_fs);
+	if (buffer.IsNull())
 		return PathTraitsUTF8::string();
 
-	char *buffer = new char[length];
-	length = WideCharToMultiByte(CP_UTF8, 0, path_fs, -1, buffer, length,
-				     nullptr, nullptr);
-	if (length <= 0) {
-		delete[] buffer;
-		return PathTraitsUTF8::string();
-	}
-
-	PathTraitsUTF8::string result(buffer);
-	delete[] buffer;
-	return FixSeparators(std::move(result));
+	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
 #else
 #ifdef HAVE_FS_CHARSET
 	if (fs_converter == nullptr)
@@ -123,7 +116,11 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 		return FixSeparators(path_fs);
 #ifdef HAVE_FS_CHARSET
 
-	return FixSeparators(fs_converter->ToUTF8(path_fs));
+	const auto buffer = fs_converter->ToUTF8(path_fs);
+	if (buffer.IsNull())
+		return PathTraitsUTF8::string();
+
+	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
 #endif
 #endif
 }
@@ -139,27 +136,20 @@ PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
 #endif
 
 #ifdef WIN32
-	int length = MultiByteToWideChar(CP_UTF8, 0, path_utf8, -1,
-					 nullptr, 0);
-	if (length <= 0)
+	const auto buffer = MultiByteToWideChar(CP_UTF8, path_utf8);
+	if (buffer.IsNull())
 		return PathTraitsFS::string();
 
-	wchar_t *buffer = new wchar_t[length];
-	length = MultiByteToWideChar(CP_UTF8, 0, path_utf8, -1,
-				     buffer, length);
-	if (length <= 0) {
-		delete[] buffer;
-		return PathTraitsFS::string();
-	}
-
-	PathTraitsFS::string result(buffer);
-	delete[] buffer;
-	return std::move(result);
+	return PathTraitsFS::string(buffer.c_str());
 #else
 	if (fs_converter == nullptr)
 		return path_utf8;
 
-	return fs_converter->FromUTF8(path_utf8);
+	const auto buffer = fs_converter->FromUTF8(path_utf8);
+	if (buffer.IsNull())
+		return PathTraitsFS::string();
+
+	return PathTraitsFS::string(buffer.c_str());
 #endif
 }
 

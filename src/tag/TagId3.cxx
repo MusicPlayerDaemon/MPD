@@ -33,10 +33,6 @@
 #include "fs/Path.hxx"
 #include "fs/FileSystem.hxx"
 
-#ifdef HAVE_GLIB
-#include <glib.h>
-#endif
-
 #include <id3tag.h>
 
 #include <string>
@@ -91,43 +87,11 @@ tag_id3_getstring(const struct id3_frame *frame, unsigned i)
 /* This will try to convert a string to utf-8,
  */
 static id3_utf8_t *
-import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
+import_id3_string(const id3_ucs4_t *ucs4)
 {
-	id3_utf8_t *utf8;
-
-#ifdef HAVE_GLIB
-	/* use encoding field here? */
-	const char *encoding;
-	if (is_id3v1 &&
-	    (encoding = config_get_string(ConfigOption::ID3V1_ENCODING,
-					  nullptr)) != nullptr) {
-		id3_latin1_t *isostr = id3_ucs4_latin1duplicate(ucs4);
-		if (gcc_unlikely(isostr == nullptr))
-			return nullptr;
-
-		utf8 = (id3_utf8_t *)
-			g_convert_with_fallback((const char*)isostr, -1,
-						"utf-8", encoding,
-						nullptr, nullptr,
-						nullptr, nullptr);
-		if (utf8 == nullptr) {
-			FormatWarning(id3_domain,
-				      "Unable to convert %s string to UTF-8: '%s'",
-				      encoding, isostr);
-			free(isostr);
-			return nullptr;
-		}
-		free(isostr);
-	} else {
-#else
-		(void)is_id3v1;
-#endif
-		utf8 = id3_ucs4_utf8duplicate(ucs4);
-		if (gcc_unlikely(utf8 == nullptr))
-			return nullptr;
-#ifdef HAVE_GLIB
-	}
-#endif
+	id3_utf8_t *utf8 = id3_ucs4_utf8duplicate(ucs4);
+	if (gcc_unlikely(utf8 == nullptr))
+		return nullptr;
 
 	id3_utf8_t *utf8_stripped = (id3_utf8_t *)
 		xstrdup(Strip((char *)utf8));
@@ -144,7 +108,7 @@ import_id3_string(bool is_id3v1, const id3_ucs4_t *ucs4)
  * - string list
  */
 static void
-tag_id3_import_text_frame(struct id3_tag *tag, const struct id3_frame *frame,
+tag_id3_import_text_frame(const struct id3_frame *frame,
 			  TagType type,
 			  const struct tag_handler *handler, void *handler_ctx)
 {
@@ -173,7 +137,7 @@ tag_id3_import_text_frame(struct id3_tag *tag, const struct id3_frame *frame,
 		if (type == TAG_GENRE)
 			ucs4 = id3_genre_name(ucs4);
 
-		id3_utf8_t *utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
+		id3_utf8_t *utf8 = import_id3_string(ucs4);
 		if (utf8 == nullptr)
 			continue;
 
@@ -194,7 +158,7 @@ tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
 	     (frame = id3_tag_findframe(tag, id, i)) != nullptr; ++i)
-		tag_id3_import_text_frame(tag, frame, type,
+		tag_id3_import_text_frame(frame, type,
 					  handler, handler_ctx);
 }
 
@@ -208,8 +172,7 @@ tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
  * - full string (we use this one)
  */
 static void
-tag_id3_import_comment_frame(struct id3_tag *tag,
-			     const struct id3_frame *frame, TagType type,
+tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
 			     const struct tag_handler *handler,
 			     void *handler_ctx)
 {
@@ -225,7 +188,7 @@ tag_id3_import_comment_frame(struct id3_tag *tag,
 	if (ucs4 == nullptr)
 		return;
 
-	id3_utf8_t *utf8 = import_id3_string(tag_is_id3v1(tag), ucs4);
+	id3_utf8_t *utf8 = import_id3_string(ucs4);
 	if (utf8 == nullptr)
 		return;
 
@@ -244,7 +207,7 @@ tag_id3_import_comment(struct id3_tag *tag, const char *id, TagType type,
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
 	     (frame = id3_tag_findframe(tag, id, i)) != nullptr; ++i)
-		tag_id3_import_comment_frame(tag, frame, type,
+		tag_id3_import_comment_frame(frame, type,
 					     handler, handler_ctx);
 }
 

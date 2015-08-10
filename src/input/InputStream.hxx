@@ -363,6 +363,25 @@ public:
 	 */
 	gcc_nonnull_all
 	size_t LockRead(void *ptr, size_t size, Error &error);
+
+	/**
+	 * Reads the whole data from the stream into the caller-supplied buffer.
+	 *
+	 * The caller must lock the mutex.
+	 *
+	 * @param ptr the buffer to read into
+	 * @param size the number of bytes to read
+	 * @return true if the whole data was read, false otherwise.
+	 */
+	gcc_nonnull_all
+	bool ReadFull(void *ptr, size_t size, Error &error);
+
+	/**
+	 * Wrapper for ReadFull() which locks and unlocks the mutex;
+	 * the caller must not be holding it already.
+	 */
+	gcc_nonnull_all
+	bool LockReadFull(void *ptr, size_t size, Error &error);
 };
 
 #endif

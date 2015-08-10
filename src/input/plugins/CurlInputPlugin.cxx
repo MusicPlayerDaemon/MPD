@@ -453,6 +453,8 @@ CurlInputStream::RequestDone(CURLcode result, long status)
 		SeekDone();
 	else if (!IsReady())
 		SetReady();
+	else
+		cond.broadcast();
 }
 
 static void
@@ -564,9 +566,9 @@ input_curl_init(const ConfigBlock &block, Error &error)
 
 	if (proxy == nullptr) {
 		/* deprecated proxy configuration */
-		proxy = config_get_string(ConfigOption::HTTP_PROXY_HOST, nullptr);
+		proxy = config_get_string(ConfigOption::HTTP_PROXY_HOST);
 		proxy_port = config_get_positive(ConfigOption::HTTP_PROXY_PORT, 0);
-		proxy_user = config_get_string(ConfigOption::HTTP_PROXY_USER, nullptr);
+		proxy_user = config_get_string(ConfigOption::HTTP_PROXY_USER);
 		proxy_password = config_get_string(ConfigOption::HTTP_PROXY_PASSWORD,
 						   "");
 	}

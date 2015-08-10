@@ -20,10 +20,10 @@
 #ifndef MPD_SONG_FILTER_HXX
 #define MPD_SONG_FILTER_HXX
 
+#include "util/AllocatedString.hxx"
 #include "Compiler.h"
 
 #include <list>
-#include <string>
 
 #include <stdint.h>
 #include <time.h>
@@ -51,7 +51,7 @@ public:
 
 		bool fold_case;
 
-		std::string value;
+		AllocatedString<> value;
 
 		/**
 		 * For #LOCATE_TAG_MODIFIED_SINCE
@@ -76,8 +76,8 @@ public:
 			return fold_case;
 		}
 
-		const std::string &GetValue() const {
-			return value;
+		const char *GetValue() const {
+			return value.c_str();
 		}
 
 		gcc_pure gcc_nonnull(2)
@@ -149,11 +149,11 @@ public:
 	bool HasOtherThanBase() const;
 
 	/**
-	 * Returns the "base" specification (if there is one) or an
-	 * empty string.
+	 * Returns the "base" specification (if there is one) or
+	 * nullptr.
 	 */
 	gcc_pure
-	std::string GetBase() const;
+	const char *GetBase() const;
 };
 
 /**

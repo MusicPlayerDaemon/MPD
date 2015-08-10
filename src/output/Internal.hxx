@@ -382,6 +382,13 @@ private:
 	void Close(bool drain);
 	void Reopen();
 
+	/**
+	 * Close the output plugin.
+	 *
+	 * Mutex must not be locked.
+	 */
+	void CloseOutput(bool drain);
+
 	AudioFormat OpenFilter(AudioFormat &format, Error &error_r);
 
 	/**

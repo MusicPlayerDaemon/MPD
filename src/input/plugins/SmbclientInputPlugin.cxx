@@ -132,6 +132,7 @@ SmbclientInputStream::Read(void *ptr, size_t read_size, Error &error)
 		nbytes = 0;
 	}
 
+	offset += nbytes;
 	return nbytes;
 }
 

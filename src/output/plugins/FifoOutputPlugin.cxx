@@ -35,9 +35,9 @@
 #include <errno.h>
 #include <unistd.h>
 
-#define FIFO_BUFFER_SIZE 65536 /* pipe capacity on Linux >= 2.6.11 */
+class FifoOutput {
+	friend struct AudioOutputWrapper<FifoOutput>;
 
-struct FifoOutput {
 	AudioOutput base;
 
 	AllocatedPath path;
@@ -48,13 +48,14 @@ struct FifoOutput {
 	bool created;
 	Timer *timer;
 
+public:
 	FifoOutput()
 		:base(fifo_output_plugin),
 		 path(AllocatedPath::Null()), input(-1), output(-1),
 		 created(false) {}
 
 	~FifoOutput() {
-		Close();
+		CloseFifo();
 	}
 
 	bool Initialize(const ConfigBlock &block, Error &error) {
@@ -67,7 +68,10 @@ struct FifoOutput {
 	bool Check(Error &error);
 	void Delete();
 
-	bool Open(Error &error);
+	bool OpenFifo(Error &error);
+	void CloseFifo();
+
+	bool Open(AudioFormat &audio_format, Error &error);
 	void Close();
 
 	unsigned Delay() const;
@@ -94,7 +98,7 @@ FifoOutput::Delete()
 }
 
 void
-FifoOutput::Close()
+FifoOutput::CloseFifo()
 {
 	if (input >= 0) {
 		close(input);
@@ -150,7 +154,7 @@ FifoOutput::Check(Error &error)
 }
 
 inline bool
-FifoOutput::Open(Error &error)
+FifoOutput::OpenFifo(Error &error)
 {
 	if (!Check(error))
 		return false;
@@ -159,7 +163,7 @@ FifoOutput::Open(Error &error)
 	if (input < 0) {
 		error.FormatErrno("Could not open FIFO \"%s\" for reading",
 				  path_utf8.c_str());
-		Close();
+		CloseFifo();
 		return false;
 	}
 
@@ -167,7 +171,7 @@ FifoOutput::Open(Error &error)
 	if (output < 0) {
 		error.FormatErrno("Could not open FIFO \"%s\" for writing",
 				  path_utf8.c_str());
-		Close();
+		CloseFifo();
 		return false;
 	}
 
@@ -196,7 +200,7 @@ FifoOutput::Create(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	if (!fd->Open(error)) {
+	if (!fd->OpenFifo(error)) {
 		delete fd;
 		return nullptr;
 	}
@@ -204,35 +208,29 @@ FifoOutput::Create(const ConfigBlock &block, Error &error)
 	return fd;
 }
 
-static bool
-fifo_output_open(AudioOutput *ao, AudioFormat &audio_format,
-		 gcc_unused Error &error)
+bool
+FifoOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 {
-	FifoOutput *fd = (FifoOutput *)ao;
-
-	fd->timer = new Timer(audio_format);
-
+	timer = new Timer(audio_format);
 	return true;
 }
 
-static void
-fifo_output_close(AudioOutput *ao)
+void
+FifoOutput::Close()
 {
-	FifoOutput *fd = (FifoOutput *)ao;
-
-	delete fd->timer;
+	delete timer;
 }
 
 inline void
 FifoOutput::Cancel()
 {
-	char buf[FIFO_BUFFER_SIZE];
-	int bytes = 1;
-
 	timer->Reset();
 
-	while (bytes > 0 && errno != EINTR)
-		bytes = read(input, buf, FIFO_BUFFER_SIZE);
+	ssize_t bytes;
+	do {
+		char buffer[16384];
+		bytes = read(input, buffer, sizeof(buffer));
+	} while (bytes > 0 && errno != EINTR);
 
 	if (bytes < 0 && errno != EAGAIN) {
 		FormatErrno(fifo_output_domain,
@@ -287,8 +285,8 @@ const struct AudioOutputPlugin fifo_output_plugin = {
 	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	fifo_output_open,
-	fifo_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	&Wrapper::Delay,
 	nullptr,
 	&Wrapper::Play,

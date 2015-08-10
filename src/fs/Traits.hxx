@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "Compiler.h"
+#include "util/StringPointer.hxx"
 #include "util/StringAPI.hxx"
 
 #ifdef WIN32
@@ -50,8 +51,9 @@ struct PathTraitsFS {
 #endif
 	typedef string::traits_type char_traits;
 	typedef char_traits::char_type value_type;
-	typedef value_type *pointer;
-	typedef const value_type *const_pointer;
+	typedef StringPointer<value_type> Pointer;
+	typedef Pointer::pointer pointer;
+	typedef Pointer::const_pointer const_pointer;
 
 #ifdef WIN32
 	static constexpr value_type SEPARATOR = '\\';

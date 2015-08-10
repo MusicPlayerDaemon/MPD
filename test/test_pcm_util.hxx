@@ -34,7 +34,7 @@ struct RandomInt {
 		      "RNG result type too small");
 
 	T operator()() {
-		return T(random());
+		return T(engine());
 	}
 };
 

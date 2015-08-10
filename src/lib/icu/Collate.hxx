@@ -26,6 +26,7 @@
 #include <string>
 
 class Error;
+template<typename T> class AllocatedString;
 
 bool
 IcuCollateInit(Error &error);
@@ -38,7 +39,7 @@ int
 IcuCollate(const char *a, const char *b);
 
 gcc_pure gcc_nonnull_all
-std::string
+AllocatedString<char>
 IcuCaseFold(const char *src);
 
 #endif

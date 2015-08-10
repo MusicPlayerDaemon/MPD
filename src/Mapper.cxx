@@ -59,7 +59,8 @@ mapper_init(AllocatedPath &&_playlist_dir)
 		mapper_set_playlist_dir(std::move(_playlist_dir));
 }
 
-void mapper_finish(void)
+void
+mapper_finish()
 {
 }
 
@@ -109,7 +110,7 @@ map_fs_to_utf8(Path path_fs)
 #endif
 
 const AllocatedPath &
-map_spl_path(void)
+map_spl_path()
 {
 	return playlist_dir_fs;
 }

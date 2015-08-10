@@ -68,7 +68,7 @@ CreateConfiguredStorage(EventLoop &event_loop, Error &error)
 {
 	assert(!error.IsDefined());
 
-	auto uri = config_get_string(ConfigOption::MUSIC_DIR, nullptr);
+	auto uri = config_get_string(ConfigOption::MUSIC_DIR);
 	if (uri != nullptr && uri_has_scheme(uri))
 		return CreateConfiguredStorageUri(event_loop, uri, error);
 
@@ -78,5 +78,5 @@ CreateConfiguredStorage(EventLoop &event_loop, Error &error)
 bool
 IsStorageConfigured()
 {
-	return config_get_string(ConfigOption::MUSIC_DIR, nullptr) != nullptr;
+	return config_get_string(ConfigOption::MUSIC_DIR) != nullptr;
 }

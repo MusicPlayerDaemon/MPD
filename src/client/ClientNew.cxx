@@ -24,7 +24,7 @@
 #include "Instance.hxx"
 #include "system/fd_util.h"
 #include "net/SocketAddress.hxx"
-#include "net/Resolver.hxx"
+#include "net/ToString.hxx"
 #include "Permission.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -62,7 +62,7 @@ client_new(EventLoop &loop, Partition &partition,
 	   int fd, SocketAddress address, int uid)
 {
 	static unsigned int next_client_num;
-	const auto remote = sockaddr_to_string(address);
+	const auto remote = ToString(address);
 
 	assert(fd >= 0);
 

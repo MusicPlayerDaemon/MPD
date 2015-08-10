@@ -24,7 +24,6 @@
 #include "fs/FileInfo.hxx"
 #include "util/Error.hxx"
 
-#include <sys/stat.h>
 #include <unistd.h>
 
 bool

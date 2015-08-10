@@ -225,6 +225,7 @@ if test x$host_is_linux = xyes; then
 fi
 
 AC_CHECK_FUNCS(getpwnam_r getpwuid_r)
+AC_CHECK_FUNCS(fnmatch)
 AC_CHECK_FUNCS(strndup)
 
 if test x$host_is_linux = xyes; then
@@ -471,37 +472,25 @@ CPPFLAGS="$CPPFLAGS_SAVED"
 
 AC_ARG_ENABLE(icu,
 	AS_HELP_STRING([--enable-icu],
-		[enable libicu for Unicode (default: enabled)]),,
-	enable_icu=yes)
+		[enable libicu for Unicode (default: auto)]),,
+	enable_icu=auto)
 
-if test x$enable_icu = xyes; then
-	PKG_CHECK_MODULES([ICU], [icu-i18n],,
-		[AC_MSG_ERROR([libicu not found])])
-fi
-
+MPD_AUTO_PKG(icu, ICU, [icu-i18n], [libicu], [libicu not found])
 MPD_DEFINE_CONDITIONAL(enable_icu, HAVE_ICU, [libicu])
 
-AC_ARG_ENABLE(glib,
-	AS_HELP_STRING([--enable-glib],
-		[enable GLib (default: auto)]),,
-	enable_glib=auto)
+AC_ARG_ENABLE(iconv,
+	AS_HELP_STRING([--enable-iconv],
+		[enable iconv for character set conversion (default: auto)]),,
+	enable_iconv=yes)
 
-if test x$enable_glib != xno; then
-	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.32],
-		[found_glib=yes],
-		[found_glib=no])
-
-	MPD_AUTO_RESULT([glib], [Glib], [GLib not found])
+if test x$enable_icu = xyes; then
+	dnl We don't need iconv() if we have libicu
+	enable_iconv=no
 fi
 
-if test x$enable_glib = xyes; then
-	if test x$GCC = xyes; then
-		# suppress warnings in the GLib headers
-		GLIB_CFLAGS=`echo $GLIB_CFLAGS |sed -e 's,-I/,-isystem /,g'`
-	fi
+if test x$enable_iconv = xyes; then
+	AC_CHECK_FUNCS(iconv)
 fi
-
-MPD_DEFINE_CONDITIONAL(enable_glib, HAVE_GLIB, [GLib])
 
 dnl ---------------------------------------------------------------------------
 dnl Protocol Options
@@ -552,9 +541,16 @@ if
 	AC_MSG_ERROR([No client interfaces configured!])
 fi
 
-MPD_ENABLE_AUTO_PKG(systemd_daemon, SYSTEMD_DAEMON, libsystemd-daemon,
-	[systemd socket activation], [libsystemd-daemon not found],
-	[$linux_auto])
+MPD_ENABLE_AUTO(systemd_daemon, SYSTEMD_DAEMON, [systemd socket activation],
+	[libsystemd not found], [$linux_auto], [
+	dnl Check for libsystemd and fall back to (the older)
+	dnl libsystemd-daemon
+	PKG_CHECK_MODULES([SYSTEMD_DAEMON], [libsystemd],
+		[found_systemd_daemon=yes],
+		[PKG_CHECK_MODULES([SYSTEMD_DAEMON], [libsystemd-daemon],
+			[found_systemd_daemon=yes],
+			[found_systemd_daemon=no])])
+])
 
 dnl ---------------------------------------------------------------------------
 dnl LIBC Features

@@ -26,20 +26,20 @@
 #ifdef HAVE_ICU
 #include "thread/Mutex.hxx"
 #define HAVE_ICU_CONVERTER
-#elif defined(HAVE_GLIB)
-#include <glib.h>
+#elif defined(HAVE_ICONV)
+#include <iconv.h>
 #define HAVE_ICU_CONVERTER
 #endif
 
 #ifdef HAVE_ICU_CONVERTER
-
-#include <string>
 
 class Error;
 
 #ifdef HAVE_ICU
 struct UConverter;
 #endif
+
+template<typename T> class AllocatedString;
 
 /**
  * This class can convert strings with a certain character set to and
@@ -56,20 +56,20 @@ class IcuConverter {
 	UConverter *const converter;
 
 	IcuConverter(UConverter *_converter):converter(_converter) {}
-#elif defined(HAVE_GLIB)
-	const GIConv to_utf8, from_utf8;
+#elif defined(HAVE_ICONV)
+	const iconv_t to_utf8, from_utf8;
 
-	IcuConverter(GIConv _to, GIConv _from)
+	IcuConverter(iconv_t _to, iconv_t _from)
 		:to_utf8(_to), from_utf8(_from) {}
 #endif
 
 public:
 #ifdef HAVE_ICU
 	~IcuConverter();
-#elif defined(HAVE_GLIB)
+#elif defined(HAVE_ICONV)
 	~IcuConverter() {
-		g_iconv_close(to_utf8);
-		g_iconv_close(from_utf8);
+		iconv_close(to_utf8);
+		iconv_close(from_utf8);
 	}
 #endif
 
@@ -77,17 +77,19 @@ public:
 
 	/**
 	 * Convert the string to UTF-8.
-	 * Returns empty string on error.
+	 *
+	 * Returns AllocatedString::Null() on error.
 	 */
 	gcc_pure gcc_nonnull_all
-	std::string ToUTF8(const char *s) const;
+	AllocatedString<char> ToUTF8(const char *s) const;
 
 	/**
 	 * Convert the string from UTF-8.
-	 * Returns empty string on error.
+	 *
+	 * Returns AllocatedString::Null() on error.
 	 */
 	gcc_pure gcc_nonnull_all
-	std::string FromUTF8(const char *s) const;
+	AllocatedString<char> FromUTF8(const char *s) const;
 };
 
 #endif

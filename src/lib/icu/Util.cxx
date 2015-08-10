@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Util.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 
@@ -49,7 +50,7 @@ UCharFromUTF8(const char *src)
 	return { dest, size_t(dest_length) };
 }
 
-WritableBuffer<char>
+AllocatedString<>
 UCharToUTF8(ConstBuffer<UChar> src)
 {
 	assert(!src.IsNull());
@@ -57,7 +58,7 @@ UCharToUTF8(ConstBuffer<UChar> src)
 	/* worst-case estimate */
 	size_t dest_capacity = 4 * src.size;
 
-	char *dest = new char[dest_capacity];
+	char *dest = new char[dest_capacity + 1];
 
 	UErrorCode error_code = U_ZERO_ERROR;
 	int32_t dest_length;
@@ -68,5 +69,6 @@ UCharToUTF8(ConstBuffer<UChar> src)
 		return nullptr;
 	}
 
-	return { dest, size_t(dest_length) };
+	dest[dest_length] = 0;
+	return AllocatedString<>::Donate(dest);
 }

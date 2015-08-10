@@ -23,12 +23,12 @@
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 #include "util/ASCII.hxx"
 #include "util/UriUtil.hxx"
 #include "lib/icu/Collate.hxx"
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 
 #define LOCATE_TAG_FILE_KEY     "file"
@@ -55,12 +55,12 @@ locate_parse_type(const char *str)
 }
 
 gcc_pure
-static std::string
+static AllocatedString<>
 ImportString(const char *p, bool fold_case)
 {
 	return fold_case
 		? IcuCaseFold(p)
-		: std::string(p);
+		: AllocatedString<>::Duplicate(p);
 }
 
 SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
@@ -70,7 +70,7 @@ SongFilter::Item::Item(unsigned _tag, const char *_value, bool _fold_case)
 }
 
 SongFilter::Item::Item(unsigned _tag, time_t _time)
-	:tag(_tag), time(_time)
+	:tag(_tag), value(nullptr), time(_time)
 {
 }
 
@@ -82,11 +82,14 @@ SongFilter::Item::StringMatch(const char *s) const
 	assert(s != nullptr);
 #endif
 
+	assert(tag != LOCATE_TAG_MODIFIED_SINCE);
+
 	if (fold_case) {
-		const std::string folded = IcuCaseFold(s);
-		return folded.find(value) != folded.npos;
+		const auto folded = IcuCaseFold(s);
+		assert(!folded.IsNull());
+		return StringFind(folded.c_str(), value.c_str()) != nullptr;
 	} else {
-		return s == value;
+		return StringIsEqual(s, value.c_str());
 	}
 }
 
@@ -300,12 +303,12 @@ SongFilter::HasOtherThanBase() const
 	return false;
 }
 
-std::string
+const char *
 SongFilter::GetBase() const
 {
 	for (const auto &i : items)
 		if (i.GetTag() == LOCATE_TAG_BASE_TYPE)
 			return i.GetValue();
 
-	return std::string();
+	return nullptr;
 }

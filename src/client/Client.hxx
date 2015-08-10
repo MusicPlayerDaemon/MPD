@@ -112,7 +112,7 @@ public:
 	void Close();
 	void SetExpired();
 
-	using FullyBufferedSocket::Write;
+	bool Write(const void *data, size_t length);
 
 	/**
 	 * returns the uid of the client process, or a negative value

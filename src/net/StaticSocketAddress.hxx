@@ -34,21 +34,16 @@
 #include "Compiler.h"
 
 #include <assert.h>
-#include <stdint.h>
-
-#ifdef WIN32
-#include <winsock2.h>
-#else
-#include <sys/socket.h>
-#endif
-
-struct ifaddrs;
 
 /**
  * An OO wrapper for struct sockaddr_storage.
  */
 class StaticSocketAddress {
-	size_t size;
+public:
+	typedef SocketAddress::size_type size_type;
+
+private:
+	size_type size;
 	struct sockaddr_storage address;
 
 public:
@@ -61,32 +56,25 @@ public:
 				     size);
 	}
 
-#ifdef HAVE_UN
-	/**
-	 * Make this a "local" address (UNIX domain socket).
-	 */
-	void SetLocal(const char *path);
-#endif
-
-	operator struct sockaddr *() {
+	struct sockaddr *GetAddress() {
 		return reinterpret_cast<struct sockaddr *>(&address);
 	}
 
-	operator const struct sockaddr *() const {
+	const struct sockaddr *GetAddress() const {
 		return reinterpret_cast<const struct sockaddr *>(&address);
 	}
 
-	constexpr size_t GetCapacity() const {
+	constexpr size_type GetCapacity() const {
 		return sizeof(address);
 	}
 
-	size_t GetSize() const {
+	size_type GetSize() const {
 		return size;
 	}
 
-	void SetSize(size_t _size) {
+	void SetSize(size_type _size) {
 		assert(_size > 0);
-		assert(_size <= sizeof(address));
+		assert(size_t(_size) <= sizeof(address));
 
 		size = _size;
 	}
@@ -104,9 +92,11 @@ public:
 	}
 
 	gcc_pure
-	bool operator==(const StaticSocketAddress &other) const;
+	bool operator==(SocketAddress other) const {
+		return (SocketAddress)*this == other;
+	}
 
-	bool operator!=(const StaticSocketAddress &other) const {
+	bool operator!=(SocketAddress &other) const {
 		return !(*this == other);
 	}
 };

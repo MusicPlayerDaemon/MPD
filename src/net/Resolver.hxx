@@ -20,26 +20,14 @@
 #ifndef MPD_RESOLVER_HXX
 #define MPD_RESOLVER_HXX
 
+#include "check.h"
 #include "Compiler.h"
-
-#include <string>
-
-#include <stddef.h>
 
 struct addrinfo;
 class Error;
 class Domain;
-class SocketAddress;
 
 extern const Domain resolver_domain;
-
-/**
- * Converts the specified socket address into a string in the form
- * "IP:PORT".
- */
-gcc_pure
-std::string
-sockaddr_to_string(SocketAddress address);
 
 /**
  * Resolve a specification in the form "host", "host:port",

@@ -27,51 +27,26 @@
 
 #include "check.h"
 #include "Compiler.h"
+#include "fs/Glob.hxx"
 
+#ifdef HAVE_CLASS_GLOB
 #include <forward_list>
-
-#ifdef HAVE_GLIB
-#include <glib.h>
 #endif
 
 class Path;
 
 class ExcludeList {
-#ifdef HAVE_GLIB
-	class Pattern {
-		GPatternSpec *pattern;
-
-	public:
-		Pattern(const char *_pattern)
-			:pattern(g_pattern_spec_new(_pattern)) {}
-
-		Pattern(Pattern &&other)
-			:pattern(other.pattern) {
-			other.pattern = nullptr;
-		}
-
-		~Pattern() {
-			g_pattern_spec_free(pattern);
-		}
-
-		gcc_pure
-		bool Check(const char *name_fs) const {
-			return g_pattern_match_string(pattern, name_fs);
-		}
-	};
-
-	std::forward_list<Pattern> patterns;
-#else
-	// TODO: implement
+#ifdef HAVE_CLASS_GLOB
+	std::forward_list<Glob> patterns;
 #endif
 
 public:
 	gcc_pure
 	bool IsEmpty() const {
-#ifdef HAVE_GLIB
+#ifdef HAVE_CLASS_GLOB
 		return patterns.empty();
 #else
-		// TODO: implement
+		/* not implemented */
 		return true;
 #endif
 	}

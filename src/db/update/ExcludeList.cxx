@@ -25,6 +25,7 @@
 #include "config.h"
 #include "ExcludeList.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/io/TextFile.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
@@ -34,7 +35,7 @@
 #include <string.h>
 #include <errno.h>
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_CLASS_GLOB
 
 gcc_pure
 static bool
@@ -53,7 +54,7 @@ IsFileNotFound(const Error &error)
 bool
 ExcludeList::LoadFile(Path path_fs)
 {
-#ifdef HAVE_GLIB
+#ifdef HAVE_CLASS_GLOB
 	Error error;
 	TextFile file(path_fs, error);
 	if (file.HasFailed()) {
@@ -73,7 +74,7 @@ ExcludeList::LoadFile(Path path_fs)
 			patterns.emplace_front(p);
 	}
 #else
-	// TODO: implement
+	/* not implemented */
 	(void)path_fs;
 #endif
 
@@ -87,12 +88,12 @@ ExcludeList::Check(Path name_fs) const
 
 	/* XXX include full path name in check */
 
-#ifdef HAVE_GLIB
+#ifdef HAVE_CLASS_GLOB
 	for (const auto &i : patterns)
-		if (i.Check(name_fs.c_str()))
+		if (i.Check(NarrowPath(name_fs).c_str()))
 			return true;
 #else
-	// TODO: implement
+	/* not implemented */
 	(void)name_fs;
 #endif
 

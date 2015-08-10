@@ -27,52 +27,17 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "config.h"
 #include "StaticSocketAddress.hxx"
 
 #include <algorithm>
 
-#include <assert.h>
 #include <string.h>
-
-#ifdef WIN32
-#include <ws2tcpip.h>
-#else
-#include <sys/un.h>
-#include <sys/socket.h>
-#endif
 
 StaticSocketAddress &
 StaticSocketAddress::operator=(SocketAddress other)
 {
-	size = std::min(size_t(other.GetSize()), GetCapacity());
+	size = std::min(other.GetSize(), GetCapacity());
 	memcpy(&address, other.GetAddress(), size);
 	return *this;
 }
-
-bool
-StaticSocketAddress::operator==(const StaticSocketAddress &other) const
-{
-	return size == other.size &&
-		memcmp(&address, &other.address, size) == 0;
-}
-
-#ifdef HAVE_UN
-
-void
-StaticSocketAddress::SetLocal(const char *path)
-{
-	auto &sun = reinterpret_cast<struct sockaddr_un &>(address);
-
-	const size_t path_length = strlen(path);
-
-	// TODO: make this a runtime check
-	assert(path_length < sizeof(sun.sun_path));
-
-	sun.sun_family = AF_LOCAL;
-	memcpy(sun.sun_path, path, path_length + 1);
-
-	/* note: Bionic doesn't provide SUN_LEN() */
-	size = SUN_LEN(&sun);
-}
-
-#endif

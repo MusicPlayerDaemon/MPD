@@ -20,12 +20,15 @@
 #include "config.h"
 #include "PlaylistFile.hxx"
 #include "PlaylistSave.hxx"
+#include "PlaylistError.hxx"
 #include "db/PlaylistInfo.hxx"
 #include "db/PlaylistVector.hxx"
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "fs/io/TextFile.hxx"
+#include "fs/io/FileOutputStream.hxx"
+#include "fs/io/BufferedOutputStream.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigDefaults.hxx"
@@ -109,7 +112,7 @@ spl_check_name(const char *name_utf8, Error &error)
 	return true;
 }
 
-static AllocatedPath
+AllocatedPath
 spl_map_to_fs(const char *name_utf8, Error &error)
 {
 	if (spl_map(error).IsNull() || !spl_check_name(name_utf8, error))
@@ -136,7 +139,7 @@ IsNotFoundError(const Error &error)
 #endif
 }
 
-static void
+void
 TranslatePlaylistError(Error &error)
 {
 	if (IsNotFoundError(error)) {
@@ -225,33 +228,28 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 {
 	assert(utf8path != nullptr);
 
-	if (spl_map(error).IsNull())
-		return false;
-
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
 
-	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
-	if (file == nullptr) {
-		playlist_errno(error);
+	FileOutputStream fos(path_fs, error);
+	if (!fos.IsDefined()) {
+		TranslatePlaylistError(error);
 		return false;
 	}
 
-	for (const auto &uri_utf8 : contents)
-		playlist_print_uri(file, uri_utf8.c_str());
+	BufferedOutputStream bos(fos);
 
-	fclose(file);
-	return true;
+	for (const auto &uri_utf8 : contents)
+		playlist_print_uri(bos, uri_utf8.c_str());
+
+	return bos.Flush(error) && fos.Commit(error);
 }
 
 PlaylistFileContents
 LoadPlaylistFile(const char *utf8path, Error &error)
 {
 	PlaylistFileContents contents;
-
-	if (spl_map(error).IsNull())
-		return contents;
 
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
@@ -345,9 +343,6 @@ spl_move_index(const char *utf8path, unsigned src, unsigned dest,
 bool
 spl_clear(const char *utf8path, Error &error)
 {
-	if (spl_map(error).IsNull())
-		return false;
-
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
@@ -404,36 +399,28 @@ spl_remove_index(const char *utf8path, unsigned pos, Error &error)
 bool
 spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 {
-	if (spl_map(error).IsNull())
-		return false;
-
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
 
-	FILE *file = FOpen(path_fs, FOpenMode::AppendText);
-	if (file == nullptr) {
-		playlist_errno(error);
+	AppendFileOutputStream fos(path_fs, error);
+	if (!fos.IsDefined()) {
+		TranslatePlaylistError(error);
 		return false;
 	}
 
-	struct stat st;
-	if (fstat(fileno(file), &st) < 0) {
-		playlist_errno(error);
-		fclose(file);
-		return false;
-	}
-
-	if (st.st_size / off_t(MPD_PATH_MAX + 1) >= (off_t)playlist_max_length) {
-		fclose(file);
+	if (fos.Tell() / (MPD_PATH_MAX + 1) >= playlist_max_length) {
 		error.Set(playlist_domain, int(PlaylistResult::TOO_LARGE),
 			  "Stored playlist is too large");
 		return false;
 	}
 
-	playlist_print_song(file, song);
+	BufferedOutputStream bos(fos);
 
-	fclose(file);
+	playlist_print_song(bos, song);
+
+	if (!bos.Flush(error) || !fos.Commit(error))
+		return false;
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return true;
@@ -481,9 +468,6 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs,
 bool
 spl_rename(const char *utf8from, const char *utf8to, Error &error)
 {
-	if (spl_map(error).IsNull())
-		return false;
-
 	const auto from_path_fs = spl_map_to_fs(utf8from, error);
 	if (from_path_fs.IsNull())
 		return false;

@@ -263,18 +263,18 @@ SendConstraints(mpd_connection *connection, const SongFilter::Item &item)
 
 		return mpd_search_add_base_constraint(connection,
 						      MPD_OPERATOR_DEFAULT,
-						      item.GetValue().c_str());
+						      item.GetValue());
 #endif
 
 	case LOCATE_TAG_FILE_TYPE:
 		return mpd_search_add_uri_constraint(connection,
 						     MPD_OPERATOR_DEFAULT,
-						     item.GetValue().c_str());
+						     item.GetValue());
 
 	case LOCATE_TAG_ANY_TYPE:
 		return mpd_search_add_any_tag_constraint(connection,
 							 MPD_OPERATOR_DEFAULT,
-							 item.GetValue().c_str());
+							 item.GetValue());
 
 	default:
 		tag = Convert(TagType(item.GetTag()));
@@ -284,7 +284,7 @@ SendConstraints(mpd_connection *connection, const SongFilter::Item &item)
 		return mpd_search_add_tag_constraint(connection,
 						     MPD_OPERATOR_DEFAULT,
 						     tag,
-						     item.GetValue().c_str());
+						     item.GetValue());
 	}
 }
 

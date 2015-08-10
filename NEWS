@@ -9,9 +9,14 @@ ver 0.20 (not yet released)
   - ape, ogg: drop support for non-standard tag "album artist"
     affected filetypes: vorbis, flac, opus & all files with ape2 tags
     (most importantly some mp3s)
+  - id3: remove the "id3v1_encoding" setting; by definition, all ID3v1 tags
+    are ISO-Latin-1
 * decoder
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
+  - mpcdec: read the bit rate
+* playlist
+  - embcue: fix last track
 * output
   - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX
@@ -25,9 +30,26 @@ ver 0.20 (not yet released)
   - soxr: allow multi-threaded resampling
 * reset song priority on playback
 * write database and state file atomically
+* always write UTF-8 to the log file.
 * remove dependency on GLib
+* support libsystemd (instead of the older libsystemd-daemon)
 * database
   - proxy: add TCP keepalive option
+
+ver 0.19.10 (2015/06/21)
+* input
+  - curl: fix deadlock on small responses
+  - smbclient: fix DFF playback
+* decoder
+  - ffmpeg: improve seeking accuracy
+  - fix stuck stream tags
+* encoder
+  - opus: fix bogus granulepos
+* output
+  - fix failure to open device right after booting
+* neighbor
+  - nfs: fix deadlock when connecting
+* fix "single" mode breakage due to queue edits
 
 ver 0.19.9 (2015/02/06)
 * decoder

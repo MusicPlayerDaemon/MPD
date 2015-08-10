@@ -73,7 +73,7 @@ config_find_block(ConfigBlockOption option, const char *key, const char *value);
 
 gcc_pure
 const char *
-config_get_string(enum ConfigOption option, const char *default_value);
+config_get_string(enum ConfigOption option, const char *default_value=nullptr);
 
 /**
  * Returns an optional configuration variable which contains an

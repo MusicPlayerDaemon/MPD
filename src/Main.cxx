@@ -102,8 +102,8 @@
 #include "org_musicpd_Bridge.h"
 #endif
 
-#ifdef HAVE_GLIB
-#include <glib.h>
+#ifdef ENABLE_SYSTEMD_DAEMON
+#include <systemd/sd-daemon.h>
 #endif
 
 #include <stdlib.h>
@@ -434,10 +434,7 @@ int mpd_main(int argc, char *argv[])
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
-#endif
-
-#ifdef HAVE_GLIB
-	g_set_application_name("Music Player Daemon");
+	setlocale(LC_COLLATE, "");
 #endif
 #endif
 
@@ -661,6 +658,10 @@ static int mpd_main_after_fork(struct options options)
 	/* the MPD frontend does not care about timer slack; set it to
 	   a huge value to allow the kernel to reduce CPU wakeups */
 	SetThreadTimerSlackMS(100);
+
+#ifdef ENABLE_SYSTEMD_DAEMON
+	sd_notify(0, "READY=1");
+#endif
 
 	/* run the main loop */
 	instance->event_loop->Run();

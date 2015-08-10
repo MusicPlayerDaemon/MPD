@@ -51,6 +51,7 @@ public:
 		av_free(data);
 	}
 
+	gcc_malloc
 	void *Get(size_t min_size) {
 #ifdef HAVE_AV_FAST_MALLOC
 		av_fast_malloc(&data, &size, min_size);

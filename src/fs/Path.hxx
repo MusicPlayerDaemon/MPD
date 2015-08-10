@@ -27,7 +27,6 @@
 #include <string>
 
 #include <assert.h>
-#include <string.h>
 
 class AllocatedPath;
 
@@ -37,14 +36,10 @@ class AllocatedPath;
  * This class manages a pointer to an existing path string.  While an
  * instance lives, the string must not be invalidated.
  */
-class Path {
-	typedef PathTraitsFS::value_type value_type;
-	typedef PathTraitsFS::pointer pointer;
-	typedef PathTraitsFS::const_pointer const_pointer;
+class Path : public PathTraitsFS::Pointer {
+	typedef PathTraitsFS::Pointer Base;
 
-	const_pointer value;
-
-	constexpr Path(const_pointer _value):value(_value) {}
+	constexpr Path(const_pointer _value):Base(_value) {}
 
 public:
 	/**
@@ -80,7 +75,7 @@ public:
 	 * must not be used.
 	 */
 	bool IsNull() const {
-		return value == nullptr;
+		return Base::IsNull();
 	}
 
 	/**
@@ -89,7 +84,7 @@ public:
 	 * @see IsNull()
 	 */
 	void SetNull() {
-		value = nullptr;
+		*this = nullptr;
 	}
 
 	/**
@@ -98,9 +93,9 @@ public:
 	 */
 	gcc_pure
 	size_t length() const {
-		assert(value != nullptr);
+		assert(!IsNull());
 
-		return PathTraitsFS::GetLength(value);
+		return PathTraitsFS::GetLength(c_str());
 	}
 
 	/**
@@ -110,7 +105,7 @@ public:
 	 */
 	gcc_pure
 	const_pointer c_str() const {
-		return value;
+		return Base::c_str();
 	}
 
 	/**
@@ -119,7 +114,7 @@ public:
 	 */
 	gcc_pure
 	const_pointer data() const {
-		return value;
+		return c_str();
 	}
 
 	/**
@@ -129,7 +124,7 @@ public:
 	 */
 	gcc_pure
 	bool HasNewline() const {
-		return PathTraitsFS::Find(value, '\n') != nullptr;
+		return PathTraitsFS::Find(c_str(), '\n') != nullptr;
 	}
 
 	/**
@@ -146,7 +141,7 @@ public:
 	 */
 	gcc_pure
 	Path GetBase() const {
-		return FromFS(PathTraitsFS::GetBase(value));
+		return FromFS(PathTraitsFS::GetBase(c_str()));
 	}
 
 	/**

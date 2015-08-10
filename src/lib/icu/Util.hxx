@@ -26,6 +26,7 @@
 
 template<typename T> struct WritableBuffer;
 template<typename T> struct ConstBuffer;
+template<typename T> class AllocatedString;
 
 /**
  * Wrapper for u_strFromUTF8().  The returned pointer must be freed
@@ -38,7 +39,7 @@ UCharFromUTF8(const char *src);
  * Wrapper for u_strToUTF8().  The returned pointer must be freed with
  * delete[].
  */
-WritableBuffer<char>
+AllocatedString<char>
 UCharToUTF8(ConstBuffer<UChar> src);
 
 #endif

@@ -251,18 +251,24 @@ AudioOutput::Close(bool drain)
 
 	mutex.unlock();
 
-	if (drain)
-		ao_plugin_drain(this);
-	else
-		ao_plugin_cancel(this);
-
-	ao_plugin_close(this);
+	CloseOutput(drain);
 	CloseFilter();
 
 	mutex.lock();
 
 	FormatDebug(output_domain, "closed plugin=%s name=\"%s\"",
 		    plugin.name, name);
+}
+
+inline void
+AudioOutput::CloseOutput(bool drain)
+{
+	if (drain)
+		ao_plugin_drain(this);
+	else
+		ao_plugin_cancel(this);
+
+	ao_plugin_close(this);
 }
 
 void

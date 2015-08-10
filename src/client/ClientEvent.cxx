@@ -18,8 +18,7 @@
  */
 
 #include "config.h"
-#include "ClientInternal.hxx"
-#include "util/Error.hxx"
+#include "Client.hxx"
 #include "Log.hxx"
 
 void

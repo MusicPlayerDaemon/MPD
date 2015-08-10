@@ -37,8 +37,13 @@ mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..
 
 # output directories
 lib_path = os.path.abspath('lib')
-tarball_path = lib_path
-src_path = os.path.join(lib_path, 'src')
+
+shared_path = lib_path
+if 'MPD_SHARED_LIB' in os.environ:
+    shared_path = os.environ['MPD_SHARED_LIB']
+tarball_path = os.path.join(shared_path, 'download')
+src_path = os.path.join(shared_path, 'src')
+
 arch_path = os.path.join(lib_path, host_arch)
 build_path = os.path.join(arch_path, 'build')
 root_path = os.path.join(arch_path, 'root')
@@ -300,8 +305,8 @@ thirdparty_libs = [
     ),
 
     AutotoolsProject(
-        'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.4.tar.xz',
-        '55f2288055e44754275a17c9a2497391',
+        'http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz',
+        '28cb28097c07a735d6af56e598e1c90f',
         'lib/libvorbis.a',
         ['--disable-shared', '--enable-static'],
     ),
@@ -342,8 +347,8 @@ thirdparty_libs = [
     ),
 
     FfmpegProject(
-        'http://ffmpeg.org/releases/ffmpeg-2.5.tar.bz2',
-        '4346fe710cc6bdd981f6534d2420d1ab',
+        'http://ffmpeg.org/releases/ffmpeg-2.6.2.tar.bz2',
+        'e75d598921285d6775f20164a91936ac',
         'lib/libavcodec.a',
         [
             '--disable-shared', '--enable-static',
@@ -366,8 +371,8 @@ thirdparty_libs = [
     ),
 
     AutotoolsProject(
-        'http://curl.haxx.se/download/curl-7.39.0.tar.lzma',
-        'e9aa6dec29920eba8ef706ea5823bad7',
+        'http://curl.haxx.se/download/curl-7.42.1.tar.lzma',
+        'f1e460020a99da039b153e4bf0cd8600',
         'lib/libcurl.a',
         [
             '--disable-shared', '--enable-static',
@@ -388,8 +393,8 @@ thirdparty_libs = [
     ),
 
     BoostProject(
-        'http://netcologne.dl.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.bz2',
-        'd6eef4b4cacb2183f2bf265a5a03a354',
+        'http://netcologne.dl.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.bz2',
+        'b8839650e61e9c1c0a89f371dd475546',
         'include/boost/version.hpp',
     ),
 ]
@@ -420,7 +425,6 @@ configure = [
 
     '--enable-silent-rules',
 
-    '--disable-glib',
     '--disable-icu',
 
 ] + configure_args

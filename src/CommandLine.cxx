@@ -106,7 +106,7 @@ static void version(void)
 	       "\n"
 	       "\n"
 	       "Copyright (C) 2003-2007 Warren Dukes <warren.dukes@gmail.com>\n"
-	       "Copyright (C) 2008-2014 Max Kellermann <max@duempel.org>\n"
+	       "Copyright (C) 2008-2015 Max Kellermann <max@duempel.org>\n"
 	       "This is free software; see the source for copying conditions.  There is NO\n"
 	       "warranty; not even MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
 
@@ -150,6 +150,14 @@ static void version(void)
 		});
 
 	printf("\n"
+	       "Filters:\n"
+#ifdef ENABLE_LIBSAMPLERATE
+	       " libsamplerate"
+#endif
+#ifdef ENABLE_SOXR
+	       " soxr"
+#endif
+	       "\n\n"
 	       "Tag plugins:\n"
 #ifdef ENABLE_ID3TAG
 	       " id3tag"
@@ -198,6 +206,37 @@ static void version(void)
 	printf("\n\n"
 	       "Protocols:\n");
 	print_supported_uri_schemes_to_fp(stdout);
+
+	printf("\n"
+	       "Other features:\n"
+#ifdef HAVE_AVAHI
+	       " avahi"
+#endif
+#ifdef USE_EPOLL
+	       " epoll"
+#endif
+#ifdef HAVE_ICONV
+	       " iconv"
+#endif
+#ifdef HAVE_ICU
+	       " icu"
+#endif
+#ifdef ENABLE_INOTIFY
+	       " inotify"
+#endif
+#ifdef HAVE_IPV6
+	       " ipv6"
+#endif
+#ifdef ENABLE_SYSTEMD_DAEMON
+	       " systemd"
+#endif
+#ifdef HAVE_TCP
+	       " tcp"
+#endif
+#ifdef HAVE_UN
+	       " un"
+#endif
+	       "\n");
 
 	exit(EXIT_SUCCESS);
 }

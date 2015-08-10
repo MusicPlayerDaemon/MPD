@@ -128,8 +128,10 @@ DetachedSong *
 EmbeddedCuePlaylist::NextSong()
 {
 	DetachedSong *song = parser->Get();
-	if (song != nullptr)
+	if (song != nullptr) {
+		song->SetURI(filename);
 		return song;
+	}
 
 	while (*next != 0) {
 		const char *line = next;

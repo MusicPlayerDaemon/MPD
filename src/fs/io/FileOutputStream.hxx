@@ -37,8 +37,8 @@
 
 class Path;
 
-class FileOutputStream final : public OutputStream {
-	AllocatedPath path;
+class BaseFileOutputStream : public OutputStream {
+	const AllocatedPath path;
 
 #ifdef WIN32
 	HANDLE handle;
@@ -46,6 +46,83 @@ class FileOutputStream final : public OutputStream {
 	FileDescriptor fd;
 #endif
 
+protected:
+#ifdef WIN32
+	template<typename P>
+	BaseFileOutputStream(P &&_path)
+		:path(std::forward<P>(_path)),
+		 handle(INVALID_HANDLE_VALUE) {}
+#else
+	template<typename P>
+	BaseFileOutputStream(P &&_path)
+		:path(std::forward<P>(_path)),
+		 fd(FileDescriptor::Undefined()) {}
+#endif
+
+	~BaseFileOutputStream() {
+		assert(!IsDefined());
+	}
+
+#ifdef WIN32
+	void SetHandle(HANDLE _handle) {
+		assert(!IsDefined());
+
+		handle = _handle;
+
+		assert(IsDefined());
+	}
+#else
+	FileDescriptor &SetFD() {
+		assert(!IsDefined());
+
+		return fd;
+	}
+
+	const FileDescriptor &GetFD() const {
+		return fd;
+	}
+#endif
+
+	bool Close() {
+		assert(IsDefined());
+
+#ifdef WIN32
+		CloseHandle(handle);
+		handle = INVALID_HANDLE_VALUE;
+		return true;
+#else
+		return fd.Close();
+#endif
+	}
+
+#ifdef WIN32
+	bool SeekEOF() {
+		return SetFilePointer(handle, 0, nullptr,
+				      FILE_END) != 0xffffffff;
+	}
+#endif
+
+public:
+	bool IsDefined() const {
+#ifdef WIN32
+		return handle != INVALID_HANDLE_VALUE;
+#else
+		return fd.IsDefined();
+#endif
+	}
+
+	Path GetPath() const {
+		return path;
+	}
+
+	gcc_pure
+	uint64_t Tell() const;
+
+	/* virtual methods from class OutputStream */
+	bool Write(const void *data, size_t size, Error &error) override;
+};
+
+class FileOutputStream final : public BaseFileOutputStream {
 #ifdef HAVE_LINKAT
 	/**
 	 * Was O_TMPFILE used?  If yes, then linkat() must be used to
@@ -64,19 +141,20 @@ public:
 
 	static FileOutputStream *Create(Path path, Error &error);
 
-	bool IsDefined() const {
-#ifdef WIN32
-		return handle != INVALID_HANDLE_VALUE;
-#else
-		return fd.IsDefined();
-#endif
+	bool Commit(Error &error);
+	void Cancel();
+};
+
+class AppendFileOutputStream final : public BaseFileOutputStream {
+public:
+	AppendFileOutputStream(Path _path, Error &error);
+
+	~AppendFileOutputStream() {
+		if (IsDefined())
+			Close();
 	}
 
 	bool Commit(Error &error);
-	void Cancel();
-
-	/* virtual methods from class OutputStream */
-	bool Write(const void *data, size_t size, Error &error) override;
 };
 
 #endif

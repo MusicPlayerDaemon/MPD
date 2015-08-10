@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Partition.hxx"
+#include "Instance.hxx"
 #include "DetachedSong.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "mixer/Volume.hxx"
@@ -26,6 +27,12 @@
 #include "GlobalEvents.hxx"
 
 #ifdef ENABLE_DATABASE
+
+const Database *
+Partition::GetDatabase(Error &error) const
+{
+	return instance.GetDatabase(error);
+}
 
 void
 Partition::DatabaseModified(const Database &db)

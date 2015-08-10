@@ -22,6 +22,7 @@
 #include "Error.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 
@@ -30,9 +31,9 @@
 #ifdef HAVE_ICU
 #include "Util.hxx"
 #include <unicode/ucnv.h>
-#elif defined(HAVE_GLIB)
+#elif defined(HAVE_ICONV)
 #include "util/Domain.hxx"
-static constexpr Domain g_iconv_domain("g_iconv");
+static constexpr Domain iconv_domain("iconv");
 #endif
 
 #ifdef HAVE_ICU
@@ -60,16 +61,16 @@ IcuConverter::Create(const char *charset, Error &error)
 	}
 
 	return new IcuConverter(converter);
-#elif defined(HAVE_GLIB)
-	GIConv to = g_iconv_open("utf-8", charset);
-	GIConv from = g_iconv_open(charset, "utf-8");
-	if (to == (GIConv)-1 || from == (GIConv)-1) {
-		if (to != (GIConv)-1)
-			g_iconv_close(to);
-		if (from != (GIConv)-1)
-			g_iconv_close(from);
-		error.Format(g_iconv_domain,
-			     "Failed to initialize charset '%s'", charset);
+#elif defined(HAVE_ICONV)
+	iconv_t to = iconv_open("utf-8", charset);
+	iconv_t from = iconv_open(charset, "utf-8");
+	if (to == (iconv_t)-1 || from == (iconv_t)-1) {
+		error.FormatErrno("Failed to initialize charset '%s'",
+				  charset);
+		if (to != (iconv_t)-1)
+			iconv_close(to);
+		if (from != (iconv_t)-1)
+			iconv_close(from);
 		return nullptr;
 	}
 
@@ -78,10 +79,10 @@ IcuConverter::Create(const char *charset, Error &error)
 }
 
 #ifdef HAVE_ICU
-#elif defined(HAVE_GLIB)
+#elif defined(HAVE_ICONV)
 
-static std::string
-DoConvert(GIConv conv, const char *src)
+static AllocatedString<char>
+DoConvert(iconv_t conv, const char *src)
 {
 	// TODO: dynamic buffer?
 	char buffer[4096];
@@ -90,17 +91,17 @@ DoConvert(GIConv conv, const char *src)
 	size_t in_left = strlen(src);
 	size_t out_left = sizeof(buffer);
 
-	size_t n = g_iconv(conv, &in, &in_left, &out, &out_left);
+	size_t n = iconv(conv, &in, &in_left, &out, &out_left);
 
 	if (n == static_cast<size_t>(-1) || in_left > 0)
-		return std::string();
+		return nullptr;
 
-	return std::string(buffer, sizeof(buffer) - out_left);
+	return AllocatedString<>::Duplicate(buffer, sizeof(buffer) - out_left);
 }
 
 #endif
 
-std::string
+AllocatedString<char>
 IcuConverter::ToUTF8(const char *s) const
 {
 #ifdef HAVE_ICU
@@ -118,23 +119,16 @@ IcuConverter::ToUTF8(const char *s) const
 		       &source, source + strlen(source),
 		       nullptr, true, &code);
 	if (code != U_ZERO_ERROR)
-		return std::string();
+		return nullptr;
 
 	const size_t target_length = target - buffer;
-	const auto u = UCharToUTF8({buffer, target_length});
-	if (u.IsNull())
-		return std::string();
-
-	std::string result(u.data, u.size);
-	delete[] u.data;
-	return result;
-
-#elif defined(HAVE_GLIB)
+	return UCharToUTF8({buffer, target_length});
+#elif defined(HAVE_ICONV)
 	return DoConvert(to_utf8, s);
 #endif
 }
 
-std::string
+AllocatedString<char>
 IcuConverter::FromUTF8(const char *s) const
 {
 #ifdef HAVE_ICU
@@ -142,7 +136,7 @@ IcuConverter::FromUTF8(const char *s) const
 
 	const auto u = UCharFromUTF8(s);
 	if (u.IsNull())
-		return std::string();
+		return nullptr;
 
 	ucnv_resetFromUnicode(converter);
 
@@ -157,11 +151,11 @@ IcuConverter::FromUTF8(const char *s) const
 	delete[] u.data;
 
 	if (code != U_ZERO_ERROR)
-		return std::string();
+		return nullptr;
 
-	return std::string(buffer, target);
+	return AllocatedString<>::Duplicate(buffer, target);
 
-#elif defined(HAVE_GLIB)
+#elif defined(HAVE_ICONV)
 	return DoConvert(from_utf8, s);
 #endif
 }

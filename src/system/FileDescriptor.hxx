@@ -146,6 +146,11 @@ public:
 		return lseek(Get(), offset, SEEK_SET);
 	}
 
+	gcc_pure
+	off_t Tell() const {
+		return lseek(Get(), 0, SEEK_CUR);
+	}
+
 	/**
 	 * Returns the size of the file in bytes, or -1 on error.
 	 */

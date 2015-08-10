@@ -4,6 +4,8 @@
 
 #include "config.h"
 #include "lib/icu/Converter.hxx"
+#include "util/AllocatedString.hxx"
+#include "util/StringAPI.hxx"
 #include "util/Error.hxx"
 
 #include <cppunit/TestFixture.h>
@@ -49,15 +51,17 @@ public:
 
 		for (const auto i : invalid_utf8) {
 			auto f = converter->FromUTF8(i);
-			CPPUNIT_ASSERT_EQUAL(true, f.empty());
+			CPPUNIT_ASSERT_EQUAL(true, f.IsNull());
 		}
 
 		for (const auto i : latin1_tests) {
 			auto f = converter->FromUTF8(i.utf8);
-			CPPUNIT_ASSERT_EQUAL(true, f == i.other);
+			CPPUNIT_ASSERT_EQUAL(true, StringIsEqual(f.c_str(),
+								 i.other));
 
 			auto t = converter->ToUTF8(i.other);
-			CPPUNIT_ASSERT_EQUAL(true, t == i.utf8);
+			CPPUNIT_ASSERT_EQUAL(true, StringIsEqual(t.c_str(),
+								 i.utf8));
 		}
 
 		delete converter;

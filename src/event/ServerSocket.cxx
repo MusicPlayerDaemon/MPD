@@ -20,10 +20,12 @@
 #include "config.h"
 #include "ServerSocket.hxx"
 #include "net/StaticSocketAddress.hxx"
+#include "net/AllocatedSocketAddress.hxx"
 #include "net/SocketAddress.hxx"
 #include "net/SocketUtil.hxx"
 #include "net/SocketError.hxx"
 #include "net/Resolver.hxx"
+#include "net/ToString.hxx"
 #include "event/SocketMonitor.hxx"
 #include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
@@ -63,31 +65,26 @@ class OneServerSocket final : private SocketMonitor {
 	AllocatedPath path;
 #endif
 
-	SocketAddress address;
+	const AllocatedSocketAddress address;
 
 public:
+	template<typename A>
 	OneServerSocket(EventLoop &_loop, ServerSocket &_parent,
 			unsigned _serial,
-			SocketAddress _address)
+			A &&_address)
 		:SocketMonitor(_loop),
 		 parent(_parent), serial(_serial),
 #ifdef HAVE_UN
 		 path(AllocatedPath::Null()),
 #endif
-		 address((sockaddr *)xmemdup(_address.GetAddress(),
-					     _address.GetSize()),
-			 _address.GetSize())
+		 address(std::forward<A>(_address))
 	{
-		assert(!_address.IsNull());
-		assert(_address.GetSize() > 0);
 	}
 
 	OneServerSocket(const OneServerSocket &other) = delete;
 	OneServerSocket &operator=(const OneServerSocket &other) = delete;
 
 	~OneServerSocket() {
-		free(const_cast<struct sockaddr *>(address.GetAddress()));
-
 		if (IsDefined())
 			Close();
 	}
@@ -111,7 +108,7 @@ public:
 
 	gcc_pure
 	std::string ToString() const {
-		return sockaddr_to_string(address);
+		return ::ToString(address);
 	}
 
 	void SetFD(int _fd) {
@@ -158,7 +155,7 @@ OneServerSocket::Accept()
 	StaticSocketAddress peer_address;
 	size_t peer_address_length = sizeof(peer_address);
 	int peer_fd =
-		accept_cloexec_nonblock(Get(), peer_address,
+		accept_cloexec_nonblock(Get(), peer_address.GetAddress(),
 					&peer_address_length);
 	if (peer_fd < 0) {
 		const SocketErrorMessage msg;
@@ -298,6 +295,15 @@ ServerSocket::AddAddress(SocketAddress address)
 	return sockets.back();
 }
 
+OneServerSocket &
+ServerSocket::AddAddress(AllocatedSocketAddress &&address)
+{
+	sockets.emplace_back(loop, *this, next_serial,
+			     std::move(address));
+
+	return sockets.back();
+}
+
 bool
 ServerSocket::AddFD(int fd, Error &error)
 {
@@ -305,7 +311,7 @@ ServerSocket::AddFD(int fd, Error &error)
 
 	StaticSocketAddress address;
 	socklen_t address_length = sizeof(address);
-	if (getsockname(fd, address,
+	if (getsockname(fd, address.GetAddress(),
 			&address_length) < 0) {
 		SetSocketError(error);
 		error.AddPrefix("Failed to get socket address: ");
@@ -423,21 +429,12 @@ bool
 ServerSocket::AddPath(AllocatedPath &&path, Error &error)
 {
 #ifdef HAVE_UN
-	struct sockaddr_un s_un;
+	(void)error;
 
-	const size_t path_length = path.length();
-	if (path_length >= sizeof(s_un.sun_path)) {
-		error.Set(server_socket_domain,
-			  "UNIX socket path is too long");
-		return false;
-	}
+	AllocatedSocketAddress address;
+	address.SetLocal(path.c_str());
 
-	RemoveFile(path);
-
-	s_un.sun_family = AF_UNIX;
-	memcpy(s_un.sun_path, path.c_str(), path_length + 1);
-
-	OneServerSocket &s = AddAddress({(const sockaddr *)&s_un, sizeof(s_un)});
+	OneServerSocket &s = AddAddress(std::move(address));
 	s.SetPath(std::move(path));
 
 	return true;

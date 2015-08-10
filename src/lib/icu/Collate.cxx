@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Collate.hxx"
+#include "util/AllocatedString.hxx"
 
 #ifdef HAVE_ICU
 #include "Util.hxx"
@@ -30,11 +31,15 @@
 
 #include <unicode/ucol.h>
 #include <unicode/ustring.h>
-#elif defined(HAVE_GLIB)
-#include <glib.h>
 #else
 #include <algorithm>
 #include <ctype.h>
+#endif
+
+#ifdef WIN32
+#include "Win32.hxx"
+#include "util/AllocatedString.hxx"
+#include <windows.h>
 #endif
 
 #include <assert.h>
@@ -107,14 +112,32 @@ IcuCollate(const char *a, const char *b)
 	return result;
 #endif
 
-#elif defined(HAVE_GLIB)
-	return g_utf8_collate(a, b);
+#elif defined(WIN32)
+	const auto wa = MultiByteToWideChar(CP_UTF8, a);
+	const auto wb = MultiByteToWideChar(CP_UTF8, b);
+	if (wa.IsNull())
+		return wb.IsNull() ? 0 : -1;
+	else if (wb.IsNull())
+		return 1;
+
+	auto result = CompareStringEx(LOCALE_NAME_INVARIANT,
+				      LINGUISTIC_IGNORECASE,
+				      wa.c_str(), -1,
+				      wb.c_str(), -1,
+				      nullptr, nullptr, 0);
+	if (result != 0)
+		/* "To maintain the C runtime convention of comparing
+		   strings, the value 2 can be subtracted from a
+		   nonzero return value." */
+		result -= 2;
+
+	return result;
 #else
-	return strcasecmp(a, b);
+	return strcoll(a, b);
 #endif
 }
 
-std::string
+AllocatedString<>
 IcuCaseFold(const char *src)
 {
 #ifdef HAVE_ICU
@@ -126,37 +149,70 @@ IcuCaseFold(const char *src)
 
 	const auto u = UCharFromUTF8(src);
 	if (u.IsNull())
-		return std::string(src);
+		return AllocatedString<>::Duplicate(src);
 
 	size_t folded_capacity = u.size * 2u;
 	UChar *folded = new UChar[folded_capacity];
 
 	UErrorCode error_code = U_ZERO_ERROR;
 	size_t folded_length = u_strFoldCase(folded, folded_capacity,
-					   u.data, u.size,
-					   U_FOLD_CASE_DEFAULT,
-					   &error_code);
+					     u.data, u.size,
+					     U_FOLD_CASE_DEFAULT,
+					     &error_code);
 	delete[] u.data;
 	if (folded_length == 0 || error_code != U_ZERO_ERROR) {
 		delete[] folded;
-		return std::string(src);
+		return AllocatedString<>::Duplicate(src);
 	}
 
-	auto result2 = UCharToUTF8({folded, folded_length});
+	auto result = UCharToUTF8({folded, folded_length});
 	delete[] folded;
-	if (result2.IsNull())
-		return std::string(src);
-
-	std::string result(result2.data, result2.size);
-	delete[] result2.data;
-#elif defined(HAVE_GLIB)
-	char *tmp = g_utf8_casefold(src, -1);
-	std::string result(tmp);
-	g_free(tmp);
-#else
-	std::string result(src);
-	std::transform(result.begin(), result.end(), result.begin(), tolower);
-#endif
 	return result;
+
+#elif defined(WIN32)
+	const auto u = MultiByteToWideChar(CP_UTF8, src);
+	if (u.IsNull())
+		return AllocatedString<>::Duplicate(src);
+
+	const int size = LCMapStringEx(LOCALE_NAME_INVARIANT,
+				       LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
+				       u.c_str(), -1, nullptr, 0,
+				       nullptr, nullptr, 0);
+	if (size <= 0)
+		return AllocatedString<>::Duplicate(src);
+
+	auto buffer = new wchar_t[size];
+	if (LCMapStringEx(LOCALE_NAME_INVARIANT,
+			  LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
+			  u.c_str(), -1, buffer, size,
+			  nullptr, nullptr, 0) <= 0) {
+		delete[] buffer;
+		return AllocatedString<>::Duplicate(src);
+	}
+
+	auto result = WideCharToMultiByte(CP_UTF8, buffer);
+	delete[] buffer;
+	if (result.IsNull())
+		return AllocatedString<>::Duplicate(src);
+
+	return result;
+
+#else
+	size_t size = strlen(src) + 1;
+	auto buffer = new char[size];
+	size_t nbytes = strxfrm(buffer, src, size);
+	if (nbytes >= size) {
+		/* buffer too small - reallocate and try again */
+		delete[] buffer;
+		size = nbytes + 1;
+		buffer = new char[size];
+		nbytes = strxfrm(buffer, src, size);
+	}
+
+	assert(nbytes < size);
+	assert(buffer[nbytes] == 0);
+
+	return AllocatedString<>::Donate(buffer);
+#endif
 }
 
