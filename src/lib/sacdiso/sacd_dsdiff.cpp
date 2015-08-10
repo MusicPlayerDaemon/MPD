@@ -403,8 +403,8 @@ bool sacd_dsdiff_t::read_frame(uint8_t* frame_data, size_t* frame_size, frame_ty
 		}
 	}
 	else {
-		uint64_t position = sacd_media->get_position();
-		*frame_size = min(*frame_size, (size_t)max((int64_t)0, (int64_t)(current_offset + current_size) - (int64_t)position));
+		int64_t position = sacd_media->get_position();
+		*frame_size = (size_t)min((int64_t)*frame_size, max((int64_t)0, (int64_t)(current_offset + current_size) - position));
 		if (*frame_size > 0) {
 			*frame_size = sacd_media->read(frame_data, *frame_size);
 			*frame_size -= *frame_size % channel_count;

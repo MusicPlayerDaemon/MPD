@@ -6,25 +6,25 @@ Lossless coding of 1-bit oversampled audio - DST (Direct Stream Transfer)
 This software was originally developed by:
 
 * Aad Rijnberg
-	Philips Digital Systems Laboratories Eindhoven
-	<aad.rijnberg@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<aad.rijnberg@philips.com>
 
 * Fons Bruekers
-	Philips Research Laboratories Eindhoven
-	<fons.bruekers@philips.com>
+Philips Research Laboratories Eindhoven
+<fons.bruekers@philips.com>
 
 * Eric Knapen
-	Philips Digital Systems Laboratories Eindhoven
-	<h.w.m.knapen@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<h.w.m.knapen@philips.com>
 
 And edited by:
 
 * Richard Theelen
-	Philips Digital Systems Laboratories Eindhoven
-	<r.h.m.theelen@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<r.h.m.theelen@philips.com>
 
 * Maxim V.Anisiutkin
-	<maxim.anisiutkin@gmail.com>
+<maxim.anisiutkin@gmail.com>
 
 in the course of development of the MPEG-4 Audio standard ISO-14496-1, 2 and 3.
 This software module is an implementation of a part of one or more MPEG-4 Audio
@@ -42,16 +42,10 @@ assign or donate the code to a third party and to inhibit third party from
 using the code for non MPEG-4 Audio conforming products. This copyright notice
 must be included in all copies of derivative works.
 
-Copyright Â© 2004.
+Copyright © 2004.
 
 */
 
-#ifndef _CU_DST_UNPACK_H_INCLUDED
-#define _CU_DST_UNPACK_H_INCLUDED
-
-#include "types.h"
-#include "dst_data.h"
-
-__FUNCTION_ATTRIBUTES__ int UnpackDSTframe(DstDec* D, uint8_t* DSTdataframe, uint8_t* DSDdataframe);
-
-#endif
+#include <stdio.h>
+#include <stdarg.h>
+#include "DSTFramework.h"

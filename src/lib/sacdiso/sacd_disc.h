@@ -73,6 +73,7 @@ public:
 	uint32_t get_channels();
 	uint32_t get_loudspeaker_config();
 	uint32_t get_samplerate();
+	uint16_t get_framerate();
 	uint64_t get_size();
 	uint64_t get_offset();
 	double get_duration();

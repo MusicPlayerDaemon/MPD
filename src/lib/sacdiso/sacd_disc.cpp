@@ -175,6 +175,10 @@ uint32_t sacd_disc_t::get_samplerate() {
 	return SACD_SAMPLING_FREQUENCY;
 }
 
+uint16_t sacd_disc_t::get_framerate() {
+	return 75;
+}
+
 uint64_t sacd_disc_t::get_size() {
 	return (uint64_t)sel_track_length_lsn * (uint64_t)sector_size;
 }

@@ -40,6 +40,7 @@ public:
 	virtual uint32_t get_channels() = 0;
 	virtual uint32_t get_loudspeaker_config() = 0;
 	virtual uint32_t get_samplerate() = 0;
+	virtual uint16_t get_framerate() = 0;
 	virtual uint64_t get_size() = 0;
 	virtual uint64_t get_offset() = 0;
 	virtual double get_duration() = 0;

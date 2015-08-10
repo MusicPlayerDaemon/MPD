@@ -6,25 +6,25 @@ Lossless coding of 1-bit oversampled audio - DST (Direct Stream Transfer)
 This software was originally developed by:
 
 * Aad Rijnberg
-	Philips Digital Systems Laboratories Eindhoven
-	<aad.rijnberg@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<aad.rijnberg@philips.com>
 
 * Fons Bruekers
-	Philips Research Laboratories Eindhoven
-	<fons.bruekers@philips.com>
+Philips Research Laboratories Eindhoven
+<fons.bruekers@philips.com>
 
 * Eric Knapen
-	Philips Digital Systems Laboratories Eindhoven
-	<h.w.m.knapen@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<h.w.m.knapen@philips.com>
 
 And edited by:
 
 * Richard Theelen
-	Philips Digital Systems Laboratories Eindhoven
-	<r.h.m.theelen@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<r.h.m.theelen@philips.com>
 
 * Maxim V.Anisiutkin
-	<maxim.anisiutkin@gmail.com>
+<maxim.anisiutkin@gmail.com>
 
 in the course of development of the MPEG-4 Audio standard ISO-14496-1, 2 and 3.
 This software module is an implementation of a part of one or more MPEG-4 Audio
@@ -42,23 +42,18 @@ assign or donate the code to a third party and to inhibit third party from
 using the code for non MPEG-4 Audio conforming products. This copyright notice
 must be included in all copies of derivative works.
 
-Copyright Â© 2004.
+Copyright © 2004.
 
 */
 
-#include "ccp_calc.h"
-#include "dst_init.h"
+#ifndef DSTFRAMEWORK_H
+#define DSTFRAMEWORK_H
 
-__FUNCTION_ATTRIBUTES__ int DST_InitDecoder(DstDec* D) {
-  int retval = 0;
-  D->FrameHdr.FrameNr = 0;
-  D->StrFilter.TableType = FILTER;
-  D->StrPtable.TableType = PTABLE;
-  if (retval == 0) {
-		retval = CCP_CalcInit((CodedTable*)&D->StrFilter);
-  }
-	if (retval == 0) {
-		retval = CCP_CalcInit((CodedTable*)&D->StrPtable);
-  }
-  return retval;
-}
+#include "DSTDefs.h"
+
+class CDSTFramework {
+};
+
+#endif
+
+

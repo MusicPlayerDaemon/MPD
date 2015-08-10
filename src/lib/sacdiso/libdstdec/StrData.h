@@ -6,25 +6,25 @@ Lossless coding of 1-bit oversampled audio - DST (Direct Stream Transfer)
 This software was originally developed by:
 
 * Aad Rijnberg
-	Philips Digital Systems Laboratories Eindhoven
-	<aad.rijnberg@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<aad.rijnberg@philips.com>
 
 * Fons Bruekers
-	Philips Research Laboratories Eindhoven
-	<fons.bruekers@philips.com>
+Philips Research Laboratories Eindhoven
+<fons.bruekers@philips.com>
 
 * Eric Knapen
-	Philips Digital Systems Laboratories Eindhoven
-	<h.w.m.knapen@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<h.w.m.knapen@philips.com>
 
 And edited by:
 
 * Richard Theelen
-	Philips Digital Systems Laboratories Eindhoven
-	<r.h.m.theelen@philips.com>
+Philips Digital Systems Laboratories Eindhoven
+<r.h.m.theelen@philips.com>
 
 * Maxim V.Anisiutkin
-	<maxim.anisiutkin@gmail.com>
+<maxim.anisiutkin@gmail.com>
 
 in the course of development of the MPEG-4 Audio standard ISO-14496-1, 2 and 3.
 This software module is an implementation of a part of one or more MPEG-4 Audio
@@ -42,15 +42,34 @@ assign or donate the code to a third party and to inhibit third party from
 using the code for non MPEG-4 Audio conforming products. This copyright notice
 must be included in all copies of derivative works.
 
-Copyright Â© 2004.
+Copyright © 2004.
 
 */
 
-#ifndef __DST_FRAM_H_INCLUDED
-#define __DST_FRAM_H_INCLUDED
+#ifndef STRDATA_H
+#define STRDATA_H
 
-#include "types.h"
+#include "DSTFramework.h"
 
-__FUNCTION_ATTRIBUTES__ int DST_FramDSTDecode(DstDec* D, uint8_t* DSTdata, uint8_t* MuxedDSDdata, int FrameSizeInBytes, int FrameCnt);
+class CStrData {
+	uint8_t DSTdata[MAX_CHANNELS * MAX_DSDBYTES_INFRAME];
+	int TotalBytes;
+	int ByteCounter;
+	int BitPosition;
+	uint8_t DataByte;
+public:
+	void getDSTDataPointer(uint8_t** pBuffer);
+	void resetReadingIndex();
+	void createBuffer(int size);
+	void deleteBuffer();
+	void fillBuffer(uint8_t* pBuf, int size);
+	void getChrUnsigned(int length, uint8_t& x);
+	void getIntUnsigned(int length, int& x);
+	void getIntSigned(int length, int& x);
+	void getShortSigned(int length, short& x);
+	int get_in_bitcount();
+private:
+	int getbits(long& outword, int out_bitptr);
+};
 
 #endif
