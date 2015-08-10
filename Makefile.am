@@ -898,30 +898,28 @@ DECODER_LIBS = \
 
 if ENABLE_DSD
 DSD_CFLAGS = \
+	-I$(srcdir)/src/lib/sacdiso/libdstdec/binding \
+	-I$(srcdir)/src/lib/sacdiso/libdstdec/decoder \
 	-I$(srcdir)/src/lib/sacdiso/libdstdec \
 	-I$(srcdir)/src/lib/sacdiso
 libdecoder_a_SOURCES += \
-	src/lib/sacdiso/libdstdec/config.h \
-	src/lib/sacdiso/libdstdec/conststr.h \
-	src/lib/sacdiso/libdstdec/types.h \
-	src/lib/sacdiso/libdstdec/ccp_calc.h \
-	src/lib/sacdiso/libdstdec/ccp_calc.cpp \
-	src/lib/sacdiso/libdstdec/dst_ac.h \
-	src/lib/sacdiso/libdstdec/dst_ac.cpp \
-	src/lib/sacdiso/libdstdec/dst_data.h \
-	src/lib/sacdiso/libdstdec/dst_data.cpp \
-	src/lib/sacdiso/libdstdec/dst_decoder.h \
-	src/lib/sacdiso/libdstdec/dst_decoder.cpp \
-	src/lib/sacdiso/libdstdec/dst_fram.h \
-	src/lib/sacdiso/libdstdec/dst_fram.cpp \
-	src/lib/sacdiso/libdstdec/dst_init.h \
-	src/lib/sacdiso/libdstdec/dst_init.cpp \
-	src/lib/sacdiso/libdstdec/dst_memory.h \
-	src/lib/sacdiso/libdstdec/dst_unpack.h \
-	src/lib/sacdiso/libdstdec/dst_unpack.cpp \
+	src/lib/sacdiso/libdstdec/binding/dst_decoder_mpd.h \
+	src/lib/sacdiso/libdstdec/binding/dst_decoder_mpd.cpp \
+	src/lib/sacdiso/libdstdec/decoder/DSTDecoder.h \
+	src/lib/sacdiso/libdstdec/decoder/DSTDecoder.cpp \
+	src/lib/sacdiso/libdstdec/ACData.h \
+	src/lib/sacdiso/libdstdec/ACData.cpp \
+	src/lib/sacdiso/libdstdec/CodedTable.h \
+	src/lib/sacdiso/libdstdec/CodedTable.cpp \
+	src/lib/sacdiso/libdstdec/DSTConsts.h \
+	src/lib/sacdiso/libdstdec/DSTDefs.h \
+	src/lib/sacdiso/libdstdec/DSTFramework.h \
+	src/lib/sacdiso/libdstdec/DSTFramework.cpp \
+	src/lib/sacdiso/libdstdec/FrameReader.h \
+	src/lib/sacdiso/libdstdec/FrameReader.cpp \
+	src/lib/sacdiso/libdstdec/StrData.h \
+	src/lib/sacdiso/libdstdec/StrData.cpp \
 	src/lib/sacdiso/endianess.h \
-	src/lib/sacdiso/dst_decoder_mpd.h \
-	src/lib/sacdiso/dst_decoder_mpd.cpp \
 	src/lib/sacdiso/sacd_disc.h \
 	src/lib/sacdiso/sacd_disc.cpp \
 	src/lib/sacdiso/sacd_dsd.h \
