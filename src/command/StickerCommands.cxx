@@ -166,17 +166,15 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 			}
 		}
 
-		bool success;
 		struct sticker_song_find_data data = {
 			client,
 			args[3],
 		};
 
-		success = sticker_song_find(*db, base_uri, data.name,
-					    op, value,
-					    sticker_song_find_print_cb, &data,
-					    error);
-		if (!success) {
+		if (!sticker_song_find(*db, base_uri, data.name,
+				       op, value,
+				       sticker_song_find_print_cb, &data,
+				       error)) {
 			if (error.IsDefined())
 				return print_error(client, error);
 

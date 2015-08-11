@@ -308,8 +308,6 @@ CommandResult
 handle_setvol(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned level;
-	bool success;
-
 	if (!check_unsigned(client, &level, args.front()))
 		return CommandResult::ERROR;
 
@@ -318,8 +316,7 @@ handle_setvol(Client &client, ConstBuffer<const char *> args)
 		return CommandResult::ERROR;
 	}
 
-	success = volume_level_change(client.partition.outputs, level);
-	if (!success) {
+	if (!volume_level_change(client.partition.outputs, level)) {
 		command_error(client, ACK_ERROR_SYSTEM,
 			      "problems setting volume");
 		return CommandResult::ERROR;

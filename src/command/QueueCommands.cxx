@@ -249,13 +249,11 @@ CommandResult
 handle_playlistinfo(Client &client, ConstBuffer<const char *> args)
 {
 	unsigned start = 0, end = std::numeric_limits<unsigned>::max();
-	bool ret;
 
 	if (args.size == 1 && !check_range(client, &start, &end, args.front()))
 		return CommandResult::ERROR;
 
-	ret = playlist_print_info(client, client.playlist, start, end);
-	if (!ret)
+	if (!playlist_print_info(client, client.playlist, start, end))
 		return print_playlist_result(client,
 					     PlaylistResult::BAD_RANGE);
 
