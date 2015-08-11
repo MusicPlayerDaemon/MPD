@@ -34,9 +34,17 @@ check_uint32(Client &client, uint32_t *dst, const char *s);
 bool
 check_int(Client &client, int *value_r, const char *s);
 
+struct RangeArg {
+	unsigned start, end;
+
+	void SetAll() {
+		start = 0;
+		end = unsigned(-1);
+	}
+};
+
 bool
-check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
-	    const char *s);
+ParseCommandArg(Client &client, RangeArg &value_r, const char *s);
 
 bool
 check_unsigned(Client &client, unsigned *value_r, const char *s);

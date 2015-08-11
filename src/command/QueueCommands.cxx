@@ -175,12 +175,11 @@ handle_rangeid(Client &client, ConstBuffer<const char *> args)
 CommandResult
 handle_delete(Client &client, ConstBuffer<const char *> args)
 {
-	unsigned start, end;
-
-	if (!check_range(client, &start, &end, args.front()))
+	RangeArg range;
+	if (!ParseCommandArg(client, range, args.front()))
 		return CommandResult::ERROR;
 
-	PlaylistResult result = client.partition.DeleteRange(start, end);
+	auto result = client.partition.DeleteRange(range.start, range.end);
 	return print_playlist_result(client, result);
 }
 
@@ -206,11 +205,13 @@ handle_playlist(Client &client, gcc_unused ConstBuffer<const char *> args)
 CommandResult
 handle_shuffle(gcc_unused Client &client, ConstBuffer<const char *> args)
 {
-	unsigned start = 0, end = client.playlist.queue.GetLength();
-	if (args.size == 1 && !check_range(client, &start, &end, args.front()))
+	RangeArg range;
+	if (args.IsEmpty())
+		range.SetAll();
+	else if (!ParseCommandArg(client, range, args.front()))
 		return CommandResult::ERROR;
 
-	client.partition.Shuffle(start, end);
+	client.partition.Shuffle(range.start, range.end);
 	return CommandResult::OK;
 }
 
@@ -248,12 +249,14 @@ handle_plchangesposid(Client &client, ConstBuffer<const char *> args)
 CommandResult
 handle_playlistinfo(Client &client, ConstBuffer<const char *> args)
 {
-	unsigned start = 0, end = std::numeric_limits<unsigned>::max();
-
-	if (args.size == 1 && !check_range(client, &start, &end, args.front()))
+	RangeArg range;
+	if (args.IsEmpty())
+		range.SetAll();
+	else if (!ParseCommandArg(client, range, args.front()))
 		return CommandResult::ERROR;
 
-	if (!playlist_print_info(client, client.playlist, start, end))
+	if (!playlist_print_info(client, client.playlist,
+				 range.start, range.end))
 		return print_playlist_result(client,
 					     PlaylistResult::BAD_RANGE);
 
@@ -322,14 +325,14 @@ handle_prio(Client &client, ConstBuffer<const char *> args)
 	}
 
 	for (const char *i : args) {
-		unsigned start_position, end_position;
-		if (!check_range(client, &start_position, &end_position, i))
+		RangeArg range;
+		if (!ParseCommandArg(client, range, i))
 			return CommandResult::ERROR;
 
 		PlaylistResult result =
-			client.partition.SetPriorityRange(start_position,
-							   end_position,
-							   priority);
+			client.partition.SetPriorityRange(range.start,
+							  range.end,
+							  priority);
 		if (result != PlaylistResult::SUCCESS)
 			return print_playlist_result(client, result);
 	}
@@ -369,16 +372,16 @@ handle_prioid(Client &client, ConstBuffer<const char *> args)
 CommandResult
 handle_move(Client &client, ConstBuffer<const char *> args)
 {
-	unsigned start, end;
+	RangeArg range;
 	int to;
 
-	if (!check_range(client, &start, &end, args[0]))
+	if (!ParseCommandArg(client, range, args[0]))
 		return CommandResult::ERROR;
 	if (!check_int(client, &to, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
-		client.partition.MoveRange(start, end, to);
+		client.partition.MoveRange(range.start, range.end, to);
 	return print_playlist_result(client, result);
 }
 

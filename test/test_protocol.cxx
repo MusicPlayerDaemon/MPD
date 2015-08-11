@@ -32,21 +32,22 @@ void
 ArgParserTest::TestRange()
 {
 	Client &client = *(Client *)nullptr;
-	unsigned a, b;
 
-	CPPUNIT_ASSERT(check_range(client, &a, &b, "1"));
-	CPPUNIT_ASSERT_EQUAL(1u, a);
-	CPPUNIT_ASSERT_EQUAL(2u, b);
+	RangeArg range;
 
-	CPPUNIT_ASSERT(check_range(client, &a, &b, "1:5"));
-	CPPUNIT_ASSERT_EQUAL(1u, a);
-	CPPUNIT_ASSERT_EQUAL(5u, b);
+	CPPUNIT_ASSERT(ParseCommandArg(client, range, "1"));
+	CPPUNIT_ASSERT_EQUAL(1u, range.start);
+	CPPUNIT_ASSERT_EQUAL(2u, range.end);
 
-	CPPUNIT_ASSERT(check_range(client, &a, &b, "1:"));
-	CPPUNIT_ASSERT_EQUAL(1u, a);
-	CPPUNIT_ASSERT(b >= 999999u);
+	CPPUNIT_ASSERT(ParseCommandArg(client, range, "1:5"));
+	CPPUNIT_ASSERT_EQUAL(1u, range.start);
+	CPPUNIT_ASSERT_EQUAL(5u, range.end);
 
-	CPPUNIT_ASSERT(!check_range(client, &a, &b, "-2"));
+	CPPUNIT_ASSERT(ParseCommandArg(client, range, "1:"));
+	CPPUNIT_ASSERT_EQUAL(1u, range.start);
+	CPPUNIT_ASSERT(range.end >= 999999u);
+
+	CPPUNIT_ASSERT(!ParseCommandArg(client, range, "-2"));
 	CPPUNIT_ASSERT_EQUAL(ACK_ERROR_ARG, last_error);
 }
 

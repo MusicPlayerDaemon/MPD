@@ -67,15 +67,15 @@ handle_lsinfo2(Client &client, ConstBuffer<const char *> args)
 static CommandResult
 handle_match(Client &client, ConstBuffer<const char *> args, bool fold_case)
 {
-	unsigned window_start = 0, window_end = std::numeric_limits<int>::max();
+	RangeArg window;
 	if (args.size >= 2 && strcmp(args[args.size - 2], "window") == 0) {
-		if (!check_range(client, &window_start, &window_end,
-				 args.back()))
+		if (!ParseCommandArg(client, window, args.back()))
 			return CommandResult::ERROR;
 
 		args.pop_back();
 		args.pop_back();
-	}
+	} else
+		window.SetAll();
 
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
@@ -87,7 +87,7 @@ handle_match(Client &client, ConstBuffer<const char *> args, bool fold_case)
 
 	Error error;
 	return db_selection_print(client, selection, true, false,
-				  window_start, window_end, error)
+				  window.start, window.end, error)
 		? CommandResult::OK
 		: print_error(client, error);
 }

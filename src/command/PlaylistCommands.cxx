@@ -70,12 +70,10 @@ handle_save(Client &client, ConstBuffer<const char *> args)
 CommandResult
 handle_load(Client &client, ConstBuffer<const char *> args)
 {
-	unsigned start_index, end_index;
-
-	if (args.size < 2) {
-		start_index = 0;
-		end_index = unsigned(-1);
-	} else if (!check_range(client, &start_index, &end_index, args[1]))
+	RangeArg range;
+	if (args.size < 2)
+		range.SetAll();
+	else if (!ParseCommandArg(client, range, args[1]))
 		return CommandResult::ERROR;
 
 	const ScopeBulkEdit bulk_edit(client.partition);
@@ -83,7 +81,7 @@ handle_load(Client &client, ConstBuffer<const char *> args)
 	Error error;
 	const SongLoader loader(client);
 	if (!playlist_open_into_queue(args.front(),
-				      start_index, end_index,
+				      range.start, range.end,
 				      client.playlist,
 				      client.player_control, loader, error))
 		return print_error(client, error);

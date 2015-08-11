@@ -65,8 +65,7 @@ check_int(Client &client, int *value_r, const char *s)
 }
 
 bool
-check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
-	    const char *s)
+ParseCommandArg(Client &client, RangeArg &value_r, const char *s)
 {
 	char *test, *test2;
 	long value;
@@ -81,8 +80,8 @@ check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
 	if (value == -1 && *test == 0) {
 		/* compatibility with older MPD versions: specifying
 		   "-1" makes MPD display the whole list */
-		*value_r1 = 0;
-		*value_r2 = std::numeric_limits<int>::max();
+		value_r.start = 0;
+		value_r.end = std::numeric_limits<int>::max();
 		return true;
 	}
 
@@ -98,7 +97,7 @@ check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
 		return false;
 	}
 
-	*value_r1 = (unsigned)value;
+	value_r.start = (unsigned)value;
 
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
@@ -123,9 +122,9 @@ check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
 			return false;
 		}
 
-		*value_r2 = (unsigned)value;
+		value_r.end = (unsigned)value;
 	} else {
-		*value_r2 = (unsigned)value + 1;
+		value_r.end = (unsigned)value + 1;
 	}
 
 	return true;
