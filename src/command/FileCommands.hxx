@@ -23,12 +23,12 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
 
 CommandResult
 handle_listfiles_local(Client &client, const char *path_utf8);
 
 CommandResult
-handle_read_comments(Client &client, ConstBuffer<const char *> args);
+handle_read_comments(Client &client, Request args);
 
 #endif

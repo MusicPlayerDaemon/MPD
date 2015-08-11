@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "NeighborCommands.hxx"
+#include "Request.hxx"
 #include "client/Client.hxx"
 #include "Instance.hxx"
 #include "Partition.hxx"
@@ -39,7 +40,7 @@ neighbor_commands_available(const Instance &instance)
 }
 
 CommandResult
-handle_listneighbors(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_listneighbors(Client &client, gcc_unused Request args)
 {
 	const NeighborGlue *const neighbors =
 		client.partition.instance.neighbors;

@@ -81,6 +81,7 @@ libmpd_a_SOURCES = \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
+	src/command/Request.hxx \
 	src/command/CommandResult.hxx \
 	src/command/CommandError.cxx src/command/CommandError.hxx \
 	src/command/AllCommands.cxx src/command/AllCommands.hxx \

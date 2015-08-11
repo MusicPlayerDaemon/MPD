@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PlayerCommands.hxx"
+#include "Request.hxx"
 #include "CommandError.hxx"
 #include "queue/Playlist.hxx"
 #include "PlaylistPrint.hxx"
@@ -57,7 +58,7 @@
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
 CommandResult
-handle_play(Client &client, ConstBuffer<const char *> args)
+handle_play(Client &client, Request args)
 {
 	int song = -1;
 
@@ -68,7 +69,7 @@ handle_play(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_playid(Client &client, ConstBuffer<const char *> args)
+handle_playid(Client &client, Request args)
 {
 	int id = -1;
 
@@ -80,21 +81,21 @@ handle_playid(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_stop(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_stop(Client &client, gcc_unused Request args)
 {
 	client.partition.Stop();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_currentsong(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_currentsong(Client &client, gcc_unused Request args)
 {
 	playlist_print_current(client, client.playlist);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_pause(Client &client, ConstBuffer<const char *> args)
+handle_pause(Client &client, Request args)
 {
 	if (!args.IsEmpty()) {
 		bool pause_flag;
@@ -109,7 +110,7 @@ handle_pause(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_status(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_status(Client &client, gcc_unused Request args)
 {
 	const char *state = nullptr;
 	int song;
@@ -223,7 +224,7 @@ handle_status(Client &client, gcc_unused ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_next(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_next(Client &client, gcc_unused Request args)
 {
 	playlist &playlist = client.playlist;
 
@@ -239,14 +240,14 @@ handle_next(Client &client, gcc_unused ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_previous(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_previous(Client &client, gcc_unused Request args)
 {
 	client.partition.PlayPrevious();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_repeat(Client &client, ConstBuffer<const char *> args)
+handle_repeat(Client &client, Request args)
 {
 	bool status;
 	if (!check_bool(client, &status, args.front()))
@@ -257,7 +258,7 @@ handle_repeat(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_single(Client &client, ConstBuffer<const char *> args)
+handle_single(Client &client, Request args)
 {
 	bool status;
 	if (!check_bool(client, &status, args.front()))
@@ -268,7 +269,7 @@ handle_single(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_consume(Client &client, ConstBuffer<const char *> args)
+handle_consume(Client &client, Request args)
 {
 	bool status;
 	if (!check_bool(client, &status, args.front()))
@@ -279,7 +280,7 @@ handle_consume(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_random(Client &client, ConstBuffer<const char *> args)
+handle_random(Client &client, Request args)
 {
 	bool status;
 	if (!check_bool(client, &status, args.front()))
@@ -291,14 +292,14 @@ handle_random(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_clearerror(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_clearerror(gcc_unused Client &client, gcc_unused Request args)
 {
 	client.player_control.ClearError();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_seek(Client &client, ConstBuffer<const char *> args)
+handle_seek(Client &client, Request args)
 {
 	unsigned song;
 	SongTime seek_time;
@@ -314,7 +315,7 @@ handle_seek(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_seekid(Client &client, ConstBuffer<const char *> args)
+handle_seekid(Client &client, Request args)
 {
 	unsigned id;
 	SongTime seek_time;
@@ -330,7 +331,7 @@ handle_seekid(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_seekcur(Client &client, ConstBuffer<const char *> args)
+handle_seekcur(Client &client, Request args)
 {
 	const char *p = args.front();
 	bool relative = *p == '+' || *p == '-';
@@ -344,7 +345,7 @@ handle_seekcur(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_crossfade(Client &client, ConstBuffer<const char *> args)
+handle_crossfade(Client &client, Request args)
 {
 	unsigned xfade_time;
 
@@ -356,7 +357,7 @@ handle_crossfade(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_mixrampdb(Client &client, ConstBuffer<const char *> args)
+handle_mixrampdb(Client &client, Request args)
 {
 	float db;
 
@@ -368,7 +369,7 @@ handle_mixrampdb(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_mixrampdelay(Client &client, ConstBuffer<const char *> args)
+handle_mixrampdelay(Client &client, Request args)
 {
 	float delay_secs;
 
@@ -380,7 +381,7 @@ handle_mixrampdelay(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_replay_gain_mode(Client &client, ConstBuffer<const char *> args)
+handle_replay_gain_mode(Client &client, Request args)
 {
 	if (!replay_gain_set_mode_string(args.front())) {
 		command_error(client, ACK_ERROR_ARG,
@@ -393,7 +394,7 @@ handle_replay_gain_mode(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_replay_gain_status(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_replay_gain_status(Client &client, gcc_unused Request args)
 {
 	client_printf(client, "replay_gain_mode: %s\n",
 		      replay_gain_get_mode_string());

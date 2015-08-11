@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "MessageCommands.hxx"
+#include "Request.hxx"
 #include "client/Client.hxx"
 #include "client/ClientList.hxx"
 #include "Instance.hxx"
@@ -32,7 +33,7 @@
 #include <assert.h>
 
 CommandResult
-handle_subscribe(Client &client, ConstBuffer<const char *> args)
+handle_subscribe(Client &client, Request args)
 {
 	assert(args.size == 1);
 	const char *const channel_name = args[0];
@@ -63,7 +64,7 @@ handle_subscribe(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_unsubscribe(Client &client, ConstBuffer<const char *> args)
+handle_unsubscribe(Client &client, Request args)
 {
 	assert(args.size == 1);
 	const char *const channel_name = args[0];
@@ -78,7 +79,7 @@ handle_unsubscribe(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_channels(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_channels(Client &client, gcc_unused Request args)
 {
 	assert(args.IsEmpty());
 
@@ -95,7 +96,7 @@ handle_channels(Client &client, gcc_unused ConstBuffer<const char *> args)
 
 CommandResult
 handle_read_messages(Client &client,
-		     gcc_unused ConstBuffer<const char *> args)
+		     gcc_unused Request args)
 {
 	assert(args.IsEmpty());
 
@@ -111,7 +112,7 @@ handle_read_messages(Client &client,
 }
 
 CommandResult
-handle_send_message(Client &client, ConstBuffer<const char *> args)
+handle_send_message(Client &client, Request args)
 {
 	assert(args.size == 2);
 

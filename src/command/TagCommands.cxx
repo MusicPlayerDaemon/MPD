@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "TagCommands.hxx"
+#include "Request.hxx"
 #include "CommandError.hxx"
 #include "client/Client.hxx"
 #include "protocol/ArgParser.hxx"
@@ -28,7 +29,7 @@
 #include "util/ConstBuffer.hxx"
 
 CommandResult
-handle_addtagid(Client &client, ConstBuffer<const char *> args)
+handle_addtagid(Client &client, Request args)
 {
 	unsigned song_id;
 	if (!check_unsigned(client, &song_id, args.front()))
@@ -53,7 +54,7 @@ handle_addtagid(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_cleartagid(Client &client, ConstBuffer<const char *> args)
+handle_cleartagid(Client &client, Request args)
 {
 	unsigned song_id;
 	if (!check_unsigned(client, &song_id, args.front()))

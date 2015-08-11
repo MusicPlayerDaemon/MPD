@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "FileCommands.hxx"
+#include "Request.hxx"
 #include "CommandError.hxx"
 #include "protocol/Ack.hxx"
 #include "protocol/Result.hxx"
@@ -216,7 +217,7 @@ translate_uri(const char *uri)
 }
 
 CommandResult
-handle_read_comments(Client &client, ConstBuffer<const char *> args)
+handle_read_comments(Client &client, Request args)
 {
 	assert(args.size == 1);
 	const char *const uri = translate_uri(args.front());

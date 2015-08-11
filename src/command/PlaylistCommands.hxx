@@ -24,43 +24,43 @@
 #include "Compiler.h"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
 
 gcc_const
 bool
 playlist_commands_available();
 
 CommandResult
-handle_save(Client &client, ConstBuffer<const char *> args);
+handle_save(Client &client, Request args);
 
 CommandResult
-handle_load(Client &client, ConstBuffer<const char *> args);
+handle_load(Client &client, Request args);
 
 CommandResult
-handle_listplaylist(Client &client, ConstBuffer<const char *> args);
+handle_listplaylist(Client &client, Request args);
 
 CommandResult
-handle_listplaylistinfo(Client &client, ConstBuffer<const char *> args);
+handle_listplaylistinfo(Client &client, Request args);
 
 CommandResult
-handle_rm(Client &client, ConstBuffer<const char *> args);
+handle_rm(Client &client, Request args);
 
 CommandResult
-handle_rename(Client &client, ConstBuffer<const char *> args);
+handle_rename(Client &client, Request args);
 
 CommandResult
-handle_playlistdelete(Client &client, ConstBuffer<const char *> args);
+handle_playlistdelete(Client &client, Request args);
 
 CommandResult
-handle_playlistmove(Client &client, ConstBuffer<const char *> args);
+handle_playlistmove(Client &client, Request args);
 
 CommandResult
-handle_playlistclear(Client &client, ConstBuffer<const char *> args);
+handle_playlistclear(Client &client, Request args);
 
 CommandResult
-handle_playlistadd(Client &client, ConstBuffer<const char *> args);
+handle_playlistadd(Client &client, Request args);
 
 CommandResult
-handle_listplaylists(Client &client, ConstBuffer<const char *> args);
+handle_listplaylists(Client &client, Request args);
 
 #endif

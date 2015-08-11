@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PlaylistCommands.hxx"
+#include "Request.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "CommandError.hxx"
 #include "PlaylistPrint.hxx"
@@ -59,7 +60,7 @@ print_spl_list(Client &client, const PlaylistVector &list)
 }
 
 CommandResult
-handle_save(Client &client, ConstBuffer<const char *> args)
+handle_save(Client &client, Request args)
 {
 	Error error;
 	return spl_save_playlist(args.front(), client.playlist, error)
@@ -68,7 +69,7 @@ handle_save(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_load(Client &client, ConstBuffer<const char *> args)
+handle_load(Client &client, Request args)
 {
 	RangeArg range;
 	if (args.size < 2)
@@ -90,7 +91,7 @@ handle_load(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_listplaylist(Client &client, ConstBuffer<const char *> args)
+handle_listplaylist(Client &client, Request args)
 {
 	const char *const name = args.front();
 
@@ -104,7 +105,7 @@ handle_listplaylist(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_listplaylistinfo(Client &client, ConstBuffer<const char *> args)
+handle_listplaylistinfo(Client &client, Request args)
 {
 	const char *const name = args.front();
 
@@ -118,7 +119,7 @@ handle_listplaylistinfo(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_rm(Client &client, ConstBuffer<const char *> args)
+handle_rm(Client &client, Request args)
 {
 	const char *const name = args.front();
 
@@ -129,7 +130,7 @@ handle_rm(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_rename(Client &client, ConstBuffer<const char *> args)
+handle_rename(Client &client, Request args)
 {
 	const char *const old_name = args[0];
 	const char *const new_name = args[1];
@@ -141,7 +142,7 @@ handle_rename(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_playlistdelete(Client &client, ConstBuffer<const char *> args)
+handle_playlistdelete(Client &client, Request args)
 {
 	const char *const name = args[0];
 	unsigned from;
@@ -156,7 +157,7 @@ handle_playlistdelete(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_playlistmove(Client &client, ConstBuffer<const char *> args)
+handle_playlistmove(Client &client, Request args)
 {
 	const char *const name = args.front();
 	unsigned from, to;
@@ -173,7 +174,7 @@ handle_playlistmove(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_playlistclear(Client &client, ConstBuffer<const char *> args)
+handle_playlistclear(Client &client, Request args)
 {
 	const char *const name = args.front();
 
@@ -184,7 +185,7 @@ handle_playlistclear(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_playlistadd(Client &client, ConstBuffer<const char *> args)
+handle_playlistadd(Client &client, Request args)
 {
 	const char *const playlist = args[0];
 	const char *const uri = args[1];
@@ -218,7 +219,7 @@ handle_playlistadd(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_listplaylists(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_listplaylists(Client &client, gcc_unused Request args)
 {
 	Error error;
 	const auto list = ListPlaylistFiles(error);

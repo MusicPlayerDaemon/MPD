@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "StickerCommands.hxx"
+#include "Request.hxx"
 #include "SongPrint.hxx"
 #include "db/Interface.hxx"
 #include "db/DatabaseGlue.hxx"
@@ -52,7 +53,7 @@ sticker_song_find_print_cb(const LightSong &song, const char *value,
 }
 
 static CommandResult
-handle_sticker_song(Client &client, ConstBuffer<const char *> args)
+handle_sticker_song(Client &client, Request args)
 {
 	Error error;
 	const Database *db = client.GetDatabase(error);
@@ -191,7 +192,7 @@ handle_sticker_song(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_sticker(Client &client, ConstBuffer<const char *> args)
+handle_sticker(Client &client, Request args)
 {
 	assert(args.size >= 3);
 

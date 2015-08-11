@@ -23,54 +23,54 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
 
 CommandResult
-handle_urlhandlers(Client &client, ConstBuffer<const char *> args);
+handle_urlhandlers(Client &client, Request args);
 
 CommandResult
-handle_decoders(Client &client, ConstBuffer<const char *> args);
+handle_decoders(Client &client, Request args);
 
 CommandResult
-handle_tagtypes(Client &client, ConstBuffer<const char *> args);
+handle_tagtypes(Client &client, Request args);
 
 CommandResult
-handle_kill(Client &client, ConstBuffer<const char *> args);
+handle_kill(Client &client, Request args);
 
 CommandResult
-handle_close(Client &client, ConstBuffer<const char *> args);
+handle_close(Client &client, Request args);
 
 CommandResult
-handle_listfiles(Client &client, ConstBuffer<const char *> args);
+handle_listfiles(Client &client, Request args);
 
 CommandResult
-handle_lsinfo(Client &client, ConstBuffer<const char *> args);
+handle_lsinfo(Client &client, Request args);
 
 CommandResult
-handle_update(Client &client, ConstBuffer<const char *> args);
+handle_update(Client &client, Request args);
 
 CommandResult
-handle_rescan(Client &client, ConstBuffer<const char *> args);
+handle_rescan(Client &client, Request args);
 
 CommandResult
-handle_setvol(Client &client, ConstBuffer<const char *> args);
+handle_setvol(Client &client, Request args);
 
 CommandResult
-handle_volume(Client &client, ConstBuffer<const char *> args);
+handle_volume(Client &client, Request args);
 
 CommandResult
-handle_stats(Client &client, ConstBuffer<const char *> args);
+handle_stats(Client &client, Request args);
 
 CommandResult
-handle_ping(Client &client, ConstBuffer<const char *> args);
+handle_ping(Client &client, Request args);
 
 CommandResult
-handle_password(Client &client, ConstBuffer<const char *> args);
+handle_password(Client &client, Request args);
 
 CommandResult
-handle_config(Client &client, ConstBuffer<const char *> args);
+handle_config(Client &client, Request args);
 
 CommandResult
-handle_idle(Client &client, ConstBuffer<const char *> args);
+handle_idle(Client &client, Request args);
 
 #endif

@@ -23,69 +23,69 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
 
 CommandResult
-handle_play(Client &client, ConstBuffer<const char *> args);
+handle_play(Client &client, Request args);
 
 CommandResult
-handle_playid(Client &client, ConstBuffer<const char *> args);
+handle_playid(Client &client, Request args);
 
 CommandResult
-handle_stop(Client &client, ConstBuffer<const char *> args);
+handle_stop(Client &client, Request args);
 
 CommandResult
-handle_currentsong(Client &client, ConstBuffer<const char *> args);
+handle_currentsong(Client &client, Request args);
 
 CommandResult
-handle_pause(Client &client, ConstBuffer<const char *> args);
+handle_pause(Client &client, Request args);
 
 CommandResult
-handle_status(Client &client, ConstBuffer<const char *> args);
+handle_status(Client &client, Request args);
 
 CommandResult
-handle_next(Client &client, ConstBuffer<const char *> args);
+handle_next(Client &client, Request args);
 
 CommandResult
-handle_previous(Client &client, ConstBuffer<const char *> args);
+handle_previous(Client &client, Request args);
 
 CommandResult
-handle_repeat(Client &client, ConstBuffer<const char *> args);
+handle_repeat(Client &client, Request args);
 
 CommandResult
-handle_single(Client &client, ConstBuffer<const char *> args);
+handle_single(Client &client, Request args);
 
 CommandResult
-handle_consume(Client &client, ConstBuffer<const char *> args);
+handle_consume(Client &client, Request args);
 
 CommandResult
-handle_random(Client &client, ConstBuffer<const char *> args);
+handle_random(Client &client, Request args);
 
 CommandResult
-handle_clearerror(Client &client, ConstBuffer<const char *> args);
+handle_clearerror(Client &client, Request args);
 
 CommandResult
-handle_seek(Client &client, ConstBuffer<const char *> args);
+handle_seek(Client &client, Request args);
 
 CommandResult
-handle_seekid(Client &client, ConstBuffer<const char *> args);
+handle_seekid(Client &client, Request args);
 
 CommandResult
-handle_seekcur(Client &client, ConstBuffer<const char *> args);
+handle_seekcur(Client &client, Request args);
 
 CommandResult
-handle_crossfade(Client &client, ConstBuffer<const char *> args);
+handle_crossfade(Client &client, Request args);
 
 CommandResult
-handle_mixrampdb(Client &client, ConstBuffer<const char *> args);
+handle_mixrampdb(Client &client, Request args);
 
 CommandResult
-handle_mixrampdelay(Client &client, ConstBuffer<const char *> args);
+handle_mixrampdelay(Client &client, Request args);
 
 CommandResult
-handle_replay_gain_mode(Client &client, ConstBuffer<const char *> args);
+handle_replay_gain_mode(Client &client, Request args);
 
 CommandResult
-handle_replay_gain_status(Client &client, ConstBuffer<const char *> args);
+handle_replay_gain_status(Client &client, Request args);
 
 #endif

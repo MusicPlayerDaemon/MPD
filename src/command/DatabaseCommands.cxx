@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "DatabaseCommands.hxx"
+#include "Request.hxx"
 #include "db/DatabaseGlue.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/DatabasePlaylist.hxx"
@@ -50,7 +51,7 @@ handle_listfiles_db(Client &client, const char *uri)
 }
 
 CommandResult
-handle_lsinfo2(Client &client, ConstBuffer<const char *> args)
+handle_lsinfo2(Client &client, Request args)
 {
 	/* default is root directory */
 	const char *const uri = args.IsEmpty() ? "" : args.front();
@@ -65,7 +66,7 @@ handle_lsinfo2(Client &client, ConstBuffer<const char *> args)
 }
 
 static CommandResult
-handle_match(Client &client, ConstBuffer<const char *> args, bool fold_case)
+handle_match(Client &client, Request args, bool fold_case)
 {
 	RangeArg window;
 	if (args.size >= 2 && strcmp(args[args.size - 2], "window") == 0) {
@@ -93,19 +94,19 @@ handle_match(Client &client, ConstBuffer<const char *> args, bool fold_case)
 }
 
 CommandResult
-handle_find(Client &client, ConstBuffer<const char *> args)
+handle_find(Client &client, Request args)
 {
 	return handle_match(client, args, false);
 }
 
 CommandResult
-handle_search(Client &client, ConstBuffer<const char *> args)
+handle_search(Client &client, Request args)
 {
 	return handle_match(client, args, true);
 }
 
 static CommandResult
-handle_match_add(Client &client, ConstBuffer<const char *> args, bool fold_case)
+handle_match_add(Client &client, Request args, bool fold_case)
 {
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
@@ -123,19 +124,19 @@ handle_match_add(Client &client, ConstBuffer<const char *> args, bool fold_case)
 }
 
 CommandResult
-handle_findadd(Client &client, ConstBuffer<const char *> args)
+handle_findadd(Client &client, Request args)
 {
 	return handle_match_add(client, args, false);
 }
 
 CommandResult
-handle_searchadd(Client &client, ConstBuffer<const char *> args)
+handle_searchadd(Client &client, Request args)
 {
 	return handle_match_add(client, args, true);
 }
 
 CommandResult
-handle_searchaddpl(Client &client, ConstBuffer<const char *> args)
+handle_searchaddpl(Client &client, Request args)
 {
 	const char *playlist = args.shift();
 
@@ -157,7 +158,7 @@ handle_searchaddpl(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_count(Client &client, ConstBuffer<const char *> args)
+handle_count(Client &client, Request args)
 {
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
 	if (args.size >= 2 && strcmp(args[args.size - 2], "group") == 0) {
@@ -186,7 +187,7 @@ handle_count(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_listall(Client &client, ConstBuffer<const char *> args)
+handle_listall(Client &client, Request args)
 {
 	/* default is root directory */
 	const char *const uri = args.IsEmpty() ? "" : args.front();
@@ -199,7 +200,7 @@ handle_listall(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_list(Client &client, ConstBuffer<const char *> args)
+handle_list(Client &client, Request args)
 {
 	const char *tag_name = args.shift();
 	unsigned tagType = locate_parse_type(tag_name);
@@ -271,7 +272,7 @@ handle_list(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_listallinfo(Client &client, ConstBuffer<const char *> args)
+handle_listallinfo(Client &client, Request args)
 {
 	/* default is root directory */
 	const char *const uri = args.IsEmpty() ? "" : args.front();

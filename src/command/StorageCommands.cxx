@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "StorageCommands.hxx"
+#include "Request.hxx"
 #include "CommandError.hxx"
 #include "protocol/Result.hxx"
 #include "util/UriUtil.hxx"
@@ -168,7 +169,7 @@ print_storage_uri(Client &client, const Storage &storage)
 }
 
 CommandResult
-handle_listmounts(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_listmounts(Client &client, gcc_unused Request args)
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
@@ -190,7 +191,7 @@ handle_listmounts(Client &client, gcc_unused ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_mount(Client &client, ConstBuffer<const char *> args)
+handle_mount(Client &client, Request args)
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
@@ -253,7 +254,7 @@ handle_mount(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_unmount(Client &client, ConstBuffer<const char *> args)
+handle_unmount(Client &client, Request args)
 {
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {

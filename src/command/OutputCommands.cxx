@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "OutputCommands.hxx"
+#include "Request.hxx"
 #include "output/OutputPrint.hxx"
 #include "output/OutputCommand.hxx"
 #include "protocol/Result.hxx"
@@ -28,7 +29,7 @@
 #include "util/ConstBuffer.hxx"
 
 CommandResult
-handle_enableoutput(Client &client, ConstBuffer<const char *> args)
+handle_enableoutput(Client &client, Request args)
 {
 	assert(args.size == 1);
 
@@ -46,7 +47,7 @@ handle_enableoutput(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_disableoutput(Client &client, ConstBuffer<const char *> args)
+handle_disableoutput(Client &client, Request args)
 {
 	assert(args.size == 1);
 
@@ -64,7 +65,7 @@ handle_disableoutput(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_toggleoutput(Client &client, ConstBuffer<const char *> args)
+handle_toggleoutput(Client &client, Request args)
 {
 	assert(args.size == 1);
 
@@ -82,7 +83,7 @@ handle_toggleoutput(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_devices(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_devices(Client &client, gcc_unused Request args)
 {
 	assert(args.IsEmpty());
 

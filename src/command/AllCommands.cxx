@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "AllCommands.hxx"
+#include "Request.hxx"
 #include "QueueCommands.hxx"
 #include "TagCommands.hxx"
 #include "PlayerCommands.hxx"
@@ -62,15 +63,15 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	CommandResult (*handler)(Client &client, ConstBuffer<const char *> args);
+	CommandResult (*handler)(Client &client, Request args);
 };
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, ConstBuffer<const char *> args);
+handle_commands(Client &client, Request args);
 
 static CommandResult
-handle_not_commands(Client &client, ConstBuffer<const char *> args);
+handle_not_commands(Client &client, Request args);
 
 /**
  * The command registry.
@@ -227,7 +228,7 @@ command_available(gcc_unused const Partition &partition,
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_commands(Client &client, gcc_unused Request args)
 {
 	const unsigned permission = client.GetPermission();
 
@@ -243,7 +244,7 @@ handle_commands(Client &client, gcc_unused ConstBuffer<const char *> args)
 }
 
 static CommandResult
-handle_not_commands(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_not_commands(Client &client, gcc_unused Request args)
 {
 	const unsigned permission = client.GetPermission();
 
@@ -295,7 +296,7 @@ command_lookup(const char *name)
 
 static bool
 command_check_request(const struct command *cmd, Client &client,
-		      unsigned permission, ConstBuffer<const char *> args)
+		      unsigned permission, Request args)
 {
 	if (cmd->permission != (permission & cmd->permission)) {
 		command_error(client, ACK_ERROR_PERMISSION,
@@ -329,7 +330,7 @@ command_check_request(const struct command *cmd, Client &client,
 
 static const struct command *
 command_checked_lookup(Client &client, unsigned permission,
-		       const char *cmd_name, ConstBuffer<const char *> args)
+		       const char *cmd_name, Request args)
 {
 	current_command = "";
 
@@ -380,7 +381,7 @@ command_process(Client &client, unsigned num, char *line)
 	}
 
 	char *argv[COMMAND_ARGV_MAX];
-	ConstBuffer<const char *> args(argv, 0);
+	Request args(argv, 0);
 
 	/* now parse the arguments (quoted or unquoted) */
 

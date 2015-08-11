@@ -23,39 +23,39 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
 
 CommandResult
 handle_listfiles_db(Client &client, const char *uri);
 
 CommandResult
-handle_lsinfo2(Client &client, ConstBuffer<const char *> args);
+handle_lsinfo2(Client &client, Request args);
 
 CommandResult
-handle_find(Client &client, ConstBuffer<const char *> args);
+handle_find(Client &client, Request args);
 
 CommandResult
-handle_findadd(Client &client, ConstBuffer<const char *> args);
+handle_findadd(Client &client, Request args);
 
 CommandResult
-handle_search(Client &client, ConstBuffer<const char *> args);
+handle_search(Client &client, Request args);
 
 CommandResult
-handle_searchadd(Client &client, ConstBuffer<const char *> args);
+handle_searchadd(Client &client, Request args);
 
 CommandResult
-handle_searchaddpl(Client &client, ConstBuffer<const char *> args);
+handle_searchaddpl(Client &client, Request args);
 
 CommandResult
-handle_count(Client &client, ConstBuffer<const char *> args);
+handle_count(Client &client, Request args);
 
 CommandResult
-handle_listall(Client &client, ConstBuffer<const char *> args);
+handle_listall(Client &client, Request args);
 
 CommandResult
-handle_list(Client &client, ConstBuffer<const char *> args);
+handle_list(Client &client, Request args);
 
 CommandResult
-handle_listallinfo(Client &client, ConstBuffer<const char *> args);
+handle_listallinfo(Client &client, Request args);
 
 #endif

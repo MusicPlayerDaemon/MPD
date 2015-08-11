@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "QueueCommands.hxx"
+#include "Request.hxx"
 #include "CommandError.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/Selection.hxx"
@@ -54,7 +55,7 @@ translate_uri(const char *uri)
 }
 
 CommandResult
-handle_add(Client &client, ConstBuffer<const char *> args)
+handle_add(Client &client, Request args)
 {
 	const char *uri = args.front();
 	if (memcmp(uri, "/", 2) == 0)
@@ -92,7 +93,7 @@ handle_add(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_addid(Client &client, ConstBuffer<const char *> args)
+handle_addid(Client &client, Request args)
 {
 	const char *const uri = translate_uri(args.front());
 
@@ -151,7 +152,7 @@ parse_time_range(const char *p, SongTime &start_r, SongTime &end_r)
 }
 
 CommandResult
-handle_rangeid(Client &client, ConstBuffer<const char *> args)
+handle_rangeid(Client &client, Request args)
 {
 	unsigned id;
 	if (!check_unsigned(client, &id, args.front()))
@@ -173,7 +174,7 @@ handle_rangeid(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_delete(Client &client, ConstBuffer<const char *> args)
+handle_delete(Client &client, Request args)
 {
 	RangeArg range;
 	if (!ParseCommandArg(client, range, args.front()))
@@ -184,7 +185,7 @@ handle_delete(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_deleteid(Client &client, ConstBuffer<const char *> args)
+handle_deleteid(Client &client, Request args)
 {
 	unsigned id;
 
@@ -196,14 +197,14 @@ handle_deleteid(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_playlist(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_playlist(Client &client, gcc_unused Request args)
 {
 	playlist_print_uris(client, client.playlist);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_shuffle(gcc_unused Client &client, ConstBuffer<const char *> args)
+handle_shuffle(gcc_unused Client &client, Request args)
 {
 	RangeArg range;
 	if (args.IsEmpty())
@@ -216,14 +217,14 @@ handle_shuffle(gcc_unused Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_clear(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_clear(gcc_unused Client &client, gcc_unused Request args)
 {
 	client.partition.ClearQueue();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_plchanges(Client &client, ConstBuffer<const char *> args)
+handle_plchanges(Client &client, Request args)
 {
 	uint32_t version;
 
@@ -235,7 +236,7 @@ handle_plchanges(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_plchangesposid(Client &client, ConstBuffer<const char *> args)
+handle_plchangesposid(Client &client, Request args)
 {
 	uint32_t version;
 
@@ -247,7 +248,7 @@ handle_plchangesposid(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_playlistinfo(Client &client, ConstBuffer<const char *> args)
+handle_playlistinfo(Client &client, Request args)
 {
 	RangeArg range;
 	if (args.IsEmpty())
@@ -264,7 +265,7 @@ handle_playlistinfo(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_playlistid(Client &client, ConstBuffer<const char *> args)
+handle_playlistid(Client &client, Request args)
 {
 	if (!args.IsEmpty()) {
 		unsigned id;
@@ -284,7 +285,7 @@ handle_playlistid(Client &client, ConstBuffer<const char *> args)
 }
 
 static CommandResult
-handle_playlist_match(Client &client, ConstBuffer<const char *> args,
+handle_playlist_match(Client &client, Request args,
 		      bool fold_case)
 {
 	SongFilter filter;
@@ -298,19 +299,19 @@ handle_playlist_match(Client &client, ConstBuffer<const char *> args,
 }
 
 CommandResult
-handle_playlistfind(Client &client, ConstBuffer<const char *> args)
+handle_playlistfind(Client &client, Request args)
 {
 	return handle_playlist_match(client, args, false);
 }
 
 CommandResult
-handle_playlistsearch(Client &client, ConstBuffer<const char *> args)
+handle_playlistsearch(Client &client, Request args)
 {
 	return handle_playlist_match(client, args, true);
 }
 
 CommandResult
-handle_prio(Client &client, ConstBuffer<const char *> args)
+handle_prio(Client &client, Request args)
 {
 	const char *const priority_string = args.shift();
 	unsigned priority;
@@ -341,7 +342,7 @@ handle_prio(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_prioid(Client &client, ConstBuffer<const char *> args)
+handle_prioid(Client &client, Request args)
 {
 	const char *const priority_string = args.shift();
 	unsigned priority;
@@ -370,7 +371,7 @@ handle_prioid(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_move(Client &client, ConstBuffer<const char *> args)
+handle_move(Client &client, Request args)
 {
 	RangeArg range;
 	int to;
@@ -386,7 +387,7 @@ handle_move(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_moveid(Client &client, ConstBuffer<const char *> args)
+handle_moveid(Client &client, Request args)
 {
 	unsigned id;
 	int to;
@@ -400,7 +401,7 @@ handle_moveid(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_swap(Client &client, ConstBuffer<const char *> args)
+handle_swap(Client &client, Request args)
 {
 	unsigned song1, song2;
 
@@ -415,7 +416,7 @@ handle_swap(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_swapid(Client &client, ConstBuffer<const char *> args)
+handle_swapid(Client &client, Request args)
 {
 	unsigned id1, id2;
 

@@ -17,18 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_COMMANDS_HXX
-#define MPD_TAG_COMMANDS_HXX
+#ifndef MPD_REQUEST_HXX
+#define MPD_REQUEST_HXX
 
-#include "CommandResult.hxx"
+#include "check.h"
+#include "util/ConstBuffer.hxx"
 
-class Client;
-class Request;
+class Request : public ConstBuffer<const char *> {
+	typedef ConstBuffer<const char *> Base;
 
-CommandResult
-handle_addtagid(Client &client, Request args);
-
-CommandResult
-handle_cleartagid(Client &client, Request args);
+public:
+	constexpr Request(const char *const*argv, size_type n)
+		:Base(argv, n) {}
+};
 
 #endif

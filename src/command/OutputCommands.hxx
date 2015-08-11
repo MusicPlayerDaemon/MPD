@@ -23,18 +23,18 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
 
 CommandResult
-handle_enableoutput(Client &client, ConstBuffer<const char *> args);
+handle_enableoutput(Client &client, Request args);
 
 CommandResult
-handle_disableoutput(Client &client, ConstBuffer<const char *> args);
+handle_disableoutput(Client &client, Request args);
 
 CommandResult
-handle_toggleoutput(Client &client, ConstBuffer<const char *> args);
+handle_toggleoutput(Client &client, Request args);
 
 CommandResult
-handle_devices(Client &client, ConstBuffer<const char *> args);
+handle_devices(Client &client, Request args);
 
 #endif
