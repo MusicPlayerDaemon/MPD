@@ -23,7 +23,6 @@
 #include "output/OutputPrint.hxx"
 #include "output/OutputCommand.hxx"
 #include "protocol/Result.hxx"
-#include "protocol/ArgParser.hxx"
 #include "client/Client.hxx"
 #include "Partition.hxx"
 #include "util/ConstBuffer.hxx"
@@ -34,7 +33,7 @@ handle_enableoutput(Client &client, Request args)
 	assert(args.size == 1);
 
 	unsigned device;
-	if (!ParseCommandArg(client, device, args.front()))
+	if (!args.Parse(0, device, client))
 		return CommandResult::ERROR;
 
 	if (!audio_output_enable_index(client.partition.outputs, device)) {
@@ -52,7 +51,7 @@ handle_disableoutput(Client &client, Request args)
 	assert(args.size == 1);
 
 	unsigned device;
-	if (!ParseCommandArg(client, device, args.front()))
+	if (!args.Parse(0, device, client))
 		return CommandResult::ERROR;
 
 	if (!audio_output_disable_index(client.partition.outputs, device)) {
@@ -70,7 +69,7 @@ handle_toggleoutput(Client &client, Request args)
 	assert(args.size == 1);
 
 	unsigned device;
-	if (!ParseCommandArg(client, device, args.front()))
+	if (!args.Parse(0, device, client))
 		return CommandResult::ERROR;
 
 	if (!audio_output_toggle_index(client.partition.outputs, device)) {

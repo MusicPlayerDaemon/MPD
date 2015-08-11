@@ -33,7 +33,6 @@
 #include "queue/Playlist.hxx"
 #include "TimePrint.hxx"
 #include "client/Client.hxx"
-#include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "Mapper.hxx"
@@ -71,10 +70,8 @@ handle_save(Client &client, Request args)
 CommandResult
 handle_load(Client &client, Request args)
 {
-	RangeArg range;
-	if (args.size < 2)
-		range.SetAll();
-	else if (!ParseCommandArg(client, range, args[1]))
+	RangeArg range = RangeArg::All();
+	if (!args.ParseOptional(1, range, client))
 		return CommandResult::ERROR;
 
 	const ScopeBulkEdit bulk_edit(client.partition);
@@ -146,7 +143,7 @@ handle_playlistdelete(Client &client, Request args)
 {
 	const char *const name = args[0];
 	unsigned from;
-	if (!ParseCommandArg(client, from, args[1]))
+	if (!args.Parse(1, from, client))
 		return CommandResult::ERROR;
 
 	Error error;
@@ -160,9 +157,8 @@ handle_playlistmove(Client &client, Request args)
 {
 	const char *const name = args.front();
 	unsigned from, to;
-	if (!ParseCommandArg(client, from, args[1]))
-		return CommandResult::ERROR;
-	if (!ParseCommandArg(client, to, args[2]))
+	if (!args.Parse(1, from, client) ||
+	    !args.Parse(2, to, client))
 		return CommandResult::ERROR;
 
 	Error error;

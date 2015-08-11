@@ -32,7 +32,6 @@
 #include "tag/TagHandler.hxx"
 #include "TimePrint.hxx"
 #include "decoder/DecoderPrint.hxx"
-#include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "mixer/Volume.hxx"
@@ -116,7 +115,7 @@ CommandResult
 handle_listfiles(Client &client, Request args)
 {
 	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
+	const auto uri = args.GetOptional(0, "");
 
 	if (memcmp(uri, "file:///", 8) == 0)
 		/* list local directory */
@@ -155,7 +154,7 @@ CommandResult
 handle_lsinfo(Client &client, Request args)
 {
 	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
+	const auto uri = args.GetOptional(0, "");
 
 	if (memcmp(uri, "file:///", 8) == 0) {
 		/* print information about an arbitrary local file */
@@ -309,7 +308,7 @@ CommandResult
 handle_setvol(Client &client, Request args)
 {
 	unsigned level;
-	if (!ParseCommandArg(client, level, args.front(), 100))
+	if (!args.Parse(0, level, client, 100))
 		return CommandResult::ERROR;
 
 	if (!volume_level_change(client.partition.outputs, level)) {
@@ -325,7 +324,7 @@ CommandResult
 handle_volume(Client &client, Request args)
 {
 	int relative;
-	if (!ParseCommandArg(client, relative, args.front(), -100, 100))
+	if (!args.Parse(0, relative, client,  -100, 100))
 		return CommandResult::ERROR;
 
 	const int old_volume = volume_level_get(client.partition.outputs);

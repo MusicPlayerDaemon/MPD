@@ -21,7 +21,14 @@
 #define MPD_REQUEST_HXX
 
 #include "check.h"
+#include "protocol/ArgParser.hxx"
 #include "util/ConstBuffer.hxx"
+
+#include <utility>
+
+#include <assert.h>
+
+class Client;
 
 class Request : public ConstBuffer<const char *> {
 	typedef ConstBuffer<const char *> Base;
@@ -29,6 +36,39 @@ class Request : public ConstBuffer<const char *> {
 public:
 	constexpr Request(const char *const*argv, size_type n)
 		:Base(argv, n) {}
+
+	constexpr const char *GetOptional(unsigned idx,
+					  const char *default_value=nullptr) const {
+		return idx < size
+			     ? data[idx]
+			     : default_value;
+	}
+
+	template<typename T, typename... Args>
+	bool Parse(unsigned idx, T &value_r, Client &client,
+		   Args&&... args) {
+		assert(idx < size);
+
+		return ParseCommandArg(client, value_r, data[idx],
+				       std::forward<Args>(args)...);
+	}
+
+	template<typename T, typename... Args>
+	bool ParseOptional(unsigned idx, T &value_r, Client &client,
+			   Args&&... args) {
+		return idx >= size ||
+			Parse(idx, value_r, client,
+			      std::forward<Args>(args)...);
+	}
+
+	template<typename T, typename... Args>
+	bool ParseShift(unsigned idx, T &value_r, Client &client,
+			Args&&... args) {
+		bool success = Parse(idx, value_r, client,
+				     std::forward<Args>(args)...);
+		shift();
+		return success;
+	}
 };
 
 #endif

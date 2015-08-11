@@ -22,7 +22,6 @@
 #include "Request.hxx"
 #include "CommandError.hxx"
 #include "client/Client.hxx"
-#include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "tag/Tag.hxx"
 #include "Partition.hxx"
@@ -32,7 +31,7 @@ CommandResult
 handle_addtagid(Client &client, Request args)
 {
 	unsigned song_id;
-	if (!ParseCommandArg(client, song_id, args.front()))
+	if (!args.Parse(0, song_id, client))
 		return CommandResult::ERROR;
 
 	const char *const tag_name = args[1];
@@ -57,7 +56,7 @@ CommandResult
 handle_cleartagid(Client &client, Request args)
 {
 	unsigned song_id;
-	if (!ParseCommandArg(client, song_id, args.front()))
+	if (!args.Parse(0, song_id, client))
 		return CommandResult::ERROR;
 
 	TagType tag_type = TAG_NUM_OF_ITEM_TYPES;

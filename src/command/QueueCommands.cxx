@@ -30,7 +30,6 @@
 #include "client/Client.hxx"
 #include "Partition.hxx"
 #include "BulkEdit.hxx"
-#include "protocol/ArgParser.hxx"
 #include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "util/ConstBuffer.hxx"
@@ -105,8 +104,9 @@ handle_addid(Client &client, Request args)
 
 	if (args.size == 2) {
 		unsigned to;
-		if (!ParseCommandArg(client, to, args[1]))
+		if (!args.Parse(1, to, client))
 			return CommandResult::ERROR;
+
 		PlaylistResult result = client.partition.MoveId(added_id, to);
 		if (result != PlaylistResult::SUCCESS) {
 			CommandResult ret =
@@ -155,7 +155,7 @@ CommandResult
 handle_rangeid(Client &client, Request args)
 {
 	unsigned id;
-	if (!ParseCommandArg(client, id, args.front()))
+	if (!args.Parse(0, id, client))
 		return CommandResult::ERROR;
 
 	SongTime start, end;
@@ -177,7 +177,7 @@ CommandResult
 handle_delete(Client &client, Request args)
 {
 	RangeArg range;
-	if (!ParseCommandArg(client, range, args.front()))
+	if (!args.Parse(0, range, client))
 		return CommandResult::ERROR;
 
 	auto result = client.partition.DeleteRange(range.start, range.end);
@@ -188,7 +188,7 @@ CommandResult
 handle_deleteid(Client &client, Request args)
 {
 	unsigned id;
-	if (!ParseCommandArg(client, id, args.front()))
+	if (!args.Parse(0, id, client))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.DeleteId(id);
@@ -205,10 +205,8 @@ handle_playlist(Client &client, gcc_unused Request args)
 CommandResult
 handle_shuffle(gcc_unused Client &client, Request args)
 {
-	RangeArg range;
-	if (args.IsEmpty())
-		range.SetAll();
-	else if (!ParseCommandArg(client, range, args.front()))
+	RangeArg range = RangeArg::All();
+	if (!args.ParseOptional(0, range, client))
 		return CommandResult::ERROR;
 
 	client.partition.Shuffle(range.start, range.end);
@@ -249,10 +247,8 @@ handle_plchangesposid(Client &client, Request args)
 CommandResult
 handle_playlistinfo(Client &client, Request args)
 {
-	RangeArg range;
-	if (args.IsEmpty())
-		range.SetAll();
-	else if (!ParseCommandArg(client, range, args.front()))
+	RangeArg range = RangeArg::All();
+	if (!args.ParseOptional(0, range, client))
 		return CommandResult::ERROR;
 
 	if (!playlist_print_info(client, client.playlist,
@@ -268,7 +264,7 @@ handle_playlistid(Client &client, Request args)
 {
 	if (!args.IsEmpty()) {
 		unsigned id;
-		if (!ParseCommandArg(client, id, args.front()))
+		if (!args.Parse(0, id, client))
 			return CommandResult::ERROR;
 
 		bool ret = playlist_print_id(client, client.playlist, id);
@@ -312,9 +308,8 @@ handle_playlistsearch(Client &client, Request args)
 CommandResult
 handle_prio(Client &client, Request args)
 {
-	const char *const priority_string = args.shift();
 	unsigned priority;
-	if (!ParseCommandArg(client, priority, priority_string, 0xff))
+	if (!args.ParseShift(0, priority, client, 0xff))
 		return CommandResult::ERROR;
 
 	for (const char *i : args) {
@@ -336,9 +331,8 @@ handle_prio(Client &client, Request args)
 CommandResult
 handle_prioid(Client &client, Request args)
 {
-	const char *const priority_string = args.shift();
 	unsigned priority;
-	if (!ParseCommandArg(client, priority, priority_string, 0xff))
+	if (!args.ParseShift(0, priority, client, 0xff))
 		return CommandResult::ERROR;
 
 	for (const char *i : args) {
@@ -361,8 +355,8 @@ handle_move(Client &client, Request args)
 	RangeArg range;
 	int to;
 
-	if (!ParseCommandArg(client, range, args[0]) ||
-	    !ParseCommandArg(client, to, args[1]))
+	if (!args.Parse(0, range, client) ||
+	    !args.Parse(1, to, client))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -375,8 +369,8 @@ handle_moveid(Client &client, Request args)
 {
 	unsigned id;
 	int to;
-	if (!ParseCommandArg(client, id, args[0]) ||
-	    !ParseCommandArg(client, to, args[1]))
+	if (!args.Parse(0, id, client) ||
+	    !args.Parse(1, to, client))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.MoveId(id, to);
@@ -387,8 +381,8 @@ CommandResult
 handle_swap(Client &client, Request args)
 {
 	unsigned song1, song2;
-	if (!ParseCommandArg(client, song1, args[0]) ||
-	    !ParseCommandArg(client, song2, args[1]))
+	if (!args.Parse(0, song1, client) ||
+	    !args.Parse(1, song2, client))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -400,8 +394,8 @@ CommandResult
 handle_swapid(Client &client, Request args)
 {
 	unsigned id1, id2;
-	if (!ParseCommandArg(client, id1, args[0]) ||
-	    !ParseCommandArg(client, id2, args[1]))
+	if (!args.Parse(0, id1, client) ||
+	    !args.Parse(1, id2, client))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.SwapIds(id1, id2);

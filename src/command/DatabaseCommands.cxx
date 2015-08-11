@@ -33,7 +33,6 @@
 #include "util/Error.hxx"
 #include "SongFilter.hxx"
 #include "protocol/Result.hxx"
-#include "protocol/ArgParser.hxx"
 #include "BulkEdit.hxx"
 
 #include <string.h>
@@ -54,7 +53,7 @@ CommandResult
 handle_lsinfo2(Client &client, Request args)
 {
 	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
+	const auto uri = args.GetOptional(0, "");
 
 	const DatabaseSelection selection(uri, false);
 
@@ -70,7 +69,7 @@ handle_match(Client &client, Request args, bool fold_case)
 {
 	RangeArg window;
 	if (args.size >= 2 && strcmp(args[args.size - 2], "window") == 0) {
-		if (!ParseCommandArg(client, window, args.back()))
+		if (!args.Parse(args.size - 1, window, client))
 			return CommandResult::ERROR;
 
 		args.pop_back();
@@ -190,7 +189,7 @@ CommandResult
 handle_listall(Client &client, Request args)
 {
 	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
+	const auto uri = args.GetOptional(0, "");
 
 	Error error;
 	return db_selection_print(client, DatabaseSelection(uri, true),
@@ -275,7 +274,7 @@ CommandResult
 handle_listallinfo(Client &client, Request args)
 {
 	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
+	const auto uri = args.GetOptional(0, "");
 
 	Error error;
 	return db_selection_print(client, DatabaseSelection(uri, true),

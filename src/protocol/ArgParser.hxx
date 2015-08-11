@@ -47,6 +47,10 @@ struct RangeArg {
 		start = 0;
 		end = std::numeric_limits<unsigned>::max();
 	}
+
+	static constexpr RangeArg All() {
+		return { 0, std::numeric_limits<unsigned>::max() };
+	}
 };
 
 bool
