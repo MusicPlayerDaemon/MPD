@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <limits>
+
 #include <stdint.h>
 
 class Client;
@@ -39,7 +41,7 @@ struct RangeArg {
 
 	void SetAll() {
 		start = 0;
-		end = unsigned(-1);
+		end = std::numeric_limits<unsigned>::max();
 	}
 };
 

@@ -22,8 +22,6 @@
 #include "Result.hxx"
 #include "Chrono.hxx"
 
-#include <limits>
-
 #include <stdlib.h>
 
 bool
