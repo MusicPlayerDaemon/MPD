@@ -11,3 +11,4 @@ LimitRTTIME=infinity
 
 [Install]
 WantedBy=multi-user.target
+Also=mpd.socket
