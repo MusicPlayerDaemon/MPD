@@ -1532,6 +1532,14 @@ buffer_size: 16384</programlisting>
           Opens remote files or streams over HTTP.
         </para>
 
+        <para>
+          Note that unless overridden by the below settings (e.g. by
+          setting them to a blank value), general curl configuration
+          from environment variables such as
+          <varname>http_proxy</varname> or specified in
+          <filename>~/.curlrc</filename> will be in effect.
+        </para>
+
         <informaltable>
           <tgroup cols="2">
             <thead>
