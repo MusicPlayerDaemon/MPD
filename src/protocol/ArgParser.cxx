@@ -41,7 +41,7 @@ check_uint32(Client &client, uint32_t *dst, const char *s)
 }
 
 bool
-check_int(Client &client, int *value_r, const char *s)
+ParseCommandArg(Client &client, int &value_r, const char *s)
 {
 	char *test;
 	long value;
@@ -60,7 +60,7 @@ check_int(Client &client, int *value_r, const char *s)
 		return false;
 	}
 
-	*value_r = (int)value;
+	value_r = (int)value;
 	return true;
 }
 
@@ -131,7 +131,7 @@ ParseCommandArg(Client &client, RangeArg &value_r, const char *s)
 }
 
 bool
-check_unsigned(Client &client, unsigned *value_r, const char *s)
+ParseCommandArg(Client &client, unsigned &value_r, const char *s)
 {
 	unsigned long value;
 	char *endptr;
@@ -149,12 +149,12 @@ check_unsigned(Client &client, unsigned *value_r, const char *s)
 		return false;
 	}
 
-	*value_r = (unsigned)value;
+	value_r = (unsigned)value;
 	return true;
 }
 
 bool
-check_bool(Client &client, bool *value_r, const char *s)
+ParseCommandArg(Client &client, bool &value_r, const char *s)
 {
 	long value;
 	char *endptr;
@@ -166,12 +166,12 @@ check_bool(Client &client, bool *value_r, const char *s)
 		return false;
 	}
 
-	*value_r = !!value;
+	value_r = !!value;
 	return true;
 }
 
 bool
-check_float(Client &client, float *value_r, const char *s)
+ParseCommandArg(Client &client, float &value_r, const char *s)
 {
 	float value;
 	char *endptr;
@@ -183,7 +183,7 @@ check_float(Client &client, float *value_r, const char *s)
 		return false;
 	}
 
-	*value_r = value;
+	value_r = value;
 	return true;
 }
 
@@ -191,7 +191,7 @@ bool
 ParseCommandArg(Client &client, SongTime &value_r, const char *s)
 {
 	float value;
-	bool success = check_float(client, &value, s) && value >= 0;
+	bool success = ParseCommandArg(client, value, s) && value >= 0;
 	if (success)
 		value_r = SongTime::FromS(value);
 
@@ -202,7 +202,7 @@ bool
 ParseCommandArg(Client &client, SignedSongTime &value_r, const char *s)
 {
 	float value;
-	bool success = check_float(client, &value, s);
+	bool success = ParseCommandArg(client, value, s);
 	if (success)
 		value_r = SignedSongTime::FromS(value);
 

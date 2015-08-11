@@ -32,7 +32,7 @@ bool
 check_uint32(Client &client, uint32_t *dst, const char *s);
 
 bool
-check_int(Client &client, int *value_r, const char *s);
+ParseCommandArg(Client &client, int &value_r, const char *s);
 
 struct RangeArg {
 	unsigned start, end;
@@ -47,13 +47,13 @@ bool
 ParseCommandArg(Client &client, RangeArg &value_r, const char *s);
 
 bool
-check_unsigned(Client &client, unsigned *value_r, const char *s);
+ParseCommandArg(Client &client, unsigned &value_r, const char *s);
 
 bool
-check_bool(Client &client, bool *value_r, const char *s);
+ParseCommandArg(Client &client, bool &value_r, const char *s);
 
 bool
-check_float(Client &client, float *value_r, const char *s);
+ParseCommandArg(Client &client, float &value_r, const char *s);
 
 bool
 ParseCommandArg(Client &client, SongTime &value_r, const char *s);

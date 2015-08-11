@@ -105,7 +105,7 @@ handle_addid(Client &client, Request args)
 
 	if (args.size == 2) {
 		unsigned to;
-		if (!check_unsigned(client, &to, args[1]))
+		if (!ParseCommandArg(client, to, args[1]))
 			return CommandResult::ERROR;
 		PlaylistResult result = client.partition.MoveId(added_id, to);
 		if (result != PlaylistResult::SUCCESS) {
@@ -155,7 +155,7 @@ CommandResult
 handle_rangeid(Client &client, Request args)
 {
 	unsigned id;
-	if (!check_unsigned(client, &id, args.front()))
+	if (!ParseCommandArg(client, id, args.front()))
 		return CommandResult::ERROR;
 
 	SongTime start, end;
@@ -188,8 +188,7 @@ CommandResult
 handle_deleteid(Client &client, Request args)
 {
 	unsigned id;
-
-	if (!check_unsigned(client, &id, args.front()))
+	if (!ParseCommandArg(client, id, args.front()))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.DeleteId(id);
@@ -269,7 +268,7 @@ handle_playlistid(Client &client, Request args)
 {
 	if (!args.IsEmpty()) {
 		unsigned id;
-		if (!check_unsigned(client, &id, args.front()))
+		if (!ParseCommandArg(client, id, args.front()))
 			return CommandResult::ERROR;
 
 		bool ret = playlist_print_id(client, client.playlist, id);
@@ -315,8 +314,7 @@ handle_prio(Client &client, Request args)
 {
 	const char *const priority_string = args.shift();
 	unsigned priority;
-
-	if (!check_unsigned(client, &priority, priority_string))
+	if (!ParseCommandArg(client, priority, priority_string))
 		return CommandResult::ERROR;
 
 	if (priority > 0xff) {
@@ -346,8 +344,7 @@ handle_prioid(Client &client, Request args)
 {
 	const char *const priority_string = args.shift();
 	unsigned priority;
-
-	if (!check_unsigned(client, &priority, priority_string))
+	if (!ParseCommandArg(client, priority, priority_string))
 		return CommandResult::ERROR;
 
 	if (priority > 0xff) {
@@ -358,7 +355,7 @@ handle_prioid(Client &client, Request args)
 
 	for (const char *i : args) {
 		unsigned song_id;
-		if (!check_unsigned(client, &song_id, i))
+		if (!ParseCommandArg(client, song_id, i))
 			return CommandResult::ERROR;
 
 		PlaylistResult result =
@@ -376,9 +373,8 @@ handle_move(Client &client, Request args)
 	RangeArg range;
 	int to;
 
-	if (!ParseCommandArg(client, range, args[0]))
-		return CommandResult::ERROR;
-	if (!check_int(client, &to, args[1]))
+	if (!ParseCommandArg(client, range, args[0]) ||
+	    !ParseCommandArg(client, to, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -391,11 +387,10 @@ handle_moveid(Client &client, Request args)
 {
 	unsigned id;
 	int to;
+	if (!ParseCommandArg(client, id, args[0]) ||
+	    !ParseCommandArg(client, to, args[1]))
+		return CommandResult::ERROR;
 
-	if (!check_unsigned(client, &id, args[0]))
-		return CommandResult::ERROR;
-	if (!check_int(client, &to, args[1]))
-		return CommandResult::ERROR;
 	PlaylistResult result = client.partition.MoveId(id, to);
 	return print_playlist_result(client, result);
 }
@@ -404,10 +399,8 @@ CommandResult
 handle_swap(Client &client, Request args)
 {
 	unsigned song1, song2;
-
-	if (!check_unsigned(client, &song1, args[0]))
-		return CommandResult::ERROR;
-	if (!check_unsigned(client, &song2, args[1]))
+	if (!ParseCommandArg(client, song1, args[0]) ||
+	    !ParseCommandArg(client, song2, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result =
@@ -419,10 +412,8 @@ CommandResult
 handle_swapid(Client &client, Request args)
 {
 	unsigned id1, id2;
-
-	if (!check_unsigned(client, &id1, args[0]))
-		return CommandResult::ERROR;
-	if (!check_unsigned(client, &id2, args[1]))
+	if (!ParseCommandArg(client, id1, args[0]) ||
+	    !ParseCommandArg(client, id2, args[1]))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.SwapIds(id1, id2);

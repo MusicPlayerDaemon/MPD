@@ -61,9 +61,9 @@ CommandResult
 handle_play(Client &client, Request args)
 {
 	int song = -1;
-
-	if (!args.IsEmpty() && !check_int(client, &song, args.front()))
+	if (!args.IsEmpty() && !ParseCommandArg(client, song, args.front()))
 		return CommandResult::ERROR;
+
 	PlaylistResult result = client.partition.PlayPosition(song);
 	return print_playlist_result(client, result);
 }
@@ -72,8 +72,7 @@ CommandResult
 handle_playid(Client &client, Request args)
 {
 	int id = -1;
-
-	if (!args.IsEmpty() && !check_int(client, &id, args.front()))
+	if (!args.IsEmpty() && !ParseCommandArg(client, id, args.front()))
 		return CommandResult::ERROR;
 
 	PlaylistResult result = client.partition.PlayId(id);
@@ -99,7 +98,7 @@ handle_pause(Client &client, Request args)
 {
 	if (!args.IsEmpty()) {
 		bool pause_flag;
-		if (!check_bool(client, &pause_flag, args.front()))
+		if (!ParseCommandArg(client, pause_flag, args.front()))
 			return CommandResult::ERROR;
 
 		client.player_control.SetPause(pause_flag);
@@ -250,7 +249,7 @@ CommandResult
 handle_repeat(Client &client, Request args)
 {
 	bool status;
-	if (!check_bool(client, &status, args.front()))
+	if (!ParseCommandArg(client, status, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.SetRepeat(status);
@@ -261,7 +260,7 @@ CommandResult
 handle_single(Client &client, Request args)
 {
 	bool status;
-	if (!check_bool(client, &status, args.front()))
+	if (!ParseCommandArg(client, status, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.SetSingle(status);
@@ -272,7 +271,7 @@ CommandResult
 handle_consume(Client &client, Request args)
 {
 	bool status;
-	if (!check_bool(client, &status, args.front()))
+	if (!ParseCommandArg(client, status, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.SetConsume(status);
@@ -283,7 +282,7 @@ CommandResult
 handle_random(Client &client, Request args)
 {
 	bool status;
-	if (!check_bool(client, &status, args.front()))
+	if (!ParseCommandArg(client, status, args.front()))
 		return CommandResult::ERROR;
 
 	client.partition.SetRandom(status);
@@ -304,7 +303,7 @@ handle_seek(Client &client, Request args)
 	unsigned song;
 	SongTime seek_time;
 
-	if (!check_unsigned(client, &song, args[0]))
+	if (!ParseCommandArg(client, song, args[0]))
 		return CommandResult::ERROR;
 	if (!ParseCommandArg(client, seek_time, args[1]))
 		return CommandResult::ERROR;
@@ -319,8 +318,7 @@ handle_seekid(Client &client, Request args)
 {
 	unsigned id;
 	SongTime seek_time;
-
-	if (!check_unsigned(client, &id, args[0]))
+	if (!ParseCommandArg(client, id, args[0]))
 		return CommandResult::ERROR;
 	if (!ParseCommandArg(client, seek_time, args[1]))
 		return CommandResult::ERROR;
@@ -348,11 +346,10 @@ CommandResult
 handle_crossfade(Client &client, Request args)
 {
 	unsigned xfade_time;
-
-	if (!check_unsigned(client, &xfade_time, args.front()))
+	if (!ParseCommandArg(client, xfade_time, args.front()))
 		return CommandResult::ERROR;
-	client.player_control.SetCrossFade(xfade_time);
 
+	client.player_control.SetCrossFade(xfade_time);
 	return CommandResult::OK;
 }
 
@@ -360,11 +357,10 @@ CommandResult
 handle_mixrampdb(Client &client, Request args)
 {
 	float db;
-
-	if (!check_float(client, &db, args.front()))
+	if (!ParseCommandArg(client, db, args.front()))
 		return CommandResult::ERROR;
-	client.player_control.SetMixRampDb(db);
 
+	client.player_control.SetMixRampDb(db);
 	return CommandResult::OK;
 }
 
@@ -372,9 +368,9 @@ CommandResult
 handle_mixrampdelay(Client &client, Request args)
 {
 	float delay_secs;
-
-	if (!check_float(client, &delay_secs, args.front()))
+	if (!ParseCommandArg(client, delay_secs, args.front()))
 		return CommandResult::ERROR;
+
 	client.player_control.SetMixRampDelay(delay_secs);
 
 	return CommandResult::OK;

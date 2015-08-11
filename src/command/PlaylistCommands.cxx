@@ -146,8 +146,7 @@ handle_playlistdelete(Client &client, Request args)
 {
 	const char *const name = args[0];
 	unsigned from;
-
-	if (!check_unsigned(client, &from, args[1]))
+	if (!ParseCommandArg(client, from, args[1]))
 		return CommandResult::ERROR;
 
 	Error error;
@@ -161,10 +160,9 @@ handle_playlistmove(Client &client, Request args)
 {
 	const char *const name = args.front();
 	unsigned from, to;
-
-	if (!check_unsigned(client, &from, args[1]))
+	if (!ParseCommandArg(client, from, args[1]))
 		return CommandResult::ERROR;
-	if (!check_unsigned(client, &to, args[2]))
+	if (!ParseCommandArg(client, to, args[2]))
 		return CommandResult::ERROR;
 
 	Error error;

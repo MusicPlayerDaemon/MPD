@@ -34,7 +34,7 @@ handle_enableoutput(Client &client, Request args)
 	assert(args.size == 1);
 
 	unsigned device;
-	if (!check_unsigned(client, &device, args.front()))
+	if (!ParseCommandArg(client, device, args.front()))
 		return CommandResult::ERROR;
 
 	if (!audio_output_enable_index(client.partition.outputs, device)) {
@@ -52,7 +52,7 @@ handle_disableoutput(Client &client, Request args)
 	assert(args.size == 1);
 
 	unsigned device;
-	if (!check_unsigned(client, &device, args.front()))
+	if (!ParseCommandArg(client, device, args.front()))
 		return CommandResult::ERROR;
 
 	if (!audio_output_disable_index(client.partition.outputs, device)) {
@@ -70,7 +70,7 @@ handle_toggleoutput(Client &client, Request args)
 	assert(args.size == 1);
 
 	unsigned device;
-	if (!check_unsigned(client, &device, args.front()))
+	if (!ParseCommandArg(client, device, args.front()))
 		return CommandResult::ERROR;
 
 	if (!audio_output_toggle_index(client.partition.outputs, device)) {

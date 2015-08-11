@@ -309,7 +309,7 @@ CommandResult
 handle_setvol(Client &client, Request args)
 {
 	unsigned level;
-	if (!check_unsigned(client, &level, args.front()))
+	if (!ParseCommandArg(client, level, args.front()))
 		return CommandResult::ERROR;
 
 	if (level > 100) {
@@ -330,7 +330,7 @@ CommandResult
 handle_volume(Client &client, Request args)
 {
 	int relative;
-	if (!check_int(client, &relative, args.front()))
+	if (!ParseCommandArg(client, relative, args.front()))
 		return CommandResult::ERROR;
 
 	if (relative < -100 || relative > 100) {
