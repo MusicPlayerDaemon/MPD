@@ -314,14 +314,8 @@ handle_prio(Client &client, Request args)
 {
 	const char *const priority_string = args.shift();
 	unsigned priority;
-	if (!ParseCommandArg(client, priority, priority_string))
+	if (!ParseCommandArg(client, priority, priority_string, 0xff))
 		return CommandResult::ERROR;
-
-	if (priority > 0xff) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Priority out of range: %s", priority_string);
-		return CommandResult::ERROR;
-	}
 
 	for (const char *i : args) {
 		RangeArg range;
@@ -344,14 +338,8 @@ handle_prioid(Client &client, Request args)
 {
 	const char *const priority_string = args.shift();
 	unsigned priority;
-	if (!ParseCommandArg(client, priority, priority_string))
+	if (!ParseCommandArg(client, priority, priority_string, 0xff))
 		return CommandResult::ERROR;
-
-	if (priority > 0xff) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Priority out of range: %s", priority_string);
-		return CommandResult::ERROR;
-	}
 
 	for (const char *i : args) {
 		unsigned song_id;

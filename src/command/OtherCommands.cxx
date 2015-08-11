@@ -309,13 +309,8 @@ CommandResult
 handle_setvol(Client &client, Request args)
 {
 	unsigned level;
-	if (!ParseCommandArg(client, level, args.front()))
+	if (!ParseCommandArg(client, level, args.front(), 100))
 		return CommandResult::ERROR;
-
-	if (level > 100) {
-		command_error(client, ACK_ERROR_ARG, "Invalid volume value");
-		return CommandResult::ERROR;
-	}
 
 	if (!volume_level_change(client.partition.outputs, level)) {
 		command_error(client, ACK_ERROR_SYSTEM,
@@ -330,13 +325,8 @@ CommandResult
 handle_volume(Client &client, Request args)
 {
 	int relative;
-	if (!ParseCommandArg(client, relative, args.front()))
+	if (!ParseCommandArg(client, relative, args.front(), -100, 100))
 		return CommandResult::ERROR;
-
-	if (relative < -100 || relative > 100) {
-		command_error(client, ACK_ERROR_ARG, "Invalid volume value");
-		return CommandResult::ERROR;
-	}
 
 	const int old_volume = volume_level_get(client.partition.outputs);
 	if (old_volume < 0) {

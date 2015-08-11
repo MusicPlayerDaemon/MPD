@@ -34,6 +34,10 @@ bool
 check_uint32(Client &client, uint32_t *dst, const char *s);
 
 bool
+ParseCommandArg(Client &client, int &value_r, const char *s,
+		int min_value, int max_value);
+
+bool
 ParseCommandArg(Client &client, int &value_r, const char *s);
 
 struct RangeArg {
@@ -47,6 +51,10 @@ struct RangeArg {
 
 bool
 ParseCommandArg(Client &client, RangeArg &value_r, const char *s);
+
+bool
+ParseCommandArg(Client &client, unsigned &value_r, const char *s,
+		unsigned max_value);
 
 bool
 ParseCommandArg(Client &client, unsigned &value_r, const char *s);

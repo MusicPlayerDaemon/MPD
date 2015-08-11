@@ -39,7 +39,8 @@ check_uint32(Client &client, uint32_t *dst, const char *s)
 }
 
 bool
-ParseCommandArg(Client &client, int &value_r, const char *s)
+ParseCommandArg(Client &client, int &value_r, const char *s,
+		int min_value, int max_value)
 {
 	char *test;
 	long value;
@@ -51,8 +52,7 @@ ParseCommandArg(Client &client, int &value_r, const char *s)
 		return false;
 	}
 
-	if (value < std::numeric_limits<int>::min() ||
-	    value > std::numeric_limits<int>::max()) {
+	if (value < min_value || value > max_value) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
@@ -60,6 +60,14 @@ ParseCommandArg(Client &client, int &value_r, const char *s)
 
 	value_r = (int)value;
 	return true;
+}
+
+bool
+ParseCommandArg(Client &client, int &value_r, const char *s)
+{
+	return ParseCommandArg(client, value_r, s,
+			       std::numeric_limits<int>::min(),
+			       std::numeric_limits<int>::max());
 }
 
 bool
@@ -129,7 +137,8 @@ ParseCommandArg(Client &client, RangeArg &value_r, const char *s)
 }
 
 bool
-ParseCommandArg(Client &client, unsigned &value_r, const char *s)
+ParseCommandArg(Client &client, unsigned &value_r, const char *s,
+		unsigned max_value)
 {
 	unsigned long value;
 	char *endptr;
@@ -141,7 +150,7 @@ ParseCommandArg(Client &client, unsigned &value_r, const char *s)
 		return false;
 	}
 
-	if (value > std::numeric_limits<unsigned>::max()) {
+	if (value > max_value) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
@@ -149,6 +158,13 @@ ParseCommandArg(Client &client, unsigned &value_r, const char *s)
 
 	value_r = (unsigned)value;
 	return true;
+}
+
+bool
+ParseCommandArg(Client &client, unsigned &value_r, const char *s)
+{
+	return ParseCommandArg(client, value_r, s,
+			       std::numeric_limits<unsigned>::max());
 }
 
 bool
