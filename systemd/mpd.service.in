@@ -9,6 +9,9 @@ ExecStart=@prefix@/bin/mpd --no-daemon
 LimitRTPRIO=50
 LimitRTTIME=infinity
 
+# disallow writing to /usr, /bin, /sbin, ...
+ProtectSystem=yes
+
 [Install]
 WantedBy=multi-user.target
 Also=mpd.socket
