@@ -21,3 +21,4 @@ ControlGroupAttribute=cpu.rt_runtime_us 500000
 
 [Install]
 WantedBy=multi-user.target
+Also=mpd.socket
