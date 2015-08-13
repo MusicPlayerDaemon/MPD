@@ -33,10 +33,8 @@
 #include <assert.h>
 
 CommandResult
-handle_subscribe(Client &client, Request args)
+handle_subscribe(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	assert(args.size == 1);
 	const char *const channel_name = args[0];
 
@@ -63,10 +61,8 @@ handle_subscribe(Client &client, Request args)
 }
 
 CommandResult
-handle_unsubscribe(Client &client, Request args)
+handle_unsubscribe(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	assert(args.size == 1);
 	const char *const channel_name = args[0];
 
@@ -79,7 +75,7 @@ handle_unsubscribe(Client &client, Request args)
 }
 
 CommandResult
-handle_channels(Client &client, gcc_unused Request args)
+handle_channels(Client &client, gcc_unused Request args, Response &r)
 {
 	assert(args.IsEmpty());
 
@@ -88,7 +84,6 @@ handle_channels(Client &client, gcc_unused Request args)
 		channels.insert(c.subscriptions.begin(),
 				c.subscriptions.end());
 
-	Response r(client);
 	for (const auto &channel : channels)
 		r.Format("channel: %s\n", channel.c_str());
 
@@ -97,11 +92,10 @@ handle_channels(Client &client, gcc_unused Request args)
 
 CommandResult
 handle_read_messages(Client &client,
-		     gcc_unused Request args)
+		     gcc_unused Request args, Response &r)
 {
 	assert(args.IsEmpty());
 
-	Response r(client);
 	while (!client.messages.empty()) {
 		const ClientMessage &msg = client.messages.front();
 
@@ -114,14 +108,13 @@ handle_read_messages(Client &client,
 }
 
 CommandResult
-handle_send_message(Client &client, Request args)
+handle_send_message(Client &client, Request args, Response &r)
 {
 	assert(args.size == 2);
 
 	const char *const channel_name = args[0];
 	const char *const message_text = args[1];
 
-	Response r(client);
 	if (!client_message_valid_channel_name(channel_name)) {
 		r.Error(ACK_ERROR_ARG, "invalid channel name");
 		return CommandResult::ERROR;

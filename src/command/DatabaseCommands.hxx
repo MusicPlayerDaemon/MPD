@@ -24,38 +24,39 @@
 
 class Client;
 class Request;
+class Response;
 
 CommandResult
-handle_listfiles_db(Client &client, const char *uri);
+handle_listfiles_db(Client &client, Response &r, const char *uri);
 
 CommandResult
-handle_lsinfo2(Client &client, Request args);
+handle_lsinfo2(Client &client, Request request, Response &response);
 
 CommandResult
-handle_find(Client &client, Request args);
+handle_find(Client &client, Request request, Response &response);
 
 CommandResult
-handle_findadd(Client &client, Request args);
+handle_findadd(Client &client, Request request, Response &response);
 
 CommandResult
-handle_search(Client &client, Request args);
+handle_search(Client &client, Request request, Response &response);
 
 CommandResult
-handle_searchadd(Client &client, Request args);
+handle_searchadd(Client &client, Request request, Response &response);
 
 CommandResult
-handle_searchaddpl(Client &client, Request args);
+handle_searchaddpl(Client &client, Request request, Response &response);
 
 CommandResult
-handle_count(Client &client, Request args);
+handle_count(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listall(Client &client, Request args);
+handle_listall(Client &client, Request request, Response &response);
 
 CommandResult
-handle_list(Client &client, Request args);
+handle_list(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listallinfo(Client &client, Request args);
+handle_listallinfo(Client &client, Request request, Response &response);
 
 #endif

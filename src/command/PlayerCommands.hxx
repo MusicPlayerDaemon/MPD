@@ -24,68 +24,69 @@
 
 class Client;
 class Request;
+class Response;
 
 CommandResult
-handle_play(Client &client, Request args);
+handle_play(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playid(Client &client, Request args);
+handle_playid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_stop(Client &client, Request args);
+handle_stop(Client &client, Request request, Response &response);
 
 CommandResult
-handle_currentsong(Client &client, Request args);
+handle_currentsong(Client &client, Request request, Response &response);
 
 CommandResult
-handle_pause(Client &client, Request args);
+handle_pause(Client &client, Request request, Response &response);
 
 CommandResult
-handle_status(Client &client, Request args);
+handle_status(Client &client, Request request, Response &response);
 
 CommandResult
-handle_next(Client &client, Request args);
+handle_next(Client &client, Request request, Response &response);
 
 CommandResult
-handle_previous(Client &client, Request args);
+handle_previous(Client &client, Request request, Response &response);
 
 CommandResult
-handle_repeat(Client &client, Request args);
+handle_repeat(Client &client, Request request, Response &response);
 
 CommandResult
-handle_single(Client &client, Request args);
+handle_single(Client &client, Request request, Response &response);
 
 CommandResult
-handle_consume(Client &client, Request args);
+handle_consume(Client &client, Request request, Response &response);
 
 CommandResult
-handle_random(Client &client, Request args);
+handle_random(Client &client, Request request, Response &response);
 
 CommandResult
-handle_clearerror(Client &client, Request args);
+handle_clearerror(Client &client, Request request, Response &response);
 
 CommandResult
-handle_seek(Client &client, Request args);
+handle_seek(Client &client, Request request, Response &response);
 
 CommandResult
-handle_seekid(Client &client, Request args);
+handle_seekid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_seekcur(Client &client, Request args);
+handle_seekcur(Client &client, Request request, Response &response);
 
 CommandResult
-handle_crossfade(Client &client, Request args);
+handle_crossfade(Client &client, Request request, Response &response);
 
 CommandResult
-handle_mixrampdb(Client &client, Request args);
+handle_mixrampdb(Client &client, Request request, Response &response);
 
 CommandResult
-handle_mixrampdelay(Client &client, Request args);
+handle_mixrampdelay(Client &client, Request request, Response &response);
 
 CommandResult
-handle_replay_gain_mode(Client &client, Request args);
+handle_replay_gain_mode(Client &client, Request request, Response &response);
 
 CommandResult
-handle_replay_gain_status(Client &client, Request args);
+handle_replay_gain_status(Client &client, Request request, Response &response);
 
 #endif

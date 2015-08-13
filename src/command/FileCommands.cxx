@@ -70,10 +70,9 @@ skip_path(Path name_fs)
 #endif
 
 CommandResult
-handle_listfiles_local(Client &client, const char *path_utf8)
+handle_listfiles_local(Client &client, Response &r,
+		       const char *path_utf8)
 {
-	Response r(client);
-
 	const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
 	if (path_fs.IsNull()) {
 		r.Error(ACK_ERROR_NO_EXIST, "unsupported file name");
@@ -214,10 +213,8 @@ translate_uri(const char *uri)
 }
 
 CommandResult
-handle_read_comments(Client &client, Request args)
+handle_read_comments(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	assert(args.size == 1);
 	const char *const uri = translate_uri(args.front());
 

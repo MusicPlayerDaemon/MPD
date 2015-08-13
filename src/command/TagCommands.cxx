@@ -28,10 +28,8 @@
 #include "util/ConstBuffer.hxx"
 
 CommandResult
-handle_addtagid(Client &client, Request args)
+handle_addtagid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned song_id;
 	if (!args.Parse(0, song_id, r))
 		return CommandResult::ERROR;
@@ -54,10 +52,8 @@ handle_addtagid(Client &client, Request args)
 }
 
 CommandResult
-handle_cleartagid(Client &client, Request args)
+handle_cleartagid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned song_id;
 	if (!args.Parse(0, song_id, r))
 		return CommandResult::ERROR;

@@ -69,9 +69,8 @@ print_spl_list(Response &r, const PlaylistVector &list)
 }
 
 CommandResult
-handle_urlhandlers(Client &client, gcc_unused Request args)
+handle_urlhandlers(Client &client, gcc_unused Request args, Response &r)
 {
-	Response r(client);
 	if (client.IsLocal())
 		r.Format("handler: file://\n");
 	print_supported_uri_schemes(r);
@@ -79,29 +78,31 @@ handle_urlhandlers(Client &client, gcc_unused Request args)
 }
 
 CommandResult
-handle_decoders(Client &client, gcc_unused Request args)
+handle_decoders(gcc_unused Client &client, gcc_unused Request args,
+		Response &r)
 {
-	Response r(client);
 	decoder_list_print(r);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_tagtypes(Client &client, gcc_unused Request args)
+handle_tagtypes(gcc_unused Client &client, gcc_unused Request request,
+		Response &r)
 {
-	Response r(client);
 	tag_print_types(r);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_kill(gcc_unused Client &client, gcc_unused Request args)
+handle_kill(gcc_unused Client &client, gcc_unused Request request,
+	    gcc_unused Response &r)
 {
 	return CommandResult::KILL;
 }
 
 CommandResult
-handle_close(gcc_unused Client &client, gcc_unused Request args)
+handle_close(gcc_unused Client &client, gcc_unused Request args,
+	     gcc_unused Response &r)
 {
 	return CommandResult::FINISH;
 }
@@ -115,16 +116,14 @@ print_tag(TagType type, const char *value, void *ctx)
 }
 
 CommandResult
-handle_listfiles(Client &client, Request args)
+handle_listfiles(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
 	if (memcmp(uri, "file:///", 8) == 0)
 		/* list local directory */
-		return handle_listfiles_local(client, uri + 7);
+		return handle_listfiles_local(client, r, uri + 7);
 
 #ifdef ENABLE_DATABASE
 	if (uri_has_scheme(uri))
@@ -142,7 +141,7 @@ handle_listfiles(Client &client, Request args)
 						uri);
 
 	/* fall back to entries from database if we have no storage */
-	return handle_listfiles_db(client, uri);
+	return handle_listfiles_db(client, r, uri);
 #else
 	r.Error(ACK_ERROR_NO_EXIST, "No database");
 	return CommandResult::ERROR;
@@ -156,12 +155,10 @@ static constexpr tag_handler print_tag_handler = {
 };
 
 CommandResult
-handle_lsinfo(Client &client, Request args)
+handle_lsinfo(Client &client, Request args, Response &r)
 {
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
-
-	Response r(client);
 
 	if (memcmp(uri, "file:///", 8) == 0) {
 		/* print information about an arbitrary local file */
@@ -202,7 +199,7 @@ handle_lsinfo(Client &client, Request args)
 	}
 
 #ifdef ENABLE_DATABASE
-	CommandResult result = handle_lsinfo2(client, args);
+	CommandResult result = handle_lsinfo2(client, args, r);
 	if (result != CommandResult::OK)
 		return result;
 #endif
@@ -224,11 +221,9 @@ handle_lsinfo(Client &client, Request args)
 #ifdef ENABLE_DATABASE
 
 static CommandResult
-handle_update(Client &client, UpdateService &update,
+handle_update(Response &r, UpdateService &update,
 	      const char *uri_utf8, bool discard)
 {
-	Response r(client);
-
 	unsigned ret = update.Enqueue(uri_utf8, discard);
 	if (ret > 0) {
 		r.Format("updating_db: %i\n", ret);
@@ -240,11 +235,9 @@ handle_update(Client &client, UpdateService &update,
 }
 
 static CommandResult
-handle_update(Client &client, Database &db,
+handle_update(Response &r, Database &db,
 	      const char *uri_utf8, bool discard)
 {
-	Response r(client);
-
 	Error error;
 	unsigned id = db.Update(uri_utf8, discard, error);
 	if (id > 0) {
@@ -263,10 +256,8 @@ handle_update(Client &client, Database &db,
 #endif
 
 static CommandResult
-handle_update(Client &client, Request args, bool discard)
+handle_update(Client &client, Request args, Response &r, bool discard)
 {
-	Response r(client);
-
 #ifdef ENABLE_DATABASE
 	const char *path = "";
 
@@ -285,11 +276,11 @@ handle_update(Client &client, Request args, bool discard)
 
 	UpdateService *update = client.partition.instance.update;
 	if (update != nullptr)
-		return handle_update(client, *update, path, discard);
+		return handle_update(r, *update, path, discard);
 
 	Database *db = client.partition.instance.database;
 	if (db != nullptr)
-		return handle_update(client, *db, path, discard);
+		return handle_update(r, *db, path, discard);
 #else
 	(void)args;
 	(void)discard;
@@ -300,22 +291,20 @@ handle_update(Client &client, Request args, bool discard)
 }
 
 CommandResult
-handle_update(Client &client, gcc_unused Request args)
+handle_update(Client &client, Request args, gcc_unused Response &r)
 {
-	return handle_update(client, args, false);
+	return handle_update(client, args, r, false);
 }
 
 CommandResult
-handle_rescan(Client &client, gcc_unused Request args)
+handle_rescan(Client &client, Request args, Response &r)
 {
-	return handle_update(client, args, true);
+	return handle_update(client, args, r, true);
 }
 
 CommandResult
-handle_setvol(Client &client, Request args)
+handle_setvol(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned level;
 	if (!args.Parse(0, level, r, 100))
 		return CommandResult::ERROR;
@@ -329,10 +318,8 @@ handle_setvol(Client &client, Request args)
 }
 
 CommandResult
-handle_volume(Client &client, Request args)
+handle_volume(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	int relative;
 	if (!args.Parse(0, relative, r,  -100, 100))
 		return CommandResult::ERROR;
@@ -359,24 +346,22 @@ handle_volume(Client &client, Request args)
 }
 
 CommandResult
-handle_stats(Client &client, gcc_unused Request args)
+handle_stats(Client &client, gcc_unused Request args, Response &r)
 {
-	Response r(client);
 	stats_print(r, client.partition);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_ping(gcc_unused Client &client, gcc_unused Request args)
+handle_ping(gcc_unused Client &client, gcc_unused Request args,
+	    gcc_unused Response &r)
 {
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_password(Client &client, Request args)
+handle_password(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned permission = 0;
 	if (getPermissionFromPassword(args.front(), &permission) < 0) {
 		r.Error(ACK_ERROR_PASSWORD, "incorrect password");
@@ -389,10 +374,8 @@ handle_password(Client &client, Request args)
 }
 
 CommandResult
-handle_config(Client &client, gcc_unused Request args)
+handle_config(Client &client, gcc_unused Request args, Response &r)
 {
-	Response r(client);
-
 	if (!client.IsLocal()) {
 		r.Error(ACK_ERROR_PERMISSION,
 			"Command only permitted to local clients");
@@ -411,10 +394,8 @@ handle_config(Client &client, gcc_unused Request args)
 }
 
 CommandResult
-handle_idle(Client &client, Request args)
+handle_idle(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned flags = 0;
 	for (const char *i : args) {
 		unsigned event = idle_parse_name(i);

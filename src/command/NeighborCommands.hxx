@@ -26,12 +26,13 @@
 struct Instance;
 class Client;
 class Request;
+class Response;
 
 gcc_pure
 bool
 neighbor_commands_available(const Instance &instance);
 
 CommandResult
-handle_listneighbors(Client &client, Request args);
+handle_listneighbors(Client &client, Request request, Response &response);
 
 #endif

@@ -59,9 +59,8 @@ print_spl_list(Response &r, const PlaylistVector &list)
 }
 
 CommandResult
-handle_save(Client &client, Request args)
+handle_save(Client &client, Request args, Response &r)
 {
-	Response r(client);
 	Error error;
 	return spl_save_playlist(args.front(), client.playlist, error)
 		? CommandResult::OK
@@ -69,10 +68,8 @@ handle_save(Client &client, Request args)
 }
 
 CommandResult
-handle_load(Client &client, Request args)
+handle_load(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	RangeArg range = RangeArg::All();
 	if (!args.ParseOptional(1, range, r))
 		return CommandResult::ERROR;
@@ -91,10 +88,8 @@ handle_load(Client &client, Request args)
 }
 
 CommandResult
-handle_listplaylist(Client &client, Request args)
+handle_listplaylist(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const name = args.front();
 
 	if (playlist_file_print(r, client.partition, SongLoader(client),
@@ -108,10 +103,8 @@ handle_listplaylist(Client &client, Request args)
 }
 
 CommandResult
-handle_listplaylistinfo(Client &client, Request args)
+handle_listplaylistinfo(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const name = args.front();
 
 	if (playlist_file_print(r, client.partition, SongLoader(client),
@@ -125,10 +118,8 @@ handle_listplaylistinfo(Client &client, Request args)
 }
 
 CommandResult
-handle_rm(Client &client, Request args)
+handle_rm(gcc_unused Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const name = args.front();
 
 	Error error;
@@ -138,10 +129,8 @@ handle_rm(Client &client, Request args)
 }
 
 CommandResult
-handle_rename(Client &client, Request args)
+handle_rename(gcc_unused Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const old_name = args[0];
 	const char *const new_name = args[1];
 
@@ -152,10 +141,8 @@ handle_rename(Client &client, Request args)
 }
 
 CommandResult
-handle_playlistdelete(Client &client, Request args)
+handle_playlistdelete(gcc_unused Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const name = args[0];
 	unsigned from;
 	if (!args.Parse(1, from, r))
@@ -168,10 +155,8 @@ handle_playlistdelete(Client &client, Request args)
 }
 
 CommandResult
-handle_playlistmove(Client &client, Request args)
+handle_playlistmove(gcc_unused Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const name = args.front();
 	unsigned from, to;
 	if (!args.Parse(1, from, r) || !args.Parse(2, to, r))
@@ -184,10 +169,8 @@ handle_playlistmove(Client &client, Request args)
 }
 
 CommandResult
-handle_playlistclear(Client &client, Request args)
+handle_playlistclear(gcc_unused Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const name = args.front();
 
 	Error error;
@@ -197,10 +180,8 @@ handle_playlistclear(Client &client, Request args)
 }
 
 CommandResult
-handle_playlistadd(Client &client, Request args)
+handle_playlistadd(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const playlist = args[0];
 	const char *const uri = args[1];
 
@@ -232,10 +213,9 @@ handle_playlistadd(Client &client, Request args)
 }
 
 CommandResult
-handle_listplaylists(Client &client, gcc_unused Request args)
+handle_listplaylists(gcc_unused Client &client, gcc_unused Request args,
+		     Response &r)
 {
-	Response r(client);
-
 	Error error;
 	const auto list = ListPlaylistFiles(error);
 	if (list.empty() && error.IsDefined())

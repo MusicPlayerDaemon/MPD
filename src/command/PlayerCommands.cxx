@@ -57,10 +57,8 @@
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
 CommandResult
-handle_play(Client &client, Request args)
+handle_play(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	int song = -1;
 	if (!args.ParseOptional(0, song, r))
 		return CommandResult::ERROR;
@@ -70,10 +68,8 @@ handle_play(Client &client, Request args)
 }
 
 CommandResult
-handle_playid(Client &client, Request args)
+handle_playid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	int id = -1;
 	if (!args.ParseOptional(0, id, r))
 		return CommandResult::ERROR;
@@ -83,25 +79,22 @@ handle_playid(Client &client, Request args)
 }
 
 CommandResult
-handle_stop(Client &client, gcc_unused Request args)
+handle_stop(Client &client, gcc_unused Request args, gcc_unused Response &r)
 {
 	client.partition.Stop();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_currentsong(Client &client, gcc_unused Request args)
+handle_currentsong(Client &client, gcc_unused Request args, Response &r)
 {
-	Response r(client);
 	playlist_print_current(r, client.partition, client.playlist);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_pause(Client &client, Request args)
+handle_pause(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	if (!args.IsEmpty()) {
 		bool pause_flag;
 		if (!args.Parse(0, pause_flag, r))
@@ -115,7 +108,7 @@ handle_pause(Client &client, Request args)
 }
 
 CommandResult
-handle_status(Client &client, gcc_unused Request args)
+handle_status(Client &client, gcc_unused Request args, Response &r)
 {
 	const char *state = nullptr;
 	int song;
@@ -133,8 +126,6 @@ handle_status(Client &client, gcc_unused Request args)
 		state = "play";
 		break;
 	}
-
-	Response r(client);
 
 	const playlist &playlist = client.playlist;
 	r.Format("volume: %i\n"
@@ -221,7 +212,7 @@ handle_status(Client &client, gcc_unused Request args)
 }
 
 CommandResult
-handle_next(Client &client, gcc_unused Request args)
+handle_next(Client &client, gcc_unused Request args, gcc_unused Response &r)
 {
 	playlist &playlist = client.playlist;
 
@@ -237,17 +228,16 @@ handle_next(Client &client, gcc_unused Request args)
 }
 
 CommandResult
-handle_previous(Client &client, gcc_unused Request args)
+handle_previous(Client &client, gcc_unused Request args,
+		gcc_unused Response &r)
 {
 	client.partition.PlayPrevious();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_repeat(Client &client, Request args)
+handle_repeat(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	bool status;
 	if (!args.Parse(0, status, r))
 		return CommandResult::ERROR;
@@ -257,10 +247,8 @@ handle_repeat(Client &client, Request args)
 }
 
 CommandResult
-handle_single(Client &client, Request args)
+handle_single(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	bool status;
 	if (!args.Parse(0, status, r))
 		return CommandResult::ERROR;
@@ -270,10 +258,8 @@ handle_single(Client &client, Request args)
 }
 
 CommandResult
-handle_consume(Client &client, Request args)
+handle_consume(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	bool status;
 	if (!args.Parse(0, status, r))
 		return CommandResult::ERROR;
@@ -283,10 +269,8 @@ handle_consume(Client &client, Request args)
 }
 
 CommandResult
-handle_random(Client &client, Request args)
+handle_random(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	bool status;
 	if (!args.Parse(0, status, r))
 		return CommandResult::ERROR;
@@ -297,17 +281,16 @@ handle_random(Client &client, Request args)
 }
 
 CommandResult
-handle_clearerror(gcc_unused Client &client, gcc_unused Request args)
+handle_clearerror(Client &client, gcc_unused Request args,
+		  gcc_unused Response &r)
 {
 	client.player_control.ClearError();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_seek(Client &client, Request args)
+handle_seek(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned song;
 	SongTime seek_time;
 	if (!args.Parse(0, song, r) || !args.Parse(1, seek_time, r))
@@ -319,10 +302,8 @@ handle_seek(Client &client, Request args)
 }
 
 CommandResult
-handle_seekid(Client &client, Request args)
+handle_seekid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned id;
 	SongTime seek_time;
 	if (!args.Parse(0, id, r))
@@ -336,10 +317,8 @@ handle_seekid(Client &client, Request args)
 }
 
 CommandResult
-handle_seekcur(Client &client, Request args)
+handle_seekcur(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *p = args.front();
 	bool relative = *p == '+' || *p == '-';
 	SignedSongTime seek_time;
@@ -352,10 +331,8 @@ handle_seekcur(Client &client, Request args)
 }
 
 CommandResult
-handle_crossfade(Client &client, Request args)
+handle_crossfade(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned xfade_time;
 	if (!args.Parse(0, xfade_time, r))
 		return CommandResult::ERROR;
@@ -365,10 +342,8 @@ handle_crossfade(Client &client, Request args)
 }
 
 CommandResult
-handle_mixrampdb(Client &client, Request args)
+handle_mixrampdb(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	float db;
 	if (!args.Parse(0, db, r))
 		return CommandResult::ERROR;
@@ -378,10 +353,8 @@ handle_mixrampdb(Client &client, Request args)
 }
 
 CommandResult
-handle_mixrampdelay(Client &client, Request args)
+handle_mixrampdelay(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	float delay_secs;
 	if (!args.Parse(0, delay_secs, r))
 		return CommandResult::ERROR;
@@ -392,10 +365,8 @@ handle_mixrampdelay(Client &client, Request args)
 }
 
 CommandResult
-handle_replay_gain_mode(Client &client, Request args)
+handle_replay_gain_mode(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	if (!replay_gain_set_mode_string(args.front())) {
 		r.Error(ACK_ERROR_ARG, "Unrecognized replay gain mode");
 		return CommandResult::ERROR;
@@ -406,9 +377,9 @@ handle_replay_gain_mode(Client &client, Request args)
 }
 
 CommandResult
-handle_replay_gain_status(Client &client, gcc_unused Request args)
+handle_replay_gain_status(gcc_unused Client &client, gcc_unused Request args,
+			  Response &r)
 {
-	Response r(client);
 	r.Format("replay_gain_mode: %s\n", replay_gain_get_mode_string());
 	return CommandResult::OK;
 }

@@ -34,12 +34,12 @@ CommandResult
 handle_listfiles_storage(Response &r, const char *uri);
 
 CommandResult
-handle_listmounts(Client &client, Request args);
+handle_listmounts(Client &client, Request request, Response &response);
 
 CommandResult
-handle_mount(Client &client, Request args);
+handle_mount(Client &client, Request request, Response &response);
 
 CommandResult
-handle_unmount(Client &client, Request args);
+handle_unmount(Client &client, Request request, Response &response);
 
 #endif

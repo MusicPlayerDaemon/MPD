@@ -24,20 +24,21 @@
 
 class Client;
 class Request;
+class Response;
 
 CommandResult
-handle_subscribe(Client &client, Request args);
+handle_subscribe(Client &client, Request request, Response &response);
 
 CommandResult
-handle_unsubscribe(Client &client, Request args);
+handle_unsubscribe(Client &client, Request request, Response &response);
 
 CommandResult
-handle_channels(Client &client, Request args);
+handle_channels(Client &client, Request request, Response &response);
 
 CommandResult
-handle_read_messages(Client &client, Request args);
+handle_read_messages(Client &client, Request request, Response &response);
 
 CommandResult
-handle_send_message(Client &client, Request args);
+handle_send_message(Client &client, Request request, Response &response);
 
 #endif

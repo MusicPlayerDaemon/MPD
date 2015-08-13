@@ -24,8 +24,9 @@
 
 class Client;
 class Request;
+class Response;
 
 CommandResult
-handle_sticker(Client &client, Request args);
+handle_sticker(Client &client, Request request, Response &response);
 
 #endif

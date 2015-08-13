@@ -24,11 +24,13 @@
 
 class Client;
 class Request;
+class Response;
 
 CommandResult
-handle_listfiles_local(Client &client, const char *path_utf8);
+handle_listfiles_local(Client &client, Response &response,
+		       const char *path_utf8);
 
 CommandResult
-handle_read_comments(Client &client, Request args);
+handle_read_comments(Client &client, Request request, Response &response);
 
 #endif

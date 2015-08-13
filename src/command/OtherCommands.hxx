@@ -24,53 +24,54 @@
 
 class Client;
 class Request;
+class Response;
 
 CommandResult
-handle_urlhandlers(Client &client, Request args);
+handle_urlhandlers(Client &client, Request request, Response &response);
 
 CommandResult
-handle_decoders(Client &client, Request args);
+handle_decoders(Client &client, Request request, Response &response);
 
 CommandResult
-handle_tagtypes(Client &client, Request args);
+handle_tagtypes(Client &client, Request request, Response &response);
 
 CommandResult
-handle_kill(Client &client, Request args);
+handle_kill(Client &client, Request request, Response &response);
 
 CommandResult
-handle_close(Client &client, Request args);
+handle_close(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listfiles(Client &client, Request args);
+handle_listfiles(Client &client, Request request, Response &response);
 
 CommandResult
-handle_lsinfo(Client &client, Request args);
+handle_lsinfo(Client &client, Request request, Response &response);
 
 CommandResult
-handle_update(Client &client, Request args);
+handle_update(Client &client, Request request, Response &response);
 
 CommandResult
-handle_rescan(Client &client, Request args);
+handle_rescan(Client &client, Request request, Response &response);
 
 CommandResult
-handle_setvol(Client &client, Request args);
+handle_setvol(Client &client, Request request, Response &response);
 
 CommandResult
-handle_volume(Client &client, Request args);
+handle_volume(Client &client, Request request, Response &response);
 
 CommandResult
-handle_stats(Client &client, Request args);
+handle_stats(Client &client, Request request, Response &response);
 
 CommandResult
-handle_ping(Client &client, Request args);
+handle_ping(Client &client, Request request, Response &response);
 
 CommandResult
-handle_password(Client &client, Request args);
+handle_password(Client &client, Request request, Response &response);
 
 CommandResult
-handle_config(Client &client, Request args);
+handle_config(Client &client, Request request, Response &response);
 
 CommandResult
-handle_idle(Client &client, Request args);
+handle_idle(Client &client, Request request, Response &response);
 
 #endif

@@ -191,10 +191,8 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 }
 
 CommandResult
-handle_sticker(Client &client, Request args)
+handle_sticker(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	assert(args.size >= 3);
 
 	if (!sticker_enabled()) {

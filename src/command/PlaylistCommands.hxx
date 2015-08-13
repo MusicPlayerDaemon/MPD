@@ -25,42 +25,43 @@
 
 class Client;
 class Request;
+class Response;
 
 gcc_const
 bool
 playlist_commands_available();
 
 CommandResult
-handle_save(Client &client, Request args);
+handle_save(Client &client, Request request, Response &response);
 
 CommandResult
-handle_load(Client &client, Request args);
+handle_load(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listplaylist(Client &client, Request args);
+handle_listplaylist(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listplaylistinfo(Client &client, Request args);
+handle_listplaylistinfo(Client &client, Request request, Response &response);
 
 CommandResult
-handle_rm(Client &client, Request args);
+handle_rm(Client &client, Request request, Response &response);
 
 CommandResult
-handle_rename(Client &client, Request args);
+handle_rename(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistdelete(Client &client, Request args);
+handle_playlistdelete(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistmove(Client &client, Request args);
+handle_playlistmove(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistclear(Client &client, Request args);
+handle_playlistclear(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistadd(Client &client, Request args);
+handle_playlistadd(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listplaylists(Client &client, Request args);
+handle_listplaylists(Client &client, Request request, Response &response);
 
 #endif

@@ -24,11 +24,12 @@
 
 class Client;
 class Request;
+class Response;
 
 CommandResult
-handle_addtagid(Client &client, Request args);
+handle_addtagid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_cleartagid(Client &client, Request args);
+handle_cleartagid(Client &client, Request request, Response &response);
 
 #endif

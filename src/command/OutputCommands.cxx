@@ -28,10 +28,8 @@
 #include "util/ConstBuffer.hxx"
 
 CommandResult
-handle_enableoutput(Client &client, Request args)
+handle_enableoutput(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	assert(args.size == 1);
 	unsigned device;
 	if (!args.Parse(0, device, r))
@@ -46,10 +44,8 @@ handle_enableoutput(Client &client, Request args)
 }
 
 CommandResult
-handle_disableoutput(Client &client, Request args)
+handle_disableoutput(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	assert(args.size == 1);
 	unsigned device;
 	if (!args.Parse(0, device, r))
@@ -64,10 +60,8 @@ handle_disableoutput(Client &client, Request args)
 }
 
 CommandResult
-handle_toggleoutput(Client &client, Request args)
+handle_toggleoutput(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	assert(args.size == 1);
 	unsigned device;
 	if (!args.Parse(0, device, r))
@@ -82,12 +76,10 @@ handle_toggleoutput(Client &client, Request args)
 }
 
 CommandResult
-handle_devices(Client &client, gcc_unused Request args)
+handle_devices(Client &client, gcc_unused Request args, Response &r)
 {
 	assert(args.IsEmpty());
 
-	Response r(client);
 	printAudioDevices(r, client.partition.outputs);
-
 	return CommandResult::OK;
 }

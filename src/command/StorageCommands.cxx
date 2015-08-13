@@ -168,10 +168,8 @@ print_storage_uri(Client &client, Response &r, const Storage &storage)
 }
 
 CommandResult
-handle_listmounts(Client &client, gcc_unused Request args)
+handle_listmounts(Client &client, gcc_unused Request args, Response &r)
 {
-	Response r(client);
-
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No database");
@@ -192,10 +190,8 @@ handle_listmounts(Client &client, gcc_unused Request args)
 }
 
 CommandResult
-handle_mount(Client &client, Request args)
+handle_mount(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No database");
@@ -256,10 +252,8 @@ handle_mount(Client &client, Request args)
 }
 
 CommandResult
-handle_unmount(Client &client, Request args)
+handle_unmount(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	Storage *_composite = client.partition.instance.storage;
 	if (_composite == nullptr) {
 		r.Error(ACK_ERROR_NO_EXIST, "No database");

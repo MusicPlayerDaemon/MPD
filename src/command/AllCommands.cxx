@@ -64,15 +64,15 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	CommandResult (*handler)(Client &client, Request args);
+	CommandResult (*handler)(Client &client, Request request, Response &response);
 };
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, Request args);
+handle_commands(Client &client, Request request, Response &response);
 
 static CommandResult
-handle_not_commands(Client &client, Request args);
+handle_not_commands(Client &client, Request request, Response &response);
 
 /**
  * The command registry.
@@ -257,17 +257,15 @@ PrintUnavailableCommands(Response &r, unsigned permission)
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, gcc_unused Request args)
+handle_commands(Client &client, gcc_unused Request request, Response &r)
 {
-	Response r(client);
 	return PrintAvailableCommands(r, client.partition,
 				      client.GetPermission());
 }
 
 static CommandResult
-handle_not_commands(Client &client, gcc_unused Request args)
+handle_not_commands(Client &client, gcc_unused Request request, Response &r)
 {
-	Response r(client);
 	return PrintUnavailableCommands(r, client.GetPermission());
 }
 
@@ -308,11 +306,10 @@ command_lookup(const char *name)
 }
 
 static bool
-command_check_request(const struct command *cmd, Client &client,
+command_check_request(const struct command *cmd, Response &r,
 		      unsigned permission, Request args)
 {
 	if (cmd->permission != (permission & cmd->permission)) {
-		Response r(client);
 		r.FormatError(ACK_ERROR_PERMISSION,
 			      "you don't have permission for \"%s\"",
 			      cmd->cmd);
@@ -326,18 +323,15 @@ command_check_request(const struct command *cmd, Client &client,
 		return true;
 
 	if (min == max && unsigned(max) != args.size) {
-		Response r(client);
 		r.FormatError(ACK_ERROR_ARG,
 			      "wrong number of arguments for \"%s\"",
 			      cmd->cmd);
 		return false;
 	} else if (args.size < unsigned(min)) {
-		Response r(client);
 		r.FormatError(ACK_ERROR_ARG,
 			      "too few arguments for \"%s\"", cmd->cmd);
 		return false;
 	} else if (max >= 0 && args.size > unsigned(max)) {
-		Response r(client);
 		r.FormatError(ACK_ERROR_ARG,
 			      "too many arguments for \"%s\"", cmd->cmd);
 		return false;
@@ -346,14 +340,13 @@ command_check_request(const struct command *cmd, Client &client,
 }
 
 static const struct command *
-command_checked_lookup(Client &client, unsigned permission,
+command_checked_lookup(Response &r, unsigned permission,
 		       const char *cmd_name, Request args)
 {
 	current_command = "";
 
 	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
-		Response r(client);
 		r.FormatError(ACK_ERROR_UNKNOWN,
 			      "unknown command \"%s\"", cmd_name);
 		return nullptr;
@@ -361,7 +354,7 @@ command_checked_lookup(Client &client, unsigned permission,
 
 	current_command = cmd->cmd;
 
-	if (!command_check_request(cmd, client, permission, args))
+	if (!command_check_request(cmd, r, permission, args))
 		return nullptr;
 
 	return cmd;
@@ -370,6 +363,7 @@ command_checked_lookup(Client &client, unsigned permission,
 CommandResult
 command_process(Client &client, unsigned num, char *line)
 {
+	Response r(client);
 	Error error;
 
 	command_list_num = num;
@@ -385,7 +379,6 @@ command_process(Client &client, unsigned num, char *line)
 	if (cmd_name == nullptr) {
 		current_command = "";
 
-		Response r(client);
 		if (tokenizer.IsEnd())
 			r.FormatError(ACK_ERROR_UNKNOWN, "No command given");
 		else
@@ -405,7 +398,6 @@ command_process(Client &client, unsigned num, char *line)
 
 	while (true) {
 		if (args.size == COMMAND_ARGV_MAX) {
-			Response r(client);
 			r.Error(ACK_ERROR_ARG, "Too many arguments");
 			current_command = nullptr;
 			return CommandResult::ERROR;
@@ -416,7 +408,6 @@ command_process(Client &client, unsigned num, char *line)
 			if (tokenizer.IsEnd())
 				break;
 
-			Response r(client);
 			r.Error(ACK_ERROR_UNKNOWN, error.GetMessage());
 			current_command = nullptr;
 			return CommandResult::ERROR;
@@ -428,11 +419,11 @@ command_process(Client &client, unsigned num, char *line)
 	/* look up and invoke the command handler */
 
 	const struct command *cmd =
-		command_checked_lookup(client, client.GetPermission(),
+		command_checked_lookup(r, client.GetPermission(),
 				       cmd_name, args);
 
 	CommandResult ret = cmd
-		? cmd->handler(client, args)
+		? cmd->handler(client, args, r)
 		: CommandResult::ERROR;
 
 	current_command = nullptr;

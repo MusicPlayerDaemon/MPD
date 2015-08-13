@@ -54,10 +54,8 @@ translate_uri(const char *uri)
 }
 
 CommandResult
-handle_add(Client &client, Request args)
+handle_add(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *uri = args.front();
 	if (memcmp(uri, "/", 2) == 0)
 		/* this URI is malformed, but some clients are buggy
@@ -94,10 +92,8 @@ handle_add(Client &client, Request args)
 }
 
 CommandResult
-handle_addid(Client &client, Request args)
+handle_addid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *const uri = translate_uri(args.front());
 
 	const SongLoader loader(client);
@@ -156,10 +152,8 @@ parse_time_range(const char *p, SongTime &start_r, SongTime &end_r)
 }
 
 CommandResult
-handle_rangeid(Client &client, Request args)
+handle_rangeid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned id;
 	if (!args.Parse(0, id, r))
 		return CommandResult::ERROR;
@@ -180,10 +174,8 @@ handle_rangeid(Client &client, Request args)
 }
 
 CommandResult
-handle_delete(Client &client, Request args)
+handle_delete(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	RangeArg range;
 	if (!args.Parse(0, range, r))
 		return CommandResult::ERROR;
@@ -193,10 +185,8 @@ handle_delete(Client &client, Request args)
 }
 
 CommandResult
-handle_deleteid(Client &client, Request args)
+handle_deleteid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned id;
 	if (!args.Parse(0, id, r))
 		return CommandResult::ERROR;
@@ -206,18 +196,15 @@ handle_deleteid(Client &client, Request args)
 }
 
 CommandResult
-handle_playlist(Client &client, gcc_unused Request args)
+handle_playlist(Client &client, gcc_unused Request args, Response &r)
 {
-	Response r(client);
 	playlist_print_uris(r, client.partition, client.playlist);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_shuffle(gcc_unused Client &client, Request args)
+handle_shuffle(gcc_unused Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	RangeArg range = RangeArg::All();
 	if (!args.ParseOptional(0, range, r))
 		return CommandResult::ERROR;
@@ -227,17 +214,15 @@ handle_shuffle(gcc_unused Client &client, Request args)
 }
 
 CommandResult
-handle_clear(gcc_unused Client &client, gcc_unused Request args)
+handle_clear(Client &client, gcc_unused Request args, gcc_unused Response &r)
 {
 	client.partition.ClearQueue();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_plchanges(Client &client, Request args)
+handle_plchanges(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	uint32_t version;
 	if (!ParseCommandArg32(r, version, args.front()))
 		return CommandResult::ERROR;
@@ -248,10 +233,8 @@ handle_plchanges(Client &client, Request args)
 }
 
 CommandResult
-handle_plchangesposid(Client &client, Request args)
+handle_plchangesposid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	uint32_t version;
 	if (!ParseCommandArg32(r, version, args.front()))
 		return CommandResult::ERROR;
@@ -261,10 +244,8 @@ handle_plchangesposid(Client &client, Request args)
 }
 
 CommandResult
-handle_playlistinfo(Client &client, Request args)
+handle_playlistinfo(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	RangeArg range = RangeArg::All();
 	if (!args.ParseOptional(0, range, r))
 		return CommandResult::ERROR;
@@ -278,10 +259,8 @@ handle_playlistinfo(Client &client, Request args)
 }
 
 CommandResult
-handle_playlistid(Client &client, Request args)
+handle_playlistid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	if (!args.IsEmpty()) {
 		unsigned id;
 		if (!args.Parse(0, id, r))
@@ -300,11 +279,9 @@ handle_playlistid(Client &client, Request args)
 }
 
 static CommandResult
-handle_playlist_match(Client &client, Request args,
+handle_playlist_match(Client &client, Request args, Response &r,
 		      bool fold_case)
 {
-	Response r(client);
-
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
 		r.Error(ACK_ERROR_ARG, "incorrect arguments");
@@ -316,22 +293,20 @@ handle_playlist_match(Client &client, Request args,
 }
 
 CommandResult
-handle_playlistfind(Client &client, Request args)
+handle_playlistfind(Client &client, Request args, Response &r)
 {
-	return handle_playlist_match(client, args, false);
+	return handle_playlist_match(client, args, r, false);
 }
 
 CommandResult
-handle_playlistsearch(Client &client, Request args)
+handle_playlistsearch(Client &client, Request args, Response &r)
 {
-	return handle_playlist_match(client, args, true);
+	return handle_playlist_match(client, args, r, true);
 }
 
 CommandResult
-handle_prio(Client &client, Request args)
+handle_prio(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned priority;
 	if (!args.ParseShift(0, priority, r, 0xff))
 		return CommandResult::ERROR;
@@ -353,10 +328,8 @@ handle_prio(Client &client, Request args)
 }
 
 CommandResult
-handle_prioid(Client &client, Request args)
+handle_prioid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned priority;
 	if (!args.ParseShift(0, priority, r, 0xff))
 		return CommandResult::ERROR;
@@ -376,10 +349,8 @@ handle_prioid(Client &client, Request args)
 }
 
 CommandResult
-handle_move(Client &client, Request args)
+handle_move(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	RangeArg range;
 	int to;
 
@@ -392,10 +363,8 @@ handle_move(Client &client, Request args)
 }
 
 CommandResult
-handle_moveid(Client &client, Request args)
+handle_moveid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned id;
 	int to;
 	if (!args.Parse(0, id, r) || !args.Parse(1, to, r))
@@ -406,10 +375,8 @@ handle_moveid(Client &client, Request args)
 }
 
 CommandResult
-handle_swap(Client &client, Request args)
+handle_swap(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned song1, song2;
 	if (!args.Parse(0, song1, r) || !args.Parse(1, song2, r))
 		return CommandResult::ERROR;
@@ -420,10 +387,8 @@ handle_swap(Client &client, Request args)
 }
 
 CommandResult
-handle_swapid(Client &client, Request args)
+handle_swapid(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	unsigned id1, id2;
 	if (!args.Parse(0, id1, r) || !args.Parse(1, id2, r))
 		return CommandResult::ERROR;

@@ -38,9 +38,8 @@
 #include <string.h>
 
 CommandResult
-handle_listfiles_db(Client &client, const char *uri)
+handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
-	Response r(client);
 	const DatabaseSelection selection(uri, false);
 
 	Error error;
@@ -52,10 +51,8 @@ handle_listfiles_db(Client &client, const char *uri)
 }
 
 CommandResult
-handle_lsinfo2(Client &client, Request args)
+handle_lsinfo2(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
@@ -70,10 +67,8 @@ handle_lsinfo2(Client &client, Request args)
 }
 
 static CommandResult
-handle_match(Client &client, Request args, bool fold_case)
+handle_match(Client &client, Request args, Response &r, bool fold_case)
 {
-	Response r(client);
-
 	RangeArg window;
 	if (args.size >= 2 && strcmp(args[args.size - 2], "window") == 0) {
 		if (!args.Parse(args.size - 1, window, r))
@@ -101,22 +96,20 @@ handle_match(Client &client, Request args, bool fold_case)
 }
 
 CommandResult
-handle_find(Client &client, Request args)
+handle_find(Client &client, Request args, Response &r)
 {
-	return handle_match(client, args, false);
+	return handle_match(client, args, r, false);
 }
 
 CommandResult
-handle_search(Client &client, Request args)
+handle_search(Client &client, Request args, Response &r)
 {
-	return handle_match(client, args, true);
+	return handle_match(client, args, r, true);
 }
 
 static CommandResult
-handle_match_add(Client &client, Request args, bool fold_case)
+handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 {
-	Response r(client);
-
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
 		r.Error(ACK_ERROR_ARG, "incorrect arguments");
@@ -133,22 +126,20 @@ handle_match_add(Client &client, Request args, bool fold_case)
 }
 
 CommandResult
-handle_findadd(Client &client, Request args)
+handle_findadd(Client &client, Request args, Response &r)
 {
-	return handle_match_add(client, args, false);
+	return handle_match_add(client, args, r, false);
 }
 
 CommandResult
-handle_searchadd(Client &client, Request args)
+handle_searchadd(Client &client, Request args, Response &r)
 {
-	return handle_match_add(client, args, true);
+	return handle_match_add(client, args, r, true);
 }
 
 CommandResult
-handle_searchaddpl(Client &client, Request args)
+handle_searchaddpl(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *playlist = args.shift();
 
 	SongFilter filter;
@@ -169,10 +160,8 @@ handle_searchaddpl(Client &client, Request args)
 }
 
 CommandResult
-handle_count(Client &client, Request args)
+handle_count(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
 	if (args.size >= 2 && strcmp(args[args.size - 2], "group") == 0) {
 		const char *s = args[args.size - 1];
@@ -200,10 +189,8 @@ handle_count(Client &client, Request args)
 }
 
 CommandResult
-handle_listall(Client &client, Request args)
+handle_listall(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
@@ -216,10 +203,8 @@ handle_listall(Client &client, Request args)
 }
 
 CommandResult
-handle_list(Client &client, Request args)
+handle_list(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	const char *tag_name = args.shift();
 	unsigned tagType = locate_parse_type(tag_name);
 
@@ -290,10 +275,8 @@ handle_list(Client &client, Request args)
 }
 
 CommandResult
-handle_listallinfo(Client &client, Request args)
+handle_listallinfo(Client &client, Request args, Response &r)
 {
-	Response r(client);
-
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 

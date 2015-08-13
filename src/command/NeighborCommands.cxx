@@ -40,10 +40,8 @@ neighbor_commands_available(const Instance &instance)
 }
 
 CommandResult
-handle_listneighbors(Client &client, gcc_unused Request args)
+handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
 {
-	Response r(client);
-
 	const NeighborGlue *const neighbors =
 		client.partition.instance.neighbors;
 	if (neighbors == nullptr) {
