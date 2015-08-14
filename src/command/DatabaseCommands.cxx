@@ -32,6 +32,7 @@
 #include "tag/Tag.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
+#include "util/StringAPI.hxx"
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
 
@@ -70,7 +71,7 @@ static CommandResult
 handle_match(Client &client, Request args, Response &r, bool fold_case)
 {
 	RangeArg window;
-	if (args.size >= 2 && strcmp(args[args.size - 2], "window") == 0) {
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "window")) {
 		if (!args.Parse(args.size - 1, window, r))
 			return CommandResult::ERROR;
 
@@ -163,7 +164,7 @@ CommandResult
 handle_count(Client &client, Request args, Response &r)
 {
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
-	if (args.size >= 2 && strcmp(args[args.size - 2], "group") == 0) {
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "group")) {
 		const char *s = args[args.size - 1];
 		group = tag_name_parse_i(s);
 		if (group == TAG_NUM_OF_ITEM_TYPES) {
@@ -231,7 +232,7 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	while (args.size >= 2 &&
-	       strcmp(args[args.size - 2], "group") == 0) {
+	       StringIsEqual(args[args.size - 2], "group")) {
 		const char *s = args[args.size - 1];
 		TagType gt = tag_name_parse_i(s);
 		if (gt == TAG_NUM_OF_ITEM_TYPES) {

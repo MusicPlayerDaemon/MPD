@@ -40,6 +40,7 @@
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerCommands.hxx"
@@ -204,23 +205,23 @@ command_available(gcc_unused const Partition &partition,
 		  gcc_unused const struct command *cmd)
 {
 #ifdef ENABLE_SQLITE
-	if (strcmp(cmd->cmd, "sticker") == 0)
+	if (StringIsEqual(cmd->cmd, "sticker"))
 		return sticker_enabled();
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	if (strcmp(cmd->cmd, "listneighbors") == 0)
+	if (StringIsEqual(cmd->cmd, "listneighbors"))
 		return neighbor_commands_available(partition.instance);
 #endif
 
-	if (strcmp(cmd->cmd, "save") == 0 ||
-	    strcmp(cmd->cmd, "rm") == 0 ||
-	    strcmp(cmd->cmd, "rename") == 0 ||
-	    strcmp(cmd->cmd, "playlistdelete") == 0 ||
-	    strcmp(cmd->cmd, "playlistmove") == 0 ||
-	    strcmp(cmd->cmd, "playlistclear") == 0 ||
-	    strcmp(cmd->cmd, "playlistadd") == 0 ||
-	    strcmp(cmd->cmd, "listplaylists") == 0)
+	if (StringIsEqual(cmd->cmd, "save") ||
+	    StringIsEqual(cmd->cmd, "rm") ||
+	    StringIsEqual(cmd->cmd, "rename") ||
+	    StringIsEqual(cmd->cmd, "playlistdelete") ||
+	    StringIsEqual(cmd->cmd, "playlistmove") ||
+	    StringIsEqual(cmd->cmd, "playlistclear") ||
+	    StringIsEqual(cmd->cmd, "playlistadd") ||
+	    StringIsEqual(cmd->cmd, "listplaylists"))
 		return playlist_commands_available();
 
 	return true;

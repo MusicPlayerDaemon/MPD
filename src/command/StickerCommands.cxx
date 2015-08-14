@@ -33,8 +33,7 @@
 #include "Instance.hxx"
 #include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
-
-#include <string.h>
+#include "util/StringAPI.hxx"
 
 struct sticker_song_find_data {
 	Response &r;
@@ -64,7 +63,7 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 	const char *const cmd = args.front();
 
 	/* get song song_id key */
-	if (args.size == 4 && strcmp(cmd, "get") == 0) {
+	if (args.size == 4 && StringIsEqual(cmd, "get")) {
 		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
 			return print_error(r, error);
@@ -84,7 +83,7 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 
 		return CommandResult::OK;
 	/* list song song_id */
-	} else if (args.size == 3 && strcmp(cmd, "list") == 0) {
+	} else if (args.size == 3 && StringIsEqual(cmd, "list")) {
 		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
 			return print_error(r, error);
@@ -99,7 +98,7 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 
 		return CommandResult::OK;
 	/* set song song_id id key */
-	} else if (args.size == 5 && strcmp(cmd, "set") == 0) {
+	} else if (args.size == 5 && StringIsEqual(cmd, "set")) {
 		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
 			return print_error(r, error);
@@ -119,7 +118,7 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 		return CommandResult::OK;
 	/* delete song song_id [key] */
 	} else if ((args.size == 3 || args.size == 4) &&
-		   strcmp(cmd, "delete") == 0) {
+		   StringIsEqual(cmd, "delete")) {
 		const LightSong *song = db->GetSong(args[2], error);
 		if (song == nullptr)
 			return print_error(r, error);
@@ -139,7 +138,7 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 		return CommandResult::OK;
 	/* find song dir key */
 	} else if ((args.size == 4 || args.size == 6) &&
-		   strcmp(cmd, "find") == 0) {
+		   StringIsEqual(cmd, "find")) {
 		/* "sticker find song a/directory name" */
 
 		const char *const base_uri = args[2];
@@ -153,11 +152,11 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 			const char *op_s = args[4];
 			value = args[5];
 
-			if (strcmp(op_s, "=") == 0)
+			if (StringIsEqual(op_s, "="))
 				op = StickerOperator::EQUALS;
-			else if (strcmp(op_s, "<") == 0)
+			else if (StringIsEqual(op_s, "<"))
 				op = StickerOperator::LESS_THAN;
-			else if (strcmp(op_s, ">") == 0)
+			else if (StringIsEqual(op_s, ">"))
 				op = StickerOperator::GREATER_THAN;
 			else {
 				r.Error(ACK_ERROR_ARG, "bad operator");
@@ -200,7 +199,7 @@ handle_sticker(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	if (strcmp(args[1], "song") == 0)
+	if (StringIsEqual(args[1], "song"))
 		return handle_sticker_song(r, client.partition, args);
 	else {
 		r.Error(ACK_ERROR_ARG, "unknown sticker domain");

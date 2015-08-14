@@ -22,8 +22,7 @@
 #include "protocol/Result.hxx"
 #include "command/AllCommands.hxx"
 #include "Log.hxx"
-
-#include <string.h>
+#include "util/StringAPI.hxx"
 
 #define CLIENT_LIST_MODE_BEGIN "command_list_begin"
 #define CLIENT_LIST_OK_MODE_BEGIN "command_list_ok_begin"
@@ -56,7 +55,7 @@ client_process_line(Client &client, char *line)
 {
 	CommandResult ret;
 
-	if (strcmp(line, "noidle") == 0) {
+	if (StringIsEqual(line, "noidle")) {
 		if (client.idle_waiting) {
 			/* send empty idle response and leave idle mode */
 			client.idle_waiting = false;
@@ -78,7 +77,7 @@ client_process_line(Client &client, char *line)
 	}
 
 	if (client.cmd_list.IsActive()) {
-		if (strcmp(line, CLIENT_LIST_MODE_END) == 0) {
+		if (StringIsEqual(line, CLIENT_LIST_MODE_END)) {
 			FormatDebug(client_domain,
 				    "[%u] process command list",
 				    client.num);
@@ -113,10 +112,10 @@ client_process_line(Client &client, char *line)
 			ret = CommandResult::OK;
 		}
 	} else {
-		if (strcmp(line, CLIENT_LIST_MODE_BEGIN) == 0) {
+		if (StringIsEqual(line, CLIENT_LIST_MODE_BEGIN)) {
 			client.cmd_list.Begin(false);
 			ret = CommandResult::OK;
-		} else if (strcmp(line, CLIENT_LIST_OK_MODE_BEGIN) == 0) {
+		} else if (StringIsEqual(line, CLIENT_LIST_OK_MODE_BEGIN)) {
 			client.cmd_list.Begin(true);
 			ret = CommandResult::OK;
 		} else {

@@ -37,6 +37,7 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
 #include "Permission.hxx"
@@ -265,7 +266,7 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 	if (!args.IsEmpty()) {
 		path = args.front();
 
-		if (*path == 0 || strcmp(path, "/") == 0)
+		if (*path == 0 || StringIsEqual(path, "/"))
 			/* backwards compatibility with MPD 0.15 */
 			path = "";
 		else if (!uri_safe_local(path)) {
