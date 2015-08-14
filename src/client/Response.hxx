@@ -37,12 +37,21 @@ class Response {
 	 */
 	const unsigned list_index;
 
+	/**
+	 * This command's name.  Used to generate error messages.
+	 */
+	const char *command;
+
 public:
 	Response(Client &_client, unsigned _list_index)
-		:client(_client), list_index(_list_index) {}
+		:client(_client), list_index(_list_index), command("") {}
 
 	Response(const Response &) = delete;
 	Response &operator=(const Response &) = delete;
+
+	void SetCommand(const char *_command) {
+		command = _command;
+	}
 
 	bool Write(const void *data, size_t length);
 	bool Write(const char *data);

@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Response.hxx"
 #include "Client.hxx"
-#include "protocol/Result.hxx"
 #include "util/FormatString.hxx"
 
 #include <string.h>
@@ -66,7 +65,7 @@ void
 Response::FormatError(enum ack code, const char *fmt, ...)
 {
 	Format("ACK [%i@%u] {%s} ",
-	       (int)code, list_index, current_command);
+	       (int)code, list_index, command);
 
 	va_list args;
 	va_start(args, fmt);

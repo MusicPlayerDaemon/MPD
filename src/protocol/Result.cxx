@@ -21,8 +21,6 @@
 #include "Result.hxx"
 #include "client/Client.hxx"
 
-const char *current_command;
-
 void
 command_success(Client &client)
 {

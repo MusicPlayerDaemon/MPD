@@ -24,8 +24,6 @@
 
 class Client;
 
-extern const char *current_command;
-
 void
 command_success(Client &client);
 

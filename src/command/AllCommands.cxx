@@ -33,7 +33,6 @@
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
 #include "tag/TagType.h"
-#include "protocol/Result.hxx"
 #include "Partition.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
@@ -343,8 +342,6 @@ static const struct command *
 command_checked_lookup(Response &r, unsigned permission,
 		       const char *cmd_name, Request args)
 {
-	current_command = "";
-
 	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
 		r.FormatError(ACK_ERROR_UNKNOWN,
@@ -352,7 +349,7 @@ command_checked_lookup(Response &r, unsigned permission,
 		return nullptr;
 	}
 
-	current_command = cmd->cmd;
+	r.SetCommand(cmd->cmd);
 
 	if (!command_check_request(cmd, r, permission, args))
 		return nullptr;
@@ -372,17 +369,12 @@ command_process(Client &client, unsigned num, char *line)
 
 	Tokenizer tokenizer(line);
 
-	const char *const cmd_name = current_command =
-		tokenizer.NextWord(error);
+	const char *const cmd_name = tokenizer.NextWord(error);
 	if (cmd_name == nullptr) {
-		current_command = "";
-
 		if (tokenizer.IsEnd())
 			r.FormatError(ACK_ERROR_UNKNOWN, "No command given");
 		else
 			r.Error(ACK_ERROR_UNKNOWN, error.GetMessage());
-
-		current_command = nullptr;
 
 		/* this client does not speak the MPD protocol; kick
 		   the connection */
@@ -397,7 +389,6 @@ command_process(Client &client, unsigned num, char *line)
 	while (true) {
 		if (args.size == COMMAND_ARGV_MAX) {
 			r.Error(ACK_ERROR_ARG, "Too many arguments");
-			current_command = nullptr;
 			return CommandResult::ERROR;
 		}
 
@@ -407,7 +398,6 @@ command_process(Client &client, unsigned num, char *line)
 				break;
 
 			r.Error(ACK_ERROR_UNKNOWN, error.GetMessage());
-			current_command = nullptr;
 			return CommandResult::ERROR;
 		}
 
@@ -423,8 +413,6 @@ command_process(Client &client, unsigned num, char *line)
 	CommandResult ret = cmd
 		? cmd->handler(client, args, r)
 		: CommandResult::ERROR;
-
-	current_command = nullptr;
 
 	return ret;
 }
