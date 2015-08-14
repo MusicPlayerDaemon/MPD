@@ -37,7 +37,7 @@ void
 ArgParserTest::TestRange()
 {
 	Client &client = *(Client *)nullptr;
-	Response r(client);
+	Response r(client, 0);
 
 	RangeArg range;
 

@@ -22,7 +22,6 @@
 #include "client/Client.hxx"
 
 const char *current_command;
-int command_list_num;
 
 void
 command_success(Client &client)

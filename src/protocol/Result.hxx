@@ -25,7 +25,6 @@
 class Client;
 
 extern const char *current_command;
-extern int command_list_num;
 
 void
 command_success(Client &client);

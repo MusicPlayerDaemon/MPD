@@ -65,8 +65,8 @@ Response::Error(enum ack code, const char *msg)
 void
 Response::FormatError(enum ack code, const char *fmt, ...)
 {
-	Format("ACK [%i@%i] {%s} ",
-	       (int)code, command_list_num, current_command);
+	Format("ACK [%i@%u] {%s} ",
+	       (int)code, list_index, current_command);
 
 	va_list args;
 	va_start(args, fmt);

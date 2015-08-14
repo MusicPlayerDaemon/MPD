@@ -363,10 +363,8 @@ command_checked_lookup(Response &r, unsigned permission,
 CommandResult
 command_process(Client &client, unsigned num, char *line)
 {
-	Response r(client);
+	Response r(client, num);
 	Error error;
-
-	command_list_num = num;
 
 	/* get the command name (first word on the line) */
 	/* we have to set current_command because Response::Error()
@@ -427,7 +425,6 @@ command_process(Client &client, unsigned num, char *line)
 		: CommandResult::ERROR;
 
 	current_command = nullptr;
-	command_list_num = 0;
 
 	return ret;
 }

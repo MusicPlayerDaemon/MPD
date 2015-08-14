@@ -31,8 +31,15 @@ class Client;
 class Response {
 	Client &client;
 
+	/**
+	 * This command's index in the command list.  Used to generate
+	 * error messages.
+	 */
+	const unsigned list_index;
+
 public:
-	explicit Response(Client &_client):client(_client) {}
+	Response(Client &_client, unsigned _list_index)
+		:client(_client), list_index(_list_index) {}
 
 	Response(const Response &) = delete;
 	Response &operator=(const Response &) = delete;
