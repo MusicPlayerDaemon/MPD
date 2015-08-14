@@ -58,7 +58,7 @@ class CommandListBuilder {
 
 public:
 	CommandListBuilder()
-		:mode(Mode::DISABLED), size(0) {}
+		:mode(Mode::DISABLED) {}
 
 	/**
 	 * Is a command list currently being built?
@@ -89,6 +89,7 @@ public:
 		assert(mode == Mode::DISABLED);
 
 		mode = (Mode)ok;
+		size = 0;
 	}
 
 	/**
