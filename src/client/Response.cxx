@@ -59,14 +59,19 @@ Response::Format(const char *fmt, ...)
 void
 Response::Error(enum ack code, const char *msg)
 {
-	command_error(client, code, "%s", msg);
+	FormatError(code, "%s", msg);
 }
 
 void
 Response::FormatError(enum ack code, const char *fmt, ...)
 {
+	Format("ACK [%i@%i] {%s} ",
+	       (int)code, command_list_num, current_command);
+
 	va_list args;
 	va_start(args, fmt);
-	command_error_v(client, code, fmt, args);
+	FormatV(fmt, args);
 	va_end(args);
+
+	Write("\n");
 }

@@ -21,10 +21,6 @@
 #define MPD_PROTOCOL_RESULT_HXX
 
 #include "check.h"
-#include "Compiler.h"
-#include "Ack.hxx"
-
-#include <stdarg.h>
 
 class Client;
 
@@ -33,13 +29,5 @@ extern int command_list_num;
 
 void
 command_success(Client &client);
-
-void
-command_error_v(Client &client, enum ack error,
-		const char *fmt, va_list args);
-
-gcc_printf(3,4)
-void
-command_error(Client &client, enum ack error, const char *fmt, ...);
 
 #endif
