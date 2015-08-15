@@ -82,4 +82,20 @@ public:
 	}
 };
 
+gcc_pure
+static inline pid_t
+ReadPidFile(Path path)
+{
+	FILE *fp = FOpen(path, PATH_LITERAL("r"));
+	if (fp == nullptr)
+		return -1;
+
+	int pid;
+	if (fscanf(fp, "%i", &pid) != 1)
+		pid = -1;
+
+	fclose(fp);
+	return pid;
+}
+
 #endif
