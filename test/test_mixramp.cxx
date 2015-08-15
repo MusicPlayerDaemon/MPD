@@ -3,7 +3,7 @@
  */
 
 #include "config.h"
-#include "CrossFade.cxx"
+#include "player/CrossFade.cxx"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>

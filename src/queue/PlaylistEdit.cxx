@@ -26,7 +26,7 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"

@@ -26,7 +26,7 @@
  * audio outputs via audio_output_all_play().
  *
  * It is controlled by the main thread (the playlist code), see
- * PlayerControl.hxx.  The playlist enqueues new songs into the player
+ * Control.hxx.  The playlist enqueues new songs into the player
  * thread and sends it commands.
  *
  * The player thread itself does not do any I/O.  It synchronizes with

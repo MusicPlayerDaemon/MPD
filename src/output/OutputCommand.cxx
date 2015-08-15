@@ -28,7 +28,7 @@
 #include "OutputCommand.hxx"
 #include "MultipleOutputs.hxx"
 #include "Internal.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "mixer/MixerControl.hxx"
 #include "Idle.hxx"
 

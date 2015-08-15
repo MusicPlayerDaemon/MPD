@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include "PlayerThread.hxx"
-#include "PlayerListener.hxx"
+#include "Thread.hxx"
+#include "Listener.hxx"
 #include "decoder/DecoderThread.hxx"
 #include "decoder/DecoderControl.hxx"
 #include "MusicPipe.hxx"
@@ -28,7 +28,7 @@
 #include "DetachedSong.hxx"
 #include "system/FatalError.hxx"
 #include "CrossFade.hxx"
-#include "PlayerControl.hxx"
+#include "Control.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "tag/Tag.hxx"
 #include "Idle.hxx"

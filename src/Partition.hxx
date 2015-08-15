@@ -23,8 +23,8 @@
 #include "queue/Playlist.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "mixer/Listener.hxx"
-#include "PlayerControl.hxx"
-#include "PlayerListener.hxx"
+#include "player/Control.hxx"
+#include "player/Listener.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 

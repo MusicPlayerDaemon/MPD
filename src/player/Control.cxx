@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "PlayerControl.hxx"
+#include "Control.hxx"
 #include "Idle.hxx"
 #include "DetachedSong.hxx"
 

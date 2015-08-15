@@ -27,7 +27,7 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "thread/Util.hxx"

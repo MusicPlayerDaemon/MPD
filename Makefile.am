@@ -95,7 +95,6 @@ libmpd_a_SOURCES = \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
-	src/CrossFade.cxx src/CrossFade.hxx \
 	src/decoder/DecoderError.cxx src/decoder/DecoderError.hxx \
 	src/decoder/DecoderThread.cxx src/decoder/DecoderThread.hxx \
 	src/decoder/DecoderCommand.hxx \
@@ -140,9 +139,10 @@ libmpd_a_SOURCES = \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/Partition.cxx src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \
-	src/PlayerThread.cxx src/PlayerThread.hxx \
-	src/PlayerControl.cxx src/PlayerControl.hxx \
-	src/PlayerListener.hxx \
+	src/player/CrossFade.cxx src/player/CrossFade.hxx \
+	src/player/Thread.cxx src/player/Thread.hxx \
+	src/player/Control.cxx src/player/Control.hxx \
+	src/player/Listener.hxx \
 	src/PlaylistError.cxx src/PlaylistError.hxx \
 	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \

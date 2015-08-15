@@ -20,7 +20,7 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "DetachedSong.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"

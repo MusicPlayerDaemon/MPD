@@ -25,7 +25,7 @@
 #include "PlaylistGlobal.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
-#include "PlayerThread.hxx"
+#include "player/Thread.hxx"
 #include "Mapper.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"

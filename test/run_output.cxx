@@ -31,7 +31,7 @@
 #include "AudioParser.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "filter/FilterRegistry.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "stdbin.h"
 #include "util/Error.hxx"
 #include "Log.hxx"

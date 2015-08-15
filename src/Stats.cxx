@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Stats.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"

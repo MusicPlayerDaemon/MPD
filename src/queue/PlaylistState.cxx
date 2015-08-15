@@ -29,7 +29,7 @@
 #include "queue/QueueSave.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "util/CharUtil.hxx"
