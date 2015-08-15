@@ -66,7 +66,7 @@ void
 daemonize_kill(void)
 {
 	FILE *fp;
-	int pid, ret;
+	int pid;
 
 	if (pidfile.IsNull())
 		FatalError("no pid_file specified in the config file");
@@ -85,8 +85,7 @@ daemonize_kill(void)
 	}
 	fclose(fp);
 
-	ret = kill(pid, SIGTERM);
-	if (ret < 0)
+	if (kill(pid, SIGTERM) < 0)
 		FormatFatalSystemError("unable to kill process %i",
 				       int(pid));
 
