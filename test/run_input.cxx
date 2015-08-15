@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "TagSave.hxx"
-#include "stdbin.h"
 #include "tag/Tag.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "input/InputStream.hxx"

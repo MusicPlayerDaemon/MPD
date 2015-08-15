@@ -1657,7 +1657,6 @@ test_run_input_LDADD = \
 	libutil.a
 test_run_input_SOURCES = test/run_input.cxx \
 	test/ScopeIOThread.hxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/TagSave.cxx
@@ -1749,7 +1748,6 @@ test_dump_text_file_LDADD = \
 	libutil.a
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/ScopeIOThread.hxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx
 
@@ -1801,7 +1799,6 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
@@ -1851,7 +1848,6 @@ test_run_filter_LDADD = \
 	libutil.a
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterRegistry.cxx \
 	src/CheckAudioFormat.cxx \
@@ -1862,7 +1858,6 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.cxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
@@ -1882,7 +1877,6 @@ endif
 if ENABLE_VORBISENC
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
@@ -1902,7 +1896,6 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 endif
 
 test_software_volume_SOURCES = test/software_volume.cxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
@@ -1924,7 +1917,6 @@ test_run_avahi_LDADD = \
 	$(AVAHI_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \
-	test/stdbin.h \
 	src/CheckAudioFormat.cxx \
 	src/AudioCompress/compress.c \
 	src/AudioParser.cxx
@@ -1962,7 +1954,6 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/ScopeIOThread.hxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/CheckAudioFormat.cxx \

@@ -31,7 +31,6 @@
 #include "util/StaticFifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "stdbin.h"
 
 #include <assert.h>
 #include <stddef.h>

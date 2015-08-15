@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "input/TextInputStream.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "stdbin.h"
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"

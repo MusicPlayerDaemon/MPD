@@ -29,7 +29,6 @@
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
-#include "stdbin.h"
 #include "Log.hxx"
 
 #include <stdio.h>

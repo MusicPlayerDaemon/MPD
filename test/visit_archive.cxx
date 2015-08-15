@@ -18,7 +18,6 @@
  */
 
 #include "config.h"
-#include "stdbin.h"
 #include "tag/Tag.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "ScopeIOThread.hxx"

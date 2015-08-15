@@ -28,7 +28,6 @@
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
-#include "stdbin.h"
 
 #include <stddef.h>
 #include <stdio.h>

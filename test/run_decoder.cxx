@@ -28,7 +28,6 @@
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "stdbin.h"
 
 #include <assert.h>
 #include <unistd.h>
