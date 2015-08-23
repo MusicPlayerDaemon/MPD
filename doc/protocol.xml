@@ -1475,15 +1475,15 @@ OK
             <cmdsynopsis>
               <command>playlistmove</command>
               <arg choice="req"><replaceable>NAME</replaceable></arg>
-              <arg choice="req"><replaceable>SONGID</replaceable></arg>
-              <arg choice="req"><replaceable>SONGPOS</replaceable></arg>
+              <arg choice="req"><replaceable>FROM</replaceable></arg>
+              <arg choice="req"><replaceable>TO</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Moves <varname>SONGID</varname> in the playlist
-              <filename>NAME.m3u</filename> to the position
-              <varname>SONGPOS</varname>.
+              Moves the song at position <varname>FROM</varname> in
+              the playlist <filename>NAME.m3u</filename> to the
+              position <varname>TO</varname>.
             </para>
           </listitem>
         </varlistentry>
