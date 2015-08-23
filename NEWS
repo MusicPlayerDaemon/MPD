@@ -16,6 +16,7 @@ ver 0.20 (not yet released)
   - ffmpeg: support stream tags
   - mpcdec: read the bit rate
 * playlist
+  - cue: don't skip pregap
   - embcue: fix last track
 * output
   - jack: reduce CPU usage

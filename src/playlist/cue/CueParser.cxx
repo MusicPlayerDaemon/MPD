@@ -273,6 +273,7 @@ CueParser::Feed2(char *p)
 		}
 
 		current->SetStartTime(SongTime::FromMS(position_ms));
+		state = IGNORE_TRACK;
 	}
 }
 
