@@ -26,12 +26,9 @@
 void
 tag_print_types(Response &r)
 {
-	int i;
-
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
 		if (!ignore_tag_items[i])
 			r.Format("tagtype: %s\n", tag_item_names[i]);
-	}
 }
 
 void
