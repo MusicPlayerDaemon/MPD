@@ -17,29 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_SETTINGS_HXX
-#define MPD_TAG_SETTINGS_HXX
-
-#include "Mask.hxx"
-#include "TagType.h"
-#include "Compiler.h"
+#ifndef MPD_TAG_MASK_HXX
+#define MPD_TAG_MASK_HXX
 
 #include <stdint.h>
 
-extern tag_mask_t global_tag_mask;
-
-gcc_const
-static inline bool
-IsTagEnabled(unsigned tag)
-{
-	return global_tag_mask & (1u << tag);
-}
-
-gcc_const
-static inline bool
-IsTagEnabled(TagType tag)
-{
-	return IsTagEnabled(unsigned(tag));
-}
+typedef uint_least32_t tag_mask_t;
 
 #endif
