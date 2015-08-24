@@ -23,9 +23,11 @@
 #include "TagType.h"
 #include "Compiler.h"
 
-#include <stdbool.h>
+#include <stdint.h>
 
-extern bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
+typedef uint_least32_t tag_mask_t;
+
+extern tag_mask_t global_tag_mask;
 
 #ifdef __cplusplus
 
@@ -33,7 +35,7 @@ gcc_const
 static inline bool
 IsTagEnabled(unsigned tag)
 {
-	return !ignore_tag_items[tag];
+	return global_tag_mask & (1u << tag);
 }
 
 gcc_const

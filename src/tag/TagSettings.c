@@ -19,7 +19,4 @@
 
 #include "TagSettings.h"
 
-bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES] = {
-	/* ignore comments by default */
-	[TAG_COMMENT] = true,
-};
+tag_mask_t global_tag_mask = (tag_mask_t)-1 & ~(1 << TAG_COMMENT);

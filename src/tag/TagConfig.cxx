@@ -39,7 +39,7 @@ TagLoadConfig()
 	if (value == nullptr)
 		return;
 
-	std::fill_n(ignore_tag_items, size_t(TAG_NUM_OF_ITEM_TYPES), true);
+	global_tag_mask = 0;
 
 	if (StringEqualsCaseASCII(value, "none"))
 		return;
@@ -62,7 +62,7 @@ TagLoadConfig()
 				FormatFatalError("error parsing metadata item \"%s\"",
 						 c);
 
-			ignore_tag_items[type] = false;
+			global_tag_mask |= tag_mask_t(1) << unsigned(type);
 
 			s++;
 			c = s;
