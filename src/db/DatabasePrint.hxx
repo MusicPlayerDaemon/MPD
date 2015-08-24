@@ -20,9 +20,8 @@
 #ifndef MPD_DB_PRINT_H
 #define MPD_DB_PRINT_H
 
+#include "tag/Mask.hxx"
 #include "Compiler.h"
-
-#include <stdint.h>
 
 class SongFilter;
 struct DatabaseSelection;
@@ -49,7 +48,7 @@ db_selection_print(Response &r, Partition &partition,
 
 bool
 PrintUniqueTags(Response &r, Partition &partition,
-		unsigned type, uint32_t group_mask,
+		unsigned type, tag_mask_t group_mask,
 		const SongFilter *filter,
 		Error &error);
 

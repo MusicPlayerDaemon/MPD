@@ -58,16 +58,16 @@ CopyTagItem(TagBuilder &dest, const Tag &src, TagType type)
  * Copy all tag items of the types in the mask.
  */
 static void
-CopyTagMask(TagBuilder &dest, const Tag &src, uint32_t mask)
+CopyTagMask(TagBuilder &dest, const Tag &src, tag_mask_t mask)
 {
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if ((mask & (1u << i)) != 0)
+		if ((mask & (tag_mask_t(1) << i)) != 0)
 			CopyTagItem(dest, src, TagType(i));
 }
 
 void
 TagSet::InsertUnique(const Tag &src, TagType type, const char *value,
-		     uint32_t group_mask)
+		     tag_mask_t group_mask)
 {
 	TagBuilder builder;
 	if (value == nullptr)
@@ -85,7 +85,7 @@ TagSet::InsertUnique(const Tag &src, TagType type, const char *value,
 bool
 TagSet::CheckUnique(TagType dest_type,
 		    const Tag &tag, TagType src_type,
-		    uint32_t group_mask)
+		    tag_mask_t group_mask)
 {
 	bool found = false;
 
@@ -101,12 +101,12 @@ TagSet::CheckUnique(TagType dest_type,
 
 void
 TagSet::InsertUnique(const Tag &tag,
-		     TagType type, uint32_t group_mask)
+		     TagType type, tag_mask_t group_mask)
 {
 	static_assert(sizeof(group_mask) * 8 >= TAG_NUM_OF_ITEM_TYPES,
 		      "Mask is too small");
 
-	assert((group_mask & (1u << unsigned(type))) == 0);
+	assert((group_mask & (tag_mask_t(1) << unsigned(type))) == 0);
 
 	if (!CheckUnique(type, tag, type, group_mask) &&
 	    (type != TAG_ALBUM_ARTIST ||

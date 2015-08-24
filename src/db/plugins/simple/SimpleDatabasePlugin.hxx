@@ -121,7 +121,7 @@ public:
 			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, uint32_t group_mask,
+				     TagType tag_type, tag_mask_t group_mask,
 				     VisitTag visit_tag,
 				     Error &error) const override;
 

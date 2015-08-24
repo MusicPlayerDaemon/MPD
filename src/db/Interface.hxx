@@ -22,10 +22,10 @@
 
 #include "Visitor.hxx"
 #include "tag/TagType.h"
+#include "tag/Mask.hxx"
 #include "Compiler.h"
 
 #include <time.h>
-#include <stdint.h>
 
 struct DatabasePlugin;
 struct DatabaseStats;
@@ -107,7 +107,7 @@ public:
 	 * Visit all unique tag values.
 	 */
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, uint32_t group_mask,
+				     TagType tag_type, tag_mask_t group_mask,
 				     VisitTag visit_tag,
 				     Error &error) const = 0;
 

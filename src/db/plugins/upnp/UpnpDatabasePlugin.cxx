@@ -94,7 +94,7 @@ public:
 			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, uint32_t group_mask,
+				     TagType tag_type, tag_mask_t group_mask,
 				     VisitTag visit_tag,
 				     Error &error) const override;
 
@@ -723,7 +723,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 
 bool
 UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-			      TagType tag, gcc_unused uint32_t group_mask,
+			      TagType tag, gcc_unused tag_mask_t group_mask,
 			      VisitTag visit_tag,
 			      Error &error) const
 {

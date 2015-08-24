@@ -223,7 +223,7 @@ PrintUniqueTag(Response &r, TagType tag_type,
 
 bool
 PrintUniqueTags(Response &r, Partition &partition,
-		unsigned type, uint32_t group_mask,
+		unsigned type, tag_mask_t group_mask,
 		const SongFilter *filter,
 		Error &error)
 {

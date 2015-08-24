@@ -217,7 +217,7 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	SongFilter *filter = nullptr;
-	uint32_t group_mask = 0;
+	tag_mask_t group_mask = 0;
 
 	if (args.size == 1) {
 		/* for compatibility with < 0.12.0 */
@@ -241,7 +241,7 @@ handle_list(Client &client, Request args, Response &r)
 			return CommandResult::ERROR;
 		}
 
-		group_mask |= 1u << unsigned(gt);
+		group_mask |= tag_mask_t(1) << unsigned(gt);
 
 		args.pop_back();
 		args.pop_back();
@@ -257,7 +257,7 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
-	    group_mask & (1u << tagType)) {
+	    group_mask & (tag_mask_t(1) << tagType)) {
 		delete filter;
 		r.Error(ACK_ERROR_ARG, "Conflicting group");
 		return CommandResult::ERROR;
