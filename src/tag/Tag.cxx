@@ -21,7 +21,6 @@
 #include "Tag.hxx"
 #include "TagPool.hxx"
 #include "TagString.hxx"
-#include "TagSettings.h"
 #include "TagBuilder.hxx"
 #include "util/ASCII.hxx"
 
