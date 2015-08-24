@@ -21,9 +21,28 @@
 #define MPD_TAG_SETTINGS_H
 
 #include "TagType.h"
+#include "Compiler.h"
 
 #include <stdbool.h>
 
 extern bool ignore_tag_items[TAG_NUM_OF_ITEM_TYPES];
+
+#ifdef __cplusplus
+
+gcc_const
+static inline bool
+IsTagEnabled(unsigned tag)
+{
+	return !ignore_tag_items[tag];
+}
+
+gcc_const
+static inline bool
+IsTagEnabled(TagType tag)
+{
+	return IsTagEnabled(unsigned(tag));
+}
+
+#endif
 
 #endif

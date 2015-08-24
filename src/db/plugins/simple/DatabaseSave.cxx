@@ -58,7 +58,7 @@ db_save_internal(BufferedOutputStream &os, const Directory &music_root)
 	os.Format("%s%s\n", DIRECTORY_FS_CHARSET, GetFSCharset());
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (!ignore_tag_items[i])
+		if (IsTagEnabled(i))
 			os.Format(DB_TAG_PREFIX "%s\n", tag_item_names[i]);
 
 	os.Format("%s\n", DIRECTORY_INFO_END);
@@ -142,7 +142,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 	}
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		if (!ignore_tag_items[i] && !tags[i]) {
+		if (IsTagEnabled(i) && !tags[i]) {
 			error.Set(db_domain,
 				  "Tag list mismatch, "
 				  "discarding database file");

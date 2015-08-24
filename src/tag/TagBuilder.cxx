@@ -220,7 +220,7 @@ TagBuilder::AddItem(TagType type, const char *value, size_t length)
 	assert(value != nullptr);
 #endif
 
-	if (length == 0 || ignore_tag_items[type])
+	if (length == 0 || !IsTagEnabled(type))
 		return;
 
 	AddItemInternal(type, value, length);

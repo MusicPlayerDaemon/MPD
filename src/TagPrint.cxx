@@ -27,7 +27,7 @@ void
 tag_print_types(Response &r)
 {
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
-		if (!ignore_tag_items[i])
+		if (IsTagEnabled(i))
 			r.Format("tagtype: %s\n", tag_item_names[i]);
 }
 
