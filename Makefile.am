@@ -818,7 +818,7 @@ libtag_a_SOURCES =\
 	src/tag/TagBuilder.cxx src/tag/TagBuilder.hxx \
 	src/tag/TagItem.hxx \
 	src/tag/TagHandler.cxx src/tag/TagHandler.hxx \
-	src/tag/TagSettings.c src/tag/TagSettings.h \
+	src/tag/Settings.cxx src/tag/Settings.hxx \
 	src/tag/TagConfig.cxx src/tag/TagConfig.hxx \
 	src/tag/TagNames.c \
 	src/tag/TagString.cxx src/tag/TagString.hxx \

@@ -26,7 +26,7 @@
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/TextFile.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagSettings.h"
+#include "tag/Settings.hxx"
 #include "fs/Charset.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"

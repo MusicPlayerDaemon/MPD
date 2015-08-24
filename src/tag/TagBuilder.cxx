@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "TagBuilder.hxx"
-#include "TagSettings.h"
+#include "Settings.hxx"
 #include "TagPool.hxx"
 #include "TagString.hxx"
 #include "Tag.hxx"

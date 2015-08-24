@@ -19,7 +19,7 @@
 
 #include "Set.hxx"
 #include "TagBuilder.hxx"
-#include "TagSettings.h"
+#include "Settings.hxx"
 
 #include <assert.h>
 

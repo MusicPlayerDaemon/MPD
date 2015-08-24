@@ -20,7 +20,7 @@
 #include "config.h"
 #include "TagPrint.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagSettings.h"
+#include "tag/Settings.hxx"
 #include "client/Response.hxx"
 
 void

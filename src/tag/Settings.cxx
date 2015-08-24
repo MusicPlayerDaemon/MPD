@@ -17,6 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "TagSettings.h"
+#include "Settings.hxx"
 
 tag_mask_t global_tag_mask = (tag_mask_t)-1 & ~(1 << TAG_COMMENT);
