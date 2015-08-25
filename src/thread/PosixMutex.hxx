@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2009-2015 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,9 +41,13 @@ class PosixMutex {
 	pthread_mutex_t mutex;
 
 public:
-#if defined(__NetBSD__) || defined(__BIONIC__)
-	/* NetBSD's PTHREAD_MUTEX_INITIALIZER is not compatible with
-	   "constexpr" */
+#ifdef __GLIBC__
+	/* optimized constexpr constructor for pthread implementations
+	   that support it */
+	constexpr PosixMutex():mutex(PTHREAD_MUTEX_INITIALIZER) {}
+#else
+	/* slow fallback for pthread implementations that are not
+	   compatible with "constexpr" */
 	PosixMutex() {
 		pthread_mutex_init(&mutex, nullptr);
 	}
@@ -51,10 +55,6 @@ public:
 	~PosixMutex() {
 		pthread_mutex_destroy(&mutex);
 	}
-#else
-	/* optimized constexpr constructor for sane POSIX
-	   implementations */
-	constexpr PosixMutex():mutex(PTHREAD_MUTEX_INITIALIZER) {}
 #endif
 
 	PosixMutex(const PosixMutex &other) = delete;
