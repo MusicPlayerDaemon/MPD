@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2009-2015 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,8 +31,6 @@
 #define THREAD_COND_HXX
 
 #ifdef WIN32
-
-/* mingw-w64 4.6.3 lacks a std::cond implementation */
 
 #include "WindowsCond.hxx"
 class Cond : public WindowsCond {};
