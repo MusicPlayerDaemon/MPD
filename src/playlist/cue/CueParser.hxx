@@ -89,12 +89,6 @@ class CueParser {
 	DetachedSong *finished;
 
 	/**
-	 * Set to true after previous.end_time has been updated to the
-	 * start time of the current song.
-	 */
-	bool last_updated;
-
-	/**
 	 * Tracks whether cue_parser_finish() has been called.  If
 	 * true, then all remaining (partial) results will be
 	 * delivered by cue_parser_get().

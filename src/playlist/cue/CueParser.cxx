@@ -250,7 +250,6 @@ CueParser::Feed2(char *p)
 		song_tag = header_tag;
 		song_tag.AddItem(TAG_TRACK, nr);
 
-		last_updated = false;
 	} else if (state == IGNORE_TRACK) {
 		return;
 	} else if (state == TRACK && strcmp(command, "INDEX") == 0) {
@@ -266,14 +265,12 @@ CueParser::Feed2(char *p)
 		if (position_ms < 0)
 			return;
 
-		if (!last_updated && previous != nullptr &&
-		    previous->GetStartTime().ToMS() < (unsigned)position_ms) {
-			last_updated = true;
+		if (previous != nullptr && previous->GetStartTime().ToMS() < (unsigned)position_ms)
 			previous->SetEndTime(SongTime::FromMS(position_ms));
-		}
 
 		current->SetStartTime(SongTime::FromMS(position_ms));
-		state = IGNORE_TRACK;
+		if(strcmp(nr, "00") != 0 || previous == nullptr)
+			state = IGNORE_TRACK;
 	}
 }
 
