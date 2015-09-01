@@ -90,7 +90,7 @@ public:
 
 	static AllocatedString Duplicate(const_pointer begin,
 					 size_t length) {
-		auto p = new value_type[length];
+		auto p = new value_type[length + 1];
 		*std::copy_n(begin, length, p) = SENTINEL;
 		return Donate(p);
 	}
