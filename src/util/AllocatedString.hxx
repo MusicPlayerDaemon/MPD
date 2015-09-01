@@ -47,6 +47,8 @@ public:
 	typedef typename StringPointer<T>::pointer pointer;
 	typedef typename StringPointer<T>::const_pointer const_pointer;
 
+	static constexpr value_type SENTINEL = '\0';
+
 private:
 	pointer value;
 
@@ -73,7 +75,7 @@ public:
 
 	static AllocatedString Empty() {
 		auto p = new value_type[1];
-		p[0] = value_type(0);
+		p[0] = SENTINEL;
 		return Donate(p);
 	}
 
@@ -82,14 +84,14 @@ public:
 	static AllocatedString Duplicate(const_pointer begin,
 					 const_pointer end) {
 		auto p = new value_type[end - begin + 1];
-		*std::copy(begin, end, p) = 0;
+		*std::copy(begin, end, p) = SENTINEL;
 		return Donate(p);
 	}
 
 	static AllocatedString Duplicate(const_pointer begin,
 					 size_t length) {
 		auto p = new value_type[length];
-		*std::copy_n(begin, length, p) = 0;
+		*std::copy_n(begin, length, p) = SENTINEL;
 		return Donate(p);
 	}
 
@@ -107,7 +109,7 @@ public:
 	}
 
 	bool empty() const {
-		return *value == 0;
+		return *value == SENTINEL;
 	}
 
 	pointer Steal() {
