@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef STRING_API_HPP
-#define STRING_API_HPP
+#ifndef STRING_API_HXX
+#define STRING_API_HXX
 
 #include "Compiler.h"
 
