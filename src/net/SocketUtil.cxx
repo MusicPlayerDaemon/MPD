@@ -69,7 +69,7 @@ socket_bind_listen(int domain, int type, int protocol,
 		return -1;
 	}
 
-#ifdef HAVE_STRUCT_UCRED
+#if defined(HAVE_STRUCT_UCRED) && defined(SO_PASSCRED)
 	setsockopt(fd, SOL_SOCKET, SO_PASSCRED,
 		   (const char *) &reuse, sizeof(reuse));
 #endif
