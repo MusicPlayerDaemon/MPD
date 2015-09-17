@@ -1,3 +1,8 @@
+resource app_signature "application/x-vnd.MusicPD";
+
+resource app_flags B_BACKGROUND_APP;
+
+// TODO: resource app_version {};
 
 resource vector_icon {
 	$"6E6369661F050102031604BEE29BBEC5403EC540BEE29B4A10004A10000001C6"
