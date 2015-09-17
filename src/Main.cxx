@@ -639,7 +639,7 @@ static int mpd_main_after_fork(struct options options)
 					 config_get_unsigned(ConfigOption::AUTO_UPDATE_DEPTH,
 							     INT_MAX));
 #else
-		FormatWarning(main_domain,
+		FormatWarning(config_domain,
 			      "inotify: auto_update was disabled. enable during compilation phase");
 #endif
 	}
