@@ -37,6 +37,10 @@
 #include <grp.h>
 #endif
 
+#ifndef WCOREDUMP
+#define WCOREDUMP(v) 0
+#endif
+
 static constexpr Domain daemon_domain("daemon");
 
 #ifndef WIN32
