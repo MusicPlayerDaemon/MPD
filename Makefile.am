@@ -342,6 +342,28 @@ EXTRA_src_mpd_DEPENDENCIES = win32/res/mpd.$(OBJEXT)
 src_mpd_LDFLAGS = -Wl,win32/res/mpd.$(OBJEXT)
 endif
 
+#
+# Haiku resource file
+#
+
+src/haiku/mpd.rsrc: src/haiku/mpd.rdef
+	$(RC) -o $@ $<
+
+if HAVE_HAIKU
+noinst_DATA = src/haiku/mpd.rdef
+
+EXTRA_src_mpd_DEPENDENCIES = src/haiku/mpd.rsrc
+
+src/mpd.haiku-rsrc-done: src/mpd src/haiku/mpd.rsrc
+	$(XRES) -o src/mpd src/haiku/mpd.rsrc
+	@touch src/mpd.haiku-rsrc-done
+
+all-local: src/mpd.haiku-rsrc-done
+
+clean-local:
+	rm -rf src/haiku/mpd.rsrc src/mpd.haiku-rsrc-done
+endif
+
 if ENABLE_DATABASE
 if ENABLE_INOTIFY
 libmpd_a_SOURCES += \
@@ -2243,4 +2265,5 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	android/src/Bridge.java \
 	android/src/Loader.java \
 	android/src/Main.java \
-	win32/res/mpd.rc.in win32/res/mpd.ico
+	win32/res/mpd.rc.in win32/res/mpd.ico \
+	src/haiku/App_MusicPD
