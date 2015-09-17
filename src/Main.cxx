@@ -54,7 +54,6 @@
 #include "system/FatalError.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "thread/Id.hxx"
 #include "thread/Slack.hxx"
 #include "lib/icu/Init.hxx"
@@ -122,8 +121,6 @@
 
 static constexpr unsigned DEFAULT_BUFFER_SIZE = 4096;
 static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
-
-static constexpr Domain main_domain("main");
 
 #ifdef ANDROID
 Context *context;

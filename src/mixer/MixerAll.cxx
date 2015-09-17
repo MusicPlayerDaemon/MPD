@@ -25,12 +25,9 @@
 #include "output/Internal.hxx"
 #include "pcm/Volume.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
-
-static constexpr Domain mixer_domain("mixer");
 
 static int
 output_mixer_get_volume(const AudioOutput &ao)

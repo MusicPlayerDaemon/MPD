@@ -22,7 +22,6 @@
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
-#include "util/Domain.hxx"
 #include "PidFile.hxx"
 #include "Log.hxx"
 
@@ -36,8 +35,6 @@
 #include <pwd.h>
 #include <grp.h>
 #endif
-
-static constexpr Domain daemon_domain("daemon");
 
 #ifndef WIN32
 

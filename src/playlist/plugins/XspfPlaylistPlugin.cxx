@@ -25,13 +25,10 @@
 #include "input/InputStream.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "Log.hxx"
 
 #include <string.h>
-
-static constexpr Domain xspf_domain("xspf");
 
 /**
  * This is the state object for the GLib XML parser.

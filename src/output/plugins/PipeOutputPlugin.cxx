@@ -22,7 +22,6 @@
 #include "../OutputAPI.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <string>
 
@@ -43,8 +42,6 @@ struct PipeOutput {
 
 	bool Configure(const config_param &param, Error &error);
 };
-
-static constexpr Domain pipe_output_domain("pipe_output");
 
 inline bool
 PipeOutput::Configure(const config_param &param, Error &error)
