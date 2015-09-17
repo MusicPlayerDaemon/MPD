@@ -116,6 +116,10 @@ darwin*)
 solaris*)
 	host_is_solaris=yes
 	;;
+haiku*)
+	AC_CHECK_TOOL(RC, rc)
+	AC_CHECK_TOOL(XRES, xres)
+	;;
 esac
 
 AM_CONDITIONAL([ANDROID], [test x$host_is_android = xyes])
