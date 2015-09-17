@@ -1,4 +1,5 @@
 ver 0.19.15 (not yet released)
+* fix more build failures on non-glibc builds due to constexpr Mutex
 
 ver 0.19.14 (2016/03/18)
 * decoder
