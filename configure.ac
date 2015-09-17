@@ -333,6 +333,11 @@ AC_ARG_ENABLE(fifo,
 		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
 
+AC_ARG_ENABLE(haiku,
+	AS_HELP_STRING([--enable-haiku],
+		[enable the Haiku output plugin (default: auto)]),,
+	enable_haiku=auto)
+
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
@@ -1129,6 +1134,19 @@ fi
 MPD_DEFINE_CONDITIONAL(enable_fifo, HAVE_FIFO,
 	[support for writing audio to a FIFO])
 
+dnl ----------------------------------- Haiku ---------------------------------
+if test x$enable_haiku = xauto; then
+	AC_CHECK_HEADER(media/MediaDefs.h,
+		[enable_haiku=yes],
+		[enable_haiku=no])
+fi
+if test x$enable_haiku = xyes; then
+	AC_DEFINE(HAVE_HAIKU,1,[Define for compiling Haiku support])
+	LIBS="$LIBS -lbe -lmedia"
+fi
+
+AM_CONDITIONAL(HAVE_HAIKU, test x$enable_haiku = xyes)
+
 dnl ------------------------------- HTTPD Output ------------------------------
 if test x$enable_httpd_output = xauto; then
 	# handle HTTPD auto-detection: disable if no encoder is
@@ -1422,6 +1440,7 @@ printf '\nPlayback support:\n\t'
 results(alsa,ALSA)
 results(fifo,FIFO)
 results(recorder_output,[File Recorder])
+results(haiku,[Haiku])
 results(httpd_output,[HTTP Daemon])
 results(jack,[JACK])
 printf '\n\t'

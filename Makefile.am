@@ -1355,6 +1355,14 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/FifoOutputPlugin.hxx
 endif
 
+if HAVE_HAIKU
+liboutput_plugins_a_SOURCES += \
+	src/output/plugins/HaikuOutputPlugin.cxx \
+	src/output/plugins/HaikuOutputPlugin.hxx
+libmixer_plugins_a_SOURCES += \
+	src/mixer/plugins/HaikuMixerPlugin.cxx src/mixer/plugins/HaikuMixerPlugin.hxx
+endif
+
 if ENABLE_PIPE_OUTPUT
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/PipeOutputPlugin.cxx \

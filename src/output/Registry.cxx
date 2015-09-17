@@ -24,6 +24,7 @@
 #include "plugins/AoOutputPlugin.hxx"
 #include "plugins/FifoOutputPlugin.hxx"
 #include "plugins/httpd/HttpdOutputPlugin.hxx"
+#include "plugins/HaikuOutputPlugin.hxx"
 #include "plugins/JackOutputPlugin.hxx"
 #include "plugins/NullOutputPlugin.hxx"
 #include "plugins/OpenALOutputPlugin.hxx"
@@ -50,6 +51,9 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef HAVE_FIFO
 	&fifo_output_plugin,
+#endif
+#ifdef HAVE_HAIKU
+	&haiku_output_plugin,
 #endif
 #ifdef ENABLE_PIPE_OUTPUT
 	&pipe_output_plugin,

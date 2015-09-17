@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2003-2015 The Music Player Daemon Project
  * http://www.musicpd.org
+ * Copyright (C) 2014-2015 François 'mmu_man' Revol
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,23 +18,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/** \file
- *
- * This header provides "extern" declarations for all mixer plugins.
- */
+#ifndef MPD_HAIKU_OUTPUT_PLUGIN_HXX
+#define MPD_HAIKU_OUTPUT_PLUGIN_HXX
 
-#ifndef MPD_MIXER_LIST_HXX
-#define MPD_MIXER_LIST_HXX
+class HaikuOutput;
 
-struct MixerPlugin;
+extern const struct AudioOutputPlugin haiku_output_plugin;
 
-extern const MixerPlugin null_mixer_plugin;
-extern const MixerPlugin software_mixer_plugin;
-extern const MixerPlugin alsa_mixer_plugin;
-extern const MixerPlugin haiku_mixer_plugin;
-extern const MixerPlugin oss_mixer_plugin;
-extern const MixerPlugin roar_mixer_plugin;
-extern const MixerPlugin pulse_mixer_plugin;
-extern const MixerPlugin winmm_mixer_plugin;
+int
+haiku_output_get_volume(HaikuOutput &haiku);
+
+bool
+haiku_output_set_volume(HaikuOutput &haiku, unsigned volume);
 
 #endif
