@@ -217,7 +217,7 @@ if test x$enable_syslog = xyes; then
 	AC_DEFINE(HAVE_SYSLOG, 1, [Define if syslog() is available])
 fi
 
-AC_SEARCH_LIBS([socket], [socket])
+AC_SEARCH_LIBS([socket], [network socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 
 if test x$host_is_linux = xyes; then
