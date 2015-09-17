@@ -23,7 +23,6 @@
 #include "../Wrapper.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <string>
 
@@ -54,8 +53,6 @@ public:
 	size_t Play(const void *chunk, size_t size, Error &error);
 
 };
-
-static constexpr Domain pipe_output_domain("pipe_output");
 
 inline bool
 PipeOutput::Configure(const ConfigBlock &block, Error &error)

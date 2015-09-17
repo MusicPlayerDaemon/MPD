@@ -26,7 +26,6 @@
 #include "util/NumberParser.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 extern "C"
 {
@@ -59,8 +58,6 @@ struct ShineEncoder {
 
 	bool WriteChunk(bool flush);
 };
-
-static constexpr Domain shine_encoder_domain("shine_encoder");
 
 inline bool
 ShineEncoder::Configure(const ConfigBlock &block, gcc_unused Error &error)

@@ -28,13 +28,10 @@
 #include "util/StringUtil.hxx"
 #include "util/DivideString.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <string>
 
 #include <stdlib.h>
-
-static constexpr Domain pls_domain("pls");
 
 static bool
 FindPlaylistSection(TextInputStream &is)

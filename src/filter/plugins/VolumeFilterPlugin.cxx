@@ -26,7 +26,6 @@
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -49,8 +48,6 @@ public:
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
 				    Error &error) override;
 };
-
-static constexpr Domain volume_domain("pcm_volume");
 
 static Filter *
 volume_filter_init(gcc_unused const ConfigBlock &block,

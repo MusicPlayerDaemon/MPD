@@ -22,7 +22,6 @@
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
-#include "util/Domain.hxx"
 #include "PidFile.hxx"
 #include "Log.hxx"
 
@@ -40,8 +39,6 @@
 #ifndef WCOREDUMP
 #define WCOREDUMP(v) 0
 #endif
-
-static constexpr Domain daemon_domain("daemon");
 
 #ifndef WIN32
 
