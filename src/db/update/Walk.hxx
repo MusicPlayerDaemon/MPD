@@ -129,10 +129,12 @@ private:
 			       const char *name, const StorageFileInfo &info);
 
 	void UpdateDirectoryChild(Directory &directory,
+				  const ExcludeList &exclude_list,
 				  const char *name,
 				  const StorageFileInfo &info);
 
 	bool UpdateDirectory(Directory &directory,
+			     const ExcludeList &exclude_list,
 			     const StorageFileInfo &info);
 
 	/**

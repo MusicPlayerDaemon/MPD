@@ -219,6 +219,7 @@ UpdateWalk::UpdateRegularFile(Directory &directory,
 
 void
 UpdateWalk::UpdateDirectoryChild(Directory &directory,
+				 const ExcludeList &exclude_list,
 				 const char *name, const StorageFileInfo &info)
 {
 	assert(strchr(name, '/') == nullptr);
@@ -236,7 +237,7 @@ UpdateWalk::UpdateDirectoryChild(Directory &directory,
 
 		assert(&directory == subdir->parent);
 
-		if (!UpdateDirectory(*subdir, info))
+		if (!UpdateDirectory(*subdir, exclude_list, info))
 			editor.LockDeleteDirectory(subdir);
 	} else {
 		FormatDebug(update_domain,
@@ -327,7 +328,9 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 }
 
 bool
-UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
+UpdateWalk::UpdateDirectory(Directory &directory,
+			    const ExcludeList &exclude_list,
+			    const StorageFileInfo &info)
 {
 	assert(info.IsDirectory());
 
@@ -340,17 +343,17 @@ UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
 		return false;
 	}
 
-	ExcludeList exclude_list;
+	ExcludeList child_exclude_list(exclude_list);
 
 	{
 		const auto exclude_path_fs =
 			storage.MapChildFS(directory.GetPath(), ".mpdignore");
 		if (!exclude_path_fs.IsNull())
-			exclude_list.LoadFile(exclude_path_fs);
+			child_exclude_list.LoadFile(exclude_path_fs);
 	}
 
-	if (!exclude_list.IsEmpty())
-		RemoveExcludedFromDirectory(directory, exclude_list);
+	if (!child_exclude_list.IsEmpty())
+		RemoveExcludedFromDirectory(directory, child_exclude_list);
 
 	PurgeDeletedFromDirectory(directory);
 
@@ -361,7 +364,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
 
 		{
 			const auto name_fs = AllocatedPath::FromUTF8(name_utf8);
-			if (name_fs.IsNull() || exclude_list.Check(name_fs))
+			if (name_fs.IsNull() || child_exclude_list.Check(name_fs))
 				continue;
 		}
 
@@ -376,7 +379,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
 			continue;
 		}
 
-		UpdateDirectoryChild(directory, name_utf8, info2);
+		UpdateDirectoryChild(directory, child_exclude_list, name_utf8, info2);
 	}
 
 	directory.mtime = info.mtime;
@@ -468,7 +471,9 @@ UpdateWalk::UpdateUri(Directory &root, const char *uri)
 		return;
 	}
 
-	UpdateDirectoryChild(*parent, name, info);
+	ExcludeList exclude_list;
+
+	UpdateDirectoryChild(*parent, exclude_list, name, info);
 }
 
 bool
@@ -484,7 +489,9 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard)
 		if (!GetInfo(storage, "", info))
 			return false;
 
-		UpdateDirectory(root, info);
+		ExcludeList exclude_list;
+
+		UpdateDirectory(root, exclude_list, info);
 	}
 
 	return modified;

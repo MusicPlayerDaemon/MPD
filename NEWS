@@ -36,6 +36,8 @@ ver 0.20 (not yet released)
 * support libsystemd (instead of the older libsystemd-daemon)
 * database
   - proxy: add TCP keepalive option
+* update
+  - apply .mpdignore matches to subdirectories
 
 ver 0.19.10 (2015/06/21)
 * input

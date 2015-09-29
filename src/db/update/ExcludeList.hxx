@@ -36,15 +36,23 @@
 class Path;
 
 class ExcludeList {
+	const ExcludeList *const parent;
+
 #ifdef HAVE_CLASS_GLOB
 	std::forward_list<Glob> patterns;
 #endif
 
 public:
+	ExcludeList()
+		:parent(nullptr) {}
+
+	ExcludeList(const ExcludeList &_parent)
+		:parent(&_parent) {}
+
 	gcc_pure
 	bool IsEmpty() const {
 #ifdef HAVE_CLASS_GLOB
-		return patterns.empty();
+		return ((parent == nullptr) || parent->IsEmpty()) && patterns.empty();
 #else
 		/* not implemented */
 		return true;

@@ -89,6 +89,12 @@ ExcludeList::Check(Path name_fs) const
 	/* XXX include full path name in check */
 
 #ifdef HAVE_CLASS_GLOB
+	if (parent != nullptr) {
+		if (parent->Check(name_fs)) {
+			return true;
+		}
+	}
+
 	for (const auto &i : patterns)
 		if (i.Check(NarrowPath(name_fs).c_str()))
 			return true;
