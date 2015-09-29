@@ -25,6 +25,7 @@
 #include "Log.hxx"
 
 #include <assert.h>
+#include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
@@ -72,6 +73,8 @@ public:
 
 		char buffer[64];
 		sprintf(buffer, "%lu\n", (unsigned long)pid);
+
+		write(fd, buffer, strlen(buffer));
 		close(fd);
 	}
 
