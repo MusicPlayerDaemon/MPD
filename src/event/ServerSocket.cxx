@@ -431,6 +431,8 @@ ServerSocket::AddPath(AllocatedPath &&path, Error &error)
 #ifdef HAVE_UN
 	(void)error;
 
+	RemoveFile(path);
+
 	AllocatedSocketAddress address;
 	address.SetLocal(path.c_str());
 
