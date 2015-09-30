@@ -24,6 +24,7 @@
 #include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
+#include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "Log.hxx"
 
@@ -128,7 +129,8 @@ rss_char_data(void *user_data, const XML_Char *s, int len)
 
 	case RssParser::ITEM:
 		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
-			parser->tag_builder.AddItem(parser->tag_type, s, len);
+			parser->tag_builder.AddItem(parser->tag_type,
+						    StringView(s, len));
 
 		break;
 	}

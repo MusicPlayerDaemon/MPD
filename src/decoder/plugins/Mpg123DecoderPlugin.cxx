@@ -28,6 +28,7 @@
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #include <mpg123.h>
@@ -111,7 +112,7 @@ AddTagItem(TagBuilder &tag, TagType type, const mpg123_string &s)
 	assert(s.size >= s.fill);
 	assert(s.fill > 0);
 
-	tag.AddItem(type, s.p, s.fill - 1);
+	tag.AddItem(type, {s.p, s.fill - 1});
 }
 
 static void

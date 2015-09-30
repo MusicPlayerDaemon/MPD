@@ -21,6 +21,7 @@
 #include "ApeLoader.hxx"
 #include "system/ByteOrder.hxx"
 #include "fs/FileSystem.hxx"
+#include "util/StringView.hxx"
 
 #include <stdint.h>
 #include <assert.h>
@@ -89,7 +90,7 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 		if (remaining < size)
 			break;
 
-		if (!callback(flags, key, p, size))
+		if (!callback(flags, key, {p, size}))
 			break;
 
 		p += size;

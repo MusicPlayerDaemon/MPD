@@ -25,10 +25,11 @@
 
 #include <stddef.h>
 
+struct StringView;
 template<typename T> struct WritableBuffer;
 
 gcc_nonnull_all
 WritableBuffer<char>
-FixTagString(const char *p, size_t length);
+FixTagString(StringView p);
 
 #endif

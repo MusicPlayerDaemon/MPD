@@ -22,6 +22,7 @@
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/Domain.hxx"
+#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -76,7 +77,7 @@ icy_add_item(TagBuilder &tag, TagType type, const char *value)
 	}
 
 	if (length > 0)
-		tag.AddItem(type, value, length);
+		tag.AddItem(type, {value, length});
 }
 
 static void

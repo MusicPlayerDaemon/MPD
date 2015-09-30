@@ -25,6 +25,7 @@
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"
 #include "util/NumberParser.hxx"
+#include "util/StringView.hxx"
 
 #include <algorithm>
 #include <string>
@@ -36,23 +37,13 @@ UPnPDirContent::~UPnPDirContent()
 	/* this destructor exists here just so it won't get inlined */
 }
 
-gcc_pure gcc_nonnull_all
-static bool
-CompareStringLiteral(const char *literal, const char *value, size_t length)
-{
-	return length == strlen(literal) &&
-		memcmp(literal, value, length) == 0;
-}
-
 gcc_pure
 static UPnPDirObject::ItemClass
-ParseItemClass(const char *name, size_t length)
+ParseItemClass(StringView name)
 {
-	if (CompareStringLiteral("object.item.audioItem.musicTrack",
-				 name, length))
+	if (name.EqualsLiteral("object.item.audioItem.musicTrack"))
 		return UPnPDirObject::ItemClass::MUSIC;
-	else if (CompareStringLiteral("object.item.playlistItem",
-				      name, length))
+	else if (name.EqualsLiteral("object.item.playlistItem"))
 		return UPnPDirObject::ItemClass::PLAYLIST;
 	else
 		return UPnPDirObject::ItemClass::UNKNOWN;
@@ -239,7 +230,7 @@ protected:
 			break;
 
 		case CLASS:
-			object.item_class = ParseItemClass(s, len);
+			object.item_class = ParseItemClass(StringView(s, len));
 			break;
 		}
 	}

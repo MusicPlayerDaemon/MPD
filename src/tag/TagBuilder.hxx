@@ -28,6 +28,7 @@
 
 #include <stddef.h>
 
+struct StringView;
 struct TagItem;
 struct Tag;
 
@@ -141,7 +142,7 @@ public:
 	 * @param length the length of #value
 	 */
 	gcc_nonnull_all
-	void AddItem(TagType type, const char *value, size_t length);
+	void AddItem(TagType type, StringView value);
 
 	/**
 	 * Appends a new tag item.
@@ -171,7 +172,7 @@ public:
 
 private:
 	gcc_nonnull_all
-	void AddItemInternal(TagType type, const char *value, size_t length);
+	void AddItemInternal(TagType type, StringView value);
 };
 
 #endif

@@ -21,15 +21,16 @@
 #include "ApeReplayGain.hxx"
 #include "ApeLoader.hxx"
 #include "ReplayGain.hxx"
-#include "util/ASCII.hxx"
 #include "fs/Path.hxx"
+#include "util/ASCII.hxx"
+#include "util/StringView.hxx"
 
 #include <string.h>
 #include <stdlib.h>
 
 static bool
 replay_gain_ape_callback(unsigned long flags, const char *key,
-			 const char *_value, size_t value_length,
+			 StringView _value,
 			 ReplayGainInfo &info)
 {
 	/* we only care about utf-8 text tags */
@@ -37,11 +38,11 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 		return false;
 
 	char value[16];
-	if (value_length >= sizeof(value))
+	if (_value.size >= sizeof(value))
 		return false;
 
-	memcpy(value, _value, value_length);
-	value[value_length] = 0;
+	memcpy(value, _value.data, _value.size);
+	value[_value.size] = 0;
 
 	return ParseReplayGainTag(info, key, value);
 }
@@ -53,10 +54,9 @@ replay_gain_ape_read(Path path_fs, ReplayGainInfo &info)
 
 	auto callback = [&info, &found]
 		(unsigned long flags, const char *key,
-		 const char *value,
-		 size_t value_length) {
+		 StringView value) {
 		found |= replay_gain_ape_callback(flags, key,
-						  value, value_length,
+						  value,
 						  info);
 		return true;
 	};

@@ -26,11 +26,11 @@
 
 #include <stddef.h>
 
+struct StringView;
 class Path;
 
 typedef std::function<bool(unsigned long flags, const char *key,
-			   const char *value,
-			   size_t value_length)> ApeTagCallback;
+			   StringView value)> ApeTagCallback;
 
 /**
  * Scans the APE tag values from a file.
