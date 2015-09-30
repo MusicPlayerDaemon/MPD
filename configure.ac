@@ -875,7 +875,7 @@ MPD_ENABLE_AUTO_PKG(fluidsynth, FLUIDSYNTH, [fluidsynth >= 1.1],
 dnl ---------------------------------- libgme ---------------------------------
 
 MPD_ENABLE_AUTO_PKG_LIB(gme, GME, [libgme],
-	gme, gme_open_file, [-lgme -lstdc++], [],
+	gme, gme_open_file, [-lgme], [],
 	[Game Music Emulator decoder plugin], [libgme not found])
 
 dnl ---------------------------------- libmad ---------------------------------
