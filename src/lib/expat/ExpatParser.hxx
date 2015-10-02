@@ -41,6 +41,9 @@ public:
 		XML_ParserFree(parser);
 	}
 
+	ExpatParser(const ExpatParser &) = delete;
+	ExpatParser &operator=(const ExpatParser &) = delete;
+
 	void SetElementHandler(XML_StartElementHandler start,
 			       XML_EndElementHandler end) {
 		XML_SetElementHandler(parser, start, end);
