@@ -1,6 +1,8 @@
 ver 0.19.11 (not yet released)
 * tags
   - ape: fix buffer overflow
+* encoder
+  - flac: fix crash with 32 bit playback
 
 ver 0.19.10 (2015/06/21)
 * input
