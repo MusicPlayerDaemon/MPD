@@ -1,3 +1,5 @@
+ver 0.19.11 (not yet released)
+
 ver 0.19.10 (2015/06/21)
 * input
   - curl: fix deadlock on small responses
