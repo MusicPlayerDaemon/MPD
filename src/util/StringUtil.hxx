@@ -37,6 +37,15 @@ bool
 StringEndsWith(const char *haystack, const char *needle);
 
 /**
+ * Returns the portion of the string after a prefix.  If the string
+ * does not begin with the specified prefix, this function returns
+ * nullptr.
+ */
+gcc_pure gcc_nonnull_all
+const char *
+StringAfterPrefix(const char *string, const char *prefix);
+
+/**
  * Check if the given string ends with the specified suffix.  If yes,
  * returns the position of the suffix, and nullptr otherwise.
  */

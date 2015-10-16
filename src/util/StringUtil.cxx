@@ -18,6 +18,7 @@
  */
 
 #include "StringUtil.hxx"
+#include "StringAPI.hxx"
 #include "CharUtil.hxx"
 #include "ASCII.hxx"
 
@@ -42,6 +43,21 @@ StringEndsWith(const char *haystack, const char *needle)
 	return haystack_length >= needle_length &&
 		memcmp(haystack + haystack_length - needle_length,
 		       needle, needle_length) == 0;
+}
+
+const char *
+StringAfterPrefix(const char *string, const char *prefix)
+{
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
+	assert(string != nullptr);
+	assert(prefix != nullptr);
+#endif
+
+	size_t prefix_length = strlen(prefix);
+	return StringIsEqual(string, prefix, prefix_length)
+		? string + prefix_length
+		: nullptr;
 }
 
 const char *

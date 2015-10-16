@@ -43,6 +43,21 @@ StringEndsWith(const wchar_t *haystack, const wchar_t *needle)
 }
 
 const wchar_t *
+StringAfterPrefix(const wchar_t *string, const wchar_t *prefix)
+{
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
+	assert(string != nullptr);
+	assert(prefix != nullptr);
+#endif
+
+	size_t prefix_length = StringLength(prefix);
+	return StringIsEqual(string, prefix, prefix_length)
+		? string + prefix_length
+		: nullptr;
+}
+
+const wchar_t *
 FindStringSuffix(const wchar_t *p, const wchar_t *suffix)
 {
 	const size_t p_length = StringLength(p);
