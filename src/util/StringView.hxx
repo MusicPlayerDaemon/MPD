@@ -103,6 +103,16 @@ struct StringView : ConstBuffer<char> {
 	bool EqualsLiteralIgnoreCase(const char (&other)[n]) const {
 		return EqualsIgnoreCase({other, n - 1});
 	}
+
+	/**
+	 * Skip all whitespace at the beginning.
+	 */
+	void StripLeft();
+
+	/**
+	 * Skip all whitespace at the end.
+	 */
+	void StripRight();
 };
 
 #endif
