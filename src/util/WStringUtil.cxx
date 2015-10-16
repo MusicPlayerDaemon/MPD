@@ -29,17 +29,17 @@
 bool
 StringStartsWith(const wchar_t *haystack, const wchar_t *needle)
 {
-  return memcmp(haystack, needle, StringLength(needle) * sizeof(needle[0])) == 0;
+	return memcmp(haystack, needle, StringLength(needle) * sizeof(needle[0])) == 0;
 }
 
 bool
 StringEndsWith(const wchar_t *haystack, const wchar_t *needle)
 {
-  const size_t haystack_length = StringLength(haystack);
-  const size_t needle_length = StringLength(needle);
+	const size_t haystack_length = StringLength(haystack);
+	const size_t needle_length = StringLength(needle);
 
-  return haystack_length >= needle_length &&
-    StringIsEqual(haystack + haystack_length - needle_length, needle);
+	return haystack_length >= needle_length &&
+		StringIsEqual(haystack + haystack_length - needle_length, needle);
 }
 
 const wchar_t *
