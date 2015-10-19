@@ -53,12 +53,6 @@ struct Directory {
 	typedef boost::intrusive::link_mode<link_mode> LinkMode;
 	typedef boost::intrusive::list_member_hook<LinkMode> Hook;
 
-	struct Disposer {
-		void operator()(Directory *directory) const {
-			delete directory;
-		}
-	};
-
 	/**
 	 * Pointers to the siblings of this directory within the
 	 * parent directory.  It is unused (undefined) in the root

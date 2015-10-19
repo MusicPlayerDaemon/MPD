@@ -31,6 +31,7 @@
 #include "lib/icu/Collate.hxx"
 #include "fs/Traits.hxx"
 #include "util/Alloc.hxx"
+#include "util/DeleteDisposer.hxx"
 #include "util/Error.hxx"
 
 #include <assert.h>
@@ -51,7 +52,7 @@ Directory::~Directory()
 	delete mounted_database;
 
 	songs.clear_and_dispose(Song::Disposer());
-	children.clear_and_dispose(Disposer());
+	children.clear_and_dispose(DeleteDisposer());
 }
 
 void
@@ -61,7 +62,7 @@ Directory::Delete()
 	assert(parent != nullptr);
 
 	parent->children.erase_and_dispose(parent->children.iterator_to(*this),
-					   Disposer());
+					   DeleteDisposer());
 }
 
 const char *
@@ -110,7 +111,8 @@ Directory::PruneEmpty()
 		child->PruneEmpty();
 
 		if (child->IsEmpty())
-			child = children.erase_and_dispose(child, Disposer());
+			child = children.erase_and_dispose(child,
+							   DeleteDisposer());
 		else
 			++child;
 	}

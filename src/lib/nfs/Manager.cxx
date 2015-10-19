@@ -21,6 +21,7 @@
 #include "Manager.hxx"
 #include "event/Loop.hxx"
 #include "Log.hxx"
+#include "util/DeleteDisposer.hxx"
 
 #include <string.h>
 
@@ -65,9 +66,7 @@ NfsManager::~NfsManager()
 
 	CollectGarbage();
 
-	connections.clear_and_dispose([](ManagedConnection *c){
-			delete c;
-		});
+	connections.clear_and_dispose(DeleteDisposer());
 }
 
 NfsConnection &
@@ -95,9 +94,7 @@ NfsManager::CollectGarbage()
 {
 	assert(GetEventLoop().IsInside());
 
-	garbage.clear_and_dispose([](ManagedConnection *c){
-			delete c;
-		});
+	garbage.clear_and_dispose(DeleteDisposer());
 }
 
 void

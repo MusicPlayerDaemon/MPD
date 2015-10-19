@@ -51,12 +51,6 @@ public:
 	struct playlist &playlist;
 	struct PlayerControl &player_control;
 
-	struct Disposer {
-		void operator()(Client *client) const {
-			delete client;
-		}
-	};
-
 	unsigned permission;
 
 	/** the uid of the client process, or -1 if unknown */

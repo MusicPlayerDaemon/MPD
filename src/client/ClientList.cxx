@@ -20,8 +20,7 @@
 #include "config.h"
 #include "ClientList.hxx"
 #include "ClientInternal.hxx"
-
-#include <algorithm>
+#include "util/DeleteDisposer.hxx"
 
 #include <assert.h>
 
@@ -36,7 +35,7 @@ ClientList::Remove(Client &client)
 void
 ClientList::CloseAll()
 {
-	list.clear_and_dispose(Client::Disposer());
+	list.clear_and_dispose(DeleteDisposer());
 }
 
 void
