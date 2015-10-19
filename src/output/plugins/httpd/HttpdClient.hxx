@@ -23,6 +23,8 @@
 #include "event/BufferedSocket.hxx"
 #include "Compiler.h"
 
+#include <boost/intrusive/list.hpp>
+
 #include <queue>
 #include <list>
 
@@ -31,7 +33,9 @@
 class HttpdOutput;
 class Page;
 
-class HttpdClient final : BufferedSocket {
+class HttpdClient final
+	: BufferedSocket,
+	  public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>> {
 	/**
 	 * The httpd output object this client is connected to.
 	 */

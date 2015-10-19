@@ -25,6 +25,7 @@
 #ifndef MPD_OUTPUT_HTTPD_INTERNAL_H
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
+#include "HttpdClient.hxx"
 #include "output/Internal.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
@@ -33,12 +34,6 @@
 #include "util/Cast.hxx"
 #include "Compiler.h"
 
-#ifdef _LIBCPP_VERSION
-/* can't use incomplete template arguments with libc++ */
-#include "HttpdClient.hxx"
-#endif
-
-#include <forward_list>
 #include <queue>
 #include <list>
 
@@ -135,7 +130,8 @@ private:
 	 * A linked list containing all clients which are currently
 	 * connected.
 	 */
-	std::forward_list<HttpdClient> clients;
+	boost::intrusive::list<HttpdClient,
+			       boost::intrusive::constant_time_size<true>> clients;
 
 	/**
 	 * A temporary buffer for the httpd_output_read_page()
@@ -147,7 +143,7 @@ private:
 	 * The maximum and current number of clients connected
 	 * at the same time.
 	 */
-	unsigned clients_max, clients_cnt;
+	unsigned clients_max;
 
 public:
 	HttpdOutput(EventLoop &_loop);
