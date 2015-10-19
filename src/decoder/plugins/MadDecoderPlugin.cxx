@@ -167,6 +167,15 @@ struct MadDecoder {
 
 	bool DecodeFirstFrame(Tag **tag);
 
+	void AllocateBuffers() {
+		assert(max_frames > 0);
+		assert(frame_offsets == nullptr);
+		assert(times == nullptr);
+
+		frame_offsets = new long[max_frames];
+		times = new mad_timer_t[max_frames];
+	}
+
 	gcc_pure
 	long TimeToFrame(SongTime t) const;
 
@@ -819,9 +828,6 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 		return false;
 	}
 
-	frame_offsets = new long[max_frames];
-	times = new mad_timer_t[max_frames];
-
 	return true;
 }
 
@@ -1048,6 +1054,8 @@ mp3_decode(Decoder &decoder, InputStream &input_stream)
 				 "input/Input does not appear to be a mp3 bit stream");
 		return;
 	}
+
+	data.AllocateBuffers();
 
 	Error error;
 	AudioFormat audio_format;
