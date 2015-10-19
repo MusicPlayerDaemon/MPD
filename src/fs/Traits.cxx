@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Traits.hxx"
+#include "util/StringUtil.hxx"
 
 #include <string.h>
 
@@ -92,12 +93,11 @@ RelativePathImpl(typename Traits::const_pointer base,
 	assert(base != nullptr);
 	assert(other != nullptr);
 
-	const auto base_length = Traits::GetLength(base);
-	if (memcmp(base, other, base_length * sizeof(*base)) != 0)
+	other = StringAfterPrefix(other, base);
+	if (other == nullptr)
 		/* mismatch */
 		return nullptr;
 
-	other += base_length;
 	if (*other != 0) {
 		if (!Traits::IsSeparator(*other))
 			/* mismatch */
