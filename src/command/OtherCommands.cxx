@@ -176,7 +176,7 @@ handle_lsinfo(Client &client, Request args, Response &r)
 			return print_error(r, error);
 
 		DetachedSong song(path_utf8);
-		if (!song.Update()) {
+		if (!song.LoadFile(path_fs)) {
 			r.Error(ACK_ERROR_NO_EXIST, "No such file");
 			return CommandResult::ERROR;
 		}

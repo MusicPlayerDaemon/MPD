@@ -32,6 +32,7 @@
 
 struct LightSong;
 class Storage;
+class Path;
 
 class DetachedSong {
 	friend DetachedSong DatabaseDetachSong(const Storage &db,
@@ -220,6 +221,11 @@ public:
 	 * @return true on success
 	 */
 	bool Update();
+
+	/**
+	 * Load #tag and #mtime from a local file.
+	 */
+	bool LoadFile(Path path);
 };
 
 #endif

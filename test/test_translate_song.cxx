@@ -121,9 +121,9 @@ DatabaseDetachSong(gcc_unused const Database &db,
 }
 
 bool
-DetachedSong::Update()
+DetachedSong::LoadFile(Path path)
 {
-	if (strcmp(GetURI(), uri1) == 0) {
+	if (path.ToUTF8() == uri1) {
 		SetTag(MakeTag1a());
 		return true;
 	}

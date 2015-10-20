@@ -154,27 +154,33 @@ Song::UpdateFileInArchive(const Storage &storage)
 #endif
 
 bool
+DetachedSong::LoadFile(Path path)
+{
+	FileInfo fi;
+	if (!GetFileInfo(path, fi) || !fi.IsRegular())
+		return false;
+
+	TagBuilder tag_builder;
+	if (!tag_file_scan(path, full_tag_handler, &tag_builder))
+		return false;
+
+	if (tag_builder.IsEmpty())
+		tag_scan_fallback(path, &full_tag_handler,
+				  &tag_builder);
+
+	mtime = fi.GetModificationTime();
+	tag_builder.Commit(tag);
+	return true;
+}
+
+bool
 DetachedSong::Update()
 {
 	if (IsAbsoluteFile()) {
 		const AllocatedPath path_fs =
 			AllocatedPath::FromUTF8(GetRealURI());
 
-		FileInfo fi;
-		if (!GetFileInfo(path_fs, fi) || !fi.IsRegular())
-			return false;
-
-		TagBuilder tag_builder;
-		if (!tag_file_scan(path_fs, full_tag_handler, &tag_builder))
-			return false;
-
-		if (tag_builder.IsEmpty())
-			tag_scan_fallback(path_fs, &full_tag_handler,
-					  &tag_builder);
-
-		mtime = fi.GetModificationTime();
-		tag_builder.Commit(tag);
-		return true;
+		return LoadFile(path_fs);
 	} else if (IsRemote()) {
 		TagBuilder tag_builder;
 		if (!tag_stream_scan(uri.c_str(), full_tag_handler,

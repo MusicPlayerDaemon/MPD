@@ -54,17 +54,15 @@ SongLoader::LoadFile(const char *path_utf8, Error &error) const
 	}
 #endif
 
-	if (client != nullptr) {
-		const auto path_fs = AllocatedPath::FromUTF8(path_utf8, error);
-		if (path_fs.IsNull())
-			return nullptr;
+	const auto path_fs = AllocatedPath::FromUTF8(path_utf8, error);
+	if (path_fs.IsNull())
+		return nullptr;
 
-		if (!client->AllowFile(path_fs, error))
-			return nullptr;
-	}
+	if (client != nullptr && !client->AllowFile(path_fs, error))
+		return nullptr;
 
 	DetachedSong *song = new DetachedSong(path_utf8);
-	if (!song->Update()) {
+	if (!song->LoadFile(path_fs)) {
 		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
 			  "No such file");
 		delete song;
