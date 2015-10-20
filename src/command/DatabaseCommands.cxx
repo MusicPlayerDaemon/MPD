@@ -52,11 +52,8 @@ handle_listfiles_db(Client &client, Response &r, const char *uri)
 }
 
 CommandResult
-handle_lsinfo2(Client &client, Request args, Response &r)
+handle_lsinfo2(Client &client, const char *uri, Response &r)
 {
-	/* default is root directory */
-	const auto uri = args.GetOptional(0, "");
-
 	const DatabaseSelection selection(uri, false);
 
 	Error error;

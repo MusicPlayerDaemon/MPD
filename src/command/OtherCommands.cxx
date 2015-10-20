@@ -200,7 +200,7 @@ handle_lsinfo(Client &client, Request args, Response &r)
 	}
 
 #ifdef ENABLE_DATABASE
-	CommandResult result = handle_lsinfo2(client, args, r);
+	CommandResult result = handle_lsinfo2(client, uri, r);
 	if (result != CommandResult::OK)
 		return result;
 #endif
