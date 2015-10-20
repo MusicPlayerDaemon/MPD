@@ -217,13 +217,6 @@ public:
 		mime = std::move(_mime);
 	}
 
-	gcc_nonnull_all
-	void OverrideMimeType(const char *_mime) {
-		assert(ready);
-
-		mime = _mime;
-	}
-
 	gcc_pure
 	bool KnownSize() const {
 		assert(ready);
