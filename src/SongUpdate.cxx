@@ -179,6 +179,8 @@ DetachedSong::Update()
 	if (IsAbsoluteFile()) {
 		const AllocatedPath path_fs =
 			AllocatedPath::FromUTF8(GetRealURI());
+		if (path_fs.IsNull())
+			return false;
 
 		return LoadFile(path_fs);
 	} else if (IsRemote()) {
