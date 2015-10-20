@@ -218,9 +218,9 @@ handle_read_comments(Client &client, Request args, Response &r)
 	assert(args.size == 1);
 	const char *const uri = translate_uri(args.front());
 
-	if (memcmp(uri, "file:///", 8) == 0) {
+	if (PathTraitsUTF8::IsAbsolute(uri)) {
 		/* read comments from arbitrary local file */
-		const char *path_utf8 = uri + 7;
+		const char *path_utf8 = uri;
 		AllocatedPath path_fs = AllocatedPath::FromUTF8(path_utf8);
 		if (path_fs.IsNull()) {
 			r.Error(ACK_ERROR_NO_EXIST, "unsupported file name");
@@ -234,7 +234,7 @@ handle_read_comments(Client &client, Request args, Response &r)
 		return read_file_comments(r, path_fs);
 	} else if (uri_has_scheme(uri)) {
 		return read_stream_comments(r, uri);
-	} else if (!PathTraitsUTF8::IsAbsolute(uri)) {
+	} else {
 #ifdef ENABLE_DATABASE
 		const Storage *storage = client.GetStorage();
 		if (storage == nullptr) {
@@ -259,8 +259,5 @@ handle_read_comments(Client &client, Request args, Response &r)
 		r.Error(ACK_ERROR_NO_EXIST, "No such file");
 		return CommandResult::ERROR;
 #endif
-	} else {
-		r.Error(ACK_ERROR_NO_EXIST, "No such file");
-		return CommandResult::ERROR;
 	}
 }
