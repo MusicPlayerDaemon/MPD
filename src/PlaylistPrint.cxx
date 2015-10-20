@@ -143,6 +143,7 @@ spl_print(Response &r, Partition &partition,
 	  Error &error)
 {
 #ifndef ENABLE_DATABASE
+	(void)partition;
 	(void)detail;
 #endif
 

@@ -283,6 +283,7 @@ handle_update(Client &client, Request args, Response &r, bool discard)
 	if (db != nullptr)
 		return handle_update(r, *db, path, discard);
 #else
+	(void)client;
 	(void)args;
 	(void)discard;
 #endif
