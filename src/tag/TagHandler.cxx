@@ -17,6 +17,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "config.h"
 #include "TagHandler.hxx"
 #include "TagBuilder.hxx"
@@ -35,7 +38,18 @@ add_tag_tag(TagType type, const char *value, void *ctx)
 {
 	TagBuilder &tag = *(TagBuilder *)ctx;
 
-	tag.AddItem(type, value);
+	if (type == TAG_TRACK || type == TAG_DISC) {
+		char *end;
+		int n = strtol(value, &end, 10);
+		if (value != end) {
+			char s[21];
+			if (snprintf(s, 21, "%d", n) >= 0) {
+				tag.AddItem(type, s);
+			}
+		}
+	} else  {
+		tag.AddItem(type, value);
+	}
 }
 
 const struct tag_handler add_tag_handler = {
