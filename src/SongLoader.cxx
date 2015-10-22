@@ -42,6 +42,21 @@ SongLoader::SongLoader(const Client &_client)
 #endif
 
 DetachedSong *
+SongLoader::LoadFromDatabase(const char *uri, Error &error) const
+{
+#ifdef ENABLE_DATABASE
+	if (db != nullptr)
+		return DatabaseDetachSong(*db, *storage, uri, error);
+#else
+	(void)uri;
+#endif
+
+	error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
+		  "No database");
+	return nullptr;
+}
+
+DetachedSong *
 SongLoader::LoadFile(const char *path_utf8, Error &error) const
 {
 #ifdef ENABLE_DATABASE
@@ -50,7 +65,7 @@ SongLoader::LoadFile(const char *path_utf8, Error &error) const
 		if (suffix != nullptr)
 			/* this path was relative to the music
 			   directory - obtain it from the database */
-			return LoadSong(suffix, error);
+			return LoadFromDatabase(suffix, error);
 	}
 #endif
 
@@ -99,14 +114,6 @@ SongLoader::LoadSong(const char *uri_utf8, Error &error) const
 	} else {
 		/* URI relative to the music directory */
 
-#ifdef ENABLE_DATABASE
-		if (db != nullptr)
-			return DatabaseDetachSong(*db, *storage,
-						  uri_utf8, error);
-#endif
-
-		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
-			  "No database");
-		return nullptr;
+		return LoadFromDatabase(uri_utf8, error);
 	}
 }

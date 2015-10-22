@@ -71,6 +71,9 @@ public:
 
 private:
 	gcc_nonnull_all
+	DetachedSong *LoadFromDatabase(const char *uri, Error &error) const;
+
+	gcc_nonnull_all
 	DetachedSong *LoadFile(const char *path_utf8, Error &error) const;
 };
 
