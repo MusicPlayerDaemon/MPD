@@ -25,6 +25,7 @@
 #include "CommandError.hxx"
 #include "db/Uri.hxx"
 #include "storage/StorageInterface.hxx"
+#include "LocateUri.hxx"
 #include "DetachedSong.hxx"
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
@@ -122,31 +123,49 @@ handle_listfiles(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	if (memcmp(uri, "file:///", 8) == 0)
-		/* list local directory */
-		return handle_listfiles_local(client, r, uri + 7);
-
+	Error error;
+	const auto located_uri = LocateUri(uri, &client,
 #ifdef ENABLE_DATABASE
-	if (uri_has_scheme(uri))
-		/* use storage plugin to list remote directory */
-		return handle_listfiles_storage(r, uri);
-
-	/* must be a path relative to the configured
-	   music_directory */
-
-	if (client.partition.instance.storage != nullptr)
-		/* if we have a storage instance, obtain a list of
-		   files from it */
-		return handle_listfiles_storage(r,
-						*client.partition.instance.storage,
-						uri);
-
-	/* fall back to entries from database if we have no storage */
-	return handle_listfiles_db(client, r, uri);
-#else
-	r.Error(ACK_ERROR_NO_EXIST, "No database");
-	return CommandResult::ERROR;
+					   nullptr,
 #endif
+					   error);
+
+	switch (located_uri.type) {
+	case LocatedUri::Type::UNKNOWN:
+		return print_error(r, error);
+
+	case LocatedUri::Type::ABSOLUTE:
+#ifdef ENABLE_DATABASE
+		/* use storage plugin to list remote directory */
+		return handle_listfiles_storage(r, located_uri.canonical_uri);
+#else
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
+
+	case LocatedUri::Type::RELATIVE:
+#ifdef ENABLE_DATABASE
+		if (client.partition.instance.storage != nullptr)
+			/* if we have a storage instance, obtain a list of
+			   files from it */
+			return handle_listfiles_storage(r,
+							*client.partition.instance.storage,
+							uri);
+
+		/* fall back to entries from database if we have no storage */
+		return handle_listfiles_db(client, r, uri);
+#else
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
+
+	case LocatedUri::Type::PATH:
+		/* list local directory */
+		return handle_listfiles_local(r, located_uri.canonical_uri,
+					      located_uri.path);
+	}
+
+	gcc_unreachable();
 }
 
 static constexpr tag_handler print_tag_handler = {
@@ -155,54 +174,26 @@ static constexpr tag_handler print_tag_handler = {
 	nullptr,
 };
 
-CommandResult
-handle_lsinfo(Client &client, Request args, Response &r)
+static CommandResult
+handle_lsinfo_absolute(Response &r, const char *uri)
 {
-	/* default is root directory */
-	const auto uri = args.GetOptional(0, "");
-
-	if (memcmp(uri, "file:///", 8) == 0) {
-		/* print information about an arbitrary local file */
-		const char *path_utf8 = uri + 7;
-		const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
-
-		if (path_fs.IsNull()) {
-			r.Error(ACK_ERROR_NO_EXIST, "unsupported file name");
-			return CommandResult::ERROR;
-		}
-
-		Error error;
-		if (!client.AllowFile(path_fs, error))
-			return print_error(r, error);
-
-		DetachedSong song(path_utf8);
-		if (!song.LoadFile(path_fs)) {
-			r.Error(ACK_ERROR_NO_EXIST, "No such file");
-			return CommandResult::ERROR;
-		}
-
-		song_print_info(r, client.partition, song);
-		return CommandResult::OK;
+	if (!tag_stream_scan(uri, print_tag_handler, &r)) {
+		r.Error(ACK_ERROR_NO_EXIST, "No such file");
+		return CommandResult::ERROR;
 	}
 
-	if (uri_has_scheme(uri)) {
-		if (!uri_supported_scheme(uri)) {
-			r.Error(ACK_ERROR_NO_EXIST, "unsupported URI scheme");
-			return CommandResult::ERROR;
-		}
+	return CommandResult::OK;
+}
 
-		if (!tag_stream_scan(uri, print_tag_handler, &r)) {
-			r.Error(ACK_ERROR_NO_EXIST, "No such file");
-			return CommandResult::ERROR;
-		}
-
-		return CommandResult::OK;
-	}
-
+static CommandResult
+handle_lsinfo_relative(Client &client, Response &r, const char *uri)
+{
 #ifdef ENABLE_DATABASE
 	CommandResult result = handle_lsinfo2(client, uri, r);
 	if (result != CommandResult::OK)
 		return result;
+#else
+	(void)client;
 #endif
 
 	if (isRootDirectory(uri)) {
@@ -217,6 +208,53 @@ handle_lsinfo(Client &client, Request args, Response &r)
 	}
 
 	return CommandResult::OK;
+}
+
+static CommandResult
+handle_lsinfo_path(Client &client, Response &r,
+		   const char *path_utf8, Path path_fs)
+{
+	DetachedSong song(path_utf8);
+	if (!song.LoadFile(path_fs)) {
+		r.Error(ACK_ERROR_NO_EXIST, "No such file");
+		return CommandResult::ERROR;
+	}
+
+	song_print_info(r, client.partition, song);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_lsinfo(Client &client, Request args, Response &r)
+{
+	/* default is root directory */
+	const auto uri = args.GetOptional(0, "");
+
+	Error error;
+	const auto located_uri = LocateUri(uri, &client,
+#ifdef ENABLE_DATABASE
+					   nullptr,
+#endif
+					   error);
+
+	switch (located_uri.type) {
+	case LocatedUri::Type::UNKNOWN:
+		return print_error(r, error);
+
+	case LocatedUri::Type::ABSOLUTE:
+		return handle_lsinfo_absolute(r, located_uri.canonical_uri);
+
+	case LocatedUri::Type::RELATIVE:
+		return handle_lsinfo_relative(client, r,
+					      located_uri.canonical_uri);
+
+	case LocatedUri::Type::PATH:
+		/* print information about an arbitrary local file */
+		return handle_lsinfo_path(client, r, located_uri.canonical_uri,
+					  located_uri.path);
+	}
+
+	gcc_unreachable();
 }
 
 #ifdef ENABLE_DATABASE

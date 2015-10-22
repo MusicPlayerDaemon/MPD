@@ -29,7 +29,9 @@ class Client;
 class Database;
 class Storage;
 class DetachedSong;
+class Path;
 class Error;
+struct LocatedUri;
 
 /**
  * A utility class that loads a #DetachedSong object by its URI.  If
@@ -66,6 +68,8 @@ public:
 	}
 #endif
 
+	DetachedSong *LoadSong(const LocatedUri &uri, Error &error) const;
+
 	gcc_nonnull_all
 	DetachedSong *LoadSong(const char *uri_utf8, Error &error) const;
 
@@ -74,7 +78,8 @@ private:
 	DetachedSong *LoadFromDatabase(const char *uri, Error &error) const;
 
 	gcc_nonnull_all
-	DetachedSong *LoadFile(const char *path_utf8, Error &error) const;
+	DetachedSong *LoadFile(const char *path_utf8, Path path_fs,
+			       Error &error) const;
 };
 
 #endif

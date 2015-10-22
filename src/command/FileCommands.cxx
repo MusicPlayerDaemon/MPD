@@ -39,8 +39,8 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "LocateUri.hxx"
 #include "TimePrint.hxx"
-#include "ls.hxx"
 
 #include <assert.h>
 #include <sys/stat.h>
@@ -70,21 +70,12 @@ skip_path(Path name_fs)
 #endif
 
 CommandResult
-handle_listfiles_local(Client &client, Response &r,
-		       const char *path_utf8)
+handle_listfiles_local(Response &r,
+		       const char *path_utf8, Path path_fs)
 {
-	const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
-	if (path_fs.IsNull()) {
-		r.Error(ACK_ERROR_NO_EXIST, "unsupported file name");
-		return CommandResult::ERROR;
-	}
-
-	Error error;
-	if (!client.AllowFile(path_fs, error))
-		return print_error(r, error);
-
 	DirectoryReader reader(path_fs);
 	if (reader.HasFailed()) {
+		Error error;
 		error.FormatErrno("Failed to open '%s'", path_utf8);
 		return print_error(r, error);
 	}
@@ -172,11 +163,6 @@ static constexpr tag_handler print_comment_handler = {
 static CommandResult
 read_stream_comments(Response &r, const char *uri)
 {
-	if (!uri_supported_scheme(uri)) {
-		r.Error(ACK_ERROR_NO_EXIST, "unsupported URI scheme");
-		return CommandResult::ERROR;
-	}
-
 	if (!tag_stream_scan(uri, print_comment_handler, &r)) {
 		r.Error(ACK_ERROR_NO_EXIST, "Failed to load file");
 		return CommandResult::ERROR;
@@ -201,63 +187,64 @@ read_file_comments(Response &r, const Path path_fs)
 
 }
 
-static const char *
-translate_uri(const char *uri)
+static CommandResult
+read_db_comments(Client &client, Response &r, const char *uri)
 {
-	if (memcmp(uri, "file:///", 8) == 0)
-		/* drop the "file://", leave only an absolute path
-		   (starting with a slash) */
-		return uri + 7;
+#ifdef ENABLE_DATABASE
+	const Storage *storage = client.GetStorage();
+	if (storage == nullptr) {
+#else
+		(void)client;
+		(void)uri;
+#endif
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#ifdef ENABLE_DATABASE
+	}
 
-	return uri;
+	{
+		AllocatedPath path_fs = storage->MapFS(uri);
+		if (!path_fs.IsNull())
+			return read_file_comments(r, path_fs);
+	}
+
+	{
+		const std::string uri2 = storage->MapUTF8(uri);
+		if (uri_has_scheme(uri2.c_str()))
+			return read_stream_comments(r, uri2.c_str());
+	}
+
+	r.Error(ACK_ERROR_NO_EXIST, "No such file");
+	return CommandResult::ERROR;
+#endif
 }
 
 CommandResult
 handle_read_comments(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
-	const char *const uri = translate_uri(args.front());
 
-	if (PathTraitsUTF8::IsAbsolute(uri)) {
-		/* read comments from arbitrary local file */
-		const char *path_utf8 = uri;
-		AllocatedPath path_fs = AllocatedPath::FromUTF8(path_utf8);
-		if (path_fs.IsNull()) {
-			r.Error(ACK_ERROR_NO_EXIST, "unsupported file name");
-			return CommandResult::ERROR;
-		}
+	const char *const uri = args.front();
 
-		Error error;
-		if (!client.AllowFile(path_fs, error))
-			return print_error(r, error);
-
-		return read_file_comments(r, path_fs);
-	} else if (uri_has_scheme(uri)) {
-		return read_stream_comments(r, uri);
-	} else {
+	Error error;
+	const auto located_uri = LocateUri(uri, &client,
 #ifdef ENABLE_DATABASE
-		const Storage *storage = client.GetStorage();
-		if (storage == nullptr) {
+					   nullptr,
 #endif
-			r.Error(ACK_ERROR_NO_EXIST, "No database");
-			return CommandResult::ERROR;
-#ifdef ENABLE_DATABASE
-		}
+					   error);
+	switch (located_uri.type) {
+	case LocatedUri::Type::UNKNOWN:
+		return print_error(r, error);
 
-		{
-			AllocatedPath path_fs = storage->MapFS(uri);
-			if (!path_fs.IsNull())
-				return read_file_comments(r, path_fs);
-		}
+	case LocatedUri::Type::ABSOLUTE:
+		return read_stream_comments(r, located_uri.canonical_uri);
 
-		{
-			const std::string uri2 = storage->MapUTF8(uri);
-			if (uri_has_scheme(uri2.c_str()))
-				return read_stream_comments(r, uri2.c_str());
-		}
+	case LocatedUri::Type::RELATIVE:
+		return read_db_comments(client, r, located_uri.canonical_uri);
 
-		r.Error(ACK_ERROR_NO_EXIST, "No such file");
-		return CommandResult::ERROR;
-#endif
+	case LocatedUri::Type::PATH:
+		return read_file_comments(r, located_uri.path);
 	}
+
+	gcc_unreachable();
 }

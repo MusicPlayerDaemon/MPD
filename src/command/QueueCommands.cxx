@@ -25,13 +25,14 @@
 #include "db/Selection.hxx"
 #include "SongFilter.hxx"
 #include "SongLoader.hxx"
+#include "DetachedSong.hxx"
+#include "LocateUri.hxx"
 #include "queue/Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "BulkEdit.hxx"
-#include "ls.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/UriUtil.hxx"
 #include "util/NumberParser.hxx"
@@ -42,15 +43,42 @@
 
 #include <string.h>
 
-static const char *
-translate_uri(const char *uri)
+static CommandResult
+AddUri(Client &client, const LocatedUri &uri, Response &r)
 {
-	if (memcmp(uri, "file:///", 8) == 0)
-		/* drop the "file://", leave only an absolute path
-		   (starting with a slash) */
-		return uri + 7;
+	Error error;
+	DetachedSong *song = SongLoader(client).LoadSong(uri, error);
+	if (song == nullptr)
+		return print_error(r, error);
 
-	return uri;
+	auto &partition = client.partition;
+	unsigned id = partition.playlist.AppendSong(partition.pc,
+						    std::move(*song), error);
+	delete song;
+	if (id == 0)
+		return print_error(r, error);
+
+	return CommandResult::OK;
+}
+
+static CommandResult
+AddDatabaseSelection(Client &client, const char *uri, Response &r)
+{
+#ifdef ENABLE_DATABASE
+	const ScopeBulkEdit bulk_edit(client.partition);
+
+	const DatabaseSelection selection(uri, true);
+	Error error;
+	return AddFromDatabase(client.partition, selection, error)
+		? CommandResult::OK
+		: print_error(r, error);
+#else
+	(void)client;
+	(void)uri;
+
+	r.Error(ACK_ERROR_NO_EXIST, "No database");
+	return CommandResult::ERROR;
+#endif
 }
 
 CommandResult
@@ -65,36 +93,32 @@ handle_add(Client &client, Request args, Response &r)
 		   here */
 		uri = "";
 
-	uri = translate_uri(uri);
+	Error error;
+	const auto located_uri = LocateUri(uri, &client,
+#ifdef ENABLE_DATABASE
+					   nullptr,
+#endif
+					   error);
+	switch (located_uri.type) {
+	case LocatedUri::Type::UNKNOWN:
+		return print_error(r, error);
 
-	if (uri_has_scheme(uri) || PathTraitsUTF8::IsAbsolute(uri)) {
-		const SongLoader loader(client);
-		Error error;
-		unsigned id = client.partition.AppendURI(loader, uri, error);
-		if (id == 0)
-			return print_error(r, error);
+	case LocatedUri::Type::ABSOLUTE:
+	case LocatedUri::Type::PATH:
+		return AddUri(client, located_uri, r);
 
-		return CommandResult::OK;
+	case LocatedUri::Type::RELATIVE:
+		return AddDatabaseSelection(client, located_uri.canonical_uri,
+					    r);
 	}
 
-#ifdef ENABLE_DATABASE
-	const ScopeBulkEdit bulk_edit(client.partition);
-
-	const DatabaseSelection selection(uri, true);
-	Error error;
-	return AddFromDatabase(client.partition, selection, error)
-		? CommandResult::OK
-		: print_error(r, error);
-#else
-	r.Error(ACK_ERROR_NO_EXIST, "No database");
-	return CommandResult::ERROR;
-#endif
+	gcc_unreachable();
 }
 
 CommandResult
 handle_addid(Client &client, Request args, Response &r)
 {
-	const char *const uri = translate_uri(args.front());
+	const char *const uri = args.front();
 
 	const SongLoader loader(client);
 	Error error;

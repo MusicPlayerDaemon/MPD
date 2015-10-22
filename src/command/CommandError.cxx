@@ -20,6 +20,7 @@
 #include "config.h"
 #include "CommandError.hxx"
 #include "db/DatabaseError.hxx"
+#include "LocateUri.hxx"
 #include "client/Response.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -114,6 +115,9 @@ print_error(Response &r, const Error &error)
 			return CommandResult::ERROR;
 		}
 #endif
+	} else if (error.IsDomain(locate_uri_domain)) {
+		r.Error(ACK_ERROR_ARG, error.GetMessage());
+		return CommandResult::ERROR;
 	} else if (error.IsDomain(errno_domain)) {
 		r.Error(ACK_ERROR_SYSTEM, strerror(error.GetCode()));
 		return CommandResult::ERROR;

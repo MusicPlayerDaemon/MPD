@@ -168,6 +168,7 @@ libmpd_a_SOURCES = \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
+	src/LocateUri.cxx src/LocateUri.hxx \
 	src/SongUpdate.cxx \
 	src/SongLoader.cxx src/SongLoader.hxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
@@ -2141,6 +2142,7 @@ test_test_translate_song_SOURCES = \
 	src/PlaylistError.cxx \
 	src/DetachedSong.cxx \
 	src/SongLoader.cxx \
+	src/LocateUri.cxx \
 	src/Log.cxx \
 	test/test_translate_song.cxx
 test_test_translate_song_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
