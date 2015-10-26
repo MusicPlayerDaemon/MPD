@@ -20,6 +20,7 @@
 #include "config.h"
 #include "GmeDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
+#include "config/Block.cxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
@@ -51,6 +52,23 @@ struct GmeContainerPath {
 	AllocatedPath path;
 	unsigned track;
 };
+
+#if GME_VERSION >= 0x000600
+static int gme_accuracy;
+#endif
+
+static bool
+gme_plugin_init(gcc_unused const ConfigBlock &block)
+{
+#if GME_VERSION >= 0x000600
+	auto accuracy = block.GetBlockParam("accuracy");
+	gme_accuracy = accuracy != nullptr
+		? (int)accuracy->GetBoolValue()
+		: -1;
+#endif
+
+	return true;
+}
 
 gcc_pure
 static unsigned
@@ -122,6 +140,11 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		LogWarning(gme_domain, gme_err);
 		return;
 	}
+
+#if GME_VERSION >= 0x000600
+	if (gme_accuracy >= 0)
+		gme_enable_accuracy(emu, gme_accuracy);
+#endif
 
 	gme_info_t *ti;
 	gme_err = gme_track_info(emu, &ti, container.track);
@@ -274,7 +297,7 @@ static const char *const gme_suffixes[] = {
 extern const struct DecoderPlugin gme_decoder_plugin;
 const struct DecoderPlugin gme_decoder_plugin = {
 	"gme",
-	nullptr,
+	gme_plugin_init,
 	nullptr,
 	nullptr,
 	gme_file_decode,

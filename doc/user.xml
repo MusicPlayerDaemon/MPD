@@ -1749,6 +1749,28 @@ buffer_size: 16384</programlisting>
           Video game music file emulator based on <ulink
           url="https://bitbucket.org/mpyne/game-music-emu/wiki/Home"><application>game-music-emu</application></ulink>.
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>accuracy</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Enable more accurate sound emulation.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
