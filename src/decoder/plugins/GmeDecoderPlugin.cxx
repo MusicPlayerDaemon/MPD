@@ -141,6 +141,9 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
+	FormatDebug(gme_domain, "emulator type '%s'\n",
+		    gme_type_system(gme_type(emu)));
+
 #if GME_VERSION >= 0x000600
 	if (gme_accuracy >= 0)
 		gme_enable_accuracy(emu, gme_accuracy);
