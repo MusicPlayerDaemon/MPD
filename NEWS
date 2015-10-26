@@ -19,6 +19,7 @@ ver 0.20 (not yet released)
 * playlist
   - cue: don't skip pregap
   - embcue: fix last track
+  - flac: new plugin which reads the "CUESHEET" metadata block
 * output
   - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX

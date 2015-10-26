@@ -27,6 +27,7 @@
 #include "plugins/PlsPlaylistPlugin.hxx"
 #include "plugins/AsxPlaylistPlugin.hxx"
 #include "plugins/RssPlaylistPlugin.hxx"
+#include "plugins/FlacPlaylistPlugin.hxx"
 #include "plugins/CuePlaylistPlugin.hxx"
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
 #include "input/InputStream.hxx"
@@ -52,6 +53,9 @@ const struct playlist_plugin *const playlist_plugins[] = {
 #endif
 #ifdef ENABLE_SOUNDCLOUD
 	&soundcloud_playlist_plugin,
+#endif
+#ifdef ENABLE_FLAC
+	&flac_playlist_plugin,
 #endif
 #ifdef ENABLE_CUE
 	&cue_playlist_plugin,

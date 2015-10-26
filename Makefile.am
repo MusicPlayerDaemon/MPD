@@ -1479,6 +1479,12 @@ PLAYLIST_LIBS = \
 	$(EXPAT_LIBS) \
 	$(FLAC_LIBS)
 
+if ENABLE_FLAC
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/plugins/FlacPlaylistPlugin.cxx \
+	src/playlist/plugins/FlacPlaylistPlugin.hxx
+endif
+
 if ENABLE_CUE
 libplaylist_plugins_a_SOURCES += \
 	src/playlist/cue/CueParser.cxx src/playlist/cue/CueParser.hxx \
