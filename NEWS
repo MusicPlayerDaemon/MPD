@@ -3,6 +3,7 @@ ver 0.19.11 (not yet released)
   - ape: fix buffer overflow
 * decoder
   - ffmpeg: fix crash due to wrong avio_alloc_context() call
+  - gme: don't loop forever, fall back to GME's default play length
 * encoder
   - flac: fix crash with 32 bit playback
 * mixer

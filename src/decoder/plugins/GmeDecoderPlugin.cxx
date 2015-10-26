@@ -156,7 +156,7 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
-	const int length = ti->length;
+	const int length = ti->play_length;
 	gme_free_info(ti);
 
 	const SignedSongTime song_len = length > 0
@@ -239,9 +239,9 @@ gme_scan_file(Path path_fs,
 
 	assert(ti != nullptr);
 
-	if (ti->length > 0)
+	if (ti->play_length > 0)
 		tag_handler_invoke_duration(handler, handler_ctx,
-					    SongTime::FromMS(ti->length));
+					    SongTime::FromMS(ti->play_length));
 
 	if (ti->song != nullptr) {
 		if (gme_track_count(emu) > 1) {
