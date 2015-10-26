@@ -196,9 +196,11 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned where = decoder_seek_time(decoder).ToMS();
 			gme_err = gme_seek(emu, where);
-			if (gme_err != nullptr)
+			if (gme_err != nullptr) {
 				LogWarning(gme_domain, gme_err);
-			decoder_command_finished(decoder);
+				decoder_seek_error(decoder);
+			} else
+				decoder_command_finished(decoder);
 		}
 
 		if (gme_track_ended(emu))
