@@ -156,8 +156,11 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
-	const SignedSongTime song_len = ti->length > 0
-		? SignedSongTime::FromMS(ti->length)
+	const int length = ti->length;
+	gme_free_info(ti);
+
+	const SignedSongTime song_len = length > 0
+		? SignedSongTime::FromMS(length)
 		: SignedSongTime::Negative();
 
 	/* initialize the MPD decoder */
@@ -168,7 +171,6 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 				       SampleFormat::S16, GME_CHANNELS,
 				       error)) {
 		LogError(error);
-		gme_free_info(ti);
 		gme_delete(emu);
 		return;
 	}
@@ -179,8 +181,8 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 	if (gme_err != nullptr)
 		LogWarning(gme_domain, gme_err);
 
-	if (ti->length > 0)
-		gme_set_fade(emu, ti->length);
+	if (length > 0)
+		gme_set_fade(emu, length);
 
 	/* play */
 	DecoderCommand cmd;
@@ -207,7 +209,6 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 			break;
 	} while (cmd != DecoderCommand::STOP);
 
-	gme_free_info(ti);
 	gme_delete(emu);
 }
 
