@@ -1743,6 +1743,15 @@ buffer_size: 16384</programlisting>
       </section>
 
       <section>
+        <title><varname>gme</varname></title>
+
+        <para>
+          Video game music file emulator based on <ulink
+          url="https://bitbucket.org/mpyne/game-music-emu/wiki/Home"><application>game-music-emu</application></ulink>.
+        </para>
+      </section>
+
+      <section>
         <title><varname>mikmod</varname></title>
 
         <para>
