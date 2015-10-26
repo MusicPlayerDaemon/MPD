@@ -82,8 +82,19 @@ struct AudioFormat {
 	SampleFormat format;
 
 	/**
-	 * The number of channels.  Only mono (1) and stereo (2) are
-	 * fully supported currently.
+	 * The number of channels.
+	 *
+	 * Channel order follows the FLAC convention
+	 * (https://xiph.org/flac/format.html):
+	 *
+	 * - 1 channel: mono
+	 * - 2 channels: left, right
+	 * - 3 channels: left, right, center
+	 * - 4 channels: front left, front right, back left, back right
+	 * - 5 channels: front left, front right, front center, back/surround left, back/surround right
+	 * - 6 channels: front left, front right, front center, LFE, back/surround left, back/surround right
+	 * - 7 channels: front left, front right, front center, LFE, back center, side left, side right
+	 * - 8 channels: front left, front right, front center, LFE, back left, back right, side left, side right
 	 */
 	uint8_t channels;
 
