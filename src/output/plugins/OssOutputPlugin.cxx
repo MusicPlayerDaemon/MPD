@@ -537,7 +537,7 @@ oss_probe_sample_format(int fd, SampleFormat sample_format,
 	*oss_format_r = oss_format;
 
 #ifdef AFMT_S24_PACKED
-	pcm_export.Open(sample_format, 0, false, false,
+	pcm_export.Open(sample_format, 0, true, false, false,
 			oss_format == AFMT_S24_PACKED,
 			oss_format == AFMT_S24_PACKED &&
 			!IsLittleEndian());

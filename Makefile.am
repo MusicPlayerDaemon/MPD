@@ -537,6 +537,7 @@ libpcm_a_SOURCES = \
 	src/pcm/Neon.hxx \
 	src/pcm/FormatConverter.cxx src/pcm/FormatConverter.hxx \
 	src/pcm/ChannelsConverter.cxx src/pcm/ChannelsConverter.hxx \
+	src/pcm/Order.cxx src/pcm/Order.hxx \
 	src/pcm/Resampler.hxx \
 	src/pcm/GlueResampler.cxx src/pcm/GlueResampler.hxx \
 	src/pcm/FallbackResampler.cxx src/pcm/FallbackResampler.hxx \

@@ -126,6 +126,7 @@ class PcmExportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST(TestPack24);
 	CPPUNIT_TEST(TestReverseEndian);
 	CPPUNIT_TEST(TestDop);
+	CPPUNIT_TEST(TestAlsaChannelOrder);
 	CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -133,6 +134,7 @@ public:
 	void TestPack24();
 	void TestReverseEndian();
 	void TestDop();
+	void TestAlsaChannelOrder();
 };
 
 #endif

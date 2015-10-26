@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PcmExport.hxx"
+#include "Order.hxx"
 #include "PcmDop.hxx"
 #include "PcmPack.hxx"
 #include "util/ByteReverse.hxx"
@@ -28,12 +29,16 @@
 
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
+		bool _alsa_channel_order,
 		bool _dop, bool _shift8, bool _pack, bool _reverse_endian)
 {
 	assert(audio_valid_sample_format(sample_format));
 	assert(!_dop || audio_valid_channel_count(_channels));
 
 	channels = _channels;
+	alsa_channel_order = _alsa_channel_order
+		? sample_format
+		: SampleFormat::UNDEFINED;
 	dop = _dop && sample_format == SampleFormat::DSD;
 	if (dop)
 		/* after the conversion to DoP, the DSD
@@ -77,6 +82,10 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 ConstBuffer<void>
 PcmExport::Export(ConstBuffer<void> data)
 {
+	if (alsa_channel_order != SampleFormat::UNDEFINED)
+		data = ToAlsaChannelOrder(order_buffer, data,
+					  alsa_channel_order, channels);
+
 	if (dop)
 		data = pcm_dsd_to_dop(dop_buffer, channels,
 				      ConstBuffer<uint8_t>::FromVoid(data))

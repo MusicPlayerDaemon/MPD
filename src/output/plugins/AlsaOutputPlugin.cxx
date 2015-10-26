@@ -711,7 +711,7 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
 
 	pcm_export->Open(audio_format.format,
 			 audio_format.channels,
-			 dop2, shift8, packed, reverse_endian);
+			 true, dop2, shift8, packed, reverse_endian);
 	return true;
 }
 

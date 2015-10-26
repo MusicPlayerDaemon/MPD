@@ -22,6 +22,7 @@ ver 0.20 (not yet released)
   - embcue: fix last track
   - flac: new plugin which reads the "CUESHEET" metadata block
 * output
+  - alsa: fix multi-channel order
   - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX
   - recorder: record tags

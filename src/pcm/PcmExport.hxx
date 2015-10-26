@@ -34,6 +34,13 @@ template<typename T> struct ConstBuffer;
  */
 struct PcmExport {
 	/**
+	 * This buffer is used to reorder channels.
+	 *
+	 * @see #alsa_channel_order
+	 */
+	PcmBuffer order_buffer;
+
+	/**
 	 * The buffer is used to convert DSD samples to the
 	 * DoP format.
 	 *
@@ -59,6 +66,16 @@ struct PcmExport {
 	 * The number of channels.
 	 */
 	uint8_t channels;
+
+	/**
+	 * Convert the given buffer from FLAC channel order to ALSA
+	 * channel order using ToAlsaChannelOrder()?
+	 *
+	 * If this value is SampleFormat::UNDEFINED, then no channel
+	 * reordering is applied, otherwise this is the input sample
+	 * format.
+	 */
+	SampleFormat alsa_channel_order;
 
 	/**
 	 * Convert DSD to DSD-over-PCM (DoP)?  Input format must be
@@ -96,6 +113,7 @@ struct PcmExport {
 	 * @param channels the number of channels; ignored unless dop is set
 	 */
 	void Open(SampleFormat sample_format, unsigned channels,
+		  bool _alsa_channel_order,
 		  bool dop, bool shift8, bool pack, bool reverse_endian);
 
 	/**

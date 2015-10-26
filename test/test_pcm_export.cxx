@@ -20,6 +20,7 @@
 #include "config.h"
 #include "test_pcm_all.hxx"
 #include "pcm/PcmExport.hxx"
+#include "pcm/Traits.hxx"
 #include "system/ByteOrder.hxx"
 #include "util/ConstBuffer.hxx"
 
@@ -32,7 +33,7 @@ PcmExportTest::TestShift8()
 	static constexpr uint32_t expected[] = { 0x0, 0x100, 0x10000, 0x1000000, 0xffffff00 };
 
 	PcmExport e;
-	e.Open(SampleFormat::S24_P32, 2, false, true, false, false);
+	e.Open(SampleFormat::S24_P32, 2, false, false, true, false, false);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
@@ -65,7 +66,7 @@ PcmExportTest::TestPack24()
 		? expected_be : expected_le;
 
 	PcmExport e;
-	e.Open(SampleFormat::S24_P32, 2, false, false, true, false);
+	e.Open(SampleFormat::S24_P32, 2, false, false, false, true, false);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(expected_size, dest.size);
@@ -88,18 +89,18 @@ PcmExportTest::TestReverseEndian()
 	};
 
 	PcmExport e;
-	e.Open(SampleFormat::S8, 2, false, false, false, true);
+	e.Open(SampleFormat::S8, 2, false, false, false, false, true);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(src), dest.size);
 	CPPUNIT_ASSERT(memcmp(dest.data, src, dest.size) == 0);
 
-	e.Open(SampleFormat::S16, 2, false, false, false, true);
+	e.Open(SampleFormat::S16, 2, false, false, false, false, true);
 	dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected2), dest.size);
 	CPPUNIT_ASSERT(memcmp(dest.data, expected2, dest.size) == 0);
 
-	e.Open(SampleFormat::S32, 2, false, false, false, true);
+	e.Open(SampleFormat::S32, 2, false, false, false, false, true);
 	dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected4), dest.size);
 	CPPUNIT_ASSERT(memcmp(dest.data, expected4, dest.size) == 0);
@@ -121,9 +122,66 @@ PcmExportTest::TestDop()
 	};
 
 	PcmExport e;
-	e.Open(SampleFormat::DSD, 2, true, false, false, false);
+	e.Open(SampleFormat::DSD, 2, false, true, false, false, false);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
 	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+}
+
+template<SampleFormat F, class Traits=SampleTraits<F>>
+static void
+TestAlsaChannelOrder51()
+{
+	typedef typename Traits::value_type value_type;
+
+	static constexpr value_type src[] = {
+		0, 1, 2, 3, 4, 5,
+		6, 7, 8, 9, 10, 11,
+	};
+
+	static constexpr value_type expected[] = {
+		0, 1, 4, 5, 2, 3,
+		6, 7, 10, 11, 8, 9,
+	};
+
+	PcmExport e;
+	e.Open(F, 6, true, false, false, false, false);
+
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+}
+
+template<SampleFormat F, class Traits=SampleTraits<F>>
+static void
+TestAlsaChannelOrder71()
+{
+	typedef typename Traits::value_type value_type;
+
+	static constexpr value_type src[] = {
+		0, 1, 2, 3, 4, 5, 6, 7,
+		8, 9, 10, 11, 12, 13, 14, 15,
+	};
+
+	static constexpr value_type expected[] = {
+		0, 1, 4, 5, 2, 3, 6, 7,
+		8, 9, 12, 13, 10, 11, 14, 15,
+	};
+
+	PcmExport e;
+	e.Open(F, 8, true, false, false, false, false);
+
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+}
+
+void
+PcmExportTest::TestAlsaChannelOrder()
+{
+	TestAlsaChannelOrder51<SampleFormat::S16>();
+	TestAlsaChannelOrder71<SampleFormat::S16>();
+	TestAlsaChannelOrder51<SampleFormat::S32>();
+	TestAlsaChannelOrder71<SampleFormat::S32>();
 }
