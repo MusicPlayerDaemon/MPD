@@ -5,6 +5,8 @@ ver 0.19.11 (not yet released)
   - ffmpeg: fix crash due to wrong avio_alloc_context() call
 * encoder
   - flac: fix crash with 32 bit playback
+* mixer
+  - fix mixer lag after enabling/disabling output
 
 ver 0.19.10 (2015/06/21)
 * input
