@@ -9,14 +9,5 @@ ExecStart=@prefix@/bin/mpd --no-daemon
 LimitRTPRIO=50
 LimitRTTIME=-1
 
-# move MPD to a top-level cgroup, as real-time budget assignment fails
-# in cgroup /system/mpd.service, because /system has a zero real-time
-# budget; see
-# http://www.freedesktop.org/wiki/Software/systemd/MyServiceCantGetRealtime/
-ControlGroup=cpu:/mpd
-
-# assign a real-time budget
-ControlGroupAttribute=cpu.rt_runtime_us 500000
-
 [Install]
 WantedBy=multi-user.target
