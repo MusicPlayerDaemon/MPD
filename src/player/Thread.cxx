@@ -369,6 +369,8 @@ Player::WaitForDecoder()
 
 	delete song;
 	song = pc.next_song;
+	pc.next_song = nullptr;
+
 	elapsed_time = SongTime::zero();
 
 	/* set the "starting" flag, which will be cleared by
@@ -376,12 +378,9 @@ Player::WaitForDecoder()
 	decoder_starting = true;
 
 	/* update PlayerControl's song information */
-	pc.total_time = pc.next_song->GetDuration();
+	pc.total_time = song->GetDuration();
 	pc.bit_rate = 0;
 	pc.audio_format.Clear();
-
-	/* clear the queued song */
-	pc.next_song = nullptr;
 
 	pc.Unlock();
 
