@@ -51,7 +51,6 @@ public:
 	}
 
 	size_t Play(const void *chunk, size_t size, Error &error);
-
 };
 
 inline bool

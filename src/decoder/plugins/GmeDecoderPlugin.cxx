@@ -157,8 +157,11 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
-	const SignedSongTime song_len = ti->length > 0
-		? SignedSongTime::FromMS(ti->length)
+	const int length = ti->play_length;
+	gme_free_info(ti);
+
+	const SignedSongTime song_len = length > 0
+		? SignedSongTime::FromMS(length)
 		: SignedSongTime::Negative();
 
 	/* initialize the MPD decoder */
@@ -169,7 +172,6 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 				       SampleFormat::S16, GME_CHANNELS,
 				       error)) {
 		LogError(error);
-		gme_free_info(ti);
 		gme_delete(emu);
 		return;
 	}
@@ -180,8 +182,8 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 	if (gme_err != nullptr)
 		LogWarning(gme_domain, gme_err);
 
-	if (ti->length > 0)
-		gme_set_fade(emu, ti->length);
+	if (length > 0)
+		gme_set_fade(emu, length);
 
 	/* play */
 	DecoderCommand cmd;
@@ -197,16 +199,17 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned where = decoder_seek_time(decoder).ToMS();
 			gme_err = gme_seek(emu, where);
-			if (gme_err != nullptr)
+			if (gme_err != nullptr) {
 				LogWarning(gme_domain, gme_err);
-			decoder_command_finished(decoder);
+				decoder_seek_error(decoder);
+			} else
+				decoder_command_finished(decoder);
 		}
 
 		if (gme_track_ended(emu))
 			break;
 	} while (cmd != DecoderCommand::STOP);
 
-	gme_free_info(ti);
 	gme_delete(emu);
 }
 
@@ -214,9 +217,9 @@ static void
 ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 	    const struct tag_handler *handler, void *handler_ctx)
 {
-	if (info.length > 0)
+	if (info.play_length > 0)
 		tag_handler_invoke_duration(handler, handler_ctx,
-					    SongTime::FromMS(info.length));
+					    SongTime::FromMS(info.play_length));
 
 	if (info.song != nullptr) {
 		if (track_count > 1) {

@@ -1025,6 +1025,58 @@ database {
         plugin).
       </para>
     </section>
+
+    <section id="realtime">
+      <title>Real-Time Scheduling</title>
+
+      <para>
+        On Linux, <application>MPD</application> attempts to configure
+        <ulink
+        url="https://en.wikipedia.org/wiki/Real-time_computing">real-time
+        scheduling</ulink> for some threads that benefit from it.
+      </para>
+
+      <para>
+        This is only possible you allow <application>MPD</application>
+        to do it.  This privilege is controlled by
+        <varname>RLIMIT_RTPRIO</varname>
+        <varname>RLIMIT_RTTIME</varname>.  You can configure this
+        privilege with <command>ulimit</command> before launching
+        <application>MPD</application>:
+      </para>
+
+      <programlisting>ulimit -HS -r 50; mpd</programlisting>
+
+      <para>
+        Or you can use the <command>prlimit</command> program from the
+        <application>util-linux</application> package:
+      </para>
+
+      <programlisting>prlimit --rtprio=50 --rttime=unlimited mpd</programlisting>
+
+      <para>
+        The <application>systemd</application> service file shipped
+        with <application>MPD</application> comes with this setting.
+      </para>
+
+      <para>
+        This works only if the Linux kernel was compiled with
+        <varname>CONFIG_RT_GROUP_SCHED</varname> disabled.  Use the
+        following command to check this option for your current
+        kernel:
+      </para>
+
+      <programlisting>zgrep ^CONFIG_RT_GROUP_SCHED /proc/config.gz</programlisting>
+
+      <note>
+        <para>
+          There is a rumor that real-time scheduling improves audio
+          quality.  That is not true.  All it does is reduce the
+          probability of skipping (audio buffer xruns) when the
+          computer is under heavy load.
+        </para>
+      </note>
+    </section>
   </chapter>
 
   <chapter id="use">

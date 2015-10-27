@@ -30,6 +30,7 @@
 #include "Internal.hxx"
 #include "player/Control.hxx"
 #include "mixer/MixerControl.hxx"
+#include "mixer/Volume.hxx"
 #include "Idle.hxx"
 
 extern unsigned audio_output_state_version;
@@ -46,6 +47,11 @@ audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
 
 	ao.enabled = true;
 	idle_add(IDLE_OUTPUT);
+
+	if (ao.mixer != nullptr) {
+		InvalidateHardwareVolume();
+		idle_add(IDLE_MIXER);
+	}
 
 	ao.player_control->UpdateAudio();
 
@@ -70,6 +76,7 @@ audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
 	Mixer *mixer = ao.mixer;
 	if (mixer != nullptr) {
 		mixer_close(mixer);
+		InvalidateHardwareVolume();
 		idle_add(IDLE_MIXER);
 	}
 
@@ -94,6 +101,7 @@ audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx)
 		Mixer *mixer = ao.mixer;
 		if (mixer != nullptr) {
 			mixer_close(mixer);
+			InvalidateHardwareVolume();
 			idle_add(IDLE_MIXER);
 		}
 	}

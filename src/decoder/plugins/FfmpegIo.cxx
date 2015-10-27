@@ -28,7 +28,10 @@
 
 AvioStream::~AvioStream()
 {
-	av_free(io);
+	if (io != nullptr) {
+		av_free(io->buffer);
+		av_free(io);
+	}
 }
 
 inline int
@@ -90,9 +93,18 @@ AvioStream::_Seek(void *opaque, int64_t pos, int whence)
 bool
 AvioStream::Open()
 {
-	io = avio_alloc_context(buffer, sizeof(buffer),
+	constexpr size_t BUFFER_SIZE = 8192;
+	auto buffer = (unsigned char *)av_malloc(BUFFER_SIZE);
+	if (buffer == nullptr)
+		return false;
+
+	io = avio_alloc_context(buffer, BUFFER_SIZE,
 				false, this,
 				_Read, nullptr,
 				input.IsSeekable() ? _Seek : nullptr);
+	/* If avio_alloc_context() fails, who frees the buffer?  The
+	   libavformat API documentation does not specify this, it
+	   only says that AVIOContext.buffer must be freed in the end,
+	   however no AVIOContext exists in that failure code path. */
 	return io != nullptr;
 }

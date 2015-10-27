@@ -42,6 +42,17 @@ ver 0.20 (not yet released)
 * update
   - apply .mpdignore matches to subdirectories
 
+ver 0.19.11 (2015/10/27)
+* tags
+  - ape: fix buffer overflow
+* decoder
+  - ffmpeg: fix crash due to wrong avio_alloc_context() call
+  - gme: don't loop forever, fall back to GME's default play length
+* encoder
+  - flac: fix crash with 32 bit playback
+* mixer
+  - fix mixer lag after enabling/disabling output
+
 ver 0.19.10 (2015/06/21)
 * input
   - curl: fix deadlock on small responses

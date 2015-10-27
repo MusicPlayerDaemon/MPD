@@ -37,8 +37,6 @@ struct AvioStream {
 
 	AVIOContext *io;
 
-	uint8_t buffer[8192];
-
 	AvioStream(Decoder *_decoder, InputStream &_input)
 		:decoder(_decoder), input(_input), io(nullptr) {}
 

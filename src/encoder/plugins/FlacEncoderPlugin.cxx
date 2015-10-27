@@ -157,8 +157,6 @@ flac_encoder_open(Encoder *_encoder, AudioFormat &audio_format, Error &error)
 	struct flac_encoder *encoder = (struct flac_encoder *)_encoder;
 	unsigned bits_per_sample;
 
-	encoder->audio_format = audio_format;
-
 	/* FIXME: flac should support 32bit as well */
 	switch (audio_format.format) {
 	case SampleFormat::S8:
@@ -177,6 +175,8 @@ flac_encoder_open(Encoder *_encoder, AudioFormat &audio_format, Error &error)
 		bits_per_sample = 24;
 		audio_format.format = SampleFormat::S24_P32;
 	}
+
+	encoder->audio_format = audio_format;
 
 	/* allocate the encoder */
 	encoder->fse = FLAC__stream_encoder_new();
