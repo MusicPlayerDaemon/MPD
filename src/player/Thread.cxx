@@ -176,11 +176,13 @@ private:
 	}
 
 	void ClearAndReplacePipe(MusicPipe *_pipe) {
+		ResetCrossFade();
 		ClearAndDeletePipe();
 		pipe = _pipe;
 	}
 
 	void ReplacePipe(MusicPipe *_pipe) {
+		ResetCrossFade();
 		delete pipe;
 		pipe = _pipe;
 	}
@@ -335,6 +337,11 @@ Player::StopDecoder()
 			delete dc.pipe;
 
 		dc.pipe = nullptr;
+
+		/* just in case we've been cross-fading: cancel it
+		   now, because we just deleted the new song's decoder
+		   pipe */
+		ResetCrossFade();
 	}
 }
 
@@ -599,7 +606,7 @@ Player::SeekDecoder()
 
 	player_command_finished(pc);
 
-	ResetCrossFade();
+	assert(xfade_state == CrossFadeState::UNKNOWN);
 
 	/* re-fill the buffer after seeking */
 	buffering = true;
@@ -905,8 +912,6 @@ Player::PlayNextChunk()
 inline bool
 Player::SongBorder()
 {
-	ResetCrossFade();
-
 	FormatDefault(player_domain, "played \"%s\"", song->GetURI());
 
 	ReplacePipe(dc.pipe);
