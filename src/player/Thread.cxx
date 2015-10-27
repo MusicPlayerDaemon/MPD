@@ -90,11 +90,26 @@ class Player {
 	DetachedSong *song;
 
 	/**
-	 * is cross fading enabled?
+	 * Is cross-fading to the next song enabled?
 	 */
 	enum class CrossFadeState : uint8_t {
+		/**
+		 * The initial state: we don't know yet if we will
+		 * cross-fade; it will be determined soon.
+		 */
 		UNKNOWN,
+
+		/**
+		 * Cross-fading is disabled for the transition to the
+		 * next song.
+		 */
 		DISABLED,
+
+		/**
+		 * Cross-fading is enabled (but may not yet be in
+		 * progress), will start near the end of the current
+		 * song.
+		 */
 		ENABLED,
 	} xfade_state;
 
