@@ -30,7 +30,7 @@ ndk_platform = 'android-14'
 
 # select the NDK compiler
 gcc_version = '4.9'
-llvm_version = '3.5'
+llvm_version = '3.6'
 
 # the path to the MPD sources
 mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..'))
