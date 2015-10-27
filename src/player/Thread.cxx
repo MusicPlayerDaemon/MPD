@@ -240,6 +240,14 @@ private:
 	bool SeekDecoder();
 
 	/**
+	 * Check if the decoder has reported an error, and forward it
+	 * to PlayerControl::SetError().
+	 *
+	 * @return false if an error has occurred
+	 */
+	bool ForwardDecoderError();
+
+	/**
 	 * After the decoder has been started asynchronously, wait for
 	 * the "START" command to finish.  The decoder may not be
 	 * initialized yet, i.e. there is no audio_format information
@@ -345,6 +353,18 @@ Player::StopDecoder()
 }
 
 bool
+Player::ForwardDecoderError()
+{
+	Error error = dc.GetError();
+	if (error.IsDefined()) {
+		pc.SetError(PlayerError::DECODER, std::move(error));
+		return false;
+	}
+
+	return true;
+}
+
+bool
 Player::WaitForDecoder()
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
@@ -353,10 +373,8 @@ Player::WaitForDecoder()
 	queued = false;
 
 	pc.Lock();
-	Error error = dc.GetError();
-	if (error.IsDefined()) {
-		pc.SetError(PlayerError::DECODER, std::move(error));
 
+	if (!ForwardDecoderError()) {
 		delete pc.next_song;
 		pc.next_song = nullptr;
 
@@ -457,10 +475,8 @@ Player::CheckDecoderStartup()
 
 	pc.Lock();
 
-	Error error = dc.GetError();
-	if (error.IsDefined()) {
+	if (!ForwardDecoderError()) {
 		/* the decoder failed */
-		pc.SetError(PlayerError::DECODER, std::move(error));
 		pc.Unlock();
 
 		return false;
