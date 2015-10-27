@@ -162,6 +162,14 @@ public:
 		 elapsed_time(SongTime::zero()) {}
 
 private:
+	/**
+	 * Reset cross-fading to the initial state.  A check to
+	 * re-enable it at an appropriate time will be scheduled.
+	 */
+	void ResetCrossFade() {
+		xfade_state = CrossFadeState::UNKNOWN;
+	}
+
 	void ClearAndDeletePipe() {
 		pipe->Clear(buffer);
 		delete pipe;
@@ -591,7 +599,7 @@ Player::SeekDecoder()
 
 	player_command_finished(pc);
 
-	xfade_state = CrossFadeState::UNKNOWN;
+	ResetCrossFade();
 
 	/* re-fill the buffer after seeking */
 	buffering = true;
@@ -897,7 +905,7 @@ Player::PlayNextChunk()
 inline bool
 Player::SongBorder()
 {
-	xfade_state = CrossFadeState::UNKNOWN;
+	ResetCrossFade();
 
 	FormatDefault(player_domain, "played \"%s\"", song->GetURI());
 
