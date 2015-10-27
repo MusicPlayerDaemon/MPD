@@ -92,10 +92,10 @@ class Player {
 	/**
 	 * is cross fading enabled?
 	 */
-	enum class CrossFadeState : int8_t {
-		DISABLED = -1,
-		UNKNOWN = 0,
-		ENABLED = 1,
+	enum class CrossFadeState : uint8_t {
+		UNKNOWN,
+		DISABLED,
+		ENABLED,
 	} xfade_state;
 
 	/**
