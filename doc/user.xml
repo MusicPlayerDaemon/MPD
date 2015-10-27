@@ -2647,7 +2647,8 @@ buffer_size: 16384</programlisting>
           / <ulink
           url="http://icecast.org/"><application>IceCast</application></ulink>.
           HTTP streaming clients like
-          <application>mplayer</application> can connect to it.
+          <application>mplayer</application>, <application>VLC</application>,
+          and <application>mpv</application> can connect to it.
         </para>
 
         <para>
