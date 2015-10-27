@@ -227,7 +227,11 @@ PlayerControl::Seek(DetachedSong *song, SongTime t)
 
 	Lock();
 
-	delete next_song;
+	if (next_song != nullptr)
+		SynchronousCommand(PlayerCommand::CANCEL);
+
+	assert(next_song == nullptr);
+
 	next_song = song;
 	seek_time = t;
 	SynchronousCommand(PlayerCommand::SEEK);
