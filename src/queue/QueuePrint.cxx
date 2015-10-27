@@ -71,19 +71,36 @@ queue_print_uris(Response &r, Partition &partition, const Queue &queue,
 
 void
 queue_print_changes_info(Response &r, Partition &partition, const Queue &queue,
-			 uint32_t version)
+			 uint32_t version,
+			 unsigned start, unsigned end)
 {
-	for (unsigned i = 0; i < queue.GetLength(); i++) {
+	assert(start <= end);
+
+	if (start >= queue.GetLength())
+		return;
+
+	if (end > queue.GetLength())
+		end = queue.GetLength();
+
+	for (unsigned i = start; i < end; i++)
 		if (queue.IsNewerAtPosition(i, version))
 			queue_print_song_info(r, partition, queue, i);
-	}
 }
 
 void
 queue_print_changes_position(Response &r, const Queue &queue,
-			     uint32_t version)
+			     uint32_t version,
+			     unsigned start, unsigned end)
 {
-	for (unsigned i = 0; i < queue.GetLength(); i++)
+	assert(start <= end);
+
+	if (start >= queue.GetLength())
+		return;
+
+	if (end > queue.GetLength())
+		end = queue.GetLength();
+
+	for (unsigned i = start; i < end; i++)
 		if (queue.IsNewerAtPosition(i, version))
 			r.Format("cpos: %i\nId: %i\n",
 				 i, queue.PositionToId(i));

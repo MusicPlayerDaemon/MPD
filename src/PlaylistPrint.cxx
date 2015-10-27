@@ -104,17 +104,21 @@ playlist_print_find(Response &r, Partition &partition,
 void
 playlist_print_changes_info(Response &r, Partition &partition,
 			    const playlist &playlist,
-			    uint32_t version)
+			    uint32_t version,
+			    unsigned start, unsigned end)
 {
-	queue_print_changes_info(r, partition, playlist.queue, version);
+	queue_print_changes_info(r, partition, playlist.queue, version,
+				 start, end);
 }
 
 void
 playlist_print_changes_position(Response &r,
 				const playlist &playlist,
-				uint32_t version)
+				uint32_t version,
+				unsigned start, unsigned end)
 {
-	queue_print_changes_position(r, playlist.queue, version);
+	queue_print_changes_position(r, playlist.queue, version,
+				     start, end);
 }
 
 #ifdef ENABLE_DATABASE

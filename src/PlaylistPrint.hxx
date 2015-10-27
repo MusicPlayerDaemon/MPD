@@ -79,7 +79,8 @@ playlist_print_find(Response &r, Partition &partition,
 void
 playlist_print_changes_info(Response &r, Partition &partition,
 			    const playlist &playlist,
-			    uint32_t version);
+			    uint32_t version,
+			    unsigned start, unsigned end);
 
 /**
  * Print changes since the specified playlist version, position only.
@@ -87,7 +88,8 @@ playlist_print_changes_info(Response &r, Partition &partition,
 void
 playlist_print_changes_position(Response &r,
 				const playlist &playlist,
-				uint32_t version);
+				uint32_t version,
+				unsigned start, unsigned end);
 
 /**
  * Send the stored playlist to the client.

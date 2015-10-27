@@ -5,6 +5,7 @@ ver 0.20 (not yet released)
   - report song duration with milliseconds precision
   - "sticker find" can match sticker values
   - drop the "file:///" prefix for absolute file paths
+  - add range parameter to command "plchanges" and "plchangesposid"
 * tags
   - ape, ogg: drop support for non-standard tag "album artist"
     affected filetypes: vorbis, flac, opus & all files with ape2 tags

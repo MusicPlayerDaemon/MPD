@@ -1161,12 +1161,15 @@ OK
             <cmdsynopsis>
               <command>plchanges</command>
               <arg choice="req"><replaceable>VERSION</replaceable></arg>
+              <arg><replaceable>START:END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
               Displays changed songs currently in the playlist since
-              <varname>VERSION</varname>.
+              <varname>VERSION</varname>.  Start and end positions may
+              be given to limit the output to changes in the given
+              range.
             </para>
             <para>
               To detect songs that were deleted at the end of the
@@ -1179,6 +1182,7 @@ OK
             <cmdsynopsis>
               <command>plchangesposid</command>
               <arg choice="req"><replaceable>VERSION</replaceable></arg>
+              <arg><replaceable>START:END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>

@@ -251,8 +251,13 @@ handle_plchanges(Client &client, Request args, Response &r)
 	if (!ParseCommandArg32(r, version, args.front()))
 		return CommandResult::ERROR;
 
+	RangeArg range = RangeArg::All();
+	if (!args.ParseOptional(1, range, r))
+		return CommandResult::ERROR;
+
 	playlist_print_changes_info(r, client.partition,
-				    client.playlist, version);
+				    client.playlist, version,
+				    range.start, range.end);
 	return CommandResult::OK;
 }
 
@@ -263,7 +268,12 @@ handle_plchangesposid(Client &client, Request args, Response &r)
 	if (!ParseCommandArg32(r, version, args.front()))
 		return CommandResult::ERROR;
 
-	playlist_print_changes_position(r, client.playlist, version);
+	RangeArg range = RangeArg::All();
+	if (!args.ParseOptional(1, range, r))
+		return CommandResult::ERROR;
+
+	playlist_print_changes_position(r, client.playlist, version,
+					range.start, range.end);
 	return CommandResult::OK;
 }
 
