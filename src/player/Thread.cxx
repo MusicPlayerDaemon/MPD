@@ -111,12 +111,12 @@ class Player {
 		 * song.
 		 */
 		ENABLED,
-	} xfade_state;
 
-	/**
-	 * has cross-fading begun?
-	 */
-	bool cross_fading;
+		/**
+		 * Currently cross-fading to the next song.
+		 */
+		ACTIVE,
+	} xfade_state;
 
 	/**
 	 * The number of chunks used for crossfading.
@@ -156,7 +156,6 @@ public:
 		 output_open(false),
 		 song(nullptr),
 		 xfade_state(CrossFadeState::UNKNOWN),
-		 cross_fading(false),
 		 cross_fade_chunks(0),
 		 cross_fade_tag(nullptr),
 		 elapsed_time(SongTime::zero()) {}
@@ -784,22 +783,27 @@ Player::PlayNextChunk()
 		   another chunk */
 		return true;
 
-	unsigned cross_fade_position;
+	/* activate cross-fading? */
+	if (xfade_state == CrossFadeState::ENABLED &&
+	    IsDecoderAtNextSong() &&
+	    pipe->GetSize() <= cross_fade_chunks) {
+		/* beginning of the cross fade - adjust
+		   cross_fade_chunks which might be bigger than the
+		   remaining number of chunks in the old song */
+		cross_fade_chunks = pipe->GetSize();
+		xfade_state = CrossFadeState::ACTIVE;
+	}
+
 	MusicChunk *chunk = nullptr;
-	if (xfade_state == CrossFadeState::ENABLED && IsDecoderAtNextSong() &&
-	    (cross_fade_position = pipe->GetSize()) <= cross_fade_chunks) {
+	if (xfade_state == CrossFadeState::ACTIVE) {
 		/* perform cross fade */
+
+		assert(IsDecoderAtNextSong());
+
+		unsigned cross_fade_position = pipe->GetSize();
+		assert(cross_fade_position <= cross_fade_chunks);
+
 		MusicChunk *other_chunk = dc.pipe->Shift();
-
-		if (!cross_fading) {
-			/* beginning of the cross fade - adjust
-			   crossFadeChunks which might be bigger than
-			   the remaining number of chunks in the old
-			   song */
-			cross_fade_chunks = cross_fade_position;
-			cross_fading = true;
-		}
-
 		if (other_chunk != nullptr) {
 			chunk = pipe->Shift();
 			assert(chunk != nullptr);
@@ -862,7 +866,7 @@ Player::PlayNextChunk()
 
 	/* insert the postponed tag if cross-fading is finished */
 
-	if (xfade_state != CrossFadeState::ENABLED && cross_fade_tag != nullptr) {
+	if (xfade_state != CrossFadeState::ACTIVE && cross_fade_tag != nullptr) {
 		chunk->tag = Tag::MergeReplace(chunk->tag, cross_fade_tag);
 		cross_fade_tag = nullptr;
 	}
@@ -1042,10 +1046,9 @@ Player::Run()
 							play_audio_format,
 							buffer.GetSize() -
 							pc.buffered_before_play);
-			if (cross_fade_chunks > 0) {
+			if (cross_fade_chunks > 0)
 				xfade_state = CrossFadeState::ENABLED;
-				cross_fading = false;
-			} else
+			else
 				/* cross fading is disabled or the
 				   next song is too short */
 				xfade_state = CrossFadeState::DISABLED;
