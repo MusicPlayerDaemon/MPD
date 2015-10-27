@@ -40,12 +40,6 @@
 
 static constexpr Domain player_domain("player");
 
-enum class CrossFadeState : int8_t {
-	DISABLED = -1,
-	UNKNOWN = 0,
-	ENABLED = 1
-};
-
 class Player {
 	PlayerControl &pc;
 
@@ -98,7 +92,11 @@ class Player {
 	/**
 	 * is cross fading enabled?
 	 */
-	CrossFadeState xfade_state;
+	enum class CrossFadeState : int8_t {
+		DISABLED = -1,
+		UNKNOWN = 0,
+		ENABLED = 1,
+	} xfade_state;
 
 	/**
 	 * has cross-fading begun?
