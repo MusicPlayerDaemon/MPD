@@ -195,7 +195,7 @@ private:
 
 	/**
 	 * The decoder has acknowledged the "START" command (see
-	 * player::WaitForDecoder()).  This function checks if the decoder
+	 * ActivateDecoder()).  This function checks if the decoder
 	 * initialization has completed yet.
 	 *
 	 * The player lock is not held.
@@ -248,14 +248,19 @@ private:
 	bool ForwardDecoderError();
 
 	/**
-	 * After the decoder has been started asynchronously, wait for
-	 * the "START" command to finish.  The decoder may not be
-	 * initialized yet, i.e. there is no audio_format information
-	 * yet.
+	 * After the decoder has been started asynchronously, activate
+	 * it for playback.  That is, make the currently decoded song
+	 * active (assign it to #song), clear PlayerControl::next_song
+	 * and #queued, initialize #elapsed_time, and set
+	 * #decoder_starting.
+	 *
+	 * When returning, the decoder may not have completed startup
+	 * yet, therefore we don't know the audio format yet.  To
+	 * finish decoder startup, call CheckDecoderStartup().
 	 *
 	 * The player lock is not held.
 	 */
-	bool WaitForDecoder();
+	bool ActivateDecoder();
 
 	/**
 	 * Wrapper for MultipleOutputs::Open().  Upon failure, it
@@ -365,7 +370,7 @@ Player::ForwardDecoderError()
 }
 
 bool
-Player::WaitForDecoder()
+Player::ActivateDecoder()
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
@@ -574,7 +579,7 @@ Player::SeekDecoder()
 
 		/* re-start the decoder */
 		StartDecoder(*pipe);
-		if (!WaitForDecoder()) {
+		if (!ActivateDecoder()) {
 			/* decoder failure */
 			player_command_finished(pc);
 			return false;
@@ -937,7 +942,7 @@ Player::SongBorder()
 
 	pc.outputs.SongBorder();
 
-	if (!WaitForDecoder())
+	if (!ActivateDecoder())
 		return false;
 
 	pc.Lock();
@@ -962,7 +967,7 @@ Player::Run()
 	pipe = new MusicPipe();
 
 	StartDecoder(*pipe);
-	if (!WaitForDecoder()) {
+	if (!ActivateDecoder()) {
 		assert(song == nullptr);
 
 		StopDecoder();
