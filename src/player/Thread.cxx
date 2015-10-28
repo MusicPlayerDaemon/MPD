@@ -260,7 +260,7 @@ private:
 	 *
 	 * The player lock is not held.
 	 */
-	bool ActivateDecoder();
+	void ActivateDecoder();
 
 	/**
 	 * Wrapper for MultipleOutputs::Open().  Upon failure, it
@@ -298,10 +298,8 @@ private:
 	 * sending chunks from the next one.
 	 *
 	 * The player lock is not held.
-	 *
-	 * @return true on success, false on error (playback will be stopped)
 	 */
-	bool SongBorder();
+	void SongBorder();
 
 public:
 	/*
@@ -369,7 +367,7 @@ Player::ForwardDecoderError()
 	return true;
 }
 
-bool
+void
 Player::ActivateDecoder()
 {
 	assert(queued || pc.command == PlayerCommand::SEEK);
@@ -378,16 +376,6 @@ Player::ActivateDecoder()
 	queued = false;
 
 	pc.Lock();
-
-	if (!ForwardDecoderError()) {
-		delete pc.next_song;
-		pc.next_song = nullptr;
-
-		pc.Unlock();
-
-		return false;
-	}
-
 	pc.ClearTaggedSong();
 
 	delete song;
@@ -409,8 +397,6 @@ Player::ActivateDecoder()
 
 	/* call syncPlaylistWithQueue() in the main thread */
 	pc.listener.OnPlayerSync();
-
-	return true;
 }
 
 /**
@@ -579,11 +565,7 @@ Player::SeekDecoder()
 
 		/* re-start the decoder */
 		StartDecoder(*pipe);
-		if (!ActivateDecoder()) {
-			/* decoder failure */
-			player_command_finished(pc);
-			return false;
-		}
+		ActivateDecoder();
 	} else {
 		if (!IsDecoderAtCurrentSong()) {
 			/* the decoder is already decoding the "next" song,
@@ -933,7 +915,7 @@ Player::PlayNextChunk()
 	return true;
 }
 
-inline bool
+inline void
 Player::SongBorder()
 {
 	FormatDefault(player_domain, "played \"%s\"", song->GetURI());
@@ -942,8 +924,7 @@ Player::SongBorder()
 
 	pc.outputs.SongBorder();
 
-	if (!ActivateDecoder())
-		return false;
+	ActivateDecoder();
 
 	pc.Lock();
 
@@ -957,8 +938,6 @@ Player::SongBorder()
 
 	if (border_pause)
 		idle_add(IDLE_PLAYER);
-
-	return true;
 }
 
 inline void
@@ -967,14 +946,7 @@ Player::Run()
 	pipe = new MusicPipe();
 
 	StartDecoder(*pipe);
-	if (!ActivateDecoder()) {
-		assert(song == nullptr);
-
-		StopDecoder();
-		player_command_finished(pc);
-		delete pipe;
-		return;
-	}
+	ActivateDecoder();
 
 	pc.Lock();
 	pc.state = PlayerState::PLAY;
@@ -1101,8 +1073,7 @@ Player::Run()
 		} else if (IsDecoderAtNextSong()) {
 			/* at the beginning of a new song */
 
-			if (!SongBorder())
-				break;
+			SongBorder();
 		} else if (dc.LockIsIdle()) {
 			/* check the size of the pipe again, because
 			   the decoder thread may have added something
