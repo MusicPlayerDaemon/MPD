@@ -203,6 +203,25 @@ private:
 	bool CheckDecoderStartup();
 
 	/**
+	 * Call CheckDecoderStartup() repeatedly until the decoder has
+	 * finished startup.  Returns false on decoder error (and
+	 * finishes the #PlayerCommand).
+	 *
+	 * This method does not check for commands.  It is only
+	 * allowed to be used while a command is being handled.
+	 */
+	bool WaitDecoderStartup() {
+		while (decoder_starting) {
+			if (!CheckDecoderStartup()) {
+				pc.LockCommandFinished();
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Stop the decoder and clears (and frees) its music pipe.
 	 *
 	 * Player lock is not held.
@@ -570,13 +589,8 @@ Player::SeekDecoder()
 
 	/* wait for the decoder to complete initialization */
 
-	while (decoder_starting) {
-		if (!CheckDecoderStartup()) {
-			/* decoder failure */
-			pc.LockCommandFinished();
-			return false;
-		}
-	}
+	if (!WaitDecoderStartup())
+		return false;
 
 	/* send the SEEK command */
 
