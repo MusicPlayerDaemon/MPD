@@ -310,14 +310,6 @@ public:
 	void Run();
 };
 
-static void
-player_command_finished(PlayerControl &pc)
-{
-	pc.Lock();
-	pc.CommandFinished();
-	pc.Unlock();
-}
-
 void
 Player::StartDecoder(MusicPipe &_pipe)
 {
@@ -581,7 +573,7 @@ Player::SeekDecoder()
 	while (decoder_starting) {
 		if (!CheckDecoderStartup()) {
 			/* decoder failure */
-			player_command_finished(pc);
+			pc.LockCommandFinished();
 			return false;
 		}
 	}
@@ -597,13 +589,13 @@ Player::SeekDecoder()
 
 	if (!dc.Seek(where + start_time)) {
 		/* decoder failure */
-		player_command_finished(pc);
+		pc.LockCommandFinished();
 		return false;
 	}
 
 	elapsed_time = where;
 
-	player_command_finished(pc);
+	pc.LockCommandFinished();
 
 	assert(xfade_state == CrossFadeState::UNKNOWN);
 
@@ -1190,7 +1182,7 @@ player_task(void *arg)
 
 			pc.outputs.Close();
 
-			player_command_finished(pc);
+			pc.LockCommandFinished();
 			return;
 
 		case PlayerCommand::CANCEL:

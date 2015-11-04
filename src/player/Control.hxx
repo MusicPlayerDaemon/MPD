@@ -263,6 +263,12 @@ struct PlayerControl {
 		ClientSignal();
 	}
 
+	void LockCommandFinished() {
+		Lock();
+		CommandFinished();
+		Unlock();
+	}
+
 private:
 	/**
 	 * Wait for the command to be finished by the player thread.
