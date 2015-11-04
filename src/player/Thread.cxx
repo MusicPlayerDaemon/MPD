@@ -575,6 +575,9 @@ Player::SeekDecoder()
 		/* re-start the decoder */
 		StartDecoder(*pipe);
 		ActivateDecoder();
+
+		if (!WaitDecoderStartup())
+			return false;
 	} else {
 		if (!IsDecoderAtCurrentSong()) {
 			/* the decoder is already decoding the "next" song,
@@ -585,29 +588,31 @@ Player::SeekDecoder()
 		delete pc.next_song;
 		pc.next_song = nullptr;
 		queued = false;
+
+		/* wait for the decoder to complete initialization
+		   (just in case that happens to be still in
+		   progress) */
+
+		if (!WaitDecoderStartup())
+			return false;
+
+		/* send the SEEK command */
+
+		SongTime where = pc.seek_time;
+		if (!pc.total_time.IsNegative()) {
+			const SongTime total_time(pc.total_time);
+			if (where > total_time)
+				where = total_time;
+		}
+
+		if (!dc.Seek(where + start_time)) {
+			/* decoder failure */
+			pc.LockCommandFinished();
+			return false;
+		}
+
+		elapsed_time = where;
 	}
-
-	/* wait for the decoder to complete initialization */
-
-	if (!WaitDecoderStartup())
-		return false;
-
-	/* send the SEEK command */
-
-	SongTime where = pc.seek_time;
-	if (!pc.total_time.IsNegative()) {
-		const SongTime total_time(pc.total_time);
-		if (where > total_time)
-			where = total_time;
-	}
-
-	if (!dc.Seek(where + start_time)) {
-		/* decoder failure */
-		pc.LockCommandFinished();
-		return false;
-	}
-
-	elapsed_time = where;
 
 	pc.LockCommandFinished();
 
