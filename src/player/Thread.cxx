@@ -380,7 +380,7 @@ Player::ActivateDecoder()
 	song = pc.next_song;
 	pc.next_song = nullptr;
 
-	elapsed_time = SongTime::zero();
+	elapsed_time = pc.seek_time;
 
 	/* set the "starting" flag, which will be cleared by
 	   player_check_decoder_startup() */
@@ -948,7 +948,6 @@ Player::Run()
 
 	pc.Lock();
 	pc.state = PlayerState::PLAY;
-	elapsed_time = pc.seek_time;
 
 	pc.CommandFinished();
 
