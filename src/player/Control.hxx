@@ -417,6 +417,7 @@ private:
 		assert(next_song == nullptr);
 
 		next_song = song;
+		seek_time = SongTime::zero();
 		SynchronousCommand(PlayerCommand::QUEUE);
 	}
 
