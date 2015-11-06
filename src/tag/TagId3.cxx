@@ -31,6 +31,7 @@
 #include "Riff.hxx"
 #include "Aiff.hxx"
 #include "fs/Path.hxx"
+#include "fs/NarrowPath.hxx"
 #include "fs/FileSystem.hxx"
 
 #include <id3tag.h>
@@ -486,7 +487,8 @@ tag_id3_load(Path path_fs, Error &error)
 {
 	FILE *file = FOpen(path_fs, PATH_LITERAL("rb"));
 	if (file == nullptr) {
-		error.FormatErrno("Failed to open file %s", path_fs.c_str());
+		error.FormatErrno("Failed to open file %s",
+				  NarrowPath(path_fs).c_str());
 		return nullptr;
 	}
 
