@@ -20,7 +20,7 @@
 #include "config.h"
 #include "InputStream.hxx"
 #include "thread/Cond.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 
 #include <assert.h>
 

@@ -26,7 +26,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 
 #include <stdlib.h>
 #include <string.h>

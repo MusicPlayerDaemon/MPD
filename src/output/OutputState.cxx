@@ -29,7 +29,7 @@
 #include "Domain.hxx"
 #include "Log.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 
 #include <assert.h>
 #include <stdlib.h>

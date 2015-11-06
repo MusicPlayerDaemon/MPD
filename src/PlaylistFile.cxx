@@ -41,7 +41,7 @@
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
 #include "util/Macros.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 

@@ -26,7 +26,7 @@
 #include "PlaylistDatabase.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

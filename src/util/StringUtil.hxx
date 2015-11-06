@@ -24,35 +24,6 @@
 
 #include <stddef.h>
 
-#ifdef _UNICODE
-#include "WStringUtil.hxx"
-#endif
-
-gcc_pure
-bool
-StringStartsWith(const char *haystack, const char *needle);
-
-gcc_pure
-bool
-StringEndsWith(const char *haystack, const char *needle);
-
-/**
- * Returns the portion of the string after a prefix.  If the string
- * does not begin with the specified prefix, this function returns
- * nullptr.
- */
-gcc_pure gcc_nonnull_all
-const char *
-StringAfterPrefix(const char *string, const char *prefix);
-
-/**
- * Check if the given string ends with the specified suffix.  If yes,
- * returns the position of the suffix, and nullptr otherwise.
- */
-gcc_pure
-const char *
-FindStringSuffix(const char *p, const char *suffix);
-
 /**
  * Copy a string.  If the buffer is too small, then the string is
  * truncated.  This is a safer version of strncpy().

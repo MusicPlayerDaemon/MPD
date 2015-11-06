@@ -17,11 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "WStringUtil.hxx"
+#include "WStringCompare.hxx"
 #include "WStringAPI.hxx"
-#include "ASCII.hxx"
-
-#include <algorithm>
 
 #include <assert.h>
 #include <string.h>

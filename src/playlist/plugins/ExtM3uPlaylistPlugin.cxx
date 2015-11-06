@@ -25,6 +25,7 @@
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "input/TextInputStream.hxx"
 
 #include <string.h>

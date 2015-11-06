@@ -20,7 +20,7 @@
 #include "config.h"
 #include "ls.hxx"
 #include "client/Response.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
 
 #include <assert.h>

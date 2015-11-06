@@ -27,7 +27,7 @@
 #include "playlist/PlaylistSong.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 #include "fs/Traits.hxx"
 #include "Log.hxx"

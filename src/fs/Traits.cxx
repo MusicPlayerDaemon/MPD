@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Traits.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string.h>
 

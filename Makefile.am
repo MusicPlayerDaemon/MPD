@@ -406,7 +406,8 @@ libutil_a_SOURCES = \
 	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
-	src/util/WStringUtil.cxx src/util/WStringUtil.hxx \
+	src/util/StringCompare.cxx src/util/StringCompare.hxx \
+	src/util/WStringCompare.cxx src/util/WStringCompare.hxx \
 	src/util/StringAPI.hxx \
 	src/util/WStringAPI.hxx \
 	src/util/DivideString.cxx src/util/DivideString.hxx \
@@ -1761,10 +1762,10 @@ test_run_gzip_SOURCES = test/run_gzip.cxx
 test_run_gunzip_SOURCES = test/run_gunzip.cxx \
 	src/Log.cxx src/LogBackend.cxx
 test_run_gunzip_LDADD = \
-	libutil.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
-	libsystem.a
+	libsystem.a \
+	libutil.a
 
 endif
 

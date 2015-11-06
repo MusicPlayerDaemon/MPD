@@ -24,7 +24,7 @@
 #include "config/Block.hxx"
 #include "input/InputStream.hxx"
 #include "tag/TagBuilder.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Alloc.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

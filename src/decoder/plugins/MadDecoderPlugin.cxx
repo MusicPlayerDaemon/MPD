@@ -28,7 +28,7 @@
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
 #include "CheckAudioFormat.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"

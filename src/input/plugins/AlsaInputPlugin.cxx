@@ -30,7 +30,7 @@
 #include "../InputStream.hxx"
 #include "util/Domain.hxx"
 #include "util/Error.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/ReusableArray.hxx"
 
 #include "Log.hxx"

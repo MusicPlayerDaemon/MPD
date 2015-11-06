@@ -33,7 +33,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "util/CharUtil.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "Log.hxx"
 
 #include <string.h>

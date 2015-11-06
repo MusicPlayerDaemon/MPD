@@ -27,7 +27,7 @@
 #include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 
 extern "C" {

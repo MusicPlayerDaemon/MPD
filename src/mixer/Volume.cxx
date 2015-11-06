@@ -21,7 +21,7 @@
 #include "Volume.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "Idle.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Domain.hxx"
 #include "system/PeriodClock.hxx"
 #include "fs/io/BufferedOutputStream.hxx"

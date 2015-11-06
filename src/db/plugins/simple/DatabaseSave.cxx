@@ -28,7 +28,7 @@
 #include "tag/Tag.hxx"
 #include "tag/Settings.hxx"
 #include "fs/Charset.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
