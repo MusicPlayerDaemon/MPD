@@ -36,6 +36,12 @@
 #include "WStringCompare.hxx"
 #endif
 
+static inline bool
+StringIsEmpty(const char *string)
+{
+  return *string == 0;
+}
+
 gcc_pure
 bool
 StringStartsWith(const char *haystack, const char *needle);

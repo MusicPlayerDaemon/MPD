@@ -38,6 +38,7 @@
 #include "fs/Charset.hxx"
 #include "storage/FileInfo.hxx"
 #include "util/Alloc.hxx"
+#include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -435,7 +436,7 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root, const char *uri)
 	while ((slash = strchr(name_utf8, '/')) != nullptr) {
 		*slash = 0;
 
-		if (*name_utf8 == 0)
+		if (StringIsEmpty(name_utf8))
 			continue;
 
 		directory = DirectoryMakeChildChecked(*directory,

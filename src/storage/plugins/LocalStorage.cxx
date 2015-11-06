@@ -22,10 +22,11 @@
 #include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
-#include "util/Error.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "util/Error.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string>
 
@@ -108,7 +109,7 @@ LocalStorage::MapUTF8(const char *uri_utf8) const
 {
 	assert(uri_utf8 != nullptr);
 
-	if (*uri_utf8 == 0)
+	if (StringIsEmpty(uri_utf8))
 		return base_utf8;
 
 	return PathTraitsUTF8::Build(base_utf8.c_str(), uri_utf8);
@@ -119,7 +120,7 @@ LocalStorage::MapFS(const char *uri_utf8, Error &error) const
 {
 	assert(uri_utf8 != nullptr);
 
-	if (*uri_utf8 == 0)
+	if (StringIsEmpty(uri_utf8))
 		return base_fs;
 
 	AllocatedPath path_fs = AllocatedPath::FromUTF8(uri_utf8, error);

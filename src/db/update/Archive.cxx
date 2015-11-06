@@ -31,6 +31,7 @@
 #include "archive/ArchiveFile.hxx"
 #include "archive/ArchiveVisitor.hxx"
 #include "util/Error.hxx"
+#include "util/StringCompare.hxx"
 #include "Log.hxx"
 
 #include <string>
@@ -54,7 +55,7 @@ UpdateWalk::UpdateArchiveTree(Directory &directory, const char *name)
 		//create directories first
 		UpdateArchiveTree(*subdir, tmp + 1);
 	} else {
-		if (strlen(name) == 0) {
+		if (StringIsEmpty(name)) {
 			LogWarning(update_domain,
 				   "archive returned directory only");
 			return;

@@ -164,7 +164,7 @@ AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond,
 		return nullptr;
 
 	const char *device = uri + strlen(scheme);
-	if (strlen(device) == 0)
+	if (*device == 0)
 		device = default_device;
 
 	/* placeholders - eventually user-requested audio format will

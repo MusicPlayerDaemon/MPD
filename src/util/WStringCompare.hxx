@@ -34,6 +34,12 @@
 
 #include <wchar.h>
 
+static inline bool
+StringIsEmpty(const wchar_t *string)
+{
+  return *string == 0;
+}
+
 gcc_pure
 bool
 StringStartsWith(const wchar_t *haystack, const wchar_t *needle);

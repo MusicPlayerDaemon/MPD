@@ -22,6 +22,7 @@
 #include "InotifyDomain.hxx"
 #include "Service.hxx"
 #include "Log.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string.h>
 
@@ -59,7 +60,7 @@ path_in(const char *path, const char *possible_parent)
 {
 	size_t length = strlen(possible_parent);
 
-	return path[0] == 0 ||
+	return StringIsEmpty(path) ||
 		(memcmp(possible_parent, path, length) == 0 &&
 		 (path[length] == 0 || path[length] == '/'));
 }

@@ -23,6 +23,7 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/StringCompare.hxx"
 
 #include <set>
 
@@ -164,7 +165,7 @@ CompositeStorage::Directory::Unmount()
 bool
 CompositeStorage::Directory::Unmount(const char *uri)
 {
-	if (*uri == 0)
+	if (StringIsEmpty(uri))
 		return Unmount();
 
 	const std::string name = NextSegment(uri);

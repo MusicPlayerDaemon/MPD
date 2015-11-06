@@ -70,7 +70,7 @@ spl_global_init(void)
 bool
 spl_valid_name(const char *name_utf8)
 {
-	if (*name_utf8 == 0)
+	if (StringIsEmpty(name_utf8))
 		/* empty name not allowed */
 		return false;
 
