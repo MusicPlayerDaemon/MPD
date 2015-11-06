@@ -30,6 +30,7 @@
 #ifndef STRING_COMPARE_HXX
 #define STRING_COMPARE_HXX
 
+#include "StringView.hxx"
 #include "Compiler.h"
 
 #ifdef _UNICODE
@@ -42,9 +43,12 @@ StringIsEmpty(const char *string)
   return *string == 0;
 }
 
-gcc_pure
-bool
-StringStartsWith(const char *haystack, const char *needle);
+gcc_pure gcc_nonnull_all
+static inline bool
+StringStartsWith(const char *haystack, StringView needle)
+{
+	return strncmp(haystack, needle.data, needle.size) == 0;
+}
 
 gcc_pure
 bool
@@ -56,8 +60,13 @@ StringEndsWith(const char *haystack, const char *needle);
  * nullptr.
  */
 gcc_pure gcc_nonnull_all
-const char *
-StringAfterPrefix(const char *string, const char *prefix);
+static inline const char *
+StringAfterPrefix(const char *haystack, StringView needle)
+{
+	return StringStartsWith(haystack, needle)
+		? haystack + needle.size
+		: nullptr;
+}
 
 /**
  * Check if the given string ends with the specified suffix.  If yes,
