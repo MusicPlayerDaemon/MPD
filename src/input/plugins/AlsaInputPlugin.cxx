@@ -159,11 +159,10 @@ inline InputStream *
 AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond,
 			Error &error)
 {
-	const char *const scheme = "alsa://";
-	if (!StringStartsWith(uri, scheme))
+	const char *device = StringAfterPrefix(uri, "alsa://");
+	if (device == nullptr)
 		return nullptr;
 
-	const char *device = uri + strlen(scheme);
 	if (*device == 0)
 		device = default_device;
 
