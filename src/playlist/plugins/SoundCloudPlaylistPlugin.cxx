@@ -94,7 +94,7 @@ enum key {
 	Other,
 };
 
-const char* key_str[] = {
+static const char *const key_str[] = {
 	"duration",
 	"title",
 	"stream_url",
