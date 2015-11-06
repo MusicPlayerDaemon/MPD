@@ -36,8 +36,8 @@
 bool
 StringStartsWith(const char *haystack, const char *needle)
 {
-	const size_t length = strlen(needle);
-	return memcmp(haystack, needle, length) == 0;
+	const size_t length = StringLength(needle);
+	return StringIsEqual(haystack, needle, length);
 }
 
 bool

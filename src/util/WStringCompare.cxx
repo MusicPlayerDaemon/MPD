@@ -26,7 +26,8 @@
 bool
 StringStartsWith(const wchar_t *haystack, const wchar_t *needle)
 {
-	return memcmp(haystack, needle, StringLength(needle) * sizeof(needle[0])) == 0;
+	const size_t length = StringLength(needle);
+	return StringIsEqual(haystack, needle, length);
 }
 
 bool
