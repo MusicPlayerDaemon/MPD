@@ -104,17 +104,26 @@ uri_safe_local(const char *uri)
 	}
 }
 
+gcc_pure
+static const char *
+SkipUriScheme(const char *uri)
+{
+	if (memcmp(uri, "http://", 7) == 0)
+		return uri + 7;
+	else if (memcmp(uri, "https://", 8) == 0)
+		return uri + 8;
+	else if (memcmp(uri, "ftp://", 6) == 0)
+		return uri + 6;
+	else
+		/* unrecognized URI */
+		return nullptr;
+}
+
 std::string
 uri_remove_auth(const char *uri)
 {
-	const char *auth;
-	if (memcmp(uri, "http://", 7) == 0)
-		auth = uri + 7;
-	else if (memcmp(uri, "https://", 8) == 0)
-		auth = uri + 8;
-	else if (memcmp(uri, "ftp://", 6) == 0)
-		auth = uri + 6;
-	else
+	const char *auth = SkipUriScheme(uri);
+	if (auth == nullptr)
 		/* unrecognized URI */
 		return std::string();
 
