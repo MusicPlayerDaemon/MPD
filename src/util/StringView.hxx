@@ -54,6 +54,16 @@ struct StringView : ConstBuffer<char> {
 		return StringView("", size_t(0));
 	}
 
+	template<size_t n>
+	static constexpr StringView Literal(const char (&_data)[n]) {
+		static_assert(n > 0, "");
+		return {_data, n - 1};
+	}
+
+	static constexpr StringView Literal() {
+		return StringView("", size_t(0));
+	}
+
 	void SetEmpty() {
 		data = "";
 		size = 0;
@@ -90,7 +100,7 @@ struct StringView : ConstBuffer<char> {
 
 	template<size_t n>
 	bool EqualsLiteral(const char (&other)[n]) const {
-		return Equals({other, n - 1});
+		return Equals(Literal(other));
 	}
 
 	gcc_pure
@@ -101,7 +111,7 @@ struct StringView : ConstBuffer<char> {
 
 	template<size_t n>
 	bool EqualsLiteralIgnoreCase(const char (&other)[n]) const {
-		return EqualsIgnoreCase({other, n - 1});
+		return EqualsIgnoreCase(Literal(other));
 	}
 
 	/**
