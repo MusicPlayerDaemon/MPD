@@ -18,6 +18,7 @@
  */
 
 #include "UriUtil.hxx"
+#include "StringCompare.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -108,15 +109,14 @@ gcc_pure
 static const char *
 SkipUriScheme(const char *uri)
 {
-	if (memcmp(uri, "http://", 7) == 0)
-		return uri + 7;
-	else if (memcmp(uri, "https://", 8) == 0)
-		return uri + 8;
-	else if (memcmp(uri, "ftp://", 6) == 0)
-		return uri + 6;
-	else
-		/* unrecognized URI */
-		return nullptr;
+	const char *const schemes[] = { "http://", "https://", "ftp://" };
+	for (auto scheme : schemes) {
+		auto result = StringAfterPrefix(uri, scheme);
+		if (result != nullptr)
+			return result;
+	}
+
+	return nullptr;
 }
 
 std::string
