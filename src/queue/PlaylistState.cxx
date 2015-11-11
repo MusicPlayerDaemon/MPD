@@ -198,7 +198,8 @@ playlist_state_restore(const char *line, TextFile &file,
 		else if (seek_time.count() == 0)
 			playlist.PlayPosition(pc, current);
 		else
-			playlist.SeekSongPosition(pc, current, seek_time);
+			playlist.SeekSongPosition(pc, current, seek_time,
+						  IgnoreError());
 
 		if (state == PlayerState::PAUSE)
 			pc.LockPause();

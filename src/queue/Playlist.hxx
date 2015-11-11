@@ -280,16 +280,19 @@ public:
 
 	void PlayPrevious(PlayerControl &pc);
 
-	PlaylistResult SeekSongOrder(PlayerControl &pc,
-				     unsigned song_order,
-				     SongTime seek_time);
+	bool SeekSongOrder(PlayerControl &pc,
+			   unsigned song_order,
+			   SongTime seek_time,
+			   Error &error);
 
-	PlaylistResult SeekSongPosition(PlayerControl &pc,
-					unsigned song_position,
-					SongTime seek_time);
+	bool SeekSongPosition(PlayerControl &pc,
+			      unsigned sonag_position,
+			      SongTime seek_time,
+			      Error &error);
 
-	PlaylistResult SeekSongId(PlayerControl &pc,
-				  unsigned song_id, SongTime seek_time);
+	bool SeekSongId(PlayerControl &pc,
+			unsigned song_id, SongTime seek_time,
+			Error &error);
 
 	/**
 	 * Seek within the current song.  Fails if MPD is not currently
@@ -299,8 +302,9 @@ public:
 	 * @param relative if true, then the specified time is relative to the
 	 * current position
 	 */
-	PlaylistResult SeekCurrent(PlayerControl &pc,
-				   SignedSongTime seek_time, bool relative);
+	bool SeekCurrent(PlayerControl &pc,
+			 SignedSongTime seek_time, bool relative,
+			 Error &error);
 
 	bool GetRepeat() const {
 		return queue.repeat;

@@ -142,17 +142,19 @@ struct Partition final : private PlayerListener, private MixerListener {
 		return playlist.PlayPrevious(pc);
 	}
 
-	PlaylistResult SeekSongPosition(unsigned song_position,
-					SongTime seek_time) {
-		return playlist.SeekSongPosition(pc, song_position, seek_time);
+	bool SeekSongPosition(unsigned song_position,
+			      SongTime seek_time, Error &error) {
+		return playlist.SeekSongPosition(pc, song_position, seek_time,
+						 error);
 	}
 
-	PlaylistResult SeekSongId(unsigned song_id, SongTime seek_time) {
-		return playlist.SeekSongId(pc, song_id, seek_time);
+	bool SeekSongId(unsigned song_id, SongTime seek_time, Error &error) {
+		return playlist.SeekSongId(pc, song_id, seek_time, error);
 	}
 
-	PlaylistResult SeekCurrent(SignedSongTime seek_time, bool relative) {
-		return playlist.SeekCurrent(pc, seek_time, relative);
+	bool SeekCurrent(SignedSongTime seek_time, bool relative,
+			 Error &error) {
+		return playlist.SeekCurrent(pc, seek_time, relative, error);
 	}
 
 	void SetRepeat(bool new_value) {
