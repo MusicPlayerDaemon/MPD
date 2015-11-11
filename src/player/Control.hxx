@@ -326,6 +326,11 @@ public:
 private:
 	void PauseLocked();
 
+	void ClearError() {
+		error_type = PlayerError::NONE;
+		error.Clear();
+	}
+
 public:
 	void LockPause();
 

@@ -185,12 +185,7 @@ void
 PlayerControl::LockClearError()
 {
 	Lock();
-
-	if (error_type != PlayerError::NONE) {
-	    error_type = PlayerError::NONE;
-	    error.Clear();
-	}
-
+	ClearError();
 	Unlock();
 }
 
