@@ -427,6 +427,8 @@ private:
 		SynchronousCommand(PlayerCommand::QUEUE);
 	}
 
+	void SeekLocked(DetachedSong *song, SongTime t);
+
 public:
 	/**
 	 * @param song the song to be queued; the given instance will be owned

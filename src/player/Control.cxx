@@ -220,12 +220,10 @@ PlayerControl::LockEnqueueSong(DetachedSong *song)
 	Unlock();
 }
 
-bool
-PlayerControl::LockSeek(DetachedSong *song, SongTime t)
+void
+PlayerControl::SeekLocked(DetachedSong *song, SongTime t)
 {
 	assert(song != nullptr);
-
-	Lock();
 
 	if (next_song != nullptr)
 		SynchronousCommand(PlayerCommand::CANCEL);
@@ -235,9 +233,18 @@ PlayerControl::LockSeek(DetachedSong *song, SongTime t)
 	next_song = song;
 	seek_time = t;
 	SynchronousCommand(PlayerCommand::SEEK);
-	Unlock();
 
 	assert(next_song == nullptr);
+}
+
+bool
+PlayerControl::LockSeek(DetachedSong *song, SongTime t)
+{
+	assert(song != nullptr);
+
+	Lock();
+	SeekLocked(song, t);
+	Unlock();
 
 	idle_add(IDLE_PLAYER);
 
