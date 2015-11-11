@@ -86,8 +86,10 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 
 	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, DIRECTORY_INFO_END) != 0) {
-		if (StringStartsWith(line, DB_FORMAT_PREFIX)) {
-			format = atoi(line + sizeof(DB_FORMAT_PREFIX) - 1);
+		const char *p;
+
+		if ((p = StringAfterPrefix(line, DB_FORMAT_PREFIX))) {
+			format = atoi(p);
 		} else if (StringStartsWith(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version) {
 				error.Set(db_domain, "Duplicate version line");
@@ -95,9 +97,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 			}
 
 			found_version = true;
-		} else if (StringStartsWith(line, DIRECTORY_FS_CHARSET)) {
-			const char *new_charset;
-
+		} else if ((p = StringAfterPrefix(line, DIRECTORY_FS_CHARSET))) {
 			if (found_charset) {
 				error.Set(db_domain, "Duplicate charset line");
 				return false;
@@ -105,7 +105,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 
 			found_charset = true;
 
-			new_charset = line + sizeof(DIRECTORY_FS_CHARSET) - 1;
+			const char *new_charset = p;
 			const char *const old_charset = GetFSCharset();
 			if (*old_charset != 0
 			    && strcmp(new_charset, old_charset) != 0) {
@@ -116,8 +116,8 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 					     new_charset, old_charset);
 				return false;
 			}
-		} else if (StringStartsWith(line, DB_TAG_PREFIX)) {
-			const char *name = line + sizeof(DB_TAG_PREFIX) - 1;
+		} else if ((p = StringAfterPrefix(line, DB_TAG_PREFIX))) {
+			const char *name = p;
 			TagType tag = tag_name_parse(name);
 			if (tag == TAG_NUM_OF_ITEM_TYPES) {
 				error.Format(db_domain,
