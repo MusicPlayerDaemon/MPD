@@ -108,12 +108,13 @@ bool
 DecoderControl::Seek(SongTime t)
 {
 	assert(state != DecoderState::START);
+	assert(state != DecoderState::ERROR);
 
 	switch (state) {
 	case DecoderState::START:
+	case DecoderState::ERROR:
 		gcc_unreachable();
 
-	case DecoderState::ERROR:
 	case DecoderState::STOP:
 		return false;
 
