@@ -40,6 +40,8 @@ public:
 	typedef T *pointer;
 	typedef const T *const_pointer;
 
+	static constexpr value_type SENTINEL = '\0';
+
 private:
 	const_pointer value;
 
@@ -58,6 +60,10 @@ public:
 
 	constexpr const_pointer c_str() const {
 		return value;
+	}
+
+	bool empty() const {
+		return *value == SENTINEL;
 	}
 };
 
