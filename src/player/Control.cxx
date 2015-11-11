@@ -54,7 +54,7 @@ PlayerControl::Play(DetachedSong *song)
 {
 	assert(song != nullptr);
 
-	Lock();
+	const ScopeLock protect(mutex);
 
 	if (state != PlayerState::STOP)
 		SynchronousCommand(PlayerCommand::STOP);
@@ -64,8 +64,6 @@ PlayerControl::Play(DetachedSong *song)
 	EnqueueSongLocked(song);
 
 	assert(next_song == nullptr);
-
-	Unlock();
 }
 
 void
@@ -113,15 +111,14 @@ PlayerControl::PauseLocked()
 void
 PlayerControl::LockPause()
 {
-	Lock();
+	const ScopeLock protect(mutex);
 	PauseLocked();
-	Unlock();
 }
 
 void
 PlayerControl::LockSetPause(bool pause_flag)
 {
-	Lock();
+	const ScopeLock protect(mutex);
 
 	switch (state) {
 	case PlayerState::STOP:
@@ -137,16 +134,13 @@ PlayerControl::LockSetPause(bool pause_flag)
 			PauseLocked();
 		break;
 	}
-
-	Unlock();
 }
 
 void
 PlayerControl::LockSetBorderPause(bool _border_pause)
 {
-	Lock();
+	const ScopeLock protect(mutex);
 	border_pause = _border_pause;
-	Unlock();
 }
 
 player_status
@@ -154,7 +148,7 @@ PlayerControl::LockGetStatus()
 {
 	player_status status;
 
-	Lock();
+	const ScopeLock protect(mutex);
 	SynchronousCommand(PlayerCommand::REFRESH);
 
 	status.state = state;
@@ -165,8 +159,6 @@ PlayerControl::LockGetStatus()
 		status.total_time = total_time;
 		status.elapsed_time = elapsed_time;
 	}
-
-	Unlock();
 
 	return status;
 }
@@ -184,18 +176,16 @@ PlayerControl::SetError(PlayerError type, Error &&_error)
 void
 PlayerControl::LockClearError()
 {
-	Lock();
+	const ScopeLock protect(mutex);
 	ClearError();
-	Unlock();
 }
 
 void
 PlayerControl::LockSetTaggedSong(const DetachedSong &song)
 {
-	Lock();
+	const ScopeLock protect(mutex);
 	delete tagged_song;
 	tagged_song = new DetachedSong(song);
-	Unlock();
 }
 
 void
@@ -210,9 +200,8 @@ PlayerControl::LockEnqueueSong(DetachedSong *song)
 {
 	assert(song != nullptr);
 
-	Lock();
+	const ScopeLock protect(mutex);
 	EnqueueSongLocked(song);
-	Unlock();
 }
 
 void
@@ -237,9 +226,10 @@ PlayerControl::LockSeek(DetachedSong *song, SongTime t)
 {
 	assert(song != nullptr);
 
-	Lock();
-	SeekLocked(song, t);
-	Unlock();
+	{
+		const ScopeLock protect(mutex);
+		SeekLocked(song, t);
+	}
 
 	idle_add(IDLE_PLAYER);
 

@@ -210,9 +210,8 @@ struct PlayerControl {
 	 * this function.
 	 */
 	void LockSignal() {
-		Lock();
+		const ScopeLock protect(mutex);
 		Signal();
-		Unlock();
 	}
 
 	/**
@@ -264,9 +263,8 @@ struct PlayerControl {
 	}
 
 	void LockCommandFinished() {
-		Lock();
+		const ScopeLock protect(mutex);
 		CommandFinished();
-		Unlock();
 	}
 
 private:
@@ -304,9 +302,8 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(PlayerCommand cmd) {
-		Lock();
+		const ScopeLock protect(mutex);
 		SynchronousCommand(cmd);
-		Unlock();
 	}
 
 public:
@@ -377,10 +374,8 @@ public:
 	 */
 	gcc_pure
 	Error LockGetError() const {
-		Lock();
-		Error result = GetError();
-		Unlock();
-		return result;
+		const ScopeLock protect(mutex);
+		return GetError();
 	}
 
 	void LockClearError();
@@ -412,10 +407,8 @@ public:
 	 * Like ReadTaggedSong(), but locks and unlocks the object.
 	 */
 	DetachedSong *LockReadTaggedSong() {
-		Lock();
-		DetachedSong *result = ReadTaggedSong();
-		Unlock();
-		return result;
+		const ScopeLock protect(mutex);
+		return ReadTaggedSong();
 	}
 
 	void LockStop();
