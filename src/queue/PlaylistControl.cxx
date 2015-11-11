@@ -38,7 +38,7 @@ playlist::Stop(PlayerControl &pc)
 	assert(current >= 0);
 
 	FormatDebug(playlist_domain, "stop");
-	pc.Stop();
+	pc.LockStop();
 	queued = -1;
 	playing = false;
 
@@ -59,7 +59,7 @@ playlist::Stop(PlayerControl &pc)
 PlaylistResult
 playlist::PlayPosition(PlayerControl &pc, int song)
 {
-	pc.ClearError();
+	pc.LockClearError();
 
 	unsigned i = song;
 	if (song == -1) {
@@ -71,7 +71,7 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 		if (playing) {
 			/* already playing: unpause playback, just in
 			   case it was paused, and return */
-			pc.SetPause(false);
+			pc.LockSetPause(false);
 			return PlaylistResult::SUCCESS;
 		}
 
@@ -196,7 +196,7 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 
 	const DetachedSong *queued_song = GetQueuedSong();
 
-	pc.ClearError();
+	pc.LockClearError();
 	stop_on_error = true;
 	error_count = 0;
 
@@ -210,7 +210,7 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 		queued_song = nullptr;
 	}
 
-	if (!pc.Seek(new DetachedSong(queue.GetOrder(i)), seek_time)) {
+	if (!pc.LockSeek(new DetachedSong(queue.GetOrder(i)), seek_time)) {
 		UpdateQueuedSong(pc, queued_song);
 
 		return PlaylistResult::NOT_PLAYING;
@@ -254,7 +254,7 @@ playlist::SeekCurrent(PlayerControl &pc,
 		return PlaylistResult::NOT_PLAYING;
 
 	if (relative) {
-		const auto status = pc.GetStatus();
+		const auto status = pc.LockGetStatus();
 
 		if (status.state != PlayerState::PLAY &&
 		    status.state != PlayerState::PAUSE)

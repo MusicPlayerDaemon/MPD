@@ -646,7 +646,7 @@ static int mpd_main_after_fork(struct options options)
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */
-	instance->partition->pc.UpdateAudio();
+	instance->partition->pc.LockUpdateAudio();
 
 #ifdef WIN32
 	win32_app_started();

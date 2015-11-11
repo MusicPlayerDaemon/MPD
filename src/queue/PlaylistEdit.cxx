@@ -252,7 +252,7 @@ playlist::DeleteInternal(PlayerControl &pc,
 		else {
 			/* stop the player */
 
-			pc.Stop();
+			pc.LockStop();
 			playing = false;
 		}
 
@@ -457,7 +457,7 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 			/* if we're manipulating the "queued" song,
 			   the decoder thread may be decoding it
 			   already; cancel that */
-			pc.Cancel();
+			pc.LockCancel();
 			queued = -1;
 		}
 	}

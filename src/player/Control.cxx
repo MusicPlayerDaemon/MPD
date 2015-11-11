@@ -69,14 +69,14 @@ PlayerControl::Play(DetachedSong *song)
 }
 
 void
-PlayerControl::Cancel()
+PlayerControl::LockCancel()
 {
 	LockSynchronousCommand(PlayerCommand::CANCEL);
 	assert(next_song == nullptr);
 }
 
 void
-PlayerControl::Stop()
+PlayerControl::LockStop()
 {
 	LockSynchronousCommand(PlayerCommand::CLOSE_AUDIO);
 	assert(next_song == nullptr);
@@ -85,7 +85,7 @@ PlayerControl::Stop()
 }
 
 void
-PlayerControl::UpdateAudio()
+PlayerControl::LockUpdateAudio()
 {
 	LockSynchronousCommand(PlayerCommand::UPDATE_AUDIO);
 }
@@ -111,7 +111,7 @@ PlayerControl::PauseLocked()
 }
 
 void
-PlayerControl::Pause()
+PlayerControl::LockPause()
 {
 	Lock();
 	PauseLocked();
@@ -119,7 +119,7 @@ PlayerControl::Pause()
 }
 
 void
-PlayerControl::SetPause(bool pause_flag)
+PlayerControl::LockSetPause(bool pause_flag)
 {
 	Lock();
 
@@ -142,7 +142,7 @@ PlayerControl::SetPause(bool pause_flag)
 }
 
 void
-PlayerControl::SetBorderPause(bool _border_pause)
+PlayerControl::LockSetBorderPause(bool _border_pause)
 {
 	Lock();
 	border_pause = _border_pause;
@@ -150,7 +150,7 @@ PlayerControl::SetBorderPause(bool _border_pause)
 }
 
 player_status
-PlayerControl::GetStatus()
+PlayerControl::LockGetStatus()
 {
 	player_status status;
 
@@ -182,7 +182,7 @@ PlayerControl::SetError(PlayerError type, Error &&_error)
 }
 
 void
-PlayerControl::ClearError()
+PlayerControl::LockClearError()
 {
 	Lock();
 
@@ -211,7 +211,7 @@ PlayerControl::ClearTaggedSong()
 }
 
 void
-PlayerControl::EnqueueSong(DetachedSong *song)
+PlayerControl::LockEnqueueSong(DetachedSong *song)
 {
 	assert(song != nullptr);
 
@@ -221,7 +221,7 @@ PlayerControl::EnqueueSong(DetachedSong *song)
 }
 
 bool
-PlayerControl::Seek(DetachedSong *song, SongTime t)
+PlayerControl::LockSeek(DetachedSong *song, SongTime t)
 {
 	assert(song != nullptr);
 

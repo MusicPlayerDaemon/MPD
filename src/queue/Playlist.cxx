@@ -57,7 +57,7 @@ playlist::QueueSongOrder(PlayerControl &pc, unsigned order)
 	FormatDebug(playlist_domain, "queue song %i:\"%s\"",
 		    queued, song.GetURI());
 
-	pc.EnqueueSong(new DetachedSong(song));
+	pc.LockEnqueueSong(new DetachedSong(song));
 }
 
 void
@@ -140,7 +140,7 @@ playlist::UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev)
 
 	if (prev != nullptr && next_song != prev) {
 		/* clear the currently queued song */
-		pc.Cancel();
+		pc.LockCancel();
 		queued = -1;
 	}
 
@@ -235,7 +235,7 @@ playlist::SetRepeat(PlayerControl &pc, bool status)
 
 	queue.repeat = status;
 
-	pc.SetBorderPause(queue.single && !queue.repeat);
+	pc.LockSetBorderPause(queue.single && !queue.repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when repeat mode is toggled */
@@ -262,7 +262,7 @@ playlist::SetSingle(PlayerControl &pc, bool status)
 
 	queue.single = status;
 
-	pc.SetBorderPause(queue.single && !queue.repeat);
+	pc.LockSetBorderPause(queue.single && !queue.repeat);
 
 	/* if the last song is currently being played, the "next song"
 	   might change when single mode is toggled */

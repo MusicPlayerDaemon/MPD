@@ -61,7 +61,7 @@ void
 playlist_state_save(BufferedOutputStream &os, const struct playlist &playlist,
 		    PlayerControl &pc)
 {
-	const auto player_status = pc.GetStatus();
+	const auto player_status = pc.LockGetStatus();
 
 	os.Write(PLAYLIST_STATE_FILE_STATE);
 
@@ -191,7 +191,7 @@ playlist_state_restore(const char *line, TextFile &file,
 		   called here, after the audio output states were
 		   restored, before playback begins */
 		if (state != PlayerState::STOP)
-			pc.UpdateAudio();
+			pc.LockUpdateAudio();
 
 		if (state == PlayerState::STOP /* && config_option */)
 			playlist.current = current;
@@ -201,7 +201,7 @@ playlist_state_restore(const char *line, TextFile &file,
 			playlist.SeekSongPosition(pc, current, seek_time);
 
 		if (state == PlayerState::PAUSE)
-			pc.Pause();
+			pc.LockPause();
 	}
 
 	return true;
@@ -211,7 +211,7 @@ unsigned
 playlist_state_get_hash(const playlist &playlist,
 			PlayerControl &pc)
 {
-	const auto player_status = pc.GetStatus();
+	const auto player_status = pc.LockGetStatus();
 
 	return playlist.queue.version ^
 		(player_status.state != PlayerState::STOP

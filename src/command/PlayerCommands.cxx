@@ -100,9 +100,9 @@ handle_pause(Client &client, Request args, Response &r)
 		if (!args.Parse(0, pause_flag, r))
 			return CommandResult::ERROR;
 
-		client.player_control.SetPause(pause_flag);
+		client.player_control.LockSetPause(pause_flag);
 	} else
-		client.player_control.Pause();
+		client.player_control.LockPause();
 
 	return CommandResult::OK;
 }
@@ -113,7 +113,7 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 	const char *state = nullptr;
 	int song;
 
-	const auto player_status = client.player_control.GetStatus();
+	const auto player_status = client.player_control.LockGetStatus();
 
 	switch (player_status.state) {
 	case PlayerState::STOP:
@@ -284,7 +284,7 @@ CommandResult
 handle_clearerror(Client &client, gcc_unused Request args,
 		  gcc_unused Response &r)
 {
-	client.player_control.ClearError();
+	client.player_control.LockClearError();
 	return CommandResult::OK;
 }
 

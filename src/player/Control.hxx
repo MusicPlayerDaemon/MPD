@@ -319,25 +319,25 @@ public:
 	/**
 	 * see PlayerCommand::CANCEL
 	 */
-	void Cancel();
+	void LockCancel();
 
-	void SetPause(bool pause_flag);
+	void LockSetPause(bool pause_flag);
 
 private:
 	void PauseLocked();
 
 public:
-	void Pause();
+	void LockPause();
 
 	/**
 	 * Set the player's #border_pause flag.
 	 */
-	void SetBorderPause(bool border_pause);
+	void LockSetBorderPause(bool border_pause);
 
 	void Kill();
 
 	gcc_pure
-	player_status GetStatus();
+	player_status LockGetStatus();
 
 	PlayerState GetState() const {
 		return state;
@@ -378,7 +378,7 @@ public:
 		return result;
 	}
 
-	void ClearError();
+	void LockClearError();
 
 	PlayerError GetErrorType() const {
 		return error_type;
@@ -413,9 +413,9 @@ public:
 		return result;
 	}
 
-	void Stop();
+	void LockStop();
 
-	void UpdateAudio();
+	void LockUpdateAudio();
 
 private:
 	void EnqueueSongLocked(DetachedSong *song) {
@@ -432,7 +432,7 @@ public:
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
 	 */
-	void EnqueueSong(DetachedSong *song);
+	void LockEnqueueSong(DetachedSong *song);
 
 	/**
 	 * Makes the player thread seek the specified song to a position.
@@ -442,7 +442,7 @@ public:
 	 * @return true on success, false on failure (e.g. if MPD isn't
 	 * playing currently)
 	 */
-	bool Seek(DetachedSong *song, SongTime t);
+	bool LockSeek(DetachedSong *song, SongTime t);
 
 	void SetCrossFade(float cross_fade_seconds);
 

@@ -53,7 +53,7 @@ audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
 		idle_add(IDLE_MIXER);
 	}
 
-	ao.player_control->UpdateAudio();
+	ao.player_control->LockUpdateAudio();
 
 	++audio_output_state_version;
 
@@ -80,7 +80,7 @@ audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
 		idle_add(IDLE_MIXER);
 	}
 
-	ao.player_control->UpdateAudio();
+	ao.player_control->LockUpdateAudio();
 
 	++audio_output_state_version;
 
@@ -106,7 +106,7 @@ audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx)
 		}
 	}
 
-	ao.player_control->UpdateAudio();
+	ao.player_control->LockUpdateAudio();
 
 	++audio_output_state_version;
 
