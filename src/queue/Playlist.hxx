@@ -262,15 +262,15 @@ public:
 
 	void Stop(PlayerControl &pc);
 
-	void PlayPosition(PlayerControl &pc, int position);
+	bool PlayPosition(PlayerControl &pc, int position, Error &error);
 
-	void PlayOrder(PlayerControl &pc, int order);
+	bool PlayOrder(PlayerControl &pc, int order, Error &error);
 
-	void PlayId(PlayerControl &pc, int id);
+	bool PlayId(PlayerControl &pc, int id, Error &error);
 
-	void PlayNext(PlayerControl &pc);
+	bool PlayNext(PlayerControl &pc, Error &error);
 
-	void PlayPrevious(PlayerControl &pc);
+	bool PlayPrevious(PlayerControl &pc, Error &error);
 
 	bool SeekSongOrder(PlayerControl &pc,
 			   unsigned song_order,

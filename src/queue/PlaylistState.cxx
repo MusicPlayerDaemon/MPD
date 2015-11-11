@@ -196,7 +196,8 @@ playlist_state_restore(const char *line, TextFile &file,
 		if (state == PlayerState::STOP /* && config_option */)
 			playlist.current = current;
 		else if (seek_time.count() == 0)
-			playlist.PlayPosition(pc, current);
+			/* TODO: log error? */
+			playlist.PlayPosition(pc, current, IgnoreError());
 		else
 			playlist.SeekSongPosition(pc, current, seek_time,
 						  IgnoreError());

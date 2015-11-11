@@ -56,8 +56,8 @@ playlist::Stop(PlayerControl &pc)
 	}
 }
 
-void
-playlist::PlayPosition(PlayerControl &pc, int song)
+bool
+playlist::PlayPosition(PlayerControl &pc, int song, Error &error)
 {
 	pc.LockClearError();
 
@@ -66,13 +66,13 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 		/* play any song ("current" song, or the first song */
 
 		if (queue.IsEmpty())
-			return;
+			return true;
 
 		if (playing) {
 			/* already playing: unpause playback, just in
 			   case it was paused, and return */
 			pc.LockSetPause(false);
-			return;
+			return true;
 		}
 
 		/* select a song: "current" song, or the first one */
@@ -102,29 +102,30 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 	stop_on_error = false;
 	error_count = 0;
 
-	PlayOrder(pc, i);
+	return PlayOrder(pc, i, error);
 }
 
-void
-playlist::PlayId(PlayerControl &pc, int id)
+bool
+playlist::PlayId(PlayerControl &pc, int id, Error &error)
 {
-	if (id == -1) {
-		PlayPosition(pc, id);
-		return;
-	}
+	if (id == -1)
+		return PlayPosition(pc, id, error);
 
 	int song = queue.IdToPosition(id);
 	if (song < 0)
 		throw PlaylistError::NoSuchSong();
 
-	return PlayPosition(pc, song);
+	return PlayPosition(pc, song, error);
 }
 
-void
-playlist::PlayNext(PlayerControl &pc)
+bool
+playlist::PlayNext(PlayerControl &pc, Error &error)
 {
-	if (!playing)
-		return;
+	if (!playing) {
+		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
+			  "Not playing");
+		return true;
+	}
 
 	assert(!queue.IsEmpty());
 	assert(queue.IsValidOrder(current));
@@ -158,19 +159,25 @@ playlist::PlayNext(PlayerControl &pc)
 			   discard them anyway */
 		}
 
-		PlayOrder(pc, next_order);
+		if (!PlayOrder(pc, next_order, error))
+			return false;
 	}
 
 	/* Consume mode removes each played songs. */
 	if (queue.consume)
 		DeleteOrder(pc, old_current);
+
+	return true;
 }
 
-void
-playlist::PlayPrevious(PlayerControl &pc)
+bool
+playlist::PlayPrevious(PlayerControl &pc, Error &error)
 {
-	if (!playing)
-		return;
+	if (!playing) {
+		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
+			  "Not playing");
+		return true;
+	}
 
 	assert(!queue.IsEmpty());
 
@@ -187,7 +194,7 @@ playlist::PlayPrevious(PlayerControl &pc)
 		order = current;
 	}
 
-	PlayOrder(pc, order);
+	return PlayOrder(pc, order, error);
 }
 
 bool

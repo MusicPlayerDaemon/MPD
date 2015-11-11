@@ -152,8 +152,8 @@ playlist::UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev)
 	}
 }
 
-void
-playlist::PlayOrder(PlayerControl &pc, int order)
+bool
+playlist::PlayOrder(PlayerControl &pc, int order, Error &error)
 {
 	playing = true;
 	queued = -1;
@@ -162,10 +162,14 @@ playlist::PlayOrder(PlayerControl &pc, int order)
 
 	FormatDebug(playlist_domain, "play %i:\"%s\"", order, song.GetURI());
 
-	pc.Play(new DetachedSong(song));
 	current = order;
 
+	if (!pc.Play(new DetachedSong(song), error))
+		return false;
+
 	SongStarted();
+
+	return true;
 }
 
 void
@@ -224,7 +228,8 @@ playlist::ResumePlayback(PlayerControl &pc)
 		Stop(pc);
 	else
 		/* continue playback at the next song */
-		PlayNext(pc);
+		/* TODO: log error? */
+		PlayNext(pc, IgnoreError());
 }
 
 void

@@ -311,7 +311,7 @@ public:
 	 * @param song the song to be queued; the given instance will
 	 * be owned and freed by the player
 	 */
-	void Play(DetachedSong *song);
+	bool Play(DetachedSong *song, Error &error);
 
 	/**
 	 * see PlayerCommand::CANCEL

@@ -123,20 +123,20 @@ struct Partition final : private PlayerListener, private MixerListener {
 		playlist.Stop(pc);
 	}
 
-	void PlayPosition(int position) {
-		playlist.PlayPosition(pc, position);
+	bool PlayPosition(int position, Error &error) {
+		return playlist.PlayPosition(pc, position, error);
 	}
 
-	void PlayId(int id) {
-		playlist.PlayId(pc, id);
+	bool PlayId(int id, Error &error) {
+		return playlist.PlayId(pc, id, error);
 	}
 
-	void PlayNext() {
-		playlist.PlayNext(pc);
+	bool PlayNext(Error &error) {
+		return playlist.PlayNext(pc, error);
 	}
 
-	void PlayPrevious() {
-		playlist.PlayPrevious(pc);
+	bool PlayPrevious(Error &error) {
+		return playlist.PlayPrevious(pc, error);
 	}
 
 	bool SeekSongPosition(unsigned song_position,
