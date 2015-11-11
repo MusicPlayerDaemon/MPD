@@ -425,7 +425,7 @@ private:
 		SynchronousCommand(PlayerCommand::QUEUE);
 	}
 
-	void SeekLocked(DetachedSong *song, SongTime t);
+	bool SeekLocked(DetachedSong *song, SongTime t, Error &error_r);
 
 public:
 	/**
@@ -442,7 +442,7 @@ public:
 	 * @return true on success, false on failure (e.g. if MPD isn't
 	 * playing currently)
 	 */
-	bool LockSeek(DetachedSong *song, SongTime t);
+	bool LockSeek(DetachedSong *song, SongTime t, Error &error_r);
 
 	void SetCrossFade(float cross_fade_seconds);
 

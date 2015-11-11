@@ -204,8 +204,8 @@ PlayerControl::LockEnqueueSong(DetachedSong *song)
 	EnqueueSongLocked(song);
 }
 
-void
-PlayerControl::SeekLocked(DetachedSong *song, SongTime t)
+bool
+PlayerControl::SeekLocked(DetachedSong *song, SongTime t, Error &error_r)
 {
 	assert(song != nullptr);
 
@@ -214,21 +214,32 @@ PlayerControl::SeekLocked(DetachedSong *song, SongTime t)
 
 	assert(next_song == nullptr);
 
+	ClearError();
 	next_song = song;
 	seek_time = t;
 	SynchronousCommand(PlayerCommand::SEEK);
 
 	assert(next_song == nullptr);
+
+	if (error_type != PlayerError::NONE) {
+		assert(error.IsDefined());
+		error_r.Set(error);
+		return false;
+	}
+
+	assert(!error.IsDefined());
+	return true;
 }
 
 bool
-PlayerControl::LockSeek(DetachedSong *song, SongTime t)
+PlayerControl::LockSeek(DetachedSong *song, SongTime t, Error &error_r)
 {
 	assert(song != nullptr);
 
 	{
 		const ScopeLock protect(mutex);
-		SeekLocked(song, t);
+		if (!SeekLocked(song, t, error_r))
+			return false;
 	}
 
 	idle_add(IDLE_PLAYER);

@@ -211,12 +211,8 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time,
 		queued_song = nullptr;
 	}
 
-	if (!pc.LockSeek(new DetachedSong(queue.GetOrder(i)), seek_time)) {
+	if (!pc.LockSeek(new DetachedSong(queue.GetOrder(i)), seek_time, error)) {
 		UpdateQueuedSong(pc, queued_song);
-
-		// TODO: fix error code
-		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
-			  "Decoder failed to seek");
 		return false;
 	}
 
