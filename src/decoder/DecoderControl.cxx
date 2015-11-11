@@ -109,8 +109,19 @@ DecoderControl::Seek(SongTime t)
 {
 	assert(state != DecoderState::START);
 
-	if (state == DecoderState::STOP ||
-	    state == DecoderState::ERROR || !seekable)
+	switch (state) {
+	case DecoderState::START:
+		gcc_unreachable();
+
+	case DecoderState::ERROR:
+	case DecoderState::STOP:
+		return false;
+
+	case DecoderState::DECODE:
+		break;
+	}
+
+	if (!seekable)
 		return false;
 
 	seek_time = t;
