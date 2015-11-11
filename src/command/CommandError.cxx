@@ -29,6 +29,41 @@
 #include <string.h>
 #include <errno.h>
 
+gcc_const
+static enum ack
+ToAck(PlaylistResult result)
+{
+	switch (result) {
+	case PlaylistResult::SUCCESS:
+		break;
+
+	case PlaylistResult::DENIED:
+		return ACK_ERROR_PERMISSION;
+
+	case PlaylistResult::NO_SUCH_SONG:
+	case PlaylistResult::NO_SUCH_LIST:
+		return ACK_ERROR_NO_EXIST;
+
+	case PlaylistResult::LIST_EXISTS:
+		return ACK_ERROR_EXIST;
+
+	case PlaylistResult::BAD_NAME:
+	case PlaylistResult::BAD_RANGE:
+		return ACK_ERROR_ARG;
+
+	case PlaylistResult::NOT_PLAYING:
+		return ACK_ERROR_PLAYER_SYNC;
+
+	case PlaylistResult::TOO_LARGE:
+		return ACK_ERROR_PLAYLIST_MAX;
+
+	case PlaylistResult::DISABLED:
+		break;
+	}
+
+	return ACK_ERROR_UNKNOWN;
+}
+
 CommandResult
 print_playlist_result(Response &r, PlaylistResult result)
 {
@@ -82,6 +117,34 @@ print_playlist_result(Response &r, PlaylistResult result)
 	return CommandResult::ERROR;
 }
 
+gcc_pure
+static enum ack
+ToAck(const Error &error)
+{
+	if (error.IsDomain(playlist_domain)) {
+		return ToAck((PlaylistResult)error.GetCode());
+	} else if (error.IsDomain(ack_domain)) {
+		return (enum ack)error.GetCode();
+#ifdef ENABLE_DATABASE
+	} else if (error.IsDomain(db_domain)) {
+		switch ((enum db_error)error.GetCode()) {
+		case DB_DISABLED:
+		case DB_NOT_FOUND:
+			return ACK_ERROR_NO_EXIST;
+
+		case DB_CONFLICT:
+			return ACK_ERROR_ARG;
+		}
+#endif
+	} else if (error.IsDomain(locate_uri_domain)) {
+		return ACK_ERROR_ARG;
+	} else if (error.IsDomain(errno_domain)) {
+		return ACK_ERROR_SYSTEM;
+	}
+
+	return ACK_ERROR_UNKNOWN;
+}
+
 CommandResult
 print_error(Response &r, const Error &error)
 {
@@ -89,36 +152,6 @@ print_error(Response &r, const Error &error)
 
 	LogError(error);
 
-	if (error.IsDomain(playlist_domain)) {
-		return print_playlist_result(r,
-					     PlaylistResult(error.GetCode()));
-	} else if (error.IsDomain(ack_domain)) {
-		r.Error((ack)error.GetCode(), error.GetMessage());
-		return CommandResult::ERROR;
-#ifdef ENABLE_DATABASE
-	} else if (error.IsDomain(db_domain)) {
-		switch ((enum db_error)error.GetCode()) {
-		case DB_DISABLED:
-			r.Error(ACK_ERROR_NO_EXIST, error.GetMessage());
-			return CommandResult::ERROR;
-
-		case DB_NOT_FOUND:
-			r.Error(ACK_ERROR_NO_EXIST, "Not found");
-			return CommandResult::ERROR;
-
-		case DB_CONFLICT:
-			r.Error(ACK_ERROR_ARG, "Conflict");
-			return CommandResult::ERROR;
-		}
-#endif
-	} else if (error.IsDomain(locate_uri_domain)) {
-		r.Error(ACK_ERROR_ARG, error.GetMessage());
-		return CommandResult::ERROR;
-	} else if (error.IsDomain(errno_domain)) {
-		r.Error(ACK_ERROR_SYSTEM, strerror(error.GetCode()));
-		return CommandResult::ERROR;
-	}
-
-	r.Error(ACK_ERROR_UNKNOWN, "error");
+	r.Error(ToAck(error), error.GetMessage());
 	return CommandResult::ERROR;
 }
