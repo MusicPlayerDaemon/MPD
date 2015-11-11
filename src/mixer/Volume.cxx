@@ -98,10 +98,10 @@ read_sw_volume_state(const char *line, MultipleOutputs &outputs)
 	char *end = nullptr;
 	long int sv;
 
-	if (!StringStartsWith(line, SW_VOLUME_STATE))
+	line = StringAfterPrefix(line, SW_VOLUME_STATE);
+	if (line == nullptr)
 		return false;
 
-	line += sizeof(SW_VOLUME_STATE) - 1;
 	sv = strtol(line, &end, 10);
 	if (*end == 0 && sv >= 0 && sv <= 100)
 		software_volume_change(outputs, sv);

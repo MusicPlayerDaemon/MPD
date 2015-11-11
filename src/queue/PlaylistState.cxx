@@ -33,6 +33,7 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "util/CharUtil.hxx"
+#include "util/StringAPI.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
@@ -132,10 +133,9 @@ playlist_state_restore(const char *line, TextFile &file,
 	SongTime seek_time = SongTime::zero();
 	bool random_mode = false;
 
-	if (!StringStartsWith(line, PLAYLIST_STATE_FILE_STATE))
+	line = StringAfterPrefix(line, PLAYLIST_STATE_FILE_STATE);
+	if (line == nullptr)
 		return false;
-
-	line += sizeof(PLAYLIST_STATE_FILE_STATE) - 1;
 
 	PlayerState state;
 	if (strcmp(line, PLAYLIST_STATE_FILE_STATE_PLAY) == 0)
@@ -146,39 +146,28 @@ playlist_state_restore(const char *line, TextFile &file,
 		state = PlayerState::STOP;
 
 	while ((line = file.ReadLine()) != nullptr) {
-		if (StringStartsWith(line, PLAYLIST_STATE_FILE_TIME)) {
-			double seconds = atof(line + strlen(PLAYLIST_STATE_FILE_TIME));
-			seek_time = SongTime::FromS(seconds);
-		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_REPEAT)) {
-			playlist.SetRepeat(pc,
-					   strcmp(&(line[strlen(PLAYLIST_STATE_FILE_REPEAT)]),
-						  "1") == 0);
-		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_SINGLE)) {
-			playlist.SetSingle(pc,
-					   strcmp(&(line[strlen(PLAYLIST_STATE_FILE_SINGLE)]),
-						  "1") == 0);
-		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_CONSUME)) {
-			playlist.SetConsume(strcmp(&(line[strlen(PLAYLIST_STATE_FILE_CONSUME)]),
-						   "1") == 0);
-		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_CROSSFADE)) {
-			pc.SetCrossFade(atoi(line + strlen(PLAYLIST_STATE_FILE_CROSSFADE)));
-		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_MIXRAMPDB)) {
-			pc.SetMixRampDb(atof(line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDB)));
-		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY)) {
-			const char *p = line + strlen(PLAYLIST_STATE_FILE_MIXRAMPDELAY);
-
+		const char *p;
+		if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_TIME))) {
+			seek_time = SongTime::FromS(atof(p));
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_REPEAT))) {
+			playlist.SetRepeat(pc, StringIsEqual(p, "1"));
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_SINGLE))) {
+			playlist.SetSingle(pc, StringIsEqual(p, "1"));
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CONSUME))) {
+			playlist.SetConsume(StringIsEqual(p, "1"));
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CROSSFADE))) {
+			pc.SetCrossFade(atoi(p));
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDB))) {
+			pc.SetMixRampDb(atof(p));
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_MIXRAMPDELAY))) {
 			/* this check discards "nan" which was used
 			   prior to MPD 0.18 */
 			if (IsDigitASCII(*p))
 				pc.SetMixRampDelay(atof(p));
-		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_RANDOM)) {
-			random_mode =
-				strcmp(line + strlen(PLAYLIST_STATE_FILE_RANDOM),
-				       "1") == 0;
-		} else if (StringStartsWith(line, PLAYLIST_STATE_FILE_CURRENT)) {
-			current = atoi(&(line
-					 [strlen
-					  (PLAYLIST_STATE_FILE_CURRENT)]));
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_RANDOM))) {
+			random_mode = StringIsEqual(p, "1");
+		} else if ((p = StringAfterPrefix(line, PLAYLIST_STATE_FILE_CURRENT))) {
+			current = atoi(p);
 		} else if (StringStartsWith(line,
 					    PLAYLIST_STATE_FILE_PLAYLIST_BEGIN)) {
 			playlist_state_load(file, song_loader, playlist);

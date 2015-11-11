@@ -83,8 +83,9 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 		return;
 
 	uint8_t priority = 0;
-	if (StringStartsWith(line, PRIO_LABEL)) {
-		priority = strtoul(line + sizeof(PRIO_LABEL) - 1, nullptr, 10);
+	const char *p;
+	if ((p = StringAfterPrefix(line, PRIO_LABEL))) {
+		priority = strtoul(p, nullptr, 10);
 
 		line = file.ReadLine();
 		if (line == nullptr)
@@ -93,8 +94,8 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 
 	DetachedSong *song;
 
-	if (StringStartsWith(line, SONG_BEGIN)) {
-		const char *uri = line + sizeof(SONG_BEGIN) - 1;
+	if ((p = StringAfterPrefix(line, PRIO_LABEL))) {
+		const char *uri = p;
 
 		Error error;
 		song = song_load(file, uri, error);
