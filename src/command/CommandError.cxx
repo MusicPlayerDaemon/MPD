@@ -36,10 +36,6 @@ print_playlist_result(Response &r, PlaylistResult result)
 	case PlaylistResult::SUCCESS:
 		return CommandResult::OK;
 
-	case PlaylistResult::ERRNO:
-		r.Error(ACK_ERROR_SYSTEM, strerror(errno));
-		return CommandResult::ERROR;
-
 	case PlaylistResult::DENIED:
 		r.Error(ACK_ERROR_PERMISSION, "Access denied");
 		return CommandResult::ERROR;

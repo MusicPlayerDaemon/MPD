@@ -24,7 +24,6 @@ class Domain;
 
 enum class PlaylistResult {
 	SUCCESS,
-	ERRNO,
 	DENIED,
 	NO_SUCH_SONG,
 	NO_SUCH_LIST,
