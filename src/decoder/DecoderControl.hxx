@@ -365,7 +365,7 @@ public:
 
 	void Stop();
 
-	bool Seek(SongTime t);
+	bool Seek(SongTime t, Error &error_r);
 
 	void Quit();
 

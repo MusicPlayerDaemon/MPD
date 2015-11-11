@@ -605,8 +605,10 @@ Player::SeekDecoder()
 				where = total_time;
 		}
 
-		if (!dc.Seek(where + start_time)) {
+		Error error;
+		if (!dc.Seek(where + start_time, error)) {
 			/* decoder failure */
+			pc.SetError(PlayerError::DECODER, std::move(error));
 			pc.LockCommandFinished();
 			return false;
 		}
