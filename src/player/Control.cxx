@@ -55,15 +55,7 @@ PlayerControl::Play(DetachedSong *song)
 	assert(song != nullptr);
 
 	const ScopeLock protect(mutex);
-
-	if (state != PlayerState::STOP)
-		SynchronousCommand(PlayerCommand::STOP);
-
-	assert(next_song == nullptr);
-
-	EnqueueSongLocked(song);
-
-	assert(next_song == nullptr);
+	SeekLocked(song, SongTime::zero(), IgnoreError());
 }
 
 void
