@@ -66,6 +66,7 @@ class NfsConnection : SocketMonitor {
 			 open(_open), close_fh(nullptr) {}
 
 		void Stat(nfs_context *context, const char *path);
+		void Lstat(nfs_context *context, const char *path);
 		void OpenDirectory(nfs_context *context, const char *path);
 		void Open(nfs_context *context, const char *path, int flags);
 		void Stat(nfs_context *context, struct nfsfh *fh);
@@ -175,6 +176,7 @@ public:
 	void RemoveLease(NfsLease &lease) noexcept;
 
 	void Stat(const char *path, NfsCallback &callback);
+	void Lstat(const char *path, NfsCallback &callback);
 
 	void OpenDirectory(const char *path, NfsCallback &callback);
 	const struct nfsdirent *ReadDirectory(struct nfsdir *dir) noexcept;
