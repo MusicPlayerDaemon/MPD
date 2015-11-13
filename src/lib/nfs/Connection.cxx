@@ -47,9 +47,9 @@ NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
 {
 	assert(connection.GetEventLoop().IsInside());
 
-	int result = nfs_stat_async(ctx, path, Callback, this);
+	int result = nfs_stat64_async(ctx, path, Callback, this);
 	if (result < 0)
-		throw FormatRuntimeError("nfs_stat_async() failed: %s",
+		throw FormatRuntimeError("nfs_stat64_async() failed: %s",
 					 nfs_get_error(ctx));
 }
 
