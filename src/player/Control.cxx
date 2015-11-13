@@ -209,6 +209,10 @@ PlayerControl::SeekLocked(DetachedSong *song, SongTime t, Error &error_r)
 {
 	assert(song != nullptr);
 
+	/* to issue the SEEK command below, we need to clear the
+	   "next_song" attribute with the CANCEL command */
+	/* optimization TODO: if the decoder happens to decode that
+	   song already, don't cancel that */
 	if (next_song != nullptr)
 		SynchronousCommand(PlayerCommand::CANCEL);
 
