@@ -94,7 +94,7 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 
 	DetachedSong *song;
 
-	if ((p = StringAfterPrefix(line, PRIO_LABEL))) {
+	if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
 		const char *uri = p;
 
 		Error error;
