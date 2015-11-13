@@ -228,7 +228,14 @@ CommandResult
 handle_lsinfo(Client &client, Request args, Response &r)
 {
 	/* default is root directory */
-	const auto uri = args.GetOptional(0, "");
+	auto uri = args.GetOptional(0, "");
+	if (StringIsEqual(uri, "/"))
+		/* this URI is malformed, but some clients are buggy
+		   and use "lsinfo /" to list files in the music root
+		   directory, which was never intended to work, but
+		   once did; in order to retain backwards
+		   compatibility, work around this here */
+		uri = "";
 
 	Error error;
 	const auto located_uri = LocateUri(uri, &client,
