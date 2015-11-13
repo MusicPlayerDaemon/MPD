@@ -267,10 +267,13 @@ Copy(StorageFileInfo &info, const struct nfs_stat_64 &st) noexcept
 class NfsGetInfoOperation final : public BlockingNfsOperation {
 	const char *const path;
 	StorageFileInfo info;
+	bool follow;
 
 public:
-	NfsGetInfoOperation(NfsConnection &_connection, const char *_path)
-		:BlockingNfsOperation(_connection), path(_path) {}
+	NfsGetInfoOperation(NfsConnection &_connection, const char *_path,
+			    bool _follow)
+		:BlockingNfsOperation(_connection), path(_path),
+		 follow(_follow) {}
 
 	const StorageFileInfo &GetInfo() const {
 		return info;
@@ -278,7 +281,10 @@ public:
 
 protected:
 	void Start() override {
-		connection.Stat(path, *this);
+		if (follow)
+			connection.Stat(path, *this);
+		else
+			connection.Lstat(path, *this);
 	}
 
 	void HandleResult(gcc_unused unsigned status, void *data) noexcept override {
@@ -287,13 +293,13 @@ protected:
 };
 
 StorageFileInfo
-NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
+NfsStorage::GetInfo(const char *uri_utf8, bool follow)
 {
 	const std::string path = UriToNfsPath(uri_utf8);
 
 	WaitConnected();
 
-	NfsGetInfoOperation operation(*connection, path.c_str());
+	NfsGetInfoOperation operation(*connection, path.c_str(), follow);
 	operation.Run();
 	return operation.GetInfo();
 }
