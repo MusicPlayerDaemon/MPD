@@ -34,6 +34,7 @@
 #include "Partition.hxx"
 #include "BulkEdit.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 #include "util/UriUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"
@@ -85,7 +86,7 @@ CommandResult
 handle_add(Client &client, Request args, Response &r)
 {
 	const char *uri = args.front();
-	if (memcmp(uri, "/", 2) == 0)
+	if (StringIsEqual(uri, "/"))
 		/* this URI is malformed, but some clients are buggy
 		   and use "add /" to add the whole database, which
 		   was never intended to work, but once did; in order
