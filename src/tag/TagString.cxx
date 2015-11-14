@@ -40,9 +40,9 @@ FindInvalidUTF8(const char *p, const char *const end)
 		/* now call the other SequenceLengthUTF8() overload
 		   which also validates the continuations */
 		const size_t t = SequenceLengthUTF8(p);
-		assert(s == t);
 		if (t == 0)
 			return p;
+		assert(s == t);
 
 		p += s;
 	}
