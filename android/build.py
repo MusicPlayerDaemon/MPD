@@ -45,7 +45,12 @@ build_arch = 'linux-x86_64'
 # set up the NDK toolchain
 
 class AndroidNdkToolchain:
-    def __init__(self, use_cxx, use_clang):
+    def __init__(self, tarball_path, src_path, build_path,
+                 use_cxx, use_clang):
+        self.tarball_path = tarball_path
+        self.src_path = src_path
+        self.build_path = build_path
+
         self.ndk_arch = 'arm'
         android_abi = 'armeabi-v7a'
         ndk_platform = 'android-14'
@@ -135,12 +140,11 @@ class Project:
         self.use_cxx = use_cxx
         self.use_clang = use_clang
 
-    def download(self):
-        global tarball_path
-        return download_and_verify(self.url, self.md5, tarball_path)
+    def download(self, toolchain):
+        return download_and_verify(self.url, self.md5, toolchain.tarball_path)
 
     def is_installed(self, toolchain):
-        tarball = self.download()
+        tarball = self.download(toolchain)
         installed = os.path.join(toolchain.install_prefix, self.installed)
         tarball_mtime = os.path.getmtime(tarball)
         try:
@@ -148,12 +152,11 @@ class Project:
         except FileNotFoundError:
             return False
 
-    def unpack(self):
-        global src_path
-        return untar(self.download(), src_path, self.base)
+    def unpack(self, toolchain):
+        return untar(self.download(toolchain), toolchain.src_path, self.base)
 
-    def make_build_path(self):
-        path = os.path.join(build_path, self.base)
+    def make_build_path(self, toolchain):
+        path = os.path.join(toolchain.build_path, self.base)
         try:
             shutil.rmtree(path)
         except FileNotFoundError:
@@ -172,14 +175,14 @@ class AutotoolsProject(Project):
         self.cppflags = cppflags
 
     def build(self, toolchain):
-        src = self.unpack()
+        src = self.unpack(toolchain)
         if self.autogen:
             subprocess.check_call(['/usr/bin/aclocal'], cwd=src)
             subprocess.check_call(['/usr/bin/automake', '--add-missing', '--force-missing', '--foreign'], cwd=src)
             subprocess.check_call(['/usr/bin/autoconf'], cwd=src)
             subprocess.check_call(['/usr/bin/libtoolize', '--force'], cwd=src)
 
-        build = self.make_build_path()
+        build = self.make_build_path(toolchain)
 
         configure = [
             os.path.join(src, 'configure'),
@@ -210,8 +213,8 @@ class FfmpegProject(Project):
         self.cppflags = cppflags
 
     def build(self, toolchain):
-        src = self.unpack()
-        build = self.make_build_path()
+        src = self.unpack(toolchain)
+        build = self.make_build_path(toolchain)
 
         configure = [
             os.path.join(src, 'configure'),
@@ -244,7 +247,7 @@ class BoostProject(Project):
                          **kwargs)
 
     def build(self, toolchain):
-        src = self.unpack()
+        src = self.unpack(toolchain)
 
         # install the headers manually; don't build any library
         # (because right now, we only use header-only libraries)
@@ -367,12 +370,14 @@ thirdparty_libs = [
 
 # build the third-party libraries
 for x in thirdparty_libs:
-    toolchain = AndroidNdkToolchain(use_cxx=x.use_cxx, use_clang=x.use_clang)
+    toolchain = AndroidNdkToolchain(tarball_path, src_path, build_path,
+                                    use_cxx=x.use_cxx, use_clang=x.use_clang)
     if not x.is_installed(toolchain):
         x.build(toolchain)
 
 # configure and build MPD
-toolchain = AndroidNdkToolchain(use_cxx=True, use_clang=True)
+toolchain = AndroidNdkToolchain(tarball_path, src_path, build_path,
+                                use_cxx=True, use_clang=True)
 
 configure = [
     os.path.join(mpd_path, 'configure'),

@@ -30,8 +30,12 @@ build_path = os.path.join(arch_path, 'build')
 root_path = os.path.join(arch_path, 'root')
 
 class CrossGccToolchain:
-    def __init__(self, toolchain_path, arch, install_prefix):
+    def __init__(self, toolchain_path, arch,
+                 tarball_path, src_path, build_path, install_prefix):
         self.arch = arch
+        self.tarball_path = tarball_path
+        self.src_path = src_path
+        self.build_path = build_path
         self.install_prefix = install_prefix
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
@@ -80,11 +84,11 @@ class Project:
         self.md5 = md5
         self.installed = installed
 
-    def download(self):
-        return download_and_verify(self.url, self.md5, tarball_path)
+    def download(self, toolchain):
+        return download_and_verify(self.url, self.md5, toolchain.tarball_path)
 
     def is_installed(self, toolchain):
-        tarball = self.download()
+        tarball = self.download(toolchain)
         installed = os.path.join(toolchain.install_prefix, self.installed)
         tarball_mtime = os.path.getmtime(tarball)
         try:
@@ -92,16 +96,15 @@ class Project:
         except FileNotFoundError:
             return False
 
-    def unpack(self, out_of_tree=True):
-        global src_path, build_path
+    def unpack(self, toolchain, out_of_tree=True):
         if out_of_tree:
-            parent_path = src_path
+            parent_path = toolchain.src_path
         else:
-            parent_path = build_path
-        return untar(self.download(), parent_path, self.base)
+            parent_path = toolchain.build_path
+        return untar(self.download(toolchain), parent_path, self.base)
 
-    def make_build_path(self):
-        path = os.path.join(build_path, self.base)
+    def make_build_path(self, toolchain):
+        path = os.path.join(toolchain.build_path, self.base)
         try:
             shutil.rmtree(path)
         except FileNotFoundError:
@@ -120,14 +123,14 @@ class AutotoolsProject(Project):
         self.cppflags = cppflags
 
     def build(self, toolchain):
-        src = self.unpack()
+        src = self.unpack(toolchain)
         if self.autogen:
             subprocess.check_call(['/usr/bin/aclocal'], cwd=src)
             subprocess.check_call(['/usr/bin/automake', '--add-missing', '--force-missing', '--foreign'], cwd=src)
             subprocess.check_call(['/usr/bin/autoconf'], cwd=src)
             subprocess.check_call(['/usr/bin/libtoolize', '--force'], cwd=src)
 
-        build = self.make_build_path()
+        build = self.make_build_path(toolchain)
 
         configure = [
             os.path.join(src, 'configure'),
@@ -157,7 +160,7 @@ class ZlibProject(Project):
         Project.__init__(self, url, md5, installed, **kwargs)
 
     def build(self, toolchain):
-        src = self.unpack(out_of_tree=False)
+        src = self.unpack(toolchain, out_of_tree=False)
 
         subprocess.check_call(['/usr/bin/make', '--quiet',
             '-f', 'win32/Makefile.gcc',
@@ -179,8 +182,8 @@ class FfmpegProject(Project):
         self.cppflags = cppflags
 
     def build(self, toolchain):
-        src = self.unpack()
-        build = self.make_build_path()
+        src = self.unpack(toolchain)
+        build = self.make_build_path(toolchain)
 
         configure = [
             os.path.join(src, 'configure'),
@@ -215,7 +218,7 @@ class BoostProject(Project):
                          **kwargs)
 
     def build(self, toolchain):
-        src = self.unpack()
+        src = self.unpack(toolchain)
 
         # install the headers manually; don't build any library
         # (because right now, we only use header-only libraries)
@@ -332,7 +335,8 @@ thirdparty_libs = [
 ]
 
 # build the third-party libraries
-toolchain = CrossGccToolchain('/usr', host_arch, root_path)
+toolchain = CrossGccToolchain('/usr', host_arch,
+                              tarball_path, src_path, build_path, root_path)
 
 for x in thirdparty_libs:
     if not x.is_installed(toolchain):
