@@ -92,9 +92,13 @@ class Project:
         except FileNotFoundError:
             return False
 
-    def unpack(self):
-        global src_path
-        return untar(self.download(), src_path, self.base)
+    def unpack(self, out_of_tree=True):
+        global src_path, build_path
+        if out_of_tree:
+            parent_path = src_path
+        else:
+            parent_path = build_path
+        return untar(self.download(), parent_path, self.base)
 
     def make_build_path(self):
         path = os.path.join(build_path, self.base)
