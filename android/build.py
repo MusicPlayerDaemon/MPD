@@ -87,7 +87,7 @@ class AndroidNdkToolchain:
         self.cflags = '-Os -g ' + common_flags
         self.cxxflags = '-Os -g ' + common_flags
         self.cppflags = '--sysroot=' + self.sysroot + ' -isystem ' + os.path.join(install_prefix, 'include')
-        self.ldflags = '--sysroot=' + self.sysroot + ' -L' + os.path.join(root_path, 'lib')
+        self.ldflags = '--sysroot=' + self.sysroot + ' -L' + os.path.join(install_prefix, 'lib')
         self.libs = ''
 
         libstdcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/gnu-libstdc++', gcc_version)

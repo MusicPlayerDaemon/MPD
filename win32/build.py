@@ -46,7 +46,7 @@ class CrossGccToolchain:
         self.cflags = '-O2 -g ' + common_flags
         self.cxxflags = '-O2 -g ' + common_flags
         self.cppflags = '-isystem ' + os.path.join(install_prefix, 'include')
-        self.ldflags = '-L' + os.path.join(root_path, 'lib')
+        self.ldflags = '-L' + os.path.join(install_prefix, 'lib')
         self.libs = ''
 
         self.env = dict(os.environ)
