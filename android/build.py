@@ -23,14 +23,7 @@ if not os.path.isdir(ndk_path):
     sys.exit(1)
 
 # select the NDK target
-ndk_arch = 'arm'
-host_arch = 'arm-linux-androideabi'
-android_abi = 'armeabi-v7a'
-ndk_platform = 'android-14'
-
-# select the NDK compiler
-gcc_version = '4.9'
-llvm_version = '3.6'
+arch = 'arm-linux-androideabi'
 
 # the path to the MPD sources
 mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..'))
@@ -44,55 +37,74 @@ if 'MPD_SHARED_LIB' in os.environ:
 tarball_path = os.path.join(shared_path, 'download')
 src_path = os.path.join(shared_path, 'src')
 
-arch_path = os.path.join(lib_path, host_arch)
+arch_path = os.path.join(lib_path, arch)
 build_path = os.path.join(arch_path, 'build')
-root_path = os.path.join(arch_path, 'root')
 
 # build host configuration
 build_arch = 'linux-x86_64'
 
-# redirect pkg-config to use our root directory instead of the default
-# one on the build host
-os.environ['PKG_CONFIG_LIBDIR'] = os.path.join(root_path, 'lib/pkgconfig')
-
 # set up the NDK toolchain
 
-gcc_toolchain = os.path.join(ndk_path, 'toolchains', host_arch + '-' + gcc_version, 'prebuilt', build_arch)
-llvm_toolchain = os.path.join(ndk_path, 'toolchains', 'llvm-' + llvm_version, 'prebuilt', build_arch)
-ndk_platform_path = os.path.join(ndk_path, 'platforms', ndk_platform)
-target_root = os.path.join(ndk_platform_path, 'arch-' + ndk_arch)
+class AndroidNdkToolchain:
+    def __init__(self, use_cxx, use_clang):
+        self.ndk_arch = 'arm'
+        android_abi = 'armeabi-v7a'
+        ndk_platform = 'android-14'
 
-llvm_triple = 'armv7-none-linux-androideabi'
+        # select the NDK compiler
+        gcc_version = '4.9'
+        llvm_version = '3.6'
 
-def select_toolchain(use_cxx, use_clang):
-    global cc, cxx, ar, strip, cflags, cxxflags, cppflags, ldflags, libs
+        ndk_platform_path = os.path.join(ndk_path, 'platforms', ndk_platform)
+        sysroot = os.path.join(ndk_platform_path, 'arch-' + self.ndk_arch)
 
-    target_arch = '-march=armv7-a -mfloat-abi=softfp'
-    if use_clang:
-        cc = os.path.join(llvm_toolchain, 'bin/clang')
-        cxx = os.path.join(llvm_toolchain, 'bin/clang++')
-        target_arch += ' -target ' + llvm_triple + ' -integrated-as -gcc-toolchain ' + gcc_toolchain
-    else:
-        cc = os.path.join(gcc_toolchain, 'bin', host_arch + '-gcc')
-        cxx = os.path.join(gcc_toolchain, 'bin', host_arch + '-g++')
-    ar = os.path.join(gcc_toolchain, 'bin', host_arch + '-ar')
-    strip = os.path.join(gcc_toolchain, 'bin', host_arch + '-strip')
+        install_prefix = os.path.join(arch_path, 'root')
 
-    libstdcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/gnu-libstdc++', gcc_version)
-    libstdcxx_cppflags = '-isystem ' + os.path.join(libstdcxx_path, 'include') + ' -isystem ' + os.path.join(libstdcxx_path, 'libs', android_abi, 'include')
-    if use_clang:
-        libstdcxx_cppflags += ' -D__STRICT_ANSI__'
-    libstdcxx_ldadd = os.path.join(libstdcxx_path, 'libs', android_abi, 'libgnustl_static.a')
+        self.arch = arch
+        self.install_prefix = install_prefix
+        self.sysroot = sysroot
 
-    cflags = '-Os -g ' + target_arch
-    cxxflags = '-Os -g ' + target_arch
-    cppflags = '--sysroot=' + target_root + ' -I' + root_path + '/include'
-    ldflags = '--sysroot=' + target_root + ' -L' + root_path + '/lib'
-    libs = ''
+        toolchain_path = os.path.join(ndk_path, 'toolchains', arch + '-' + gcc_version, 'prebuilt', build_arch)
+        llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm-' + llvm_version, 'prebuilt', build_arch)
+        llvm_triple = 'armv7-none-linux-androideabi'
 
-    if use_cxx:
-        libs += ' ' + libstdcxx_ldadd
-        cppflags += ' ' + libstdcxx_cppflags
+        common_flags = '-march=armv7-a -mfloat-abi=softfp'
+
+        toolchain_bin = os.path.join(toolchain_path, 'bin')
+        if use_clang:
+            llvm_bin = os.path.join(llvm_path, 'bin')
+            self.cc = os.path.join(llvm_bin, 'clang')
+            self.cxx = os.path.join(llvm_bin, 'clang++')
+            common_flags += ' -target ' + llvm_triple + ' -integrated-as -gcc-toolchain ' + toolchain_path
+        else:
+            self.cc = os.path.join(toolchain_bin, arch + '-gcc')
+            self.cxx = os.path.join(toolchain_bin, arch + '-g++')
+
+        self.ar = os.path.join(toolchain_bin, arch + '-ar')
+        self.nm = os.path.join(toolchain_bin, arch + '-nm')
+        self.strip = os.path.join(toolchain_bin, arch + '-strip')
+
+        self.cflags = '-Os -g ' + common_flags
+        self.cxxflags = '-Os -g ' + common_flags
+        self.cppflags = '--sysroot=' + self.sysroot + ' -isystem ' + os.path.join(install_prefix, 'include')
+        self.ldflags = '--sysroot=' + self.sysroot + ' -L' + os.path.join(root_path, 'lib')
+        self.libs = ''
+
+        libstdcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/gnu-libstdc++', gcc_version)
+        libstdcxx_cppflags = '-isystem ' + os.path.join(libstdcxx_path, 'include') + ' -isystem ' + os.path.join(libstdcxx_path, 'libs', android_abi, 'include')
+        if use_clang:
+            libstdcxx_cppflags += ' -D__STRICT_ANSI__'
+        libstdcxx_ldadd = os.path.join(libstdcxx_path, 'libs', android_abi, 'libgnustl_static.a')
+
+        if use_cxx:
+            self.libs += ' ' + libstdcxx_ldadd
+            self.cppflags += ' ' + libstdcxx_cppflags
+
+        self.env = dict(os.environ)
+
+        # redirect pkg-config to use our root directory instead of the
+        # default one on the build host
+        self.env['PKG_CONFIG_LIBDIR'] = os.path.join(install_prefix, 'lib/pkgconfig')
 
 def file_md5(path):
     """Calculate the MD5 checksum of a file and return it in hexadecimal notation."""
@@ -162,10 +174,9 @@ class Project:
     def download(self):
         return download_tarball(self.url, self.md5)
 
-    def is_installed(self):
-        global root_path
+    def is_installed(self, toolchain):
         tarball = self.download()
-        installed = os.path.join(root_path, self.installed)
+        installed = os.path.join(toolchain.install_prefix, self.installed)
         tarball_mtime = os.path.getmtime(tarball)
         try:
             return os.path.getmtime(installed) >= tarball_mtime
@@ -203,7 +214,7 @@ class AutotoolsProject(Project):
         self.autogen = autogen
         self.cppflags = cppflags
 
-    def build(self):
+    def build(self, toolchain):
         src = self.unpack()
         if self.autogen:
             subprocess.check_call(['/usr/bin/aclocal'], cwd=src)
@@ -213,27 +224,25 @@ class AutotoolsProject(Project):
 
         build = self.make_build_path()
 
-        select_toolchain(use_cxx=self.use_cxx, use_clang=self.use_clang)
         configure = [
             os.path.join(src, 'configure'),
-            'CC=' + cc,
-            'CXX=' + cxx,
-            'CFLAGS=' + cflags,
-            'CXXFLAGS=' + cxxflags,
-            'CPPFLAGS=' + cppflags + ' ' + self.cppflags,
-            'LDFLAGS=' + ldflags,
-            'LIBS=' + libs,
-            'AR=' + ar,
-            'STRIP=' + strip,
-            '--host=' + host_arch,
-            '--prefix=' + root_path,
-            '--with-sysroot=' + target_root,
+            'CC=' + toolchain.cc,
+            'CXX=' + toolchain.cxx,
+            'CFLAGS=' + toolchain.cflags,
+            'CXXFLAGS=' + toolchain.cxxflags,
+            'CPPFLAGS=' + toolchain.cppflags + ' ' + self.cppflags,
+            'LDFLAGS=' + toolchain.ldflags,
+            'LIBS=' + toolchain.libs,
+            'AR=' + toolchain.ar,
+            'STRIP=' + toolchain.strip,
+            '--host=' + toolchain.arch,
+            '--prefix=' + toolchain.install_prefix,
             '--enable-silent-rules',
         ] + self.configure_args
 
-        subprocess.check_call(configure, cwd=build)
-        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build)
-        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build)
+        subprocess.check_call(configure, cwd=build, env=toolchain.env)
+        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build, env=toolchain.env)
+        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build, env=toolchain.env)
 
 class FfmpegProject(Project):
     def __init__(self, url, md5, installed, configure_args=[],
@@ -243,30 +252,30 @@ class FfmpegProject(Project):
         self.configure_args = configure_args
         self.cppflags = cppflags
 
-    def build(self):
+    def build(self, toolchain):
         src = self.unpack()
         build = self.make_build_path()
 
-        select_toolchain(use_cxx=self.use_cxx, use_clang=self.use_clang)
         configure = [
             os.path.join(src, 'configure'),
-            '--cc=' + cc,
-            '--cxx=' + cxx,
-            '--extra-cflags=' + cflags + ' ' + cppflags + ' ' + self.cppflags,
-            '--extra-cxxflags=' + cxxflags + ' ' + cppflags + ' ' + self.cppflags,
-            '--extra-ldflags=' + ldflags,
-            '--extra-libs=' + libs,
-            '--ar=' + ar,
+            '--cc=' + toolchain.cc,
+            '--cxx=' + toolchain.cxx,
+            '--nm=' + toolchain.nm,
+            '--extra-cflags=' + toolchain.cflags + ' ' + toolchain.cppflags + ' ' + self.cppflags,
+            '--extra-cxxflags=' + toolchain.cxxflags + ' ' + toolchain.cppflags + ' ' + self.cppflags,
+            '--extra-ldflags=' + toolchain.ldflags,
+            '--extra-libs=' + toolchain.libs,
+            '--ar=' + toolchain.ar,
             '--enable-cross-compile',
             '--target-os=linux',
-            '--arch=' + ndk_arch,
+            '--arch=' + toolchain.ndk_arch,
             '--cpu=cortex-a8',
-            '--prefix=' + root_path,
+            '--prefix=' + toolchain.install_prefix,
         ] + self.configure_args
 
-        subprocess.check_call(configure, cwd=build)
-        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build)
-        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build)
+        subprocess.check_call(configure, cwd=build, env=toolchain.env)
+        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build, env=toolchain.env)
+        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build, env=toolchain.env)
 
 class BoostProject(Project):
     def __init__(self, url, md5, installed,
@@ -277,12 +286,12 @@ class BoostProject(Project):
                          name='boost', version=version,
                          **kwargs)
 
-    def build(self):
+    def build(self, toolchain):
         src = self.unpack()
 
         # install the headers manually; don't build any library
         # (because right now, we only use header-only libraries)
-        includedir = os.path.join(root_path, 'include')
+        includedir = os.path.join(toolchain.install_prefix, 'include')
         for dirpath, dirnames, filenames in os.walk(os.path.join(src, 'boost')):
             relpath = dirpath[len(src)+1:]
             destdir = os.path.join(includedir, relpath)
@@ -401,26 +410,27 @@ thirdparty_libs = [
 
 # build the third-party libraries
 for x in thirdparty_libs:
-    if not x.is_installed():
-        x.build()
+    toolchain = AndroidNdkToolchain(use_cxx=x.use_cxx, use_clang=x.use_clang)
+    if not x.is_installed(toolchain):
+        x.build(toolchain)
 
 # configure and build MPD
-select_toolchain(use_cxx=True, use_clang=True)
+toolchain = AndroidNdkToolchain(use_cxx=True, use_clang=True)
 
 configure = [
     os.path.join(mpd_path, 'configure'),
-    'CC=' + cc,
-    'CXX=' + cxx,
-    'CFLAGS=' + cflags,
-    'CXXFLAGS=' + cxxflags,
-    'CPPFLAGS=' + cppflags,
-    'LDFLAGS=' + ldflags,
-    'LIBS=' + libs,
-    'AR=' + ar,
-    'STRIP=' + strip,
-    '--host=' + host_arch,
-    '--prefix=' + root_path,
-    '--with-sysroot=' + target_root,
+    'CC=' + toolchain.cc,
+    'CXX=' + toolchain.cxx,
+    'CFLAGS=' + toolchain.cflags,
+    'CXXFLAGS=' + toolchain.cxxflags,
+    'CPPFLAGS=' + toolchain.cppflags,
+    'LDFLAGS=' + toolchain.ldflags,
+    'LIBS=' + toolchain.libs,
+    'AR=' + toolchain.ar,
+    'STRIP=' + toolchain.strip,
+    '--host=' + toolchain.arch,
+    '--prefix=' + toolchain.install_prefix,
+    '--with-sysroot=' + toolchain.sysroot,
     '--with-android-sdk=' + sdk_path,
 
     '--enable-silent-rules',
@@ -429,5 +439,5 @@ configure = [
 
 ] + configure_args
 
-subprocess.check_call(configure)
-subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'])
+subprocess.check_call(configure, env=toolchain.env)
+subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], env=toolchain.env)

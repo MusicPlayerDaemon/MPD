@@ -30,27 +30,30 @@ arch_path = os.path.join(lib_path, host_arch)
 build_path = os.path.join(arch_path, 'build')
 root_path = os.path.join(arch_path, 'root')
 
-# redirect pkg-config to use our root directory instead of the default
-# one on the build host
-os.environ['PKG_CONFIG_LIBDIR'] = os.path.join(root_path, 'lib/pkgconfig')
+class CrossGccToolchain:
+    def __init__(self, toolchain_path, arch, install_prefix):
+        self.arch = arch
+        self.install_prefix = install_prefix
 
-gcc_toolchain = '/usr'
+        toolchain_bin = os.path.join(toolchain_path, 'bin')
+        self.cc = os.path.join(toolchain_bin, arch + '-gcc')
+        self.cxx = os.path.join(toolchain_bin, arch + '-g++')
+        self.ar = os.path.join(toolchain_bin, arch + '-ar')
+        self.nm = os.path.join(toolchain_bin, arch + '-nm')
+        self.strip = os.path.join(toolchain_bin, arch + '-strip')
 
-def select_toolchain():
-    global cc, cxx, ar, nm, strip, cflags, cxxflags, cppflags, ldflags, libs
+        common_flags = ''
+        self.cflags = '-O2 -g ' + common_flags
+        self.cxxflags = '-O2 -g ' + common_flags
+        self.cppflags = '-isystem ' + os.path.join(install_prefix, 'include')
+        self.ldflags = '-L' + os.path.join(root_path, 'lib')
+        self.libs = ''
 
-    target_arch = ''
-    cc = os.path.join(gcc_toolchain, 'bin', host_arch + '-gcc')
-    cxx = os.path.join(gcc_toolchain, 'bin', host_arch + '-g++')
-    ar = os.path.join(gcc_toolchain, 'bin', host_arch + '-ar')
-    nm = os.path.join(gcc_toolchain, 'bin', host_arch + '-nm')
-    strip = os.path.join(gcc_toolchain, 'bin', host_arch + '-strip')
+        self.env = dict(os.environ)
 
-    cflags = '-O2 -g ' + target_arch
-    cxxflags = '-O2 -g ' + target_arch
-    cppflags = '-I' + root_path + '/include'
-    ldflags = '-L' + root_path + '/lib'
-    libs = ''
+        # redirect pkg-config to use our root directory instead of the
+        # default one on the build host
+        self.env['PKG_CONFIG_LIBDIR'] = os.path.join(install_prefix, 'lib/pkgconfig')
 
 def file_md5(path):
     """Calculate the MD5 checksum of a file and return it in hexadecimal notation."""
@@ -116,10 +119,9 @@ class Project:
     def download(self):
         return download_tarball(self.url, self.md5)
 
-    def is_installed(self):
-        global root_path
+    def is_installed(self, toolchain):
         tarball = self.download()
-        installed = os.path.join(root_path, self.installed)
+        installed = os.path.join(toolchain.install_prefix, self.installed)
         tarball_mtime = os.path.getmtime(tarball)
         try:
             return os.path.getmtime(installed) >= tarball_mtime
@@ -161,7 +163,7 @@ class AutotoolsProject(Project):
         self.autogen = autogen
         self.cppflags = cppflags
 
-    def build(self):
+    def build(self, toolchain):
         src = self.unpack()
         if self.autogen:
             subprocess.check_call(['/usr/bin/aclocal'], cwd=src)
@@ -171,46 +173,46 @@ class AutotoolsProject(Project):
 
         build = self.make_build_path()
 
-        select_toolchain()
         configure = [
             os.path.join(src, 'configure'),
-            'CC=' + cc,
-            'CXX=' + cxx,
-            'CFLAGS=' + cflags,
-            'CXXFLAGS=' + cxxflags,
-            'CPPFLAGS=' + cppflags + ' ' + self.cppflags,
-            'LDFLAGS=' + ldflags,
-            'LIBS=' + libs,
-            'AR=' + ar,
-            'STRIP=' + strip,
-            '--host=' + host_arch,
-            '--prefix=' + root_path,
+            'CC=' + toolchain.cc,
+            'CXX=' + toolchain.cxx,
+            'CFLAGS=' + toolchain.cflags,
+            'CXXFLAGS=' + toolchain.cxxflags,
+            'CPPFLAGS=' + toolchain.cppflags + ' ' + self.cppflags,
+            'LDFLAGS=' + toolchain.ldflags,
+            'LIBS=' + toolchain.libs,
+            'AR=' + toolchain.ar,
+            'STRIP=' + toolchain.strip,
+            '--host=' + toolchain.arch,
+            '--prefix=' + toolchain.install_prefix,
             '--enable-silent-rules',
         ] + self.configure_args
 
-        subprocess.check_call(configure, cwd=build)
-        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build)
-        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build)
+        subprocess.check_call(configure, cwd=build, env=toolchain.env)
+        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'],
+                              cwd=build, env=toolchain.env)
+        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'],
+                              cwd=build, env=toolchain.env)
 
 class ZlibProject(Project):
     def __init__(self, url, md5, installed,
                  **kwargs):
         Project.__init__(self, url, md5, installed, **kwargs)
 
-    def build(self):
+    def build(self, toolchain):
         src = self.unpack(out_of_tree=False)
 
-        select_toolchain()
         subprocess.check_call(['/usr/bin/make', '--quiet',
             '-f', 'win32/Makefile.gcc',
-            'PREFIX=' + host_arch + '-',
+            'PREFIX=' + toolchain.arch + '-',
             '-j12',
             'install',
-            'DESTDIR=' + root_path + '/',
+            'DESTDIR=' + toolchain.install_prefix + '/',
             'INCLUDE_PATH=include',
             'LIBRARY_PATH=lib',
             'BINARY_PATH=bin', 'SHARED_MODE=1'],
-            cwd=src)
+            cwd=src, env=toolchain.env)
 
 class FfmpegProject(Project):
     def __init__(self, url, md5, installed, configure_args=[],
@@ -220,31 +222,32 @@ class FfmpegProject(Project):
         self.configure_args = configure_args
         self.cppflags = cppflags
 
-    def build(self):
+    def build(self, toolchain):
         src = self.unpack()
         build = self.make_build_path()
 
-        select_toolchain()
         configure = [
             os.path.join(src, 'configure'),
-            '--cc=' + cc,
-            '--cxx=' + cxx,
-            '--nm=' + nm,
-            '--extra-cflags=' + cflags + ' ' + cppflags + ' ' + self.cppflags,
-            '--extra-cxxflags=' + cxxflags + ' ' + cppflags + ' ' + self.cppflags,
-            '--extra-ldflags=' + ldflags,
-            '--extra-libs=' + libs,
-            '--ar=' + ar,
+            '--cc=' + toolchain.cc,
+            '--cxx=' + toolchain.cxx,
+            '--nm=' + toolchain.nm,
+            '--extra-cflags=' + toolchain.cflags + ' ' + toolchain.cppflags + ' ' + self.cppflags,
+            '--extra-cxxflags=' + toolchain.cxxflags + ' ' + toolchain.cppflags + ' ' + self.cppflags,
+            '--extra-ldflags=' + toolchain.ldflags,
+            '--extra-libs=' + toolchain.libs,
+            '--ar=' + toolchain.ar,
             '--enable-cross-compile',
             '--arch=x86',
             '--target-os=mingw32',
-            '--cross-prefix=' + host_arch + '-',
-            '--prefix=' + root_path,
+            '--cross-prefix=' + toolchain.arch + '-',
+            '--prefix=' + toolchain.install_prefix,
         ] + self.configure_args
 
-        subprocess.check_call(configure, cwd=build)
-        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], cwd=build)
-        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'], cwd=build)
+        subprocess.check_call(configure, cwd=build, env=toolchain.env)
+        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'],
+                              cwd=build, env=toolchain.env)
+        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'],
+                              cwd=build, env=toolchain.env)
 
 class BoostProject(Project):
     def __init__(self, url, md5, installed,
@@ -255,12 +258,12 @@ class BoostProject(Project):
                          name='boost', version=version,
                          **kwargs)
 
-    def build(self):
+    def build(self, toolchain):
         src = self.unpack()
 
         # install the headers manually; don't build any library
         # (because right now, we only use header-only libraries)
-        includedir = os.path.join(root_path, 'include')
+        includedir = os.path.join(toolchain.install_prefix, 'include')
         for dirpath, dirnames, filenames in os.walk(os.path.join(src, 'boost')):
             relpath = dirpath[len(src)+1:]
             destdir = os.path.join(includedir, relpath)
@@ -373,26 +376,27 @@ thirdparty_libs = [
 ]
 
 # build the third-party libraries
+toolchain = CrossGccToolchain('/usr', host_arch, root_path)
+
 for x in thirdparty_libs:
-    if not x.is_installed():
-        x.build()
+    if not x.is_installed(toolchain):
+        x.build(toolchain)
 
 # configure and build MPD
-select_toolchain()
 
 configure = [
     os.path.join(mpd_path, 'configure'),
-    'CC=' + cc,
-    'CXX=' + cxx,
-    'CFLAGS=' + cflags,
-    'CXXFLAGS=' + cxxflags,
-    'CPPFLAGS=' + cppflags,
-    'LDFLAGS=' + ldflags + ' -static',
-    'LIBS=' + libs,
-    'AR=' + ar,
-    'STRIP=' + strip,
-    '--host=' + host_arch,
-    '--prefix=' + root_path,
+    'CC=' + toolchain.cc,
+    'CXX=' + toolchain.cxx,
+    'CFLAGS=' + toolchain.cflags,
+    'CXXFLAGS=' + toolchain.cxxflags,
+    'CPPFLAGS=' + toolchain.cppflags,
+    'LDFLAGS=' + toolchain.ldflags + ' -static',
+    'LIBS=' + toolchain.libs,
+    'AR=' + toolchain.ar,
+    'STRIP=' + toolchain.strip,
+    '--host=' + toolchain.arch,
+    '--prefix=' + toolchain.install_prefix,
 
     '--enable-silent-rules',
 
@@ -400,5 +404,5 @@ configure = [
 
 ] + configure_args
 
-subprocess.check_call(configure)
-subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'])
+subprocess.check_call(configure, env=toolchain.env)
+subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'], env=toolchain.env)
