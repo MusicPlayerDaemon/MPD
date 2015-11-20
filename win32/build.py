@@ -51,6 +51,10 @@ class CrossGccToolchain:
         self.ldflags = '-L' + os.path.join(install_prefix, 'lib')
         self.libs = ''
 
+        self.is_arm = arch.startswith('arm')
+        self.is_armv7 = self.is_arm and 'armv7' in self.cflags
+        self.is_windows = 'mingw32' in arch
+
         self.env = dict(os.environ)
 
         # redirect pkg-config to use our root directory instead of the
@@ -92,6 +96,16 @@ class FfmpegProject(Project):
         src = self.unpack(toolchain)
         build = self.make_build_path(toolchain)
 
+        if toolchain.is_arm:
+            arch = 'arm'
+        else:
+            arch = 'x86'
+
+        if toolchain.is_windows:
+            target_os = 'mingw32'
+        else:
+            target_os = 'linux'
+
         configure = [
             os.path.join(src, 'configure'),
             '--cc=' + toolchain.cc,
@@ -103,11 +117,14 @@ class FfmpegProject(Project):
             '--extra-libs=' + toolchain.libs,
             '--ar=' + toolchain.ar,
             '--enable-cross-compile',
-            '--arch=x86',
-            '--target-os=mingw32',
+            '--arch=' + arch,
+            '--target-os=' + target_os,
             '--cross-prefix=' + toolchain.arch + '-',
             '--prefix=' + toolchain.install_prefix,
         ] + self.configure_args
+
+        if toolchain.is_armv7:
+            configure.append('--cpu=cortex-a8')
 
         subprocess.check_call(configure, cwd=build, env=toolchain.env)
         subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'],
