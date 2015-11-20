@@ -63,6 +63,7 @@ class CrossGccToolchain:
 
 from build.project import Project
 from build.autotools import AutotoolsProject
+from build.ffmpeg import FfmpegProject
 from build.boost import BoostProject
 
 class ZlibProject(Project):
@@ -83,54 +84,6 @@ class ZlibProject(Project):
             'LIBRARY_PATH=lib',
             'BINARY_PATH=bin', 'SHARED_MODE=1'],
             cwd=src, env=toolchain.env)
-
-class FfmpegProject(Project):
-    def __init__(self, url, md5, installed, configure_args=[],
-                 cppflags='',
-                 **kwargs):
-        Project.__init__(self, url, md5, installed, **kwargs)
-        self.configure_args = configure_args
-        self.cppflags = cppflags
-
-    def build(self, toolchain):
-        src = self.unpack(toolchain)
-        build = self.make_build_path(toolchain)
-
-        if toolchain.is_arm:
-            arch = 'arm'
-        else:
-            arch = 'x86'
-
-        if toolchain.is_windows:
-            target_os = 'mingw32'
-        else:
-            target_os = 'linux'
-
-        configure = [
-            os.path.join(src, 'configure'),
-            '--cc=' + toolchain.cc,
-            '--cxx=' + toolchain.cxx,
-            '--nm=' + toolchain.nm,
-            '--extra-cflags=' + toolchain.cflags + ' ' + toolchain.cppflags + ' ' + self.cppflags,
-            '--extra-cxxflags=' + toolchain.cxxflags + ' ' + toolchain.cppflags + ' ' + self.cppflags,
-            '--extra-ldflags=' + toolchain.ldflags,
-            '--extra-libs=' + toolchain.libs,
-            '--ar=' + toolchain.ar,
-            '--enable-cross-compile',
-            '--arch=' + arch,
-            '--target-os=' + target_os,
-            '--cross-prefix=' + toolchain.arch + '-',
-            '--prefix=' + toolchain.install_prefix,
-        ] + self.configure_args
-
-        if toolchain.is_armv7:
-            configure.append('--cpu=cortex-a8')
-
-        subprocess.check_call(configure, cwd=build, env=toolchain.env)
-        subprocess.check_call(['/usr/bin/make', '--quiet', '-j12'],
-                              cwd=build, env=toolchain.env)
-        subprocess.check_call(['/usr/bin/make', '--quiet', 'install'],
-                              cwd=build, env=toolchain.env)
 
 # a list of third-party libraries to be used by MPD on Android
 thirdparty_libs = [
