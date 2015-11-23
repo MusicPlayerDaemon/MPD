@@ -27,13 +27,7 @@ mpd_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]) or '.', '..
 sys.path[0] = os.path.join(mpd_path, 'python')
 
 # output directories
-lib_path = os.path.abspath('lib')
-
-shared_path = lib_path
-if 'MPD_SHARED_LIB' in os.environ:
-    shared_path = os.environ['MPD_SHARED_LIB']
-tarball_path = os.path.join(shared_path, 'download')
-src_path = os.path.join(shared_path, 'src')
+from build.dirs import lib_path, tarball_path, src_path
 
 arch_path = os.path.join(lib_path, arch)
 build_path = os.path.join(arch_path, 'build')
