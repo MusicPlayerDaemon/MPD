@@ -10,7 +10,7 @@ def untar(tarball_path, parent_path, base, lazy=False):
         pass
     os.makedirs(parent_path, exist_ok=True)
     try:
-        subprocess.check_call(['/bin/tar', 'xfC', tarball_path, parent_path])
+        subprocess.check_call(['tar', 'xfC', tarball_path, parent_path])
     except FileNotFoundError:
         import tarfile
         tar = tarfile.open(tarball_path)
