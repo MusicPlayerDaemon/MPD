@@ -15,10 +15,10 @@ class AutotoolsProject(Project):
     def build(self, toolchain):
         src = self.unpack(toolchain)
         if self.autogen:
-            subprocess.check_call(['/usr/bin/libtoolize', '--force'], cwd=src)
-            subprocess.check_call(['/usr/bin/aclocal'], cwd=src)
-            subprocess.check_call(['/usr/bin/automake', '--add-missing', '--force-missing', '--foreign'], cwd=src)
-            subprocess.check_call(['/usr/bin/autoconf'], cwd=src)
+            subprocess.check_call(['libtoolize', '--force'], cwd=src)
+            subprocess.check_call(['aclocal'], cwd=src)
+            subprocess.check_call(['automake', '--add-missing', '--force-missing', '--foreign'], cwd=src)
+            subprocess.check_call(['autoconf'], cwd=src)
 
         build = self.make_build_path(toolchain)
 
