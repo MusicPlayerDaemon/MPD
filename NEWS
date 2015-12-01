@@ -1,5 +1,6 @@
 ver 0.19.12 (not yet released)
 * fix build failure on non-Linux systems
+* fix LimitRTTIME in systemd unit file
 
 ver 0.19.11 (2015/10/27)
 * tags
