@@ -232,14 +232,12 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 		/* TODO: eliminate this unlock/lock; it is necessary
 		   because the child's SimpleDatabasePlugin::Visit()
 		   call will lock it again */
-		db_unlock();
-		bool result = WalkMount(GetPath(), *mounted_database,
-					recursive, filter,
-					visit_directory, visit_song,
-					visit_playlist,
-					error);
-		db_lock();
-		return result;
+		const ScopeDatabaseUnlock unlock;
+		return WalkMount(GetPath(), *mounted_database,
+				 recursive, filter,
+				 visit_directory, visit_song,
+				 visit_playlist,
+				 error);
 	}
 
 	if (visit_song) {

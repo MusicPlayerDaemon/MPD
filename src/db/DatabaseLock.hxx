@@ -107,4 +107,18 @@ public:
 	}
 };
 
+/**
+ * Unlock the database while in the current scope.
+ */
+class ScopeDatabaseUnlock {
+public:
+	ScopeDatabaseUnlock() {
+		db_unlock();
+	}
+
+	~ScopeDatabaseUnlock() {
+		db_lock();
+	}
+};
+
 #endif

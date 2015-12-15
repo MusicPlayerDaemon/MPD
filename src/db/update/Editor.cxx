@@ -36,15 +36,14 @@ DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 	/* first, prevent traversers in main task from getting this */
 	dir.RemoveSong(del);
 
-	db_unlock(); /* temporary unlock, because update_remove_song() blocks */
+	/* temporary unlock, because update_remove_song() blocks */
+	const ScopeDatabaseUnlock unlock;
 
 	/* now take it out of the playlist (in the main_task) */
 	remove.Remove(del);
 
 	/* finally, all possible references gone, free it */
 	del->Free();
-
-	db_lock();
 }
 
 void
