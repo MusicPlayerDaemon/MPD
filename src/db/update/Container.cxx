@@ -78,16 +78,16 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		return false;
 	const DecoderPlugin &plugin = *_plugin;
 
-	db_lock();
-	Directory *contdir = MakeDirectoryIfModified(directory, name, info);
-	if (contdir == nullptr) {
-		/* not modified */
-		db_unlock();
-		return true;
-	}
+	Directory *contdir;
+	{
+		const ScopeDatabaseLock protect;
+		contdir = MakeDirectoryIfModified(directory, name, info);
+		if (contdir == nullptr)
+			/* not modified */
+			return true;
 
-	contdir->device = DEVICE_CONTAINER;
-	db_unlock();
+		contdir->device = DEVICE_CONTAINER;
+	}
 
 	const auto pathname = storage.MapFS(contdir->GetPath());
 	if (pathname.IsNull()) {
@@ -116,9 +116,10 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 
 		tag_builder.Commit(song->tag);
 
-		db_lock();
-		contdir->AddSong(song);
-		db_unlock();
+		{
+			const ScopeDatabaseLock protect;
+			contdir->AddSong(song);
+		}
 
 		modified = true;
 

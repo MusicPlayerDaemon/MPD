@@ -72,7 +72,6 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 	char *line;
 	unsigned format = 0;
 	bool found_charset = false, found_version = false;
-	bool success;
 	bool tags[TAG_NUM_OF_ITEM_TYPES];
 
 	/* get initial info */
@@ -152,9 +151,6 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 
 	LogDebug(db_domain, "reading DB");
 
-	db_lock();
-	success = directory_load(file, music_root, error);
-	db_unlock();
-
-	return success;
+	const ScopeDatabaseLock protect;
+	return directory_load(file, music_root, error);
 }

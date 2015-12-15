@@ -240,13 +240,13 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 	assert(prefixed_light_song == nullptr);
 	assert(borrowed_song_count == 0);
 
-	db_lock();
+	ScopeDatabaseLock protect;
 
 	auto r = root->LookupDirectory(uri);
 
 	if (r.directory->IsMount()) {
 		/* pass the request to the mounted database */
-		db_unlock();
+		protect.unlock();
 
 		const LightSong *song =
 			r.directory->mounted_database->GetSong(r.uri, error);
@@ -260,7 +260,6 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 
 	if (r.uri == nullptr) {
 		/* it's a directory */
-		db_unlock();
 		error.Format(db_domain, DB_NOT_FOUND,
 			     "No such song: %s", uri);
 		return nullptr;
@@ -268,14 +267,13 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 
 	if (strchr(r.uri, '/') != nullptr) {
 		/* refers to a URI "below" the actual song */
-		db_unlock();
 		error.Format(db_domain, DB_NOT_FOUND,
 			     "No such song: %s", uri);
 		return nullptr;
 	}
 
 	const Song *song = r.directory->FindSong(r.uri);
-	db_unlock();
+	protect.unlock();
 	if (song == nullptr) {
 		error.Format(db_domain, DB_NOT_FOUND,
 			     "No such song: %s", uri);
@@ -367,15 +365,15 @@ SimpleDatabase::GetStats(const DatabaseSelection &selection,
 bool
 SimpleDatabase::Save(Error &error)
 {
-	db_lock();
+	{
+		const ScopeDatabaseLock protect;
 
-	LogDebug(simple_db_domain, "removing empty directories from DB");
-	root->PruneEmpty();
+		LogDebug(simple_db_domain, "removing empty directories from DB");
+		root->PruneEmpty();
 
-	LogDebug(simple_db_domain, "sorting DB");
-	root->Sort();
-
-	db_unlock();
+		LogDebug(simple_db_domain, "sorting DB");
+		root->Sort();
+	}
 
 	LogDebug(simple_db_domain, "writing DB");
 

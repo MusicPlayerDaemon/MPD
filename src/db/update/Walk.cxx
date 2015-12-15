@@ -78,7 +78,7 @@ inline void
 UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 					const ExcludeList &exclude_list)
 {
-	db_lock();
+	const ScopeDatabaseLock protect;
 
 	directory.ForEachChildSafe([&](Directory &child){
 			const auto name_fs =
@@ -99,8 +99,6 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 				modified = true;
 			}
 		});
-
-	db_unlock();
 }
 
 inline void
@@ -129,9 +127,8 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 	     i != end;) {
 		if (!directory_child_is_regular(storage, directory,
 						i->name.c_str())) {
-			db_lock();
+			const ScopeDatabaseLock protect;
 			i = directory.playlists.erase(i);
-			db_unlock();
 		} else
 			++i;
 	}
@@ -198,10 +195,9 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 
 	PlaylistInfo pi(name, info.mtime);
 
-	db_lock();
+	const ScopeDatabaseLock protect;
 	if (directory.playlists.UpdateOrInsert(std::move(pi)))
 		modified = true;
-	db_unlock();
 	return true;
 }
 
@@ -232,9 +228,11 @@ UpdateWalk::UpdateDirectoryChild(Directory &directory,
 					info.inode, info.device))
 			return;
 
-		db_lock();
-		Directory *subdir = directory.MakeChild(name);
-		db_unlock();
+		Directory *subdir;
+		{
+			const ScopeDatabaseLock protect;
+			subdir = directory.MakeChild(name);
+		}
 
 		assert(&directory == subdir->parent);
 
@@ -393,9 +391,11 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 				      const char *uri_utf8,
 				      const char *name_utf8)
 {
-	db_lock();
-	Directory *directory = parent.FindChild(name_utf8);
-	db_unlock();
+	Directory *directory;
+	{
+		const ScopeDatabaseLock protect;
+		directory = parent.FindChild(name_utf8);
+	}
 
 	if (directory != nullptr) {
 		if (directory->IsMount())
@@ -414,13 +414,14 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
-	db_lock();
-	Song *conflicting = parent.FindSong(name_utf8);
-	if (conflicting)
-		editor.DeleteSong(parent, conflicting);
+	{
+		const ScopeDatabaseLock protect;
+		Song *conflicting = parent.FindSong(name_utf8);
+		if (conflicting)
+			editor.DeleteSong(parent, conflicting);
 
-	directory = parent.CreateChild(name_utf8);
-	db_unlock();
+		directory = parent.CreateChild(name_utf8);
+	}
 
 	directory_set_stat(*directory, info);
 	return directory;

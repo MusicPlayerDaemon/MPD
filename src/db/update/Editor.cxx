@@ -50,9 +50,8 @@ DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 void
 DatabaseEditor::LockDeleteSong(Directory &parent, Song *song)
 {
-	db_lock();
+	const ScopeDatabaseLock protect;
 	DeleteSong(parent, song);
-	db_unlock();
 }
 
 /**
@@ -87,17 +86,17 @@ DatabaseEditor::DeleteDirectory(Directory *directory)
 void
 DatabaseEditor::LockDeleteDirectory(Directory *directory)
 {
-	db_lock();
+	const ScopeDatabaseLock protect;
 	DeleteDirectory(directory);
-	db_unlock();
 }
 
 bool
 DatabaseEditor::DeleteNameIn(Directory &parent, const char *name)
 {
+	const ScopeDatabaseLock protect;
+
 	bool modified = false;
 
-	db_lock();
 	Directory *directory = parent.FindChild(name);
 
 	if (directory != nullptr) {
@@ -112,8 +111,6 @@ DatabaseEditor::DeleteNameIn(Directory &parent, const char *name)
 	}
 
 	parent.playlists.erase(name);
-
-	db_unlock();
 
 	return modified;
 }
