@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "AllCommands.hxx"
+#include "CommandError.hxx"
 #include "Request.hxx"
 #include "QueueCommands.hxx"
 #include "TagCommands.hxx"
@@ -411,9 +412,14 @@ command_process(Client &client, unsigned num, char *line)
 		command_checked_lookup(r, client.GetPermission(),
 				       cmd_name, args);
 
-	CommandResult ret = cmd
-		? cmd->handler(client, args, r)
-		: CommandResult::ERROR;
+	try {
+		CommandResult ret = cmd
+			? cmd->handler(client, args, r)
+			: CommandResult::ERROR;
 
-	return ret;
+		return ret;
+	} catch (const std::exception &e) {
+		PrintError(r, e);
+		return CommandResult::ERROR;
+	}
 }

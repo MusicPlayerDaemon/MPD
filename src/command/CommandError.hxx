@@ -23,6 +23,10 @@
 #include "CommandResult.hxx"
 #include "PlaylistError.hxx"
 
+namespace std {
+	class exception;
+}
+
 class Response;
 class Error;
 
@@ -34,5 +38,8 @@ print_playlist_result(Response &r, PlaylistResult result);
  */
 CommandResult
 print_error(Response &r, const Error &error);
+
+void
+PrintError(Response &r, const std::exception &e);
 
 #endif
