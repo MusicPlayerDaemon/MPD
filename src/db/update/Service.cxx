@@ -129,9 +129,13 @@ UpdateService::Task()
 			      next.discard);
 
 	if (modified || !next.db->FileExists()) {
-		Error error;
-		if (!next.db->Save(error))
-			LogError(error, "Failed to save database");
+		try {
+			Error error;
+			if (!next.db->Save(error))
+				LogError(error, "Failed to save database");
+		} catch (const std::exception &e) {
+			LogError(e, "Failed to save database");
+		}
 	}
 
 	if (!next.path_utf8.empty())

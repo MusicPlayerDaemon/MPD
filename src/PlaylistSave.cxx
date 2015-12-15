@@ -80,12 +80,7 @@ spl_save_queue(const char *name_utf8, const Queue &queue, Error &error)
 		return false;
 	}
 
-	FileOutputStream fos(path_fs, error);
-	if (!fos.IsDefined()) {
-		TranslatePlaylistError(error);
-		return false;
-	}
-
+	FileOutputStream fos(path_fs);
 	BufferedOutputStream bos(fos);
 
 	for (unsigned i = 0; i < queue.GetLength(); i++)

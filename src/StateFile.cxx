@@ -32,6 +32,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <exception>
+
 #include <string.h>
 
 static constexpr Domain state_file_domain("state_file");
@@ -87,11 +89,15 @@ StateFile::Write()
 	FormatDebug(state_file_domain,
 		    "Saving state file %s", path_utf8.c_str());
 
-	Error error;
-	FileOutputStream fos(path, error);
-	if (!fos.IsDefined() || !Write(fos, error) || !fos.Commit(error)) {
-		LogError(error);
-		return;
+	try {
+		Error error;
+		FileOutputStream fos(path);
+		if (!Write(fos, error) || !fos.Commit(error)) {
+			LogError(error);
+			return;
+		}
+	} catch (const std::exception &e) {
+		LogError(e);
 	}
 
 	RememberVersions();

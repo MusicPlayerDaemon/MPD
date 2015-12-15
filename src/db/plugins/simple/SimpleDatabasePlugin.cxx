@@ -379,9 +379,7 @@ SimpleDatabase::Save(Error &error)
 
 	LogDebug(simple_db_domain, "writing DB");
 
-	FileOutputStream fos(path, error);
-	if (!fos.IsDefined())
-		return false;
+	FileOutputStream fos(path);
 
 	OutputStream *os = &fos;
 

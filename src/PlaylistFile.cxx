@@ -232,11 +232,7 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 	if (path_fs.IsNull())
 		return false;
 
-	FileOutputStream fos(path_fs, error);
-	if (!fos.IsDefined()) {
-		TranslatePlaylistError(error);
-		return false;
-	}
+	FileOutputStream fos(path_fs);
 
 	BufferedOutputStream bos(fos);
 
@@ -403,11 +399,7 @@ spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 	if (path_fs.IsNull())
 		return false;
 
-	AppendFileOutputStream fos(path_fs, error);
-	if (!fos.IsDefined()) {
-		TranslatePlaylistError(error);
-		return false;
-	}
+	AppendFileOutputStream fos(path_fs);
 
 	if (fos.Tell() / (MPD_PATH_MAX + 1) >= playlist_max_length) {
 		error.Set(playlist_domain, int(PlaylistResult::TOO_LARGE),

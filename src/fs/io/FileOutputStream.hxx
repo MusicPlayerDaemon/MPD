@@ -102,7 +102,6 @@ protected:
 	}
 #endif
 
-public:
 	bool IsDefined() const {
 #ifdef WIN32
 		return handle != INVALID_HANDLE_VALUE;
@@ -111,6 +110,7 @@ public:
 #endif
 	}
 
+public:
 	Path GetPath() const {
 		return path;
 	}
@@ -132,14 +132,12 @@ class FileOutputStream final : public BaseFileOutputStream {
 #endif
 
 public:
-	FileOutputStream(Path _path, Error &error);
+	FileOutputStream(Path _path);
 
 	~FileOutputStream() {
 		if (IsDefined())
 			Cancel();
 	}
-
-	static FileOutputStream *Create(Path path, Error &error);
 
 	bool Commit(Error &error);
 	void Cancel();
@@ -147,7 +145,7 @@ public:
 
 class AppendFileOutputStream final : public BaseFileOutputStream {
 public:
-	AppendFileOutputStream(Path _path, Error &error);
+	AppendFileOutputStream(Path _path);
 
 	~AppendFileOutputStream() {
 		if (IsDefined())

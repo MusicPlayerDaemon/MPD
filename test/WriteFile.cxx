@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "fs/io/FileOutputStream.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
 
 #include <unistd.h>
@@ -59,20 +60,21 @@ main(int argc, char **argv)
 
 	const Path path = Path::FromFS(argv[1]);
 
-	Error error;
-	FileOutputStream fos(path, error);
-	if (!fos.IsDefined()) {
-		fprintf(stderr, "%s\n", error.GetMessage());
+	try {
+		Error error;
+		FileOutputStream fos(path);
+
+		if (!Copy(fos, STDIN_FILENO))
+			return EXIT_FAILURE;
+
+		if (!fos.Commit(error)) {
+			fprintf(stderr, "%s\n", error.GetMessage());
+			return EXIT_FAILURE;
+		}
+
+		return EXIT_SUCCESS;
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-
-	if (!Copy(fos, STDIN_FILENO))
-		return EXIT_FAILURE;
-
-	if (!fos.Commit(error)) {
-		fprintf(stderr, "%s\n", error.GetMessage());
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
 }

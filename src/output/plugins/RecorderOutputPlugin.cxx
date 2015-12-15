@@ -179,7 +179,6 @@ inline bool
 RecorderOutput::EncoderToFile(Error &error)
 {
 	assert(file != nullptr);
-	assert(file->IsDefined());
 
 	return EncoderToOutputStream(*file, *encoder, error);
 }
@@ -192,9 +191,12 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 	if (!HasDynamicPath()) {
 		assert(!path.IsNull());
 
-		file = FileOutputStream::Create(path, error);
-		if (file == nullptr)
+		try {
+			file = new FileOutputStream(path);
+		} catch (const std::exception &e) {
+			error.Set(recorder_domain, e.what());
 			return false;
+		}
 	} else {
 		/* don't open the file just yet; wait until we have
 		   a tag that we can use to build the path */
@@ -294,10 +296,13 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
 	assert(path.IsNull());
 	assert(file == nullptr);
 
-	FileOutputStream *new_file =
-		FileOutputStream::Create(new_path, error);
-	if (new_file == nullptr)
+	FileOutputStream *new_file;
+	try {
+		new_file = new FileOutputStream(path);
+	} catch (const std::exception &e) {
+		error.Set(recorder_domain, e.what());
 		return false;
+	}
 
 	AudioFormat new_audio_format = effective_audio_format;
 	if (!encoder->Open(new_audio_format, error)) {

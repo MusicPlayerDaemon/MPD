@@ -20,23 +20,14 @@
 #include "config.h"
 #include "FileOutputStream.hxx"
 #include "fs/FileSystem.hxx"
+#include "system/Error.hxx"
 #include "util/Error.hxx"
 
-FileOutputStream *
-FileOutputStream::Create(Path path, Error &error)
-{
-	FileOutputStream *f = new FileOutputStream(path, error);
-	if (!f->IsDefined()) {
-		delete f;
-		f = nullptr;
-	}
-
-	return f;
-}
+#include <system_error>
 
 #ifdef WIN32
 
-FileOutputStream::FileOutputStream(Path _path, Error &error)
+FileOutputStream::FileOutputStream(Path _path)
 	:BaseFileOutputStream(_path)
 {
 	SetHandle(CreateFile(_path.c_str(), GENERIC_WRITE, 0, nullptr,
@@ -44,7 +35,7 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 			     FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			     nullptr));
 	if (!IsDefined())
-		error.FormatLastError("Failed to create %s",
+		throw FormatLastError("Failed to create %s",
 				      GetPath().ToUTF8().c_str());
 }
 
@@ -128,7 +119,7 @@ OpenTempFile(FileDescriptor &fd, Path path)
 
 #endif /* HAVE_LINKAT */
 
-FileOutputStream::FileOutputStream(Path _path, Error &error)
+FileOutputStream::FileOutputStream(Path _path)
 	:BaseFileOutputStream(_path)
 {
 #ifdef HAVE_LINKAT
@@ -140,7 +131,7 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 		if (!SetFD().Open(GetPath().c_str(),
 				  O_WRONLY|O_CREAT|O_TRUNC,
 				  0666))
-			error.FormatErrno("Failed to create %s",
+			throw FormatErrno("Failed to create %s",
 					  GetPath().c_str());
 #ifdef HAVE_LINKAT
 	}
@@ -216,7 +207,7 @@ FileOutputStream::Cancel()
 
 #endif
 
-AppendFileOutputStream::AppendFileOutputStream(Path _path, Error &error)
+AppendFileOutputStream::AppendFileOutputStream(Path _path)
 	:BaseFileOutputStream(_path)
 {
 #ifdef WIN32
@@ -225,18 +216,19 @@ AppendFileOutputStream::AppendFileOutputStream(Path _path, Error &error)
 			     FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			     nullptr));
 	if (!IsDefined())
-		error.FormatLastError("Failed to append to %s",
+		throw FormatLastError("Failed to append to %s",
 				      GetPath().ToUTF8().c_str());
 
 	if (!SeekEOF()) {
-		error.FormatLastError("Failed seek end-of-file of %s",
-				      GetPath().ToUTF8().c_str());
+		auto code = GetLastError();
 		Close();
+		throw FormatLastError(code, "Failed seek end-of-file of %s",
+				      GetPath().ToUTF8().c_str());
 	}
 #else
 	if (!SetFD().Open(GetPath().c_str(),
 			  O_WRONLY|O_APPEND))
-		error.FormatErrno("Failed to append to %s",
+		throw FormatErrno("Failed to append to %s",
 				  GetPath().c_str());
 #endif
 }
