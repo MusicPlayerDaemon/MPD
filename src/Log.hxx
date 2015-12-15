@@ -23,6 +23,10 @@
 #include "LogLevel.hxx"
 #include "Compiler.h"
 
+namespace std {
+	class exception;
+}
+
 class Error;
 class Domain;
 
@@ -78,6 +82,12 @@ LogError(const Domain &domain, const char *msg)
 {
 	Log(domain, LogLevel::ERROR, msg);
 }
+
+void
+LogError(const std::exception &e);
+
+void
+LogError(const std::exception &e, const char *msg);
 
 gcc_printf(2,3)
 void

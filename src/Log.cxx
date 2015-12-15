@@ -20,11 +20,17 @@
 #include "config.h"
 #include "LogV.hxx"
 #include "util/Error.hxx"
+#include "util/Domain.hxx"
+
+#include <exception>
 
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+
+/** Domain for std::exception */
+static constexpr Domain exception_domain("exception");
 
 void
 LogFormatV(const Domain &domain, LogLevel level, const char *fmt, va_list ap)
@@ -86,6 +92,36 @@ FormatError(const Domain &domain, const char *fmt, ...)
 	va_start(ap, fmt);
 	LogFormatV(domain, LogLevel::ERROR, fmt, ap);
 	va_end(ap);
+}
+
+void
+LogError(const std::exception &e)
+{
+	Log(exception_domain, LogLevel::ERROR, e.what());
+
+	try {
+		std::rethrow_if_nested(e);
+	} catch (const std::exception &nested) {
+		LogError(nested, "nested");
+	} catch (...) {
+		Log(exception_domain, LogLevel::ERROR,
+		    "Unrecognized nested exception");
+	}
+}
+
+void
+LogError(const std::exception &e, const char *msg)
+{
+	FormatError(exception_domain, "%s: %s", msg, e.what());
+
+	try {
+		std::rethrow_if_nested(e);
+	} catch (const std::exception &nested) {
+		LogError(nested);
+	} catch (...) {
+		Log(exception_domain, LogLevel::ERROR,
+		    "Unrecognized nested exception");
+	}
 }
 
 void
