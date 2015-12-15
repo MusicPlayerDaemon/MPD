@@ -1,4 +1,4 @@
-ver 0.19.12 (not yet released)
+ver 0.19.12 (2015/12/15)
 * fix assertion failure on malformed UTF-8 tag
 * fix build failure on non-Linux systems
 * fix LimitRTTIME in systemd unit file
