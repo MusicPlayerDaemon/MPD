@@ -1304,6 +1304,7 @@ liboutput_plugins_a_SOURCES = \
 
 MIXER_LIBS = \
 	libmixer_plugins.a \
+	$(ALSA_LIBS) \
 	$(PULSE_LIBS2)
 
 MIXER_API_SRC = \

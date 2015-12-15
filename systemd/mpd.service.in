@@ -8,7 +8,7 @@ ExecStart=@prefix@/bin/mpd --no-daemon
 
 # allow MPD to use real-time priority 50
 LimitRTPRIO=50
-LimitRTTIME=-1
+LimitRTTIME=infinity
 
 # disallow writing to /usr, /bin, /sbin, ...
 ProtectSystem=yes
