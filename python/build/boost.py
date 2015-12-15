@@ -18,14 +18,6 @@ class BoostProject(Project):
         # install the headers manually; don't build any library
         # (because right now, we only use header-only libraries)
         includedir = os.path.join(toolchain.install_prefix, 'include')
-        for dirpath, dirnames, filenames in os.walk(os.path.join(src, 'boost')):
-            relpath = dirpath[len(src)+1:]
-            destdir = os.path.join(includedir, relpath)
-            try:
-                os.mkdir(destdir)
-            except:
-                pass
-            for name in filenames:
-                if name[-4:] == '.hpp':
-                    shutil.copyfile(os.path.join(dirpath, name),
-                                    os.path.join(destdir, name))
+        dest = os.path.join(includedir, 'boost')
+        shutil.rmtree(dest, ignore_errors=True)
+        shutil.copytree(os.path.join(src, 'boost'), dest)
