@@ -448,26 +448,7 @@ dnl ---------------------------------------------------------------------------
 dnl Mandatory Libraries
 dnl ---------------------------------------------------------------------------
 
-no_exceptions=yes
-
 AX_BOOST_BASE([1.46],, [AC_MSG_ERROR([Boost not found])])
-
-dnl Don't disable exceptions on Boost older than 1.54, because
-dnl Boost.Intrusive supports this compiler mode only since 1.54;
-dnl see https://svn.boost.org/trac/boost/ticket/7849
-CPPFLAGS_SAVED="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-export CPPFLAGS
-AC_LANG_PUSH(C++)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-@%:@include <boost/version.hpp>
-]], [[
-#if BOOST_VERSION < 105400
-#error detected Boost older than 1.54
-#endif
-]])],, [no_exceptions=no])
-AC_LANG_POP([C++])
-CPPFLAGS="$CPPFLAGS_SAVED"
 
 AC_ARG_ENABLE(icu,
 	AS_HELP_STRING([--enable-icu],
@@ -1326,12 +1307,6 @@ AC_LANG_PUSH([C++])
 AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
 AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
 AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
-
-if test x$no_exceptions = xyes; then
-	AX_APPEND_COMPILE_FLAGS([-fno-exceptions])
-	AX_APPEND_COMPILE_FLAGS([-fno-rtti])
-fi
-
 AX_APPEND_COMPILE_FLAGS([-ffast-math])
 AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
 AC_LANG_POP
