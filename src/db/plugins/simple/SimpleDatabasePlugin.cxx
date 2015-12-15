@@ -411,8 +411,7 @@ SimpleDatabase::Save(Error &error)
 	}
 #endif
 
-	if (!fos.Commit(error))
-		return false;
+	fos.Commit();
 
 	FileInfo fi;
 	if (GetFileInfo(path, fi))

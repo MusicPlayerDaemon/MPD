@@ -244,8 +244,14 @@ RecorderOutput::Commit(Error &error)
 
 	encoder->Close();
 
-	if (success && !file->Commit(error))
-		success = false;
+	if (success) {
+		try {
+			file->Commit();
+		} catch (...) {
+			delete file;
+			throw;
+		}
+	}
 
 	delete file;
 
@@ -263,9 +269,13 @@ RecorderOutput::Close()
 		return;
 	}
 
-	Error error;
-	if (!Commit(error))
-		LogError(error);
+	try {
+		Error error;
+		if (!Commit(error))
+			LogError(error);
+	} catch (const std::exception &e) {
+		LogError(e);
+	}
 
 	if (HasDynamicPath()) {
 		assert(!path.IsNull());
@@ -281,9 +291,13 @@ RecorderOutput::FinishFormat()
 	if (file == nullptr)
 		return;
 
-	Error error;
-	if (!Commit(error))
-		LogError(error);
+	try {
+		Error error;
+		if (!Commit(error))
+			LogError(error);
+	} catch (const std::exception &e) {
+		LogError(e);
+	}
 
 	file = nullptr;
 	path.SetNull();

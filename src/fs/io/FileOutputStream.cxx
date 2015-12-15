@@ -72,13 +72,12 @@ BaseFileOutputStream::Write(const void *data, size_t size, Error &error)
 	return true;
 }
 
-bool
-FileOutputStream::Commit(gcc_unused Error &error)
+void
+FileOutputStream::Commit()
 {
 	assert(IsDefined());
 
 	Close();
-	return true;
 }
 
 void
@@ -162,8 +161,8 @@ BaseFileOutputStream::Write(const void *data, size_t size, Error &error)
 	return true;
 }
 
-bool
-FileOutputStream::Commit(Error &error)
+void
+FileOutputStream::Commit()
 {
 	assert(IsDefined());
 
@@ -176,20 +175,20 @@ FileOutputStream::Commit(Error &error)
 		snprintf(fd_path, sizeof(fd_path), "/proc/self/fd/%d",
 			 GetFD().Get());
 		if (linkat(AT_FDCWD, fd_path, AT_FDCWD, GetPath().c_str(),
-			   AT_SYMLINK_FOLLOW) < 0) {
-			error.FormatErrno("Failed to commit %s",
+			   AT_SYMLINK_FOLLOW) < 0)
+			throw FormatErrno("Failed to commit %s",
 					  GetPath().c_str());
-			Close();
-			return false;
-		}
 	}
 #endif
 
-	bool success = Close();
-	if (!success)
-		error.FormatErrno("Failed to commit %s", GetPath().c_str());
-
-	return success;
+	if (!Close()) {
+#ifdef WIN32
+		throw FormatLastError("Failed to commit %s",
+				      GetPath().ToUTF8().c_str());
+#else
+		throw FormatErrno("Failed to commit %s", GetPath().c_str());
+#endif
+	}
 }
 
 void
@@ -233,18 +232,17 @@ AppendFileOutputStream::AppendFileOutputStream(Path _path)
 #endif
 }
 
-bool
-AppendFileOutputStream::Commit(gcc_unused Error &error)
+void
+AppendFileOutputStream::Commit()
 {
 	assert(IsDefined());
 
+	if (!Close()) {
 #ifdef WIN32
-	return Close();
+		throw FormatLastError("Failed to commit %s",
+				      GetPath().ToUTF8().c_str());
 #else
-	bool success = Close();
-	if (!success)
-		error.FormatErrno("Failed to commit %s", GetPath().c_str());
-
-	return success;
+		throw FormatErrno("Failed to commit %s", GetPath().c_str());
 #endif
+	}
 }

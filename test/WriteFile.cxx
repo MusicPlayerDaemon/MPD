@@ -61,16 +61,12 @@ main(int argc, char **argv)
 	const Path path = Path::FromFS(argv[1]);
 
 	try {
-		Error error;
 		FileOutputStream fos(path);
 
 		if (!Copy(fos, STDIN_FILENO))
 			return EXIT_FAILURE;
 
-		if (!fos.Commit(error)) {
-			fprintf(stderr, "%s\n", error.GetMessage());
-			return EXIT_FAILURE;
-		}
+		fos.Commit();
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {

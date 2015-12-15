@@ -86,8 +86,10 @@ spl_save_queue(const char *name_utf8, const Queue &queue, Error &error)
 	for (unsigned i = 0; i < queue.GetLength(); i++)
 		playlist_print_song(bos, queue.Get(i));
 
-	if (!bos.Flush(error) || !fos.Commit(error))
+	if (!bos.Flush(error))
 		return false;
+
+	fos.Commit();
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return true;

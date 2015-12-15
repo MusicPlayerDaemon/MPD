@@ -139,7 +139,7 @@ public:
 			Cancel();
 	}
 
-	bool Commit(Error &error);
+	void Commit();
 	void Cancel();
 };
 
@@ -152,7 +152,7 @@ public:
 			Close();
 	}
 
-	bool Commit(Error &error);
+	void Commit();
 };
 
 #endif

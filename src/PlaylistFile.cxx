@@ -239,7 +239,11 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 	for (const auto &uri_utf8 : contents)
 		playlist_print_uri(bos, uri_utf8.c_str());
 
-	return bos.Flush(error) && fos.Commit(error);
+	if (!bos.Flush(error))
+		return false;
+
+	fos.Commit();
+	return true;
 }
 
 PlaylistFileContents
@@ -411,8 +415,10 @@ spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 
 	playlist_print_song(bos, song);
 
-	if (!bos.Flush(error) || !fos.Commit(error))
+	if (!bos.Flush(error))
 		return false;
+
+	fos.Commit();
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return true;

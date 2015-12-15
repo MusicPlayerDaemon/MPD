@@ -92,10 +92,12 @@ StateFile::Write()
 	try {
 		Error error;
 		FileOutputStream fos(path);
-		if (!Write(fos, error) || !fos.Commit(error)) {
+		if (!Write(fos, error)) {
 			LogError(error);
 			return;
 		}
+
+		fos.Commit();
 	} catch (const std::exception &e) {
 		LogError(e);
 	}
