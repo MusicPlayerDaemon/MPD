@@ -84,13 +84,26 @@ db_unlock(void)
 }
 
 class ScopeDatabaseLock {
+	bool locked = true;
+
 public:
 	ScopeDatabaseLock() {
 		db_lock();
 	}
 
 	~ScopeDatabaseLock() {
+		if (locked)
+			db_unlock();
+	}
+
+	/**
+	 * Unlock the mutex now, making the destructor a no-op.
+	 */
+	void unlock() {
+		assert(locked);
+
 		db_unlock();
+		locked = false;
 	}
 };
 
