@@ -46,6 +46,8 @@
 #include "fs/io/GzipOutputStream.hxx"
 #endif
 
+#include <memory>
+
 #include <errno.h>
 
 static constexpr Domain simple_db_domain("simple_db");
@@ -384,15 +386,13 @@ SimpleDatabase::Save(Error &error)
 	OutputStream *os = &fos;
 
 #ifdef ENABLE_ZLIB
-	GzipOutputStream *gzip = nullptr;
+	std::unique_ptr<GzipOutputStream> gzip;
 	if (compress) {
-		gzip = new GzipOutputStream(*os, error);
-		if (!gzip->IsDefined()) {
-			delete gzip;
+		gzip.reset(new GzipOutputStream(*os, error));
+		if (!gzip->IsDefined())
 			return false;
-		}
 
-		os = gzip;
+		os = gzip.get();
 	}
 #endif
 
@@ -401,16 +401,13 @@ SimpleDatabase::Save(Error &error)
 	db_save_internal(bos, *root);
 
 	if (!bos.Flush(error)) {
-#ifdef ENABLE_ZLIB
-		delete gzip;
-#endif
 		return false;
 	}
 
 #ifdef ENABLE_ZLIB
 	if (gzip != nullptr) {
 		bool success = gzip->Flush(error);
-		delete gzip;
+		gzip.reset();
 		if (!success)
 			return false;
 	}
