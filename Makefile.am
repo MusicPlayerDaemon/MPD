@@ -464,6 +464,7 @@ libnet_a_SOURCES = \
 
 libsystem_a_SOURCES = \
 	src/system/ByteOrder.hxx \
+	src/system/Error.hxx \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
 	src/system/FileDescriptor.cxx src/system/FileDescriptor.hxx \
 	src/system/fd_util.c src/system/fd_util.h \
