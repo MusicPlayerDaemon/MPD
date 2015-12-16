@@ -146,7 +146,7 @@ run_output(AudioOutput *ao, AudioFormat audio_format)
 }
 
 int main(int argc, char **argv)
-{
+try {
 	Error error;
 
 	if (argc < 3 || argc > 4) {
@@ -196,4 +196,7 @@ int main(int argc, char **argv)
 	config_global_finish();
 
 	return success ? EXIT_SUCCESS : EXIT_FAILURE;
-}
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

@@ -389,6 +389,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/RuntimeError.hxx \
 	src/util/Macros.hxx \
 	src/util/Cast.hxx \
 	src/util/Clamp.hxx \

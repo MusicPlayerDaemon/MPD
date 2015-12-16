@@ -28,7 +28,7 @@
 #include <stdlib.h>
 
 int main(int argc, char **argv)
-{
+try {
 	if (argc != 3) {
 		fprintf(stderr, "Usage: read_conf FILE SETTING\n");
 		return EXIT_FAILURE;
@@ -60,4 +60,7 @@ int main(int argc, char **argv)
 
 	config_global_finish();
 	return ret;
-}
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

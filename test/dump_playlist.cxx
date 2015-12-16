@@ -48,7 +48,7 @@ tag_save(FILE *file, const Tag &tag)
 }
 
 int main(int argc, char **argv)
-{
+try {
 	const char *uri;
 	InputStream *is = NULL;
 
@@ -144,5 +144,8 @@ int main(int argc, char **argv)
 	input_stream_global_finish();
 	config_global_finish();
 
-	return 0;
-}
+	return EXIT_SUCCESS;
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

@@ -67,7 +67,7 @@ load_filter(const char *name)
 }
 
 int main(int argc, char **argv)
-{
+try {
 	struct audio_format_string af_string;
 	Error error2;
 	char buffer[4096];
@@ -151,5 +151,8 @@ int main(int argc, char **argv)
 
 	config_global_finish();
 
-	return 0;
-}
+	return EXIT_SUCCESS;
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

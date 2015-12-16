@@ -32,6 +32,7 @@
 #include "tag/TagConfig.hxx"
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
 
 #include <iostream>
@@ -89,7 +90,7 @@ DumpPlaylist(const PlaylistInfo &playlist,
 
 int
 main(int argc, char **argv)
-{
+try {
 	if (argc != 3) {
 		cerr << "Usage: DumpDatabase CONFIG PLUGIN" << endl;
 		return 1;
@@ -158,4 +159,7 @@ main(int argc, char **argv)
 	config_global_finish();
 
 	return EXIT_SUCCESS;
-}
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }
