@@ -106,7 +106,7 @@ config_read_block(BufferedReader &reader, Error &error)
 			if (*line != 0 && *line != CONF_COMMENT) {
 				delete ret;
 				error.Format(config_file_domain,
-					     "line %y: Unknown tokens after '}'",
+					     "line %u: Unknown tokens after '}'",
 					     reader.GetLineNumber());
 				return nullptr;
 			}
