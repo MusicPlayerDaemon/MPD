@@ -22,13 +22,13 @@
 
 #include "check.h"
 #include "OutputStream.hxx"
+#include "lib/zlib/Error.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
 #include <zlib.h>
 
 class Error;
-class Domain;
 
 /**
  * A filter that compresses data written to it using zlib, forwarding
@@ -43,19 +43,10 @@ class GzipOutputStream final : public OutputStream {
 
 public:
 	/**
-	 * Construct the filter.  Call IsDefined() to check whether
-	 * the constructor has succeeded.  If not, #error will hold
-	 * information about the failure.
+	 * Construct the filter.
 	 */
-	GzipOutputStream(OutputStream &_next, Error &error);
+	GzipOutputStream(OutputStream &_next) throw(ZlibError);
 	~GzipOutputStream();
-
-	/**
-	 * Check whether the constructor has succeeded.
-	 */
-	bool IsDefined() const {
-		return z.opaque == nullptr;
-	}
 
 	/**
 	 * Finish the file and write all data remaining in zlib's

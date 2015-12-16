@@ -20,6 +20,7 @@
 #include "config.h"
 #include "fs/io/GzipOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>
@@ -48,9 +49,8 @@ Copy(OutputStream &dest, int src, Error &error)
 static bool
 CopyGzip(OutputStream &_dest, int src, Error &error)
 {
-	GzipOutputStream dest(_dest, error);
-	return dest.IsDefined() &&
-		Copy(dest, src, error) &&
+	GzipOutputStream dest(_dest);
+	return Copy(dest, src, error) &&
 		dest.Flush(error);
 }
 
@@ -69,11 +69,16 @@ main(int argc, gcc_unused char **argv)
 		return EXIT_FAILURE;
 	}
 
-	Error error;
-	if (!CopyGzip(stdout, STDIN_FILENO, error)) {
-		fprintf(stderr, "%s\n", error.GetMessage());
+	try {
+		Error error;
+		if (!CopyGzip(stdout, STDIN_FILENO, error)) {
+			fprintf(stderr, "%s\n", error.GetMessage());
+			return EXIT_FAILURE;
+		}
+
+		return EXIT_SUCCESS;
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-
-	return EXIT_SUCCESS;
 }

@@ -20,10 +20,10 @@
 #include "config.h"
 #include "GzipOutputStream.hxx"
 #include "lib/zlib/Domain.hxx"
+#include "lib/zlib/Error.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
-GzipOutputStream::GzipOutputStream(OutputStream &_next, Error &error)
+GzipOutputStream::GzipOutputStream(OutputStream &_next) throw(ZlibError)
 	:next(_next)
 {
 	z.next_in = nullptr;
@@ -38,16 +38,13 @@ GzipOutputStream::GzipOutputStream(OutputStream &_next, Error &error)
 	int result = deflateInit2(&z, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
 				  windowBits | gzip_encoding,
 				  8, Z_DEFAULT_STRATEGY);
-	if (result != Z_OK) {
-		z.opaque = this;
-		error.Set(zlib_domain, result, zError(result));
-	}
+	if (result != Z_OK)
+		throw ZlibError(result);
 }
 
 GzipOutputStream::~GzipOutputStream()
 {
-	if (IsDefined())
-		deflateEnd(&z);
+	deflateEnd(&z);
 }
 
 bool
