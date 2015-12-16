@@ -30,8 +30,6 @@
 #ifndef TOKENIZER_HXX
 #define TOKENIZER_HXX
 
-class Error;
-
 class Tokenizer {
 	char *input;
 
@@ -58,50 +56,42 @@ public:
 	}
 
 	/**
-	 * Reads the next word.
+	 * Reads the next word.  Throws std::runtime_error on error.
 	 *
-	 * @param error if this function returns nullptr and
-	 * **input_p!=0, it provides an #Error object in
-	 * this argument
 	 * @return a pointer to the null-terminated word, or nullptr
-	 * on error or end of line
+	 * on end of line
 	 */
-	char *NextWord(Error &error);
+	char *NextWord();
 
 	/**
-	 * Reads the next unquoted word from the input string.
+	 * Reads the next unquoted word from the input string.  Throws
+	 * std::runtime_error on error.
 	 *
-	 * @param error if this function returns nullptr and **input_p!=0, it
-	 * provides an #Error object in this argument
 	 * @return a pointer to the null-terminated word, or nullptr
-	 * on error or end of line
+	 * on end of line
 	 */
-	char *NextUnquoted(Error &error);
+	char *NextUnquoted();
 
 	/**
-	 * Reads the next quoted string from the input string.  A backslash
-	 * escapes the following character.  This function modifies the input
-	 * string.
+	 * Reads the next quoted string from the input string.  A
+	 * backslash escapes the following character.  This function
+	 * modifies the input string.  Throws std::runtime_error on
+	 * error.
 	 *
-	 * @param error if this function returns nullptr and **input_p!=0, it
-	 * provides an #Error object in this argument
-	 * @return a pointer to the null-terminated string, or nullptr on error
-	 * or end of line
+	 * @return a pointer to the null-terminated string, or nullptr
+	 * end of line
 	 */
-	char *NextString(Error &error);
+	char *NextString();
 
 	/**
 	 * Reads the next unquoted word or quoted string from the
 	 * input.  This is a wrapper for NextUnquoted() and
-	 * NextString().
+	 * NextString().  Throws std::runtime_error on error.
 	 *
-	 * @param error if this function returns nullptr and
-	 * **input_p!=0, it provides an #Error object in
-	 * this argument
 	 * @return a pointer to the null-terminated string, or nullptr
-	 * on error or end of line
+	 * on end of line
 	 */
-	char *NextParam(Error &error);
+	char *NextParam();
 };
 
 #endif

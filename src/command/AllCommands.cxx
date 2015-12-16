@@ -361,7 +361,7 @@ command_checked_lookup(Response &r, unsigned permission,
 
 CommandResult
 command_process(Client &client, unsigned num, char *line)
-{
+try {
 	Response r(client, num);
 	Error error;
 
@@ -371,13 +371,17 @@ command_process(Client &client, unsigned num, char *line)
 
 	Tokenizer tokenizer(line);
 
-	const char *const cmd_name = tokenizer.NextWord(error);
-	if (cmd_name == nullptr) {
-		if (tokenizer.IsEnd())
-			r.FormatError(ACK_ERROR_UNKNOWN, "No command given");
-		else
-			r.Error(ACK_ERROR_UNKNOWN, error.GetMessage());
-
+	const char *cmd_name;
+	try {
+		cmd_name = tokenizer.NextWord();
+		if (cmd_name == nullptr) {
+			r.Error(ACK_ERROR_UNKNOWN, "No command given");
+			/* this client does not speak the MPD
+			   protocol; kick the connection */
+			return CommandResult::FINISH;
+		}
+	} catch (const std::exception &e) {
+		r.Error(ACK_ERROR_UNKNOWN, e.what());
 		/* this client does not speak the MPD protocol; kick
 		   the connection */
 		return CommandResult::FINISH;
@@ -394,14 +398,9 @@ command_process(Client &client, unsigned num, char *line)
 			return CommandResult::ERROR;
 		}
 
-		char *a = tokenizer.NextParam(error);
-		if (a == nullptr) {
-			if (tokenizer.IsEnd())
-				break;
-
-			r.Error(ACK_ERROR_UNKNOWN, error.GetMessage());
-			return CommandResult::ERROR;
-		}
+		char *a = tokenizer.NextParam();
+		if (a == nullptr)
+			break;
 
 		argv[args.size++] = a;
 	}
@@ -412,14 +411,13 @@ command_process(Client &client, unsigned num, char *line)
 		command_checked_lookup(r, client.GetPermission(),
 				       cmd_name, args);
 
-	try {
-		CommandResult ret = cmd
-			? cmd->handler(client, args, r)
-			: CommandResult::ERROR;
+	CommandResult ret = cmd
+		? cmd->handler(client, args, r)
+		: CommandResult::ERROR;
 
-		return ret;
-	} catch (const std::exception &e) {
-		PrintError(r, e);
-		return CommandResult::ERROR;
-	}
+	return ret;
+} catch (const std::exception &e) {
+	Response r(client, num);
+	PrintError(r, e);
+	return CommandResult::ERROR;
 }

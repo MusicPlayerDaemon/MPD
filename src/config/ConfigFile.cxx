@@ -41,26 +41,17 @@ static constexpr char CONF_COMMENT = '#';
 
 static constexpr Domain config_file_domain("config_file");
 
-static bool
-config_read_name_value(ConfigBlock &block, char *input, unsigned line,
-		       Error &error)
+static void
+config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 {
 	Tokenizer tokenizer(input);
 
-	const char *name = tokenizer.NextWord(error);
-	if (name == nullptr) {
-		assert(!tokenizer.IsEnd());
-		return false;
-	}
+	const char *name = tokenizer.NextWord();
+	assert(name != nullptr);
 
-	const char *value = tokenizer.NextString(error);
-	if (value == nullptr) {
-		if (tokenizer.IsEnd())
-			throw std::runtime_error("Value missing");
-
-		assert(error.IsDefined());
-		return false;
-	}
+	const char *value = tokenizer.NextString();
+	if (value == nullptr)
+		throw std::runtime_error("Value missing");
 
 	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT)
 		throw std::runtime_error("Unknown tokens after value");
@@ -71,7 +62,6 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line,
 					 name, bp->line);
 
 	block.AddBlockParam(name, value, line);
-	return true;
 }
 
 static ConfigBlock *
@@ -104,13 +94,8 @@ try {
 
 		/* parse name and value */
 
-		if (!config_read_name_value(*block, line,
-					    reader.GetLineNumber(),
-					    error)) {
-			assert(*line != 0);
-			error.FormatPrefix("line %u: ", reader.GetLineNumber());
-			return nullptr;
-		}
+		config_read_name_value(*block, line,
+				       reader.GetLineNumber());
 	}
 } catch (...) {
 	std::throw_with_nested(FormatRuntimeError("Error in line %u", reader.GetLineNumber()));
@@ -179,11 +164,10 @@ Append(config_param *&head, config_param *p)
 	*i = p;
 }
 
-static bool
+static void
 ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 		const char *name, ConfigOption o,
-		Tokenizer &tokenizer,
-		Error &error)
+		Tokenizer &tokenizer)
 {
 	const unsigned i = unsigned(o);
 	const ConfigTemplate &option = config_param_templates[i];
@@ -199,15 +183,10 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 
 	/* now parse the block or the value */
 
-	const char *value = tokenizer.NextString(error);
-	if (value == nullptr) {
-		if (tokenizer.IsEnd())
-			throw FormatRuntimeError("line %u: Value missing",
-						 reader.GetLineNumber());
-
-		error.FormatPrefix("line %u: ", reader.GetLineNumber());
-		return false;
-	}
+	const char *value = tokenizer.NextString();
+	if (value == nullptr)
+		throw FormatRuntimeError("line %u: Value missing",
+					 reader.GetLineNumber());
 
 	if (!tokenizer.IsEnd() && tokenizer.CurrentChar() != CONF_COMMENT)
 		throw FormatRuntimeError("line %u: Unknown tokens after value",
@@ -215,7 +194,6 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 
 	auto *param = new config_param(value, reader.GetLineNumber());
 	Append(head, param);
-	return true;
 }
 
 static bool
@@ -234,12 +212,8 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 		   by either the value or '{' */
 
 		Tokenizer tokenizer(line);
-		const char *name = tokenizer.NextWord(error);
-		if (name == nullptr) {
-			assert(!tokenizer.IsEnd());
-			error.FormatPrefix("line %u: ", reader.GetLineNumber());
-			return false;
-		}
+		const char *name = tokenizer.NextWord();
+		assert(name != nullptr);
 
 		/* get the definition of that option, and check the
 		   "repeatable" flag */
@@ -247,9 +221,8 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 		const ConfigOption o = ParseConfigOptionName(name);
 		ConfigBlockOption bo;
 		if (o != ConfigOption::MAX) {
-			if (!ReadConfigParam(config_data, reader, name, o,
-					     tokenizer, error))
-				return false;
+			ReadConfigParam(config_data, reader, name, o,
+					tokenizer);
 		} else if ((bo = ParseConfigBlockOptionName(name)) != ConfigBlockOption::MAX) {
 			if (!ReadConfigBlock(config_data, reader, name, bo,
 					     tokenizer, error))
