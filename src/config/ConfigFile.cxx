@@ -32,6 +32,8 @@
 #include "fs/io/BufferedReader.hxx"
 #include "Log.hxx"
 
+#include <memory>
+
 #include <assert.h>
 
 static constexpr char CONF_COMMENT = '#';
@@ -81,13 +83,11 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line,
 static ConfigBlock *
 config_read_block(BufferedReader &reader, Error &error)
 {
-	auto *ret = new ConfigBlock(reader.GetLineNumber());
+	std::unique_ptr<ConfigBlock> block(new ConfigBlock(reader.GetLineNumber()));
 
 	while (true) {
 		char *line = reader.ReadLine();
 		if (line == nullptr) {
-			delete ret;
-
 			if (reader.Check(error))
 				error.Set(config_file_domain,
 					  "Expected '}' before end-of-file");
@@ -104,22 +104,21 @@ config_read_block(BufferedReader &reader, Error &error)
 
 			line = StripLeft(line + 1);
 			if (*line != 0 && *line != CONF_COMMENT) {
-				delete ret;
 				error.Format(config_file_domain,
 					     "line %u: Unknown tokens after '}'",
 					     reader.GetLineNumber());
 				return nullptr;
 			}
 
-			return ret;
+			return block.release();
 		}
 
 		/* parse name and value */
 
-		if (!config_read_name_value(*ret, line, reader.GetLineNumber(),
+		if (!config_read_name_value(*block, line,
+					    reader.GetLineNumber(),
 					    error)) {
 			assert(*line != 0);
-			delete ret;
 			error.FormatPrefix("line %u: ", reader.GetLineNumber());
 			return nullptr;
 		}
