@@ -25,7 +25,6 @@
 #include "ConfigTemplates.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/StringUtil.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "fs/Path.hxx"
@@ -65,17 +64,14 @@ config_read_name_value(ConfigBlock &block, char *input, unsigned line)
 }
 
 static ConfigBlock *
-config_read_block(BufferedReader &reader, Error &error)
+config_read_block(BufferedReader &reader)
 try {
 	std::unique_ptr<ConfigBlock> block(new ConfigBlock(reader.GetLineNumber()));
 
 	while (true) {
 		char *line = reader.ReadLine();
-		if (line == nullptr) {
-			if (reader.Check(error))
-				throw std::runtime_error("Expected '}' before end-of-file");
-			return nullptr;
-		}
+		if (line == nullptr)
+			throw std::runtime_error("Expected '}' before end-of-file");
 
 		line = StripLeft(line);
 		if (*line == 0 || *line == CONF_COMMENT)
@@ -114,11 +110,10 @@ Append(ConfigBlock *&head, ConfigBlock *p)
 	*i = p;
 }
 
-static bool
+static void
 ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 		const char *name, ConfigBlockOption o,
-		Tokenizer &tokenizer,
-		Error &error)
+		Tokenizer &tokenizer)
 {
 	const unsigned i = unsigned(o);
 	const ConfigTemplate &option = config_block_templates[i];
@@ -143,12 +138,9 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 		throw FormatRuntimeError("line %u: Unknown tokens after '{'",
 					 reader.GetLineNumber());
 
-	auto *param = config_read_block(reader, error);
-	if (param == nullptr)
-		return false;
-
+	auto *param = config_read_block(reader);
+	assert(param != nullptr);
 	Append(head, param);
-	return true;
 }
 
 gcc_nonnull_all
@@ -196,13 +188,13 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 	Append(head, param);
 }
 
-static bool
-ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
+static void
+ReadConfigFile(ConfigData &config_data, BufferedReader &reader)
 {
 	while (true) {
 		char *line = reader.ReadLine();
 		if (line == nullptr)
-			return true;
+			return;
 
 		line = StripLeft(line);
 		if (*line == 0 || *line == CONF_COMMENT)
@@ -224,9 +216,8 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 			ReadConfigParam(config_data, reader, name, o,
 					tokenizer);
 		} else if ((bo = ParseConfigBlockOptionName(name)) != ConfigBlockOption::MAX) {
-			if (!ReadConfigBlock(config_data, reader, name, bo,
-					     tokenizer, error))
-				return false;
+			ReadConfigBlock(config_data, reader, name, bo,
+					tokenizer);
 		} else {
 			throw FormatRuntimeError("unrecognized parameter in config file at "
 						 "line %u: %s\n",
@@ -235,19 +226,16 @@ ReadConfigFile(ConfigData &config_data, BufferedReader &reader, Error &error)
 	}
 }
 
-bool
-ReadConfigFile(ConfigData &config_data, Path path, Error &error)
+void
+ReadConfigFile(ConfigData &config_data, Path path)
 {
 	assert(!path.IsNull());
 	const std::string path_utf8 = path.ToUTF8();
 
 	FormatDebug(config_file_domain, "loading file %s", path_utf8.c_str());
 
-	FileReader file(path, error);
-	if (!file.IsDefined())
-		return false;
+	FileReader file(path);
 
 	BufferedReader reader(file);
-	return ReadConfigFile(config_data, reader, error) &&
-		reader.Check(error);
+	ReadConfigFile(config_data, reader);
 }

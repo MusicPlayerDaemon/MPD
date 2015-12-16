@@ -453,11 +453,8 @@ int mpd_main(int argc, char *argv[])
 		if (!sdcard.IsNull()) {
 			const auto config_path =
 				AllocatedPath::Build(sdcard, "mpd.conf");
-			if (FileExists(config_path) &&
-			    !ReadConfigFile(config_path, error)) {
-				LogError(error);
-				return EXIT_FAILURE;
-			}
+			if (FileExists(config_path))
+				ReadConfigFile(config_path);
 		}
 #else
 		if (!parse_cmdline(argc, argv, &options, error)) {

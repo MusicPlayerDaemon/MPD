@@ -102,17 +102,12 @@ StateFile::Write()
 
 void
 StateFile::Read()
-{
+try {
 	bool success;
 
 	FormatDebug(state_file_domain, "Loading state file %s", path_utf8.c_str());
 
-	Error error;
-	TextFile file(path, error);
-	if (file.HasFailed()) {
-		LogError(error);
-		return;
-	}
+	TextFile file(path);
 
 #ifdef ENABLE_DATABASE
 	const SongLoader song_loader(partition.instance.database,
@@ -135,6 +130,8 @@ StateFile::Read()
 	}
 
 	RememberVersions();
+} catch (const std::exception &e) {
+	LogError(e);
 }
 
 void

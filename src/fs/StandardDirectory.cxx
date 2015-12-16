@@ -200,20 +200,21 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 }
 
 static AllocatedPath GetUserDir(const char *name)
-{
+try {
 	auto result = AllocatedPath::Null();
 	auto config_dir = GetUserConfigDir();
 	if (config_dir.IsNull())
 		return result;
 	auto dirs_file = AllocatedPath::Build(config_dir, "user-dirs.dirs");
-	TextFile input(dirs_file, IgnoreError());
-	if (input.HasFailed())
-		return result;
+
+	TextFile input(dirs_file);
 	char *line;
 	while ((line = input.ReadLine()) != nullptr)
 		if (ParseConfigLine(line, name, result))
 			return result;
 	return result;
+} catch (const std::exception &e) {
+	return AllocatedPath::Null();
 }
 
 #endif

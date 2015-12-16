@@ -25,9 +25,6 @@
 bool
 BufferedReader::Fill(bool need_more)
 {
-	if (gcc_unlikely(last_error.IsDefined()))
-		return false;
-
 	if (eof)
 		return !need_more;
 
@@ -41,11 +38,8 @@ BufferedReader::Fill(bool need_more)
 		assert(!w.IsEmpty());
 	}
 
-	size_t nbytes = reader.Read(w.data, w.size, last_error);
+	size_t nbytes = reader.Read(w.data, w.size);
 	if (nbytes == 0) {
-		if (gcc_unlikely(last_error.IsDefined()))
-			return false;
-
 		eof = true;
 		return !need_more;
 	}
@@ -65,7 +59,7 @@ BufferedReader::ReadLine()
 		}
 	} while (Fill(true));
 
-	if (last_error.IsDefined() || !eof || buffer.IsEmpty())
+	if (!eof || buffer.IsEmpty())
 		return nullptr;
 
 	auto w = buffer.Write();

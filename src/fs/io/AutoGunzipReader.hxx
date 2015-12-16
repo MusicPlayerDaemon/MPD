@@ -43,10 +43,10 @@ public:
 	~AutoGunzipReader();
 
 	/* virtual methods from class Reader */
-	virtual size_t Read(void *data, size_t size, Error &error) override;
+	virtual size_t Read(void *data, size_t size) override;
 
 private:
-	bool Detect(Error &error);
+	void Detect();
 };
 
 #endif

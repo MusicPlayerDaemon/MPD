@@ -26,22 +26,18 @@
 
 #include <assert.h>
 
-TextFile::TextFile(Path path_fs, Error &error)
-	:file_reader(new FileReader(path_fs, error)),
+TextFile::TextFile(Path path_fs)
+	:file_reader(new FileReader(path_fs)),
 #ifdef ENABLE_ZLIB
-	 gunzip_reader(file_reader->IsDefined()
-		       ? new AutoGunzipReader(*file_reader)
-		       : nullptr),
+	 gunzip_reader(new AutoGunzipReader(*file_reader)),
 #endif
-	 buffered_reader(file_reader->IsDefined()
-			 ? new BufferedReader(*
+	 buffered_reader(new BufferedReader(*
 #ifdef ENABLE_ZLIB
-					      gunzip_reader
+					    gunzip_reader
 #else
-					      file_reader
+					    file_reader
 #endif
-					      )
-			 : nullptr)
+					    ))
 {
 }
 
@@ -60,12 +56,4 @@ TextFile::ReadLine()
 	assert(buffered_reader != nullptr);
 
 	return buffered_reader->ReadLine();
-}
-
-bool
-TextFile::Check(Error &error) const
-{
-	assert(buffered_reader != nullptr);
-
-	return buffered_reader->Check(error);
 }

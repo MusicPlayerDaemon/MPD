@@ -45,10 +45,10 @@ void config_global_init(void)
 {
 }
 
-bool
-ReadConfigFile(Path path, Error &error)
+void
+ReadConfigFile(Path path)
 {
-	return ReadConfigFile(config_data, path, error);
+	return ReadConfigFile(config_data, path);
 }
 
 static void

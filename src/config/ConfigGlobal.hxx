@@ -42,8 +42,8 @@ config_global_finish();
 void
 config_global_check();
 
-bool
-ReadConfigFile(Path path, Error &error);
+void
+ReadConfigFile(Path path);
 
 gcc_pure
 const config_param *

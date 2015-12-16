@@ -65,10 +65,7 @@ try {
 	config_global_init();
 
 	Error error;
-	if (!ReadConfigFile(config_path, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	const ScopeIOThread io_thread;
 

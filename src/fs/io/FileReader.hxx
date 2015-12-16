@@ -48,7 +48,7 @@ class FileReader final : public Reader {
 #endif
 
 public:
-	FileReader(Path _path, Error &error);
+	FileReader(Path _path);
 
 #ifdef WIN32
 	FileReader(FileReader &&other)
@@ -70,6 +70,7 @@ public:
 	}
 
 
+protected:
 	bool IsDefined() const {
 #ifdef WIN32
 		return handle != INVALID_HANDLE_VALUE;
@@ -78,6 +79,7 @@ public:
 #endif
 	}
 
+public:
 #ifndef WIN32
 	FileDescriptor GetFD() const {
 		return fd;
@@ -86,12 +88,13 @@ public:
 
 	void Close();
 
-	bool GetFileInfo(FileInfo &info, Error &error) const;
+	gcc_pure
+	FileInfo GetFileInfo() const;
 
-	bool Seek(off_t offset, Error &error);
+	void Seek(off_t offset);
 
 	/* virtual methods from class Reader */
-	size_t Read(void *data, size_t size, Error &error) override;
+	size_t Read(void *data, size_t size) override;
 };
 
 #endif

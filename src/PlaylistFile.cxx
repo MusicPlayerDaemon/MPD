@@ -254,11 +254,7 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 	if (path_fs.IsNull())
 		return contents;
 
-	TextFile file(path_fs, error);
-	if (file.HasFailed()) {
-		TranslatePlaylistError(error);
-		return contents;
-	}
+	TextFile file(path_fs);
 
 	char *s;
 	while ((s = file.ReadLine()) != nullptr) {

@@ -20,7 +20,6 @@
 #include "config.h"
 #include "AutoGunzipReader.hxx"
 #include "GunzipReader.hxx"
-#include "util/Error.hxx"
 
 AutoGunzipReader::~AutoGunzipReader()
 {
@@ -35,36 +34,27 @@ IsGzip(const uint8_t data[4])
 		(data[3] & 0xe0) == 0;
 }
 
-inline bool
-AutoGunzipReader::Detect(Error &error)
+inline void
+AutoGunzipReader::Detect()
 {
-	const uint8_t *data = (const uint8_t *)peek.Peek(4, error);
+	const uint8_t *data = (const uint8_t *)peek.Peek(4);
 	if (data == nullptr) {
-		if (error.IsDefined())
-			return false;
-
 		next = &peek;
-		return true;
+		return;
 	}
 
-	if (IsGzip(data)) {
-		gunzip = new GunzipReader(peek, error);
-		if (!gunzip->IsDefined())
-			return false;
-
-
-		next = gunzip;
-	} else
+	if (IsGzip(data))
+		next = gunzip = new GunzipReader(peek);
+	else
 		next = &peek;
-
-	return true;
 }
 
 size_t
-AutoGunzipReader::Read(void *data, size_t size, Error &error)
+AutoGunzipReader::Read(void *data, size_t size)
 {
-	if (next == nullptr && !Detect(error))
-		return false;
+	if (next == nullptr)
+		Detect();
 
-	return next->Read(data, size, error);
+	assert(next != nullptr);
+	return next->Read(data, size);
 }

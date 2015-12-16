@@ -110,10 +110,7 @@ try {
 	config_global_init();
 
 	Error error;
-	if (!ReadConfigFile(config_path, error)) {
-		cerr << error.GetMessage() << endl;
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	TagLoadConfig();
 

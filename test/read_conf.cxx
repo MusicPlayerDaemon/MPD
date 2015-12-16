@@ -20,7 +20,6 @@
 #include "config.h"
 #include "config/ConfigGlobal.hxx"
 #include "fs/Path.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -39,11 +38,7 @@ try {
 
 	config_global_init();
 
-	Error error;
-	if (!ReadConfigFile(config_path, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	ConfigOption option = ParseConfigOptionName(name);
 	const char *value = option != ConfigOption::MAX

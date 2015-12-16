@@ -184,11 +184,9 @@ SimpleDatabase::Load(Error &error)
 	assert(!path.IsNull());
 	assert(root != nullptr);
 
-	TextFile file(path, error);
-	if (file.HasFailed())
-		return false;
+	TextFile file(path);
 
-	if (!db_load_internal(file, *root, error) || !file.Check(error))
+	if (!db_load_internal(file, *root, error))
 		return false;
 
 	FileInfo fi;
@@ -200,7 +198,7 @@ SimpleDatabase::Load(Error &error)
 
 bool
 SimpleDatabase::Open(Error &error)
-{
+try {
 	assert(prefixed_light_song == nullptr);
 
 	root = Directory::NewRoot();
@@ -223,6 +221,9 @@ SimpleDatabase::Open(Error &error)
 	}
 
 	return true;
+} catch (const std::exception &e) {
+	error.Set(e);
+	return false;
 }
 
 void

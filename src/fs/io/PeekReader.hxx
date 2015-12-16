@@ -44,10 +44,10 @@ public:
 	PeekReader(Reader &_next)
 		:next(_next), buffer_size(0), buffer_position(0) {}
 
-	const void *Peek(size_t size, Error &error);
+	const void *Peek(size_t size);
 
 	/* virtual methods from class Reader */
-	virtual size_t Read(void *data, size_t size, Error &error) override;
+	virtual size_t Read(void *data, size_t size) override;
 };
 
 #endif

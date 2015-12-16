@@ -161,10 +161,7 @@ try {
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	if (!ReadConfigFile(config_path, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	EventLoop event_loop;
 

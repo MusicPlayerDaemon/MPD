@@ -25,8 +25,6 @@
 
 #include <stddef.h>
 
-class Error;
-
 /**
  * An interface that can read bytes from a stream until the stream
  * ends.
@@ -43,10 +41,10 @@ public:
 	 * Read data from the stream.
 	 *
 	 * @return the number of bytes read into the given buffer or 0
-	 * on error/end-of-stream
+	 * on end-of-stream
 	 */
 	gcc_nonnull_all
-	virtual size_t Read(void *data, size_t size, Error &error) = 0;
+	virtual size_t Read(void *data, size_t size) = 0;
 };
 
 #endif

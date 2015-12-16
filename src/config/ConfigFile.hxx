@@ -24,7 +24,7 @@ class Error;
 class Path;
 struct ConfigData;
 
-bool
-ReadConfigFile(ConfigData &data, Path path, Error &error);
+void
+ReadConfigFile(ConfigData &data, Path path);
 
 #endif

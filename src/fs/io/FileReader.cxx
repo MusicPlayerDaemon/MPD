@@ -20,57 +20,49 @@
 #include "config.h"
 #include "FileReader.hxx"
 #include "fs/FileInfo.hxx"
-#include "util/Error.hxx"
+#include "system/Error.hxx"
 
 #ifdef WIN32
 
-FileReader::FileReader(Path _path, Error &error)
+FileReader::FileReader(Path _path)
 	:path(_path),
 	 handle(CreateFile(path.c_str(), GENERIC_READ, FILE_SHARE_READ,
 			   nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL,
 			   nullptr))
 {
-	if (handle == INVALID_HANDLE_VALUE) {
-		const auto path_utf8 = path.ToUTF8();
-		error.FormatLastError("Failed to open %s", path_utf8.c_str());
-	}
+	if (handle == INVALID_HANDLE_VALUE)
+		throw FormatLastError("Failed to open %s", path.ToUTF8().c_str());
 }
 
-bool
-FileReader::GetFileInfo(FileInfo &info, Error &error) const
+FileInfo
+FileReader::GetFileInfo() const
 {
 	assert(IsDefined());
 
-	return ::GetFileInfo(path, info, error);
+	return FileInfo(path);
 }
 
 size_t
-FileReader::Read(void *data, size_t size, Error &error)
+FileReader::Read(void *data, size_t size)
 {
 	assert(IsDefined());
 
 	DWORD nbytes;
-	if (!ReadFile(handle, data, size, &nbytes, nullptr)) {
-		const auto path_utf8 = path.ToUTF8();
-		error.FormatLastError("Failed to read from %s",
-				      path_utf8.c_str());
-		nbytes = 0;
-	}
+	if (!ReadFile(handle, data, size, &nbytes, nullptr))
+		throw FormatLastError("Failed to read from %s",
+				      path.ToUTF8().c_str());
 
 	return nbytes;
 }
 
-bool
-FileReader::Seek(off_t offset, Error &error)
+void
+FileReader::Seek(off_t offset)
 {
 	assert(IsDefined());
 
 	auto result = SetFilePointer(handle, offset, nullptr, FILE_BEGIN);
-	const bool success = result != INVALID_SET_FILE_POINTER;
-	if (!success)
-		error.SetLastError("Failed to seek");
-
-	return success;
+	if (result == INVALID_SET_FILE_POINTER)
+		throw MakeLastError("Failed to seek");
 }
 
 void
@@ -83,52 +75,49 @@ FileReader::Close()
 
 #else
 
-FileReader::FileReader(Path _path, Error &error)
+FileReader::FileReader(Path _path)
 	:path(_path)
 {
 	fd.OpenReadOnly(path.c_str());
 	if (!fd.IsDefined())
-		error.FormatErrno("Failed to open %s", path.c_str());
+		throw FormatErrno("Failed to open %s", path.ToUTF8().c_str());
 }
 
-bool
-FileReader::GetFileInfo(FileInfo &info, Error &error) const
+FileInfo
+FileReader::GetFileInfo() const
 {
 	assert(IsDefined());
 
+	FileInfo info;
 	const bool success = fstat(fd.Get(), &info.st) == 0;
 	if (!success)
-		error.FormatErrno("Failed to access %s",
+		throw FormatErrno("Failed to access %s",
 				  path.ToUTF8().c_str());
 
-	return success;
+	return info;
 }
 
 size_t
-FileReader::Read(void *data, size_t size, Error &error)
+FileReader::Read(void *data, size_t size)
 {
 	assert(IsDefined());
 
 	ssize_t nbytes = fd.Read(data, size);
-	if (nbytes < 0) {
-		error.FormatErrno("Failed to read from %s", path.c_str());
-		nbytes = 0;
-	}
+	if (nbytes < 0)
+		throw FormatErrno("Failed to read from %s", path.ToUTF8().c_str());
 
 	return nbytes;
 }
 
-bool
-FileReader::Seek(off_t offset, Error &error)
+void
+FileReader::Seek(off_t offset)
 {
 	assert(IsDefined());
 
 	auto result = fd.Seek(offset);
 	const bool success = result >= 0;
 	if (!success)
-		error.SetErrno("Failed to seek");
-
-	return success;
+		throw MakeErrno("Failed to seek");
 }
 
 void

@@ -59,10 +59,7 @@ try {
 	Error error;
 
 	config_global_init();
-	if (!ReadConfigFile(config_path, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	/* initialize the core */
 

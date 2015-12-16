@@ -28,32 +28,32 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static bool
-Copy(OutputStream &dest, Reader &src, Error &error)
+static void
+Copy(OutputStream &dest, Reader &src)
 {
 	while (true) {
 		char buffer[4096];
-		size_t nbytes = src.Read(buffer, sizeof(buffer), error);
+		size_t nbytes = src.Read(buffer, sizeof(buffer));
 		if (nbytes == 0)
-			return !error.IsDefined();
+			break;
 
 		dest.Write(buffer, nbytes);
 	}
 }
 
-static bool
-CopyGunzip(OutputStream &dest, Reader &_src, Error &error)
+static void
+CopyGunzip(OutputStream &dest, Reader &_src)
 {
-	GunzipReader src(_src, error);
-	return src.IsDefined() && Copy(dest, src, error);
+	GunzipReader src(_src);
+	Copy(dest, src);
 }
 
-static bool
-CopyGunzip(FILE *_dest, Path src_path, Error &error)
+static void
+CopyGunzip(FILE *_dest, Path src_path)
 {
 	StdioOutputStream dest(_dest);
-	FileReader src(src_path, error);
-	return src.IsDefined() && CopyGunzip(dest, src, error);
+	FileReader src(src_path);
+	CopyGunzip(dest, src);
 }
 
 int
@@ -67,12 +67,7 @@ main(int argc, gcc_unused char **argv)
 	Path path = Path::FromFS(argv[1]);
 
 	try {
-		Error error;
-		if (!CopyGunzip(stdout, path, error)) {
-			fprintf(stderr, "%s\n", error.GetMessage());
-			return EXIT_FAILURE;
-		}
-
+		CopyGunzip(stdout, path);
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {
 		LogError(e);

@@ -69,7 +69,6 @@ load_filter(const char *name)
 int main(int argc, char **argv)
 try {
 	struct audio_format_string af_string;
-	Error error2;
 	char buffer[4096];
 
 	if (argc < 3 || argc > 4) {
@@ -84,8 +83,7 @@ try {
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	if (!ReadConfigFile(config_path, error2))
-		FatalError(error2);
+	ReadConfigFile(config_path);
 
 	/* parse the audio format */
 
