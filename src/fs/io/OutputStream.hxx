@@ -21,18 +21,18 @@
 #define MPD_OUTPUT_STREAM_HXX
 
 #include "check.h"
-#include "Compiler.h"
 
 #include <stddef.h>
-
-class Error;
 
 class OutputStream {
 public:
 	OutputStream() = default;
 	OutputStream(const OutputStream &) = delete;
 
-	virtual bool Write(const void *data, size_t size, Error &error) = 0;
+	/**
+	 * Throws std::exception on error.
+	 */
+	virtual void Write(const void *data, size_t size) = 0;
 };
 
 #endif

@@ -24,9 +24,8 @@
 
 struct Encoder;
 class OutputStream;
-class Error;
 
-bool
-EncoderToOutputStream(OutputStream &os, Encoder &encoder, Error &error);
+void
+EncoderToOutputStream(OutputStream &os, Encoder &encoder);
 
 #endif

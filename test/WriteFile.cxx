@@ -43,10 +43,7 @@ Copy(OutputStream &dest, int src)
 		if (nbytes == 0)
 			return true;
 
-		if (!dest.Write(buffer, nbytes, error)) {
-			fprintf(stderr, "%s\n", error.GetMessage());
-			return false;
-		}
+		dest.Write(buffer, nbytes);
 	}
 }
 

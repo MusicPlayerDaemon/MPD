@@ -41,8 +41,7 @@ Copy(OutputStream &dest, int src, Error &error)
 				return true;
 		}
 
-		if (!dest.Write(buffer, nbytes, error))
-			return false;
+		dest.Write(buffer, nbytes);
 	}
 }
 
@@ -50,8 +49,11 @@ static bool
 CopyGzip(OutputStream &_dest, int src, Error &error)
 {
 	GzipOutputStream dest(_dest);
-	return Copy(dest, src, error) &&
-		dest.Flush(error);
+	if (!Copy(dest, src, error))
+		return false;
+
+	dest.Flush();
+	return true;
 }
 
 static bool

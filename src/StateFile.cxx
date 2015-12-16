@@ -75,12 +75,12 @@ StateFile::Write(BufferedOutputStream &os)
 	playlist_state_save(os, partition.playlist, partition.pc);
 }
 
-inline bool
-StateFile::Write(OutputStream &os, Error &error)
+inline void
+StateFile::Write(OutputStream &os)
 {
 	BufferedOutputStream bos(os);
 	Write(bos);
-	return bos.Flush(error);
+	bos.Flush();
 }
 
 void
@@ -90,13 +90,8 @@ StateFile::Write()
 		    "Saving state file %s", path_utf8.c_str());
 
 	try {
-		Error error;
 		FileOutputStream fos(path);
-		if (!Write(fos, error)) {
-			LogError(error);
-			return;
-		}
-
+		Write(fos);
 		fos.Commit();
 	} catch (const std::exception &e) {
 		LogError(e);

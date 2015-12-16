@@ -21,9 +21,6 @@
 #include "FileOutputStream.hxx"
 #include "fs/FileSystem.hxx"
 #include "system/Error.hxx"
-#include "util/Error.hxx"
-
-#include <system_error>
 
 #ifdef WIN32
 
@@ -50,26 +47,19 @@ BaseFileOutputStream::Tell() const
 	return uint64_t(high) << 32 | uint64_t(low);
 }
 
-bool
-BaseFileOutputStream::Write(const void *data, size_t size, Error &error)
+void
+BaseFileOutputStream::Write(const void *data, size_t size)
 {
 	assert(IsDefined());
 
 	DWORD nbytes;
-	if (!WriteFile(handle, data, size, &nbytes, nullptr)) {
-		error.FormatLastError("Failed to write to %s",
-				      path.ToUTF8().c_str());
-		return false;
-	}
+	if (!WriteFile(handle, data, size, &nbytes, nullptr))
+		throw FormatLastError("Failed to write to %s",
+				      GetPath().c_str());
 
-	if (size_t(nbytes) != size) {
-		error.FormatLastError(ERROR_DISK_FULL,
-				      "Failed to write to %s",
-				      path.ToUTF8().c_str());
-		return false;
-	}
-
-	return true;
+	if (size_t(nbytes) != size)
+		throw FormatLastError(ERROR_DISK_FULL, "Failed to write to %s",
+				      GetPath().c_str());
 }
 
 void
@@ -143,22 +133,17 @@ BaseFileOutputStream::Tell() const
 	return fd.Tell();
 }
 
-bool
-BaseFileOutputStream::Write(const void *data, size_t size, Error &error)
+void
+BaseFileOutputStream::Write(const void *data, size_t size)
 {
 	assert(IsDefined());
 
 	ssize_t nbytes = fd.Write(data, size);
-	if (nbytes < 0) {
-		error.FormatErrno("Failed to write to %s", GetPath().c_str());
-		return false;
-	} else if ((size_t)nbytes < size) {
-		error.FormatErrno(ENOSPC,
-				  "Failed to write to %s", GetPath().c_str());
-		return false;
-	}
-
-	return true;
+	if (nbytes < 0)
+		throw FormatErrno("Failed to write to %s", GetPath().c_str());
+	else if ((size_t)nbytes < size)
+		throw FormatErrno(ENOSPC, "Failed to write to %s",
+				  GetPath().c_str());
 }
 
 void

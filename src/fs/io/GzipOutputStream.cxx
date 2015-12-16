@@ -21,7 +21,6 @@
 #include "GzipOutputStream.hxx"
 #include "lib/zlib/Domain.hxx"
 #include "lib/zlib/Error.hxx"
-#include "util/Error.hxx"
 
 GzipOutputStream::GzipOutputStream(OutputStream &_next) throw(ZlibError)
 	:next(_next)
@@ -47,8 +46,8 @@ GzipOutputStream::~GzipOutputStream()
 	deflateEnd(&z);
 }
 
-bool
-GzipOutputStream::Flush(Error &error)
+void
+GzipOutputStream::Flush()
 {
 	/* no more input */
 	z.next_in = nullptr;
@@ -60,21 +59,18 @@ GzipOutputStream::Flush(Error &error)
 		z.avail_out = sizeof(output);
 
 		int result = deflate(&z, Z_FINISH);
-		if (z.next_out > output &&
-		    !next.Write(output, z.next_out - output, error))
-			return false;
+		if (z.next_out > output)
+			next.Write(output, z.next_out - output);
 
 		if (result == Z_STREAM_END)
-			return true;
-		else if (result != Z_OK) {
-			error.Set(zlib_domain, result, zError(result));
-			return false;
-		}
-    }
+			break;
+		else if (result != Z_OK)
+			throw ZlibError(result);
+	}
 }
 
-bool
-GzipOutputStream::Write(const void *_data, size_t size, Error &error)
+void
+GzipOutputStream::Write(const void *_data, size_t size)
 {
 	/* zlib's API requires non-const input pointer */
 	void *data = const_cast<void *>(_data);
@@ -88,15 +84,10 @@ GzipOutputStream::Write(const void *_data, size_t size, Error &error)
 		z.avail_out = sizeof(output);
 
 		int result = deflate(&z, Z_NO_FLUSH);
-		if (result != Z_OK) {
-			error.Set(zlib_domain, result, zError(result));
-			return false;
-		}
+		if (result != Z_OK)
+			throw ZlibError(result);
 
-		if (z.next_out > output &&
-		    !next.Write(output, z.next_out - output, error))
-			return false;
+		if (z.next_out > output)
+			next.Write(output, z.next_out - output);
 	}
-
-	return true;
 }

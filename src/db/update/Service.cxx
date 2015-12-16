@@ -130,9 +130,7 @@ UpdateService::Task()
 
 	if (modified || !next.db->FileExists()) {
 		try {
-			Error error;
-			if (!next.db->Save(error))
-				LogError(error, "Failed to save database");
+			next.db->Save();
 		} catch (const std::exception &e) {
 			LogError(e, "Failed to save database");
 		}

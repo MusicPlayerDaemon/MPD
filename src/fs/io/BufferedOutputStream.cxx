@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 bool
-BufferedOutputStream::AppendToBuffer(const void *data, size_t size)
+BufferedOutputStream::AppendToBuffer(const void *data, size_t size) noexcept
 {
 	auto r = buffer.Write();
 	if (r.size < size)
@@ -37,46 +37,36 @@ BufferedOutputStream::AppendToBuffer(const void *data, size_t size)
 	return true;
 }
 
-bool
+void
 BufferedOutputStream::Write(const void *data, size_t size)
 {
-	if (gcc_unlikely(last_error.IsDefined()))
-		/* the stream has already failed */
-		return false;
-
 	/* try to append to the current buffer */
 	if (AppendToBuffer(data, size))
-		return true;
+		return;
 
 	/* not enough room in the buffer - flush it */
-	if (!Flush())
-		return false;
+	Flush();
 
 	/* see if there's now enough room */
 	if (AppendToBuffer(data, size))
-		return true;
+		return;
 
 	/* too large for the buffer: direct write */
-	return os.Write(data, size, last_error);
+	os.Write(data, size);
 }
 
-bool
+void
 BufferedOutputStream::Write(const char *p)
 {
-	return Write(p, strlen(p));
+	Write(p, strlen(p));
 }
 
-bool
+void
 BufferedOutputStream::Format(const char *fmt, ...)
 {
-	if (gcc_unlikely(last_error.IsDefined()))
-		return false;
-
 	auto r = buffer.Write();
 	if (r.IsEmpty()) {
-		if (!Flush())
-			return false;
-
+		Flush();
 		r = buffer.Write();
 	}
 
@@ -90,8 +80,7 @@ BufferedOutputStream::Format(const char *fmt, ...)
 		/* buffer was not large enough; flush it and try
 		   again */
 
-		if (!Flush())
-			return false;
+		Flush();
 
 		r = buffer.Write();
 
@@ -112,37 +101,15 @@ BufferedOutputStream::Format(const char *fmt, ...)
 	}
 
 	buffer.Append(size);
-	return true;
 }
 
-bool
+void
 BufferedOutputStream::Flush()
 {
-	if (!Check())
-		return false;
-
 	auto r = buffer.Read();
 	if (r.IsEmpty())
-		return true;
+		return;
 
-	bool success = os.Write(r.data, r.size, last_error);
-	if (gcc_likely(success))
-		buffer.Consume(r.size);
-	return success;
-}
-
-bool
-BufferedOutputStream::Flush(Error &error)
-{
-	if (!Check(error))
-		return false;
-
-	auto r = buffer.Read();
-	if (r.IsEmpty())
-		return true;
-
-	bool success = os.Write(r.data, r.size, error);
-	if (gcc_likely(success))
-		buffer.Consume(r.size);
-	return success;
+	os.Write(r.data, r.size);
+	buffer.Consume(r.size);
 }

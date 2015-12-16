@@ -364,8 +364,8 @@ SimpleDatabase::GetStats(const DatabaseSelection &selection,
 	return ::GetStats(*this, selection, stats, error);
 }
 
-bool
-SimpleDatabase::Save(Error &error)
+void
+SimpleDatabase::Save()
 {
 	{
 		const ScopeDatabaseLock protect;
@@ -395,16 +395,12 @@ SimpleDatabase::Save(Error &error)
 
 	db_save_internal(bos, *root);
 
-	if (!bos.Flush(error)) {
-		return false;
-	}
+	bos.Flush();
 
 #ifdef ENABLE_ZLIB
 	if (gzip != nullptr) {
-		bool success = gzip->Flush(error);
+		gzip->Flush();
 		gzip.reset();
-		if (!success)
-			return false;
 	}
 #endif
 
@@ -413,8 +409,6 @@ SimpleDatabase::Save(Error &error)
 	FileInfo fi;
 	if (GetFileInfo(path, fi))
 		mtime = fi.GetModificationTime();
-
-	return true;
 }
 
 bool

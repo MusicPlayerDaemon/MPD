@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "OutputStream.hxx"
-#include "fs/AllocatedPath.hxx"
 #include "Compiler.h"
 
 #include <stdio.h>
@@ -34,12 +33,10 @@ public:
 	StdioOutputStream(FILE *_file):file(_file) {}
 
 	/* virtual methods from class OutputStream */
-	bool Write(const void *data, size_t size,
-		   gcc_unused Error &error) override {
+	void Write(const void *data, size_t size) override {
 		fwrite(data, 1, size, file);
 
 		/* this class is debug-only and ignores errors */
-		return true;
 	}
 };
 

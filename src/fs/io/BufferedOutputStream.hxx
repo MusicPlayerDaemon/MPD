@@ -23,67 +23,37 @@
 #include "check.h"
 #include "Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
-#include "util/Error.hxx"
 
 #include <stddef.h>
 
 class OutputStream;
-class Error;
 
 /**
  * An #OutputStream wrapper that buffers its output to reduce the
  * number of OutputStream::Write() calls.
- *
- * It simplifies error handling by managing an #Error attribute.
- * Invoke any number of writes, and check for errors in the end using
- * Check().
  */
 class BufferedOutputStream {
 	OutputStream &os;
 
 	DynamicFifoBuffer<char> buffer;
 
-	Error last_error;
-
 public:
 	BufferedOutputStream(OutputStream &_os)
 		:os(_os), buffer(32768) {}
 
-	bool Write(const void *data, size_t size);
-	bool Write(const char *p);
+	void Write(const void *data, size_t size);
+	void Write(const char *p);
 
 	gcc_printf(2,3)
-	bool Format(const char *fmt, ...);
-
-	/**
-	 * Returns false if an error has occurred.
-	 */
-	gcc_pure
-	bool Check() const {
-		return !last_error.IsDefined();
-	}
-
-	/**
-	 * Returns false if an error has occurred.  In that case, a
-	 * copy of the #Error is returned.
-	 */
-	bool Check(Error &error) const {
-		if (last_error.IsDefined()) {
-			error.Set(last_error);
-			return false;
-		} else
-			return true;
-	}
+	void Format(const char *fmt, ...);
 
 	/**
 	 * Write buffer contents to the #OutputStream.
 	 */
-	bool Flush();
-
-	bool Flush(Error &error);
+	void Flush();
 
 private:
-	bool AppendToBuffer(const void *data, size_t size);
+	bool AppendToBuffer(const void *data, size_t size) noexcept;
 };
 
 #endif

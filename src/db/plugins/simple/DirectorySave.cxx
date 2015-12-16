@@ -90,9 +90,6 @@ directory_save(BufferedOutputStream &os, const Directory &directory)
 
 		if (!child.IsMount())
 			directory_save(os, child);
-
-		if (!os.Check())
-			return;
 	}
 
 	for (const auto &song : directory.songs)

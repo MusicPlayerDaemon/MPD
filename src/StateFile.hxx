@@ -60,7 +60,7 @@ public:
 	void CheckModified();
 
 private:
-	bool Write(OutputStream &os, Error &error);
+	void Write(OutputStream &os);
 	void Write(BufferedOutputStream &os);
 
 	/**

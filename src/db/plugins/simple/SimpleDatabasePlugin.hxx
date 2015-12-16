@@ -83,7 +83,7 @@ public:
 		return *root;
 	}
 
-	bool Save(Error &error);
+	void Save();
 
 	/**
 	 * Returns true if there is a valid database file on the disk.

@@ -119,7 +119,7 @@ public:
 	uint64_t Tell() const;
 
 	/* virtual methods from class OutputStream */
-	bool Write(const void *data, size_t size, Error &error) override;
+	void Write(const void *data, size_t size) override;
 };
 
 class FileOutputStream final : public BaseFileOutputStream {

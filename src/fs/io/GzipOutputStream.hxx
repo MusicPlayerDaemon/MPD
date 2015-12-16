@@ -28,8 +28,6 @@
 #include <assert.h>
 #include <zlib.h>
 
-class Error;
-
 /**
  * A filter that compresses data written to it using zlib, forwarding
  * compressed data in the "gzip" format.
@@ -52,10 +50,10 @@ public:
 	 * Finish the file and write all data remaining in zlib's
 	 * output buffer.
 	 */
-	bool Flush(Error &error);
+	void Flush();
 
 	/* virtual methods from class OutputStream */
-	bool Write(const void *data, size_t size, Error &error) override;
+	void Write(const void *data, size_t size) override;
 };
 
 #endif

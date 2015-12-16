@@ -21,6 +21,7 @@
 #include "fs/io/GunzipReader.hxx"
 #include "fs/io/FileReader.hxx"
 #include "fs/io/StdioOutputStream.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>
@@ -36,8 +37,7 @@ Copy(OutputStream &dest, Reader &src, Error &error)
 		if (nbytes == 0)
 			return !error.IsDefined();
 
-		if (!dest.Write(buffer, nbytes, error))
-			return false;
+		dest.Write(buffer, nbytes);
 	}
 }
 
@@ -66,11 +66,16 @@ main(int argc, gcc_unused char **argv)
 
 	Path path = Path::FromFS(argv[1]);
 
-	Error error;
-	if (!CopyGunzip(stdout, path, error)) {
-		fprintf(stderr, "%s\n", error.GetMessage());
+	try {
+		Error error;
+		if (!CopyGunzip(stdout, path, error)) {
+			fprintf(stderr, "%s\n", error.GetMessage());
+			return EXIT_FAILURE;
+		}
+
+		return EXIT_SUCCESS;
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-
-	return EXIT_SUCCESS;
 }
