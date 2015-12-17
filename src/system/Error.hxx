@@ -31,6 +31,7 @@
 #define SYSTEM_ERROR_HXX
 
 #include "util/StringUtil.hxx"
+#include "Compiler.h"
 
 #include <system_error>
 #include <utility>
@@ -105,5 +106,18 @@ FormatErrno(const char *fmt, Args&&... args)
 }
 
 #endif
+
+gcc_pure
+static inline bool
+IsFileNotFound(const std::system_error &e)
+{
+#ifdef WIN32
+	return e.code().category() == std::system_category() &&
+		e.code().value() == ERROR_FILE_NOT_FOUND;
+#else
+	return e.code().category() == std::system_category() &&
+		e.code().value() == ENOENT;
+#endif
+}
 
 #endif
