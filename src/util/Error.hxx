@@ -40,6 +40,13 @@
 
 class Domain;
 
+namespace std {
+	class exception;
+}
+
+/** Domain for std::exception */
+extern const Domain exception_domain;
+
 extern const Domain errno_domain;
 
 #ifdef WIN32
@@ -125,6 +132,8 @@ public:
 		code = other.code;
 		message = other.message;
 	}
+
+	void Set(const std::exception &src);
 
 	void Set(const Domain &_domain, int _code, const char *_message);
 

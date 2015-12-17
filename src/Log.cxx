@@ -29,9 +29,6 @@
 #include <string.h>
 #include <errno.h>
 
-/** Domain for std::exception */
-static constexpr Domain exception_domain("exception");
-
 void
 LogFormatV(const Domain &domain, LogLevel level, const char *fmt, va_list ap)
 {
