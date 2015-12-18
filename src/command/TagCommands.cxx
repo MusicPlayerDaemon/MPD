@@ -30,9 +30,7 @@
 CommandResult
 handle_addtagid(Client &client, Request args, Response &r)
 {
-	unsigned song_id;
-	if (!args.Parse(0, song_id, r))
-		return CommandResult::ERROR;
+	unsigned song_id = args.ParseUnsigned(0);
 
 	const char *const tag_name = args[1];
 	const TagType tag_type = tag_name_parse_i(tag_name);
@@ -54,9 +52,7 @@ handle_addtagid(Client &client, Request args, Response &r)
 CommandResult
 handle_cleartagid(Client &client, Request args, Response &r)
 {
-	unsigned song_id;
-	if (!args.Parse(0, song_id, r))
-		return CommandResult::ERROR;
+	unsigned song_id = args.ParseUnsigned(0);
 
 	TagType tag_type = TAG_NUM_OF_ITEM_TYPES;
 	if (args.size >= 2) {

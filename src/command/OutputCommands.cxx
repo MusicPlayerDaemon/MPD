@@ -31,9 +31,7 @@ CommandResult
 handle_enableoutput(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
-	unsigned device;
-	if (!args.Parse(0, device, r))
-		return CommandResult::ERROR;
+	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_enable_index(client.partition.outputs, device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
@@ -47,9 +45,7 @@ CommandResult
 handle_disableoutput(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
-	unsigned device;
-	if (!args.Parse(0, device, r))
-		return CommandResult::ERROR;
+	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_disable_index(client.partition.outputs, device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
@@ -63,9 +59,7 @@ CommandResult
 handle_toggleoutput(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
-	unsigned device;
-	if (!args.Parse(0, device, r))
-		return CommandResult::ERROR;
+	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_toggle_index(client.partition.outputs, device)) {
 		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");

@@ -20,6 +20,10 @@
 #ifndef MPD_ACK_H
 #define MPD_ACK_H
 
+#include <stdexcept>
+
+#include <stdio.h>
+
 class Domain;
 
 enum ack {
@@ -39,5 +43,26 @@ enum ack {
 };
 
 extern const Domain ack_domain;
+
+class ProtocolError : public std::runtime_error {
+	enum ack code;
+
+public:
+	ProtocolError(enum ack _code, const char *msg)
+		:std::runtime_error(msg), code(_code) {}
+
+	enum ack GetCode() const {
+		return code;
+	}
+};
+
+template<typename... Args>
+static inline ProtocolError
+FormatProtocolError(enum ack code, const char *fmt, Args&&... args) noexcept
+{
+	char buffer[256];
+	snprintf(buffer, sizeof(buffer), fmt, std::forward<Args>(args)...);
+	return ProtocolError(code, buffer);
+}
 
 #endif

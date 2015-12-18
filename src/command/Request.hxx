@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "protocol/ArgParser.hxx"
+#include "Chrono.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <utility>
@@ -44,30 +45,72 @@ public:
 			     : default_value;
 	}
 
-	template<typename T, typename... Args>
-	bool Parse(unsigned idx, T &value_r, Response &r,
-		   Args&&... args) {
+	gcc_pure
+	int ParseInt(unsigned idx) const {
 		assert(idx < size);
-
-		return ParseCommandArg(r, value_r, data[idx],
-				       std::forward<Args>(args)...);
+		return ParseCommandArgInt(data[idx]);
 	}
 
-	template<typename T, typename... Args>
-	bool ParseOptional(unsigned idx, T &value_r, Response &r,
-			   Args&&... args) {
-		return idx >= size ||
-			Parse(idx, value_r, r,
-			      std::forward<Args>(args)...);
+	gcc_pure
+	int ParseInt(unsigned idx, int min_value, int max_value) const {
+		assert(idx < size);
+		return ParseCommandArgInt(data[idx], min_value, max_value);
 	}
 
-	template<typename T, typename... Args>
-	bool ParseShift(unsigned idx, T &value_r, Response &r,
-			Args&&... args) {
-		bool success = Parse(idx, value_r, r,
-				     std::forward<Args>(args)...);
-		shift();
-		return success;
+	gcc_pure
+	int ParseUnsigned(unsigned idx) const {
+		assert(idx < size);
+		return ParseCommandArgUnsigned(data[idx]);
+	}
+
+	gcc_pure
+	int ParseUnsigned(unsigned idx, unsigned max_value) const {
+		assert(idx < size);
+		return ParseCommandArgUnsigned(data[idx], max_value);
+	}
+
+	gcc_pure
+	bool ParseBool(unsigned idx) const {
+		assert(idx < size);
+		return ParseCommandArgBool(data[idx]);
+	}
+
+	gcc_pure
+	RangeArg ParseRange(unsigned idx) const {
+		assert(idx < size);
+		return ParseCommandArgRange(data[idx]);
+	}
+
+	gcc_pure
+	float ParseFloat(unsigned idx) const {
+		assert(idx < size);
+		return ParseCommandArgFloat(data[idx]);
+	}
+
+	gcc_pure
+	SongTime ParseSongTime(unsigned idx) const {
+		assert(idx < size);
+		return ParseCommandArgSongTime(data[idx]);
+	}
+
+	gcc_pure
+	SignedSongTime ParseSignedSongTime(unsigned idx) const {
+		assert(idx < size);
+		return ParseCommandArgSignedSongTime(data[idx]);
+	}
+
+	gcc_pure
+	int ParseOptional(unsigned idx, int default_value) const {
+		return idx < size
+			? ParseInt(idx)
+			: default_value;
+	}
+
+	gcc_pure
+	RangeArg ParseOptional(unsigned idx, RangeArg default_value) const {
+		return idx < size
+			? ParseRange(idx)
+			: default_value;
 	}
 };
 

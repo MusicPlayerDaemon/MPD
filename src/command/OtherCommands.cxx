@@ -352,9 +352,7 @@ handle_rescan(Client &client, Request args, Response &r)
 CommandResult
 handle_setvol(Client &client, Request args, Response &r)
 {
-	unsigned level;
-	if (!args.Parse(0, level, r, 100))
-		return CommandResult::ERROR;
+	unsigned level = args.ParseUnsigned(0, 100);
 
 	if (!volume_level_change(client.partition.outputs, level)) {
 		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
@@ -367,9 +365,7 @@ handle_setvol(Client &client, Request args, Response &r)
 CommandResult
 handle_volume(Client &client, Request args, Response &r)
 {
-	int relative;
-	if (!args.Parse(0, relative, r,  -100, 100))
-		return CommandResult::ERROR;
+	int relative = args.ParseInt(0, -100, 100);
 
 	const int old_volume = volume_level_get(client.partition.outputs);
 	if (old_volume < 0) {

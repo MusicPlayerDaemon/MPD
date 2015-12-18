@@ -21,6 +21,7 @@
 #define MPD_PROTOCOL_ARGPARSER_HXX
 
 #include "check.h"
+#include "Compiler.h"
 
 #include <limits>
 
@@ -30,15 +31,17 @@ class Response;
 class SongTime;
 class SignedSongTime;
 
-bool
-ParseCommandArg32(Response &r, uint32_t &value_r, const char *s);
+gcc_pure
+uint32_t
+ParseCommandArgU32(const char *s);
 
-bool
-ParseCommandArg(Response &r, int &value_r, const char *s,
-		int min_value, int max_value);
+gcc_pure
+int
+ParseCommandArgInt(const char *s, int min_value, int max_value);
 
-bool
-ParseCommandArg(Response &r, int &value_r, const char *s);
+gcc_pure
+int
+ParseCommandArgInt(const char *s);
 
 struct RangeArg {
 	unsigned start, end;
@@ -53,26 +56,32 @@ struct RangeArg {
 	}
 };
 
-bool
-ParseCommandArg(Response &r, RangeArg &value_r, const char *s);
+gcc_pure
+RangeArg
+ParseCommandArgRange(const char *s);
 
-bool
-ParseCommandArg(Response &r, unsigned &value_r, const char *s,
-		unsigned max_value);
+gcc_pure
+unsigned
+ParseCommandArgUnsigned(const char *s, unsigned max_value);
 
-bool
-ParseCommandArg(Response &r, unsigned &value_r, const char *s);
+gcc_pure
+unsigned
+ParseCommandArgUnsigned(const char *s);
 
+gcc_pure
 bool
-ParseCommandArg(Response &r, bool &value_r, const char *s);
+ParseCommandArgBool(const char *s);
 
-bool
-ParseCommandArg(Response &r, float &value_r, const char *s);
+gcc_pure
+float
+ParseCommandArgFloat(const char *s);
 
-bool
-ParseCommandArg(Response &r, SongTime &value_r, const char *s);
+gcc_pure
+SongTime
+ParseCommandArgSongTime(const char *s);
 
-bool
-ParseCommandArg(Response &r, SignedSongTime &value_r, const char *s);
+gcc_pure
+SignedSongTime
+ParseCommandArgSignedSongTime(const char *s);
 
 #endif

@@ -57,23 +57,17 @@
 #define COMMAND_STATUS_UPDATING_DB	"updating_db"
 
 CommandResult
-handle_play(Client &client, Request args, Response &r)
+handle_play(Client &client, Request args, gcc_unused Response &r)
 {
-	int song = -1;
-	if (!args.ParseOptional(0, song, r))
-		return CommandResult::ERROR;
-
+	int song = args.ParseOptional(0, -1);
 	client.partition.PlayPosition(song);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_playid(Client &client, Request args, Response &r)
+handle_playid(Client &client, Request args, gcc_unused Response &r)
 {
-	int id = -1;
-	if (!args.ParseOptional(0, id, r))
-		return CommandResult::ERROR;
-
+	int id = args.ParseOptional(0, -1);
 	client.partition.PlayId(id);
 	return CommandResult::OK;
 }
@@ -93,13 +87,10 @@ handle_currentsong(Client &client, gcc_unused Request args, Response &r)
 }
 
 CommandResult
-handle_pause(Client &client, Request args, Response &r)
+handle_pause(Client &client, Request args, gcc_unused Response &r)
 {
 	if (!args.IsEmpty()) {
-		bool pause_flag;
-		if (!args.Parse(0, pause_flag, r))
-			return CommandResult::ERROR;
-
+		bool pause_flag = args.ParseBool(0);
 		client.player_control.LockSetPause(pause_flag);
 	} else
 		client.player_control.LockPause();
@@ -236,45 +227,33 @@ handle_previous(Client &client, gcc_unused Request args,
 }
 
 CommandResult
-handle_repeat(Client &client, Request args, Response &r)
+handle_repeat(Client &client, Request args, gcc_unused Response &r)
 {
-	bool status;
-	if (!args.Parse(0, status, r))
-		return CommandResult::ERROR;
-
+	bool status = args.ParseBool(0);
 	client.partition.SetRepeat(status);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_single(Client &client, Request args, Response &r)
+handle_single(Client &client, Request args, gcc_unused Response &r)
 {
-	bool status;
-	if (!args.Parse(0, status, r))
-		return CommandResult::ERROR;
-
+	bool status = args.ParseBool(0);
 	client.partition.SetSingle(status);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_consume(Client &client, Request args, Response &r)
+handle_consume(Client &client, Request args, gcc_unused Response &r)
 {
-	bool status;
-	if (!args.Parse(0, status, r))
-		return CommandResult::ERROR;
-
+	bool status = args.ParseBool(0);
 	client.partition.SetConsume(status);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_random(Client &client, Request args, Response &r)
+handle_random(Client &client, Request args, gcc_unused Response &r)
 {
-	bool status;
-	if (!args.Parse(0, status, r))
-		return CommandResult::ERROR;
-
+	bool status = args.ParseBool(0);
 	client.partition.SetRandom(status);
 	client.partition.outputs.SetReplayGainMode(replay_gain_get_real_mode(client.partition.GetRandom()));
 	return CommandResult::OK;
@@ -291,10 +270,8 @@ handle_clearerror(Client &client, gcc_unused Request args,
 CommandResult
 handle_seek(Client &client, Request args, Response &r)
 {
-	unsigned song;
-	SongTime seek_time;
-	if (!args.Parse(0, song, r) || !args.Parse(1, seek_time, r))
-		return CommandResult::ERROR;
+	unsigned song = args.ParseUnsigned(0);
+	SongTime seek_time = args.ParseSongTime(1);
 
 	Error error;
 	return client.partition.SeekSongPosition(song, seek_time, error)
@@ -305,12 +282,8 @@ handle_seek(Client &client, Request args, Response &r)
 CommandResult
 handle_seekid(Client &client, Request args, Response &r)
 {
-	unsigned id;
-	SongTime seek_time;
-	if (!args.Parse(0, id, r))
-		return CommandResult::ERROR;
-	if (!args.Parse(1, seek_time, r))
-		return CommandResult::ERROR;
+	unsigned id = args.ParseUnsigned(0);
+	SongTime seek_time = args.ParseSongTime(1);
 
 	Error error;
 	return client.partition.SeekSongId(id, seek_time, error)
@@ -323,9 +296,7 @@ handle_seekcur(Client &client, Request args, Response &r)
 {
 	const char *p = args.front();
 	bool relative = *p == '+' || *p == '-';
-	SignedSongTime seek_time;
-	if (!ParseCommandArg(r, seek_time, p))
-		return CommandResult::ERROR;
+	SignedSongTime seek_time = ParseCommandArgSignedSongTime(p);
 
 	Error error;
 	return client.partition.SeekCurrent(seek_time, relative, error)
@@ -334,36 +305,26 @@ handle_seekcur(Client &client, Request args, Response &r)
 }
 
 CommandResult
-handle_crossfade(Client &client, Request args, Response &r)
+handle_crossfade(Client &client, Request args, gcc_unused Response &r)
 {
-	unsigned xfade_time;
-	if (!args.Parse(0, xfade_time, r))
-		return CommandResult::ERROR;
-
+	unsigned xfade_time = args.ParseUnsigned(0);
 	client.player_control.SetCrossFade(xfade_time);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_mixrampdb(Client &client, Request args, Response &r)
+handle_mixrampdb(Client &client, Request args, gcc_unused Response &r)
 {
-	float db;
-	if (!args.Parse(0, db, r))
-		return CommandResult::ERROR;
-
+	float db = args.ParseFloat(0);
 	client.player_control.SetMixRampDb(db);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_mixrampdelay(Client &client, Request args, Response &r)
+handle_mixrampdelay(Client &client, Request args, gcc_unused Response &r)
 {
-	float delay_secs;
-	if (!args.Parse(0, delay_secs, r))
-		return CommandResult::ERROR;
-
+	float delay_secs = args.ParseFloat(0);
 	client.player_control.SetMixRampDelay(delay_secs);
-
 	return CommandResult::OK;
 }
 

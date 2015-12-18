@@ -69,8 +69,7 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 {
 	RangeArg window;
 	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "window")) {
-		if (!args.Parse(args.size - 1, window, r))
-			return CommandResult::ERROR;
+		window = args.ParseRange(args.size - 1);
 
 		args.pop_back();
 		args.pop_back();

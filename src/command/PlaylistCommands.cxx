@@ -70,9 +70,7 @@ handle_save(Client &client, Request args, Response &r)
 CommandResult
 handle_load(Client &client, Request args, Response &r)
 {
-	RangeArg range = RangeArg::All();
-	if (!args.ParseOptional(1, range, r))
-		return CommandResult::ERROR;
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
 
 	const ScopeBulkEdit bulk_edit(client.partition);
 
@@ -144,9 +142,7 @@ CommandResult
 handle_playlistdelete(gcc_unused Client &client, Request args, Response &r)
 {
 	const char *const name = args[0];
-	unsigned from;
-	if (!args.Parse(1, from, r))
-		return CommandResult::ERROR;
+	unsigned from = args.ParseUnsigned(1);
 
 	Error error;
 	return spl_remove_index(name, from, error)
@@ -158,9 +154,8 @@ CommandResult
 handle_playlistmove(gcc_unused Client &client, Request args, Response &r)
 {
 	const char *const name = args.front();
-	unsigned from, to;
-	if (!args.Parse(1, from, r) || !args.Parse(2, to, r))
-		return CommandResult::ERROR;
+	unsigned from = args.ParseUnsigned(1);
+	unsigned to = args.ParseUnsigned(2);
 
 	Error error;
 	return spl_move_index(name, from, to, error)

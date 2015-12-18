@@ -165,6 +165,8 @@ PrintError(Response &r, const std::exception &e)
 
 	try {
 		throw e;
+	} catch (const ProtocolError &pe) {
+		r.Error(pe.GetCode(), pe.what());
 	} catch (const PlaylistError &pe) {
 		r.Error(ToAck(pe.GetCode()), pe.what());
 	} catch (const std::system_error &) {
