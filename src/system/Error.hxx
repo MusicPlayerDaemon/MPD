@@ -49,6 +49,19 @@ FormatSystemError(std::error_code code, const char *fmt, Args&&... args)
 
 #include <windows.h>
 
+static inline std::system_error
+MakeLastError(DWORD code, const char *msg)
+{
+	return std::system_error(std::error_code(code, std::system_category()),
+				 msg);
+}
+
+static inline std::system_error
+MakeLastError(const char *msg)
+{
+	return MakeLastError(GetLastError(), msg);
+}
+
 template<typename... Args>
 static inline std::system_error
 FormatLastError(DWORD code, const char *fmt, Args&&... args)
@@ -64,8 +77,7 @@ FormatLastError(DWORD code, const char *fmt, Args&&... args)
 	FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM |
 		       FORMAT_MESSAGE_IGNORE_INSERTS,
 		       nullptr, code, 0, p, end - p, nullptr);
-	return std::system_error(std::error_code(code, std::system_category()),
-				 buffer);
+	return MakeLastError(code, buffer);
 }
 
 template<typename... Args>
@@ -81,6 +93,19 @@ FormatLastError(const char *fmt, Args&&... args)
 #include <errno.h>
 #include <string.h>
 
+static inline std::system_error
+MakeErrno(int code, const char *msg)
+{
+	return std::system_error(std::error_code(code, std::system_category()),
+				 msg);
+}
+
+static inline std::system_error
+MakeErrno(const char *msg)
+{
+	return MakeErrno(errno, msg);
+}
+
 template<typename... Args>
 static inline std::system_error
 FormatErrno(int code, const char *fmt, Args&&... args)
@@ -94,8 +119,7 @@ FormatErrno(int code, const char *fmt, Args&&... args)
 	*p++ = ' ';
 
 	CopyString(p, strerror(code), end - p);
-	return std::system_error(std::error_code(code, std::system_category()),
-				 buffer);
+	return MakeErrno(code, buffer);
 }
 
 template<typename... Args>
