@@ -132,12 +132,13 @@ handle_addid(Client &client, Request args, Response &r)
 		if (!args.Parse(1, to, r))
 			return CommandResult::ERROR;
 
-		PlaylistResult result = client.partition.MoveId(added_id, to);
-		if (result != PlaylistResult::SUCCESS) {
-			CommandResult ret =
-				print_playlist_result(r, result);
+		try {
+			client.partition.MoveId(added_id, to);
+			return CommandResult::OK;
+		} catch (...) {
+			/* rollback */
 			client.partition.DeleteId(added_id);
-			return ret;
+			throw;
 		}
 	}
 
@@ -205,8 +206,8 @@ handle_delete(Client &client, Request args, Response &r)
 	if (!args.Parse(0, range, r))
 		return CommandResult::ERROR;
 
-	auto result = client.partition.DeleteRange(range.start, range.end);
-	return print_playlist_result(r, result);
+	client.partition.DeleteRange(range.start, range.end);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -216,8 +217,8 @@ handle_deleteid(Client &client, Request args, Response &r)
 	if (!args.Parse(0, id, r))
 		return CommandResult::ERROR;
 
-	PlaylistResult result = client.partition.DeleteId(id);
-	return print_playlist_result(r, result);
+	client.partition.DeleteId(id);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -351,12 +352,8 @@ handle_prio(Client &client, Request args, Response &r)
 		if (!ParseCommandArg(r, range, i))
 			return CommandResult::ERROR;
 
-		PlaylistResult result =
-			client.partition.SetPriorityRange(range.start,
-							  range.end,
-							  priority);
-		if (result != PlaylistResult::SUCCESS)
-			return print_playlist_result(r, result);
+		client.partition.SetPriorityRange(range.start, range.end,
+						  priority);
 	}
 
 	return CommandResult::OK;
@@ -374,10 +371,7 @@ handle_prioid(Client &client, Request args, Response &r)
 		if (!ParseCommandArg(r, song_id, i))
 			return CommandResult::ERROR;
 
-		PlaylistResult result =
-			client.partition.SetPriorityId(song_id, priority);
-		if (result != PlaylistResult::SUCCESS)
-			return print_playlist_result(r, result);
+		client.partition.SetPriorityId(song_id, priority);
 	}
 
 	return CommandResult::OK;
@@ -392,9 +386,8 @@ handle_move(Client &client, Request args, Response &r)
 	if (!args.Parse(0, range, r) || !args.Parse(1, to, r))
 		return CommandResult::ERROR;
 
-	PlaylistResult result =
-		client.partition.MoveRange(range.start, range.end, to);
-	return print_playlist_result(r, result);
+	client.partition.MoveRange(range.start, range.end, to);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -405,8 +398,8 @@ handle_moveid(Client &client, Request args, Response &r)
 	if (!args.Parse(0, id, r) || !args.Parse(1, to, r))
 		return CommandResult::ERROR;
 
-	PlaylistResult result = client.partition.MoveId(id, to);
-	return print_playlist_result(r, result);
+	client.partition.MoveId(id, to);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -416,9 +409,8 @@ handle_swap(Client &client, Request args, Response &r)
 	if (!args.Parse(0, song1, r) || !args.Parse(1, song2, r))
 		return CommandResult::ERROR;
 
-	PlaylistResult result =
-		client.partition.SwapPositions(song1, song2);
-	return print_playlist_result(r, result);
+	client.partition.SwapPositions(song1, song2);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -428,6 +420,6 @@ handle_swapid(Client &client, Request args, Response &r)
 	if (!args.Parse(0, id1, r) || !args.Parse(1, id2, r))
 		return CommandResult::ERROR;
 
-	PlaylistResult result = client.partition.SwapIds(id1, id2);
-	return print_playlist_result(r, result);
+	client.partition.SwapIds(id1, id2);
+	return CommandResult::OK;
 }

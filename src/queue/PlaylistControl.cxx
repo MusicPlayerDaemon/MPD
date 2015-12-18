@@ -56,7 +56,7 @@ playlist::Stop(PlayerControl &pc)
 	}
 }
 
-PlaylistResult
+void
 playlist::PlayPosition(PlayerControl &pc, int song)
 {
 	pc.LockClearError();
@@ -66,13 +66,13 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 		/* play any song ("current" song, or the first song */
 
 		if (queue.IsEmpty())
-			return PlaylistResult::SUCCESS;
+			return;
 
 		if (playing) {
 			/* already playing: unpause playback, just in
 			   case it was paused, and return */
 			pc.LockSetPause(false);
-			return PlaylistResult::SUCCESS;
+			return;
 		}
 
 		/* select a song: "current" song, or the first one */
@@ -80,7 +80,7 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 			? current
 			: 0;
 	} else if (!queue.IsValidPosition(song))
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	if (queue.random) {
 		if (song >= 0)
@@ -103,18 +103,19 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 	error_count = 0;
 
 	PlayOrder(pc, i);
-	return PlaylistResult::SUCCESS;
 }
 
-PlaylistResult
+void
 playlist::PlayId(PlayerControl &pc, int id)
 {
-	if (id == -1)
-		return PlayPosition(pc, id);
+	if (id == -1) {
+		PlayPosition(pc, id);
+		return;
+	}
 
 	int song = queue.IdToPosition(id);
 	if (song < 0)
-		return PlaylistResult::NO_SUCH_SONG;
+		throw PlaylistError::NoSuchSong();
 
 	return PlayPosition(pc, song);
 }

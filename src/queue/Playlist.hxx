@@ -214,15 +214,13 @@ protected:
 			    unsigned song, const DetachedSong **queued_p);
 
 public:
-	PlaylistResult DeletePosition(PlayerControl &pc,
-				      unsigned position);
+	void DeletePosition(PlayerControl &pc, unsigned position);
 
-	PlaylistResult DeleteOrder(PlayerControl &pc,
-				   unsigned order) {
-		return DeletePosition(pc, queue.OrderToPosition(order));
+	void DeleteOrder(PlayerControl &pc, unsigned order) {
+		DeletePosition(pc, queue.OrderToPosition(order));
 	}
 
-	PlaylistResult DeleteId(PlayerControl &pc, unsigned id);
+	void DeleteId(PlayerControl &pc, unsigned id);
 
 	/**
 	 * Deletes a range of songs from the playlist.
@@ -230,31 +228,27 @@ public:
 	 * @param start the position of the first song to delete
 	 * @param end the position after the last song to delete
 	 */
-	PlaylistResult DeleteRange(PlayerControl &pc,
-				   unsigned start, unsigned end);
+	void DeleteRange(PlayerControl &pc, unsigned start, unsigned end);
 
 	void DeleteSong(PlayerControl &pc, const char *uri);
 
 	void Shuffle(PlayerControl &pc, unsigned start, unsigned end);
 
-	PlaylistResult MoveRange(PlayerControl &pc,
-				 unsigned start, unsigned end, int to);
+	void MoveRange(PlayerControl &pc, unsigned start,
+		       unsigned end, int to);
 
-	PlaylistResult MoveId(PlayerControl &pc, unsigned id, int to);
+	void MoveId(PlayerControl &pc, unsigned id, int to);
 
-	PlaylistResult SwapPositions(PlayerControl &pc,
-				     unsigned song1, unsigned song2);
+	void SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2);
 
-	PlaylistResult SwapIds(PlayerControl &pc,
-			       unsigned id1, unsigned id2);
+	void SwapIds(PlayerControl &pc, unsigned id1, unsigned id2);
 
-	PlaylistResult SetPriorityRange(PlayerControl &pc,
-					unsigned start_position,
-					unsigned end_position,
-					uint8_t priority);
+	void SetPriorityRange(PlayerControl &pc,
+			      unsigned start_position, unsigned end_position,
+			      uint8_t priority);
 
-	PlaylistResult SetPriorityId(PlayerControl &pc,
-				     unsigned song_id, uint8_t priority);
+	void SetPriorityId(PlayerControl &pc,
+			   unsigned song_id, uint8_t priority);
 
 	/**
 	 * Sets the start_time and end_time attributes on the song
@@ -270,11 +264,11 @@ public:
 
 	void Stop(PlayerControl &pc);
 
-	PlaylistResult PlayPosition(PlayerControl &pc, int position);
+	void PlayPosition(PlayerControl &pc, int position);
 
 	void PlayOrder(PlayerControl &pc, int order);
 
-	PlaylistResult PlayId(PlayerControl &pc, int id);
+	void PlayId(PlayerControl &pc, int id);
 
 	void PlayNext(PlayerControl &pc);
 

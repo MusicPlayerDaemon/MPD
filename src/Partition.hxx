@@ -63,12 +63,12 @@ struct Partition final : private PlayerListener, private MixerListener {
 		return playlist.AppendURI(pc, loader, uri_utf8, error);
 	}
 
-	PlaylistResult DeletePosition(unsigned position) {
-		return playlist.DeletePosition(pc, position);
+	void DeletePosition(unsigned position) {
+		playlist.DeletePosition(pc, position);
 	}
 
-	PlaylistResult DeleteId(unsigned id) {
-		return playlist.DeleteId(pc, id);
+	void DeleteId(unsigned id) {
+		playlist.DeleteId(pc, id);
 	}
 
 	/**
@@ -77,8 +77,8 @@ struct Partition final : private PlayerListener, private MixerListener {
 	 * @param start the position of the first song to delete
 	 * @param end the position after the last song to delete
 	 */
-	PlaylistResult DeleteRange(unsigned start, unsigned end) {
-		return playlist.DeleteRange(pc, start, end);
+	void DeleteRange(unsigned start, unsigned end) {
+		playlist.DeleteRange(pc, start, end);
 	}
 
 #ifdef ENABLE_DATABASE
@@ -93,53 +93,50 @@ struct Partition final : private PlayerListener, private MixerListener {
 		playlist.Shuffle(pc, start, end);
 	}
 
-	PlaylistResult MoveRange(unsigned start, unsigned end, int to) {
-		return playlist.MoveRange(pc, start, end, to);
+	void MoveRange(unsigned start, unsigned end, int to) {
+		playlist.MoveRange(pc, start, end, to);
 	}
 
-	PlaylistResult MoveId(unsigned id, int to) {
-		return playlist.MoveId(pc, id, to);
+	void MoveId(unsigned id, int to) {
+		playlist.MoveId(pc, id, to);
 	}
 
-	PlaylistResult SwapPositions(unsigned song1, unsigned song2) {
-		return playlist.SwapPositions(pc, song1, song2);
+	void SwapPositions(unsigned song1, unsigned song2) {
+		playlist.SwapPositions(pc, song1, song2);
 	}
 
-	PlaylistResult SwapIds(unsigned id1, unsigned id2) {
-		return playlist.SwapIds(pc, id1, id2);
+	void SwapIds(unsigned id1, unsigned id2) {
+		playlist.SwapIds(pc, id1, id2);
 	}
 
-	PlaylistResult SetPriorityRange(unsigned start_position,
-					unsigned end_position,
-					uint8_t priority) {
-		return playlist.SetPriorityRange(pc,
-						 start_position, end_position,
-						 priority);
+	void SetPriorityRange(unsigned start_position, unsigned end_position,
+			      uint8_t priority) {
+		playlist.SetPriorityRange(pc, start_position, end_position,
+					  priority);
 	}
 
-	PlaylistResult SetPriorityId(unsigned song_id,
-				     uint8_t priority) {
-		return playlist.SetPriorityId(pc, song_id, priority);
+	void SetPriorityId(unsigned song_id, uint8_t priority) {
+		playlist.SetPriorityId(pc, song_id, priority);
 	}
 
 	void Stop() {
 		playlist.Stop(pc);
 	}
 
-	PlaylistResult PlayPosition(int position) {
-		return playlist.PlayPosition(pc, position);
+	void PlayPosition(int position) {
+		playlist.PlayPosition(pc, position);
 	}
 
-	PlaylistResult PlayId(int id) {
-		return playlist.PlayId(pc, id);
+	void PlayId(int id) {
+		playlist.PlayId(pc, id);
 	}
 
 	void PlayNext() {
-		return playlist.PlayNext(pc);
+		playlist.PlayNext(pc);
 	}
 
 	void PlayPrevious() {
-		return playlist.PlayPrevious(pc);
+		playlist.PlayPrevious(pc);
 	}
 
 	bool SeekSongPosition(unsigned song_position,

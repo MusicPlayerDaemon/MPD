@@ -20,6 +20,8 @@
 #ifndef MPD_PLAYLIST_ERROR_HXX
 #define MPD_PLAYLIST_ERROR_HXX
 
+#include <stdexcept>
+
 class Domain;
 
 enum class PlaylistResult {
@@ -36,5 +38,27 @@ enum class PlaylistResult {
 };
 
 extern const Domain playlist_domain;
+
+class PlaylistError : public std::runtime_error {
+	PlaylistResult code;
+
+public:
+	PlaylistError(PlaylistResult _code, const char *msg)
+		:std::runtime_error(msg), code(_code) {}
+
+	PlaylistResult GetCode() const {
+		return code;
+	}
+
+	static PlaylistError NoSuchSong() {
+		return PlaylistError(PlaylistResult::BAD_RANGE,
+				     "No such song");
+	}
+
+	static PlaylistError BadRange() {
+		return PlaylistError(PlaylistResult::BAD_RANGE,
+				     "Bad song index");
+	}
+};
 
 #endif

@@ -138,11 +138,11 @@ playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
 	return result;
 }
 
-PlaylistResult
+void
 playlist::SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2)
 {
 	if (!queue.IsValidPosition(song1) || !queue.IsValidPosition(song2))
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	const DetachedSong *const queued_song = GetQueuedSong();
 
@@ -165,35 +165,33 @@ playlist::SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2)
 
 	UpdateQueuedSong(pc, queued_song);
 	OnModified();
-
-	return PlaylistResult::SUCCESS;
 }
 
-PlaylistResult
+void
 playlist::SwapIds(PlayerControl &pc, unsigned id1, unsigned id2)
 {
 	int song1 = queue.IdToPosition(id1);
 	int song2 = queue.IdToPosition(id2);
 
 	if (song1 < 0 || song2 < 0)
-		return PlaylistResult::NO_SUCH_SONG;
+		throw PlaylistError::NoSuchSong();
 
-	return SwapPositions(pc, song1, song2);
+	SwapPositions(pc, song1, song2);
 }
 
-PlaylistResult
+void
 playlist::SetPriorityRange(PlayerControl &pc,
 			   unsigned start, unsigned end,
 			   uint8_t priority)
 {
 	if (start >= GetLength())
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	if (end > GetLength())
 		end = GetLength();
 
 	if (start >= end)
-		return PlaylistResult::SUCCESS;
+		return;
 
 	/* remember "current" and "queued" */
 
@@ -211,21 +209,17 @@ playlist::SetPriorityRange(PlayerControl &pc,
 
 	UpdateQueuedSong(pc, queued_song);
 	OnModified();
-
-	return PlaylistResult::SUCCESS;
 }
 
-PlaylistResult
+void
 playlist::SetPriorityId(PlayerControl &pc,
 			unsigned song_id, uint8_t priority)
 {
 	int song_position = queue.IdToPosition(song_id);
 	if (song_position < 0)
-		return PlaylistResult::NO_SUCH_SONG;
+		throw PlaylistError::NoSuchSong();
 
-	return SetPriorityRange(pc, song_position, song_position + 1,
-				priority);
-
+	SetPriorityRange(pc, song_position, song_position + 1, priority);
 }
 
 void
@@ -272,11 +266,11 @@ playlist::DeleteInternal(PlayerControl &pc,
 		current--;
 }
 
-PlaylistResult
+void
 playlist::DeletePosition(PlayerControl &pc, unsigned song)
 {
 	if (song >= queue.GetLength())
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	const DetachedSong *queued_song = GetQueuedSong();
 
@@ -284,21 +278,19 @@ playlist::DeletePosition(PlayerControl &pc, unsigned song)
 
 	UpdateQueuedSong(pc, queued_song);
 	OnModified();
-
-	return PlaylistResult::SUCCESS;
 }
 
-PlaylistResult
+void
 playlist::DeleteRange(PlayerControl &pc, unsigned start, unsigned end)
 {
 	if (start >= queue.GetLength())
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	if (end > queue.GetLength())
 		end = queue.GetLength();
 
 	if (start >= end)
-		return PlaylistResult::SUCCESS;
+		return;
 
 	const DetachedSong *queued_song = GetQueuedSong();
 
@@ -308,18 +300,16 @@ playlist::DeleteRange(PlayerControl &pc, unsigned start, unsigned end)
 
 	UpdateQueuedSong(pc, queued_song);
 	OnModified();
-
-	return PlaylistResult::SUCCESS;
 }
 
-PlaylistResult
+void
 playlist::DeleteId(PlayerControl &pc, unsigned id)
 {
 	int song = queue.IdToPosition(id);
 	if (song < 0)
-		return PlaylistResult::NO_SUCH_SONG;
+		throw PlaylistError::NoSuchSong();
 
-	return DeletePosition(pc, song);
+	DeletePosition(pc, song);
 }
 
 void
@@ -330,19 +320,19 @@ playlist::DeleteSong(PlayerControl &pc, const char *uri)
 			DeletePosition(pc, i);
 }
 
-PlaylistResult
+void
 playlist::MoveRange(PlayerControl &pc, unsigned start, unsigned end, int to)
 {
 	if (!queue.IsValidPosition(start) || !queue.IsValidPosition(end - 1))
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	if ((to >= 0 && to + end - start - 1 >= GetLength()) ||
 	    (to < 0 && unsigned(abs(to)) > GetLength()))
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	if ((int)start == to)
 		/* nothing happens */
-		return PlaylistResult::SUCCESS;
+		return;
 
 	const DetachedSong *const queued_song = GetQueuedSong();
 
@@ -355,11 +345,11 @@ playlist::MoveRange(PlayerControl &pc, unsigned start, unsigned end, int to)
 		if (currentSong < 0)
 			/* can't move relative to current song,
 			   because there is no current song */
-			return PlaylistResult::BAD_RANGE;
+			throw PlaylistError::BadRange();
 
 		if (start <= (unsigned)currentSong && (unsigned)currentSong < end)
 			/* no-op, can't be moved to offset of itself */
-			return PlaylistResult::SUCCESS;
+			return;
 		to = (currentSong + abs(to)) % GetLength();
 		if (start < (unsigned)to)
 			to--;
@@ -379,18 +369,16 @@ playlist::MoveRange(PlayerControl &pc, unsigned start, unsigned end, int to)
 
 	UpdateQueuedSong(pc, queued_song);
 	OnModified();
-
-	return PlaylistResult::SUCCESS;
 }
 
-PlaylistResult
+void
 playlist::MoveId(PlayerControl &pc, unsigned id1, int to)
 {
 	int song = queue.IdToPosition(id1);
 	if (song < 0)
-		return PlaylistResult::NO_SUCH_SONG;
+		throw PlaylistError::NoSuchSong();
 
-	return MoveRange(pc, song, song + 1, to);
+	MoveRange(pc, song, song + 1, to);
 }
 
 void

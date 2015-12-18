@@ -63,8 +63,8 @@ handle_play(Client &client, Request args, Response &r)
 	if (!args.ParseOptional(0, song, r))
 		return CommandResult::ERROR;
 
-	PlaylistResult result = client.partition.PlayPosition(song);
-	return print_playlist_result(r, result);
+	client.partition.PlayPosition(song);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -74,8 +74,8 @@ handle_playid(Client &client, Request args, Response &r)
 	if (!args.ParseOptional(0, id, r))
 		return CommandResult::ERROR;
 
-	PlaylistResult result = client.partition.PlayId(id);
-	return print_playlist_result(r, result);
+	client.partition.PlayId(id);
+	return CommandResult::OK;
 }
 
 CommandResult
