@@ -59,12 +59,10 @@ print_spl_list(Response &r, const PlaylistVector &list)
 }
 
 CommandResult
-handle_save(Client &client, Request args, Response &r)
+handle_save(Client &client, Request args, gcc_unused Response &r)
 {
-	Error error;
-	return spl_save_playlist(args.front(), client.playlist, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	spl_save_playlist(args.front(), client.playlist);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -94,10 +92,8 @@ handle_listplaylist(Client &client, Request args, Response &r)
 				name, false))
 		return CommandResult::OK;
 
-	Error error;
-	return spl_print(r, client.partition, name, false, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	spl_print(r, client.partition, name, false);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -109,10 +105,8 @@ handle_listplaylistinfo(Client &client, Request args, Response &r)
 				name, true))
 		return CommandResult::OK;
 
-	Error error;
-	return spl_print(r, client.partition, name, true, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	spl_print(r, client.partition, name, true);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -139,28 +133,26 @@ handle_rename(gcc_unused Client &client, Request args, Response &r)
 }
 
 CommandResult
-handle_playlistdelete(gcc_unused Client &client, Request args, Response &r)
+handle_playlistdelete(gcc_unused Client &client,
+		      Request args, gcc_unused Response &r)
 {
 	const char *const name = args[0];
 	unsigned from = args.ParseUnsigned(1);
 
-	Error error;
-	return spl_remove_index(name, from, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	spl_remove_index(name, from);
+	return CommandResult::OK;
 }
 
 CommandResult
-handle_playlistmove(gcc_unused Client &client, Request args, Response &r)
+handle_playlistmove(gcc_unused Client &client,
+		    Request args, gcc_unused Response &r)
 {
 	const char *const name = args.front();
 	unsigned from = args.ParseUnsigned(1);
 	unsigned to = args.ParseUnsigned(2);
 
-	Error error;
-	return spl_move_index(name, from, to, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	spl_move_index(name, from, to);
+	return CommandResult::OK;
 }
 
 CommandResult

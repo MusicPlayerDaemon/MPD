@@ -45,6 +45,8 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 
+#include <memory>
+
 #include <assert.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -91,37 +93,34 @@ spl_valid_name(const char *name_utf8)
 }
 
 static const AllocatedPath &
-spl_map(Error &error)
+spl_map()
 {
 	const AllocatedPath &path_fs = map_spl_path();
 	if (path_fs.IsNull())
-		error.Set(playlist_domain, int(PlaylistResult::DISABLED),
-			  "Stored playlists are disabled");
+		throw PlaylistError(PlaylistResult::DISABLED,
+				    "Stored playlists are disabled");
+
 	return path_fs;
 }
 
-static bool
-spl_check_name(const char *name_utf8, Error &error)
+static void
+spl_check_name(const char *name_utf8)
 {
-	if (!spl_valid_name(name_utf8)) {
-		error.Set(playlist_domain, int(PlaylistResult::BAD_NAME),
+	if (!spl_valid_name(name_utf8))
+		throw PlaylistError(PlaylistResult::BAD_NAME,
 				    "Bad playlist name");
-		return false;
-	}
-
-	return true;
 }
 
 AllocatedPath
-spl_map_to_fs(const char *name_utf8, Error &error)
+spl_map_to_fs(const char *name_utf8)
 {
-	if (spl_map(error).IsNull() || !spl_check_name(name_utf8, error))
-		return AllocatedPath::Null();
+	spl_map();
+	spl_check_name(name_utf8);
 
 	auto path_fs = map_spl_utf8_to_fs(name_utf8);
 	if (path_fs.IsNull())
-		error.Set(playlist_domain, int(PlaylistResult::BAD_NAME),
-			  "Bad playlist name");
+		throw PlaylistError(PlaylistResult::BAD_NAME,
+				    "Bad playlist name");
 
 	return path_fs;
 }
@@ -179,9 +178,8 @@ ListPlaylistFiles(Error &error)
 {
 	PlaylistVector list;
 
-	const auto &parent_path_fs = spl_map(error);
-	if (parent_path_fs.IsNull())
-		return list;
+	const auto &parent_path_fs = spl_map();
+	assert(!parent_path_fs.IsNull());
 
 	DirectoryReader reader(parent_path_fs);
 	if (reader.HasFailed()) {
@@ -199,15 +197,13 @@ ListPlaylistFiles(Error &error)
 	return list;
 }
 
-static bool
-SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
-		 Error &error)
+static void
+SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path)
 {
 	assert(utf8path != nullptr);
 
-	const auto path_fs = spl_map_to_fs(utf8path, error);
-	if (path_fs.IsNull())
-		return false;
+	const auto path_fs = spl_map_to_fs(utf8path);
+	assert(!path_fs.IsNull());
 
 	FileOutputStream fos(path_fs);
 
@@ -219,17 +215,15 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 	bos.Flush();
 
 	fos.Commit();
-	return true;
 }
 
 PlaylistFileContents
-LoadPlaylistFile(const char *utf8path, Error &error)
+LoadPlaylistFile(const char *utf8path)
 try {
 	PlaylistFileContents contents;
 
-	const auto path_fs = spl_map_to_fs(utf8path, error);
-	if (path_fs.IsNull())
-		return contents;
+	const auto path_fs = spl_map_to_fs(utf8path);
+	assert(!path_fs.IsNull());
 
 	TextFile file(path_fs);
 
@@ -284,24 +278,18 @@ try {
 	throw;
 }
 
-bool
-spl_move_index(const char *utf8path, unsigned src, unsigned dest,
-	       Error &error)
+void
+spl_move_index(const char *utf8path, unsigned src, unsigned dest)
 {
 	if (src == dest)
 		/* this doesn't check whether the playlist exists, but
 		   what the hell.. */
-		return true;
+		return;
 
-	auto contents = LoadPlaylistFile(utf8path, error);
-	if (contents.empty() && error.IsDefined())
-		return false;
+	auto contents = LoadPlaylistFile(utf8path);
 
-	if (src >= contents.size() || dest >= contents.size()) {
-		error.Set(playlist_domain, int(PlaylistResult::BAD_RANGE),
-			  "Bad range");
-		return false;
-	}
+	if (src >= contents.size() || dest >= contents.size())
+		throw PlaylistError(PlaylistResult::BAD_RANGE, "Bad range");
 
 	const auto src_i = std::next(contents.begin(), src);
 	auto value = std::move(*src_i);
@@ -310,18 +298,16 @@ spl_move_index(const char *utf8path, unsigned src, unsigned dest,
 	const auto dest_i = std::next(contents.begin(), dest);
 	contents.insert(dest_i, std::move(value));
 
-	bool result = SavePlaylistFile(contents, utf8path, error);
+	SavePlaylistFile(contents, utf8path);
 
 	idle_add(IDLE_STORED_PLAYLIST);
-	return result;
 }
 
 bool
 spl_clear(const char *utf8path, Error &error)
 {
-	const auto path_fs = spl_map_to_fs(utf8path, error);
-	if (path_fs.IsNull())
-		return false;
+	const auto path_fs = spl_map_to_fs(utf8path);
+	assert(!path_fs.IsNull());
 
 	FILE *file = FOpen(path_fs, FOpenMode::WriteText);
 	if (file == nullptr) {
@@ -338,9 +324,8 @@ spl_clear(const char *utf8path, Error &error)
 bool
 spl_delete(const char *name_utf8, Error &error)
 {
-	const auto path_fs = spl_map_to_fs(name_utf8, error);
-	if (path_fs.IsNull())
-		return false;
+	const auto path_fs = spl_map_to_fs(name_utf8);
+	assert(!path_fs.IsNull());
 
 	if (!RemoveFile(path_fs)) {
 		playlist_errno(error);
@@ -351,41 +336,31 @@ spl_delete(const char *name_utf8, Error &error)
 	return true;
 }
 
-bool
-spl_remove_index(const char *utf8path, unsigned pos, Error &error)
+void
+spl_remove_index(const char *utf8path, unsigned pos)
 {
-	auto contents = LoadPlaylistFile(utf8path, error);
-	if (contents.empty() && error.IsDefined())
-		return false;
+	auto contents = LoadPlaylistFile(utf8path);
 
-	if (pos >= contents.size()) {
-		error.Set(playlist_domain, int(PlaylistResult::BAD_RANGE),
-			  "Bad range");
-		return false;
-	}
+	if (pos >= contents.size())
+		throw PlaylistError(PlaylistResult::BAD_RANGE, "Bad range");
 
 	contents.erase(std::next(contents.begin(), pos));
 
-	bool result = SavePlaylistFile(contents, utf8path, error);
-
+	SavePlaylistFile(contents, utf8path);
 	idle_add(IDLE_STORED_PLAYLIST);
-	return result;
 }
 
-bool
-spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
+void
+spl_append_song(const char *utf8path, const DetachedSong &song)
 try {
-	const auto path_fs = spl_map_to_fs(utf8path, error);
-	if (path_fs.IsNull())
-		return false;
+	const auto path_fs = spl_map_to_fs(utf8path);
+	assert(!path_fs.IsNull());
 
 	AppendFileOutputStream fos(path_fs);
 
-	if (fos.Tell() / (MPD_PATH_MAX + 1) >= playlist_max_length) {
-		error.Set(playlist_domain, int(PlaylistResult::TOO_LARGE),
-			  "Stored playlist is too large");
-		return false;
-	}
+	if (fos.Tell() / (MPD_PATH_MAX + 1) >= playlist_max_length)
+		throw PlaylistError(PlaylistResult::TOO_LARGE,
+				    "Stored playlist is too large");
 
 	BufferedOutputStream bos(fos);
 
@@ -395,7 +370,6 @@ try {
 	fos.Commit();
 
 	idle_add(IDLE_STORED_PLAYLIST);
-	return true;
 } catch (const std::system_error &e) {
 	if (IsFileNotFound(e))
 		throw PlaylistError::NoSuchList();
@@ -407,13 +381,12 @@ spl_append_uri(const char *utf8file,
 	       const SongLoader &loader, const char *url,
 	       Error &error)
 {
-	DetachedSong *song = loader.LoadSong(url, error);
+	std::unique_ptr<DetachedSong> song(loader.LoadSong(url, error));
 	if (song == nullptr)
 		return false;
 
-	bool success = spl_append_song(utf8file, *song, error);
-	delete song;
-	return success;
+	spl_append_song(utf8file, *song);
+	return true;
 }
 
 static bool
@@ -444,13 +417,11 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs,
 bool
 spl_rename(const char *utf8from, const char *utf8to, Error &error)
 {
-	const auto from_path_fs = spl_map_to_fs(utf8from, error);
-	if (from_path_fs.IsNull())
-		return false;
+	const auto from_path_fs = spl_map_to_fs(utf8from);
+	assert(!from_path_fs.IsNull());
 
-	const auto to_path_fs = spl_map_to_fs(utf8to, error);
-	if (to_path_fs.IsNull())
-		return false;
+	const auto to_path_fs = spl_map_to_fs(utf8to);
+	assert(!to_path_fs.IsNull());
 
 	return spl_rename_internal(from_path_fs, to_path_fs, error);
 }

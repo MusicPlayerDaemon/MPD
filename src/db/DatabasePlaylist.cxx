@@ -30,11 +30,11 @@
 
 static bool
 AddSong(const Storage &storage, const char *playlist_path_utf8,
-	const LightSong &song, Error &error)
+	const LightSong &song)
 {
-	return spl_append_song(playlist_path_utf8,
-			       DatabaseDetachSong(storage, song),
-			       error);
+	spl_append_song(playlist_path_utf8,
+			DatabaseDetachSong(storage, song));
+	return true;
 }
 
 bool
@@ -47,6 +47,6 @@ search_add_to_playlist(const Database &db, const Storage &storage,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddSong, std::ref(storage),
-				 playlist_path_utf8, _1, _2);
+				 playlist_path_utf8, _1);
 	return db.Visit(selection, f, error);
 }

@@ -141,19 +141,16 @@ PrintSongDetails(Response &r, Partition &partition, const char *uri_utf8)
 
 #endif
 
-bool
+void
 spl_print(Response &r, Partition &partition,
-	  const char *name_utf8, bool detail,
-	  Error &error)
+	  const char *name_utf8, bool detail)
 {
 #ifndef ENABLE_DATABASE
 	(void)partition;
 	(void)detail;
 #endif
 
-	PlaylistFileContents contents = LoadPlaylistFile(name_utf8, error);
-	if (contents.empty() && error.IsDefined())
-		return false;
+	PlaylistFileContents contents = LoadPlaylistFile(name_utf8);
 
 	for (const auto &uri_utf8 : contents) {
 #ifdef ENABLE_DATABASE
@@ -162,6 +159,4 @@ spl_print(Response &r, Partition &partition,
 #endif
 			r.Format(SONG_FILE "%s\n", uri_utf8.c_str());
 	}
-
-	return true;
 }

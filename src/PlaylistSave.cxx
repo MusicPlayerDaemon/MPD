@@ -67,18 +67,15 @@ playlist_print_uri(BufferedOutputStream &os, const char *uri)
 		os.Format("%s\n", NarrowPath(path).c_str());
 }
 
-bool
-spl_save_queue(const char *name_utf8, const Queue &queue, Error &error)
+void
+spl_save_queue(const char *name_utf8, const Queue &queue)
 {
-	const auto path_fs = spl_map_to_fs(name_utf8, error);
-	if (path_fs.IsNull())
-		return false;
+	const auto path_fs = spl_map_to_fs(name_utf8);
+	assert(!path_fs.IsNull());
 
-	if (FileExists(path_fs)) {
-		error.Set(playlist_domain, int(PlaylistResult::LIST_EXISTS),
-			  "Playlist already exists");
-		return false;
-	}
+	if (FileExists(path_fs))
+		throw PlaylistError(PlaylistResult::LIST_EXISTS,
+				    "Playlist already exists");
 
 	FileOutputStream fos(path_fs);
 	BufferedOutputStream bos(fos);
@@ -90,12 +87,10 @@ spl_save_queue(const char *name_utf8, const Queue &queue, Error &error)
 	fos.Commit();
 
 	idle_add(IDLE_STORED_PLAYLIST);
-	return true;
 }
 
-bool
-spl_save_playlist(const char *name_utf8, const playlist &playlist,
-		  Error &error)
+void
+spl_save_playlist(const char *name_utf8, const playlist &playlist)
 {
-	return spl_save_queue(name_utf8, playlist.queue, error);
+	spl_save_queue(name_utf8, playlist.queue);
 }

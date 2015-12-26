@@ -24,7 +24,6 @@ struct Queue;
 struct playlist;
 class BufferedOutputStream;
 class DetachedSong;
-class Error;
 
 void
 playlist_print_song(BufferedOutputStream &os, const DetachedSong &song);
@@ -35,14 +34,13 @@ playlist_print_uri(BufferedOutputStream &os, const char *uri);
 /**
  * Saves a queue object into a stored playlist file.
  */
-bool
-spl_save_queue(const char *name_utf8, const Queue &queue, Error &error);
+void
+spl_save_queue(const char *name_utf8, const Queue &queue);
 
 /**
  * Saves a playlist object into a stored playlist file.
  */
-bool
-spl_save_playlist(const char *name_utf8, const playlist &playlist,
-		  Error &error);
+void
+spl_save_playlist(const char *name_utf8, const playlist &playlist);
 
 #endif
