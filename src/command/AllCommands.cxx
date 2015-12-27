@@ -418,6 +418,6 @@ try {
 	return ret;
 } catch (const std::exception &e) {
 	Response r(client, num);
-	PrintError(r, e);
+	PrintError(r, std::current_exception());
 	return CommandResult::ERROR;
 }

@@ -159,19 +159,26 @@ print_error(Response &r, const Error &error)
 }
 
 void
-PrintError(Response &r, const std::exception &e)
+PrintError(Response &r, std::exception_ptr ep)
 {
-	LogError(e);
+	try {
+		std::rethrow_exception(ep);
+	} catch (const std::exception &e) {
+		LogError(e);
+	} catch (...) {
+	}
 
 	try {
-		throw e;
+		std::rethrow_exception(ep);
 	} catch (const ProtocolError &pe) {
 		r.Error(pe.GetCode(), pe.what());
 	} catch (const PlaylistError &pe) {
 		r.Error(ToAck(pe.GetCode()), pe.what());
-	} catch (const std::system_error &) {
+	} catch (const std::system_error &e) {
 		r.Error(ACK_ERROR_SYSTEM, e.what());
-	} catch (...) {
+	} catch (const std::exception &e) {
 		r.Error(ACK_ERROR_UNKNOWN, e.what());
+	} catch (...) {
+		r.Error(ACK_ERROR_UNKNOWN, "Unknown error");
 	}
 }
