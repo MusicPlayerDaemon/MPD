@@ -51,7 +51,7 @@ public:
 	}
 
 	static PlaylistError NoSuchSong() {
-		return PlaylistError(PlaylistResult::BAD_RANGE,
+		return PlaylistError(PlaylistResult::NO_SUCH_SONG,
 				     "No such song");
 	}
 
