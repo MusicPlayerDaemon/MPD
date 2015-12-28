@@ -247,7 +247,7 @@ SavePlaylistFile(const PlaylistFileContents &contents, const char *utf8path,
 
 PlaylistFileContents
 LoadPlaylistFile(const char *utf8path, Error &error)
-{
+try {
 	PlaylistFileContents contents;
 
 	const auto path_fs = spl_map_to_fs(utf8path, error);
@@ -301,6 +301,10 @@ LoadPlaylistFile(const char *utf8path, Error &error)
 	}
 
 	return contents;
+} catch (const std::system_error &e) {
+	if (IsFileNotFound(e))
+		throw PlaylistError::NoSuchList();
+	throw;
 }
 
 bool
@@ -393,7 +397,7 @@ spl_remove_index(const char *utf8path, unsigned pos, Error &error)
 
 bool
 spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
-{
+try {
 	const auto path_fs = spl_map_to_fs(utf8path, error);
 	if (path_fs.IsNull())
 		return false;
@@ -415,6 +419,10 @@ spl_append_song(const char *utf8path, const DetachedSong &song, Error &error)
 
 	idle_add(IDLE_STORED_PLAYLIST);
 	return true;
+} catch (const std::system_error &e) {
+	if (IsFileNotFound(e))
+		throw PlaylistError::NoSuchList();
+	throw;
 }
 
 bool
