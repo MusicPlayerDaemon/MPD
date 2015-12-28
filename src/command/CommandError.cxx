@@ -158,6 +158,23 @@ print_error(Response &r, const Error &error)
 	return CommandResult::ERROR;
 }
 
+gcc_pure
+static enum ack
+ToAck(std::exception_ptr ep)
+{
+	try {
+		std::rethrow_exception(ep);
+	} catch (const ProtocolError &pe) {
+		return pe.GetCode();
+	} catch (const PlaylistError &pe) {
+		return ToAck(pe.GetCode());
+	} catch (const std::system_error &e) {
+		return ACK_ERROR_SYSTEM;
+	} catch (...) {
+		return ACK_ERROR_UNKNOWN;
+	}
+}
+
 void
 PrintError(Response &r, std::exception_ptr ep)
 {
@@ -170,14 +187,8 @@ PrintError(Response &r, std::exception_ptr ep)
 
 	try {
 		std::rethrow_exception(ep);
-	} catch (const ProtocolError &pe) {
-		r.Error(pe.GetCode(), pe.what());
-	} catch (const PlaylistError &pe) {
-		r.Error(ToAck(pe.GetCode()), pe.what());
-	} catch (const std::system_error &e) {
-		r.Error(ACK_ERROR_SYSTEM, e.what());
 	} catch (const std::exception &e) {
-		r.Error(ACK_ERROR_UNKNOWN, e.what());
+		r.Error(ToAck(ep), e.what());
 	} catch (...) {
 		r.Error(ACK_ERROR_UNKNOWN, "Unknown error");
 	}
