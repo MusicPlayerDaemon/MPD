@@ -23,9 +23,7 @@
 #include "CommandResult.hxx"
 #include "PlaylistError.hxx"
 
-namespace std {
-	class exception_ptr;
-}
+#include <exception>
 
 class Response;
 class Error;
