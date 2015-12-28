@@ -171,7 +171,12 @@ ToAck(std::exception_ptr ep)
 	} catch (const std::system_error &e) {
 		return ACK_ERROR_SYSTEM;
 	} catch (...) {
-		return ACK_ERROR_UNKNOWN;
+		try {
+			std::rethrow_if_nested(ep);
+			return ACK_ERROR_UNKNOWN;
+		} catch (...) {
+			return ToAck(std::current_exception());
+		}
 	}
 }
 
