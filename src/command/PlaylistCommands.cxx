@@ -110,26 +110,22 @@ handle_listplaylistinfo(Client &client, Request args, Response &r)
 }
 
 CommandResult
-handle_rm(gcc_unused Client &client, Request args, Response &r)
+handle_rm(gcc_unused Client &client, Request args, gcc_unused Response &r)
 {
 	const char *const name = args.front();
 
-	Error error;
-	return spl_delete(name, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	spl_delete(name);
+	return CommandResult::OK;
 }
 
 CommandResult
-handle_rename(gcc_unused Client &client, Request args, Response &r)
+handle_rename(gcc_unused Client &client, Request args, gcc_unused Response &r)
 {
 	const char *const old_name = args[0];
 	const char *const new_name = args[1];
 
-	Error error;
-	return spl_rename(old_name, new_name, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	spl_rename(old_name, new_name);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -156,14 +152,13 @@ handle_playlistmove(gcc_unused Client &client,
 }
 
 CommandResult
-handle_playlistclear(gcc_unused Client &client, Request args, Response &r)
+handle_playlistclear(gcc_unused Client &client,
+		     Request args, gcc_unused Response &r)
 {
 	const char *const name = args.front();
 
-	Error error;
-	return spl_clear(name, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	spl_clear(name);
+	return CommandResult::OK;
 }
 
 CommandResult
