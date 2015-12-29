@@ -198,11 +198,6 @@ CommandResult
 handle_listplaylists(gcc_unused Client &client, gcc_unused Request args,
 		     Response &r)
 {
-	Error error;
-	const auto list = ListPlaylistFiles(error);
-	if (list.empty() && error.IsDefined())
-		return print_error(r, error);
-
-	print_spl_list(r, list);
+	print_spl_list(r, ListPlaylistFiles());
 	return CommandResult::OK;
 }

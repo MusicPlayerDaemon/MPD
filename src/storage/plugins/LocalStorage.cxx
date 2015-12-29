@@ -41,10 +41,6 @@ public:
 	LocalDirectoryReader(AllocatedPath &&_base_fs)
 		:base_fs(std::move(_base_fs)), reader(base_fs) {}
 
-	bool HasFailed() {
-		return reader.HasFailed();
-	}
-
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
 	bool GetInfo(bool follow, StorageFileInfo &info,
@@ -160,15 +156,7 @@ LocalStorage::OpenDirectory(const char *uri_utf8, Error &error)
 	if (path_fs.IsNull())
 		return nullptr;
 
-	LocalDirectoryReader *reader =
-		new LocalDirectoryReader(std::move(path_fs));
-	if (reader->HasFailed()) {
-		error.FormatErrno("Failed to open '%s'", uri_utf8);
-		delete reader;
-		return nullptr;
-	}
-
-	return reader;
+	return new LocalDirectoryReader(std::move(path_fs));
 }
 
 gcc_pure

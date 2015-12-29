@@ -49,6 +49,7 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "Idle.hxx"
+#include "Log.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "DatabaseCommands.hxx"
@@ -161,8 +162,7 @@ handle_listfiles(Client &client, Request args, Response &r)
 
 	case LocatedUri::Type::PATH:
 		/* list local directory */
-		return handle_listfiles_local(r, located_uri.canonical_uri,
-					      located_uri.path);
+		return handle_listfiles_local(r, located_uri.path);
 	}
 
 	gcc_unreachable();
@@ -197,9 +197,11 @@ handle_lsinfo_relative(Client &client, Response &r, const char *uri)
 #endif
 
 	if (isRootDirectory(uri)) {
-		Error error;
-		const auto &list = ListPlaylistFiles(error);
-		print_spl_list(r, list);
+		try {
+			print_spl_list(r, ListPlaylistFiles());
+		} catch (const std::exception &e) {
+			LogError(e);
+		}
 	} else {
 #ifndef ENABLE_DATABASE
 		r.Error(ACK_ERROR_NO_EXIST, "No database");

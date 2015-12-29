@@ -218,7 +218,7 @@ void
 UpdateWalk::UpdateDirectoryChild(Directory &directory,
 				 const ExcludeList &exclude_list,
 				 const char *name, const StorageFileInfo &info)
-{
+try {
 	assert(strchr(name, '/') == nullptr);
 
 	if (info.IsRegular()) {
@@ -242,6 +242,8 @@ UpdateWalk::UpdateDirectoryChild(Directory &directory,
 		FormatDebug(update_domain,
 			    "%s is not a directory, archive or music", name);
 	}
+} catch (const std::exception &e) {
+	LogError(e);
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
@@ -455,7 +457,7 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root, const char *uri)
 
 inline void
 UpdateWalk::UpdateUri(Directory &root, const char *uri)
-{
+try {
 	Directory *parent = DirectoryMakeUriParentChecked(root, uri);
 	if (parent == nullptr)
 		return;
@@ -476,6 +478,8 @@ UpdateWalk::UpdateUri(Directory &root, const char *uri)
 	ExcludeList exclude_list;
 
 	UpdateDirectoryChild(*parent, exclude_list, name, info);
+} catch (const std::exception &e) {
+	LogError(e);
 }
 
 bool

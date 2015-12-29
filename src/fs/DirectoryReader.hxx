@@ -61,10 +61,10 @@ class DirectoryReader {
 public:
 	/**
 	 * Creates new directory reader for the specified #dir.
+	 *
+	 * Throws std::system_error on error.
 	 */
-	explicit DirectoryReader(Path dir)
-		:handle(FindFirstFile(MakeWildcardPath(dir.c_str()), &data)) {
-	}
+	explicit DirectoryReader(Path dir);
 
 	DirectoryReader(const DirectoryReader &other) = delete;
 	DirectoryReader &operator=(const DirectoryReader &other) = delete;
@@ -73,15 +73,7 @@ public:
 	 * Destroys this instance.
 	 */
 	~DirectoryReader() {
-		if (!HasFailed())
-			FindClose(handle);
-	}
-
-	/**
-	 * Checks if directory failed to open.
-	 */
-	bool HasFailed() const {
-		return handle == INVALID_HANDLE_VALUE;
+		FindClose(handle);
 	}
 
 	/**
@@ -118,10 +110,10 @@ class DirectoryReader {
 public:
 	/**
 	 * Creates new directory reader for the specified #dir.
+	 *
+	 * Throws std::system_error on error.
 	 */
-	explicit DirectoryReader(Path dir)
-		:dirp(opendir(dir.c_str())) {
-	}
+	explicit DirectoryReader(Path dir);
 
 	DirectoryReader(const DirectoryReader &other) = delete;
 	DirectoryReader &operator=(const DirectoryReader &other) = delete;
@@ -130,22 +122,13 @@ public:
 	 * Destroys this instance.
 	 */
 	~DirectoryReader() {
-		if (!HasFailed())
-			closedir(dirp);
-	}
-
-	/**
-	 * Checks if directory failed to open. 
-	 */
-	bool HasFailed() const {
-		return dirp == nullptr;
+		closedir(dirp);
 	}
 
 	/**
 	 * Checks if directory entry is available.
 	 */
 	bool HasEntry() const {
-		assert(!HasFailed());
 		return ent != nullptr;
 	}
 
@@ -153,7 +136,6 @@ public:
 	 * Reads next directory entry.
 	 */
 	bool ReadEntry() {
-		assert(!HasFailed());
 		ent = readdir(dirp);
 		return HasEntry();
 	}

@@ -70,15 +70,9 @@ skip_path(Path name_fs)
 #endif
 
 CommandResult
-handle_listfiles_local(Response &r,
-		       const char *path_utf8, Path path_fs)
+handle_listfiles_local(Response &r, Path path_fs)
 {
 	DirectoryReader reader(path_fs);
-	if (reader.HasFailed()) {
-		Error error;
-		error.FormatErrno("Failed to open '%s'", path_utf8);
-		return print_error(r, error);
-	}
 
 	while (reader.ReadEntry()) {
 		const Path name_fs = reader.GetEntry();

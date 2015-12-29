@@ -17,20 +17,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FILE_COMMANDS_HXX
-#define MPD_FILE_COMMANDS_HXX
+#include "config.h"
+#include "DirectoryReader.hxx"
+#include "system/Error.hxx"
 
-#include "CommandResult.hxx"
+#ifdef WIN32
 
-class Client;
-class Request;
-class Response;
-class Path;
+DirectoryReader::DirectoryReader(Path dir)
+	:handle(FindFirstFile(MakeWildcardPath(dir.c_str()), &data))
+{
+	if (handle == INVALID_HANDLE_VALUE)
+		throw FormatLastError("Failed to open %s", dir.c_str());
+}
 
-CommandResult
-handle_listfiles_local(Response &response, Path path_fs);
+#else
 
-CommandResult
-handle_read_comments(Client &client, Request request, Response &response);
+DirectoryReader::DirectoryReader(Path dir)
+	:dirp(opendir(dir.c_str()))
+{
+	if (dirp == nullptr)
+		throw FormatErrno("Failed to open %s", dir.c_str());
+}
 
 #endif

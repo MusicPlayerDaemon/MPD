@@ -174,7 +174,7 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 }
 
 PlaylistVector
-ListPlaylistFiles(Error &error)
+ListPlaylistFiles()
 {
 	PlaylistVector list;
 
@@ -182,10 +182,6 @@ ListPlaylistFiles(Error &error)
 	assert(!parent_path_fs.IsNull());
 
 	DirectoryReader reader(parent_path_fs);
-	if (reader.HasFailed()) {
-		error.SetErrno();
-		return list;
-	}
 
 	PlaylistInfo info;
 	while (reader.ReadEntry()) {

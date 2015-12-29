@@ -600,7 +600,7 @@ libfs_a_SOURCES = \
 	src/fs/Glob.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
-	src/fs/DirectoryReader.hxx
+	src/fs/DirectoryReader.cxx src/fs/DirectoryReader.hxx
 libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
 
 if ENABLE_ZLIB

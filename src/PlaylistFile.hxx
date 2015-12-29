@@ -50,11 +50,10 @@ AllocatedPath
 spl_map_to_fs(const char *name_utf8);
 
 /**
- * Returns a list of stored_playlist_info struct pointers.  Returns
- * nullptr if an error occurred.
+ * Returns a list of stored_playlist_info struct pointers.
  */
 PlaylistVector
-ListPlaylistFiles(Error &error);
+ListPlaylistFiles();
 
 PlaylistFileContents
 LoadPlaylistFile(const char *utf8path);
