@@ -34,7 +34,7 @@
 class DirectoryReader {
 	const HANDLE handle;
 	WIN32_FIND_DATA data;
-	bool first;
+	bool first = true;
 
 	class MakeWildcardPath {
 		PathTraitsFS::pointer path;
@@ -63,8 +63,8 @@ public:
 	 * Creates new directory reader for the specified #dir.
 	 */
 	explicit DirectoryReader(Path dir)
-		:handle(FindFirstFile(MakeWildcardPath(dir.c_str()), &data)),
-		 first(true) {}
+		:handle(FindFirstFile(MakeWildcardPath(dir.c_str()), &data)) {
+	}
 
 	DirectoryReader(const DirectoryReader &other) = delete;
 	DirectoryReader &operator=(const DirectoryReader &other) = delete;
@@ -113,14 +113,14 @@ public:
  */
 class DirectoryReader {
 	DIR *const dirp;
-	dirent *ent;
+	dirent *ent = nullptr;
+
 public:
 	/**
 	 * Creates new directory reader for the specified #dir.
 	 */
 	explicit DirectoryReader(Path dir)
-		: dirp(opendir(dir.c_str())),
-		  ent(nullptr) {
+		:dirp(opendir(dir.c_str())) {
 	}
 
 	DirectoryReader(const DirectoryReader &other) = delete;
