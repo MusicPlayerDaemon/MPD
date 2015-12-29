@@ -170,9 +170,19 @@ ToAck(std::exception_ptr ep)
 		return ToAck(pe.GetCode());
 	} catch (const std::system_error &e) {
 		return ACK_ERROR_SYSTEM;
+#if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204
+	} catch (const std::exception &e) {
+#else
 	} catch (...) {
+#endif
 		try {
+#if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204
+			/* workaround for g++ 4.x: no overload for
+			   rethrow_exception(exception_ptr) */
+			std::rethrow_if_nested(e);
+#else
 			std::rethrow_if_nested(ep);
+#endif
 			return ACK_ERROR_UNKNOWN;
 		} catch (...) {
 			return ToAck(std::current_exception());
