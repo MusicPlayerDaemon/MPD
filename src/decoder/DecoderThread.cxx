@@ -144,15 +144,15 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	/* rewind the stream, so each plugin gets a fresh start */
 	input_stream.Rewind(IgnoreError());
 
-	decoder.dc.Unlock();
+	{
+		const ScopeUnlock unlock(decoder.dc.mutex);
 
-	FormatThreadName("decoder:%s", plugin.name);
+		FormatThreadName("decoder:%s", plugin.name);
 
-	plugin.StreamDecode(decoder, input_stream);
+		plugin.StreamDecode(decoder, input_stream);
 
-	SetThreadName("decoder");
-
-	decoder.dc.Lock();
+		SetThreadName("decoder");
+	}
 
 	assert(decoder.dc.state == DecoderState::START ||
 	       decoder.dc.state == DecoderState::DECODE);
@@ -181,15 +181,15 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	if (decoder.dc.command == DecoderCommand::STOP)
 		return true;
 
-	decoder.dc.Unlock();
+	{
+		const ScopeUnlock unlock(decoder.dc.mutex);
 
-	FormatThreadName("decoder:%s", plugin.name);
+		FormatThreadName("decoder:%s", plugin.name);
 
-	plugin.FileDecode(decoder, path);
+		plugin.FileDecode(decoder, path);
 
-	SetThreadName("decoder");
-
-	decoder.dc.Lock();
+		SetThreadName("decoder");
+	}
 
 	assert(decoder.dc.state == DecoderState::START ||
 	       decoder.dc.state == DecoderState::DECODE);
@@ -389,18 +389,19 @@ decoder_run_song(DecoderControl &dc,
 
 	decoder_command_finished_locked(dc);
 
-	dc.Unlock();
+	int ret;
+	{
+		const ScopeUnlock unlock(dc.mutex);
 
-	const int ret = !path_fs.IsNull()
-		? decoder_run_file(decoder, uri, path_fs)
-		: decoder_run_stream(decoder, uri);
+		ret = !path_fs.IsNull()
+			? decoder_run_file(decoder, uri, path_fs)
+			: decoder_run_stream(decoder, uri);
 
-	/* flush the last chunk */
+		/* flush the last chunk */
 
-	if (decoder.chunk != nullptr)
-		decoder.FlushChunk();
-
-	dc.Lock();
+		if (decoder.chunk != nullptr)
+			decoder.FlushChunk();
+	}
 
 	if (decoder.error.IsDefined()) {
 		/* copy the Error from sruct Decoder to
