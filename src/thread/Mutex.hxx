@@ -58,4 +58,24 @@ public:
 	ScopeLock &operator=(const ScopeLock &other) = delete;
 };
 
+/**
+ * Within the scope of an instance, this class will keep a #Mutex
+ * unlocked.
+ */
+class ScopeUnlock {
+	Mutex &mutex;
+
+public:
+	explicit ScopeUnlock(Mutex &_mutex):mutex(_mutex) {
+		mutex.unlock();
+	};
+
+	~ScopeUnlock() {
+		mutex.lock();
+	}
+
+	ScopeUnlock(const ScopeUnlock &other) = delete;
+	ScopeUnlock &operator=(const ScopeUnlock &other) = delete;
+};
+
 #endif
