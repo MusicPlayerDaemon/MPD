@@ -385,11 +385,11 @@ decoder_run_song(DecoderControl &dc,
 
 	decoder_command_finished_locked(dc);
 
-	int ret;
+	bool success;
 	{
 		const ScopeUnlock unlock(dc.mutex);
 
-		ret = !path_fs.IsNull()
+		success = !path_fs.IsNull()
 			? decoder_run_file(decoder, uri, path_fs)
 			: decoder_run_stream(decoder, uri);
 
@@ -404,7 +404,7 @@ decoder_run_song(DecoderControl &dc,
 		   DecoderControl */
 		dc.state = DecoderState::ERROR;
 		dc.error = std::move(decoder.error);
-	} else if (ret)
+	} else if (success)
 		dc.state = DecoderState::STOP;
 	else {
 		dc.state = DecoderState::ERROR;
