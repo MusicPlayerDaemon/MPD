@@ -80,10 +80,9 @@ decoder_initialized(Decoder &decoder,
 			decoder.error = std::move(error);
 	}
 
-	dc.Lock();
+	const ScopeLock protect(dc.mutex);
 	dc.state = DecoderState::DECODE;
 	dc.client_cond.signal();
-	dc.Unlock();
 }
 
 /**
@@ -154,6 +153,14 @@ decoder_get_virtual_command(Decoder &decoder)
 	return dc.command;
 }
 
+gcc_pure
+static DecoderCommand
+decoder_lock_get_virtual_command(Decoder &decoder)
+{
+	const ScopeLock protect(decoder.dc.mutex);
+	return decoder_get_virtual_command(decoder);
+}
+
 DecoderCommand
 decoder_get_command(Decoder &decoder)
 {
@@ -165,7 +172,7 @@ decoder_command_finished(Decoder &decoder)
 {
 	DecoderControl &dc = decoder.dc;
 
-	dc.Lock();
+	const ScopeLock protect(dc.mutex);
 
 	assert(dc.command != DecoderCommand::NONE ||
 	       decoder.initial_seek_running);
@@ -181,7 +188,6 @@ decoder_command_finished(Decoder &decoder)
 
 		decoder.initial_seek_running = false;
 		decoder.timestamp = dc.start_time.ToDoubleS();
-		dc.Unlock();
 		return;
 	}
 
@@ -202,7 +208,6 @@ decoder_command_finished(Decoder &decoder)
 
 	dc.command = DecoderCommand::NONE;
 	dc.client_cond.signal();
-	dc.Unlock();
 }
 
 SongTime
@@ -451,15 +456,12 @@ decoder_data(Decoder &decoder,
 	     uint16_t kbit_rate)
 {
 	DecoderControl &dc = decoder.dc;
-	DecoderCommand cmd;
 
 	assert(dc.state == DecoderState::DECODE);
 	assert(dc.pipe != nullptr);
 	assert(length % dc.in_audio_format.GetFrameSize() == 0);
 
-	dc.Lock();
-	cmd = decoder_get_virtual_command(decoder);
-	dc.Unlock();
+	DecoderCommand cmd = decoder_lock_get_virtual_command(decoder);
 
 	if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK ||
 	    length == 0)
