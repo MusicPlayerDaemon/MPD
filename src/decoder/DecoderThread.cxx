@@ -55,12 +55,13 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
  * @return an InputStream on success or if #DecoderCommand::STOP is
  * received, nullptr on error
  */
-static InputStream *
+static std::unique_ptr<InputStream>
 decoder_input_stream_open(DecoderControl &dc, const char *uri)
 {
 	Error error;
 
-	InputStream *is = InputStream::Open(uri, dc.mutex, dc.cond, error);
+	std::unique_ptr<InputStream> is(InputStream::Open(uri, dc.mutex,
+							  dc.cond, error));
 	if (is == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
@@ -89,12 +90,13 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 	return is;
 }
 
-static InputStream *
+static std::unique_ptr<InputStream>
 decoder_input_stream_open(DecoderControl &dc, Path path)
 {
 	Error error;
 
-	InputStream *is = OpenLocalInputStream(path, dc.mutex, dc.cond, error);
+	std::unique_ptr<InputStream> is(OpenLocalInputStream(path, dc.mutex,
+							     dc.cond, error));
 	if (is == nullptr) {
 		LogError(error);
 		return nullptr;
@@ -261,7 +263,8 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 {
 	DecoderControl &dc = decoder.dc;
 
-	std::unique_ptr<InputStream> input_stream(decoder_input_stream_open(dc, uri));
+	std::unique_ptr<InputStream> input_stream =
+		decoder_input_stream_open(dc, uri);
 	if (input_stream == nullptr)
 		return false;
 
@@ -307,7 +310,8 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 		const ScopeLock protect(dc.mutex);
 		return decoder_file_decode(plugin, decoder, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
-		std::unique_ptr<InputStream> input_stream(decoder_input_stream_open(dc, path_fs));
+		std::unique_ptr<InputStream> input_stream =
+			decoder_input_stream_open(dc, path_fs);
 		if (input_stream == nullptr)
 			return false;
 
