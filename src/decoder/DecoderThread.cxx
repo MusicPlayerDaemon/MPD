@@ -120,6 +120,11 @@ decoder_input_stream_open(DecoderControl &dc, Path path)
 	return is;
 }
 
+/**
+ * Decode a stream with the given decoder plugin.
+ *
+ * Caller holds DecoderControl::mutex.
+ */
 static bool
 decoder_stream_decode(const DecoderPlugin &plugin,
 		      Decoder &decoder,
@@ -155,6 +160,11 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	return decoder.dc.state != DecoderState::START;
 }
 
+/**
+ * Decode a file with the given decoder plugin.
+ *
+ * Caller holds DecoderControl::mutex.
+ */
 static bool
 decoder_file_decode(const DecoderPlugin &plugin,
 		    Decoder &decoder, Path path)
@@ -258,6 +268,8 @@ decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 
 /**
  * Try decoding a stream.
+ *
+ * Caller holds DecoderControl::mutex.
  */
 static bool
 decoder_run_stream(Decoder &decoder, const char *uri)
@@ -302,6 +314,12 @@ decoder_load_replay_gain(Decoder &decoder, Path path_fs)
 		decoder_replay_gain(decoder, &info);
 }
 
+/**
+ * Decode a file with the given decoder plugin.
+ *
+ * DecoderControl::mutex must not be locked by the caller.  It will be
+ * left locked upon returning true.
+ */
 static bool
 TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 	       const DecoderPlugin &plugin)
@@ -344,6 +362,8 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 
 /**
  * Try decoding a file.
+ *
+ * Caller holds DecoderControl::mutex.
  */
 static bool
 decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
@@ -369,6 +389,11 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	return false;
 }
 
+/**
+ * Decode a song addressed by a #DetachedSong.
+ *
+ * Caller holds DecoderControl::mutex.
+ */
 static void
 decoder_run_song(DecoderControl &dc,
 		 const DetachedSong &song, const char *uri, Path path_fs)
@@ -419,6 +444,10 @@ decoder_run_song(DecoderControl &dc,
 	dc.client_cond.signal();
 }
 
+/**
+ *
+ * Caller holds DecoderControl::mutex.
+ */
 static void
 decoder_run(DecoderControl &dc)
 {
