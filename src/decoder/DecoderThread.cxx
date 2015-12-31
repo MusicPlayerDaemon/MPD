@@ -40,6 +40,7 @@
 #include "Log.hxx"
 
 #include <functional>
+#include <memory>
 
 static constexpr Domain decoder_thread_domain("decoder_thread");
 
@@ -276,7 +277,7 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 {
 	DecoderControl &dc = decoder.dc;
 
-	InputStream *input_stream = decoder_input_stream_open(dc, uri);
+	std::unique_ptr<InputStream> input_stream(decoder_input_stream_open(dc, uri));
 	if (input_stream == nullptr)
 		return false;
 
@@ -292,7 +293,6 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 		 decoder_run_stream_fallback(decoder, *input_stream));
 
 	dc.Unlock();
-	delete input_stream;
 
 	return success;
 }
