@@ -307,21 +307,12 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 		const ScopeLock protect(dc.mutex);
 		return decoder_file_decode(plugin, decoder, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
-		InputStream *input_stream =
-			decoder_input_stream_open(dc, path_fs);
+		std::unique_ptr<InputStream> input_stream(decoder_input_stream_open(dc, path_fs));
 		if (input_stream == nullptr)
 			return false;
 
-		bool success;
-		{
-			const ScopeLock protect(dc.mutex);
-			success = decoder_stream_decode(plugin, decoder,
-							*input_stream);
-		}
-
-		delete input_stream;
-
-		return success;
+		const ScopeLock protect(dc.mutex);
+		return decoder_stream_decode(plugin, decoder, *input_stream);
 	} else
 		return false;
 }
