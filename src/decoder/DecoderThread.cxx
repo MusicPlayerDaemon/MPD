@@ -446,6 +446,10 @@ decoder_task(void *arg)
 			dc.replay_gain_db = 0;
 
 			decoder_run(dc);
+
+			if (dc.state == DecoderState::ERROR)
+				LogError(dc.error);
+
 			break;
 
 		case DecoderCommand::SEEK:

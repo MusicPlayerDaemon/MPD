@@ -14,6 +14,7 @@ ver 0.20 (not yet released)
   - id3: remove the "id3v1_encoding" setting; by definition, all ID3v1 tags
     are ISO-Latin-1
 * decoder
+  - improved error logging
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
   - gme: add option "accuracy"
