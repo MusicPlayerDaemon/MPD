@@ -90,7 +90,7 @@ DecoderControl::Start(DetachedSong *_song,
 void
 DecoderControl::Stop()
 {
-	Lock();
+	const ScopeLock protect(mutex);
 
 	if (command != DecoderCommand::NONE)
 		/* Attempt to cancel the current command.  If it's too
@@ -101,8 +101,6 @@ DecoderControl::Stop()
 
 	if (state != DecoderState::STOP && state != DecoderState::ERROR)
 		SynchronousCommandLocked(DecoderCommand::STOP);
-
-	Unlock();
 }
 
 bool
