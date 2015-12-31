@@ -312,8 +312,7 @@ decoder_load_replay_gain(Decoder &decoder, Path path_fs)
 /**
  * Decode a file with the given decoder plugin.
  *
- * DecoderControl::mutex must not be locked by the caller.  It will be
- * left locked upon returning true.
+ * DecoderControl::mutex is not locked by caller.
  */
 static bool
 TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
@@ -327,10 +326,11 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 	if (plugin.file_decode != nullptr) {
 		dc.Lock();
 
-		if (decoder_file_decode(plugin, decoder, path_fs))
-			return true;
+		bool success = decoder_file_decode(plugin, decoder, path_fs);
 
 		dc.Unlock();
+
+		return success;
 	} else if (plugin.stream_decode != nullptr) {
 		InputStream *input_stream =
 			decoder_input_stream_open(dc, path_fs);
@@ -346,13 +346,9 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 
 		delete input_stream;
 
-		if (success) {
-			dc.Lock();
-			return true;
-		}
-	}
-
-	return false;
+		return success;
+	} else
+		return false;
 }
 
 /**
@@ -367,21 +363,15 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	DecoderControl &dc = decoder.dc;
-
 	decoder_load_replay_gain(decoder, path_fs);
 
-	if (decoder_plugins_try([&decoder, path_fs,
-				 suffix](const DecoderPlugin &plugin){
-				return TryDecoderFile(decoder,
-						      path_fs, suffix,
-						      plugin);
-				})) {
-		dc.Unlock();
-		return true;
-	}
-
-	return false;
+	return decoder_plugins_try([&decoder, path_fs,
+				    suffix](const DecoderPlugin &plugin){
+					   return TryDecoderFile(decoder,
+								 path_fs,
+								 suffix,
+								 plugin);
+				   });
 }
 
 /**
