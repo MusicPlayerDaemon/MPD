@@ -351,6 +351,20 @@ private:
 
 public:
 	/**
+	 * Marks the current command as "finished" and notifies the
+	 * client (= player thread).
+	 *
+	 * To be called from the decoder thread.  Caller must lock the
+	 * mutex.
+	 */
+	void CommandFinishedLocked() {
+		assert(command != DecoderCommand::NONE);
+
+		command = DecoderCommand::NONE;
+		client_cond.signal();
+	}
+
+	/**
 	 * Start the decoder.
 	 *
 	 * @param song the song to be decoded; the given instance will be

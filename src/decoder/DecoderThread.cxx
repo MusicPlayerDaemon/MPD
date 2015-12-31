@@ -45,22 +45,6 @@
 static constexpr Domain decoder_thread_domain("decoder_thread");
 
 /**
- * Marks the current decoder command as "finished" and notifies the
- * player thread.
- *
- * @param dc the #DecoderControl object; must be locked
- */
-static void
-decoder_command_finished_locked(DecoderControl &dc)
-{
-	assert(dc.command != DecoderCommand::NONE);
-
-	dc.command = DecoderCommand::NONE;
-
-	dc.client_cond.signal();
-}
-
-/**
  * Opens the input stream with InputStream::Open(), and waits until
  * the stream gets ready.  If a decoder STOP command is received
  * during that, it cancels the operation (but does not close the
@@ -382,8 +366,7 @@ decoder_run_song(DecoderControl &dc,
 			song.IsFile() ? new Tag(song.GetTag()) : nullptr);
 
 	dc.state = DecoderState::START;
-
-	decoder_command_finished_locked(dc);
+	dc.CommandFinishedLocked();
 
 	bool success;
 	{
@@ -441,7 +424,7 @@ decoder_run(DecoderControl &dc)
 		path_buffer = AllocatedPath::FromUTF8(uri_utf8, dc.error);
 		if (path_buffer.IsNull()) {
 			dc.state = DecoderState::ERROR;
-			decoder_command_finished_locked(dc);
+			dc.CommandFinishedLocked();
 			return;
 		}
 
@@ -487,7 +470,7 @@ decoder_task(void *arg)
 			break;
 
 		case DecoderCommand::STOP:
-			decoder_command_finished_locked(dc);
+			dc.CommandFinishedLocked();
 			break;
 
 		case DecoderCommand::NONE:
