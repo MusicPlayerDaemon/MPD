@@ -269,20 +269,16 @@ decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 /**
  * Try decoding a stream.
  *
- * Caller holds DecoderControl::mutex.
+ * DecoderControl::mutex is not locked by caller.
  */
 static bool
 decoder_run_stream(Decoder &decoder, const char *uri)
 {
 	DecoderControl &dc = decoder.dc;
 
-	dc.Unlock();
-
 	InputStream *input_stream = decoder_input_stream_open(dc, uri);
-	if (input_stream == nullptr) {
-		dc.Lock();
+	if (input_stream == nullptr)
 		return false;
-	}
 
 	dc.Lock();
 
@@ -297,7 +293,6 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 
 	dc.Unlock();
 	delete input_stream;
-	dc.Lock();
 
 	return success;
 }
@@ -363,7 +358,7 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 /**
  * Try decoding a file.
  *
- * Caller holds DecoderControl::mutex.
+ * DecoderControl::mutex is not locked by caller.
  */
 static bool
 decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
@@ -373,7 +368,6 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 		return false;
 
 	DecoderControl &dc = decoder.dc;
-	dc.Unlock();
 
 	decoder_load_replay_gain(decoder, path_fs);
 
@@ -382,10 +376,11 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 				return TryDecoderFile(decoder,
 						      path_fs, suffix,
 						      plugin);
-			}))
+				})) {
+		dc.Unlock();
 		return true;
+	}
 
-	dc.Lock();
 	return false;
 }
 
@@ -409,11 +404,11 @@ decoder_run_song(DecoderControl &dc,
 
 	decoder_command_finished_locked(dc);
 
+	dc.Unlock();
+
 	const int ret = !path_fs.IsNull()
 		? decoder_run_file(decoder, uri, path_fs)
 		: decoder_run_stream(decoder, uri);
-
-	dc.Unlock();
 
 	/* flush the last chunk */
 
