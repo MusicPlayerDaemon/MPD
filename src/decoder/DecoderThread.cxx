@@ -86,7 +86,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
 
-	dc.Lock();
+	const ScopeLock protect(dc.mutex);
 
 	is->Update();
 	while (!is->IsReady() &&
@@ -97,13 +97,9 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 	}
 
 	if (!is->Check(error)) {
-		dc.Unlock();
-
 		LogError(error);
 		return nullptr;
 	}
-
-	dc.Unlock();
 
 	return is;
 }
@@ -457,7 +453,7 @@ decoder_task(void *arg)
 
 	SetThreadName("decoder");
 
-	dc.Lock();
+	const ScopeLock protect(dc.mutex);
 
 	do {
 		assert(dc.state == DecoderState::STOP ||
@@ -493,8 +489,6 @@ decoder_task(void *arg)
 			break;
 		}
 	} while (dc.command != DecoderCommand::NONE || !dc.quit);
-
-	dc.Unlock();
 }
 
 void
