@@ -15,6 +15,7 @@ ver 0.20 (not yet released)
     are ISO-Latin-1
 * decoder
   - improved error logging
+  - report I/O errors to clients
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
   - gme: add option "accuracy"

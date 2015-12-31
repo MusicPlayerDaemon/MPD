@@ -56,18 +56,12 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
  * received, nullptr on error
  */
 static std::unique_ptr<InputStream>
-decoder_input_stream_open(DecoderControl &dc, const char *uri)
+decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
 {
-	Error error;
-
 	std::unique_ptr<InputStream> is(InputStream::Open(uri, dc.mutex,
 							  dc.cond, error));
-	if (is == nullptr) {
-		if (error.IsDefined())
-			LogError(error);
-
+	if (is == nullptr)
 		return nullptr;
-	}
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
@@ -82,25 +76,19 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 		is->Update();
 	}
 
-	if (!is->Check(error)) {
-		LogError(error);
+	if (!is->Check(error))
 		return nullptr;
-	}
 
 	return is;
 }
 
 static std::unique_ptr<InputStream>
-decoder_input_stream_open(DecoderControl &dc, Path path)
+decoder_input_stream_open(DecoderControl &dc, Path path, Error &error)
 {
-	Error error;
-
 	std::unique_ptr<InputStream> is(OpenLocalInputStream(path, dc.mutex,
 							     dc.cond, error));
-	if (is == nullptr) {
-		LogError(error);
+	if (is == nullptr)
 		return nullptr;
-	}
 
 	assert(is->IsReady());
 
@@ -264,7 +252,7 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 	DecoderControl &dc = decoder.dc;
 
 	std::unique_ptr<InputStream> input_stream =
-		decoder_input_stream_open(dc, uri);
+		decoder_input_stream_open(dc, uri, decoder.error);
 	if (input_stream == nullptr)
 		return false;
 
@@ -311,9 +299,11 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 		return decoder_file_decode(plugin, decoder, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
 		std::unique_ptr<InputStream> input_stream =
-			decoder_input_stream_open(dc, path_fs);
+			decoder_input_stream_open(dc, path_fs, decoder.error);
 		if (input_stream == nullptr)
-			return false;
+			/* returning true to stop the search for
+			   another decoder plugin */
+			return true;
 
 		const ScopeLock protect(dc.mutex);
 		return decoder_stream_decode(plugin, decoder, *input_stream);
