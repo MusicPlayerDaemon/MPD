@@ -324,25 +324,20 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 	DecoderControl &dc = decoder.dc;
 
 	if (plugin.file_decode != nullptr) {
-		dc.Lock();
-
-		bool success = decoder_file_decode(plugin, decoder, path_fs);
-
-		dc.Unlock();
-
-		return success;
+		const ScopeLock protect(dc.mutex);
+		return decoder_file_decode(plugin, decoder, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
 		InputStream *input_stream =
 			decoder_input_stream_open(dc, path_fs);
 		if (input_stream == nullptr)
 			return false;
 
-		dc.Lock();
-
-		bool success = decoder_stream_decode(plugin, decoder,
-						     *input_stream);
-
-		dc.Unlock();
+		bool success;
+		{
+			const ScopeLock protect(dc.mutex);
+			success = decoder_stream_decode(plugin, decoder,
+							*input_stream);
+		}
 
 		delete input_stream;
 
