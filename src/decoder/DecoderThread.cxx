@@ -281,20 +281,16 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 	if (input_stream == nullptr)
 		return false;
 
-	dc.Lock();
+	const ScopeLock protect(dc.mutex);
 
 	bool tried = false;
-	const bool success = dc.command == DecoderCommand::STOP ||
+	return dc.command == DecoderCommand::STOP ||
 		decoder_run_stream_locked(decoder, *input_stream, uri,
 					  tried) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
 		(!tried &&
 		 decoder_run_stream_fallback(decoder, *input_stream));
-
-	dc.Unlock();
-
-	return success;
 }
 
 /**
