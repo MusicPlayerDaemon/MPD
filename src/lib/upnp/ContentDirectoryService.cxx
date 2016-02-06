@@ -26,7 +26,7 @@
 #include "Util.hxx"
 #include "Action.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 						 const UPnPService &service)
@@ -50,43 +50,34 @@ ContentDirectoryService::~ContentDirectoryService()
 	/* this destructor exists here just so it won't get inlined */
 }
 
-bool
-ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
-					       std::list<std::string> &result,
-					       Error &error) const
+std::list<std::string>
+ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 {
-	assert(result.empty());
-
 	UniqueIxmlDocument request(UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
 						  0,
 						  nullptr, nullptr));
-	if (!request) {
-		error.Set(upnp_domain, "UpnpMakeAction() failed");
-		return false;
-	}
+	if (!request)
+		throw std::runtime_error("UpnpMakeAction() failed");
 
 	IXML_Document *_response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
 				   0 /*devUDN*/, request.get(), &_response);
-	if (code != UPNP_E_SUCCESS) {
-		error.Format(upnp_domain, code,
-			     "UpnpSendAction() failed: %s",
-			     UpnpGetErrorMessage(code));
-		return false;
-	}
+	if (code != UPNP_E_SUCCESS)
+		throw FormatRuntimeError("UpnpSendAction() failed: %s",
+					 UpnpGetErrorMessage(code));
 
 	UniqueIxmlDocument response(_response);
+
+	std::list<std::string> result;
 
 	const char *s = ixmlwrap::getFirstElementValue(response.get(),
 						       "SearchCaps");
 	if (s == nullptr || *s == 0)
-		return true;
+		return result;
 
-	if (!csvToStrings(s, result)) {
-		error.Set(upnp_domain, "Bad response");
-		return false;
-	}
+	if (!csvToStrings(s, result))
+		throw std::runtime_error("Bad response");
 
-	return true;
+	return result;
 }

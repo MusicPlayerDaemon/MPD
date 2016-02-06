@@ -115,12 +115,12 @@ public:
 
 	/** Retrieve search capabilities
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param[out] result an empty vector: no search, or a single '*' element:
 	 *     any tag can be used in a search, or a list of usable tag names.
 	 */
-	bool getSearchCapabilities(UpnpClient_Handle handle,
-				   std::list<std::string> &result,
-				   Error &error) const;
+	std::list<std::string> getSearchCapabilities(UpnpClient_Handle handle) const;
 
 	gcc_pure
 	std::string GetURI() const {

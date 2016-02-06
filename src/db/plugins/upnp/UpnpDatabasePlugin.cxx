@@ -179,16 +179,17 @@ UpnpDatabase::Configure(const ConfigBlock &, Error &)
 }
 
 bool
-UpnpDatabase::Open(Error &error)
+UpnpDatabase::Open(gcc_unused Error &error)
 {
-	if (!UpnpClientGlobalInit(handle, error))
-		return false;
+	UpnpClientGlobalInit(handle);
 
 	discovery = new UPnPDeviceDirectory(handle);
-	if (!discovery->Start(error)) {
+	try {
+		discovery->Start();
+	} catch (...) {
 		delete discovery;
 		UpnpClientGlobalFinish();
-		return false;
+		throw;
 	}
 
 	return true;
@@ -216,15 +217,11 @@ const LightSong *
 UpnpDatabase::GetSong(const char *uri, Error &error) const
 {
 	auto vpath = stringToTokens(uri, "/", true);
-	if (vpath.size() < 2) {
-		error.Format(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
-			     "No such song: %s", uri);
-		return nullptr;
-	}
+	if (vpath.size() < 2)
+		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+				    "No such song");
 
-	ContentDirectoryService server;
-	if (!discovery->GetServer(vpath.front().c_str(), server, error))
-		return nullptr;
+	auto server = discovery->GetServer(vpath.front().c_str());
 
 	vpath.pop_front();
 
@@ -276,10 +273,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 	if (selection.filter == nullptr)
 		return true;
 
-	std::list<std::string> searchcaps;
-	if (!server.getSearchCapabilities(handle, searchcaps, error))
-		return false;
-
+	const auto searchcaps = server.getSearchCapabilities(handle);
 	if (searchcaps.empty())
 		return true;
 
@@ -434,13 +428,10 @@ UpnpDatabase::ReadNode(const ContentDirectoryService &server,
 	if (!server.getMetadata(handle, objid, dirbuf, error))
 		return false;
 
-	if (dirbuf.objects.size() == 1) {
-		dirent = std::move(dirbuf.objects.front());
-	} else {
-		error.Format(upnp_domain, "Bad resource");
-		return false;
-	}
+	if (dirbuf.objects.size() != 1)
+		throw std::runtime_error("Bad resource");
 
+	dirent = std::move(dirbuf.objects.front());
 	return true;
 }
 
@@ -495,24 +486,18 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 
 		// Look for the name in the sub-container list
 		UPnPDirObject *child = dirbuf.FindObject(i->c_str());
-		if (child == nullptr) {
-			error.Format(db_domain,
-				     (int)DatabaseErrorCode::NOT_FOUND,
-				     "No such object");
-			return false;
-		}
+		if (child == nullptr)
+			throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+					    "No such object");
 
 		if (i == last) {
 			odirent = std::move(*child);
 			return true;
 		}
 
-		if (child->type != UPnPDirObject::Type::CONTAINER) {
-			error.Format(db_domain,
-				     (int)DatabaseErrorCode::NOT_FOUND,
-				     "Not a container");
-			return false;
-		}
+		if (child->type != UPnPDirObject::Type::CONTAINER)
+			throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+					    "Not a container");
 
 		objid = std::move(child->id);
 	}
@@ -607,10 +592,8 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 			break;
 
 		default:
-			error.Format(db_domain,
-				     (int)DatabaseErrorCode::NOT_FOUND,
-				     "Not found");
-			return false;
+			throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+					    "Not found");
 		}
 
 		if (visit_song) {
@@ -620,12 +603,9 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 				return false;
 
 			if (dirent.type != UPnPDirObject::Type::ITEM ||
-			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC) {
-				error.Format(db_domain,
-					     (int)DatabaseErrorCode::NOT_FOUND,
-					     "Not found");
-				return false;
-			}
+			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
+				throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+						    "Not found");
 
 			std::string path = songPath(server.getFriendlyName(),
 						    dirent.id);
@@ -693,11 +673,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 {
 	auto vpath = stringToTokens(selection.uri, "/", true);
 	if (vpath.empty()) {
-		std::vector<ContentDirectoryService> servers;
-		if (!discovery->GetDirectories(servers, error))
-			return false;
-
-		for (const auto &server : servers) {
+		for (const auto &server : discovery->GetDirectories()) {
 			if (visit_directory) {
 				const LightDirectory d(server.getFriendlyName(), 0);
 				if (!visit_directory(d, error))
@@ -718,10 +694,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	std::string servername(std::move(vpath.front()));
 	vpath.pop_front();
 
-	ContentDirectoryService server;
-	if (!discovery->GetServer(servername.c_str(), server, error))
-		return false;
-
+	auto server = discovery->GetServer(servername.c_str());
 	return VisitServer(server, vpath, selection,
 			   visit_directory, visit_song, visit_playlist, error);
 }
@@ -737,12 +710,8 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	if (!visit_tag)
 		return true;
 
-	std::vector<ContentDirectoryService> servers;
-	if (!discovery->GetDirectories(servers, error))
-		return false;
-
 	std::set<std::string> values;
-	for (auto& server : servers) {
+	for (auto& server : discovery->GetDirectories()) {
 		UPnPDirContent dirbuf;
 		if (!SearchSongs(server, rootid, selection, dirbuf, error))
 			return false;

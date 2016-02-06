@@ -22,10 +22,8 @@
 
 #include "check.h"
 
-class Error;
-
-bool
-UpnpGlobalInit(Error &error);
+void
+UpnpGlobalInit();
 
 void
 UpnpGlobalFinish();

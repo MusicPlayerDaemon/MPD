@@ -25,6 +25,7 @@
 #include "Directory.hxx"
 #include "util/NumberParser.hxx"
 #include "util/UriUtil.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>
@@ -59,21 +60,16 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				 "SortCriteria", "",
 				 "StartingIndex", ofbuf,
 				 "RequestedCount", cntbuf);
-	if (request == nullptr) {
-		error.Set(upnp_domain, "UpnpMakeAction() failed");
-		return false;
-	}
+	if (request == nullptr)
+		throw std::runtime_error("UpnpMakeAction() failed");
 
 	IXML_Document *response;
 	int code = UpnpSendAction(hdl, m_actionURL.c_str(), m_serviceType.c_str(),
 				  0 /*devUDN*/, request, &response);
 	ixmlDocument_free(request);
-	if (code != UPNP_E_SUCCESS) {
-		error.Format(upnp_domain, code,
-			     "UpnpSendAction() failed: %s",
-			     UpnpGetErrorMessage(code));
-		return false;
-	}
+	if (code != UPNP_E_SUCCESS)
+		throw FormatRuntimeError("UpnpSendAction() failed: %s",
+					 UpnpGetErrorMessage(code));
 
 	const char *value = ixmlwrap::getFirstElementValue(response, "NumberReturned");
 	didreadp = value != nullptr
@@ -129,22 +125,17 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 					 "SortCriteria", "",
 					 "StartingIndex", ofbuf,
 					 "RequestedCount", "0"); // Setting a value here gets twonky into fits
-		if (request == 0) {
-			error.Set(upnp_domain, "UpnpMakeAction() failed");
-			return false;
-		}
+		if (request == 0)
+			throw std::runtime_error("UpnpMakeAction() failed");
 
 		IXML_Document *response;
 		auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 					   m_serviceType.c_str(),
 					   0 /*devUDN*/, request, &response);
 		ixmlDocument_free(request);
-		if (code != UPNP_E_SUCCESS) {
-			error.Format(upnp_domain, code,
-				     "UpnpSendAction() failed: %s",
-				     UpnpGetErrorMessage(code));
-			return false;
-		}
+		if (code != UPNP_E_SUCCESS)
+			throw FormatRuntimeError("UpnpSendAction() failed: %s",
+						 UpnpGetErrorMessage(code));
 
 		const char *value =
 			ixmlwrap::getFirstElementValue(response, "NumberReturned");
@@ -182,22 +173,17 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 				 "SortCriteria", "",
 				 "StartingIndex", "0",
 				 "RequestedCount", "1");
-	if (request == nullptr) {
-		error.Set(upnp_domain, "UpnpMakeAction() failed");
-		return false;
-	}
+	if (request == nullptr)
+		throw std::runtime_error("UpnpMakeAction() failed");
 
 	IXML_Document *response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
 				   0 /*devUDN*/, request, &response);
 	ixmlDocument_free(request);
-	if (code != UPNP_E_SUCCESS) {
-		error.Format(upnp_domain, code,
-			     "UpnpSendAction() failed: %s",
-			     UpnpGetErrorMessage(code));
-		return false;
-	}
+	if (code != UPNP_E_SUCCESS)
+		throw FormatRuntimeError("UpnpSendAction() failed: %s",
+					 UpnpGetErrorMessage(code));
 
 	bool success = ReadResultTag(dirbuf, response, error);
 	ixmlDocument_free(response);

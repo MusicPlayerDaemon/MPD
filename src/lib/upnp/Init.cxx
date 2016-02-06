@@ -21,44 +21,40 @@
 #include "Init.hxx"
 #include "Domain.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <upnp/upnp.h>
 #include <upnp/upnptools.h>
 #include <upnp/ixml.h>
 
+#include <assert.h>
+
 static Mutex upnp_init_mutex;
 static unsigned upnp_ref;
 
-static bool
-DoInit(Error &error)
+static void
+DoInit()
 {
 	auto code = UpnpInit(0, 0);
-	if (code != UPNP_E_SUCCESS) {
-		error.Format(upnp_domain, code,
-			     "UpnpInit() failed: %s",
-			     UpnpGetErrorMessage(code));
-		return false;
-	}
+	if (code != UPNP_E_SUCCESS)
+		throw FormatRuntimeError("UpnpInit() failed: %s",
+					 UpnpGetErrorMessage(code));
 
 	UpnpSetMaxContentLength(2000*1024);
 
 	// Servers sometimes make error (e.g.: minidlna returns bad utf-8)
 	ixmlRelaxParser(1);
-
-	return true;
 }
 
-bool
-UpnpGlobalInit(Error &error)
+void
+UpnpGlobalInit()
 {
 	const ScopeLock protect(upnp_init_mutex);
 
-	if (upnp_ref == 0 && !DoInit(error))
-		return false;
+	if (upnp_ref == 0)
+		DoInit();
 
 	++upnp_ref;
-	return true;
 }
 
 void

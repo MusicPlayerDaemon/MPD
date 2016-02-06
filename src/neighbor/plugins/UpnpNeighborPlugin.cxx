@@ -70,17 +70,19 @@ private:
 };
 
 bool
-UpnpNeighborExplorer::Open(Error &error)
+UpnpNeighborExplorer::Open(gcc_unused Error &error)
 {
 	UpnpClient_Handle handle;
-	if (!UpnpClientGlobalInit(handle, error))
-		return false;
+	UpnpClientGlobalInit(handle);
 
 	discovery = new UPnPDeviceDirectory(handle, this);
-	if (!discovery->Start(error)) {
+
+	try {
+		discovery->Start();
+	} catch (...) {
 		delete discovery;
 		UpnpClientGlobalFinish();
-		return false;
+		throw;
 	}
 
 	return true;
@@ -98,10 +100,10 @@ UpnpNeighborExplorer::GetList() const
 {
 	std::vector<ContentDirectoryService> tmp;
 
-	{
-		Error error;
-		if (!discovery->GetDirectories(tmp, error))
-			LogError(error);
+	try {
+		tmp = discovery->GetDirectories();
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 	}
 
 	List result;

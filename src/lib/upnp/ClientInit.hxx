@@ -24,10 +24,8 @@
 
 #include <upnp/upnp.h>
 
-class Error;
-
-bool
-UpnpClientGlobalInit(UpnpClient_Handle &handle, Error &error);
+void
+UpnpClientGlobalInit(UpnpClient_Handle &handle);
 
 void
 UpnpClientGlobalFinish();
