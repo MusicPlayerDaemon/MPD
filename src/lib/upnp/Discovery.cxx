@@ -111,7 +111,7 @@ inline void
 UPnPDeviceDirectory::Explore()
 {
 	for (;;) {
-		DiscoveredTask *tsk = 0;
+		std::unique_ptr<DiscoveredTask> tsk;
 		if (!queue.take(tsk)) {
 			queue.workerExit();
 			return;
@@ -138,14 +138,12 @@ UPnPDeviceDirectory::Explore()
 			Error error2;
 			bool success = d.Parse(tsk->url, buf, error2);
 			if (!success) {
-				delete tsk;
 				LogError(error2);
 				continue;
 			}
 		}
 
 		LockAdd(std::move(d));
-		delete tsk;
 	}
 }
 

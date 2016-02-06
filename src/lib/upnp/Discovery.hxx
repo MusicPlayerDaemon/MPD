@@ -32,6 +32,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <memory>
 
 class ContentDirectoryService;
 
@@ -97,7 +98,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 	Mutex mutex;
 	std::list<ContentDirectoryDescriptor> directories;
-	WorkQueue<DiscoveredTask *> queue;
+	WorkQueue<std::unique_ptr<DiscoveredTask>> queue;
 
 	/**
 	 * The UPnP device search timeout, which should actually be
