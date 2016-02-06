@@ -23,6 +23,7 @@
 #include "ContentDirectoryService.hxx"
 #include "system/Clock.hxx"
 #include "Log.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <upnp/upnptools.h>
 
@@ -127,6 +128,8 @@ UPnPDeviceDirectory::Explore()
 			continue;
 		}
 
+		AtScopeExit(buf){ free(buf); };
+
 		// Update or insert the device
 		ContentDirectoryDescriptor d(std::move(tsk->device_id),
 					     MonotonicClockS(), tsk->expires);
@@ -134,7 +137,6 @@ UPnPDeviceDirectory::Explore()
 		{
 			Error error2;
 			bool success = d.Parse(tsk->url, buf, error2);
-			free(buf);
 			if (!success) {
 				delete tsk;
 				LogError(error2);
