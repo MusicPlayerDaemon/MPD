@@ -32,22 +32,22 @@
 
 #include <stdio.h>
 
-static bool
-ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response, Error &error)
+static void
+ReadResultTag(UPnPDirContent &dirbuf, IXML_Document *response)
 {
 	const char *p = ixmlwrap::getFirstElementValue(response, "Result");
 	if (p == nullptr)
 		p = "";
 
-	return dirbuf.parse(p, error);
+	dirbuf.Parse(p);
 }
 
-inline bool
+inline void
 ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 				      const char *objectId, unsigned offset,
 				      unsigned count, UPnPDirContent &dirbuf,
-				      unsigned &didreadp, unsigned &totalp,
-				      Error &error) const
+				      unsigned &didreadp,
+				      unsigned &totalp) const
 {
 	// Create request
 	char ofbuf[100], cntbuf[100];
@@ -85,35 +85,32 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	if (value != nullptr)
 		totalp = ParseUnsigned(value);
 
-	return ReadResultTag(dirbuf, response, error);
+	ReadResultTag(dirbuf, response);
 }
 
-bool
+UPnPDirContent
 ContentDirectoryService::readDir(UpnpClient_Handle handle,
-				 const char *objectId,
-				 UPnPDirContent &dirbuf,
-				 Error &error) const
+				 const char *objectId) const
 {
+	UPnPDirContent dirbuf;
 	unsigned offset = 0, total = -1, count;
 
 	do {
-		if (!readDirSlice(handle, objectId, offset, m_rdreqcnt, dirbuf,
-				  count, total, error))
-			return false;
+		readDirSlice(handle, objectId, offset, m_rdreqcnt, dirbuf,
+			     count, total);
 
 		offset += count;
 	} while (count > 0 && offset < total);
 
-	return true;
+	return dirbuf;
 }
 
-bool
+UPnPDirContent
 ContentDirectoryService::search(UpnpClient_Handle hdl,
 				const char *objectId,
-				const char *ss,
-				UPnPDirContent &dirbuf,
-				Error &error) const
+				const char *ss) const
 {
+	UPnPDirContent dirbuf;
 	unsigned offset = 0, total = -1, count;
 
 	do {
@@ -155,18 +152,15 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 		if (value != nullptr)
 			total = ParseUnsigned(value);
 
-		if (!ReadResultTag(dirbuf, response.get(), error))
-			return false;
+		ReadResultTag(dirbuf, response.get());
 	} while (count > 0 && offset < total);
 
-	return true;
+	return dirbuf;
 }
 
-bool
+UPnPDirContent
 ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
-				     const char *objectId,
-				     UPnPDirContent &dirbuf,
-				     Error &error) const
+				     const char *objectId) const
 {
 	// Create request
 	UniqueIxmlDocument request(MakeActionHelper("Browse", m_serviceType.c_str(),
@@ -188,5 +182,7 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 					 UpnpGetErrorMessage(code));
 
 	UniqueIxmlDocument response(_response);
-	return ReadResultTag(dirbuf, response.get(), error);
+	UPnPDirContent dirbuf;
+	ReadResultTag(dirbuf, response.get());
+	return dirbuf;
 }

@@ -236,9 +236,9 @@ protected:
 	}
 };
 
-bool
-UPnPDirContent::parse(const char *input, Error &error)
+void
+UPnPDirContent::Parse(const char *input)
 {
 	UPnPDirParser parser(*this);
-	return parser.Parse(input, strlen(input), true, error);
+	parser.Parse(input, strlen(input), true);
 }

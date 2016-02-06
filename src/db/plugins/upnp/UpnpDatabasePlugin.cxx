@@ -127,32 +127,26 @@ private:
 			 VisitSong visit_song,
 			 Error &error) const;
 
-	bool SearchSongs(const ContentDirectoryService &server,
-			 const char *objid,
-			 const DatabaseSelection &selection,
-			 UPnPDirContent& dirbuf,
-			 Error &error) const;
+	UPnPDirContent SearchSongs(const ContentDirectoryService &server,
+				   const char *objid,
+				   const DatabaseSelection &selection) const;
 
-	bool Namei(const ContentDirectoryService &server,
-		   const std::list<std::string> &vpath,
-		   UPnPDirObject &dirent,
-		   Error &error) const;
+	UPnPDirObject Namei(const ContentDirectoryService &server,
+			    const std::list<std::string> &vpath) const;
 
 	/**
 	 * Take server and objid, return metadata.
 	 */
-	bool ReadNode(const ContentDirectoryService &server,
-		      const char *objid, UPnPDirObject& dirent,
-		      Error &error) const;
+	UPnPDirObject ReadNode(const ContentDirectoryService &server,
+			       const char *objid) const;
 
 	/**
 	 * Get the path for an object Id. This works much like pwd,
 	 * except easier cause our inodes have a parent id. Not used
 	 * any more actually (see comments in SearchSongs).
 	 */
-	bool BuildPath(const ContentDirectoryService &server,
-		       const UPnPDirObject& dirent, std::string &idpath,
-		       Error &error) const;
+	std::string BuildPath(const ContentDirectoryService &server,
+			      const UPnPDirObject& dirent) const;
 };
 
 Database *
@@ -214,7 +208,7 @@ UpnpDatabase::ReturnSong(const LightSong *_song) const
 // Get song info by path. We can receive either the id path, or the titles
 // one
 const LightSong *
-UpnpDatabase::GetSong(const char *uri, Error &error) const
+UpnpDatabase::GetSong(const char *uri, gcc_unused Error &error) const
 {
 	auto vpath = stringToTokens(uri, "/", true);
 	if (vpath.size() < 2)
@@ -227,12 +221,9 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 
 	UPnPDirObject dirent;
 	if (vpath.front() != rootid) {
-		if (!Namei(server, vpath, dirent, error))
-			return nullptr;
+		dirent = Namei(server, vpath);
 	} else {
-		if (!ReadNode(server, vpath.back().c_str(), dirent,
-			      error))
-			return nullptr;
+		dirent = ReadNode(server, vpath.back().c_str());
 	}
 
 	return new UpnpSong(std::move(dirent), uri);
@@ -262,20 +253,18 @@ dquote(std::string &out, const char *in)
 
 // Run an UPnP search, according to MPD parameters. Return results as
 // UPnP items
-bool
+UPnPDirContent
 UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 			  const char *objid,
-			  const DatabaseSelection &selection,
-			  UPnPDirContent &dirbuf,
-			  Error &error) const
+			  const DatabaseSelection &selection) const
 {
 	const SongFilter *filter = selection.filter;
 	if (selection.filter == nullptr)
-		return true;
+		return UPnPDirContent();
 
 	const auto searchcaps = server.getSearchCapabilities(handle);
 	if (searchcaps.empty())
-		return true;
+		return UPnPDirContent();
 
 	std::string cond;
 	for (const auto &item : filter->GetItems()) {
@@ -338,9 +327,7 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 		}
 	}
 
-	return server.search(handle,
-			     objid, cond.c_str(), dirbuf,
-			     error);
+	return server.search(handle, objid, cond.c_str());
 }
 
 static bool
@@ -381,13 +368,10 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 			  VisitSong visit_song,
 			  Error &error) const
 {
-	UPnPDirContent dirbuf;
 	if (!visit_song)
 		return true;
-	if (!SearchSongs(server, objid, selection, dirbuf, error))
-		return false;
 
-	for (auto &dirent : dirbuf.objects) {
+	for (auto &dirent : SearchSongs(server, objid, selection).objects) {
 		if (dirent.type != UPnPDirObject::Type::ITEM ||
 		    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
 			continue;
@@ -419,34 +403,25 @@ UpnpDatabase::SearchSongs(const ContentDirectoryService &server,
 	return true;
 }
 
-bool
+UPnPDirObject
 UpnpDatabase::ReadNode(const ContentDirectoryService &server,
-		       const char *objid, UPnPDirObject &dirent,
-		       Error &error) const
+		       const char *objid) const
 {
-	UPnPDirContent dirbuf;
-	if (!server.getMetadata(handle, objid, dirbuf, error))
-		return false;
-
+	auto dirbuf = server.getMetadata(handle, objid);
 	if (dirbuf.objects.size() != 1)
 		throw std::runtime_error("Bad resource");
 
-	dirent = std::move(dirbuf.objects.front());
-	return true;
+	return std::move(dirbuf.objects.front());
 }
 
-bool
+std::string
 UpnpDatabase::BuildPath(const ContentDirectoryService &server,
-			const UPnPDirObject& idirent,
-			std::string &path,
-			Error &error) const
+			const UPnPDirObject& idirent) const
 {
 	const char *pid = idirent.id.c_str();
-	path.clear();
-	UPnPDirObject dirent;
+	std::string path;
 	while (strcmp(pid, rootid) != 0) {
-		if (!ReadNode(server, pid, dirent, error))
-			return false;
+		auto dirent = ReadNode(server, pid);
 		pid = dirent.parent_id.c_str();
 
 		if (path.empty())
@@ -456,33 +431,24 @@ UpnpDatabase::BuildPath(const ContentDirectoryService &server,
 						     path.c_str());
 	}
 
-	path = PathTraitsUTF8::Build(server.getFriendlyName(),
+	return PathTraitsUTF8::Build(server.getFriendlyName(),
 				     path.c_str());
-	return true;
 }
 
 // Take server and internal title pathname and return objid and metadata.
-bool
+UPnPDirObject
 UpnpDatabase::Namei(const ContentDirectoryService &server,
-		    const std::list<std::string> &vpath,
-		    UPnPDirObject &odirent,
-		    Error &error) const
+		    const std::list<std::string> &vpath) const
 {
-	if (vpath.empty()) {
+	if (vpath.empty())
 		// looking for root info
-		if (!ReadNode(server, rootid, odirent, error))
-			return false;
-
-		return true;
-	}
+		return ReadNode(server, rootid);
 
 	std::string objid(rootid);
 
 	// Walk the path elements, read each directory and try to find the next one
 	for (auto i = vpath.begin(), last = std::prev(vpath.end());; ++i) {
-		UPnPDirContent dirbuf;
-		if (!server.readDir(handle, objid.c_str(), dirbuf, error))
-			return false;
+		auto dirbuf = server.readDir(handle, objid.c_str());
 
 		// Look for the name in the sub-container list
 		UPnPDirObject *child = dirbuf.FindObject(i->c_str());
@@ -490,10 +456,8 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 			throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 					    "No such object");
 
-		if (i == last) {
-			odirent = std::move(*child);
-			return true;
-		}
+		if (i == last)
+			return std::move(*child);
 
 		if (child->type != UPnPDirObject::Type::CONTAINER)
 			throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
@@ -597,10 +561,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 		}
 
 		if (visit_song) {
-			UPnPDirObject dirent;
-			if (!ReadNode(server, vpath.back().c_str(), dirent,
-				      error))
-				return false;
+			auto dirent = ReadNode(server, vpath.back().c_str());
 
 			if (dirent.type != UPnPDirObject::Type::ITEM ||
 			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC)
@@ -618,9 +579,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	}
 
 	// Translate the target path into an object id and the associated metadata.
-	UPnPDirObject tdirent;
-	if (!Namei(server, vpath, tdirent, error))
-		return false;
+	const auto tdirent = Namei(server, vpath);
 
 	/* If recursive is set, this is a search... No use sending it
 	   if the filter is empty. In this case, we implement limited
@@ -644,12 +603,7 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 	/* Target was a a container. Visit it. We could read slices
 	   and loop here, but it's not useful as mpd will only return
 	   data to the client when we're done anyway. */
-	UPnPDirContent dirbuf;
-	if (!server.readDir(handle, tdirent.id.c_str(), dirbuf,
-			    error))
-		return false;
-
-	for (auto &dirent : dirbuf.objects) {
+	for (const auto &dirent : server.readDir(handle, tdirent.id.c_str()).objects) {
 		const std::string uri = PathTraitsUTF8::Build(base_uri,
 							      dirent.name.c_str());
 		if (!VisitObject(dirent, uri.c_str(),
@@ -712,9 +666,7 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 
 	std::set<std::string> values;
 	for (auto& server : discovery->GetDirectories()) {
-		UPnPDirContent dirbuf;
-		if (!SearchSongs(server, rootid, selection, dirbuf, error))
-			return false;
+		const auto dirbuf = SearchSongs(server, rootid, selection);
 
 		for (const auto &dirent : dirbuf.objects) {
 			if (dirent.type != UPnPDirObject::Type::ITEM ||

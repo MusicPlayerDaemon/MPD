@@ -23,8 +23,6 @@
 #include <vector>
 #include <string>
 
-class Error;
-
 /**
  * UPnP Description phase: interpreting the device description which we
  * downloaded from the URL obtained by the discovery phase.
@@ -81,8 +79,7 @@ public:
 	 * @param url where the description came from
 	 * @param description the xml device description
 	 */
-	bool Parse(const std::string &url, const char *description,
-		   Error &error);
+	void Parse(const std::string &url, const char *description);
 };
 
 #endif /* _UPNPDEV_HXX_INCLUDED_ */

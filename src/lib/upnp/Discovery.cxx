@@ -135,13 +135,10 @@ UPnPDeviceDirectory::Explore()
 		ContentDirectoryDescriptor d(std::move(tsk->device_id),
 					     MonotonicClockS(), tsk->expires);
 
-		{
-			Error error2;
-			bool success = d.Parse(tsk->url, buf, error2);
-			if (!success) {
-				LogError(error2);
-				continue;
-			}
+		try {
+			d.Parse(tsk->url, buf);
+		} catch (const std::exception &e) {
+			LogError(e);
 		}
 
 		LockAdd(std::move(d));

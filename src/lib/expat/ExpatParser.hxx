@@ -25,8 +25,19 @@
 
 #include <expat.h>
 
+#include <stdexcept>
+
 class InputStream;
 class Error;
+
+class ExpatError final : public std::runtime_error {
+public:
+	ExpatError(XML_Error code)
+		:std::runtime_error(XML_ErrorString(code)) {}
+
+	ExpatError(XML_Parser parser)
+		:ExpatError(XML_GetErrorCode(parser)) {}
+};
 
 class ExpatParser final {
 	const XML_Parser parser;
@@ -53,8 +64,7 @@ public:
 		XML_SetCharacterDataHandler(parser, charhndl);
 	}
 
-	bool Parse(const char *data, size_t length, bool is_final,
-		   Error &error);
+	void Parse(const char *data, size_t length, bool is_final);
 
 	bool Parse(InputStream &is, Error &error);
 
@@ -83,9 +93,8 @@ public:
 		parser.SetCharacterDataHandler(CharacterData);
 	}
 
-	bool Parse(const char *data, size_t length, bool is_final,
-		   Error &error) {
-		return parser.Parse(data, length, is_final, error);
+	void Parse(const char *data, size_t length, bool is_final) {
+		parser.Parse(data, length, is_final);
 	}
 
 	bool Parse(InputStream &is, Error &error) {
