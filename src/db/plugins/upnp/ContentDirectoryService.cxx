@@ -21,12 +21,14 @@
 #include "lib/upnp/ContentDirectoryService.hxx"
 #include "lib/upnp/Domain.hxx"
 #include "lib/upnp/ixmlwrap.hxx"
+#include "lib/upnp/UniqueIxml.hxx"
 #include "lib/upnp/Action.hxx"
 #include "Directory.hxx"
 #include "util/NumberParser.hxx"
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <stdio.h>
 
@@ -63,13 +65,16 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	if (request == nullptr)
 		throw std::runtime_error("UpnpMakeAction() failed");
 
+	AtScopeExit(request) { ixmlDocument_free(request); };
+
 	IXML_Document *response;
 	int code = UpnpSendAction(hdl, m_actionURL.c_str(), m_serviceType.c_str(),
 				  0 /*devUDN*/, request, &response);
-	ixmlDocument_free(request);
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpSendAction() failed: %s",
 					 UpnpGetErrorMessage(code));
+
+	AtScopeExit(response) { ixmlDocument_free(response); };
 
 	const char *value = ixmlwrap::getFirstElementValue(response, "NumberReturned");
 	didreadp = value != nullptr
@@ -80,9 +85,7 @@ ContentDirectoryService::readDirSlice(UpnpClient_Handle hdl,
 	if (value != nullptr)
 		totalp = ParseUnsigned(value);
 
-	bool success = ReadResultTag(dirbuf, response, error);
-	ixmlDocument_free(response);
-	return success;
+	return ReadResultTag(dirbuf, response, error);
 }
 
 bool
@@ -117,41 +120,42 @@ ContentDirectoryService::search(UpnpClient_Handle hdl,
 		char ofbuf[100];
 		sprintf(ofbuf, "%d", offset);
 
-		IXML_Document *request =
-			MakeActionHelper("Search", m_serviceType.c_str(),
-					 "ContainerID", objectId,
-					 "SearchCriteria", ss,
-					 "Filter", "*",
-					 "SortCriteria", "",
-					 "StartingIndex", ofbuf,
-					 "RequestedCount", "0"); // Setting a value here gets twonky into fits
-		if (request == 0)
+		UniqueIxmlDocument request(MakeActionHelper("Search", m_serviceType.c_str(),
+							    "ContainerID", objectId,
+							    "SearchCriteria", ss,
+							    "Filter", "*",
+							    "SortCriteria", "",
+							    "StartingIndex", ofbuf,
+							    "RequestedCount", "0")); // Setting a value here gets twonky into fits
+		if (!request)
 			throw std::runtime_error("UpnpMakeAction() failed");
 
-		IXML_Document *response;
+		IXML_Document *_response;
 		auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 					   m_serviceType.c_str(),
-					   0 /*devUDN*/, request, &response);
-		ixmlDocument_free(request);
+					   0 /*devUDN*/,
+					   request.get(), &_response);
 		if (code != UPNP_E_SUCCESS)
 			throw FormatRuntimeError("UpnpSendAction() failed: %s",
 						 UpnpGetErrorMessage(code));
 
+		UniqueIxmlDocument response(_response);
+
 		const char *value =
-			ixmlwrap::getFirstElementValue(response, "NumberReturned");
+			ixmlwrap::getFirstElementValue(response.get(),
+						       "NumberReturned");
 		count = value != nullptr
 			? ParseUnsigned(value)
 			: 0;
 
 		offset += count;
 
-		value = ixmlwrap::getFirstElementValue(response, "TotalMatches");
+		value = ixmlwrap::getFirstElementValue(response.get(),
+						       "TotalMatches");
 		if (value != nullptr)
 			total = ParseUnsigned(value);
 
-		bool success = ReadResultTag(dirbuf, response, error);
-		ixmlDocument_free(response);
-		if (!success)
+		if (!ReadResultTag(dirbuf, response.get(), error))
 			return false;
 	} while (count > 0 && offset < total);
 
@@ -165,27 +169,24 @@ ContentDirectoryService::getMetadata(UpnpClient_Handle hdl,
 				     Error &error) const
 {
 	// Create request
-	IXML_Document *request =
-		MakeActionHelper("Browse", m_serviceType.c_str(),
-				 "ObjectID", objectId,
-				 "BrowseFlag", "BrowseMetadata",
-				 "Filter", "*",
-				 "SortCriteria", "",
-				 "StartingIndex", "0",
-				 "RequestedCount", "1");
+	UniqueIxmlDocument request(MakeActionHelper("Browse", m_serviceType.c_str(),
+						    "ObjectID", objectId,
+						    "BrowseFlag", "BrowseMetadata",
+						    "Filter", "*",
+						    "SortCriteria", "",
+						    "StartingIndex", "0",
+						    "RequestedCount", "1"));
 	if (request == nullptr)
 		throw std::runtime_error("UpnpMakeAction() failed");
 
-	IXML_Document *response;
+	IXML_Document *_response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
-				   0 /*devUDN*/, request, &response);
-	ixmlDocument_free(request);
+				   0 /*devUDN*/, request.get(), &_response);
 	if (code != UPNP_E_SUCCESS)
 		throw FormatRuntimeError("UpnpSendAction() failed: %s",
 					 UpnpGetErrorMessage(code));
 
-	bool success = ReadResultTag(dirbuf, response, error);
-	ixmlDocument_free(response);
-	return success;
+	UniqueIxmlDocument response(_response);
+	return ReadResultTag(dirbuf, response.get(), error);
 }
