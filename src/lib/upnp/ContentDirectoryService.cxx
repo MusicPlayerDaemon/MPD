@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ContentDirectoryService.hxx"
+#include "UniqueIxml.hxx"
 #include "Domain.hxx"
 #include "Device.hxx"
 #include "ixmlwrap.hxx"
@@ -56,20 +57,18 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 {
 	assert(result.empty());
 
-	IXML_Document *request =
-		UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
-			       0,
-			       nullptr, nullptr);
-	if (request == 0) {
+	UniqueIxmlDocument request(UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
+						  0,
+						  nullptr, nullptr));
+	if (!request) {
 		error.Set(upnp_domain, "UpnpMakeAction() failed");
 		return false;
 	}
 
-	IXML_Document *response;
+	IXML_Document *_response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
-				   0 /*devUDN*/, request, &response);
-	ixmlDocument_free(request);
+				   0 /*devUDN*/, request.get(), &_response);
 	if (code != UPNP_E_SUCCESS) {
 		error.Format(upnp_domain, code,
 			     "UpnpSendAction() failed: %s",
@@ -77,18 +76,17 @@ ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
 		return false;
 	}
 
-	const char *s = ixmlwrap::getFirstElementValue(response, "SearchCaps");
-	if (s == nullptr || *s == 0) {
-		ixmlDocument_free(response);
-		return true;
-	}
+	UniqueIxmlDocument response(_response);
 
-	bool success = true;
+	const char *s = ixmlwrap::getFirstElementValue(response.get(),
+						       "SearchCaps");
+	if (s == nullptr || *s == 0)
+		return true;
+
 	if (!csvToStrings(s, result)) {
 		error.Set(upnp_domain, "Bad response");
-		success = false;
+		return false;
 	}
 
-	ixmlDocument_free(response);
-	return success;
+	return true;
 }

@@ -244,6 +244,7 @@ UPNP_SOURCES = \
 	src/lib/upnp/ixmlwrap.cxx src/lib/upnp/ixmlwrap.hxx \
 	src/lib/upnp/Callback.hxx \
 	src/lib/upnp/Util.cxx src/lib/upnp/Util.hxx \
+	src/lib/upnp/UniqueIxml.hxx \
 	src/lib/upnp/WorkQueue.hxx \
 	src/lib/upnp/Action.hxx
 

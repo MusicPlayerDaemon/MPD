@@ -16,29 +16,26 @@
  */
 
 #include "ixmlwrap.hxx"
+#include "UniqueIxml.hxx"
 
 namespace ixmlwrap {
 
 const char *
 getFirstElementValue(IXML_Document *doc, const char *name)
 {
-	const char *ret = nullptr;
-	IXML_NodeList *nodes =
-		ixmlDocument_getElementsByTagName(doc, name);
+	UniqueIxmlNodeList nodes(ixmlDocument_getElementsByTagName(doc, name));
+	if (!nodes)
+		return nullptr;
 
-	if (nodes) {
-		IXML_Node *first = ixmlNodeList_item(nodes, 0);
-		if (first) {
-			IXML_Node *dnode = ixmlNode_getFirstChild(first);
-			if (dnode) {
-				ret = ixmlNode_getNodeValue(dnode);
-			}
-		}
+	IXML_Node *first = ixmlNodeList_item(nodes.get(), 0);
+	if (!first)
+		return nullptr;
 
-		ixmlNodeList_free(nodes);
-	}
+	IXML_Node *dnode = ixmlNode_getFirstChild(first);
+	if (!dnode)
+		return nullptr;
 
-	return ret;
+	return ixmlNode_getNodeValue(dnode);
 }
 
 }
