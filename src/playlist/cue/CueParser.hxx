@@ -21,10 +21,12 @@
 #define MPD_CUE_PARSER_HXX
 
 #include "check.h"
+#include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"
 #include "Compiler.h"
 
 #include <string>
+#include <memory>
 
 class DetachedSong;
 struct Tag;
@@ -74,19 +76,19 @@ class CueParser {
 	/**
 	 * The song currently being edited.
 	 */
-	DetachedSong *current = nullptr;
+	std::unique_ptr<DetachedSong> current;
 
 	/**
 	 * The previous song.  It is remembered because its end_time
 	 * will be set to the current song's start time.
 	 */
-	DetachedSong *previous = nullptr;
+	std::unique_ptr<DetachedSong> previous;
 
 	/**
 	 * A song that is completely finished and can be returned to
 	 * the caller via cue_parser_get().
 	 */
-	DetachedSong *finished = nullptr;
+	std::unique_ptr<DetachedSong> finished;
 
 	/**
 	 * Tracks whether cue_parser_finish() has been called.  If
@@ -96,8 +98,6 @@ class CueParser {
 	bool end = false;
 
 public:
-	~CueParser();
-
 	/**
 	 * Feed a text line from the CUE file into the parser.  Call
 	 * cue_parser_get() after this to see if a song has been finished.
