@@ -33,7 +33,7 @@ public:
 		:tis(is) {
 	}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static SongEnumerator *
@@ -42,7 +42,7 @@ m3u_open_stream(InputStream &is)
 	return new M3uPlaylist(is);
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 M3uPlaylist::NextSong()
 {
 	char *line_s;
@@ -55,7 +55,7 @@ M3uPlaylist::NextSong()
 		line_s = Strip(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	return new DetachedSong(line_s);
+	return std::unique_ptr<DetachedSong>(new DetachedSong(line_s));
 }
 
 static const char *const m3u_suffixes[] = {

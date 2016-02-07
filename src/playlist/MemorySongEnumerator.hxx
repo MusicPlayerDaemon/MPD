@@ -33,7 +33,7 @@ public:
 	MemorySongEnumerator(std::forward_list<DetachedSong> &&_songs)
 		:songs(std::move(_songs)) {}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 #endif

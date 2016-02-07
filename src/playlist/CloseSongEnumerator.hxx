@@ -41,7 +41,7 @@ public:
 
 	virtual ~CloseSongEnumerator();
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 #endif

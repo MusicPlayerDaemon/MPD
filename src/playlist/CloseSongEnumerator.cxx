@@ -20,6 +20,7 @@
 #include "config.h"
 #include "CloseSongEnumerator.hxx"
 #include "input/InputStream.hxx"
+#include "DetachedSong.hxx"
 
 CloseSongEnumerator::~CloseSongEnumerator()
 {
@@ -27,7 +28,7 @@ CloseSongEnumerator::~CloseSongEnumerator()
 	delete is;
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 CloseSongEnumerator::NextSong()
 {
 	return other->NextSong();

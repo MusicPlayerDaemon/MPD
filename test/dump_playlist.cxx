@@ -108,7 +108,7 @@ try {
 
 	/* dump the playlist */
 
-	DetachedSong *song;
+	std::unique_ptr<DetachedSong> song;
 	while ((song = playlist->NextSong()) != NULL) {
 		printf("%s\n", song->GetURI());
 
@@ -127,8 +127,6 @@ try {
 			       (start_ms / 1000) % 60);
 
 		tag_save(stdout, song->GetTag());
-
-		delete song;
 	}
 
 	/* deinitialize everything */

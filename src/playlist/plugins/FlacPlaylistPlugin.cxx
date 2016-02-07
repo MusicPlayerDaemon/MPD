@@ -58,10 +58,10 @@ public:
 		FLAC__metadata_object_delete(cuesheet);
 	}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 FlacPlaylist::NextSong()
 {
 	const FLAC__StreamMetadata_CueSheet &c = cuesheet->data.cue_sheet;
@@ -82,7 +82,7 @@ FlacPlaylist::NextSong()
 		? c.tracks[next_track].offset
 		: total_samples;
 
-	auto *song = new DetachedSong(uri);
+	std::unique_ptr<DetachedSong> song(new DetachedSong(uri));
 	song->SetStartTime(SongTime::FromScale(start, sample_rate));
 	song->SetEndTime(SongTime::FromScale(end, sample_rate));
 	return song;

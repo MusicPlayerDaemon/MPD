@@ -44,24 +44,21 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 		? PathTraitsUTF8::GetParent(uri)
 		: std::string(".");
 
-	DetachedSong *song;
+	std::unique_ptr<DetachedSong> song;
 	for (unsigned i = 0;
 	     i < end_index && (song = e.NextSong()) != nullptr;
 	     ++i) {
 		if (i < start_index) {
 			/* skip songs before the start index */
-			delete song;
 			continue;
 		}
 
 		if (!playlist_check_translate_song(*song, base_uri.c_str(),
 						   loader)) {
-			delete song;
 			continue;
 		}
 
 		unsigned id = dest.AppendSong(pc, std::move(*song), error);
-		delete song;
 		if (id == 0)
 			return false;
 	}

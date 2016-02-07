@@ -48,7 +48,7 @@ public:
 		return strcmp(line, "#EXTM3U") == 0;
 	}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static SongEnumerator *
@@ -105,7 +105,7 @@ extm3u_parse_tag(const char *line)
 	return tag.Commit();
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 ExtM3uPlaylist::NextSong()
 {
 	Tag tag;
@@ -126,7 +126,7 @@ ExtM3uPlaylist::NextSong()
 		line_s = StripLeft(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	return new DetachedSong(line_s, std::move(tag));
+	return std::unique_ptr<DetachedSong>(new DetachedSong(line_s, std::move(tag)));
 }
 
 static const char *const extm3u_suffixes[] = {

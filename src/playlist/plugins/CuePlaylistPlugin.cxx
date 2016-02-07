@@ -36,7 +36,7 @@ class CuePlaylist final : public SongEnumerator {
 		:is(_is), tis(is) {
 	}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static SongEnumerator *
@@ -45,23 +45,23 @@ cue_playlist_open_stream(InputStream &is)
 	return new CuePlaylist(is);
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 CuePlaylist::NextSong()
 {
 	auto song = parser.Get();
 	if (song != nullptr)
-		return song.release();
+		return song;
 
 	const char *line;
 	while ((line = tis.ReadLine()) != nullptr) {
 		parser.Feed(line);
 		song = parser.Get();
 		if (song != nullptr)
-			return song.release();
+			return song;
 	}
 
 	parser.Finish();
-	return parser.Get().release();
+	return parser.Get();
 }
 
 static const char *const cue_playlist_suffixes[] = {

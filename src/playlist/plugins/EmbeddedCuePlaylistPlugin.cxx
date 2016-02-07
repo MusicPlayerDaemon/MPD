@@ -69,7 +69,7 @@ public:
 		delete parser;
 	}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static void
@@ -124,13 +124,13 @@ embcue_playlist_open_uri(const char *uri,
 	return playlist;
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 EmbeddedCuePlaylist::NextSong()
 {
 	auto song = parser->Get();
 	if (song != nullptr) {
 		song->SetURI(filename);
-		return song.release();
+		return song;
 	}
 
 	while (*next != 0) {
@@ -149,7 +149,7 @@ EmbeddedCuePlaylist::NextSong()
 		song = parser->Get();
 		if (song != nullptr) {
 			song->SetURI(filename);
-			return song.release();
+			return song;
 		}
 	}
 
@@ -157,7 +157,7 @@ EmbeddedCuePlaylist::NextSong()
 	song = parser->Get();
 	if (song != nullptr)
 		song->SetURI(filename);
-	return song.release();
+	return song;
 }
 
 static const char *const embcue_playlist_suffixes[] = {

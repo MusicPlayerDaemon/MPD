@@ -41,7 +41,7 @@ playlist_provider_print(Response &r, Partition &partition,
 		? PathTraitsUTF8::GetParent(uri)
 		: std::string(".");
 
-	DetachedSong *song;
+	std::unique_ptr<DetachedSong> song;
 	while ((song = e.NextSong()) != nullptr) {
 		if (playlist_check_translate_song(*song, base_uri.c_str(),
 						  loader) &&
@@ -51,8 +51,6 @@ playlist_provider_print(Response &r, Partition &partition,
 			/* fallback if no detail was requested or no
 			   detail was available */
 			song_print_uri(r, partition, *song);
-
-		delete song;
 	}
 }
 
