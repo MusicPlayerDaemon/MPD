@@ -65,9 +65,11 @@ UpnpClientGlobalInit(UpnpClient_Handle &handle, Error &error)
 	if (!UpnpGlobalInit(error))
 		return false;
 
-	upnp_client_init_mutex.lock();
-	bool success = upnp_client_ref > 0 || DoInit(error);
-	upnp_client_init_mutex.unlock();
+	bool success;
+	{
+		const ScopeLock protect(upnp_client_init_mutex);
+		success = upnp_client_ref > 0 || DoInit(error);
+	}
 
 	if (success) {
 		++upnp_client_ref;
@@ -81,13 +83,13 @@ UpnpClientGlobalInit(UpnpClient_Handle &handle, Error &error)
 void
 UpnpClientGlobalFinish()
 {
-	upnp_client_init_mutex.lock();
+	{
+		const ScopeLock protect(upnp_client_init_mutex);
 
-	assert(upnp_client_ref > 0);
-	if (--upnp_client_ref == 0)
-		UpnpUnRegisterClient(upnp_client_handle);
-
-	upnp_client_init_mutex.unlock();
+		assert(upnp_client_ref > 0);
+		if (--upnp_client_ref == 0)
+			UpnpUnRegisterClient(upnp_client_handle);
+	}
 
 	UpnpGlobalFinish();
 }
