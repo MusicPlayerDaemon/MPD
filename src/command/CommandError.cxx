@@ -179,6 +179,10 @@ ToAck(std::exception_ptr ep)
 		return pe.GetCode();
 	} catch (const PlaylistError &pe) {
 		return ToAck(pe.GetCode());
+#ifdef ENABLE_DATABASE
+	} catch (const DatabaseError &de) {
+		return ToAck(de.GetCode());
+#endif
 	} catch (const std::system_error &e) {
 		return ACK_ERROR_SYSTEM;
 #if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204

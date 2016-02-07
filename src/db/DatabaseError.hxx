@@ -20,6 +20,8 @@
 #ifndef MPD_DB_ERROR_HXX
 #define MPD_DB_ERROR_HXX
 
+#include <stdexcept>
+
 class Domain;
 
 enum class DatabaseErrorCode {
@@ -32,6 +34,18 @@ enum class DatabaseErrorCode {
 	NOT_FOUND,
 
 	CONFLICT,
+};
+
+class DatabaseError final : public std::runtime_error {
+	DatabaseErrorCode code;
+
+public:
+	DatabaseError(DatabaseErrorCode _code, const char *msg)
+		:std::runtime_error(msg), code(_code) {}
+
+	DatabaseErrorCode GetCode() const {
+		return code;
+	}
 };
 
 extern const Domain db_domain;
