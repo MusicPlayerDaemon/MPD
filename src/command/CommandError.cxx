@@ -66,6 +66,24 @@ ToAck(PlaylistResult result)
 	return ACK_ERROR_UNKNOWN;
 }
 
+#ifdef ENABLE_DATABASE
+gcc_const
+static enum ack
+ToAck(DatabaseErrorCode code)
+{
+	switch (code) {
+	case DatabaseErrorCode::DISABLED:
+	case DatabaseErrorCode::NOT_FOUND:
+		return ACK_ERROR_NO_EXIST;
+
+	case DatabaseErrorCode::CONFLICT:
+		return ACK_ERROR_ARG;
+	}
+
+	return ACK_ERROR_UNKNOWN;
+}
+#endif
+
 CommandResult
 print_playlist_result(Response &r, PlaylistResult result)
 {
@@ -129,14 +147,7 @@ ToAck(const Error &error)
 		return (enum ack)error.GetCode();
 #ifdef ENABLE_DATABASE
 	} else if (error.IsDomain(db_domain)) {
-		switch ((DatabaseErrorCode)error.GetCode()) {
-		case DatabaseErrorCode::DISABLED:
-		case DatabaseErrorCode::NOT_FOUND:
-			return ACK_ERROR_NO_EXIST;
-
-		case DatabaseErrorCode::CONFLICT:
-			return ACK_ERROR_ARG;
-		}
+		return ToAck((DatabaseErrorCode)error.GetCode());
 #endif
 	} else if (error.IsDomain(locate_uri_domain)) {
 		return ACK_ERROR_ARG;
