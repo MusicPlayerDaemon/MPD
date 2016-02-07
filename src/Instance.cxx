@@ -37,7 +37,8 @@ Database *
 Instance::GetDatabase(Error &error)
 {
 	if (database == nullptr)
-		error.Set(db_domain, DB_DISABLED, "No database");
+		error.Set(db_domain, int(DatabaseErrorCode::DISABLED),
+			  "No database");
 	return database;
 }
 

@@ -129,12 +129,12 @@ ToAck(const Error &error)
 		return (enum ack)error.GetCode();
 #ifdef ENABLE_DATABASE
 	} else if (error.IsDomain(db_domain)) {
-		switch ((enum db_error)error.GetCode()) {
-		case DB_DISABLED:
-		case DB_NOT_FOUND:
+		switch ((DatabaseErrorCode)error.GetCode()) {
+		case DatabaseErrorCode::DISABLED:
+		case DatabaseErrorCode::NOT_FOUND:
 			return ACK_ERROR_NO_EXIST;
 
-		case DB_CONFLICT:
+		case DatabaseErrorCode::CONFLICT:
 			return ACK_ERROR_ARG;
 		}
 #endif

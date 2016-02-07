@@ -217,7 +217,8 @@ UpnpDatabase::GetSong(const char *uri, Error &error) const
 {
 	auto vpath = stringToTokens(uri, "/", true);
 	if (vpath.size() < 2) {
-		error.Format(db_domain, DB_NOT_FOUND, "No such song: %s", uri);
+		error.Format(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
+			     "No such song: %s", uri);
 		return nullptr;
 	}
 
@@ -495,7 +496,8 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 		// Look for the name in the sub-container list
 		UPnPDirObject *child = dirbuf.FindObject(i->c_str());
 		if (child == nullptr) {
-			error.Format(db_domain, DB_NOT_FOUND,
+			error.Format(db_domain,
+				     (int)DatabaseErrorCode::NOT_FOUND,
 				     "No such object");
 			return false;
 		}
@@ -506,7 +508,8 @@ UpnpDatabase::Namei(const ContentDirectoryService &server,
 		}
 
 		if (child->type != UPnPDirObject::Type::CONTAINER) {
-			error.Format(db_domain, DB_NOT_FOUND,
+			error.Format(db_domain,
+				     (int)DatabaseErrorCode::NOT_FOUND,
 				     "Not a container");
 			return false;
 		}
@@ -604,7 +607,8 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 			break;
 
 		default:
-			error.Format(db_domain, DB_NOT_FOUND,
+			error.Format(db_domain,
+				     (int)DatabaseErrorCode::NOT_FOUND,
 				     "Not found");
 			return false;
 		}
@@ -617,7 +621,8 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 
 			if (dirent.type != UPnPDirObject::Type::ITEM ||
 			    dirent.item_class != UPnPDirObject::ItemClass::MUSIC) {
-				error.Format(db_domain, DB_NOT_FOUND,
+				error.Format(db_domain,
+					     (int)DatabaseErrorCode::NOT_FOUND,
 					     "Not found");
 				return false;
 			}

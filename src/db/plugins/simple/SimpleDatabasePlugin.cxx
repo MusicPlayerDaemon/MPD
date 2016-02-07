@@ -263,14 +263,14 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 
 	if (r.uri == nullptr) {
 		/* it's a directory */
-		error.Format(db_domain, DB_NOT_FOUND,
+		error.Format(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
 			     "No such song: %s", uri);
 		return nullptr;
 	}
 
 	if (strchr(r.uri, '/') != nullptr) {
 		/* refers to a URI "below" the actual song */
-		error.Format(db_domain, DB_NOT_FOUND,
+		error.Format(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
 			     "No such song: %s", uri);
 		return nullptr;
 	}
@@ -278,7 +278,7 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 	const Song *song = r.directory->FindSong(r.uri);
 	protect.unlock();
 	if (song == nullptr) {
-		error.Format(db_domain, DB_NOT_FOUND,
+		error.Format(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
 			     "No such song: %s", uri);
 		return nullptr;
 	}
@@ -343,7 +343,8 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		}
 	}
 
-	error.Set(db_domain, DB_NOT_FOUND, "No such directory");
+	error.Set(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
+		  "No such directory");
 	return false;
 }
 
@@ -426,13 +427,13 @@ SimpleDatabase::Mount(const char *uri, Database *db, Error &error)
 
 	auto r = root->LookupDirectory(uri);
 	if (r.uri == nullptr) {
-		error.Format(db_domain, DB_CONFLICT,
+		error.Format(db_domain, (int)DatabaseErrorCode::CONFLICT,
 			     "Already exists: %s", uri);
 		return false;
 	}
 
 	if (strchr(r.uri, '/') != nullptr) {
-		error.Format(db_domain, DB_NOT_FOUND,
+		error.Format(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
 			     "Parent not found: %s", uri);
 		return false;
 	}
@@ -459,7 +460,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 		      Error &error)
 {
 	if (cache_path.IsNull()) {
-		error.Format(db_domain, DB_NOT_FOUND,
+		error.Format(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
 			     "No 'cache_directory' configured");
 		return false;
 	}

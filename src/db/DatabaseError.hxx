@@ -22,16 +22,16 @@
 
 class Domain;
 
-enum db_error {
+enum class DatabaseErrorCode {
 	/**
 	 * The database is disabled, i.e. none is configured in this
 	 * MPD instance.
 	 */
-	DB_DISABLED,
+	DISABLED,
 
-	DB_NOT_FOUND,
+	NOT_FOUND,
 
-	DB_CONFLICT,
+	CONFLICT,
 };
 
 extern const Domain db_domain;
