@@ -33,6 +33,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include <stdio.h>
+
 template<typename... Args>
 static inline std::runtime_error
 FormatRuntimeError(const char *fmt, Args&&... args) noexcept
