@@ -118,7 +118,7 @@ public:
 	 * @return a song object that must be freed by the caller, or NULL if
 	 * no song was finished at this time
 	 */
-	DetachedSong *Get();
+	std::unique_ptr<DetachedSong> Get();
 
 private:
 	gcc_pure

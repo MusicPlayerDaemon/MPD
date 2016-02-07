@@ -127,10 +127,10 @@ embcue_playlist_open_uri(const char *uri,
 DetachedSong *
 EmbeddedCuePlaylist::NextSong()
 {
-	DetachedSong *song = parser->Get();
+	auto song = parser->Get();
 	if (song != nullptr) {
 		song->SetURI(filename);
-		return song;
+		return song.release();
 	}
 
 	while (*next != 0) {
@@ -149,7 +149,7 @@ EmbeddedCuePlaylist::NextSong()
 		song = parser->Get();
 		if (song != nullptr) {
 			song->SetURI(filename);
-			return song;
+			return song.release();
 		}
 	}
 
@@ -157,7 +157,7 @@ EmbeddedCuePlaylist::NextSong()
 	song = parser->Get();
 	if (song != nullptr)
 		song->SetURI(filename);
-	return song;
+	return song.release();
 }
 
 static const char *const embcue_playlist_suffixes[] = {

@@ -48,20 +48,20 @@ cue_playlist_open_stream(InputStream &is)
 DetachedSong *
 CuePlaylist::NextSong()
 {
-	DetachedSong *song = parser.Get();
+	auto song = parser.Get();
 	if (song != nullptr)
-		return song;
+		return song.release();
 
 	const char *line;
 	while ((line = tis.ReadLine()) != nullptr) {
 		parser.Feed(line);
 		song = parser.Get();
 		if (song != nullptr)
-			return song;
+			return song.release();
 	}
 
 	parser.Finish();
-	return parser.Get();
+	return parser.Get().release();
 }
 
 static const char *const cue_playlist_suffixes[] = {

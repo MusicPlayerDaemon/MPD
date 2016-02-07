@@ -281,7 +281,7 @@ CueParser::Finish()
 	end = true;
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 CueParser::Get()
 {
 	if (finished == nullptr && end) {
@@ -293,5 +293,7 @@ CueParser::Get()
 		previous.reset();
 	}
 
-	return finished.release();
+	auto result = std::move(finished);
+	finished.reset();
+	return result;
 }
