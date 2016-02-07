@@ -32,7 +32,7 @@
 
 static SongEnumerator *
 playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
-{
+try {
 	assert(!path.IsNull());
 
 	const auto *suffix = path.GetSuffix();
@@ -58,11 +58,14 @@ playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
 		delete is;
 
 	return playlist;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return nullptr;
 }
 
 SongEnumerator *
 playlist_open_path(Path path, Mutex &mutex, Cond &cond)
-{
+try {
 	assert(!path.IsNull());
 
 	const std::string uri_utf8 = path.ToUTF8();
@@ -73,11 +76,14 @@ playlist_open_path(Path path, Mutex &mutex, Cond &cond)
 		playlist = playlist_open_path_suffix(path, mutex, cond);
 
 	return playlist;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return nullptr;
 }
 
 SongEnumerator *
 playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond)
-{
+try {
 	assert(uri_has_scheme(uri));
 
 	SongEnumerator *playlist = playlist_list_open_uri(uri, mutex, cond);
@@ -100,4 +106,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond)
 	}
 
 	return new CloseSongEnumerator(playlist, is);
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return nullptr;
 }
