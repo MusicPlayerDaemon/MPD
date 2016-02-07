@@ -29,13 +29,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-CueParser::CueParser()
-	:state(HEADER),
-	 current(nullptr),
-	 previous(nullptr),
-	 finished(nullptr),
-	 end(false) {}
-
 CueParser::~CueParser()
 {
 	delete current;

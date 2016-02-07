@@ -55,7 +55,7 @@ class CueParser {
 		 * Ignore everything until the next "TRACK".
 		 */
 		IGNORE_TRACK,
-	} state;
+	} state = HEADER;
 
 	/**
 	 * Tags read from the CUE header.
@@ -74,29 +74,28 @@ class CueParser {
 	/**
 	 * The song currently being edited.
 	 */
-	DetachedSong *current;
+	DetachedSong *current = nullptr;
 
 	/**
 	 * The previous song.  It is remembered because its end_time
 	 * will be set to the current song's start time.
 	 */
-	DetachedSong *previous;
+	DetachedSong *previous = nullptr;
 
 	/**
 	 * A song that is completely finished and can be returned to
 	 * the caller via cue_parser_get().
 	 */
-	DetachedSong *finished;
+	DetachedSong *finished = nullptr;
 
 	/**
 	 * Tracks whether cue_parser_finish() has been called.  If
 	 * true, then all remaining (partial) results will be
 	 * delivered by cue_parser_get().
 	 */
-	bool end;
+	bool end = false;
 
 public:
-	CueParser();
 	~CueParser();
 
 	/**
