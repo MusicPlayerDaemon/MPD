@@ -533,7 +533,7 @@ int mpd_main(int argc, char *argv[])
 }
 
 static int mpd_main_after_fork(struct options options)
-{
+try {
 	Error error;
 
 	GlobalEvents::Initialize(*instance->event_loop);
@@ -746,6 +746,9 @@ static int mpd_main_after_fork(struct options options)
 
 	log_deinit();
 	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }
 
 #ifdef ANDROID
