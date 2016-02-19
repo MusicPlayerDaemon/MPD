@@ -25,10 +25,19 @@
 
 class Path;
 class Error;
+class InputStream;
 
 /**
- * Loads the ID3 tags from the file into a libid3tag object.  The
- * return value must be freed with id3_tag_delete().
+ * Loads the ID3 tags from the #InputStream into a libid3tag object.
+ *
+ * @return nullptr on error or if no ID3 tag was found in the file (no
+ * Error will be set)
+ */
+UniqueId3Tag
+tag_id3_load(InputStream &is);
+
+/**
+ * Loads the ID3 tags from the file into a libid3tag object.
  *
  * @return nullptr on error or if no ID3 tag was found in the file (no
  * Error will be set)

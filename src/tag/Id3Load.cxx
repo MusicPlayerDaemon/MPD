@@ -25,14 +25,14 @@
 #include "Riff.hxx"
 #include "Aiff.hxx"
 #include "fs/Path.hxx"
-#include "fs/NarrowPath.hxx"
-#include "fs/FileSystem.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
+#include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 
 #include <id3tag.h>
 
 #include <algorithm>
-
-#include <stdio.h>
 
 static constexpr Domain id3_domain("id3");
 
@@ -45,37 +45,32 @@ tag_is_id3v1(struct id3_tag *tag)
 	return (id3_tag_options(tag, 0, 0) & ID3_TAG_OPTION_ID3V1) != 0;
 }
 
-static size_t
-fill_buffer(void *buf, size_t size, FILE *stream, long offset, int whence)
-{
-	if (fseek(stream, offset, whence) != 0) return 0;
-	return fread(buf, 1, size, stream);
-}
-
 static long
-get_id3v2_footer_size(FILE *stream, long offset, int whence)
+get_id3v2_footer_size(InputStream &is, offset_type offset)
 {
 	id3_byte_t buf[ID3_TAG_QUERYSIZE];
-	size_t bufsize = fill_buffer(buf, ID3_TAG_QUERYSIZE, stream, offset, whence);
-	if (bufsize == 0) return 0;
-	return id3_tag_query(buf, bufsize);
+	if (!is.Seek(offset, IgnoreError()))
+		return 0;
+
+	if (!is.ReadFull(buf, sizeof(buf), IgnoreError()))
+		return 0;
+
+	return id3_tag_query(buf, sizeof(buf));
 }
 
 static UniqueId3Tag
-ReadId3Tag(FILE *file)
+ReadId3Tag(InputStream &is)
 {
 	id3_byte_t query_buffer[ID3_TAG_QUERYSIZE];
-	size_t query_buffer_size = fread(query_buffer, 1, sizeof(query_buffer),
-					 file);
-	if (query_buffer_size == 0)
+	if (!is.ReadFull(query_buffer, sizeof(query_buffer), IgnoreError()))
 		return nullptr;
 
 	/* Look for a tag header */
-	long tag_size = id3_tag_query(query_buffer, query_buffer_size);
+	long tag_size = id3_tag_query(query_buffer, sizeof(query_buffer));
 	if (tag_size <= 0) return nullptr;
 
 	/* Found a tag.  Allocate a buffer and read it in. */
-	if (size_t(tag_size) <= query_buffer_size)
+	if (size_t(tag_size) <= sizeof(query_buffer))
 		/* we have enough data already */
 		return UniqueId3Tag(id3_tag_parse(query_buffer, tag_size));
 
@@ -83,12 +78,12 @@ ReadId3Tag(FILE *file)
 
 	/* copy the start of the tag we already have to the allocated
 	   buffer */
-	id3_byte_t *end = std::copy_n(query_buffer, query_buffer_size,
+	id3_byte_t *end = std::copy_n(query_buffer, sizeof(query_buffer),
 				      tag_buffer.get());
 
 	/* now read the remaining bytes */
-	const size_t remaining = tag_size - query_buffer_size;
-	const size_t nbytes = fread(end, 1, remaining, file);
+	const size_t remaining = tag_size - sizeof(query_buffer);
+	const size_t nbytes = is.Read(end, remaining, IgnoreError());
 	if (nbytes != remaining)
 		return nullptr;
 
@@ -96,29 +91,38 @@ ReadId3Tag(FILE *file)
 }
 
 static UniqueId3Tag
-ReadId3v1Tag(FILE *file)
+ReadId3Tag(InputStream &is, off_t offset)
+{
+	if (!is.Seek(offset, IgnoreError()))
+		return nullptr;
+
+	return ReadId3Tag(is);
+}
+
+static UniqueId3Tag
+ReadId3v1Tag(InputStream &is)
 {
 	id3_byte_t buffer[ID3V1_SIZE];
 
-	if (fread(buffer, 1, ID3V1_SIZE, file) != ID3V1_SIZE)
+	if (is.Read(buffer, ID3V1_SIZE, IgnoreError()) != ID3V1_SIZE)
 		return nullptr;
 
 	return UniqueId3Tag(id3_tag_parse(buffer, ID3V1_SIZE));
 }
 
 static UniqueId3Tag
-tag_id3_read(FILE *file, long offset, int whence)
+ReadId3v1Tag(InputStream &is, off_t offset)
 {
-	if (fseek(file, offset, whence) != 0)
-		return 0;
+	if (!is.Seek(offset, IgnoreError()))
+		return nullptr;
 
-	return ReadId3Tag(file);
+	return ReadId3v1Tag(is);
 }
 
 static UniqueId3Tag
-tag_id3_find_from_beginning(FILE *stream)
+tag_id3_find_from_beginning(InputStream &is)
 {
-	auto tag = ReadId3Tag(stream);
+	auto tag = ReadId3Tag(is);
 	if (!tag) {
 		return nullptr;
 	} else if (tag_is_id3v1(tag.get())) {
@@ -135,7 +139,7 @@ tag_id3_find_from_beginning(FILE *stream)
 			break;
 
 		/* Get the tag specified by the SEEK frame */
-		auto seektag = tag_id3_read(stream, seek, SEEK_CUR);
+		auto seektag = ReadId3Tag(is, is.GetOffset() + seek);
 		if (!seektag || tag_is_id3v1(seektag.get()))
 			break;
 
@@ -147,25 +151,37 @@ tag_id3_find_from_beginning(FILE *stream)
 }
 
 static UniqueId3Tag
-tag_id3_find_from_end(FILE *stream)
+tag_id3_find_from_end(InputStream &is)
 {
-	off_t offset = -(off_t)ID3V1_SIZE;
-
-	/* Get an id3v1 tag from the end of file for later use */
-	if (fseek(stream, offset, SEEK_END) != 0)
+	if (!is.KnownSize() || !is.CheapSeeking())
 		return nullptr;
 
-	auto v1tag = ReadId3v1Tag(stream);
+	const offset_type size = is.GetSize();
+	if (size < ID3V1_SIZE)
+		return nullptr;
+
+	offset_type offset = size - ID3V1_SIZE;
+
+	/* Get an id3v1 tag from the end of file for later use */
+	auto v1tag = ReadId3v1Tag(is, offset);
 	if (!v1tag)
-		offset = 0;
+		offset = size;
 
 	/* Get the id3v2 tag size from the footer (located before v1tag) */
-	int tagsize = get_id3v2_footer_size(stream, offset - ID3_TAG_QUERYSIZE, SEEK_END);
-	if (tagsize >= 0)
+	if (offset < ID3_TAG_QUERYSIZE)
+		return v1tag;
+
+	long tag_offset =
+		get_id3v2_footer_size(is, offset - ID3_TAG_QUERYSIZE);
+	if (tag_offset >= 0)
+		return v1tag;
+
+	offset_type tag_size = -tag_offset;
+	if (tag_size > offset)
 		return v1tag;
 
 	/* Get the tag which the footer belongs to */
-	auto tag = tag_id3_read(stream, tagsize, SEEK_CUR);
+	auto tag = ReadId3Tag(is, offset - tag_size);
 	if (!tag)
 		return v1tag;
 
@@ -174,11 +190,11 @@ tag_id3_find_from_end(FILE *stream)
 }
 
 static UniqueId3Tag
-tag_id3_riff_aiff_load(FILE *file)
+tag_id3_riff_aiff_load(InputStream &is)
 {
-	size_t size = riff_seek_id3(file);
+	size_t size = riff_seek_id3(is);
 	if (size == 0)
-		size = aiff_seek_id3(file);
+		size = aiff_seek_id3(is);
 	if (size == 0)
 		return nullptr;
 
@@ -187,8 +203,7 @@ tag_id3_riff_aiff_load(FILE *file)
 		return nullptr;
 
 	std::unique_ptr<id3_byte_t[]> buffer(new id3_byte_t[size]);
-	size_t ret = fread(buffer.get(), size, 1, file);
-	if (ret != 1) {
+	if (!is.ReadFull(buffer.get(), size, IgnoreError())) {
 		LogWarning(id3_domain, "Failed to read RIFF chunk");
 		return nullptr;
 	}
@@ -197,22 +212,30 @@ tag_id3_riff_aiff_load(FILE *file)
 }
 
 UniqueId3Tag
+tag_id3_load(InputStream &is)
+{
+	const ScopeLock protect(is.mutex);
+
+	auto tag = tag_id3_find_from_beginning(is);
+	if (tag == nullptr && is.CheapSeeking()) {
+		tag = tag_id3_riff_aiff_load(is);
+		if (tag == nullptr)
+			tag = tag_id3_find_from_end(is);
+	}
+
+	return tag;
+}
+
+UniqueId3Tag
 tag_id3_load(Path path_fs, Error &error)
 {
-	FILE *file = FOpen(path_fs, PATH_LITERAL("rb"));
-	if (file == nullptr) {
-		error.FormatErrno("Failed to open file %s",
-				  NarrowPath(path_fs).c_str());
+	Mutex mutex;
+	Cond cond;
+
+	std::unique_ptr<InputStream> is(OpenLocalInputStream(path_fs, mutex,
+							     cond, error));
+	if (!is)
 		return nullptr;
-	}
 
-	auto tag = tag_id3_find_from_beginning(file);
-	if (tag == nullptr) {
-		tag = tag_id3_riff_aiff_load(file);
-		if (tag == nullptr)
-			tag = tag_id3_find_from_end(file);
-	}
-
-	fclose(file);
-	return tag;
+	return tag_id3_load(*is);
 }

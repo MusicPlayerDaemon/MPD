@@ -26,15 +26,17 @@
 #define MPD_RIFF_HXX
 
 #include <stddef.h>
-#include <stdio.h>
+
+class InputStream;
 
 /**
  * Seeks the RIFF file to the ID3 chunk.
  *
+ * @param is a locked #InputStream
  * @return the size of the ID3 chunk on success, or 0 if this is not a
  * RIFF file or no ID3 chunk was found
  */
 size_t
-riff_seek_id3(FILE *file);
+riff_seek_id3(InputStream &is);
 
 #endif

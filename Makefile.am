@@ -1890,6 +1890,11 @@ test_ReadApeTags_SOURCES = test/ReadApeTags.cxx
 if ENABLE_ID3TAG
 test_dump_rva2_LDADD = \
 	$(TAG_LIBS) \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	$(FS_LIBS) \
+	$(ICU_LDADD) \
+	libsystem.a \
 	libutil.a
 test_dump_rva2_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
