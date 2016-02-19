@@ -72,6 +72,10 @@ tag_id3_read(FILE *stream, long offset, int whence)
 	if (tag_size <= 0) return nullptr;
 
 	/* Found a tag.  Allocate a buffer and read it in. */
+	if (size_t(tag_size) <= query_buffer_size)
+		/* we have enough data already */
+		return UniqueId3Tag(id3_tag_parse(query_buffer, tag_size));
+
 	std::unique_ptr<id3_byte_t[]> tag_buffer(new id3_byte_t[tag_size]);
 	int tag_buffer_size = fill_buffer(tag_buffer.get(), tag_size,
 					  stream, offset, whence);
