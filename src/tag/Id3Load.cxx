@@ -30,6 +30,8 @@
 
 #include <id3tag.h>
 
+#include <algorithm>
+
 #include <stdio.h>
 
 static constexpr Domain id3_domain("id3");
@@ -77,12 +79,19 @@ tag_id3_read(FILE *stream, long offset, int whence)
 		return UniqueId3Tag(id3_tag_parse(query_buffer, tag_size));
 
 	std::unique_ptr<id3_byte_t[]> tag_buffer(new id3_byte_t[tag_size]);
-	int tag_buffer_size = fill_buffer(tag_buffer.get(), tag_size,
-					  stream, offset, whence);
-	if (tag_buffer_size < tag_size)
+
+	/* copy the start of the tag we already have to the allocated
+	   buffer */
+	id3_byte_t *end = std::copy_n(query_buffer, query_buffer_size,
+				      tag_buffer.get());
+
+	/* now read the remaining bytes */
+	const size_t remaining = tag_size - query_buffer_size;
+	const size_t nbytes = fread(end, 1, remaining, stream);
+	if (nbytes != remaining)
 		return nullptr;
 
-	return UniqueId3Tag(id3_tag_parse(tag_buffer.get(), tag_buffer_size));
+	return UniqueId3Tag(id3_tag_parse(tag_buffer.get(), tag_size));
 }
 
 static UniqueId3Tag
