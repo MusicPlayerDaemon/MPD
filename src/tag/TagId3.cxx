@@ -37,6 +37,7 @@
 #include <id3tag.h>
 
 #include <string>
+#include <stdexcept>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -507,12 +508,19 @@ bool
 tag_id3_scan(Path path_fs,
 	     const struct tag_handler *handler, void *handler_ctx)
 {
-	Error error;
-	struct id3_tag *tag = tag_id3_load(path_fs, error);
-	if (tag == nullptr) {
-		if (error.IsDefined())
-			LogError(error);
+	struct id3_tag *tag;
 
+	try {
+		Error error;
+		tag = tag_id3_load(path_fs, error);
+		if (tag == nullptr) {
+			if (error.IsDefined())
+				LogError(error);
+
+			return false;
+		}
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		return false;
 	}
 
