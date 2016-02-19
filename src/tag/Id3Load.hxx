@@ -17,46 +17,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_ID3_HXX
-#define MPD_TAG_ID3_HXX
+#ifndef MPD_TAG_ID3_LOAD_HXX
+#define MPD_TAG_ID3_LOAD_HXX
 
 #include "check.h"
-#include "Compiler.h"
 
-class Path;
-struct tag_handler;
-struct Tag;
 struct id3_tag;
-
-#ifdef ENABLE_ID3TAG
-
-bool
-tag_id3_scan(Path path_fs,
-	     const tag_handler *handler, void *handler_ctx);
-
-Tag *
-tag_id3_import(id3_tag *);
+class Path;
+class Error;
 
 /**
- * Import all tags from the provided id3_tag *tag
+ * Loads the ID3 tags from the file into a libid3tag object.  The
+ * return value must be freed with id3_tag_delete().
  *
+ * @return nullptr on error or if no ID3 tag was found in the file (no
+ * Error will be set)
  */
-void
-scan_id3_tag(id3_tag *tag,
-	     const tag_handler *handler, void *handler_ctx);
-
-#else
-
-#include "fs/Path.hxx"
-
-static inline bool
-tag_id3_scan(gcc_unused Path path_fs,
-	     gcc_unused const tag_handler *handler,
-	     gcc_unused void *handler_ctx)
-{
-	return false;
-}
-
-#endif
+struct id3_tag *
+tag_id3_load(Path path_fs, Error &error);
 
 #endif
