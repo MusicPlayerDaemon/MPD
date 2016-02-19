@@ -92,6 +92,7 @@ public:
 	FileInfo GetFileInfo() const;
 
 	void Seek(off_t offset);
+	void Skip(off_t offset);
 
 	/* virtual methods from class Reader */
 	size_t Read(void *data, size_t size) override;

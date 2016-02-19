@@ -66,6 +66,16 @@ FileReader::Seek(off_t offset)
 }
 
 void
+FileReader::Skip(off_t offset)
+{
+	assert(IsDefined());
+
+	auto result = SetFilePointer(handle, offset, nullptr, FILE_CURRENT);
+	if (result == INVALID_SET_FILE_POINTER)
+		throw MakeLastError("Failed to seek");
+}
+
+void
 FileReader::Close()
 {
 	assert(IsDefined());
@@ -115,6 +125,17 @@ FileReader::Seek(off_t offset)
 	assert(IsDefined());
 
 	auto result = fd.Seek(offset);
+	const bool success = result >= 0;
+	if (!success)
+		throw MakeErrno("Failed to seek");
+}
+
+void
+FileReader::Skip(off_t offset)
+{
+	assert(IsDefined());
+
+	auto result = fd.Skip(offset);
 	const bool success = result >= 0;
 	if (!success)
 		throw MakeErrno("Failed to seek");
