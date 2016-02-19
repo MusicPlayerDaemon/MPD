@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 	const char *path = argv[1];
 
 	Error error;
-	struct id3_tag *tag = tag_id3_load(Path::FromFS(path), error);
+	const auto tag = tag_id3_load(Path::FromFS(path), error);
 	if (tag == NULL) {
 		if (error.IsDefined())
 			LogError(error);
@@ -70,9 +70,7 @@ int main(int argc, char **argv)
 	ReplayGainInfo replay_gain;
 	replay_gain.Clear();
 
-	bool success = tag_rva2_parse(tag, replay_gain);
-	id3_tag_delete(tag);
-
+	bool success = tag_rva2_parse(tag.get(), replay_gain);
 	if (!success) {
 		fprintf(stderr, "No RVA2 tag found\n");
 		return EXIT_FAILURE;

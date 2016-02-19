@@ -869,6 +869,7 @@ libtag_a_SOURCES =\
 if ENABLE_ID3TAG
 libtag_a_SOURCES += \
 	src/tag/Id3Load.cxx src/tag/Id3Load.hxx \
+	src/tag/Id3Unique.hxx \
 	src/tag/TagId3.cxx src/tag/TagId3.hxx \
 	src/tag/TagRva2.cxx src/tag/TagRva2.hxx \
 	src/tag/Riff.cxx src/tag/Riff.hxx \

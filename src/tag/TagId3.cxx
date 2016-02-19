@@ -347,7 +347,7 @@ bool
 tag_id3_scan(Path path_fs,
 	     const struct tag_handler *handler, void *handler_ctx)
 {
-	struct id3_tag *tag;
+	UniqueId3Tag tag;
 
 	try {
 		Error error;
@@ -363,7 +363,6 @@ tag_id3_scan(Path path_fs,
 		return false;
 	}
 
-	scan_id3_tag(tag, handler, handler_ctx);
-	id3_tag_delete(tag);
+	scan_id3_tag(tag.get(), handler, handler_ctx);
 	return true;
 }

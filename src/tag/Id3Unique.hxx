@@ -17,23 +17,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_TAG_ID3_LOAD_HXX
-#define MPD_TAG_ID3_LOAD_HXX
+#ifndef MPD_TAG_ID3_UNIQUE_HXX
+#define MPD_TAG_ID3_UNIQUE_HXX
 
 #include "check.h"
-#include "Id3Unique.hxx"
 
-class Path;
-class Error;
+#include <id3tag.h>
 
-/**
- * Loads the ID3 tags from the file into a libid3tag object.  The
- * return value must be freed with id3_tag_delete().
- *
- * @return nullptr on error or if no ID3 tag was found in the file (no
- * Error will be set)
- */
-UniqueId3Tag
-tag_id3_load(Path path_fs, Error &error);
+#include <memory>
+
+struct Id3Delete {
+	void operator()(struct id3_tag *tag) {
+		id3_tag_delete(tag);
+	}
+};
+
+using UniqueId3Tag = std::unique_ptr<struct id3_tag, Id3Delete>;
 
 #endif

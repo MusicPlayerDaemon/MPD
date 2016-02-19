@@ -57,7 +57,7 @@ get_id3v2_footer_size(FILE *stream, long offset, int whence)
 	return id3_tag_query(buf, bufsize);
 }
 
-static struct id3_tag *
+static UniqueId3Tag
 tag_id3_read(FILE *stream, long offset, int whence)
 {
 	/* It's ok if we get less than we asked for */
@@ -72,57 +72,51 @@ tag_id3_read(FILE *stream, long offset, int whence)
 	if (tag_size <= 0) return nullptr;
 
 	/* Found a tag.  Allocate a buffer and read it in. */
-	id3_byte_t *tag_buffer = new id3_byte_t[tag_size];
-	int tag_buffer_size = fill_buffer(tag_buffer, tag_size,
+	std::unique_ptr<id3_byte_t[]> tag_buffer(new id3_byte_t[tag_size]);
+	int tag_buffer_size = fill_buffer(tag_buffer.get(), tag_size,
 					  stream, offset, whence);
-	if (tag_buffer_size < tag_size) {
-		delete[] tag_buffer;
+	if (tag_buffer_size < tag_size)
 		return nullptr;
-	}
 
-	id3_tag *tag = id3_tag_parse(tag_buffer, tag_buffer_size);
-	delete[] tag_buffer;
-	return tag;
+	return UniqueId3Tag(id3_tag_parse(tag_buffer.get(), tag_buffer_size));
 }
 
-static struct id3_tag *
+static UniqueId3Tag
 tag_id3_find_from_beginning(FILE *stream)
 {
-	id3_tag *tag = tag_id3_read(stream, 0, SEEK_SET);
+	auto tag = tag_id3_read(stream, 0, SEEK_SET);
 	if (!tag) {
 		return nullptr;
-	} else if (tag_is_id3v1(tag)) {
+	} else if (tag_is_id3v1(tag.get())) {
 		/* id3v1 tags don't belong here */
-		id3_tag_delete(tag);
 		return nullptr;
 	}
 
 	/* We have an id3v2 tag, so let's look for SEEK frames */
 	id3_frame *frame;
-	while ((frame = id3_tag_findframe(tag, "SEEK", 0))) {
+	while ((frame = id3_tag_findframe(tag.get(), "SEEK", 0))) {
 		/* Found a SEEK frame, get it's value */
 		int seek = id3_field_getint(id3_frame_field(frame, 0));
 		if (seek < 0)
 			break;
 
 		/* Get the tag specified by the SEEK frame */
-		id3_tag *seektag = tag_id3_read(stream, seek, SEEK_CUR);
-		if (!seektag || tag_is_id3v1(seektag))
+		auto seektag = tag_id3_read(stream, seek, SEEK_CUR);
+		if (!seektag || tag_is_id3v1(seektag.get()))
 			break;
 
 		/* Replace the old tag with the new one */
-		id3_tag_delete(tag);
-		tag = seektag;
+		tag = std::move(seektag);
 	}
 
 	return tag;
 }
 
-static struct id3_tag *
+static UniqueId3Tag
 tag_id3_find_from_end(FILE *stream)
 {
 	/* Get an id3v1 tag from the end of file for later use */
-	id3_tag *v1tag = tag_id3_read(stream, -128, SEEK_END);
+	auto v1tag = tag_id3_read(stream, -128, SEEK_END);
 
 	/* Get the id3v2 tag size from the footer (located before v1tag) */
 	int tagsize = get_id3v2_footer_size(stream, (v1tag ? -128 : 0) - 10, SEEK_END);
@@ -130,17 +124,15 @@ tag_id3_find_from_end(FILE *stream)
 		return v1tag;
 
 	/* Get the tag which the footer belongs to */
-	id3_tag *tag = tag_id3_read(stream, tagsize, SEEK_CUR);
+	auto tag = tag_id3_read(stream, tagsize, SEEK_CUR);
 	if (!tag)
 		return v1tag;
 
 	/* We have an id3v2 tag, so ditch v1tag */
-	id3_tag_delete(v1tag);
-
 	return tag;
 }
 
-static struct id3_tag *
+static UniqueId3Tag
 tag_id3_riff_aiff_load(FILE *file)
 {
 	size_t size = riff_seek_id3(file);
@@ -153,20 +145,17 @@ tag_id3_riff_aiff_load(FILE *file)
 		/* too large, don't allocate so much memory */
 		return nullptr;
 
-	id3_byte_t *buffer = new id3_byte_t[size];
-	size_t ret = fread(buffer, size, 1, file);
+	std::unique_ptr<id3_byte_t[]> buffer(new id3_byte_t[size]);
+	size_t ret = fread(buffer.get(), size, 1, file);
 	if (ret != 1) {
 		LogWarning(id3_domain, "Failed to read RIFF chunk");
-		delete[] buffer;
 		return nullptr;
 	}
 
-	struct id3_tag *tag = id3_tag_parse(buffer, size);
-	delete[] buffer;
-	return tag;
+	return UniqueId3Tag(id3_tag_parse(buffer.get(), size));
 }
 
-struct id3_tag *
+UniqueId3Tag
 tag_id3_load(Path path_fs, Error &error)
 {
 	FILE *file = FOpen(path_fs, PATH_LITERAL("rb"));
@@ -176,7 +165,7 @@ tag_id3_load(Path path_fs, Error &error)
 		return nullptr;
 	}
 
-	struct id3_tag *tag = tag_id3_find_from_beginning(file);
+	auto tag = tag_id3_find_from_beginning(file);
 	if (tag == nullptr) {
 		tag = tag_id3_riff_aiff_load(file);
 		if (tag == nullptr)
