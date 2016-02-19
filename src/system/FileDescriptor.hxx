@@ -146,6 +146,10 @@ public:
 		return lseek(Get(), offset, SEEK_SET);
 	}
 
+	off_t Skip(off_t offset) {
+		return lseek(Get(), offset, SEEK_CUR);
+	}
+
 	gcc_pure
 	off_t Tell() const {
 		return lseek(Get(), 0, SEEK_CUR);
