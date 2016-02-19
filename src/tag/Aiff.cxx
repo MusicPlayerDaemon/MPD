@@ -42,16 +42,22 @@ struct aiff_chunk_header {
 	uint32_t size;
 };
 
+gcc_pure
+static off_t
+GetFileSize(FILE *file)
+{
+	struct stat st;
+	return fstat(fileno(file), &st) == 0
+		? st.st_size
+		: -1;
+}
+
 size_t
 aiff_seek_id3(FILE *file)
 {
 	/* determine the file size */
 
-	struct stat st;
-	if (fstat(fileno(file), &st) < 0) {
-		LogErrno(aiff_domain, "Failed to stat file descriptor");
-		return 0;
-	}
+	const off_t file_size = GetFileSize(file);
 
 	/* seek to the beginning and read the AIFF header */
 
@@ -64,7 +70,8 @@ aiff_seek_id3(FILE *file)
 	size_t size = fread(&header, sizeof(header), 1, file);
 	if (size != 1 ||
 	    memcmp(header.id, "FORM", 4) != 0 ||
-	    FromBE32(header.size) > (uint32_t)st.st_size ||
+	    (file_size >= 0 &&
+	     FromBE32(header.size) > (uint32_t)file_size) ||
 	    (memcmp(header.format, "AIFF", 4) != 0 &&
 	     memcmp(header.format, "AIFC", 4) != 0))
 		/* not a AIFF file */

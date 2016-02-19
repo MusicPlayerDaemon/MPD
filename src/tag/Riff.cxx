@@ -42,16 +42,22 @@ struct riff_chunk_header {
 	uint32_t size;
 };
 
+gcc_pure
+static off_t
+GetFileSize(FILE *file)
+{
+	struct stat st;
+	return fstat(fileno(file), &st) == 0
+		? st.st_size
+		: -1;
+}
+
 size_t
 riff_seek_id3(FILE *file)
 {
 	/* determine the file size */
 
-	struct stat st;
-	if (fstat(fileno(file), &st) < 0) {
-		LogErrno(riff_domain, "Failed to stat file descriptor");
-		return 0;
-	}
+	const off_t file_size = GetFileSize(file);
 
 	/* seek to the beginning and read the RIFF header */
 
@@ -64,7 +70,7 @@ riff_seek_id3(FILE *file)
 	size_t size = fread(&header, sizeof(header), 1, file);
 	if (size != 1 ||
 	    memcmp(header.id, "RIFF", 4) != 0 ||
-	    FromLE32(header.size) > (uint32_t)st.st_size)
+	    (file_size >= 0 && FromLE32(header.size) > (uint32_t)file_size))
 		/* not a RIFF file */
 		return 0;
 
