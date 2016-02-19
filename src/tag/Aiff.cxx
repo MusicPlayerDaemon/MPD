@@ -84,13 +84,13 @@ aiff_seek_id3(FILE *file)
 			   underflow when casting to off_t */
 			return 0;
 
-		if (size % 2 != 0)
-			/* pad byte */
-			++size;
-
 		if (memcmp(chunk.id, "ID3 ", 4) == 0)
 			/* found it! */
 			return size;
+
+		if (size % 2 != 0)
+			/* pad byte */
+			++size;
 
 		if (fseek(file, size, SEEK_CUR) != 0)
 			return 0;
