@@ -105,7 +105,7 @@ tag_id3_read(FILE *file, long offset, int whence)
 static UniqueId3Tag
 tag_id3_find_from_beginning(FILE *stream)
 {
-	auto tag = tag_id3_read(stream, 0, SEEK_SET);
+	auto tag = ReadId3Tag(stream);
 	if (!tag) {
 		return nullptr;
 	} else if (tag_is_id3v1(tag.get())) {
