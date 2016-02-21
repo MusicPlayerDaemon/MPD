@@ -50,7 +50,6 @@ tag_save(FILE *file, const Tag &tag)
 int main(int argc, char **argv)
 try {
 	const char *uri;
-	InputStream *is = NULL;
 
 	if (argc != 3) {
 		fprintf(stderr, "Usage: dump_playlist CONFIG URI\n");
@@ -82,12 +81,13 @@ try {
 	Mutex mutex;
 	Cond cond;
 
+	InputStreamPtr is;
 	auto playlist = playlist_list_open_uri(uri, mutex, cond);
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
 		is = InputStream::OpenReady(uri, mutex, cond, error);
-		if (is == NULL) {
+		if (!is) {
 			if (error.IsDefined())
 				LogError(error);
 			else
@@ -100,7 +100,6 @@ try {
 
 		playlist = playlist_list_open_stream(*is, uri);
 		if (playlist == NULL) {
-			delete is;
 			fprintf(stderr, "Failed to open playlist\n");
 			return 2;
 		}
@@ -132,7 +131,7 @@ try {
 	/* deinitialize everything */
 
 	delete playlist;
-	delete is;
+	is.reset();
 
 	decoder_plugin_deinit_all();
 	playlist_list_global_finish();

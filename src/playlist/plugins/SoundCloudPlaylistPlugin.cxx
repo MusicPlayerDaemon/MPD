@@ -234,8 +234,8 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 		      Mutex &mutex, Cond &cond)
 {
 	Error error;
-	InputStream *input_stream = InputStream::OpenReady(url, mutex, cond,
-							   error);
+	auto input_stream = InputStream::OpenReady(url, mutex, cond,
+						   error);
 	if (input_stream == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
@@ -260,7 +260,6 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 				done = true;
 			} else {
 				mutex.unlock();
-				delete input_stream;
 				return -1;
 			}
 		}
@@ -279,7 +278,6 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	}
 
 	mutex.unlock();
-	delete input_stream;
 
 	return 0;
 }

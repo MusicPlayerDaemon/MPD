@@ -68,12 +68,7 @@ tag_stream_scan(const char *uri, const tag_handler &handler, void *ctx)
 	Mutex mutex;
 	Cond cond;
 
-	InputStream *is = InputStream::OpenReady(uri, mutex, cond,
-						 IgnoreError());
-	if (is == nullptr)
-		return false;
-
-	bool success = tag_stream_scan(*is, handler, ctx);
-	delete is;
-	return success;
+	auto is = InputStream::OpenReady(uri, mutex, cond,
+					 IgnoreError());
+	return is && tag_stream_scan(*is, handler, ctx);
 }

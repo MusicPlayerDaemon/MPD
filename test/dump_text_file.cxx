@@ -92,19 +92,20 @@ int main(int argc, char **argv)
 
 	/* open the stream and dump it */
 
-	Mutex mutex;
-	Cond cond;
+	{
+		Mutex mutex;
+		Cond cond;
 
-	InputStream *is = InputStream::OpenReady(argv[1], mutex, cond, error);
-	if (is != NULL) {
-		ret = dump_input_stream(*is);
-		delete is;
-	} else {
-		if (error.IsDefined())
-			LogError(error);
-		else
-			fprintf(stderr, "input_stream::Open() failed\n");
-		ret = EXIT_FAILURE;
+		auto is = InputStream::OpenReady(argv[1], mutex, cond, error);
+		if (is) {
+			ret = dump_input_stream(*is);
+		} else {
+			if (error.IsDefined())
+				LogError(error);
+			else
+				fprintf(stderr, "input_stream::Open() failed\n");
+			ret = EXIT_FAILURE;
+		}
 	}
 
 	/* deinitialize everything */

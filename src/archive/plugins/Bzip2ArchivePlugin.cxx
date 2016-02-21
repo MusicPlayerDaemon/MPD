@@ -49,20 +49,16 @@ public:
 	RefCount ref;
 
 	std::string name;
-	InputStream *const istream;
+	const InputStreamPtr istream;
 
-	Bzip2ArchiveFile(Path path, InputStream *_is)
+	Bzip2ArchiveFile(Path path, InputStreamPtr &&_is)
 		:ArchiveFile(bz2_archive_plugin),
 		 name(path.GetBase().c_str()),
-		 istream(_is) {
+		 istream(std::move(_is)) {
 		// remove .bz2 suffix
 		const size_t len = name.length();
 		if (len > 4)
 			name.erase(len - 4);
-	}
-
-	~Bzip2ArchiveFile() {
-		delete istream;
 	}
 
 	void Ref() {
@@ -141,11 +137,11 @@ bz2_open(Path pathname, Error &error)
 {
 	static Mutex mutex;
 	static Cond cond;
-	InputStream *is = OpenLocalInputStream(pathname, mutex, cond, error);
+	auto is = OpenLocalInputStream(pathname, mutex, cond, error);
 	if (is == nullptr)
 		return nullptr;
 
-	return new Bzip2ArchiveFile(pathname, is);
+	return new Bzip2ArchiveFile(pathname, std::move(is));
 }
 
 /* single archive handling */

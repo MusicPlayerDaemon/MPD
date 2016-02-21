@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "Offset.hxx"
+#include "Ptr.hxx"
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
@@ -123,18 +124,17 @@ public:
 	 * @return an #InputStream object on success, nullptr on error
 	 */
 	gcc_nonnull_all
-	gcc_malloc
-	static InputStream *Open(const char *uri, Mutex &mutex, Cond &cond,
-				 Error &error);
+	static InputStreamPtr Open(const char *uri, Mutex &mutex, Cond &cond,
+				   Error &error);
 
 	/**
 	 * Just like Open(), but waits for the stream to become ready.
 	 * It is a wrapper for Open(), WaitReady() and Check().
 	 */
-	gcc_malloc gcc_nonnull_all
-	static InputStream *OpenReady(const char *uri,
-				      Mutex &mutex, Cond &cond,
-				      Error &error);
+	gcc_nonnull_all
+	static InputStreamPtr OpenReady(const char *uri,
+					Mutex &mutex, Cond &cond,
+					Error &error);
 
 	/**
 	 * The absolute URI which was used to open this stream.

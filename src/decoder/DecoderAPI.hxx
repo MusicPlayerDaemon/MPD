@@ -30,6 +30,7 @@
 // IWYU pragma: begin_exports
 
 #include "check.h"
+#include "input/Ptr.hxx"
 #include "DecoderCommand.hxx"
 #include "DecoderPlugin.hxx"
 #include "ReplayGainInfo.hxx"
@@ -116,7 +117,7 @@ decoder_seek_error(Decoder &decoder);
  * cancelled by DecoderCommand::STOP (returns nullptr without setting
  * #Error).
  */
-InputStream *
+InputStreamPtr
 decoder_open_uri(Decoder &decoder, const char *uri, Error &error);
 
 /**

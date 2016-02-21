@@ -64,10 +64,9 @@ int main(int argc, char **argv)
 	if (plugin->file_decode != nullptr) {
 		plugin->FileDecode(decoder, Path::FromFS(uri));
 	} else if (plugin->stream_decode != nullptr) {
-		InputStream *is =
-			InputStream::OpenReady(uri, decoder.mutex,
-					       decoder.cond, error);
-		if (is == NULL) {
+		auto is = InputStream::OpenReady(uri, decoder.mutex,
+						 decoder.cond, error);
+		if (!is) {
 			if (error.IsDefined())
 				LogError(error);
 			else
@@ -77,8 +76,6 @@ int main(int argc, char **argv)
 		}
 
 		plugin->StreamDecode(decoder, *is);
-
-		delete is;
 	} else {
 		fprintf(stderr, "Decoder plugin is not usable\n");
 		return EXIT_FAILURE;

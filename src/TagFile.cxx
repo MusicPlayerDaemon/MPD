@@ -39,7 +39,7 @@ class TagFileScan {
 
 	Mutex mutex;
 	Cond cond;
-	InputStream *is;
+	InputStreamPtr is;
 
 public:
 	TagFileScan(Path _path_fs, const char *_suffix,
@@ -47,10 +47,6 @@ public:
 		:path_fs(_path_fs), suffix(_suffix),
 		 handler(_handler), handler_ctx(_handler_ctx) ,
 		 is(nullptr) {}
-
-	~TagFileScan() {
-		delete is;
-	}
 
 	bool ScanFile(const DecoderPlugin &plugin) {
 		return plugin.ScanFile(path_fs, handler, handler_ctx);

@@ -107,16 +107,15 @@ int main(int argc, char **argv)
 		Mutex mutex;
 		Cond cond;
 
-		InputStream *is = InputStream::OpenReady(path.c_str(),
-							 mutex, cond,
-							 error);
-		if (is == NULL) {
+		auto is = InputStream::OpenReady(path.c_str(),
+						 mutex, cond,
+						 error);
+		if (!is) {
 			FormatError(error, "Failed to open %s", path.c_str());
 			return EXIT_FAILURE;
 		}
 
 		success = plugin->ScanStream(*is, print_handler, nullptr);
-		delete is;
 	}
 
 	decoder_plugin_deinit_all();

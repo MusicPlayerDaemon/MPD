@@ -17,22 +17,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_INPUT_LOCAL_OPEN_HXX
-#define MPD_INPUT_LOCAL_OPEN_HXX
+#ifndef MPD_INPUT_STREAM_PTR_HXX
+#define MPD_INPUT_STREAM_PTR_HXX
 
-#include "check.h"
-#include "Ptr.hxx"
+#include <memory>
 
-class Path;
-class Mutex;
-class Cond;
-class Error;
+class InputStream;
 
-/**
- * Open a "local" file.  This is a wrapper for the input plugins
- * "file" and "archive".
- */
-InputStreamPtr
-OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond, Error &error);
+typedef std::unique_ptr<InputStream> InputStreamPtr;
 
 #endif

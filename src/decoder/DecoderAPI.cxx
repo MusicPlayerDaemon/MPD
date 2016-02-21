@@ -256,7 +256,7 @@ void decoder_seek_error(Decoder & decoder)
 	decoder_command_finished(decoder);
 }
 
-InputStream *
+InputStreamPtr
 decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
 {
 	assert(decoder.dc.state == DecoderState::START ||
@@ -266,8 +266,8 @@ decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
 	Mutex &mutex = dc.mutex;
 	Cond &cond = dc.cond;
 
-	InputStream *is = InputStream::Open(uri, mutex, cond, error);
-	if (is == nullptr)
+	auto is = InputStream::Open(uri, mutex, cond, error);
+	if (!is)
 		return nullptr;
 
 	mutex.lock();
@@ -280,7 +280,6 @@ decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
 
 		if (dc.command == DecoderCommand::STOP) {
 			mutex.unlock();
-			delete is;
 			return nullptr;
 		}
 

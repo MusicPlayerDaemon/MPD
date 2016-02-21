@@ -44,7 +44,7 @@ try {
 		return nullptr;
 
 	Error error;
-	InputStream *is = OpenLocalInputStream(path, mutex, cond, error);
+	auto is = OpenLocalInputStream(path, mutex, cond, error);
 	if (is == nullptr) {
 		LogError(error);
 		return nullptr;
@@ -53,9 +53,7 @@ try {
 	auto playlist = playlist_list_open_stream_suffix(*is,
 							 suffix_utf8.c_str());
 	if (playlist != nullptr)
-		playlist = new CloseSongEnumerator(playlist, is);
-	else
-		delete is;
+		playlist = new CloseSongEnumerator(playlist, is.release());
 
 	return playlist;
 } catch (const std::runtime_error &e) {
@@ -91,7 +89,7 @@ try {
 		return playlist;
 
 	Error error;
-	InputStream *is = InputStream::OpenReady(uri, mutex, cond, error);
+	auto is = InputStream::OpenReady(uri, mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
 			FormatError(error, "Failed to open %s", uri);
@@ -100,12 +98,10 @@ try {
 	}
 
 	playlist = playlist_list_open_stream(*is, uri);
-	if (playlist == nullptr) {
-		delete is;
+	if (playlist == nullptr)
 		return nullptr;
-	}
 
-	return new CloseSongEnumerator(playlist, is);
+	return new CloseSongEnumerator(playlist, is.release());
 } catch (const std::runtime_error &e) {
 	LogError(e);
 	return nullptr;

@@ -486,13 +486,13 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 
 	char *wvc_url = xstrcatdup(uri, "c");
 
-	InputStream *is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
+	auto is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
 	free(wvc_url);
 
 	if (is_wvc == nullptr)
 		return nullptr;
 
-	return new WavpackInput(decoder, *is_wvc);
+	return new WavpackInput(decoder, *is_wvc.release());
 }
 
 /*
