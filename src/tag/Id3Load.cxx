@@ -60,13 +60,12 @@ get_id3v2_footer_size(FILE *stream, long offset, int whence)
 }
 
 static UniqueId3Tag
-tag_id3_read(FILE *stream, long offset, int whence)
+ReadId3Tag(FILE *file)
 {
-	/* It's ok if we get less than we asked for */
 	id3_byte_t query_buffer[ID3_TAG_QUERYSIZE];
-	size_t query_buffer_size = fill_buffer(query_buffer, ID3_TAG_QUERYSIZE,
-					       stream, offset, whence);
-	if (query_buffer_size <= 0)
+	size_t query_buffer_size = fread(query_buffer, 1, sizeof(query_buffer),
+					 file);
+	if (query_buffer_size == 0)
 		return nullptr;
 
 	/* Look for a tag header */
@@ -87,11 +86,20 @@ tag_id3_read(FILE *stream, long offset, int whence)
 
 	/* now read the remaining bytes */
 	const size_t remaining = tag_size - query_buffer_size;
-	const size_t nbytes = fread(end, 1, remaining, stream);
+	const size_t nbytes = fread(end, 1, remaining, file);
 	if (nbytes != remaining)
 		return nullptr;
 
 	return UniqueId3Tag(id3_tag_parse(tag_buffer.get(), tag_size));
+}
+
+static UniqueId3Tag
+tag_id3_read(FILE *file, long offset, int whence)
+{
+	if (fseek(file, offset, whence) != 0)
+		return 0;
+
+	return ReadId3Tag(file);
 }
 
 static UniqueId3Tag
