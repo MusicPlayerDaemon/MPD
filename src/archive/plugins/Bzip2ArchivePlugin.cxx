@@ -103,6 +103,9 @@ struct Bzip2InputStream final : public InputStream {
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
 	size_t Read(void *ptr, size_t size, Error &error) override;
+
+private:
+	bool FillBuffer(Error &error);
 };
 
 static constexpr Domain bz2_domain("bz2");
@@ -175,24 +178,19 @@ Bzip2ArchiveFile::OpenStream(const char *path,
 	return bis;
 }
 
-static bool
-bz2_fillbuffer(Bzip2InputStream *bis, Error &error)
+inline bool
+Bzip2InputStream::FillBuffer(Error &error)
 {
-	size_t count;
-	bz_stream *bzstream;
-
-	bzstream = &bis->bzstream;
-
-	if (bzstream->avail_in > 0)
+	if (bzstream.avail_in > 0)
 		return true;
 
-	count = bis->archive->istream->Read(bis->buffer, sizeof(bis->buffer),
-					    error);
+	size_t count = archive->istream->Read(buffer, sizeof(buffer),
+					      error);
 	if (count == 0)
 		return false;
 
-	bzstream->next_in = bis->buffer;
-	bzstream->avail_in = count;
+	bzstream.next_in = buffer;
+	bzstream.avail_in = count;
 	return true;
 }
 
@@ -209,7 +207,7 @@ Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
 	bzstream.avail_out = length;
 
 	do {
-		if (!bz2_fillbuffer(this, error))
+		if (!FillBuffer(error))
 			return 0;
 
 		bz_result = BZ2_bzDecompress(&bzstream);
