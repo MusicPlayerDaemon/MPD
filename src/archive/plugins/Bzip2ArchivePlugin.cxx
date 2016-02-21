@@ -88,7 +88,7 @@ public:
 struct Bzip2InputStream final : public InputStream {
 	Bzip2ArchiveFile *archive;
 
-	bool eof;
+	bool eof = false;
 
 	bz_stream bzstream;
 
@@ -150,7 +150,7 @@ Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context,
 				   const char *_uri,
 				   Mutex &_mutex, Cond &_cond)
 	:InputStream(_uri, _mutex, _cond),
-	 archive(&_context), eof(false)
+	 archive(&_context)
 {
 	archive->Ref();
 }
