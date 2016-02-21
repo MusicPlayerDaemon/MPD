@@ -26,6 +26,11 @@
 
 #include <assert.h>
 
+TextInputStream::TextInputStream(InputStreamPtr &&_is)
+	:is(std::move(_is)) {}
+
+TextInputStream::~TextInputStream() {}
+
 char *
 TextInputStream::ReadLine()
 {
@@ -54,7 +59,7 @@ TextInputStream::ReadLine()
 		--dest.size;
 
 		Error error;
-		size_t nbytes = is.LockRead(dest.data, dest.size, error);
+		size_t nbytes = is->LockRead(dest.data, dest.size, error);
 		if (nbytes > 0)
 			buffer.Append(nbytes);
 		else if (error.IsDefined()) {

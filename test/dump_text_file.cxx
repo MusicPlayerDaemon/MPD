@@ -44,23 +44,23 @@ dump_text_file(TextInputStream &is)
 }
 
 static int
-dump_input_stream(InputStream &is)
+dump_input_stream(InputStreamPtr &&is)
 {
 	{
-		TextInputStream tis(is);
+		TextInputStream tis(std::move(is));
 		dump_text_file(tis);
 	}
 
-	is.Lock();
+	is->Lock();
 
 	Error error;
-	if (!is.Check(error)) {
+	if (!is->Check(error)) {
 		LogError(error);
-		is.Unlock();
+		is->Unlock();
 		return EXIT_FAILURE;
 	}
 
-	is.Unlock();
+	is->Unlock();
 
 	return 0;
 }
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 
 		auto is = InputStream::OpenReady(argv[1], mutex, cond, error);
 		if (is) {
-			ret = dump_input_stream(*is);
+			ret = dump_input_stream(std::move(is));
 		} else {
 			if (error.IsDefined())
 				LogError(error);

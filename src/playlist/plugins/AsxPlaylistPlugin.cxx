@@ -144,7 +144,7 @@ asx_char_data(void *user_data, const XML_Char *s, int len)
  */
 
 static SongEnumerator *
-asx_open_stream(InputStream &is)
+asx_open_stream(InputStreamPtr &&is)
 {
 	AsxParser parser;
 
@@ -154,7 +154,7 @@ asx_open_stream(InputStream &is)
 		expat.SetCharacterDataHandler(asx_char_data);
 
 		Error error;
-		if (!expat.Parse(is, error)) {
+		if (!expat.Parse(*is, error)) {
 			LogError(error);
 			return nullptr;
 		}

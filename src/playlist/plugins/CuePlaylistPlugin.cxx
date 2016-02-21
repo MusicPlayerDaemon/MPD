@@ -27,22 +27,21 @@
 #include <string>
 
 class CuePlaylist final : public SongEnumerator {
-	InputStream &is;
 	TextInputStream tis;
 	CueParser parser;
 
  public:
-	CuePlaylist(InputStream &_is)
-		:is(_is), tis(is) {
+	CuePlaylist(InputStreamPtr &&is)
+		:tis(std::move(is)) {
 	}
 
 	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static SongEnumerator *
-cue_playlist_open_stream(InputStream &is)
+cue_playlist_open_stream(InputStreamPtr &&is)
 {
-	return new CuePlaylist(is);
+	return new CuePlaylist(std::move(is));
 }
 
 std::unique_ptr<DetachedSong>

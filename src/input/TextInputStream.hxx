@@ -20,12 +20,13 @@
 #ifndef MPD_TEXT_INPUT_STREAM_HXX
 #define MPD_TEXT_INPUT_STREAM_HXX
 
+#include "input/Ptr.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
 class InputStream;
 
 class TextInputStream {
-	InputStream &is;
+	InputStreamPtr is;
 	StaticFifoBuffer<char, 4096> buffer;
 
 public:
@@ -35,11 +36,15 @@ public:
 	 *
 	 * @param _is an open #InputStream object
 	 */
-	explicit TextInputStream(InputStream &_is)
-		:is(_is) {}
+	explicit TextInputStream(InputStreamPtr &&_is);
+	~TextInputStream();
 
 	TextInputStream(const TextInputStream &) = delete;
 	TextInputStream& operator=(const TextInputStream &) = delete;
+
+	InputStreamPtr &&StealInputStream() {
+		return std::move(is);
+	}
 
 	/**
 	 * Reads the next line from the stream with newline character stripped.

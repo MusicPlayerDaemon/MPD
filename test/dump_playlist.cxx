@@ -98,7 +98,7 @@ try {
 
 		/* open the playlist */
 
-		playlist = playlist_list_open_stream(*is, uri);
+		playlist = playlist_list_open_stream(std::move(is), uri);
 		if (playlist == NULL) {
 			fprintf(stderr, "Failed to open playlist\n");
 			return 2;

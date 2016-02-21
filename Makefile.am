@@ -1468,8 +1468,6 @@ endif
 libplaylist_plugins_a_SOURCES = \
 	src/playlist/PlaylistPlugin.hxx \
 	src/playlist/SongEnumerator.hxx \
-	src/playlist/CloseSongEnumerator.cxx \
-	src/playlist/CloseSongEnumerator.hxx \
 	src/playlist/MemorySongEnumerator.cxx \
 	src/playlist/MemorySongEnumerator.hxx \
 	src/playlist/plugins/ExtM3uPlaylistPlugin.cxx \

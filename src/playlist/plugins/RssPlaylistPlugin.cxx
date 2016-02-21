@@ -142,7 +142,7 @@ rss_char_data(void *user_data, const XML_Char *s, int len)
  */
 
 static SongEnumerator *
-rss_open_stream(InputStream &is)
+rss_open_stream(InputStreamPtr &&is)
 {
 	RssParser parser;
 
@@ -152,7 +152,7 @@ rss_open_stream(InputStream &is)
 		expat.SetCharacterDataHandler(rss_char_data);
 
 		Error error;
-		if (!expat.Parse(is, error)) {
+		if (!expat.Parse(*is, error)) {
 			LogError(error);
 			return nullptr;
 		}

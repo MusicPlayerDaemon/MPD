@@ -189,7 +189,7 @@ xspf_char_data(void *user_data, const XML_Char *s, int len)
  */
 
 static SongEnumerator *
-xspf_open_stream(InputStream &is)
+xspf_open_stream(InputStreamPtr &&is)
 {
 	XspfParser parser;
 
@@ -199,7 +199,7 @@ xspf_open_stream(InputStream &is)
 		expat.SetCharacterDataHandler(xspf_char_data);
 
 		Error error;
-		if (!expat.Parse(is, error)) {
+		if (!expat.Parse(*is, error)) {
 			LogError(error);
 			return nullptr;
 		}

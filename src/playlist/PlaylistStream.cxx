@@ -20,7 +20,6 @@
 #include "config.h"
 #include "PlaylistStream.hxx"
 #include "PlaylistRegistry.hxx"
-#include "CloseSongEnumerator.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "input/InputStream.hxx"
@@ -50,12 +49,8 @@ try {
 		return nullptr;
 	}
 
-	auto playlist = playlist_list_open_stream_suffix(*is,
-							 suffix_utf8.c_str());
-	if (playlist != nullptr)
-		playlist = new CloseSongEnumerator(playlist, is.release());
-
-	return playlist;
+	return playlist_list_open_stream_suffix(std::move(is),
+						suffix_utf8.c_str());
 } catch (const std::runtime_error &e) {
 	LogError(e);
 	return nullptr;
@@ -97,11 +92,7 @@ try {
 		return nullptr;
 	}
 
-	playlist = playlist_list_open_stream(*is, uri);
-	if (playlist == nullptr)
-		return nullptr;
-
-	return new CloseSongEnumerator(playlist, is.release());
+	return playlist_list_open_stream(std::move(is), uri);
 } catch (const std::runtime_error &e) {
 	LogError(e);
 	return nullptr;

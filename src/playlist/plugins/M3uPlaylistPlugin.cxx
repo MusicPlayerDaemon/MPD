@@ -29,17 +29,17 @@ class M3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
 
 public:
-	M3uPlaylist(InputStream &is)
-		:tis(is) {
+	M3uPlaylist(InputStreamPtr &&is)
+		:tis(std::move(is)) {
 	}
 
 	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static SongEnumerator *
-m3u_open_stream(InputStream &is)
+m3u_open_stream(InputStreamPtr &&is)
 {
-	return new M3uPlaylist(is);
+	return new M3uPlaylist(std::move(is));
 }
 
 std::unique_ptr<DetachedSong>

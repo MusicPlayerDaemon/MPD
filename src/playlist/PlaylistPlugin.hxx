@@ -20,8 +20,9 @@
 #ifndef MPD_PLAYLIST_PLUGIN_HXX
 #define MPD_PLAYLIST_PLUGIN_HXX
 
+#include "input/Ptr.hxx"
+
 struct ConfigBlock;
-class InputStream;
 struct Tag;
 class Mutex;
 class Cond;
@@ -57,8 +58,11 @@ struct playlist_plugin {
 	 * Opens the playlist in the specified input stream.  It has
 	 * either matched one of the suffixes or one of the MIME
 	 * types.
+	 *
+	 * @parm is the input stream; the pointer will not be
+	 * invalidated when the function returns nullptr
 	 */
-	SongEnumerator *(*open_stream)(InputStream &is);
+	SongEnumerator *(*open_stream)(InputStreamPtr &&is);
 
 	const char *const*schemes;
 	const char *const*suffixes;
@@ -101,9 +105,9 @@ playlist_plugin_open_uri(const struct playlist_plugin *plugin, const char *uri,
 
 static inline SongEnumerator *
 playlist_plugin_open_stream(const struct playlist_plugin *plugin,
-			    InputStream &is)
+			    InputStreamPtr &&is)
 {
-	return plugin->open_stream(is);
+	return plugin->open_stream(std::move(is));
 }
 
 #endif

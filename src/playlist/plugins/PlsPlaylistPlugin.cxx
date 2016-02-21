@@ -22,6 +22,7 @@
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
 #include "input/TextInputStream.hxx"
+#include "input/InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
@@ -142,17 +143,22 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 }
 
 static bool
-ParsePls(InputStream &is, std::forward_list<DetachedSong> &songs)
+ParsePls(InputStreamPtr &&is, std::forward_list<DetachedSong> &songs)
 {
-	TextInputStream tis(is);
-	return ParsePls(tis, songs);
+	TextInputStream tis(std::move(is));
+	if (!ParsePls(tis, songs)) {
+		is = tis.StealInputStream();
+		return false;
+	}
+
+	return true;
 }
 
 static SongEnumerator *
-pls_open_stream(InputStream &is)
+pls_open_stream(InputStreamPtr &&is)
 {
 	std::forward_list<DetachedSong> songs;
-	if (!ParsePls(is, songs))
+	if (!ParsePls(std::move(is), songs))
 		return nullptr;
 
 	return new MemorySongEnumerator(std::move(songs));
