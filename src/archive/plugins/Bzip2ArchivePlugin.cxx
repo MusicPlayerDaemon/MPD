@@ -39,11 +39,6 @@
 
 #include <stddef.h>
 
-#ifdef HAVE_OLDER_BZIP2
-#define BZ2_bzDecompressInit bzDecompressInit
-#define BZ2_bzDecompress bzDecompress
-#endif
-
 class Bzip2ArchiveFile final : public ArchiveFile {
 public:
 	RefCount ref;
