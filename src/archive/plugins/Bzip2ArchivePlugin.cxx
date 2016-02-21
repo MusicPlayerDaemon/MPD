@@ -85,7 +85,7 @@ public:
 					Error &error) override;
 };
 
-struct Bzip2InputStream final : public InputStream {
+class Bzip2InputStream final : public InputStream {
 	Bzip2ArchiveFile *archive;
 
 	bool eof = false;
@@ -94,6 +94,7 @@ struct Bzip2InputStream final : public InputStream {
 
 	char buffer[5000];
 
+public:
 	Bzip2InputStream(Bzip2ArchiveFile &context, const char *uri,
 			 Mutex &mutex, Cond &cond);
 	~Bzip2InputStream();
