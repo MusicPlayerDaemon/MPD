@@ -295,6 +295,15 @@ public:
 	}
 
 	/**
+	 * Skip input bytes.
+	 */
+	bool Skip(offset_type _offset, Error &error) {
+		return Seek(GetOffset() + _offset, error);
+	}
+
+	bool LockSkip(offset_type _offset, Error &error);
+
+	/**
 	 * Returns true if the stream has reached end-of-file.
 	 *
 	 * The caller must lock the mutex.

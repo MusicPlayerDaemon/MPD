@@ -100,6 +100,13 @@ InputStream::LockSeek(offset_type _offset, Error &error)
 	return Seek(_offset, error);
 }
 
+bool
+InputStream::LockSkip(offset_type _offset, Error &error)
+{
+	const ScopeLock protect(mutex);
+	return Skip(_offset, error);
+}
+
 Tag *
 InputStream::ReadTag()
 {
