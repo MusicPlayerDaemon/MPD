@@ -29,6 +29,8 @@
 #include "neighbor/Info.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 class UpnpNeighborExplorer final
 	: public NeighborExplorer, UPnPDiscoveryListener {
 	struct Server {

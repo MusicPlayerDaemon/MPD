@@ -27,6 +27,8 @@
 #include "fs/Path.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 
 static SongEnumerator *
