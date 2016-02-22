@@ -138,11 +138,15 @@ tag_id3_find_from_beginning(FILE *stream)
 static UniqueId3Tag
 tag_id3_find_from_end(FILE *stream)
 {
+	off_t offset = -(off_t)ID3V1_SIZE;
+
 	/* Get an id3v1 tag from the end of file for later use */
-	auto v1tag = tag_id3_read(stream, -(off_t)ID3V1_SIZE, SEEK_END);
+	auto v1tag = tag_id3_read(stream, offset, SEEK_END);
+	if (!v1tag)
+		offset = 0;
 
 	/* Get the id3v2 tag size from the footer (located before v1tag) */
-	int tagsize = get_id3v2_footer_size(stream, (v1tag ? -(off_t)ID3V1_SIZE : 0) - ID3_TAG_QUERYSIZE, SEEK_END);
+	int tagsize = get_id3v2_footer_size(stream, offset - ID3_TAG_QUERYSIZE, SEEK_END);
 	if (tagsize >= 0)
 		return v1tag;
 
