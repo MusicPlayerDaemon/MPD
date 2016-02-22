@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <string.h>
 
-struct ape_footer {
+struct ApeFooter {
 	unsigned char id[8];
 	uint32_t version;
 	uint32_t length;
@@ -52,7 +52,7 @@ tag_ape_scan(InputStream &is, ApeTagCallback callback)
 		return false;
 
 	/* determine if file has an apeV2 tag */
-	struct ape_footer footer;
+	ApeFooter footer;
 	if (!is.Seek(is.GetSize() - sizeof(footer), IgnoreError()) ||
 	    !is.ReadFull(&footer, sizeof(footer), IgnoreError()) ||
 	    memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
