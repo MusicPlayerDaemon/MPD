@@ -28,6 +28,8 @@
 #include "util/StringView.hxx"
 #include "util/Error.hxx"
 
+#include <memory>
+
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
@@ -69,15 +71,13 @@ tag_ape_scan(InputStream &is, ApeTagCallback callback)
 	remaining -= sizeof(footer);
 	assert(remaining > 10);
 
-	char *buffer = new char[remaining];
-	if (!is.ReadFull(buffer, remaining, IgnoreError())) {
-		delete[] buffer;
+	std::unique_ptr<char[]> buffer(new char[remaining]);
+	if (!is.ReadFull(buffer.get(), remaining, IgnoreError()))
 		return false;
-	}
 
 	/* read tags */
 	unsigned n = FromLE32(footer.count);
-	const char *p = buffer;
+	const char *p = buffer.get();
 	while (n-- && remaining > 10) {
 		size_t size = FromLE32(*(const uint32_t *)p);
 		p += 4;
@@ -106,7 +106,6 @@ tag_ape_scan(InputStream &is, ApeTagCallback callback)
 		remaining -= size;
 	}
 
-	delete[] buffer;
 	return true;
 }
 
