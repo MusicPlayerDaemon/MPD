@@ -32,8 +32,7 @@
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagHandler.hxx"
-#include "tag/TagId3.hxx"
-#include "tag/ApeTag.hxx"
+#include "tag/Generic.hxx"
 #include "TagFile.hxx"
 #include "TagStream.hxx"
 
@@ -73,17 +72,6 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 
 #endif
 
-/**
- * Attempts to load APE or ID3 tags from the specified file.
- */
-static bool
-tag_scan_fallback(Path path,
-		  const TagHandler *handler, void *handler_ctx)
-{
-	return tag_ape_scan2(path, handler, handler_ctx) ||
-		tag_id3_scan(path, handler, handler_ctx);
-}
-
 #ifdef ENABLE_DATABASE
 
 bool
@@ -112,8 +100,8 @@ Song::UpdateFile(Storage &storage)
 			return false;
 
 		if (tag_builder.IsEmpty())
-			tag_scan_fallback(path_fs, &full_tag_handler,
-					  &tag_builder);
+			ScanGenericTags(path_fs, full_tag_handler,
+					&tag_builder);
 	}
 
 	mtime = info.mtime;
@@ -165,8 +153,7 @@ DetachedSong::LoadFile(Path path)
 		return false;
 
 	if (tag_builder.IsEmpty())
-		tag_scan_fallback(path, &full_tag_handler,
-				  &tag_builder);
+		ScanGenericTags(path, full_tag_handler, &tag_builder);
 
 	mtime = fi.GetModificationTime();
 	tag_builder.Commit(tag);

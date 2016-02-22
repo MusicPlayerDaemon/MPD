@@ -25,8 +25,7 @@
 #include "input/InputStream.hxx"
 #include "AudioFormat.hxx"
 #include "tag/TagHandler.hxx"
-#include "tag/TagId3.hxx"
-#include "tag/ApeTag.hxx"
+#include "tag/Generic.hxx"
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
 #include "thread/Cond.hxx"
@@ -126,11 +125,8 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (empty) {
-		tag_ape_scan2(path, &print_handler, NULL);
-		if (empty)
-			tag_id3_scan(path, &print_handler, NULL);
-	}
+	if (empty)
+		ScanGenericTags(path, print_handler, nullptr);
 
 	return 0;
 }
