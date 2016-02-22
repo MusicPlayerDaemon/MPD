@@ -36,6 +36,8 @@
 
 static constexpr Domain id3_domain("id3");
 
+static constexpr size_t ID3V1_SIZE = 128;
+
 gcc_pure
 static inline bool
 tag_is_id3v1(struct id3_tag *tag)
@@ -137,10 +139,10 @@ static UniqueId3Tag
 tag_id3_find_from_end(FILE *stream)
 {
 	/* Get an id3v1 tag from the end of file for later use */
-	auto v1tag = tag_id3_read(stream, -128, SEEK_END);
+	auto v1tag = tag_id3_read(stream, -(off_t)ID3V1_SIZE, SEEK_END);
 
 	/* Get the id3v2 tag size from the footer (located before v1tag) */
-	int tagsize = get_id3v2_footer_size(stream, (v1tag ? -128 : 0) - ID3_TAG_QUERYSIZE, SEEK_END);
+	int tagsize = get_id3v2_footer_size(stream, (v1tag ? -(off_t)ID3V1_SIZE : 0) - ID3_TAG_QUERYSIZE, SEEK_END);
 	if (tagsize >= 0)
 		return v1tag;
 
