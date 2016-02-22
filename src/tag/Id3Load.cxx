@@ -96,6 +96,17 @@ ReadId3Tag(FILE *file)
 }
 
 static UniqueId3Tag
+ReadId3v1Tag(FILE *file)
+{
+	id3_byte_t buffer[ID3V1_SIZE];
+
+	if (fread(buffer, 1, ID3V1_SIZE, file) != ID3V1_SIZE)
+		return nullptr;
+
+	return UniqueId3Tag(id3_tag_parse(buffer, ID3V1_SIZE));
+}
+
+static UniqueId3Tag
 tag_id3_read(FILE *file, long offset, int whence)
 {
 	if (fseek(file, offset, whence) != 0)
@@ -141,7 +152,10 @@ tag_id3_find_from_end(FILE *stream)
 	off_t offset = -(off_t)ID3V1_SIZE;
 
 	/* Get an id3v1 tag from the end of file for later use */
-	auto v1tag = tag_id3_read(stream, offset, SEEK_END);
+	if (fseek(stream, offset, SEEK_END) != 0)
+		return nullptr;
+
+	auto v1tag = ReadId3v1Tag(stream);
 	if (!v1tag)
 		offset = 0;
 
