@@ -29,7 +29,7 @@
 /**
  * A callback table for receiving metadata of a song.
  */
-struct tag_handler {
+struct TagHandler {
 	/**
 	 * Declare the duration of a song.  Do not call
 	 * this when the duration could not be determined, because
@@ -53,7 +53,7 @@ struct tag_handler {
 };
 
 static inline void
-tag_handler_invoke_duration(const struct tag_handler *handler, void *ctx,
+tag_handler_invoke_duration(const TagHandler *handler, void *ctx,
 			    SongTime duration)
 {
 	assert(handler != nullptr);
@@ -63,7 +63,7 @@ tag_handler_invoke_duration(const struct tag_handler *handler, void *ctx,
 }
 
 static inline void
-tag_handler_invoke_tag(const struct tag_handler *handler, void *ctx,
+tag_handler_invoke_tag(const TagHandler *handler, void *ctx,
 		       TagType type, const char *value)
 {
 	assert(handler != nullptr);
@@ -75,7 +75,7 @@ tag_handler_invoke_tag(const struct tag_handler *handler, void *ctx,
 }
 
 static inline void
-tag_handler_invoke_pair(const struct tag_handler *handler, void *ctx,
+tag_handler_invoke_pair(const TagHandler *handler, void *ctx,
 			const char *name, const char *value)
 {
 	assert(handler != nullptr);
@@ -87,16 +87,16 @@ tag_handler_invoke_pair(const struct tag_handler *handler, void *ctx,
 }
 
 /**
- * This #tag_handler implementation adds tag values to a #TagBuilder object
+ * This #TagHandler implementation adds tag values to a #TagBuilder object
  * (casted from the context pointer).
  */
-extern const struct tag_handler add_tag_handler;
+extern const TagHandler add_tag_handler;
 
 /**
- * This #tag_handler implementation adds tag values to a #TagBuilder object
+ * This #TagHandler implementation adds tag values to a #TagBuilder object
  * (casted from the context pointer), and supports the has_playlist
  * attribute.
  */
-extern const struct tag_handler full_tag_handler;
+extern const TagHandler full_tag_handler;
 
 #endif

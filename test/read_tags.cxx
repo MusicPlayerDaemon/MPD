@@ -62,7 +62,7 @@ print_pair(const char *name, const char *value, gcc_unused void *ctx)
 	printf("\"%s\"=%s\n", name, value);
 }
 
-static const struct tag_handler print_handler = {
+static constexpr TagHandler print_handler = {
 	print_duration,
 	print_tag,
 	print_pair,

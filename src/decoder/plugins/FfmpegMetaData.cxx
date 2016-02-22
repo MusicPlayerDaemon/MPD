@@ -42,7 +42,7 @@ static constexpr struct tag_table ffmpeg_tags[] = {
 static void
 FfmpegScanTag(TagType type,
 	      AVDictionary *m, const char *name,
-	      const struct tag_handler *handler, void *handler_ctx)
+	      const TagHandler *handler, void *handler_ctx)
 {
 	AVDictionaryEntry *mt = nullptr;
 
@@ -53,7 +53,7 @@ FfmpegScanTag(TagType type,
 
 static void
 FfmpegScanPairs(AVDictionary *dict,
-		const struct tag_handler *handler, void *handler_ctx)
+		const TagHandler *handler, void *handler_ctx)
 {
 	AVDictionaryEntry *i = nullptr;
 
@@ -64,7 +64,7 @@ FfmpegScanPairs(AVDictionary *dict,
 
 void
 FfmpegScanDictionary(AVDictionary *dict,
-		     const struct tag_handler *handler, void *handler_ctx)
+		     const TagHandler *handler, void *handler_ctx)
 {
 	if (handler->tag != nullptr) {
 		for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)

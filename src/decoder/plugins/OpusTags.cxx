@@ -43,7 +43,7 @@ ParseOpusTagName(const char *name)
 static void
 ScanOneOpusTag(const char *name, const char *value,
 	       ReplayGainInfo *rgi,
-	       const struct tag_handler *handler, void *ctx)
+	       const TagHandler *handler, void *ctx)
 {
 	if (rgi != nullptr && strcmp(name, "R128_TRACK_GAIN") == 0) {
 		/* R128_TRACK_GAIN is a Q7.8 fixed point number in
@@ -67,7 +67,7 @@ ScanOneOpusTag(const char *name, const char *value,
 bool
 ScanOpusTags(const void *data, size_t size,
 	     ReplayGainInfo *rgi,
-	     const struct tag_handler *handler, void *ctx)
+	     const TagHandler *handler, void *ctx)
 {
 	OpusReader r(data, size);
 	if (!r.Expect("OpusTags", 8))

@@ -34,7 +34,7 @@ class TagFileScan {
 	const Path path_fs;
 	const char *const suffix;
 
-	const tag_handler &handler;
+	const TagHandler &handler;
 	void *handler_ctx;
 
 	Mutex mutex;
@@ -43,7 +43,7 @@ class TagFileScan {
 
 public:
 	TagFileScan(Path _path_fs, const char *_suffix,
-		    const tag_handler &_handler, void *_handler_ctx)
+		    const TagHandler &_handler, void *_handler_ctx)
 		:path_fs(_path_fs), suffix(_suffix),
 		 handler(_handler), handler_ctx(_handler_ctx) ,
 		 is(nullptr) {}
@@ -77,7 +77,7 @@ public:
 };
 
 bool
-tag_file_scan(Path path_fs, const tag_handler &handler, void *handler_ctx)
+tag_file_scan(Path path_fs, const TagHandler &handler, void *handler_ctx)
 {
 	assert(!path_fs.IsNull());
 

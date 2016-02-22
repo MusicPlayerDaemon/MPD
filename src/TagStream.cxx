@@ -42,7 +42,7 @@ CheckDecoderPlugin(const DecoderPlugin &plugin,
 }
 
 bool
-tag_stream_scan(InputStream &is, const tag_handler &handler, void *ctx)
+tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 {
 	assert(is.IsReady());
 
@@ -63,7 +63,7 @@ tag_stream_scan(InputStream &is, const tag_handler &handler, void *ctx)
 }
 
 bool
-tag_stream_scan(const char *uri, const tag_handler &handler, void *ctx)
+tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx)
 {
 	Mutex mutex;
 	Cond cond;

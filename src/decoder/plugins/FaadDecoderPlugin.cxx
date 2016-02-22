@@ -419,7 +419,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 
 static bool
 faad_scan_stream(InputStream &is,
-		 const struct tag_handler *handler, void *handler_ctx)
+		 const TagHandler *handler, void *handler_ctx)
 {
 	auto result = faad_get_file_time(is);
 	if (!result.first)

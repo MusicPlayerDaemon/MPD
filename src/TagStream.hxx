@@ -23,7 +23,7 @@
 #include "check.h"
 
 class InputStream;
-struct tag_handler;
+struct TagHandler;
 
 /**
  * Scan the tags of an #InputStream.  Invokes matching decoder
@@ -33,9 +33,9 @@ struct tag_handler;
  * found)
  */
 bool
-tag_stream_scan(InputStream &is, const tag_handler &handler, void *ctx);
+tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx);
 
 bool
-tag_stream_scan(const char *uri, const tag_handler &handler, void *ctx);
+tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx);
 
 #endif

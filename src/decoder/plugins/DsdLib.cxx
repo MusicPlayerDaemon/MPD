@@ -106,7 +106,7 @@ dsdlib_valid_freq(uint32_t samplefreq)
 #ifdef ENABLE_ID3TAG
 void
 dsdlib_tag_id3(InputStream &is,
-	       const struct tag_handler *handler,
+	       const TagHandler *handler,
 	       void *handler_ctx, offset_type tagoffset)
 {
 	if (tagoffset == 0 || !is.KnownSize())

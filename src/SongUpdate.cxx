@@ -78,7 +78,7 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
  */
 static bool
 tag_scan_fallback(Path path,
-		  const struct tag_handler *handler, void *handler_ctx)
+		  const TagHandler *handler, void *handler_ctx)
 {
 	return tag_ape_scan2(path, handler, handler_ctx) ||
 		tag_id3_scan(path, handler, handler_ctx);

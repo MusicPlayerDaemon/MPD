@@ -29,7 +29,7 @@
 #include <assert.h>
 
 bool
-tag_archive_scan(Path path, const tag_handler &handler, void *handler_ctx)
+tag_archive_scan(Path path, const TagHandler &handler, void *handler_ctx)
 {
 	assert(!path.IsNull());
 

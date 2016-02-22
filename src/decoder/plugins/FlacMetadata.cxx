@@ -80,7 +80,7 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 static bool
 flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const char *name, TagType tag_type,
-		  const struct tag_handler *handler, void *handler_ctx)
+		  const TagHandler *handler, void *handler_ctx)
 {
 	const char *value = flac_comment_value(entry, name);
 	if (value != nullptr) {
@@ -93,7 +93,7 @@ flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 
 static void
 flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		  const struct tag_handler *handler, void *handler_ctx)
+		  const TagHandler *handler, void *handler_ctx)
 {
 	if (handler->pair != nullptr) {
 		const char *comment = (const char *)entry->entry;
@@ -118,7 +118,7 @@ flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 
 static void
 flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
-		   const struct tag_handler *handler, void *handler_ctx)
+		   const TagHandler *handler, void *handler_ctx)
 {
 	for (unsigned i = 0; i < comment->num_comments; ++i)
 		flac_scan_comment(&comment->comments[i],
@@ -137,7 +137,7 @@ flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
 
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
-		   const struct tag_handler *handler, void *handler_ctx)
+		   const TagHandler *handler, void *handler_ctx)
 {
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
@@ -165,7 +165,7 @@ flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment)
 }
 
 void
-FlacMetadataChain::Scan(const struct tag_handler *handler, void *handler_ctx)
+FlacMetadataChain::Scan(const TagHandler *handler, void *handler_ctx)
 {
 	FLACMetadataIterator iterator(*this);
 

@@ -24,7 +24,7 @@
 
 struct ConfigBlock;
 class InputStream;
-struct tag_handler;
+struct TagHandler;
 class Path;
 
 /**
@@ -74,7 +74,7 @@ struct DecoderPlugin {
 	 * @return false if the operation has failed
 	 */
 	bool (*scan_file)(Path path_fs,
-			  const struct tag_handler *handler,
+			  const TagHandler *handler,
 			  void *handler_ctx);
 
 	/**
@@ -83,7 +83,7 @@ struct DecoderPlugin {
 	 * @return false if the operation has failed
 	 */
 	bool (*scan_stream)(InputStream &is,
-			    const struct tag_handler *handler,
+			    const TagHandler *handler,
 			    void *handler_ctx);
 
 	/**
@@ -145,7 +145,7 @@ struct DecoderPlugin {
 	 */
 	template<typename P>
 	bool ScanFile(P path_fs,
-		      const tag_handler &handler, void *handler_ctx) const {
+		      const TagHandler &handler, void *handler_ctx) const {
 		return scan_file != nullptr
 			? scan_file(path_fs, &handler, handler_ctx)
 			: false;
@@ -155,7 +155,7 @@ struct DecoderPlugin {
 	 * Read the tag of a stream.
 	 */
 	bool ScanStream(InputStream &is,
-			const tag_handler &handler, void *handler_ctx) const {
+			const TagHandler &handler, void *handler_ctx) const {
 		return scan_stream != nullptr
 			? scan_stream(is, &handler, handler_ctx)
 			: false;

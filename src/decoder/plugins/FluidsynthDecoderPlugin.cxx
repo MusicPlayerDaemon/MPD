@@ -201,7 +201,7 @@ fluidsynth_file_decode(Decoder &decoder, Path path_fs)
 
 static bool
 fluidsynth_scan_file(Path path_fs,
-		     gcc_unused const struct tag_handler *handler,
+		     gcc_unused const TagHandler *handler,
 		     gcc_unused void *handler_ctx)
 {
 	return fluid_is_midifile(path_fs.c_str());

@@ -263,7 +263,7 @@ audiofile_get_duration(InputStream &is)
 
 static bool
 audiofile_scan_stream(InputStream &is,
-		      const struct tag_handler *handler, void *handler_ctx)
+		      const TagHandler *handler, void *handler_ctx)
 {
 	const auto duration = audiofile_get_duration(is);
 	if (duration.IsNegative())

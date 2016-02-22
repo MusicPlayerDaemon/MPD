@@ -23,7 +23,7 @@
 #include "check.h"
 
 class Path;
-struct tag_handler;
+struct TagHandler;
 
 /**
  * Scan the tags of a song file.  Invokes matching decoder plugins,
@@ -33,6 +33,6 @@ struct tag_handler;
  * found)
  */
 bool
-tag_file_scan(Path path, const tag_handler &handler, void *handler_ctx);
+tag_file_scan(Path path, const TagHandler &handler, void *handler_ctx);
 
 #endif

@@ -148,7 +148,7 @@ print_pair(const char *key, const char *value, void *ctx)
 		r.Format("%s: %s\n", key, value);
 }
 
-static constexpr tag_handler print_comment_handler = {
+static constexpr TagHandler print_comment_handler = {
 	nullptr,
 	nullptr,
 	print_pair,

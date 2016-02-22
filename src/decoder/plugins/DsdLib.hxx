@@ -28,6 +28,7 @@
 #include <stdint.h>
 
 struct Decoder;
+struct TagHandler;
 class InputStream;
 
 struct DsdId {
@@ -80,7 +81,7 @@ dsdlib_valid_freq(uint32_t samplefreq);
  */
 void
 dsdlib_tag_id3(InputStream &is,
-	       const struct tag_handler *handler,
+	       const TagHandler *handler,
 	       void *handler_ctx, offset_type tagoffset);
 
 #endif

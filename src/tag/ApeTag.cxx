@@ -77,7 +77,7 @@ ForEachValue(const char *value, const char *end, C &&callback)
 static bool
 tag_ape_import_item(unsigned long flags,
 		    const char *key, StringView value,
-		    const struct tag_handler *handler, void *handler_ctx)
+		    const TagHandler *handler, void *handler_ctx)
 {
 	/* we only care about utf-8 text tags */
 	if ((flags & (0x3 << 1)) != 0)
@@ -107,7 +107,7 @@ tag_ape_import_item(unsigned long flags,
 
 bool
 tag_ape_scan2(InputStream &is,
-	      const struct tag_handler *handler, void *handler_ctx)
+	      const TagHandler *handler, void *handler_ctx)
 {
 	bool recognized = false;
 
@@ -124,7 +124,7 @@ tag_ape_scan2(InputStream &is,
 
 bool
 tag_ape_scan2(Path path_fs,
-	      const struct tag_handler *handler, void *handler_ctx)
+	      const TagHandler *handler, void *handler_ctx)
 {
 	bool recognized = false;
 

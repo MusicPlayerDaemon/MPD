@@ -82,7 +82,7 @@ embcue_tag_pair(const char *name, const char *value, void *ctx)
 		playlist->cuesheet = value;
 }
 
-static const struct tag_handler embcue_tag_handler = {
+static constexpr TagHandler embcue_tag_handler = {
 	nullptr,
 	nullptr,
 	embcue_tag_pair,

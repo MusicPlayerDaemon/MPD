@@ -433,7 +433,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 
 static bool
 mpd_opus_scan_stream(InputStream &is,
-		     const struct tag_handler *handler, void *handler_ctx)
+		     const TagHandler *handler, void *handler_ctx)
 {
 	OggSyncState oy(is);
 

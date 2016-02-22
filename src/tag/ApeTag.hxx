@@ -24,7 +24,7 @@
 
 class Path;
 class InputStream;
-struct tag_handler;
+struct TagHandler;
 
 extern const struct tag_table ape_tags[];
 
@@ -35,7 +35,7 @@ extern const struct tag_table ape_tags[];
  */
 bool
 tag_ape_scan2(InputStream &is,
-	      const tag_handler *handler, void *handler_ctx);
+	      const TagHandler *handler, void *handler_ctx);
 
 /**
  * Scan the APE tags of a file.
@@ -44,6 +44,6 @@ tag_ape_scan2(InputStream &is,
  */
 bool
 tag_ape_scan2(Path path_fs,
-	      const tag_handler *handler, void *handler_ctx);
+	      const TagHandler *handler, void *handler_ctx);
 
 #endif

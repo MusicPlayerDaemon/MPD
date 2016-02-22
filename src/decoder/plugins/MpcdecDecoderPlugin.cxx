@@ -249,7 +249,7 @@ mpcdec_get_file_duration(InputStream &is)
 
 static bool
 mpcdec_scan_stream(InputStream &is,
-		   const struct tag_handler *handler, void *handler_ctx)
+		   const TagHandler *handler, void *handler_ctx)
 {
 	const auto duration = mpcdec_get_file_duration(is);
 	if (duration.IsNegative())

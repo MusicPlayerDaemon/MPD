@@ -89,7 +89,7 @@ adplug_file_decode(Decoder &decoder, Path path_fs)
 
 static void
 adplug_scan_tag(TagType type, const std::string &value,
-		const struct tag_handler *handler, void *handler_ctx)
+		const TagHandler *handler, void *handler_ctx)
 {
 	if (!value.empty())
 		tag_handler_invoke_tag(handler, handler_ctx,
@@ -98,7 +98,7 @@ adplug_scan_tag(TagType type, const std::string &value,
 
 static bool
 adplug_scan_file(Path path_fs,
-		 const struct tag_handler *handler, void *handler_ctx)
+		 const TagHandler *handler, void *handler_ctx)
 {
 	CEmuopl opl(sample_rate, true, true);
 	opl.init();

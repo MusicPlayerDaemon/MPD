@@ -56,7 +56,7 @@ vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)
 static bool
 vorbis_copy_comment(const char *comment,
 		    const char *name, TagType tag_type,
-		    const struct tag_handler *handler, void *handler_ctx)
+		    const TagHandler *handler, void *handler_ctx)
 {
 	const char *value;
 
@@ -71,7 +71,7 @@ vorbis_copy_comment(const char *comment,
 
 static void
 vorbis_scan_comment(const char *comment,
-		    const struct tag_handler *handler, void *handler_ctx)
+		    const TagHandler *handler, void *handler_ctx)
 {
 	if (handler->pair != nullptr) {
 		const DivideString split(comment, '=');
@@ -95,7 +95,7 @@ vorbis_scan_comment(const char *comment,
 
 void
 vorbis_comments_scan(char **comments,
-		     const struct tag_handler *handler, void *handler_ctx)
+		     const TagHandler *handler, void *handler_ctx)
 {
 	while (*comments)
 		vorbis_scan_comment(*comments++,

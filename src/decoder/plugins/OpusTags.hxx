@@ -25,10 +25,11 @@
 #include <stddef.h>
 
 struct ReplayGainInfo;
+struct TagHandler;
 
 bool
 ScanOpusTags(const void *data, size_t size,
 	     ReplayGainInfo *rgi,
-	     const struct tag_handler *handler, void *ctx);
+	     const TagHandler *handler, void *ctx);
 
 #endif

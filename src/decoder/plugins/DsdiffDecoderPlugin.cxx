@@ -187,7 +187,7 @@ dsdiff_read_prop(Decoder *decoder, InputStream &is,
 
 static void
 dsdiff_handle_native_tag(InputStream &is,
-			 const struct tag_handler *handler,
+			 const TagHandler *handler,
 			 void *handler_ctx, offset_type tagoffset,
 			 TagType type)
 {
@@ -229,7 +229,7 @@ static bool
 dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 			   DsdiffMetaData *metadata,
 			   DsdiffChunkHeader *chunk_header,
-			   const struct tag_handler *handler,
+			   const TagHandler *handler,
 			   void *handler_ctx)
 {
 
@@ -456,7 +456,7 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 
 static bool
 dsdiff_scan_stream(InputStream &is,
-		   gcc_unused const struct tag_handler *handler,
+		   gcc_unused const TagHandler *handler,
 		   gcc_unused void *handler_ctx)
 {
 	DsdiffMetaData metadata;

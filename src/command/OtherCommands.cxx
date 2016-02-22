@@ -168,7 +168,7 @@ handle_listfiles(Client &client, Request args, Response &r)
 	gcc_unreachable();
 }
 
-static constexpr tag_handler print_tag_handler = {
+static constexpr TagHandler print_tag_handler = {
 	nullptr,
 	print_tag,
 	nullptr,
