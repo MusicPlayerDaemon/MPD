@@ -20,12 +20,16 @@
 #include "config.h"
 #include "ApeLoader.hxx"
 #include "system/ByteOrder.hxx"
-#include "fs/FileSystem.hxx"
+#include "fs/Path.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
+#include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "util/StringView.hxx"
+#include "util/Error.hxx"
 
 #include <stdint.h>
 #include <assert.h>
-#include <stdio.h>
 #include <string.h>
 
 struct ape_footer {
@@ -37,13 +41,18 @@ struct ape_footer {
 	unsigned char reserved[8];
 };
 
-static bool
-ape_scan_internal(FILE *fp, ApeTagCallback callback)
+bool
+tag_ape_scan(InputStream &is, ApeTagCallback callback)
 {
+	const ScopeLock protect(is.mutex);
+
+	if (!is.KnownSize() || !is.CheapSeeking())
+		return false;
+
 	/* determine if file has an apeV2 tag */
 	struct ape_footer footer;
-	if (fseek(fp, -(long)sizeof(footer), SEEK_END) ||
-	    fread(&footer, 1, sizeof(footer), fp) != sizeof(footer) ||
+	if (!is.Seek(is.GetSize() - sizeof(footer), IgnoreError()) ||
+	    !is.ReadFull(&footer, sizeof(footer), IgnoreError()) ||
 	    memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
 	    FromLE32(footer.version) != 2000)
 		return false;
@@ -53,7 +62,7 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 	if (remaining <= sizeof(footer) + 10 ||
 	    /* refuse to load more than one megabyte of tag data */
 	    remaining > 1024 * 1024 ||
-	    fseek(fp, -(long)remaining, SEEK_END))
+	    !is.Seek(is.GetSize() - remaining, IgnoreError()))
 		return false;
 
 	/* read tag into buffer */
@@ -61,7 +70,7 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 	assert(remaining > 10);
 
 	char *buffer = new char[remaining];
-	if (fread(buffer, 1, remaining, fp) != remaining) {
+	if (!is.ReadFull(buffer, remaining, IgnoreError())) {
 		delete[] buffer;
 		return false;
 	}
@@ -104,11 +113,13 @@ ape_scan_internal(FILE *fp, ApeTagCallback callback)
 bool
 tag_ape_scan(Path path_fs, ApeTagCallback callback)
 {
-	FILE *fp = FOpen(path_fs, PATH_LITERAL("rb"));
-	if (fp == nullptr)
+	Mutex mutex;
+	Cond cond;
+
+	std::unique_ptr<InputStream> is(OpenLocalInputStream(path_fs, mutex,
+							     cond, IgnoreError()));
+	if (!is)
 		return false;
 
-	bool success = ape_scan_internal(fp, callback);
-	fclose(fp);
-	return success;
+	return tag_ape_scan(*is, callback);
 }
