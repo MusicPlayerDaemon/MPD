@@ -140,7 +140,7 @@ tag_id3_find_from_end(FILE *stream)
 	auto v1tag = tag_id3_read(stream, -128, SEEK_END);
 
 	/* Get the id3v2 tag size from the footer (located before v1tag) */
-	int tagsize = get_id3v2_footer_size(stream, (v1tag ? -128 : 0) - 10, SEEK_END);
+	int tagsize = get_id3v2_footer_size(stream, (v1tag ? -128 : 0) - ID3_TAG_QUERYSIZE, SEEK_END);
 	if (tagsize >= 0)
 		return v1tag;
 
