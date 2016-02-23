@@ -31,9 +31,6 @@
 
 #include <stdexcept>
 
-/**
- * Attempts to scan APE or ID3 tags from the specified file.
- */
 bool
 ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
 {
@@ -50,9 +47,6 @@ ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
 #endif
 }
 
-/**
- * Attempts to scan APE or ID3 tags from the specified file.
- */
 bool
 ScanGenericTags(Path path, const TagHandler &handler, void *ctx)
 try {
