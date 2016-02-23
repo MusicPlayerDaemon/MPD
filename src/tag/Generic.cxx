@@ -22,8 +22,14 @@
 #include "TagId3.hxx"
 #include "ApeTag.hxx"
 #include "fs/Path.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
+
+#include <stdexcept>
 
 /**
  * Attempts to scan APE or ID3 tags from the specified file.
@@ -45,7 +51,19 @@ ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
  */
 bool
 ScanGenericTags(Path path, const TagHandler &handler, void *ctx)
-{
-	return tag_ape_scan2(path, handler, ctx) ||
-		tag_id3_scan(path, handler, ctx);
+try {
+	Mutex mutex;
+	Cond cond;
+
+	Error error;
+	auto is = OpenLocalInputStream(path, mutex, cond, error);
+	if (!is) {
+		LogError(error);
+		return false;
+	}
+
+	return ScanGenericTags(*is, handler, ctx);
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return false;
 }
