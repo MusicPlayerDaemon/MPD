@@ -1,4 +1,4 @@
-ver 0.19.13 (not yet released)
+ver 0.19.13 (2016/02/23)
 * tags
   - aiff, riff: fix ID3 chunk padding
 * decoder
