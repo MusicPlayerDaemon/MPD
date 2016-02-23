@@ -27,7 +27,8 @@ class InputStream;
 class Path;
 
 /**
- * Attempts to scan APE or ID3 tags from the specified file.
+ * Attempts to scan APE or ID3 tags from the specified stream.  The
+ * stream does not need to be rewound.
  */
 bool
 ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx);
