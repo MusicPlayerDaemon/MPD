@@ -23,12 +23,17 @@
 #include "check.h"
 #include "Compiler.h"
 
+class InputStream;
 class Path;
 struct TagHandler;
 struct Tag;
 struct id3_tag;
 
 #ifdef ENABLE_ID3TAG
+
+bool
+tag_id3_scan(InputStream &is,
+	     const TagHandler &handler, void *handler_ctx);
 
 bool
 tag_id3_scan(Path path_fs,
@@ -48,6 +53,14 @@ scan_id3_tag(id3_tag *tag,
 #else
 
 #include "fs/Path.hxx"
+
+static inline bool
+tag_id3_scan(gcc_unused InputStream &is,
+	     gcc_unused const TagHandler &handler,
+	     gcc_unused void *handler_ctx)
+{
+	return false;
+}
 
 static inline bool
 tag_id3_scan(gcc_unused Path path_fs,

@@ -344,6 +344,23 @@ tag_id3_import(struct id3_tag *tag)
 }
 
 bool
+tag_id3_scan(InputStream &is,
+	     const TagHandler &handler, void *handler_ctx)
+{
+	UniqueId3Tag tag;
+
+	try {
+		tag = tag_id3_load(is);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
+		return false;
+	}
+
+	scan_id3_tag(tag.get(), handler, handler_ctx);
+	return true;
+}
+
+bool
 tag_id3_scan(Path path_fs,
 	     const TagHandler &handler, void *handler_ctx)
 {
