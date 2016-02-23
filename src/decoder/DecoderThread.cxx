@@ -280,24 +280,13 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 }
 
 /**
- * Attempt to load replay gain data, and pass it to
- * decoder_replay_gain().
- */
-static void
-decoder_load_replay_gain(Decoder &decoder, Path path_fs)
-{
-	ReplayGainInfo info;
-	if (replay_gain_ape_read(path_fs, info))
-		decoder_replay_gain(decoder, &info);
-}
-
-/**
  * Decode a file with the given decoder plugin.
  *
  * DecoderControl::mutex is not locked by caller.
  */
 static bool
 TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
+	       InputStream &input_stream,
 	       const DecoderPlugin &plugin)
 {
 	if (!plugin.SupportsSuffix(suffix))
@@ -309,15 +298,8 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 		const ScopeLock protect(dc.mutex);
 		return decoder_file_decode(plugin, decoder, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
-		auto input_stream = decoder_input_stream_open(dc, path_fs,
-							      decoder.error);
-		if (input_stream == nullptr)
-			/* returning true to stop the search for
-			   another decoder plugin */
-			return true;
-
 		const ScopeLock protect(dc.mutex);
-		return decoder_stream_decode(plugin, decoder, *input_stream);
+		return decoder_stream_decode(plugin, decoder, input_stream);
 	} else
 		return false;
 }
@@ -334,13 +316,20 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	decoder_load_replay_gain(decoder, path_fs);
+	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs,
+						      decoder.error);
+	if (input_stream == nullptr)
+		return false;
 
-	return decoder_plugins_try([&decoder, path_fs,
-				    suffix](const DecoderPlugin &plugin){
+	LoadReplayGain(decoder, *input_stream);
+
+	auto &is = *input_stream;
+	return decoder_plugins_try([&decoder, path_fs, suffix,
+				    &is](const DecoderPlugin &plugin){
 					   return TryDecoderFile(decoder,
 								 path_fs,
 								 suffix,
+								 is,
 								 plugin);
 				   });
 }
