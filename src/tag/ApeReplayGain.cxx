@@ -48,6 +48,23 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 }
 
 bool
+replay_gain_ape_read(InputStream &is, ReplayGainInfo &info)
+{
+	bool found = false;
+
+	auto callback = [&info, &found]
+		(unsigned long flags, const char *key,
+		 StringView value) {
+		found |= replay_gain_ape_callback(flags, key,
+						  value,
+						  info);
+		return true;
+	};
+
+	return tag_ape_scan(is, callback) && found;
+}
+
+bool
 replay_gain_ape_read(Path path_fs, ReplayGainInfo &info)
 {
 	bool found = false;

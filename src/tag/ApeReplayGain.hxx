@@ -22,8 +22,12 @@
 
 #include "check.h"
 
+class InputStream;
 class Path;
 struct ReplayGainInfo;
+
+bool
+replay_gain_ape_read(InputStream &is, ReplayGainInfo &info);
 
 bool
 replay_gain_ape_read(Path path_fs, ReplayGainInfo &info);
