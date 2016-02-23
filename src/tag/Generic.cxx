@@ -40,10 +40,14 @@ ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
 	if (tag_ape_scan2(is, handler, ctx))
 		return true;
 
+#ifdef ENABLE_ID3TAG
 	if (!is.Rewind(IgnoreError()))
 		return false;
 
 	return tag_id3_scan(is, handler, ctx);
+#else
+	return false;
+#endif
 }
 
 /**

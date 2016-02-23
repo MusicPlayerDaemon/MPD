@@ -21,14 +21,11 @@
 #define MPD_TAG_ID3_HXX
 
 #include "check.h"
-#include "Compiler.h"
 
 class InputStream;
 struct TagHandler;
 struct Tag;
 struct id3_tag;
-
-#ifdef ENABLE_ID3TAG
 
 bool
 tag_id3_scan(InputStream &is,
@@ -44,17 +41,5 @@ tag_id3_import(id3_tag *);
 void
 scan_id3_tag(id3_tag *tag,
 	     const TagHandler &handler, void *handler_ctx);
-
-#else
-
-static inline bool
-tag_id3_scan(gcc_unused InputStream &is,
-	     gcc_unused const TagHandler &handler,
-	     gcc_unused void *handler_ctx)
-{
-	return false;
-}
-
-#endif
 
 #endif
