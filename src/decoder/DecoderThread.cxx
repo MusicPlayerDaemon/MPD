@@ -242,6 +242,18 @@ decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 }
 
 /**
+ * Attempt to load replay gain data, and pass it to
+ * decoder_replay_gain().
+ */
+static void
+LoadReplayGain(Decoder &decoder, InputStream &is)
+{
+	ReplayGainInfo info;
+	if (replay_gain_ape_read(is, info))
+		decoder_replay_gain(decoder, &info);
+}
+
+/**
  * Try decoding a stream.
  *
  * DecoderControl::mutex is not locked by caller.
@@ -255,6 +267,8 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 		decoder_input_stream_open(dc, uri, decoder.error);
 	if (input_stream == nullptr)
 		return false;
+
+	LoadReplayGain(decoder, *input_stream);
 
 	const ScopeLock protect(dc.mutex);
 
