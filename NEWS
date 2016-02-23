@@ -3,6 +3,7 @@ ver 0.19.13 (not yet released)
   - aiff, riff: fix ID3 chunk padding
 * decoder
   - ffmpeg: support the TAK codec
+* initialize supplementary groups with glibc 2.19+
 
 ver 0.19.12 (2015/12/15)
 * fix assertion failure on malformed UTF-8 tag

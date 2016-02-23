@@ -110,7 +110,7 @@ daemonize_set_user(void)
 				       (int)user_gid);
 	}
 
-#ifdef _BSD_SOURCE
+#ifdef HAVE_INITGROUPS
 	/* init supplementary groups
 	 * (must be done before we change our uid)
 	 */
