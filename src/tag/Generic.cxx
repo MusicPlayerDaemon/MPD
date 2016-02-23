@@ -29,6 +29,6 @@
 bool
 ScanGenericTags(Path path, const TagHandler &handler, void *ctx)
 {
-	return tag_ape_scan2(path, &handler, ctx) ||
-		tag_id3_scan(path, &handler, ctx);
+	return tag_ape_scan2(path, handler, ctx) ||
+		tag_id3_scan(path, handler, ctx);
 }

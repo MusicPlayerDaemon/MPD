@@ -32,7 +32,7 @@ struct id3_tag;
 
 bool
 tag_id3_scan(Path path_fs,
-	     const TagHandler *handler, void *handler_ctx);
+	     const TagHandler &handler, void *handler_ctx);
 
 Tag *
 tag_id3_import(id3_tag *);
@@ -43,7 +43,7 @@ tag_id3_import(id3_tag *);
  */
 void
 scan_id3_tag(id3_tag *tag,
-	     const TagHandler *handler, void *handler_ctx);
+	     const TagHandler &handler, void *handler_ctx);
 
 #else
 
@@ -51,7 +51,7 @@ scan_id3_tag(id3_tag *tag,
 
 static inline bool
 tag_id3_scan(gcc_unused Path path_fs,
-	     gcc_unused const TagHandler *handler,
+	     gcc_unused const TagHandler &handler,
 	     gcc_unused void *handler_ctx)
 {
 	return false;

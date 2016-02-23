@@ -82,7 +82,7 @@ public:
 		return FLAC__Metadata_ChainStatusString[GetStatus()];
 	}
 
-	void Scan(const TagHandler *handler, void *handler_ctx);
+	void Scan(const TagHandler &handler, void *handler_ctx);
 };
 
 class FLACMetadataIterator {
@@ -126,6 +126,6 @@ flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment);
 
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
-		   const TagHandler *handler, void *handler_ctx);
+		   const TagHandler &handler, void *handler_ctx);
 
 #endif

@@ -335,7 +335,7 @@ vorbis_stream_decode(Decoder &decoder,
 
 static bool
 vorbis_scan_stream(InputStream &is,
-		   const TagHandler *handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx)
 {
 	VorbisInputStream vis(nullptr, is);
 	OggVorbis_File vf;

@@ -243,7 +243,7 @@ wavpack_replaygain(ReplayGainInfo &rgi,
 static void
 wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
 		      TagType type,
-		      const TagHandler *handler, void *handler_ctx)
+		      const TagHandler &handler, void *handler_ctx)
 {
 	char buffer[1024];
 	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
@@ -256,7 +256,7 @@ wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
 
 static void
 wavpack_scan_pair(WavpackContext *wpc, const char *name,
-		  const TagHandler *handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx)
 {
 	char buffer[8192];
 	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
@@ -271,7 +271,7 @@ wavpack_scan_pair(WavpackContext *wpc, const char *name,
  */
 static bool
 wavpack_scan_file(Path path_fs,
-		  const TagHandler *handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
@@ -302,7 +302,7 @@ wavpack_scan_file(Path path_fs,
 		wavpack_scan_tag_item(wpc, i->name, i->type,
 				      handler, handler_ctx);
 
-	if (handler->pair != nullptr) {
+	if (handler.pair != nullptr) {
 		char name[64];
 
 		for (int i = 0, n = WavpackGetNumTagItems(wpc);

@@ -97,7 +97,7 @@ import_id3_string(const id3_ucs4_t *ucs4)
 static void
 tag_id3_import_text_frame(const struct id3_frame *frame,
 			  TagType type,
-			  const TagHandler *handler, void *handler_ctx)
+			  const TagHandler &handler, void *handler_ctx)
 {
 	if (frame->nfields != 2)
 		return;
@@ -140,7 +140,7 @@ tag_id3_import_text_frame(const struct id3_frame *frame,
  */
 static void
 tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
-		    const TagHandler *handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx)
 {
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
@@ -160,7 +160,7 @@ tag_id3_import_text(struct id3_tag *tag, const char *id, TagType type,
  */
 static void
 tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
-			     const TagHandler *handler,
+			     const TagHandler &handler,
 			     void *handler_ctx)
 {
 	if (frame->nfields != 4)
@@ -189,7 +189,7 @@ tag_id3_import_comment_frame(const struct id3_frame *frame, TagType type,
  */
 static void
 tag_id3_import_comment(struct id3_tag *tag, const char *id, TagType type,
-		       const TagHandler *handler, void *handler_ctx)
+		       const TagHandler &handler, void *handler_ctx)
 {
 	const struct id3_frame *frame;
 	for (unsigned i = 0;
@@ -226,7 +226,7 @@ tag_id3_parse_txxx_name(const char *name)
  */
 static void
 tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
-			   const TagHandler *handler,
+			   const TagHandler &handler,
 			   void *handler_ctx)
 {
 	for (unsigned i = 0;; ++i) {
@@ -262,7 +262,7 @@ tag_id3_import_musicbrainz(struct id3_tag *id3_tag,
  */
 static void
 tag_id3_import_ufid(struct id3_tag *id3_tag,
-		    const TagHandler *handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx)
 {
 	for (unsigned i = 0;; ++i) {
 		const id3_frame *frame = id3_tag_findframe(id3_tag, "UFID", i);
@@ -296,7 +296,7 @@ tag_id3_import_ufid(struct id3_tag *id3_tag,
 
 void
 scan_id3_tag(struct id3_tag *tag,
-	     const TagHandler *handler, void *handler_ctx)
+	     const TagHandler &handler, void *handler_ctx)
 {
 	tag_id3_import_text(tag, ID3_FRAME_ARTIST, TAG_ARTIST,
 			    handler, handler_ctx);
@@ -337,7 +337,7 @@ Tag *
 tag_id3_import(struct id3_tag *tag)
 {
 	TagBuilder tag_builder;
-	scan_id3_tag(tag, &add_tag_handler, &tag_builder);
+	scan_id3_tag(tag, add_tag_handler, &tag_builder);
 	return tag_builder.IsEmpty()
 		? nullptr
 		: tag_builder.CommitNew();
@@ -345,7 +345,7 @@ tag_id3_import(struct id3_tag *tag)
 
 bool
 tag_id3_scan(Path path_fs,
-	     const TagHandler *handler, void *handler_ctx)
+	     const TagHandler &handler, void *handler_ctx)
 {
 	UniqueId3Tag tag;
 

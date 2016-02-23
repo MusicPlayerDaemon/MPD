@@ -215,7 +215,7 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 
 static void
 ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
-	    const TagHandler *handler, void *handler_ctx)
+	    const TagHandler &handler, void *handler_ctx)
 {
 	if (info.play_length > 0)
 		tag_handler_invoke_duration(handler, handler_ctx,
@@ -255,7 +255,7 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 
 static bool
 ScanMusicEmu(Music_Emu *emu, unsigned song_num,
-	     const TagHandler *handler, void *handler_ctx)
+	     const TagHandler &handler, void *handler_ctx)
 {
 	gme_info_t *ti;
 	const char *gme_err = gme_track_info(emu, &ti, song_num);
@@ -275,7 +275,7 @@ ScanMusicEmu(Music_Emu *emu, unsigned song_num,
 
 static bool
 gme_scan_file(Path path_fs,
-	      const TagHandler *handler, void *handler_ctx)
+	      const TagHandler &handler, void *handler_ctx)
 {
 	const auto container = ParseContainerPath(path_fs);
 

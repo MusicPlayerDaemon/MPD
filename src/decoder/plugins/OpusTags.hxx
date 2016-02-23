@@ -30,6 +30,6 @@ struct TagHandler;
 bool
 ScanOpusTags(const void *data, size_t size,
 	     ReplayGainInfo *rgi,
-	     const TagHandler *handler, void *ctx);
+	     const TagHandler &handler, void *ctx);
 
 #endif

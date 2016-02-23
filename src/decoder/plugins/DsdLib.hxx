@@ -81,7 +81,7 @@ dsdlib_valid_freq(uint32_t samplefreq);
  */
 void
 dsdlib_tag_id3(InputStream &is,
-	       const TagHandler *handler,
+	       const TagHandler &handler,
 	       void *handler_ctx, offset_type tagoffset);
 
 #endif

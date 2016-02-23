@@ -89,7 +89,7 @@ adplug_file_decode(Decoder &decoder, Path path_fs)
 
 static void
 adplug_scan_tag(TagType type, const std::string &value,
-		const TagHandler *handler, void *handler_ctx)
+		const TagHandler &handler, void *handler_ctx)
 {
 	if (!value.empty())
 		tag_handler_invoke_tag(handler, handler_ctx,
@@ -98,7 +98,7 @@ adplug_scan_tag(TagType type, const std::string &value,
 
 static bool
 adplug_scan_file(Path path_fs,
-		 const TagHandler *handler, void *handler_ctx)
+		 const TagHandler &handler, void *handler_ctx)
 {
 	CEmuopl opl(sample_rate, true, true);
 	opl.init();
@@ -110,7 +110,7 @@ adplug_scan_file(Path path_fs,
 	tag_handler_invoke_duration(handler, handler_ctx,
 				    SongTime::FromMS(player->songlength()));
 
-	if (handler->tag != nullptr) {
+	if (handler.tag != nullptr) {
 		adplug_scan_tag(TAG_TITLE, player->gettitle(),
 				handler, handler_ctx);
 		adplug_scan_tag(TAG_ARTIST, player->getauthor(),

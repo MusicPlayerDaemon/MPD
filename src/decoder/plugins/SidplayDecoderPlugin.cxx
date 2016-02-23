@@ -286,7 +286,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 static bool
 sidplay_scan_file(Path path_fs,
-		  const TagHandler *handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx)
 {
 	const auto container = ParseContainerPath(path_fs);
 	const unsigned song_num = container.track;

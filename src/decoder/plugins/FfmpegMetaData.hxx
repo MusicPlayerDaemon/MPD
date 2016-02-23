@@ -25,6 +25,6 @@ struct TagHandler;
 
 void
 FfmpegScanDictionary(AVDictionary *dict,
-		     const TagHandler *handler, void *handler_ctx);
+		     const TagHandler &handler, void *handler_ctx);
 
 #endif

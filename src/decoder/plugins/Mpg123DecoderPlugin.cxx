@@ -287,7 +287,7 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 
 static bool
 mpd_mpg123_scan_file(Path path_fs,
-		     const TagHandler *handler, void *handler_ctx)
+		     const TagHandler &handler, void *handler_ctx)
 {
 	int error;
 	mpg123_handle *const handle = mpg123_new(nullptr, &error);

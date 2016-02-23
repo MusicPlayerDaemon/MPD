@@ -74,7 +74,7 @@ struct DecoderPlugin {
 	 * @return false if the operation has failed
 	 */
 	bool (*scan_file)(Path path_fs,
-			  const TagHandler *handler,
+			  const TagHandler &handler,
 			  void *handler_ctx);
 
 	/**
@@ -83,7 +83,7 @@ struct DecoderPlugin {
 	 * @return false if the operation has failed
 	 */
 	bool (*scan_stream)(InputStream &is,
-			    const TagHandler *handler,
+			    const TagHandler &handler,
 			    void *handler_ctx);
 
 	/**
@@ -147,7 +147,7 @@ struct DecoderPlugin {
 	bool ScanFile(P path_fs,
 		      const TagHandler &handler, void *handler_ctx) const {
 		return scan_file != nullptr
-			? scan_file(path_fs, &handler, handler_ctx)
+			? scan_file(path_fs, handler, handler_ctx)
 			: false;
 	}
 
@@ -157,7 +157,7 @@ struct DecoderPlugin {
 	bool ScanStream(InputStream &is,
 			const TagHandler &handler, void *handler_ctx) const {
 		return scan_stream != nullptr
-			? scan_stream(is, &handler, handler_ctx)
+			? scan_stream(is, handler, handler_ctx)
 			: false;
 	}
 

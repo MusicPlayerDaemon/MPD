@@ -53,37 +53,33 @@ struct TagHandler {
 };
 
 static inline void
-tag_handler_invoke_duration(const TagHandler *handler, void *ctx,
+tag_handler_invoke_duration(const TagHandler &handler, void *ctx,
 			    SongTime duration)
 {
-	assert(handler != nullptr);
-
-	if (handler->duration != nullptr)
-		handler->duration(duration, ctx);
+	if (handler.duration != nullptr)
+		handler.duration(duration, ctx);
 }
 
 static inline void
-tag_handler_invoke_tag(const TagHandler *handler, void *ctx,
+tag_handler_invoke_tag(const TagHandler &handler, void *ctx,
 		       TagType type, const char *value)
 {
-	assert(handler != nullptr);
 	assert((unsigned)type < TAG_NUM_OF_ITEM_TYPES);
 	assert(value != nullptr);
 
-	if (handler->tag != nullptr)
-		handler->tag(type, value, ctx);
+	if (handler.tag != nullptr)
+		handler.tag(type, value, ctx);
 }
 
 static inline void
-tag_handler_invoke_pair(const TagHandler *handler, void *ctx,
+tag_handler_invoke_pair(const TagHandler &handler, void *ctx,
 			const char *name, const char *value)
 {
-	assert(handler != nullptr);
 	assert(name != nullptr);
 	assert(value != nullptr);
 
-	if (handler->pair != nullptr)
-		handler->pair(name, value, ctx);
+	if (handler.pair != nullptr)
+		handler.pair(name, value, ctx);
 }
 
 /**

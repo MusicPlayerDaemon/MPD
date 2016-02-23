@@ -332,7 +332,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	DecoderCommand cmd;
 	if (ScanOpusTags(packet.packet, packet.bytes,
 			 &rgi,
-			 &add_tag_handler, &tag_builder) &&
+			 add_tag_handler, &tag_builder) &&
 	    !tag_builder.IsEmpty()) {
 		decoder_replay_gain(decoder, &rgi);
 
@@ -433,7 +433,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 
 static bool
 mpd_opus_scan_stream(InputStream &is,
-		     const TagHandler *handler, void *handler_ctx)
+		     const TagHandler &handler, void *handler_ctx)
 {
 	OggSyncState oy(is);
 
