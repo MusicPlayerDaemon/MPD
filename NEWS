@@ -48,11 +48,13 @@ ver 0.20 (not yet released)
 * update
   - apply .mpdignore matches to subdirectories
 
-ver 0.19.13 (not yet released)
+ver 0.19.13 (2016/02/23)
 * tags
   - aiff, riff: fix ID3 chunk padding
 * decoder
   - ffmpeg: support the TAK codec
+* fix disappearing duration of remote songs during playback
+* initialize supplementary groups with glibc 2.19+
 
 ver 0.19.12 (2015/12/15)
 * fix assertion failure on malformed UTF-8 tag

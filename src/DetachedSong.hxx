@@ -188,6 +188,14 @@ public:
 		tag = std::move(other.tag);
 	}
 
+	/**
+	 * Similar to the MoveTagFrom(), but move only the #TagItem
+	 * array.
+	 */
+	void MoveTagItemsFrom(DetachedSong &&other) {
+		tag.MoveItemsFrom(std::move(other.tag));
+	}
+
 	time_t GetLastModified() const {
 		return mtime;
 	}

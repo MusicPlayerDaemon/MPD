@@ -37,7 +37,7 @@ playlist::TagModified(DetachedSong &&song)
 
 	DetachedSong &current_song = queue.GetOrder(current);
 	if (song.IsSame(current_song))
-		current_song.MoveTagFrom(std::move(song));
+		current_song.MoveTagItemsFrom(std::move(song));
 
 	queue.ModifyAtOrder(current);
 	queue.IncrementVersion();

@@ -80,9 +80,17 @@ struct Tag {
 	Tag &operator=(Tag &&other) {
 		duration = other.duration;
 		has_playlist = other.has_playlist;
+		MoveItemsFrom(std::move(other));
+		return *this;
+	}
+
+	/**
+	 * Similar to the move operator, but move only the #TagItem
+	 * array.
+	 */
+	void MoveItemsFrom(Tag &&other) {
 		std::swap(items, other.items);
 		std::swap(num_items, other.num_items);
-		return *this;
 	}
 
 	/**
