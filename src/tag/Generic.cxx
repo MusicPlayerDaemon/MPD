@@ -22,6 +22,23 @@
 #include "TagId3.hxx"
 #include "ApeTag.hxx"
 #include "fs/Path.hxx"
+#include "input/InputStream.hxx"
+#include "util/Error.hxx"
+
+/**
+ * Attempts to scan APE or ID3 tags from the specified file.
+ */
+bool
+ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
+{
+	if (tag_ape_scan2(is, handler, ctx))
+		return true;
+
+	if (!is.Rewind(IgnoreError()))
+		return false;
+
+	return tag_id3_scan(is, handler, ctx);
+}
 
 /**
  * Attempts to scan APE or ID3 tags from the specified file.

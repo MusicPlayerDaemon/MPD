@@ -23,7 +23,14 @@
 #include "check.h"
 
 struct TagHandler;
+class InputStream;
 class Path;
+
+/**
+ * Attempts to scan APE or ID3 tags from the specified file.
+ */
+bool
+ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx);
 
 /**
  * Attempts to scan APE or ID3 tags from the specified file.
