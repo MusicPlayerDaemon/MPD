@@ -359,27 +359,3 @@ tag_id3_scan(InputStream &is,
 	scan_id3_tag(tag.get(), handler, handler_ctx);
 	return true;
 }
-
-bool
-tag_id3_scan(Path path_fs,
-	     const TagHandler &handler, void *handler_ctx)
-{
-	UniqueId3Tag tag;
-
-	try {
-		Error error;
-		tag = tag_id3_load(path_fs, error);
-		if (tag == nullptr) {
-			if (error.IsDefined())
-				LogError(error);
-
-			return false;
-		}
-	} catch (const std::runtime_error &e) {
-		LogError(e);
-		return false;
-	}
-
-	scan_id3_tag(tag.get(), handler, handler_ctx);
-	return true;
-}

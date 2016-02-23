@@ -21,12 +21,9 @@
 #include "ApeReplayGain.hxx"
 #include "ApeLoader.hxx"
 #include "ReplayGain.hxx"
-#include "fs/Path.hxx"
-#include "util/ASCII.hxx"
 #include "util/StringView.hxx"
 
 #include <string.h>
-#include <stdlib.h>
 
 static bool
 replay_gain_ape_callback(unsigned long flags, const char *key,
@@ -62,21 +59,4 @@ replay_gain_ape_read(InputStream &is, ReplayGainInfo &info)
 	};
 
 	return tag_ape_scan(is, callback) && found;
-}
-
-bool
-replay_gain_ape_read(Path path_fs, ReplayGainInfo &info)
-{
-	bool found = false;
-
-	auto callback = [&info, &found]
-		(unsigned long flags, const char *key,
-		 StringView value) {
-		found |= replay_gain_ape_callback(flags, key,
-						  value,
-						  info);
-		return true;
-	};
-
-	return tag_ape_scan(path_fs, callback) && found;
 }

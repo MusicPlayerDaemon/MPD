@@ -19,8 +19,14 @@
 
 #include "config.h"
 #include "tag/ApeLoader.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "fs/Path.hxx"
+#include "Log.hxx"
+#include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "util/StringView.hxx"
+#include "util/Error.hxx"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -55,7 +61,18 @@ main(int argc, char **argv)
 	}
 
 	const Path path = Path::FromFS(argv[1]);
-	if (!tag_ape_scan(path, MyApeTagCallback)) {
+
+	Mutex mutex;
+	Cond cond;
+
+	Error error;
+	auto is = OpenLocalInputStream(path, mutex, cond, error);
+	if (!is) {
+		LogError(error);
+		return EXIT_FAILURE;
+	}
+
+	if (!tag_ape_scan(*is, MyApeTagCallback)) {
 		fprintf(stderr, "error\n");
 		return EXIT_FAILURE;
 	}

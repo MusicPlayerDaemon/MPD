@@ -20,11 +20,7 @@
 #include "config.h"
 #include "ApeLoader.hxx"
 #include "system/ByteOrder.hxx"
-#include "fs/Path.hxx"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "input/InputStream.hxx"
-#include "input/LocalOpen.hxx"
 #include "util/StringView.hxx"
 #include "util/Error.hxx"
 
@@ -107,18 +103,4 @@ tag_ape_scan(InputStream &is, ApeTagCallback callback)
 	}
 
 	return true;
-}
-
-bool
-tag_ape_scan(Path path_fs, ApeTagCallback callback)
-{
-	Mutex mutex;
-	Cond cond;
-
-	std::unique_ptr<InputStream> is(OpenLocalInputStream(path_fs, mutex,
-							     cond, IgnoreError()));
-	if (!is)
-		return false;
-
-	return tag_ape_scan(*is, callback);
 }

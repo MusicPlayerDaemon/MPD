@@ -24,11 +24,7 @@
 #include "Log.hxx"
 #include "Riff.hxx"
 #include "Aiff.hxx"
-#include "fs/Path.hxx"
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "input/InputStream.hxx"
-#include "input/LocalOpen.hxx"
 
 #include <id3tag.h>
 
@@ -224,18 +220,4 @@ tag_id3_load(InputStream &is)
 	}
 
 	return tag;
-}
-
-UniqueId3Tag
-tag_id3_load(Path path_fs, Error &error)
-{
-	Mutex mutex;
-	Cond cond;
-
-	std::unique_ptr<InputStream> is(OpenLocalInputStream(path_fs, mutex,
-							     cond, error));
-	if (!is)
-		return nullptr;
-
-	return tag_id3_load(*is);
 }

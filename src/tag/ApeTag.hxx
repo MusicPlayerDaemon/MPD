@@ -22,7 +22,6 @@
 
 #include "TagTable.hxx"
 
-class Path;
 class InputStream;
 struct TagHandler;
 
@@ -35,15 +34,6 @@ extern const struct tag_table ape_tags[];
  */
 bool
 tag_ape_scan2(InputStream &is,
-	      const TagHandler &handler, void *handler_ctx);
-
-/**
- * Scan the APE tags of a file.
- *
- * @param path_fs the path of the file in filesystem encoding
- */
-bool
-tag_ape_scan2(Path path_fs,
 	      const TagHandler &handler, void *handler_ctx);
 
 #endif

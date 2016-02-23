@@ -23,7 +23,6 @@
 #include "Tag.hxx"
 #include "TagTable.hxx"
 #include "TagHandler.hxx"
-#include "fs/Path.hxx"
 #include "util/StringView.hxx"
 
 #include <string>
@@ -120,21 +119,4 @@ tag_ape_scan2(InputStream &is,
 	};
 
 	return tag_ape_scan(is, callback) && recognized;
-}
-
-bool
-tag_ape_scan2(Path path_fs,
-	      const TagHandler &handler, void *handler_ctx)
-{
-	bool recognized = false;
-
-	auto callback = [handler, handler_ctx, &recognized]
-		(unsigned long flags, const char *key,
-		 StringView value) {
-		recognized |= tag_ape_import_item(flags, key, value,
-						  handler, handler_ctx);
-		return true;
-	};
-
-	return tag_ape_scan(path_fs, callback) && recognized;
 }
