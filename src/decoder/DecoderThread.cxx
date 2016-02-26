@@ -368,7 +368,7 @@ decoder_run_song(DecoderControl &dc,
 	}
 
 	if (decoder.error.IsDefined()) {
-		/* copy the Error from sruct Decoder to
+		/* copy the Error from struct Decoder to
 		   DecoderControl */
 		dc.state = DecoderState::ERROR;
 		dc.error = std::move(decoder.error);
