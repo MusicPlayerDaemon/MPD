@@ -56,6 +56,11 @@ PlayerControl::Play(DetachedSong *song)
 
 	const ScopeLock protect(mutex);
 	SeekLocked(song, SongTime::zero(), IgnoreError());
+
+	if (state == PlayerState::PAUSE)
+		/* if the player was paused previously, we need to
+		   unpause it */
+		PauseLocked();
 }
 
 void
