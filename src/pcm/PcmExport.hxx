@@ -35,6 +35,7 @@ template<typename T> struct ConstBuffer;
 struct PcmExport {
 	struct Params {
 		bool alsa_channel_order = false;
+		bool dsd_u32 = false;
 		bool dop = false;
 		bool shift8 = false;
 		bool pack24 = false;
@@ -88,6 +89,11 @@ struct PcmExport {
 	SampleFormat alsa_channel_order;
 
 #ifdef ENABLE_DSD
+	/**
+	 * Convert DSD (U8) to DSD_U32?
+	 */
+	bool dsd_u32;
+
 	/**
 	 * Convert DSD to DSD-over-PCM (DoP)?  Input format must be
 	 * SampleFormat::DSD and output format must be

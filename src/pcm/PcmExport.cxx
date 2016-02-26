@@ -25,6 +25,7 @@
 #include "util/ConstBuffer.hxx"
 
 #ifdef ENABLE_DSD
+#include "PcmDsd.hxx"
 #include "PcmDop.hxx"
 #endif
 
@@ -42,7 +43,15 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		: SampleFormat::UNDEFINED;
 
 #ifdef ENABLE_DSD
+	assert(!params.dsd_u32 || !params.dop);
 	assert(!params.dop || audio_valid_channel_count(_channels));
+
+	dsd_u32 = params.dsd_u32 && sample_format == SampleFormat::DSD;
+	if (dsd_u32)
+		/* after the conversion to DSD_U32, the DSD samples
+		   are stuffed inside fake 32 bit samples */
+		sample_format = SampleFormat::S32;
+
 	dop = params.dop && sample_format == SampleFormat::DSD;
 	if (dop)
 		/* after the conversion to DoP, the DSD
@@ -77,6 +86,9 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 		return audio_format.channels * 3;
 
 #ifdef ENABLE_DSD
+	if (dsd_u32)
+		return channels * 4;
+
 	if (dop)
 		/* the DSD-over-USB draft says that DSD 1-bit samples
 		   are enclosed within 24 bit samples, and MPD's
@@ -96,6 +108,11 @@ PcmExport::Export(ConstBuffer<void> data)
 					  alsa_channel_order, channels);
 
 #ifdef ENABLE_DSD
+	if (dsd_u32)
+		data = Dsd8To32(dop_buffer, channels,
+				ConstBuffer<uint8_t>::FromVoid(data))
+			.ToVoid();
+
 	if (dop)
 		data = pcm_dsd_to_dop(dop_buffer, channels,
 				      ConstBuffer<uint8_t>::FromVoid(data))

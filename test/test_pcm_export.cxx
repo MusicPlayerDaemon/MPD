@@ -116,6 +116,30 @@ PcmExportTest::TestReverseEndian()
 }
 
 void
+PcmExportTest::TestDsdU32()
+{
+	static constexpr uint8_t src[] = {
+		0x01, 0x23, 0x45, 0x67,
+		0x89, 0xab, 0xcd, 0xef,
+	};
+
+	static constexpr uint32_t expected[] = {
+		0xcd894501,
+		0xefab6723,
+	};
+
+	PcmExport::Params params;
+	params.dsd_u32 = true;
+
+	PcmExport e;
+	e.Open(SampleFormat::DSD, 2, params);
+
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+}
+
+void
 PcmExportTest::TestDop()
 {
 	static constexpr uint8_t src[] = {
