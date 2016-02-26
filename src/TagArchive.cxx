@@ -35,11 +35,10 @@ tag_archive_scan(Path path, const TagHandler &handler, void *handler_ctx)
 
 	Mutex mutex;
 	Cond cond;
-	auto *is = OpenArchiveInputStream(path, mutex, cond, IgnoreError());
-	if (is == nullptr)
+	InputStreamPtr is(OpenArchiveInputStream(path, mutex, cond,
+						 IgnoreError()));
+	if (!is)
 		return false;
 
-	bool result = tag_stream_scan(*is, handler, handler_ctx);
-	delete is;
-	return result;
+	return tag_stream_scan(*is, handler, handler_ctx);
 }
