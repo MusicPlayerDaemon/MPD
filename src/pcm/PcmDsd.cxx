@@ -55,9 +55,7 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src)
 	const unsigned num_samples = src.size;
 	const unsigned num_frames = src.size / channels;
 
-	float *dest;
-	const size_t dest_size = num_samples * sizeof(*dest);
-	dest = (float *)buffer.Get(dest_size);
+	float *dest = buffer.GetT<float>(num_samples);
 
 	for (unsigned c = 0; c < channels; ++c) {
 		if (dsd2pcm[c] == nullptr) {
