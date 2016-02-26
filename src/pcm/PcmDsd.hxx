@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "PcmBuffer.hxx"
+#include "AudioFormat.hxx"
 
 #include <array>
 
@@ -35,7 +36,7 @@ template<typename T> struct ConstBuffer;
 class PcmDsd {
 	PcmBuffer buffer;
 
-	std::array<struct dsd2pcm_ctx_s *, 32> dsd2pcm;
+	std::array<struct dsd2pcm_ctx_s *, MAX_CHANNELS> dsd2pcm;
 
 public:
 	PcmDsd();
