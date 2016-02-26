@@ -9,6 +9,20 @@ retrieval, and playlist management can all be managed remotely.
 
 For basic installation information see the INSTALL file.
 
+# Users
+
+- [Manual](http://www.musicpd.org/doc/user/)
+- [Forum](http://forum.musicpd.org/)
+- [IRC](irc://chat.freenode.net/#mpd)
+- [Bug tracker](http://bugs.musicpd.org/)
+
+# Developers
+
+- [Protocol specification](http://www.musicpd.org/doc/protocol/)
+- [Developer manual](http://www.musicpd.org/doc/developer/)
+
+# Legal
+
 MPD is released under the
 [GNU General Public License version 2](https://www.gnu.org/licenses/gpl-2.0.txt),
 which is distributed in the COPYING file.
