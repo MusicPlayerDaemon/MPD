@@ -21,15 +21,10 @@
 #include "TagArchive.hxx"
 #include "TagStream.hxx"
 #include "tag/Generic.hxx"
-#include "tag/TagHandler.hxx"
-#include "tag/TagBuilder.hxx"
 #include "archive/ArchiveFile.hxx"
-#include "fs/Path.hxx"
-#include "util/Error.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Cond.hxx"
-
-#include <assert.h>
+#include "util/Error.hxx"
 
 bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
