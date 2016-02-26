@@ -4,6 +4,7 @@ Documentation=man:mpd(1) man:mpd.conf(5)
 After=network.target sound.target
 
 [Service]
+Type=notify
 ExecStart=@prefix@/bin/mpd --no-daemon
 
 # allow MPD to use real-time priority 50
