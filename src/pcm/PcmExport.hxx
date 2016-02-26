@@ -40,6 +40,7 @@ struct PcmExport {
 	 */
 	PcmBuffer order_buffer;
 
+#ifdef ENABLE_DSD
 	/**
 	 * The buffer is used to convert DSD samples to the
 	 * DoP format.
@@ -47,6 +48,7 @@ struct PcmExport {
 	 * @see #dop
 	 */
 	PcmBuffer dop_buffer;
+#endif
 
 	/**
 	 * The buffer is used to pack samples, removing padding.
@@ -77,12 +79,14 @@ struct PcmExport {
 	 */
 	SampleFormat alsa_channel_order;
 
+#ifdef ENABLE_DSD
 	/**
 	 * Convert DSD to DSD-over-PCM (DoP)?  Input format must be
 	 * SampleFormat::DSD and output format must be
 	 * SampleFormat::S24_P32.
 	 */
 	bool dop;
+#endif
 
 	/**
 	 * Convert (padded) 24 bit samples to 32 bit by shifting 8
