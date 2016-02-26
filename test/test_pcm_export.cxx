@@ -32,8 +32,11 @@ PcmExportTest::TestShift8()
 	static constexpr int32_t src[] = { 0x0, 0x1, 0x100, 0x10000, 0xffffff };
 	static constexpr uint32_t expected[] = { 0x0, 0x100, 0x10000, 0x1000000, 0xffffff00 };
 
+	PcmExport::Params params;
+	params.shift8 = true;
+
 	PcmExport e;
-	e.Open(SampleFormat::S24_P32, 2, false, false, true, false, false);
+	e.Open(SampleFormat::S24_P32, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
@@ -65,8 +68,11 @@ PcmExportTest::TestPack24()
 	static const uint8_t *const expected = IsBigEndian()
 		? expected_be : expected_le;
 
+	PcmExport::Params params;
+	params.pack24 = true;
+
 	PcmExport e;
-	e.Open(SampleFormat::S24_P32, 2, false, false, false, true, false);
+	e.Open(SampleFormat::S24_P32, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(expected_size, dest.size);
@@ -88,19 +94,22 @@ PcmExportTest::TestReverseEndian()
 		4, 3, 2, 1, 8, 7, 6, 5, 12, 11, 10, 9,
 	};
 
+	PcmExport::Params params;
+	params.reverse_endian = true;
+
 	PcmExport e;
-	e.Open(SampleFormat::S8, 2, false, false, false, false, true);
+	e.Open(SampleFormat::S8, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(src), dest.size);
 	CPPUNIT_ASSERT(memcmp(dest.data, src, dest.size) == 0);
 
-	e.Open(SampleFormat::S16, 2, false, false, false, false, true);
+	e.Open(SampleFormat::S16, 2, params);
 	dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected2), dest.size);
 	CPPUNIT_ASSERT(memcmp(dest.data, expected2, dest.size) == 0);
 
-	e.Open(SampleFormat::S32, 2, false, false, false, false, true);
+	e.Open(SampleFormat::S32, 2, params);
 	dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected4), dest.size);
 	CPPUNIT_ASSERT(memcmp(dest.data, expected4, dest.size) == 0);
@@ -121,8 +130,11 @@ PcmExportTest::TestDop()
 		0xfffaabef,
 	};
 
+	PcmExport::Params params;
+	params.dop = true;
+
 	PcmExport e;
-	e.Open(SampleFormat::DSD, 2, false, true, false, false, false);
+	e.Open(SampleFormat::DSD, 2, params);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
@@ -145,8 +157,11 @@ TestAlsaChannelOrder51()
 		6, 7, 10, 11, 8, 9,
 	};
 
+	PcmExport::Params params;
+	params.alsa_channel_order = true;
+
 	PcmExport e;
-	e.Open(F, 6, true, false, false, false, false);
+	e.Open(F, 6, params);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
@@ -169,8 +184,11 @@ TestAlsaChannelOrder71()
 		8, 9, 12, 13, 10, 11, 14, 15,
 	};
 
+	PcmExport::Params params;
+	params.alsa_channel_order = true;
+
 	PcmExport e;
-	e.Open(F, 8, true, false, false, false, false);
+	e.Open(F, 8, params);
 
 	auto dest = e.Export({src, sizeof(src)});
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);

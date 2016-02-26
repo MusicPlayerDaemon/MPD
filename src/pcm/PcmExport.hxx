@@ -33,6 +33,14 @@ template<typename T> struct ConstBuffer;
  * representation which are not supported by the pcm_convert library.
  */
 struct PcmExport {
+	struct Params {
+		bool alsa_channel_order = false;
+		bool dop = false;
+		bool shift8 = false;
+		bool pack24 = false;
+		bool reverse_endian = false;
+	};
+
 	/**
 	 * This buffer is used to reorder channels.
 	 *
@@ -117,8 +125,7 @@ struct PcmExport {
 	 * @param channels the number of channels; ignored unless dop is set
 	 */
 	void Open(SampleFormat sample_format, unsigned channels,
-		  bool _alsa_channel_order,
-		  bool dop, bool shift8, bool pack, bool reverse_endian);
+		  Params params);
 
 	/**
 	 * Calculate the size of one output frame.

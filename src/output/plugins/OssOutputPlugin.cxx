@@ -537,10 +537,13 @@ oss_probe_sample_format(int fd, SampleFormat sample_format,
 	*oss_format_r = oss_format;
 
 #ifdef AFMT_S24_PACKED
-	pcm_export.Open(sample_format, 0, true, false, false,
-			oss_format == AFMT_S24_PACKED,
-			oss_format == AFMT_S24_PACKED &&
-			!IsLittleEndian());
+	PcmExport::Params params;
+	params.alsa_channel_order = true;
+	params.pack24 = oss_format == AFMT_S24_PACKED;
+	params.reverse_endian = oss_format == AFMT_S24_PACKED &&
+		!IsLittleEndian();
+
+	pcm_export.Open(sample_format, 0, params);
 #endif
 
 	return SUCCESS;

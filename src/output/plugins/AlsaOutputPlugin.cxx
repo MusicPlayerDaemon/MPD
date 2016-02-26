@@ -716,22 +716,24 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 inline bool
 AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
 {
-	bool shift8 = false, packed, reverse_endian;
+	PcmExport::Params params;
+	params.alsa_channel_order = true;
 
-	const bool dop2 = dop &&
-		audio_format.format == SampleFormat::DSD;
-	const bool success = dop2
+	params.dop = dop && audio_format.format == SampleFormat::DSD;
+	const bool success = params.dop
 		? SetupDop(audio_format,
-			   &shift8, &packed, &reverse_endian,
+			   &params.shift8,
+			   &params.pack24, &params.reverse_endian,
 			   error)
-		: alsa_setup(this, audio_format, &packed, &reverse_endian,
+		: alsa_setup(this, audio_format,
+			     &params.pack24, &params.reverse_endian,
 			     error);
 	if (!success)
 		return false;
 
 	pcm_export->Open(audio_format.format,
 			 audio_format.channels,
-			 true, dop2, shift8, packed, reverse_endian);
+			 params);
 	return true;
 }
 
