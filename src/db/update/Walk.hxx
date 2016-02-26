@@ -30,6 +30,7 @@ struct stat;
 struct StorageFileInfo;
 struct Directory;
 struct ArchivePlugin;
+class ArchiveFile;
 class Storage;
 class ExcludeList;
 
@@ -101,7 +102,8 @@ private:
 
 
 #ifdef ENABLE_ARCHIVE
-	void UpdateArchiveTree(Directory &parent, const char *name);
+	void UpdateArchiveTree(ArchiveFile &archive, Directory &parent,
+			       const char *name);
 
 	bool UpdateArchiveFile(Directory &directory,
 			       const char *name, const char *suffix,
