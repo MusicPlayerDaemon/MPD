@@ -96,12 +96,8 @@ Song::UpdateFile(Storage &storage)
 				     full_tag_handler, &tag_builder))
 			return false;
 	} else {
-		if (!tag_file_scan(path_fs, full_tag_handler, &tag_builder))
+		if (!tag_file_scan(path_fs, tag_builder))
 			return false;
-
-		if (tag_builder.IsEmpty())
-			ScanGenericTags(path_fs, full_tag_handler,
-					&tag_builder);
 	}
 
 	mtime = info.mtime;
@@ -149,11 +145,8 @@ DetachedSong::LoadFile(Path path)
 		return false;
 
 	TagBuilder tag_builder;
-	if (!tag_file_scan(path, full_tag_handler, &tag_builder))
+	if (!tag_file_scan(path, tag_builder))
 		return false;
-
-	if (tag_builder.IsEmpty())
-		ScanGenericTags(path, full_tag_handler, &tag_builder);
 
 	mtime = fi.GetModificationTime();
 	tag_builder.Commit(tag);

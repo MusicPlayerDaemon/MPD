@@ -19,6 +19,9 @@
 
 #include "config.h"
 #include "TagFile.hxx"
+#include "tag/Generic.hxx"
+#include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
 #include "fs/Path.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -93,4 +96,16 @@ tag_file_scan(Path path_fs, const TagHandler &handler, void *handler_ctx)
 	return decoder_plugins_try([&](const DecoderPlugin &plugin){
 			return tfs.Scan(plugin);
 		});
+}
+
+bool
+tag_file_scan(Path path, TagBuilder &builder)
+{
+	if (!tag_file_scan(path, full_tag_handler, &builder))
+		return false;
+
+	if (builder.IsEmpty())
+		ScanGenericTags(path, full_tag_handler, &builder);
+
+	return true;
 }
