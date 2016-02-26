@@ -208,6 +208,8 @@ decoder_run_stream_plugin(Decoder &decoder, InputStream &is,
 	if (!decoder_check_plugin(plugin, is, suffix))
 		return false;
 
+	decoder.error.Clear();
+
 	tried_r = true;
 	return decoder_stream_decode(plugin, decoder, is);
 }
@@ -291,6 +293,8 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 {
 	if (!plugin.SupportsSuffix(suffix))
 		return false;
+
+	decoder.error.Clear();
 
 	DecoderControl &dc = decoder.dc;
 
