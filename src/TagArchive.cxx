@@ -27,20 +27,19 @@
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "input/InputStream.hxx"
-#include "input/plugins/ArchiveInputPlugin.hxx"
 #include "thread/Cond.hxx"
 
 #include <assert.h>
 
 bool
-tag_archive_scan(Path path, const TagHandler &handler, void *handler_ctx)
+tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
+		 const TagHandler &handler, void *handler_ctx)
 {
-	assert(!path.IsNull());
-
 	Mutex mutex;
 	Cond cond;
-	InputStreamPtr is(OpenArchiveInputStream(path, mutex, cond,
-						 IgnoreError()));
+
+	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond,
+					     IgnoreError()));
 	if (!is)
 		return false;
 

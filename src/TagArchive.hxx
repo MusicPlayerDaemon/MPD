@@ -23,7 +23,6 @@
 #include "check.h"
 
 class ArchiveFile;
-class Path;
 struct TagHandler;
 class TagBuilder;
 
@@ -36,7 +35,8 @@ class TagBuilder;
  * found)
  */
 bool
-tag_archive_scan(Path path, const TagHandler &handler, void *handler_ctx);
+tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
+		 const TagHandler &handler, void *handler_ctx);
 
 /**
  * Scan the tags of a song file inside an archive.  Invokes matching
