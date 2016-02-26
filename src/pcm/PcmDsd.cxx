@@ -20,31 +20,28 @@
 #include "config.h"
 #include "PcmDsd.hxx"
 #include "dsd2pcm/dsd2pcm.h"
-#include "util/Macros.hxx"
 #include "util/ConstBuffer.hxx"
-
-#include <algorithm>
 
 #include <assert.h>
 
 PcmDsd::PcmDsd()
 {
-	std::fill_n(dsd2pcm, ARRAY_SIZE(dsd2pcm), nullptr);
+	dsd2pcm.fill(nullptr);
 }
 
 PcmDsd::~PcmDsd()
 {
-	for (unsigned i = 0; i < ARRAY_SIZE(dsd2pcm); ++i)
-		if (dsd2pcm[i] != nullptr)
-			dsd2pcm_destroy(dsd2pcm[i]);
+	for (auto i : dsd2pcm)
+		if (i != nullptr)
+			dsd2pcm_destroy(i);
 }
 
 void
 PcmDsd::Reset()
 {
-	for (unsigned i = 0; i < ARRAY_SIZE(dsd2pcm); ++i)
-		if (dsd2pcm[i] != nullptr)
-			dsd2pcm_reset(dsd2pcm[i]);
+	for (auto i : dsd2pcm)
+		if (i != nullptr)
+			dsd2pcm_reset(i);
 }
 
 ConstBuffer<float>
@@ -53,7 +50,7 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src)
 	assert(!src.IsNull());
 	assert(!src.IsEmpty());
 	assert(src.size % channels == 0);
-	assert(channels <= ARRAY_SIZE(dsd2pcm));
+	assert(channels <= dsd2pcm.max_size());
 
 	const unsigned num_samples = src.size;
 	const unsigned num_frames = src.size / channels;

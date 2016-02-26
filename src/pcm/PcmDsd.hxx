@@ -23,6 +23,8 @@
 #include "check.h"
 #include "PcmBuffer.hxx"
 
+#include <array>
+
 #include <stdint.h>
 
 template<typename T> struct ConstBuffer;
@@ -33,7 +35,7 @@ template<typename T> struct ConstBuffer;
 class PcmDsd {
 	PcmBuffer buffer;
 
-	struct dsd2pcm_ctx_s *dsd2pcm[32];
+	std::array<struct dsd2pcm_ctx_s *, 32> dsd2pcm;
 
 public:
 	PcmDsd();
