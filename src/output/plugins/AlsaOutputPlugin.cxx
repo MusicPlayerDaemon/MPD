@@ -67,12 +67,14 @@ struct AlsaOutput {
 	/** use memory mapped I/O? */
 	bool use_mmap;
 
+#ifdef ENABLE_DSD
 	/**
 	 * Enable DSD over PCM according to the DoP standard standard?
 	 *
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
 	bool dop;
+#endif
 
 	/** libasound's buffer_time setting (in microseconds) */
 	unsigned int buffer_time;
@@ -161,9 +163,12 @@ struct AlsaOutput {
 	void Cancel();
 
 private:
+#ifdef ENABLE_DSD
 	bool SetupDop(AudioFormat audio_format,
 		      PcmExport::Params &params,
 		      Error &error);
+#endif
+
 	bool SetupOrDop(AudioFormat &audio_format, Error &error);
 
 	int Recover(int err);
@@ -189,9 +194,11 @@ AlsaOutput::Configure(const ConfigBlock &block, Error &error)
 
 	use_mmap = block.GetBlockValue("use_mmap", false);
 
+#ifdef ENABLE_DSD
 	dop = block.GetBlockValue("dop", false) ||
 		/* legacy name from MPD 0.18 and older: */
 		block.GetBlockValue("dsd_usb", false);
+#endif
 
 	buffer_time = block.GetBlockValue("buffer_time",
 					      MPD_ALSA_BUFFER_TIME_US);
@@ -672,6 +679,8 @@ error:
 	return false;
 }
 
+#ifdef ENABLE_DSD
+
 inline bool
 AlsaOutput::SetupDop(const AudioFormat audio_format,
 		     PcmExport::Params &params,
@@ -713,16 +722,25 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 	return true;
 }
 
+#endif
+
 inline bool
 AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
 {
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 
+#ifdef ENABLE_DSD
 	params.dop = dop && audio_format.format == SampleFormat::DSD;
-	const bool success = params.dop
+#endif
+
+	const bool success =
+#ifdef ENABLE_DSD
+		params.dop
 		? SetupDop(audio_format, params, error)
-		: alsa_setup(this, audio_format, params, error);
+		:
+#endif
+		alsa_setup(this, audio_format, params, error);
 	if (!success)
 		return false;
 
