@@ -117,8 +117,6 @@ struct Song {
 				     const char *name_utf8,
 				     Directory &parent);
 	bool UpdateFileInArchive(ArchiveFile &archive);
-
-	bool UpdateFileInArchive(const Storage &storage);
 #endif
 
 	/**

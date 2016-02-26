@@ -138,32 +138,6 @@ Song::UpdateFileInArchive(ArchiveFile &archive)
 	return true;
 }
 
-bool
-Song::UpdateFileInArchive(const Storage &storage)
-{
-	/* check if there's a suffix and a plugin */
-
-	const char *suffix = uri_get_suffix(uri);
-	if (suffix == nullptr)
-		return false;
-
-	if (!decoder_plugins_supports_suffix(suffix))
-		return false;
-
-	const auto path_fs = parent->IsRoot()
-		? storage.MapFS(uri)
-		: storage.MapChildFS(parent->GetPath(), uri);
-	if (path_fs.IsNull())
-		return false;
-
-	TagBuilder tag_builder;
-	if (!tag_archive_scan(path_fs, tag_builder))
-		return false;
-
-	tag_builder.Commit(tag);
-	return true;
-}
-
 #endif
 
 bool
