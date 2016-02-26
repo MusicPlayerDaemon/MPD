@@ -23,6 +23,7 @@
 #include "tag/Generic.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
+#include "archive/ArchiveFile.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "input/InputStream.hxx"
@@ -55,5 +56,17 @@ tag_archive_scan(Path path, TagBuilder &builder)
 	Cond cond;
 	InputStreamPtr is(OpenArchiveInputStream(path, mutex, cond,
 						 IgnoreError()));
+	return is && tag_stream_scan(*is, builder);
+}
+
+bool
+tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
+		 TagBuilder &builder)
+{
+	Mutex mutex;
+	Cond cond;
+
+	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond,
+					     IgnoreError()));
 	return is && tag_stream_scan(*is, builder);
 }
