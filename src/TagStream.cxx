@@ -19,6 +19,9 @@
 
 #include "config.h"
 #include "TagStream.hxx"
+#include "tag/Generic.hxx"
+#include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "decoder/DecoderList.hxx"
@@ -71,4 +74,29 @@ tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx)
 	auto is = InputStream::OpenReady(uri, mutex, cond,
 					 IgnoreError());
 	return is && tag_stream_scan(*is, handler, ctx);
+}
+
+bool
+tag_stream_scan(InputStream &is, TagBuilder &builder)
+{
+	assert(is.IsReady());
+
+	if (!tag_stream_scan(is, full_tag_handler, &builder))
+		return false;
+
+	if (builder.IsEmpty())
+		ScanGenericTags(is, full_tag_handler, &builder);
+
+	return true;
+}
+
+bool
+tag_stream_scan(const char *uri, TagBuilder &builder)
+{
+	Mutex mutex;
+	Cond cond;
+
+	auto is = InputStream::OpenReady(uri, mutex, cond,
+					 IgnoreError());
+	return is && tag_stream_scan(*is, builder);
 }

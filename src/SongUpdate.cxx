@@ -92,8 +92,7 @@ Song::UpdateFile(Storage &storage)
 	if (path_fs.IsNull()) {
 		const auto absolute_uri =
 			storage.MapUTF8(relative_uri.c_str());
-		if (!tag_stream_scan(absolute_uri.c_str(),
-				     full_tag_handler, &tag_builder))
+		if (!tag_stream_scan(absolute_uri.c_str(), tag_builder))
 			return false;
 	} else {
 		if (!tag_file_scan(path_fs, tag_builder))
@@ -165,8 +164,7 @@ DetachedSong::Update()
 		return LoadFile(path_fs);
 	} else if (IsRemote()) {
 		TagBuilder tag_builder;
-		if (!tag_stream_scan(uri.c_str(), full_tag_handler,
-				     &tag_builder))
+		if (!tag_stream_scan(uri.c_str(), tag_builder))
 			return false;
 
 		mtime = 0;

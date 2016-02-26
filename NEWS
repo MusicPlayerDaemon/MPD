@@ -14,6 +14,7 @@ ver 0.20 (not yet released)
   - id3: remove the "id3v1_encoding" setting; by definition, all ID3v1 tags
     are ISO-Latin-1
   - ape: support APE replay gain on remote files
+  - read ID3 tags from NFS/SMB
 * decoder
   - improved error logging
   - report I/O errors to clients
