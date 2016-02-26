@@ -38,7 +38,7 @@ ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
 		return true;
 
 #ifdef ENABLE_ID3TAG
-	if (!is.Rewind(IgnoreError()))
+	if (!is.LockRewind(IgnoreError()))
 		return false;
 
 	return tag_id3_scan(is, handler, ctx);
