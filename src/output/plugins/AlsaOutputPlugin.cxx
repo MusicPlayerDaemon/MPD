@@ -39,6 +39,11 @@
 #define HAVE_ALSA_DSD
 #endif
 
+#if SND_LIB_VERSION >= 0x1001d
+/* alsa-lib supports DSD_U32 since version 1.0.29 */
+#define HAVE_ALSA_DSD_U32
+#endif
+
 static const char default_device[] = "default";
 
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
@@ -314,6 +319,21 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 		return SND_PCM_FORMAT_S24_3BE;
 
 	case SND_PCM_FORMAT_S32_BE: return SND_PCM_FORMAT_S32_LE;
+
+#ifdef HAVE_ALSA_DSD_U32
+	case SND_PCM_FORMAT_DSD_U16_LE:
+		return SND_PCM_FORMAT_DSD_U16_BE;
+
+	case SND_PCM_FORMAT_DSD_U16_BE:
+		return SND_PCM_FORMAT_DSD_U16_LE;
+
+	case SND_PCM_FORMAT_DSD_U32_LE:
+		return SND_PCM_FORMAT_DSD_U32_BE;
+
+	case SND_PCM_FORMAT_DSD_U32_BE:
+		return SND_PCM_FORMAT_DSD_U32_LE;
+#endif
+
 	default: return SND_PCM_FORMAT_UNKNOWN;
 	}
 }
