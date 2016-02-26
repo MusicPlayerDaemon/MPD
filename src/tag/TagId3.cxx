@@ -351,6 +351,8 @@ tag_id3_scan(InputStream &is,
 
 	try {
 		tag = tag_id3_load(is);
+		if (!tag)
+			return false;
 	} catch (const std::runtime_error &e) {
 		LogError(e);
 		return false;
