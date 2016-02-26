@@ -1,6 +1,6 @@
+# Music Player Daemon
 
-		       Music Player Daemon (MPD)
-			http://www.musicpd.org
+http://www.musicpd.org
 
 A daemon for playing music of various formats.  Music is played through the 
 server's audio device.  The daemon stores info about all available music, 
@@ -9,9 +9,6 @@ retrieval, and playlist management can all be managed remotely.
 
 For basic installation information see the INSTALL file.
 
-MPD is released under the GNU General Public License version 2, which is
-distributed in the COPYING file.
-
-You should have received a copy of the GNU General Public License along with
-this program.  If not, see <http://www.gnu.org/licenses/>.
-
+MPD is released under the
+[GNU General Public License version 2](https://www.gnu.org/licenses/gpl-2.0.txt),
+which is distributed in the COPYING file.
