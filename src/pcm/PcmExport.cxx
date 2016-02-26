@@ -36,7 +36,6 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		bool _dop, bool _shift8, bool _pack, bool _reverse_endian)
 {
 	assert(audio_valid_sample_format(sample_format));
-	assert(!_dop || audio_valid_channel_count(_channels));
 
 	channels = _channels;
 	alsa_channel_order = _alsa_channel_order
@@ -44,12 +43,14 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		: SampleFormat::UNDEFINED;
 
 #ifdef ENABLE_DSD
+	assert(!_dop || audio_valid_channel_count(_channels));
 	dop = _dop && sample_format == SampleFormat::DSD;
 	if (dop)
 		/* after the conversion to DoP, the DSD
 		   samples are stuffed inside fake 24 bit samples */
 		sample_format = SampleFormat::S24_P32;
 #else
+	(void)_channels;
 	(void)_dop;
 #endif
 
