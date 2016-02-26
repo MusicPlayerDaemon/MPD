@@ -24,6 +24,7 @@
 
 class Path;
 struct TagHandler;
+class TagBuilder;
 
 /**
  * Scan the tags of a song file inside an archive.  Invokes matching
@@ -35,5 +36,16 @@ struct TagHandler;
  */
 bool
 tag_archive_scan(Path path, const TagHandler &handler, void *handler_ctx);
+
+/**
+ * Scan the tags of a song file inside an archive.  Invokes matching
+ * decoder plugins, and falls back to generic scanners (APE and ID3)
+ * if no tags were found (but the file was recognized).
+ *
+ * @return true if the file was recognized (even if no metadata was
+ * found)
+ */
+bool
+tag_archive_scan(Path path, TagBuilder &builder);
 
 #endif

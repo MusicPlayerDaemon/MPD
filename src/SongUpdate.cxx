@@ -31,8 +31,6 @@
 #include "decoder/DecoderList.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
-#include "tag/TagHandler.hxx"
-#include "tag/Generic.hxx"
 #include "TagFile.hxx"
 #include "TagStream.hxx"
 
@@ -127,7 +125,7 @@ Song::UpdateFileInArchive(const Storage &storage)
 		return false;
 
 	TagBuilder tag_builder;
-	if (!tag_archive_scan(path_fs, full_tag_handler, &tag_builder))
+	if (!tag_archive_scan(path_fs, tag_builder))
 		return false;
 
 	tag_builder.Commit(tag);

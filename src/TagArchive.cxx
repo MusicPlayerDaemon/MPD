@@ -20,6 +20,9 @@
 #include "config.h"
 #include "TagArchive.hxx"
 #include "TagStream.hxx"
+#include "tag/Generic.hxx"
+#include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "input/InputStream.hxx"
@@ -41,4 +44,16 @@ tag_archive_scan(Path path, const TagHandler &handler, void *handler_ctx)
 		return false;
 
 	return tag_stream_scan(*is, handler, handler_ctx);
+}
+
+bool
+tag_archive_scan(Path path, TagBuilder &builder)
+{
+	assert(!path.IsNull());
+
+	Mutex mutex;
+	Cond cond;
+	InputStreamPtr is(OpenArchiveInputStream(path, mutex, cond,
+						 IgnoreError()));
+	return is && tag_stream_scan(*is, builder);
 }
