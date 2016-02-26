@@ -51,16 +51,7 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 	assert(strchr(path_utf8, '\n') == nullptr);
 
 	Song *song = NewFile(path_utf8, parent);
-
-	//in archive ?
-	bool success =
-#ifdef ENABLE_ARCHIVE
-		parent.device == DEVICE_INARCHIVE
-		? song->UpdateFileInArchive(storage)
-		:
-#endif
-		song->UpdateFile(storage);
-	if (!success) {
+	if (!song->UpdateFile(storage)) {
 		song->Free();
 		return nullptr;
 	}
