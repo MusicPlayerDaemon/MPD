@@ -35,14 +35,11 @@
 
 #include <string>
 #include <utility>
+#include <exception>
 
 #include <assert.h>
 
 class Domain;
-
-namespace std {
-	class exception;
-}
 
 /** Domain for std::exception */
 extern const Domain exception_domain;
@@ -133,7 +130,7 @@ public:
 		message = other.message;
 	}
 
-	void Set(const std::exception &src);
+	void Set(std::exception_ptr src);
 
 	void Set(const Domain &_domain, int _code, const char *_message);
 

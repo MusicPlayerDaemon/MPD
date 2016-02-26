@@ -31,7 +31,6 @@
 #include "Error.hxx"
 #include "Domain.hxx"
 
-#include <exception>
 #include <system_error>
 
 #ifdef WIN32
@@ -54,11 +53,11 @@ const Domain win32_domain("win32");
 Error::~Error() {}
 
 void
-Error::Set(const std::exception &src)
+Error::Set(std::exception_ptr src)
 {
 	try {
 		/* classify the exception */
-		throw src;
+		std::rethrow_exception(src);
 	} catch (const std::system_error &se) {
 		if (se.code().category() == std::system_category()) {
 #ifdef WIN32
@@ -67,9 +66,11 @@ Error::Set(const std::exception &src)
 			Set(errno_domain, se.code().value(), se.what());
 #endif
 		} else
-			Set(exception_domain, src.what());
+			Set(exception_domain, se.what());
+	} catch (const std::exception &e) {
+		Set(exception_domain, e.what());
 	} catch (...) {
-		Set(exception_domain, src.what());
+		Set(exception_domain, "Unknown exception");
 	}
 }
 

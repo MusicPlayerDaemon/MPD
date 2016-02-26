@@ -81,7 +81,7 @@ try {
 				   std::move(reader), info.GetSize(),
 				   mutex, cond);
 } catch (const std::exception &e) {
-	error.Set(e);
+	error.Set(std::current_exception());
 	return nullptr;
 }
 
@@ -102,7 +102,7 @@ try {
 	offset = new_offset;
 	return true;
 } catch (const std::exception &e) {
-	error.Set(e);
+	error.Set(std::current_exception());
 	return false;
 }
 
@@ -113,7 +113,7 @@ try {
 	offset += nbytes;
 	return nbytes;
 } catch (const std::exception &e) {
-	error.Set(e);
+	error.Set(std::current_exception());
 	return 0;
 }
 

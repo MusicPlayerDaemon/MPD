@@ -222,7 +222,7 @@ try {
 
 	return true;
 } catch (const std::exception &e) {
-	error.Set(e);
+	error.Set(std::current_exception());
 	return false;
 }
 
