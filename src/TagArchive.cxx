@@ -48,18 +48,6 @@ tag_archive_scan(Path path, const TagHandler &handler, void *handler_ctx)
 }
 
 bool
-tag_archive_scan(Path path, TagBuilder &builder)
-{
-	assert(!path.IsNull());
-
-	Mutex mutex;
-	Cond cond;
-	InputStreamPtr is(OpenArchiveInputStream(path, mutex, cond,
-						 IgnoreError()));
-	return is && tag_stream_scan(*is, builder);
-}
-
-bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
 		 TagBuilder &builder)
 {
