@@ -106,6 +106,47 @@ Song::UpdateFile(Storage &storage)
 
 #ifdef ENABLE_ARCHIVE
 
+Song *
+Song::LoadFromArchive(ArchiveFile &archive, const char *name_utf8,
+		      Directory &parent)
+{
+	assert(!uri_has_scheme(name_utf8));
+	assert(strchr(name_utf8, '\n') == nullptr);
+
+	Song *song = NewFile(name_utf8, parent);
+
+	if (!song->UpdateFileInArchive(archive)) {
+		song->Free();
+		return nullptr;
+	}
+
+	return song;
+}
+
+bool
+Song::UpdateFileInArchive(ArchiveFile &archive)
+{
+	assert(parent != nullptr);
+	assert(parent->device == DEVICE_INARCHIVE);
+
+	std::string path_utf8(uri);
+
+	for (const Directory *directory = parent;
+	     directory->parent != nullptr &&
+		     directory->parent->device == DEVICE_INARCHIVE;
+	     directory = directory->parent) {
+		path_utf8.insert(path_utf8.begin(), '/');
+		path_utf8.insert(0, directory->GetName());
+	}
+
+	TagBuilder tag_builder;
+	if (!tag_archive_scan(archive, path_utf8.c_str(), tag_builder))
+		return false;
+
+	tag_builder.Commit(tag);
+	return true;
+}
+
 bool
 Song::UpdateFileInArchive(const Storage &storage)
 {

@@ -36,6 +36,7 @@ struct LightSong;
 struct Directory;
 class DetachedSong;
 class Storage;
+class ArchiveFile;
 
 /**
  * A song file inside the configured music directory.  Internal
@@ -112,6 +113,11 @@ struct Song {
 	bool UpdateFile(Storage &storage);
 
 #ifdef ENABLE_ARCHIVE
+	static Song *LoadFromArchive(ArchiveFile &archive,
+				     const char *name_utf8,
+				     Directory &parent);
+	bool UpdateFileInArchive(ArchiveFile &archive);
+
 	bool UpdateFileInArchive(const Storage &storage);
 #endif
 
