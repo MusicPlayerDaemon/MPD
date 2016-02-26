@@ -95,6 +95,13 @@ UpdateWalk::UpdateArchiveTree(ArchiveFile &archive, Directory &directory,
 				FormatDefault(update_domain, "added %s/%s",
 					      directory.GetPath(), name);
 			}
+		} else {
+			if (!song->UpdateFileInArchive(archive)) {
+				FormatDebug(update_domain,
+					    "deleting unrecognized file %s/%s",
+					    directory.GetPath(), name);
+				editor.LockDeleteSong(directory, song);
+			}
 		}
 	}
 }
