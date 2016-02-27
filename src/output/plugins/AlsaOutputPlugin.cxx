@@ -162,7 +162,7 @@ struct AlsaOutput {
 
 private:
 	bool SetupDop(AudioFormat audio_format,
-		      bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
+		      PcmExport::Params &params,
 		      Error &error);
 	bool SetupOrDop(AudioFormat &audio_format, Error &error);
 
@@ -674,7 +674,7 @@ error:
 
 inline bool
 AlsaOutput::SetupDop(const AudioFormat audio_format,
-		     bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
+		     PcmExport::Params &params,
 		     Error &error)
 {
 	assert(dop);
@@ -688,7 +688,8 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 
 	const AudioFormat check = dop_format;
 
-	if (!alsa_setup(this, dop_format, packed_r, reverse_endian_r, error))
+	if (!alsa_setup(this, dop_format, &params.pack24,
+			&params.reverse_endian, error))
 		return false;
 
 	/* if the device allows only 32 bit, shift all DoP
@@ -696,7 +697,7 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 	   the DSD-over-USB documentation does not specify whether
 	   this is legal, but there is anecdotical evidence that this
 	   is possible (and the only option for some devices) */
-	*shift8_r = dop_format.format == SampleFormat::S32;
+	params.shift8 = dop_format.format == SampleFormat::S32;
 	if (dop_format.format == SampleFormat::S32)
 		dop_format.format = SampleFormat::S24_P32;
 
@@ -721,10 +722,7 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
 
 	params.dop = dop && audio_format.format == SampleFormat::DSD;
 	const bool success = params.dop
-		? SetupDop(audio_format,
-			   &params.shift8,
-			   &params.pack24, &params.reverse_endian,
-			   error)
+		? SetupDop(audio_format, params, error)
 		: alsa_setup(this, audio_format,
 			     &params.pack24, &params.reverse_endian,
 			     error);
