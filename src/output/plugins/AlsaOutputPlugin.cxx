@@ -363,11 +363,11 @@ alsa_to_packed_format(snd_pcm_format_t fmt)
  */
 static int
 alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-			  snd_pcm_format_t fmt, bool *packed_r)
+			  snd_pcm_format_t fmt, PcmExport::Params &params)
 {
 	int err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
 	if (err == 0)
-		*packed_r = false;
+		params.pack24 = false;
 
 	if (err != -EINVAL)
 		return err;
@@ -378,7 +378,7 @@ alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 
 	err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
 	if (err == 0)
-		*packed_r = true;
+		params.pack24 = true;
 
 	return err;
 }
@@ -390,16 +390,16 @@ alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 static int
 alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		       SampleFormat sample_format,
-		       bool *packed_r, bool *reverse_endian_r)
+		       PcmExport::Params &params)
 {
 	snd_pcm_format_t alsa_format = get_bitformat(sample_format);
 	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
 	int err = alsa_try_format_or_packed(pcm, hwparams, alsa_format,
-					    packed_r);
+					    params);
 	if (err == 0)
-		*reverse_endian_r = false;
+		params.reverse_endian = false;
 
 	if (err != -EINVAL)
 		return err;
@@ -408,9 +408,9 @@ alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
-	err = alsa_try_format_or_packed(pcm, hwparams, alsa_format, packed_r);
+	err = alsa_try_format_or_packed(pcm, hwparams, alsa_format, params);
 	if (err == 0)
-		*reverse_endian_r = true;
+		params.reverse_endian = true;
 
 	return err;
 }
@@ -421,13 +421,13 @@ alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 static int
 alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			 AudioFormat &audio_format,
-			 bool *packed_r, bool *reverse_endian_r)
+			 PcmExport::Params &params)
 {
 	/* try the input format first */
 
 	int err = alsa_output_try_format(pcm, hwparams,
 					 audio_format.format,
-					 packed_r, reverse_endian_r);
+					 params);
 
 	/* if unsupported by the hardware, try other formats */
 
@@ -447,7 +447,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 			continue;
 
 		err = alsa_output_try_format(pcm, hwparams, mpd_format,
-					     packed_r, reverse_endian_r);
+					     params);
 		if (err == 0)
 			audio_format.format = mpd_format;
 	}
@@ -461,7 +461,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  */
 static bool
 alsa_setup(AlsaOutput *ad, AudioFormat &audio_format,
-	   bool *packed_r, bool *reverse_endian_r, Error &error)
+	   PcmExport::Params &params, Error &error)
 {
 	unsigned int sample_rate = audio_format.sample_rate;
 	unsigned int channels = audio_format.channels;
@@ -505,7 +505,7 @@ configure_hw:
 	}
 
 	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format,
-				       packed_r, reverse_endian_r);
+				       params);
 	if (err < 0) {
 		error.Format(alsa_output_domain, err,
 			     "ALSA device \"%s\" does not support format %s: %s",
@@ -688,8 +688,7 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 
 	const AudioFormat check = dop_format;
 
-	if (!alsa_setup(this, dop_format, &params.pack24,
-			&params.reverse_endian, error))
+	if (!alsa_setup(this, dop_format, params, error))
 		return false;
 
 	/* if the device allows only 32 bit, shift all DoP
@@ -723,9 +722,7 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
 	params.dop = dop && audio_format.format == SampleFormat::DSD;
 	const bool success = params.dop
 		? SetupDop(audio_format, params, error)
-		: alsa_setup(this, audio_format,
-			     &params.pack24, &params.reverse_endian,
-			     error);
+		: alsa_setup(this, audio_format, params, error);
 	if (!success)
 		return false;
 
