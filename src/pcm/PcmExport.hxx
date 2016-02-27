@@ -35,8 +35,10 @@ template<typename T> struct ConstBuffer;
 struct PcmExport {
 	struct Params {
 		bool alsa_channel_order = false;
+#ifdef ENABLE_DSD
 		bool dsd_u32 = false;
 		bool dop = false;
+#endif
 		bool shift8 = false;
 		bool pack24 = false;
 		bool reverse_endian = false;

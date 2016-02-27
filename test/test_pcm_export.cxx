@@ -115,6 +115,8 @@ PcmExportTest::TestReverseEndian()
 	CPPUNIT_ASSERT(memcmp(dest.data, expected4, dest.size) == 0);
 }
 
+#ifdef ENABLE_DSD
+
 void
 PcmExportTest::TestDsdU32()
 {
@@ -164,6 +166,8 @@ PcmExportTest::TestDop()
 	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
 	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
 }
+
+#endif
 
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static void

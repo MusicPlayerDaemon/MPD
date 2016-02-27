@@ -125,8 +125,10 @@ class PcmExportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST(TestShift8);
 	CPPUNIT_TEST(TestPack24);
 	CPPUNIT_TEST(TestReverseEndian);
+#ifdef ENABLE_DSD
 	CPPUNIT_TEST(TestDsdU32);
 	CPPUNIT_TEST(TestDop);
+#endif
 	CPPUNIT_TEST(TestAlsaChannelOrder);
 	CPPUNIT_TEST_SUITE_END();
 
@@ -134,8 +136,10 @@ public:
 	void TestShift8();
 	void TestPack24();
 	void TestReverseEndian();
+#ifdef ENABLE_DSD
 	void TestDsdU32();
 	void TestDop();
+#endif
 	void TestAlsaChannelOrder();
 };
 
