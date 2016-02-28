@@ -41,8 +41,10 @@ playlist_print_uris(Response &r, Partition &partition,
  * information about the songs.  The "end" offset is decreased
  * automatically if it is too large; passing UINT_MAX is allowed.
  * This function however fails when the start offset is invalid.
+ *
+ * Throws #PlaylistError if the range is invalid.
  */
-bool
+void
 playlist_print_info(Response &r, Partition &partition,
 		    const playlist &playlist,
 		    unsigned start, unsigned end);
@@ -50,9 +52,9 @@ playlist_print_info(Response &r, Partition &partition,
 /**
  * Sends the song with the specified id to the client.
  *
- * @return true on suite, false if there is no such song
+ * Throws #PlaylistError if the range is invalid.
  */
-bool
+void
 playlist_print_id(Response &r, Partition &partition,
 		  const playlist &playlist, unsigned id);
 

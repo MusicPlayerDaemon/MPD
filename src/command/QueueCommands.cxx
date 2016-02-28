@@ -251,11 +251,8 @@ handle_playlistinfo(Client &client, Request args, Response &r)
 {
 	RangeArg range = args.ParseOptional(0, RangeArg::All());
 
-	if (!playlist_print_info(r, client.partition, client.playlist,
-				 range.start, range.end))
-		return print_playlist_result(r,
-					     PlaylistResult::BAD_RANGE);
-
+	playlist_print_info(r, client.partition, client.playlist,
+			    range.start, range.end);
 	return CommandResult::OK;
 }
 
@@ -264,10 +261,8 @@ handle_playlistid(Client &client, Request args, Response &r)
 {
 	if (!args.IsEmpty()) {
 		unsigned id = args.ParseUnsigned(0);
-		bool ret = playlist_print_id(r, client.partition,
-					     client.playlist, id);
-		if (!ret)
-			return print_playlist_result(r, PlaylistResult::NO_SUCH_SONG);
+		playlist_print_id(r, client.partition,
+				  client.playlist, id);
 	} else {
 		playlist_print_info(r, client.partition, client.playlist,
 				    0, std::numeric_limits<unsigned>::max());
