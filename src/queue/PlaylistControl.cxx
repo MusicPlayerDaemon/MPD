@@ -212,12 +212,13 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time,
 		queued_song = nullptr;
 	}
 
+	queued = -1;
+
 	if (!pc.LockSeek(new DetachedSong(queue.GetOrder(i)), seek_time, error)) {
 		UpdateQueuedSong(pc, queued_song);
 		return false;
 	}
 
-	queued = -1;
 	UpdateQueuedSong(pc, nullptr);
 
 	return true;
