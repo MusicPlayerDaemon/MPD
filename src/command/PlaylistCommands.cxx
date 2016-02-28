@@ -66,7 +66,7 @@ handle_save(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_load(Client &client, Request args, Response &r)
+handle_load(Client &client, Request args, gcc_unused Response &r)
 {
 	RangeArg range = args.ParseOptional(1, RangeArg::All());
 
@@ -74,12 +74,10 @@ handle_load(Client &client, Request args, Response &r)
 
 	Error error;
 	const SongLoader loader(client);
-	if (!playlist_open_into_queue(args.front(),
-				      range.start, range.end,
-				      client.playlist,
-				      client.player_control, loader, error))
-		return print_error(r, error);
-
+	playlist_open_into_queue(args.front(),
+				 range.start, range.end,
+				 client.playlist,
+				 client.player_control, loader);
 	return CommandResult::OK;
 }
 

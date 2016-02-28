@@ -35,12 +35,11 @@
 
 #include <memory>
 
-bool
+void
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 const SongLoader &loader,
-			 Error &error)
+			 const SongLoader &loader)
 {
 	const std::string base_uri = uri != nullptr
 		? PathTraitsUTF8::GetParent(uri)
@@ -60,20 +59,15 @@ playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			continue;
 		}
 
-		unsigned id = dest.AppendSong(pc, std::move(*song), error);
-		if (id == 0)
-			return false;
+		dest.AppendSong(pc, std::move(*song));
 	}
-
-	return true;
 }
 
-bool
+void
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 const SongLoader &loader,
-			 Error &error)
+			 const SongLoader &loader)
 {
 	Mutex mutex;
 	Cond cond;
@@ -83,13 +77,10 @@ playlist_open_into_queue(const char *uri,
 								   loader.GetStorage(),
 #endif
 								   mutex, cond));
-	if (playlist == nullptr) {
-		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_LIST),
-			  "No such playlist");
-		return false;
-	}
+	if (playlist == nullptr)
+		throw PlaylistError::NoSuchList();
 
-	return playlist_load_into_queue(uri, *playlist,
-					start_index, end_index,
-					dest, pc, loader, error);
+	playlist_load_into_queue(uri, *playlist,
+				 start_index, end_index,
+				 dest, pc, loader);
 }

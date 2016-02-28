@@ -28,15 +28,13 @@
 #include <functional>
 
 static bool
-AddToQueue(Partition &partition, const LightSong &song, Error &error)
+AddToQueue(Partition &partition, const LightSong &song)
 {
 	const Storage &storage = *partition.instance.storage;
-	unsigned id =
-		partition.playlist.AppendSong(partition.pc,
-					      DatabaseDetachSong(storage,
-								 song),
-					      error);
-	return id != 0;
+	partition.playlist.AppendSong(partition.pc,
+				      DatabaseDetachSong(storage,
+							 song));
+	return true;
 }
 
 bool
@@ -48,6 +46,6 @@ AddFromDatabase(Partition &partition, const DatabaseSelection &selection,
 		return false;
 
 	using namespace std::placeholders;
-	const auto f = std::bind(AddToQueue, std::ref(partition), _1, _2);
+	const auto f = std::bind(AddToQueue, std::ref(partition), _1);
 	return db->Visit(selection, f, error);
 }

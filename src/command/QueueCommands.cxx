@@ -54,11 +54,7 @@ AddUri(Client &client, const LocatedUri &uri, Response &r)
 		return print_error(r, error);
 
 	auto &partition = client.partition;
-	unsigned id = partition.playlist.AppendSong(partition.pc,
-						    std::move(*song), error);
-	if (id == 0)
-		return print_error(r, error);
-
+	partition.playlist.AppendSong(partition.pc, std::move(*song));
 	return CommandResult::OK;
 }
 
@@ -186,12 +182,8 @@ handle_rangeid(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	Error error;
-	if (!client.partition.playlist.SetSongIdRange(client.partition.pc,
-						      id, start, end,
-						      error))
-		return print_error(r, error);
-
+	client.partition.playlist.SetSongIdRange(client.partition.pc,
+						 id, start, end);
 	return CommandResult::OK;
 }
 

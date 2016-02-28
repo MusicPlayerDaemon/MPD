@@ -92,15 +92,13 @@ playlist::CommitBulk(PlayerControl &pc)
 }
 
 unsigned
-playlist::AppendSong(PlayerControl &pc, DetachedSong &&song, Error &error)
+playlist::AppendSong(PlayerControl &pc, DetachedSong &&song)
 {
 	unsigned id;
 
-	if (queue.IsFull()) {
-		error.Set(playlist_domain, int(PlaylistResult::TOO_LARGE),
-			  "Playlist is too large");
-		return 0;
-	}
+	if (queue.IsFull())
+		throw PlaylistError(PlaylistResult::TOO_LARGE,
+				    "Playlist is too large");
 
 	const DetachedSong *const queued_song = GetQueuedSong();
 
@@ -134,7 +132,7 @@ playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
 	if (song == nullptr)
 		return 0;
 
-	return AppendSong(pc, std::move(*song), error);
+	return AppendSong(pc, std::move(*song));
 }
 
 void
@@ -419,26 +417,20 @@ playlist::Shuffle(PlayerControl &pc, unsigned start, unsigned end)
 	OnModified();
 }
 
-bool
+void
 playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
-			 SongTime start, SongTime end,
-			 Error &error)
+			 SongTime start, SongTime end)
 {
 	assert(end.IsZero() || start < end);
 
 	int position = queue.IdToPosition(id);
-	if (position < 0) {
-		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
-			  "No such song");
-		return false;
-	}
+	if (position < 0)
+		throw PlaylistError::NoSuchSong();
 
 	if (playing) {
-		if (position == current) {
-			error.Set(playlist_domain, int(PlaylistResult::DENIED),
-				  "Cannot edit the current song");
-			return false;
-		}
+		if (position == current)
+			throw PlaylistError(PlaylistResult::DENIED,
+					    "Cannot edit the current song");
 
 		if (position == queued) {
 			/* if we're manipulating the "queued" song,
@@ -455,12 +447,9 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 	if (!duration.IsNegative()) {
 		/* validate the offsets */
 
-		if (start > duration) {
-			error.Set(playlist_domain,
-				  int(PlaylistResult::BAD_RANGE),
-				  "Invalid start offset");
-			return false;
-		}
+		if (start > duration)
+			throw PlaylistError(PlaylistResult::BAD_RANGE,
+					    "Invalid start offset");
 
 		if (end >= duration)
 			end = SongTime::zero();
@@ -474,5 +463,4 @@ playlist::SetSongIdRange(PlayerControl &pc, unsigned id,
 	UpdateQueuedSong(pc, nullptr);
 	queue.ModifyAtPosition(position);
 	OnModified();
-	return true;
 }

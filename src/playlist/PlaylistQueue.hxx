@@ -41,22 +41,21 @@ struct PlayerControl;
  * @param start_index the index of the first song
  * @param end_index the index of the last song (excluding)
  */
-bool
+void
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 const SongLoader &loader,
-			 Error &error);
+			 const SongLoader &loader);
 
 /**
  * Opens a playlist with a playlist plugin and append to the specified
  * play queue.
  */
-bool
+void
 playlist_open_into_queue(const char *uri,
 			 unsigned start_index, unsigned end_index,
 			 playlist &dest, PlayerControl &pc,
-			 const SongLoader &loader, Error &error);
+			 const SongLoader &loader);
 
 #endif
 

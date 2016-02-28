@@ -195,11 +195,11 @@ public:
 #endif
 
 	/**
-	 * @return the new song id or 0 on error
+	 * Throws PlaylistError if the queue would be too large.
+	 *
+	 * @return the new song id
 	 */
-	unsigned AppendSong(PlayerControl &pc,
-			    DetachedSong &&song,
-			    Error &error);
+	unsigned AppendSong(PlayerControl &pc, DetachedSong &&song);
 
 	/**
 	 * @return the new song id or 0 on error
@@ -254,9 +254,8 @@ public:
 	 * Sets the start_time and end_time attributes on the song
 	 * with the specified id.
 	 */
-	bool SetSongIdRange(PlayerControl &pc, unsigned id,
-			    SongTime start, SongTime end,
-			    Error &error);
+	void SetSongIdRange(PlayerControl &pc, unsigned id,
+			    SongTime start, SongTime end);
 
 	void AddSongIdTag(unsigned id, TagType tag_type, const char *value);
 	void ClearSongIdTag(unsigned id, TagType tag_type);
