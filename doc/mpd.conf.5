@@ -238,11 +238,6 @@ probably only useful if your alsa device has more than one
 identically\-named mixer control.  The default is "0".  Use "amixer
 scontrols" to see the list of controls with their indexes.
 .TP
-.B use_mmap <yes or no>
-Setting this allows you to use memory-mapped I/O.  Certain hardware setups may
-benefit from this, but most do not.  Most users do not need to set this.  The
-default is to not use memory-mapped I/O.
-.TP
 .B auto_resample <yes or no>
 Setting this to "no" disables ALSA's software resampling, if the
 hardware does not support a specific sample rate.  This lets MPD do

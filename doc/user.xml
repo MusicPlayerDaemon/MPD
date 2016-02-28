@@ -2484,17 +2484,6 @@ buffer_size: 16384</programlisting>
               </row>
               <row>
                 <entry>
-                  <varname>use_mmap</varname>
-                  <parameter>yes|no</parameter>
-                </entry>
-                <entry>
-                  If set to <parameter>yes</parameter>, then
-                  <filename>libasound</filename> will try to use
-                  memory mapped I/O.
-                </entry>
-              </row>
-              <row>
-                <entry>
                   <varname>buffer_time</varname>
                   <parameter>US</parameter>
                 </entry>

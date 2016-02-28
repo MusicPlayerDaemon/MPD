@@ -50,9 +50,6 @@ static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
 static constexpr unsigned MPD_ALSA_RETRY_NR = 5;
 
-typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
-					snd_pcm_uframes_t size);
-
 struct AlsaOutput {
 	AudioOutput base;
 
@@ -63,9 +60,6 @@ struct AlsaOutput {
 	 * default device
 	 */
 	std::string device;
-
-	/** use memory mapped I/O? */
-	bool use_mmap;
 
 #ifdef ENABLE_DSD
 	/**
@@ -87,13 +81,6 @@ struct AlsaOutput {
 
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
-
-	/**
-	 * a pointer to the libasound writei() function, which is
-	 * snd_pcm_writei() or snd_pcm_mmap_writei(), depending on the
-	 * use_mmap configuration
-	 */
-	alsa_writei_t *writei;
 
 	/**
 	 * The size of one audio frame passed to method play().
@@ -136,7 +123,7 @@ struct AlsaOutput {
 
 	AlsaOutput()
 		:base(alsa_output_plugin),
-		 mode(0), writei(snd_pcm_writei) {
+		 mode(0) {
 	}
 
 	~AlsaOutput() {
@@ -177,7 +164,7 @@ private:
 	 * Write silence to the ALSA device.
 	 */
 	void WriteSilence(snd_pcm_uframes_t nframes) {
-		writei(pcm, silence, nframes);
+		snd_pcm_writei(pcm, silence, nframes);
 	}
 
 };
@@ -191,8 +178,6 @@ AlsaOutput::Configure(const ConfigBlock &block, Error &error)
 		return false;
 
 	device = block.GetBlockValue("device", "");
-
-	use_mmap = block.GetBlockValue("use_mmap", false);
 
 #ifdef ENABLE_DSD
 	dop = block.GetBlockValue("dop", false) ||
@@ -488,28 +473,11 @@ configure_hw:
 	if (err < 0)
 		goto error;
 
-	if (ad->use_mmap) {
-		err = snd_pcm_hw_params_set_access(ad->pcm, hwparams,
-						   SND_PCM_ACCESS_MMAP_INTERLEAVED);
-		if (err < 0) {
-			FormatWarning(alsa_output_domain,
-				      "Cannot set mmap'ed mode on ALSA device \"%s\": %s",
-				      ad->GetDevice(), snd_strerror(-err));
-			LogWarning(alsa_output_domain,
-				   "Falling back to direct write mode");
-			ad->use_mmap = false;
-		} else
-			ad->writei = snd_pcm_mmap_writei;
-	}
-
-	if (!ad->use_mmap) {
-		cmd = "snd_pcm_hw_params_set_access";
-		err = snd_pcm_hw_params_set_access(ad->pcm, hwparams,
-						   SND_PCM_ACCESS_RW_INTERLEAVED);
-		if (err < 0)
-			goto error;
-		ad->writei = snd_pcm_writei;
-	}
+	cmd = "snd_pcm_hw_params_set_access";
+	err = snd_pcm_hw_params_set_access(ad->pcm, hwparams,
+					   SND_PCM_ACCESS_RW_INTERLEAVED);
+	if (err < 0)
+		goto error;
 
 	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format,
 				       params);
@@ -890,7 +858,7 @@ AlsaOutput::Play(const void *chunk, size_t size, Error &error)
 	assert(size > 0);
 
 	while (true) {
-		snd_pcm_sframes_t ret = writei(pcm, chunk, size);
+		snd_pcm_sframes_t ret = snd_pcm_writei(pcm, chunk, size);
 		if (ret > 0) {
 			period_position = (period_position + ret)
 				% period_frames;
