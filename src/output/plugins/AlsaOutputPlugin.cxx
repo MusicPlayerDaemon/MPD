@@ -186,7 +186,7 @@ AlsaOutput::Configure(const ConfigBlock &block, Error &error)
 #endif
 
 	buffer_time = block.GetBlockValue("buffer_time",
-					      MPD_ALSA_BUFFER_TIME_US);
+					  MPD_ALSA_BUFFER_TIME_US);
 	period_time = block.GetBlockValue("period_time", 0u);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
