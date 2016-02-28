@@ -33,6 +33,8 @@
 #include "SongLoader.hxx"
 #endif
 
+#include <memory>
+
 bool
 playlist_load_into_queue(const char *uri, SongEnumerator &e,
 			 unsigned start_index, unsigned end_index,
@@ -76,21 +78,18 @@ playlist_open_into_queue(const char *uri,
 	Mutex mutex;
 	Cond cond;
 
-	auto playlist = playlist_open_any(uri,
+	std::unique_ptr<SongEnumerator> playlist(playlist_open_any(uri,
 #ifdef ENABLE_DATABASE
-					  loader.GetStorage(),
+								   loader.GetStorage(),
 #endif
-					  mutex, cond);
+								   mutex, cond));
 	if (playlist == nullptr) {
 		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_LIST),
 			  "No such playlist");
 		return false;
 	}
 
-	bool result =
-		playlist_load_into_queue(uri, *playlist,
-					 start_index, end_index,
-					 dest, pc, loader, error);
-	delete playlist;
-	return result;
+	return playlist_load_into_queue(uri, *playlist,
+					start_index, end_index,
+					dest, pc, loader, error);
 }
