@@ -45,11 +45,10 @@ SongLoader::LoadFromDatabase(const char *uri, Error &error) const
 		return DatabaseDetachSong(*db, *storage, uri, error);
 #else
 	(void)uri;
+	(void)error;
 #endif
 
-	error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
-		  "No database");
-	return nullptr;
+	throw PlaylistError(PlaylistResult::NO_SUCH_SONG, "No database");
 }
 
 DetachedSong *
@@ -63,14 +62,13 @@ SongLoader::LoadFile(const char *path_utf8, Path path_fs, Error &error) const
 			   directory - obtain it from the database */
 			return LoadFromDatabase(suffix, error);
 	}
+#else
+	(void)error;
 #endif
 
 	DetachedSong song(path_utf8);
-	if (!song.LoadFile(path_fs)) {
-		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
-			  "No such file");
-		return nullptr;
-	}
+	if (!song.LoadFile(path_fs))
+		throw PlaylistError::NoSuchSong();
 
 	return new DetachedSong(std::move(song));
 }
