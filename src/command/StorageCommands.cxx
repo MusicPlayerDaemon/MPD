@@ -237,9 +237,14 @@ handle_mount(Client &client, Request args, Response &r)
 	if (_db != nullptr && _db->IsPlugin(simple_db_plugin)) {
 		SimpleDatabase &db = *(SimpleDatabase *)_db;
 
-		if (!db.Mount(local_uri, remote_uri, error)) {
+		try {
+			if (!db.Mount(local_uri, remote_uri, error)) {
+				composite.Unmount(local_uri);
+				return print_error(r, error);
+			}
+		} catch (...) {
 			composite.Unmount(local_uri);
-			return print_error(r, error);
+			throw;
 		}
 
 		// TODO: call Instance::OnDatabaseModified()?

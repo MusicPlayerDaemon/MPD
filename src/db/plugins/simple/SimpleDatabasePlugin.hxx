@@ -97,7 +97,7 @@ public:
 	 * success, this object gains ownership of the given #Database
 	 */
 	gcc_nonnull_all
-	bool Mount(const char *uri, Database *db, Error &error);
+	void Mount(const char *uri, Database *db);
 
 	gcc_nonnull_all
 	bool Mount(const char *local_uri, const char *storage_uri,
