@@ -208,11 +208,11 @@ try {
 	borrowed_song_count = 0;
 #endif
 
-	if (!Load(error)) {
-		delete root;
+	Error error2;
+	if (!Load(error2)) {
+		LogError(error2);
 
-		LogError(error);
-		error.Clear();
+		delete root;
 
 		if (!Check(error))
 			return false;
