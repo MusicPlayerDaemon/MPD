@@ -731,13 +731,25 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params,
 		       Error &error)
 {
 #ifdef ENABLE_DSD
-	if (dop && audio_format.format == SampleFormat::DSD) {
+	Error dop_error;
+	if (dop && audio_format.format == SampleFormat::DSD &&
+	    SetupDop(audio_format, params, dop_error)) {
 		params.dop = true;
-		return SetupDop(audio_format, params, error);
+		return true;
 	}
 #endif
 
-	return AlsaSetup(this, audio_format, params, error);
+	if (AlsaSetup(this, audio_format, params, error))
+		return true;
+
+#ifdef ENABLE_DSD
+	if (dop_error.IsDefined())
+		/* if DoP was attempted, prefer returning the original
+		   DoP error instead of the fallback error */
+		error = std::move(dop_error);
+#endif
+
+	return false;
 }
 
 inline bool
