@@ -65,15 +65,14 @@ SongLoader::LoadFile(const char *path_utf8, Path path_fs, Error &error) const
 	}
 #endif
 
-	DetachedSong *song = new DetachedSong(path_utf8);
-	if (!song->LoadFile(path_fs)) {
+	DetachedSong song(path_utf8);
+	if (!song.LoadFile(path_fs)) {
 		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
 			  "No such file");
-		delete song;
 		return nullptr;
 	}
 
-	return song;
+	return new DetachedSong(std::move(song));
 }
 
 DetachedSong *
