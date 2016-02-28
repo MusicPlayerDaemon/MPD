@@ -256,8 +256,9 @@ alsa_test_default_device()
  * enum.  Returns SND_PCM_FORMAT_UNKNOWN if there is no according ALSA
  * PCM format.
  */
+gcc_const
 static snd_pcm_format_t
-get_bitformat(SampleFormat sample_format)
+ToAlsaPcmFormat(SampleFormat sample_format)
 {
 	switch (sample_format) {
 	case SampleFormat::UNDEFINED:
@@ -295,7 +296,7 @@ get_bitformat(SampleFormat sample_format)
  * SND_PCM_FORMAT_UNKNOWN if the format cannot be byte-swapped.
  */
 static snd_pcm_format_t
-byteswap_bitformat(snd_pcm_format_t fmt)
+ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt)
 {
 	switch (fmt) {
 	case SND_PCM_FORMAT_S16_LE: return SND_PCM_FORMAT_S16_BE;
@@ -335,7 +336,7 @@ byteswap_bitformat(snd_pcm_format_t fmt)
  * Returns SND_PCM_FORMAT_UNKNOWN if not.
  */
 static snd_pcm_format_t
-alsa_to_packed_format(snd_pcm_format_t fmt)
+PackAlsaPcmFormat(snd_pcm_format_t fmt)
 {
 	switch (fmt) {
 	case SND_PCM_FORMAT_S24_LE:
@@ -354,8 +355,8 @@ alsa_to_packed_format(snd_pcm_format_t fmt)
  * fall back to the packed version.
  */
 static int
-alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-			  snd_pcm_format_t fmt, PcmExport::Params &params)
+AlsaTryFormatOrPacked(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		      snd_pcm_format_t fmt, PcmExport::Params &params)
 {
 	int err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
 	if (err == 0)
@@ -364,7 +365,7 @@ alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	if (err != -EINVAL)
 		return err;
 
-	fmt = alsa_to_packed_format(fmt);
+	fmt = PackAlsaPcmFormat(fmt);
 	if (fmt == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
@@ -380,46 +381,51 @@ alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  * reversed host byte order if was not supported.
  */
 static int
-alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-		       SampleFormat sample_format,
-		       PcmExport::Params &params)
+AlsaTryFormatOrByteSwap(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+			snd_pcm_format_t fmt,
+			PcmExport::Params &params)
 {
-	snd_pcm_format_t alsa_format = get_bitformat(sample_format);
-	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
-		return -EINVAL;
-
-	int err = alsa_try_format_or_packed(pcm, hwparams, alsa_format,
-					    params);
+	int err = AlsaTryFormatOrPacked(pcm, hwparams, fmt, params);
 	if (err == 0)
 		params.reverse_endian = false;
 
 	if (err != -EINVAL)
 		return err;
 
-	alsa_format = byteswap_bitformat(alsa_format);
-	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
+	fmt = ByteSwapAlsaPcmFormat(fmt);
+	if (fmt == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
-	err = alsa_try_format_or_packed(pcm, hwparams, alsa_format, params);
+	err = AlsaTryFormatOrPacked(pcm, hwparams, fmt, params);
 	if (err == 0)
 		params.reverse_endian = true;
 
 	return err;
 }
 
+static int
+AlsaTryFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+	      SampleFormat sample_format,
+	      PcmExport::Params &params)
+{
+	snd_pcm_format_t alsa_format = ToAlsaPcmFormat(sample_format);
+	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
+		return -EINVAL;
+
+	return AlsaTryFormatOrByteSwap(pcm, hwparams, alsa_format, params);
+}
+
 /**
  * Configure a sample format, and probe other formats if that fails.
  */
 static int
-alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-			 AudioFormat &audio_format,
-			 PcmExport::Params &params)
+AlsaSetupFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		AudioFormat &audio_format,
+		PcmExport::Params &params)
 {
 	/* try the input format first */
 
-	int err = alsa_output_try_format(pcm, hwparams,
-					 audio_format.format,
-					 params);
+	int err = AlsaTryFormat(pcm, hwparams, audio_format.format, params);
 
 	/* if unsupported by the hardware, try other formats */
 
@@ -438,8 +444,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		if (mpd_format == audio_format.format)
 			continue;
 
-		err = alsa_output_try_format(pcm, hwparams, mpd_format,
-					     params);
+		err = AlsaTryFormat(pcm, hwparams, mpd_format, params);
 		if (err == 0)
 			audio_format.format = mpd_format;
 	}
@@ -452,8 +457,8 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  * the configured settings and the audio format.
  */
 static bool
-alsa_setup(AlsaOutput *ad, AudioFormat &audio_format,
-	   PcmExport::Params &params, Error &error)
+AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
+	  PcmExport::Params &params, Error &error)
 {
 	unsigned int sample_rate = audio_format.sample_rate;
 	unsigned int channels = audio_format.channels;
@@ -479,8 +484,7 @@ configure_hw:
 	if (err < 0)
 		goto error;
 
-	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format,
-				       params);
+	err = AlsaSetupFormat(ad->pcm, hwparams, audio_format, params);
 	if (err < 0) {
 		error.Format(alsa_output_domain, err,
 			     "ALSA device \"%s\" does not support format %s: %s",
@@ -657,7 +661,7 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 	assert(dop);
 	assert(audio_format.format == SampleFormat::DSD);
 
-	/* pass 24 bit to alsa_setup() */
+	/* pass 24 bit to AlsaSetup() */
 
 	AudioFormat dop_format = audio_format;
 	dop_format.format = SampleFormat::S24_P32;
@@ -665,7 +669,7 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 
 	const AudioFormat check = dop_format;
 
-	if (!alsa_setup(this, dop_format, params, error))
+	if (!AlsaSetup(this, dop_format, params, error))
 		return false;
 
 	/* if the device allows only 32 bit, shift all DoP
@@ -708,7 +712,7 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
 		? SetupDop(audio_format, params, error)
 		:
 #endif
-		alsa_setup(this, audio_format, params, error);
+		AlsaSetup(this, audio_format, params, error);
 	if (!success)
 		return false;
 
