@@ -30,6 +30,7 @@ ver 0.20 (not yet released)
 * output
   - alsa: fix multi-channel order
   - alsa: remove option "use_mmap"
+  - alsa: support DSD_U32
   - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX
   - recorder: record tags

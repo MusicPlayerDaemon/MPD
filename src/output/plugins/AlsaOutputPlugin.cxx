@@ -24,6 +24,7 @@
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
 #include "config/ConfigError.hxx"
+#include "system/ByteOrder.hxx"
 #include "util/Manual.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -403,6 +404,34 @@ AlsaTryFormatOrByteSwap(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	return err;
 }
 
+/**
+ * Attempts to configure the specified sample format.  On DSD_U8
+ * failure, attempt to switch to DSD_U32.
+ */
+static int
+AlsaTryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		 snd_pcm_format_t fmt, PcmExport::Params &params)
+{
+	int err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
+
+#if defined(ENABLE_DSD) && defined(HAVE_ALSA_DSD_U32)
+	if (err == 0)
+		params.dsd_u32 = false;
+
+	if (err == -EINVAL && fmt == SND_PCM_FORMAT_DSD_U8) {
+		/* attempt to switch to DSD_U32 */
+		fmt = IsLittleEndian()
+			? SND_PCM_FORMAT_DSD_U32_LE
+			: SND_PCM_FORMAT_DSD_U32_BE;
+		err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
+		if (err == 0)
+			params.dsd_u32 = true;
+	}
+#endif
+
+	return err;
+}
+
 static int
 AlsaTryFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	      SampleFormat sample_format,
@@ -412,7 +441,7 @@ AlsaTryFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
-	return AlsaTryFormatOrByteSwap(pcm, hwparams, alsa_format, params);
+	return AlsaTryFormatDsd(pcm, hwparams, alsa_format, params);
 }
 
 /**
