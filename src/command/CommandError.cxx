@@ -141,9 +141,7 @@ gcc_pure
 static enum ack
 ToAck(const Error &error)
 {
-	if (error.IsDomain(playlist_domain)) {
-		return ToAck((PlaylistResult)error.GetCode());
-	} else if (error.IsDomain(ack_domain)) {
+	if (error.IsDomain(ack_domain)) {
 		return (enum ack)error.GetCode();
 #ifdef ENABLE_DATABASE
 	} else if (error.IsDomain(db_domain)) {
