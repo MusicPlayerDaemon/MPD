@@ -157,7 +157,8 @@ private:
 		      Error &error);
 #endif
 
-	bool SetupOrDop(AudioFormat &audio_format, Error &error);
+	bool SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params,
+			Error &error);
 
 	int Recover(int err);
 
@@ -726,29 +727,17 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 #endif
 
 inline bool
-AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
+AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params,
+		       Error &error)
 {
-	PcmExport::Params params;
-	params.alsa_channel_order = true;
-
 #ifdef ENABLE_DSD
-	params.dop = dop && audio_format.format == SampleFormat::DSD;
+	if (dop && audio_format.format == SampleFormat::DSD) {
+		params.dop = true;
+		return SetupDop(audio_format, params, error);
+	}
 #endif
 
-	const bool success =
-#ifdef ENABLE_DSD
-		params.dop
-		? SetupDop(audio_format, params, error)
-		:
-#endif
-		AlsaSetup(this, audio_format, params, error);
-	if (!success)
-		return false;
-
-	pcm_export->Open(audio_format.format,
-			 audio_format.channels,
-			 params);
-	return true;
+	return AlsaSetup(this, audio_format, params, error);
 }
 
 inline bool
@@ -767,10 +756,17 @@ AlsaOutput::Open(AudioFormat &audio_format, Error &error)
 		    snd_pcm_name(pcm),
 		    snd_pcm_type_name(snd_pcm_type(pcm)));
 
-	if (!SetupOrDop(audio_format, error)) {
+	PcmExport::Params params;
+	params.alsa_channel_order = true;
+
+	if (!SetupOrDop(audio_format, params, error)) {
 		snd_pcm_close(pcm);
 		return false;
 	}
+
+	pcm_export->Open(audio_format.format,
+			 audio_format.channels,
+			 params);
 
 	in_frame_size = audio_format.GetFrameSize();
 	out_frame_size = pcm_export->GetFrameSize(audio_format);
