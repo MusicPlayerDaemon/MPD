@@ -33,6 +33,8 @@
 #include "SongLoader.hxx"
 #include "Idle.hxx"
 
+#include <memory>
+
 #include <stdlib.h>
 
 void
@@ -128,14 +130,11 @@ playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
 		    const char *uri,
 		    Error &error)
 {
-	DetachedSong *song = loader.LoadSong(uri, error);
+	std::unique_ptr<DetachedSong> song(loader.LoadSong(uri, error));
 	if (song == nullptr)
 		return 0;
 
-	unsigned result = AppendSong(pc, std::move(*song), error);
-	delete song;
-
-	return result;
+	return AppendSong(pc, std::move(*song), error);
 }
 
 void
