@@ -517,11 +517,9 @@ ProxyDatabase::GetSong(const char *uri, Error &error) const
 		return nullptr;
 	}
 
-	if (song == nullptr) {
-		error.Format(db_domain, (int)DatabaseErrorCode::NOT_FOUND,
-			     "No such song: %s", uri);
-		return nullptr;
-	}
+	if (song == nullptr)
+		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+				    "No such song");
 
 	return new AllocatedProxySong(song);
 }
