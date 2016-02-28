@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "CommandError.hxx"
+#include "PlaylistError.hxx"
 #include "db/DatabaseError.hxx"
 #include "LocateUri.hxx"
 #include "client/Response.hxx"
@@ -83,59 +84,6 @@ ToAck(DatabaseErrorCode code)
 	return ACK_ERROR_UNKNOWN;
 }
 #endif
-
-CommandResult
-print_playlist_result(Response &r, PlaylistResult result)
-{
-	switch (result) {
-	case PlaylistResult::SUCCESS:
-		return CommandResult::OK;
-
-	case PlaylistResult::DENIED:
-		r.Error(ACK_ERROR_PERMISSION, "Access denied");
-		return CommandResult::ERROR;
-
-	case PlaylistResult::NO_SUCH_SONG:
-		r.Error(ACK_ERROR_NO_EXIST, "No such song");
-		return CommandResult::ERROR;
-
-	case PlaylistResult::NO_SUCH_LIST:
-		r.Error(ACK_ERROR_NO_EXIST, "No such playlist");
-		return CommandResult::ERROR;
-
-	case PlaylistResult::LIST_EXISTS:
-		r.Error(ACK_ERROR_EXIST, "Playlist already exists");
-		return CommandResult::ERROR;
-
-	case PlaylistResult::BAD_NAME:
-		r.Error(ACK_ERROR_ARG,
-			"playlist name is invalid: "
-			"playlist names may not contain slashes,"
-			" newlines or carriage returns");
-		return CommandResult::ERROR;
-
-	case PlaylistResult::BAD_RANGE:
-		r.Error(ACK_ERROR_ARG, "Bad song index");
-		return CommandResult::ERROR;
-
-	case PlaylistResult::NOT_PLAYING:
-		r.Error(ACK_ERROR_PLAYER_SYNC, "Not playing");
-		return CommandResult::ERROR;
-
-	case PlaylistResult::TOO_LARGE:
-		r.Error(ACK_ERROR_PLAYLIST_MAX,
-			"playlist is at the max size");
-		return CommandResult::ERROR;
-
-	case PlaylistResult::DISABLED:
-		r.Error(ACK_ERROR_UNKNOWN,
-			"stored playlist support is disabled");
-		return CommandResult::ERROR;
-	}
-
-	assert(0);
-	return CommandResult::ERROR;
-}
 
 gcc_pure
 static enum ack

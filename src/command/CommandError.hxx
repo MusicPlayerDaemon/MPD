@@ -21,15 +21,11 @@
 #define MPD_COMMAND_ERROR_HXX
 
 #include "CommandResult.hxx"
-#include "PlaylistError.hxx"
 
 #include <exception>
 
 class Response;
 class Error;
-
-CommandResult
-print_playlist_result(Response &r, PlaylistResult result);
 
 /**
  * Send the #Error to the client.
