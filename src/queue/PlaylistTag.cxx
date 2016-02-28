@@ -29,25 +29,18 @@
 #include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
-#include "util/Error.hxx"
 
-bool
-playlist::AddSongIdTag(unsigned id, TagType tag_type, const char *value,
-		       Error &error)
+void
+playlist::AddSongIdTag(unsigned id, TagType tag_type, const char *value)
 {
 	const int position = queue.IdToPosition(id);
-	if (position < 0) {
-		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
-			  "No such song");
-		return false;
-	}
+	if (position < 0)
+		throw PlaylistError::NoSuchSong();
 
 	DetachedSong &song = queue.Get(position);
-	if (song.IsFile()) {
-		error.Set(playlist_domain, int(PlaylistResult::DENIED),
-			  "Cannot edit tags of local file");
-		return false;
-	}
+	if (song.IsFile())
+		throw PlaylistError(PlaylistResult::DENIED,
+				    "Cannot edit tags of local file");
 
 	{
 		TagBuilder tag(std::move(song.WritableTag()));
@@ -57,26 +50,19 @@ playlist::AddSongIdTag(unsigned id, TagType tag_type, const char *value,
 
 	queue.ModifyAtPosition(position);
 	OnModified();
-	return true;
 }
 
-bool
-playlist::ClearSongIdTag(unsigned id, TagType tag_type,
-			 Error &error)
+void
+playlist::ClearSongIdTag(unsigned id, TagType tag_type)
 {
 	const int position = queue.IdToPosition(id);
-	if (position < 0) {
-		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
-			  "No such song");
-		return false;
-	}
+	if (position < 0)
+		throw PlaylistError::NoSuchSong();
 
 	DetachedSong &song = queue.Get(position);
-	if (song.IsFile()) {
-		error.Set(playlist_domain, int(PlaylistResult::DENIED),
-			  "Cannot edit tags of local file");
-		return false;
-	}
+	if (song.IsFile())
+		throw PlaylistError(PlaylistResult::DENIED,
+				    "Cannot edit tags of local file");
 
 	{
 		TagBuilder tag(std::move(song.WritableTag()));
@@ -89,5 +75,4 @@ playlist::ClearSongIdTag(unsigned id, TagType tag_type,
 
 	queue.ModifyAtPosition(position);
 	OnModified();
-	return true;
 }

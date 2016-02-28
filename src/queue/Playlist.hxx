@@ -258,9 +258,8 @@ public:
 			    SongTime start, SongTime end,
 			    Error &error);
 
-	bool AddSongIdTag(unsigned id, TagType tag_type, const char *value,
-			  Error &error);
-	bool ClearSongIdTag(unsigned id, TagType tag_type, Error &error);
+	void AddSongIdTag(unsigned id, TagType tag_type, const char *value);
+	void ClearSongIdTag(unsigned id, TagType tag_type);
 
 	void Stop(PlayerControl &pc);
 

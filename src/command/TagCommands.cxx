@@ -41,11 +41,7 @@ handle_addtagid(Client &client, Request args, Response &r)
 
 	const char *const value = args[2];
 
-	Error error;
-	if (!client.partition.playlist.AddSongIdTag(song_id, tag_type, value,
-						    error))
-		return print_error(r, error);
-
+	client.partition.playlist.AddSongIdTag(song_id, tag_type, value);
 	return CommandResult::OK;
 }
 
@@ -65,10 +61,6 @@ handle_cleartagid(Client &client, Request args, Response &r)
 		}
 	}
 
-	Error error;
-	if (!client.partition.playlist.ClearSongIdTag(song_id, tag_type,
-						      error))
-		return print_error(r, error);
-
+	client.partition.playlist.ClearSongIdTag(song_id, tag_type);
 	return CommandResult::OK;
 }
