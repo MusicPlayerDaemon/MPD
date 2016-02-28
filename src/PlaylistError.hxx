@@ -64,6 +64,11 @@ public:
 		return PlaylistError(PlaylistResult::BAD_RANGE,
 				     "Bad song index");
 	}
+
+	static PlaylistError NotPlaying() {
+		return PlaylistError(PlaylistResult::NOT_PLAYING,
+				     "Not playing");
+	}
 };
 
 #endif

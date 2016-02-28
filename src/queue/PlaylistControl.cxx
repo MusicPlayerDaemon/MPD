@@ -260,22 +260,15 @@ playlist::SeekCurrent(PlayerControl &pc,
 		      SignedSongTime seek_time, bool relative,
 		      Error &error)
 {
-	if (!playing) {
-		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
-			  "Not playing");
-		return false;
-	}
+	if (!playing)
+		throw PlaylistError::NotPlaying();
 
 	if (relative) {
 		const auto status = pc.LockGetStatus();
 
 		if (status.state != PlayerState::PLAY &&
-		    status.state != PlayerState::PAUSE) {
-			error.Set(playlist_domain,
-				  int(PlaylistResult::NOT_PLAYING),
-				  "Not playing");
-			return false;
-		}
+		    status.state != PlayerState::PAUSE)
+			throw PlaylistError::NotPlaying();
 
 		seek_time += status.elapsed_time;
 		if (seek_time.IsNegative())
