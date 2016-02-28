@@ -63,7 +63,7 @@ struct AlsaOutput {
 
 #ifdef ENABLE_DSD
 	/**
-	 * Enable DSD over PCM according to the DoP standard standard?
+	 * Enable DSD over PCM according to the DoP standard?
 	 *
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
