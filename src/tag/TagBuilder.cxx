@@ -199,12 +199,15 @@ TagBuilder::AddItemInternal(TagType type, StringView value)
 		value = { f.data, f.size };
 
 	tag_pool_lock.lock();
-	auto i = tag_pool_get_item(type, value);
+	auto item = tag_pool_get_item(type, value);
 	tag_pool_lock.unlock();
 
 	free(f.data);
 
-	items.push_back(i);
+	if (std::find(items.begin(), items.end(), item) == items.end()) {
+		/* the tag isn't a duplicate */
+		items.push_back(item);
+	}
 }
 
 void
