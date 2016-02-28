@@ -198,7 +198,7 @@ SimpleDatabase::Load(Error &error)
 
 bool
 SimpleDatabase::Open(Error &error)
-try {
+{
 	assert(prefixed_light_song == nullptr);
 
 	root = Directory::NewRoot();
@@ -208,9 +208,20 @@ try {
 	borrowed_song_count = 0;
 #endif
 
-	Error error2;
-	if (!Load(error2)) {
-		LogError(error2);
+	try {
+		Error error2;
+		if (!Load(error2)) {
+			LogError(error2);
+
+			delete root;
+
+			if (!Check(error))
+				return false;
+
+			root = Directory::NewRoot();
+		}
+	} catch (const std::exception &e) {
+		LogError(e);
 
 		delete root;
 
@@ -221,9 +232,6 @@ try {
 	}
 
 	return true;
-} catch (const std::exception &e) {
-	error.Set(std::current_exception());
-	return false;
 }
 
 void
