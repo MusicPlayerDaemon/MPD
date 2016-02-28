@@ -40,6 +40,7 @@
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
 
+#include <memory>
 #include <limits>
 
 #include <string.h>
@@ -48,14 +49,13 @@ static CommandResult
 AddUri(Client &client, const LocatedUri &uri, Response &r)
 {
 	Error error;
-	DetachedSong *song = SongLoader(client).LoadSong(uri, error);
+	std::unique_ptr<DetachedSong> song(SongLoader(client).LoadSong(uri, error));
 	if (song == nullptr)
 		return print_error(r, error);
 
 	auto &partition = client.partition;
 	unsigned id = partition.playlist.AppendSong(partition.pc,
 						    std::move(*song), error);
-	delete song;
 	if (id == 0)
 		return print_error(r, error);
 
