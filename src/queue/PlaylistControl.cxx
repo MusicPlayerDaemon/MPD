@@ -228,11 +228,8 @@ playlist::SeekSongPosition(PlayerControl &pc, unsigned song,
 			   SongTime seek_time,
 			   Error &error)
 {
-	if (!queue.IsValidPosition(song)) {
-		error.Set(playlist_domain, int(PlaylistResult::BAD_RANGE),
-			  "Bad range");
-		return false;
-	}
+	if (!queue.IsValidPosition(song))
+		throw PlaylistError::BadRange();
 
 	unsigned i = queue.random
 		? queue.PositionToOrder(song)
@@ -246,11 +243,8 @@ playlist::SeekSongId(PlayerControl &pc, unsigned id, SongTime seek_time,
 		     Error &error)
 {
 	int song = queue.IdToPosition(id);
-	if (song < 0) {
-		error.Set(playlist_domain, int(PlaylistResult::NO_SUCH_SONG),
-			  "No such song");
-		return false;
-	}
+	if (song < 0)
+		throw PlaylistError::NoSuchSong();
 
 	return SeekSongPosition(pc, song, seek_time, error);
 }
