@@ -143,10 +143,6 @@ ToAck(const Error &error)
 {
 	if (error.IsDomain(ack_domain)) {
 		return (enum ack)error.GetCode();
-#ifdef ENABLE_DATABASE
-	} else if (error.IsDomain(db_domain)) {
-		return ToAck((DatabaseErrorCode)error.GetCode());
-#endif
 	} else if (error.IsDomain(locate_uri_domain)) {
 		return ACK_ERROR_ARG;
 	} else if (error.IsDomain(errno_domain)) {
