@@ -22,6 +22,7 @@
 
 #include "TagType.h"
 #include "Compiler.h"
+#include <string.h>
 
 /**
  * One tag value.  It is a mapping of #TagType to am arbitrary string
@@ -40,6 +41,10 @@ struct TagItem {
 	TagItem() = default;
 	TagItem(const TagItem &other) = delete;
 	TagItem &operator=(const TagItem &other) = delete;
+	bool operator==(const TagItem &other) const {
+		return this->type == other.type &&
+			strcmp(this->value, other.value) == 0;
+	}
 } gcc_packed;
 
 #endif
