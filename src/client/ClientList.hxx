@@ -22,7 +22,7 @@
 
 #include "Client.hxx"
 
-class Client;
+#include <boost/intrusive/list.hpp>
 
 class ClientList {
 	typedef boost::intrusive::list<Client,

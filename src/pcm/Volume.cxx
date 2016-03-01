@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Volume.hxx"
 #include "Domain.hxx"
-#include "PcmUtils.hxx"
 #include "Traits.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"

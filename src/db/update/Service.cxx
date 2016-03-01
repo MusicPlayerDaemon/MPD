@@ -29,9 +29,7 @@
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "Instance.hxx"
 #include "system/FatalError.hxx"
-#include "thread/Id.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Util.hxx"
 

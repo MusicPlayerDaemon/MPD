@@ -27,14 +27,12 @@
 #include "ReplayGainConfig.hxx"
 #include "mixer/MixerControl.hxx"
 #include "pcm/Volume.hxx"
-#include "pcm/PcmBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
-#include <string.h>
 
 static constexpr Domain replay_gain_domain("replay_gain");
 

@@ -26,10 +26,7 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/Traits.hxx"
 #include "fs/FileInfo.hxx"
-#include "decoder/DecoderList.hxx"
-#include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "TagFile.hxx"
 #include "TagStream.hxx"
@@ -40,7 +37,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <sys/stat.h>
 
 #ifdef ENABLE_DATABASE
 

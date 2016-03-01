@@ -27,12 +27,11 @@
 #include "../ArchiveFile.hxx"
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
-#include "input/InputPlugin.hxx"
 #include "input/LocalOpen.hxx"
+#include "thread/Cond.hxx"
 #include "util/RefCount.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/Traits.hxx"
 #include "fs/Path.hxx"
 
 #include <bzlib.h>

@@ -25,10 +25,6 @@
 #include "pcm/Volume.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
-
-#include <assert.h>
-#include <string.h>
 
 class VolumeFilter final : public Filter {
 	PcmVolume pv;

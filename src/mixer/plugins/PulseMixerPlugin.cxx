@@ -25,7 +25,6 @@
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
 #include "util/Error.hxx"
-#include "Log.hxx"
 
 #include <pulse/context.h>
 #include <pulse/introspect.h>

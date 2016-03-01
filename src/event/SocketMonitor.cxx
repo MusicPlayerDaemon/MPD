@@ -21,7 +21,6 @@
 #include "SocketMonitor.hxx"
 #include "Loop.hxx"
 #include "system/fd_util.h"
-#include "Compiler.h"
 
 #include <assert.h>
 

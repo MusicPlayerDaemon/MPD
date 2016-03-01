@@ -35,7 +35,6 @@
 
 #include <assert.h>
 
-struct AudioFormat;
 class MusicBuffer;
 class MusicPipe;
 class EventLoop;

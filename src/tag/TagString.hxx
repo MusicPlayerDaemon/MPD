@@ -23,8 +23,6 @@
 #include "check.h"
 #include "Compiler.h"
 
-#include <stddef.h>
-
 struct StringView;
 template<typename T> struct WritableBuffer;
 

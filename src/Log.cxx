@@ -20,11 +20,9 @@
 #include "config.h"
 #include "LogV.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <exception>
 
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

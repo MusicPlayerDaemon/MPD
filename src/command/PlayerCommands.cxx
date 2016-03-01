@@ -30,7 +30,6 @@
 #include "Instance.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
-#include "util/ConstBuffer.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"

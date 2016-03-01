@@ -35,15 +35,11 @@
 #include "BulkEdit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
-#include "util/UriUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"
-#include "fs/AllocatedPath.hxx"
 
 #include <memory>
 #include <limits>
-
-#include <string.h>
 
 static CommandResult
 AddUri(Client &client, const LocatedUri &uri, Response &r)

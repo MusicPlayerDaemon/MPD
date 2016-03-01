@@ -26,11 +26,7 @@
 #include "tag/VorbisComment.hxx"
 #include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
-#include "util/ASCII.hxx"
 #include "util/DivideString.hxx"
-
-#include <stddef.h>
-#include <stdlib.h>
 
 bool
 vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)

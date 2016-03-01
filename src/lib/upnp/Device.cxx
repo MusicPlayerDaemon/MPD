@@ -22,8 +22,6 @@
 #include "Util.hxx"
 #include "lib/expat/ExpatParser.hxx"
 
-#include <stdlib.h>
-
 #include <string.h>
 
 UPnPDevice::~UPnPDevice()

@@ -24,7 +24,6 @@
 #include "SongEnumerator.hxx"
 #include "SongPrint.hxx"
 #include "DetachedSong.hxx"
-#include "SongLoader.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

@@ -26,7 +26,6 @@
 #include "protocol/Ack.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/CharUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -42,7 +41,6 @@
 #include "TimePrint.hxx"
 
 #include <assert.h>
-#include <sys/stat.h>
 #include <inttypes.h> /* for PRIu64 */
 
 gcc_pure

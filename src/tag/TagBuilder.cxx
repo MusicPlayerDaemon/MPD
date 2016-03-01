@@ -29,7 +29,6 @@
 #include <array>
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 
 TagBuilder::TagBuilder(const Tag &other)

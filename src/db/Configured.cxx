@@ -27,7 +27,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "util/Error.hxx"
-#include "Log.hxx"
 
 Database *
 CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,

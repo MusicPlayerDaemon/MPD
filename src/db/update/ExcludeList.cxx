@@ -32,7 +32,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <errno.h>
 
 bool
 ExcludeList::LoadFile(Path path_fs)

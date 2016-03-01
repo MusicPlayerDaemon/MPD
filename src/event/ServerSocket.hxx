@@ -22,8 +22,6 @@
 
 #include <list>
 
-#include <stddef.h>
-
 class SocketAddress;
 class AllocatedSocketAddress;
 class EventLoop;

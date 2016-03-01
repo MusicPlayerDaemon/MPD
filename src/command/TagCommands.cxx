@@ -20,7 +20,6 @@
 #include "config.h"
 #include "TagCommands.hxx"
 #include "Request.hxx"
-#include "CommandError.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "tag/Tag.hxx"

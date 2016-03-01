@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "lib/upnp/ContentDirectoryService.hxx"
-#include "lib/upnp/Domain.hxx"
 #include "lib/upnp/ixmlwrap.hxx"
 #include "lib/upnp/UniqueIxml.hxx"
 #include "lib/upnp/Action.hxx"

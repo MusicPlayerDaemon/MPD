@@ -29,7 +29,6 @@
 #include "input/InputStream.hxx"
 #include "tag/TagId3.hxx"
 #include "util/Error.hxx"
-#include "util/Alloc.hxx"
 
 #include <string.h>
 #include <stdlib.h>

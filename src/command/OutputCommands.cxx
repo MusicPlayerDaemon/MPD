@@ -25,7 +25,6 @@
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
-#include "util/ConstBuffer.hxx"
 
 CommandResult
 handle_enableoutput(Client &client, Request args, Response &r)

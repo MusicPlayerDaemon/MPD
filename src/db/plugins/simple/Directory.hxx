@@ -43,7 +43,6 @@ static constexpr unsigned DEVICE_INARCHIVE = -1;
  */
 static constexpr unsigned DEVICE_CONTAINER = -2;
 
-struct db_visitor;
 class SongFilter;
 class Error;
 class Database;

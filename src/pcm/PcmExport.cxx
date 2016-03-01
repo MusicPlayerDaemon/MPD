@@ -29,8 +29,6 @@
 #include "PcmDop.hxx"
 #endif
 
-#include <iterator>
-
 void
 PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		Params params)

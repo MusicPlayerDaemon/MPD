@@ -29,7 +29,6 @@
 #include <string>
 
 #include <assert.h>
-#include <stdint.h>
 
 class Cond;
 class Error;

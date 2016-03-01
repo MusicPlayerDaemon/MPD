@@ -36,7 +36,6 @@
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
-#include "event/Call.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "IOThread.hxx"

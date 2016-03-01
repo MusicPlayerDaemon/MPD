@@ -24,7 +24,6 @@
 #include "PcmBuffer.hxx"
 #include "AudioFormat.hxx"
 
-struct AudioFormat;
 template<typename T> struct ConstBuffer;
 
 /**

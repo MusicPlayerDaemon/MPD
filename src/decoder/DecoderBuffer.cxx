@@ -21,8 +21,6 @@
 #include "DecoderBuffer.hxx"
 #include "DecoderAPI.hxx"
 
-#include <assert.h>
-
 bool
 DecoderBuffer::Fill()
 {

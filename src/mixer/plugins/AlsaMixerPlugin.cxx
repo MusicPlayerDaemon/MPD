@@ -23,7 +23,6 @@
 #include "output/OutputAPI.hxx"
 #include "event/MultiSocketMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
-#include "event/Loop.hxx"
 #include "util/ASCII.hxx"
 #include "util/ReusableArray.hxx"
 #include "util/Clamp.hxx"

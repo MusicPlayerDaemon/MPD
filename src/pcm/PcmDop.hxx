@@ -23,7 +23,6 @@
 #include "check.h"
 
 #include <stdint.h>
-#include <stddef.h>
 
 class PcmBuffer;
 template<typename T> struct ConstBuffer;

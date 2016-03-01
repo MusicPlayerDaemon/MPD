@@ -27,7 +27,6 @@
 #include <string>
 #include <list>
 
-class Error;
 class UPnPDevice;
 struct UPnPService;
 class UPnPDirContent;

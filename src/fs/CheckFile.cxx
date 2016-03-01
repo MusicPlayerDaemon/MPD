@@ -28,7 +28,6 @@
 #include "system/Error.hxx"
 
 #include <errno.h>
-#include <sys/stat.h>
 
 void
 CheckDirectoryReadable(Path path_fs)

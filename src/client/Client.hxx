@@ -27,7 +27,8 @@
 #include "event/TimeoutMonitor.hxx"
 #include "Compiler.h"
 
-#include <boost/intrusive/list.hpp>
+#include <boost/intrusive/link_mode.hpp>
+#include <boost/intrusive/list_hook.hpp>
 
 #include <set>
 #include <string>

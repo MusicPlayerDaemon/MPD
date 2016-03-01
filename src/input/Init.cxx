@@ -28,7 +28,6 @@
 #include "Log.hxx"
 
 #include <assert.h>
-#include <string.h>
 
 bool
 input_stream_global_init(Error &error)

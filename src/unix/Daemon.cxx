@@ -23,7 +23,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "PidFile.hxx"
-#include "Log.hxx"
 
 #include <stdlib.h>
 #include <unistd.h>

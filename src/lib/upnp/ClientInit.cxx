@@ -21,7 +21,6 @@
 #include "ClientInit.hxx"
 #include "Init.hxx"
 #include "Callback.hxx"
-#include "Domain.hxx"
 #include "thread/Mutex.hxx"
 #include "util/RuntimeError.hxx"
 

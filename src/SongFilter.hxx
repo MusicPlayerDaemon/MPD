@@ -40,7 +40,6 @@
 template<typename T> struct ConstBuffer;
 struct Tag;
 struct TagItem;
-struct Song;
 struct LightSong;
 class DetachedSong;
 

@@ -25,7 +25,6 @@
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/Alloc.hxx"
 #include "util/FormatString.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"

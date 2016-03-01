@@ -20,7 +20,7 @@
 #ifndef MPD_ZLIB_ERROR_HXX
 #define MPD_ZLIB_ERROR_HXX
 
-#include <stdexcept>
+#include <exception>
 
 class ZlibError final : public std::exception {
 	int code;

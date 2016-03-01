@@ -29,6 +29,8 @@
 #include "Chrono.hxx"
 #include "util/Error.hxx"
 
+#include <utility>
+
 #include <assert.h>
 #include <stdint.h>
 

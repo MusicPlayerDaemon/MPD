@@ -25,8 +25,6 @@
 #include "config/Block.hxx"
 #include "DatabasePlugin.hxx"
 
-#include <string.h>
-
 Database *
 DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
 		   const ConfigBlock &block, Error &error)

@@ -18,7 +18,6 @@
  */
 
 #include "StringUtil.hxx"
-#include "StringAPI.hxx"
 #include "CharUtil.hxx"
 #include "ASCII.hxx"
 

@@ -34,7 +34,6 @@
 #include <shlobj.h>
 #else
 #include <stdlib.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include <pwd.h>
 #endif

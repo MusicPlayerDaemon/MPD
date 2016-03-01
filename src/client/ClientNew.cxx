@@ -26,7 +26,6 @@
 #include "net/SocketAddress.hxx"
 #include "net/ToString.hxx"
 #include "Permission.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <assert.h>

@@ -21,13 +21,13 @@
 #include "PlaylistQueue.hxx"
 #include "PlaylistAny.hxx"
 #include "PlaylistSong.hxx"
+#include "PlaylistError.hxx"
 #include "queue/Playlist.hxx"
 #include "SongEnumerator.hxx"
 #include "DetachedSong.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "fs/Traits.hxx"
-#include "util/Error.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "SongLoader.hxx"

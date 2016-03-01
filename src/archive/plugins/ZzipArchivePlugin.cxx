@@ -27,7 +27,6 @@
 #include "../ArchiveFile.hxx"
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
-#include "input/InputPlugin.hxx"
 #include "fs/Path.hxx"
 #include "util/RefCount.hxx"
 #include "util/Error.hxx"

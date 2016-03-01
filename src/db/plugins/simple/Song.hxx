@@ -29,7 +29,6 @@
 
 #include <string>
 
-#include <assert.h>
 #include <time.h>
 
 struct LightSong;

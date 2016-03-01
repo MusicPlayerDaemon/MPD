@@ -34,6 +34,8 @@
 #include "util/Cast.hxx"
 #include "Compiler.h"
 
+#include <boost/intrusive/list.hpp>
+
 #include <queue>
 #include <list>
 

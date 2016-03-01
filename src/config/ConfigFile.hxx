@@ -20,7 +20,6 @@
 #ifndef MPD_CONFIG_FILE_HXX
 #define MPD_CONFIG_FILE_HXX
 
-class Error;
 class Path;
 struct ConfigData;
 

@@ -21,12 +21,10 @@
 #define MPD_DB_PRINT_H
 
 #include "tag/Mask.hxx"
-#include "Compiler.h"
 
 class SongFilter;
 struct DatabaseSelection;
 struct Partition;
-class Client;
 class Response;
 class Error;
 

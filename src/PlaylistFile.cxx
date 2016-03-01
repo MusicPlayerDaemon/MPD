@@ -43,12 +43,10 @@
 #include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 
 #include <memory>
 
 #include <assert.h>
-#include <sys/stat.h>
 #include <string.h>
 #include <errno.h>
 

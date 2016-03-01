@@ -40,7 +40,6 @@
 #include "util/Macros.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 
 #ifdef ENABLE_SQLITE

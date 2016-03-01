@@ -23,13 +23,11 @@
 #include "PlaylistError.hxx"
 #include "DetachedSong.hxx"
 #include "SongSave.hxx"
-#include "SongLoader.hxx"
 #include "playlist/PlaylistSong.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Error.hxx"
-#include "fs/Traits.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>

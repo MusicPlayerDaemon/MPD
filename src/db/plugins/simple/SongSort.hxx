@@ -22,8 +22,6 @@
 
 #include "Song.hxx"
 
-struct list_head;
-
 void
 song_list_sort(SongList &songs);
 

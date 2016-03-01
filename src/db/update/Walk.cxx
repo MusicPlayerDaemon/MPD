@@ -44,7 +44,6 @@
 #include "Log.hxx"
 
 #include <assert.h>
-#include <sys/stat.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>

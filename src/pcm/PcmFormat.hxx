@@ -23,7 +23,6 @@
 #include "AudioFormat.hxx"
 
 #include <stdint.h>
-#include <stddef.h>
 
 template<typename T> struct ConstBuffer;
 class PcmBuffer;

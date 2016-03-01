@@ -24,7 +24,6 @@
 #include "PlaylistFile.hxx"
 #include "Interface.hxx"
 #include "DetachedSong.hxx"
-#include "storage/StorageInterface.hxx"
 
 #include <functional>
 

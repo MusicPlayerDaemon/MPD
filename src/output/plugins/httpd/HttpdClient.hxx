@@ -23,7 +23,8 @@
 #include "event/BufferedSocket.hxx"
 #include "Compiler.h"
 
-#include <boost/intrusive/list.hpp>
+#include <boost/intrusive/link_mode.hpp>
+#include <boost/intrusive/list_hook.hpp>
 
 #include <queue>
 #include <list>

@@ -34,8 +34,6 @@
 
 #include <FLAC/metadata.h>
 
-#include <string.h>
-
 class FlacPlaylist final : public SongEnumerator {
 	const char *const uri;
 

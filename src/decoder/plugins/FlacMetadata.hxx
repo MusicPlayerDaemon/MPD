@@ -25,8 +25,6 @@
 
 #include <FLAC/metadata.h>
 
-#include <assert.h>
-
 struct TagHandler;
 class MixRampInfo;
 

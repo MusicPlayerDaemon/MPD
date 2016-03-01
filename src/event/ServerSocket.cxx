@@ -30,7 +30,6 @@
 #include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
-#include "util/Alloc.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -38,12 +37,9 @@
 #include <string>
 #include <algorithm>
 
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
 #include <assert.h>
 
 #ifdef WIN32
@@ -52,7 +48,6 @@
 #else
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <sys/un.h>
 #include <netdb.h>
 #endif
 

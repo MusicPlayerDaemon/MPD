@@ -22,7 +22,6 @@
 
 #ifndef WIN32
 
-#include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
 #include "util/Manual.hxx"
 #include "system/FatalError.hxx"

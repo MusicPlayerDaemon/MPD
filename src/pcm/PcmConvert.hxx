@@ -21,7 +21,6 @@
 #define PCM_CONVERT_HXX
 
 #include "check.h"
-#include "PcmBuffer.hxx"
 #include "FormatConverter.hxx"
 #include "ChannelsConverter.hxx"
 #include "GlueResampler.hxx"
@@ -31,11 +30,8 @@
 #include "PcmDsd.hxx"
 #endif
 
-#include <stddef.h>
-
 template<typename T> struct ConstBuffer;
 class Error;
-class Domain;
 
 /**
  * This object is statically allocated (within another struct), and

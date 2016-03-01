@@ -27,7 +27,6 @@
 #include "db/LightDirectory.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
-#include "SongFilter.hxx"
 #include "DatabaseSave.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/DatabaseError.hxx"

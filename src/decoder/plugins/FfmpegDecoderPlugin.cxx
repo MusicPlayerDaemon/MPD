@@ -40,7 +40,6 @@
 #include "CheckAudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "LogV.hxx"
 
 extern "C" {
@@ -48,7 +47,6 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
 #include <libavutil/avutil.h>
-#include <libavutil/log.h>
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 #include <libavutil/frame.h>

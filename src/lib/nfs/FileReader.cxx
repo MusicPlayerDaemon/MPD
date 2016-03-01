@@ -33,6 +33,7 @@
 #include <assert.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 NfsFileReader::NfsFileReader()
 	:DeferredMonitor(io_thread_get()), state(State::INITIAL)

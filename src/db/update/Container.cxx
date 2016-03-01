@@ -32,8 +32,6 @@
 #include "tag/TagBuilder.hxx"
 #include "Log.hxx"
 
-#include <sys/stat.h>
-
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
 				    const StorageFileInfo &info)

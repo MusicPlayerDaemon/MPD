@@ -25,16 +25,14 @@
 #include "TagBuilder.hxx"
 #include "util/Alloc.hxx"
 #include "util/StringUtil.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
-#include "config/ConfigGlobal.hxx"
-#include "fs/Path.hxx"
 
 #include <id3tag.h>
 
 #include <string>
 #include <stdexcept>
 
+#include <string.h>
 #include <stdlib.h>
 
 #  ifndef ID3_FRAME_COMPOSER

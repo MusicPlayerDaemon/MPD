@@ -23,7 +23,6 @@
 #include "check.h"
 #include "Id3Unique.hxx"
 
-class Error;
 class InputStream;
 
 /**

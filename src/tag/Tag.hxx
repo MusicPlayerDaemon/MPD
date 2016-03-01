@@ -26,9 +26,6 @@
 #include "Compiler.h"
 
 #include <algorithm>
-#include <iterator>
-
-#include <stddef.h>
 
 /**
  * The meta information about a song file.  It is a MPD specific

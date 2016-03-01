@@ -25,7 +25,6 @@
 #include "lib/zlib/Error.hxx"
 #include "Compiler.h"
 
-#include <assert.h>
 #include <zlib.h>
 
 /**

@@ -28,8 +28,6 @@
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 
-#include <algorithm>
-
 #include <stdlib.h>
 
 void

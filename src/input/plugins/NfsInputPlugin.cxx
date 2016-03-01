@@ -29,8 +29,6 @@
 #include "util/Error.hxx"
 
 #include <string.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 /**
  * Do not buffer more than this number of bytes.  It should be a

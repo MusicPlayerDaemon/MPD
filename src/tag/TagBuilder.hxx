@@ -26,8 +26,6 @@
 
 #include <vector>
 
-#include <stddef.h>
-
 struct StringView;
 struct TagItem;
 struct Tag;

@@ -30,7 +30,6 @@
 
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <errno.h>
 
 static constexpr Domain file_domain("file");
 

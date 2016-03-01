@@ -19,8 +19,6 @@
 
 #include "Util.hxx"
 
-#include <upnp/ixml.h>
-
 #include <assert.h>
 
 /** Get rid of white space at both ends */

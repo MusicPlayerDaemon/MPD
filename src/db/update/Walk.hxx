@@ -24,9 +24,6 @@
 #include "Editor.hxx"
 #include "Compiler.h"
 
-#include <sys/stat.h>
-
-struct stat;
 struct StorageFileInfo;
 struct Directory;
 struct ArchivePlugin;
@@ -141,7 +138,7 @@ private:
 
 	/**
 	 * Create the specified directory object if it does not exist
-	 * already or if the #stat object indicates that it has been
+	 * already or if the #StorageFileInfo object indicates that it has been
 	 * modified since the last update.  Returns nullptr when it
 	 * exists already and is unmodified.
 	 *

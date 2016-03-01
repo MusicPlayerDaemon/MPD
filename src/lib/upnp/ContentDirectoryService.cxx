@@ -20,7 +20,6 @@
 #include "config.h"
 #include "ContentDirectoryService.hxx"
 #include "UniqueIxml.hxx"
-#include "Domain.hxx"
 #include "Device.hxx"
 #include "ixmlwrap.hxx"
 #include "Util.hxx"

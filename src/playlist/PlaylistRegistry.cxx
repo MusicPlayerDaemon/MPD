@@ -37,7 +37,6 @@
 #include "util/Macros.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
-#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>

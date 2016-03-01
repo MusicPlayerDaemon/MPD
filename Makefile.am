@@ -240,7 +240,6 @@ UPNP_SOURCES = \
 	src/lib/upnp/Device.cxx src/lib/upnp/Device.hxx \
 	src/lib/upnp/ContentDirectoryService.cxx src/lib/upnp/ContentDirectoryService.hxx \
 	src/lib/upnp/Discovery.cxx src/lib/upnp/Discovery.hxx \
-	src/lib/upnp/Domain.cxx src/lib/upnp/Domain.hxx \
 	src/lib/upnp/ixmlwrap.cxx src/lib/upnp/ixmlwrap.hxx \
 	src/lib/upnp/Callback.hxx \
 	src/lib/upnp/Util.cxx src/lib/upnp/Util.hxx \
@@ -607,7 +606,6 @@ libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
 
 if ENABLE_ZLIB
 libfs_a_SOURCES += \
-	src/lib/zlib/Domain.cxx src/lib/zlib/Domain.hxx \
 	src/lib/zlib/Error.cxx src/lib/zlib/Error.hxx \
 	src/fs/io/GunzipReader.cxx src/fs/io/GunzipReader.hxx \
 	src/fs/io/AutoGunzipReader.cxx src/fs/io/AutoGunzipReader.hxx \

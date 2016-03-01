@@ -33,7 +33,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <unistd.h>
 
 static const unsigned adts_sample_rates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,

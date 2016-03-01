@@ -19,9 +19,6 @@
 
 #include "config.h"
 #include "ProxyInputStream.hxx"
-#include "tag/Tag.hxx"
-
-#include <assert.h>
 
 ProxyInputStream::ProxyInputStream(InputStream *_input)
 	:InputStream(_input->GetURI(), _input->mutex, _input->cond),

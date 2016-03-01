@@ -25,13 +25,7 @@
 #include "Compiler.h"
 
 #include <assert.h>
-#include <stdint.h>
 #include <string.h>
-
-#ifndef WIN32
-#include <sys/types.h>
-#include <sys/socket.h>
-#endif
 
 FullyBufferedSocket::ssize_t
 FullyBufferedSocket::DirectWrite(const void *data, size_t length)

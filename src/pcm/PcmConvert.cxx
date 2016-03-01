@@ -22,13 +22,10 @@
 #include "Domain.hxx"
 #include "ConfiguredResampler.hxx"
 #include "AudioFormat.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>
-#include <math.h>
 
 bool
 pcm_convert_global_init(Error &error)

@@ -34,7 +34,6 @@
 
 #include <assert.h>
 #include <sys/inotify.h>
-#include <sys/stat.h>
 #include <string.h>
 #include <dirent.h>
 

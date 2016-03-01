@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Registry.hxx"
-#include "OutputAPI.hxx"
+#include "OutputPlugin.hxx"
 #include "plugins/AlsaOutputPlugin.hxx"
 #include "plugins/AoOutputPlugin.hxx"
 #include "plugins/FifoOutputPlugin.hxx"

@@ -22,10 +22,8 @@
 #include "PrefixedLightSong.hxx"
 #include "db/Selection.hxx"
 #include "db/LightDirectory.hxx"
-#include "db/LightSong.hxx"
 #include "db/Interface.hxx"
 #include "fs/Traits.hxx"
-#include "util/Error.hxx"
 
 #include <string>
 

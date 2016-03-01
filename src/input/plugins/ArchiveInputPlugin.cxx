@@ -25,9 +25,7 @@
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"
 #include "../InputPlugin.hxx"
-#include "fs/Traits.hxx"
 #include "fs/Path.hxx"
-#include "util/Alloc.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>

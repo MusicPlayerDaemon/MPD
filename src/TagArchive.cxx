@@ -20,7 +20,6 @@
 #include "config.h"
 #include "TagArchive.hxx"
 #include "TagStream.hxx"
-#include "tag/Generic.hxx"
 #include "archive/ArchiveFile.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Cond.hxx"

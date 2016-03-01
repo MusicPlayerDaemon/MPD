@@ -28,7 +28,6 @@
 #include "Instance.hxx"
 #include "mixer/Volume.hxx"
 #include "SongLoader.hxx"
-#include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 

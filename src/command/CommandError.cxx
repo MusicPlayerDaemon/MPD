@@ -29,8 +29,6 @@
 #include <system_error>
 
 #include <assert.h>
-#include <string.h>
-#include <errno.h>
 
 gcc_const
 static enum ack

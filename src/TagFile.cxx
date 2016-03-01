@@ -23,7 +23,6 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
 #include "fs/Path.hxx"
-#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"

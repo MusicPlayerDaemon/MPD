@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "ArchivePlugin.hxx"
-#include "ArchiveFile.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 

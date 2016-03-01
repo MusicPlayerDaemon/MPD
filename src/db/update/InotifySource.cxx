@@ -25,8 +25,6 @@
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
-#include <algorithm>
-
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <errno.h>

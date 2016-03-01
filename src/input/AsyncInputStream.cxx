@@ -21,7 +21,6 @@
 #include "AsyncInputStream.hxx"
 #include "Domain.hxx"
 #include "tag/Tag.hxx"
-#include "event/Call.hxx"
 #include "thread/Cond.hxx"
 #include "IOThread.hxx"
 #include "util/HugeAllocator.hxx"

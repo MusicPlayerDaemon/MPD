@@ -26,12 +26,8 @@
 #include "Partition.hxx"
 #include "neighbor/Glue.hxx"
 #include "neighbor/Info.hxx"
-#include "util/ConstBuffer.hxx"
 
-#include <set>
 #include <string>
-
-#include <assert.h>
 
 bool
 neighbor_commands_available(const Instance &instance)

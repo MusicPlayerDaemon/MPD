@@ -20,10 +20,8 @@
 #include "config.h"
 #include "Charset.hxx"
 #include "Domain.hxx"
-#include "Limits.hxx"
 #include "Log.hxx"
 #include "lib/icu/Converter.hxx"
-#include "util/Error.hxx"
 #include "util/AllocatedString.hxx"
 
 #ifdef WIN32

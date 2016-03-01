@@ -31,7 +31,6 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
-#include <stddef.h>
 #include <string.h>
 
 #define DIRECTORY_DIR "directory: "

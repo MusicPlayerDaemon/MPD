@@ -27,7 +27,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <stdlib.h>
 
 inline Song::Song(const char *_uri, size_t uri_length, Directory &_parent)
 	:parent(&_parent), mtime(0),

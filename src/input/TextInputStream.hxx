@@ -23,8 +23,6 @@
 #include "input/Ptr.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
-class InputStream;
-
 class TextInputStream {
 	InputStreamPtr is;
 	StaticFifoBuffer<char, 4096> buffer;

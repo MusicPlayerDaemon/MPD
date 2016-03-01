@@ -21,7 +21,6 @@
 #include "SoxrResampler.hxx"
 #include "AudioFormat.hxx"
 #include "config/Block.hxx"
-#include "util/ASCII.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"

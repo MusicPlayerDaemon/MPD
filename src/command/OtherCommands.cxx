@@ -37,7 +37,6 @@
 #include "mixer/Volume.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"

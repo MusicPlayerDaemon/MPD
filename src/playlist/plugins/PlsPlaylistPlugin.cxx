@@ -28,7 +28,6 @@
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/DivideString.hxx"
-#include "util/Error.hxx"
 
 #include <string>
 

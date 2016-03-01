@@ -28,9 +28,6 @@
 #include <string>
 #include <memory>
 
-class DetachedSong;
-struct Tag;
-
 class CueParser {
 	enum {
 		/**

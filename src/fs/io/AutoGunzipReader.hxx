@@ -24,8 +24,6 @@
 #include "PeekReader.hxx"
 #include "Compiler.h"
 
-#include <stdint.h>
-
 class GunzipReader;
 
 /**

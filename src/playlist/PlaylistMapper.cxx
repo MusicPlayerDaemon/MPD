@@ -21,7 +21,6 @@
 #include "PlaylistMapper.hxx"
 #include "PlaylistFile.hxx"
 #include "PlaylistStream.hxx"
-#include "PlaylistRegistry.hxx"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/StorageInterface.hxx"

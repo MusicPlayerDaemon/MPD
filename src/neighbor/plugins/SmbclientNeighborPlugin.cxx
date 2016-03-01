@@ -30,14 +30,10 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
-#include "util/Macros.hxx"
-#include "util/Domain.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <libsmbclient.h>
 
-#include <list>
 #include <algorithm>
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {

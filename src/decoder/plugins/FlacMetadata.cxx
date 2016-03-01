@@ -29,7 +29,6 @@
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
 #include "ReplayGainInfo.hxx"
-#include "util/ASCII.hxx"
 #include "util/DivideString.hxx"
 
 bool

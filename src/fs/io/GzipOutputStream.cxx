@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "GzipOutputStream.hxx"
-#include "lib/zlib/Domain.hxx"
 #include "lib/zlib/Error.hxx"
 
 GzipOutputStream::GzipOutputStream(OutputStream &_next) throw(ZlibError)

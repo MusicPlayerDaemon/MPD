@@ -21,7 +21,6 @@
 #define MPD_PLAYLIST_HXX
 
 #include "queue/Queue.hxx"
-#include "PlaylistError.hxx"
 
 enum TagType : uint8_t;
 struct PlayerControl;

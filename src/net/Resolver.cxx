@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "Resolver.hxx"
-#include "SocketAddress.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 

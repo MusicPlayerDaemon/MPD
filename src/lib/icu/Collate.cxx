@@ -27,7 +27,6 @@
 #include "util/WritableBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <unicode/ucol.h>
 #include <unicode/ustring.h>
@@ -44,7 +43,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <strings.h>
 
 #ifdef HAVE_ICU
 static UCollator *collator;

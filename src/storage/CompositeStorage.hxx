@@ -29,7 +29,6 @@
 #include <map>
 
 class Error;
-class Storage;
 
 /**
  * A #Storage implementation that combines multiple other #Storage

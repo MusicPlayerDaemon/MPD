@@ -27,7 +27,6 @@
 
 #include <stdint.h>
 
-class Response;
 class SongTime;
 class SignedSongTime;
 

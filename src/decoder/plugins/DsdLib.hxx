@@ -24,7 +24,6 @@
 #include "input/Offset.hxx"
 #include "Compiler.h"
 
-#include <stddef.h>
 #include <stdint.h>
 
 struct Decoder;

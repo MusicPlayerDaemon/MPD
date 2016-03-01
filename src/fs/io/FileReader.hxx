@@ -29,8 +29,6 @@
 #include "system/FileDescriptor.hxx"
 #endif
 
-#include <assert.h>
-
 #ifdef WIN32
 #include <windows.h>
 #endif

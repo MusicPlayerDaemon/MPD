@@ -25,7 +25,6 @@
 #include "util/UTF8.hxx"
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 
 gcc_pure

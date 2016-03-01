@@ -25,9 +25,7 @@
 struct playlist;
 struct Partition;
 class SongFilter;
-class Client;
 class Response;
-class Error;
 
 /**
  * Sends the whole playlist to the client, song URIs only.

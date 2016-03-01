@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "Discovery.hxx"
-#include "Domain.hxx"
 #include "ContentDirectoryService.hxx"
 #include "system/Clock.hxx"
 #include "Log.hxx"

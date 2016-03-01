@@ -20,7 +20,6 @@
 #include "config.h"
 #include "DatabaseCommands.hxx"
 #include "Request.hxx"
-#include "db/DatabaseGlue.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "db/DatabasePrint.hxx"
@@ -35,8 +34,6 @@
 #include "util/StringAPI.hxx"
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
-
-#include <string.h>
 
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)

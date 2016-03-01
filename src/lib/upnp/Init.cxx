@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "Init.hxx"
-#include "Domain.hxx"
 #include "thread/Mutex.hxx"
 #include "util/RuntimeError.hxx"
 

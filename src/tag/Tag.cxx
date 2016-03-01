@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Tag.hxx"
 #include "TagPool.hxx"
-#include "TagString.hxx"
 #include "TagBuilder.hxx"
 #include "util/ASCII.hxx"
 

@@ -23,7 +23,6 @@
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Manual.hxx"
-#include "util/NumberParser.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
 

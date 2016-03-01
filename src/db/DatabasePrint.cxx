@@ -23,7 +23,6 @@
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
 #include "TimePrint.hxx"
-#include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
 #include "tag/Tag.hxx"

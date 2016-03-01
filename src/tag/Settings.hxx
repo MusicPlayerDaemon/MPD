@@ -24,8 +24,6 @@
 #include "TagType.h"
 #include "Compiler.h"
 
-#include <stdint.h>
-
 extern tag_mask_t global_tag_mask;
 
 gcc_const

@@ -36,7 +36,6 @@
 
 #include <string>
 
-#include <sys/stat.h>
 #include <string.h>
 
 static Directory *

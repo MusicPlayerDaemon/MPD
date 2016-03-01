@@ -21,7 +21,6 @@
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "DetachedSong.hxx"
-#include "output/MultipleOutputs.hxx"
 #include "mixer/Volume.hxx"
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"

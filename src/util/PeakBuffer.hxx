@@ -20,7 +20,6 @@
 #ifndef MPD_PEAK_BUFFER_HXX
 #define MPD_PEAK_BUFFER_HXX
 
-#include "WritableBuffer.hxx"
 #include "Compiler.h"
 
 #include <stddef.h>

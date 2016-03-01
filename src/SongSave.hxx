@@ -23,7 +23,6 @@
 #define SONG_BEGIN "song_begin: "
 
 struct Song;
-struct Directory;
 class DetachedSong;
 class BufferedOutputStream;
 class TextFile;

@@ -25,10 +25,8 @@
 #include "Domain.hxx"
 #include "plugins/RewindInputPlugin.hxx"
 #include "fs/Traits.hxx"
-#include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 InputStreamPtr
 InputStream::Open(const char *url,

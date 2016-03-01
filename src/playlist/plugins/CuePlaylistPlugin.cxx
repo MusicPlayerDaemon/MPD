@@ -24,8 +24,6 @@
 #include "../cue/CueParser.hxx"
 #include "input/TextInputStream.hxx"
 
-#include <string>
-
 class CuePlaylist final : public SongEnumerator {
 	TextInputStream tis;
 	CueParser parser;

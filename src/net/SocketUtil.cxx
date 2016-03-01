@@ -23,12 +23,6 @@
 #include "SocketError.hxx"
 #include "system/fd_util.h"
 
-#include <unistd.h>
-
-#ifdef HAVE_IPV6
-#include <string.h>
-#endif
-
 int
 socket_bind_listen(int domain, int type, int protocol,
 		   SocketAddress address,

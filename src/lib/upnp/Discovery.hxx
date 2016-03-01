@@ -24,7 +24,6 @@
 #include "Device.hxx"
 #include "WorkQueue.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Error.hxx"
 #include "Compiler.h"
 
 #include <upnp/upnp.h>

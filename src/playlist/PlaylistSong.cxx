@@ -27,7 +27,6 @@
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"
 
-#include <assert.h>
 #include <string.h>
 
 static void

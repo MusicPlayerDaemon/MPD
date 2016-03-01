@@ -24,8 +24,6 @@
 #include "config.h"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/Traits.hxx"
-#include "fs/Charset.hxx"
 #include "fs/CheckFile.hxx"
 #include "util/StringCompare.hxx"
 

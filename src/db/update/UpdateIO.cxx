@@ -19,7 +19,6 @@
 
 #include "config.h" /* must be first for large file support */
 #include "UpdateIO.hxx"
-#include "UpdateDomain.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "storage/FileInfo.hxx"
 #include "storage/StorageInterface.hxx"
@@ -30,7 +29,6 @@
 #include "Log.hxx"
 
 #include <errno.h>
-#include <unistd.h>
 
 bool
 GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info)

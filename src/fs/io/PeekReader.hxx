@@ -26,8 +26,6 @@
 
 #include <stdint.h>
 
-class AutoGunzipReader;
-
 /**
  * A filter that allows the caller to peek the first few bytes without
  * consuming them.  The first call must be Peek(), and the following

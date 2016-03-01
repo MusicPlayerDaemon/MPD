@@ -24,10 +24,7 @@
 
 #include <functional>
 
-#include <stddef.h>
-
 struct StringView;
-class Path;
 class InputStream;
 
 typedef std::function<bool(unsigned long flags, const char *key,

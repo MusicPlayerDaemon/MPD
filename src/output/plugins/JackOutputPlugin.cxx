@@ -36,7 +36,6 @@
 
 #include <unistd.h> /* for usleep() */
 #include <stdlib.h>
-#include <string.h>
 
 static constexpr unsigned MAX_PORTS = 16;
 

@@ -24,8 +24,6 @@
 #ifndef MPD_PLAYLIST_QUEUE_HXX
 #define MPD_PLAYLIST_QUEUE_HXX
 
-#include "PlaylistError.hxx"
-
 class Error;
 class SongLoader;
 class SongEnumerator;

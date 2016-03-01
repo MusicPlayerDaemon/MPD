@@ -26,7 +26,6 @@
 
 struct Directory;
 struct Song;
-class UpdateRemoveService;
 
 class DatabaseEditor final {
 	UpdateRemoveService remove;

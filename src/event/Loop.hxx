@@ -35,7 +35,6 @@
 class TimeoutMonitor;
 class IdleMonitor;
 class DeferredMonitor;
-class SocketMonitor;
 
 #include <assert.h>
 

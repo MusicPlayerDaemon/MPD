@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "UpnpNeighborPlugin.hxx"
-#include "lib/upnp/Domain.hxx"
 #include "lib/upnp/ClientInit.hxx"
 #include "lib/upnp/Discovery.hxx"
 #include "lib/upnp/ContentDirectoryService.hxx"
