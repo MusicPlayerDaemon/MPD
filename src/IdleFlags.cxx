@@ -23,29 +23,45 @@
  */
 
 #include "config.h"
-#include "Idle.hxx"
-#include "Main.hxx"
-#include "Instance.hxx"
-
-#include <atomic>
+#include "IdleFlags.hxx"
+#include "util/ASCII.hxx"
 
 #include <assert.h>
 
-static std::atomic_uint idle_flags;
+static const char *const idle_names[] = {
+	"database",
+	"stored_playlist",
+	"playlist",
+	"player",
+	"mixer",
+	"output",
+	"options",
+	"sticker",
+	"update",
+	"subscription",
+	"message",
+	"neighbor",
+	"mount",
+	nullptr
+};
 
-void
-idle_add(unsigned flags)
+const char*const*
+idle_get_names(void)
 {
-	assert(flags != 0);
-
-	unsigned old_flags = idle_flags.fetch_or(flags);
-
-	if ((old_flags & flags) != flags)
-		instance->global_events.Emit(GlobalEvents::IDLE);
+        return idle_names;
 }
 
 unsigned
-idle_get(void)
+idle_parse_name(const char *name)
 {
-	return idle_flags.exchange(0);
+#if !CLANG_CHECK_VERSION(3,6)
+	/* disabled on clang due to -Wtautological-pointer-compare */
+	assert(name != nullptr);
+#endif
+
+	for (unsigned i = 0; idle_names[i] != nullptr; ++i)
+		if (StringEqualsCaseASCII(name, idle_names[i]))
+			return 1 << i;
+
+	return 0;
 }
