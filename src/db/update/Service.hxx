@@ -44,7 +44,7 @@ class UpdateService final : DeferredMonitor {
 
 	Thread update_thread;
 
-	static const unsigned update_task_id_max = 1 << 15;
+	static constexpr unsigned update_task_id_max = 1 << 15;
 
 	unsigned update_task_id;
 
