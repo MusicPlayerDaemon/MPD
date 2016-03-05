@@ -756,7 +756,7 @@ JNIEXPORT void JNICALL
 Java_org_musicpd_Bridge_shutdown(JNIEnv *, jclass)
 {
 	if (instance != nullptr)
-		instance->event_loop->Break();
+		instance->Shutdown();
 }
 
 #endif
