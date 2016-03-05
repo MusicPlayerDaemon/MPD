@@ -20,7 +20,7 @@
 #ifndef MPD_GLOBAL_EVENTS_HXX
 #define MPD_GLOBAL_EVENTS_HXX
 
-class EventLoop;
+#include "event/MaskMonitor.hxx"
 
 namespace GlobalEvents {
 	enum Event {
@@ -38,13 +38,25 @@ namespace GlobalEvents {
 
 	typedef void (*Handler)();
 
-	void Initialize(EventLoop &loop);
+	class Monitor final : MaskMonitor {
+		Handler handlers[MAX];
 
-	void Deinitialize();
+	public:
+		explicit Monitor(EventLoop &_loop):MaskMonitor(_loop) {}
 
-	void Register(Event event, Handler handler);
+		void Register(Event event, Handler handler);
 
-	void Emit(Event event);
+		void Emit(Event event);
+
+	private:
+		/**
+		 * Invoke the callback for a certain event.
+		 */
+		void Invoke(Event event);
+
+	protected:
+		void HandleMask(unsigned mask) override;
+	};
 }
 
 #endif /* MAIN_NOTIFY_H */

@@ -24,7 +24,8 @@
 
 #include "config.h"
 #include "Idle.hxx"
-#include "GlobalEvents.hxx"
+#include "Main.hxx"
+#include "Instance.hxx"
 #include "util/ASCII.hxx"
 
 #include <atomic>
@@ -58,7 +59,7 @@ idle_add(unsigned flags)
 	unsigned old_flags = idle_flags.fetch_or(flags);
 
 	if ((old_flags & flags) != flags)
-		GlobalEvents::Emit(GlobalEvents::IDLE);
+		instance->global_events.Emit(GlobalEvents::IDLE);
 }
 
 unsigned

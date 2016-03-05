@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "event/Loop.hxx"
+#include "GlobalEvents.hxx"
 #include "Compiler.h"
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -36,7 +37,6 @@ class Storage;
 class UpdateService;
 #endif
 
-class EventLoop;
 class Error;
 class ClientList;
 struct Partition;
@@ -57,6 +57,8 @@ struct Instance final
 {
 	EventLoop event_loop;
 
+	GlobalEvents::Monitor global_events;
+
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	NeighborGlue *neighbors;
 #endif
@@ -76,6 +78,8 @@ struct Instance final
 	ClientList *client_list;
 
 	Partition *partition;
+
+	Instance():global_events(event_loop) {}
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().

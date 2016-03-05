@@ -19,35 +19,16 @@
 
 #include "config.h"
 #include "GlobalEvents.hxx"
-#include "util/Manual.hxx"
-#include "event/MaskMonitor.hxx"
 
 #include <assert.h>
 
-namespace GlobalEvents {
-	class Monitor final : public MaskMonitor {
-	public:
-		explicit Monitor(EventLoop &_loop):MaskMonitor(_loop) {}
-
-	protected:
-		virtual void HandleMask(unsigned mask) override;
-	};
-
-	static Manual<Monitor> monitor;
-
-	static Handler handlers[MAX];
-}
-
-/**
- * Invoke the callback for a certain event.
- */
-static void
-InvokeGlobalEvent(GlobalEvents::Event event)
+inline void
+GlobalEvents::Monitor::Invoke(Event event)
 {
 	assert((unsigned)event < GlobalEvents::MAX);
-	assert(GlobalEvents::handlers[event] != nullptr);
+	assert(handlers[event] != nullptr);
 
-	GlobalEvents::handlers[event]();
+	handlers[event]();
 }
 
 void
@@ -56,35 +37,22 @@ GlobalEvents::Monitor::HandleMask(unsigned f)
 	for (unsigned i = 0; i < MAX; ++i)
 		if (f & (1u << i))
 			/* invoke the event handler */
-			InvokeGlobalEvent(Event(i));
+			Invoke(Event(i));
 }
 
 void
-GlobalEvents::Initialize(EventLoop &loop)
-{
-	monitor.Construct(loop);
-}
-
-void
-GlobalEvents::Deinitialize()
-{
-	monitor.Destruct();
-}
-
-void
-GlobalEvents::Register(Event event, Handler callback)
+GlobalEvents::Monitor::Register(Event event, Handler callback)
 {
 	assert((unsigned)event < MAX);
-	assert(handlers[event] == nullptr);
 
 	handlers[event] = callback;
 }
 
 void
-GlobalEvents::Emit(Event event)
+GlobalEvents::Monitor::Emit(Event event)
 {
 	assert((unsigned)event < MAX);
 
 	const unsigned mask = 1u << unsigned(event);
-	monitor->OrMask(mask);
+	OrMask(mask);
 }

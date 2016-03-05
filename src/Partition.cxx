@@ -67,13 +67,13 @@ Partition::SyncWithPlayer()
 void
 Partition::OnPlayerSync()
 {
-	GlobalEvents::Emit(GlobalEvents::PLAYLIST);
+	instance.global_events.Emit(GlobalEvents::PLAYLIST);
 }
 
 void
 Partition::OnPlayerTagModified()
 {
-	GlobalEvents::Emit(GlobalEvents::TAG);
+	instance.global_events.Emit(GlobalEvents::TAG);
 }
 
 void

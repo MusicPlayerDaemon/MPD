@@ -38,7 +38,6 @@
 #include "Idle.hxx"
 #include "Log.hxx"
 #include "LogInit.hxx"
-#include "GlobalEvents.hxx"
 #include "input/Init.hxx"
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
@@ -520,8 +519,7 @@ static int mpd_main_after_fork(struct options options)
 try {
 	Error error;
 
-	GlobalEvents::Initialize(instance->event_loop);
-	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
+	instance->global_events.Register(GlobalEvents::IDLE, idle_event_emitted);
 
 	if (!ConfigureFS(error)) {
 		LogError(error);
@@ -688,8 +686,6 @@ try {
 #ifdef ENABLE_SQLITE
 	sticker_global_finish();
 #endif
-
-	GlobalEvents::Deinitialize();
 
 	playlist_list_global_finish();
 	input_stream_global_finish();
