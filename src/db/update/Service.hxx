@@ -35,18 +35,10 @@ class CompositeStorage;
  * This class manages the update queue and runs the update thread.
  */
 class UpdateService final : DeferredMonitor {
-	enum Progress {
-		UPDATE_PROGRESS_IDLE = 0,
-		UPDATE_PROGRESS_RUNNING = 1,
-		UPDATE_PROGRESS_DONE = 2
-	};
-
 	SimpleDatabase &db;
 	CompositeStorage &storage;
 
 	DatabaseListener &listener;
-
-	Progress progress;
 
 	bool modified;
 

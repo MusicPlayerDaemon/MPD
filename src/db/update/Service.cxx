@@ -45,7 +45,6 @@ UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
 	:DeferredMonitor(_loop),
 	 db(_db), storage(_storage),
 	 listener(_listener),
-	 progress(UPDATE_PROGRESS_IDLE),
 	 update_task_id(0),
 	 walk(nullptr)
 {
@@ -140,7 +139,6 @@ UpdateService::Task()
 	else
 		LogDebug(update_domain, "finished");
 
-	progress = UPDATE_PROGRESS_DONE;
 	DeferredMonitor::Schedule();
 }
 
@@ -157,7 +155,6 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 	assert(GetEventLoop().IsInsideOrNull());
 	assert(walk == nullptr);
 
-	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
 
 	next = std::move(i);
@@ -231,7 +228,7 @@ UpdateService::Enqueue(const char *path, bool discard)
 		   happen */
 		return 0;
 
-	if (progress != UPDATE_PROGRESS_IDLE) {
+	if (walk != nullptr) {
 		const unsigned id = GenerateId();
 		if (!queue.Push(*db2, *storage2, path, discard, id))
 			return 0;
@@ -254,7 +251,6 @@ UpdateService::Enqueue(const char *path, bool discard)
 void
 UpdateService::RunDeferred()
 {
-	assert(progress == UPDATE_PROGRESS_DONE);
 	assert(next.IsDefined());
 	assert(walk != nullptr);
 
@@ -278,7 +274,5 @@ UpdateService::RunDeferred()
 	if (i.IsDefined()) {
 		/* schedule the next path */
 		StartThread(std::move(i));
-	} else {
-		progress = UPDATE_PROGRESS_IDLE;
 	}
 }
