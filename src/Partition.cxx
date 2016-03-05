@@ -25,6 +25,16 @@
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 
+Partition::Partition(Instance &_instance,
+		     unsigned max_length,
+		     unsigned buffer_chunks,
+		     unsigned buffered_before_play)
+	:instance(_instance), playlist(max_length),
+	 outputs(*this),
+	 pc(*this, outputs, buffer_chunks, buffered_before_play)
+{
+}
+
 void
 Partition::EmitIdle(unsigned mask)
 {

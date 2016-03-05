@@ -48,10 +48,7 @@ struct Partition final : private PlayerListener, private MixerListener {
 	Partition(Instance &_instance,
 		  unsigned max_length,
 		  unsigned buffer_chunks,
-		  unsigned buffered_before_play)
-		:instance(_instance), playlist(max_length),
-		 outputs(*this),
-		 pc(*this, outputs, buffer_chunks, buffered_before_play) {}
+		  unsigned buffered_before_play);
 
 	void EmitIdle(unsigned mask);
 
