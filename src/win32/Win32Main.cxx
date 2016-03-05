@@ -23,7 +23,7 @@
 #ifdef WIN32
 
 #include "Compiler.h"
-#include "GlobalEvents.hxx"
+#include "Instance.hxx"
 #include "system/FatalError.hxx"
 
 #include <cstdlib>
@@ -71,7 +71,7 @@ service_dispatcher(gcc_unused DWORD control, gcc_unused DWORD event_type,
 	switch (control) {
 	case SERVICE_CONTROL_SHUTDOWN:
 	case SERVICE_CONTROL_STOP:
-		GlobalEvents::Emit(GlobalEvents::SHUTDOWN);
+		instance->Shutdown();
 		return NO_ERROR;
 	default:
 		return NO_ERROR;
@@ -107,7 +107,7 @@ console_handler(DWORD event)
 			// regardless our thread is still active.
 			// If this did not happen within 3 seconds
 			// let's shutdown anyway.
-			GlobalEvents::Emit(GlobalEvents::SHUTDOWN);
+			instance->Shutdown();
 			// Under debugger it's better to wait indefinitely
 			// to allow debugging of shutdown code.
 			Sleep(IsDebuggerPresent() ? INFINITE : 3000);

@@ -33,11 +33,6 @@ namespace GlobalEvents {
 		/** the current song's tag has changed */
 		TAG,
 
-#ifdef WIN32
-		/** shutdown requested */
-		SHUTDOWN,
-#endif
-
 		MAX
 	};
 

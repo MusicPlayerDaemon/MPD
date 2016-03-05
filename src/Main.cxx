@@ -385,19 +385,6 @@ idle_event_emitted(void)
 		state_file->CheckModified();
 }
 
-#ifdef WIN32
-
-/**
- * Handler for GlobalEvents::SHUTDOWN.
- */
-static void
-shutdown_event_emitted(void)
-{
-	instance->Shutdown();
-}
-
-#endif
-
 #ifndef ANDROID
 
 int main(int argc, char *argv[])
@@ -536,9 +523,6 @@ try {
 
 	GlobalEvents::Initialize(*instance->event_loop);
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
-#ifdef WIN32
-	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);
-#endif
 
 	if (!ConfigureFS(error)) {
 		LogError(error);
