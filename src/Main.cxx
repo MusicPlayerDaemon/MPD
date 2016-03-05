@@ -128,8 +128,6 @@ Context *context;
 
 Instance *instance;
 
-static StateFile *state_file;
-
 #ifdef ENABLE_DAEMON
 
 static bool
@@ -284,10 +282,10 @@ glue_state_file_init(Error &error)
 		config_get_unsigned(ConfigOption::STATE_FILE_INTERVAL,
 				    StateFile::DEFAULT_INTERVAL);
 
-	state_file = new StateFile(std::move(path_fs), interval,
-				   *instance->partition,
-				   instance->event_loop);
-	state_file->Read();
+	instance->state_file = new StateFile(std::move(path_fs), interval,
+					     *instance->partition,
+					     instance->event_loop);
+	instance->state_file->Read();
 	return true;
 }
 
@@ -380,8 +378,8 @@ idle_event_emitted(void)
 		instance->client_list->IdleAdd(flags);
 
 	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT) &&
-	    state_file != nullptr)
-		state_file->CheckModified();
+	    instance->state_file != nullptr)
+		instance->state_file->CheckModified();
 }
 
 #ifndef ANDROID
@@ -655,9 +653,9 @@ try {
 		instance->update->CancelAllAsync();
 #endif
 
-	if (state_file != nullptr) {
-		state_file->Write();
-		delete state_file;
+	if (instance->state_file != nullptr) {
+		instance->state_file->Write();
+		delete instance->state_file;
 	}
 
 	instance->partition->pc.Kill();

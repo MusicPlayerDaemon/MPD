@@ -40,6 +40,7 @@ class UpdateService;
 class Error;
 class ClientList;
 struct Partition;
+class StateFile;
 
 struct Instance final
 #if defined(ENABLE_DATABASE) || defined(ENABLE_NEIGHBOR_PLUGINS)
@@ -78,6 +79,8 @@ struct Instance final
 	ClientList *client_list;
 
 	Partition *partition;
+
+	StateFile *state_file;
 
 	Instance():global_events(event_loop) {}
 
