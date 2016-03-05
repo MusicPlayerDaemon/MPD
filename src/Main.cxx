@@ -393,7 +393,7 @@ idle_event_emitted(void)
 static void
 shutdown_event_emitted(void)
 {
-	instance->event_loop->Break();
+	instance->Shutdown();
 }
 
 #endif

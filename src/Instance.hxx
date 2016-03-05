@@ -76,6 +76,11 @@ struct Instance final
 
 	Partition *partition;
 
+	/**
+	 * Initiate shutdown.  Wrapper for EventLoop::Break().
+	 */
+	void Shutdown();
+
 #ifdef ENABLE_DATABASE
 	/**
 	 * Returns the global #Database instance.  May return nullptr
