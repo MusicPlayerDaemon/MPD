@@ -67,21 +67,14 @@ struct Instance final
 	 * This is really a #CompositeStorage.  To avoid heavy include
 	 * dependencies, we declare it as just #Storage.
 	 */
-	Storage *storage;
+	Storage *storage = nullptr;
 
-	UpdateService *update;
+	UpdateService *update = nullptr;
 #endif
 
 	ClientList *client_list;
 
 	Partition *partition;
-
-	Instance() {
-#ifdef ENABLE_DATABASE
-		storage = nullptr;
-		update = nullptr;
-#endif
-	}
 
 #ifdef ENABLE_DATABASE
 	/**
