@@ -25,6 +25,12 @@
 #include "Idle.hxx"
 #include "GlobalEvents.hxx"
 
+void
+Partition::EmitIdle(unsigned mask)
+{
+	idle_add(mask);
+}
+
 #ifdef ENABLE_DATABASE
 
 const Database *
@@ -37,6 +43,7 @@ void
 Partition::DatabaseModified(const Database &db)
 {
 	playlist.DatabaseModified(db);
+	EmitIdle(IDLE_DATABASE);
 }
 
 #endif
@@ -75,5 +82,5 @@ Partition::OnMixerVolumeChanged(gcc_unused Mixer &mixer, gcc_unused int volume)
 	InvalidateHardwareVolume();
 
 	/* notify clients */
-	idle_add(IDLE_MIXER);
+	EmitIdle(IDLE_MIXER);
 }

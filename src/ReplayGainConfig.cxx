@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "ReplayGainConfig.hxx"
-#include "Idle.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "system/FatalError.hxx"
@@ -73,8 +72,6 @@ replay_gain_set_mode_string(const char *p)
 		replay_gain_mode = REPLAY_GAIN_AUTO;
 	else
 		return false;
-
-	idle_add(IDLE_OPTIONS);
 
 	return true;
 }

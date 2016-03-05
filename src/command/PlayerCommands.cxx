@@ -28,6 +28,7 @@
 #include "mixer/Volume.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
+#include "Idle.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
 
@@ -348,6 +349,7 @@ handle_replay_gain_mode(Client &client, Request args, Response &r)
 	}
 
 	client.partition.outputs.SetReplayGainMode(replay_gain_get_real_mode(client.playlist.queue.random));
+	client.partition.EmitIdle(IDLE_OPTIONS);
 	return CommandResult::OK;
 }
 

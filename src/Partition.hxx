@@ -53,6 +53,8 @@ struct Partition final : private PlayerListener, private MixerListener {
 		 outputs(*this),
 		 pc(*this, outputs, buffer_chunks, buffered_before_play) {}
 
+	void EmitIdle(unsigned mask);
+
 	void ClearQueue() {
 		playlist.Clear(pc);
 	}

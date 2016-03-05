@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "ClientInternal.hxx"
+#include "Partition.hxx"
 #include "Idle.hxx"
 
 #include <assert.h>
@@ -40,7 +41,7 @@ Client::Subscribe(const char *channel)
 
 	++num_subscriptions;
 
-	idle_add(IDLE_SUBSCRIPTION);
+	partition.EmitIdle(IDLE_SUBSCRIPTION);
 
 	return Client::SubscribeResult::OK;
 }
@@ -57,7 +58,7 @@ Client::Unsubscribe(const char *channel)
 	subscriptions.erase(i);
 	--num_subscriptions;
 
-	idle_add(IDLE_SUBSCRIPTION);
+	partition.EmitIdle(IDLE_SUBSCRIPTION);
 
 	assert((num_subscriptions == 0) ==
 	       subscriptions.empty());
