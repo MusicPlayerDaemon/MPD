@@ -22,7 +22,6 @@
 #include "Partition.hxx"
 #include "Idle.hxx"
 #include "Stats.hxx"
-#include "event/Loop.hxx"
 #include "util/Error.hxx"
 
 #ifdef ENABLE_DATABASE
@@ -34,12 +33,6 @@
 #include "sticker/SongSticker.hxx"
 #endif
 #endif
-
-void
-Instance::Shutdown()
-{
-	event_loop->Break();
-}
 
 #ifdef ENABLE_DATABASE
 

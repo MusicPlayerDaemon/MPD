@@ -21,6 +21,7 @@
 #define MPD_INSTANCE_HXX
 
 #include "check.h"
+#include "event/Loop.hxx"
 #include "Compiler.h"
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -54,7 +55,7 @@ struct Instance final
 	public NeighborListener
 #endif
 {
-	EventLoop *event_loop;
+	EventLoop event_loop;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	NeighborGlue *neighbors;
@@ -79,7 +80,9 @@ struct Instance final
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().
 	 */
-	void Shutdown();
+	void Shutdown() {
+		event_loop.Break();
+	}
 
 #ifdef ENABLE_DATABASE
 	/**

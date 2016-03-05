@@ -190,7 +190,7 @@ glue_db_init_and_load(void)
 {
 	Error error;
 	instance->database =
-		CreateConfiguredDatabase(*instance->event_loop, *instance,
+		CreateConfiguredDatabase(instance->event_loop, *instance,
 					 error);
 	if (instance->database == nullptr) {
 		if (error.IsDefined())
@@ -225,7 +225,7 @@ glue_db_init_and_load(void)
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
-	instance->update = new UpdateService(*instance->event_loop, db,
+	instance->update = new UpdateService(instance->event_loop, db,
 					     static_cast<CompositeStorage &>(*instance->storage),
 					     *instance);
 
@@ -287,7 +287,7 @@ glue_state_file_init(Error &error)
 
 	state_file = new StateFile(std::move(path_fs), interval,
 				   *instance->partition,
-				   *instance->event_loop);
+				   instance->event_loop);
 	state_file->Read();
 	return true;
 }
@@ -468,7 +468,6 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	instance = new Instance();
-	instance->event_loop = new EventLoop();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
@@ -489,7 +488,7 @@ int mpd_main(int argc, char *argv[])
 
 	initialize_decoder_and_player();
 
-	if (!listen_global_init(*instance->event_loop, *instance->partition,
+	if (!listen_global_init(instance->event_loop, *instance->partition,
 				error)) {
 		LogError(error);
 		return EXIT_FAILURE;
@@ -521,7 +520,7 @@ static int mpd_main_after_fork(struct options options)
 try {
 	Error error;
 
-	GlobalEvents::Initialize(*instance->event_loop);
+	GlobalEvents::Initialize(instance->event_loop);
 	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
 
 	if (!ConfigureFS(error)) {
@@ -556,7 +555,7 @@ try {
 
 	command_init();
 	initAudioConfig();
-	instance->partition->outputs.Configure(*instance->event_loop,
+	instance->partition->outputs.Configure(instance->event_loop,
 					       instance->partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
@@ -575,7 +574,7 @@ try {
 #ifndef ANDROID
 	setup_log_output(options.log_stderr);
 
-	SignalHandlersInit(*instance->event_loop);
+	SignalHandlersInit(instance->event_loop);
 #endif
 
 	io_thread_start();
@@ -586,7 +585,7 @@ try {
 		FatalError(error);
 #endif
 
-	ZeroconfInit(*instance->event_loop);
+	ZeroconfInit(instance->event_loop);
 
 	StartPlayerThread(instance->partition->pc);
 
@@ -612,7 +611,7 @@ try {
 #ifdef ENABLE_INOTIFY
 		if (instance->storage != nullptr &&
 		    instance->update != nullptr)
-			mpd_inotify_init(*instance->event_loop,
+			mpd_inotify_init(instance->event_loop,
 					 *instance->storage,
 					 *instance->update,
 					 config_get_unsigned(ConfigOption::AUTO_UPDATE_DEPTH,
@@ -643,7 +642,7 @@ try {
 #endif
 
 	/* run the main loop */
-	instance->event_loop->Run();
+	instance->event_loop.Run();
 
 #ifdef WIN32
 	win32_app_stopping();
@@ -712,7 +711,6 @@ try {
 #ifndef ANDROID
 	SignalHandlersFinish();
 #endif
-	delete instance->event_loop;
 	delete instance;
 	instance = nullptr;
 
