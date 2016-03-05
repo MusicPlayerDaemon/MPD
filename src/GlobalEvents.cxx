@@ -20,24 +20,21 @@
 #include "config.h"
 #include "GlobalEvents.hxx"
 #include "util/Manual.hxx"
-#include "event/DeferredMonitor.hxx"
-
-#include <atomic>
+#include "event/MaskMonitor.hxx"
 
 #include <assert.h>
 
 namespace GlobalEvents {
-	class Monitor final : public DeferredMonitor {
+	class Monitor final : public MaskMonitor {
 	public:
-		Monitor(EventLoop &_loop):DeferredMonitor(_loop) {}
+		explicit Monitor(EventLoop &_loop):MaskMonitor(_loop) {}
 
 	protected:
-		virtual void RunDeferred() override;
+		virtual void HandleMask(unsigned mask) override;
 	};
 
 	static Manual<Monitor> monitor;
 
-	static std::atomic_uint flags;
 	static Handler handlers[MAX];
 }
 
@@ -54,10 +51,8 @@ InvokeGlobalEvent(GlobalEvents::Event event)
 }
 
 void
-GlobalEvents::Monitor::RunDeferred()
+GlobalEvents::Monitor::HandleMask(unsigned f)
 {
-	const unsigned f = flags.exchange(0);
-
 	for (unsigned i = 0; i < MAX; ++i)
 		if (f & (1u << i))
 			/* invoke the event handler */
@@ -91,6 +86,5 @@ GlobalEvents::Emit(Event event)
 	assert((unsigned)event < MAX);
 
 	const unsigned mask = 1u << unsigned(event);
-	if (GlobalEvents::flags.fetch_or(mask) == 0)
-		monitor->Schedule();
+	monitor->OrMask(mask);
 }
