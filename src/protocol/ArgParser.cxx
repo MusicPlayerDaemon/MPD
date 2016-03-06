@@ -92,7 +92,7 @@ check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
 		return false;
 	}
 
-	if (unsigned(value) > std::numeric_limits<unsigned>::max()) {
+	if (value > std::numeric_limits<int>::max()) {
 		command_error(client, ACK_ERROR_ARG,
 			      "Number too large: %s", s);
 		return false;
@@ -117,7 +117,7 @@ check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
 			return false;
 		}
 
-		if (unsigned(value) > std::numeric_limits<unsigned>::max()) {
+		if (value > std::numeric_limits<int>::max()) {
 			command_error(client, ACK_ERROR_ARG,
 				      "Number too large: %s", s);
 			return false;
