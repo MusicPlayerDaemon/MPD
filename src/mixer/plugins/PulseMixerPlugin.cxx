@@ -218,7 +218,7 @@ PulseMixer::SetVolume(unsigned new_volume, Error &error)
 
 	struct pa_cvolume cvolume;
 	pa_cvolume_set(&cvolume, volume.channels,
-		       (pa_volume_t)new_volume * PA_VOLUME_NORM / 100 + 0.5);
+		       (new_volume * PA_VOLUME_NORM + 50) / 100);
 	bool success = pulse_output_set_volume(output, &cvolume, error);
 	if (success)
 		volume = cvolume;
