@@ -1,4 +1,6 @@
 ver 0.19.14 (not yet released)
+* decoder
+  - opus: limit tag size to 64 kB
 * fix build failures on non-glibc builds due to constexpr Mutex
 
 ver 0.19.13 (2016/02/23)
