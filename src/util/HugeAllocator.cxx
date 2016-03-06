@@ -46,7 +46,7 @@ static size_t
 AlignToPageSize(size_t size)
 {
 	static const long page_size = sysconf(_SC_PAGESIZE);
-	if (page_size > 0)
+	if (page_size == 0)
 		return size;
 
 	size_t ps(page_size);
