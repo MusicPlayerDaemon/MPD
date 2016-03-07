@@ -66,7 +66,10 @@ public:
 		return iso9660_iso_seek_read(iso, ptr, start, i_size);
 	}
 
-	void Visit(char *path, size_t length,
+	/**
+	 * @param capacity the path buffer size
+	 */
+	void Visit(char *path, size_t length, size_t capacity,
 		   ArchiveVisitor &visitor);
 
 	virtual void Close() override {
@@ -85,7 +88,7 @@ static constexpr Domain iso9660_domain("iso9660");
 /* archive open && listing routine */
 
 inline void
-Iso9660ArchiveFile::Visit(char *path, size_t length,
+Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 			  ArchiveVisitor &visitor)
 {
 	auto *entlist = iso9660_ifs_readdir(iso, path);
@@ -102,12 +105,16 @@ Iso9660ArchiveFile::Visit(char *path, size_t length,
 			continue;
 
 		size_t filename_length = strlen(filename);
+		if (length + filename_length + 1 >= capacity)
+			/* file name is too long */
+			continue;
+
 		memcpy(path + length, filename, filename_length + 1);
 		size_t new_length = length + filename_length;
 
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
 			memcpy(path + new_length, "/", 2);
-			Visit(path, new_length + 1, visitor);
+			Visit(path, new_length + 1, capacity, visitor);
 		} else {
 			//remove leading /
 			visitor.VisitArchiveEntry(path + 1);
@@ -135,7 +142,7 @@ void
 Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 {
 	char path[4096] = "/";
-	Visit(path, 1, visitor);
+	Visit(path, 1, sizeof(path), visitor);
 }
 
 /* single archive handling */
