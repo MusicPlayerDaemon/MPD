@@ -85,7 +85,7 @@ public:
 
 	char *ReadString() {
 		uint32_t length;
-		if (!ReadWord(length))
+		if (!ReadWord(length) || length >= 65536)
 			return nullptr;
 
 		const char *src = (const char *)Read(length);

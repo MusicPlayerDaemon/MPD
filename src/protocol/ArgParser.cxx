@@ -78,7 +78,7 @@ ParseCommandArgRange(const char *s)
 		throw FormatProtocolError(ACK_ERROR_ARG,
 					  "Number is negative: %s", s);
 
-	if (unsigned(value) > std::numeric_limits<unsigned>::max())
+	if (value > std::numeric_limits<int>::max())
 		throw FormatProtocolError(ACK_ERROR_ARG,
 					  "Number too large: %s", s);
 
@@ -99,7 +99,8 @@ ParseCommandArgRange(const char *s)
 			throw FormatProtocolError(ACK_ERROR_ARG,
 						  "Number is negative: %s", s);
 
-		if (unsigned(value) > std::numeric_limits<unsigned>::max())
+
+		if (value > std::numeric_limits<int>::max())
 			throw FormatProtocolError(ACK_ERROR_ARG,
 						  "Number too large: %s", s);
 

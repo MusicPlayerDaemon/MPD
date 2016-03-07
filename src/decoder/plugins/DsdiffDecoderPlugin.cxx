@@ -205,7 +205,7 @@ dsdiff_handle_native_tag(InputStream &is,
 	if (length == 0 || length > 60)
 		return;
 
-	char string[length];
+	char string[length + 1];
 	char *label;
 	label = string;
 

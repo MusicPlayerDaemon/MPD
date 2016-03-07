@@ -52,6 +52,14 @@ ver 0.20 (not yet released)
 * update
   - apply .mpdignore matches to subdirectories
 
+ver 0.19.14 (not yet released)
+* decoder
+  - dsdiff: fix off-by-one buffer overflow
+  - opus: limit tag size to 64 kB
+* archive
+  - iso9660: fix buffer overflow
+* fix build failures on non-glibc builds due to constexpr Mutex
+
 ver 0.19.13 (2016/02/23)
 * tags
   - aiff, riff: fix ID3 chunk padding
