@@ -86,18 +86,17 @@ static constexpr Domain iso9660_domain("iso9660");
 inline void
 Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
 {
-	CdioList_t *entlist;
-	CdioListNode_t *entnode;
-	iso9660_stat_t *statbuf;
 	char pathname[4096];
 
-	entlist = iso9660_ifs_readdir (iso, psz_path);
+	auto *entlist = iso9660_ifs_readdir (iso, psz_path);
 	if (!entlist) {
 		return;
 	}
 	/* Iterate over the list of nodes that iso9660_ifs_readdir gives  */
+	CdioListNode_t *entnode;
 	_CDIO_LIST_FOREACH (entnode, entlist) {
-		statbuf = (iso9660_stat_t *) _cdio_list_node_data (entnode);
+		auto *statbuf = (iso9660_stat_t *)
+			_cdio_list_node_data(entnode);
 
 		strcpy(pathname, psz_path);
 		strcat(pathname, statbuf->filename);
