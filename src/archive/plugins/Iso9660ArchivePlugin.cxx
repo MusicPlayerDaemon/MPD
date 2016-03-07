@@ -98,15 +98,15 @@ Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
 		auto *statbuf = (iso9660_stat_t *)
 			_cdio_list_node_data(entnode);
 		const char *filename = statbuf->filename;
+		if (strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0)
+			continue;
 
 		strcpy(pathname, psz_path);
 		strcat(pathname, filename);
 
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
-			if (strcmp(filename, ".") && strcmp(filename, "..")) {
-				strcat(pathname, "/");
-				Visit(pathname, visitor);
-			}
+			strcat(pathname, "/");
+			Visit(pathname, visitor);
 		} else {
 			//remove leading /
 			visitor.VisitArchiveEntry(pathname + 1);
