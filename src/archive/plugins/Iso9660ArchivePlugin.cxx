@@ -66,7 +66,8 @@ public:
 		return iso9660_iso_seek_read(iso, ptr, start, i_size);
 	}
 
-	void Visit(const char *path, ArchiveVisitor &visitor);
+	void Visit(char *path, size_t length,
+		   ArchiveVisitor &visitor);
 
 	virtual void Close() override {
 		Unref();
@@ -84,11 +85,10 @@ static constexpr Domain iso9660_domain("iso9660");
 /* archive open && listing routine */
 
 inline void
-Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
+Iso9660ArchiveFile::Visit(char *path, size_t length,
+			  ArchiveVisitor &visitor)
 {
-	char pathname[4096];
-
-	auto *entlist = iso9660_ifs_readdir (iso, psz_path);
+	auto *entlist = iso9660_ifs_readdir(iso, path);
 	if (!entlist) {
 		return;
 	}
@@ -101,15 +101,16 @@ Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
 		if (strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0)
 			continue;
 
-		strcpy(pathname, psz_path);
-		strcat(pathname, filename);
+		size_t filename_length = strlen(filename);
+		memcpy(path + length, filename, filename_length + 1);
+		size_t new_length = length + filename_length;
 
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
-			strcat(pathname, "/");
-			Visit(pathname, visitor);
+			memcpy(path + new_length, "/", 2);
+			Visit(path, new_length + 1, visitor);
 		} else {
 			//remove leading /
-			visitor.VisitArchiveEntry(pathname + 1);
+			visitor.VisitArchiveEntry(path + 1);
 		}
 	}
 	_cdio_list_free (entlist, true);
@@ -133,7 +134,8 @@ iso9660_archive_open(Path pathname, Error &error)
 void
 Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 {
-	Visit("/", visitor);
+	char path[4096] = "/";
+	Visit(path, 1, visitor);
 }
 
 /* single archive handling */
