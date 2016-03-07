@@ -97,12 +97,13 @@ Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
 	_CDIO_LIST_FOREACH (entnode, entlist) {
 		auto *statbuf = (iso9660_stat_t *)
 			_cdio_list_node_data(entnode);
+		const char *filename = statbuf->filename;
 
 		strcpy(pathname, psz_path);
-		strcat(pathname, statbuf->filename);
+		strcat(pathname, filename);
 
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
-			if (strcmp(statbuf->filename, ".") && strcmp(statbuf->filename, "..")) {
+			if (strcmp(filename, ".") && strcmp(filename, "..")) {
 				strcat(pathname, "/");
 				Visit(pathname, visitor);
 			}
