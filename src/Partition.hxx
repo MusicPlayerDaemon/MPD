@@ -217,11 +217,11 @@ private:
 	void OnQueueSongStarted() override;
 
 	/* virtual methods from class PlayerListener */
-	virtual void OnPlayerSync() override;
-	virtual void OnPlayerTagModified() override;
+	void OnPlayerSync() override;
+	void OnPlayerTagModified() override;
 
 	/* virtual methods from class MixerListener */
-	virtual void OnMixerVolumeChanged(Mixer &mixer, int volume) override;
+	void OnMixerVolumeChanged(Mixer &mixer, int volume) override;
 
 	/* callback for #global_events */
 	void OnGlobalEvent(unsigned mask);

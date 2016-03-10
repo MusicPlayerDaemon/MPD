@@ -114,14 +114,14 @@ struct Instance final
 
 private:
 #ifdef ENABLE_DATABASE
-	virtual void OnDatabaseModified() override;
-	virtual void OnDatabaseSongRemoved(const LightSong &song) override;
+	void OnDatabaseModified() override;
+	void OnDatabaseSongRemoved(const LightSong &song) override;
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	/* virtual methods from class NeighborListener */
-	virtual void FoundNeighbor(const NeighborInfo &info) override;
-	virtual void LostNeighbor(const NeighborInfo &info) override;
+	void FoundNeighbor(const NeighborInfo &info) override;
+	void LostNeighbor(const NeighborInfo &info) override;
 #endif
 
 	/* callback for #idle_monitor */
