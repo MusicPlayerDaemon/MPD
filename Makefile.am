@@ -394,6 +394,7 @@ endif
 libutil_a_SOURCES = \
 	src/util/RuntimeError.hxx \
 	src/util/Macros.hxx \
+	src/util/BoundMethod.hxx \
 	src/util/Cast.hxx \
 	src/util/Clamp.hxx \
 	src/util/DeleteDisposer.hxx \
