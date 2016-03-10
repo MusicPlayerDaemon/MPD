@@ -30,11 +30,20 @@ Partition::Partition(Instance &_instance,
 		     unsigned buffer_chunks,
 		     unsigned buffered_before_play)
 	:instance(_instance),
-	 global_events(instance.event_loop),
+	 global_events(instance.event_loop, *this, &Partition::OnGlobalEvent),
 	 playlist(max_length, *this),
 	 outputs(*this),
 	 pc(*this, outputs, buffer_chunks, buffered_before_play)
 {
+}
+
+void
+Partition::EmitGlobalEvent(GlobalEvents::Event event)
+{
+	assert((unsigned)event < GlobalEvents::MAX);
+
+	const unsigned mask = 1u << unsigned(event);
+	global_events.OrMask(mask);
 }
 
 void
@@ -97,13 +106,13 @@ Partition::OnQueueSongStarted()
 void
 Partition::OnPlayerSync()
 {
-	global_events.Emit(GlobalEvents::PLAYLIST);
+	EmitGlobalEvent(GlobalEvents::PLAYLIST);
 }
 
 void
 Partition::OnPlayerTagModified()
 {
-	global_events.Emit(GlobalEvents::TAG);
+	EmitGlobalEvent(GlobalEvents::TAG);
 }
 
 void
@@ -113,4 +122,14 @@ Partition::OnMixerVolumeChanged(gcc_unused Mixer &mixer, gcc_unused int volume)
 
 	/* notify clients */
 	EmitIdle(IDLE_MIXER);
+}
+
+void
+Partition::OnGlobalEvent(unsigned mask)
+{
+	if ((mask & (1u << unsigned(GlobalEvents::TAG))) != 0)
+		TagModified();
+
+	if ((mask & (1u << unsigned(GlobalEvents::PLAYLIST))) != 0)
+		SyncWithPlayer();
 }

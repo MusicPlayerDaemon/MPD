@@ -45,22 +45,6 @@ Instance::GetDatabase(Error &error)
 	return database;
 }
 
-#endif
-
-void
-Instance::TagModified()
-{
-	partition->TagModified();
-}
-
-void
-Instance::SyncWithPlayer()
-{
-	partition->SyncWithPlayer();
-}
-
-#ifdef ENABLE_DATABASE
-
 void
 Instance::OnDatabaseModified()
 {

@@ -20,6 +20,7 @@
 #ifndef MPD_PARTITION_HXX
 #define MPD_PARTITION_HXX
 
+#include "event/MaskMonitor.hxx"
 #include "GlobalEvents.hxx"
 #include "queue/Playlist.hxx"
 #include "queue/Listener.hxx"
@@ -41,7 +42,7 @@ class SongLoader;
 struct Partition final : QueueListener, PlayerListener, MixerListener {
 	Instance &instance;
 
-	GlobalEvents::Monitor global_events;
+	CallbackMaskMonitor<Partition> global_events;
 
 	struct playlist playlist;
 
@@ -53,6 +54,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		  unsigned max_length,
 		  unsigned buffer_chunks,
 		  unsigned buffered_before_play);
+
+	void EmitGlobalEvent(GlobalEvents::Event event);
 
 	void EmitIdle(unsigned mask);
 
@@ -215,6 +218,9 @@ private:
 
 	/* virtual methods from class MixerListener */
 	virtual void OnMixerVolumeChanged(Mixer &mixer, int volume) override;
+
+	/* callback for #global_events */
+	void OnGlobalEvent(unsigned mask);
 };
 
 #endif

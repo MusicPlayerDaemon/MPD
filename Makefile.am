@@ -132,7 +132,7 @@ libmpd_a_SOURCES = \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/win32/Win32Main.cxx \
-	src/GlobalEvents.cxx src/GlobalEvents.hxx \
+	src/GlobalEvents.hxx \
 	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
@@ -145,7 +145,6 @@ libmpd_a_SOURCES = \
 	src/player/Control.cxx src/player/Control.hxx \
 	src/player/Listener.hxx \
 	src/PlaylistError.cxx src/PlaylistError.hxx \
-	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \
 	src/playlist/PlaylistStream.cxx src/playlist/PlaylistStream.hxx \

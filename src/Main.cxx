@@ -22,7 +22,6 @@
 #include "Instance.hxx"
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
-#include "PlaylistGlobal.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
 #include "player/Thread.hxx"
@@ -523,7 +522,6 @@ try {
 	}
 
 	initPermissions();
-	playlist_global_init();
 	spl_global_init();
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();

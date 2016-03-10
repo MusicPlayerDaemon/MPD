@@ -112,17 +112,6 @@ struct Instance final
 	Database *GetDatabase(Error &error);
 #endif
 
-	/**
-	 * A tag in the play queue has been modified by the player
-	 * thread.  Propagate the change to all subsystems.
-	 */
-	void TagModified();
-
-	/**
-	 * Synchronize the player with the play queue.
-	 */
-	void SyncWithPlayer();
-
 private:
 #ifdef ENABLE_DATABASE
 	virtual void OnDatabaseModified() override;
