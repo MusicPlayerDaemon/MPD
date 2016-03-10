@@ -95,7 +95,6 @@ libmpd_a_SOURCES = \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
-	src/IdleMaskMonitor.hxx \
 	src/IdleFlags.cxx src/IdleFlags.hxx \
 	src/decoder/DecoderError.cxx src/decoder/DecoderError.hxx \
 	src/decoder/DecoderThread.cxx src/decoder/DecoderThread.hxx \

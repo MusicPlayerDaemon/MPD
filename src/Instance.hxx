@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "event/Loop.hxx"
-#include "IdleMaskMonitor.hxx"
+#include "event/MaskMonitor.hxx"
 #include "GlobalEvents.hxx"
 #include "Compiler.h"
 
@@ -52,8 +52,7 @@ struct EventLoopHolder {
 };
 
 struct Instance final
-	: EventLoopHolder,
-	  IdleMaskMonitor
+	: EventLoopHolder
 #if defined(ENABLE_DATABASE) || defined(ENABLE_NEIGHBOR_PLUGINS)
 	,
 #endif
@@ -68,6 +67,8 @@ struct Instance final
 #endif
 {
 	GlobalEvents::Monitor global_events;
+
+	CallbackMaskMonitor<Instance> idle_monitor;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	NeighborGlue *neighbors;
@@ -92,14 +93,18 @@ struct Instance final
 	StateFile *state_file;
 
 	Instance()
-		:IdleMaskMonitor(event_loop),
-		 global_events(event_loop) {}
+		:global_events(event_loop),
+		 idle_monitor(event_loop, *this, &Instance::OnIdle) {}
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().
 	 */
 	void Shutdown() {
 		event_loop.Break();
+	}
+
+	void EmitIdle(unsigned mask) {
+		idle_monitor.OrMask(mask);
 	}
 
 #ifdef ENABLE_DATABASE
@@ -134,8 +139,8 @@ private:
 	virtual void LostNeighbor(const NeighborInfo &info) override;
 #endif
 
-	/* virtual methods from class IdleMaskMonitor */
-	void OnIdle(unsigned mask) override;
+	/* callback for #idle_monitor */
+	void OnIdle(unsigned mask);
 };
 
 #endif
