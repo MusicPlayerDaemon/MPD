@@ -21,7 +21,6 @@
 #define MPD_PARTITION_HXX
 
 #include "event/MaskMonitor.hxx"
-#include "GlobalEvents.hxx"
 #include "queue/Playlist.hxx"
 #include "queue/Listener.hxx"
 #include "output/MultipleOutputs.hxx"
@@ -40,6 +39,9 @@ class SongLoader;
  * a playlist, a player, outputs etc.
  */
 struct Partition final : QueueListener, PlayerListener, MixerListener {
+	static constexpr unsigned TAG_MODIFIED = 0x1;
+	static constexpr unsigned SYNC_WITH_PLAYER = 0x2;
+
 	Instance &instance;
 
 	CallbackMaskMonitor<Partition> global_events;
@@ -55,7 +57,9 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		  unsigned buffer_chunks,
 		  unsigned buffered_before_play);
 
-	void EmitGlobalEvent(GlobalEvents::Event event);
+	void EmitGlobalEvent(unsigned mask) {
+		global_events.OrMask(mask);
+	}
 
 	void EmitIdle(unsigned mask);
 

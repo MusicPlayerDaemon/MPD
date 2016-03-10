@@ -23,7 +23,6 @@
 #include "DetachedSong.hxx"
 #include "mixer/Volume.hxx"
 #include "Idle.hxx"
-#include "GlobalEvents.hxx"
 
 Partition::Partition(Instance &_instance,
 		     unsigned max_length,
@@ -35,15 +34,6 @@ Partition::Partition(Instance &_instance,
 	 outputs(*this),
 	 pc(*this, outputs, buffer_chunks, buffered_before_play)
 {
-}
-
-void
-Partition::EmitGlobalEvent(GlobalEvents::Event event)
-{
-	assert((unsigned)event < GlobalEvents::MAX);
-
-	const unsigned mask = 1u << unsigned(event);
-	global_events.OrMask(mask);
 }
 
 void
@@ -106,13 +96,13 @@ Partition::OnQueueSongStarted()
 void
 Partition::OnPlayerSync()
 {
-	EmitGlobalEvent(GlobalEvents::PLAYLIST);
+	EmitGlobalEvent(SYNC_WITH_PLAYER);
 }
 
 void
 Partition::OnPlayerTagModified()
 {
-	EmitGlobalEvent(GlobalEvents::TAG);
+	EmitGlobalEvent(TAG_MODIFIED);
 }
 
 void
@@ -127,9 +117,9 @@ Partition::OnMixerVolumeChanged(gcc_unused Mixer &mixer, gcc_unused int volume)
 void
 Partition::OnGlobalEvent(unsigned mask)
 {
-	if ((mask & (1u << unsigned(GlobalEvents::TAG))) != 0)
+	if ((mask & TAG_MODIFIED) != 0)
 		TagModified();
 
-	if ((mask & (1u << unsigned(GlobalEvents::PLAYLIST))) != 0)
+	if ((mask & SYNC_WITH_PLAYER) != 0)
 		SyncWithPlayer();
 }
