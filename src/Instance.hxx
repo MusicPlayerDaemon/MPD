@@ -42,9 +42,18 @@ class ClientList;
 struct Partition;
 class StateFile;
 
+/**
+ * A utility class which, when used as the first base class, ensures
+ * that the #EventLoop gets initialized before the other base classes.
+ */
+struct EventLoopHolder {
+	EventLoop event_loop;
+};
+
 struct Instance final
+	: EventLoopHolder
 #if defined(ENABLE_DATABASE) || defined(ENABLE_NEIGHBOR_PLUGINS)
-	:
+	,
 #endif
 #ifdef ENABLE_DATABASE
 	public DatabaseListener
@@ -56,8 +65,6 @@ struct Instance final
 	public NeighborListener
 #endif
 {
-	EventLoop event_loop;
-
 	GlobalEvents::Monitor global_events;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
