@@ -22,7 +22,7 @@
 #include "Instance.hxx"
 #include "DetachedSong.hxx"
 #include "mixer/Volume.hxx"
-#include "Idle.hxx"
+#include "IdleFlags.hxx"
 
 Partition::Partition(Instance &_instance,
 		     unsigned max_length,
@@ -39,7 +39,7 @@ Partition::Partition(Instance &_instance,
 void
 Partition::EmitIdle(unsigned mask)
 {
-	idle_add(mask);
+	instance.EmitIdle(mask);
 }
 
 #ifdef ENABLE_DATABASE
