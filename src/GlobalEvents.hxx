@@ -24,9 +24,6 @@
 
 namespace GlobalEvents {
 	enum Event {
-		/** an idle event was emitted */
-		IDLE,
-
 		/** must call playlist_sync() */
 		PLAYLIST,
 

@@ -365,21 +365,16 @@ initialize_decoder_and_player(void)
 					    buffered_before_play);
 }
 
-/**
- * Handler for GlobalEvents::IDLE.
- */
-static void
-idle_event_emitted(void)
+void
+Instance::OnIdle(unsigned flags)
 {
 	/* send "idle" notifications to all subscribed
 	   clients */
-	unsigned flags = idle_get();
-	if (flags != 0)
-		instance->client_list->IdleAdd(flags);
+	client_list->IdleAdd(flags);
 
 	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT) &&
-	    instance->state_file != nullptr)
-		instance->state_file->CheckModified();
+	    state_file != nullptr)
+		state_file->CheckModified();
 }
 
 #ifndef ANDROID
@@ -516,8 +511,6 @@ int mpd_main(int argc, char *argv[])
 static int mpd_main_after_fork(struct options options)
 try {
 	Error error;
-
-	instance->global_events.Register(GlobalEvents::IDLE, idle_event_emitted);
 
 	if (!ConfigureFS(error)) {
 		LogError(error);

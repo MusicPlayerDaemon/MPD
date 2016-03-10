@@ -34,10 +34,4 @@
 void
 idle_add(unsigned flags);
 
-/**
- * Atomically reads and resets the global idle flags value.
- */
-unsigned
-idle_get();
-
 #endif

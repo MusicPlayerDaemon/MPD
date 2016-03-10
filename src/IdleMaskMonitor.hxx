@@ -17,22 +17,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*
- * Support library for the "idle" command.
- *
- */
+#ifndef MPD_IDLE_MONITOR_HXX
+#define MPD_IDLE_MONITOR_HXX
 
-#include "config.h"
-#include "Idle.hxx"
-#include "Main.hxx"
-#include "Instance.hxx"
+#include "event/MaskMonitor.hxx"
 
-#include <assert.h>
+class IdleMaskMonitor : MaskMonitor {
+public:
+	explicit IdleMaskMonitor(EventLoop &_loop)
+		:MaskMonitor(_loop) {}
 
-void
-idle_add(unsigned flags)
-{
-	assert(flags != 0);
+	void EmitIdle(unsigned mask) {
+		OrMask(mask);
+	}
 
-	instance->EmitIdle(flags);
-}
+protected:
+	virtual void OnIdle(unsigned mask) = 0;
+
+private:
+	/* virtual methods from class MaskMonitor */
+	void HandleMask(unsigned mask) final {
+		OnIdle(mask);
+	}
+};
+
+#endif

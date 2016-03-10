@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "event/Loop.hxx"
+#include "IdleMaskMonitor.hxx"
 #include "GlobalEvents.hxx"
 #include "Compiler.h"
 
@@ -51,7 +52,8 @@ struct EventLoopHolder {
 };
 
 struct Instance final
-	: EventLoopHolder
+	: EventLoopHolder,
+	  IdleMaskMonitor
 #if defined(ENABLE_DATABASE) || defined(ENABLE_NEIGHBOR_PLUGINS)
 	,
 #endif
@@ -89,7 +91,9 @@ struct Instance final
 
 	StateFile *state_file;
 
-	Instance():global_events(event_loop) {}
+	Instance()
+		:IdleMaskMonitor(event_loop),
+		 global_events(event_loop) {}
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().
@@ -129,6 +133,9 @@ private:
 	virtual void FoundNeighbor(const NeighborInfo &info) override;
 	virtual void LostNeighbor(const NeighborInfo &info) override;
 #endif
+
+	/* virtual methods from class IdleMaskMonitor */
+	void OnIdle(unsigned mask) override;
 };
 
 #endif
