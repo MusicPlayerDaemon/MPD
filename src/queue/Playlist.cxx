@@ -40,8 +40,7 @@ playlist::TagModified(DetachedSong &&song)
 		current_song.MoveTagItemsFrom(std::move(song));
 
 	queue.ModifyAtOrder(current);
-	queue.IncrementVersion();
-	idle_add(IDLE_PLAYLIST);
+	OnModified();
 }
 
 inline void

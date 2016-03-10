@@ -65,8 +65,6 @@ playlist::DatabaseModified(const Database &db)
 		}
 	}
 
-	if (modified) {
-		queue.IncrementVersion();
-		idle_add(IDLE_PLAYLIST);
-	}
+	if (modified)
+		OnModified();
 }
