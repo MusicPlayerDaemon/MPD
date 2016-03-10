@@ -25,12 +25,12 @@
 
 #include "config.h"
 #include "Playlist.hxx"
+#include "Listener.hxx"
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
-#include "Idle.hxx"
 
 #include <memory>
 
@@ -47,7 +47,7 @@ playlist::OnModified()
 
 	queue.IncrementVersion();
 
-	idle_add(IDLE_PLAYLIST);
+	listener.OnQueueModified();
 }
 
 void

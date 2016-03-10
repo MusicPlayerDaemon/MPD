@@ -29,7 +29,7 @@ Partition::Partition(Instance &_instance,
 		     unsigned max_length,
 		     unsigned buffer_chunks,
 		     unsigned buffered_before_play)
-	:instance(_instance), playlist(max_length),
+	:instance(_instance), playlist(max_length, *this),
 	 outputs(*this),
 	 pc(*this, outputs, buffer_chunks, buffered_before_play)
 {
@@ -72,6 +72,24 @@ void
 Partition::SyncWithPlayer()
 {
 	playlist.SyncWithPlayer(pc);
+}
+
+void
+Partition::OnQueueModified()
+{
+	EmitIdle(IDLE_PLAYLIST);
+}
+
+void
+Partition::OnQueueOptionsChanged()
+{
+	EmitIdle(IDLE_OPTIONS);
+}
+
+void
+Partition::OnQueueSongStarted()
+{
+	EmitIdle(IDLE_PLAYER);
 }
 
 void

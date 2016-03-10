@@ -21,6 +21,7 @@
 #define MPD_PARTITION_HXX
 
 #include "queue/Playlist.hxx"
+#include "queue/Listener.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "mixer/Listener.hxx"
 #include "player/Control.hxx"
@@ -36,7 +37,7 @@ class SongLoader;
  * A partition of the Music Player Daemon.  It is a separate unit with
  * a playlist, a player, outputs etc.
  */
-struct Partition final : private PlayerListener, private MixerListener {
+struct Partition final : QueueListener, PlayerListener, MixerListener {
 	Instance &instance;
 
 	struct playlist playlist;
@@ -200,6 +201,11 @@ struct Partition final : private PlayerListener, private MixerListener {
 	void SyncWithPlayer();
 
 private:
+	/* virtual methods from class QueueListener */
+	void OnQueueModified() override;
+	void OnQueueOptionsChanged() override;
+	void OnQueueSongStarted() override;
+
 	/* virtual methods from class PlayerListener */
 	virtual void OnPlayerSync() override;
 	virtual void OnPlayerTagModified() override;

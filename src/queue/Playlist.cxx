@@ -19,10 +19,10 @@
 
 #include "config.h"
 #include "Playlist.hxx"
+#include "Listener.hxx"
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
 #include "DetachedSong.hxx"
-#include "Idle.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -86,7 +86,7 @@ playlist::QueuedSongStarted(PlayerControl &pc)
 	if (queue.consume)
 		DeleteOrder(pc, old_current);
 
-	idle_add(IDLE_PLAYER);
+	listener.OnQueueSongStarted();
 
 	SongStarted();
 }
@@ -245,7 +245,7 @@ playlist::SetRepeat(PlayerControl &pc, bool status)
 	   might change when repeat mode is toggled */
 	UpdateQueuedSong(pc, GetQueuedSong());
 
-	idle_add(IDLE_OPTIONS);
+	listener.OnQueueOptionsChanged();
 }
 
 static void
@@ -272,7 +272,7 @@ playlist::SetSingle(PlayerControl &pc, bool status)
 	   might change when single mode is toggled */
 	UpdateQueuedSong(pc, GetQueuedSong());
 
-	idle_add(IDLE_OPTIONS);
+	listener.OnQueueOptionsChanged();
 }
 
 void
@@ -282,7 +282,7 @@ playlist::SetConsume(bool status)
 		return;
 
 	queue.consume = status;
-	idle_add(IDLE_OPTIONS);
+	listener.OnQueueOptionsChanged();
 }
 
 void
@@ -319,7 +319,7 @@ playlist::SetRandom(PlayerControl &pc, bool status)
 
 	UpdateQueuedSong(pc, queued_song);
 
-	idle_add(IDLE_OPTIONS);
+	listener.OnQueueOptionsChanged();
 }
 
 int

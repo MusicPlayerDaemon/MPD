@@ -30,12 +30,15 @@ class Error;
 class SongLoader;
 class SongTime;
 class SignedSongTime;
+class QueueListener;
 
 struct playlist {
 	/**
 	 * The song queue - it contains the "real" playlist.
 	 */
 	Queue queue;
+
+	QueueListener &listener;
 
 	/**
 	 * This value is true if the player is currently playing (or
@@ -85,8 +88,11 @@ struct playlist {
 	 */
 	int queued;
 
-	playlist(unsigned max_length)
-		:queue(max_length), playing(false),
+	playlist(unsigned max_length,
+		 QueueListener &_listener)
+		:queue(max_length),
+		 listener(_listener),
+		 playing(false),
 		 bulk_edit(false),
 		 current(-1), queued(-1) {
 	}
@@ -129,7 +135,8 @@ struct playlist {
 protected:
 	/**
 	 * Called by all editing methods after a modification.
-	 * Updates the queue version and emits #IDLE_PLAYLIST.
+	 * Updates the queue version and invokes
+	 * QueueListener::OnQueueModified().
 	 */
 	void OnModified();
 

@@ -22,7 +22,6 @@
 #include "db/Interface.hxx"
 #include "db/LightSong.hxx"
 #include "DetachedSong.hxx"
-#include "Idle.hxx"
 #include "util/Error.hxx"
 
 static bool
