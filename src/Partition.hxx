@@ -20,6 +20,7 @@
 #ifndef MPD_PARTITION_HXX
 #define MPD_PARTITION_HXX
 
+#include "GlobalEvents.hxx"
 #include "queue/Playlist.hxx"
 #include "queue/Listener.hxx"
 #include "output/MultipleOutputs.hxx"
@@ -39,6 +40,8 @@ class SongLoader;
  */
 struct Partition final : QueueListener, PlayerListener, MixerListener {
 	Instance &instance;
+
+	GlobalEvents::Monitor global_events;
 
 	struct playlist playlist;
 

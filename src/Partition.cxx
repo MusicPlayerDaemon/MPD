@@ -29,7 +29,9 @@ Partition::Partition(Instance &_instance,
 		     unsigned max_length,
 		     unsigned buffer_chunks,
 		     unsigned buffered_before_play)
-	:instance(_instance), playlist(max_length, *this),
+	:instance(_instance),
+	 global_events(instance.event_loop),
+	 playlist(max_length, *this),
 	 outputs(*this),
 	 pc(*this, outputs, buffer_chunks, buffered_before_play)
 {
@@ -95,13 +97,13 @@ Partition::OnQueueSongStarted()
 void
 Partition::OnPlayerSync()
 {
-	instance.global_events.Emit(GlobalEvents::PLAYLIST);
+	global_events.Emit(GlobalEvents::PLAYLIST);
 }
 
 void
 Partition::OnPlayerTagModified()
 {
-	instance.global_events.Emit(GlobalEvents::TAG);
+	global_events.Emit(GlobalEvents::TAG);
 }
 
 void

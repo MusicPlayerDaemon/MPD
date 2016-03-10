@@ -26,6 +26,7 @@
 #include "PlaylistGlobal.hxx"
 #include "Main.hxx"
 #include "Instance.hxx"
+#include "Partition.hxx"
 
 static void
 playlist_tag_event(void)
@@ -42,6 +43,6 @@ playlist_event(void)
 void
 playlist_global_init()
 {
-	instance->global_events.Register(GlobalEvents::TAG, playlist_tag_event);
-	instance->global_events.Register(GlobalEvents::PLAYLIST, playlist_event);
+	instance->partition->global_events.Register(GlobalEvents::TAG, playlist_tag_event);
+	instance->partition->global_events.Register(GlobalEvents::PLAYLIST, playlist_event);
 }

@@ -23,7 +23,6 @@
 #include "check.h"
 #include "event/Loop.hxx"
 #include "event/MaskMonitor.hxx"
-#include "GlobalEvents.hxx"
 #include "Compiler.h"
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -66,8 +65,6 @@ struct Instance final
 	public NeighborListener
 #endif
 {
-	GlobalEvents::Monitor global_events;
-
 	CallbackMaskMonitor<Instance> idle_monitor;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -93,8 +90,7 @@ struct Instance final
 	StateFile *state_file;
 
 	Instance()
-		:global_events(event_loop),
-		 idle_monitor(event_loop, *this, &Instance::OnIdle) {}
+		:idle_monitor(event_loop, *this, &Instance::OnIdle) {}
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().
