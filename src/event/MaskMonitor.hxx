@@ -22,6 +22,7 @@
 
 #include "check.h"
 #include "DeferredMonitor.hxx"
+#include "util/BoundMethod.hxx"
 
 #include <atomic>
 
@@ -48,6 +49,24 @@ protected:
 
 	/* virtual methode from class DeferredMonitor */
 	void RunDeferred() override;
+};
+
+/**
+ * A variant of #MaskMonitor which invokes a bound method.
+ */
+template<typename T>
+class CallbackMaskMonitor final : public MaskMonitor {
+	BoundMethod<T, void, unsigned> callback;
+
+public:
+	template<typename... Args>
+	explicit CallbackMaskMonitor(EventLoop &_loop, Args&&... args)
+		:MaskMonitor(_loop), callback(std::forward<Args>(args)...) {}
+
+protected:
+	void HandleMask(unsigned mask) override {
+		callback(mask);
+	}
 };
 
 #endif
