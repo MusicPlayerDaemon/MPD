@@ -23,6 +23,8 @@
 #include "util/Cast.hxx"
 #include "util/VarSize.hxx"
 
+#include <limits>
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -35,6 +37,8 @@ struct TagPoolSlot {
 	TagPoolSlot *next;
 	unsigned char ref;
 	TagItem item;
+
+	static constexpr unsigned MAX_REF = std::numeric_limits<decltype(ref)>::max();
 
 	TagPoolSlot(TagPoolSlot *_next, TagType type,
 		    const char *value, size_t length)
@@ -116,7 +120,7 @@ tag_pool_get_item(TagType type, const char *value, size_t length)
 		if (slot->item.type == type &&
 		    length == strlen(slot->item.value) &&
 		    memcmp(value, slot->item.value, length) == 0 &&
-		    slot->ref < 0xff) {
+		    slot->ref < TagPoolSlot::MAX_REF) {
 			assert(slot->ref > 0);
 			++slot->ref;
 			return &slot->item;
@@ -135,11 +139,11 @@ tag_pool_dup_item(TagItem *item)
 
 	assert(slot->ref > 0);
 
-	if (slot->ref < 0xff) {
+	if (slot->ref < TagPoolSlot::MAX_REF) {
 		++slot->ref;
 		return item;
 	} else {
-		/* the reference counter overflows above 0xff;
+		/* the reference counter overflows above MAX_REF;
 		   duplicate the item, and start with 1 */
 		size_t length = strlen(item->value);
 		auto slot_p = tag_value_slot_p(item->type,
