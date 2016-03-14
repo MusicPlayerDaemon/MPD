@@ -144,14 +144,10 @@ tag_pool_dup_item(TagItem *item)
 		return item;
 	} else {
 		/* the reference counter overflows above MAX_REF;
-		   duplicate the item, and start with 1 */
+		   obtain a reference to a different TagPoolSlot which
+		   isn't yet "full" */
 		size_t length = strlen(item->value);
-		auto slot_p = tag_value_slot_p(item->type,
-					       item->value, length);
-		slot = TagPoolSlot::Create(*slot_p, item->type,
-					   item->value, strlen(item->value));
-		*slot_p = slot;
-		return &slot->item;
+		return tag_pool_get_item(item->type, item->value, length);
 	}
 }
 
