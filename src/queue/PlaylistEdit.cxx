@@ -312,8 +312,16 @@ playlist::DeleteId(PlayerControl &pc, unsigned id)
 void
 playlist::StaleSong(PlayerControl &pc, const char *uri)
 {
+	/* don't remove the song if it's currently being played, to
+	   avoid disrupting playback; a deleted file may still be
+	   played if it's still open */
+	// TODO: mark the song as "stale" and postpone deletion
+	int current_position = playing
+		? GetCurrentPosition()
+		: -1;
+
 	for (int i = queue.GetLength() - 1; i >= 0; --i)
-		if (queue.Get(i).IsURI(uri))
+		if (i != current_position && queue.Get(i).IsURI(uri))
 			DeletePosition(pc, i);
 }
 
