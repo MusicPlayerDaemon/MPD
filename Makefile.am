@@ -734,7 +734,6 @@ libdb_plugins_a_SOURCES = \
 	src/db/plugins/simple/DatabaseSave.hxx \
 	src/db/plugins/simple/DirectorySave.cxx \
 	src/db/plugins/simple/DirectorySave.hxx \
-	src/db/plugins/LazyDatabase.cxx src/db/plugins/LazyDatabase.hxx \
 	src/db/plugins/simple/Directory.cxx \
 	src/db/plugins/simple/Directory.hxx \
 	src/db/plugins/simple/Song.cxx \
