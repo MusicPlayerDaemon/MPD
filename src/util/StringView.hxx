@@ -47,7 +47,7 @@ struct StringView : ConstBuffer<char> {
 		:ConstBuffer<char>(_data,
 				   _data != nullptr ? strlen(_data) : 0) {}
 
-	StringView(std::nullptr_t n)
+	constexpr StringView(std::nullptr_t n)
 		:ConstBuffer<char>(n) {}
 
 	static constexpr StringView Empty() {
