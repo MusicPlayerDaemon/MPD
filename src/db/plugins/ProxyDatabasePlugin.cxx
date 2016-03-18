@@ -808,9 +808,8 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		result = visit_tag(tag.Commit(), error);
 	}
 
-	return mpd_response_finish(connection) &&
-		CheckError(connection, error) &&
-		result;
+	mpd_response_finish(connection);
+	return result && CheckError(connection, error);
 }
 
 bool
