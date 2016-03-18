@@ -136,7 +136,6 @@ public:
 private:
 	bool Configure(const ConfigBlock &block, Error &error);
 
-	gcc_pure
 	bool Check(Error &error) const;
 
 	bool Load(Error &error);
