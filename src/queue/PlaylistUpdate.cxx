@@ -21,6 +21,7 @@
 #include "Playlist.hxx"
 #include "db/Interface.hxx"
 #include "db/LightSong.hxx"
+#include "db/DatabaseError.hxx"
 #include "DetachedSong.hxx"
 #include "util/Error.hxx"
 
@@ -32,7 +33,13 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 		   from the Database */
 		return false;
 
-	const LightSong *original = db.GetSong(song.GetURI(), IgnoreError());
+	const LightSong *original;
+	try {
+		original = db.GetSong(song.GetURI(), IgnoreError());
+	} catch (DatabaseError) {
+		return false;
+	}
+
 	if (original == nullptr)
 		/* not found - shouldn't happen, because the update
 		   thread should ensure that all stale Song instances
