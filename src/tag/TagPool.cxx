@@ -24,18 +24,22 @@
 #include "util/VarSize.hxx"
 #include "util/StringView.hxx"
 
+#include <limits>
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
 Mutex tag_pool_lock;
 
-static constexpr size_t NUM_SLOTS = 4096;
+static constexpr size_t NUM_SLOTS = 4093;
 
 struct TagPoolSlot {
 	TagPoolSlot *next;
 	unsigned char ref;
 	TagItem item;
+
+	static constexpr unsigned MAX_REF = std::numeric_limits<decltype(ref)>::max();
 
 	TagPoolSlot(TagPoolSlot *_next, TagType type,
 		    StringView value)
@@ -114,7 +118,7 @@ tag_pool_get_item(TagType type, StringView value)
 	for (auto slot = *slot_p; slot != nullptr; slot = slot->next) {
 		if (slot->item.type == type &&
 		    value.Equals(slot->item.value) &&
-		    slot->ref < 0xff) {
+		    slot->ref < TagPoolSlot::MAX_REF) {
 			assert(slot->ref > 0);
 			++slot->ref;
 			return &slot->item;
@@ -133,17 +137,14 @@ tag_pool_dup_item(TagItem *item)
 
 	assert(slot->ref > 0);
 
-	if (slot->ref < 0xff) {
+	if (slot->ref < TagPoolSlot::MAX_REF) {
 		++slot->ref;
 		return item;
 	} else {
-		/* the reference counter overflows above 0xff;
-		   duplicate the item, and start with 1 */
-		auto slot_p = tag_value_slot_p(item->type, item->value);
-		slot = TagPoolSlot::Create(*slot_p, item->type,
-					   item->value);
-		*slot_p = slot;
-		return &slot->item;
+		/* the reference counter overflows above MAX_REF;
+		   obtain a reference to a different TagPoolSlot which
+		   isn't yet "full" */
+		return tag_pool_get_item(item->type, item->value);
 	}
 }
 
