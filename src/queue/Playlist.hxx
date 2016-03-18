@@ -237,7 +237,13 @@ public:
 	 */
 	void DeleteRange(PlayerControl &pc, unsigned start, unsigned end);
 
-	void DeleteSong(PlayerControl &pc, const char *uri);
+	/**
+	 * Mark the given song as "stale", i.e. as not being available
+	 * anymore.  This gets called when a song is removed from the
+	 * database.  The method attempts to remove all instances of
+	 * this song from the queue.
+	 */
+	void StaleSong(PlayerControl &pc, const char *uri);
 
 	void Shuffle(PlayerControl &pc, unsigned start, unsigned end);
 

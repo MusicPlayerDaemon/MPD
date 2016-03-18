@@ -310,7 +310,7 @@ playlist::DeleteId(PlayerControl &pc, unsigned id)
 }
 
 void
-playlist::DeleteSong(PlayerControl &pc, const char *uri)
+playlist::StaleSong(PlayerControl &pc, const char *uri)
 {
 	for (int i = queue.GetLength() - 1; i >= 0; --i)
 		if (queue.Get(i).IsURI(uri))

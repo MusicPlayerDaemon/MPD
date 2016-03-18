@@ -91,13 +91,9 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.DeleteRange(pc, start, end);
 	}
 
-#ifdef ENABLE_DATABASE
-
-	void DeleteSong(const char *uri) {
-		playlist.DeleteSong(pc, uri);
+	void StaleSong(const char *uri) {
+		playlist.StaleSong(pc, uri);
 	}
-
-#endif
 
 	void Shuffle(unsigned start, unsigned end) {
 		playlist.Shuffle(pc, start, end);

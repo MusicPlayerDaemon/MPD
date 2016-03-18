@@ -66,7 +66,7 @@ Instance::OnDatabaseSongRemoved(const char *uri)
 		sticker_song_delete(uri, IgnoreError());
 #endif
 
-	partition->DeleteSong(uri);
+	partition->StaleSong(uri);
 }
 
 #endif
