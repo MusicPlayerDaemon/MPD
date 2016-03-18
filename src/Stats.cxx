@@ -82,12 +82,19 @@ stats_update(const Database &db)
 	Error error;
 
 	const DatabaseSelection selection("", true);
-	if (db.GetStats(selection, stats, error)) {
-		stats_validity = StatsValidity::VALID;
-		return true;
-	} else {
-		LogError(error);
 
+	try {
+		if (db.GetStats(selection, stats, error)) {
+			stats_validity = StatsValidity::VALID;
+			return true;
+		} else {
+			LogError(error);
+
+			stats_validity = StatsValidity::FAILED;
+			return false;
+		}
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		stats_validity = StatsValidity::FAILED;
 		return false;
 	}
