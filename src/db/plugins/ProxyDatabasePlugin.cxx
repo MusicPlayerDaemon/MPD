@@ -227,12 +227,10 @@ Convert(TagType tag_type)
 	return MPD_TAG_COUNT;
 }
 
-static bool
-CheckError(struct mpd_connection *connection, Error &error)
+static void
+MakeError(struct mpd_connection *connection, Error &error)
 {
 	const auto code = mpd_connection_get_error(connection);
-	if (code == MPD_ERROR_SUCCESS)
-		return true;
 
 	AtScopeExit(connection) {
 		mpd_connection_clear_error(connection);
@@ -249,7 +247,16 @@ CheckError(struct mpd_connection *connection, Error &error)
 		error.Set(libmpdclient_domain, (int)code,
 			  mpd_connection_get_error_message(connection));
 	}
+}
 
+static bool
+CheckError(struct mpd_connection *connection, Error &error)
+{
+	const auto code = mpd_connection_get_error(connection);
+	if (code == MPD_ERROR_SUCCESS)
+		return true;
+
+	MakeError(connection, error);
 	return false;
 }
 
@@ -488,8 +495,8 @@ ProxyDatabase::OnIdle()
 
 	if (!mpd_send_idle_mask(connection, MPD_IDLE_DATABASE)) {
 		Error error;
-		if (!CheckError(connection, error))
-			LogError(error);
+		MakeError(connection, error);
+		LogError(error);
 
 		SocketMonitor::Steal();
 		mpd_connection_free(connection);
@@ -509,15 +516,15 @@ ProxyDatabase::GetSong(const char *uri, Error &error) const
 		return nullptr;
 
 	if (!mpd_send_list_meta(connection, uri)) {
-		CheckError(connection, error);
+		MakeError(connection, error);
 		return nullptr;
 	}
 
 	struct mpd_song *song = mpd_recv_song(connection);
-	if (!mpd_response_finish(connection) &&
-	    !CheckError(connection, error)) {
+	if (!mpd_response_finish(connection)) {
 		if (song != nullptr)
 			mpd_song_free(song);
+		MakeError(connection, error);
 		return nullptr;
 	}
 
@@ -646,8 +653,10 @@ Visit(struct mpd_connection *connection, const char *uri,
       VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error)
 {
-	if (!mpd_send_list_meta(connection, uri))
-		return CheckError(connection, error);
+	if (!mpd_send_list_meta(connection, uri)) {
+		MakeError(connection, error);
+		return false;
+	}
 
 	std::list<ProxyEntity> entities(ReceiveEntities(connection));
 	if (!CheckError(connection, error))
@@ -698,8 +707,10 @@ SearchSongs(struct mpd_connection *connection,
 
 	if (!mpd_search_db_songs(connection, exact) ||
 	    !SendConstraints(connection, selection) ||
-	    !mpd_search_commit(connection))
-		return CheckError(connection, error);
+	    !mpd_search_commit(connection)) {
+		MakeError(connection, error);
+		return false;
+	}
 
 	bool result = true;
 	struct mpd_song *song;
@@ -710,8 +721,12 @@ SearchSongs(struct mpd_connection *connection,
 			visit_song(song2, error);
 	}
 
-	mpd_response_finish(connection);
-	return result && CheckError(connection, error);
+	if (!mpd_response_finish(connection) && result) {
+		MakeError(connection, error);
+		result = false;
+	}
+
+	return result;
 }
 
 /**
@@ -774,16 +789,18 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		return false;
 	}
 
-	if (!mpd_search_db_tags(connection, tag_type2))
-		return CheckError(connection, error);
-
-	if (!SendConstraints(connection, selection))
-		return CheckError(connection, error);
+	if (!mpd_search_db_tags(connection, tag_type2) ||
+	    !SendConstraints(connection, selection)) {
+		MakeError(connection, error);
+		return false;
+	}
 
 	// TODO: use group_mask
 
-	if (!mpd_search_commit(connection))
-		return CheckError(connection, error);
+	if (!mpd_search_commit(connection)) {
+		MakeError(connection, error);
+		return false;
+	}
 
 	bool result = true;
 
@@ -808,8 +825,12 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		result = visit_tag(tag.Commit(), error);
 	}
 
-	mpd_response_finish(connection);
-	return result && CheckError(connection, error);
+	if (!mpd_response_finish(connection) && result) {
+		MakeError(connection, error);
+		result = false;
+	}
+
+	return result;
 }
 
 bool
@@ -825,8 +846,10 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 
 	struct mpd_stats *stats2 =
 		mpd_run_stats(connection);
-	if (stats2 == nullptr)
-		return CheckError(connection, error);
+	if (stats2 == nullptr) {
+		MakeError(connection, error);
+		return false;
+	}
 
 	update_stamp = (time_t)mpd_stats_get_db_update_time(stats2);
 
