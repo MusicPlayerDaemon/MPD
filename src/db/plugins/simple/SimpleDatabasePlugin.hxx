@@ -136,7 +136,7 @@ public:
 private:
 	bool Configure(const ConfigBlock &block, Error &error);
 
-	bool Check(Error &error) const;
+	void Check() const;
 
 	bool Load(Error &error);
 

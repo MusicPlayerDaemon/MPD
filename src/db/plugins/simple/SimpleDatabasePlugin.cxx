@@ -113,8 +113,8 @@ SimpleDatabase::Configure(const ConfigBlock &block, Error &error)
 	return true;
 }
 
-bool
-SimpleDatabase::Check(Error &error) const
+void
+SimpleDatabase::Check() const
 {
 	assert(!path.IsNull());
 
@@ -127,54 +127,43 @@ SimpleDatabase::Check(Error &error) const
 
 		/* Check that the parent part of the path is a directory */
 		FileInfo fi;
-		if (!GetFileInfo(dirPath, fi, error)) {
-			error.AddPrefix("On parent directory of db file: ");
-			return false;
+
+		try {
+			fi = FileInfo(dirPath);
+		} catch (...) {
+			std::throw_with_nested(std::runtime_error("On parent directory of db file"));
 		}
 
-		if (!fi.IsDirectory()) {
-			error.Format(simple_db_domain,
-				     "Couldn't create db file \"%s\" because the "
-				     "parent path is not a directory",
-				     path_utf8.c_str());
-			return false;
-		}
+		if (!fi.IsDirectory())
+			throw std::runtime_error("Couldn't create db file \"" +
+						 path_utf8 + "\" because the "
+						 "parent path is not a directory");
 
 #ifndef WIN32
 		/* Check if we can write to the directory */
 		if (!CheckAccess(dirPath, X_OK | W_OK)) {
 			const int e = errno;
 			const std::string dirPath_utf8 = dirPath.ToUTF8();
-			error.FormatErrno(e, "Can't create db file in \"%s\"",
+			throw FormatErrno(e, "Can't create db file in \"%s\"",
 					  dirPath_utf8.c_str());
-			return false;
 		}
 #endif
-		return true;
+
+		return;
 	}
 
 	/* Path exists, now check if it's a regular file */
-	FileInfo fi;
-	if (!GetFileInfo(path, fi, error))
-		return false;
+	const FileInfo fi(path);
 
-	if (!fi.IsRegular()) {
-		error.Format(simple_db_domain,
-			     "db file \"%s\" is not a regular file",
-			     path_utf8.c_str());
-		return false;
-	}
+	if (!fi.IsRegular())
+		throw std::runtime_error("db file \"" + path_utf8 + "\" is not a regular file");
 
 #ifndef WIN32
 	/* And check that we can write to it */
-	if (!CheckAccess(path, R_OK | W_OK)) {
-		error.FormatErrno("Can't open db file \"%s\" for reading/writing",
+	if (!CheckAccess(path, R_OK | W_OK))
+		throw FormatErrno("Can't open db file \"%s\" for reading/writing",
 				  path_utf8.c_str());
-		return false;
-	}
 #endif
-
-	return true;
 }
 
 bool
@@ -196,7 +185,7 @@ SimpleDatabase::Load(Error &error)
 }
 
 bool
-SimpleDatabase::Open(Error &error)
+SimpleDatabase::Open(gcc_unused Error &error)
 {
 	assert(prefixed_light_song == nullptr);
 
@@ -214,8 +203,7 @@ SimpleDatabase::Open(Error &error)
 
 			delete root;
 
-			if (!Check(error))
-				return false;
+			Check();
 
 			root = Directory::NewRoot();
 		}
@@ -224,8 +212,7 @@ SimpleDatabase::Open(Error &error)
 
 		delete root;
 
-		if (!Check(error))
-			return false;
+		Check();
 
 		root = Directory::NewRoot();
 	}
