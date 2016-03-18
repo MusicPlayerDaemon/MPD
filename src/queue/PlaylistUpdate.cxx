@@ -36,7 +36,7 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 	const LightSong *original;
 	try {
 		original = db.GetSong(song.GetURI(), IgnoreError());
-	} catch (DatabaseError) {
+	} catch (const std::runtime_error &e) {
 		return false;
 	}
 
