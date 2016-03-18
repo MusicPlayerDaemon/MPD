@@ -125,9 +125,14 @@ PrintSongDetails(Response &r, Partition &partition, const char *uri_utf8)
 	if (db == nullptr)
 		return false;
 
-	auto *song = db->GetSong(uri_utf8, IgnoreError());
-	if (song == nullptr)
+	const LightSong *song;
+	try {
+		song = db->GetSong(uri_utf8, IgnoreError());
+		if (song == nullptr)
+			return false;
+	} catch (const std::runtime_error &e) {
 		return false;
+	}
 
 	song_print_info(r, partition, *song);
 	db->ReturnSong(song);
