@@ -471,9 +471,14 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	auto db = new SimpleDatabase(AllocatedPath::Build(cache_path,
 							  name_fs.c_str()),
 				     compress);
-	if (!db->Open(error)) {
+	try {
+		if (!db->Open(error)) {
+			delete db;
+			return false;
+		}
+	} catch (...) {
 		delete db;
-		return false;
+		throw;
 	}
 
 	// TODO: update the new database instance?
