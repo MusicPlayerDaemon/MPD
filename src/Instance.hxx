@@ -115,7 +115,7 @@ struct Instance final
 private:
 #ifdef ENABLE_DATABASE
 	void OnDatabaseModified() override;
-	void OnDatabaseSongRemoved(const LightSong &song) override;
+	void OnDatabaseSongRemoved(const char *uri) override;
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS

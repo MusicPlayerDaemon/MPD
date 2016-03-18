@@ -40,7 +40,7 @@ public:
 	 * During database update, a song is about to be removed from
 	 * the database because the file has disappeared.
 	 */
-	virtual void OnDatabaseSongRemoved(const LightSong &song) = 0;
+	virtual void OnDatabaseSongRemoved(const char *uri) = 0;
 };
 
 #endif

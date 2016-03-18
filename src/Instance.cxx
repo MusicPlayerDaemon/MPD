@@ -26,7 +26,6 @@
 
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseError.hxx"
-#include "db/LightSong.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "sticker/StickerDatabase.hxx"
@@ -57,18 +56,17 @@ Instance::OnDatabaseModified()
 }
 
 void
-Instance::OnDatabaseSongRemoved(const LightSong &song)
+Instance::OnDatabaseSongRemoved(const char *uri)
 {
 	assert(database != nullptr);
 
 #ifdef ENABLE_SQLITE
 	/* if the song has a sticker, remove it */
 	if (sticker_enabled())
-		sticker_song_delete(song, IgnoreError());
+		sticker_song_delete(uri, IgnoreError());
 #endif
 
-	const auto uri = song.GetURI();
-	partition->DeleteSong(uri.c_str());
+	partition->DeleteSong(uri);
 }
 
 #endif

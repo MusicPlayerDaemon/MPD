@@ -39,9 +39,8 @@ UpdateRemoveService::RunDeferred()
 	{
 		const auto uri = removed_song->GetURI();
 		FormatDefault(update_domain, "removing %s", uri.c_str());
+		listener.OnDatabaseSongRemoved(uri.c_str());
 	}
-
-	listener.OnDatabaseSongRemoved(removed_song->Export());
 
 	/* clear "removed_song" and send signal to update thread */
 	remove_mutex.lock();

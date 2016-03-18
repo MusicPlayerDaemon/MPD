@@ -57,8 +57,8 @@ public:
 		cout << "DatabaseModified" << endl;
 	}
 
-	virtual void OnDatabaseSongRemoved(const LightSong &song) override {
-		cout << "SongRemoved " << song.GetURI() << endl;
+	virtual void OnDatabaseSongRemoved(const char *uri) override {
+		cout << "SongRemoved " << uri << endl;
 	}
 };
 
