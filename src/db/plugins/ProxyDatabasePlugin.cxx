@@ -35,6 +35,7 @@
 #include "tag/Tag.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "protocol/Ack.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/IdleMonitor.hxx"
@@ -233,6 +234,10 @@ CheckError(struct mpd_connection *connection, Error &error)
 	if (code == MPD_ERROR_SUCCESS)
 		return true;
 
+	AtScopeExit(connection) {
+		mpd_connection_clear_error(connection);
+	};
+
 	if (code == MPD_ERROR_SERVER) {
 		/* libmpdclient's "enum mpd_server_error" is the same
 		   as our "enum ack" */
@@ -245,7 +250,6 @@ CheckError(struct mpd_connection *connection, Error &error)
 			  mpd_connection_get_error_message(connection));
 	}
 
-	mpd_connection_clear_error(connection);
 	return false;
 }
 
@@ -786,6 +790,10 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	struct mpd_pair *pair;
 	while (result &&
 	       (pair = mpd_recv_pair_tag(connection, tag_type2)) != nullptr) {
+		AtScopeExit(this, pair) {
+			mpd_return_pair(connection, pair);
+		};
+
 		TagBuilder tag;
 		tag.AddItem(tag_type, pair->value);
 
@@ -798,7 +806,6 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			tag.AddEmptyItem(tag_type);
 
 		result = visit_tag(tag.Commit(), error);
-		mpd_return_pair(connection, pair);
 	}
 
 	return mpd_response_finish(connection) &&
