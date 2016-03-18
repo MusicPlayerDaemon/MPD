@@ -73,16 +73,17 @@ struct playlist {
 	unsigned error_count;
 
 	/**
-	 * The "current song pointer".  This is the song which is
-	 * played when we get the "play" command.  It is also the song
-	 * which is currently being played.
+	 * The "current song pointer" (the order number).  This is the
+	 * song which is played when we get the "play" command.  It is
+	 * also the song which is currently being played.
 	 */
 	int current;
 
 	/**
-	 * The "next" song to be played, when the current one
-	 * finishes.  The decoder thread may start decoding and
-	 * buffering it, while the "current" song is still playing.
+	 * The "next" song to be played (the order number), when the
+	 * current one finishes.  The decoder thread may start
+	 * decoding and buffering it, while the "current" song is
+	 * still playing.
 	 *
 	 * This variable is only valid if #playing is true.
 	 */
