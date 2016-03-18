@@ -52,7 +52,7 @@ public:
 	 * This serialized access is implemented to avoid excessive
 	 * locking.
 	 */
-	void Remove(const Song *song);
+	void Remove(std::string &&uri);
 
 private:
 	/* virtual methods from class DeferredMonitor */

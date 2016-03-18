@@ -39,7 +39,7 @@ DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 	const ScopeDatabaseUnlock unlock;
 
 	/* now take it out of the playlist (in the main_task) */
-	remove.Remove(del);
+	remove.Remove(del->GetURI());
 
 	/* finally, all possible references gone, free it */
 	del->Free();

@@ -20,7 +20,6 @@
 #include "config.h" /* must be first for large file support */
 #include "Remove.hxx"
 #include "UpdateDomain.hxx"
-#include "db/plugins/simple/Song.hxx"
 #include "db/DatabaseListener.hxx"
 #include "Log.hxx"
 
@@ -51,14 +50,14 @@ UpdateRemoveService::RunDeferred()
 }
 
 void
-UpdateRemoveService::Remove(const Song *song)
+UpdateRemoveService::Remove(std::string &&uri)
 {
 	bool was_empty;
 
 	{
 		const ScopeLock protect(mutex);
 		was_empty = uris.empty();
-		uris.emplace_front(song->GetURI());
+		uris.emplace_front(std::move(uri));
 	}
 
 	/* inject an event into the main thread, but only if the list
