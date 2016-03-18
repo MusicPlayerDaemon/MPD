@@ -184,8 +184,8 @@ SimpleDatabase::Load(Error &error)
 	return true;
 }
 
-bool
-SimpleDatabase::Open(gcc_unused Error &error)
+void
+SimpleDatabase::Open()
 {
 	assert(prefixed_light_song == nullptr);
 
@@ -216,8 +216,6 @@ SimpleDatabase::Open(gcc_unused Error &error)
 
 		root = Directory::NewRoot();
 	}
-
-	return true;
 }
 
 void
@@ -459,10 +457,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 							  name_fs.c_str()),
 				     compress);
 	try {
-		if (!db->Open(error)) {
-			delete db;
-			return false;
-		}
+		db->Open();
 	} catch (...) {
 		delete db;
 		throw;

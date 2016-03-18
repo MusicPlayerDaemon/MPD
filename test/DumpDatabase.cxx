@@ -136,10 +136,7 @@ try {
 
 	AtScopeExit(db) { delete db; };
 
-	if (!db->Open(error)) {
-		cerr << error.GetMessage() << endl;
-		return EXIT_FAILURE;
-	}
+	db->Open();
 
 	AtScopeExit(db) { db->Close(); };
 

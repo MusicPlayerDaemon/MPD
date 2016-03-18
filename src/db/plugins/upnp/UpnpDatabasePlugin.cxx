@@ -80,7 +80,7 @@ public:
 				const ConfigBlock &block,
 				Error &error);
 
-	virtual bool Open(Error &error) override;
+	virtual void Open() override;
 	virtual void Close() override;
 	virtual const LightSong *GetSong(const char *uri_utf8,
 					 Error &error) const override;
@@ -168,8 +168,8 @@ UpnpDatabase::Configure(const ConfigBlock &, Error &)
 	return true;
 }
 
-bool
-UpnpDatabase::Open(gcc_unused Error &error)
+void
+UpnpDatabase::Open()
 {
 	UpnpClientGlobalInit(handle);
 
@@ -181,8 +181,6 @@ UpnpDatabase::Open(gcc_unused Error &error)
 		UpnpClientGlobalFinish();
 		throw;
 	}
-
-	return true;
 }
 
 void

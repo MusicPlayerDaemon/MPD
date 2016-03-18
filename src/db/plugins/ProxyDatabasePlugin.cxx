@@ -113,7 +113,7 @@ public:
 				const ConfigBlock &block,
 				Error &error);
 
-	virtual bool Open(Error &error) override;
+	virtual void Open() override;
 	virtual void Close() override;
 	virtual const LightSong *GetSong(const char *uri_utf8,
 				     Error &error) const override;
@@ -362,14 +362,12 @@ ProxyDatabase::Configure(const ConfigBlock &block, gcc_unused Error &error)
 	return true;
 }
 
-bool
-ProxyDatabase::Open(gcc_unused Error &error)
+void
+ProxyDatabase::Open()
 {
 	Connect();
 
 	update_stamp = 0;
-
-	return true;
 }
 
 void

@@ -55,9 +55,10 @@ public:
 
 	/**
          * Open the database.  Read it into memory if applicable.
+	 *
+	 * Throws #DatabaseError or std::runtime_error on error.
 	 */
-	virtual bool Open(gcc_unused Error &error) {
-		return true;
+	virtual void Open() {
 	}
 
 	/**

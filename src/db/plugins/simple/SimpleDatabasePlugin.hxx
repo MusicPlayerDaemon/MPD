@@ -107,7 +107,7 @@ public:
 	bool Unmount(const char *uri);
 
 	/* virtual methods from class Database */
-	virtual bool Open(Error &error) override;
+	virtual void Open() override;
 	virtual void Close() override;
 
 	const LightSong *GetSong(const char *uri_utf8,
