@@ -152,14 +152,14 @@ playlist::UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev)
 }
 
 bool
-playlist::PlayOrder(PlayerControl &pc, int order, Error &error)
+playlist::PlayOrder(PlayerControl &pc, unsigned order, Error &error)
 {
 	playing = true;
 	queued = -1;
 
 	const DetachedSong &song = queue.GetOrder(order);
 
-	FormatDebug(playlist_domain, "play %i:\"%s\"", order, song.GetURI());
+	FormatDebug(playlist_domain, "play %u:\"%s\"", order, song.GetURI());
 
 	current = order;
 

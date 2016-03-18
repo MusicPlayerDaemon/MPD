@@ -271,7 +271,7 @@ public:
 
 	bool PlayPosition(PlayerControl &pc, int position, Error &error);
 
-	bool PlayOrder(PlayerControl &pc, int order, Error &error);
+	bool PlayOrder(PlayerControl &pc, unsigned order, Error &error);
 
 	bool PlayId(PlayerControl &pc, int id, Error &error);
 
