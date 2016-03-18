@@ -1,4 +1,4 @@
-ver 0.19.14 (not yet released)
+ver 0.19.14 (2016/03/18)
 * decoder
   - dsdiff: fix off-by-one buffer overflow
   - opus: limit tag size to 64 kB
