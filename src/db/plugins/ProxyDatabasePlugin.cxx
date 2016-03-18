@@ -48,6 +48,18 @@
 #include <string>
 #include <list>
 
+class LibmpdclientError final : std::runtime_error {
+	enum mpd_error code;
+
+public:
+	LibmpdclientError(enum mpd_error _code, const char *_msg)
+		:std::runtime_error(_msg), code(_code) {}
+
+	enum mpd_error GetCode() const {
+		return code;
+	}
+};
+
 class ProxySong : public LightSong {
 	Tag tag2;
 
@@ -132,9 +144,9 @@ public:
 private:
 	bool Configure(const ConfigBlock &block, Error &error);
 
-	bool Connect(Error &error);
-	bool CheckConnection(Error &error);
-	bool EnsureConnected(Error &error);
+	void Connect();
+	void CheckConnection();
+	void EnsureConnected();
 
 	void Disconnect();
 
@@ -228,7 +240,7 @@ Convert(TagType tag_type)
 }
 
 static void
-MakeError(struct mpd_connection *connection, Error &error)
+ThrowError(struct mpd_connection *connection)
 {
 	const auto code = mpd_connection_get_error(connection);
 
@@ -241,23 +253,20 @@ MakeError(struct mpd_connection *connection, Error &error)
 		   as our "enum ack" */
 		const auto server_error =
 			mpd_connection_get_server_error(connection);
-		error.Set(ack_domain, (int)server_error,
-			  mpd_connection_get_error_message(connection));
+		throw ProtocolError((enum ack)server_error,
+				    mpd_connection_get_error_message(connection));
 	} else {
-		error.Set(libmpdclient_domain, (int)code,
-			  mpd_connection_get_error_message(connection));
+		throw LibmpdclientError(code,
+					mpd_connection_get_error_message(connection));
 	}
 }
 
-static bool
-CheckError(struct mpd_connection *connection, Error &error)
+static void
+CheckError(struct mpd_connection *connection)
 {
 	const auto code = mpd_connection_get_error(connection);
-	if (code == MPD_ERROR_SUCCESS)
-		return true;
-
-	MakeError(connection, error);
-	return false;
+	if (code != MPD_ERROR_SUCCESS)
+		ThrowError(connection);
 }
 
 static bool
@@ -354,10 +363,9 @@ ProxyDatabase::Configure(const ConfigBlock &block, gcc_unused Error &error)
 }
 
 bool
-ProxyDatabase::Open(Error &error)
+ProxyDatabase::Open(gcc_unused Error &error)
 {
-	if (!Connect(error))
-		return false;
+	Connect();
 
 	update_stamp = 0;
 
@@ -371,22 +379,21 @@ ProxyDatabase::Close()
 		Disconnect();
 }
 
-bool
-ProxyDatabase::Connect(Error &error)
+void
+ProxyDatabase::Connect()
 {
 	const char *_host = host.empty() ? nullptr : host.c_str();
 	connection = mpd_connection_new(_host, port, 0);
-	if (connection == nullptr) {
-		error.Set(libmpdclient_domain, (int)MPD_ERROR_OOM,
-			  "Out of memory");
-		return false;
-	}
+	if (connection == nullptr)
+		throw LibmpdclientError(MPD_ERROR_OOM, "Out of memory");
 
-	if (!CheckError(connection, error)) {
+	try {
+		CheckError(connection);
+	} catch (...) {
 		mpd_connection_free(connection);
 		connection = nullptr;
 
-		return false;
+		throw;
 	}
 
 #if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
@@ -398,41 +405,43 @@ ProxyDatabase::Connect(Error &error)
 
 	SocketMonitor::Open(mpd_async_get_fd(mpd_connection_get_async(connection)));
 	IdleMonitor::Schedule();
-
-	return true;
 }
 
-bool
-ProxyDatabase::CheckConnection(Error &error)
+void
+ProxyDatabase::CheckConnection()
 {
 	assert(connection != nullptr);
 
 	if (!mpd_connection_clear_error(connection)) {
 		Disconnect();
-		return Connect(error);
+		Connect();
+		return;
 	}
 
 	if (is_idle) {
 		unsigned idle = mpd_run_noidle(connection);
-		if (idle == 0 && !CheckError(connection, error)) {
-			Disconnect();
-			return false;
+		if (idle == 0) {
+			try {
+				CheckError(connection);
+			} catch (...) {
+				Disconnect();
+				throw;
+			}
 		}
 
 		idle_received |= idle;
 		is_idle = false;
 		IdleMonitor::Schedule();
 	}
-
-	return true;
 }
 
-bool
-ProxyDatabase::EnsureConnected(Error &error)
+void
+ProxyDatabase::EnsureConnected()
 {
-	return connection != nullptr
-		? CheckConnection(error)
-		: Connect(error);
+	if (connection != nullptr)
+		CheckConnection();
+	else
+		Connect();
 }
 
 void
@@ -460,8 +469,9 @@ ProxyDatabase::OnSocketReady(gcc_unused unsigned flags)
 
 	unsigned idle = (unsigned)mpd_recv_idle(connection, false);
 	if (idle == 0) {
-		Error error;
-		if (!CheckError(connection, error)) {
+		try {
+			CheckError(connection);
+		} catch (const std::runtime_error &error) {
 			LogError(error);
 			Disconnect();
 			return false;
@@ -494,9 +504,11 @@ ProxyDatabase::OnIdle()
 		return;
 
 	if (!mpd_send_idle_mask(connection, MPD_IDLE_DATABASE)) {
-		Error error;
-		MakeError(connection, error);
-		LogError(error);
+		try {
+			ThrowError(connection);
+		} catch (const std::runtime_error &error) {
+			LogError(error);
+		}
 
 		SocketMonitor::Steal();
 		mpd_connection_free(connection);
@@ -509,23 +521,19 @@ ProxyDatabase::OnIdle()
 }
 
 const LightSong *
-ProxyDatabase::GetSong(const char *uri, Error &error) const
+ProxyDatabase::GetSong(const char *uri, gcc_unused Error &error) const
 {
 	// TODO: eliminate the const_cast
-	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return nullptr;
+	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
-	if (!mpd_send_list_meta(connection, uri)) {
-		MakeError(connection, error);
-		return nullptr;
-	}
+	if (!mpd_send_list_meta(connection, uri))
+		ThrowError(connection);
 
 	struct mpd_song *song = mpd_recv_song(connection);
 	if (!mpd_response_finish(connection)) {
 		if (song != nullptr)
 			mpd_song_free(song);
-		MakeError(connection, error);
-		return nullptr;
+		ThrowError(connection);
 	}
 
 	if (song == nullptr)
@@ -653,14 +661,11 @@ Visit(struct mpd_connection *connection, const char *uri,
       VisitDirectory visit_directory, VisitSong visit_song,
       VisitPlaylist visit_playlist, Error &error)
 {
-	if (!mpd_send_list_meta(connection, uri)) {
-		MakeError(connection, error);
-		return false;
-	}
+	if (!mpd_send_list_meta(connection, uri))
+		ThrowError(connection);
 
 	std::list<ProxyEntity> entities(ReceiveEntities(connection));
-	if (!CheckError(connection, error))
-		return false;
+	CheckError(connection);
 
 	for (const auto &entity : entities) {
 		switch (mpd_entity_get_type(entity)) {
@@ -707,10 +712,8 @@ SearchSongs(struct mpd_connection *connection,
 
 	if (!mpd_search_db_songs(connection, exact) ||
 	    !SendConstraints(connection, selection) ||
-	    !mpd_search_commit(connection)) {
-		MakeError(connection, error);
-		return false;
-	}
+	    !mpd_search_commit(connection))
+		ThrowError(connection);
 
 	bool result = true;
 	struct mpd_song *song;
@@ -721,10 +724,8 @@ SearchSongs(struct mpd_connection *connection,
 			visit_song(song2, error);
 	}
 
-	if (!mpd_response_finish(connection) && result) {
-		MakeError(connection, error);
-		result = false;
-	}
+	if (!mpd_response_finish(connection) && result)
+		ThrowError(connection);
 
 	return result;
 }
@@ -754,8 +755,7 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     Error &error) const
 {
 	// TODO: eliminate the const_cast
-	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return false;
+	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
 	if (!visit_directory && !visit_playlist && selection.recursive &&
 	    (ServerSupportsSearchBase(connection)
@@ -780,8 +780,7 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       Error &error) const
 {
 	// TODO: eliminate the const_cast
-	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return false;
+	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
 	enum mpd_tag_type tag_type2 = Convert(tag_type);
 	if (tag_type2 == MPD_TAG_COUNT) {
@@ -790,17 +789,13 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	}
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
-	    !SendConstraints(connection, selection)) {
-		MakeError(connection, error);
-		return false;
-	}
+	    !SendConstraints(connection, selection))
+		ThrowError(connection);
 
 	// TODO: use group_mask
 
-	if (!mpd_search_commit(connection)) {
-		MakeError(connection, error);
-		return false;
-	}
+	if (!mpd_search_commit(connection))
+		ThrowError(connection);
 
 	bool result = true;
 
@@ -825,31 +820,26 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		result = visit_tag(tag.Commit(), error);
 	}
 
-	if (!mpd_response_finish(connection) && result) {
-		MakeError(connection, error);
-		result = false;
-	}
+	if (!mpd_response_finish(connection) && result)
+		ThrowError(connection);
 
 	return result;
 }
 
 bool
 ProxyDatabase::GetStats(const DatabaseSelection &selection,
-			DatabaseStats &stats, Error &error) const
+			DatabaseStats &stats, gcc_unused Error &error) const
 {
 	// TODO: match
 	(void)selection;
 
 	// TODO: eliminate the const_cast
-	if (!const_cast<ProxyDatabase *>(this)->EnsureConnected(error))
-		return false;
+	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
 	struct mpd_stats *stats2 =
 		mpd_run_stats(connection);
-	if (stats2 == nullptr) {
-		MakeError(connection, error);
-		return false;
-	}
+	if (stats2 == nullptr)
+		ThrowError(connection);
 
 	update_stamp = (time_t)mpd_stats_get_db_update_time(stats2);
 
@@ -864,16 +854,15 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 
 unsigned
 ProxyDatabase::Update(const char *uri_utf8, bool discard,
-		      Error &error)
+		      gcc_unused Error &error)
 {
-	if (!EnsureConnected(error))
-		return 0;
+	EnsureConnected();
 
 	unsigned id = discard
 		? mpd_run_rescan(connection, uri_utf8)
 		: mpd_run_update(connection, uri_utf8);
 	if (id == 0)
-		CheckError(connection, error);
+		CheckError(connection);
 
 	return id;
 }
