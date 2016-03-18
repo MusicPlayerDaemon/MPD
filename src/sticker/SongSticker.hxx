@@ -51,6 +51,9 @@ sticker_song_set_value(const LightSong &song,
  * Deletes a sticker from the database.  All values are deleted.
  */
 bool
+sticker_song_delete(const char *uri, Error &error);
+
+bool
 sticker_song_delete(const LightSong &song, Error &error);
 
 /**

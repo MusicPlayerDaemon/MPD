@@ -45,10 +45,15 @@ sticker_song_set_value(const LightSong &song,
 }
 
 bool
+sticker_song_delete(const char *uri, Error &error)
+{
+	return sticker_delete("song", uri, error);
+}
+
+bool
 sticker_song_delete(const LightSong &song, Error &error)
 {
-	const auto uri = song.GetURI();
-	return sticker_delete("song", uri.c_str(), error);
+	return sticker_song_delete(song.GetURI().c_str(), error);
 }
 
 bool
