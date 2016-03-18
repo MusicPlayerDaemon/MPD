@@ -415,6 +415,7 @@ libutil_a_SOURCES = \
 	src/util/WStringAPI.hxx \
 	src/util/DivideString.cxx src/util/DivideString.hxx \
 	src/util/SplitString.cxx src/util/SplitString.hxx \
+	src/util/IterableSplitString.hxx \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/TextFile.hxx \

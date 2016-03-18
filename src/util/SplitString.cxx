@@ -28,6 +28,7 @@
  */
 
 #include "SplitString.hxx"
+#include "IterableSplitString.hxx"
 #include "StringUtil.hxx"
 
 #include <string.h>
@@ -44,26 +45,16 @@ SplitString(const char *s, char separator, bool strip)
 
 	auto i = list.before_begin();
 
-	while (true) {
-		const char *next = strchr(s, separator);
-		if (next == nullptr)
-			break;
+	for (auto value : IterableSplitString(s, separator)) {
+		const char *begin = value.begin(), *end = value.end();
 
-		const char *end = next++;
-		if (strip)
-			end = StripRight(s, end);
+		if (strip) {
+			begin = StripLeft(begin, end);
+			end = StripRight(begin, end);
+		}
 
-		i = list.emplace_after(i, s, end);
-
-		s = next;
-		if (strip)
-			s = StripLeft(s);
+		i = list.emplace_after(i, begin, end);
 	}
 
-	const char *end = s + strlen(s);
-	if (strip)
-		end = StripRight(s, end);
-
-	list.emplace_after(i, s, end);
 	return list;
 }

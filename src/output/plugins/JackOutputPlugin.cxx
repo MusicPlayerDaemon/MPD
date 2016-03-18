@@ -23,7 +23,7 @@
 #include "../Wrapper.hxx"
 #include "config/ConfigError.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/SplitString.hxx"
+#include "util/IterableSplitString.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -355,14 +355,14 @@ static unsigned
 parse_port_list(const char *source, std::string dest[], Error &error)
 {
 	unsigned n = 0;
-	for (auto &&i : SplitString(source, ',')) {
+	for (auto i : IterableSplitString(source, ',')) {
 		if (n >= MAX_PORTS) {
 			error.Set(config_domain,
 				  "too many port names");
 			return 0;
 		}
 
-		dest[n++] = std::move(i);
+		dest[n++] = std::string(i.data, i.size);
 	}
 
 	if (n == 0) {
