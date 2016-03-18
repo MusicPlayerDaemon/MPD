@@ -681,7 +681,7 @@ Visit(struct mpd_connection *connection, const char *uri,
 		}
 	}
 
-	return CheckError(connection, error);
+	return true;
 }
 
 static bool
