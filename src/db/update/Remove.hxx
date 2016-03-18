@@ -23,8 +23,10 @@
 #include "check.h"
 #include "event/DeferredMonitor.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "Compiler.h"
+
+#include <forward_list>
+#include <string>
 
 struct Song;
 class DatabaseListener;
@@ -36,15 +38,13 @@ class DatabaseListener;
 class UpdateRemoveService final : DeferredMonitor {
 	DatabaseListener &listener;
 
-	Mutex remove_mutex;
-	Cond remove_cond;
+	Mutex mutex;
 
-	const Song *removed_song;
+	std::forward_list<std::string> uris;
 
 public:
 	UpdateRemoveService(EventLoop &_loop, DatabaseListener &_listener)
-		:DeferredMonitor(_loop), listener(_listener),
-		 removed_song(nullptr){}
+		:DeferredMonitor(_loop), listener(_listener) {}
 
 	/**
 	 * Sends a signal to the main thread which will in turn remove

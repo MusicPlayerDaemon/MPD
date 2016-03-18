@@ -21,47 +21,49 @@
 #include "Remove.hxx"
 #include "UpdateDomain.hxx"
 #include "db/plugins/simple/Song.hxx"
-#include "db/LightSong.hxx"
 #include "db/DatabaseListener.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
-
 /**
- * Safely remove a song from the database.  This must be done in the
+ * Safely remove songs from the database.  This must be done in the
  * main task, to be sure that there is no pointer left to it.
  */
 void
 UpdateRemoveService::RunDeferred()
 {
-	assert(removed_song != nullptr);
+	/* copy the list and unlock the mutex before invoking
+	   callbacks */
+
+	std::forward_list<std::string> copy;
 
 	{
-		const auto uri = removed_song->GetURI();
+		const ScopeLock protect(mutex);
+		std::swap(uris, copy);
+	}
+
+	for (const auto &uri : copy) {
 		FormatDefault(update_domain, "removing %s", uri.c_str());
 		listener.OnDatabaseSongRemoved(uri.c_str());
 	}
 
-	/* clear "removed_song" and send signal to update thread */
-	remove_mutex.lock();
-	removed_song = nullptr;
-	remove_cond.signal();
-	remove_mutex.unlock();
+	/* note: if Remove() was called in the meantime, it saw an
+	   empty list, and scheduled another event */
 }
 
 void
 UpdateRemoveService::Remove(const Song *song)
 {
-	assert(removed_song == nullptr);
+	bool was_empty;
 
-	removed_song = song;
+	{
+		const ScopeLock protect(mutex);
+		was_empty = uris.empty();
+		uris.emplace_front(song->GetURI());
+	}
 
-	DeferredMonitor::Schedule();
-
-	remove_mutex.lock();
-
-	while (removed_song != nullptr)
-		remove_cond.wait(remove_mutex);
-
-	remove_mutex.unlock();
+	/* inject an event into the main thread, but only if the list
+	   was empty; if it was not, then that even was already
+	   pending */
+	if (was_empty)
+		DeferredMonitor::Schedule();
 }
