@@ -111,8 +111,7 @@ static const char *uri2 = "foo/bar.ogg";
 DetachedSong *
 DatabaseDetachSong(gcc_unused const Database &db,
 		   gcc_unused const Storage &_storage,
-		   const char *uri,
-		   gcc_unused Error &error)
+		   const char *uri)
 {
 	if (strcmp(uri, uri2) == 0)
 		return new DetachedSong(uri, MakeTag2a());

@@ -115,8 +115,7 @@ public:
 
 	virtual void Open() override;
 	virtual void Close() override;
-	virtual const LightSong *GetSong(const char *uri_utf8,
-				     Error &error) const override;
+	const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
 
 	virtual bool Visit(const DatabaseSelection &selection,
@@ -519,7 +518,7 @@ ProxyDatabase::OnIdle()
 }
 
 const LightSong *
-ProxyDatabase::GetSong(const char *uri, gcc_unused Error &error) const
+ProxyDatabase::GetSong(const char *uri) const
 {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();

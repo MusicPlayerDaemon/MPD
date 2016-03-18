@@ -68,18 +68,17 @@ public:
 	}
 #endif
 
-	DetachedSong *LoadSong(const LocatedUri &uri, Error &error) const;
+	DetachedSong *LoadSong(const LocatedUri &uri) const;
 
 	gcc_nonnull_all
 	DetachedSong *LoadSong(const char *uri_utf8, Error &error) const;
 
 private:
 	gcc_nonnull_all
-	DetachedSong *LoadFromDatabase(const char *uri, Error &error) const;
+	DetachedSong *LoadFromDatabase(const char *uri) const;
 
 	gcc_nonnull_all
-	DetachedSong *LoadFile(const char *path_utf8, Path path_fs,
-			       Error &error) const;
+	DetachedSong *LoadFile(const char *path_utf8, Path path_fs) const;
 };
 
 #endif

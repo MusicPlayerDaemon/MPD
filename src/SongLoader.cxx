@@ -38,21 +38,20 @@ SongLoader::SongLoader(const Client &_client)
 #endif
 
 DetachedSong *
-SongLoader::LoadFromDatabase(const char *uri, Error &error) const
+SongLoader::LoadFromDatabase(const char *uri) const
 {
 #ifdef ENABLE_DATABASE
 	if (db != nullptr)
-		return DatabaseDetachSong(*db, *storage, uri, error);
+		return DatabaseDetachSong(*db, *storage, uri);
 #else
 	(void)uri;
-	(void)error;
 #endif
 
 	throw PlaylistError(PlaylistResult::NO_SUCH_SONG, "No database");
 }
 
 DetachedSong *
-SongLoader::LoadFile(const char *path_utf8, Path path_fs, Error &error) const
+SongLoader::LoadFile(const char *path_utf8, Path path_fs) const
 {
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
@@ -60,10 +59,8 @@ SongLoader::LoadFile(const char *path_utf8, Path path_fs, Error &error) const
 		if (suffix != nullptr)
 			/* this path was relative to the music
 			   directory - obtain it from the database */
-			return LoadFromDatabase(suffix, error);
+			return LoadFromDatabase(suffix);
 	}
-#else
-	(void)error;
 #endif
 
 	DetachedSong song(path_utf8);
@@ -74,7 +71,7 @@ SongLoader::LoadFile(const char *path_utf8, Path path_fs, Error &error) const
 }
 
 DetachedSong *
-SongLoader::LoadSong(const LocatedUri &located_uri, Error &error) const
+SongLoader::LoadSong(const LocatedUri &located_uri) const
 {
 	switch (located_uri.type) {
 	case LocatedUri::Type::UNKNOWN:
@@ -84,11 +81,10 @@ SongLoader::LoadSong(const LocatedUri &located_uri, Error &error) const
 		return new DetachedSong(located_uri.canonical_uri);
 
 	case LocatedUri::Type::RELATIVE:
-		return LoadFromDatabase(located_uri.canonical_uri, error);
+		return LoadFromDatabase(located_uri.canonical_uri);
 
 	case LocatedUri::Type::PATH:
-		return LoadFile(located_uri.canonical_uri, located_uri.path,
-				error);
+		return LoadFile(located_uri.canonical_uri, located_uri.path);
 	}
 
 	gcc_unreachable();
@@ -110,5 +106,5 @@ SongLoader::LoadSong(const char *uri_utf8, Error &error) const
 	if (located_uri.IsUnknown())
 		return nullptr;
 
-	return LoadSong(located_uri, error);
+	return LoadSong(located_uri);
 }

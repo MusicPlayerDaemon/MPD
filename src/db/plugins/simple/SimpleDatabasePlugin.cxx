@@ -229,7 +229,7 @@ SimpleDatabase::Close()
 }
 
 const LightSong *
-SimpleDatabase::GetSong(const char *uri, Error &error) const
+SimpleDatabase::GetSong(const char *uri) const
 {
 	assert(root != nullptr);
 	assert(prefixed_light_song == nullptr);
@@ -244,7 +244,7 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 		protect.unlock();
 
 		const LightSong *song =
-			r.directory->mounted_database->GetSong(r.uri, error);
+			r.directory->mounted_database->GetSong(r.uri);
 		if (song == nullptr)
 			return nullptr;
 

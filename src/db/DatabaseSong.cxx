@@ -41,12 +41,10 @@ DatabaseDetachSong(const Storage &storage, const LightSong &song)
 }
 
 DetachedSong *
-DatabaseDetachSong(const Database &db, const Storage &storage, const char *uri,
-		   Error &error)
+DatabaseDetachSong(const Database &db, const Storage &storage, const char *uri)
 {
-	const LightSong *tmp = db.GetSong(uri, error);
-	if (tmp == nullptr)
-		return nullptr;
+	const LightSong *tmp = db.GetSong(uri);
+	assert(tmp != nullptr);
 
 	DetachedSong *song = new DetachedSong(DatabaseDetachSong(storage,
 								 *tmp));

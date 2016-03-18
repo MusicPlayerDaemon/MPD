@@ -127,9 +127,7 @@ PrintSongDetails(Response &r, Partition &partition, const char *uri_utf8)
 
 	const LightSong *song;
 	try {
-		song = db->GetSong(uri_utf8, IgnoreError());
-		if (song == nullptr)
-			return false;
+		song = db->GetSong(uri_utf8);
 	} catch (const std::runtime_error &e) {
 		return false;
 	}

@@ -41,17 +41,14 @@
 #include <memory>
 #include <limits>
 
-static CommandResult
-AddUri(Client &client, const LocatedUri &uri, Response &r)
+static void
+AddUri(Client &client, const LocatedUri &uri)
 {
-	Error error;
-	std::unique_ptr<DetachedSong> song(SongLoader(client).LoadSong(uri, error));
-	if (song == nullptr)
-		return print_error(r, error);
+	std::unique_ptr<DetachedSong> song(SongLoader(client).LoadSong(uri));
+	assert(song);
 
 	auto &partition = client.partition;
 	partition.playlist.AppendSong(partition.pc, std::move(*song));
-	return CommandResult::OK;
 }
 
 static CommandResult
@@ -98,7 +95,8 @@ handle_add(Client &client, Request args, Response &r)
 
 	case LocatedUri::Type::ABSOLUTE:
 	case LocatedUri::Type::PATH:
-		return AddUri(client, located_uri, r);
+		AddUri(client, located_uri);
+		return CommandResult::OK;
 
 	case LocatedUri::Type::RELATIVE:
 		return AddDatabaseSelection(client, located_uri.canonical_uri,
