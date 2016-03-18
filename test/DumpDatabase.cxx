@@ -34,6 +34,7 @@
 #include "event/Loop.hxx"
 #include "Log.hxx"
 #include "util/Error.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <iostream>
 using std::cout;
@@ -108,6 +109,7 @@ try {
 	/* initialize MPD */
 
 	config_global_init();
+	AtScopeExit() { config_global_finish(); };
 
 	Error error;
 	ReadConfigFile(config_path);
@@ -132,28 +134,22 @@ try {
 		return EXIT_FAILURE;
 	}
 
+	AtScopeExit(db) { delete db; };
+
 	if (!db->Open(error)) {
-		delete db;
 		cerr << error.GetMessage() << endl;
 		return EXIT_FAILURE;
 	}
+
+	AtScopeExit(db) { db->Close(); };
 
 	const DatabaseSelection selection("", true);
 
 	if (!db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist,
 		       error)) {
-		db->Close();
-		delete db;
 		cerr << error.GetMessage() << endl;
 		return EXIT_FAILURE;
 	}
-
-	db->Close();
-	delete db;
-
-	/* deinitialize everything */
-
-	config_global_finish();
 
 	return EXIT_SUCCESS;
  } catch (const std::exception &e) {
