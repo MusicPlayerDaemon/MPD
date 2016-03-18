@@ -25,7 +25,8 @@
 
 /**
  * Safely remove songs from the database.  This must be done in the
- * main task, to be sure that there is no pointer left to it.
+ * main task, because some (thread-unsafe) data structures are
+ * available only there.
  */
 void
 UpdateRemoveService::RunDeferred()
