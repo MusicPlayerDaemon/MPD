@@ -123,6 +123,11 @@ struct StringView : ConstBuffer<char> {
 	 * Skip all whitespace at the end.
 	 */
 	void StripRight();
+
+	void Strip() {
+		StripLeft();
+		StripRight();
+	}
 };
 
 #endif
