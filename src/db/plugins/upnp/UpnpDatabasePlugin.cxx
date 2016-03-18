@@ -159,9 +159,6 @@ UpnpDatabase::Create(gcc_unused EventLoop &loop,
 		return nullptr;
 	}
 
-	/* libupnp loses its ability to receive multicast messages
-	   apparently due to daemonization; using the LazyDatabase
-	   wrapper works around this problem */
 	return db;
 }
 
