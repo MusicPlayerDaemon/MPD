@@ -25,6 +25,8 @@
 #include "util/Error.hxx"
 #include "util/Alloc.hxx"
 
+#include <stdexcept>
+
 #include <string.h>
 #include <stdlib.h>
 
