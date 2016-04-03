@@ -1161,12 +1161,15 @@ OK
             <cmdsynopsis>
               <command>plchanges</command>
               <arg choice="req"><replaceable>VERSION</replaceable></arg>
+              <arg><replaceable>START:END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
               Displays changed songs currently in the playlist since
-              <varname>VERSION</varname>.
+              <varname>VERSION</varname>.  Start and end positions may
+              be given to limit the output to changes in the given
+              range.
             </para>
             <para>
               To detect songs that were deleted at the end of the
@@ -1179,6 +1182,7 @@ OK
             <cmdsynopsis>
               <command>plchangesposid</command>
               <arg choice="req"><replaceable>VERSION</replaceable></arg>
+              <arg><replaceable>START:END</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
@@ -1475,15 +1479,15 @@ OK
             <cmdsynopsis>
               <command>playlistmove</command>
               <arg choice="req"><replaceable>NAME</replaceable></arg>
-              <arg choice="req"><replaceable>SONGID</replaceable></arg>
-              <arg choice="req"><replaceable>SONGPOS</replaceable></arg>
+              <arg choice="req"><replaceable>FROM</replaceable></arg>
+              <arg choice="req"><replaceable>TO</replaceable></arg>
             </cmdsynopsis>
           </term>
           <listitem>
             <para>
-              Moves <varname>SONGID</varname> in the playlist
-              <filename>NAME.m3u</filename> to the position
-              <varname>SONGPOS</varname>.
+              Moves the song at position <varname>FROM</varname> in
+              the playlist <filename>NAME.m3u</filename> to the
+              position <varname>TO</varname>.
             </para>
           </listitem>
         </varlistentry>

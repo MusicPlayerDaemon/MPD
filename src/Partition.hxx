@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,13 @@
 #ifndef MPD_PARTITION_HXX
 #define MPD_PARTITION_HXX
 
+#include "event/MaskMonitor.hxx"
 #include "queue/Playlist.hxx"
+#include "queue/Listener.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "mixer/Listener.hxx"
-#include "PlayerControl.hxx"
-#include "PlayerListener.hxx"
+#include "player/Control.hxx"
+#include "player/Listener.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 
@@ -36,8 +38,13 @@ class SongLoader;
  * A partition of the Music Player Daemon.  It is a separate unit with
  * a playlist, a player, outputs etc.
  */
-struct Partition final : private PlayerListener, private MixerListener {
+struct Partition final : QueueListener, PlayerListener, MixerListener {
+	static constexpr unsigned TAG_MODIFIED = 0x1;
+	static constexpr unsigned SYNC_WITH_PLAYER = 0x2;
+
 	Instance &instance;
+
+	CallbackMaskMonitor<Partition> global_events;
 
 	struct playlist playlist;
 
@@ -48,10 +55,13 @@ struct Partition final : private PlayerListener, private MixerListener {
 	Partition(Instance &_instance,
 		  unsigned max_length,
 		  unsigned buffer_chunks,
-		  unsigned buffered_before_play)
-		:instance(_instance), playlist(max_length),
-		 outputs(*this),
-		 pc(*this, outputs, buffer_chunks, buffered_before_play) {}
+		  unsigned buffered_before_play);
+
+	void EmitGlobalEvent(unsigned mask) {
+		global_events.OrMask(mask);
+	}
+
+	void EmitIdle(unsigned mask);
 
 	void ClearQueue() {
 		playlist.Clear(pc);
@@ -63,12 +73,12 @@ struct Partition final : private PlayerListener, private MixerListener {
 		return playlist.AppendURI(pc, loader, uri_utf8, error);
 	}
 
-	PlaylistResult DeletePosition(unsigned position) {
-		return playlist.DeletePosition(pc, position);
+	void DeletePosition(unsigned position) {
+		playlist.DeletePosition(pc, position);
 	}
 
-	PlaylistResult DeleteId(unsigned id) {
-		return playlist.DeleteId(pc, id);
+	void DeleteId(unsigned id) {
+		playlist.DeleteId(pc, id);
 	}
 
 	/**
@@ -77,82 +87,77 @@ struct Partition final : private PlayerListener, private MixerListener {
 	 * @param start the position of the first song to delete
 	 * @param end the position after the last song to delete
 	 */
-	PlaylistResult DeleteRange(unsigned start, unsigned end) {
-		return playlist.DeleteRange(pc, start, end);
+	void DeleteRange(unsigned start, unsigned end) {
+		playlist.DeleteRange(pc, start, end);
 	}
 
-#ifdef ENABLE_DATABASE
-
-	void DeleteSong(const char *uri) {
-		playlist.DeleteSong(pc, uri);
+	void StaleSong(const char *uri) {
+		playlist.StaleSong(pc, uri);
 	}
-
-#endif
 
 	void Shuffle(unsigned start, unsigned end) {
 		playlist.Shuffle(pc, start, end);
 	}
 
-	PlaylistResult MoveRange(unsigned start, unsigned end, int to) {
-		return playlist.MoveRange(pc, start, end, to);
+	void MoveRange(unsigned start, unsigned end, int to) {
+		playlist.MoveRange(pc, start, end, to);
 	}
 
-	PlaylistResult MoveId(unsigned id, int to) {
-		return playlist.MoveId(pc, id, to);
+	void MoveId(unsigned id, int to) {
+		playlist.MoveId(pc, id, to);
 	}
 
-	PlaylistResult SwapPositions(unsigned song1, unsigned song2) {
-		return playlist.SwapPositions(pc, song1, song2);
+	void SwapPositions(unsigned song1, unsigned song2) {
+		playlist.SwapPositions(pc, song1, song2);
 	}
 
-	PlaylistResult SwapIds(unsigned id1, unsigned id2) {
-		return playlist.SwapIds(pc, id1, id2);
+	void SwapIds(unsigned id1, unsigned id2) {
+		playlist.SwapIds(pc, id1, id2);
 	}
 
-	PlaylistResult SetPriorityRange(unsigned start_position,
-					unsigned end_position,
-					uint8_t priority) {
-		return playlist.SetPriorityRange(pc,
-						 start_position, end_position,
-						 priority);
+	void SetPriorityRange(unsigned start_position, unsigned end_position,
+			      uint8_t priority) {
+		playlist.SetPriorityRange(pc, start_position, end_position,
+					  priority);
 	}
 
-	PlaylistResult SetPriorityId(unsigned song_id,
-				     uint8_t priority) {
-		return playlist.SetPriorityId(pc, song_id, priority);
+	void SetPriorityId(unsigned song_id, uint8_t priority) {
+		playlist.SetPriorityId(pc, song_id, priority);
 	}
 
 	void Stop() {
 		playlist.Stop(pc);
 	}
 
-	PlaylistResult PlayPosition(int position) {
-		return playlist.PlayPosition(pc, position);
+	bool PlayPosition(int position, Error &error) {
+		return playlist.PlayPosition(pc, position, error);
 	}
 
-	PlaylistResult PlayId(int id) {
-		return playlist.PlayId(pc, id);
+	bool PlayId(int id, Error &error) {
+		return playlist.PlayId(pc, id, error);
 	}
 
-	void PlayNext() {
-		return playlist.PlayNext(pc);
+	bool PlayNext(Error &error) {
+		return playlist.PlayNext(pc, error);
 	}
 
-	void PlayPrevious() {
-		return playlist.PlayPrevious(pc);
+	bool PlayPrevious(Error &error) {
+		return playlist.PlayPrevious(pc, error);
 	}
 
-	PlaylistResult SeekSongPosition(unsigned song_position,
-					SongTime seek_time) {
-		return playlist.SeekSongPosition(pc, song_position, seek_time);
+	bool SeekSongPosition(unsigned song_position,
+			      SongTime seek_time, Error &error) {
+		return playlist.SeekSongPosition(pc, song_position, seek_time,
+						 error);
 	}
 
-	PlaylistResult SeekSongId(unsigned song_id, SongTime seek_time) {
-		return playlist.SeekSongId(pc, song_id, seek_time);
+	bool SeekSongId(unsigned song_id, SongTime seek_time, Error &error) {
+		return playlist.SeekSongId(pc, song_id, seek_time, error);
 	}
 
-	PlaylistResult SeekCurrent(SignedSongTime seek_time, bool relative) {
-		return playlist.SeekCurrent(pc, seek_time, relative);
+	bool SeekCurrent(SignedSongTime seek_time, bool relative,
+			 Error &error) {
+		return playlist.SeekCurrent(pc, seek_time, relative, error);
 	}
 
 	void SetRepeat(bool new_value) {
@@ -202,12 +207,20 @@ struct Partition final : private PlayerListener, private MixerListener {
 	void SyncWithPlayer();
 
 private:
+	/* virtual methods from class QueueListener */
+	void OnQueueModified() override;
+	void OnQueueOptionsChanged() override;
+	void OnQueueSongStarted() override;
+
 	/* virtual methods from class PlayerListener */
-	virtual void OnPlayerSync() override;
-	virtual void OnPlayerTagModified() override;
+	void OnPlayerSync() override;
+	void OnPlayerTagModified() override;
 
 	/* virtual methods from class MixerListener */
-	virtual void OnMixerVolumeChanged(Mixer &mixer, int volume) override;
+	void OnMixerVolumeChanged(Mixer &mixer, int volume) override;
+
+	/* callback for #global_events */
+	void OnGlobalEvent(unsigned mask);
 };
 
 #endif

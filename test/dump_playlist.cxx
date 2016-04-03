@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -48,9 +48,8 @@ tag_save(FILE *file, const Tag &tag)
 }
 
 int main(int argc, char **argv)
-{
+try {
 	const char *uri;
-	InputStream *is = NULL;
 
 	if (argc != 3) {
 		fprintf(stderr, "Usage: dump_playlist CONFIG URI\n");
@@ -65,10 +64,7 @@ int main(int argc, char **argv)
 	config_global_init();
 
 	Error error;
-	if (!ReadConfigFile(config_path, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	const ScopeIOThread io_thread;
 
@@ -85,12 +81,13 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
+	InputStreamPtr is;
 	auto playlist = playlist_list_open_uri(uri, mutex, cond);
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
 		is = InputStream::OpenReady(uri, mutex, cond, error);
-		if (is == NULL) {
+		if (!is) {
 			if (error.IsDefined())
 				LogError(error);
 			else
@@ -101,9 +98,8 @@ int main(int argc, char **argv)
 
 		/* open the playlist */
 
-		playlist = playlist_list_open_stream(*is, uri);
+		playlist = playlist_list_open_stream(std::move(is), uri);
 		if (playlist == NULL) {
-			delete is;
 			fprintf(stderr, "Failed to open playlist\n");
 			return 2;
 		}
@@ -111,7 +107,7 @@ int main(int argc, char **argv)
 
 	/* dump the playlist */
 
-	DetachedSong *song;
+	std::unique_ptr<DetachedSong> song;
 	while ((song = playlist->NextSong()) != NULL) {
 		printf("%s\n", song->GetURI());
 
@@ -130,19 +126,20 @@ int main(int argc, char **argv)
 			       (start_ms / 1000) % 60);
 
 		tag_save(stdout, song->GetTag());
-
-		delete song;
 	}
 
 	/* deinitialize everything */
 
 	delete playlist;
-	delete is;
+	is.reset();
 
 	decoder_plugin_deinit_all();
 	playlist_list_global_finish();
 	input_stream_global_finish();
 	config_global_finish();
 
-	return 0;
-}
+	return EXIT_SUCCESS;
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,27 +28,30 @@
 #include <stdint.h>
 
 struct Queue;
+struct Partition;
 class SongFilter;
-class Client;
+class Response;
 
 void
-queue_print_info(Client &client, const Queue &queue,
+queue_print_info(Response &r, Partition &partition, const Queue &queue,
 		 unsigned start, unsigned end);
 
 void
-queue_print_uris(Client &client, const Queue &queue,
+queue_print_uris(Response &r, Partition &partition, const Queue &queue,
 		 unsigned start, unsigned end);
 
 void
-queue_print_changes_info(Client &client, const Queue &queue,
-			 uint32_t version);
+queue_print_changes_info(Response &r, Partition &partition, const Queue &queue,
+			 uint32_t version,
+			 unsigned start, unsigned end);
 
 void
-queue_print_changes_position(Client &client, const Queue &queue,
-			     uint32_t version);
+queue_print_changes_position(Response &r, const Queue &queue,
+			     uint32_t version,
+			     unsigned start, unsigned end);
 
 void
-queue_find(Client &client, const Queue &queue,
+queue_find(Response &response, Partition &partition, const Queue &queue,
 	   const SongFilter &filter);
 
 #endif

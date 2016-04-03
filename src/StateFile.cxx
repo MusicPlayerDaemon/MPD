@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,9 +28,10 @@
 #include "Instance.hxx"
 #include "mixer/Volume.hxx"
 #include "SongLoader.hxx"
-#include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
+
+#include <exception>
 
 #include <string.h>
 
@@ -73,12 +74,12 @@ StateFile::Write(BufferedOutputStream &os)
 	playlist_state_save(os, partition.playlist, partition.pc);
 }
 
-inline bool
-StateFile::Write(OutputStream &os, Error &error)
+inline void
+StateFile::Write(OutputStream &os)
 {
 	BufferedOutputStream bos(os);
 	Write(bos);
-	return bos.Flush(error);
+	bos.Flush();
 }
 
 void
@@ -87,11 +88,12 @@ StateFile::Write()
 	FormatDebug(state_file_domain,
 		    "Saving state file %s", path_utf8.c_str());
 
-	Error error;
-	FileOutputStream fos(path, error);
-	if (!fos.IsDefined() || !Write(fos, error) || !fos.Commit(error)) {
-		LogError(error);
-		return;
+	try {
+		FileOutputStream fos(path);
+		Write(fos);
+		fos.Commit();
+	} catch (const std::exception &e) {
+		LogError(e);
 	}
 
 	RememberVersions();
@@ -99,17 +101,12 @@ StateFile::Write()
 
 void
 StateFile::Read()
-{
+try {
 	bool success;
 
 	FormatDebug(state_file_domain, "Loading state file %s", path_utf8.c_str());
 
-	Error error;
-	TextFile file(path, error);
-	if (file.HasFailed()) {
-		LogError(error);
-		return;
-	}
+	TextFile file(path);
 
 #ifdef ENABLE_DATABASE
 	const SongLoader song_loader(partition.instance.database,
@@ -132,6 +129,8 @@ StateFile::Read()
 	}
 
 	RememberVersions();
+} catch (const std::exception &e) {
+	LogError(e);
 }
 
 void

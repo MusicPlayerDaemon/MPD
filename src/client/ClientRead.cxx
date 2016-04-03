@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -53,7 +53,7 @@ Client::OnSocketInput(void *data, size_t length)
 
 	case CommandResult::KILL:
 		Close();
-		partition.instance.event_loop->Break();
+		partition.instance.Shutdown();
 		return InputResult::CLOSED;
 
 	case CommandResult::FINISH:

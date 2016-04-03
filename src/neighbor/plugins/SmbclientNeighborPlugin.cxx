@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,14 +30,10 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
-#include "util/Macros.hxx"
-#include "util/Domain.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <libsmbclient.h>
 
-#include <list>
 #include <algorithm>
 
 class SmbclientNeighborExplorer final : public NeighborExplorer {

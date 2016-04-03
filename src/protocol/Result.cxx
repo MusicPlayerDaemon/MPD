@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,36 +21,8 @@
 #include "Result.hxx"
 #include "client/Client.hxx"
 
-#include <assert.h>
-
-const char *current_command;
-int command_list_num;
-
 void
 command_success(Client &client)
 {
 	client_puts(client, "OK\n");
-}
-
-void
-command_error_v(Client &client, enum ack error,
-		const char *fmt, va_list args)
-{
-	assert(current_command != nullptr);
-
-	client_printf(client, "ACK [%i@%i] {%s} ",
-		      (int)error, command_list_num, current_command);
-	client_vprintf(client, fmt, args);
-	client_puts(client, "\n");
-
-	current_command = nullptr;
-}
-
-void
-command_error(Client &client, enum ack error, const char *fmt, ...)
-{
-	va_list args;
-	va_start(args, fmt);
-	command_error_v(client, error, fmt, args);
-	va_end(args);
 }

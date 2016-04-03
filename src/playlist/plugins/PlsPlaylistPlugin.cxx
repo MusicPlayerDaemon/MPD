@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,19 +22,16 @@
 #include "../PlaylistPlugin.hxx"
 #include "../MemorySongEnumerator.hxx"
 #include "input/TextInputStream.hxx"
+#include "input/InputStream.hxx"
 #include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/DivideString.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <string>
 
 #include <stdlib.h>
-
-static constexpr Domain pls_domain("pls");
 
 static bool
 FindPlaylistSection(TextInputStream &is)
@@ -145,17 +142,22 @@ ParsePls(TextInputStream &is, std::forward_list<DetachedSong> &songs)
 }
 
 static bool
-ParsePls(InputStream &is, std::forward_list<DetachedSong> &songs)
+ParsePls(InputStreamPtr &&is, std::forward_list<DetachedSong> &songs)
 {
-	TextInputStream tis(is);
-	return ParsePls(tis, songs);
+	TextInputStream tis(std::move(is));
+	if (!ParsePls(tis, songs)) {
+		is = tis.StealInputStream();
+		return false;
+	}
+
+	return true;
 }
 
 static SongEnumerator *
-pls_open_stream(InputStream &is)
+pls_open_stream(InputStreamPtr &&is)
 {
 	std::forward_list<DetachedSong> songs;
-	if (!ParsePls(is, songs))
+	if (!ParsePls(std::move(is), songs))
 		return nullptr;
 
 	return new MemorySongEnumerator(std::move(songs));

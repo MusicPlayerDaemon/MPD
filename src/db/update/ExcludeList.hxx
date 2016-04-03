@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,15 +36,23 @@
 class Path;
 
 class ExcludeList {
+	const ExcludeList *const parent;
+
 #ifdef HAVE_CLASS_GLOB
 	std::forward_list<Glob> patterns;
 #endif
 
 public:
+	ExcludeList()
+		:parent(nullptr) {}
+
+	ExcludeList(const ExcludeList &_parent)
+		:parent(&_parent) {}
+
 	gcc_pure
 	bool IsEmpty() const {
 #ifdef HAVE_CLASS_GLOB
-		return patterns.empty();
+		return ((parent == nullptr) || parent->IsEmpty()) && patterns.empty();
 #else
 		/* not implemented */
 		return true;

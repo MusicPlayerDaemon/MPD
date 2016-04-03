@@ -5,19 +5,33 @@ ver 0.20 (not yet released)
   - report song duration with milliseconds precision
   - "sticker find" can match sticker values
   - drop the "file:///" prefix for absolute file paths
+  - add range parameter to command "plchanges" and "plchangesposid"
+  - send verbose error message to client
 * tags
   - ape, ogg: drop support for non-standard tag "album artist"
     affected filetypes: vorbis, flac, opus & all files with ape2 tags
     (most importantly some mp3s)
   - id3: remove the "id3v1_encoding" setting; by definition, all ID3v1 tags
     are ISO-Latin-1
+  - ape: support APE replay gain on remote files
+  - read ID3 tags from NFS/SMB
 * decoder
+  - improved error logging
+  - report I/O errors to clients
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
+  - gme: add option "accuracy"
+  - mad: reduce memory usage while scanning tags
   - mpcdec: read the bit rate
 * playlist
+  - cue: don't skip pregap
   - embcue: fix last track
+  - flac: new plugin which reads the "CUESHEET" metadata block
 * output
+  - alsa: fix multi-channel order
+  - alsa: remove option "use_mmap"
+  - alsa: support DSD_U32
+  - alsa: disable DoP if it fails
   - jack: reduce CPU usage
   - pulse: set channel map to WAVE-EX
   - recorder: record tags
@@ -35,6 +49,41 @@ ver 0.20 (not yet released)
 * support libsystemd (instead of the older libsystemd-daemon)
 * database
   - proxy: add TCP keepalive option
+* update
+  - apply .mpdignore matches to subdirectories
+
+ver 0.19.14 (2016/03/18)
+* decoder
+  - dsdiff: fix off-by-one buffer overflow
+  - opus: limit tag size to 64 kB
+* archive
+  - iso9660: fix buffer overflow
+* fix quadratic runtime bug in the tag pool
+* fix build failures on non-glibc builds due to constexpr Mutex
+
+ver 0.19.13 (2016/02/23)
+* tags
+  - aiff, riff: fix ID3 chunk padding
+* decoder
+  - ffmpeg: support the TAK codec
+* fix disappearing duration of remote songs during playback
+* initialize supplementary groups with glibc 2.19+
+
+ver 0.19.12 (2015/12/15)
+* fix assertion failure on malformed UTF-8 tag
+* fix build failure on non-Linux systems
+* fix LimitRTTIME in systemd unit file
+
+ver 0.19.11 (2015/10/27)
+* tags
+  - ape: fix buffer overflow
+* decoder
+  - ffmpeg: fix crash due to wrong avio_alloc_context() call
+  - gme: don't loop forever, fall back to GME's default play length
+* encoder
+  - flac: fix crash with 32 bit playback
+* mixer
+  - fix mixer lag after enabling/disabling output
 
 ver 0.19.10 (2015/06/21)
 * input

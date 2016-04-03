@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #include "config.h"
 #include "InputStream.hxx"
 #include "thread/Cond.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 
 #include <assert.h>
 
@@ -98,6 +98,13 @@ InputStream::LockSeek(offset_type _offset, Error &error)
 {
 	const ScopeLock protect(mutex);
 	return Seek(_offset, error);
+}
+
+bool
+InputStream::LockSkip(offset_type _offset, Error &error)
+{
+	const ScopeLock protect(mutex);
+	return Skip(_offset, error);
 }
 
 Tag *

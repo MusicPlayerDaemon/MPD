@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -187,7 +187,7 @@ dsdiff_read_prop(Decoder *decoder, InputStream &is,
 
 static void
 dsdiff_handle_native_tag(InputStream &is,
-			 const struct tag_handler *handler,
+			 const TagHandler &handler,
 			 void *handler_ctx, offset_type tagoffset,
 			 TagType type)
 {
@@ -205,7 +205,7 @@ dsdiff_handle_native_tag(InputStream &is,
 	if (length == 0 || length > 60)
 		return;
 
-	char string[length];
+	char string[length + 1];
 	char *label;
 	label = string;
 
@@ -229,7 +229,7 @@ static bool
 dsdiff_read_metadata_extra(Decoder *decoder, InputStream &is,
 			   DsdiffMetaData *metadata,
 			   DsdiffChunkHeader *chunk_header,
-			   const struct tag_handler *handler,
+			   const TagHandler &handler,
 			   void *handler_ctx)
 {
 
@@ -456,7 +456,7 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 
 static bool
 dsdiff_scan_stream(InputStream &is,
-		   gcc_unused const struct tag_handler *handler,
+		   gcc_unused const TagHandler &handler,
 		   gcc_unused void *handler_ctx)
 {
 	DsdiffMetaData metadata;

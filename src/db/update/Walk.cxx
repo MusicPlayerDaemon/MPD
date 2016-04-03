@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -38,12 +38,12 @@
 #include "fs/Charset.hxx"
 #include "storage/FileInfo.hxx"
 #include "util/Alloc.hxx"
+#include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
-#include <sys/stat.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -77,7 +77,7 @@ inline void
 UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 					const ExcludeList &exclude_list)
 {
-	db_lock();
+	const ScopeDatabaseLock protect;
 
 	directory.ForEachChildSafe([&](Directory &child){
 			const auto name_fs =
@@ -98,8 +98,6 @@ UpdateWalk::RemoveExcludedFromDirectory(Directory &directory,
 				modified = true;
 			}
 		});
-
-	db_unlock();
 }
 
 inline void
@@ -128,9 +126,8 @@ UpdateWalk::PurgeDeletedFromDirectory(Directory &directory)
 	     i != end;) {
 		if (!directory_child_is_regular(storage, directory,
 						i->name.c_str())) {
-			db_lock();
+			const ScopeDatabaseLock protect;
 			i = directory.playlists.erase(i);
-			db_unlock();
 		} else
 			++i;
 	}
@@ -197,10 +194,9 @@ UpdateWalk::UpdatePlaylistFile(Directory &directory,
 
 	PlaylistInfo pi(name, info.mtime);
 
-	db_lock();
+	const ScopeDatabaseLock protect;
 	if (directory.playlists.UpdateOrInsert(std::move(pi)))
 		modified = true;
-	db_unlock();
 	return true;
 }
 
@@ -219,8 +215,9 @@ UpdateWalk::UpdateRegularFile(Directory &directory,
 
 void
 UpdateWalk::UpdateDirectoryChild(Directory &directory,
+				 const ExcludeList &exclude_list,
 				 const char *name, const StorageFileInfo &info)
-{
+try {
 	assert(strchr(name, '/') == nullptr);
 
 	if (info.IsRegular()) {
@@ -230,18 +227,22 @@ UpdateWalk::UpdateDirectoryChild(Directory &directory,
 					info.inode, info.device))
 			return;
 
-		db_lock();
-		Directory *subdir = directory.MakeChild(name);
-		db_unlock();
+		Directory *subdir;
+		{
+			const ScopeDatabaseLock protect;
+			subdir = directory.MakeChild(name);
+		}
 
 		assert(&directory == subdir->parent);
 
-		if (!UpdateDirectory(*subdir, info))
+		if (!UpdateDirectory(*subdir, exclude_list, info))
 			editor.LockDeleteDirectory(subdir);
 	} else {
 		FormatDebug(update_domain,
 			    "%s is not a directory, archive or music", name);
 	}
+} catch (const std::exception &e) {
+	LogError(e);
 }
 
 /* we don't look at "." / ".." nor files with newlines in their name */
@@ -327,7 +328,9 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 }
 
 bool
-UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
+UpdateWalk::UpdateDirectory(Directory &directory,
+			    const ExcludeList &exclude_list,
+			    const StorageFileInfo &info)
 {
 	assert(info.IsDirectory());
 
@@ -340,17 +343,17 @@ UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
 		return false;
 	}
 
-	ExcludeList exclude_list;
+	ExcludeList child_exclude_list(exclude_list);
 
 	{
 		const auto exclude_path_fs =
 			storage.MapChildFS(directory.GetPath(), ".mpdignore");
 		if (!exclude_path_fs.IsNull())
-			exclude_list.LoadFile(exclude_path_fs);
+			child_exclude_list.LoadFile(exclude_path_fs);
 	}
 
-	if (!exclude_list.IsEmpty())
-		RemoveExcludedFromDirectory(directory, exclude_list);
+	if (!child_exclude_list.IsEmpty())
+		RemoveExcludedFromDirectory(directory, child_exclude_list);
 
 	PurgeDeletedFromDirectory(directory);
 
@@ -361,7 +364,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
 
 		{
 			const auto name_fs = AllocatedPath::FromUTF8(name_utf8);
-			if (name_fs.IsNull() || exclude_list.Check(name_fs))
+			if (name_fs.IsNull() || child_exclude_list.Check(name_fs))
 				continue;
 		}
 
@@ -376,7 +379,7 @@ UpdateWalk::UpdateDirectory(Directory &directory, const StorageFileInfo &info)
 			continue;
 		}
 
-		UpdateDirectoryChild(directory, name_utf8, info2);
+		UpdateDirectoryChild(directory, child_exclude_list, name_utf8, info2);
 	}
 
 	directory.mtime = info.mtime;
@@ -389,9 +392,11 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 				      const char *uri_utf8,
 				      const char *name_utf8)
 {
-	db_lock();
-	Directory *directory = parent.FindChild(name_utf8);
-	db_unlock();
+	Directory *directory;
+	{
+		const ScopeDatabaseLock protect;
+		directory = parent.FindChild(name_utf8);
+	}
 
 	if (directory != nullptr) {
 		if (directory->IsMount())
@@ -410,13 +415,14 @@ UpdateWalk::DirectoryMakeChildChecked(Directory &parent,
 
 	/* if we're adding directory paths, make sure to delete filenames
 	   with potentially the same name */
-	db_lock();
-	Song *conflicting = parent.FindSong(name_utf8);
-	if (conflicting)
-		editor.DeleteSong(parent, conflicting);
+	{
+		const ScopeDatabaseLock protect;
+		Song *conflicting = parent.FindSong(name_utf8);
+		if (conflicting)
+			editor.DeleteSong(parent, conflicting);
 
-	directory = parent.CreateChild(name_utf8);
-	db_unlock();
+		directory = parent.CreateChild(name_utf8);
+	}
 
 	directory_set_stat(*directory, info);
 	return directory;
@@ -432,7 +438,7 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root, const char *uri)
 	while ((slash = strchr(name_utf8, '/')) != nullptr) {
 		*slash = 0;
 
-		if (*name_utf8 == 0)
+		if (StringIsEmpty(name_utf8))
 			continue;
 
 		directory = DirectoryMakeChildChecked(*directory,
@@ -450,7 +456,7 @@ UpdateWalk::DirectoryMakeUriParentChecked(Directory &root, const char *uri)
 
 inline void
 UpdateWalk::UpdateUri(Directory &root, const char *uri)
-{
+try {
 	Directory *parent = DirectoryMakeUriParentChecked(root, uri);
 	if (parent == nullptr)
 		return;
@@ -468,7 +474,11 @@ UpdateWalk::UpdateUri(Directory &root, const char *uri)
 		return;
 	}
 
-	UpdateDirectoryChild(*parent, name, info);
+	ExcludeList exclude_list;
+
+	UpdateDirectoryChild(*parent, exclude_list, name, info);
+} catch (const std::exception &e) {
+	LogError(e);
 }
 
 bool
@@ -484,7 +494,9 @@ UpdateWalk::Walk(Directory &root, const char *path, bool discard)
 		if (!GetInfo(storage, "", info))
 			return false;
 
-		UpdateDirectory(root, info);
+		ExcludeList exclude_list;
+
+		UpdateDirectory(root, exclude_list, info);
 	}
 
 	return modified;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -58,7 +58,7 @@ class CommandListBuilder {
 
 public:
 	CommandListBuilder()
-		:mode(Mode::DISABLED), size(0) {}
+		:mode(Mode::DISABLED) {}
 
 	/**
 	 * Is a command list currently being built?
@@ -89,6 +89,7 @@ public:
 		assert(mode == Mode::DISABLED);
 
 		mode = (Mode)ok;
+		size = 0;
 	}
 
 	/**

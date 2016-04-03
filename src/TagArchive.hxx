@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,9 @@
 
 #include "check.h"
 
-class Path;
-struct tag_handler;
+class ArchiveFile;
+struct TagHandler;
+class TagBuilder;
 
 /**
  * Scan the tags of a song file inside an archive.  Invokes matching
@@ -34,6 +35,19 @@ struct tag_handler;
  * found)
  */
 bool
-tag_archive_scan(Path path, const tag_handler &handler, void *handler_ctx);
+tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
+		 const TagHandler &handler, void *handler_ctx);
+
+/**
+ * Scan the tags of a song file inside an archive.  Invokes matching
+ * decoder plugins, and falls back to generic scanners (APE and ID3)
+ * if no tags were found (but the file was recognized).
+ *
+ * @return true if the file was recognized (even if no metadata was
+ * found)
+ */
+bool
+tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
+		 TagBuilder &builder);
 
 #endif

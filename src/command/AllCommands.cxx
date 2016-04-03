@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,8 @@
 
 #include "config.h"
 #include "AllCommands.hxx"
+#include "CommandError.hxx"
+#include "Request.hxx"
 #include "QueueCommands.hxx"
 #include "TagCommands.hxx"
 #include "PlayerCommands.hxx"
@@ -32,13 +34,13 @@
 #include "OtherCommands.hxx"
 #include "Permission.hxx"
 #include "tag/TagType.h"
-#include "protocol/Result.hxx"
 #include "Partition.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "util/Macros.hxx"
 #include "util/Tokenizer.hxx"
 #include "util/Error.hxx"
-#include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 
 #ifdef ENABLE_SQLITE
 #include "StickerCommands.hxx"
@@ -62,15 +64,15 @@ struct command {
 	unsigned permission;
 	int min;
 	int max;
-	CommandResult (*handler)(Client &client, ConstBuffer<const char *> args);
+	CommandResult (*handler)(Client &client, Request request, Response &response);
 };
 
 /* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, ConstBuffer<const char *> args);
+handle_commands(Client &client, Request request, Response &response);
 
 static CommandResult
-handle_not_commands(Client &client, ConstBuffer<const char *> args);
+handle_not_commands(Client &client, Request request, Response &response);
 
 /**
  * The command registry.
@@ -146,8 +148,8 @@ static constexpr struct command commands[] = {
 	{ "playlistinfo", PERMISSION_READ, 0, 1, handle_playlistinfo },
 	{ "playlistmove", PERMISSION_CONTROL, 3, 3, handle_playlistmove },
 	{ "playlistsearch", PERMISSION_READ, 2, -1, handle_playlistsearch },
-	{ "plchanges", PERMISSION_READ, 1, 1, handle_plchanges },
-	{ "plchangesposid", PERMISSION_READ, 1, 1, handle_plchangesposid },
+	{ "plchanges", PERMISSION_READ, 1, 2, handle_plchanges },
+	{ "plchangesposid", PERMISSION_READ, 1, 2, handle_plchangesposid },
 	{ "previous", PERMISSION_CONTROL, 0, 0, handle_previous },
 	{ "prio", PERMISSION_CONTROL, 2, -1, handle_prio },
 	{ "prioid", PERMISSION_CONTROL, 2, -1, handle_prioid },
@@ -203,58 +205,68 @@ command_available(gcc_unused const Partition &partition,
 		  gcc_unused const struct command *cmd)
 {
 #ifdef ENABLE_SQLITE
-	if (strcmp(cmd->cmd, "sticker") == 0)
+	if (StringIsEqual(cmd->cmd, "sticker"))
 		return sticker_enabled();
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	if (strcmp(cmd->cmd, "listneighbors") == 0)
+	if (StringIsEqual(cmd->cmd, "listneighbors"))
 		return neighbor_commands_available(partition.instance);
 #endif
 
-	if (strcmp(cmd->cmd, "save") == 0 ||
-	    strcmp(cmd->cmd, "rm") == 0 ||
-	    strcmp(cmd->cmd, "rename") == 0 ||
-	    strcmp(cmd->cmd, "playlistdelete") == 0 ||
-	    strcmp(cmd->cmd, "playlistmove") == 0 ||
-	    strcmp(cmd->cmd, "playlistclear") == 0 ||
-	    strcmp(cmd->cmd, "playlistadd") == 0 ||
-	    strcmp(cmd->cmd, "listplaylists") == 0)
+	if (StringIsEqual(cmd->cmd, "save") ||
+	    StringIsEqual(cmd->cmd, "rm") ||
+	    StringIsEqual(cmd->cmd, "rename") ||
+	    StringIsEqual(cmd->cmd, "playlistdelete") ||
+	    StringIsEqual(cmd->cmd, "playlistmove") ||
+	    StringIsEqual(cmd->cmd, "playlistclear") ||
+	    StringIsEqual(cmd->cmd, "playlistadd") ||
+	    StringIsEqual(cmd->cmd, "listplaylists"))
 		return playlist_commands_available();
 
 	return true;
 }
 
-/* don't be fooled, this is the command handler for "commands" command */
 static CommandResult
-handle_commands(Client &client, gcc_unused ConstBuffer<const char *> args)
+PrintAvailableCommands(Response &r, const Partition &partition,
+		     unsigned permission)
 {
-	const unsigned permission = client.GetPermission();
-
 	for (unsigned i = 0; i < num_commands; ++i) {
 		const struct command *cmd = &commands[i];
 
 		if (cmd->permission == (permission & cmd->permission) &&
-		    command_available(client.partition, cmd))
-			client_printf(client, "command: %s\n", cmd->cmd);
+		    command_available(partition, cmd))
+			r.Format("command: %s\n", cmd->cmd);
 	}
 
 	return CommandResult::OK;
 }
 
 static CommandResult
-handle_not_commands(Client &client, gcc_unused ConstBuffer<const char *> args)
+PrintUnavailableCommands(Response &r, unsigned permission)
 {
-	const unsigned permission = client.GetPermission();
-
 	for (unsigned i = 0; i < num_commands; ++i) {
 		const struct command *cmd = &commands[i];
 
 		if (cmd->permission != (permission & cmd->permission))
-			client_printf(client, "command: %s\n", cmd->cmd);
+			r.Format("command: %s\n", cmd->cmd);
 	}
 
 	return CommandResult::OK;
+}
+
+/* don't be fooled, this is the command handler for "commands" command */
+static CommandResult
+handle_commands(Client &client, gcc_unused Request request, Response &r)
+{
+	return PrintAvailableCommands(r, client.partition,
+				      client.GetPermission());
+}
+
+static CommandResult
+handle_not_commands(Client &client, gcc_unused Request request, Response &r)
+{
+	return PrintUnavailableCommands(r, client.GetPermission());
 }
 
 void
@@ -294,11 +306,11 @@ command_lookup(const char *name)
 }
 
 static bool
-command_check_request(const struct command *cmd, Client &client,
-		      unsigned permission, ConstBuffer<const char *> args)
+command_check_request(const struct command *cmd, Response &r,
+		      unsigned permission, Request args)
 {
 	if (cmd->permission != (permission & cmd->permission)) {
-		command_error(client, ACK_ERROR_PERMISSION,
+		r.FormatError(ACK_ERROR_PERMISSION,
 			      "you don't have permission for \"%s\"",
 			      cmd->cmd);
 		return false;
@@ -311,16 +323,16 @@ command_check_request(const struct command *cmd, Client &client,
 		return true;
 
 	if (min == max && unsigned(max) != args.size) {
-		command_error(client, ACK_ERROR_ARG,
+		r.FormatError(ACK_ERROR_ARG,
 			      "wrong number of arguments for \"%s\"",
 			      cmd->cmd);
 		return false;
 	} else if (args.size < unsigned(min)) {
-		command_error(client, ACK_ERROR_ARG,
+		r.FormatError(ACK_ERROR_ARG,
 			      "too few arguments for \"%s\"", cmd->cmd);
 		return false;
 	} else if (max >= 0 && args.size > unsigned(max)) {
-		command_error(client, ACK_ERROR_ARG,
+		r.FormatError(ACK_ERROR_ARG,
 			      "too many arguments for \"%s\"", cmd->cmd);
 		return false;
 	} else
@@ -328,21 +340,19 @@ command_check_request(const struct command *cmd, Client &client,
 }
 
 static const struct command *
-command_checked_lookup(Client &client, unsigned permission,
-		       const char *cmd_name, ConstBuffer<const char *> args)
+command_checked_lookup(Response &r, unsigned permission,
+		       const char *cmd_name, Request args)
 {
-	current_command = "";
-
 	const struct command *cmd = command_lookup(cmd_name);
 	if (cmd == nullptr) {
-		command_error(client, ACK_ERROR_UNKNOWN,
+		r.FormatError(ACK_ERROR_UNKNOWN,
 			      "unknown command \"%s\"", cmd_name);
 		return nullptr;
 	}
 
-	current_command = cmd->cmd;
+	r.SetCommand(cmd->cmd);
 
-	if (!command_check_request(cmd, client, permission, args))
+	if (!command_check_request(cmd, r, permission, args))
 		return nullptr;
 
 	return cmd;
@@ -350,57 +360,46 @@ command_checked_lookup(Client &client, unsigned permission,
 
 CommandResult
 command_process(Client &client, unsigned num, char *line)
-{
+try {
+	Response r(client, num);
 	Error error;
 
-	command_list_num = num;
-
 	/* get the command name (first word on the line) */
-	/* we have to set current_command because command_error()
+	/* we have to set current_command because Response::Error()
 	   expects it to be set */
 
 	Tokenizer tokenizer(line);
 
-	const char *const cmd_name = current_command =
-		tokenizer.NextWord(error);
-	if (cmd_name == nullptr) {
-		current_command = "";
-		if (tokenizer.IsEnd())
-			command_error(client, ACK_ERROR_UNKNOWN,
-				      "No command given");
-		else
-			command_error(client, ACK_ERROR_UNKNOWN,
-				      "%s", error.GetMessage());
-
-		current_command = nullptr;
-
+	const char *cmd_name;
+	try {
+		cmd_name = tokenizer.NextWord();
+		if (cmd_name == nullptr) {
+			r.Error(ACK_ERROR_UNKNOWN, "No command given");
+			/* this client does not speak the MPD
+			   protocol; kick the connection */
+			return CommandResult::FINISH;
+		}
+	} catch (const std::exception &e) {
+		r.Error(ACK_ERROR_UNKNOWN, e.what());
 		/* this client does not speak the MPD protocol; kick
 		   the connection */
 		return CommandResult::FINISH;
 	}
 
 	char *argv[COMMAND_ARGV_MAX];
-	ConstBuffer<const char *> args(argv, 0);
+	Request args(argv, 0);
 
 	/* now parse the arguments (quoted or unquoted) */
 
 	while (true) {
 		if (args.size == COMMAND_ARGV_MAX) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Too many arguments");
-			current_command = nullptr;
+			r.Error(ACK_ERROR_ARG, "Too many arguments");
 			return CommandResult::ERROR;
 		}
 
-		char *a = tokenizer.NextParam(error);
-		if (a == nullptr) {
-			if (tokenizer.IsEnd())
-				break;
-
-			command_error(client, ACK_ERROR_ARG, "%s", error.GetMessage());
-			current_command = nullptr;
-			return CommandResult::ERROR;
-		}
+		char *a = tokenizer.NextParam();
+		if (a == nullptr)
+			break;
 
 		argv[args.size++] = a;
 	}
@@ -408,15 +407,16 @@ command_process(Client &client, unsigned num, char *line)
 	/* look up and invoke the command handler */
 
 	const struct command *cmd =
-		command_checked_lookup(client, client.GetPermission(),
+		command_checked_lookup(r, client.GetPermission(),
 				       cmd_name, args);
 
 	CommandResult ret = cmd
-		? cmd->handler(client, args)
+		? cmd->handler(client, args, r)
 		: CommandResult::ERROR;
 
-	current_command = nullptr;
-	command_list_num = 0;
-
 	return ret;
+} catch (const std::exception &e) {
+	Response r(client, num);
+	PrintError(r, std::current_exception());
+	return CommandResult::ERROR;
 }

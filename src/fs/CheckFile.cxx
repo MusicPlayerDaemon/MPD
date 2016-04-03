@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,9 +25,9 @@
 #include "Path.hxx"
 #include "AllocatedPath.hxx"
 #include "DirectoryReader.hxx"
+#include "system/Error.hxx"
 
 #include <errno.h>
-#include <sys/stat.h>
 
 void
 CheckDirectoryReadable(Path path_fs)
@@ -58,11 +58,12 @@ CheckDirectoryReadable(Path path_fs)
 	}
 #endif
 
-	const DirectoryReader reader(path_fs);
-	if (reader.HasFailed() && errno == EACCES) {
-		const auto path_utf8 = path_fs.ToUTF8();
-		FormatError(config_domain,
-			    "No permission to read directory: %s",
-			    path_utf8.c_str());
+	try {
+		const DirectoryReader reader(path_fs);
+	} catch (const std::system_error &e) {
+		if (IsAccessDenied(e))
+			FormatError(config_domain,
+				    "No permission to read directory: %s",
+				    path_fs.ToUTF8().c_str());
 	}
 }

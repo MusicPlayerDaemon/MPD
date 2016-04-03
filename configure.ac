@@ -116,6 +116,10 @@ darwin*)
 solaris*)
 	host_is_solaris=yes
 	;;
+haiku*)
+	AC_CHECK_TOOL(RC, rc)
+	AC_CHECK_TOOL(XRES, xres)
+	;;
 esac
 
 AM_CONDITIONAL([ANDROID], [test x$host_is_android = xyes])
@@ -217,7 +221,7 @@ if test x$enable_syslog = xyes; then
 	AC_DEFINE(HAVE_SYSLOG, 1, [Define if syslog() is available])
 fi
 
-AC_SEARCH_LIBS([socket], [socket])
+AC_SEARCH_LIBS([socket], [network socket])
 AC_SEARCH_LIBS([gethostbyname], [nsl])
 
 if test x$host_is_linux = xyes; then
@@ -225,6 +229,7 @@ if test x$host_is_linux = xyes; then
 fi
 
 AC_CHECK_FUNCS(getpwnam_r getpwuid_r)
+AC_CHECK_FUNCS(initgroups)
 AC_CHECK_FUNCS(fnmatch)
 AC_CHECK_FUNCS(strndup)
 
@@ -329,6 +334,11 @@ AC_ARG_ENABLE(fifo,
 		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
 
+AC_ARG_ENABLE(haiku,
+	AS_HELP_STRING([--enable-haiku],
+		[enable the Haiku output plugin (default: auto)]),,
+	enable_haiku=auto)
+
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
@@ -387,7 +397,7 @@ AC_ARG_ENABLE(recorder-output,
 
 AC_ARG_ENABLE(sacdiso,
 	AS_HELP_STRING([--enable-sacdiso],
-		[enable Super Audio CD ISO support via libsacdiso (default: disable)]),,
+		 [enable Super Audio CD ISO support via libsacdiso (default: disable)]),,
 	enable_sacdiso=no)
 
 AC_ARG_ENABLE(dvdaiso,
@@ -449,26 +459,7 @@ dnl ---------------------------------------------------------------------------
 dnl Mandatory Libraries
 dnl ---------------------------------------------------------------------------
 
-no_exceptions=yes
-
 AX_BOOST_BASE([1.46],, [AC_MSG_ERROR([Boost not found])])
-
-dnl Don't disable exceptions on Boost older than 1.54, because
-dnl Boost.Intrusive supports this compiler mode only since 1.54;
-dnl see https://svn.boost.org/trac/boost/ticket/7849
-CPPFLAGS_SAVED="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $BOOST_CPPFLAGS"
-export CPPFLAGS
-AC_LANG_PUSH(C++)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-@%:@include <boost/version.hpp>
-]], [[
-#if BOOST_VERSION < 105400
-#error detected Boost older than 1.54
-#endif
-]])],, [no_exceptions=no])
-AC_LANG_POP([C++])
-CPPFLAGS="$CPPFLAGS_SAVED"
 
 AC_ARG_ENABLE(icu,
 	AS_HELP_STRING([--enable-icu],
@@ -876,7 +867,7 @@ MPD_ENABLE_AUTO_PKG(fluidsynth, FLUIDSYNTH, [fluidsynth >= 1.1],
 dnl ---------------------------------- libgme ---------------------------------
 
 MPD_ENABLE_AUTO_PKG_LIB(gme, GME, [libgme],
-	gme, gme_open_file, [-lgme -lstdc++], [],
+	gme, gme_open_file, [-lgme], [],
 	[Game Music Emulator decoder plugin], [libgme not found])
 
 dnl ---------------------------------- libmad ---------------------------------
@@ -993,16 +984,16 @@ AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enab
 
 dnl --------------------------------- sacdiso ---------------------------------
 if test x$enable_sacdiso = xyes; then
-	AC_DEFINE(ENABLE_SACDISO, 1, [Define for Super Audio ISO support])
-	AC_SUBST(SACDISO_LIBS,"-lssl -lcrypto")
+  AC_DEFINE(ENABLE_SACDISO, 1, [Define for Super Audio ISO support])
+  AC_SUBST(SACDISO_LIBS,"-lssl -lcrypto")
 fi
 
 AM_CONDITIONAL(ENABLE_SACDISO, test x$enable_sacdiso = xyes)
 
 dnl --------------------------------- dvdaiso ---------------------------------
 if test x$enable_dvdaiso = xyes; then
-	AC_DEFINE(ENABLE_DVDAISO, 1, [Define for DVD-Audio ISO support])
-	AC_SUBST(DVDAISO_LIBS,"-lssl -lcrypto")
+  AC_DEFINE(ENABLE_DVDAISO, 1, [Define for DVD-Audio ISO support])
+  AC_SUBST(DVDAISO_LIBS,"-lssl -lcrypto")
 fi
 
 AM_CONDITIONAL(ENABLE_DVDAISO, test x$enable_dvdaiso = xyes)
@@ -1047,29 +1038,6 @@ MPD_ENABLE_AUTO_LIB(wildmidi, WILDMIDI, WildMidi, WildMidi_Init, [-lWildMidi], [
 	[WildMidi decoder plugin], [libwildmidi not found])
 
 dnl ------------------------ Post Decoder Plugins Tests -----------------------
-if
-	test x$enable_aac = xno &&
-	test x$enable_audiofile = xno &&
-	test x$enable_ffmpeg = xno &&
-	test x$enable_flac = xno &&
-	test x$enable_fluidsynth = xno &&
-	test x$enable_mad = xno &&
-	test x$enable_mikmod = xno; then
-	test x$enable_modplug = xno &&
-	test x$enable_mp4v2 = xno &&
-	test x$enable_mpc = xno &&
-	test x$enable_mpg123 = xno &&
-	test x$enable_opus = xno &&
-	test x$enable_sacdiso = xno &&
-	test x$enable_dvdaiso = xno &&
-	test x$enable_sidplay = xno &&
-	test x$enable_tremor = xno &&
-	test x$enable_vorbis = xno &&
-	test x$enable_wavpack = xno &&
-	test x$enable_wildmidi = xno
-
-	AC_MSG_ERROR([No input plugins supported!])
-fi
 
 AM_CONDITIONAL(HAVE_XIPH,
 	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes || test x$enable_opus = xyes)
@@ -1173,6 +1141,19 @@ fi
 
 MPD_DEFINE_CONDITIONAL(enable_fifo, HAVE_FIFO,
 	[support for writing audio to a FIFO])
+
+dnl ----------------------------------- Haiku ---------------------------------
+if test x$enable_haiku = xauto; then
+	AC_CHECK_HEADER(media/MediaDefs.h,
+		[enable_haiku=yes],
+		[enable_haiku=no])
+fi
+if test x$enable_haiku = xyes; then
+	AC_DEFINE(HAVE_HAIKU,1,[Define for compiling Haiku support])
+	LIBS="$LIBS -lbe -lmedia"
+fi
+
+AM_CONDITIONAL(HAVE_HAIKU, test x$enable_haiku = xyes)
 
 dnl ------------------------------- HTTPD Output ------------------------------
 if test x$enable_httpd_output = xauto; then
@@ -1353,17 +1334,6 @@ AC_LANG_PUSH([C++])
 AX_APPEND_COMPILE_FLAGS([-fvisibility=hidden])
 AX_APPEND_COMPILE_FLAGS([-fno-threadsafe-statics])
 AX_APPEND_COMPILE_FLAGS([-fmerge-all-constants])
-
-if test x$no_exceptions = xyes; then
-	AX_APPEND_COMPILE_FLAGS([-fno-exceptions])
-	AX_APPEND_COMPILE_FLAGS([-fno-rtti])
-fi
-
-if test "x$enable_debug" = xyes; then
-	CFLAGS="$CFLAGS -O0"
-	CXXFLAGS="$CXXFLAGS -O0"
-fi
-
 AX_APPEND_COMPILE_FLAGS([-ffast-math])
 AX_APPEND_COMPILE_FLAGS([-ftree-vectorize])
 AC_LANG_POP
@@ -1381,6 +1351,11 @@ if test "x$enable_debug" = xno; then
 	AC_LANG_POP
 
 	AX_APPEND_LINK_FLAGS([-Wl,--gc-sections])
+fi
+
+if test "x$enable_debug" = xyes; then
+  CFLAGS="$CFLAGS -O0"
+  CXXFLAGS="$CXXFLAGS -O0"
 fi
 
 dnl ----------------------------------- GCC -----------------------------------
@@ -1474,6 +1449,7 @@ printf '\nPlayback support:\n\t'
 results(alsa,ALSA)
 results(fifo,FIFO)
 results(recorder_output,[File Recorder])
+results(haiku,[Haiku])
 results(httpd_output,[HTTP Daemon])
 results(jack,[JACK])
 printf '\n\t'

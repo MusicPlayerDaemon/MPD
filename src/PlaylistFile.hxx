@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -47,43 +47,38 @@ bool
 spl_valid_name(const char *name_utf8);
 
 AllocatedPath
-spl_map_to_fs(const char *name_utf8, Error &error);
-
-void
-TranslatePlaylistError(Error &error);
+spl_map_to_fs(const char *name_utf8);
 
 /**
- * Returns a list of stored_playlist_info struct pointers.  Returns
- * nullptr if an error occurred.
+ * Returns a list of stored_playlist_info struct pointers.
  */
 PlaylistVector
-ListPlaylistFiles(Error &error);
+ListPlaylistFiles();
 
 PlaylistFileContents
-LoadPlaylistFile(const char *utf8path, Error &error);
+LoadPlaylistFile(const char *utf8path);
 
-bool
-spl_move_index(const char *utf8path, unsigned src, unsigned dest,
-	       Error &error);
+void
+spl_move_index(const char *utf8path, unsigned src, unsigned dest);
 
-bool
-spl_clear(const char *utf8path, Error &error);
+void
+spl_clear(const char *utf8path);
 
-bool
-spl_delete(const char *name_utf8, Error &error);
+void
+spl_delete(const char *name_utf8);
 
-bool
-spl_remove_index(const char *utf8path, unsigned pos, Error &error);
+void
+spl_remove_index(const char *utf8path, unsigned pos);
 
-bool
-spl_append_song(const char *utf8path, const DetachedSong &song, Error &error);
+void
+spl_append_song(const char *utf8path, const DetachedSong &song);
 
 bool
 spl_append_uri(const char *path_utf8,
 	       const SongLoader &loader, const char *uri_utf8,
 	       Error &error);
 
-bool
-spl_rename(const char *utf8from, const char *utf8to, Error &error);
+void
+spl_rename(const char *utf8from, const char *utf8to);
 
 #endif

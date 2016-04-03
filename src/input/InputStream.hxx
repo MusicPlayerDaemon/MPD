@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,13 +22,13 @@
 
 #include "check.h"
 #include "Offset.hxx"
+#include "Ptr.hxx"
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
 #include <string>
 
 #include <assert.h>
-#include <stdint.h>
 
 class Cond;
 class Error;
@@ -123,18 +123,17 @@ public:
 	 * @return an #InputStream object on success, nullptr on error
 	 */
 	gcc_nonnull_all
-	gcc_malloc
-	static InputStream *Open(const char *uri, Mutex &mutex, Cond &cond,
-				 Error &error);
+	static InputStreamPtr Open(const char *uri, Mutex &mutex, Cond &cond,
+				   Error &error);
 
 	/**
 	 * Just like Open(), but waits for the stream to become ready.
 	 * It is a wrapper for Open(), WaitReady() and Check().
 	 */
-	gcc_malloc gcc_nonnull_all
-	static InputStream *OpenReady(const char *uri,
-				      Mutex &mutex, Cond &cond,
-				      Error &error);
+	gcc_nonnull_all
+	static InputStreamPtr OpenReady(const char *uri,
+					Mutex &mutex, Cond &cond,
+					Error &error);
 
 	/**
 	 * The absolute URI which was used to open this stream.
@@ -217,13 +216,6 @@ public:
 		mime = std::move(_mime);
 	}
 
-	gcc_nonnull_all
-	void OverrideMimeType(const char *_mime) {
-		assert(ready);
-
-		mime = _mime;
-	}
-
 	gcc_pure
 	bool KnownSize() const {
 		assert(ready);
@@ -300,6 +292,15 @@ public:
 	bool LockRewind(Error &error) {
 		return LockSeek(0, error);
 	}
+
+	/**
+	 * Skip input bytes.
+	 */
+	bool Skip(offset_type _offset, Error &error) {
+		return Seek(GetOffset() + _offset, error);
+	}
+
+	bool LockSkip(offset_type _offset, Error &error);
 
 	/**
 	 * Returns true if the stream has reached end-of-file.

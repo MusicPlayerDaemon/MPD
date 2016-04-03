@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -277,13 +277,7 @@ static void help(void)
 
 class ConfigLoader
 {
-	Error &error;
-	bool result;
 public:
-	ConfigLoader(Error &_error) : error(_error), result(false) { }
-
-	bool GetResult() const { return result; }
-
 	bool TryFile(const Path path);
 	bool TryFile(const AllocatedPath &base_path,
 		     PathTraitsFS::const_pointer path);
@@ -292,7 +286,7 @@ public:
 bool ConfigLoader::TryFile(Path path)
 {
 	if (FileExists(path)) {
-		result = ReadConfigFile(path, error);
+		ReadConfigFile(path);
 		return true;
 	}
 	return false;
@@ -386,15 +380,16 @@ parse_cmdline(int argc, char **argv, struct options *options,
 			return false;
 		}
 
-		return ReadConfigFile(Path::FromFS(buffer), error);
+		ReadConfigFile(Path::FromFS(buffer));
 #else
-		return ReadConfigFile(Path::FromFS(config_file), error);
+		ReadConfigFile(Path::FromFS(config_file));
 #endif
+		return true;
 	}
 
 	/* use default configuration file path */
 
-	ConfigLoader loader(error);
+	ConfigLoader loader;
 
 	bool found =
 #ifdef WIN32
@@ -413,5 +408,5 @@ parse_cmdline(int argc, char **argv, struct options *options,
 		return false;
 	}
 
-	return loader.GetResult();
+	return true;
 }

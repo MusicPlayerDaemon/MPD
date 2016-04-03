@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,26 +19,21 @@
 
 #include "config.h"
 #include "OutputCommands.hxx"
+#include "Request.hxx"
 #include "output/OutputPrint.hxx"
 #include "output/OutputCommand.hxx"
-#include "protocol/Result.hxx"
-#include "protocol/ArgParser.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
-#include "util/ConstBuffer.hxx"
 
 CommandResult
-handle_enableoutput(Client &client, ConstBuffer<const char *> args)
+handle_enableoutput(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
-
-	unsigned device;
-	if (!check_unsigned(client, &device, args.front()))
-		return CommandResult::ERROR;
+	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_enable_index(client.partition.outputs, device)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "No such audio output");
+		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
 
@@ -46,17 +41,13 @@ handle_enableoutput(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_disableoutput(Client &client, ConstBuffer<const char *> args)
+handle_disableoutput(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
-
-	unsigned device;
-	if (!check_unsigned(client, &device, args.front()))
-		return CommandResult::ERROR;
+	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_disable_index(client.partition.outputs, device)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "No such audio output");
+		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
 
@@ -64,17 +55,13 @@ handle_disableoutput(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_toggleoutput(Client &client, ConstBuffer<const char *> args)
+handle_toggleoutput(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
-
-	unsigned device;
-	if (!check_unsigned(client, &device, args.front()))
-		return CommandResult::ERROR;
+	unsigned device = args.ParseUnsigned(0);
 
 	if (!audio_output_toggle_index(client.partition.outputs, device)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "No such audio output");
+		r.Error(ACK_ERROR_NO_EXIST, "No such audio output");
 		return CommandResult::ERROR;
 	}
 
@@ -82,11 +69,10 @@ handle_toggleoutput(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_devices(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_devices(Client &client, gcc_unused Request args, Response &r)
 {
 	assert(args.IsEmpty());
 
-	printAudioDevices(client, client.partition.outputs);
-
+	printAudioDevices(r, client.partition.outputs);
 	return CommandResult::OK;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,7 @@
 #include "plugins/PlsPlaylistPlugin.hxx"
 #include "plugins/AsxPlaylistPlugin.hxx"
 #include "plugins/RssPlaylistPlugin.hxx"
+#include "plugins/FlacPlaylistPlugin.hxx"
 #include "plugins/CuePlaylistPlugin.hxx"
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
 #include "input/InputStream.hxx"
@@ -36,7 +37,6 @@
 #include "util/Macros.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
-#include "Log.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -52,6 +52,9 @@ const struct playlist_plugin *const playlist_plugins[] = {
 #endif
 #ifdef ENABLE_SOUNDCLOUD
 	&soundcloud_playlist_plugin,
+#endif
+#ifdef ENABLE_FLAC
+	&flac_playlist_plugin,
 #endif
 #ifdef ENABLE_CUE
 	&cue_playlist_plugin,
@@ -179,7 +182,7 @@ playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 }
 
 static SongEnumerator *
-playlist_list_open_stream_mime2(InputStream &is, const char *mime)
+playlist_list_open_stream_mime2(InputStreamPtr &&is, const char *mime)
 {
 	assert(mime != nullptr);
 
@@ -189,10 +192,10 @@ playlist_list_open_stream_mime2(InputStream &is, const char *mime)
 		    string_array_contains(plugin->mime_types, mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			is.Rewind(IgnoreError());
+			is->Rewind(IgnoreError());
 
 			auto playlist = playlist_plugin_open_stream(plugin,
-								    is);
+								    std::move(is));
 			if (playlist != nullptr)
 				return playlist;
 		}
@@ -202,24 +205,25 @@ playlist_list_open_stream_mime2(InputStream &is, const char *mime)
 }
 
 static SongEnumerator *
-playlist_list_open_stream_mime(InputStream &is, const char *full_mime)
+playlist_list_open_stream_mime(InputStreamPtr &&is, const char *full_mime)
 {
 	assert(full_mime != nullptr);
 
 	const char *semicolon = strchr(full_mime, ';');
 	if (semicolon == nullptr)
-		return playlist_list_open_stream_mime2(is, full_mime);
+		return playlist_list_open_stream_mime2(std::move(is),
+						       full_mime);
 
 	if (semicolon == full_mime)
 		return nullptr;
 
 	/* probe only the portion before the semicolon*/
 	const std::string mime(full_mime, semicolon);
-	return playlist_list_open_stream_mime2(is, mime.c_str());
+	return playlist_list_open_stream_mime2(std::move(is), mime.c_str());
 }
 
 SongEnumerator *
-playlist_list_open_stream_suffix(InputStream &is, const char *suffix)
+playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix)
 {
 	assert(suffix != nullptr);
 
@@ -229,9 +233,10 @@ playlist_list_open_stream_suffix(InputStream &is, const char *suffix)
 		    string_array_contains(plugin->suffixes, suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			is.Rewind(IgnoreError());
+			is->Rewind(IgnoreError());
 
-			auto playlist = playlist_plugin_open_stream(plugin, is);
+			auto playlist = playlist_plugin_open_stream(plugin,
+								    std::move(is));
 			if (playlist != nullptr)
 				return playlist;
 		}
@@ -241,13 +246,14 @@ playlist_list_open_stream_suffix(InputStream &is, const char *suffix)
 }
 
 SongEnumerator *
-playlist_list_open_stream(InputStream &is, const char *uri)
+playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 {
-	assert(is.IsReady());
+	assert(is->IsReady());
 
-	const char *const mime = is.GetMimeType();
+	const char *const mime = is->GetMimeType();
 	if (mime != nullptr) {
-		auto playlist = playlist_list_open_stream_mime(is, mime);
+		auto playlist = playlist_list_open_stream_mime(std::move(is),
+							       mime);
 		if (playlist != nullptr)
 			return playlist;
 	}
@@ -257,7 +263,8 @@ playlist_list_open_stream(InputStream &is, const char *uri)
 		? uri_get_suffix(uri, suffix_buffer)
 		: nullptr;
 	if (suffix != nullptr) {
-		auto playlist = playlist_list_open_stream_suffix(is, suffix);
+		auto playlist = playlist_list_open_stream_suffix(std::move(is),
+								 suffix);
 		if (playlist != nullptr)
 			return playlist;
 	}

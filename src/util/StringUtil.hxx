@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,26 +23,6 @@
 #include "Compiler.h"
 
 #include <stddef.h>
-
-#ifdef _UNICODE
-#include "WStringUtil.hxx"
-#endif
-
-gcc_pure
-bool
-StringStartsWith(const char *haystack, const char *needle);
-
-gcc_pure
-bool
-StringEndsWith(const char *haystack, const char *needle);
-
-/**
- * Check if the given string ends with the specified suffix.  If yes,
- * returns the position of the suffix, and nullptr otherwise.
- */
-gcc_pure
-const char *
-FindStringSuffix(const char *p, const char *suffix);
 
 /**
  * Copy a string.  If the buffer is too small, then the string is

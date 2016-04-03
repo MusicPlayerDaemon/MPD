@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,10 +22,10 @@
 
 #include "check.h"
 
-class Path;
+class InputStream;
 struct ReplayGainInfo;
 
 bool
-replay_gain_ape_read(Path path_fs, ReplayGainInfo &info);
+replay_gain_ape_read(InputStream &is, ReplayGainInfo &info);
 
 #endif

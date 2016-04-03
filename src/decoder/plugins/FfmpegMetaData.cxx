@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -42,7 +42,7 @@ static constexpr struct tag_table ffmpeg_tags[] = {
 static void
 FfmpegScanTag(TagType type,
 	      AVDictionary *m, const char *name,
-	      const struct tag_handler *handler, void *handler_ctx)
+	      const TagHandler &handler, void *handler_ctx)
 {
 	AVDictionaryEntry *mt = nullptr;
 
@@ -53,7 +53,7 @@ FfmpegScanTag(TagType type,
 
 static void
 FfmpegScanPairs(AVDictionary *dict,
-		const struct tag_handler *handler, void *handler_ctx)
+		const TagHandler &handler, void *handler_ctx)
 {
 	AVDictionaryEntry *i = nullptr;
 
@@ -64,9 +64,9 @@ FfmpegScanPairs(AVDictionary *dict,
 
 void
 FfmpegScanDictionary(AVDictionary *dict,
-		     const struct tag_handler *handler, void *handler_ctx)
+		     const TagHandler &handler, void *handler_ctx)
 {
-	if (handler->tag != nullptr) {
+	if (handler.tag != nullptr) {
 		for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
 			FfmpegScanTag(TagType(i), dict, tag_item_names[i],
 				      handler, handler_ctx);
@@ -77,6 +77,6 @@ FfmpegScanDictionary(AVDictionary *dict,
 				      handler, handler_ctx);
 	}
 
-	if (handler->pair != nullptr)
+	if (handler.pair != nullptr)
 		FfmpegScanPairs(dict, handler, handler_ctx);
 }

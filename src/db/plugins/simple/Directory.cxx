@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 #include "lib/icu/Collate.hxx"
 #include "fs/Traits.hxx"
 #include "util/Alloc.hxx"
+#include "util/DeleteDisposer.hxx"
 #include "util/Error.hxx"
 
 #include <assert.h>
@@ -51,7 +52,7 @@ Directory::~Directory()
 	delete mounted_database;
 
 	songs.clear_and_dispose(Song::Disposer());
-	children.clear_and_dispose(Disposer());
+	children.clear_and_dispose(DeleteDisposer());
 }
 
 void
@@ -61,7 +62,7 @@ Directory::Delete()
 	assert(parent != nullptr);
 
 	parent->children.erase_and_dispose(parent->children.iterator_to(*this),
-					   Disposer());
+					   DeleteDisposer());
 }
 
 const char *
@@ -110,7 +111,8 @@ Directory::PruneEmpty()
 		child->PruneEmpty();
 
 		if (child->IsEmpty())
-			child = children.erase_and_dispose(child, Disposer());
+			child = children.erase_and_dispose(child,
+							   DeleteDisposer());
 		else
 			++child;
 	}
@@ -230,14 +232,12 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 		/* TODO: eliminate this unlock/lock; it is necessary
 		   because the child's SimpleDatabasePlugin::Visit()
 		   call will lock it again */
-		db_unlock();
-		bool result = WalkMount(GetPath(), *mounted_database,
-					recursive, filter,
-					visit_directory, visit_song,
-					visit_playlist,
-					error);
-		db_lock();
-		return result;
+		const ScopeDatabaseUnlock unlock;
+		return WalkMount(GetPath(), *mounted_database,
+				 recursive, filter,
+				 visit_directory, visit_song,
+				 visit_playlist,
+				 error);
 	}
 
 	if (visit_song) {

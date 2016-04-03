@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,11 +19,8 @@
 
 #include "config.h"
 #include "GunzipReader.hxx"
-#include "lib/zlib/Domain.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
-GunzipReader::GunzipReader(Reader &_next, Error &error)
+GunzipReader::GunzipReader(Reader &_next) throw(ZlibError)
 	:next(_next), eof(false)
 {
 	z.next_in = nullptr;
@@ -33,25 +30,17 @@ GunzipReader::GunzipReader(Reader &_next, Error &error)
 	z.opaque = Z_NULL;
 
 	int result = inflateInit2(&z, 16 + MAX_WBITS);
-	if (result != Z_OK) {
-		z.opaque = this;
-		error.Set(zlib_domain, result, zError(result));
-	}
-}
-
-GunzipReader::~GunzipReader()
-{
-	if (IsDefined())
-		inflateEnd(&z);
+	if (result != Z_OK)
+		throw ZlibError(result);
 }
 
 inline bool
-GunzipReader::FillBuffer(Error &error)
+GunzipReader::FillBuffer()
 {
 	auto w = buffer.Write();
 	assert(!w.IsEmpty());
 
-	size_t nbytes = next.Read(w.data, w.size, error);
+	size_t nbytes = next.Read(w.data, w.size);
 	if (nbytes == 0)
 		return false;
 
@@ -60,7 +49,7 @@ GunzipReader::FillBuffer(Error &error)
 }
 
 size_t
-GunzipReader::Read(void *data, size_t size, Error &error)
+GunzipReader::Read(void *data, size_t size)
 {
 	if (eof)
 		return 0;
@@ -73,10 +62,8 @@ GunzipReader::Read(void *data, size_t size, Error &error)
 
 		auto r = buffer.Read();
 		if (r.IsEmpty()) {
-			if (FillBuffer(error))
+			if (FillBuffer())
 				r = buffer.Read();
-			else if (error.IsDefined())
-				return 0;
 			else
 				flush = Z_FINISH;
 		}
@@ -88,10 +75,8 @@ GunzipReader::Read(void *data, size_t size, Error &error)
 		if (result == Z_STREAM_END) {
 			eof = true;
 			return size - z.avail_out;
-		} else if (result != Z_OK) {
-			error.Set(zlib_domain, result, zError(result));
-			return 0;
-		}
+		} else if (result != Z_OK)
+			throw ZlibError(result);
 
 		buffer.Consume(r.size - z.avail_in);
 

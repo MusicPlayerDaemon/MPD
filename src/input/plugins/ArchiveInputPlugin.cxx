@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,9 +25,7 @@
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"
 #include "../InputPlugin.hxx"
-#include "fs/Traits.hxx"
 #include "fs/Path.hxx"
-#include "util/Alloc.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>

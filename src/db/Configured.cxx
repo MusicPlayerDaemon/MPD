@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/StandardDirectory.hxx"
 #include "util/Error.hxx"
-#include "Log.hxx"
 
 Database *
 CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
@@ -43,16 +42,13 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 		return nullptr;
 	}
 
-	ConfigBlock *allocated = nullptr;
-
-	if (param == nullptr && path != nullptr) {
-		allocated = new ConfigBlock(path->line);
-		allocated->AddBlockParam("path", path->value.c_str(),
-					 path->line);
-		param = allocated;
-	}
-
-	if (param == nullptr) {
+	if (param != nullptr)
+		return DatabaseGlobalInit(loop, listener, *param, error);
+	else if (path != nullptr) {
+		ConfigBlock block(path->line);
+		block.AddBlockParam("path", path->value.c_str(), path->line);
+		return DatabaseGlobalInit(loop, listener, block, error);
+	} else {
 		/* if there is no override, use the cache directory */
 
 		const AllocatedPath cache_dir = GetUserCacheDir();
@@ -65,13 +61,8 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 		if (db_file_utf8.empty())
 			return nullptr;
 
-		allocated = new ConfigBlock();
-		allocated->AddBlockParam("path", db_file_utf8.c_str(), -1);
-		param = allocated;
+		ConfigBlock block;
+		block.AddBlockParam("path", db_file_utf8.c_str(), -1);
+		return DatabaseGlobalInit(loop, listener, block, error);
 	}
-
-	Database *db = DatabaseGlobalInit(loop, listener, *param,
-					  error);
-	delete allocated;
-	return db;
 }

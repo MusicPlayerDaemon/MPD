@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -84,13 +84,40 @@ db_unlock(void)
 }
 
 class ScopeDatabaseLock {
+	bool locked = true;
+
 public:
 	ScopeDatabaseLock() {
 		db_lock();
 	}
 
 	~ScopeDatabaseLock() {
+		if (locked)
+			db_unlock();
+	}
+
+	/**
+	 * Unlock the mutex now, making the destructor a no-op.
+	 */
+	void unlock() {
+		assert(locked);
+
 		db_unlock();
+		locked = false;
+	}
+};
+
+/**
+ * Unlock the database while in the current scope.
+ */
+class ScopeDatabaseUnlock {
+public:
+	ScopeDatabaseUnlock() {
+		db_unlock();
+	}
+
+	~ScopeDatabaseUnlock() {
+		db_lock();
 	}
 };
 

@@ -31,6 +31,8 @@
 #include "Error.hxx"
 #include "Domain.hxx"
 
+#include <system_error>
+
 #ifdef WIN32
 #include <windows.h>
 #endif
@@ -40,6 +42,8 @@
 #include <stdio.h>
 #include <string.h>
 
+const Domain exception_domain("exception");
+
 const Domain errno_domain("errno");
 
 #ifdef WIN32
@@ -47,6 +51,28 @@ const Domain win32_domain("win32");
 #endif
 
 Error::~Error() {}
+
+void
+Error::Set(std::exception_ptr src)
+{
+	try {
+		/* classify the exception */
+		std::rethrow_exception(src);
+	} catch (const std::system_error &se) {
+		if (se.code().category() == std::system_category()) {
+#ifdef WIN32
+			Set(win32_domain, se.code().value(), se.what());
+#else
+			Set(errno_domain, se.code().value(), se.what());
+#endif
+		} else
+			Set(exception_domain, se.what());
+	} catch (const std::exception &e) {
+		Set(exception_domain, e.what());
+	} catch (...) {
+		Set(exception_domain, "Unknown exception");
+	}
+}
 
 void
 Error::Set(const Domain &_domain, int _code, const char *_message)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,9 +35,11 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 			    const char *name, const char *suffix,
 			    const StorageFileInfo &info)
 {
-	db_lock();
-	Song *song = directory.FindSong(name);
-	db_unlock();
+	Song *song;
+	{
+		const ScopeDatabaseLock protect;
+		song = directory.FindSong(name);
+	}
 
 	if (!directory_child_access(storage, directory, name, R_OK)) {
 		FormatError(update_domain,
@@ -69,9 +71,10 @@ UpdateWalk::UpdateSongFile2(Directory &directory,
 			return;
 		}
 
-		db_lock();
-		directory.AddSong(song);
-		db_unlock();
+		{
+			const ScopeDatabaseLock protect;
+			directory.AddSong(song);
+		}
 
 		modified = true;
 		FormatDefault(update_domain, "added %s/%s",

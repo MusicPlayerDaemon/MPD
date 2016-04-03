@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,8 @@
 #include "EncoderInterface.hxx"
 #include "fs/io/OutputStream.hxx"
 
-bool
-EncoderToOutputStream(OutputStream &os, Encoder &encoder, Error &error)
+void
+EncoderToOutputStream(OutputStream &os, Encoder &encoder)
 {
 	while (true) {
 		/* read from the encoder */
@@ -31,11 +31,10 @@ EncoderToOutputStream(OutputStream &os, Encoder &encoder, Error &error)
 		char buffer[32768];
 		size_t nbytes = encoder_read(&encoder, buffer, sizeof(buffer));
 		if (nbytes == 0)
-			return true;
+			return;
 
 		/* write everything to the stream */
 
-		if (!os.Write(buffer, nbytes, error))
-			return false;
+		os.Write(buffer, nbytes);
 	}
 }

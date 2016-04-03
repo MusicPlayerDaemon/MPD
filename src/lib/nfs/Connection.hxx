@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,14 +20,11 @@
 #ifndef MPD_NFS_CONNECTION_HXX
 #define MPD_NFS_CONNECTION_HXX
 
-#include "Lease.hxx"
 #include "Cancellable.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/TimeoutMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "util/Error.hxx"
-
-#include <boost/intrusive/list.hpp>
 
 #include <string>
 #include <list>
@@ -37,6 +34,7 @@ struct nfs_context;
 struct nfsdir;
 struct nfsdirent;
 class NfsCallback;
+class NfsLease;
 
 /**
  * An asynchronous connection to a NFS server.

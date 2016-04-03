@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 #include "Queue.hxx"
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
-#include "client/Client.hxx"
+#include "client/Response.hxx"
 
 /**
  * Send detailed information about a range of songs in the queue to a
@@ -33,70 +33,87 @@
  * @param end the index of the last song (excluding)
  */
 static void
-queue_print_song_info(Client &client, const Queue &queue,
+queue_print_song_info(Response &r, Partition &partition, const Queue &queue,
 		      unsigned position)
 {
-	song_print_info(client, queue.Get(position));
-	client_printf(client, "Pos: %u\nId: %u\n",
-		      position, queue.PositionToId(position));
+	song_print_info(r, partition, queue.Get(position));
+	r.Format("Pos: %u\nId: %u\n",
+		 position, queue.PositionToId(position));
 
 	uint8_t priority = queue.GetPriorityAtPosition(position);
 	if (priority != 0)
-		client_printf(client, "Prio: %u\n", priority);
+		r.Format("Prio: %u\n", priority);
 }
 
 void
-queue_print_info(Client &client, const Queue &queue,
+queue_print_info(Response &r, Partition &partition, const Queue &queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
 	assert(end <= queue.GetLength());
 
 	for (unsigned i = start; i < end; ++i)
-		queue_print_song_info(client, queue, i);
+		queue_print_song_info(r, partition, queue, i);
 }
 
 void
-queue_print_uris(Client &client, const Queue &queue,
+queue_print_uris(Response &r, Partition &partition, const Queue &queue,
 		 unsigned start, unsigned end)
 {
 	assert(start <= end);
 	assert(end <= queue.GetLength());
 
 	for (unsigned i = start; i < end; ++i) {
-		client_printf(client, "%i:", i);
-		song_print_uri(client, queue.Get(i));
+		r.Format("%i:", i);
+		song_print_uri(r, partition, queue.Get(i));
 	}
 }
 
 void
-queue_print_changes_info(Client &client, const Queue &queue,
-			 uint32_t version)
+queue_print_changes_info(Response &r, Partition &partition, const Queue &queue,
+			 uint32_t version,
+			 unsigned start, unsigned end)
 {
-	for (unsigned i = 0; i < queue.GetLength(); i++) {
+	assert(start <= end);
+
+	if (start >= queue.GetLength())
+		return;
+
+	if (end > queue.GetLength())
+		end = queue.GetLength();
+
+	for (unsigned i = start; i < end; i++)
 		if (queue.IsNewerAtPosition(i, version))
-			queue_print_song_info(client, queue, i);
-	}
+			queue_print_song_info(r, partition, queue, i);
 }
 
 void
-queue_print_changes_position(Client &client, const Queue &queue,
-			     uint32_t version)
+queue_print_changes_position(Response &r, const Queue &queue,
+			     uint32_t version,
+			     unsigned start, unsigned end)
 {
-	for (unsigned i = 0; i < queue.GetLength(); i++)
+	assert(start <= end);
+
+	if (start >= queue.GetLength())
+		return;
+
+	if (end > queue.GetLength())
+		end = queue.GetLength();
+
+	for (unsigned i = start; i < end; i++)
 		if (queue.IsNewerAtPosition(i, version))
-			client_printf(client, "cpos: %i\nId: %i\n",
-				      i, queue.PositionToId(i));
+			r.Format("cpos: %i\nId: %i\n",
+				 i, queue.PositionToId(i));
 }
 
 void
-queue_find(Client &client, const Queue &queue,
+queue_find(Response &r, Partition &partition, const Queue &queue,
 	   const SongFilter &filter)
 {
 	for (unsigned i = 0; i < queue.GetLength(); i++) {
 		const DetachedSong &song = queue.Get(i);
 
 		if (filter.Match(song))
-			queue_print_song_info(client, queue, i);
+			queue_print_song_info(r, partition, queue, i);
 	}
 }

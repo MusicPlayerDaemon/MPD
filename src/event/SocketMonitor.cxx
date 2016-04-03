@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 #include "SocketMonitor.hxx"
 #include "Loop.hxx"
 #include "system/fd_util.h"
-#include "Compiler.h"
 
 #include <assert.h>
 

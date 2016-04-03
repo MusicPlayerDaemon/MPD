@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,9 +26,10 @@
 extern Mutex tag_pool_lock;
 
 struct TagItem;
+struct StringView;
 
 TagItem *
-tag_pool_get_item(TagType type, const char *value, size_t length);
+tag_pool_get_item(TagType type, StringView value);
 
 TagItem *
 tag_pool_dup_item(TagItem *item);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,12 +24,10 @@
 #include "Editor.hxx"
 #include "Compiler.h"
 
-#include <sys/stat.h>
-
-struct stat;
 struct StorageFileInfo;
 struct Directory;
 struct ArchivePlugin;
+class ArchiveFile;
 class Storage;
 class ExcludeList;
 
@@ -101,7 +99,8 @@ private:
 
 
 #ifdef ENABLE_ARCHIVE
-	void UpdateArchiveTree(Directory &parent, const char *name);
+	void UpdateArchiveTree(ArchiveFile &archive, Directory &parent,
+			       const char *name);
 
 	bool UpdateArchiveFile(Directory &directory,
 			       const char *name, const char *suffix,
@@ -129,15 +128,17 @@ private:
 			       const char *name, const StorageFileInfo &info);
 
 	void UpdateDirectoryChild(Directory &directory,
+				  const ExcludeList &exclude_list,
 				  const char *name,
 				  const StorageFileInfo &info);
 
 	bool UpdateDirectory(Directory &directory,
+			     const ExcludeList &exclude_list,
 			     const StorageFileInfo &info);
 
 	/**
 	 * Create the specified directory object if it does not exist
-	 * already or if the #stat object indicates that it has been
+	 * already or if the #StorageFileInfo object indicates that it has been
 	 * modified since the last update.  Returns nullptr when it
 	 * exists already and is unmodified.
 	 *

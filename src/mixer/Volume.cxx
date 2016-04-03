@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 #include "Volume.hxx"
 #include "output/MultipleOutputs.hxx"
 #include "Idle.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Domain.hxx"
 #include "system/PeriodClock.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
@@ -98,10 +98,10 @@ read_sw_volume_state(const char *line, MultipleOutputs &outputs)
 	char *end = nullptr;
 	long int sv;
 
-	if (!StringStartsWith(line, SW_VOLUME_STATE))
+	line = StringAfterPrefix(line, SW_VOLUME_STATE);
+	if (line == nullptr)
 		return false;
 
-	line += sizeof(SW_VOLUME_STATE) - 1;
 	sv = strtol(line, &end, 10);
 	if (*end == 0 && sv >= 0 && sv <= 100)
 		software_volume_change(outputs, sv);

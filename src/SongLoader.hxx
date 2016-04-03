@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,9 @@ class Client;
 class Database;
 class Storage;
 class DetachedSong;
+class Path;
 class Error;
+struct LocatedUri;
 
 /**
  * A utility class that loads a #DetachedSong object by its URI.  If
@@ -66,12 +68,17 @@ public:
 	}
 #endif
 
+	DetachedSong *LoadSong(const LocatedUri &uri) const;
+
 	gcc_nonnull_all
 	DetachedSong *LoadSong(const char *uri_utf8, Error &error) const;
 
 private:
 	gcc_nonnull_all
-	DetachedSong *LoadFile(const char *path_utf8, Error &error) const;
+	DetachedSong *LoadFromDatabase(const char *uri) const;
+
+	gcc_nonnull_all
+	DetachedSong *LoadFile(const char *path_utf8, Path path_fs) const;
 };
 
 #endif

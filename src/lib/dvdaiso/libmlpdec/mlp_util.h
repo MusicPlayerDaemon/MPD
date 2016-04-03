@@ -643,14 +643,14 @@ uint32_t av_crc(const AVCRC* ctx, uint32_t start_crc, const uint8_t* buffer, siz
  */
 #define AV_LOG_DEBUG    48
 
-extern int av_log_level;
+extern int mlp_av_log_level;
 
 extern void av_log(void* avctx, int level, const char* fmt, ...);
-extern void av_vlog(void* avctx, int level, const char* fmt, va_list);
-extern int  av_log_get_level();
-extern void av_log_set_level(int level);
-extern void av_log_set_callback(void (*callback)(void* avctx, int level, const char* fmt, va_list vl));
-extern void av_log_default_callback(void* avctx, int level, const char* fmt, va_list vl);
+extern void mlp_av_vlog(void* avctx, int level, const char* fmt, va_list);
+extern int  mlp_av_log_get_level();
+extern void mlp_av_log_set_level(int level);
+extern void mlp_av_log_set_callback(void (*callback)(void* avctx, int level, const char* fmt, va_list vl));
+extern void mlp_av_log_default_callback(void* avctx, int level, const char* fmt, va_list vl);
 
 //extern void dprintf(AVCodecContext* avctx, const char* fmt, ...);
 

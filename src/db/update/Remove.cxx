@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,49 +20,50 @@
 #include "config.h" /* must be first for large file support */
 #include "Remove.hxx"
 #include "UpdateDomain.hxx"
-#include "db/plugins/simple/Song.hxx"
-#include "db/LightSong.hxx"
 #include "db/DatabaseListener.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
-
 /**
- * Safely remove a song from the database.  This must be done in the
- * main task, to be sure that there is no pointer left to it.
+ * Safely remove songs from the database.  This must be done in the
+ * main task, because some (thread-unsafe) data structures are
+ * available only there.
  */
 void
 UpdateRemoveService::RunDeferred()
 {
-	assert(removed_song != nullptr);
+	/* copy the list and unlock the mutex before invoking
+	   callbacks */
+
+	std::forward_list<std::string> copy;
 
 	{
-		const auto uri = removed_song->GetURI();
-		FormatDefault(update_domain, "removing %s", uri.c_str());
+		const ScopeLock protect(mutex);
+		std::swap(uris, copy);
 	}
 
-	listener.OnDatabaseSongRemoved(removed_song->Export());
+	for (const auto &uri : copy) {
+		FormatDefault(update_domain, "removing %s", uri.c_str());
+		listener.OnDatabaseSongRemoved(uri.c_str());
+	}
 
-	/* clear "removed_song" and send signal to update thread */
-	remove_mutex.lock();
-	removed_song = nullptr;
-	remove_cond.signal();
-	remove_mutex.unlock();
+	/* note: if Remove() was called in the meantime, it saw an
+	   empty list, and scheduled another event */
 }
 
 void
-UpdateRemoveService::Remove(const Song *song)
+UpdateRemoveService::Remove(std::string &&uri)
 {
-	assert(removed_song == nullptr);
+	bool was_empty;
 
-	removed_song = song;
+	{
+		const ScopeLock protect(mutex);
+		was_empty = uris.empty();
+		uris.emplace_front(std::move(uri));
+	}
 
-	DeferredMonitor::Schedule();
-
-	remove_mutex.lock();
-
-	while (removed_song != nullptr)
-		remove_cond.wait(remove_mutex);
-
-	remove_mutex.unlock();
+	/* inject an event into the main thread, but only if the list
+	   was empty; if it was not, then that even was already
+	   pending */
+	if (was_empty)
+		DeferredMonitor::Schedule();
 }

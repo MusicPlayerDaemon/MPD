@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <assert.h>
 
 static bool
-CollectTags(TagSet &set, TagType tag_type, uint32_t group_mask,
+CollectTags(TagSet &set, TagType tag_type, tag_mask_t group_mask,
 	    const LightSong &song)
 {
 	assert(song.tag != nullptr);
@@ -39,7 +39,7 @@ CollectTags(TagSet &set, TagType tag_type, uint32_t group_mask,
 
 bool
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
-		TagType tag_type, uint32_t group_mask,
+		TagType tag_type, tag_mask_t group_mask,
 		VisitTag visit_tag,
 		Error &error)
 {

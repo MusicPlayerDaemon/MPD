@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 #include "config.h"
 #include "config/ConfigGlobal.hxx"
 #include "fs/Path.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -28,7 +27,7 @@
 #include <stdlib.h>
 
 int main(int argc, char **argv)
-{
+try {
 	if (argc != 3) {
 		fprintf(stderr, "Usage: read_conf FILE SETTING\n");
 		return EXIT_FAILURE;
@@ -39,11 +38,7 @@ int main(int argc, char **argv)
 
 	config_global_init();
 
-	Error error;
-	if (!ReadConfigFile(config_path, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	ConfigOption option = ParseConfigOptionName(name);
 	const char *value = option != ConfigOption::MAX
@@ -60,4 +55,7 @@ int main(int argc, char **argv)
 
 	config_global_finish();
 	return ret;
-}
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

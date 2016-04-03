@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,13 +20,13 @@
 #include "config.h"
 #include "MemorySongEnumerator.hxx"
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 MemorySongEnumerator::NextSong()
 {
 	if (songs.empty())
 		return nullptr;
 
-	auto result = new DetachedSong(std::move(songs.front()));
+	std::unique_ptr<DetachedSong> result(new DetachedSong(std::move(songs.front())));
 	songs.pop_front();
 	return result;
 }

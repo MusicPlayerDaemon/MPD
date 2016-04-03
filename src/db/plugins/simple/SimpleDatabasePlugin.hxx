@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -83,7 +83,7 @@ public:
 		return *root;
 	}
 
-	bool Save(Error &error);
+	void Save();
 
 	/**
 	 * Returns true if there is a valid database file on the disk.
@@ -97,7 +97,7 @@ public:
 	 * success, this object gains ownership of the given #Database
 	 */
 	gcc_nonnull_all
-	bool Mount(const char *uri, Database *db, Error &error);
+	void Mount(const char *uri, Database *db);
 
 	gcc_nonnull_all
 	bool Mount(const char *local_uri, const char *storage_uri,
@@ -107,11 +107,10 @@ public:
 	bool Unmount(const char *uri);
 
 	/* virtual methods from class Database */
-	virtual bool Open(Error &error) override;
+	virtual void Open() override;
 	virtual void Close() override;
 
-	const LightSong *GetSong(const char *uri_utf8,
-				 Error &error) const override;
+	const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
 
 	virtual bool Visit(const DatabaseSelection &selection,
@@ -121,7 +120,7 @@ public:
 			   Error &error) const override;
 
 	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, uint32_t group_mask,
+				     TagType tag_type, tag_mask_t group_mask,
 				     VisitTag visit_tag,
 				     Error &error) const override;
 
@@ -136,8 +135,7 @@ public:
 private:
 	bool Configure(const ConfigBlock &block, Error &error);
 
-	gcc_pure
-	bool Check(Error &error) const;
+	void Check() const;
 
 	bool Load(Error &error);
 

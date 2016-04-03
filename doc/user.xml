@@ -16,7 +16,7 @@
       <application>MPD</application> (Music Player Daemon) is, as the
       name suggests, a server software allowing you to remotely play
       your music, handle playlists, deliver music (HTTP streams with
-      various sub-protocols) and organizze playlists.
+      various sub-protocols) and organize playlists.
     </para>
 
     <para>
@@ -1025,6 +1025,58 @@ database {
         plugin).
       </para>
     </section>
+
+    <section id="realtime">
+      <title>Real-Time Scheduling</title>
+
+      <para>
+        On Linux, <application>MPD</application> attempts to configure
+        <ulink
+        url="https://en.wikipedia.org/wiki/Real-time_computing">real-time
+        scheduling</ulink> for some threads that benefit from it.
+      </para>
+
+      <para>
+        This is only possible you allow <application>MPD</application>
+        to do it.  This privilege is controlled by
+        <varname>RLIMIT_RTPRIO</varname>
+        <varname>RLIMIT_RTTIME</varname>.  You can configure this
+        privilege with <command>ulimit</command> before launching
+        <application>MPD</application>:
+      </para>
+
+      <programlisting>ulimit -HS -r 50; mpd</programlisting>
+
+      <para>
+        Or you can use the <command>prlimit</command> program from the
+        <application>util-linux</application> package:
+      </para>
+
+      <programlisting>prlimit --rtprio=50 --rttime=unlimited mpd</programlisting>
+
+      <para>
+        The <application>systemd</application> service file shipped
+        with <application>MPD</application> comes with this setting.
+      </para>
+
+      <para>
+        This works only if the Linux kernel was compiled with
+        <varname>CONFIG_RT_GROUP_SCHED</varname> disabled.  Use the
+        following command to check this option for your current
+        kernel:
+      </para>
+
+      <programlisting>zgrep ^CONFIG_RT_GROUP_SCHED /proc/config.gz</programlisting>
+
+      <note>
+        <para>
+          There is a rumor that real-time scheduling improves audio
+          quality.  That is not true.  All it does is reduce the
+          probability of skipping (audio buffer xruns) when the
+          computer is under heavy load.
+        </para>
+      </note>
+    </section>
   </chapter>
 
   <chapter id="use">
@@ -1077,6 +1129,8 @@ database {
         To exclude a file from the update, create a file called
         <filename>.mpdignore</filename> in its parent directory.  Each
         line of that file may contain a list of shell wildcards.
+        Matching files in the current directory and all subdirectories
+        are excluded.
       </para>
     </section>
 
@@ -1532,6 +1586,14 @@ buffer_size: 16384</programlisting>
           Opens remote files or streams over HTTP.
         </para>
 
+        <para>
+          Note that unless overridden by the below settings (e.g. by
+          setting them to a blank value), general curl configuration
+          from environment variables such as
+          <varname>http_proxy</varname> or specified in
+          <filename>~/.curlrc</filename> will be in effect.
+        </para>
+
         <informaltable>
           <tgroup cols="2">
             <thead>
@@ -1725,6 +1787,37 @@ buffer_size: 16384</programlisting>
                   The absolute path of the soundfont file.  Defaults
                   to
                   <filename>/usr/share/sounds/sf2/FluidR3_GM.sf2</filename>.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
+        <title><varname>gme</varname></title>
+
+        <para>
+          Video game music file emulator based on <ulink
+          url="https://bitbucket.org/mpyne/game-music-emu/wiki/Home"><application>game-music-emu</application></ulink>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>accuracy</varname>
+                  <parameter>yes|no</parameter>
+                </entry>
+                <entry>
+                  Enable more accurate sound emulation.
                 </entry>
               </row>
             </tbody>
@@ -2391,17 +2484,6 @@ buffer_size: 16384</programlisting>
               </row>
               <row>
                 <entry>
-                  <varname>use_mmap</varname>
-                  <parameter>yes|no</parameter>
-                </entry>
-                <entry>
-                  If set to <parameter>yes</parameter>, then
-                  <filename>libasound</filename> will try to use
-                  memory mapped I/O.
-                </entry>
-              </row>
-              <row>
-                <entry>
                   <varname>buffer_time</varname>
                   <parameter>US</parameter>
                 </entry>
@@ -2746,7 +2828,8 @@ buffer_size: 16384</programlisting>
           / <ulink
           url="http://icecast.org/"><application>IceCast</application></ulink>.
           HTTP streaming clients like
-          <application>mplayer</application> can connect to it.
+          <application>mplayer</application>, <application>VLC</application>,
+          and <application>mpv</application> can connect to it.
         </para>
 
         <para>

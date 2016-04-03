@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@
 #include "db/plugins/simple/Song.hxx"
 
 #include <assert.h>
-#include <stddef.h>
 
 void
 DatabaseEditor::DeleteSong(Directory &dir, Song *del)
@@ -36,23 +35,21 @@ DatabaseEditor::DeleteSong(Directory &dir, Song *del)
 	/* first, prevent traversers in main task from getting this */
 	dir.RemoveSong(del);
 
-	db_unlock(); /* temporary unlock, because update_remove_song() blocks */
+	/* temporary unlock, because update_remove_song() blocks */
+	const ScopeDatabaseUnlock unlock;
 
 	/* now take it out of the playlist (in the main_task) */
-	remove.Remove(del);
+	remove.Remove(del->GetURI());
 
 	/* finally, all possible references gone, free it */
 	del->Free();
-
-	db_lock();
 }
 
 void
 DatabaseEditor::LockDeleteSong(Directory &parent, Song *song)
 {
-	db_lock();
+	const ScopeDatabaseLock protect;
 	DeleteSong(parent, song);
-	db_unlock();
 }
 
 /**
@@ -87,17 +84,17 @@ DatabaseEditor::DeleteDirectory(Directory *directory)
 void
 DatabaseEditor::LockDeleteDirectory(Directory *directory)
 {
-	db_lock();
+	const ScopeDatabaseLock protect;
 	DeleteDirectory(directory);
-	db_unlock();
 }
 
 bool
 DatabaseEditor::DeleteNameIn(Directory &parent, const char *name)
 {
+	const ScopeDatabaseLock protect;
+
 	bool modified = false;
 
-	db_lock();
 	Directory *directory = parent.FindChild(name);
 
 	if (directory != nullptr) {
@@ -112,8 +109,6 @@ DatabaseEditor::DeleteNameIn(Directory &parent, const char *name)
 	}
 
 	parent.playlists.erase(name);
-
-	db_unlock();
 
 	return modified;
 }

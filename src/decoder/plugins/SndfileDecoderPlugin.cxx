@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -244,7 +244,7 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 
 static void
 sndfile_handle_tag(SNDFILE *sf, int str, TagType tag,
-		   const struct tag_handler *handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx)
 {
 	const char *value = sf_get_string(sf, str);
 	if (value != nullptr)
@@ -266,7 +266,7 @@ static constexpr struct {
 
 static bool
 sndfile_scan_stream(InputStream &is,
-		    const struct tag_handler *handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx)
 {
 	SF_INFO info;
 

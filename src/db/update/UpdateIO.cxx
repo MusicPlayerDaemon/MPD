@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 
 #include "config.h" /* must be first for large file support */
 #include "UpdateIO.hxx"
-#include "UpdateDomain.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "storage/FileInfo.hxx"
 #include "storage/StorageInterface.hxx"
@@ -30,7 +29,6 @@
 #include "Log.hxx"
 
 #include <errno.h>
-#include <unistd.h>
 
 bool
 GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info)

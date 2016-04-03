@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,26 +22,11 @@
 #include "util/Alloc.hxx"
 #include "util/StringUtil.hxx"
 #include "util/CharUtil.hxx"
-#include "DetachedSong.hxx"
 #include "tag/Tag.hxx"
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-
-CueParser::CueParser()
-	:state(HEADER),
-	 current(nullptr),
-	 previous(nullptr),
-	 finished(nullptr),
-	 end(false) {}
-
-CueParser::~CueParser()
-{
-	delete current;
-	delete previous;
-	delete finished;
-}
 
 static const char *
 cue_next_word(char *p, char **pp)
@@ -167,9 +152,9 @@ CueParser::Commit()
 	assert(!current->GetTag().IsDefined());
 	current->SetTag(song_tag.Commit());
 
-	finished = previous;
-	previous = current;
-	current = nullptr;
+	finished = std::move(previous);
+	previous = std::move(current);
+	current.reset();
 }
 
 void
@@ -244,13 +229,12 @@ CueParser::Feed2(char *p)
 		}
 
 		state = TRACK;
-		current = new DetachedSong(filename);
+		current.reset(new DetachedSong(filename));
 		assert(!current->GetTag().IsDefined());
 
 		song_tag = header_tag;
 		song_tag.AddItem(TAG_TRACK, nr);
 
-		last_updated = false;
 	} else if (state == IGNORE_TRACK) {
 		return;
 	} else if (state == TRACK && strcmp(command, "INDEX") == 0) {
@@ -266,13 +250,12 @@ CueParser::Feed2(char *p)
 		if (position_ms < 0)
 			return;
 
-		if (!last_updated && previous != nullptr &&
-		    previous->GetStartTime().ToMS() < (unsigned)position_ms) {
-			last_updated = true;
+		if (previous != nullptr && previous->GetStartTime().ToMS() < (unsigned)position_ms)
 			previous->SetEndTime(SongTime::FromMS(position_ms));
-		}
 
 		current->SetStartTime(SongTime::FromMS(position_ms));
+		if(strcmp(nr, "00") != 0 || previous == nullptr)
+			state = IGNORE_TRACK;
 	}
 }
 
@@ -298,7 +281,7 @@ CueParser::Finish()
 	end = true;
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 CueParser::Get()
 {
 	if (finished == nullptr && end) {
@@ -306,11 +289,11 @@ CueParser::Get()
 		   deliver all remaining (partial) results */
 		assert(current == nullptr);
 
-		finished = previous;
-		previous = nullptr;
+		finished = std::move(previous);
+		previous.reset();
 	}
 
-	DetachedSong *song = finished;
-	finished = nullptr;
-	return song;
+	auto result = std::move(finished);
+	finished.reset();
+	return result;
 }

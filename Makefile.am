@@ -81,6 +81,7 @@ libmpd_a_SOURCES = \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
+	src/command/Request.hxx \
 	src/command/CommandResult.hxx \
 	src/command/CommandError.cxx src/command/CommandError.hxx \
 	src/command/AllCommands.cxx src/command/AllCommands.hxx \
@@ -94,7 +95,7 @@ libmpd_a_SOURCES = \
 	src/command/OtherCommands.cxx src/command/OtherCommands.hxx \
 	src/command/CommandListBuilder.cxx src/command/CommandListBuilder.hxx \
 	src/Idle.cxx src/Idle.hxx \
-	src/CrossFade.cxx src/CrossFade.hxx \
+	src/IdleFlags.cxx src/IdleFlags.hxx \
 	src/decoder/DecoderError.cxx src/decoder/DecoderError.hxx \
 	src/decoder/DecoderThread.cxx src/decoder/DecoderThread.hxx \
 	src/decoder/DecoderCommand.hxx \
@@ -121,6 +122,7 @@ libmpd_a_SOURCES = \
 	src/client/ClientMessage.cxx src/client/ClientMessage.hxx \
 	src/client/ClientSubscribe.cxx \
 	src/client/ClientFile.cxx \
+	src/client/Response.cxx src/client/Response.hxx \
 	src/Listen.cxx src/Listen.hxx \
 	src/LogInit.cxx src/LogInit.hxx \
 	src/LogBackend.cxx src/LogBackend.hxx \
@@ -130,7 +132,6 @@ libmpd_a_SOURCES = \
 	src/IOThread.cxx src/IOThread.hxx \
 	src/Instance.cxx src/Instance.hxx \
 	src/win32/Win32Main.cxx \
-	src/GlobalEvents.cxx src/GlobalEvents.hxx \
 	src/MixRampInfo.hxx \
 	src/MusicBuffer.cxx src/MusicBuffer.hxx \
 	src/MusicPipe.cxx src/MusicPipe.hxx \
@@ -138,11 +139,11 @@ libmpd_a_SOURCES = \
 	src/Mapper.cxx src/Mapper.hxx \
 	src/Partition.cxx src/Partition.hxx \
 	src/Permission.cxx src/Permission.hxx \
-	src/PlayerThread.cxx src/PlayerThread.hxx \
-	src/PlayerControl.cxx src/PlayerControl.hxx \
-	src/PlayerListener.hxx \
+	src/player/CrossFade.cxx src/player/CrossFade.hxx \
+	src/player/Thread.cxx src/player/Thread.hxx \
+	src/player/Control.cxx src/player/Control.hxx \
+	src/player/Listener.hxx \
 	src/PlaylistError.cxx src/PlaylistError.hxx \
-	src/PlaylistGlobal.cxx src/PlaylistGlobal.hxx \
 	src/PlaylistPrint.cxx src/PlaylistPrint.hxx \
 	src/PlaylistSave.cxx src/PlaylistSave.hxx \
 	src/playlist/PlaylistStream.cxx src/playlist/PlaylistStream.hxx \
@@ -163,9 +164,11 @@ libmpd_a_SOURCES = \
 	src/queue/PlaylistEdit.cxx \
 	src/queue/PlaylistTag.cxx \
 	src/queue/PlaylistState.cxx src/queue/PlaylistState.hxx \
+	src/queue/Listener.hxx \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
+	src/LocateUri.cxx src/LocateUri.hxx \
 	src/SongUpdate.cxx \
 	src/SongLoader.cxx src/SongLoader.hxx \
 	src/SongPrint.cxx src/SongPrint.hxx \
@@ -237,10 +240,10 @@ UPNP_SOURCES = \
 	src/lib/upnp/Device.cxx src/lib/upnp/Device.hxx \
 	src/lib/upnp/ContentDirectoryService.cxx src/lib/upnp/ContentDirectoryService.hxx \
 	src/lib/upnp/Discovery.cxx src/lib/upnp/Discovery.hxx \
-	src/lib/upnp/Domain.cxx src/lib/upnp/Domain.hxx \
 	src/lib/upnp/ixmlwrap.cxx src/lib/upnp/ixmlwrap.hxx \
 	src/lib/upnp/Callback.hxx \
 	src/lib/upnp/Util.cxx src/lib/upnp/Util.hxx \
+	src/lib/upnp/UniqueIxml.hxx \
 	src/lib/upnp/WorkQueue.hxx \
 	src/lib/upnp/Action.hxx
 
@@ -340,6 +343,28 @@ EXTRA_src_mpd_DEPENDENCIES = win32/res/mpd.$(OBJEXT)
 src_mpd_LDFLAGS = -Wl,win32/res/mpd.$(OBJEXT)
 endif
 
+#
+# Haiku resource file
+#
+
+src/haiku/mpd.rsrc: src/haiku/mpd.rdef
+	$(RC) -o $@ $<
+
+if HAVE_HAIKU
+noinst_DATA = src/haiku/mpd.rdef
+
+EXTRA_src_mpd_DEPENDENCIES = src/haiku/mpd.rsrc
+
+src/mpd.haiku-rsrc-done: src/mpd src/haiku/mpd.rsrc
+	$(XRES) -o src/mpd src/haiku/mpd.rsrc
+	@touch src/mpd.haiku-rsrc-done
+
+all-local: src/mpd.haiku-rsrc-done
+
+clean-local:
+	rm -rf src/haiku/mpd.rsrc src/mpd.haiku-rsrc-done
+endif
+
 if ENABLE_DATABASE
 if ENABLE_INOTIFY
 libmpd_a_SOURCES += \
@@ -364,11 +389,15 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/RuntimeError.hxx \
 	src/util/Macros.hxx \
+	src/util/BoundMethod.hxx \
 	src/util/Cast.hxx \
 	src/util/Clamp.hxx \
+	src/util/DeleteDisposer.hxx \
 	src/util/Alloc.cxx src/util/Alloc.hxx \
 	src/util/VarSize.hxx \
+	src/util/ScopeExit.hxx \
 	src/util/Error.cxx src/util/Error.hxx \
 	src/util/Domain.hxx \
 	src/util/ReusableArray.hxx \
@@ -377,13 +406,16 @@ libutil_a_SOURCES = \
 	src/util/CharUtil.hxx \
 	src/util/NumberParser.hxx \
 	src/util/StringPointer.hxx \
+	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
 	src/util/StringUtil.cxx src/util/StringUtil.hxx \
-	src/util/WStringUtil.cxx src/util/WStringUtil.hxx \
+	src/util/StringCompare.cxx src/util/StringCompare.hxx \
+	src/util/WStringCompare.cxx src/util/WStringCompare.hxx \
 	src/util/StringAPI.hxx \
 	src/util/WStringAPI.hxx \
 	src/util/DivideString.cxx src/util/DivideString.hxx \
 	src/util/SplitString.cxx src/util/SplitString.hxx \
+	src/util/IterableSplitString.hxx \
 	src/util/FormatString.cxx src/util/FormatString.hxx \
 	src/util/Tokenizer.cxx src/util/Tokenizer.hxx \
 	src/util/TextFile.hxx \
@@ -436,6 +468,7 @@ libnet_a_SOURCES = \
 
 libsystem_a_SOURCES = \
 	src/system/ByteOrder.hxx \
+	src/system/Error.hxx \
 	src/system/FatalError.cxx src/system/FatalError.hxx \
 	src/system/FileDescriptor.cxx src/system/FileDescriptor.hxx \
 	src/system/fd_util.c src/system/fd_util.h \
@@ -459,6 +492,7 @@ libevent_a_SOURCES = \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
 	src/event/IdleMonitor.hxx src/event/IdleMonitor.cxx \
 	src/event/DeferredMonitor.hxx src/event/DeferredMonitor.cxx \
+	src/event/MaskMonitor.hxx src/event/MaskMonitor.cxx \
 	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \
 	src/event/FullyBufferedSocket.cxx src/event/FullyBufferedSocket.hxx \
@@ -510,6 +544,7 @@ libpcm_a_SOURCES = \
 	src/pcm/Neon.hxx \
 	src/pcm/FormatConverter.cxx src/pcm/FormatConverter.hxx \
 	src/pcm/ChannelsConverter.cxx src/pcm/ChannelsConverter.hxx \
+	src/pcm/Order.cxx src/pcm/Order.hxx \
 	src/pcm/Resampler.hxx \
 	src/pcm/GlueResampler.cxx src/pcm/GlueResampler.hxx \
 	src/pcm/FallbackResampler.cxx src/pcm/FallbackResampler.hxx \
@@ -569,12 +604,12 @@ libfs_a_SOURCES = \
 	src/fs/Glob.hxx \
 	src/fs/StandardDirectory.cxx src/fs/StandardDirectory.hxx \
 	src/fs/CheckFile.cxx src/fs/CheckFile.hxx \
-	src/fs/DirectoryReader.hxx
+	src/fs/DirectoryReader.cxx src/fs/DirectoryReader.hxx
 libfs_a_CPPFLAGS = $(AM_CPPFLAGS) $(ZLIB_CFLAGS)
 
 if ENABLE_ZLIB
 libfs_a_SOURCES += \
-	src/lib/zlib/Domain.cxx src/lib/zlib/Domain.hxx \
+	src/lib/zlib/Error.cxx src/lib/zlib/Error.hxx \
 	src/fs/io/GunzipReader.cxx src/fs/io/GunzipReader.hxx \
 	src/fs/io/AutoGunzipReader.cxx src/fs/io/AutoGunzipReader.hxx \
 	src/fs/io/GzipOutputStream.cxx src/fs/io/GzipOutputStream.hxx
@@ -699,7 +734,6 @@ libdb_plugins_a_SOURCES = \
 	src/db/plugins/simple/DatabaseSave.hxx \
 	src/db/plugins/simple/DirectorySave.cxx \
 	src/db/plugins/simple/DirectorySave.hxx \
-	src/db/plugins/LazyDatabase.cxx src/db/plugins/LazyDatabase.hxx \
 	src/db/plugins/simple/Directory.cxx \
 	src/db/plugins/simple/Directory.hxx \
 	src/db/plugins/simple/Song.cxx \
@@ -816,7 +850,8 @@ libtag_a_SOURCES =\
 	src/tag/TagBuilder.cxx src/tag/TagBuilder.hxx \
 	src/tag/TagItem.hxx \
 	src/tag/TagHandler.cxx src/tag/TagHandler.hxx \
-	src/tag/TagSettings.c src/tag/TagSettings.h \
+	src/tag/Mask.hxx \
+	src/tag/Settings.cxx src/tag/Settings.hxx \
 	src/tag/TagConfig.cxx src/tag/TagConfig.hxx \
 	src/tag/TagNames.c \
 	src/tag/TagString.cxx src/tag/TagString.hxx \
@@ -827,12 +862,15 @@ libtag_a_SOURCES =\
 	src/tag/VorbisComment.cxx src/tag/VorbisComment.hxx \
 	src/tag/ReplayGain.cxx src/tag/ReplayGain.hxx \
 	src/tag/MixRamp.cxx src/tag/MixRamp.hxx \
+	src/tag/Generic.cxx src/tag/Generic.hxx \
 	src/tag/ApeLoader.cxx src/tag/ApeLoader.hxx \
 	src/tag/ApeReplayGain.cxx src/tag/ApeReplayGain.hxx \
 	src/tag/ApeTag.cxx src/tag/ApeTag.hxx
 
 if ENABLE_ID3TAG
 libtag_a_SOURCES += \
+	src/tag/Id3Load.cxx src/tag/Id3Load.hxx \
+	src/tag/Id3Unique.hxx \
 	src/tag/TagId3.cxx src/tag/TagId3.hxx \
 	src/tag/TagRva2.cxx src/tag/TagRva2.hxx \
 	src/tag/Riff.cxx src/tag/Riff.hxx \
@@ -871,8 +909,8 @@ libdecoder_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AUDIOFILE_CFLAGS) \
 	$(LIBMIKMOD_CFLAGS) \
 	$(GME_CFLAGS) \
-	$(DSD_CFLAGS) \
-	$(DVDAISO_CFLAGS) \
+  $(DSD_CFLAGS) \
+  $(DVDAISO_CFLAGS) \
 	$(SIDPLAY_CFLAGS) \
 	$(FLUIDSYNTH_CFLAGS) \
 	$(WILDMIDI_CFLAGS) \
@@ -892,9 +930,9 @@ DECODER_LIBS = \
 	$(SNDFILE_LIBS) \
 	$(AUDIOFILE_LIBS) $(LIBMIKMOD_LIBS) \
 	$(GME_LIBS) \
-	$(SACDISO_LIBS) \
-	$(DVDAISO_LIBS) \
-	$(SIDPLAY_LIBS) \
+  $(SACDISO_LIBS) \
+  $(DVDAISO_LIBS) \
+  $(SIDPLAY_LIBS) \
 	$(FLUIDSYNTH_LIBS) \
 	$(WILDMIDI_LIBS) \
 	$(WAVPACK_LIBS) \
@@ -908,46 +946,114 @@ DECODER_LIBS = \
 
 if ENABLE_DSD
 DSD_CFLAGS = \
-	-I$(srcdir)/src/lib/sacdiso/libdstdec/binding \
-	-I$(srcdir)/src/lib/sacdiso/libdstdec/decoder \
-	-I$(srcdir)/src/lib/sacdiso/libdstdec \
-	-I$(srcdir)/src/lib/sacdiso
+  -I$(srcdir)/src/lib/sacdiso/libdstdec/binding \
+  -I$(srcdir)/src/lib/sacdiso/libdstdec/decoder \
+  -I$(srcdir)/src/lib/sacdiso/libdstdec \
+  -I$(srcdir)/src/lib/sacdiso
 libdecoder_a_SOURCES += \
-	src/lib/sacdiso/libdstdec/binding/dst_decoder_mpd.h \
-	src/lib/sacdiso/libdstdec/binding/dst_decoder_mpd.cpp \
-	src/lib/sacdiso/libdstdec/decoder/DSTDecoder.h \
-	src/lib/sacdiso/libdstdec/decoder/DSTDecoder.cpp \
-	src/lib/sacdiso/libdstdec/ACData.h \
-	src/lib/sacdiso/libdstdec/ACData.cpp \
-	src/lib/sacdiso/libdstdec/CodedTable.h \
-	src/lib/sacdiso/libdstdec/CodedTable.cpp \
-	src/lib/sacdiso/libdstdec/DSTConsts.h \
-	src/lib/sacdiso/libdstdec/DSTDefs.h \
-	src/lib/sacdiso/libdstdec/DSTFramework.h \
-	src/lib/sacdiso/libdstdec/DSTFramework.cpp \
-	src/lib/sacdiso/libdstdec/FrameReader.h \
-	src/lib/sacdiso/libdstdec/FrameReader.cpp \
-	src/lib/sacdiso/libdstdec/StrData.h \
-	src/lib/sacdiso/libdstdec/StrData.cpp \
-	src/lib/sacdiso/endianess.h \
-	src/lib/sacdiso/sacd_disc.h \
-	src/lib/sacdiso/sacd_disc.cpp \
-	src/lib/sacdiso/sacd_dsd.h \
-	src/lib/sacdiso/sacd_dsdiff.h \
-	src/lib/sacdiso/sacd_dsdiff.cpp \
-	src/lib/sacdiso/sacd_media.h \
-	src/lib/sacdiso/sacd_media.cpp \
-	src/lib/sacdiso/sacd_metabase.h \
-	src/lib/sacdiso/sacd_metabase.cpp \
-	src/lib/sacdiso/sacd_reader.h \
-	src/lib/sacdiso/scarletbook.h \
-	src/lib/sacdiso/scarletbook.cpp \
-	src/decoder/plugins/DffDecoderPlugin.cxx \
-	src/decoder/plugins/DffDecoderPlugin.hxx \
-	src/decoder/plugins/DsfDecoderPlugin.cxx \
-	src/decoder/plugins/DsfDecoderPlugin.hxx \
-	src/decoder/plugins/DsdLib.cxx \
+  src/lib/sacdiso/libdstdec/binding/dst_decoder_mpd.h \
+  src/lib/sacdiso/libdstdec/binding/dst_decoder_mpd.cpp \
+  src/lib/sacdiso/libdstdec/decoder/DSTDecoder.h \
+  src/lib/sacdiso/libdstdec/decoder/DSTDecoder.cpp \
+  src/lib/sacdiso/libdstdec/ACData.h \
+  src/lib/sacdiso/libdstdec/ACData.cpp \
+  src/lib/sacdiso/libdstdec/CodedTable.h \
+  src/lib/sacdiso/libdstdec/CodedTable.cpp \
+  src/lib/sacdiso/libdstdec/DSTConsts.h \
+  src/lib/sacdiso/libdstdec/DSTDefs.h \
+  src/lib/sacdiso/libdstdec/DSTFramework.h \
+  src/lib/sacdiso/libdstdec/DSTFramework.cpp \
+  src/lib/sacdiso/libdstdec/FrameReader.h \
+  src/lib/sacdiso/libdstdec/FrameReader.cpp \
+  src/lib/sacdiso/libdstdec/StrData.h \
+  src/lib/sacdiso/libdstdec/StrData.cpp \
+  src/lib/sacdiso/endianess.h \
+  src/lib/sacdiso/sacd_disc.h \
+  src/lib/sacdiso/sacd_disc.cpp \
+  src/lib/sacdiso/sacd_dsd.h \
+  src/lib/sacdiso/sacd_dsdiff.h \
+  src/lib/sacdiso/sacd_dsdiff.cpp \
+  src/lib/sacdiso/sacd_media.h \
+  src/lib/sacdiso/sacd_media.cpp \
+  src/lib/sacdiso/sacd_metabase.h \
+  src/lib/sacdiso/sacd_metabase.cpp \
+  src/lib/sacdiso/sacd_reader.h \
+  src/lib/sacdiso/scarletbook.h \
+  src/lib/sacdiso/scarletbook.cpp \
+  src/decoder/plugins/DffDecoderPlugin.cxx \
+  src/decoder/plugins/DffDecoderPlugin.hxx \
+  src/decoder/plugins/DsfDecoderPlugin.cxx \
+  src/decoder/plugins/DsfDecoderPlugin.hxx \
+  src/decoder/plugins/DsdLib.cxx \
 	src/decoder/plugins/DsdLib.hxx
+endif
+
+if ENABLE_SACDISO
+libdecoder_a_SOURCES += \
+  src/decoder/plugins/SacdIsoDecoderPlugin.cxx \
+  src/decoder/plugins/SacdIsoDecoderPlugin.hxx
+endif
+
+if ENABLE_DVDAISO
+DVDAISO_CFLAGS = \
+  -I$(srcdir)/src/lib/dvdaiso/libmlpdec \
+  -I$(srcdir)/src/lib/dvdaiso/libmlpdec/libavcodec \
+  -I$(srcdir)/src/lib/dvdaiso/libmlpdec/libavuitl \
+  -I$(srcdir)/src/lib/dvdaiso/libudf \
+  -I$(srcdir)/src/lib/dvdaiso
+libdecoder_a_SOURCES += \
+  src/lib/dvdaiso/libmlpdec/libavutil/crc.h \
+  src/lib/dvdaiso/libmlpdec/libavutil/intreadwrite.h \
+  src/lib/dvdaiso/libmlpdec/avcodec.h \
+  src/lib/dvdaiso/libmlpdec/bitstream.h \
+  src/lib/dvdaiso/libmlpdec/bswap.h \
+  src/lib/dvdaiso/libmlpdec/dsputil.h \
+  src/lib/dvdaiso/libmlpdec/get_bits.h \
+  src/lib/dvdaiso/libmlpdec/intreadwrite.h \
+  src/lib/dvdaiso/libmlpdec/mlp.h \
+  src/lib/dvdaiso/libmlpdec/mlp.c \
+  src/lib/dvdaiso/libmlpdec/mlpdec.c \
+  src/lib/dvdaiso/libmlpdec/MlpDecoder.h \
+  src/lib/dvdaiso/libmlpdec/mlpdsp.c \
+  src/lib/dvdaiso/libmlpdec/mlp_parser.h \
+  src/lib/dvdaiso/libmlpdec/mlp_parser.c \
+  src/lib/dvdaiso/libmlpdec/mlp_util.h \
+  src/lib/dvdaiso/libmlpdec/mlp_util.c \
+  src/lib/dvdaiso/libmlpdec/parser.h \
+  src/lib/dvdaiso/libudf/dvd_input.h \
+  src/lib/dvdaiso/libudf/dvd_input.cpp \
+  src/lib/dvdaiso/libudf/dvd_reader.h \
+  src/lib/dvdaiso/libudf/dvd_reader.cpp \
+  src/lib/dvdaiso/libudf/dvd_udf.h \
+  src/lib/dvdaiso/libudf/dvd_udf.c \
+  src/lib/dvdaiso/audio_stream.h \
+  src/lib/dvdaiso/audio_stream.cpp \
+  src/lib/dvdaiso/audio_stream_info.h \
+  src/lib/dvdaiso/audio_stream_info.cpp \
+  src/lib/dvdaiso/audio_track.h \
+  src/lib/dvdaiso/audio_track.cpp \
+  src/lib/dvdaiso/b2n.h \
+  src/lib/dvdaiso/dvda_block.h \
+  src/lib/dvdaiso/dvda_block.cpp \
+  src/lib/dvdaiso/dvda_disc.h \
+  src/lib/dvdaiso/dvda_disc.cpp \
+  src/lib/dvdaiso/dvda_error.h \
+  src/lib/dvdaiso/dvda_filesystem.h \
+  src/lib/dvdaiso/dvda_filesystem.cpp \
+  src/lib/dvdaiso/dvda_media.h \
+  src/lib/dvdaiso/dvda_media.cpp \
+  src/lib/dvdaiso/dvda_metabase.h \
+  src/lib/dvdaiso/dvda_metabase.cpp \
+  src/lib/dvdaiso/dvda_readed.h \
+  src/lib/dvdaiso/dvda_zone.h \
+  src/lib/dvdaiso/dvda_zone.cpp \
+  src/lib/dvdaiso/dvdaerror.h \
+  src/lib/dvdaiso/ifo.h \
+  src/lib/dvdaiso/log_trunk.h \
+  src/lib/dvdaiso/log_trunk.cpp \
+  src/lib/dvdaiso/stream_buffer.h \
+  src/decoder/plugins/DvdaIsoDecoderPlugin.cxx \
+  src/decoder/plugins/DvdaIsoDecoderPlugin.hxx
 endif
 
 if ENABLE_MAD
@@ -1085,74 +1191,6 @@ endif
 if ENABLE_GME
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/GmeDecoderPlugin.cxx src/decoder/plugins/GmeDecoderPlugin.hxx
-endif
-
-if ENABLE_SACDISO
-libdecoder_a_SOURCES += \
-	src/decoder/plugins/SacdIsoDecoderPlugin.cxx \
-	src/decoder/plugins/SacdIsoDecoderPlugin.hxx
-endif
-
-if ENABLE_DVDAISO
-DVDAISO_CFLAGS = \
-	-I$(srcdir)/src/lib/dvdaiso/libmlpdec \
-	-I$(srcdir)/src/lib/dvdaiso/libmlpdec/libavcodec \
-	-I$(srcdir)/src/lib/dvdaiso/libmlpdec/libavuitl \
-	-I$(srcdir)/src/lib/dvdaiso/libudf \
-	-I$(srcdir)/src/lib/dvdaiso
-libdecoder_a_SOURCES += \
-	src/lib/dvdaiso/libmlpdec/libavutil/crc.h \
-	src/lib/dvdaiso/libmlpdec/libavutil/intreadwrite.h \
-	src/lib/dvdaiso/libmlpdec/avcodec.h \
-	src/lib/dvdaiso/libmlpdec/bitstream.h \
-	src/lib/dvdaiso/libmlpdec/bswap.h \
-	src/lib/dvdaiso/libmlpdec/dsputil.h \
-	src/lib/dvdaiso/libmlpdec/get_bits.h \
-	src/lib/dvdaiso/libmlpdec/intreadwrite.h \
-	src/lib/dvdaiso/libmlpdec/mlp.h \
-	src/lib/dvdaiso/libmlpdec/mlp.c \
-	src/lib/dvdaiso/libmlpdec/mlpdec.c \
-	src/lib/dvdaiso/libmlpdec/MlpDecoder.h \
-	src/lib/dvdaiso/libmlpdec/mlpdsp.c \
-	src/lib/dvdaiso/libmlpdec/mlp_parser.h \
-	src/lib/dvdaiso/libmlpdec/mlp_parser.c \
-	src/lib/dvdaiso/libmlpdec/mlp_util.h \
-	src/lib/dvdaiso/libmlpdec/mlp_util.c \
-	src/lib/dvdaiso/libmlpdec/parser.h \
-	src/lib/dvdaiso/libudf/dvd_input.h \
-	src/lib/dvdaiso/libudf/dvd_input.cpp \
-	src/lib/dvdaiso/libudf/dvd_reader.h \
-	src/lib/dvdaiso/libudf/dvd_reader.cpp \
-	src/lib/dvdaiso/libudf/dvd_udf.h \
-	src/lib/dvdaiso/libudf/dvd_udf.c \
-	src/lib/dvdaiso/audio_stream.h \
-	src/lib/dvdaiso/audio_stream.cpp \
-	src/lib/dvdaiso/audio_stream_info.h \
-	src/lib/dvdaiso/audio_stream_info.cpp \
-	src/lib/dvdaiso/audio_track.h \
-	src/lib/dvdaiso/audio_track.cpp \
-	src/lib/dvdaiso/b2n.h \
-	src/lib/dvdaiso/dvda_block.h \
-	src/lib/dvdaiso/dvda_block.cpp \
-	src/lib/dvdaiso/dvda_disc.h \
-	src/lib/dvdaiso/dvda_disc.cpp \
-	src/lib/dvdaiso/dvda_error.h \
-	src/lib/dvdaiso/dvda_filesystem.h \
-	src/lib/dvdaiso/dvda_filesystem.cpp \
-	src/lib/dvdaiso/dvda_media.h \
-	src/lib/dvdaiso/dvda_media.cpp \
-	src/lib/dvdaiso/dvda_metabase.h \
-	src/lib/dvdaiso/dvda_metabase.cpp \
-	src/lib/dvdaiso/dvda_readed.h \
-	src/lib/dvdaiso/dvda_zone.h \
-	src/lib/dvdaiso/dvda_zone.cpp \
-	src/lib/dvdaiso/dvdaerror.h \
-	src/lib/dvdaiso/ifo.h \
-	src/lib/dvdaiso/log_trunk.h \
-	src/lib/dvdaiso/log_trunk.cpp \
-	src/lib/dvdaiso/stream_buffer.h \
-	src/decoder/plugins/DvdaIsoDecoderPlugin.cxx \
-	src/decoder/plugins/DvdaIsoDecoderPlugin.hxx
 endif
 
 # encoder plugins
@@ -1380,6 +1418,7 @@ liboutput_plugins_a_SOURCES = \
 
 MIXER_LIBS = \
 	libmixer_plugins.a \
+	$(ALSA_LIBS) \
 	$(PULSE_LIBS2)
 
 MIXER_API_SRC = \
@@ -1434,6 +1473,14 @@ if HAVE_FIFO
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/FifoOutputPlugin.cxx \
 	src/output/plugins/FifoOutputPlugin.hxx
+endif
+
+if HAVE_HAIKU
+liboutput_plugins_a_SOURCES += \
+	src/output/plugins/HaikuOutputPlugin.cxx \
+	src/output/plugins/HaikuOutputPlugin.hxx
+libmixer_plugins_a_SOURCES += \
+	src/mixer/plugins/HaikuMixerPlugin.cxx src/mixer/plugins/HaikuMixerPlugin.hxx
 endif
 
 if ENABLE_PIPE_OUTPUT
@@ -1528,8 +1575,6 @@ endif
 libplaylist_plugins_a_SOURCES = \
 	src/playlist/PlaylistPlugin.hxx \
 	src/playlist/SongEnumerator.hxx \
-	src/playlist/CloseSongEnumerator.cxx \
-	src/playlist/CloseSongEnumerator.hxx \
 	src/playlist/MemorySongEnumerator.cxx \
 	src/playlist/MemorySongEnumerator.hxx \
 	src/playlist/plugins/ExtM3uPlaylistPlugin.cxx \
@@ -1548,6 +1593,12 @@ PLAYLIST_LIBS = \
 	libplaylist_plugins.a \
 	$(EXPAT_LIBS) \
 	$(FLAC_LIBS)
+
+if ENABLE_FLAC
+libplaylist_plugins_a_SOURCES += \
+	src/playlist/plugins/FlacPlaylistPlugin.cxx \
+	src/playlist/plugins/FlacPlaylistPlugin.hxx
+endif
 
 if ENABLE_CUE
 libplaylist_plugins_a_SOURCES += \
@@ -1655,6 +1706,7 @@ noinst_PROGRAMS = \
 	test/dump_playlist \
 	test/run_decoder \
 	test/read_tags \
+	test/ReadApeTags \
 	test/run_filter \
 	test/run_output \
 	test/run_convert \
@@ -1761,7 +1813,6 @@ test_run_input_LDADD = \
 	libutil.a
 test_run_input_SOURCES = test/run_input.cxx \
 	test/ScopeIOThread.hxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/TagSave.cxx
@@ -1819,15 +1870,16 @@ noinst_PROGRAMS += test/run_gzip test/run_gunzip
 test_run_gzip_LDADD = \
 	libutil.a \
 	$(FS_LIBS)
-test_run_gzip_SOURCES = test/run_gzip.cxx
+test_run_gzip_SOURCES = test/run_gzip.cxx \
+	src/Log.cxx src/LogBackend.cxx
 
 test_run_gunzip_SOURCES = test/run_gunzip.cxx \
 	src/Log.cxx src/LogBackend.cxx
 test_run_gunzip_LDADD = \
-	libutil.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
-	libsystem.a
+	libsystem.a \
+	libutil.a
 
 endif
 
@@ -1853,7 +1905,6 @@ test_dump_text_file_LDADD = \
 	libutil.a
 test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 	test/ScopeIOThread.hxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx
 
@@ -1905,7 +1956,6 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
@@ -1937,9 +1987,26 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	$(DECODER_SRC)
 
+test_ReadApeTags_LDADD = \
+	$(TAG_LIBS) \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	$(FS_LIBS) \
+	$(ICU_LDADD) \
+	libsystem.a \
+	libutil.a
+test_ReadApeTags_SOURCES = \
+	src/Log.cxx src/LogBackend.cxx \
+	test/ReadApeTags.cxx
+
 if ENABLE_ID3TAG
 test_dump_rva2_LDADD = \
 	$(TAG_LIBS) \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	$(FS_LIBS) \
+	$(ICU_LDADD) \
+	libsystem.a \
 	libutil.a
 test_dump_rva2_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
@@ -1955,7 +2022,6 @@ test_run_filter_LDADD = \
 	libutil.a
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterRegistry.cxx \
 	src/CheckAudioFormat.cxx \
@@ -1966,7 +2032,6 @@ test_run_filter_SOURCES = test/run_filter.cxx \
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.cxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
@@ -1986,7 +2051,6 @@ endif
 if ENABLE_VORBISENC
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioFormat.cxx \
@@ -2006,7 +2070,6 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 endif
 
 test_software_volume_SOURCES = test/software_volume.cxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	src/AudioParser.cxx
@@ -2028,7 +2091,6 @@ test_run_avahi_LDADD = \
 	$(AVAHI_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \
-	test/stdbin.h \
 	src/CheckAudioFormat.cxx \
 	src/AudioCompress/compress.c \
 	src/AudioParser.cxx
@@ -2066,7 +2128,6 @@ test_run_output_LDADD = $(MPD_LIBS) \
 test_run_output_SOURCES = test/run_output.cxx \
 	test/FakeReplayGainConfig.cxx \
 	test/ScopeIOThread.hxx \
-	test/stdbin.h \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/CheckAudioFormat.cxx \
@@ -2213,6 +2274,7 @@ test_test_translate_song_SOURCES = \
 	src/PlaylistError.cxx \
 	src/DetachedSong.cxx \
 	src/SongLoader.cxx \
+	src/LocateUri.cxx \
 	src/Log.cxx \
 	test/test_translate_song.cxx
 test_test_translate_song_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
@@ -2288,7 +2350,7 @@ endif
 #
 
 man_MANS = doc/mpd.1 doc/mpd.conf.5
-doc_DATA = AUTHORS COPYING NEWS README doc/mpdconf.example
+doc_DATA = AUTHORS COPYING NEWS README.md doc/mpdconf.example
 
 DOCBOOK_FILES = doc/protocol.xml doc/user.xml doc/developer.xml
 
@@ -2355,4 +2417,5 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	android/src/Bridge.java \
 	android/src/Loader.java \
 	android/src/Main.java \
-	win32/res/mpd.rc.in win32/res/mpd.ico
+	win32/res/mpd.rc.in win32/res/mpd.ico \
+	src/haiku/App_MusicPD

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,16 +19,16 @@
 
 #include "config.h"
 #include "TagBuilder.hxx"
-#include "TagSettings.h"
+#include "Settings.hxx"
 #include "TagPool.hxx"
 #include "TagString.hxx"
 #include "Tag.hxx"
 #include "util/WritableBuffer.hxx"
+#include "util/StringView.hxx"
 
 #include <array>
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 
 TagBuilder::TagBuilder(const Tag &other)
@@ -189,22 +189,16 @@ TagBuilder::Complement(const Tag &other)
 }
 
 inline void
-TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
+TagBuilder::AddItemInternal(TagType type, StringView value)
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(value != nullptr);
-#endif
-	assert(length > 0);
+	assert(!value.IsEmpty());
 
-	auto f = FixTagString(value, length);
-	if (!f.IsNull()) {
-		value = f.data;
-		length = f.size;
-	}
+	auto f = FixTagString(value);
+	if (!f.IsNull())
+		value = { f.data, f.size };
 
 	tag_pool_lock.lock();
-	auto i = tag_pool_get_item(type, value, length);
+	auto i = tag_pool_get_item(type, value);
 	tag_pool_lock.unlock();
 
 	free(f.data);
@@ -213,17 +207,12 @@ TagBuilder::AddItemInternal(TagType type, const char *value, size_t length)
 }
 
 void
-TagBuilder::AddItem(TagType type, const char *value, size_t length)
+TagBuilder::AddItem(TagType type, StringView value)
 {
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(value != nullptr);
-#endif
-
-	if (length == 0 || ignore_tag_items[type])
+	if (value.IsEmpty() || !IsTagEnabled(type))
 		return;
 
-	AddItemInternal(type, value, length);
+	AddItemInternal(type, value);
 }
 
 void
@@ -234,14 +223,14 @@ TagBuilder::AddItem(TagType type, const char *value)
 	assert(value != nullptr);
 #endif
 
-	AddItem(type, value, strlen(value));
+	AddItem(type, StringView(value));
 }
 
 void
 TagBuilder::AddEmptyItem(TagType type)
 {
 	tag_pool_lock.lock();
-	auto i = tag_pool_get_item(type, "", 0);
+	auto i = tag_pool_get_item(type, StringView::Empty());
 	tag_pool_lock.unlock();
 
 	items.push_back(i);

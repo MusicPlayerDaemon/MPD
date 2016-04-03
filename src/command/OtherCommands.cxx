@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,11 +19,13 @@
 
 #include "config.h"
 #include "OtherCommands.hxx"
+#include "Request.hxx"
 #include "FileCommands.hxx"
 #include "StorageCommands.hxx"
 #include "CommandError.hxx"
 #include "db/Uri.hxx"
 #include "storage/StorageInterface.hxx"
+#include "LocateUri.hxx"
 #include "DetachedSong.hxx"
 #include "SongPrint.hxx"
 #include "TagPrint.hxx"
@@ -31,22 +33,22 @@
 #include "tag/TagHandler.hxx"
 #include "TimePrint.hxx"
 #include "decoder/DecoderPrint.hxx"
-#include "protocol/ArgParser.hxx"
-#include "protocol/Result.hxx"
 #include "ls.hxx"
 #include "mixer/Volume.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "util/ConstBuffer.hxx"
+#include "util/StringAPI.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
 #include "Permission.hxx"
 #include "PlaylistFile.hxx"
 #include "db/PlaylistVector.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
 #include "Instance.hxx"
 #include "Idle.hxx"
+#include "Log.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "DatabaseCommands.hxx"
@@ -58,47 +60,51 @@
 #include <string.h>
 
 static void
-print_spl_list(Client &client, const PlaylistVector &list)
+print_spl_list(Response &r, const PlaylistVector &list)
 {
 	for (const auto &i : list) {
-		client_printf(client, "playlist: %s\n", i.name.c_str());
+		r.Format("playlist: %s\n", i.name.c_str());
 
 		if (i.mtime > 0)
-			time_print(client, "Last-Modified", i.mtime);
+			time_print(r, "Last-Modified", i.mtime);
 	}
 }
 
 CommandResult
-handle_urlhandlers(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_urlhandlers(Client &client, gcc_unused Request args, Response &r)
 {
 	if (client.IsLocal())
-		client_puts(client, "handler: file://\n");
-	print_supported_uri_schemes(client);
+		r.Format("handler: file://\n");
+	print_supported_uri_schemes(r);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_decoders(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_decoders(gcc_unused Client &client, gcc_unused Request args,
+		Response &r)
 {
-	decoder_list_print(client);
+	decoder_list_print(r);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_tagtypes(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_tagtypes(gcc_unused Client &client, gcc_unused Request request,
+		Response &r)
 {
-	tag_print_types(client);
+	tag_print_types(r);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_kill(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_kill(gcc_unused Client &client, gcc_unused Request request,
+	    gcc_unused Response &r)
 {
 	return CommandResult::KILL;
 }
 
 CommandResult
-handle_close(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_close(gcc_unused Client &client, gcc_unused Request args,
+	     gcc_unused Response &r)
 {
 	return CommandResult::FINISH;
 }
@@ -106,111 +112,98 @@ handle_close(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> arg
 static void
 print_tag(TagType type, const char *value, void *ctx)
 {
-	Client &client = *(Client *)ctx;
+	auto &r = *(Response *)ctx;
 
-	tag_print(client, type, value);
+	tag_print(r, type, value);
 }
 
 CommandResult
-handle_listfiles(Client &client, ConstBuffer<const char *> args)
+handle_listfiles(Client &client, Request args, Response &r)
 {
 	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
+	const auto uri = args.GetOptional(0, "");
 
-	if (memcmp(uri, "file:///", 8) == 0)
-		/* list local directory */
-		return handle_listfiles_local(client, uri + 7);
-
+	Error error;
+	const auto located_uri = LocateUri(uri, &client,
 #ifdef ENABLE_DATABASE
-	if (uri_has_scheme(uri))
-		/* use storage plugin to list remote directory */
-		return handle_listfiles_storage(client, uri);
-
-	/* must be a path relative to the configured
-	   music_directory */
-
-	if (client.partition.instance.storage != nullptr)
-		/* if we have a storage instance, obtain a list of
-		   files from it */
-		return handle_listfiles_storage(client,
-						*client.partition.instance.storage,
-						uri);
-
-	/* fall back to entries from database if we have no storage */
-	return handle_listfiles_db(client, uri);
-#else
-	command_error(client, ACK_ERROR_NO_EXIST, "No database");
-	return CommandResult::ERROR;
+					   nullptr,
 #endif
+					   error);
+
+	switch (located_uri.type) {
+	case LocatedUri::Type::UNKNOWN:
+		return print_error(r, error);
+
+	case LocatedUri::Type::ABSOLUTE:
+#ifdef ENABLE_DATABASE
+		/* use storage plugin to list remote directory */
+		return handle_listfiles_storage(r, located_uri.canonical_uri);
+#else
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
+
+	case LocatedUri::Type::RELATIVE:
+#ifdef ENABLE_DATABASE
+		if (client.partition.instance.storage != nullptr)
+			/* if we have a storage instance, obtain a list of
+			   files from it */
+			return handle_listfiles_storage(r,
+							*client.partition.instance.storage,
+							uri);
+
+		/* fall back to entries from database if we have no storage */
+		return handle_listfiles_db(client, r, uri);
+#else
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#endif
+
+	case LocatedUri::Type::PATH:
+		/* list local directory */
+		return handle_listfiles_local(r, located_uri.path);
+	}
+
+	gcc_unreachable();
 }
 
-static constexpr tag_handler print_tag_handler = {
+static constexpr TagHandler print_tag_handler = {
 	nullptr,
 	print_tag,
 	nullptr,
 };
 
-CommandResult
-handle_lsinfo(Client &client, ConstBuffer<const char *> args)
+static CommandResult
+handle_lsinfo_absolute(Response &r, const char *uri)
 {
-	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
-
-	if (memcmp(uri, "file:///", 8) == 0) {
-		/* print information about an arbitrary local file */
-		const char *path_utf8 = uri + 7;
-		const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
-
-		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported file name");
-			return CommandResult::ERROR;
-		}
-
-		Error error;
-		if (!client.AllowFile(path_fs, error))
-			return print_error(client, error);
-
-		DetachedSong song(path_utf8);
-		if (!song.Update()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "No such file");
-			return CommandResult::ERROR;
-		}
-
-		song_print_info(client, song);
-		return CommandResult::OK;
+	if (!tag_stream_scan(uri, print_tag_handler, &r)) {
+		r.Error(ACK_ERROR_NO_EXIST, "No such file");
+		return CommandResult::ERROR;
 	}
 
-	if (uri_has_scheme(uri)) {
-		if (!uri_supported_scheme(uri)) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported URI scheme");
-			return CommandResult::ERROR;
-		}
+	return CommandResult::OK;
+}
 
-		if (!tag_stream_scan(uri, print_tag_handler, &client)) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "No such file");
-			return CommandResult::ERROR;
-		}
-
-		return CommandResult::OK;
-	}
-
+static CommandResult
+handle_lsinfo_relative(Client &client, Response &r, const char *uri)
+{
 #ifdef ENABLE_DATABASE
-	CommandResult result = handle_lsinfo2(client, args);
+	CommandResult result = handle_lsinfo2(client, uri, r);
 	if (result != CommandResult::OK)
 		return result;
+#else
+	(void)client;
 #endif
 
 	if (isRootDirectory(uri)) {
-		Error error;
-		const auto &list = ListPlaylistFiles(error);
-		print_spl_list(client, list);
+		try {
+			print_spl_list(r, ListPlaylistFiles());
+		} catch (const std::exception &e) {
+			LogError(e);
+		}
 	} else {
 #ifndef ENABLE_DATABASE
-		command_error(client, ACK_ERROR_NO_EXIST, "No database");
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
 		return CommandResult::ERROR;
 #endif
 	}
@@ -218,38 +211,91 @@ handle_lsinfo(Client &client, ConstBuffer<const char *> args)
 	return CommandResult::OK;
 }
 
+static CommandResult
+handle_lsinfo_path(Client &client, Response &r,
+		   const char *path_utf8, Path path_fs)
+{
+	DetachedSong song(path_utf8);
+	if (!song.LoadFile(path_fs)) {
+		r.Error(ACK_ERROR_NO_EXIST, "No such file");
+		return CommandResult::ERROR;
+	}
+
+	song_print_info(r, client.partition, song);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_lsinfo(Client &client, Request args, Response &r)
+{
+	/* default is root directory */
+	auto uri = args.GetOptional(0, "");
+	if (StringIsEqual(uri, "/"))
+		/* this URI is malformed, but some clients are buggy
+		   and use "lsinfo /" to list files in the music root
+		   directory, which was never intended to work, but
+		   once did; in order to retain backwards
+		   compatibility, work around this here */
+		uri = "";
+
+	Error error;
+	const auto located_uri = LocateUri(uri, &client,
+#ifdef ENABLE_DATABASE
+					   nullptr,
+#endif
+					   error);
+
+	switch (located_uri.type) {
+	case LocatedUri::Type::UNKNOWN:
+		return print_error(r, error);
+
+	case LocatedUri::Type::ABSOLUTE:
+		return handle_lsinfo_absolute(r, located_uri.canonical_uri);
+
+	case LocatedUri::Type::RELATIVE:
+		return handle_lsinfo_relative(client, r,
+					      located_uri.canonical_uri);
+
+	case LocatedUri::Type::PATH:
+		/* print information about an arbitrary local file */
+		return handle_lsinfo_path(client, r, located_uri.canonical_uri,
+					  located_uri.path);
+	}
+
+	gcc_unreachable();
+}
+
 #ifdef ENABLE_DATABASE
 
 static CommandResult
-handle_update(Client &client, UpdateService &update,
+handle_update(Response &r, UpdateService &update,
 	      const char *uri_utf8, bool discard)
 {
 	unsigned ret = update.Enqueue(uri_utf8, discard);
 	if (ret > 0) {
-		client_printf(client, "updating_db: %i\n", ret);
+		r.Format("updating_db: %i\n", ret);
 		return CommandResult::OK;
 	} else {
-		command_error(client, ACK_ERROR_UPDATE_ALREADY,
-			      "already updating");
+		r.Error(ACK_ERROR_UPDATE_ALREADY, "already updating");
 		return CommandResult::ERROR;
 	}
 }
 
 static CommandResult
-handle_update(Client &client, Database &db,
+handle_update(Response &r, Database &db,
 	      const char *uri_utf8, bool discard)
 {
 	Error error;
 	unsigned id = db.Update(uri_utf8, discard, error);
 	if (id > 0) {
-		client_printf(client, "updating_db: %i\n", id);
+		r.Format("updating_db: %i\n", id);
 		return CommandResult::OK;
 	} else if (error.IsDefined()) {
-		return print_error(client, error);
+		return print_error(r, error);
 	} else {
 		/* Database::Update() has returned 0 without setting
 		   the Error: the method is not implemented */
-		command_error(client, ACK_ERROR_NO_EXIST, "Not implemented");
+		r.Error(ACK_ERROR_NO_EXIST, "Not implemented");
 		return CommandResult::ERROR;
 	}
 }
@@ -257,7 +303,7 @@ handle_update(Client &client, Database &db,
 #endif
 
 static CommandResult
-handle_update(Client &client, ConstBuffer<const char *> args, bool discard)
+handle_update(Client &client, Request args, Response &r, bool discard)
 {
 #ifdef ENABLE_DATABASE
 	const char *path = "";
@@ -266,62 +312,51 @@ handle_update(Client &client, ConstBuffer<const char *> args, bool discard)
 	if (!args.IsEmpty()) {
 		path = args.front();
 
-		if (*path == 0 || strcmp(path, "/") == 0)
+		if (*path == 0 || StringIsEqual(path, "/"))
 			/* backwards compatibility with MPD 0.15 */
 			path = "";
 		else if (!uri_safe_local(path)) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Malformed path");
+			r.Error(ACK_ERROR_ARG, "Malformed path");
 			return CommandResult::ERROR;
 		}
 	}
 
 	UpdateService *update = client.partition.instance.update;
 	if (update != nullptr)
-		return handle_update(client, *update, path, discard);
+		return handle_update(r, *update, path, discard);
 
 	Database *db = client.partition.instance.database;
 	if (db != nullptr)
-		return handle_update(client, *db, path, discard);
+		return handle_update(r, *db, path, discard);
 #else
+	(void)client;
 	(void)args;
 	(void)discard;
 #endif
 
-	command_error(client, ACK_ERROR_NO_EXIST, "No database");
+	r.Error(ACK_ERROR_NO_EXIST, "No database");
 	return CommandResult::ERROR;
 }
 
 CommandResult
-handle_update(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_update(Client &client, Request args, gcc_unused Response &r)
 {
-	return handle_update(client, args, false);
+	return handle_update(client, args, r, false);
 }
 
 CommandResult
-handle_rescan(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_rescan(Client &client, Request args, Response &r)
 {
-	return handle_update(client, args, true);
+	return handle_update(client, args, r, true);
 }
 
 CommandResult
-handle_setvol(Client &client, ConstBuffer<const char *> args)
+handle_setvol(Client &client, Request args, Response &r)
 {
-	unsigned level;
-	bool success;
+	unsigned level = args.ParseUnsigned(0, 100);
 
-	if (!check_unsigned(client, &level, args.front()))
-		return CommandResult::ERROR;
-
-	if (level > 100) {
-		command_error(client, ACK_ERROR_ARG, "Invalid volume value");
-		return CommandResult::ERROR;
-	}
-
-	success = volume_level_change(client.partition.outputs, level);
-	if (!success) {
-		command_error(client, ACK_ERROR_SYSTEM,
-			      "problems setting volume");
+	if (!volume_level_change(client.partition.outputs, level)) {
+		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
 		return CommandResult::ERROR;
 	}
 
@@ -329,20 +364,13 @@ handle_setvol(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_volume(Client &client, ConstBuffer<const char *> args)
+handle_volume(Client &client, Request args, Response &r)
 {
-	int relative;
-	if (!check_int(client, &relative, args.front()))
-		return CommandResult::ERROR;
-
-	if (relative < -100 || relative > 100) {
-		command_error(client, ACK_ERROR_ARG, "Invalid volume value");
-		return CommandResult::ERROR;
-	}
+	int relative = args.ParseInt(0, -100, 100);
 
 	const int old_volume = volume_level_get(client.partition.outputs);
 	if (old_volume < 0) {
-		command_error(client, ACK_ERROR_SYSTEM, "No mixer");
+		r.Error(ACK_ERROR_SYSTEM, "No mixer");
 		return CommandResult::ERROR;
 	}
 
@@ -354,8 +382,7 @@ handle_volume(Client &client, ConstBuffer<const char *> args)
 
 	if (new_volume != old_volume &&
 	    !volume_level_change(client.partition.outputs, new_volume)) {
-		command_error(client, ACK_ERROR_SYSTEM,
-			      "problems setting volume");
+		r.Error(ACK_ERROR_SYSTEM, "problems setting volume");
 		return CommandResult::ERROR;
 	}
 
@@ -363,25 +390,25 @@ handle_volume(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_stats(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_stats(Client &client, gcc_unused Request args, Response &r)
 {
-	stats_print(client);
+	stats_print(r, client.partition);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_ping(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_ping(gcc_unused Client &client, gcc_unused Request args,
+	    gcc_unused Response &r)
 {
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_password(Client &client, ConstBuffer<const char *> args)
+handle_password(Client &client, Request args, Response &r)
 {
 	unsigned permission = 0;
-
 	if (getPermissionFromPassword(args.front(), &permission) < 0) {
-		command_error(client, ACK_ERROR_PASSWORD, "incorrect password");
+		r.Error(ACK_ERROR_PASSWORD, "incorrect password");
 		return CommandResult::ERROR;
 	}
 
@@ -391,11 +418,11 @@ handle_password(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_config(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_config(Client &client, gcc_unused Request args, Response &r)
 {
 	if (!client.IsLocal()) {
-		command_error(client, ACK_ERROR_PERMISSION,
-			      "Command only permitted to local clients");
+		r.Error(ACK_ERROR_PERMISSION,
+			"Command only permitted to local clients");
 		return CommandResult::ERROR;
 	}
 
@@ -403,7 +430,7 @@ handle_config(Client &client, gcc_unused ConstBuffer<const char *> args)
 	const Storage *storage = client.GetStorage();
 	if (storage != nullptr) {
 		const auto path = storage->MapUTF8("");
-		client_printf(client, "music_directory: %s\n", path.c_str());
+		r.Format("music_directory: %s\n", path.c_str());
 	}
 #endif
 
@@ -411,16 +438,14 @@ handle_config(Client &client, gcc_unused ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_idle(Client &client, ConstBuffer<const char *> args)
+handle_idle(Client &client, Request args, Response &r)
 {
 	unsigned flags = 0;
-
 	for (const char *i : args) {
 		unsigned event = idle_parse_name(i);
 		if (event == 0) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Unrecognized idle event: %s",
-				      i);
+			r.FormatError(ACK_ERROR_ARG,
+				      "Unrecognized idle event: %s", i);
 			return CommandResult::ERROR;
 		}
 

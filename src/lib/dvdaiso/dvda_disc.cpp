@@ -84,7 +84,7 @@ bool dvda_disc_t::can_downmix() {
 	return track_list[sel_track_index].audio_stream_info.can_downmix;
 }
 
-void dvda_disc_t::get_info(uint32_t track_index, bool downmix, const struct tag_handler *handler, void *handler_ctx) {
+void dvda_disc_t::get_info(uint32_t track_index, bool downmix, const struct TagHandler& handler, void* handler_ctx) {
 	if (!(track_index < track_list.size())) {
 		return;
 	}

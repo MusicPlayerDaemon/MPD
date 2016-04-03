@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,24 +40,9 @@
 #include "Log.hxx"
 
 #include <functional>
+#include <memory>
 
 static constexpr Domain decoder_thread_domain("decoder_thread");
-
-/**
- * Marks the current decoder command as "finished" and notifies the
- * player thread.
- *
- * @param dc the #DecoderControl object; must be locked
- */
-static void
-decoder_command_finished_locked(DecoderControl &dc)
-{
-	assert(dc.command != DecoderCommand::NONE);
-
-	dc.command = DecoderCommand::NONE;
-
-	dc.client_cond.signal();
-}
 
 /**
  * Opens the input stream with InputStream::Open(), and waits until
@@ -70,23 +55,17 @@ decoder_command_finished_locked(DecoderControl &dc)
  * @return an InputStream on success or if #DecoderCommand::STOP is
  * received, nullptr on error
  */
-static InputStream *
-decoder_input_stream_open(DecoderControl &dc, const char *uri)
+static InputStreamPtr
+decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
 {
-	Error error;
-
-	InputStream *is = InputStream::Open(uri, dc.mutex, dc.cond, error);
-	if (is == nullptr) {
-		if (error.IsDefined())
-			LogError(error);
-
+	auto is = InputStream::Open(uri, dc.mutex, dc.cond, error);
+	if (is == nullptr)
 		return nullptr;
-	}
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
 
-	dc.Lock();
+	const ScopeLock protect(dc.mutex);
 
 	is->Update();
 	while (!is->IsReady() &&
@@ -96,34 +75,29 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 		is->Update();
 	}
 
-	if (!is->Check(error)) {
-		dc.Unlock();
-
-		LogError(error);
+	if (!is->Check(error))
 		return nullptr;
-	}
-
-	dc.Unlock();
 
 	return is;
 }
 
-static InputStream *
-decoder_input_stream_open(DecoderControl &dc, Path path)
+static InputStreamPtr
+decoder_input_stream_open(DecoderControl &dc, Path path, Error &error)
 {
-	Error error;
-
-	InputStream *is = OpenLocalInputStream(path, dc.mutex, dc.cond, error);
-	if (is == nullptr) {
-		LogError(error);
+	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond, error);
+	if (is == nullptr)
 		return nullptr;
-	}
 
 	assert(is->IsReady());
 
 	return is;
 }
 
+/**
+ * Decode a stream with the given decoder plugin.
+ *
+ * Caller holds DecoderControl::mutex.
+ */
 static bool
 decoder_stream_decode(const DecoderPlugin &plugin,
 		      Decoder &decoder,
@@ -143,15 +117,15 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	/* rewind the stream, so each plugin gets a fresh start */
 	input_stream.Rewind(IgnoreError());
 
-	decoder.dc.Unlock();
+	{
+		const ScopeUnlock unlock(decoder.dc.mutex);
 
-	FormatThreadName("decoder:%s", plugin.name);
+		FormatThreadName("decoder:%s", plugin.name);
 
-	plugin.StreamDecode(decoder, input_stream);
+		plugin.StreamDecode(decoder, input_stream);
 
-	SetThreadName("decoder");
-
-	decoder.dc.Lock();
+		SetThreadName("decoder");
+	}
 
 	assert(decoder.dc.state == DecoderState::START ||
 	       decoder.dc.state == DecoderState::DECODE);
@@ -159,6 +133,11 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	return decoder.dc.state != DecoderState::START;
 }
 
+/**
+ * Decode a file with the given decoder plugin.
+ *
+ * Caller holds DecoderControl::mutex.
+ */
 static bool
 decoder_file_decode(const DecoderPlugin &plugin,
 		    Decoder &decoder, Path path)
@@ -175,15 +154,15 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	if (decoder.dc.command == DecoderCommand::STOP)
 		return true;
 
-	decoder.dc.Unlock();
+	{
+		const ScopeUnlock unlock(decoder.dc.mutex);
 
-	FormatThreadName("decoder:%s", plugin.name);
+		FormatThreadName("decoder:%s", plugin.name);
 
-	plugin.FileDecode(decoder, path);
+		plugin.FileDecode(decoder, path);
 
-	SetThreadName("decoder");
-
-	decoder.dc.Lock();
+		SetThreadName("decoder");
+	}
 
 	assert(decoder.dc.state == DecoderState::START ||
 	       decoder.dc.state == DecoderState::DECODE);
@@ -229,6 +208,8 @@ decoder_run_stream_plugin(Decoder &decoder, InputStream &is,
 	if (!decoder_check_plugin(plugin, is, suffix))
 		return false;
 
+	decoder.error.Clear();
+
 	tried_r = true;
 	return decoder_stream_decode(plugin, decoder, is);
 }
@@ -261,94 +242,78 @@ decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 }
 
 /**
+ * Attempt to load replay gain data, and pass it to
+ * decoder_replay_gain().
+ */
+static void
+LoadReplayGain(Decoder &decoder, InputStream &is)
+{
+	ReplayGainInfo info;
+	if (replay_gain_ape_read(is, info))
+		decoder_replay_gain(decoder, &info);
+}
+
+/**
  * Try decoding a stream.
+ *
+ * DecoderControl::mutex is not locked by caller.
  */
 static bool
 decoder_run_stream(Decoder &decoder, const char *uri)
 {
 	DecoderControl &dc = decoder.dc;
 
-	dc.Unlock();
-
-	InputStream *input_stream = decoder_input_stream_open(dc, uri);
-	if (input_stream == nullptr) {
-		dc.Lock();
+	auto input_stream = decoder_input_stream_open(dc, uri, decoder.error);
+	if (input_stream == nullptr)
 		return false;
-	}
 
-	dc.Lock();
+	LoadReplayGain(decoder, *input_stream);
+
+	const ScopeLock protect(dc.mutex);
 
 	bool tried = false;
-	const bool success = dc.command == DecoderCommand::STOP ||
+	return dc.command == DecoderCommand::STOP ||
 		decoder_run_stream_locked(decoder, *input_stream, uri,
 					  tried) ||
 		/* fallback to mp3: this is needed for bastard streams
 		   that don't have a suffix or set the mimeType */
 		(!tried &&
 		 decoder_run_stream_fallback(decoder, *input_stream));
-
-	dc.Unlock();
-	delete input_stream;
-	dc.Lock();
-
-	return success;
 }
 
 /**
- * Attempt to load replay gain data, and pass it to
- * decoder_replay_gain().
+ * Decode a file with the given decoder plugin.
+ *
+ * DecoderControl::mutex is not locked by caller.
  */
-static void
-decoder_load_replay_gain(Decoder &decoder, Path path_fs)
-{
-	ReplayGainInfo info;
-	if (replay_gain_ape_read(path_fs, info))
-		decoder_replay_gain(decoder, &info);
-}
-
 static bool
 TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
+	       InputStream &input_stream,
 	       const DecoderPlugin &plugin)
 {
 	if (!plugin.SupportsSuffix(suffix))
 		return false;
 
+	decoder.error.Clear();
+
 	DecoderControl &dc = decoder.dc;
 
 	if (plugin.file_decode != nullptr) {
-		dc.Lock();
-
-		if (decoder_file_decode(plugin, decoder, path_fs))
-			return true;
-
-		dc.Unlock();
+		const ScopeLock protect(dc.mutex);
+		return decoder_file_decode(plugin, decoder, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
-		InputStream *input_stream =
-			decoder_input_stream_open(dc, path_fs);
-		if (input_stream == nullptr)
-			return false;
-
-		dc.Lock();
-
-		bool success = decoder_stream_decode(plugin, decoder,
-						     *input_stream);
-
-		dc.Unlock();
-
-		delete input_stream;
-
-		if (success) {
-			dc.Lock();
-			return true;
-		}
-	}
-
-	return false;
+		const ScopeLock protect(dc.mutex);
+		return decoder_stream_decode(plugin, decoder, input_stream);
+	} else
+		return false;
 }
 
 /**
  * Try decoding a file.
+ *
+ * DecoderControl::mutex is not locked by caller.
  */
+/*
 static bool
 decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 {
@@ -356,23 +321,55 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	DecoderControl &dc = decoder.dc;
-	dc.Unlock();
+	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs,
+						      decoder.error);
+	if (input_stream == nullptr)
+		return false;
 
-	decoder_load_replay_gain(decoder, path_fs);
+	LoadReplayGain(decoder, *input_stream);
 
-	if (decoder_plugins_try([&decoder, path_fs,
-				 suffix](const DecoderPlugin &plugin){
-				return TryDecoderFile(decoder,
-						      path_fs, suffix,
-						      plugin);
-			}))
-		return true;
+	auto &is = *input_stream;
+	return decoder_plugins_try([&decoder, path_fs, suffix,
+				    &is](const DecoderPlugin &plugin){
+					   return TryDecoderFile(decoder,
+								 path_fs,
+								 suffix,
+								 is,
+								 plugin);
+				   });
+}
+*/
+static bool
+decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
+{
+	const char *suffix = uri_get_suffix(uri_utf8);
+	if (suffix == nullptr)
+		return false;
 
-	dc.Lock();
-	return false;
+	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs,
+									decoder.error);
+	if (input_stream == nullptr && strcasecmp(suffix, "iso") != 0)
+		return false;
+
+	if (input_stream != nullptr)
+		LoadReplayGain(decoder, *input_stream);
+
+	auto &is = *input_stream;
+	return decoder_plugins_try([&decoder, path_fs, suffix,
+						&is](const DecoderPlugin &plugin){
+						 return TryDecoderFile(decoder,
+								 path_fs,
+								 suffix,
+								 is,
+								 plugin);
+					 });
 }
 
+/**
+ * Decode a song addressed by a #DetachedSong.
+ *
+ * Caller holds DecoderControl::mutex.
+ */
 static void
 decoder_run_song(DecoderControl &dc,
 		 const DetachedSong &song, const char *uri, Path path_fs)
@@ -385,28 +382,28 @@ decoder_run_song(DecoderControl &dc,
 			song.IsFile() ? new Tag(song.GetTag()) : nullptr);
 
 	dc.state = DecoderState::START;
+	dc.CommandFinishedLocked();
 
-	decoder_command_finished_locked(dc);
+	bool success;
+	{
+		const ScopeUnlock unlock(dc.mutex);
 
-	const int ret = !path_fs.IsNull()
-		? decoder_run_file(decoder, uri, path_fs)
-		: decoder_run_stream(decoder, uri);
+		success = !path_fs.IsNull()
+			? decoder_run_file(decoder, uri, path_fs)
+			: decoder_run_stream(decoder, uri);
 
-	dc.Unlock();
+		/* flush the last chunk */
 
-	/* flush the last chunk */
-
-	if (decoder.chunk != nullptr)
-		decoder.FlushChunk();
-
-	dc.Lock();
+		if (decoder.chunk != nullptr)
+			decoder.FlushChunk();
+	}
 
 	if (decoder.error.IsDefined()) {
-		/* copy the Error from sruct Decoder to
+		/* copy the Error from struct Decoder to
 		   DecoderControl */
 		dc.state = DecoderState::ERROR;
 		dc.error = std::move(decoder.error);
-	} else if (ret)
+	} else if (success)
 		dc.state = DecoderState::STOP;
 	else {
 		dc.state = DecoderState::ERROR;
@@ -423,6 +420,10 @@ decoder_run_song(DecoderControl &dc,
 	dc.client_cond.signal();
 }
 
+/**
+ *
+ * Caller holds DecoderControl::mutex.
+ */
 static void
 decoder_run(DecoderControl &dc)
 {
@@ -439,7 +440,7 @@ decoder_run(DecoderControl &dc)
 		path_buffer = AllocatedPath::FromUTF8(uri_utf8, dc.error);
 		if (path_buffer.IsNull()) {
 			dc.state = DecoderState::ERROR;
-			decoder_command_finished_locked(dc);
+			dc.CommandFinishedLocked();
 			return;
 		}
 
@@ -457,7 +458,7 @@ decoder_task(void *arg)
 
 	SetThreadName("decoder");
 
-	dc.Lock();
+	const ScopeLock protect(dc.mutex);
 
 	do {
 		assert(dc.state == DecoderState::STOP ||
@@ -470,6 +471,10 @@ decoder_task(void *arg)
 			dc.replay_gain_db = 0;
 
 			decoder_run(dc);
+
+			if (dc.state == DecoderState::ERROR)
+				LogError(dc.error);
+
 			break;
 
 		case DecoderCommand::SEEK:
@@ -485,7 +490,7 @@ decoder_task(void *arg)
 			break;
 
 		case DecoderCommand::STOP:
-			decoder_command_finished_locked(dc);
+			dc.CommandFinishedLocked();
 			break;
 
 		case DecoderCommand::NONE:
@@ -493,8 +498,6 @@ decoder_task(void *arg)
 			break;
 		}
 	} while (dc.command != DecoderCommand::NONE || !dc.quit);
-
-	dc.Unlock();
 }
 
 void

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include "Tag.hxx"
 #include "TagTable.hxx"
 #include "TagHandler.hxx"
-#include "fs/Path.hxx"
+#include "util/StringView.hxx"
 
 #include <string>
 
@@ -75,27 +75,28 @@ ForEachValue(const char *value, const char *end, C &&callback)
  */
 static bool
 tag_ape_import_item(unsigned long flags,
-		    const char *key, const char *value, size_t value_length,
-		    const struct tag_handler *handler, void *handler_ctx)
+		    const char *key, StringView value,
+		    const TagHandler &handler, void *handler_ctx)
 {
 	/* we only care about utf-8 text tags */
 	if ((flags & (0x3 << 1)) != 0)
 		return false;
 
-	const char *const end = value + value_length;
+	const auto begin = value.begin();
+	const auto end = value.end();
 
-	if (handler->pair != nullptr)
-		ForEachValue(value, end, [handler, handler_ctx,
+	if (handler.pair != nullptr)
+		ForEachValue(begin, end, [handler, handler_ctx,
 					  key](const char *_value) {
-				handler->pair(key, _value, handler_ctx);
+				handler.pair(key, _value, handler_ctx);
 			});
 
 	TagType type = tag_ape_name_parse(key);
 	if (type == TAG_NUM_OF_ITEM_TYPES)
 		return false;
 
-	ForEachValue(value, end, [handler, handler_ctx,
-				    type](const char *_value) {
+	ForEachValue(begin, end, [handler, handler_ctx,
+				  type](const char *_value) {
 			tag_handler_invoke_tag(handler, handler_ctx,
 					       type, _value);
 		});
@@ -104,20 +105,18 @@ tag_ape_import_item(unsigned long flags,
 }
 
 bool
-tag_ape_scan2(Path path_fs,
-	      const struct tag_handler *handler, void *handler_ctx)
+tag_ape_scan2(InputStream &is,
+	      const TagHandler &handler, void *handler_ctx)
 {
 	bool recognized = false;
 
 	auto callback = [handler, handler_ctx, &recognized]
 		(unsigned long flags, const char *key,
-		 const char *value,
-		 size_t value_length) {
+		 StringView value) {
 		recognized |= tag_ape_import_item(flags, key, value,
-						  value_length,
 						  handler, handler_ctx);
 		return true;
 	};
 
-	return tag_ape_scan(path_fs, callback) && recognized;
+	return tag_ape_scan(is, callback) && recognized;
 }

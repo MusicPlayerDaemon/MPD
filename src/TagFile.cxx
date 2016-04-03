@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,8 +19,10 @@
 
 #include "config.h"
 #include "TagFile.hxx"
+#include "tag/Generic.hxx"
+#include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
 #include "fs/Path.hxx"
-#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
@@ -34,23 +36,19 @@ class TagFileScan {
 	const Path path_fs;
 	const char *const suffix;
 
-	const tag_handler &handler;
+	const TagHandler &handler;
 	void *handler_ctx;
 
 	Mutex mutex;
 	Cond cond;
-	InputStream *is;
+	InputStreamPtr is;
 
 public:
 	TagFileScan(Path _path_fs, const char *_suffix,
-		    const tag_handler &_handler, void *_handler_ctx)
+		    const TagHandler &_handler, void *_handler_ctx)
 		:path_fs(_path_fs), suffix(_suffix),
 		 handler(_handler), handler_ctx(_handler_ctx) ,
 		 is(nullptr) {}
-
-	~TagFileScan() {
-		delete is;
-	}
 
 	bool ScanFile(const DecoderPlugin &plugin) {
 		return plugin.ScanFile(path_fs, handler, handler_ctx);
@@ -81,7 +79,7 @@ public:
 };
 
 bool
-tag_file_scan(Path path_fs, const tag_handler &handler, void *handler_ctx)
+tag_file_scan(Path path_fs, const TagHandler &handler, void *handler_ctx)
 {
 	assert(!path_fs.IsNull());
 
@@ -97,4 +95,16 @@ tag_file_scan(Path path_fs, const tag_handler &handler, void *handler_ctx)
 	return decoder_plugins_try([&](const DecoderPlugin &plugin){
 			return tfs.Scan(plugin);
 		});
+}
+
+bool
+tag_file_scan(Path path, TagBuilder &builder)
+{
+	if (!tag_file_scan(path, full_tag_handler, &builder))
+		return false;
+
+	if (builder.IsEmpty())
+		ScanGenericTags(path, full_tag_handler, &builder);
+
+	return true;
 }

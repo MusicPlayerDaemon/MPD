@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,9 +21,8 @@
 #include "Playlist.hxx"
 #include "db/Interface.hxx"
 #include "db/LightSong.hxx"
+#include "db/DatabaseError.hxx"
 #include "DetachedSong.hxx"
-#include "tag/Tag.hxx"
-#include "Idle.hxx"
 #include "util/Error.hxx"
 
 static bool
@@ -34,7 +33,13 @@ UpdatePlaylistSong(const Database &db, DetachedSong &song)
 		   from the Database */
 		return false;
 
-	const LightSong *original = db.GetSong(song.GetURI(), IgnoreError());
+	const LightSong *original;
+	try {
+		original = db.GetSong(song.GetURI());
+	} catch (const std::runtime_error &e) {
+		return false;
+	}
+
 	if (original == nullptr)
 		/* not found - shouldn't happen, because the update
 		   thread should ensure that all stale Song instances
@@ -66,8 +71,6 @@ playlist::DatabaseModified(const Database &db)
 		}
 	}
 
-	if (modified) {
-		queue.IncrementVersion();
-		idle_add(IDLE_PLAYLIST);
-	}
+	if (modified)
+		OnModified();
 }

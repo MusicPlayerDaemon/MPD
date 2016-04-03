@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,8 @@
 #define MPD_INSTANCE_HXX
 
 #include "check.h"
+#include "event/Loop.hxx"
+#include "event/MaskMonitor.hxx"
 #include "Compiler.h"
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
@@ -35,14 +37,23 @@ class Storage;
 class UpdateService;
 #endif
 
-class EventLoop;
 class Error;
 class ClientList;
 struct Partition;
+class StateFile;
+
+/**
+ * A utility class which, when used as the first base class, ensures
+ * that the #EventLoop gets initialized before the other base classes.
+ */
+struct EventLoopHolder {
+	EventLoop event_loop;
+};
 
 struct Instance final
+	: EventLoopHolder
 #if defined(ENABLE_DATABASE) || defined(ENABLE_NEIGHBOR_PLUGINS)
-	:
+	,
 #endif
 #ifdef ENABLE_DATABASE
 	public DatabaseListener
@@ -54,7 +65,7 @@ struct Instance final
 	public NeighborListener
 #endif
 {
-	EventLoop *event_loop;
+	CallbackMaskMonitor<Instance> idle_monitor;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	NeighborGlue *neighbors;
@@ -67,20 +78,29 @@ struct Instance final
 	 * This is really a #CompositeStorage.  To avoid heavy include
 	 * dependencies, we declare it as just #Storage.
 	 */
-	Storage *storage;
+	Storage *storage = nullptr;
 
-	UpdateService *update;
+	UpdateService *update = nullptr;
 #endif
 
 	ClientList *client_list;
 
 	Partition *partition;
 
-	Instance() {
-#ifdef ENABLE_DATABASE
-		storage = nullptr;
-		update = nullptr;
-#endif
+	StateFile *state_file;
+
+	Instance()
+		:idle_monitor(event_loop, *this, &Instance::OnIdle) {}
+
+	/**
+	 * Initiate shutdown.  Wrapper for EventLoop::Break().
+	 */
+	void Shutdown() {
+		event_loop.Break();
+	}
+
+	void EmitIdle(unsigned mask) {
+		idle_monitor.OrMask(mask);
 	}
 
 #ifdef ENABLE_DATABASE
@@ -92,28 +112,20 @@ struct Instance final
 	Database *GetDatabase(Error &error);
 #endif
 
-	/**
-	 * A tag in the play queue has been modified by the player
-	 * thread.  Propagate the change to all subsystems.
-	 */
-	void TagModified();
-
-	/**
-	 * Synchronize the player with the play queue.
-	 */
-	void SyncWithPlayer();
-
 private:
 #ifdef ENABLE_DATABASE
-	virtual void OnDatabaseModified() override;
-	virtual void OnDatabaseSongRemoved(const LightSong &song) override;
+	void OnDatabaseModified() override;
+	void OnDatabaseSongRemoved(const char *uri) override;
 #endif
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	/* virtual methods from class NeighborListener */
-	virtual void FoundNeighbor(const NeighborInfo &info) override;
-	virtual void LostNeighbor(const NeighborInfo &info) override;
+	void FoundNeighbor(const NeighborInfo &info) override;
+	void LostNeighbor(const NeighborInfo &info) override;
 #endif
+
+	/* callback for #idle_monitor */
+	void OnIdle(unsigned mask);
 };
 
 #endif

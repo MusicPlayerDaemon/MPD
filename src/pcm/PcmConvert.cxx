@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,13 +22,10 @@
 #include "Domain.hxx"
 #include "ConfiguredResampler.hxx"
 #include "AudioFormat.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>
-#include <math.h>
 
 bool
 pcm_convert_global_init(Error &error)

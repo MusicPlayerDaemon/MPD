@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,6 @@
 #include <shlobj.h>
 #else
 #include <stdlib.h>
-#include <sys/types.h>
 #include <unistd.h>
 #include <pwd.h>
 #endif
@@ -42,6 +41,7 @@
 #ifdef USE_XDG
 #include "util/Error.hxx"
 #include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "io/TextFile.hxx"
 #include <string.h>
 #include <utility>
@@ -199,20 +199,21 @@ ParseConfigLine(char *line, const char *dir_name, AllocatedPath &result_dir)
 }
 
 static AllocatedPath GetUserDir(const char *name)
-{
+try {
 	auto result = AllocatedPath::Null();
 	auto config_dir = GetUserConfigDir();
 	if (config_dir.IsNull())
 		return result;
 	auto dirs_file = AllocatedPath::Build(config_dir, "user-dirs.dirs");
-	TextFile input(dirs_file, IgnoreError());
-	if (input.HasFailed())
-		return result;
+
+	TextFile input(dirs_file);
 	char *line;
 	while ((line = input.ReadLine()) != nullptr)
 		if (ParseConfigLine(line, name, result))
 			return result;
 	return result;
+} catch (const std::exception &e) {
+	return AllocatedPath::Null();
 }
 
 #endif

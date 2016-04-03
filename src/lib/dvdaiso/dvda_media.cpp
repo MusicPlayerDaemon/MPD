@@ -131,7 +131,6 @@ bool dvda_media_stream_t::open(const char* path) {
 }
 
 bool dvda_media_stream_t::close() {
-	delete is;
 	is = nullptr;
 	return true;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,26 +20,34 @@
 #include "config.h"
 #include "TagArchive.hxx"
 #include "TagStream.hxx"
-#include "fs/Path.hxx"
-#include "util/Error.hxx"
+#include "archive/ArchiveFile.hxx"
 #include "input/InputStream.hxx"
-#include "input/plugins/ArchiveInputPlugin.hxx"
 #include "thread/Cond.hxx"
-
-#include <assert.h>
+#include "util/Error.hxx"
 
 bool
-tag_archive_scan(Path path, const tag_handler &handler, void *handler_ctx)
+tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
+		 const TagHandler &handler, void *handler_ctx)
 {
-	assert(!path.IsNull());
-
 	Mutex mutex;
 	Cond cond;
-	auto *is = OpenArchiveInputStream(path, mutex, cond, IgnoreError());
-	if (is == nullptr)
+
+	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond,
+					     IgnoreError()));
+	if (!is)
 		return false;
 
-	bool result = tag_stream_scan(*is, handler, handler_ctx);
-	delete is;
-	return result;
+	return tag_stream_scan(*is, handler, handler_ctx);
+}
+
+bool
+tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
+		 TagBuilder &builder)
+{
+	Mutex mutex;
+	Cond cond;
+
+	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond,
+					     IgnoreError()));
+	return is && tag_stream_scan(*is, builder);
 }

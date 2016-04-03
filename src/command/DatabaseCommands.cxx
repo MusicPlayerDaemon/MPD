@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "DatabaseCommands.hxx"
-#include "db/DatabaseGlue.hxx"
+#include "Request.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "db/DatabasePrint.hxx"
@@ -27,89 +27,86 @@
 #include "db/Selection.hxx"
 #include "CommandError.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "tag/Tag.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
+#include "util/StringAPI.hxx"
 #include "SongFilter.hxx"
-#include "protocol/Result.hxx"
-#include "protocol/ArgParser.hxx"
 #include "BulkEdit.hxx"
 
-#include <string.h>
-
 CommandResult
-handle_listfiles_db(Client &client, const char *uri)
+handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
 	const DatabaseSelection selection(uri, false);
 
 	Error error;
-	if (!db_selection_print(client, selection, false, true, error))
-		return print_error(client, error);
+	if (!db_selection_print(r, client.partition,
+				selection, false, true, error))
+		return print_error(r, error);
 
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_lsinfo2(Client &client, ConstBuffer<const char *> args)
+handle_lsinfo2(Client &client, const char *uri, Response &r)
 {
-	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
-
 	const DatabaseSelection selection(uri, false);
 
 	Error error;
-	if (!db_selection_print(client, selection, true, false, error))
-		return print_error(client, error);
+	if (!db_selection_print(r, client.partition,
+				selection, true, false, error))
+		return print_error(r, error);
 
 	return CommandResult::OK;
 }
 
 static CommandResult
-handle_match(Client &client, ConstBuffer<const char *> args, bool fold_case)
+handle_match(Client &client, Request args, Response &r, bool fold_case)
 {
-	unsigned window_start = 0, window_end = std::numeric_limits<int>::max();
-	if (args.size >= 2 && strcmp(args[args.size - 2], "window") == 0) {
-		if (!check_range(client, &window_start, &window_end,
-				 args.back()))
-			return CommandResult::ERROR;
+	RangeArg window;
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "window")) {
+		window = args.ParseRange(args.size - 1);
 
 		args.pop_back();
 		args.pop_back();
-	}
+	} else
+		window.SetAll();
 
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
-		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
+		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
 	const DatabaseSelection selection("", true, &filter);
 
 	Error error;
-	return db_selection_print(client, selection, true, false,
-				  window_start, window_end, error)
+	return db_selection_print(r, client.partition,
+				  selection, true, false,
+				  window.start, window.end, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
-handle_find(Client &client, ConstBuffer<const char *> args)
+handle_find(Client &client, Request args, Response &r)
 {
-	return handle_match(client, args, false);
+	return handle_match(client, args, r, false);
 }
 
 CommandResult
-handle_search(Client &client, ConstBuffer<const char *> args)
+handle_search(Client &client, Request args, Response &r)
 {
-	return handle_match(client, args, true);
+	return handle_match(client, args, r, true);
 }
 
 static CommandResult
-handle_match_add(Client &client, ConstBuffer<const char *> args, bool fold_case)
+handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 {
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
-		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
+		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
@@ -119,52 +116,52 @@ handle_match_add(Client &client, ConstBuffer<const char *> args, bool fold_case)
 	Error error;
 	return AddFromDatabase(client.partition, selection, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
-handle_findadd(Client &client, ConstBuffer<const char *> args)
+handle_findadd(Client &client, Request args, Response &r)
 {
-	return handle_match_add(client, args, false);
+	return handle_match_add(client, args, r, false);
 }
 
 CommandResult
-handle_searchadd(Client &client, ConstBuffer<const char *> args)
+handle_searchadd(Client &client, Request args, Response &r)
 {
-	return handle_match_add(client, args, true);
+	return handle_match_add(client, args, r, true);
 }
 
 CommandResult
-handle_searchaddpl(Client &client, ConstBuffer<const char *> args)
+handle_searchaddpl(Client &client, Request args, Response &r)
 {
 	const char *playlist = args.shift();
 
 	SongFilter filter;
 	if (!filter.Parse(args, true)) {
-		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
+		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
 	Error error;
 	const Database *db = client.GetDatabase(error);
 	if (db == nullptr)
-		return print_error(client, error);
+		return print_error(r, error);
 
 	return search_add_to_playlist(*db, *client.GetStorage(),
 				      "", playlist, &filter, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
-handle_count(Client &client, ConstBuffer<const char *> args)
+handle_count(Client &client, Request args, Response &r)
 {
 	TagType group = TAG_NUM_OF_ITEM_TYPES;
-	if (args.size >= 2 && strcmp(args[args.size - 2], "group") == 0) {
+	if (args.size >= 2 && StringIsEqual(args[args.size - 2], "group")) {
 		const char *s = args[args.size - 1];
 		group = tag_name_parse_i(s);
 		if (group == TAG_NUM_OF_ITEM_TYPES) {
-			command_error(client, ACK_ERROR_ARG,
+			r.FormatError(ACK_ERROR_ARG,
 				      "Unknown tag type: %s", s);
 			return CommandResult::ERROR;
 		}
@@ -175,49 +172,50 @@ handle_count(Client &client, ConstBuffer<const char *> args)
 
 	SongFilter filter;
 	if (!args.IsEmpty() && !filter.Parse(args, false)) {
-		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
+		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
 	Error error;
-	return PrintSongCount(client, "", &filter, group, error)
+	return PrintSongCount(r, client.partition, "", &filter, group, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
-handle_listall(Client &client, ConstBuffer<const char *> args)
+handle_listall(Client &client, Request args, Response &r)
 {
 	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
+	const auto uri = args.GetOptional(0, "");
 
 	Error error;
-	return db_selection_print(client, DatabaseSelection(uri, true),
+	return db_selection_print(r, client.partition,
+				  DatabaseSelection(uri, true),
 				  false, false, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }
 
 CommandResult
-handle_list(Client &client, ConstBuffer<const char *> args)
+handle_list(Client &client, Request args, Response &r)
 {
 	const char *tag_name = args.shift();
 	unsigned tagType = locate_parse_type(tag_name);
 
 	if (tagType >= TAG_NUM_OF_ITEM_TYPES &&
 	    tagType != LOCATE_TAG_FILE_TYPE) {
-		command_error(client, ACK_ERROR_ARG,
+		r.FormatError(ACK_ERROR_ARG,
 			      "Unknown tag type: %s", tag_name);
 		return CommandResult::ERROR;
 	}
 
 	SongFilter *filter = nullptr;
-	uint32_t group_mask = 0;
+	tag_mask_t group_mask = 0;
 
 	if (args.size == 1) {
 		/* for compatibility with < 0.12.0 */
 		if (tagType != TAG_ALBUM) {
-			command_error(client, ACK_ERROR_ARG,
+			r.FormatError(ACK_ERROR_ARG,
 				      "should be \"%s\" for 3 arguments",
 				      tag_item_names[TAG_ALBUM]);
 			return CommandResult::ERROR;
@@ -227,16 +225,16 @@ handle_list(Client &client, ConstBuffer<const char *> args)
 	}
 
 	while (args.size >= 2 &&
-	       strcmp(args[args.size - 2], "group") == 0) {
+	       StringIsEqual(args[args.size - 2], "group")) {
 		const char *s = args[args.size - 1];
 		TagType gt = tag_name_parse_i(s);
 		if (gt == TAG_NUM_OF_ITEM_TYPES) {
-			command_error(client, ACK_ERROR_ARG,
+			r.FormatError(ACK_ERROR_ARG,
 				      "Unknown tag type: %s", s);
 			return CommandResult::ERROR;
 		}
 
-		group_mask |= 1u << unsigned(gt);
+		group_mask |= tag_mask_t(1) << unsigned(gt);
 
 		args.pop_back();
 		args.pop_back();
@@ -246,24 +244,24 @@ handle_list(Client &client, ConstBuffer<const char *> args)
 		filter = new SongFilter();
 		if (!filter->Parse(args, false)) {
 			delete filter;
-			command_error(client, ACK_ERROR_ARG,
-				      "not able to parse args");
+			r.Error(ACK_ERROR_ARG, "not able to parse args");
 			return CommandResult::ERROR;
 		}
 	}
 
 	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
-	    group_mask & (1u << tagType)) {
+	    group_mask & (tag_mask_t(1) << tagType)) {
 		delete filter;
-		command_error(client, ACK_ERROR_ARG, "Conflicting group");
+		r.Error(ACK_ERROR_ARG, "Conflicting group");
 		return CommandResult::ERROR;
 	}
 
 	Error error;
 	CommandResult ret =
-		PrintUniqueTags(client, tagType, group_mask, filter, error)
+		PrintUniqueTags(r, client.partition,
+				tagType, group_mask, filter, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 
 	delete filter;
 
@@ -271,14 +269,15 @@ handle_list(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_listallinfo(Client &client, ConstBuffer<const char *> args)
+handle_listallinfo(Client &client, Request args, Response &r)
 {
 	/* default is root directory */
-	const char *const uri = args.IsEmpty() ? "" : args.front();
+	const auto uri = args.GetOptional(0, "");
 
 	Error error;
-	return db_selection_print(client, DatabaseSelection(uri, true),
+	return db_selection_print(r, client.partition,
+				  DatabaseSelection(uri, true),
 				  true, false, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 }

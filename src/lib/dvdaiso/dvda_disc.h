@@ -68,7 +68,7 @@ public:
 	double get_duration();
 	double get_duration(uint32_t track_index);
 	bool can_downmix();
-	void get_info(uint32_t track_index, bool downmix, const struct tag_handler* handler, void* handler_ctx);
+    void get_info(uint32_t track_index, bool downmix, const struct TagHandler& handler, void* handler_ctx);
 	uint32_t get_track_length_lsn();
 	bool open(dvda_media_t* dvda_media);
 	bool close();

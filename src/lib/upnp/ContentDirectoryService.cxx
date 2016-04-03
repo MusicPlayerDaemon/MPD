@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,13 +19,13 @@
 
 #include "config.h"
 #include "ContentDirectoryService.hxx"
-#include "Domain.hxx"
+#include "UniqueIxml.hxx"
 #include "Device.hxx"
 #include "ixmlwrap.hxx"
 #include "Util.hxx"
 #include "Action.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 ContentDirectoryService::ContentDirectoryService(const UPnPDevice &device,
 						 const UPnPService &service)
@@ -49,46 +49,34 @@ ContentDirectoryService::~ContentDirectoryService()
 	/* this destructor exists here just so it won't get inlined */
 }
 
-bool
-ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl,
-					       std::list<std::string> &result,
-					       Error &error) const
+std::list<std::string>
+ContentDirectoryService::getSearchCapabilities(UpnpClient_Handle hdl) const
 {
-	assert(result.empty());
+	UniqueIxmlDocument request(UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
+						  0,
+						  nullptr, nullptr));
+	if (!request)
+		throw std::runtime_error("UpnpMakeAction() failed");
 
-	IXML_Document *request =
-		UpnpMakeAction("GetSearchCapabilities", m_serviceType.c_str(),
-			       0,
-			       nullptr, nullptr);
-	if (request == 0) {
-		error.Set(upnp_domain, "UpnpMakeAction() failed");
-		return false;
-	}
-
-	IXML_Document *response;
+	IXML_Document *_response;
 	auto code = UpnpSendAction(hdl, m_actionURL.c_str(),
 				   m_serviceType.c_str(),
-				   0 /*devUDN*/, request, &response);
-	ixmlDocument_free(request);
-	if (code != UPNP_E_SUCCESS) {
-		error.Format(upnp_domain, code,
-			     "UpnpSendAction() failed: %s",
-			     UpnpGetErrorMessage(code));
-		return false;
-	}
+				   0 /*devUDN*/, request.get(), &_response);
+	if (code != UPNP_E_SUCCESS)
+		throw FormatRuntimeError("UpnpSendAction() failed: %s",
+					 UpnpGetErrorMessage(code));
 
-	const char *s = ixmlwrap::getFirstElementValue(response, "SearchCaps");
-	if (s == nullptr || *s == 0) {
-		ixmlDocument_free(response);
-		return true;
-	}
+	UniqueIxmlDocument response(_response);
 
-	bool success = true;
-	if (!csvToStrings(s, result)) {
-		error.Set(upnp_domain, "Bad response");
-		success = false;
-	}
+	std::list<std::string> result;
 
-	ixmlDocument_free(response);
-	return success;
+	const char *s = ixmlwrap::getFirstElementValue(response.get(),
+						       "SearchCaps");
+	if (s == nullptr || *s == 0)
+		return result;
+
+	if (!csvToStrings(s, result))
+		throw std::runtime_error("Bad response");
+
+	return result;
 }

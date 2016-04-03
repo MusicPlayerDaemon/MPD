@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,20 +25,21 @@
 #include "Log.hxx"
 
 #include <assert.h>
-#include <stdio.h>
-#include <sys/types.h>
+#include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
 
 class PidFile {
-	FILE *file;
+	int fd;
 
 public:
-	PidFile(const AllocatedPath &path):file(nullptr) {
+	PidFile(const AllocatedPath &path):fd(-1) {
 		if (path.IsNull())
 			return;
 
-		file = FOpen(path, FOpenMode::WriteText);
-		if (file == nullptr) {
+		fd = OpenFile(path, O_WRONLY|O_CREAT|O_TRUNC, 0666);
+		if (fd < 0) {
 			const std::string utf8 = path.ToUTF8();
 			FormatFatalSystemError("Failed to create pid file \"%s\"",
 					       utf8.c_str());
@@ -48,38 +49,66 @@ public:
 	PidFile(const PidFile &) = delete;
 
 	void Close() {
-		if (file == nullptr)
+		if (fd < 0)
 			return;
 
-		fclose(file);
+		close(fd);
 	}
 
 	void Delete(const AllocatedPath &path) {
-		if (file == nullptr) {
+		if (fd < 0) {
 			assert(path.IsNull());
 			return;
 		}
 
 		assert(!path.IsNull());
 
-		fclose(file);
+		close(fd);
 		RemoveFile(path);
 	}
 
 	void Write(pid_t pid) {
-		if (file == nullptr)
+		if (fd < 0)
 			return;
 
-		fprintf(file, "%lu\n", (unsigned long)pid);
-		fclose(file);
+		char buffer[64];
+		sprintf(buffer, "%lu\n", (unsigned long)pid);
+
+		write(fd, buffer, strlen(buffer));
+		close(fd);
 	}
 
 	void Write() {
-		if (file == nullptr)
+		if (fd < 0)
 			return;
 
 		Write(getpid());
 	}
 };
+
+gcc_pure
+static inline pid_t
+ReadPidFile(Path path)
+{
+	int fd = OpenFile(path, O_RDONLY, 0);
+	if (fd < 0)
+		return -1;
+
+	pid_t pid = -1;
+
+	char buffer[32];
+	auto nbytes = read(fd, buffer, sizeof(buffer) - 1);
+	if (nbytes > 0) {
+		buffer[nbytes] = 0;
+
+		char *endptr;
+		auto value = strtoul(buffer, &endptr, 10);
+		if (endptr > buffer)
+			pid = value;
+	}
+
+	close(fd);
+	return pid;
+}
 
 #endif

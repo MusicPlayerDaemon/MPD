@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,6 @@
 #define MPD_PLAYLIST_HXX
 
 #include "queue/Queue.hxx"
-#include "PlaylistError.hxx"
 
 enum TagType : uint8_t;
 struct PlayerControl;
@@ -31,12 +30,15 @@ class Error;
 class SongLoader;
 class SongTime;
 class SignedSongTime;
+class QueueListener;
 
 struct playlist {
 	/**
 	 * The song queue - it contains the "real" playlist.
 	 */
-	struct Queue queue;
+	Queue queue;
+
+	QueueListener &listener;
 
 	/**
 	 * This value is true if the player is currently playing (or
@@ -71,23 +73,27 @@ struct playlist {
 	unsigned error_count;
 
 	/**
-	 * The "current song pointer".  This is the song which is
-	 * played when we get the "play" command.  It is also the song
-	 * which is currently being played.
+	 * The "current song pointer" (the order number).  This is the
+	 * song which is played when we get the "play" command.  It is
+	 * also the song which is currently being played.
 	 */
 	int current;
 
 	/**
-	 * The "next" song to be played, when the current one
-	 * finishes.  The decoder thread may start decoding and
-	 * buffering it, while the "current" song is still playing.
+	 * The "next" song to be played (the order number), when the
+	 * current one finishes.  The decoder thread may start
+	 * decoding and buffering it, while the "current" song is
+	 * still playing.
 	 *
 	 * This variable is only valid if #playing is true.
 	 */
 	int queued;
 
-	playlist(unsigned max_length)
-		:queue(max_length), playing(false),
+	playlist(unsigned max_length,
+		 QueueListener &_listener)
+		:queue(max_length),
+		 listener(_listener),
+		 playing(false),
 		 bulk_edit(false),
 		 current(-1), queued(-1) {
 	}
@@ -130,7 +136,8 @@ struct playlist {
 protected:
 	/**
 	 * Called by all editing methods after a modification.
-	 * Updates the queue version and emits #IDLE_PLAYLIST.
+	 * Updates the queue version and invokes
+	 * QueueListener::OnQueueModified().
 	 */
 	void OnModified();
 
@@ -195,11 +202,11 @@ public:
 #endif
 
 	/**
-	 * @return the new song id or 0 on error
+	 * Throws PlaylistError if the queue would be too large.
+	 *
+	 * @return the new song id
 	 */
-	unsigned AppendSong(PlayerControl &pc,
-			    DetachedSong &&song,
-			    Error &error);
+	unsigned AppendSong(PlayerControl &pc, DetachedSong &&song);
 
 	/**
 	 * @return the new song id or 0 on error
@@ -214,15 +221,13 @@ protected:
 			    unsigned song, const DetachedSong **queued_p);
 
 public:
-	PlaylistResult DeletePosition(PlayerControl &pc,
-				      unsigned position);
+	void DeletePosition(PlayerControl &pc, unsigned position);
 
-	PlaylistResult DeleteOrder(PlayerControl &pc,
-				   unsigned order) {
-		return DeletePosition(pc, queue.OrderToPosition(order));
+	void DeleteOrder(PlayerControl &pc, unsigned order) {
+		DeletePosition(pc, queue.OrderToPosition(order));
 	}
 
-	PlaylistResult DeleteId(PlayerControl &pc, unsigned id);
+	void DeleteId(PlayerControl &pc, unsigned id);
 
 	/**
 	 * Deletes a range of songs from the playlist.
@@ -230,66 +235,69 @@ public:
 	 * @param start the position of the first song to delete
 	 * @param end the position after the last song to delete
 	 */
-	PlaylistResult DeleteRange(PlayerControl &pc,
-				   unsigned start, unsigned end);
+	void DeleteRange(PlayerControl &pc, unsigned start, unsigned end);
 
-	void DeleteSong(PlayerControl &pc, const char *uri);
+	/**
+	 * Mark the given song as "stale", i.e. as not being available
+	 * anymore.  This gets called when a song is removed from the
+	 * database.  The method attempts to remove all instances of
+	 * this song from the queue.
+	 */
+	void StaleSong(PlayerControl &pc, const char *uri);
 
 	void Shuffle(PlayerControl &pc, unsigned start, unsigned end);
 
-	PlaylistResult MoveRange(PlayerControl &pc,
-				 unsigned start, unsigned end, int to);
+	void MoveRange(PlayerControl &pc, unsigned start,
+		       unsigned end, int to);
 
-	PlaylistResult MoveId(PlayerControl &pc, unsigned id, int to);
+	void MoveId(PlayerControl &pc, unsigned id, int to);
 
-	PlaylistResult SwapPositions(PlayerControl &pc,
-				     unsigned song1, unsigned song2);
+	void SwapPositions(PlayerControl &pc, unsigned song1, unsigned song2);
 
-	PlaylistResult SwapIds(PlayerControl &pc,
-			       unsigned id1, unsigned id2);
+	void SwapIds(PlayerControl &pc, unsigned id1, unsigned id2);
 
-	PlaylistResult SetPriorityRange(PlayerControl &pc,
-					unsigned start_position,
-					unsigned end_position,
-					uint8_t priority);
+	void SetPriorityRange(PlayerControl &pc,
+			      unsigned start_position, unsigned end_position,
+			      uint8_t priority);
 
-	PlaylistResult SetPriorityId(PlayerControl &pc,
-				     unsigned song_id, uint8_t priority);
+	void SetPriorityId(PlayerControl &pc,
+			   unsigned song_id, uint8_t priority);
 
 	/**
 	 * Sets the start_time and end_time attributes on the song
 	 * with the specified id.
 	 */
-	bool SetSongIdRange(PlayerControl &pc, unsigned id,
-			    SongTime start, SongTime end,
-			    Error &error);
+	void SetSongIdRange(PlayerControl &pc, unsigned id,
+			    SongTime start, SongTime end);
 
-	bool AddSongIdTag(unsigned id, TagType tag_type, const char *value,
-			  Error &error);
-	bool ClearSongIdTag(unsigned id, TagType tag_type, Error &error);
+	void AddSongIdTag(unsigned id, TagType tag_type, const char *value);
+	void ClearSongIdTag(unsigned id, TagType tag_type);
 
 	void Stop(PlayerControl &pc);
 
-	PlaylistResult PlayPosition(PlayerControl &pc, int position);
+	bool PlayPosition(PlayerControl &pc, int position, Error &error);
 
-	void PlayOrder(PlayerControl &pc, int order);
+	bool PlayOrder(PlayerControl &pc, unsigned order, Error &error);
 
-	PlaylistResult PlayId(PlayerControl &pc, int id);
+	bool PlayId(PlayerControl &pc, int id, Error &error);
 
-	void PlayNext(PlayerControl &pc);
+	bool PlayNext(PlayerControl &pc, Error &error);
 
-	void PlayPrevious(PlayerControl &pc);
+	bool PlayPrevious(PlayerControl &pc, Error &error);
 
-	PlaylistResult SeekSongOrder(PlayerControl &pc,
-				     unsigned song_order,
-				     SongTime seek_time);
+	bool SeekSongOrder(PlayerControl &pc,
+			   unsigned song_order,
+			   SongTime seek_time,
+			   Error &error);
 
-	PlaylistResult SeekSongPosition(PlayerControl &pc,
-					unsigned song_position,
-					SongTime seek_time);
+	bool SeekSongPosition(PlayerControl &pc,
+			      unsigned sonag_position,
+			      SongTime seek_time,
+			      Error &error);
 
-	PlaylistResult SeekSongId(PlayerControl &pc,
-				  unsigned song_id, SongTime seek_time);
+	bool SeekSongId(PlayerControl &pc,
+			unsigned song_id, SongTime seek_time,
+			Error &error);
 
 	/**
 	 * Seek within the current song.  Fails if MPD is not currently
@@ -299,8 +307,9 @@ public:
 	 * @param relative if true, then the specified time is relative to the
 	 * current position
 	 */
-	PlaylistResult SeekCurrent(PlayerControl &pc,
-				   SignedSongTime seek_time, bool relative);
+	bool SeekCurrent(PlayerControl &pc,
+			 SignedSongTime seek_time, bool relative,
+			 Error &error);
 
 	bool GetRepeat() const {
 		return queue.repeat;

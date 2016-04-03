@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,12 +22,12 @@
 
 #include <time.h>
 
-class Client;
+class Response;
 
 /**
  * Write a line with a time stamp to the client.
  */
 void
-time_print(Client &client, const char *name, time_t t);
+time_print(Response &r, const char *name, time_t t);
 
 #endif

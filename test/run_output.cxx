@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,7 @@
 #include "AudioParser.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "filter/FilterRegistry.hxx"
-#include "PlayerControl.hxx"
-#include "stdbin.h"
+#include "player/Control.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -147,7 +146,7 @@ run_output(AudioOutput *ao, AudioFormat audio_format)
 }
 
 int main(int argc, char **argv)
-{
+try {
 	Error error;
 
 	if (argc < 3 || argc > 4) {
@@ -162,10 +161,7 @@ int main(int argc, char **argv)
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	if (!ReadConfigFile(config_path, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	EventLoop event_loop;
 
@@ -197,4 +193,7 @@ int main(int argc, char **argv)
 	config_global_finish();
 
 	return success ? EXIT_SUCCESS : EXIT_FAILURE;
-}
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,18 +22,18 @@
 
 #include "TagTable.hxx"
 
-class Path;
-struct tag_handler;
+class InputStream;
+struct TagHandler;
 
 extern const struct tag_table ape_tags[];
 
 /**
- * Scan the APE tags of a file.
+ * Scan the APE tags of a stream.
  *
  * @param path_fs the path of the file in filesystem encoding
  */
 bool
-tag_ape_scan2(Path path_fs,
-	      const tag_handler *handler, void *handler_ctx);
+tag_ape_scan2(InputStream &is,
+	      const TagHandler &handler, void *handler_ctx);
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,17 +24,16 @@
 #include "PlaylistFile.hxx"
 #include "Interface.hxx"
 #include "DetachedSong.hxx"
-#include "storage/StorageInterface.hxx"
 
 #include <functional>
 
 static bool
 AddSong(const Storage &storage, const char *playlist_path_utf8,
-	const LightSong &song, Error &error)
+	const LightSong &song)
 {
-	return spl_append_song(playlist_path_utf8,
-			       DatabaseDetachSong(storage, song),
-			       error);
+	spl_append_song(playlist_path_utf8,
+			DatabaseDetachSong(storage, song));
+	return true;
 }
 
 bool
@@ -47,6 +46,6 @@ search_add_to_playlist(const Database &db, const Storage &storage,
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddSong, std::ref(storage),
-				 playlist_path_utf8, _1, _2);
+				 playlist_path_utf8, _1);
 	return db.Visit(selection, f, error);
 }

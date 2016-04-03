@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 #ifndef MPD_SONG_ENUMERATOR_HXX
 #define MPD_SONG_ENUMERATOR_HXX
 
+#include <memory>
+
 class DetachedSong;
 
 /**
@@ -31,11 +33,10 @@ public:
 	virtual ~SongEnumerator() {}
 
 	/**
-	 * Obtain the next song.  The caller is responsible for
-	 * freeing the returned #Song object.  Returns nullptr if
-	 * there are no more songs.
+	 * Obtain the next song.  Returns nullptr if there are no more
+	 * songs.
 	 */
-	virtual DetachedSong *NextSong() = 0;
+	virtual std::unique_ptr<DetachedSong> NextSong() = 0;
 };
 
 #endif

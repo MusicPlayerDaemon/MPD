@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,7 @@ ParseOpusTagName(const char *name)
 static void
 ScanOneOpusTag(const char *name, const char *value,
 	       ReplayGainInfo *rgi,
-	       const struct tag_handler *handler, void *ctx)
+	       const TagHandler &handler, void *ctx)
 {
 	if (rgi != nullptr && strcmp(name, "R128_TRACK_GAIN") == 0) {
 		/* R128_TRACK_GAIN is a Q7.8 fixed point number in
@@ -57,7 +57,7 @@ ScanOneOpusTag(const char *name, const char *value,
 
 	tag_handler_invoke_pair(handler, ctx, name, value);
 
-	if (handler->tag != nullptr) {
+	if (handler.tag != nullptr) {
 		TagType t = ParseOpusTagName(name);
 		if (t != TAG_NUM_OF_ITEM_TYPES)
 			tag_handler_invoke_tag(handler, ctx, t, value);
@@ -67,13 +67,13 @@ ScanOneOpusTag(const char *name, const char *value,
 bool
 ScanOpusTags(const void *data, size_t size,
 	     ReplayGainInfo *rgi,
-	     const struct tag_handler *handler, void *ctx)
+	     const TagHandler &handler, void *ctx)
 {
 	OpusReader r(data, size);
 	if (!r.Expect("OpusTags", 8))
 		return false;
 
-	if (handler->pair == nullptr && handler->tag == nullptr)
+	if (handler.pair == nullptr && handler.tag == nullptr)
 		return true;
 
 	if (!r.SkipString())

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,11 +22,11 @@
 
 #include "Compiler.h"
 #include "Tag.hxx"
+#include "Mask.hxx"
 
 #include <set>
 
 #include <string.h>
-#include <stdint.h>
 
 /**
  * Helper class for #TagSet which compares two #Tag objects.
@@ -59,15 +59,15 @@ struct TagLess {
 class TagSet : public std::set<Tag, TagLess> {
 public:
 	void InsertUnique(const Tag &tag,
-			  TagType type, uint32_t group_mask);
+			  TagType type, tag_mask_t group_mask);
 
 private:
 	void InsertUnique(const Tag &src, TagType type, const char *value,
-			  uint32_t group_mask);
+			  tag_mask_t group_mask);
 
 	bool CheckUnique(TagType dest_type,
 			 const Tag &tag, TagType src_type,
-			 uint32_t group_mask);
+			 tag_mask_t group_mask);
 };
 
 #endif

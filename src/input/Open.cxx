@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,12 +25,10 @@
 #include "Domain.hxx"
 #include "plugins/RewindInputPlugin.hxx"
 #include "fs/Traits.hxx"
-#include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
-InputStream *
+InputStreamPtr
 InputStream::Open(const char *url,
 		  Mutex &mutex, Cond &cond,
 		  Error &error)
@@ -51,7 +49,7 @@ InputStream::Open(const char *url,
 		if (is != nullptr) {
 			is = input_rewind_open(is);
 
-			return is;
+			return InputStreamPtr(is);
 		} else if (error.IsDefined())
 			return nullptr;
 	}
@@ -60,12 +58,12 @@ InputStream::Open(const char *url,
 	return nullptr;
 }
 
-InputStream *
+InputStreamPtr
 InputStream::OpenReady(const char *uri,
 		       Mutex &mutex, Cond &cond,
 		       Error &error)
 {
-	InputStream *is = Open(uri, mutex, cond, error);
+	auto is = Open(uri, mutex, cond, error);
 	if (is == nullptr)
 		return nullptr;
 
@@ -74,10 +72,8 @@ InputStream::OpenReady(const char *uri,
 	bool success = is->Check(error);
 	mutex.unlock();
 
-	if (!success) {
-		delete is;
-		is = nullptr;
-	}
+	if (!success)
+		is.reset();
 
 	return is;
 }

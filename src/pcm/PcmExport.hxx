@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 #include "PcmBuffer.hxx"
 #include "AudioFormat.hxx"
 
-struct AudioFormat;
 template<typename T> struct ConstBuffer;
 
 /**
@@ -33,6 +32,25 @@ template<typename T> struct ConstBuffer;
  * representation which are not supported by the pcm_convert library.
  */
 struct PcmExport {
+	struct Params {
+		bool alsa_channel_order = false;
+#ifdef ENABLE_DSD
+		bool dsd_u32 = false;
+		bool dop = false;
+#endif
+		bool shift8 = false;
+		bool pack24 = false;
+		bool reverse_endian = false;
+	};
+
+	/**
+	 * This buffer is used to reorder channels.
+	 *
+	 * @see #alsa_channel_order
+	 */
+	PcmBuffer order_buffer;
+
+#ifdef ENABLE_DSD
 	/**
 	 * The buffer is used to convert DSD samples to the
 	 * DoP format.
@@ -40,6 +58,7 @@ struct PcmExport {
 	 * @see #dop
 	 */
 	PcmBuffer dop_buffer;
+#endif
 
 	/**
 	 * The buffer is used to pack samples, removing padding.
@@ -61,11 +80,28 @@ struct PcmExport {
 	uint8_t channels;
 
 	/**
+	 * Convert the given buffer from FLAC channel order to ALSA
+	 * channel order using ToAlsaChannelOrder()?
+	 *
+	 * If this value is SampleFormat::UNDEFINED, then no channel
+	 * reordering is applied, otherwise this is the input sample
+	 * format.
+	 */
+	SampleFormat alsa_channel_order;
+
+#ifdef ENABLE_DSD
+	/**
+	 * Convert DSD (U8) to DSD_U32?
+	 */
+	bool dsd_u32;
+
+	/**
 	 * Convert DSD to DSD-over-PCM (DoP)?  Input format must be
 	 * SampleFormat::DSD and output format must be
 	 * SampleFormat::S24_P32.
 	 */
 	bool dop;
+#endif
 
 	/**
 	 * Convert (padded) 24 bit samples to 32 bit by shifting 8
@@ -96,7 +132,7 @@ struct PcmExport {
 	 * @param channels the number of channels; ignored unless dop is set
 	 */
 	void Open(SampleFormat sample_format, unsigned channels,
-		  bool dop, bool shift8, bool pack, bool reverse_endian);
+		  Params params);
 
 	/**
 	 * Calculate the size of one output frame.

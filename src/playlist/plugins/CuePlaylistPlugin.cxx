@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,31 +24,28 @@
 #include "../cue/CueParser.hxx"
 #include "input/TextInputStream.hxx"
 
-#include <string>
-
 class CuePlaylist final : public SongEnumerator {
-	InputStream &is;
 	TextInputStream tis;
 	CueParser parser;
 
  public:
-	CuePlaylist(InputStream &_is)
-		:is(_is), tis(is) {
+	CuePlaylist(InputStreamPtr &&is)
+		:tis(std::move(is)) {
 	}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static SongEnumerator *
-cue_playlist_open_stream(InputStream &is)
+cue_playlist_open_stream(InputStreamPtr &&is)
 {
-	return new CuePlaylist(is);
+	return new CuePlaylist(std::move(is));
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 CuePlaylist::NextSong()
 {
-	DetachedSong *song = parser.Get();
+	auto song = parser.Get();
 	if (song != nullptr)
 		return song;
 

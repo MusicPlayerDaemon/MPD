@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,13 +23,11 @@
 #include "PlaylistError.hxx"
 #include "DetachedSong.hxx"
 #include "SongSave.hxx"
-#include "SongLoader.hxx"
 #include "playlist/PlaylistSong.hxx"
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Error.hxx"
-#include "fs/Traits.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>
@@ -83,8 +81,9 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 		return;
 
 	uint8_t priority = 0;
-	if (StringStartsWith(line, PRIO_LABEL)) {
-		priority = strtoul(line + sizeof(PRIO_LABEL) - 1, nullptr, 10);
+	const char *p;
+	if ((p = StringAfterPrefix(line, PRIO_LABEL))) {
+		priority = strtoul(p, nullptr, 10);
 
 		line = file.ReadLine();
 		if (line == nullptr)
@@ -93,8 +92,8 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 
 	DetachedSong *song;
 
-	if (StringStartsWith(line, SONG_BEGIN)) {
-		const char *uri = line + sizeof(SONG_BEGIN) - 1;
+	if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
+		const char *uri = p;
 
 		Error error;
 		song = song_load(file, uri, error);

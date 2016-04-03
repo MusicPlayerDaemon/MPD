@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "input/TextInputStream.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "stdbin.h"
 #include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
@@ -45,23 +44,23 @@ dump_text_file(TextInputStream &is)
 }
 
 static int
-dump_input_stream(InputStream &is)
+dump_input_stream(InputStreamPtr &&is)
 {
 	{
-		TextInputStream tis(is);
+		TextInputStream tis(std::move(is));
 		dump_text_file(tis);
 	}
 
-	is.Lock();
+	is->Lock();
 
 	Error error;
-	if (!is.Check(error)) {
+	if (!is->Check(error)) {
 		LogError(error);
-		is.Unlock();
+		is->Unlock();
 		return EXIT_FAILURE;
 	}
 
-	is.Unlock();
+	is->Unlock();
 
 	return 0;
 }
@@ -93,19 +92,20 @@ int main(int argc, char **argv)
 
 	/* open the stream and dump it */
 
-	Mutex mutex;
-	Cond cond;
+	{
+		Mutex mutex;
+		Cond cond;
 
-	InputStream *is = InputStream::OpenReady(argv[1], mutex, cond, error);
-	if (is != NULL) {
-		ret = dump_input_stream(*is);
-		delete is;
-	} else {
-		if (error.IsDefined())
-			LogError(error);
-		else
-			fprintf(stderr, "input_stream::Open() failed\n");
-		ret = EXIT_FAILURE;
+		auto is = InputStream::OpenReady(argv[1], mutex, cond, error);
+		if (is) {
+			ret = dump_input_stream(std::move(is));
+		} else {
+			if (error.IsDefined())
+				LogError(error);
+			else
+				fprintf(stderr, "input_stream::Open() failed\n");
+			ret = EXIT_FAILURE;
+		}
 	}
 
 	/* deinitialize everything */

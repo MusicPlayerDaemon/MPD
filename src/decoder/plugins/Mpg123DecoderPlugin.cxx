@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/StringView.hxx"
 #include "Log.hxx"
 
 #include <mpg123.h>
@@ -111,7 +112,7 @@ AddTagItem(TagBuilder &tag, TagType type, const mpg123_string &s)
 	assert(s.size >= s.fill);
 	assert(s.fill > 0);
 
-	tag.AddItem(type, s.p, s.fill - 1);
+	tag.AddItem(type, {s.p, s.fill - 1});
 }
 
 static void
@@ -286,7 +287,7 @@ mpd_mpg123_file_decode(Decoder &decoder, Path path_fs)
 
 static bool
 mpd_mpg123_scan_file(Path path_fs,
-		     const struct tag_handler *handler, void *handler_ctx)
+		     const TagHandler &handler, void *handler_ctx)
 {
 	int error;
 	mpg123_handle *const handle = mpg123_new(nullptr, &error);

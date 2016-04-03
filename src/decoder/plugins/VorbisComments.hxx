@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 #include "check.h"
 
 struct ReplayGainInfo;
-struct tag_handler;
+struct TagHandler;
 struct Tag;
 
 bool
@@ -31,7 +31,7 @@ vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments);
 
 void
 vorbis_comments_scan(char **comments,
-		     const tag_handler *handler, void *handler_ctx);
+		     const TagHandler &handler, void *handler_ctx);
 
 Tag *
 vorbis_comments_to_tag(char **comments);

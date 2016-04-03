@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include "db/LightDirectory.hxx"
 #include "Directory.hxx"
 #include "Song.hxx"
-#include "SongFilter.hxx"
 #include "DatabaseSave.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/DatabaseError.hxx"
@@ -45,6 +44,8 @@
 #ifdef ENABLE_ZLIB
 #include "fs/io/GzipOutputStream.hxx"
 #endif
+
+#include <memory>
 
 #include <errno.h>
 
@@ -112,8 +113,8 @@ SimpleDatabase::Configure(const ConfigBlock &block, Error &error)
 	return true;
 }
 
-bool
-SimpleDatabase::Check(Error &error) const
+void
+SimpleDatabase::Check() const
 {
 	assert(!path.IsNull());
 
@@ -126,54 +127,43 @@ SimpleDatabase::Check(Error &error) const
 
 		/* Check that the parent part of the path is a directory */
 		FileInfo fi;
-		if (!GetFileInfo(dirPath, fi, error)) {
-			error.AddPrefix("On parent directory of db file: ");
-			return false;
+
+		try {
+			fi = FileInfo(dirPath);
+		} catch (...) {
+			std::throw_with_nested(std::runtime_error("On parent directory of db file"));
 		}
 
-		if (!fi.IsDirectory()) {
-			error.Format(simple_db_domain,
-				     "Couldn't create db file \"%s\" because the "
-				     "parent path is not a directory",
-				     path_utf8.c_str());
-			return false;
-		}
+		if (!fi.IsDirectory())
+			throw std::runtime_error("Couldn't create db file \"" +
+						 path_utf8 + "\" because the "
+						 "parent path is not a directory");
 
 #ifndef WIN32
 		/* Check if we can write to the directory */
 		if (!CheckAccess(dirPath, X_OK | W_OK)) {
 			const int e = errno;
 			const std::string dirPath_utf8 = dirPath.ToUTF8();
-			error.FormatErrno(e, "Can't create db file in \"%s\"",
+			throw FormatErrno(e, "Can't create db file in \"%s\"",
 					  dirPath_utf8.c_str());
-			return false;
 		}
 #endif
-		return true;
+
+		return;
 	}
 
 	/* Path exists, now check if it's a regular file */
-	FileInfo fi;
-	if (!GetFileInfo(path, fi, error))
-		return false;
+	const FileInfo fi(path);
 
-	if (!fi.IsRegular()) {
-		error.Format(simple_db_domain,
-			     "db file \"%s\" is not a regular file",
-			     path_utf8.c_str());
-		return false;
-	}
+	if (!fi.IsRegular())
+		throw std::runtime_error("db file \"" + path_utf8 + "\" is not a regular file");
 
 #ifndef WIN32
 	/* And check that we can write to it */
-	if (!CheckAccess(path, R_OK | W_OK)) {
-		error.FormatErrno("Can't open db file \"%s\" for reading/writing",
+	if (!CheckAccess(path, R_OK | W_OK))
+		throw FormatErrno("Can't open db file \"%s\" for reading/writing",
 				  path_utf8.c_str());
-		return false;
-	}
 #endif
-
-	return true;
 }
 
 bool
@@ -182,11 +172,9 @@ SimpleDatabase::Load(Error &error)
 	assert(!path.IsNull());
 	assert(root != nullptr);
 
-	TextFile file(path, error);
-	if (file.HasFailed())
-		return false;
+	TextFile file(path);
 
-	if (!db_load_internal(file, *root, error) || !file.Check(error))
+	if (!db_load_internal(file, *root, error))
 		return false;
 
 	FileInfo fi;
@@ -196,8 +184,8 @@ SimpleDatabase::Load(Error &error)
 	return true;
 }
 
-bool
-SimpleDatabase::Open(Error &error)
+void
+SimpleDatabase::Open()
 {
 	assert(prefixed_light_song == nullptr);
 
@@ -208,19 +196,26 @@ SimpleDatabase::Open(Error &error)
 	borrowed_song_count = 0;
 #endif
 
-	if (!Load(error)) {
+	try {
+		Error error2;
+		if (!Load(error2)) {
+			LogError(error2);
+
+			delete root;
+
+			Check();
+
+			root = Directory::NewRoot();
+		}
+	} catch (const std::exception &e) {
+		LogError(e);
+
 		delete root;
 
-		LogError(error);
-		error.Clear();
-
-		if (!Check(error))
-			return false;
+		Check();
 
 		root = Directory::NewRoot();
 	}
-
-	return true;
 }
 
 void
@@ -234,22 +229,22 @@ SimpleDatabase::Close()
 }
 
 const LightSong *
-SimpleDatabase::GetSong(const char *uri, Error &error) const
+SimpleDatabase::GetSong(const char *uri) const
 {
 	assert(root != nullptr);
 	assert(prefixed_light_song == nullptr);
 	assert(borrowed_song_count == 0);
 
-	db_lock();
+	ScopeDatabaseLock protect;
 
 	auto r = root->LookupDirectory(uri);
 
 	if (r.directory->IsMount()) {
 		/* pass the request to the mounted database */
-		db_unlock();
+		protect.unlock();
 
 		const LightSong *song =
-			r.directory->mounted_database->GetSong(r.uri, error);
+			r.directory->mounted_database->GetSong(r.uri);
 		if (song == nullptr)
 			return nullptr;
 
@@ -258,29 +253,21 @@ SimpleDatabase::GetSong(const char *uri, Error &error) const
 		return prefixed_light_song;
 	}
 
-	if (r.uri == nullptr) {
+	if (r.uri == nullptr)
 		/* it's a directory */
-		db_unlock();
-		error.Format(db_domain, DB_NOT_FOUND,
-			     "No such song: %s", uri);
-		return nullptr;
-	}
+		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+				    "No such song");
 
-	if (strchr(r.uri, '/') != nullptr) {
+	if (strchr(r.uri, '/') != nullptr)
 		/* refers to a URI "below" the actual song */
-		db_unlock();
-		error.Format(db_domain, DB_NOT_FOUND,
-			     "No such song: %s", uri);
-		return nullptr;
-	}
+		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+				    "No such song");
 
 	const Song *song = r.directory->FindSong(r.uri);
-	db_unlock();
-	if (song == nullptr) {
-		error.Format(db_domain, DB_NOT_FOUND,
-			     "No such song: %s", uri);
-		return nullptr;
-	}
+	protect.unlock();
+	if (song == nullptr)
+		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+				    "No such song");
 
 	light_song = song->Export();
 
@@ -342,13 +329,13 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		}
 	}
 
-	error.Set(db_domain, DB_NOT_FOUND, "No such directory");
-	return false;
+	throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+			    "No such directory");
 }
 
 bool
 SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
-				TagType tag_type, uint32_t group_mask,
+				TagType tag_type, tag_mask_t group_mask,
 				VisitTag visit_tag,
 				Error &error) const
 {
@@ -364,37 +351,30 @@ SimpleDatabase::GetStats(const DatabaseSelection &selection,
 	return ::GetStats(*this, selection, stats, error);
 }
 
-bool
-SimpleDatabase::Save(Error &error)
+void
+SimpleDatabase::Save()
 {
-	db_lock();
+	{
+		const ScopeDatabaseLock protect;
 
-	LogDebug(simple_db_domain, "removing empty directories from DB");
-	root->PruneEmpty();
+		LogDebug(simple_db_domain, "removing empty directories from DB");
+		root->PruneEmpty();
 
-	LogDebug(simple_db_domain, "sorting DB");
-	root->Sort();
-
-	db_unlock();
+		LogDebug(simple_db_domain, "sorting DB");
+		root->Sort();
+	}
 
 	LogDebug(simple_db_domain, "writing DB");
 
-	FileOutputStream fos(path, error);
-	if (!fos.IsDefined())
-		return false;
+	FileOutputStream fos(path);
 
 	OutputStream *os = &fos;
 
 #ifdef ENABLE_ZLIB
-	GzipOutputStream *gzip = nullptr;
+	std::unique_ptr<GzipOutputStream> gzip;
 	if (compress) {
-		gzip = new GzipOutputStream(*os, error);
-		if (!gzip->IsDefined()) {
-			delete gzip;
-			return false;
-		}
-
-		os = gzip;
+		gzip.reset(new GzipOutputStream(*os));
+		os = gzip.get();
 	}
 #endif
 
@@ -402,34 +382,24 @@ SimpleDatabase::Save(Error &error)
 
 	db_save_internal(bos, *root);
 
-	if (!bos.Flush(error)) {
-#ifdef ENABLE_ZLIB
-		delete gzip;
-#endif
-		return false;
-	}
+	bos.Flush();
 
 #ifdef ENABLE_ZLIB
 	if (gzip != nullptr) {
-		bool success = gzip->Flush(error);
-		delete gzip;
-		if (!success)
-			return false;
+		gzip->Flush();
+		gzip.reset();
 	}
 #endif
 
-	if (!fos.Commit(error))
-		return false;
+	fos.Commit();
 
 	FileInfo fi;
 	if (GetFileInfo(path, fi))
 		mtime = fi.GetModificationTime();
-
-	return true;
 }
 
-bool
-SimpleDatabase::Mount(const char *uri, Database *db, Error &error)
+void
+SimpleDatabase::Mount(const char *uri, Database *db)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -441,21 +411,16 @@ SimpleDatabase::Mount(const char *uri, Database *db, Error &error)
 	ScopeDatabaseLock protect;
 
 	auto r = root->LookupDirectory(uri);
-	if (r.uri == nullptr) {
-		error.Format(db_domain, DB_CONFLICT,
-			     "Already exists: %s", uri);
-		return false;
-	}
+	if (r.uri == nullptr)
+		throw DatabaseError(DatabaseErrorCode::CONFLICT,
+				    "Already exists");
 
-	if (strchr(r.uri, '/') != nullptr) {
-		error.Format(db_domain, DB_NOT_FOUND,
-			     "Parent not found: %s", uri);
-		return false;
-	}
+	if (strchr(r.uri, '/') != nullptr)
+		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+				    "Parent not found");
 
 	Directory *mnt = r.directory->CreateChild(r.uri);
 	mnt->mounted_database = db;
-	return true;
 }
 
 static constexpr bool
@@ -474,11 +439,9 @@ bool
 SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 		      Error &error)
 {
-	if (cache_path.IsNull()) {
-		error.Format(db_domain, DB_NOT_FOUND,
-			     "No 'cache_directory' configured");
-		return false;
-	}
+	if (cache_path.IsNull())
+		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
+				    "No 'cache_directory' configured");
 
 	std::string name(storage_uri);
 	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
@@ -493,17 +456,21 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	auto db = new SimpleDatabase(AllocatedPath::Build(cache_path,
 							  name_fs.c_str()),
 				     compress);
-	if (!db->Open(error)) {
+	try {
+		db->Open();
+	} catch (...) {
 		delete db;
-		return false;
+		throw;
 	}
 
 	// TODO: update the new database instance?
 
-	if (!Mount(local_uri, db, error)) {
+	try {
+		Mount(local_uri, db);
+	} catch (...) {
 		db->Close();
 		delete db;
-		return false;
+		throw;
 	}
 
 	return true;

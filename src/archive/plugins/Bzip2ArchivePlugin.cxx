@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,42 +27,32 @@
 #include "../ArchiveFile.hxx"
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
-#include "input/InputPlugin.hxx"
 #include "input/LocalOpen.hxx"
+#include "thread/Cond.hxx"
 #include "util/RefCount.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
-#include "fs/Traits.hxx"
 #include "fs/Path.hxx"
 
 #include <bzlib.h>
 
 #include <stddef.h>
 
-#ifdef HAVE_OLDER_BZIP2
-#define BZ2_bzDecompressInit bzDecompressInit
-#define BZ2_bzDecompress bzDecompress
-#endif
-
 class Bzip2ArchiveFile final : public ArchiveFile {
 public:
 	RefCount ref;
 
 	std::string name;
-	InputStream *const istream;
+	const InputStreamPtr istream;
 
-	Bzip2ArchiveFile(Path path, InputStream *_is)
+	Bzip2ArchiveFile(Path path, InputStreamPtr &&_is)
 		:ArchiveFile(bz2_archive_plugin),
 		 name(path.GetBase().c_str()),
-		 istream(_is) {
+		 istream(std::move(_is)) {
 		// remove .bz2 suffix
 		const size_t len = name.length();
 		if (len > 4)
 			name.erase(len - 4);
-	}
-
-	~Bzip2ArchiveFile() {
-		delete istream;
 	}
 
 	void Ref() {
@@ -89,15 +79,16 @@ public:
 					Error &error) override;
 };
 
-struct Bzip2InputStream final : public InputStream {
+class Bzip2InputStream final : public InputStream {
 	Bzip2ArchiveFile *archive;
 
-	bool eof;
+	bool eof = false;
 
 	bz_stream bzstream;
 
 	char buffer[5000];
 
+public:
 	Bzip2InputStream(Bzip2ArchiveFile &context, const char *uri,
 			 Mutex &mutex, Cond &cond);
 	~Bzip2InputStream();
@@ -107,6 +98,9 @@ struct Bzip2InputStream final : public InputStream {
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
 	size_t Read(void *ptr, size_t size, Error &error) override;
+
+private:
+	bool FillBuffer(Error &error);
 };
 
 static constexpr Domain bz2_domain("bz2");
@@ -141,11 +135,11 @@ bz2_open(Path pathname, Error &error)
 {
 	static Mutex mutex;
 	static Cond cond;
-	InputStream *is = OpenLocalInputStream(pathname, mutex, cond, error);
+	auto is = OpenLocalInputStream(pathname, mutex, cond, error);
 	if (is == nullptr)
 		return nullptr;
 
-	return new Bzip2ArchiveFile(pathname, is);
+	return new Bzip2ArchiveFile(pathname, std::move(is));
 }
 
 /* single archive handling */
@@ -154,7 +148,7 @@ Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context,
 				   const char *_uri,
 				   Mutex &_mutex, Cond &_cond)
 	:InputStream(_uri, _mutex, _cond),
-	 archive(&_context), eof(false)
+	 archive(&_context)
 {
 	archive->Ref();
 }
@@ -179,24 +173,19 @@ Bzip2ArchiveFile::OpenStream(const char *path,
 	return bis;
 }
 
-static bool
-bz2_fillbuffer(Bzip2InputStream *bis, Error &error)
+inline bool
+Bzip2InputStream::FillBuffer(Error &error)
 {
-	size_t count;
-	bz_stream *bzstream;
-
-	bzstream = &bis->bzstream;
-
-	if (bzstream->avail_in > 0)
+	if (bzstream.avail_in > 0)
 		return true;
 
-	count = bis->archive->istream->Read(bis->buffer, sizeof(bis->buffer),
-					    error);
+	size_t count = archive->istream->Read(buffer, sizeof(buffer),
+					      error);
 	if (count == 0)
 		return false;
 
-	bzstream->next_in = bis->buffer;
-	bzstream->avail_in = count;
+	bzstream.next_in = buffer;
+	bzstream.avail_in = count;
 	return true;
 }
 
@@ -213,7 +202,7 @@ Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
 	bzstream.avail_out = length;
 
 	do {
-		if (!bz2_fillbuffer(this, error))
+		if (!FillBuffer(error))
 			return 0;
 
 		bz_result = BZ2_bzDecompress(&bzstream);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,8 @@
 #include "LogV.hxx"
 #include "util/Error.hxx"
 
-#include <assert.h>
+#include <exception>
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -86,6 +87,36 @@ FormatError(const Domain &domain, const char *fmt, ...)
 	va_start(ap, fmt);
 	LogFormatV(domain, LogLevel::ERROR, fmt, ap);
 	va_end(ap);
+}
+
+void
+LogError(const std::exception &e)
+{
+	Log(exception_domain, LogLevel::ERROR, e.what());
+
+	try {
+		std::rethrow_if_nested(e);
+	} catch (const std::exception &nested) {
+		LogError(nested, "nested");
+	} catch (...) {
+		Log(exception_domain, LogLevel::ERROR,
+		    "Unrecognized nested exception");
+	}
+}
+
+void
+LogError(const std::exception &e, const char *msg)
+{
+	FormatError(exception_domain, "%s: %s", msg, e.what());
+
+	try {
+		std::rethrow_if_nested(e);
+	} catch (const std::exception &nested) {
+		LogError(nested);
+	} catch (...) {
+		Log(exception_domain, LogLevel::ERROR,
+		    "Unrecognized nested exception");
+	}
 }
 
 void

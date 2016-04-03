@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,9 +25,7 @@
 
 #include <FLAC/metadata.h>
 
-#include <assert.h>
-
-struct tag_handler;
+struct TagHandler;
 class MixRampInfo;
 
 class FlacMetadataChain {
@@ -82,7 +80,7 @@ public:
 		return FLAC__Metadata_ChainStatusString[GetStatus()];
 	}
 
-	void Scan(const tag_handler *handler, void *handler_ctx);
+	void Scan(const TagHandler &handler, void *handler_ctx);
 };
 
 class FLACMetadataIterator {
@@ -126,6 +124,6 @@ flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment);
 
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
-		   const tag_handler *handler, void *handler_ctx);
+		   const TagHandler &handler, void *handler_ctx);
 
 #endif

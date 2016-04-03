@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,193 +19,156 @@
 
 #include "config.h"
 #include "ArgParser.hxx"
-#include "Result.hxx"
+#include "Ack.hxx"
 #include "Chrono.hxx"
-
-#include <limits>
 
 #include <stdlib.h>
 
-bool
-check_uint32(Client &client, uint32_t *dst, const char *s)
+uint32_t
+ParseCommandArgU32(const char *s)
 {
 	char *test;
+	auto value = strtoul(s, &test, 10);
+	if (test == s || *test != '\0')
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Integer expected: %s", s);
 
-	*dst = strtoul(s, &test, 10);
-	if (test == s || *test != '\0') {
-		command_error(client, ACK_ERROR_ARG,
-			      "Integer expected: %s", s);
-		return false;
-	}
-	return true;
+	return value;
 }
 
-bool
-check_int(Client &client, int *value_r, const char *s)
+int
+ParseCommandArgInt(const char *s, int min_value, int max_value)
 {
 	char *test;
-	long value;
+	auto value = strtol(s, &test, 10);
+	if (test == s || *test != '\0')
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Integer expected: %s", s);
 
-	value = strtol(s, &test, 10);
-	if (test == s || *test != '\0') {
-		command_error(client, ACK_ERROR_ARG,
-			      "Integer expected: %s", s);
-		return false;
-	}
+	if (value < min_value || value > max_value)
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Number too large: %s", s);
 
-	if (value < std::numeric_limits<int>::min() ||
-	    value > std::numeric_limits<int>::max()) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Number too large: %s", s);
-		return false;
-	}
-
-	*value_r = (int)value;
-	return true;
+	return (int)value;
 }
 
-bool
-check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
-	    const char *s)
+int
+ParseCommandArgInt(const char *s)
+{
+	return ParseCommandArgInt(s,
+				  std::numeric_limits<int>::min(),
+				  std::numeric_limits<int>::max());
+}
+
+RangeArg
+ParseCommandArgRange(const char *s)
 {
 	char *test, *test2;
-	long value;
+	auto value = strtol(s, &test, 10);
+	if (test == s || (*test != '\0' && *test != ':'))
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Integer or range expected: %s", s);
 
-	value = strtol(s, &test, 10);
-	if (test == s || (*test != '\0' && *test != ':')) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Integer or range expected: %s", s);
-		return false;
-	}
-
-	if (value == -1 && *test == 0) {
+	if (value == -1 && *test == 0)
 		/* compatibility with older MPD versions: specifying
 		   "-1" makes MPD display the whole list */
-		*value_r1 = 0;
-		*value_r2 = std::numeric_limits<int>::max();
-		return true;
-	}
+		return RangeArg::All();
 
-	if (value < 0) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Number is negative: %s", s);
-		return false;
-	}
+	if (value < 0)
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Number is negative: %s", s);
 
-	if (unsigned(value) > std::numeric_limits<unsigned>::max()) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Number too large: %s", s);
-		return false;
-	}
+	if (value > std::numeric_limits<int>::max())
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Number too large: %s", s);
 
-	*value_r1 = (unsigned)value;
+	RangeArg range;
+	range.start = (unsigned)value;
 
 	if (*test == ':') {
 		value = strtol(++test, &test2, 10);
-		if (*test2 != '\0') {
-			command_error(client, ACK_ERROR_ARG,
-				      "Integer or range expected: %s", s);
-			return false;
-		}
+		if (*test2 != '\0')
+			throw FormatProtocolError(ACK_ERROR_ARG,
+						  "Integer or range expected: %s",
+						  s);
 
 		if (test == test2)
 			value = std::numeric_limits<int>::max();
 
-		if (value < 0) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Number is negative: %s", s);
-			return false;
-		}
+		if (value < 0)
+			throw FormatProtocolError(ACK_ERROR_ARG,
+						  "Number is negative: %s", s);
 
-		if (unsigned(value) > std::numeric_limits<unsigned>::max()) {
-			command_error(client, ACK_ERROR_ARG,
-				      "Number too large: %s", s);
-			return false;
-		}
 
-		*value_r2 = (unsigned)value;
+		if (value > std::numeric_limits<int>::max())
+			throw FormatProtocolError(ACK_ERROR_ARG,
+						  "Number too large: %s", s);
+
+		range.end = (unsigned)value;
 	} else {
-		*value_r2 = (unsigned)value + 1;
+		range.end = (unsigned)value + 1;
 	}
 
-	return true;
+	return range;
 }
 
-bool
-check_unsigned(Client &client, unsigned *value_r, const char *s)
+unsigned
+ParseCommandArgUnsigned(const char *s, unsigned max_value)
 {
-	unsigned long value;
 	char *endptr;
+	auto value = strtoul(s, &endptr, 10);
+	if (endptr == s || *endptr != 0)
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Integer expected: %s", s);
 
-	value = strtoul(s, &endptr, 10);
-	if (endptr == s || *endptr != 0) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Integer expected: %s", s);
-		return false;
-	}
+	if (value > max_value)
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Number too large: %s", s);
 
-	if (value > std::numeric_limits<unsigned>::max()) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Number too large: %s", s);
-		return false;
-	}
+	return (unsigned)value;
+}
 
-	*value_r = (unsigned)value;
-	return true;
+unsigned
+ParseCommandArgUnsigned(const char *s)
+{
+	return ParseCommandArgUnsigned(s,
+				       std::numeric_limits<unsigned>::max());
 }
 
 bool
-check_bool(Client &client, bool *value_r, const char *s)
+ParseCommandArgBool(const char *s)
 {
-	long value;
 	char *endptr;
+	auto value = strtol(s, &endptr, 10);
+	if (endptr == s || *endptr != 0 || (value != 0 && value != 1))
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Boolean (0/1) expected: %s", s);
 
-	value = strtol(s, &endptr, 10);
-	if (endptr == s || *endptr != 0 || (value != 0 && value != 1)) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Boolean (0/1) expected: %s", s);
-		return false;
-	}
-
-	*value_r = !!value;
-	return true;
+	return !!value;
 }
 
-bool
-check_float(Client &client, float *value_r, const char *s)
+float
+ParseCommandArgFloat(const char *s)
 {
-	float value;
 	char *endptr;
+	auto value = strtof(s, &endptr);
+	if (endptr == s || *endptr != 0)
+		throw FormatProtocolError(ACK_ERROR_ARG,
+					  "Float expected: %s", s);
 
-	value = strtof(s, &endptr);
-	if (endptr == s || *endptr != 0) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Float expected: %s", s);
-		return false;
-	}
-
-	*value_r = value;
-	return true;
+	return value;
 }
 
-bool
-ParseCommandArg(Client &client, SongTime &value_r, const char *s)
+SongTime
+ParseCommandArgSongTime(const char *s)
 {
-	float value;
-	bool success = check_float(client, &value, s) && value >= 0;
-	if (success)
-		value_r = SongTime::FromS(value);
-
-	return success;
+	auto value = ParseCommandArgFloat(s);
+	return SongTime::FromS(value);
 }
 
-bool
-ParseCommandArg(Client &client, SignedSongTime &value_r, const char *s)
+SignedSongTime
+ParseCommandArgSignedSongTime(const char *s)
 {
-	float value;
-	bool success = check_float(client, &value, s);
-	if (success)
-		value_r = SignedSongTime::FromS(value);
-
-	return success;
+	auto value = ParseCommandArgFloat(s);
+	return SongTime::FromS(value);
 }

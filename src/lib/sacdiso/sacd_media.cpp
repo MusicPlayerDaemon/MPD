@@ -112,8 +112,7 @@ bool sacd_media_stream_t::open(const char* path) {
 }
 
 bool sacd_media_stream_t::close() {
-	delete is;
-	is = nullptr;
+    is.release();
 	return true;
 }
 

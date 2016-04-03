@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,9 +26,6 @@
 #include "Compiler.h"
 
 #include <algorithm>
-#include <iterator>
-
-#include <stddef.h>
 
 /**
  * The meta information about a song file.  It is a MPD specific
@@ -80,9 +77,17 @@ struct Tag {
 	Tag &operator=(Tag &&other) {
 		duration = other.duration;
 		has_playlist = other.has_playlist;
+		MoveItemsFrom(std::move(other));
+		return *this;
+	}
+
+	/**
+	 * Similar to the move operator, but move only the #TagItem
+	 * array.
+	 */
+	void MoveItemsFrom(Tag &&other) {
 		std::swap(items, other.items);
 		std::swap(num_items, other.num_items);
-		return *this;
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,8 @@
 #include "event/TimeoutMonitor.hxx"
 #include "Compiler.h"
 
-#include <boost/intrusive/list.hpp>
+#include <boost/intrusive/link_mode.hpp>
+#include <boost/intrusive/list_hook.hpp>
 
 #include <set>
 #include <string>
@@ -50,12 +51,6 @@ public:
 	Partition &partition;
 	struct playlist &playlist;
 	struct PlayerControl &player_control;
-
-	struct Disposer {
-		void operator()(Client *client) const {
-			delete client;
-		}
-	};
 
 	unsigned permission;
 

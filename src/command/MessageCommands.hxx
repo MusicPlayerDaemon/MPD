@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,21 +23,22 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
+class Response;
 
 CommandResult
-handle_subscribe(Client &client, ConstBuffer<const char *> args);
+handle_subscribe(Client &client, Request request, Response &response);
 
 CommandResult
-handle_unsubscribe(Client &client, ConstBuffer<const char *> args);
+handle_unsubscribe(Client &client, Request request, Response &response);
 
 CommandResult
-handle_channels(Client &client, ConstBuffer<const char *> args);
+handle_channels(Client &client, Request request, Response &response);
 
 CommandResult
-handle_read_messages(Client &client, ConstBuffer<const char *> args);
+handle_read_messages(Client &client, Request request, Response &response);
 
 CommandResult
-handle_send_message(Client &client, ConstBuffer<const char *> args);
+handle_send_message(Client &client, Request request, Response &response);
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -50,6 +50,9 @@ sticker_song_set_value(const LightSong &song,
 /**
  * Deletes a sticker from the database.  All values are deleted.
  */
+bool
+sticker_song_delete(const char *uri, Error &error);
+
 bool
 sticker_song_delete(const LightSong &song, Error &error);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,18 +20,32 @@
 #ifndef MPD_DB_ERROR_HXX
 #define MPD_DB_ERROR_HXX
 
+#include <stdexcept>
+
 class Domain;
 
-enum db_error {
+enum class DatabaseErrorCode {
 	/**
 	 * The database is disabled, i.e. none is configured in this
 	 * MPD instance.
 	 */
-	DB_DISABLED,
+	DISABLED,
 
-	DB_NOT_FOUND,
+	NOT_FOUND,
 
-	DB_CONFLICT,
+	CONFLICT,
+};
+
+class DatabaseError final : public std::runtime_error {
+	DatabaseErrorCode code;
+
+public:
+	DatabaseError(DatabaseErrorCode _code, const char *msg)
+		:std::runtime_error(msg), code(_code) {}
+
+	DatabaseErrorCode GetCode() const {
+		return code;
+	}
 };
 
 extern const Domain db_domain;

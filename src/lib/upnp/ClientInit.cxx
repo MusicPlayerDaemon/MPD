@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,11 +21,12 @@
 #include "ClientInit.hxx"
 #include "Init.hxx"
 #include "Callback.hxx"
-#include "Domain.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <upnp/upnptools.h>
+
+#include <assert.h>
 
 static Mutex upnp_client_init_mutex;
 static unsigned upnp_client_ref;
@@ -44,50 +45,44 @@ UpnpClientCallback(Upnp_EventType et, void *evp, void *cookie)
 	return callback.Invoke(et, evp);
 }
 
-static bool
-DoInit(Error &error)
+static void
+DoInit()
 {
 	auto code = UpnpRegisterClient(UpnpClientCallback, nullptr,
 				       &upnp_client_handle);
-	if (code != UPNP_E_SUCCESS) {
-		error.Format(upnp_domain, code,
-			     "UpnpRegisterClient() failed: %s",
-			     UpnpGetErrorMessage(code));
-		return false;
-	}
-
-	return true;
+	if (code != UPNP_E_SUCCESS)
+		throw FormatRuntimeError("UpnpRegisterClient() failed: %s",
+					 UpnpGetErrorMessage(code));
 }
 
-bool
-UpnpClientGlobalInit(UpnpClient_Handle &handle, Error &error)
+void
+UpnpClientGlobalInit(UpnpClient_Handle &handle)
 {
-	if (!UpnpGlobalInit(error))
-		return false;
+	UpnpGlobalInit();
 
-	upnp_client_init_mutex.lock();
-	bool success = upnp_client_ref > 0 || DoInit(error);
-	upnp_client_init_mutex.unlock();
-
-	if (success) {
-		++upnp_client_ref;
-		handle = upnp_client_handle;
-	} else
+	try {
+		const ScopeLock protect(upnp_client_init_mutex);
+		if (upnp_client_ref == 0)
+			DoInit();
+	} catch (...) {
 		UpnpGlobalFinish();
+		throw;
+	}
 
-	return success;
+	++upnp_client_ref;
+	handle = upnp_client_handle;
 }
 
 void
 UpnpClientGlobalFinish()
 {
-	upnp_client_init_mutex.lock();
+	{
+		const ScopeLock protect(upnp_client_init_mutex);
 
-	assert(upnp_client_ref > 0);
-	if (--upnp_client_ref == 0)
-		UpnpUnRegisterClient(upnp_client_handle);
-
-	upnp_client_init_mutex.unlock();
+		assert(upnp_client_ref > 0);
+		if (--upnp_client_ref == 0)
+			UpnpUnRegisterClient(upnp_client_handle);
+	}
 
 	UpnpGlobalFinish();
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,10 @@
 #include "check.h"
 #include "Compiler.h"
 #include "util/DynamicFifoBuffer.hxx"
-#include "util/Error.hxx"
 
 #include <stddef.h>
 
 class Reader;
-class Error;
 
 class BufferedReader {
 	static constexpr size_t MAX_SIZE = 512 * 1024;
@@ -36,8 +34,6 @@ class BufferedReader {
 	Reader &reader;
 
 	DynamicFifoBuffer<char> buffer;
-
-	Error last_error;
 
 	bool eof;
 
@@ -47,19 +43,6 @@ public:
 	BufferedReader(Reader &_reader)
 		:reader(_reader), buffer(4096), eof(false),
 		 line_number(0) {}
-
-	gcc_pure
-	bool Check() const {
-		return !last_error.IsDefined();
-	}
-
-	bool Check(Error &error) const {
-		if (last_error.IsDefined()) {
-			error.Set(last_error);
-			return false;
-		} else
-			return true;
-	}
 
 	bool Fill(bool need_more);
 

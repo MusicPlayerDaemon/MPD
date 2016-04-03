@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,10 +23,8 @@
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Manual.hxx"
-#include "util/NumberParser.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 extern "C"
 {
@@ -59,8 +57,6 @@ struct ShineEncoder {
 
 	bool WriteChunk(bool flush);
 };
-
-static constexpr Domain shine_encoder_domain("shine_encoder");
 
 inline bool
 ShineEncoder::Configure(const ConfigBlock &block, gcc_unused Error &error)

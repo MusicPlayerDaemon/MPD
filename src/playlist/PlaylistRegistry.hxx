@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,10 +20,11 @@
 #ifndef MPD_PLAYLIST_REGISTRY_HXX
 #define MPD_PLAYLIST_REGISTRY_HXX
 
+#include "input/Ptr.hxx"
+
 class Mutex;
 class Cond;
 class SongEnumerator;
-class InputStream;
 
 extern const struct playlist_plugin *const playlist_plugins[];
 
@@ -52,7 +53,7 @@ SongEnumerator *
 playlist_list_open_uri(const char *uri, Mutex &mutex, Cond &cond);
 
 SongEnumerator *
-playlist_list_open_stream_suffix(InputStream &is, const char *suffix);
+playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix);
 
 /**
  * Opens a playlist from an input stream.
@@ -62,7 +63,7 @@ playlist_list_open_stream_suffix(InputStream &is, const char *suffix);
  * used to select the appropriate playlist plugin
  */
 SongEnumerator *
-playlist_list_open_stream(InputStream &is, const char *uri);
+playlist_list_open_stream(InputStreamPtr &&is, const char *uri);
 
 /**
  * Determines if there is a playlist plugin which can handle the

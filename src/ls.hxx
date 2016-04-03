@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 
-class Client;
+class Response;
 
 /**
  * Checks whether the scheme of the specified URI is supported by MPD.
@@ -38,7 +38,7 @@ bool uri_supported_scheme(const char *url);
  * Send a list of supported URI schemes to the client.  This is the
  * response to the "urlhandlers" command.
  */
-void print_supported_uri_schemes(Client &client);
+void print_supported_uri_schemes(Response &r);
 
 /**
  * Send a list of supported URI schemes to a file pointer.

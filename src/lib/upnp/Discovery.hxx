@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,6 @@
 #include "Device.hxx"
 #include "WorkQueue.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Error.hxx"
 #include "Compiler.h"
 
 #include <upnp/upnp.h>
@@ -32,6 +31,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <memory>
 
 class ContentDirectoryService;
 
@@ -86,9 +86,8 @@ class UPnPDeviceDirectory final : UpnpCallback {
 					   unsigned last, int exp)
 			:id(std::move(_id)), expires(last + exp + 20) {}
 
-		bool Parse(const std::string &url, const char *description,
-			   Error &_error) {
-			return device.Parse(url, description, _error);
+		void Parse(const std::string &url, const char *description) {
+			device.Parse(url, description);
 		}
 	};
 
@@ -97,7 +96,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 
 	Mutex mutex;
 	std::list<ContentDirectoryDescriptor> directories;
-	WorkQueue<DiscoveredTask *> queue;
+	WorkQueue<std::unique_ptr<DiscoveredTask>> queue;
 
 	/**
 	 * The UPnP device search timeout, which should actually be
@@ -119,20 +118,18 @@ public:
 	UPnPDeviceDirectory(const UPnPDeviceDirectory &) = delete;
 	UPnPDeviceDirectory& operator=(const UPnPDeviceDirectory &) = delete;
 
-	bool Start(Error &error);
+	void Start();
 
 	/** Retrieve the directory services currently seen on the network */
-	bool GetDirectories(std::vector<ContentDirectoryService> &, Error &);
+	std::vector<ContentDirectoryService> GetDirectories();
 
 	/**
 	 * Get server by friendly name.
 	 */
-	bool GetServer(const char *friendly_name,
-		       ContentDirectoryService &server,
-		       Error &error);
+	ContentDirectoryService GetServer(const char *friendly_name);
 
 private:
-	bool Search(Error &error);
+	void Search();
 
 	/**
 	 * Look at the devices and get rid of those which have not
@@ -141,7 +138,7 @@ private:
 	 *
 	 * Caller must lock #mutex.
 	 */
-	bool ExpireDevices(Error &error);
+	void ExpireDevices();
 
 	void LockAdd(ContentDirectoryDescriptor &&d);
 	void LockRemove(const std::string &id);

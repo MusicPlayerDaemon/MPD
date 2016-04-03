@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "config.h"
 #include "fs/io/GzipOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>
@@ -40,18 +41,19 @@ Copy(OutputStream &dest, int src, Error &error)
 				return true;
 		}
 
-		if (!dest.Write(buffer, nbytes, error))
-			return false;
+		dest.Write(buffer, nbytes);
 	}
 }
 
 static bool
 CopyGzip(OutputStream &_dest, int src, Error &error)
 {
-	GzipOutputStream dest(_dest, error);
-	return dest.IsDefined() &&
-		Copy(dest, src, error) &&
-		dest.Flush(error);
+	GzipOutputStream dest(_dest);
+	if (!Copy(dest, src, error))
+		return false;
+
+	dest.Flush();
+	return true;
 }
 
 static bool
@@ -69,11 +71,16 @@ main(int argc, gcc_unused char **argv)
 		return EXIT_FAILURE;
 	}
 
-	Error error;
-	if (!CopyGzip(stdout, STDIN_FILENO, error)) {
-		fprintf(stderr, "%s\n", error.GetMessage());
+	try {
+		Error error;
+		if (!CopyGzip(stdout, STDIN_FILENO, error)) {
+			fprintf(stderr, "%s\n", error.GetMessage());
+			return EXIT_FAILURE;
+		}
+
+		return EXIT_SUCCESS;
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-
-	return EXIT_SUCCESS;
 }

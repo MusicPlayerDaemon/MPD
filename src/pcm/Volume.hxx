@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,6 @@
 #include "PcmBuffer.hxx"
 #include "PcmDither.hxx"
 
-#include <stdint.h>
-#include <stddef.h>
-
 #ifndef NDEBUG
 #include <assert.h>
 #endif
@@ -44,8 +41,6 @@ static constexpr unsigned PCM_VOLUME_BITS = 10;
  */
 static constexpr unsigned PCM_VOLUME_1 = 1024;
 static constexpr int PCM_VOLUME_1S = PCM_VOLUME_1;
-
-struct AudioFormat;
 
 /**
  * Converts a float value (0.0 = silence, 1.0 = 100% volume) to an

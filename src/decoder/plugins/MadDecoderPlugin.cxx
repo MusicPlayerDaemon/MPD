@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,7 @@
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
 #include "CheckAudioFormat.hxx"
-#include "util/StringUtil.hxx"
-#include "util/ASCII.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -166,6 +165,15 @@ struct MadDecoder {
 	void FileSizeToSongLength();
 
 	bool DecodeFirstFrame(Tag **tag);
+
+	void AllocateBuffers() {
+		assert(max_frames > 0);
+		assert(frame_offsets == nullptr);
+		assert(times == nullptr);
+
+		frame_offsets = new long[max_frames];
+		times = new mad_timer_t[max_frames];
+	}
 
 	gcc_pure
 	long TimeToFrame(SongTime t) const;
@@ -819,9 +827,6 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 		return false;
 	}
 
-	frame_offsets = new long[max_frames];
-	times = new mad_timer_t[max_frames];
-
 	return true;
 }
 
@@ -1049,6 +1054,8 @@ mp3_decode(Decoder &decoder, InputStream &input_stream)
 		return;
 	}
 
+	data.AllocateBuffers();
+
 	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format,
@@ -1075,7 +1082,7 @@ mp3_decode(Decoder &decoder, InputStream &input_stream)
 
 static bool
 mad_decoder_scan_stream(InputStream &is,
-			const struct tag_handler *handler, void *handler_ctx)
+			const TagHandler &handler, void *handler_ctx)
 {
 	const auto result = mad_decoder_total_file_time(is);
 	if (!result.first)

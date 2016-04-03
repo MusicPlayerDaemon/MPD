@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,7 @@
  */
 
 #include "UriUtil.hxx"
+#include "StringCompare.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -74,8 +75,6 @@ uri_get_suffix(const char *uri, UriSuffixBuffer &buffer)
 static const char *
 verify_uri_segment(const char *p)
 {
-	const char *q;
-
 	unsigned dots = 0;
 	while (*p == '.') {
 		++p;
@@ -85,7 +84,7 @@ verify_uri_segment(const char *p)
 	if (dots <= 2 && (*p == 0 || *p == '/'))
 		return nullptr;
 
-	q = strchr(p + 1, '/');
+	const char *q = strchr(p + 1, '/');
 	return q != nullptr ? q : "";
 }
 
@@ -106,26 +105,33 @@ uri_safe_local(const char *uri)
 	}
 }
 
+gcc_pure
+static const char *
+SkipUriScheme(const char *uri)
+{
+	const char *const schemes[] = { "http://", "https://", "ftp://" };
+	for (auto scheme : schemes) {
+		auto result = StringAfterPrefix(uri, scheme);
+		if (result != nullptr)
+			return result;
+	}
+
+	return nullptr;
+}
+
 std::string
 uri_remove_auth(const char *uri)
 {
-	const char *auth, *slash, *at;
-
-	if (memcmp(uri, "http://", 7) == 0)
-		auth = uri + 7;
-	else if (memcmp(uri, "https://", 8) == 0)
-		auth = uri + 8;
-	else if (memcmp(uri, "ftp://", 6) == 0)
-		auth = uri + 6;
-	else
+	const char *auth = SkipUriScheme(uri);
+	if (auth == nullptr)
 		/* unrecognized URI */
 		return std::string();
 
-	slash = strchr(auth, '/');
+	const char *slash = strchr(auth, '/');
 	if (slash == nullptr)
 		slash = auth + strlen(auth);
 
-	at = (const char *)memchr(auth, '@', slash - auth);
+	const char *at = (const char *)memchr(auth, '@', slash - auth);
 	if (at == nullptr)
 		/* no auth info present, do nothing */
 		return std::string();

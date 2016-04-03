@@ -57,7 +57,7 @@ class dvda_metabase_t {
 public:
 	dvda_metabase_t(dvda_disc_t* dvda_disc, const char* tags_path = nullptr, const char* tags_file = nullptr);
 	~dvda_metabase_t();
-	bool get_info(uint32_t track_index, bool downmix, const struct tag_handler* handler, void* handler_ctx);
+    bool get_info(uint32_t track_index, bool downmix, const struct TagHandler& handler, void* handler_ctx);
 private:
 	bool init_xmldoc();
 	void track_index_to_id(uint32_t track_index, string& track_id);

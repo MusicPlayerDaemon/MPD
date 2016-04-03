@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,66 +24,15 @@
 
 #include "config.h"
 #include "Idle.hxx"
-#include "GlobalEvents.hxx"
-#include "util/ASCII.hxx"
-
-#include <atomic>
+#include "Main.hxx"
+#include "Instance.hxx"
 
 #include <assert.h>
-
-static std::atomic_uint idle_flags;
-
-static const char *const idle_names[] = {
-	"database",
-	"stored_playlist",
-	"playlist",
-	"player",
-	"mixer",
-	"output",
-	"options",
-	"sticker",
-	"update",
-	"subscription",
-	"message",
-	"neighbor",
-	"mount",
-	nullptr
-};
 
 void
 idle_add(unsigned flags)
 {
 	assert(flags != 0);
 
-	unsigned old_flags = idle_flags.fetch_or(flags);
-
-	if ((old_flags & flags) != flags)
-		GlobalEvents::Emit(GlobalEvents::IDLE);
-}
-
-unsigned
-idle_get(void)
-{
-	return idle_flags.exchange(0);
-}
-
-const char*const*
-idle_get_names(void)
-{
-        return idle_names;
-}
-
-unsigned
-idle_parse_name(const char *name)
-{
-#if !CLANG_CHECK_VERSION(3,6)
-	/* disabled on clang due to -Wtautological-pointer-compare */
-	assert(name != nullptr);
-#endif
-
-	for (unsigned i = 0; idle_names[i] != nullptr; ++i)
-		if (StringEqualsCaseASCII(name, idle_names[i]))
-			return 1 << i;
-
-	return 0;
+	instance->EmitIdle(flags);
 }

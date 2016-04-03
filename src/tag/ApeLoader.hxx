@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,22 +24,19 @@
 
 #include <functional>
 
-#include <stddef.h>
-
-class Path;
+struct StringView;
+class InputStream;
 
 typedef std::function<bool(unsigned long flags, const char *key,
-			   const char *value,
-			   size_t value_length)> ApeTagCallback;
+			   StringView value)> ApeTagCallback;
 
 /**
  * Scans the APE tag values from a file.
  *
- * @param path_fs the path of the file in filesystem encoding
  * @return false if the file could not be opened or if no APE tag is
  * present
  */
 bool
-tag_ape_scan(Path path_fs, ApeTagCallback callback);
+tag_ape_scan(InputStream &is, ApeTagCallback callback);
 
 #endif

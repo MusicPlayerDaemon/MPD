@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,13 +30,14 @@
 #include "lib/nfs/Connection.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/Error.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "event/Loop.hxx"
 #include "event/Call.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "event/TimeoutMonitor.hxx"
+#include "util/Error.hxx"
+#include "util/StringCompare.hxx"
 
 extern "C" {
 #include <nfsc/libnfs.h>
@@ -232,7 +233,7 @@ NfsStorage::MapUTF8(const char *uri_utf8) const
 {
 	assert(uri_utf8 != nullptr);
 
-	if (*uri_utf8 == 0)
+	if (StringIsEmpty(uri_utf8))
 		return base;
 
 	return PathTraitsUTF8::Build(base.c_str(), uri_utf8);

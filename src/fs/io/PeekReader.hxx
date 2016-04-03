@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,8 +26,6 @@
 
 #include <stdint.h>
 
-class AutoGunzipReader;
-
 /**
  * A filter that allows the caller to peek the first few bytes without
  * consuming them.  The first call must be Peek(), and the following
@@ -44,10 +42,10 @@ public:
 	PeekReader(Reader &_next)
 		:next(_next), buffer_size(0), buffer_position(0) {}
 
-	const void *Peek(size_t size, Error &error);
+	const void *Peek(size_t size);
 
 	/* virtual methods from class Reader */
-	virtual size_t Read(void *data, size_t size, Error &error) override;
+	virtual size_t Read(void *data, size_t size) override;
 };
 
 #endif

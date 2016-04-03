@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "UpnpNeighborPlugin.hxx"
-#include "lib/upnp/Domain.hxx"
 #include "lib/upnp/ClientInit.hxx"
 #include "lib/upnp/Discovery.hxx"
 #include "lib/upnp/ContentDirectoryService.hxx"
@@ -28,6 +27,8 @@
 #include "neighbor/Listener.hxx"
 #include "neighbor/Info.hxx"
 #include "Log.hxx"
+
+#include <stdexcept>
 
 class UpnpNeighborExplorer final
 	: public NeighborExplorer, UPnPDiscoveryListener {
@@ -70,17 +71,19 @@ private:
 };
 
 bool
-UpnpNeighborExplorer::Open(Error &error)
+UpnpNeighborExplorer::Open(gcc_unused Error &error)
 {
 	UpnpClient_Handle handle;
-	if (!UpnpClientGlobalInit(handle, error))
-		return false;
+	UpnpClientGlobalInit(handle);
 
 	discovery = new UPnPDeviceDirectory(handle, this);
-	if (!discovery->Start(error)) {
+
+	try {
+		discovery->Start();
+	} catch (...) {
 		delete discovery;
 		UpnpClientGlobalFinish();
-		return false;
+		throw;
 	}
 
 	return true;
@@ -98,10 +101,10 @@ UpnpNeighborExplorer::GetList() const
 {
 	std::vector<ContentDirectoryService> tmp;
 
-	{
-		Error error;
-		if (!discovery->GetDirectories(tmp, error))
-			LogError(error);
+	try {
+		tmp = discovery->GetDirectories();
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 	}
 
 	List result;

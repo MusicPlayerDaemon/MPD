@@ -330,37 +330,37 @@ uint32_t av_crc(const AVCRC *ctx, uint32_t crc, const uint8_t *buffer, size_t le
 /***   log.h                                                               ***/
 /*****************************************************************************/
 
-int av_log_level = AV_LOG_INFO;
+int mlp_av_log_level = AV_LOG_INFO;
 
-void av_log_default_callback(void* avctx, int level, const char* fmt, va_list vl) {
-	if (level > av_log_level)
+void mlp_av_log_default_callback(void* avctx, int level, const char* fmt, va_list vl) {
+	if (level > mlp_av_log_level)
 		return;
 	vfprintf(stderr, fmt, vl);
 }
 
-static void (*av_log_callback)(void* avctx, int level , const char* fmt, va_list vl) = av_log_default_callback;
+static void (*mlp_av_log_callback)(void* avctx, int level , const char* fmt, va_list vl) = mlp_av_log_default_callback;
 
 void av_log(void* avctx, int level, const char* fmt, ...) {
 	va_list vl;
 	va_start(vl, fmt);
-	av_vlog(avctx, level, fmt, vl);
+	mlp_av_vlog(avctx, level, fmt, vl);
 	va_end(vl);
 }
 
-void av_vlog(void* avcl, int level, const char *fmt, va_list vl) {
-	av_log_callback(avcl, level, fmt, vl);
+void mlp_av_vlog(void* avcl, int level, const char *fmt, va_list vl) {
+	mlp_av_log_callback(avcl, level, fmt, vl);
 }
 
-int av_log_get_level() {
-	return av_log_level;
+int mlp_av_log_get_level() {
+	return mlp_av_log_level;
 }
 
-void av_log_set_level(int level) {
-	av_log_level = level;
+void mlp_av_log_set_level(int level) {
+	mlp_av_log_level = level;
 }
 
-void av_log_set_callback(void (*callback)(void* avctx, int level , const char* fmt, va_list vl)) {
-	av_log_callback = callback;
+void mlp_av_log_set_callback(void (*callback)(void* avctx, int level , const char* fmt, va_list vl)) {
+	mlp_av_log_callback = callback;
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -72,7 +72,7 @@ decoder_seek_error(gcc_unused Decoder &decoder)
 {
 }
 
-InputStream *
+InputStreamPtr
 decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
 {
 	return InputStream::OpenReady(uri, decoder.mutex, decoder.cond, error);

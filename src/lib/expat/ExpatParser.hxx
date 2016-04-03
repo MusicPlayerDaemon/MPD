@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,19 @@
 
 #include <expat.h>
 
+#include <stdexcept>
+
 class InputStream;
 class Error;
+
+class ExpatError final : public std::runtime_error {
+public:
+	ExpatError(XML_Error code)
+		:std::runtime_error(XML_ErrorString(code)) {}
+
+	ExpatError(XML_Parser parser)
+		:ExpatError(XML_GetErrorCode(parser)) {}
+};
 
 class ExpatParser final {
 	const XML_Parser parser;
@@ -41,6 +52,9 @@ public:
 		XML_ParserFree(parser);
 	}
 
+	ExpatParser(const ExpatParser &) = delete;
+	ExpatParser &operator=(const ExpatParser &) = delete;
+
 	void SetElementHandler(XML_StartElementHandler start,
 			       XML_EndElementHandler end) {
 		XML_SetElementHandler(parser, start, end);
@@ -50,8 +64,7 @@ public:
 		XML_SetCharacterDataHandler(parser, charhndl);
 	}
 
-	bool Parse(const char *data, size_t length, bool is_final,
-		   Error &error);
+	void Parse(const char *data, size_t length, bool is_final);
 
 	bool Parse(InputStream &is, Error &error);
 
@@ -80,9 +93,8 @@ public:
 		parser.SetCharacterDataHandler(CharacterData);
 	}
 
-	bool Parse(const char *data, size_t length, bool is_final,
-		   Error &error) {
-		return parser.Parse(data, length, is_final, error);
+	void Parse(const char *data, size_t length, bool is_final) {
+		parser.Parse(data, length, is_final);
 	}
 
 	bool Parse(InputStream &is, Error &error) {

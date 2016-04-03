@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,7 @@
 
 struct LightSong;
 class Storage;
+class Path;
 
 class DetachedSong {
 	friend DetachedSong DatabaseDetachSong(const Storage &db,
@@ -187,6 +188,14 @@ public:
 		tag = std::move(other.tag);
 	}
 
+	/**
+	 * Similar to the MoveTagFrom(), but move only the #TagItem
+	 * array.
+	 */
+	void MoveTagItemsFrom(DetachedSong &&other) {
+		tag.MoveItemsFrom(std::move(other.tag));
+	}
+
 	time_t GetLastModified() const {
 		return mtime;
 	}
@@ -220,6 +229,11 @@ public:
 	 * @return true on success
 	 */
 	bool Update();
+
+	/**
+	 * Load #tag and #mtime from a local file.
+	 */
+	bool LoadFile(Path path);
 };
 
 #endif

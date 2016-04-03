@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,10 +21,10 @@
 #define MPD_FFMPEG_METADATA_HXX
 
 struct AVDictionary;
-struct tag_handler;
+struct TagHandler;
 
 void
 FfmpegScanDictionary(AVDictionary *dict,
-		     const tag_handler *handler, void *handler_ctx);
+		     const TagHandler &handler, void *handler_ctx);
 
 #endif

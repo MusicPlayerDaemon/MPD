@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,8 +21,8 @@
 #define MPD_INPUT_LOCAL_OPEN_HXX
 
 #include "check.h"
+#include "Ptr.hxx"
 
-class InputStream;
 class Path;
 class Mutex;
 class Cond;
@@ -32,7 +32,7 @@ class Error;
  * Open a "local" file.  This is a wrapper for the input plugins
  * "file" and "archive".
  */
-InputStream *
+InputStreamPtr
 OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond, Error &error);
 
 #endif

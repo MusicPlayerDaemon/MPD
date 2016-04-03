@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,14 +26,8 @@
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/Traits.hxx"
 #include "fs/FileInfo.hxx"
-#include "decoder/DecoderList.hxx"
-#include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
-#include "tag/TagHandler.hxx"
-#include "tag/TagId3.hxx"
-#include "tag/ApeTag.hxx"
 #include "TagFile.hxx"
 #include "TagStream.hxx"
 
@@ -43,7 +37,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <sys/stat.h>
 
 #ifdef ENABLE_DATABASE
 
@@ -54,16 +47,7 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 	assert(strchr(path_utf8, '\n') == nullptr);
 
 	Song *song = NewFile(path_utf8, parent);
-
-	//in archive ?
-	bool success =
-#ifdef ENABLE_ARCHIVE
-		parent.device == DEVICE_INARCHIVE
-		? song->UpdateFileInArchive(storage)
-		:
-#endif
-		song->UpdateFile(storage);
-	if (!success) {
+	if (!song->UpdateFile(storage)) {
 		song->Free();
 		return nullptr;
 	}
@@ -72,17 +56,6 @@ Song::LoadFile(Storage &storage, const char *path_utf8, Directory &parent)
 }
 
 #endif
-
-/**
- * Attempts to load APE or ID3 tags from the specified file.
- */
-static bool
-tag_scan_fallback(Path path,
-		  const struct tag_handler *handler, void *handler_ctx)
-{
-	return tag_ape_scan2(path, handler, handler_ctx) ||
-		tag_id3_scan(path, handler, handler_ctx);
-}
 
 #ifdef ENABLE_DATABASE
 
@@ -104,16 +77,11 @@ Song::UpdateFile(Storage &storage)
 	if (path_fs.IsNull()) {
 		const auto absolute_uri =
 			storage.MapUTF8(relative_uri.c_str());
-		if (!tag_stream_scan(absolute_uri.c_str(),
-				     full_tag_handler, &tag_builder))
+		if (!tag_stream_scan(absolute_uri.c_str(), tag_builder))
 			return false;
 	} else {
-		if (!tag_file_scan(path_fs, full_tag_handler, &tag_builder))
+		if (!tag_file_scan(path_fs, tag_builder))
 			return false;
-
-		if (tag_builder.IsEmpty())
-			tag_scan_fallback(path_fs, &full_tag_handler,
-					  &tag_builder);
 	}
 
 	mtime = info.mtime;
@@ -125,26 +93,41 @@ Song::UpdateFile(Storage &storage)
 
 #ifdef ENABLE_ARCHIVE
 
-bool
-Song::UpdateFileInArchive(const Storage &storage)
+Song *
+Song::LoadFromArchive(ArchiveFile &archive, const char *name_utf8,
+		      Directory &parent)
 {
-	/* check if there's a suffix and a plugin */
+	assert(!uri_has_scheme(name_utf8));
+	assert(strchr(name_utf8, '\n') == nullptr);
 
-	const char *suffix = uri_get_suffix(uri);
-	if (suffix == nullptr)
-		return false;
+	Song *song = NewFile(name_utf8, parent);
 
-	if (!decoder_plugins_supports_suffix(suffix))
-		return false;
+	if (!song->UpdateFileInArchive(archive)) {
+		song->Free();
+		return nullptr;
+	}
 
-	const auto path_fs = parent->IsRoot()
-		? storage.MapFS(uri)
-		: storage.MapChildFS(parent->GetPath(), uri);
-	if (path_fs.IsNull())
-		return false;
+	return song;
+}
+
+bool
+Song::UpdateFileInArchive(ArchiveFile &archive)
+{
+	assert(parent != nullptr);
+	assert(parent->device == DEVICE_INARCHIVE);
+
+	std::string path_utf8(uri);
+
+	for (const Directory *directory = parent;
+	     directory->parent != nullptr &&
+		     directory->parent->device == DEVICE_INARCHIVE;
+	     directory = directory->parent) {
+		path_utf8.insert(path_utf8.begin(), '/');
+		path_utf8.insert(0, directory->GetName());
+	}
 
 	TagBuilder tag_builder;
-	if (!tag_archive_scan(path_fs, full_tag_handler, &tag_builder))
+	if (!tag_archive_scan(archive, path_utf8.c_str(), tag_builder))
 		return false;
 
 	tag_builder.Commit(tag);
@@ -154,31 +137,34 @@ Song::UpdateFileInArchive(const Storage &storage)
 #endif
 
 bool
+DetachedSong::LoadFile(Path path)
+{
+	FileInfo fi;
+	if (!GetFileInfo(path, fi) || !fi.IsRegular())
+		return false;
+
+	TagBuilder tag_builder;
+	if (!tag_file_scan(path, tag_builder))
+		return false;
+
+	mtime = fi.GetModificationTime();
+	tag_builder.Commit(tag);
+	return true;
+}
+
+bool
 DetachedSong::Update()
 {
 	if (IsAbsoluteFile()) {
 		const AllocatedPath path_fs =
 			AllocatedPath::FromUTF8(GetRealURI());
-
-		FileInfo fi;
-		if (!GetFileInfo(path_fs, fi) || !fi.IsRegular())
+		if (path_fs.IsNull())
 			return false;
 
-		TagBuilder tag_builder;
-		if (!tag_file_scan(path_fs, full_tag_handler, &tag_builder))
-			return false;
-
-		if (tag_builder.IsEmpty())
-			tag_scan_fallback(path_fs, &full_tag_handler,
-					  &tag_builder);
-
-		mtime = fi.GetModificationTime();
-		tag_builder.Commit(tag);
-		return true;
+		return LoadFile(path_fs);
 	} else if (IsRemote()) {
 		TagBuilder tag_builder;
-		if (!tag_stream_scan(uri.c_str(), full_tag_handler,
-				     &tag_builder))
+		if (!tag_stream_scan(uri.c_str(), tag_builder))
 			return false;
 
 		mtime = 0;

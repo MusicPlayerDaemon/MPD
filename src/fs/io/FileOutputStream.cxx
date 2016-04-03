@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,23 +20,11 @@
 #include "config.h"
 #include "FileOutputStream.hxx"
 #include "fs/FileSystem.hxx"
-#include "util/Error.hxx"
-
-FileOutputStream *
-FileOutputStream::Create(Path path, Error &error)
-{
-	FileOutputStream *f = new FileOutputStream(path, error);
-	if (!f->IsDefined()) {
-		delete f;
-		f = nullptr;
-	}
-
-	return f;
-}
+#include "system/Error.hxx"
 
 #ifdef WIN32
 
-FileOutputStream::FileOutputStream(Path _path, Error &error)
+FileOutputStream::FileOutputStream(Path _path)
 	:BaseFileOutputStream(_path)
 {
 	SetHandle(CreateFile(_path.c_str(), GENERIC_WRITE, 0, nullptr,
@@ -44,7 +32,7 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 			     FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			     nullptr));
 	if (!IsDefined())
-		error.FormatLastError("Failed to create %s",
+		throw FormatLastError("Failed to create %s",
 				      GetPath().ToUTF8().c_str());
 }
 
@@ -59,35 +47,27 @@ BaseFileOutputStream::Tell() const
 	return uint64_t(high) << 32 | uint64_t(low);
 }
 
-bool
-BaseFileOutputStream::Write(const void *data, size_t size, Error &error)
+void
+BaseFileOutputStream::Write(const void *data, size_t size)
 {
 	assert(IsDefined());
 
 	DWORD nbytes;
-	if (!WriteFile(handle, data, size, &nbytes, nullptr)) {
-		error.FormatLastError("Failed to write to %s",
-				      path.ToUTF8().c_str());
-		return false;
-	}
+	if (!WriteFile(handle, data, size, &nbytes, nullptr))
+		throw FormatLastError("Failed to write to %s",
+				      GetPath().c_str());
 
-	if (size_t(nbytes) != size) {
-		error.FormatLastError(ERROR_DISK_FULL,
-				      "Failed to write to %s",
-				      path.ToUTF8().c_str());
-		return false;
-	}
-
-	return true;
+	if (size_t(nbytes) != size)
+		throw FormatLastError(ERROR_DISK_FULL, "Failed to write to %s",
+				      GetPath().c_str());
 }
 
-bool
-FileOutputStream::Commit(gcc_unused Error &error)
+void
+FileOutputStream::Commit()
 {
 	assert(IsDefined());
 
 	Close();
-	return true;
 }
 
 void
@@ -128,7 +108,7 @@ OpenTempFile(FileDescriptor &fd, Path path)
 
 #endif /* HAVE_LINKAT */
 
-FileOutputStream::FileOutputStream(Path _path, Error &error)
+FileOutputStream::FileOutputStream(Path _path)
 	:BaseFileOutputStream(_path)
 {
 #ifdef HAVE_LINKAT
@@ -140,7 +120,7 @@ FileOutputStream::FileOutputStream(Path _path, Error &error)
 		if (!SetFD().Open(GetPath().c_str(),
 				  O_WRONLY|O_CREAT|O_TRUNC,
 				  0666))
-			error.FormatErrno("Failed to create %s",
+			throw FormatErrno("Failed to create %s",
 					  GetPath().c_str());
 #ifdef HAVE_LINKAT
 	}
@@ -153,26 +133,21 @@ BaseFileOutputStream::Tell() const
 	return fd.Tell();
 }
 
-bool
-BaseFileOutputStream::Write(const void *data, size_t size, Error &error)
+void
+BaseFileOutputStream::Write(const void *data, size_t size)
 {
 	assert(IsDefined());
 
 	ssize_t nbytes = fd.Write(data, size);
-	if (nbytes < 0) {
-		error.FormatErrno("Failed to write to %s", GetPath().c_str());
-		return false;
-	} else if ((size_t)nbytes < size) {
-		error.FormatErrno(ENOSPC,
-				  "Failed to write to %s", GetPath().c_str());
-		return false;
-	}
-
-	return true;
+	if (nbytes < 0)
+		throw FormatErrno("Failed to write to %s", GetPath().c_str());
+	else if ((size_t)nbytes < size)
+		throw FormatErrno(ENOSPC, "Failed to write to %s",
+				  GetPath().c_str());
 }
 
-bool
-FileOutputStream::Commit(Error &error)
+void
+FileOutputStream::Commit()
 {
 	assert(IsDefined());
 
@@ -185,20 +160,20 @@ FileOutputStream::Commit(Error &error)
 		snprintf(fd_path, sizeof(fd_path), "/proc/self/fd/%d",
 			 GetFD().Get());
 		if (linkat(AT_FDCWD, fd_path, AT_FDCWD, GetPath().c_str(),
-			   AT_SYMLINK_FOLLOW) < 0) {
-			error.FormatErrno("Failed to commit %s",
+			   AT_SYMLINK_FOLLOW) < 0)
+			throw FormatErrno("Failed to commit %s",
 					  GetPath().c_str());
-			Close();
-			return false;
-		}
 	}
 #endif
 
-	bool success = Close();
-	if (!success)
-		error.FormatErrno("Failed to commit %s", GetPath().c_str());
-
-	return success;
+	if (!Close()) {
+#ifdef WIN32
+		throw FormatLastError("Failed to commit %s",
+				      GetPath().ToUTF8().c_str());
+#else
+		throw FormatErrno("Failed to commit %s", GetPath().c_str());
+#endif
+	}
 }
 
 void
@@ -216,7 +191,7 @@ FileOutputStream::Cancel()
 
 #endif
 
-AppendFileOutputStream::AppendFileOutputStream(Path _path, Error &error)
+AppendFileOutputStream::AppendFileOutputStream(Path _path)
 	:BaseFileOutputStream(_path)
 {
 #ifdef WIN32
@@ -225,34 +200,34 @@ AppendFileOutputStream::AppendFileOutputStream(Path _path, Error &error)
 			     FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			     nullptr));
 	if (!IsDefined())
-		error.FormatLastError("Failed to append to %s",
+		throw FormatLastError("Failed to append to %s",
 				      GetPath().ToUTF8().c_str());
 
 	if (!SeekEOF()) {
-		error.FormatLastError("Failed seek end-of-file of %s",
-				      GetPath().ToUTF8().c_str());
+		auto code = GetLastError();
 		Close();
+		throw FormatLastError(code, "Failed seek end-of-file of %s",
+				      GetPath().ToUTF8().c_str());
 	}
 #else
 	if (!SetFD().Open(GetPath().c_str(),
 			  O_WRONLY|O_APPEND))
-		error.FormatErrno("Failed to append to %s",
+		throw FormatErrno("Failed to append to %s",
 				  GetPath().c_str());
 #endif
 }
 
-bool
-AppendFileOutputStream::Commit(gcc_unused Error &error)
+void
+AppendFileOutputStream::Commit()
 {
 	assert(IsDefined());
 
+	if (!Close()) {
 #ifdef WIN32
-	return Close();
+		throw FormatLastError("Failed to commit %s",
+				      GetPath().ToUTF8().c_str());
 #else
-	bool success = Close();
-	if (!success)
-		error.FormatErrno("Failed to commit %s", GetPath().c_str());
-
-	return success;
+		throw FormatErrno("Failed to commit %s", GetPath().c_str());
 #endif
+	}
 }

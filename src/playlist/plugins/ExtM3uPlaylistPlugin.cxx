@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,9 @@
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
 #include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "input/TextInputStream.hxx"
+#include "input/InputStream.hxx"
 
 #include <string.h>
 #include <stdlib.h>
@@ -34,28 +36,36 @@ class ExtM3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
 
 public:
-	ExtM3uPlaylist(InputStream &is)
-		:tis(is) {
+	ExtM3uPlaylist(InputStreamPtr &&is)
+		:tis(std::move(is)) {
 	}
 
-	bool CheckFirstLine() {
+	/**
+	 * @return nullptr if ExtM3U was recognized, or the original
+	 * InputStream on error
+	 */
+	InputStreamPtr CheckFirstLine() {
 		char *line = tis.ReadLine();
 		if (line == nullptr)
-			return false;
+			return tis.StealInputStream();
 
 		StripRight(line);
-		return strcmp(line, "#EXTM3U") == 0;
+		if (strcmp(line, "#EXTM3U") != 0)
+			return tis.StealInputStream();
+
+		return nullptr;
 	}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static SongEnumerator *
-extm3u_open_stream(InputStream &is)
+extm3u_open_stream(InputStreamPtr &&is)
 {
-	ExtM3uPlaylist *playlist = new ExtM3uPlaylist(is);
+	ExtM3uPlaylist *playlist = new ExtM3uPlaylist(std::move(is));
 
-	if (!playlist->CheckFirstLine()) {
+	is = playlist->CheckFirstLine();
+	if (is) {
 		/* no EXTM3U header: fall back to the plain m3u
 		   plugin */
 		delete playlist;
@@ -104,7 +114,7 @@ extm3u_parse_tag(const char *line)
 	return tag.Commit();
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 ExtM3uPlaylist::NextSong()
 {
 	Tag tag;
@@ -125,7 +135,7 @@ ExtM3uPlaylist::NextSong()
 		line_s = StripLeft(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	return new DetachedSong(line_s, std::move(tag));
+	return std::unique_ptr<DetachedSong>(new DetachedSong(line_s, std::move(tag)));
 }
 
 static const char *const extm3u_suffixes[] = {

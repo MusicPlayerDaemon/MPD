@@ -30,7 +30,6 @@
 #include "config.h"
 #include "AllocatedSocketAddress.hxx"
 
-#include <assert.h>
 #include <string.h>
 
 #ifdef HAVE_UN

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,9 +22,7 @@
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
-#include "util/Domain.hxx"
 #include "PidFile.hxx"
-#include "Log.hxx"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -37,7 +35,9 @@
 #include <grp.h>
 #endif
 
-static constexpr Domain daemon_domain("daemon");
+#ifndef WCOREDUMP
+#define WCOREDUMP(v) 0
+#endif
 
 #ifndef WIN32
 
@@ -65,28 +65,17 @@ static int detach_fd = -1;
 void
 daemonize_kill(void)
 {
-	FILE *fp;
-	int pid, ret;
-
 	if (pidfile.IsNull())
 		FatalError("no pid_file specified in the config file");
 
-	fp = FOpen(pidfile, PATH_LITERAL("r"));
-	if (fp == nullptr) {
-		const std::string utf8 = pidfile.ToUTF8();
-		FormatFatalSystemError("Unable to open pid file \"%s\"",
-				       utf8.c_str());
-	}
-
-	if (fscanf(fp, "%i", &pid) != 1) {
+	const pid_t pid = ReadPidFile(pidfile);
+	if (pid < 0) {
 		const std::string utf8 = pidfile.ToUTF8();
 		FormatFatalError("unable to read the pid from file \"%s\"",
 				 utf8.c_str());
 	}
-	fclose(fp);
 
-	ret = kill(pid, SIGTERM);
-	if (ret < 0)
+	if (kill(pid, SIGTERM) < 0)
 		FormatFatalSystemError("unable to kill process %i",
 				       int(pid));
 
@@ -113,7 +102,7 @@ daemonize_set_user(void)
 				       (int)user_gid);
 	}
 
-#ifdef _BSD_SOURCE
+#ifdef HAVE_INITGROUPS
 	/* init supplementary groups
 	 * (must be done before we change our uid)
 	 */

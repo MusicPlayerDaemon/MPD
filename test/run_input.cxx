@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "TagSave.hxx"
-#include "stdbin.h"
 #include "tag/Tag.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "input/InputStream.hxx"
@@ -119,20 +118,20 @@ int main(int argc, char **argv)
 
 	/* open the stream and dump it */
 
-	Mutex mutex;
-	Cond cond;
-
-	InputStream *is = InputStream::OpenReady(argv[1], mutex, cond, error);
 	int ret;
-	if (is != NULL) {
-		ret = dump_input_stream(is);
-		delete is;
-	} else {
-		if (error.IsDefined())
-			LogError(error);
-		else
-			fprintf(stderr, "input_stream::Open() failed\n");
-		ret = EXIT_FAILURE;
+	{
+		Mutex mutex;
+		Cond cond;
+		auto is = InputStream::OpenReady(argv[1], mutex, cond, error);
+		if (is) {
+			ret = dump_input_stream(is.get());
+		} else {
+			if (error.IsDefined())
+				LogError(error);
+			else
+				fprintf(stderr, "input_stream::Open() failed\n");
+			ret = EXIT_FAILURE;
+		}
 	}
 
 	/* deinitialize everything */

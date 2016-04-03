@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -95,7 +95,7 @@ class RecorderOutput {
 	/**
 	 * Writes pending data from the encoder to the output file.
 	 */
-	bool EncoderToFile(Error &error);
+	void EncoderToFile();
 
 	void SendTag(const Tag &tag);
 
@@ -175,13 +175,12 @@ RecorderOutput::Create(const ConfigBlock &block, Error &error)
 	return recorder;
 }
 
-inline bool
-RecorderOutput::EncoderToFile(Error &error)
+inline void
+RecorderOutput::EncoderToFile()
 {
 	assert(file != nullptr);
-	assert(file->IsDefined());
 
-	return EncoderToOutputStream(*file, *encoder, error);
+	EncoderToOutputStream(*file, *encoder);
 }
 
 inline bool
@@ -192,9 +191,12 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 	if (!HasDynamicPath()) {
 		assert(!path.IsNull());
 
-		file = FileOutputStream::Create(path, error);
-		if (file == nullptr)
+		try {
+			file = new FileOutputStream(path);
+		} catch (const std::exception &e) {
+			error.Set(recorder_domain, e.what());
 			return false;
+		}
 	} else {
 		/* don't open the file just yet; wait until we have
 		   a tag that we can use to build the path */
@@ -211,9 +213,11 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 	}
 
 	if (!HasDynamicPath()) {
-		if (!EncoderToFile(error)) {
+		try {
+			EncoderToFile();
+		} catch (const std::exception &e) {
 			encoder->Close();
-			delete file;
+			error.Set(recorder_domain, e.what());
 			return false;
 		}
 	} else {
@@ -235,15 +239,28 @@ RecorderOutput::Commit(Error &error)
 
 	/* flush the encoder and write the rest to the file */
 
-	bool success = encoder_end(encoder, error) &&
-		EncoderToFile(error);
+	bool success = encoder_end(encoder, error);
+	if (success) {
+		try {
+			EncoderToFile();
+		} catch (...) {
+			encoder->Close();
+			throw;
+		}
+	}
 
 	/* now really close everything */
 
 	encoder->Close();
 
-	if (success && !file->Commit(error))
-		success = false;
+	if (success) {
+		try {
+			file->Commit();
+		} catch (...) {
+			delete file;
+			throw;
+		}
+	}
 
 	delete file;
 
@@ -261,9 +278,13 @@ RecorderOutput::Close()
 		return;
 	}
 
-	Error error;
-	if (!Commit(error))
-		LogError(error);
+	try {
+		Error error;
+		if (!Commit(error))
+			LogError(error);
+	} catch (const std::exception &e) {
+		LogError(e);
+	}
 
 	if (HasDynamicPath()) {
 		assert(!path.IsNull());
@@ -279,9 +300,13 @@ RecorderOutput::FinishFormat()
 	if (file == nullptr)
 		return;
 
-	Error error;
-	if (!Commit(error))
-		LogError(error);
+	try {
+		Error error;
+		if (!Commit(error))
+			LogError(error);
+	} catch (const std::exception &e) {
+		LogError(e);
+	}
 
 	file = nullptr;
 	path.SetNull();
@@ -294,10 +319,13 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
 	assert(path.IsNull());
 	assert(file == nullptr);
 
-	FileOutputStream *new_file =
-		FileOutputStream::Create(new_path, error);
-	if (new_file == nullptr)
+	FileOutputStream *new_file;
+	try {
+		new_file = new FileOutputStream(path);
+	} catch (const std::exception &e) {
+		error.Set(recorder_domain, e.what());
 		return false;
+	}
 
 	AudioFormat new_audio_format = effective_audio_format;
 	if (!encoder->Open(new_audio_format, error)) {
@@ -309,9 +337,12 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
 	   AudioFormat as before */
 	assert(new_audio_format == effective_audio_format);
 
-	if (!EncoderToOutputStream(*new_file, *encoder, error)) {
+	try {
+		EncoderToOutputStream(*new_file, *encoder);
+	} catch (const std::exception &e) {
 		encoder->Close();
 		delete new_file;
+		error.Set(recorder_domain, e.what());
 		return false;
 	}
 
@@ -357,9 +388,19 @@ RecorderOutput::SendTag(const Tag &tag)
 	}
 
 	Error error;
-	if (!encoder_pre_tag(encoder, error) ||
-	    !EncoderToFile(error) ||
-	    !encoder_tag(encoder, tag, error))
+	if (!encoder_pre_tag(encoder, error)) {
+		LogError(error);
+		return;
+	}
+
+	try {
+		EncoderToFile();
+	} catch (const std::exception &e) {
+		LogError(e);
+		return;
+	}
+
+	if (!encoder_tag(encoder, tag, error))
 		LogError(error);
 }
 
@@ -374,9 +415,17 @@ RecorderOutput::Play(const void *chunk, size_t size, Error &error)
 		return size;
 	}
 
-	return encoder_write(encoder, chunk, size, error) &&
-		EncoderToFile(error)
-		? size : 0;
+	if (!encoder_write(encoder, chunk, size, error))
+		return 0;
+
+	try {
+		EncoderToFile();
+	} catch (const std::exception &e) {
+		error.Set(recorder_domain, e.what());
+		return 0;
+	}
+
+	return size;
 }
 
 typedef AudioOutputWrapper<RecorderOutput> Wrapper;

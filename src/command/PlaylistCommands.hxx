@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,43 +24,44 @@
 #include "Compiler.h"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
+class Response;
 
 gcc_const
 bool
 playlist_commands_available();
 
 CommandResult
-handle_save(Client &client, ConstBuffer<const char *> args);
+handle_save(Client &client, Request request, Response &response);
 
 CommandResult
-handle_load(Client &client, ConstBuffer<const char *> args);
+handle_load(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listplaylist(Client &client, ConstBuffer<const char *> args);
+handle_listplaylist(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listplaylistinfo(Client &client, ConstBuffer<const char *> args);
+handle_listplaylistinfo(Client &client, Request request, Response &response);
 
 CommandResult
-handle_rm(Client &client, ConstBuffer<const char *> args);
+handle_rm(Client &client, Request request, Response &response);
 
 CommandResult
-handle_rename(Client &client, ConstBuffer<const char *> args);
+handle_rename(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistdelete(Client &client, ConstBuffer<const char *> args);
+handle_playlistdelete(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistmove(Client &client, ConstBuffer<const char *> args);
+handle_playlistmove(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistclear(Client &client, ConstBuffer<const char *> args);
+handle_playlistclear(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistadd(Client &client, ConstBuffer<const char *> args);
+handle_playlistadd(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listplaylists(Client &client, ConstBuffer<const char *> args);
+handle_listplaylists(Client &client, Request request, Response &response);
 
 #endif

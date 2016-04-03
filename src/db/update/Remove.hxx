@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,8 +23,10 @@
 #include "check.h"
 #include "event/DeferredMonitor.hxx"
 #include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
 #include "Compiler.h"
+
+#include <forward_list>
+#include <string>
 
 struct Song;
 class DatabaseListener;
@@ -36,15 +38,13 @@ class DatabaseListener;
 class UpdateRemoveService final : DeferredMonitor {
 	DatabaseListener &listener;
 
-	Mutex remove_mutex;
-	Cond remove_cond;
+	Mutex mutex;
 
-	const Song *removed_song;
+	std::forward_list<std::string> uris;
 
 public:
 	UpdateRemoveService(EventLoop &_loop, DatabaseListener &_listener)
-		:DeferredMonitor(_loop), listener(_listener),
-		 removed_song(nullptr){}
+		:DeferredMonitor(_loop), listener(_listener) {}
 
 	/**
 	 * Sends a signal to the main thread which will in turn remove
@@ -52,7 +52,7 @@ public:
 	 * This serialized access is implemented to avoid excessive
 	 * locking.
 	 */
-	void Remove(const Song *song);
+	void Remove(std::string &&uri);
 
 private:
 	/* virtual methods from class DeferredMonitor */

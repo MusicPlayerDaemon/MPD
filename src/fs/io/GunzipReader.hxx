@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,10 @@
 #include "check.h"
 #include "Reader.hxx"
 #include "util/StaticFifoBuffer.hxx"
+#include "lib/zlib/Error.hxx"
 #include "Compiler.h"
 
 #include <zlib.h>
-
-class Error;
-class Domain;
 
 /**
  * A filter that decompresses data using zlib.
@@ -44,25 +42,19 @@ class GunzipReader final : public Reader {
 
 public:
 	/**
-	 * Construct the filter.  Call IsDefined() to check whether
-	 * the constructor has succeeded.  If not, #error will hold
-	 * information about the failure.
+	 * Construct the filter.
 	 */
-	GunzipReader(Reader &_next, Error &error);
-	~GunzipReader();
+	GunzipReader(Reader &_next) throw(ZlibError);
 
-	/**
-	 * Check whether the constructor has succeeded.
-	 */
-	bool IsDefined() const {
-		return z.opaque == nullptr;
+	~GunzipReader() {
+		inflateEnd(&z);
 	}
 
 	/* virtual methods from class Reader */
-	virtual size_t Read(void *data, size_t size, Error &error) override;
+	size_t Read(void *data, size_t size) override;
 
 private:
-	bool FillBuffer(Error &error);
+	bool FillBuffer();
 };
 
 #endif

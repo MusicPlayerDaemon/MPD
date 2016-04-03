@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -51,72 +51,63 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	const auto encoder = encoder_init(*plugin, block, IgnoreError());
 	assert(encoder != NULL);
 
-	/* open the encoder */
+	try {
+		/* open the encoder */
 
-	AudioFormat audio_format(44100, SampleFormat::S16, 2);
-	success = encoder->Open(audio_format, IgnoreError());
-	assert(success);
+		AudioFormat audio_format(44100, SampleFormat::S16, 2);
+		success = encoder->Open(audio_format, IgnoreError());
+		assert(success);
 
-	StdioOutputStream os(stdout);
+		StdioOutputStream os(stdout);
 
-	Error error;
-	if (!EncoderToOutputStream(os, *encoder, error)) {
-		LogError(error);
+		EncoderToOutputStream(os, *encoder);
+
+		/* write a block of data */
+
+		success = encoder_write(encoder, zero, sizeof(zero), IgnoreError());
+		assert(success);
+
+		EncoderToOutputStream(os, *encoder);
+
+		/* write a tag */
+
+		success = encoder_pre_tag(encoder, IgnoreError());
+		assert(success);
+
+		EncoderToOutputStream(os, *encoder);
+
+		Tag tag;
+
+		{
+			TagBuilder tag_builder;
+			tag_builder.AddItem(TAG_ARTIST, "Foo");
+			tag_builder.AddItem(TAG_TITLE, "Bar");
+			tag_builder.Commit(tag);
+		}
+
+		success = encoder_tag(encoder, tag, IgnoreError());
+		assert(success);
+
+		EncoderToOutputStream(os, *encoder);
+
+		/* write another block of data */
+
+		success = encoder_write(encoder, zero, sizeof(zero), IgnoreError());
+		assert(success);
+
+		/* finish */
+
+		success = encoder_end(encoder, IgnoreError());
+		assert(success);
+
+		EncoderToOutputStream(os, *encoder);
+
+		encoder->Close();
+		encoder->Dispose();
+
+		return EXIT_SUCCESS;
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-
-	/* write a block of data */
-
-	success = encoder_write(encoder, zero, sizeof(zero), IgnoreError());
-	assert(success);
-
-	if (!EncoderToOutputStream(os, *encoder, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
-	/* write a tag */
-
-	success = encoder_pre_tag(encoder, IgnoreError());
-	assert(success);
-
-	if (!EncoderToOutputStream(os, *encoder, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
-	Tag tag;
-
-	{
-		TagBuilder tag_builder;
-		tag_builder.AddItem(TAG_ARTIST, "Foo");
-		tag_builder.AddItem(TAG_TITLE, "Bar");
-		tag_builder.Commit(tag);
-	}
-
-	success = encoder_tag(encoder, tag, IgnoreError());
-	assert(success);
-
-	if (!EncoderToOutputStream(os, *encoder, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
-	/* write another block of data */
-
-	success = encoder_write(encoder, zero, sizeof(zero), IgnoreError());
-	assert(success);
-
-	/* finish */
-
-	success = encoder_end(encoder, IgnoreError());
-	assert(success);
-
-	if (!EncoderToOutputStream(os, *encoder, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
-	encoder->Close();
-	encoder->Dispose();
 }

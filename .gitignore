@@ -83,3 +83,5 @@ tags
 /*.tar.bz2
 /*.tar.xz
 /mpd-*/
+
+__pycache__/

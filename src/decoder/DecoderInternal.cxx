@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -56,6 +56,13 @@ need_chunks(DecoderControl &dc)
 	return dc.command;
 }
 
+static DecoderCommand
+LockNeedChunks(DecoderControl &dc)
+{
+	const ScopeLock protect(dc.mutex);
+	return need_chunks(dc);
+}
+
 MusicChunk *
 Decoder::GetChunk()
 {
@@ -74,9 +81,7 @@ Decoder::GetChunk()
 			return chunk;
 		}
 
-		dc.Lock();
-		cmd = need_chunks(dc);
-		dc.Unlock();
+		cmd = LockNeedChunks(dc);
 	} while (cmd == DecoderCommand::NONE);
 
 	return nullptr;
@@ -97,8 +102,7 @@ Decoder::FlushChunk()
 
 	chunk = nullptr;
 
-	dc.Lock();
+	const ScopeLock protect(dc.mutex);
 	if (dc.client_is_waiting)
 		dc.client_cond.signal();
-	dc.Unlock();
 }

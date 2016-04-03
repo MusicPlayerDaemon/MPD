@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,11 +19,12 @@
 
 #include "config.h"
 #include "Registry.hxx"
-#include "OutputAPI.hxx"
+#include "OutputPlugin.hxx"
 #include "plugins/AlsaOutputPlugin.hxx"
 #include "plugins/AoOutputPlugin.hxx"
 #include "plugins/FifoOutputPlugin.hxx"
 #include "plugins/httpd/HttpdOutputPlugin.hxx"
+#include "plugins/HaikuOutputPlugin.hxx"
 #include "plugins/JackOutputPlugin.hxx"
 #include "plugins/NullOutputPlugin.hxx"
 #include "plugins/OpenALOutputPlugin.hxx"
@@ -50,6 +51,9 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #endif
 #ifdef HAVE_FIFO
 	&fifo_output_plugin,
+#endif
+#ifdef HAVE_HAIKU
+	&haiku_output_plugin,
 #endif
 #ifdef ENABLE_PIPE_OUTPUT
 	&pipe_output_plugin,

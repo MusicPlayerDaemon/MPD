@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,10 +22,9 @@
 #include "Instance.hxx"
 #include "CommandLine.hxx"
 #include "PlaylistFile.hxx"
-#include "PlaylistGlobal.hxx"
 #include "MusicChunk.hxx"
 #include "StateFile.hxx"
-#include "PlayerThread.hxx"
+#include "player/Thread.hxx"
 #include "Mapper.hxx"
 #include "Permission.hxx"
 #include "Listen.hxx"
@@ -38,7 +37,6 @@
 #include "Idle.hxx"
 #include "Log.hxx"
 #include "LogInit.hxx"
-#include "GlobalEvents.hxx"
 #include "input/Init.hxx"
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
@@ -51,10 +49,7 @@
 #include "pcm/PcmConvert.hxx"
 #include "unix/SignalHandlers.hxx"
 #include "system/FatalError.hxx"
-#include "util/UriUtil.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
-#include "thread/Id.hxx"
 #include "thread/Slack.hxx"
 #include "lib/icu/Init.hxx"
 #include "config/ConfigGlobal.hxx"
@@ -126,15 +121,11 @@
 static constexpr unsigned DEFAULT_BUFFER_SIZE = 4096;
 static constexpr unsigned DEFAULT_BUFFER_BEFORE_PLAY = 10;
 
-static constexpr Domain main_domain("main");
-
 #ifdef ANDROID
 Context *context;
 #endif
 
 Instance *instance;
-
-static StateFile *state_file;
 
 #ifdef ENABLE_DAEMON
 
@@ -195,7 +186,7 @@ glue_db_init_and_load(void)
 {
 	Error error;
 	instance->database =
-		CreateConfiguredDatabase(*instance->event_loop, *instance,
+		CreateConfiguredDatabase(instance->event_loop, *instance,
 					 error);
 	if (instance->database == nullptr) {
 		if (error.IsDefined())
@@ -223,14 +214,13 @@ glue_db_init_and_load(void)
 				   "because the database does not need it");
 	}
 
-	if (!instance->database->Open(error))
-		FatalError(error);
+	instance->database->Open();
 
 	if (!instance->database->IsPlugin(simple_db_plugin))
 		return true;
 
 	SimpleDatabase &db = *(SimpleDatabase *)instance->database;
-	instance->update = new UpdateService(*instance->event_loop, db,
+	instance->update = new UpdateService(instance->event_loop, db,
 					     static_cast<CompositeStorage &>(*instance->storage),
 					     *instance);
 
@@ -290,10 +280,10 @@ glue_state_file_init(Error &error)
 		config_get_unsigned(ConfigOption::STATE_FILE_INTERVAL,
 				    StateFile::DEFAULT_INTERVAL);
 
-	state_file = new StateFile(std::move(path_fs), interval,
-				   *instance->partition,
-				   *instance->event_loop);
-	state_file->Read();
+	instance->state_file = new StateFile(std::move(path_fs), interval,
+					     *instance->partition,
+					     instance->event_loop);
+	instance->state_file->Read();
 	return true;
 }
 
@@ -373,35 +363,17 @@ initialize_decoder_and_player(void)
 					    buffered_before_play);
 }
 
-/**
- * Handler for GlobalEvents::IDLE.
- */
-static void
-idle_event_emitted(void)
+void
+Instance::OnIdle(unsigned flags)
 {
 	/* send "idle" notifications to all subscribed
 	   clients */
-	unsigned flags = idle_get();
-	if (flags != 0)
-		instance->client_list->IdleAdd(flags);
+	client_list->IdleAdd(flags);
 
 	if (flags & (IDLE_PLAYLIST|IDLE_PLAYER|IDLE_MIXER|IDLE_OUTPUT) &&
 	    state_file != nullptr)
 		state_file->CheckModified();
 }
-
-#ifdef WIN32
-
-/**
- * Handler for GlobalEvents::SHUTDOWN.
- */
-static void
-shutdown_event_emitted(void)
-{
-	instance->event_loop->Break();
-}
-
-#endif
 
 #ifndef ANDROID
 
@@ -447,28 +419,28 @@ int mpd_main(int argc, char *argv[])
 	io_thread_init();
 	config_global_init();
 
+	try {
 #ifdef ANDROID
-	(void)argc;
-	(void)argv;
+		(void)argc;
+		(void)argv;
 
-	{
 		const auto sdcard = Environment::getExternalStorageDirectory();
 		if (!sdcard.IsNull()) {
 			const auto config_path =
 				AllocatedPath::Build(sdcard, "mpd.conf");
-			if (FileExists(config_path) &&
-			    !ReadConfigFile(config_path, error)) {
-				LogError(error);
-				return EXIT_FAILURE;
-			}
+			if (FileExists(config_path))
+				ReadConfigFile(config_path);
 		}
-	}
 #else
-	if (!parse_cmdline(argc, argv, &options, error)) {
-		LogError(error);
+		if (!parse_cmdline(argc, argv, &options, error)) {
+			LogError(error);
+			return EXIT_FAILURE;
+		}
+#endif
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-#endif
 
 #ifdef ENABLE_DAEMON
 	if (!glue_daemonize_init(&options, error)) {
@@ -486,7 +458,6 @@ int mpd_main(int argc, char *argv[])
 	}
 
 	instance = new Instance();
-	instance->event_loop = new EventLoop();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
@@ -507,7 +478,7 @@ int mpd_main(int argc, char *argv[])
 
 	initialize_decoder_and_player();
 
-	if (!listen_global_init(*instance->event_loop, *instance->partition,
+	if (!listen_global_init(instance->event_loop, *instance->partition,
 				error)) {
 		LogError(error);
 		return EXIT_FAILURE;
@@ -536,14 +507,8 @@ int mpd_main(int argc, char *argv[])
 }
 
 static int mpd_main_after_fork(struct options options)
-{
+try {
 	Error error;
-
-	GlobalEvents::Initialize(*instance->event_loop);
-	GlobalEvents::Register(GlobalEvents::IDLE, idle_event_emitted);
-#ifdef WIN32
-	GlobalEvents::Register(GlobalEvents::SHUTDOWN, shutdown_event_emitted);
-#endif
 
 	if (!ConfigureFS(error)) {
 		LogError(error);
@@ -556,7 +521,6 @@ static int mpd_main_after_fork(struct options options)
 	}
 
 	initPermissions();
-	playlist_global_init();
 	spl_global_init();
 #ifdef ENABLE_ARCHIVE
 	archive_plugin_init_all();
@@ -577,7 +541,7 @@ static int mpd_main_after_fork(struct options options)
 
 	command_init();
 	initAudioConfig();
-	instance->partition->outputs.Configure(*instance->event_loop,
+	instance->partition->outputs.Configure(instance->event_loop,
 					       instance->partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
@@ -596,7 +560,7 @@ static int mpd_main_after_fork(struct options options)
 #ifndef ANDROID
 	setup_log_output(options.log_stderr);
 
-	SignalHandlersInit(*instance->event_loop);
+	SignalHandlersInit(instance->event_loop);
 #endif
 
 	io_thread_start();
@@ -607,7 +571,7 @@ static int mpd_main_after_fork(struct options options)
 		FatalError(error);
 #endif
 
-	ZeroconfInit(*instance->event_loop);
+	ZeroconfInit(instance->event_loop);
 
 	StartPlayerThread(instance->partition->pc);
 
@@ -633,13 +597,13 @@ static int mpd_main_after_fork(struct options options)
 #ifdef ENABLE_INOTIFY
 		if (instance->storage != nullptr &&
 		    instance->update != nullptr)
-			mpd_inotify_init(*instance->event_loop,
+			mpd_inotify_init(instance->event_loop,
 					 *instance->storage,
 					 *instance->update,
 					 config_get_unsigned(ConfigOption::AUTO_UPDATE_DEPTH,
 							     INT_MAX));
 #else
-		FormatWarning(main_domain,
+		FormatWarning(config_domain,
 			      "inotify: auto_update was disabled. enable during compilation phase");
 #endif
 	}
@@ -649,7 +613,7 @@ static int mpd_main_after_fork(struct options options)
 
 	/* enable all audio outputs (if not already done by
 	   playlist_state_restore() */
-	instance->partition->pc.UpdateAudio();
+	instance->partition->pc.LockUpdateAudio();
 
 #ifdef WIN32
 	win32_app_started();
@@ -664,7 +628,7 @@ static int mpd_main_after_fork(struct options options)
 #endif
 
 	/* run the main loop */
-	instance->event_loop->Run();
+	instance->event_loop.Run();
 
 #ifdef WIN32
 	win32_app_stopping();
@@ -679,9 +643,9 @@ static int mpd_main_after_fork(struct options options)
 		instance->update->CancelAllAsync();
 #endif
 
-	if (state_file != nullptr) {
-		state_file->Write();
-		delete state_file;
+	if (instance->state_file != nullptr) {
+		instance->state_file->Write();
+		delete instance->state_file;
 	}
 
 	instance->partition->pc.Kill();
@@ -711,8 +675,6 @@ static int mpd_main_after_fork(struct options options)
 	sticker_global_finish();
 #endif
 
-	GlobalEvents::Deinitialize();
-
 	playlist_list_global_finish();
 	input_stream_global_finish();
 
@@ -733,7 +695,6 @@ static int mpd_main_after_fork(struct options options)
 #ifndef ANDROID
 	SignalHandlersFinish();
 #endif
-	delete instance->event_loop;
 	delete instance;
 	instance = nullptr;
 
@@ -749,6 +710,9 @@ static int mpd_main_after_fork(struct options options)
 
 	log_deinit();
 	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }
 
 #ifdef ANDROID
@@ -774,7 +738,7 @@ JNIEXPORT void JNICALL
 Java_org_musicpd_Bridge_shutdown(JNIEnv *, jclass)
 {
 	if (instance != nullptr)
-		instance->event_loop->Break();
+		instance->Shutdown();
 }
 
 #endif

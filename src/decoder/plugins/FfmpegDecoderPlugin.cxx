@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,6 @@
 #include "CheckAudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "LogV.hxx"
 
 extern "C" {
@@ -48,7 +47,6 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavformat/avio.h>
 #include <libavutil/avutil.h>
-#include <libavutil/log.h>
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 #include <libavutil/frame.h>
@@ -390,18 +388,18 @@ FfmpegParseMetaData(Decoder &decoder,
 
 static void
 FfmpegScanMetadata(const AVStream &stream,
-		   const tag_handler &handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx)
 {
-	FfmpegScanDictionary(stream.metadata, &handler, handler_ctx);
+	FfmpegScanDictionary(stream.metadata, handler, handler_ctx);
 }
 
 static void
 FfmpegScanMetadata(const AVFormatContext &format_context, int audio_stream,
-		   const tag_handler &handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx)
 {
 	assert(audio_stream >= 0);
 
-	FfmpegScanDictionary(format_context.metadata, &handler, handler_ctx);
+	FfmpegScanDictionary(format_context.metadata, handler, handler_ctx);
 	FfmpegScanMetadata(*format_context.streams[audio_stream],
 			   handler, handler_ctx);
 }
@@ -614,7 +612,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 static bool
 FfmpegScanStream(AVFormatContext &format_context,
-		 const struct tag_handler &handler, void *handler_ctx)
+		 const TagHandler &handler, void *handler_ctx)
 {
 	const int find_result =
 		avformat_find_stream_info(&format_context, nullptr);
@@ -627,7 +625,7 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 	const AVStream &stream = *format_context.streams[audio_stream];
 	if (stream.duration != (int64_t)AV_NOPTS_VALUE)
-		tag_handler_invoke_duration(&handler, handler_ctx,
+		tag_handler_invoke_duration(handler, handler_ctx,
 					    FromFfmpegTime(stream.duration,
 							   stream.time_base));
 
@@ -638,7 +636,7 @@ FfmpegScanStream(AVFormatContext &format_context,
 
 static bool
 ffmpeg_scan_stream(InputStream &is,
-		   const struct tag_handler *handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx)
 {
 	AVInputFormat *input_format = ffmpeg_probe(nullptr, is);
 	if (input_format == nullptr)
@@ -653,7 +651,7 @@ ffmpeg_scan_stream(InputStream &is,
 	if (f == nullptr)
 		return false;
 
-	bool result = FfmpegScanStream(*f, *handler, handler_ctx);
+	bool result = FfmpegScanStream(*f, handler, handler_ctx);
 	avformat_close_input(&f);
 	return result;
 }
@@ -678,7 +676,7 @@ static const char *const ffmpeg_suffixes[] = {
 	"mve", "mvi", "mxf", "nc", "nsv", "nut", "nuv", "oga", "ogm", "ogv",
 	"ogx", "oma", "ogg", "omg", "opus", "psp", "pva", "qcp", "qt", "r3d", "ra",
 	"ram", "rl2", "rm", "rmvb", "roq", "rpl", "rvc", "shn", "smk", "snd",
-	"sol", "son", "spx", "str", "swf", "tgi", "tgq", "tgv", "thp", "ts",
+	"sol", "son", "spx", "str", "swf", "tak", "tgi", "tgq", "tgv", "thp", "ts",
 	"tsp", "tta", "xa", "xvid", "uv", "uv2", "vb", "vid", "vob", "voc",
 	"vp6", "vmd", "wav", "webm", "wma", "wmv", "wsaud", "wsvga", "wv",
 	"wve",

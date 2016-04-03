@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,54 +23,55 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
+class Response;
 
 CommandResult
-handle_urlhandlers(Client &client, ConstBuffer<const char *> args);
+handle_urlhandlers(Client &client, Request request, Response &response);
 
 CommandResult
-handle_decoders(Client &client, ConstBuffer<const char *> args);
+handle_decoders(Client &client, Request request, Response &response);
 
 CommandResult
-handle_tagtypes(Client &client, ConstBuffer<const char *> args);
+handle_tagtypes(Client &client, Request request, Response &response);
 
 CommandResult
-handle_kill(Client &client, ConstBuffer<const char *> args);
+handle_kill(Client &client, Request request, Response &response);
 
 CommandResult
-handle_close(Client &client, ConstBuffer<const char *> args);
+handle_close(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listfiles(Client &client, ConstBuffer<const char *> args);
+handle_listfiles(Client &client, Request request, Response &response);
 
 CommandResult
-handle_lsinfo(Client &client, ConstBuffer<const char *> args);
+handle_lsinfo(Client &client, Request request, Response &response);
 
 CommandResult
-handle_update(Client &client, ConstBuffer<const char *> args);
+handle_update(Client &client, Request request, Response &response);
 
 CommandResult
-handle_rescan(Client &client, ConstBuffer<const char *> args);
+handle_rescan(Client &client, Request request, Response &response);
 
 CommandResult
-handle_setvol(Client &client, ConstBuffer<const char *> args);
+handle_setvol(Client &client, Request request, Response &response);
 
 CommandResult
-handle_volume(Client &client, ConstBuffer<const char *> args);
+handle_volume(Client &client, Request request, Response &response);
 
 CommandResult
-handle_stats(Client &client, ConstBuffer<const char *> args);
+handle_stats(Client &client, Request request, Response &response);
 
 CommandResult
-handle_ping(Client &client, ConstBuffer<const char *> args);
+handle_ping(Client &client, Request request, Response &response);
 
 CommandResult
-handle_password(Client &client, ConstBuffer<const char *> args);
+handle_password(Client &client, Request request, Response &response);
 
 CommandResult
-handle_config(Client &client, ConstBuffer<const char *> args);
+handle_config(Client &client, Request request, Response &response);
 
 CommandResult
-handle_idle(Client &client, ConstBuffer<const char *> args);
+handle_idle(Client &client, Request request, Response &response);
 
 #endif

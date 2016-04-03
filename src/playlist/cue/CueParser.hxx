@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,13 +21,12 @@
 #define MPD_CUE_PARSER_HXX
 
 #include "check.h"
+#include "DetachedSong.hxx"
 #include "tag/TagBuilder.hxx"
 #include "Compiler.h"
 
 #include <string>
-
-class DetachedSong;
-struct Tag;
+#include <memory>
 
 class CueParser {
 	enum {
@@ -55,7 +54,7 @@ class CueParser {
 		 * Ignore everything until the next "TRACK".
 		 */
 		IGNORE_TRACK,
-	} state;
+	} state = HEADER;
 
 	/**
 	 * Tags read from the CUE header.
@@ -74,37 +73,28 @@ class CueParser {
 	/**
 	 * The song currently being edited.
 	 */
-	DetachedSong *current;
+	std::unique_ptr<DetachedSong> current;
 
 	/**
 	 * The previous song.  It is remembered because its end_time
 	 * will be set to the current song's start time.
 	 */
-	DetachedSong *previous;
+	std::unique_ptr<DetachedSong> previous;
 
 	/**
 	 * A song that is completely finished and can be returned to
 	 * the caller via cue_parser_get().
 	 */
-	DetachedSong *finished;
-
-	/**
-	 * Set to true after previous.end_time has been updated to the
-	 * start time of the current song.
-	 */
-	bool last_updated;
+	std::unique_ptr<DetachedSong> finished;
 
 	/**
 	 * Tracks whether cue_parser_finish() has been called.  If
 	 * true, then all remaining (partial) results will be
 	 * delivered by cue_parser_get().
 	 */
-	bool end;
+	bool end = false;
 
 public:
-	CueParser();
-	~CueParser();
-
 	/**
 	 * Feed a text line from the CUE file into the parser.  Call
 	 * cue_parser_get() after this to see if a song has been finished.
@@ -125,7 +115,7 @@ public:
 	 * @return a song object that must be freed by the caller, or NULL if
 	 * no song was finished at this time
 	 */
-	DetachedSong *Get();
+	std::unique_ptr<DetachedSong> Get();
 
 private:
 	gcc_pure

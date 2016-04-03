@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,10 +21,10 @@
 #include "TagString.hxx"
 #include "util/Alloc.hxx"
 #include "util/WritableBuffer.hxx"
+#include "util/StringView.hxx"
 #include "util/UTF8.hxx"
 
 #include <assert.h>
-#include <string.h>
 #include <stdlib.h>
 
 gcc_pure
@@ -40,9 +40,9 @@ FindInvalidUTF8(const char *p, const char *const end)
 		/* now call the other SequenceLengthUTF8() overload
 		   which also validates the continuations */
 		const size_t t = SequenceLengthUTF8(p);
-		assert(s == t);
 		if (t == 0)
 			return p;
+		assert(s == t);
 
 		p += s;
 	}
@@ -54,14 +54,14 @@ FindInvalidUTF8(const char *p, const char *const end)
  * Replace invalid sequences with the question mark.
  */
 static WritableBuffer<char>
-patch_utf8(const char *src, size_t length, const char *_invalid)
+patch_utf8(StringView src, const char *_invalid)
 {
 	/* duplicate the string, and replace invalid bytes in that
 	   buffer */
-	char *dest = (char *)xmemdup(src, length);
-	char *const end = dest + length;
+	char *dest = (char *)xmemdup(src.data, src.size);
+	char *const end = dest + src.size;
 
-	char *invalid = dest + (_invalid - src);
+	char *invalid = dest + (_invalid - src.data);
 	do {
 		*invalid = '?';
 
@@ -69,19 +69,19 @@ patch_utf8(const char *src, size_t length, const char *_invalid)
 		invalid = const_cast<char *>(__invalid);
 	} while (invalid != nullptr);
 
-	return { dest, length };
+	return { dest, src.size };
 }
 
 static WritableBuffer<char>
-fix_utf8(const char *str, size_t length)
+fix_utf8(StringView p)
 {
 	/* check if the string is already valid UTF-8 */
-	const char *invalid = FindInvalidUTF8(str, str + length);
+	const char *invalid = FindInvalidUTF8(p.begin(), p.end());
 	if (invalid == nullptr)
 		return nullptr;
 
 	/* no, broken - patch invalid sequences */
-	return patch_utf8(str, length, invalid);
+	return patch_utf8(p, invalid);
 }
 
 static bool
@@ -91,11 +91,11 @@ char_is_non_printable(unsigned char ch)
 }
 
 static const char *
-find_non_printable(const char *p, size_t length)
+find_non_printable(StringView p)
 {
-	for (size_t i = 0; i < length; ++i)
-		if (char_is_non_printable(p[i]))
-			return p + i;
+	for (const char &ch : p)
+		if (char_is_non_printable(ch))
+			return &ch;
 
 	return nullptr;
 }
@@ -105,31 +105,29 @@ find_non_printable(const char *p, size_t length)
  * Returns nullptr if nothing needs to be cleared.
  */
 static WritableBuffer<char>
-clear_non_printable(const char *p, size_t length)
+clear_non_printable(StringView src)
 {
-	const char *first = find_non_printable(p, length);
+	const char *first = find_non_printable(src);
 	if (first == nullptr)
 		return nullptr;
 
-	char *dest = (char *)xmemdup(p, length);
+	char *dest = (char *)xmemdup(src.data, src.size);
 
-	for (size_t i = first - p; i < length; ++i)
+	for (size_t i = first - src.data; i < src.size; ++i)
 		if (char_is_non_printable(dest[i]))
 			dest[i] = ' ';
 
-	return { dest, length };
+	return { dest, src.size };
 }
 
 WritableBuffer<char>
-FixTagString(const char *p, size_t length)
+FixTagString(StringView p)
 {
-	auto utf8 = fix_utf8(p, length);
-	if (!utf8.IsNull()) {
-		p = utf8.data;
-		length = utf8.size;
-	}
+	auto utf8 = fix_utf8(p);
+	if (!utf8.IsNull())
+		p = {utf8.data, utf8.size};
 
-	WritableBuffer<char> cleared = clear_non_printable(p, length);
+	WritableBuffer<char> cleared = clear_non_printable(p);
 	if (cleared.IsNull())
 		cleared = utf8;
 	else

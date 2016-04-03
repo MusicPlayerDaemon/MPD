@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 /**
  * A callback table for receiving metadata of a song.
  */
-struct tag_handler {
+struct TagHandler {
 	/**
 	 * Declare the duration of a song.  Do not call
 	 * this when the duration could not be determined, because
@@ -53,50 +53,46 @@ struct tag_handler {
 };
 
 static inline void
-tag_handler_invoke_duration(const struct tag_handler *handler, void *ctx,
+tag_handler_invoke_duration(const TagHandler &handler, void *ctx,
 			    SongTime duration)
 {
-	assert(handler != nullptr);
-
-	if (handler->duration != nullptr)
-		handler->duration(duration, ctx);
+	if (handler.duration != nullptr)
+		handler.duration(duration, ctx);
 }
 
 static inline void
-tag_handler_invoke_tag(const struct tag_handler *handler, void *ctx,
+tag_handler_invoke_tag(const TagHandler &handler, void *ctx,
 		       TagType type, const char *value)
 {
-	assert(handler != nullptr);
 	assert((unsigned)type < TAG_NUM_OF_ITEM_TYPES);
 	assert(value != nullptr);
 
-	if (handler->tag != nullptr)
-		handler->tag(type, value, ctx);
+	if (handler.tag != nullptr)
+		handler.tag(type, value, ctx);
 }
 
 static inline void
-tag_handler_invoke_pair(const struct tag_handler *handler, void *ctx,
+tag_handler_invoke_pair(const TagHandler &handler, void *ctx,
 			const char *name, const char *value)
 {
-	assert(handler != nullptr);
 	assert(name != nullptr);
 	assert(value != nullptr);
 
-	if (handler->pair != nullptr)
-		handler->pair(name, value, ctx);
+	if (handler.pair != nullptr)
+		handler.pair(name, value, ctx);
 }
 
 /**
- * This #tag_handler implementation adds tag values to a #TagBuilder object
+ * This #TagHandler implementation adds tag values to a #TagBuilder object
  * (casted from the context pointer).
  */
-extern const struct tag_handler add_tag_handler;
+extern const TagHandler add_tag_handler;
 
 /**
- * This #tag_handler implementation adds tag values to a #TagBuilder object
+ * This #TagHandler implementation adds tag values to a #TagBuilder object
  * (casted from the context pointer), and supports the has_playlist
  * attribute.
  */
-extern const struct tag_handler full_tag_handler;
+extern const TagHandler full_tag_handler;
 
 #endif

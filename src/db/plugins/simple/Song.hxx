@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,13 +29,13 @@
 
 #include <string>
 
-#include <assert.h>
 #include <time.h>
 
 struct LightSong;
 struct Directory;
 class DetachedSong;
 class Storage;
+class ArchiveFile;
 
 /**
  * A song file inside the configured music directory.  Internal
@@ -112,7 +112,10 @@ struct Song {
 	bool UpdateFile(Storage &storage);
 
 #ifdef ENABLE_ARCHIVE
-	bool UpdateFileInArchive(const Storage &storage);
+	static Song *LoadFromArchive(ArchiveFile &archive,
+				     const char *name_utf8,
+				     Directory &parent);
+	bool UpdateFileInArchive(ArchiveFile &archive);
 #endif
 
 	/**

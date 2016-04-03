@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,9 @@
 #include "tag/TagConfig.hxx"
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <iostream>
 using std::cout;
@@ -56,8 +58,8 @@ public:
 		cout << "DatabaseModified" << endl;
 	}
 
-	virtual void OnDatabaseSongRemoved(const LightSong &song) override {
-		cout << "SongRemoved " << song.GetURI() << endl;
+	virtual void OnDatabaseSongRemoved(const char *uri) override {
+		cout << "SongRemoved " << uri << endl;
 	}
 };
 
@@ -89,7 +91,7 @@ DumpPlaylist(const PlaylistInfo &playlist,
 
 int
 main(int argc, char **argv)
-{
+try {
 	if (argc != 3) {
 		cerr << "Usage: DumpDatabase CONFIG PLUGIN" << endl;
 		return 1;
@@ -107,12 +109,10 @@ main(int argc, char **argv)
 	/* initialize MPD */
 
 	config_global_init();
+	AtScopeExit() { config_global_finish(); };
 
 	Error error;
-	if (!ReadConfigFile(config_path, error)) {
-		cerr << error.GetMessage() << endl;
-		return EXIT_FAILURE;
-	}
+	ReadConfigFile(config_path);
 
 	TagLoadConfig();
 
@@ -134,28 +134,22 @@ main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (!db->Open(error)) {
-		delete db;
-		cerr << error.GetMessage() << endl;
-		return EXIT_FAILURE;
-	}
+	AtScopeExit(db) { delete db; };
+
+	db->Open();
+
+	AtScopeExit(db) { db->Close(); };
 
 	const DatabaseSelection selection("", true);
 
 	if (!db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist,
 		       error)) {
-		db->Close();
-		delete db;
 		cerr << error.GetMessage() << endl;
 		return EXIT_FAILURE;
 	}
 
-	db->Close();
-	delete db;
-
-	/* deinitialize everything */
-
-	config_global_finish();
-
 	return EXIT_SUCCESS;
-}
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

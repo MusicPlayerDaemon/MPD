@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "thread/Util.hxx"
@@ -593,7 +593,12 @@ AudioOutput::Task()
 {
 	FormatThreadName("output:%s", name);
 
-	SetThreadRealtime();
+	Error error;
+	if(!SetThreadRealtime(error)) {
+		LogError(error);
+		LogWarning(output_domain,
+			"OutputThread could not get realtime scheduling, continuing anyway");
+	}
 	SetThreadTimerSlackUS(100);
 
 	mutex.lock();

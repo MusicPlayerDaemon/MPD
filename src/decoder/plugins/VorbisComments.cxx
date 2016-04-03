@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,11 +26,7 @@
 #include "tag/VorbisComment.hxx"
 #include "tag/ReplayGain.hxx"
 #include "ReplayGainInfo.hxx"
-#include "util/ASCII.hxx"
 #include "util/DivideString.hxx"
-
-#include <stddef.h>
-#include <stdlib.h>
 
 bool
 vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)
@@ -56,7 +52,7 @@ vorbis_comments_to_replay_gain(ReplayGainInfo &rgi, char **comments)
 static bool
 vorbis_copy_comment(const char *comment,
 		    const char *name, TagType tag_type,
-		    const struct tag_handler *handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx)
 {
 	const char *value;
 
@@ -71,9 +67,9 @@ vorbis_copy_comment(const char *comment,
 
 static void
 vorbis_scan_comment(const char *comment,
-		    const struct tag_handler *handler, void *handler_ctx)
+		    const TagHandler &handler, void *handler_ctx)
 {
-	if (handler->pair != nullptr) {
+	if (handler.pair != nullptr) {
 		const DivideString split(comment, '=');
 		if (split.IsDefined() && !split.IsEmpty())
 			tag_handler_invoke_pair(handler, handler_ctx,
@@ -95,7 +91,7 @@ vorbis_scan_comment(const char *comment,
 
 void
 vorbis_comments_scan(char **comments,
-		     const struct tag_handler *handler, void *handler_ctx)
+		     const TagHandler &handler, void *handler_ctx)
 {
 	while (*comments)
 		vorbis_scan_comment(*comments++,
@@ -107,7 +103,7 @@ Tag *
 vorbis_comments_to_tag(char **comments)
 {
 	TagBuilder tag_builder;
-	vorbis_comments_scan(comments, &add_tag_handler, &tag_builder);
+	vorbis_comments_scan(comments, add_tag_handler, &tag_builder);
 	return tag_builder.IsEmpty()
 		? nullptr
 		: tag_builder.CommitNew();

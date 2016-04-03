@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,6 @@ struct LightSong;
 class Database;
 class Storage;
 class DetachedSong;
-class Error;
 
 /**
  * "Detach" the #Song object, i.e. convert it to a #DetachedSong
@@ -44,7 +43,7 @@ DatabaseDetachSong(const Storage &storage, const LightSong &song);
  */
 gcc_malloc gcc_nonnull_all
 DetachedSong *
-DatabaseDetachSong(const Database &db, const Storage &storage, const char *uri,
-		   Error &error);
+DatabaseDetachSong(const Database &db, const Storage &storage,
+		   const char *uri);
 
 #endif

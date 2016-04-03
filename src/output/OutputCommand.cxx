@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,9 @@
 #include "OutputCommand.hxx"
 #include "MultipleOutputs.hxx"
 #include "Internal.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "mixer/MixerControl.hxx"
+#include "mixer/Volume.hxx"
 #include "Idle.hxx"
 
 extern unsigned audio_output_state_version;
@@ -47,7 +48,12 @@ audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
 	ao.enabled = true;
 	idle_add(IDLE_OUTPUT);
 
-	ao.player_control->UpdateAudio();
+	if (ao.mixer != nullptr) {
+		InvalidateHardwareVolume();
+		idle_add(IDLE_MIXER);
+	}
+
+	ao.player_control->LockUpdateAudio();
 
 	++audio_output_state_version;
 
@@ -70,10 +76,11 @@ audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
 	Mixer *mixer = ao.mixer;
 	if (mixer != nullptr) {
 		mixer_close(mixer);
+		InvalidateHardwareVolume();
 		idle_add(IDLE_MIXER);
 	}
 
-	ao.player_control->UpdateAudio();
+	ao.player_control->LockUpdateAudio();
 
 	++audio_output_state_version;
 
@@ -94,11 +101,12 @@ audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx)
 		Mixer *mixer = ao.mixer;
 		if (mixer != nullptr) {
 			mixer_close(mixer);
+			InvalidateHardwareVolume();
 			idle_add(IDLE_MIXER);
 		}
 	}
 
-	ao.player_control->UpdateAudio();
+	ao.player_control->LockUpdateAudio();
 
 	++audio_output_state_version;
 

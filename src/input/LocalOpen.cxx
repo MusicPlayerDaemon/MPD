@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,19 +35,19 @@
 #include <errno.h>
 #endif
 
-InputStream *
+InputStreamPtr
 OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond, Error &error)
 {
 	assert(!error.IsDefined());
 
-	InputStream *is = OpenFileInputStream(path, mutex, cond, error);
+	InputStreamPtr is(OpenFileInputStream(path, mutex, cond, error));
 #ifdef ENABLE_ARCHIVE
 	if (is == nullptr && error.IsDomain(errno_domain) &&
 	    error.GetCode() == ENOTDIR) {
 		/* ENOTDIR means this may be a path inside an archive
 		   file */
 		Error error2;
-		is = OpenArchiveInputStream(path, mutex, cond, error2);
+		is.reset(OpenArchiveInputStream(path, mutex, cond, error2));
 		if (is == nullptr && error2.IsDefined())
 			error = std::move(error2);
 	}

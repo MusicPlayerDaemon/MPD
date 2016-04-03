@@ -23,6 +23,8 @@
 
 #include <string>
 
+#define HAVE_GLIB 1
+
 #ifdef HAVE_GLIB
 #include <glib.h>
 #endif
@@ -203,7 +205,7 @@ double sacd_disc_t::get_duration(uint32_t track_index) {
 	return track_duration;
 }
 
-void sacd_disc_t::get_info(uint32_t track_index, const struct tag_handler *handler, void *handler_ctx) {
+void sacd_disc_t::get_info(uint32_t track_index, const struct TagHandler& handler, void *handler_ctx) {
 	scarletbook_area_t* area = get_area(track_area);
 	if (!(area != nullptr && track_index < get_tracks(track_area))) {
 		return;

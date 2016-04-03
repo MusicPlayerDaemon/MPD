@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,8 @@
 #include "Count.hxx"
 #include "Selection.hxx"
 #include "Interface.hxx"
-#include "client/Client.hxx"
+#include "Partition.hxx"
+#include "client/Response.hxx"
 #include "LightSong.hxx"
 #include "tag/Tag.hxx"
 
@@ -40,26 +41,24 @@ class TagCountMap : public std::map<std::string, SearchStats> {
 };
 
 static void
-PrintSearchStats(Client &client, const SearchStats &stats)
+PrintSearchStats(Response &r, const SearchStats &stats)
 {
 	unsigned total_duration_s =
 		std::chrono::duration_cast<std::chrono::seconds>(stats.total_duration).count();
 
-	client_printf(client,
-		      "songs: %u\n"
-		      "playtime: %u\n",
-		      stats.n_songs, total_duration_s);
+	r.Format("songs: %u\n"
+		 "playtime: %u\n",
+		 stats.n_songs, total_duration_s);
 }
 
 static void
-Print(Client &client, TagType group, const TagCountMap &m)
+Print(Response &r, TagType group, const TagCountMap &m)
 {
 	assert(unsigned(group) < TAG_NUM_OF_ITEM_TYPES);
 
 	for (const auto &i : m) {
-		client_printf(client, "%s: %s\n",
-			      tag_item_names[group], i.first.c_str());
-		PrintSearchStats(client, i.second);
+		r.Format("%s: %s\n", tag_item_names[group], i.first.c_str());
+		PrintSearchStats(r, i.second);
 	}
 }
 
@@ -109,12 +108,12 @@ GroupCountVisitor(TagCountMap &map, TagType group, const LightSong &song)
 }
 
 bool
-PrintSongCount(Client &client, const char *name,
+PrintSongCount(Response &r, const Partition &partition, const char *name,
 	       const SongFilter *filter,
 	       TagType group,
 	       Error &error)
 {
-	const Database *db = client.GetDatabase(error);
+	const Database *db = partition.GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -131,7 +130,7 @@ PrintSongCount(Client &client, const char *name,
 		if (!db->Visit(selection, f, error))
 			return false;
 
-		PrintSearchStats(client, stats);
+		PrintSearchStats(r, stats);
 	} else {
 		/* group by the specified tag: store counts in a
 		   std::map */
@@ -144,7 +143,7 @@ PrintSongCount(Client &client, const char *name,
 		if (!db->Visit(selection, f, error))
 			return false;
 
-		Print(client, group, map);
+		Print(r, group, map);
 	}
 
 	return true;

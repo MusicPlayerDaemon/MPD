@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -102,7 +102,6 @@ protected:
 	}
 #endif
 
-public:
 	bool IsDefined() const {
 #ifdef WIN32
 		return handle != INVALID_HANDLE_VALUE;
@@ -111,6 +110,7 @@ public:
 #endif
 	}
 
+public:
 	Path GetPath() const {
 		return path;
 	}
@@ -119,7 +119,7 @@ public:
 	uint64_t Tell() const;
 
 	/* virtual methods from class OutputStream */
-	bool Write(const void *data, size_t size, Error &error) override;
+	void Write(const void *data, size_t size) override;
 };
 
 class FileOutputStream final : public BaseFileOutputStream {
@@ -132,29 +132,27 @@ class FileOutputStream final : public BaseFileOutputStream {
 #endif
 
 public:
-	FileOutputStream(Path _path, Error &error);
+	FileOutputStream(Path _path);
 
 	~FileOutputStream() {
 		if (IsDefined())
 			Cancel();
 	}
 
-	static FileOutputStream *Create(Path path, Error &error);
-
-	bool Commit(Error &error);
+	void Commit();
 	void Cancel();
 };
 
 class AppendFileOutputStream final : public BaseFileOutputStream {
 public:
-	AppendFileOutputStream(Path _path, Error &error);
+	AppendFileOutputStream(Path _path);
 
 	~AppendFileOutputStream() {
 		if (IsDefined())
 			Close();
 	}
 
-	bool Commit(Error &error);
+	void Commit();
 };
 
 #endif

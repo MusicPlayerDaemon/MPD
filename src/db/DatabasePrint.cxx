@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,8 @@
 #include "SongFilter.hxx"
 #include "SongPrint.hxx"
 #include "TimePrint.hxx"
-#include "client/Client.hxx"
+#include "client/Response.hxx"
+#include "Partition.hxx"
 #include "tag/Tag.hxx"
 #include "LightSong.hxx"
 #include "LightDirectory.hxx"
@@ -42,116 +43,119 @@ ApplyBaseFlag(const char *uri, bool base)
 }
 
 static void
-PrintDirectoryURI(Client &client, bool base, const LightDirectory &directory)
+PrintDirectoryURI(Response &r, bool base, const LightDirectory &directory)
 {
-	client_printf(client, "directory: %s\n",
-		      ApplyBaseFlag(directory.GetPath(), base));
+	r.Format("directory: %s\n",
+		 ApplyBaseFlag(directory.GetPath(), base));
 }
 
 static bool
-PrintDirectoryBrief(Client &client, bool base, const LightDirectory &directory)
+PrintDirectoryBrief(Response &r, bool base, const LightDirectory &directory)
 {
 	if (!directory.IsRoot())
-		PrintDirectoryURI(client, base, directory);
+		PrintDirectoryURI(r, base, directory);
 
 	return true;
 }
 
 static bool
-PrintDirectoryFull(Client &client, bool base, const LightDirectory &directory)
+PrintDirectoryFull(Response &r, bool base, const LightDirectory &directory)
 {
 	if (!directory.IsRoot()) {
-		PrintDirectoryURI(client, base, directory);
+		PrintDirectoryURI(r, base, directory);
 
 		if (directory.mtime > 0)
-			time_print(client, "Last-Modified", directory.mtime);
+			time_print(r, "Last-Modified", directory.mtime);
 	}
 
 	return true;
 }
 
 static void
-print_playlist_in_directory(Client &client, bool base,
+print_playlist_in_directory(Response &r, bool base,
 			    const char *directory,
 			    const char *name_utf8)
 {
 	if (base || directory == nullptr)
-		client_printf(client, "playlist: %s\n",
-			      ApplyBaseFlag(name_utf8, base));
+		r.Format("playlist: %s\n",
+			 ApplyBaseFlag(name_utf8, base));
 	else
-		client_printf(client, "playlist: %s/%s\n",
-			      directory, name_utf8);
+		r.Format("playlist: %s/%s\n",
+			 directory, name_utf8);
 }
 
 static void
-print_playlist_in_directory(Client &client, bool base,
+print_playlist_in_directory(Response &r, bool base,
 			    const LightDirectory *directory,
 			    const char *name_utf8)
 {
 	if (base || directory == nullptr || directory->IsRoot())
-		client_printf(client, "playlist: %s\n", name_utf8);
+		r.Format("playlist: %s\n", name_utf8);
 	else
-		client_printf(client, "playlist: %s/%s\n",
-			      directory->GetPath(), name_utf8);
+		r.Format("playlist: %s/%s\n",
+			 directory->GetPath(), name_utf8);
 }
 
 static bool
-PrintSongBrief(Client &client, bool base, const LightSong &song)
+PrintSongBrief(Response &r, Partition &partition,
+	       bool base, const LightSong &song)
 {
-	song_print_uri(client, song, base);
+	song_print_uri(r, partition, song, base);
 
 	if (song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
-		print_playlist_in_directory(client, base,
+		print_playlist_in_directory(r, base,
 					    song.directory, song.uri);
 
 	return true;
 }
 
 static bool
-PrintSongFull(Client &client, bool base, const LightSong &song)
+PrintSongFull(Response &r, Partition &partition,
+	      bool base, const LightSong &song)
 {
-	song_print_info(client, song, base);
+	song_print_info(r, partition, song, base);
 
 	if (song.tag->has_playlist)
 		/* this song file has an embedded CUE sheet */
-		print_playlist_in_directory(client, base,
+		print_playlist_in_directory(r, base,
 					    song.directory, song.uri);
 
 	return true;
 }
 
 static bool
-PrintPlaylistBrief(Client &client, bool base,
+PrintPlaylistBrief(Response &r, bool base,
 		   const PlaylistInfo &playlist,
 		   const LightDirectory &directory)
 {
-	print_playlist_in_directory(client, base,
+	print_playlist_in_directory(r, base,
 				    &directory, playlist.name.c_str());
 	return true;
 }
 
 static bool
-PrintPlaylistFull(Client &client, bool base,
+PrintPlaylistFull(Response &r, bool base,
 		  const PlaylistInfo &playlist,
 		  const LightDirectory &directory)
 {
-	print_playlist_in_directory(client, base,
+	print_playlist_in_directory(r, base,
 				    &directory, playlist.name.c_str());
 
 	if (playlist.mtime > 0)
-		time_print(client, "Last-Modified", playlist.mtime);
+		time_print(r, "Last-Modified", playlist.mtime);
 
 	return true;
 }
 
 bool
-db_selection_print(Client &client, const DatabaseSelection &selection,
+db_selection_print(Response &r, Partition &partition,
+		   const DatabaseSelection &selection,
 		   bool full, bool base,
 		   unsigned window_start, unsigned window_end,
 		   Error &error)
 {
-	const Database *db = client.GetDatabase(error);
+	const Database *db = partition.GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -160,13 +164,13 @@ db_selection_print(Client &client, const DatabaseSelection &selection,
 	using namespace std::placeholders;
 	const auto d = selection.filter == nullptr
 		? std::bind(full ? PrintDirectoryFull : PrintDirectoryBrief,
-			    std::ref(client), base, _1)
+			    std::ref(r), base, _1)
 		: VisitDirectory();
 	VisitSong s = std::bind(full ? PrintSongFull : PrintSongBrief,
-				std::ref(client), base, _1);
+				std::ref(r), std::ref(partition), base, _1);
 	const auto p = selection.filter == nullptr
 		? std::bind(full ? PrintPlaylistFull : PrintPlaylistBrief,
-			    std::ref(client), base, _1, _2)
+			    std::ref(r), base, _1, _2)
 		: VisitPlaylist();
 
 	if (window_start > 0 ||
@@ -182,45 +186,47 @@ db_selection_print(Client &client, const DatabaseSelection &selection,
 }
 
 bool
-db_selection_print(Client &client, const DatabaseSelection &selection,
+db_selection_print(Response &r, Partition &partition,
+		   const DatabaseSelection &selection,
 		   bool full, bool base,
 		   Error &error)
 {
-	return db_selection_print(client, selection, full, base,
+	return db_selection_print(r, partition, selection, full, base,
 				  0, std::numeric_limits<int>::max(),
 				  error);
 }
 
 static bool
-PrintSongURIVisitor(Client &client, const LightSong &song)
+PrintSongURIVisitor(Response &r, Partition &partition, const LightSong &song)
 {
-	song_print_uri(client, song);
+	song_print_uri(r, partition, song);
 
 	return true;
 }
 
 static bool
-PrintUniqueTag(Client &client, TagType tag_type,
+PrintUniqueTag(Response &r, TagType tag_type,
 	       const Tag &tag)
 {
 	const char *value = tag.GetValue(tag_type);
 	assert(value != nullptr);
-	client_printf(client, "%s: %s\n", tag_item_names[tag_type], value);
+	r.Format("%s: %s\n", tag_item_names[tag_type], value);
 
 	for (const auto &item : tag)
 		if (item.type != tag_type)
-			client_printf(client, "%s: %s\n",
-				      tag_item_names[item.type], item.value);
+			r.Format("%s: %s\n",
+				 tag_item_names[item.type], item.value);
 
 	return true;
 }
 
 bool
-PrintUniqueTags(Client &client, unsigned type, uint32_t group_mask,
+PrintUniqueTags(Response &r, Partition &partition,
+		unsigned type, tag_mask_t group_mask,
 		const SongFilter *filter,
 		Error &error)
 {
-	const Database *db = client.GetDatabase(error);
+	const Database *db = partition.GetDatabase(error);
 	if (db == nullptr)
 		return false;
 
@@ -229,13 +235,13 @@ PrintUniqueTags(Client &client, unsigned type, uint32_t group_mask,
 	if (type == LOCATE_TAG_FILE_TYPE) {
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintSongURIVisitor,
-					 std::ref(client), _1);
+					 std::ref(r), std::ref(partition), _1);
 		return db->Visit(selection, f, error);
 	} else {
 		assert(type < TAG_NUM_OF_ITEM_TYPES);
 
 		using namespace std::placeholders;
-		const auto f = std::bind(PrintUniqueTag, std::ref(client),
+		const auto f = std::bind(PrintUniqueTag, std::ref(r),
 					 (TagType)type, _1);
 		return db->VisitUniqueTags(selection, (TagType)type,
 					   group_mask,

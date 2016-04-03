@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,64 +19,41 @@
 
 #include "config.h"
 #include "QueueCommands.hxx"
+#include "Request.hxx"
 #include "CommandError.hxx"
 #include "db/DatabaseQueue.hxx"
 #include "db/Selection.hxx"
 #include "SongFilter.hxx"
 #include "SongLoader.hxx"
+#include "DetachedSong.hxx"
+#include "LocateUri.hxx"
 #include "queue/Playlist.hxx"
 #include "PlaylistPrint.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Partition.hxx"
 #include "BulkEdit.hxx"
-#include "protocol/ArgParser.hxx"
-#include "protocol/Result.hxx"
-#include "ls.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/UriUtil.hxx"
+#include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
 #include "util/Error.hxx"
-#include "fs/AllocatedPath.hxx"
 
+#include <memory>
 #include <limits>
 
-#include <string.h>
-
-static const char *
-translate_uri(const char *uri)
+static void
+AddUri(Client &client, const LocatedUri &uri)
 {
-	if (memcmp(uri, "file:///", 8) == 0)
-		/* drop the "file://", leave only an absolute path
-		   (starting with a slash) */
-		return uri + 7;
+	std::unique_ptr<DetachedSong> song(SongLoader(client).LoadSong(uri));
+	assert(song);
 
-	return uri;
+	auto &partition = client.partition;
+	partition.playlist.AppendSong(partition.pc, std::move(*song));
 }
 
-CommandResult
-handle_add(Client &client, ConstBuffer<const char *> args)
+static CommandResult
+AddDatabaseSelection(Client &client, const char *uri, Response &r)
 {
-	const char *uri = args.front();
-	if (memcmp(uri, "/", 2) == 0)
-		/* this URI is malformed, but some clients are buggy
-		   and use "add /" to add the whole database, which
-		   was never intended to work, but once did; in order
-		   to retain backwards compatibility, work around this
-		   here */
-		uri = "";
-
-	uri = translate_uri(uri);
-
-	if (uri_has_scheme(uri) || PathTraitsUTF8::IsAbsolute(uri)) {
-		const SongLoader loader(client);
-		Error error;
-		unsigned id = client.partition.AppendURI(loader, uri, error);
-		if (id == 0)
-			return print_error(client, error);
-
-		return CommandResult::OK;
-	}
-
 #ifdef ENABLE_DATABASE
 	const ScopeBulkEdit bulk_edit(client.partition);
 
@@ -84,38 +61,76 @@ handle_add(Client &client, ConstBuffer<const char *> args)
 	Error error;
 	return AddFromDatabase(client.partition, selection, error)
 		? CommandResult::OK
-		: print_error(client, error);
+		: print_error(r, error);
 #else
-	command_error(client, ACK_ERROR_NO_EXIST, "No database");
+	(void)client;
+	(void)uri;
+
+	r.Error(ACK_ERROR_NO_EXIST, "No database");
 	return CommandResult::ERROR;
 #endif
 }
 
 CommandResult
-handle_addid(Client &client, ConstBuffer<const char *> args)
+handle_add(Client &client, Request args, Response &r)
 {
-	const char *const uri = translate_uri(args.front());
+	const char *uri = args.front();
+	if (StringIsEqual(uri, "/"))
+		/* this URI is malformed, but some clients are buggy
+		   and use "add /" to add the whole database, which
+		   was never intended to work, but once did; in order
+		   to retain backwards compatibility, work around this
+		   here */
+		uri = "";
+
+	Error error;
+	const auto located_uri = LocateUri(uri, &client,
+#ifdef ENABLE_DATABASE
+					   nullptr,
+#endif
+					   error);
+	switch (located_uri.type) {
+	case LocatedUri::Type::UNKNOWN:
+		return print_error(r, error);
+
+	case LocatedUri::Type::ABSOLUTE:
+	case LocatedUri::Type::PATH:
+		AddUri(client, located_uri);
+		return CommandResult::OK;
+
+	case LocatedUri::Type::RELATIVE:
+		return AddDatabaseSelection(client, located_uri.canonical_uri,
+					    r);
+	}
+
+	gcc_unreachable();
+}
+
+CommandResult
+handle_addid(Client &client, Request args, Response &r)
+{
+	const char *const uri = args.front();
 
 	const SongLoader loader(client);
 	Error error;
 	unsigned added_id = client.partition.AppendURI(loader, uri, error);
 	if (added_id == 0)
-		return print_error(client, error);
+		return print_error(r, error);
 
 	if (args.size == 2) {
-		unsigned to;
-		if (!check_unsigned(client, &to, args[1]))
-			return CommandResult::ERROR;
-		PlaylistResult result = client.partition.MoveId(added_id, to);
-		if (result != PlaylistResult::SUCCESS) {
-			CommandResult ret =
-				print_playlist_result(client, result);
+		unsigned to = args.ParseUnsigned(1);
+
+		try {
+			client.partition.MoveId(added_id, to);
+			return CommandResult::OK;
+		} catch (...) {
+			/* rollback */
 			client.partition.DeleteId(added_id);
-			return ret;
+			throw;
 		}
 	}
 
-	client_printf(client, "Id: %u\n", added_id);
+	r.Format("Id: %u\n", added_id);
 	return CommandResult::OK;
 }
 
@@ -151,131 +166,99 @@ parse_time_range(const char *p, SongTime &start_r, SongTime &end_r)
 }
 
 CommandResult
-handle_rangeid(Client &client, ConstBuffer<const char *> args)
+handle_rangeid(Client &client, Request args, Response &r)
 {
-	unsigned id;
-	if (!check_unsigned(client, &id, args.front()))
-		return CommandResult::ERROR;
+	unsigned id = args.ParseUnsigned(0);
 
 	SongTime start, end;
 	if (!parse_time_range(args[1], start, end)) {
-		command_error(client, ACK_ERROR_ARG, "Bad range");
+		r.Error(ACK_ERROR_ARG, "Bad range");
 		return CommandResult::ERROR;
 	}
 
-	Error error;
-	if (!client.partition.playlist.SetSongIdRange(client.partition.pc,
-						      id, start, end,
-						      error))
-		return print_error(client, error);
-
+	client.partition.playlist.SetSongIdRange(client.partition.pc,
+						 id, start, end);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_delete(Client &client, ConstBuffer<const char *> args)
+handle_delete(Client &client, Request args, gcc_unused Response &r)
 {
-	unsigned start, end;
-
-	if (!check_range(client, &start, &end, args.front()))
-		return CommandResult::ERROR;
-
-	PlaylistResult result = client.partition.DeleteRange(start, end);
-	return print_playlist_result(client, result);
-}
-
-CommandResult
-handle_deleteid(Client &client, ConstBuffer<const char *> args)
-{
-	unsigned id;
-
-	if (!check_unsigned(client, &id, args.front()))
-		return CommandResult::ERROR;
-
-	PlaylistResult result = client.partition.DeleteId(id);
-	return print_playlist_result(client, result);
-}
-
-CommandResult
-handle_playlist(Client &client, gcc_unused ConstBuffer<const char *> args)
-{
-	playlist_print_uris(client, client.playlist);
+	RangeArg range = args.ParseRange(0);
+	client.partition.DeleteRange(range.start, range.end);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_shuffle(gcc_unused Client &client, ConstBuffer<const char *> args)
+handle_deleteid(Client &client, Request args, gcc_unused Response &r)
 {
-	unsigned start = 0, end = client.playlist.queue.GetLength();
-	if (args.size == 1 && !check_range(client, &start, &end, args.front()))
-		return CommandResult::ERROR;
-
-	client.partition.Shuffle(start, end);
+	unsigned id = args.ParseUnsigned(0);
+	client.partition.DeleteId(id);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_clear(gcc_unused Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_playlist(Client &client, gcc_unused Request args, Response &r)
+{
+	playlist_print_uris(r, client.partition, client.playlist);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_shuffle(gcc_unused Client &client, Request args, gcc_unused Response &r)
+{
+	RangeArg range = args.ParseOptional(0, RangeArg::All());
+	client.partition.Shuffle(range.start, range.end);
+	return CommandResult::OK;
+}
+
+CommandResult
+handle_clear(Client &client, gcc_unused Request args, gcc_unused Response &r)
 {
 	client.partition.ClearQueue();
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_plchanges(Client &client, ConstBuffer<const char *> args)
+handle_plchanges(Client &client, Request args, Response &r)
 {
-	uint32_t version;
-
-	if (!check_uint32(client, &version, args.front()))
-		return CommandResult::ERROR;
-
-	playlist_print_changes_info(client, client.playlist, version);
+	uint32_t version = ParseCommandArgU32(args.front());
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
+	playlist_print_changes_info(r, client.partition,
+				    client.playlist, version,
+				    range.start, range.end);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_plchangesposid(Client &client, ConstBuffer<const char *> args)
+handle_plchangesposid(Client &client, Request args, Response &r)
 {
-	uint32_t version;
-
-	if (!check_uint32(client, &version, args.front()))
-		return CommandResult::ERROR;
-
-	playlist_print_changes_position(client, client.playlist, version);
+	uint32_t version = ParseCommandArgU32(args.front());
+	RangeArg range = args.ParseOptional(1, RangeArg::All());
+	playlist_print_changes_position(r, client.playlist, version,
+					range.start, range.end);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_playlistinfo(Client &client, ConstBuffer<const char *> args)
+handle_playlistinfo(Client &client, Request args, Response &r)
 {
-	unsigned start = 0, end = std::numeric_limits<unsigned>::max();
-	bool ret;
+	RangeArg range = args.ParseOptional(0, RangeArg::All());
 
-	if (args.size == 1 && !check_range(client, &start, &end, args.front()))
-		return CommandResult::ERROR;
-
-	ret = playlist_print_info(client, client.playlist, start, end);
-	if (!ret)
-		return print_playlist_result(client,
-					     PlaylistResult::BAD_RANGE);
-
+	playlist_print_info(r, client.partition, client.playlist,
+			    range.start, range.end);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_playlistid(Client &client, ConstBuffer<const char *> args)
+handle_playlistid(Client &client, Request args, Response &r)
 {
 	if (!args.IsEmpty()) {
-		unsigned id;
-		if (!check_unsigned(client, &id, args.front()))
-			return CommandResult::ERROR;
-
-		bool ret = playlist_print_id(client, client.playlist, id);
-		if (!ret)
-			return print_playlist_result(client,
-						     PlaylistResult::NO_SUCH_SONG);
+		unsigned id = args.ParseUnsigned(0);
+		playlist_print_id(r, client.partition,
+				  client.playlist, id);
 	} else {
-		playlist_print_info(client, client.playlist,
+		playlist_print_info(r, client.partition, client.playlist,
 				    0, std::numeric_limits<unsigned>::max());
 	}
 
@@ -283,146 +266,92 @@ handle_playlistid(Client &client, ConstBuffer<const char *> args)
 }
 
 static CommandResult
-handle_playlist_match(Client &client, ConstBuffer<const char *> args,
+handle_playlist_match(Client &client, Request args, Response &r,
 		      bool fold_case)
 {
 	SongFilter filter;
 	if (!filter.Parse(args, fold_case)) {
-		command_error(client, ACK_ERROR_ARG, "incorrect arguments");
+		r.Error(ACK_ERROR_ARG, "incorrect arguments");
 		return CommandResult::ERROR;
 	}
 
-	playlist_print_find(client, client.playlist, filter);
+	playlist_print_find(r, client.partition, client.playlist, filter);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_playlistfind(Client &client, ConstBuffer<const char *> args)
+handle_playlistfind(Client &client, Request args, Response &r)
 {
-	return handle_playlist_match(client, args, false);
+	return handle_playlist_match(client, args, r, false);
 }
 
 CommandResult
-handle_playlistsearch(Client &client, ConstBuffer<const char *> args)
+handle_playlistsearch(Client &client, Request args, Response &r)
 {
-	return handle_playlist_match(client, args, true);
+	return handle_playlist_match(client, args, r, true);
 }
 
 CommandResult
-handle_prio(Client &client, ConstBuffer<const char *> args)
+handle_prio(Client &client, Request args, gcc_unused Response &r)
 {
-	const char *const priority_string = args.shift();
-	unsigned priority;
-
-	if (!check_unsigned(client, &priority, priority_string))
-		return CommandResult::ERROR;
-
-	if (priority > 0xff) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Priority out of range: %s", priority_string);
-		return CommandResult::ERROR;
-	}
+	unsigned priority = args.ParseUnsigned(0, 0xff);
+	args.shift();
 
 	for (const char *i : args) {
-		unsigned start_position, end_position;
-		if (!check_range(client, &start_position, &end_position, i))
-			return CommandResult::ERROR;
-
-		PlaylistResult result =
-			client.partition.SetPriorityRange(start_position,
-							   end_position,
-							   priority);
-		if (result != PlaylistResult::SUCCESS)
-			return print_playlist_result(client, result);
+		RangeArg range = ParseCommandArgRange(i);
+		client.partition.SetPriorityRange(range.start, range.end,
+						  priority);
 	}
 
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_prioid(Client &client, ConstBuffer<const char *> args)
+handle_prioid(Client &client, Request args, gcc_unused Response &r)
 {
-	const char *const priority_string = args.shift();
-	unsigned priority;
-
-	if (!check_unsigned(client, &priority, priority_string))
-		return CommandResult::ERROR;
-
-	if (priority > 0xff) {
-		command_error(client, ACK_ERROR_ARG,
-			      "Priority out of range: %s", priority_string);
-		return CommandResult::ERROR;
-	}
+	unsigned priority = args.ParseUnsigned(0, 0xff);
+	args.shift();
 
 	for (const char *i : args) {
-		unsigned song_id;
-		if (!check_unsigned(client, &song_id, i))
-			return CommandResult::ERROR;
-
-		PlaylistResult result =
-			client.partition.SetPriorityId(song_id, priority);
-		if (result != PlaylistResult::SUCCESS)
-			return print_playlist_result(client, result);
+		unsigned song_id = ParseCommandArgUnsigned(i);
+		client.partition.SetPriorityId(song_id, priority);
 	}
 
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_move(Client &client, ConstBuffer<const char *> args)
+handle_move(Client &client, Request args, gcc_unused Response &r)
 {
-	unsigned start, end;
-	int to;
-
-	if (!check_range(client, &start, &end, args[0]))
-		return CommandResult::ERROR;
-	if (!check_int(client, &to, args[1]))
-		return CommandResult::ERROR;
-
-	PlaylistResult result =
-		client.partition.MoveRange(start, end, to);
-	return print_playlist_result(client, result);
+	RangeArg range = args.ParseRange(0);
+	int to = args.ParseInt(1);
+	client.partition.MoveRange(range.start, range.end, to);
+	return CommandResult::OK;
 }
 
 CommandResult
-handle_moveid(Client &client, ConstBuffer<const char *> args)
+handle_moveid(Client &client, Request args, gcc_unused Response &r)
 {
-	unsigned id;
-	int to;
-
-	if (!check_unsigned(client, &id, args[0]))
-		return CommandResult::ERROR;
-	if (!check_int(client, &to, args[1]))
-		return CommandResult::ERROR;
-	PlaylistResult result = client.partition.MoveId(id, to);
-	return print_playlist_result(client, result);
+	unsigned id = args.ParseUnsigned(0);
+	int to = args.ParseInt(1);
+	client.partition.MoveId(id, to);
+	return CommandResult::OK;
 }
 
 CommandResult
-handle_swap(Client &client, ConstBuffer<const char *> args)
+handle_swap(Client &client, Request args, gcc_unused Response &r)
 {
-	unsigned song1, song2;
-
-	if (!check_unsigned(client, &song1, args[0]))
-		return CommandResult::ERROR;
-	if (!check_unsigned(client, &song2, args[1]))
-		return CommandResult::ERROR;
-
-	PlaylistResult result =
-		client.partition.SwapPositions(song1, song2);
-	return print_playlist_result(client, result);
+	unsigned song1 = args.ParseUnsigned(0);
+	unsigned song2 = args.ParseUnsigned(1);
+	client.partition.SwapPositions(song1, song2);
+	return CommandResult::OK;
 }
 
 CommandResult
-handle_swapid(Client &client, ConstBuffer<const char *> args)
+handle_swapid(Client &client, Request args, gcc_unused Response &r)
 {
-	unsigned id1, id2;
-
-	if (!check_unsigned(client, &id1, args[0]))
-		return CommandResult::ERROR;
-	if (!check_unsigned(client, &id2, args[1]))
-		return CommandResult::ERROR;
-
-	PlaylistResult result = client.partition.SwapIds(id1, id2);
-	return print_playlist_result(client, result);
+	unsigned id1 = args.ParseUnsigned(0);
+	unsigned id2 = args.ParseUnsigned(1);
+	client.partition.SwapIds(id1, id2);
+	return CommandResult::OK;
 }

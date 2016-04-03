@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,12 +22,6 @@
 #include "SocketAddress.hxx"
 #include "SocketError.hxx"
 #include "system/fd_util.h"
-
-#include <unistd.h>
-
-#ifdef HAVE_IPV6
-#include <string.h>
-#endif
 
 int
 socket_bind_listen(int domain, int type, int protocol,
@@ -69,7 +63,7 @@ socket_bind_listen(int domain, int type, int protocol,
 		return -1;
 	}
 
-#ifdef HAVE_STRUCT_UCRED
+#if defined(HAVE_STRUCT_UCRED) && defined(SO_PASSCRED)
 	setsockopt(fd, SOL_SOCKET, SO_PASSCRED,
 		   (const char *) &reuse, sizeof(reuse));
 #endif

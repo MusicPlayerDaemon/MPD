@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,9 @@
 #include "TagBuilder.hxx"
 #include "util/ASCII.hxx"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 static void
 add_tag_duration(SongTime duration, void *ctx)
 {
@@ -35,10 +38,20 @@ add_tag_tag(TagType type, const char *value, void *ctx)
 {
 	TagBuilder &tag = *(TagBuilder *)ctx;
 
-	tag.AddItem(type, value);
+	if (type == TAG_TRACK || type == TAG_DISC) {
+		/* filter out this extra data and leading zeroes */
+		char *end;
+		unsigned n = strtoul(value, &end, 10);
+		if (value != end) {
+			char s[21];
+			if (snprintf(s, 21, "%u", n) >= 0)
+				tag.AddItem(type, s);
+		}
+	} else
+		tag.AddItem(type, value);
 }
 
-const struct tag_handler add_tag_handler = {
+const TagHandler add_tag_handler = {
 	add_tag_duration,
 	add_tag_tag,
 	nullptr,
@@ -53,7 +66,7 @@ full_tag_pair(const char *name, gcc_unused const char *value, void *ctx)
 		tag.SetHasPlaylist(true);
 }
 
-const struct tag_handler full_tag_handler = {
+const TagHandler full_tag_handler = {
 	add_tag_duration,
 	add_tag_tag,
 	full_tag_pair,

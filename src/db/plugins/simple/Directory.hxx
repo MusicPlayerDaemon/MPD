@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,6 @@ static constexpr unsigned DEVICE_INARCHIVE = -1;
  */
 static constexpr unsigned DEVICE_CONTAINER = -2;
 
-struct db_visitor;
 class SongFilter;
 class Error;
 class Database;
@@ -52,12 +51,6 @@ struct Directory {
 	static constexpr auto link_mode = boost::intrusive::normal_link;
 	typedef boost::intrusive::link_mode<link_mode> LinkMode;
 	typedef boost::intrusive::list_member_hook<LinkMode> Hook;
-
-	struct Disposer {
-		void operator()(Directory *directory) const {
-			delete directory;
-		}
-	};
 
 	/**
 	 * Pointers to the siblings of this directory within the

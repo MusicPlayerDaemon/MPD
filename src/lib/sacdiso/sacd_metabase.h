@@ -56,7 +56,7 @@ class sacd_metabase_t {
 public:
 	sacd_metabase_t(sacd_disc_t* sacd_disc, const char* tags_path = nullptr, const char* tags_file = nullptr);
 	~sacd_metabase_t();
-	bool get_info(uint32_t track_index, const struct tag_handler* handler, void* handler_ctx);
+    bool get_info(uint32_t track_index, const struct TagHandler& handler, void* handler_ctx);
 private:
 	bool init_xmldoc();
 	IXML_Node* get_track_node(uint32_t track_index);

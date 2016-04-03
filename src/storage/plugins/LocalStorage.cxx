@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,10 +22,11 @@
 #include "storage/StoragePlugin.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
-#include "util/Error.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "util/Error.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string>
 
@@ -39,10 +40,6 @@ class LocalDirectoryReader final : public StorageDirectoryReader {
 public:
 	LocalDirectoryReader(AllocatedPath &&_base_fs)
 		:base_fs(std::move(_base_fs)), reader(base_fs) {}
-
-	bool HasFailed() {
-		return reader.HasFailed();
-	}
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
@@ -108,7 +105,7 @@ LocalStorage::MapUTF8(const char *uri_utf8) const
 {
 	assert(uri_utf8 != nullptr);
 
-	if (*uri_utf8 == 0)
+	if (StringIsEmpty(uri_utf8))
 		return base_utf8;
 
 	return PathTraitsUTF8::Build(base_utf8.c_str(), uri_utf8);
@@ -119,7 +116,7 @@ LocalStorage::MapFS(const char *uri_utf8, Error &error) const
 {
 	assert(uri_utf8 != nullptr);
 
-	if (*uri_utf8 == 0)
+	if (StringIsEmpty(uri_utf8))
 		return base_fs;
 
 	AllocatedPath path_fs = AllocatedPath::FromUTF8(uri_utf8, error);
@@ -159,15 +156,7 @@ LocalStorage::OpenDirectory(const char *uri_utf8, Error &error)
 	if (path_fs.IsNull())
 		return nullptr;
 
-	LocalDirectoryReader *reader =
-		new LocalDirectoryReader(std::move(path_fs));
-	if (reader->HasFailed()) {
-		error.FormatErrno("Failed to open '%s'", uri_utf8);
-		delete reader;
-		return nullptr;
-	}
-
-	return reader;
+	return new LocalDirectoryReader(std::move(path_fs));
 }
 
 gcc_pure

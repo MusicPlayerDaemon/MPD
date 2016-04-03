@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -85,7 +85,7 @@ public:
 
 	char *ReadString() {
 		uint32_t length;
-		if (!ReadWord(length))
+		if (!ReadWord(length) || length >= 65536)
 			return nullptr;
 
 		const char *src = (const char *)Read(length);

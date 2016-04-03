@@ -71,7 +71,7 @@ sacd_metabase_t::~sacd_metabase_t() {
 	}
 }
 
-bool sacd_metabase_t::get_info(uint32_t track_index, const struct tag_handler* handler, void* handler_ctx) {
+bool sacd_metabase_t::get_info(uint32_t track_index, const struct TagHandler& handler, void* handler_ctx) {
 	if (!metabase_loaded) {
 		return false;
 	}

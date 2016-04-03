@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,20 +29,20 @@ class M3uPlaylist final : public SongEnumerator {
 	TextInputStream tis;
 
 public:
-	M3uPlaylist(InputStream &is)
-		:tis(is) {
+	M3uPlaylist(InputStreamPtr &&is)
+		:tis(std::move(is)) {
 	}
 
-	virtual DetachedSong *NextSong() override;
+	virtual std::unique_ptr<DetachedSong> NextSong() override;
 };
 
 static SongEnumerator *
-m3u_open_stream(InputStream &is)
+m3u_open_stream(InputStreamPtr &&is)
 {
-	return new M3uPlaylist(is);
+	return new M3uPlaylist(std::move(is));
 }
 
-DetachedSong *
+std::unique_ptr<DetachedSong>
 M3uPlaylist::NextSong()
 {
 	char *line_s;
@@ -55,7 +55,7 @@ M3uPlaylist::NextSong()
 		line_s = Strip(line_s);
 	} while (line_s[0] == '#' || *line_s == 0);
 
-	return new DetachedSong(line_s);
+	return std::unique_ptr<DetachedSong>(new DetachedSong(line_s));
 }
 
 static const char *const m3u_suffixes[] = {

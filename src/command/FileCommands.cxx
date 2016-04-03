@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,28 +21,26 @@
 
 #include "config.h"
 #include "FileCommands.hxx"
+#include "Request.hxx"
 #include "CommandError.hxx"
 #include "protocol/Ack.hxx"
-#include "protocol/Result.hxx"
 #include "client/Client.hxx"
-#include "util/ConstBuffer.hxx"
+#include "client/Response.hxx"
 #include "util/CharUtil.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "tag/TagHandler.hxx"
-#include "tag/ApeTag.hxx"
-#include "tag/TagId3.hxx"
+#include "tag/Generic.hxx"
 #include "TagStream.hxx"
 #include "TagFile.hxx"
 #include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
+#include "LocateUri.hxx"
 #include "TimePrint.hxx"
-#include "ls.hxx"
 
 #include <assert.h>
-#include <sys/stat.h>
 #include <inttypes.h> /* for PRIu64 */
 
 gcc_pure
@@ -69,24 +67,9 @@ skip_path(Path name_fs)
 #endif
 
 CommandResult
-handle_listfiles_local(Client &client, const char *path_utf8)
+handle_listfiles_local(Response &r, Path path_fs)
 {
-	const auto path_fs = AllocatedPath::FromUTF8(path_utf8);
-	if (path_fs.IsNull()) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "unsupported file name");
-		return CommandResult::ERROR;
-	}
-
-	Error error;
-	if (!client.AllowFile(path_fs, error))
-		return print_error(client, error);
-
 	DirectoryReader reader(path_fs);
-	if (reader.HasFailed()) {
-		error.FormatErrno("Failed to open '%s'", path_utf8);
-		return print_error(client, error);
-	}
 
 	while (reader.ReadEntry()) {
 		const Path name_fs = reader.GetEntry();
@@ -104,17 +87,16 @@ handle_listfiles_local(Client &client, const char *path_utf8)
 			continue;
 
 		if (fi.IsRegular())
-			client_printf(client, "file: %s\n"
-				      "size: %" PRIu64 "\n",
-				      name_utf8.c_str(),
-				      fi.GetSize());
+			r.Format("file: %s\n"
+				 "size: %" PRIu64 "\n",
+				 name_utf8.c_str(),
+				 fi.GetSize());
 		else if (fi.IsDirectory())
-			client_printf(client, "directory: %s\n",
-				      name_utf8.c_str());
+			r.Format("directory: %s\n", name_utf8.c_str());
 		else
 			continue;
 
-		time_print(client, "Last-Modified", fi.GetModificationTime());
+		time_print(r, "Last-Modified", fi.GetModificationTime());
 	}
 
 	return CommandResult::OK;
@@ -157,30 +139,23 @@ IsValidValue(const char *p)
 static void
 print_pair(const char *key, const char *value, void *ctx)
 {
-	Client &client = *(Client *)ctx;
+	auto &r = *(Response *)ctx;
 
 	if (IsValidName(key) && IsValidValue(value))
-		client_printf(client, "%s: %s\n", key, value);
+		r.Format("%s: %s\n", key, value);
 }
 
-static constexpr tag_handler print_comment_handler = {
+static constexpr TagHandler print_comment_handler = {
 	nullptr,
 	nullptr,
 	print_pair,
 };
 
 static CommandResult
-read_stream_comments(Client &client, const char *uri)
+read_stream_comments(Response &r, const char *uri)
 {
-	if (!uri_supported_scheme(uri)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "unsupported URI scheme");
-		return CommandResult::ERROR;
-	}
-
-	if (!tag_stream_scan(uri, print_comment_handler, &client)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "Failed to load file");
+	if (!tag_stream_scan(uri, print_comment_handler, &r)) {
+		r.Error(ACK_ERROR_NO_EXIST, "Failed to load file");
 		return CommandResult::ERROR;
 	}
 
@@ -189,84 +164,77 @@ read_stream_comments(Client &client, const char *uri)
 }
 
 static CommandResult
-read_file_comments(Client &client, const Path path_fs)
+read_file_comments(Response &r, const Path path_fs)
 {
-	if (!tag_file_scan(path_fs, print_comment_handler, &client)) {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "Failed to load file");
+	if (!tag_file_scan(path_fs, print_comment_handler, &r)) {
+		r.Error(ACK_ERROR_NO_EXIST, "Failed to load file");
 		return CommandResult::ERROR;
 	}
 
-	tag_ape_scan2(path_fs, &print_comment_handler, &client);
-	tag_id3_scan(path_fs, &print_comment_handler, &client);
+	ScanGenericTags(path_fs, print_comment_handler, &r);
 
 	return CommandResult::OK;
 
 }
 
-static const char *
-translate_uri(const char *uri)
+static CommandResult
+read_db_comments(Client &client, Response &r, const char *uri)
 {
-	if (memcmp(uri, "file:///", 8) == 0)
-		/* drop the "file://", leave only an absolute path
-		   (starting with a slash) */
-		return uri + 7;
+#ifdef ENABLE_DATABASE
+	const Storage *storage = client.GetStorage();
+	if (storage == nullptr) {
+#else
+		(void)client;
+		(void)uri;
+#endif
+		r.Error(ACK_ERROR_NO_EXIST, "No database");
+		return CommandResult::ERROR;
+#ifdef ENABLE_DATABASE
+	}
 
-	return uri;
+	{
+		AllocatedPath path_fs = storage->MapFS(uri);
+		if (!path_fs.IsNull())
+			return read_file_comments(r, path_fs);
+	}
+
+	{
+		const std::string uri2 = storage->MapUTF8(uri);
+		if (uri_has_scheme(uri2.c_str()))
+			return read_stream_comments(r, uri2.c_str());
+	}
+
+	r.Error(ACK_ERROR_NO_EXIST, "No such file");
+	return CommandResult::ERROR;
+#endif
 }
 
 CommandResult
-handle_read_comments(Client &client, ConstBuffer<const char *> args)
+handle_read_comments(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
-	const char *const uri = translate_uri(args.front());
 
-	if (memcmp(uri, "file:///", 8) == 0) {
-		/* read comments from arbitrary local file */
-		const char *path_utf8 = uri + 7;
-		AllocatedPath path_fs = AllocatedPath::FromUTF8(path_utf8);
-		if (path_fs.IsNull()) {
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "unsupported file name");
-			return CommandResult::ERROR;
-		}
+	const char *const uri = args.front();
 
-		Error error;
-		if (!client.AllowFile(path_fs, error))
-			return print_error(client, error);
-
-		return read_file_comments(client, path_fs);
-	} else if (uri_has_scheme(uri)) {
-		return read_stream_comments(client, uri);
-	} else if (!PathTraitsUTF8::IsAbsolute(uri)) {
+	Error error;
+	const auto located_uri = LocateUri(uri, &client,
 #ifdef ENABLE_DATABASE
-		const Storage *storage = client.GetStorage();
-		if (storage == nullptr) {
+					   nullptr,
 #endif
-			command_error(client, ACK_ERROR_NO_EXIST,
-				      "No database");
-			return CommandResult::ERROR;
-#ifdef ENABLE_DATABASE
-		}
+					   error);
+	switch (located_uri.type) {
+	case LocatedUri::Type::UNKNOWN:
+		return print_error(r, error);
 
-		{
-			AllocatedPath path_fs = storage->MapFS(uri);
-			if (!path_fs.IsNull())
-				return read_file_comments(client, path_fs);
-		}
+	case LocatedUri::Type::ABSOLUTE:
+		return read_stream_comments(r, located_uri.canonical_uri);
 
-		{
-			const std::string uri2 = storage->MapUTF8(uri);
-			if (uri_has_scheme(uri2.c_str()))
-				return read_stream_comments(client,
-							    uri2.c_str());
-		}
+	case LocatedUri::Type::RELATIVE:
+		return read_db_comments(client, r, located_uri.canonical_uri);
 
-		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
-		return CommandResult::ERROR;
-#endif
-	} else {
-		command_error(client, ACK_ERROR_NO_EXIST, "No such file");
-		return CommandResult::ERROR;
+	case LocatedUri::Type::PATH:
+		return read_file_comments(r, located_uri.path);
 	}
+
+	gcc_unreachable();
 }

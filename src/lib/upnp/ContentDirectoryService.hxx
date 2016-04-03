@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include <string>
 #include <list>
 
-class Error;
 class UPnPDevice;
 struct UPnPService;
 class UPnPDirContent;
@@ -76,17 +75,14 @@ public:
 	/** Read a container's children list into dirbuf.
 	 *
 	 * @param objectId the UPnP object Id for the container. Root has Id "0"
-	 * @param[out] dirbuf stores the entries we read.
 	 */
-	bool readDir(UpnpClient_Handle handle,
-		     const char *objectId, UPnPDirContent &dirbuf,
-		     Error &error) const;
+	UPnPDirContent readDir(UpnpClient_Handle handle,
+			       const char *objectId) const;
 
-	bool readDirSlice(UpnpClient_Handle handle,
+	void readDirSlice(UpnpClient_Handle handle,
 			  const char *objectId, unsigned offset,
 			  unsigned count, UPnPDirContent& dirbuf,
-			  unsigned &didread, unsigned &total,
-			  Error &error) const;
+			  unsigned &didread, unsigned &total) const;
 
 	/** Search the content directory service.
 	 *
@@ -96,31 +92,26 @@ public:
 	 * @param searchstring an UPnP searchcriteria string. Check the
 	 * UPnP document: UPnP-av-ContentDirectory-v1-Service-20020625.pdf
 	 * section 2.5.5. Maybe we'll provide an easier way some day...
-	 * @param[out] dirbuf stores the entries we read.
 	 */
-	bool search(UpnpClient_Handle handle,
-		    const char *objectId, const char *searchstring,
-		    UPnPDirContent &dirbuf,
-		    Error &error) const;
+	UPnPDirContent search(UpnpClient_Handle handle,
+			      const char *objectId,
+			      const char *searchstring) const;
 
 	/** Read metadata for a given node.
 	 *
 	 * @param objectId the UPnP object Id. Root has Id "0"
-	 * @param[out] dirbuf stores the entries we read. At most one entry will be
-	 *   returned.
 	 */
-	bool getMetadata(UpnpClient_Handle handle,
-			 const char *objectId, UPnPDirContent &dirbuf,
-			 Error &error) const;
+	UPnPDirContent getMetadata(UpnpClient_Handle handle,
+				   const char *objectId) const;
 
 	/** Retrieve search capabilities
+	 *
+	 * Throws std::runtime_error on error.
 	 *
 	 * @param[out] result an empty vector: no search, or a single '*' element:
 	 *     any tag can be used in a search, or a list of usable tag names.
 	 */
-	bool getSearchCapabilities(UpnpClient_Handle handle,
-				   std::list<std::string> &result,
-				   Error &error) const;
+	std::list<std::string> getSearchCapabilities(UpnpClient_Handle handle) const;
 
 	gcc_pure
 	std::string GetURI() const {

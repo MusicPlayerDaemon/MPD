@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,6 @@
 
 #include <vector>
 #include <string>
-
-class Error;
 
 /**
  * UPnP Description phase: interpreting the device description which we
@@ -81,8 +79,7 @@ public:
 	 * @param url where the description came from
 	 * @param description the xml device description
 	 */
-	bool Parse(const std::string &url, const char *description,
-		   Error &error);
+	void Parse(const std::string &url, const char *description);
 };
 
 #endif /* _UPNPDEV_HXX_INCLUDED_ */

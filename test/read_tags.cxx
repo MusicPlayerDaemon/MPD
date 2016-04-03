@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,7 @@
 #include "input/InputStream.hxx"
 #include "AudioFormat.hxx"
 #include "tag/TagHandler.hxx"
-#include "tag/TagId3.hxx"
-#include "tag/ApeTag.hxx"
+#include "tag/Generic.hxx"
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
 #include "thread/Cond.hxx"
@@ -62,7 +61,7 @@ print_pair(const char *name, const char *value, gcc_unused void *ctx)
 	printf("\"%s\"=%s\n", name, value);
 }
 
-static const struct tag_handler print_handler = {
+static constexpr TagHandler print_handler = {
 	print_duration,
 	print_tag,
 	print_pair,
@@ -107,16 +106,15 @@ int main(int argc, char **argv)
 		Mutex mutex;
 		Cond cond;
 
-		InputStream *is = InputStream::OpenReady(path.c_str(),
-							 mutex, cond,
-							 error);
-		if (is == NULL) {
+		auto is = InputStream::OpenReady(path.c_str(),
+						 mutex, cond,
+						 error);
+		if (!is) {
 			FormatError(error, "Failed to open %s", path.c_str());
 			return EXIT_FAILURE;
 		}
 
 		success = plugin->ScanStream(*is, print_handler, nullptr);
-		delete is;
 	}
 
 	decoder_plugin_deinit_all();
@@ -127,11 +125,8 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if (empty) {
-		tag_ape_scan2(path, &print_handler, NULL);
-		if (empty)
-			tag_id3_scan(path, &print_handler, NULL);
-	}
+	if (empty)
+		ScanGenericTags(path, print_handler, nullptr);
 
 	return 0;
 }

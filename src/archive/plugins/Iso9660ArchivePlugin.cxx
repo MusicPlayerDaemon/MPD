@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include "../ArchiveFile.hxx"
 #include "../ArchiveVisitor.hxx"
 #include "input/InputStream.hxx"
-#include "input/InputPlugin.hxx"
 #include "fs/Path.hxx"
 #include "util/RefCount.hxx"
 #include "util/Error.hxx"
@@ -66,7 +65,11 @@ public:
 		return iso9660_iso_seek_read(iso, ptr, start, i_size);
 	}
 
-	void Visit(const char *path, ArchiveVisitor &visitor);
+	/**
+	 * @param capacity the path buffer size
+	 */
+	void Visit(char *path, size_t length, size_t capacity,
+		   ArchiveVisitor &visitor);
 
 	virtual void Close() override {
 		Unref();
@@ -84,32 +87,36 @@ static constexpr Domain iso9660_domain("iso9660");
 /* archive open && listing routine */
 
 inline void
-Iso9660ArchiveFile::Visit(const char *psz_path, ArchiveVisitor &visitor)
+Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
+			  ArchiveVisitor &visitor)
 {
-	CdioList_t *entlist;
-	CdioListNode_t *entnode;
-	iso9660_stat_t *statbuf;
-	char pathname[4096];
-
-	entlist = iso9660_ifs_readdir (iso, psz_path);
+	auto *entlist = iso9660_ifs_readdir(iso, path);
 	if (!entlist) {
 		return;
 	}
 	/* Iterate over the list of nodes that iso9660_ifs_readdir gives  */
+	CdioListNode_t *entnode;
 	_CDIO_LIST_FOREACH (entnode, entlist) {
-		statbuf = (iso9660_stat_t *) _cdio_list_node_data (entnode);
+		auto *statbuf = (iso9660_stat_t *)
+			_cdio_list_node_data(entnode);
+		const char *filename = statbuf->filename;
+		if (strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0)
+			continue;
 
-		strcpy(pathname, psz_path);
-		strcat(pathname, statbuf->filename);
+		size_t filename_length = strlen(filename);
+		if (length + filename_length + 1 >= capacity)
+			/* file name is too long */
+			continue;
+
+		memcpy(path + length, filename, filename_length + 1);
+		size_t new_length = length + filename_length;
 
 		if (iso9660_stat_s::_STAT_DIR == statbuf->type ) {
-			if (strcmp(statbuf->filename, ".") && strcmp(statbuf->filename, "..")) {
-				strcat(pathname, "/");
-				Visit(pathname, visitor);
-			}
+			memcpy(path + new_length, "/", 2);
+			Visit(path, new_length + 1, capacity, visitor);
 		} else {
 			//remove leading /
-			visitor.VisitArchiveEntry(pathname + 1);
+			visitor.VisitArchiveEntry(path + 1);
 		}
 	}
 	_cdio_list_free (entlist, true);
@@ -133,7 +140,8 @@ iso9660_archive_open(Path pathname, Error &error)
 void
 Iso9660ArchiveFile::Visit(ArchiveVisitor &visitor)
 {
-	Visit("/", visitor);
+	char path[4096] = "/";
+	Visit(path, 1, sizeof(path), visitor);
 }
 
 /* single archive handling */

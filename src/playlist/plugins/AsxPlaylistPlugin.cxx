@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "tag/TagBuilder.hxx"
 #include "util/ASCII.hxx"
 #include "util/Error.hxx"
+#include "util/StringView.hxx"
 #include "lib/expat/ExpatParser.hxx"
 #include "Log.hxx"
 
@@ -130,7 +131,8 @@ asx_char_data(void *user_data, const XML_Char *s, int len)
 
 	case AsxParser::ENTRY:
 		if (parser->tag_type != TAG_NUM_OF_ITEM_TYPES)
-			parser->tag_builder.AddItem(parser->tag_type, s, len);
+			parser->tag_builder.AddItem(parser->tag_type,
+						    StringView(s, len));
 
 		break;
 	}
@@ -142,7 +144,7 @@ asx_char_data(void *user_data, const XML_Char *s, int len)
  */
 
 static SongEnumerator *
-asx_open_stream(InputStream &is)
+asx_open_stream(InputStreamPtr &&is)
 {
 	AsxParser parser;
 
@@ -152,7 +154,7 @@ asx_open_stream(InputStream &is)
 		expat.SetCharacterDataHandler(asx_char_data);
 
 		Error error;
-		if (!expat.Parse(is, error)) {
+		if (!expat.Parse(*is, error)) {
 			LogError(error);
 			return nullptr;
 		}

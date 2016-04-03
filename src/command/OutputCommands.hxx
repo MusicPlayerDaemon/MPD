@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,18 +23,19 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
+class Response;
 
 CommandResult
-handle_enableoutput(Client &client, ConstBuffer<const char *> args);
+handle_enableoutput(Client &client, Request request, Response &response);
 
 CommandResult
-handle_disableoutput(Client &client, ConstBuffer<const char *> args);
+handle_disableoutput(Client &client, Request request, Response &response);
 
 CommandResult
-handle_toggleoutput(Client &client, ConstBuffer<const char *> args);
+handle_toggleoutput(Client &client, Request request, Response &response);
 
 CommandResult
-handle_devices(Client &client, ConstBuffer<const char *> args);
+handle_devices(Client &client, Request request, Response &response);
 
 #endif

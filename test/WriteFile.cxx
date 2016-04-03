@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "fs/io/FileOutputStream.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
 
 #include <unistd.h>
@@ -42,10 +43,7 @@ Copy(OutputStream &dest, int src)
 		if (nbytes == 0)
 			return true;
 
-		if (!dest.Write(buffer, nbytes, error)) {
-			fprintf(stderr, "%s\n", error.GetMessage());
-			return false;
-		}
+		dest.Write(buffer, nbytes);
 	}
 }
 
@@ -59,20 +57,17 @@ main(int argc, char **argv)
 
 	const Path path = Path::FromFS(argv[1]);
 
-	Error error;
-	FileOutputStream fos(path, error);
-	if (!fos.IsDefined()) {
-		fprintf(stderr, "%s\n", error.GetMessage());
+	try {
+		FileOutputStream fos(path);
+
+		if (!Copy(fos, STDIN_FILENO))
+			return EXIT_FAILURE;
+
+		fos.Commit();
+
+		return EXIT_SUCCESS;
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-
-	if (!Copy(fos, STDIN_FILENO))
-		return EXIT_FAILURE;
-
-	if (!fos.Commit(error)) {
-		fprintf(stderr, "%s\n", error.GetMessage());
-		return EXIT_FAILURE;
-	}
-
-	return EXIT_SUCCESS;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,8 @@
 #include "check.h"
 
 class InputStream;
-struct tag_handler;
+struct TagHandler;
+class TagBuilder;
 
 /**
  * Scan the tags of an #InputStream.  Invokes matching decoder
@@ -33,9 +34,23 @@ struct tag_handler;
  * found)
  */
 bool
-tag_stream_scan(InputStream &is, const tag_handler &handler, void *ctx);
+tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx);
 
 bool
-tag_stream_scan(const char *uri, const tag_handler &handler, void *ctx);
+tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx);
+
+/**
+ * Scan the tags of an #InputStream.  Invokes matching decoder
+ * plugins, and falls back to generic scanners (APE and ID3) if no
+ * tags were found (but the file was recognized).
+ *
+ * @return true if the file was recognized (even if no metadata was
+ * found)
+ */
+bool
+tag_stream_scan(InputStream &is, TagBuilder &builder);
+
+bool
+tag_stream_scan(const char *uri, TagBuilder &builder);
 
 #endif

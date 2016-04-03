@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,8 +24,6 @@
 #include "PeekReader.hxx"
 #include "Compiler.h"
 
-#include <stdint.h>
-
 class GunzipReader;
 
 /**
@@ -43,10 +41,10 @@ public:
 	~AutoGunzipReader();
 
 	/* virtual methods from class Reader */
-	virtual size_t Read(void *data, size_t size, Error &error) override;
+	virtual size_t Read(void *data, size_t size) override;
 
 private:
-	bool Detect(Error &error);
+	void Detect();
 };
 
 #endif

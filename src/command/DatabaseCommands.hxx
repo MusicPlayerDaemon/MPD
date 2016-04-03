@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,39 +23,40 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
+class Response;
 
 CommandResult
-handle_listfiles_db(Client &client, const char *uri);
+handle_listfiles_db(Client &client, Response &r, const char *uri);
 
 CommandResult
-handle_lsinfo2(Client &client, ConstBuffer<const char *> args);
+handle_lsinfo2(Client &client, const char *uri, Response &response);
 
 CommandResult
-handle_find(Client &client, ConstBuffer<const char *> args);
+handle_find(Client &client, Request request, Response &response);
 
 CommandResult
-handle_findadd(Client &client, ConstBuffer<const char *> args);
+handle_findadd(Client &client, Request request, Response &response);
 
 CommandResult
-handle_search(Client &client, ConstBuffer<const char *> args);
+handle_search(Client &client, Request request, Response &response);
 
 CommandResult
-handle_searchadd(Client &client, ConstBuffer<const char *> args);
+handle_searchadd(Client &client, Request request, Response &response);
 
 CommandResult
-handle_searchaddpl(Client &client, ConstBuffer<const char *> args);
+handle_searchaddpl(Client &client, Request request, Response &response);
 
 CommandResult
-handle_count(Client &client, ConstBuffer<const char *> args);
+handle_count(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listall(Client &client, ConstBuffer<const char *> args);
+handle_listall(Client &client, Request request, Response &response);
 
 CommandResult
-handle_list(Client &client, ConstBuffer<const char *> args);
+handle_list(Client &client, Request request, Response &response);
 
 CommandResult
-handle_listallinfo(Client &client, ConstBuffer<const char *> args);
+handle_listallinfo(Client &client, Request request, Response &response);
 
 #endif

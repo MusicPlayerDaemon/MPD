@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,52 +24,52 @@
 #include "SongEnumerator.hxx"
 #include "SongPrint.hxx"
 #include "DetachedSong.hxx"
-#include "SongLoader.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "client/Client.hxx"
+#include "Partition.hxx"
+#include "Instance.hxx"
 
 static void
-playlist_provider_print(Client &client, const char *uri,
+playlist_provider_print(Response &r, Partition &partition,
+			const SongLoader &loader,
+			const char *uri,
 			SongEnumerator &e, bool detail)
 {
 	const std::string base_uri = uri != nullptr
 		? PathTraitsUTF8::GetParent(uri)
 		: std::string(".");
 
-	const SongLoader loader(client);
-
-	DetachedSong *song;
+	std::unique_ptr<DetachedSong> song;
 	while ((song = e.NextSong()) != nullptr) {
 		if (playlist_check_translate_song(*song, base_uri.c_str(),
 						  loader) &&
 		    detail)
-			song_print_info(client, *song);
+			song_print_info(r, partition, *song);
 		else
 			/* fallback if no detail was requested or no
 			   detail was available */
-			song_print_uri(client, *song);
-
-		delete song;
+			song_print_uri(r, partition, *song);
 	}
 }
 
 bool
-playlist_file_print(Client &client, const char *uri, bool detail)
+playlist_file_print(Response &r, Partition &partition,
+		    const SongLoader &loader,
+		    const char *uri, bool detail)
 {
 	Mutex mutex;
 	Cond cond;
 
 	SongEnumerator *playlist = playlist_open_any(uri,
 #ifdef ENABLE_DATABASE
-						     client.GetStorage(),
+						     partition.instance.storage,
 #endif
 						     mutex, cond);
 	if (playlist == nullptr)
 		return false;
 
-	playlist_provider_print(client, uri, *playlist, detail);
+	playlist_provider_print(r, partition, loader, uri, *playlist, detail);
 	delete playlist;
 	return true;
 }

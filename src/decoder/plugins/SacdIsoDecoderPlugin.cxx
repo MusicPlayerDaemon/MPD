@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2014 The Music Player Daemon Project
+ * Copyright (C) 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -367,7 +367,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 }
 
 static bool
-sacdiso_scan_file(Path path_fs, const struct tag_handler* handler, void* handler_ctx) {
+sacdiso_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_ctx) {
 	string path_container = get_container_path(path_fs.c_str());
 	if (path_container.empty()) {
 		return false;

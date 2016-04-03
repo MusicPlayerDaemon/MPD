@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 #include <string.h>
 
 const void *
-PeekReader::Peek(size_t size, Error &error)
+PeekReader::Peek(size_t size)
 {
 	assert(size > 0);
 	assert(size < sizeof(buffer));
@@ -35,7 +35,7 @@ PeekReader::Peek(size_t size, Error &error)
 
 	do {
 		size_t nbytes = next.Read(buffer + buffer_size,
-					size - buffer_size, error);
+					  size - buffer_size);
 		if (nbytes == 0)
 			return nullptr;
 
@@ -46,7 +46,7 @@ PeekReader::Peek(size_t size, Error &error)
 }
 
 size_t
-PeekReader::Read(void *data, size_t size, Error &error)
+PeekReader::Read(void *data, size_t size)
 {
 	size_t buffer_remaining = buffer_size - buffer_position;
 	if (buffer_remaining > 0) {
@@ -56,5 +56,5 @@ PeekReader::Read(void *data, size_t size, Error &error)
 		return nbytes;
 	}
 
-	return next.Read(data, size, error);
+	return next.Read(data, size);
 }

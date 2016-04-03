@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 #include "config/Block.hxx"
 #include "input/InputStream.hxx"
 #include "tag/TagBuilder.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Alloc.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -94,7 +94,7 @@ enum key {
 	Other,
 };
 
-const char* key_str[] = {
+static const char *const key_str[] = {
 	"duration",
 	"title",
 	"stream_url",
@@ -234,8 +234,8 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 		      Mutex &mutex, Cond &cond)
 {
 	Error error;
-	InputStream *input_stream = InputStream::OpenReady(url, mutex, cond,
-							   error);
+	auto input_stream = InputStream::OpenReady(url, mutex, cond,
+						   error);
 	if (input_stream == nullptr) {
 		if (error.IsDefined())
 			LogError(error);
@@ -260,7 +260,6 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 				done = true;
 			} else {
 				mutex.unlock();
-				delete input_stream;
 				return -1;
 			}
 		}
@@ -279,7 +278,6 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	}
 
 	mutex.unlock();
-	delete input_stream;
 
 	return 0;
 }

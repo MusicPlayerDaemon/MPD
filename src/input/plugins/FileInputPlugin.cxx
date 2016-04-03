@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,6 @@
 
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <errno.h>
 
 static constexpr Domain file_domain("file");
 
@@ -61,14 +60,10 @@ InputStream *
 OpenFileInputStream(Path path,
 		    Mutex &mutex, Cond &cond,
 		    Error &error)
-{
-	FileReader reader(path, error);
-	if (!reader.IsDefined())
-		return nullptr;
+try {
+	FileReader reader(path);
 
-	FileInfo info;
-	if (!reader.GetFileInfo(info, error))
-		return nullptr;
+	const FileInfo info = reader.GetFileInfo();
 
 	if (!info.IsRegular()) {
 		error.Format(file_domain, "Not a regular file: %s",
@@ -84,6 +79,9 @@ OpenFileInputStream(Path path,
 	return new FileInputStream(path.ToUTF8().c_str(),
 				   std::move(reader), info.GetSize(),
 				   mutex, cond);
+} catch (const std::exception &e) {
+	error.Set(std::current_exception());
+	return nullptr;
 }
 
 static InputStream *
@@ -98,23 +96,24 @@ input_file_open(gcc_unused const char *filename,
 
 bool
 FileInputStream::Seek(offset_type new_offset, Error &error)
-{
-	if (!reader.Seek((off_t)new_offset, error))
-		return false;
-
+try {
+	reader.Seek((off_t)new_offset);
 	offset = new_offset;
 	return true;
+} catch (const std::exception &e) {
+	error.Set(std::current_exception());
+	return false;
 }
 
 size_t
 FileInputStream::Read(void *ptr, size_t read_size, Error &error)
-{
-	ssize_t nbytes = reader.Read(ptr, read_size, error);
-	if (nbytes < 0)
-		return 0;
-
+try {
+	size_t nbytes = reader.Read(ptr, read_size);
 	offset += nbytes;
-	return (size_t)nbytes;
+	return nbytes;
+} catch (const std::exception &e) {
+	error.Set(std::current_exception());
+	return 0;
 }
 
 const InputPlugin input_plugin_file = {

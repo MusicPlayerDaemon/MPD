@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,34 +23,38 @@
 #include <stdint.h>
 
 struct playlist;
+struct Partition;
 class SongFilter;
-class Client;
-class Error;
+class Response;
 
 /**
  * Sends the whole playlist to the client, song URIs only.
  */
 void
-playlist_print_uris(Client &client, const playlist &playlist);
+playlist_print_uris(Response &r, Partition &partition,
+		    const playlist &playlist);
 
 /**
  * Sends a range of the playlist to the client, including all known
  * information about the songs.  The "end" offset is decreased
  * automatically if it is too large; passing UINT_MAX is allowed.
  * This function however fails when the start offset is invalid.
+ *
+ * Throws #PlaylistError if the range is invalid.
  */
-bool
-playlist_print_info(Client &client, const playlist &playlist,
+void
+playlist_print_info(Response &r, Partition &partition,
+		    const playlist &playlist,
 		    unsigned start, unsigned end);
 
 /**
  * Sends the song with the specified id to the client.
  *
- * @return true on suite, false if there is no such song
+ * Throws #PlaylistError if the range is invalid.
  */
-bool
-playlist_print_id(Client &client, const playlist &playlist,
-		  unsigned id);
+void
+playlist_print_id(Response &r, Partition &partition,
+		  const playlist &playlist, unsigned id);
 
 /**
  * Sends the current song to the client.
@@ -58,30 +62,34 @@ playlist_print_id(Client &client, const playlist &playlist,
  * @return true on success, false if there is no current song
  */
 bool
-playlist_print_current(Client &client, const playlist &playlist);
+playlist_print_current(Response &r, Partition &partition,
+		       const playlist &playlist);
 
 /**
  * Find songs in the playlist.
  */
 void
-playlist_print_find(Client &client, const playlist &playlist,
+playlist_print_find(Response &r, Partition &partition,
+		    const playlist &playlist,
 		    const SongFilter &filter);
 
 /**
  * Print detailed changes since the specified playlist version.
  */
 void
-playlist_print_changes_info(Client &client,
+playlist_print_changes_info(Response &r, Partition &partition,
 			    const playlist &playlist,
-			    uint32_t version);
+			    uint32_t version,
+			    unsigned start, unsigned end);
 
 /**
  * Print changes since the specified playlist version, position only.
  */
 void
-playlist_print_changes_position(Client &client,
+playlist_print_changes_position(Response &r,
 				const playlist &playlist,
-				uint32_t version);
+				uint32_t version,
+				unsigned start, unsigned end);
 
 /**
  * Send the stored playlist to the client.
@@ -89,10 +97,9 @@ playlist_print_changes_position(Client &client,
  * @param client the client which requested the playlist
  * @param name_utf8 the name of the stored playlist in UTF-8 encoding
  * @param detail true if all details should be printed
- * @return true on success, false if the playlist does not exist
  */
-bool
-spl_print(Client &client, const char *name_utf8, bool detail,
-	  Error &error);
+void
+spl_print(Response &r, Partition &partition,
+	  const char *name_utf8, bool detail);
 
 #endif

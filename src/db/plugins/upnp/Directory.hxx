@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,9 @@ class UPnPDirContent {
 public:
 	std::vector<UPnPDirObject> objects;
 
+	UPnPDirContent() = default;
+	UPnPDirContent(UPnPDirContent &&) = default;
+
 	~UPnPDirContent();
 
 	gcc_pure
@@ -60,7 +63,7 @@ public:
 	 * actually global, nothing really bad will happen if you mix
 	 * up...
 	 */
-	bool parse(const char *didltext, Error &error);
+	void Parse(const char *didltext);
 };
 
 #endif /* _UPNPDIRCONTENT_H_X_INCLUDED_ */

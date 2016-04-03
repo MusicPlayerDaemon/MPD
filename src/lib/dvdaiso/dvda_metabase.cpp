@@ -80,7 +80,7 @@ dvda_metabase_t::~dvda_metabase_t() {
 	}
 }
 
-bool dvda_metabase_t::get_info(uint32_t track_index, bool downmix, const struct tag_handler* handler, void* handler_ctx) {
+bool dvda_metabase_t::get_info(uint32_t track_index, bool downmix, const struct TagHandler& handler, void* handler_ctx) {
 	if (!metabase_loaded) {
 		return false;
 	}

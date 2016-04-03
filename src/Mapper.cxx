@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,9 +24,8 @@
 #include "config.h"
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "fs/Traits.hxx"
-#include "fs/Charset.hxx"
 #include "fs/CheckFile.hxx"
+#include "util/StringCompare.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "storage/StorageInterface.hxx"
@@ -98,7 +97,7 @@ map_fs_to_utf8(Path path_fs)
 			return std::string();
 
 		auto relative = music_dir_fs.Relative(path_fs);
-		if (relative == nullptr || *relative == 0)
+		if (relative == nullptr || StringIsEmpty(relative))
 			return std::string();
 
 		path_fs = Path::FromFS(relative);

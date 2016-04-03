@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,14 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
+class Response;
+class Path;
 
 CommandResult
-handle_listfiles_local(Client &client, const char *path_utf8);
+handle_listfiles_local(Response &response, Path path_fs);
 
 CommandResult
-handle_read_comments(Client &client, ConstBuffer<const char *> args);
+handle_read_comments(Client &client, Request request, Response &response);
 
 #endif

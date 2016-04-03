@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,11 @@
 #include "config.h"
 #include "GmeDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
+#include "config/Block.cxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/Alloc.hxx"
 #include "util/FormatString.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
@@ -51,6 +51,23 @@ struct GmeContainerPath {
 	AllocatedPath path;
 	unsigned track;
 };
+
+#if GME_VERSION >= 0x000600
+static int gme_accuracy;
+#endif
+
+static bool
+gme_plugin_init(gcc_unused const ConfigBlock &block)
+{
+#if GME_VERSION >= 0x000600
+	auto accuracy = block.GetBlockParam("accuracy");
+	gme_accuracy = accuracy != nullptr
+		? (int)accuracy->GetBoolValue()
+		: -1;
+#endif
+
+	return true;
+}
 
 gcc_pure
 static unsigned
@@ -123,6 +140,14 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
+	FormatDebug(gme_domain, "emulator type '%s'\n",
+		    gme_type_system(gme_type(emu)));
+
+#if GME_VERSION >= 0x000600
+	if (gme_accuracy >= 0)
+		gme_enable_accuracy(emu, gme_accuracy);
+#endif
+
 	gme_info_t *ti;
 	gme_err = gme_track_info(emu, &ti, container.track);
 	if (gme_err != nullptr) {
@@ -131,8 +156,11 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
-	const SignedSongTime song_len = ti->length > 0
-		? SignedSongTime::FromMS(ti->length)
+	const int length = ti->play_length;
+	gme_free_info(ti);
+
+	const SignedSongTime song_len = length > 0
+		? SignedSongTime::FromMS(length)
 		: SignedSongTime::Negative();
 
 	/* initialize the MPD decoder */
@@ -143,7 +171,6 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 				       SampleFormat::S16, GME_CHANNELS,
 				       error)) {
 		LogError(error);
-		gme_free_info(ti);
 		gme_delete(emu);
 		return;
 	}
@@ -154,8 +181,8 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 	if (gme_err != nullptr)
 		LogWarning(gme_domain, gme_err);
 
-	if (ti->length > 0)
-		gme_set_fade(emu, ti->length);
+	if (length > 0)
+		gme_set_fade(emu, length);
 
 	/* play */
 	DecoderCommand cmd;
@@ -171,26 +198,27 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned where = decoder_seek_time(decoder).ToMS();
 			gme_err = gme_seek(emu, where);
-			if (gme_err != nullptr)
+			if (gme_err != nullptr) {
 				LogWarning(gme_domain, gme_err);
-			decoder_command_finished(decoder);
+				decoder_seek_error(decoder);
+			} else
+				decoder_command_finished(decoder);
 		}
 
 		if (gme_track_ended(emu))
 			break;
 	} while (cmd != DecoderCommand::STOP);
 
-	gme_free_info(ti);
 	gme_delete(emu);
 }
 
 static void
 ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
-	    const struct tag_handler *handler, void *handler_ctx)
+	    const TagHandler &handler, void *handler_ctx)
 {
-	if (info.length > 0)
+	if (info.play_length > 0)
 		tag_handler_invoke_duration(handler, handler_ctx,
-					    SongTime::FromMS(info.length));
+					    SongTime::FromMS(info.play_length));
 
 	if (info.song != nullptr) {
 		if (track_count > 1) {
@@ -226,7 +254,7 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 
 static bool
 ScanMusicEmu(Music_Emu *emu, unsigned song_num,
-	     const struct tag_handler *handler, void *handler_ctx)
+	     const TagHandler &handler, void *handler_ctx)
 {
 	gme_info_t *ti;
 	const char *gme_err = gme_track_info(emu, &ti, song_num);
@@ -246,7 +274,7 @@ ScanMusicEmu(Music_Emu *emu, unsigned song_num,
 
 static bool
 gme_scan_file(Path path_fs,
-	      const struct tag_handler *handler, void *handler_ctx)
+	      const TagHandler &handler, void *handler_ctx)
 {
 	const auto container = ParseContainerPath(path_fs);
 
@@ -274,7 +302,7 @@ static const char *const gme_suffixes[] = {
 extern const struct DecoderPlugin gme_decoder_plugin;
 const struct DecoderPlugin gme_decoder_plugin = {
 	"gme",
-	nullptr,
+	gme_plugin_init,
 	nullptr,
 	nullptr,
 	gme_file_decode,

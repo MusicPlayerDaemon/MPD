@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -243,7 +243,7 @@ wavpack_replaygain(ReplayGainInfo &rgi,
 static void
 wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
 		      TagType type,
-		      const struct tag_handler *handler, void *handler_ctx)
+		      const TagHandler &handler, void *handler_ctx)
 {
 	char buffer[1024];
 	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
@@ -256,7 +256,7 @@ wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
 
 static void
 wavpack_scan_pair(WavpackContext *wpc, const char *name,
-		  const struct tag_handler *handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx)
 {
 	char buffer[8192];
 	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
@@ -271,7 +271,7 @@ wavpack_scan_pair(WavpackContext *wpc, const char *name,
  */
 static bool
 wavpack_scan_file(Path path_fs,
-		  const struct tag_handler *handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
@@ -302,7 +302,7 @@ wavpack_scan_file(Path path_fs,
 		wavpack_scan_tag_item(wpc, i->name, i->type,
 				      handler, handler_ctx);
 
-	if (handler->pair != nullptr) {
+	if (handler.pair != nullptr) {
 		char name[64];
 
 		for (int i = 0, n = WavpackGetNumTagItems(wpc);
@@ -486,13 +486,13 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 
 	char *wvc_url = xstrcatdup(uri, "c");
 
-	InputStream *is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
+	auto is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
 	free(wvc_url);
 
 	if (is_wvc == nullptr)
 		return nullptr;
 
-	return new WavpackInput(decoder, *is_wvc);
+	return new WavpackInput(decoder, *is_wvc.release());
 }
 
 /*

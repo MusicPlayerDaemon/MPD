@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,11 +19,12 @@
 
 #include "config.h"
 #include "MessageCommands.hxx"
+#include "Request.hxx"
 #include "client/Client.hxx"
 #include "client/ClientList.hxx"
+#include "client/Response.hxx"
 #include "Instance.hxx"
 #include "Partition.hxx"
-#include "protocol/Result.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <set>
@@ -32,7 +33,7 @@
 #include <assert.h>
 
 CommandResult
-handle_subscribe(Client &client, ConstBuffer<const char *> args)
+handle_subscribe(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
 	const char *const channel_name = args[0];
@@ -42,18 +43,15 @@ handle_subscribe(Client &client, ConstBuffer<const char *> args)
 		return CommandResult::OK;
 
 	case Client::SubscribeResult::INVALID:
-		command_error(client, ACK_ERROR_ARG,
-			      "invalid channel name");
+		r.Error(ACK_ERROR_ARG, "invalid channel name");
 		return CommandResult::ERROR;
 
 	case Client::SubscribeResult::ALREADY:
-		command_error(client, ACK_ERROR_EXIST,
-			      "already subscribed to this channel");
+		r.Error(ACK_ERROR_EXIST, "already subscribed to this channel");
 		return CommandResult::ERROR;
 
 	case Client::SubscribeResult::FULL:
-		command_error(client, ACK_ERROR_EXIST,
-			      "subscription list is full");
+		r.Error(ACK_ERROR_EXIST, "subscription list is full");
 		return CommandResult::ERROR;
 	}
 
@@ -63,7 +61,7 @@ handle_subscribe(Client &client, ConstBuffer<const char *> args)
 }
 
 CommandResult
-handle_unsubscribe(Client &client, ConstBuffer<const char *> args)
+handle_unsubscribe(Client &client, Request args, Response &r)
 {
 	assert(args.size == 1);
 	const char *const channel_name = args[0];
@@ -71,14 +69,13 @@ handle_unsubscribe(Client &client, ConstBuffer<const char *> args)
 	if (client.Unsubscribe(channel_name))
 		return CommandResult::OK;
 	else {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "not subscribed to this channel");
+		r.Error(ACK_ERROR_NO_EXIST, "not subscribed to this channel");
 		return CommandResult::ERROR;
 	}
 }
 
 CommandResult
-handle_channels(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_channels(Client &client, gcc_unused Request args, Response &r)
 {
 	assert(args.IsEmpty());
 
@@ -88,22 +85,22 @@ handle_channels(Client &client, gcc_unused ConstBuffer<const char *> args)
 				c.subscriptions.end());
 
 	for (const auto &channel : channels)
-		client_printf(client, "channel: %s\n", channel.c_str());
+		r.Format("channel: %s\n", channel.c_str());
 
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_read_messages(Client &client,
-		     gcc_unused ConstBuffer<const char *> args)
+		     gcc_unused Request args, Response &r)
 {
 	assert(args.IsEmpty());
 
 	while (!client.messages.empty()) {
 		const ClientMessage &msg = client.messages.front();
 
-		client_printf(client, "channel: %s\nmessage: %s\n",
-			      msg.GetChannel(), msg.GetMessage());
+		r.Format("channel: %s\nmessage: %s\n",
+			 msg.GetChannel(), msg.GetMessage());
 		client.messages.pop_front();
 	}
 
@@ -111,7 +108,7 @@ handle_read_messages(Client &client,
 }
 
 CommandResult
-handle_send_message(Client &client, ConstBuffer<const char *> args)
+handle_send_message(Client &client, Request args, Response &r)
 {
 	assert(args.size == 2);
 
@@ -119,8 +116,7 @@ handle_send_message(Client &client, ConstBuffer<const char *> args)
 	const char *const message_text = args[1];
 
 	if (!client_message_valid_channel_name(channel_name)) {
-		command_error(client, ACK_ERROR_ARG,
-			      "invalid channel name");
+		r.Error(ACK_ERROR_ARG, "invalid channel name");
 		return CommandResult::ERROR;
 	}
 
@@ -133,8 +129,8 @@ handle_send_message(Client &client, ConstBuffer<const char *> args)
 	if (sent)
 		return CommandResult::OK;
 	else {
-		command_error(client, ACK_ERROR_NO_EXIST,
-			      "nobody is subscribed to this channel");
+		r.Error(ACK_ERROR_NO_EXIST,
+			"nobody is subscribed to this channel");
 		return CommandResult::ERROR;
 	}
 }

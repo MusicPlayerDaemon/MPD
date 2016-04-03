@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,9 @@
 
 #include "config.h"
 #include "TagStream.hxx"
+#include "tag/Generic.hxx"
+#include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "decoder/DecoderList.hxx"
@@ -42,7 +45,7 @@ CheckDecoderPlugin(const DecoderPlugin &plugin,
 }
 
 bool
-tag_stream_scan(InputStream &is, const tag_handler &handler, void *ctx)
+tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 {
 	assert(is.IsReady());
 
@@ -63,17 +66,37 @@ tag_stream_scan(InputStream &is, const tag_handler &handler, void *ctx)
 }
 
 bool
-tag_stream_scan(const char *uri, const tag_handler &handler, void *ctx)
+tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx)
 {
 	Mutex mutex;
 	Cond cond;
 
-	InputStream *is = InputStream::OpenReady(uri, mutex, cond,
-						 IgnoreError());
-	if (is == nullptr)
+	auto is = InputStream::OpenReady(uri, mutex, cond,
+					 IgnoreError());
+	return is && tag_stream_scan(*is, handler, ctx);
+}
+
+bool
+tag_stream_scan(InputStream &is, TagBuilder &builder)
+{
+	assert(is.IsReady());
+
+	if (!tag_stream_scan(is, full_tag_handler, &builder))
 		return false;
 
-	bool success = tag_stream_scan(*is, handler, ctx);
-	delete is;
-	return success;
+	if (builder.IsEmpty())
+		ScanGenericTags(is, full_tag_handler, &builder);
+
+	return true;
+}
+
+bool
+tag_stream_scan(const char *uri, TagBuilder &builder)
+{
+	Mutex mutex;
+	Cond cond;
+
+	auto is = InputStream::OpenReady(uri, mutex, cond,
+					 IgnoreError());
+	return is && tag_stream_scan(*is, builder);
 }

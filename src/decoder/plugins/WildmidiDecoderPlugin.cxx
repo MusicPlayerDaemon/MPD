@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -123,7 +123,7 @@ wildmidi_file_decode(Decoder &decoder, Path path_fs)
 
 static bool
 wildmidi_scan_file(Path path_fs,
-		   const struct tag_handler *handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx)
 {
 	midi *wm = WildMidi_Open(path_fs.c_str());
 	if (wm == nullptr)

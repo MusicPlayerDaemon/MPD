@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,36 +21,66 @@
 #define MPD_PROTOCOL_ARGPARSER_HXX
 
 #include "check.h"
+#include "Compiler.h"
+
+#include <limits>
 
 #include <stdint.h>
 
-class Client;
 class SongTime;
 class SignedSongTime;
 
-bool
-check_uint32(Client &client, uint32_t *dst, const char *s);
+gcc_pure
+uint32_t
+ParseCommandArgU32(const char *s);
 
-bool
-check_int(Client &client, int *value_r, const char *s);
+gcc_pure
+int
+ParseCommandArgInt(const char *s, int min_value, int max_value);
 
-bool
-check_range(Client &client, unsigned *value_r1, unsigned *value_r2,
-	    const char *s);
+gcc_pure
+int
+ParseCommandArgInt(const char *s);
 
-bool
-check_unsigned(Client &client, unsigned *value_r, const char *s);
+struct RangeArg {
+	unsigned start, end;
 
-bool
-check_bool(Client &client, bool *value_r, const char *s);
+	void SetAll() {
+		start = 0;
+		end = std::numeric_limits<unsigned>::max();
+	}
 
-bool
-check_float(Client &client, float *value_r, const char *s);
+	static constexpr RangeArg All() {
+		return { 0, std::numeric_limits<unsigned>::max() };
+	}
+};
 
-bool
-ParseCommandArg(Client &client, SongTime &value_r, const char *s);
+gcc_pure
+RangeArg
+ParseCommandArgRange(const char *s);
 
+gcc_pure
+unsigned
+ParseCommandArgUnsigned(const char *s, unsigned max_value);
+
+gcc_pure
+unsigned
+ParseCommandArgUnsigned(const char *s);
+
+gcc_pure
 bool
-ParseCommandArg(Client &client, SignedSongTime &value_r, const char *s);
+ParseCommandArgBool(const char *s);
+
+gcc_pure
+float
+ParseCommandArgFloat(const char *s);
+
+gcc_pure
+SongTime
+ParseCommandArgSongTime(const char *s);
+
+gcc_pure
+SignedSongTime
+ParseCommandArgSignedSongTime(const char *s);
 
 #endif

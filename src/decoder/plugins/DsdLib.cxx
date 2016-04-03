@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@
 #include "input/InputStream.hxx"
 #include "tag/TagId3.hxx"
 #include "util/Error.hxx"
-#include "util/Alloc.hxx"
 
 #include <string.h>
 #include <stdlib.h>
@@ -106,7 +105,7 @@ dsdlib_valid_freq(uint32_t samplefreq)
 #ifdef ENABLE_ID3TAG
 void
 dsdlib_tag_id3(InputStream &is,
-	       const struct tag_handler *handler,
+	       const TagHandler &handler,
 	       void *handler_ctx, offset_type tagoffset)
 {
 	if (tagoffset == 0 || !is.KnownSize())

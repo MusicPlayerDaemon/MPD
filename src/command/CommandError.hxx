@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,18 +21,19 @@
 #define MPD_COMMAND_ERROR_HXX
 
 #include "CommandResult.hxx"
-#include "PlaylistError.hxx"
 
-class Client;
+#include <exception>
+
+class Response;
 class Error;
-
-CommandResult
-print_playlist_result(Client &client, PlaylistResult result);
 
 /**
  * Send the #Error to the client.
  */
 CommandResult
-print_error(Client &client, const Error &error);
+print_error(Response &r, const Error &error);
+
+void
+PrintError(Response &r, std::exception_ptr ep);
 
 #endif

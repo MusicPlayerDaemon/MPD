@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,9 +26,9 @@
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/TextFile.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagSettings.h"
+#include "tag/Settings.hxx"
 #include "fs/Charset.hxx"
-#include "util/StringUtil.hxx"
+#include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
@@ -58,7 +58,7 @@ db_save_internal(BufferedOutputStream &os, const Directory &music_root)
 	os.Format("%s%s\n", DIRECTORY_FS_CHARSET, GetFSCharset());
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
-		if (!ignore_tag_items[i])
+		if (IsTagEnabled(i))
 			os.Format(DB_TAG_PREFIX "%s\n", tag_item_names[i]);
 
 	os.Format("%s\n", DIRECTORY_INFO_END);
@@ -72,7 +72,6 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 	char *line;
 	unsigned format = 0;
 	bool found_charset = false, found_version = false;
-	bool success;
 	bool tags[TAG_NUM_OF_ITEM_TYPES];
 
 	/* get initial info */
@@ -86,8 +85,10 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 
 	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, DIRECTORY_INFO_END) != 0) {
-		if (StringStartsWith(line, DB_FORMAT_PREFIX)) {
-			format = atoi(line + sizeof(DB_FORMAT_PREFIX) - 1);
+		const char *p;
+
+		if ((p = StringAfterPrefix(line, DB_FORMAT_PREFIX))) {
+			format = atoi(p);
 		} else if (StringStartsWith(line, DIRECTORY_MPD_VERSION)) {
 			if (found_version) {
 				error.Set(db_domain, "Duplicate version line");
@@ -95,9 +96,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 			}
 
 			found_version = true;
-		} else if (StringStartsWith(line, DIRECTORY_FS_CHARSET)) {
-			const char *new_charset;
-
+		} else if ((p = StringAfterPrefix(line, DIRECTORY_FS_CHARSET))) {
 			if (found_charset) {
 				error.Set(db_domain, "Duplicate charset line");
 				return false;
@@ -105,7 +104,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 
 			found_charset = true;
 
-			new_charset = line + sizeof(DIRECTORY_FS_CHARSET) - 1;
+			const char *new_charset = p;
 			const char *const old_charset = GetFSCharset();
 			if (*old_charset != 0
 			    && strcmp(new_charset, old_charset) != 0) {
@@ -116,8 +115,8 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 					     new_charset, old_charset);
 				return false;
 			}
-		} else if (StringStartsWith(line, DB_TAG_PREFIX)) {
-			const char *name = line + sizeof(DB_TAG_PREFIX) - 1;
+		} else if ((p = StringAfterPrefix(line, DB_TAG_PREFIX))) {
+			const char *name = p;
 			TagType tag = tag_name_parse(name);
 			if (tag == TAG_NUM_OF_ITEM_TYPES) {
 				error.Format(db_domain,
@@ -142,7 +141,7 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 	}
 
 	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		if (!ignore_tag_items[i] && !tags[i]) {
+		if (IsTagEnabled(i) && !tags[i]) {
 			error.Set(db_domain,
 				  "Tag list mismatch, "
 				  "discarding database file");
@@ -152,9 +151,6 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 
 	LogDebug(db_domain, "reading DB");
 
-	db_lock();
-	success = directory_load(file, music_root, error);
-	db_unlock();
-
-	return success;
+	const ScopeDatabaseLock protect;
+	return directory_load(file, music_root, error);
 }

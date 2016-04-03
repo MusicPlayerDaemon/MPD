@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,9 +29,7 @@
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "Instance.hxx"
 #include "system/FatalError.hxx"
-#include "thread/Id.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Util.hxx"
 
@@ -47,7 +45,6 @@ UpdateService::UpdateService(EventLoop &_loop, SimpleDatabase &_db,
 	:DeferredMonitor(_loop),
 	 db(_db), storage(_storage),
 	 listener(_listener),
-	 progress(UPDATE_PROGRESS_IDLE),
 	 update_task_id(0),
 	 walk(nullptr)
 {
@@ -80,9 +77,11 @@ UpdateService::CancelMount(const char *uri)
 	/* determine which (mounted) database will be updated and what
 	   storage will be scanned */
 
-	db_lock();
-	const auto lr = db.GetRoot().LookupDirectory(uri);
-	db_unlock();
+	Directory::LookupResult lr;
+	{
+		const ScopeDatabaseLock protect;
+		lr = db.GetRoot().LookupDirectory(uri);
+	}
 
 	if (!lr.directory->IsMount())
 		return;
@@ -127,9 +126,11 @@ UpdateService::Task()
 			      next.discard);
 
 	if (modified || !next.db->FileExists()) {
-		Error error;
-		if (!next.db->Save(error))
-			LogError(error, "Failed to save database");
+		try {
+			next.db->Save();
+		} catch (const std::exception &e) {
+			LogError(e, "Failed to save database");
+		}
 	}
 
 	if (!next.path_utf8.empty())
@@ -138,7 +139,6 @@ UpdateService::Task()
 	else
 		LogDebug(update_domain, "finished");
 
-	progress = UPDATE_PROGRESS_DONE;
 	DeferredMonitor::Schedule();
 }
 
@@ -155,7 +155,6 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 	assert(GetEventLoop().IsInsideOrNull());
 	assert(walk == nullptr);
 
-	progress = UPDATE_PROGRESS_RUNNING;
 	modified = false;
 
 	next = std::move(i);
@@ -188,9 +187,12 @@ UpdateService::Enqueue(const char *path, bool discard)
 	SimpleDatabase *db2;
 	Storage *storage2;
 
-	db_lock();
-	const auto lr = db.GetRoot().LookupDirectory(path);
-	db_unlock();
+	Directory::LookupResult lr;
+	{
+		const ScopeDatabaseLock protect;
+		lr = db.GetRoot().LookupDirectory(path);
+	}
+
 	if (lr.directory->IsMount()) {
 		/* follow the mountpoint, update the mounted
 		   database */
@@ -226,7 +228,7 @@ UpdateService::Enqueue(const char *path, bool discard)
 		   happen */
 		return 0;
 
-	if (progress != UPDATE_PROGRESS_IDLE) {
+	if (walk != nullptr) {
 		const unsigned id = GenerateId();
 		if (!queue.Push(*db2, *storage2, path, discard, id))
 			return 0;
@@ -249,7 +251,6 @@ UpdateService::Enqueue(const char *path, bool discard)
 void
 UpdateService::RunDeferred()
 {
-	assert(progress == UPDATE_PROGRESS_DONE);
 	assert(next.IsDefined());
 	assert(walk != nullptr);
 
@@ -273,7 +274,5 @@ UpdateService::RunDeferred()
 	if (i.IsDefined()) {
 		/* schedule the next path */
 		StartThread(std::move(i));
-	} else {
-		progress = UPDATE_PROGRESS_IDLE;
 	}
 }

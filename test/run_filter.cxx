@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,6 @@
 #include "filter/FilterInternal.hxx"
 #include "pcm/Volume.hxx"
 #include "mixer/MixerControl.hxx"
-#include "stdbin.h"
 #include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "system/FatalError.hxx"
@@ -68,9 +67,8 @@ load_filter(const char *name)
 }
 
 int main(int argc, char **argv)
-{
+try {
 	struct audio_format_string af_string;
-	Error error2;
 	char buffer[4096];
 
 	if (argc < 3 || argc > 4) {
@@ -85,8 +83,7 @@ int main(int argc, char **argv)
 	/* read configuration file (mpd.conf) */
 
 	config_global_init();
-	if (!ReadConfigFile(config_path, error2))
-		FatalError(error2);
+	ReadConfigFile(config_path);
 
 	/* parse the audio format */
 
@@ -152,5 +149,8 @@ int main(int argc, char **argv)
 
 	config_global_finish();
 
-	return 0;
-}
+	return EXIT_SUCCESS;
+ } catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
+ }

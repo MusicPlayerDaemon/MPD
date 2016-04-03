@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,111 +19,147 @@
 
 #include "config.h"
 #include "CommandError.hxx"
+#include "PlaylistError.hxx"
 #include "db/DatabaseError.hxx"
-#include "protocol/Result.hxx"
+#include "LocateUri.hxx"
+#include "client/Response.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-#include <assert.h>
-#include <string.h>
-#include <errno.h>
+#include <system_error>
 
-CommandResult
-print_playlist_result(Client &client, PlaylistResult result)
+#include <assert.h>
+
+gcc_const
+static enum ack
+ToAck(PlaylistResult result)
 {
 	switch (result) {
 	case PlaylistResult::SUCCESS:
-		return CommandResult::OK;
-
-	case PlaylistResult::ERRNO:
-		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      strerror(errno));
-		return CommandResult::ERROR;
+		break;
 
 	case PlaylistResult::DENIED:
-		command_error(client, ACK_ERROR_PERMISSION, "Access denied");
-		return CommandResult::ERROR;
+		return ACK_ERROR_PERMISSION;
 
 	case PlaylistResult::NO_SUCH_SONG:
-		command_error(client, ACK_ERROR_NO_EXIST, "No such song");
-		return CommandResult::ERROR;
-
 	case PlaylistResult::NO_SUCH_LIST:
-		command_error(client, ACK_ERROR_NO_EXIST, "No such playlist");
-		return CommandResult::ERROR;
+		return ACK_ERROR_NO_EXIST;
 
 	case PlaylistResult::LIST_EXISTS:
-		command_error(client, ACK_ERROR_EXIST,
-			      "Playlist already exists");
-		return CommandResult::ERROR;
+		return ACK_ERROR_EXIST;
 
 	case PlaylistResult::BAD_NAME:
-		command_error(client, ACK_ERROR_ARG,
-			      "playlist name is invalid: "
-			      "playlist names may not contain slashes,"
-			      " newlines or carriage returns");
-		return CommandResult::ERROR;
-
 	case PlaylistResult::BAD_RANGE:
-		command_error(client, ACK_ERROR_ARG, "Bad song index");
-		return CommandResult::ERROR;
+		return ACK_ERROR_ARG;
 
 	case PlaylistResult::NOT_PLAYING:
-		command_error(client, ACK_ERROR_PLAYER_SYNC, "Not playing");
-		return CommandResult::ERROR;
+		return ACK_ERROR_PLAYER_SYNC;
 
 	case PlaylistResult::TOO_LARGE:
-		command_error(client, ACK_ERROR_PLAYLIST_MAX,
-			      "playlist is at the max size");
-		return CommandResult::ERROR;
+		return ACK_ERROR_PLAYLIST_MAX;
 
 	case PlaylistResult::DISABLED:
-		command_error(client, ACK_ERROR_UNKNOWN,
-			      "stored playlist support is disabled");
-		return CommandResult::ERROR;
+		break;
 	}
 
-	assert(0);
-	return CommandResult::ERROR;
+	return ACK_ERROR_UNKNOWN;
+}
+
+#ifdef ENABLE_DATABASE
+gcc_const
+static enum ack
+ToAck(DatabaseErrorCode code)
+{
+	switch (code) {
+	case DatabaseErrorCode::DISABLED:
+	case DatabaseErrorCode::NOT_FOUND:
+		return ACK_ERROR_NO_EXIST;
+
+	case DatabaseErrorCode::CONFLICT:
+		return ACK_ERROR_ARG;
+	}
+
+	return ACK_ERROR_UNKNOWN;
+}
+#endif
+
+gcc_pure
+static enum ack
+ToAck(const Error &error)
+{
+	if (error.IsDomain(ack_domain)) {
+		return (enum ack)error.GetCode();
+	} else if (error.IsDomain(locate_uri_domain)) {
+		return ACK_ERROR_ARG;
+	} else if (error.IsDomain(errno_domain)) {
+		return ACK_ERROR_SYSTEM;
+	}
+
+	return ACK_ERROR_UNKNOWN;
 }
 
 CommandResult
-print_error(Client &client, const Error &error)
+print_error(Response &r, const Error &error)
 {
 	assert(error.IsDefined());
 
 	LogError(error);
 
-	if (error.IsDomain(playlist_domain)) {
-		return print_playlist_result(client,
-					     PlaylistResult(error.GetCode()));
-	} else if (error.IsDomain(ack_domain)) {
-		command_error(client, (ack)error.GetCode(),
-			      "%s", error.GetMessage());
-		return CommandResult::ERROR;
+	r.Error(ToAck(error), error.GetMessage());
+	return CommandResult::ERROR;
+}
+
+gcc_pure
+static enum ack
+ToAck(std::exception_ptr ep)
+{
+	try {
+		std::rethrow_exception(ep);
+	} catch (const ProtocolError &pe) {
+		return pe.GetCode();
+	} catch (const PlaylistError &pe) {
+		return ToAck(pe.GetCode());
 #ifdef ENABLE_DATABASE
-	} else if (error.IsDomain(db_domain)) {
-		switch ((enum db_error)error.GetCode()) {
-		case DB_DISABLED:
-			command_error(client, ACK_ERROR_NO_EXIST, "%s",
-				      error.GetMessage());
-			return CommandResult::ERROR;
-
-		case DB_NOT_FOUND:
-			command_error(client, ACK_ERROR_NO_EXIST, "Not found");
-			return CommandResult::ERROR;
-
-		case DB_CONFLICT:
-			command_error(client, ACK_ERROR_ARG, "Conflict");
-			return CommandResult::ERROR;
-		}
+	} catch (const DatabaseError &de) {
+		return ToAck(de.GetCode());
 #endif
-	} else if (error.IsDomain(errno_domain)) {
-		command_error(client, ACK_ERROR_SYSTEM, "%s",
-			      strerror(error.GetCode()));
-		return CommandResult::ERROR;
+	} catch (const std::system_error &e) {
+		return ACK_ERROR_SYSTEM;
+#if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204
+	} catch (const std::exception &e) {
+#else
+	} catch (...) {
+#endif
+		try {
+#if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204
+			/* workaround for g++ 4.x: no overload for
+			   rethrow_exception(exception_ptr) */
+			std::rethrow_if_nested(e);
+#else
+			std::rethrow_if_nested(ep);
+#endif
+			return ACK_ERROR_UNKNOWN;
+		} catch (...) {
+			return ToAck(std::current_exception());
+		}
+	}
+}
+
+void
+PrintError(Response &r, std::exception_ptr ep)
+{
+	try {
+		std::rethrow_exception(ep);
+	} catch (const std::exception &e) {
+		LogError(e);
+	} catch (...) {
 	}
 
-	command_error(client, ACK_ERROR_UNKNOWN, "error");
-	return CommandResult::ERROR;
+	try {
+		std::rethrow_exception(ep);
+	} catch (const std::exception &e) {
+		r.Error(ToAck(ep), e.what());
+	} catch (...) {
+		r.Error(ACK_ERROR_UNKNOWN, "Unknown error");
+	}
 }

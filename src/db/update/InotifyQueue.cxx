@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,7 @@
 #include "InotifyDomain.hxx"
 #include "Service.hxx"
 #include "Log.hxx"
-
-#include <string.h>
+#include "util/StringCompare.hxx"
 
 /**
  * Wait this long after the last change before calling
@@ -54,14 +53,16 @@ InotifyQueue::OnTimeout()
 	}
 }
 
+gcc_pure
 static bool
 path_in(const char *path, const char *possible_parent)
 {
-	size_t length = strlen(possible_parent);
+	if (StringIsEmpty(path))
+		return true;
 
-	return path[0] == 0 ||
-		(memcmp(possible_parent, path, length) == 0 &&
-		 (path[length] == 0 || path[length] == '/'));
+	auto rest = StringAfterPrefix(path, possible_parent);
+	return rest != nullptr &&
+		(StringIsEmpty(rest) || rest[0] == '/');
 }
 
 void

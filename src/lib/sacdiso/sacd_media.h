@@ -59,7 +59,7 @@ public:
 class sacd_media_stream_t : public sacd_media_t {
 	Mutex mutex;
 	Cond cond;
-	InputStream* is;
+    InputStreamPtr is;
 public:
 	sacd_media_stream_t();
 	~sacd_media_stream_t();

@@ -1,6 +1,6 @@
 /*
 * MPD DVD-Audio Decoder plugin
-* Copyright (c) 2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * DVD-Audio Decoder is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -59,11 +59,11 @@ void mpd_av_log_callback(void* ptr, int level, const char* fmt, va_list vl) {
 }
 
 void my_av_log_set_callback(void (*callback)(void*, int, const char*, va_list)) {
-	av_log_set_callback(callback);
+	mlp_av_log_set_callback(callback);
 }
 
 void my_av_log_set_default_callback(void) {
-	av_log_set_callback(av_log_default_callback);
+	mlp_av_log_set_callback(mlp_av_log_default_callback);
 }
 
 void mpd_dprintf(int ptr, const char* fmt, ...) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,7 @@
 #include "Manager.hxx"
 #include "event/Loop.hxx"
 #include "Log.hxx"
+#include "util/DeleteDisposer.hxx"
 
 #include <string.h>
 
@@ -65,9 +66,7 @@ NfsManager::~NfsManager()
 
 	CollectGarbage();
 
-	connections.clear_and_dispose([](ManagedConnection *c){
-			delete c;
-		});
+	connections.clear_and_dispose(DeleteDisposer());
 }
 
 NfsConnection &
@@ -95,9 +94,7 @@ NfsManager::CollectGarbage()
 {
 	assert(GetEventLoop().IsInside());
 
-	garbage.clear_and_dispose([](ManagedConnection *c){
-			delete c;
-		});
+	garbage.clear_and_dispose(DeleteDisposer());
 }
 
 void

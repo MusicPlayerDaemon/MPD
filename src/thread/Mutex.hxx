@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2009-2015 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,8 +32,6 @@
 
 #ifdef WIN32
 
-/* mingw-w64 4.6.3 lacks a std::mutex implementation */
-
 #include "CriticalSection.hxx"
 class Mutex : public CriticalSection {};
 
@@ -58,6 +56,26 @@ public:
 
 	ScopeLock(const ScopeLock &other) = delete;
 	ScopeLock &operator=(const ScopeLock &other) = delete;
+};
+
+/**
+ * Within the scope of an instance, this class will keep a #Mutex
+ * unlocked.
+ */
+class ScopeUnlock {
+	Mutex &mutex;
+
+public:
+	explicit ScopeUnlock(Mutex &_mutex):mutex(_mutex) {
+		mutex.unlock();
+	};
+
+	~ScopeUnlock() {
+		mutex.lock();
+	}
+
+	ScopeUnlock(const ScopeUnlock &other) = delete;
+	ScopeUnlock &operator=(const ScopeUnlock &other) = delete;
 };
 
 #endif

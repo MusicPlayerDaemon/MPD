@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,10 +23,7 @@
 #include "check.h"
 #include "Compiler.h"
 
-#include <stddef.h>
-
 class Path;
-class Error;
 class FileReader;
 class AutoGunzipReader;
 class BufferedReader;
@@ -41,32 +38,20 @@ class TextFile {
 	BufferedReader *const buffered_reader;
 
 public:
-	TextFile(Path path_fs, Error &error);
+	TextFile(Path path_fs);
 
 	TextFile(const TextFile &other) = delete;
 
 	~TextFile();
-
-	bool HasFailed() const {
-		return gcc_unlikely(buffered_reader == nullptr);
-	}
 
 	/**
 	 * Reads a line from the input file, and strips trailing
 	 * space.  There is a reasonable maximum line length, only to
 	 * prevent denial of service.
 	 *
-	 * Use Check() after nullptr has been returned to check
-	 * whether an error occurred or end-of-file has been reached.
-	 *
-	 * @return a pointer to the line, or nullptr on end-of-file or error
+	 * @return a pointer to the line, or nullptr on end-of-file
 	 */
 	char *ReadLine();
-
-	/**
-	 * Check whether a ReadLine() call has thrown an error.
-	 */
-	bool Check(Error &error) const;
 };
 
 #endif

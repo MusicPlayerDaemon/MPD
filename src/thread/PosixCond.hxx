@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2009-2015 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -41,9 +41,13 @@ class PosixCond {
 	pthread_cond_t cond;
 
 public:
-#if defined(__NetBSD__) || defined(__BIONIC__)
-	/* NetBSD's PTHREAD_COND_INITIALIZER is not compatible with
-	   "constexpr" */
+#ifdef __GLIBC__
+	/* optimized constexpr constructor for pthread implementations
+	   that support it */
+	constexpr PosixCond():cond(PTHREAD_COND_INITIALIZER) {}
+#else
+	/* slow fallback for pthread implementations that are not
+	   compatible with "constexpr" */
 	PosixCond() {
 		pthread_cond_init(&cond, nullptr);
 	}
@@ -51,10 +55,6 @@ public:
 	~PosixCond() {
 		pthread_cond_destroy(&cond);
 	}
-#else
-	/* optimized constexpr constructor for sane POSIX
-	   implementations */
-	constexpr PosixCond():cond(PTHREAD_COND_INITIALIZER) {}
 #endif
 
 	PosixCond(const PosixCond &other) = delete;

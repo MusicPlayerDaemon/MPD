@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,12 +18,16 @@
  */
 
 #include "config.h"
-#include "tag/TagId3.hxx"
+#include "tag/Id3Load.hxx"
 #include "tag/TagRva2.hxx"
 #include "ReplayGainInfo.hxx"
 #include "config/ConfigGlobal.hxx"
+#include "thread/Mutex.hxx"
+#include "thread/Cond.hxx"
 #include "util/Error.hxx"
 #include "fs/Path.hxx"
+#include "input/InputStream.hxx"
+#include "input/LocalOpen.hxx"
 #include "Log.hxx"
 
 #include <id3tag.h>
@@ -54,25 +58,28 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	const char *path = argv[1];
+	const Path path = Path::FromFS(argv[1]);
+
+	Mutex mutex;
+	Cond cond;
 
 	Error error;
-	struct id3_tag *tag = tag_id3_load(Path::FromFS(path), error);
-	if (tag == NULL) {
-		if (error.IsDefined())
-			LogError(error);
-		else
-			fprintf(stderr, "No ID3 tag found\n");
+	auto is = OpenLocalInputStream(path, mutex, cond, error);
+	if (!is) {
+		LogError(error);
+		return EXIT_FAILURE;
+	}
 
+	const auto tag = tag_id3_load(*is);
+	if (tag == NULL) {
+		fprintf(stderr, "No ID3 tag found\n");
 		return EXIT_FAILURE;
 	}
 
 	ReplayGainInfo replay_gain;
 	replay_gain.Clear();
 
-	bool success = tag_rva2_parse(tag, replay_gain);
-	id3_tag_delete(tag);
-
+	bool success = tag_rva2_parse(tag.get(), replay_gain);
 	if (!success) {
 		fprintf(stderr, "No RVA2 tag found\n");
 		return EXIT_FAILURE;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -34,12 +34,11 @@
 #include "event/Call.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/DeleteDisposer.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
 
-#include <sys/types.h>
-#include <unistd.h>
 #include <string.h>
 #include <errno.h>
 
@@ -169,9 +168,9 @@ httpd_output_finish(AudioOutput *ao)
 inline void
 HttpdOutput::AddClient(int fd)
 {
-	clients.emplace_front(*this, fd, GetEventLoop(),
-			      encoder->plugin.tag == nullptr);
-	++clients_cnt;
+	auto *client = new HttpdClient(*this, fd, GetEventLoop(),
+				       encoder->plugin.tag == nullptr);
+	clients.push_front(*client);
 
 	/* pass metadata to client */
 	if (metadata != nullptr)
@@ -235,7 +234,7 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 
 	if (fd >= 0) {
 		/* can we allow additional client */
-		if (open && (clients_max == 0 ||  clients_cnt < clients_max))
+		if (open && (clients_max == 0 || clients.size() < clients_max))
 			AddClient(fd);
 		else
 			close_socket(fd);
@@ -319,7 +318,6 @@ HttpdOutput::Open(AudioFormat &audio_format, Error &error)
 
 	/* initialize other attributes */
 
-	clients_cnt = 0;
 	timer = new Timer(audio_format);
 
 	open = true;
@@ -347,7 +345,7 @@ HttpdOutput::Close()
 	delete timer;
 
 	BlockingCall(GetEventLoop(), [this](){
-			clients.clear();
+			clients.clear_and_dispose(DeleteDisposer());
 		});
 
 	if (header != nullptr)
@@ -368,17 +366,10 @@ httpd_output_close(AudioOutput *ao)
 void
 HttpdOutput::RemoveClient(HttpdClient &client)
 {
-	assert(clients_cnt > 0);
+	assert(!clients.empty());
 
-	for (auto prev = clients.before_begin(), i = std::next(prev);;
-	     prev = i, i = std::next(prev)) {
-		assert(i != clients.end());
-		if (&*i == &client) {
-			clients.erase_after(prev);
-			clients_cnt--;
-			break;
-		}
-	}
+	clients.erase_and_dispose(clients.iterator_to(client),
+				  DeleteDisposer());
 }
 
 void

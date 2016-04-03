@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,39 +21,39 @@
 #include "fs/io/GunzipReader.hxx"
 #include "fs/io/FileReader.hxx"
 #include "fs/io/StdioOutputStream.hxx"
+#include "Log.hxx"
 #include "util/Error.hxx"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-static bool
-Copy(OutputStream &dest, Reader &src, Error &error)
+static void
+Copy(OutputStream &dest, Reader &src)
 {
 	while (true) {
 		char buffer[4096];
-		size_t nbytes = src.Read(buffer, sizeof(buffer), error);
+		size_t nbytes = src.Read(buffer, sizeof(buffer));
 		if (nbytes == 0)
-			return !error.IsDefined();
+			break;
 
-		if (!dest.Write(buffer, nbytes, error))
-			return false;
+		dest.Write(buffer, nbytes);
 	}
 }
 
-static bool
-CopyGunzip(OutputStream &dest, Reader &_src, Error &error)
+static void
+CopyGunzip(OutputStream &dest, Reader &_src)
 {
-	GunzipReader src(_src, error);
-	return src.IsDefined() && Copy(dest, src, error);
+	GunzipReader src(_src);
+	Copy(dest, src);
 }
 
-static bool
-CopyGunzip(FILE *_dest, Path src_path, Error &error)
+static void
+CopyGunzip(FILE *_dest, Path src_path)
 {
 	StdioOutputStream dest(_dest);
-	FileReader src(src_path, error);
-	return src.IsDefined() && CopyGunzip(dest, src, error);
+	FileReader src(src_path);
+	CopyGunzip(dest, src);
 }
 
 int
@@ -66,11 +66,11 @@ main(int argc, gcc_unused char **argv)
 
 	Path path = Path::FromFS(argv[1]);
 
-	Error error;
-	if (!CopyGunzip(stdout, path, error)) {
-		fprintf(stderr, "%s\n", error.GetMessage());
+	try {
+		CopyGunzip(stdout, path);
+		return EXIT_SUCCESS;
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-
-	return EXIT_SUCCESS;
 }

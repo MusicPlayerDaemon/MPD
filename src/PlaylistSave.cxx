@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@
 #include "PlaylistError.hxx"
 #include "queue/Playlist.hxx"
 #include "DetachedSong.hxx"
-#include "SongLoader.hxx"
 #include "Mapper.hxx"
 #include "Idle.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -32,12 +31,7 @@
 #include "fs/NarrowPath.hxx"
 #include "fs/io/FileOutputStream.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
-#include "util/Alloc.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
-#include "Log.hxx"
-
-#include <string.h>
 
 void
 playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
@@ -67,40 +61,30 @@ playlist_print_uri(BufferedOutputStream &os, const char *uri)
 		os.Format("%s\n", NarrowPath(path).c_str());
 }
 
-bool
-spl_save_queue(const char *name_utf8, const Queue &queue, Error &error)
+void
+spl_save_queue(const char *name_utf8, const Queue &queue)
 {
-	const auto path_fs = spl_map_to_fs(name_utf8, error);
-	if (path_fs.IsNull())
-		return false;
+	const auto path_fs = spl_map_to_fs(name_utf8);
+	assert(!path_fs.IsNull());
 
-	if (FileExists(path_fs)) {
-		error.Set(playlist_domain, int(PlaylistResult::LIST_EXISTS),
-			  "Playlist already exists");
-		return false;
-	}
+	if (FileExists(path_fs))
+		throw PlaylistError(PlaylistResult::LIST_EXISTS,
+				    "Playlist already exists");
 
-	FileOutputStream fos(path_fs, error);
-	if (!fos.IsDefined()) {
-		TranslatePlaylistError(error);
-		return false;
-	}
-
+	FileOutputStream fos(path_fs);
 	BufferedOutputStream bos(fos);
 
 	for (unsigned i = 0; i < queue.GetLength(); i++)
 		playlist_print_song(bos, queue.Get(i));
 
-	if (!bos.Flush(error) || !fos.Commit(error))
-		return false;
+	bos.Flush();
+	fos.Commit();
 
 	idle_add(IDLE_STORED_PLAYLIST);
-	return true;
 }
 
-bool
-spl_save_playlist(const char *name_utf8, const playlist &playlist,
-		  Error &error)
+void
+spl_save_playlist(const char *name_utf8, const playlist &playlist)
 {
-	return spl_save_queue(name_utf8, playlist.queue, error);
+	spl_save_queue(name_utf8, playlist.queue);
 }

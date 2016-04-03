@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,41 +20,38 @@
 #include "config.h"
 #include "TagPrint.hxx"
 #include "tag/Tag.hxx"
-#include "tag/TagSettings.h"
-#include "client/Client.hxx"
+#include "tag/Settings.hxx"
+#include "client/Response.hxx"
 
-void tag_print_types(Client &client)
+void
+tag_print_types(Response &r)
 {
-	int i;
-
-	for (i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++) {
-		if (!ignore_tag_items[i])
-			client_printf(client, "tagtype: %s\n",
-				      tag_item_names[i]);
-	}
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; i++)
+		if (IsTagEnabled(i))
+			r.Format("tagtype: %s\n", tag_item_names[i]);
 }
 
 void
-tag_print(Client &client, TagType type, const char *value)
+tag_print(Response &r, TagType type, const char *value)
 {
-	client_printf(client, "%s: %s\n", tag_item_names[type], value);
+	r.Format("%s: %s\n", tag_item_names[type], value);
 }
 
 void
-tag_print_values(Client &client, const Tag &tag)
+tag_print_values(Response &r, const Tag &tag)
 {
 	for (const auto &i : tag)
-		client_printf(client, "%s: %s\n",
-			      tag_item_names[i.type], i.value);
+		r.Format("%s: %s\n", tag_item_names[i.type], i.value);
 }
 
-void tag_print(Client &client, const Tag &tag)
+void
+tag_print(Response &r, const Tag &tag)
 {
 	if (!tag.duration.IsNegative())
-		client_printf(client, "Time: %i\n"
-			      "duration: %1.3f\n",
-			      tag.duration.RoundS(),
-			      tag.duration.ToDoubleS());
+		r.Format("Time: %i\n"
+			 "duration: %1.3f\n",
+			 tag.duration.RoundS(),
+			 tag.duration.ToDoubleS());
 
-	tag_print_values(client, tag);
+	tag_print_values(r, tag);
 }

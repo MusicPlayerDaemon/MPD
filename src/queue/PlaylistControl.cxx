@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #include "config.h"
 #include "Playlist.hxx"
 #include "PlaylistError.hxx"
-#include "PlayerControl.hxx"
+#include "player/Control.hxx"
 #include "DetachedSong.hxx"
 #include "Log.hxx"
 
@@ -38,7 +38,7 @@ playlist::Stop(PlayerControl &pc)
 	assert(current >= 0);
 
 	FormatDebug(playlist_domain, "stop");
-	pc.Stop();
+	pc.LockStop();
 	queued = -1;
 	playing = false;
 
@@ -56,23 +56,23 @@ playlist::Stop(PlayerControl &pc)
 	}
 }
 
-PlaylistResult
-playlist::PlayPosition(PlayerControl &pc, int song)
+bool
+playlist::PlayPosition(PlayerControl &pc, int song, Error &error)
 {
-	pc.ClearError();
+	pc.LockClearError();
 
 	unsigned i = song;
 	if (song == -1) {
 		/* play any song ("current" song, or the first song */
 
 		if (queue.IsEmpty())
-			return PlaylistResult::SUCCESS;
+			return true;
 
 		if (playing) {
 			/* already playing: unpause playback, just in
 			   case it was paused, and return */
-			pc.SetPause(false);
-			return PlaylistResult::SUCCESS;
+			pc.LockSetPause(false);
+			return true;
 		}
 
 		/* select a song: "current" song, or the first one */
@@ -80,7 +80,7 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 			? current
 			: 0;
 	} else if (!queue.IsValidPosition(song))
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	if (queue.random) {
 		if (song >= 0)
@@ -102,28 +102,30 @@ playlist::PlayPosition(PlayerControl &pc, int song)
 	stop_on_error = false;
 	error_count = 0;
 
-	PlayOrder(pc, i);
-	return PlaylistResult::SUCCESS;
+	return PlayOrder(pc, i, error);
 }
 
-PlaylistResult
-playlist::PlayId(PlayerControl &pc, int id)
+bool
+playlist::PlayId(PlayerControl &pc, int id, Error &error)
 {
 	if (id == -1)
-		return PlayPosition(pc, id);
+		return PlayPosition(pc, id, error);
 
 	int song = queue.IdToPosition(id);
 	if (song < 0)
-		return PlaylistResult::NO_SUCH_SONG;
+		throw PlaylistError::NoSuchSong();
 
-	return PlayPosition(pc, song);
+	return PlayPosition(pc, song, error);
 }
 
-void
-playlist::PlayNext(PlayerControl &pc)
+bool
+playlist::PlayNext(PlayerControl &pc, Error &error)
 {
-	if (!playing)
-		return;
+	if (!playing) {
+		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
+			  "Not playing");
+		return true;
+	}
 
 	assert(!queue.IsEmpty());
 	assert(queue.IsValidOrder(current));
@@ -157,19 +159,25 @@ playlist::PlayNext(PlayerControl &pc)
 			   discard them anyway */
 		}
 
-		PlayOrder(pc, next_order);
+		if (!PlayOrder(pc, next_order, error))
+			return false;
 	}
 
 	/* Consume mode removes each played songs. */
 	if (queue.consume)
 		DeleteOrder(pc, old_current);
+
+	return true;
 }
 
-void
-playlist::PlayPrevious(PlayerControl &pc)
+bool
+playlist::PlayPrevious(PlayerControl &pc, Error &error)
 {
-	if (!playing)
-		return;
+	if (!playing) {
+		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
+			  "Not playing");
+		return true;
+	}
 
 	assert(!queue.IsEmpty());
 
@@ -186,17 +194,18 @@ playlist::PlayPrevious(PlayerControl &pc)
 		order = current;
 	}
 
-	PlayOrder(pc, order);
+	return PlayOrder(pc, order, error);
 }
 
-PlaylistResult
-playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
+bool
+playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time,
+			Error &error)
 {
 	assert(queue.IsValidOrder(i));
 
 	const DetachedSong *queued_song = GetQueuedSong();
 
-	pc.ClearError();
+	pc.LockClearError();
 	stop_on_error = true;
 	error_count = 0;
 
@@ -210,55 +219,58 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 		queued_song = nullptr;
 	}
 
-	if (!pc.Seek(new DetachedSong(queue.GetOrder(i)), seek_time)) {
-		UpdateQueuedSong(pc, queued_song);
+	queued = -1;
 
-		return PlaylistResult::NOT_PLAYING;
+	if (!pc.LockSeek(new DetachedSong(queue.GetOrder(i)), seek_time, error)) {
+		UpdateQueuedSong(pc, queued_song);
+		return false;
 	}
 
-	queued = -1;
 	UpdateQueuedSong(pc, nullptr);
 
-	return PlaylistResult::SUCCESS;
+	return true;
 }
 
-PlaylistResult
+bool
 playlist::SeekSongPosition(PlayerControl &pc, unsigned song,
-			   SongTime seek_time)
+			   SongTime seek_time,
+			   Error &error)
 {
 	if (!queue.IsValidPosition(song))
-		return PlaylistResult::BAD_RANGE;
+		throw PlaylistError::BadRange();
 
 	unsigned i = queue.random
 		? queue.PositionToOrder(song)
 		: song;
 
-	return SeekSongOrder(pc, i, seek_time);
+	return SeekSongOrder(pc, i, seek_time, error);
 }
 
-PlaylistResult
-playlist::SeekSongId(PlayerControl &pc, unsigned id, SongTime seek_time)
+bool
+playlist::SeekSongId(PlayerControl &pc, unsigned id, SongTime seek_time,
+		     Error &error)
 {
 	int song = queue.IdToPosition(id);
 	if (song < 0)
-		return PlaylistResult::NO_SUCH_SONG;
+		throw PlaylistError::NoSuchSong();
 
-	return SeekSongPosition(pc, song, seek_time);
+	return SeekSongPosition(pc, song, seek_time, error);
 }
 
-PlaylistResult
+bool
 playlist::SeekCurrent(PlayerControl &pc,
-		      SignedSongTime seek_time, bool relative)
+		      SignedSongTime seek_time, bool relative,
+		      Error &error)
 {
 	if (!playing)
-		return PlaylistResult::NOT_PLAYING;
+		throw PlaylistError::NotPlaying();
 
 	if (relative) {
-		const auto status = pc.GetStatus();
+		const auto status = pc.LockGetStatus();
 
 		if (status.state != PlayerState::PLAY &&
 		    status.state != PlayerState::PAUSE)
-			return PlaylistResult::NOT_PLAYING;
+			throw PlaylistError::NotPlaying();
 
 		seek_time += status.elapsed_time;
 		if (seek_time.IsNegative())
@@ -268,5 +280,5 @@ playlist::SeekCurrent(PlayerControl &pc,
 	if (seek_time.IsNegative())
 		seek_time = SignedSongTime::zero();
 
-	return SeekSongOrder(pc, current, SongTime(seek_time));
+	return SeekSongOrder(pc, current, SongTime(seek_time), error);
 }

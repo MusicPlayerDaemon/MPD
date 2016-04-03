@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,15 +21,13 @@
 #include "ApeReplayGain.hxx"
 #include "ApeLoader.hxx"
 #include "ReplayGain.hxx"
-#include "util/ASCII.hxx"
-#include "fs/Path.hxx"
+#include "util/StringView.hxx"
 
 #include <string.h>
-#include <stdlib.h>
 
 static bool
 replay_gain_ape_callback(unsigned long flags, const char *key,
-			 const char *_value, size_t value_length,
+			 StringView _value,
 			 ReplayGainInfo &info)
 {
 	/* we only care about utf-8 text tags */
@@ -37,29 +35,28 @@ replay_gain_ape_callback(unsigned long flags, const char *key,
 		return false;
 
 	char value[16];
-	if (value_length >= sizeof(value))
+	if (_value.size >= sizeof(value))
 		return false;
 
-	memcpy(value, _value, value_length);
-	value[value_length] = 0;
+	memcpy(value, _value.data, _value.size);
+	value[_value.size] = 0;
 
 	return ParseReplayGainTag(info, key, value);
 }
 
 bool
-replay_gain_ape_read(Path path_fs, ReplayGainInfo &info)
+replay_gain_ape_read(InputStream &is, ReplayGainInfo &info)
 {
 	bool found = false;
 
 	auto callback = [&info, &found]
 		(unsigned long flags, const char *key,
-		 const char *value,
-		 size_t value_length) {
+		 StringView value) {
 		found |= replay_gain_ape_callback(flags, key,
-						  value, value_length,
+						  value,
 						  info);
 		return true;
 	};
 
-	return tag_ape_scan(path_fs, callback) && found;
+	return tag_ape_scan(is, callback) && found;
 }

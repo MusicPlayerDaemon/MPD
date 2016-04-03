@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "Idle.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
+#include "util/StringCompare.hxx"
 
 #include <string>
 #include <map>
@@ -178,7 +179,7 @@ sticker_load_value(const char *type, const char *uri, const char *name,
 	assert(uri != nullptr);
 	assert(name != nullptr);
 
-	if (*name == 0)
+	if (StringIsEmpty(name))
 		return std::string();
 
 	if (!BindAll(error, stmt, type, uri, name))
@@ -287,7 +288,7 @@ sticker_store_value(const char *type, const char *uri,
 	assert(name != nullptr);
 	assert(value != nullptr);
 
-	if (*name == 0)
+	if (StringIsEmpty(name))
 		return false;
 
 	return sticker_update_value(type, uri, name, value, error) ||

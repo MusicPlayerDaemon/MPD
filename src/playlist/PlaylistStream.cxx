@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 #include "config.h"
 #include "PlaylistStream.hxx"
 #include "PlaylistRegistry.hxx"
-#include "CloseSongEnumerator.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "input/InputStream.hxx"
@@ -28,11 +27,13 @@
 #include "fs/Path.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 
 static SongEnumerator *
 playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
-{
+try {
 	assert(!path.IsNull());
 
 	const auto *suffix = path.GetSuffix();
@@ -44,25 +45,22 @@ playlist_open_path_suffix(Path path, Mutex &mutex, Cond &cond)
 		return nullptr;
 
 	Error error;
-	InputStream *is = OpenLocalInputStream(path, mutex, cond, error);
+	auto is = OpenLocalInputStream(path, mutex, cond, error);
 	if (is == nullptr) {
 		LogError(error);
 		return nullptr;
 	}
 
-	auto playlist = playlist_list_open_stream_suffix(*is,
-							 suffix_utf8.c_str());
-	if (playlist != nullptr)
-		playlist = new CloseSongEnumerator(playlist, is);
-	else
-		delete is;
-
-	return playlist;
+	return playlist_list_open_stream_suffix(std::move(is),
+						suffix_utf8.c_str());
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return nullptr;
 }
 
 SongEnumerator *
 playlist_open_path(Path path, Mutex &mutex, Cond &cond)
-{
+try {
 	assert(!path.IsNull());
 
 	const std::string uri_utf8 = path.ToUTF8();
@@ -73,11 +71,14 @@ playlist_open_path(Path path, Mutex &mutex, Cond &cond)
 		playlist = playlist_open_path_suffix(path, mutex, cond);
 
 	return playlist;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return nullptr;
 }
 
 SongEnumerator *
 playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond)
-{
+try {
 	assert(uri_has_scheme(uri));
 
 	SongEnumerator *playlist = playlist_list_open_uri(uri, mutex, cond);
@@ -85,7 +86,7 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond)
 		return playlist;
 
 	Error error;
-	InputStream *is = InputStream::OpenReady(uri, mutex, cond, error);
+	auto is = InputStream::OpenReady(uri, mutex, cond, error);
 	if (is == nullptr) {
 		if (error.IsDefined())
 			FormatError(error, "Failed to open %s", uri);
@@ -93,11 +94,8 @@ playlist_open_remote(const char *uri, Mutex &mutex, Cond &cond)
 		return nullptr;
 	}
 
-	playlist = playlist_list_open_stream(*is, uri);
-	if (playlist == nullptr) {
-		delete is;
-		return nullptr;
-	}
-
-	return new CloseSongEnumerator(playlist, is);
+	return playlist_list_open_stream(std::move(is), uri);
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return nullptr;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #include "check.h"
 #include "Path.hxx"
 #include "util/Error.hxx"
+#include "system/Error.hxx"
 
 #include <stdint.h>
 
@@ -63,6 +64,20 @@ class FileInfo {
 #endif
 
 public:
+	FileInfo() = default;
+
+	FileInfo(Path path, bool follow_symlinks=true) {
+		if (!GetFileInfo(path, *this, follow_symlinks)) {
+#ifdef WIN32
+			throw FormatLastError("Failed to access %s",
+					      path.ToUTF8().c_str());
+#else
+			throw FormatErrno("Failed to access %s",
+					  path.ToUTF8().c_str());
+#endif
+		}
+	}
+
 	bool IsRegular() const {
 #ifdef WIN32
 		return (data.dwFileAttributes &

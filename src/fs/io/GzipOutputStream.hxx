@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,13 +22,10 @@
 
 #include "check.h"
 #include "OutputStream.hxx"
+#include "lib/zlib/Error.hxx"
 #include "Compiler.h"
 
-#include <assert.h>
 #include <zlib.h>
-
-class Error;
-class Domain;
 
 /**
  * A filter that compresses data written to it using zlib, forwarding
@@ -43,28 +40,19 @@ class GzipOutputStream final : public OutputStream {
 
 public:
 	/**
-	 * Construct the filter.  Call IsDefined() to check whether
-	 * the constructor has succeeded.  If not, #error will hold
-	 * information about the failure.
+	 * Construct the filter.
 	 */
-	GzipOutputStream(OutputStream &_next, Error &error);
+	GzipOutputStream(OutputStream &_next) throw(ZlibError);
 	~GzipOutputStream();
-
-	/**
-	 * Check whether the constructor has succeeded.
-	 */
-	bool IsDefined() const {
-		return z.opaque == nullptr;
-	}
 
 	/**
 	 * Finish the file and write all data remaining in zlib's
 	 * output buffer.
 	 */
-	bool Flush(Error &error);
+	void Flush();
 
 	/* virtual methods from class OutputStream */
-	bool Write(const void *data, size_t size, Error &error) override;
+	void Write(const void *data, size_t size) override;
 };
 
 #endif

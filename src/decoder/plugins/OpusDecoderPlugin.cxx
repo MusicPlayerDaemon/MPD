@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,6 @@
 #include <ogg/ogg.h>
 
 #include <string.h>
-#include <stdio.h>
 
 static constexpr opus_int32 opus_sample_rate = 48000;
 
@@ -332,7 +331,7 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 	DecoderCommand cmd;
 	if (ScanOpusTags(packet.packet, packet.bytes,
 			 &rgi,
-			 &add_tag_handler, &tag_builder) &&
+			 add_tag_handler, &tag_builder) &&
 	    !tag_builder.IsEmpty()) {
 		decoder_replay_gain(decoder, &rgi);
 
@@ -433,7 +432,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 
 static bool
 mpd_opus_scan_stream(InputStream &is,
-		     const struct tag_handler *handler, void *handler_ctx)
+		     const TagHandler &handler, void *handler_ctx)
 {
 	OggSyncState oy(is);
 

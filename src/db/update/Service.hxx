@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,24 +35,16 @@ class CompositeStorage;
  * This class manages the update queue and runs the update thread.
  */
 class UpdateService final : DeferredMonitor {
-	enum Progress {
-		UPDATE_PROGRESS_IDLE = 0,
-		UPDATE_PROGRESS_RUNNING = 1,
-		UPDATE_PROGRESS_DONE = 2
-	};
-
 	SimpleDatabase &db;
 	CompositeStorage &storage;
 
 	DatabaseListener &listener;
 
-	Progress progress;
-
 	bool modified;
 
 	Thread update_thread;
 
-	static const unsigned update_task_id_max = 1 << 15;
+	static constexpr unsigned update_task_id_max = 1 << 15;
 
 	unsigned update_task_id;
 

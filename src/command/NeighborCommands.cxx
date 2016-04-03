@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,18 +19,15 @@
 
 #include "config.h"
 #include "NeighborCommands.hxx"
+#include "Request.hxx"
 #include "client/Client.hxx"
+#include "client/Response.hxx"
 #include "Instance.hxx"
 #include "Partition.hxx"
-#include "protocol/Result.hxx"
 #include "neighbor/Glue.hxx"
 #include "neighbor/Info.hxx"
-#include "util/ConstBuffer.hxx"
 
-#include <set>
 #include <string>
-
-#include <assert.h>
 
 bool
 neighbor_commands_available(const Instance &instance)
@@ -39,21 +36,19 @@ neighbor_commands_available(const Instance &instance)
 }
 
 CommandResult
-handle_listneighbors(Client &client, gcc_unused ConstBuffer<const char *> args)
+handle_listneighbors(Client &client, gcc_unused Request args, Response &r)
 {
 	const NeighborGlue *const neighbors =
 		client.partition.instance.neighbors;
 	if (neighbors == nullptr) {
-		command_error(client, ACK_ERROR_UNKNOWN,
-			      "No neighbor plugin configured");
+		r.Error(ACK_ERROR_UNKNOWN, "No neighbor plugin configured");
 		return CommandResult::ERROR;
 	}
 
 	for (const auto &i : neighbors->GetList())
-		client_printf(client,
-			      "neighbor: %s\n"
-			      "name: %s\n",
-			      i.uri.c_str(),
-			      i.display_name.c_str());
+		r.Format("neighbor: %s\n"
+			 "name: %s\n",
+			 i.uri.c_str(),
+			 i.display_name.c_str());
 	return CommandResult::OK;
 }

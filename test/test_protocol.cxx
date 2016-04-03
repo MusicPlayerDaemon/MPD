@@ -1,6 +1,6 @@
 #include "config.h"
 #include "protocol/ArgParser.hxx"
-#include "protocol/Result.hxx"
+#include "protocol/Ack.hxx"
 #include "Compiler.h"
 
 #include <cppunit/TestFixture.h>
@@ -9,15 +9,6 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include <stdlib.h>
-
-static enum ack last_error = ack(-1);
-
-void
-command_error(gcc_unused Client &client, enum ack error,
-	      gcc_unused const char *fmt, ...)
-{
-	last_error = error;
-}
 
 class ArgParserTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST_SUITE(ArgParserTest);
@@ -31,23 +22,24 @@ public:
 void
 ArgParserTest::TestRange()
 {
-	Client &client = *(Client *)nullptr;
-	unsigned a, b;
+	RangeArg range = ParseCommandArgRange("1");
+	CPPUNIT_ASSERT_EQUAL(1u, range.start);
+	CPPUNIT_ASSERT_EQUAL(2u, range.end);
 
-	CPPUNIT_ASSERT(check_range(client, &a, &b, "1"));
-	CPPUNIT_ASSERT_EQUAL(1u, a);
-	CPPUNIT_ASSERT_EQUAL(2u, b);
+	range = ParseCommandArgRange("1:5");
+	CPPUNIT_ASSERT_EQUAL(1u, range.start);
+	CPPUNIT_ASSERT_EQUAL(5u, range.end);
 
-	CPPUNIT_ASSERT(check_range(client, &a, &b, "1:5"));
-	CPPUNIT_ASSERT_EQUAL(1u, a);
-	CPPUNIT_ASSERT_EQUAL(5u, b);
+	range = ParseCommandArgRange("1:");
+	CPPUNIT_ASSERT_EQUAL(1u, range.start);
+	CPPUNIT_ASSERT(range.end >= 999999u);
 
-	CPPUNIT_ASSERT(check_range(client, &a, &b, "1:"));
-	CPPUNIT_ASSERT_EQUAL(1u, a);
-	CPPUNIT_ASSERT(b >= 999999u);
-
-	CPPUNIT_ASSERT(!check_range(client, &a, &b, "-2"));
-	CPPUNIT_ASSERT_EQUAL(ACK_ERROR_ARG, last_error);
+	try {
+		range = ParseCommandArgRange("-2");
+		CPPUNIT_ASSERT(false);
+	} catch (ProtocolError) {
+		CPPUNIT_ASSERT(true);
+	}
 }
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArgParserTest);

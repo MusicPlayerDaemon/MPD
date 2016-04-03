@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -33,7 +33,6 @@
 
 #include <assert.h>
 #include <string.h>
-#include <unistd.h>
 
 static const unsigned adts_sample_rates[] =
     { 96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050,
@@ -419,7 +418,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 
 static bool
 faad_scan_stream(InputStream &is,
-		 const struct tag_handler *handler, void *handler_ctx)
+		 const TagHandler &handler, void *handler_ctx)
 {
 	auto result = faad_get_file_time(is);
 	if (!result.first)

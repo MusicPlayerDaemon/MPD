@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,66 +23,67 @@
 #include "CommandResult.hxx"
 
 class Client;
-template<typename T> struct ConstBuffer;
+class Request;
+class Response;
 
 CommandResult
-handle_add(Client &client, ConstBuffer<const char *> args);
+handle_add(Client &client, Request request, Response &response);
 
 CommandResult
-handle_addid(Client &client, ConstBuffer<const char *> args);
+handle_addid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_rangeid(Client &client, ConstBuffer<const char *> args);
+handle_rangeid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_delete(Client &client, ConstBuffer<const char *> args);
+handle_delete(Client &client, Request request, Response &response);
 
 CommandResult
-handle_deleteid(Client &client, ConstBuffer<const char *> args);
+handle_deleteid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlist(Client &client, ConstBuffer<const char *> args);
+handle_playlist(Client &client, Request request, Response &response);
 
 CommandResult
-handle_shuffle(Client &client, ConstBuffer<const char *> args);
+handle_shuffle(Client &client, Request request, Response &response);
 
 CommandResult
-handle_clear(Client &client, ConstBuffer<const char *> args);
+handle_clear(Client &client, Request request, Response &response);
 
 CommandResult
-handle_plchanges(Client &client, ConstBuffer<const char *> args);
+handle_plchanges(Client &client, Request request, Response &response);
 
 CommandResult
-handle_plchangesposid(Client &client, ConstBuffer<const char *> args);
+handle_plchangesposid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistinfo(Client &client, ConstBuffer<const char *> args);
+handle_playlistinfo(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistid(Client &client, ConstBuffer<const char *> args);
+handle_playlistid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistfind(Client &client, ConstBuffer<const char *> args);
+handle_playlistfind(Client &client, Request request, Response &response);
 
 CommandResult
-handle_playlistsearch(Client &client, ConstBuffer<const char *> args);
+handle_playlistsearch(Client &client, Request request, Response &response);
 
 CommandResult
-handle_prio(Client &client, ConstBuffer<const char *> args);
+handle_prio(Client &client, Request request, Response &response);
 
 CommandResult
-handle_prioid(Client &client, ConstBuffer<const char *> args);
+handle_prioid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_move(Client &client, ConstBuffer<const char *> args);
+handle_move(Client &client, Request request, Response &response);
 
 CommandResult
-handle_moveid(Client &client, ConstBuffer<const char *> args);
+handle_moveid(Client &client, Request request, Response &response);
 
 CommandResult
-handle_swap(Client &client, ConstBuffer<const char *> args);
+handle_swap(Client &client, Request request, Response &response);
 
 CommandResult
-handle_swapid(Client &client, ConstBuffer<const char *> args);
+handle_swapid(Client &client, Request request, Response &response);
 
 #endif

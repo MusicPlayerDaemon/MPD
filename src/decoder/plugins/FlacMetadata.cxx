@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,6 @@
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
 #include "ReplayGainInfo.hxx"
-#include "util/ASCII.hxx"
 #include "util/DivideString.hxx"
 
 bool
@@ -80,7 +79,7 @@ flac_comment_value(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 static bool
 flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 		  const char *name, TagType tag_type,
-		  const struct tag_handler *handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx)
 {
 	const char *value = flac_comment_value(entry, name);
 	if (value != nullptr) {
@@ -93,9 +92,9 @@ flac_copy_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 
 static void
 flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
-		  const struct tag_handler *handler, void *handler_ctx)
+		  const TagHandler &handler, void *handler_ctx)
 {
-	if (handler->pair != nullptr) {
+	if (handler.pair != nullptr) {
 		const char *comment = (const char *)entry->entry;
 		const DivideString split(comment, '=');
 		if (split.IsDefined() && !split.IsEmpty())
@@ -118,7 +117,7 @@ flac_scan_comment(const FLAC__StreamMetadata_VorbisComment_Entry *entry,
 
 static void
 flac_scan_comments(const FLAC__StreamMetadata_VorbisComment *comment,
-		   const struct tag_handler *handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx)
 {
 	for (unsigned i = 0; i < comment->num_comments; ++i)
 		flac_scan_comment(&comment->comments[i],
@@ -137,7 +136,7 @@ flac_duration(const FLAC__StreamMetadata_StreamInfo *stream_info)
 
 void
 flac_scan_metadata(const FLAC__StreamMetadata *block,
-		   const struct tag_handler *handler, void *handler_ctx)
+		   const TagHandler &handler, void *handler_ctx)
 {
 	switch (block->type) {
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
@@ -160,12 +159,12 @@ Tag
 flac_vorbis_comments_to_tag(const FLAC__StreamMetadata_VorbisComment *comment)
 {
 	TagBuilder tag_builder;
-	flac_scan_comments(comment, &add_tag_handler, &tag_builder);
+	flac_scan_comments(comment, add_tag_handler, &tag_builder);
 	return tag_builder.Commit();
 }
 
 void
-FlacMetadataChain::Scan(const struct tag_handler *handler, void *handler_ctx)
+FlacMetadataChain::Scan(const TagHandler &handler, void *handler_ctx)
 {
 	FLACMetadataIterator iterator(*this);
 

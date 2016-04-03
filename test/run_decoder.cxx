@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,6 @@
 #include "AudioFormat.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
-#include "stdbin.h"
 
 #include <assert.h>
 #include <unistd.h>
@@ -65,10 +64,9 @@ int main(int argc, char **argv)
 	if (plugin->file_decode != nullptr) {
 		plugin->FileDecode(decoder, Path::FromFS(uri));
 	} else if (plugin->stream_decode != nullptr) {
-		InputStream *is =
-			InputStream::OpenReady(uri, decoder.mutex,
-					       decoder.cond, error);
-		if (is == NULL) {
+		auto is = InputStream::OpenReady(uri, decoder.mutex,
+						 decoder.cond, error);
+		if (!is) {
 			if (error.IsDefined())
 				LogError(error);
 			else
@@ -78,8 +76,6 @@ int main(int argc, char **argv)
 		}
 
 		plugin->StreamDecode(decoder, *is);
-
-		delete is;
 	} else {
 		fprintf(stderr, "Decoder plugin is not usable\n");
 		return EXIT_FAILURE;

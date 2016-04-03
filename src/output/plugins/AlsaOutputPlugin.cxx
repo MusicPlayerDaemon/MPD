@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include "mixer/MixerList.hxx"
 #include "pcm/PcmExport.hxx"
 #include "config/ConfigError.hxx"
+#include "system/ByteOrder.hxx"
 #include "util/Manual.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -39,14 +40,16 @@
 #define HAVE_ALSA_DSD
 #endif
 
+#if SND_LIB_VERSION >= 0x1001d
+/* alsa-lib supports DSD_U32 since version 1.0.29 */
+#define HAVE_ALSA_DSD_U32
+#endif
+
 static const char default_device[] = "default";
 
 static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
 static constexpr unsigned MPD_ALSA_RETRY_NR = 5;
-
-typedef snd_pcm_sframes_t alsa_writei_t(snd_pcm_t * pcm, const void *buffer,
-					snd_pcm_uframes_t size);
 
 struct AlsaOutput {
 	AudioOutput base;
@@ -59,15 +62,14 @@ struct AlsaOutput {
 	 */
 	std::string device;
 
-	/** use memory mapped I/O? */
-	bool use_mmap;
-
+#ifdef ENABLE_DSD
 	/**
-	 * Enable DSD over PCM according to the DoP standard standard?
+	 * Enable DSD over PCM according to the DoP standard?
 	 *
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
 	bool dop;
+#endif
 
 	/** libasound's buffer_time setting (in microseconds) */
 	unsigned int buffer_time;
@@ -80,13 +82,6 @@ struct AlsaOutput {
 
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
-
-	/**
-	 * a pointer to the libasound writei() function, which is
-	 * snd_pcm_writei() or snd_pcm_mmap_writei(), depending on the
-	 * use_mmap configuration
-	 */
-	alsa_writei_t *writei;
 
 	/**
 	 * The size of one audio frame passed to method play().
@@ -129,7 +124,7 @@ struct AlsaOutput {
 
 	AlsaOutput()
 		:base(alsa_output_plugin),
-		 mode(0), writei(snd_pcm_writei) {
+		 mode(0) {
 	}
 
 	~AlsaOutput() {
@@ -156,10 +151,14 @@ struct AlsaOutput {
 	void Cancel();
 
 private:
+#ifdef ENABLE_DSD
 	bool SetupDop(AudioFormat audio_format,
-		      bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
+		      PcmExport::Params &params,
 		      Error &error);
-	bool SetupOrDop(AudioFormat &audio_format, Error &error);
+#endif
+
+	bool SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params,
+			Error &error);
 
 	int Recover(int err);
 
@@ -167,7 +166,7 @@ private:
 	 * Write silence to the ALSA device.
 	 */
 	void WriteSilence(snd_pcm_uframes_t nframes) {
-		writei(pcm, silence, nframes);
+		snd_pcm_writei(pcm, silence, nframes);
 	}
 
 };
@@ -182,14 +181,14 @@ AlsaOutput::Configure(const ConfigBlock &block, Error &error)
 
 	device = block.GetBlockValue("device", "");
 
-	use_mmap = block.GetBlockValue("use_mmap", false);
-
+#ifdef ENABLE_DSD
 	dop = block.GetBlockValue("dop", false) ||
 		/* legacy name from MPD 0.18 and older: */
 		block.GetBlockValue("dsd_usb", false);
+#endif
 
 	buffer_time = block.GetBlockValue("buffer_time",
-					      MPD_ALSA_BUFFER_TIME_US);
+					  MPD_ALSA_BUFFER_TIME_US);
 	period_time = block.GetBlockValue("period_time", 0u);
 
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
@@ -259,8 +258,9 @@ alsa_test_default_device()
  * enum.  Returns SND_PCM_FORMAT_UNKNOWN if there is no according ALSA
  * PCM format.
  */
+gcc_const
 static snd_pcm_format_t
-get_bitformat(SampleFormat sample_format)
+ToAlsaPcmFormat(SampleFormat sample_format)
 {
 	switch (sample_format) {
 	case SampleFormat::UNDEFINED:
@@ -298,7 +298,7 @@ get_bitformat(SampleFormat sample_format)
  * SND_PCM_FORMAT_UNKNOWN if the format cannot be byte-swapped.
  */
 static snd_pcm_format_t
-byteswap_bitformat(snd_pcm_format_t fmt)
+ByteSwapAlsaPcmFormat(snd_pcm_format_t fmt)
 {
 	switch (fmt) {
 	case SND_PCM_FORMAT_S16_LE: return SND_PCM_FORMAT_S16_BE;
@@ -314,6 +314,21 @@ byteswap_bitformat(snd_pcm_format_t fmt)
 		return SND_PCM_FORMAT_S24_3BE;
 
 	case SND_PCM_FORMAT_S32_BE: return SND_PCM_FORMAT_S32_LE;
+
+#ifdef HAVE_ALSA_DSD_U32
+	case SND_PCM_FORMAT_DSD_U16_LE:
+		return SND_PCM_FORMAT_DSD_U16_BE;
+
+	case SND_PCM_FORMAT_DSD_U16_BE:
+		return SND_PCM_FORMAT_DSD_U16_LE;
+
+	case SND_PCM_FORMAT_DSD_U32_LE:
+		return SND_PCM_FORMAT_DSD_U32_BE;
+
+	case SND_PCM_FORMAT_DSD_U32_BE:
+		return SND_PCM_FORMAT_DSD_U32_LE;
+#endif
+
 	default: return SND_PCM_FORMAT_UNKNOWN;
 	}
 }
@@ -323,7 +338,7 @@ byteswap_bitformat(snd_pcm_format_t fmt)
  * Returns SND_PCM_FORMAT_UNKNOWN if not.
  */
 static snd_pcm_format_t
-alsa_to_packed_format(snd_pcm_format_t fmt)
+PackAlsaPcmFormat(snd_pcm_format_t fmt)
 {
 	switch (fmt) {
 	case SND_PCM_FORMAT_S24_LE:
@@ -342,23 +357,23 @@ alsa_to_packed_format(snd_pcm_format_t fmt)
  * fall back to the packed version.
  */
 static int
-alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-			  snd_pcm_format_t fmt, bool *packed_r)
+AlsaTryFormatOrPacked(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		      snd_pcm_format_t fmt, PcmExport::Params &params)
 {
 	int err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
 	if (err == 0)
-		*packed_r = false;
+		params.pack24 = false;
 
 	if (err != -EINVAL)
 		return err;
 
-	fmt = alsa_to_packed_format(fmt);
+	fmt = PackAlsaPcmFormat(fmt);
 	if (fmt == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
 	err = snd_pcm_hw_params_set_format(pcm, hwparams, fmt);
 	if (err == 0)
-		*packed_r = true;
+		params.pack24 = true;
 
 	return err;
 }
@@ -368,46 +383,79 @@ alsa_try_format_or_packed(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  * reversed host byte order if was not supported.
  */
 static int
-alsa_output_try_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-		       SampleFormat sample_format,
-		       bool *packed_r, bool *reverse_endian_r)
+AlsaTryFormatOrByteSwap(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+			snd_pcm_format_t fmt,
+			PcmExport::Params &params)
 {
-	snd_pcm_format_t alsa_format = get_bitformat(sample_format);
-	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
-		return -EINVAL;
-
-	int err = alsa_try_format_or_packed(pcm, hwparams, alsa_format,
-					    packed_r);
+	int err = AlsaTryFormatOrPacked(pcm, hwparams, fmt, params);
 	if (err == 0)
-		*reverse_endian_r = false;
+		params.reverse_endian = false;
 
 	if (err != -EINVAL)
 		return err;
 
-	alsa_format = byteswap_bitformat(alsa_format);
+	fmt = ByteSwapAlsaPcmFormat(fmt);
+	if (fmt == SND_PCM_FORMAT_UNKNOWN)
+		return -EINVAL;
+
+	err = AlsaTryFormatOrPacked(pcm, hwparams, fmt, params);
+	if (err == 0)
+		params.reverse_endian = true;
+
+	return err;
+}
+
+/**
+ * Attempts to configure the specified sample format.  On DSD_U8
+ * failure, attempt to switch to DSD_U32.
+ */
+static int
+AlsaTryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		 snd_pcm_format_t fmt, PcmExport::Params &params)
+{
+	int err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
+
+#if defined(ENABLE_DSD) && defined(HAVE_ALSA_DSD_U32)
+	if (err == 0)
+		params.dsd_u32 = false;
+
+	if (err == -EINVAL && fmt == SND_PCM_FORMAT_DSD_U8) {
+		/* attempt to switch to DSD_U32 */
+		fmt = IsLittleEndian()
+			? SND_PCM_FORMAT_DSD_U32_LE
+			: SND_PCM_FORMAT_DSD_U32_BE;
+		err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
+		if (err == 0)
+			params.dsd_u32 = true;
+	}
+#endif
+
+	return err;
+}
+
+static int
+AlsaTryFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+	      SampleFormat sample_format,
+	      PcmExport::Params &params)
+{
+	snd_pcm_format_t alsa_format = ToAlsaPcmFormat(sample_format);
 	if (alsa_format == SND_PCM_FORMAT_UNKNOWN)
 		return -EINVAL;
 
-	err = alsa_try_format_or_packed(pcm, hwparams, alsa_format, packed_r);
-	if (err == 0)
-		*reverse_endian_r = true;
-
-	return err;
+	return AlsaTryFormatDsd(pcm, hwparams, alsa_format, params);
 }
 
 /**
  * Configure a sample format, and probe other formats if that fails.
  */
 static int
-alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
-			 AudioFormat &audio_format,
-			 bool *packed_r, bool *reverse_endian_r)
+AlsaSetupFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+		AudioFormat &audio_format,
+		PcmExport::Params &params)
 {
 	/* try the input format first */
 
-	int err = alsa_output_try_format(pcm, hwparams,
-					 audio_format.format,
-					 packed_r, reverse_endian_r);
+	int err = AlsaTryFormat(pcm, hwparams, audio_format.format, params);
 
 	/* if unsupported by the hardware, try other formats */
 
@@ -426,8 +474,7 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		if (mpd_format == audio_format.format)
 			continue;
 
-		err = alsa_output_try_format(pcm, hwparams, mpd_format,
-					     packed_r, reverse_endian_r);
+		err = AlsaTryFormat(pcm, hwparams, mpd_format, params);
 		if (err == 0)
 			audio_format.format = mpd_format;
 	}
@@ -440,8 +487,8 @@ alsa_output_setup_format(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
  * the configured settings and the audio format.
  */
 static bool
-alsa_setup(AlsaOutput *ad, AudioFormat &audio_format,
-	   bool *packed_r, bool *reverse_endian_r, Error &error)
+AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
+	  PcmExport::Params &params, Error &error)
 {
 	unsigned int sample_rate = audio_format.sample_rate;
 	unsigned int channels = audio_format.channels;
@@ -461,31 +508,13 @@ configure_hw:
 	if (err < 0)
 		goto error;
 
-	if (ad->use_mmap) {
-		err = snd_pcm_hw_params_set_access(ad->pcm, hwparams,
-						   SND_PCM_ACCESS_MMAP_INTERLEAVED);
-		if (err < 0) {
-			FormatWarning(alsa_output_domain,
-				      "Cannot set mmap'ed mode on ALSA device \"%s\": %s",
-				      ad->GetDevice(), snd_strerror(-err));
-			LogWarning(alsa_output_domain,
-				   "Falling back to direct write mode");
-			ad->use_mmap = false;
-		} else
-			ad->writei = snd_pcm_mmap_writei;
-	}
+	cmd = "snd_pcm_hw_params_set_access";
+	err = snd_pcm_hw_params_set_access(ad->pcm, hwparams,
+					   SND_PCM_ACCESS_RW_INTERLEAVED);
+	if (err < 0)
+		goto error;
 
-	if (!ad->use_mmap) {
-		cmd = "snd_pcm_hw_params_set_access";
-		err = snd_pcm_hw_params_set_access(ad->pcm, hwparams,
-						   SND_PCM_ACCESS_RW_INTERLEAVED);
-		if (err < 0)
-			goto error;
-		ad->writei = snd_pcm_writei;
-	}
-
-	err = alsa_output_setup_format(ad->pcm, hwparams, audio_format,
-				       packed_r, reverse_endian_r);
+	err = AlsaSetupFormat(ad->pcm, hwparams, audio_format, params);
 	if (err < 0) {
 		error.Format(alsa_output_domain, err,
 			     "ALSA device \"%s\" does not support format %s: %s",
@@ -652,15 +681,17 @@ error:
 	return false;
 }
 
+#ifdef ENABLE_DSD
+
 inline bool
 AlsaOutput::SetupDop(const AudioFormat audio_format,
-		     bool *shift8_r, bool *packed_r, bool *reverse_endian_r,
+		     PcmExport::Params &params,
 		     Error &error)
 {
 	assert(dop);
 	assert(audio_format.format == SampleFormat::DSD);
 
-	/* pass 24 bit to alsa_setup() */
+	/* pass 24 bit to AlsaSetup() */
 
 	AudioFormat dop_format = audio_format;
 	dop_format.format = SampleFormat::S24_P32;
@@ -668,7 +699,7 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 
 	const AudioFormat check = dop_format;
 
-	if (!alsa_setup(this, dop_format, packed_r, reverse_endian_r, error))
+	if (!AlsaSetup(this, dop_format, params, error))
 		return false;
 
 	/* if the device allows only 32 bit, shift all DoP
@@ -676,7 +707,7 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 	   the DSD-over-USB documentation does not specify whether
 	   this is legal, but there is anecdotical evidence that this
 	   is possible (and the only option for some devices) */
-	*shift8_r = dop_format.format == SampleFormat::S32;
+	params.shift8 = dop_format.format == SampleFormat::S32;
 	if (dop_format.format == SampleFormat::S32)
 		dop_format.format = SampleFormat::S24_P32;
 
@@ -693,26 +724,32 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 	return true;
 }
 
+#endif
+
 inline bool
-AlsaOutput::SetupOrDop(AudioFormat &audio_format, Error &error)
+AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params,
+		       Error &error)
 {
-	bool shift8 = false, packed, reverse_endian;
+#ifdef ENABLE_DSD
+	Error dop_error;
+	if (dop && audio_format.format == SampleFormat::DSD &&
+	    SetupDop(audio_format, params, dop_error)) {
+		params.dop = true;
+		return true;
+	}
+#endif
 
-	const bool dop2 = dop &&
-		audio_format.format == SampleFormat::DSD;
-	const bool success = dop2
-		? SetupDop(audio_format,
-			   &shift8, &packed, &reverse_endian,
-			   error)
-		: alsa_setup(this, audio_format, &packed, &reverse_endian,
-			     error);
-	if (!success)
-		return false;
+	if (AlsaSetup(this, audio_format, params, error))
+		return true;
 
-	pcm_export->Open(audio_format.format,
-			 audio_format.channels,
-			 dop2, shift8, packed, reverse_endian);
-	return true;
+#ifdef ENABLE_DSD
+	if (dop_error.IsDefined())
+		/* if DoP was attempted, prefer returning the original
+		   DoP error instead of the fallback error */
+		error = std::move(dop_error);
+#endif
+
+	return false;
 }
 
 inline bool
@@ -731,10 +768,17 @@ AlsaOutput::Open(AudioFormat &audio_format, Error &error)
 		    snd_pcm_name(pcm),
 		    snd_pcm_type_name(snd_pcm_type(pcm)));
 
-	if (!SetupOrDop(audio_format, error)) {
+	PcmExport::Params params;
+	params.alsa_channel_order = true;
+
+	if (!SetupOrDop(audio_format, params, error)) {
 		snd_pcm_close(pcm);
 		return false;
 	}
+
+	pcm_export->Open(audio_format.format,
+			 audio_format.channels,
+			 params);
 
 	in_frame_size = audio_format.GetFrameSize();
 	out_frame_size = pcm_export->GetFrameSize(audio_format);
@@ -855,7 +899,7 @@ AlsaOutput::Play(const void *chunk, size_t size, Error &error)
 	assert(size > 0);
 
 	while (true) {
-		snd_pcm_sframes_t ret = writei(pcm, chunk, size);
+		snd_pcm_sframes_t ret = snd_pcm_writei(pcm, chunk, size);
 		if (ret > 0) {
 			period_position = (period_position + ret)
 				% period_frames;

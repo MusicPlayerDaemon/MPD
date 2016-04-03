@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,15 +26,17 @@
 #define MPD_AIFF_HXX
 
 #include <stddef.h>
-#include <stdio.h>
+
+class InputStream;
 
 /**
  * Seeks the AIFF file to the ID3 chunk.
  *
+ * @param is a locked #InputStream
  * @return the size of the ID3 chunk on success, or 0 if this is not a
  * AIFF file or no ID3 chunk was found
  */
 size_t
-aiff_seek_id3(FILE *file);
+aiff_seek_id3(InputStream &is);
 
 #endif

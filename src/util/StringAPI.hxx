@@ -27,8 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef STRING_API_HPP
-#define STRING_API_HPP
+#ifndef STRING_API_HXX
+#define STRING_API_HXX
 
 #include "Compiler.h"
 
@@ -99,6 +99,19 @@ static inline void
 UnsafeCopyString(char *dest, const char *src)
 {
 	strcpy(dest, src);
+}
+
+gcc_nonnull_all
+static inline char *
+UnsafeCopyStringP(char *dest, const char *src)
+{
+#if defined(WIN32) || defined(__BIONIC__)
+  /* emulate stpcpy() */
+  UnsafeCopyString(dest, src);
+  return dest + StringLength(dest);
+#else
+  return stpcpy(dest, src);
+#endif
 }
 
 /**

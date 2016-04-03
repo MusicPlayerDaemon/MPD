@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
-#include "fs/Path.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -263,7 +262,7 @@ audiofile_get_duration(InputStream &is)
 
 static bool
 audiofile_scan_stream(InputStream &is,
-		      const struct tag_handler *handler, void *handler_ctx)
+		      const TagHandler &handler, void *handler_ctx)
 {
 	const auto duration = audiofile_get_duration(is);
 	if (duration.IsNegative())

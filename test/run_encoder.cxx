@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003-2015 The Music Player Daemon Project
+ * Copyright 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -63,60 +63,58 @@ int main(int argc, char **argv)
 	ConfigBlock block;
 	block.AddBlockParam("quality", "5.0", -1);
 
-	Error error;
-	const auto encoder = encoder_init(*plugin, block, error);
-	if (encoder == NULL) {
-		LogError(error, "Failed to initialize encoder");
-		return EXIT_FAILURE;
-	}
-
-	/* open the encoder */
-
-	AudioFormat audio_format(44100, SampleFormat::S16, 2);
-	if (argc > 2) {
-		if (!audio_format_parse(audio_format, argv[2], false, error)) {
-			LogError(error, "Failed to parse audio format");
-			return EXIT_FAILURE;
-		}
-	}
-
-	if (!encoder->Open(audio_format, error)) {
-		LogError(error, "Failed to open encoder");
-		return EXIT_FAILURE;
-	}
-
-	StdioOutputStream os(stdout);
-
-	if (!EncoderToOutputStream(os, *encoder, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
-	/* do it */
-
-	ssize_t nbytes;
-	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-		if (!encoder_write(encoder, buffer, nbytes, error)) {
-			LogError(error, "encoder_write() failed");
+	try {
+		Error error;
+		const auto encoder = encoder_init(*plugin, block, error);
+		if (encoder == NULL) {
+			LogError(error, "Failed to initialize encoder");
 			return EXIT_FAILURE;
 		}
 
-		if (!EncoderToOutputStream(os, *encoder, error)) {
-			LogError(error);
+		/* open the encoder */
+
+		AudioFormat audio_format(44100, SampleFormat::S16, 2);
+		if (argc > 2) {
+			if (!audio_format_parse(audio_format, argv[2], false, error)) {
+				LogError(error, "Failed to parse audio format");
+				return EXIT_FAILURE;
+			}
+		}
+
+		if (!encoder->Open(audio_format, error)) {
+			LogError(error, "Failed to open encoder");
 			return EXIT_FAILURE;
 		}
-	}
 
-	if (!encoder_end(encoder, error)) {
-		LogError(error, "encoder_flush() failed");
+		StdioOutputStream os(stdout);
+
+		EncoderToOutputStream(os, *encoder);
+
+		/* do it */
+
+		ssize_t nbytes;
+		while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
+			if (!encoder_write(encoder, buffer, nbytes, error)) {
+				LogError(error, "encoder_write() failed");
+				return EXIT_FAILURE;
+			}
+
+			EncoderToOutputStream(os, *encoder);
+		}
+
+		if (!encoder_end(encoder, error)) {
+			LogError(error, "encoder_flush() failed");
+			return EXIT_FAILURE;
+		}
+
+		EncoderToOutputStream(os, *encoder);
+
+		encoder->Close();
+		encoder->Dispose();
+
+		return EXIT_SUCCESS;
+	} catch (const std::exception &e) {
+		LogError(e);
 		return EXIT_FAILURE;
 	}
-
-	if (!EncoderToOutputStream(os, *encoder, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
-	encoder->Close();
-	encoder->Dispose();
 }
