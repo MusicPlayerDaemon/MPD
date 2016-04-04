@@ -45,7 +45,7 @@ public:
 	virtual uint64_t get_offset() = 0;
 	virtual double get_duration() = 0;
 	virtual double get_duration(uint32_t track_index) = 0;
-    virtual void get_info(uint32_t track_index, const struct TagHandler& handler, void* handler_ctx) = 0;
+	virtual void get_info(uint32_t track_index, const struct TagHandler& handler, void* handler_ctx) = 0;
 	virtual bool is_dst() = 0;
 	virtual void set_emaster(bool emaster) = 0;
 	virtual void select_area(area_id_e area_id) = 0;

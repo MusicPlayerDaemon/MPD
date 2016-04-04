@@ -154,7 +154,7 @@ dsdiff_update_toc(const char* path) {
 static bool
 dsdiff_init(const ConfigBlock& block) {
 	param_dstdec_threads = block.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
-	param_edited_master  = block.GetBlockValue("edited_master",  false);
+	param_edited_master  = block.GetBlockValue("edited_master", false);
 	param_lsbitfirst     = block.GetBlockValue("lsbitfirst", false);
 	const char* playable_area = block.GetBlockValue("playable_area", nullptr);
 	param_playable_area = AREA_BOTH;
@@ -378,7 +378,8 @@ dsdiff_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_c
 	}
 	string tag_value = to_string(track + 1);
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
-	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(sacd_reader->get_duration(track)));
+	double duration = sacd_reader->get_duration(track);
+	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(duration));
 	sacd_reader->get_info(track, handler, handler_ctx);
 	const char* track_format = sacd_reader->is_dst() ? "DST" : "DSD";
 	tag_handler_invoke_pair(handler, handler_ctx, "codec", track_format);
