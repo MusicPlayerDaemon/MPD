@@ -58,8 +58,8 @@ libmad = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-2.8.3.tar.xz',
-    '2af2723dd53364ac0635efd20cf6e34e',
+    'http://ffmpeg.org/releases/ffmpeg-3.0.1.tar.bz2',
+    '51ca580a64c0d2ecb6dba721b2744815',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
