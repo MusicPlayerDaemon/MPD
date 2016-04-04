@@ -25,6 +25,7 @@
 #include "util/Error.hxx"
 
 #include <string>
+#include <sstream>
 
 #include <stdio.h>
 
@@ -82,17 +83,52 @@ PipeOutput::Create(const ConfigBlock &block, Error &error)
 	return po;
 }
 
+/* helper function */
+static void replaceString(std::string& str, const std::string& from,
+                          const std::string& to) {
+    if(from.empty())
+        return;
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+}
+
 inline bool
 PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &error)
 {
-	fh = popen(cmd.c_str(), "w");
-	if (fh == nullptr) {
-		error.FormatErrno("Error opening pipe \"%s\"",
-				  cmd.c_str());
-		return false;
-	}
+        std::string replacedString = cmd;
+        std::string bits, format;
+        std::string channels;
+        std::string sampleRate;
 
-	return true;
+        switch(audio_format.format)
+        {
+                case SampleFormat::S8: format = "S8"; bits = "8"; break;
+                case SampleFormat::S16: format = "S16"; bits = "16"; break;
+                case SampleFormat::S24_P32: format ="S24_P32"; bits = 32; break;
+                case SampleFormat::S32: format = "S32"; bits = "32"; break;
+                case SampleFormat::FLOAT: format = "FLOAT"; bits = "32"; break;
+                case SampleFormat::DSD: format = "DSD"; bits = "32"; break;
+                case SampleFormat::UNDEFINED: format = "UNDEFINED"; bits = "16"; break;
+        }
+        channels = std::to_string( audio_format.channels );
+        sampleRate = std::to_string( audio_format.sample_rate );
+
+        replaceString(replacedString,"$MPDPIPE_BITS", bits);
+        replaceString(replacedString,"$MPDPIPE_CHANNELS", channels);
+        replaceString(replacedString,"$MPDPIPE_RATE", sampleRate);
+        replaceString(replacedString,"$MPDPIPE_FORMAT", format);
+
+        fh = popen(replacedString.c_str(), "w");
+        if (fh == nullptr) {
+                error.FormatErrno("Error opening pipe \"%s\"",
+                                  replacedString.c_str());
+                return false;
+        }
+
+        return true;
 }
 
 inline size_t

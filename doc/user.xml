@@ -3076,7 +3076,7 @@ buffer_size: 16384</programlisting>
                   <parameter>CMD</parameter>
                 </entry>
                 <entry>
-                  This command is invoked with the shell.
+                  This command is invoked with the shell. The command may contain one or more of the strings $MPDPIPE_BITS, $MPDPIPE_CHANNELS, $MPDPIPE_RATE, $MPDPIPE_FORMAT. Before the command is invoked MPD will substitute these strings by the number of bits per sample, the number of channels, the sample rate, and the sample format (one of "S8", "S16", "S24_P32", "S32", "FLOAT" or "DSD"), respectively. 
                 </entry>
               </row>
             </tbody>
