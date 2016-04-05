@@ -27,6 +27,7 @@
 #include <string>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 class PipeOutput {
 	friend struct AudioOutputWrapper<PipeOutput>;
@@ -83,8 +84,15 @@ PipeOutput::Create(const ConfigBlock &block, Error &error)
 }
 
 inline bool
-PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &error)
+PipeOutput::Open(AudioFormat &audio_format, Error &error)
 {
+	char strbuf[8];
+	setenv("MPDPIPE_BITS", sample_format_to_string(audio_format.format), 1);
+	snprintf(strbuf, sizeof(strbuf), "%u", audio_format.sample_rate);
+	setenv("MPDPIPE_RATE", strbuf, 1);
+	snprintf(strbuf, sizeof(strbuf), "%u", audio_format.channels);
+	setenv("MPDPIPE_CHANNELS", strbuf, 1);
+
 	fh = popen(cmd.c_str(), "w");
 	if (fh == nullptr) {
 		error.FormatErrno("Error opening pipe \"%s\"",

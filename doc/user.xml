@@ -3059,6 +3059,10 @@ buffer_size: 16384</programlisting>
         <para>
           The <varname>pipe</varname> plugin starts a program and
           writes raw PCM data into its standard input.
+          The environment variables MPDPIPE_BITS, MPDPIPE_CHANNELS and
+          MPDPIPE_RATE are set to the number of bits per sample,
+          the number of channels and the sample rate of the raw data,
+          respectively.
         </para>
 
         <informaltable>
