@@ -1,6 +1,6 @@
 /*
 * MPD SACD Decoder plugin
-* Copyright (c) 2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This module partially uses code from SACD Ripper http://code.google.com/p/sacd-ripper/ project
 *
@@ -44,6 +44,7 @@ typedef struct {
 class sacd_disc_t : public sacd_reader_t {
 private:
 	sacd_media_t*        sacd_media;
+	open_mode_e          mode;
 	scarletbook_handle_t sb_handle;
 	area_id_e            track_area;
 	uint32_t             sel_track_index;
@@ -82,7 +83,7 @@ public:
 	uint32_t get_track_length_lsn();
 	bool is_dst();
 	void set_emaster(bool emaster);
-	bool open(sacd_media_t* sacd_media);
+	bool open(sacd_media_t* sacd_media, open_mode_e mode = MODE_MULTI_TRACK);
 	bool close();
 	void select_area(area_id_e area_id);
 	bool select_track(uint32_t track_index, area_id_e area_id = AREA_BOTH, uint32_t offset = 0);

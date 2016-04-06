@@ -1,6 +1,6 @@
 /*
 * MPD SACD Decoder plugin
-* Copyright (c) 2011-2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2011-2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -90,12 +90,13 @@ bool sacd_dsdiff_t::is_dst() {
 	return is_dst_encoded != 0;
 }
 
-bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media) {
+bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media, open_mode_e _mode) {
 	sacd_media = _sacd_media;
+	mode = _mode;
 	dsti_size = 0;
 	Chunk ck;
 	ID id;
-	bool skip_emaster_chunks = false; // if true plays as the single track
+	bool skip_emaster_chunks = (mode & MODE_SINGLE_TRACK) == MODE_SINGLE_TRACK;
 	uint32_t start_mark_count = 0;
 	id3tags_t t_old;
 	track_index.resize(0);

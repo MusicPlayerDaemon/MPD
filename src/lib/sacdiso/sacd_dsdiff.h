@@ -1,6 +1,6 @@
 /*
 * MPD SACD Decoder plugin
-* Copyright (c) 2011-2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2011-2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -77,6 +77,7 @@ public:
 
 class sacd_dsdiff_t : public sacd_reader_t {
 	sacd_media_t*       sacd_media;
+	open_mode_e         mode;
 	area_id_e           track_area;
 	uint32_t            version;
 	uint32_t            samplerate;
@@ -101,7 +102,7 @@ class sacd_dsdiff_t : public sacd_reader_t {
 public:
 	sacd_dsdiff_t();
 	virtual ~sacd_dsdiff_t();
-	bool open(sacd_media_t* sacd_media);
+	bool open(sacd_media_t* sacd_media, open_mode_e mode = MODE_MULTI_TRACK);
 	bool close();
 	uint32_t get_tracks();
 	uint32_t get_tracks(area_id_e area_id = AREA_BOTH);

@@ -1,6 +1,6 @@
 /*
 * MPD SACD Decoder plugin
-* Copyright (c) 2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Lesser General Public
@@ -23,17 +23,15 @@
 #include "tag/TagHandler.hxx"
 #include "sacd_media.h"
 
-#define MODE_SINGLE_TRACK  1
-#define MODE_FULL_PLAYBACK 2
-
 enum area_id_e {AREA_BOTH = 0, AREA_TWOCH = 1, AREA_MULCH = 2};
 enum frame_type_e {FRAME_DSD = 0, FRAME_DST = 1, FRAME_INVALID = -1};
+enum open_mode_e {MODE_MULTI_TRACK = 0, MODE_SINGLE_TRACK = 1, MODE_FULL_PLAYBACK = 2};
 
 class sacd_reader_t {
 public:
 	sacd_reader_t() {}
 	virtual ~sacd_reader_t() {}
-	virtual bool open(sacd_media_t* sacd_media) = 0;
+	virtual bool open(sacd_media_t* sacd_media, open_mode_e mode = MODE_MULTI_TRACK) = 0;
 	virtual bool close() = 0;
 	virtual	uint32_t get_tracks() = 0;
 	virtual	uint32_t get_tracks(area_id_e area_id = AREA_BOTH) = 0;

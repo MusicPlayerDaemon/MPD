@@ -54,6 +54,7 @@ static constexpr unsigned DST_DECODER_THREADS = 8;
 
 static unsigned  param_dstdec_threads;
 static bool      param_edited_master;
+static bool      param_single_track;
 static bool      param_lsbitfirst;
 static area_id_e param_playable_area;
 
@@ -142,7 +143,7 @@ dsdiff_update_toc(const char* path) {
 			LogWarning(dsdiff_domain, err.c_str());
 			return false;
 		}
-		if (!sacd_reader->open(sacd_media)) {
+		if (!sacd_reader->open(sacd_media, param_single_track ? MODE_SINGLE_TRACK : MODE_MULTI_TRACK)) {
 			//LogWarning(dsdiff_domain, "sacd_reader->open(...) failed");
 			return false;
 		}
@@ -155,6 +156,7 @@ static bool
 dsdiff_init(const ConfigBlock& block) {
 	param_dstdec_threads = block.GetBlockValue("dstdec_threads", DST_DECODER_THREADS);
 	param_edited_master  = block.GetBlockValue("edited_master", false);
+	param_single_track   = block.GetBlockValue("single_track", false);
 	param_lsbitfirst     = block.GetBlockValue("lsbitfirst", false);
 	const char* playable_area = block.GetBlockValue("playable_area", nullptr);
 	param_playable_area = AREA_BOTH;
@@ -176,6 +178,9 @@ dsdiff_finish() {
 
 static char*
 dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
+	if (path_fs.IsNull()) {
+		return param_single_track ? (char*)0x1 : nullptr;
+	}
 	if (!dsdiff_update_toc(path_fs.c_str())) {
 		return nullptr;
 	}

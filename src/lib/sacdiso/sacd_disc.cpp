@@ -1,6 +1,6 @@
 /*
 * MPD SACD Decoder plugin
-* Copyright (c) 2014 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
+* Copyright (c) 2016 Maxim V.Anisiutkin <maxim.anisiutkin@gmail.com>
 *
 * This module partially uses code from SACD Ripper http://code.google.com/p/sacd-ripper/ project
 *
@@ -287,8 +287,9 @@ void sacd_disc_t::set_emaster(bool emaster) {
 	is_emaster = emaster;
 }
 
-bool sacd_disc_t::open(sacd_media_t* _sacd_media) {
+bool sacd_disc_t::open(sacd_media_t* _sacd_media, open_mode_e _mode) {
 	sacd_media = _sacd_media;
+	mode = _mode;
 	sb_handle.master_data = nullptr;
 	sb_handle.area_count = 0;
 	sb_handle.twoch_area_idx = -1;

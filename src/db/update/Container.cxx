@@ -60,6 +60,12 @@ UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
 static bool
 SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
 {
+	if (strcmp(plugin.name, "dsdiff") == 0 && plugin.SupportsSuffix(suffix)) {
+		if (plugin.container_scan(Path::Null(), 0)) {
+			return false;
+		}
+	}
+
 	return plugin.container_scan != nullptr &&
 		plugin.SupportsSuffix(suffix);
 }
