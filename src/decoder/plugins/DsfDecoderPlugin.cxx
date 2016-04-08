@@ -309,7 +309,7 @@ dsf_stream_decode(Decoder &decoder, InputStream &is)
 
 	Error error;
 	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
+	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8 / 4,
 				       SampleFormat::DSD,
 				       metadata.channels, error)) {
 		LogError(error);
@@ -340,7 +340,7 @@ dsf_scan_stream(InputStream &is,
 		return false;
 
 	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
+	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8 / 4,
 				       SampleFormat::DSD,
 				       metadata.channels, IgnoreError()))
 		/* refuse to parse files which we cannot play anyway */
