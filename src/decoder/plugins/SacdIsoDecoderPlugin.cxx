@@ -270,7 +270,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 	// initialize decoder
 	Error error;
 	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, dsd_samplerate / 8, SampleFormat::DSD, dsd_channels, error)) {
+	if (!audio_format_init_checked(audio_format, dsd_samplerate / 8 / 4, SampleFormat::DSD, dsd_channels, error)) {
 		LogError(error);
 		return;
 	}
