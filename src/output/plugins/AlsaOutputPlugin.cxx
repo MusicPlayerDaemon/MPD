@@ -695,7 +695,7 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 
 	AudioFormat dop_format = audio_format;
 	dop_format.format = SampleFormat::S24_P32;
-	dop_format.sample_rate /= 2;
+	dop_format.sample_rate *= 2;
 
 	const AudioFormat check = dop_format;
 
