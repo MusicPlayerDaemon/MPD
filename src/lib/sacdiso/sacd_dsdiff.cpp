@@ -286,7 +286,7 @@ bool sacd_dsdiff_t::open(sacd_media_t* _sacd_media, open_mode_e _mode) {
 				sacd_media->skip(sacd_media->get_position() & 1);
 			}
 		}
-		else if (ck.has_id("ID3 ") && !skip_emaster_chunks) {
+		else if (ck.has_id("ID3 ")) {
 			id3_offset = min(id3_offset, (uint64_t)sacd_media->get_position() - sizeof(ck));
 			id3tags_t t;
 			t.index  = id3tags.size();
@@ -465,7 +465,12 @@ void sacd_dsdiff_t::get_id3tags(uint32_t _track_index, const struct TagHandler& 
 		const id3_length_t count = id3tags[_track_index].size;
 		struct id3_tag* id3_tag = id3_tag_parse(dsdid3, count);
 		if (id3_tag != nullptr) {
-			scan_id3_tag(id3_tag, handler, handler_ctx);
+			if ((mode & MODE_SINGLE_TRACK) == MODE_SINGLE_TRACK) {
+				scan_id3_tag(id3_tag, handler, handler_ctx);
+			}
+			else {
+				scan_id3_tag(id3_tag, handler, handler_ctx);
+			}
 			id3_tag_delete(id3_tag);
 		}
 	}
