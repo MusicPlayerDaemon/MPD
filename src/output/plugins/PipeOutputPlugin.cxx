@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 class PipeOutput {
 	friend struct AudioOutputWrapper<PipeOutput>;
@@ -86,21 +87,40 @@ PipeOutput::Create(const ConfigBlock &block, Error &error)
 inline bool
 PipeOutput::Open(AudioFormat &audio_format, Error &error)
 {
+	int pfdes[2];
+	pid_t childpid;
 	char strbuf[8];
-	setenv("MPDPIPE_BITS", sample_format_to_string(audio_format.format), 1);
-	snprintf(strbuf, sizeof(strbuf), "%u", audio_format.sample_rate);
-	setenv("MPDPIPE_RATE", strbuf, 1);
-	snprintf(strbuf, sizeof(strbuf), "%u", audio_format.channels);
-	setenv("MPDPIPE_CHANNELS", strbuf, 1);
 
-	fh = popen(cmd.c_str(), "w");
-	if (fh == nullptr) {
-		error.FormatErrno("Error opening pipe \"%s\"",
-				  cmd.c_str());
+	if (pipe(pfdes) == -1) {
+		error.FormatErrno("Error opening pipe for output.");
 		return false;
 	}
-
-	return true;
+	childpid = fork();
+	if (childpid == -1) {
+		error.FormatErrno("Error forking for pipe output.");
+		return false;
+	}
+	if (childpid != 0) {
+		close(pfdes[0]);
+		fh = fdopen(pfdes[1], "w");
+		if (fh == NULL) {
+			error.FormatErrno("Error creating file pointer for pipe output.");
+			return false;
+		}
+		return true;
+	} else {
+		close(pfdes[1]);
+		dup2(pfdes[0], 0);
+		close(pfdes[0]);
+		setenv("MPDPIPE_BITS", sample_format_to_string(audio_format.format), 1);
+		snprintf(strbuf, sizeof(strbuf), "%u", audio_format.sample_rate);
+		setenv("MPDPIPE_RATE", strbuf, 1);
+		snprintf(strbuf, sizeof(strbuf), "%u", audio_format.channels);
+		setenv("MPDPIPE_CHANNELS", strbuf, 1);
+		execlp("sh", "/bin/sh", "-c", cmd.c_str(), (char*)NULL);
+		error.FormatErrno("Cannot execute pipe program \"%s\"", cmd.c_str());
+		abort();
+	}
 }
 
 inline size_t
