@@ -36,8 +36,7 @@ WritableBuffer<UChar>
 UCharFromUTF8(const char *src);
 
 /**
- * Wrapper for u_strToUTF8().  The returned pointer must be freed with
- * delete[].
+ * Wrapper for u_strToUTF8().
  */
 AllocatedString<char>
 UCharToUTF8(ConstBuffer<UChar> src);
