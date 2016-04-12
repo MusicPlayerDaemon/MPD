@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Client.hxx"
 #include "util/FormatString.hxx"
+#include "util/AllocatedString.hxx"
 
 #include <string.h>
 
@@ -45,9 +46,7 @@ client_puts(Client &client, const char *s)
 void
 client_vprintf(Client &client, const char *fmt, va_list args)
 {
-	char *p = FormatNewV(fmt, args);
-	client.Write(p);
-	delete[] p;
+	client.Write(FormatStringV(fmt, args).c_str());
 }
 
 void

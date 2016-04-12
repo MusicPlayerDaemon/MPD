@@ -24,11 +24,9 @@
 
 struct Tag;
 class Page;
+template<typename T> class AllocatedString;
 
-/**
- * Free the return value with delete[].
- */
-char*
+AllocatedString<char>
 icy_server_metadata_header(const char *name,
 			   const char *genre, const char *url,
 			   const char *content_type, int metaint);

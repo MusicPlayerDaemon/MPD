@@ -21,6 +21,7 @@
 #include "HttpdClient.hxx"
 #include "HttpdInternal.hxx"
 #include "util/ASCII.hxx"
+#include "util/AllocatedString.hxx"
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "net/SocketError.hxx"
@@ -141,7 +142,8 @@ HttpdClient::HandleLine(const char *line)
 bool
 HttpdClient::SendResponse()
 {
-	char buffer[1024], *allocated = nullptr;
+	char buffer[1024];
+	AllocatedString<> allocated = nullptr;
 	const char *response;
 
 	assert(state == RESPONSE);
@@ -162,11 +164,12 @@ HttpdClient::SendResponse()
 		response = buffer;
 
 	} else if (metadata_requested) {
-		response = allocated =
+		allocated =
 			icy_server_metadata_header(httpd.name, httpd.genre,
 						   httpd.website,
 						   httpd.content_type,
 						   metaint);
+		response = allocated.c_str();
        } else { /* revert to a normal HTTP request */
 		snprintf(buffer, sizeof(buffer),
 			 "HTTP/1.1 200 OK\r\n"
@@ -180,7 +183,6 @@ HttpdClient::SendResponse()
 	}
 
 	ssize_t nbytes = SocketMonitor::Write(response, strlen(response));
-	delete[] allocated;
 	if (gcc_unlikely(nbytes < 0)) {
 		const SocketErrorMessage msg;
 		FormatWarning(httpd_output_domain,

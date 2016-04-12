@@ -21,6 +21,7 @@
 #include "Response.hxx"
 #include "Client.hxx"
 #include "util/FormatString.hxx"
+#include "util/AllocatedString.hxx"
 
 bool
 Response::Write(const void *data, size_t length)
@@ -37,10 +38,7 @@ Response::Write(const char *data)
 bool
 Response::FormatV(const char *fmt, va_list args)
 {
-	char *p = FormatNewV(fmt, args);
-	bool success = Write(p);
-	delete[] p;
-	return success;
+	return Write(FormatStringV(fmt, args).c_str());
 }
 
 bool
