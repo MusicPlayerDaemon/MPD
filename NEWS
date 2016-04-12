@@ -1,5 +1,6 @@
 ver 0.19.15 (not yet released)
 * decoder
+  - ffmpeg: support FFmpeg 3.0
   - ffmpeg: use as fallback instead of "mad" if no plugin matches
 * fix more build failures on non-glibc builds due to constexpr Mutex
 

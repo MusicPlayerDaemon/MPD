@@ -640,7 +640,11 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		} else
 			cmd = decoder_get_command(decoder);
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(56, 25, 100)
+		av_packet_unref(&packet);
+#else
 		av_free_packet(&packet);
+#endif
 
 		if (cmd == DecoderCommand::SEEK) {
 			int64_t where =
