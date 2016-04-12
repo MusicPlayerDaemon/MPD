@@ -396,6 +396,7 @@ libutil_a_SOURCES = \
 	src/util/Clamp.hxx \
 	src/util/DeleteDisposer.hxx \
 	src/util/Alloc.cxx src/util/Alloc.hxx \
+	src/util/AllocatedArray.hxx \
 	src/util/VarSize.hxx \
 	src/util/ScopeExit.hxx \
 	src/util/Error.cxx src/util/Error.hxx \
