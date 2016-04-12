@@ -48,7 +48,8 @@ DeinitFSCharset();
 
 /**
  * Convert the path to UTF-8.
- * Returns empty string on error.
+ *
+ * Throws std::runtime_error on error.
  */
 gcc_pure gcc_nonnull_all
 PathTraitsUTF8::string
@@ -56,7 +57,8 @@ PathToUTF8(PathTraitsFS::const_pointer_type path_fs);
 
 /**
  * Convert the path from UTF-8.
- * Returns empty string on error.
+ *
+ * Throws std::runtime_error on error.
  */
 gcc_pure gcc_nonnull_all
 PathTraitsFS::string

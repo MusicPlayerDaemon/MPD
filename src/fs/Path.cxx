@@ -21,10 +21,16 @@
 #include "Path.hxx"
 #include "Charset.hxx"
 
+#include <stdexcept>
+
 std::string
 Path::ToUTF8() const
 {
-	return ::PathToUTF8(c_str());
+	try {
+		return ::PathToUTF8(c_str());
+	} catch (const std::runtime_error &) {
+		return std::string();
+	}
 }
 
 Path::const_pointer_type

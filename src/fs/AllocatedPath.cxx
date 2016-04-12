@@ -24,6 +24,8 @@
 #include "util/Error.hxx"
 #include "Compiler.h"
 
+#include <stdexcept>
+
 /* no inlining, please */
 AllocatedPath::~AllocatedPath() {}
 
@@ -31,7 +33,11 @@ AllocatedPath
 AllocatedPath::FromUTF8(const char *path_utf8)
 {
 #if defined(HAVE_FS_CHARSET) || defined(WIN32)
-	return AllocatedPath(::PathFromUTF8(path_utf8));
+	try {
+		return AllocatedPath(::PathFromUTF8(path_utf8));
+	} catch (const std::runtime_error &) {
+		return nullptr;
+	}
 #else
 	return FromFS(path_utf8);
 #endif
@@ -58,7 +64,11 @@ AllocatedPath::GetDirectoryName() const
 std::string
 AllocatedPath::ToUTF8() const
 {
-	return ::PathToUTF8(c_str());
+	try {
+		return ::PathToUTF8(c_str());
+	} catch (const std::runtime_error &) {
+		return std::string();
+	}
 }
 
 void

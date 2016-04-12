@@ -101,12 +101,8 @@ PathToUTF8(PathTraitsFS::const_pointer_type path_fs)
 #endif
 
 #ifdef WIN32
-	try {
-		const auto buffer = WideCharToMultiByte(CP_UTF8, path_fs);
-		return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
-	} catch (const std::runtime_error &) {
-		return PathTraitsUTF8::string();
-	}
+	const auto buffer = WideCharToMultiByte(CP_UTF8, path_fs);
+	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
 #else
 #ifdef HAVE_FS_CHARSET
 	if (fs_converter == nullptr)
@@ -114,12 +110,8 @@ PathToUTF8(PathTraitsFS::const_pointer_type path_fs)
 		return FixSeparators(path_fs);
 #ifdef HAVE_FS_CHARSET
 
-	try {
-		const auto buffer = fs_converter->ToUTF8(path_fs);
-		return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
-	} catch (const std::runtime_error &) {
-		return PathTraitsUTF8::string();
-	}
+	const auto buffer = fs_converter->ToUTF8(path_fs);
+	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
 #endif
 #endif
 }
@@ -135,20 +127,13 @@ PathFromUTF8(PathTraitsUTF8::const_pointer_type path_utf8)
 #endif
 
 #ifdef WIN32
-	try {
-		const auto buffer = MultiByteToWideChar(CP_UTF8, path_utf8);
-		return PathTraitsFS::string(buffer.c_str());
-	} catch (const std::runtime_error &) {
-		return PathTraitsFS::string();
-	}
+	const auto buffer = MultiByteToWideChar(CP_UTF8, path_utf8);
+	return PathTraitsFS::string(buffer.c_str());
 #else
 	if (fs_converter == nullptr)
 		return path_utf8;
 
 	const auto buffer = fs_converter->FromUTF8(path_utf8);
-	if (buffer.IsNull())
-		return PathTraitsFS::string();
-
 	return PathTraitsFS::string(buffer.c_str());
 #endif
 }
