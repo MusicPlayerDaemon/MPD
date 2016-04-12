@@ -43,9 +43,8 @@ playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
 		: song.GetURI();
 
 	try {
-		const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
-		if (!uri_fs.IsNull())
-			os.Format("%s\n", NarrowPath(uri_fs).c_str());
+		const auto uri_fs = AllocatedPath::FromUTF8Throw(uri_utf8);
+		os.Format("%s\n", NarrowPath(uri_fs).c_str());
 	} catch (const std::runtime_error &) {
 	}
 }
@@ -61,7 +60,7 @@ playlist_print_uri(BufferedOutputStream &os, const char *uri)
 			? map_uri_fs(uri)
 			:
 #endif
-			AllocatedPath::FromUTF8(uri);
+			AllocatedPath::FromUTF8Throw(uri);
 
 		if (!path.IsNull())
 			os.Format("%s\n", NarrowPath(path).c_str());

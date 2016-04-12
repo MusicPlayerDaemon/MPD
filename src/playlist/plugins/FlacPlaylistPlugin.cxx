@@ -94,9 +94,7 @@ flac_playlist_open_uri(const char *uri,
 		/* only local files supported */
 		return nullptr;
 
-	const auto path_fs = AllocatedPath::FromUTF8(uri);
-	if (path_fs.IsNull())
-		return nullptr;
+	const auto path_fs = AllocatedPath::FromUTF8Throw(uri);
 
 	const NarrowPath narrow_path_fs(path_fs);
 
