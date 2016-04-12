@@ -22,8 +22,6 @@
 #include "Client.hxx"
 #include "util/FormatString.hxx"
 
-#include <string.h>
-
 bool
 Response::Write(const void *data, size_t length)
 {
@@ -33,7 +31,7 @@ Response::Write(const void *data, size_t length)
 bool
 Response::Write(const char *data)
 {
-	return Write(data, strlen(data));
+	return client.Write(data);
 }
 
 bool
