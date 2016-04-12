@@ -41,6 +41,8 @@
 #include <windows.h>
 #endif
 
+#include <memory>
+
 #include <assert.h>
 #include <string.h>
 
@@ -169,17 +171,14 @@ IcuCaseFold(const char *src)
 	if (size <= 0)
 		return AllocatedString<>::Duplicate(src);
 
-	auto buffer = new wchar_t[size];
+	std::unique_ptr<wchar_t[]> buffer(new wchar_t[size]);
 	if (LCMapStringEx(LOCALE_NAME_INVARIANT,
 			  LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
-			  u.c_str(), -1, buffer, size,
-			  nullptr, nullptr, 0) <= 0) {
-		delete[] buffer;
+			  u.c_str(), -1, buffer.get(), size,
+			  nullptr, nullptr, 0) <= 0)
 		return AllocatedString<>::Duplicate(src);
-	}
 
-	auto result = WideCharToMultiByte(CP_UTF8, buffer);
-	delete[] buffer;
+	auto result = WideCharToMultiByte(CP_UTF8, buffer.get());
 	if (result.IsNull())
 		return AllocatedString<>::Duplicate(src);
 
@@ -187,20 +186,20 @@ IcuCaseFold(const char *src)
 
 #else
 	size_t size = strlen(src) + 1;
-	auto buffer = new char[size];
-	size_t nbytes = strxfrm(buffer, src, size);
+	std::unique_ptr<char[]> buffer(new char[size]);
+	size_t nbytes = strxfrm(buffer.get(), src, size);
 	if (nbytes >= size) {
 		/* buffer too small - reallocate and try again */
-		delete[] buffer;
+		buffer.reset();
 		size = nbytes + 1;
-		buffer = new char[size];
-		nbytes = strxfrm(buffer, src, size);
+		buffer.reset(new char[size]);
+		nbytes = strxfrm(buffer.get(), src, size);
 	}
 
 	assert(nbytes < size);
 	assert(buffer[nbytes] == 0);
 
-	return AllocatedString<>::Donate(buffer);
+	return AllocatedString<>::Donate(buffer.release());
 #endif
 }
 
