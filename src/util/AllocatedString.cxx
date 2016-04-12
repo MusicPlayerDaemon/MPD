@@ -32,7 +32,7 @@
 
 template<>
 AllocatedString<char>
-AllocatedString<char>::Duplicate(const_pointer src)
+AllocatedString<char>::Duplicate(const_pointer_type src)
 {
 	return Duplicate(src, StringLength(src));
 }

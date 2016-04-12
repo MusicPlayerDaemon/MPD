@@ -37,17 +37,17 @@ template<typename T=char>
 class StringPointer {
 public:
 	typedef T value_type;
-	typedef T *pointer;
-	typedef const T *const_pointer;
+	typedef T *pointer_type;
+	typedef const T *const_pointer_type;
 
 	static constexpr value_type SENTINEL = '\0';
 
 private:
-	const_pointer value;
+	const_pointer_type value;
 
 public:
 	StringPointer() = default;
-	constexpr StringPointer(const_pointer _value)
+	constexpr StringPointer(const_pointer_type _value)
 		:value(_value) {}
 
 	/**
@@ -58,7 +58,7 @@ public:
 		return value == nullptr;
 	}
 
-	constexpr const_pointer c_str() const {
+	constexpr const_pointer_type c_str() const {
 		return value;
 	}
 

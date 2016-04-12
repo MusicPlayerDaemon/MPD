@@ -52,8 +52,8 @@ struct PathTraitsFS {
 	typedef string::traits_type char_traits;
 	typedef char_traits::char_type value_type;
 	typedef StringPointer<value_type> Pointer;
-	typedef Pointer::pointer pointer;
-	typedef Pointer::const_pointer const_pointer;
+	typedef Pointer::pointer_type pointer_type;
+	typedef Pointer::const_pointer_type const_pointer_type;
 
 #ifdef WIN32
 	static constexpr value_type SEPARATOR = '\\';
@@ -61,7 +61,7 @@ struct PathTraitsFS {
 	static constexpr value_type SEPARATOR = '/';
 #endif
 
-	static constexpr const_pointer CURRENT_DIRECTORY = PATH_LITERAL(".");
+	static constexpr const_pointer_type CURRENT_DIRECTORY = PATH_LITERAL(".");
 
 	static constexpr bool IsSeparator(value_type ch) {
 		return
@@ -72,14 +72,14 @@ struct PathTraitsFS {
 	}
 
 	gcc_pure gcc_nonnull_all
-	static const_pointer FindLastSeparator(const_pointer p) {
+	static const_pointer_type FindLastSeparator(const_pointer_type p) {
 #if !CLANG_CHECK_VERSION(3,6)
 		/* disabled on clang due to -Wtautological-pointer-compare */
 		assert(p != nullptr);
 #endif
 
 #ifdef WIN32
-		const_pointer pos = p + GetLength(p);
+		const_pointer_type pos = p + GetLength(p);
 		while (p != pos && !IsSeparator(*pos))
 			--pos;
 		return IsSeparator(*pos) ? pos : nullptr;
@@ -90,13 +90,13 @@ struct PathTraitsFS {
 
 #ifdef WIN32
 	gcc_pure gcc_nonnull_all
-	static constexpr bool IsDrive(const_pointer p) {
+	static constexpr bool IsDrive(const_pointer_type p) {
 		return IsAlphaASCII(p[0]) && p[1] == ':';
 	}
 #endif
 
 	gcc_pure gcc_nonnull_all
-	static bool IsAbsolute(const_pointer p) {
+	static bool IsAbsolute(const_pointer_type p) {
 #if !CLANG_CHECK_VERSION(3,6)
 		/* disabled on clang due to -Wtautological-pointer-compare */
 		assert(p != nullptr);
@@ -110,12 +110,12 @@ struct PathTraitsFS {
 	}
 
 	gcc_pure gcc_nonnull_all
-	static size_t GetLength(const_pointer p) {
+	static size_t GetLength(const_pointer_type p) {
 		return StringLength(p);
 	}
 
 	gcc_pure gcc_nonnull_all
-	static const_pointer Find(const_pointer p, value_type ch) {
+	static const_pointer_type Find(const_pointer_type p, value_type ch) {
 		return StringFind(p, ch);
 	}
 
@@ -124,7 +124,7 @@ struct PathTraitsFS {
 	 * The return value points inside the given string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const_pointer GetBase(const_pointer p);
+	static const_pointer_type GetBase(const_pointer_type p);
 
 	/**
 	 * Determine the "parent" file name of the given native path.
@@ -132,7 +132,7 @@ struct PathTraitsFS {
 	 * separator in the given input string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string GetParent(const_pointer p);
+	static string GetParent(const_pointer_type p);
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -141,7 +141,8 @@ struct PathTraitsFS {
 	 * nullptr on mismatch.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const_pointer Relative(const_pointer base, const_pointer other);
+	static const_pointer_type Relative(const_pointer_type base,
+					   const_pointer_type other);
 
 	/**
 	 * Constructs the path from the given components.
@@ -150,11 +151,11 @@ struct PathTraitsFS {
 	 * If both components are empty strings, empty string is returned.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer a, size_t a_size,
-			    const_pointer b, size_t b_size);
+	static string Build(const_pointer_type a, size_t a_size,
+			    const_pointer_type b, size_t b_size);
 
 	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer a, const_pointer b) {
+	static string Build(const_pointer_type a, const_pointer_type b) {
 		return Build(a, GetLength(a), b, GetLength(b));
 	}
 };
@@ -166,19 +167,19 @@ struct PathTraitsUTF8 {
 	typedef std::string string;
 	typedef string::traits_type char_traits;
 	typedef char_traits::char_type value_type;
-	typedef value_type *pointer;
-	typedef const value_type *const_pointer;
+	typedef value_type *pointer_type;
+	typedef const value_type *const_pointer_type;
 
 	static constexpr value_type SEPARATOR = '/';
 
-	static constexpr const_pointer CURRENT_DIRECTORY = ".";
+	static constexpr const_pointer_type CURRENT_DIRECTORY = ".";
 
 	static constexpr bool IsSeparator(value_type ch) {
 		return ch == SEPARATOR;
 	}
 
 	gcc_pure gcc_nonnull_all
-	static const_pointer FindLastSeparator(const_pointer p) {
+	static const_pointer_type FindLastSeparator(const_pointer_type p) {
 #if !CLANG_CHECK_VERSION(3,6)
 		/* disabled on clang due to -Wtautological-pointer-compare */
 		assert(p != nullptr);
@@ -189,13 +190,13 @@ struct PathTraitsUTF8 {
 
 #ifdef WIN32
 	gcc_pure gcc_nonnull_all
-	static constexpr bool IsDrive(const_pointer p) {
+	static constexpr bool IsDrive(const_pointer_type p) {
 		return IsAlphaASCII(p[0]) && p[1] == ':';
 	}
 #endif
 
 	gcc_pure gcc_nonnull_all
-	static bool IsAbsolute(const_pointer p) {
+	static bool IsAbsolute(const_pointer_type p) {
 #if !CLANG_CHECK_VERSION(3,6)
 		/* disabled on clang due to -Wtautological-pointer-compare */
 		assert(p != nullptr);
@@ -209,12 +210,12 @@ struct PathTraitsUTF8 {
 	}
 
 	gcc_pure gcc_nonnull_all
-	static size_t GetLength(const_pointer p) {
+	static size_t GetLength(const_pointer_type p) {
 		return StringLength(p);
 	}
 
 	gcc_pure gcc_nonnull_all
-	static const_pointer Find(const_pointer p, value_type ch) {
+	static const_pointer_type Find(const_pointer_type p, value_type ch) {
 		return StringFind(p, ch);
 	}
 
@@ -223,7 +224,7 @@ struct PathTraitsUTF8 {
 	 * The return value points inside the given string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const_pointer GetBase(const_pointer p);
+	static const_pointer_type GetBase(const_pointer_type p);
 
 	/**
 	 * Determine the "parent" file name of the given UTF-8 path.
@@ -231,7 +232,7 @@ struct PathTraitsUTF8 {
 	 * separator in the given input string.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string GetParent(const_pointer p);
+	static string GetParent(const_pointer_type p);
 
 	/**
 	 * Determine the relative part of the given path to this
@@ -240,7 +241,8 @@ struct PathTraitsUTF8 {
 	 * nullptr on mismatch.
 	 */
 	gcc_pure gcc_nonnull_all
-	static const_pointer Relative(const_pointer base, const_pointer other);
+	static const_pointer_type Relative(const_pointer_type base,
+					   const_pointer_type other);
 
 	/**
 	 * Constructs the path from the given components.
@@ -249,11 +251,11 @@ struct PathTraitsUTF8 {
 	 * If both components are empty strings, empty string is returned.
 	 */
 	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer a, size_t a_size,
-			    const_pointer b, size_t b_size);
+	static string Build(const_pointer_type a, size_t a_size,
+			    const_pointer_type b, size_t b_size);
 
 	gcc_pure gcc_nonnull_all
-	static string Build(const_pointer a, const_pointer b) {
+	static string Build(const_pointer_type a, const_pointer_type b) {
 		return Build(a, GetLength(a), b, GetLength(b));
 	}
 };

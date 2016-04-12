@@ -45,7 +45,7 @@
 
 gcc_pure
 static bool
-SkipNameFS(PathTraitsFS::const_pointer name_fs)
+SkipNameFS(PathTraitsFS::const_pointer_type name_fs)
 {
 	return name_fs[0] == '.' &&
 		(name_fs[1] == 0 ||

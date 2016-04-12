@@ -91,18 +91,21 @@ public:
 };
 #endif
 
-static inline bool IsValidPathString(PathTraitsFS::const_pointer path)
+static inline bool
+IsValidPathString(PathTraitsFS::const_pointer_type path)
 {
 	return path != nullptr && *path != '\0';
 }
 
-static inline bool IsValidDir(PathTraitsFS::const_pointer dir)
+static inline bool
+IsValidDir(PathTraitsFS::const_pointer_type dir)
 {
 	return PathTraitsFS::IsAbsolute(dir) &&
 	       DirectoryExists(Path::FromFS(dir));
 }
 
-static inline AllocatedPath SafePathFromFS(PathTraitsFS::const_pointer dir)
+static inline AllocatedPath
+SafePathFromFS(PathTraitsFS::const_pointer_type dir)
 {
 	if (IsValidPathString(dir) && IsValidDir(dir))
 		return AllocatedPath::FromFS(dir);

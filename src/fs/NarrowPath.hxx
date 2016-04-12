@@ -43,7 +43,7 @@ class NarrowPath {
 #else
 	typedef StringPointer<> Value;
 #endif
-	typedef typename Value::const_pointer const_pointer;
+	typedef typename Value::const_pointer_type const_pointer_type;
 
 	Value value;
 
@@ -59,11 +59,11 @@ public:
 	explicit NarrowPath(Path _path):value(_path.c_str()) {}
 #endif
 
-	operator const_pointer() const {
+	operator const_pointer_type() const {
 		return c_str();
 	}
 
-	const_pointer c_str() const {
+	const_pointer_type c_str() const {
 		return value.c_str();
 	}
 };
