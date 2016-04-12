@@ -24,15 +24,14 @@
 
 #include <unicode/utypes.h>
 
-template<typename T> struct WritableBuffer;
 template<typename T> struct ConstBuffer;
+template<typename T> class AllocatedArray;
 template<typename T> class AllocatedString;
 
 /**
- * Wrapper for u_strFromUTF8().  The returned pointer must be freed
- * with delete[].
+ * Wrapper for u_strFromUTF8().
  */
-WritableBuffer<UChar>
+AllocatedArray<UChar>
 UCharFromUTF8(const char *src);
 
 /**

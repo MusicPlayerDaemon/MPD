@@ -24,7 +24,7 @@
 #ifdef HAVE_ICU
 #include "Util.hxx"
 #include "Error.hxx"
-#include "util/WritableBuffer.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 
@@ -99,15 +99,10 @@ IcuCollate(const char *a, const char *b)
 	const auto au = UCharFromUTF8(a);
 	const auto bu = UCharFromUTF8(b);
 
-	int result = !au.IsNull() && !bu.IsNull()
-		? (int)ucol_strcoll(collator, au.data, au.size,
-				    bu.data, bu.size)
+	return !au.IsNull() && !bu.IsNull()
+		? (int)ucol_strcoll(collator, au.begin(), au.size(),
+				    bu.begin(), bu.size())
 		: strcasecmp(a, b);
-
-	delete[] au.data;
-	delete[] bu.data;
-
-	return result;
 #endif
 
 #elif defined(WIN32)
@@ -149,15 +144,14 @@ IcuCaseFold(const char *src)
 	if (u.IsNull())
 		return AllocatedString<>::Duplicate(src);
 
-	size_t folded_capacity = u.size * 2u;
+	size_t folded_capacity = u.size() * 2u;
 	UChar *folded = new UChar[folded_capacity];
 
 	UErrorCode error_code = U_ZERO_ERROR;
 	size_t folded_length = u_strFoldCase(folded, folded_capacity,
-					     u.data, u.size,
+					     u.begin(), u.size(),
 					     U_FOLD_CASE_DEFAULT,
 					     &error_code);
-	delete[] u.data;
 	if (folded_length == 0 || error_code != U_ZERO_ERROR) {
 		delete[] folded;
 		return AllocatedString<>::Duplicate(src);

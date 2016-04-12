@@ -23,7 +23,7 @@
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "util/AllocatedString.hxx"
-#include "util/WritableBuffer.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <string.h>
@@ -142,13 +142,12 @@ IcuConverter::FromUTF8(const char *s) const
 
 	// TODO: dynamic buffer?
 	char buffer[4096], *target = buffer;
-	const UChar *source = u.data;
+	const UChar *source = u.begin();
 	UErrorCode code = U_ZERO_ERROR;
 
 	ucnv_fromUnicode(converter, &target, buffer + ARRAY_SIZE(buffer),
 			 &source, u.end(),
 			 nullptr, true, &code);
-	delete[] u.data;
 
 	if (code != U_ZERO_ERROR)
 		return nullptr;
