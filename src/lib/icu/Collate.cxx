@@ -144,22 +144,18 @@ IcuCaseFold(const char *src)
 	if (u.IsNull())
 		return AllocatedString<>::Duplicate(src);
 
-	size_t folded_capacity = u.size() * 2u;
-	UChar *folded = new UChar[folded_capacity];
+	AllocatedArray<UChar> folded(u.size() * 2u);
 
 	UErrorCode error_code = U_ZERO_ERROR;
-	size_t folded_length = u_strFoldCase(folded, folded_capacity,
+	size_t folded_length = u_strFoldCase(folded.begin(), folded.size(),
 					     u.begin(), u.size(),
 					     U_FOLD_CASE_DEFAULT,
 					     &error_code);
-	if (folded_length == 0 || error_code != U_ZERO_ERROR) {
-		delete[] folded;
+	if (folded_length == 0 || error_code != U_ZERO_ERROR)
 		return AllocatedString<>::Duplicate(src);
-	}
 
-	auto result = UCharToUTF8({folded, folded_length});
-	delete[] folded;
-	return result;
+	folded.SetSize(folded_length);
+	return UCharToUTF8({folded.begin(), folded.size()});
 
 #elif defined(WIN32)
 	const auto u = MultiByteToWideChar(CP_UTF8, src);
