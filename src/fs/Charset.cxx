@@ -40,19 +40,17 @@ static std::string fs_charset;
 
 static IcuConverter *fs_converter;
 
-bool
-SetFSCharset(const char *charset, Error &error)
+void
+SetFSCharset(const char *charset)
 {
 	assert(charset != nullptr);
 	assert(fs_converter == nullptr);
 
-	fs_converter = IcuConverter::Create(charset, error);
-	if (fs_converter == nullptr)
-		return false;
+	fs_converter = IcuConverter::Create(charset);
+	assert(fs_converter != nullptr);
 
 	FormatDebug(path_domain,
 		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
-	return true;
 }
 
 #endif

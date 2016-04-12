@@ -19,12 +19,13 @@
 
 #include "config.h"
 #include "Converter.hxx"
-#include "Error.hxx"
-#include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/AllocatedArray.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/FormatString.hxx"
+
+#include <stdexcept>
 
 #include <string.h>
 
@@ -32,8 +33,7 @@
 #include "Util.hxx"
 #include <unicode/ucnv.h>
 #elif defined(HAVE_ICONV)
-#include "util/Domain.hxx"
-static constexpr Domain iconv_domain("iconv");
+#include "system/Error.hxx"
 #endif
 
 #ifdef HAVE_ICU
@@ -48,30 +48,27 @@ IcuConverter::~IcuConverter()
 #ifdef HAVE_ICU_CONVERTER
 
 IcuConverter *
-IcuConverter::Create(const char *charset, Error &error)
+IcuConverter::Create(const char *charset)
 {
 #ifdef HAVE_ICU
 	UErrorCode code = U_ZERO_ERROR;
 	UConverter *converter = ucnv_open(charset, &code);
-	if (converter == nullptr) {
-		error.Format(icu_domain, int(code),
-			     "Failed to initialize charset '%s': %s",
-			     charset, u_errorName(code));
-		return nullptr;
-	}
+	if (converter == nullptr)
+		throw std::runtime_error(FormatString("Failed to initialize charset '%s': %s",
+						      charset, u_errorName(code)).c_str());
 
 	return new IcuConverter(converter);
 #elif defined(HAVE_ICONV)
 	iconv_t to = iconv_open("utf-8", charset);
 	iconv_t from = iconv_open(charset, "utf-8");
 	if (to == (iconv_t)-1 || from == (iconv_t)-1) {
-		error.FormatErrno("Failed to initialize charset '%s'",
-				  charset);
+		int e = errno;
 		if (to != (iconv_t)-1)
 			iconv_close(to);
 		if (from != (iconv_t)-1)
 			iconv_close(from);
-		return nullptr;
+		throw FormatErrno(e, "Failed to initialize charset '%s'",
+				  charset);
 	}
 
 	return new IcuConverter(to, from);

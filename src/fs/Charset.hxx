@@ -37,8 +37,11 @@ gcc_const
 const char *
 GetFSCharset();
 
-bool
-SetFSCharset(const char *charset, Error &error);
+/**
+ * Throws std::runtime_error on error.
+ */
+void
+SetFSCharset(const char *charset);
 
 void
 DeinitFSCharset();

@@ -33,8 +33,6 @@
 
 #ifdef HAVE_ICU_CONVERTER
 
-class Error;
-
 #ifdef HAVE_ICU
 struct UConverter;
 #endif
@@ -73,7 +71,10 @@ public:
 	}
 #endif
 
-	static IcuConverter *Create(const char *charset, Error &error);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	static IcuConverter *Create(const char *charset);
 
 	/**
 	 * Convert the string to UTF-8.

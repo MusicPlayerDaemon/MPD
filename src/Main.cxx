@@ -510,10 +510,7 @@ static int mpd_main_after_fork(struct options options)
 try {
 	Error error;
 
-	if (!ConfigureFS(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ConfigureFS();
 
 	if (!glue_mapper_init(error)) {
 		LogError(error);

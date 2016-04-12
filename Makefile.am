@@ -1657,11 +1657,11 @@ test_DumpDatabase_LDADD = \
 	$(DB_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
-	libutil.a \
 	libevent.a \
 	$(FS_LIBS) \
 	libsystem.a \
-	$(ICU_LDADD)
+	$(ICU_LDADD) \
+	libutil.a
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/protocol/Ack.cxx \
 	src/Log.cxx src/LogBackend.cxx \
@@ -2002,8 +2002,8 @@ test_run_convert_LDADD = \
 	libconf.a \
 	$(FS_LIBS) \
 	libsystem.a \
-	libutil.a \
-	$(ICU_LDADD)
+	$(ICU_LDADD) \
+	libutil.a
 
 test_run_output_LDADD = $(MPD_LIBS) \
 	$(PCM_LIBS) \
