@@ -115,6 +115,14 @@ public:
 		return *value == SENTINEL;
 	}
 
+	reference_type operator[](size_type i) {
+		return value[i];
+	}
+
+	const reference_type operator[](size_type i) const {
+		return value[i];
+	}
+
 	pointer_type Steal() {
 		pointer_type result = value;
 		value = nullptr;
