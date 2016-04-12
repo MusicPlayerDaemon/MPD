@@ -320,22 +320,22 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs,
-						      decoder.error);
-	if (input_stream == nullptr)
+	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs, decoder.error);
+	if (input_stream == nullptr && (strcasecmp(suffix, "dff") != 0 && strcasecmp(suffix, "iso") != 0))
 		return false;
 
-	LoadReplayGain(decoder, *input_stream);
+	if (input_stream != nullptr)
+		LoadReplayGain(decoder, *input_stream);
 
 	auto &is = *input_stream;
 	return decoder_plugins_try([&decoder, path_fs, suffix,
-				    &is](const DecoderPlugin &plugin){
-					   return TryDecoderFile(decoder,
+						&is](const DecoderPlugin &plugin){
+						 return TryDecoderFile(decoder,
 								 path_fs,
 								 suffix,
 								 is,
 								 plugin);
-				   });
+					 });
 }
 
 /**

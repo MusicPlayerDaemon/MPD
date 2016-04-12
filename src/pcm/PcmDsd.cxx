@@ -78,8 +78,8 @@ PcmDsd::ToFloat(unsigned channels, ConstBuffer<uint8_t> src)
 static constexpr inline uint32_t
 Construct32(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
 {
-	return uint32_t(a) | (uint32_t(b) << 8) |
-		(uint32_t(c) << 16) | (uint32_t(d) << 24);
+	return uint32_t(d) | (uint32_t(c) << 8) |
+		(uint32_t(b) << 16) | (uint32_t(a) << 24);
 }
 
 static constexpr inline uint32_t
