@@ -22,9 +22,9 @@
 #include "Request.hxx"
 #include "db/DatabasePlaylist.hxx"
 #include "CommandError.hxx"
-#include "PlaylistPrint.hxx"
 #include "PlaylistSave.hxx"
 #include "PlaylistFile.hxx"
+#include "PlaylistError.hxx"
 #include "db/PlaylistVector.hxx"
 #include "SongLoader.hxx"
 #include "BulkEdit.hxx"
@@ -85,11 +85,10 @@ handle_listplaylist(Client &client, Request args, Response &r)
 	const char *const name = args.front();
 
 	if (playlist_file_print(r, client.partition, SongLoader(client),
-				name, false))
+				 name, false))
 		return CommandResult::OK;
 
-	spl_print(r, client.partition, name, false);
-	return CommandResult::OK;
+	throw PlaylistError::NoSuchList();
 }
 
 CommandResult
@@ -101,8 +100,7 @@ handle_listplaylistinfo(Client &client, Request args, Response &r)
 				name, true))
 		return CommandResult::OK;
 
-	spl_print(r, client.partition, name, true);
-	return CommandResult::OK;
+	throw PlaylistError::NoSuchList();
 }
 
 CommandResult

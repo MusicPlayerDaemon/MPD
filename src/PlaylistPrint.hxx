@@ -91,15 +91,4 @@ playlist_print_changes_position(Response &r,
 				uint32_t version,
 				unsigned start, unsigned end);
 
-/**
- * Send the stored playlist to the client.
- *
- * @param client the client which requested the playlist
- * @param name_utf8 the name of the stored playlist in UTF-8 encoding
- * @param detail true if all details should be printed
- */
-void
-spl_print(Response &r, Partition &partition,
-	  const char *name_utf8, bool detail);
-
 #endif
