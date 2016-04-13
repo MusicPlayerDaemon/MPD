@@ -236,7 +236,11 @@ decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 {
 	const struct DecoderPlugin *plugin;
 
+#ifdef HAVE_FFMPEG
+	plugin = decoder_plugin_from_name("ffmpeg");
+#else
 	plugin = decoder_plugin_from_name("mad");
+#endif
 	return plugin != nullptr && plugin->stream_decode != nullptr &&
 		decoder_stream_decode(*plugin, decoder, is);
 }
