@@ -27,10 +27,16 @@
 
 template<typename T> class AllocatedString;
 
+/**
+ * Throws std::system_error on error.
+ */
 gcc_pure gcc_nonnull_all
 AllocatedString<char>
 WideCharToMultiByte(unsigned code_page, const wchar_t *src);
 
+/**
+ * Throws std::system_error on error.
+ */
 gcc_pure gcc_nonnull_all
 AllocatedString<wchar_t>
 MultiByteToWideChar(unsigned code_page, const char *src);

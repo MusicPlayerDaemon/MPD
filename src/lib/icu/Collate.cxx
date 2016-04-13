@@ -42,6 +42,7 @@
 #endif
 
 #include <memory>
+#include <stdexcept>
 
 #include <assert.h>
 #include <string.h>
@@ -108,12 +109,24 @@ IcuCollate(const char *a, const char *b)
 #endif
 
 #elif defined(WIN32)
-	const auto wa = MultiByteToWideChar(CP_UTF8, a);
-	const auto wb = MultiByteToWideChar(CP_UTF8, b);
-	if (wa.IsNull())
-		return wb.IsNull() ? 0 : -1;
-	else if (wb.IsNull())
+	AllocatedString<wchar_t> wa = nullptr, wb = nullptr;
+
+	try {
+		wa = MultiByteToWideChar(CP_UTF8, a);
+	} catch (const std::runtime_error &) {
+		try {
+			wb = MultiByteToWideChar(CP_UTF8, b);
+			return -1;
+		} catch (const std::runtime_error &) {
+			return 0;
+		}
+	}
+
+	try {
+		wb = MultiByteToWideChar(CP_UTF8, b);
+	} catch (const std::runtime_error &) {
 		return 1;
+	}
 
 	auto result = CompareStringEx(LOCALE_NAME_INVARIANT,
 				      LINGUISTIC_IGNORECASE,
@@ -134,7 +147,7 @@ IcuCollate(const char *a, const char *b)
 
 AllocatedString<>
 IcuCaseFold(const char *src)
-{
+try {
 #ifdef HAVE_ICU
 	assert(collator != nullptr);
 #if !CLANG_CHECK_VERSION(3,6)
@@ -161,8 +174,6 @@ IcuCaseFold(const char *src)
 
 #elif defined(WIN32)
 	const auto u = MultiByteToWideChar(CP_UTF8, src);
-	if (u.IsNull())
-		return AllocatedString<>::Duplicate(src);
 
 	const int size = LCMapStringEx(LOCALE_NAME_INVARIANT,
 				       LCMAP_SORTKEY|LINGUISTIC_IGNORECASE,
@@ -178,11 +189,7 @@ IcuCaseFold(const char *src)
 			  nullptr, nullptr, 0) <= 0)
 		return AllocatedString<>::Duplicate(src);
 
-	auto result = WideCharToMultiByte(CP_UTF8, buffer.get());
-	if (result.IsNull())
-		return AllocatedString<>::Duplicate(src);
-
-	return result;
+	return WideCharToMultiByte(CP_UTF8, buffer.get());
 
 #else
 	size_t size = strlen(src) + 1;
@@ -201,5 +208,6 @@ IcuCaseFold(const char *src)
 
 	return AllocatedString<>::Donate(buffer.release());
 #endif
+} catch (const std::runtime_error &) {
+	return AllocatedString<>::Duplicate(src);
 }
-

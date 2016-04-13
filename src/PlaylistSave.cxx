@@ -33,6 +33,8 @@
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/UriUtil.hxx"
 
+#include <stdexcept>
+
 void
 playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
 {
@@ -40,25 +42,31 @@ playlist_print_song(BufferedOutputStream &os, const DetachedSong &song)
 		? song.GetRealURI()
 		: song.GetURI();
 
-	const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
-	if (!uri_fs.IsNull())
-		os.Format("%s\n", NarrowPath(uri_fs).c_str());
+	try {
+		const auto uri_fs = AllocatedPath::FromUTF8(uri_utf8);
+		if (!uri_fs.IsNull())
+			os.Format("%s\n", NarrowPath(uri_fs).c_str());
+	} catch (const std::runtime_error &) {
+	}
 }
 
 void
 playlist_print_uri(BufferedOutputStream &os, const char *uri)
 {
-	auto path =
+	try {
+		auto path =
 #ifdef ENABLE_DATABASE
-		playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
-		!PathTraitsUTF8::IsAbsolute(uri)
-		? map_uri_fs(uri)
-		:
+			playlist_saveAbsolutePaths && !uri_has_scheme(uri) &&
+			!PathTraitsUTF8::IsAbsolute(uri)
+			? map_uri_fs(uri)
+			:
 #endif
-		AllocatedPath::FromUTF8(uri);
+			AllocatedPath::FromUTF8(uri);
 
-	if (!path.IsNull())
-		os.Format("%s\n", NarrowPath(path).c_str());
+		if (!path.IsNull())
+			os.Format("%s\n", NarrowPath(path).c_str());
+	} catch (const std::runtime_error &) {
+	}
 }
 
 void

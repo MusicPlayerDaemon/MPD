@@ -30,6 +30,8 @@
 #include "system/Error.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
@@ -78,9 +80,13 @@ ExcludeList::Check(Path name_fs) const
 		}
 	}
 
-	for (const auto &i : patterns)
-		if (i.Check(NarrowPath(name_fs).c_str()))
-			return true;
+	for (const auto &i : patterns) {
+		try {
+			if (i.Check(NarrowPath(name_fs).c_str()))
+				return true;
+		} catch (const std::runtime_error &) {
+		}
+	}
 #else
 	/* not implemented */
 	(void)name_fs;
