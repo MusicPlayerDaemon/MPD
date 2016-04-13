@@ -90,8 +90,11 @@ DoConvert(iconv_t conv, const char *src)
 
 	size_t n = iconv(conv, &in, &in_left, &out, &out_left);
 
-	if (n == static_cast<size_t>(-1) || in_left > 0)
-		return nullptr;
+	if (n == static_cast<size_t>(-1))
+		throw MakeErrno("Charset conversion failed");
+
+	if (in_left > 0)
+		throw std::runtime_error("Charset conversion failed");
 
 	return AllocatedString<>::Duplicate(buffer, sizeof(buffer) - out_left);
 }
@@ -100,7 +103,7 @@ DoConvert(iconv_t conv, const char *src)
 
 AllocatedString<char>
 IcuConverter::ToUTF8(const char *s) const
-try {
+{
 #ifdef HAVE_ICU
 	const ScopeLock protect(mutex);
 
@@ -116,26 +119,23 @@ try {
 		       &source, source + strlen(source),
 		       nullptr, true, &code);
 	if (code != U_ZERO_ERROR)
-		return nullptr;
+		throw std::runtime_error(FormatString("Failed to convert to Unicode: %s",
+						      u_errorName(code)).c_str());
 
 	const size_t target_length = target - buffer;
 	return UCharToUTF8({buffer, target_length});
 #elif defined(HAVE_ICONV)
 	return DoConvert(to_utf8, s);
 #endif
-} catch (const std::runtime_error &) {
-	return nullptr;
 }
 
 AllocatedString<char>
 IcuConverter::FromUTF8(const char *s) const
-try {
+{
 #ifdef HAVE_ICU
 	const ScopeLock protect(mutex);
 
 	const auto u = UCharFromUTF8(s);
-	if (u.IsNull())
-		return nullptr;
 
 	ucnv_resetFromUnicode(converter);
 
@@ -149,15 +149,14 @@ try {
 			 nullptr, true, &code);
 
 	if (code != U_ZERO_ERROR)
-		return nullptr;
+		throw std::runtime_error(FormatString("Failed to convert from Unicode: %s",
+						      u_errorName(code)).c_str());
 
 	return AllocatedString<>::Duplicate(buffer, target);
 
 #elif defined(HAVE_ICONV)
 	return DoConvert(from_utf8, s);
 #endif
-} catch (const std::runtime_error &) {
-	return nullptr;
 }
 
 #endif

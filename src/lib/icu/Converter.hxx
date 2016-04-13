@@ -79,7 +79,7 @@ public:
 	/**
 	 * Convert the string to UTF-8.
 	 *
-	 * Returns AllocatedString::Null() on error.
+	 * Throws std::runtime_error on error.
 	 */
 	gcc_pure gcc_nonnull_all
 	AllocatedString<char> ToUTF8(const char *s) const;
@@ -87,7 +87,7 @@ public:
 	/**
 	 * Convert the string from UTF-8.
 	 *
-	 * Returns AllocatedString::Null() on error.
+	 * Throws std::runtime_error on error.
 	 */
 	gcc_pure gcc_nonnull_all
 	AllocatedString<char> FromUTF8(const char *s) const;

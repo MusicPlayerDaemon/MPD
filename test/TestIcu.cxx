@@ -54,8 +54,11 @@ public:
 		CPPUNIT_ASSERT(converter != nullptr);
 
 		for (const auto i : invalid_utf8) {
-			auto f = converter->FromUTF8(i);
-			CPPUNIT_ASSERT_EQUAL(true, f.IsNull());
+			try {
+				auto f = converter->FromUTF8(i);
+				CPPUNIT_FAIL("Exception expected");
+			} catch (const std::runtime_error &) {
+			}
 		}
 
 		for (const auto i : latin1_tests) {
