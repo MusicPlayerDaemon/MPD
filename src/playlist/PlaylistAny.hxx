@@ -28,7 +28,7 @@ class Storage;
 /**
  * Opens a playlist from the specified URI, which can be either an
  * absolute remote URI (with a scheme) or a relative path to the
- * music orplaylist directory.
+ * music or playlist directory.
  */
 SongEnumerator *
 playlist_open_any(const char *uri,
