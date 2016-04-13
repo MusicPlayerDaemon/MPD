@@ -349,7 +349,7 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
  */
 static DecoderCommand
 ffmpeg_send_packet(Decoder &decoder, InputStream &is,
-		   const AVPacket &packet,
+		   AVPacket &&packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
 		   AVFrame *frame,
@@ -370,17 +370,15 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 					  time_from_ffmpeg(pts, stream.time_base));
 	}
 
-	AVPacket packet2 = packet;
-
 	uint8_t *output_buffer;
 
 	DecoderCommand cmd = DecoderCommand::NONE;
-	while (packet2.size > 0 && cmd == DecoderCommand::NONE) {
+	while (packet.size > 0 && cmd == DecoderCommand::NONE) {
 		int audio_size = 0;
 		int got_frame = 0;
 		int len = avcodec_decode_audio4(&codec_context,
 						frame, &got_frame,
-						&packet2);
+						&packet);
 		if (len >= 0 && got_frame) {
 			audio_size = copy_interleave_frame(codec_context,
 							   *frame,
@@ -397,8 +395,8 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 			break;
 		}
 
-		packet2.data += len;
-		packet2.size -= len;
+		packet.data += len;
+		packet.size -= len;
 
 		if (audio_size <= 0)
 			continue;
@@ -631,7 +629,8 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 		if (packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(decoder, input,
-						 packet, *codec_context,
+						 std::move(packet),
+						 *codec_context,
 						 *av_stream,
 						 frame,
 						 min_frame, audio_format.GetFrameSize(),
