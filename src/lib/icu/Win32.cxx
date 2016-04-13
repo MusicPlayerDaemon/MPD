@@ -21,6 +21,8 @@
 #include "Win32.hxx"
 #include "util/AllocatedString.hxx"
 
+#include <memory>
+
 #include <windows.h>
 
 AllocatedString<char>
@@ -31,15 +33,14 @@ WideCharToMultiByte(unsigned code_page, const wchar_t *src)
 	if (length <= 0)
 		return nullptr;
 
-	char *buffer = new char[length];
-	length = WideCharToMultiByte(code_page, 0, src, -1, buffer, length,
+	std::unique_ptr<char[]> buffer(new char[length]);
+	length = WideCharToMultiByte(code_page, 0, src, -1,
+				     buffer.get(), length,
 				     nullptr, nullptr);
-	if (length <= 0) {
-		delete[] buffer;
+	if (length <= 0)
 		return nullptr;
-	}
 
-	return AllocatedString<char>::Donate(buffer);
+	return AllocatedString<char>::Donate(buffer.release());
 }
 
 AllocatedString<wchar_t>
@@ -49,12 +50,11 @@ MultiByteToWideChar(unsigned code_page, const char *src)
 	if (length <= 0)
 		return nullptr;
 
-	wchar_t *buffer = new wchar_t[length];
-	length = MultiByteToWideChar(code_page, 0, src, -1, buffer, length);
-	if (length <= 0) {
-		delete[] buffer;
+	std::unique_ptr<wchar_t[]> buffer(new wchar_t[length]);
+	length = MultiByteToWideChar(code_page, 0, src, -1,
+				     buffer.get(), length);
+	if (length <= 0)
 		return nullptr;
-	}
 
-	return AllocatedString<wchar_t>::Donate(buffer);
+	return AllocatedString<wchar_t>::Donate(buffer.release());
 }
