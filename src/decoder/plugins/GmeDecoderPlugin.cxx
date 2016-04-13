@@ -103,7 +103,7 @@ ParseContainerPath(Path path_fs)
 	return { path_fs.GetDirectoryName(), track - 1 };
 }
 
-static char *
+static AllocatedString<>
 gme_container_scan(Path path_fs, const unsigned int tnum)
 {
 	Music_Emu *emu;
@@ -123,7 +123,7 @@ gme_container_scan(Path path_fs, const unsigned int tnum)
 	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
 	if (tnum <= num_songs){
 		return FormatString(SUBTUNE_PREFIX "%03u.%s",
-				    tnum, subtune_suffix).Steal();
+				    tnum, subtune_suffix);
 	} else
 		return nullptr;
 }

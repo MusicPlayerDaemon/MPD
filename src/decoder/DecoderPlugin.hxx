@@ -26,6 +26,7 @@ struct ConfigBlock;
 class InputStream;
 struct TagHandler;
 class Path;
+template<typename T> class AllocatedString;
 
 /**
  * Opaque handle which the decoder plugin passes to the functions in
@@ -95,10 +96,8 @@ struct DecoderPlugin {
 	 * @return nullptr if there are no multiple files
 	 * a filename for every single track according to tnum (param 2)
 	 * do not include full pathname here, just the "virtual" file
-	 *
-	 * Free the return value with delete[].
 	 */
-	char* (*container_scan)(Path path_fs, const unsigned int tnum);
+	AllocatedString<char> (*container_scan)(Path path_fs, unsigned tnum);
 
 	/* last element in these arrays must always be a nullptr: */
 	const char *const*suffixes;

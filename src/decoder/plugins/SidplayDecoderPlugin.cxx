@@ -336,7 +336,7 @@ sidplay_scan_file(Path path_fs,
 	return true;
 }
 
-static char *
+static AllocatedString<>
 sidplay_container_scan(Path path_fs, const unsigned int tnum)
 {
 	SidTune tune(path_fs.c_str(), nullptr, true);
@@ -353,7 +353,7 @@ sidplay_container_scan(Path path_fs, const unsigned int tnum)
 	/* Construct container/tune path names, eg.
 		Delta.sid/tune_001.sid */
 	if(tnum<=info.songs) {
-		return FormatString(SUBTUNE_PREFIX "%03u.sid", tnum).Steal();
+		return FormatString(SUBTUNE_PREFIX "%03u.sid", tnum);
 	} else
 		return nullptr;
 }

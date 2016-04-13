@@ -31,6 +31,7 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
 #include "Log.hxx"
+#include "util/AllocatedString.hxx"
 
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
@@ -95,16 +96,16 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		return false;
 	}
 
-	char *vtrack;
+	AllocatedString<> vtrack = nullptr;
 	unsigned int tnum = 0;
 	TagBuilder tag_builder;
 	while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
-		Song *song = Song::NewFile(vtrack, *contdir);
+		Song *song = Song::NewFile(vtrack.c_str(), *contdir);
 
 		// shouldn't be necessary but it's there..
 		song->mtime = info.mtime;
 
-		const auto vtrack_fs = AllocatedPath::FromUTF8(vtrack);
+		const auto vtrack_fs = AllocatedPath::FromUTF8(vtrack.c_str());
 		// TODO: check vtrack_fs.IsNull()
 
 		const auto child_path_fs = AllocatedPath::Build(pathname,
@@ -122,8 +123,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		modified = true;
 
 		FormatDefault(update_domain, "added %s/%s",
-			      directory.GetPath(), vtrack);
-		delete[] vtrack;
+			      directory.GetPath(), vtrack.c_str());
 	}
 
 	if (tnum == 1) {
