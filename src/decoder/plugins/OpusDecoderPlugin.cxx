@@ -441,8 +441,8 @@ mpd_opus_scan_stream(InputStream &is,
 	if (!oy.ExpectFirstPage(os))
 		return false;
 
-	/* read at most two more pages */
-	unsigned remaining_pages = 2;
+	/* read at most 64 more pages */
+	unsigned remaining_pages = 64;
 
 	bool result = false;
 
