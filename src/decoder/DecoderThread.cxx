@@ -68,8 +68,10 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
 	const ScopeLock protect(dc.mutex);
 
 	is->Update();
-	while (!is->IsReady() &&
-	       dc.command != DecoderCommand::STOP) {
+	while (!is->IsReady()) {
+		if (dc.command == DecoderCommand::STOP)
+			return nullptr;
+
 		dc.Wait();
 
 		is->Update();
