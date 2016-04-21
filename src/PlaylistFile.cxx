@@ -36,7 +36,6 @@
 #include "fs/Limits.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
-#include "fs/Charset.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/DirectoryReader.hxx"
@@ -161,8 +160,8 @@ LoadPlaylistFileInfo(PlaylistInfo &info,
 	    !fi.IsRegular())
 		return false;
 
-	PathTraitsFS::string name(name_fs_str, name_fs_end);
-	std::string name_utf8 = PathToUTF8(name.c_str());
+	const auto name = AllocatedPath::FromFS(name_fs_str, name_fs_end);
+	std::string name_utf8 = name.ToUTF8();
 	if (name_utf8.empty())
 		return false;
 
