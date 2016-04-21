@@ -48,6 +48,9 @@ class AllocatedPath {
 	AllocatedPath(std::nullptr_t):value() {}
 	explicit AllocatedPath(const_pointer_type _value):value(_value) {}
 
+	AllocatedPath(const_pointer_type _begin, const_pointer_type _end)
+		:value(_begin, _end) {}
+
 	AllocatedPath(string &&_value):value(std::move(_value)) {}
 
 	static AllocatedPath Build(const_pointer_type a, size_t a_size,
@@ -130,6 +133,12 @@ public:
 	gcc_pure
 	static AllocatedPath FromFS(const_pointer_type fs) {
 		return AllocatedPath(fs);
+	}
+
+	gcc_pure
+	static AllocatedPath FromFS(const_pointer_type _begin,
+				    const_pointer_type _end) {
+		return AllocatedPath(_begin, _end);
 	}
 
 	/**
