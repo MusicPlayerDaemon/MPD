@@ -35,7 +35,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/Traits.hxx"
 #include "fs/FileSystem.hxx"
-#include "fs/Charset.hxx"
 #include "storage/FileInfo.hxx"
 #include "util/Alloc.hxx"
 #include "util/StringCompare.hxx"
@@ -278,12 +277,10 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 		return false;
 	}
 
-	const char *target_str = target.c_str();
-
-	if (PathTraitsFS::IsAbsolute(target_str)) {
+	if (target.IsAbsolute()) {
 		/* if the symlink points to an absolute path, see if
 		   that path is inside the music directory */
-		const auto target_utf8 = PathToUTF8(target_str);
+		const auto target_utf8 = target.ToUTF8();
 		if (target_utf8.empty())
 			return true;
 
@@ -294,7 +291,7 @@ UpdateWalk::SkipSymlink(const Directory *directory,
 			: !follow_outside_symlinks;
 	}
 
-	const char *p = target_str;
+	const char *p = target.c_str();
 	while (*p == '.') {
 		if (p[1] == '.' && PathTraitsFS::IsSeparator(p[2])) {
 			/* "../" moves to parent directory */
