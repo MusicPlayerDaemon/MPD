@@ -46,7 +46,7 @@ class AllocatedPath {
 	string value;
 
 	AllocatedPath(std::nullptr_t):value() {}
-	AllocatedPath(const_pointer_type _value):value(_value) {}
+	explicit AllocatedPath(const_pointer_type _value):value(_value) {}
 
 	AllocatedPath(string &&_value):value(std::move(_value)) {}
 
