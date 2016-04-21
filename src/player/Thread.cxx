@@ -213,6 +213,11 @@ private:
 	bool WaitDecoderStartup() {
 		while (decoder_starting) {
 			if (!CheckDecoderStartup()) {
+				/* if decoder startup fails, make sure
+				   the previous song is not being
+				   played anymore */
+				pc.outputs.Cancel();
+
 				pc.LockCommandFinished();
 				return false;
 			}
