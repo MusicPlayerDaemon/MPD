@@ -129,7 +129,7 @@ try {
 
 AllocatedString<char>
 IcuConverter::FromUTF8(const char *s) const
-{
+try {
 #ifdef HAVE_ICU
 	const ScopeLock protect(mutex);
 
@@ -156,6 +156,8 @@ IcuConverter::FromUTF8(const char *s) const
 #elif defined(HAVE_ICONV)
 	return DoConvert(from_utf8, s);
 #endif
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 #endif

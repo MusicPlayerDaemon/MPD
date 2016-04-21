@@ -47,7 +47,7 @@ UCharFromUTF8(const char *src)
 		      src, src_length,
 		      &error_code);
 	if (U_FAILURE(error_code))
-		return {};
+		throw std::runtime_error(u_errorName(error_code));
 
 	dest.SetSize(dest_length);
 	return dest;

@@ -99,13 +99,16 @@ IcuCollate(const char *a, const char *b)
 #else
 	/* fall back to ucol_strcoll() */
 
-	const auto au = UCharFromUTF8(a);
-	const auto bu = UCharFromUTF8(b);
+	try {
+		const auto au = UCharFromUTF8(a);
+		const auto bu = UCharFromUTF8(b);
 
-	return !au.IsNull() && !bu.IsNull()
-		? (int)ucol_strcoll(collator, au.begin(), au.size(),
-				    bu.begin(), bu.size())
-		: strcasecmp(a, b);
+		return ucol_strcoll(collator, au.begin(), au.size(),
+				    bu.begin(), bu.size());
+	} catch (const std::runtime_error &) {
+		/* fall back to plain strcasecmp() */
+		return strcasecmp(a, b);
+	}
 #endif
 
 #elif defined(WIN32)

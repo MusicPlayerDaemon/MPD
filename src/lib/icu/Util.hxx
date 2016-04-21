@@ -30,6 +30,8 @@ template<typename T> class AllocatedString;
 
 /**
  * Wrapper for u_strFromUTF8().
+ *
+ * Throws std::runtime_error on error.
  */
 AllocatedArray<UChar>
 UCharFromUTF8(const char *src);
