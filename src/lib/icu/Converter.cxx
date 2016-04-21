@@ -100,7 +100,7 @@ DoConvert(iconv_t conv, const char *src)
 
 AllocatedString<char>
 IcuConverter::ToUTF8(const char *s) const
-{
+try {
 #ifdef HAVE_ICU
 	const ScopeLock protect(mutex);
 
@@ -123,6 +123,8 @@ IcuConverter::ToUTF8(const char *s) const
 #elif defined(HAVE_ICONV)
 	return DoConvert(to_utf8, s);
 #endif
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 AllocatedString<char>

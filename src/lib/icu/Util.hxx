@@ -36,16 +36,10 @@ UCharFromUTF8(const char *src);
 
 /**
  * Wrapper for u_strToUTF8().
- */
-AllocatedString<char>
-UCharToUTF8(ConstBuffer<UChar> src);
-
-/**
- * Wrapper for u_strToUTF8().
  *
  * Throws std::runtime_error on error.
  */
 AllocatedString<char>
-UCharToUTF8Throw(ConstBuffer<UChar> src);
+UCharToUTF8(ConstBuffer<UChar> src);
 
 #endif
