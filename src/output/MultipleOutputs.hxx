@@ -49,24 +49,24 @@ class MultipleOutputs {
 
 	std::vector<AudioOutput *> outputs;
 
-	AudioFormat input_audio_format;
+	AudioFormat input_audio_format = AudioFormat::Undefined();
 
 	/**
 	 * The #MusicBuffer object where consumed chunks are returned.
 	 */
-	MusicBuffer *buffer;
+	MusicBuffer *buffer = nullptr;
 
 	/**
 	 * The #MusicPipe object which feeds all audio outputs.  It is
 	 * filled by audio_output_all_play().
 	 */
-	MusicPipe *pipe;
+	MusicPipe *pipe = nullptr;
 
 	/**
 	 * The "elapsed_time" stamp of the most recently finished
 	 * chunk.
 	 */
-	SignedSongTime elapsed_time;
+	SignedSongTime elapsed_time = SignedSongTime::Negative();
 
 public:
 	/**
