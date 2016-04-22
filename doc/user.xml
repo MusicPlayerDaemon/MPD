@@ -945,6 +945,33 @@ systemctl start mpd.socket</programlisting>
     <section id="config_other">
       <title>Other Settings</title>
 
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Setting</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>metadata_to_use</varname>
+                <parameter>TAG1,TAG2,...</parameter>
+              </entry>
+              <entry>
+                Use only the specified tags, and ignore the others.
+                This setting can reduce the database size and
+                <application>MPD</application>'s memory usage by
+                omitting unused tags.  By default, all tags but
+                <varname>comment</varname> are enabled.  The special
+                value "none" disables all tags.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
       <section>
         <title>The State File</title>
 

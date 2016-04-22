@@ -174,15 +174,6 @@ MP3 playback.
 This specifies whether relative or absolute paths for song filenames are used
 when saving playlists.  The default is "no".
 .TP
-.B metadata_to_use <tags>
-This specifies the tag types that will be scanned for and made available to
-clients.  Possible values are listed in the MPD user manual.
-Multiple tags may be specified
-as a comma separated list.
-An example value is "artist,album,title,track".  The special value "none" may
-be used alone to disable all metadata.  The default is to use all known tag
-types except for comments.
-.TP
 .B auto_update <yes or no>
 This specifies the whether to support automatic update of music database when
 files are changed in music_directory. The default is to disable autoupdate
