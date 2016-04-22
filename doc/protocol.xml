@@ -202,6 +202,25 @@
         omitted, then the maximum possible value is assumed.
       </para>
     </section>
+
+    <section id="tags">
+      <title>Tags</title>
+
+      <para>
+        The following tags are supported by
+        <application>MPD</application>:
+      </para>
+
+      <xi:include href="include/tags.xml"
+                  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+      <para>
+        There can be multiple values for some of these tags.  For
+        example, <application>MPD</application> may return multiple
+        lines with a <varname>performer</varname> tag.  A tag value is
+        a UTF-8 string.
+      </para>
+    </section>
   </chapter>
 
   <chapter id="recipes">

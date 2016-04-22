@@ -1298,6 +1298,19 @@ database {
       </para>
     </section>
 
+    <section id="tags">
+      <title>Metadata</title>
+
+      <para>
+        When scanning or playing a song,
+        <application>MPD</application> parses its metadata.  The
+        following tags are supported:
+      </para>
+
+      <xi:include href="include/tags.xml"
+                  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    </section>
+
     <section id="queue">
       <title>The queue</title>
 
