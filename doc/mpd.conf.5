@@ -176,15 +176,14 @@ when saving playlists.  The default is "no".
 .TP
 .B metadata_to_use <tags>
 This specifies the tag types that will be scanned for and made available to
-clients.  Note that you must recreate (not update) your database for changes to
-this parameter to take effect.  Possible values are artist, album, title,
+clients.  Possible values are artist, album, title,
 track, name, genre, date, composer, performer, comment, disc,
 musicbrainz_artistid, musicbrainz_albumid, musicbrainz_albumartistid,
 musicbrainz_releasetrackid, musicbrainz_trackid.  Multiple tags may be specified
 as a comma separated list.
 An example value is "artist,album,title,track".  The special value "none" may
 be used alone to disable all metadata.  The default is to use all known tag
-types except for comments and those starting with "musicbrainz".
+types except for comments.
 .TP
 .B auto_update <yes or no>
 This specifies the whether to support automatic update of music database when
