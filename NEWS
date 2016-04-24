@@ -4,6 +4,7 @@ ver 0.19.15 (not yet released)
   - ffmpeg: use as fallback instead of "mad" if no plugin matches
   - opus: support bigger OpusTags packets
 * fix more build failures on non-glibc builds due to constexpr Mutex
+* fix build failure due to missing include
 
 ver 0.19.14 (2016/03/18)
 * decoder

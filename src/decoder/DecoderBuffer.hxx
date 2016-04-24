@@ -25,6 +25,7 @@
 #include "util/ConstBuffer.hxx"
 
 #include <stddef.h>
+#include <stdint.h>
 
 struct Decoder;
 class InputStream;
