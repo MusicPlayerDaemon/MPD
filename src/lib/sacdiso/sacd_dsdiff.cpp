@@ -466,7 +466,7 @@ void sacd_dsdiff_t::get_id3tags(uint32_t _track_index, const struct TagHandler& 
 		struct id3_tag* id3_tag = id3_tag_parse(dsdid3, count);
 		if (id3_tag != nullptr) {
 			if ((mode & MODE_SINGLE_TRACK) == MODE_SINGLE_TRACK) {
-				scan_id3_tag(id3_tag, handler, handler_ctx);
+				//scan_id3_tag(id3_tag, handler, handler_ctx);
 			}
 			else {
 				scan_id3_tag(id3_tag, handler, handler_ctx);

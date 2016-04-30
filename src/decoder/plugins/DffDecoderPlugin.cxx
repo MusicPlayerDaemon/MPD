@@ -29,11 +29,13 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Alloc.hxx"
 #include "util/bit_reverse.h"
 #include "util/FormatString.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -178,14 +180,8 @@ dsdiff_finish() {
 
 static AllocatedString<>
 dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
-	return FormatString("%03u.%d", 0, 0);
-}
-
-/*
-static AllocatedString<>
-dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
 	if (path_fs.IsNull()) {
-		return param_single_track ? (char*)0x1 : nullptr;
+		return param_single_track ? AllocatedString<>::Empty() : AllocatedString<>::Null();
 	}
 	if (!dsdiff_update_toc(path_fs.c_str())) {
 		return nullptr;
@@ -219,7 +215,6 @@ dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
 	return FormatString(DSDIFF_TRACKXXX_FMT, area, track + 1, suffix);
 	return nullptr;
 }
-*/
 
 static void
 bit_reverse_buffer(uint8_t* p, uint8_t* end) {

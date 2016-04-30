@@ -30,11 +30,13 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Alloc.hxx"
 #include "util/bit_reverse.h"
 #include "util/FormatString.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -101,11 +103,11 @@ get_subsong(const char* path, unsigned* track, bool* downmix) {
 	return params == 3;
 }
 
-static char*
+static AllocatedString<>
 new_track(Path path_fs, unsigned track, bool downmix) {
 	const char area = downmix ? 'D' : (dvda_reader->get_channels() > 2 ? 'M' : 'S');
 	const char* suffix = uri_get_suffix(path_fs.c_str());
-	return FormatNew(DVDA_TRACKXXX_FMT, track + 1, area, suffix);
+	return FormatString(DVDA_TRACKXXX_FMT, track + 1, area, suffix);
 }
 
 static bool

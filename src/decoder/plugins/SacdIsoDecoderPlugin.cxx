@@ -30,11 +30,13 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
+#include "fs/AllocatedPath.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Mutex.hxx"
 #include "util/Alloc.hxx"
 #include "util/bit_reverse.h"
 #include "util/FormatString.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -221,7 +223,7 @@ sacdiso_container_scan(Path path_fs, const unsigned int tnum) {
 	}
 	char area = sacd_reader->get_channels() > 2 ? 'M' : '2';
 	const char* suffix = uri_get_suffix(path_fs.c_str());
-	return FormatNew(SACD_TRACKXXX_FMT, area, track + 1, suffix);
+	return FormatString(SACD_TRACKXXX_FMT, area, track + 1, suffix);
 }
 
 static void
