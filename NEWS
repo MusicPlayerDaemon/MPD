@@ -1,4 +1,4 @@
-ver 0.19.15 (not yet released)
+ver 0.19.15 (2016/04/30)
 * decoder
   - ffmpeg: support FFmpeg 3.0
   - ffmpeg: use as fallback instead of "mad" if no plugin matches
