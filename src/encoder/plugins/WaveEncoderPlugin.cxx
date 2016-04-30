@@ -64,7 +64,7 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 	header->id_fmt = ToLE32(0x20746d66);
 	header->id_data = ToLE32(0x61746164);
 
-        /* wave format */
+	/* wave format */
 	header->format = ToLE16(1); // PCM_FORMAT
 	header->channels = ToLE16(channels);
 	header->bits = ToLE16(bits);
@@ -72,7 +72,7 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 	header->blocksize = ToLE16(block_size);
 	header->byterate = ToLE32(freq * block_size);
 
-        /* chunk sizes (fake data length) */
+	/* chunk sizes (fake data length) */
 	header->fmt_size = ToLE32(16);
 	header->data_size = ToLE32(data_size);
 	header->riff_size = ToLE32(4 + (8 + 16) + (8 + data_size));
