@@ -185,7 +185,7 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
  */
 static DecoderCommand
 ffmpeg_send_packet(Decoder &decoder, InputStream &is,
-		   AVPacket packet,
+		   AVPacket &&packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
 		   AVFrame &frame,
@@ -560,7 +560,8 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 
 		if (packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(decoder, input,
-						 packet, codec_context,
+						 std::move(packet),
+						 codec_context,
 						 av_stream,
 						 *frame,
 						 min_frame, audio_format.GetFrameSize(),
@@ -569,7 +570,11 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		} else
 			cmd = decoder_get_command(decoder);
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(56, 25, 100)
+		av_packet_unref(&packet);
+#else
 		av_free_packet(&packet);
+#endif
 	}
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53

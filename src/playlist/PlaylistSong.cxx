@@ -27,6 +27,8 @@
 #include "util/Error.hxx"
 #include "DetachedSong.hxx"
 
+#include <stdexcept>
+
 #include <string.h>
 
 static void
@@ -44,7 +46,14 @@ merge_song_metadata(DetachedSong &add, const DetachedSong &base)
 static bool
 playlist_check_load_song(DetachedSong &song, const SongLoader &loader)
 {
-	DetachedSong *tmp = loader.LoadSong(song.GetURI(), IgnoreError());
+	DetachedSong *tmp;
+
+	try {
+		tmp = loader.LoadSong(song.GetURI(), IgnoreError());
+	} catch (const std::runtime_error &) {
+		return false;
+	}
+
 	if (tmp == nullptr)
 		return false;
 

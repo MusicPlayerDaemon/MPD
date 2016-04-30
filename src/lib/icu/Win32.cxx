@@ -19,7 +19,10 @@
 
 #include "config.h"
 #include "Win32.hxx"
+#include "system/Error.hxx"
 #include "util/AllocatedString.hxx"
+
+#include <memory>
 
 #include <windows.h>
 
@@ -29,17 +32,16 @@ WideCharToMultiByte(unsigned code_page, const wchar_t *src)
 	int length = WideCharToMultiByte(code_page, 0, src, -1, nullptr, 0,
 					 nullptr, nullptr);
 	if (length <= 0)
-		return nullptr;
+		throw MakeLastError("Failed to convert from Unicode");
 
-	char *buffer = new char[length];
-	length = WideCharToMultiByte(code_page, 0, src, -1, buffer, length,
+	std::unique_ptr<char[]> buffer(new char[length]);
+	length = WideCharToMultiByte(code_page, 0, src, -1,
+				     buffer.get(), length,
 				     nullptr, nullptr);
-	if (length <= 0) {
-		delete[] buffer;
-		return nullptr;
-	}
+	if (length <= 0)
+		throw MakeLastError("Failed to convert from Unicode");
 
-	return AllocatedString<char>::Donate(buffer);
+	return AllocatedString<char>::Donate(buffer.release());
 }
 
 AllocatedString<wchar_t>
@@ -47,14 +49,13 @@ MultiByteToWideChar(unsigned code_page, const char *src)
 {
 	int length = MultiByteToWideChar(code_page, 0, src, -1, nullptr, 0);
 	if (length <= 0)
-		return nullptr;
+		throw MakeLastError("Failed to convert to Unicode");
 
-	wchar_t *buffer = new wchar_t[length];
-	length = MultiByteToWideChar(code_page, 0, src, -1, buffer, length);
-	if (length <= 0) {
-		delete[] buffer;
-		return nullptr;
-	}
+	std::unique_ptr<wchar_t[]> buffer(new wchar_t[length]);
+	length = MultiByteToWideChar(code_page, 0, src, -1,
+				     buffer.get(), length);
+	if (length <= 0)
+		throw MakeLastError("Failed to convert to Unicode");
 
-	return AllocatedString<wchar_t>::Donate(buffer);
+	return AllocatedString<wchar_t>::Donate(buffer.release());
 }

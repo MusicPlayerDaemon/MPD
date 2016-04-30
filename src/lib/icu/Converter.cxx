@@ -19,12 +19,13 @@
 
 #include "config.h"
 #include "Converter.hxx"
-#include "Error.hxx"
-#include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "util/AllocatedString.hxx"
-#include "util/WritableBuffer.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/FormatString.hxx"
+
+#include <stdexcept>
 
 #include <string.h>
 
@@ -32,8 +33,7 @@
 #include "Util.hxx"
 #include <unicode/ucnv.h>
 #elif defined(HAVE_ICONV)
-#include "util/Domain.hxx"
-static constexpr Domain iconv_domain("iconv");
+#include "system/Error.hxx"
 #endif
 
 #ifdef HAVE_ICU
@@ -48,30 +48,27 @@ IcuConverter::~IcuConverter()
 #ifdef HAVE_ICU_CONVERTER
 
 IcuConverter *
-IcuConverter::Create(const char *charset, Error &error)
+IcuConverter::Create(const char *charset)
 {
 #ifdef HAVE_ICU
 	UErrorCode code = U_ZERO_ERROR;
 	UConverter *converter = ucnv_open(charset, &code);
-	if (converter == nullptr) {
-		error.Format(icu_domain, int(code),
-			     "Failed to initialize charset '%s': %s",
-			     charset, u_errorName(code));
-		return nullptr;
-	}
+	if (converter == nullptr)
+		throw std::runtime_error(FormatString("Failed to initialize charset '%s': %s",
+						      charset, u_errorName(code)).c_str());
 
 	return new IcuConverter(converter);
 #elif defined(HAVE_ICONV)
 	iconv_t to = iconv_open("utf-8", charset);
 	iconv_t from = iconv_open(charset, "utf-8");
 	if (to == (iconv_t)-1 || from == (iconv_t)-1) {
-		error.FormatErrno("Failed to initialize charset '%s'",
-				  charset);
+		int e = errno;
 		if (to != (iconv_t)-1)
 			iconv_close(to);
 		if (from != (iconv_t)-1)
 			iconv_close(from);
-		return nullptr;
+		throw FormatErrno(e, "Failed to initialize charset '%s'",
+				  charset);
 	}
 
 	return new IcuConverter(to, from);
@@ -93,8 +90,11 @@ DoConvert(iconv_t conv, const char *src)
 
 	size_t n = iconv(conv, &in, &in_left, &out, &out_left);
 
-	if (n == static_cast<size_t>(-1) || in_left > 0)
-		return nullptr;
+	if (n == static_cast<size_t>(-1))
+		throw MakeErrno("Charset conversion failed");
+
+	if (in_left > 0)
+		throw std::runtime_error("Charset conversion failed");
 
 	return AllocatedString<>::Duplicate(buffer, sizeof(buffer) - out_left);
 }
@@ -119,7 +119,8 @@ IcuConverter::ToUTF8(const char *s) const
 		       &source, source + strlen(source),
 		       nullptr, true, &code);
 	if (code != U_ZERO_ERROR)
-		return nullptr;
+		throw std::runtime_error(FormatString("Failed to convert to Unicode: %s",
+						      u_errorName(code)).c_str());
 
 	const size_t target_length = target - buffer;
 	return UCharToUTF8({buffer, target_length});
@@ -135,23 +136,21 @@ IcuConverter::FromUTF8(const char *s) const
 	const ScopeLock protect(mutex);
 
 	const auto u = UCharFromUTF8(s);
-	if (u.IsNull())
-		return nullptr;
 
 	ucnv_resetFromUnicode(converter);
 
 	// TODO: dynamic buffer?
 	char buffer[4096], *target = buffer;
-	const UChar *source = u.data;
+	const UChar *source = u.begin();
 	UErrorCode code = U_ZERO_ERROR;
 
 	ucnv_fromUnicode(converter, &target, buffer + ARRAY_SIZE(buffer),
 			 &source, u.end(),
 			 nullptr, true, &code);
-	delete[] u.data;
 
 	if (code != U_ZERO_ERROR)
-		return nullptr;
+		throw std::runtime_error(FormatString("Failed to convert from Unicode: %s",
+						      u_errorName(code)).c_str());
 
 	return AllocatedString<>::Duplicate(buffer, target);
 

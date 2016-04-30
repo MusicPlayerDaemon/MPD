@@ -20,34 +20,37 @@
 #include "config.h"
 #include "Util.hxx"
 #include "util/AllocatedString.hxx"
+#include "util/AllocatedArray.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <unicode/ustring.h>
 
+#include <memory>
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
-WritableBuffer<UChar>
+AllocatedArray<UChar>
 UCharFromUTF8(const char *src)
 {
 	assert(src != nullptr);
 
 	const size_t src_length = strlen(src);
 	const size_t dest_capacity = src_length;
-	UChar *dest = new UChar[dest_capacity];
+	AllocatedArray<UChar> dest(dest_capacity);
 
 	UErrorCode error_code = U_ZERO_ERROR;
 	int32_t dest_length;
-	u_strFromUTF8(dest, dest_capacity, &dest_length,
+	u_strFromUTF8(dest.begin(), dest_capacity, &dest_length,
 		      src, src_length,
 		      &error_code);
-	if (U_FAILURE(error_code)) {
-		delete[] dest;
-		return nullptr;
-	}
+	if (U_FAILURE(error_code))
+		throw std::runtime_error(u_errorName(error_code));
 
-	return { dest, size_t(dest_length) };
+	dest.SetSize(dest_length);
+	return dest;
 }
 
 AllocatedString<>
@@ -58,17 +61,16 @@ UCharToUTF8(ConstBuffer<UChar> src)
 	/* worst-case estimate */
 	size_t dest_capacity = 4 * src.size;
 
-	char *dest = new char[dest_capacity + 1];
+	std::unique_ptr<char[]> dest(new char[dest_capacity + 1]);
 
 	UErrorCode error_code = U_ZERO_ERROR;
 	int32_t dest_length;
-	u_strToUTF8(dest, dest_capacity, &dest_length, src.data, src.size,
+	u_strToUTF8(dest.get(), dest_capacity, &dest_length,
+		    src.data, src.size,
 		    &error_code);
-	if (U_FAILURE(error_code)) {
-		delete[] dest;
-		return nullptr;
-	}
+	if (U_FAILURE(error_code))
+		throw std::runtime_error(u_errorName(error_code));
 
 	dest[dest_length] = 0;
-	return AllocatedString<>::Donate(dest);
+	return AllocatedString<>::Donate(dest.release());
 }

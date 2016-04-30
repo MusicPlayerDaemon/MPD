@@ -116,7 +116,7 @@
 #
 # This setting defines a list of tag types that will be extracted during the
 # audio file discovery process. The complete list of possible values can be
-# found in the mpd.conf man page.
+# found in the user manual.
 #metadata_to_use	"artist,album,title,track,name,genre,date,composer,performer,disc"
 #
 # This setting enables automatic update of MPD's database when files in 

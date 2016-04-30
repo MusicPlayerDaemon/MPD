@@ -110,6 +110,11 @@ public:
 	bool Write(const void *data, size_t length);
 
 	/**
+	 * Write a null-terminated string.
+	 */
+	bool Write(const char *data);
+
+	/**
 	 * returns the uid of the client process, or a negative value
 	 * if the uid is unknown
 	 */

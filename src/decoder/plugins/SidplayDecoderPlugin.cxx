@@ -24,6 +24,7 @@
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/FormatString.hxx"
+#include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
 #include "util/Error.hxx"
 #include "system/ByteOrder.hxx"
@@ -335,7 +336,7 @@ sidplay_scan_file(Path path_fs,
 	return true;
 }
 
-static char *
+static AllocatedString<>
 sidplay_container_scan(Path path_fs, const unsigned int tnum)
 {
 	SidTune tune(path_fs.c_str(), nullptr, true);
@@ -352,7 +353,7 @@ sidplay_container_scan(Path path_fs, const unsigned int tnum)
 	/* Construct container/tune path names, eg.
 		Delta.sid/tune_001.sid */
 	if(tnum<=info.songs) {
-		return FormatNew(SUBTUNE_PREFIX "%03u.sid", tnum);
+		return FormatString(SUBTUNE_PREFIX "%03u.sid", tnum);
 	} else
 		return nullptr;
 }

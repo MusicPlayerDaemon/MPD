@@ -25,8 +25,8 @@
 
 template<typename Traits>
 typename Traits::string
-BuildPathImpl(typename Traits::const_pointer a, size_t a_size,
-	      typename Traits::const_pointer b, size_t b_size)
+BuildPathImpl(typename Traits::const_pointer_type a, size_t a_size,
+	      typename Traits::const_pointer_type b, size_t b_size)
 {
 	assert(a != nullptr);
 	assert(b != nullptr);
@@ -50,15 +50,15 @@ BuildPathImpl(typename Traits::const_pointer a, size_t a_size,
 }
 
 template<typename Traits>
-typename Traits::const_pointer
-GetBasePathImpl(typename Traits::const_pointer p)
+typename Traits::const_pointer_type
+GetBasePathImpl(typename Traits::const_pointer_type p)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(p != nullptr);
 #endif
 
-	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
+	typename Traits::const_pointer_type sep = Traits::FindLastSeparator(p);
 	return sep != nullptr
 		? sep + 1
 		: p;
@@ -66,14 +66,14 @@ GetBasePathImpl(typename Traits::const_pointer p)
 
 template<typename Traits>
 typename Traits::string
-GetParentPathImpl(typename Traits::const_pointer p)
+GetParentPathImpl(typename Traits::const_pointer_type p)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(p != nullptr);
 #endif
 
-	typename Traits::const_pointer sep = Traits::FindLastSeparator(p);
+	typename Traits::const_pointer_type sep = Traits::FindLastSeparator(p);
 	if (sep == nullptr)
 		return typename Traits::string(Traits::CURRENT_DIRECTORY);
 	if (sep == p)
@@ -86,9 +86,9 @@ GetParentPathImpl(typename Traits::const_pointer p)
 }
 
 template<typename Traits>
-typename Traits::const_pointer
-RelativePathImpl(typename Traits::const_pointer base,
-		 typename Traits::const_pointer other)
+typename Traits::const_pointer_type
+RelativePathImpl(typename Traits::const_pointer_type base,
+		 typename Traits::const_pointer_type other)
 {
 	assert(base != nullptr);
 	assert(other != nullptr);
@@ -113,51 +113,51 @@ RelativePathImpl(typename Traits::const_pointer base,
 }
 
 PathTraitsFS::string
-PathTraitsFS::Build(PathTraitsFS::const_pointer a, size_t a_size,
-		    PathTraitsFS::const_pointer b, size_t b_size)
+PathTraitsFS::Build(const_pointer_type a, size_t a_size,
+		    const_pointer_type b, size_t b_size)
 {
 	return BuildPathImpl<PathTraitsFS>(a, a_size, b, b_size);
 }
 
-PathTraitsFS::const_pointer
-PathTraitsFS::GetBase(PathTraitsFS::const_pointer p)
+PathTraitsFS::const_pointer_type
+PathTraitsFS::GetBase(PathTraitsFS::const_pointer_type p)
 {
 	return GetBasePathImpl<PathTraitsFS>(p);
 }
 
 PathTraitsFS::string
-PathTraitsFS::GetParent(PathTraitsFS::const_pointer p)
+PathTraitsFS::GetParent(PathTraitsFS::const_pointer_type p)
 {
 	return GetParentPathImpl<PathTraitsFS>(p);
 }
 
-PathTraitsFS::const_pointer
-PathTraitsFS::Relative(const_pointer base, const_pointer other)
+PathTraitsFS::const_pointer_type
+PathTraitsFS::Relative(const_pointer_type base, const_pointer_type other)
 {
 	return RelativePathImpl<PathTraitsFS>(base, other);
 }
 
 PathTraitsUTF8::string
-PathTraitsUTF8::Build(PathTraitsUTF8::const_pointer a, size_t a_size,
-		      PathTraitsUTF8::const_pointer b, size_t b_size)
+PathTraitsUTF8::Build(const_pointer_type a, size_t a_size,
+		      const_pointer_type b, size_t b_size)
 {
 	return BuildPathImpl<PathTraitsUTF8>(a, a_size, b, b_size);
 }
 
-PathTraitsUTF8::const_pointer
-PathTraitsUTF8::GetBase(PathTraitsUTF8::const_pointer p)
+PathTraitsUTF8::const_pointer_type
+PathTraitsUTF8::GetBase(const_pointer_type p)
 {
 	return GetBasePathImpl<PathTraitsUTF8>(p);
 }
 
 PathTraitsUTF8::string
-PathTraitsUTF8::GetParent(PathTraitsUTF8::const_pointer p)
+PathTraitsUTF8::GetParent(const_pointer_type p)
 {
 	return GetParentPathImpl<PathTraitsUTF8>(p);
 }
 
-PathTraitsUTF8::const_pointer
-PathTraitsUTF8::Relative(const_pointer base, const_pointer other)
+PathTraitsUTF8::const_pointer_type
+PathTraitsUTF8::Relative(const_pointer_type base, const_pointer_type other)
 {
 	return RelativePathImpl<PathTraitsUTF8>(base, other);
 }

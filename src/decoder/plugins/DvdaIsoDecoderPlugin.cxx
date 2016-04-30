@@ -198,7 +198,7 @@ dvdaiso_finish() {
 	my_av_log_set_default_callback();
 }
 
-static char*
+static AllocatedString<>
 dvdaiso_container_scan(Path path_fs, const unsigned int tnum) {
 	if (!dvdaiso_update_ifo(path_fs.c_str())) {
 		return nullptr;

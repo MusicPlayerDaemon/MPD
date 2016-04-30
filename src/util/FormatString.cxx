@@ -18,6 +18,7 @@
  */
 
 #include "FormatString.hxx"
+#include "AllocatedString.hxx"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,8 +27,8 @@
 #include <string.h>
 #endif
 
-char *
-FormatNewV(const char *fmt, va_list args)
+AllocatedString<>
+FormatStringV(const char *fmt, va_list args)
 {
 #ifndef WIN32
 	va_list tmp;
@@ -41,7 +42,7 @@ FormatNewV(const char *fmt, va_list args)
 
 	char *buffer = new char[length + 1];
 	vsnprintf(buffer, length + 1, fmt, args);
-	return buffer;
+	return AllocatedString<>::Donate(buffer);
 #else
 	/* On mingw32, snprintf() expects a 64 bit integer instead of
 	   a "long int" for "%li".  This is not consistent with our
@@ -56,16 +57,16 @@ FormatNewV(const char *fmt, va_list args)
 	const size_t length = strlen(buffer);
 	char *p = new char[length + 1];
 	memcpy(p, buffer, length + 1);
-	return p;
+	return AllocatedString<>::Donate(buffer);
 #endif
 }
 
-char *
-FormatNew(const char *fmt, ...)
+AllocatedString<>
+FormatString(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	char *p = FormatNewV(fmt, args);
+	auto p = FormatStringV(fmt, args);
 	va_end(args);
 	return p;
 }

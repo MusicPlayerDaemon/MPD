@@ -176,7 +176,13 @@ dsdiff_finish() {
 	dsdiff_update_toc(nullptr);
 }
 
-static char*
+static AllocatedString<>
+dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
+	return FormatString("%03u.%d", 0, 0);
+}
+
+/*
+static AllocatedString<>
 dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
 	if (path_fs.IsNull()) {
 		return param_single_track ? (char*)0x1 : nullptr;
@@ -210,8 +216,10 @@ dsdiff_container_scan(Path path_fs, const unsigned int tnum) {
 	}
 	char area = sacd_reader->get_channels() > 2 ? 'M' : '2';
 	const char* suffix = uri_get_suffix(path_fs.c_str());
-	return FormatNew(DSDIFF_TRACKXXX_FMT, area, track + 1, suffix);
+	return FormatString(DSDIFF_TRACKXXX_FMT, area, track + 1, suffix);
+	return nullptr;
 }
+*/
 
 static void
 bit_reverse_buffer(uint8_t* p, uint8_t* end) {

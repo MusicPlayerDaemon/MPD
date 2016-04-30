@@ -44,15 +44,18 @@ template<typename T=char>
 class AllocatedString {
 public:
 	typedef typename StringPointer<T>::value_type value_type;
-	typedef typename StringPointer<T>::pointer pointer;
-	typedef typename StringPointer<T>::const_pointer const_pointer;
+	typedef typename StringPointer<T>::reference_type reference_type;
+	typedef typename StringPointer<T>::const_reference_type const_reference_type;
+	typedef typename StringPointer<T>::pointer_type pointer_type;
+	typedef typename StringPointer<T>::const_pointer_type const_pointer_type;
+	typedef size_t size_type;
 
 	static constexpr value_type SENTINEL = '\0';
 
 private:
-	pointer value;
+	pointer_type value;
 
-	explicit AllocatedString(pointer _value)
+	explicit AllocatedString(pointer_type _value)
 		:value(_value) {}
 
 public:
@@ -65,7 +68,7 @@ public:
 		delete[] value;
 	}
 
-	static AllocatedString Donate(pointer value) {
+	static AllocatedString Donate(pointer_type value) {
 		return AllocatedString(value);
 	}
 
@@ -79,17 +82,17 @@ public:
 		return Donate(p);
 	}
 
-	static AllocatedString Duplicate(const_pointer src);
+	static AllocatedString Duplicate(const_pointer_type src);
 
-	static AllocatedString Duplicate(const_pointer begin,
-					 const_pointer end) {
+	static AllocatedString Duplicate(const_pointer_type begin,
+					 const_pointer_type end) {
 		auto p = new value_type[end - begin + 1];
 		*std::copy(begin, end, p) = SENTINEL;
 		return Donate(p);
 	}
 
-	static AllocatedString Duplicate(const_pointer begin,
-					 size_t length) {
+	static AllocatedString Duplicate(const_pointer_type begin,
+					 size_type length) {
 		auto p = new value_type[length + 1];
 		*std::copy_n(begin, length, p) = SENTINEL;
 		return Donate(p);
@@ -100,11 +103,19 @@ public:
 		return *this;
 	}
 
+	constexpr bool operator==(std::nullptr_t other) const {
+		return value == other;
+	}
+
+	constexpr bool operator!=(std::nullptr_t other) const {
+		return value != other;
+	}
+
 	constexpr bool IsNull() const {
 		return value == nullptr;
 	}
 
-	constexpr const_pointer c_str() const {
+	constexpr const_pointer_type c_str() const {
 		return value;
 	}
 
@@ -112,8 +123,16 @@ public:
 		return *value == SENTINEL;
 	}
 
-	pointer Steal() {
-		pointer result = value;
+	reference_type operator[](size_type i) {
+		return value[i];
+	}
+
+	const reference_type operator[](size_type i) const {
+		return value[i];
+	}
+
+	pointer_type Steal() {
+		pointer_type result = value;
 		value = nullptr;
 		return result;
 	}

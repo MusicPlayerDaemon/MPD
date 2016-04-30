@@ -193,7 +193,7 @@ sacdiso_finish() {
 	sacdiso_update_toc(nullptr);
 }
 
-static char*
+static AllocatedString<>
 sacdiso_container_scan(Path path_fs, const unsigned int tnum) {
 	if (!sacdiso_update_toc(path_fs.c_str())) {
 		return nullptr;

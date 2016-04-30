@@ -31,6 +31,7 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
 #include "Log.hxx"
+#include "util/AllocatedString.hxx"
 
 Directory *
 UpdateWalk::MakeDirectoryIfModified(Directory &parent, const char *name,
@@ -61,7 +62,7 @@ static bool
 SupportsContainerSuffix(const DecoderPlugin &plugin, const char *suffix)
 {
 	if (strcmp(plugin.name, "dsdiff") == 0 && plugin.SupportsSuffix(suffix)) {
-		if (plugin.container_scan(Path::Null(), 0)) {
+		if (!plugin.container_scan(Path::Null(), 0).IsNull()) {
 			return false;
 		}
 	}
@@ -104,20 +105,22 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	unsigned int tnum_total = 0;
 	for (unsigned i = 0; i < plugins.size(); ++i) {
 		const DecoderPlugin &plugin = *plugins[i];
-		char *vtrack;
+		AllocatedString<> vtrack = nullptr;
 		unsigned int tnum = 0;
 		TagBuilder tag_builder;
 		while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
-			Song *song = Song::NewFile(vtrack, *contdir);
+			Song *song = Song::NewFile(vtrack.c_str(), *contdir);
 
 			// shouldn't be necessary but it's there..
 			song->mtime = info.mtime;
 
-			const auto vtrack_fs = AllocatedPath::FromUTF8(vtrack);
+			const auto vtrack_fs = AllocatedPath::FromUTF8(vtrack.c_str());
 			// TODO: check vtrack_fs.IsNull()
 
-			const auto child_path_fs = AllocatedPath::Build(pathname, vtrack_fs);
-			plugin.ScanFile(child_path_fs, add_tag_handler, &tag_builder);
+			const auto child_path_fs = AllocatedPath::Build(pathname,
+									vtrack_fs);
+			plugin.ScanFile(child_path_fs,
+					add_tag_handler, &tag_builder);
 
 			tag_builder.Commit(song->tag);
 
@@ -128,8 +131,9 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 
 			modified = true;
 
-			FormatDefault(update_domain, "added %s/%s", directory.GetPath(), vtrack);
-			delete[] vtrack;
+			FormatDefault(update_domain, "added %s/%s",
+							directory.GetPath(), vtrack.c_str());
+
 			tnum_total++;
 		}
 	}

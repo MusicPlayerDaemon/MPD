@@ -68,8 +68,10 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
 	const ScopeLock protect(dc.mutex);
 
 	is->Update();
-	while (!is->IsReady() &&
-	       dc.command != DecoderCommand::STOP) {
+	while (!is->IsReady()) {
+		if (dc.command == DecoderCommand::STOP)
+			return nullptr;
+
 		dc.Wait();
 
 		is->Update();
@@ -236,7 +238,11 @@ decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 {
 	const struct DecoderPlugin *plugin;
 
+#ifdef HAVE_FFMPEG
+	plugin = decoder_plugin_from_name("ffmpeg");
+#else
 	plugin = decoder_plugin_from_name("mad");
+#endif
 	return plugin != nullptr && plugin->stream_decode != nullptr &&
 		decoder_stream_decode(*plugin, decoder, is);
 }
@@ -320,7 +326,8 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs, decoder.error);
+	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs,
+									decoder.error);
 	if (input_stream == nullptr && (strcasecmp(suffix, "dff") != 0 && strcasecmp(suffix, "iso") != 0))
 		return false;
 

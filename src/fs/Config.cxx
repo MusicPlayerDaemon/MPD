@@ -22,15 +22,13 @@
 #include "Charset.hxx"
 #include "config/ConfigGlobal.hxx"
 
-bool
-ConfigureFS(Error &error)
+void
+ConfigureFS()
 {
 #ifdef HAVE_FS_CHARSET
 	const char *charset = config_get_string(ConfigOption::FS_CHARSET);
-	return charset == nullptr || SetFSCharset(charset, error);
-#else
-	(void)error;
-	return true;
+	if (charset != nullptr)
+		SetFSCharset(charset);
 #endif
 }
 

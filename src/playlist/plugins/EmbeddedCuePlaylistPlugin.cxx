@@ -96,9 +96,7 @@ embcue_playlist_open_uri(const char *uri,
 		/* only local files supported */
 		return nullptr;
 
-	const auto path_fs = AllocatedPath::FromUTF8(uri);
-	if (path_fs.IsNull())
-		return nullptr;
+	const auto path_fs = AllocatedPath::FromUTF8Throw(uri);
 
 	const auto playlist = new EmbeddedCuePlaylist();
 

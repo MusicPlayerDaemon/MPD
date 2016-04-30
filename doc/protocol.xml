@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding="utf-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-               "docbook/dtd/xml/4.2/docbookx.dtd">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                      "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+
 <book>
   <title>The Music Player Daemon protocol</title>
 
@@ -199,6 +200,25 @@
         item is not included in the range, similar to ranges in the
         Python programming language).  If <varname>END</varname> is
         omitted, then the maximum possible value is assumed.
+      </para>
+    </section>
+
+    <section id="tags">
+      <title>Tags</title>
+
+      <para>
+        The following tags are supported by
+        <application>MPD</application>:
+      </para>
+
+      <xi:include href="include/tags.xml"
+                  xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+      <para>
+        There can be multiple values for some of these tags.  For
+        example, <application>MPD</application> may return multiple
+        lines with a <varname>performer</varname> tag.  A tag value is
+        a UTF-8 string.
       </para>
     </section>
   </chapter>

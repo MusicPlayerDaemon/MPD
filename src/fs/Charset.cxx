@@ -30,6 +30,7 @@
 #endif
 
 #include <algorithm>
+#include <stdexcept>
 
 #include <assert.h>
 #include <string.h>
@@ -40,19 +41,17 @@ static std::string fs_charset;
 
 static IcuConverter *fs_converter;
 
-bool
-SetFSCharset(const char *charset, Error &error)
+void
+SetFSCharset(const char *charset)
 {
 	assert(charset != nullptr);
 	assert(fs_converter == nullptr);
 
-	fs_converter = IcuConverter::Create(charset, error);
-	if (fs_converter == nullptr)
-		return false;
+	fs_converter = IcuConverter::Create(charset);
+	assert(fs_converter != nullptr);
 
 	FormatDebug(path_domain,
 		    "SetFSCharset: fs charset is: %s", fs_charset.c_str());
-	return true;
 }
 
 #endif
@@ -94,7 +93,7 @@ FixSeparators(PathTraitsUTF8::string &&s)
 }
 
 PathTraitsUTF8::string
-PathToUTF8(PathTraitsFS::const_pointer path_fs)
+PathToUTF8(PathTraitsFS::const_pointer_type path_fs)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -103,9 +102,6 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 
 #ifdef WIN32
 	const auto buffer = WideCharToMultiByte(CP_UTF8, path_fs);
-	if (buffer.IsNull())
-		return PathTraitsUTF8::string();
-
 	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
 #else
 #ifdef HAVE_FS_CHARSET
@@ -115,9 +111,6 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 #ifdef HAVE_FS_CHARSET
 
 	const auto buffer = fs_converter->ToUTF8(path_fs);
-	if (buffer.IsNull())
-		return PathTraitsUTF8::string();
-
 	return FixSeparators(PathTraitsUTF8::string(buffer.c_str()));
 #endif
 #endif
@@ -126,7 +119,7 @@ PathToUTF8(PathTraitsFS::const_pointer path_fs)
 #if defined(HAVE_FS_CHARSET) || defined(WIN32)
 
 PathTraitsFS::string
-PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
+PathFromUTF8(PathTraitsUTF8::const_pointer_type path_utf8)
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
@@ -135,18 +128,12 @@ PathFromUTF8(PathTraitsUTF8::const_pointer path_utf8)
 
 #ifdef WIN32
 	const auto buffer = MultiByteToWideChar(CP_UTF8, path_utf8);
-	if (buffer.IsNull())
-		return PathTraitsFS::string();
-
 	return PathTraitsFS::string(buffer.c_str());
 #else
 	if (fs_converter == nullptr)
 		return path_utf8;
 
 	const auto buffer = fs_converter->FromUTF8(path_utf8);
-	if (buffer.IsNull())
-		return PathTraitsFS::string();
-
 	return PathTraitsFS::string(buffer.c_str());
 #endif
 }

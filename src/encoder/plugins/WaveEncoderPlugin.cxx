@@ -27,6 +27,8 @@
 #include <assert.h>
 #include <string.h>
 
+static constexpr uint16_t WAVE_FORMAT_PCM = 1;
+
 struct WaveEncoder {
 	Encoder encoder;
 	unsigned bits;
@@ -36,7 +38,7 @@ struct WaveEncoder {
 	WaveEncoder():encoder(wave_encoder_plugin) {}
 };
 
-struct wave_header {
+struct WaveHeader {
 	uint32_t id_riff;
 	uint32_t riff_size;
 	uint32_t id_wave;
@@ -53,7 +55,7 @@ struct wave_header {
 };
 
 static void
-fill_wave_header(struct wave_header *header, int channels, int bits,
+fill_wave_header(WaveHeader *header, int channels, int bits,
 		int freq, int block_size)
 {
 	int data_size = 0x0FFFFFFF;
@@ -64,15 +66,15 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 	header->id_fmt = ToLE32(0x20746d66);
 	header->id_data = ToLE32(0x61746164);
 
-        /* wave format */
-	header->format = ToLE16(1); // PCM_FORMAT
+	/* wave format */
+	header->format = ToLE16(WAVE_FORMAT_PCM);
 	header->channels = ToLE16(channels);
 	header->bits = ToLE16(bits);
 	header->freq = ToLE32(freq);
 	header->blocksize = ToLE16(block_size);
 	header->byterate = ToLE32(freq * block_size);
 
-        /* chunk sizes (fake data length) */
+	/* chunk sizes (fake data length) */
 	header->fmt_size = ToLE32(16);
 	header->data_size = ToLE32(data_size);
 	header->riff_size = ToLE32(4 + (8 + 16) + (8 + data_size));
@@ -129,8 +131,8 @@ wave_encoder_open(Encoder *_encoder,
 	encoder->buffer.Construct(8192);
 
 	auto range = encoder->buffer->Write();
-	assert(range.size >= sizeof(wave_header));
-	wave_header *header = (wave_header *)range.data;
+	assert(range.size >= sizeof(WaveHeader));
+	auto *header = (WaveHeader *)range.data;
 
 	/* create PCM wave header in initial buffer */
 	fill_wave_header(header,

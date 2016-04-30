@@ -13,6 +13,8 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <stdexcept>
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -39,19 +41,24 @@ class TestIcuConverter : public CppUnit::TestFixture {
 
 public:
 	void TestInvalidCharset() {
-		CPPUNIT_ASSERT_EQUAL((IcuConverter *)nullptr,
-				     IcuConverter::Create("doesntexist",
-							  IgnoreError()));
+		try {
+			IcuConverter::Create("doesntexist");
+			CPPUNIT_FAIL("Exception expected");
+		} catch (const std::runtime_error &) {
+		}
 	}
 
 	void TestLatin1() {
 		IcuConverter *const converter =
-			IcuConverter::Create("iso-8859-1", IgnoreError());
+			IcuConverter::Create("iso-8859-1");
 		CPPUNIT_ASSERT(converter != nullptr);
 
 		for (const auto i : invalid_utf8) {
-			auto f = converter->FromUTF8(i);
-			CPPUNIT_ASSERT_EQUAL(true, f.IsNull());
+			try {
+				auto f = converter->FromUTF8(i);
+				CPPUNIT_FAIL("Exception expected");
+			} catch (const std::runtime_error &) {
+			}
 		}
 
 		for (const auto i : latin1_tests) {

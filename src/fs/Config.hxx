@@ -26,9 +26,11 @@ class Error;
 
 /**
  * Performs global one-time initialization of this class.
+ *
+ * Throws std::runtime_error on error.
  */
-bool
-ConfigureFS(Error &error);
+void
+ConfigureFS();
 
 void
 DeinitFS();

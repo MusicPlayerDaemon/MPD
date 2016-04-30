@@ -41,19 +41,19 @@ namespace FOpenMode {
 	/**
 	 * Open mode for writing text files.
 	 */
-	constexpr PathTraitsFS::const_pointer WriteText = PATH_LITERAL("w");
+	constexpr PathTraitsFS::const_pointer_type WriteText = PATH_LITERAL("w");
 
 	/**
 	 * Open mode for appending text files.
 	 */
-	constexpr PathTraitsFS::const_pointer AppendText = PATH_LITERAL("a");
+	constexpr PathTraitsFS::const_pointer_type AppendText = PATH_LITERAL("a");
 }
 
 /**
  * Wrapper for fopen() that uses #Path names.
  */
 static inline FILE *
-FOpen(Path file, PathTraitsFS::const_pointer mode)
+FOpen(Path file, PathTraitsFS::const_pointer_type mode)
 {
 #ifdef WIN32
 	return _tfopen(file.c_str(), mode);

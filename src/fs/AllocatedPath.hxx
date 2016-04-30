@@ -40,18 +40,21 @@ class Error;
 class AllocatedPath {
 	typedef PathTraitsFS::string string;
 	typedef PathTraitsFS::value_type value_type;
-	typedef PathTraitsFS::pointer pointer;
-	typedef PathTraitsFS::const_pointer const_pointer;
+	typedef PathTraitsFS::pointer_type pointer_type;
+	typedef PathTraitsFS::const_pointer_type const_pointer_type;
 
 	string value;
 
 	AllocatedPath(std::nullptr_t):value() {}
-	AllocatedPath(const_pointer _value):value(_value) {}
+	explicit AllocatedPath(const_pointer_type _value):value(_value) {}
+
+	AllocatedPath(const_pointer_type _begin, const_pointer_type _end)
+		:value(_begin, _end) {}
 
 	AllocatedPath(string &&_value):value(std::move(_value)) {}
 
-	static AllocatedPath Build(const_pointer a, size_t a_size,
-				   const_pointer b, size_t b_size) {
+	static AllocatedPath Build(const_pointer_type a, size_t a_size,
+				   const_pointer_type b, size_t b_size) {
 		return AllocatedPath(PathTraitsFS::Build(a, a_size, b, b_size));
 	}
 public:
@@ -89,13 +92,13 @@ public:
 	 * Join two path components with the path separator.
 	 */
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer a, const_pointer b) {
+	static AllocatedPath Build(const_pointer_type a, const_pointer_type b) {
 		return Build(a, PathTraitsFS::GetLength(a),
 			     b, PathTraitsFS::GetLength(b));
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(Path a, const_pointer b) {
+	static AllocatedPath Build(Path a, const_pointer_type b) {
 		return Build(a.c_str(), b);
 	}
 
@@ -105,13 +108,13 @@ public:
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const_pointer a, const AllocatedPath &b) {
+	static AllocatedPath Build(const_pointer_type a, const AllocatedPath &b) {
 		return Build(a, PathTraitsFS::GetLength(a),
 			     b.value.c_str(), b.value.size());
 	}
 
 	gcc_pure gcc_nonnull_all
-	static AllocatedPath Build(const AllocatedPath &a, const_pointer b) {
+	static AllocatedPath Build(const AllocatedPath &a, const_pointer_type b) {
 		return Build(a.value.c_str(), a.value.size(),
 			     b, PathTraitsFS::GetLength(b));
 	}
@@ -128,8 +131,14 @@ public:
 	 * character set to a #Path instance.
 	 */
 	gcc_pure
-	static AllocatedPath FromFS(const_pointer fs) {
+	static AllocatedPath FromFS(const_pointer_type fs) {
 		return AllocatedPath(fs);
+	}
+
+	gcc_pure
+	static AllocatedPath FromFS(const_pointer_type _begin,
+				    const_pointer_type _end) {
+		return AllocatedPath(_begin, _end);
 	}
 
 	/**
@@ -147,6 +156,13 @@ public:
 	 */
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath FromUTF8(const char *path_utf8);
+
+	/**
+	 * Convert a UTF-8 C string to an #AllocatedPath instance.
+	 * Throws a std::runtime_error on error.
+	 */
+	gcc_pure gcc_nonnull_all
+	static AllocatedPath FromUTF8Throw(const char *path_utf8);
 
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath FromUTF8(const char *path_utf8, Error &error);
@@ -214,7 +230,7 @@ public:
 	 * instance ends.
 	 */
 	gcc_pure
-	const_pointer c_str() const {
+	const_pointer_type c_str() const {
 		return value.c_str();
 	}
 
@@ -223,7 +239,7 @@ public:
 	 * null-terminated.
 	 */
 	gcc_pure
-	const_pointer data() const {
+	const_pointer_type data() const {
 		return value.data();
 	}
 
@@ -249,7 +265,7 @@ public:
 	 * nullptr on mismatch.
 	 */
 	gcc_pure
-	const_pointer Relative(Path other_fs) const {
+	const_pointer_type Relative(Path other_fs) const {
 		return PathTraitsFS::Relative(c_str(), other_fs.c_str());
 	}
 

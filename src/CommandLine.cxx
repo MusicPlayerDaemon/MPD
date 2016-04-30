@@ -280,7 +280,7 @@ class ConfigLoader
 public:
 	bool TryFile(const Path path);
 	bool TryFile(const AllocatedPath &base_path,
-		     PathTraitsFS::const_pointer path);
+		     PathTraitsFS::const_pointer_type path);
 };
 
 bool ConfigLoader::TryFile(Path path)
@@ -293,7 +293,7 @@ bool ConfigLoader::TryFile(Path path)
 }
 
 bool ConfigLoader::TryFile(const AllocatedPath &base_path,
-			   PathTraitsFS::const_pointer path)
+			   PathTraitsFS::const_pointer_type path)
 {
 	if (base_path.IsNull())
 		return false;

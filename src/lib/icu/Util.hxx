@@ -24,20 +24,22 @@
 
 #include <unicode/utypes.h>
 
-template<typename T> struct WritableBuffer;
 template<typename T> struct ConstBuffer;
+template<typename T> class AllocatedArray;
 template<typename T> class AllocatedString;
 
 /**
- * Wrapper for u_strFromUTF8().  The returned pointer must be freed
- * with delete[].
+ * Wrapper for u_strFromUTF8().
+ *
+ * Throws std::runtime_error on error.
  */
-WritableBuffer<UChar>
+AllocatedArray<UChar>
 UCharFromUTF8(const char *src);
 
 /**
- * Wrapper for u_strToUTF8().  The returned pointer must be freed with
- * delete[].
+ * Wrapper for u_strToUTF8().
+ *
+ * Throws std::runtime_error on error.
  */
 AllocatedString<char>
 UCharToUTF8(ConstBuffer<UChar> src);

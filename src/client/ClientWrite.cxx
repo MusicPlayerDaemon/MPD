@@ -20,6 +20,7 @@
 #include "config.h"
 #include "Client.hxx"
 #include "util/FormatString.hxx"
+#include "util/AllocatedString.hxx"
 
 #include <string.h>
 
@@ -30,18 +31,22 @@ Client::Write(const void *data, size_t length)
 	return !IsExpired() && FullyBufferedSocket::Write(data, length);
 }
 
+bool
+Client::Write(const char *data)
+{
+	return Write(data, strlen(data));
+}
+
 void
 client_puts(Client &client, const char *s)
 {
-	client.Write(s, strlen(s));
+	client.Write(s);
 }
 
 void
 client_vprintf(Client &client, const char *fmt, va_list args)
 {
-	char *p = FormatNewV(fmt, args);
-	client.Write(p, strlen(p));
-	delete[] p;
+	client.Write(FormatStringV(fmt, args).c_str());
 }
 
 void
