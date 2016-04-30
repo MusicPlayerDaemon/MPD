@@ -1,6 +1,7 @@
 <?xml version='1.0' encoding="utf-8"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-               "docbook/dtd/xml/4.2/docbookx.dtd">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+                      "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+
 <book>
   <title>The Music Player Daemon - User's Manual</title>
 
@@ -779,6 +780,33 @@ systemctl start mpd.socket</programlisting>
     <section id="config_other">
       <title>Other Settings</title>
 
+      <informaltable>
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry>Setting</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <varname>metadata_to_use</varname>
+                <parameter>TAG1,TAG2,...</parameter>
+              </entry>
+              <entry>
+                Use only the specified tags, and ignore the others.
+                This setting can reduce the database size and
+                <application>MPD</application>'s memory usage by
+                omitting unused tags.  By default, all tags but
+                <varname>comment</varname> are enabled.  The special
+                value "none" disables all tags.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
       <section>
         <title>The State File</title>
 
@@ -1132,6 +1160,19 @@ database {
         Matching files in the current directory and all subdirectories
         are excluded.
       </para>
+    </section>
+
+    <section id="tags">
+      <title>Metadata</title>
+
+      <para>
+        When scanning or playing a song,
+        <application>MPD</application> parses its metadata.  The
+        following tags are supported:
+      </para>
+
+      <xi:include href="include/tags.xml"
+                  xmlns:xi="http://www.w3.org/2001/XInclude"/>
     </section>
 
     <section id="queue">

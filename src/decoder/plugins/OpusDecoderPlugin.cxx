@@ -440,13 +440,15 @@ mpd_opus_scan_stream(InputStream &is,
 	if (!oy.ExpectFirstPage(os))
 		return false;
 
-	/* read at most two more pages */
-	unsigned remaining_pages = 2;
+	/* read at most 64 more pages */
+	unsigned remaining_pages = 64;
+
+	unsigned remaining_packets = 4;
 
 	bool result = false;
 
 	ogg_packet packet;
-	while (true) {
+	while (remaining_packets > 0) {
 		int r = ogg_stream_packetout(&os, &packet);
 		if (r < 0) {
 			result = false;
@@ -464,6 +466,8 @@ mpd_opus_scan_stream(InputStream &is,
 
 			continue;
 		}
+
+		--remaining_packets;
 
 		if (packet.b_o_s) {
 			if (!IsOpusHead(packet))

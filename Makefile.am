@@ -2261,7 +2261,9 @@ developer_DATA = $(wildcard doc/developer/*.html)
 
 DOCBOOK_HTML = $(patsubst %.xml,%/index.html,$(DOCBOOK_FILES))
 
-$(DOCBOOK_HTML): %/index.html: %.xml
+DOCBOOK_INCLUDES = $(wildcard $(srcdir)/doc/include/*.xml)
+
+$(DOCBOOK_HTML): %/index.html: %.xml $(DOCBOOK_INCLUDES)
 	$(XMLTO) -o $(@D) --stringparam chunker.output.encoding=utf-8 html --stringparam use.id.as.filename=1 $<
 
 doc/api/html/index.html: doc/doxygen.conf
