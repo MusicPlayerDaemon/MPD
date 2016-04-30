@@ -38,7 +38,7 @@ struct WaveEncoder {
 	WaveEncoder():encoder(wave_encoder_plugin) {}
 };
 
-struct wave_header {
+struct WaveHeader {
 	uint32_t id_riff;
 	uint32_t riff_size;
 	uint32_t id_wave;
@@ -55,7 +55,7 @@ struct wave_header {
 };
 
 static void
-fill_wave_header(struct wave_header *header, int channels, int bits,
+fill_wave_header(WaveHeader *header, int channels, int bits,
 		int freq, int block_size)
 {
 	int data_size = 0x0FFFFFFF;
@@ -131,8 +131,8 @@ wave_encoder_open(Encoder *_encoder,
 	encoder->buffer.Construct(8192);
 
 	auto range = encoder->buffer->Write();
-	assert(range.size >= sizeof(wave_header));
-	wave_header *header = (wave_header *)range.data;
+	assert(range.size >= sizeof(WaveHeader));
+	auto *header = (WaveHeader *)range.data;
 
 	/* create PCM wave header in initial buffer */
 	fill_wave_header(header,
