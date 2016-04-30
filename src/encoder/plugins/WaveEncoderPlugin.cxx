@@ -27,6 +27,8 @@
 #include <assert.h>
 #include <string.h>
 
+static constexpr uint16_t WAVE_FORMAT_PCM = 1;
+
 struct WaveEncoder {
 	Encoder encoder;
 	unsigned bits;
@@ -65,7 +67,7 @@ fill_wave_header(struct wave_header *header, int channels, int bits,
 	header->id_data = ToLE32(0x61746164);
 
 	/* wave format */
-	header->format = ToLE16(1); // PCM_FORMAT
+	header->format = ToLE16(WAVE_FORMAT_PCM);
 	header->channels = ToLE16(channels);
 	header->bits = ToLE16(bits);
 	header->freq = ToLE32(freq);
