@@ -45,17 +45,25 @@ class Mutex : public PosixMutex {};
 class ScopeLock {
 	Mutex &mutex;
 
+	bool active = true;
+
 public:
 	ScopeLock(Mutex &_mutex):mutex(_mutex) {
 		mutex.lock();
 	};
 
 	~ScopeLock() {
-		mutex.unlock();
+		if (active)
+			mutex.unlock();
 	};
 
 	ScopeLock(const ScopeLock &other) = delete;
 	ScopeLock &operator=(const ScopeLock &other) = delete;
+
+	void Unlock() {
+		mutex.unlock();
+		active = false;
+	}
 };
 
 /**
