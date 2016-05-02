@@ -2152,7 +2152,7 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	test/test_archive_bzip2.sh  \
 	test/test_archive_iso9660.sh \
 	test/test_archive_zzip.sh \
-	$(wildcard scripts/*.sh) \
+	$(wildcard $(srcdir)/scripts/*.rb) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	systemd/mpd.socket \
 	android/AndroidManifest.xml \
