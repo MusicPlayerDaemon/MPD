@@ -25,6 +25,8 @@
 #include "OggFind.hxx"
 #include "OggSyncState.hxx"
 #include "../DecoderAPI.hxx"
+#include "decoder/Reader.hxx"
+#include "input/Reader.hxx"
 #include "OggCodec.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
@@ -205,7 +207,8 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
 
 	/* create temporary Ogg objects for seeking and parsing the
 	   EOS packet */
-	OggSyncState oy(is, decoder);
+	DecoderReader reader(decoder, is);
+	OggSyncState oy(reader);
 	ogg_stream_state os;
 	ogg_stream_init(&os, serialno);
 
@@ -406,7 +409,8 @@ mpd_opus_stream_decode(Decoder &decoder,
 	input_stream.LockRewind(IgnoreError());
 
 	MPDOpusDecoder d(decoder, input_stream);
-	OggSyncState oy(input_stream, &decoder);
+	DecoderReader reader(decoder, input_stream);
+	OggSyncState oy(reader);
 
 	if (!d.ReadFirstPage(oy))
 		return;
@@ -434,7 +438,8 @@ static bool
 mpd_opus_scan_stream(InputStream &is,
 		     const TagHandler &handler, void *handler_ctx)
 {
-	OggSyncState oy(is);
+	InputStreamReader reader(is);
+	OggSyncState oy(reader);
 
 	ogg_stream_state os;
 	if (!oy.ExpectFirstPage(os))

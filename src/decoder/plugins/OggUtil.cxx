@@ -19,18 +19,16 @@
 
 #include "config.h"
 #include "OggUtil.hxx"
-#include "../DecoderAPI.hxx"
+#include "fs/io/Reader.hxx"
 
 bool
-OggFeed(ogg_sync_state &oy, Decoder *decoder,
-	InputStream &input_stream, size_t size)
+OggFeed(ogg_sync_state &oy, Reader &reader, size_t size)
 {
 		char *buffer = ogg_sync_buffer(&oy, size);
 		if (buffer == nullptr)
 			return false;
 
-		size_t nbytes = decoder_read(decoder, input_stream,
-					     buffer, size);
+		size_t nbytes = reader.Read(buffer, size);
 		if (nbytes == 0)
 			return false;
 
@@ -39,25 +37,23 @@ OggFeed(ogg_sync_state &oy, Decoder *decoder,
 }
 
 bool
-OggExpectPage(ogg_sync_state &oy, ogg_page &page,
-	      Decoder *decoder, InputStream &input_stream)
+OggExpectPage(ogg_sync_state &oy, ogg_page &page, Reader &reader)
 {
 	while (true) {
 		int r = ogg_sync_pageout(&oy, &page);
 		if (r != 0)
 			return r > 0;
 
-		if (!OggFeed(oy, decoder, input_stream, 1024))
+		if (!OggFeed(oy, reader, 1024))
 			return false;
 	}
 }
 
 bool
-OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
-		   Decoder *decoder, InputStream &is)
+OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os, Reader &reader)
 {
 	ogg_page page;
-	if (!OggExpectPage(oy, page, decoder, is))
+	if (!OggExpectPage(oy, page, reader))
 		return false;
 
 	ogg_stream_init(&os, ogg_page_serialno(&page));
@@ -66,11 +62,10 @@ OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
 }
 
 bool
-OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
-		Decoder *decoder, InputStream &is)
+OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os, Reader &reader)
 {
 	ogg_page page;
-	if (!OggExpectPage(oy, page, decoder, is))
+	if (!OggExpectPage(oy, page, reader))
 		return false;
 
 	ogg_stream_pagein(&os, &page);
@@ -78,8 +73,7 @@ OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
 }
 
 bool
-OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
-		  Decoder *decoder, InputStream &input_stream)
+OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page, Reader &reader)
 {
 	size_t remaining_skipped = 32768;
 
@@ -100,17 +94,16 @@ OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
 			continue;
 		}
 
-		if (!OggFeed(oy, decoder, input_stream, 1024))
+		if (!OggFeed(oy, reader, 1024))
 			return false;
 	}
 }
 
 bool
-OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os,
-		    Decoder *decoder, InputStream &is)
+OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os, Reader &reader)
 {
 	ogg_page page;
-	if (!OggExpectPageSeek(oy, page, decoder, is))
+	if (!OggExpectPageSeek(oy, page, reader))
 		return false;
 
 	ogg_stream_pagein(&os, &page);

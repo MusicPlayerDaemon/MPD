@@ -26,8 +26,7 @@
 
 #include <stddef.h>
 
-class InputStream;
-struct Decoder;
+class Reader;
 
 /**
  * Feed data from the #InputStream into the #ogg_sync_state.
@@ -35,8 +34,7 @@ struct Decoder;
  * @return false on error or end-of-file
  */
 bool
-OggFeed(ogg_sync_state &oy, Decoder *decoder, InputStream &is,
-	size_t size);
+OggFeed(ogg_sync_state &oy, Reader &reader, size_t size);
 
 /**
  * Feed into the #ogg_sync_state until a page gets available.  Garbage
@@ -45,8 +43,7 @@ OggFeed(ogg_sync_state &oy, Decoder *decoder, InputStream &is,
  * @return true if a page is available
  */
 bool
-OggExpectPage(ogg_sync_state &oy, ogg_page &page,
-	      Decoder *decoder, InputStream &is);
+OggExpectPage(ogg_sync_state &oy, ogg_page &page, Reader &reader);
 
 /**
  * Combines OggExpectPage(), ogg_stream_init() and
@@ -56,8 +53,7 @@ OggExpectPage(ogg_sync_state &oy, ogg_page &page,
  * delivered to it
  */
 bool
-OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
-		   Decoder *decoder, InputStream &is);
+OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os, Reader &reader);
 
 /**
  * Combines OggExpectPage() and ogg_stream_pagein().
@@ -65,15 +61,13 @@ OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
  * @return true if a page was delivered to the stream
  */
 bool
-OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
-		Decoder *decoder, InputStream &is);
+OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os, Reader &reader);
 
 /**
  * Like OggExpectPage(), but allow skipping garbage (after seeking).
  */
 bool
-OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
-		  Decoder *decoder, InputStream &is);
+OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page, Reader &reader);
 
 /**
  * Combines OggExpectPageSeek() and ogg_stream_pagein().
@@ -81,7 +75,6 @@ OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
  * @return true if a page was delivered to the stream
  */
 bool
-OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os,
-		    Decoder *decoder, InputStream &is);
+OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os, Reader &reader);
 
 #endif
