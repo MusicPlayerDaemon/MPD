@@ -703,12 +703,6 @@ AC_ARG_ENABLE(glib,
 if test x$enable_glib = xyes; then
 	PKG_CHECK_MODULES([GLIB], [glib-2.0 >= 2.28 gthread-2.0],,
 		[AC_MSG_ERROR([GLib 2.28 is required])])
-
-	if test x$GCC = xyes; then
-		# suppress warnings in the GLib headers
-		GLIB_CFLAGS=`echo $GLIB_CFLAGS |sed -e 's,-I/,-isystem /,g'`
-	fi
-
 	AC_DEFINE(HAVE_GLIB, 1, [Define if GLib is used])
 fi
 AM_CONDITIONAL(HAVE_GLIB, test x$enable_glib = xyes)
