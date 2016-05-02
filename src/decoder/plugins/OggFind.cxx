@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "OggFind.hxx"
-#include "OggSyncState.hxx"
+#include "lib/xiph/OggSyncState.hxx"
 #include "input/InputStream.hxx"
 #include "util/Error.hxx"
 

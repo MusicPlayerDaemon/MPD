@@ -23,7 +23,7 @@
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
 #include "OggFind.hxx"
-#include "OggSyncState.hxx"
+#include "lib/xiph/OggSyncState.hxx"
 #include "../DecoderAPI.hxx"
 #include "decoder/Reader.hxx"
 #include "input/Reader.hxx"

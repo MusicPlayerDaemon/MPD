@@ -1086,8 +1086,6 @@ fi
 MPD_DEFINE_CONDITIONAL(enable_encoder, ENABLE_ENCODER,
 		[the encoder plugins])
 
-AM_CONDITIONAL(HAVE_OGG_ENCODER, test x$enable_vorbis_encoder = xyes || test x$enable_opus = xyes)
-
 dnl ---------------------------------------------------------------------------
 dnl Audio Output Plugins
 dnl ---------------------------------------------------------------------------

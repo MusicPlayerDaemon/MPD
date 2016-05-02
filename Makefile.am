@@ -20,6 +20,7 @@ noinst_LIBRARIES = \
 	libevent.a \
 	libicu.a \
 	libpcm.a \
+	libxiph.a \
 	libconf.a \
 	libtag.a \
 	libinput.a \
@@ -585,9 +586,18 @@ if HAVE_XIPH
 noinst_LIBRARIES += libxiph.a
 
 libxiph_a_SOURCES = \
+	src/lib/xiph/VorbisComments.cxx src/lib/xiph/VorbisComments.hxx \
 	src/lib/xiph/XiphTags.cxx src/lib/xiph/XiphTags.hxx
 libxiph_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(OGG_CFLAGS)
+
+if HAVE_OGG
+libxiph_a_SOURCES += \
+	src/lib/xiph/OggSerial.cxx src/lib/xiph/OggSerial.hxx \
+	src/lib/xiph/OggUtil.cxx src/lib/xiph/OggUtil.hxx \
+	src/lib/xiph/OggSyncState.hxx \
+	src/lib/xiph/OggStream.hxx
+endif
 
 XIPH_LIBS = libxiph.a
 
@@ -988,9 +998,6 @@ endif
 
 if ENABLE_OPUS
 libdecoder_a_SOURCES += \
-	src/decoder/plugins/OggUtil.cxx \
-	src/decoder/plugins/OggUtil.hxx \
-	src/decoder/plugins/OggSyncState.hxx \
 	src/decoder/plugins/OggFind.cxx src/decoder/plugins/OggFind.hxx \
 	src/decoder/plugins/OpusDomain.cxx src/decoder/plugins/OpusDomain.hxx \
 	src/decoder/plugins/OpusReader.hxx \
@@ -1027,7 +1034,6 @@ endif
 if ENABLE_VORBIS_DECODER
 libdecoder_a_SOURCES += \
 	src/decoder/plugins/VorbisDomain.cxx src/decoder/plugins/VorbisDomain.hxx \
-	src/decoder/plugins/VorbisComments.cxx src/decoder/plugins/VorbisComments.hxx \
 	src/decoder/plugins/VorbisDecoderPlugin.cxx src/decoder/plugins/VorbisDecoderPlugin.h
 endif
 
@@ -1120,6 +1126,7 @@ libencoder_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 ENCODER_LIBS = \
 	libencoder_plugins.a \
+	$(XIPH_LIBS) \
 	$(LAME_LIBS) \
 	$(TWOLAME_LIBS) \
 	$(FLAC_LIBS) \
@@ -1132,17 +1139,9 @@ libencoder_plugins_a_SOURCES = \
 	src/encoder/EncoderInterface.hxx \
 	src/encoder/EncoderPlugin.hxx \
 	src/encoder/ToOutputStream.cxx src/encoder/ToOutputStream.hxx \
-	src/encoder/plugins/OggStream.hxx \
 	src/encoder/plugins/NullEncoderPlugin.cxx \
 	src/encoder/plugins/NullEncoderPlugin.hxx \
 	src/encoder/EncoderList.cxx src/encoder/EncoderList.hxx
-
-if HAVE_OGG_ENCODER
-libencoder_plugins_a_SOURCES += \
-	src/encoder/plugins/OggSerial.cxx \
-	src/encoder/plugins/OggSerial.hxx \
-	src/encoder/plugins/OggStream.hxx
-endif
 
 if ENABLE_WAVE_ENCODER
 libencoder_plugins_a_SOURCES += \
@@ -1825,6 +1824,7 @@ test_dump_playlist_LDADD = \
 	$(FLAC_LIBS) \
 	$(DECODER_LIBS) \
 	$(TAG_LIBS) \
+	libxiph.a \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	libconf.a \

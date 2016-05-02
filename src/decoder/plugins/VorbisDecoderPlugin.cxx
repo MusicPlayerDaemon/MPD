@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "VorbisDecoderPlugin.h"
-#include "VorbisComments.hxx"
+#include "lib/xiph/VorbisComments.hxx"
 #include "VorbisDomain.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"

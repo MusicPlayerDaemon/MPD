@@ -19,8 +19,8 @@
 
 #include "config.h"
 #include "VorbisEncoderPlugin.hxx"
-#include "OggStream.hxx"
-#include "OggSerial.hxx"
+#include "lib/xiph/OggStream.hxx"
+#include "lib/xiph/OggSerial.hxx"
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
