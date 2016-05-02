@@ -1806,10 +1806,10 @@ test_dump_text_file_SOURCES = test/dump_text_file.cxx \
 test_dump_playlist_LDADD = \
 	$(PLAYLIST_LIBS) \
 	$(FLAC_LIBS) \
-	$(INPUT_LIBS) \
-	$(ARCHIVE_LIBS) \
 	$(DECODER_LIBS) \
 	$(TAG_LIBS) \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
 	libconf.a \
 	libevent.a \
 	libthread.a \
