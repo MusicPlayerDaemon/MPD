@@ -270,18 +270,14 @@ decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
 	if (!is)
 		return nullptr;
 
-	mutex.lock();
+	const ScopeLock lock(mutex);
 	while (true) {
 		is->Update();
-		if (is->IsReady()) {
-			mutex.unlock();
+		if (is->IsReady())
 			return is;
-		}
 
-		if (dc.command == DecoderCommand::STOP) {
-			mutex.unlock();
+		if (dc.command == DecoderCommand::STOP)
 			return nullptr;
-		}
 
 		cond.wait(mutex);
 	}
@@ -326,13 +322,11 @@ decoder_read(Decoder *decoder,
 	if (length == 0)
 		return 0;
 
-	is.Lock();
+	ScopeLock lock(is.mutex);
 
 	while (true) {
-		if (decoder_check_cancel_read(decoder)) {
-			is.Unlock();
+		if (decoder_check_cancel_read(decoder))
 			return 0;
-		}
 
 		if (is.IsAvailable())
 			break;
@@ -345,7 +339,7 @@ decoder_read(Decoder *decoder,
 	assert(nbytes == 0 || !error.IsDefined());
 	assert(nbytes > 0 || error.IsDefined() || is.IsEOF());
 
-	is.Unlock();
+	lock.Unlock();
 
 	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
 		LogError(error);
