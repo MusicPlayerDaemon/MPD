@@ -1204,6 +1204,7 @@ libinput_a_SOURCES = \
 	src/input/Offset.hxx \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
 	src/input/InputPlugin.hxx \
+	src/input/Reader.cxx src/input/Reader.hxx \
 	src/input/TextInputStream.cxx src/input/TextInputStream.hxx \
 	src/input/ThreadInputStream.cxx src/input/ThreadInputStream.hxx \
 	src/input/AsyncInputStream.cxx src/input/AsyncInputStream.hxx \
