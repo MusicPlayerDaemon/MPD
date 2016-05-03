@@ -34,12 +34,11 @@ class OggStream {
 	bool flush;
 
 #ifndef NDEBUG
-	bool initialized;
+	bool initialized = false;
 #endif
 
 public:
 #ifndef NDEBUG
-	OggStream():initialized(false) {}
 	~OggStream() {
 		assert(!initialized);
 	}
