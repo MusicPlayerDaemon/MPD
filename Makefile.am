@@ -586,6 +586,8 @@ noinst_LIBRARIES += libxiph.a
 
 libxiph_a_SOURCES = \
 	src/lib/xiph/XiphTags.cxx src/lib/xiph/XiphTags.hxx
+libxiph_a_CPPFLAGS = $(AM_CPPFLAGS) \
+	$(OGG_CFLAGS)
 
 XIPH_LIBS = libxiph.a
 

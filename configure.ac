@@ -1266,6 +1266,10 @@ if test x$enable_ogg = xyes || test x$enable_flac = xyes; then
 	have_xiph=yes
 fi
 
+if test x$have_ogg = xyes; then
+	PKG_CHECK_MODULES([OGG], [ogg],, [AC_MSG_ERROR([libogg not found])])
+fi
+
 AM_CONDITIONAL(HAVE_OGG, test x$have_ogg = xyes)
 AM_CONDITIONAL(HAVE_XIPH, test x$have_xiph = xyes)
 
