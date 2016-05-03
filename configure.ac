@@ -1257,12 +1257,12 @@ dnl Option groups
 dnl ---------------------------------------------------------------------------
 
 have_ogg=no
-if test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_opus = xyes; then
+if test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_opus = xyes || test x$enable_vorbis_encoder = xyes; then
 	have_ogg=yes
 fi
 
 have_xiph=no
-if test x$enable_ogg = xyes || test x$enable_flac = xyes; then
+if test x$enable_ogg = xyes || test x$enable_flac = xyes || test x$enable_flac_encoder = xyes; then
 	have_xiph=yes
 fi
 
