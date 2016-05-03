@@ -578,6 +578,19 @@ libpcm_a_SOURCES += \
 	src/pcm/SoxrResampler.cxx src/pcm/SoxrResampler.hxx
 endif
 
+# Xiph codec support library
+
+if HAVE_XIPH
+
+noinst_LIBRARIES += libxiph.a
+
+libxiph_a_SOURCES = \
+	src/lib/xiph/XiphTags.cxx src/lib/xiph/XiphTags.hxx
+
+XIPH_LIBS = libxiph.a
+
+endif
+
 # File system library
 
 FS_LIBS = libfs.a
@@ -925,6 +938,7 @@ libdecoder_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 DECODER_LIBS = \
 	libdecoder.a \
+	$(XIPH_LIBS) \
 	$(VORBIS_LIBS) $(TREMOR_LIBS) \
 	$(FLAC_LIBS) \
 	$(SNDFILE_LIBS) \
@@ -1005,7 +1019,6 @@ endif
 
 if HAVE_XIPH
 libdecoder_a_SOURCES += \
-	src/decoder/plugins/XiphTags.cxx src/decoder/plugins/XiphTags.hxx \
 	src/decoder/plugins/OggCodec.cxx src/decoder/plugins/OggCodec.hxx
 endif
 
