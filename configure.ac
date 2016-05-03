@@ -1011,11 +1011,6 @@ dnl --------------------------------- WildMidi --------------------------------
 MPD_ENABLE_AUTO_LIB(wildmidi, WILDMIDI, WildMidi, WildMidi_Init, [-lWildMidi], [],
 	[WildMidi decoder plugin], [libwildmidi not found])
 
-dnl ------------------------ Post Decoder Plugins Tests -----------------------
-
-AM_CONDITIONAL(HAVE_XIPH,
-	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes || test x$enable_opus = xyes)
-
 dnl ---------------------------------------------------------------------------
 dnl Encoders for Streaming Audio Output Plugins
 dnl ---------------------------------------------------------------------------
@@ -1256,6 +1251,23 @@ else
 fi
 
 AM_CONDITIONAL(ENABLE_WINMM_OUTPUT, test x$enable_winmm_output = xyes)
+
+dnl ---------------------------------------------------------------------------
+dnl Option groups
+dnl ---------------------------------------------------------------------------
+
+have_ogg=no
+if test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_opus = xyes; then
+	have_ogg=yes
+fi
+
+have_xiph=no
+if test x$enable_ogg = xyes || test x$enable_flac = xyes; then
+	have_xiph=yes
+fi
+
+AM_CONDITIONAL(HAVE_OGG, test x$have_ogg = xyes)
+AM_CONDITIONAL(HAVE_XIPH, test x$have_xiph = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Documentation
