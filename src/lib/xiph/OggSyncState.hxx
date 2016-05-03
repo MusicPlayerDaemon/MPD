@@ -45,6 +45,9 @@ public:
 		ogg_sync_clear(&oy);
 	}
 
+	OggSyncState(const OggSyncState &) = delete;
+	OggSyncState &operator=(const OggSyncState &) = delete;
+
 	void Reset() {
 		ogg_sync_reset(&oy);
 	}
