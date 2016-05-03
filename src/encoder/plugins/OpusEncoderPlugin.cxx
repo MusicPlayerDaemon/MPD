@@ -35,7 +35,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-struct opus_encoder {
+struct OpusEncoder {
 	/** the base class */
 	Encoder encoder;
 
@@ -66,13 +66,13 @@ struct opus_encoder {
 
 	ogg_int64_t granulepos;
 
-	opus_encoder():encoder(opus_encoder_plugin), granulepos(0) {}
+	OpusEncoder():encoder(opus_encoder_plugin), granulepos(0) {}
 };
 
 static constexpr Domain opus_encoder_domain("opus_encoder");
 
 static bool
-opus_encoder_configure(struct opus_encoder *encoder,
+opus_encoder_configure(OpusEncoder *encoder,
 		       const ConfigBlock &block, Error &error)
 {
 	const char *value = block.GetBlockValue("bitrate", "auto");
@@ -114,7 +114,7 @@ opus_encoder_configure(struct opus_encoder *encoder,
 static Encoder *
 opus_encoder_init(const ConfigBlock &block, Error &error)
 {
-	opus_encoder *encoder = new opus_encoder();
+	auto *encoder = new OpusEncoder();
 
 	/* load configuration from "block" */
 	if (!opus_encoder_configure(encoder, block, error)) {
@@ -129,7 +129,7 @@ opus_encoder_init(const ConfigBlock &block, Error &error)
 static void
 opus_encoder_finish(Encoder *_encoder)
 {
-	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
+	auto *encoder = (OpusEncoder *)_encoder;
 
 	/* the real libopus cleanup was already performed by
 	   opus_encoder_close(), so no real work here */
@@ -141,7 +141,7 @@ opus_encoder_open(Encoder *_encoder,
 		  AudioFormat &audio_format,
 		  Error &error)
 {
-	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
+	auto *encoder = (OpusEncoder *)_encoder;
 
 	/* libopus supports only 48 kHz */
 	audio_format.sample_rate = 48000;
@@ -198,7 +198,7 @@ opus_encoder_open(Encoder *_encoder,
 static void
 opus_encoder_close(Encoder *_encoder)
 {
-	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
+	auto *encoder = (OpusEncoder *)_encoder;
 
 	encoder->stream.Deinitialize();
 	free(encoder->buffer);
@@ -206,7 +206,7 @@ opus_encoder_close(Encoder *_encoder)
 }
 
 static bool
-opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
+opus_encoder_do_encode(OpusEncoder *encoder, bool eos,
 		       Error &error)
 {
 	assert(encoder->buffer_position == encoder->buffer_size);
@@ -247,7 +247,7 @@ opus_encoder_do_encode(struct opus_encoder *encoder, bool eos,
 static bool
 opus_encoder_end(Encoder *_encoder, Error &error)
 {
-	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
+	auto *encoder = (OpusEncoder *)_encoder;
 
 	encoder->stream.Flush();
 
@@ -261,14 +261,14 @@ opus_encoder_end(Encoder *_encoder, Error &error)
 static bool
 opus_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 {
-	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
+	auto *encoder = (OpusEncoder *)_encoder;
 
 	encoder->stream.Flush();
 	return true;
 }
 
 static bool
-opus_encoder_write_silence(struct opus_encoder *encoder, unsigned fill_frames,
+opus_encoder_write_silence(OpusEncoder *encoder, unsigned fill_frames,
 			   Error &error)
 {
 	size_t fill_bytes = fill_frames * encoder->frame_size;
@@ -297,7 +297,7 @@ opus_encoder_write(Encoder *_encoder,
 		   const void *_data, size_t length,
 		   Error &error)
 {
-	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
+	auto *encoder = (OpusEncoder *)_encoder;
 	const uint8_t *data = (const uint8_t *)_data;
 
 	if (encoder->lookahead > 0) {
@@ -334,7 +334,7 @@ opus_encoder_write(Encoder *_encoder,
 }
 
 static void
-opus_encoder_generate_head(struct opus_encoder *encoder)
+opus_encoder_generate_head(OpusEncoder *encoder)
 {
 	unsigned char header[19];
 	memcpy(header, "OpusHead", 8);
@@ -359,7 +359,7 @@ opus_encoder_generate_head(struct opus_encoder *encoder)
 }
 
 static void
-opus_encoder_generate_tags(struct opus_encoder *encoder)
+opus_encoder_generate_tags(OpusEncoder *encoder)
 {
 	const char *version = opus_get_version_string();
 	size_t version_length = strlen(version);
@@ -387,7 +387,7 @@ opus_encoder_generate_tags(struct opus_encoder *encoder)
 static size_t
 opus_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
-	struct opus_encoder *encoder = (struct opus_encoder *)_encoder;
+	auto *encoder = (OpusEncoder *)_encoder;
 
 	if (encoder->packetno == 0)
 		opus_encoder_generate_head(encoder);
