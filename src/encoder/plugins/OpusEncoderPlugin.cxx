@@ -67,42 +67,59 @@ struct OpusEncoder {
 	ogg_int64_t granulepos;
 
 	OpusEncoder():encoder(opus_encoder_plugin), granulepos(0) {}
+
+	bool Configure(const ConfigBlock &block, Error &error);
+	bool Open(AudioFormat &audio_format, Error &error);
+	void Close();
+
+	bool DoEncode(bool eos, Error &error);
+
+	bool End(Error &error);
+	bool Flush(Error &error);
+
+	bool WriteSilence(unsigned fill_frames, Error &error);
+
+	bool Write(const void *_data, size_t length, Error &error);
+
+	void GenerateHead();
+	void GenerateTags();
+
+	size_t Read(void *dest, size_t length);
 };
 
 static constexpr Domain opus_encoder_domain("opus_encoder");
 
-static bool
-opus_encoder_configure(OpusEncoder *encoder,
-		       const ConfigBlock &block, Error &error)
+bool
+OpusEncoder::Configure(const ConfigBlock &block, Error &error)
 {
 	const char *value = block.GetBlockValue("bitrate", "auto");
 	if (strcmp(value, "auto") == 0)
-		encoder->bitrate = OPUS_AUTO;
+		bitrate = OPUS_AUTO;
 	else if (strcmp(value, "max") == 0)
-		encoder->bitrate = OPUS_BITRATE_MAX;
+		bitrate = OPUS_BITRATE_MAX;
 	else {
 		char *endptr;
-		encoder->bitrate = strtoul(value, &endptr, 10);
+		bitrate = strtoul(value, &endptr, 10);
 		if (endptr == value || *endptr != 0 ||
-		    encoder->bitrate < 500 || encoder->bitrate > 512000) {
+		    bitrate < 500 || bitrate > 512000) {
 			error.Set(config_domain, "Invalid bit rate");
 			return false;
 		}
 	}
 
-	encoder->complexity = block.GetBlockValue("complexity", 10u);
-	if (encoder->complexity > 10) {
+	complexity = block.GetBlockValue("complexity", 10u);
+	if (complexity > 10) {
 		error.Format(config_domain, "Invalid complexity");
 		return false;
 	}
 
 	value = block.GetBlockValue("signal", "auto");
 	if (strcmp(value, "auto") == 0)
-		encoder->signal = OPUS_AUTO;
+		signal = OPUS_AUTO;
 	else if (strcmp(value, "voice") == 0)
-		encoder->signal = OPUS_SIGNAL_VOICE;
+		signal = OPUS_SIGNAL_VOICE;
 	else if (strcmp(value, "music") == 0)
-		encoder->signal = OPUS_SIGNAL_MUSIC;
+		signal = OPUS_SIGNAL_MUSIC;
 	else {
 		error.Format(config_domain, "Invalid signal");
 		return false;
@@ -117,7 +134,7 @@ opus_encoder_init(const ConfigBlock &block, Error &error)
 	auto *encoder = new OpusEncoder();
 
 	/* load configuration from "block" */
-	if (!opus_encoder_configure(encoder, block, error)) {
+	if (!encoder->Configure(block, error)) {
 		/* configuration has failed, roll back and return error */
 		delete encoder;
 		return nullptr;
@@ -136,156 +153,207 @@ opus_encoder_finish(Encoder *_encoder)
 	delete encoder;
 }
 
-static bool
-opus_encoder_open(Encoder *_encoder,
-		  AudioFormat &audio_format,
-		  Error &error)
+bool
+OpusEncoder::Open(AudioFormat &_audio_format, Error &error)
 {
-	auto *encoder = (OpusEncoder *)_encoder;
-
 	/* libopus supports only 48 kHz */
-	audio_format.sample_rate = 48000;
+	_audio_format.sample_rate = 48000;
 
-	if (audio_format.channels > 2)
-		audio_format.channels = 1;
+	if (_audio_format.channels > 2)
+		_audio_format.channels = 1;
 
-	switch (audio_format.format) {
+	switch (_audio_format.format) {
 	case SampleFormat::S16:
 	case SampleFormat::FLOAT:
 		break;
 
 	case SampleFormat::S8:
-		audio_format.format = SampleFormat::S16;
+		_audio_format.format = SampleFormat::S16;
 		break;
 
 	default:
-		audio_format.format = SampleFormat::FLOAT;
+		_audio_format.format = SampleFormat::FLOAT;
 		break;
 	}
 
-	encoder->audio_format = audio_format;
-	encoder->frame_size = audio_format.GetFrameSize();
+	audio_format = _audio_format;
+	frame_size = _audio_format.GetFrameSize();
 
 	int error_code;
-	encoder->enc = opus_encoder_create(audio_format.sample_rate,
-					   audio_format.channels,
-					   OPUS_APPLICATION_AUDIO,
-					   &error_code);
-	if (encoder->enc == nullptr) {
+	enc = opus_encoder_create(_audio_format.sample_rate,
+				  _audio_format.channels,
+				  OPUS_APPLICATION_AUDIO,
+				  &error_code);
+	if (enc == nullptr) {
 		error.Set(opus_encoder_domain, error_code,
 			  opus_strerror(error_code));
 		return false;
 	}
 
-	opus_encoder_ctl(encoder->enc, OPUS_SET_BITRATE(encoder->bitrate));
-	opus_encoder_ctl(encoder->enc,
-			 OPUS_SET_COMPLEXITY(encoder->complexity));
-	opus_encoder_ctl(encoder->enc, OPUS_SET_SIGNAL(encoder->signal));
+	opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate));
+	opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(complexity));
+	opus_encoder_ctl(enc, OPUS_SET_SIGNAL(signal));
 
-	opus_encoder_ctl(encoder->enc, OPUS_GET_LOOKAHEAD(&encoder->lookahead));
+	opus_encoder_ctl(enc, OPUS_GET_LOOKAHEAD(&lookahead));
 
-	encoder->buffer_frames = audio_format.sample_rate / 50;
-	encoder->buffer_size = encoder->frame_size * encoder->buffer_frames;
-	encoder->buffer_position = 0;
-	encoder->buffer = (unsigned char *)xalloc(encoder->buffer_size);
+	buffer_frames = _audio_format.sample_rate / 50;
+	buffer_size = frame_size * buffer_frames;
+	buffer_position = 0;
+	buffer = (unsigned char *)xalloc(buffer_size);
 
-	encoder->stream.Initialize(GenerateOggSerial());
-	encoder->packetno = 0;
+	stream.Initialize(GenerateOggSerial());
+	packetno = 0;
 
 	return true;
+}
+
+static bool
+opus_encoder_open(Encoder *_encoder,
+		  AudioFormat &audio_format,
+		  Error &error)
+{
+	auto &encoder = *(OpusEncoder *)_encoder;
+	return encoder.Open(audio_format, error);
+}
+
+void
+OpusEncoder::Close()
+{
+	stream.Deinitialize();
+	free(buffer);
+	opus_encoder_destroy(enc);
 }
 
 static void
 opus_encoder_close(Encoder *_encoder)
 {
-	auto *encoder = (OpusEncoder *)_encoder;
-
-	encoder->stream.Deinitialize();
-	free(encoder->buffer);
-	opus_encoder_destroy(encoder->enc);
+	auto &encoder = *(OpusEncoder *)_encoder;
+	encoder.Close();
 }
 
-static bool
-opus_encoder_do_encode(OpusEncoder *encoder, bool eos,
-		       Error &error)
+bool
+OpusEncoder::DoEncode(bool eos, Error &error)
 {
-	assert(encoder->buffer_position == encoder->buffer_size);
+	assert(buffer_position == buffer_size);
 
 	opus_int32 result =
-		encoder->audio_format.format == SampleFormat::S16
-		? opus_encode(encoder->enc,
-			      (const opus_int16 *)encoder->buffer,
-			      encoder->buffer_frames,
-			      encoder->buffer2,
-			      sizeof(encoder->buffer2))
-		: opus_encode_float(encoder->enc,
-				    (const float *)encoder->buffer,
-				    encoder->buffer_frames,
-				    encoder->buffer2,
-				    sizeof(encoder->buffer2));
+		audio_format.format == SampleFormat::S16
+		? opus_encode(enc,
+			      (const opus_int16 *)buffer,
+			      buffer_frames,
+			      buffer2,
+			      sizeof(buffer2))
+		: opus_encode_float(enc,
+				    (const float *)buffer,
+				    buffer_frames,
+				    buffer2,
+				    sizeof(buffer2));
 	if (result < 0) {
 		error.Set(opus_encoder_domain, "Opus encoder error");
 		return false;
 	}
 
-	encoder->granulepos += encoder->buffer_frames;
+	granulepos += buffer_frames;
 
 	ogg_packet packet;
-	packet.packet = encoder->buffer2;
+	packet.packet = buffer2;
 	packet.bytes = result;
 	packet.b_o_s = false;
 	packet.e_o_s = eos;
-	packet.granulepos = encoder->granulepos;
-	packet.packetno = encoder->packetno++;
-	encoder->stream.PacketIn(packet);
+	packet.granulepos = granulepos;
+	packet.packetno = packetno++;
+	stream.PacketIn(packet);
 
-	encoder->buffer_position = 0;
+	buffer_position = 0;
 
 	return true;
+}
+
+bool
+OpusEncoder::End(Error &error)
+{
+	stream.Flush();
+
+	memset(buffer + buffer_position, 0,
+	       buffer_size - buffer_position);
+	buffer_position = buffer_size;
+
+	return DoEncode(true, error);
 }
 
 static bool
 opus_encoder_end(Encoder *_encoder, Error &error)
 {
-	auto *encoder = (OpusEncoder *)_encoder;
-
-	encoder->stream.Flush();
-
-	memset(encoder->buffer + encoder->buffer_position, 0,
-	       encoder->buffer_size - encoder->buffer_position);
-	encoder->buffer_position = encoder->buffer_size;
-
-	return opus_encoder_do_encode(encoder, true, error);
+	auto &encoder = *(OpusEncoder *)_encoder;
+	return encoder.End(error);
 }
 
-static bool
-opus_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
+bool
+OpusEncoder::Flush(gcc_unused Error &error)
 {
-	auto *encoder = (OpusEncoder *)_encoder;
-
-	encoder->stream.Flush();
+	stream.Flush();
 	return true;
 }
 
 static bool
-opus_encoder_write_silence(OpusEncoder *encoder, unsigned fill_frames,
-			   Error &error)
+opus_encoder_flush(Encoder *_encoder, Error &error)
 {
-	size_t fill_bytes = fill_frames * encoder->frame_size;
+	auto &encoder = *(OpusEncoder *)_encoder;
+
+	return encoder.Flush(error);
+}
+
+bool
+OpusEncoder::WriteSilence(unsigned fill_frames, Error &error)
+{
+	size_t fill_bytes = fill_frames * frame_size;
 
 	while (fill_bytes > 0) {
-		size_t nbytes =
-			encoder->buffer_size - encoder->buffer_position;
+		size_t nbytes = buffer_size - buffer_position;
 		if (nbytes > fill_bytes)
 			nbytes = fill_bytes;
 
-		memset(encoder->buffer + encoder->buffer_position,
-		       0, nbytes);
-		encoder->buffer_position += nbytes;
+		memset(buffer + buffer_position, 0, nbytes);
+		buffer_position += nbytes;
 		fill_bytes -= nbytes;
 
-		if (encoder->buffer_position == encoder->buffer_size &&
-		    !opus_encoder_do_encode(encoder, false, error))
+		if (buffer_position == buffer_size &&
+		    !DoEncode(false, error))
+			return false;
+	}
+
+	return true;
+}
+
+bool
+OpusEncoder::Write(const void *_data, size_t length, Error &error)
+{
+	const uint8_t *data = (const uint8_t *)_data;
+
+	if (lookahead > 0) {
+		/* generate some silence at the beginning of the
+		   stream */
+
+		assert(buffer_position == 0);
+
+		if (!WriteSilence(lookahead, error))
+			return false;
+
+		lookahead = 0;
+	}
+
+	while (length > 0) {
+		size_t nbytes = buffer_size - buffer_position;
+		if (nbytes > length)
+			nbytes = length;
+
+		memcpy(buffer + buffer_position, data, nbytes);
+		data += nbytes;
+		length -= nbytes;
+		buffer_position += nbytes;
+
+		if (buffer_position == buffer_size &&
+		    !DoEncode(false, error))
 			return false;
 	}
 
@@ -294,55 +362,22 @@ opus_encoder_write_silence(OpusEncoder *encoder, unsigned fill_frames,
 
 static bool
 opus_encoder_write(Encoder *_encoder,
-		   const void *_data, size_t length,
+		   const void *data, size_t length,
 		   Error &error)
 {
-	auto *encoder = (OpusEncoder *)_encoder;
-	const uint8_t *data = (const uint8_t *)_data;
-
-	if (encoder->lookahead > 0) {
-		/* generate some silence at the beginning of the
-		   stream */
-
-		assert(encoder->buffer_position == 0);
-
-		if (!opus_encoder_write_silence(encoder, encoder->lookahead,
-						error))
-			return false;
-
-		encoder->lookahead = 0;
-	}
-
-	while (length > 0) {
-		size_t nbytes =
-			encoder->buffer_size - encoder->buffer_position;
-		if (nbytes > length)
-			nbytes = length;
-
-		memcpy(encoder->buffer + encoder->buffer_position,
-		       data, nbytes);
-		data += nbytes;
-		length -= nbytes;
-		encoder->buffer_position += nbytes;
-
-		if (encoder->buffer_position == encoder->buffer_size &&
-		    !opus_encoder_do_encode(encoder, false, error))
-			return false;
-	}
-
-	return true;
+	auto &encoder = *(OpusEncoder *)_encoder;
+	return encoder.Write(data, length, error);
 }
 
-static void
-opus_encoder_generate_head(OpusEncoder *encoder)
+void
+OpusEncoder::GenerateHead()
 {
 	unsigned char header[19];
 	memcpy(header, "OpusHead", 8);
 	header[8] = 1;
-	header[9] = encoder->audio_format.channels;
-	*(uint16_t *)(header + 10) = ToLE16(encoder->lookahead);
-	*(uint32_t *)(header + 12) =
-		ToLE32(encoder->audio_format.sample_rate);
+	header[9] = audio_format.channels;
+	*(uint16_t *)(header + 10) = ToLE16(lookahead);
+	*(uint32_t *)(header + 12) = ToLE32(audio_format.sample_rate);
 	header[16] = 0;
 	header[17] = 0;
 	header[18] = 0;
@@ -353,13 +388,13 @@ opus_encoder_generate_head(OpusEncoder *encoder)
 	packet.b_o_s = true;
 	packet.e_o_s = false;
 	packet.granulepos = 0;
-	packet.packetno = encoder->packetno++;
-	encoder->stream.PacketIn(packet);
-	encoder->stream.Flush();
+	packet.packetno = packetno++;
+	stream.PacketIn(packet);
+	stream.Flush();
 }
 
-static void
-opus_encoder_generate_tags(OpusEncoder *encoder)
+void
+OpusEncoder::GenerateTags()
 {
 	const char *version = opus_get_version_string();
 	size_t version_length = strlen(version);
@@ -377,24 +412,29 @@ opus_encoder_generate_tags(OpusEncoder *encoder)
 	packet.b_o_s = false;
 	packet.e_o_s = false;
 	packet.granulepos = 0;
-	packet.packetno = encoder->packetno++;
-	encoder->stream.PacketIn(packet);
-	encoder->stream.Flush();
+	packet.packetno = packetno++;
+	stream.PacketIn(packet);
+	stream.Flush();
 
 	free(comments);
+}
+
+size_t
+OpusEncoder::Read(void *dest, size_t length)
+{
+	if (packetno == 0)
+		GenerateHead();
+	else if (packetno == 1)
+		GenerateTags();
+
+	return stream.PageOut(dest, length);
 }
 
 static size_t
 opus_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
-	auto *encoder = (OpusEncoder *)_encoder;
-
-	if (encoder->packetno == 0)
-		opus_encoder_generate_head(encoder);
-	else if (encoder->packetno == 1)
-		opus_encoder_generate_tags(encoder);
-
-	return encoder->stream.PageOut(dest, length);
+	auto &encoder = *(OpusEncoder *)_encoder;
+	return encoder.Read(dest, length);
 }
 
 static const char *
