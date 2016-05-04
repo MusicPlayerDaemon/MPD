@@ -20,6 +20,7 @@
 #include "config.h"
 #include "ShoutOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
@@ -65,6 +66,16 @@ struct ShoutOutput final {
 	}
 
 	bool Configure(const ConfigBlock &block, Error &error);
+	static ShoutOutput *Create(const ConfigBlock &block, Error &error);
+
+	bool Open(AudioFormat &audio_format, Error &error);
+	void Close();
+
+	unsigned Delay() const;
+	void SendTag(const Tag &tag);
+	size_t Play(const void *chunk, size_t size, Error &error);
+	void Cancel();
+	bool Pause();
 };
 
 static int shout_init_count;
@@ -278,8 +289,8 @@ ShoutOutput::Configure(const ConfigBlock &block, Error &error)
 	return true;
 }
 
-static AudioOutput *
-my_shout_init_driver(const ConfigBlock &block, Error &error)
+ShoutOutput *
+ShoutOutput::Create(const ConfigBlock &block, Error &error)
 {
 	if (shout_init_count == 0)
 		shout_init();
@@ -297,7 +308,7 @@ my_shout_init_driver(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return &sd->base;
+	return sd;
 }
 
 static bool
@@ -347,45 +358,28 @@ write_page(ShoutOutput *sd, Error &error)
 	return true;
 }
 
-static void close_shout_conn(ShoutOutput * sd)
+void
+ShoutOutput::Close()
 {
-	if (sd->encoder != nullptr) {
-		if (encoder_end(sd->encoder, IgnoreError()))
-			write_page(sd, IgnoreError());
+	if (encoder != nullptr) {
+		if (encoder_end(encoder, IgnoreError()))
+			write_page(this, IgnoreError());
 
-		sd->encoder->Close();
+		encoder->Close();
 	}
 
-	if (shout_get_connected(sd->shout_conn) != SHOUTERR_UNCONNECTED &&
-	    shout_close(sd->shout_conn) != SHOUTERR_SUCCESS) {
+	if (shout_get_connected(shout_conn) != SHOUTERR_UNCONNECTED &&
+	    shout_close(shout_conn) != SHOUTERR_SUCCESS) {
 		FormatWarning(shout_output_domain,
 			      "problem closing connection to shout server: %s",
-			      shout_get_error(sd->shout_conn));
+			      shout_get_error(shout_conn));
 	}
 }
 
-static void
-my_shout_finish_driver(AudioOutput *ao)
+void
+ShoutOutput::Cancel()
 {
-	ShoutOutput *sd = (ShoutOutput *)ao;
-	delete sd;
-}
-
-static void
-my_shout_drop_buffered_audio(AudioOutput *ao)
-{
-	gcc_unused
-	ShoutOutput *sd = (ShoutOutput *)ao;
-
 	/* needs to be implemented for shout */
-}
-
-static void
-my_shout_close_device(AudioOutput *ao)
-{
-	ShoutOutput *sd = (ShoutOutput *)ao;
-
-	close_shout_conn(sd);
 }
 
 static bool
@@ -406,59 +400,51 @@ shout_connect(ShoutOutput *sd, Error &error)
 	}
 }
 
-static bool
-my_shout_open_device(AudioOutput *ao, AudioFormat &audio_format,
-		     Error &error)
+bool
+ShoutOutput::Open(AudioFormat &audio_format, Error &error)
 {
-	ShoutOutput *sd = (ShoutOutput *)ao;
-
-	if (!shout_connect(sd, error))
+	if (!shout_connect(this, error))
 		return false;
 
-	if (!sd->encoder->Open(audio_format, error)) {
-		shout_close(sd->shout_conn);
+	if (!encoder->Open(audio_format, error)) {
+		shout_close(shout_conn);
 		return false;
 	}
 
-	if (!write_page(sd, error)) {
-		sd->encoder->Close();
-		shout_close(sd->shout_conn);
+	if (!write_page(this, error)) {
+		encoder->Close();
+		shout_close(shout_conn);
 		return false;
 	}
 
 	return true;
 }
 
-static unsigned
-my_shout_delay(AudioOutput *ao)
+unsigned
+ShoutOutput::Delay() const
 {
-	ShoutOutput *sd = (ShoutOutput *)ao;
-
-	int delay = shout_delay(sd->shout_conn);
+	int delay = shout_delay(shout_conn);
 	if (delay < 0)
 		delay = 0;
 
 	return delay;
 }
 
-static size_t
-my_shout_play(AudioOutput *ao, const void *chunk, size_t size,
-	      Error &error)
+size_t
+ShoutOutput::Play(const void *chunk, size_t size, Error &error)
 {
-	ShoutOutput *sd = (ShoutOutput *)ao;
-
-	return encoder_write(sd->encoder, chunk, size, error) &&
-		write_page(sd, error)
+	return encoder_write(encoder, chunk, size, error) &&
+		write_page(this, error)
 		? size
 		: 0;
 }
 
-static bool
-my_shout_pause(AudioOutput *ao)
+bool
+ShoutOutput::Pause()
 {
 	static char silence[1020];
 
-	return my_shout_play(ao, silence, sizeof(silence), IgnoreError());
+	return Play(silence, sizeof(silence), IgnoreError());
 }
 
 static void
@@ -487,18 +473,16 @@ shout_tag_to_metadata(const Tag &tag, char *dest, size_t size)
 	snprintf(dest, size, "%s - %s", artist, title);
 }
 
-static void my_shout_set_tag(AudioOutput *ao,
-			     const Tag &tag)
+void
+ShoutOutput::SendTag(const Tag &tag)
 {
-	ShoutOutput *sd = (ShoutOutput *)ao;
-
-	if (sd->encoder->plugin.tag != nullptr) {
+	if (encoder->plugin.tag != nullptr) {
 		/* encoder plugin supports stream tags */
 
 		Error error;
-		if (!encoder_pre_tag(sd->encoder, error) ||
-		    !write_page(sd, error) ||
-		    !encoder_tag(sd->encoder, tag, error)) {
+		if (!encoder_pre_tag(encoder, error) ||
+		    !write_page(this, error) ||
+		    !encoder_tag(encoder, tag, error)) {
 			LogError(error);
 			return;
 		}
@@ -507,31 +491,33 @@ static void my_shout_set_tag(AudioOutput *ao,
 		char song[1024];
 		shout_tag_to_metadata(tag, song, sizeof(song));
 
-		shout_metadata_add(sd->shout_meta, "song", song);
-		if (SHOUTERR_SUCCESS != shout_set_metadata(sd->shout_conn,
-							   sd->shout_meta)) {
+		shout_metadata_add(shout_meta, "song", song);
+		if (SHOUTERR_SUCCESS != shout_set_metadata(shout_conn,
+							   shout_meta)) {
 			LogWarning(shout_output_domain,
 				   "error setting shout metadata");
 		}
 	}
 
-	write_page(sd, IgnoreError());
+	write_page(this, IgnoreError());
 }
+
+typedef AudioOutputWrapper<ShoutOutput> Wrapper;
 
 const struct AudioOutputPlugin shout_output_plugin = {
 	"shout",
 	nullptr,
-	my_shout_init_driver,
-	my_shout_finish_driver,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	my_shout_open_device,
-	my_shout_close_device,
-	my_shout_delay,
-	my_shout_set_tag,
-	my_shout_play,
+	&Wrapper::Open,
+	&Wrapper::Close,
+	&Wrapper::Delay,
+	&Wrapper::SendTag,
+	&Wrapper::Play,
 	nullptr,
-	my_shout_drop_buffered_audio,
-	my_shout_pause,
+	&Wrapper::Cancel,
+	&Wrapper::Pause,
 	nullptr,
 };
