@@ -29,7 +29,7 @@ EncoderToOutputStream(OutputStream &os, Encoder &encoder)
 		/* read from the encoder */
 
 		char buffer[32768];
-		size_t nbytes = encoder_read(&encoder, buffer, sizeof(buffer));
+		size_t nbytes = encoder.Read(buffer, sizeof(buffer));
 		if (nbytes == 0)
 			return;
 

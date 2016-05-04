@@ -22,8 +22,8 @@
 
 #include "check.h"
 
-struct Encoder;
 class OutputStream;
+class Encoder;
 
 void
 EncoderToOutputStream(OutputStream &os, Encoder &encoder);

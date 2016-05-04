@@ -45,7 +45,8 @@ class EventLoop;
 class ServerSocket;
 class HttpdClient;
 class Page;
-struct Encoder;
+struct PreparedEncoder;
+class Encoder;
 struct Tag;
 
 class HttpdOutput final : ServerSocket, DeferredMonitor {
@@ -60,6 +61,7 @@ class HttpdOutput final : ServerSocket, DeferredMonitor {
 	/**
 	 * The configured encoder plugin.
 	 */
+	PreparedEncoder *prepared_encoder = nullptr;
 	Encoder *encoder;
 
 	/**

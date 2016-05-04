@@ -45,7 +45,8 @@ struct ShoutOutput final {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 
-	Encoder *encoder = nullptr;
+	PreparedEncoder *prepared_encoder = nullptr;
+	Encoder *encoder;
 
 	float quality = -2.0;
 	int bitrate = -1;
@@ -93,8 +94,7 @@ ShoutOutput::~ShoutOutput()
 	if (shout_init_count == 0)
 		shout_shutdown();
 
-	if (encoder != nullptr)
-		encoder->Dispose();
+	delete prepared_encoder;
 }
 
 static const EncoderPlugin *
@@ -192,8 +192,8 @@ ShoutOutput::Configure(const ConfigBlock &block, Error &error)
 		return false;
 	}
 
-	encoder = encoder_init(*encoder_plugin, block, error);
-	if (encoder == nullptr)
+	prepared_encoder = encoder_init(*encoder_plugin, block, error);
+	if (prepared_encoder == nullptr)
 		return false;
 
 	unsigned shout_format;
@@ -345,8 +345,8 @@ write_page(ShoutOutput *sd, Error &error)
 	assert(sd->encoder != nullptr);
 
 	while (true) {
-		size_t nbytes = encoder_read(sd->encoder,
-					     sd->buffer, sizeof(sd->buffer));
+		size_t nbytes = sd->encoder->Read(sd->buffer,
+						  sizeof(sd->buffer));
 		if (nbytes == 0)
 			return true;
 
@@ -362,10 +362,10 @@ void
 ShoutOutput::Close()
 {
 	if (encoder != nullptr) {
-		if (encoder_end(encoder, IgnoreError()))
+		if (encoder->End(IgnoreError()))
 			write_page(this, IgnoreError());
 
-		encoder->Close();
+		delete encoder;
 	}
 
 	if (shout_get_connected(shout_conn) != SHOUTERR_UNCONNECTED &&
@@ -406,13 +406,14 @@ ShoutOutput::Open(AudioFormat &audio_format, Error &error)
 	if (!shout_connect(this, error))
 		return false;
 
-	if (!encoder->Open(audio_format, error)) {
+	encoder = prepared_encoder->Open(audio_format, error);
+	if (encoder == nullptr) {
 		shout_close(shout_conn);
 		return false;
 	}
 
 	if (!write_page(this, error)) {
-		encoder->Close();
+		delete encoder;
 		shout_close(shout_conn);
 		return false;
 	}
@@ -433,7 +434,7 @@ ShoutOutput::Delay() const
 size_t
 ShoutOutput::Play(const void *chunk, size_t size, Error &error)
 {
-	return encoder_write(encoder, chunk, size, error) &&
+	return encoder->Write(chunk, size, error) &&
 		write_page(this, error)
 		? size
 		: 0;
@@ -476,13 +477,13 @@ shout_tag_to_metadata(const Tag &tag, char *dest, size_t size)
 void
 ShoutOutput::SendTag(const Tag &tag)
 {
-	if (encoder->plugin.tag != nullptr) {
+	if (encoder->ImplementsTag()) {
 		/* encoder plugin supports stream tags */
 
 		Error error;
-		if (!encoder_pre_tag(encoder, error) ||
+		if (!encoder->PreTag(error) ||
 		    !write_page(this, error) ||
-		    !encoder_tag(encoder, tag, error)) {
+		    !encoder->SendTag(tag, error)) {
 			LogError(error);
 			return;
 		}
