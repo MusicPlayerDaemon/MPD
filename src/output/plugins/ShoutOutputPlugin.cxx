@@ -46,20 +46,17 @@ struct ShoutOutput final {
 
 	Encoder *encoder;
 
-	float quality;
-	int bitrate;
+	float quality = -2.0;
+	int bitrate = -1;
 
-	int timeout;
+	int timeout = DEFAULT_CONN_TIMEOUT;
 
 	uint8_t buffer[32768];
 
 	ShoutOutput()
 		:base(shout_output_plugin),
 		 shout_conn(shout_new()),
-		shout_meta(shout_metadata_new()),
-		quality(-2.0),
-		bitrate(-1),
-		timeout(DEFAULT_CONN_TIMEOUT) {}
+		 shout_meta(shout_metadata_new()) {}
 
 	~ShoutOutput() {
 		if (shout_meta != nullptr)
