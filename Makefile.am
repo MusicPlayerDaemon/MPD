@@ -1149,6 +1149,11 @@ libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/WaveEncoderPlugin.hxx
 endif
 
+if HAVE_OGG
+libencoder_plugins_a_SOURCES += \
+	src/encoder/plugins/OggEncoder.hxx
+endif
+
 if ENABLE_VORBISENC
 libencoder_plugins_a_SOURCES += \
 	src/encoder/plugins/VorbisEncoderPlugin.cxx \

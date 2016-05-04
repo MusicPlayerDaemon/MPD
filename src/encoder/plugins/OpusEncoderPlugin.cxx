@@ -19,9 +19,7 @@
 
 #include "config.h"
 #include "OpusEncoderPlugin.hxx"
-#include "lib/xiph/OggStream.hxx"
-#include "lib/xiph/OggSerial.hxx"
-#include "../EncoderAPI.hxx"
+#include "OggEncoder.hxx"
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Alloc.hxx"
@@ -37,7 +35,7 @@
 
 namespace {
 
-class OpusEncoder final : public Encoder {
+class OpusEncoder final : public OggEncoder {
 	const AudioFormat audio_format;
 
 	const size_t frame_size;
@@ -49,8 +47,6 @@ class OpusEncoder final : public Encoder {
 	::OpusEncoder *const enc;
 
 	unsigned char buffer2[1275 * 3 + 7];
-
-	OggStream stream;
 
 	int lookahead;
 
@@ -64,7 +60,6 @@ public:
 
 	/* virtual methods from class Encoder */
 	bool End(Error &) override;
-	bool Flush(Error &) override;
 	bool Write(const void *data, size_t length, Error &) override;
 
 	size_t Read(void *dest, size_t length) override;
@@ -150,7 +145,7 @@ opus_encoder_init(const ConfigBlock &block, Error &error)
 }
 
 OpusEncoder::OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc)
-	:Encoder(false),
+	:OggEncoder(false),
 	 audio_format(_audio_format),
 	 frame_size(_audio_format.GetFrameSize()),
 	 buffer_frames(_audio_format.sample_rate / 50),
@@ -159,8 +154,6 @@ OpusEncoder::OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc)
 	 enc(_enc)
 {
 	opus_encoder_ctl(enc, OPUS_GET_LOOKAHEAD(&lookahead));
-
-	stream.Initialize(GenerateOggSerial());
 }
 
 Encoder *
@@ -206,7 +199,6 @@ PreparedOpusEncoder::Open(AudioFormat &audio_format, Error &error)
 
 OpusEncoder::~OpusEncoder()
 {
-	stream.Deinitialize();
 	free(buffer);
 	opus_encoder_destroy(enc);
 }
@@ -259,13 +251,6 @@ OpusEncoder::End(Error &error)
 	buffer_position = buffer_size;
 
 	return DoEncode(true, error);
-}
-
-bool
-OpusEncoder::Flush(gcc_unused Error &error)
-{
-	stream.Flush();
-	return true;
 }
 
 bool

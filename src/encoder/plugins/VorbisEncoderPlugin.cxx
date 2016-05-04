@@ -19,9 +19,7 @@
 
 #include "config.h"
 #include "VorbisEncoderPlugin.hxx"
-#include "lib/xiph/OggStream.hxx"
-#include "lib/xiph/OggSerial.hxx"
-#include "../EncoderAPI.hxx"
+#include "OggEncoder.hxx"
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
 #include "util/StringUtil.hxx"
@@ -31,18 +29,16 @@
 
 #include <vorbis/vorbisenc.h>
 
-class VorbisEncoder final : public Encoder {
+class VorbisEncoder final : public OggEncoder {
 	AudioFormat audio_format;
 
 	vorbis_dsp_state vd;
 	vorbis_block vb;
 	vorbis_info vi;
 
-	OggStream stream;
-
 public:
 	VorbisEncoder()
-		:Encoder(true) {}
+		:OggEncoder(true) {}
 
 	virtual ~VorbisEncoder() {
 		Clear();
@@ -56,15 +52,10 @@ public:
 		return PreTag(error);
 	}
 
-	bool Flush(Error &error) override;
 	bool PreTag(Error &error) override;
 	bool SendTag(const Tag &tag, Error &error) override;
 
 	bool Write(const void *data, size_t length, Error &) override;
-
-	size_t Read(void *dest, size_t length) override {
-		return stream.PageOut(dest, length);
-	}
 
 private:
 	void HeaderOut(vorbis_comment &vc);
@@ -189,7 +180,6 @@ VorbisEncoder::Open(float quality, int bitrate, AudioFormat &_audio_format,
 
 	vorbis_analysis_init(&vd, &vi);
 	vorbis_block_init(&vd, &vb);
-	stream.Initialize(GenerateOggSerial());
 
 	SendHeader();
 
@@ -234,7 +224,6 @@ PreparedVorbisEncoder::Open(AudioFormat &audio_format, Error &error)
 void
 VorbisEncoder::Clear()
 {
-	stream.Deinitialize();
 	vorbis_block_clear(&vb);
 	vorbis_dsp_clear(&vd);
 	vorbis_info_clear(&vi);
@@ -251,13 +240,6 @@ VorbisEncoder::BlockOut()
 		while (vorbis_bitrate_flushpacket(&vd, &packet))
 			stream.PacketIn(packet);
 	}
-}
-
-bool
-VorbisEncoder::Flush(gcc_unused Error &error)
-{
-	stream.Flush();
-	return true;
 }
 
 bool
