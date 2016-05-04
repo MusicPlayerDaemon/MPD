@@ -30,6 +30,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <memory>
+
 #include <stddef.h>
 #include <unistd.h>
 
@@ -48,14 +50,16 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	ConfigBlock block;
 	block.AddBlockParam("quality", "5.0", -1);
 
-	const auto p_encoder = encoder_init(*plugin, block, IgnoreError());
+	std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block,
+								IgnoreError()));
 	assert(p_encoder != nullptr);
 
 	try {
 		/* open the encoder */
 
 		AudioFormat audio_format(44100, SampleFormat::S16, 2);
-		auto encoder = p_encoder->Open(audio_format, IgnoreError());
+		std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format,
+								 IgnoreError()));
 		assert(encoder != nullptr);
 
 		StdioOutputStream os(stdout);
@@ -101,9 +105,6 @@ main(gcc_unused int argc, gcc_unused char **argv)
 		assert(success);
 
 		EncoderToOutputStream(os, *encoder);
-
-		delete encoder;
-		delete p_encoder;
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {

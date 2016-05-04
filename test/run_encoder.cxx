@@ -29,6 +29,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <memory>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -65,7 +67,7 @@ int main(int argc, char **argv)
 
 	try {
 		Error error;
-		const auto p_encoder = encoder_init(*plugin, block, error);
+		std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block, error));
 		if (p_encoder == nullptr) {
 			LogError(error, "Failed to initialize encoder");
 			return EXIT_FAILURE;
@@ -81,7 +83,7 @@ int main(int argc, char **argv)
 			}
 		}
 
-		auto *encoder = p_encoder->Open(audio_format, error);
+		std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format, error));
 		if (encoder == nullptr) {
 			LogError(error, "Failed to open encoder");
 			return EXIT_FAILURE;
@@ -109,9 +111,6 @@ int main(int argc, char **argv)
 		}
 
 		EncoderToOutputStream(os, *encoder);
-
-		delete encoder;
-		delete p_encoder;
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {
