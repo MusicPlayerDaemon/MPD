@@ -47,12 +47,12 @@ class RecorderOutput {
 	/**
 	 * The configured encoder plugin.
 	 */
-	Encoder *encoder;
+	Encoder *encoder = nullptr;
 
 	/**
 	 * The destination file name.
 	 */
-	AllocatedPath path;
+	AllocatedPath path = AllocatedPath::Null();
 
 	/**
 	 * A string that will be used with FormatTag() to build the
@@ -72,9 +72,7 @@ class RecorderOutput {
 	FileOutputStream *file;
 
 	RecorderOutput()
-		:base(recorder_output_plugin),
-		 encoder(nullptr),
-		 path(AllocatedPath::Null()) {}
+		:base(recorder_output_plugin) {}
 
 	~RecorderOutput() {
 		if (encoder != nullptr)
