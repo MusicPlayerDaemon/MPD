@@ -44,10 +44,15 @@ public:
 	}
 };
 
-struct PreparedWaveEncoder {
-	PreparedEncoder encoder;
+class PreparedWaveEncoder final : public PreparedEncoder {
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override {
+		return new WaveEncoder(audio_format);
+	}
 
-	PreparedWaveEncoder():encoder(wave_encoder_plugin) {}
+	const char *GetMimeType() const override {
+		return "audio/wav";
+	}
 };
 
 struct WaveHeader {
@@ -96,16 +101,7 @@ static PreparedEncoder *
 wave_encoder_init(gcc_unused const ConfigBlock &block,
 		  gcc_unused Error &error)
 {
-	auto *encoder = new PreparedWaveEncoder();
-	return &encoder->encoder;
-}
-
-static void
-wave_encoder_finish(PreparedEncoder *_encoder)
-{
-	auto *encoder = (PreparedWaveEncoder *)_encoder;
-
-	delete encoder;
+	return new PreparedWaveEncoder();
 }
 
 WaveEncoder::WaveEncoder(AudioFormat &audio_format)
@@ -149,14 +145,6 @@ WaveEncoder::WaveEncoder(AudioFormat &audio_format)
 			 (bits / 8) * audio_format.channels);
 
 	buffer.Append(sizeof(*header));
-}
-
-static Encoder *
-wave_encoder_open(gcc_unused PreparedEncoder *_encoder,
-		  AudioFormat &audio_format,
-		  gcc_unused Error &error)
-{
-	return new WaveEncoder(audio_format);
 }
 
 static size_t
@@ -239,16 +227,7 @@ WaveEncoder::Write(const void *src, size_t length,
 	return true;
 }
 
-static const char *
-wave_encoder_get_mime_type(gcc_unused PreparedEncoder *_encoder)
-{
-	return "audio/wav";
-}
-
 const EncoderPlugin wave_encoder_plugin = {
 	"wave",
 	wave_encoder_init,
-	wave_encoder_finish,
-	wave_encoder_open,
-	wave_encoder_get_mime_type,
 };

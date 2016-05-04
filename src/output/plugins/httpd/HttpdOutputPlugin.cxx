@@ -63,9 +63,7 @@ HttpdOutput::~HttpdOutput()
 	if (metadata != nullptr)
 		metadata->Unref();
 
-	if (prepared_encoder != nullptr)
-		prepared_encoder->Dispose();
-
+	delete prepared_encoder;
 }
 
 inline bool
@@ -128,7 +126,7 @@ HttpdOutput::Configure(const ConfigBlock &block, Error &error)
 		return false;
 
 	/* determine content type */
-	content_type = encoder_get_mime_type(prepared_encoder);
+	content_type = prepared_encoder->GetMimeType();
 	if (content_type == nullptr)
 		content_type = "application/octet-stream";
 

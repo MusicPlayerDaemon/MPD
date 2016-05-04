@@ -77,20 +77,20 @@ private:
 	void GenerateTags();
 };
 
-struct PreparedOpusEncoder {
-	/** the base class */
-	PreparedEncoder encoder;
-
-	/* configuration */
-
+class PreparedOpusEncoder final : public PreparedEncoder {
 	opus_int32 bitrate;
 	int complexity;
 	int signal;
 
-	PreparedOpusEncoder():encoder(opus_encoder_plugin) {}
-
+public:
 	bool Configure(const ConfigBlock &block, Error &error);
-	Encoder *Open(AudioFormat &audio_format, Error &error);
+
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override;
+
+	const char *GetMimeType() const override {
+		return "audio/ogg";
+	}
 };
 
 static constexpr Domain opus_encoder_domain("opus_encoder");
@@ -146,17 +146,7 @@ opus_encoder_init(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return &encoder->encoder;
-}
-
-static void
-opus_encoder_finish(PreparedEncoder *_encoder)
-{
-	auto *encoder = (PreparedOpusEncoder *)_encoder;
-
-	/* the real libopus cleanup was already performed by
-	   opus_encoder_close(), so no real work here */
-	delete encoder;
+	return encoder;
 }
 
 OpusEncoder::OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc)
@@ -212,15 +202,6 @@ PreparedOpusEncoder::Open(AudioFormat &audio_format, Error &error)
 	opus_encoder_ctl(enc, OPUS_SET_SIGNAL(signal));
 
 	return new OpusEncoder(audio_format, enc);
-}
-
-static Encoder *
-opus_encoder_open(PreparedEncoder *_encoder,
-		  AudioFormat &audio_format,
-		  Error &error)
-{
-	auto &encoder = *(PreparedOpusEncoder *)_encoder;
-	return encoder.Open(audio_format, error);
 }
 
 OpusEncoder::~OpusEncoder()
@@ -405,18 +386,9 @@ OpusEncoder::Read(void *dest, size_t length)
 	return stream.PageOut(dest, length);
 }
 
-static const char *
-opus_encoder_get_mime_type(gcc_unused PreparedEncoder *_encoder)
-{
-	return  "audio/ogg";
-}
-
 }
 
 const EncoderPlugin opus_encoder_plugin = {
 	"opus",
 	opus_encoder_init,
-	opus_encoder_finish,
-	opus_encoder_open,
-	opus_encoder_get_mime_type,
 };

@@ -20,9 +20,7 @@
 #ifndef MPD_ENCODER_PLUGIN_HXX
 #define MPD_ENCODER_PLUGIN_HXX
 
-struct PreparedEncoder;
-class Encoder;
-struct AudioFormat;
+class PreparedEncoder;
 struct ConfigBlock;
 class Error;
 
@@ -31,14 +29,6 @@ struct EncoderPlugin {
 
 	PreparedEncoder *(*init)(const ConfigBlock &block,
 				 Error &error);
-
-	void (*finish)(PreparedEncoder *encoder);
-
-	Encoder *(*open)(PreparedEncoder *encoder,
-			 AudioFormat &audio_format,
-			 Error &error);
-
-	const char *(*get_mime_type)(PreparedEncoder *encoder);
 };
 
 /**

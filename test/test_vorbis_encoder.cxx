@@ -103,7 +103,7 @@ main(gcc_unused int argc, gcc_unused char **argv)
 		EncoderToOutputStream(os, *encoder);
 
 		delete encoder;
-		p_encoder->Dispose();
+		delete p_encoder;
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {

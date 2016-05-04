@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <stddef.h>
 
+struct AudioFormat;
 struct Tag;
 
 class Encoder {
@@ -112,19 +113,9 @@ public:
 	virtual size_t Read(void *dest, size_t length) = 0;
 };
 
-struct PreparedEncoder {
-	const EncoderPlugin &plugin;
-
-	explicit PreparedEncoder(const EncoderPlugin &_plugin)
-		:plugin(_plugin) {}
-
-
-	/**
-	 * Frees an #Encoder object.
-	 */
-	void Dispose() {
-		plugin.finish(this);
-	}
+class PreparedEncoder {
+public:
+	virtual ~PreparedEncoder() {}
 
 	/**
 	 * Opens the object.  You must call this prior to using it.
@@ -139,24 +130,16 @@ struct PreparedEncoder {
 	 * may modify the struct to adapt it to its abilities
 	 * @return true on success
 	 */
-	Encoder *Open(AudioFormat &audio_format, Error &error) {
-		return plugin.open(this, audio_format, error);
+	virtual Encoder *Open(AudioFormat &audio_format, Error &error) = 0;
+
+	/**
+	 * Get mime type of encoded content.
+	 *
+	 * @return an constant string, nullptr on failure
+	 */
+	virtual const char *GetMimeType() const {
+		return nullptr;
 	}
-
 };
-
-/**
- * Get mime type of encoded content.
- *
- * @return an constant string, nullptr on failure
- */
-static inline const char *
-encoder_get_mime_type(PreparedEncoder *encoder)
-{
-	/* this method is optional */
-	return encoder->plugin.get_mime_type != nullptr
-		? encoder->plugin.get_mime_type(encoder)
-		: nullptr;
-}
 
 #endif

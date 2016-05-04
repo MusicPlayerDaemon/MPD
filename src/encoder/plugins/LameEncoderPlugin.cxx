@@ -53,15 +53,19 @@ public:
 	size_t Read(void *dest, size_t length) override;
 };
 
-struct PreparedLameEncoder final {
-	PreparedEncoder encoder;
-
+class PreparedLameEncoder final : public PreparedEncoder {
 	float quality;
 	int bitrate;
 
-	PreparedLameEncoder():encoder(lame_encoder_plugin) {}
-
+public:
 	bool Configure(const ConfigBlock &block, Error &error);
+
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override;
+
+	const char *GetMimeType() const override {
+		return "audio/mpeg";
+	}
 };
 
 static constexpr Domain lame_encoder_domain("lame_encoder");
@@ -126,17 +130,7 @@ lame_encoder_init(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return &encoder->encoder;
-}
-
-static void
-lame_encoder_finish(PreparedEncoder *_encoder)
-{
-	auto *encoder = (PreparedLameEncoder *)_encoder;
-
-	/* the real liblame cleanup was already performed by
-	   lame_encoder_close(), so no real work here */
-	delete encoder;
+	return encoder;
 }
 
 static bool
@@ -193,12 +187,9 @@ lame_encoder_setup(lame_global_flags *gfp, float quality, int bitrate,
 	return true;
 }
 
-static Encoder *
-lame_encoder_open(PreparedEncoder *_encoder, AudioFormat &audio_format,
-		  Error &error)
+Encoder *
+PreparedLameEncoder::Open(AudioFormat &audio_format, Error &error)
 {
-	auto *encoder = (PreparedLameEncoder *)_encoder;
-
 	audio_format.format = SampleFormat::S16;
 	audio_format.channels = 2;
 
@@ -208,7 +199,7 @@ lame_encoder_open(PreparedEncoder *_encoder, AudioFormat &audio_format,
 		return nullptr;
 	}
 
-	if (!lame_encoder_setup(gfp, encoder->quality, encoder->bitrate,
+	if (!lame_encoder_setup(gfp, quality, bitrate,
 				audio_format, error)) {
 		lame_close(gfp);
 		return nullptr;
@@ -269,16 +260,7 @@ LameEncoder::Read(void *dest, size_t length)
 	return length;
 }
 
-static const char *
-lame_encoder_get_mime_type(gcc_unused PreparedEncoder *_encoder)
-{
-	return "audio/mpeg";
-}
-
 const EncoderPlugin lame_encoder_plugin = {
 	"lame",
 	lame_encoder_init,
-	lame_encoder_finish,
-	lame_encoder_open,
-	lame_encoder_get_mime_type,
 };

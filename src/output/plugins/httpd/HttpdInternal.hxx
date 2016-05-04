@@ -45,7 +45,7 @@ class EventLoop;
 class ServerSocket;
 class HttpdClient;
 class Page;
-struct PreparedEncoder;
+class PreparedEncoder;
 class Encoder;
 struct Tag;
 

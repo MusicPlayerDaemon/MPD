@@ -88,14 +88,18 @@ private:
 	}
 };
 
-struct PreparedFlacEncoder {
-	PreparedEncoder encoder;
-
+class PreparedFlacEncoder final : public PreparedEncoder {
 	unsigned compression;
 
-	PreparedFlacEncoder():encoder(flac_encoder_plugin) {}
-
+public:
 	bool Configure(const ConfigBlock &block, Error &error);
+
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override;
+
+	const char *GetMimeType() const override {
+		return  "audio/flac";
+	}
 };
 
 static constexpr Domain flac_encoder_domain("vorbis_encoder");
@@ -119,17 +123,7 @@ flac_encoder_init(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return &encoder->encoder;
-}
-
-static void
-flac_encoder_finish(PreparedEncoder *_encoder)
-{
-	auto *encoder = (PreparedFlacEncoder *)_encoder;
-
-	/* the real libFLAC cleanup was already performed by
-	   flac_encoder_close(), so no real work here */
-	delete encoder;
+	return encoder;
 }
 
 static bool
@@ -190,10 +184,9 @@ FlacEncoder::Init(Error &error)
 	return true;
 }
 
-static Encoder *
-flac_encoder_open(PreparedEncoder *_encoder, AudioFormat &audio_format, Error &error)
+Encoder *
+PreparedFlacEncoder::Open(AudioFormat &audio_format, Error &error)
 {
-	auto *encoder = (PreparedFlacEncoder *)_encoder;
 	unsigned bits_per_sample;
 
 	/* FIXME: flac should support 32bit as well */
@@ -222,7 +215,7 @@ flac_encoder_open(PreparedEncoder *_encoder, AudioFormat &audio_format, Error &e
 		return nullptr;
 	}
 
-	if (!flac_encoder_setup(fse, encoder->compression,
+	if (!flac_encoder_setup(fse, compression,
 				audio_format, bits_per_sample, error)) {
 		FLAC__stream_encoder_delete(fse);
 		return nullptr;
@@ -304,17 +297,8 @@ FlacEncoder::Write(const void *data, size_t length, Error &error)
 	return true;
 }
 
-static const char *
-flac_encoder_get_mime_type(gcc_unused PreparedEncoder *_encoder)
-{
-	return "audio/flac";
-}
-
 const EncoderPlugin flac_encoder_plugin = {
 	"flac",
 	flac_encoder_init,
-	flac_encoder_finish,
-	flac_encoder_open,
-	flac_encoder_get_mime_type,
 };
 

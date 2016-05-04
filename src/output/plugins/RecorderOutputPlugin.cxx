@@ -76,8 +76,7 @@ class RecorderOutput {
 		:base(recorder_output_plugin) {}
 
 	~RecorderOutput() {
-		if (prepared_encoder != nullptr)
-			prepared_encoder->Dispose();
+		delete prepared_encoder;
 	}
 
 	bool Initialize(const ConfigBlock &block, Error &error_r) {

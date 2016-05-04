@@ -84,16 +84,18 @@ public:
 	}
 };
 
-struct PreparedShineEncoder {
-	PreparedEncoder encoder;
-
+class PreparedShineEncoder final : public PreparedEncoder {
 	shine_config_t config;
 
-	PreparedShineEncoder():encoder(shine_encoder_plugin) {}
-
+public:
 	bool Configure(const ConfigBlock &block, Error &error);
 
-	bool Setup(Error &error);
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override;
+
+	const char *GetMimeType() const override {
+		return  "audio/mpeg";
+	}
 };
 
 inline bool
@@ -117,15 +119,7 @@ shine_encoder_init(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return &encoder->encoder;
-}
-
-static void
-shine_encoder_finish(PreparedEncoder *_encoder)
-{
-	auto *encoder = (PreparedShineEncoder *)_encoder;
-
-	delete encoder;
+	return encoder;
 }
 
 static shine_t
@@ -159,13 +153,10 @@ SetupShine(shine_config_t config, AudioFormat &audio_format,
 	return shine;
 }
 
-static Encoder *
-shine_encoder_open(PreparedEncoder *_encoder, AudioFormat &audio_format,
-		   Error &error)
+Encoder *
+PreparedShineEncoder::Open(AudioFormat &audio_format, Error &error)
 {
-	auto *encoder = (PreparedShineEncoder *)_encoder;
-
-	auto shine = SetupShine(encoder->config, audio_format, error);
+	auto shine = SetupShine(config, audio_format, error);
 	if (!shine)
 		return nullptr;
 
@@ -238,16 +229,7 @@ ShineEncoder::Flush(gcc_unused Error &error)
 	return true;
 }
 
-static const char *
-shine_encoder_get_mime_type(gcc_unused PreparedEncoder *_encoder)
-{
-	return "audio/mpeg";
-}
-
 const EncoderPlugin shine_encoder_plugin = {
 	"shine",
 	shine_encoder_init,
-	shine_encoder_finish,
-	shine_encoder_open,
-	shine_encoder_get_mime_type,
 };

@@ -72,15 +72,19 @@ public:
 	size_t Read(void *dest, size_t length) override;
 };
 
-struct PreparedTwolameEncoder final {
-	PreparedEncoder encoder;
-
+class PreparedTwolameEncoder final : public PreparedEncoder {
 	float quality;
 	int bitrate;
 
-	PreparedTwolameEncoder():encoder(twolame_encoder_plugin) {}
-
+public:
 	bool Configure(const ConfigBlock &block, Error &error);
+
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override;
+
+	const char *GetMimeType() const override {
+		return  "audio/mpeg";
+	}
 };
 
 static constexpr Domain twolame_encoder_domain("twolame_encoder");
@@ -148,17 +152,7 @@ twolame_encoder_init(const ConfigBlock &block, Error &error_r)
 		return nullptr;
 	}
 
-	return &encoder->encoder;
-}
-
-static void
-twolame_encoder_finish(PreparedEncoder *_encoder)
-{
-	auto *encoder = (PreparedTwolameEncoder *)_encoder;
-
-	/* the real libtwolame cleanup was already performed by
-	   twolame_encoder_close(), so no real work here */
-	delete encoder;
+	return encoder;
 }
 
 static bool
@@ -210,12 +204,9 @@ twolame_encoder_setup(twolame_options *options, float quality, int bitrate,
 	return true;
 }
 
-static Encoder *
-twolame_encoder_open(PreparedEncoder *_encoder, AudioFormat &audio_format,
-		     Error &error)
+Encoder *
+PreparedTwolameEncoder::Open(AudioFormat &audio_format, Error &error)
 {
-	auto *encoder = (PreparedTwolameEncoder *)_encoder;
-
 	audio_format.format = SampleFormat::S16;
 	audio_format.channels = 2;
 
@@ -225,7 +216,7 @@ twolame_encoder_open(PreparedEncoder *_encoder, AudioFormat &audio_format,
 		return nullptr;
 	}
 
-	if (!twolame_encoder_setup(options, encoder->quality, encoder->bitrate,
+	if (!twolame_encoder_setup(options, quality, bitrate,
 				   audio_format, error)) {
 		twolame_close(&options);
 		return nullptr;
@@ -291,16 +282,7 @@ TwolameEncoder::Read(void *dest, size_t length)
 	return length;
 }
 
-static const char *
-twolame_encoder_get_mime_type(gcc_unused PreparedEncoder *_encoder)
-{
-	return "audio/mpeg";
-}
-
 const EncoderPlugin twolame_encoder_plugin = {
 	"twolame",
 	twolame_encoder_init,
-	twolame_encoder_finish,
-	twolame_encoder_open,
-	twolame_encoder_get_mime_type,
 };

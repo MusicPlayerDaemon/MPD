@@ -73,18 +73,19 @@ private:
 	void Clear();
 };
 
-struct PreparedVorbisEncoder {
-	/** the base class */
-	PreparedEncoder encoder;
-
-	/* configuration */
-
+class PreparedVorbisEncoder final : public PreparedEncoder {
 	float quality;
 	int bitrate;
 
-	PreparedVorbisEncoder():encoder(vorbis_encoder_plugin) {}
-
+public:
 	bool Configure(const ConfigBlock &block, Error &error);
+
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override;
+
+	const char *GetMimeType() const override {
+		return "audio/ogg";
+	}
 };
 
 static constexpr Domain vorbis_encoder_domain("vorbis_encoder");
@@ -148,17 +149,7 @@ vorbis_encoder_init(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return &encoder->encoder;
-}
-
-static void
-vorbis_encoder_finish(PreparedEncoder *_encoder)
-{
-	auto *encoder = (PreparedVorbisEncoder *)_encoder;
-
-	/* the real libvorbis/libogg cleanup was already performed by
-	   vorbis_encoder_close(), so no real work here */
-	delete encoder;
+	return encoder;
 }
 
 bool
@@ -228,15 +219,11 @@ VorbisEncoder::SendHeader()
 	vorbis_comment_clear(&vc);
 }
 
-static Encoder *
-vorbis_encoder_open(PreparedEncoder *_encoder,
-		    AudioFormat &audio_format,
-		    Error &error)
+Encoder *
+PreparedVorbisEncoder::Open(AudioFormat &audio_format, Error &error)
 {
-	auto &encoder = *(PreparedVorbisEncoder *)_encoder;
-
 	auto *e = new VorbisEncoder();
-	if (!e->Open(encoder.quality, encoder.bitrate, audio_format, error)) {
+	if (!e->Open(quality, bitrate, audio_format, error)) {
 		delete e;
 		return nullptr;
 	}
@@ -348,16 +335,7 @@ VorbisEncoder::Write(const void *data, size_t length, gcc_unused Error &error)
 	return true;
 }
 
-static const char *
-vorbis_encoder_get_mime_type(gcc_unused PreparedEncoder *_encoder)
-{
-	return  "audio/ogg";
-}
-
 const EncoderPlugin vorbis_encoder_plugin = {
 	"vorbis",
 	vorbis_encoder_init,
-	vorbis_encoder_finish,
-	vorbis_encoder_open,
-	vorbis_encoder_get_mime_type,
 };

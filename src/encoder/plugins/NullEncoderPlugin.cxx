@@ -23,8 +23,6 @@
 #include "util/DynamicFifoBuffer.hxx"
 #include "Compiler.h"
 
-#include <assert.h>
-
 class NullEncoder final : public Encoder {
 	DynamicFifoBuffer<uint8_t> buffer;
 
@@ -44,40 +42,22 @@ public:
 	}
 };
 
-struct PreparedNullEncoder final {
-	PreparedEncoder encoder;
-
-	PreparedNullEncoder()
-		:encoder(null_encoder_plugin) {}
+class PreparedNullEncoder final : public PreparedEncoder {
+public:
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &, Error &) override {
+		return new NullEncoder();
+	}
 };
 
 static PreparedEncoder *
 null_encoder_init(gcc_unused const ConfigBlock &block,
 		  gcc_unused Error &error)
 {
-	auto *encoder = new PreparedNullEncoder();
-	return &encoder->encoder;
-}
-
-static void
-null_encoder_finish(PreparedEncoder *_encoder)
-{
-	auto *encoder = (PreparedNullEncoder *)_encoder;
-	delete encoder;
-}
-
-static Encoder *
-null_encoder_open(gcc_unused PreparedEncoder *encoder,
-		  gcc_unused AudioFormat &audio_format,
-		  gcc_unused Error &error)
-{
-	return new NullEncoder();
+	return new PreparedNullEncoder();
 }
 
 const EncoderPlugin null_encoder_plugin = {
 	"null",
 	null_encoder_init,
-	null_encoder_finish,
-	null_encoder_open,
-	nullptr,
 };
