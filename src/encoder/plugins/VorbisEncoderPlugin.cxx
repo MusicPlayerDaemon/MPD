@@ -51,23 +51,30 @@ struct VorbisEncoder {
 	OggStream stream;
 
 	VorbisEncoder():encoder(vorbis_encoder_plugin) {}
+
+	bool Configure(const ConfigBlock &block, Error &error);
+
+	bool Reinit(Error &error);
+
+	void HeaderOut(vorbis_comment &vc);
+	void SendHeader();
+	void BlockOut();
+	void Clear();
 };
 
 static constexpr Domain vorbis_encoder_domain("vorbis_encoder");
 
-static bool
-vorbis_encoder_configure(VorbisEncoder &encoder,
-			 const ConfigBlock &block, Error &error)
+bool
+VorbisEncoder::Configure(const ConfigBlock &block, Error &error)
 {
 	const char *value = block.GetBlockValue("quality");
 	if (value != nullptr) {
 		/* a quality was configured (VBR) */
 
 		char *endptr;
-		encoder.quality = ParseDouble(value, &endptr);
+		quality = ParseDouble(value, &endptr);
 
-		if (*endptr != '\0' || encoder.quality < -1.0 ||
-		    encoder.quality > 10.0) {
+		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
 			error.Format(config_domain,
 				     "quality \"%s\" is not a number in the "
 				     "range -1 to 10",
@@ -90,11 +97,11 @@ vorbis_encoder_configure(VorbisEncoder &encoder,
 			return false;
 		}
 
-		encoder.quality = -2.0;
+		quality = -2.0;
 
 		char *endptr;
-		encoder.bitrate = ParseInt(value, &endptr);
-		if (*endptr != '\0' || encoder.bitrate <= 0) {
+		bitrate = ParseInt(value, &endptr);
+		if (*endptr != '\0' || bitrate <= 0) {
 			error.Set(config_domain,
 				  "bitrate should be a positive integer");
 			return false;
@@ -110,7 +117,7 @@ vorbis_encoder_init(const ConfigBlock &block, Error &error)
 	auto *encoder = new VorbisEncoder();
 
 	/* load configuration from "block" */
-	if (!vorbis_encoder_configure(*encoder, block, error)) {
+	if (!encoder->Configure(block, error)) {
 		/* configuration has failed, roll back and return error */
 		delete encoder;
 		return nullptr;
@@ -129,64 +136,64 @@ vorbis_encoder_finish(Encoder *_encoder)
 	delete encoder;
 }
 
-static bool
-vorbis_encoder_reinit(VorbisEncoder &encoder, Error &error)
+bool
+VorbisEncoder::Reinit(Error &error)
 {
-	vorbis_info_init(&encoder.vi);
+	vorbis_info_init(&vi);
 
-	if (encoder.quality >= -1.0) {
+	if (quality >= -1.0) {
 		/* a quality was configured (VBR) */
 
-		if (0 != vorbis_encode_init_vbr(&encoder.vi,
-						encoder.audio_format.channels,
-						encoder.audio_format.sample_rate,
-						encoder.quality * 0.1)) {
+		if (0 != vorbis_encode_init_vbr(&vi,
+						audio_format.channels,
+						audio_format.sample_rate,
+						quality * 0.1)) {
 			error.Set(vorbis_encoder_domain,
 				  "error initializing vorbis vbr");
-			vorbis_info_clear(&encoder.vi);
+			vorbis_info_clear(&vi);
 			return false;
 		}
 	} else {
 		/* a bit rate was configured */
 
-		if (0 != vorbis_encode_init(&encoder.vi,
-					    encoder.audio_format.channels,
-					    encoder.audio_format.sample_rate, -1.0,
-					    encoder.bitrate * 1000, -1.0)) {
+		if (0 != vorbis_encode_init(&vi,
+					    audio_format.channels,
+					    audio_format.sample_rate, -1.0,
+					    bitrate * 1000, -1.0)) {
 			error.Set(vorbis_encoder_domain,
 				  "error initializing vorbis encoder");
-			vorbis_info_clear(&encoder.vi);
+			vorbis_info_clear(&vi);
 			return false;
 		}
 	}
 
-	vorbis_analysis_init(&encoder.vd, &encoder.vi);
-	vorbis_block_init(&encoder.vd, &encoder.vb);
-	encoder.stream.Initialize(GenerateOggSerial());
+	vorbis_analysis_init(&vd, &vi);
+	vorbis_block_init(&vd, &vb);
+	stream.Initialize(GenerateOggSerial());
 
 	return true;
 }
 
-static void
-vorbis_encoder_headerout(VorbisEncoder &encoder, vorbis_comment &vc)
+void
+VorbisEncoder::HeaderOut(vorbis_comment &vc)
 {
 	ogg_packet packet, comments, codebooks;
 
-	vorbis_analysis_headerout(&encoder.vd, &vc,
+	vorbis_analysis_headerout(&vd, &vc,
 				  &packet, &comments, &codebooks);
 
-	encoder.stream.PacketIn(packet);
-	encoder.stream.PacketIn(comments);
-	encoder.stream.PacketIn(codebooks);
+	stream.PacketIn(packet);
+	stream.PacketIn(comments);
+	stream.PacketIn(codebooks);
 }
 
-static void
-vorbis_encoder_send_header(VorbisEncoder &encoder)
+void
+VorbisEncoder::SendHeader()
 {
 	vorbis_comment vc;
 
 	vorbis_comment_init(&vc);
-	vorbis_encoder_headerout(encoder, vc);
+	HeaderOut(vc);
 	vorbis_comment_clear(&vc);
 }
 
@@ -201,21 +208,21 @@ vorbis_encoder_open(Encoder *_encoder,
 
 	encoder.audio_format = audio_format;
 
-	if (!vorbis_encoder_reinit(encoder, error))
+	if (!encoder.Reinit(error))
 		return false;
 
-	vorbis_encoder_send_header(encoder);
+	encoder.SendHeader();
 
 	return true;
 }
 
-static void
-vorbis_encoder_clear(VorbisEncoder &encoder)
+void
+VorbisEncoder::Clear()
 {
-	encoder.stream.Deinitialize();
-	vorbis_block_clear(&encoder.vb);
-	vorbis_dsp_clear(&encoder.vd);
-	vorbis_info_clear(&encoder.vi);
+	stream.Deinitialize();
+	vorbis_block_clear(&vb);
+	vorbis_dsp_clear(&vd);
+	vorbis_info_clear(&vi);
 }
 
 static void
@@ -223,19 +230,19 @@ vorbis_encoder_close(Encoder *_encoder)
 {
 	auto &encoder = *(VorbisEncoder *)_encoder;
 
-	vorbis_encoder_clear(encoder);
+	encoder.Clear();
 }
 
-static void
-vorbis_encoder_blockout(VorbisEncoder &encoder)
+void
+VorbisEncoder::BlockOut()
 {
-	while (vorbis_analysis_blockout(&encoder.vd, &encoder.vb) == 1) {
-		vorbis_analysis(&encoder.vb, nullptr);
-		vorbis_bitrate_addblock(&encoder.vb);
+	while (vorbis_analysis_blockout(&vd, &vb) == 1) {
+		vorbis_analysis(&vb, nullptr);
+		vorbis_bitrate_addblock(&vb);
 
 		ogg_packet packet;
-		while (vorbis_bitrate_flushpacket(&encoder.vd, &packet))
-			encoder.stream.PacketIn(packet);
+		while (vorbis_bitrate_flushpacket(&vd, &packet))
+			stream.PacketIn(packet);
 	}
 }
 
@@ -254,7 +261,7 @@ vorbis_encoder_pre_tag(Encoder *_encoder, gcc_unused Error &error)
 	auto &encoder = *(VorbisEncoder *)_encoder;
 
 	vorbis_analysis_wrote(&encoder.vd, 0);
-	vorbis_encoder_blockout(encoder);
+	encoder.BlockOut();
 
 	/* reinitialize vorbis_dsp_state and vorbis_block to reset the
 	   end-of-stream marker */
@@ -295,7 +302,7 @@ vorbis_encoder_tag(Encoder *_encoder, const Tag &tag,
 
 	/* send that vorbis_comment to the ogg_stream_state */
 
-	vorbis_encoder_headerout(encoder, comment);
+	encoder.HeaderOut(comment);
 	vorbis_comment_clear(&comment);
 
 	return true;
@@ -328,7 +335,7 @@ vorbis_encoder_write(Encoder *_encoder,
 				     encoder.audio_format.channels);
 
 	vorbis_analysis_wrote(&encoder.vd, num_frames);
-	vorbis_encoder_blockout(encoder);
+	encoder.BlockOut();
 	return true;
 }
 
