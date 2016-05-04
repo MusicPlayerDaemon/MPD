@@ -31,7 +31,7 @@
 
 #include <vorbis/vorbisenc.h>
 
-struct vorbis_encoder {
+struct VorbisEncoder {
 	/** the base class */
 	Encoder encoder;
 
@@ -50,13 +50,13 @@ struct vorbis_encoder {
 
 	OggStream stream;
 
-	vorbis_encoder():encoder(vorbis_encoder_plugin) {}
+	VorbisEncoder():encoder(vorbis_encoder_plugin) {}
 };
 
 static constexpr Domain vorbis_encoder_domain("vorbis_encoder");
 
 static bool
-vorbis_encoder_configure(struct vorbis_encoder &encoder,
+vorbis_encoder_configure(VorbisEncoder &encoder,
 			 const ConfigBlock &block, Error &error)
 {
 	const char *value = block.GetBlockValue("quality");
@@ -107,7 +107,7 @@ vorbis_encoder_configure(struct vorbis_encoder &encoder,
 static Encoder *
 vorbis_encoder_init(const ConfigBlock &block, Error &error)
 {
-	vorbis_encoder *encoder = new vorbis_encoder();
+	auto *encoder = new VorbisEncoder();
 
 	/* load configuration from "block" */
 	if (!vorbis_encoder_configure(*encoder, block, error)) {
@@ -122,7 +122,7 @@ vorbis_encoder_init(const ConfigBlock &block, Error &error)
 static void
 vorbis_encoder_finish(Encoder *_encoder)
 {
-	struct vorbis_encoder *encoder = (struct vorbis_encoder *)_encoder;
+	VorbisEncoder *encoder = (VorbisEncoder *)_encoder;
 
 	/* the real libvorbis/libogg cleanup was already performed by
 	   vorbis_encoder_close(), so no real work here */
@@ -130,7 +130,7 @@ vorbis_encoder_finish(Encoder *_encoder)
 }
 
 static bool
-vorbis_encoder_reinit(struct vorbis_encoder &encoder, Error &error)
+vorbis_encoder_reinit(VorbisEncoder &encoder, Error &error)
 {
 	vorbis_info_init(&encoder.vi);
 
@@ -168,7 +168,7 @@ vorbis_encoder_reinit(struct vorbis_encoder &encoder, Error &error)
 }
 
 static void
-vorbis_encoder_headerout(struct vorbis_encoder &encoder, vorbis_comment &vc)
+vorbis_encoder_headerout(VorbisEncoder &encoder, vorbis_comment &vc)
 {
 	ogg_packet packet, comments, codebooks;
 
@@ -181,7 +181,7 @@ vorbis_encoder_headerout(struct vorbis_encoder &encoder, vorbis_comment &vc)
 }
 
 static void
-vorbis_encoder_send_header(struct vorbis_encoder &encoder)
+vorbis_encoder_send_header(VorbisEncoder &encoder)
 {
 	vorbis_comment vc;
 
@@ -195,7 +195,7 @@ vorbis_encoder_open(Encoder *_encoder,
 		    AudioFormat &audio_format,
 		    Error &error)
 {
-	struct vorbis_encoder &encoder = *(struct vorbis_encoder *)_encoder;
+	auto &encoder = *(VorbisEncoder *)_encoder;
 
 	audio_format.format = SampleFormat::FLOAT;
 
@@ -210,7 +210,7 @@ vorbis_encoder_open(Encoder *_encoder,
 }
 
 static void
-vorbis_encoder_clear(struct vorbis_encoder &encoder)
+vorbis_encoder_clear(VorbisEncoder &encoder)
 {
 	encoder.stream.Deinitialize();
 	vorbis_block_clear(&encoder.vb);
@@ -221,13 +221,13 @@ vorbis_encoder_clear(struct vorbis_encoder &encoder)
 static void
 vorbis_encoder_close(Encoder *_encoder)
 {
-	struct vorbis_encoder &encoder = *(struct vorbis_encoder *)_encoder;
+	auto &encoder = *(VorbisEncoder *)_encoder;
 
 	vorbis_encoder_clear(encoder);
 }
 
 static void
-vorbis_encoder_blockout(struct vorbis_encoder &encoder)
+vorbis_encoder_blockout(VorbisEncoder &encoder)
 {
 	while (vorbis_analysis_blockout(&encoder.vd, &encoder.vb) == 1) {
 		vorbis_analysis(&encoder.vb, nullptr);
@@ -242,7 +242,7 @@ vorbis_encoder_blockout(struct vorbis_encoder &encoder)
 static bool
 vorbis_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 {
-	struct vorbis_encoder &encoder = *(struct vorbis_encoder *)_encoder;
+	auto &encoder = *(VorbisEncoder *)_encoder;
 
 	encoder.stream.Flush();
 	return true;
@@ -251,7 +251,7 @@ vorbis_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
 static bool
 vorbis_encoder_pre_tag(Encoder *_encoder, gcc_unused Error &error)
 {
-	struct vorbis_encoder &encoder = *(struct vorbis_encoder *)_encoder;
+	auto &encoder = *(VorbisEncoder *)_encoder;
 
 	vorbis_analysis_wrote(&encoder.vd, 0);
 	vorbis_encoder_blockout(encoder);
@@ -281,7 +281,7 @@ static bool
 vorbis_encoder_tag(Encoder *_encoder, const Tag &tag,
 		   gcc_unused Error &error)
 {
-	struct vorbis_encoder &encoder = *(struct vorbis_encoder *)_encoder;
+	auto &encoder = *(VorbisEncoder *)_encoder;
 	vorbis_comment comment;
 
 	/* write the vorbis_comment object */
@@ -315,7 +315,7 @@ vorbis_encoder_write(Encoder *_encoder,
 		     const void *data, size_t length,
 		     gcc_unused Error &error)
 {
-	struct vorbis_encoder &encoder = *(struct vorbis_encoder *)_encoder;
+	auto &encoder = *(VorbisEncoder *)_encoder;
 
 	unsigned num_frames = length / encoder.audio_format.GetFrameSize();
 
@@ -335,7 +335,7 @@ vorbis_encoder_write(Encoder *_encoder,
 static size_t
 vorbis_encoder_read(Encoder *_encoder, void *dest, size_t length)
 {
-	struct vorbis_encoder &encoder = *(struct vorbis_encoder *)_encoder;
+	auto &encoder = *(VorbisEncoder *)_encoder;
 
 	return encoder.stream.PageOut(dest, length);
 }
