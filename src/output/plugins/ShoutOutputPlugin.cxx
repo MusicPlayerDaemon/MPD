@@ -44,7 +44,7 @@ struct ShoutOutput final {
 	shout_t *shout_conn;
 	shout_metadata_t *shout_meta;
 
-	Encoder *encoder;
+	Encoder *encoder = nullptr;
 
 	float quality = -2.0;
 	int bitrate = -1;
@@ -81,6 +81,9 @@ ShoutOutput::~ShoutOutput()
 	shout_init_count--;
 	if (shout_init_count == 0)
 		shout_shutdown();
+
+	if (encoder != nullptr)
+		encoder->Dispose();
 }
 
 static const EncoderPlugin *
@@ -365,9 +368,6 @@ static void
 my_shout_finish_driver(AudioOutput *ao)
 {
 	ShoutOutput *sd = (ShoutOutput *)ao;
-
-	sd->encoder->Dispose();
-
 	delete sd;
 }
 
