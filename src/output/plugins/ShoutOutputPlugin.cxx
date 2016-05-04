@@ -58,12 +58,7 @@ struct ShoutOutput final {
 		 shout_conn(shout_new()),
 		 shout_meta(shout_metadata_new()) {}
 
-	~ShoutOutput() {
-		if (shout_meta != nullptr)
-			shout_metadata_free(shout_meta);
-		if (shout_conn != nullptr)
-			shout_free(shout_conn);
-	}
+	~ShoutOutput();
 
 	bool Initialize(const ConfigBlock &block, Error &error) {
 		return base.Configure(block, error);
@@ -75,6 +70,18 @@ struct ShoutOutput final {
 static int shout_init_count;
 
 static constexpr Domain shout_output_domain("shout_output");
+
+ShoutOutput::~ShoutOutput()
+{
+	if (shout_meta != nullptr)
+		shout_metadata_free(shout_meta);
+	if (shout_conn != nullptr)
+		shout_free(shout_conn);
+
+	shout_init_count--;
+	if (shout_init_count == 0)
+		shout_shutdown();
+}
 
 static const EncoderPlugin *
 shout_encoder_plugin_get(const char *name)
@@ -271,6 +278,11 @@ ShoutOutput::Configure(const ConfigBlock &block, Error &error)
 static AudioOutput *
 my_shout_init_driver(const ConfigBlock &block, Error &error)
 {
+	if (shout_init_count == 0)
+		shout_init();
+
+	shout_init_count++;
+
 	ShoutOutput *sd = new ShoutOutput();
 	if (!sd->Initialize(block, error)) {
 		delete sd;
@@ -281,11 +293,6 @@ my_shout_init_driver(const ConfigBlock &block, Error &error)
 		delete sd;
 		return nullptr;
 	}
-
-	if (shout_init_count == 0)
-		shout_init();
-
-	shout_init_count++;
 
 	return &sd->base;
 }
@@ -362,11 +369,6 @@ my_shout_finish_driver(AudioOutput *ao)
 	sd->encoder->Dispose();
 
 	delete sd;
-
-	shout_init_count--;
-
-	if (shout_init_count == 0)
-		shout_shutdown();
 }
 
 static void
