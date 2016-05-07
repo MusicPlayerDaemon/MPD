@@ -20,7 +20,6 @@ noinst_LIBRARIES = \
 	libevent.a \
 	libicu.a \
 	libpcm.a \
-	libxiph.a \
 	libconf.a \
 	libtag.a \
 	libinput.a \
@@ -1829,7 +1828,7 @@ test_dump_playlist_LDADD = \
 	$(FLAC_LIBS) \
 	$(DECODER_LIBS) \
 	$(TAG_LIBS) \
-	libxiph.a \
+	$(XIPH_LIBS) \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	libconf.a \
