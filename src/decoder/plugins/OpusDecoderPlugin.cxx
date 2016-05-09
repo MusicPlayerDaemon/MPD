@@ -444,9 +444,11 @@ mpd_opus_scan_stream(InputStream &is,
 	InputStreamReader reader(is);
 	OggSyncState oy(reader);
 
-	ogg_stream_state os;
-	if (!oy.ExpectFirstPage(os))
+	ogg_page first_page;
+	if (!oy.ExpectPage(first_page))
 		return false;
+
+	OggStreamState os(first_page);
 
 	/* read at most 64 more pages */
 	unsigned remaining_pages = 64;
@@ -457,7 +459,7 @@ mpd_opus_scan_stream(InputStream &is,
 
 	ogg_packet packet;
 	while (remaining_packets > 0) {
-		int r = ogg_stream_packetout(&os, &packet);
+		int r = os.PacketOut(packet);
 		if (r < 0) {
 			result = false;
 			break;
@@ -507,8 +509,6 @@ mpd_opus_scan_stream(InputStream &is,
 						      opus_sample_rate);
 		tag_handler_invoke_duration(handler, handler_ctx, duration);
 	}
-
-	ogg_stream_clear(&os);
 
 	return result;
 }
