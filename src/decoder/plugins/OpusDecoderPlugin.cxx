@@ -87,8 +87,6 @@ class MPDOpusDecoder {
 	 */
 	unsigned previous_channels = 0;
 
-	int opus_serialno;
-
 	ogg_int64_t eos_granulepos;
 
 	size_t frame_size;
@@ -247,7 +245,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return DecoderCommand::STOP;
 	}
 
-	opus_serialno = os.GetSerialNo();
+	const auto opus_serialno = os.GetSerialNo();
 
 	/* TODO: parse attributes from the OpusHead (sample rate,
 	   channels, ...) */
