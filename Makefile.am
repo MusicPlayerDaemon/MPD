@@ -597,8 +597,7 @@ libxiph_a_SOURCES += \
 	src/lib/xiph/OggUtil.cxx src/lib/xiph/OggUtil.hxx \
 	src/lib/xiph/OggSyncState.hxx \
 	src/lib/xiph/OggPage.hxx \
-	src/lib/xiph/OggStreamState.hxx \
-	src/lib/xiph/OggStream.hxx
+	src/lib/xiph/OggStreamState.hxx
 endif
 
 XIPH_LIBS = libxiph.a
