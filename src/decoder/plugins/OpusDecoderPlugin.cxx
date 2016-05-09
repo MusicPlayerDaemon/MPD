@@ -23,6 +23,7 @@
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
 #include "OggFind.hxx"
+#include "lib/xiph/OggStreamState.hxx"
 #include "lib/xiph/OggSyncState.hxx"
 #include "../DecoderAPI.hxx"
 #include "decoder/Reader.hxx"
@@ -209,11 +210,13 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
 	   EOS packet */
 	DecoderReader reader(decoder, is);
 	OggSyncState oy(reader);
-	ogg_stream_state os;
-	ogg_stream_init(&os, serialno);
 
-	bool result = OggSeekFindEOS(oy, os, packet, is);
-	ogg_stream_clear(&os);
+	bool result;
+
+	{
+		OggStreamState os(serialno);
+		result = OggSeekFindEOS(oy, os, packet, is);
+	}
 
 	/* restore the previous file position */
 	is.LockSeek(old_offset, IgnoreError());
