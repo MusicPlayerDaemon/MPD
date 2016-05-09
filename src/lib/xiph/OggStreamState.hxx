@@ -65,6 +65,10 @@ public:
 
 	/* decoding */
 
+	bool PageIn(ogg_page &page) {
+		return ogg_stream_pagein(&state, &page) == 0;
+	}
+
 	int PacketOut(ogg_packet &packet) {
 		return ogg_stream_packetout(&state, &packet);
 	}
