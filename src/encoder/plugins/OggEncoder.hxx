@@ -22,7 +22,8 @@
 
 #include "config.h"
 #include "../EncoderAPI.hxx"
-#include "lib/xiph/OggStream.hxx"
+#include "lib/xiph/OggStreamState.hxx"
+#include "lib/xiph/OggPage.hxx"
 #include "lib/xiph/OggSerial.hxx"
 
 #include <ogg/ogg.h>
@@ -32,27 +33,44 @@
  * with Ogg container output.
  */
 class OggEncoder : public Encoder {
+	/* initialize "flush" to true, so the caller gets the full
+	   headers on the first read */
+	bool flush = true;
+
 protected:
-	OggStream stream;
+	OggStreamState stream;
 
 public:
 	OggEncoder(bool _implements_tag)
-		:Encoder(_implements_tag) {
-		stream.Initialize(GenerateOggSerial());
-	}
-
-	~OggEncoder() override {
-		stream.Deinitialize();
+		:Encoder(_implements_tag),
+		 stream(GenerateOggSerial()) {
 	}
 
 	/* virtual methods from class Encoder */
 	bool Flush(Error &) override {
-		stream.Flush();
+		Flush();
 		return true;
 	}
 
 	size_t Read(void *dest, size_t length) override {
-		return stream.PageOut(dest, length);
+		ogg_page page;
+		bool success = stream.PageOut(page);
+		if (!success) {
+			if (flush) {
+				flush = false;
+				success = stream.Flush(page);
+			}
+
+			if (!success)
+				return 0;
+		}
+
+		return ReadPage(page, dest, length);
+	}
+
+protected:
+	void Flush() {
+		flush = true;
 	}
 };
 

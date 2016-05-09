@@ -244,7 +244,7 @@ VorbisEncoder::PreTag(gcc_unused Error &error)
 	vorbis_analysis_init(&vd, &vi);
 	vorbis_block_init(&vd, &vb);
 
-	stream.Flush();
+	Flush();
 	return true;
 }
 
