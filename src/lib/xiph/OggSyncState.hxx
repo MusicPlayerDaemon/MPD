@@ -60,10 +60,6 @@ public:
 		return OggExpectPage(oy, page, reader);
 	}
 
-	bool ExpectFirstPage(ogg_stream_state &os) {
-		return OggExpectFirstPage(oy, os, reader);
-	}
-
 	bool ExpectPageIn(ogg_stream_state &os) {
 		return OggExpectPageIn(oy, os, reader);
 	}

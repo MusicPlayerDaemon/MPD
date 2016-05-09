@@ -50,18 +50,6 @@ OggExpectPage(ogg_sync_state &oy, ogg_page &page, Reader &reader)
 }
 
 bool
-OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os, Reader &reader)
-{
-	ogg_page page;
-	if (!OggExpectPage(oy, page, reader))
-		return false;
-
-	ogg_stream_init(&os, ogg_page_serialno(&page));
-	ogg_stream_pagein(&os, &page);
-	return true;
-}
-
-bool
 OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os, Reader &reader)
 {
 	ogg_page page;
