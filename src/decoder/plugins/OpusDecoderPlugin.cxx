@@ -19,12 +19,12 @@
 
 #include "config.h" /* must be first for large file support */
 #include "OpusDecoderPlugin.h"
+#include "OggDecoder.hxx"
 #include "OpusDomain.hxx"
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
 #include "lib/xiph/OggPacket.hxx"
 #include "lib/xiph/OggFind.hxx"
-#include "lib/xiph/OggVisitor.hxx"
 #include "../DecoderAPI.hxx"
 #include "decoder/Reader.hxx"
 #include "input/Reader.hxx"
@@ -73,10 +73,7 @@ mpd_opus_init(gcc_unused const ConfigBlock &block)
 	return true;
 }
 
-class MPDOpusDecoder final : public OggVisitor {
-	Decoder &decoder;
-	InputStream &input_stream;
-
+class MPDOpusDecoder final : public OggDecoder {
 	OpusDecoder *opus_decoder = nullptr;
 	opus_int16 *output_buffer = nullptr;
 
@@ -88,15 +85,11 @@ class MPDOpusDecoder final : public OggVisitor {
 	 */
 	unsigned previous_channels = 0;
 
-	ogg_int64_t eos_granulepos;
-
 	size_t frame_size;
 
 public:
-	MPDOpusDecoder(DecoderReader &reader)
-		:OggVisitor(reader),
-		 decoder(reader.GetDecoder()),
-		 input_stream(reader.GetInputStream()) {}
+	explicit MPDOpusDecoder(DecoderReader &reader)
+		:OggDecoder(reader) {}
 
 	~MPDOpusDecoder();
 
@@ -106,8 +99,6 @@ public:
 	bool IsInitialized() const {
 		return previous_channels != 0;
 	}
-
-	DecoderCommand HandlePackets();
 
 	bool Seek(uint64_t where_frame);
 
@@ -139,57 +130,6 @@ MPDOpusDecoder::OnOggPacket(const ogg_packet &packet)
 		HandleAudio(packet);
 }
 
-/**
- * Load the end-of-stream packet and restore the previous file
- * position.
- */
-static bool
-LoadEOSPacket(InputStream &is, Decoder &decoder, int serialno,
-	      ogg_packet &packet)
-{
-	if (!is.CheapSeeking())
-		/* we do this for local files only, because seeking
-		   around remote files is expensive and not worth the
-		   trouble */
-		return false;
-
-	const auto old_offset = is.GetOffset();
-
-	/* create temporary Ogg objects for seeking and parsing the
-	   EOS packet */
-
-	bool result;
-
-	{
-		DecoderReader reader(decoder, is);
-		OggSyncState oy(reader);
-		OggStreamState os(serialno);
-		result = OggSeekFindEOS(oy, os, packet, is);
-	}
-
-	/* restore the previous file position */
-	is.LockSeek(old_offset, IgnoreError());
-
-	return result;
-}
-
-/**
- * Load the end-of-stream granulepos and restore the previous file
- * position.
- *
- * @return -1 on error
- */
-gcc_pure
-static ogg_int64_t
-LoadEOSGranulePos(InputStream &is, Decoder &decoder, int serialno)
-{
-	ogg_packet packet;
-	if (!LoadEOSPacket(is, decoder, serialno, packet))
-		return -1;
-
-	return packet.granulepos;
-}
-
 void
 MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 {
@@ -210,8 +150,6 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 		throw FormatRuntimeError("Next stream has different channels (%u -> %u)",
 					 previous_channels, channels);
 
-	const auto opus_serialno = GetSerialNo();
-
 	/* TODO: parse attributes from the OpusHead (sample rate,
 	   channels, ...) */
 
@@ -229,8 +167,7 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 		return;
 	}
 
-	eos_granulepos = LoadEOSGranulePos(input_stream, decoder,
-					   opus_serialno);
+	const auto eos_granulepos = UpdateEndGranulePos();
 	const auto duration = eos_granulepos >= 0
 		? SignedSongTime::FromScale<uint64_t>(eos_granulepos,
 						      opus_sample_rate)
@@ -254,7 +191,7 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 void
 MPDOpusDecoder::OnOggEnd()
 {
-	if (eos_granulepos < 0 && IsInitialized()) {
+	if (!IsSeekable() && IsInitialized()) {
 		/* allow chaining of (unseekable) streams */
 		assert(opus_decoder != nullptr);
 		assert(output_buffer != nullptr);
@@ -318,23 +255,13 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 bool
 MPDOpusDecoder::Seek(uint64_t where_frame)
 {
-	assert(eos_granulepos > 0);
+	assert(IsSeekable());
 	assert(input_stream.IsSeekable());
 	assert(input_stream.KnownSize());
 
 	const ogg_int64_t where_granulepos(where_frame);
 
-	/* interpolate the file offset where we expect to find the
-	   given granule position */
-	/* TODO: implement binary search */
-	offset_type offset(where_granulepos * input_stream.GetSize()
-			   / eos_granulepos);
-
-	if (!input_stream.LockSeek(offset, IgnoreError()))
-		return false;
-
-	PostSeek();
-	return true;
+	return SeekGranulePos(where_granulepos, IgnoreError());
 }
 
 static void
