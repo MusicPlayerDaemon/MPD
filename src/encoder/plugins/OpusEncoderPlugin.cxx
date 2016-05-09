@@ -368,7 +368,7 @@ OpusEncoder::Read(void *dest, size_t length)
 	else if (packetno == 1)
 		GenerateTags();
 
-	return stream.PageOut(dest, length);
+	return OggEncoder::Read(dest, length);
 }
 
 }
