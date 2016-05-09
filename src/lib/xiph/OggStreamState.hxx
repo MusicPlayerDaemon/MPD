@@ -36,6 +36,15 @@ public:
 		ogg_stream_init(&state, serialno);
 	}
 
+	/**
+	 * Initialize a decoding #ogg_stream_state with the first
+	 * page.
+	 */
+	explicit OggStreamState(ogg_page &page) {
+		ogg_stream_init(&state, ogg_page_serialno(&page));
+		PageIn(page);
+	}
+
 	~OggStreamState() {
 		ogg_stream_clear(&state);
 	}
