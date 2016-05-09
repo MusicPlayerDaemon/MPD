@@ -585,6 +585,7 @@ if HAVE_XIPH
 noinst_LIBRARIES += libxiph.a
 
 libxiph_a_SOURCES = \
+	src/lib/xiph/VorbisComment.hxx \
 	src/lib/xiph/VorbisComments.cxx src/lib/xiph/VorbisComments.hxx \
 	src/lib/xiph/XiphTags.cxx src/lib/xiph/XiphTags.hxx
 libxiph_a_CPPFLAGS = $(AM_CPPFLAGS) \

@@ -20,6 +20,7 @@
 #include "config.h"
 #include "VorbisEncoderPlugin.hxx"
 #include "OggEncoder.hxx"
+#include "lib/xiph/VorbisComment.hxx"
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
 #include "util/StringUtil.hxx"
@@ -202,11 +203,8 @@ VorbisEncoder::HeaderOut(vorbis_comment &vc)
 void
 VorbisEncoder::SendHeader()
 {
-	vorbis_comment vc;
-
-	vorbis_comment_init(&vc);
+	VorbisComment vc;
 	HeaderOut(vc);
-	vorbis_comment_clear(&vc);
 }
 
 Encoder *
@@ -260,24 +258,22 @@ VorbisEncoder::PreTag(gcc_unused Error &error)
 }
 
 static void
-copy_tag_to_vorbis_comment(vorbis_comment *vc, const Tag &tag)
+copy_tag_to_vorbis_comment(VorbisComment &vc, const Tag &tag)
 {
 	for (const auto &item : tag) {
 		char name[64];
 		ToUpperASCII(name, tag_item_names[item.type], sizeof(name));
-		vorbis_comment_add_tag(vc, name, item.value);
+		vc.AddTag(name, item.value);
 	}
 }
 
 bool
 VorbisEncoder::SendTag(const Tag &tag, gcc_unused Error &error)
 {
-	vorbis_comment comment;
-
 	/* write the vorbis_comment object */
 
-	vorbis_comment_init(&comment);
-	copy_tag_to_vorbis_comment(&comment, tag);
+	VorbisComment comment;
+	copy_tag_to_vorbis_comment(comment, tag);
 
 	/* reset ogg_stream_state and begin a new stream */
 
@@ -286,7 +282,6 @@ VorbisEncoder::SendTag(const Tag &tag, gcc_unused Error &error)
 	/* send that vorbis_comment to the ogg_stream_state */
 
 	HeaderOut(comment);
-	vorbis_comment_clear(&comment);
 
 	return true;
 }
