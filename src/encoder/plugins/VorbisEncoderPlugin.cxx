@@ -163,7 +163,6 @@ VorbisEncoder::Open(float quality, int bitrate, AudioFormat &_audio_format,
 						quality * 0.1)) {
 			error.Set(vorbis_encoder_domain,
 				  "error initializing vorbis vbr");
-			vorbis_info_clear(&vi);
 			return false;
 		}
 	} else {
@@ -175,7 +174,6 @@ VorbisEncoder::Open(float quality, int bitrate, AudioFormat &_audio_format,
 					    bitrate * 1000, -1.0)) {
 			error.Set(vorbis_encoder_domain,
 				  "error initializing vorbis encoder");
-			vorbis_info_clear(&vi);
 			return false;
 		}
 	}
