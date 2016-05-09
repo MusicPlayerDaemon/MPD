@@ -76,8 +76,8 @@ class MPDOpusDecoder {
 
 	ogg_stream_state os;
 
-	OpusDecoder *opus_decoder;
-	opus_int16 *output_buffer;
+	OpusDecoder *opus_decoder = nullptr;
+	opus_int16 *output_buffer = nullptr;
 
 	/**
 	 * If non-zero, then a previous Opus stream has been found
@@ -85,9 +85,9 @@ class MPDOpusDecoder {
 	 * nullptr, then its end-of-stream packet has been found
 	 * already.
 	 */
-	unsigned previous_channels;
+	unsigned previous_channels = 0;
 
-	bool os_initialized;
+	bool os_initialized = false;
 
 	int opus_serialno;
 
@@ -98,11 +98,7 @@ class MPDOpusDecoder {
 public:
 	MPDOpusDecoder(Decoder &_decoder,
 		       InputStream &_input_stream)
-		:decoder(_decoder), input_stream(_input_stream),
-		 opus_decoder(nullptr),
-		 output_buffer(nullptr),
-		 previous_channels(0),
-		 os_initialized(false) {}
+		:decoder(_decoder), input_stream(_input_stream) {}
 	~MPDOpusDecoder();
 
 	bool ReadFirstPage(OggSyncState &oy);
