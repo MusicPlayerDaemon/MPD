@@ -39,7 +39,9 @@ class VorbisEncoder final : public OggEncoder {
 
 public:
 	VorbisEncoder()
-		:OggEncoder(true) {}
+		:OggEncoder(true) {
+		vorbis_info_init(&vi);
+	}
 
 	virtual ~VorbisEncoder() {
 		vorbis_block_clear(&vb);
@@ -151,8 +153,6 @@ VorbisEncoder::Open(float quality, int bitrate, AudioFormat &_audio_format,
 {
 	_audio_format.format = SampleFormat::FLOAT;
 	audio_format = _audio_format;
-
-	vorbis_info_init(&vi);
 
 	if (quality >= -1.0) {
 		/* a quality was configured (VBR) */
