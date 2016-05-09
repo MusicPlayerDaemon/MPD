@@ -201,7 +201,7 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
 	if (!is.CheapSeeking())
 		/* we do this for local files only, because seeking
 		   around remote files is expensive and not worth the
-		   troubl */
+		   trouble */
 		return false;
 
 	const auto old_offset = is.GetOffset();
