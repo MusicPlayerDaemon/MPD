@@ -42,7 +42,9 @@ public:
 		:OggEncoder(true) {}
 
 	virtual ~VorbisEncoder() {
-		Clear();
+		vorbis_block_clear(&vb);
+		vorbis_dsp_clear(&vd);
+		vorbis_info_clear(&vi);
 	}
 
 	bool Open(float quality, int bitrate, AudioFormat &audio_format,
@@ -62,7 +64,6 @@ private:
 	void HeaderOut(vorbis_comment &vc);
 	void SendHeader();
 	void BlockOut();
-	void Clear();
 };
 
 class PreparedVorbisEncoder final : public PreparedEncoder {
@@ -217,14 +218,6 @@ PreparedVorbisEncoder::Open(AudioFormat &audio_format, Error &error)
 	}
 
 	return e;
-}
-
-void
-VorbisEncoder::Clear()
-{
-	vorbis_block_clear(&vb);
-	vorbis_dsp_clear(&vd);
-	vorbis_info_clear(&vi);
 }
 
 void
