@@ -208,12 +208,12 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
 
 	/* create temporary Ogg objects for seeking and parsing the
 	   EOS packet */
-	DecoderReader reader(decoder, is);
-	OggSyncState oy(reader);
 
 	bool result;
 
 	{
+		DecoderReader reader(decoder, is);
+		OggSyncState oy(reader);
 		OggStreamState os(serialno);
 		result = OggSeekFindEOS(oy, os, packet, is);
 	}
