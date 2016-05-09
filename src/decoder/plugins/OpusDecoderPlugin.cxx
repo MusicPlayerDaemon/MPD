@@ -74,7 +74,7 @@ class MPDOpusDecoder {
 	Decoder &decoder;
 	InputStream &input_stream;
 
-	ogg_stream_state os;
+	OggStreamState os;
 
 	OpusDecoder *opus_decoder = nullptr;
 	opus_int16 *output_buffer = nullptr;
@@ -87,8 +87,6 @@ class MPDOpusDecoder {
 	 */
 	unsigned previous_channels = 0;
 
-	bool os_initialized = false;
-
 	int opus_serialno;
 
 	ogg_int64_t eos_granulepos;
@@ -97,11 +95,13 @@ class MPDOpusDecoder {
 
 public:
 	MPDOpusDecoder(Decoder &_decoder,
-		       InputStream &_input_stream)
-		:decoder(_decoder), input_stream(_input_stream) {}
+		       InputStream &_input_stream,
+		       ogg_page &first_page)
+		:decoder(_decoder), input_stream(_input_stream),
+		 os(first_page) {}
+
 	~MPDOpusDecoder();
 
-	bool ReadFirstPage(OggSyncState &oy);
 	bool ReadNextPage(OggSyncState &oy);
 
 	DecoderCommand HandlePackets();
@@ -120,37 +120,20 @@ MPDOpusDecoder::~MPDOpusDecoder()
 
 	if (opus_decoder != nullptr)
 		opus_decoder_destroy(opus_decoder);
-
-	if (os_initialized)
-		ogg_stream_clear(&os);
-}
-
-inline bool
-MPDOpusDecoder::ReadFirstPage(OggSyncState &oy)
-{
-	assert(!os_initialized);
-
-	if (!oy.ExpectFirstPage(os))
-		return false;
-
-	os_initialized = true;
-	return true;
 }
 
 inline bool
 MPDOpusDecoder::ReadNextPage(OggSyncState &oy)
 {
-	assert(os_initialized);
-
 	ogg_page page;
 	if (!oy.ExpectPage(page))
 		return false;
 
 	const auto page_serialno = ogg_page_serialno(&page);
-	if (page_serialno != os.serialno)
-		ogg_stream_reset_serialno(&os, page_serialno);
+	if (page_serialno != os.GetSerialNo())
+		os.Reinitialize(page_serialno);
 
-	ogg_stream_pagein(&os, &page);
+	os.PageIn(page);
 	return true;
 }
 
@@ -158,7 +141,7 @@ inline DecoderCommand
 MPDOpusDecoder::HandlePackets()
 {
 	ogg_packet packet;
-	while (ogg_stream_packetout(&os, &packet) == 1) {
+	while (os.PacketOut(packet) == 1) {
 		auto cmd = HandlePacket(packet);
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
@@ -264,7 +247,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return DecoderCommand::STOP;
 	}
 
-	opus_serialno = os.serialno;
+	opus_serialno = os.GetSerialNo();
 
 	/* TODO: parse attributes from the OpusHead (sample rate,
 	   channels, ...) */
@@ -407,12 +390,14 @@ mpd_opus_stream_decode(Decoder &decoder,
 	   moved it */
 	input_stream.LockRewind(IgnoreError());
 
-	MPDOpusDecoder d(decoder, input_stream);
 	DecoderReader reader(decoder, input_stream);
 	OggSyncState oy(reader);
 
-	if (!d.ReadFirstPage(oy))
+	ogg_page page;
+	if (!oy.ExpectPage(page))
 		return;
+
+	MPDOpusDecoder d(decoder, input_stream, page);
 
 	while (true) {
 		auto cmd = d.HandlePackets();
