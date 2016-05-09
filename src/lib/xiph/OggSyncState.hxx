@@ -21,11 +21,12 @@
 #define MPD_OGG_SYNC_STATE_HXX
 
 #include "check.h"
-#include "OggUtil.hxx"
 
 #include <ogg/ogg.h>
 
 #include <stddef.h>
+
+class Reader;
 
 /**
  * Wrapper for an ogg_sync_state.
@@ -52,25 +53,15 @@ public:
 		ogg_sync_reset(&oy);
 	}
 
-	bool Feed(size_t size) {
-		return OggFeed(oy, reader, size);
-	}
+	bool Feed(size_t size);
 
-	bool ExpectPage(ogg_page &page) {
-		return OggExpectPage(oy, page, reader);
-	}
+	bool ExpectPage(ogg_page &page);
 
-	bool ExpectPageIn(ogg_stream_state &os) {
-		return OggExpectPageIn(oy, os, reader);
-	}
+	bool ExpectPageIn(ogg_stream_state &os);
 
-	bool ExpectPageSeek(ogg_page &page) {
-		return OggExpectPageSeek(oy, page, reader);
-	}
+	bool ExpectPageSeek(ogg_page &page);
 
-	bool ExpectPageSeekIn(ogg_stream_state &os) {
-		return OggExpectPageSeekIn(oy, os, reader);
-	}
+	bool ExpectPageSeekIn(ogg_stream_state &os);
 };
 
 #endif

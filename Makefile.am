@@ -594,8 +594,7 @@ libxiph_a_CPPFLAGS = $(AM_CPPFLAGS) \
 if HAVE_OGG
 libxiph_a_SOURCES += \
 	src/lib/xiph/OggSerial.cxx src/lib/xiph/OggSerial.hxx \
-	src/lib/xiph/OggUtil.cxx src/lib/xiph/OggUtil.hxx \
-	src/lib/xiph/OggSyncState.hxx \
+	src/lib/xiph/OggSyncState.cxx src/lib/xiph/OggSyncState.hxx \
 	src/lib/xiph/OggPage.hxx \
 	src/lib/xiph/OggStreamState.hxx
 endif
