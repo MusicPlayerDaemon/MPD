@@ -21,12 +21,11 @@
 #define MPD_OGG_STREAM_HXX
 
 #include "check.h"
+#include "OggPage.hxx"
 
 #include <ogg/ogg.h>
 
 #include <assert.h>
-#include <string.h>
-#include <stdint.h>
 
 class OggStream {
 	ogg_stream_state state;
@@ -101,26 +100,12 @@ public:
 		return result != 0;
 	}
 
-	size_t PageOut(void *_buffer, size_t size) {
+	size_t PageOut(void *buffer, size_t size) {
 		ogg_page page;
 		if (!PageOut(page))
 			return 0;
 
-		assert(page.header_len > 0 || page.body_len > 0);
-
-		size_t header_len = (size_t)page.header_len;
-		size_t body_len = (size_t)page.body_len;
-		assert(header_len <= size);
-
-		if (header_len + body_len > size)
-			/* TODO: better overflow handling */
-			body_len = size - header_len;
-
-		uint8_t *buffer = (uint8_t *)_buffer;
-		memcpy(buffer, page.header, header_len);
-		memcpy(buffer + header_len, page.body, body_len);
-
-		return header_len + body_len;
+		return ReadPage(page, buffer, size);
 	}
 };
 
