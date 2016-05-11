@@ -102,6 +102,13 @@ public:
 
 	~MPDOpusDecoder();
 
+	/**
+	 * Has decoder_initialized() been called yet?
+	 */
+	bool IsInitialized() const {
+		return previous_channels != 0;
+	}
+
 	bool ReadNextPage(OggSyncState &oy);
 
 	DecoderCommand HandlePackets();
@@ -240,9 +247,9 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	}
 
 	assert(opus_decoder == nullptr);
-	assert((previous_channels == 0) == (output_buffer == nullptr));
+	assert(IsInitialized() == (output_buffer != nullptr));
 
-	if (previous_channels != 0 && channels != previous_channels) {
+	if (IsInitialized() && channels != previous_channels) {
 		FormatWarning(opus_domain,
 			      "Next stream has different channels (%u -> %u)",
 			      previous_channels, channels);
@@ -263,7 +270,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return DecoderCommand::STOP;
 	}
 
-	if (previous_channels != 0) {
+	if (IsInitialized()) {
 		/* decoder was already initialized by the previous
 		   stream; skip the rest of this method */
 		LogDebug(opus_domain, "Found another stream");
@@ -293,7 +300,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 inline DecoderCommand
 MPDOpusDecoder::HandleEOS()
 {
-	if (eos_granulepos < 0 && previous_channels != 0) {
+	if (eos_granulepos < 0 && IsInitialized()) {
 		/* allow chaining of (unseekable) streams */
 		assert(opus_decoder != nullptr);
 		assert(output_buffer != nullptr);
