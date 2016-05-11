@@ -105,13 +105,15 @@ public:
 	bool ReadNextPage(OggSyncState &oy);
 
 	DecoderCommand HandlePackets();
+
+	bool Seek(OggSyncState &oy, uint64_t where_frame);
+
+private:
 	DecoderCommand HandlePacket(const ogg_packet &packet);
 	DecoderCommand HandleBOS(const ogg_packet &packet);
 	DecoderCommand HandleEOS();
 	DecoderCommand HandleTags(const ogg_packet &packet);
 	DecoderCommand HandleAudio(const ogg_packet &packet);
-
-	bool Seek(OggSyncState &oy, uint64_t where_frame);
 };
 
 MPDOpusDecoder::~MPDOpusDecoder()
