@@ -23,8 +23,7 @@
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
 #include "OggFind.hxx"
-#include "lib/xiph/OggStreamState.hxx"
-#include "lib/xiph/OggSyncState.hxx"
+#include "lib/xiph/OggVisitor.hxx"
 #include "../DecoderAPI.hxx"
 #include "decoder/Reader.hxx"
 #include "input/Reader.hxx"
@@ -73,12 +72,9 @@ mpd_opus_init(gcc_unused const ConfigBlock &block)
 	return true;
 }
 
-class MPDOpusDecoder {
+class MPDOpusDecoder final : public OggVisitor {
 	Decoder &decoder;
 	InputStream &input_stream;
-
-	OggSyncState oy;
-	OggStreamState os;
 
 	OpusDecoder *opus_decoder = nullptr;
 	opus_int16 *output_buffer = nullptr;
@@ -97,20 +93,11 @@ class MPDOpusDecoder {
 
 public:
 	MPDOpusDecoder(DecoderReader &reader)
-		:decoder(reader.GetDecoder()),
-		 input_stream(reader.GetInputStream()),
-		 oy(reader),
-		 os(0) {}
+		:OggVisitor(reader),
+		 decoder(reader.GetDecoder()),
+		 input_stream(reader.GetInputStream()) {}
 
 	~MPDOpusDecoder();
-
-	/**
-	 * Has the OggStreamState been initialized with the first
-	 * serial?
-	 */
-	bool HasSerial() const {
-		return os.GetSerialNo() != 0;
-	}
 
 	/**
 	 * Has decoder_initialized() been called yet?
@@ -119,18 +106,19 @@ public:
 		return previous_channels != 0;
 	}
 
-	bool ReadNextPage();
-
 	DecoderCommand HandlePackets();
 
 	bool Seek(uint64_t where_frame);
 
 private:
-	DecoderCommand HandlePacket(const ogg_packet &packet);
-	void HandleBOS(const ogg_packet &packet);
-	void HandleEOS();
-	DecoderCommand HandleTags(const ogg_packet &packet);
-	DecoderCommand HandleAudio(const ogg_packet &packet);
+	void HandleTags(const ogg_packet &packet);
+	void HandleAudio(const ogg_packet &packet);
+
+protected:
+	/* virtual methods from class OggVisitor */
+	void OnOggBeginning(const ogg_packet &packet) override;
+	void OnOggPacket(const ogg_packet &packet) override;
+	void OnOggEnd() override;
 };
 
 MPDOpusDecoder::~MPDOpusDecoder()
@@ -141,52 +129,13 @@ MPDOpusDecoder::~MPDOpusDecoder()
 		opus_decoder_destroy(opus_decoder);
 }
 
-inline bool
-MPDOpusDecoder::ReadNextPage()
+void
+MPDOpusDecoder::OnOggPacket(const ogg_packet &packet)
 {
-	ogg_page page;
-	if (!oy.ExpectPage(page))
-		return false;
-
-	const auto page_serialno = ogg_page_serialno(&page);
-	if (page_serialno != os.GetSerialNo())
-		os.Reinitialize(page_serialno);
-
-	os.PageIn(page);
-	return true;
-}
-
-inline DecoderCommand
-MPDOpusDecoder::HandlePackets()
-{
-	ogg_packet packet;
-	while (os.PacketOut(packet) == 1) {
-		auto cmd = HandlePacket(packet);
-		if (cmd != DecoderCommand::NONE)
-			return cmd;
-	}
-
-	return DecoderCommand::NONE;
-}
-
-inline DecoderCommand
-MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
-{
-	if (packet.e_o_s) {
-		HandleEOS();
-		return decoder_get_command(decoder);
-	}
-
-	if (packet.b_o_s) {
-		HandleBOS(packet);
-		return decoder_get_command(decoder);
-	} else if (opus_decoder == nullptr)
-		throw std::runtime_error("BOS packet expected");
-
 	if (IsOpusTags(packet))
-		return HandleTags(packet);
-
-	return HandleAudio(packet);
+		HandleTags(packet);
+	else
+		HandleAudio(packet);
 }
 
 /**
@@ -240,8 +189,8 @@ LoadEOSGranulePos(InputStream &is, Decoder &decoder, int serialno)
 	return packet.granulepos;
 }
 
-inline void
-MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
+void
+MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 {
 	assert(packet.b_o_s);
 
@@ -260,7 +209,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		throw FormatRuntimeError("Next stream has different channels (%u -> %u)",
 					 previous_channels, channels);
 
-	const auto opus_serialno = os.GetSerialNo();
+	const auto opus_serialno = GetSerialNo();
 
 	/* TODO: parse attributes from the OpusHead (sample rate,
 	   channels, ...) */
@@ -295,10 +244,14 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 
 	output_buffer = new opus_int16[opus_output_buffer_frames
 				       * audio_format.channels];
+
+	auto cmd = decoder_get_command(decoder);
+	if (cmd != DecoderCommand::NONE)
+		throw cmd;
 }
 
-inline void
-MPDOpusDecoder::HandleEOS()
+void
+MPDOpusDecoder::OnOggEnd()
 {
 	if (eos_granulepos < 0 && IsInitialized()) {
 		/* allow chaining of (unseekable) streams */
@@ -311,7 +264,7 @@ MPDOpusDecoder::HandleEOS()
 		throw StopDecoder();
 }
 
-inline DecoderCommand
+inline void
 MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 {
 	ReplayGainInfo rgi;
@@ -319,7 +272,6 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 
 	TagBuilder tag_builder;
 
-	DecoderCommand cmd;
 	if (ScanOpusTags(packet.packet, packet.bytes,
 			 &rgi,
 			 add_tag_handler, &tag_builder) &&
@@ -327,14 +279,13 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 		decoder_replay_gain(decoder, &rgi);
 
 		Tag tag = tag_builder.Commit();
-		cmd = decoder_tag(decoder, input_stream, std::move(tag));
-	} else
-		cmd = decoder_get_command(decoder);
-
-	return cmd;
+		auto cmd = decoder_tag(decoder, input_stream, std::move(tag));
+		if (cmd != DecoderCommand::NONE)
+			throw cmd;
+	}
 }
 
-inline DecoderCommand
+inline void
 MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 {
 	assert(opus_decoder != nullptr);
@@ -354,15 +305,13 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 					output_buffer, nbytes,
 					0);
 		if (cmd != DecoderCommand::NONE)
-			return cmd;
+			throw cmd;
 
 		if (packet.granulepos > 0)
 			decoder_timestamp(decoder,
 					  double(packet.granulepos)
 					  / opus_sample_rate);
 	}
-
-	return DecoderCommand::NONE;
 }
 
 bool
@@ -380,7 +329,11 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 	offset_type offset(where_granulepos * input_stream.GetSize()
 			   / eos_granulepos);
 
-	return OggSeekPageAtOffset(oy, os, input_stream, offset);
+	if (!input_stream.LockSeek(offset, IgnoreError()))
+		return false;
+
+	PostSeek();
+	return true;
 }
 
 static void
@@ -399,21 +352,18 @@ mpd_opus_stream_decode(Decoder &decoder,
 	MPDOpusDecoder d(reader);
 
 	while (true) {
-		auto cmd = d.HandlePackets();
-		if (cmd == DecoderCommand::SEEK) {
-			if (d.Seek(decoder_seek_where_frame(decoder)))
-				decoder_command_finished(decoder);
-			else
-				decoder_seek_error(decoder);
-
-			continue;
+		try {
+			d.Visit();
+			break;
+		} catch (DecoderCommand cmd) {
+			if (cmd == DecoderCommand::SEEK) {
+				if (d.Seek(decoder_seek_where_frame(decoder)))
+					decoder_command_finished(decoder);
+				else
+					decoder_seek_error(decoder);
+			} else if (cmd != DecoderCommand::NONE)
+				break;
 		}
-
-		if (cmd != DecoderCommand::NONE)
-			break;
-
-		if (!d.ReadNextPage())
-			break;
 	}
 }
 
