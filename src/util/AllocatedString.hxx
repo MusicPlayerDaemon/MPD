@@ -103,12 +103,12 @@ public:
 		return *this;
 	}
 
-	constexpr bool operator==(std::nullptr_t other) const {
-		return value == other;
+	constexpr bool operator==(std::nullptr_t) const {
+		return value == nullptr;
 	}
 
-	constexpr bool operator!=(std::nullptr_t other) const {
-		return value != other;
+	constexpr bool operator!=(std::nullptr_t) const {
+		return value != nullptr;
 	}
 
 	constexpr bool IsNull() const {
