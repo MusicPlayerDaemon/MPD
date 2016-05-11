@@ -40,6 +40,8 @@
 
 #include <string.h>
 
+namespace {
+
 static constexpr opus_int32 opus_sample_rate = 48000;
 
 /**
@@ -510,6 +512,8 @@ static const char *const opus_mime_types[] = {
 	"audio/opus",
 	nullptr
 };
+
+} /* anonymous namespace */
 
 const struct DecoderPlugin opus_decoder_plugin = {
 	"opus",
