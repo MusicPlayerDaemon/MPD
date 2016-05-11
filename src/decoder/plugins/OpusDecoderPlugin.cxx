@@ -95,12 +95,19 @@ class MPDOpusDecoder {
 
 public:
 	MPDOpusDecoder(Decoder &_decoder,
-		       InputStream &_input_stream,
-		       ogg_page &first_page)
+		       InputStream &_input_stream)
 		:decoder(_decoder), input_stream(_input_stream),
-		 os(first_page) {}
+		 os(0) {}
 
 	~MPDOpusDecoder();
+
+	/**
+	 * Has the OggStreamState been initialized with the first
+	 * serial?
+	 */
+	bool HasSerial() const {
+		return os.GetSerialNo() != 0;
+	}
 
 	/**
 	 * Has decoder_initialized() been called yet?
@@ -402,11 +409,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 	DecoderReader reader(decoder, input_stream);
 	OggSyncState oy(reader);
 
-	ogg_page page;
-	if (!oy.ExpectPage(page))
-		return;
-
-	MPDOpusDecoder d(decoder, input_stream, page);
+	MPDOpusDecoder d(decoder, input_stream);
 
 	while (true) {
 		auto cmd = d.HandlePackets();
