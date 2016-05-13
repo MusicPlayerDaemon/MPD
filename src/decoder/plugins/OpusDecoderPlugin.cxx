@@ -33,6 +33,7 @@
 #include "tag/TagBuilder.hxx"
 #include "input/InputStream.hxx"
 #include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <opus.h>
@@ -176,10 +177,8 @@ MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 
 	if (packet.b_o_s)
 		return HandleBOS(packet);
-	else if (opus_decoder == nullptr) {
-		LogDebug(opus_domain, "BOS packet expected");
-		return DecoderCommand::STOP;
-	}
+	else if (opus_decoder == nullptr)
+		throw std::runtime_error("BOS packet expected");
 
 	if (IsOpusTags(packet))
 		return HandleTags(packet);
@@ -243,27 +242,20 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 {
 	assert(packet.b_o_s);
 
-	if (opus_decoder != nullptr || !IsOpusHead(packet)) {
-		LogDebug(opus_domain, "BOS packet must be OpusHead");
-		return DecoderCommand::STOP;
-	}
+	if (opus_decoder != nullptr || !IsOpusHead(packet))
+		throw std::runtime_error("BOS packet must be OpusHead");
 
 	unsigned channels;
 	if (!ScanOpusHeader(packet.packet, packet.bytes, channels) ||
-	    !audio_valid_channel_count(channels)) {
-		LogDebug(opus_domain, "Malformed BOS packet");
-		return DecoderCommand::STOP;
-	}
+	    !audio_valid_channel_count(channels))
+		throw std::runtime_error("Malformed BOS packet");
 
 	assert(opus_decoder == nullptr);
 	assert(IsInitialized() == (output_buffer != nullptr));
 
-	if (IsInitialized() && channels != previous_channels) {
-		FormatWarning(opus_domain,
-			      "Next stream has different channels (%u -> %u)",
-			      previous_channels, channels);
-		return DecoderCommand::STOP;
-	}
+	if (IsInitialized() && channels != previous_channels)
+		throw FormatRuntimeError("Next stream has different channels (%u -> %u)",
+					 previous_channels, channels);
 
 	const auto opus_serialno = os.GetSerialNo();
 
@@ -273,11 +265,9 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 	int opus_error;
 	opus_decoder = opus_decoder_create(opus_sample_rate, channels,
 					   &opus_error);
-	if (opus_decoder == nullptr) {
-		FormatError(opus_domain, "libopus error: %s",
-			    opus_strerror(opus_error));
-		return DecoderCommand::STOP;
-	}
+	if (opus_decoder == nullptr)
+		throw FormatRuntimeError("libopus error: %s",
+					 opus_strerror(opus_error));
 
 	if (IsInitialized()) {
 		/* decoder was already initialized by the previous
@@ -356,11 +346,9 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 				  packet.bytes,
 				  output_buffer, opus_output_buffer_frames,
 				  0);
-	if (nframes < 0) {
-		FormatError(opus_domain, "libopus error: %s",
-			    opus_strerror(nframes));
-		return DecoderCommand::STOP;
-	}
+	if (nframes < 0)
+		throw FormatRuntimeError("libopus error: %s",
+					 opus_strerror(nframes));
 
 	if (nframes > 0) {
 		const size_t nbytes = nframes * frame_size;
