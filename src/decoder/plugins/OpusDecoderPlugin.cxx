@@ -76,6 +76,7 @@ class MPDOpusDecoder {
 	Decoder &decoder;
 	InputStream &input_stream;
 
+	OggSyncState oy;
 	OggStreamState os;
 
 	OpusDecoder *opus_decoder = nullptr;
@@ -97,6 +98,7 @@ public:
 	MPDOpusDecoder(DecoderReader &reader)
 		:decoder(reader.GetDecoder()),
 		 input_stream(reader.GetInputStream()),
+		 oy(reader),
 		 os(0) {}
 
 	~MPDOpusDecoder();
@@ -116,11 +118,11 @@ public:
 		return previous_channels != 0;
 	}
 
-	bool ReadNextPage(OggSyncState &oy);
+	bool ReadNextPage();
 
 	DecoderCommand HandlePackets();
 
-	bool Seek(OggSyncState &oy, uint64_t where_frame);
+	bool Seek(uint64_t where_frame);
 
 private:
 	DecoderCommand HandlePacket(const ogg_packet &packet);
@@ -139,7 +141,7 @@ MPDOpusDecoder::~MPDOpusDecoder()
 }
 
 inline bool
-MPDOpusDecoder::ReadNextPage(OggSyncState &oy)
+MPDOpusDecoder::ReadNextPage()
 {
 	ogg_page page;
 	if (!oy.ExpectPage(page))
@@ -378,7 +380,7 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 }
 
 bool
-MPDOpusDecoder::Seek(OggSyncState &oy, uint64_t where_frame)
+MPDOpusDecoder::Seek(uint64_t where_frame)
 {
 	assert(eos_granulepos > 0);
 	assert(input_stream.IsSeekable());
@@ -407,14 +409,13 @@ mpd_opus_stream_decode(Decoder &decoder,
 	input_stream.LockRewind(IgnoreError());
 
 	DecoderReader reader(decoder, input_stream);
-	OggSyncState oy(reader);
 
 	MPDOpusDecoder d(reader);
 
 	while (true) {
 		auto cmd = d.HandlePackets();
 		if (cmd == DecoderCommand::SEEK) {
-			if (d.Seek(oy, decoder_seek_where_frame(decoder)))
+			if (d.Seek(decoder_seek_where_frame(decoder)))
 				decoder_command_finished(decoder);
 			else
 				decoder_seek_error(decoder);
@@ -425,7 +426,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 		if (cmd != DecoderCommand::NONE)
 			break;
 
-		if (!d.ReadNextPage(oy))
+		if (!d.ReadNextPage())
 			break;
 	}
 }
