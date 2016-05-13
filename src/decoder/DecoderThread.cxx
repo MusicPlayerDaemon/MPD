@@ -356,6 +356,8 @@ try {
 	return !path_fs.IsNull()
 		? decoder_run_file(decoder, real_uri, path_fs)
 		: decoder_run_stream(decoder, real_uri);
+} catch (StopDecoder) {
+	return true;
 } catch (const std::runtime_error &e) {
 	/* copy the exception to decoder.error */
 

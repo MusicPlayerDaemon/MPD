@@ -47,6 +47,13 @@
 class Error;
 
 /**
+ * Throw an instance of this class to stop decoding the current song
+ * (successfully).  It can be used to jump out of all of a decoder's
+ * stack frames.
+ */
+class StopDecoder {};
+
+/**
  * Notify the player thread that it has finished initialization and
  * that it has read the song's meta data.
  *

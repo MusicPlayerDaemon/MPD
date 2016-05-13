@@ -310,7 +310,7 @@ MPDOpusDecoder::HandleEOS()
 		return decoder_get_command(decoder);
 	}
 
-	return DecoderCommand::STOP;
+	throw StopDecoder();
 }
 
 inline DecoderCommand
