@@ -39,6 +39,14 @@ public:
 	DecoderReader(Decoder &_decoder, InputStream &_is)
 		:decoder(_decoder), is(_is) {}
 
+	Decoder &GetDecoder() {
+		return decoder;
+	}
+
+	InputStream &GetInputStream() {
+		return is;
+	}
+
 	/* virtual methods from class Reader */
 	size_t Read(void *data, size_t size) override;
 };
