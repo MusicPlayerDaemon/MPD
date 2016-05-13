@@ -190,7 +190,7 @@ MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
  * position.
  */
 static bool
-LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
+LoadEOSPacket(InputStream &is, Decoder &decoder, int serialno,
 	      ogg_packet &packet)
 {
 	if (!is.CheapSeeking())
@@ -227,7 +227,7 @@ LoadEOSPacket(InputStream &is, Decoder *decoder, int serialno,
  */
 gcc_pure
 static ogg_int64_t
-LoadEOSGranulePos(InputStream &is, Decoder *decoder, int serialno)
+LoadEOSGranulePos(InputStream &is, Decoder &decoder, int serialno)
 {
 	ogg_packet packet;
 	if (!LoadEOSPacket(is, decoder, serialno, packet))
@@ -284,7 +284,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		return decoder_get_command(decoder);
 	}
 
-	eos_granulepos = LoadEOSGranulePos(input_stream, &decoder,
+	eos_granulepos = LoadEOSGranulePos(input_stream, decoder,
 					   opus_serialno);
 	const auto duration = eos_granulepos >= 0
 		? SignedSongTime::FromScale<uint64_t>(eos_granulepos,
