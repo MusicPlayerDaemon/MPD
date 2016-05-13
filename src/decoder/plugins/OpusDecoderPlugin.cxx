@@ -94,9 +94,9 @@ class MPDOpusDecoder {
 	size_t frame_size;
 
 public:
-	MPDOpusDecoder(Decoder &_decoder,
-		       InputStream &_input_stream)
-		:decoder(_decoder), input_stream(_input_stream),
+	MPDOpusDecoder(DecoderReader &reader)
+		:decoder(reader.GetDecoder()),
+		 input_stream(reader.GetInputStream()),
 		 os(0) {}
 
 	~MPDOpusDecoder();
@@ -409,7 +409,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 	DecoderReader reader(decoder, input_stream);
 	OggSyncState oy(reader);
 
-	MPDOpusDecoder d(decoder, input_stream);
+	MPDOpusDecoder d(reader);
 
 	while (true) {
 		auto cmd = d.HandlePackets();
