@@ -345,6 +345,19 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 }
 
 /**
+ * Decode a song.
+ *
+ * DecoderControl::mutex is not locked.
+ */
+static bool
+DecoderUnlockedRunUri(Decoder &decoder, const char *real_uri, Path path_fs)
+{
+	return !path_fs.IsNull()
+		? decoder_run_file(decoder, real_uri, path_fs)
+		: decoder_run_stream(decoder, real_uri);
+}
+
+/**
  * Decode a song addressed by a #DetachedSong.
  *
  * Caller holds DecoderControl::mutex.
@@ -367,9 +380,7 @@ decoder_run_song(DecoderControl &dc,
 	{
 		const ScopeUnlock unlock(dc.mutex);
 
-		success = !path_fs.IsNull()
-			? decoder_run_file(decoder, uri, path_fs)
-			: decoder_run_stream(decoder, uri);
+		success = DecoderUnlockedRunUri(decoder, uri, path_fs);
 
 		/* flush the last chunk */
 
