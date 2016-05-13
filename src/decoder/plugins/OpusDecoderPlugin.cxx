@@ -127,8 +127,8 @@ public:
 
 private:
 	DecoderCommand HandlePacket(const ogg_packet &packet);
-	DecoderCommand HandleBOS(const ogg_packet &packet);
-	DecoderCommand HandleEOS();
+	void HandleBOS(const ogg_packet &packet);
+	void HandleEOS();
 	DecoderCommand HandleTags(const ogg_packet &packet);
 	DecoderCommand HandleAudio(const ogg_packet &packet);
 };
@@ -172,12 +172,15 @@ MPDOpusDecoder::HandlePackets()
 inline DecoderCommand
 MPDOpusDecoder::HandlePacket(const ogg_packet &packet)
 {
-	if (packet.e_o_s)
-		return HandleEOS();
+	if (packet.e_o_s) {
+		HandleEOS();
+		return decoder_get_command(decoder);
+	}
 
-	if (packet.b_o_s)
-		return HandleBOS(packet);
-	else if (opus_decoder == nullptr)
+	if (packet.b_o_s) {
+		HandleBOS(packet);
+		return decoder_get_command(decoder);
+	} else if (opus_decoder == nullptr)
 		throw std::runtime_error("BOS packet expected");
 
 	if (IsOpusTags(packet))
@@ -237,7 +240,7 @@ LoadEOSGranulePos(InputStream &is, Decoder &decoder, int serialno)
 	return packet.granulepos;
 }
 
-inline DecoderCommand
+inline void
 MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 {
 	assert(packet.b_o_s);
@@ -273,7 +276,7 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 		/* decoder was already initialized by the previous
 		   stream; skip the rest of this method */
 		LogDebug(opus_domain, "Found another stream");
-		return decoder_get_command(decoder);
+		return;
 	}
 
 	eos_granulepos = LoadEOSGranulePos(input_stream, decoder,
@@ -292,11 +295,9 @@ MPDOpusDecoder::HandleBOS(const ogg_packet &packet)
 
 	output_buffer = new opus_int16[opus_output_buffer_frames
 				       * audio_format.channels];
-
-	return decoder_get_command(decoder);
 }
 
-inline DecoderCommand
+inline void
 MPDOpusDecoder::HandleEOS()
 {
 	if (eos_granulepos < 0 && IsInitialized()) {
@@ -306,11 +307,8 @@ MPDOpusDecoder::HandleEOS()
 
 		opus_decoder_destroy(opus_decoder);
 		opus_decoder = nullptr;
-
-		return decoder_get_command(decoder);
-	}
-
-	throw StopDecoder();
+	} else
+		throw StopDecoder();
 }
 
 inline DecoderCommand
