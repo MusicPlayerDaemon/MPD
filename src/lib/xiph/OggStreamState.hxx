@@ -61,6 +61,10 @@ public:
 		return state.serialno;
 	}
 
+	void Reset() {
+		ogg_stream_reset(&state);
+	}
+
 	/* encoding */
 
 	void PacketIn(const ogg_packet &packet) {
