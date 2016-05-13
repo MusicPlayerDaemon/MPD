@@ -24,5 +24,5 @@
 size_t
 DecoderReader::Read(void *data, size_t size)
 {
-	return decoder_read(decoder, is, data, size);
+	return decoder_read(&decoder, is, data, size);
 }

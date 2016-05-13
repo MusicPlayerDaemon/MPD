@@ -32,14 +32,11 @@ class InputStream;
  * interface.
  */
 class DecoderReader final : public Reader {
-	Decoder *const decoder;
+	Decoder &decoder;
 	InputStream &is;
 
 public:
 	DecoderReader(Decoder &_decoder, InputStream &_is)
-		:decoder(&_decoder), is(_is) {}
-
-	DecoderReader(Decoder *_decoder, InputStream &_is)
 		:decoder(_decoder), is(_is) {}
 
 	/* virtual methods from class Reader */
