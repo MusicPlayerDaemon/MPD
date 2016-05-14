@@ -406,7 +406,7 @@ decoder_run_song(DecoderControl &dc,
 
 		/* flush the last chunk */
 
-		if (success && decoder.chunk != nullptr)
+		if (decoder.chunk != nullptr)
 			decoder.FlushChunk();
 	}
 
