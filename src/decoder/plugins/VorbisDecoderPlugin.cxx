@@ -20,13 +20,19 @@
 #include "config.h"
 #include "VorbisDecoderPlugin.h"
 #include "lib/xiph/VorbisComments.hxx"
+#include "lib/xiph/OggSyncState.hxx"
+#include "lib/xiph/OggStreamState.hxx"
+#include "lib/xiph/OggPacket.hxx"
+#include "lib/xiph/OggFind.hxx"
 #include "VorbisDomain.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
+#include "input/Reader.hxx"
 #include "OggCodec.hxx"
 #include "pcm/Interleave.hxx"
 #include "util/Error.hxx"
 #include "util/Macros.hxx"
+#include "util/ScopeExit.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "Log.hxx"
@@ -333,25 +339,66 @@ vorbis_stream_decode(Decoder &decoder,
 	ov_clear(&vf);
 }
 
+static void
+VisitVorbisDuration(InputStream &is,
+		    OggSyncState &sync, OggStreamState &stream,
+		    unsigned sample_rate,
+		    const TagHandler &handler, void *handler_ctx)
+{
+	ogg_packet packet;
+
+	if (!OggSeekFindEOS(sync, stream, packet, is))
+		return;
+
+	const auto duration =
+		SongTime::FromScale<uint64_t>(packet.granulepos,
+					      sample_rate);
+	tag_handler_invoke_duration(handler, handler_ctx, duration);
+}
+
 static bool
 vorbis_scan_stream(InputStream &is,
 		   const TagHandler &handler, void *handler_ctx)
 {
-	VorbisInputStream vis(nullptr, is);
-	OggVorbis_File vf;
+	/* initialize libogg */
 
-	if (!vorbis_is_open(&vis, &vf))
+	InputStreamReader reader(is);
+	OggSyncState sync(reader);
+
+	ogg_page first_page;
+	if (!sync.ExpectPage(first_page))
 		return false;
 
-	const auto total = ov_time_total(&vf, -1);
-	if (total >= 0)
-		tag_handler_invoke_duration(handler, handler_ctx,
-					    SongTime::FromS(total));
+	OggStreamState stream(first_page);
 
-	vorbis_comments_scan(ov_comment(&vf, -1)->user_comments,
+	/* initialize libvorbis */
+
+	vorbis_info vi;
+	vorbis_info_init(&vi);
+	AtScopeExit(&) { vorbis_info_clear(&vi); };
+
+	vorbis_comment vc;
+	vorbis_comment_init(&vc);
+	AtScopeExit(&) { vorbis_comment_clear(&vc); };
+
+	/* feed the first 3 packets to libvorbis */
+
+	for (unsigned i = 0; i < 3; ++i) {
+		ogg_packet packet;
+		if (!OggReadPacket(sync, stream, packet) ||
+		    vorbis_synthesis_headerin(&vi, &vc, &packet) != 0)
+			return false;
+	}
+
+	/* visit the Vorbis comments we just read */
+
+	vorbis_comments_scan(vc.user_comments,
 			     handler, handler_ctx);
 
-	ov_clear(&vf);
+	/* check the song duration by locating the e_o_s packet */
+
+	VisitVorbisDuration(is, sync, stream, vi.rate, handler, handler_ctx);
+
 	return true;
 }
 
