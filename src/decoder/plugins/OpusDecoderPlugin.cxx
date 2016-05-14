@@ -22,6 +22,7 @@
 #include "OpusDomain.hxx"
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
+#include "lib/xiph/OggPacket.hxx"
 #include "lib/xiph/OggFind.hxx"
 #include "lib/xiph/OggVisitor.hxx"
 #include "../DecoderAPI.hxx"
@@ -368,6 +369,45 @@ mpd_opus_stream_decode(Decoder &decoder,
 }
 
 static bool
+ReadAndParseOpusHead(OggSyncState &sync, OggStreamState &stream,
+		     unsigned &channels)
+{
+	ogg_packet packet;
+
+	return OggReadPacket(sync, stream, packet) && packet.b_o_s &&
+		IsOpusHead(packet) &&
+		ScanOpusHeader(packet.packet, packet.bytes, channels) &&
+		audio_valid_channel_count(channels);
+}
+
+static bool
+ReadAndVisitOpusTags(OggSyncState &sync, OggStreamState &stream,
+		     const TagHandler &handler, void *handler_ctx)
+{
+	ogg_packet packet;
+
+	return OggReadPacket(sync, stream, packet) &&
+		IsOpusTags(packet) &&
+		ScanOpusTags(packet.packet, packet.bytes,
+			     nullptr,
+			     handler, handler_ctx);
+}
+
+static void
+VisitOpusDuration(InputStream &is, OggSyncState &sync, OggStreamState &stream,
+		  const TagHandler &handler, void *handler_ctx)
+{
+	ogg_packet packet;
+
+	if (OggSeekFindEOS(sync, stream, packet, is)) {
+		const auto duration =
+			SongTime::FromScale<uint64_t>(packet.granulepos,
+						      opus_sample_rate);
+		tag_handler_invoke_duration(handler, handler_ctx, duration);
+	}
+}
+
+static bool
 mpd_opus_scan_stream(InputStream &is,
 		     const TagHandler &handler, void *handler_ctx)
 {
@@ -380,67 +420,13 @@ mpd_opus_scan_stream(InputStream &is,
 
 	OggStreamState os(first_page);
 
-	/* read at most 64 more pages */
-	unsigned remaining_pages = 64;
+	unsigned channels;
+	if (!ReadAndParseOpusHead(oy, os, channels) ||
+	    !ReadAndVisitOpusTags(oy, os, handler, handler_ctx))
+		return false;
 
-	unsigned remaining_packets = 4;
-
-	bool result = false;
-
-	ogg_packet packet;
-	while (remaining_packets > 0) {
-		int r = os.PacketOut(packet);
-		if (r < 0) {
-			result = false;
-			break;
-		}
-
-		if (r == 0) {
-			if (remaining_pages-- == 0)
-				break;
-
-			if (!oy.ExpectPageIn(os)) {
-				result = false;
-				break;
-			}
-
-			continue;
-		}
-
-		--remaining_packets;
-
-		if (packet.b_o_s) {
-			if (!IsOpusHead(packet))
-				break;
-
-			unsigned channels;
-			if (!ScanOpusHeader(packet.packet, packet.bytes, channels) ||
-			    !audio_valid_channel_count(channels)) {
-				result = false;
-				break;
-			}
-
-			result = true;
-		} else if (!result)
-			break;
-		else if (IsOpusTags(packet)) {
-			if (!ScanOpusTags(packet.packet, packet.bytes,
-					  nullptr,
-					  handler, handler_ctx))
-				result = false;
-
-			break;
-		}
-	}
-
-	if (packet.e_o_s || OggSeekFindEOS(oy, os, packet, is)) {
-		const auto duration =
-			SongTime::FromScale<uint64_t>(packet.granulepos,
-						      opus_sample_rate);
-		tag_handler_invoke_duration(handler, handler_ctx, duration);
-	}
-
-	return result;
+	VisitOpusDuration(is, oy, os, handler, handler_ctx);
+	return true;
 }
 
 static const char *const opus_suffixes[] = {

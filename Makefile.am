@@ -598,6 +598,7 @@ libxiph_a_SOURCES += \
 	src/lib/xiph/OggSyncState.cxx src/lib/xiph/OggSyncState.hxx \
 	src/lib/xiph/OggFind.cxx src/lib/xiph/OggFind.hxx \
 	src/lib/xiph/OggPage.hxx \
+	src/lib/xiph/OggPacket.cxx src/lib/xiph/OggPacket.hxx \
 	src/lib/xiph/OggStreamState.hxx
 endif
 
