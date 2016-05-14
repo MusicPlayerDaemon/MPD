@@ -596,6 +596,7 @@ libxiph_a_SOURCES += \
 	src/lib/xiph/OggVisitor.cxx src/lib/xiph/OggVisitor.hxx \
 	src/lib/xiph/OggSerial.cxx src/lib/xiph/OggSerial.hxx \
 	src/lib/xiph/OggSyncState.cxx src/lib/xiph/OggSyncState.hxx \
+	src/lib/xiph/OggFind.cxx src/lib/xiph/OggFind.hxx \
 	src/lib/xiph/OggPage.hxx \
 	src/lib/xiph/OggStreamState.hxx
 endif
@@ -999,7 +1000,6 @@ endif
 
 if ENABLE_OPUS
 libdecoder_a_SOURCES += \
-	src/decoder/plugins/OggFind.cxx src/decoder/plugins/OggFind.hxx \
 	src/decoder/plugins/OpusDomain.cxx src/decoder/plugins/OpusDomain.hxx \
 	src/decoder/plugins/OpusReader.hxx \
 	src/decoder/plugins/OpusHead.hxx \

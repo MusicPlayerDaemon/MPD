@@ -22,7 +22,7 @@
 #include "OpusDomain.hxx"
 #include "OpusHead.hxx"
 #include "OpusTags.hxx"
-#include "OggFind.hxx"
+#include "lib/xiph/OggFind.hxx"
 #include "lib/xiph/OggVisitor.hxx"
 #include "../DecoderAPI.hxx"
 #include "decoder/Reader.hxx"
