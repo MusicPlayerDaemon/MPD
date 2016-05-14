@@ -19,9 +19,8 @@
 
 #include "config.h"
 #include "VorbisDecoderPlugin.h"
+#include "OggDecoder.hxx"
 #include "lib/xiph/VorbisComments.hxx"
-#include "lib/xiph/OggSyncState.hxx"
-#include "lib/xiph/OggStreamState.hxx"
 #include "lib/xiph/OggPacket.hxx"
 #include "lib/xiph/OggFind.hxx"
 #include "VorbisDomain.hxx"
@@ -38,137 +37,114 @@
 #include "Log.hxx"
 
 #ifndef HAVE_TREMOR
-#define OV_EXCLUDE_STATIC_CALLBACKS
-#include <vorbis/vorbisfile.h>
+#include <vorbis/codec.h>
 #else
-#include <tremor/ivorbisfile.h>
-/* Macros to make Tremor's API look like libogg. Tremor always
-   returns host-byte-order 16-bit signed data, and uses integer
-   milliseconds where libogg uses double seconds.
-*/
-#define ov_read(VF, BUFFER, LENGTH, BIGENDIANP, WORD, SGNED, BITSTREAM) \
-        ov_read(VF, BUFFER, LENGTH, BITSTREAM)
-#define ov_time_total(VF, I) ((double)ov_time_total(VF, I)/1000)
-#define ov_time_tell(VF) ((double)ov_time_tell(VF)/1000)
-#define ov_time_seek_page(VF, S) (ov_time_seek_page(VF, (S)*1000))
+#include <tremor/ivorbiscodec.h>
 #endif /* HAVE_TREMOR */
 
-#include <errno.h>
+#include <stdexcept>
 
-struct VorbisInputStream {
-	Decoder *const decoder;
+class VorbisDecoder final : public OggDecoder {
+#ifdef HAVE_TREMOR
+	static constexpr SampleFormat sample_format = SampleFormat::S16;
+	typedef ogg_int32_t in_sample_t;
+	typedef int16_t out_sample_t;
+#else
+	static constexpr SampleFormat sample_format = SampleFormat::FLOAT;
+	typedef float in_sample_t;
+	typedef float out_sample_t;
+#endif
 
-	InputStream &input_stream;
-	bool seekable;
+	unsigned remaining_header_packets;
 
-	VorbisInputStream(Decoder *_decoder, InputStream &_is)
-		:decoder(_decoder), input_stream(_is),
-		 seekable(input_stream.CheapSeeking()) {}
-};
+	vorbis_info vi;
+	vorbis_comment vc;
+	vorbis_dsp_state dsp;
+	vorbis_block block;
 
-static size_t ogg_read_cb(void *ptr, size_t size, size_t nmemb, void *data)
-{
-	VorbisInputStream *vis = (VorbisInputStream *)data;
-	size_t ret = decoder_read(vis->decoder, vis->input_stream,
-				  ptr, size * nmemb);
+	/**
+	 * If non-zero, then a previous Vorbis stream has been found
+	 * already with this number of channels.
+	 */
+	AudioFormat audio_format = AudioFormat::Undefined();
+	size_t frame_size;
 
-	errno = 0;
+	bool dsp_initialized = false;
 
-	return ret / size;
-}
-
-static int ogg_seek_cb(void *data, ogg_int64_t _offset, int whence)
-{
-	VorbisInputStream *vis = (VorbisInputStream *)data;
-	InputStream &is = vis->input_stream;
-
-	if (!vis->seekable ||
-	    (vis->decoder != nullptr &&
-	     decoder_get_command(*vis->decoder) == DecoderCommand::STOP))
-		return -1;
-
-	offset_type offset = _offset;
-	switch (whence) {
-	case SEEK_SET:
-		break;
-
-	case SEEK_CUR:
-		offset += is.GetOffset();
-		break;
-
-	case SEEK_END:
-		if (!is.KnownSize())
-			return -1;
-
-		offset += is.GetSize();
-		break;
-
-	default:
-		return -1;
+public:
+	explicit VorbisDecoder(DecoderReader &reader)
+		:OggDecoder(reader) {
+		InitVorbis();
 	}
 
-	return is.LockSeek(offset, IgnoreError())
-		? 0 : -1;
-}
+	~VorbisDecoder() {
+		DeinitVorbis();
+	}
 
-/* TODO: check Ogg libraries API and see if we can just not have this func */
-static int ogg_close_cb(gcc_unused void *data)
-{
-	return 0;
-}
+	bool Seek(uint64_t where_frame);
 
-static long ogg_tell_cb(void *data)
-{
-	VorbisInputStream *vis = (VorbisInputStream *)data;
+private:
+	void InitVorbis() {
+		vorbis_info_init(&vi);
+		vorbis_comment_init(&vc);
+	}
 
-	return (long)vis->input_stream.GetOffset();
-}
+	void DeinitVorbis() {
+		if (dsp_initialized) {
+			dsp_initialized = false;
 
-static const ov_callbacks vorbis_is_callbacks = {
-	ogg_read_cb,
-	ogg_seek_cb,
-	ogg_close_cb,
-	ogg_tell_cb,
+			vorbis_block_clear(&block);
+			vorbis_dsp_clear(&dsp);
+		}
+
+		vorbis_comment_clear(&vc);
+		vorbis_info_clear(&vi);
+	}
+
+	void ReinitVorbis() {
+		DeinitVorbis();
+		InitVorbis();
+	}
+
+	void SubmitInit();
+	bool SubmitSomePcm();
+	void SubmitPcm();
+
+protected:
+	/* virtual methods from class OggVisitor */
+	void OnOggBeginning(const ogg_packet &packet) override;
+	void OnOggPacket(const ogg_packet &packet) override;
+	void OnOggEnd() override;
 };
 
-static const char *
-vorbis_strerror(int code)
+bool
+VorbisDecoder::Seek(uint64_t where_frame)
 {
-	switch (code) {
-	case OV_EREAD:
-		return "read error";
+	assert(IsSeekable());
+	assert(input_stream.IsSeekable());
+	assert(input_stream.KnownSize());
 
-	case OV_ENOTVORBIS:
-		return "not vorbis stream";
+	const ogg_int64_t where_granulepos(where_frame);
 
-	case OV_EVERSION:
-		return "vorbis version mismatch";
-
-	case OV_EBADHEADER:
-		return "invalid vorbis header";
-
-	case OV_EFAULT:
-		return "internal logic error";
-
-	default:
-		return "unknown error";
-	}
-}
-
-static bool
-vorbis_is_open(VorbisInputStream *vis, OggVorbis_File *vf)
-{
-	int ret = ov_open_callbacks(vis, vf, nullptr, 0, vorbis_is_callbacks);
-	if (ret < 0) {
-		if (vis->decoder == nullptr ||
-		    decoder_get_command(*vis->decoder) == DecoderCommand::NONE)
-			FormatWarning(vorbis_domain,
-				      "Failed to open Ogg Vorbis stream: %s",
-				      vorbis_strerror(ret));
+	if (!SeekGranulePos(where_granulepos, IgnoreError()))
 		return false;
-	}
 
+	vorbis_synthesis_restart(&dsp);
 	return true;
+}
+
+void
+VorbisDecoder::OnOggBeginning(const ogg_packet &_packet)
+{
+	/* libvorbis wants non-const packets */
+	ogg_packet &packet = const_cast<ogg_packet &>(_packet);
+
+	ReinitVorbis();
+
+	if (vorbis_synthesis_headerin(&vi, &vc, &packet) != 0)
+		throw std::runtime_error("Unrecognized Vorbis BOS packet");
+
+	remaining_header_packets = 2;
 }
 
 static void
@@ -183,15 +159,137 @@ vorbis_send_comments(Decoder &decoder, InputStream &is,
 	delete tag;
 }
 
-#ifndef HAVE_TREMOR
-static void
-vorbis_interleave(float *dest, const float *const*src,
-		  unsigned nframes, unsigned channels)
+void
+VorbisDecoder::SubmitInit()
 {
-	PcmInterleaveFloat(dest, ConstBuffer<const float *>(src, channels),
-			   nframes);
+	assert(!dsp_initialized);
+
+	Error error;
+	if (!audio_format_init_checked(audio_format, vi.rate, sample_format,
+				       vi.channels, error))
+		throw std::runtime_error(error.GetMessage());
+
+	frame_size = audio_format.GetFrameSize();
+
+	const auto eos_granulepos = UpdateEndGranulePos();
+	const auto duration = eos_granulepos >= 0
+		? SignedSongTime::FromScale<uint64_t>(eos_granulepos,
+						      audio_format.sample_rate)
+		: SignedSongTime::Negative();
+
+	decoder_initialized(decoder, audio_format,
+			    eos_granulepos > 0, duration);
 }
+
+bool
+VorbisDecoder::SubmitSomePcm()
+{
+	in_sample_t **pcm;
+	int result = vorbis_synthesis_pcmout(&dsp, &pcm);
+	if (result <= 0)
+		return false;
+
+	out_sample_t buffer[4096];
+	const unsigned channels = audio_format.channels;
+	size_t max_frames = ARRAY_SIZE(buffer) / channels;
+	size_t n_frames = std::min(size_t(result), max_frames);
+
+#ifdef HAVE_TREMOR
+	for (unsigned c = 0; c < channels; ++c) {
+		const auto *src = pcm[c];
+		auto *dest = &buffer[c];
+
+		for (size_t i = 0; i < n_frames; ++i) {
+			*dest = *src++;
+			dest += channels;
+		}
+	}
+#else
+	PcmInterleaveFloat(buffer,
+			   ConstBuffer<const in_sample_t *>(pcm,
+							    channels),
+			   n_frames);
 #endif
+
+	vorbis_synthesis_read(&dsp, n_frames);
+
+	const size_t nbytes = n_frames * frame_size;
+	auto cmd = decoder_data(decoder, input_stream,
+				buffer, nbytes,
+				0);
+	if (cmd != DecoderCommand::NONE)
+		throw cmd;
+
+	return true;
+}
+
+void
+VorbisDecoder::SubmitPcm()
+{
+	while (SubmitSomePcm()) {}
+}
+
+void
+VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
+{
+	/* libvorbis wants non-const packets */
+	ogg_packet &packet = const_cast<ogg_packet &>(_packet);
+
+	if (remaining_header_packets > 0) {
+		if (vorbis_synthesis_headerin(&vi, &vc, &packet) != 0)
+			throw std::runtime_error("Unrecognized Vorbis header packet");
+
+		if (--remaining_header_packets > 0)
+			return;
+
+		if (audio_format.IsDefined()) {
+			/* TODO: change the MPD decoder plugin API to
+			   allow mid-song AudioFormat changes */
+			if ((unsigned)vi.rate != audio_format.sample_rate ||
+			    (unsigned)vi.channels != audio_format.channels)
+				throw std::runtime_error("Next stream has different audio format");
+		} else
+			SubmitInit();
+
+		vorbis_send_comments(decoder, input_stream, vc.user_comments);
+
+		ReplayGainInfo rgi;
+		if (vorbis_comments_to_replay_gain(rgi, vc.user_comments))
+			decoder_replay_gain(decoder, &rgi);
+	} else {
+		if (!dsp_initialized) {
+			dsp_initialized = true;
+
+			vorbis_synthesis_init(&dsp, &vi);
+			vorbis_block_init(&dsp, &block);
+		}
+
+		if (vorbis_synthesis(&block, &packet) != 0) {
+			/* ignore bad packets, but give the MPD core a
+			   chance to stop us */
+			auto cmd = decoder_get_command(decoder);
+			if (cmd != DecoderCommand::NONE)
+				throw cmd;
+			return;
+		}
+
+		if (vorbis_synthesis_blockin(&dsp, &block) != 0)
+			throw std::runtime_error("vorbis_synthesis_blockin() failed");
+
+		SubmitPcm();
+
+#ifndef HAVE_TREMOR
+		if (packet.granulepos > 0)
+			decoder_timestamp(decoder,
+					  vorbis_granule_time(&dsp, packet.granulepos));
+#endif
+	}
+}
+
+void
+VorbisDecoder::OnOggEnd()
+{
+}
 
 /* public */
 
@@ -202,16 +300,6 @@ vorbis_init(gcc_unused const ConfigBlock &block)
 	LogDebug(vorbis_domain, vorbis_version_string());
 #endif
 	return true;
-}
-
-gcc_pure
-static SignedSongTime
-vorbis_duration(OggVorbis_File &vf)
-{
-	auto total = ov_time_total(&vf, -1);
-	return total >= 0
-		? SignedSongTime::FromS(total)
-		: SignedSongTime::Negative();
 }
 
 static void
@@ -225,118 +313,23 @@ vorbis_stream_decode(Decoder &decoder,
 	   moved it */
 	input_stream.LockRewind(IgnoreError());
 
-	VorbisInputStream vis(&decoder, input_stream);
-	OggVorbis_File vf;
-	if (!vorbis_is_open(&vis, &vf))
-		return;
+	DecoderReader reader(decoder, input_stream);
+	VorbisDecoder d(reader);
 
-	const vorbis_info *vi = ov_info(&vf, -1);
-	if (vi == nullptr) {
-		LogWarning(vorbis_domain, "ov_info() has failed");
-		return;
-	}
-
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, vi->rate,
-#ifdef HAVE_TREMOR
-				       SampleFormat::S16,
-#else
-				       SampleFormat::FLOAT,
-#endif
-				       vi->channels, error)) {
-		LogError(error);
-		return;
-	}
-
-	decoder_initialized(decoder, audio_format, vis.seekable,
-			    vorbis_duration(vf));
-
-#ifdef HAVE_TREMOR
-	char buffer[4096];
-#else
-	float buffer[2048];
-	const int frames_per_buffer =
-		ARRAY_SIZE(buffer) / audio_format.channels;
-	const unsigned frame_size = sizeof(buffer[0]) * audio_format.channels;
-#endif
-
-	int prev_section = -1;
-	unsigned kbit_rate = 0;
-
-	DecoderCommand cmd = decoder_get_command(decoder);
-	while (cmd != DecoderCommand::STOP) {
-		if (cmd == DecoderCommand::SEEK) {
-			auto seek_where = decoder_seek_where_frame(decoder);
-			if (0 == ov_pcm_seek_page(&vf, seek_where)) {
-				decoder_command_finished(decoder);
-			} else
-				decoder_seek_error(decoder);
-		}
-
-		int current_section;
-
-#ifdef HAVE_TREMOR
-		long nbytes = ov_read(&vf, buffer, sizeof(buffer),
-				      IsBigEndian(), 2, 1,
-				      &current_section);
-#else
-		float **per_channel;
-		long nframes = ov_read_float(&vf, &per_channel,
-					     frames_per_buffer,
-					     &current_section);
-		long nbytes = nframes;
-		if (nframes > 0) {
-			vorbis_interleave(buffer,
-					  (const float*const*)per_channel,
-					  nframes, audio_format.channels);
-			nbytes *= frame_size;
-		}
-#endif
-
-		if (nbytes == OV_HOLE) /* bad packet */
-			nbytes = 0;
-		else if (nbytes <= 0)
-			/* break on EOF or other error */
+	while (true) {
+		try {
+			d.Visit();
 			break;
-
-		if (current_section != prev_section) {
-			vi = ov_info(&vf, -1);
-			if (vi == nullptr) {
-				LogWarning(vorbis_domain,
-					   "ov_info() has failed");
+		} catch (DecoderCommand cmd) {
+			if (cmd == DecoderCommand::SEEK) {
+				if (d.Seek(decoder_seek_where_frame(decoder)))
+					decoder_command_finished(decoder);
+				else
+					decoder_seek_error(decoder);
+			} else if (cmd != DecoderCommand::NONE)
 				break;
-			}
-
-			if (vi->rate != (long)audio_format.sample_rate ||
-			    vi->channels != (int)audio_format.channels) {
-				/* we don't support audio format
-				   change yet */
-				LogWarning(vorbis_domain,
-					   "audio format change, stopping here");
-				break;
-			}
-
-			char **comments = ov_comment(&vf, -1)->user_comments;
-			vorbis_send_comments(decoder, input_stream, comments);
-
-			ReplayGainInfo rgi;
-			if (vorbis_comments_to_replay_gain(rgi, comments))
-				decoder_replay_gain(decoder, &rgi);
-
-			prev_section = current_section;
 		}
-
-		long test = ov_bitrate_instant(&vf);
-		if (test > 0)
-			kbit_rate = test / 1000;
-
-		cmd = decoder_data(decoder, input_stream,
-				   buffer, nbytes,
-				   kbit_rate);
 	}
-
-	ov_clear(&vf);
 }
 
 static void

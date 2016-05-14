@@ -964,7 +964,7 @@ if test x$enable_tremor = xyes; then
 	fi
 fi
 
-MPD_AUTO_PKG(vorbis, VORBIS, [vorbisfile vorbis ogg],
+MPD_AUTO_PKG(vorbis, VORBIS, [vorbis ogg],
 	[Ogg Vorbis decoder], [libvorbis not found])
 if test x$enable_vorbis = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support])
