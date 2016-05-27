@@ -103,7 +103,7 @@ curl = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'http://netcologne.dl.sourceforge.net/project/boost/boost/1.59.0/boost_1_59_0.tar.bz2',
-    '6aa9a5c6a4ca1016edd0ed1178e3cb87',
+    'http://downloads.sourceforge.net/boost/boost_1_61_0.tar.bz2',
+    '6095876341956f65f9d35939ccea1a9f',
     'include/boost/version.hpp',
 )
