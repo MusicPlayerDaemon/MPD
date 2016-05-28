@@ -21,11 +21,12 @@
 #define MPD_OGG_SYNC_STATE_HXX
 
 #include "check.h"
-#include "OggUtil.hxx"
 
 #include <ogg/ogg.h>
 
 #include <stddef.h>
+
+class Reader;
 
 /**
  * Wrapper for an ogg_sync_state.
@@ -33,12 +34,11 @@
 class OggSyncState {
 	ogg_sync_state oy;
 
-	InputStream &is;
-	Decoder *const decoder;
+	Reader &reader;
 
 public:
-	OggSyncState(InputStream &_is, Decoder *const _decoder=nullptr)
-		:is(_is), decoder(_decoder) {
+	explicit OggSyncState(Reader &_reader)
+		:reader(_reader) {
 		ogg_sync_init(&oy);
 	}
 
@@ -46,33 +46,22 @@ public:
 		ogg_sync_clear(&oy);
 	}
 
+	OggSyncState(const OggSyncState &) = delete;
+	OggSyncState &operator=(const OggSyncState &) = delete;
+
 	void Reset() {
 		ogg_sync_reset(&oy);
 	}
 
-	bool Feed(size_t size) {
-		return OggFeed(oy, decoder, is, size);
-	}
+	bool Feed(size_t size);
 
-	bool ExpectPage(ogg_page &page) {
-		return OggExpectPage(oy, page, decoder, is);
-	}
+	bool ExpectPage(ogg_page &page);
 
-	bool ExpectFirstPage(ogg_stream_state &os) {
-		return OggExpectFirstPage(oy, os, decoder, is);
-	}
+	bool ExpectPageIn(ogg_stream_state &os);
 
-	bool ExpectPageIn(ogg_stream_state &os) {
-		return OggExpectPageIn(oy, os, decoder, is);
-	}
+	bool ExpectPageSeek(ogg_page &page);
 
-	bool ExpectPageSeek(ogg_page &page) {
-		return OggExpectPageSeek(oy, page, decoder, is);
-	}
-
-	bool ExpectPageSeekIn(ogg_stream_state &os) {
-		return OggExpectPageSeekIn(oy, os, decoder, is);
-	}
+	bool ExpectPageSeekIn(ogg_stream_state &os);
 };
 
 #endif

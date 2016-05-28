@@ -39,6 +39,7 @@
 #include "tag/ApeReplayGain.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
 #include <functional>
 #include <memory>
 
@@ -346,6 +347,40 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 }
 
 /**
+ * Decode a song.
+ *
+ * DecoderControl::mutex is not locked.
+ */
+static bool
+DecoderUnlockedRunUri(Decoder &decoder, const char *real_uri, Path path_fs)
+try {
+	return !path_fs.IsNull()
+		? decoder_run_file(decoder, real_uri, path_fs)
+		: decoder_run_stream(decoder, real_uri);
+} catch (StopDecoder) {
+	return true;
+} catch (const std::runtime_error &e) {
+	/* copy the exception to decoder.error */
+
+	if (decoder.error.IsDefined()) {
+		/* decoder.error already set, now we have a second
+		   one; only log the second one */
+		LogError(e);
+		return false;
+	}
+
+	const char *error_uri = real_uri;
+	const std::string allocated = uri_remove_auth(error_uri);
+	if (!allocated.empty())
+		error_uri = allocated.c_str();
+
+	decoder.error.Format(decoder_domain,
+			     "Failed to decode %s: %s",
+			     error_uri, e.what());
+	return false;
+}
+
+/**
  * Decode a song addressed by a #DetachedSong.
  *
  * Caller holds DecoderControl::mutex.
@@ -368,9 +403,7 @@ decoder_run_song(DecoderControl &dc,
 	{
 		const ScopeUnlock unlock(dc.mutex);
 
-		success = !path_fs.IsNull()
-			? decoder_run_file(decoder, uri, path_fs)
-			: decoder_run_stream(decoder, uri);
+		success = DecoderUnlockedRunUri(decoder, uri, path_fs);
 
 		/* flush the last chunk */
 

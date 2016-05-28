@@ -21,7 +21,6 @@
 #include "WaveEncoderPlugin.hxx"
 #include "../EncoderAPI.hxx"
 #include "system/ByteOrder.hxx"
-#include "util/Manual.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 
 #include <assert.h>
@@ -29,13 +28,31 @@
 
 static constexpr uint16_t WAVE_FORMAT_PCM = 1;
 
-struct WaveEncoder {
-	Encoder encoder;
+class WaveEncoder final : public Encoder {
 	unsigned bits;
 
-	Manual<DynamicFifoBuffer<uint8_t>> buffer;
+	DynamicFifoBuffer<uint8_t> buffer;
 
-	WaveEncoder():encoder(wave_encoder_plugin) {}
+public:
+	WaveEncoder(AudioFormat &audio_format);
+
+	/* virtual methods from class Encoder */
+	bool Write(const void *data, size_t length, Error &) override;
+
+	size_t Read(void *dest, size_t length) override {
+		return buffer.Read((uint8_t *)dest, length);
+	}
+};
+
+class PreparedWaveEncoder final : public PreparedEncoder {
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override {
+		return new WaveEncoder(audio_format);
+	}
+
+	const char *GetMimeType() const override {
+		return "audio/wav";
+	}
 };
 
 struct WaveHeader {
@@ -80,78 +97,54 @@ fill_wave_header(WaveHeader *header, int channels, int bits,
 	header->riff_size = ToLE32(4 + (8 + 16) + (8 + data_size));
 }
 
-static Encoder *
+static PreparedEncoder *
 wave_encoder_init(gcc_unused const ConfigBlock &block,
 		  gcc_unused Error &error)
 {
-	WaveEncoder *encoder = new WaveEncoder();
-	return &encoder->encoder;
+	return new PreparedWaveEncoder();
 }
 
-static void
-wave_encoder_finish(Encoder *_encoder)
+WaveEncoder::WaveEncoder(AudioFormat &audio_format)
+	:Encoder(false),
+	 buffer(8192)
 {
-	WaveEncoder *encoder = (WaveEncoder *)_encoder;
-
-	delete encoder;
-}
-
-static bool
-wave_encoder_open(Encoder *_encoder,
-		  AudioFormat &audio_format,
-		  gcc_unused Error &error)
-{
-	WaveEncoder *encoder = (WaveEncoder *)_encoder;
-
 	assert(audio_format.IsValid());
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
-		encoder->bits = 8;
+		bits = 8;
 		break;
 
 	case SampleFormat::S16:
-		encoder->bits = 16;
+		bits = 16;
 		break;
 
 	case SampleFormat::S24_P32:
-		encoder->bits = 24;
+		bits = 24;
 		break;
 
 	case SampleFormat::S32:
-		encoder->bits = 32;
+		bits = 32;
 		break;
 
 	default:
 		audio_format.format = SampleFormat::S16;
-		encoder->bits = 16;
+		bits = 16;
 		break;
 	}
 
-	encoder->buffer.Construct(8192);
-
-	auto range = encoder->buffer->Write();
+	auto range = buffer.Write();
 	assert(range.size >= sizeof(WaveHeader));
 	auto *header = (WaveHeader *)range.data;
 
 	/* create PCM wave header in initial buffer */
 	fill_wave_header(header,
 			 audio_format.channels,
-			 encoder->bits,
+			 bits,
 			 audio_format.sample_rate,
-			 (encoder->bits / 8) * audio_format.channels);
+			 (bits / 8) * audio_format.channels);
 
-	encoder->buffer->Append(sizeof(*header));
-
-	return true;
-}
-
-static void
-wave_encoder_close(Encoder *_encoder)
-{
-	WaveEncoder *encoder = (WaveEncoder *)_encoder;
-
-	encoder->buffer.Destruct();
+	buffer.Append(sizeof(*header));
 }
 
 static size_t
@@ -194,17 +187,14 @@ pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length)
 	return (dst8 - dst_old);
 }
 
-static bool
-wave_encoder_write(Encoder *_encoder,
-		   const void *src, size_t length,
+bool
+WaveEncoder::Write(const void *src, size_t length,
 		   gcc_unused Error &error)
 {
-	WaveEncoder *encoder = (WaveEncoder *)_encoder;
-
-	uint8_t *dst = encoder->buffer->Write(length);
+	uint8_t *dst = buffer.Write(length);
 
 	if (IsLittleEndian()) {
-		switch (encoder->bits) {
+		switch (bits) {
 		case 8:
 		case 16:
 		case 32:// optimized cases
@@ -215,7 +205,7 @@ wave_encoder_write(Encoder *_encoder,
 			break;
 		}
 	} else {
-		switch (encoder->bits) {
+		switch (bits) {
 		case 8:
 			memcpy(dst, src, length);
 			break;
@@ -233,35 +223,11 @@ wave_encoder_write(Encoder *_encoder,
 		}
 	}
 
-	encoder->buffer->Append(length);
+	buffer.Append(length);
 	return true;
-}
-
-static size_t
-wave_encoder_read(Encoder *_encoder, void *dest, size_t length)
-{
-	WaveEncoder *encoder = (WaveEncoder *)_encoder;
-
-	return encoder->buffer->Read((uint8_t *)dest, length);
-}
-
-static const char *
-wave_encoder_get_mime_type(gcc_unused Encoder *_encoder)
-{
-	return "audio/wav";
 }
 
 const EncoderPlugin wave_encoder_plugin = {
 	"wave",
 	wave_encoder_init,
-	wave_encoder_finish,
-	wave_encoder_open,
-	wave_encoder_close,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	wave_encoder_write,
-	wave_encoder_read,
-	wave_encoder_get_mime_type,
 };

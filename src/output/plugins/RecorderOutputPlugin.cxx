@@ -47,12 +47,13 @@ class RecorderOutput {
 	/**
 	 * The configured encoder plugin.
 	 */
+	PreparedEncoder *prepared_encoder = nullptr;
 	Encoder *encoder;
 
 	/**
 	 * The destination file name.
 	 */
-	AllocatedPath path;
+	AllocatedPath path = AllocatedPath::Null();
 
 	/**
 	 * A string that will be used with FormatTag() to build the
@@ -72,13 +73,10 @@ class RecorderOutput {
 	FileOutputStream *file;
 
 	RecorderOutput()
-		:base(recorder_output_plugin),
-		 encoder(nullptr),
-		 path(AllocatedPath::Null()) {}
+		:base(recorder_output_plugin) {}
 
 	~RecorderOutput() {
-		if (encoder != nullptr)
-			encoder->Dispose();
+		delete prepared_encoder;
 	}
 
 	bool Initialize(const ConfigBlock &block, Error &error_r) {
@@ -150,8 +148,8 @@ RecorderOutput::Configure(const ConfigBlock &block, Error &error)
 
 	/* initialize encoder */
 
-	encoder = encoder_init(*encoder_plugin, block, error);
-	if (encoder == nullptr)
+	prepared_encoder = encoder_init(*encoder_plugin, block, error);
+	if (prepared_encoder == nullptr)
 		return false;
 
 	return true;
@@ -207,7 +205,8 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 
 	/* open the encoder */
 
-	if (!encoder->Open(audio_format, error)) {
+	encoder = prepared_encoder->Open(audio_format, error);
+	if (encoder == nullptr) {
 		delete file;
 		return false;
 	}
@@ -216,7 +215,7 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 		try {
 			EncoderToFile();
 		} catch (const std::exception &e) {
-			encoder->Close();
+			delete encoder;
 			error.Set(recorder_domain, e.what());
 			return false;
 		}
@@ -226,7 +225,7 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 
 		/* close the encoder for now; it will be opened as
 		   soon as we have received a tag */
-		encoder->Close();
+		delete encoder;
 	}
 
 	return true;
@@ -239,19 +238,19 @@ RecorderOutput::Commit(Error &error)
 
 	/* flush the encoder and write the rest to the file */
 
-	bool success = encoder_end(encoder, error);
+	bool success = encoder->End(error);
 	if (success) {
 		try {
 			EncoderToFile();
 		} catch (...) {
-			encoder->Close();
+			delete encoder;
 			throw;
 		}
 	}
 
 	/* now really close everything */
 
-	encoder->Close();
+	delete encoder;
 
 	if (success) {
 		try {
@@ -328,7 +327,8 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
 	}
 
 	AudioFormat new_audio_format = effective_audio_format;
-	if (!encoder->Open(new_audio_format, error)) {
+	encoder = prepared_encoder->Open(new_audio_format, error);
+	if (encoder == nullptr) {
 		delete new_file;
 		return false;
 	}
@@ -340,7 +340,7 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
 	try {
 		EncoderToOutputStream(*new_file, *encoder);
 	} catch (const std::exception &e) {
-		encoder->Close();
+		delete encoder;
 		delete new_file;
 		error.Set(recorder_domain, e.what());
 		return false;
@@ -388,7 +388,7 @@ RecorderOutput::SendTag(const Tag &tag)
 	}
 
 	Error error;
-	if (!encoder_pre_tag(encoder, error)) {
+	if (!encoder->PreTag(error)) {
 		LogError(error);
 		return;
 	}
@@ -400,7 +400,7 @@ RecorderOutput::SendTag(const Tag &tag)
 		return;
 	}
 
-	if (!encoder_tag(encoder, tag, error))
+	if (!encoder->SendTag(tag, error))
 		LogError(error);
 }
 
@@ -415,7 +415,7 @@ RecorderOutput::Play(const void *chunk, size_t size, Error &error)
 		return size;
 	}
 
-	if (!encoder_write(encoder, chunk, size, error))
+	if (!encoder->Write(chunk, size, error))
 		return 0;
 
 	try {

@@ -17,15 +17,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ENCODER_TO_OUTPUT_STREAM_HXX
-#define MPD_ENCODER_TO_OUTPUT_STREAM_HXX
+#include "config.h"
+#include "Reader.hxx"
+#include "DecoderAPI.hxx"
 
-#include "check.h"
-
-class OutputStream;
-class Encoder;
-
-void
-EncoderToOutputStream(OutputStream &os, Encoder &encoder);
-
-#endif
+size_t
+DecoderReader::Read(void *data, size_t size)
+{
+	return decoder_read(&decoder, is, data, size);
+}

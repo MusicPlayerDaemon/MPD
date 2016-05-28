@@ -17,15 +17,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ENCODER_TO_OUTPUT_STREAM_HXX
-#define MPD_ENCODER_TO_OUTPUT_STREAM_HXX
+#ifndef MPD_OGG_PAGE_HXX
+#define MPD_OGG_PAGE_HXX
 
 #include "check.h"
 
-class OutputStream;
-class Encoder;
+#include <ogg/ogg.h>
 
-void
-EncoderToOutputStream(OutputStream &os, Encoder &encoder);
+#include <assert.h>
+#include <string.h>
+#include <stdint.h>
+
+static size_t
+ReadPage(const ogg_page &page, void *_buffer, size_t size)
+{
+	assert(page.header_len > 0 || page.body_len > 0);
+
+	size_t header_len = (size_t)page.header_len;
+	size_t body_len = (size_t)page.body_len;
+	assert(header_len <= size);
+
+	if (header_len + body_len > size)
+		/* TODO: better overflow handling */
+		body_len = size - header_len;
+
+	uint8_t *buffer = (uint8_t *)_buffer;
+	memcpy(buffer, page.header, header_len);
+	memcpy(buffer + header_len, page.body, body_len);
+
+	return header_len + body_len;
+}
 
 #endif

@@ -17,15 +17,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ENCODER_TO_OUTPUT_STREAM_HXX
-#define MPD_ENCODER_TO_OUTPUT_STREAM_HXX
+#include "config.h"
+#include "Reader.hxx"
+#include "InputStream.hxx"
+#include "util/Error.hxx"
+#include "Log.hxx"
 
-#include "check.h"
+size_t
+InputStreamReader::Read(void *data, size_t size)
+{
+	Error error;
+	size_t nbytes = is.LockRead(data, size, error);
+	assert(nbytes == 0 || !error.IsDefined());
+	assert(nbytes > 0 || error.IsDefined() || is.IsEOF());
 
-class OutputStream;
-class Encoder;
+	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
+		LogError(error);
 
-void
-EncoderToOutputStream(OutputStream &os, Encoder &encoder);
-
-#endif
+	return nbytes;
+}

@@ -18,19 +18,17 @@
  */
 
 #include "config.h"
-#include "OggUtil.hxx"
-#include "../DecoderAPI.hxx"
+#include "OggSyncState.hxx"
+#include "fs/io/Reader.hxx"
 
 bool
-OggFeed(ogg_sync_state &oy, Decoder *decoder,
-	InputStream &input_stream, size_t size)
+OggSyncState::Feed(size_t size)
 {
 		char *buffer = ogg_sync_buffer(&oy, size);
 		if (buffer == nullptr)
 			return false;
 
-		size_t nbytes = decoder_read(decoder, input_stream,
-					     buffer, size);
+		size_t nbytes = reader.Read(buffer, size);
 		if (nbytes == 0)
 			return false;
 
@@ -39,38 +37,23 @@ OggFeed(ogg_sync_state &oy, Decoder *decoder,
 }
 
 bool
-OggExpectPage(ogg_sync_state &oy, ogg_page &page,
-	      Decoder *decoder, InputStream &input_stream)
+OggSyncState::ExpectPage(ogg_page &page)
 {
 	while (true) {
 		int r = ogg_sync_pageout(&oy, &page);
 		if (r != 0)
 			return r > 0;
 
-		if (!OggFeed(oy, decoder, input_stream, 1024))
+		if (!Feed(1024))
 			return false;
 	}
 }
 
 bool
-OggExpectFirstPage(ogg_sync_state &oy, ogg_stream_state &os,
-		   Decoder *decoder, InputStream &is)
+OggSyncState::ExpectPageIn(ogg_stream_state &os)
 {
 	ogg_page page;
-	if (!OggExpectPage(oy, page, decoder, is))
-		return false;
-
-	ogg_stream_init(&os, ogg_page_serialno(&page));
-	ogg_stream_pagein(&os, &page);
-	return true;
-}
-
-bool
-OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
-		Decoder *decoder, InputStream &is)
-{
-	ogg_page page;
-	if (!OggExpectPage(oy, page, decoder, is))
+	if (!ExpectPage(page))
 		return false;
 
 	ogg_stream_pagein(&os, &page);
@@ -78,8 +61,7 @@ OggExpectPageIn(ogg_sync_state &oy, ogg_stream_state &os,
 }
 
 bool
-OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
-		  Decoder *decoder, InputStream &input_stream)
+OggSyncState::ExpectPageSeek(ogg_page &page)
 {
 	size_t remaining_skipped = 32768;
 
@@ -100,17 +82,16 @@ OggExpectPageSeek(ogg_sync_state &oy, ogg_page &page,
 			continue;
 		}
 
-		if (!OggFeed(oy, decoder, input_stream, 1024))
+		if (!Feed(1024))
 			return false;
 	}
 }
 
 bool
-OggExpectPageSeekIn(ogg_sync_state &oy, ogg_stream_state &os,
-		    Decoder *decoder, InputStream &is)
+OggSyncState::ExpectPageSeekIn(ogg_stream_state &os)
 {
 	ogg_page page;
-	if (!OggExpectPageSeek(oy, page, decoder, is))
+	if (!ExpectPageSeek(page))
 		return false;
 
 	ogg_stream_pagein(&os, &page);

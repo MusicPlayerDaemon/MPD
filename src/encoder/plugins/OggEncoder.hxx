@@ -17,47 +17,61 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "NullEncoderPlugin.hxx"
-#include "../EncoderAPI.hxx"
-#include "util/DynamicFifoBuffer.hxx"
-#include "Compiler.h"
+#ifndef MPD_OGG_ENCODER_HXX
+#define MPD_OGG_ENCODER_HXX
 
-class NullEncoder final : public Encoder {
-	DynamicFifoBuffer<uint8_t> buffer;
+#include "config.h"
+#include "../EncoderAPI.hxx"
+#include "lib/xiph/OggStreamState.hxx"
+#include "lib/xiph/OggPage.hxx"
+#include "lib/xiph/OggSerial.hxx"
+
+#include <ogg/ogg.h>
+
+/**
+ * An abstract base class which contains code common to all encoders
+ * with Ogg container output.
+ */
+class OggEncoder : public Encoder {
+	/* initialize "flush" to true, so the caller gets the full
+	   headers on the first read */
+	bool flush = true;
+
+protected:
+	OggStreamState stream;
 
 public:
-	NullEncoder()
-		:Encoder(false),
-		 buffer(8192) {}
+	OggEncoder(bool _implements_tag)
+		:Encoder(_implements_tag),
+		 stream(GenerateOggSerial()) {
+	}
 
 	/* virtual methods from class Encoder */
-	bool Write(const void *data, size_t length, Error &) override {
-		buffer.Append((const uint8_t *)data, length);
+	bool Flush(Error &) override {
+		Flush();
 		return true;
 	}
 
 	size_t Read(void *dest, size_t length) override {
-		return buffer.Read((uint8_t *)dest, length);
+		ogg_page page;
+		bool success = stream.PageOut(page);
+		if (!success) {
+			if (flush) {
+				flush = false;
+				success = stream.Flush(page);
+			}
+
+			if (!success)
+				return 0;
+		}
+
+		return ReadPage(page, dest, length);
+	}
+
+protected:
+	void Flush() {
+		flush = true;
 	}
 };
 
-class PreparedNullEncoder final : public PreparedEncoder {
-public:
-	/* virtual methods from class PreparedEncoder */
-	Encoder *Open(AudioFormat &, Error &) override {
-		return new NullEncoder();
-	}
-};
-
-static PreparedEncoder *
-null_encoder_init(gcc_unused const ConfigBlock &block,
-		  gcc_unused Error &error)
-{
-	return new PreparedNullEncoder();
-}
-
-const EncoderPlugin null_encoder_plugin = {
-	"null",
-	null_encoder_init,
-};
+#endif

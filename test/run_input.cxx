@@ -49,7 +49,7 @@ tag_save(FILE *file, const Tag &tag)
 static int
 dump_input_stream(InputStream *is)
 {
-	is->Lock();
+	const ScopeLock protect(is->mutex);
 
 	/* print meta data */
 
@@ -84,11 +84,8 @@ dump_input_stream(InputStream *is)
 	Error error;
 	if (!is->Check(error)) {
 		LogError(error);
-		is->Unlock();
 		return EXIT_FAILURE;
 	}
-
-	is->Unlock();
 
 	return 0;
 }

@@ -30,6 +30,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <memory>
+
 #include <stddef.h>
 #include <unistd.h>
 
@@ -48,15 +50,17 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	ConfigBlock block;
 	block.AddBlockParam("quality", "5.0", -1);
 
-	const auto encoder = encoder_init(*plugin, block, IgnoreError());
-	assert(encoder != NULL);
+	std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block,
+								IgnoreError()));
+	assert(p_encoder != nullptr);
 
 	try {
 		/* open the encoder */
 
 		AudioFormat audio_format(44100, SampleFormat::S16, 2);
-		success = encoder->Open(audio_format, IgnoreError());
-		assert(success);
+		std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format,
+								 IgnoreError()));
+		assert(encoder != nullptr);
 
 		StdioOutputStream os(stdout);
 
@@ -64,14 +68,14 @@ main(gcc_unused int argc, gcc_unused char **argv)
 
 		/* write a block of data */
 
-		success = encoder_write(encoder, zero, sizeof(zero), IgnoreError());
+		success = encoder->Write(zero, sizeof(zero), IgnoreError());
 		assert(success);
 
 		EncoderToOutputStream(os, *encoder);
 
 		/* write a tag */
 
-		success = encoder_pre_tag(encoder, IgnoreError());
+		success = encoder->PreTag(IgnoreError());
 		assert(success);
 
 		EncoderToOutputStream(os, *encoder);
@@ -85,25 +89,22 @@ main(gcc_unused int argc, gcc_unused char **argv)
 			tag_builder.Commit(tag);
 		}
 
-		success = encoder_tag(encoder, tag, IgnoreError());
+		success = encoder->SendTag(tag, IgnoreError());
 		assert(success);
 
 		EncoderToOutputStream(os, *encoder);
 
 		/* write another block of data */
 
-		success = encoder_write(encoder, zero, sizeof(zero), IgnoreError());
+		success = encoder->Write(zero, sizeof(zero), IgnoreError());
 		assert(success);
 
 		/* finish */
 
-		success = encoder_end(encoder, IgnoreError());
+		success = encoder->End(IgnoreError());
 		assert(success);
 
 		EncoderToOutputStream(os, *encoder);
-
-		encoder->Close();
-		encoder->Dispose();
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {

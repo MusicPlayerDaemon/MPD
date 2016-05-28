@@ -974,7 +974,7 @@ if test x$enable_tremor = xyes; then
 	fi
 fi
 
-MPD_AUTO_PKG(vorbis, VORBIS, [vorbisfile vorbis ogg],
+MPD_AUTO_PKG(vorbis, VORBIS, [vorbis ogg],
 	[Ogg Vorbis decoder], [libvorbis not found])
 if test x$enable_vorbis = xyes; then
 	AC_DEFINE(ENABLE_VORBIS_DECODER, 1, [Define for Ogg Vorbis support])
@@ -1036,11 +1036,6 @@ MPD_ENABLE_AUTO_PKG(wavpack, WAVPACK, [wavpack],
 dnl --------------------------------- WildMidi --------------------------------
 MPD_ENABLE_AUTO_LIB(wildmidi, WILDMIDI, WildMidi, WildMidi_Init, [-lWildMidi], [],
 	[WildMidi decoder plugin], [libwildmidi not found])
-
-dnl ------------------------ Post Decoder Plugins Tests -----------------------
-
-AM_CONDITIONAL(HAVE_XIPH,
-	test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_flac = xyes || test x$enable_opus = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Encoders for Streaming Audio Output Plugins
@@ -1116,8 +1111,6 @@ fi
 
 MPD_DEFINE_CONDITIONAL(enable_encoder, ENABLE_ENCODER,
 		[the encoder plugins])
-
-AM_CONDITIONAL(HAVE_OGG_ENCODER, test x$enable_vorbis_encoder = xyes || test x$enable_opus = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Audio Output Plugins
@@ -1282,6 +1275,27 @@ else
 fi
 
 AM_CONDITIONAL(ENABLE_WINMM_OUTPUT, test x$enable_winmm_output = xyes)
+
+dnl ---------------------------------------------------------------------------
+dnl Option groups
+dnl ---------------------------------------------------------------------------
+
+have_ogg=no
+if test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_opus = xyes || test x$enable_vorbis_encoder = xyes; then
+	have_ogg=yes
+fi
+
+have_xiph=no
+if test x$enable_ogg = xyes || test x$enable_flac = xyes || test x$enable_flac_encoder = xyes; then
+	have_xiph=yes
+fi
+
+if test x$have_ogg = xyes; then
+	PKG_CHECK_MODULES([OGG], [ogg],, [AC_MSG_ERROR([libogg not found])])
+fi
+
+AM_CONDITIONAL(HAVE_OGG, test x$have_ogg = xyes)
+AM_CONDITIONAL(HAVE_XIPH, test x$have_xiph = xyes)
 
 dnl ---------------------------------------------------------------------------
 dnl Documentation

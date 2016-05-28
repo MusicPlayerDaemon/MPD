@@ -17,15 +17,38 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ENCODER_TO_OUTPUT_STREAM_HXX
-#define MPD_ENCODER_TO_OUTPUT_STREAM_HXX
+#ifndef MPD_DECODER_READER_HXX
+#define MPD_DECODER_READER_HXX
 
 #include "check.h"
+#include "fs/io/Reader.hxx"
+#include "Compiler.h"
 
-class OutputStream;
-class Encoder;
+struct Decoder;
+class InputStream;
 
-void
-EncoderToOutputStream(OutputStream &os, Encoder &encoder);
+/**
+ * A wrapper for decoder_read() which implements the #Reader
+ * interface.
+ */
+class DecoderReader final : public Reader {
+	Decoder &decoder;
+	InputStream &is;
+
+public:
+	DecoderReader(Decoder &_decoder, InputStream &_is)
+		:decoder(_decoder), is(_is) {}
+
+	Decoder &GetDecoder() {
+		return decoder;
+	}
+
+	InputStream &GetInputStream() {
+		return is;
+	}
+
+	/* virtual methods from class Reader */
+	size_t Read(void *data, size_t size) override;
+};
 
 #endif

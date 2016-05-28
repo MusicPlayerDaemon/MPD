@@ -29,6 +29,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <memory>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
@@ -65,8 +67,8 @@ int main(int argc, char **argv)
 
 	try {
 		Error error;
-		const auto encoder = encoder_init(*plugin, block, error);
-		if (encoder == NULL) {
+		std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block, error));
+		if (p_encoder == nullptr) {
 			LogError(error, "Failed to initialize encoder");
 			return EXIT_FAILURE;
 		}
@@ -81,7 +83,8 @@ int main(int argc, char **argv)
 			}
 		}
 
-		if (!encoder->Open(audio_format, error)) {
+		std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format, error));
+		if (encoder == nullptr) {
 			LogError(error, "Failed to open encoder");
 			return EXIT_FAILURE;
 		}
@@ -94,7 +97,7 @@ int main(int argc, char **argv)
 
 		ssize_t nbytes;
 		while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-			if (!encoder_write(encoder, buffer, nbytes, error)) {
+			if (!encoder->Write(buffer, nbytes, error)) {
 				LogError(error, "encoder_write() failed");
 				return EXIT_FAILURE;
 			}
@@ -102,15 +105,12 @@ int main(int argc, char **argv)
 			EncoderToOutputStream(os, *encoder);
 		}
 
-		if (!encoder_end(encoder, error)) {
+		if (!encoder->End(error)) {
 			LogError(error, "encoder_flush() failed");
 			return EXIT_FAILURE;
 		}
 
 		EncoderToOutputStream(os, *encoder);
-
-		encoder->Close();
-		encoder->Dispose();
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {

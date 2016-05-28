@@ -24,7 +24,6 @@
 #include "config/ConfigError.hxx"
 #include "util/NumberParser.hxx"
 #include "util/ReusableArray.hxx"
-#include "util/Manual.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -33,27 +32,46 @@
 #include <assert.h>
 #include <string.h>
 
-struct LameEncoder final {
-	Encoder encoder;
+class LameEncoder final : public Encoder {
+	const AudioFormat audio_format;
 
-	AudioFormat audio_format;
+	lame_global_flags *const gfp;
+
+	ReusableArray<unsigned char, 32768> output_buffer;
+	unsigned char *output_begin = nullptr, *output_end = nullptr;
+
+public:
+	LameEncoder(const AudioFormat _audio_format,
+		    lame_global_flags *_gfp)
+		:Encoder(false),
+		 audio_format(_audio_format), gfp(_gfp) {}
+
+	~LameEncoder() override;
+
+	/* virtual methods from class Encoder */
+	bool Write(const void *data, size_t length, Error &) override;
+	size_t Read(void *dest, size_t length) override;
+};
+
+class PreparedLameEncoder final : public PreparedEncoder {
 	float quality;
 	int bitrate;
 
-	lame_global_flags *gfp;
-
-	Manual<ReusableArray<unsigned char, 32768>> output_buffer;
-	unsigned char *output_begin, *output_end;
-
-	LameEncoder():encoder(lame_encoder_plugin) {}
-
+public:
 	bool Configure(const ConfigBlock &block, Error &error);
+
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override;
+
+	const char *GetMimeType() const override {
+		return "audio/mpeg";
+	}
 };
 
 static constexpr Domain lame_encoder_domain("lame_encoder");
 
 bool
-LameEncoder::Configure(const ConfigBlock &block, Error &error)
+PreparedLameEncoder::Configure(const ConfigBlock &block, Error &error)
 {
 	const char *value;
 	char *endptr;
@@ -100,10 +118,10 @@ LameEncoder::Configure(const ConfigBlock &block, Error &error)
 	return true;
 }
 
-static Encoder *
+static PreparedEncoder *
 lame_encoder_init(const ConfigBlock &block, Error &error)
 {
-	LameEncoder *encoder = new LameEncoder();
+	auto *encoder = new PreparedLameEncoder();
 
 	/* load configuration from "block" */
 	if (!encoder->Configure(block, error)) {
@@ -112,31 +130,22 @@ lame_encoder_init(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return &encoder->encoder;
-}
-
-static void
-lame_encoder_finish(Encoder *_encoder)
-{
-	LameEncoder *encoder = (LameEncoder *)_encoder;
-
-	/* the real liblame cleanup was already performed by
-	   lame_encoder_close(), so no real work here */
-	delete encoder;
+	return encoder;
 }
 
 static bool
-lame_encoder_setup(LameEncoder *encoder, Error &error)
+lame_encoder_setup(lame_global_flags *gfp, float quality, int bitrate,
+		   const AudioFormat &audio_format, Error &error)
 {
-	if (encoder->quality >= -1.0) {
+	if (quality >= -1.0) {
 		/* a quality was configured (VBR) */
 
-		if (0 != lame_set_VBR(encoder->gfp, vbr_rh)) {
+		if (0 != lame_set_VBR(gfp, vbr_rh)) {
 			error.Set(lame_encoder_domain,
 				  "error setting lame VBR mode");
 			return false;
 		}
-		if (0 != lame_set_VBR_q(encoder->gfp, encoder->quality)) {
+		if (0 != lame_set_VBR_q(gfp, quality)) {
 			error.Set(lame_encoder_domain,
 				  "error setting lame VBR quality");
 			return false;
@@ -144,35 +153,32 @@ lame_encoder_setup(LameEncoder *encoder, Error &error)
 	} else {
 		/* a bit rate was configured */
 
-		if (0 != lame_set_brate(encoder->gfp, encoder->bitrate)) {
+		if (0 != lame_set_brate(gfp, bitrate)) {
 			error.Set(lame_encoder_domain,
 				  "error setting lame bitrate");
 			return false;
 		}
 	}
 
-	if (0 != lame_set_num_channels(encoder->gfp,
-				       encoder->audio_format.channels)) {
+	if (0 != lame_set_num_channels(gfp, audio_format.channels)) {
 		error.Set(lame_encoder_domain,
 			  "error setting lame num channels");
 		return false;
 	}
 
-	if (0 != lame_set_in_samplerate(encoder->gfp,
-					encoder->audio_format.sample_rate)) {
+	if (0 != lame_set_in_samplerate(gfp, audio_format.sample_rate)) {
 		error.Set(lame_encoder_domain,
 			  "error setting lame sample rate");
 		return false;
 	}
 
-	if (0 != lame_set_out_samplerate(encoder->gfp,
-					 encoder->audio_format.sample_rate)) {
+	if (0 != lame_set_out_samplerate(gfp, audio_format.sample_rate)) {
 		error.Set(lame_encoder_domain,
 			  "error setting lame out sample rate");
 		return false;
 	}
 
-	if (0 > lame_init_params(encoder->gfp)) {
+	if (0 > lame_init_params(gfp)) {
 		error.Set(lame_encoder_domain,
 			  "error initializing lame params");
 		return false;
@@ -181,113 +187,80 @@ lame_encoder_setup(LameEncoder *encoder, Error &error)
 	return true;
 }
 
-static bool
-lame_encoder_open(Encoder *_encoder, AudioFormat &audio_format, Error &error)
+Encoder *
+PreparedLameEncoder::Open(AudioFormat &audio_format, Error &error)
 {
-	LameEncoder *encoder = (LameEncoder *)_encoder;
-
 	audio_format.format = SampleFormat::S16;
 	audio_format.channels = 2;
 
-	encoder->audio_format = audio_format;
-
-	encoder->gfp = lame_init();
-	if (encoder->gfp == nullptr) {
+	auto gfp = lame_init();
+	if (gfp == nullptr) {
 		error.Set(lame_encoder_domain, "lame_init() failed");
-		return false;
+		return nullptr;
 	}
 
-	if (!lame_encoder_setup(encoder, error)) {
-		lame_close(encoder->gfp);
-		return false;
+	if (!lame_encoder_setup(gfp, quality, bitrate,
+				audio_format, error)) {
+		lame_close(gfp);
+		return nullptr;
 	}
 
-	encoder->output_buffer.Construct();
-	encoder->output_begin = encoder->output_end = nullptr;
-
-	return true;
+	return new LameEncoder(audio_format, gfp);
 }
 
-static void
-lame_encoder_close(Encoder *_encoder)
+LameEncoder::~LameEncoder()
 {
-	LameEncoder *encoder = (LameEncoder *)_encoder;
-
-	lame_close(encoder->gfp);
-	encoder->output_buffer.Destruct();
+	lame_close(gfp);
 }
 
-static bool
-lame_encoder_write(Encoder *_encoder,
-		   const void *data, size_t length,
+bool
+LameEncoder::Write(const void *data, size_t length,
 		   gcc_unused Error &error)
 {
-	LameEncoder *encoder = (LameEncoder *)_encoder;
 	const int16_t *src = (const int16_t*)data;
 
-	assert(encoder->output_begin == encoder->output_end);
+	assert(output_begin == output_end);
 
-	const unsigned num_frames =
-		length / encoder->audio_format.GetFrameSize();
-	const unsigned num_samples =
-		length / encoder->audio_format.GetSampleSize();
+	const unsigned num_frames = length / audio_format.GetFrameSize();
+	const unsigned num_samples = length / audio_format.GetSampleSize();
 
 	/* worst-case formula according to LAME documentation */
 	const size_t output_buffer_size = 5 * num_samples / 4 + 7200;
-	const auto output_buffer = encoder->output_buffer->Get(output_buffer_size);
+	const auto dest = output_buffer.Get(output_buffer_size);
 
 	/* this is for only 16-bit audio */
 
-	int bytes_out = lame_encode_buffer_interleaved(encoder->gfp,
+	int bytes_out = lame_encode_buffer_interleaved(gfp,
 						       const_cast<short *>(src),
 						       num_frames,
-						       output_buffer,
-						       output_buffer_size);
+						       dest, output_buffer_size);
 
 	if (bytes_out < 0) {
 		error.Set(lame_encoder_domain, "lame encoder failed");
 		return false;
 	}
 
-	encoder->output_begin = output_buffer;
-	encoder->output_end = output_buffer + bytes_out;
+	output_begin = dest;
+	output_end = dest + bytes_out;
 	return true;
 }
 
-static size_t
-lame_encoder_read(Encoder *_encoder, void *dest, size_t length)
+size_t
+LameEncoder::Read(void *dest, size_t length)
 {
-	LameEncoder *encoder = (LameEncoder *)_encoder;
-
-	const auto begin = encoder->output_begin;
-	assert(begin <= encoder->output_end);
-	const size_t remainning = encoder->output_end - begin;
+	const auto begin = output_begin;
+	assert(begin <= output_end);
+	const size_t remainning = output_end - begin;
 	if (length > remainning)
 		length = remainning;
 
 	memcpy(dest, begin, length);
 
-	encoder->output_begin = begin + length;
+	output_begin = begin + length;
 	return length;
-}
-
-static const char *
-lame_encoder_get_mime_type(gcc_unused Encoder *_encoder)
-{
-	return "audio/mpeg";
 }
 
 const EncoderPlugin lame_encoder_plugin = {
 	"lame",
 	lame_encoder_init,
-	lame_encoder_finish,
-	lame_encoder_open,
-	lame_encoder_close,
-	nullptr,
-	nullptr,
-	nullptr,
-	nullptr,
-	lame_encoder_write,
-	lame_encoder_read,
-	lame_encoder_get_mime_type,
 };

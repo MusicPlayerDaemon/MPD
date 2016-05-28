@@ -22,7 +22,6 @@
 #include "../EncoderAPI.hxx"
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
-#include "util/Manual.hxx"
 #include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
 
@@ -34,32 +33,73 @@ extern "C"
 static constexpr size_t BUFFER_INIT_SIZE = 8192;
 static constexpr unsigned CHANNELS = 2;
 
-struct ShineEncoder {
-	Encoder encoder;
+class ShineEncoder final : public Encoder {
+	const AudioFormat audio_format;
 
-	AudioFormat audio_format;
+	const shine_t shine;
 
-	shine_t shine;
+	const size_t frame_size;
 
-	shine_config_t config;
+	/* workaround for bug:
+	   https://github.com/savonet/shine/issues/11 */
+	size_t input_pos = SHINE_MAX_SAMPLES + 1;
 
-	size_t frame_size;
-	size_t input_pos;
 	int16_t *stereo[CHANNELS];
 
-	Manual<DynamicFifoBuffer<uint8_t>> output_buffer;
+	DynamicFifoBuffer<uint8_t> output_buffer;
 
-	ShineEncoder():encoder(shine_encoder_plugin){}
+public:
+	ShineEncoder(AudioFormat _audio_format, shine_t _shine)
+		:Encoder(false),
+		 audio_format(_audio_format), shine(_shine),
+		 frame_size(shine_samples_per_pass(shine)),
+		 stereo{new int16_t[frame_size], new int16_t[frame_size]},
+		 output_buffer(BUFFER_INIT_SIZE) {}
 
-	bool Configure(const ConfigBlock &block, Error &error);
+	~ShineEncoder() override {
+		if (input_pos > SHINE_MAX_SAMPLES) {
+			/* write zero chunk */
+			input_pos = 0;
+			WriteChunk(true);
+		}
 
-	bool Setup(Error &error);
+		shine_close(shine);
+		delete[] stereo[0];
+		delete[] stereo[1];
+	}
 
 	bool WriteChunk(bool flush);
+
+	/* virtual methods from class Encoder */
+	bool End(Error &error) override {
+		return Flush(error);
+	}
+
+	bool Flush(Error &) override;
+
+	bool Write(const void *data, size_t length, Error &) override;
+
+	size_t Read(void *dest, size_t length) override {
+		return output_buffer.Read((uint8_t *)dest, length);
+	}
+};
+
+class PreparedShineEncoder final : public PreparedEncoder {
+	shine_config_t config;
+
+public:
+	bool Configure(const ConfigBlock &block, Error &error);
+
+	/* virtual methods from class PreparedEncoder */
+	Encoder *Open(AudioFormat &audio_format, Error &) override;
+
+	const char *GetMimeType() const override {
+		return  "audio/mpeg";
+	}
 };
 
 inline bool
-ShineEncoder::Configure(const ConfigBlock &block, gcc_unused Error &error)
+PreparedShineEncoder::Configure(const ConfigBlock &block, Error &)
 {
 	shine_set_config_mpeg_defaults(&config.mpeg);
 	config.mpeg.bitr = block.GetBlockValue("bitrate", 128);
@@ -67,10 +107,10 @@ ShineEncoder::Configure(const ConfigBlock &block, gcc_unused Error &error)
 	return true;
 }
 
-static Encoder *
+static PreparedEncoder *
 shine_encoder_init(const ConfigBlock &block, Error &error)
 {
-	ShineEncoder *encoder = new ShineEncoder();
+	auto *encoder = new PreparedShineEncoder();
 
 	/* load configuration from "block" */
 	if (!encoder->Configure(block, error)) {
@@ -79,20 +119,16 @@ shine_encoder_init(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	return &encoder->encoder;
+	return encoder;
 }
 
-static void
-shine_encoder_finish(Encoder *_encoder)
+static shine_t
+SetupShine(shine_config_t config, AudioFormat &audio_format,
+	   Error &error)
 {
-	ShineEncoder *encoder = (ShineEncoder *)_encoder;
+	audio_format.format = SampleFormat::S16;
+	audio_format.channels = CHANNELS;
 
-	delete encoder;
-}
-
-inline bool
-ShineEncoder::Setup(Error &error)
-{
 	config.mpeg.mode = audio_format.channels == 2 ? STEREO : MONO;
 	config.wave.samplerate = audio_format.sample_rate;
 	config.wave.channels =
@@ -106,61 +142,25 @@ ShineEncoder::Setup(Error &error)
 			     config.wave.samplerate,
 			     config.mpeg.bitr);
 
-		return false;
+		return nullptr;
 	}
 
-	shine = shine_initialise(&config);
-
-	if (!shine) {
+	auto shine = shine_initialise(&config);
+	if (!shine)
 		error.Format(config_domain,
 			     "error initializing shine.");
 
-		return false;
-	}
-
-	frame_size = shine_samples_per_pass(shine);
-
-	return true;
+	return shine;
 }
 
-static bool
-shine_encoder_open(Encoder *_encoder, AudioFormat &audio_format, Error &error)
+Encoder *
+PreparedShineEncoder::Open(AudioFormat &audio_format, Error &error)
 {
-	ShineEncoder *encoder = (ShineEncoder *)_encoder;
+	auto shine = SetupShine(config, audio_format, error);
+	if (!shine)
+		return nullptr;
 
-	audio_format.format = SampleFormat::S16;
-	audio_format.channels = CHANNELS;
-	encoder->audio_format = audio_format;
-
-	if (!encoder->Setup(error))
-		return false;
-
-	encoder->stereo[0] = new int16_t[encoder->frame_size];
-	encoder->stereo[1] = new int16_t[encoder->frame_size];
-	/* workaround for bug:
-	   https://github.com/savonet/shine/issues/11 */
-	encoder->input_pos = SHINE_MAX_SAMPLES + 1;
-
-	encoder->output_buffer.Construct(BUFFER_INIT_SIZE);
-
-	return true;
-}
-
-static void
-shine_encoder_close(Encoder *_encoder)
-{
-	ShineEncoder *encoder = (ShineEncoder *)_encoder;
-
-	if (encoder->input_pos > SHINE_MAX_SAMPLES) {
-		/* write zero chunk */
-		encoder->input_pos = 0;
-		encoder->WriteChunk(true);
-	}
-
-	shine_close(encoder->shine);
-	delete[] encoder->stereo[0];
-	delete[] encoder->stereo[1];
-	encoder->output_buffer.Destruct();
+	return new ShineEncoder(audio_format, shine);
 }
 
 bool
@@ -179,7 +179,7 @@ ShineEncoder::WriteChunk(bool flush)
 			shine_encode_buffer(shine, stereo, &written);
 
 		if (written > 0)
-			output_buffer->Append(out, written);
+			output_buffer.Append(out, written);
 
 		input_pos = 0;
 	}
@@ -187,80 +187,49 @@ ShineEncoder::WriteChunk(bool flush)
 	return true;
 }
 
-static bool
-shine_encoder_write(Encoder *_encoder,
-		    const void *_data, size_t length,
-		    gcc_unused Error &error)
+bool
+ShineEncoder::Write(const void *_data, size_t length, gcc_unused Error &error)
 {
-	ShineEncoder *encoder = (ShineEncoder *)_encoder;
 	const int16_t *data = (const int16_t*)_data;
-	length /= sizeof(*data) * encoder->audio_format.channels;
+	length /= sizeof(*data) * audio_format.channels;
 	size_t written = 0;
 
-	if (encoder->input_pos > SHINE_MAX_SAMPLES) {
-		encoder->input_pos = 0;
-	}
+	if (input_pos > SHINE_MAX_SAMPLES)
+		input_pos = 0;
 
 	/* write all data to de-interleaved buffers */
 	while (written < length) {
 		for (;
-		     written < length
-			     && encoder->input_pos < encoder->frame_size;
-		     written++, encoder->input_pos++) {
+		     written < length && input_pos < frame_size;
+		     written++, input_pos++) {
 			const size_t base =
-				written * encoder->audio_format.channels;
-			encoder->stereo[0][encoder->input_pos] = data[base];
-			encoder->stereo[1][encoder->input_pos] = data[base + 1];
+				written * audio_format.channels;
+			stereo[0][input_pos] = data[base];
+			stereo[1][input_pos] = data[base + 1];
 		}
 		/* write if chunk is filled */
-		encoder->WriteChunk(false);
+		WriteChunk(false);
 	}
 
 	return true;
 }
 
-static bool
-shine_encoder_flush(Encoder *_encoder, gcc_unused Error &error)
+bool
+ShineEncoder::Flush(gcc_unused Error &error)
 {
-	ShineEncoder *encoder = (ShineEncoder *)_encoder;
-
 	/* flush buffers and flush shine */
-	encoder->WriteChunk(true);
+	WriteChunk(true);
 
 	int written;
-	const uint8_t *data = shine_flush(encoder->shine, &written);
+	const uint8_t *data = shine_flush(shine, &written);
 
 	if (written > 0)
-		encoder->output_buffer->Append(data, written);
+		output_buffer.Append(data, written);
 
 	return true;
-}
-
-static size_t
-shine_encoder_read(Encoder *_encoder, void *dest, size_t length)
-{
-	ShineEncoder *encoder = (ShineEncoder *)_encoder;
-
-	return encoder->output_buffer->Read((uint8_t *)dest, length);
-}
-
-static const char *
-shine_encoder_get_mime_type(gcc_unused Encoder *_encoder)
-{
-	return "audio/mpeg";
 }
 
 const EncoderPlugin shine_encoder_plugin = {
 	"shine",
 	shine_encoder_init,
-	shine_encoder_finish,
-	shine_encoder_open,
-	shine_encoder_close,
-	shine_encoder_flush,
-	shine_encoder_flush,
-	nullptr,
-	nullptr,
-	shine_encoder_write,
-	shine_encoder_read,
-	shine_encoder_get_mime_type,
 };

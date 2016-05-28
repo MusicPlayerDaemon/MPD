@@ -17,15 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ENCODER_TO_OUTPUT_STREAM_HXX
-#define MPD_ENCODER_TO_OUTPUT_STREAM_HXX
+#include "config.h"
+#include "OggPacket.hxx"
+#include "OggSyncState.hxx"
+#include "OggStreamState.hxx"
 
-#include "check.h"
+bool
+OggReadPacket(OggSyncState &sync, OggStreamState &stream, ogg_packet &packet)
+{
+	while (true) {
+		if (stream.PacketOut(packet))
+			return true;
 
-class OutputStream;
-class Encoder;
-
-void
-EncoderToOutputStream(OutputStream &os, Encoder &encoder);
-
-#endif
+		if (!sync.ExpectPageIn(stream))
+			return false;
+	}
+}

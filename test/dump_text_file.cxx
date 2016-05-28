@@ -51,16 +51,13 @@ dump_input_stream(InputStreamPtr &&is)
 		dump_text_file(tis);
 	}
 
-	is->Lock();
+	const ScopeLock protect(is->mutex);
 
 	Error error;
 	if (!is->Check(error)) {
 		LogError(error);
-		is->Unlock();
 		return EXIT_FAILURE;
 	}
-
-	is->Unlock();
 
 	return 0;
 }

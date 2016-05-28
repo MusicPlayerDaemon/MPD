@@ -17,15 +17,42 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ENCODER_TO_OUTPUT_STREAM_HXX
-#define MPD_ENCODER_TO_OUTPUT_STREAM_HXX
+#ifndef MPD_VORBIS_COMMENT_HXX
+#define MPD_VORBIS_COMMENT_HXX
 
 #include "check.h"
 
-class OutputStream;
-class Encoder;
+#include <vorbis/codec.h>
 
-void
-EncoderToOutputStream(OutputStream &os, Encoder &encoder);
+/**
+ * OO wrapper for a #vorbis_comment instance.
+ */
+class VorbisComment {
+	vorbis_comment vc;
+
+public:
+	VorbisComment() {
+		vorbis_comment_init(&vc);
+	}
+
+	~VorbisComment() {
+		vorbis_comment_clear(&vc);
+	}
+
+	VorbisComment(const VorbisComment &) = delete;
+	VorbisComment &operator=(const VorbisComment &) = delete;
+
+	operator vorbis_comment &() {
+		return vc;
+	}
+
+	operator vorbis_comment *() {
+		return &vc;
+	}
+
+	void AddTag(const char *tag, const char *contents) {
+		vorbis_comment_add_tag(&vc, tag, contents);
+	}
+};
 
 #endif

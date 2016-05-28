@@ -20,7 +20,7 @@
 #include "config.h"
 #include "OpusTags.hxx"
 #include "OpusReader.hxx"
-#include "XiphTags.hxx"
+#include "lib/xiph/XiphTags.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/Tag.hxx"
 #include "ReplayGainInfo.hxx"
