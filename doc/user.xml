@@ -1942,7 +1942,9 @@ buffer_size: 16384</programlisting>
         <title><varname>pcm</varname></title>
 
         <para>
-          Read raw PCM samples.
+          Read raw PCM samples.  It understands the "audio/L16" MIME
+          type with parameters "rate" and "channels" according to RFC
+          2586.
         </para>
       </section>
 

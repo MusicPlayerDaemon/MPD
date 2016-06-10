@@ -20,9 +20,12 @@
 #include "config.h"
 #include "PcmDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
+#include "CheckAudioFormat.hxx"
 #include "input/InputStream.hxx"
 #include "util/Error.hxx"
 #include "util/ByteReverse.hxx"
+#include "util/NumberParser.hxx"
+#include "util/MimeType.hxx"
 #include "Log.hxx"
 
 #include <string.h>
@@ -30,7 +33,7 @@
 static void
 pcm_stream_decode(Decoder &decoder, InputStream &is)
 {
-	static constexpr AudioFormat audio_format = {
+	AudioFormat audio_format = {
 		44100,
 		SampleFormat::S16,
 		2,
@@ -39,6 +42,66 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 	const char *const mime = is.GetMimeType();
 	const bool reverse_endian = mime != nullptr &&
 		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
+
+	const bool l16 = mime != nullptr &&
+		GetMimeTypeBase(mime) == "audio/L16";
+	if (l16) {
+		audio_format.sample_rate = 0;
+		audio_format.channels = 1;
+	}
+
+	{
+		const auto mime_parameters = ParseMimeTypeParameters(mime);
+		Error error;
+
+		/* MIME type parameters according to RFC 2586 */
+		auto i = mime_parameters.find("rate");
+		if (i != mime_parameters.end()) {
+			const char *s = i->second.c_str();
+			char *endptr;
+			unsigned value = ParseUnsigned(s, &endptr);
+			if (endptr == s || *endptr != 0) {
+				FormatWarning(audio_format_domain,
+					      "Failed to parse sample rate: %s",
+					      s);
+				return;
+			}
+
+			if (!audio_check_sample_rate(value, error)) {
+				LogError(error);
+				return;
+			}
+
+			audio_format.sample_rate = value;
+		}
+
+		i = mime_parameters.find("channels");
+		if (i != mime_parameters.end()) {
+			const char *s = i->second.c_str();
+			char *endptr;
+			unsigned value = ParseUnsigned(s, &endptr);
+			if (endptr == s || *endptr != 0) {
+				FormatWarning(audio_format_domain,
+					      "Failed to parse sample rate: %s",
+					      s);
+				return;
+			}
+
+			if (!audio_check_channel_count(value, error)) {
+				LogError(error);
+				return;
+			}
+
+			audio_format.channels = value;
+		}
+	}
+
+	if (audio_format.sample_rate == 0) {
+		FormatWarning(audio_format_domain,
+			      "Missing 'rate' parameter: %s",
+			      mime);
+		return;
+	}
 
 	const auto frame_size = audio_format.GetFrameSize();
 
@@ -88,6 +151,9 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 }
 
 static const char *const pcm_mime_types[] = {
+	/* RFC 2586 */
+	"audio/L16",
+
 	/* for streams obtained by the cdio_paranoia input plugin */
 	"audio/x-mpd-cdda-pcm",
 
