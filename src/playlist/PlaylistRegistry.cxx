@@ -31,6 +31,7 @@
 #include "plugins/CuePlaylistPlugin.hxx"
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
 #include "input/InputStream.hxx"
+#include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
@@ -253,7 +254,7 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 	const char *const mime = is->GetMimeType();
 	if (mime != nullptr) {
 		auto playlist = playlist_list_open_stream_mime(std::move(is),
-							       mime);
+							       GetMimeTypeBase(mime).c_str());
 		if (playlist != nullptr)
 			return playlist;
 	}

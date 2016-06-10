@@ -32,6 +32,7 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "DecoderList.hxx"
+#include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -180,7 +181,8 @@ decoder_check_plugin_mime(const DecoderPlugin &plugin, const InputStream &is)
 	assert(plugin.stream_decode != nullptr);
 
 	const char *mime_type = is.GetMimeType();
-	return mime_type != nullptr && plugin.SupportsMimeType(mime_type);
+	return mime_type != nullptr &&
+		plugin.SupportsMimeType(GetMimeTypeBase(mime_type).c_str());
 }
 
 gcc_pure
