@@ -21,6 +21,7 @@
 #define MPD_MIME_TYPE_HXX
 
 #include <string>
+#include <map>
 
 /**
  * Extract the part of the MIME type before the parameters, i.e. the
@@ -29,5 +30,14 @@
  */
 std::string
 GetMimeTypeBase(const char *s);
+
+/**
+ * Parse the parameters from a MIME type string.  Parameters are
+ * separated by semicolon.  Example:
+ *
+ * "foo/bar; param1=value1; param2=value2"
+ */
+std::map<std::string, std::string>
+ParseMimeTypeParameters(const char *s);
 
 #endif

@@ -18,6 +18,7 @@
  */
 
 #include "MimeType.hxx"
+#include "SplitString.hxx"
 
 #include <string.h>
 
@@ -28,4 +29,25 @@ GetMimeTypeBase(const char *s)
 	return semicolon != nullptr
 		? std::string(s, semicolon)
 		: std::string(s);
+}
+
+std::map<std::string, std::string>
+ParseMimeTypeParameters(const char *s)
+{
+	std::map<std::string, std::string> result;
+
+	auto l = SplitString(s, ';', true);
+	if (!l.empty())
+		l.pop_front();
+
+	for (const auto &i : l) {
+		const auto eq = i.find('=');
+		if (eq == i.npos)
+			continue;
+
+		result.insert(std::make_pair(std::string(&i.front(), eq),
+					     std::string(&i[eq + 1])));
+	}
+
+	return result;
 }
