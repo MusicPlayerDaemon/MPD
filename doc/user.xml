@@ -1944,7 +1944,9 @@ buffer_size: 16384</programlisting>
         <para>
           Read raw PCM samples.  It understands the "audio/L16" MIME
           type with parameters "rate" and "channels" according to RFC
-          2586.
+          2586.  It also understands the
+          <application>MPD</application>-specific MIME type
+          "audio/x-mpd-float".
         </para>
       </section>
 

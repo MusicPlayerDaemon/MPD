@@ -23,7 +23,7 @@ ver 0.20 (not yet released)
   - gme: add option "accuracy"
   - mad: reduce memory usage while scanning tags
   - mpcdec: read the bit rate
-  - pcm: support audio/L16 (RFC 2586)
+  - pcm: support audio/L16 (RFC 2586) and audio/x-mpd-float
 * playlist
   - cue: don't skip pregap
   - embcue: fix last track

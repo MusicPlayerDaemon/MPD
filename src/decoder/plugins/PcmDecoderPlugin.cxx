@@ -45,10 +45,15 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 
 	const bool l16 = mime != nullptr &&
 		GetMimeTypeBase(mime) == "audio/L16";
-	if (l16) {
+	const bool is_float = mime != nullptr &&
+		GetMimeTypeBase(mime) == "audio/x-mpd-float";
+	if (l16 || is_float) {
 		audio_format.sample_rate = 0;
 		audio_format.channels = 1;
 	}
+
+	if (is_float)
+		audio_format.format = SampleFormat::FLOAT;
 
 	{
 		const auto mime_parameters = ParseMimeTypeParameters(mime);
@@ -153,6 +158,9 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 static const char *const pcm_mime_types[] = {
 	/* RFC 2586 */
 	"audio/L16",
+
+	/* MPD-specific: float32 native-endian */
+	"audio/x-mpd-float",
 
 	/* for streams obtained by the cdio_paranoia input plugin */
 	"audio/x-mpd-cdda-pcm",
