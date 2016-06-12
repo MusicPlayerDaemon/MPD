@@ -22,6 +22,7 @@
 #include "tag/Generic.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
+#include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
 #include "decoder/DecoderList.hxx"
@@ -51,10 +52,14 @@ tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 
 	UriSuffixBuffer suffix_buffer;
 	const char *const suffix = uri_get_suffix(is.GetURI(), suffix_buffer);
-	const char *const mime = is.GetMimeType();
+	const char *mime = is.GetMimeType();
 
 	if (suffix == nullptr && mime == nullptr)
 		return false;
+
+	std::string mime_base;
+	if (mime != nullptr)
+		mime = (mime_base = GetMimeTypeBase(mime)).c_str();
 
 	return decoder_plugins_try([suffix, mime, &is,
 				    &handler, ctx](const DecoderPlugin &plugin){

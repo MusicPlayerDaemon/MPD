@@ -91,7 +91,7 @@ Strip(char *p)
 }
 
 bool
-string_array_contains(const char *const* haystack, const char *needle)
+StringArrayContainsCase(const char *const*haystack, const char *needle)
 {
 	assert(haystack != nullptr);
 	assert(needle != nullptr);

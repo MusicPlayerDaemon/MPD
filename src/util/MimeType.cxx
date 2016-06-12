@@ -17,24 +17,37 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ConfigParser.hxx"
-#include "util/StringUtil.hxx"
+#include "MimeType.hxx"
+#include "SplitString.hxx"
 
-bool
-get_bool(const char *value, bool *value_r)
+#include <string.h>
+
+std::string
+GetMimeTypeBase(const char *s)
 {
-	static const char *const t[] = { "yes", "true", "1", nullptr };
-	static const char *const f[] = { "no", "false", "0", nullptr };
+	const char *semicolon = strchr(s, ';');
+	return semicolon != nullptr
+		? std::string(s, semicolon)
+		: std::string(s);
+}
 
-	if (StringArrayContainsCase(t, value)) {
-		*value_r = true;
-		return true;
+std::map<std::string, std::string>
+ParseMimeTypeParameters(const char *s)
+{
+	std::map<std::string, std::string> result;
+
+	auto l = SplitString(s, ';', true);
+	if (!l.empty())
+		l.pop_front();
+
+	for (const auto &i : l) {
+		const auto eq = i.find('=');
+		if (eq == i.npos)
+			continue;
+
+		result.insert(std::make_pair(std::string(&i.front(), eq),
+					     std::string(&i[eq + 1])));
 	}
 
-	if (StringArrayContainsCase(f, value)) {
-		*value_r = false;
-		return true;
-	}
-
-	return false;
+	return result;
 }

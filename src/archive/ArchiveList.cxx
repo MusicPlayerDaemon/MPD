@@ -56,7 +56,7 @@ archive_plugin_from_suffix(const char *suffix)
 
 	archive_plugins_for_each_enabled(plugin)
 		if (plugin->suffixes != nullptr &&
-		    string_array_contains(plugin->suffixes, suffix))
+		    StringArrayContainsCase(plugin->suffixes, suffix))
 			return plugin;
 
 	return nullptr;

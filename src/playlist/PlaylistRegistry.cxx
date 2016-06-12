@@ -31,6 +31,7 @@
 #include "plugins/CuePlaylistPlugin.hxx"
 #include "plugins/EmbeddedCuePlaylistPlugin.hxx"
 #include "input/InputStream.hxx"
+#include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
@@ -120,7 +121,7 @@ playlist_list_open_uri_scheme(const char *uri, Mutex &mutex, Cond &cond,
 
 		if (playlist_plugins_enabled[i] && plugin->open_uri != nullptr &&
 		    plugin->schemes != nullptr &&
-		    string_array_contains(plugin->schemes, scheme.c_str())) {
+		    StringArrayContainsCase(plugin->schemes, scheme.c_str())) {
 			playlist = playlist_plugin_open_uri(plugin, uri,
 							    mutex, cond);
 			if (playlist != nullptr)
@@ -151,7 +152,7 @@ playlist_list_open_uri_suffix(const char *uri, Mutex &mutex, Cond &cond,
 
 		if (playlist_plugins_enabled[i] && !tried[i] &&
 		    plugin->open_uri != nullptr && plugin->suffixes != nullptr &&
-		    string_array_contains(plugin->suffixes, suffix)) {
+		    StringArrayContainsCase(plugin->suffixes, suffix)) {
 			playlist = playlist_plugin_open_uri(plugin, uri,
 							    mutex, cond);
 			if (playlist != nullptr)
@@ -189,7 +190,7 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, const char *mime)
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->open_stream != nullptr &&
 		    plugin->mime_types != nullptr &&
-		    string_array_contains(plugin->mime_types, mime)) {
+		    StringArrayContainsCase(plugin->mime_types, mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			is->Rewind(IgnoreError());
@@ -230,7 +231,7 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix)
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->open_stream != nullptr &&
 		    plugin->suffixes != nullptr &&
-		    string_array_contains(plugin->suffixes, suffix)) {
+		    StringArrayContainsCase(plugin->suffixes, suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
 			is->Rewind(IgnoreError());
@@ -253,7 +254,7 @@ playlist_list_open_stream(InputStreamPtr &&is, const char *uri)
 	const char *const mime = is->GetMimeType();
 	if (mime != nullptr) {
 		auto playlist = playlist_list_open_stream_mime(std::move(is),
-							       mime);
+							       GetMimeTypeBase(mime).c_str());
 		if (playlist != nullptr)
 			return playlist;
 	}
@@ -279,7 +280,7 @@ playlist_suffix_supported(const char *suffix)
 
 	playlist_plugins_for_each_enabled(plugin) {
 		if (plugin->suffixes != nullptr &&
-		    string_array_contains(plugin->suffixes, suffix))
+		    StringArrayContainsCase(plugin->suffixes, suffix))
 			return true;
 	}
 

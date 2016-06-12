@@ -17,24 +17,27 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "ConfigParser.hxx"
-#include "util/StringUtil.hxx"
+#ifndef MPD_MIME_TYPE_HXX
+#define MPD_MIME_TYPE_HXX
 
-bool
-get_bool(const char *value, bool *value_r)
-{
-	static const char *const t[] = { "yes", "true", "1", nullptr };
-	static const char *const f[] = { "no", "false", "0", nullptr };
+#include <string>
+#include <map>
 
-	if (StringArrayContainsCase(t, value)) {
-		*value_r = true;
-		return true;
-	}
+/**
+ * Extract the part of the MIME type before the parameters, i.e. the
+ * part before the semicolon.  If there is no semicolon, it returns
+ * the string as-is.
+ */
+std::string
+GetMimeTypeBase(const char *s);
 
-	if (StringArrayContainsCase(f, value)) {
-		*value_r = false;
-		return true;
-	}
+/**
+ * Parse the parameters from a MIME type string.  Parameters are
+ * separated by semicolon.  Example:
+ *
+ * "foo/bar; param1=value1; param2=value2"
+ */
+std::map<std::string, std::string>
+ParseMimeTypeParameters(const char *s);
 
-	return false;
-}
+#endif

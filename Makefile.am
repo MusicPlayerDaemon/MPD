@@ -406,6 +406,7 @@ libutil_a_SOURCES = \
 	src/util/UTF8.cxx src/util/UTF8.hxx \
 	src/util/CharUtil.hxx \
 	src/util/NumberParser.hxx \
+	src/util/MimeType.cxx src/util/MimeType.hxx \
 	src/util/StringPointer.hxx \
 	src/util/StringView.cxx src/util/StringView.hxx \
 	src/util/AllocatedString.cxx src/util/AllocatedString.hxx \
@@ -2214,6 +2215,7 @@ test_test_util_SOURCES = \
 	test/DivideStringTest.hxx \
 	test/SplitStringTest.hxx \
 	test/UriUtilTest.hxx \
+	test/MimeTypeTest.hxx \
 	test/TestCircularBuffer.hxx \
 	test/test_util.cxx
 test_test_util_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
