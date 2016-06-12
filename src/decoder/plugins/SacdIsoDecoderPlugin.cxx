@@ -378,6 +378,7 @@ sacdiso_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_
 		return false;
 	}
 	unsigned track = get_subsong(path_fs.c_str());
+	unsigned track_sacd = track; // pass correct track to sacd_metabase
 	unsigned twoch_count = sacd_reader->get_tracks(AREA_TWOCH);
 	unsigned mulch_count = sacd_reader->get_tracks(AREA_MULCH);
 	if (track < twoch_count) {
@@ -396,7 +397,7 @@ sacdiso_scan_file(Path path_fs, const struct TagHandler& handler, void* handler_
 	string tag_value = to_string(track + 1);
 	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, tag_value.c_str());
 	tag_handler_invoke_duration(handler, handler_ctx, SongTime::FromS(sacd_reader->get_duration(track)));
-	if (!sacd_metabase || (sacd_metabase && !sacd_metabase->get_info(track, handler, handler_ctx))) {
+	if (!sacd_metabase || (sacd_metabase && !sacd_metabase->get_info(track_sacd, handler, handler_ctx))) {
 		sacd_reader->get_info(track, handler, handler_ctx);
 	}
 	return true;
