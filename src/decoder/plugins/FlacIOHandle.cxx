@@ -20,6 +20,7 @@
 #include "config.h"
 #include "FlacIOHandle.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
 #include "Compiler.h"
 
 #include <errno.h>
@@ -87,7 +88,13 @@ FlacIOSeek(FLAC__IOHandle handle, FLAC__int64 _offset, int whence)
 		return -1;
 	}
 
-	return is->LockSeek(offset, IgnoreError()) ? 0 : -1;
+	Error error;
+	if (!is->LockSeek(offset, error)) {
+		LogError(error);
+		return -1;
+	}
+
+	return 0;
 }
 
 static FLAC__int64
