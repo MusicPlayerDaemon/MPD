@@ -518,6 +518,8 @@ Player::SeekDecoder()
 {
 	assert(pc.next_song != nullptr);
 
+	pc.outputs.Cancel();
+
 	const SongTime start_time = pc.next_song->GetStartTime();
 
 	if (!dc.LockIsCurrentSong(*pc.next_song)) {
@@ -582,8 +584,6 @@ Player::SeekDecoder()
 
 	/* re-fill the buffer after seeking */
 	buffering = true;
-
-	pc.outputs.Cancel();
 
 	return true;
 }

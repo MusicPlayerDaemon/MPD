@@ -1,4 +1,5 @@
 ver 0.19.16 (not yet released)
+* faster seeking
 * fix system include path order
 * add missing DocBook file to tarball
 
