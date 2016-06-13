@@ -122,6 +122,7 @@ handle_addid(Client &client, Request args, Response &r)
 
 		try {
 			client.partition.MoveId(added_id, to);
+			r.Format("Id: %u\n", added_id);
 			return CommandResult::OK;
 		} catch (...) {
 			/* rollback */
