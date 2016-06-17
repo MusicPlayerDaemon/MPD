@@ -52,7 +52,7 @@ HugeAllocate(size_t size) throw(std::bad_alloc);
  * @param size the allocation's size as passed to HugeAllocate()
  */
 void
-HugeFree(void *p, size_t size);
+HugeFree(void *p, size_t size) noexcept;
 
 /**
  * Discard any data stored in the allocation and give the memory back
@@ -63,7 +63,7 @@ HugeFree(void *p, size_t size);
  * @param size the allocation's size as passed to HugeAllocate()
  */
 void
-HugeDiscard(void *p, size_t size);
+HugeDiscard(void *p, size_t size) noexcept;
 
 #elif defined(WIN32)
 #include <windows.h>
@@ -73,13 +73,13 @@ void *
 HugeAllocate(size_t size) throw(std::bad_alloc);
 
 static inline void
-HugeFree(void *p, gcc_unused size_t size)
+HugeFree(void *p, gcc_unused size_t size) noexcept
 {
 	VirtualFree(p, 0, MEM_RELEASE);
 }
 
 static inline void
-HugeDiscard(void *p, size_t size)
+HugeDiscard(void *p, size_t size) noexcept
 {
 	VirtualAlloc(p, size, MEM_RESET, PAGE_NOACCESS);
 }
@@ -98,14 +98,14 @@ HugeAllocate(size_t size) throw(std::bad_alloc)
 }
 
 static inline void
-HugeFree(void *_p, size_t)
+HugeFree(void *_p, size_t) noexcept
 {
 	auto *p = (uint8_t *)_p;
 	delete[] p;
 }
 
 static inline void
-HugeDiscard(void *, size_t)
+HugeDiscard(void *, size_t) noexcept
 {
 }
 

@@ -81,13 +81,13 @@ HugeAllocate(size_t size) throw(std::bad_alloc)
 }
 
 void
-HugeFree(void *p, size_t size)
+HugeFree(void *p, size_t size) noexcept
 {
 	munmap(p, AlignToPageSize(size));
 }
 
 void
-HugeDiscard(void *p, size_t size)
+HugeDiscard(void *p, size_t size) noexcept
 {
 #ifdef MADV_DONTNEED
 	madvise(p, AlignToPageSize(size), MADV_DONTNEED);
