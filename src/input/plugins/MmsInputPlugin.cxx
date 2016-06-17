@@ -73,7 +73,7 @@ MmsInputStream::Open(Error &error)
 static InputStream *
 input_mms_open(const char *url,
 	       Mutex &mutex, Cond &cond,
-	       Error &error)
+	       gcc_unused Error &error)
 {
 	if (!StringStartsWith(url, "mms://") &&
 	    !StringStartsWith(url, "mmsh://") &&
@@ -82,11 +82,8 @@ input_mms_open(const char *url,
 		return nullptr;
 
 	auto m = new MmsInputStream(url, mutex, cond);
-	auto is = m->Start(error);
-	if (is == nullptr)
-		delete m;
-
-	return is;
+	m->Start();
+	return m;
 }
 
 size_t

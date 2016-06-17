@@ -83,10 +83,11 @@ private:
 };
 
 bool
-SmbclientNeighborExplorer::Open(Error &error)
+SmbclientNeighborExplorer::Open(gcc_unused Error &error)
 {
 	quit = false;
-	return thread.Start(ThreadFunc, this, error);
+	thread.Start(ThreadFunc, this);
+	return true;
 }
 
 void

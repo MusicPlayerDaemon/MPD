@@ -78,10 +78,8 @@ public:
 
 	/**
 	 * Initialize the object and start the thread.
-	 *
-	 * @return false on error
 	 */
-	InputStream *Start(Error &error);
+	void Start();
 
 	/* virtual methods from InputStream */
 	bool Check(Error &error) override final;

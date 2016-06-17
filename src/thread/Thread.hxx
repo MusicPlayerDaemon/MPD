@@ -31,8 +31,6 @@
 
 #include <assert.h>
 
-class Error;
-
 class Thread {
 #ifdef WIN32
 	HANDLE handle = nullptr;
@@ -91,7 +89,7 @@ public:
 #endif
 	}
 
-	bool Start(void (*f)(void *ctx), void *ctx, Error &error);
+	bool Start(void (*f)(void *ctx), void *ctx);
 	void Join();
 
 private:

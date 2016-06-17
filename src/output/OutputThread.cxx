@@ -33,7 +33,6 @@
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
 #include "thread/Name.hxx"
-#include "system/FatalError.hxx"
 #include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "Log.hxx"
@@ -709,7 +708,5 @@ AudioOutput::StartThread()
 {
 	assert(command == Command::NONE);
 
-	Error error;
-	if (!thread.Start(Task, this, error))
-		FatalError(error);
+	thread.Start(Task, this);
 }
