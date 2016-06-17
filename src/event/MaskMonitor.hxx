@@ -22,7 +22,7 @@
 
 #include "check.h"
 #include "DeferredMonitor.hxx"
-#include "util/BoundMethod.hxx"
+#include "util/BindMethod.hxx"
 
 #include <atomic>
 
@@ -32,12 +32,15 @@
  *
  * This class is thread-safe.
  */
-class MaskMonitor : DeferredMonitor {
+class MaskMonitor final : DeferredMonitor {
+	typedef BoundMethod<void(unsigned)> Callback;
+	const Callback callback;
+
 	std::atomic_uint pending_mask;
 
 public:
-	explicit MaskMonitor(EventLoop &_loop)
-		:DeferredMonitor(_loop), pending_mask(0) {}
+	MaskMonitor(EventLoop &_loop, Callback _callback)
+		:DeferredMonitor(_loop), callback(_callback), pending_mask(0) {}
 
 	using DeferredMonitor::GetEventLoop;
 	using DeferredMonitor::Cancel;
@@ -45,28 +48,8 @@ public:
 	void OrMask(unsigned new_mask);
 
 protected:
-	virtual void HandleMask(unsigned mask) = 0;
-
 	/* virtual methode from class DeferredMonitor */
 	void RunDeferred() override;
-};
-
-/**
- * A variant of #MaskMonitor which invokes a bound method.
- */
-template<typename T>
-class CallbackMaskMonitor final : public MaskMonitor {
-	BoundMethod<T, void, unsigned> callback;
-
-public:
-	template<typename... Args>
-	explicit CallbackMaskMonitor(EventLoop &_loop, Args&&... args)
-		:MaskMonitor(_loop), callback(std::forward<Args>(args)...) {}
-
-protected:
-	void HandleMask(unsigned mask) override {
-		callback(mask);
-	}
 };
 
 #endif

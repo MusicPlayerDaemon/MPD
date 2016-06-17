@@ -32,5 +32,5 @@ MaskMonitor::RunDeferred()
 {
 	const unsigned mask = pending_mask.exchange(0);
 	if (mask != 0)
-		HandleMask(mask);
+		callback(mask);
 }

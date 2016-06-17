@@ -44,7 +44,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	Instance &instance;
 
-	CallbackMaskMonitor<Partition> global_events;
+	MaskMonitor global_events;
 
 	struct playlist playlist;
 
