@@ -133,6 +133,12 @@ protected:
 		return buffer.GetSpace();
 	}
 
+	CircularBuffer<uint8_t>::Range PrepareWriteBuffer() {
+		return buffer.Write();
+	}
+
+	void CommitWriteBuffer(size_t nbytes);
+
 	/**
 	 * Append data to the buffer.  The size must fit into the
 	 * buffer; see GetBufferSpace().

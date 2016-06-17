@@ -216,6 +216,17 @@ AsyncInputStream::Read(void *ptr, size_t read_size, Error &error)
 }
 
 void
+AsyncInputStream::CommitWriteBuffer(size_t nbytes)
+{
+	buffer.Append(nbytes);
+
+	if (!IsReady())
+		SetReady();
+	else
+		cond.broadcast();
+}
+
+void
 AsyncInputStream::AppendToBuffer(const void *data, size_t append_size)
 {
 	auto w = buffer.Write();
