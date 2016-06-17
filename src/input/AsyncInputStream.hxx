@@ -21,7 +21,7 @@
 #define MPD_ASYNC_INPUT_STREAM_HXX
 
 #include "InputStream.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferredCall.hxx"
 #include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
 #include "util/Error.hxx"
@@ -32,10 +32,13 @@
  * buffer, and that buffer is then consumed by another thread using
  * the regular #InputStream API.
  */
-class AsyncInputStream : public InputStream, private DeferredMonitor {
+class AsyncInputStream : public InputStream {
 	enum class SeekState : uint8_t {
 		NONE, SCHEDULED, PENDING
 	};
+
+	DeferredCall deferred_resume;
+	DeferredCall deferred_seek;
 
 	HugeAllocation allocation;
 
@@ -162,8 +165,9 @@ protected:
 private:
 	void Resume();
 
-	/* virtual methods from DeferredMonitor */
-	void RunDeferred() final;
+	/* for DeferredCall */
+	void DeferredResume();
+	void DeferredSeek();
 };
 
 #endif
