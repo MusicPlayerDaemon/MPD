@@ -33,6 +33,7 @@
 #include "Compiler.h"
 
 #include <new>
+#include <utility>
 
 #include <stddef.h>
 
@@ -110,5 +111,50 @@ HugeDiscard(void *, size_t) noexcept
 }
 
 #endif
+
+/**
+ * Automatic huge memory allocation management.
+ */
+class HugeAllocation {
+	void *data = nullptr;
+	size_t size;
+
+public:
+	HugeAllocation() = default;
+
+	HugeAllocation(size_t _size) throw(std::bad_alloc)
+		:data(HugeAllocate(_size)), size(_size) {}
+
+	HugeAllocation(HugeAllocation &&src) noexcept
+		:data(src.data), size(src.size) {
+		src.data = nullptr;
+	}
+
+	~HugeAllocation() {
+		if (data != nullptr)
+			HugeFree(data, size);
+	}
+
+	HugeAllocation &operator=(HugeAllocation &&src) noexcept {
+		std::swap(data, src.data);
+		std::swap(size, src.size);
+		return *this;
+	}
+
+	void Discard() noexcept {
+		HugeDiscard(data, size);
+	}
+
+	void reset() noexcept {
+		if (data != nullptr) {
+			HugeFree(data, size);
+			data = nullptr;
+		}
+	}
+
+	void *get() noexcept {
+		return data;
+	}
+};
 
 #endif
