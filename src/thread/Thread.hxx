@@ -35,11 +35,11 @@ class Error;
 
 class Thread {
 #ifdef WIN32
-	HANDLE handle;
+	HANDLE handle = nullptr;
 	DWORD id;
 #else
 	pthread_t handle;
-	bool defined;
+	bool defined = false;
 
 #ifndef NDEBUG
 	/**
@@ -47,7 +47,7 @@ class Thread {
 	 * IsInside(), which may return false until pthread_create() has
 	 * initialised the #handle.
 	 */
-	bool creating;
+	bool creating = false;
 #endif
 #endif
 
@@ -55,15 +55,7 @@ class Thread {
 	void *ctx;
 
 public:
-#ifdef WIN32
-	Thread():handle(nullptr) {}
-#else
-	Thread():defined(false) {
-#ifndef NDEBUG
-		creating = false;
-#endif
-	}
-#endif
+	Thread() = default;
 
 	Thread(const Thread &) = delete;
 
