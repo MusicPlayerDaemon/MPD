@@ -48,11 +48,10 @@ class NfsInputStream final : public AsyncInputStream, NfsFileReader {
 	bool reconnect_on_resume, reconnecting;
 
 public:
-	NfsInputStream(const char *_uri,
-		       Mutex &_mutex, Cond &_cond,
-		       void *_buffer)
+	NfsInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
 		:AsyncInputStream(_uri, _mutex, _cond,
-				  _buffer, NFS_MAX_BUFFERED,
+				  HugeAllocate(NFS_MAX_BUFFERED),
+				  NFS_MAX_BUFFERED,
 				  NFS_RESUME_AT),
 		 reconnect_on_resume(false), reconnecting(false) {}
 
@@ -239,13 +238,7 @@ input_nfs_open(const char *uri,
 	if (!StringStartsWith(uri, "nfs://"))
 		return nullptr;
 
-	void *buffer = HugeAllocate(NFS_MAX_BUFFERED);
-	if (buffer == nullptr) {
-		error.Set(nfs_domain, "Out of memory");
-		return nullptr;
-	}
-
-	NfsInputStream *is = new NfsInputStream(uri, mutex, cond, buffer);
+	NfsInputStream *is = new NfsInputStream(uri, mutex, cond);
 	if (!is->Open(error)) {
 		delete is;
 		return nullptr;

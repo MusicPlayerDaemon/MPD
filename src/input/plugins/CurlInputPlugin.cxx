@@ -73,10 +73,10 @@ struct CurlInputStream final : public AsyncInputStream {
 	/** parser for icy-metadata */
 	IcyInputStream *icy;
 
-	CurlInputStream(const char *_url, Mutex &_mutex, Cond &_cond,
-			void *_buffer)
+	CurlInputStream(const char *_url, Mutex &_mutex, Cond &_cond)
 		:AsyncInputStream(_url, _mutex, _cond,
-				  _buffer, CURL_MAX_BUFFERED,
+				  HugeAllocate(CURL_MAX_BUFFERED),
+				  CURL_MAX_BUFFERED,
 				  CURL_RESUME_AT),
 		 request_headers(nullptr),
 		 icy(new IcyInputStream(this)) {}
@@ -844,14 +844,7 @@ inline InputStream *
 CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond,
 		      Error &error)
 {
-	void *buffer = HugeAllocate(CURL_MAX_BUFFERED);
-	if (buffer == nullptr) {
-		error.Set(curl_domain, "Out of memory");
-		return nullptr;
-	}
-
-	CurlInputStream *c = new CurlInputStream(url, mutex, cond, buffer);
-
+	CurlInputStream *c = new CurlInputStream(url, mutex, cond);
 	if (!c->InitEasy(error) || !input_curl_easy_add_indirect(c, error)) {
 		delete c;
 		return nullptr;

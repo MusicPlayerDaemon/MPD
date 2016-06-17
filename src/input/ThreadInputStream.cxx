@@ -50,10 +50,7 @@ ThreadInputStream::Start(Error &error)
 	assert(buffer == nullptr);
 
 	void *p = HugeAllocate(buffer_size);
-	if (p == nullptr) {
-		error.SetErrno();
-		return nullptr;
-	}
+	assert(p != nullptr);
 
 	buffer = new CircularBuffer<uint8_t>((uint8_t *)p, buffer_size);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2016 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -54,7 +54,7 @@ AlignToPageSize(size_t size)
 }
 
 void *
-HugeAllocate(size_t size)
+HugeAllocate(size_t size) throw(std::bad_alloc)
 {
 	size = AlignToPageSize(size);
 
@@ -63,7 +63,7 @@ HugeAllocate(size_t size)
 		       PROT_READ|PROT_WRITE, flags,
 		       -1, 0);
 	if (p == (void *)-1)
-		return nullptr;
+		throw std::bad_alloc();
 
 #ifdef MADV_HUGEPAGE
 	/* allow the Linux kernel to use "Huge Pages", which reduces page
@@ -92,6 +92,21 @@ HugeDiscard(void *p, size_t size)
 #ifdef MADV_DONTNEED
 	madvise(p, AlignToPageSize(size), MADV_DONTNEED);
 #endif
+}
+
+#elif defined(WIN32)
+
+void *
+HugeAllocate(size_t size) throw(std::bad_alloc)
+{
+	// TODO: use MEM_LARGE_PAGES
+	void *p = VirtualAlloc(nullptr, size,
+			       MEM_COMMIT|MEM_RESERVE,
+			       PAGE_READWRITE);
+	if (p == nullptr)
+		throw std::bad_alloc();
+
+	return p;
 }
 
 #endif

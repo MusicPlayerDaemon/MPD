@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2016 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,6 +32,8 @@
 
 #include "Compiler.h"
 
+#include <new>
+
 #include <stddef.h>
 
 #ifdef __linux__
@@ -43,7 +45,7 @@
  */
 gcc_malloc
 void *
-HugeAllocate(size_t size);
+HugeAllocate(size_t size) throw(std::bad_alloc);
 
 /**
  * @param p an allocation returned by HugeAllocate()
@@ -67,14 +69,8 @@ HugeDiscard(void *p, size_t size);
 #include <windows.h>
 
 gcc_malloc
-static inline void *
-HugeAllocate(size_t size)
-{
-	// TODO: use MEM_LARGE_PAGES
-	return VirtualAlloc(nullptr, size,
-			    MEM_COMMIT|MEM_RESERVE,
-			    PAGE_READWRITE);
-}
+void *
+HugeAllocate(size_t size) throw(std::bad_alloc);
 
 static inline void
 HugeFree(void *p, gcc_unused size_t size)
@@ -92,19 +88,20 @@ HugeDiscard(void *p, size_t size)
 
 /* not Linux: fall back to standard C calls */
 
-#include <stdlib.h>
+#include <stdint.h>
 
 gcc_malloc
 static inline void *
-HugeAllocate(size_t size)
+HugeAllocate(size_t size) throw(std::bad_alloc)
 {
-	return malloc(size);
+	return new uint8_t[size];
 }
 
 static inline void
-HugeFree(void *p, size_t)
+HugeFree(void *_p, size_t)
 {
-	free(p);
+	auto *p = (uint8_t *)_p;
+	delete[] p;
 }
 
 static inline void
