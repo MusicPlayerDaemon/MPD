@@ -22,6 +22,7 @@
 
 #include "InputStream.hxx"
 #include "event/DeferredMonitor.hxx"
+#include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
 #include "util/Error.hxx"
 
@@ -35,6 +36,8 @@ class AsyncInputStream : public InputStream, private DeferredMonitor {
 	enum class SeekState : uint8_t {
 		NONE, SCHEDULED, PENDING
 	};
+
+	HugeAllocation allocation;
 
 	CircularBuffer<uint8_t> buffer;
 	const size_t resume_at;
@@ -68,7 +71,7 @@ public:
 	 */
 	AsyncInputStream(const char *_url,
 			 Mutex &_mutex, Cond &_cond,
-			 void *_buffer, size_t _buffer_size,
+			 size_t _buffer_size,
 			 size_t _resume_at);
 
 	virtual ~AsyncInputStream();

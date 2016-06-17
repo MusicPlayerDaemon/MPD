@@ -32,7 +32,6 @@
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
-#include "util/HugeAllocator.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -75,7 +74,6 @@ struct CurlInputStream final : public AsyncInputStream {
 
 	CurlInputStream(const char *_url, Mutex &_mutex, Cond &_cond)
 		:AsyncInputStream(_url, _mutex, _cond,
-				  HugeAllocate(CURL_MAX_BUFFERED),
 				  CURL_MAX_BUFFERED,
 				  CURL_RESUME_AT),
 		 request_headers(nullptr),

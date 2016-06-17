@@ -24,7 +24,6 @@
 #include "lib/nfs/Domain.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
-#include "util/HugeAllocator.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 
@@ -50,7 +49,6 @@ class NfsInputStream final : public AsyncInputStream, NfsFileReader {
 public:
 	NfsInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
 		:AsyncInputStream(_uri, _mutex, _cond,
-				  HugeAllocate(NFS_MAX_BUFFERED),
 				  NFS_MAX_BUFFERED,
 				  NFS_RESUME_AT),
 		 reconnect_on_resume(false), reconnecting(false) {}

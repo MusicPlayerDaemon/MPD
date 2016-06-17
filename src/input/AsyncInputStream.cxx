@@ -23,17 +23,17 @@
 #include "tag/Tag.hxx"
 #include "thread/Cond.hxx"
 #include "IOThread.hxx"
-#include "util/HugeAllocator.hxx"
 
 #include <assert.h>
 #include <string.h>
 
 AsyncInputStream::AsyncInputStream(const char *_url,
 				   Mutex &_mutex, Cond &_cond,
-				   void *_buffer, size_t _buffer_size,
+				   size_t _buffer_size,
 				   size_t _resume_at)
 	:InputStream(_url, _mutex, _cond), DeferredMonitor(io_thread_get()),
-	 buffer((uint8_t *)_buffer, _buffer_size),
+	 allocation(_buffer_size),
+	 buffer((uint8_t *)allocation.get(), _buffer_size),
 	 resume_at(_resume_at),
 	 open(true),
 	 paused(false),
@@ -45,7 +45,6 @@ AsyncInputStream::~AsyncInputStream()
 	delete tag;
 
 	buffer.Clear();
-	HugeFree(buffer.Write().data, buffer.GetCapacity());
 }
 
 void
