@@ -54,17 +54,17 @@ class ThreadInputStream : public InputStream {
 	Error postponed_error;
 
 	const size_t buffer_size;
-	CircularBuffer<uint8_t> *buffer;
+	CircularBuffer<uint8_t> *buffer = nullptr;
 
 	/**
 	 * Shall the stream be closed?
 	 */
-	bool close;
+	bool close = false;
 
 	/**
 	 * Has the end of the stream been seen by the thread?
 	 */
-	bool eof;
+	bool eof = false;
 
 public:
 	ThreadInputStream(const char *_plugin,
@@ -72,9 +72,7 @@ public:
 			  size_t _buffer_size)
 		:InputStream(_uri, _mutex, _cond),
 		 plugin(_plugin),
-		 buffer_size(_buffer_size),
-		 buffer(nullptr),
-		 close(false), eof(false) {}
+		 buffer_size(_buffer_size) {}
 
 	virtual ~ThreadInputStream();
 
