@@ -24,8 +24,6 @@
 #include "thread/Thread.hxx"
 #include "thread/Name.hxx"
 #include "event/Loop.hxx"
-#include "system/FatalError.hxx"
-#include "util/Error.hxx"
 
 #include <assert.h>
 
@@ -75,10 +73,7 @@ io_thread_start()
 	assert(!io.thread.IsDefined());
 
 	const ScopeLock protect(io.mutex);
-
-	Error error;
-	if (!io.thread.Start(io_thread_func, nullptr, error))
-		FatalError(error);
+	io.thread.Start(io_thread_func, nullptr);
 }
 
 void

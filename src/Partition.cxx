@@ -29,7 +29,7 @@ Partition::Partition(Instance &_instance,
 		     unsigned buffer_chunks,
 		     unsigned buffered_before_play)
 	:instance(_instance),
-	 global_events(instance.event_loop, *this, &Partition::OnGlobalEvent),
+	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
 	 outputs(*this),
 	 pc(*this, outputs, buffer_chunks, buffered_before_play)

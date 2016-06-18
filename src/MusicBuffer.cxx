@@ -20,14 +20,11 @@
 #include "config.h"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
-#include "system/FatalError.hxx"
 
 #include <assert.h>
 
 MusicBuffer::MusicBuffer(unsigned num_chunks)
 	:buffer(num_chunks) {
-	if (buffer.IsOOM())
-		FatalError("Failed to allocate buffer");
 }
 
 MusicChunk *

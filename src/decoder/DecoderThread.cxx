@@ -24,7 +24,6 @@
 #include "DecoderError.hxx"
 #include "DecoderPlugin.hxx"
 #include "DetachedSong.hxx"
-#include "system/FatalError.hxx"
 #include "MusicPipe.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -521,8 +520,5 @@ decoder_thread_start(DecoderControl &dc)
 	assert(!dc.thread.IsDefined());
 
 	dc.quit = false;
-
-	Error error;
-	if (!dc.thread.Start(decoder_task, &dc, error))
-		FatalError(error);
+	dc.thread.Start(decoder_task, &dc);
 }

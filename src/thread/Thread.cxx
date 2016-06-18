@@ -19,14 +19,14 @@
 
 #include "config.h"
 #include "Thread.hxx"
-#include "util/Error.hxx"
+#include "system/Error.hxx"
 
 #ifdef ANDROID
 #include "java/Global.hxx"
 #endif
 
 bool
-Thread::Start(void (*_f)(void *ctx), void *_ctx, Error &error)
+Thread::Start(void (*_f)(void *ctx), void *_ctx)
 {
 	assert(!IsDefined());
 
@@ -35,10 +35,8 @@ Thread::Start(void (*_f)(void *ctx), void *_ctx, Error &error)
 
 #ifdef WIN32
 	handle = ::CreateThread(nullptr, 0, ThreadProc, this, 0, &id);
-	if (handle == nullptr) {
-		error.SetLastError("Failed to create thread");
-		return false;
-	}
+	if (handle == nullptr)
+		throw MakeLastError("Failed to create thread");
 #else
 #ifndef NDEBUG
 	creating = true;
@@ -50,8 +48,7 @@ Thread::Start(void (*_f)(void *ctx), void *_ctx, Error &error)
 #ifndef NDEBUG
 		creating = false;
 #endif
-		error.SetErrno(e, "Failed to create thread");
-		return false;
+		throw MakeErrno(e, "Failed to create thread");
 	}
 
 	defined = true;

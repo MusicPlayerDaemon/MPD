@@ -88,13 +88,6 @@ public:
 	SliceBuffer(const SliceBuffer &other) = delete;
 	SliceBuffer &operator=(const SliceBuffer &other) = delete;
 
-	/**
-	 * @return true if buffer allocation (by the constructor) has failed
-	 */
-	bool IsOOM() {
-		return data == nullptr;
-	}
-
 	unsigned GetCapacity() const {
 		return n_max;
 	}

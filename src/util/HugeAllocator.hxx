@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2016 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,6 +32,9 @@
 
 #include "Compiler.h"
 
+#include <new>
+#include <utility>
+
 #include <stddef.h>
 
 #ifdef __linux__
@@ -43,14 +46,14 @@
  */
 gcc_malloc
 void *
-HugeAllocate(size_t size);
+HugeAllocate(size_t size) throw(std::bad_alloc);
 
 /**
  * @param p an allocation returned by HugeAllocate()
  * @param size the allocation's size as passed to HugeAllocate()
  */
 void
-HugeFree(void *p, size_t size);
+HugeFree(void *p, size_t size) noexcept;
 
 /**
  * Discard any data stored in the allocation and give the memory back
@@ -61,29 +64,23 @@ HugeFree(void *p, size_t size);
  * @param size the allocation's size as passed to HugeAllocate()
  */
 void
-HugeDiscard(void *p, size_t size);
+HugeDiscard(void *p, size_t size) noexcept;
 
 #elif defined(WIN32)
 #include <windows.h>
 
 gcc_malloc
-static inline void *
-HugeAllocate(size_t size)
-{
-	// TODO: use MEM_LARGE_PAGES
-	return VirtualAlloc(nullptr, size,
-			    MEM_COMMIT|MEM_RESERVE,
-			    PAGE_READWRITE);
-}
+void *
+HugeAllocate(size_t size) throw(std::bad_alloc);
 
 static inline void
-HugeFree(void *p, gcc_unused size_t size)
+HugeFree(void *p, gcc_unused size_t size) noexcept
 {
 	VirtualFree(p, 0, MEM_RELEASE);
 }
 
 static inline void
-HugeDiscard(void *p, size_t size)
+HugeDiscard(void *p, size_t size) noexcept
 {
 	VirtualAlloc(p, size, MEM_RESET, PAGE_NOACCESS);
 }
@@ -92,26 +89,72 @@ HugeDiscard(void *p, size_t size)
 
 /* not Linux: fall back to standard C calls */
 
-#include <stdlib.h>
+#include <stdint.h>
 
 gcc_malloc
 static inline void *
-HugeAllocate(size_t size)
+HugeAllocate(size_t size) throw(std::bad_alloc)
 {
-	return malloc(size);
+	return new uint8_t[size];
 }
 
 static inline void
-HugeFree(void *p, size_t)
+HugeFree(void *_p, size_t) noexcept
 {
-	free(p);
+	auto *p = (uint8_t *)_p;
+	delete[] p;
 }
 
 static inline void
-HugeDiscard(void *, size_t)
+HugeDiscard(void *, size_t) noexcept
 {
 }
 
 #endif
+
+/**
+ * Automatic huge memory allocation management.
+ */
+class HugeAllocation {
+	void *data = nullptr;
+	size_t size;
+
+public:
+	HugeAllocation() = default;
+
+	HugeAllocation(size_t _size) throw(std::bad_alloc)
+		:data(HugeAllocate(_size)), size(_size) {}
+
+	HugeAllocation(HugeAllocation &&src) noexcept
+		:data(src.data), size(src.size) {
+		src.data = nullptr;
+	}
+
+	~HugeAllocation() {
+		if (data != nullptr)
+			HugeFree(data, size);
+	}
+
+	HugeAllocation &operator=(HugeAllocation &&src) noexcept {
+		std::swap(data, src.data);
+		std::swap(size, src.size);
+		return *this;
+	}
+
+	void Discard() noexcept {
+		HugeDiscard(data, size);
+	}
+
+	void reset() noexcept {
+		if (data != nullptr) {
+			HugeFree(data, size);
+			data = nullptr;
+		}
+	}
+
+	void *get() noexcept {
+		return data;
+	}
+};
 
 #endif

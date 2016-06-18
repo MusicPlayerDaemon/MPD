@@ -21,7 +21,8 @@
 #define MPD_ASYNC_INPUT_STREAM_HXX
 
 #include "InputStream.hxx"
-#include "event/DeferredMonitor.hxx"
+#include "event/DeferredCall.hxx"
+#include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
 #include "util/Error.hxx"
 
@@ -31,10 +32,15 @@
  * buffer, and that buffer is then consumed by another thread using
  * the regular #InputStream API.
  */
-class AsyncInputStream : public InputStream, private DeferredMonitor {
+class AsyncInputStream : public InputStream {
 	enum class SeekState : uint8_t {
 		NONE, SCHEDULED, PENDING
 	};
+
+	DeferredCall deferred_resume;
+	DeferredCall deferred_seek;
+
+	HugeAllocation allocation;
 
 	CircularBuffer<uint8_t> buffer;
 	const size_t resume_at;
@@ -68,7 +74,7 @@ public:
 	 */
 	AsyncInputStream(const char *_url,
 			 Mutex &_mutex, Cond &_cond,
-			 void *_buffer, size_t _buffer_size,
+			 size_t _buffer_size,
 			 size_t _resume_at);
 
 	virtual ~AsyncInputStream();
@@ -127,6 +133,12 @@ protected:
 		return buffer.GetSpace();
 	}
 
+	CircularBuffer<uint8_t>::Range PrepareWriteBuffer() {
+		return buffer.Write();
+	}
+
+	void CommitWriteBuffer(size_t nbytes);
+
 	/**
 	 * Append data to the buffer.  The size must fit into the
 	 * buffer; see GetBufferSpace().
@@ -159,8 +171,9 @@ protected:
 private:
 	void Resume();
 
-	/* virtual methods from DeferredMonitor */
-	void RunDeferred() final;
+	/* for DeferredCall */
+	void DeferredResume();
+	void DeferredSeek();
 };
 
 #endif

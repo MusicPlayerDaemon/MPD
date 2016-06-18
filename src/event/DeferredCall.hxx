@@ -17,39 +17,34 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_EVENT_MASK_MONITOR_HXX
-#define MPD_EVENT_MASK_MONITOR_HXX
+#ifndef MPD_EVENT_DEFERRED_CALL_HXX
+#define MPD_EVENT_DEFERRED_CALL_HXX
 
 #include "check.h"
 #include "DeferredMonitor.hxx"
 #include "util/BindMethod.hxx"
 
-#include <atomic>
-
 /**
- * Manage a bit mask of events that have occurred.  Every time the
- * mask becomes non-zero, OnMask() is called in #EventLoop's thread.
+ * Invoke a method call in the #EventLoop.
  *
  * This class is thread-safe.
  */
-class MaskMonitor final : DeferredMonitor {
-	typedef BoundMethod<void(unsigned)> Callback;
+class DeferredCall final : DeferredMonitor {
+	typedef BoundMethod<void()> Callback;
 	const Callback callback;
 
-	std::atomic_uint pending_mask;
-
 public:
-	MaskMonitor(EventLoop &_loop, Callback _callback)
-		:DeferredMonitor(_loop), callback(_callback), pending_mask(0) {}
+	DeferredCall(EventLoop &_loop, Callback _callback)
+		:DeferredMonitor(_loop), callback(_callback) {}
 
 	using DeferredMonitor::GetEventLoop;
+	using DeferredMonitor::Schedule;
 	using DeferredMonitor::Cancel;
 
-	void OrMask(unsigned new_mask);
-
 protected:
-	/* virtual methode from class DeferredMonitor */
-	void RunDeferred() override;
+	void RunDeferred() override {
+		callback();
+	}
 };
 
 #endif

@@ -44,23 +44,16 @@ ThreadInputStream::~ThreadInputStream()
 	}
 }
 
-InputStream *
-ThreadInputStream::Start(Error &error)
+void
+ThreadInputStream::Start()
 {
 	assert(buffer == nullptr);
 
 	void *p = HugeAllocate(buffer_size);
-	if (p == nullptr) {
-		error.SetErrno();
-		return nullptr;
-	}
+	assert(p != nullptr);
 
 	buffer = new CircularBuffer<uint8_t>((uint8_t *)p, buffer_size);
-
-	if (!thread.Start(ThreadFunc, this, error))
-		return nullptr;
-
-	return this;
+	thread.Start(ThreadFunc, this);
 }
 
 inline void

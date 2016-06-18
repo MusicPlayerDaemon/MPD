@@ -23,17 +23,19 @@
 #include "tag/Tag.hxx"
 #include "thread/Cond.hxx"
 #include "IOThread.hxx"
-#include "util/HugeAllocator.hxx"
 
 #include <assert.h>
 #include <string.h>
 
 AsyncInputStream::AsyncInputStream(const char *_url,
 				   Mutex &_mutex, Cond &_cond,
-				   void *_buffer, size_t _buffer_size,
+				   size_t _buffer_size,
 				   size_t _resume_at)
-	:InputStream(_url, _mutex, _cond), DeferredMonitor(io_thread_get()),
-	 buffer((uint8_t *)_buffer, _buffer_size),
+	:InputStream(_url, _mutex, _cond),
+	 deferred_resume(io_thread_get(), BIND_THIS_METHOD(DeferredResume)),
+	 deferred_seek(io_thread_get(), BIND_THIS_METHOD(DeferredSeek)),
+	 allocation(_buffer_size),
+	 buffer((uint8_t *)allocation.get(), _buffer_size),
 	 resume_at(_resume_at),
 	 open(true),
 	 paused(false),
@@ -45,7 +47,6 @@ AsyncInputStream::~AsyncInputStream()
 	delete tag;
 
 	buffer.Clear();
-	HugeFree(buffer.Write().data, buffer.GetCapacity());
 }
 
 void
@@ -142,7 +143,7 @@ AsyncInputStream::Seek(offset_type new_offset, Error &error)
 	seek_offset = new_offset;
 	seek_state = SeekState::SCHEDULED;
 
-	DeferredMonitor::Schedule();
+	deferred_seek.Schedule();
 
 	while (seek_state != SeekState::NONE)
 		cond.wait(mutex);
@@ -209,9 +210,20 @@ AsyncInputStream::Read(void *ptr, size_t read_size, Error &error)
 	offset += (offset_type)nbytes;
 
 	if (paused && buffer.GetSize() < resume_at)
-		DeferredMonitor::Schedule();
+		deferred_resume.Schedule();
 
 	return nbytes;
+}
+
+void
+AsyncInputStream::CommitWriteBuffer(size_t nbytes)
+{
+	buffer.Append(nbytes);
+
+	if (!IsReady())
+		SetReady();
+	else
+		cond.broadcast();
 }
 
 void
@@ -241,16 +253,24 @@ AsyncInputStream::AppendToBuffer(const void *data, size_t append_size)
 }
 
 void
-AsyncInputStream::RunDeferred()
+AsyncInputStream::DeferredResume()
 {
 	const ScopeLock protect(mutex);
 
 	Resume();
+}
 
-	if (seek_state == SeekState::SCHEDULED) {
-		seek_state = SeekState::PENDING;
-		buffer.Clear();
-		paused = false;
-		DoSeek(seek_offset);
-	}
+void
+AsyncInputStream::DeferredSeek()
+{
+	const ScopeLock protect(mutex);
+	if (seek_state != SeekState::SCHEDULED)
+		return;
+
+	Resume();
+
+	seek_state = SeekState::PENDING;
+	buffer.Clear();
+	paused = false;
+	DoSeek(seek_offset);
 }

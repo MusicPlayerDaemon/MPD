@@ -391,7 +391,7 @@ endif
 libutil_a_SOURCES = \
 	src/util/RuntimeError.hxx \
 	src/util/Macros.hxx \
-	src/util/BoundMethod.hxx \
+	src/util/BindMethod.hxx \
 	src/util/Cast.hxx \
 	src/util/Clamp.hxx \
 	src/util/DeleteDisposer.hxx \
@@ -494,6 +494,7 @@ libevent_a_SOURCES = \
 	src/event/TimeoutMonitor.hxx src/event/TimeoutMonitor.cxx \
 	src/event/IdleMonitor.hxx src/event/IdleMonitor.cxx \
 	src/event/DeferredMonitor.hxx src/event/DeferredMonitor.cxx \
+	src/event/DeferredCall.hxx \
 	src/event/MaskMonitor.hxx src/event/MaskMonitor.cxx \
 	src/event/SocketMonitor.cxx src/event/SocketMonitor.hxx \
 	src/event/BufferedSocket.cxx src/event/BufferedSocket.hxx \
@@ -2437,8 +2438,9 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	test/test_archive_bzip2.sh  \
 	test/test_archive_iso9660.sh \
 	test/test_archive_zzip.sh \
-	$(wildcard scripts/*.sh) \
+	$(wildcard $(srcdir)/scripts/*.rb) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
+	$(wildcard $(srcdir)/doc/include/*.xml) \
 	systemd/mpd.socket \
 	android/AndroidManifest.xml \
 	android/build.py \

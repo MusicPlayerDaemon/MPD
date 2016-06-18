@@ -27,9 +27,7 @@
 #include "db/plugins/simple/Directory.hxx"
 #include "storage/CompositeStorage.hxx"
 #include "Idle.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
-#include "system/FatalError.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Util.hxx"
 
@@ -160,9 +158,7 @@ UpdateService::StartThread(UpdateQueueItem &&i)
 	next = std::move(i);
 	walk = new UpdateWalk(GetEventLoop(), listener, *next.storage);
 
-	Error error;
-	if (!update_thread.Start(Task, this, error))
-		FatalError(error);
+	update_thread.Start(Task, this);
 
 	FormatDebug(update_domain,
 		    "spawned thread for update job id %i", next.id);

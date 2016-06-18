@@ -65,7 +65,7 @@ struct Instance final
 	public NeighborListener
 #endif
 {
-	CallbackMaskMonitor<Instance> idle_monitor;
+	MaskMonitor idle_monitor;
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	NeighborGlue *neighbors;
@@ -90,7 +90,7 @@ struct Instance final
 	StateFile *state_file;
 
 	Instance()
-		:idle_monitor(event_loop, *this, &Instance::OnIdle) {}
+		:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle)) {}
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().

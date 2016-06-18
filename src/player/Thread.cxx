@@ -26,7 +26,6 @@
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
 #include "DetachedSong.hxx"
-#include "system/FatalError.hxx"
 #include "CrossFade.hxx"
 #include "Control.hxx"
 #include "output/MultipleOutputs.hxx"
@@ -565,6 +564,8 @@ Player::SeekDecoder()
 {
 	assert(pc.next_song != nullptr);
 
+	pc.outputs.Cancel();
+
 	const SongTime start_time = pc.next_song->GetStartTime();
 
 	if (!dc.LockIsCurrentSong(*pc.next_song)) {
@@ -627,8 +628,6 @@ Player::SeekDecoder()
 
 	/* re-fill the buffer after seeking */
 	buffering = true;
-
-	pc.outputs.Cancel();
 
 	return true;
 }
@@ -1235,7 +1234,5 @@ StartPlayerThread(PlayerControl &pc)
 {
 	assert(!pc.thread.IsDefined());
 
-	Error error;
-	if (!pc.thread.Start(player_task, &pc, error))
-		FatalError(error);
+	pc.thread.Start(player_task, &pc);
 }

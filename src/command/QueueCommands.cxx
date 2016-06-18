@@ -122,7 +122,6 @@ handle_addid(Client &client, Request args, Response &r)
 
 		try {
 			client.partition.MoveId(added_id, to);
-			return CommandResult::OK;
 		} catch (...) {
 			/* rollback */
 			client.partition.DeleteId(added_id);
