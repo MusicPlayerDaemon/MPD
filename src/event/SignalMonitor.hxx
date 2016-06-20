@@ -43,13 +43,6 @@ void
 SignalMonitorFinish();
 
 /**
- * Obtain a reference to the #EventLoop that was passed to
- * SignalMonitorInit().
- */
-EventLoop &
-SignalMonitorGetEventLoop();
-
-/**
  * Register a handler for the specified signal.  The handler will be
  * invoked in a safe context.
  */

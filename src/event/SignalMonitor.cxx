@@ -170,12 +170,6 @@ SignalMonitorFinish()
 	monitor.Destruct();
 }
 
-EventLoop &
-SignalMonitorGetEventLoop()
-{
-	return monitor->GetEventLoop();
-}
-
 void
 SignalMonitorRegister(int signo, SignalHandler handler)
 {
