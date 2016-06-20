@@ -60,6 +60,19 @@ public:
 	BoundMethod(void *_instance, function_pointer _function)
 		:instance_(_instance), function(_function) {}
 
+	/**
+	 * Construct an "undefined" object.  It must not be called,
+	 * and its "bool" operator returns false.
+	 */
+	BoundMethod(std::nullptr_t):function(nullptr) {}
+
+	/**
+	 * Was this object initialized with a valid function pointer?
+	 */
+	operator bool() const {
+		return function != nullptr;
+	}
+
 	R operator()(Args... args) const {
 		return function(instance_, std::forward<Args>(args)...);
 	}
