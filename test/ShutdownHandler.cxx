@@ -27,17 +27,18 @@
 #include <signal.h>
 
 static void
-HandleShutdownSignal()
+HandleShutdownSignal(void *ctx)
 {
-	SignalMonitorGetEventLoop().Break();
+	auto &loop = *(EventLoop *)ctx;
+	loop.Break();
 }
 
 ShutdownHandler::ShutdownHandler(EventLoop &loop)
 {
 	SignalMonitorInit(loop);
 
-	SignalMonitorRegister(SIGINT, HandleShutdownSignal);
-	SignalMonitorRegister(SIGTERM, HandleShutdownSignal);
+	SignalMonitorRegister(SIGINT, {&loop, HandleShutdownSignal});
+	SignalMonitorRegister(SIGTERM, {&loop, HandleShutdownSignal});
 }
 
 ShutdownHandler::~ShutdownHandler()

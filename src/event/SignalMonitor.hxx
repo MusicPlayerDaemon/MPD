@@ -26,7 +26,9 @@ class EventLoop;
 
 #ifndef WIN32
 
-typedef void (*SignalHandler)();
+#include "util/BindMethod.hxx"
+
+typedef BoundMethod<void()> SignalHandler;
 
 /**
  * Initialise the signal monitor subsystem.

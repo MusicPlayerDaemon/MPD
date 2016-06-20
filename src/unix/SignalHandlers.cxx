@@ -34,9 +34,10 @@
 static constexpr Domain signal_handlers_domain("signal_handlers");
 
 static void
-HandleShutdownSignal()
+HandleShutdownSignal(void *ctx)
 {
-	SignalMonitorGetEventLoop().Break();
+	auto &loop = *(EventLoop *)ctx;
+	loop.Break();
 }
 
 static void
@@ -47,7 +48,7 @@ x_sigaction(int signum, const struct sigaction *act)
 }
 
 static void
-handle_reload_event(void)
+handle_reload_event(void *)
 {
 	LogDebug(signal_handlers_domain, "got SIGHUP, reopening log files");
 	cycle_log_files();
@@ -68,10 +69,10 @@ SignalHandlersInit(EventLoop &loop)
 	sa.sa_handler = SIG_IGN;
 	x_sigaction(SIGPIPE, &sa);
 
-	SignalMonitorRegister(SIGINT, HandleShutdownSignal);
-	SignalMonitorRegister(SIGTERM, HandleShutdownSignal);
+	SignalMonitorRegister(SIGINT, {&loop, HandleShutdownSignal});
+	SignalMonitorRegister(SIGTERM, {&loop, HandleShutdownSignal});
 
-	SignalMonitorRegister(SIGHUP, handle_reload_event);
+	SignalMonitorRegister(SIGHUP, {nullptr, handle_reload_event});
 #endif
 }
 
