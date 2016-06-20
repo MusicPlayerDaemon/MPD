@@ -51,6 +51,9 @@ class BoundMethod<R(Args...)> {
 	function_pointer function;
 
 public:
+	/**
+	 * Non-initializing trivial constructor
+	 */
 	BoundMethod() = default;
 
 	constexpr
