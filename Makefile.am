@@ -1396,6 +1396,12 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/FifoOutputPlugin.hxx
 endif
 
+if HAVE_SNDIO
+liboutput_plugins_a_SOURCES += \
+	src/output/plugins/SndioOutputPlugin.cxx \
+	src/output/plugins/SndioOutputPlugin.hxx
+endif
+
 if HAVE_HAIKU
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/HaikuOutputPlugin.cxx \

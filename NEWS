@@ -37,6 +37,7 @@ ver 0.20 (not yet released)
   - pulse: set channel map to WAVE-EX
   - recorder: record tags
   - recorder: allow dynamic file names
+  - sndio: new output plugin
 * mixer
   - null: new plugin
 * resampler

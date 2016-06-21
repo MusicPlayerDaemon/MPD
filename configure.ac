@@ -334,6 +334,11 @@ AC_ARG_ENABLE(fifo,
 		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
 
+AC_ARG_ENABLE(sndio,
+	AS_HELP_STRING([--enable-sndio],
+		[enable support for sndio output plugin (default: auto)]),,
+	enable_sndio=auto)
+
 AC_ARG_ENABLE(haiku,
 	AS_HELP_STRING([--enable-haiku],
 		[enable the Haiku output plugin (default: auto)]),,
@@ -1109,6 +1114,20 @@ fi
 MPD_DEFINE_CONDITIONAL(enable_fifo, HAVE_FIFO,
 	[support for writing audio to a FIFO])
 
+dnl ----------------------------------- SNDIO ----------------------------------
+if test x$enable_sndio = xauto; then
+	AC_CHECK_HEADER(sndio.h,
+		[enable_sndio=yes],
+		[enable_sndio=no;AC_MSG_WARN([sndio.h not found -- disabling support for sndio output])])
+fi
+
+if test x$enable_sndio = xyes; then
+	AC_DEFINE(HAVE_SNDIO,1,[Define for compiling sndio support])
+	LIBS="$LIBS -lsndio"
+fi
+
+AM_CONDITIONAL(HAVE_SNDIO, test x$enable_sndio = xyes)
+
 dnl ----------------------------------- Haiku ---------------------------------
 if test x$enable_haiku = xauto; then
 	AC_CHECK_HEADER(media/MediaDefs.h,
@@ -1429,6 +1448,7 @@ results(id3,[ID3])
 printf '\nPlayback support:\n\t'
 results(alsa,ALSA)
 results(fifo,FIFO)
+results(sndio,[SNDIO])
 results(recorder_output,[File Recorder])
 results(haiku,[Haiku])
 results(httpd_output,[HTTP Daemon])
