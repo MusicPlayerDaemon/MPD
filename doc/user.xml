@@ -2738,6 +2738,51 @@ buffer_size: 16384</programlisting>
       </section>
 
       <section>
+        <title><varname>sndio</varname></title>
+
+        <para>
+          The <varname>sndio</varname> plugin uses the <ulink
+          url="http://www.sndio.org/">sndio</ulink> library.  It should normally be used
+          on OpenBSD.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>device</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  The audio output device <filename>libsndio</filename>
+                  will attempt to use.  The default is "default" which
+                  causes libsndio to select the first output device.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>buffer_time</varname>
+                  <parameter>MS</parameter>
+                </entry>
+                <entry>
+                  Set the application buffer time in milliseconds.
+                </entry>
+              </row>
+
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section>
         <title><varname>fifo</varname></title>
 
         <para>
