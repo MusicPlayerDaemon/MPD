@@ -48,18 +48,7 @@
 #define AUDIO_FILTERS		"filters"
 
 AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
-	:plugin(_plugin),
-	 mixer(nullptr),
-	 enabled(true), really_enabled(false),
-	 open(false),
-	 pause(false),
-	 allow_play(true),
-	 in_playback_loop(false),
-	 woken_for_play(false),
-	 filter(nullptr),
-	 replay_gain_filter(nullptr),
-	 other_replay_gain_filter(nullptr),
-	 command(Command::NONE)
+	:plugin(_plugin)
 {
 	assert(plugin.finish != nullptr);
 	assert(plugin.open != nullptr);

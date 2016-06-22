@@ -81,7 +81,7 @@ struct AudioOutput {
 	 * May be nullptr if none is available, or if software volume is
 	 * configured.
 	 */
-	Mixer *mixer;
+	Mixer *mixer = nullptr;
 
 	/**
 	 * Will this output receive tags from the decoder?  The
@@ -99,13 +99,13 @@ struct AudioOutput {
 	/**
 	 * Has the user enabled this device?
 	 */
-	bool enabled;
+	bool enabled = true;
 
 	/**
 	 * Is this device actually enabled, i.e. the "enable" method
 	 * has succeeded?
 	 */
-	bool really_enabled;
+	bool really_enabled = false;
 
 	/**
 	 * Is the device (already) open and functional?
@@ -115,13 +115,13 @@ struct AudioOutput {
 	 * output thread and read accesses outside of it may only be
 	 * performed while the lock is held.
 	 */
-	bool open;
+	bool open = false;
 
 	/**
 	 * Is the device paused?  i.e. the output thread is in the
 	 * ao_pause() loop.
 	 */
-	bool pause;
+	bool pause = false;
 
 	/**
 	 * When this flag is set, the output thread will not do any
@@ -130,7 +130,7 @@ struct AudioOutput {
 	 * This is used to synchronize the "clear" operation on the
 	 * shared music pipe during the CANCEL command.
 	 */
-	bool allow_play;
+	bool allow_play = true;
 
 	/**
 	 * True while the OutputThread is inside ao_play().  This
@@ -138,14 +138,14 @@ struct AudioOutput {
 	 * OutputThread when new chunks are added to the MusicPipe,
 	 * because the OutputThread is already watching that.
 	 */
-	bool in_playback_loop;
+	bool in_playback_loop = false;
 
 	/**
 	 * Has the OutputThread been woken up to play more chunks?
 	 * This is set by audio_output_play() and reset by ao_play()
 	 * to reduce the number of duplicate wakeups.
 	 */
-	bool woken_for_play;
+	bool woken_for_play = false;
 
 	/**
 	 * If not nullptr, the device has failed, and this timer is used
@@ -187,13 +187,13 @@ struct AudioOutput {
 	 * The filter object of this audio output.  This is an
 	 * instance of chain_filter_plugin.
 	 */
-	Filter *filter;
+	Filter *filter = nullptr;
 
 	/**
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output.
 	 */
-	Filter *replay_gain_filter;
+	Filter *replay_gain_filter = nullptr;
 
 	/**
 	 * The serial number of the last replay gain info.  0 means no
@@ -206,7 +206,7 @@ struct AudioOutput {
 	 * output, to be applied to the second chunk during
 	 * cross-fading.
 	 */
-	Filter *other_replay_gain_filter;
+	Filter *other_replay_gain_filter = nullptr;
 
 	/**
 	 * The serial number of the last replay gain info by the
@@ -231,7 +231,7 @@ struct AudioOutput {
 	/**
 	 * The next command to be performed by the output thread.
 	 */
-	Command command;
+	Command command = Command::NONE;
 
 	/**
 	 * The music pipe which provides music chunks to be played.
