@@ -36,10 +36,13 @@
 #define SIO_DEVANY "default"
 #endif
 
+static constexpr unsigned MPD_SNDIO_BUFFER_TIME_MS = 250;
+
 class SndioOutput {
 	friend struct AudioOutputWrapper<SndioOutput>;
 	AudioOutput base;
 	const char *device;
+	unsigned buffer_time; /* in ms */
 	struct sio_hdl *sio_hdl;
 
 public:
@@ -66,6 +69,8 @@ SndioOutput::Configure(const ConfigBlock &block, Error &error)
 	if (!base.Configure(block, error))
 		return false;
 	device = block.GetBlockValue("device", SIO_DEVANY);
+	buffer_time = block.GetBlockValue("buffer_time",
+	                                   MPD_SNDIO_BUFFER_TIME_MS);
 	return true;
 }
 
@@ -133,6 +138,7 @@ SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 	par.pchan = chans;
 	par.sig = 1;
 	par.le = SIO_LE_NATIVE;
+	par.appbufsz = rate * buffer_time / 1000;
 
 	if (!sio_setpar(sio_hdl, &par) ||
 	    !sio_getpar(sio_hdl, &par)) {
