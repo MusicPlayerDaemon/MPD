@@ -46,8 +46,7 @@ class SndioOutput {
 
 public:
 	SndioOutput()
-		:base(sndio_output_plugin),
-		 device(nullptr), sio_hdl(nullptr) {}
+		:base(sndio_output_plugin) {}
 	~SndioOutput() {}
 
 	bool Configure(const ConfigBlock &block, Error &error);
@@ -165,15 +164,13 @@ SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 	return true;
 err:
 	sio_close(sio_hdl);
-	sio_hdl = nullptr;
 	return false;
 }
 
 void
 SndioOutput::Close()
 {
-	if (sio_hdl)
-		sio_close(sio_hdl);
+	sio_close(sio_hdl);
 	delete timer;
 }
 
