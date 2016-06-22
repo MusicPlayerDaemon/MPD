@@ -52,6 +52,7 @@
 #include "util/ConstBuffer.hxx"
 
 #include <algorithm>
+#include <array>
 
 #include <string.h>
 #include <stdint.h>
@@ -78,7 +79,7 @@ class RouteFilter final : public Filter {
 	 * a corresponding input channel from which to take the
 	 * data. A -1 means "no source"
 	 */
-	int8_t sources[MAX_CHANNELS];
+	std::array<int8_t, MAX_CHANNELS> sources;
 
 	/**
 	 * The actual input format of our signal, once opened
@@ -135,7 +136,7 @@ RouteFilter::Configure(const ConfigBlock &block, Error &error) {
 	 * dynamic realloc() instead of one count run and one malloc().
 	 */
 
-	std::fill_n(sources, MAX_CHANNELS, -1);
+	sources.fill(-1);
 
 	min_input_channels = 0;
 	min_output_channels = 0;
