@@ -32,6 +32,11 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#ifndef SIO_DEVANY
+/* this macro is missing in libroar-dev 1.0~beta2-3 (Debian Wheezy) */
+#define SIO_DEVANY "default"
+#endif
+
 class SndioOutput {
 	friend struct AudioOutputWrapper<SndioOutput>;
 	AudioOutput base;
