@@ -78,6 +78,22 @@ SndioOutput::Create(const ConfigBlock &block, Error &error)
 	return ao;
 }
 
+static bool
+sndio_test_default_device()
+{
+	struct sio_hdl *sio_hdl;
+
+	sio_hdl = sio_open(SIO_DEVANY, SIO_PLAY, 0);
+	if (!sio_hdl) {
+		FormatError(sndio_output_domain,
+		            "Error opening default sndio device");
+		return false;
+	}
+
+	sio_close(sio_hdl);
+	return true;
+}
+
 bool
 SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 {
@@ -193,7 +209,7 @@ typedef AudioOutputWrapper<SndioOutput> Wrapper;
 
 const struct AudioOutputPlugin sndio_output_plugin = {
 	"sndio",
-	nullptr,
+	sndio_test_default_device,
 	&Wrapper::Init,
 	&Wrapper::Finish,
 	nullptr,
