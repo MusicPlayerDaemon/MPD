@@ -69,15 +69,6 @@ AudioOutput::LockCommandWait(Command cmd)
 }
 
 void
-AudioOutput::SetReplayGainMode(ReplayGainMode mode)
-{
-	if (replay_gain_filter != nullptr)
-		replay_gain_filter_set_mode(replay_gain_filter, mode);
-	if (other_replay_gain_filter != nullptr)
-		replay_gain_filter_set_mode(other_replay_gain_filter, mode);
-}
-
-void
 AudioOutput::LockEnableWait()
 {
 	if (!thread.IsDefined()) {

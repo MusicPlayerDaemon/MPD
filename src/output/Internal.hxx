@@ -24,12 +24,14 @@
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/PcmDither.hxx"
 #include "ReplayGainInfo.hxx"
+#include "filter/Observer.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "system/PeriodClock.hxx"
 
 class Error;
+class PreparedFilter;
 class Filter;
 class MusicPipe;
 class EventLoop;
@@ -147,6 +149,8 @@ struct AudioOutput {
 	 */
 	bool woken_for_play = false;
 
+	ReplayGainMode replay_gain_mode = REPLAY_GAIN_OFF;
+
 	/**
 	 * If not nullptr, the device has failed, and this timer is used
 	 * to estimate how long it should stay disabled (unless
@@ -187,19 +191,21 @@ struct AudioOutput {
 	 * The filter object of this audio output.  This is an
 	 * instance of chain_filter_plugin.
 	 */
-	Filter *filter = nullptr;
+	PreparedFilter *prepared_filter = nullptr;
+	Filter *filter_instance;
 
 	/**
 	 * The #VolumeFilter instance of this audio output.  It is
 	 * used by the #SoftwareMixer.
 	 */
-	Filter *volume_filter = nullptr;
+	FilterObserver volume_filter;
 
 	/**
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output.
 	 */
-	Filter *replay_gain_filter = nullptr;
+	PreparedFilter *prepared_replay_gain_filter = nullptr;
+	Filter *replay_gain_filter_instance;
 
 	/**
 	 * The serial number of the last replay gain info.  0 means no
@@ -212,7 +218,8 @@ struct AudioOutput {
 	 * output, to be applied to the second chunk during
 	 * cross-fading.
 	 */
-	Filter *other_replay_gain_filter = nullptr;
+	PreparedFilter *prepared_other_replay_gain_filter = nullptr;
+	Filter *other_replay_gain_filter_instance;
 
 	/**
 	 * The serial number of the last replay gain info by the
@@ -226,7 +233,7 @@ struct AudioOutput {
 	 * for converting the input data into the appropriate format
 	 * for this audio output.
 	 */
-	Filter *convert_filter;
+	FilterObserver convert_filter;
 
 	/**
 	 * The thread handle, or nullptr if the output thread isn't
@@ -346,7 +353,9 @@ struct AudioOutput {
 	 */
 	void LockRelease();
 
-	void SetReplayGainMode(ReplayGainMode mode);
+	void SetReplayGainMode(ReplayGainMode _mode) {
+		replay_gain_mode = _mode;
+	}
 
 	/**
 	 * Caller must lock the mutex.

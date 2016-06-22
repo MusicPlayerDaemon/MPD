@@ -24,6 +24,11 @@ class Filter;
 class Error;
 struct AudioFormat;
 
+Filter *
+convert_filter_new(AudioFormat in_audio_format,
+		   AudioFormat out_audio_format,
+		   Error &error);
+
 /**
  * Sets the output audio format for the specified filter.  You must
  * call this after the filter has been opened.  Since this audio

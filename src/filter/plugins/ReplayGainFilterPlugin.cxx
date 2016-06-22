@@ -41,13 +41,13 @@ class ReplayGainFilter final : public Filter {
 	 * If set, then this hardware mixer is used for applying
 	 * replay gain, instead of the software volume library.
 	 */
-	Mixer *mixer = nullptr;
+	Mixer *const mixer;
 
 	/**
 	 * The base volume level for scale=1.0, between 1 and 100
 	 * (including).
 	 */
-	unsigned base;
+	const unsigned base;
 
 	ReplayGainMode mode = REPLAY_GAIN_OFF;
 
@@ -68,17 +68,15 @@ class ReplayGainFilter final : public Filter {
 	PcmVolume pv;
 
 public:
-	ReplayGainFilter() {
+	ReplayGainFilter(const AudioFormat &audio_format,
+			 Mixer *_mixer, unsigned _base)
+		:Filter(audio_format),
+		 mixer(_mixer), base(_base), mode(REPLAY_GAIN_OFF) {
 		info.Clear();
 	}
 
-	void SetMixer(Mixer *_mixer, unsigned _base) {
-		assert(_mixer == nullptr || (_base > 0 && _base <= 100));
-
-		mixer = _mixer;
-		base = _base;
-
-		Update();
+	bool Open(Error &error) {
+		return pv.Open(out_audio_format.format, error);
 	}
 
 	void SetInfo(const ReplayGainInfo *_info) {
@@ -110,10 +108,33 @@ public:
 	void Update();
 
 	/* virtual methods from class Filter */
-	AudioFormat Open(AudioFormat &af, Error &error) override;
-	void Close() override;
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
 				    Error &error) override;
+};
+
+class PreparedReplayGainFilter final : public PreparedFilter {
+	/**
+	 * If set, then this hardware mixer is used for applying
+	 * replay gain, instead of the software volume library.
+	 */
+	Mixer *mixer = nullptr;
+
+	/**
+	 * The base volume level for scale=1.0, between 1 and 100
+	 * (including).
+	 */
+	unsigned base;
+
+public:
+	void SetMixer(Mixer *_mixer, unsigned _base) {
+		assert(_mixer == nullptr || (_base > 0 && _base <= 100));
+
+		mixer = _mixer;
+		base = _base;
+	}
+
+	/* virtual methods from class Filter */
+	Filter *Open(AudioFormat &af, Error &error) override;
 };
 
 void
@@ -146,26 +167,23 @@ ReplayGainFilter::Update()
 	}
 }
 
-static Filter *
+static PreparedFilter *
 replay_gain_filter_init(gcc_unused const ConfigBlock &block,
 			gcc_unused Error &error)
 {
-	return new ReplayGainFilter();
+	return new PreparedReplayGainFilter();
 }
 
-AudioFormat
-ReplayGainFilter::Open(AudioFormat &af, gcc_unused Error &error)
+Filter *
+PreparedReplayGainFilter::Open(AudioFormat &af, gcc_unused Error &error)
 {
-	if (!pv.Open(af.format, error))
-		return AudioFormat::Undefined();
+	auto *filter = new ReplayGainFilter(af, mixer, base);
+	if (!filter->Open(error)) {
+		delete filter;
+		return nullptr;
+	}
 
-	return af;
-}
-
-void
-ReplayGainFilter::Close()
-{
-	pv.Close();
+	return filter;
 }
 
 ConstBuffer<void>
@@ -180,10 +198,10 @@ const struct filter_plugin replay_gain_filter_plugin = {
 };
 
 void
-replay_gain_filter_set_mixer(Filter *_filter, Mixer *mixer,
+replay_gain_filter_set_mixer(PreparedFilter *_filter, Mixer *mixer,
 			     unsigned base)
 {
-	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;
+	PreparedReplayGainFilter *filter = (PreparedReplayGainFilter *)_filter;
 
 	filter->SetMixer(mixer, base);
 }

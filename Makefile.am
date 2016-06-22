@@ -108,6 +108,7 @@ libmpd_a_SOURCES = \
 	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \
 	src/filter/FilterInternal.hxx \
 	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
+	src/filter/Observer.cxx src/filter/Observer.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
 	src/client/ClientEvent.cxx \
@@ -2068,6 +2069,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/mixer/MixerType.cxx \
 	src/filter/FilterPlugin.cxx \
 	src/filter/FilterConfig.cxx \
+	src/filter/Observer.cxx \
 	src/ReplayGainInfo.cxx
 
 test_read_mixer_LDADD = \

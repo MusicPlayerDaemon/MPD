@@ -24,7 +24,6 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
-#include "config/Block.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>
@@ -33,82 +32,70 @@ class AutoConvertFilter final : public Filter {
 	/**
 	 * The underlying filter.
 	 */
-	Filter *filter;
+	Filter *const filter;
 
 	/**
 	 * A convert_filter, just in case conversion is needed.  nullptr
 	 * if unused.
 	 */
-	Filter *convert;
+	Filter *const convert;
 
 public:
-	AutoConvertFilter(Filter *_filter):filter(_filter) {}
+	AutoConvertFilter(Filter *_filter, Filter *_convert)
+		:filter(_filter), convert(_convert) {}
+
 	~AutoConvertFilter() {
+		delete convert;
 		delete filter;
 	}
 
-	virtual AudioFormat Open(AudioFormat &af, Error &error) override;
-	virtual void Close() override;
 	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
 					    Error &error) override;
 };
 
-AudioFormat
-AutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
+class PreparedAutoConvertFilter final : public PreparedFilter {
+	/**
+	 * The underlying filter.
+	 */
+	PreparedFilter *const filter;
+
+public:
+	PreparedAutoConvertFilter(PreparedFilter *_filter):filter(_filter) {}
+	~PreparedAutoConvertFilter() {
+		delete filter;
+	}
+
+	virtual Filter *Open(AudioFormat &af, Error &error) override;
+};
+
+Filter *
+PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
 {
 	assert(in_audio_format.IsValid());
 
 	/* open the "real" filter */
 
 	AudioFormat child_audio_format = in_audio_format;
-	AudioFormat out_audio_format = filter->Open(child_audio_format, error);
-	if (!out_audio_format.IsDefined())
-		return out_audio_format;
+	auto *new_filter = filter->Open(child_audio_format, error);
+	if (new_filter == nullptr)
+		return nullptr;
 
 	/* need to convert? */
 
+	Filter *convert = nullptr;
 	if (in_audio_format != child_audio_format) {
 		/* yes - create a convert_filter */
 
-		const ConfigBlock empty;
-		convert = filter_new(&convert_filter_plugin, empty, error);
+		convert = convert_filter_new(in_audio_format,
+					     child_audio_format,
+					     error);
 		if (convert == nullptr) {
-			filter->Close();
-			return AudioFormat::Undefined();
+			delete new_filter;
+			return nullptr;
 		}
-
-		AudioFormat audio_format2 = in_audio_format;
-		AudioFormat audio_format3 =
-			convert->Open(audio_format2, error);
-		if (!audio_format3.IsDefined()) {
-			delete convert;
-			filter->Close();
-			return AudioFormat::Undefined();
-		}
-
-		assert(audio_format2 == in_audio_format);
-
-		if (!convert_filter_set(convert, child_audio_format, error)) {
-			delete convert;
-			filter->Close();
-			return AudioFormat::Undefined();
-		}
-	} else
-		/* no */
-		convert = nullptr;
-
-	return out_audio_format;
-}
-
-void
-AutoConvertFilter::Close()
-{
-	if (convert != nullptr) {
-		convert->Close();
-		delete convert;
 	}
 
-	filter->Close();
+	return new AutoConvertFilter(new_filter, convert);
 }
 
 ConstBuffer<void>
@@ -123,8 +110,8 @@ AutoConvertFilter::FilterPCM(ConstBuffer<void> src, Error &error)
 	return filter->FilterPCM(src, error);
 }
 
-Filter *
-autoconvert_filter_new(Filter *filter)
+PreparedFilter *
+autoconvert_filter_new(PreparedFilter *filter)
 {
-	return new AutoConvertFilter(filter);
+	return new PreparedAutoConvertFilter(filter);
 }

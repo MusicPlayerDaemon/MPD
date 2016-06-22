@@ -33,7 +33,7 @@
 #include <string.h>
 
 static bool
-filter_chain_append_new(Filter &chain, const char *template_name, Error &error)
+filter_chain_append_new(PreparedFilter &chain, const char *template_name, Error &error)
 {
 	const auto *cfg = config_find_block(ConfigBlockOption::AUDIO_FILTER,
 					    "name", template_name);
@@ -45,7 +45,7 @@ filter_chain_append_new(Filter &chain, const char *template_name, Error &error)
 	}
 
 	// Instantiate one of those filter plugins with the template name as a hint
-	Filter *f = filter_configured_new(*cfg, error);
+	PreparedFilter *f = filter_configured_new(*cfg, error);
 	if (f == nullptr)
 		// The error has already been set, just stop.
 		return false;
@@ -58,7 +58,7 @@ filter_chain_append_new(Filter &chain, const char *template_name, Error &error)
 }
 
 bool
-filter_chain_parse(Filter &chain, const char *spec, Error &error)
+filter_chain_parse(PreparedFilter &chain, const char *spec, Error &error)
 {
 	const char *const end = spec + strlen(spec);
 

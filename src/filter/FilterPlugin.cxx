@@ -26,7 +26,7 @@
 
 #include <assert.h>
 
-Filter *
+PreparedFilter *
 filter_new(const struct filter_plugin *plugin,
 	   const ConfigBlock &block, Error &error)
 {
@@ -36,7 +36,7 @@ filter_new(const struct filter_plugin *plugin,
 	return plugin->init(block, error);
 }
 
-Filter *
+PreparedFilter *
 filter_configured_new(const ConfigBlock &block, Error &error)
 {
 	assert(!error.IsDefined());

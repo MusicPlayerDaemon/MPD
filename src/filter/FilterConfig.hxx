@@ -25,7 +25,7 @@
 #ifndef MPD_FILTER_CONFIG_HXX
 #define MPD_FILTER_CONFIG_HXX
 
-class Filter;
+class PreparedFilter;
 class Error;
 
 /**
@@ -38,6 +38,6 @@ class Error;
  * @return true on success
  */
 bool
-filter_chain_parse(Filter &chain, const char *spec, Error &error);
+filter_chain_parse(PreparedFilter &chain, const char *spec, Error &error);
 
 #endif

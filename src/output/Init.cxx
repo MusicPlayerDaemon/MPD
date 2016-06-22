@@ -102,7 +102,7 @@ audio_output_mixer_type(const ConfigBlock &block)
 						  "hardware"));
 }
 
-static Filter *
+static PreparedFilter *
 CreateVolumeFilter()
 {
 	return filter_new(&volume_filter_plugin, ConfigBlock(),
@@ -113,12 +113,10 @@ static Mixer *
 audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 			const ConfigBlock &block,
 			const MixerPlugin *plugin,
-			Filter &filter_chain,
+			PreparedFilter &filter_chain,
 			MixerListener &listener,
 			Error &error)
 {
-	assert(ao.volume_filter == nullptr);
-
 	Mixer *mixer;
 
 	switch (audio_output_mixer_type(block)) {
@@ -144,13 +142,8 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 				  IgnoreError());
 		assert(mixer != nullptr);
 
-		ao.volume_filter = CreateVolumeFilter();
-		assert(ao.volume_filter != nullptr);
-
 		filter_chain_append(filter_chain, "software_mixer",
-				    ao.volume_filter);
-
-		software_mixer_set_filter(*mixer, ao.volume_filter);
+				    ao.volume_filter.Set(CreateVolumeFilter()));
 		return mixer;
 	}
 
@@ -190,23 +183,23 @@ AudioOutput::Configure(const ConfigBlock &block, Error &error)
 
 	/* set up the filter chain */
 
-	filter = filter_chain_new();
-	assert(filter != nullptr);
+	prepared_filter = filter_chain_new();
+	assert(prepared_filter != nullptr);
 
 	/* create the normalization filter (if configured) */
 
 	if (config_get_bool(ConfigOption::VOLUME_NORMALIZATION, false)) {
-		Filter *normalize_filter =
+		auto *normalize_filter =
 			filter_new(&normalize_filter_plugin, ConfigBlock(),
 				   IgnoreError());
 		assert(normalize_filter != nullptr);
 
-		filter_chain_append(*filter, "normalize",
+		filter_chain_append(*prepared_filter, "normalize",
 				    autoconvert_filter_new(normalize_filter));
 	}
 
 	Error filter_error;
-	filter_chain_parse(*filter,
+	filter_chain_parse(*prepared_filter,
 			   block.GetBlockValue(AUDIO_FILTERS, ""),
 			   filter_error);
 
@@ -235,21 +228,21 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 		block.GetBlockValue("replay_gain_handler", "software");
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
-		ao.replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-						   block, IgnoreError());
-		assert(ao.replay_gain_filter != nullptr);
+		ao.prepared_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+							    block, IgnoreError());
+		assert(ao.prepared_replay_gain_filter != nullptr);
 
 		ao.replay_gain_serial = 0;
 
-		ao.other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-							 block,
-							 IgnoreError());
-		assert(ao.other_replay_gain_filter != nullptr);
+		ao.prepared_other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
+								  block,
+								  IgnoreError());
+		assert(ao.prepared_other_replay_gain_filter != nullptr);
 
 		ao.other_replay_gain_serial = 0;
 	} else {
-		ao.replay_gain_filter = nullptr;
-		ao.other_replay_gain_filter = nullptr;
+		ao.prepared_replay_gain_filter = nullptr;
+		ao.prepared_other_replay_gain_filter = nullptr;
 	}
 
 	/* set up the mixer */
@@ -257,7 +250,7 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 	Error mixer_error;
 	ao.mixer = audio_output_load_mixer(event_loop, ao, block,
 					   ao.plugin.mixer_plugin,
-					   *ao.filter,
+					   *ao.prepared_filter,
 					   mixer_listener,
 					   mixer_error);
 	if (ao.mixer == nullptr && mixer_error.IsDefined())
@@ -269,13 +262,13 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 
 	if (strcmp(replay_gain_handler, "mixer") == 0) {
 		if (ao.mixer != nullptr)
-			replay_gain_filter_set_mixer(ao.replay_gain_filter,
+			replay_gain_filter_set_mixer(ao.prepared_replay_gain_filter,
 						     ao.mixer, 100);
 		else
 			FormatError(output_domain,
 				    "No such mixer for output '%s'", ao.name);
 	} else if (strcmp(replay_gain_handler, "software") != 0 &&
-		   ao.replay_gain_filter != nullptr) {
+		   ao.prepared_replay_gain_filter != nullptr) {
 		error.Set(config_domain,
 			  "Invalid \"replay_gain_handler\" value");
 		return false;
@@ -283,11 +276,12 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 
 	/* the "convert" filter must be the last one in the chain */
 
-	ao.convert_filter = filter_new(&convert_filter_plugin, ConfigBlock(),
-					IgnoreError());
-	assert(ao.convert_filter != nullptr);
+	auto *f = filter_new(&convert_filter_plugin, ConfigBlock(),
+			     IgnoreError());
+	assert(f != nullptr);
 
-	filter_chain_append(*ao.filter, "convert", ao.convert_filter);
+	filter_chain_append(*ao.prepared_filter, "convert",
+			    ao.convert_filter.Set(f));
 
 	return true;
 }
