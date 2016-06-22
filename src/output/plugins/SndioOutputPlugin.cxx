@@ -17,7 +17,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <errno.h>
 #include <sndio.h>
 #include <string.h>
 #include <unistd.h>
@@ -183,11 +182,11 @@ SndioOutput::Play(const void *chunk, size_t size, Error &error)
 
 	while (1) {
 		n = sio_write(sio_hdl, chunk, size);
-		if (n < 0) {
-			if (errno == EINTR)
-				continue;
-			error.FormatErrno("Failed to write %zu bytes to sndio output", size);
-			return 0;
+		if (n == 0) {
+			if (sio_eof(sio_hdl)) {
+				error.Set(sndio_output_domain, -1, "sndio write failed");
+				return 0;
+			}
 		}
 		return n;
 	}
