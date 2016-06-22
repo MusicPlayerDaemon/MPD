@@ -143,7 +143,8 @@ SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 	    !sio_getpar(sio_hdl, &par)) {
 		error.Format(sndio_output_domain, -1,
 		             "Failed to set/get audio params");
-		goto err;
+		sio_close(sio_hdl);
+		return false;
 	}
 
 	if (par.bits != bits ||
@@ -154,19 +155,18 @@ SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 	    par.le != SIO_LE_NATIVE) {
 		error.Format(sndio_output_domain, -1,
 		             "Requested audio params cannot be satisfied");
-		goto err;
+		sio_close(sio_hdl);
+		return false;
 	}
 
 	if (!sio_start(sio_hdl)) {
 		error.Format(sndio_output_domain, -1,
 		             "Failed to start audio device");
-		goto err;
+		sio_close(sio_hdl);
+		return false;
 	}
 
 	return true;
-err:
-	sio_close(sio_hdl);
-	return false;
 }
 
 void
