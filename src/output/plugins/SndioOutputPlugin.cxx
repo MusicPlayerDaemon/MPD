@@ -27,7 +27,6 @@
 #include "config/ConfigError.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
-#include "../Timer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -42,7 +41,6 @@ class SndioOutput {
 	AudioOutput base;
 	const char *device;
 	struct sio_hdl *sio_hdl;
-	Timer *timer;
 
 public:
 	SndioOutput()
@@ -160,7 +158,6 @@ SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 		goto err;
 	}
 
-	timer = new Timer(audio_format);
 	return true;
 err:
 	sio_close(sio_hdl);
@@ -171,25 +168,12 @@ void
 SndioOutput::Close()
 {
 	sio_close(sio_hdl);
-	delete timer;
-}
-
-unsigned
-SndioOutput::Delay() const
-{
-	return timer->IsStarted()
-		? timer->GetDelay()
-		: 0;
 }
 
 size_t
 SndioOutput::Play(const void *chunk, size_t size, Error &error)
 {
 	ssize_t n;
-
-	if (!timer->IsStarted())
-		timer->Start();
-	timer->Add(size);
 
 	while (1) {
 		n = sio_write(sio_hdl, chunk, size);
@@ -203,12 +187,6 @@ SndioOutput::Play(const void *chunk, size_t size, Error &error)
 	}
 }
 
-void
-SndioOutput::Cancel()
-{
-	timer->Reset();
-}
-
 typedef AudioOutputWrapper<SndioOutput> Wrapper;
 
 const struct AudioOutputPlugin sndio_output_plugin = {
@@ -220,11 +198,11 @@ const struct AudioOutputPlugin sndio_output_plugin = {
 	nullptr,
 	&Wrapper::Open,
 	&Wrapper::Close,
-	&Wrapper::Delay,
+	nullptr,
 	nullptr,
 	&Wrapper::Play,
 	nullptr,
-	&Wrapper::Cancel,
+	nullptr,
 	nullptr,
 	nullptr,
 };
