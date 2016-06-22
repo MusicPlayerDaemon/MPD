@@ -305,6 +305,14 @@ input {
 ##	device		"Digital Audio (S/PDIF) (High Definition Audio Device)" # optional
 #}
 #
+# An example of an sndio output.
+#
+#audio_output {
+#	type		"sndio"
+#	name		"sndio output"
+#	mixer_type	"software"
+#}
+#
 ## Example "pipe" output:
 #
 #audio_output {
