@@ -40,13 +40,14 @@
 class SndioOutput {
 	friend struct AudioOutputWrapper<SndioOutput>;
 	AudioOutput base;
+	const char *device;
 	struct sio_hdl *sio_hdl;
 	Timer *timer;
 
 public:
 	SndioOutput()
 		:base(sndio_output_plugin),
-		 sio_hdl(nullptr) {}
+		 device(nullptr), sio_hdl(nullptr) {}
 	~SndioOutput() {}
 
 	bool Configure(const ConfigBlock &block, Error &error);
@@ -67,6 +68,7 @@ SndioOutput::Configure(const ConfigBlock &block, Error &error)
 {
 	if (!base.Configure(block, error))
 		return false;
+	device = block.GetBlockValue("device", SIO_DEVANY);
 	return true;
 }
 
@@ -105,7 +107,7 @@ SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 	struct sio_par par;
 	unsigned bits, rate, chans;
 
-	sio_hdl = sio_open(SIO_DEVANY, SIO_PLAY, 0);
+	sio_hdl = sio_open(device, SIO_PLAY, 0);
 	if (!sio_hdl) {
 		error.Format(sndio_output_domain, -1,
 		             "Failed to open default sndio device");
