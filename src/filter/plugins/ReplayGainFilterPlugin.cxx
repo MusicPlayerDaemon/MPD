@@ -41,7 +41,7 @@ class ReplayGainFilter final : public Filter {
 	 * If set, then this hardware mixer is used for applying
 	 * replay gain, instead of the software volume library.
 	 */
-	Mixer *mixer;
+	Mixer *mixer = nullptr;
 
 	/**
 	 * The base volume level for scale=1.0, between 1 and 100
@@ -49,7 +49,7 @@ class ReplayGainFilter final : public Filter {
 	 */
 	unsigned base;
 
-	ReplayGainMode mode;
+	ReplayGainMode mode = REPLAY_GAIN_OFF;
 
 	ReplayGainInfo info;
 
@@ -68,8 +68,7 @@ class ReplayGainFilter final : public Filter {
 	PcmVolume pv;
 
 public:
-	ReplayGainFilter()
-		:mixer(nullptr), mode(REPLAY_GAIN_OFF) {
+	ReplayGainFilter() {
 		info.Clear();
 	}
 
