@@ -180,16 +180,10 @@ SndioOutput::Play(const void *chunk, size_t size, Error &error)
 {
 	size_t n;
 
-	while (1) {
-		n = sio_write(sio_hdl, chunk, size);
-		if (n == 0) {
-			if (sio_eof(sio_hdl)) {
-				error.Set(sndio_output_domain, -1, "sndio write failed");
-				return 0;
-			}
-		}
-		return n;
-	}
+	n = sio_write(sio_hdl, chunk, size);
+	if (n == 0 && sio_eof(sio_hdl) != 0)
+		error.Set(sndio_output_domain, -1, "sndio write failed");
+	return n;
 }
 
 typedef AudioOutputWrapper<SndioOutput> Wrapper;
