@@ -103,7 +103,7 @@ sndio_test_default_device()
 }
 
 bool
-SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
+SndioOutput::Open(AudioFormat &audio_format, Error &error)
 {
 	struct sio_par par;
 	unsigned bits, rate, chans;
