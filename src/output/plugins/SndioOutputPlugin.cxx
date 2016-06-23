@@ -119,6 +119,9 @@ SndioOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 	case SampleFormat::S16:
 		bits = 16;
 		break;
+	case SampleFormat::S24_P32:
+		bits = 24;
+		break;
 	case SampleFormat::S32:
 		bits = 32;
 		break;
