@@ -37,6 +37,8 @@
 
 static constexpr unsigned MPD_SNDIO_BUFFER_TIME_MS = 250;
 
+static constexpr Domain sndio_output_domain("sndio_output");
+
 class SndioOutput {
 	friend struct AudioOutputWrapper<SndioOutput>;
 	AudioOutput base;
@@ -60,8 +62,6 @@ public:
 	void Cancel();
 };
 
-static constexpr Domain sndio_output_domain("sndio_output");
-
 bool
 SndioOutput::Configure(const ConfigBlock &block, Error &error)
 {
@@ -69,7 +69,7 @@ SndioOutput::Configure(const ConfigBlock &block, Error &error)
 		return false;
 	device = block.GetBlockValue("device", SIO_DEVANY);
 	buffer_time = block.GetBlockValue("buffer_time",
-	                                   MPD_SNDIO_BUFFER_TIME_MS);
+	                                  MPD_SNDIO_BUFFER_TIME_MS);
 	return true;
 }
 
@@ -178,7 +178,7 @@ SndioOutput::Close()
 size_t
 SndioOutput::Play(const void *chunk, size_t size, Error &error)
 {
-	ssize_t n;
+	size_t n;
 
 	while (1) {
 		n = sio_write(sio_hdl, chunk, size);
