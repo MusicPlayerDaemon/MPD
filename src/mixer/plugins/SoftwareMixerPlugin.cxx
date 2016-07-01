@@ -31,23 +31,8 @@
 #include <assert.h>
 #include <math.h>
 
-static Filter *
-CreateVolumeFilter()
-{
-	return filter_new(&volume_filter_plugin, ConfigBlock(),
-			  IgnoreError());
-}
-
 class SoftwareMixer final : public Mixer {
-	Filter *filter;
-
-	/**
-	 * If this is true, then this object "owns" the #Filter
-	 * instance (see above).  It will be set to false by
-	 * software_mixer_get_filter(); after that, the caller will be
-	 * responsible for the #Filter.
-	 */
-	bool owns_filter = true;
+	Filter *filter = nullptr;
 
 	/**
 	 * The current volume in percent (0..100).
@@ -56,18 +41,11 @@ class SoftwareMixer final : public Mixer {
 
 public:
 	SoftwareMixer(MixerListener &_listener)
-		:Mixer(software_mixer_plugin, _listener),
-		 filter(CreateVolumeFilter())
+		:Mixer(software_mixer_plugin, _listener)
 	{
-		assert(filter != nullptr);
 	}
 
-	virtual ~SoftwareMixer() {
-		if (owns_filter)
-			delete filter;
-	}
-
-	Filter *GetFilter();
+	void SetFilter(Filter *_filter);
 
 	/* virtual methods from class Mixer */
 	virtual bool Open(gcc_unused Error &error) override {
@@ -115,7 +93,9 @@ SoftwareMixer::SetVolume(unsigned new_volume, gcc_unused Error &error)
 	assert(new_volume <= 100);
 
 	volume = new_volume;
-	volume_filter_set(filter, PercentVolumeToSoftwareVolume(new_volume));
+
+	if (filter != nullptr)
+		volume_filter_set(filter, PercentVolumeToSoftwareVolume(new_volume));
 	return true;
 }
 
@@ -124,19 +104,19 @@ const MixerPlugin software_mixer_plugin = {
 	true,
 };
 
-inline Filter *
-SoftwareMixer::GetFilter()
+inline void
+SoftwareMixer::SetFilter(Filter *_filter)
 {
-	assert(owns_filter);
+	filter = _filter;
 
-	owns_filter = false;
-	return filter;
+	if (filter != nullptr)
+		volume_filter_set(filter,
+				  PercentVolumeToSoftwareVolume(volume));
 }
 
-Filter *
-software_mixer_get_filter(Mixer *mixer)
+void
+software_mixer_set_filter(Mixer &mixer, Filter *filter)
 {
-	SoftwareMixer *sm = (SoftwareMixer *)mixer;
-	assert(sm->IsPlugin(software_mixer_plugin));
-	return sm->GetFilter();
+	SoftwareMixer &sm = (SoftwareMixer &)mixer;
+	sm.SetFilter(filter);
 }

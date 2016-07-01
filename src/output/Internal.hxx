@@ -190,6 +190,12 @@ struct AudioOutput {
 	Filter *filter = nullptr;
 
 	/**
+	 * The #VolumeFilter instance of this audio output.  It is
+	 * used by the #SoftwareMixer.
+	 */
+	Filter *volume_filter = nullptr;
+
+	/**
 	 * The replay_gain_filter_plugin instance of this audio
 	 * output.
 	 */

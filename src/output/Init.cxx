@@ -102,6 +102,13 @@ audio_output_mixer_type(const ConfigBlock &block)
 						  "hardware"));
 }
 
+static Filter *
+CreateVolumeFilter()
+{
+	return filter_new(&volume_filter_plugin, ConfigBlock(),
+			  IgnoreError());
+}
+
 static Mixer *
 audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 			const ConfigBlock &block,
@@ -110,6 +117,8 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 			MixerListener &listener,
 			Error &error)
 {
+	assert(ao.volume_filter == nullptr);
+
 	Mixer *mixer;
 
 	switch (audio_output_mixer_type(block)) {
@@ -135,8 +144,13 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 				  IgnoreError());
 		assert(mixer != nullptr);
 
+		ao.volume_filter = CreateVolumeFilter();
+		assert(ao.volume_filter != nullptr);
+
 		filter_chain_append(filter_chain, "software_mixer",
-				    software_mixer_get_filter(mixer));
+				    ao.volume_filter);
+
+		software_mixer_set_filter(*mixer, ao.volume_filter);
 		return mixer;
 	}
 

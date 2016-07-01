@@ -24,10 +24,12 @@ class Mixer;
 class Filter;
 
 /**
- * Returns the (volume) filter associated with this mixer.  All users
- * of this mixer plugin should install this filter.
+ * Attach a #VolumeFilter to this mixer.  The #VolumeFilter is the
+ * entity which actually applies the volume; it is created and managed
+ * by the output.  Mixer::SetVolume() calls will be forwarded to
+ * volume_filter_set().
  */
-Filter *
-software_mixer_get_filter(Mixer *mixer);
+void
+software_mixer_set_filter(Mixer &mixer, Filter *filter);
 
 #endif
