@@ -22,6 +22,7 @@
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "input/InputStream.hxx"
+#include "system/ByteOrder.hxx"
 #include "util/Error.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/NumberParser.hxx"
@@ -40,8 +41,6 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 	};
 
 	const char *const mime = is.GetMimeType();
-	const bool reverse_endian = mime != nullptr &&
-		strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0;
 
 	const bool l16 = mime != nullptr &&
 		GetMimeTypeBase(mime) == "audio/L16";
@@ -51,6 +50,10 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 		audio_format.sample_rate = 0;
 		audio_format.channels = 1;
 	}
+
+	const bool reverse_endian = (l16 && IsLittleEndian()) ||
+		(mime != nullptr &&
+		 strcmp(mime, "audio/x-mpd-cdda-pcm-reverse") == 0);
 
 	if (is_float)
 		audio_format.format = SampleFormat::FLOAT;
