@@ -134,8 +134,6 @@ ReplayGainFilter::Update()
 		volume = pcm_float_to_volume(scale);
 	}
 
-	pv.SetVolume(volume);
-
 	if (mixer != nullptr) {
 		/* update the hardware mixer volume */
 
@@ -146,7 +144,8 @@ ReplayGainFilter::Update()
 		Error error;
 		if (!mixer_set_volume(mixer, _volume, error))
 			LogError(error, "Failed to update hardware mixer");
-	}
+	} else
+		pv.SetVolume(volume);
 }
 
 static Filter *
@@ -174,7 +173,9 @@ ReplayGainFilter::Close()
 ConstBuffer<void>
 ReplayGainFilter::FilterPCM(ConstBuffer<void> src, gcc_unused Error &error)
 {
-	return pv.Apply(src);
+	return mixer != nullptr
+		? src
+		: pv.Apply(src);
 }
 
 const struct filter_plugin replay_gain_filter_plugin = {
