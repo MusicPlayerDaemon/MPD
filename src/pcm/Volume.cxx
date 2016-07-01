@@ -134,9 +134,11 @@ PcmVolume::Apply(ConstBuffer<void> src)
 
 	if (volume == 0) {
 		/* optimized special case: 0% volume = memset(0) */
-		/* TODO: is this valid for all sample formats? What
-		   about floating point? */
-		memset(data, 0, src.size);
+		uint8_t pattern = 0;
+		if (format == SampleFormat::DSD)
+			pattern = 0x69;
+
+		memset(data, pattern, src.size);
 		return { data, src.size };
 	}
 
