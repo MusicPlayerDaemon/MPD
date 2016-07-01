@@ -47,19 +47,17 @@ class SoftwareMixer final : public Mixer {
 	 * software_mixer_get_filter(); after that, the caller will be
 	 * responsible for the #Filter.
 	 */
-	bool owns_filter;
+	bool owns_filter = true;
 
 	/**
 	 * The current volume in percent (0..100).
 	 */
-	unsigned volume;
+	unsigned volume = 100;
 
 public:
 	SoftwareMixer(MixerListener &_listener)
 		:Mixer(software_mixer_plugin, _listener),
-		 filter(CreateVolumeFilter()),
-		 owns_filter(true),
-		 volume(100)
+		 filter(CreateVolumeFilter())
 	{
 		assert(filter != nullptr);
 	}
