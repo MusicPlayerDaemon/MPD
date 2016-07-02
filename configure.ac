@@ -1279,7 +1279,7 @@ if test x$enable_vorbis = xyes || test x$enable_tremor = xyes || test x$enable_o
 fi
 
 have_xiph=no
-if test x$enable_ogg = xyes || test x$enable_flac = xyes || test x$enable_flac_encoder = xyes; then
+if test x$have_ogg = xyes || test x$enable_flac = xyes || test x$enable_flac_encoder = xyes; then
 	have_xiph=yes
 fi
 
