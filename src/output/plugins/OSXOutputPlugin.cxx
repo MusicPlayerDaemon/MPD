@@ -127,6 +127,8 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		goto done;
 	}
 
+	FormatDebug(osx_output_domain, "found %u OS X audio output devices", size);
+
 	/* what are the available audio device IDs? */
 	numdevices = size / sizeof(AudioDeviceID);
 	deviceids = new AudioDeviceID[numdevices];
@@ -153,6 +155,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 			ret = false;
 			goto done;
 		}
+		FormatDebug(osx_output_domain, "found OS X audio output device: %s", name);
 		if (strcmp(oo->device_name, name) == 0) {
 			FormatDebug(osx_output_domain,
 				    "found matching device: ID=%u, name=%s",
