@@ -28,7 +28,7 @@
 #include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
-#include <CoreAudio/AudioHardware.h>
+#include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
 
@@ -40,7 +40,7 @@ struct OSXOutput {
 	/* only applicable with kAudioUnitSubType_HALOutput */
 	const char *device_name;
 
-	AudioUnit au;
+	AudioComponentInstance au;
 	Mutex mutex;
 	Cond condition;
 
@@ -109,6 +109,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	OSStatus status;
 	UInt32 size, numdevices;
 	AudioDeviceID *deviceids = nullptr;
+	AudioObjectPropertyAddress propaddr;
 	char name[256];
 	unsigned int i;
 
@@ -116,9 +117,8 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		goto done;
 
 	/* how many audio devices are there? */
-	status = AudioHardwareGetPropertyInfo(kAudioHardwarePropertyDevices,
-					      &size,
-					      nullptr);
+	propaddr = { kAudioHardwarePropertyDevices, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+	status = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &propaddr, 0, nullptr, &size);
 	if (status != noErr) {
 		error.Format(osx_output_domain, status,
 			     "Unable to determine number of OS X audio devices: %s",
@@ -130,9 +130,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	/* what are the available audio device IDs? */
 	numdevices = size / sizeof(AudioDeviceID);
 	deviceids = new AudioDeviceID[numdevices];
-	status = AudioHardwareGetProperty(kAudioHardwarePropertyDevices,
-					  &size,
-					  deviceids);
+	status = AudioObjectGetPropertyData(kAudioObjectSystemObject, &propaddr, 0, nullptr, &size, deviceids);
 	if (status != noErr) {
 		error.Format(osx_output_domain, status,
 			     "Unable to determine OS X audio device IDs: %s",
@@ -142,11 +140,10 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	}
 
 	/* which audio device matches oo->device_name? */
+	propaddr = { kAudioObjectPropertyName, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
 	for (i = 0; i < numdevices; i++) {
 		size = sizeof(name);
-		status = AudioDeviceGetProperty(deviceids[i], 0, false,
-						kAudioDevicePropertyDeviceName,
-						&size, name);
+		status = AudioObjectGetPropertyData(deviceids[i], &propaddr, 0, nullptr, &size, name);
 		if (status != noErr) {
 			error.Format(osx_output_domain, status,
 				     "Unable to determine OS X device name "
@@ -238,21 +235,21 @@ osx_output_enable(AudioOutput *ao, Error &error)
 {
 	OSXOutput *oo = (OSXOutput *)ao;
 
-	ComponentDescription desc;
+	AudioComponentDescription desc;
 	desc.componentType = kAudioUnitType_Output;
 	desc.componentSubType = oo->component_subtype;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 	desc.componentFlags = 0;
 	desc.componentFlagsMask = 0;
 
-	Component comp = FindNextComponent(nullptr, &desc);
+	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
 	if (comp == 0) {
 		error.Set(osx_output_domain,
 			  "Error finding OS X component");
 		return false;
 	}
 
-	OSStatus status = OpenAComponent(comp, &oo->au);
+	OSStatus status = AudioComponentInstanceNew(comp, &oo->au);
 	if (status != noErr) {
 		error.Format(osx_output_domain, status,
 			     "Unable to open OS X component: %s",
@@ -261,7 +258,7 @@ osx_output_enable(AudioOutput *ao, Error &error)
 	}
 
 	if (!osx_output_set_device(oo, error)) {
-		CloseComponent(oo->au);
+		AudioComponentInstanceDispose(oo->au);
 		return false;
 	}
 
@@ -269,14 +266,14 @@ osx_output_enable(AudioOutput *ao, Error &error)
 	callback.inputProc = osx_render;
 	callback.inputProcRefCon = oo;
 
-	ComponentResult result =
+	status =
 		AudioUnitSetProperty(oo->au,
 				     kAudioUnitProperty_SetRenderCallback,
 				     kAudioUnitScope_Input, 0,
 				     &callback, sizeof(callback));
-	if (result != noErr) {
-		CloseComponent(oo->au);
-		error.Set(osx_output_domain, result,
+	if (status != noErr) {
+		AudioComponentInstanceDispose(oo->au);
+		error.Set(osx_output_domain, status,
 			  "unable to set callback for OS X audio unit");
 		return false;
 	}
@@ -289,7 +286,7 @@ osx_output_disable(AudioOutput *ao)
 {
 	OSXOutput *oo = (OSXOutput *)ao;
 
-	CloseComponent(oo->au);
+	AudioComponentInstanceDispose(oo->au);
 }
 
 static void
@@ -350,18 +347,18 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
 	stream_description.mChannelsPerFrame = audio_format.channels;
 
-	ComponentResult result =
+	OSStatus status =
 		AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
 				     kAudioUnitScope_Input, 0,
 				     &stream_description,
 				     sizeof(stream_description));
-	if (result != noErr) {
-		error.Set(osx_output_domain, result,
+	if (status != noErr) {
+		error.Set(osx_output_domain, status,
 			  "Unable to set format on OS X device");
 		return false;
 	}
 
-	OSStatus status = AudioUnitInitialize(od->au);
+	status = AudioUnitInitialize(od->au);
 	if (status != noErr) {
 		error.Format(osx_output_domain, status,
 			     "Unable to initialize OS X audio unit: %s",
