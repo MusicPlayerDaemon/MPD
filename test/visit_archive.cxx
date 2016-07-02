@@ -31,6 +31,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 class MyArchiveVisitor final : public ArchiveVisitor {
  public:
