@@ -110,6 +110,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	UInt32 size, numdevices;
 	AudioDeviceID *deviceids = nullptr;
 	AudioObjectPropertyAddress propaddr;
+	CFStringRef cfname = nullptr;
 	char name[256];
 	unsigned int i;
 
@@ -144,8 +145,8 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	/* which audio device matches oo->device_name? */
 	propaddr = { kAudioObjectPropertyName, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
 	for (i = 0; i < numdevices; i++) {
-		size = sizeof(name);
-		status = AudioObjectGetPropertyData(deviceids[i], &propaddr, 0, nullptr, &size, name);
+		size = sizeof(CFStringRef);
+		status = AudioObjectGetPropertyData(deviceids[i], &propaddr, 0, nullptr, &size, &cfname);
 		if (status != noErr) {
 			error.Format(osx_output_domain, status,
 				     "Unable to determine OS X device name "
@@ -155,6 +156,12 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 			ret = false;
 			goto done;
 		}
+		if (!CFStringGetCString(cfname, name, sizeof(name), kCFStringEncodingUTF8)) {
+			error.Format(osx_output_domain, "Unable to convert device name CFString to char*");
+			ret = false;
+			goto done;
+		}
+
 		FormatDebug(osx_output_domain, "found OS X audio output device: %s", name);
 		if (strcmp(oo->device_name, name) == 0) {
 			FormatDebug(osx_output_domain,
@@ -191,6 +198,9 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 
 done:
 	delete[] deviceids;
+	if (cfname) {
+		CFRelease(cfname);
+	}
 	return ret;
 }
 
