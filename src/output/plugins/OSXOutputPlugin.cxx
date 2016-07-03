@@ -52,6 +52,20 @@ struct OSXOutput {
 
 static constexpr Domain osx_output_domain("osx_output");
 
+static void
+osx_os_status_to_cstring(OSStatus status, char *str, size_t size) {
+	CFErrorRef cferr = CFErrorCreate(nullptr, kCFErrorDomainOSStatus, status, nullptr);
+	CFStringRef cfstr = CFErrorCopyDescription(cferr);
+	if (!CFStringGetCString(cfstr, str, size, kCFStringEncodingUTF8)) {
+		/* conversion failed, return empty string */
+		*str = '\0';
+	}
+	if (cferr)
+		CFRelease(cferr);
+	if (cfstr)
+		CFRelease(cfstr);
+}
+
 static bool
 osx_output_test_default_device(void)
 {
@@ -111,6 +125,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	AudioDeviceID *deviceids = nullptr;
 	AudioObjectPropertyAddress propaddr;
 	CFStringRef cfname = nullptr;
+	char errormsg[1024];
 	char name[256];
 	unsigned int i;
 
@@ -121,9 +136,10 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	propaddr = { kAudioHardwarePropertyDevices, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
 	status = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &propaddr, 0, nullptr, &size);
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to determine number of OS X audio devices: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		ret = false;
 		goto done;
 	}
@@ -133,9 +149,10 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	deviceids = new AudioDeviceID[numdevices];
 	status = AudioObjectGetPropertyData(kAudioObjectSystemObject, &propaddr, 0, nullptr, &size, deviceids);
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to determine OS X audio device IDs: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		ret = false;
 		goto done;
 	}
@@ -146,11 +163,12 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	for (i = 0; i < numdevices; i++) {
 		status = AudioObjectGetPropertyData(deviceids[i], &propaddr, 0, nullptr, &size, &cfname);
 		if (status != noErr) {
+			osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 			error.Format(osx_output_domain, status,
 				     "Unable to determine OS X device name "
 				     "(device %u): %s",
 				     (unsigned int) deviceids[i],
-				     GetMacOSStatusCommentString(status));
+				     errormsg);
 			ret = false;
 			goto done;
 		}
@@ -183,9 +201,10 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 				      &(deviceids[i]),
 				      sizeof(AudioDeviceID));
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to set OS X audio output device: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		ret = false;
 		goto done;
 	}
@@ -244,6 +263,7 @@ osx_render(void *vdata,
 static bool
 osx_output_enable(AudioOutput *ao, Error &error)
 {
+	char errormsg[1024];
 	OSXOutput *oo = (OSXOutput *)ao;
 
 	AudioComponentDescription desc;
@@ -262,9 +282,10 @@ osx_output_enable(AudioOutput *ao, Error &error)
 
 	OSStatus status = AudioComponentInstanceNew(comp, &oo->au);
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to open OS X component: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		return false;
 	}
 
@@ -324,6 +345,7 @@ static bool
 osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		Error &error)
 {
+	char errormsg[1024];
 	OSXOutput *od = (OSXOutput *)ao;
 
 	AudioStreamBasicDescription stream_description;
@@ -371,9 +393,10 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 
 	status = AudioUnitInitialize(od->au);
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to initialize OS X audio unit: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		return false;
 	}
 
@@ -384,9 +407,10 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
 		AudioUnitUninitialize(od->au);
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "unable to start audio output: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		return false;
 	}
 
