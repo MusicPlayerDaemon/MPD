@@ -215,9 +215,8 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 
 done:
 	delete[] deviceids;
-	if (cfname) {
+	if (cfname)
 		CFRelease(cfname);
-	}
 	return ret;
 }
 
