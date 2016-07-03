@@ -156,7 +156,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		}
 
 		if (!CFStringGetCString(cfname, name, sizeof(name), kCFStringEncodingUTF8)) {
-			error.Format(osx_output_domain, "Unable to convert device name from CFString to char*");
+			error.Set(osx_output_domain, "Unable to convert device name from CFStringRef to char*");
 			ret = false;
 			goto done;
 		}
