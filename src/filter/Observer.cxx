@@ -41,6 +41,7 @@ public:
 		assert(observer.proxy == this);
 
 		observer.proxy = nullptr;
+		delete prepared_filter;
 	}
 
 	void Clear(gcc_unused Proxy *_child) {
