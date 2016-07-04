@@ -110,7 +110,7 @@ ConvertFilter::~ConvertFilter()
 {
 	assert(in_audio_format.IsValid());
 
-	if (out_audio_format.IsValid())
+	if (out_audio_format != in_audio_format)
 		state.Close();
 }
 
@@ -119,7 +119,7 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src, Error &error)
 {
 	assert(in_audio_format.IsValid());
 
-	if (!out_audio_format.IsValid())
+	if (out_audio_format == in_audio_format)
 		/* optimized special case: no-op */
 		return src;
 
