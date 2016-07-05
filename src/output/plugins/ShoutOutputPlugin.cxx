@@ -247,7 +247,6 @@ ShoutOutput::Configure(const config_param &param, Error &error)
 
 	{
 		char temp[11];
-		memset(temp, 0, sizeof(temp));
 
 		snprintf(temp, sizeof(temp), "%u", audio_format.channels);
 		shout_set_audio_info(shout_conn, SHOUT_AI_CHANNELS, temp);
