@@ -25,6 +25,7 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
+#include "pcm/Silence.hxx"
 #include "DetachedSong.hxx"
 #include "system/FatalError.hxx"
 #include "CrossFade.hxx"
@@ -505,7 +506,7 @@ Player::SendSilence()
 
 	chunk->time = SignedSongTime::Negative(); /* undefined time stamp */
 	chunk->length = num_frames * frame_size;
-	memset(chunk->data, 0, chunk->length);
+	PcmSilence({chunk->data, chunk->length}, play_audio_format.format);
 
 	Error error;
 	if (!pc.outputs.Play(chunk, error)) {
