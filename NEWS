@@ -1,4 +1,5 @@
 ver 0.19.17 (not yet released)
+* fix spurious seek error "Failed to allocate silence buffer"
 * replay gain: fix "replay_gain_handler mixer" setting
 
 ver 0.19.16 (2016/06/13)
