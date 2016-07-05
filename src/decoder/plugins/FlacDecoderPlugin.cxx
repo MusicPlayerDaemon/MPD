@@ -209,8 +209,16 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 			/* regular end of stream */
 			return;
 
-		case FLAC__STREAM_DECODER_OGG_ERROR:
 		case FLAC__STREAM_DECODER_SEEK_ERROR:
+			/* try to recover from seek error */
+			if (!FLAC__stream_decoder_flush(flac_dec)) {
+				LogError(flac_domain, "FLAC__stream_decoder_flush() failed");
+				return;
+			}
+
+			break;
+
+		case FLAC__STREAM_DECODER_OGG_ERROR:
 		case FLAC__STREAM_DECODER_ABORTED:
 		case FLAC__STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
 			/* an error, fatal enough for us to abort the
