@@ -194,9 +194,33 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 				decoder_command_finished(decoder);
 			} else
 				decoder_seek_error(decoder);
-		} else if (cmd == DecoderCommand::STOP ||
-			   FLAC__stream_decoder_get_state(flac_dec) == FLAC__STREAM_DECODER_END_OF_STREAM)
+		} else if (cmd == DecoderCommand::STOP)
 			break;
+
+		switch (FLAC__stream_decoder_get_state(flac_dec)) {
+		case FLAC__STREAM_DECODER_SEARCH_FOR_METADATA:
+		case FLAC__STREAM_DECODER_READ_METADATA:
+		case FLAC__STREAM_DECODER_SEARCH_FOR_FRAME_SYNC:
+		case FLAC__STREAM_DECODER_READ_FRAME:
+			/* continue decoding */
+			break;
+
+		case FLAC__STREAM_DECODER_END_OF_STREAM:
+			/* regular end of stream */
+			return;
+
+		case FLAC__STREAM_DECODER_OGG_ERROR:
+		case FLAC__STREAM_DECODER_SEEK_ERROR:
+		case FLAC__STREAM_DECODER_ABORTED:
+		case FLAC__STREAM_DECODER_MEMORY_ALLOCATION_ERROR:
+			/* an error, fatal enough for us to abort the
+			   decoder */
+			return;
+
+		case FLAC__STREAM_DECODER_UNINITIALIZED:
+			/* we shouldn't see this, ever - bail out */
+			return;
+		}
 
 		if (t_end != 0 && data->next_frame >= t_end)
 			/* end of this sub track */
