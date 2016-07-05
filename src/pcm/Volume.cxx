@@ -19,10 +19,12 @@
 
 #include "config.h"
 #include "Volume.hxx"
+#include "Silence.hxx"
 #include "Domain.hxx"
 #include "PcmUtils.hxx"
 #include "Traits.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/WritableBuffer.hxx"
 #include "util/Error.hxx"
 
 #include "PcmDither.cxx" // including the .cxx file to get inlined templates
@@ -134,11 +136,7 @@ PcmVolume::Apply(ConstBuffer<void> src)
 
 	if (volume == 0) {
 		/* optimized special case: 0% volume = memset(0) */
-		uint8_t pattern = 0;
-		if (format == SampleFormat::DSD)
-			pattern = 0x69;
-
-		memset(data, pattern, src.size);
+		PcmSilence({data, src.size}, format);
 		return { data, src.size };
 	}
 
