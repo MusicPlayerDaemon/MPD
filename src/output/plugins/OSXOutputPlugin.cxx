@@ -41,6 +41,7 @@ struct OSXOutput {
 	const char *device_name;
 
 	AudioComponentInstance au;
+	AudioStreamBasicDescription asbd;
 	Mutex mutex;
 	Cond condition;
 
@@ -220,43 +221,116 @@ done:
 	return ret;
 }
 
+
+/*
+	This function (the 'render callback' osx_render) is called by the
+	OS X audio subsystem (CoreAudio) to request audio data that will be
+	played by the audio hardware. This function has hard time constraints
+	so it cannot do IO (debug statements) or memory allocations.
+	
+	The caller (i.e. CoreAudio) requests a specific number of
+	audio frames (in_number_frames) to be rendered into a
+	collection of output buffers (buffer_list). Depending on the
+	number of output buffers the render callback has to interleave
+	or de-interleave audio data to match the layout of the output
+	buffers. The intput buffer is always interleaved. In practice,
+	it seems this callback always gets a single output buffer
+	meaning that no de-interleaving actually takes place. For the
+	sake of correctness this callback allows for de-interleaving
+	anyway, and calculates the expected output layout by examining
+	the output buffers.
+	
+	The input buffer is a DynamicFifoBuffer. When a
+	DynamicFifoBuffer contains less data than we want to read from
+	it there is no point in doing a second Read(). So in the case
+	of insufficient audio data in the input buffer, this render
+	callback will emit silence into the output buffers (memset
+	zero).
+*/
+
 static OSStatus
 osx_render(void *vdata,
 	   gcc_unused AudioUnitRenderActionFlags *io_action_flags,
 	   gcc_unused const AudioTimeStamp *in_timestamp,
 	   gcc_unused UInt32 in_bus_number,
-	   gcc_unused UInt32 in_number_frames,
+	   UInt32 in_number_frames,
 	   AudioBufferList *buffer_list)
 {
+	AudioBuffer *output_buffer = nullptr;
+	size_t output_buffer_frame_size, dest;
+
 	OSXOutput *od = (OSXOutput *) vdata;
-	AudioBuffer *buffer = &buffer_list->mBuffers[0];
-	size_t buffer_size = buffer->mDataByteSize;
+	DynamicFifoBuffer<uint8_t> *input_buffer = od->buffer;
+	assert(input_buffer != nullptr);
 
-	assert(od->buffer != nullptr);
+	/*
+		By convention when interfacing with audio hardware in CoreAudio,
+		in_bus_number equals 0 for output and 1 for input. Because this is an
+		audio output plugin our in_bus_number should always be 0.
+	*/
+	assert(in_bus_number == 0);
 
+	unsigned int input_channel_count = od->asbd.mChannelsPerFrame;
+	unsigned int output_channel_count = 0;
+	for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
+		output_buffer = &buffer_list->mBuffers[i];
+		assert(output_buffer->mData != nullptr);
+		output_channel_count += output_buffer->mNumberChannels;
+	}
+	assert(output_channel_count == input_channel_count);
+
+	size_t input_buffer_frame_size = od->asbd.mBytesPerFrame;
+	size_t sample_size = input_buffer_frame_size / input_channel_count;
+
+	// Acquire mutex when accessing input_buffer
 	od->mutex.lock();
 
-	auto src = od->buffer->Read();
-	if (!src.IsEmpty()) {
-		if (src.size > buffer_size)
-			src.size = buffer_size;
+	auto src = input_buffer->Read();
 
-		memcpy(buffer->mData, src.data, src.size);
-		od->buffer->Consume(src.size);
+	UInt32 available_frames = src.size / input_buffer_frame_size;
+	// Never write more frames than we were asked
+	if (available_frames > in_number_frames)
+		available_frames = in_number_frames;
+
+	/*
+		To de-interleave the data in the input buffer so that it fits in
+		the output buffers we divide the input buffer frames into 'sub frames'
+		that fit into the output buffers.
+	*/
+	size_t sub_frame_offset = 0;
+	for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
+		output_buffer = &buffer_list->mBuffers[i];
+		output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
+		for (UInt32 current_frame = 0; current_frame < available_frames; ++current_frame) {
+				dest = (size_t) output_buffer->mData + current_frame * output_buffer_frame_size;
+				memcpy(
+					(void *) dest,
+					src.data + current_frame * input_buffer_frame_size + sub_frame_offset,
+					output_buffer_frame_size
+				);
+		}
+		sub_frame_offset += output_buffer_frame_size;
 	}
+
+	input_buffer->Consume(available_frames * input_buffer_frame_size);
 
 	od->condition.signal();
 	od->mutex.unlock();
 
-	buffer->mDataByteSize = src.size;
-
-	unsigned i;
-	for (i = 1; i < buffer_list->mNumberBuffers; ++i) {
-		buffer = &buffer_list->mBuffers[i];
-		buffer->mDataByteSize = 0;
+	if (available_frames < in_number_frames) {
+		for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
+			output_buffer = &buffer_list->mBuffers[i];
+			output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
+			dest = (size_t) output_buffer->mData + available_frames * output_buffer_frame_size;
+			memset(
+				(void *) dest,
+				0,
+				(in_number_frames - available_frames) * output_buffer_frame_size
+			);
+		}
 	}
 
-	return 0;
+	return noErr;
 }
 
 static bool
@@ -347,43 +421,43 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	char errormsg[1024];
 	OSXOutput *od = (OSXOutput *)ao;
 
-	AudioStreamBasicDescription stream_description;
-	stream_description.mSampleRate = audio_format.sample_rate;
-	stream_description.mFormatID = kAudioFormatLinearPCM;
-	stream_description.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
+	memset(&od->asbd, 0, sizeof(od->asbd));
+	od->asbd.mSampleRate = audio_format.sample_rate;
+	od->asbd.mFormatID = kAudioFormatLinearPCM;
+	od->asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
-		stream_description.mBitsPerChannel = 8;
+		od->asbd.mBitsPerChannel = 8;
 		break;
 
 	case SampleFormat::S16:
-		stream_description.mBitsPerChannel = 16;
+		od->asbd.mBitsPerChannel = 16;
 		break;
 
 	case SampleFormat::S32:
-		stream_description.mBitsPerChannel = 32;
+		od->asbd.mBitsPerChannel = 32;
 		break;
 
 	default:
 		audio_format.format = SampleFormat::S32;
-		stream_description.mBitsPerChannel = 32;
+		od->asbd.mBitsPerChannel = 32;
 		break;
 	}
 
 	if (IsBigEndian())
-		stream_description.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+		od->asbd.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 
-	stream_description.mBytesPerPacket = audio_format.GetFrameSize();
-	stream_description.mFramesPerPacket = 1;
-	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
-	stream_description.mChannelsPerFrame = audio_format.channels;
+	od->asbd.mBytesPerPacket = audio_format.GetFrameSize();
+	od->asbd.mFramesPerPacket = 1;
+	od->asbd.mBytesPerFrame = od->asbd.mBytesPerPacket;
+	od->asbd.mChannelsPerFrame = audio_format.channels;
 
 	OSStatus status =
 		AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
 				     kAudioUnitScope_Input, 0,
-				     &stream_description,
-				     sizeof(stream_description));
+				     &od->asbd,
+				     sizeof(od->asbd));
 	if (status != noErr) {
 		error.Set(osx_output_domain, status,
 			  "Unable to set format on OS X device");
