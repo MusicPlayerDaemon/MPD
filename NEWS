@@ -5,7 +5,7 @@ ver 0.19.17 (not yet released)
 * fix spurious seek error "Failed to allocate silence buffer"
 * replay gain: fix "replay_gain_handler mixer" setting
 * DSD: use 0x69 as silence pattern
-* fix use-after-free bug on "close"
+* fix use-after-free bug on "close" and "kill"
 
 ver 0.19.16 (2016/06/13)
 * faster seeking

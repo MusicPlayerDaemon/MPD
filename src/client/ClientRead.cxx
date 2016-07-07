@@ -52,8 +52,8 @@ Client::OnSocketInput(void *data, size_t length)
 		break;
 
 	case CommandResult::KILL:
-		Close();
 		partition.instance.event_loop->Break();
+		Close();
 		return InputResult::CLOSED;
 
 	case CommandResult::FINISH:
