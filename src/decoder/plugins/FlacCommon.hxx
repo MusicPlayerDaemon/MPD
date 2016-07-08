@@ -61,6 +61,10 @@ struct flac_data : public FlacInput {
 	 */
 	FLAC__uint64 total_frames;
 
+	/**
+	 * End of last frame's position within the stream.  This is
+	 * used for bit rate calculations.
+	 */
 	FLAC__uint64 position;
 
 	Decoder &decoder;
