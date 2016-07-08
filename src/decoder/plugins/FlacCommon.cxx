@@ -33,7 +33,7 @@ flac_data::flac_data(Decoder &_decoder,
 		     InputStream &_input_stream)
 	:FlacInput(_input_stream, &_decoder),
 	 initialized(false), unsupported(false),
-	 total_frames(0), position(0),
+	 position(0),
 	 decoder(_decoder), input_stream(_input_stream)
 {
 }
@@ -142,6 +142,7 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 			    data->input_stream.IsSeekable(),
 			    duration);
 
+	data->total_frames = 0; /* unkown duration */
 	data->initialized = true;
 
 	return true;

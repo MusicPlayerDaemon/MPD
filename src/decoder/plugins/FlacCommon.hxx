@@ -56,6 +56,8 @@ struct flac_data : public FlacInput {
 
 	/**
 	 * The total number of frames in this song.  0 means unknown.
+	 *
+	 * This attribute is defined if "initialized" is true.
 	 */
 	FLAC__uint64 total_frames;
 
