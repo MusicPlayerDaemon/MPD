@@ -167,12 +167,9 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 }
 
 static void
-flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
-		  FLAC__uint64 t_start, FLAC__uint64 t_end)
+flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec)
 {
 	Decoder &decoder = data->decoder;
-
-	data->first_frame = t_start;
 
 	while (true) {
 		DecoderCommand cmd;
@@ -184,12 +181,9 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 			cmd = decoder_get_command(decoder);
 
 		if (cmd == DecoderCommand::SEEK) {
-			FLAC__uint64 seek_sample = t_start +
+			FLAC__uint64 seek_sample =
 				decoder_seek_where_frame(decoder);
-			if (seek_sample >= t_start &&
-			    (t_end == 0 || seek_sample <= t_end) &&
-			    FLAC__stream_decoder_seek_absolute(flac_dec, seek_sample)) {
-				data->next_frame = seek_sample;
+			if (FLAC__stream_decoder_seek_absolute(flac_dec, seek_sample)) {
 				data->position = 0;
 				decoder_command_finished(decoder);
 			} else
@@ -229,10 +223,6 @@ flac_decoder_loop(struct flac_data *data, FLAC__StreamDecoder *flac_dec,
 			/* we shouldn't see this, ever - bail out */
 			return;
 		}
-
-		if (t_end != 0 && data->next_frame >= t_end)
-			/* end of this sub track */
-			break;
 
 		if (!FLAC__stream_decoder_process_single(flac_dec) &&
 		    decoder_get_command(decoder) == DecoderCommand::NONE) {
@@ -310,7 +300,7 @@ flac_decode_internal(Decoder &decoder,
 		return;
 	}
 
-	flac_decoder_loop(&data, flac_dec, 0, 0);
+	flac_decoder_loop(&data, flac_dec);
 
 	FLAC__stream_decoder_finish(flac_dec);
 	FLAC__stream_decoder_delete(flac_dec);

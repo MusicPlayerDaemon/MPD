@@ -33,7 +33,7 @@ flac_data::flac_data(Decoder &_decoder,
 		     InputStream &_input_stream)
 	:FlacInput(_input_stream, &_decoder),
 	 initialized(false), unsupported(false),
-	 total_frames(0), first_frame(0), next_frame(0), position(0),
+	 total_frames(0), position(0),
 	 decoder(_decoder), input_stream(_input_stream)
 {
 }
@@ -176,7 +176,6 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 	auto cmd = decoder_data(data->decoder, data->input_stream,
 				buffer, buffer_size,
 				bit_rate);
-	data->next_frame += frame->header.blocksize;
 	switch (cmd) {
 	case DecoderCommand::NONE:
 	case DecoderCommand::START:

@@ -61,17 +61,6 @@ struct flac_data : public FlacInput {
 	 */
 	FLAC__uint64 total_frames;
 
-	/**
-	 * The number of the first frame in this song.  This is only
-	 * non-zero if playing sub songs from a CUE sheet.
-	 */
-	FLAC__uint64 first_frame;
-
-	/**
-	 * The number of the next frame which is going to be decoded.
-	 */
-	FLAC__uint64 next_frame;
-
 	FLAC__uint64 position;
 
 	Decoder &decoder;
