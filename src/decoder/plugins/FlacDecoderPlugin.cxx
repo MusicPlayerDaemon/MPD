@@ -261,6 +261,24 @@ stream_init(FLAC__StreamDecoder *flac_dec, struct flac_data *data, bool is_ogg)
 		: stream_init_flac(flac_dec, data);
 }
 
+static bool
+FlacInitAndDecode(struct flac_data &data, FLAC__StreamDecoder *sd, bool is_ogg)
+{
+	auto init_status = stream_init(sd, &data, is_ogg);
+	if (init_status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
+		LogWarning(flac_domain,
+			   FLAC__StreamDecoderInitStatusString[init_status]);
+		return false;
+	}
+
+	bool result = flac_decoder_initialize(&data, sd);
+	if (result)
+		flac_decoder_loop(&data, sd);
+
+	FLAC__stream_decoder_finish(sd);
+	return result;
+}
+
 static void
 flac_decode_internal(Decoder &decoder,
 		     InputStream &input_stream,
@@ -274,24 +292,8 @@ flac_decode_internal(Decoder &decoder,
 
 	struct flac_data data(decoder, input_stream);
 
-	FLAC__StreamDecoderInitStatus status =
-		stream_init(flac_dec, &data, is_ogg);
-	if (status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
-		FLAC__stream_decoder_delete(flac_dec);
-		LogWarning(flac_domain,
-			   FLAC__StreamDecoderInitStatusString[status]);
-		return;
-	}
+	FlacInitAndDecode(data, flac_dec, is_ogg);
 
-	if (!flac_decoder_initialize(&data, flac_dec)) {
-		FLAC__stream_decoder_finish(flac_dec);
-		FLAC__stream_decoder_delete(flac_dec);
-		return;
-	}
-
-	flac_decoder_loop(&data, flac_dec);
-
-	FLAC__stream_decoder_finish(flac_dec);
 	FLAC__stream_decoder_delete(flac_dec);
 }
 
