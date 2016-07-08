@@ -155,7 +155,6 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  FLAC__uint64 nbytes)
 {
 	void *buffer;
-	unsigned bit_rate;
 
 	if (!data->initialized && !flac_got_first_frame(data, &frame->header))
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
@@ -167,11 +166,8 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		     data->audio_format.format, buf,
 		     0, frame->header.blocksize);
 
-	if (nbytes > 0)
-		bit_rate = nbytes * 8 * frame->header.sample_rate /
-			(1000 * frame->header.blocksize);
-	else
-		bit_rate = 0;
+	unsigned bit_rate = nbytes * 8 * frame->header.sample_rate /
+		(1000 * frame->header.blocksize);
 
 	auto cmd = decoder_data(data->decoder, data->input_stream,
 				buffer, buffer_size,
