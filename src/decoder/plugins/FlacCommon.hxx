@@ -55,9 +55,7 @@ struct flac_data : public FlacInput {
 	AudioFormat audio_format;
 
 	/**
-	 * The total number of frames in this song.  The decoder
-	 * plugin may initialize this attribute to override the value
-	 * provided by libFLAC (e.g. for sub songs from a CUE sheet).
+	 * The total number of frames in this song.  0 means unknown.
 	 */
 	FLAC__uint64 total_frames;
 

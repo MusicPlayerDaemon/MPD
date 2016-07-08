@@ -1,6 +1,7 @@
 ver 0.19.17 (not yet released)
 * decoder
   - flac: fix assertion failure while seeking
+  - flac: fix stream duration indicator
   - fix seek problems in several plugins
 * fix spurious seek error "Failed to allocate silence buffer"
 * replay gain: fix "replay_gain_handler mixer" setting
