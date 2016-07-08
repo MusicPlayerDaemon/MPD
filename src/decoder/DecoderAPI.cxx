@@ -301,7 +301,8 @@ decoder_check_cancel_read(const Decoder *decoder)
 	/* ignore the SEEK command during initialization, the plugin
 	   should handle that after it has initialized successfully */
 	if (dc.command == DecoderCommand::SEEK &&
-	    (dc.state == DecoderState::START || decoder->seeking))
+	    (dc.state == DecoderState::START || decoder->seeking ||
+	     decoder->initial_seek_running))
 		return false;
 
 	return true;

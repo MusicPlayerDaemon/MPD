@@ -19,9 +19,11 @@
 
 #include "config.h"
 #include "Volume.hxx"
+#include "Silence.hxx"
 #include "Domain.hxx"
 #include "Traits.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/WritableBuffer.hxx"
 #include "util/Error.hxx"
 
 #include "PcmDither.cxx" // including the .cxx file to get inlined templates
@@ -133,9 +135,7 @@ PcmVolume::Apply(ConstBuffer<void> src)
 
 	if (volume == 0) {
 		/* optimized special case: 0% volume = memset(0) */
-		/* TODO: is this valid for all sample formats? What
-		   about floating point? */
-		memset(data, 0, src.size);
+		PcmSilence({data, src.size}, format);
 		return { data, src.size };
 	}
 

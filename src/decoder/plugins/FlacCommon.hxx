@@ -55,23 +55,9 @@ struct flac_data : public FlacInput {
 	AudioFormat audio_format;
 
 	/**
-	 * The total number of frames in this song.  The decoder
-	 * plugin may initialize this attribute to override the value
-	 * provided by libFLAC (e.g. for sub songs from a CUE sheet).
+	 * End of last frame's position within the stream.  This is
+	 * used for bit rate calculations.
 	 */
-	FLAC__uint64 total_frames;
-
-	/**
-	 * The number of the first frame in this song.  This is only
-	 * non-zero if playing sub songs from a CUE sheet.
-	 */
-	FLAC__uint64 first_frame;
-
-	/**
-	 * The number of the next frame which is going to be decoded.
-	 */
-	FLAC__uint64 next_frame;
-
 	FLAC__uint64 position;
 
 	Decoder &decoder;
@@ -80,6 +66,12 @@ struct flac_data : public FlacInput {
 	Tag tag;
 
 	flac_data(Decoder &decoder, InputStream &input_stream);
+
+	/**
+	 * Wrapper for decoder_initialized().
+	 */
+	bool Initialize(unsigned sample_rate, unsigned bits_per_sample,
+			unsigned channels, FLAC__uint64 total_frames);
 };
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,

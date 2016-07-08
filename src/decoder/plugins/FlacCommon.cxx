@@ -33,7 +33,7 @@ flac_data::flac_data(Decoder &_decoder,
 		     InputStream &_input_stream)
 	:FlacInput(_input_stream, &_decoder),
 	 initialized(false), unsupported(false),
-	 total_frames(0), first_frame(0), next_frame(0), position(0),
+	 position(0),
 	 decoder(_decoder), input_stream(_input_stream)
 {
 }
@@ -59,6 +59,38 @@ flac_sample_format(unsigned bits_per_sample)
 	}
 }
 
+bool
+flac_data::Initialize(unsigned sample_rate, unsigned bits_per_sample,
+		      unsigned channels, FLAC__uint64 total_frames)
+{
+	assert(!initialized);
+	assert(!unsupported);
+
+	::Error error;
+	if (!audio_format_init_checked(audio_format,
+				       sample_rate,
+				       flac_sample_format(bits_per_sample),
+				       channels, error)) {
+		LogError(error);
+		unsupported = true;
+		return false;
+	}
+
+	frame_size = audio_format.GetFrameSize();
+
+	const auto duration = total_frames > 0
+		? SignedSongTime::FromScale<uint64_t>(total_frames,
+						      audio_format.sample_rate)
+		: SignedSongTime::Negative();
+
+	decoder_initialized(decoder, audio_format,
+			    input_stream.IsSeekable(),
+			    duration);
+
+	initialized = true;
+	return true;
+}
+
 static void
 flac_got_stream_info(struct flac_data *data,
 		     const FLAC__StreamMetadata_StreamInfo *stream_info)
@@ -66,22 +98,10 @@ flac_got_stream_info(struct flac_data *data,
 	if (data->initialized || data->unsupported)
 		return;
 
-	Error error;
-	if (!audio_format_init_checked(data->audio_format,
-				       stream_info->sample_rate,
-				       flac_sample_format(stream_info->bits_per_sample),
-				       stream_info->channels, error)) {
-		LogError(error);
-		data->unsupported = true;
-		return;
-	}
-
-	data->frame_size = data->audio_format.GetFrameSize();
-
-	if (data->total_frames == 0)
-		data->total_frames = stream_info->total_samples;
-
-	data->initialized = true;
+	data->Initialize(stream_info->sample_rate,
+			 stream_info->bits_per_sample,
+			 stream_info->channels,
+			 stream_info->total_samples);
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
@@ -125,28 +145,11 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 	if (data->unsupported)
 		return false;
 
-	Error error;
-	if (!audio_format_init_checked(data->audio_format,
-				       header->sample_rate,
-				       flac_sample_format(header->bits_per_sample),
-				       header->channels, error)) {
-		LogError(error);
-		data->unsupported = true;
-		return false;
-	}
-
-	data->frame_size = data->audio_format.GetFrameSize();
-
-	const auto duration = SongTime::FromScale<uint64_t>(data->total_frames,
-							    data->audio_format.sample_rate);
-
-	decoder_initialized(data->decoder, data->audio_format,
-			    data->input_stream.IsSeekable(),
-			    duration);
-
-	data->initialized = true;
-
-	return true;
+	return data->Initialize(header->sample_rate,
+				header->bits_per_sample,
+				header->channels,
+				/* unknown duration */
+				0);
 }
 
 FLAC__StreamDecoderWriteStatus
@@ -155,7 +158,6 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		  FLAC__uint64 nbytes)
 {
 	void *buffer;
-	unsigned bit_rate;
 
 	if (!data->initialized && !flac_got_first_frame(data, &frame->header))
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
@@ -167,16 +169,12 @@ flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
 		     data->audio_format.format, buf,
 		     0, frame->header.blocksize);
 
-	if (nbytes > 0)
-		bit_rate = nbytes * 8 * frame->header.sample_rate /
-			(1000 * frame->header.blocksize);
-	else
-		bit_rate = 0;
+	unsigned bit_rate = nbytes * 8 * frame->header.sample_rate /
+		(1000 * frame->header.blocksize);
 
 	auto cmd = decoder_data(data->decoder, data->input_stream,
 				buffer, buffer_size,
 				bit_rate);
-	data->next_frame += frame->header.blocksize;
 	switch (cmd) {
 	case DecoderCommand::NONE:
 	case DecoderCommand::START:

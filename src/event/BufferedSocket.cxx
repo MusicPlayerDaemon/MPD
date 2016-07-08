@@ -118,8 +118,14 @@ BufferedSocket::OnSocketReady(unsigned flags)
 	if (flags & READ) {
 		assert(!input.IsFull());
 
-		if (!ReadToBuffer() || !ResumeInput())
+		if (!ReadToBuffer())
 			return false;
+
+		if (!ResumeInput())
+			/* we must return "true" here or
+			   SocketMonitor::Dispatch() will call
+			   Cancel() on a freed object */
+			return true;
 
 		if (!input.IsFull())
 			ScheduleRead();

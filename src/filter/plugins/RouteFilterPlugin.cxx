@@ -47,9 +47,11 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "pcm/PcmBuffer.hxx"
+#include "pcm/Silence.hxx"
 #include "util/StringUtil.hxx"
 #include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/WritableBuffer.hxx"
 
 #include <algorithm>
 #include <array>
@@ -272,9 +274,8 @@ RouteFilter::FilterPCM(ConstBuffer<void> src, gcc_unused Error &error)
 			    (unsigned)sources[c] >= input_format.channels) {
 				// No source for this destination output,
 				// give it zeroes as input
-				memset(chan_destination,
-					0x00,
-					bytes_per_frame_per_channel);
+				PcmSilence({chan_destination, bytes_per_frame_per_channel},
+					   input_format.format);
 			} else {
 				// Get the data from channel sources[c]
 				// and copy it to the output
