@@ -132,11 +132,8 @@ flac_decoder_new(void)
 }
 
 static bool
-flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
-			FLAC__uint64 duration)
+flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd)
 {
-	data->total_frames = duration;
-
 	if (!FLAC__stream_decoder_process_until_end_of_metadata(sd)) {
 		LogWarning(flac_domain, "problem reading metadata");
 		return false;
@@ -295,7 +292,7 @@ flac_decode_internal(Decoder &decoder,
 		return;
 	}
 
-	if (!flac_decoder_initialize(&data, flac_dec, 0)) {
+	if (!flac_decoder_initialize(&data, flac_dec)) {
 		FLAC__stream_decoder_finish(flac_dec);
 		FLAC__stream_decoder_delete(flac_dec);
 		return;

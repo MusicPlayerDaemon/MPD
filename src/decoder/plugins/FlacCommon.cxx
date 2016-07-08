@@ -77,9 +77,7 @@ flac_got_stream_info(struct flac_data *data,
 	}
 
 	data->frame_size = data->audio_format.GetFrameSize();
-
-	if (data->total_frames == 0)
-		data->total_frames = stream_info->total_samples;
+	data->total_frames = stream_info->total_samples;
 
 	data->initialized = true;
 }
