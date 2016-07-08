@@ -135,7 +135,8 @@ static bool
 flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd)
 {
 	if (!FLAC__stream_decoder_process_until_end_of_metadata(sd)) {
-		LogWarning(flac_domain, "problem reading metadata");
+		if (FLAC__stream_decoder_get_state(sd) != FLAC__STREAM_DECODER_END_OF_STREAM)
+			LogWarning(flac_domain, "problem reading metadata");
 		return false;
 	}
 
