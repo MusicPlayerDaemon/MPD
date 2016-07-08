@@ -55,13 +55,6 @@ struct flac_data : public FlacInput {
 	AudioFormat audio_format;
 
 	/**
-	 * The total number of frames in this song.  0 means unknown.
-	 *
-	 * This attribute is defined if "initialized" is true.
-	 */
-	FLAC__uint64 total_frames;
-
-	/**
 	 * End of last frame's position within the stream.  This is
 	 * used for bit rate calculations.
 	 */
@@ -73,6 +66,12 @@ struct flac_data : public FlacInput {
 	Tag tag;
 
 	flac_data(Decoder &decoder, InputStream &input_stream);
+
+	/**
+	 * Wrapper for decoder_initialized().
+	 */
+	bool Initialize(unsigned sample_rate, unsigned bits_per_sample,
+			unsigned channels, FLAC__uint64 total_frames);
 };
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
