@@ -146,8 +146,8 @@ flac_decoder_initialize(struct flac_data *data, FLAC__StreamDecoder *sd,
 		/* done */
 
 		const auto duration2 =
-			SongTime::FromScale<uint64_t>(data->total_frames,
-						      data->audio_format.sample_rate);
+			SignedSongTime::FromScale<uint64_t>(data->total_frames,
+							    data->audio_format.sample_rate);
 
 		decoder_initialized(data->decoder, data->audio_format,
 				    data->input_stream.IsSeekable(),
