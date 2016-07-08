@@ -1,4 +1,4 @@
-ver 0.19.17 (not yet released)
+ver 0.19.17 (2016/07/09)
 * decoder
   - flac: fix assertion failure while seeking
   - flac: fix stream duration indicator
