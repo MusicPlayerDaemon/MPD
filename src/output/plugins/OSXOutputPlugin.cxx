@@ -39,6 +39,7 @@ struct OSXOutput {
 	OSType component_subtype;
 	/* only applicable with kAudioUnitSubType_HALOutput */
 	const char *device_name;
+	const char *channel_map;
 
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
@@ -93,6 +94,8 @@ osx_output_configure(OSXOutput *oo, const ConfigBlock &block)
 		/* XXX am I supposed to strdup() this? */
 		oo->device_name = device;
 	}
+
+	oo->channel_map = block.GetBlockValue("channel_map");
 }
 
 static AudioOutput *
@@ -115,6 +118,126 @@ osx_output_finish(AudioOutput *ao)
 	OSXOutput *oo = (OSXOutput *)ao;
 
 	delete oo;
+}
+
+static bool
+osx_output_parse_channel_map(
+	const char *device_name,
+	const char *channel_map_str,
+	SInt32 channel_map[],
+	UInt32 num_channels,
+	Error &error)
+{
+	char *endptr;
+	unsigned int inserted_channels = 0;
+	bool want_number = true;
+
+	while (*channel_map_str) {
+		if (inserted_channels >= num_channels) {
+			error.Format(osx_output_domain,
+				"%s: channel map contains more than %u entries or trailing garbage",
+				device_name, num_channels);
+			return false;
+		}
+
+		if (!want_number && *channel_map_str == ',') {
+			++channel_map_str;
+			want_number = true;
+			continue;
+		}
+
+		if (want_number &&
+			(isdigit(*channel_map_str) || *channel_map_str == '-')
+		) {
+			channel_map[inserted_channels] = strtol(channel_map_str, &endptr, 10);
+			if (channel_map[inserted_channels] < -1) {
+				error.Format(osx_output_domain,
+					"%s: channel map value %d not allowed (must be -1 or greater)",
+					device_name, channel_map[inserted_channels]);
+				return false;
+			}
+			channel_map_str = endptr;
+			want_number = false;
+			FormatDebug(osx_output_domain,
+				"%s: channel_map[%u] = %d",
+				device_name, inserted_channels, channel_map[inserted_channels]);
+			++inserted_channels;
+			continue;
+		}
+
+		error.Format(osx_output_domain,
+			"%s: invalid character '%c' in channel map",
+			device_name, *channel_map_str);
+		return false;
+	}
+
+	if (inserted_channels < num_channels) {
+		error.Format(osx_output_domain,
+			"%s: channel map contains less than %u entries",
+			device_name, num_channels);
+		return false;
+	}
+
+	return true;
+}
+
+static bool
+osx_output_set_channel_map(OSXOutput *oo, Error &error)
+{
+	AudioStreamBasicDescription desc;
+	OSStatus status;
+	SInt32 *channel_map = nullptr;
+	UInt32 size, num_channels;
+	char errormsg[1024];
+	bool ret = true;
+
+	size = sizeof(desc);
+	memset(&desc, 0, size);
+	status = AudioUnitGetProperty(oo->au,
+		kAudioUnitProperty_StreamFormat,
+		kAudioUnitScope_Output,
+		0,
+		&desc,
+		&size);
+	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
+		error.Format(osx_output_domain, status,
+			"%s: unable to get number of output device channels: %s",
+			oo->device_name, errormsg);
+		ret = false;
+		goto done;
+	}
+
+	num_channels = desc.mChannelsPerFrame;
+	channel_map = new SInt32[num_channels];
+	if (!osx_output_parse_channel_map(oo->device_name,
+		oo->channel_map,
+		channel_map,
+		num_channels,
+		error)
+	) {
+		ret = false;
+		goto done;
+	}
+
+	size = num_channels * sizeof(SInt32);
+	status = AudioUnitSetProperty(oo->au,
+		kAudioOutputUnitProperty_ChannelMap,
+		kAudioUnitScope_Input,
+		0,
+		channel_map,
+		size);
+	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
+		error.Format(osx_output_domain, status,
+			"%s: unable to set channel map: %s", oo->device_name, errormsg);
+		ret = false;
+		goto done;
+	}
+
+done:
+	delete[] channel_map;
+	return ret;
 }
 
 static bool
@@ -213,6 +336,11 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	FormatDebug(osx_output_domain,
 		    "set OS X audio output device ID=%u, name=%s",
 		    (unsigned)deviceids[i], name);
+
+	if (oo->channel_map && !osx_output_set_channel_map(oo, error)) {
+		ret = false;
+		goto done;
+	}
 
 done:
 	delete[] deviceids;
