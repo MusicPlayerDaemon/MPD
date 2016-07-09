@@ -24,7 +24,10 @@
 
 #include <unistd.h>
 #include <errno.h>
+
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 static bool
 Copy(OutputStream &dest, int src)

@@ -87,7 +87,7 @@ ReadId3Tag(InputStream &is)
 }
 
 static UniqueId3Tag
-ReadId3Tag(InputStream &is, off_t offset)
+ReadId3Tag(InputStream &is, offset_type offset)
 {
 	if (!is.Seek(offset, IgnoreError()))
 		return nullptr;
@@ -107,7 +107,7 @@ ReadId3v1Tag(InputStream &is)
 }
 
 static UniqueId3Tag
-ReadId3v1Tag(InputStream &is, off_t offset)
+ReadId3v1Tag(InputStream &is, offset_type offset)
 {
 	if (!is.Seek(offset, IgnoreError()))
 		return nullptr;

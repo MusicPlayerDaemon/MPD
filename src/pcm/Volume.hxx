@@ -77,12 +77,6 @@ public:
 #endif
 	}
 
-#ifndef NDEBUG
-	~PcmVolume() {
-		assert(format == SampleFormat::UNDEFINED);
-	}
-#endif
-
 	unsigned GetVolume() const {
 		return volume;
 	}

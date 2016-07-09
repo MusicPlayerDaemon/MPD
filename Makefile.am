@@ -108,6 +108,7 @@ libmpd_a_SOURCES = \
 	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \
 	src/filter/FilterInternal.hxx \
 	src/filter/FilterRegistry.cxx src/filter/FilterRegistry.hxx \
+	src/filter/Observer.cxx src/filter/Observer.hxx \
 	src/client/Client.cxx src/client/Client.hxx \
 	src/client/ClientInternal.hxx \
 	src/client/ClientEvent.cxx \
@@ -538,6 +539,7 @@ libpcm_a_SOURCES = \
 	src/pcm/PcmConvert.cxx src/pcm/PcmConvert.hxx \
 	src/pcm/PcmDop.cxx src/pcm/PcmDop.hxx \
 	src/pcm/Volume.cxx src/pcm/Volume.hxx \
+	src/pcm/Silence.cxx src/pcm/Silence.hxx \
 	src/pcm/PcmMix.cxx src/pcm/PcmMix.hxx \
 	src/pcm/PcmChannels.cxx src/pcm/PcmChannels.hxx \
 	src/pcm/PcmPack.cxx src/pcm/PcmPack.hxx \
@@ -1502,6 +1504,12 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/FifoOutputPlugin.hxx
 endif
 
+if HAVE_SNDIO
+liboutput_plugins_a_SOURCES += \
+	src/output/plugins/SndioOutputPlugin.cxx \
+	src/output/plugins/SndioOutputPlugin.hxx
+endif
+
 if HAVE_HAIKU
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/HaikuOutputPlugin.cxx \
@@ -2168,6 +2176,7 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/mixer/MixerType.cxx \
 	src/filter/FilterPlugin.cxx \
 	src/filter/FilterConfig.cxx \
+	src/filter/Observer.cxx \
 	src/ReplayGainInfo.cxx
 
 test_read_mixer_LDADD = \

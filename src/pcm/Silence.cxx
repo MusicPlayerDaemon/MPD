@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright (C) 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,33 +18,18 @@
  */
 
 #include "config.h"
-#include "Internal.hxx"
-#include "OutputPlugin.hxx"
-#include "mixer/MixerControl.hxx"
-#include "filter/FilterInternal.hxx"
+#include "Silence.hxx"
+#include "AudioFormat.hxx"
+#include "util/WritableBuffer.hxx"
 
-#include <assert.h>
-
-AudioOutput::~AudioOutput()
-{
-	assert(!open);
-	assert(!fail_timer.IsDefined());
-	assert(!thread.IsDefined());
-
-	if (mixer != nullptr)
-		mixer_free(mixer);
-
-	delete prepared_replay_gain_filter;
-	delete prepared_other_replay_gain_filter;
-	delete prepared_filter;
-}
+#include <string.h>
 
 void
-audio_output_free(AudioOutput *ao)
+PcmSilence(WritableBuffer<void> dest, SampleFormat format)
 {
-	assert(!ao->open);
-	assert(!ao->fail_timer.IsDefined());
-	assert(!ao->thread.IsDefined());
+	uint8_t pattern = 0;
+	if (format == SampleFormat::DSD)
+		pattern = 0x69;
 
-	ao_plugin_finish(ao);
+	memset(dest.data, pattern, dest.size);
 }

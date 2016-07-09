@@ -27,6 +27,8 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
+#include "mixer/MixerInternal.hxx"
+#include "mixer/plugins/SoftwareMixerPlugin.hxx"
 #include "player/Control.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
@@ -94,37 +96,44 @@ AudioOutput::OpenFilter(AudioFormat &format, Error &error_r)
 	assert(format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
-	if (replay_gain_filter != nullptr &&
-	    !replay_gain_filter->Open(format, error_r).IsDefined())
-		return AudioFormat::Undefined();
+	if (prepared_replay_gain_filter != nullptr) {
+		replay_gain_filter_instance =
+			prepared_replay_gain_filter->Open(format, error_r);
+		if (replay_gain_filter_instance == nullptr)
+			return AudioFormat::Undefined();
+	}
 
-	if (other_replay_gain_filter != nullptr &&
-	    !other_replay_gain_filter->Open(format, error_r).IsDefined()) {
-		if (replay_gain_filter != nullptr)
-			replay_gain_filter->Close();
+	if (prepared_other_replay_gain_filter != nullptr) {
+		other_replay_gain_filter_instance =
+			prepared_other_replay_gain_filter->Open(format, error_r);
+		if (other_replay_gain_filter_instance == nullptr) {
+			delete replay_gain_filter_instance;
+			return AudioFormat::Undefined();
+		}
+	}
+
+	filter_instance = prepared_filter->Open(format, error_r);
+	if (filter_instance == nullptr) {
+		delete other_replay_gain_filter_instance;
+		delete replay_gain_filter_instance;
 		return AudioFormat::Undefined();
 	}
 
-	const AudioFormat af = filter->Open(format, error_r);
-	if (!af.IsDefined()) {
-		if (replay_gain_filter != nullptr)
-			replay_gain_filter->Close();
-		if (other_replay_gain_filter != nullptr)
-			other_replay_gain_filter->Close();
-	}
+	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
+		software_mixer_set_filter(*mixer, volume_filter.Get());
 
-	return af;
+	return filter_instance->GetOutAudioFormat();
 }
 
 void
 AudioOutput::CloseFilter()
 {
-	if (replay_gain_filter != nullptr)
-		replay_gain_filter->Close();
-	if (other_replay_gain_filter != nullptr)
-		other_replay_gain_filter->Close();
+	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
+		software_mixer_set_filter(*mixer, nullptr);
 
-	filter->Close();
+	delete replay_gain_filter_instance;
+	delete other_replay_gain_filter_instance;
+	delete filter_instance;
 }
 
 inline void
@@ -186,7 +195,7 @@ AudioOutput::Open()
 		return;
 	}
 
-	if (!convert_filter_set(convert_filter, out_audio_format,
+	if (!convert_filter_set(convert_filter.Get(), out_audio_format,
 				error)) {
 		FormatError(error, "Failed to convert for \"%s\" [%s]",
 			    name, plugin.name);
@@ -282,7 +291,7 @@ AudioOutput::ReopenFilter()
 	const AudioFormat filter_audio_format =
 		OpenFilter(in_audio_format, error);
 	if (!filter_audio_format.IsDefined() ||
-	    !convert_filter_set(convert_filter, out_audio_format,
+	    !convert_filter_set(convert_filter.Get(), out_audio_format,
 				error)) {
 		FormatError(error,
 			    "Failed to open filter for \"%s\" [%s]",
@@ -368,6 +377,9 @@ ao_chunk_data(AudioOutput *ao, const MusicChunk *chunk,
 	assert(data.size % ao->in_audio_format.GetFrameSize() == 0);
 
 	if (!data.IsEmpty() && replay_gain_filter != nullptr) {
+		replay_gain_filter_set_mode(replay_gain_filter,
+					    ao->replay_gain_mode);
+
 		if (chunk->replay_gain_serial != *replay_gain_serial_p) {
 			replay_gain_filter_set_info(replay_gain_filter,
 						    chunk->replay_gain_serial != 0
@@ -390,7 +402,7 @@ static ConstBuffer<void>
 ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk)
 {
 	ConstBuffer<void> data =
-		ao_chunk_data(ao, chunk, ao->replay_gain_filter,
+		ao_chunk_data(ao, chunk, ao->replay_gain_filter_instance,
 			      &ao->replay_gain_serial);
 	if (data.IsEmpty())
 		return data;
@@ -400,7 +412,7 @@ ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk)
 	if (chunk->other != nullptr) {
 		ConstBuffer<void> other_data =
 			ao_chunk_data(ao, chunk->other,
-				      ao->other_replay_gain_filter,
+				      ao->other_replay_gain_filter_instance,
 				      &ao->other_replay_gain_serial);
 		if (other_data.IsNull())
 			return nullptr;
@@ -443,7 +455,7 @@ ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk)
 	/* apply filter chain */
 
 	Error error;
-	data = ao->filter->FilterPCM(data, error);
+	data = ao->filter_instance->FilterPCM(data, error);
 	if (data.IsNull()) {
 		FormatError(error, "\"%s\" [%s] failed to filter",
 			    ao->name, ao->plugin.name);
@@ -456,7 +468,7 @@ ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk)
 inline bool
 AudioOutput::PlayChunk(const MusicChunk *chunk)
 {
-	assert(filter != nullptr);
+	assert(filter_instance != nullptr);
 
 	if (tags && gcc_unlikely(chunk->tag != nullptr)) {
 		mutex.unlock();

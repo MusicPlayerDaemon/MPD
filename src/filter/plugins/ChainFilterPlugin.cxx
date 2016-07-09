@@ -27,6 +27,7 @@
 #include "util/Domain.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <memory>
 #include <list>
 
 #include <assert.h>
@@ -49,100 +50,98 @@ class ChainFilter final : public Filter {
 	std::list<Child> children;
 
 public:
+	explicit ChainFilter(AudioFormat _audio_format)
+		:Filter(_audio_format) {}
+
 	void Append(const char *name, Filter *filter) {
+		assert(out_audio_format.IsValid());
+		out_audio_format = filter->GetOutAudioFormat();
+		assert(out_audio_format.IsValid());
+
 		children.emplace_back(name, filter);
 	}
 
 	/* virtual methods from class Filter */
-	AudioFormat Open(AudioFormat &af, Error &error) override;
-	void Close() override;
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
 					    Error &error) override;
+};
 
-private:
-	/**
-	 * Close all filters in the chain until #until is reached.
-	 * #until itself is not closed.
-	 */
-	void CloseUntil(const Filter *until);
+class PreparedChainFilter final : public PreparedFilter {
+	struct Child {
+		const char *name;
+		PreparedFilter *filter;
+
+		Child(const char *_name, PreparedFilter *_filter)
+			:name(_name), filter(_filter) {}
+		~Child() {
+			delete filter;
+		}
+
+		Child(const Child &) = delete;
+		Child &operator=(const Child &) = delete;
+
+		Filter *Open(const AudioFormat &prev_audio_format,
+			     Error &error);
+	};
+
+	std::list<Child> children;
+
+public:
+	void Append(const char *name, PreparedFilter *filter) {
+		children.emplace_back(name, filter);
+	}
+
+	/* virtual methods from class PreparedFilter */
+	Filter *Open(AudioFormat &af, Error &error) override;
 };
 
 static constexpr Domain chain_filter_domain("chain_filter");
 
-static Filter *
+static PreparedFilter *
 chain_filter_init(gcc_unused const ConfigBlock &block,
 		  gcc_unused Error &error)
 {
-	return new ChainFilter();
+	return new PreparedChainFilter();
 }
 
-void
-ChainFilter::CloseUntil(const Filter *until)
-{
-	for (auto &child : children) {
-		if (child.filter == until)
-			/* don't close this filter */
-			return;
-
-		/* close this filter */
-		child.filter->Close();
-	}
-
-	/* this assertion fails if #until does not exist (anymore) */
-	assert(false);
-	gcc_unreachable();
-}
-
-static AudioFormat
-chain_open_child(const char *name, Filter *filter,
-		 const AudioFormat &prev_audio_format,
-		 Error &error)
+Filter *
+PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format,
+				 Error &error)
 {
 	AudioFormat conv_audio_format = prev_audio_format;
-	const AudioFormat next_audio_format =
-		filter->Open(conv_audio_format, error);
-	if (!next_audio_format.IsDefined())
-		return next_audio_format;
+	Filter *new_filter = filter->Open(conv_audio_format, error);
+	if (new_filter == nullptr)
+		return nullptr;
 
 	if (conv_audio_format != prev_audio_format) {
+		delete new_filter;
+
 		struct audio_format_string s;
-
-		filter->Close();
-
 		error.Format(chain_filter_domain,
 			     "Audio format not supported by filter '%s': %s",
 			     name,
 			     audio_format_to_string(prev_audio_format, &s));
-		return AudioFormat::Undefined();
+		return nullptr;
 	}
 
-	return next_audio_format;
+	return new_filter;
 }
 
-AudioFormat
-ChainFilter::Open(AudioFormat &in_audio_format, Error &error)
+Filter *
+PreparedChainFilter::Open(AudioFormat &in_audio_format, Error &error)
 {
-	AudioFormat audio_format = in_audio_format;
+	std::unique_ptr<ChainFilter> chain(new ChainFilter(in_audio_format));
 
 	for (auto &child : children) {
-		audio_format = chain_open_child(child.name, child.filter,
-						audio_format, error);
-		if (!audio_format.IsDefined()) {
-			/* rollback, close all children */
-			CloseUntil(child.filter);
-			break;
-		}
+		AudioFormat audio_format = chain->GetOutAudioFormat();
+		auto *filter = child.Open(audio_format, error);
+		if (filter == nullptr)
+			return nullptr;
+
+		chain->Append(child.name, filter);
 	}
 
-	/* return the output format of the last filter */
-	return audio_format;
-}
-
-void
-ChainFilter::Close()
-{
-	for (auto &child : children)
-		child.filter->Close();
+	return chain.release();
 }
 
 ConstBuffer<void>
@@ -165,16 +164,17 @@ const struct filter_plugin chain_filter_plugin = {
 	chain_filter_init,
 };
 
-Filter *
+PreparedFilter *
 filter_chain_new(void)
 {
-	return new ChainFilter();
+	return new PreparedChainFilter();
 }
 
 void
-filter_chain_append(Filter &_chain, const char *name, Filter *filter)
+filter_chain_append(PreparedFilter &_chain, const char *name,
+		    PreparedFilter *filter)
 {
-	ChainFilter &chain = (ChainFilter &)_chain;
+	PreparedChainFilter &chain = (PreparedChainFilter &)_chain;
 
 	chain.Append(name, filter);
 }

@@ -32,6 +32,8 @@
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
+#include <memory>
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -46,7 +48,7 @@ mixer_set_volume(gcc_unused Mixer *mixer,
 	return true;
 }
 
-static Filter *
+static PreparedFilter *
 load_filter(const char *name)
 {
 	const auto *param = config_find_block(ConfigBlockOption::AUDIO_FILTER,
@@ -57,7 +59,7 @@ load_filter(const char *name)
 	}
 
 	Error error;
-	Filter *filter = filter_configured_new(*param, error);
+	auto *filter = filter_configured_new(*param, error);
 	if (filter == NULL) {
 		LogError(error, "Failed to load filter");
 		return NULL;
@@ -97,19 +99,21 @@ try {
 
 	/* initialize the filter */
 
-	Filter *filter = load_filter(argv[2]);
-	if (filter == NULL)
+	std::unique_ptr<PreparedFilter> prepared_filter(load_filter(argv[2]));
+	if (!prepared_filter)
 		return EXIT_FAILURE;
 
 	/* open the filter */
 
 	Error error;
-	const AudioFormat out_audio_format = filter->Open(audio_format, error);
-	if (!out_audio_format.IsDefined()) {
+	std::unique_ptr<Filter> filter(prepared_filter->Open(audio_format,
+							     error));
+	if (!filter) {
 		LogError(error, "Failed to open filter");
-		delete filter;
 		return EXIT_FAILURE;
 	}
+
+	const AudioFormat out_audio_format = filter->GetOutAudioFormat();
 
 	fprintf(stderr, "audio_format=%s\n",
 		audio_format_to_string(out_audio_format, &af_string));
@@ -127,8 +131,6 @@ try {
 					      error);
 		if (dest.IsNull()) {
 			LogError(error, "filter/Filter failed");
-			filter->Close();
-			delete filter;
 			return EXIT_FAILURE;
 		}
 
@@ -136,16 +138,11 @@ try {
 		if (nbytes < 0) {
 			fprintf(stderr, "Failed to write: %s\n",
 				strerror(errno));
-			filter->Close();
-			delete filter;
 			return 1;
 		}
 	}
 
 	/* cleanup and exit */
-
-	filter->Close();
-	delete filter;
 
 	config_global_finish();
 

@@ -23,6 +23,7 @@
 #include "ReplayGainInfo.hxx"
 
 class Filter;
+class PreparedFilter;
 class Mixer;
 
 /**
@@ -34,7 +35,7 @@ class Mixer;
  * (including).
  */
 void
-replay_gain_filter_set_mixer(Filter *_filter, Mixer *mixer,
+replay_gain_filter_set_mixer(PreparedFilter *_filter, Mixer *mixer,
 			     unsigned base);
 
 /**

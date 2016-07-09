@@ -158,7 +158,7 @@ SignalMonitorFinish()
 	sa.sa_handler = SIG_DFL;
 
 	for (unsigned i = 0; i < MAX_SIGNAL; ++i) {
-		if (signal_handlers[i] != nullptr) {
+		if (signal_handlers[i]) {
 			x_sigaction(i, sa);
 			signal_handlers[i] = nullptr;
 		}
@@ -170,16 +170,10 @@ SignalMonitorFinish()
 	monitor.Destruct();
 }
 
-EventLoop &
-SignalMonitorGetEventLoop()
-{
-	return monitor->GetEventLoop();
-}
-
 void
 SignalMonitorRegister(int signo, SignalHandler handler)
 {
-	assert(signal_handlers[signo] == nullptr);
+	assert(!signal_handlers[signo]);
 #ifndef USE_SIGNALFD
 	assert(!signal_pending[signo]);
 #endif
@@ -209,7 +203,7 @@ SignalMonitor::OnSocketReady(unsigned)
 	int signo;
 	while ((signo = fd.Read()) >= 0) {
 		assert(unsigned(signo) < MAX_SIGNAL);
-		assert(signal_handlers[signo] != nullptr);
+		assert(signal_handlers[signo]);
 
 		signal_handlers[signo]();
 	}

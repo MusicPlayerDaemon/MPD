@@ -25,6 +25,7 @@
 #include "MusicPipe.hxx"
 #include "MusicBuffer.hxx"
 #include "MusicChunk.hxx"
+#include "pcm/Silence.hxx"
 #include "DetachedSong.hxx"
 #include "CrossFade.hxx"
 #include "Control.hxx"
@@ -532,8 +533,12 @@ Player::SendSilence()
 
 	MusicChunk *chunk = buffer.Allocate();
 	if (chunk == nullptr) {
-		LogError(player_domain, "Failed to allocate silence buffer");
-		return false;
+		/* this is non-fatal, because this means that the
+		   decoder has filled to buffer completely meanwhile;
+		   by ignoring the error, we work around this race
+		   condition */
+		LogDebug(player_domain, "Failed to allocate silence buffer");
+		return true;
 	}
 
 #ifndef NDEBUG
@@ -547,7 +552,7 @@ Player::SendSilence()
 
 	chunk->time = SignedSongTime::Negative(); /* undefined time stamp */
 	chunk->length = num_frames * frame_size;
-	memset(chunk->data, 0, chunk->length);
+	PcmSilence({chunk->data, chunk->length}, play_audio_format.format);
 
 	Error error;
 	if (!pc.outputs.Play(chunk, error)) {

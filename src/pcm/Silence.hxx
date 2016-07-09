@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2016 The Music Player Daemon Project
+ * Copyright (C) 2003-2016 The Music Player Daemon Project
  * http://www.musicpd.org
  *
  * This program is free software; you can redistribute it and/or modify
@@ -17,34 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Internal.hxx"
-#include "OutputPlugin.hxx"
-#include "mixer/MixerControl.hxx"
-#include "filter/FilterInternal.hxx"
+#ifndef MPD_PCM_SILENCE_HXX
+#define MPD_PCM_SILENCE_HXX
 
-#include <assert.h>
+#include "check.h"
 
-AudioOutput::~AudioOutput()
-{
-	assert(!open);
-	assert(!fail_timer.IsDefined());
-	assert(!thread.IsDefined());
+#include <stdint.h>
 
-	if (mixer != nullptr)
-		mixer_free(mixer);
+template<typename T> struct WritableBuffer;
+enum class SampleFormat : uint8_t;
 
-	delete prepared_replay_gain_filter;
-	delete prepared_other_replay_gain_filter;
-	delete prepared_filter;
-}
-
+/**
+ * Fill the given buffer with the format-specific silence pattern.
+ */
 void
-audio_output_free(AudioOutput *ao)
-{
-	assert(!ao->open);
-	assert(!ao->fail_timer.IsDefined());
-	assert(!ao->thread.IsDefined());
+PcmSilence(WritableBuffer<void> dest, SampleFormat format);
 
-	ao_plugin_finish(ao);
-}
+#endif

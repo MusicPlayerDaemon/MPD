@@ -25,6 +25,7 @@
 #include "Compiler.h"
 
 #include <unistd.h>
+#include <stdio.h>
 
 void
 decoder_initialized(Decoder &decoder,

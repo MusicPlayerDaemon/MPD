@@ -28,7 +28,7 @@
 #include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
-#include <CoreAudio/AudioHardware.h>
+#include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
 
@@ -40,7 +40,8 @@ struct OSXOutput {
 	/* only applicable with kAudioUnitSubType_HALOutput */
 	const char *device_name;
 
-	AudioUnit au;
+	AudioComponentInstance au;
+	AudioStreamBasicDescription asbd;
 	Mutex mutex;
 	Cond condition;
 
@@ -51,6 +52,20 @@ struct OSXOutput {
 };
 
 static constexpr Domain osx_output_domain("osx_output");
+
+static void
+osx_os_status_to_cstring(OSStatus status, char *str, size_t size) {
+	CFErrorRef cferr = CFErrorCreate(nullptr, kCFErrorDomainOSStatus, status, nullptr);
+	CFStringRef cfstr = CFErrorCopyDescription(cferr);
+	if (!CFStringGetCString(cfstr, str, size, kCFStringEncodingUTF8)) {
+		/* conversion failed, return empty string */
+		*str = '\0';
+	}
+	if (cferr)
+		CFRelease(cferr);
+	if (cfstr)
+		CFRelease(cfstr);
+}
 
 static bool
 osx_output_test_default_device(void)
@@ -109,6 +124,9 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	OSStatus status;
 	UInt32 size, numdevices;
 	AudioDeviceID *deviceids = nullptr;
+	AudioObjectPropertyAddress propaddr;
+	CFStringRef cfname = nullptr;
+	char errormsg[1024];
 	char name[256];
 	unsigned int i;
 
@@ -116,13 +134,13 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		goto done;
 
 	/* how many audio devices are there? */
-	status = AudioHardwareGetPropertyInfo(kAudioHardwarePropertyDevices,
-					      &size,
-					      nullptr);
+	propaddr = { kAudioHardwarePropertyDevices, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+	status = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &propaddr, 0, nullptr, &size);
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to determine number of OS X audio devices: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		ret = false;
 		goto done;
 	}
@@ -130,32 +148,38 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	/* what are the available audio device IDs? */
 	numdevices = size / sizeof(AudioDeviceID);
 	deviceids = new AudioDeviceID[numdevices];
-	status = AudioHardwareGetProperty(kAudioHardwarePropertyDevices,
-					  &size,
-					  deviceids);
+	status = AudioObjectGetPropertyData(kAudioObjectSystemObject, &propaddr, 0, nullptr, &size, deviceids);
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to determine OS X audio device IDs: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		ret = false;
 		goto done;
 	}
 
 	/* which audio device matches oo->device_name? */
+	propaddr = { kAudioObjectPropertyName, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
+	size = sizeof(CFStringRef);
 	for (i = 0; i < numdevices; i++) {
-		size = sizeof(name);
-		status = AudioDeviceGetProperty(deviceids[i], 0, false,
-						kAudioDevicePropertyDeviceName,
-						&size, name);
+		status = AudioObjectGetPropertyData(deviceids[i], &propaddr, 0, nullptr, &size, &cfname);
 		if (status != noErr) {
+			osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 			error.Format(osx_output_domain, status,
 				     "Unable to determine OS X device name "
 				     "(device %u): %s",
 				     (unsigned int) deviceids[i],
-				     GetMacOSStatusCommentString(status));
+				     errormsg);
 			ret = false;
 			goto done;
 		}
+
+		if (!CFStringGetCString(cfname, name, sizeof(name), kCFStringEncodingUTF8)) {
+			error.Set(osx_output_domain, "Unable to convert device name from CFStringRef to char*");
+			ret = false;
+			goto done;
+		}
+
 		if (strcmp(oo->device_name, name) == 0) {
 			FormatDebug(osx_output_domain,
 				    "found matching device: ID=%u, name=%s",
@@ -178,9 +202,10 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 				      &(deviceids[i]),
 				      sizeof(AudioDeviceID));
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to set OS X audio output device: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		ret = false;
 		goto done;
 	}
@@ -191,77 +216,154 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 
 done:
 	delete[] deviceids;
+	if (cfname)
+		CFRelease(cfname);
 	return ret;
 }
+
+
+/*
+	This function (the 'render callback' osx_render) is called by the
+	OS X audio subsystem (CoreAudio) to request audio data that will be
+	played by the audio hardware. This function has hard time constraints
+	so it cannot do IO (debug statements) or memory allocations.
+	
+	The caller (i.e. CoreAudio) requests a specific number of
+	audio frames (in_number_frames) to be rendered into a
+	collection of output buffers (buffer_list). Depending on the
+	number of output buffers the render callback has to interleave
+	or de-interleave audio data to match the layout of the output
+	buffers. The intput buffer is always interleaved. In practice,
+	it seems this callback always gets a single output buffer
+	meaning that no de-interleaving actually takes place. For the
+	sake of correctness this callback allows for de-interleaving
+	anyway, and calculates the expected output layout by examining
+	the output buffers.
+	
+	The input buffer is a DynamicFifoBuffer. When a
+	DynamicFifoBuffer contains less data than we want to read from
+	it there is no point in doing a second Read(). So in the case
+	of insufficient audio data in the input buffer, this render
+	callback will emit silence into the output buffers (memset
+	zero).
+*/
 
 static OSStatus
 osx_render(void *vdata,
 	   gcc_unused AudioUnitRenderActionFlags *io_action_flags,
 	   gcc_unused const AudioTimeStamp *in_timestamp,
 	   gcc_unused UInt32 in_bus_number,
-	   gcc_unused UInt32 in_number_frames,
+	   UInt32 in_number_frames,
 	   AudioBufferList *buffer_list)
 {
+	AudioBuffer *output_buffer = nullptr;
+	size_t output_buffer_frame_size, dest;
+
 	OSXOutput *od = (OSXOutput *) vdata;
-	AudioBuffer *buffer = &buffer_list->mBuffers[0];
-	size_t buffer_size = buffer->mDataByteSize;
+	DynamicFifoBuffer<uint8_t> *input_buffer = od->buffer;
+	assert(input_buffer != nullptr);
 
-	assert(od->buffer != nullptr);
+	/*
+		By convention when interfacing with audio hardware in CoreAudio,
+		in_bus_number equals 0 for output and 1 for input. Because this is an
+		audio output plugin our in_bus_number should always be 0.
+	*/
+	assert(in_bus_number == 0);
 
+	unsigned int input_channel_count = od->asbd.mChannelsPerFrame;
+	unsigned int output_channel_count = 0;
+	for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
+		output_buffer = &buffer_list->mBuffers[i];
+		assert(output_buffer->mData != nullptr);
+		output_channel_count += output_buffer->mNumberChannels;
+	}
+	assert(output_channel_count == input_channel_count);
+
+	size_t input_buffer_frame_size = od->asbd.mBytesPerFrame;
+	size_t sample_size = input_buffer_frame_size / input_channel_count;
+
+	// Acquire mutex when accessing input_buffer
 	od->mutex.lock();
 
-	auto src = od->buffer->Read();
-	if (!src.IsEmpty()) {
-		if (src.size > buffer_size)
-			src.size = buffer_size;
+	auto src = input_buffer->Read();
 
-		memcpy(buffer->mData, src.data, src.size);
-		od->buffer->Consume(src.size);
+	UInt32 available_frames = src.size / input_buffer_frame_size;
+	// Never write more frames than we were asked
+	if (available_frames > in_number_frames)
+		available_frames = in_number_frames;
+
+	/*
+		To de-interleave the data in the input buffer so that it fits in
+		the output buffers we divide the input buffer frames into 'sub frames'
+		that fit into the output buffers.
+	*/
+	size_t sub_frame_offset = 0;
+	for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
+		output_buffer = &buffer_list->mBuffers[i];
+		output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
+		for (UInt32 current_frame = 0; current_frame < available_frames; ++current_frame) {
+				dest = (size_t) output_buffer->mData + current_frame * output_buffer_frame_size;
+				memcpy(
+					(void *) dest,
+					src.data + current_frame * input_buffer_frame_size + sub_frame_offset,
+					output_buffer_frame_size
+				);
+		}
+		sub_frame_offset += output_buffer_frame_size;
 	}
+
+	input_buffer->Consume(available_frames * input_buffer_frame_size);
 
 	od->condition.signal();
 	od->mutex.unlock();
 
-	buffer->mDataByteSize = src.size;
-
-	unsigned i;
-	for (i = 1; i < buffer_list->mNumberBuffers; ++i) {
-		buffer = &buffer_list->mBuffers[i];
-		buffer->mDataByteSize = 0;
+	if (available_frames < in_number_frames) {
+		for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
+			output_buffer = &buffer_list->mBuffers[i];
+			output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
+			dest = (size_t) output_buffer->mData + available_frames * output_buffer_frame_size;
+			memset(
+				(void *) dest,
+				0,
+				(in_number_frames - available_frames) * output_buffer_frame_size
+			);
+		}
 	}
 
-	return 0;
+	return noErr;
 }
 
 static bool
 osx_output_enable(AudioOutput *ao, Error &error)
 {
+	char errormsg[1024];
 	OSXOutput *oo = (OSXOutput *)ao;
 
-	ComponentDescription desc;
+	AudioComponentDescription desc;
 	desc.componentType = kAudioUnitType_Output;
 	desc.componentSubType = oo->component_subtype;
 	desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 	desc.componentFlags = 0;
 	desc.componentFlagsMask = 0;
 
-	Component comp = FindNextComponent(nullptr, &desc);
+	AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
 	if (comp == 0) {
 		error.Set(osx_output_domain,
 			  "Error finding OS X component");
 		return false;
 	}
 
-	OSStatus status = OpenAComponent(comp, &oo->au);
+	OSStatus status = AudioComponentInstanceNew(comp, &oo->au);
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to open OS X component: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		return false;
 	}
 
 	if (!osx_output_set_device(oo, error)) {
-		CloseComponent(oo->au);
+		AudioComponentInstanceDispose(oo->au);
 		return false;
 	}
 
@@ -269,14 +371,14 @@ osx_output_enable(AudioOutput *ao, Error &error)
 	callback.inputProc = osx_render;
 	callback.inputProcRefCon = oo;
 
-	ComponentResult result =
+	status =
 		AudioUnitSetProperty(oo->au,
 				     kAudioUnitProperty_SetRenderCallback,
 				     kAudioUnitScope_Input, 0,
 				     &callback, sizeof(callback));
-	if (result != noErr) {
-		CloseComponent(oo->au);
-		error.Set(osx_output_domain, result,
+	if (status != noErr) {
+		AudioComponentInstanceDispose(oo->au);
+		error.Set(osx_output_domain, status,
 			  "unable to set callback for OS X audio unit");
 		return false;
 	}
@@ -289,7 +391,7 @@ osx_output_disable(AudioOutput *ao)
 {
 	OSXOutput *oo = (OSXOutput *)ao;
 
-	CloseComponent(oo->au);
+	AudioComponentInstanceDispose(oo->au);
 }
 
 static void
@@ -316,56 +418,58 @@ static bool
 osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		Error &error)
 {
+	char errormsg[1024];
 	OSXOutput *od = (OSXOutput *)ao;
 
-	AudioStreamBasicDescription stream_description;
-	stream_description.mSampleRate = audio_format.sample_rate;
-	stream_description.mFormatID = kAudioFormatLinearPCM;
-	stream_description.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
+	memset(&od->asbd, 0, sizeof(od->asbd));
+	od->asbd.mSampleRate = audio_format.sample_rate;
+	od->asbd.mFormatID = kAudioFormatLinearPCM;
+	od->asbd.mFormatFlags = kLinearPCMFormatFlagIsSignedInteger;
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
-		stream_description.mBitsPerChannel = 8;
+		od->asbd.mBitsPerChannel = 8;
 		break;
 
 	case SampleFormat::S16:
-		stream_description.mBitsPerChannel = 16;
+		od->asbd.mBitsPerChannel = 16;
 		break;
 
 	case SampleFormat::S32:
-		stream_description.mBitsPerChannel = 32;
+		od->asbd.mBitsPerChannel = 32;
 		break;
 
 	default:
 		audio_format.format = SampleFormat::S32;
-		stream_description.mBitsPerChannel = 32;
+		od->asbd.mBitsPerChannel = 32;
 		break;
 	}
 
 	if (IsBigEndian())
-		stream_description.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
+		od->asbd.mFormatFlags |= kLinearPCMFormatFlagIsBigEndian;
 
-	stream_description.mBytesPerPacket = audio_format.GetFrameSize();
-	stream_description.mFramesPerPacket = 1;
-	stream_description.mBytesPerFrame = stream_description.mBytesPerPacket;
-	stream_description.mChannelsPerFrame = audio_format.channels;
+	od->asbd.mBytesPerPacket = audio_format.GetFrameSize();
+	od->asbd.mFramesPerPacket = 1;
+	od->asbd.mBytesPerFrame = od->asbd.mBytesPerPacket;
+	od->asbd.mChannelsPerFrame = audio_format.channels;
 
-	ComponentResult result =
+	OSStatus status =
 		AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
 				     kAudioUnitScope_Input, 0,
-				     &stream_description,
-				     sizeof(stream_description));
-	if (result != noErr) {
-		error.Set(osx_output_domain, result,
+				     &od->asbd,
+				     sizeof(od->asbd));
+	if (status != noErr) {
+		error.Set(osx_output_domain, status,
 			  "Unable to set format on OS X device");
 		return false;
 	}
 
-	OSStatus status = AudioUnitInitialize(od->au);
+	status = AudioUnitInitialize(od->au);
 	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to initialize OS X audio unit: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		return false;
 	}
 
@@ -376,9 +480,10 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
 		AudioUnitUninitialize(od->au);
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "unable to start audio output: %s",
-			     GetMacOSStatusCommentString(status));
+			     errormsg);
 		return false;
 	}
 

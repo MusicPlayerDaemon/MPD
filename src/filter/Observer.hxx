@@ -17,34 +17,31 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Internal.hxx"
-#include "OutputPlugin.hxx"
-#include "mixer/MixerControl.hxx"
-#include "filter/FilterInternal.hxx"
+#ifndef MPD_FILTER_OBSERVER_HXX
+#define MPD_FILTER_OBSERVER_HXX
 
-#include <assert.h>
+#include "check.h"
 
-AudioOutput::~AudioOutput()
-{
-	assert(!open);
-	assert(!fail_timer.IsDefined());
-	assert(!thread.IsDefined());
+class PreparedFilter;
+class Filter;
 
-	if (mixer != nullptr)
-		mixer_free(mixer);
+/**
+ * A helper class which observes calls to a #PreparedFilter and allows
+ * the caller to access the #Filter instances created by it.
+ */
+class FilterObserver {
+	class PreparedProxy;
+	class Proxy;
 
-	delete prepared_replay_gain_filter;
-	delete prepared_other_replay_gain_filter;
-	delete prepared_filter;
-}
+	PreparedProxy *proxy = nullptr;
 
-void
-audio_output_free(AudioOutput *ao)
-{
-	assert(!ao->open);
-	assert(!ao->fail_timer.IsDefined());
-	assert(!ao->thread.IsDefined());
+public:
+	/**
+	 * @return a proxy object
+	 */
+	PreparedFilter *Set(PreparedFilter *pf);
 
-	ao_plugin_finish(ao);
-}
+	Filter *Get();
+};
+
+#endif

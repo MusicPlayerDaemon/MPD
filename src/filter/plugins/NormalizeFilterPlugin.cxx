@@ -29,40 +29,43 @@
 #include <string.h>
 
 class NormalizeFilter final : public Filter {
-	struct Compressor *compressor;
+	Compressor *const compressor;
 
 	PcmBuffer buffer;
 
 public:
+	NormalizeFilter(const AudioFormat &audio_format)
+		:Filter(audio_format), compressor(Compressor_new(0)) {
+	}
+
+	~NormalizeFilter() {
+		Compressor_delete(compressor);
+	}
+
 	/* virtual methods from class Filter */
-	AudioFormat Open(AudioFormat &af, Error &error) override;
-	void Close() override;
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
 				    Error &error) override;
 };
 
-static Filter *
+class PreparedNormalizeFilter final : public PreparedFilter {
+public:
+	/* virtual methods from class PreparedFilter */
+	Filter *Open(AudioFormat &af, Error &error) override;
+};
+
+static PreparedFilter *
 normalize_filter_init(gcc_unused const ConfigBlock &block,
 		      gcc_unused Error &error)
 {
-	return new NormalizeFilter();
+	return new PreparedNormalizeFilter();
 }
 
-AudioFormat
-NormalizeFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
+Filter *
+PreparedNormalizeFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
 {
 	audio_format.format = SampleFormat::S16;
 
-	compressor = Compressor_new(0);
-
-	return audio_format;
-}
-
-void
-NormalizeFilter::Close()
-{
-	buffer.Clear();
-	Compressor_delete(compressor);
+	return new NormalizeFilter(audio_format);
 }
 
 ConstBuffer<void>

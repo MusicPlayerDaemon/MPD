@@ -25,6 +25,8 @@
 #ifndef MPD_FILTER_INTERNAL_HXX
 #define MPD_FILTER_INTERNAL_HXX
 
+#include "AudioFormat.hxx"
+
 #include <stddef.h>
 
 struct AudioFormat;
@@ -32,8 +34,38 @@ class Error;
 template<typename T> struct ConstBuffer;
 
 class Filter {
+protected:
+	AudioFormat out_audio_format;
+
+	Filter() = default;
+	explicit Filter(AudioFormat _out_audio_format)
+		:out_audio_format(_out_audio_format) {}
+
 public:
 	virtual ~Filter() {}
+
+	/**
+	 * Returns the #AudioFormat produced by FilterPCM().
+	 */
+	const AudioFormat &GetOutAudioFormat() const {
+		return out_audio_format;
+	}
+
+	/**
+	 * Filters a block of PCM data.
+	 *
+	 * @param src the input buffer
+	 * @param error location to store the error occurring
+	 * @return the destination buffer on success (will be
+	 * invalidated by deleting this object or the next FilterPCM()
+	 * call), nullptr on error
+	 */
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src, Error &error) = 0;
+};
+
+class PreparedFilter {
+public:
+	virtual ~PreparedFilter() {}
 
 	/**
 	 * Opens the filter, preparing it for FilterPCM().
@@ -45,23 +77,7 @@ public:
 	 * @return the format of outgoing data or
 	 * AudioFormat::Undefined() on error
 	 */
-	virtual AudioFormat Open(AudioFormat &af, Error &error) = 0;
-
-	/**
-	 * Closes the filter.  After that, you may call Open() again.
-	 */
-	virtual void Close() = 0;
-
-	/**
-	 * Filters a block of PCM data.
-	 *
-	 * @param src the input buffer
-	 * @param error location to store the error occurring
-	 * @return the destination buffer on success (will be
-	 * invalidated by Close() or FilterPCM()), nullptr on
-	 * error
-	 */
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src, Error &error) = 0;
+	virtual Filter *Open(AudioFormat &af, Error &error) = 0;
 };
 
 #endif
