@@ -120,12 +120,6 @@ static FlacStreamDecoder
 flac_decoder_new(void)
 {
 	FlacStreamDecoder sd;
-	if (!sd) {
-		LogError(flac_domain,
-			 "FLAC__stream_decoder_new() failed");
-		return sd;
-	}
-
 	if(!FLAC__stream_decoder_set_metadata_respond(sd.get(), FLAC__METADATA_TYPE_VORBIS_COMMENT))
 		LogDebug(flac_domain,
 			 "FLAC__stream_decoder_set_metadata_respond() has failed");

@@ -25,6 +25,7 @@
 #include <FLAC/stream_decoder.h>
 
 #include <utility>
+#include <stdexcept>
 
 #include <assert.h>
 
@@ -36,7 +37,10 @@ class FlacStreamDecoder {
 
 public:
 	FlacStreamDecoder()
-		:decoder(FLAC__stream_decoder_new()) {}
+		:decoder(FLAC__stream_decoder_new()) {
+		if (decoder == nullptr)
+			throw std::runtime_error("FLAC__stream_decoder_new() failed");
+	}
 
 	FlacStreamDecoder(FlacStreamDecoder &&src)
 		:decoder(src.decoder) {
