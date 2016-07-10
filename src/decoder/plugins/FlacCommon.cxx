@@ -151,6 +151,24 @@ flac_got_first_frame(FlacDecoder *data, const FLAC__FrameHeader *header)
 				0);
 }
 
+FLAC__uint64
+FlacDecoder::GetDeltaPosition(const FLAC__StreamDecoder &sd)
+{
+	FLAC__uint64 nbytes;
+	if (!FLAC__stream_decoder_get_decode_position(&sd, &nbytes))
+		return 0;
+
+	if (position > 0 && nbytes > position) {
+		nbytes -= position;
+		position += nbytes;
+	} else {
+		position = nbytes;
+		nbytes = 0;
+	}
+
+	return nbytes;
+}
+
 FLAC__StreamDecoderWriteStatus
 flac_common_write(FlacDecoder *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[],

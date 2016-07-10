@@ -69,6 +69,12 @@ struct FlacDecoder : public FlacInput {
 	 */
 	bool Initialize(unsigned sample_rate, unsigned bits_per_sample,
 			unsigned channels, FLAC__uint64 total_frames);
+
+	/**
+	 * Calculate the delta (in bytes) between the last frame and
+	 * the current frame.
+	 */
+	FLAC__uint64 GetDeltaPosition(const FLAC__StreamDecoder &sd);
 };
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,

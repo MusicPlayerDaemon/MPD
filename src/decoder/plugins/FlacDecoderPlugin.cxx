@@ -65,20 +65,9 @@ flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 	      const FLAC__int32 *const buf[], void *vdata)
 {
 	FlacDecoder *data = (FlacDecoder *) vdata;
-	FLAC__uint64 nbytes = 0;
 
-	if (FLAC__stream_decoder_get_decode_position(dec, &nbytes)) {
-		if (data->position > 0 && nbytes > data->position) {
-			nbytes -= data->position;
-			data->position += nbytes;
-		} else {
-			data->position = nbytes;
-			nbytes = 0;
-		}
-	} else
-		nbytes = 0;
-
-	return flac_common_write(data, frame, buf, nbytes);
+	return flac_common_write(data, frame, buf,
+				 data->GetDeltaPosition(*dec));
 }
 
 static bool
