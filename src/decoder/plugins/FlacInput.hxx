@@ -39,6 +39,14 @@ public:
 		  Decoder *_decoder=nullptr)
 		:decoder(_decoder), input_stream(_input_stream) {}
 
+	Decoder *GetDecoder() {
+		return decoder;
+	}
+
+	InputStream &GetInputStream() {
+		return input_stream;
+	}
+
 protected:
 	FLAC__StreamDecoderReadStatus Read(FLAC__byte buffer[], size_t *bytes);
 	FLAC__StreamDecoderSeekStatus Seek(FLAC__uint64 absolute_byte_offset);
