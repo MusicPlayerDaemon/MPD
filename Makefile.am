@@ -1052,6 +1052,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/FlacPcm.cxx src/decoder/plugins/FlacPcm.hxx \
 	src/decoder/plugins/FlacDomain.cxx src/decoder/plugins/FlacDomain.hxx \
 	src/decoder/plugins/FlacCommon.cxx src/decoder/plugins/FlacCommon.hxx \
+	src/decoder/plugins/FlacStreamDecoder.hxx \
 	src/decoder/plugins/FlacDecoderPlugin.cxx \
 	src/decoder/plugins/FlacDecoderPlugin.h
 endif

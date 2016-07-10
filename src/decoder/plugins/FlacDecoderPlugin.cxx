@@ -19,6 +19,7 @@
 
 #include "config.h" /* must be first for large file support */
 #include "FlacDecoderPlugin.h"
+#include "FlacStreamDecoder.hxx"
 #include "FlacDomain.hxx"
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
@@ -115,17 +116,17 @@ flac_scan_stream(InputStream &is,
 /**
  * Some glue code around FLAC__stream_decoder_new().
  */
-static FLAC__StreamDecoder *
+static FlacStreamDecoder
 flac_decoder_new(void)
 {
-	FLAC__StreamDecoder *sd = FLAC__stream_decoder_new();
-	if (sd == nullptr) {
+	FlacStreamDecoder sd;
+	if (!sd) {
 		LogError(flac_domain,
 			 "FLAC__stream_decoder_new() failed");
-		return nullptr;
+		return sd;
 	}
 
-	if(!FLAC__stream_decoder_set_metadata_respond(sd, FLAC__METADATA_TYPE_VORBIS_COMMENT))
+	if(!FLAC__stream_decoder_set_metadata_respond(sd.get(), FLAC__METADATA_TYPE_VORBIS_COMMENT))
 		LogDebug(flac_domain,
 			 "FLAC__stream_decoder_set_metadata_respond() has failed");
 
@@ -286,17 +287,13 @@ flac_decode_internal(Decoder &decoder,
 		     InputStream &input_stream,
 		     bool is_ogg)
 {
-	FLAC__StreamDecoder *flac_dec;
-
-	flac_dec = flac_decoder_new();
-	if (flac_dec == nullptr)
+	auto flac_dec = flac_decoder_new();
+	if (!flac_dec)
 		return;
 
 	FlacDecoder data(decoder, input_stream);
 
-	FlacInitAndDecode(data, flac_dec, is_ogg);
-
-	FLAC__stream_decoder_delete(flac_dec);
+	FlacInitAndDecode(data, flac_dec.get(), is_ogg);
 }
 
 static void
