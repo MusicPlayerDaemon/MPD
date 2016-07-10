@@ -29,8 +29,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-flac_data::flac_data(Decoder &_decoder,
-		     InputStream &_input_stream)
+FlacDecoder::FlacDecoder(Decoder &_decoder,
+			 InputStream &_input_stream)
 	:FlacInput(_input_stream, &_decoder),
 	 initialized(false), unsupported(false),
 	 position(0),
@@ -60,8 +60,8 @@ flac_sample_format(unsigned bits_per_sample)
 }
 
 bool
-flac_data::Initialize(unsigned sample_rate, unsigned bits_per_sample,
-		      unsigned channels, FLAC__uint64 total_frames)
+FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
+			unsigned channels, FLAC__uint64 total_frames)
 {
 	assert(!initialized);
 	assert(!unsupported);
@@ -92,7 +92,7 @@ flac_data::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 }
 
 static void
-flac_got_stream_info(struct flac_data *data,
+flac_got_stream_info(FlacDecoder *data,
 		     const FLAC__StreamMetadata_StreamInfo *stream_info)
 {
 	if (data->initialized || data->unsupported)
@@ -105,7 +105,7 @@ flac_got_stream_info(struct flac_data *data,
 }
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
-			     struct flac_data *data)
+			     FlacDecoder *data)
 {
 	if (data->unsupported)
 		return;
@@ -140,7 +140,7 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
  * (e.g. when seeking with SqueezeBox Server).
  */
 static bool
-flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
+flac_got_first_frame(FlacDecoder *data, const FLAC__FrameHeader *header)
 {
 	if (data->unsupported)
 		return false;
@@ -153,7 +153,7 @@ flac_got_first_frame(struct flac_data *data, const FLAC__FrameHeader *header)
 }
 
 FLAC__StreamDecoderWriteStatus
-flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
+flac_common_write(FlacDecoder *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[],
 		  FLAC__uint64 nbytes)
 {

@@ -30,7 +30,7 @@
 
 #include <FLAC/stream_decoder.h>
 
-struct flac_data : public FlacInput {
+struct FlacDecoder : public FlacInput {
 	PcmBuffer buffer;
 
 	/**
@@ -65,7 +65,7 @@ struct flac_data : public FlacInput {
 
 	Tag tag;
 
-	flac_data(Decoder &decoder, InputStream &input_stream);
+	FlacDecoder(Decoder &decoder, InputStream &input_stream);
 
 	/**
 	 * Wrapper for decoder_initialized().
@@ -75,10 +75,10 @@ struct flac_data : public FlacInput {
 };
 
 void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
-			     struct flac_data *data);
+			     FlacDecoder *data);
 
 FLAC__StreamDecoderWriteStatus
-flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
+flac_common_write(FlacDecoder *data, const FLAC__Frame * frame,
 		  const FLAC__int32 *const buf[],
 		  FLAC__uint64 nbytes);
 
