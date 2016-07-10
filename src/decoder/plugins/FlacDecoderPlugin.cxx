@@ -146,7 +146,7 @@ flac_decoder_initialize(FlacDecoder *data, FLAC__StreamDecoder *sd)
 		return true;
 	}
 
-	if (data->input_stream.IsSeekable())
+	if (data->GetInputStream().IsSeekable())
 		/* allow the workaround below only for nonseekable
 		   streams*/
 		return false;
@@ -160,12 +160,12 @@ flac_decoder_initialize(FlacDecoder *data, FLAC__StreamDecoder *sd)
 static void
 flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 {
-	Decoder &decoder = data->decoder;
+	Decoder &decoder = *data->GetDecoder();
 
 	while (true) {
 		DecoderCommand cmd;
 		if (!data->tag.IsEmpty()) {
-			cmd = decoder_tag(data->decoder, data->input_stream,
+			cmd = decoder_tag(decoder, data->GetInputStream(),
 					  std::move(data->tag));
 			data->tag.Clear();
 		} else

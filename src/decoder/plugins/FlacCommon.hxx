@@ -60,9 +60,6 @@ struct FlacDecoder : public FlacInput {
 	 */
 	FLAC__uint64 position;
 
-	Decoder &decoder;
-	InputStream &input_stream;
-
 	Tag tag;
 
 	FlacDecoder(Decoder &decoder, InputStream &input_stream);

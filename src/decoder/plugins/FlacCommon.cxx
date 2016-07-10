@@ -33,8 +33,7 @@ FlacDecoder::FlacDecoder(Decoder &_decoder,
 			 InputStream &_input_stream)
 	:FlacInput(_input_stream, &_decoder),
 	 initialized(false), unsupported(false),
-	 position(0),
-	 decoder(_decoder), input_stream(_input_stream)
+	 position(0)
 {
 }
 
@@ -83,8 +82,8 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(decoder, audio_format,
-			    input_stream.IsSeekable(),
+	decoder_initialized(*GetDecoder(), audio_format,
+			    GetInputStream().IsSeekable(),
 			    duration);
 
 	initialized = true;
@@ -119,9 +118,9 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
 		if (flac_parse_replay_gain(rgi, block->data.vorbis_comment))
-			decoder_replay_gain(data->decoder, &rgi);
+			decoder_replay_gain(*data->GetDecoder(), &rgi);
 
-		decoder_mixramp(data->decoder,
+		decoder_mixramp(*data->GetDecoder(),
 				flac_parse_mixramp(block->data.vorbis_comment));
 
 		data->tag = flac_vorbis_comments_to_tag(&block->data.vorbis_comment);
@@ -172,7 +171,7 @@ flac_common_write(FlacDecoder *data, const FLAC__Frame * frame,
 	unsigned bit_rate = nbytes * 8 * frame->header.sample_rate /
 		(1000 * frame->header.blocksize);
 
-	auto cmd = decoder_data(data->decoder, data->input_stream,
+	auto cmd = decoder_data(*data->GetDecoder(), data->GetInputStream(),
 				buffer, buffer_size,
 				bit_rate);
 	switch (cmd) {
