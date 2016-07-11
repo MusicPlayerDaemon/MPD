@@ -57,17 +57,16 @@ static void flacPrintErroredState(FLAC__StreamDecoderState state)
 static void flacMetadata(gcc_unused const FLAC__StreamDecoder * dec,
 			 const FLAC__StreamMetadata * block, void *vdata)
 {
-	flac_metadata_common_cb(block, (FlacDecoder *) vdata);
+	auto &fd = *(FlacDecoder *)vdata;
+	fd.OnMetadata(*block);
 }
 
 static FLAC__StreamDecoderWriteStatus
 flac_write_cb(const FLAC__StreamDecoder *dec, const FLAC__Frame *frame,
 	      const FLAC__int32 *const buf[], void *vdata)
 {
-	FlacDecoder *data = (FlacDecoder *) vdata;
-
-	return flac_common_write(data, frame, buf,
-				 data->GetDeltaPosition(*dec));
+	auto &fd = *(FlacDecoder *)vdata;
+	return fd.OnWrite(*frame, buf, fd.GetDeltaPosition(*dec));
 }
 
 static bool

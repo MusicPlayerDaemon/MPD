@@ -82,40 +82,43 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 	return true;
 }
 
-static void
-flac_got_stream_info(FlacDecoder *data,
-		     const FLAC__StreamMetadata_StreamInfo *stream_info)
+inline void
+FlacDecoder::OnStreamInfo(const FLAC__StreamMetadata_StreamInfo &stream_info)
 {
-	if (data->initialized || data->unsupported)
+	if (initialized)
 		return;
 
-	data->Initialize(stream_info->sample_rate,
-			 stream_info->bits_per_sample,
-			 stream_info->channels,
-			 stream_info->total_samples);
+	Initialize(stream_info.sample_rate,
+		   stream_info.bits_per_sample,
+		   stream_info.channels,
+		   stream_info.total_samples);
 }
 
-void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
-			     FlacDecoder *data)
+inline void
+FlacDecoder::OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc)
 {
-	if (data->unsupported)
+	ReplayGainInfo rgi;
+	if (flac_parse_replay_gain(rgi, vc))
+		decoder_replay_gain(*GetDecoder(), &rgi);
+
+	decoder_mixramp(*GetDecoder(), flac_parse_mixramp(vc));
+
+	tag = flac_vorbis_comments_to_tag(&vc);
+}
+
+void
+FlacDecoder::OnMetadata(const FLAC__StreamMetadata &metadata)
+{
+	if (unsupported)
 		return;
 
-	ReplayGainInfo rgi;
-
-	switch (block->type) {
+	switch (metadata.type) {
 	case FLAC__METADATA_TYPE_STREAMINFO:
-		flac_got_stream_info(data, &block->data.stream_info);
+		OnStreamInfo(metadata.data.stream_info);
 		break;
 
 	case FLAC__METADATA_TYPE_VORBIS_COMMENT:
-		if (flac_parse_replay_gain(rgi, block->data.vorbis_comment))
-			decoder_replay_gain(*data->GetDecoder(), &rgi);
-
-		decoder_mixramp(*data->GetDecoder(),
-				flac_parse_mixramp(block->data.vorbis_comment));
-
-		data->tag = flac_vorbis_comments_to_tag(&block->data.vorbis_comment);
+		OnVorbisComment(metadata.data.vorbis_comment);
 		break;
 
 	default:
@@ -123,24 +126,17 @@ void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
 	}
 }
 
-/**
- * This function attempts to call decoder_initialized() in case there
- * was no STREAMINFO block.  This is allowed for nonseekable streams,
- * where the server sends us only a part of the file, without
- * providing the STREAMINFO block from the beginning of the file
- * (e.g. when seeking with SqueezeBox Server).
- */
-static bool
-flac_got_first_frame(FlacDecoder *data, const FLAC__FrameHeader *header)
+inline bool
+FlacDecoder::OnFirstFrame(const FLAC__FrameHeader &header)
 {
-	if (data->unsupported)
+	if (unsupported)
 		return false;
 
-	return data->Initialize(header->sample_rate,
-				header->bits_per_sample,
-				header->channels,
-				/* unknown duration */
-				0);
+	return Initialize(header.sample_rate,
+			  header.bits_per_sample,
+			  header.channels,
+			  /* unknown duration */
+			  0);
 }
 
 FLAC__uint64
@@ -162,27 +158,25 @@ FlacDecoder::GetDeltaPosition(const FLAC__StreamDecoder &sd)
 }
 
 FLAC__StreamDecoderWriteStatus
-flac_common_write(FlacDecoder *data, const FLAC__Frame * frame,
-		  const FLAC__int32 *const buf[],
-		  FLAC__uint64 nbytes)
+FlacDecoder::OnWrite(const FLAC__Frame &frame,
+		     const FLAC__int32 *const buf[],
+		     FLAC__uint64 nbytes)
 {
-	void *buffer;
-
-	if (!data->initialized && !flac_got_first_frame(data, &frame->header))
+	if (!initialized && !OnFirstFrame(frame.header))
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 
-	size_t buffer_size = frame->header.blocksize * data->frame_size;
-	buffer = data->buffer.Get(buffer_size);
+	size_t buffer_size = frame.header.blocksize * frame_size;
+	void *data = buffer.Get(buffer_size);
 
-	flac_convert(buffer, frame->header.channels,
-		     data->audio_format.format, buf,
-		     0, frame->header.blocksize);
+	flac_convert(data, frame.header.channels,
+		     audio_format.format, buf,
+		     0, frame.header.blocksize);
 
-	unsigned bit_rate = nbytes * 8 * frame->header.sample_rate /
-		(1000 * frame->header.blocksize);
+	unsigned bit_rate = nbytes * 8 * frame.header.sample_rate /
+		(1000 * frame.header.blocksize);
 
-	auto cmd = decoder_data(*data->GetDecoder(), data->GetInputStream(),
-				buffer, buffer_size,
+	auto cmd = decoder_data(*GetDecoder(), GetInputStream(),
+				data, buffer_size,
 				bit_rate);
 	switch (cmd) {
 	case DecoderCommand::NONE:

@@ -72,19 +72,30 @@ struct FlacDecoder : public FlacInput {
 	bool Initialize(unsigned sample_rate, unsigned bits_per_sample,
 			unsigned channels, FLAC__uint64 total_frames);
 
+	void OnMetadata(const FLAC__StreamMetadata &metadata);
+
+	FLAC__StreamDecoderWriteStatus OnWrite(const FLAC__Frame &frame,
+					       const FLAC__int32 *const buf[],
+					       FLAC__uint64 nbytes);
+
 	/**
 	 * Calculate the delta (in bytes) between the last frame and
 	 * the current frame.
 	 */
 	FLAC__uint64 GetDeltaPosition(const FLAC__StreamDecoder &sd);
+
+private:
+	void OnStreamInfo(const FLAC__StreamMetadata_StreamInfo &stream_info);
+	void OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc);
+
+	/**
+	 * This function attempts to call decoder_initialized() in case there
+	 * was no STREAMINFO block.  This is allowed for nonseekable streams,
+	 * where the server sends us only a part of the file, without
+	 * providing the STREAMINFO block from the beginning of the file
+	 * (e.g. when seeking with SqueezeBox Server).
+	 */
+	bool OnFirstFrame(const FLAC__FrameHeader &header);
 };
-
-void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
-			     FlacDecoder *data);
-
-FLAC__StreamDecoderWriteStatus
-flac_common_write(FlacDecoder *data, const FLAC__Frame * frame,
-		  const FLAC__int32 *const buf[],
-		  FLAC__uint64 nbytes);
 
 #endif /* _FLAC_COMMON_H */
