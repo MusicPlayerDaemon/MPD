@@ -22,56 +22,32 @@
 
 #include <assert.h>
 
-static void flac_convert_stereo16(int16_t *dest,
-				  const FLAC__int32 * const buf[],
-				  size_t n_frames)
+template<typename T>
+static void
+FlacImportStereo(T *dest, const FLAC__int32 *const src[], size_t n_frames)
 {
 	for (size_t i = 0; i != n_frames; ++i) {
-		*dest++ = buf[0][i];
-		*dest++ = buf[1][i];
+		*dest++ = (T)src[0][i];
+		*dest++ = (T)src[1][i];
 	}
 }
 
+template<typename T>
 static void
-flac_convert_16(int16_t *dest,
-		unsigned int num_channels,
-		const FLAC__int32 * const buf[],
-		size_t n_frames)
+FlacImportAny(T *dest, const FLAC__int32 *const src[], size_t n_frames,
+	      unsigned n_channels)
 {
-	unsigned int c_chan;
-
 	for (size_t i = 0; i != n_frames; ++i)
-		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][i];
+		for (unsigned c = 0; c != n_channels; ++c)
+			*dest++ = src[c][i];
 }
 
-/**
- * Note: this function also handles 24 bit files!
- */
+template<typename T>
 static void
-flac_convert_32(int32_t *dest,
-		unsigned int num_channels,
-		const FLAC__int32 * const buf[],
-		size_t n_frames)
+FlacImport(T *dest, const FLAC__int32 *const src[], size_t n_frames,
+	   unsigned n_channels)
 {
-	unsigned int c_chan;
-
-	for (size_t i = 0; i != n_frames; ++i)
-		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][i];
-}
-
-static void
-flac_convert_8(int8_t *dest,
-	       unsigned int num_channels,
-	       const FLAC__int32 * const buf[],
-	       size_t n_frames)
-{
-	unsigned int c_chan;
-
-	for (size_t i = 0; i != n_frames; ++i)
-		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][i];
+	FlacImportAny(dest, src, n_frames, n_channels);
 }
 
 void
@@ -83,21 +59,18 @@ flac_convert(void *dest,
 	switch (sample_format) {
 	case SampleFormat::S16:
 		if (num_channels == 2)
-			flac_convert_stereo16((int16_t *)dest, buf, n_frames);
+			FlacImportStereo((int16_t *)dest, buf, n_frames);
 		else
-			flac_convert_16((int16_t*)dest, num_channels, buf,
-					n_frames);
+			FlacImportAny((int16_t *)dest, buf, n_frames, num_channels);
 		break;
 
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
-		flac_convert_32((int32_t*)dest, num_channels, buf,
-				n_frames);
+		FlacImport((int32_t *)dest, buf, n_frames, num_channels);
 		break;
 
 	case SampleFormat::S8:
-		flac_convert_8((int8_t*)dest, num_channels, buf,
-			       n_frames);
+		FlacImport((int8_t *)dest, buf, n_frames, num_channels);
 		break;
 
 	case SampleFormat::FLOAT:
