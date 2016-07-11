@@ -179,7 +179,7 @@ FlacDecoder::OnWrite(const FLAC__Frame &frame,
 
 	flac_convert(data, frame.header.channels,
 		     audio_format.format, buf,
-		     0, frame.header.blocksize);
+		     frame.header.blocksize);
 
 	unsigned bit_rate = nbytes * 8 * frame.header.sample_rate /
 		(1000 * frame.header.blocksize);

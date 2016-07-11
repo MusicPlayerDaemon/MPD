@@ -24,11 +24,11 @@
 
 static void flac_convert_stereo16(int16_t *dest,
 				  const FLAC__int32 * const buf[],
-				  unsigned int position, unsigned int end)
+				  size_t n_frames)
 {
-	for (; position < end; ++position) {
-		*dest++ = buf[0][position];
-		*dest++ = buf[1][position];
+	for (size_t i = 0; i != n_frames; ++i) {
+		*dest++ = buf[0][i];
+		*dest++ = buf[1][i];
 	}
 }
 
@@ -36,13 +36,13 @@ static void
 flac_convert_16(int16_t *dest,
 		unsigned int num_channels,
 		const FLAC__int32 * const buf[],
-		unsigned int position, unsigned int end)
+		size_t n_frames)
 {
 	unsigned int c_chan;
 
-	for (; position < end; ++position)
+	for (size_t i = 0; i != n_frames; ++i)
 		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][position];
+			*dest++ = buf[c_chan][i];
 }
 
 /**
@@ -52,53 +52,52 @@ static void
 flac_convert_32(int32_t *dest,
 		unsigned int num_channels,
 		const FLAC__int32 * const buf[],
-		unsigned int position, unsigned int end)
+		size_t n_frames)
 {
 	unsigned int c_chan;
 
-	for (; position < end; ++position)
+	for (size_t i = 0; i != n_frames; ++i)
 		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][position];
+			*dest++ = buf[c_chan][i];
 }
 
 static void
 flac_convert_8(int8_t *dest,
 	       unsigned int num_channels,
 	       const FLAC__int32 * const buf[],
-	       unsigned int position, unsigned int end)
+	       size_t n_frames)
 {
 	unsigned int c_chan;
 
-	for (; position < end; ++position)
+	for (size_t i = 0; i != n_frames; ++i)
 		for (c_chan = 0; c_chan < num_channels; c_chan++)
-			*dest++ = buf[c_chan][position];
+			*dest++ = buf[c_chan][i];
 }
 
 void
 flac_convert(void *dest,
 	     unsigned int num_channels, SampleFormat sample_format,
 	     const FLAC__int32 *const buf[],
-	     unsigned int position, unsigned int end)
+	     size_t n_frames)
 {
 	switch (sample_format) {
 	case SampleFormat::S16:
 		if (num_channels == 2)
-			flac_convert_stereo16((int16_t*)dest, buf,
-					      position, end);
+			flac_convert_stereo16((int16_t *)dest, buf, n_frames);
 		else
 			flac_convert_16((int16_t*)dest, num_channels, buf,
-					position, end);
+					n_frames);
 		break;
 
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
 		flac_convert_32((int32_t*)dest, num_channels, buf,
-				position, end);
+				n_frames);
 		break;
 
 	case SampleFormat::S8:
 		flac_convert_8((int8_t*)dest, num_channels, buf,
-			       position, end);
+			       n_frames);
 		break;
 
 	case SampleFormat::FLOAT:

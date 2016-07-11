@@ -24,10 +24,12 @@
 
 #include <FLAC/ordinals.h>
 
+#include <stddef.h>
+
 void
 flac_convert(void *dest,
 	     unsigned int num_channels, SampleFormat sample_format,
 	     const FLAC__int32 *const buf[],
-	     unsigned int position, unsigned int end);
+	     size_t n_frames);
 
 #endif
