@@ -25,6 +25,7 @@
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
 #include "FlacPcm.hxx"
+#include "FlacDomain.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -57,10 +58,18 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 	assert(!initialized);
 	assert(!unsupported);
 
+	auto sample_format = flac_sample_format(bits_per_sample);
+	if (sample_format == SampleFormat::UNDEFINED) {
+		FormatWarning(flac_domain, "Unsupported FLAC bit depth: %u",
+			      bits_per_sample);
+		unsupported = true;
+		return false;
+	}
+
 	::Error error;
 	if (!audio_format_init_checked(audio_format,
 				       sample_rate,
-				       flac_sample_format(bits_per_sample),
+				       sample_format,
 				       channels, error)) {
 		LogError(error);
 		unsupported = true;
