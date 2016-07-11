@@ -47,7 +47,10 @@ static void
 FlacImport(T *dest, const FLAC__int32 *const src[], size_t n_frames,
 	   unsigned n_channels)
 {
-	FlacImportAny(dest, src, n_frames, n_channels);
+	if (n_channels == 2)
+		FlacImportStereo(dest, src, n_frames);
+	else
+		FlacImportAny(dest, src, n_frames, n_channels);
 }
 
 void
@@ -58,10 +61,7 @@ flac_convert(void *dest,
 {
 	switch (sample_format) {
 	case SampleFormat::S16:
-		if (num_channels == 2)
-			FlacImportStereo((int16_t *)dest, buf, n_frames);
-		else
-			FlacImportAny((int16_t *)dest, buf, n_frames, num_channels);
+		FlacImport((int16_t *)dest, buf, n_frames, num_channels);
 		break;
 
 	case SampleFormat::S24_P32:
