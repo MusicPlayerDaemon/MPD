@@ -19,8 +19,53 @@
 
 #include "config.h"
 #include "FlacPcm.hxx"
+#include "FlacDomain.hxx"
+#include "CheckAudioFormat.hxx"
+#include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 
 #include <assert.h>
+
+static SampleFormat
+flac_sample_format(unsigned bits_per_sample)
+{
+	switch (bits_per_sample) {
+	case 8:
+		return SampleFormat::S8;
+
+	case 16:
+		return SampleFormat::S16;
+
+	case 24:
+		return SampleFormat::S24_P32;
+
+	case 32:
+		return SampleFormat::S32;
+
+	default:
+		return SampleFormat::UNDEFINED;
+	}
+}
+
+bool
+FlacPcmImport::Open(unsigned sample_rate, unsigned bits_per_sample,
+		    unsigned channels, Error &error)
+{
+	auto sample_format = flac_sample_format(bits_per_sample);
+	if (sample_format == SampleFormat::UNDEFINED) {
+		error.Format(flac_domain, "Unsupported FLAC bit depth: %u",
+			     bits_per_sample);
+		return false;
+	}
+
+	if (!audio_format_init_checked(audio_format,
+				       sample_rate,
+				       sample_format,
+				       channels, error))
+		return false;
+
+	return true;
+}
 
 template<typename T>
 static void
@@ -53,30 +98,41 @@ FlacImport(T *dest, const FLAC__int32 *const src[], size_t n_frames,
 		FlacImportAny(dest, src, n_frames, n_channels);
 }
 
-void
-flac_convert(void *dest,
-	     unsigned int num_channels, SampleFormat sample_format,
-	     const FLAC__int32 *const buf[],
-	     size_t n_frames)
+template<typename T>
+static ConstBuffer<void>
+FlacImport(PcmBuffer &buffer, const FLAC__int32 *const src[], size_t n_frames,
+	   unsigned n_channels)
 {
-	switch (sample_format) {
+	size_t n_samples = n_frames * n_channels;
+	size_t dest_size = n_samples * sizeof(T);
+	T *dest = (T *)buffer.Get(dest_size);
+	FlacImport(dest, src, n_frames, n_channels);
+	return {dest, dest_size};
+}
+
+ConstBuffer<void>
+FlacPcmImport::Import(const FLAC__int32 *const src[], size_t n_frames)
+{
+	switch (audio_format.format) {
 	case SampleFormat::S16:
-		FlacImport((int16_t *)dest, buf, n_frames, num_channels);
-		break;
+		return FlacImport<int16_t>(buffer, src, n_frames,
+					   audio_format.channels);
 
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
-		FlacImport((int32_t *)dest, buf, n_frames, num_channels);
-		break;
+		return FlacImport<int32_t>(buffer, src, n_frames,
+					   audio_format.channels);
 
 	case SampleFormat::S8:
-		FlacImport((int8_t *)dest, buf, n_frames, num_channels);
-		break;
+		return FlacImport<int8_t>(buffer, src, n_frames,
+					  audio_format.channels);
 
 	case SampleFormat::FLOAT:
 	case SampleFormat::DSD:
 	case SampleFormat::UNDEFINED:
-		assert(false);
-		gcc_unreachable();
+		break;
 	}
+
+	assert(false);
+	gcc_unreachable();
 }

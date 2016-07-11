@@ -20,16 +20,37 @@
 #ifndef MPD_FLAC_PCM_HXX
 #define MPD_FLAC_PCM_HXX
 
+#include "check.h"
+#include "pcm/PcmBuffer.hxx"
 #include "AudioFormat.hxx"
 
 #include <FLAC/ordinals.h>
 
-#include <stddef.h>
+class Error;
+template<typename T> struct ConstBuffer;
 
-void
-flac_convert(void *dest,
-	     unsigned int num_channels, SampleFormat sample_format,
-	     const FLAC__int32 *const buf[],
-	     size_t n_frames);
+/**
+ * This class imports libFLAC PCM data into a PCM format supported by
+ * MPD.
+ */
+class FlacPcmImport {
+	PcmBuffer buffer;
+
+	AudioFormat audio_format;
+
+public:
+	/**
+	 * @return false on error
+	 */
+	bool Open(unsigned sample_rate, unsigned bits_per_sample,
+		  unsigned channels, Error &error);
+
+	const AudioFormat &GetAudioFormat() const {
+		return audio_format;
+	}
+
+	ConstBuffer<void> Import(const FLAC__int32 *const src[],
+				 size_t n_frames);
+};
 
 #endif

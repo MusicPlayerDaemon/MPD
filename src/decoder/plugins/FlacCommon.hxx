@@ -25,19 +25,12 @@
 #define MPD_FLAC_COMMON_HXX
 
 #include "FlacInput.hxx"
+#include "FlacPcm.hxx"
 #include "../DecoderAPI.hxx"
-#include "pcm/PcmBuffer.hxx"
 
 #include <FLAC/stream_decoder.h>
 
 struct FlacDecoder : public FlacInput {
-	PcmBuffer buffer;
-
-	/**
-	 * The size of one frame in the output buffer.
-	 */
-	unsigned frame_size;
-
 	/**
 	 * Has decoder_initialized() been called yet?
 	 */
@@ -48,11 +41,7 @@ struct FlacDecoder : public FlacInput {
 	 */
 	bool unsupported = false;
 
-	/**
-	 * The validated audio format of the FLAC file.  This
-	 * attribute is defined if "initialized" is true.
-	 */
-	AudioFormat audio_format;
+	FlacPcmImport pcm_import;
 
 	/**
 	 * End of last frame's position within the stream.  This is
@@ -61,7 +50,6 @@ struct FlacDecoder : public FlacInput {
 	FLAC__uint64 position = 0;
 
 	Tag tag;
-
 
 	FlacDecoder(Decoder &_decoder, InputStream &_input_stream)
 		:FlacInput(_input_stream, &_decoder) {}

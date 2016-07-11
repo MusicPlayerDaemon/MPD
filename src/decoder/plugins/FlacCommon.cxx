@@ -24,32 +24,9 @@
 #include "config.h"
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
-#include "FlacPcm.hxx"
-#include "FlacDomain.hxx"
-#include "CheckAudioFormat.hxx"
 #include "util/Error.hxx"
+#include "util/ConstBuffer.hxx"
 #include "Log.hxx"
-
-static SampleFormat
-flac_sample_format(unsigned bits_per_sample)
-{
-	switch (bits_per_sample) {
-	case 8:
-		return SampleFormat::S8;
-
-	case 16:
-		return SampleFormat::S16;
-
-	case 24:
-		return SampleFormat::S24_P32;
-
-	case 32:
-		return SampleFormat::S32;
-
-	default:
-		return SampleFormat::UNDEFINED;
-	}
-}
 
 bool
 FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
@@ -58,25 +35,15 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 	assert(!initialized);
 	assert(!unsupported);
 
-	auto sample_format = flac_sample_format(bits_per_sample);
-	if (sample_format == SampleFormat::UNDEFINED) {
-		FormatWarning(flac_domain, "Unsupported FLAC bit depth: %u",
-			      bits_per_sample);
-		unsupported = true;
-		return false;
-	}
-
 	::Error error;
-	if (!audio_format_init_checked(audio_format,
-				       sample_rate,
-				       sample_format,
-				       channels, error)) {
+	if (!pcm_import.Open(sample_rate, bits_per_sample,
+			     channels, error)) {
 		LogError(error);
 		unsupported = true;
 		return false;
 	}
 
-	frame_size = audio_format.GetFrameSize();
+	const auto audio_format = pcm_import.GetAudioFormat();
 
 	const auto duration = total_frames > 0
 		? SignedSongTime::FromScale<uint64_t>(total_frames,
@@ -174,18 +141,13 @@ FlacDecoder::OnWrite(const FLAC__Frame &frame,
 	if (!initialized && !OnFirstFrame(frame.header))
 		return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 
-	size_t buffer_size = frame.header.blocksize * frame_size;
-	void *data = buffer.Get(buffer_size);
-
-	flac_convert(data, frame.header.channels,
-		     audio_format.format, buf,
-		     frame.header.blocksize);
+	const auto data = pcm_import.Import(buf, frame.header.blocksize);
 
 	unsigned bit_rate = nbytes * 8 * frame.header.sample_rate /
 		(1000 * frame.header.blocksize);
 
 	auto cmd = decoder_data(*GetDecoder(), GetInputStream(),
-				data, buffer_size,
+				data.data, data.size,
 				bit_rate);
 	switch (cmd) {
 	case DecoderCommand::NONE:
