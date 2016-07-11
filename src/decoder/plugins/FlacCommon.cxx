@@ -29,14 +29,6 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
-FlacDecoder::FlacDecoder(Decoder &_decoder,
-			 InputStream &_input_stream)
-	:FlacInput(_input_stream, &_decoder),
-	 initialized(false), unsupported(false),
-	 position(0)
-{
-}
-
 static SampleFormat
 flac_sample_format(unsigned bits_per_sample)
 {

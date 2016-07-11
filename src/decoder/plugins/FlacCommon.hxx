@@ -41,12 +41,12 @@ struct FlacDecoder : public FlacInput {
 	/**
 	 * Has decoder_initialized() been called yet?
 	 */
-	bool initialized;
+	bool initialized = false;
 
 	/**
 	 * Does the FLAC file contain an unsupported audio format?
 	 */
-	bool unsupported;
+	bool unsupported = false;
 
 	/**
 	 * The validated audio format of the FLAC file.  This
@@ -58,11 +58,13 @@ struct FlacDecoder : public FlacInput {
 	 * End of last frame's position within the stream.  This is
 	 * used for bit rate calculations.
 	 */
-	FLAC__uint64 position;
+	FLAC__uint64 position = 0;
 
 	Tag tag;
 
-	FlacDecoder(Decoder &decoder, InputStream &input_stream);
+
+	FlacDecoder(Decoder &_decoder, InputStream &_input_stream)
+		:FlacInput(_input_stream, &_decoder) {}
 
 	/**
 	 * Wrapper for decoder_initialized().
