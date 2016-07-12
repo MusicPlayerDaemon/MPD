@@ -1032,9 +1032,13 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/FaadDecoderPlugin.cxx src/decoder/plugins/FaadDecoderPlugin.hxx
 endif
 
+if HAVE_OGG
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/OggDecoder.cxx src/decoder/plugins/OggDecoder.hxx
+endif
+
 if HAVE_XIPH
 libdecoder_a_SOURCES += \
-	src/decoder/plugins/OggDecoder.cxx src/decoder/plugins/OggDecoder.hxx \
 	src/decoder/plugins/OggCodec.cxx src/decoder/plugins/OggCodec.hxx
 endif
 
