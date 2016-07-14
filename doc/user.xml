@@ -3149,6 +3149,55 @@ buffer_size: 16384</programlisting>
         <para>
           The "Mac OS X" plugin uses Apple's CoreAudio API.
         </para>
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>device</varname>
+                  <parameter>NAME</parameter>
+                </entry>
+                <entry>
+                  Sets the device which should be used. Uses device names as listed in the
+                  "Audio Devices" window of "Audio MIDI Setup".
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <varname>channel_map</varname>
+                  <parameter>SOURCE,SOURCE,...</parameter>
+                </entry>
+                <entry><para>
+                    Specifies a channel map. If your audio device has more than two
+                    outputs this allows you to route audio to auxillary outputs. For
+                    predictable results you should also specify a "format" with a fixed
+                    number of channels, e.g. "*:*:2". The number of items in the channel
+                    map must match the number of output channels of your output device.
+                    Each list entry specifies the source for that output channel; use "-1"
+                    to silence an output. For example, if you have a four-channel output
+                    device and you wish to send stereo sound (format "*:*:2") to outputs 3
+                    and 4 while leaving outputs 1 and 2 silent then set the channel map to
+                    "-1,-1,0,1". In this example '0' and '1' denote the left and right
+                    channel respectively.
+                  </para>
+                  <para>
+                    The channel map may not refer to outputs that do not exist according
+                    to the format. If the format is "*:*:1" (mono) and you have a
+                    four-channel sound card then "-1,-1,0,0" (dual mono output on the
+                    second pair of sound card outputs) is a valid channel map but
+                    "-1,-1,0,1" is not because the second channel ('1') does not exist
+                    when the output is mono.
+                </para></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
