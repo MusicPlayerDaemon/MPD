@@ -27,6 +27,12 @@
 #include <string>
 
 #include <stdio.h>
+#include <stdlib.h>
+#ifndef WIN32
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#endif
 
 class PipeOutput {
 	friend struct AudioOutputWrapper<PipeOutput>;
@@ -35,6 +41,9 @@ class PipeOutput {
 
 	std::string cmd;
 	FILE *fh;
+#ifndef WIN32
+	pid_t childpid;
+#endif
 
 	PipeOutput()
 		:base(pipe_output_plugin) {}
@@ -47,7 +56,13 @@ public:
 	bool Open(AudioFormat &audio_format, Error &error);
 
 	void Close() {
+#ifdef WIN32
 		pclose(fh);
+#else
+		int status;
+		fclose(fh);
+		waitpid(childpid, &status, 0);
+#endif
 	}
 
 	size_t Play(const void *chunk, size_t size, Error &error);
@@ -82,9 +97,20 @@ PipeOutput::Create(const ConfigBlock &block, Error &error)
 	return po;
 }
 
+#define set_MPDPIPE_vars(audio_format) {\
+	char strbuf[8];\
+	setenv("MPDPIPE_BITS", sample_format_to_string(audio_format.format), 1);\
+	snprintf(strbuf, sizeof(strbuf), "%u", audio_format.sample_rate);\
+	setenv("MPDPIPE_RATE", strbuf, 1);\
+	snprintf(strbuf, sizeof(strbuf), "%u", audio_format.channels);\
+	setenv("MPDPIPE_CHANNELS", strbuf, 1);\
+}
+
 inline bool
-PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &error)
+PipeOutput::Open(AudioFormat &audio_format, Error &error)
 {
+#ifdef WIN32
+	set_MPDPIPE_vars(audio_format);
 	fh = popen(cmd.c_str(), "w");
 	if (fh == nullptr) {
 		error.FormatErrno("Error opening pipe \"%s\"",
@@ -93,6 +119,36 @@ PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &error)
 	}
 
 	return true;
+#else
+	int pfdes[2];
+
+	if (pipe(pfdes) == -1) {
+		error.FormatErrno("Error opening pipe for output.");
+		return false;
+	}
+	childpid = fork();
+	if (childpid == -1) {
+		error.FormatErrno("Error forking for pipe output.");
+		return false;
+	}
+	if (childpid != 0) {
+		close(pfdes[0]);
+		fh = fdopen(pfdes[1], "w");
+		if (fh == NULL) {
+			error.FormatErrno("Error creating file pointer for pipe output.");
+			return false;
+		}
+		return true;
+	} else {
+		close(pfdes[1]);
+		dup2(pfdes[0], 0);
+		close(pfdes[0]);
+		set_MPDPIPE_vars(audio_format);
+		execlp("sh", "/bin/sh", "-c", cmd.c_str(), (char*)NULL);
+		error.FormatErrno("Cannot execute pipe program \"%s\"", cmd.c_str());
+		abort();
+	}
+#endif
 }
 
 inline size_t
