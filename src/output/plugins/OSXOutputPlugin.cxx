@@ -367,13 +367,6 @@ done:
 	sake of correctness this callback allows for de-interleaving
 	anyway, and calculates the expected output layout by examining
 	the output buffers.
-	
-	The input buffer is a DynamicFifoBuffer. When a
-	DynamicFifoBuffer contains less data than we want to read from
-	it there is no point in doing a second Read(). So in the case
-	of insufficient audio data in the input buffer, this render
-	callback will emit silence into the output buffers (memset
-	zero).
 */
 
 static OSStatus
@@ -413,7 +406,7 @@ osx_render(void *vdata,
 	// Acquire mutex when accessing input_buffer
 	od->mutex.lock();
 
-	auto src = input_buffer->Read();
+	DynamicFifoBuffer<uint8_t>::Range src = input_buffer->Read();
 
 	UInt32 available_frames = src.size / input_buffer_frame_size;
 	// Never write more frames than we were asked
@@ -429,6 +422,7 @@ osx_render(void *vdata,
 	for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
 		output_buffer = &buffer_list->mBuffers[i];
 		output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
+		output_buffer->mDataByteSize = 0; // Record how much data we actually rendered
 		for (UInt32 current_frame = 0; current_frame < available_frames; ++current_frame) {
 				dest = (size_t) output_buffer->mData + current_frame * output_buffer_frame_size;
 				memcpy(
@@ -436,6 +430,7 @@ osx_render(void *vdata,
 					src.data + current_frame * input_buffer_frame_size + sub_frame_offset,
 					output_buffer_frame_size
 				);
+				output_buffer->mDataByteSize += output_buffer_frame_size;
 		}
 		sub_frame_offset += output_buffer_frame_size;
 	}
@@ -444,19 +439,6 @@ osx_render(void *vdata,
 
 	od->condition.signal();
 	od->mutex.unlock();
-
-	if (available_frames < in_number_frames) {
-		for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
-			output_buffer = &buffer_list->mBuffers[i];
-			output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
-			dest = (size_t) output_buffer->mData + available_frames * output_buffer_frame_size;
-			memset(
-				(void *) dest,
-				0,
-				(in_number_frames - available_frames) * output_buffer_frame_size
-			);
-		}
-	}
 
 	return noErr;
 }
