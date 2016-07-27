@@ -37,7 +37,6 @@
 #include "CheckAudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "LogV.hxx"
 
 extern "C" {
