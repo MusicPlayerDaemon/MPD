@@ -77,12 +77,18 @@ ffmpeg_init(gcc_unused const config_param &param)
 }
 
 gcc_pure
+static bool
+IsAudio(const AVStream &stream)
+{
+	return stream.codec->codec_type == AVMEDIA_TYPE_AUDIO;
+}
+
+gcc_pure
 static int
 ffmpeg_find_audio_stream(const AVFormatContext &format_context)
 {
 	for (unsigned i = 0; i < format_context.nb_streams; ++i)
-		if (format_context.streams[i]->codec->codec_type ==
-		    AVMEDIA_TYPE_AUDIO)
+		if (IsAudio(*format_context.streams[i]))
 			return i;
 
 	return -1;
