@@ -1,3 +1,5 @@
+ver 0.19.18 (not yet released)
+
 ver 0.19.17 (2016/07/09)
 * decoder
   - flac: fix assertion failure while seeking
