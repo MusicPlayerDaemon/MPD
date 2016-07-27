@@ -77,10 +77,24 @@ ffmpeg_init(gcc_unused const config_param &param)
 }
 
 gcc_pure
+static const AVCodecContext &
+GetCodecParameters(const AVStream &stream)
+{
+	return *stream.codec;
+}
+
+gcc_pure
+static AVSampleFormat
+GetSampleFormat(const AVCodecContext &codec_context)
+{
+	return codec_context.sample_fmt;
+}
+
+gcc_pure
 static bool
 IsAudio(const AVStream &stream)
 {
-	return stream.codec->codec_type == AVMEDIA_TYPE_AUDIO;
+	return GetCodecParameters(stream).codec_type == AVMEDIA_TYPE_AUDIO;
 }
 
 gcc_pure
@@ -411,10 +425,11 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	AVStream &av_stream = *format_context->streams[audio_stream];
 
 	AVCodecContext *codec_context = av_stream.codec;
+	const auto &codec_params = GetCodecParameters(av_stream);
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 25, 0)
 	const AVCodecDescriptor *codec_descriptor =
-		avcodec_descriptor_get(codec_context->codec_id);
+		avcodec_descriptor_get(codec_params.codec_id);
 	if (codec_descriptor != nullptr)
 		FormatDebug(ffmpeg_domain, "codec '%s'",
 			    codec_descriptor->name);
@@ -424,7 +439,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 			    codec_context->codec_name);
 #endif
 
-	AVCodec *codec = avcodec_find_decoder(codec_context->codec_id);
+	AVCodec *codec = avcodec_find_decoder(codec_params.codec_id);
 
 	if (!codec) {
 		LogError(ffmpeg_domain, "Unsupported audio codec");
@@ -433,7 +448,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	}
 
 	const SampleFormat sample_format =
-		ffmpeg_sample_format(codec_context->sample_fmt);
+		ffmpeg_sample_format(GetSampleFormat(codec_params));
 	if (sample_format == SampleFormat::UNDEFINED) {
 		// (error message already done by ffmpeg_sample_format())
 		avformat_close_input(&format_context);
@@ -443,9 +458,9 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 	Error error;
 	AudioFormat audio_format;
 	if (!audio_format_init_checked(audio_format,
-				       codec_context->sample_rate,
+				       codec_params.sample_rate,
 				       sample_format,
-				       codec_context->channels, error)) {
+				       codec_params.channels, error)) {
 		LogError(error);
 		avformat_close_input(&format_context);
 		return;
