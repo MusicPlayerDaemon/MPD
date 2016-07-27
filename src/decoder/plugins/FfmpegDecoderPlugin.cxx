@@ -251,6 +251,54 @@ FfmpegSendFrame(Decoder &decoder, InputStream &is,
 			    codec_context.bit_rate / 1000);
 }
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 0)
+
+static DecoderCommand
+FfmpegReceiveFrames(Decoder &decoder, InputStream &is,
+		    AVCodecContext &codec_context,
+		    AVFrame &frame,
+		    size_t &skip_bytes,
+		    FfmpegBuffer &buffer,
+		    bool &eof)
+{
+	while (true) {
+		DecoderCommand cmd;
+
+		int err = avcodec_receive_frame(&codec_context, &frame);
+		switch (err) {
+		case 0:
+			cmd = FfmpegSendFrame(decoder, is, codec_context,
+					      frame, skip_bytes,
+					      buffer);
+			if (cmd != DecoderCommand::NONE)
+				return cmd;
+
+			break;
+
+		case AVERROR_EOF:
+			eof = true;
+			return DecoderCommand::NONE;
+
+		case AVERROR(EAGAIN):
+			/* need to call avcodec_send_packet() */
+			return DecoderCommand::NONE;
+
+		default:
+			{
+				char msg[256];
+				av_strerror(err, msg, sizeof(msg));
+				FormatWarning(ffmpeg_domain,
+					      "avcodec_send_packet() failed: %s",
+					      msg);
+			}
+
+			return DecoderCommand::STOP;
+		}
+	}
+}
+
+#endif
+
 /**
  * Decode an #AVPacket and send the resulting PCM data to the decoder
  * API.
@@ -283,6 +331,36 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 							     stream.time_base));
 	}
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 0)
+	bool eof = false;
+
+	int err = avcodec_send_packet(&codec_context, &packet);
+	switch (err) {
+	case 0:
+		break;
+
+	case AVERROR_EOF:
+		eof = true;
+		break;
+
+	default:
+		{
+			char msg[256];
+			av_strerror(err, msg, sizeof(msg));
+			FormatWarning(ffmpeg_domain,
+				      "avcodec_send_packet() failed: %s", msg);
+		}
+
+		return DecoderCommand::NONE;
+	}
+
+	auto cmd = FfmpegReceiveFrames(decoder, is, codec_context,
+				       frame,
+				       skip_bytes, buffer, eof);
+
+	if (eof)
+		cmd = DecoderCommand::STOP;
+#else
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (packet.size > 0 && cmd == DecoderCommand::NONE) {
 		int got_frame = 0;
@@ -305,6 +383,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 				      frame, skip_bytes,
 				      buffer);
 	}
+#endif
 
 	return cmd;
 }
