@@ -174,6 +174,43 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
 }
 
 /**
+ * Invoke decoder_data() with the contents of an #AVFrame.
+ */
+static DecoderCommand
+FfmpegSendFrame(Decoder &decoder, InputStream &is,
+		AVCodecContext &codec_context,
+		const AVFrame &frame,
+		size_t &skip_bytes,
+		FfmpegBuffer &buffer)
+{
+	Error error;
+	auto output_buffer =
+		copy_interleave_frame(codec_context, frame,
+				      buffer, error);
+	if (output_buffer.IsNull()) {
+		/* this must be a serious error, e.g. OOM */
+		LogError(error);
+		return DecoderCommand::STOP;
+	}
+
+	if (skip_bytes > 0) {
+		if (skip_bytes >= output_buffer.size) {
+			skip_bytes -= output_buffer.size;
+			return DecoderCommand::NONE;
+		}
+
+		output_buffer.data =
+			(const uint8_t *)output_buffer.data + skip_bytes;
+		output_buffer.size -= skip_bytes;
+		skip_bytes = 0;
+	}
+
+	return decoder_data(decoder, is,
+			    output_buffer.data, output_buffer.size,
+			    codec_context.bit_rate / 1000);
+}
+
+/**
  * Decode an #AVPacket and send the resulting PCM data to the decoder
  * API.
  *
@@ -205,8 +242,6 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 							     stream.time_base));
 	}
 
-	Error error;
-
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (packet.size > 0 && cmd == DecoderCommand::NONE) {
 		int got_frame = 0;
@@ -225,32 +260,11 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		if (!got_frame || frame.nb_samples <= 0)
 			continue;
 
-		auto output_buffer =
-			copy_interleave_frame(codec_context, frame,
-					      buffer, error);
-		if (output_buffer.IsNull()) {
-			/* this must be a serious error,
-			   e.g. OOM */
-			LogError(error);
-			return DecoderCommand::STOP;
-		}
-
-		if (skip_bytes > 0) {
-			if (skip_bytes >= output_buffer.size) {
-				skip_bytes -= output_buffer.size;
-				continue;
-			}
-
-			output_buffer.data =
-				(const uint8_t *)output_buffer.data + skip_bytes;
-			output_buffer.size -= skip_bytes;
-			skip_bytes = 0;
-		}
-
-		cmd = decoder_data(decoder, is,
-				   output_buffer.data, output_buffer.size,
-				   codec_context.bit_rate / 1000);
+		cmd = FfmpegSendFrame(decoder, is, codec_context,
+				      frame, skip_bytes,
+				      buffer);
 	}
+
 	return cmd;
 }
 
