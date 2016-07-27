@@ -76,6 +76,24 @@ ffmpeg_init(gcc_unused const config_param &param)
 	return true;
 }
 
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 5, 0)
+
+gcc_pure
+static const AVCodecParameters &
+GetCodecParameters(const AVStream &stream)
+{
+	return *stream.codecpar;
+}
+
+gcc_pure
+static AVSampleFormat
+GetSampleFormat(const AVCodecParameters &codec_params)
+{
+	return AVSampleFormat(codec_params.format);
+}
+
+#else
+
 gcc_pure
 static const AVCodecContext &
 GetCodecParameters(const AVStream &stream)
@@ -89,6 +107,8 @@ GetSampleFormat(const AVCodecContext &codec_context)
 {
 	return codec_context.sample_fmt;
 }
+
+#endif
 
 gcc_pure
 static bool
