@@ -503,7 +503,10 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 
 	AVStream &av_stream = *format_context.streams[audio_stream];
 
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57, 5, 0)
 	AVCodecContext *codec_context = av_stream.codec;
+#endif
+
 	const auto &codec_params = GetCodecParameters(av_stream);
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 25, 0)
@@ -524,6 +527,18 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		LogError(ffmpeg_domain, "Unsupported audio codec");
 		return;
 	}
+
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 5, 0)
+	AVCodecContext *codec_context = avcodec_alloc_context3(codec);
+	if (codec_context == nullptr) {
+		LogError(ffmpeg_domain, "avcodec_alloc_context3() failed");
+		return;
+	}
+
+	AtScopeExit(&codec_context) {
+		avcodec_free_context(&codec_context);
+	};
+#endif
 
 	const SampleFormat sample_format =
 		ffmpeg_sample_format(GetSampleFormat(codec_params));
@@ -553,9 +568,11 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		return;
 	}
 
+#if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(57, 5, 0)
 	AtScopeExit(codec_context) {
 		avcodec_close(codec_context);
 	};
+#endif
 
 	const SignedSongTime total_time =
 		FromFfmpegTimeChecked(av_stream.duration, av_stream.time_base);
