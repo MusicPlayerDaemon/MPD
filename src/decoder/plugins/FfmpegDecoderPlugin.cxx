@@ -419,6 +419,24 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 	return cmd;
 }
 
+static DecoderCommand
+ffmpeg_send_packet(Decoder &decoder, InputStream &is,
+		   const AVPacket &packet,
+		   AVCodecContext &codec_context,
+		   const AVStream &stream,
+		   AVFrame *frame,
+		   uint64_t min_frame, size_t pcm_frame_size,
+		   FfmpegBuffer &buffer)
+{
+	return ffmpeg_send_packet(decoder, is,
+				  /* copy the AVPacket, because FFmpeg
+				     < 3.0 requires this */
+				  AVPacket(packet),
+				  codec_context, stream,
+				  frame, min_frame, pcm_frame_size,
+				  buffer);
+}
+
 gcc_const
 static SampleFormat
 ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
@@ -627,7 +645,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 
 		if (packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(decoder, input,
-						 std::move(packet),
+						 packet,
 						 *codec_context,
 						 *av_stream,
 						 frame,
