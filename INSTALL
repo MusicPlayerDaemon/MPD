@@ -12,7 +12,7 @@ install MPD.  If more information is desired, read the user manual:
 Dependencies
 ------------
 
-gcc 4.6 or later - http://gcc.gnu.org/
+gcc 4.7 or later - http://gcc.gnu.org/
 clang 3.2 or later - http://clang.llvm.org/
 Any other C++11 compliant compiler should also work.
 
