@@ -281,6 +281,16 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	} while (cmd != DecoderCommand::STOP);
 }
 
+gcc_pure
+static const char *
+GetInfoString(const SidTuneInfo &info, unsigned i)
+{
+	return info.numberOfInfoStrings > i
+		? info.infoString[i]
+		: nullptr;
+
+}
+
 static bool
 sidplay_scan_file(Path path_fs,
 		  const struct tag_handler *handler, void *handler_ctx)
@@ -297,11 +307,9 @@ sidplay_scan_file(Path path_fs,
 	const SidTuneInfo &info = tune.getInfo();
 
 	/* title */
-	const char *title;
-	if (info.numberOfInfoStrings > 0 && info.infoString[0] != nullptr)
-		title=info.infoString[0];
-	else
-		title="";
+	const char *title = GetInfoString(info, 0);
+	if (title == nullptr)
+		title = "";
 
 	if(info.songs>1) {
 		char tag_title[1024];
@@ -314,9 +322,10 @@ sidplay_scan_file(Path path_fs,
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
 
 	/* artist */
-	if (info.numberOfInfoStrings > 1 && info.infoString[1] != nullptr)
+	const char *artist = GetInfoString(info, 1);
+	if (artist != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
-				       info.infoString[1]);
+				       artist);
 
 	/* track */
 	char track[16];
