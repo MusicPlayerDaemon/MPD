@@ -164,7 +164,9 @@ ShoutOutput::Configure(const config_param &param, Error &error)
 		}
 	}
 
-	const char *encoding = param.GetBlockValue("encoding", "ogg");
+	const char *encoding = param.GetBlockValue("encoder", nullptr);
+	if (encoding == nullptr)
+		encoding = param.GetBlockValue("encoding", "vorbis");
 	const auto encoder_plugin = shout_encoder_plugin_get(encoding);
 	if (encoder_plugin == nullptr) {
 		error.Format(config_domain,
