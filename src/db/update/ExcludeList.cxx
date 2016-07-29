@@ -34,7 +34,9 @@
 #include <string.h>
 #include <errno.h>
 
+#ifdef HAVE_GLIB
 static constexpr Domain exclude_list_domain("exclude_list");
+#endif
 
 bool
 ExcludeList::LoadFile(Path path_fs)
