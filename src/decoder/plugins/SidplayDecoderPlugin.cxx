@@ -153,7 +153,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 	const auto container = ParseContainerPath(path_fs);
 	SidTuneMod tune(container.path.c_str());
-	if (!tune) {
+	if (!tune.getStatus()) {
 		LogWarning(sidplay_domain, "failed to load file");
 		return;
 	}
