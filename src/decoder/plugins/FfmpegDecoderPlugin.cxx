@@ -69,7 +69,13 @@ FfmpegOpenInput(AVIOContext *pb,
 
 	context->pb = pb;
 
-	avformat_open_input(&context, filename, fmt, nullptr);
+	int err = avformat_open_input(&context, filename, fmt, nullptr);
+	if (err < 0) {
+		avformat_free_context(context);
+		SetFfmpegError(error, err, "avformat_open_input() failed");
+		return nullptr;
+	}
+
 	return context;
 }
 
