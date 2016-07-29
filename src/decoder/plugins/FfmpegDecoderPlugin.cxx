@@ -35,6 +35,7 @@
 #include "tag/TagHandler.hxx"
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "LogV.hxx"
@@ -473,6 +474,10 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		return;
 	}
 
+	AtScopeExit(codec_context) {
+		avcodec_close(codec_context);
+	};
+
 	const SignedSongTime total_time =
 		FromFfmpegTimeChecked(av_stream.duration, av_stream.time_base);
 
@@ -488,6 +493,16 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		LogError(ffmpeg_domain, "Could not allocate frame");
 		return;
 	}
+
+	AtScopeExit(&frame) {
+#if LIBAVUTIL_VERSION_MAJOR >= 53
+		av_frame_free(&frame);
+#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
+		avcodec_free_frame(&frame);
+#else
+		av_free(frame);
+#endif
+	};
 
 	FfmpegBuffer interleaved_buffer;
 
@@ -537,16 +552,6 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		av_free_packet(&packet);
 #endif
 	}
-
-#if LIBAVUTIL_VERSION_MAJOR >= 53
-	av_frame_free(&frame);
-#elif LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(54, 28, 0)
-	avcodec_free_frame(&frame);
-#else
-	av_free(frame);
-#endif
-
-	avcodec_close(codec_context);
 }
 
 static void
@@ -572,9 +577,11 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
-	FfmpegDecode(decoder, input, *format_context);
+	AtScopeExit(&format_context) {
+		avformat_close_input(&format_context);
+	};
 
-	avformat_close_input(&format_context);
+	FfmpegDecode(decoder, input, *format_context);
 }
 
 static bool
@@ -619,9 +626,11 @@ ffmpeg_scan_stream(InputStream &is,
 	if (f == nullptr)
 		return false;
 
-	bool result = FfmpegScanStream(*f, *handler, handler_ctx);
-	avformat_close_input(&f);
-	return result;
+	AtScopeExit(&f) {
+		avformat_close_input(&f);
+	};
+
+	return FfmpegScanStream(*f, *handler, handler_ctx);
 }
 
 /**
