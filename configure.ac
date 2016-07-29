@@ -1333,9 +1333,9 @@ AM_CONDITIONAL(ENABLE_VORBIS_DECODER, test x$enable_vorbis = xyes || test x$enab
 
 dnl --------------------------------- sidplay ---------------------------------
 if test x$enable_sidplay != xno; then
-	# we're not using pkg-config here
-	# because libsidplay2's .pc file requires libtool
-	AC_CHECK_LIB([sidplay2],[main],[found_sidplay=yes],[found_sidplay=no],[])
+	PKG_CHECK_MODULES([SIDPLAY], [libsidplay2 libsidutils],
+		[found_sidplay=yes],
+		[found_sidplay=no])
 
 	MPD_AUTO_PRE(sidplay, [sidplay decoder plugin],
 		[libsidplay2 not found])
@@ -1345,18 +1345,12 @@ if test x$enable_sidplay != xno; then
 	AC_CHECK_LIB([resid-builder], [main],
 		[found_sidplay=yes], [found_sidplay=no])
 
-	if test x$found_sidplay = xyes; then
-		AC_CHECK_LIB([sidutils],[main],[:],[found_sidplay=no],[])
-	fi
-
 	MPD_AUTO_RESULT(sidplay, [sidplay decoder plugin],
-		[libresid-builder or libsidutils not found])
+		[libresid-builder not found])
 fi
 
 if test x$enable_sidplay = xyes; then
-	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder -lsidutils")
-	AC_SUBST(SIDPLAY_CFLAGS,)
-
+	SIDPLAY_LIBS="$SIDPLAY_LIBS -lresid-builder"
 	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
 fi
 
