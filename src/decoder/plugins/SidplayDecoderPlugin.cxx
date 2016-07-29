@@ -289,7 +289,7 @@ sidplay_scan_file(Path path_fs,
 	const unsigned song_num = container.track;
 
 	SidTuneMod tune(container.path.c_str());
-	if (!tune)
+	if (!tune.getStatus())
 		return false;
 
 	tune.selectSong(song_num);
