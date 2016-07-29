@@ -1976,8 +1976,7 @@ buffer_size: 16384</programlisting>
                   Location of your songlengths file, as distributed
                   with the HVSC.  The <varname>sidplay</varname>
                   plugin checks this for matching MD5 fingerprints.
-                  See <ulink
-                  url="http://www.c64.org/HVSC/DOCUMENTS/Songlengths.faq">http://www.c64.org/HVSC/DOCUMENTS/Songlengths.faq</ulink>.
+                  See <ulink url="http://www.hvsc.c64.org/download/C64Music/DOCUMENTS/Songlengths.faq"/>.
                 </entry>
               </row>
 
