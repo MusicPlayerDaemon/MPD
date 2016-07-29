@@ -178,12 +178,6 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	/* initialize the builder */
 
 	ReSIDBuilder builder("ReSID");
-	if (!builder) {
-		LogWarning(sidplay_domain,
-			   "failed to initialize ReSIDBuilder");
-		return;
-	}
-
 	builder.create(player.info().maxsids);
 	if (!builder) {
 		LogWarning(sidplay_domain, "ReSIDBuilder.create() failed");
