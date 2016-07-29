@@ -154,7 +154,8 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	const auto container = ParseContainerPath(path_fs);
 	SidTuneMod tune(container.path.c_str());
 	if (!tune.getStatus()) {
-		LogWarning(sidplay_domain, "failed to load file");
+		FormatWarning(sidplay_domain, "failed to load file: %s",
+			      tune.getInfo().statusString);
 		return;
 	}
 
@@ -180,13 +181,15 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	ReSIDBuilder builder("ReSID");
 	builder.create(player.info().maxsids);
 	if (!builder) {
-		LogWarning(sidplay_domain, "ReSIDBuilder.create() failed");
+		FormatWarning(sidplay_domain, "ReSIDBuilder.create() failed: %s",
+			      builder.error());
 		return;
 	}
 
 	builder.filter(filter_setting);
 	if (!builder) {
-		LogWarning(sidplay_domain, "ReSIDBuilder.filter() failed");
+		FormatWarning(sidplay_domain, "ReSIDBuilder.filter() failed: %s",
+			      builder.error());
 		return;
 	}
 
