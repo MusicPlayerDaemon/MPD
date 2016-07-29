@@ -327,6 +327,12 @@ sidplay_scan_file(Path path_fs,
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
 				       artist);
 
+	/* date */
+	const char *date = GetInfoString(info, 2);
+	if (date != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE,
+				       date);
+
 	/* track */
 	char track[16];
 	sprintf(track, "%d", song_num);
