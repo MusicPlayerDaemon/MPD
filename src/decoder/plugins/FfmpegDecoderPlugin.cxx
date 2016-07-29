@@ -58,11 +58,14 @@ extern "C" {
 static AVFormatContext *
 FfmpegOpenInput(AVIOContext *pb,
 		const char *filename,
-		AVInputFormat *fmt)
+		AVInputFormat *fmt,
+		Error &error)
 {
 	AVFormatContext *context = avformat_alloc_context();
-	if (context == nullptr)
+	if (context == nullptr) {
+		error.Set(ffmpeg_domain, "Out of memory");
 		return nullptr;
+	}
 
 	context->pb = pb;
 
@@ -666,10 +669,11 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
+	Error error;
 	AVFormatContext *format_context =
-		FfmpegOpenInput(stream.io, input.GetURI(), input_format);
+		FfmpegOpenInput(stream.io, input.GetURI(), input_format, error);
 	if (format_context == nullptr) {
-		LogError(ffmpeg_domain, "Open failed");
+		LogError(error);
 		return;
 	}
 
@@ -718,7 +722,8 @@ ffmpeg_scan_stream(InputStream &is,
 		return false;
 
 	AVFormatContext *f =
-		FfmpegOpenInput(stream.io, is.GetURI(), input_format);
+		FfmpegOpenInput(stream.io, is.GetURI(), input_format,
+				IgnoreError());
 	if (f == nullptr)
 		return false;
 
