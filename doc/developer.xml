@@ -41,7 +41,7 @@
       <listitem>
         <para>
           the code should be C++11 compliant, and must compile with
-          <application>GCC</application> 4.6 and
+          <application>GCC</application> 4.7 and
           <application>clang</application> 3.2
         </para>
       </listitem>

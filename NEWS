@@ -59,6 +59,13 @@ ver 0.19.18 (not yet released)
   - ffmpeg: fix crash with older FFmpeg versions (< 3.0)
   - ffmpeg: log detailed error message
   - ffmpeg: support FFmpeg 3.1
+  - sidplay: detect libsidplay2 with pkg-config
+  - sidplay: log detailed error message
+  - sidplay: read the "date" tag
+  - sidplay: allow building with libsidplayfp instead of libsidplay2
+* output
+  - shout: recognize setting "encoder" instead of "encoding"
+* require gcc 4.7 or newer
 
 ver 0.19.17 (2016/07/09)
 * decoder

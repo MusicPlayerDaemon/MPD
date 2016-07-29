@@ -23,6 +23,7 @@
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "util/Macros.hxx"
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
@@ -33,10 +34,21 @@
 
 #include <string.h>
 
+#ifdef HAVE_SIDPLAYFP
+#include <sidplayfp/sidplayfp.h>
+#include <sidplayfp/SidInfo.h>
+#include <sidplayfp/SidConfig.h>
+#include <sidplayfp/SidTune.h>
+#include <sidplayfp/SidTuneInfo.h>
+#include <sidplayfp/builders/resid.h>
+#include <sidplayfp/builders/residfp.h>
+#include <sidplayfp/SidDatabase.h>
+#else
 #include <sidplay/sidplay2.h>
 #include <sidplay/builders/resid.h>
 #include <sidplay/utils/SidTuneMod.h>
 #include <sidplay/utils/SidDatabase.h>
+#endif
 
 #define SUBTUNE_PREFIX "tune_"
 
@@ -53,7 +65,12 @@ static SidDatabase *
 sidplay_load_songlength_db(const Path path)
 {
 	SidDatabase *db = new SidDatabase();
-	if (db->open(path.c_str()) < 0) {
+#ifdef HAVE_SIDPLAYFP
+	bool error = !db->open(path.c_str());
+#else
+	bool error = db->open(path.c_str()) < 0;
+#endif
+	if (error) {
 		FormatError(sidplay_domain,
 			    "unable to read songlengths file %s: %s",
 			    path.c_str(), db->error());
@@ -129,7 +146,25 @@ ParseContainerPath(Path path_fs)
 	return { path_fs.GetDirectoryName(), track };
 }
 
-/* get the song length in seconds */
+#ifdef HAVE_SIDPLAYFP
+
+static SignedSongTime
+get_song_length(SidTune &tune)
+{
+	assert(tune.getStatus());
+
+	if (songlength_database == nullptr)
+		return SignedSongTime::Negative();
+
+	const auto length = songlength_database->length(tune);
+	if (length < 0)
+		return SignedSongTime::Negative();
+
+	return SignedSongTime::FromS(length);
+}
+
+#else
+
 static SignedSongTime
 get_song_length(SidTuneMod &tune)
 {
@@ -145,6 +180,8 @@ get_song_length(SidTuneMod &tune)
 	return SignedSongTime::FromS(length);
 }
 
+#endif
+
 static void
 sidplay_file_decode(Decoder &decoder, Path path_fs)
 {
@@ -153,9 +190,19 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	/* load the tune */
 
 	const auto container = ParseContainerPath(path_fs);
+#ifdef HAVE_SIDPLAYFP
+	SidTune tune(container.path.c_str());
+#else
 	SidTuneMod tune(container.path.c_str());
-	if (!tune) {
-		LogWarning(sidplay_domain, "failed to load file");
+#endif
+	if (!tune.getStatus()) {
+#ifdef HAVE_SIDPLAYFP
+		const char *error = tune.statusString();
+#else
+		const char *error = tune.getInfo().statusString;
+#endif
+		FormatWarning(sidplay_domain, "failed to load file: %s",
+			      error);
 		return;
 	}
 
@@ -168,9 +215,17 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 	/* initialize the player */
 
+#ifdef HAVE_SIDPLAYFP
+	sidplayfp player;
+#else
 	sidplay2 player;
-	int iret = player.load(&tune);
-	if (iret != 0) {
+#endif
+#ifdef HAVE_SIDPLAYFP
+	bool error = !player.load(&tune);
+#else
+	bool error = player.load(&tune) < 0;
+#endif
+	if (error) {
 		FormatWarning(sidplay_domain,
 			      "sidplay2.load() failed: %s", player.error());
 		return;
@@ -178,53 +233,104 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 	/* initialize the builder */
 
-	ReSIDBuilder builder("ReSID");
-	if (!builder) {
-		LogWarning(sidplay_domain,
-			   "failed to initialize ReSIDBuilder");
+#ifdef HAVE_SIDPLAYFP
+	ReSIDfpBuilder builder("ReSID");
+	if (!builder.getStatus()) {
+		FormatWarning(sidplay_domain,
+			      "failed to initialize ReSIDfpBuilder: %s",
+			      builder.error());
 		return;
 	}
 
+	builder.create(player.info().maxsids());
+	if (!builder.getStatus()) {
+		FormatWarning(sidplay_domain,
+			      "ReSIDfpBuilder.create() failed: %s",
+			      builder.error());
+		return;
+	}
+#else
+	ReSIDBuilder builder("ReSID");
 	builder.create(player.info().maxsids);
 	if (!builder) {
-		LogWarning(sidplay_domain, "ReSIDBuilder.create() failed");
+		FormatWarning(sidplay_domain, "ReSIDBuilder.create() failed: %s",
+			      builder.error());
 		return;
 	}
+#endif
 
 	builder.filter(filter_setting);
-	if (!builder) {
-		LogWarning(sidplay_domain, "ReSIDBuilder.filter() failed");
+#ifdef HAVE_SIDPLAYFP
+	if (!builder.getStatus()) {
+		FormatWarning(sidplay_domain,
+			      "ReSIDfpBuilder.filter() failed: %s",
+			      builder.error());
 		return;
 	}
+#else
+	if (!builder) {
+		FormatWarning(sidplay_domain, "ReSIDBuilder.filter() failed: %s",
+			      builder.error());
+		return;
+	}
+#endif
 
 	/* configure the player */
 
-	sid2_config_t config = player.config();
+	auto config = player.config();
 
+#ifndef HAVE_SIDPLAYFP
 	config.clockDefault = SID2_CLOCK_PAL;
 	config.clockForced = true;
 	config.clockSpeed = SID2_CLOCK_CORRECT;
+#endif
 	config.frequency = 48000;
+#ifndef HAVE_SIDPLAYFP
 	config.optimisation = SID2_DEFAULT_OPTIMISATION;
 
 	config.precision = 16;
 	config.sidDefault = SID2_MOS6581;
+#endif
 	config.sidEmulation = &builder;
+#ifdef HAVE_SIDPLAYFP
+	config.samplingMethod = SidConfig::INTERPOLATE;
+	config.fastSampling = false;
+#else
 	config.sidModel = SID2_MODEL_CORRECT;
 	config.sidSamples = true;
 	config.sampleFormat = IsLittleEndian()
 		? SID2_LITTLE_SIGNED
 		: SID2_BIG_SIGNED;
-	if (tune.isStereo()) {
+#endif
+
+#ifdef HAVE_SIDPLAYFP
+	const bool stereo = tune.getInfo()->sidChips() >= 2;
+#else
+	const bool stereo = tune.isStereo();
+#endif
+
+	if (stereo) {
+#ifdef HAVE_SIDPLAYFP
+		config.playback = SidConfig::STEREO;
+#else
 		config.playback = sid2_stereo;
+#endif
 		channels = 2;
 	} else {
+#ifdef HAVE_SIDPLAYFP
+		config.playback = SidConfig::MONO;
+#else
 		config.playback = sid2_mono;
+#endif
 		channels = 1;
 	}
 
-	iret = player.config(config);
-	if (iret != 0) {
+#ifdef HAVE_SIDPLAYFP
+	error = !player.config(config);
+#else
+	error = player.config(config) < 0;
+#endif
+	if (error) {
 		FormatWarning(sidplay_domain,
 			      "sidplay2.config() failed: %s", player.error());
 		return;
@@ -239,17 +345,21 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 	/* .. and play */
 
+#ifdef HAVE_SIDPLAYFP
+	constexpr unsigned timebase = 1;
+#else
 	const unsigned timebase = player.timebase();
+#endif
 	const unsigned end = duration.IsNegative()
 		? 0u
 		: duration.ToScale<uint64_t>(timebase);
 
 	DecoderCommand cmd;
 	do {
-		char buffer[4096];
+		short buffer[4096];
 		size_t nbytes;
 
-		nbytes = player.play(buffer, sizeof(buffer));
+		nbytes = player.play(buffer, ARRAY_SIZE(buffer));
 		if (nbytes == 0)
 			break;
 
@@ -270,7 +380,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 
 			/* ignore data until target time is reached */
 			while(data_time<target_time) {
-				nbytes=player.play(buffer, sizeof(buffer));
+				nbytes=player.play(buffer, ARRAY_SIZE(buffer));
 				if(nbytes==0)
 					break;
 				data_time = player.time();
@@ -285,6 +395,21 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	} while (cmd != DecoderCommand::STOP);
 }
 
+gcc_pure
+static const char *
+GetInfoString(const SidTuneInfo &info, unsigned i)
+{
+#ifdef HAVE_SIDPLAYFP
+	return info.numberOfInfoStrings() > i
+		? info.infoString(i)
+		: nullptr;
+#else
+	return info.numberOfInfoStrings > i
+		? info.infoString[i]
+		: nullptr;
+#endif
+}
+
 static bool
 sidplay_scan_file(Path path_fs,
 		  const TagHandler &handler, void *handler_ctx)
@@ -292,35 +417,50 @@ sidplay_scan_file(Path path_fs,
 	const auto container = ParseContainerPath(path_fs);
 	const unsigned song_num = container.track;
 
+#ifdef HAVE_SIDPLAYFP
+	SidTune tune(container.path.c_str());
+#else
 	SidTuneMod tune(container.path.c_str());
-	if (!tune)
+#endif
+	if (!tune.getStatus())
 		return false;
 
 	tune.selectSong(song_num);
 
+#ifdef HAVE_SIDPLAYFP
+	const SidTuneInfo &info = *tune.getInfo();
+	const unsigned n_tracks = info.songs();
+#else
 	const SidTuneInfo &info = tune.getInfo();
+	const unsigned n_tracks = info.songs;
+#endif
 
 	/* title */
-	const char *title;
-	if (info.numberOfInfoStrings > 0 && info.infoString[0] != nullptr)
-		title=info.infoString[0];
-	else
-		title="";
+	const char *title = GetInfoString(info, 0);
+	if (title == nullptr)
+		title = "";
 
-	if(info.songs>1) {
+	if (n_tracks > 1) {
 		char tag_title[1024];
 		snprintf(tag_title, sizeof(tag_title),
-			 "%s (%d/%d)",
-			 title, song_num, info.songs);
+			 "%s (%d/%u)",
+			 title, song_num, n_tracks);
 		tag_handler_invoke_tag(handler, handler_ctx,
 				       TAG_TITLE, tag_title);
 	} else
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
 
 	/* artist */
-	if (info.numberOfInfoStrings > 1 && info.infoString[1] != nullptr)
+	const char *artist = GetInfoString(info, 1);
+	if (artist != nullptr)
 		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
-				       info.infoString[1]);
+				       artist);
+
+	/* date */
+	const char *date = GetInfoString(info, 2);
+	if (date != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE,
+				       date);
 
 	/* track */
 	char track[16];
@@ -340,19 +480,25 @@ static AllocatedString<>
 sidplay_container_scan(Path path_fs, const unsigned int tnum)
 {
 	SidTune tune(path_fs.c_str(), nullptr, true);
-	if (!tune)
+	if (!tune.getStatus())
 		return nullptr;
 
-	const SidTuneInfo &info=tune.getInfo();
+#ifdef HAVE_SIDPLAYFP
+	const SidTuneInfo &info = *tune.getInfo();
+	const unsigned n_tracks = info.songs();
+#else
+	const SidTuneInfo &info = tune.getInfo();
+	const unsigned n_tracks = info.songs;
+#endif
 
 	/* Don't treat sids containing a single tune
 		as containers */
-	if(!all_files_are_containers && info.songs<2)
+	if(!all_files_are_containers && n_tracks < 2)
 		return nullptr;
 
 	/* Construct container/tune path names, eg.
 		Delta.sid/tune_001.sid */
-	if(tnum<=info.songs) {
+	if (tnum <= n_tracks) {
 		return FormatString(SUBTUNE_PREFIX "%03u.sid", tnum);
 	} else
 		return nullptr;

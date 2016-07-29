@@ -232,7 +232,7 @@ input {
 #
 #audio_output {
 #	type		"shout"
-#	encoding	"ogg"			# optional
+#	encoder		"vorbis"		# optional
 #	name		"My Shout Stream"
 #	host		"localhost"
 #	port		"8000"
