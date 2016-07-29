@@ -702,7 +702,7 @@ FfmpegScanStream(AVFormatContext &format_context,
 		FfmpegScanDictionary(format_context.streams[idx]->metadata,
 				     &handler, handler_ctx);
 
-	return FfmpegScanStream(format_context, handler, handler_ctx);
+	return true;
 }
 
 static bool
