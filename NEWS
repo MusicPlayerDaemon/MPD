@@ -54,6 +54,12 @@ ver 0.20 (not yet released)
 * update
   - apply .mpdignore matches to subdirectories
 
+ver 0.19.18 (not yet released)
+* decoder
+  - ffmpeg: fix crash with older FFmpeg versions (< 3.0)
+  - ffmpeg: log detailed error message
+  - ffmpeg: support FFmpeg 3.1
+
 ver 0.19.17 (2016/07/09)
 * decoder
   - flac: fix assertion failure while seeking
