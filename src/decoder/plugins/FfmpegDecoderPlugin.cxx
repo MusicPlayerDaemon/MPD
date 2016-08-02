@@ -86,7 +86,7 @@ ffmpeg_init(gcc_unused const config_param &param)
 	return true;
 }
 
-#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 5, 0)
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 25, 0) /* FFmpeg 3.1 */
 
 gcc_pure
 static const AVCodecParameters &
