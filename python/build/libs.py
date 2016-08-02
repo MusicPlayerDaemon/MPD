@@ -19,8 +19,8 @@ libvorbis = AutotoolsProject(
 )
 
 opus = AutotoolsProject(
-    'http://downloads.xiph.org/releases/opus/opus-1.1.2.tar.gz',
-    '1f08a661bc72930187893a07f3741a91',
+    'http://downloads.xiph.org/releases/opus/opus-1.1.3.tar.gz',
+    '32bbb6b557fe1b6066adc0ae1f08b629',
     'lib/libopus.a',
     ['--disable-shared', '--enable-static'],
 )
