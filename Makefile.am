@@ -1876,6 +1876,7 @@ test_run_convert_SOURCES = test/run_convert.cxx \
 	src/AudioParser.cxx
 test_run_convert_LDADD = \
 	$(PCM_LIBS) \
+	libconf.a \
 	libutil.a \
 	$(GLIB_LIBS)
 
