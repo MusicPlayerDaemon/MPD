@@ -60,6 +60,18 @@ NfsManager::Compare::operator()(const ManagedConnection &a,
 	return result < 0;
 }
 
+inline bool
+NfsManager::Compare::operator()(const ManagedConnection &a,
+				const ManagedConnection &b) const
+{
+	int result = strcmp(a.GetServer(), b.GetServer());
+	if (result != 0)
+		return result < 0;
+
+	result = strcmp(a.GetExportName(), b.GetExportName());
+	return result < 0;
+}
+
 NfsManager::~NfsManager()
 {
 	assert(GetEventLoop().IsInside());

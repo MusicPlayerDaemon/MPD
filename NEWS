@@ -54,7 +54,7 @@ ver 0.20 (not yet released)
 * update
   - apply .mpdignore matches to subdirectories
 
-ver 0.19.18 (not yet released)
+ver 0.19.18 (2016/08/05)
 * decoder
   - ffmpeg: fix crash with older FFmpeg versions (< 3.0)
   - ffmpeg: log detailed error message
@@ -65,6 +65,8 @@ ver 0.19.18 (not yet released)
   - sidplay: allow building with libsidplayfp instead of libsidplay2
 * output
   - shout: recognize setting "encoder" instead of "encoding"
+* fix memory leak after stream failure
+* fix build failure with Boost 1.61
 * require gcc 4.7 or newer
 
 ver 0.19.17 (2016/07/09)
