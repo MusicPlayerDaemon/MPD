@@ -20,7 +20,6 @@
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "thread/Mutex.hxx"
@@ -31,6 +30,8 @@
 #include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
+
+#include<boost/lockfree/spsc_queue.hpp>
 
 struct OSXOutput {
 	AudioOutput base;
@@ -43,10 +44,13 @@ struct OSXOutput {
 
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
+
 	Mutex mutex;
 	Cond condition;
 
-	DynamicFifoBuffer<uint8_t> *buffer;
+	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
+	size_t render_buffer_size;
+	uint8_t *render_buffer;
 
 	OSXOutput()
 		:base(osx_output_plugin) {}
@@ -378,11 +382,9 @@ osx_render(void *vdata,
 	   AudioBufferList *buffer_list)
 {
 	AudioBuffer *output_buffer = nullptr;
-	size_t output_buffer_frame_size, dest;
+	size_t output_buffer_frame_size;
 
 	OSXOutput *od = (OSXOutput *) vdata;
-	DynamicFifoBuffer<uint8_t> *input_buffer = od->buffer;
-	assert(input_buffer != nullptr);
 
 	/*
 		By convention when interfacing with audio hardware in CoreAudio,
@@ -403,15 +405,28 @@ osx_render(void *vdata,
 	size_t input_buffer_frame_size = od->asbd.mBytesPerFrame;
 	size_t sample_size = input_buffer_frame_size / input_channel_count;
 
-	// Acquire mutex when accessing input_buffer
-	od->mutex.lock();
+	size_t requested_bytes = in_number_frames * input_buffer_frame_size;
+	if (requested_bytes > od->render_buffer_size)
+		requested_bytes = od->render_buffer_size;
 
-	DynamicFifoBuffer<uint8_t>::Range src = input_buffer->Read();
+	size_t available_bytes = od->ring_buffer->pop(od->render_buffer, requested_bytes);
+	size_t wraparound_remainder = available_bytes % input_buffer_frame_size;
 
-	UInt32 available_frames = src.size / input_buffer_frame_size;
-	// Never write more frames than we were asked
-	if (available_frames > in_number_frames)
-		available_frames = in_number_frames;
+	/*
+		Maybe this is paranoid but we have no way of knowing
+		if the 'pop' above ended at a frame boundary. In case
+		of an incomplete last frame, do a second pop to get
+		enough bytes to complete the last frame.
+	*/
+	if (wraparound_remainder > 0)
+		available_bytes += od->ring_buffer->pop(
+			od->render_buffer + available_bytes,
+			input_buffer_frame_size - wraparound_remainder
+		);
+
+	od->condition.signal(); // We are done consuming from ring_buffer
+
+	UInt32 available_frames = available_bytes / input_buffer_frame_size;
 
 	/*
 		To de-interleave the data in the input buffer so that it fits in
@@ -424,21 +439,15 @@ osx_render(void *vdata,
 		output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
 		output_buffer->mDataByteSize = 0; // Record how much data we actually rendered
 		for (UInt32 current_frame = 0; current_frame < available_frames; ++current_frame) {
-				dest = (size_t) output_buffer->mData + current_frame * output_buffer_frame_size;
 				memcpy(
-					(void *) dest,
-					src.data + current_frame * input_buffer_frame_size + sub_frame_offset,
+					(uint8_t *) output_buffer->mData + current_frame * output_buffer_frame_size,
+					od->render_buffer + current_frame * input_buffer_frame_size + sub_frame_offset,
 					output_buffer_frame_size
 				);
 				output_buffer->mDataByteSize += output_buffer_frame_size;
 		}
 		sub_frame_offset += output_buffer_frame_size;
 	}
-
-	input_buffer->Consume(available_frames * input_buffer_frame_size);
-
-	od->condition.signal();
-	od->mutex.unlock();
 
 	return noErr;
 }
@@ -505,15 +514,6 @@ osx_output_disable(AudioOutput *ao)
 }
 
 static void
-osx_output_cancel(AudioOutput *ao)
-{
-	OSXOutput *od = (OSXOutput *)ao;
-
-	const ScopeLock protect(od->mutex);
-	od->buffer->Clear();
-}
-
-static void
 osx_output_close(AudioOutput *ao)
 {
 	OSXOutput *od = (OSXOutput *)ao;
@@ -521,7 +521,8 @@ osx_output_close(AudioOutput *ao)
 	AudioOutputUnitStop(od->au);
 	AudioUnitUninitialize(od->au);
 
-	delete od->buffer;
+	delete od->ring_buffer;
+	delete[] od->render_buffer;
 }
 
 static bool
@@ -583,9 +584,16 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		return false;
 	}
 
-	/* create a buffer of 1s */
-	od->buffer = new DynamicFifoBuffer<uint8_t>(audio_format.sample_rate *
-						    audio_format.GetFrameSize());
+	/* create a ring buffer of 1s */
+	od->ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(audio_format.sample_rate * audio_format.GetFrameSize());
+
+	/*
+		od->render_buffer_size is the maximum amount of data we
+		render in the render callback. Allocate enough space
+		for 0.1 s of frames.
+	*/
+	od->render_buffer_size = (audio_format.sample_rate/10) * audio_format.GetFrameSize();
+	od->render_buffer = new uint8_t[od->render_buffer_size];
 
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
@@ -606,25 +614,15 @@ osx_output_play(AudioOutput *ao, const void *chunk, size_t size,
 {
 	OSXOutput *od = (OSXOutput *)ao;
 
-	const ScopeLock protect(od->mutex);
-
-	DynamicFifoBuffer<uint8_t>::Range dest;
 	while (true) {
-		dest = od->buffer->Write();
-		if (!dest.IsEmpty())
+		if (od->ring_buffer->write_available() > 0)
 			break;
 
 		/* wait for some free space in the buffer */
 		od->condition.wait(od->mutex);
 	}
 
-	if (size > dest.size)
-		size = dest.size;
-
-	memcpy(dest.data, chunk, size);
-	od->buffer->Append(size);
-
-	return size;
+	return od->ring_buffer->push((uint8_t *) chunk, size);
 }
 
 const struct AudioOutputPlugin osx_output_plugin = {
@@ -640,7 +638,7 @@ const struct AudioOutputPlugin osx_output_plugin = {
 	nullptr,
 	osx_output_play,
 	nullptr,
-	osx_output_cancel,
+	nullptr,
 	nullptr,
 	nullptr,
 };
