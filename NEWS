@@ -1,4 +1,4 @@
-ver 0.19.18 (not yet released)
+ver 0.19.18 (2016/08/05)
 * decoder
   - ffmpeg: fix crash with older FFmpeg versions (< 3.0)
   - ffmpeg: log detailed error message
