@@ -98,6 +98,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 
 	if (!is->Check(error)) {
 		dc.Unlock();
+		delete is;
 
 		LogError(error);
 		return nullptr;
