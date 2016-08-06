@@ -410,18 +410,18 @@ osx_render(void *vdata,
 		requested_bytes = od->render_buffer_size;
 
 	size_t available_bytes = od->ring_buffer->pop(od->render_buffer, requested_bytes);
-	size_t wraparound_remainder = available_bytes % input_buffer_frame_size;
 
 	/*
 		Maybe this is paranoid but we have no way of knowing
 		if the 'pop' above ended at a frame boundary. In case
-		of an incomplete last frame, do a second pop to get
-		enough bytes to complete the last frame.
+		of an incomplete last frame, keep popping until the
+		last frame is complete.
 	*/
-	if (wraparound_remainder > 0)
+	size_t remainder;
+	while ((remainder = available_bytes % input_buffer_frame_size) > 0)
 		available_bytes += od->ring_buffer->pop(
 			od->render_buffer + available_bytes,
-			input_buffer_frame_size - wraparound_remainder
+			input_buffer_frame_size - remainder
 		);
 
 	od->condition.signal(); // We are done consuming from ring_buffer
