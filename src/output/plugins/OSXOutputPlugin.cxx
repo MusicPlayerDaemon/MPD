@@ -614,6 +614,7 @@ osx_output_play(AudioOutput *ao, const void *chunk, size_t size,
 {
 	OSXOutput *od = (OSXOutput *)ao;
 
+	od->mutex.lock();
 	while (true) {
 		if (od->ring_buffer->write_available() > 0)
 			break;
@@ -621,6 +622,7 @@ osx_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		/* wait for some free space in the buffer */
 		od->condition.wait(od->mutex);
 	}
+	od->mutex.unlock();
 
 	return od->ring_buffer->push((uint8_t *) chunk, size);
 }
