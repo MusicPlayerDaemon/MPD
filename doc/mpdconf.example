@@ -232,7 +232,7 @@ input {
 #
 #audio_output {
 #	type		"shout"
-#	encoding	"ogg"			# optional
+#	encoder		"vorbis"		# optional
 #	name		"My Shout Stream"
 #	host		"localhost"
 #	port		"8000"
@@ -311,6 +311,15 @@ input {
 #	type		"sndio"
 #	name		"sndio output"
 #	mixer_type	"software"
+#}
+#
+# An example of an OS X output:
+#
+#audio_output {
+#	type		"osx"
+#	name		"My OS X Device"
+##	device		"Built-in Output"	# optional
+##	channel_map      "-1,-1,0,1"	# optional
 #}
 #
 ## Example "pipe" output:

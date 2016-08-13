@@ -64,6 +64,10 @@ class NfsManager final : IdleMonitor {
 		gcc_pure
 		bool operator()(const ManagedConnection &a,
 				const LookupKey b) const;
+
+		gcc_pure
+		bool operator()(const ManagedConnection &a,
+				const ManagedConnection &b) const;
 	};
 
 	/**

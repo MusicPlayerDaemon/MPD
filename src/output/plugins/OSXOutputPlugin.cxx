@@ -20,7 +20,6 @@
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
-#include "util/DynamicFifoBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "thread/Mutex.hxx"
@@ -32,6 +31,8 @@
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
 
+#include<boost/lockfree/spsc_queue.hpp>
+
 struct OSXOutput {
 	AudioOutput base;
 
@@ -39,13 +40,17 @@ struct OSXOutput {
 	OSType component_subtype;
 	/* only applicable with kAudioUnitSubType_HALOutput */
 	const char *device_name;
+	const char *channel_map;
 
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
+
 	Mutex mutex;
 	Cond condition;
 
-	DynamicFifoBuffer<uint8_t> *buffer;
+	boost::lockfree::spsc_queue<uint8_t> *ring_buffer;
+	size_t render_buffer_size;
+	uint8_t *render_buffer;
 
 	OSXOutput()
 		:base(osx_output_plugin) {}
@@ -93,6 +98,8 @@ osx_output_configure(OSXOutput *oo, const ConfigBlock &block)
 		/* XXX am I supposed to strdup() this? */
 		oo->device_name = device;
 	}
+
+	oo->channel_map = block.GetBlockValue("channel_map");
 }
 
 static AudioOutput *
@@ -115,6 +122,126 @@ osx_output_finish(AudioOutput *ao)
 	OSXOutput *oo = (OSXOutput *)ao;
 
 	delete oo;
+}
+
+static bool
+osx_output_parse_channel_map(
+	const char *device_name,
+	const char *channel_map_str,
+	SInt32 channel_map[],
+	UInt32 num_channels,
+	Error &error)
+{
+	char *endptr;
+	unsigned int inserted_channels = 0;
+	bool want_number = true;
+
+	while (*channel_map_str) {
+		if (inserted_channels >= num_channels) {
+			error.Format(osx_output_domain,
+				"%s: channel map contains more than %u entries or trailing garbage",
+				device_name, num_channels);
+			return false;
+		}
+
+		if (!want_number && *channel_map_str == ',') {
+			++channel_map_str;
+			want_number = true;
+			continue;
+		}
+
+		if (want_number &&
+			(isdigit(*channel_map_str) || *channel_map_str == '-')
+		) {
+			channel_map[inserted_channels] = strtol(channel_map_str, &endptr, 10);
+			if (channel_map[inserted_channels] < -1) {
+				error.Format(osx_output_domain,
+					"%s: channel map value %d not allowed (must be -1 or greater)",
+					device_name, channel_map[inserted_channels]);
+				return false;
+			}
+			channel_map_str = endptr;
+			want_number = false;
+			FormatDebug(osx_output_domain,
+				"%s: channel_map[%u] = %d",
+				device_name, inserted_channels, channel_map[inserted_channels]);
+			++inserted_channels;
+			continue;
+		}
+
+		error.Format(osx_output_domain,
+			"%s: invalid character '%c' in channel map",
+			device_name, *channel_map_str);
+		return false;
+	}
+
+	if (inserted_channels < num_channels) {
+		error.Format(osx_output_domain,
+			"%s: channel map contains less than %u entries",
+			device_name, num_channels);
+		return false;
+	}
+
+	return true;
+}
+
+static bool
+osx_output_set_channel_map(OSXOutput *oo, Error &error)
+{
+	AudioStreamBasicDescription desc;
+	OSStatus status;
+	SInt32 *channel_map = nullptr;
+	UInt32 size, num_channels;
+	char errormsg[1024];
+	bool ret = true;
+
+	size = sizeof(desc);
+	memset(&desc, 0, size);
+	status = AudioUnitGetProperty(oo->au,
+		kAudioUnitProperty_StreamFormat,
+		kAudioUnitScope_Output,
+		0,
+		&desc,
+		&size);
+	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
+		error.Format(osx_output_domain, status,
+			"%s: unable to get number of output device channels: %s",
+			oo->device_name, errormsg);
+		ret = false;
+		goto done;
+	}
+
+	num_channels = desc.mChannelsPerFrame;
+	channel_map = new SInt32[num_channels];
+	if (!osx_output_parse_channel_map(oo->device_name,
+		oo->channel_map,
+		channel_map,
+		num_channels,
+		error)
+	) {
+		ret = false;
+		goto done;
+	}
+
+	size = num_channels * sizeof(SInt32);
+	status = AudioUnitSetProperty(oo->au,
+		kAudioOutputUnitProperty_ChannelMap,
+		kAudioUnitScope_Input,
+		0,
+		channel_map,
+		size);
+	if (status != noErr) {
+		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
+		error.Format(osx_output_domain, status,
+			"%s: unable to set channel map: %s", oo->device_name, errormsg);
+		ret = false;
+		goto done;
+	}
+
+done:
+	delete[] channel_map;
+	return ret;
 }
 
 static bool
@@ -214,6 +341,11 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		    "set OS X audio output device ID=%u, name=%s",
 		    (unsigned)deviceids[i], name);
 
+	if (oo->channel_map && !osx_output_set_channel_map(oo, error)) {
+		ret = false;
+		goto done;
+	}
+
 done:
 	delete[] deviceids;
 	if (cfname)
@@ -239,13 +371,6 @@ done:
 	sake of correctness this callback allows for de-interleaving
 	anyway, and calculates the expected output layout by examining
 	the output buffers.
-	
-	The input buffer is a DynamicFifoBuffer. When a
-	DynamicFifoBuffer contains less data than we want to read from
-	it there is no point in doing a second Read(). So in the case
-	of insufficient audio data in the input buffer, this render
-	callback will emit silence into the output buffers (memset
-	zero).
 */
 
 static OSStatus
@@ -257,11 +382,9 @@ osx_render(void *vdata,
 	   AudioBufferList *buffer_list)
 {
 	AudioBuffer *output_buffer = nullptr;
-	size_t output_buffer_frame_size, dest;
+	size_t output_buffer_frame_size;
 
 	OSXOutput *od = (OSXOutput *) vdata;
-	DynamicFifoBuffer<uint8_t> *input_buffer = od->buffer;
-	assert(input_buffer != nullptr);
 
 	/*
 		By convention when interfacing with audio hardware in CoreAudio,
@@ -282,15 +405,32 @@ osx_render(void *vdata,
 	size_t input_buffer_frame_size = od->asbd.mBytesPerFrame;
 	size_t sample_size = input_buffer_frame_size / input_channel_count;
 
-	// Acquire mutex when accessing input_buffer
-	od->mutex.lock();
+	size_t requested_bytes = in_number_frames * input_buffer_frame_size;
+	if (requested_bytes > od->render_buffer_size)
+		requested_bytes = od->render_buffer_size;
 
-	auto src = input_buffer->Read();
+	size_t available_bytes = od->ring_buffer->pop(od->render_buffer, requested_bytes);
 
-	UInt32 available_frames = src.size / input_buffer_frame_size;
-	// Never write more frames than we were asked
-	if (available_frames > in_number_frames)
-		available_frames = in_number_frames;
+	/*
+		Maybe this is paranoid but we have no way of knowing
+		if the 'pop' above ended at a frame boundary. In case
+		of an incomplete last frame, keep popping until the
+		last frame is complete.
+	*/
+	while (true) {
+		size_t incomplete_frame_bytes = available_bytes % input_buffer_frame_size;
+		if (incomplete_frame_bytes == 0)
+			break;
+
+		available_bytes += od->ring_buffer->pop(
+			od->render_buffer + available_bytes,
+			input_buffer_frame_size - incomplete_frame_bytes
+		);
+	}
+
+	od->condition.signal(); // We are done consuming from ring_buffer
+
+	UInt32 available_frames = available_bytes / input_buffer_frame_size;
 
 	/*
 		To de-interleave the data in the input buffer so that it fits in
@@ -301,33 +441,16 @@ osx_render(void *vdata,
 	for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
 		output_buffer = &buffer_list->mBuffers[i];
 		output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
+		output_buffer->mDataByteSize = 0; // Record how much data we actually rendered
 		for (UInt32 current_frame = 0; current_frame < available_frames; ++current_frame) {
-				dest = (size_t) output_buffer->mData + current_frame * output_buffer_frame_size;
 				memcpy(
-					(void *) dest,
-					src.data + current_frame * input_buffer_frame_size + sub_frame_offset,
+					(uint8_t *) output_buffer->mData + current_frame * output_buffer_frame_size,
+					od->render_buffer + current_frame * input_buffer_frame_size + sub_frame_offset,
 					output_buffer_frame_size
 				);
+				output_buffer->mDataByteSize += output_buffer_frame_size;
 		}
 		sub_frame_offset += output_buffer_frame_size;
-	}
-
-	input_buffer->Consume(available_frames * input_buffer_frame_size);
-
-	od->condition.signal();
-	od->mutex.unlock();
-
-	if (available_frames < in_number_frames) {
-		for (unsigned int i = 0 ; i < buffer_list->mNumberBuffers; ++i) {
-			output_buffer = &buffer_list->mBuffers[i];
-			output_buffer_frame_size = output_buffer->mNumberChannels * sample_size;
-			dest = (size_t) output_buffer->mData + available_frames * output_buffer_frame_size;
-			memset(
-				(void *) dest,
-				0,
-				(in_number_frames - available_frames) * output_buffer_frame_size
-			);
-		}
 	}
 
 	return noErr;
@@ -395,15 +518,6 @@ osx_output_disable(AudioOutput *ao)
 }
 
 static void
-osx_output_cancel(AudioOutput *ao)
-{
-	OSXOutput *od = (OSXOutput *)ao;
-
-	const ScopeLock protect(od->mutex);
-	od->buffer->Clear();
-}
-
-static void
 osx_output_close(AudioOutput *ao)
 {
 	OSXOutput *od = (OSXOutput *)ao;
@@ -411,7 +525,8 @@ osx_output_close(AudioOutput *ao)
 	AudioOutputUnitStop(od->au);
 	AudioUnitUninitialize(od->au);
 
-	delete od->buffer;
+	delete od->ring_buffer;
+	delete[] od->render_buffer;
 }
 
 static bool
@@ -473,9 +588,16 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		return false;
 	}
 
-	/* create a buffer of 1s */
-	od->buffer = new DynamicFifoBuffer<uint8_t>(audio_format.sample_rate *
-						    audio_format.GetFrameSize());
+	/* create a ring buffer of 1s */
+	od->ring_buffer = new boost::lockfree::spsc_queue<uint8_t>(audio_format.sample_rate * audio_format.GetFrameSize());
+
+	/*
+		od->render_buffer_size is the maximum amount of data we
+		render in the render callback. Allocate enough space
+		for 0.1 s of frames.
+	*/
+	od->render_buffer_size = (audio_format.sample_rate/10) * audio_format.GetFrameSize();
+	od->render_buffer = new uint8_t[od->render_buffer_size];
 
 	status = AudioOutputUnitStart(od->au);
 	if (status != 0) {
@@ -496,25 +618,19 @@ osx_output_play(AudioOutput *ao, const void *chunk, size_t size,
 {
 	OSXOutput *od = (OSXOutput *)ao;
 
-	const ScopeLock protect(od->mutex);
+	{
+		const ScopeLock protect(od->mutex);
 
-	DynamicFifoBuffer<uint8_t>::Range dest;
-	while (true) {
-		dest = od->buffer->Write();
-		if (!dest.IsEmpty())
-			break;
+		while (true) {
+			if (od->ring_buffer->write_available() > 0)
+				break;
 
-		/* wait for some free space in the buffer */
-		od->condition.wait(od->mutex);
+			/* wait for some free space in the buffer */
+			od->condition.wait(od->mutex);
+		}
 	}
 
-	if (size > dest.size)
-		size = dest.size;
-
-	memcpy(dest.data, chunk, size);
-	od->buffer->Append(size);
-
-	return size;
+	return od->ring_buffer->push((uint8_t *) chunk, size);
 }
 
 const struct AudioOutputPlugin osx_output_plugin = {
@@ -530,7 +646,7 @@ const struct AudioOutputPlugin osx_output_plugin = {
 	nullptr,
 	osx_output_play,
 	nullptr,
-	osx_output_cancel,
+	nullptr,
 	nullptr,
 	nullptr,
 };

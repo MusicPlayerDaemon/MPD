@@ -17,40 +17,55 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_FLAC_PCM_HXX
-#define MPD_FLAC_PCM_HXX
+#ifndef MPD_FLAC_STREAM_DECODER
+#define MPD_FLAC_STREAM_DECODER
 
 #include "check.h"
-#include "pcm/PcmBuffer.hxx"
-#include "AudioFormat.hxx"
 
-#include <FLAC/ordinals.h>
+#include <FLAC/stream_decoder.h>
 
-class Error;
-template<typename T> struct ConstBuffer;
+#include <utility>
+#include <stdexcept>
+
+#include <assert.h>
 
 /**
- * This class imports libFLAC PCM data into a PCM format supported by
- * MPD.
+ * OO wrapper for a FLAC__StreamDecoder.
  */
-class FlacPcmImport {
-	PcmBuffer buffer;
-
-	AudioFormat audio_format;
+class FlacStreamDecoder {
+	FLAC__StreamDecoder *decoder;
 
 public:
-	/**
-	 * @return false on error
-	 */
-	bool Open(unsigned sample_rate, unsigned bits_per_sample,
-		  unsigned channels, Error &error);
-
-	const AudioFormat &GetAudioFormat() const {
-		return audio_format;
+	FlacStreamDecoder()
+		:decoder(FLAC__stream_decoder_new()) {
+		if (decoder == nullptr)
+			throw std::runtime_error("FLAC__stream_decoder_new() failed");
 	}
 
-	ConstBuffer<void> Import(const FLAC__int32 *const src[],
-				 size_t n_frames);
+	FlacStreamDecoder(FlacStreamDecoder &&src)
+		:decoder(src.decoder) {
+		src.decoder = nullptr;
+	}
+
+	~FlacStreamDecoder() {
+		if (decoder != nullptr)
+			FLAC__stream_decoder_delete(decoder);
+	}
+
+	FlacStreamDecoder &operator=(FlacStreamDecoder &&src) {
+		std::swap(decoder, src.decoder);
+		return *this;
+	}
+
+	operator bool() const {
+		return decoder != nullptr;
+	}
+
+	FLAC__StreamDecoder *get() {
+		assert(decoder != nullptr);
+
+		return decoder;
+	}
 };
 
 #endif

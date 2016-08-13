@@ -1138,9 +1138,13 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/FaadDecoderPlugin.cxx src/decoder/plugins/FaadDecoderPlugin.hxx
 endif
 
+if HAVE_OGG
+libdecoder_a_SOURCES += \
+	src/decoder/plugins/OggDecoder.cxx src/decoder/plugins/OggDecoder.hxx
+endif
+
 if HAVE_XIPH
 libdecoder_a_SOURCES += \
-	src/decoder/plugins/OggDecoder.cxx src/decoder/plugins/OggDecoder.hxx \
 	src/decoder/plugins/OggCodec.cxx src/decoder/plugins/OggCodec.hxx
 endif
 
@@ -1158,6 +1162,7 @@ libdecoder_a_SOURCES += \
 	src/decoder/plugins/FlacPcm.cxx src/decoder/plugins/FlacPcm.hxx \
 	src/decoder/plugins/FlacDomain.cxx src/decoder/plugins/FlacDomain.hxx \
 	src/decoder/plugins/FlacCommon.cxx src/decoder/plugins/FlacCommon.hxx \
+	src/decoder/plugins/FlacStreamDecoder.hxx \
 	src/decoder/plugins/FlacDecoderPlugin.cxx \
 	src/decoder/plugins/FlacDecoderPlugin.h
 endif

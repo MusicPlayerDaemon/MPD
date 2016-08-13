@@ -1005,31 +1005,36 @@ AM_CONDITIONAL(ENABLE_DVDAISO, test x$enable_dvdaiso = xyes)
 
 dnl --------------------------------- sidplay ---------------------------------
 if test x$enable_sidplay != xno; then
-	# we're not using pkg-config here
-	# because libsidplay2's .pc file requires libtool
-	AC_CHECK_LIB([sidplay2],[main],[found_sidplay=yes],[found_sidplay=no],[])
+	dnl Check for libsidplayfp first
+	PKG_CHECK_MODULES([SIDPLAY], [libsidplayfp libsidutils],
+		[found_sidplayfp=yes],
+		[found_sidplayfp=no])
+	found_sidplay=$found_sidplayfp
+fi
+
+if test x$enable_sidplay != xno && test x$found_sidplayfp = xno; then
+	PKG_CHECK_MODULES([SIDPLAY], [libsidplay2 libsidutils],
+		[found_sidplay=yes],
+		[found_sidplay=no])
 
 	MPD_AUTO_PRE(sidplay, [sidplay decoder plugin],
 		[libsidplay2 not found])
 fi
 
-if test x$enable_sidplay != xno; then
+if test x$enable_sidplay != xno && test x$found_sidplayfp = xno; then
 	AC_CHECK_LIB([resid-builder], [main],
 		[found_sidplay=yes], [found_sidplay=no])
 
-	if test x$found_sidplay = xyes; then
-		AC_CHECK_LIB([sidutils],[main],[:],[found_sidplay=no],[])
-	fi
-
 	MPD_AUTO_RESULT(sidplay, [sidplay decoder plugin],
-		[libresid-builder or libsidutils not found])
+		[libresid-builder not found])
 fi
 
 if test x$enable_sidplay = xyes; then
-	AC_SUBST(SIDPLAY_LIBS,"-lsidplay2 -lresid-builder -lsidutils")
-	AC_SUBST(SIDPLAY_CFLAGS,)
-
+	SIDPLAY_LIBS="$SIDPLAY_LIBS -lresid-builder"
 	AC_DEFINE(ENABLE_SIDPLAY, 1, [Define for libsidplay2 support])
+	if test x$found_sidplayfp = xyes; then
+		AC_DEFINE(HAVE_SIDPLAYFP, 1, [Define if libsidplayfp is used instead of libsidplay2])
+	fi
 fi
 
 AM_CONDITIONAL(ENABLE_SIDPLAY, test x$enable_sidplay = xyes)

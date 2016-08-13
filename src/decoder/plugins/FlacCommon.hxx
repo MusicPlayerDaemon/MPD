@@ -25,61 +25,65 @@
 #define MPD_FLAC_COMMON_HXX
 
 #include "FlacInput.hxx"
+#include "FlacPcm.hxx"
 #include "../DecoderAPI.hxx"
-#include "pcm/PcmBuffer.hxx"
 
 #include <FLAC/stream_decoder.h>
 
-struct flac_data : public FlacInput {
-	PcmBuffer buffer;
-
-	/**
-	 * The size of one frame in the output buffer.
-	 */
-	unsigned frame_size;
-
+struct FlacDecoder : public FlacInput {
 	/**
 	 * Has decoder_initialized() been called yet?
 	 */
-	bool initialized;
+	bool initialized = false;
 
 	/**
 	 * Does the FLAC file contain an unsupported audio format?
 	 */
-	bool unsupported;
+	bool unsupported = false;
 
-	/**
-	 * The validated audio format of the FLAC file.  This
-	 * attribute is defined if "initialized" is true.
-	 */
-	AudioFormat audio_format;
+	FlacPcmImport pcm_import;
 
 	/**
 	 * End of last frame's position within the stream.  This is
 	 * used for bit rate calculations.
 	 */
-	FLAC__uint64 position;
-
-	Decoder &decoder;
-	InputStream &input_stream;
+	FLAC__uint64 position = 0;
 
 	Tag tag;
 
-	flac_data(Decoder &decoder, InputStream &input_stream);
+	FlacDecoder(Decoder &_decoder, InputStream &_input_stream)
+		:FlacInput(_input_stream, &_decoder) {}
 
 	/**
 	 * Wrapper for decoder_initialized().
 	 */
 	bool Initialize(unsigned sample_rate, unsigned bits_per_sample,
 			unsigned channels, FLAC__uint64 total_frames);
+
+	void OnMetadata(const FLAC__StreamMetadata &metadata);
+
+	FLAC__StreamDecoderWriteStatus OnWrite(const FLAC__Frame &frame,
+					       const FLAC__int32 *const buf[],
+					       FLAC__uint64 nbytes);
+
+	/**
+	 * Calculate the delta (in bytes) between the last frame and
+	 * the current frame.
+	 */
+	FLAC__uint64 GetDeltaPosition(const FLAC__StreamDecoder &sd);
+
+private:
+	void OnStreamInfo(const FLAC__StreamMetadata_StreamInfo &stream_info);
+	void OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc);
+
+	/**
+	 * This function attempts to call decoder_initialized() in case there
+	 * was no STREAMINFO block.  This is allowed for nonseekable streams,
+	 * where the server sends us only a part of the file, without
+	 * providing the STREAMINFO block from the beginning of the file
+	 * (e.g. when seeking with SqueezeBox Server).
+	 */
+	bool OnFirstFrame(const FLAC__FrameHeader &header);
 };
-
-void flac_metadata_common_cb(const FLAC__StreamMetadata * block,
-			     struct flac_data *data);
-
-FLAC__StreamDecoderWriteStatus
-flac_common_write(struct flac_data *data, const FLAC__Frame * frame,
-		  const FLAC__int32 *const buf[],
-		  FLAC__uint64 nbytes);
 
 #endif /* _FLAC_COMMON_H */

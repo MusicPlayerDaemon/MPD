@@ -29,13 +29,15 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 int main(int argc, char **argv)
-{
+try {
 	if (argc != 3) {
 		fprintf(stderr, "Usage: run_decoder DECODER URI >OUT\n");
 		return EXIT_FAILURE;
@@ -89,5 +91,8 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }
