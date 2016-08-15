@@ -68,7 +68,14 @@ wildmidi_finish(void)
 static DecoderCommand
 wildmidi_output(Decoder &decoder, midi *wm)
 {
+#ifdef LIBWILDMIDI_VER_MAJOR
+	/* WildMidi 0.4 has switched from "char*" to "int8_t*" */
+	int8_t buffer[4096];
+#else
+	/* pre 0.4 */
 	char buffer[4096];
+#endif
+
 	int length = WildMidi_GetOutput(wm, buffer, sizeof(buffer));
 	if (length <= 0)
 		return DecoderCommand::STOP;
