@@ -37,18 +37,6 @@
 
 class AllocatedPath;
 
-namespace FOpenMode {
-	/**
-	 * Open mode for writing text files.
-	 */
-	constexpr PathTraitsFS::const_pointer_type WriteText = PATH_LITERAL("w");
-
-	/**
-	 * Open mode for appending text files.
-	 */
-	constexpr PathTraitsFS::const_pointer_type AppendText = PATH_LITERAL("a");
-}
-
 /**
  * Wrapper for fopen() that uses #Path names.
  */
