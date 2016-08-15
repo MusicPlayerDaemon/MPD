@@ -41,22 +41,20 @@ class BaseFileOutputStream : public OutputStream {
 	const AllocatedPath path;
 
 #ifdef WIN32
-	HANDLE handle;
+	HANDLE handle = INVALID_HANDLE_VALUE;
 #else
-	FileDescriptor fd;
+	FileDescriptor fd = FileDescriptor::Undefined();
 #endif
 
 protected:
 #ifdef WIN32
 	template<typename P>
 	BaseFileOutputStream(P &&_path)
-		:path(std::forward<P>(_path)),
-		 handle(INVALID_HANDLE_VALUE) {}
+		:path(std::forward<P>(_path)) {}
 #else
 	template<typename P>
 	BaseFileOutputStream(P &&_path)
-		:path(std::forward<P>(_path)),
-		 fd(FileDescriptor::Undefined()) {}
+		:path(std::forward<P>(_path)) {}
 #endif
 
 	~BaseFileOutputStream() {
