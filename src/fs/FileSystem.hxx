@@ -105,6 +105,13 @@ StatFile(Path file, struct stat &buf, bool follow_symlinks = true)
 #endif
 
 /**
+ * Truncate a file that exists already.  Throws std::system_error on
+ * error.
+ */
+void
+TruncateFile(Path path);
+
+/**
  * Wrapper for unlink() that uses #Path names.
  */
 static inline bool
