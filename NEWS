@@ -54,6 +54,12 @@ ver 0.20 (not yet released)
 * update
   - apply .mpdignore matches to subdirectories
 
+ver 0.19.19 (not yet released)
+* decoder
+  - wildmidi: support libWildMidi 0.4
+* output
+  - pulse: support 32 bit, 24 bit and floating point playback
+
 ver 0.19.18 (2016/08/05)
 * decoder
   - ffmpeg: fix crash with older FFmpeg versions (< 3.0)

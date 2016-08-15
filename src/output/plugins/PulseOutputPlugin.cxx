@@ -679,11 +679,30 @@ PulseOutput::Open(AudioFormat &audio_format, Error &error)
 		return false;
 	}
 
-	/* MPD doesn't support the other pulseaudio sample formats, so
-	   we just force MPD to send us everything as 16 bit */
-	audio_format.format = SampleFormat::S16;
+	/* Use the sample formats that our version of PulseAudio and MPD
+	   have in common, otherwise force MPD to send 16 bit */
 
 	pa_sample_spec ss;
+
+	switch (audio_format.format) {
+	case SampleFormat::FLOAT:
+		ss.format = PA_SAMPLE_FLOAT32NE;
+		break;
+	case SampleFormat::S32:
+		ss.format = PA_SAMPLE_S32NE;
+		break;
+	case SampleFormat::S24_P32:
+		ss.format = PA_SAMPLE_S24_32NE;
+		break;
+	case SampleFormat::S16:
+		ss.format = PA_SAMPLE_S16NE;
+		break;
+	default:
+		audio_format.format = SampleFormat::S16;
+		ss.format = PA_SAMPLE_S16NE;
+		break;
+	}
+
 	ss.format = PA_SAMPLE_S16NE;
 	ss.rate = audio_format.sample_rate;
 	ss.channels = audio_format.channels;
