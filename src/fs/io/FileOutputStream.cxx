@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "FileOutputStream.hxx"
-#include "fs/FileSystem.hxx"
 #include "system/Error.hxx"
 
 #ifdef WIN32
@@ -77,10 +76,7 @@ FileOutputStream::Cancel()
 
 	Close();
 
-	try {
-		RemoveFile(GetPath());
-	} catch (std::runtime_error) {
-	}
+	DeleteFile(GetPath().c_str());
 }
 
 #else
@@ -157,10 +153,7 @@ FileOutputStream::Commit()
 
 #if HAVE_LINKAT
 	if (is_tmpfile) {
-		try {
-			RemoveFile(GetPath());
-		} catch (std::runtime_error) {
-		}
+		unlink(GetPath().c_str());
 
 		/* hard-link the temporary file to the final path */
 		char fd_path[64];
@@ -193,10 +186,7 @@ FileOutputStream::Cancel()
 #ifdef HAVE_LINKAT
 	if (!is_tmpfile)
 #endif
-		try {
-			RemoveFile(GetPath());
-		} catch (std::runtime_error) {
-		}
+		unlink(GetPath().c_str());
 }
 
 #endif
