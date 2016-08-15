@@ -87,10 +87,10 @@ FifoOutput::Delete()
 	FormatDebug(fifo_output_domain,
 		    "Removing FIFO \"%s\"", path_utf8.c_str());
 
-	if (!RemoveFile(path)) {
-		FormatErrno(fifo_output_domain,
-			    "Could not remove FIFO \"%s\"",
-			    path_utf8.c_str());
+	try {
+		RemoveFile(path);
+	} catch (const std::runtime_error &e) {
+		LogError(e, "Could not remove FIFO");
 		return;
 	}
 

@@ -66,3 +66,15 @@ TruncateFile(Path path)
 	close(fd);
 #endif
 }
+
+void
+RemoveFile(Path path)
+{
+#ifdef WIN32
+	if (!DeleteFile(path.c_str()))
+		throw FormatLastError("Failed to delete %s", path.c_str());
+#else
+	if (unlink(path.c_str()) < 0)
+		throw FormatErrno("Failed to delete %s", path.c_str());
+#endif
+}

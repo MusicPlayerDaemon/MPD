@@ -76,7 +76,11 @@ FileOutputStream::Cancel()
 	assert(IsDefined());
 
 	Close();
-	RemoveFile(GetPath());
+
+	try {
+		RemoveFile(GetPath());
+	} catch (std::runtime_error) {
+	}
 }
 
 #else
@@ -153,7 +157,10 @@ FileOutputStream::Commit()
 
 #if HAVE_LINKAT
 	if (is_tmpfile) {
-		RemoveFile(GetPath());
+		try {
+			RemoveFile(GetPath());
+		} catch (std::runtime_error) {
+		}
 
 		/* hard-link the temporary file to the final path */
 		char fd_path[64];
@@ -186,7 +193,10 @@ FileOutputStream::Cancel()
 #ifdef HAVE_LINKAT
 	if (!is_tmpfile)
 #endif
-		RemoveFile(GetPath());
+		try {
+			RemoveFile(GetPath());
+		} catch (std::runtime_error) {
+		}
 }
 
 #endif

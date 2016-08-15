@@ -100,17 +100,11 @@ void
 TruncateFile(Path path);
 
 /**
- * Wrapper for unlink() that uses #Path names.
+ * Wrapper for unlink() that uses #Path names.  Throws
+ * std::system_error on error.
  */
-static inline bool
-RemoveFile(Path file)
-{
-#ifdef WIN32
-	return _tunlink(file.c_str()) == 0;
-#else
-	return unlink(file.c_str()) == 0;
-#endif
-}
+void
+RemoveFile(Path path);
 
 /**
  * Wrapper for readlink() that uses #Path names.
