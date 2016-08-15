@@ -545,7 +545,6 @@ pulse_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		  Error &error)
 {
 	PulseOutput *po = (PulseOutput *)ao;
-	pa_sample_spec ss;
 
 	assert(po->mainloop != nullptr);
 
@@ -579,6 +578,7 @@ pulse_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	   we just force MPD to send us everything as 16 bit */
 	audio_format.format = SampleFormat::S16;
 
+	pa_sample_spec ss;
 	ss.format = PA_SAMPLE_S16NE;
 	ss.rate = audio_format.sample_rate;
 	ss.channels = audio_format.channels;
