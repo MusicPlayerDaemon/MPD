@@ -59,6 +59,7 @@ BufferedReader::ReadFromBuffer(WritableBuffer<void> dest)
 	auto src = Read();
 	size_t nbytes = std::min(src.size, dest.size);
 	memcpy(dest.data, src.data, nbytes);
+	Consume(nbytes);
 	return nbytes;
 }
 
