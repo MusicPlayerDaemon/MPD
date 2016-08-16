@@ -22,6 +22,11 @@
 #include "Reader.hxx"
 #include "util/TextFile.hxx"
 
+#include <stdexcept>
+
+#include <stdint.h>
+#include <string.h>
+
 bool
 BufferedReader::Fill(bool need_more)
 {
@@ -46,6 +51,32 @@ BufferedReader::Fill(bool need_more)
 
 	buffer.Append(nbytes);
 	return true;
+}
+
+size_t
+BufferedReader::ReadFromBuffer(WritableBuffer<void> dest)
+{
+	auto src = Read();
+	size_t nbytes = std::min(src.size, dest.size);
+	memcpy(dest.data, src.data, nbytes);
+	return nbytes;
+}
+
+void
+BufferedReader::ReadFull(WritableBuffer<void> _dest)
+{
+	auto dest = WritableBuffer<uint8_t>::FromVoid(_dest);
+	assert(dest.size == _dest.size);
+
+	while (true) {
+		size_t nbytes = ReadFromBuffer(dest.ToVoid());
+		dest.skip_front(nbytes);
+		if (dest.size == 0)
+			break;
+
+		if (!Fill(true))
+			throw std::runtime_error("Premature end of file");
+	}
 }
 
 char *

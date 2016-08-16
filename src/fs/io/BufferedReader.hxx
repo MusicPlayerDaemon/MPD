@@ -55,6 +55,19 @@ public:
 		buffer.Consume(n);
 	}
 
+	/**
+	 * Read (and consume) data from the input buffer into the
+	 * given buffer.  Does not attempt to refill the buffer.
+	 */
+	size_t ReadFromBuffer(WritableBuffer<void> dest);
+
+	/**
+	 * Read data into the given buffer and consume it from our
+	 * buffer.  Throw an exception if the request cannot be
+	 * forfilled.
+	 */
+	void ReadFull(WritableBuffer<void> dest);
+
 	char *ReadLine();
 
 	unsigned GetLineNumber() const {
