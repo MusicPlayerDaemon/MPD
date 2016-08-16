@@ -151,7 +151,7 @@ FileOutputStream::Commit()
 {
 	assert(IsDefined());
 
-#if HAVE_LINKAT
+#ifdef HAVE_LINKAT
 	if (is_tmpfile) {
 		unlink(GetPath().c_str());
 
