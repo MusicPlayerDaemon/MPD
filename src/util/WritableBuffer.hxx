@@ -217,6 +217,15 @@ struct WritableBuffer {
 		pop_front();
 		return result;
 	}
+
+	void skip_front(size_type n) {
+#ifndef NDEBUG
+		assert(size >= n);
+#endif
+
+		data += n;
+		size -= n;
+	}
 };
 
 #endif
