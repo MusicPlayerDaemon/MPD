@@ -30,6 +30,7 @@
 #endif
 
 #include <assert.h>
+#include <stdint.h>
 
 #ifdef WIN32
 #include <windows.h>
