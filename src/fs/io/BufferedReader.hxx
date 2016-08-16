@@ -51,6 +51,14 @@ public:
 		return buffer.Read().ToVoid();
 	}
 
+	/**
+	 * Read a buffer of exactly the given size (without consuming
+	 * it).  Throws std::runtime_error if not enough data is
+	 * available.
+	 */
+	gcc_pure
+	void *ReadFull(size_t size);
+
 	void Consume(size_t n) {
 		buffer.Consume(n);
 	}

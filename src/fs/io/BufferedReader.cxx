@@ -53,6 +53,19 @@ BufferedReader::Fill(bool need_more)
 	return true;
 }
 
+void *
+BufferedReader::ReadFull(size_t size)
+{
+	while (true) {
+		auto r = Read();
+		if (r.size >= size)
+			return r.data;
+
+		if (!Fill(true))
+			throw std::runtime_error("Premature end of file");
+	}
+}
+
 size_t
 BufferedReader::ReadFromBuffer(WritableBuffer<void> dest)
 {
