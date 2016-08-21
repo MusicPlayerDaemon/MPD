@@ -703,7 +703,6 @@ PulseOutput::Open(AudioFormat &audio_format, Error &error)
 		break;
 	}
 
-	ss.format = PA_SAMPLE_S16NE;
 	ss.rate = audio_format.sample_rate;
 	ss.channels = audio_format.channels;
 
