@@ -33,7 +33,7 @@
  * other compiler) or newer?
  */
 #define GCC_CHECK_VERSION(major, minor) \
-	(defined(__GNUC__) && !defined(__clang__) && \
+	(!defined(__clang__) && \
 	 GCC_VERSION >= GCC_MAKE_VERSION(major, minor, 0))
 
 /**
