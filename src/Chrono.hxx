@@ -26,7 +26,7 @@
 #include <utility>
 #include <cstdint>
 
-#if defined(__GNUC__) && !GCC_CHECK_VERSION(4,7) && !defined(__clang__)
+#if GCC_OLDER_THAN(4,7)
 /* std::chrono::duration operators are "constexpr" since gcc 4.7 */
 #define chrono_constexpr gcc_pure
 #else
