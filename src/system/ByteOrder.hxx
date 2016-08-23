@@ -42,7 +42,7 @@
 /* well-known big-endian */
 #  define IS_LITTLE_ENDIAN false
 #  define IS_BIG_ENDIAN true
-#elif defined(__APPLE__)
+#elif defined(__APPLE__) || defined(__NetBSD__)
 /* compile-time check for MacOS */
 #  include <machine/endian.h>
 #  if BYTE_ORDER == LITTLE_ENDIAN
