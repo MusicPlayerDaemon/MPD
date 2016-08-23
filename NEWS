@@ -1,4 +1,4 @@
-ver 0.19.19 (not yet released)
+ver 0.19.19 (2016/08/23)
 * decoder
   - ffmpeg: bug fix for FFmpeg 3.1 support
   - wildmidi: support libWildMidi 0.4
