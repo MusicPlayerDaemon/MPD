@@ -548,7 +548,9 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		avcodec_free_context(&codec_context);
 	};
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 25, 0) /* FFmpeg 3.1 */
 	avcodec_parameters_to_context(codec_context, av_stream.codecpar);
+#endif
 #endif
 
 	const SampleFormat sample_format =
