@@ -547,6 +547,8 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 	AtScopeExit(&codec_context) {
 		avcodec_free_context(&codec_context);
 	};
+
+	avcodec_parameters_to_context(codec_context, av_stream.codecpar);
 #endif
 
 	const SampleFormat sample_format =

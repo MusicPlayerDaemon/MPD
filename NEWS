@@ -1,5 +1,6 @@
 ver 0.19.19 (not yet released)
 * decoder
+  - ffmpeg: bug fix for FFmpeg 3.1 support
   - wildmidi: support libWildMidi 0.4
 * output
   - pulse: support 32 bit, 24 bit and floating point playback
