@@ -89,6 +89,10 @@ public:
 	gcc_pure
 	FileInfo GetFileInfo() const;
 
+	void Rewind() {
+		Seek(0);
+	}
+
 	void Seek(off_t offset);
 	void Skip(off_t offset);
 
