@@ -44,6 +44,16 @@ public:
 		:reader(_reader), buffer(4096), eof(false),
 		 line_number(0) {}
 
+	/**
+	 * Reset the internal state.  Should be called after rewinding
+	 * the underlying #Reader.
+	 */
+	void Reset() {
+		buffer.Clear();
+		eof = false;
+		line_number = 0;
+	}
+
 	bool Fill(bool need_more);
 
 	gcc_pure
