@@ -302,19 +302,7 @@ AudioOutput::ReopenFilter()
 			    "Failed to open filter for \"%s\" [%s]",
 			    name, plugin.name);
 
-		/* this is a little code duplication from Close(),
-		   but we cannot call this function because we must
-		   not call filter_close(filter) again */
-
-		pipe = nullptr;
-
-		current_chunk = nullptr;
-		open = false;
-		fail_timer.Update();
-
-		mutex.unlock();
-		ao_plugin_close(this);
-		mutex.lock();
+		Close(false);
 
 		return;
 	}
