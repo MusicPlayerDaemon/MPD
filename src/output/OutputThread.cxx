@@ -132,8 +132,13 @@ AudioOutput::CloseFilter()
 		software_mixer_set_filter(*mixer, nullptr);
 
 	delete replay_gain_filter_instance;
+	replay_gain_filter_instance = nullptr;
+
 	delete other_replay_gain_filter_instance;
+	other_replay_gain_filter_instance = nullptr;
+
 	delete filter_instance;
+	filter_instance = nullptr;
 }
 
 inline void
