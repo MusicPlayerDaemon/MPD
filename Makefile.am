@@ -444,7 +444,7 @@ libutil_a_SOURCES = \
 # Multi-threading library
 
 libthread_a_SOURCES = \
-	src/thread/Util.hxx \
+	src/thread/Util.cxx src/thread/Util.hxx \
 	src/thread/Name.hxx \
 	src/thread/Slack.hxx \
 	src/thread/Mutex.hxx \
