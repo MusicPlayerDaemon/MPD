@@ -120,6 +120,18 @@ LogError(const std::exception &e, const char *msg)
 }
 
 void
+FormatError(const std::exception &e, const char *fmt, ...)
+{
+	char msg[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, ap);
+	va_end(ap);
+
+	LogError(e, msg);
+}
+
+void
 LogError(const Error &error)
 {
 	Log(error.GetDomain(), LogLevel::ERROR, error.GetMessage());

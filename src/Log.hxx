@@ -91,6 +91,10 @@ LogError(const std::exception &e, const char *msg);
 
 gcc_printf(2,3)
 void
+FormatError(const std::exception &e, const char *fmt, ...);
+
+gcc_printf(2,3)
+void
 FormatError(const Domain &domain, const char *fmt, ...);
 
 void
