@@ -21,7 +21,6 @@
 #define MPD_TAG_ITEM_HXX
 
 #include "TagType.h"
-#include "Compiler.h"
 
 /**
  * One tag value.  It is a mapping of #TagType to am arbitrary string
@@ -40,6 +39,8 @@ struct TagItem {
 	TagItem() = default;
 	TagItem(const TagItem &other) = delete;
 	TagItem &operator=(const TagItem &other) = delete;
-} gcc_packed;
+};
+
+static_assert(alignof(TagItem) == 1, "Unexpected alignment");
 
 #endif
