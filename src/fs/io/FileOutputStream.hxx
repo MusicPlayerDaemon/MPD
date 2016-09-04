@@ -65,6 +65,13 @@ public:
 		CREATE,
 
 		/**
+		 * Like #CREATE, but no attempt is made to hide file
+		 * contents during the transaction (e.g. via O_TMPFILE
+		 * or a hidden temporary file).
+		 */
+		CREATE_VISIBLE,
+
+		/**
 		 * Append to a file that already exists.  If it does
 		 * not, an exception is thrown.
 		 */
@@ -103,7 +110,7 @@ public:
 	void Cancel();
 
 private:
-	void OpenCreate();
+	void OpenCreate(bool visible);
 	void OpenAppend(bool create);
 
 	bool Close() {
