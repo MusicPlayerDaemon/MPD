@@ -49,7 +49,7 @@
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/Silence.hxx"
 #include "util/StringUtil.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/WritableBuffer.hxx"
 
@@ -130,16 +130,14 @@ public:
 	 * and input channel a gets copied to output channel b, etc.
 	 * @param block the configuration block to read
 	 * @param filter a route_filter whose min_channels and sources[] to set
-	 * @return true on success, false on error
 	 */
-	bool Configure(const ConfigBlock &block, Error &error);
+	PreparedRouteFilter(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedFilter */
 	Filter *Open(AudioFormat &af) override;
 };
 
-bool
-PreparedRouteFilter::Configure(const ConfigBlock &block, Error &error)
+PreparedRouteFilter::PreparedRouteFilter(const ConfigBlock &block)
 {
 	/* TODO:
 	 * With a more clever way of marking "don't copy to output N",
@@ -160,18 +158,12 @@ PreparedRouteFilter::Configure(const ConfigBlock &block, Error &error)
 		char *endptr;
 		const unsigned source = strtoul(routes, &endptr, 10);
 		endptr = StripLeft(endptr);
-		if (endptr == routes || *endptr != '>') {
-			error.Set(config_domain,
-				  "Malformed 'routes' specification");
-			return false;
-		}
+		if (endptr == routes || *endptr != '>')
+			throw std::runtime_error("Malformed 'routes' specification");
 
-		if (source >= MAX_CHANNELS) {
-			error.Format(config_domain,
-				     "Invalid source channel number: %u",
-				     source);
-			return false;
-		}
+		if (source >= MAX_CHANNELS)
+			throw FormatRuntimeError("Invalid source channel number: %u",
+						 source);
 
 		if (source >= min_input_channels)
 			min_input_channels = source + 1;
@@ -180,18 +172,12 @@ PreparedRouteFilter::Configure(const ConfigBlock &block, Error &error)
 
 		unsigned dest = strtoul(routes, &endptr, 10);
 		endptr = StripLeft(endptr);
-		if (endptr == routes) {
-			error.Set(config_domain,
-				  "Malformed 'routes' specification");
-			return false;
-		}
+		if (endptr == routes)
+			throw std::runtime_error("Malformed 'routes' specification");
 
-		if (dest >= MAX_CHANNELS) {
-			error.Format(config_domain,
-				     "Invalid destination channel number: %u",
-				     dest);
-			return false;
-		}
+		if (dest >= MAX_CHANNELS)
+			throw FormatRuntimeError("Invalid destination channel number: %u",
+						 dest);
 
 		if (dest >= min_output_channels)
 			min_output_channels = dest + 1;
@@ -203,28 +189,17 @@ PreparedRouteFilter::Configure(const ConfigBlock &block, Error &error)
 		if (*routes == 0)
 			break;
 
-		if (*routes != ',') {
-			error.Set(config_domain,
-				  "Malformed 'routes' specification");
-			return false;
-		}
+		if (*routes != ',')
+			throw std::runtime_error("Malformed 'routes' specification");
 
 		++routes;
 	}
-
-	return true;
 }
 
 static PreparedFilter *
-route_filter_init(const ConfigBlock &block, Error &error)
+route_filter_init(const ConfigBlock &block)
 {
-	auto *filter = new PreparedRouteFilter();
-	if (!filter->Configure(block, error)) {
-		delete filter;
-		return nullptr;
-	}
-
-	return filter;
+	return new PreparedRouteFilter(block);
 }
 
 RouteFilter::RouteFilter(const AudioFormat &audio_format,

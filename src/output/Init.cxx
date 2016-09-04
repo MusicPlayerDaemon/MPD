@@ -39,6 +39,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
@@ -105,8 +107,7 @@ audio_output_mixer_type(const ConfigBlock &block)
 static PreparedFilter *
 CreateVolumeFilter()
 {
-	return filter_new(&volume_filter_plugin, ConfigBlock(),
-			  IgnoreError());
+	return filter_new(&volume_filter_plugin, ConfigBlock());
 }
 
 static Mixer *
@@ -190,25 +191,24 @@ AudioOutput::Configure(const ConfigBlock &block, Error &error)
 
 	if (config_get_bool(ConfigOption::VOLUME_NORMALIZATION, false)) {
 		auto *normalize_filter =
-			filter_new(&normalize_filter_plugin, ConfigBlock(),
-				   IgnoreError());
+			filter_new(&normalize_filter_plugin, ConfigBlock());
 		assert(normalize_filter != nullptr);
 
 		filter_chain_append(*prepared_filter, "normalize",
 				    autoconvert_filter_new(normalize_filter));
 	}
 
-	Error filter_error;
-	filter_chain_parse(*prepared_filter,
-			   block.GetBlockValue(AUDIO_FILTERS, ""),
-			   filter_error);
-
-	// It's not really fatal - Part of the filter chain has been set up already
-	// and even an empty one will work (if only with unexpected behaviour)
-	if (filter_error.IsDefined())
-		FormatError(filter_error,
+	try {
+		filter_chain_parse(*prepared_filter,
+				   block.GetBlockValue(AUDIO_FILTERS, ""));
+	} catch (const std::runtime_error &e) {
+		/* It's not really fatal - Part of the filter chain
+		   has been set up already and even an empty one will
+		   work (if only with unexpected behaviour) */
+		FormatError(e,
 			    "Failed to initialize filter chain for '%s'",
 			    name);
+	}
 
 	/* done */
 
@@ -229,14 +229,13 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
 		ao.prepared_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-							    block, IgnoreError());
+							    block);
 		assert(ao.prepared_replay_gain_filter != nullptr);
 
 		ao.replay_gain_serial = 0;
 
 		ao.prepared_other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-								  block,
-								  IgnoreError());
+								  block);
 		assert(ao.prepared_other_replay_gain_filter != nullptr);
 
 		ao.other_replay_gain_serial = 0;
@@ -276,8 +275,7 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 
 	/* the "convert" filter must be the last one in the chain */
 
-	auto *f = filter_new(&convert_filter_plugin, ConfigBlock(),
-			     IgnoreError());
+	auto *f = filter_new(&convert_filter_plugin, ConfigBlock());
 	assert(f != nullptr);
 
 	filter_chain_append(*ao.prepared_filter, "convert",

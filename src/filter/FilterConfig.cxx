@@ -26,39 +26,31 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigError.hxx"
 #include "config/Block.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <algorithm>
 
 #include <string.h>
 
-static bool
-filter_chain_append_new(PreparedFilter &chain, const char *template_name, Error &error)
+static void
+filter_chain_append_new(PreparedFilter &chain, const char *template_name)
 {
 	const auto *cfg = config_find_block(ConfigBlockOption::AUDIO_FILTER,
 					    "name", template_name);
-	if (cfg == nullptr) {
-		error.Format(config_domain,
-			     "filter template not found: %s",
-			     template_name);
-		return false;
-	}
+	if (cfg == nullptr)
+		throw FormatRuntimeError("Filter template not found: %s",
+					 template_name);
 
 	// Instantiate one of those filter plugins with the template name as a hint
-	PreparedFilter *f = filter_configured_new(*cfg, error);
-	if (f == nullptr)
-		// The error has already been set, just stop.
-		return false;
+	PreparedFilter *f = filter_configured_new(*cfg);
 
 	const char *plugin_name = cfg->GetBlockValue("plugin",
 						     "unknown");
 	filter_chain_append(chain, plugin_name, f);
-
-	return true;
 }
 
-bool
-filter_chain_parse(PreparedFilter &chain, const char *spec, Error &error)
+void
+filter_chain_parse(PreparedFilter &chain, const char *spec)
 {
 	const char *const end = spec + strlen(spec);
 
@@ -66,9 +58,7 @@ filter_chain_parse(PreparedFilter &chain, const char *spec, Error &error)
 		const char *comma = std::find(spec, end, ',');
 		if (comma > spec) {
 			const std::string name(spec, comma);
-			if (!filter_chain_append_new(chain, name.c_str(),
-						     error))
-				return false;
+			filter_chain_append_new(chain, name.c_str());
 		}
 
 		if (comma == end)
@@ -76,6 +66,4 @@ filter_chain_parse(PreparedFilter &chain, const char *spec, Error &error)
 
 		spec = comma + 1;
 	}
-
-	return true;
 }

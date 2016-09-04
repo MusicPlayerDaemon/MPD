@@ -168,8 +168,7 @@ ReplayGainFilter::Update()
 }
 
 static PreparedFilter *
-replay_gain_filter_init(gcc_unused const ConfigBlock &block,
-			gcc_unused Error &error)
+replay_gain_filter_init(gcc_unused const ConfigBlock &block)
 {
 	return new PreparedReplayGainFilter();
 }

@@ -28,7 +28,6 @@
 
 struct ConfigBlock;
 class PreparedFilter;
-class Error;
 
 struct filter_plugin {
 	const char *name;
@@ -36,32 +35,30 @@ struct filter_plugin {
 	/**
          * Allocates and configures a filter.
 	 */
-	PreparedFilter *(*init)(const ConfigBlock &block, Error &error);
+	PreparedFilter *(*init)(const ConfigBlock &block);
 };
 
 /**
  * Creates a new instance of the specified filter plugin.
  *
+ * Throws std::runtime_error on error.
+ *
  * @param plugin the filter plugin
  * @param block configuration section
- * @param error location to store the error occurring, or nullptr to
- * ignore errors.
- * @return a new filter object, or nullptr on error
  */
 PreparedFilter *
 filter_new(const struct filter_plugin *plugin,
-	   const ConfigBlock &block, Error &error);
+	   const ConfigBlock &block);
 
 /**
  * Creates a new filter, loads configuration and the plugin name from
  * the specified configuration section.
  *
+ * Throws std::runtime_error on error.
+ *
  * @param block the configuration section
- * @param error location to store the error occurring, or nullptr to
- * ignore errors.
- * @return a new filter object, or nullptr on error
  */
 PreparedFilter *
-filter_configured_new(const ConfigBlock &block, Error &error);
+filter_configured_new(const ConfigBlock &block);
 
 #endif

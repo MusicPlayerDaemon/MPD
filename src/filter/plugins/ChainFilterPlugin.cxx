@@ -93,8 +93,7 @@ public:
 };
 
 static PreparedFilter *
-chain_filter_init(gcc_unused const ConfigBlock &block,
-		  gcc_unused Error &error)
+chain_filter_init(gcc_unused const ConfigBlock &block)
 {
 	return new PreparedChainFilter();
 }

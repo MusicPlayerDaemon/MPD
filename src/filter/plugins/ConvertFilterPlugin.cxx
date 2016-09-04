@@ -64,8 +64,7 @@ public:
 };
 
 static PreparedFilter *
-convert_filter_init(gcc_unused const ConfigBlock &block,
-		    gcc_unused Error &error)
+convert_filter_init(gcc_unused const ConfigBlock &block)
 {
 	return new PreparedConvertFilter();
 }

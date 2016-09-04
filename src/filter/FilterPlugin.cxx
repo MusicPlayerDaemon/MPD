@@ -22,37 +22,29 @@
 #include "FilterRegistry.hxx"
 #include "config/Block.hxx"
 #include "config/ConfigError.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 
 PreparedFilter *
-filter_new(const struct filter_plugin *plugin,
-	   const ConfigBlock &block, Error &error)
+filter_new(const struct filter_plugin *plugin, const ConfigBlock &block)
 {
 	assert(plugin != nullptr);
-	assert(!error.IsDefined());
 
-	return plugin->init(block, error);
+	return plugin->init(block);
 }
 
 PreparedFilter *
-filter_configured_new(const ConfigBlock &block, Error &error)
+filter_configured_new(const ConfigBlock &block)
 {
-	assert(!error.IsDefined());
-
 	const char *plugin_name = block.GetBlockValue("plugin");
-	if (plugin_name == nullptr) {
-		error.Set(config_domain, "No filter plugin specified");
-		return nullptr;
-	}
+	if (plugin_name == nullptr)
+		throw std::runtime_error("No filter plugin specified");
 
 	const filter_plugin *plugin = filter_plugin_by_name(plugin_name);
-	if (plugin == nullptr) {
-		error.Format(config_domain,
-			     "No such filter plugin: %s", plugin_name);
-		return nullptr;
-	}
+	if (plugin == nullptr)
+		throw FormatRuntimeError("No such filter plugin: %s",
+					 plugin_name);
 
-	return filter_new(plugin, block, error);
+	return filter_new(plugin, block);
 }

@@ -61,8 +61,7 @@ public:
 };
 
 static PreparedFilter *
-volume_filter_init(gcc_unused const ConfigBlock &block,
-		   gcc_unused Error &error)
+volume_filter_init(gcc_unused const ConfigBlock &block)
 {
 	return new PreparedVolumeFilter();
 }

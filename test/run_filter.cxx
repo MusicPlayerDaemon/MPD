@@ -58,14 +58,7 @@ load_filter(const char *name)
 		return nullptr;
 	}
 
-	Error error;
-	auto *filter = filter_configured_new(*param, error);
-	if (filter == NULL) {
-		LogError(error, "Failed to load filter");
-		return NULL;
-	}
-
-	return filter;
+	return filter_configured_new(*param);
 }
 
 int main(int argc, char **argv)
