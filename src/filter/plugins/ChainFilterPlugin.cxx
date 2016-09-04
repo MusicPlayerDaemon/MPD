@@ -23,9 +23,8 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <memory>
 #include <list>
@@ -62,8 +61,7 @@ public:
 	}
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-					    Error &error) override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedChainFilter final : public PreparedFilter {
@@ -80,8 +78,7 @@ class PreparedChainFilter final : public PreparedFilter {
 		Child(const Child &) = delete;
 		Child &operator=(const Child &) = delete;
 
-		Filter *Open(const AudioFormat &prev_audio_format,
-			     Error &error);
+		Filter *Open(const AudioFormat &prev_audio_format);
 	};
 
 	std::list<Child> children;
@@ -92,10 +89,8 @@ public:
 	}
 
 	/* virtual methods from class PreparedFilter */
-	Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
-
-static constexpr Domain chain_filter_domain("chain_filter");
 
 static PreparedFilter *
 chain_filter_init(gcc_unused const ConfigBlock &block,
@@ -105,39 +100,31 @@ chain_filter_init(gcc_unused const ConfigBlock &block,
 }
 
 Filter *
-PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format,
-				 Error &error)
+PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format)
 {
 	AudioFormat conv_audio_format = prev_audio_format;
-	Filter *new_filter = filter->Open(conv_audio_format, error);
-	if (new_filter == nullptr)
-		return nullptr;
+	Filter *new_filter = filter->Open(conv_audio_format);
 
 	if (conv_audio_format != prev_audio_format) {
 		delete new_filter;
 
 		struct audio_format_string s;
-		error.Format(chain_filter_domain,
-			     "Audio format not supported by filter '%s': %s",
-			     name,
-			     audio_format_to_string(prev_audio_format, &s));
-		return nullptr;
+		throw FormatRuntimeError("Audio format not supported by filter '%s': %s",
+					 name,
+					 audio_format_to_string(prev_audio_format, &s));
 	}
 
 	return new_filter;
 }
 
 Filter *
-PreparedChainFilter::Open(AudioFormat &in_audio_format, Error &error)
+PreparedChainFilter::Open(AudioFormat &in_audio_format)
 {
 	std::unique_ptr<ChainFilter> chain(new ChainFilter(in_audio_format));
 
 	for (auto &child : children) {
 		AudioFormat audio_format = chain->GetOutAudioFormat();
-		auto *filter = child.Open(audio_format, error);
-		if (filter == nullptr)
-			return nullptr;
-
+		auto *filter = child.Open(audio_format);
 		chain->Append(child.name, filter);
 	}
 
@@ -145,14 +132,12 @@ PreparedChainFilter::Open(AudioFormat &in_audio_format, Error &error)
 }
 
 ConstBuffer<void>
-ChainFilter::FilterPCM(ConstBuffer<void> src, Error &error)
+ChainFilter::FilterPCM(ConstBuffer<void> src)
 {
 	for (auto &child : children) {
 		/* feed the output of the previous filter as input
 		   into the current one */
-		src = child.filter->FilterPCM(src, error);
-		if (src.IsNull())
-			return nullptr;
+		src = child.filter->FilterPCM(src);
 	}
 
 	/* return the output of the last filter */

@@ -47,8 +47,7 @@ public:
 			  std::unique_ptr<Filter> &&_convert)
 		:filter(std::move(_filter)), convert(std::move(_convert)) {}
 
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-					    Error &error) override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedAutoConvertFilter final : public PreparedFilter {
@@ -63,20 +62,18 @@ public:
 		delete filter;
 	}
 
-	virtual Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
 
 Filter *
-PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
+PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 {
 	assert(in_audio_format.IsValid());
 
 	/* open the "real" filter */
 
 	AudioFormat child_audio_format = in_audio_format;
-	std::unique_ptr<Filter> new_filter(filter->Open(child_audio_format, error));
-	if (!new_filter)
-		return nullptr;
+	std::unique_ptr<Filter> new_filter(filter->Open(child_audio_format));
 
 	/* need to convert? */
 
@@ -85,10 +82,7 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
 		/* yes - create a convert_filter */
 
 		convert.reset(convert_filter_new(in_audio_format,
-						 child_audio_format,
-						 error));
-		if (!convert)
-			return nullptr;
+						 child_audio_format));
 	}
 
 	return new AutoConvertFilter(std::move(new_filter),
@@ -96,15 +90,15 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
 }
 
 ConstBuffer<void>
-AutoConvertFilter::FilterPCM(ConstBuffer<void> src, Error &error)
+AutoConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
 	if (convert != nullptr) {
-		src = convert->FilterPCM(src, error);
+		src = convert->FilterPCM(src);
 		if (src.IsNull())
 			return nullptr;
 	}
 
-	return filter->FilterPCM(src, error);
+	return filter->FilterPCM(src);
 }
 
 PreparedFilter *

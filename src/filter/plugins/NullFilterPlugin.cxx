@@ -36,16 +36,14 @@ class NullFilter final : public Filter {
 public:
 	explicit NullFilter(const AudioFormat &af):Filter(af) {}
 
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-					    gcc_unused Error &error) override {
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
 		return src;
 	}
 };
 
 class PreparedNullFilter final : public PreparedFilter {
 public:
-	virtual Filter *Open(AudioFormat &af,
-			     gcc_unused Error &error) override {
+	virtual Filter *Open(AudioFormat &af) override {
 		return new NullFilter(af);
 	}
 };

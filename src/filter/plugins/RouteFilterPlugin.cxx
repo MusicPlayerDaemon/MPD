@@ -96,8 +96,7 @@ public:
 		    const std::array<int8_t, MAX_CHANNELS> &_sources);
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-				    Error &error) override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedRouteFilter final : public PreparedFilter {
@@ -136,7 +135,7 @@ public:
 	bool Configure(const ConfigBlock &block, Error &error);
 
 	/* virtual methods from class PreparedFilter */
-	Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
 
 bool
@@ -243,13 +242,13 @@ RouteFilter::RouteFilter(const AudioFormat &audio_format,
 }
 
 Filter *
-PreparedRouteFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
+PreparedRouteFilter::Open(AudioFormat &audio_format)
 {
 	return new RouteFilter(audio_format, min_output_channels, sources);
 }
 
 ConstBuffer<void>
-RouteFilter::FilterPCM(ConstBuffer<void> src, gcc_unused Error &error)
+RouteFilter::FilterPCM(ConstBuffer<void> src)
 {
 	size_t number_of_frames = src.size / input_frame_size;
 

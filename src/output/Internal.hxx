@@ -404,7 +404,10 @@ private:
 	 */
 	void CloseOutput(bool drain);
 
-	AudioFormat OpenFilter(AudioFormat &format, Error &error_r);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	AudioFormat OpenFilter(AudioFormat &format);
 
 	/**
 	 * Mutex must not be locked.

@@ -32,6 +32,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 
 static constexpr Domain replay_gain_domain("replay_gain");
@@ -73,10 +75,10 @@ public:
 		:Filter(audio_format),
 		 mixer(_mixer), base(_base), mode(REPLAY_GAIN_OFF) {
 		info.Clear();
-	}
 
-	bool Open(Error &error) {
-		return pv.Open(out_audio_format.format, error);
+		Error error;
+		if (!pv.Open(out_audio_format.format, error))
+			throw std::runtime_error(error.GetMessage());
 	}
 
 	void SetInfo(const ReplayGainInfo *_info) {
@@ -108,8 +110,7 @@ public:
 	void Update();
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-				    Error &error) override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedReplayGainFilter final : public PreparedFilter {
@@ -134,7 +135,7 @@ public:
 	}
 
 	/* virtual methods from class Filter */
-	Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
 
 void
@@ -174,19 +175,13 @@ replay_gain_filter_init(gcc_unused const ConfigBlock &block,
 }
 
 Filter *
-PreparedReplayGainFilter::Open(AudioFormat &af, gcc_unused Error &error)
+PreparedReplayGainFilter::Open(AudioFormat &af)
 {
-	auto *filter = new ReplayGainFilter(af, mixer, base);
-	if (!filter->Open(error)) {
-		delete filter;
-		return nullptr;
-	}
-
-	return filter;
+	return new ReplayGainFilter(af, mixer, base);
 }
 
 ConstBuffer<void>
-ReplayGainFilter::FilterPCM(ConstBuffer<void> src, gcc_unused Error &error)
+ReplayGainFilter::FilterPCM(ConstBuffer<void> src)
 {
 	return mixer != nullptr
 		? src

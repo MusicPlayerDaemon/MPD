@@ -105,13 +105,7 @@ try {
 
 	/* open the filter */
 
-	Error error;
-	std::unique_ptr<Filter> filter(prepared_filter->Open(audio_format,
-							     error));
-	if (!filter) {
-		LogError(error, "Failed to open filter");
-		return EXIT_FAILURE;
-	}
+	std::unique_ptr<Filter> filter(prepared_filter->Open(audio_format));
 
 	const AudioFormat out_audio_format = filter->GetOutAudioFormat();
 
@@ -127,12 +121,7 @@ try {
 		if (nbytes <= 0)
 			break;
 
-		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes},
-					      error);
-		if (dest.IsNull()) {
-			LogError(error, "filter/Filter failed");
-			return EXIT_FAILURE;
-		}
+		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes});
 
 		nbytes = write(1, dest.data, dest.size);
 		if (nbytes < 0) {
@@ -147,7 +136,7 @@ try {
 	config_global_finish();
 
 	return EXIT_SUCCESS;
- } catch (const std::exception &e) {
+} catch (const std::exception &e) {
 	LogError(e);
 	return EXIT_FAILURE;
- }
+}

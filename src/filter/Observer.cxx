@@ -51,7 +51,7 @@ public:
 
 	Filter *Get();
 
-	Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
 
 class FilterObserver::Proxy final : public Filter {
@@ -73,9 +73,8 @@ public:
 		return filter;
 	}
 
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-				    Error &error) override {
-		return filter->FilterPCM(src, error);
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override {
+		return filter->FilterPCM(src);
 	}
 };
 
@@ -88,14 +87,11 @@ FilterObserver::PreparedProxy::Get()
 }
 
 Filter *
-FilterObserver::PreparedProxy::Open(AudioFormat &af, Error &error)
+FilterObserver::PreparedProxy::Open(AudioFormat &af)
 {
 	assert(child == nullptr);
 
-	Filter *f = prepared_filter->Open(af, error);
-	if (f == nullptr)
-		return f;
-
+	Filter *f = prepared_filter->Open(af);
 	return child = new Proxy(*this, f);
 }
 

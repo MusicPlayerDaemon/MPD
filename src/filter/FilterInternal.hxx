@@ -54,13 +54,15 @@ public:
 	/**
 	 * Filters a block of PCM data.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param src the input buffer
 	 * @param error location to store the error occurring
 	 * @return the destination buffer on success (will be
 	 * invalidated by deleting this object or the next FilterPCM()
-	 * call), nullptr on error
+	 * call)
 	 */
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src, Error &error) = 0;
+	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) = 0;
 };
 
 class PreparedFilter {
@@ -70,12 +72,13 @@ public:
 	/**
 	 * Opens the filter, preparing it for FilterPCM().
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param af the audio format of incoming data; the
 	 * plugin may modify the object to enforce another input
 	 * format
-	 * @param error location to store the error occurring
 	 */
-	virtual Filter *Open(AudioFormat &af, Error &error) = 0;
+	virtual Filter *Open(AudioFormat &af) = 0;
 };
 
 #endif
