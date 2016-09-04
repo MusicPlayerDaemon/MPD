@@ -192,7 +192,7 @@ struct AudioOutput {
 	 * instance of chain_filter_plugin.
 	 */
 	PreparedFilter *prepared_filter = nullptr;
-	Filter *filter_instance;
+	Filter *filter_instance = nullptr;
 
 	/**
 	 * The #VolumeFilter instance of this audio output.  It is
@@ -205,7 +205,7 @@ struct AudioOutput {
 	 * output.
 	 */
 	PreparedFilter *prepared_replay_gain_filter = nullptr;
-	Filter *replay_gain_filter_instance;
+	Filter *replay_gain_filter_instance = nullptr;
 
 	/**
 	 * The serial number of the last replay gain info.  0 means no
@@ -219,7 +219,7 @@ struct AudioOutput {
 	 * cross-fading.
 	 */
 	PreparedFilter *prepared_other_replay_gain_filter = nullptr;
-	Filter *other_replay_gain_filter_instance;
+	Filter *other_replay_gain_filter_instance = nullptr;
 
 	/**
 	 * The serial number of the last replay gain info by the
