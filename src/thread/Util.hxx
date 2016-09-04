@@ -30,8 +30,6 @@
 #ifndef THREAD_UTIL_HXX
 #define THREAD_UTIL_HXX
 
-class Error;
-
 /**
  * Lower the current thread's priority to "idle" (very low).
  */
@@ -40,10 +38,10 @@ SetThreadIdlePriority();
 
 /**
  * Raise the current thread's priority to "real-time" (very high).
- * @param[out]	error	Receives error information on failure
- * @return	true on success (always true on non-linux systems)
+ *
+ * Throws std::system_error on error.
  */
-bool
-SetThreadRealtime(Error &error);
+void
+SetThreadRealtime();
 
 #endif

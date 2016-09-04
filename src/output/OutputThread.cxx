@@ -40,6 +40,8 @@
 #include "Log.hxx"
 #include "Compiler.h"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
@@ -597,12 +599,13 @@ AudioOutput::Task()
 {
 	FormatThreadName("output:%s", name);
 
-	Error error;
-	if(!SetThreadRealtime(error)) {
-		LogError(error);
-		LogWarning(output_domain,
-			"OutputThread could not get realtime scheduling, continuing anyway");
+	try {
+		SetThreadRealtime();
+	} catch (const std::runtime_error &e) {
+		LogError(e,
+			 "OutputThread could not get realtime scheduling, continuing anyway");
 	}
+
 	SetThreadTimerSlackUS(100);
 
 	mutex.lock();

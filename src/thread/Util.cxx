@@ -27,9 +27,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include "Util.hxx"
-#include "util/Error.hxx"
+#include "system/Error.hxx"
 
 #ifdef __linux__
 #include <sched.h>
@@ -77,8 +76,8 @@ SetThreadIdlePriority()
 #endif
 };
 
-bool
-SetThreadRealtime(Error& error)
+void
+SetThreadRealtime()
 {
 #ifdef __linux__
 	struct sched_param sched_param;
@@ -89,13 +88,7 @@ SetThreadRealtime(Error& error)
 	policy |= SCHED_RESET_ON_FORK;
 #endif
 
-	if(sched_setscheduler(0, policy, &sched_param)==0) {
-		return true;
-	} else {
-		error.FormatErrno("sched_setscheduler failed");
-		return false;
-	}
-#else
-	return true; // on non-linux systems, we pretend it worked
+	if (sched_setscheduler(0, policy, &sched_param) < 0)
+		throw MakeErrno("sched_setscheduler failed");
 #endif	// __linux__
 };
