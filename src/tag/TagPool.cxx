@@ -50,7 +50,7 @@ struct TagPoolSlot {
 
 	static TagPoolSlot *Create(TagPoolSlot *_next, TagType type,
 				   const char *value, size_t length);
-} gcc_packed;
+};
 
 TagPoolSlot *
 TagPoolSlot::Create(TagPoolSlot *_next, TagType type,
