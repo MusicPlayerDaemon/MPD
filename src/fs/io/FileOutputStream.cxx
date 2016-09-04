@@ -30,7 +30,11 @@ FileOutputStream::FileOutputStream(Path _path, Mode _mode)
 		break;
 
 	case Mode::APPEND_EXISTING:
-		OpenAppendExisting();
+		OpenAppend(false);
+		break;
+
+	case Mode::APPEND_OR_CREATE:
+		OpenAppend(true);
 		break;
 	}
 }
@@ -50,10 +54,10 @@ FileOutputStream::OpenCreate()
 }
 
 inline void
-FileOutputStream::OpenAppendExisting()
+FileOutputStream::OpenAppend(bool create)
 {
 	handle = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
-			    OPEN_EXISTING,
+			    create ? OPEN_ALWAYS : OPEN_EXISTING,
 			    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
 			    nullptr);
 	if (!IsDefined())
@@ -162,9 +166,13 @@ FileOutputStream::OpenCreate()
 }
 
 inline void
-FileOutputStream::OpenAppendExisting()
+FileOutputStream::OpenAppend(bool create)
 {
-	if (!fd.Open(path.c_str(), O_WRONLY|O_APPEND))
+	int flags = O_WRONLY|O_APPEND;
+	if (create)
+		flags |= O_CREAT;
+
+	if (!fd.Open(path.c_str(), flags))
 		throw FormatErrno("Failed to append to %s",
 				  path.c_str());
 }
@@ -234,6 +242,7 @@ FileOutputStream::Cancel()
 		break;
 
 	case Mode::APPEND_EXISTING:
+	case Mode::APPEND_OR_CREATE:
 		/* can't roll this back */
 		break;
 	}

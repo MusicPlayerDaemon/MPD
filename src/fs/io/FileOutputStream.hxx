@@ -69,6 +69,12 @@ public:
 		 * not, an exception is thrown.
 		 */
 		APPEND_EXISTING,
+
+		/**
+		 * Like #APPEND_EXISTING, but create the file if it
+		 * does not exist.
+		 */
+		APPEND_OR_CREATE,
 	};
 
 private:
@@ -98,7 +104,7 @@ public:
 
 private:
 	void OpenCreate();
-	void OpenAppendExisting();
+	void OpenAppend(bool create);
 
 	bool Close() {
 		assert(IsDefined());
