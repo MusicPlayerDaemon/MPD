@@ -42,6 +42,11 @@ public:
 		:os(_os), buffer(32768) {}
 
 	void Write(const void *data, size_t size);
+
+	void Write(const char &ch) {
+		Write(&ch, sizeof(ch));
+	}
+
 	void Write(const char *p);
 
 	gcc_printf(2,3)
