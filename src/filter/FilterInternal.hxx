@@ -74,8 +74,6 @@ public:
 	 * plugin may modify the object to enforce another input
 	 * format
 	 * @param error location to store the error occurring
-	 * @return the format of outgoing data or
-	 * AudioFormat::Undefined() on error
 	 */
 	virtual Filter *Open(AudioFormat &af, Error &error) = 0;
 };
