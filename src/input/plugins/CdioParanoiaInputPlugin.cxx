@@ -27,6 +27,7 @@
 #include "../InputPlugin.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringCompare.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
@@ -105,8 +106,8 @@ static constexpr Domain cdio_domain("cdio");
 
 static bool default_reverse_endian;
 
-static InputPlugin::InitResult
-input_cdio_init(const ConfigBlock &block, Error &error)
+static void
+input_cdio_init(const ConfigBlock &block)
 {
 	const char *value = block.GetBlockValue("default_byte_order");
 	if (value != nullptr) {
@@ -114,15 +115,10 @@ input_cdio_init(const ConfigBlock &block, Error &error)
 			default_reverse_endian = IsBigEndian();
 		else if (strcmp(value, "big_endian") == 0)
 			default_reverse_endian = IsLittleEndian();
-		else {
-			error.Format(config_domain, 0,
-				     "Unrecognized 'default_byte_order' setting: %s",
-				     value);
-			return InputPlugin::InitResult::ERROR;
-		}
+		else
+			throw FormatRuntimeError("Unrecognized 'default_byte_order' setting: %s",
+						 value);
 	}
-
-	return InputPlugin::InitResult::SUCCESS;
 }
 
 struct cdio_uri {

@@ -25,8 +25,8 @@ class Error;
 /**
  * Initializes this library and all #InputStream implementations.
  */
-bool
-input_stream_global_init(Error &error);
+void
+input_stream_global_init();
 
 /**
  * Deinitializes this library and all #InputStream implementations.

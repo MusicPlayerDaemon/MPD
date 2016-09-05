@@ -72,17 +72,14 @@ input_ffmpeg_supported(void)
 	return avio_enum_protocols(&opaque, 0) != nullptr;
 }
 
-static InputPlugin::InitResult
-input_ffmpeg_init(gcc_unused const ConfigBlock &block,
-		  gcc_unused Error &error)
+static void
+input_ffmpeg_init(gcc_unused const ConfigBlock &block)
 {
 	FfmpegInit();
 
 	/* disable this plugin if there's no registered protocol */
 	if (!input_ffmpeg_supported())
 		throw PluginUnavailable("No protocol");
-
-	return InputPlugin::InitResult::SUCCESS;
 }
 
 static InputStream *

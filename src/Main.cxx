@@ -536,12 +536,7 @@ try {
 					       instance->partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
-
-	if (!input_stream_global_init(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
+	input_stream_global_init();
 	playlist_list_global_init();
 
 #ifdef ENABLE_DAEMON

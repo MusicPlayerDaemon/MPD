@@ -50,10 +50,7 @@ try {
 	const ScopeIOThread io_thread;
 
 	Error error;
-	if (!input_stream_global_init(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	input_stream_global_init();
 
 	decoder_plugin_init_all();
 

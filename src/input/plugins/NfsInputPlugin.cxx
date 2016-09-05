@@ -215,11 +215,10 @@ NfsInputStream::OnNfsFileError(Error &&error)
  *
  */
 
-static InputPlugin::InitResult
-input_nfs_init(const ConfigBlock &, Error &)
+static void
+input_nfs_init(const ConfigBlock &)
 {
 	nfs_init();
-	return InputPlugin::InitResult::SUCCESS;
 }
 
 static void

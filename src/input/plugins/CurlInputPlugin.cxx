@@ -533,8 +533,8 @@ CurlMulti::OnTimeout()
  *
  */
 
-static InputPlugin::InitResult
-input_curl_init(const ConfigBlock &block, gcc_unused Error &error)
+static void
+input_curl_init(const ConfigBlock &block)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK)
@@ -577,7 +577,6 @@ input_curl_init(const ConfigBlock &block, gcc_unused Error &error)
 	}
 
 	curl_multi = new CurlMulti(io_thread_get(), multi);
-	return InputPlugin::InitResult::SUCCESS;
 }
 
 static void

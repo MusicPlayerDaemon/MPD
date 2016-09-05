@@ -68,8 +68,8 @@ public:
  *
  */
 
-static InputPlugin::InitResult
-input_smbclient_init(gcc_unused const ConfigBlock &block, gcc_unused Error &error)
+static void
+input_smbclient_init(gcc_unused const ConfigBlock &block)
 {
 	try {
 		SmbclientInit();
@@ -81,8 +81,6 @@ input_smbclient_init(gcc_unused const ConfigBlock &block, gcc_unused Error &erro
 	// TODO: create one global SMBCCTX here?
 
 	// TODO: evaluate ConfigBlock, call smbc_setOption*()
-
-	return InputPlugin::InitResult::SUCCESS;
 }
 
 static InputStream *

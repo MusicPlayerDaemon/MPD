@@ -28,6 +28,9 @@
 #include "archive/ArchiveVisitor.hxx"
 #include "fs/Path.hxx"
 #include "util/Error.hxx"
+#include "Log.hxx"
+
+#include <stdexcept>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -42,7 +45,7 @@ class MyArchiveVisitor final : public ArchiveVisitor {
 
 int
 main(int argc, char **argv)
-{
+try {
 	Error error;
 
 	if (argc != 3) {
@@ -61,10 +64,7 @@ main(int argc, char **argv)
 
 	archive_plugin_init_all();
 
-	if (!input_stream_global_init(error)) {
-		fprintf(stderr, "%s", error.GetMessage());
-		return 2;
-	}
+	input_stream_global_init();
 
 	/* open the archive and dump it */
 
@@ -95,4 +95,7 @@ main(int argc, char **argv)
 	config_global_finish();
 
 	return result;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }
