@@ -26,6 +26,9 @@
 #include "config/ConfigOption.hxx"
 #include "config/Block.hxx"
 #include "Log.hxx"
+#include "util/RuntimeError.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 
@@ -50,9 +53,16 @@ input_stream_global_init(Error &error)
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
-		InputPlugin::InitResult result = plugin->init != nullptr
-			? plugin->init(*block, error)
-			: InputPlugin::InitResult::SUCCESS;
+		InputPlugin::InitResult result;
+
+		try {
+			result = plugin->init != nullptr
+				? plugin->init(*block, error)
+				: InputPlugin::InitResult::SUCCESS;
+		} catch (const std::runtime_error &e) {
+			std::throw_with_nested(FormatRuntimeError("Failed to initialize input plugin '%s'",
+								  plugin->name));
+		}
 
 		switch (result) {
 		case InputPlugin::InitResult::SUCCESS:
