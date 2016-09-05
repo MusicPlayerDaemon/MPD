@@ -273,8 +273,7 @@ smbclient_neighbor_create(gcc_unused EventLoop &loop,
 			  gcc_unused const ConfigBlock &block,
 			  gcc_unused Error &error)
 {
-	if (!SmbclientInit(error))
-		return nullptr;
+	SmbclientInit();
 
 	return new SmbclientNeighborExplorer(listener);
 }

@@ -20,14 +20,12 @@
 #ifndef MPD_SMBCLIENT_INIT_HXX
 #define MPD_SMBCLIENT_INIT_HXX
 
-#include "check.h"
-
-class Error;
-
 /**
  * Initialize libsmbclient.
+ *
+ * Throws std::runtime_error on error.
  */
-bool
-SmbclientInit(Error &error);
+void
+SmbclientInit();
 
 #endif

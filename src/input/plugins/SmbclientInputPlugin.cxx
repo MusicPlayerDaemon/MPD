@@ -28,6 +28,8 @@
 
 #include <libsmbclient.h>
 
+#include <stdexcept>
+
 class SmbclientInputStream final : public InputStream {
 	SMBCCTX *ctx;
 	int fd;
@@ -66,10 +68,13 @@ public:
  */
 
 static InputPlugin::InitResult
-input_smbclient_init(gcc_unused const ConfigBlock &block, Error &error)
+input_smbclient_init(gcc_unused const ConfigBlock &block, gcc_unused Error &error)
 {
-	if (!SmbclientInit(error))
+	try {
+		SmbclientInit();
+	} catch (const std::runtime_error &e) {
 		return InputPlugin::InitResult::UNAVAILABLE;
+	}
 
 	// TODO: create one global SMBCCTX here?
 
