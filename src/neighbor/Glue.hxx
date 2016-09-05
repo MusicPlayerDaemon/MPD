@@ -27,7 +27,6 @@
 #include <forward_list>
 
 struct config_param;
-class Error;
 class EventLoop;
 class NeighborExplorer;
 class NeighborListener;
@@ -60,9 +59,12 @@ public:
 		return explorers.empty();
 	}
 
-	bool Init(EventLoop &loop, NeighborListener &listener, Error &error);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Init(EventLoop &loop, NeighborListener &listener);
 
-	bool Open(Error &error);
+	void Open();
 	void Close();
 
 	/**

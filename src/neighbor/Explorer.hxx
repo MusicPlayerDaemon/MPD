@@ -22,7 +22,6 @@
 
 #include <forward_list>
 
-class Error;
 class NeighborListener;
 struct NeighborInfo;
 
@@ -54,8 +53,10 @@ public:
 
 	/**
          * Start exploring the neighborhood.
+	 *
+	 * Throws std::runtime_error on error.
 	 */
-	virtual bool Open(Error &error) = 0;
+	virtual void Open() = 0;
 
 	/**
          * Stop exploring.

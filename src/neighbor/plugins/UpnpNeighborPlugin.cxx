@@ -60,7 +60,7 @@ public:
 		:NeighborExplorer(_listener) {}
 
 	/* virtual methods from class NeighborExplorer */
-	virtual bool Open(Error &error) override;
+	void Open() override;
 	virtual void Close() override;
 	virtual List GetList() const override;
 
@@ -70,8 +70,8 @@ private:
 	virtual void LostUPnP(const ContentDirectoryService &service) override;
 };
 
-bool
-UpnpNeighborExplorer::Open(gcc_unused Error &error)
+void
+UpnpNeighborExplorer::Open()
 {
 	UpnpClient_Handle handle;
 	UpnpClientGlobalInit(handle);
@@ -85,8 +85,6 @@ UpnpNeighborExplorer::Open(gcc_unused Error &error)
 		UpnpClientGlobalFinish();
 		throw;
 	}
-
-	return true;
 }
 
 void
@@ -130,8 +128,7 @@ UpnpNeighborExplorer::LostUPnP(const ContentDirectoryService &service)
 static NeighborExplorer *
 upnp_neighbor_create(gcc_unused EventLoop &loop,
 		     NeighborListener &listener,
-		     gcc_unused const ConfigBlock &block,
-		     gcc_unused Error &error)
+		     gcc_unused const ConfigBlock &block)
 {
 	return new UpnpNeighborExplorer(listener);
 }

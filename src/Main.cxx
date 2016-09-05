@@ -461,10 +461,7 @@ int mpd_main(int argc, char *argv[])
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
-	if (!instance->neighbors->Init(io_thread_get(), *instance, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	instance->neighbors->Init(io_thread_get(), *instance);
 
 	if (instance->neighbors->IsEmpty()) {
 		delete instance->neighbors;
@@ -563,9 +560,8 @@ try {
 	io_thread_start();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	if (instance->neighbors != nullptr &&
-	    !instance->neighbors->Open(error))
-		FatalError(error);
+	if (instance->neighbors != nullptr)
+		instance->neighbors->Open();
 #endif
 
 	ZeroconfInit(instance->event_loop);
