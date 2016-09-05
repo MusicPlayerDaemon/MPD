@@ -121,11 +121,8 @@ playlist::PlayId(PlayerControl &pc, int id, Error &error)
 bool
 playlist::PlayNext(PlayerControl &pc, Error &error)
 {
-	if (!playing) {
-		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
-			  "Not playing");
-		return false;
-	}
+	if (!playing)
+		throw PlaylistError::NotPlaying();
 
 	assert(!queue.IsEmpty());
 	assert(queue.IsValidOrder(current));
@@ -173,11 +170,8 @@ playlist::PlayNext(PlayerControl &pc, Error &error)
 bool
 playlist::PlayPrevious(PlayerControl &pc, Error &error)
 {
-	if (!playing) {
-		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
-			  "Not playing");
-		return false;
-	}
+	if (!playing)
+		throw PlaylistError::NotPlaying();
 
 	assert(!queue.IsEmpty());
 
