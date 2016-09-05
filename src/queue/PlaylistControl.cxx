@@ -124,7 +124,7 @@ playlist::PlayNext(PlayerControl &pc, Error &error)
 	if (!playing) {
 		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
 			  "Not playing");
-		return true;
+		return false;
 	}
 
 	assert(!queue.IsEmpty());
@@ -176,7 +176,7 @@ playlist::PlayPrevious(PlayerControl &pc, Error &error)
 	if (!playing) {
 		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
 			  "Not playing");
-		return true;
+		return false;
 	}
 
 	assert(!queue.IsEmpty());
