@@ -27,6 +27,9 @@
 #include "config/ConfigError.hxx"
 #include "config/Block.hxx"
 #include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
+
+#include <stdexcept>
 
 NeighborGlue::Explorer::~Explorer()
 {
@@ -61,14 +64,20 @@ NeighborGlue::Init(EventLoop &loop, NeighborListener &listener, Error &error)
 {
 	for (const auto *block = config_get_block(ConfigBlockOption::NEIGHBORS);
 	     block != nullptr; block = block->next) {
-		NeighborExplorer *explorer =
-			CreateNeighborExplorer(loop, listener, *block, error);
-		if (explorer == nullptr) {
-			error.FormatPrefix("Line %i: ", block->line);
-			return false;
-		}
+		try {
+			auto *explorer =
+				CreateNeighborExplorer(loop, listener, *block,
+						       error);
+			if (explorer == nullptr) {
+				error.FormatPrefix("Line %i: ", block->line);
+				return false;
+			}
 
-		explorers.emplace_front(explorer);
+			explorers.emplace_front(explorer);
+		} catch (...) {
+			std::throw_with_nested(FormatRuntimeError("Line %i: ",
+								  block->line));
+		}
 	}
 
 	return true;
