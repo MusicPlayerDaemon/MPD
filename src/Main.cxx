@@ -520,10 +520,7 @@ try {
 	archive_plugin_init_all();
 #endif
 
-	if (!pcm_convert_global_init(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	pcm_convert_global_init();
 
 	decoder_plugin_init_all();
 

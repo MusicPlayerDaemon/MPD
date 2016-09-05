@@ -24,7 +24,6 @@
 #include "Compiler.h"
 
 struct AudioFormat;
-class Error;
 
 /**
  * This is an interface for plugins that convert PCM data to a
@@ -37,16 +36,17 @@ public:
 	/**
 	 * Opens the resampler, preparing it for Resample().
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param af the audio format of incoming data; the plugin may
 	 * modify the object to enforce another input format (however,
 	 * it may not request a different input sample rate)
 	 * @param new_sample_rate the requested output sample rate
 	 * @param error location to store the error
-	 * @return the format of outgoing data or
-	 * AudioFormat::Undefined() on error
+	 * @return the format of outgoing data
 	 */
-	virtual AudioFormat Open(AudioFormat &af, unsigned new_sample_rate,
-				 Error &error) = 0;
+	virtual AudioFormat Open(AudioFormat &af,
+				 unsigned new_sample_rate) = 0;
 
 	/**
 	 * Closes the resampler.  After that, you may call Open()
@@ -58,14 +58,11 @@ public:
 	 * Resamples a block of PCM data.
 	 *
 	 * @param src the input buffer
-	 * @param error location to store the error occurring
-	 * @return the destination buffer on success (will be
-	 * invalidated by filter_close() or filter_filter()), nullptr on
-	 * error
+	 * @return the destination buffer (will be invalidated by
+	 * filter_close() or filter_filter())
 	 */
 	gcc_pure
-	virtual ConstBuffer<void> Resample(ConstBuffer<void> src,
-					   Error &error) = 0;
+	virtual ConstBuffer<void> Resample(ConstBuffer<void> src) = 0;
 };
 
 #endif

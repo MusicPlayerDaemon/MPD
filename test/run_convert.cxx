@@ -38,8 +38,9 @@
 #include <stdio.h>
 #include <unistd.h>
 
-int main(int argc, char **argv)
-{
+int
+main(int argc, char **argv)
+try {
 	AudioFormat in_audio_format, out_audio_format;
 
 	if (argc != 3) {
@@ -68,10 +69,7 @@ int main(int argc, char **argv)
 	const size_t in_frame_size = in_audio_format.GetFrameSize();
 
 	PcmConvert state;
-	if (!state.Open(in_audio_format, out_audio_format_mask, error)) {
-		LogError(error, "Failed to open PcmConvert");
-		return EXIT_FAILURE;
-	}
+	state.Open(in_audio_format, out_audio_format_mask);
 
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 
@@ -96,12 +94,7 @@ int main(int argc, char **argv)
 
 		buffer.Consume(src.size);
 
-		auto output = state.Convert({src.data, src.size}, error);
-		if (output.IsNull()) {
-			state.Close();
-			LogError(error, "Failed to convert");
-			return EXIT_FAILURE;
-		}
+		auto output = state.Convert({src.data, src.size});
 
 		gcc_unused ssize_t ignored = write(1, output.data,
 						   output.size);
@@ -110,4 +103,7 @@ int main(int argc, char **argv)
 	state.Close();
 
 	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

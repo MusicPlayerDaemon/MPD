@@ -20,15 +20,13 @@
 #include "config.h"
 #include "FormatConverter.hxx"
 #include "PcmFormat.hxx"
-#include "Domain.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 
-bool
-PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format,
-			 Error &error)
+void
+PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format)
 {
 	assert(_src_format != SampleFormat::UNDEFINED);
 	assert(_dest_format != SampleFormat::UNDEFINED);
@@ -40,11 +38,9 @@ PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format,
 
 	case SampleFormat::S8:
 	case SampleFormat::DSD:
-		error.Format(pcm_domain,
-			     "PCM conversion from %s to %s is not implemented",
-			     sample_format_to_string(_src_format),
-			     sample_format_to_string(_dest_format));
-		return false;
+		throw FormatRuntimeError("PCM conversion from %s to %s is not implemented",
+					 sample_format_to_string(_src_format),
+					 sample_format_to_string(_dest_format));
 
 	case SampleFormat::S16:
 	case SampleFormat::S24_P32:
@@ -55,7 +51,6 @@ PcmFormatConverter::Open(SampleFormat _src_format, SampleFormat _dest_format,
 
 	src_format = _src_format;
 	dest_format = _dest_format;
-	return true;
 }
 
 void
@@ -68,7 +63,7 @@ PcmFormatConverter::Close()
 }
 
 ConstBuffer<void>
-PcmFormatConverter::Convert(ConstBuffer<void> src, gcc_unused Error &error)
+PcmFormatConverter::Convert(ConstBuffer<void> src)
 {
 	switch (dest_format) {
 	case SampleFormat::UNDEFINED:

@@ -22,11 +22,10 @@
 
 #include "check.h"
 
-class Error;
 class PcmResampler;
 
-bool
-pcm_resampler_global_init(Error &error);
+void
+pcm_resampler_global_init();
 
 /**
  * Create a #PcmResampler instance from the implementation class

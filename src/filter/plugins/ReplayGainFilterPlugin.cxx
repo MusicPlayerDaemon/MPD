@@ -76,9 +76,7 @@ public:
 		 mixer(_mixer), base(_base), mode(REPLAY_GAIN_OFF) {
 		info.Clear();
 
-		Error error;
-		if (!pv.Open(out_audio_format.format, error))
-			throw std::runtime_error(error.GetMessage());
+		pv.Open(out_audio_format.format);
 	}
 
 	void SetInfo(const ReplayGainInfo *_info) {

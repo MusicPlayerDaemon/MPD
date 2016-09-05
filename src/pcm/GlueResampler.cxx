@@ -32,33 +32,28 @@ GluePcmResampler::~GluePcmResampler()
 	delete resampler;
 }
 
-bool
-GluePcmResampler::Open(AudioFormat src_format, unsigned new_sample_rate,
-		       Error &error)
+void
+GluePcmResampler::Open(AudioFormat src_format, unsigned new_sample_rate)
 {
 	assert(src_format.IsValid());
 	assert(audio_valid_sample_rate(new_sample_rate));
 
 	AudioFormat requested_format = src_format;
 	AudioFormat dest_format = resampler->Open(requested_format,
-						  new_sample_rate,
-						  error);
-	if (!dest_format.IsValid())
-		return false;
+						  new_sample_rate);
+	assert(dest_format.IsValid());
 
 	assert(requested_format.channels == src_format.channels);
 	assert(dest_format.channels == src_format.channels);
 	assert(dest_format.sample_rate == new_sample_rate);
 
-	if (requested_format.format != src_format.format &&
-	    !format_converter.Open(src_format.format, requested_format.format,
-				   error))
-		return false;
+	if (requested_format.format != src_format.format)
+		format_converter.Open(src_format.format,
+				      requested_format.format);
 
 	src_sample_format = src_format.format;
 	requested_sample_format = requested_format.format;
 	output_sample_format = dest_format.format;
-	return true;
 }
 
 void
@@ -71,15 +66,12 @@ GluePcmResampler::Close()
 }
 
 ConstBuffer<void>
-GluePcmResampler::Resample(ConstBuffer<void> src, Error &error)
+GluePcmResampler::Resample(ConstBuffer<void> src)
 {
 	assert(!src.IsNull());
 
-	if (requested_sample_format != src_sample_format) {
-		src = format_converter.Convert(src, error);
-		if (src.IsNull())
-			return nullptr;
-	}
+	if (requested_sample_format != src_sample_format)
+		src = format_converter.Convert(src);
 
-	return resampler->Resample(src, error);
+	return resampler->Resample(src);
 }

@@ -28,7 +28,6 @@
 #include <assert.h>
 #endif
 
-class Error;
 template<typename T> struct ConstBuffer;
 
 /**
@@ -93,11 +92,11 @@ public:
 	/**
 	 * Opens the object, prepare for Apply().
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param format the sample format
-	 * @param error location to store the error
-	 * @return true on success
 	 */
-	bool Open(SampleFormat format, Error &error);
+	void Open(SampleFormat format);
 
 	/**
 	 * Closes the object.  After that, you may call Open() again.

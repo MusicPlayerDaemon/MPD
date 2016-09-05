@@ -25,7 +25,6 @@
 #include "pcm/Volume.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
 
 #include <stdexcept>
 
@@ -35,9 +34,7 @@ class VolumeFilter final : public Filter {
 public:
 	explicit VolumeFilter(const AudioFormat &audio_format)
 		:Filter(audio_format) {
-		Error error;
-		if (!pv.Open(out_audio_format.format, error))
-			throw std::runtime_error(error.GetMessage());
+		pv.Open(out_audio_format.format);
 	}
 
 	unsigned GetVolume() const {

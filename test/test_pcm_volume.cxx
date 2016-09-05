@@ -22,7 +22,6 @@
 #include "pcm/Volume.hxx"
 #include "pcm/Traits.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
 #include "test_pcm_util.hxx"
 
 #include <algorithm>
@@ -37,7 +36,7 @@ TestVolume(G g=G())
 	typedef typename Traits::value_type value_type;
 
 	PcmVolume pv;
-	CPPUNIT_ASSERT(pv.Open(F, IgnoreError()));
+	pv.Open(F);
 
 	constexpr size_t N = 509;
 	static value_type zero[N];
@@ -96,7 +95,7 @@ void
 PcmVolumeTest::TestVolumeFloat()
 {
 	PcmVolume pv;
-	CPPUNIT_ASSERT(pv.Open(SampleFormat::FLOAT, IgnoreError()));
+	pv.Open(SampleFormat::FLOAT);
 
 	constexpr size_t N = 509;
 	static float zero[N];

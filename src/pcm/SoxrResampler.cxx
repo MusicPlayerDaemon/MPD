@@ -21,7 +21,7 @@
 #include "SoxrResampler.hxx"
 #include "AudioFormat.hxx"
 #include "config/Block.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -80,18 +80,16 @@ soxr_parse_quality(const char *quality)
 	return SOXR_INVALID_RECIPE;
 }
 
-bool
-pcm_resample_soxr_global_init(const ConfigBlock &block, Error &error)
+void
+pcm_resample_soxr_global_init(const ConfigBlock &block)
 {
 	const char *quality_string = block.GetBlockValue("quality");
 	unsigned long recipe = soxr_parse_quality(quality_string);
 	if (recipe == SOXR_INVALID_RECIPE) {
 		assert(quality_string != nullptr);
 
-		error.Format(soxr_domain,
-			     "unknown quality setting '%s' in line %d",
-			     quality_string, block.line);
-		return false;
+		throw FormatRuntimeError("unknown quality setting '%s' in line %d",
+					 quality_string, block.line);
 	}
 
 	soxr_quality = soxr_quality_spec(recipe, 0);
@@ -102,13 +100,10 @@ pcm_resample_soxr_global_init(const ConfigBlock &block, Error &error)
 
 	const unsigned n_threads = block.GetBlockValue("threads", 1);
 	soxr_runtime = soxr_runtime_spec(n_threads);
-
-	return true;
 }
 
 AudioFormat
-SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
-		       Error &error)
+SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 {
 	assert(af.IsValid());
 	assert(audio_valid_sample_rate(new_sample_rate));
@@ -117,11 +112,9 @@ SoxrPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
 	soxr = soxr_create(af.sample_rate, new_sample_rate,
 			   af.channels, &e,
 			   nullptr, &soxr_quality, &soxr_runtime);
-	if (soxr == nullptr) {
-		error.Format(soxr_domain,
-			     "soxr initialization has failed: %s", e);
-		return AudioFormat::Undefined();
-	}
+	if (soxr == nullptr)
+		throw FormatRuntimeError("soxr initialization has failed: %s",
+					 e);
 
 	FormatDebug(soxr_domain, "soxr engine '%s'", soxr_engine(soxr));
 
@@ -147,7 +140,7 @@ SoxrPcmResampler::Close()
 }
 
 ConstBuffer<void>
-SoxrPcmResampler::Resample(ConstBuffer<void> src, Error &error)
+SoxrPcmResampler::Resample(ConstBuffer<void> src)
 {
 	const size_t frame_size = channels * sizeof(float);
 	assert(src.size % frame_size == 0);
@@ -162,10 +155,8 @@ SoxrPcmResampler::Resample(ConstBuffer<void> src, Error &error)
 	size_t i_done, o_done;
 	soxr_error_t e = soxr_process(soxr, src.data, n_frames, &i_done,
 				      output_buffer, o_frames, &o_done);
-	if (e != nullptr) {
-		error.Format(soxr_domain, "soxr error: %s", e);
-		return nullptr;
-	}
+	if (e != nullptr)
+		throw FormatRuntimeError("soxr error: %s", e);
 
 	return { output_buffer, o_done * frame_size };
 }

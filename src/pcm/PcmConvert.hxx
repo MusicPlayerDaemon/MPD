@@ -31,7 +31,6 @@
 #endif
 
 template<typename T> struct ConstBuffer;
-class Error;
 
 /**
  * This object is statically allocated (within another struct), and
@@ -57,9 +56,10 @@ public:
 
 	/**
 	 * Prepare the object.  Call Close() when done.
+	 *
+	 * Throws std::runtime_error on error.
 	 */
-	bool Open(AudioFormat _src_format, AudioFormat _dest_format,
-		  Error &error);
+	void Open(AudioFormat _src_format, AudioFormat _dest_format);
 
 	/**
 	 * Close the object after it was prepared with Open().  After
@@ -70,14 +70,15 @@ public:
 	/**
 	 * Converts PCM data between two audio formats.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param src the source PCM buffer
-	 * @param error location to store the error occurring
-	 * @return the destination buffer, or nullptr on error
+	 * @return the destination buffer
 	 */
-	ConstBuffer<void> Convert(ConstBuffer<void> src, Error &error);
+	ConstBuffer<void> Convert(ConstBuffer<void> src);
 };
 
-bool
-pcm_convert_global_init(Error &error);
+void
+pcm_convert_global_init();
 
 #endif

@@ -73,11 +73,12 @@ decoder_initialized(Decoder &decoder,
 
 		decoder.convert = new PcmConvert();
 
-		Error error;
-		if (!decoder.convert->Open(dc.in_audio_format,
-					   dc.out_audio_format,
-					   error))
-			decoder.error = std::make_exception_ptr(std::move(error));
+		try {
+			decoder.convert->Open(dc.in_audio_format,
+					      dc.out_audio_format);
+		} catch (...) {
+			decoder.error = std::current_exception();
+		}
 	}
 
 	const ScopeLock protect(dc.mutex);
@@ -484,19 +485,17 @@ decoder_data(Decoder &decoder,
 	if (decoder.convert != nullptr) {
 		assert(dc.in_audio_format != dc.out_audio_format);
 
-		Error error;
-		auto result = decoder.convert->Convert({data, length},
-						       error);
-		if (data == nullptr) {
+		try {
+			auto result = decoder.convert->Convert({data, length});
+			data = result.data;
+			length = result.size;
+		} catch (const std::runtime_error &e) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
 			   bail out */
-			LogError(error);
+			LogError(e);
 			return DecoderCommand::STOP;
 		}
-
-		data = result.data;
-		length = result.size;
 	} else {
 		assert(dc.in_audio_format == dc.out_audio_format);
 	}

@@ -28,7 +28,6 @@
 #include <assert.h>
 #endif
 
-class Error;
 template<typename T> struct ConstBuffer;
 
 /**
@@ -53,15 +52,14 @@ public:
 	/**
 	 * Opens the object, prepare for Convert().
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param format the sample format
 	 * @param src_channels the number of source channels
 	 * @param dest_channels the number of destination channels
-	 * @param error location to store the error
-	 * @return true on success
 	 */
-	bool Open(SampleFormat format,
-		  unsigned src_channels, unsigned dest_channels,
-		  Error &error);
+	void Open(SampleFormat format,
+		  unsigned src_channels, unsigned dest_channels);
 
 	/**
 	 * Closes the object.  After that, you may call Open() again.
@@ -71,13 +69,13 @@ public:
 	/**
 	 * Convert a block of PCM data.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param src the input buffer
-	 * @param error location to store the error
-	 * @return the destination buffer on success,
-	 * ConstBuffer::Null() on error
+	 * @return the destination buffer
 	 */
 	gcc_pure
-	ConstBuffer<void> Convert(ConstBuffer<void> src, Error &error);
+	ConstBuffer<void> Convert(ConstBuffer<void> src);
 };
 
 #endif

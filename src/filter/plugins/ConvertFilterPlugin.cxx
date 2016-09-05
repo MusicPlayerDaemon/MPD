@@ -25,7 +25,6 @@
 #include "pcm/PcmConvert.hxx"
 #include "util/Manual.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
 #include "AudioFormat.hxx"
 #include "poison.h"
 
@@ -88,9 +87,7 @@ ConvertFilter::Set(const AudioFormat &_out_audio_format)
 		/* optimized special case: no-op */
 		return;
 
-	Error error;
-	if (!state.Open(in_audio_format, _out_audio_format, error))
-		throw std::runtime_error(error.GetMessage());
+	state.Open(in_audio_format, _out_audio_format);
 
 	out_audio_format = _out_audio_format;
 }
@@ -125,12 +122,7 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src)
 		/* optimized special case: no-op */
 		return src;
 
-	Error error;
-	auto result = state.Convert(src, error);
-	if (result.IsNull())
-		throw std::runtime_error(error.GetMessage());
-
-	return result;
+	return state.Convert(src);
 }
 
 const struct filter_plugin convert_filter_plugin = {

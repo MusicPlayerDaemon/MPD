@@ -24,7 +24,7 @@
 #include "Traits.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/WritableBuffer.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include "PcmDither.cxx" // including the .cxx file to get inlined templates
 
@@ -97,17 +97,15 @@ pcm_volume_change_float(float *dest, const float *src, size_t n,
 		dest[i] = src[i] * volume;
 }
 
-bool
-PcmVolume::Open(SampleFormat _format, Error &error)
+void
+PcmVolume::Open(SampleFormat _format)
 {
 	assert(format == SampleFormat::UNDEFINED);
 
 	switch (_format) {
 	case SampleFormat::UNDEFINED:
-		error.Format(pcm_domain,
-			     "Software volume for %s is not implemented",
-			     sample_format_to_string(_format));
-		return false;
+		throw FormatRuntimeError("Software volume for %s is not implemented",
+					 sample_format_to_string(_format));
 
 	case SampleFormat::S8:
 	case SampleFormat::S16:
@@ -122,7 +120,6 @@ PcmVolume::Open(SampleFormat _format, Error &error)
 	}
 
 	format = _format;
-	return true;
 }
 
 ConstBuffer<void>
