@@ -21,6 +21,7 @@
 #include "Control.hxx"
 #include "Idle.hxx"
 #include "DetachedSong.hxx"
+#include "util/Error.hxx"
 
 #include <algorithm>
 
@@ -161,13 +162,22 @@ PlayerControl::LockGetStatus()
 }
 
 void
+PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error)
+{
+	assert(type != PlayerError::NONE);
+	assert(_error);
+
+	error_type = type;
+	error = std::move(_error);
+}
+
+void
 PlayerControl::SetError(PlayerError type, Error &&_error)
 {
 	assert(type != PlayerError::NONE);
 	assert(_error.IsDefined());
 
-	error_type = type;
-	error = std::move(_error);
+	SetError(type, std::make_exception_ptr(std::move(_error)));
 }
 
 void
@@ -223,11 +233,11 @@ PlayerControl::SeekLocked(DetachedSong *song, SongTime t)
 	assert(next_song == nullptr);
 
 	if (error_type != PlayerError::NONE) {
-		assert(error.IsDefined());
-		throw error;
+		assert(error);
+		std::rethrow_exception(error);
 	}
 
-	assert(!error.IsDefined());
+	assert(!error);
 }
 
 void

@@ -32,6 +32,7 @@
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/Error.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
@@ -191,10 +192,15 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 	}
 #endif
 
-	Error error = client.player_control.LockGetError();
-	if (error.IsDefined())
-		r.Format(COMMAND_STATUS_ERROR ": %s\n",
-			 error.GetMessage());
+	try {
+		client.player_control.LockCheckRethrowError();
+	} catch (const std::exception &e) {
+		r.Format(COMMAND_STATUS_ERROR ": %s\n", e.what());
+	} catch (const Error &error) {
+		r.Format(COMMAND_STATUS_ERROR ": %s\n", error.GetMessage());
+	} catch (...) {
+		r.Format(COMMAND_STATUS_ERROR ": unknown\n");
+	}
 
 	song = playlist.GetNextPosition();
 	if (song >= 0)
