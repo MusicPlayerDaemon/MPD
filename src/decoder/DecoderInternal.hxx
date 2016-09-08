@@ -35,12 +35,12 @@ struct Decoder {
 	 * For converting input data to the configured audio format.
 	 * nullptr means no conversion necessary.
 	 */
-	PcmConvert *convert;
+	PcmConvert *convert = nullptr;
 
 	/**
 	 * The time stamp of the next data chunk, in seconds.
 	 */
-	double timestamp;
+	double timestamp = 0;
 
 	/**
 	 * Is the initial seek (to the start position of the sub-song)
@@ -54,14 +54,14 @@ struct Decoder {
 	 * decoder_get_virtual_command(), when the virtual SEEK
 	 * command is generated for the first time.
 	 */
-	bool initial_seek_running;
+	bool initial_seek_running = false;
 
 	/**
 	 * This flag is set by decoder_seek_time(), and checked by
 	 * decoder_command_finished().  It is used to clean up after
 	 * seeking.
 	 */
-	bool seeking;
+	bool seeking = false;
 
 	/**
 	 * The tag from the song object.  This is only used for local
@@ -71,13 +71,13 @@ struct Decoder {
 	Tag *song_tag;
 
 	/** the last tag received from the stream */
-	Tag *stream_tag;
+	Tag *stream_tag = nullptr;
 
 	/** the last tag received from the decoder plugin */
-	Tag *decoder_tag;
+	Tag *decoder_tag = nullptr;
 
 	/** the chunk currently being written to */
-	MusicChunk *chunk;
+	MusicChunk *chunk = nullptr;
 
 	ReplayGainInfo replay_gain_info;
 
@@ -85,7 +85,7 @@ struct Decoder {
 	 * A positive serial number for checking if replay gain info
 	 * has changed since the last check.
 	 */
-	unsigned replay_gain_serial;
+	unsigned replay_gain_serial = 0;
 
 	/**
 	 * An error has occurred (in DecoderAPI.cxx), and the plugin
@@ -95,15 +95,8 @@ struct Decoder {
 
 	Decoder(DecoderControl &_dc, bool _initial_seek_pending, Tag *_tag)
 		:dc(_dc),
-		 convert(nullptr),
-		 timestamp(0),
 		 initial_seek_pending(_initial_seek_pending),
-		 initial_seek_running(false),
-		 seeking(false),
-		 song_tag(_tag), stream_tag(nullptr), decoder_tag(nullptr),
-		 chunk(nullptr),
-		 replay_gain_serial(0) {
-	}
+		 song_tag(_tag) {}
 
 	~Decoder();
 
