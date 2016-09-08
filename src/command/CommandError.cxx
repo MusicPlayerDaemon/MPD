@@ -152,12 +152,6 @@ PrintError(Response &r, std::exception_ptr ep)
 		std::rethrow_exception(ep);
 	} catch (const std::exception &e) {
 		LogError(e);
-	} catch (...) {
-	}
-
-	try {
-		std::rethrow_exception(ep);
-	} catch (const std::exception &e) {
 		r.Error(ToAck(ep), e.what());
 	} catch (...) {
 		r.Error(ACK_ERROR_UNKNOWN, "Unknown error");
