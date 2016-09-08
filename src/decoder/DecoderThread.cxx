@@ -34,6 +34,7 @@
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "thread/Name.hxx"
 #include "tag/ApeReplayGain.hxx"
@@ -415,7 +416,7 @@ decoder_run_song(DecoderControl &dc,
 		/* copy the Error from struct Decoder to
 		   DecoderControl */
 		dc.state = DecoderState::ERROR;
-		dc.error = std::move(decoder.error);
+		dc.error = std::make_exception_ptr(std::move(decoder.error));
 	} else if (success)
 		dc.state = DecoderState::STOP;
 	else {
@@ -426,8 +427,7 @@ decoder_run_song(DecoderControl &dc,
 		if (!allocated.empty())
 			error_uri = allocated.c_str();
 
-		dc.error.Format(decoder_domain,
-				 "Failed to decode %s", error_uri);
+		dc.error = std::make_exception_ptr(FormatRuntimeError("Failed to decode %s", error_uri));
 	}
 
 	dc.client_cond.signal();
@@ -450,9 +450,11 @@ decoder_run(DecoderControl &dc)
 	Path path_fs = Path::Null();
 	AllocatedPath path_buffer = AllocatedPath::Null();
 	if (PathTraitsUTF8::IsAbsolute(uri_utf8)) {
-		path_buffer = AllocatedPath::FromUTF8(uri_utf8, dc.error);
+		Error error;
+		path_buffer = AllocatedPath::FromUTF8(uri_utf8, error);
 		if (path_buffer.IsNull()) {
 			dc.state = DecoderState::ERROR;
+			dc.error = std::make_exception_ptr(std::move(error));
 			dc.CommandFinishedLocked();
 			return;
 		}
@@ -485,8 +487,16 @@ decoder_task(void *arg)
 
 			decoder_run(dc);
 
-			if (dc.state == DecoderState::ERROR)
-				LogError(dc.error);
+			if (dc.state == DecoderState::ERROR) {
+				try {
+					std::rethrow_exception(dc.error);
+				} catch (const std::exception &e) {
+					LogError(e);
+				} catch (const Error &error) {
+					LogError(error);
+				} catch (...) {
+				}
+			}
 
 			break;
 

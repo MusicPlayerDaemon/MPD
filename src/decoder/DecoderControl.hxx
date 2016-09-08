@@ -27,7 +27,8 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "Chrono.hxx"
-#include "util/Error.hxx"
+
+#include <exception>
 
 #include <utility>
 
@@ -39,6 +40,7 @@
 #undef ERROR
 #endif
 
+class Error;
 class DetachedSong;
 class MusicBuffer;
 class MusicPipe;
@@ -97,7 +99,7 @@ struct DecoderControl {
 	 * The object must be freed when this object transitions to
 	 * any other state (usually #DecoderState::START).
 	 */
-	Error error;
+	std::exception_ptr error;
 
 	bool quit;
 
@@ -242,29 +244,25 @@ struct DecoderControl {
 	}
 
 	/**
-	 * Checks whether an error has occurred, and if so, returns a
-	 * copy of the #Error object.
+	 * Checks whether an error has occurred, and if so, rethrows
+	 * it.
 	 *
 	 * Caller must lock the object.
 	 */
-	gcc_pure
-	Error GetError() const {
+	void CheckRethrowError() const {
 		assert(command == DecoderCommand::NONE);
-		assert(state != DecoderState::ERROR || error.IsDefined());
+		assert(state != DecoderState::ERROR || error);
 
-		Error result;
 		if (state == DecoderState::ERROR)
-			result.Set(error);
-		return result;
+			std::rethrow_exception(error);
 	}
 
 	/**
-	 * Like GetError(), but locks and unlocks the object.
+	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
-	gcc_pure
-	Error LockGetError() const {
+	void LockCheckRethrowError() const {
 		const ScopeLock protect(mutex);
-		return GetError();
+		CheckRethrowError();
 	}
 
 	/**
@@ -274,7 +272,7 @@ struct DecoderControl {
 	 */
 	void ClearError() {
 		if (state == DecoderState::ERROR) {
-			error.Clear();
+			error = std::exception_ptr();
 			state = DecoderState::STOP;
 		}
 	}
