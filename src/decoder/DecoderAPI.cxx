@@ -77,7 +77,7 @@ decoder_initialized(Decoder &decoder,
 		if (!decoder.convert->Open(dc.in_audio_format,
 					   dc.out_audio_format,
 					   error))
-			decoder.error = std::move(error);
+			decoder.error = std::make_exception_ptr(std::move(error));
 	}
 
 	const ScopeLock protect(dc.mutex);
@@ -140,7 +140,7 @@ gcc_pure
 static DecoderCommand
 decoder_get_virtual_command(Decoder &decoder)
 {
-	if (decoder.error.IsDefined())
+	if (decoder.error)
 		/* an error has occurred: stop the decoder plugin */
 		return DecoderCommand::STOP;
 

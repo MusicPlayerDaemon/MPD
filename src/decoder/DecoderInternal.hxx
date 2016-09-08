@@ -21,7 +21,8 @@
 #define MPD_DECODER_INTERNAL_HXX
 
 #include "ReplayGainInfo.hxx"
-#include "util/Error.hxx"
+
+#include <exception>
 
 class PcmConvert;
 struct MusicChunk;
@@ -91,7 +92,7 @@ struct Decoder {
 	 * An error has occurred (in DecoderAPI.cxx), and the plugin
 	 * will be asked to stop.
 	 */
-	Error error;
+	std::exception_ptr error;
 
 	Decoder(DecoderControl &_dc, bool _initial_seek_pending, Tag *_tag)
 		:dc(_dc),

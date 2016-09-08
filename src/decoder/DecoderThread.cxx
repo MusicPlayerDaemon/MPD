@@ -211,7 +211,7 @@ decoder_run_stream_plugin(Decoder &decoder, InputStream &is,
 	if (!decoder_check_plugin(plugin, is, suffix))
 		return false;
 
-	decoder.error.Clear();
+	decoder.error = std::exception_ptr();
 
 	tried_r = true;
 	return decoder_stream_decode(plugin, decoder, is);
@@ -300,7 +300,7 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 	if (!plugin.SupportsSuffix(suffix))
 		return false;
 
-	decoder.error.Clear();
+	decoder.error = std::exception_ptr();
 
 	DecoderControl &dc = decoder.dc;
 
@@ -398,10 +398,10 @@ decoder_run_song(DecoderControl &dc,
 
 	}
 
-	if (decoder.error.IsDefined()) {
+	if (decoder.error) {
 		/* copy the Error from struct Decoder to
 		   DecoderControl */
-		throw std::move(decoder.error);
+		std::rethrow_exception(decoder.error);
 	} else if (success)
 		dc.state = DecoderState::STOP;
 	else {
