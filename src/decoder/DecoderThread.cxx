@@ -36,6 +36,7 @@
 #include "util/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "thread/Name.hxx"
 #include "tag/ApeReplayGain.hxx"
 #include "Log.hxx"
@@ -404,12 +405,14 @@ decoder_run_song(DecoderControl &dc,
 	{
 		const ScopeUnlock unlock(dc.mutex);
 
+		AtScopeExit(&decoder) {
+			/* flush the last chunk */
+			if (decoder.chunk != nullptr)
+				decoder.FlushChunk();
+		};
+
 		success = DecoderUnlockedRunUri(decoder, uri, path_fs);
 
-		/* flush the last chunk */
-
-		if (decoder.chunk != nullptr)
-			decoder.FlushChunk();
 	}
 
 	if (decoder.error.IsDefined()) {
