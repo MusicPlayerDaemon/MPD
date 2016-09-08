@@ -415,19 +415,16 @@ decoder_run_song(DecoderControl &dc,
 	if (decoder.error.IsDefined()) {
 		/* copy the Error from struct Decoder to
 		   DecoderControl */
-		dc.state = DecoderState::ERROR;
-		dc.error = std::make_exception_ptr(std::move(decoder.error));
+		throw std::move(decoder.error);
 	} else if (success)
 		dc.state = DecoderState::STOP;
 	else {
-		dc.state = DecoderState::ERROR;
-
 		const char *error_uri = song.GetURI();
 		const std::string allocated = uri_remove_auth(error_uri);
 		if (!allocated.empty())
 			error_uri = allocated.c_str();
 
-		dc.error = std::make_exception_ptr(FormatRuntimeError("Failed to decode %s", error_uri));
+		throw FormatRuntimeError("Failed to decode %s", error_uri);
 	}
 
 	dc.client_cond.signal();
@@ -453,10 +450,8 @@ try {
 		Error error;
 		path_buffer = AllocatedPath::FromUTF8(uri_utf8, error);
 		if (path_buffer.IsNull()) {
-			dc.state = DecoderState::ERROR;
-			dc.error = std::make_exception_ptr(std::move(error));
 			dc.CommandFinishedLocked();
-			return;
+			throw std::move(error);
 		}
 
 		path_fs = path_buffer;
