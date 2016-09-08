@@ -98,6 +98,8 @@ LogError(const std::exception &e)
 		std::rethrow_if_nested(e);
 	} catch (const std::exception &nested) {
 		LogError(nested, "nested");
+	} catch (const Error &nested) {
+		LogError(nested, "nested");
 	} catch (...) {
 		Log(exception_domain, LogLevel::ERROR,
 		    "Unrecognized nested exception");
@@ -112,6 +114,8 @@ LogError(const std::exception &e, const char *msg)
 	try {
 		std::rethrow_if_nested(e);
 	} catch (const std::exception &nested) {
+		LogError(nested);
+	} catch (const Error &nested) {
 		LogError(nested);
 	} catch (...) {
 		Log(exception_domain, LogLevel::ERROR,
