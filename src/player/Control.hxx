@@ -131,7 +131,7 @@ struct PlayerControl {
 
 	/**
 	 * The error that occurred in the player thread.  This
-	 * attribute is only valid if #error is not
+	 * attribute is only valid if #error_type is not
 	 * #PlayerError::NONE.  The object must be freed when this
 	 * object transitions back to #PlayerError::NONE.
 	 */
