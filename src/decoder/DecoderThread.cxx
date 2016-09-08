@@ -361,25 +361,14 @@ try {
 		: decoder_run_stream(decoder, real_uri);
 } catch (StopDecoder) {
 	return true;
-} catch (const std::runtime_error &e) {
-	/* copy the exception to decoder.error */
-
-	if (decoder.error.IsDefined()) {
-		/* decoder.error already set, now we have a second
-		   one; only log the second one */
-		LogError(e);
-		return false;
-	}
-
+} catch (...) {
 	const char *error_uri = real_uri;
 	const std::string allocated = uri_remove_auth(error_uri);
 	if (!allocated.empty())
 		error_uri = allocated.c_str();
 
-	decoder.error.Format(decoder_domain,
-			     "Failed to decode %s: %s",
-			     error_uri, e.what());
-	return false;
+	std::throw_with_nested(FormatRuntimeError("Failed to decode %s",
+						  error_uri));
 }
 
 /**
