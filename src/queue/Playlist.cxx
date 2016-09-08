@@ -151,8 +151,8 @@ playlist::UpdateQueuedSong(PlayerControl &pc, const DetachedSong *prev)
 	}
 }
 
-bool
-playlist::PlayOrder(PlayerControl &pc, unsigned order, Error &error)
+void
+playlist::PlayOrder(PlayerControl &pc, unsigned order)
 {
 	playing = true;
 	queued = -1;
@@ -163,12 +163,9 @@ playlist::PlayOrder(PlayerControl &pc, unsigned order, Error &error)
 
 	current = order;
 
-	if (!pc.Play(new DetachedSong(song), error))
-		return false;
+	pc.Play(new DetachedSong(song));
 
 	SongStarted();
-
-	return true;
 }
 
 void
@@ -227,8 +224,11 @@ playlist::ResumePlayback(PlayerControl &pc)
 		Stop(pc);
 	else
 		/* continue playback at the next song */
-		/* TODO: log error? */
-		PlayNext(pc, IgnoreError());
+		try {
+			PlayNext(pc);
+		} catch (...) {
+			/* TODO: log error? */
+		}
 }
 
 void

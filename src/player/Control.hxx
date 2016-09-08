@@ -308,10 +308,12 @@ private:
 
 public:
 	/**
+	 * Throws std::runtime_error or #Error on error.
+	 *
 	 * @param song the song to be queued; the given instance will
 	 * be owned and freed by the player
 	 */
-	bool Play(DetachedSong *song, Error &error);
+	void Play(DetachedSong *song);
 
 	/**
 	 * see PlayerCommand::CANCEL
@@ -425,7 +427,10 @@ private:
 		SynchronousCommand(PlayerCommand::QUEUE);
 	}
 
-	bool SeekLocked(DetachedSong *song, SongTime t, Error &error_r);
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void SeekLocked(DetachedSong *song, SongTime t);
 
 public:
 	/**
@@ -437,12 +442,12 @@ public:
 	/**
 	 * Makes the player thread seek the specified song to a position.
 	 *
+	 * Throws std::runtime_error or #Error on error.
+	 *
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
-	 * @return true on success, false on failure (e.g. if MPD isn't
-	 * playing currently)
 	 */
-	bool LockSeek(DetachedSong *song, SongTime t, Error &error_r);
+	void LockSeek(DetachedSong *song, SongTime t);
 
 	void SetCrossFade(float cross_fade_seconds);
 

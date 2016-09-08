@@ -275,41 +275,63 @@ public:
 
 	void Stop(PlayerControl &pc);
 
-	bool PlayPosition(PlayerControl &pc, int position, Error &error);
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void PlayPosition(PlayerControl &pc, int position);
 
-	bool PlayOrder(PlayerControl &pc, unsigned order, Error &error);
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void PlayOrder(PlayerControl &pc, unsigned order);
 
-	bool PlayId(PlayerControl &pc, int id, Error &error);
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void PlayId(PlayerControl &pc, int id);
 
-	bool PlayNext(PlayerControl &pc, Error &error);
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void PlayNext(PlayerControl &pc);
 
-	bool PlayPrevious(PlayerControl &pc, Error &error);
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void PlayPrevious(PlayerControl &pc);
 
-	bool SeekSongOrder(PlayerControl &pc,
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void SeekSongOrder(PlayerControl &pc,
 			   unsigned song_order,
-			   SongTime seek_time,
-			   Error &error);
+			   SongTime seek_time);
 
-	bool SeekSongPosition(PlayerControl &pc,
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void SeekSongPosition(PlayerControl &pc,
 			      unsigned sonag_position,
-			      SongTime seek_time,
-			      Error &error);
+			      SongTime seek_time);
 
-	bool SeekSongId(PlayerControl &pc,
-			unsigned song_id, SongTime seek_time,
-			Error &error);
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void SeekSongId(PlayerControl &pc,
+			unsigned song_id, SongTime seek_time);
 
 	/**
 	 * Seek within the current song.  Fails if MPD is not currently
 	 * playing.
 	 *
+	 * Throws std::runtime_error or #Error on error.
+	 *
 	 * @param seek_time the time
 	 * @param relative if true, then the specified time is relative to the
 	 * current position
 	 */
-	bool SeekCurrent(PlayerControl &pc,
-			 SignedSongTime seek_time, bool relative,
-			 Error &error);
+	void SeekCurrent(PlayerControl &pc,
+			 SignedSongTime seek_time, bool relative);
 
 	bool GetRepeat() const {
 		return queue.repeat;
