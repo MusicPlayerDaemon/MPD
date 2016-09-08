@@ -31,6 +31,7 @@
 #include "Idle.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
+#include "util/ScopeExit.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
@@ -218,12 +219,12 @@ handle_next(Client &client, gcc_unused Request args, gcc_unused Response &r)
 	const bool single = playlist.queue.single;
 	playlist.queue.single = false;
 
+	AtScopeExit(&playlist, single) {
+		playlist.queue.single = single;
+	};
+
 	Error error;
-	bool success = client.partition.PlayNext(error);
-
-	playlist.queue.single = single;
-
-	return success
+	return client.partition.PlayNext(error)
 		? CommandResult::OK
 		: print_error(r, error);
 }
