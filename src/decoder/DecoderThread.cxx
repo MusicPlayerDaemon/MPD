@@ -52,15 +52,14 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
  * the stream gets ready.
  *
  * Unlock the decoder before calling this function.
- *
- * @return an InputStream on success, nullptr on error
  */
 static InputStreamPtr
-decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
+decoder_input_stream_open(DecoderControl &dc, const char *uri)
 {
+	Error error;
 	auto is = InputStream::Open(uri, dc.mutex, dc.cond, error);
 	if (is == nullptr)
-		return nullptr;
+		throw error;
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
@@ -78,17 +77,18 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
 	}
 
 	if (!is->Check(error))
-		return nullptr;
+		throw error;
 
 	return is;
 }
 
 static InputStreamPtr
-decoder_input_stream_open(DecoderControl &dc, Path path, Error &error)
+decoder_input_stream_open(DecoderControl &dc, Path path)
 {
+	Error error;
 	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond, error);
 	if (is == nullptr)
-		return nullptr;
+		throw error;
 
 	assert(is->IsReady());
 
@@ -270,9 +270,8 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 {
 	DecoderControl &dc = decoder.dc;
 
-	auto input_stream = decoder_input_stream_open(dc, uri, decoder.error);
-	if (input_stream == nullptr)
-		return false;
+	auto input_stream = decoder_input_stream_open(dc, uri);
+	assert(input_stream);
 
 	LoadReplayGain(decoder, *input_stream);
 
@@ -327,10 +326,8 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs,
-						      decoder.error);
-	if (input_stream == nullptr)
-		return false;
+	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs);
+	assert(input_stream);
 
 	LoadReplayGain(decoder, *input_stream);
 
