@@ -49,14 +49,11 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
 
 /**
  * Opens the input stream with InputStream::Open(), and waits until
- * the stream gets ready.  If a decoder STOP command is received
- * during that, it cancels the operation (but does not close the
- * stream).
+ * the stream gets ready.
  *
  * Unlock the decoder before calling this function.
  *
- * @return an InputStream on success or if #DecoderCommand::STOP is
- * received, nullptr on error
+ * @return an InputStream on success, nullptr on error
  */
 static InputStreamPtr
 decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
@@ -73,7 +70,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
 	is->Update();
 	while (!is->IsReady()) {
 		if (dc.command == DecoderCommand::STOP)
-			return nullptr;
+			throw StopDecoder();
 
 		dc.Wait();
 
@@ -117,7 +114,7 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
 
 	if (decoder.dc.command == DecoderCommand::STOP)
-		return true;
+		throw StopDecoder();
 
 	/* rewind the stream, so each plugin gets a fresh start */
 	input_stream.Rewind(IgnoreError());
@@ -157,7 +154,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
 
 	if (decoder.dc.command == DecoderCommand::STOP)
-		return true;
+		throw StopDecoder();
 
 	{
 		const ScopeUnlock unlock(decoder.dc.mutex);
