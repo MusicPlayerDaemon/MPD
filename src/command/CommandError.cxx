@@ -128,6 +128,8 @@ ToAck(std::exception_ptr ep)
 #if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204
 	} catch (const std::exception &e) {
 #else
+	} catch (const Error &error) {
+		return ToAck(error);
 	} catch (...) {
 #endif
 		try {
@@ -153,6 +155,8 @@ PrintError(Response &r, std::exception_ptr ep)
 	} catch (const std::exception &e) {
 		LogError(e);
 		r.Error(ToAck(ep), e.what());
+	} catch (const Error &error) {
+		print_error(r, error);
 	} catch (...) {
 		r.Error(ACK_ERROR_UNKNOWN, "Unknown error");
 	}
