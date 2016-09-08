@@ -439,7 +439,7 @@ decoder_run_song(DecoderControl &dc,
  */
 static void
 decoder_run(DecoderControl &dc)
-{
+try {
 	dc.ClearError();
 
 	assert(dc.song != nullptr);
@@ -463,7 +463,10 @@ decoder_run(DecoderControl &dc)
 	}
 
 	decoder_run_song(dc, song, uri_utf8, path_fs);
-
+} catch (...) {
+	dc.state = DecoderState::ERROR;
+	dc.error = std::current_exception();
+	dc.client_cond.signal();
 }
 
 static void
