@@ -67,10 +67,13 @@ InputStream::OpenReady(const char *uri,
 	if (is == nullptr)
 		return nullptr;
 
-	mutex.lock();
-	is->WaitReady();
-	bool success = is->Check(error);
-	mutex.unlock();
+	bool success;
+
+	{
+		const ScopeLock protect(mutex);
+		is->WaitReady();
+		success = is->Check(error);
+	}
 
 	if (!success)
 		is.reset();
