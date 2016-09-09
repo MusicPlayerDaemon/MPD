@@ -209,7 +209,7 @@ handle_end_map(void *ctx)
 	return 1;
 }
 
-static yajl_callbacks parse_callbacks = {
+static constexpr yajl_callbacks parse_callbacks = {
 	nullptr,
 	nullptr,
 	handle_integer,
