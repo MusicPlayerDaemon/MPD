@@ -29,6 +29,7 @@
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Alloc.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <wavpack/wavpack.h>
@@ -485,10 +486,11 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 		return nullptr;
 
 	char *wvc_url = xstrcatdup(uri, "c");
+	AtScopeExit(wvc_url) {
+		free(wvc_url);
+	};
 
 	auto is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
-	free(wvc_url);
-
 	if (is_wvc == nullptr)
 		return nullptr;
 
@@ -510,6 +512,13 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 		can_seek &= wvc->is.IsSeekable();
 	}
 
+	AtScopeExit(wvc) {
+		if (wvc != nullptr) {
+			delete &wvc->is;
+			delete wvc;
+		}
+	};
+
 	if (!can_seek) {
 		open_flags |= OPEN_STREAMING;
 	}
@@ -527,14 +536,11 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 		return;
 	}
 
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
+
 	wavpack_decode(decoder, wpc, can_seek);
-
-	WavpackCloseFile(wpc);
-
-	if (wvc != nullptr) {
-		delete &wvc->is;
-		delete wvc;
-	}
 }
 
 /*
