@@ -103,9 +103,9 @@ static const char *const key_str[] = {
 
 struct SoundCloudJsonData {
 	int key;
-	char *stream_url = nullptr;
+	std::string stream_url;
 	long duration;
-	char *title = nullptr;
+	std::string title;
 	int got_url = 0; /* nesting level of last stream_url */
 
 	std::forward_list<DetachedSong> songs;
@@ -135,12 +135,10 @@ handle_string(void *ctx, const unsigned char *stringval, size_t stringlen)
 
 	switch (data->key) {
 	case Title:
-		free(data->title);
-		data->title = xstrndup(s, stringlen);
+		data->title.assign(s, stringlen);
 		break;
 	case Stream_URL:
-		free(data->stream_url);
-		data->stream_url = xstrndup(s, stringlen);
+		data->stream_url.assign(s, stringlen);
 		data->got_url = 1;
 		break;
 	default:
@@ -195,16 +193,15 @@ handle_end_map(void *ctx)
 	/* got_url == 1, track finished, make it into a song */
 	data->got_url = 0;
 
-	char *u = xstrcatdup(data->stream_url, "?client_id=",
-			     soundcloud_config.apikey.c_str());
+	const std::string u = data->stream_url + "?client_id=" +
+		soundcloud_config.apikey;
 
 	TagBuilder tag;
 	tag.SetDuration(SignedSongTime::FromMS(data->duration));
-	if (data->title != nullptr)
-		tag.AddItem(TAG_NAME, data->title);
+	if (!data->title.empty())
+		tag.AddItem(TAG_NAME, data->title.c_str());
 
-	data->songs.emplace_front(u, tag.Commit());
-	free(u);
+	data->songs.emplace_front(u.c_str(), tag.Commit());
 
 	return 1;
 }
@@ -332,8 +329,6 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	free(u);
 	yajl_free(hand);
-	free(data.title);
-	free(data.stream_url);
 
 	if (ret == -1)
 		return nullptr;
