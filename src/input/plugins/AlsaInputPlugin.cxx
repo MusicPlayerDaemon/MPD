@@ -241,59 +241,47 @@ AlsaInputStream::Recover(int err)
 	return err;
 }
 
-inline snd_pcm_t *
-AlsaInputStream::OpenDevice(const char *device,
-			    int rate, snd_pcm_format_t format, int channels,
-			    Error &error)
+static bool
+ConfigureCapture(snd_pcm_t *capture_handle,
+		 int rate, snd_pcm_format_t format, int channels,
+		 Error &error)
 {
-	snd_pcm_t *capture_handle;
 	int err;
-	if ((err = snd_pcm_open(&capture_handle, device,
-				SND_PCM_STREAM_CAPTURE, 0)) < 0) {
-		error.Format(alsa_input_domain, "Failed to open device: %s (%s)", device, snd_strerror(err));
-		return nullptr;
-	}
 
 	snd_pcm_hw_params_t *hw_params;
 	if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
 		error.Format(alsa_input_domain, "Cannot allocate hardware parameter structure (%s)", snd_strerror(err));
-		snd_pcm_close(capture_handle);
-		return nullptr;
+		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_any(capture_handle, hw_params)) < 0) {
 		error.Format(alsa_input_domain, "Cannot initialize hardware parameter structure (%s)", snd_strerror(err));
 		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
+		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_set_access(capture_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
 		error.Format(alsa_input_domain, "Cannot set access type (%s)", snd_strerror (err));
 		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
+		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0) {
 		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
 		error.Format(alsa_input_domain, "Cannot set sample format (%s)", snd_strerror (err));
-		return nullptr;
+		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_set_channels(capture_handle, hw_params, channels)) < 0) {
 		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
 		error.Format(alsa_input_domain, "Cannot set channels (%s)", snd_strerror (err));
-		return nullptr;
+		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_set_rate(capture_handle, hw_params, rate, 0)) < 0) {
 		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
 		error.Format(alsa_input_domain, "Cannot set sample rate (%s)", snd_strerror (err));
-		return nullptr;
+		return false;
 	}
 
 	/* period needs to be big enough so that poll() doesn't fire too often,
@@ -309,16 +297,14 @@ AlsaInputStream::OpenDevice(const char *device,
 		error.Format(alsa_input_domain, "Cannot set period size (%s)",
 			     snd_strerror(err));
 		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
+		return false;
 	}
 
 	if ((err = snd_pcm_hw_params(capture_handle, hw_params)) < 0) {
 		error.Format(alsa_input_domain, "Cannot set parameters (%s)",
 			     snd_strerror(err));
 		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
+		return false;
 	}
 
 	snd_pcm_hw_params_free (hw_params);
@@ -333,19 +319,38 @@ AlsaInputStream::OpenDevice(const char *device,
 		error.Format(alsa_input_domain,
 			     "unable to set start threshold (%s)", snd_strerror(err));
 		snd_pcm_sw_params_free(sw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
+		return false;
 	}
 
 	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0) {
 		error.Format(alsa_input_domain,
 			     "unable to install sw params (%s)", snd_strerror(err));
 		snd_pcm_sw_params_free(sw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
+		return false;
 	}
 
 	snd_pcm_sw_params_free(sw_params);
+
+	return true;
+}
+
+inline snd_pcm_t *
+AlsaInputStream::OpenDevice(const char *device,
+			    int rate, snd_pcm_format_t format, int channels,
+			    Error &error)
+{
+	snd_pcm_t *capture_handle;
+	int err;
+	if ((err = snd_pcm_open(&capture_handle, device,
+				SND_PCM_STREAM_CAPTURE, 0)) < 0) {
+		error.Format(alsa_input_domain, "Failed to open device: %s (%s)", device, snd_strerror(err));
+		return nullptr;
+	}
+
+	if (!ConfigureCapture(capture_handle, rate, format, channels, error)) {
+		snd_pcm_close(capture_handle);
+		return nullptr;
+	}
 
 	snd_pcm_prepare(capture_handle);
 
