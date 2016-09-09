@@ -81,6 +81,7 @@ AsyncInputStream::Resume()
 
 	if (paused) {
 		paused = false;
+
 		DoResume();
 	}
 }
@@ -264,7 +265,12 @@ AsyncInputStream::DeferredResume()
 {
 	const ScopeLock protect(mutex);
 
-	Resume();
+	try {
+		Resume();
+	} catch (...) {
+		postponed_exception = std::current_exception();
+		cond.broadcast();
+	}
 }
 
 void
@@ -274,10 +280,16 @@ AsyncInputStream::DeferredSeek()
 	if (seek_state != SeekState::SCHEDULED)
 		return;
 
-	Resume();
+	try {
+		Resume();
 
-	seek_state = SeekState::PENDING;
-	buffer.Clear();
-	paused = false;
-	DoSeek(seek_offset);
+		seek_state = SeekState::PENDING;
+		buffer.Clear();
+		paused = false;
+
+		DoSeek(seek_offset);
+	} catch (...) {
+		postponed_exception = std::current_exception();
+		cond.broadcast();
+	}
 }

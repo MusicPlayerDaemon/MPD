@@ -25,14 +25,18 @@
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"
 #include "../InputPlugin.hxx"
+#include "../InputStream.hxx"
 #include "fs/Path.hxx"
 #include "Log.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/Error.hxx"
+
+#include <stdexcept>
 
 #include <stdlib.h>
 
-InputStream *
-OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond, Error &error)
+InputStreamPtr
+OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond)
 {
 	const ArchivePlugin *arplug;
 
@@ -57,22 +61,21 @@ OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond, Error &error)
 		return nullptr;
 	}
 
+	Error error;
 	auto file = archive_file_open(arplug, Path::FromFS(archive), error);
-	if (file == nullptr) {
-		return nullptr;
-	}
+	if (file == nullptr)
+		throw std::runtime_error(error.GetMessage());
 
 	AtScopeExit(file) {
 		file->Close();
 	};
 
-	return file->OpenStream(filename, mutex, cond, error);
+	return InputStreamPtr(file->OpenStream(filename, mutex, cond));
 }
 
 static InputStream *
 input_archive_open(gcc_unused const char *filename,
-		gcc_unused Mutex &mutex, gcc_unused Cond &cond,
-		gcc_unused Error &error)
+		   gcc_unused Mutex &mutex, gcc_unused Cond &cond)
 {
 	/* dummy method; use OpenArchiveInputStream() instead */
 

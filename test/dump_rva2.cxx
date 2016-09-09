@@ -24,7 +24,6 @@
 #include "config/ConfigGlobal.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "util/Error.hxx"
 #include "fs/Path.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
@@ -47,7 +46,7 @@ config_get_string(gcc_unused enum ConfigOption option,
 }
 
 int main(int argc, char **argv)
-{
+try {
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
@@ -63,12 +62,7 @@ int main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	Error error;
-	auto is = OpenLocalInputStream(path, mutex, cond, error);
-	if (!is) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	auto is = OpenLocalInputStream(path, mutex, cond);
 
 	const auto tag = tag_id3_load(*is);
 	if (tag == NULL) {
@@ -96,4 +90,7 @@ int main(int argc, char **argv)
 			tuple->gain, tuple->peak);
 
 	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

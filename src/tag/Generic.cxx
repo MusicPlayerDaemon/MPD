@@ -53,13 +53,7 @@ try {
 	Mutex mutex;
 	Cond cond;
 
-	Error error;
-	auto is = OpenLocalInputStream(path, mutex, cond, error);
-	if (!is) {
-		LogError(error);
-		return false;
-	}
-
+	auto is = OpenLocalInputStream(path, mutex, cond);
 	return ScanGenericTags(*is, handler, ctx);
 } catch (const std::runtime_error &e) {
 	LogError(e);

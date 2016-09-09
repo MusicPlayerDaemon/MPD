@@ -230,15 +230,9 @@ static constexpr yajl_callbacks parse_callbacks = {
 static int
 soundcloud_parse_json(const char *url, yajl_handle hand,
 		      Mutex &mutex, Cond &cond)
-{
+try {
 	Error error;
-	auto input_stream = InputStream::OpenReady(url, mutex, cond,
-						   error);
-	if (input_stream == nullptr) {
-		if (error.IsDefined())
-			LogError(error);
-		return -1;
-	}
+	auto input_stream = InputStream::OpenReady(url, mutex, cond);
 
 	const ScopeLock protect(mutex);
 
@@ -275,6 +269,9 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 	}
 
 	return 0;
+} catch (const std::exception &e) {
+	LogError(e);
+	return -1;
 }
 
 /**

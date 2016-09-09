@@ -31,7 +31,6 @@
 #include "fs/Path.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
-#include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
 
@@ -63,7 +62,6 @@ try {
 
 	config_global_init();
 
-	Error error;
 	ReadConfigFile(config_path);
 
 	const ScopeIOThread io_thread;
@@ -82,15 +80,7 @@ try {
 	if (playlist == NULL) {
 		/* open the stream and wait until it becomes ready */
 
-		is = InputStream::OpenReady(uri, mutex, cond, error);
-		if (!is) {
-			if (error.IsDefined())
-				LogError(error);
-			else
-				fprintf(stderr,
-					"InputStream::Open() failed\n");
-			return 2;
-		}
+		is = InputStream::OpenReady(uri, mutex, cond);
 
 		/* open the playlist */
 

@@ -44,13 +44,7 @@ try {
 	if (!playlist_suffix_supported(suffix_utf8.c_str()))
 		return nullptr;
 
-	Error error;
-	auto is = OpenLocalInputStream(path, mutex, cond, error);
-	if (is == nullptr) {
-		LogError(error);
-		return nullptr;
-	}
-
+	auto is = OpenLocalInputStream(path, mutex, cond);
 	return playlist_list_open_stream_suffix(std::move(is),
 						suffix_utf8.c_str());
 } catch (const std::runtime_error &e) {
@@ -85,15 +79,7 @@ try {
 	if (playlist != nullptr)
 		return playlist;
 
-	Error error;
-	auto is = InputStream::OpenReady(uri, mutex, cond, error);
-	if (is == nullptr) {
-		if (error.IsDefined())
-			FormatError(error, "Failed to open %s", uri);
-
-		return nullptr;
-	}
-
+	auto is = InputStream::OpenReady(uri, mutex, cond);
 	return playlist_list_open_stream(std::move(is), uri);
 } catch (const std::runtime_error &e) {
 	LogError(e);

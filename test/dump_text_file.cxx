@@ -83,7 +83,6 @@ try {
 	archive_plugin_init_all();
 #endif
 
-	Error error;
 	input_stream_global_init();
 
 	/* open the stream and dump it */
@@ -92,16 +91,8 @@ try {
 		Mutex mutex;
 		Cond cond;
 
-		auto is = InputStream::OpenReady(argv[1], mutex, cond, error);
-		if (is) {
-			ret = dump_input_stream(std::move(is));
-		} else {
-			if (error.IsDefined())
-				LogError(error);
-			else
-				fprintf(stderr, "input_stream::Open() failed\n");
-			ret = EXIT_FAILURE;
-		}
+		auto is = InputStream::OpenReady(argv[1], mutex, cond);
+		ret = dump_input_stream(std::move(is));
 	}
 
 	/* deinitialize everything */

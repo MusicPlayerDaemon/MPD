@@ -56,10 +56,7 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
 static InputStreamPtr
 decoder_input_stream_open(DecoderControl &dc, const char *uri)
 {
-	Error error;
-	auto is = InputStream::Open(uri, dc.mutex, dc.cond, error);
-	if (is == nullptr)
-		throw error;
+	auto is = InputStream::Open(uri, dc.mutex, dc.cond);
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
@@ -76,6 +73,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 		is->Update();
 	}
 
+	Error error;
 	if (!is->Check(error))
 		throw error;
 
@@ -85,10 +83,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 static InputStreamPtr
 decoder_input_stream_open(DecoderControl &dc, Path path)
 {
-	Error error;
-	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond, error);
-	if (is == nullptr)
-		throw error;
+	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond);
 
 	assert(is->IsReady());
 

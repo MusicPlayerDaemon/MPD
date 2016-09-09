@@ -91,23 +91,19 @@ NfsFileReader::DeferClose()
 	BlockingCall(io_thread_get(), [this](){ Close(); });
 }
 
-bool
-NfsFileReader::Open(const char *uri, Error &error)
+void
+NfsFileReader::Open(const char *uri)
 {
 	assert(state == State::INITIAL);
 
-	if (!StringStartsWith(uri, "nfs://")) {
-		error.Set(nfs_domain, "Malformed nfs:// URI");
-		return false;
-	}
+	if (!StringStartsWith(uri, "nfs://"))
+		throw std::runtime_error("Malformed nfs:// URI");
 
 	uri += 6;
 
 	const char *slash = strchr(uri, '/');
-	if (slash == nullptr) {
-		error.Set(nfs_domain, "Malformed nfs:// URI");
-		return false;
-	}
+	if (slash == nullptr)
+		throw std::runtime_error("Malformed nfs:// URI");
 
 	server = std::string(uri, slash);
 
@@ -121,10 +117,8 @@ NfsFileReader::Open(const char *uri, Error &error)
 		path = new_path;
 	} else {
 		slash = strrchr(uri + 1, '/');
-		if (slash == nullptr || slash[1] == 0) {
-			error.Set(nfs_domain, "Malformed nfs:// URI");
-			return false;
-		}
+		if (slash == nullptr || slash[1] == 0)
+			throw std::runtime_error("Malformed nfs:// URI");
 
 		export_name = std::string(uri, slash);
 		path = slash;
@@ -132,7 +126,6 @@ NfsFileReader::Open(const char *uri, Error &error)
 
 	state = State::DEFER;
 	DeferredMonitor::Schedule();
-	return true;
 }
 
 bool

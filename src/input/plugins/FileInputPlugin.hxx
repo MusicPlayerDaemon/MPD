@@ -20,17 +20,16 @@
 #ifndef MPD_INPUT_FILE_HXX
 #define MPD_INPUT_FILE_HXX
 
-class InputStream;
+#include "input/Ptr.hxx"
+
 class Path;
 class Mutex;
 class Cond;
-class Error;
 
 extern const struct InputPlugin input_plugin_file;
 
-InputStream *
+InputStreamPtr
 OpenFileInputStream(Path path,
-		    Mutex &mutex, Cond &cond,
-		    Error &error);
+		    Mutex &mutex, Cond &cond);
 
 #endif

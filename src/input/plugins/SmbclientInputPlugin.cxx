@@ -24,6 +24,7 @@
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "PluginUnavailable.hxx"
+#include "system/Error.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 
@@ -85,8 +86,7 @@ input_smbclient_init(gcc_unused const ConfigBlock &block)
 
 static InputStream *
 input_smbclient_open(const char *uri,
-		     Mutex &mutex, Cond &cond,
-		     Error &error)
+		     Mutex &mutex, Cond &cond)
 {
 	if (!StringStartsWith(uri, "smb://"))
 		return nullptr;
@@ -94,33 +94,30 @@ input_smbclient_open(const char *uri,
 	const ScopeLock protect(smbclient_mutex);
 
 	SMBCCTX *ctx = smbc_new_context();
-	if (ctx == nullptr) {
-		error.SetErrno("smbc_new_context() failed");
-		return nullptr;
-	}
+	if (ctx == nullptr)
+		throw MakeErrno("smbc_new_context() failed");
 
 	SMBCCTX *ctx2 = smbc_init_context(ctx);
 	if (ctx2 == nullptr) {
-		error.SetErrno("smbc_init_context() failed");
+		int e = errno;
 		smbc_free_context(ctx, 1);
-		return nullptr;
+		throw MakeErrno(e, "smbc_init_context() failed");
 	}
 
 	ctx = ctx2;
 
 	int fd = smbc_open(uri, O_RDONLY, 0);
 	if (fd < 0) {
-		error.SetErrno("smbc_open() failed");
+		int e = errno;
 		smbc_free_context(ctx, 1);
-		return nullptr;
+		throw MakeErrno(e, "smbc_open() failed");
 	}
 
 	struct stat st;
 	if (smbc_fstat(fd, &st) < 0) {
-		error.SetErrno("smbc_fstat() failed");
-		smbc_close(fd);
+		int e = errno;
 		smbc_free_context(ctx, 1);
-		return nullptr;
+		throw MakeErrno(e, "smbc_fstat() failed");
 	}
 
 	return new SmbclientInputStream(uri, mutex, cond, ctx, fd, st);

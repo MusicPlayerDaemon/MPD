@@ -34,6 +34,8 @@
 
 #include <wavpack/wavpack.h>
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -490,7 +492,11 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 		free(wvc_url);
 	};
 
-	return decoder_open_uri(decoder, uri, IgnoreError());
+	try {
+		return decoder_open_uri(decoder, uri);
+	} catch (const std::runtime_error &) {
+		return nullptr;
+	}
 }
 
 /*

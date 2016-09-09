@@ -118,16 +118,8 @@ try {
 	{
 		Mutex mutex;
 		Cond cond;
-		auto is = InputStream::OpenReady(argv[1], mutex, cond, error);
-		if (is) {
-			ret = dump_input_stream(is.get());
-		} else {
-			if (error.IsDefined())
-				LogError(error);
-			else
-				fprintf(stderr, "input_stream::Open() failed\n");
-			ret = EXIT_FAILURE;
-		}
+		auto is = InputStream::OpenReady(argv[1], mutex, cond);
+		ret = dump_input_stream(is.get());
 	}
 
 	/* deinitialize everything */

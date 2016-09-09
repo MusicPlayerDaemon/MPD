@@ -84,8 +84,7 @@ input_ffmpeg_init(gcc_unused const ConfigBlock &block)
 
 static InputStream *
 input_ffmpeg_open(const char *uri,
-		  Mutex &mutex, Cond &cond,
-		  Error &error)
+		  Mutex &mutex, Cond &cond)
 {
 	if (!StringStartsWith(uri, "gopher://") &&
 	    !StringStartsWith(uri, "rtp://") &&
@@ -97,10 +96,8 @@ input_ffmpeg_open(const char *uri,
 
 	AVIOContext *h;
 	auto result = avio_open(&h, uri, AVIO_FLAG_READ);
-	if (result != 0) {
-		SetFfmpegError(error, result);
-		return nullptr;
-	}
+	if (result != 0)
+		throw MakeFfmpegError(result);
 
 	return new FfmpegInputStream(uri, mutex, cond, h);
 }

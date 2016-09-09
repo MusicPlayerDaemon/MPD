@@ -29,6 +29,7 @@
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
 #include "util/RefCount.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -77,9 +78,8 @@ public:
 
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
-	virtual InputStream *OpenStream(const char *path,
-					Mutex &mutex, Cond &cond,
-					Error &error) override;
+	InputStream *OpenStream(const char *path,
+				Mutex &mutex, Cond &cond) override;
 };
 
 static constexpr Domain iso9660_domain("iso9660");
@@ -175,15 +175,12 @@ public:
 
 InputStream *
 Iso9660ArchiveFile::OpenStream(const char *pathname,
-			       Mutex &mutex, Cond &cond,
-			       Error &error)
+			       Mutex &mutex, Cond &cond)
 {
 	auto statbuf = iso9660_ifs_stat_translate(iso, pathname);
-	if (statbuf == nullptr) {
-		error.Format(iso9660_domain,
-			     "not found in the ISO file: %s", pathname);
-		return nullptr;
-	}
+	if (statbuf == nullptr)
+		throw FormatRuntimeError("not found in the ISO file: %s",
+					 pathname);
 
 	return new Iso9660InputStream(*this, pathname, mutex, cond,
 				      statbuf);

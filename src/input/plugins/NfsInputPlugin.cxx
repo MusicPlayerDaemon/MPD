@@ -57,10 +57,10 @@ public:
 		DeferClose();
 	}
 
-	bool Open(Error &error) {
+	void Open() {
 		assert(!IsReady());
 
-		return NfsFileReader::Open(GetURI(), error);
+		NfsFileReader::Open(GetURI());
 	}
 
 private:
@@ -119,17 +119,10 @@ NfsInputStream::DoResume()
 		reconnect_on_resume = false;
 		reconnecting = true;
 
-		mutex.unlock();
+		ScopeUnlock unlock(mutex);
+
 		NfsFileReader::Close();
-
-		Error error;
-		bool success = NfsFileReader::Open(GetURI(), error);
-		mutex.lock();
-
-		if (!success) {
-			postponed_error = std::move(error);
-			cond.broadcast();
-		}
+		NfsFileReader::Open(GetURI());
 
 		return;
 	}
@@ -229,16 +222,17 @@ input_nfs_finish()
 
 static InputStream *
 input_nfs_open(const char *uri,
-	       Mutex &mutex, Cond &cond,
-	       Error &error)
+	       Mutex &mutex, Cond &cond)
 {
 	if (!StringStartsWith(uri, "nfs://"))
 		return nullptr;
 
 	NfsInputStream *is = new NfsInputStream(uri, mutex, cond);
-	if (!is->Open(error)) {
+	try {
+		is->Open();
+	} catch (...) {
 		delete is;
-		return nullptr;
+		throw;
 	}
 
 	return is;

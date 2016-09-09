@@ -26,7 +26,6 @@
 #include "AudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/Generic.hxx"
-#include "util/Error.hxx"
 #include "fs/Path.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
@@ -89,7 +88,6 @@ try {
 
 	const ScopeIOThread io_thread;
 
-	Error error;
 	input_stream_global_init();
 	decoder_plugin_init_all();
 
@@ -105,13 +103,7 @@ try {
 		Cond cond;
 
 		auto is = InputStream::OpenReady(path.c_str(),
-						 mutex, cond,
-						 error);
-		if (!is) {
-			FormatError(error, "Failed to open %s", path.c_str());
-			return EXIT_FAILURE;
-		}
-
+						 mutex, cond);
 		success = plugin->ScanStream(*is, print_handler, nullptr);
 	}
 

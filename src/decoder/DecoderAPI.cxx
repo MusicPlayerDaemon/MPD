@@ -258,7 +258,7 @@ void decoder_seek_error(Decoder & decoder)
 }
 
 InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
+decoder_open_uri(Decoder &decoder, const char *uri)
 {
 	assert(decoder.dc.state == DecoderState::START ||
 	       decoder.dc.state == DecoderState::DECODE);
@@ -267,9 +267,7 @@ decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
 	Mutex &mutex = dc.mutex;
 	Cond &cond = dc.cond;
 
-	auto is = InputStream::Open(uri, mutex, cond, error);
-	if (!is)
-		return nullptr;
+	auto is = InputStream::Open(uri, mutex, cond);
 
 	const ScopeLock lock(mutex);
 	while (true) {

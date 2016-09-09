@@ -32,6 +32,7 @@
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -78,17 +79,18 @@ struct CurlInputStream final : public AsyncInputStream {
 				  CURL_MAX_BUFFERED,
 				  CURL_RESUME_AT),
 		 request_headers(nullptr),
-		 icy(new IcyInputStream(this)) {}
+		 icy(new IcyInputStream(this)) {
+		InitEasy();
+	}
 
 	~CurlInputStream();
 
 	CurlInputStream(const CurlInputStream &) = delete;
 	CurlInputStream &operator=(const CurlInputStream &) = delete;
 
-	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond,
-				 Error &error);
+	static InputStream *Open(const char *url, Mutex &mutex, Cond &cond);
 
-	bool InitEasy(Error &error);
+	void InitEasy();
 
 	/**
 	 * Frees the current "libcurl easy" handle, and everything
@@ -201,7 +203,7 @@ public:
 		curl_multi_cleanup(multi);
 	}
 
-	bool Add(CurlInputStream *c, Error &error);
+	void Add(CurlInputStream *c);
 	void Remove(CurlInputStream *c);
 
 	/**
@@ -355,41 +357,39 @@ CurlSocket::OnSocketReady(unsigned flags)
 
 /**
  * Runs in the I/O thread.  No lock needed.
+ *
+ * Throws std::runtime_error on error.
  */
-inline bool
-CurlMulti::Add(CurlInputStream *c, Error &error)
+inline void
+CurlMulti::Add(CurlInputStream *c)
 {
 	assert(io_thread_inside());
 	assert(c != nullptr);
 	assert(c->easy != nullptr);
 
 	CURLMcode mcode = curl_multi_add_handle(multi, c->easy);
-	if (mcode != CURLM_OK) {
-		error.Format(curlm_domain, mcode,
-			     "curl_multi_add_handle() failed: %s",
-			     curl_multi_strerror(mcode));
-		return false;
-	}
+	if (mcode != CURLM_OK)
+		throw FormatRuntimeError("curl_multi_add_handle() failed: %s",
+					 curl_multi_strerror(mcode));
 
 	InvalidateSockets();
-	return true;
 }
 
 /**
  * Call input_curl_easy_add() in the I/O thread.  May be called from
  * any thread.  Caller must not hold a mutex.
+ *
+ * Throws std::runtime_error on error.
  */
-static bool
-input_curl_easy_add_indirect(CurlInputStream *c, Error &error)
+static void
+input_curl_easy_add_indirect(CurlInputStream *c)
 {
 	assert(c != nullptr);
 	assert(c->easy != nullptr);
 
-	bool result;
-	BlockingCall(io_thread_get(), [c, &error, &result](){
-			result = curl_multi->Add(c, error);
+	BlockingCall(io_thread_get(), [c](){
+			curl_multi->Add(c);
 		});
-	return result;
 }
 
 inline void
@@ -727,14 +727,12 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 	return c.DataReceived(ptr, size);
 }
 
-bool
-CurlInputStream::InitEasy(Error &error)
+void
+CurlInputStream::InitEasy()
 {
 	easy = curl_easy_init();
-	if (easy == nullptr) {
-		error.Set(curl_domain, "curl_easy_init() failed");
-		return false;
-	}
+	if (easy == nullptr)
+		throw std::runtime_error("curl_easy_init() failed");
 
 	curl_easy_setopt(easy, CURLOPT_PRIVATE, (void *)this);
 	curl_easy_setopt(easy, CURLOPT_USERAGENT,
@@ -773,19 +771,14 @@ CurlInputStream::InitEasy(Error &error)
 	curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
 
 	CURLcode code = curl_easy_setopt(easy, CURLOPT_URL, GetURI());
-	if (code != CURLE_OK) {
-		error.Format(curl_domain, code,
-			     "curl_easy_setopt() failed: %s",
-			     curl_easy_strerror(code));
-		return false;
-	}
+	if (code != CURLE_OK)
+		throw FormatRuntimeError("curl_easy_setopt() failed: %s",
+					 curl_easy_strerror(code));
 
 	request_headers = nullptr;
 	request_headers = curl_slist_append(request_headers,
 					       "Icy-Metadata: 1");
 	curl_easy_setopt(easy, CURLOPT_HTTPHEADER, request_headers);
-
-	return true;
 }
 
 void
@@ -809,11 +802,11 @@ CurlInputStream::DoSeek(offset_type new_offset)
 		return;
 	}
 
-	Error error;
-	if (!InitEasy(postponed_error)) {
+	try {
+		InitEasy();
+	} catch (...) {
 		mutex.lock();
-		PostponeError(std::move(error));
-		return;
+		throw;
 	}
 
 	/* send the "Range" header */
@@ -823,10 +816,11 @@ CurlInputStream::DoSeek(offset_type new_offset)
 		curl_easy_setopt(easy, CURLOPT_RANGE, range);
 	}
 
-	if (!input_curl_easy_add_indirect(this, error)) {
+	try {
+		input_curl_easy_add_indirect(this);
+	} catch (...) {
 		mutex.lock();
-		PostponeError(std::move(error));
-		return;
+		throw;
 	}
 
 	mutex.lock();
@@ -834,27 +828,29 @@ CurlInputStream::DoSeek(offset_type new_offset)
 }
 
 inline InputStream *
-CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond,
-		      Error &error)
+CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 {
 	CurlInputStream *c = new CurlInputStream(url, mutex, cond);
-	if (!c->InitEasy(error) || !input_curl_easy_add_indirect(c, error)) {
+
+	try {
+		c->InitEasy();
+		input_curl_easy_add_indirect(c);
+	} catch (...) {
 		delete c;
-		return nullptr;
+		throw;
 	}
 
 	return c->icy;
 }
 
 static InputStream *
-input_curl_open(const char *url, Mutex &mutex, Cond &cond,
-		Error &error)
+input_curl_open(const char *url, Mutex &mutex, Cond &cond)
 {
 	if (memcmp(url, "http://",  7) != 0 &&
 	    memcmp(url, "https://", 8) != 0)
 		return nullptr;
 
-	return CurlInputStream::Open(url, mutex, cond, error);
+	return CurlInputStream::Open(url, mutex, cond);
 }
 
 const struct InputPlugin input_plugin_curl = {

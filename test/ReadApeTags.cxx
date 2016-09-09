@@ -26,7 +26,6 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "util/StringView.hxx"
-#include "util/Error.hxx"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,7 +48,7 @@ MyApeTagCallback(gcc_unused unsigned long flags,
 
 int
 main(int argc, char **argv)
-{
+try {
 #ifdef HAVE_LOCALE_H
 	/* initialize locale */
 	setlocale(LC_CTYPE,"");
@@ -65,12 +64,7 @@ main(int argc, char **argv)
 	Mutex mutex;
 	Cond cond;
 
-	Error error;
-	auto is = OpenLocalInputStream(path, mutex, cond, error);
-	if (!is) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	auto is = OpenLocalInputStream(path, mutex, cond);
 
 	if (!tag_ape_scan(*is, MyApeTagCallback)) {
 		fprintf(stderr, "error\n");
@@ -78,4 +72,7 @@ main(int argc, char **argv)
 	}
 
 	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

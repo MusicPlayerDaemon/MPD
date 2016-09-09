@@ -72,8 +72,7 @@ MmsInputStream::Open(Error &error)
 
 static InputStream *
 input_mms_open(const char *url,
-	       Mutex &mutex, Cond &cond,
-	       gcc_unused Error &error)
+	       Mutex &mutex, Cond &cond)
 {
 	if (!StringStartsWith(url, "mms://") &&
 	    !StringStartsWith(url, "mmsh://") &&

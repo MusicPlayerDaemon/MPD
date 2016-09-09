@@ -51,11 +51,12 @@ public:
 	/**
 	 * Opens an InputStream of a file within the archive.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param path the path within the archive
 	 */
 	virtual InputStream *OpenStream(const char *path,
-					Mutex &mutex, Cond &cond,
-					Error &error) = 0;
+					Mutex &mutex, Cond &cond) = 0;
 };
 
 #endif

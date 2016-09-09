@@ -74,9 +74,9 @@ decoder_seek_error(gcc_unused Decoder &decoder)
 }
 
 InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
+decoder_open_uri(Decoder &decoder, const char *uri)
 {
-	return InputStream::OpenReady(uri, decoder.mutex, decoder.cond, error);
+	return InputStream::OpenReady(uri, decoder.mutex, decoder.cond);
 }
 
 size_t

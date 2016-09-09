@@ -36,7 +36,6 @@
 
 struct ConfigBlock;
 class InputStream;
-class Error;
 struct Tag;
 
 struct InputPlugin {
@@ -58,9 +57,11 @@ struct InputPlugin {
 	 */
 	void (*finish)();
 
+	/**
+	 * Throws std::runtime_error on error.
+	 */
 	InputStream *(*open)(const char *uri,
-			     Mutex &mutex, Cond &cond,
-			     Error &error);
+			     Mutex &mutex, Cond &cond);
 };
 
 #endif

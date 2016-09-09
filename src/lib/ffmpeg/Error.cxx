@@ -26,6 +26,14 @@ extern "C" {
 #include <libavutil/error.h>
 }
 
+std::runtime_error
+MakeFfmpegError(int errnum)
+{
+	char msg[256];
+	av_strerror(errnum, msg, sizeof(msg));
+	return std::runtime_error(msg);
+}
+
 void
 SetFfmpegError(Error &error, int errnum)
 {

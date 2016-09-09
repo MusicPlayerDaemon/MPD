@@ -61,7 +61,11 @@ public:
 	void Close();
 	void DeferClose();
 
-	bool Open(const char *uri, Error &error);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Open(const char *uri);
+
 	bool Read(uint64_t offset, size_t size, Error &error);
 	void CancelRead();
 

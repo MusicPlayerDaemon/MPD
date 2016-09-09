@@ -20,7 +20,12 @@
 #ifndef MPD_FFMPEG_ERROR_HXX
 #define MPD_FFMPEG_ERROR_HXX
 
+#include <stdexcept>
+
 class Error;
+
+std::runtime_error
+MakeFfmpegError(int errnum);
 
 void
 SetFfmpegError(Error &error, int errnum);
