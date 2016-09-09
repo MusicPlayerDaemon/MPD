@@ -32,6 +32,7 @@
 #include "util/Error.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ReusableArray.hxx"
+#include "util/ScopeExit.hxx"
 
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
@@ -254,32 +255,31 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 		return false;
 	}
 
+	AtScopeExit(hw_params) {
+		snd_pcm_hw_params_free(hw_params);
+	};
+
 	if ((err = snd_pcm_hw_params_any(capture_handle, hw_params)) < 0) {
 		error.Format(alsa_input_domain, "Cannot initialize hardware parameter structure (%s)", snd_strerror(err));
-		snd_pcm_hw_params_free(hw_params);
 		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_set_access(capture_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
 		error.Format(alsa_input_domain, "Cannot set access type (%s)", snd_strerror (err));
-		snd_pcm_hw_params_free(hw_params);
 		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0) {
-		snd_pcm_hw_params_free(hw_params);
 		error.Format(alsa_input_domain, "Cannot set sample format (%s)", snd_strerror (err));
 		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_set_channels(capture_handle, hw_params, channels)) < 0) {
-		snd_pcm_hw_params_free(hw_params);
 		error.Format(alsa_input_domain, "Cannot set channels (%s)", snd_strerror (err));
 		return false;
 	}
 
 	if ((err = snd_pcm_hw_params_set_rate(capture_handle, hw_params, rate, 0)) < 0) {
-		snd_pcm_hw_params_free(hw_params);
 		error.Format(alsa_input_domain, "Cannot set sample rate (%s)", snd_strerror (err));
 		return false;
 	}
@@ -296,40 +296,36 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 							  &period, &direction)) < 0) {
 		error.Format(alsa_input_domain, "Cannot set period size (%s)",
 			     snd_strerror(err));
-		snd_pcm_hw_params_free(hw_params);
 		return false;
 	}
 
 	if ((err = snd_pcm_hw_params(capture_handle, hw_params)) < 0) {
 		error.Format(alsa_input_domain, "Cannot set parameters (%s)",
 			     snd_strerror(err));
-		snd_pcm_hw_params_free(hw_params);
 		return false;
 	}
-
-	snd_pcm_hw_params_free (hw_params);
 
 	snd_pcm_sw_params_t *sw_params;
 
 	snd_pcm_sw_params_malloc(&sw_params);
 	snd_pcm_sw_params_current(capture_handle, sw_params);
 
+	AtScopeExit(sw_params) {
+		snd_pcm_sw_params_free(sw_params);
+	};
+
 	if ((err = snd_pcm_sw_params_set_start_threshold(capture_handle, sw_params,
 							 period)) < 0)  {
 		error.Format(alsa_input_domain,
 			     "unable to set start threshold (%s)", snd_strerror(err));
-		snd_pcm_sw_params_free(sw_params);
 		return false;
 	}
 
 	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0) {
 		error.Format(alsa_input_domain,
 			     "unable to install sw params (%s)", snd_strerror(err));
-		snd_pcm_sw_params_free(sw_params);
 		return false;
 	}
-
-	snd_pcm_sw_params_free(sw_params);
 
 	return true;
 }
