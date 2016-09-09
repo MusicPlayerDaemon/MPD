@@ -25,6 +25,8 @@
 #include "thread/Cond.hxx"
 #include "Compiler.h"
 
+#include <exception>
+
 #include <assert.h>
 
 class BlockingCallMonitor final
@@ -36,6 +38,8 @@ class BlockingCallMonitor final
 	Cond cond;
 
 	bool done;
+
+	std::exception_ptr exception;
 
 public:
 	BlockingCallMonitor(EventLoop &_loop, std::function<void()> &&_f)
@@ -50,13 +54,20 @@ public:
 		while (!done)
 			cond.wait(mutex);
 		mutex.unlock();
+
+		if (exception)
+			std::rethrow_exception(exception);
 	}
 
 private:
 	virtual void RunDeferred() override {
 		assert(!done);
 
-		f();
+		try {
+			f();
+		} catch (...) {
+			exception = std::current_exception();
+		}
 
 		mutex.lock();
 		done = true;
