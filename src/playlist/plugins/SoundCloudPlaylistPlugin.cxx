@@ -103,10 +103,10 @@ static const char *const key_str[] = {
 
 struct SoundCloudJsonData {
 	int key;
-	char* stream_url;
+	char *stream_url = nullptr;
 	long duration;
-	char* title;
-	int got_url; /* nesting level of last stream_url */
+	char *title = nullptr;
+	int got_url = 0; /* nesting level of last stream_url */
 
 	std::forward_list<DetachedSong> songs;
 };
@@ -326,9 +326,6 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 	}
 
 	SoundCloudJsonData data;
-	data.got_url = 0;
-	data.title = nullptr;
-	data.stream_url = nullptr;
 	yajl_handle hand = yajl_alloc(&parse_callbacks, nullptr, &data);
 
 	int ret = soundcloud_parse_json(u, hand, mutex, cond);
