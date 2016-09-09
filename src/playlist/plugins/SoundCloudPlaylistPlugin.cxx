@@ -242,7 +242,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 		return -1;
 	}
 
-	mutex.lock();
+	const ScopeLock protect(mutex);
 
 	yajl_status stat;
 	int done = 0;
@@ -259,7 +259,6 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 			if (input_stream->IsEOF()) {
 				done = true;
 			} else {
-				mutex.unlock();
 				return -1;
 			}
 		}
@@ -276,8 +275,6 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 			break;
 		}
 	}
-
-	mutex.unlock();
 
 	return 0;
 }
