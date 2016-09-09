@@ -101,7 +101,7 @@ static const char *const key_str[] = {
 	nullptr,
 };
 
-struct parse_data {
+struct SoundCloudJsonData {
 	int key;
 	char* stream_url;
 	long duration;
@@ -114,7 +114,7 @@ struct parse_data {
 static int
 handle_integer(void *ctx, long long intval)
 {
-	struct parse_data *data = (struct parse_data *) ctx;
+	auto *data = (SoundCloudJsonData *) ctx;
 
 	switch (data->key) {
 	case Duration:
@@ -130,7 +130,7 @@ handle_integer(void *ctx, long long intval)
 static int
 handle_string(void *ctx, const unsigned char *stringval, size_t stringlen)
 {
-	struct parse_data *data = (struct parse_data *) ctx;
+	auto *data = (SoundCloudJsonData *) ctx;
 	const char *s = (const char *) stringval;
 
 	switch (data->key) {
@@ -153,7 +153,7 @@ handle_string(void *ctx, const unsigned char *stringval, size_t stringlen)
 static int
 handle_mapkey(void *ctx, const unsigned char *stringval, size_t stringlen)
 {
-	struct parse_data *data = (struct parse_data *) ctx;
+	auto *data = (SoundCloudJsonData *) ctx;
 
 	int i;
 	data->key = Other;
@@ -171,7 +171,7 @@ handle_mapkey(void *ctx, const unsigned char *stringval, size_t stringlen)
 static int
 handle_start_map(void *ctx)
 {
-	struct parse_data *data = (struct parse_data *) ctx;
+	auto *data = (SoundCloudJsonData *) ctx;
 
 	if (data->got_url > 0)
 		data->got_url++;
@@ -182,7 +182,7 @@ handle_start_map(void *ctx)
 static int
 handle_end_map(void *ctx)
 {
-	struct parse_data *data = (struct parse_data *) ctx;
+	auto *data = (SoundCloudJsonData *) ctx;
 
 	if (data->got_url > 1) {
 		data->got_url--;
@@ -325,7 +325,7 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 		return nullptr;
 	}
 
-	struct parse_data data;
+	SoundCloudJsonData data;
 	data.got_url = 0;
 	data.title = nullptr;
 	data.stream_url = nullptr;
