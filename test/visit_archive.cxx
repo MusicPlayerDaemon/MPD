@@ -27,7 +27,6 @@
 #include "archive/ArchiveFile.hxx"
 #include "archive/ArchiveVisitor.hxx"
 #include "fs/Path.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -46,8 +45,6 @@ class MyArchiveVisitor final : public ArchiveVisitor {
 int
 main(int argc, char **argv)
 try {
-	Error error;
-
 	if (argc != 3) {
 		fprintf(stderr, "Usage: visit_archive PLUGIN PATH\n");
 		return EXIT_FAILURE;
@@ -76,15 +73,11 @@ try {
 
 	int result = EXIT_SUCCESS;
 
-	ArchiveFile *file = archive_file_open(plugin, path, error);
-	if (file != nullptr) {
-		MyArchiveVisitor visitor;
-		file->Visit(visitor);
-		file->Close();
-	} else {
-		fprintf(stderr, "%s", error.GetMessage());
-		result = EXIT_FAILURE;
-	}
+	ArchiveFile *file = archive_file_open(plugin, path);
+
+	MyArchiveVisitor visitor;
+	file->Visit(visitor);
+	file->Close();
 
 	/* deinitialize everything */
 

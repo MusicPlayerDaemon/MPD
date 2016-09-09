@@ -29,7 +29,6 @@
 #include "fs/Path.hxx"
 #include "Log.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/Error.hxx"
 
 #include <stdexcept>
 
@@ -61,10 +60,7 @@ OpenArchiveInputStream(Path path, Mutex &mutex, Cond &cond)
 		return nullptr;
 	}
 
-	Error error;
-	auto file = archive_file_open(arplug, Path::FromFS(archive), error);
-	if (file == nullptr)
-		throw std::runtime_error(error.GetMessage());
+	auto file = archive_file_open(arplug, Path::FromFS(archive));
 
 	AtScopeExit(file) {
 		file->Close();

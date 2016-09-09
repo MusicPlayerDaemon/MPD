@@ -22,7 +22,6 @@
 
 class ArchiveFile;
 class Path;
-class Error;
 
 struct ArchivePlugin {
 	const char *name;
@@ -43,9 +42,10 @@ struct ArchivePlugin {
 	/**
 	 * tryes to open archive file and associates handle with archive
 	 * returns pointer to handle used is all operations with this archive
-	 * or nullptr when opening fails
+	 *
+	 * Throws std::runtime_error on error.
 	 */
-	ArchiveFile *(*open)(Path path_fs, Error &error);
+	ArchiveFile *(*open)(Path path_fs);
 
 	/**
 	 * suffixes handled by this plugin.
@@ -55,7 +55,6 @@ struct ArchivePlugin {
 };
 
 ArchiveFile *
-archive_file_open(const ArchivePlugin *plugin, Path path,
-		  Error &error);
+archive_file_open(const ArchivePlugin *plugin, Path path);
 
 #endif

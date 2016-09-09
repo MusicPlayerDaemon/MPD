@@ -123,16 +123,13 @@ Iso9660ArchiveFile::Visit(char *path, size_t length, size_t capacity,
 }
 
 static ArchiveFile *
-iso9660_archive_open(Path pathname, Error &error)
+iso9660_archive_open(Path pathname)
 {
 	/* open archive */
 	auto iso = iso9660_open(pathname.c_str());
-	if (iso == nullptr) {
-		error.Format(iso9660_domain,
-			     "Failed to open ISO9660 file %s",
-			     pathname.c_str());
-		return nullptr;
-	}
+	if (iso == nullptr)
+		throw FormatRuntimeError("Failed to open ISO9660 file %s",
+					 pathname.c_str());
 
 	return new Iso9660ArchiveFile(iso);
 }

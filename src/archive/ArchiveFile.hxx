@@ -22,7 +22,6 @@
 
 class Mutex;
 class Cond;
-class Error;
 struct ArchivePlugin;
 class ArchiveVisitor;
 class InputStream;

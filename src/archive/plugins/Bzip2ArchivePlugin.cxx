@@ -127,7 +127,7 @@ Bzip2InputStream::Open()
 /* archive open && listing routine */
 
 static ArchiveFile *
-bz2_open(Path pathname, gcc_unused Error &error)
+bz2_open(Path pathname)
 {
 	static Mutex mutex;
 	static Cond cond;
