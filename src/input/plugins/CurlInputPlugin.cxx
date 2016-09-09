@@ -35,6 +35,7 @@
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
+#include "PluginUnavailable.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -533,15 +534,11 @@ CurlMulti::OnTimeout()
  */
 
 static InputPlugin::InitResult
-input_curl_init(const ConfigBlock &block, Error &error)
+input_curl_init(const ConfigBlock &block, gcc_unused Error &error)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
-	if (code != CURLE_OK) {
-		error.Format(curl_domain, code,
-			     "curl_global_init() failed: %s",
-			     curl_easy_strerror(code));
-		return InputPlugin::InitResult::UNAVAILABLE;
-	}
+	if (code != CURLE_OK)
+		throw PluginUnavailable(curl_easy_strerror(code));
 
 	const auto version_info = curl_version_info(CURLVERSION_FIRST);
 	if (version_info != nullptr) {
@@ -576,8 +573,7 @@ input_curl_init(const ConfigBlock &block, Error &error)
 	if (multi == nullptr) {
 		curl_slist_free_all(http_200_aliases);
 		curl_global_cleanup();
-		error.Set(curl_domain, 0, "curl_multi_init() failed");
-		return InputPlugin::InitResult::UNAVAILABLE;
+		throw PluginUnavailable("curl_multi_init() failed");
 	}
 
 	curl_multi = new CurlMulti(io_thread_get(), multi);

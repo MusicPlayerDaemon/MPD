@@ -23,6 +23,7 @@
 #include "lib/smbclient/Mutex.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
+#include "PluginUnavailable.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 
@@ -73,7 +74,8 @@ input_smbclient_init(gcc_unused const ConfigBlock &block, gcc_unused Error &erro
 	try {
 		SmbclientInit();
 	} catch (const std::runtime_error &e) {
-		return InputPlugin::InitResult::UNAVAILABLE;
+		// TODO: use std::throw_with_nested()?
+		throw PluginUnavailable(e.what());
 	}
 
 	// TODO: create one global SMBCCTX here?

@@ -52,13 +52,6 @@ struct InputPlugin {
 		 * ready to be used.
 		 */
 		SUCCESS,
-
-		/**
-		 * The plugin is not available and shall be disabled.
-		 * The #Error may be set describing the situation (to
-		 * be logged).
-		 */
-		UNAVAILABLE,
 	};
 
 	const char *name;
@@ -66,8 +59,8 @@ struct InputPlugin {
 	/**
 	 * Global initialization.  This method is called when MPD starts.
 	 *
-	 * @return true on success, false if the plugin should be
-	 * disabled
+	 * Throws #PluginUnavailable if the plugin is not available
+	 * and shall be disabled.
 	 */
 	InitResult (*init)(const ConfigBlock &block, Error &error);
 

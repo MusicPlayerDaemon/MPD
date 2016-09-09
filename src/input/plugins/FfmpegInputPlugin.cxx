@@ -27,6 +27,7 @@
 #include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
+#include "PluginUnavailable.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 
@@ -73,15 +74,13 @@ input_ffmpeg_supported(void)
 
 static InputPlugin::InitResult
 input_ffmpeg_init(gcc_unused const ConfigBlock &block,
-		  Error &error)
+		  gcc_unused Error &error)
 {
 	FfmpegInit();
 
 	/* disable this plugin if there's no registered protocol */
-	if (!input_ffmpeg_supported()) {
-		error.Set(ffmpeg_domain, "No protocol");
-		return InputPlugin::InitResult::UNAVAILABLE;
-	}
+	if (!input_ffmpeg_supported())
+		throw PluginUnavailable("No protocol");
 
 	return InputPlugin::InitResult::SUCCESS;
 }

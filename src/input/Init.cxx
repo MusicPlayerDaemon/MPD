@@ -26,6 +26,7 @@
 #include "config/ConfigOption.hxx"
 #include "config/Block.hxx"
 #include "Log.hxx"
+#include "PluginUnavailable.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <stdexcept>
@@ -59,6 +60,11 @@ input_stream_global_init(Error &error)
 			result = plugin->init != nullptr
 				? plugin->init(*block, error)
 				: InputPlugin::InitResult::SUCCESS;
+		} catch (const PluginUnavailable &e) {
+			FormatError(e,
+				    "Input plugin '%s' is unavailable",
+				    plugin->name);
+			continue;
 		} catch (const std::runtime_error &e) {
 			std::throw_with_nested(FormatRuntimeError("Failed to initialize input plugin '%s'",
 								  plugin->name));
@@ -73,16 +79,6 @@ input_stream_global_init(Error &error)
 			error.FormatPrefix("Failed to initialize input plugin '%s': ",
 					   plugin->name);
 			return false;
-
-		case InputPlugin::InitResult::UNAVAILABLE:
-			if (error.IsDefined()) {
-				FormatError(error,
-					    "Input plugin '%s' is unavailable",
-					    plugin->name);
-				error.Clear();
-			}
-
-			break;
 		}
 	}
 
