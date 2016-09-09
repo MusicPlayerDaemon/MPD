@@ -28,6 +28,7 @@
 #include "util/Alloc.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <yajl/yajl_parse.h>
@@ -317,6 +318,8 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 		u = soundcloud_resolve(rest);
 	}
 
+	AtScopeExit(u) { free(u); };
+
 	if (u == nullptr) {
 		LogWarning(soundcloud_domain, "unknown soundcloud URI");
 		return nullptr;
@@ -324,11 +327,9 @@ soundcloud_open_uri(const char *uri, Mutex &mutex, Cond &cond)
 
 	SoundCloudJsonData data;
 	yajl_handle hand = yajl_alloc(&parse_callbacks, nullptr, &data);
+	AtScopeExit(hand, &data) { yajl_free(hand); };
 
 	int ret = soundcloud_parse_json(u, hand, mutex, cond);
-
-	free(u);
-	yajl_free(hand);
 
 	if (ret == -1)
 		return nullptr;
