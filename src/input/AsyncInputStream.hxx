@@ -26,6 +26,8 @@
 #include "util/CircularBuffer.hxx"
 #include "util/Error.hxx"
 
+#include <exception>
+
 /**
  * Helper class for moving asynchronous (non-blocking) InputStream
  * implementations to the I/O thread.  Data is being read into a ring
@@ -66,6 +68,8 @@ class AsyncInputStream : public InputStream {
 
 protected:
 	Error postponed_error;
+
+	std::exception_ptr postponed_exception;
 
 public:
 	/**

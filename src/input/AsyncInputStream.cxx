@@ -88,6 +88,12 @@ AsyncInputStream::Resume()
 bool
 AsyncInputStream::Check(Error &error)
 {
+	if (postponed_exception) {
+		auto e = std::move(postponed_exception);
+		postponed_exception = std::exception_ptr();
+		std::rethrow_exception(e);
+	}
+
 	bool success = !postponed_error.IsDefined();
 	if (!success) {
 		error = std::move(postponed_error);
@@ -181,6 +187,7 @@ bool
 AsyncInputStream::IsAvailable()
 {
 	return postponed_error.IsDefined() ||
+		postponed_exception ||
 		IsEOF() ||
 		!buffer.IsEmpty();
 }
