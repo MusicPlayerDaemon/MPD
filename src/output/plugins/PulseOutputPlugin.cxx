@@ -22,6 +22,7 @@
 #include "lib/pulse/Domain.hxx"
 #include "lib/pulse/Error.hxx"
 #include "lib/pulse/LogError.hxx"
+#include "lib/pulse/LockGuard.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
@@ -75,12 +76,8 @@ public:
 
 	bool SetVolume(const pa_cvolume &volume, Error &error);
 
-	void Lock() {
-		pa_threaded_mainloop_lock(mainloop);
-	}
-
-	void Unlock() {
-		pa_threaded_mainloop_unlock(mainloop);
+	struct pa_threaded_mainloop *GetMainloop() {
+		return mainloop;
 	}
 
 	void OnContextStateChanged(pa_context_state_t new_state);
@@ -180,16 +177,10 @@ private:
 	bool StreamPause(bool pause, Error &error);
 };
 
-void
-pulse_output_lock(PulseOutput &po)
+struct pa_threaded_mainloop *
+pulse_output_get_mainloop(PulseOutput &po)
 {
-	po.Lock();
-}
-
-void
-pulse_output_unlock(PulseOutput &po)
-{
-	po.Unlock();
+	return po.GetMainloop();
 }
 
 inline void
@@ -202,7 +193,7 @@ PulseOutput::SetMixer(PulseMixer &_mixer)
 	if (mainloop == nullptr)
 		return;
 
-	pa_threaded_mainloop_lock(mainloop);
+	Pulse::LockGuard lock(mainloop);
 
 	if (context != nullptr &&
 	    pa_context_get_state(context) == PA_CONTEXT_READY) {
@@ -212,8 +203,6 @@ PulseOutput::SetMixer(PulseMixer &_mixer)
 		    pa_stream_get_state(stream) == PA_STREAM_READY)
 			pulse_mixer_on_change(_mixer, context, stream);
 	}
-
-	pa_threaded_mainloop_unlock(mainloop);
 }
 
 void
@@ -653,7 +642,7 @@ PulseOutput::Open(AudioFormat &audio_format, Error &error)
 {
 	assert(mainloop != nullptr);
 
-	pa_threaded_mainloop_lock(mainloop);
+	Pulse::LockGuard lock(mainloop);
 
 	if (context != nullptr) {
 		switch (pa_context_get_state(context)) {
@@ -674,10 +663,8 @@ PulseOutput::Open(AudioFormat &audio_format, Error &error)
 		}
 	}
 
-	if (!WaitConnection(error)) {
-		pa_threaded_mainloop_unlock(mainloop);
+	if (!WaitConnection(error))
 		return false;
-	}
 
 	/* Use the sample formats that our version of PulseAudio and MPD
 	   have in common, otherwise force MPD to send 16 bit */
@@ -708,10 +695,8 @@ PulseOutput::Open(AudioFormat &audio_format, Error &error)
 
 	/* create a stream .. */
 
-	if (!SetupStream(ss, error)) {
-		pa_threaded_mainloop_unlock(mainloop);
+	if (!SetupStream(ss, error))
 		return false;
-	}
 
 	/* .. and connect it (asynchronously) */
 
@@ -722,11 +707,9 @@ PulseOutput::Open(AudioFormat &audio_format, Error &error)
 
 		SetPulseError(error, context,
 			      "pa_stream_connect_playback() has failed");
-		pa_threaded_mainloop_unlock(mainloop);
 		return false;
 	}
 
-	pa_threaded_mainloop_unlock(mainloop);
 	return true;
 }
 
@@ -735,7 +718,7 @@ PulseOutput::Close()
 {
 	assert(mainloop != nullptr);
 
-	pa_threaded_mainloop_lock(mainloop);
+	Pulse::LockGuard lock(mainloop);
 
 	if (pa_stream_get_state(stream) == PA_STREAM_READY) {
 		pa_operation *o =
@@ -753,8 +736,6 @@ PulseOutput::Close()
 	if (context != nullptr &&
 	    pa_context_get_state(context) != PA_CONTEXT_READY)
 		DeleteContext();
-
-	pa_threaded_mainloop_unlock(mainloop);
 }
 
 bool
@@ -806,15 +787,13 @@ PulseOutput::StreamPause(bool pause, Error &error)
 inline unsigned
 PulseOutput::Delay()
 {
-	pa_threaded_mainloop_lock(mainloop);
+	Pulse::LockGuard lock(mainloop);
 
 	unsigned result = 0;
 	if (base.pause && pa_stream_is_corked(stream) &&
 	    pa_stream_get_state(stream) == PA_STREAM_READY)
 		/* idle while paused */
 		result = 1000;
-
-	pa_threaded_mainloop_unlock(mainloop);
 
 	return result;
 }
@@ -825,29 +804,24 @@ PulseOutput::Play(const void *chunk, size_t size, Error &error)
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);
 
-	pa_threaded_mainloop_lock(mainloop);
+	Pulse::LockGuard lock(mainloop);
 
 	/* check if the stream is (already) connected */
 
-	if (!WaitStream(error)) {
-		pa_threaded_mainloop_unlock(mainloop);
+	if (!WaitStream(error))
 		return 0;
-	}
 
 	assert(context != nullptr);
 
 	/* unpause if previously paused */
 
-	if (pa_stream_is_corked(stream) && !StreamPause(false, error)) {
-		pa_threaded_mainloop_unlock(mainloop);
+	if (pa_stream_is_corked(stream) && !StreamPause(false, error))
 		return 0;
-	}
 
 	/* wait until the server allows us to write */
 
 	while (writable == 0) {
 		if (pa_stream_is_suspended(stream)) {
-			pa_threaded_mainloop_unlock(mainloop);
 			error.Set(pulse_domain, "suspended");
 			return 0;
 		}
@@ -855,7 +829,6 @@ PulseOutput::Play(const void *chunk, size_t size, Error &error)
 		pa_threaded_mainloop_wait(mainloop);
 
 		if (pa_stream_get_state(stream) != PA_STREAM_READY) {
-			pa_threaded_mainloop_unlock(mainloop);
 			error.Set(pulse_domain, "disconnected");
 			return 0;
 		}
@@ -871,7 +844,6 @@ PulseOutput::Play(const void *chunk, size_t size, Error &error)
 
 	int result = pa_stream_write(stream, chunk, size, nullptr,
 				     0, PA_SEEK_RELATIVE);
-	pa_threaded_mainloop_unlock(mainloop);
 	if (result < 0) {
 		SetPulseError(error, context, "pa_stream_write() failed");
 		return 0;
@@ -886,12 +858,11 @@ PulseOutput::Cancel()
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);
 
-	pa_threaded_mainloop_lock(mainloop);
+	Pulse::LockGuard lock(mainloop);
 
 	if (pa_stream_get_state(stream) != PA_STREAM_READY) {
 		/* no need to flush when the stream isn't connected
 		   yet */
-		pa_threaded_mainloop_unlock(mainloop);
 		return;
 	}
 
@@ -902,12 +873,10 @@ PulseOutput::Cancel()
 					  this);
 	if (o == nullptr) {
 		LogPulseError(context, "pa_stream_flush() has failed");
-		pa_threaded_mainloop_unlock(mainloop);
 		return;
 	}
 
 	pulse_wait_for_operation(mainloop, o);
-	pa_threaded_mainloop_unlock(mainloop);
 }
 
 inline bool
@@ -916,13 +885,12 @@ PulseOutput::Pause()
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);
 
-	pa_threaded_mainloop_lock(mainloop);
+	Pulse::LockGuard lock(mainloop);
 
 	/* check if the stream is (already/still) connected */
 
 	Error error;
 	if (!WaitStream(error)) {
-		pa_threaded_mainloop_unlock(mainloop);
 		LogError(error);
 		return false;
 	}
@@ -932,12 +900,10 @@ PulseOutput::Pause()
 	/* cork the stream */
 
 	if (!pa_stream_is_corked(stream) && !StreamPause(true, error)) {
-		pa_threaded_mainloop_unlock(mainloop);
 		LogError(error);
 		return false;
 	}
 
-	pa_threaded_mainloop_unlock(mainloop);
 	return true;
 }
 

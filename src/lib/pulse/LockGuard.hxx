@@ -17,27 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PULSE_OUTPUT_PLUGIN_HXX
-#define MPD_PULSE_OUTPUT_PLUGIN_HXX
+#ifndef MPD_PULSE_LOCK_GUARD_HXX
+#define MPD_PULSE_LOCK_GUARD_HXX
 
-class PulseOutput;
-class PulseMixer;
-struct pa_cvolume;
-class Error;
+#include <pulse/thread-mainloop.h>
 
-extern const struct AudioOutputPlugin pulse_output_plugin;
+namespace Pulse {
 
-struct pa_threaded_mainloop *
-pulse_output_get_mainloop(PulseOutput &po);
+class LockGuard {
+	struct pa_threaded_mainloop *const mainloop;
 
-void
-pulse_output_set_mixer(PulseOutput &po, PulseMixer &pm);
+public:
+	explicit LockGuard(struct pa_threaded_mainloop *_mainloop)
+		:mainloop(_mainloop) {
+		pa_threaded_mainloop_lock(mainloop);
+	}
 
-void
-pulse_output_clear_mixer(PulseOutput &po, PulseMixer &pm);
+	~LockGuard() {
+		pa_threaded_mainloop_unlock(mainloop);
+	}
 
-bool
-pulse_output_set_volume(PulseOutput &po,
-			const pa_cvolume *volume, Error &error);
+	LockGuard(const LockGuard &) = delete;
+	LockGuard &operator=(const LockGuard &) = delete;
+};
+
+};
 
 #endif

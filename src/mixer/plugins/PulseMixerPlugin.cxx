@@ -21,6 +21,7 @@
 #include "PulseMixerPlugin.hxx"
 #include "lib/pulse/Domain.hxx"
 #include "lib/pulse/LogError.hxx"
+#include "lib/pulse/LockGuard.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
@@ -181,12 +182,9 @@ PulseMixer::~PulseMixer()
 int
 PulseMixer::GetVolume(gcc_unused Error &error)
 {
-	pulse_output_lock(output);
+	Pulse::LockGuard lock(pulse_output_get_mainloop(output));
 
-	int result = GetVolumeInternal(error);
-	pulse_output_unlock(output);
-
-	return result;
+	return GetVolumeInternal(error);
 }
 
 /**
@@ -203,10 +201,9 @@ PulseMixer::GetVolumeInternal(gcc_unused Error &error)
 bool
 PulseMixer::SetVolume(unsigned new_volume, Error &error)
 {
-	pulse_output_lock(output);
+	Pulse::LockGuard lock(pulse_output_get_mainloop(output));
 
 	if (!online) {
-		pulse_output_unlock(output);
 		error.Set(pulse_domain, "disconnected");
 		return false;
 	}
@@ -218,7 +215,6 @@ PulseMixer::SetVolume(unsigned new_volume, Error &error)
 	if (success)
 		volume = cvolume;
 
-	pulse_output_unlock(output);
 	return success;
 }
 
