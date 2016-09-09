@@ -30,8 +30,6 @@
 #include "fs/Path.hxx"
 #include "util/RefCount.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <cdio/iso9660.h>
 
@@ -81,8 +79,6 @@ public:
 	InputStream *OpenStream(const char *path,
 				Mutex &mutex, Cond &cond) override;
 };
-
-static constexpr Domain iso9660_domain("iso9660");
 
 /* archive open && listing routine */
 
@@ -167,7 +163,7 @@ public:
 
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
-	size_t Read(void *ptr, size_t size, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
 };
 
 InputStream *
@@ -184,7 +180,7 @@ Iso9660ArchiveFile::OpenStream(const char *pathname,
 }
 
 size_t
-Iso9660InputStream::Read(void *ptr, size_t read_size, Error &error)
+Iso9660InputStream::Read(void *ptr, size_t read_size)
 {
 	int readed = 0;
 	int no_blocks, cur_block;
@@ -204,12 +200,10 @@ Iso9660InputStream::Read(void *ptr, size_t read_size, Error &error)
 	readed = archive.SeekRead(ptr, statbuf->lsn + cur_block,
 				  no_blocks);
 
-	if (readed != no_blocks * ISO_BLOCKSIZE) {
-		error.Format(iso9660_domain,
-			     "error reading ISO file at lsn %lu",
-			     (unsigned long)cur_block);
-		return 0;
-	}
+	if (readed != no_blocks * ISO_BLOCKSIZE)
+		throw FormatRuntimeError("error reading ISO file at lsn %lu",
+					 (unsigned long)cur_block);
+
 	if (left_bytes < read_size) {
 		readed = left_bytes;
 	}

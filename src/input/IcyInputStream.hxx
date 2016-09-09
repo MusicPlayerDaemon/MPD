@@ -62,7 +62,7 @@ public:
 	/* virtual methods from InputStream */
 	void Update() override;
 	Tag *ReadTag() override;
-	size_t Read(void *ptr, size_t size, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
 };
 
 #endif

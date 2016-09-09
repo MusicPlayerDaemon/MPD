@@ -330,7 +330,10 @@ oggflac_decode(Decoder &decoder, InputStream &input_stream)
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream.LockRewind(IgnoreError());
+	try {
+		input_stream.LockRewind();
+	} catch (const std::runtime_error &) {
+	}
 
 	flac_decode_internal(decoder, input_stream, true);
 }

@@ -22,9 +22,10 @@
 #include "FlacDomain.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 #include "Compiler.h"
+
+#include <stdexcept>
 
 FLAC__StreamDecoderReadStatus
 FlacInput::Read(FLAC__byte buffer[], size_t *bytes)
@@ -50,13 +51,13 @@ FlacInput::Seek(FLAC__uint64 absolute_byte_offset)
 	if (!input_stream.IsSeekable())
 		return FLAC__STREAM_DECODER_SEEK_STATUS_UNSUPPORTED;
 
-	::Error error;
-	if (!input_stream.LockSeek(absolute_byte_offset, error)) {
-		LogError(error);
+	try {
+		input_stream.LockSeek(absolute_byte_offset);
+		return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
 	}
-
-	return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 }
 
 FLAC__StreamDecoderTellStatus

@@ -21,7 +21,8 @@
 #include "OggFind.hxx"
 #include "lib/xiph/OggSyncState.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
+
+#include <stdexcept>
 
 bool
 OggFindEOS(OggSyncState &oy, ogg_stream_state &os, ogg_packet &packet)
@@ -48,8 +49,13 @@ OggSeekPageAtOffset(OggSyncState &oy, ogg_stream_state &os, InputStream &is,
 	   data */
 	ogg_stream_reset(&os);
 
-	return is.LockSeek(offset, IgnoreError()) &&
-		oy.ExpectPageSeekIn(os);
+	try {
+		is.LockSeek(offset);
+	} catch (const std::runtime_error &) {
+		return false;
+	}
+
+	return oy.ExpectPageSeekIn(os);
 }
 
 bool

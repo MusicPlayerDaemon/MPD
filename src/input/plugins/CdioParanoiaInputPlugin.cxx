@@ -98,8 +98,8 @@ class CdioParanoiaInputStream final : public InputStream {
 
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
-	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
+	void Seek(offset_type offset) override;
 };
 
 static constexpr Domain cdio_domain("cdio");
@@ -256,30 +256,26 @@ input_cdio_open(const char *uri,
 					   lsn_from, lsn_to);
 }
 
-bool
-CdioParanoiaInputStream::Seek(offset_type new_offset, Error &error)
+void
+CdioParanoiaInputStream::Seek(offset_type new_offset)
 {
-	if (new_offset > size) {
-		error.Format(cdio_domain, "Invalid offset to seek %ld (%ld)",
-			     (long int)new_offset, (long int)size);
-		return false;
-	}
+	if (new_offset > size)
+		throw FormatRuntimeError("Invalid offset to seek %ld (%ld)",
+					 (long int)new_offset, (long int)size);
 
 	/* simple case */
 	if (new_offset == offset)
-		return true;
+		return;
 
 	/* calculate current LSN */
 	lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
 	offset = new_offset;
 
 	cdio_paranoia_seek(para, lsn_from + lsn_relofs, SEEK_SET);
-
-	return true;
 }
 
 size_t
-CdioParanoiaInputStream::Read(void *ptr, size_t length, Error &error)
+CdioParanoiaInputStream::Read(void *ptr, size_t length)
 {
 	size_t nbytes = 0;
 	int diff;
@@ -309,11 +305,9 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length, Error &error)
 			if (s_mess) {
 				free(s_mess);
 			}
-			if (!rbuf) {
-				error.Set(cdio_domain,
-					  "paranoia read error. Stopping.");
-				return 0;
-			}
+			if (!rbuf)
+				throw std::runtime_error("paranoia read error");
+
 			//store current buffer
 			memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
 			buffer_lsn = lsn_relofs;

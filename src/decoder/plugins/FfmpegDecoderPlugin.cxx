@@ -460,8 +460,14 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 
 	unsigned char buffer[BUFFER_SIZE];
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING || !is.LockRewind(IgnoreError()))
+	if (nbytes <= PADDING)
 		return nullptr;
+
+	try {
+		is.LockRewind();
+	} catch (const std::runtime_error &) {
+		return nullptr;
+	}
 
 	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
 	   beyond the declared buffer limit, which makes valgrind

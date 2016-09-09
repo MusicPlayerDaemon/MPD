@@ -154,10 +154,9 @@ public:
 
 	/**
 	 * Check for errors that may have occurred in the I/O thread.
-	 *
-	 * @return false on error
+	 * Throws std::runtime_error on error.
 	 */
-	virtual bool Check(Error &error);
+	virtual void Check();
 
 	/**
 	 * Update the public attributes.  Call before accessing attributes
@@ -271,36 +270,38 @@ public:
 	 *
 	 * The caller must lock the mutex.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param offset the relative offset
 	 */
-	virtual bool Seek(offset_type offset, Error &error);
+	virtual void Seek(offset_type offset);
 
 	/**
 	 * Wrapper for Seek() which locks and unlocks the mutex; the
 	 * caller must not be holding it already.
 	 */
-	bool LockSeek(offset_type offset, Error &error);
+	void LockSeek(offset_type offset);
 
 	/**
 	 * Rewind to the beginning of the stream.  This is a wrapper
 	 * for Seek(0, error).
 	 */
-	bool Rewind(Error &error) {
-		return Seek(0, error);
+	void Rewind() {
+		Seek(0);
 	}
 
-	bool LockRewind(Error &error) {
-		return LockSeek(0, error);
+	void LockRewind() {
+		LockSeek(0);
 	}
 
 	/**
 	 * Skip input bytes.
 	 */
-	bool Skip(offset_type _offset, Error &error) {
-		return Seek(GetOffset() + _offset, error);
+	void Skip(offset_type _offset) {
+		Seek(GetOffset() + _offset);
 	}
 
-	bool LockSkip(offset_type _offset, Error &error);
+	void LockSkip(offset_type _offset);
 
 	/**
 	 * Returns true if the stream has reached end-of-file.
@@ -351,38 +352,46 @@ public:
 	 *
 	 * The caller must lock the mutex.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param ptr the buffer to read into
 	 * @param size the maximum number of bytes to read
 	 * @return the number of bytes read
 	 */
 	gcc_nonnull_all
-	virtual size_t Read(void *ptr, size_t size, Error &error) = 0;
+	virtual size_t Read(void *ptr, size_t size) = 0;
 
 	/**
 	 * Wrapper for Read() which locks and unlocks the mutex;
 	 * the caller must not be holding it already.
+	 *
+	 * Throws std::runtime_error on error.
 	 */
 	gcc_nonnull_all
-	size_t LockRead(void *ptr, size_t size, Error &error);
+	size_t LockRead(void *ptr, size_t size);
 
 	/**
 	 * Reads the whole data from the stream into the caller-supplied buffer.
 	 *
 	 * The caller must lock the mutex.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @param ptr the buffer to read into
 	 * @param size the number of bytes to read
 	 * @return true if the whole data was read, false otherwise.
 	 */
 	gcc_nonnull_all
-	bool ReadFull(void *ptr, size_t size, Error &error);
+	void ReadFull(void *ptr, size_t size);
 
 	/**
 	 * Wrapper for ReadFull() which locks and unlocks the mutex;
 	 * the caller must not be holding it already.
+	 *
+	 * Throws std::runtime_error on error.
 	 */
 	gcc_nonnull_all
-	bool LockReadFull(void *ptr, size_t size, Error &error);
+	void LockReadFull(void *ptr, size_t size);
 };
 
 #endif

@@ -63,20 +63,11 @@ InputStream::OpenReady(const char *uri,
 {
 	auto is = Open(uri, mutex, cond);
 
-	bool success;
-
 	{
 		const ScopeLock protect(mutex);
 		is->WaitReady();
-
-		Error error;
-		success = is->Check(error);
-		if (!success)
-			throw std::runtime_error(error.GetMessage());
+		is->Check();
 	}
-
-	if (!success)
-		is.reset();
 
 	return is;
 }

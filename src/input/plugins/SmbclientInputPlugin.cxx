@@ -26,7 +26,6 @@
 #include "PluginUnavailable.hxx"
 #include "system/Error.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Error.hxx"
 
 #include <libsmbclient.h>
 
@@ -60,8 +59,8 @@ public:
 		return offset >= size;
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
+	void Seek(offset_type offset) override;
 };
 
 /*
@@ -124,33 +123,28 @@ input_smbclient_open(const char *uri,
 }
 
 size_t
-SmbclientInputStream::Read(void *ptr, size_t read_size, Error &error)
+SmbclientInputStream::Read(void *ptr, size_t read_size)
 {
 	smbclient_mutex.lock();
 	ssize_t nbytes = smbc_read(fd, ptr, read_size);
 	smbclient_mutex.unlock();
-	if (nbytes < 0) {
-		error.SetErrno("smbc_read() failed");
-		nbytes = 0;
-	}
+	if (nbytes < 0)
+		throw MakeErrno("smbc_read() failed");
 
 	offset += nbytes;
 	return nbytes;
 }
 
-bool
-SmbclientInputStream::Seek(offset_type new_offset, Error &error)
+void
+SmbclientInputStream::Seek(offset_type new_offset)
 {
 	smbclient_mutex.lock();
 	off_t result = smbc_lseek(fd, new_offset, SEEK_SET);
 	smbclient_mutex.unlock();
-	if (result < 0) {
-		error.SetErrno("smbc_lseek() failed");
-		return false;
-	}
+	if (result < 0)
+		throw MakeErrno("smbc_lseek() failed");
 
 	offset = result;
-	return true;
 }
 
 const InputPlugin input_plugin_smbclient = {

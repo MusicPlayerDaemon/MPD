@@ -83,10 +83,10 @@ public:
 	void Start();
 
 	/* virtual methods from InputStream */
-	bool Check(Error &error) override final;
+	void Check() override final;
 	bool IsEOF() override final;
 	bool IsAvailable() override final;
-	size_t Read(void *ptr, size_t size, Error &error) override final;
+	size_t Read(void *ptr, size_t size) override final;
 
 protected:
 	void SetMimeType(const char *_mime) {

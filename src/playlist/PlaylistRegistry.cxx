@@ -34,10 +34,11 @@
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringUtil.hxx"
-#include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <string.h>
@@ -193,7 +194,10 @@ playlist_list_open_stream_mime2(InputStreamPtr &&is, const char *mime)
 		    StringArrayContainsCase(plugin->mime_types, mime)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			is->Rewind(IgnoreError());
+			try {
+				is->Rewind();
+			} catch (const std::runtime_error &) {
+			}
 
 			auto playlist = playlist_plugin_open_stream(plugin,
 								    std::move(is));
@@ -234,7 +238,10 @@ playlist_list_open_stream_suffix(InputStreamPtr &&is, const char *suffix)
 		    StringArrayContainsCase(plugin->suffixes, suffix)) {
 			/* rewind the stream, so each plugin gets a
 			   fresh start */
-			is->Rewind(IgnoreError());
+			try {
+				is->Rewind();
+			} catch (const std::runtime_error &) {
+			}
 
 			auto playlist = playlist_plugin_open_stream(plugin,
 								    std::move(is));

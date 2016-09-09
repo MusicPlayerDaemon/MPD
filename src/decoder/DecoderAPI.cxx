@@ -334,15 +334,8 @@ try {
 		is.cond.wait(is.mutex);
 	}
 
-	Error error;
-	size_t nbytes = is.Read(buffer, length, error);
-	assert(nbytes == 0 || !error.IsDefined());
-	assert(nbytes > 0 || error.IsDefined() || is.IsEOF());
-
-	lock.Unlock();
-
-	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
-		LogError(error);
+	size_t nbytes = is.Read(buffer, length);
+	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;
 } catch (const std::runtime_error &e) {

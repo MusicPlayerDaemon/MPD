@@ -30,8 +30,6 @@
 #include "input/LocalOpen.hxx"
 #include "thread/Cond.hxx"
 #include "util/RefCount.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "fs/Path.hxx"
 
 #include <bzlib.h>
@@ -96,14 +94,12 @@ public:
 
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
-	size_t Read(void *ptr, size_t size, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
 
 private:
 	void Open();
-	bool FillBuffer(Error &error);
+	bool FillBuffer();
 };
-
-static constexpr Domain bz2_domain("bz2");
 
 /* single archive handling allocation helpers */
 
@@ -161,13 +157,12 @@ Bzip2ArchiveFile::OpenStream(const char *path,
 }
 
 inline bool
-Bzip2InputStream::FillBuffer(Error &error)
+Bzip2InputStream::FillBuffer()
 {
 	if (bzstream.avail_in > 0)
 		return true;
 
-	size_t count = archive->istream->Read(buffer, sizeof(buffer),
-					      error);
+	size_t count = archive->istream->Read(buffer, sizeof(buffer));
 	if (count == 0)
 		return false;
 
@@ -177,7 +172,7 @@ Bzip2InputStream::FillBuffer(Error &error)
 }
 
 size_t
-Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
+Bzip2InputStream::Read(void *ptr, size_t length)
 {
 	int bz_result;
 	size_t nbytes = 0;
@@ -189,7 +184,7 @@ Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
 	bzstream.avail_out = length;
 
 	do {
-		if (!FillBuffer(error))
+		if (!FillBuffer())
 			return 0;
 
 		bz_result = BZ2_bzDecompress(&bzstream);
@@ -199,11 +194,8 @@ Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
 			break;
 		}
 
-		if (bz_result != BZ_OK) {
-			error.Set(bz2_domain, bz_result,
-				  "BZ2_bzDecompress() has failed");
-			return 0;
-		}
+		if (bz_result != BZ_OK)
+			throw std::runtime_error("BZ2_bzDecompress() has failed");
 	} while (bzstream.avail_out == length);
 
 	nbytes = length - bzstream.avail_out;

@@ -29,6 +29,8 @@
 #include "util/MimeType.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <string.h>
 
 static void
@@ -145,11 +147,11 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 			uint64_t frame = decoder_seek_where_frame(decoder);
 			offset_type offset = frame * frame_size;
 
-			Error error;
-			if (is.LockSeek(offset, error)) {
+			try {
+				is.LockSeek(offset);
 				decoder_command_finished(decoder);
-			} else {
-				LogError(error);
+			} catch (const std::runtime_error &e) {
+				LogError(e);
 				decoder_seek_error(decoder);
 			}
 

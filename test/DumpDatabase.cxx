@@ -36,6 +36,7 @@
 #include "util/Error.hxx"
 #include "util/ScopeExit.hxx"
 
+#include <stdexcept>
 #include <iostream>
 using std::cout;
 using std::cerr;
@@ -46,7 +47,7 @@ using std::endl;
 #ifdef ENABLE_UPNP
 #include "input/InputStream.hxx"
 size_t
-InputStream::LockRead(void *, size_t, Error &)
+InputStream::LockRead(void *, size_t)
 {
 	return 0;
 }

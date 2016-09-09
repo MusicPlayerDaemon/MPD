@@ -32,9 +32,10 @@ class InputStream;
 /**
  * Seeks the AIFF file to the ID3 chunk.
  *
+ * Throws std::runtime_error on error.
+ *
  * @param is a locked #InputStream
- * @return the size of the ID3 chunk on success, or 0 if this is not a
- * AIFF file or no ID3 chunk was found
+ * @return the size of the ID3 chunk
  */
 size_t
 aiff_seek_id3(InputStream &is);

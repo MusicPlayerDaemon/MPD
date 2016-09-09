@@ -43,25 +43,21 @@ ExpatParser::Parse(const char *data, size_t length, bool is_final)
 		throw ExpatError(parser);
 }
 
-bool
-ExpatParser::Parse(InputStream &is, Error &error)
+void
+ExpatParser::Parse(InputStream &is)
 {
 	assert(is.IsReady());
 
 	while (true) {
 		char buffer[4096];
-		size_t nbytes = is.LockRead(buffer, sizeof(buffer), error);
+		size_t nbytes = is.LockRead(buffer, sizeof(buffer));
 		if (nbytes == 0)
 			break;
 
 		Parse(buffer, nbytes, false);
 	}
 
-	if (error.IsDefined())
-		return false;
-
 	Parse("", 0, true);
-	return true;
 }
 
 const char *

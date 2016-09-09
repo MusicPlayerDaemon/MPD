@@ -66,7 +66,7 @@ public:
 
 	void Parse(const char *data, size_t length, bool is_final);
 
-	bool Parse(InputStream &is, Error &error);
+	void Parse(InputStream &is);
 
 	gcc_pure
 	static const char *GetAttribute(const XML_Char **atts,
@@ -97,8 +97,8 @@ public:
 		parser.Parse(data, length, is_final);
 	}
 
-	bool Parse(InputStream &is, Error &error) {
-		return parser.Parse(is, error);
+	void Parse(InputStream &is) {
+		parser.Parse(is);
 	}
 
 	gcc_pure

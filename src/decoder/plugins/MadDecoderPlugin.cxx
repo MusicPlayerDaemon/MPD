@@ -39,6 +39,8 @@
 #include <id3tag.h>
 #endif
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -217,9 +219,11 @@ MadDecoder::MadDecoder(Decoder *_decoder,
 inline bool
 MadDecoder::Seek(long offset)
 {
-	Error error;
-	if (!input_stream.LockSeek(offset, error))
+	try {
+		input_stream.LockSeek(offset);
+	} catch (const std::runtime_error &) {
 		return false;
+	}
 
 	mad_stream_buffer(&stream, input_buffer, 0);
 	stream.error = MAD_ERROR_NONE;

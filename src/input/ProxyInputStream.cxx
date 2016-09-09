@@ -49,10 +49,10 @@ ProxyInputStream::CopyAttributes()
 	}
 }
 
-bool
-ProxyInputStream::Check(Error &error)
+void
+ProxyInputStream::Check()
 {
-	return input.Check(error);
+	input.Check();
 }
 
 void
@@ -62,12 +62,11 @@ ProxyInputStream::Update()
 	CopyAttributes();
 }
 
-bool
-ProxyInputStream::Seek(offset_type new_offset, Error &error)
+void
+ProxyInputStream::Seek(offset_type new_offset)
 {
-	bool success = input.Seek(new_offset, error);
+	input.Seek(new_offset);
 	CopyAttributes();
-	return success;
 }
 
 bool
@@ -89,9 +88,9 @@ ProxyInputStream::IsAvailable()
 }
 
 size_t
-ProxyInputStream::Read(void *ptr, size_t read_size, Error &error)
+ProxyInputStream::Read(void *ptr, size_t read_size)
 {
-	size_t nbytes = input.Read(ptr, read_size, error);
+	size_t nbytes = input.Read(ptr, read_size);
 	CopyAttributes();
 	return nbytes;
 }

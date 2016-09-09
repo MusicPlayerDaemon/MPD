@@ -50,9 +50,10 @@ try {
 
 	/* determine if file has an apeV2 tag */
 	ApeFooter footer;
-	if (!is.Seek(is.GetSize() - sizeof(footer), IgnoreError()) ||
-	    !is.ReadFull(&footer, sizeof(footer), IgnoreError()) ||
-	    memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
+	is.Seek(is.GetSize() - sizeof(footer));
+	is.ReadFull(&footer, sizeof(footer));
+
+	if (memcmp(footer.id, "APETAGEX", sizeof(footer.id)) != 0 ||
 	    FromLE32(footer.version) != 2000)
 		return false;
 
@@ -60,17 +61,17 @@ try {
 	size_t remaining = FromLE32(footer.length);
 	if (remaining <= sizeof(footer) + 10 ||
 	    /* refuse to load more than one megabyte of tag data */
-	    remaining > 1024 * 1024 ||
-	    !is.Seek(is.GetSize() - remaining, IgnoreError()))
+	    remaining > 1024 * 1024)
 		return false;
+
+	is.Seek(is.GetSize() - remaining);
 
 	/* read tag into buffer */
 	remaining -= sizeof(footer);
 	assert(remaining > 10);
 
 	std::unique_ptr<char[]> buffer(new char[remaining]);
-	if (!is.ReadFull(buffer.get(), remaining, IgnoreError()))
-		return false;
+	is.ReadFull(buffer.get(), remaining);
 
 	/* read tags */
 	unsigned n = FromLE32(footer.count);

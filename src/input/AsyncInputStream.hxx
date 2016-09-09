@@ -81,12 +81,12 @@ public:
 	virtual ~AsyncInputStream();
 
 	/* virtual methods from InputStream */
-	bool Check(Error &error) final;
+	void Check() final;
 	bool IsEOF() final;
-	bool Seek(offset_type new_offset, Error &error) final;
+	void Seek(offset_type new_offset) final;
 	Tag *ReadTag() final;
 	bool IsAvailable() final;
-	size_t Read(void *ptr, size_t read_size, Error &error) final;
+	size_t Read(void *ptr, size_t read_size) final;
 
 protected:
 	/**

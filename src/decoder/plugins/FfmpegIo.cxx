@@ -24,7 +24,8 @@
 #include "FfmpegIo.hxx"
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
+
+#include <stdexcept>
 
 AvioStream::~AvioStream()
 {
@@ -68,10 +69,12 @@ AvioStream::Seek(int64_t pos, int whence)
 		return -1;
 	}
 
-	if (!input.LockSeek(pos, IgnoreError()))
+	try {
+		input.LockSeek(pos);
+		return input.GetOffset();
+	} catch (const std::runtime_error &) {
 		return -1;
-
-	return input.GetOffset();
+	}
 }
 
 int

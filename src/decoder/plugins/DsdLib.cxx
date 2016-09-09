@@ -28,14 +28,15 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/TagId3.hxx"
-#include "util/Error.hxx"
-
-#include <string.h>
-#include <stdlib.h>
 
 #ifdef ENABLE_ID3TAG
 #include <id3tag.h>
 #endif
+
+#include <stdexcept>
+
+#include <string.h>
+#include <stdlib.h>
 
 bool
 DsdId::Equals(const char *s) const
@@ -53,8 +54,13 @@ bool
 dsdlib_skip_to(Decoder *decoder, InputStream &is,
 	       offset_type offset)
 {
-	if (is.IsSeekable())
-		return is.LockSeek(offset, IgnoreError());
+	if (is.IsSeekable()) {
+		try {
+			is.LockSeek(offset);
+		} catch (const std::runtime_error &) {
+			return false;
+		}
+	}
 
 	if (is.GetOffset() > offset)
 		return false;
@@ -72,8 +78,13 @@ dsdlib_skip(Decoder *decoder, InputStream &is,
 	if (delta == 0)
 		return true;
 
-	if (is.IsSeekable())
-		return is.LockSeek(is.GetOffset() + delta, IgnoreError());
+	if (is.IsSeekable()) {
+		try {
+			is.LockSeek(is.GetOffset() + delta);
+		} catch (const std::runtime_error &) {
+			return false;
+		}
+	}
 
 	if (delta > 1024 * 1024)
 		/* don't skip more than one megabyte; it would be too

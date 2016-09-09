@@ -43,13 +43,13 @@ public:
 	ProxyInputStream &operator=(const ProxyInputStream &) = delete;
 
 	/* virtual methods from InputStream */
-	bool Check(Error &error) override;
+	void Check() override;
 	void Update() override;
-	bool Seek(offset_type new_offset, Error &error) override;
+	void Seek(offset_type new_offset) override;
 	bool IsEOF() override;
 	Tag *ReadTag() override;
 	bool IsAvailable() override;
-	size_t Read(void *ptr, size_t read_size, Error &error) override;
+	size_t Read(void *ptr, size_t read_size) override;
 
 protected:
 	/**

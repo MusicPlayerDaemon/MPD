@@ -49,8 +49,8 @@ public:
 		return GetOffset() >= GetSize();
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
+	void Seek(offset_type offset) override;
 };
 
 InputStreamPtr
@@ -84,26 +84,19 @@ input_file_open(gcc_unused const char *filename,
 	return nullptr;
 }
 
-bool
-FileInputStream::Seek(offset_type new_offset, Error &error)
-try {
+void
+FileInputStream::Seek(offset_type new_offset)
+{
 	reader.Seek((off_t)new_offset);
 	offset = new_offset;
-	return true;
-} catch (const std::exception &e) {
-	error.Set(std::current_exception());
-	return false;
 }
 
 size_t
-FileInputStream::Read(void *ptr, size_t read_size, Error &error)
-try {
+FileInputStream::Read(void *ptr, size_t read_size)
+{
 	size_t nbytes = reader.Read(ptr, read_size);
 	offset += nbytes;
 	return nbytes;
-} catch (const std::exception &e) {
-	error.Set(std::current_exception());
-	return 0;
 }
 
 const InputPlugin input_plugin_file = {

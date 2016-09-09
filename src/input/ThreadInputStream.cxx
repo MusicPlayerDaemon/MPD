@@ -114,15 +114,13 @@ ThreadInputStream::ThreadFunc(void *ctx)
 	tis.ThreadFunc();
 }
 
-bool
-ThreadInputStream::Check(Error &)
+void
+ThreadInputStream::Check()
 {
 	assert(!thread.IsInside());
 
 	if (postponed_exception)
 		std::rethrow_exception(postponed_exception);
-
-	return true;
 }
 
 bool
@@ -134,7 +132,7 @@ ThreadInputStream::IsAvailable()
 }
 
 inline size_t
-ThreadInputStream::Read(void *ptr, size_t read_size, Error &)
+ThreadInputStream::Read(void *ptr, size_t read_size)
 {
 	assert(!thread.IsInside());
 

@@ -73,9 +73,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 		is->Update();
 	}
 
-	Error error;
-	if (!is->Check(error))
-		throw error;
+	is->Check();
 
 	return is;
 }
@@ -112,7 +110,10 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 		throw StopDecoder();
 
 	/* rewind the stream, so each plugin gets a fresh start */
-	input_stream.Rewind(IgnoreError());
+	try {
+		input_stream.Rewind();
+	} catch (const std::runtime_error &) {
+	}
 
 	{
 		const ScopeUnlock unlock(decoder.dc.mutex);

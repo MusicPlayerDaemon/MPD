@@ -24,7 +24,6 @@
 #include "input/InputStream.hxx"
 #include "input/Init.hxx"
 #include "ScopeIOThread.hxx"
-#include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
@@ -68,26 +67,17 @@ dump_input_stream(InputStream *is)
 			delete tag;
 		}
 
-		Error error;
 		char buffer[4096];
-		size_t num_read = is->Read(buffer, sizeof(buffer), error);
-		if (num_read == 0) {
-			if (error.IsDefined())
-				LogError(error);
-
+		size_t num_read = is->Read(buffer, sizeof(buffer));
+		if (num_read == 0)
 			break;
-		}
 
 		ssize_t num_written = write(1, buffer, num_read);
 		if (num_written <= 0)
 			break;
 	}
 
-	Error error;
-	if (!is->Check(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	is->Check();
 
 	return 0;
 }
@@ -109,7 +99,6 @@ try {
 	archive_plugin_init_all();
 #endif
 
-	Error error;
 	input_stream_global_init();
 
 	/* open the stream and dump it */

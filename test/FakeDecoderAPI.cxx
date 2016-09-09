@@ -21,8 +21,9 @@
 #include "FakeDecoderAPI.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
 #include "Compiler.h"
+
+#include <stdexcept>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -84,7 +85,11 @@ decoder_read(gcc_unused Decoder *decoder,
 	     InputStream &is,
 	     void *buffer, size_t length)
 {
-	return is.LockRead(buffer, length, IgnoreError());
+	try {
+		return is.LockRead(buffer, length);
+	} catch (const std::runtime_error &) {
+		return 0;
+	}
 }
 
 bool

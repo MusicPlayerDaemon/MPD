@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "input/TextInputStream.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
 
@@ -55,12 +54,7 @@ dump_input_stream(InputStreamPtr &&is)
 
 	const ScopeLock protect(is->mutex);
 
-	Error error;
-	if (!is->Check(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
+	is->Check();
 	return 0;
 }
 

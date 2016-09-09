@@ -21,10 +21,9 @@
 #include "Riff.hxx"
 #include "input/InputStream.hxx"
 #include "system/ByteOrder.hxx"
-#include "Log.hxx"
-#include "util/Error.hxx"
 
 #include <limits>
+#include <stdexcept>
 
 #include <stdint.h>
 #include <string.h>
@@ -45,31 +44,25 @@ riff_seek_id3(InputStream &is)
 {
 	/* seek to the beginning and read the RIFF header */
 
-	Error error;
-	if (!is.Rewind(error)) {
-		LogError(error, "Failed to seek");
-		return 0;
-	}
+	is.Rewind();
 
 	riff_header header;
-	if (!is.ReadFull(&header, sizeof(header), IgnoreError()) ||
-	    memcmp(header.id, "RIFF", 4) != 0 ||
+	is.ReadFull(&header, sizeof(header));
+	if (memcmp(header.id, "RIFF", 4) != 0 ||
 	    (is.KnownSize() && FromLE32(header.size) > is.GetSize()))
-		/* not a RIFF file */
-		return 0;
+		throw std::runtime_error("Not a RIFF file");
 
 	while (true) {
 		/* read the chunk header */
 
 		riff_chunk_header chunk;
-		if (!is.ReadFull(&chunk, sizeof(chunk), IgnoreError()))
-			return 0;
+		is.ReadFull(&chunk, sizeof(chunk));
 
 		size_t size = FromLE32(chunk.size);
 		if (size > size_t(std::numeric_limits<int>::max()))
 			/* too dangerous, bail out: possible integer
 			   underflow when casting to off_t */
-			return 0;
+			throw std::runtime_error("RIFF chunk is too large");
 
 		if (memcmp(chunk.id, "id3 ", 4) == 0 ||
 		    memcmp(chunk.id, "ID3 ", 4) == 0)
@@ -80,7 +73,6 @@ riff_seek_id3(InputStream &is)
 			/* pad byte */
 			++size;
 
-		if (!is.Skip(size, IgnoreError()))
-			return 0;
+		is.Skip(size);
 	}
 }

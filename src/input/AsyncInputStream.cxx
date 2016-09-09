@@ -78,16 +78,14 @@ AsyncInputStream::Resume()
 	}
 }
 
-bool
-AsyncInputStream::Check(Error &)
+void
+AsyncInputStream::Check()
 {
 	if (postponed_exception) {
 		auto e = std::move(postponed_exception);
 		postponed_exception = std::exception_ptr();
 		std::rethrow_exception(e);
 	}
-
-	return true;
 }
 
 bool
@@ -97,15 +95,15 @@ AsyncInputStream::IsEOF()
 		(!open && buffer.IsEmpty());
 }
 
-bool
-AsyncInputStream::Seek(offset_type new_offset, Error &error)
+void
+AsyncInputStream::Seek(offset_type new_offset)
 {
 	assert(IsReady());
 	assert(seek_state == SeekState::NONE);
 
 	if (new_offset == offset)
 		/* no-op */
-		return true;
+		return;
 
 	if (!IsSeekable())
 		throw std::runtime_error("Not seekable");
@@ -127,7 +125,7 @@ AsyncInputStream::Seek(offset_type new_offset, Error &error)
 	}
 
 	if (new_offset == offset)
-		return true;
+		return;
 
 	/* no: ask the implementation to seek */
 
@@ -139,10 +137,7 @@ AsyncInputStream::Seek(offset_type new_offset, Error &error)
 	while (seek_state != SeekState::NONE)
 		cond.wait(mutex);
 
-	if (!Check(error))
-		return false;
-
-	return true;
+	Check();
 }
 
 void
@@ -177,15 +172,14 @@ AsyncInputStream::IsAvailable()
 }
 
 size_t
-AsyncInputStream::Read(void *ptr, size_t read_size, Error &error)
+AsyncInputStream::Read(void *ptr, size_t read_size)
 {
 	assert(!io_thread_inside());
 
 	/* wait for data */
 	CircularBuffer<uint8_t>::Range r;
 	while (true) {
-		if (!Check(error))
-			return 0;
+		Check();
 
 		r = buffer.Read();
 		if (!r.IsEmpty() || IsEOF())

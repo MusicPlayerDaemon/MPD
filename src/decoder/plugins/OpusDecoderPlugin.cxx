@@ -261,7 +261,12 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 
 	const ogg_int64_t where_granulepos(where_frame);
 
-	return SeekGranulePos(where_granulepos, IgnoreError());
+	try {
+		SeekGranulePos(where_granulepos);
+		return true;
+	} catch (const std::runtime_error &) {
+		return false;
+	}
 }
 
 static void
@@ -273,7 +278,10 @@ mpd_opus_stream_decode(Decoder &decoder,
 
 	/* rewind the stream, because ogg_codec_detect() has
 	   moved it */
-	input_stream.LockRewind(IgnoreError());
+	try {
+		input_stream.LockRewind();
+	} catch (const std::runtime_error &) {
+	}
 
 	DecoderReader reader(decoder, input_stream);
 

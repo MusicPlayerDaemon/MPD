@@ -32,6 +32,8 @@
 
 #include <mpc/mpcdec.h>
 
+#include <stdexcept>
+
 #include <math.h>
 
 struct mpc_decoder_data {
@@ -62,7 +64,12 @@ mpc_seek_cb(mpc_reader *reader, mpc_int32_t offset)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return data->is.LockSeek(offset, IgnoreError());
+	try {
+		data->is.LockSeek(offset);
+		return true;
+	} catch (const std::runtime_error &) {
+		return false;
+	}
 }
 
 static mpc_int32_t

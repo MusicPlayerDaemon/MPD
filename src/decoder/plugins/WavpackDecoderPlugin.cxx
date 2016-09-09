@@ -400,7 +400,12 @@ wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
 	WavpackInput &wpi = *wpin(id);
 
-	return wpi.is.LockSeek(pos, IgnoreError()) ? 0 : -1;
+	try {
+		wpi.is.LockSeek(pos);
+		return 0;
+	} catch (const std::runtime_error &) {
+		return -1;
+	}
 }
 
 static int
@@ -429,7 +434,12 @@ wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 		return -1;
 	}
 
-	return is.LockSeek(offset, IgnoreError()) ? 0 : -1;
+	try {
+		wpi.is.LockSeek(offset);
+		return 0;
+	} catch (const std::runtime_error &) {
+		return -1;
+	}
 }
 
 static int

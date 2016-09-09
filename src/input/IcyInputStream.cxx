@@ -79,13 +79,13 @@ IcyInputStream::ReadTag()
 }
 
 size_t
-IcyInputStream::Read(void *ptr, size_t read_size, Error &error)
+IcyInputStream::Read(void *ptr, size_t read_size)
 {
 	if (!IsEnabled())
-		return ProxyInputStream::Read(ptr, read_size, error);
+		return ProxyInputStream::Read(ptr, read_size);
 
 	while (true) {
-		size_t nbytes = ProxyInputStream::Read(ptr, read_size, error);
+		size_t nbytes = ProxyInputStream::Read(ptr, read_size);
 		if (nbytes == 0)
 			return 0;
 

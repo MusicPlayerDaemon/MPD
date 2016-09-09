@@ -26,7 +26,6 @@
 #include "tag/TagBuilder.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Alloc.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
@@ -231,29 +230,20 @@ static int
 soundcloud_parse_json(const char *url, yajl_handle hand,
 		      Mutex &mutex, Cond &cond)
 try {
-	Error error;
 	auto input_stream = InputStream::OpenReady(url, mutex, cond);
 
 	const ScopeLock protect(mutex);
 
 	yajl_status stat;
-	int done = 0;
+	bool done = false;
 
 	while (!done) {
 		char buffer[4096];
 		unsigned char *ubuffer = (unsigned char *)buffer;
 		const size_t nbytes =
-			input_stream->Read(buffer, sizeof(buffer), error);
-		if (nbytes == 0) {
-			if (error.IsDefined())
-				LogError(error);
-
-			if (input_stream->IsEOF()) {
-				done = true;
-			} else {
-				return -1;
-			}
-		}
+			input_stream->Read(buffer, sizeof(buffer));
+		if (nbytes == 0)
+			done = true;
 
 		if (done) {
 			stat = yajl_complete_parse(hand);

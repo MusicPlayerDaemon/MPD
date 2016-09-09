@@ -20,19 +20,12 @@
 #include "config.h"
 #include "Reader.hxx"
 #include "InputStream.hxx"
-#include "util/Error.hxx"
-#include "Log.hxx"
 
 size_t
 InputStreamReader::Read(void *data, size_t size)
 {
-	Error error;
-	size_t nbytes = is.LockRead(data, size, error);
-	assert(nbytes == 0 || !error.IsDefined());
-	assert(nbytes > 0 || error.IsDefined() || is.IsEOF());
-
-	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
-		LogError(error);
+	size_t nbytes = is.LockRead(data, size);
+	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;
 }
