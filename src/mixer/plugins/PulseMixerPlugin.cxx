@@ -25,12 +25,13 @@
 #include "mixer/MixerInternal.hxx"
 #include "mixer/Listener.hxx"
 #include "output/plugins/PulseOutputPlugin.hxx"
-#include "util/Error.hxx"
 
 #include <pulse/context.h>
 #include <pulse/introspect.h>
 #include <pulse/stream.h>
 #include <pulse/subscribe.h>
+
+#include <stdexcept>
 
 #include <assert.h>
 
@@ -52,18 +53,17 @@ public:
 	void Offline();
 	void VolumeCallback(const pa_sink_input_info *i, int eol);
 	void Update(pa_context *context, pa_stream *stream);
-	int GetVolumeInternal(Error &error);
+	int GetVolumeInternal();
 
 	/* virtual methods from class Mixer */
-	bool Open(gcc_unused Error &error) override {
-		return true;
+	void Open() override {
 	}
 
 	void Close() override {
 	}
 
-	int GetVolume(Error &error) override;
-	bool SetVolume(unsigned volume, Error &error) override;
+	int GetVolume() override;
+	void SetVolume(unsigned volume) override;
 };
 
 void
@@ -91,7 +91,7 @@ PulseMixer::VolumeCallback(const pa_sink_input_info *i, int eol)
 	online = true;
 	volume = i->volume;
 
-	listener.OnMixerVolumeChanged(*this, GetVolumeInternal(IgnoreError()));
+	listener.OnMixerVolumeChanged(*this, GetVolumeInternal());
 }
 
 /**
@@ -163,8 +163,7 @@ pulse_mixer_on_change(PulseMixer &pm,
 static Mixer *
 pulse_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		 MixerListener &listener,
-		 gcc_unused const ConfigBlock &block,
-		 gcc_unused Error &error)
+		 gcc_unused const ConfigBlock &block)
 {
 	PulseOutput &po = (PulseOutput &)ao;
 	PulseMixer *pm = new PulseMixer(po, listener);
@@ -180,42 +179,37 @@ PulseMixer::~PulseMixer()
 }
 
 int
-PulseMixer::GetVolume(gcc_unused Error &error)
+PulseMixer::GetVolume()
 {
 	Pulse::LockGuard lock(pulse_output_get_mainloop(output));
 
-	return GetVolumeInternal(error);
+	return GetVolumeInternal();
 }
 
 /**
  * Pulse mainloop lock must be held by caller
  */
 int
-PulseMixer::GetVolumeInternal(gcc_unused Error &error)
+PulseMixer::GetVolumeInternal()
 {
 	return online ?
 		(int)((100 * (pa_cvolume_avg(&volume) + 1)) / PA_VOLUME_NORM)
 		: -1;
 }
 
-bool
-PulseMixer::SetVolume(unsigned new_volume, Error &error)
+void
+PulseMixer::SetVolume(unsigned new_volume)
 {
 	Pulse::LockGuard lock(pulse_output_get_mainloop(output));
 
-	if (!online) {
-		error.Set(pulse_domain, "disconnected");
-		return false;
-	}
+	if (!online)
+		throw std::runtime_error("disconnected");
 
 	struct pa_cvolume cvolume;
 	pa_cvolume_set(&cvolume, volume.channels,
 		       (new_volume * PA_VOLUME_NORM + 50) / 100);
-	bool success = pulse_output_set_volume(output, &cvolume, error);
-	if (success)
-		volume = cvolume;
-
-	return success;
+	pulse_output_set_volume(output, &cvolume);
+	volume = cvolume;
 }
 
 const MixerPlugin pulse_mixer_plugin = {

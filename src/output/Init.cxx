@@ -115,8 +115,7 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 			const ConfigBlock &block,
 			const MixerPlugin *plugin,
 			PreparedFilter &filter_chain,
-			MixerListener &listener,
-			Error &error)
+			MixerListener &listener)
 {
 	Mixer *mixer;
 
@@ -127,20 +126,19 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 
 	case MixerType::NULL_:
 		return mixer_new(event_loop, null_mixer_plugin, ao, listener,
-				 block, error);
+				 block);
 
 	case MixerType::HARDWARE:
 		if (plugin == nullptr)
 			return nullptr;
 
 		return mixer_new(event_loop, *plugin, ao, listener,
-				 block, error);
+				 block);
 
 	case MixerType::SOFTWARE:
 		mixer = mixer_new(event_loop, software_mixer_plugin, ao,
 				  listener,
-				  ConfigBlock(),
-				  IgnoreError());
+				  ConfigBlock());
 		assert(mixer != nullptr);
 
 		filter_chain_append(filter_chain, "software_mixer",
@@ -246,16 +244,16 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 
 	/* set up the mixer */
 
-	Error mixer_error;
-	ao.mixer = audio_output_load_mixer(event_loop, ao, block,
-					   ao.plugin.mixer_plugin,
-					   *ao.prepared_filter,
-					   mixer_listener,
-					   mixer_error);
-	if (ao.mixer == nullptr && mixer_error.IsDefined())
-		FormatError(mixer_error,
+	try {
+		ao.mixer = audio_output_load_mixer(event_loop, ao, block,
+						   ao.plugin.mixer_plugin,
+						   *ao.prepared_filter,
+						   mixer_listener);
+	} catch (const std::runtime_error &e) {
+		FormatError(e,
 			    "Failed to initialize hardware mixer for '%s'",
 			    ao.name);
+	}
 
 	/* use the hardware mixer for replay gain? */
 

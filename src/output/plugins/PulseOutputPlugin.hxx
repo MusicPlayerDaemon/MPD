@@ -36,8 +36,7 @@ pulse_output_set_mixer(PulseOutput &po, PulseMixer &pm);
 void
 pulse_output_clear_mixer(PulseOutput &po, PulseMixer &pm);
 
-bool
-pulse_output_set_volume(PulseOutput &po,
-			const pa_cvolume *volume, Error &error);
+void
+pulse_output_set_volume(PulseOutput &po, const pa_cvolume *volume);
 
 #endif

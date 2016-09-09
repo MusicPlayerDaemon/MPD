@@ -67,9 +67,9 @@ public:
 	/**
 	 * Open mixer device
 	 *
-	 * @return true on success, false on error
+	 * Throws std::runtime_error on error.
 	 */
-	virtual bool Open(Error &error) = 0;
+	virtual void Open() = 0;
 
 	/**
 	 * Close mixer device
@@ -79,19 +79,22 @@ public:
 	/**
 	 * Reads the current volume.
 	 *
+	 * Throws std::runtime_error on error.
+	 *
 	 * @return the current volume (0..100 including) or -1 if
-	 * unavailable or on error (error set, mixer will be closed)
+	 * unavailable
 	 */
 	gcc_pure
-	virtual int GetVolume(Error &error) = 0;
+	virtual int GetVolume() = 0;
 
 	/**
 	 * Sets the volume.
 	 *
-	 * @param volume the new volume (0..100 including) @return
-	 * true on success, false on error
+	 * Throws std::runtime_error on error.
+	 *
+	 * @param volume the new volume (0..100 including)
 	 */
-	virtual bool SetVolume(unsigned volume, Error &error) = 0;
+	virtual void SetVolume(unsigned volume) = 0;
 };
 
 #endif

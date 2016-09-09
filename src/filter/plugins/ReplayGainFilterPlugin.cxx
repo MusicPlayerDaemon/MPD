@@ -158,9 +158,11 @@ ReplayGainFilter::Update()
 		if (_volume > 100)
 			_volume = 100;
 
-		Error error;
-		if (!mixer_set_volume(mixer, _volume, error))
-			LogError(error, "Failed to update hardware mixer");
+		try {
+			mixer_set_volume(mixer, _volume);
+		} catch (const std::runtime_error &e) {
+			LogError(e, "Failed to update hardware mixer");
+		}
 	} else
 		pv.SetVolume(volume);
 }

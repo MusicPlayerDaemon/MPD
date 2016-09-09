@@ -34,36 +34,34 @@ public:
 		 self(_output) {}
 
 	/* virtual methods from class Mixer */
-	virtual bool Open(gcc_unused Error &error) override {
-		return true;
+	void Open() override {
 	}
 
 	virtual void Close() override {
 	}
 
-	virtual int GetVolume(Error &error) override;
-	virtual bool SetVolume(unsigned volume, Error &error) override;
+	int GetVolume() override;
+	void SetVolume(unsigned volume) override;
 };
 
 static Mixer *
 roar_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		MixerListener &listener,
-		gcc_unused const ConfigBlock &block,
-		gcc_unused Error &error)
+		gcc_unused const ConfigBlock &block)
 {
 	return new RoarMixer((RoarOutput &)ao, listener);
 }
 
 int
-RoarMixer::GetVolume(gcc_unused Error &error)
+RoarMixer::GetVolume()
 {
 	return roar_output_get_volume(self);
 }
 
-bool
-RoarMixer::SetVolume(unsigned volume, gcc_unused Error &error)
+void
+RoarMixer::SetVolume(unsigned volume)
 {
-	return roar_output_set_volume(self, volume);
+	roar_output_set_volume(self, volume);
 }
 
 const MixerPlugin roar_mixer_plugin = {

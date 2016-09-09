@@ -25,7 +25,6 @@
 #ifndef MPD_MIXER_CONTROL_HXX
 #define MPD_MIXER_CONTROL_HXX
 
-class Error;
 class Mixer;
 class EventLoop;
 struct AudioOutput;
@@ -33,17 +32,22 @@ struct MixerPlugin;
 class MixerListener;
 struct ConfigBlock;
 
+/**
+ * Throws std::runtime_error on error.
+ */
 Mixer *
 mixer_new(EventLoop &event_loop, const MixerPlugin &plugin, AudioOutput &ao,
 	  MixerListener &listener,
-	  const ConfigBlock &block,
-	  Error &error);
+	  const ConfigBlock &block);
 
 void
 mixer_free(Mixer *mixer);
 
-bool
-mixer_open(Mixer *mixer, Error &error);
+/**
+ * Throws std::runtime_error on error.
+ */
+void
+mixer_open(Mixer *mixer);
 
 void
 mixer_close(Mixer *mixer);
@@ -55,10 +59,16 @@ mixer_close(Mixer *mixer);
 void
 mixer_auto_close(Mixer *mixer);
 
+/**
+ * Throws std::runtime_error on error.
+ */
 int
-mixer_get_volume(Mixer *mixer, Error &error);
+mixer_get_volume(Mixer *mixer);
 
-bool
-mixer_set_volume(Mixer *mixer, unsigned volume, Error &error);
+/**
+ * Throws std::runtime_error on error.
+ */
+void
+mixer_set_volume(Mixer *mixer, unsigned volume);
 
 #endif

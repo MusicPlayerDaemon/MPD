@@ -41,11 +41,10 @@
 #include <errno.h>
 #include <unistd.h>
 
-bool
+void
 mixer_set_volume(gcc_unused Mixer *mixer,
-		 gcc_unused unsigned volume, gcc_unused Error &error)
+		 gcc_unused unsigned volume)
 {
-	return true;
 }
 
 static PreparedFilter *

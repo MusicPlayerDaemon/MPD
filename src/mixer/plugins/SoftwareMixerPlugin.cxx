@@ -26,7 +26,6 @@
 #include "filter/plugins/VolumeFilterPlugin.hxx"
 #include "pcm/Volume.hxx"
 #include "config/Block.hxx"
-#include "util/Error.hxx"
 
 #include <assert.h>
 #include <math.h>
@@ -48,26 +47,24 @@ public:
 	void SetFilter(Filter *_filter);
 
 	/* virtual methods from class Mixer */
-	virtual bool Open(gcc_unused Error &error) override {
-		return true;
+	void Open() override {
 	}
 
 	virtual void Close() override {
 	}
 
-	virtual int GetVolume(gcc_unused Error &error) override {
+	int GetVolume() override {
 		return volume;
 	}
 
-	virtual bool SetVolume(unsigned volume, Error &error) override;
+	void SetVolume(unsigned volume) override;
 };
 
 static Mixer *
 software_mixer_init(gcc_unused EventLoop &event_loop,
 		    gcc_unused AudioOutput &ao,
 		    MixerListener &listener,
-		    gcc_unused const ConfigBlock &block,
-		    gcc_unused Error &error)
+		    gcc_unused const ConfigBlock &block)
 {
 	return new SoftwareMixer(listener);
 }
@@ -87,8 +84,8 @@ PercentVolumeToSoftwareVolume(unsigned volume)
 		return 0;
 }
 
-bool
-SoftwareMixer::SetVolume(unsigned new_volume, gcc_unused Error &error)
+void
+SoftwareMixer::SetVolume(unsigned new_volume)
 {
 	assert(new_volume <= 100);
 
@@ -96,7 +93,6 @@ SoftwareMixer::SetVolume(unsigned new_volume, gcc_unused Error &error)
 
 	if (filter != nullptr)
 		volume_filter_set(filter, PercentVolumeToSoftwareVolume(new_volume));
-	return true;
 }
 
 const MixerPlugin software_mixer_plugin = {

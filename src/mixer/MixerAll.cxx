@@ -24,8 +24,9 @@
 #include "MixerList.hxx"
 #include "output/Internal.hxx"
 #include "pcm/Volume.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 
@@ -39,14 +40,14 @@ output_mixer_get_volume(const AudioOutput &ao)
 	if (mixer == nullptr)
 		return -1;
 
-	Error error;
-	int volume = mixer_get_volume(mixer, error);
-	if (volume < 0 && error.IsDefined())
-		FormatError(error,
+	try {
+		return mixer_get_volume(mixer);
+	} catch (const std::runtime_error &e) {
+		FormatError(e,
 			    "Failed to read mixer for '%s'",
 			    ao.name);
-
-	return volume;
+		return -1;
+	}
 }
 
 int
@@ -81,14 +82,15 @@ output_mixer_set_volume(AudioOutput &ao, unsigned volume)
 	if (mixer == nullptr)
 		return false;
 
-	Error error;
-	bool success = mixer_set_volume(mixer, volume, error);
-	if (!success && error.IsDefined())
-		FormatError(error,
+	try {
+		mixer_set_volume(mixer, volume);
+		return true;
+	} catch (const std::runtime_error &e) {
+		FormatError(e,
 			    "Failed to set mixer for '%s'",
 			    ao.name);
-
-	return success;
+		return false;
+	}
 }
 
 bool
@@ -114,7 +116,7 @@ output_mixer_get_software_volume(const AudioOutput &ao)
 	if (mixer == nullptr || !mixer->IsPlugin(software_mixer_plugin))
 		return -1;
 
-	return mixer_get_volume(mixer, IgnoreError());
+	return mixer_get_volume(mixer);
 }
 
 int
@@ -148,6 +150,6 @@ MultipleOutputs::SetSoftwareVolume(unsigned volume)
 		if (mixer != nullptr &&
 		    (&mixer->plugin == &software_mixer_plugin ||
 		     &mixer->plugin == &null_mixer_plugin))
-			mixer_set_volume(mixer, volume, IgnoreError());
+			mixer_set_volume(mixer, volume);
 	}
 }

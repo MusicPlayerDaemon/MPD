@@ -37,6 +37,8 @@
 #include <pulse/subscribe.h>
 #include <pulse/version.h>
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -74,7 +76,7 @@ public:
 		mixer = nullptr;
 	}
 
-	bool SetVolume(const pa_cvolume &volume, Error &error);
+	void SetVolume(const pa_cvolume &volume);
 
 	struct pa_threaded_mainloop *GetMainloop() {
 		return mainloop;
@@ -217,34 +219,27 @@ pulse_output_clear_mixer(PulseOutput &po, PulseMixer &pm)
 	po.ClearMixer(pm);
 }
 
-inline bool
-PulseOutput::SetVolume(const pa_cvolume &volume, Error &error)
+inline void
+PulseOutput::SetVolume(const pa_cvolume &volume)
 {
 	if (context == nullptr || stream == nullptr ||
-	    pa_stream_get_state(stream) != PA_STREAM_READY) {
-		error.Set(pulse_domain, "disconnected");
-		return false;
-	}
+	    pa_stream_get_state(stream) != PA_STREAM_READY)
+		throw std::runtime_error("disconnected");
 
 	pa_operation *o =
 		pa_context_set_sink_input_volume(context,
 						 pa_stream_get_index(stream),
 						 &volume, nullptr, nullptr);
-	if (o == nullptr) {
-		SetPulseError(error, context,
-			      "failed to set PulseAudio volume");
-		return false;
-	}
+	if (o == nullptr)
+		throw std::runtime_error("failed to set PulseAudio volume");
 
 	pa_operation_unref(o);
-	return true;
 }
 
-bool
-pulse_output_set_volume(PulseOutput &po, const pa_cvolume *volume,
-			Error &error)
+void
+pulse_output_set_volume(PulseOutput &po, const pa_cvolume *volume)
 {
-	return po.SetVolume(*volume, error);
+	return po.SetVolume(*volume);
 }
 
 /**
