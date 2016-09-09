@@ -136,6 +136,48 @@ FormatError(const std::exception &e, const char *fmt, ...)
 }
 
 void
+LogError(const std::exception_ptr &ep)
+{
+	try {
+		std::rethrow_exception(ep);
+	} catch (const std::exception &e) {
+		LogError(e);
+	} catch (const Error &e) {
+		LogError(e);
+	} catch (...) {
+		Log(exception_domain, LogLevel::ERROR,
+		    "Unrecognized exception");
+	}
+}
+
+void
+LogError(const std::exception_ptr &ep, const char *msg)
+{
+	try {
+		std::rethrow_exception(ep);
+	} catch (const std::exception &e) {
+		LogError(e, msg);
+	} catch (const Error &e) {
+		LogError(e, msg);
+	} catch (...) {
+		FormatError(exception_domain,
+			    "%s: Unrecognized exception", msg);
+	}
+}
+
+void
+FormatError(const std::exception_ptr &ep, const char *fmt, ...)
+{
+	char msg[1024];
+	va_list ap;
+	va_start(ap, fmt);
+	vsnprintf(msg, sizeof(msg), fmt, ap);
+	va_end(ap);
+
+	LogError(ep, msg);
+}
+
+void
 LogError(const Error &error)
 {
 	Log(error.GetDomain(), LogLevel::ERROR, error.GetMessage());
