@@ -475,7 +475,7 @@ static WavpackStreamReader mpd_is_reader = {
 	nullptr /* no need to write edited tags */
 };
 
-static WavpackInput *
+static InputStreamPtr
 wavpack_open_wvc(Decoder &decoder, const char *uri)
 {
 	/*
@@ -490,11 +490,7 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 		free(wvc_url);
 	};
 
-	auto is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
-	if (is_wvc == nullptr)
-		return nullptr;
-
-	return new WavpackInput(decoder, *is_wvc.release());
+	return decoder_open_uri(decoder, uri, IgnoreError());
 }
 
 /*
@@ -506,18 +502,14 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 	int open_flags = OPEN_NORMALIZE;
 	bool can_seek = is.IsSeekable();
 
-	WavpackInput *wvc = wavpack_open_wvc(decoder, is.GetURI());
-	if (wvc != nullptr) {
+	std::unique_ptr<WavpackInput> wvc;
+	auto is_wvc = wavpack_open_wvc(decoder, is.GetURI());
+	if (is_wvc) {
 		open_flags |= OPEN_WVC;
 		can_seek &= wvc->is.IsSeekable();
-	}
 
-	AtScopeExit(wvc) {
-		if (wvc != nullptr) {
-			delete &wvc->is;
-			delete wvc;
-		}
-	};
+		wvc.reset(new WavpackInput(decoder, *is_wvc));
+	}
 
 	if (!can_seek) {
 		open_flags |= OPEN_STREAMING;
@@ -527,7 +519,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 
 	char error[ERRORLEN];
 	WavpackContext *wpc =
-		WavpackOpenFileInputEx(&mpd_is_reader, &isp, wvc,
+		WavpackOpenFileInputEx(&mpd_is_reader, &isp, wvc.get(),
 				       error, open_flags, 23);
 
 	if (wpc == nullptr) {
