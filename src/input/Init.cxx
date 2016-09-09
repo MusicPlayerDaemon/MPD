@@ -56,6 +56,7 @@ input_stream_global_init()
 		try {
 			if (plugin->init != nullptr)
 				plugin->init(*block);
+			input_plugins_enabled[i] = true;
 		} catch (const PluginUnavailable &e) {
 			FormatError(e,
 				    "Input plugin '%s' is unavailable",
