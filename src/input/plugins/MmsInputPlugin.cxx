@@ -21,11 +21,12 @@
 #include "MmsInputPlugin.hxx"
 #include "input/ThreadInputStream.hxx"
 #include "input/InputPlugin.hxx"
+#include "system/Error.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <libmms/mmsx.h>
+
+#include <stdexcept>
 
 static constexpr size_t MMS_BUFFER_SIZE = 256 * 1024;
 
@@ -39,27 +40,23 @@ public:
 	}
 
 protected:
-	virtual bool Open(gcc_unused Error &error) override;
-	virtual size_t ThreadRead(void *ptr, size_t size,
-				  Error &error) override;
+	virtual void Open() override;
+	virtual size_t ThreadRead(void *ptr, size_t size) override;
 
 	void Close() override {
 		mmsx_close(mms);
 	}
 };
 
-static constexpr Domain mms_domain("mms");
-
-bool
-MmsInputStream::Open(Error &error)
+void
+MmsInputStream::Open()
 {
 	Unlock();
 
 	mms = mmsx_connect(nullptr, nullptr, GetURI(), 128 * 1024);
 	if (mms == nullptr) {
 		Lock();
-		error.Set(mms_domain, "mmsx_connect() failed");
-		return false;
+		throw std::runtime_error("mmsx_connect() failed");
 	}
 
 	Lock();
@@ -67,7 +64,6 @@ MmsInputStream::Open(Error &error)
 	/* TODO: is this correct?  at least this selects the ffmpeg
 	   decoder, which seems to work fine */
 	SetMimeType("audio/x-ms-wma");
-	return true;
 }
 
 static InputStream *
@@ -86,7 +82,7 @@ input_mms_open(const char *url,
 }
 
 size_t
-MmsInputStream::ThreadRead(void *ptr, size_t read_size, Error &error)
+MmsInputStream::ThreadRead(void *ptr, size_t read_size)
 {
 	/* unfortunately, mmsx_read() blocks until the whole buffer
 	   has been filled; to avoid big latencies, limit the size of
@@ -98,7 +94,7 @@ MmsInputStream::ThreadRead(void *ptr, size_t read_size, Error &error)
 	int nbytes = mmsx_read(nullptr, mms, (char *)ptr, read_size);
 	if (nbytes <= 0) {
 		if (nbytes < 0)
-			error.SetErrno("mmsx_read() failed");
+			throw MakeErrno("mmsx_read() failed");
 		return 0;
 	}
 

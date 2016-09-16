@@ -64,7 +64,10 @@ ThreadInputStream::ThreadFunc()
 
 	const ScopeLock lock(mutex);
 
-	if (!Open(postponed_error)) {
+	try {
+		Open();
+	} catch (...) {
+		postponed_exception = std::current_exception();
 		cond.broadcast();
 		return;
 	}
@@ -73,25 +76,27 @@ ThreadInputStream::ThreadFunc()
 	SetReady();
 
 	while (!close) {
-		assert(!postponed_error.IsDefined());
+		assert(!postponed_exception);
 
 		auto w = buffer->Write();
 		if (w.IsEmpty()) {
 			wake_cond.wait(mutex);
 		} else {
-			Error error;
 			size_t nbytes;
 
-			{
+			try {
 				const ScopeUnlock unlock(mutex);
-				nbytes = ThreadRead(w.data, w.size, error);
+				nbytes = ThreadRead(w.data, w.size);
+			} catch (...) {
+				postponed_exception = std::current_exception();
+				cond.broadcast();
+				break;
 			}
 
 			cond.broadcast();
 
 			if (nbytes == 0) {
 				eof = true;
-				postponed_error = std::move(error);
 				break;
 			}
 
@@ -110,14 +115,12 @@ ThreadInputStream::ThreadFunc(void *ctx)
 }
 
 bool
-ThreadInputStream::Check(Error &error)
+ThreadInputStream::Check(Error &)
 {
 	assert(!thread.IsInside());
 
-	if (postponed_error.IsDefined()) {
-		error = std::move(postponed_error);
-		return false;
-	}
+	if (postponed_exception)
+		std::rethrow_exception(postponed_exception);
 
 	return true;
 }
@@ -127,19 +130,17 @@ ThreadInputStream::IsAvailable()
 {
 	assert(!thread.IsInside());
 
-	return !buffer->IsEmpty() || eof || postponed_error.IsDefined();
+	return !buffer->IsEmpty() || eof || postponed_exception;
 }
 
 inline size_t
-ThreadInputStream::Read(void *ptr, size_t read_size, Error &error)
+ThreadInputStream::Read(void *ptr, size_t read_size, Error &)
 {
 	assert(!thread.IsInside());
 
 	while (true) {
-		if (postponed_error.IsDefined()) {
-			error = std::move(postponed_error);
-			return 0;
-		}
+		if (postponed_exception)
+			std::rethrow_exception(postponed_exception);
 
 		auto r = buffer->Read();
 		if (!r.IsEmpty()) {
