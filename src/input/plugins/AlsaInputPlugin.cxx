@@ -207,10 +207,8 @@ AlsaInputStream::DispatchSockets()
 	while ((n_frames = snd_pcm_readi(capture_handle,
 					 w.data, w_frames)) < 0) {
 		if (Recover(n_frames) < 0) {
-			Error error;
-			error.Format(alsa_input_domain,
-				     "PCM error - stream aborted");
-			PostponeError(std::move(error));
+			postponed_exception = std::make_exception_ptr(std::runtime_error("PCM error - stream aborted"));
+			cond.broadcast();
 			return;
 		}
 	}
