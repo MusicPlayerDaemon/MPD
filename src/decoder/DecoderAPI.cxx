@@ -311,7 +311,7 @@ size_t
 decoder_read(Decoder *decoder,
 	     InputStream &is,
 	     void *buffer, size_t length)
-{
+try {
 	/* XXX don't allow decoder==nullptr */
 
 	assert(decoder == nullptr ||
@@ -345,6 +345,9 @@ decoder_read(Decoder *decoder,
 		LogError(error);
 
 	return nbytes;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return 0;
 }
 
 bool
