@@ -21,7 +21,6 @@
 #include "NfsInputPlugin.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../InputPlugin.hxx"
-#include "lib/nfs/Domain.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
 #include "util/StringCompare.hxx"
@@ -64,7 +63,7 @@ public:
 	}
 
 private:
-	bool DoRead();
+	void DoRead();
 
 protected:
 	/* virtual methods from AsyncInputStream */
@@ -75,41 +74,34 @@ private:
 	/* virtual methods from NfsFileReader */
 	void OnNfsFileOpen(uint64_t size) override;
 	void OnNfsFileRead(const void *data, size_t size) override;
-	void OnNfsFileError(Error &&error) override;
+	void OnNfsFileError(std::exception_ptr &&e) override;
 };
 
-bool
+void
 NfsInputStream::DoRead()
 {
 	assert(NfsFileReader::IsIdle());
 
 	int64_t remaining = size - next_offset;
 	if (remaining <= 0)
-		return true;
+		return;
 
 	const size_t buffer_space = GetBufferSpace();
 	if (buffer_space == 0) {
 		Pause();
-		return true;
+		return;
 	}
 
 	size_t nbytes = std::min<size_t>(std::min<uint64_t>(remaining, 32768),
 					 buffer_space);
 
-	Error error;
-	bool success;
-
-	{
+	try {
 		const ScopeUnlock unlock(mutex);
-		success = NfsFileReader::Read(next_offset, nbytes, error);
+		NfsFileReader::Read(next_offset, nbytes);
+	} catch (...) {
+		postponed_exception = std::current_exception();
+		cond.broadcast();
 	}
-
-	if (!success) {
-		PostponeError(std::move(error));
-		return false;
-	}
-
-	return true;
 }
 
 void
@@ -182,7 +174,7 @@ NfsInputStream::OnNfsFileRead(const void *data, size_t data_size)
 }
 
 void
-NfsInputStream::OnNfsFileError(Error &&error)
+NfsInputStream::OnNfsFileError(std::exception_ptr &&e)
 {
 	const ScopeLock protect(mutex);
 
@@ -197,7 +189,7 @@ NfsInputStream::OnNfsFileError(Error &&error)
 		return;
 	}
 
-	postponed_error = std::move(error);
+	postponed_exception = std::move(e);
 
 	if (IsSeekPending())
 		SeekDone();

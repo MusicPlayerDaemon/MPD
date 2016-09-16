@@ -25,7 +25,8 @@
 #include "Lease.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "util/Error.hxx"
+
+#include <exception>
 
 class NfsConnection;
 
@@ -42,7 +43,7 @@ class BlockingNfsOperation : protected NfsCallback, NfsLease {
 
 	bool finished;
 
-	Error error;
+	std::exception_ptr error;
 
 protected:
 	NfsConnection &connection;
@@ -51,7 +52,10 @@ public:
 	BlockingNfsOperation(NfsConnection &_connection)
 		:finished(false), connection(_connection) {}
 
-	bool Run(Error &error);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Run();
 
 private:
 	bool LockWaitFinished() {
@@ -75,15 +79,15 @@ private:
 
 	/* virtual methods from NfsLease */
 	void OnNfsConnectionReady() final;
-	void OnNfsConnectionFailed(const Error &error) final;
-	void OnNfsConnectionDisconnected(const Error &error) final;
+	void OnNfsConnectionFailed(std::exception_ptr e) final;
+	void OnNfsConnectionDisconnected(std::exception_ptr e) final;
 
 	/* virtual methods from NfsCallback */
 	void OnNfsCallback(unsigned status, void *data) final;
-	void OnNfsError(Error &&error) final;
+	void OnNfsError(std::exception_ptr &&e) final;
 
 protected:
-	virtual bool Start(Error &error) = 0;
+	virtual void Start() = 0;
 	virtual void HandleResult(unsigned status, void *data) = 0;
 };
 

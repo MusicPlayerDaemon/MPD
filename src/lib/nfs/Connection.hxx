@@ -24,11 +24,11 @@
 #include "event/SocketMonitor.hxx"
 #include "event/TimeoutMonitor.hxx"
 #include "event/DeferredMonitor.hxx"
-#include "util/Error.hxx"
 
 #include <string>
 #include <list>
 #include <forward_list>
+#include <exception>
 
 struct nfs_context;
 struct nfsdir;
@@ -65,17 +65,12 @@ class NfsConnection : SocketMonitor, TimeoutMonitor, DeferredMonitor {
 			 connection(_connection),
 			 open(_open), close_fh(nullptr) {}
 
-		bool Stat(nfs_context *context, const char *path,
-			  Error &error);
-		bool OpenDirectory(nfs_context *context, const char *path,
-				   Error &error);
-		bool Open(nfs_context *context, const char *path, int flags,
-			  Error &error);
-		bool Stat(nfs_context *context, struct nfsfh *fh,
-			  Error &error);
-		bool Read(nfs_context *context, struct nfsfh *fh,
-			  uint64_t offset, size_t size,
-			  Error &error);
+		void Stat(nfs_context *context, const char *path);
+		void OpenDirectory(nfs_context *context, const char *path);
+		void Open(nfs_context *context, const char *path, int flags);
+		void Stat(nfs_context *context, struct nfsfh *fh);
+		void Read(nfs_context *context, struct nfsfh *fh,
+			  uint64_t offset, size_t size);
 
 		/**
 		 * Cancel the operation and schedule a call to
@@ -115,7 +110,7 @@ class NfsConnection : SocketMonitor, TimeoutMonitor, DeferredMonitor {
 	 */
 	std::forward_list<struct nfsfh *> deferred_close;
 
-	Error postponed_mount_error;
+	std::exception_ptr postponed_mount_error;
 
 #ifndef NDEBUG
 	/**
@@ -175,25 +170,32 @@ public:
 	void AddLease(NfsLease &lease);
 	void RemoveLease(NfsLease &lease);
 
-	bool Stat(const char *path, NfsCallback &callback, Error &error);
+	void Stat(const char *path, NfsCallback &callback);
 
-	bool OpenDirectory(const char *path, NfsCallback &callback,
-			   Error &error);
+	void OpenDirectory(const char *path, NfsCallback &callback);
 	const struct nfsdirent *ReadDirectory(struct nfsdir *dir);
 	void CloseDirectory(struct nfsdir *dir);
 
-	bool Open(const char *path, int flags, NfsCallback &callback,
-		  Error &error);
-	bool Stat(struct nfsfh *fh, NfsCallback &callback, Error &error);
-	bool Read(struct nfsfh *fh, uint64_t offset, size_t size,
-		  NfsCallback &callback, Error &error);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Open(const char *path, int flags, NfsCallback &callback);
+
+	void Stat(struct nfsfh *fh, NfsCallback &callback);
+
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Read(struct nfsfh *fh, uint64_t offset, size_t size,
+		  NfsCallback &callback);
+
 	void Cancel(NfsCallback &callback);
 
 	void Close(struct nfsfh *fh);
 	void CancelAndClose(struct nfsfh *fh, NfsCallback &callback);
 
 protected:
-	virtual void OnNfsConnectionError(Error &&error) = 0;
+	virtual void OnNfsConnectionError(std::exception_ptr &&e) = 0;
 
 private:
 	void DestroyContext();
@@ -208,10 +210,10 @@ private:
 	 */
 	void DeferClose(struct nfsfh *fh);
 
-	bool MountInternal(Error &error);
+	void MountInternal();
 	void BroadcastMountSuccess();
-	void BroadcastMountError(Error &&error);
-	void BroadcastError(Error &&error);
+	void BroadcastMountError(std::exception_ptr &&e);
+	void BroadcastError(std::exception_ptr &&e);
 
 	static void MountCallback(int status, nfs_context *nfs, void *data,
 				  void *private_data);
