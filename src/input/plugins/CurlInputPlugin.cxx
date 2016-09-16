@@ -255,7 +255,6 @@ static bool verify_peer, verify_host;
 
 static CurlMulti *curl_multi;
 
-static constexpr Domain http_domain("http");
 static constexpr Domain curl_domain("curl");
 static constexpr Domain curlm_domain("curlm");
 
@@ -430,7 +429,7 @@ inline void
 CurlInputStream::RequestDone(CURLcode result, long status)
 {
 	assert(io_thread_inside());
-	assert(!postponed_error.IsDefined());
+	assert(!postponed_exception);
 
 	FreeEasy();
 	AsyncInputStream::SetClosed();
@@ -438,12 +437,11 @@ CurlInputStream::RequestDone(CURLcode result, long status)
 	const ScopeLock protect(mutex);
 
 	if (result != CURLE_OK) {
-		postponed_error.Format(curl_domain, result,
-				       "curl failed: %s", error_buffer);
+		postponed_exception = std::make_exception_ptr(FormatRuntimeError("curl failed: %s",
+										 error_buffer));
 	} else if (status < 200 || status >= 300) {
-		postponed_error.Format(http_domain, status,
-				       "got HTTP status %ld",
-				       status);
+		postponed_exception = std::make_exception_ptr(FormatRuntimeError("got HTTP status %ld",
+										 status));
 	}
 
 	if (IsSeekPending())
