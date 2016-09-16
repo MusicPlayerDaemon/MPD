@@ -96,10 +96,13 @@ NfsInputStream::DoRead()
 	size_t nbytes = std::min<size_t>(std::min<uint64_t>(remaining, 32768),
 					 buffer_space);
 
-	mutex.unlock();
 	Error error;
-	bool success = NfsFileReader::Read(next_offset, nbytes, error);
-	mutex.lock();
+	bool success;
+
+	{
+		const ScopeUnlock unlock(mutex);
+		success = NfsFileReader::Read(next_offset, nbytes, error);
+	}
 
 	if (!success) {
 		PostponeError(std::move(error));
@@ -135,9 +138,10 @@ NfsInputStream::DoResume()
 void
 NfsInputStream::DoSeek(offset_type new_offset)
 {
-	mutex.unlock();
-	NfsFileReader::CancelRead();
-	mutex.lock();
+	{
+		const ScopeUnlock unlock(mutex);
+		NfsFileReader::CancelRead();
+	}
 
 	next_offset = offset = new_offset;
 	SeekDone();
