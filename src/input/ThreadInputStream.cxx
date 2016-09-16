@@ -28,10 +28,11 @@
 
 ThreadInputStream::~ThreadInputStream()
 {
-	Lock();
-	close = true;
-	wake_cond.signal();
-	Unlock();
+	{
+		const ScopeLock lock(mutex);
+		close = true;
+		wake_cond.signal();
+	}
 
 	Cancel();
 
@@ -61,10 +62,10 @@ ThreadInputStream::ThreadFunc()
 {
 	FormatThreadName("input:%s", plugin);
 
-	Lock();
+	const ScopeLock lock(mutex);
+
 	if (!Open(postponed_error)) {
 		cond.broadcast();
-		Unlock();
 		return;
 	}
 
@@ -78,12 +79,14 @@ ThreadInputStream::ThreadFunc()
 		if (w.IsEmpty()) {
 			wake_cond.wait(mutex);
 		} else {
-			Unlock();
-
 			Error error;
-			size_t nbytes = ThreadRead(w.data, w.size, error);
+			size_t nbytes;
 
-			Lock();
+			{
+				const ScopeUnlock unlock(mutex);
+				nbytes = ThreadRead(w.data, w.size, error);
+			}
+
 			cond.broadcast();
 
 			if (nbytes == 0) {
@@ -95,8 +98,6 @@ ThreadInputStream::ThreadFunc()
 			buffer->Append(nbytes);
 		}
 	}
-
-	Unlock();
 
 	Close();
 }
