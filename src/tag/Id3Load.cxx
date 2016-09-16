@@ -29,6 +29,7 @@
 #include <id3tag.h>
 
 #include <algorithm>
+#include <stdexcept>
 
 static constexpr Domain id3_domain("id3");
 
@@ -43,7 +44,7 @@ tag_is_id3v1(struct id3_tag *tag)
 
 static long
 get_id3v2_footer_size(InputStream &is, offset_type offset)
-{
+try {
 	id3_byte_t buf[ID3_TAG_QUERYSIZE];
 	if (!is.Seek(offset, IgnoreError()))
 		return 0;
@@ -52,11 +53,13 @@ get_id3v2_footer_size(InputStream &is, offset_type offset)
 		return 0;
 
 	return id3_tag_query(buf, sizeof(buf));
+} catch (const std::runtime_error &) {
+	return 0;
 }
 
 static UniqueId3Tag
 ReadId3Tag(InputStream &is)
-{
+try {
 	id3_byte_t query_buffer[ID3_TAG_QUERYSIZE];
 	if (!is.ReadFull(query_buffer, sizeof(query_buffer), IgnoreError()))
 		return nullptr;
@@ -84,40 +87,48 @@ ReadId3Tag(InputStream &is)
 		return nullptr;
 
 	return UniqueId3Tag(id3_tag_parse(tag_buffer.get(), tag_size));
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 static UniqueId3Tag
 ReadId3Tag(InputStream &is, offset_type offset)
-{
+try {
 	if (!is.Seek(offset, IgnoreError()))
 		return nullptr;
 
 	return ReadId3Tag(is);
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 static UniqueId3Tag
 ReadId3v1Tag(InputStream &is)
-{
+try {
 	id3_byte_t buffer[ID3V1_SIZE];
 
 	if (is.Read(buffer, ID3V1_SIZE, IgnoreError()) != ID3V1_SIZE)
 		return nullptr;
 
 	return UniqueId3Tag(id3_tag_parse(buffer, ID3V1_SIZE));
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 static UniqueId3Tag
 ReadId3v1Tag(InputStream &is, offset_type offset)
-{
+try {
 	if (!is.Seek(offset, IgnoreError()))
 		return nullptr;
 
 	return ReadId3v1Tag(is);
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 static UniqueId3Tag
 tag_id3_find_from_beginning(InputStream &is)
-{
+try {
 	auto tag = ReadId3Tag(is);
 	if (!tag) {
 		return nullptr;
@@ -144,11 +155,13 @@ tag_id3_find_from_beginning(InputStream &is)
 	}
 
 	return tag;
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 static UniqueId3Tag
 tag_id3_find_from_end(InputStream &is)
-{
+try {
 	if (!is.KnownSize() || !is.CheapSeeking())
 		return nullptr;
 
@@ -183,11 +196,13 @@ tag_id3_find_from_end(InputStream &is)
 
 	/* We have an id3v2 tag, so ditch v1tag */
 	return tag;
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 static UniqueId3Tag
 tag_id3_riff_aiff_load(InputStream &is)
-{
+try {
 	size_t size = riff_seek_id3(is);
 	if (size == 0)
 		size = aiff_seek_id3(is);
@@ -205,11 +220,13 @@ tag_id3_riff_aiff_load(InputStream &is)
 	}
 
 	return UniqueId3Tag(id3_tag_parse(buffer.get(), size));
+} catch (const std::runtime_error &) {
+	return nullptr;
 }
 
 UniqueId3Tag
 tag_id3_load(InputStream &is)
-{
+try {
 	const ScopeLock protect(is.mutex);
 
 	auto tag = tag_id3_find_from_beginning(is);
@@ -220,4 +237,6 @@ tag_id3_load(InputStream &is)
 	}
 
 	return tag;
+} catch (const std::runtime_error &) {
+	return nullptr;
 }

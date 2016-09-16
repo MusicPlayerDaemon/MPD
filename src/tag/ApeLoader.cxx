@@ -25,6 +25,7 @@
 #include "util/Error.hxx"
 
 #include <memory>
+#include <stdexcept>
 
 #include <stdint.h>
 #include <assert.h>
@@ -41,7 +42,7 @@ struct ApeFooter {
 
 bool
 tag_ape_scan(InputStream &is, ApeTagCallback callback)
-{
+try {
 	const ScopeLock protect(is.mutex);
 
 	if (!is.KnownSize() || !is.CheapSeeking())
@@ -103,4 +104,6 @@ tag_ape_scan(InputStream &is, ApeTagCallback callback)
 	}
 
 	return true;
+} catch (const std::runtime_error &) {
+		return false;
 }
