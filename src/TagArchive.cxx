@@ -28,26 +28,28 @@
 bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
 		 const TagHandler &handler, void *handler_ctx)
-{
+try {
 	Mutex mutex;
 	Cond cond;
 
-	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond,
-					     IgnoreError()));
+	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond));
 	if (!is)
 		return false;
 
 	return tag_stream_scan(*is, handler, handler_ctx);
+} catch (const std::exception &e) {
+	return false;
 }
 
 bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,
 		 TagBuilder &builder)
-{
+try {
 	Mutex mutex;
 	Cond cond;
 
-	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond,
-					     IgnoreError()));
+	InputStreamPtr is(archive.OpenStream(path_utf8, mutex, cond));
 	return is && tag_stream_scan(*is, builder);
+} catch (const std::exception &e) {
+	return false;
 }

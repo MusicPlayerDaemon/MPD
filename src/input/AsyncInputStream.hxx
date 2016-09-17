@@ -24,7 +24,8 @@
 #include "event/DeferredCall.hxx"
 #include "util/HugeAllocator.hxx"
 #include "util/CircularBuffer.hxx"
-#include "util/Error.hxx"
+
+#include <exception>
 
 /**
  * Helper class for moving asynchronous (non-blocking) InputStream
@@ -65,7 +66,7 @@ class AsyncInputStream : public InputStream {
 	offset_type seek_offset;
 
 protected:
-	Error postponed_error;
+	std::exception_ptr postponed_exception;
 
 public:
 	/**
@@ -80,12 +81,12 @@ public:
 	virtual ~AsyncInputStream();
 
 	/* virtual methods from InputStream */
-	bool Check(Error &error) final;
+	void Check() final;
 	bool IsEOF() final;
-	bool Seek(offset_type new_offset, Error &error) final;
+	void Seek(offset_type new_offset) final;
 	Tag *ReadTag() final;
 	bool IsAvailable() final;
-	size_t Read(void *ptr, size_t read_size, Error &error) final;
+	size_t Read(void *ptr, size_t read_size) final;
 
 protected:
 	/**
@@ -111,11 +112,6 @@ protected:
 	void SetClosed() {
 		open = false;
 	}
-
-	/**
-	 * Pass an error from the I/O thread to the client thread.
-	 */
-	void PostponeError(Error &&error);
 
 	bool IsBufferEmpty() const {
 		return buffer.IsEmpty();

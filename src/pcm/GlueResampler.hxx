@@ -24,7 +24,6 @@
 #include "AudioFormat.hxx"
 #include "FormatConverter.hxx"
 
-class Error;
 class PcmResampler;
 template<typename T> struct ConstBuffer;
 
@@ -49,15 +48,14 @@ public:
 	GluePcmResampler();
 	~GluePcmResampler();
 
-	bool Open(AudioFormat src_format, unsigned new_sample_rate,
-		  Error &error);
+	void Open(AudioFormat src_format, unsigned new_sample_rate);
 	void Close();
 
 	SampleFormat GetOutputSampleFormat() const {
 		return output_sample_format;
 	}
 
-	ConstBuffer<void> Resample(ConstBuffer<void> src, Error &error);
+	ConstBuffer<void> Resample(ConstBuffer<void> src);
 };
 
 #endif

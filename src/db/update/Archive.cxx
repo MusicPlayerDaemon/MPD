@@ -30,11 +30,11 @@
 #include "archive/ArchivePlugin.hxx"
 #include "archive/ArchiveFile.hxx"
 #include "archive/ArchiveVisitor.hxx"
-#include "util/Error.hxx"
 #include "util/StringCompare.hxx"
 #include "Log.hxx"
 
 #include <string>
+#include <stdexcept>
 
 #include <string.h>
 
@@ -150,10 +150,11 @@ UpdateWalk::UpdateArchiveFile(Directory &parent, const char *name,
 		return;
 
 	/* open archive */
-	Error error;
-	ArchiveFile *file = archive_file_open(&plugin, path_fs, error);
-	if (file == nullptr) {
-		LogError(error);
+	ArchiveFile *file;
+	try {
+		file = archive_file_open(&plugin, path_fs);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		if (directory != nullptr)
 			editor.LockDeleteDirectory(directory);
 		return;

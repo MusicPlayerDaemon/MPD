@@ -31,6 +31,8 @@
 #include "Idle.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainConfig.hxx"
+#include "util/ScopeExit.hxx"
+#include "util/Error.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
@@ -61,10 +63,8 @@ handle_play(Client &client, Request args, gcc_unused Response &r)
 {
 	int song = args.ParseOptional(0, -1);
 
-	Error error;
-	return client.partition.PlayPosition(song, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	client.partition.PlayPosition(song);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -72,10 +72,8 @@ handle_playid(Client &client, Request args, gcc_unused Response &r)
 {
 	int id = args.ParseOptional(0, -1);
 
-	Error error;
-	return client.partition.PlayId(id, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	client.partition.PlayId(id);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -194,10 +192,15 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 	}
 #endif
 
-	Error error = client.player_control.LockGetError();
-	if (error.IsDefined())
-		r.Format(COMMAND_STATUS_ERROR ": %s\n",
-			 error.GetMessage());
+	try {
+		client.player_control.LockCheckRethrowError();
+	} catch (const std::exception &e) {
+		r.Format(COMMAND_STATUS_ERROR ": %s\n", e.what());
+	} catch (const Error &error) {
+		r.Format(COMMAND_STATUS_ERROR ": %s\n", error.GetMessage());
+	} catch (...) {
+		r.Format(COMMAND_STATUS_ERROR ": unknown\n");
+	}
 
 	song = playlist.GetNextPosition();
 	if (song >= 0)
@@ -218,24 +221,20 @@ handle_next(Client &client, gcc_unused Request args, gcc_unused Response &r)
 	const bool single = playlist.queue.single;
 	playlist.queue.single = false;
 
-	Error error;
-	bool success = client.partition.PlayNext(error);
+	AtScopeExit(&playlist, single) {
+		playlist.queue.single = single;
+	};
 
-	playlist.queue.single = single;
-
-	return success
-		? CommandResult::OK
-		: print_error(r, error);
+	client.partition.PlayNext();
+	return CommandResult::OK;
 }
 
 CommandResult
 handle_previous(Client &client, gcc_unused Request args,
 		gcc_unused Response &r)
 {
-	Error error;
-	return client.partition.PlayPrevious(error)
-		? CommandResult::OK
-		: print_error(r, error);
+	client.partition.PlayPrevious();
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -280,40 +279,34 @@ handle_clearerror(Client &client, gcc_unused Request args,
 }
 
 CommandResult
-handle_seek(Client &client, Request args, Response &r)
+handle_seek(Client &client, Request args, gcc_unused Response &r)
 {
 	unsigned song = args.ParseUnsigned(0);
 	SongTime seek_time = args.ParseSongTime(1);
 
-	Error error;
-	return client.partition.SeekSongPosition(song, seek_time, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	client.partition.SeekSongPosition(song, seek_time);
+	return CommandResult::OK;
 }
 
 CommandResult
-handle_seekid(Client &client, Request args, Response &r)
+handle_seekid(Client &client, Request args, gcc_unused Response &r)
 {
 	unsigned id = args.ParseUnsigned(0);
 	SongTime seek_time = args.ParseSongTime(1);
 
-	Error error;
-	return client.partition.SeekSongId(id, seek_time, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	client.partition.SeekSongId(id, seek_time);
+	return CommandResult::OK;
 }
 
 CommandResult
-handle_seekcur(Client &client, Request args, Response &r)
+handle_seekcur(Client &client, Request args, gcc_unused Response &r)
 {
 	const char *p = args.front();
 	bool relative = *p == '+' || *p == '-';
 	SignedSongTime seek_time = ParseCommandArgSignedSongTime(p);
 
-	Error error;
-	return client.partition.SeekCurrent(seek_time, relative, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	client.partition.SeekCurrent(seek_time, relative);
+	return CommandResult::OK;
 }
 
 CommandResult

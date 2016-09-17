@@ -26,9 +26,9 @@
 #include <string.h>
 
 void
-NfsManager::ManagedConnection::OnNfsConnectionError(Error &&error)
+NfsManager::ManagedConnection::OnNfsConnectionError(std::exception_ptr &&e)
 {
-	FormatError(error, "NFS error on %s:%s", GetServer(), GetExportName());
+	FormatError(e, "NFS error on %s:%s", GetServer(), GetExportName());
 
 	/* defer deletion so the caller
 	   (i.e. NfsConnection::OnSocketReady()) can still use this

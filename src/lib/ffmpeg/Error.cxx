@@ -21,9 +21,26 @@
 #include "Error.hxx"
 #include "Domain.hxx"
 #include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 extern "C" {
 #include <libavutil/error.h>
+}
+
+std::runtime_error
+MakeFfmpegError(int errnum)
+{
+	char msg[256];
+	av_strerror(errnum, msg, sizeof(msg));
+	return std::runtime_error(msg);
+}
+
+std::runtime_error
+MakeFfmpegError(int errnum, const char *prefix)
+{
+	char msg[256];
+	av_strerror(errnum, msg, sizeof(msg));
+	return FormatRuntimeError("%s: %s", prefix, msg);
 }
 
 void

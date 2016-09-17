@@ -27,6 +27,7 @@
 #include "Compiler.h"
 
 #include <string>
+#include <exception>
 
 #include <stdint.h>
 #include <stddef.h>
@@ -61,8 +62,15 @@ public:
 	void Close();
 	void DeferClose();
 
-	bool Open(const char *uri, Error &error);
-	bool Read(uint64_t offset, size_t size, Error &error);
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Open(const char *uri);
+
+	/**
+	 * Throws std::runtime_error on error.
+	 */
+	void Read(uint64_t offset, size_t size);
 	void CancelRead();
 
 	bool IsIdle() const {
@@ -72,7 +80,7 @@ public:
 protected:
 	virtual void OnNfsFileOpen(uint64_t size) = 0;
 	virtual void OnNfsFileRead(const void *data, size_t size) = 0;
-	virtual void OnNfsFileError(Error &&error) = 0;
+	virtual void OnNfsFileError(std::exception_ptr &&e) = 0;
 
 private:
 	/**
@@ -86,12 +94,12 @@ private:
 
 	/* virtual methods from NfsLease */
 	void OnNfsConnectionReady() final;
-	void OnNfsConnectionFailed(const Error &error) final;
-	void OnNfsConnectionDisconnected(const Error &error) final;
+	void OnNfsConnectionFailed(std::exception_ptr e) final;
+	void OnNfsConnectionDisconnected(std::exception_ptr e) final;
 
 	/* virtual methods from NfsCallback */
 	void OnNfsCallback(unsigned status, void *data) final;
-	void OnNfsError(Error &&error) final;
+	void OnNfsError(std::exception_ptr &&e) final;
 
 	/* virtual methods from DeferredMonitor */
 	void RunDeferred() final;

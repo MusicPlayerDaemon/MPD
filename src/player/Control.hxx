@@ -24,12 +24,14 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
-#include "util/Error.hxx"
 #include "CrossFade.hxx"
 #include "Chrono.hxx"
 
+#include <exception>
+
 #include <stdint.h>
 
+class Error;
 class PlayerListener;
 class MultipleOutputs;
 class DetachedSong;
@@ -131,11 +133,11 @@ struct PlayerControl {
 
 	/**
 	 * The error that occurred in the player thread.  This
-	 * attribute is only valid if #error is not
+	 * attribute is only valid if #error_type is not
 	 * #PlayerError::NONE.  The object must be freed when this
 	 * object transitions back to #PlayerError::NONE.
 	 */
-	Error error;
+	std::exception_ptr error;
 
 	/**
 	 * A copy of the current #DetachedSong after its tags have
@@ -308,10 +310,12 @@ private:
 
 public:
 	/**
+	 * Throws std::runtime_error or #Error on error.
+	 *
 	 * @param song the song to be queued; the given instance will
 	 * be owned and freed by the player
 	 */
-	bool Play(DetachedSong *song, Error &error);
+	void Play(DetachedSong *song);
 
 	/**
 	 * see PlayerCommand::CANCEL
@@ -325,7 +329,7 @@ private:
 
 	void ClearError() {
 		error_type = PlayerError::NONE;
-		error.Clear();
+		error = std::exception_ptr();
 	}
 
 public:
@@ -354,28 +358,25 @@ public:
 	 * @param error detailed error information; must be defined.
 	 */
 	void SetError(PlayerError type, Error &&error);
+	void SetError(PlayerError type, std::exception_ptr &&_error);
 
 	/**
-	 * Checks whether an error has occurred, and if so, returns a
-	 * copy of the #Error object.
+	 * Checks whether an error has occurred, and if so, rethrows
+	 * it.
 	 *
 	 * Caller must lock the object.
 	 */
-	gcc_pure
-	Error GetError() const {
-		Error result;
+	void CheckRethrowError() const {
 		if (error_type != PlayerError::NONE)
-			result.Set(error);
-		return result;
+			std::rethrow_exception(error);
 	}
 
 	/**
-	 * Like GetError(), but locks and unlocks the object.
+	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
-	gcc_pure
-	Error LockGetError() const {
+	void LockCheckRethrowError() const {
 		const ScopeLock protect(mutex);
-		return GetError();
+		CheckRethrowError();
 	}
 
 	void LockClearError();
@@ -425,7 +426,10 @@ private:
 		SynchronousCommand(PlayerCommand::QUEUE);
 	}
 
-	bool SeekLocked(DetachedSong *song, SongTime t, Error &error_r);
+	/**
+	 * Throws std::runtime_error or #Error on error.
+	 */
+	void SeekLocked(DetachedSong *song, SongTime t);
 
 public:
 	/**
@@ -437,12 +441,12 @@ public:
 	/**
 	 * Makes the player thread seek the specified song to a position.
 	 *
+	 * Throws std::runtime_error or #Error on error.
+	 *
 	 * @param song the song to be queued; the given instance will be owned
 	 * and freed by the player
-	 * @return true on success, false on failure (e.g. if MPD isn't
-	 * playing currently)
 	 */
-	bool LockSeek(DetachedSong *song, SongTime t, Error &error_r);
+	void LockSeek(DetachedSong *song, SongTime t);
 
 	void SetCrossFade(float cross_fade_seconds);
 

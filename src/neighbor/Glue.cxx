@@ -26,7 +26,9 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigError.hxx"
 #include "config/Block.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
+
+#include <stdexcept>
 
 NeighborGlue::Explorer::~Explorer()
 {
@@ -37,57 +39,50 @@ NeighborGlue::~NeighborGlue() {}
 
 static NeighborExplorer *
 CreateNeighborExplorer(EventLoop &loop, NeighborListener &listener,
-		       const ConfigBlock &block, Error &error)
+		       const ConfigBlock &block)
 {
 	const char *plugin_name = block.GetBlockValue("plugin");
-	if (plugin_name == nullptr) {
-		error.Set(config_domain,
-			  "Missing \"plugin\" configuration");
-		return nullptr;
-	}
+	if (plugin_name == nullptr)
+		throw std::runtime_error("Missing \"plugin\" configuration");
 
 	const NeighborPlugin *plugin = GetNeighborPluginByName(plugin_name);
-	if (plugin == nullptr) {
-		error.Format(config_domain, "No such neighbor plugin: %s",
-			     plugin_name);
-		return nullptr;
-	}
+	if (plugin == nullptr)
+		throw FormatRuntimeError("No such neighbor plugin: %s",
+					 plugin_name);
 
-	return plugin->create(loop, listener, block, error);
+	return plugin->create(loop, listener, block);
 }
 
-bool
-NeighborGlue::Init(EventLoop &loop, NeighborListener &listener, Error &error)
+void
+NeighborGlue::Init(EventLoop &loop, NeighborListener &listener)
 {
 	for (const auto *block = config_get_block(ConfigBlockOption::NEIGHBORS);
 	     block != nullptr; block = block->next) {
-		NeighborExplorer *explorer =
-			CreateNeighborExplorer(loop, listener, *block, error);
-		if (explorer == nullptr) {
-			error.FormatPrefix("Line %i: ", block->line);
-			return false;
+		try {
+			auto *explorer =
+				CreateNeighborExplorer(loop, listener, *block);
+			explorers.emplace_front(explorer);
+		} catch (...) {
+			std::throw_with_nested(FormatRuntimeError("Line %i: ",
+								  block->line));
 		}
-
-		explorers.emplace_front(explorer);
 	}
-
-	return true;
 }
 
-bool
-NeighborGlue::Open(Error &error)
+void
+NeighborGlue::Open()
 {
 	for (auto i = explorers.begin(), end = explorers.end();
 	     i != end; ++i) {
-		if (!i->explorer->Open(error)) {
+		try {
+			i->explorer->Open();
+		} catch (...) {
 			/* roll back */
 			for (auto k = explorers.begin(); k != i; ++k)
 				k->explorer->Close();
-			return false;
+			throw;
 		}
 	}
-
-	return true;
 }
 
 void

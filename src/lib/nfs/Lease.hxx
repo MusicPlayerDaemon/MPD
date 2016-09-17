@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <exception>
+
 class Error;
 
 class NfsLease {
@@ -36,13 +38,13 @@ public:
 	 * The #NfsConnection has failed to mount the server's export.
 	 * This is being called instead of OnNfsConnectionReady().
 	 */
-	virtual void OnNfsConnectionFailed(const Error &error) = 0;
+	virtual void OnNfsConnectionFailed(std::exception_ptr e) = 0;
 
 	/**
 	 * The #NfsConnection has failed after OnNfsConnectionReady()
 	 * had been called already.
 	 */
-	virtual void OnNfsConnectionDisconnected(const Error &error) = 0;
+	virtual void OnNfsConnectionDisconnected(std::exception_ptr e) = 0;
 };
 
 #endif

@@ -238,8 +238,11 @@ playlist::DeleteInternal(PlayerControl &pc,
 
 		if (current >= 0 && !paused)
 			/* play the song after the deleted one */
-			/* TODO: log error? */
-			PlayOrder(pc, current, IgnoreError());
+			try {
+				PlayOrder(pc, current);
+			} catch (...) {
+				/* TODO: log error? */
+			}
 		else {
 			/* stop the player */
 

@@ -27,6 +27,7 @@
 #include "lib/ffmpeg/Error.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
+#include "PluginUnavailable.hxx"
 #include "util/StringCompare.hxx"
 #include "util/Error.hxx"
 
@@ -60,8 +61,8 @@ struct FfmpegInputStream final : public InputStream {
 
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
-	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
+	void Seek(offset_type offset) override;
 };
 
 static inline bool
@@ -71,25 +72,19 @@ input_ffmpeg_supported(void)
 	return avio_enum_protocols(&opaque, 0) != nullptr;
 }
 
-static InputPlugin::InitResult
-input_ffmpeg_init(gcc_unused const ConfigBlock &block,
-		  Error &error)
+static void
+input_ffmpeg_init(gcc_unused const ConfigBlock &block)
 {
 	FfmpegInit();
 
 	/* disable this plugin if there's no registered protocol */
-	if (!input_ffmpeg_supported()) {
-		error.Set(ffmpeg_domain, "No protocol");
-		return InputPlugin::InitResult::UNAVAILABLE;
-	}
-
-	return InputPlugin::InitResult::SUCCESS;
+	if (!input_ffmpeg_supported())
+		throw PluginUnavailable("No protocol");
 }
 
 static InputStream *
 input_ffmpeg_open(const char *uri,
-		  Mutex &mutex, Cond &cond,
-		  Error &error)
+		  Mutex &mutex, Cond &cond)
 {
 	if (!StringStartsWith(uri, "gopher://") &&
 	    !StringStartsWith(uri, "rtp://") &&
@@ -101,24 +96,22 @@ input_ffmpeg_open(const char *uri,
 
 	AVIOContext *h;
 	auto result = avio_open(&h, uri, AVIO_FLAG_READ);
-	if (result != 0) {
-		SetFfmpegError(error, result);
-		return nullptr;
-	}
+	if (result != 0)
+		throw MakeFfmpegError(result);
 
 	return new FfmpegInputStream(uri, mutex, cond, h);
 }
 
 size_t
-FfmpegInputStream::Read(void *ptr, size_t read_size, Error &error)
+FfmpegInputStream::Read(void *ptr, size_t read_size)
 {
 	auto result = avio_read(h, (unsigned char *)ptr, read_size);
 	if (result <= 0) {
 		if (result < 0)
-			SetFfmpegError(error, result, "avio_read() failed");
+			throw MakeFfmpegError(result, "avio_read() failed");
 
 		eof = true;
-		return false;
+		return 0;
 	}
 
 	offset += result;
@@ -131,19 +124,16 @@ FfmpegInputStream::IsEOF()
 	return eof;
 }
 
-bool
-FfmpegInputStream::Seek(offset_type new_offset, Error &error)
+void
+FfmpegInputStream::Seek(offset_type new_offset)
 {
 	auto result = avio_seek(h, new_offset, SEEK_SET);
 
-	if (result < 0) {
-		SetFfmpegError(error, result, "avio_seek() failed");
-		return false;
-	}
+	if (result < 0)
+		throw MakeFfmpegError(result, "avio_seek() failed");
 
 	offset = result;
 	eof = false;
-	return true;
 }
 
 const InputPlugin input_plugin_ffmpeg = {

@@ -42,11 +42,13 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+#include <memory>
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <memory>
 
 UpdateWalk::UpdateWalk(EventLoop &_loop, DatabaseListener &_listener,
 		       Storage &_storage)
@@ -333,10 +335,17 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 
 	directory_set_stat(directory, info);
 
-	Error error;
-	const std::unique_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(directory.GetPath(), error));
-	if (reader.get() == nullptr) {
-		LogError(error);
+	std::unique_ptr<StorageDirectoryReader> reader;
+
+	try {
+		Error error;
+		reader.reset(storage.OpenDirectory(directory.GetPath(), error));
+		if (!reader) {
+			LogError(error);
+			return false;
+		}
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		return false;
 	}
 

@@ -27,6 +27,8 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 
 /** after a failure, wait this number of seconds before
@@ -145,10 +147,11 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	const bool open2 = open;
 
 	if (open2 && mixer != nullptr) {
-		Error error;
-		if (!mixer_open(mixer, error))
-			FormatWarning(output_domain,
-				      "Failed to open mixer for '%s'", name);
+		try {
+			mixer_open(mixer);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "Failed to open mixer for '%s'", name);
+		}
 	}
 
 	return open2;

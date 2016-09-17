@@ -26,31 +26,28 @@
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <memory>
+
 #include <assert.h>
 
 class AutoConvertFilter final : public Filter {
 	/**
 	 * The underlying filter.
 	 */
-	Filter *const filter;
+	std::unique_ptr<Filter> filter;
 
 	/**
 	 * A convert_filter, just in case conversion is needed.  nullptr
 	 * if unused.
 	 */
-	Filter *const convert;
+	std::unique_ptr<Filter> convert;
 
 public:
-	AutoConvertFilter(Filter *_filter, Filter *_convert)
-		:filter(_filter), convert(_convert) {}
+	AutoConvertFilter(std::unique_ptr<Filter> &&_filter,
+			  std::unique_ptr<Filter> &&_convert)
+		:filter(std::move(_filter)), convert(std::move(_convert)) {}
 
-	~AutoConvertFilter() {
-		delete convert;
-		delete filter;
-	}
-
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-					    Error &error) override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedAutoConvertFilter final : public PreparedFilter {
@@ -65,49 +62,43 @@ public:
 		delete filter;
 	}
 
-	virtual Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
 
 Filter *
-PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format, Error &error)
+PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 {
 	assert(in_audio_format.IsValid());
 
 	/* open the "real" filter */
 
 	AudioFormat child_audio_format = in_audio_format;
-	auto *new_filter = filter->Open(child_audio_format, error);
-	if (new_filter == nullptr)
-		return nullptr;
+	std::unique_ptr<Filter> new_filter(filter->Open(child_audio_format));
 
 	/* need to convert? */
 
-	Filter *convert = nullptr;
+	std::unique_ptr<Filter> convert;
 	if (in_audio_format != child_audio_format) {
 		/* yes - create a convert_filter */
 
-		convert = convert_filter_new(in_audio_format,
-					     child_audio_format,
-					     error);
-		if (convert == nullptr) {
-			delete new_filter;
-			return nullptr;
-		}
+		convert.reset(convert_filter_new(in_audio_format,
+						 child_audio_format));
 	}
 
-	return new AutoConvertFilter(new_filter, convert);
+	return new AutoConvertFilter(std::move(new_filter),
+				     std::move(convert));
 }
 
 ConstBuffer<void>
-AutoConvertFilter::FilterPCM(ConstBuffer<void> src, Error &error)
+AutoConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
 	if (convert != nullptr) {
-		src = convert->FilterPCM(src, error);
+		src = convert->FilterPCM(src);
 		if (src.IsNull())
 			return nullptr;
 	}
 
-	return filter->FilterPCM(src, error);
+	return filter->FilterPCM(src);
 }
 
 PreparedFilter *

@@ -20,12 +20,10 @@
 #include "config.h"
 #include "Blocking.hxx"
 #include "Connection.hxx"
-#include "Domain.hxx"
 #include "event/Call.hxx"
-#include "util/Error.hxx"
 
-bool
-BlockingNfsOperation::Run(Error &_error)
+void
+BlockingNfsOperation::Run()
 {
 	/* subscribe to the connection, which will invoke either
 	   OnNfsConnectionReady() or OnNfsConnectionFailed() */
@@ -33,40 +31,37 @@ BlockingNfsOperation::Run(Error &_error)
 		    [this](){ connection.AddLease(*this); });
 
 	/* wait for completion */
-	if (!LockWaitFinished()) {
-		_error.Set(nfs_domain, 0, "Timeout");
-		return false;
-	}
+	if (!LockWaitFinished())
+		throw std::runtime_error("Timeout");
 
 	/* check for error */
-	if (error.IsDefined()) {
-		_error = std::move(error);
-		return false;
-	}
-
-	return true;
+	if (error)
+		std::rethrow_exception(std::move(error));
 }
 
 void
 BlockingNfsOperation::OnNfsConnectionReady()
 {
-	if (!Start(error)) {
+	try {
+		Start();
+	} catch (...) {
+		error = std::current_exception();
 		connection.RemoveLease(*this);
 		LockSetFinished();
 	}
 }
 
 void
-BlockingNfsOperation::OnNfsConnectionFailed(const Error &_error)
+BlockingNfsOperation::OnNfsConnectionFailed(std::exception_ptr e)
 {
-	error.Set(_error);
+	error = std::move(e);
 	LockSetFinished();
 }
 
 void
-BlockingNfsOperation::OnNfsConnectionDisconnected(const Error &_error)
+BlockingNfsOperation::OnNfsConnectionDisconnected(std::exception_ptr e)
 {
-	error.Set(_error);
+	error = std::move(e);
 	LockSetFinished();
 }
 
@@ -80,10 +75,10 @@ BlockingNfsOperation::OnNfsCallback(unsigned status, void *data)
 }
 
 void
-BlockingNfsOperation::OnNfsError(Error &&_error)
+BlockingNfsOperation::OnNfsError(std::exception_ptr &&e)
 {
 	connection.RemoveLease(*this);
 
-	error = std::move(_error);
+	error = std::move(e);
 	LockSetFinished();
 }

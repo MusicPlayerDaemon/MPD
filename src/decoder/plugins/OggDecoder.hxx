@@ -24,8 +24,6 @@
 #include "lib/xiph/OggVisitor.hxx"
 #include "decoder/Reader.hxx"
 
-class Error;
-
 class OggDecoder : public OggVisitor {
 	ogg_int64_t end_granulepos;
 
@@ -58,7 +56,7 @@ protected:
 		return end_granulepos > 0;
 	}
 
-	bool SeekGranulePos(ogg_int64_t where_granulepos, Error &error);
+	void SeekGranulePos(ogg_int64_t where_granulepos);
 };
 
 #endif

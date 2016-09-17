@@ -36,8 +36,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-int main(int argc, char **argv)
-{
+int
+main(int argc, char **argv)
+try {
 	static char buffer[4096];
 	ssize_t nbytes;
 
@@ -56,10 +57,7 @@ int main(int argc, char **argv)
 	}
 
 	PcmVolume pv;
-	if (!pv.Open(audio_format.format, error)) {
-		fprintf(stderr, "%s\n", error.GetMessage());
-		return EXIT_FAILURE;
-	}
+	pv.Open(audio_format.format);
 
 	while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
 		auto dest = pv.Apply({buffer, size_t(nbytes)});
@@ -67,4 +65,7 @@ int main(int argc, char **argv)
 	}
 
 	pv.Close();
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

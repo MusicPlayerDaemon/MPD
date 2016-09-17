@@ -38,8 +38,11 @@ ScanGenericTags(InputStream &is, const TagHandler &handler, void *ctx)
 		return true;
 
 #ifdef ENABLE_ID3TAG
-	if (!is.LockRewind(IgnoreError()))
+	try {
+		is.LockRewind();
+	} catch (const std::runtime_error &) {
 		return false;
+	}
 
 	return tag_id3_scan(is, handler, ctx);
 #else
@@ -53,13 +56,7 @@ try {
 	Mutex mutex;
 	Cond cond;
 
-	Error error;
-	auto is = OpenLocalInputStream(path, mutex, cond, error);
-	if (!is) {
-		LogError(error);
-		return false;
-	}
-
+	auto is = OpenLocalInputStream(path, mutex, cond);
 	return ScanGenericTags(*is, handler, ctx);
 } catch (const std::runtime_error &e) {
 	LogError(e);

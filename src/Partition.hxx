@@ -129,35 +129,32 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.Stop(pc);
 	}
 
-	bool PlayPosition(int position, Error &error) {
-		return playlist.PlayPosition(pc, position, error);
+	void PlayPosition(int position) {
+		return playlist.PlayPosition(pc, position);
 	}
 
-	bool PlayId(int id, Error &error) {
-		return playlist.PlayId(pc, id, error);
+	void PlayId(int id) {
+		return playlist.PlayId(pc, id);
 	}
 
-	bool PlayNext(Error &error) {
-		return playlist.PlayNext(pc, error);
+	void PlayNext() {
+		return playlist.PlayNext(pc);
 	}
 
-	bool PlayPrevious(Error &error) {
-		return playlist.PlayPrevious(pc, error);
+	void PlayPrevious() {
+		return playlist.PlayPrevious(pc);
 	}
 
-	bool SeekSongPosition(unsigned song_position,
-			      SongTime seek_time, Error &error) {
-		return playlist.SeekSongPosition(pc, song_position, seek_time,
-						 error);
+	void SeekSongPosition(unsigned song_position, SongTime seek_time) {
+		playlist.SeekSongPosition(pc, song_position, seek_time);
 	}
 
-	bool SeekSongId(unsigned song_id, SongTime seek_time, Error &error) {
-		return playlist.SeekSongId(pc, song_id, seek_time, error);
+	void SeekSongId(unsigned song_id, SongTime seek_time) {
+		playlist.SeekSongId(pc, song_id, seek_time);
 	}
 
-	bool SeekCurrent(SignedSongTime seek_time, bool relative,
-			 Error &error) {
-		return playlist.SeekCurrent(pc, seek_time, relative, error);
+	void SeekCurrent(SignedSongTime seek_time, bool relative) {
+		playlist.SeekCurrent(pc, seek_time, relative);
 	}
 
 	void SetRepeat(bool new_value) {

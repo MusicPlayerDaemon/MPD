@@ -20,11 +20,10 @@
 #include "config.h"
 #include "Connection.hxx"
 #include "Lease.hxx"
-#include "Domain.hxx"
 #include "Callback.hxx"
 #include "event/Loop.hxx"
 #include "system/fd_util.h"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 extern "C" {
 #include <nfsc/libnfs.h>
@@ -36,90 +35,65 @@ extern "C" {
 
 static constexpr unsigned NFS_MOUNT_TIMEOUT = 60;
 
-inline bool
+inline void
 NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
-					 const char *path,
-					 Error &error)
+					 const char *path)
 {
 	assert(connection.GetEventLoop().IsInside());
 
 	int result = nfs_stat_async(ctx, path, Callback, this);
-	if (result < 0) {
-		error.Format(nfs_domain, "nfs_stat_async() failed: %s",
-			     nfs_get_error(ctx));
-		return false;
-	}
-
-	return true;
+	if (result < 0)
+		throw FormatRuntimeError("nfs_stat_async() failed: %s",
+					 nfs_get_error(ctx));
 }
 
-inline bool
+inline void
 NfsConnection::CancellableCallback::OpenDirectory(nfs_context *ctx,
-						  const char *path,
-						  Error &error)
+						  const char *path)
 {
 	assert(connection.GetEventLoop().IsInside());
 
 	int result = nfs_opendir_async(ctx, path, Callback, this);
-	if (result < 0) {
-		error.Format(nfs_domain, "nfs_opendir_async() failed: %s",
-			     nfs_get_error(ctx));
-		return false;
-	}
-
-	return true;
+	if (result < 0)
+		throw FormatRuntimeError("nfs_opendir_async() failed: %s",
+					 nfs_get_error(ctx));
 }
 
-inline bool
+inline void
 NfsConnection::CancellableCallback::Open(nfs_context *ctx,
-					 const char *path, int flags,
-					 Error &error)
+					 const char *path, int flags)
 {
 	assert(connection.GetEventLoop().IsInside());
 
 	int result = nfs_open_async(ctx, path, flags,
 				    Callback, this);
-	if (result < 0) {
-		error.Format(nfs_domain, "nfs_open_async() failed: %s",
-			     nfs_get_error(ctx));
-		return false;
-	}
-
-	return true;
+	if (result < 0)
+		throw FormatRuntimeError("nfs_open_async() failed: %s",
+					 nfs_get_error(ctx));
 }
 
-inline bool
+inline void
 NfsConnection::CancellableCallback::Stat(nfs_context *ctx,
-					 struct nfsfh *fh,
-					 Error &error)
+					 struct nfsfh *fh)
 {
 	assert(connection.GetEventLoop().IsInside());
 
 	int result = nfs_fstat_async(ctx, fh, Callback, this);
-	if (result < 0) {
-		error.Format(nfs_domain, "nfs_fstat_async() failed: %s",
-			     nfs_get_error(ctx));
-		return false;
-	}
-
-	return true;
+	if (result < 0)
+		throw FormatRuntimeError("nfs_fstat_async() failed: %s",
+					 nfs_get_error(ctx));
 }
 
-inline bool
+inline void
 NfsConnection::CancellableCallback::Read(nfs_context *ctx, struct nfsfh *fh,
-					 uint64_t offset, size_t size,
-					 Error &error)
+					 uint64_t offset, size_t size)
 {
 	assert(connection.GetEventLoop().IsInside());
 
 	int result = nfs_pread_async(ctx, fh, offset, size, Callback, this);
-	if (result < 0) {
-		error.Format(nfs_domain, "nfs_pread_async() failed: %s",
-			     nfs_get_error(ctx));
-		return false;
-	}
-
-	return true;
+	if (result < 0)
+		throw FormatRuntimeError("nfs_pread_async() failed: %s",
+					 nfs_get_error(ctx));
 }
 
 inline void
@@ -160,8 +134,7 @@ NfsConnection::CancellableCallback::Callback(int err, void *data)
 		if (err >= 0)
 			cb.OnNfsCallback((unsigned)err, data);
 		else
-			cb.OnNfsError(Error(nfs_domain, err,
-					    (const char *)data));
+			cb.OnNfsError(std::make_exception_ptr(std::runtime_error((const char *)data)));
 	} else {
 		if (open) {
 			/* a nfs_open_async() call was cancelled - to
@@ -234,37 +207,38 @@ NfsConnection::RemoveLease(NfsLease &lease)
 	active_leases.remove(&lease);
 }
 
-bool
-NfsConnection::Stat(const char *path, NfsCallback &callback, Error &error)
+void
+NfsConnection::Stat(const char *path, NfsCallback &callback)
 {
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, false);
-	if (!c.Stat(context, path, error)) {
+	try {
+		c.Stat(context, path);
+	} catch (...) {
 		callbacks.Remove(c);
-		return false;
+		throw;
 	}
 
 	ScheduleSocket();
-	return true;
 }
 
-bool
-NfsConnection::OpenDirectory(const char *path, NfsCallback &callback,
-			     Error &error)
+void
+NfsConnection::OpenDirectory(const char *path, NfsCallback &callback)
 {
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, true);
-	if (!c.OpenDirectory(context, path, error)) {
+	try {
+		c.OpenDirectory(context, path);
+	} catch (...) {
 		callbacks.Remove(c);
-		return false;
+		throw;
 	}
 
 	ScheduleSocket();
-	return true;
 }
 
 const struct nfsdirent *
@@ -283,54 +257,56 @@ NfsConnection::CloseDirectory(struct nfsdir *dir)
 	return nfs_closedir(context, dir);
 }
 
-bool
-NfsConnection::Open(const char *path, int flags, NfsCallback &callback,
-		    Error &error)
+void
+NfsConnection::Open(const char *path, int flags, NfsCallback &callback)
 {
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, true);
-	if (!c.Open(context, path, flags, error)) {
+	try {
+		c.Open(context, path, flags);
+	} catch (...) {
 		callbacks.Remove(c);
-		return false;
+		throw;
 	}
 
 	ScheduleSocket();
-	return true;
 }
 
-bool
-NfsConnection::Stat(struct nfsfh *fh, NfsCallback &callback, Error &error)
+void
+NfsConnection::Stat(struct nfsfh *fh, NfsCallback &callback)
 {
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, false);
-	if (!c.Stat(context, fh, error)) {
+	try {
+		c.Stat(context, fh);
+	} catch (...) {
 		callbacks.Remove(c);
-		return false;
+		throw;
 	}
 
 	ScheduleSocket();
-	return true;
 }
 
-bool
+void
 NfsConnection::Read(struct nfsfh *fh, uint64_t offset, size_t size,
-		    NfsCallback &callback, Error &error)
+		    NfsCallback &callback)
 {
 	assert(GetEventLoop().IsInside());
 	assert(!callbacks.Contains(callback));
 
 	auto &c = callbacks.Add(callback, *this, false);
-	if (!c.Read(context, fh, offset, size, error)) {
+	try {
+		c.Read(context, fh, offset, size);
+	} catch (...) {
 		callbacks.Remove(c);
-		return false;
+		throw;
 	}
 
 	ScheduleSocket();
-	return true;
 }
 
 void
@@ -479,7 +455,7 @@ NfsConnection::OnSocketReady(unsigned flags)
 	}
 
 	if (!was_mounted && mount_finished) {
-		if (postponed_mount_error.IsDefined()) {
+		if (postponed_mount_error) {
 			DestroyContext();
 			closed = true;
 			BroadcastMountError(std::move(postponed_mount_error));
@@ -487,11 +463,10 @@ NfsConnection::OnSocketReady(unsigned flags)
 			BroadcastMountSuccess();
 	} else if (result < 0) {
 		/* the connection has failed */
-		Error error;
-		error.Format(nfs_domain, "NFS connection has failed: %s",
-			     nfs_get_error(context));
 
-		BroadcastError(std::move(error));
+		auto e = FormatRuntimeError("NFS connection has failed: %s",
+					    nfs_get_error(context));
+		BroadcastError(std::make_exception_ptr(e));
 
 		DestroyContext();
 		closed = true;
@@ -499,15 +474,13 @@ NfsConnection::OnSocketReady(unsigned flags)
 		/* this happens when rpc_reconnect_requeue() is called
 		   after the connection broke, but autoreconnect was
 		   disabled - nfs_service() returns 0 */
-		Error error;
+
 		const char *msg = nfs_get_error(context);
 		if (msg == nullptr)
-			error.Set(nfs_domain, "NFS socket disappeared");
-		else
-			error.Format(nfs_domain,
-				     "NFS socket disappeared: %s", msg);
+			msg = "<unknown>";
+		auto e = FormatRuntimeError("NFS socket disappeared: %s", msg);
 
-		BroadcastError(std::move(error));
+		BroadcastError(std::make_exception_ptr(e));
 
 		DestroyContext();
 		closed = true;
@@ -539,9 +512,9 @@ NfsConnection::MountCallback(int status, gcc_unused nfs_context *nfs,
 	TimeoutMonitor::Cancel();
 
 	if (status < 0) {
-		postponed_mount_error.Format(nfs_domain, status,
-					     "nfs_mount_async() failed: %s",
-					     nfs_get_error(context));
+		auto e = FormatRuntimeError("nfs_mount_async() failed: %s",
+					    nfs_get_error(context));
+		postponed_mount_error = std::make_exception_ptr(e);
 		return;
 	}
 }
@@ -555,19 +528,17 @@ NfsConnection::MountCallback(int status, nfs_context *nfs, void *data,
 	c->MountCallback(status, nfs, data);
 }
 
-inline bool
-NfsConnection::MountInternal(Error &error)
+inline void
+NfsConnection::MountInternal()
 {
 	assert(GetEventLoop().IsInside());
 	assert(context == nullptr);
 
 	context = nfs_init_context();
-	if (context == nullptr) {
-		error.Set(nfs_domain, "nfs_init_context() failed");
-		return false;
-	}
+	if (context == nullptr)
+		throw std::runtime_error("nfs_init_context() failed");
 
-	postponed_mount_error.Clear();
+	postponed_mount_error = std::exception_ptr();
 	mount_finished = false;
 
 	TimeoutMonitor::ScheduleSeconds(NFS_MOUNT_TIMEOUT);
@@ -580,16 +551,14 @@ NfsConnection::MountInternal(Error &error)
 
 	if (nfs_mount_async(context, server.c_str(), export_name.c_str(),
 			    MountCallback, this) != 0) {
-		error.Format(nfs_domain,
-			     "nfs_mount_async() failed: %s",
-			     nfs_get_error(context));
+		auto e = FormatRuntimeError("nfs_mount_async() failed: %s",
+					    nfs_get_error(context));
 		nfs_destroy_context(context);
 		context = nullptr;
-		return false;
+		throw e;
 	}
 
 	ScheduleSocket();
-	return true;
 }
 
 void
@@ -605,31 +574,31 @@ NfsConnection::BroadcastMountSuccess()
 }
 
 void
-NfsConnection::BroadcastMountError(Error &&error)
+NfsConnection::BroadcastMountError(std::exception_ptr &&e)
 {
 	assert(GetEventLoop().IsInside());
 
 	while (!new_leases.empty()) {
 		auto l = new_leases.front();
 		new_leases.pop_front();
-		l->OnNfsConnectionFailed(error);
+		l->OnNfsConnectionFailed(e);
 	}
 
-	OnNfsConnectionError(std::move(error));
+	OnNfsConnectionError(std::move(e));
 }
 
 void
-NfsConnection::BroadcastError(Error &&error)
+NfsConnection::BroadcastError(std::exception_ptr &&e)
 {
 	assert(GetEventLoop().IsInside());
 
 	while (!active_leases.empty()) {
 		auto l = active_leases.front();
 		active_leases.pop_front();
-		l->OnNfsConnectionDisconnected(error);
+		l->OnNfsConnectionDisconnected(e);
 	}
 
-	BroadcastMountError(std::move(error));
+	BroadcastMountError(std::move(e));
 }
 
 void
@@ -641,7 +610,7 @@ NfsConnection::OnTimeout()
 	mount_finished = true;
 	DestroyContext();
 
-	BroadcastMountError(Error(nfs_domain, "Mount timeout"));
+	BroadcastMountError(std::make_exception_ptr(std::runtime_error("Mount timeout")));
 }
 
 void
@@ -650,9 +619,10 @@ NfsConnection::RunDeferred()
 	assert(GetEventLoop().IsInside());
 
 	if (context == nullptr) {
-		Error error;
-		if (!MountInternal(error)) {
-			BroadcastMountError(std::move(error));
+		try {
+			MountInternal();
+		} catch (...) {
+			BroadcastMountError(std::current_exception());
 			return;
 		}
 	}

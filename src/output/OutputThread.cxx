@@ -40,6 +40,8 @@
 #include "Log.hxx"
 #include "Compiler.h"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
@@ -91,38 +93,28 @@ AudioOutput::Disable()
 }
 
 inline AudioFormat
-AudioOutput::OpenFilter(AudioFormat &format, Error &error_r)
-{
+AudioOutput::OpenFilter(AudioFormat &format)
+try {
 	assert(format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
-	if (prepared_replay_gain_filter != nullptr) {
+	if (prepared_replay_gain_filter != nullptr)
 		replay_gain_filter_instance =
-			prepared_replay_gain_filter->Open(format, error_r);
-		if (replay_gain_filter_instance == nullptr)
-			return AudioFormat::Undefined();
-	}
+			prepared_replay_gain_filter->Open(format);
 
-	if (prepared_other_replay_gain_filter != nullptr) {
+	if (prepared_other_replay_gain_filter != nullptr)
 		other_replay_gain_filter_instance =
-			prepared_other_replay_gain_filter->Open(format, error_r);
-		if (other_replay_gain_filter_instance == nullptr) {
-			delete replay_gain_filter_instance;
-			return AudioFormat::Undefined();
-		}
-	}
+			prepared_other_replay_gain_filter->Open(format);
 
-	filter_instance = prepared_filter->Open(format, error_r);
-	if (filter_instance == nullptr) {
-		delete other_replay_gain_filter_instance;
-		delete replay_gain_filter_instance;
-		return AudioFormat::Undefined();
-	}
+	filter_instance = prepared_filter->Open(format);
 
 	if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 		software_mixer_set_filter(*mixer, volume_filter.Get());
 
 	return filter_instance->GetOutAudioFormat();
+} catch (...) {
+	CloseFilter();
+	throw;
 }
 
 void
@@ -132,8 +124,13 @@ AudioOutput::CloseFilter()
 		software_mixer_set_filter(*mixer, nullptr);
 
 	delete replay_gain_filter_instance;
+	replay_gain_filter_instance = nullptr;
+
 	delete other_replay_gain_filter_instance;
+	other_replay_gain_filter_instance = nullptr;
+
 	delete filter_instance;
+	filter_instance = nullptr;
 }
 
 inline void
@@ -158,10 +155,11 @@ AudioOutput::Open()
 
 	/* open the filter */
 
-	const AudioFormat filter_audio_format =
-		OpenFilter(in_audio_format, error);
-	if (!filter_audio_format.IsDefined()) {
-		FormatError(error, "Failed to open filter for \"%s\" [%s]",
+	AudioFormat filter_audio_format;
+	try {
+		filter_audio_format = OpenFilter(in_audio_format);
+	} catch (const std::runtime_error &e) {
+		FormatError(e, "Failed to open filter for \"%s\" [%s]",
 			    name, plugin.name);
 
 		fail_timer.Update();
@@ -195,9 +193,10 @@ AudioOutput::Open()
 		return;
 	}
 
-	if (!convert_filter_set(convert_filter.Get(), out_audio_format,
-				error)) {
-		FormatError(error, "Failed to convert for \"%s\" [%s]",
+	try {
+		convert_filter_set(convert_filter.Get(), out_audio_format);
+	} catch (const std::runtime_error &e) {
+		FormatError(e, "Failed to convert for \"%s\" [%s]",
 			    name, plugin.name);
 
 		mutex.unlock();
@@ -288,28 +287,16 @@ AudioOutput::ReopenFilter()
 	CloseFilter();
 	mutex.lock();
 
-	const AudioFormat filter_audio_format =
-		OpenFilter(in_audio_format, error);
-	if (!filter_audio_format.IsDefined() ||
-	    !convert_filter_set(convert_filter.Get(), out_audio_format,
-				error)) {
-		FormatError(error,
+	AudioFormat filter_audio_format;
+	try {
+		filter_audio_format = OpenFilter(in_audio_format);
+		convert_filter_set(convert_filter.Get(), out_audio_format);
+	} catch (const std::runtime_error &e) {
+		FormatError(e,
 			    "Failed to open filter for \"%s\" [%s]",
 			    name, plugin.name);
 
-		/* this is a little code duplication from Close(),
-		   but we cannot call this function because we must
-		   not call filter_close(filter) again */
-
-		pipe = nullptr;
-
-		current_chunk = nullptr;
-		open = false;
-		fail_timer.Update();
-
-		mutex.unlock();
-		ao_plugin_close(this);
-		mutex.lock();
+		Close(false);
 
 		return;
 	}
@@ -388,11 +375,13 @@ ao_chunk_data(AudioOutput *ao, const MusicChunk *chunk,
 			*replay_gain_serial_p = chunk->replay_gain_serial;
 		}
 
-		Error error;
-		data = replay_gain_filter->FilterPCM(data, error);
-		if (data.IsNull())
-			FormatError(error, "\"%s\" [%s] failed to filter",
+		try {
+			data = replay_gain_filter->FilterPCM(data);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "\"%s\" [%s] failed to filter",
 				    ao->name, ao->plugin.name);
+			return nullptr;
+		}
 	}
 
 	return data;
@@ -454,15 +443,13 @@ ao_filter_chunk(AudioOutput *ao, const MusicChunk *chunk)
 
 	/* apply filter chain */
 
-	Error error;
-	data = ao->filter_instance->FilterPCM(data, error);
-	if (data.IsNull()) {
-		FormatError(error, "\"%s\" [%s] failed to filter",
+	try {
+		return ao->filter_instance->FilterPCM(data);
+	} catch (const std::runtime_error &e) {
+		FormatError(e, "\"%s\" [%s] failed to filter",
 			    ao->name, ao->plugin.name);
 		return nullptr;
 	}
-
-	return data;
 }
 
 inline bool
@@ -604,12 +591,13 @@ AudioOutput::Task()
 {
 	FormatThreadName("output:%s", name);
 
-	Error error;
-	if(!SetThreadRealtime(error)) {
-		LogError(error);
-		LogWarning(output_domain,
-			"OutputThread could not get realtime scheduling, continuing anyway");
+	try {
+		SetThreadRealtime();
+	} catch (const std::runtime_error &e) {
+		LogError(e,
+			 "OutputThread could not get realtime scheduling, continuing anyway");
 	}
+
 	SetThreadTimerSlackUS(100);
 
 	mutex.lock();

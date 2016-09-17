@@ -27,6 +27,7 @@
 #include "../InputPlugin.hxx"
 #include "util/StringUtil.hxx"
 #include "util/StringCompare.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
@@ -97,16 +98,16 @@ class CdioParanoiaInputStream final : public InputStream {
 
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
-	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
+	void Seek(offset_type offset) override;
 };
 
 static constexpr Domain cdio_domain("cdio");
 
 static bool default_reverse_endian;
 
-static InputPlugin::InitResult
-input_cdio_init(const ConfigBlock &block, Error &error)
+static void
+input_cdio_init(const ConfigBlock &block)
 {
 	const char *value = block.GetBlockValue("default_byte_order");
 	if (value != nullptr) {
@@ -114,15 +115,10 @@ input_cdio_init(const ConfigBlock &block, Error &error)
 			default_reverse_endian = IsBigEndian();
 		else if (strcmp(value, "big_endian") == 0)
 			default_reverse_endian = IsLittleEndian();
-		else {
-			error.Format(config_domain, 0,
-				     "Unrecognized 'default_byte_order' setting: %s",
-				     value);
-			return InputPlugin::InitResult::ERROR;
-		}
+		else
+			throw FormatRuntimeError("Unrecognized 'default_byte_order' setting: %s",
+						 value);
 	}
-
-	return InputPlugin::InitResult::SUCCESS;
 }
 
 struct cdio_uri {
@@ -131,7 +127,7 @@ struct cdio_uri {
 };
 
 static bool
-parse_cdio_uri(struct cdio_uri *dest, const char *src, Error &error)
+parse_cdio_uri(struct cdio_uri *dest, const char *src)
 {
 	if (!StringStartsWith(src, "cdda://"))
 		return false;
@@ -164,10 +160,8 @@ parse_cdio_uri(struct cdio_uri *dest, const char *src, Error &error)
 
 	char *endptr;
 	dest->track = strtoul(track, &endptr, 10);
-	if (*endptr != 0) {
-		error.Set(cdio_domain, "Malformed track number");
-		return false;
-	}
+	if (*endptr != 0)
+		throw std::runtime_error("Malformed track number");
 
 	if (endptr == track)
 		/* play the whole CD */
@@ -191,35 +185,28 @@ cdio_detect_device(void)
 
 static InputStream *
 input_cdio_open(const char *uri,
-		Mutex &mutex, Cond &cond,
-		Error &error)
+		Mutex &mutex, Cond &cond)
 {
 	struct cdio_uri parsed_uri;
-	if (!parse_cdio_uri(&parsed_uri, uri, error))
+	if (!parse_cdio_uri(&parsed_uri, uri))
 		return nullptr;
 
 	/* get list of CD's supporting CD-DA */
 	const AllocatedPath device = parsed_uri.device[0] != 0
 		? AllocatedPath::FromFS(parsed_uri.device)
 		: cdio_detect_device();
-	if (device.IsNull()) {
-		error.Set(cdio_domain,
-			  "Unable find or access a CD-ROM drive with an audio CD in it.");
-		return nullptr;
-	}
+	if (device.IsNull())
+		throw std::runtime_error("Unable find or access a CD-ROM drive with an audio CD in it.");
 
 	/* Found such a CD-ROM with a CD-DA loaded. Use the first drive in the list. */
 	const auto cdio = cdio_open(device.c_str(), DRIVER_UNKNOWN);
-	if (cdio == nullptr) {
-		error.Set(cdio_domain, "Failed to open CD drive");
-		return nullptr;
-	}
+	if (cdio == nullptr)
+		throw std::runtime_error("Failed to open CD drive");
 
 	const auto drv = cdio_cddap_identify_cdio(cdio, 1, nullptr);
 	if (drv == nullptr) {
-		error.Set(cdio_domain, "Unable to identify audio CD disc.");
 		cdio_destroy(cdio);
-		return nullptr;
+		throw std::runtime_error("Unable to identify audio CD disc.");
 	}
 
 	cdda_verbose_set(drv, CDDA_MESSAGE_FORGETIT, CDDA_MESSAGE_FORGETIT);
@@ -227,12 +214,12 @@ input_cdio_open(const char *uri,
 	if (0 != cdio_cddap_open(drv)) {
 		cdio_cddap_close_no_free_cdio(drv);
 		cdio_destroy(cdio);
-		error.Set(cdio_domain, "Unable to open disc.");
-		return nullptr;
+		throw std::runtime_error("Unable to open disc.");
 	}
 
 	bool reverse_endian;
-	switch (data_bigendianp(drv)) {
+	const int be = data_bigendianp(drv);
+	switch (be) {
 	case -1:
 		LogDebug(cdio_domain, "drive returns unknown audio data");
 		reverse_endian = default_reverse_endian;
@@ -249,11 +236,10 @@ input_cdio_open(const char *uri,
 		break;
 
 	default:
-		error.Format(cdio_domain, "Drive returns unknown data type %d",
-			     data_bigendianp(drv));
 		cdio_cddap_close_no_free_cdio(drv);
 		cdio_destroy(cdio);
-		return nullptr;
+		throw FormatRuntimeError("Drive returns unknown data type %d",
+					 be);
 	}
 
 	lsn_t lsn_from, lsn_to;
@@ -270,30 +256,26 @@ input_cdio_open(const char *uri,
 					   lsn_from, lsn_to);
 }
 
-bool
-CdioParanoiaInputStream::Seek(offset_type new_offset, Error &error)
+void
+CdioParanoiaInputStream::Seek(offset_type new_offset)
 {
-	if (new_offset > size) {
-		error.Format(cdio_domain, "Invalid offset to seek %ld (%ld)",
-			     (long int)new_offset, (long int)size);
-		return false;
-	}
+	if (new_offset > size)
+		throw FormatRuntimeError("Invalid offset to seek %ld (%ld)",
+					 (long int)new_offset, (long int)size);
 
 	/* simple case */
 	if (new_offset == offset)
-		return true;
+		return;
 
 	/* calculate current LSN */
 	lsn_relofs = new_offset / CDIO_CD_FRAMESIZE_RAW;
 	offset = new_offset;
 
 	cdio_paranoia_seek(para, lsn_from + lsn_relofs, SEEK_SET);
-
-	return true;
 }
 
 size_t
-CdioParanoiaInputStream::Read(void *ptr, size_t length, Error &error)
+CdioParanoiaInputStream::Read(void *ptr, size_t length)
 {
 	size_t nbytes = 0;
 	int diff;
@@ -323,11 +305,9 @@ CdioParanoiaInputStream::Read(void *ptr, size_t length, Error &error)
 			if (s_mess) {
 				free(s_mess);
 			}
-			if (!rbuf) {
-				error.Set(cdio_domain,
-					  "paranoia read error. Stopping.");
-				return 0;
-			}
+			if (!rbuf)
+				throw std::runtime_error("paranoia read error");
+
 			//store current buffer
 			memcpy(buffer, rbuf, CDIO_CD_FRAMESIZE_RAW);
 			buffer_lsn = lsn_relofs;

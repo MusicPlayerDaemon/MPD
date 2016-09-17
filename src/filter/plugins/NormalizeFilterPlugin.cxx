@@ -43,25 +43,23 @@ public:
 	}
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-				    Error &error) override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedNormalizeFilter final : public PreparedFilter {
 public:
 	/* virtual methods from class PreparedFilter */
-	Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
 
 static PreparedFilter *
-normalize_filter_init(gcc_unused const ConfigBlock &block,
-		      gcc_unused Error &error)
+normalize_filter_init(gcc_unused const ConfigBlock &block)
 {
 	return new PreparedNormalizeFilter();
 }
 
 Filter *
-PreparedNormalizeFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
+PreparedNormalizeFilter::Open(AudioFormat &audio_format)
 {
 	audio_format.format = SampleFormat::S16;
 
@@ -69,7 +67,7 @@ PreparedNormalizeFilter::Open(AudioFormat &audio_format, gcc_unused Error &error
 }
 
 ConstBuffer<void>
-NormalizeFilter::FilterPCM(ConstBuffer<void> src, gcc_unused Error &error)
+NormalizeFilter::FilterPCM(ConstBuffer<void> src)
 {
 	int16_t *dest = (int16_t *)buffer.Get(src.size);
 	memcpy(dest, src.data, src.size);

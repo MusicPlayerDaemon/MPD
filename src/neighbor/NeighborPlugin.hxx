@@ -21,7 +21,6 @@
 #define MPD_NEIGHBOR_PLUGIN_HXX
 
 struct ConfigBlock;
-class Error;
 class EventLoop;
 class NeighborListener;
 class NeighborExplorer;
@@ -33,8 +32,7 @@ struct NeighborPlugin {
 	 * Allocates and configures a #NeighborExplorer instance.
 	 */
 	NeighborExplorer *(*create)(EventLoop &loop, NeighborListener &listener,
-				    const ConfigBlock &block,
-				    Error &error);
+				    const ConfigBlock &block);
 };
 
 #endif

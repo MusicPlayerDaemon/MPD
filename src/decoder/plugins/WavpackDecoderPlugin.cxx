@@ -29,9 +29,12 @@
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Alloc.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <wavpack/wavpack.h>
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <stdio.h>
@@ -397,7 +400,12 @@ wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
 	WavpackInput &wpi = *wpin(id);
 
-	return wpi.is.LockSeek(pos, IgnoreError()) ? 0 : -1;
+	try {
+		wpi.is.LockSeek(pos);
+		return 0;
+	} catch (const std::runtime_error &) {
+		return -1;
+	}
 }
 
 static int
@@ -426,7 +434,12 @@ wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 		return -1;
 	}
 
-	return is.LockSeek(offset, IgnoreError()) ? 0 : -1;
+	try {
+		wpi.is.LockSeek(offset);
+		return 0;
+	} catch (const std::runtime_error &) {
+		return -1;
+	}
 }
 
 static int
@@ -474,7 +487,7 @@ static WavpackStreamReader mpd_is_reader = {
 	nullptr /* no need to write edited tags */
 };
 
-static WavpackInput *
+static InputStreamPtr
 wavpack_open_wvc(Decoder &decoder, const char *uri)
 {
 	/*
@@ -485,14 +498,15 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 		return nullptr;
 
 	char *wvc_url = xstrcatdup(uri, "c");
+	AtScopeExit(wvc_url) {
+		free(wvc_url);
+	};
 
-	auto is_wvc = decoder_open_uri(decoder, uri, IgnoreError());
-	free(wvc_url);
-
-	if (is_wvc == nullptr)
+	try {
+		return decoder_open_uri(decoder, uri);
+	} catch (const std::runtime_error &) {
 		return nullptr;
-
-	return new WavpackInput(decoder, *is_wvc.release());
+	}
 }
 
 /*
@@ -504,10 +518,13 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 	int open_flags = OPEN_NORMALIZE;
 	bool can_seek = is.IsSeekable();
 
-	WavpackInput *wvc = wavpack_open_wvc(decoder, is.GetURI());
-	if (wvc != nullptr) {
+	std::unique_ptr<WavpackInput> wvc;
+	auto is_wvc = wavpack_open_wvc(decoder, is.GetURI());
+	if (is_wvc) {
 		open_flags |= OPEN_WVC;
 		can_seek &= wvc->is.IsSeekable();
+
+		wvc.reset(new WavpackInput(decoder, *is_wvc));
 	}
 
 	if (!can_seek) {
@@ -518,7 +535,7 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 
 	char error[ERRORLEN];
 	WavpackContext *wpc =
-		WavpackOpenFileInputEx(&mpd_is_reader, &isp, wvc,
+		WavpackOpenFileInputEx(&mpd_is_reader, &isp, wvc.get(),
 				       error, open_flags, 23);
 
 	if (wpc == nullptr) {
@@ -527,14 +544,11 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 		return;
 	}
 
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
+
 	wavpack_decode(decoder, wpc, can_seek);
-
-	WavpackCloseFile(wpc);
-
-	if (wvc != nullptr) {
-		delete &wvc->is;
-		delete wvc;
-	}
 }
 
 /*

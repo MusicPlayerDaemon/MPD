@@ -31,6 +31,8 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 
 /**
@@ -63,7 +65,10 @@ tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 
 	return decoder_plugins_try([suffix, mime, &is,
 				    &handler, ctx](const DecoderPlugin &plugin){
-			is.LockRewind(IgnoreError());
+			try {
+				is.LockRewind();
+			} catch (const std::runtime_error &) {
+			}
 
 			return CheckDecoderPlugin(plugin, suffix, mime) &&
 				plugin.ScanStream(is, handler, ctx);
@@ -72,13 +77,14 @@ tag_stream_scan(InputStream &is, const TagHandler &handler, void *ctx)
 
 bool
 tag_stream_scan(const char *uri, const TagHandler &handler, void *ctx)
-{
+try {
 	Mutex mutex;
 	Cond cond;
 
-	auto is = InputStream::OpenReady(uri, mutex, cond,
-					 IgnoreError());
-	return is && tag_stream_scan(*is, handler, ctx);
+	auto is = InputStream::OpenReady(uri, mutex, cond);
+	return tag_stream_scan(*is, handler, ctx);
+} catch (const std::exception &e) {
+	return false;
 }
 
 bool
@@ -97,11 +103,12 @@ tag_stream_scan(InputStream &is, TagBuilder &builder)
 
 bool
 tag_stream_scan(const char *uri, TagBuilder &builder)
-{
+try {
 	Mutex mutex;
 	Cond cond;
 
-	auto is = InputStream::OpenReady(uri, mutex, cond,
-					 IgnoreError());
-	return is && tag_stream_scan(*is, builder);
+	auto is = InputStream::OpenReady(uri, mutex, cond);
+	return tag_stream_scan(*is, builder);
+} catch (const std::exception &e) {
+	return false;
 }

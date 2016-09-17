@@ -189,8 +189,7 @@ CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base,
 	if (memcmp(base, "smb://", 6) != 0)
 		return nullptr;
 
-	if (!SmbclientInit(error))
-		return nullptr;
+	SmbclientInit();
 
 	const ScopeLock protect(smbclient_mutex);
 	SMBCCTX *ctx = smbc_new_context();

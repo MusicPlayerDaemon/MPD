@@ -23,8 +23,7 @@
 #include <assert.h>
 
 AudioFormat
-FallbackPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
-			   gcc_unused Error &error)
+FallbackPcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 {
 	assert(af.IsValid());
 	assert(audio_valid_sample_rate(new_sample_rate));
@@ -116,7 +115,7 @@ pcm_resample_fallback_void(PcmBuffer &buffer,
 }
 
 ConstBuffer<void>
-FallbackPcmResampler::Resample(ConstBuffer<void> src, gcc_unused Error &error)
+FallbackPcmResampler::Resample(ConstBuffer<void> src)
 {
 	switch (format.format) {
 	case SampleFormat::UNDEFINED:

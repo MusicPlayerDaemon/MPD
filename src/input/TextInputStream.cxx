@@ -20,9 +20,10 @@
 #include "config.h"
 #include "TextInputStream.hxx"
 #include "InputStream.hxx"
-#include "util/Error.hxx"
 #include "util/TextFile.hxx"
 #include "Log.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 
@@ -58,12 +59,12 @@ TextInputStream::ReadLine()
 		   character */
 		--dest.size;
 
-		Error error;
-		size_t nbytes = is->LockRead(dest.data, dest.size, error);
-		if (nbytes > 0)
-			buffer.Append(nbytes);
-		else if (error.IsDefined()) {
-			LogError(error);
+		size_t nbytes;
+
+		try {
+			nbytes = is->LockRead(dest.data, dest.size);
+		} catch (const std::runtime_error &e) {
+			LogError(e);
 			return nullptr;
 		}
 

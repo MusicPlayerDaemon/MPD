@@ -36,40 +36,20 @@
 
 struct ConfigBlock;
 class InputStream;
-class Error;
 struct Tag;
 
 struct InputPlugin {
-	enum class InitResult {
-		/**
-		 * A fatal error has occurred (e.g. misconfiguration).
-		 * The #Error has been set.
-		 */
-		ERROR,
-
-		/**
-		 * The plugin was initialized successfully and is
-		 * ready to be used.
-		 */
-		SUCCESS,
-
-		/**
-		 * The plugin is not available and shall be disabled.
-		 * The #Error may be set describing the situation (to
-		 * be logged).
-		 */
-		UNAVAILABLE,
-	};
-
 	const char *name;
 
 	/**
 	 * Global initialization.  This method is called when MPD starts.
 	 *
-	 * @return true on success, false if the plugin should be
-	 * disabled
+	 * Throws #PluginUnavailable if the plugin is not available
+	 * and shall be disabled.
+	 *
+	 * Throws std::runtime_error on (fatal) error.
 	 */
-	InitResult (*init)(const ConfigBlock &block, Error &error);
+	void (*init)(const ConfigBlock &block);
 
 	/**
 	 * Global deinitialization.  Called once before MPD shuts
@@ -77,9 +57,11 @@ struct InputPlugin {
 	 */
 	void (*finish)();
 
+	/**
+	 * Throws std::runtime_error on error.
+	 */
 	InputStream *(*open)(const char *uri,
-			     Mutex &mutex, Cond &cond,
-			     Error &error);
+			     Mutex &mutex, Cond &cond);
 };
 
 #endif

@@ -21,8 +21,10 @@
 #include "FileSystem.hxx"
 #include "AllocatedPath.hxx"
 #include "Limits.hxx"
+#include "system/Error.hxx"
 
 #include <errno.h>
+#include <fcntl.h>
 
 AllocatedPath
 ReadLink(Path path)
@@ -42,5 +44,37 @@ ReadLink(Path path)
 	}
 	buffer[size] = '\0';
 	return AllocatedPath::FromFS(buffer);
+#endif
+}
+
+void
+TruncateFile(Path path)
+{
+#ifdef WIN32
+	HANDLE h = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
+			      TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL,
+			      nullptr);
+	if (h == INVALID_HANDLE_VALUE)
+		throw FormatLastError("Failed to truncate %s", path.c_str());
+
+	CloseHandle(h);
+#else
+	int fd = open_cloexec(path.c_str(), O_WRONLY|O_TRUNC, 0);
+	if (fd < 0)
+		throw FormatErrno("Failed to truncate %s", path.c_str());
+
+	close(fd);
+#endif
+}
+
+void
+RemoveFile(Path path)
+{
+#ifdef WIN32
+	if (!DeleteFile(path.c_str()))
+		throw FormatLastError("Failed to delete %s", path.c_str());
+#else
+	if (unlink(path.c_str()) < 0)
+		throw FormatErrno("Failed to delete %s", path.c_str());
 #endif
 }

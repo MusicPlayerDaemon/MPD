@@ -27,11 +27,8 @@ class Error;
 
 extern const struct AudioOutputPlugin pulse_output_plugin;
 
-void
-pulse_output_lock(PulseOutput &po);
-
-void
-pulse_output_unlock(PulseOutput &po);
+struct pa_threaded_mainloop *
+pulse_output_get_mainloop(PulseOutput &po);
 
 void
 pulse_output_set_mixer(PulseOutput &po, PulseMixer &pm);
@@ -39,8 +36,7 @@ pulse_output_set_mixer(PulseOutput &po, PulseMixer &pm);
 void
 pulse_output_clear_mixer(PulseOutput &po, PulseMixer &pm);
 
-bool
-pulse_output_set_volume(PulseOutput &po,
-			const pa_cvolume *volume, Error &error);
+void
+pulse_output_set_volume(PulseOutput &po, const pa_cvolume *volume);
 
 #endif

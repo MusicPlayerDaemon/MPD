@@ -26,17 +26,17 @@ struct AudioFormat;
 
 Filter *
 convert_filter_new(AudioFormat in_audio_format,
-		   AudioFormat out_audio_format,
-		   Error &error);
+		   AudioFormat out_audio_format);
 
 /**
  * Sets the output audio format for the specified filter.  You must
  * call this after the filter has been opened.  Since this audio
  * format switch is a violation of the filter API, this filter must be
  * the last in a chain.
+ *
+ * Throws std::runtime_error on error.
  */
-bool
-convert_filter_set(Filter *filter, AudioFormat out_audio_format,
-		   Error &error);
+void
+convert_filter_set(Filter *filter, AudioFormat out_audio_format);
 
 #endif

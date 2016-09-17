@@ -142,6 +142,19 @@ IsFileNotFound(const std::system_error &e)
 
 gcc_pure
 static inline bool
+IsPathNotFound(const std::system_error &e)
+{
+#ifdef WIN32
+	return e.code().category() == std::system_category() &&
+		e.code().value() == ERROR_PATH_NOT_FOUND;
+#else
+	return e.code().category() == std::system_category() &&
+		e.code().value() == ENOTDIR;
+#endif
+}
+
+gcc_pure
+static inline bool
 IsAccessDenied(const std::system_error &e)
 {
 #ifdef WIN32

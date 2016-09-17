@@ -51,7 +51,7 @@ struct TagPoolSlot {
 
 	static TagPoolSlot *Create(TagPoolSlot *_next, TagType type,
 				   StringView value);
-} gcc_packed;
+};
 
 TagPoolSlot *
 TagPoolSlot::Create(TagPoolSlot *_next, TagType type,

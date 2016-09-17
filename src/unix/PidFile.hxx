@@ -64,7 +64,7 @@ public:
 		assert(!path.IsNull());
 
 		close(fd);
-		RemoveFile(path);
+		unlink(path.c_str());
 	}
 
 	void Write(pid_t pid) {

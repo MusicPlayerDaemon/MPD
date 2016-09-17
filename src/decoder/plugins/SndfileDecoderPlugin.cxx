@@ -27,6 +27,8 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <sndfile.h>
 
 static constexpr Domain sndfile_domain("sndfile");
@@ -89,13 +91,13 @@ sndfile_vio_seek(sf_count_t _offset, int whence, void *user_data)
 		return -1;
 	}
 
-	Error error;
-	if (!is.LockSeek(offset, error)) {
-		LogError(error, "Seek failed");
+	try {
+		is.LockSeek(offset);
+		return is.GetOffset();
+	} catch (const std::runtime_error &e) {
+		LogError(e, "Seek failed");
 		return -1;
 	}
-
-	return is.GetOffset();
 }
 
 static sf_count_t

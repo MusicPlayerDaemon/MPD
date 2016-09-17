@@ -23,13 +23,14 @@
 #include "input/InputStream.hxx"
 #include "input/TextInputStream.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "util/Error.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
 
 #ifdef ENABLE_ARCHIVE
 #include "archive/ArchiveList.hxx"
 #endif
+
+#include <stdexcept>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -53,17 +54,12 @@ dump_input_stream(InputStreamPtr &&is)
 
 	const ScopeLock protect(is->mutex);
 
-	Error error;
-	if (!is->Check(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
+	is->Check();
 	return 0;
 }
 
 int main(int argc, char **argv)
-{
+try {
 	int ret;
 
 	if (argc != 2) {
@@ -81,11 +77,7 @@ int main(int argc, char **argv)
 	archive_plugin_init_all();
 #endif
 
-	Error error;
-	if (!input_stream_global_init(error)) {
-		LogError(error);
-		return 2;
-	}
+	input_stream_global_init();
 
 	/* open the stream and dump it */
 
@@ -93,16 +85,8 @@ int main(int argc, char **argv)
 		Mutex mutex;
 		Cond cond;
 
-		auto is = InputStream::OpenReady(argv[1], mutex, cond, error);
-		if (is) {
-			ret = dump_input_stream(std::move(is));
-		} else {
-			if (error.IsDefined())
-				LogError(error);
-			else
-				fprintf(stderr, "input_stream::Open() failed\n");
-			ret = EXIT_FAILURE;
-		}
+		auto is = InputStream::OpenReady(argv[1], mutex, cond);
+		ret = dump_input_stream(std::move(is));
 	}
 
 	/* deinitialize everything */
@@ -116,4 +100,7 @@ int main(int argc, char **argv)
 	config_global_finish();
 
 	return ret;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

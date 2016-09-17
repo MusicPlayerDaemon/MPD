@@ -21,16 +21,19 @@
 #include "Init.hxx"
 #include "Registry.hxx"
 #include "InputPlugin.hxx"
-#include "util/Error.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/Block.hxx"
 #include "Log.hxx"
+#include "PluginUnavailable.hxx"
+#include "util/RuntimeError.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 
-bool
-input_stream_global_init(Error &error)
+void
+input_stream_global_init()
 {
 	const ConfigBlock empty;
 
@@ -50,33 +53,20 @@ input_stream_global_init(Error &error)
 			/* the plugin is disabled in mpd.conf */
 			continue;
 
-		InputPlugin::InitResult result = plugin->init != nullptr
-			? plugin->init(*block, error)
-			: InputPlugin::InitResult::SUCCESS;
-
-		switch (result) {
-		case InputPlugin::InitResult::SUCCESS:
+		try {
+			if (plugin->init != nullptr)
+				plugin->init(*block);
 			input_plugins_enabled[i] = true;
-			break;
-
-		case InputPlugin::InitResult::ERROR:
-			error.FormatPrefix("Failed to initialize input plugin '%s': ",
-					   plugin->name);
-			return false;
-
-		case InputPlugin::InitResult::UNAVAILABLE:
-			if (error.IsDefined()) {
-				FormatError(error,
-					    "Input plugin '%s' is unavailable",
-					    plugin->name);
-				error.Clear();
-			}
-
-			break;
+		} catch (const PluginUnavailable &e) {
+			FormatError(e,
+				    "Input plugin '%s' is unavailable",
+				    plugin->name);
+			continue;
+		} catch (const std::runtime_error &e) {
+			std::throw_with_nested(FormatRuntimeError("Failed to initialize input plugin '%s'",
+								  plugin->name));
 		}
 	}
-
-	return true;
 }
 
 void input_stream_global_finish(void)

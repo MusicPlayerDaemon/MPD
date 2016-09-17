@@ -30,6 +30,7 @@
 #endif
 
 #include <assert.h>
+#include <stdint.h>
 
 #ifdef WIN32
 #include <windows.h>
@@ -37,51 +38,80 @@
 
 class Path;
 
-class BaseFileOutputStream : public OutputStream {
+class FileOutputStream final : public OutputStream {
 	const AllocatedPath path;
 
 #ifdef WIN32
-	HANDLE handle;
+	HANDLE handle = INVALID_HANDLE_VALUE;
 #else
-	FileDescriptor fd;
+	FileDescriptor fd = FileDescriptor::Undefined();
 #endif
 
-protected:
-#ifdef WIN32
-	template<typename P>
-	BaseFileOutputStream(P &&_path)
-		:path(std::forward<P>(_path)),
-		 handle(INVALID_HANDLE_VALUE) {}
-#else
-	template<typename P>
-	BaseFileOutputStream(P &&_path)
-		:path(std::forward<P>(_path)),
-		 fd(FileDescriptor::Undefined()) {}
+#ifdef HAVE_LINKAT
+	/**
+	 * Was O_TMPFILE used?  If yes, then linkat() must be used to
+	 * create a link to this file.
+	 */
+	bool is_tmpfile = false;
 #endif
 
-	~BaseFileOutputStream() {
-		assert(!IsDefined());
+public:
+	enum class Mode : uint8_t {
+		/**
+		 * Create a new file, or replace an existing file.
+		 * File contents may not be visible until Commit() has
+		 * been called.
+		 */
+		CREATE,
+
+		/**
+		 * Like #CREATE, but no attempt is made to hide file
+		 * contents during the transaction (e.g. via O_TMPFILE
+		 * or a hidden temporary file).
+		 */
+		CREATE_VISIBLE,
+
+		/**
+		 * Append to a file that already exists.  If it does
+		 * not, an exception is thrown.
+		 */
+		APPEND_EXISTING,
+
+		/**
+		 * Like #APPEND_EXISTING, but create the file if it
+		 * does not exist.
+		 */
+		APPEND_OR_CREATE,
+	};
+
+private:
+	Mode mode;
+
+public:
+	FileOutputStream(Path _path, Mode _mode=Mode::CREATE);
+
+	~FileOutputStream() {
+		if (IsDefined())
+			Cancel();
 	}
 
-#ifdef WIN32
-	void SetHandle(HANDLE _handle) {
-		assert(!IsDefined());
-
-		handle = _handle;
-
-		assert(IsDefined());
-	}
-#else
-	FileDescriptor &SetFD() {
-		assert(!IsDefined());
-
-		return fd;
+public:
+	Path GetPath() const {
+		return path;
 	}
 
-	const FileDescriptor &GetFD() const {
-		return fd;
-	}
-#endif
+	gcc_pure
+	uint64_t Tell() const;
+
+	/* virtual methods from class OutputStream */
+	void Write(const void *data, size_t size) override;
+
+	void Commit();
+	void Cancel();
+
+private:
+	void OpenCreate(bool visible);
+	void OpenAppend(bool create);
 
 	bool Close() {
 		assert(IsDefined());
@@ -109,50 +139,6 @@ protected:
 		return fd.IsDefined();
 #endif
 	}
-
-public:
-	Path GetPath() const {
-		return path;
-	}
-
-	gcc_pure
-	uint64_t Tell() const;
-
-	/* virtual methods from class OutputStream */
-	void Write(const void *data, size_t size) override;
-};
-
-class FileOutputStream final : public BaseFileOutputStream {
-#ifdef HAVE_LINKAT
-	/**
-	 * Was O_TMPFILE used?  If yes, then linkat() must be used to
-	 * create a link to this file.
-	 */
-	bool is_tmpfile;
-#endif
-
-public:
-	FileOutputStream(Path _path);
-
-	~FileOutputStream() {
-		if (IsDefined())
-			Cancel();
-	}
-
-	void Commit();
-	void Cancel();
-};
-
-class AppendFileOutputStream final : public BaseFileOutputStream {
-public:
-	AppendFileOutputStream(Path _path);
-
-	~AppendFileOutputStream() {
-		if (IsDefined())
-			Close();
-	}
-
-	void Commit();
 };
 
 #endif

@@ -29,6 +29,7 @@
 #include "Log.hxx"
 
 #include <string>
+#include <stdexcept>
 
 /* libroar/services.h declares roar_service_stream::new - work around
    this C++ problem */
@@ -74,7 +75,7 @@ public:
 	void Cancel();
 
 	int GetVolume() const;
-	bool SetVolume(unsigned volume);
+	void SetVolume(unsigned volume);
 };
 
 static constexpr Domain roar_output_domain("roar_output");
@@ -90,7 +91,7 @@ RoarOutput::GetVolume() const
 	float l, r;
 	int error;
 	if (roar_vs_volume_get(vss, &l, &r, &error) < 0)
-		return -1;
+		throw std::runtime_error(roar_vs_strerr(error));
 
 	return (l + r) * 50;
 }
@@ -101,26 +102,26 @@ roar_output_get_volume(RoarOutput &roar)
 	return roar.GetVolume();
 }
 
-bool
+inline void
 RoarOutput::SetVolume(unsigned volume)
 {
 	assert(volume <= 100);
 
 	const ScopeLock protect(mutex);
 	if (vss == nullptr || !alive)
-		return false;
+		throw std::runtime_error("closed");
 
 	int error;
 	float level = volume / 100.0;
 
-	roar_vs_volume_mono(vss, level, &error);
-	return true;
+	if (roar_vs_volume_mono(vss, level, &error) < 0)
+		throw std::runtime_error(roar_vs_strerr(error));
 }
 
-bool
+void
 roar_output_set_volume(RoarOutput &roar, unsigned volume)
 {
-	return roar.SetVolume(volume);
+	roar.SetVolume(volume);
 }
 
 inline void

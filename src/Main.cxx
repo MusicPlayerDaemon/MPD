@@ -461,10 +461,7 @@ int mpd_main(int argc, char *argv[])
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
 	instance->neighbors = new NeighborGlue();
-	if (!instance->neighbors->Init(io_thread_get(), *instance, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	instance->neighbors->Init(io_thread_get(), *instance);
 
 	if (instance->neighbors->IsEmpty()) {
 		delete instance->neighbors;
@@ -523,10 +520,7 @@ try {
 	archive_plugin_init_all();
 #endif
 
-	if (!pcm_convert_global_init(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	pcm_convert_global_init();
 
 	decoder_plugin_init_all();
 
@@ -542,12 +536,7 @@ try {
 					       instance->partition->pc);
 	client_manager_init();
 	replay_gain_global_init();
-
-	if (!input_stream_global_init(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
+	input_stream_global_init();
 	playlist_list_global_init();
 
 #ifdef ENABLE_DAEMON
@@ -563,9 +552,8 @@ try {
 	io_thread_start();
 
 #ifdef ENABLE_NEIGHBOR_PLUGINS
-	if (instance->neighbors != nullptr &&
-	    !instance->neighbors->Open(error))
-		FatalError(error);
+	if (instance->neighbors != nullptr)
+		instance->neighbors->Open();
 #endif
 
 	ZeroconfInit(instance->event_loop);

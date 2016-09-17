@@ -22,14 +22,13 @@
 #include "PcmChannels.hxx"
 #include "Domain.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 
-bool
+void
 PcmChannelsConverter::Open(SampleFormat _format,
-			   unsigned _src_channels, unsigned _dest_channels,
-			   gcc_unused Error &error)
+			   unsigned _src_channels, unsigned _dest_channels)
 {
 	assert(_format != SampleFormat::UNDEFINED);
 
@@ -41,16 +40,13 @@ PcmChannelsConverter::Open(SampleFormat _format,
 		break;
 
 	default:
-		error.Format(pcm_domain,
-			     "PCM channel conversion for %s is not implemented",
-			     sample_format_to_string(_format));
-		return false;
+		throw FormatRuntimeError("PCM channel conversion for %s is not implemented",
+					 sample_format_to_string(_format));
 	}
 
 	format = _format;
 	src_channels = _src_channels;
 	dest_channels = _dest_channels;
-	return true;
 }
 
 void
@@ -62,7 +58,7 @@ PcmChannelsConverter::Close()
 }
 
 ConstBuffer<void>
-PcmChannelsConverter::Convert(ConstBuffer<void> src, gcc_unused Error &error)
+PcmChannelsConverter::Convert(ConstBuffer<void> src)
 {
 	switch (format) {
 	case SampleFormat::UNDEFINED:

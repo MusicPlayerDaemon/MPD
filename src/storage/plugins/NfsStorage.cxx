@@ -24,7 +24,6 @@
 #include "storage/FileInfo.hxx"
 #include "storage/MemoryDirectoryReader.hxx"
 #include "lib/nfs/Blocking.hxx"
-#include "lib/nfs/Domain.hxx"
 #include "lib/nfs/Base.hxx"
 #include "lib/nfs/Lease.hxx"
 #include "lib/nfs/Connection.hxx"
@@ -66,7 +65,7 @@ class NfsStorage final
 	Mutex mutex;
 	Cond cond;
 	State state;
-	Error last_error;
+	std::exception_ptr last_exception;
 
 public:
 	NfsStorage(EventLoop &_loop, const char *_base,
@@ -102,17 +101,17 @@ public:
 		SetState(State::READY);
 	}
 
-	void OnNfsConnectionFailed(gcc_unused const Error &error) final {
+	void OnNfsConnectionFailed(std::exception_ptr e) final {
 		assert(state == State::CONNECTING);
 
-		SetState(State::DELAY, error);
+		SetState(State::DELAY, std::move(e));
 		TimeoutMonitor::ScheduleSeconds(60);
 	}
 
-	void OnNfsConnectionDisconnected(gcc_unused const Error &error) final {
+	void OnNfsConnectionDisconnected(std::exception_ptr e) final {
 		assert(state == State::READY);
 
-		SetState(State::DELAY, error);
+		SetState(State::DELAY, std::move(e));
 		TimeoutMonitor::ScheduleSeconds(5);
 	}
 
@@ -142,13 +141,12 @@ private:
 		cond.broadcast();
 	}
 
-	void SetState(State _state, const Error &error) {
+	void SetState(State _state, std::exception_ptr &&e) {
 		assert(GetEventLoop().IsInside());
 
 		const ScopeLock protect(mutex);
 		state = _state;
-		last_error.Clear();
-		last_error.Set(error);
+		last_exception = std::move(e);
 		cond.broadcast();
 	}
 
@@ -168,7 +166,7 @@ private:
 			Connect();
 	}
 
-	bool WaitConnected(Error &error) {
+	void WaitConnected() {
 		const ScopeLock protect(mutex);
 
 		while (true) {
@@ -184,12 +182,11 @@ private:
 
 			case State::CONNECTING:
 			case State::READY:
-				return true;
+				return;
 
 			case State::DELAY:
-				assert(last_error.IsDefined());
-				error.Set(last_error);
-				return false;
+				assert(last_exception);
+				std::rethrow_exception(last_exception);
 			}
 		}
 	}
@@ -271,8 +268,8 @@ public:
 		:BlockingNfsOperation(_connection), path(_path), info(_info) {}
 
 protected:
-	bool Start(Error &_error) override {
-		return connection.Stat(path, *this, _error);
+	void Start() override {
+		connection.Stat(path, *this);
 	}
 
 	void HandleResult(gcc_unused unsigned status, void *data) override {
@@ -288,11 +285,11 @@ NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
 	if (path.empty())
 		return false;
 
-	if (!WaitConnected(error))
-		return false;
+	WaitConnected();
 
 	NfsGetInfoOperation operation(*connection, path.c_str(), info);
-	return operation.Run(error);
+	operation.Run();
+	return true;
 }
 
 gcc_pure
@@ -342,8 +339,8 @@ public:
 	}
 
 protected:
-	bool Start(Error &_error) override {
-		return connection.OpenDirectory(path, *this, _error);
+	void Start() override {
+		connection.OpenDirectory(path, *this);
 	}
 
 	void HandleResult(gcc_unused unsigned status, void *data) override {
@@ -386,19 +383,16 @@ NfsStorage::OpenDirectory(const char *uri_utf8, Error &error)
 	if (path.empty())
 		return nullptr;
 
-	if (!WaitConnected(error))
-		return nullptr;
+	WaitConnected();
 
 	NfsListDirectoryOperation operation(*connection, path.c_str());
-	if (!operation.Run(error))
-		return nullptr;
+	operation.Run();
 
 	return operation.ToReader();
 }
 
 static Storage *
-CreateNfsStorageURI(EventLoop &event_loop, const char *base,
-		    Error &error)
+CreateNfsStorageURI(EventLoop &event_loop, const char *base, Error &)
 {
 	if (memcmp(base, "nfs://", 6) != 0)
 		return nullptr;
@@ -406,10 +400,8 @@ CreateNfsStorageURI(EventLoop &event_loop, const char *base,
 	const char *p = base + 6;
 
 	const char *mount = strchr(p, '/');
-	if (mount == nullptr) {
-		error.Set(nfs_domain, "Malformed nfs:// URI");
-		return nullptr;
-	}
+	if (mount == nullptr)
+		throw std::runtime_error("Malformed nfs:// URI");
 
 	const std::string server(p, mount);
 

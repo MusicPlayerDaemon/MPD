@@ -26,10 +26,11 @@
 #include "AudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/Generic.hxx"
-#include "util/Error.hxx"
 #include "fs/Path.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <unistd.h>
@@ -68,7 +69,7 @@ static constexpr TagHandler print_handler = {
 };
 
 int main(int argc, char **argv)
-{
+try {
 	const char *decoder_name;
 	const struct DecoderPlugin *plugin;
 
@@ -87,12 +88,7 @@ int main(int argc, char **argv)
 
 	const ScopeIOThread io_thread;
 
-	Error error;
-	if (!input_stream_global_init(error)) {
-		LogError(error);
-		return 2;
-	}
-
+	input_stream_global_init();
 	decoder_plugin_init_all();
 
 	plugin = decoder_plugin_from_name(decoder_name);
@@ -107,13 +103,7 @@ int main(int argc, char **argv)
 		Cond cond;
 
 		auto is = InputStream::OpenReady(path.c_str(),
-						 mutex, cond,
-						 error);
-		if (!is) {
-			FormatError(error, "Failed to open %s", path.c_str());
-			return EXIT_FAILURE;
-		}
-
+						 mutex, cond);
 		success = plugin->ScanStream(*is, print_handler, nullptr);
 	}
 
@@ -129,4 +119,7 @@ int main(int argc, char **argv)
 		ScanGenericTags(path, print_handler, nullptr);
 
 	return 0;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

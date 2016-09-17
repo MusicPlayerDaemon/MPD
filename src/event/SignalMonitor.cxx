@@ -115,7 +115,7 @@ at_fork_child()
 static void
 SignalCallback(int signo)
 {
-	assert(signal_handlers[signo] != nullptr);
+	assert(signal_handlers[signo]);
 
 	if (!signal_pending[signo].exchange(true))
 		monitor->WakeUp();

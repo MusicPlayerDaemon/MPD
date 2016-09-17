@@ -37,18 +37,6 @@
 
 class AllocatedPath;
 
-namespace FOpenMode {
-	/**
-	 * Open mode for writing text files.
-	 */
-	constexpr PathTraitsFS::const_pointer_type WriteText = PATH_LITERAL("w");
-
-	/**
-	 * Open mode for appending text files.
-	 */
-	constexpr PathTraitsFS::const_pointer_type AppendText = PATH_LITERAL("a");
-}
-
 /**
  * Wrapper for fopen() that uses #Path names.
  */
@@ -105,17 +93,18 @@ StatFile(Path file, struct stat &buf, bool follow_symlinks = true)
 #endif
 
 /**
- * Wrapper for unlink() that uses #Path names.
+ * Truncate a file that exists already.  Throws std::system_error on
+ * error.
  */
-static inline bool
-RemoveFile(Path file)
-{
-#ifdef WIN32
-	return _tunlink(file.c_str()) == 0;
-#else
-	return unlink(file.c_str()) == 0;
-#endif
-}
+void
+TruncateFile(Path path);
+
+/**
+ * Wrapper for unlink() that uses #Path names.  Throws
+ * std::system_error on error.
+ */
+void
+RemoveFile(Path path);
 
 /**
  * Wrapper for readlink() that uses #Path names.

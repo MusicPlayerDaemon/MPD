@@ -35,6 +35,8 @@
 #include "TagArchive.hxx"
 #endif
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
@@ -65,8 +67,13 @@ Song::UpdateFile(Storage &storage)
 	const auto &relative_uri = GetURI();
 
 	StorageFileInfo info;
-	if (!storage.GetInfo(relative_uri.c_str(), true, info, IgnoreError()))
+	try {
+		if (!storage.GetInfo(relative_uri.c_str(), true, info,
+				     IgnoreError()))
+			return false;
+	} catch (const std::runtime_error &) {
 		return false;
+	}
 
 	if (!info.IsRegular())
 		return false;

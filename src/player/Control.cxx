@@ -21,6 +21,7 @@
 #include "Control.hxx"
 #include "Idle.hxx"
 #include "DetachedSong.hxx"
+#include "util/Error.hxx"
 
 #include <algorithm>
 
@@ -49,20 +50,18 @@ PlayerControl::~PlayerControl()
 	delete tagged_song;
 }
 
-bool
-PlayerControl::Play(DetachedSong *song, Error &error_r)
+void
+PlayerControl::Play(DetachedSong *song)
 {
 	assert(song != nullptr);
 
 	const ScopeLock protect(mutex);
-	bool success = SeekLocked(song, SongTime::zero(), error_r);
+	SeekLocked(song, SongTime::zero());
 
-	if (success && state == PlayerState::PAUSE)
+	if (state == PlayerState::PAUSE)
 		/* if the player was paused previously, we need to
 		   unpause it */
 		PauseLocked();
-
-	return success;
 }
 
 void
@@ -163,13 +162,22 @@ PlayerControl::LockGetStatus()
 }
 
 void
+PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error)
+{
+	assert(type != PlayerError::NONE);
+	assert(_error);
+
+	error_type = type;
+	error = std::move(_error);
+}
+
+void
 PlayerControl::SetError(PlayerError type, Error &&_error)
 {
 	assert(type != PlayerError::NONE);
 	assert(_error.IsDefined());
 
-	error_type = type;
-	error = std::move(_error);
+	SetError(type, std::make_exception_ptr(std::move(_error)));
 }
 
 void
@@ -203,8 +211,8 @@ PlayerControl::LockEnqueueSong(DetachedSong *song)
 	EnqueueSongLocked(song);
 }
 
-bool
-PlayerControl::SeekLocked(DetachedSong *song, SongTime t, Error &error_r)
+void
+PlayerControl::SeekLocked(DetachedSong *song, SongTime t)
 {
 	assert(song != nullptr);
 
@@ -225,29 +233,24 @@ PlayerControl::SeekLocked(DetachedSong *song, SongTime t, Error &error_r)
 	assert(next_song == nullptr);
 
 	if (error_type != PlayerError::NONE) {
-		assert(error.IsDefined());
-		error_r.Set(error);
-		return false;
+		assert(error);
+		std::rethrow_exception(error);
 	}
 
-	assert(!error.IsDefined());
-	return true;
+	assert(!error);
 }
 
-bool
-PlayerControl::LockSeek(DetachedSong *song, SongTime t, Error &error_r)
+void
+PlayerControl::LockSeek(DetachedSong *song, SongTime t)
 {
 	assert(song != nullptr);
 
 	{
 		const ScopeLock protect(mutex);
-		if (!SeekLocked(song, t, error_r))
-			return false;
+		SeekLocked(song, t);
 	}
 
 	idle_add(IDLE_PLAYER);
-
-	return true;
 }
 
 void

@@ -53,7 +53,7 @@ class NfsManager final : IdleMonitor {
 
 	protected:
 		/* virtual methods from NfsConnection */
-		void OnNfsConnectionError(Error &&error) override;
+		void OnNfsConnectionError(std::exception_ptr &&e) override;
 	};
 
 	struct Compare {

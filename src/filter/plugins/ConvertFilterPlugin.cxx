@@ -28,6 +28,9 @@
 #include "AudioFormat.hxx"
 #include "poison.h"
 
+#include <stdexcept>
+#include <memory>
+
 #include <assert.h>
 
 class ConvertFilter final : public Filter {
@@ -47,35 +50,33 @@ public:
 	ConvertFilter(const AudioFormat &audio_format);
 	~ConvertFilter();
 
-	bool Set(const AudioFormat &_out_audio_format, Error &error);
+	void Set(const AudioFormat &_out_audio_format);
 
-	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-					    Error &error) override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedConvertFilter final : public PreparedFilter {
 public:
-	bool Set(const AudioFormat &_out_audio_format, Error &error);
+	void Set(const AudioFormat &_out_audio_format);
 
-	Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
 
 static PreparedFilter *
-convert_filter_init(gcc_unused const ConfigBlock &block,
-		    gcc_unused Error &error)
+convert_filter_init(gcc_unused const ConfigBlock &block)
 {
 	return new PreparedConvertFilter();
 }
 
-bool
-ConvertFilter::Set(const AudioFormat &_out_audio_format, Error &error)
+void
+ConvertFilter::Set(const AudioFormat &_out_audio_format)
 {
 	assert(in_audio_format.IsValid());
 	assert(_out_audio_format.IsValid());
 
 	if (_out_audio_format == out_audio_format)
 		/* no change */
-		return true;
+		return;
 
 	if (out_audio_format != in_audio_format) {
 		out_audio_format = in_audio_format;
@@ -84,13 +85,11 @@ ConvertFilter::Set(const AudioFormat &_out_audio_format, Error &error)
 
 	if (_out_audio_format == in_audio_format)
 		/* optimized special case: no-op */
-		return true;
+		return;
 
-	if (!state.Open(in_audio_format, _out_audio_format, error))
-		return false;
+	state.Open(in_audio_format, _out_audio_format);
 
 	out_audio_format = _out_audio_format;
-	return true;
 }
 
 ConvertFilter::ConvertFilter(const AudioFormat &audio_format)
@@ -99,7 +98,7 @@ ConvertFilter::ConvertFilter(const AudioFormat &audio_format)
 }
 
 Filter *
-PreparedConvertFilter::Open(AudioFormat &audio_format, gcc_unused Error &error)
+PreparedConvertFilter::Open(AudioFormat &audio_format)
 {
 	assert(audio_format.IsValid());
 
@@ -115,7 +114,7 @@ ConvertFilter::~ConvertFilter()
 }
 
 ConstBuffer<void>
-ConvertFilter::FilterPCM(ConstBuffer<void> src, Error &error)
+ConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
 	assert(in_audio_format.IsValid());
 
@@ -123,7 +122,7 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src, Error &error)
 		/* optimized special case: no-op */
 		return src;
 
-	return state.Convert(src, error);
+	return state.Convert(src);
 }
 
 const struct filter_plugin convert_filter_plugin = {
@@ -133,23 +132,17 @@ const struct filter_plugin convert_filter_plugin = {
 
 Filter *
 convert_filter_new(const AudioFormat in_audio_format,
-		   const AudioFormat out_audio_format,
-		   Error &error)
+		   const AudioFormat out_audio_format)
 {
-	auto *filter = new ConvertFilter(in_audio_format);
-	if (!filter->Set(out_audio_format, error)) {
-		delete filter;
-		return nullptr;
-	}
-
-	return filter;
+	std::unique_ptr<ConvertFilter> filter(new ConvertFilter(in_audio_format));
+	filter->Set(out_audio_format);
+	return filter.release();
 }
 
-bool
-convert_filter_set(Filter *_filter, AudioFormat out_audio_format,
-		   Error &error)
+void
+convert_filter_set(Filter *_filter, AudioFormat out_audio_format)
 {
 	ConvertFilter *filter = (ConvertFilter *)_filter;
 
-	return filter->Set(out_audio_format, error);
+	filter->Set(out_audio_format);
 }

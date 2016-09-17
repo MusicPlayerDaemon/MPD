@@ -26,7 +26,6 @@
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
 #include "AudioFormat.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -49,11 +48,7 @@ try {
 
 	const ScopeIOThread io_thread;
 
-	Error error;
-	if (!input_stream_global_init(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	input_stream_global_init();
 
 	decoder_plugin_init_all();
 
@@ -67,16 +62,7 @@ try {
 		plugin->FileDecode(decoder, Path::FromFS(uri));
 	} else if (plugin->stream_decode != nullptr) {
 		auto is = InputStream::OpenReady(uri, decoder.mutex,
-						 decoder.cond, error);
-		if (!is) {
-			if (error.IsDefined())
-				LogError(error);
-			else
-				fprintf(stderr, "InputStream::Open() failed\n");
-
-			return EXIT_FAILURE;
-		}
-
+						 decoder.cond);
 		plugin->StreamDecode(decoder, *is);
 	} else {
 		fprintf(stderr, "Decoder plugin is not usable\n");

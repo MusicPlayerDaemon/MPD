@@ -34,20 +34,18 @@ public:
 	}
 
 	/* virtual methods from class Mixer */
-	bool Open(gcc_unused Error &error) override {
-		return true;
+	void Open() override {
 	}
 
 	void Close() override {
 	}
 
-	int GetVolume(gcc_unused Error &error) override {
+	int GetVolume() override {
 		return volume;
 	}
 
-	bool SetVolume(unsigned _volume, gcc_unused Error &error) override {
+	void SetVolume(unsigned _volume) override {
 		volume = _volume;
-		return true;
 	}
 };
 
@@ -55,8 +53,7 @@ static Mixer *
 null_mixer_init(gcc_unused EventLoop &event_loop,
 		gcc_unused AudioOutput &ao,
 		MixerListener &listener,
-		gcc_unused const ConfigBlock &block,
-		gcc_unused Error &error)
+		gcc_unused const ConfigBlock &block)
 {
 	return new NullMixer(listener);
 }

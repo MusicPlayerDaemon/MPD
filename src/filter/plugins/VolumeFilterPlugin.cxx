@@ -26,15 +26,15 @@
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 
+#include <stdexcept>
+
 class VolumeFilter final : public Filter {
 	PcmVolume pv;
 
 public:
 	explicit VolumeFilter(const AudioFormat &audio_format)
-		:Filter(audio_format) {}
-
-	bool Open(Error &error) {
-		return pv.Open(out_audio_format.format, error);
+		:Filter(audio_format) {
+		pv.Open(out_audio_format.format);
 	}
 
 	unsigned GetVolume() const {
@@ -46,8 +46,7 @@ public:
 	}
 
 	/* virtual methods from class Filter */
-	ConstBuffer<void> FilterPCM(ConstBuffer<void> src,
-				    Error &error) override;
+	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
 class PreparedVolumeFilter final : public PreparedFilter {
@@ -55,30 +54,23 @@ class PreparedVolumeFilter final : public PreparedFilter {
 
 public:
 	/* virtual methods from class Filter */
-	Filter *Open(AudioFormat &af, Error &error) override;
+	Filter *Open(AudioFormat &af) override;
 };
 
 static PreparedFilter *
-volume_filter_init(gcc_unused const ConfigBlock &block,
-		   gcc_unused Error &error)
+volume_filter_init(gcc_unused const ConfigBlock &block)
 {
 	return new PreparedVolumeFilter();
 }
 
 Filter *
-PreparedVolumeFilter::Open(AudioFormat &audio_format, Error &error)
+PreparedVolumeFilter::Open(AudioFormat &audio_format)
 {
-	auto *filter = new VolumeFilter(audio_format);
-	if (!filter->Open(error)) {
-		delete filter;
-		return nullptr;
-	}
-
-	return filter;
+	return new VolumeFilter(audio_format);
 }
 
 ConstBuffer<void>
-VolumeFilter::FilterPCM(ConstBuffer<void> src, gcc_unused Error &error)
+VolumeFilter::FilterPCM(ConstBuffer<void> src)
 {
 	return pv.Apply(src);
 }

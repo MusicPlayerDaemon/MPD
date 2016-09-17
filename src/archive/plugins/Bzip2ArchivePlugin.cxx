@@ -30,11 +30,11 @@
 #include "input/LocalOpen.hxx"
 #include "thread/Cond.hxx"
 #include "util/RefCount.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "fs/Path.hxx"
 
 #include <bzlib.h>
+
+#include <stdexcept>
 
 #include <stddef.h>
 
@@ -74,9 +74,8 @@ public:
 		visitor.VisitArchiveEntry(name.c_str());
 	}
 
-	virtual InputStream *OpenStream(const char *path,
-					Mutex &mutex, Cond &cond,
-					Error &error) override;
+	InputStream *OpenStream(const char *path,
+				Mutex &mutex, Cond &cond) override;
 };
 
 class Bzip2InputStream final : public InputStream {
@@ -93,22 +92,19 @@ public:
 			 Mutex &mutex, Cond &cond);
 	~Bzip2InputStream();
 
-	bool Open(Error &error);
-
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
-	size_t Read(void *ptr, size_t size, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
 
 private:
-	bool FillBuffer(Error &error);
+	void Open();
+	bool FillBuffer();
 };
-
-static constexpr Domain bz2_domain("bz2");
 
 /* single archive handling allocation helpers */
 
-inline bool
-Bzip2InputStream::Open(Error &error)
+inline void
+Bzip2InputStream::Open()
 {
 	bzstream.bzalloc = nullptr;
 	bzstream.bzfree = nullptr;
@@ -118,27 +114,20 @@ Bzip2InputStream::Open(Error &error)
 	bzstream.avail_in = 0;
 
 	int ret = BZ2_bzDecompressInit(&bzstream, 0, 0);
-	if (ret != BZ_OK) {
-		error.Set(bz2_domain, ret,
-			  "BZ2_bzDecompressInit() has failed");
-		return false;
-	}
+	if (ret != BZ_OK)
+		throw std::runtime_error("BZ2_bzDecompressInit() has failed");
 
 	SetReady();
-	return true;
 }
 
 /* archive open && listing routine */
 
 static ArchiveFile *
-bz2_open(Path pathname, Error &error)
+bz2_open(Path pathname)
 {
 	static Mutex mutex;
 	static Cond cond;
-	auto is = OpenLocalInputStream(pathname, mutex, cond, error);
-	if (is == nullptr)
-		return nullptr;
-
+	auto is = OpenLocalInputStream(pathname, mutex, cond);
 	return new Bzip2ArchiveFile(pathname, std::move(is));
 }
 
@@ -150,6 +139,7 @@ Bzip2InputStream::Bzip2InputStream(Bzip2ArchiveFile &_context,
 	:InputStream(_uri, _mutex, _cond),
 	 archive(&_context)
 {
+	Open();
 	archive->Ref();
 }
 
@@ -161,26 +151,18 @@ Bzip2InputStream::~Bzip2InputStream()
 
 InputStream *
 Bzip2ArchiveFile::OpenStream(const char *path,
-			     Mutex &mutex, Cond &cond,
-			     Error &error)
+			     Mutex &mutex, Cond &cond)
 {
-	Bzip2InputStream *bis = new Bzip2InputStream(*this, path, mutex, cond);
-	if (!bis->Open(error)) {
-		delete bis;
-		return nullptr;
-	}
-
-	return bis;
+	return new Bzip2InputStream(*this, path, mutex, cond);
 }
 
 inline bool
-Bzip2InputStream::FillBuffer(Error &error)
+Bzip2InputStream::FillBuffer()
 {
 	if (bzstream.avail_in > 0)
 		return true;
 
-	size_t count = archive->istream->Read(buffer, sizeof(buffer),
-					      error);
+	size_t count = archive->istream->Read(buffer, sizeof(buffer));
 	if (count == 0)
 		return false;
 
@@ -190,7 +172,7 @@ Bzip2InputStream::FillBuffer(Error &error)
 }
 
 size_t
-Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
+Bzip2InputStream::Read(void *ptr, size_t length)
 {
 	int bz_result;
 	size_t nbytes = 0;
@@ -202,7 +184,7 @@ Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
 	bzstream.avail_out = length;
 
 	do {
-		if (!FillBuffer(error))
+		if (!FillBuffer())
 			return 0;
 
 		bz_result = BZ2_bzDecompress(&bzstream);
@@ -212,11 +194,8 @@ Bzip2InputStream::Read(void *ptr, size_t length, Error &error)
 			break;
 		}
 
-		if (bz_result != BZ_OK) {
-			error.Set(bz2_domain, bz_result,
-				  "BZ2_bzDecompress() has failed");
-			return 0;
-		}
+		if (bz_result != BZ_OK)
+			throw std::runtime_error("BZ2_bzDecompress() has failed");
 	} while (bzstream.avail_out == length);
 
 	nbytes = length - bzstream.avail_out;

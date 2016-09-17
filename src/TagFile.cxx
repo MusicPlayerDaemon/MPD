@@ -30,6 +30,8 @@
 #include "input/LocalOpen.hxx"
 #include "thread/Cond.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 
 class TagFileScan {
@@ -60,13 +62,18 @@ public:
 
 		/* open the InputStream (if not already open) */
 		if (is == nullptr) {
-			is = OpenLocalInputStream(path_fs,
-						  mutex, cond,
-						  IgnoreError());
-			if (is == nullptr)
+			try {
+				is = OpenLocalInputStream(path_fs,
+							  mutex, cond);
+			} catch (const std::runtime_error &) {
 				return false;
-		} else
-			is->LockRewind(IgnoreError());
+			}
+		} else {
+			try {
+				is->LockRewind();
+			} catch (const std::runtime_error &) {
+			}
+		}
 
 		/* now try the stream_tag() method */
 		return plugin.ScanStream(*is, handler, handler_ctx);

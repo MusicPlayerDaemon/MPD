@@ -36,11 +36,9 @@ class FallbackPcmResampler final : public PcmResampler {
 	PcmBuffer buffer;
 
 public:
-	virtual AudioFormat Open(AudioFormat &af, unsigned new_sample_rate,
-				 Error &error) override;
-	virtual void Close() override;
-	virtual ConstBuffer<void> Resample(ConstBuffer<void> src,
-					   Error &error) override;
+	AudioFormat Open(AudioFormat &af, unsigned new_sample_rate) override;
+	void Close() override;
+	ConstBuffer<void> Resample(ConstBuffer<void> src) override;
 };
 
 #endif

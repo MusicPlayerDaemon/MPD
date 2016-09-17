@@ -22,6 +22,7 @@
 #include "DecoderError.hxx"
 #include "MusicPipe.hxx"
 #include "DetachedSong.hxx"
+#include "util/Error.hxx"
 
 #include <assert.h>
 

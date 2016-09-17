@@ -41,7 +41,7 @@ filter_plugin_by_name(gcc_unused const char *name)
 }
 
 int main(int argc, gcc_unused char **argv)
-{
+try {
 	int volume;
 
 	if (argc != 2) {
@@ -51,36 +51,27 @@ int main(int argc, gcc_unused char **argv)
 
 	EventLoop event_loop;
 
-	Error error;
 	Mixer *mixer = mixer_new(event_loop, alsa_mixer_plugin,
 				 *(AudioOutput *)nullptr,
 				 *(MixerListener *)nullptr,
-				 ConfigBlock(), error);
-	if (mixer == NULL) {
-		LogError(error, "mixer_new() failed");
-		return EXIT_FAILURE;
-	}
+				 ConfigBlock());
 
-	if (!mixer_open(mixer, error)) {
-		mixer_free(mixer);
-		LogError(error, "failed to open the mixer");
-		return EXIT_FAILURE;
-	}
+	mixer_open(mixer);
 
-	volume = mixer_get_volume(mixer, error);
+	volume = mixer_get_volume(mixer);
 	mixer_close(mixer);
 	mixer_free(mixer);
 
 	assert(volume >= -1 && volume <= 100);
 
 	if (volume < 0) {
-		if (error.IsDefined()) {
-			LogError(error, "failed to read volume");
-		} else
-			fprintf(stderr, "failed to read volume\n");
+		fprintf(stderr, "failed to read volume\n");
 		return EXIT_FAILURE;
 	}
 
 	printf("%d\n", volume);
 	return 0;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

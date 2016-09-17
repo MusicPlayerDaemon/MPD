@@ -21,7 +21,8 @@
 #include "OggDecoder.hxx"
 #include "lib/xiph/OggFind.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
+
+#include <stdexcept>
 
 /**
  * Load the end-of-stream packet and restore the previous file
@@ -52,7 +53,10 @@ OggDecoder::LoadEndPacket(ogg_packet &packet) const
 	}
 
 	/* restore the previous file position */
-	input_stream.LockSeek(old_offset, IgnoreError());
+	try {
+		input_stream.LockSeek(old_offset);
+	} catch (const std::runtime_error &) {
+	}
 
 	return result;
 }
@@ -67,8 +71,8 @@ OggDecoder::LoadEndGranulePos() const
 	return packet.granulepos;
 }
 
-bool
-OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos, Error &error)
+void
+OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos)
 {
 	assert(IsSeekable());
 
@@ -78,10 +82,7 @@ OggDecoder::SeekGranulePos(ogg_int64_t where_granulepos, Error &error)
 	offset_type offset(where_granulepos * input_stream.GetSize()
 			   / end_granulepos);
 
-	if (!input_stream.LockSeek(offset, error))
-		return false;
-
+	input_stream.LockSeek(offset);
 	PostSeek();
-	return true;
 }
 

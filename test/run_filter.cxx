@@ -41,11 +41,10 @@
 #include <errno.h>
 #include <unistd.h>
 
-bool
+void
 mixer_set_volume(gcc_unused Mixer *mixer,
-		 gcc_unused unsigned volume, gcc_unused Error &error)
+		 gcc_unused unsigned volume)
 {
-	return true;
 }
 
 static PreparedFilter *
@@ -58,14 +57,7 @@ load_filter(const char *name)
 		return nullptr;
 	}
 
-	Error error;
-	auto *filter = filter_configured_new(*param, error);
-	if (filter == NULL) {
-		LogError(error, "Failed to load filter");
-		return NULL;
-	}
-
-	return filter;
+	return filter_configured_new(*param);
 }
 
 int main(int argc, char **argv)
@@ -105,13 +97,7 @@ try {
 
 	/* open the filter */
 
-	Error error;
-	std::unique_ptr<Filter> filter(prepared_filter->Open(audio_format,
-							     error));
-	if (!filter) {
-		LogError(error, "Failed to open filter");
-		return EXIT_FAILURE;
-	}
+	std::unique_ptr<Filter> filter(prepared_filter->Open(audio_format));
 
 	const AudioFormat out_audio_format = filter->GetOutAudioFormat();
 
@@ -127,12 +113,7 @@ try {
 		if (nbytes <= 0)
 			break;
 
-		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes},
-					      error);
-		if (dest.IsNull()) {
-			LogError(error, "filter/Filter failed");
-			return EXIT_FAILURE;
-		}
+		auto dest = filter->FilterPCM({(const void *)buffer, (size_t)nbytes});
 
 		nbytes = write(1, dest.data, dest.size);
 		if (nbytes < 0) {
@@ -147,7 +128,7 @@ try {
 	config_global_finish();
 
 	return EXIT_SUCCESS;
- } catch (const std::exception &e) {
+} catch (const std::exception &e) {
 	LogError(e);
 	return EXIT_FAILURE;
- }
+}

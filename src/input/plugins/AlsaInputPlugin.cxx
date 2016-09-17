@@ -30,8 +30,10 @@
 #include "../AsyncInputStream.hxx"
 #include "util/Domain.hxx"
 #include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ReusableArray.hxx"
+#include "util/ScopeExit.hxx"
 
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
@@ -101,8 +103,7 @@ public:
 		snd_pcm_close(capture_handle);
 	}
 
-	static InputStream *Create(const char *uri, Mutex &mutex, Cond &cond,
-				   Error &error);
+	static InputStream *Create(const char *uri, Mutex &mutex, Cond &cond);
 
 protected:
 	/* virtual methods from AsyncInputStream */
@@ -119,8 +120,7 @@ protected:
 
 private:
 	static snd_pcm_t *OpenDevice(const char *device, int rate,
-				     snd_pcm_format_t format, int channels,
-				     Error &error);
+				     snd_pcm_format_t format, int channels);
 
 	void Pause() {
 		AsyncInputStream::Pause();
@@ -142,8 +142,7 @@ private:
 };
 
 inline InputStream *
-AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond,
-			Error &error)
+AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond)
 {
 	const char *device = StringAfterPrefix(uri, "alsa://");
 	if (device == nullptr)
@@ -159,10 +158,7 @@ AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond,
 	snd_pcm_format_t format = default_format;
 	int channels = default_channels;
 
-	snd_pcm_t *handle = OpenDevice(device, rate, format, channels,
-				       error);
-	if (handle == nullptr)
-		return nullptr;
+	snd_pcm_t *handle = OpenDevice(device, rate, format, channels);
 
 	int frame_size = snd_pcm_format_width(format) / 8 * channels;
 	return new AlsaInputStream(io_thread_get(),
@@ -211,10 +207,8 @@ AlsaInputStream::DispatchSockets()
 	while ((n_frames = snd_pcm_readi(capture_handle,
 					 w.data, w_frames)) < 0) {
 		if (Recover(n_frames) < 0) {
-			Error error;
-			error.Format(alsa_input_domain,
-				     "PCM error - stream aborted");
-			PostponeError(std::move(error));
+			postponed_exception = std::make_exception_ptr(std::runtime_error("PCM error - stream aborted"));
+			cond.broadcast();
 			return;
 		}
 	}
@@ -241,60 +235,40 @@ AlsaInputStream::Recover(int err)
 	return err;
 }
 
-inline snd_pcm_t *
-AlsaInputStream::OpenDevice(const char *device,
-			    int rate, snd_pcm_format_t format, int channels,
-			    Error &error)
+static void
+ConfigureCapture(snd_pcm_t *capture_handle,
+		 int rate, snd_pcm_format_t format, int channels)
 {
-	snd_pcm_t *capture_handle;
 	int err;
-	if ((err = snd_pcm_open(&capture_handle, device,
-				SND_PCM_STREAM_CAPTURE, 0)) < 0) {
-		error.Format(alsa_input_domain, "Failed to open device: %s (%s)", device, snd_strerror(err));
-		return nullptr;
-	}
 
 	snd_pcm_hw_params_t *hw_params;
-	if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
-		error.Format(alsa_input_domain, "Cannot allocate hardware parameter structure (%s)", snd_strerror(err));
-		snd_pcm_close(capture_handle);
-		return nullptr;
-	}
+	if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0)
+		throw FormatRuntimeError("Cannot allocate hardware parameter structure (%s)",
+					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params_any(capture_handle, hw_params)) < 0) {
-		error.Format(alsa_input_domain, "Cannot initialize hardware parameter structure (%s)", snd_strerror(err));
+	AtScopeExit(hw_params) {
 		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
-	}
+	};
 
-	if ((err = snd_pcm_hw_params_set_access(capture_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-		error.Format(alsa_input_domain, "Cannot set access type (%s)", snd_strerror (err));
-		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
-	}
+	if ((err = snd_pcm_hw_params_any(capture_handle, hw_params)) < 0)
+		throw FormatRuntimeError("Cannot initialize hardware parameter structure (%s)",
+					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0) {
-		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		error.Format(alsa_input_domain, "Cannot set sample format (%s)", snd_strerror (err));
-		return nullptr;
-	}
+	if ((err = snd_pcm_hw_params_set_access(capture_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0)
+		throw FormatRuntimeError("Cannot set access type (%s)",
+					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params_set_channels(capture_handle, hw_params, channels)) < 0) {
-		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		error.Format(alsa_input_domain, "Cannot set channels (%s)", snd_strerror (err));
-		return nullptr;
-	}
+	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0)
+		throw FormatRuntimeError("Cannot set sample format (%s)",
+					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params_set_rate(capture_handle, hw_params, rate, 0)) < 0) {
-		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		error.Format(alsa_input_domain, "Cannot set sample rate (%s)", snd_strerror (err));
-		return nullptr;
-	}
+	if ((err = snd_pcm_hw_params_set_channels(capture_handle, hw_params, channels)) < 0)
+		throw FormatRuntimeError("Cannot set channels (%s)",
+					 snd_strerror(err));
+
+	if ((err = snd_pcm_hw_params_set_rate(capture_handle, hw_params, rate, 0)) < 0)
+		throw FormatRuntimeError("Cannot set sample rate (%s)",
+					 snd_strerror(err));
 
 	/* period needs to be big enough so that poll() doesn't fire too often,
 	 * but small enough that buffer overruns don't occur if Read() is not
@@ -305,47 +279,50 @@ AlsaInputStream::OpenDevice(const char *device,
 	snd_pcm_uframes_t period = read_buffer_size * 2;
 	int direction = -1;
 	if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle, hw_params,
-							  &period, &direction)) < 0) {
-		error.Format(alsa_input_domain, "Cannot set period size (%s)",
-			     snd_strerror(err));
-		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
-	}
+							  &period, &direction)) < 0)
+		throw FormatRuntimeError("Cannot set period size (%s)",
+					 snd_strerror(err));
 
-	if ((err = snd_pcm_hw_params(capture_handle, hw_params)) < 0) {
-		error.Format(alsa_input_domain, "Cannot set parameters (%s)",
-			     snd_strerror(err));
-		snd_pcm_hw_params_free(hw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
-	}
-
-	snd_pcm_hw_params_free (hw_params);
+	if ((err = snd_pcm_hw_params(capture_handle, hw_params)) < 0)
+		throw FormatRuntimeError("Cannot set parameters (%s)",
+					 snd_strerror(err));
 
 	snd_pcm_sw_params_t *sw_params;
 
 	snd_pcm_sw_params_malloc(&sw_params);
 	snd_pcm_sw_params_current(capture_handle, sw_params);
 
+	AtScopeExit(sw_params) {
+		snd_pcm_sw_params_free(sw_params);
+	};
+
 	if ((err = snd_pcm_sw_params_set_start_threshold(capture_handle, sw_params,
-							 period)) < 0)  {
-		error.Format(alsa_input_domain,
-			     "unable to set start threshold (%s)", snd_strerror(err));
-		snd_pcm_sw_params_free(sw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
-	}
+							 period)) < 0)
+		throw FormatRuntimeError("unable to set start threshold (%s)",
+					 snd_strerror(err));
 
-	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0) {
-		error.Format(alsa_input_domain,
-			     "unable to install sw params (%s)", snd_strerror(err));
-		snd_pcm_sw_params_free(sw_params);
-		snd_pcm_close(capture_handle);
-		return nullptr;
-	}
+	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0)
+		throw FormatRuntimeError("unable to install sw params (%s)",
+					 snd_strerror(err));
+}
 
-	snd_pcm_sw_params_free(sw_params);
+inline snd_pcm_t *
+AlsaInputStream::OpenDevice(const char *device,
+			    int rate, snd_pcm_format_t format, int channels)
+{
+	snd_pcm_t *capture_handle;
+	int err;
+	if ((err = snd_pcm_open(&capture_handle, device,
+				SND_PCM_STREAM_CAPTURE, 0)) < 0)
+		throw FormatRuntimeError("Failed to open device: %s (%s)",
+					 device, snd_strerror(err));
+
+	try {
+		ConfigureCapture(capture_handle, rate, format, channels);
+	} catch (...) {
+		snd_pcm_close(capture_handle);
+		throw;
+	}
 
 	snd_pcm_prepare(capture_handle);
 
@@ -355,9 +332,9 @@ AlsaInputStream::OpenDevice(const char *device,
 /*#########################  Plugin Functions  ##############################*/
 
 static InputStream *
-alsa_input_open(const char *uri, Mutex &mutex, Cond &cond, Error &error)
+alsa_input_open(const char *uri, Mutex &mutex, Cond &cond)
 {
-	return AlsaInputStream::Create(uri, mutex, cond, error);
+	return AlsaInputStream::Create(uri, mutex, cond);
 }
 
 const struct InputPlugin input_plugin_alsa = {

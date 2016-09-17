@@ -22,6 +22,8 @@
 #include "fs/FileInfo.hxx"
 #include "system/Error.hxx"
 
+#include <assert.h>
+
 #ifdef WIN32
 
 FileReader::FileReader(Path _path)

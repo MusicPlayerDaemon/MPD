@@ -17,11 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_NFS_DOMAIN_HXX
-#define MPD_NFS_DOMAIN_HXX
+#ifndef MPD_PLUGIN_UNAVAILABLE_HXX
+#define MPD_PLUGIN_UNAVAILABLE_HXX
 
-class Domain;
+#include <stdexcept>
 
-extern const Domain nfs_domain;
+/**
+ * An exception class which is used by plugin initializers to indicate
+ * that this plugin is unavailable.  It will be disabled, and MPD can
+ * continue initialization.
+ */
+class PluginUnavailable final : public std::runtime_error {
+public:
+	explicit PluginUnavailable(const char *msg)
+		:std::runtime_error(msg) {}
+};
 
 #endif

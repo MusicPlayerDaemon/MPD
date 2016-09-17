@@ -63,8 +63,8 @@ public:
 		return !ReadingFromBuffer() && ProxyInputStream::IsEOF();
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
+	void Seek(offset_type offset) override;
 
 private:
 	/**
@@ -77,7 +77,7 @@ private:
 };
 
 size_t
-RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
+RewindInputStream::Read(void *ptr, size_t read_size)
 {
 	if (ReadingFromBuffer()) {
 		/* buffered read */
@@ -96,7 +96,7 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 	} else {
 		/* pass method call to underlying stream */
 
-		size_t nbytes = input.Read(ptr, read_size, error);
+		size_t nbytes = input.Read(ptr, read_size);
 
 		if (input.GetOffset() > (offset_type)sizeof(buffer))
 			/* disable buffering */
@@ -116,9 +116,8 @@ RewindInputStream::Read(void *ptr, size_t read_size, Error &error)
 	}
 }
 
-bool
-RewindInputStream::Seek(offset_type new_offset,
-			Error &error)
+void
+RewindInputStream::Seek(offset_type new_offset)
 {
 	assert(IsReady());
 
@@ -131,14 +130,12 @@ RewindInputStream::Seek(offset_type new_offset,
 
 		head = (size_t)new_offset;
 		offset = new_offset;
-
-		return true;
 	} else {
 		/* disable the buffer, because input has left the
 		   buffered range now */
 		tail = 0;
 
-		return ProxyInputStream::Seek(new_offset, error);
+		ProxyInputStream::Seek(new_offset);
 	}
 }
 

@@ -21,7 +21,6 @@
 #include "NfsInputPlugin.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../InputPlugin.hxx"
-#include "lib/nfs/Domain.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
 #include "util/StringCompare.hxx"
@@ -57,14 +56,14 @@ public:
 		DeferClose();
 	}
 
-	bool Open(Error &error) {
+	void Open() {
 		assert(!IsReady());
 
-		return NfsFileReader::Open(GetURI(), error);
+		NfsFileReader::Open(GetURI());
 	}
 
 private:
-	bool DoRead();
+	void DoRead();
 
 protected:
 	/* virtual methods from AsyncInputStream */
@@ -75,38 +74,34 @@ private:
 	/* virtual methods from NfsFileReader */
 	void OnNfsFileOpen(uint64_t size) override;
 	void OnNfsFileRead(const void *data, size_t size) override;
-	void OnNfsFileError(Error &&error) override;
+	void OnNfsFileError(std::exception_ptr &&e) override;
 };
 
-bool
+void
 NfsInputStream::DoRead()
 {
 	assert(NfsFileReader::IsIdle());
 
 	int64_t remaining = size - next_offset;
 	if (remaining <= 0)
-		return true;
+		return;
 
 	const size_t buffer_space = GetBufferSpace();
 	if (buffer_space == 0) {
 		Pause();
-		return true;
+		return;
 	}
 
 	size_t nbytes = std::min<size_t>(std::min<uint64_t>(remaining, 32768),
 					 buffer_space);
 
-	mutex.unlock();
-	Error error;
-	bool success = NfsFileReader::Read(next_offset, nbytes, error);
-	mutex.lock();
-
-	if (!success) {
-		PostponeError(std::move(error));
-		return false;
+	try {
+		const ScopeUnlock unlock(mutex);
+		NfsFileReader::Read(next_offset, nbytes);
+	} catch (...) {
+		postponed_exception = std::current_exception();
+		cond.broadcast();
 	}
-
-	return true;
 }
 
 void
@@ -119,17 +114,10 @@ NfsInputStream::DoResume()
 		reconnect_on_resume = false;
 		reconnecting = true;
 
-		mutex.unlock();
+		ScopeUnlock unlock(mutex);
+
 		NfsFileReader::Close();
-
-		Error error;
-		bool success = NfsFileReader::Open(GetURI(), error);
-		mutex.lock();
-
-		if (!success) {
-			postponed_error = std::move(error);
-			cond.broadcast();
-		}
+		NfsFileReader::Open(GetURI());
 
 		return;
 	}
@@ -142,9 +130,10 @@ NfsInputStream::DoResume()
 void
 NfsInputStream::DoSeek(offset_type new_offset)
 {
-	mutex.unlock();
-	NfsFileReader::CancelRead();
-	mutex.lock();
+	{
+		const ScopeUnlock unlock(mutex);
+		NfsFileReader::CancelRead();
+	}
 
 	next_offset = offset = new_offset;
 	SeekDone();
@@ -185,7 +174,7 @@ NfsInputStream::OnNfsFileRead(const void *data, size_t data_size)
 }
 
 void
-NfsInputStream::OnNfsFileError(Error &&error)
+NfsInputStream::OnNfsFileError(std::exception_ptr &&e)
 {
 	const ScopeLock protect(mutex);
 
@@ -200,7 +189,7 @@ NfsInputStream::OnNfsFileError(Error &&error)
 		return;
 	}
 
-	postponed_error = std::move(error);
+	postponed_exception = std::move(e);
 
 	if (IsSeekPending())
 		SeekDone();
@@ -215,11 +204,10 @@ NfsInputStream::OnNfsFileError(Error &&error)
  *
  */
 
-static InputPlugin::InitResult
-input_nfs_init(const ConfigBlock &, Error &)
+static void
+input_nfs_init(const ConfigBlock &)
 {
 	nfs_init();
-	return InputPlugin::InitResult::SUCCESS;
 }
 
 static void
@@ -230,16 +218,17 @@ input_nfs_finish()
 
 static InputStream *
 input_nfs_open(const char *uri,
-	       Mutex &mutex, Cond &cond,
-	       Error &error)
+	       Mutex &mutex, Cond &cond)
 {
 	if (!StringStartsWith(uri, "nfs://"))
 		return nullptr;
 
 	NfsInputStream *is = new NfsInputStream(uri, mutex, cond);
-	if (!is->Open(error)) {
+	try {
+		is->Open();
+	} catch (...) {
 		delete is;
-		return nullptr;
+		throw;
 	}
 
 	return is;

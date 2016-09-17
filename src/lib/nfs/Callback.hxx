@@ -22,12 +22,12 @@
 
 #include "check.h"
 
-class Error;
+#include <exception>
 
 class NfsCallback {
 public:
 	virtual void OnNfsCallback(unsigned status, void *data) = 0;
-	virtual void OnNfsError(Error &&error) = 0;
+	virtual void OnNfsError(std::exception_ptr &&e) = 0;
 };
 
 #endif

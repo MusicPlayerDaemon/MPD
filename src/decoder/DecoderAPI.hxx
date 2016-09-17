@@ -121,11 +121,12 @@ decoder_seek_error(Decoder &decoder);
 
 /**
  * Open a new #InputStream and wait until it's ready.  Can get
- * cancelled by DecoderCommand::STOP (returns nullptr without setting
- * #Error).
+ * cancelled by DecoderCommand::STOP (returns nullptr).
+ *
+ * Throws std::runtime_error on error.
  */
 InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri, Error &error);
+decoder_open_uri(Decoder &decoder, const char *uri);
 
 /**
  * Blocking read from the input stream.

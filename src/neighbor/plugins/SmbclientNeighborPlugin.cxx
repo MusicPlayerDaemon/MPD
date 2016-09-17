@@ -72,7 +72,7 @@ public:
 		:NeighborExplorer(_listener) {}
 
 	/* virtual methods from class NeighborExplorer */
-	virtual bool Open(Error &error) override;
+	void Open() override;
 	virtual void Close() override;
 	virtual List GetList() const override;
 
@@ -82,12 +82,11 @@ private:
 	static void ThreadFunc(void *ctx);
 };
 
-bool
-SmbclientNeighborExplorer::Open(gcc_unused Error &error)
+void
+SmbclientNeighborExplorer::Open()
 {
 	quit = false;
 	thread.Start(ThreadFunc, this);
-	return true;
 }
 
 void
@@ -270,11 +269,9 @@ SmbclientNeighborExplorer::ThreadFunc(void *ctx)
 static NeighborExplorer *
 smbclient_neighbor_create(gcc_unused EventLoop &loop,
 			  NeighborListener &listener,
-			  gcc_unused const ConfigBlock &block,
-			  gcc_unused Error &error)
+			  gcc_unused const ConfigBlock &block)
 {
-	if (!SmbclientInit(error))
-		return nullptr;
+	SmbclientInit();
 
 	return new SmbclientNeighborExplorer(listener);
 }

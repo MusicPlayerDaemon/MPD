@@ -24,7 +24,8 @@
 #include "InputStream.hxx"
 #include "thread/Thread.hxx"
 #include "thread/Cond.hxx"
-#include "util/Error.hxx"
+
+#include <exception>
 
 #include <stdint.h>
 
@@ -51,7 +52,7 @@ class ThreadInputStream : public InputStream {
 	 */
 	Cond wake_cond;
 
-	Error postponed_error;
+	std::exception_ptr postponed_exception;
 
 	const size_t buffer_size;
 	CircularBuffer<uint8_t> *buffer = nullptr;
@@ -82,10 +83,10 @@ public:
 	void Start();
 
 	/* virtual methods from InputStream */
-	bool Check(Error &error) override final;
+	void Check() override final;
 	bool IsEOF() override final;
 	bool IsAvailable() override final;
-	size_t Read(void *ptr, size_t size, Error &error) override final;
+	size_t Read(void *ptr, size_t size) override final;
 
 protected:
 	void SetMimeType(const char *_mime) {
@@ -103,9 +104,10 @@ protected:
 	 *
 	 * The #InputStream is locked.  Unlock/relock it if you do a
 	 * blocking operation.
+	 *
+	 * Throws std::runtime_error on error.
 	 */
-	virtual bool Open(gcc_unused Error &error) {
-		return true;
+	virtual void Open() {
 	}
 
 	/**
@@ -113,9 +115,11 @@ protected:
 	 *
 	 * The #InputStream is not locked.
 	 *
-	 * @return 0 on end-of-file or on error
+	 * Throws std::runtime_error on error.
+	 *
+	 * @return 0 on end-of-file
 	 */
-	virtual size_t ThreadRead(void *ptr, size_t size, Error &error) = 0;
+	virtual size_t ThreadRead(void *ptr, size_t size) = 0;
 
 	/**
 	 * Optional deinitialization before leaving the thread.

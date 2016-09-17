@@ -33,6 +33,7 @@
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "util/Domain.hxx"
+#include "util/Error.hxx"
 #include "thread/Name.hxx"
 #include "Log.hxx"
 
@@ -372,9 +373,10 @@ Player::StopDecoder()
 bool
 Player::ForwardDecoderError()
 {
-	Error error = dc.GetError();
-	if (error.IsDefined()) {
-		pc.SetError(PlayerError::DECODER, std::move(error));
+	try {
+		dc.CheckRethrowError();
+	} catch (...) {
+		pc.SetError(PlayerError::DECODER, std::current_exception());
 		return false;
 	}
 

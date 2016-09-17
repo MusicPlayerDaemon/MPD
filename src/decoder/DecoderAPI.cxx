@@ -73,11 +73,12 @@ decoder_initialized(Decoder &decoder,
 
 		decoder.convert = new PcmConvert();
 
-		Error error;
-		if (!decoder.convert->Open(dc.in_audio_format,
-					   dc.out_audio_format,
-					   error))
-			decoder.error = std::move(error);
+		try {
+			decoder.convert->Open(dc.in_audio_format,
+					      dc.out_audio_format);
+		} catch (...) {
+			decoder.error = std::current_exception();
+		}
 	}
 
 	const ScopeLock protect(dc.mutex);
@@ -140,7 +141,7 @@ gcc_pure
 static DecoderCommand
 decoder_get_virtual_command(Decoder &decoder)
 {
-	if (decoder.error.IsDefined())
+	if (decoder.error)
 		/* an error has occurred: stop the decoder plugin */
 		return DecoderCommand::STOP;
 
@@ -257,7 +258,7 @@ void decoder_seek_error(Decoder & decoder)
 }
 
 InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
+decoder_open_uri(Decoder &decoder, const char *uri)
 {
 	assert(decoder.dc.state == DecoderState::START ||
 	       decoder.dc.state == DecoderState::DECODE);
@@ -266,9 +267,7 @@ decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
 	Mutex &mutex = dc.mutex;
 	Cond &cond = dc.cond;
 
-	auto is = InputStream::Open(uri, mutex, cond, error);
-	if (!is)
-		return nullptr;
+	auto is = InputStream::Open(uri, mutex, cond);
 
 	const ScopeLock lock(mutex);
 	while (true) {
@@ -312,7 +311,7 @@ size_t
 decoder_read(Decoder *decoder,
 	     InputStream &is,
 	     void *buffer, size_t length)
-{
+try {
 	/* XXX don't allow decoder==nullptr */
 
 	assert(decoder == nullptr ||
@@ -335,17 +334,13 @@ decoder_read(Decoder *decoder,
 		is.cond.wait(is.mutex);
 	}
 
-	Error error;
-	size_t nbytes = is.Read(buffer, length, error);
-	assert(nbytes == 0 || !error.IsDefined());
-	assert(nbytes > 0 || error.IsDefined() || is.IsEOF());
-
-	lock.Unlock();
-
-	if (gcc_unlikely(nbytes == 0 && error.IsDefined()))
-		LogError(error);
+	size_t nbytes = is.Read(buffer, length);
+	assert(nbytes > 0 || is.IsEOF());
 
 	return nbytes;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return 0;
 }
 
 bool
@@ -484,19 +479,17 @@ decoder_data(Decoder &decoder,
 	if (decoder.convert != nullptr) {
 		assert(dc.in_audio_format != dc.out_audio_format);
 
-		Error error;
-		auto result = decoder.convert->Convert({data, length},
-						       error);
-		if (data == nullptr) {
+		try {
+			auto result = decoder.convert->Convert({data, length});
+			data = result.data;
+			length = result.size;
+		} catch (const std::runtime_error &e) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
 			   bail out */
-			LogError(error);
+			LogError(e);
 			return DecoderCommand::STOP;
 		}
-
-		data = result.data;
-		length = result.size;
 	} else {
 		assert(dc.in_audio_format == dc.out_audio_format);
 	}

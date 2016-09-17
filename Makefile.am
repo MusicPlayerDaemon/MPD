@@ -166,6 +166,7 @@ libmpd_a_SOURCES = \
 	src/queue/PlaylistTag.cxx \
 	src/queue/PlaylistState.cxx src/queue/PlaylistState.hxx \
 	src/queue/Listener.hxx \
+	src/PluginUnavailable.hxx \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
@@ -444,7 +445,7 @@ libutil_a_SOURCES = \
 # Multi-threading library
 
 libthread_a_SOURCES = \
-	src/thread/Util.hxx \
+	src/thread/Util.cxx src/thread/Util.hxx \
 	src/thread/Name.hxx \
 	src/thread/Slack.hxx \
 	src/thread/Mutex.hxx \
@@ -670,8 +671,7 @@ NFS_SOURCES = \
 	src/lib/nfs/Glue.cxx src/lib/nfs/Glue.hxx \
 	src/lib/nfs/Base.cxx src/lib/nfs/Base.hxx \
 	src/lib/nfs/FileReader.cxx src/lib/nfs/FileReader.hxx \
-	src/lib/nfs/Blocking.cxx src/lib/nfs/Blocking.hxx \
-	src/lib/nfs/Domain.cxx src/lib/nfs/Domain.hxx
+	src/lib/nfs/Blocking.cxx src/lib/nfs/Blocking.hxx
 
 if ENABLE_DATABASE
 
@@ -1563,6 +1563,7 @@ libmixer_plugins_a_SOURCES += \
 
 noinst_LIBRARIES += libpulse.a
 libpulse_a_SOURCES = \
+	src/lib/pulse/LockGuard.hxx \
 	src/lib/pulse/LogError.cxx src/lib/pulse/LogError.hxx \
 	src/lib/pulse/Error.cxx src/lib/pulse/Error.hxx \
 	src/lib/pulse/Domain.cxx src/lib/pulse/Domain.hxx

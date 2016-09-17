@@ -89,6 +89,36 @@ public:
 	gcc_pure
 	FileInfo GetFileInfo() const;
 
+	gcc_pure
+	uint64_t GetSize() const {
+#ifdef WIN32
+		LARGE_INTEGER size;
+		return GetFileSizeEx(handle, &size)
+			? size.QuadPart
+			: 0;
+#else
+		return fd.GetSize();
+#endif
+	}
+
+	gcc_pure
+	uint64_t GetPosition() const {
+#ifdef WIN32
+		LARGE_INTEGER zero;
+		zero.QuadPart = 0;
+		LARGE_INTEGER position;
+		return SetFilePointerEx(handle, zero, &position, FILE_CURRENT)
+			? position.QuadPart
+			: 0;
+#else
+		return fd.Tell();
+#endif
+	}
+
+	void Rewind() {
+		Seek(0);
+	}
+
 	void Seek(off_t offset);
 	void Skip(off_t offset);
 

@@ -25,7 +25,7 @@
 #include "config/ConfigError.hxx"
 #include "config/Block.hxx"
 #include "config/Param.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #ifdef ENABLE_LIBSAMPLERATE
 #include "LibsamplerateResampler.hxx"
@@ -112,7 +112,7 @@ MigrateResamplerConfig(const config_param *param, ConfigBlock &buffer)
 }
 
 static const ConfigBlock *
-GetResamplerConfig(ConfigBlock &buffer, Error &error)
+GetResamplerConfig(ConfigBlock &buffer)
 {
 	const auto *old_param =
 		config_get_param(ConfigOption::SAMPLERATE_CONVERTER);
@@ -120,49 +120,39 @@ GetResamplerConfig(ConfigBlock &buffer, Error &error)
 	if (block == nullptr)
 		return MigrateResamplerConfig(old_param, buffer);
 
-	if (old_param != nullptr) {
-		error.Format(config_domain,
-			     "Cannot use both 'resampler' (line %d) and 'samplerate_converter' (line %d)",
-			     block->line, old_param->line);
-		return nullptr;
-	}
+	if (old_param != nullptr)
+		throw FormatRuntimeError("Cannot use both 'resampler' (line %d) and 'samplerate_converter' (line %d)",
+					 block->line, old_param->line);
 
 	return block;
 }
 
-bool
-pcm_resampler_global_init(Error &error)
+void
+pcm_resampler_global_init()
 {
 	ConfigBlock buffer;
-	const auto *block = GetResamplerConfig(buffer, error);
-	if (block == nullptr)
-		return false;
+	const auto *block = GetResamplerConfig(buffer);
 
 	const char *plugin_name = block->GetBlockValue("plugin");
-	if (plugin_name == nullptr) {
-		error.Format(config_domain,
-			     "'plugin' missing in line %d", block->line);
-		return false;
-	}
+	if (plugin_name == nullptr)
+		throw FormatRuntimeError("'plugin' missing in line %d",
+					 block->line);
 
 	if (strcmp(plugin_name, "internal") == 0) {
 		selected_resampler = SelectedResampler::FALLBACK;
-		return true;
 #ifdef ENABLE_SOXR
 	} else if (strcmp(plugin_name, "soxr") == 0) {
 		selected_resampler = SelectedResampler::SOXR;
-		return pcm_resample_soxr_global_init(*block, error);
+		pcm_resample_soxr_global_init(*block);
 #endif
 #ifdef ENABLE_LIBSAMPLERATE
 	} else if (strcmp(plugin_name, "libsamplerate") == 0) {
 		selected_resampler = SelectedResampler::LIBSAMPLERATE;
-		return pcm_resample_lsr_global_init(*block, error);
+		pcm_resample_lsr_global_init(*block);
 #endif
 	} else {
-		error.Format(config_domain,
-			     "No such resampler plugin: %s",
-			     plugin_name);
-		return false;
+		throw FormatRuntimeError("No such resampler plugin: %s",
+					 plugin_name);
 	}
 }
 

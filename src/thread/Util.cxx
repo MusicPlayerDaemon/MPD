@@ -27,21 +27,68 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THREAD_UTIL_HXX
-#define THREAD_UTIL_HXX
+#include "Util.hxx"
+#include "system/Error.hxx"
 
-/**
- * Lower the current thread's priority to "idle" (very low).
- */
-void
-SetThreadIdlePriority();
+#ifdef __linux__
+#include <sched.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#elif defined(WIN32)
+#include <windows.h>
+#endif
 
-/**
- * Raise the current thread's priority to "real-time" (very high).
- *
- * Throws std::system_error on error.
- */
-void
-SetThreadRealtime();
+#ifdef __linux__
+
+static int
+ioprio_set(int which, int who, int ioprio)
+{
+	return syscall(__NR_ioprio_set, which, who, ioprio);
+}
+
+static void
+ioprio_set_idle()
+{
+	static constexpr int _IOPRIO_WHO_PROCESS = 1;
+	static constexpr int _IOPRIO_CLASS_IDLE = 3;
+	static constexpr int _IOPRIO_CLASS_SHIFT = 13;
+	static constexpr int _IOPRIO_IDLE =
+		(_IOPRIO_CLASS_IDLE << _IOPRIO_CLASS_SHIFT) | 7;
+
+	ioprio_set(_IOPRIO_WHO_PROCESS, 0, _IOPRIO_IDLE);
+}
 
 #endif
+
+void
+SetThreadIdlePriority()
+{
+#ifdef __linux__
+#ifdef SCHED_IDLE
+	static struct sched_param sched_param;
+	sched_setscheduler(0, SCHED_IDLE, &sched_param);
+#endif
+
+	ioprio_set_idle();
+
+#elif defined(WIN32)
+	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
+#endif
+};
+
+void
+SetThreadRealtime()
+{
+#ifdef __linux__
+	struct sched_param sched_param;
+	sched_param.sched_priority = 50;
+
+	int policy = SCHED_FIFO;
+#ifdef SCHED_RESET_ON_FORK
+	policy |= SCHED_RESET_ON_FORK;
+#endif
+
+	if (sched_setscheduler(0, policy, &sched_param) < 0)
+		throw MakeErrno("sched_setscheduler failed");
+#endif	// __linux__
+};

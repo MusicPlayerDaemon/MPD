@@ -56,8 +56,8 @@ playlist::Stop(PlayerControl &pc)
 	}
 }
 
-bool
-playlist::PlayPosition(PlayerControl &pc, int song, Error &error)
+void
+playlist::PlayPosition(PlayerControl &pc, int song)
 {
 	pc.LockClearError();
 
@@ -66,13 +66,13 @@ playlist::PlayPosition(PlayerControl &pc, int song, Error &error)
 		/* play any song ("current" song, or the first song */
 
 		if (queue.IsEmpty())
-			return true;
+			return;
 
 		if (playing) {
 			/* already playing: unpause playback, just in
 			   case it was paused, and return */
 			pc.LockSetPause(false);
-			return true;
+			return;
 		}
 
 		/* select a song: "current" song, or the first one */
@@ -102,30 +102,29 @@ playlist::PlayPosition(PlayerControl &pc, int song, Error &error)
 	stop_on_error = false;
 	error_count = 0;
 
-	return PlayOrder(pc, i, error);
+	PlayOrder(pc, i);
 }
 
-bool
-playlist::PlayId(PlayerControl &pc, int id, Error &error)
+void
+playlist::PlayId(PlayerControl &pc, int id)
 {
-	if (id == -1)
-		return PlayPosition(pc, id, error);
+	if (id == -1) {
+		PlayPosition(pc, id);
+		return;
+	}
 
 	int song = queue.IdToPosition(id);
 	if (song < 0)
 		throw PlaylistError::NoSuchSong();
 
-	return PlayPosition(pc, song, error);
+	PlayPosition(pc, song);
 }
 
-bool
-playlist::PlayNext(PlayerControl &pc, Error &error)
+void
+playlist::PlayNext(PlayerControl &pc)
 {
-	if (!playing) {
-		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
-			  "Not playing");
-		return true;
-	}
+	if (!playing)
+		throw PlaylistError::NotPlaying();
 
 	assert(!queue.IsEmpty());
 	assert(queue.IsValidOrder(current));
@@ -159,25 +158,19 @@ playlist::PlayNext(PlayerControl &pc, Error &error)
 			   discard them anyway */
 		}
 
-		if (!PlayOrder(pc, next_order, error))
-			return false;
+		PlayOrder(pc, next_order);
 	}
 
 	/* Consume mode removes each played songs. */
 	if (queue.consume)
 		DeleteOrder(pc, old_current);
-
-	return true;
 }
 
-bool
-playlist::PlayPrevious(PlayerControl &pc, Error &error)
+void
+playlist::PlayPrevious(PlayerControl &pc)
 {
-	if (!playing) {
-		error.Set(playlist_domain, int(PlaylistResult::NOT_PLAYING),
-			  "Not playing");
-		return true;
-	}
+	if (!playing)
+		throw PlaylistError::NotPlaying();
 
 	assert(!queue.IsEmpty());
 
@@ -194,12 +187,11 @@ playlist::PlayPrevious(PlayerControl &pc, Error &error)
 		order = current;
 	}
 
-	return PlayOrder(pc, order, error);
+	PlayOrder(pc, order);
 }
 
-bool
-playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time,
-			Error &error)
+void
+playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time)
 {
 	assert(queue.IsValidOrder(i));
 
@@ -221,20 +213,19 @@ playlist::SeekSongOrder(PlayerControl &pc, unsigned i, SongTime seek_time,
 
 	queued = -1;
 
-	if (!pc.LockSeek(new DetachedSong(queue.GetOrder(i)), seek_time, error)) {
+	try {
+		pc.LockSeek(new DetachedSong(queue.GetOrder(i)), seek_time);
+	} catch (...) {
 		UpdateQueuedSong(pc, queued_song);
-		return false;
+		throw;
 	}
 
 	UpdateQueuedSong(pc, nullptr);
-
-	return true;
 }
 
-bool
+void
 playlist::SeekSongPosition(PlayerControl &pc, unsigned song,
-			   SongTime seek_time,
-			   Error &error)
+			   SongTime seek_time)
 {
 	if (!queue.IsValidPosition(song))
 		throw PlaylistError::BadRange();
@@ -243,24 +234,22 @@ playlist::SeekSongPosition(PlayerControl &pc, unsigned song,
 		? queue.PositionToOrder(song)
 		: song;
 
-	return SeekSongOrder(pc, i, seek_time, error);
+	SeekSongOrder(pc, i, seek_time);
 }
 
-bool
-playlist::SeekSongId(PlayerControl &pc, unsigned id, SongTime seek_time,
-		     Error &error)
+void
+playlist::SeekSongId(PlayerControl &pc, unsigned id, SongTime seek_time)
 {
 	int song = queue.IdToPosition(id);
 	if (song < 0)
 		throw PlaylistError::NoSuchSong();
 
-	return SeekSongPosition(pc, song, seek_time, error);
+	SeekSongPosition(pc, song, seek_time);
 }
 
-bool
+void
 playlist::SeekCurrent(PlayerControl &pc,
-		      SignedSongTime seek_time, bool relative,
-		      Error &error)
+		      SignedSongTime seek_time, bool relative)
 {
 	if (!playing)
 		throw PlaylistError::NotPlaying();
@@ -280,5 +269,5 @@ playlist::SeekCurrent(PlayerControl &pc,
 	if (seek_time.IsNegative())
 		seek_time = SignedSongTime::zero();
 
-	return SeekSongOrder(pc, current, SongTime(seek_time), error);
+	SeekSongOrder(pc, current, SongTime(seek_time));
 }

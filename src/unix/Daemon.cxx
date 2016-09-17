@@ -22,7 +22,10 @@
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
+
+#ifndef WIN32
 #include "PidFile.hxx"
+#endif
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -247,7 +250,7 @@ void
 daemonize_finish(void)
 {
 	if (!pidfile.IsNull()) {
-		RemoveFile(pidfile);
+		unlink(pidfile.c_str());
 		pidfile = AllocatedPath::Null();
 	}
 

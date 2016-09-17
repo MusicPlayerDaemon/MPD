@@ -21,8 +21,9 @@
 #include "FakeDecoderAPI.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
 #include "Compiler.h"
+
+#include <stdexcept>
 
 #include <unistd.h>
 #include <stdio.h>
@@ -74,9 +75,9 @@ decoder_seek_error(gcc_unused Decoder &decoder)
 }
 
 InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri, Error &error)
+decoder_open_uri(Decoder &decoder, const char *uri)
 {
-	return InputStream::OpenReady(uri, decoder.mutex, decoder.cond, error);
+	return InputStream::OpenReady(uri, decoder.mutex, decoder.cond);
 }
 
 size_t
@@ -84,7 +85,11 @@ decoder_read(gcc_unused Decoder *decoder,
 	     InputStream &is,
 	     void *buffer, size_t length)
 {
-	return is.LockRead(buffer, length, IgnoreError());
+	try {
+		return is.LockRead(buffer, length);
+	} catch (const std::runtime_error &) {
+		return 0;
+	}
 }
 
 bool

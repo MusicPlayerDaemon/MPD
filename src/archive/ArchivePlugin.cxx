@@ -20,20 +20,15 @@
 #include "config.h"
 #include "ArchivePlugin.hxx"
 #include "fs/Path.hxx"
-#include "util/Error.hxx"
 
 #include <assert.h>
 
 ArchiveFile *
-archive_file_open(const ArchivePlugin *plugin, Path path,
-		  Error &error)
+archive_file_open(const ArchivePlugin *plugin, Path path)
 {
 	assert(plugin != nullptr);
 	assert(plugin->open != nullptr);
 	assert(!path.IsNull());
 
-	ArchiveFile *file = plugin->open(path, error);
-	assert((file == nullptr) == error.IsDefined());
-
-	return file;
+	return plugin->open(path);
 }

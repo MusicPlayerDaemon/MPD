@@ -60,22 +60,18 @@ extern "C" {
 static AVFormatContext *
 FfmpegOpenInput(AVIOContext *pb,
 		const char *filename,
-		AVInputFormat *fmt,
-		Error &error)
+		AVInputFormat *fmt)
 {
 	AVFormatContext *context = avformat_alloc_context();
-	if (context == nullptr) {
-		error.Set(ffmpeg_domain, "Out of memory");
-		return nullptr;
-	}
+	if (context == nullptr)
+		throw std::runtime_error("avformat_alloc_context() failed");
 
 	context->pb = pb;
 
 	int err = avformat_open_input(&context, filename, fmt, nullptr);
 	if (err < 0) {
 		avformat_free_context(context);
-		SetFfmpegError(error, err, "avformat_open_input() failed");
-		return nullptr;
+		throw MakeFfmpegError(err, "avformat_open_input() failed");
 	}
 
 	return context;
@@ -460,8 +456,14 @@ ffmpeg_probe(Decoder *decoder, InputStream &is)
 
 	unsigned char buffer[BUFFER_SIZE];
 	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
-	if (nbytes <= PADDING || !is.LockRewind(IgnoreError()))
+	if (nbytes <= PADDING)
 		return nullptr;
+
+	try {
+		is.LockRewind();
+	} catch (const std::runtime_error &) {
+		return nullptr;
+	}
 
 	/* some ffmpeg parsers (e.g. ac3_parser.c) read a few bytes
 	   beyond the declared buffer limit, which makes valgrind
@@ -653,6 +655,10 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 	AtScopeExit(&codec_context) {
 		avcodec_free_context(&codec_context);
 	};
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 25, 0) /* FFmpeg 3.1 */
+	avcodec_parameters_to_context(codec_context, av_stream.codecpar);
+#endif
 #endif
 
 	const SampleFormat sample_format =
@@ -787,11 +793,12 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		return;
 	}
 
-	Error error;
-	AVFormatContext *format_context =
-		FfmpegOpenInput(stream.io, input.GetURI(), input_format, error);
-	if (format_context == nullptr) {
-		LogError(error);
+	AVFormatContext *format_context;
+	try {
+		format_context =FfmpegOpenInput(stream.io, input.GetURI(),
+						input_format);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		return;
 	}
 
@@ -838,11 +845,12 @@ ffmpeg_scan_stream(InputStream &is,
 	if (!stream.Open())
 		return false;
 
-	AVFormatContext *f =
-		FfmpegOpenInput(stream.io, is.GetURI(), input_format,
-				IgnoreError());
-	if (f == nullptr)
+	AVFormatContext *f;
+	try {
+		f = FfmpegOpenInput(stream.io, is.GetURI(), input_format);
+	} catch (const std::runtime_error &) {
 		return false;
+	}
 
 	AtScopeExit(&f) {
 		avformat_close_input(&f);

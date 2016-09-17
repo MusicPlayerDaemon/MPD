@@ -37,8 +37,7 @@ public:
 		return remaining == 0;
 	}
 
-	size_t Read(void *ptr, size_t read_size,
-		    gcc_unused Error &error) override {
+	size_t Read(void *ptr, size_t read_size) override {
 		size_t nbytes = std::min(remaining, read_size);
 		memcpy(ptr, data, nbytes);
 		data += nbytes;
@@ -76,50 +75,50 @@ public:
 
 		Error error;
 		char buffer[16];
-		size_t nbytes = ris->Read(buffer, 2, error);
+		size_t nbytes = ris->Read(buffer, 2);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('f', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[1]);
 		CPPUNIT_ASSERT_EQUAL(offset_type(2), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		nbytes = ris->Read(buffer, 2, error);
+		nbytes = ris->Read(buffer, 2);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL(' ', buffer[1]);
 		CPPUNIT_ASSERT_EQUAL(offset_type(4), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		CPPUNIT_ASSERT(ris->Seek(1, error));
+		ris->Seek(1);
 		CPPUNIT_ASSERT_EQUAL(offset_type(1), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		nbytes = ris->Read(buffer, 2, error);
+		nbytes = ris->Read(buffer, 2);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[1]);
 		CPPUNIT_ASSERT_EQUAL(offset_type(3), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		CPPUNIT_ASSERT(ris->Seek(0, error));
+		ris->Seek(0);
 		CPPUNIT_ASSERT_EQUAL(offset_type(0), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		nbytes = ris->Read(buffer, 2, error);
+		nbytes = ris->Read(buffer, 2);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('f', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[1]);
 		CPPUNIT_ASSERT_EQUAL(offset_type(2), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		nbytes = ris->Read(buffer, sizeof(buffer), error);
+		nbytes = ris->Read(buffer, sizeof(buffer));
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);
 		CPPUNIT_ASSERT_EQUAL('o', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL(' ', buffer[1]);
 		CPPUNIT_ASSERT_EQUAL(offset_type(4), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		nbytes = ris->Read(buffer, sizeof(buffer), error);
+		nbytes = ris->Read(buffer, sizeof(buffer));
 		CPPUNIT_ASSERT_EQUAL(size_t(3), nbytes);
 		CPPUNIT_ASSERT_EQUAL('b', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('a', buffer[1]);
@@ -127,11 +126,11 @@ public:
 		CPPUNIT_ASSERT_EQUAL(offset_type(7), ris->GetOffset());
 		CPPUNIT_ASSERT(ris->IsEOF());
 
-		CPPUNIT_ASSERT(ris->Seek(3, error));
+		ris->Seek(3);
 		CPPUNIT_ASSERT_EQUAL(offset_type(3), ris->GetOffset());
 		CPPUNIT_ASSERT(!ris->IsEOF());
 
-		nbytes = ris->Read(buffer, sizeof(buffer), error);
+		nbytes = ris->Read(buffer, sizeof(buffer));
 		CPPUNIT_ASSERT_EQUAL(size_t(4), nbytes);
 		CPPUNIT_ASSERT_EQUAL(' ', buffer[0]);
 		CPPUNIT_ASSERT_EQUAL('b', buffer[1]);

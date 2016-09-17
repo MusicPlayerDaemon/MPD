@@ -17,8 +17,30 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Domain.hxx"
-#include "util/Domain.hxx"
+#ifndef MPD_PULSE_LOCK_GUARD_HXX
+#define MPD_PULSE_LOCK_GUARD_HXX
 
-const Domain nfs_domain("nfs");
+#include <pulse/thread-mainloop.h>
+
+namespace Pulse {
+
+class LockGuard {
+	struct pa_threaded_mainloop *const mainloop;
+
+public:
+	explicit LockGuard(struct pa_threaded_mainloop *_mainloop)
+		:mainloop(_mainloop) {
+		pa_threaded_mainloop_lock(mainloop);
+	}
+
+	~LockGuard() {
+		pa_threaded_mainloop_unlock(mainloop);
+	}
+
+	LockGuard(const LockGuard &) = delete;
+	LockGuard &operator=(const LockGuard &) = delete;
+};
+
+};
+
+#endif

@@ -21,9 +21,10 @@
 #include "mixer/MixerInternal.hxx"
 #include "config/Block.hxx"
 #include "system/fd_util.h"
+#include "system/Error.hxx"
 #include "util/ASCII.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -49,16 +50,18 @@ class OssMixer final : public Mixer {
 	int volume_control;
 
 public:
-	OssMixer(MixerListener &_listener)
-		:Mixer(oss_mixer_plugin, _listener) {}
+	OssMixer(MixerListener &_listener, const ConfigBlock &block)
+		:Mixer(oss_mixer_plugin, _listener) {
+		Configure(block);
+	}
 
-	bool Configure(const ConfigBlock &block, Error &error);
+	void Configure(const ConfigBlock &block);
 
 	/* virtual methods from class Mixer */
-	virtual bool Open(Error &error) override;
-	virtual void Close() override;
-	virtual int GetVolume(Error &error) override;
-	virtual bool SetVolume(unsigned volume, Error &error) override;
+	void Open() override;
+	void Close() override;
+	int GetVolume() override;
+	void SetVolume(unsigned volume) override;
 };
 
 static constexpr Domain oss_mixer_domain("oss_mixer");
@@ -78,39 +81,27 @@ oss_find_mixer(const char *name)
 	return -1;
 }
 
-inline bool
-OssMixer::Configure(const ConfigBlock &block, Error &error)
+inline void
+OssMixer::Configure(const ConfigBlock &block)
 {
 	device = block.GetBlockValue("mixer_device", VOLUME_MIXER_OSS_DEFAULT);
 	control = block.GetBlockValue("mixer_control");
 
 	if (control != NULL) {
 		volume_control = oss_find_mixer(control);
-		if (volume_control < 0) {
-			error.Format(oss_mixer_domain, 0,
-				     "no such mixer control: %s", control);
-			return false;
-		}
+		if (volume_control < 0)
+			throw FormatRuntimeError("no such mixer control: %s",
+						 control);
 	} else
 		volume_control = SOUND_MIXER_PCM;
-
-	return true;
 }
 
 static Mixer *
 oss_mixer_init(gcc_unused EventLoop &event_loop, gcc_unused AudioOutput &ao,
 	       MixerListener &listener,
-	       const ConfigBlock &block,
-	       Error &error)
+	       const ConfigBlock &block)
 {
-	OssMixer *om = new OssMixer(listener);
-
-	if (!om->Configure(block, error)) {
-		delete om;
-		return nullptr;
-	}
-
-	return om;
+	return new OssMixer(listener, block);
 }
 
 void
@@ -121,38 +112,32 @@ OssMixer::Close()
 	close(device_fd);
 }
 
-bool
-OssMixer::Open(Error &error)
+void
+OssMixer::Open()
 {
 	device_fd = open_cloexec(device, O_RDONLY, 0);
-	if (device_fd < 0) {
-		error.FormatErrno("failed to open %s", device);
-		return false;
-	}
+	if (device_fd < 0)
+		throw FormatErrno("failed to open %s", device);
 
-	if (control) {
-		int devmask = 0;
+	try {
+		if (control) {
+			int devmask = 0;
 
-		if (ioctl(device_fd, SOUND_MIXER_READ_DEVMASK, &devmask) < 0) {
-			error.SetErrno("READ_DEVMASK failed");
-			Close();
-			return false;
+			if (ioctl(device_fd, SOUND_MIXER_READ_DEVMASK, &devmask) < 0)
+				throw MakeErrno("READ_DEVMASK failed");
+
+			if (((1 << volume_control) & devmask) == 0)
+				throw FormatErrno("mixer control \"%s\" not usable",
+						  control);
 		}
-
-		if (((1 << volume_control) & devmask) == 0) {
-			error.Format(oss_mixer_domain, 0,
-				     "mixer control \"%s\" not usable",
-				     control);
-			Close();
-			return false;
-		}
+	} catch (...) {
+		Close();
+		throw;
 	}
-
-	return true;
 }
 
 int
-OssMixer::GetVolume(Error &error)
+OssMixer::GetVolume()
 {
 	int left, right, level;
 	int ret;
@@ -160,10 +145,8 @@ OssMixer::GetVolume(Error &error)
 	assert(device_fd >= 0);
 
 	ret = ioctl(device_fd, MIXER_READ(volume_control), &level);
-	if (ret < 0) {
-		error.SetErrno("failed to read OSS volume");
-		return false;
-	}
+	if (ret < 0)
+		throw MakeErrno("failed to read OSS volume");
 
 	left = level & 0xff;
 	right = (level & 0xff00) >> 8;
@@ -177,24 +160,18 @@ OssMixer::GetVolume(Error &error)
 	return left;
 }
 
-bool
-OssMixer::SetVolume(unsigned volume, Error &error)
+void
+OssMixer::SetVolume(unsigned volume)
 {
 	int level;
-	int ret;
 
 	assert(device_fd >= 0);
 	assert(volume <= 100);
 
 	level = (volume << 8) + volume;
 
-	ret = ioctl(device_fd, MIXER_WRITE(volume_control), &level);
-	if (ret < 0) {
-		error.SetErrno("failed to set OSS volume");
-		return false;
-	}
-
-	return true;
+	if (ioctl(device_fd, MIXER_WRITE(volume_control), &level) < 0)
+		throw MakeErrno("failed to set OSS volume");
 }
 
 const MixerPlugin oss_mixer_plugin = {

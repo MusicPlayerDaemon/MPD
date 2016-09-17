@@ -31,6 +31,8 @@
 
 #include <neaacdec.h>
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
@@ -192,7 +194,10 @@ faad_song_duration(DecoderBuffer &buffer, InputStream &is)
 
 		auto song_length = adts_song_duration(buffer);
 
-		is.LockSeek(tagsize, IgnoreError());
+		try {
+			is.LockSeek(tagsize);
+		} catch (const std::runtime_error &) {
+		}
 
 		buffer.Clear();
 

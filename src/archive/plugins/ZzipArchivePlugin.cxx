@@ -29,8 +29,7 @@
 #include "input/InputStream.hxx"
 #include "fs/Path.hxx"
 #include "util/RefCount.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <zzip/zzip.h>
 
@@ -58,24 +57,19 @@ public:
 
 	virtual void Visit(ArchiveVisitor &visitor) override;
 
-	virtual InputStream *OpenStream(const char *path,
-					Mutex &mutex, Cond &cond,
-					Error &error) override;
+	InputStream *OpenStream(const char *path,
+				Mutex &mutex, Cond &cond) override;
 };
-
-static constexpr Domain zzip_domain("zzip");
 
 /* archive open && listing routine */
 
 static ArchiveFile *
-zzip_archive_open(Path pathname, Error &error)
+zzip_archive_open(Path pathname)
 {
 	ZZIP_DIR *dir = zzip_dir_open(pathname.c_str(), nullptr);
-	if (dir == nullptr) {
-		error.Format(zzip_domain, "Failed to open ZIP file %s",
-			     pathname.c_str());
-		return nullptr;
-	}
+	if (dir == nullptr)
+		throw FormatRuntimeError("Failed to open ZIP file %s",
+					 pathname.c_str());
 
 	return new ZzipArchiveFile(dir);
 }
@@ -123,21 +117,18 @@ struct ZzipInputStream final : public InputStream {
 
 	/* virtual methods from InputStream */
 	bool IsEOF() override;
-	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
+	void Seek(offset_type offset) override;
 };
 
 InputStream *
 ZzipArchiveFile::OpenStream(const char *pathname,
-			    Mutex &mutex, Cond &cond,
-			    Error &error)
+			    Mutex &mutex, Cond &cond)
 {
 	ZZIP_FILE *_file = zzip_file_open(dir, pathname, 0);
-	if (_file == nullptr) {
-		error.Format(zzip_domain, "not found in the ZIP file: %s",
-			     pathname);
-		return nullptr;
-	}
+	if (_file == nullptr)
+		throw FormatRuntimeError("not found in the ZIP file: %s",
+					 pathname);
 
 	return new ZzipInputStream(*this, pathname,
 				   mutex, cond,
@@ -145,13 +136,11 @@ ZzipArchiveFile::OpenStream(const char *pathname,
 }
 
 size_t
-ZzipInputStream::Read(void *ptr, size_t read_size, Error &error)
+ZzipInputStream::Read(void *ptr, size_t read_size)
 {
 	int ret = zzip_file_read(file, ptr, read_size);
-	if (ret < 0) {
-		error.Set(zzip_domain, "zzip_file_read() has failed");
-		return 0;
-	}
+	if (ret < 0)
+		throw std::runtime_error("zzip_file_read() has failed");
 
 	offset = zzip_tell(file);
 	return ret;
@@ -163,17 +152,14 @@ ZzipInputStream::IsEOF()
 	return offset_type(zzip_tell(file)) == size;
 }
 
-bool
-ZzipInputStream::Seek(offset_type new_offset, Error &error)
+void
+ZzipInputStream::Seek(offset_type new_offset)
 {
 	zzip_off_t ofs = zzip_seek(file, new_offset, SEEK_SET);
-	if (ofs < 0) {
-		error.Set(zzip_domain, "zzip_seek() has failed");
-		return false;
-	}
+	if (ofs < 0)
+		throw std::runtime_error("zzip_seek() has failed");
 
 	offset = ofs;
-	return true;
 }
 
 /* exported structures */

@@ -75,21 +75,7 @@ public:
 	Error(const Domain &_domain, const char *_message)
 		:domain(&_domain), code(0), message(_message) {}
 
-	Error(Error &&other)
-		:domain(other.domain), code(other.code),
-		 message(std::move(other.message)) {}
-
 	~Error();
-
-	Error(const Error &) = delete;
-	Error &operator=(const Error &) = delete;
-
-	Error &operator=(Error &&other) {
-		domain = other.domain;
-		code = other.code;
-		std::swap(message, other.message);
-		return *this;
-	}
 
 	bool IsDefined() const {
 		return domain != nullptr;

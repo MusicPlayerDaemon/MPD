@@ -19,25 +19,66 @@
 
 #include "config.h"
 #include "FileOutputStream.hxx"
-#include "fs/FileSystem.hxx"
 #include "system/Error.hxx"
+
+FileOutputStream::FileOutputStream(Path _path, Mode _mode)
+	:path(_path), mode(_mode)
+{
+	switch (mode) {
+	case Mode::CREATE:
+		OpenCreate(false);
+		break;
+
+	case Mode::CREATE_VISIBLE:
+		OpenCreate(true);
+		break;
+
+	case Mode::APPEND_EXISTING:
+		OpenAppend(false);
+		break;
+
+	case Mode::APPEND_OR_CREATE:
+		OpenAppend(true);
+		break;
+	}
+}
 
 #ifdef WIN32
 
-FileOutputStream::FileOutputStream(Path _path)
-	:BaseFileOutputStream(_path)
+inline void
+FileOutputStream::OpenCreate(gcc_unused bool visible)
 {
-	SetHandle(CreateFile(_path.c_str(), GENERIC_WRITE, 0, nullptr,
-			     CREATE_ALWAYS,
-			     FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
-			     nullptr));
+	handle = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
+			    CREATE_ALWAYS,
+			    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+			    nullptr);
 	if (!IsDefined())
 		throw FormatLastError("Failed to create %s",
-				      GetPath().ToUTF8().c_str());
+				      path.ToUTF8().c_str());
+}
+
+inline void
+FileOutputStream::OpenAppend(bool create)
+{
+	handle = CreateFile(path.c_str(), GENERIC_WRITE, 0, nullptr,
+			    create ? OPEN_ALWAYS : OPEN_EXISTING,
+			    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
+			    nullptr);
+	if (!IsDefined())
+		throw FormatLastError("Failed to append to %s",
+				      path.ToUTF8().c_str());
+
+	if (!SeekEOF()) {
+		auto code = GetLastError();
+		Close();
+		throw FormatLastError(code, "Failed seek end-of-file of %s",
+				      path.ToUTF8().c_str());
+	}
+
 }
 
 uint64_t
-BaseFileOutputStream::Tell() const
+FileOutputStream::Tell() const
 {
 	LONG high = 0;
 	DWORD low = SetFilePointer(handle, 0, &high, FILE_CURRENT);
@@ -48,7 +89,7 @@ BaseFileOutputStream::Tell() const
 }
 
 void
-BaseFileOutputStream::Write(const void *data, size_t size)
+FileOutputStream::Write(const void *data, size_t size)
 {
 	assert(IsDefined());
 
@@ -76,7 +117,8 @@ FileOutputStream::Cancel()
 	assert(IsDefined());
 
 	Close();
-	RemoveFile(GetPath());
+
+	DeleteFile(GetPath().c_str());
 }
 
 #else
@@ -108,18 +150,18 @@ OpenTempFile(FileDescriptor &fd, Path path)
 
 #endif /* HAVE_LINKAT */
 
-FileOutputStream::FileOutputStream(Path _path)
-	:BaseFileOutputStream(_path)
+inline void
+FileOutputStream::OpenCreate(bool visible)
 {
 #ifdef HAVE_LINKAT
 	/* try Linux's O_TMPFILE first */
-	is_tmpfile = OpenTempFile(SetFD(), GetPath());
+	is_tmpfile = !visible && OpenTempFile(fd, GetPath());
 	if (!is_tmpfile) {
 #endif
 		/* fall back to plain POSIX */
-		if (!SetFD().Open(GetPath().c_str(),
-				  O_WRONLY|O_CREAT|O_TRUNC,
-				  0666))
+		if (!fd.Open(GetPath().c_str(),
+			     O_WRONLY|O_CREAT|O_TRUNC,
+			     0666))
 			throw FormatErrno("Failed to create %s",
 					  GetPath().c_str());
 #ifdef HAVE_LINKAT
@@ -127,14 +169,26 @@ FileOutputStream::FileOutputStream(Path _path)
 #endif
 }
 
+inline void
+FileOutputStream::OpenAppend(bool create)
+{
+	int flags = O_WRONLY|O_APPEND;
+	if (create)
+		flags |= O_CREAT;
+
+	if (!fd.Open(path.c_str(), flags))
+		throw FormatErrno("Failed to append to %s",
+				  path.c_str());
+}
+
 uint64_t
-BaseFileOutputStream::Tell() const
+FileOutputStream::Tell() const
 {
 	return fd.Tell();
 }
 
 void
-BaseFileOutputStream::Write(const void *data, size_t size)
+FileOutputStream::Write(const void *data, size_t size)
 {
 	assert(IsDefined());
 
@@ -151,27 +205,27 @@ FileOutputStream::Commit()
 {
 	assert(IsDefined());
 
-#if HAVE_LINKAT
+#ifdef HAVE_LINKAT
 	if (is_tmpfile) {
-		RemoveFile(GetPath());
+		unlink(GetPath().c_str());
 
 		/* hard-link the temporary file to the final path */
 		char fd_path[64];
 		snprintf(fd_path, sizeof(fd_path), "/proc/self/fd/%d",
-			 GetFD().Get());
-		if (linkat(AT_FDCWD, fd_path, AT_FDCWD, GetPath().c_str(),
+			 fd.Get());
+		if (linkat(AT_FDCWD, fd_path, AT_FDCWD, path.c_str(),
 			   AT_SYMLINK_FOLLOW) < 0)
 			throw FormatErrno("Failed to commit %s",
-					  GetPath().c_str());
+					  path.c_str());
 	}
 #endif
 
 	if (!Close()) {
 #ifdef WIN32
 		throw FormatLastError("Failed to commit %s",
-				      GetPath().ToUTF8().c_str());
+				      path.ToUTF8().c_str());
 #else
-		throw FormatErrno("Failed to commit %s", GetPath().c_str());
+		throw FormatErrno("Failed to commit %s", path.c_str());
 #endif
 	}
 }
@@ -183,51 +237,20 @@ FileOutputStream::Cancel()
 
 	Close();
 
+	switch (mode) {
+	case Mode::CREATE:
 #ifdef HAVE_LINKAT
-	if (!is_tmpfile)
+		if (!is_tmpfile)
 #endif
-		RemoveFile(GetPath());
-}
+			unlink(GetPath().c_str());
+		break;
 
-#endif
-
-AppendFileOutputStream::AppendFileOutputStream(Path _path)
-	:BaseFileOutputStream(_path)
-{
-#ifdef WIN32
-	SetHandle(CreateFile(GetPath().c_str(), GENERIC_WRITE, 0, nullptr,
-			     OPEN_EXISTING,
-			     FILE_ATTRIBUTE_NORMAL|FILE_FLAG_WRITE_THROUGH,
-			     nullptr));
-	if (!IsDefined())
-		throw FormatLastError("Failed to append to %s",
-				      GetPath().ToUTF8().c_str());
-
-	if (!SeekEOF()) {
-		auto code = GetLastError();
-		Close();
-		throw FormatLastError(code, "Failed seek end-of-file of %s",
-				      GetPath().ToUTF8().c_str());
-	}
-#else
-	if (!SetFD().Open(GetPath().c_str(),
-			  O_WRONLY|O_APPEND))
-		throw FormatErrno("Failed to append to %s",
-				  GetPath().c_str());
-#endif
-}
-
-void
-AppendFileOutputStream::Commit()
-{
-	assert(IsDefined());
-
-	if (!Close()) {
-#ifdef WIN32
-		throw FormatLastError("Failed to commit %s",
-				      GetPath().ToUTF8().c_str());
-#else
-		throw FormatErrno("Failed to commit %s", GetPath().c_str());
-#endif
+	case Mode::CREATE_VISIBLE:
+	case Mode::APPEND_EXISTING:
+	case Mode::APPEND_OR_CREATE:
+		/* can't roll this back */
+		break;
 	}
 }
+
+#endif

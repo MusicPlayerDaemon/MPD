@@ -34,7 +34,9 @@
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "thread/Name.hxx"
 #include "tag/ApeReplayGain.hxx"
 #include "Log.hxx"
@@ -47,21 +49,14 @@ static constexpr Domain decoder_thread_domain("decoder_thread");
 
 /**
  * Opens the input stream with InputStream::Open(), and waits until
- * the stream gets ready.  If a decoder STOP command is received
- * during that, it cancels the operation (but does not close the
- * stream).
+ * the stream gets ready.
  *
  * Unlock the decoder before calling this function.
- *
- * @return an InputStream on success or if #DecoderCommand::STOP is
- * received, nullptr on error
  */
 static InputStreamPtr
-decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
+decoder_input_stream_open(DecoderControl &dc, const char *uri)
 {
-	auto is = InputStream::Open(uri, dc.mutex, dc.cond, error);
-	if (is == nullptr)
-		return nullptr;
+	auto is = InputStream::Open(uri, dc.mutex, dc.cond);
 
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
@@ -71,25 +66,22 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri, Error &error)
 	is->Update();
 	while (!is->IsReady()) {
 		if (dc.command == DecoderCommand::STOP)
-			return nullptr;
+			throw StopDecoder();
 
 		dc.Wait();
 
 		is->Update();
 	}
 
-	if (!is->Check(error))
-		return nullptr;
+	is->Check();
 
 	return is;
 }
 
 static InputStreamPtr
-decoder_input_stream_open(DecoderControl &dc, Path path, Error &error)
+decoder_input_stream_open(DecoderControl &dc, Path path)
 {
-	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond, error);
-	if (is == nullptr)
-		return nullptr;
+	auto is = OpenLocalInputStream(path, dc.mutex, dc.cond);
 
 	assert(is->IsReady());
 
@@ -115,10 +107,13 @@ decoder_stream_decode(const DecoderPlugin &plugin,
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
 
 	if (decoder.dc.command == DecoderCommand::STOP)
-		return true;
+		throw StopDecoder();
 
 	/* rewind the stream, so each plugin gets a fresh start */
-	input_stream.Rewind(IgnoreError());
+	try {
+		input_stream.Rewind();
+	} catch (const std::runtime_error &) {
+	}
 
 	{
 		const ScopeUnlock unlock(decoder.dc.mutex);
@@ -155,7 +150,7 @@ decoder_file_decode(const DecoderPlugin &plugin,
 	FormatDebug(decoder_thread_domain, "probing plugin %s", plugin.name);
 
 	if (decoder.dc.command == DecoderCommand::STOP)
-		return true;
+		throw StopDecoder();
 
 	{
 		const ScopeUnlock unlock(decoder.dc.mutex);
@@ -212,7 +207,7 @@ decoder_run_stream_plugin(Decoder &decoder, InputStream &is,
 	if (!decoder_check_plugin(plugin, is, suffix))
 		return false;
 
-	decoder.error.Clear();
+	decoder.error = std::exception_ptr();
 
 	tried_r = true;
 	return decoder_stream_decode(plugin, decoder, is);
@@ -271,9 +266,8 @@ decoder_run_stream(Decoder &decoder, const char *uri)
 {
 	DecoderControl &dc = decoder.dc;
 
-	auto input_stream = decoder_input_stream_open(dc, uri, decoder.error);
-	if (input_stream == nullptr)
-		return false;
+	auto input_stream = decoder_input_stream_open(dc, uri);
+	assert(input_stream);
 
 	LoadReplayGain(decoder, *input_stream);
 
@@ -302,7 +296,7 @@ TryDecoderFile(Decoder &decoder, Path path_fs, const char *suffix,
 	if (!plugin.SupportsSuffix(suffix))
 		return false;
 
-	decoder.error.Clear();
+	decoder.error = std::exception_ptr();
 
 	DecoderControl &dc = decoder.dc;
 
@@ -328,13 +322,12 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs,
-									decoder.error);
+	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs);
 	if (input_stream == nullptr && (strcasecmp(suffix, "dff") != 0 && strcasecmp(suffix, "iso") != 0))
 		return false;
+	assert(input_stream);
 
-	if (input_stream != nullptr)
-		LoadReplayGain(decoder, *input_stream);
+	LoadReplayGain(decoder, *input_stream);
 
 	auto &is = *input_stream;
 	return decoder_plugins_try([&decoder, path_fs, suffix,
@@ -360,25 +353,14 @@ try {
 		: decoder_run_stream(decoder, real_uri);
 } catch (StopDecoder) {
 	return true;
-} catch (const std::runtime_error &e) {
-	/* copy the exception to decoder.error */
-
-	if (decoder.error.IsDefined()) {
-		/* decoder.error already set, now we have a second
-		   one; only log the second one */
-		LogError(e);
-		return false;
-	}
-
+} catch (...) {
 	const char *error_uri = real_uri;
 	const std::string allocated = uri_remove_auth(error_uri);
 	if (!allocated.empty())
 		error_uri = allocated.c_str();
 
-	decoder.error.Format(decoder_domain,
-			     "Failed to decode %s: %s",
-			     error_uri, e.what());
-	return false;
+	std::throw_with_nested(FormatRuntimeError("Failed to decode %s",
+						  error_uri));
 }
 
 /**
@@ -404,31 +386,29 @@ decoder_run_song(DecoderControl &dc,
 	{
 		const ScopeUnlock unlock(dc.mutex);
 
+		AtScopeExit(&decoder) {
+			/* flush the last chunk */
+			if (decoder.chunk != nullptr)
+				decoder.FlushChunk();
+		};
+
 		success = DecoderUnlockedRunUri(decoder, uri, path_fs);
 
-		/* flush the last chunk */
-
-		if (decoder.chunk != nullptr)
-			decoder.FlushChunk();
 	}
 
-	if (decoder.error.IsDefined()) {
+	if (decoder.error) {
 		/* copy the Error from struct Decoder to
 		   DecoderControl */
-		dc.state = DecoderState::ERROR;
-		dc.error = std::move(decoder.error);
+		std::rethrow_exception(decoder.error);
 	} else if (success)
 		dc.state = DecoderState::STOP;
 	else {
-		dc.state = DecoderState::ERROR;
-
 		const char *error_uri = song.GetURI();
 		const std::string allocated = uri_remove_auth(error_uri);
 		if (!allocated.empty())
 			error_uri = allocated.c_str();
 
-		dc.error.Format(decoder_domain,
-				 "Failed to decode %s", error_uri);
+		throw FormatRuntimeError("Failed to decode %s", error_uri);
 	}
 
 	dc.client_cond.signal();
@@ -440,7 +420,7 @@ decoder_run_song(DecoderControl &dc,
  */
 static void
 decoder_run(DecoderControl &dc)
-{
+try {
 	dc.ClearError();
 
 	assert(dc.song != nullptr);
@@ -451,18 +431,21 @@ decoder_run(DecoderControl &dc)
 	Path path_fs = Path::Null();
 	AllocatedPath path_buffer = AllocatedPath::Null();
 	if (PathTraitsUTF8::IsAbsolute(uri_utf8)) {
-		path_buffer = AllocatedPath::FromUTF8(uri_utf8, dc.error);
+		Error error;
+		path_buffer = AllocatedPath::FromUTF8(uri_utf8, error);
 		if (path_buffer.IsNull()) {
-			dc.state = DecoderState::ERROR;
 			dc.CommandFinishedLocked();
-			return;
+			throw std::move(error);
 		}
 
 		path_fs = path_buffer;
 	}
 
 	decoder_run_song(dc, song, uri_utf8, path_fs);
-
+} catch (...) {
+	dc.state = DecoderState::ERROR;
+	dc.error = std::current_exception();
+	dc.client_cond.signal();
 }
 
 static void
@@ -486,8 +469,16 @@ decoder_task(void *arg)
 
 			decoder_run(dc);
 
-			if (dc.state == DecoderState::ERROR)
-				LogError(dc.error);
+			if (dc.state == DecoderState::ERROR) {
+				try {
+					std::rethrow_exception(dc.error);
+				} catch (const std::exception &e) {
+					LogError(e);
+				} catch (const Error &error) {
+					LogError(error);
+				} catch (...) {
+				}
+			}
 
 			break;
 

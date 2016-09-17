@@ -21,7 +21,7 @@
 #include "LibsamplerateResampler.hxx"
 #include "config/Block.hxx"
 #include "util/ASCII.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -63,26 +63,21 @@ lsr_parse_converter(const char *s)
 	return false;
 }
 
-bool
-pcm_resample_lsr_global_init(const ConfigBlock &block, Error &error)
+void
+pcm_resample_lsr_global_init(const ConfigBlock &block)
 {
 	const char *converter = block.GetBlockValue("type", "2");
-	if (!lsr_parse_converter(converter)) {
-		error.Format(libsamplerate_domain,
-			     "unknown samplerate converter '%s'", converter);
-		return false;
-	}
+	if (!lsr_parse_converter(converter))
+		throw FormatRuntimeError("unknown samplerate converter '%s'",
+					 converter);
 
 	FormatDebug(libsamplerate_domain,
 		    "libsamplerate converter '%s'",
 		    src_get_name(lsr_converter));
-
-	return true;
 }
 
 AudioFormat
-LibsampleratePcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
-				Error &error)
+LibsampleratePcmResampler::Open(AudioFormat &af, unsigned new_sample_rate)
 {
 	assert(af.IsValid());
 	assert(audio_valid_sample_rate(new_sample_rate));
@@ -96,12 +91,9 @@ LibsampleratePcmResampler::Open(AudioFormat &af, unsigned new_sample_rate,
 
 	int src_error;
 	state = src_new(lsr_converter, channels, &src_error);
-	if (!state) {
-		error.Format(libsamplerate_domain, src_error,
-			     "libsamplerate initialization has failed: %s",
-			     src_strerror(src_error));
-		return AudioFormat::Undefined();
-	}
+	if (!state)
+		throw FormatRuntimeError("libsamplerate initialization has failed: %s",
+					 src_strerror(src_error));
 
 	memset(&data, 0, sizeof(data));
 
@@ -122,22 +114,8 @@ LibsampleratePcmResampler::Close()
 	state = src_delete(state);
 }
 
-static bool
-src_process(SRC_STATE *state, SRC_DATA *data, Error &error)
-{
-	int result = src_process(state, data);
-	if (result != 0) {
-		error.Format(libsamplerate_domain, result,
-			     "libsamplerate has failed: %s",
-			     src_strerror(result));
-		return false;
-	}
-
-	return true;
-}
-
 inline ConstBuffer<float>
-LibsampleratePcmResampler::Resample2(ConstBuffer<float> src, Error &error)
+LibsampleratePcmResampler::Resample2(ConstBuffer<float> src)
 {
 	assert(src.size % channels == 0);
 
@@ -151,15 +129,17 @@ LibsampleratePcmResampler::Resample2(ConstBuffer<float> src, Error &error)
 	data.input_frames = src_frames;
 	data.output_frames = dest_frames;
 
-	if (!src_process(state, &data, error))
-		return nullptr;
+	int result = src_process(state, &data);
+	if (result != 0)
+		throw FormatRuntimeError("libsamplerate has failed: %s",
+					 src_strerror(result));
 
 	return ConstBuffer<float>(data.data_out,
 				  data.output_frames_gen * channels);
 }
 
 ConstBuffer<void>
-LibsampleratePcmResampler::Resample(ConstBuffer<void> src, Error &error)
+LibsampleratePcmResampler::Resample(ConstBuffer<void> src)
 {
-	return Resample2(ConstBuffer<float>::FromVoid(src), error).ToVoid();
+	return Resample2(ConstBuffer<float>::FromVoid(src)).ToVoid();
 }

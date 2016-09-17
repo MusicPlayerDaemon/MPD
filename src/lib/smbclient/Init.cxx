@@ -21,7 +21,7 @@
 #include "Init.hxx"
 #include "Mutex.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Error.hxx"
+#include "system/Error.hxx"
 
 #include <libsmbclient.h>
 
@@ -40,16 +40,12 @@ mpd_smbc_get_auth_data(gcc_unused const char *srv,
 	strcpy(pw, "");
 }
 
-bool
-SmbclientInit(Error &error)
+void
+SmbclientInit()
 {
 	const ScopeLock protect(smbclient_mutex);
 
 	constexpr int debug = 0;
-	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0) {
-		error.SetErrno("smbc_init() failed");
-		return false;
-	}
-
-	return true;
+	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0)
+		throw MakeErrno("smbc_init() failed");
 }

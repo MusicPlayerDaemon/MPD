@@ -21,10 +21,10 @@
 #include "mixer/MixerInternal.hxx"
 #include "output/OutputAPI.hxx"
 #include "output/plugins/WinmmOutputPlugin.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <mmsystem.h>
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <math.h>
@@ -40,18 +40,15 @@ public:
 	}
 
 	/* virtual methods from class Mixer */
-	virtual bool Open(gcc_unused Error &error) override {
-		return true;
+	void Open() override {
 	}
 
-	virtual void Close() override {
+	void Close() override {
 	}
 
-	virtual int GetVolume(Error &error) override;
-	virtual bool SetVolume(unsigned volume, Error &error) override;
+	int GetVolume() override;
+	void SetVolume(unsigned volume) override;
 };
-
-static constexpr Domain winmm_mixer_domain("winmm_mixer");
 
 static inline int
 winmm_volume_decode(DWORD volume)
@@ -69,40 +66,33 @@ winmm_volume_encode(int volume)
 static Mixer *
 winmm_mixer_init(gcc_unused EventLoop &event_loop, AudioOutput &ao,
 		 MixerListener &listener,
-		 gcc_unused const ConfigBlock &block,
-		 gcc_unused Error &error)
+		 gcc_unused const ConfigBlock &block)
 {
 	return new WinmmMixer((WinmmOutput &)ao, listener);
 }
 
 int
-WinmmMixer::GetVolume(Error &error)
+WinmmMixer::GetVolume()
 {
 	DWORD volume;
 	HWAVEOUT handle = winmm_output_get_handle(output);
 	MMRESULT result = waveOutGetVolume(handle, &volume);
 
-	if (result != MMSYSERR_NOERROR) {
-		error.Set(winmm_mixer_domain, "Failed to get winmm volume");
-		return -1;
-	}
+	if (result != MMSYSERR_NOERROR)
+		throw std::runtime_error("Failed to get winmm volume");
 
 	return winmm_volume_decode(volume);
 }
 
-bool
-WinmmMixer::SetVolume(unsigned volume, Error &error)
+void
+WinmmMixer::SetVolume(unsigned volume)
 {
 	DWORD value = winmm_volume_encode(volume);
 	HWAVEOUT handle = winmm_output_get_handle(output);
 	MMRESULT result = waveOutSetVolume(handle, value);
 
-	if (result != MMSYSERR_NOERROR) {
-		error.Set(winmm_mixer_domain, "Failed to set winmm volume");
-		return false;
-	}
-
-	return true;
+	if (result != MMSYSERR_NOERROR)
+		throw std::runtime_error("Failed to set winmm volume");
 }
 
 const MixerPlugin winmm_mixer_plugin = {

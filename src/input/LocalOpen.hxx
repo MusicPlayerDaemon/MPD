@@ -26,13 +26,14 @@
 class Path;
 class Mutex;
 class Cond;
-class Error;
 
 /**
  * Open a "local" file.  This is a wrapper for the input plugins
  * "file" and "archive".
+ *
+ * Throws std::runtime_error on error.
  */
 InputStreamPtr
-OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond, Error &error);
+OpenLocalInputStream(Path path, Mutex &mutex, Cond &cond);
 
 #endif

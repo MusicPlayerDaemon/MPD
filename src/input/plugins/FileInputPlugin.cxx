@@ -21,17 +21,14 @@
 #include "FileInputPlugin.hxx"
 #include "../InputStream.hxx"
 #include "../InputPlugin.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileInfo.hxx"
 #include "fs/io/FileReader.hxx"
 #include "system/FileDescriptor.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <sys/stat.h>
 #include <fcntl.h>
-
-static constexpr Domain file_domain("file");
 
 class FileInputStream final : public InputStream {
 	FileReader reader;
@@ -52,68 +49,54 @@ public:
 		return GetOffset() >= GetSize();
 	}
 
-	size_t Read(void *ptr, size_t size, Error &error) override;
-	bool Seek(offset_type offset, Error &error) override;
+	size_t Read(void *ptr, size_t size) override;
+	void Seek(offset_type offset) override;
 };
 
-InputStream *
+InputStreamPtr
 OpenFileInputStream(Path path,
-		    Mutex &mutex, Cond &cond,
-		    Error &error)
-try {
+		    Mutex &mutex, Cond &cond)
+{
 	FileReader reader(path);
 
 	const FileInfo info = reader.GetFileInfo();
 
-	if (!info.IsRegular()) {
-		error.Format(file_domain, "Not a regular file: %s",
-			     path.c_str());
-		return nullptr;
-	}
+	if (!info.IsRegular())
+		throw FormatRuntimeError("Not a regular file: %s",
+					 path.c_str());
 
 #ifdef POSIX_FADV_SEQUENTIAL
 	posix_fadvise(reader.GetFD().Get(), (off_t)0, info.GetSize(),
 		      POSIX_FADV_SEQUENTIAL);
 #endif
 
-	return new FileInputStream(path.ToUTF8().c_str(),
-				   std::move(reader), info.GetSize(),
-				   mutex, cond);
-} catch (const std::exception &e) {
-	error.Set(std::current_exception());
-	return nullptr;
+	return InputStreamPtr(new FileInputStream(path.ToUTF8().c_str(),
+						  std::move(reader), info.GetSize(),
+						  mutex, cond));
 }
 
 static InputStream *
 input_file_open(gcc_unused const char *filename,
-		gcc_unused Mutex &mutex, gcc_unused Cond &cond,
-		gcc_unused Error &error)
+		gcc_unused Mutex &mutex, gcc_unused Cond &cond)
 {
 	/* dummy method; use OpenFileInputStream() instead */
 
 	return nullptr;
 }
 
-bool
-FileInputStream::Seek(offset_type new_offset, Error &error)
-try {
+void
+FileInputStream::Seek(offset_type new_offset)
+{
 	reader.Seek((off_t)new_offset);
 	offset = new_offset;
-	return true;
-} catch (const std::exception &e) {
-	error.Set(std::current_exception());
-	return false;
 }
 
 size_t
-FileInputStream::Read(void *ptr, size_t read_size, Error &error)
-try {
+FileInputStream::Read(void *ptr, size_t read_size)
+{
 	size_t nbytes = reader.Read(ptr, read_size);
 	offset += nbytes;
 	return nbytes;
-} catch (const std::exception &e) {
-	error.Set(std::current_exception());
-	return 0;
 }
 
 const InputPlugin input_plugin_file = {

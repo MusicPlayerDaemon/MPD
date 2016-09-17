@@ -28,34 +28,47 @@
 #include "util/Error.hxx"
 #include "Log.hxx"
 
+#include <stdexcept>
+
 #include <errno.h>
 
 bool
 GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info)
-{
+try {
 	Error error;
 	bool success = storage.GetInfo(uri_utf8, true, info, error);
 	if (!success)
 		LogError(error);
 	return success;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return false;
 }
 
 bool
 GetInfo(StorageDirectoryReader &reader, StorageFileInfo &info)
-{
+try {
 	Error error;
 	bool success = reader.GetInfo(true, info, error);
 	if (!success)
 		LogError(error);
 	return success;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return false;
 }
 
 bool
 DirectoryExists(Storage &storage, const Directory &directory)
 {
 	StorageFileInfo info;
-	if (!storage.GetInfo(directory.GetPath(), true, info, IgnoreError()))
+
+	try {
+		if (!storage.GetInfo(directory.GetPath(), true, info, IgnoreError()))
+			return false;
+	} catch (const std::runtime_error &) {
 		return false;
+	}
 
 	return directory.device == DEVICE_INARCHIVE ||
 		directory.device == DEVICE_CONTAINER
@@ -75,11 +88,13 @@ GetDirectoryChildInfo(Storage &storage, const Directory &directory,
 bool
 directory_child_is_regular(Storage &storage, const Directory &directory,
 			   const char *name_utf8)
-{
+try {
 	StorageFileInfo info;
 	return GetDirectoryChildInfo(storage, directory, name_utf8, info,
 				     IgnoreError()) &&
 		info.IsRegular();
+ } catch (const std::runtime_error &) {
+	return false;
 }
 
 bool
