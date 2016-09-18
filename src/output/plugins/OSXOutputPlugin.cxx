@@ -631,7 +631,9 @@ osx_output_enable(AudioOutput *ao, Error &error)
 		return false;
 	}
 
-	osx_output_hog_device(oo->dev_id, true);
+        if (oo->component_subtype == kAudioUnitSubType_HALOutput) {
+		osx_output_hog_device(oo->dev_id, true);
+        }
 
 	AURenderCallbackStruct callback;
 	callback.inputProc = osx_render;
@@ -659,7 +661,9 @@ osx_output_disable(AudioOutput *ao)
 
 	AudioComponentInstanceDispose(oo->au);
 
-	osx_output_hog_device(oo->dev_id, false);
+        if (oo->component_subtype == kAudioUnitSubType_HALOutput) {
+		osx_output_hog_device(oo->dev_id, false);
+        }
 }
 
 static void
