@@ -42,6 +42,7 @@ struct OSXOutput {
 	const char *device_name;
 	const char *channel_map;
 
+	AudioDeviceID dev_id;
 	AudioComponentInstance au;
 	AudioStreamBasicDescription asbd;
 
@@ -112,6 +113,22 @@ osx_output_init(const ConfigBlock &block, Error &error)
 	}
 
 	osx_output_configure(oo, block);
+
+	AudioObjectPropertyAddress aopa = {
+		kAudioHardwarePropertyDefaultOutputDevice,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+
+	AudioDeviceID dev_id = kAudioDeviceUnknown;
+	UInt32 dev_id_size = sizeof(dev_id);
+	AudioObjectGetPropertyData(kAudioObjectSystemObject,
+				   &aopa,
+				   0,
+				   NULL,
+				   &dev_id_size,
+				   &dev_id);
+	oo->dev_id = dev_id;
 
 	return &oo->base;
 }
@@ -244,6 +261,129 @@ done:
 	return ret;
 }
 
+static void
+osx_output_sync_device_sample_rate(AudioDeviceID dev_id, AudioStreamBasicDescription desc)
+{
+	FormatDebug(osx_output_domain, "Syncing sample rate.");
+	AudioObjectPropertyAddress aopa = {
+		kAudioDevicePropertyAvailableNominalSampleRates,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+
+	UInt32 property_size;
+	OSStatus err = AudioObjectGetPropertyDataSize(dev_id,
+						      &aopa,
+						      0,
+						      NULL,
+						      &property_size);
+
+	int count = property_size/sizeof(AudioValueRange);
+	AudioValueRange ranges[count];
+	property_size = sizeof(ranges);
+	err = AudioObjectGetPropertyData(dev_id,
+					 &aopa,
+					 0,
+					 NULL,
+					 &property_size,
+					 &ranges);
+	// Get the maximum sample rate as fallback.
+	Float64 sample_rate = .0;
+	for (int i = 0; i < count; i++) {
+		if (ranges[i].mMaximum > sample_rate)
+			sample_rate = ranges[i].mMaximum;
+	}
+
+	// Now try to see if the device support our format sample rate.
+	// For some high quality media samples, the frame rate may exceed
+	// device capability. In this case, we let CoreAudio downsample
+	// by decimation with an integer factor ranging from 1 to 4.
+	for (int f = 4; f > 0; f--) {
+		Float64 rate = desc.mSampleRate / f;
+		for (int i = 0; i < count; i++) {
+			if (ranges[i].mMinimum <= rate
+			   && rate <= ranges[i].mMaximum) {
+				sample_rate = rate;
+				break;
+			}
+		}
+	}
+
+	aopa.mSelector = kAudioDevicePropertyNominalSampleRate,
+
+	err = AudioObjectSetPropertyData(dev_id,
+					 &aopa,
+					 0,
+					 NULL,
+					 sizeof(&desc.mSampleRate),
+					 &sample_rate);
+	if (err != noErr) {
+                FormatWarning(osx_output_domain,
+			      "Failed to synchronize the sample rate: %d",
+			      err);
+	} else {
+		FormatDebug(osx_output_domain,
+			    "Sample rate synced to %f Hz.",
+			    sample_rate);
+	}
+}
+
+
+static void
+osx_output_hog_device(AudioDeviceID dev_id, bool hog)
+{
+	pid_t hog_pid;
+	AudioObjectPropertyAddress aopa = {
+		kAudioDevicePropertyHogMode,
+		kAudioObjectPropertyScopeOutput,
+		kAudioObjectPropertyElementMaster
+	};
+	UInt32 size = sizeof(hog_pid);
+	OSStatus err = AudioObjectGetPropertyData(dev_id,
+						  &aopa,
+						  0,
+						  NULL,
+						  &size,
+						  &hog_pid);
+	if (err != noErr) {
+		FormatDebug(osx_output_domain,
+			    "Cannot get hog information: %d",
+			    err);
+		return;
+	}
+	if (hog) {
+		if (hog_pid != -1) {
+		        FormatDebug(osx_output_domain,
+				    "Device is already hogged.");
+			return;
+		}
+	} else {
+		if (hog_pid != getpid()) {
+		        FormatDebug(osx_output_domain,
+				    "Device is not owned by this process.");
+			return;
+		}
+	}
+	hog_pid = hog ? getpid() : -1;
+	size = sizeof(hog_pid);
+	err = AudioObjectSetPropertyData(dev_id,
+					 &aopa,
+					 0,
+					 NULL,
+					 size,
+					 &hog_pid);
+	if (err != noErr) {
+		FormatDebug(osx_output_domain,
+			    "Cannot hog the device: %d",
+			    err);
+	} else {
+		FormatDebug(osx_output_domain,
+			    hog_pid == -1 ? "Device is unhogged" 
+					  : "Device is hogged");
+	}
+}
+
+
 static bool
 osx_output_set_device(OSXOutput *oo, Error &error)
 {
@@ -337,6 +477,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		goto done;
 	}
 
+	oo->dev_id = deviceids[i];
 	FormatDebug(osx_output_domain,
 		    "set OS X audio output device ID=%u, name=%s",
 		    (unsigned)deviceids[i], name);
@@ -490,6 +631,8 @@ osx_output_enable(AudioOutput *ao, Error &error)
 		return false;
 	}
 
+	osx_output_hog_device(oo->dev_id, true);
+
 	AURenderCallbackStruct callback;
 	callback.inputProc = osx_render;
 	callback.inputProcRefCon = oo;
@@ -515,6 +658,8 @@ osx_output_disable(AudioOutput *ao)
 	OSXOutput *oo = (OSXOutput *)ao;
 
 	AudioComponentInstanceDispose(oo->au);
+
+	osx_output_hog_device(oo->dev_id, false);
 }
 
 static void
@@ -567,6 +712,8 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	od->asbd.mFramesPerPacket = 1;
 	od->asbd.mBytesPerFrame = od->asbd.mBytesPerPacket;
 	od->asbd.mChannelsPerFrame = audio_format.channels;
+
+	osx_output_sync_device_sample_rate(od->dev_id, od->asbd);
 
 	OSStatus status =
 		AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
