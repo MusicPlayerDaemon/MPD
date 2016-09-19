@@ -30,8 +30,7 @@
 #include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
 #include <CoreServices/CoreServices.h>
-#include <libkern/OSAtomic.h>
-#include<boost/lockfree/spsc_queue.hpp>
+#include <boost/lockfree/spsc_queue.hpp>
 
 struct OSXOutput {
 	AudioOutput base;
