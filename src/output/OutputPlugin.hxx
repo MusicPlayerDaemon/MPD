@@ -93,10 +93,11 @@ struct AudioOutputPlugin {
 	void (*close)(AudioOutput *data);
 
 	/**
-	 * Returns a positive number if the output thread shall delay
-	 * the next call to play() or pause().  This should be
-	 * implemented instead of doing a sleep inside the plugin,
-	 * because this allows MPD to listen to commands meanwhile.
+	 * Returns a positive number if the output thread shall further
+	 * delay the next call to play() or pause(), which will happen
+	 * until this function returns 0.  This should be implemented
+	 * instead of doing a sleep inside the plugin, because this 
+	 * allows MPD to listen to commands meanwhile.
 	 *
 	 * @return the number of milliseconds to wait
 	 */
