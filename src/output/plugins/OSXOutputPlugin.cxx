@@ -710,7 +710,7 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		return false;
 	}
 
-	UInt32 buffer_frame_size;
+	UInt32 buffer_frame_size = 1;
 	status = osx_output_set_buffer_size(od->au, od->asbd, &buffer_frame_size);
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
