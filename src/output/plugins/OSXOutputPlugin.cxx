@@ -740,13 +740,14 @@ osx_output_play(AudioOutput *ao, const void *chunk, size_t size,
 		gcc_unused Error &error)
 {
 	OSXOutput *od = (OSXOutput *)ao;
-	while (!od->ring_buffer->write_available()) {
-		struct timespec req;
-		req.tv_sec = 0;
-		req.tv_nsec = 25 * 1e6;
-		nanosleep(&req, NULL);
-	}
 	return od->ring_buffer->push((uint8_t *)chunk, size);
+}
+
+static unsigned
+osx_output_delay(AudioOutput *ao)
+{
+	OSXOutput *od = (OSXOutput *)ao;
+	return od->ring_buffer->write_available() ? 0 : 25;
 }
 
 const struct AudioOutputPlugin osx_output_plugin = {
@@ -758,7 +759,7 @@ const struct AudioOutputPlugin osx_output_plugin = {
 	osx_output_disable,
 	osx_output_open,
 	osx_output_close,
-	nullptr,
+	osx_output_delay,
 	nullptr,
 	osx_output_play,
 	nullptr,
