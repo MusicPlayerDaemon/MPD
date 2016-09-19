@@ -41,6 +41,8 @@ struct OSXOutput {
 	/* only applicable with kAudioUnitSubType_HALOutput */
 	const char *device_name;
 	const char *channel_map;
+	bool hog_device;
+	bool sync_sample_rate;
 
 	AudioDeviceID dev_id;
 	AudioComponentInstance au;
@@ -101,6 +103,8 @@ osx_output_configure(OSXOutput *oo, const ConfigBlock &block)
 	}
 
 	oo->channel_map = block.GetBlockValue("channel_map");
+	oo->hog_device = block.GetBlockValue("hog_device", false);
+	oo->sync_sample_rate = block.GetBlockValue("sync_sample_rate", false);
 }
 
 static AudioOutput *
@@ -631,7 +635,7 @@ osx_output_enable(AudioOutput *ao, Error &error)
 		return false;
 	}
 
-        if (oo->component_subtype == kAudioUnitSubType_HALOutput) {
+        if (oo->hog_device) {
 		osx_output_hog_device(oo->dev_id, true);
         }
 
@@ -661,7 +665,7 @@ osx_output_disable(AudioOutput *ao)
 
 	AudioComponentInstanceDispose(oo->au);
 
-        if (oo->component_subtype == kAudioUnitSubType_HALOutput) {
+        if (oo->hog_device) {
 		osx_output_hog_device(oo->dev_id, false);
         }
 }
@@ -717,7 +721,9 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	od->asbd.mBytesPerFrame = od->asbd.mBytesPerPacket;
 	od->asbd.mChannelsPerFrame = audio_format.channels;
 
-	osx_output_sync_device_sample_rate(od->dev_id, od->asbd);
+	if (od->sync_sample_rate) {
+		osx_output_sync_device_sample_rate(od->dev_id, od->asbd);
+	}
 
 	OSStatus status =
 		AudioUnitSetProperty(od->au, kAudioUnitProperty_StreamFormat,
