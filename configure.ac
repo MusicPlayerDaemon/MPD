@@ -4,7 +4,7 @@ AC_INIT(mpd, 0.19.19, musicpd-dev-team@lists.sourceforge.net)
 
 VERSION_MAJOR=0
 VERSION_MINOR=19
-VERSION_REVISION=19
+VERSION_REVISION=20
 VERSION_EXTRA=0
 
 AC_CONFIG_SRCDIR([src/Main.cxx])
