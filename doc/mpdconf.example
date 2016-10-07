@@ -164,7 +164,7 @@
 # Permissions #################################################################
 #
 # If this setting is set, MPD will require password authorization. The password
-# can setting can be specified multiple times for different password profiles.
+# setting can be specified multiple times for different password profiles.
 #
 #password                        "password@read,add,control,admin"
 #
