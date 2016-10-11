@@ -137,6 +137,14 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		return playlist.PlayId(pc, id);
 	}
 
+	void PlayNextPosition(int position) {
+		return playlist.PlayNextPosition(pc, position);
+	}
+
+	void PlayNextId(int id) {
+		return playlist.PlayNextId(pc, id);
+	}
+
 	void PlayNext() {
 		return playlist.PlayNext(pc);
 	}

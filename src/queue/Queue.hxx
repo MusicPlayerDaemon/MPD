@@ -87,6 +87,10 @@ struct Queue {
 	/** map song ids to positions */
 	IdTable id_table;
 
+	/** play this song after the current song finishes?
+	    set to -1 when inactive. */
+	int next;
+
 	/** repeat playback when the end of the queue has been
 	    reached? */
 	bool repeat;
@@ -227,12 +231,26 @@ struct Queue {
 
 	/**
 	 * Returns the order number following the specified one.  This takes
-	 * end of queue and "repeat" mode into account.
+	 * end of queue, "repeat" mode and playnext into account.
 	 *
 	 * @return the next order number, or -1 to stop playback
 	 */
 	gcc_pure
-	int GetNextOrder(unsigned order) const;
+	int GetNextOrder(unsigned order);
+
+	/**
+	 * Sets the next song to be played after the current song finishes.
+	 * used by playnext and playnextid
+	 */
+	void SetNextOrder(unsigned order);
+
+	/**
+	 * Sets the next song to be played after the current song finishes.
+	 * used by playnext and playnextid
+	 */
+	void SetNextPosition(unsigned position) {
+		SetNextOrder(PositionToOrder(position));
+	}
 
 	/**
 	 * Increments the queue's version number.  This handles integer
@@ -279,6 +297,7 @@ struct Queue {
 	 * Swaps two songs, addressed by their order number.
 	 */
 	void SwapOrders(unsigned order1, unsigned order2) {
+		next = -1;
 		std::swap(order[order1], order[order2]);
 	}
 
@@ -306,6 +325,7 @@ struct Queue {
 	 * Initializes the "order" array, and restores "normal" order.
 	 */
 	void RestoreOrder() {
+		next = -1;
 		for (unsigned i = 0; i < length; ++i)
 			order[i] = i;
 	}
@@ -357,6 +377,7 @@ private:
 
 	void MoveItemTo(unsigned from, unsigned to) {
 		unsigned from_id = items[from].id;
+		next = -1;
 
 		items[to] = items[from];
 		items[to].version = version;

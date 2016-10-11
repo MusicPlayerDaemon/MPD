@@ -892,6 +892,36 @@
             </para>
           </listitem>
         </varlistentry>
+        <varlistentry id="command_playnext">
+          <term>
+            <cmdsynopsis>
+              <command>playnext</command>
+              <arg choice="req"><replaceable>SONGPOS</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Goes to the song number
+              <varname>SONGPOS</varname>
+              in the playlist after the current song.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry id="command_playnextid">
+          <term>
+            <cmdsynopsis>
+              <command>playnextid</command>
+              <arg choice="req"><replaceable>SONGID</replaceable></arg>
+            </cmdsynopsis>
+          </term>
+          <listitem>
+            <para>
+              Goes to the song
+              <varname>SONGID</varname>
+              in the playlist after the current song.
+            </para>
+          </listitem>
+        </varlistentry>
         <varlistentry id="command_previous">
           <term>
             <cmdsynopsis>

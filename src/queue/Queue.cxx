@@ -27,6 +27,7 @@ Queue::Queue(unsigned _max_length)
 	 items(new Item[max_length]),
 	 order(new unsigned[max_length]),
 	 id_table(max_length * HASH_MULT),
+	 next(-1),
 	 repeat(false),
 	 single(false),
 	 consume(false),
@@ -43,11 +44,18 @@ Queue::~Queue()
 }
 
 int
-Queue::GetNextOrder(unsigned _order) const
+Queue::GetNextOrder(unsigned _order)
 {
 	assert(_order < length);
 
-	if (single && repeat && !consume)
+	if (next >= 0) {
+		/* Bug check */
+		assert(next < length);
+		/* force the next track */
+		int tmp = next;
+		next = -1;
+		return tmp;
+	} else if (single && repeat && !consume)
 		return _order;
 	else if (_order + 1 < length)
 		return _order + 1;
@@ -57,6 +65,14 @@ Queue::GetNextOrder(unsigned _order) const
 	else
 		/* end of queue */
 		return -1;
+}
+
+void
+Queue::SetNextOrder(unsigned _order)
+{
+	assert(_order < length);
+
+	next = (int)_order;
 }
 
 void
@@ -108,6 +124,8 @@ Queue::SwapPositions(unsigned position1, unsigned position2)
 	unsigned id1 = items[position1].id;
 	unsigned id2 = items[position2].id;
 
+	next = -1;
+
 	std::swap(items[position1], items[position2]);
 
 	items[position1].version = version;
@@ -121,6 +139,7 @@ void
 Queue::MovePostion(unsigned from, unsigned to)
 {
 	const Item tmp = items[from];
+	next = -1;
 
 	/* move songs to one less in from->to */
 
@@ -193,6 +212,7 @@ Queue::MoveRange(unsigned start, unsigned end, unsigned to)
 				order[i] += to - start;
 		}
 	}
+	next = -1;
 }
 
 void
@@ -200,6 +220,8 @@ Queue::MoveOrder(unsigned from_order, unsigned to_order)
 {
 	assert(from_order < length);
 	assert(to_order <= length);
+
+	next = -1;
 
 	const unsigned from_position = OrderToPosition(from_order);
 
@@ -245,11 +267,13 @@ Queue::DeletePosition(unsigned position)
 	for (unsigned i = 0; i < length; i++)
 		if (order[i] > position)
 			--order[i];
+	next = -1;
 }
 
 void
 Queue::Clear()
 {
+	next = -1;
 	for (unsigned i = 0; i < length; i++) {
 		Item *item = &items[i];
 
@@ -288,6 +312,7 @@ Queue::ShuffleOrderRange(unsigned start, unsigned end)
 
 	rand.AutoCreate();
 	std::shuffle(order + start, order + end, rand);
+	next = -1;
 }
 
 /**
