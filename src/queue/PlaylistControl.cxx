@@ -113,7 +113,7 @@ playlist::PlayNextPosition(PlayerControl &pc, int song)
 	if (!queue.IsValidPosition(song))
 		throw PlaylistError::BadRange();
 
-	queue.SetNextOrder(song);
+	queue.SetNextPosition(song);
 }
 
 void
