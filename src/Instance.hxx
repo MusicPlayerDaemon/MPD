@@ -90,7 +90,7 @@ struct Instance final
 	StateFile *state_file;
 
 	Instance()
-		:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle)) {}
+		:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle)), state_file(nullptr) {}
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().
