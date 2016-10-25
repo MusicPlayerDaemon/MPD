@@ -128,23 +128,23 @@ struct MadDecoder {
 	SignedSongTime total_time;
 	SongTime elapsed_time;
 	SongTime seek_time;
-	enum muteframe mute_frame;
-	long *frame_offsets;
-	mad_timer_t *times;
-	unsigned long highest_frame;
-	unsigned long max_frames;
-	unsigned long current_frame;
-	unsigned int drop_start_frames;
-	unsigned int drop_end_frames;
-	unsigned int drop_start_samples;
-	unsigned int drop_end_samples;
-	bool found_replay_gain;
-	bool found_first_frame;
-	bool decoded_first_frame;
+	enum muteframe mute_frame = MUTEFRAME_NONE;
+	long *frame_offsets = nullptr;
+	mad_timer_t *times = nullptr;
+	unsigned long highest_frame = 0;
+	unsigned long max_frames = 0;
+	unsigned long current_frame = 0;
+	unsigned int drop_start_frames = 0;
+	unsigned int drop_end_frames = 0;
+	unsigned int drop_start_samples = 0;
+	unsigned int drop_end_samples = 0;
+	bool found_replay_gain = false;
+	bool found_first_frame = false;
+	bool decoded_first_frame = false;
 	unsigned long bit_rate;
 	Decoder *const decoder;
 	InputStream &input_stream;
-	enum mad_layer layer;
+	enum mad_layer layer = mad_layer(0);
 
 	MadDecoder(Decoder *decoder, InputStream &input_stream);
 	~MadDecoder();
@@ -198,16 +198,7 @@ struct MadDecoder {
 
 MadDecoder::MadDecoder(Decoder *_decoder,
 		       InputStream &_input_stream)
-	:mute_frame(MUTEFRAME_NONE),
-	 frame_offsets(nullptr),
-	 times(nullptr),
-	 highest_frame(0), max_frames(0), current_frame(0),
-	 drop_start_frames(0), drop_end_frames(0),
-	 drop_start_samples(0), drop_end_samples(0),
-	 found_replay_gain(false),
-	 found_first_frame(false), decoded_first_frame(false),
-	 decoder(_decoder), input_stream(_input_stream),
-	 layer(mad_layer(0))
+	:decoder(_decoder), input_stream(_input_stream)
 {
 	mad_stream_init(&stream);
 	mad_stream_options(&stream, MAD_OPTION_IGNORECRC);
