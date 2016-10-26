@@ -113,9 +113,7 @@ PrintSongCount(Response &r, const Partition &partition, const char *name,
 	       TagType group,
 	       Error &error)
 {
-	const Database *db = partition.GetDatabase(error);
-	if (db == nullptr)
-		return false;
+	const Database &db = partition.GetDatabaseOrThrow();
 
 	const DatabaseSelection selection(name, true, filter);
 
@@ -127,7 +125,7 @@ PrintSongCount(Response &r, const Partition &partition, const char *name,
 		using namespace std::placeholders;
 		const auto f = std::bind(stats_visitor_song, std::ref(stats),
 					 _1);
-		if (!db->Visit(selection, f, error))
+		if (!db.Visit(selection, f, error))
 			return false;
 
 		PrintSearchStats(r, stats);
@@ -140,7 +138,7 @@ PrintSongCount(Response &r, const Partition &partition, const char *name,
 		using namespace std::placeholders;
 		const auto f = std::bind(GroupCountVisitor, std::ref(map),
 					 group, _1);
-		if (!db->Visit(selection, f, error))
+		if (!db.Visit(selection, f, error))
 			return false;
 
 		Print(r, group, map);

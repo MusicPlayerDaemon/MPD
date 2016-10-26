@@ -44,6 +44,16 @@ Instance::GetDatabase(Error &error)
 	return database;
 }
 
+const Database &
+Instance::GetDatabaseOrThrow() const
+{
+	if (database == nullptr)
+		throw DatabaseError(DatabaseErrorCode::DISABLED,
+				    "No database");
+
+	return *database;
+}
+
 void
 Instance::OnDatabaseModified()
 {

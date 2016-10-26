@@ -143,11 +143,9 @@ handle_searchaddpl(Client &client, Request args, Response &r)
 	}
 
 	Error error;
-	const Database *db = client.GetDatabase(error);
-	if (db == nullptr)
-		return print_error(r, error);
+	const Database &db = client.GetDatabaseOrThrow();
 
-	return search_add_to_playlist(*db, *client.GetStorage(),
+	return search_add_to_playlist(db, *client.GetStorage(),
 				      "", playlist, &filter, error)
 		? CommandResult::OK
 		: print_error(r, error);

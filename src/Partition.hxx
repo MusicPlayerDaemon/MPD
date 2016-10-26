@@ -185,6 +185,9 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	 */
 	const Database *GetDatabase(Error &error) const;
 
+	gcc_pure
+	const Database &GetDatabaseOrThrow() const;
+
 	/**
 	 * The database has been modified.  Propagate the change to
 	 * all subsystems.

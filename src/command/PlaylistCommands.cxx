@@ -168,11 +168,9 @@ handle_playlistadd(Client &client, Request args, Response &r)
 		success = spl_append_uri(playlist, loader, uri, error);
 	} else {
 #ifdef ENABLE_DATABASE
-		const Database *db = client.GetDatabase(error);
-		if (db == nullptr)
-			return print_error(r, error);
+		const Database &db = client.GetDatabaseOrThrow();
 
-		success = search_add_to_playlist(*db, *client.GetStorage(),
+		success = search_add_to_playlist(db, *client.GetStorage(),
 						 uri, playlist, nullptr,
 						 error);
 #else

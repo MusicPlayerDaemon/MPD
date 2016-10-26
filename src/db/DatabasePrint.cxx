@@ -155,9 +155,7 @@ db_selection_print(Response &r, Partition &partition,
 		   unsigned window_start, unsigned window_end,
 		   Error &error)
 {
-	const Database *db = partition.GetDatabase(error);
-	if (db == nullptr)
-		return false;
+	const Database &db = partition.GetDatabaseOrThrow();
 
 	unsigned i = 0;
 
@@ -182,7 +180,7 @@ db_selection_print(Response &r, Partition &partition,
 			return !in_window || s(song, error2);
 		};
 
-	return db->Visit(selection, d, s, p, error);
+	return db.Visit(selection, d, s, p, error);
 }
 
 bool
@@ -226,9 +224,7 @@ PrintUniqueTags(Response &r, Partition &partition,
 		const SongFilter *filter,
 		Error &error)
 {
-	const Database *db = partition.GetDatabase(error);
-	if (db == nullptr)
-		return false;
+	const Database &db = partition.GetDatabaseOrThrow();
 
 	const DatabaseSelection selection("", true, filter);
 
@@ -236,15 +232,15 @@ PrintUniqueTags(Response &r, Partition &partition,
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintSongURIVisitor,
 					 std::ref(r), std::ref(partition), _1);
-		return db->Visit(selection, f, error);
+		return db.Visit(selection, f, error);
 	} else {
 		assert(type < TAG_NUM_OF_ITEM_TYPES);
 
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintUniqueTag, std::ref(r),
 					 (TagType)type, _1);
-		return db->VisitUniqueTags(selection, (TagType)type,
-					   group_mask,
-					   f, error);
+		return db.VisitUniqueTags(selection, (TagType)type,
+					  group_mask,
+					  f, error);
 	}
 }

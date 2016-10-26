@@ -50,6 +50,12 @@ Partition::GetDatabase(Error &error) const
 	return instance.GetDatabase(error);
 }
 
+const Database &
+Partition::GetDatabaseOrThrow() const
+{
+	return instance.GetDatabaseOrThrow();
+}
+
 void
 Partition::DatabaseModified(const Database &db)
 {

@@ -187,6 +187,12 @@ public:
 	gcc_pure
 	const Database *GetDatabase(Error &error) const;
 
+	/**
+	 * Wrapper for Instance::GetDatabaseOrThrow().
+	 */
+	gcc_pure
+	const Database &GetDatabaseOrThrow() const;
+
 	gcc_pure
 	const Storage *GetStorage() const;
 
