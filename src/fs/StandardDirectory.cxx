@@ -54,7 +54,7 @@
 #include "Main.hxx"
 #endif
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(ANDROID)
 class PasswdEntry
 {
 #if defined(HAVE_GETPWNAM_R) || defined(HAVE_GETPWUID_R)
@@ -91,6 +91,7 @@ public:
 };
 #endif
 
+#ifndef ANDROID
 static inline bool
 IsValidPathString(PathTraitsFS::const_pointer_type path)
 {
@@ -111,6 +112,7 @@ SafePathFromFS(PathTraitsFS::const_pointer_type dir)
 		return AllocatedPath::FromFS(dir);
 	return AllocatedPath::Null();
 }
+#endif
 
 #ifdef WIN32
 static AllocatedPath GetStandardDir(int folder_id)
@@ -310,21 +312,27 @@ AllocatedPath GetAppBaseDir()
 
 AllocatedPath GetHomeDir()
 {
+#ifndef ANDROID
 	auto home = getenv("HOME");
 	if (IsValidPathString(home) && IsValidDir(home))
 		return AllocatedPath::FromFS(home);
 	PasswdEntry pw;
 	if (pw.ReadByUid(getuid()))
 		return SafePathFromFS(pw->pw_dir);
+#endif
 	return AllocatedPath::Null();
 }
 
 AllocatedPath GetHomeDir(const char *user_name)
 {
+#ifdef ANDROID
+	(void)user_name;
+#else
 	assert(user_name != nullptr);
 	PasswdEntry pw;
 	if (pw.ReadByName(user_name))
 		return SafePathFromFS(pw->pw_dir);
+#endif
 	return AllocatedPath::Null();
 }
 
