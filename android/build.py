@@ -85,7 +85,7 @@ class AndroidNdkToolchain:
         self.cflags = '-Os -g ' + common_flags
         self.cxxflags = '-Os -g ' + common_flags
         self.cppflags = '--sysroot=' + self.sysroot + ' -isystem ' + os.path.join(install_prefix, 'include')
-        self.ldflags = '--sysroot=' + self.sysroot + ' -L' + os.path.join(install_prefix, 'lib')
+        self.ldflags = '--sysroot=' + self.sysroot + ' ' + common_flags + ' -L' + os.path.join(install_prefix, 'lib')
         self.libs = ''
 
         self.is_arm = self.ndk_arch == 'arm'
