@@ -50,7 +50,6 @@ class AndroidNdkToolchain:
 
         # select the NDK compiler
         gcc_version = '4.9'
-        llvm_version = '3.6'
 
         ndk_platform_path = os.path.join(ndk_path, 'platforms', ndk_platform)
         sysroot = os.path.join(ndk_platform_path, 'arch-' + self.ndk_arch)
@@ -62,7 +61,7 @@ class AndroidNdkToolchain:
         self.sysroot = sysroot
 
         toolchain_path = os.path.join(ndk_path, 'toolchains', arch + '-' + gcc_version, 'prebuilt', build_arch)
-        llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm-' + llvm_version, 'prebuilt', build_arch)
+        llvm_path = os.path.join(ndk_path, 'toolchains', 'llvm', 'prebuilt', build_arch)
         llvm_triple = 'armv7-none-linux-androideabi'
 
         common_flags = '-march=armv7-a -mfloat-abi=softfp'
