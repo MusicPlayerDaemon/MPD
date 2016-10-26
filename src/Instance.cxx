@@ -35,15 +35,6 @@
 
 #ifdef ENABLE_DATABASE
 
-Database *
-Instance::GetDatabase(Error &error)
-{
-	if (database == nullptr)
-		error.Set(db_domain, int(DatabaseErrorCode::DISABLED),
-			  "No database");
-	return database;
-}
-
 const Database &
 Instance::GetDatabaseOrThrow() const
 {

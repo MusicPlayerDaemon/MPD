@@ -131,7 +131,7 @@ DetachedSong::LoadFile(Path path)
 }
 
 const Database *
-Client::GetDatabase(gcc_unused Error &error) const
+Client::GetDatabase() const
 {
 	return reinterpret_cast<const Database *>(this);
 }

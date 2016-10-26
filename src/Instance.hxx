@@ -109,7 +109,9 @@ struct Instance final
 	 * if this MPD configuration has no database (no
 	 * music_directory was configured).
 	 */
-	Database *GetDatabase(Error &error);
+	Database *GetDatabase() {
+		return database;
+	}
 
 	/**
 	 * Returns the global #Database instance.  Throws

@@ -32,7 +32,7 @@
 #ifdef ENABLE_DATABASE
 
 SongLoader::SongLoader(const Client &_client)
-	:client(&_client), db(_client.GetDatabase(IgnoreError())),
+	:client(&_client), db(_client.GetDatabase()),
 	 storage(_client.GetStorage()) {}
 
 #endif

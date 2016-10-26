@@ -185,7 +185,7 @@ public:
 	 * Wrapper for Instance::GetDatabase().
 	 */
 	gcc_pure
-	const Database *GetDatabase(Error &error) const;
+	const Database *GetDatabase() const;
 
 	/**
 	 * Wrapper for Instance::GetDatabaseOrThrow().

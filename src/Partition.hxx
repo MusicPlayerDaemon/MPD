@@ -183,7 +183,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	 * if this MPD configuration has no database (no
 	 * music_directory was configured).
 	 */
-	const Database *GetDatabase(Error &error) const;
+	const Database *GetDatabase() const;
 
 	gcc_pure
 	const Database &GetDatabaseOrThrow() const;
