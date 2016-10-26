@@ -39,7 +39,7 @@ build_arch = 'linux-x86_64'
 
 class AndroidNdkToolchain:
     def __init__(self, tarball_path, src_path, build_path,
-                 use_cxx, use_clang):
+                 use_cxx):
         self.tarball_path = tarball_path
         self.src_path = src_path
         self.build_path = build_path
@@ -67,14 +67,10 @@ class AndroidNdkToolchain:
         common_flags = '-march=armv7-a -mfloat-abi=softfp'
 
         toolchain_bin = os.path.join(toolchain_path, 'bin')
-        if use_clang:
-            llvm_bin = os.path.join(llvm_path, 'bin')
-            self.cc = os.path.join(llvm_bin, 'clang')
-            self.cxx = os.path.join(llvm_bin, 'clang++')
-            common_flags += ' -target ' + llvm_triple + ' -integrated-as -gcc-toolchain ' + toolchain_path
-        else:
-            self.cc = os.path.join(toolchain_bin, arch + '-gcc')
-            self.cxx = os.path.join(toolchain_bin, arch + '-g++')
+        llvm_bin = os.path.join(llvm_path, 'bin')
+        self.cc = os.path.join(llvm_bin, 'clang')
+        self.cxx = os.path.join(llvm_bin, 'clang++')
+        common_flags += ' -target ' + llvm_triple + ' -integrated-as -gcc-toolchain ' + toolchain_path
 
         self.ar = os.path.join(toolchain_bin, arch + '-ar')
         self.ranlib = os.path.join(toolchain_bin, arch + '-ranlib')
@@ -93,8 +89,6 @@ class AndroidNdkToolchain:
 
         libstdcxx_path = os.path.join(ndk_path, 'sources/cxx-stl/gnu-libstdc++', gcc_version)
         libstdcxx_cppflags = '-isystem ' + os.path.join(libstdcxx_path, 'include') + ' -isystem ' + os.path.join(libstdcxx_path, 'libs', android_abi, 'include')
-        if use_clang:
-            libstdcxx_cppflags += ' -D__STRICT_ANSI__'
         libstdcxx_ldadd = os.path.join(libstdcxx_path, 'libs', android_abi, 'libgnustl_static.a')
 
         if use_cxx:
@@ -124,13 +118,13 @@ thirdparty_libs = [
 # build the third-party libraries
 for x in thirdparty_libs:
     toolchain = AndroidNdkToolchain(tarball_path, src_path, build_path,
-                                    use_cxx=x.use_cxx, use_clang=x.use_clang)
+                                    use_cxx=x.use_cxx)
     if not x.is_installed(toolchain):
         x.build(toolchain)
 
 # configure and build MPD
 toolchain = AndroidNdkToolchain(tarball_path, src_path, build_path,
-                                use_cxx=True, use_clang=True)
+                                use_cxx=True)
 
 configure = [
     os.path.join(mpd_path, 'configure'),
