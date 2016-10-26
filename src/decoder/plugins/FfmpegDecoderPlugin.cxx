@@ -643,7 +643,7 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 			/* end of file */
 			break;
 
-		if (packet.stream_index == audio_stream) {
+		if (packet.size > 0 && packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(decoder, input,
 						 packet,
 						 *codec_context,
