@@ -1,4 +1,4 @@
-import subprocess
+import os.path, subprocess
 
 from build.project import Project
 
@@ -15,8 +15,8 @@ class ZlibProject(Project):
             'PREFIX=' + toolchain.arch + '-',
             '-j12',
             'install',
-            'DESTDIR=' + toolchain.install_prefix + '/',
-            'INCLUDE_PATH=include',
-            'LIBRARY_PATH=lib',
-            'BINARY_PATH=bin', 'SHARED_MODE=1'],
+            'INCLUDE_PATH='+ os.path.join(toolchain.install_prefix, 'include'),
+            'LIBRARY_PATH=' + os.path.join(toolchain.install_prefix, 'lib'),
+            'BINARY_PATH=' + os.path.join(toolchain.install_prefix, 'bin'),
+            'SHARED_MODE=1'],
             cwd=src, env=toolchain.env)
