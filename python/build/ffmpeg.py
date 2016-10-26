@@ -34,6 +34,7 @@ class FfmpegProject(Project):
             '--extra-ldflags=' + toolchain.ldflags,
             '--extra-libs=' + toolchain.libs,
             '--ar=' + toolchain.ar,
+            '--ranlib=' + toolchain.ranlib,
             '--enable-cross-compile',
             '--arch=' + arch,
             '--target-os=' + target_os,
