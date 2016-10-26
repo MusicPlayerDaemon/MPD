@@ -166,6 +166,8 @@ FileOutputStream::OpenCreate(bool visible)
 					  GetPath().c_str());
 #ifdef HAVE_LINKAT
 	}
+#else
+	(void)visible;
 #endif
 }
 
