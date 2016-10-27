@@ -22,7 +22,6 @@
 #include "system/ByteOrder.hxx"
 #include "input/InputStream.hxx"
 #include "util/StringView.hxx"
-#include "util/Error.hxx"
 
 #include <memory>
 #include <stdexcept>
