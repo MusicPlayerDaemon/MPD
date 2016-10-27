@@ -757,7 +757,7 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		FfmpegCheckTag(decoder, input, format_context, audio_stream);
 #endif
 
-		if (packet.stream_index == audio_stream) {
+		if (packet.size > 0 && packet.stream_index == audio_stream) {
 			cmd = ffmpeg_send_packet(decoder, input,
 						 packet,
 						 *codec_context,

@@ -44,7 +44,7 @@ class CompositeStorage final : public Storage {
 	 */
 	struct Directory {
 		/**
-		 * The #Storage mounted n this virtual directory.  All
+		 * The #Storage mounted in this virtual directory.  All
 		 * "leaf" Directory instances must have a #Storage.
 		 * Other Directory instances may have one, and child
 		 * mounts will be "mixed" in.
@@ -154,9 +154,16 @@ private:
 		}
 	}
 
+	/**
+	 * Follow the given URI path, and find the outermost directory
+	 * which is a #Storage mount point.  If there are no mounts,
+	 * it returns the root directory (with a nullptr "storage"
+	 * attribute, of course).  FindResult::uri contains the
+	 * remaining unused part of the URI (may be empty if all of
+	 * the URI was used).
+	 */
 	gcc_pure
 	FindResult FindStorage(const char *uri) const;
-	FindResult FindStorage(const char *uri, Error &error) const;
 
 	const char *MapToRelativeUTF8(const Directory &directory,
 				      const char *uri) const;

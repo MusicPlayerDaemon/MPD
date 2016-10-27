@@ -54,6 +54,11 @@ ver 0.20 (not yet released)
 * update
   - apply .mpdignore matches to subdirectories
 
+ver 0.19.20 (not yet released)
+* decoder
+  - ffmpeg: ignore empty packets
+  - sidplay: fix playback speed with libsidplayfp
+
 ver 0.19.19 (2016/08/23)
 * decoder
   - ffmpeg: bug fix for FFmpeg 3.1 support

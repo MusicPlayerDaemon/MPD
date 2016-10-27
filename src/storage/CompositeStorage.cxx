@@ -266,22 +266,13 @@ CompositeStorage::FindStorage(const char *uri) const
 	return result;
 }
 
-CompositeStorage::FindResult
-CompositeStorage::FindStorage(const char *uri, Error &error) const
-{
-	auto result = FindStorage(uri);
-	if (result.directory == nullptr)
-		error.Set(composite_domain, "No such directory");
-	return result;
-}
-
 bool
 CompositeStorage::GetInfo(const char *uri, bool follow, StorageFileInfo &info,
 			  Error &error)
 {
 	const ScopeLock protect(mutex);
 
-	auto f = FindStorage(uri, error);
+	auto f = FindStorage(uri);
 	if (f.directory->storage != nullptr &&
 	    f.directory->storage->GetInfo(f.uri, follow, info, error))
 		return true;
@@ -296,6 +287,7 @@ CompositeStorage::GetInfo(const char *uri, bool follow, StorageFileInfo &info,
 		return true;
 	}
 
+	error.Set(composite_domain, "No such directory");
 	return false;
 }
 
@@ -305,13 +297,15 @@ CompositeStorage::OpenDirectory(const char *uri,
 {
 	const ScopeLock protect(mutex);
 
-	auto f = FindStorage(uri, error);
+	auto f = FindStorage(uri);
 	const Directory *directory = f.directory->Find(f.uri);
 	if (directory == nullptr || directory->children.empty()) {
 		/* no virtual directories here */
 
-		if (f.directory->storage == nullptr)
+		if (f.directory->storage == nullptr) {
+			error.Set(composite_domain, "No such directory");
 			return nullptr;
+		}
 
 		return f.directory->storage->OpenDirectory(f.uri, error);
 	}
