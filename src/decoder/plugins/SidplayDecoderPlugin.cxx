@@ -376,12 +376,9 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 			}
 
 			/* ignore data until target time is reached */
-			while(data_time<target_time) {
-				nbytes=player.play(buffer, ARRAY_SIZE(buffer));
-				if(nbytes==0)
-					break;
+			while (data_time < target_time &&
+			       player.play(buffer, ARRAY_SIZE(buffer)) > 0)
 				data_time = player.time();
-			}
 
 			decoder_command_finished(decoder);
 		}
