@@ -165,7 +165,6 @@ private:
 	 */
 	gcc_pure
 	FindResult FindStorage(const char *uri) const;
-	FindResult FindStorage(const char *uri, Error &error) const;
 
 	const char *MapToRelativeUTF8(const Directory &directory,
 				      const char *uri) const;
