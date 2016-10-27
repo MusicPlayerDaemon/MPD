@@ -354,11 +354,18 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	DecoderCommand cmd;
 	do {
 		short buffer[4096];
-		size_t nbytes;
 
-		nbytes = player.play(buffer, ARRAY_SIZE(buffer));
-		if (nbytes == 0)
+		const auto result = player.play(buffer, ARRAY_SIZE(buffer));
+		if (result <= 0)
 			break;
+
+#ifdef HAVE_SIDPLAYFP
+		/* libsidplayfp returns the number of samples */
+		const size_t nbytes = result * sizeof(buffer[0]);
+#else
+		/* libsidplay2 returns the number of bytes */
+		const size_t nbytes = result;
+#endif
 
 		decoder_timestamp(decoder, (double)player.time() / timebase);
 
