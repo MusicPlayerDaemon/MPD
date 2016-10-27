@@ -216,16 +216,12 @@ handle_read_comments(Client &client, Request args, Response &r)
 
 	const char *const uri = args.front();
 
-	Error error;
-	const auto located_uri = LocateUri(uri, &client,
+	const auto located_uri = LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
-					   nullptr,
+					   , nullptr
 #endif
-					   error);
+					   );
 	switch (located_uri.type) {
-	case LocatedUri::Type::UNKNOWN:
-		return print_error(r, error);
-
 	case LocatedUri::Type::ABSOLUTE:
 		return read_stream_comments(r, located_uri.canonical_uri);
 

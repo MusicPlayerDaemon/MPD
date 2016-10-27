@@ -35,8 +35,6 @@
 #endif
 #endif
 
-class Domain;
-class Error;
 class Client;
 
 #ifdef ENABLE_DATABASE
@@ -45,11 +43,6 @@ class Storage;
 
 struct LocatedUri {
 	enum class Type {
-		/**
-		 * Failed to parse the URI.
-		 */
-		UNKNOWN,
-
 		/**
 		 * An absolute URI with a supported scheme.
 		 */
@@ -76,21 +69,12 @@ struct LocatedUri {
 	LocatedUri(Type _type, const char *_uri,
 		   AllocatedPath &&_path=AllocatedPath::Null())
 		:type(_type), canonical_uri(_uri), path(std::move(_path)) {}
-
-	gcc_const
-	static LocatedUri Unknown() {
-		return LocatedUri(Type::UNKNOWN, nullptr);
-	}
-
-	bool IsUnknown() const {
-		return type == Type::UNKNOWN;
-	}
 };
-
-extern const Domain locate_uri_domain;
 
 /**
  * Classify a URI.
+ *
+ * Throws #std::runtime_error on error.
  *
  * @param client the #Client that is used to determine whether a local
  * file is allowed; nullptr disables the check and allows all local
@@ -100,10 +84,10 @@ extern const Domain locate_uri_domain;
  * that feature is disabled if this parameter is nullptr
  */
 LocatedUri
-LocateUri(const char *uri, const Client *client,
+LocateUri(const char *uri, const Client *client
 #ifdef ENABLE_DATABASE
-	  const Storage *storage,
+	  , const Storage *storage
 #endif
-	  Error &error);
+	  );
 
 #endif

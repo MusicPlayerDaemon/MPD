@@ -209,12 +209,13 @@ public:
 	unsigned AppendSong(PlayerControl &pc, DetachedSong &&song);
 
 	/**
-	 * @return the new song id or 0 on error
+	 * Throws #std::runtime_error on error.
+	 *
+	 * @return the new song id
 	 */
 	unsigned AppendURI(PlayerControl &pc,
 			   const SongLoader &loader,
-			   const char *uri_utf8,
-			   Error &error);
+			   const char *uri_utf8);
 
 protected:
 	void DeleteInternal(PlayerControl &pc,

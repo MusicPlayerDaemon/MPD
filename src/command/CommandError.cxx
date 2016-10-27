@@ -21,7 +21,6 @@
 #include "CommandError.hxx"
 #include "PlaylistError.hxx"
 #include "db/DatabaseError.hxx"
-#include "LocateUri.hxx"
 #include "client/Response.hxx"
 #include "util/Error.hxx"
 #include "Log.hxx"
@@ -89,8 +88,6 @@ ToAck(const Error &error)
 {
 	if (error.IsDomain(ack_domain)) {
 		return (enum ack)error.GetCode();
-	} else if (error.IsDomain(locate_uri_domain)) {
-		return ACK_ERROR_ARG;
 	} else if (error.IsDomain(errno_domain)) {
 		return ACK_ERROR_SYSTEM;
 	}

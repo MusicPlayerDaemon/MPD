@@ -83,16 +83,12 @@ handle_add(Client &client, Request args, Response &r)
 		   here */
 		uri = "";
 
-	Error error;
-	const auto located_uri = LocateUri(uri, &client,
+	const auto located_uri = LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
-					   nullptr,
+					   , nullptr
 #endif
-					   error);
+					   );
 	switch (located_uri.type) {
-	case LocatedUri::Type::UNKNOWN:
-		return print_error(r, error);
-
 	case LocatedUri::Type::ABSOLUTE:
 	case LocatedUri::Type::PATH:
 		AddUri(client, located_uri);
@@ -112,10 +108,7 @@ handle_addid(Client &client, Request args, Response &r)
 	const char *const uri = args.front();
 
 	const SongLoader loader(client);
-	Error error;
-	unsigned added_id = client.partition.AppendURI(loader, uri, error);
-	if (added_id == 0)
-		return print_error(r, error);
+	unsigned added_id = client.partition.AppendURI(loader, uri);
 
 	if (args.size == 2) {
 		unsigned to = args.ParseUnsigned(1);

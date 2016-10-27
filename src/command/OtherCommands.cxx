@@ -123,17 +123,13 @@ handle_listfiles(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	Error error;
-	const auto located_uri = LocateUri(uri, &client,
+	const auto located_uri = LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
-					   nullptr,
+					   , nullptr
 #endif
-					   error);
+					   );
 
 	switch (located_uri.type) {
-	case LocatedUri::Type::UNKNOWN:
-		return print_error(r, error);
-
 	case LocatedUri::Type::ABSOLUTE:
 #ifdef ENABLE_DATABASE
 		/* use storage plugin to list remote directory */
@@ -238,17 +234,13 @@ handle_lsinfo(Client &client, Request args, Response &r)
 		   compatibility, work around this here */
 		uri = "";
 
-	Error error;
-	const auto located_uri = LocateUri(uri, &client,
+	const auto located_uri = LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
-					   nullptr,
+					   , nullptr
 #endif
-					   error);
+					   );
 
 	switch (located_uri.type) {
-	case LocatedUri::Type::UNKNOWN:
-		return print_error(r, error);
-
 	case LocatedUri::Type::ABSOLUTE:
 		return handle_lsinfo_absolute(r, located_uri.canonical_uri);
 

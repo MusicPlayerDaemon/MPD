@@ -373,17 +373,12 @@ try {
 	throw;
 }
 
-bool
+void
 spl_append_uri(const char *utf8file,
-	       const SongLoader &loader, const char *url,
-	       Error &error)
+	       const SongLoader &loader, const char *url)
 {
-	std::unique_ptr<DetachedSong> song(loader.LoadSong(url, error));
-	if (song == nullptr)
-		return false;
-
+	std::unique_ptr<DetachedSong> song(loader.LoadSong(url));
 	spl_append_song(utf8file, *song);
-	return true;
 }
 
 static void

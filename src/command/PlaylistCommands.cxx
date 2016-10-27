@@ -165,7 +165,8 @@ handle_playlistadd(Client &client, Request args, Response &r)
 	Error error;
 	if (uri_has_scheme(uri)) {
 		const SongLoader loader(client);
-		success = spl_append_uri(playlist, loader, uri, error);
+		spl_append_uri(playlist, loader, uri);
+		success = true;
 	} else {
 #ifdef ENABLE_DATABASE
 		const Database &db = client.GetDatabaseOrThrow();

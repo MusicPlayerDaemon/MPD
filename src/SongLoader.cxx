@@ -74,9 +74,6 @@ DetachedSong *
 SongLoader::LoadSong(const LocatedUri &located_uri) const
 {
 	switch (located_uri.type) {
-	case LocatedUri::Type::UNKNOWN:
-		gcc_unreachable();
-
 	case LocatedUri::Type::ABSOLUTE:
 		return new DetachedSong(located_uri.canonical_uri);
 
@@ -91,20 +88,17 @@ SongLoader::LoadSong(const LocatedUri &located_uri) const
 }
 
 DetachedSong *
-SongLoader::LoadSong(const char *uri_utf8, Error &error) const
+SongLoader::LoadSong(const char *uri_utf8) const
 {
 #if !CLANG_CHECK_VERSION(3,6)
 	/* disabled on clang due to -Wtautological-pointer-compare */
 	assert(uri_utf8 != nullptr);
 #endif
 
-	const auto located_uri = LocateUri(uri_utf8, client,
+	const auto located_uri = LocateUri(uri_utf8, client
 #ifdef ENABLE_DATABASE
-					   storage,
+					   , storage
 #endif
-					   error);
-	if (located_uri.IsUnknown())
-		return nullptr;
-
+					   );
 	return LoadSong(located_uri);
 }

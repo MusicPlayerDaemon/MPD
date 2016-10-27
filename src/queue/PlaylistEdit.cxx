@@ -124,13 +124,9 @@ playlist::AppendSong(PlayerControl &pc, DetachedSong &&song)
 
 unsigned
 playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
-		    const char *uri,
-		    Error &error)
+		    const char *uri)
 {
-	std::unique_ptr<DetachedSong> song(loader.LoadSong(uri, error));
-	if (song == nullptr)
-		return 0;
-
+	std::unique_ptr<DetachedSong> song(loader.LoadSong(uri));
 	return AppendSong(pc, std::move(*song));
 }
 

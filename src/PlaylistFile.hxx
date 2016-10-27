@@ -73,10 +73,12 @@ spl_remove_index(const char *utf8path, unsigned pos);
 void
 spl_append_song(const char *utf8path, const DetachedSong &song);
 
-bool
+/**
+ * Throws #std::runtime_error on error.
+ */
+void
 spl_append_uri(const char *path_utf8,
-	       const SongLoader &loader, const char *uri_utf8,
-	       Error &error);
+	       const SongLoader &loader, const char *uri_utf8);
 
 void
 spl_rename(const char *utf8from, const char *utf8to);

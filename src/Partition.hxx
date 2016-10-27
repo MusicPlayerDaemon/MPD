@@ -68,9 +68,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	}
 
 	unsigned AppendURI(const SongLoader &loader,
-			   const char *uri_utf8,
-			   Error &error) {
-		return playlist.AppendURI(pc, loader, uri_utf8, error);
+			   const char *uri_utf8) {
+		return playlist.AppendURI(pc, loader, uri_utf8);
 	}
 
 	void DeletePosition(unsigned position) {
