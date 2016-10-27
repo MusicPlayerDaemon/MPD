@@ -21,7 +21,6 @@
 #include "PlaylistStream.hxx"
 #include "PlaylistRegistry.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "fs/Path.hxx"

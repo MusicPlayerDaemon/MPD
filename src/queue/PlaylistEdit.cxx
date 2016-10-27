@@ -28,7 +28,6 @@
 #include "Listener.hxx"
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
-#include "util/Error.hxx"
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 
