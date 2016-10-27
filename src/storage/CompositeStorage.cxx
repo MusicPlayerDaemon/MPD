@@ -286,7 +286,8 @@ CompositeStorage::GetInfo(const char *uri, bool follow, FileInfo &info,
 		return true;
 	}
 
-	error.Set(composite_domain, "No such directory");
+	if (!error.IsDefined())
+		error.Set(composite_domain, "No such directory");
 	return false;
 }
 
