@@ -40,6 +40,8 @@
 #include "IOThread.hxx"
 #include "Idle.hxx"
 
+#include <memory>
+
 #include <inttypes.h> /* for PRIu64 */
 
 gcc_pure
@@ -101,13 +103,11 @@ static bool
 handle_listfiles_storage(Response &r, Storage &storage, const char *uri,
 			 Error &error)
 {
-	auto reader = storage.OpenDirectory(uri, error);
+	std::unique_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(uri, error));
 	if (reader == nullptr)
 		return false;
 
-	bool success = handle_listfiles_storage(r, *reader, error);
-	delete reader;
-	return success;
+	return handle_listfiles_storage(r, *reader, error);
 }
 
 CommandResult
@@ -124,7 +124,8 @@ CommandResult
 handle_listfiles_storage(Response &r, const char *uri)
 {
 	Error error;
-	Storage *storage = CreateStorageURI(io_thread_get(), uri, error);
+	std::unique_ptr<Storage> storage(CreateStorageURI(io_thread_get(), uri,
+							  error));
 	if (storage == nullptr) {
 		if (error.IsDefined())
 			return print_error(r, error);
@@ -133,9 +134,7 @@ handle_listfiles_storage(Response &r, const char *uri)
 		return CommandResult::ERROR;
 	}
 
-	bool success = handle_listfiles_storage(r, *storage, "", error);
-	delete storage;
-	if (!success)
+	if (!handle_listfiles_storage(r, *storage, "", error))
 		return print_error(r, error);
 
 	return CommandResult::OK;
