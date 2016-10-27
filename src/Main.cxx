@@ -161,19 +161,16 @@ glue_mapper_init(Error &error)
 
 #ifdef ENABLE_DATABASE
 
-static bool
-InitStorage(Error &error)
+static void
+InitStorage()
 {
-	Storage *storage = CreateConfiguredStorage(io_thread_get(), error);
+	Storage *storage = CreateConfiguredStorage(io_thread_get());
 	if (storage == nullptr)
-		return !error.IsDefined();
-
-	assert(!error.IsDefined());
+		return;
 
 	CompositeStorage *composite = new CompositeStorage();
 	instance->storage = composite;
 	composite->Mount("", storage);
-	return true;
 }
 
 /**
@@ -196,8 +193,7 @@ glue_db_init_and_load(void)
 	}
 
 	if (instance->database->GetPlugin().flags & DatabasePlugin::FLAG_REQUIRE_STORAGE) {
-		if (!InitStorage(error))
-			FatalError(error);
+		InitStorage();
 
 		if (instance->storage == nullptr) {
 			delete instance->database;

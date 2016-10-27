@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "Log.hxx"
 #include "ScopeIOThread.hxx"
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
@@ -25,6 +26,7 @@
 #include "util/Error.hxx"
 
 #include <memory>
+#include <stdexcept>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -35,12 +37,9 @@
 static Storage *
 MakeStorage(const char *uri)
 {
-	Error error;
-	Storage *storage = CreateStorageURI(io_thread_get(), uri, error);
-	if (storage == nullptr) {
-		fprintf(stderr, "%s\n", error.GetMessage());
-		exit(EXIT_FAILURE);
-	}
+	Storage *storage = CreateStorageURI(io_thread_get(), uri);
+	if (storage == nullptr)
+		throw std::runtime_error("Unrecognized storage URI");
 
 	return storage;
 }
@@ -48,21 +47,11 @@ MakeStorage(const char *uri)
 static int
 Ls(Storage &storage, const char *path)
 {
-	Error error;
-	auto dir = storage.OpenDirectory(path, error);
-	if (dir == nullptr) {
-		fprintf(stderr, "%s\n", error.GetMessage());
-		return EXIT_FAILURE;
-	}
+	auto dir = storage.OpenDirectory(path);
 
 	const char *name;
 	while ((name = dir->Read()) != nullptr) {
-		StorageFileInfo info;
-		if (!dir->GetInfo(false, info, error)) {
-			printf("Error on %s: %s\n", name, error.GetMessage());
-			error.Clear();
-			continue;
-		}
+		const auto info = dir->GetInfo(false);
 
 		const char *type = "unk";
 		switch (info.type) {
@@ -93,7 +82,7 @@ Ls(Storage &storage, const char *path)
 
 int
 main(int argc, char **argv)
-{
+try {
 	if (argc < 3) {
 		fprintf(stderr, "Usage: run_storage COMMAND URI ...\n");
 		return EXIT_FAILURE;
@@ -119,4 +108,9 @@ main(int argc, char **argv)
 		fprintf(stderr, "Unknown command\n");
 		return EXIT_FAILURE;
 	}
+
+	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

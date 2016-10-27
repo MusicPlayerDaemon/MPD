@@ -23,7 +23,6 @@
 #include "plugins/LocalStorage.hxx"
 #include "plugins/SmbclientStorage.hxx"
 #include "plugins/NfsStorage.hxx"
-#include "util/Error.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -52,18 +51,16 @@ GetStoragePluginByName(const char *name)
 }
 
 Storage *
-CreateStorageURI(EventLoop &event_loop, const char *uri, Error &error)
+CreateStorageURI(EventLoop &event_loop, const char *uri)
 {
-	assert(!error.IsDefined());
-
 	for (auto i = storage_plugins; *i != nullptr; ++i) {
 		const StoragePlugin &plugin = **i;
 
 		if (plugin.create_uri == nullptr)
 			continue;
 
-		Storage *storage = plugin.create_uri(event_loop, uri, error);
-		if (storage != nullptr || error.IsDefined())
+		Storage *storage = plugin.create_uri(event_loop, uri);
+		if (storage != nullptr)
 			return storage;
 	}
 

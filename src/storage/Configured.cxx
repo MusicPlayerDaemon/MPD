@@ -27,34 +27,39 @@
 #include "fs/CheckFile.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 
 static Storage *
-CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri,
-			   Error &error)
+CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)
 {
-	Storage *storage = CreateStorageURI(event_loop, uri, error);
-	if (storage == nullptr && !error.IsDefined())
-		error.Format(config_domain,
-			     "Unrecognized storage URI: %s", uri);
+	Storage *storage = CreateStorageURI(event_loop, uri);
+	if (storage == nullptr)
+		throw FormatRuntimeError("Unrecognized storage URI: %s", uri);
+
 	return storage;
 }
 
 static AllocatedPath
-GetConfiguredMusicDirectory(Error &error)
+GetConfiguredMusicDirectory()
 {
+	Error error;
 	AllocatedPath path = config_get_path(ConfigOption::MUSIC_DIR, error);
-	if (path.IsNull() && !error.IsDefined())
+	if (path.IsNull()) {
+		if (error.IsDefined())
+			throw std::runtime_error(error.GetMessage());
+
 		path = GetUserMusicDir();
+	}
 
 	return path;
 }
 
 static Storage *
-CreateConfiguredStorageLocal(Error &error)
+CreateConfiguredStorageLocal()
 {
-	AllocatedPath path = GetConfiguredMusicDirectory(error);
+	AllocatedPath path = GetConfiguredMusicDirectory();
 	if (path.IsNull())
 		return nullptr;
 
@@ -64,15 +69,13 @@ CreateConfiguredStorageLocal(Error &error)
 }
 
 Storage *
-CreateConfiguredStorage(EventLoop &event_loop, Error &error)
+CreateConfiguredStorage(EventLoop &event_loop)
 {
-	assert(!error.IsDefined());
-
 	auto uri = config_get_string(ConfigOption::MUSIC_DIR);
 	if (uri != nullptr && uri_has_scheme(uri))
-		return CreateConfiguredStorageUri(event_loop, uri, error);
+		return CreateConfiguredStorageUri(event_loop, uri);
 
-	return CreateConfiguredStorageLocal(error);
+	return CreateConfiguredStorageLocal();
 }
 
 bool

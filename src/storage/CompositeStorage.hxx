@@ -28,8 +28,6 @@
 #include <string>
 #include <map>
 
-class Error;
-
 /**
  * A #Storage implementation that combines multiple other #Storage
  * instances in one virtual tree.  It is used to "mount" new #Storage
@@ -121,11 +119,9 @@ public:
 	bool Unmount(const char *uri);
 
 	/* virtual methods from class Storage */
-	bool GetInfo(const char *uri, bool follow, StorageFileInfo &info,
-		     Error &error) override;
+	StorageFileInfo GetInfo(const char *uri, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri,
-					      Error &error) override;
+	StorageDirectoryReader *OpenDirectory(const char *uri) override;
 
 	std::string MapUTF8(const char *uri) const override;
 

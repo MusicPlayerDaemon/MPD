@@ -61,8 +61,7 @@ public:
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
-	bool GetInfo(bool follow, StorageFileInfo &info,
-		     Error &error) override;
+	StorageFileInfo GetInfo(bool follow) override;
 };
 
 #endif

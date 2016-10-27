@@ -26,8 +26,9 @@
 #include "lib/smbclient/Mutex.hxx"
 #include "fs/Traits.hxx"
 #include "thread/Mutex.hxx"
-#include "util/Error.hxx"
+#include "system/Error.hxx"
 #include "util/StringCompare.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <libsmbclient.h>
 
@@ -45,8 +46,7 @@ public:
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
-	bool GetInfo(bool follow, StorageFileInfo &info,
-		     Error &error) override;
+	StorageFileInfo GetInfo(bool follow) override;
 };
 
 class SmbclientStorage final : public Storage {
@@ -65,11 +65,9 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	bool GetInfo(const char *uri_utf8, bool follow, StorageFileInfo &info,
-		     Error &error) override;
+	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
-					      Error &error) override;
+	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
 
 	std::string MapUTF8(const char *uri_utf8) const override;
 
@@ -93,18 +91,18 @@ SmbclientStorage::MapToRelativeUTF8(const char *uri_utf8) const
 	return PathTraitsUTF8::Relative(base.c_str(), uri_utf8);
 }
 
-static bool
-GetInfo(const char *path, StorageFileInfo &info, Error &error)
+static StorageFileInfo
+GetInfo(const char *path)
 {
 	struct stat st;
-	smbclient_mutex.lock();
-	bool success = smbc_stat(path, &st) == 0;
-	smbclient_mutex.unlock();
-	if (!success) {
-		error.SetErrno();
-		return false;
+
+	{
+		const ScopeLock protect(smbclient_mutex);
+		if (smbc_stat(path, &st) != 0)
+			throw MakeErrno("Failed to access file");
 	}
 
+	StorageFileInfo info;
 	if (S_ISREG(st.st_mode))
 		info.type = StorageFileInfo::Type::REGULAR;
 	else if (S_ISDIR(st.st_mode))
@@ -116,27 +114,28 @@ GetInfo(const char *path, StorageFileInfo &info, Error &error)
 	info.mtime = st.st_mtime;
 	info.device = st.st_dev;
 	info.inode = st.st_ino;
-	return true;
+	return info;
 }
 
-bool
-SmbclientStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
-			  StorageFileInfo &info, Error &error)
+StorageFileInfo
+SmbclientStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 {
 	const std::string mapped = MapUTF8(uri_utf8);
-	return ::GetInfo(mapped.c_str(), info, error);
+	return ::GetInfo(mapped.c_str());
 }
 
 StorageDirectoryReader *
-SmbclientStorage::OpenDirectory(const char *uri_utf8, Error &error)
+SmbclientStorage::OpenDirectory(const char *uri_utf8)
 {
 	std::string mapped = MapUTF8(uri_utf8);
-	smbclient_mutex.lock();
-	int handle = smbc_opendir(mapped.c_str());
-	smbclient_mutex.unlock();
-	if (handle < 0) {
-		error.SetErrno();
-		return nullptr;
+
+	int handle;
+
+	{
+		const ScopeLock protect(smbclient_mutex);
+		handle = smbc_opendir(mapped.c_str());
+		if (handle < 0)
+			throw MakeErrno("Failed to open directory");
 	}
 
 	return new SmbclientDirectoryReader(std::move(mapped.c_str()), handle);
@@ -173,18 +172,15 @@ SmbclientDirectoryReader::Read()
 	return nullptr;
 }
 
-bool
-SmbclientDirectoryReader::GetInfo(gcc_unused bool follow,
-				  StorageFileInfo &info,
-				  Error &error)
+StorageFileInfo
+SmbclientDirectoryReader::GetInfo(gcc_unused bool follow)
 {
 	const std::string path = PathTraitsUTF8::Build(base.c_str(), name);
-	return ::GetInfo(path.c_str(), info, error);
+	return ::GetInfo(path.c_str());
 }
 
 static Storage *
-CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base,
-			  Error &error)
+CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base)
 {
 	if (memcmp(base, "smb://", 6) != 0)
 		return nullptr;
@@ -193,16 +189,13 @@ CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base,
 
 	const ScopeLock protect(smbclient_mutex);
 	SMBCCTX *ctx = smbc_new_context();
-	if (ctx == nullptr) {
-		error.SetErrno("smbc_new_context() failed");
-		return nullptr;
-	}
+	if (ctx == nullptr)
+		throw MakeErrno("smbc_new_context() failed");
 
 	SMBCCTX *ctx2 = smbc_init_context(ctx);
 	if (ctx2 == nullptr) {
-		error.SetErrno("smbc_init_context() failed");
-		smbc_free_context(ctx, 1);
-		return nullptr;
+		AtScopeExit(ctx) { smbc_free_context(ctx, 1); };
+		throw MakeErrno("smbc_new_context() failed");
 	}
 
 	return new SmbclientStorage(base, ctx2);

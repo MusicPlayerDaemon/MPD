@@ -35,7 +35,6 @@
 #include "event/Call.hxx"
 #include "event/DeferredMonitor.hxx"
 #include "event/TimeoutMonitor.hxx"
-#include "util/Error.hxx"
 #include "util/StringCompare.hxx"
 
 extern "C" {
@@ -84,11 +83,9 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	bool GetInfo(const char *uri_utf8, bool follow, StorageFileInfo &info,
-		     Error &error) override;
+	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
-					      Error &error) override;
+	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
 
 	std::string MapUTF8(const char *uri_utf8) const override;
 
@@ -214,7 +211,7 @@ private:
 };
 
 static std::string
-UriToNfsPath(const char *_uri_utf8, Error &error)
+UriToNfsPath(const char *_uri_utf8)
 {
 	assert(_uri_utf8 != nullptr);
 
@@ -222,7 +219,7 @@ UriToNfsPath(const char *_uri_utf8, Error &error)
 	std::string uri_utf8("/");
 	uri_utf8.append(_uri_utf8);
 
-	return AllocatedPath::FromUTF8(uri_utf8.c_str(), error).Steal();
+	return AllocatedPath::FromUTF8Throw(uri_utf8.c_str()).Steal();
 }
 
 std::string
@@ -260,12 +257,15 @@ Copy(StorageFileInfo &info, const struct stat &st)
 
 class NfsGetInfoOperation final : public BlockingNfsOperation {
 	const char *const path;
-	StorageFileInfo &info;
+	StorageFileInfo info;
 
 public:
-	NfsGetInfoOperation(NfsConnection &_connection, const char *_path,
-			    StorageFileInfo &_info)
-		:BlockingNfsOperation(_connection), path(_path), info(_info) {}
+	NfsGetInfoOperation(NfsConnection &_connection, const char *_path)
+		:BlockingNfsOperation(_connection), path(_path) {}
+
+	const StorageFileInfo &GetInfo() const {
+		return info;
+	}
 
 protected:
 	void Start() override {
@@ -277,19 +277,16 @@ protected:
 	}
 };
 
-bool
-NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow,
-		    StorageFileInfo &info, Error &error)
+StorageFileInfo
+NfsStorage::GetInfo(const char *uri_utf8, gcc_unused bool follow)
 {
-	const std::string path = UriToNfsPath(uri_utf8, error);
-	if (path.empty())
-		return false;
+	const std::string path = UriToNfsPath(uri_utf8);
 
 	WaitConnected();
 
-	NfsGetInfoOperation operation(*connection, path.c_str(), info);
+	NfsGetInfoOperation operation(*connection, path.c_str());
 	operation.Run();
-	return true;
+	return operation.GetInfo();
 }
 
 gcc_pure
@@ -377,11 +374,9 @@ NfsListDirectoryOperation::CollectEntries(struct nfsdir *dir)
 }
 
 StorageDirectoryReader *
-NfsStorage::OpenDirectory(const char *uri_utf8, Error &error)
+NfsStorage::OpenDirectory(const char *uri_utf8)
 {
-	const std::string path = UriToNfsPath(uri_utf8, error);
-	if (path.empty())
-		return nullptr;
+	const std::string path = UriToNfsPath(uri_utf8);
 
 	WaitConnected();
 
@@ -392,7 +387,7 @@ NfsStorage::OpenDirectory(const char *uri_utf8, Error &error)
 }
 
 static Storage *
-CreateNfsStorageURI(EventLoop &event_loop, const char *base, Error &)
+CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 {
 	if (memcmp(base, "nfs://", 6) != 0)
 		return nullptr;

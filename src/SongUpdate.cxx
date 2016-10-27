@@ -68,9 +68,7 @@ Song::UpdateFile(Storage &storage)
 
 	StorageFileInfo info;
 	try {
-		if (!storage.GetInfo(relative_uri.c_str(), true, info,
-				     IgnoreError()))
-			return false;
+		info = storage.GetInfo(relative_uri.c_str(), true);
 	} catch (const std::runtime_error &) {
 		return false;
 	}

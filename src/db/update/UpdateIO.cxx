@@ -35,11 +35,8 @@
 bool
 GetInfo(Storage &storage, const char *uri_utf8, StorageFileInfo &info)
 try {
-	Error error;
-	bool success = storage.GetInfo(uri_utf8, true, info, error);
-	if (!success)
-		LogError(error);
-	return success;
+	info = storage.GetInfo(uri_utf8, true);
+	return true;
 } catch (const std::runtime_error &e) {
 	LogError(e);
 	return false;
@@ -48,11 +45,8 @@ try {
 bool
 GetInfo(StorageDirectoryReader &reader, StorageFileInfo &info)
 try {
-	Error error;
-	bool success = reader.GetInfo(true, info, error);
-	if (!success)
-		LogError(error);
-	return success;
+	info = reader.GetInfo(true);
+	return true;
 } catch (const std::runtime_error &e) {
 	LogError(e);
 	return false;
@@ -64,8 +58,7 @@ DirectoryExists(Storage &storage, const Directory &directory)
 	StorageFileInfo info;
 
 	try {
-		if (!storage.GetInfo(directory.GetPath(), true, info, IgnoreError()))
-			return false;
+		info = storage.GetInfo(directory.GetPath(), true);
 	} catch (const std::runtime_error &) {
 		return false;
 	}
@@ -76,24 +69,22 @@ DirectoryExists(Storage &storage, const Directory &directory)
 		: info.IsDirectory();
 }
 
-static bool
+static StorageFileInfo
 GetDirectoryChildInfo(Storage &storage, const Directory &directory,
-		      const char *name_utf8, StorageFileInfo &info, Error &error)
+		      const char *name_utf8)
 {
 	const auto uri_utf8 = PathTraitsUTF8::Build(directory.GetPath(),
 						    name_utf8);
-	return storage.GetInfo(uri_utf8.c_str(), true, info, error);
+	return storage.GetInfo(uri_utf8.c_str(), true);
 }
 
 bool
 directory_child_is_regular(Storage &storage, const Directory &directory,
 			   const char *name_utf8)
 try {
-	StorageFileInfo info;
-	return GetDirectoryChildInfo(storage, directory, name_utf8, info,
-				     IgnoreError()) &&
-		info.IsRegular();
- } catch (const std::runtime_error &) {
+	return GetDirectoryChildInfo(storage, directory, name_utf8)
+		.IsRegular();
+} catch (const std::runtime_error &) {
 	return false;
 }
 
