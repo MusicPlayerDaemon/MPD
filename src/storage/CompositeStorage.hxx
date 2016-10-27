@@ -155,6 +155,14 @@ private:
 		}
 	}
 
+	/**
+	 * Follow the given URI path, and find the outermost directory
+	 * which is a #Storage mount point.  If there are no mounts,
+	 * it returns the root directory (with a nullptr "storage"
+	 * attribute, of course).  FindResult::uri contains the
+	 * remaining unused part of the URI (may be empty if all of
+	 * the URI was used).
+	 */
 	gcc_pure
 	FindResult FindStorage(const char *uri) const;
 	FindResult FindStorage(const char *uri, Error &error) const;
