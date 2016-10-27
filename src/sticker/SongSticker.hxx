@@ -28,50 +28,56 @@
 struct LightSong;
 struct Sticker;
 class Database;
-class Error;
 
 /**
- * Returns one value from a song's sticker record.  The caller must
- * free the return value with g_free().
+ * Returns one value from a song's sticker record.
+ *
+ * Throws #SqliteError on error.
  */
 gcc_pure
 std::string
-sticker_song_get_value(const LightSong &song, const char *name, Error &error);
+sticker_song_get_value(const LightSong &song, const char *name);
 
 /**
  * Sets a sticker value in the specified song.  Overwrites existing
  * values.
+ *
+ * Throws #SqliteError on error.
  */
-bool
+void
 sticker_song_set_value(const LightSong &song,
-		       const char *name, const char *value,
-		       Error &error);
+		       const char *name, const char *value);
 
 /**
  * Deletes a sticker from the database.  All values are deleted.
+ *
+ * Throws #SqliteError on error.
  */
 bool
-sticker_song_delete(const char *uri, Error &error);
+sticker_song_delete(const char *uri);
 
 bool
-sticker_song_delete(const LightSong &song, Error &error);
+sticker_song_delete(const LightSong &song);
 
 /**
  * Deletes a sticker value.  Does nothing if the sticker did not
  * exist.
+ *
+ * Throws #SqliteError on error.
  */
 bool
-sticker_song_delete_value(const LightSong &song, const char *name,
-			  Error &error);
+sticker_song_delete_value(const LightSong &song, const char *name);
 
 /**
  * Loads the sticker for the specified song.
  *
+ * Throws #SqliteError on error.
+ *
  * @param song the song object
- * @return a sticker object, or NULL on error or if there is no sticker
+ * @return a sticker object, or nullptr if there is no sticker
  */
 Sticker *
-sticker_song_get(const LightSong &song, Error &error);
+sticker_song_get(const LightSong &song);
 
 /**
  * Finds stickers with the specified name below the specified
@@ -79,17 +85,16 @@ sticker_song_get(const LightSong &song, Error &error);
  *
  * Caller must lock the #db_mutex.
  *
+ * Throws #SqliteError on error.
+ *
  * @param base_uri the base directory to search in
  * @param name the name of the sticker
- * @return true on success (even if no sticker was found), false on
- * failure
  */
-bool
+void
 sticker_song_find(const Database &db, const char *base_uri, const char *name,
 		  StickerOperator op, const char *value,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
-		  void *user_data,
-		  Error &error);
+		  void *user_data);
 
 #endif

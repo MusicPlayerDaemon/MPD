@@ -17,8 +17,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Domain.hxx"
-#include "util/Domain.hxx"
+#include "Error.hxx"
 
-const Domain sqlite_domain("sqlite");
+#include <sqlite3.h>
+
+static std::string
+MakeSqliteErrorMessage(sqlite3 *db, const char *msg)
+{
+	return std::string(msg) + ": " + sqlite3_errmsg(db);
+}
+
+SqliteError::SqliteError(sqlite3 *db, int _code, const char *msg)
+	:std::runtime_error(MakeSqliteErrorMessage(db, msg)), code(_code) {}
+
+SqliteError::SqliteError(sqlite3_stmt *stmt, int _code, const char *msg)
+	:SqliteError(sqlite3_db_handle(stmt), _code, msg) {}

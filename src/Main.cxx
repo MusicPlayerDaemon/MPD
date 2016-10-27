@@ -252,8 +252,7 @@ glue_sticker_init(void)
 		return;
 	}
 
-	if (!sticker_global_init(std::move(sticker_file), error))
-		FatalError(error);
+	sticker_global_init(std::move(sticker_file));
 #endif
 }
 

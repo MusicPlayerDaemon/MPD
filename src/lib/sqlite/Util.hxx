@@ -20,77 +20,49 @@
 #ifndef MPD_SQLITE_UTIL_HXX
 #define MPD_SQLITE_UTIL_HXX
 
-#include "Domain.hxx"
-#include "util/Error.hxx"
+#include "Error.hxx"
 
 #include <sqlite3.h>
 
 #include <assert.h>
 
+/**
+ * Throws #SqliteError on error.
+ */
 static void
-SetError(Error &error, sqlite3 *db, int code, const char *msg)
-{
-	error.Format(sqlite_domain, code, "%s: %s",
-		     msg, sqlite3_errmsg(db));
-}
-
-static void
-SetError(Error &error, sqlite3_stmt *stmt, int code, const char *msg)
-{
-	SetError(error, sqlite3_db_handle(stmt), code, msg);
-}
-
-static bool
-Bind(sqlite3_stmt *stmt, unsigned i, const char *value, Error &error)
+Bind(sqlite3_stmt *stmt, unsigned i, const char *value)
 {
 	int result = sqlite3_bind_text(stmt, i, value, -1, nullptr);
-	if (result != SQLITE_OK) {
-		SetError(error, stmt, result, "sqlite3_bind_text() failed");
-		return false;
-	}
-
-	return true;
+	if (result != SQLITE_OK)
+		throw SqliteError(stmt, result, "sqlite3_bind_text() failed");
 }
 
 template<typename... Args>
-static bool
-BindAll2(gcc_unused Error &error, gcc_unused sqlite3_stmt *stmt,
-	 gcc_unused unsigned i)
+static void
+BindAll2(gcc_unused sqlite3_stmt *stmt, gcc_unused unsigned i)
 {
 	assert(int(i - 1) == sqlite3_bind_parameter_count(stmt));
-
-	return true;
 }
 
 template<typename... Args>
-static bool
-BindAll2(Error &error, sqlite3_stmt *stmt, unsigned i,
+static void
+BindAll2(sqlite3_stmt *stmt, unsigned i,
 	 const char *value, Args&&... args)
 {
-	return Bind(stmt, i, value, error) &&
-		BindAll2(error, stmt, i + 1, std::forward<Args>(args)...);
-}
-
-template<typename... Args>
-static bool
-BindAll(Error &error, sqlite3_stmt *stmt, Args&&... args)
-{
-	assert(int(sizeof...(args)) == sqlite3_bind_parameter_count(stmt));
-
-	return BindAll2(error, stmt, 1, std::forward<Args>(args)...);
+	Bind(stmt, i, value);
+	BindAll2(stmt, i + 1, std::forward<Args>(args)...);
 }
 
 /**
- * Wrapper for BindAll() that returns the specified sqlite3_stmt* on
- * success and nullptr on error.
+ * Throws #SqliteError on error.
  */
 template<typename... Args>
-static sqlite3_stmt *
-BindAllOrNull(Error &error, sqlite3_stmt *stmt, Args&&... args)
+static void
+BindAll(sqlite3_stmt *stmt, Args&&... args)
 {
-	return BindAll(error, stmt, std::forward<Args>(args)...)
-		? stmt
-		: nullptr;
+	assert(int(sizeof...(args)) == sqlite3_bind_parameter_count(stmt));
+
+	BindAll2(stmt, 1, std::forward<Args>(args)...);
 }
 
 /**
@@ -110,16 +82,18 @@ ExecuteBusy(sqlite3_stmt *stmt)
 
 /**
  * Wrapper for ExecuteBusy() that returns true on SQLITE_ROW.
+ *
+ * Throws #SqliteError on error.
  */
 static bool
-ExecuteRow(sqlite3_stmt *stmt, Error &error)
+ExecuteRow(sqlite3_stmt *stmt)
 {
 	int result = ExecuteBusy(stmt);
 	if (result == SQLITE_ROW)
 		return true;
 
 	if (result != SQLITE_DONE)
-		SetError(error, stmt, result, "sqlite3_step() failed");
+		throw SqliteError(stmt, result, "sqlite3_step() failed");
 
 	return false;
 }
@@ -127,46 +101,46 @@ ExecuteRow(sqlite3_stmt *stmt, Error &error)
 /**
  * Wrapper for ExecuteBusy() that interprets everything other than
  * SQLITE_DONE as error.
+ *
+ * Throws #SqliteError on error.
  */
-static bool
-ExecuteCommand(sqlite3_stmt *stmt, Error &error)
+static void
+ExecuteCommand(sqlite3_stmt *stmt)
 {
 	int result = ExecuteBusy(stmt);
-	if (result != SQLITE_DONE) {
-		SetError(error, stmt, result, "sqlite3_step() failed");
-		return false;
-	}
-
-	return true;
+	if (result != SQLITE_DONE)
+		throw SqliteError(stmt, result, "sqlite3_step() failed");
 }
 
 /**
  * Wrapper for ExecuteCommand() that returns the number of rows
- * modified via sqlite3_changes().  Returns -1 on error.
+ * modified via sqlite3_changes().
+ *
+ * Throws #SqliteError on error.
  */
-static inline int
-ExecuteChanges(sqlite3_stmt *stmt, Error &error)
+static inline unsigned
+ExecuteChanges(sqlite3_stmt *stmt)
 {
-	if (!ExecuteCommand(stmt, error))
-		return -1;
+	ExecuteCommand(stmt);
 
 	return sqlite3_changes(sqlite3_db_handle(stmt));
 }
 
 /**
  * Wrapper for ExecuteChanges() that returns true if at least one row
- * was modified.  Returns false if nothing was modified or if an error
- * occurred.
+ * was modified.  Returns false if nothing was modified.
+ *
+ * Throws #SqliteError on error.
  */
 static inline bool
-ExecuteModified(sqlite3_stmt *stmt, Error &error)
+ExecuteModified(sqlite3_stmt *stmt)
 {
-	return ExecuteChanges(stmt, error) > 0;
+	return ExecuteChanges(stmt) > 0;
 }
 
 template<typename F>
-static inline bool
-ExecuteForEach(sqlite3_stmt *stmt, Error &error, F &&f)
+static inline void
+ExecuteForEach(sqlite3_stmt *stmt, F &&f)
 {
 	while (true) {
 		int result = ExecuteBusy(stmt);
@@ -176,11 +150,10 @@ ExecuteForEach(sqlite3_stmt *stmt, Error &error, F &&f)
 			break;
 
 		case SQLITE_DONE:
-			return true;
+			return;
 
 		default:
-			SetError(error, stmt, result, "sqlite3_step() failed");
-			return false;
+			throw SqliteError(stmt, result, "sqlite3_step() failed");
 		}
 	}
 }
