@@ -182,8 +182,6 @@ public:
 	 */
 	void AllowFile(Path path_fs) const;
 
-	bool AllowFile(Path path_fs, Error &error) const;
-
 	/**
 	 * Wrapper for Instance::GetDatabase().
 	 */

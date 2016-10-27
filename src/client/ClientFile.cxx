@@ -22,7 +22,6 @@
 #include "protocol/Ack.hxx"
 #include "fs/Path.hxx"
 #include "fs/FileInfo.hxx"
-#include "util/Error.hxx"
 
 #include <unistd.h>
 
@@ -48,39 +47,5 @@ Client::AllowFile(Path path_fs) const
 	if (fi.GetUid() != (uid_t)uid && (fi.GetMode() & 0444) != 0444)
 		/* client is not owner */
 		throw ProtocolError(ACK_ERROR_PERMISSION, "Access denied");
-#endif
-}
-
-bool
-Client::AllowFile(Path path_fs, Error &error) const
-{
-#ifdef WIN32
-	(void)path_fs;
-
-	error.Set(ack_domain, ACK_ERROR_PERMISSION, "Access denied");
-	return false;
-#else
-	if (uid >= 0 && (uid_t)uid == geteuid())
-		/* always allow access if user runs his own MPD
-		   instance */
-		return true;
-
-	if (uid < 0) {
-		/* unauthenticated client */
-		error.Set(ack_domain, ACK_ERROR_PERMISSION, "Access denied");
-		return false;
-	}
-
-	FileInfo fi;
-	if (!GetFileInfo(path_fs, fi, error))
-		return false;
-
-	if (fi.GetUid() != (uid_t)uid && (fi.GetMode() & 0444) != 0444) {
-		/* client is not owner */
-		error.Set(ack_domain, ACK_ERROR_PERMISSION, "Access denied");
-		return false;
-	}
-
-	return true;
 #endif
 }
