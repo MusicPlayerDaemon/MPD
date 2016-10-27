@@ -45,7 +45,7 @@ class CompositeStorage final : public Storage {
 	 */
 	struct Directory {
 		/**
-		 * The #Storage mounted n this virtual directory.  All
+		 * The #Storage mounted in this virtual directory.  All
 		 * "leaf" Directory instances must have a #Storage.
 		 * Other Directory instances may have one, and child
 		 * mounts will be "mixed" in.
