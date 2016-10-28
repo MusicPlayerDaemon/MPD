@@ -32,6 +32,7 @@
 #include "system/fd_util.h"
 #include "IOThread.hxx"
 #include "event/Call.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
@@ -50,12 +51,43 @@
 const Domain httpd_output_domain("httpd_output");
 
 inline
-HttpdOutput::HttpdOutput(EventLoop &_loop)
+HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	:ServerSocket(_loop), DeferredMonitor(_loop),
-	 base(httpd_output_plugin),
+	 base(httpd_output_plugin, block),
 	 encoder(nullptr), unflushed_input(0),
 	 metadata(nullptr)
 {
+	/* read configuration */
+	name = block.GetBlockValue("name", "Set name in config");
+	genre = block.GetBlockValue("genre", "Set genre in config");
+	website = block.GetBlockValue("website", "Set website in config");
+
+	unsigned port = block.GetBlockValue("port", 8000u);
+
+	const char *encoder_name =
+		block.GetBlockValue("encoder", "vorbis");
+	const auto encoder_plugin = encoder_plugin_get(encoder_name);
+	if (encoder_plugin == nullptr)
+		throw FormatRuntimeError("No such encoder: %s", encoder_name);
+
+	clients_max = block.GetBlockValue("max_clients", 0u);
+
+	/* set up bind_to_address */
+
+	const char *bind_to_address = block.GetBlockValue("bind_to_address");
+	if (bind_to_address != nullptr && strcmp(bind_to_address, "any") != 0)
+		AddHost(bind_to_address, port);
+	else
+		AddPort(port);
+
+	/* initialize encoder */
+
+	prepared_encoder = encoder_init(*encoder_plugin, block);
+
+	/* determine content type */
+	content_type = prepared_encoder->GetMimeType();
+	if (content_type == nullptr)
+		content_type = "application/octet-stream";
 }
 
 HttpdOutput::~HttpdOutput()
@@ -86,68 +118,10 @@ HttpdOutput::Unbind()
 		});
 }
 
-inline bool
-HttpdOutput::Configure(const ConfigBlock &block, Error &error)
-{
-	/* read configuration */
-	name = block.GetBlockValue("name", "Set name in config");
-	genre = block.GetBlockValue("genre", "Set genre in config");
-	website = block.GetBlockValue("website", "Set website in config");
-
-	unsigned port = block.GetBlockValue("port", 8000u);
-
-	const char *encoder_name =
-		block.GetBlockValue("encoder", "vorbis");
-	const auto encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin == nullptr) {
-		error.Format(httpd_output_domain,
-			     "No such encoder: %s", encoder_name);
-		return false;
-	}
-
-	clients_max = block.GetBlockValue("max_clients", 0u);
-
-	/* set up bind_to_address */
-
-	const char *bind_to_address = block.GetBlockValue("bind_to_address");
-	if (bind_to_address != nullptr && strcmp(bind_to_address, "any") != 0)
-		AddHost(bind_to_address, port);
-	else
-		AddPort(port);
-
-	/* initialize encoder */
-
-	prepared_encoder = encoder_init(*encoder_plugin, block);
-
-	/* determine content type */
-	content_type = prepared_encoder->GetMimeType();
-	if (content_type == nullptr)
-		content_type = "application/octet-stream";
-
-	return true;
-}
-
-inline bool
-HttpdOutput::Init(const ConfigBlock &block, Error &error)
-{
-	return base.Configure(block, error);
-}
-
 static AudioOutput *
-httpd_output_init(const ConfigBlock &block, Error &error)
+httpd_output_init(const ConfigBlock &block, Error &)
 {
-	HttpdOutput *httpd = new HttpdOutput(io_thread_get());
-
-	try {
-		AudioOutput *result = httpd->InitAndConfigure(block, error);
-		if (result == nullptr)
-			delete httpd;
-
-		return result;
-	} catch (const std::runtime_error &e) {
-		delete httpd;
-		throw;
-	}
+	return *new HttpdOutput(io_thread_get(), block);
 }
 
 static void
