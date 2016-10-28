@@ -21,6 +21,7 @@
 #define MPD_SOCKET_ERROR_HXX
 
 #include "Compiler.h"
+#include "system/Error.hxx"
 #include "util/Error.hxx" // IWYU pragma: export
 
 #ifdef WIN32
@@ -134,6 +135,24 @@ static inline Error
 NewSocketError()
 {
 	return NewSocketError(GetSocketError());
+}
+
+gcc_const
+static inline std::system_error
+MakeSocketError(socket_error_t code, const char *msg)
+{
+#ifdef WIN32
+	return MakeLastError(code, msg);
+#else
+	return MakeErrno(code, msg);
+#endif
+}
+
+gcc_pure
+static inline std::system_error
+MakeSocketError(const char *msg)
+{
+	return MakeSocketError(GetSocketError(), msg);
 }
 
 #endif

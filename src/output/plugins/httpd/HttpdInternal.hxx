@@ -177,7 +177,7 @@ public:
 		return &base;
 	}
 
-	bool Bind(Error &error);
+	void Bind();
 	void Unbind();
 
 	/**

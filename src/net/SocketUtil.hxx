@@ -27,11 +27,12 @@
 #define MPD_SOCKET_UTIL_HXX
 
 class SocketAddress;
-class Error;
 
 /**
  * Creates a socket listening on the specified address.  This is a
  * shortcut for socket(), bind() and listen().
+ *
+ * Throws #std::system_error on error.
  *
  * @param domain the socket domain, e.g. PF_INET6
  * @param type the socket type, e.g. SOCK_STREAM
@@ -40,13 +41,12 @@ class Error;
  * @param backlog the backlog parameter for the listen() system call
  * @param error location to store the error occurring, or NULL to
  * ignore errors
- * @return the socket file descriptor or -1 on error
+ * @return the socket file descriptor
  */
 int
 socket_bind_listen(int domain, int type, int protocol,
 		   SocketAddress address,
-		   int backlog,
-		   Error &error);
+		   int backlog);
 
 int
 socket_keepalive(int fd);

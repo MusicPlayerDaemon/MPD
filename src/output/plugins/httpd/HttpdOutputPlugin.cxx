@@ -66,16 +66,14 @@ HttpdOutput::~HttpdOutput()
 	delete prepared_encoder;
 }
 
-inline bool
-HttpdOutput::Bind(Error &error)
+inline void
+HttpdOutput::Bind()
 {
 	open = false;
 
-	bool result = false;
-	BlockingCall(GetEventLoop(), [this, &error, &result](){
-			result = ServerSocket::Open(error);
+	BlockingCall(GetEventLoop(), [this](){
+			ServerSocket::Open();
 		});
-	return result;
 }
 
 inline void
@@ -112,12 +110,10 @@ HttpdOutput::Configure(const ConfigBlock &block, Error &error)
 	/* set up bind_to_address */
 
 	const char *bind_to_address = block.GetBlockValue("bind_to_address");
-	bool success = bind_to_address != nullptr &&
-		strcmp(bind_to_address, "any") != 0
-		? AddHost(bind_to_address, port, error)
-		: AddPort(port, error);
-	if (!success)
-		return false;
+	if (bind_to_address != nullptr && strcmp(bind_to_address, "any") != 0)
+		AddHost(bind_to_address, port);
+	else
+		AddPort(port);
 
 	/* initialize encoder */
 
@@ -144,11 +140,16 @@ httpd_output_init(const ConfigBlock &block, Error &error)
 {
 	HttpdOutput *httpd = new HttpdOutput(io_thread_get());
 
-	AudioOutput *result = httpd->InitAndConfigure(block, error);
-	if (result == nullptr)
-		delete httpd;
+	try {
+		AudioOutput *result = httpd->InitAndConfigure(block, error);
+		if (result == nullptr)
+			delete httpd;
 
-	return result;
+		return result;
+	} catch (const std::runtime_error &e) {
+		delete httpd;
+		throw;
+	}
 }
 
 static void
@@ -271,11 +272,12 @@ HttpdOutput::ReadPage()
 }
 
 static bool
-httpd_output_enable(AudioOutput *ao, Error &error)
+httpd_output_enable(AudioOutput *ao, gcc_unused Error &error)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	return httpd->Bind(error);
+	httpd->Bind();
+	return true;
 }
 
 static void

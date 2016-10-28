@@ -465,11 +465,7 @@ try {
 
 	initialize_decoder_and_player();
 
-	if (!listen_global_init(instance->event_loop, *instance->partition,
-				error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	listen_global_init(instance->event_loop, *instance->partition);
 
 #ifdef ENABLE_DAEMON
 	daemonize_set_user();

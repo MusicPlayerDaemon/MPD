@@ -30,8 +30,9 @@
 #include "system/fd_util.h"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <string>
@@ -96,7 +97,7 @@ public:
 	}
 #endif
 
-	bool Open(Error &error);
+	void Open();
 
 	using SocketMonitor::IsDefined;
 	using SocketMonitor::Close;
@@ -179,17 +180,14 @@ OneServerSocket::OnSocketReady(gcc_unused unsigned flags)
 	return true;
 }
 
-inline bool
-OneServerSocket::Open(Error &error)
+inline void
+OneServerSocket::Open()
 {
 	assert(!IsDefined());
 
 	int _fd = socket_bind_listen(address.GetFamily(),
 				     SOCK_STREAM, 0,
-				     address, 5,
-				     error);
-	if (_fd < 0)
-		return false;
+				     address, 5);
 
 #ifdef HAVE_UN
 	/* allow everybody to connect */
@@ -201,8 +199,6 @@ OneServerSocket::Open(Error &error)
 	/* register in the EventLoop */
 
 	SetFD(_fd);
-
-	return true;
 }
 
 ServerSocket::ServerSocket(EventLoop &_loop)
@@ -212,11 +208,11 @@ ServerSocket::ServerSocket(EventLoop &_loop)
    declaration */
 ServerSocket::~ServerSocket() {}
 
-bool
-ServerSocket::Open(Error &error)
+void
+ServerSocket::Open()
 {
 	OneServerSocket *good = nullptr, *bad = nullptr;
-	Error last_error;
+	std::exception_ptr last_error;
 
 	for (auto &i : sockets) {
 		assert(i.GetSerial() > 0);
@@ -224,30 +220,32 @@ ServerSocket::Open(Error &error)
 
 		if (bad != nullptr && i.GetSerial() != bad->GetSerial()) {
 			Close();
-			error = std::move(last_error);
-			return false;
+			std::rethrow_exception(last_error);
 		}
 
-		Error error2;
-		if (!i.Open(error2)) {
+		try {
+			i.Open();
+		} catch (const std::runtime_error &e) {
 			if (good != nullptr && good->GetSerial() == i.GetSerial()) {
 				const auto address_string = i.ToString();
 				const auto good_string = good->ToString();
-				FormatWarning(server_socket_domain,
-					      "bind to '%s' failed: %s "
-					      "(continuing anyway, because "
-					      "binding to '%s' succeeded)",
-					      address_string.c_str(),
-					      error2.GetMessage(),
-					      good_string.c_str());
+				FormatError(e,
+					    "bind to '%s' failed "
+					    "(continuing anyway, because "
+					    "binding to '%s' succeeded)",
+					    address_string.c_str(),
+					    good_string.c_str());
 			} else if (bad == nullptr) {
 				bad = &i;
 
 				const auto address_string = i.ToString();
-				error2.FormatPrefix("Failed to bind to '%s': ",
-						    address_string.c_str());
 
-				last_error = std::move(error2);
+				try {
+					std::throw_with_nested(FormatRuntimeError("Failed to bind to '%s'",
+										  address_string.c_str()));
+				} catch (...) {
+					last_error = std::current_exception();
+				}
 			}
 
 			continue;
@@ -260,17 +258,14 @@ ServerSocket::Open(Error &error)
 
 		if (bad != nullptr) {
 			bad = nullptr;
-			last_error.Clear();
+			last_error = nullptr;
 		}
 	}
 
 	if (bad != nullptr) {
 		Close();
-		error = std::move(last_error);
-		return false;
+		std::rethrow_exception(last_error);
 	}
-
-	return true;
 }
 
 void
@@ -299,26 +294,21 @@ ServerSocket::AddAddress(AllocatedSocketAddress &&address)
 	return sockets.back();
 }
 
-bool
-ServerSocket::AddFD(int fd, Error &error)
+void
+ServerSocket::AddFD(int fd)
 {
 	assert(fd >= 0);
 
 	StaticSocketAddress address;
 	socklen_t address_length = sizeof(address);
 	if (getsockname(fd, address.GetAddress(),
-			&address_length) < 0) {
-		SetSocketError(error);
-		error.AddPrefix("Failed to get socket address: ");
-		return false;
-	}
+			&address_length) < 0)
+		throw MakeSocketError("Failed to get socket address");
 
 	address.SetSize(address_length);
 
 	OneServerSocket &s = AddAddress(address);
 	s.SetFD(fd);
-
-	return true;
 }
 
 #ifdef HAVE_TCP
@@ -367,14 +357,12 @@ SupportsIPv6()
 
 #endif /* HAVE_TCP */
 
-bool
-ServerSocket::AddPort(unsigned port, Error &error)
+void
+ServerSocket::AddPort(unsigned port)
 {
 #ifdef HAVE_TCP
-	if (port == 0 || port > 0xffff) {
-		error.Set(server_socket_domain, "Invalid TCP port");
-		return false;
-	}
+	if (port == 0 || port > 0xffff)
+		throw std::runtime_error("Invalid TCP port");
 
 #ifdef HAVE_IPV6
 	if (SupportsIPv6())
@@ -383,49 +371,37 @@ ServerSocket::AddPort(unsigned port, Error &error)
 	AddPortIPv4(port);
 
 	++next_serial;
-
-	return true;
 #else /* HAVE_TCP */
 	(void)port;
 
-	error.Set(server_socket_domain, "TCP support is disabled");
-	return false;
+	throw std::runtime_error("TCP support is disabled");
 #endif /* HAVE_TCP */
 }
 
-bool
-ServerSocket::AddHost(const char *hostname, unsigned port, Error &error)
+void
+ServerSocket::AddHost(const char *hostname, unsigned port)
 {
 #ifdef HAVE_TCP
 	struct addrinfo *ai = resolve_host_port(hostname, port,
-						AI_PASSIVE, SOCK_STREAM,
-						error);
-	if (ai == nullptr)
-		return false;
+						AI_PASSIVE, SOCK_STREAM);
+	AtScopeExit(ai) { freeaddrinfo(ai); };
 
 	for (const struct addrinfo *i = ai; i != nullptr; i = i->ai_next)
 		AddAddress(SocketAddress(i->ai_addr, i->ai_addrlen));
 
-	freeaddrinfo(ai);
-
 	++next_serial;
-
-	return true;
 #else /* HAVE_TCP */
 	(void)hostname;
 	(void)port;
 
-	error.Set(server_socket_domain, "TCP support is disabled");
-	return false;
+	throw std::runtime_error("TCP support is disabled");
 #endif /* HAVE_TCP */
 }
 
-bool
-ServerSocket::AddPath(AllocatedPath &&path, Error &error)
+void
+ServerSocket::AddPath(AllocatedPath &&path)
 {
 #ifdef HAVE_UN
-	(void)error;
-
 	unlink(path.c_str());
 
 	AllocatedSocketAddress address;
@@ -433,14 +409,10 @@ ServerSocket::AddPath(AllocatedPath &&path, Error &error)
 
 	OneServerSocket &s = AddAddress(std::move(address));
 	s.SetPath(std::move(path));
-
-	return true;
 #else /* !HAVE_UN */
 	(void)path;
 
-	error.Set(server_socket_domain,
-		  "UNIX domain socket support is disabled");
-	return false;
+	throw std::runtime_error("UNIX domain socket support is disabled");
 #endif /* !HAVE_UN */
 }
 

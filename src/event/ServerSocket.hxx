@@ -25,7 +25,6 @@
 class SocketAddress;
 class AllocatedSocketAddress;
 class EventLoop;
-class Error;
 class AllocatedPath;
 class OneServerSocket;
 
@@ -71,40 +70,49 @@ public:
 	/**
 	 * Add a listener on a port on all interfaces.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param port the TCP port
 	 * @param error location to store the error occurring
-	 * @return true on success
 	 */
-	bool AddPort(unsigned port, Error &error);
+	void AddPort(unsigned port);
 
 	/**
 	 * Resolves a host name, and adds listeners on all addresses in the
 	 * result set.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param hostname the host name to be resolved
 	 * @param port the TCP port
 	 * @param error location to store the error occurring
-	 * @return true on success
 	 */
-	bool AddHost(const char *hostname, unsigned port, Error &error);
+	void AddHost(const char *hostname, unsigned port);
 
 	/**
 	 * Add a listener on a Unix domain socket.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param path the absolute socket path
 	 * @param error location to store the error occurring
-	 * @return true on success
 	 */
-	bool AddPath(AllocatedPath &&path, Error &error);
+	void AddPath(AllocatedPath &&path);
 
 	/**
 	 * Add a socket descriptor that is accepting connections.  After this
 	 * has been called, don't call server_socket_open(), because the
 	 * socket is already open.
+	 *
+	 * Throws #std::runtime_error on error.
 	 */
-	bool AddFD(int fd, Error &error);
+	void AddFD(int fd);
 
-	bool Open(Error &error);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void Open();
+
 	void Close();
 
 protected:

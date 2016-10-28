@@ -24,24 +24,21 @@
 #include "Compiler.h"
 
 struct addrinfo;
-class Error;
-class Domain;
-
-extern const Domain resolver_domain;
 
 /**
  * Resolve a specification in the form "host", "host:port",
  * "[host]:port".  This is a convenience wrapper for getaddrinfo().
  *
+ * Throws #std::runtime_error on error.
+ *
  * @param default_port a default port number that will be used if none
  * is given in the string (if applicable); pass 0 to go without a
  * default
  * @return an #addrinfo linked list that must be freed with
- * freeaddrinfo(), or NULL on error
+ * freeaddrinfo()
  */
 addrinfo *
 resolve_host_port(const char *host_port, unsigned default_port,
-		  int flags, int socktype,
-		  Error &error);
+		  int flags, int socktype);
 
 #endif
