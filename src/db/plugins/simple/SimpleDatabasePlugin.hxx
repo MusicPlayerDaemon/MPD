@@ -67,7 +67,7 @@ class SimpleDatabase : public Database {
 	mutable unsigned borrowed_song_count;
 #endif
 
-	SimpleDatabase();
+	SimpleDatabase(const ConfigBlock &block);
 
 	SimpleDatabase(AllocatedPath &&_path, bool _compress);
 

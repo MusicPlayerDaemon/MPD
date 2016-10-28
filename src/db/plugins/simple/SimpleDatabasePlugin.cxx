@@ -51,14 +51,20 @@
 
 static constexpr Domain simple_db_domain("simple_db");
 
-inline SimpleDatabase::SimpleDatabase()
+inline SimpleDatabase::SimpleDatabase(const ConfigBlock &block)
 	:Database(simple_db_plugin),
-	 path(AllocatedPath::Null()),
+	 path(block.GetPath("path")),
 #ifdef ENABLE_ZLIB
-	 compress(true),
+	 compress(block.GetBlockValue("compress", true)),
 #endif
-	 cache_path(AllocatedPath::Null()),
-	 prefixed_light_song(nullptr) {}
+	 cache_path(block.GetPath("cache_directory")),
+	 prefixed_light_song(nullptr)
+{
+	if (path.IsNull())
+		throw std::runtime_error("No \"path\" parameter specified");
+
+	path_utf8 = path.ToUTF8();
+}
 
 inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 #ifndef ENABLE_ZLIB
@@ -80,25 +86,7 @@ SimpleDatabase::Create(gcc_unused EventLoop &loop,
 		       gcc_unused DatabaseListener &listener,
 		       const ConfigBlock &block, Error &)
 {
-	SimpleDatabase *db = new SimpleDatabase();
-	db->Configure(block);
-	return db;
-}
-
-void
-SimpleDatabase::Configure(const ConfigBlock &block)
-{
-	path = block.GetPath("path");
-	if (path.IsNull())
-		throw std::runtime_error("No \"path\" parameter specified");
-
-	path_utf8 = path.ToUTF8();
-
-	cache_path = block.GetPath("cache_directory");
-
-#ifdef ENABLE_ZLIB
-	compress = block.GetBlockValue("compress", compress);
-#endif
+	return new SimpleDatabase(block);
 }
 
 void
