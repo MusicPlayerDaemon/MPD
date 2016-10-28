@@ -128,18 +128,7 @@ config_get_path(ConfigOption option, Error &error)
 	if (param == nullptr)
 		return AllocatedPath::Null();
 
-	return config_parse_path(param, error);
-}
-
-AllocatedPath
-config_parse_path(const ConfigParam *param, Error & error)
-{
-	AllocatedPath path = ParsePath(param->value.c_str(), error);
-	if (gcc_unlikely(path.IsNull()))
-		error.FormatPrefix("Invalid path at line %i: ",
-				   param->line);
-
-	return path;
+	return param->GetPath(error);
 }
 
 unsigned

@@ -19,6 +19,9 @@
 
 #include "config.h"
 #include "Param.hxx"
+#include "ConfigPath.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "util/Error.hxx"
 
 ConfigParam::ConfigParam(const char *_value, int _line)
 	:next(nullptr), value(_value), line(_line), used(false) {}
@@ -26,4 +29,15 @@ ConfigParam::ConfigParam(const char *_value, int _line)
 ConfigParam::~ConfigParam()
 {
 	delete next;
+}
+
+AllocatedPath
+ConfigParam::GetPath(Error &error) const
+{
+	auto path = ParsePath(value.c_str(), error);
+	if (gcc_unlikely(path.IsNull()))
+		error.FormatPrefix("Invalid path at line %i: ", line);
+
+	return path;
+
 }

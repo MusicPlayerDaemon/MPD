@@ -84,14 +84,6 @@ config_get_string(enum ConfigOption option, const char *default_value=nullptr);
 AllocatedPath
 config_get_path(enum ConfigOption option, Error &error);
 
-/**
- * Parse a configuration parameter as a path.
- * If there is a tilde prefix, it is expanded. If the path could
- * not be parsed, returns AllocatedPath::Null() and sets the error.
- */
-AllocatedPath
-config_parse_path(const ConfigParam *param, Error & error_r);
-
 gcc_pure
 unsigned
 config_get_unsigned(enum ConfigOption option, unsigned default_value);

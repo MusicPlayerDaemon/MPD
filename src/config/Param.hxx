@@ -25,6 +25,9 @@
 
 #include <string>
 
+class Error;
+class AllocatedPath;
+
 struct ConfigParam {
 	/**
 	 * The next ConfigParam with the same name.  The destructor
@@ -62,6 +65,13 @@ struct ConfigParam {
 	bool IsNull() const {
 		return line < 0;
 	}
+
+	/**
+	 * Parse the value as a path.  If there is a tilde prefix, it
+	 * is expanded.  If the path could not be parsed, returns
+	 * AllocatedPath::Null() and sets the error.
+	 */
+	AllocatedPath GetPath(Error &error) const;
 };
 
 #endif
