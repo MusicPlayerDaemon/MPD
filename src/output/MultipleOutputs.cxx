@@ -32,6 +32,8 @@
 #include "config/ConfigOption.hxx"
 #include "notify.hxx"
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <string.h>
 
@@ -51,7 +53,7 @@ MultipleOutputs::~MultipleOutputs()
 static AudioOutput *
 LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
 	   PlayerControl &pc, const ConfigBlock &block)
-{
+try {
 	Error error;
 	AudioOutput *output = audio_output_new(event_loop, block,
 					       mixer_listener,
@@ -66,6 +68,13 @@ LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
 	}
 
 	return output;
+} catch (const std::runtime_error &e) {
+	if (block.line > 0)
+		FormatFatalError("line %i: %s",
+				 block.line,
+				 e.what());
+	else
+		FatalError(e.what());
 }
 
 void

@@ -454,6 +454,9 @@ private:
  */
 extern struct notify audio_output_client_notify;
 
+/**
+ * Throws #std::runtime_error on error.
+ */
 AudioOutput *
 audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 		 MixerListener &mixer_listener,

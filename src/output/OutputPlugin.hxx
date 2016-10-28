@@ -50,6 +50,8 @@ struct AudioOutputPlugin {
 	 * Configure and initialize the device, but do not open it
 	 * yet.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param param the configuration section, or nullptr if there is
 	 * no configuration
 	 * @return nullptr on error, or an opaque pointer to the plugin's
