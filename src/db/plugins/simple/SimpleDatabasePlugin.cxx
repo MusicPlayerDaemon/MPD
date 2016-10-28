@@ -92,7 +92,7 @@ SimpleDatabase::Create(gcc_unused EventLoop &loop,
 bool
 SimpleDatabase::Configure(const ConfigBlock &block, Error &error)
 {
-	path = block.GetBlockPath("path", error);
+	path = block.GetPath("path", error);
 	if (path.IsNull()) {
 		if (!error.IsDefined())
 			error.Set(simple_db_domain,
@@ -102,7 +102,7 @@ SimpleDatabase::Configure(const ConfigBlock &block, Error &error)
 
 	path_utf8 = path.ToUTF8();
 
-	cache_path = block.GetBlockPath("cache_directory", error);
+	cache_path = block.GetPath("cache_directory", error);
 	if (path.IsNull() && error.IsDefined())
 		return false;
 

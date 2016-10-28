@@ -183,7 +183,7 @@ FifoOutput::Create(const ConfigBlock &block, Error &error)
 {
 	FifoOutput *fd = new FifoOutput();
 
-	fd->path = block.GetBlockPath("path", error);
+	fd->path = block.GetPath("path", error);
 	if (fd->path.IsNull()) {
 		delete fd;
 

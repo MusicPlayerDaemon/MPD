@@ -91,8 +91,8 @@ ConfigBlock::GetBlockValue(const char *name, const char *default_value) const
 }
 
 AllocatedPath
-ConfigBlock::GetBlockPath(const char *name, const char *default_value,
-			   Error &error) const
+ConfigBlock::GetPath(const char *name, const char *default_value,
+		     Error &error) const
 {
 	assert(!error.IsDefined());
 
@@ -119,9 +119,9 @@ ConfigBlock::GetBlockPath(const char *name, const char *default_value,
 }
 
 AllocatedPath
-ConfigBlock::GetBlockPath(const char *name, Error &error) const
+ConfigBlock::GetPath(const char *name, Error &error) const
 {
-	return GetBlockPath(name, nullptr, error);
+	return GetPath(name, nullptr, error);
 }
 
 int

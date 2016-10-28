@@ -128,7 +128,7 @@ RecorderOutput::Configure(const ConfigBlock &block, Error &error)
 		return false;
 	}
 
-	path = block.GetBlockPath("path", error);
+	path = block.GetPath("path", error);
 	if (error.IsDefined())
 		return false;
 

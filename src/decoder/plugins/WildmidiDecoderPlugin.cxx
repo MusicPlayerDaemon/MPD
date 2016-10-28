@@ -42,9 +42,9 @@ wildmidi_init(const ConfigBlock &block)
 {
 	Error error;
 	const AllocatedPath path =
-		block.GetBlockPath("config_file",
-				   "/etc/timidity/timidity.cfg",
-				   error);
+		block.GetPath("config_file",
+			      "/etc/timidity/timidity.cfg",
+			      error);
 	if (path.IsNull())
 		FatalError(error);
 
