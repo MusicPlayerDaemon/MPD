@@ -64,9 +64,7 @@ struct AudioOutputPlugin {
 
 	/**
 	 * Enable the device.  This may allocate resources, preparing
-	 * for the device to be opened.  Enabling a device cannot
-	 * fail: if an error occurs during that, it should be reported
-	 * by the open() method.
+	 * for the device to be opened.
 	 *
 	 * @return true on success, false on error
 	 */
@@ -96,7 +94,7 @@ struct AudioOutputPlugin {
 	 * Returns a positive number if the output thread shall further
 	 * delay the next call to play() or pause(), which will happen
 	 * until this function returns 0.  This should be implemented
-	 * instead of doing a sleep inside the plugin, because this 
+	 * instead of doing a sleep inside the plugin, because this
 	 * allows MPD to listen to commands meanwhile.
 	 *
 	 * @return the number of milliseconds to wait
@@ -137,8 +135,8 @@ struct AudioOutputPlugin {
 	 * disconnected.  Plugins which do not support pausing will
 	 * simply be closed, and have to be reopened when unpaused.
 	 *
-	 * @return false on error (output will be closed then), true
-	 * for continue to pause
+	 * @return false on error (output will be closed by caller),
+	 * true for continue to pause
 	 */
 	bool (*pause)(AudioOutput *data);
 
