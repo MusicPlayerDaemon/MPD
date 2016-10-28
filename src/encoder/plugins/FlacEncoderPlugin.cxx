@@ -89,10 +89,10 @@ private:
 };
 
 class PreparedFlacEncoder final : public PreparedEncoder {
-	unsigned compression;
+	const unsigned compression;
 
 public:
-	bool Configure(const ConfigBlock &block, Error &error);
+	PreparedFlacEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format, Error &) override;
@@ -104,26 +104,15 @@ public:
 
 static constexpr Domain flac_encoder_domain("vorbis_encoder");
 
-bool
-PreparedFlacEncoder::Configure(const ConfigBlock &block, Error &)
+PreparedFlacEncoder::PreparedFlacEncoder(const ConfigBlock &block)
+	:compression(block.GetBlockValue("compression", 5u))
 {
-	compression = block.GetBlockValue("compression", 5u);
-	return true;
 }
 
 static PreparedEncoder *
-flac_encoder_init(const ConfigBlock &block, Error &error)
+flac_encoder_init(const ConfigBlock &block)
 {
-	auto *encoder = new PreparedFlacEncoder();
-
-	/* load configuration from "block" */
-	if (!encoder->Configure(block, error)) {
-		/* configuration has failed, roll back and return error */
-		delete encoder;
-		return nullptr;
-	}
-
-	return encoder;
+	return new PreparedFlacEncoder(block);
 }
 
 static bool

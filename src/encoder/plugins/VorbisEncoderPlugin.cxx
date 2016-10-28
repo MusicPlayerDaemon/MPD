@@ -25,6 +25,7 @@
 #include "config/ConfigError.hxx"
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 
@@ -73,7 +74,7 @@ class PreparedVorbisEncoder final : public PreparedEncoder {
 	int bitrate;
 
 public:
-	bool Configure(const ConfigBlock &block, Error &error);
+	PreparedVorbisEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format, Error &) override;
@@ -85,8 +86,7 @@ public:
 
 static constexpr Domain vorbis_encoder_domain("vorbis_encoder");
 
-bool
-PreparedVorbisEncoder::Configure(const ConfigBlock &block, Error &error)
+PreparedVorbisEncoder::PreparedVorbisEncoder(const ConfigBlock &block)
 {
 	const char *value = block.GetBlockValue("quality");
 	if (value != nullptr) {
@@ -95,56 +95,33 @@ PreparedVorbisEncoder::Configure(const ConfigBlock &block, Error &error)
 		char *endptr;
 		quality = ParseDouble(value, &endptr);
 
-		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
-			error.Format(config_domain,
-				     "quality \"%s\" is not a number in the "
-				     "range -1 to 10",
-				     value);
-			return false;
-		}
+		if (*endptr != '\0' || quality < -1.0 || quality > 10.0)
+			throw FormatRuntimeError("quality \"%s\" is not a number in the "
+						 "range -1 to 10",
+						 value);
 
-		if (block.GetBlockValue("bitrate") != nullptr) {
-			error.Set(config_domain,
-				  "quality and bitrate are both defined");
-			return false;
-		}
+		if (block.GetBlockValue("bitrate") != nullptr)
+			throw std::runtime_error("quality and bitrate are both defined");
 	} else {
 		/* a bit rate was configured */
 
 		value = block.GetBlockValue("bitrate");
-		if (value == nullptr) {
-			error.Set(config_domain,
-				  "neither bitrate nor quality defined");
-			return false;
-		}
+		if (value == nullptr)
+			throw std::runtime_error("neither bitrate nor quality defined");
 
 		quality = -2.0;
 
 		char *endptr;
 		bitrate = ParseInt(value, &endptr);
-		if (*endptr != '\0' || bitrate <= 0) {
-			error.Set(config_domain,
-				  "bitrate should be a positive integer");
-			return false;
-		}
+		if (*endptr != '\0' || bitrate <= 0)
+			throw std::runtime_error("bitrate should be a positive integer");
 	}
-
-	return true;
 }
 
 static PreparedEncoder *
-vorbis_encoder_init(const ConfigBlock &block, Error &error)
+vorbis_encoder_init(const ConfigBlock &block)
 {
-	auto *encoder = new PreparedVorbisEncoder();
-
-	/* load configuration from "block" */
-	if (!encoder->Configure(block, error)) {
-		/* configuration has failed, roll back and return error */
-		delete encoder;
-		return nullptr;
-	}
-
-	return encoder;
+	return new PreparedVorbisEncoder(block);
 }
 
 bool

@@ -23,6 +23,7 @@
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
 #include "util/NumberParser.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
@@ -77,7 +78,7 @@ class PreparedTwolameEncoder final : public PreparedEncoder {
 	int bitrate;
 
 public:
-	bool Configure(const ConfigBlock &block, Error &error);
+	PreparedTwolameEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format, Error &) override;
@@ -89,8 +90,7 @@ public:
 
 static constexpr Domain twolame_encoder_domain("twolame_encoder");
 
-bool
-PreparedTwolameEncoder::Configure(const ConfigBlock &block, Error &error)
+PreparedTwolameEncoder::PreparedTwolameEncoder(const ConfigBlock &block)
 {
 	const char *value;
 	char *endptr;
@@ -101,58 +101,35 @@ PreparedTwolameEncoder::Configure(const ConfigBlock &block, Error &error)
 
 		quality = ParseDouble(value, &endptr);
 
-		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
-			error.Format(config_domain,
-				     "quality \"%s\" is not a number in the "
-				     "range -1 to 10",
-				     value);
-			return false;
-		}
+		if (*endptr != '\0' || quality < -1.0 || quality > 10.0)
+			throw FormatRuntimeError("quality \"%s\" is not a number in the "
+						 "range -1 to 10",
+						 value);
 
-		if (block.GetBlockValue("bitrate") != nullptr) {
-			error.Set(config_domain,
-				  "quality and bitrate are both defined");
-			return false;
-		}
+		if (block.GetBlockValue("bitrate") != nullptr)
+			throw std::runtime_error("quality and bitrate are both defined");
 	} else {
 		/* a bit rate was configured */
 
 		value = block.GetBlockValue("bitrate");
-		if (value == nullptr) {
-			error.Set(config_domain,
-				  "neither bitrate nor quality defined");
-			return false;
-		}
+		if (value == nullptr)
+			throw std::runtime_error("neither bitrate nor quality defined");
 
 		quality = -2.0;
 		bitrate = ParseInt(value, &endptr);
 
-		if (*endptr != '\0' || bitrate <= 0) {
-			error.Set(config_domain,
-				  "bitrate should be a positive integer");
-			return false;
-		}
+		if (*endptr != '\0' || bitrate <= 0)
+			throw std::runtime_error("bitrate should be a positive integer");
 	}
-
-	return true;
 }
 
 static PreparedEncoder *
-twolame_encoder_init(const ConfigBlock &block, Error &error_r)
+twolame_encoder_init(const ConfigBlock &block)
 {
 	FormatDebug(twolame_encoder_domain,
 		    "libtwolame version %s", get_twolame_version());
 
-	auto *encoder = new PreparedTwolameEncoder();
-
-	/* load configuration from "block" */
-	if (!encoder->Configure(block, error_r)) {
-		/* configuration has failed, roll back and return error */
-		delete encoder;
-		return nullptr;
-	}
-
-	return encoder;
+	return new PreparedTwolameEncoder(block);
 }
 
 static bool

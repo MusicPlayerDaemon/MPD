@@ -39,7 +39,7 @@ static uint8_t zero[256];
 
 int
 main(gcc_unused int argc, gcc_unused char **argv)
-{
+try {
 	gcc_unused bool success;
 
 	/* create the encoder */
@@ -50,65 +50,62 @@ main(gcc_unused int argc, gcc_unused char **argv)
 	ConfigBlock block;
 	block.AddBlockParam("quality", "5.0", -1);
 
-	std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block,
-								IgnoreError()));
+	std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block));
 	assert(p_encoder != nullptr);
 
-	try {
-		/* open the encoder */
+	/* open the encoder */
 
-		AudioFormat audio_format(44100, SampleFormat::S16, 2);
-		std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format,
-								 IgnoreError()));
-		assert(encoder != nullptr);
+	AudioFormat audio_format(44100, SampleFormat::S16, 2);
+	std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format,
+							 IgnoreError()));
+	assert(encoder != nullptr);
 
-		StdioOutputStream os(stdout);
+	StdioOutputStream os(stdout);
 
-		EncoderToOutputStream(os, *encoder);
+	EncoderToOutputStream(os, *encoder);
 
-		/* write a block of data */
+	/* write a block of data */
 
-		success = encoder->Write(zero, sizeof(zero), IgnoreError());
-		assert(success);
+	success = encoder->Write(zero, sizeof(zero), IgnoreError());
+	assert(success);
 
-		EncoderToOutputStream(os, *encoder);
+	EncoderToOutputStream(os, *encoder);
 
-		/* write a tag */
+	/* write a tag */
 
-		success = encoder->PreTag(IgnoreError());
-		assert(success);
+	success = encoder->PreTag(IgnoreError());
+	assert(success);
 
-		EncoderToOutputStream(os, *encoder);
+	EncoderToOutputStream(os, *encoder);
 
-		Tag tag;
+	Tag tag;
 
-		{
-			TagBuilder tag_builder;
-			tag_builder.AddItem(TAG_ARTIST, "Foo");
-			tag_builder.AddItem(TAG_TITLE, "Bar");
-			tag_builder.Commit(tag);
-		}
-
-		success = encoder->SendTag(tag, IgnoreError());
-		assert(success);
-
-		EncoderToOutputStream(os, *encoder);
-
-		/* write another block of data */
-
-		success = encoder->Write(zero, sizeof(zero), IgnoreError());
-		assert(success);
-
-		/* finish */
-
-		success = encoder->End(IgnoreError());
-		assert(success);
-
-		EncoderToOutputStream(os, *encoder);
-
-		return EXIT_SUCCESS;
-	} catch (const std::exception &e) {
-		LogError(e);
-		return EXIT_FAILURE;
+	{
+		TagBuilder tag_builder;
+		tag_builder.AddItem(TAG_ARTIST, "Foo");
+		tag_builder.AddItem(TAG_TITLE, "Bar");
+		tag_builder.Commit(tag);
 	}
+
+	success = encoder->SendTag(tag, IgnoreError());
+	assert(success);
+
+	EncoderToOutputStream(os, *encoder);
+
+	/* write another block of data */
+
+	success = encoder->Write(zero, sizeof(zero), IgnoreError());
+	assert(success);
+
+	/* finish */
+
+	success = encoder->End(IgnoreError());
+	assert(success);
+
+	EncoderToOutputStream(os, *encoder);
+
+	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

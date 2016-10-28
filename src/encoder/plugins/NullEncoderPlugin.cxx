@@ -51,8 +51,7 @@ public:
 };
 
 static PreparedEncoder *
-null_encoder_init(gcc_unused const ConfigBlock &block,
-		  gcc_unused Error &error)
+null_encoder_init(gcc_unused const ConfigBlock &block)
 {
 	return new PreparedNullEncoder();
 }

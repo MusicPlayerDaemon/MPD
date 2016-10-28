@@ -30,6 +30,8 @@
 #include <opus.h>
 #include <ogg/ogg.h>
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <stdlib.h>
 
@@ -78,7 +80,7 @@ class PreparedOpusEncoder final : public PreparedEncoder {
 	int signal;
 
 public:
-	bool Configure(const ConfigBlock &block, Error &error);
+	PreparedOpusEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format, Error &) override;
@@ -90,8 +92,7 @@ public:
 
 static constexpr Domain opus_encoder_domain("opus_encoder");
 
-bool
-PreparedOpusEncoder::Configure(const ConfigBlock &block, Error &error)
+PreparedOpusEncoder::PreparedOpusEncoder(const ConfigBlock &block)
 {
 	const char *value = block.GetBlockValue("bitrate", "auto");
 	if (strcmp(value, "auto") == 0)
@@ -102,17 +103,13 @@ PreparedOpusEncoder::Configure(const ConfigBlock &block, Error &error)
 		char *endptr;
 		bitrate = strtoul(value, &endptr, 10);
 		if (endptr == value || *endptr != 0 ||
-		    bitrate < 500 || bitrate > 512000) {
-			error.Set(config_domain, "Invalid bit rate");
-			return false;
-		}
+		    bitrate < 500 || bitrate > 512000)
+			throw std::runtime_error("Invalid bit rate");
 	}
 
 	complexity = block.GetBlockValue("complexity", 10u);
-	if (complexity > 10) {
-		error.Format(config_domain, "Invalid complexity");
-		return false;
-	}
+	if (complexity > 10)
+		throw std::runtime_error("Invalid complexity");
 
 	value = block.GetBlockValue("signal", "auto");
 	if (strcmp(value, "auto") == 0)
@@ -121,27 +118,14 @@ PreparedOpusEncoder::Configure(const ConfigBlock &block, Error &error)
 		signal = OPUS_SIGNAL_VOICE;
 	else if (strcmp(value, "music") == 0)
 		signal = OPUS_SIGNAL_MUSIC;
-	else {
-		error.Format(config_domain, "Invalid signal");
-		return false;
-	}
-
-	return true;
+	else
+		throw std::runtime_error("Invalid signal");
 }
 
 static PreparedEncoder *
-opus_encoder_init(const ConfigBlock &block, Error &error)
+opus_encoder_init(const ConfigBlock &block)
 {
-	auto *encoder = new PreparedOpusEncoder();
-
-	/* load configuration from "block" */
-	if (!encoder->Configure(block, error)) {
-		/* configuration has failed, roll back and return error */
-		delete encoder;
-		return nullptr;
-	}
-
-	return encoder;
+	return new PreparedOpusEncoder(block);
 }
 
 OpusEncoder::OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc)

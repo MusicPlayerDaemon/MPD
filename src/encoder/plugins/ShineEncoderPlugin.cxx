@@ -88,7 +88,7 @@ class PreparedShineEncoder final : public PreparedEncoder {
 	shine_config_t config;
 
 public:
-	bool Configure(const ConfigBlock &block, Error &error);
+	PreparedShineEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
 	Encoder *Open(AudioFormat &audio_format, Error &) override;
@@ -98,28 +98,16 @@ public:
 	}
 };
 
-inline bool
-PreparedShineEncoder::Configure(const ConfigBlock &block, Error &)
+PreparedShineEncoder::PreparedShineEncoder(const ConfigBlock &block)
 {
 	shine_set_config_mpeg_defaults(&config.mpeg);
 	config.mpeg.bitr = block.GetBlockValue("bitrate", 128);
-
-	return true;
 }
 
 static PreparedEncoder *
-shine_encoder_init(const ConfigBlock &block, Error &error)
+shine_encoder_init(const ConfigBlock &block)
 {
-	auto *encoder = new PreparedShineEncoder();
-
-	/* load configuration from "block" */
-	if (!encoder->Configure(block, error)) {
-		/* configuration has failed, roll back and return error */
-		delete encoder;
-		return nullptr;
-	}
-
-	return encoder;
+	return new PreparedShineEncoder(block);
 }
 
 static shine_t

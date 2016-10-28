@@ -28,6 +28,7 @@
 
 struct AudioFormat;
 struct Tag;
+class Error;
 
 class Encoder {
 	const bool implements_tag;

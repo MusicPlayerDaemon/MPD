@@ -148,9 +148,7 @@ RecorderOutput::Configure(const ConfigBlock &block, Error &error)
 
 	/* initialize encoder */
 
-	prepared_encoder = encoder_init(*encoder_plugin, block, error);
-	if (prepared_encoder == nullptr)
-		return false;
+	prepared_encoder = encoder_init(*encoder_plugin, block);
 
 	return true;
 }
@@ -160,14 +158,19 @@ RecorderOutput::Create(const ConfigBlock &block, Error &error)
 {
 	RecorderOutput *recorder = new RecorderOutput();
 
-	if (!recorder->Initialize(block, error)) {
-		delete recorder;
-		return nullptr;
-	}
+	try {
+		if (!recorder->Initialize(block, error)) {
+			delete recorder;
+			return nullptr;
+		}
 
-	if (!recorder->Configure(block, error)) {
+		if (!recorder->Configure(block, error)) {
+			delete recorder;
+			return nullptr;
+		}
+	} catch (...) {
 		delete recorder;
-		return nullptr;
+		throw;
 	}
 
 	return recorder;

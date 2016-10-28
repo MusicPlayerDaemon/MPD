@@ -117,9 +117,7 @@ HttpdOutput::Configure(const ConfigBlock &block, Error &error)
 
 	/* initialize encoder */
 
-	prepared_encoder = encoder_init(*encoder_plugin, block, error);
-	if (prepared_encoder == nullptr)
-		return false;
+	prepared_encoder = encoder_init(*encoder_plugin, block);
 
 	/* determine content type */
 	content_type = prepared_encoder->GetMimeType();

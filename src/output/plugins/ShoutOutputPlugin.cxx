@@ -194,9 +194,7 @@ ShoutOutput::Configure(const ConfigBlock &block, Error &error)
 		return false;
 	}
 
-	prepared_encoder = encoder_init(*encoder_plugin, block, error);
-	if (prepared_encoder == nullptr)
-		return false;
+	prepared_encoder = encoder_init(*encoder_plugin, block);
 
 	unsigned shout_format;
 	if (strcmp(encoding, "mp3") == 0 || strcmp(encoding, "lame") == 0)
@@ -304,9 +302,14 @@ ShoutOutput::Create(const ConfigBlock &block, Error &error)
 		return nullptr;
 	}
 
-	if (!sd->Configure(block, error)) {
+	try {
+		if (!sd->Configure(block, error)) {
+			delete sd;
+			return nullptr;
+		}
+	} catch (...) {
 		delete sd;
-		return nullptr;
+		throw;
 	}
 
 	return sd;

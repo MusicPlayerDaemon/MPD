@@ -67,11 +67,7 @@ int main(int argc, char **argv)
 
 	try {
 		Error error;
-		std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block, error));
-		if (p_encoder == nullptr) {
-			LogError(error, "Failed to initialize encoder");
-			return EXIT_FAILURE;
-		}
+		std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block));
 
 		/* open the encoder */
 
