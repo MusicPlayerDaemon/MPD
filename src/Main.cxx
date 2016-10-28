@@ -389,7 +389,7 @@ static int mpd_main_after_fork(struct options);
 static inline
 #endif
 int mpd_main(int argc, char *argv[])
-{
+try {
 	struct options options;
 	Error error;
 
@@ -414,28 +414,23 @@ int mpd_main(int argc, char *argv[])
 	io_thread_init();
 	config_global_init();
 
-	try {
 #ifdef ANDROID
-		(void)argc;
-		(void)argv;
+	(void)argc;
+	(void)argv;
 
-		const auto sdcard = Environment::getExternalStorageDirectory();
-		if (!sdcard.IsNull()) {
-			const auto config_path =
-				AllocatedPath::Build(sdcard, "mpd.conf");
-			if (FileExists(config_path))
-				ReadConfigFile(config_path);
-		}
+	const auto sdcard = Environment::getExternalStorageDirectory();
+	if (!sdcard.IsNull()) {
+		const auto config_path =
+			AllocatedPath::Build(sdcard, "mpd.conf");
+		if (FileExists(config_path))
+			ReadConfigFile(config_path);
+	}
 #else
-		if (!parse_cmdline(argc, argv, &options, error)) {
-			LogError(error);
-			return EXIT_FAILURE;
-		}
-#endif
-	} catch (const std::exception &e) {
-		LogError(e);
+	if (!parse_cmdline(argc, argv, &options, error)) {
+		LogError(error);
 		return EXIT_FAILURE;
 	}
+#endif
 
 #ifdef ENABLE_DAEMON
 	if (!glue_daemonize_init(&options, error)) {
@@ -496,6 +491,9 @@ int mpd_main(int argc, char *argv[])
 #else
 	return mpd_main_after_fork(options);
 #endif
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }
 
 static int mpd_main_after_fork(struct options options)
