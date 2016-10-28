@@ -21,6 +21,8 @@
 
 #include <sqlite3.h>
 
+#include <string>
+
 static std::string
 MakeSqliteErrorMessage(sqlite3 *db, const char *msg)
 {
