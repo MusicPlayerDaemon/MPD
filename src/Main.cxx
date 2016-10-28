@@ -183,14 +183,9 @@ glue_db_init_and_load(void)
 {
 	Error error;
 	instance->database =
-		CreateConfiguredDatabase(instance->event_loop, *instance,
-					 error);
-	if (instance->database == nullptr) {
-		if (error.IsDefined())
-			FatalError(error);
-		else
-			return true;
-	}
+		CreateConfiguredDatabase(instance->event_loop, *instance);
+	if (instance->database == nullptr)
+		return true;
 
 	if (instance->database->GetPlugin().flags & DatabasePlugin::FLAG_REQUIRE_STORAGE) {
 		InitStorage();

@@ -23,31 +23,26 @@
 #include "config/ConfigGlobal.hxx"
 #include "config/Param.hxx"
 #include "config/Block.hxx"
-#include "config/ConfigError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/StandardDirectory.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 Database *
-CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
-			 Error &error)
+CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener)
 {
 	const auto *param = config_get_block(ConfigBlockOption::DATABASE);
 	const auto *path = config_get_param(ConfigOption::DB_FILE);
 
-	if (param != nullptr && path != nullptr) {
-		error.Format(config_domain,
-			     "Found both 'database' (line %d) and 'db_file' (line %d) setting",
-			     param->line, path->line);
-		return nullptr;
-	}
+	if (param != nullptr && path != nullptr)
+		throw FormatRuntimeError("Found both 'database' (line %d) and 'db_file' (line %d) setting",
+					 param->line, path->line);
 
 	if (param != nullptr)
-		return DatabaseGlobalInit(loop, listener, *param, error);
+		return DatabaseGlobalInit(loop, listener, *param);
 	else if (path != nullptr) {
 		ConfigBlock block(path->line);
 		block.AddBlockParam("path", path->value.c_str(), path->line);
-		return DatabaseGlobalInit(loop, listener, block, error);
+		return DatabaseGlobalInit(loop, listener, block);
 	} else {
 		/* if there is no override, use the cache directory */
 
@@ -63,6 +58,6 @@ CreateConfiguredDatabase(EventLoop &loop, DatabaseListener &listener,
 
 		ConfigBlock block;
 		block.AddBlockParam("path", db_file_utf8.c_str(), -1);
-		return DatabaseGlobalInit(loop, listener, block, error);
+		return DatabaseGlobalInit(loop, listener, block);
 	}
 }
