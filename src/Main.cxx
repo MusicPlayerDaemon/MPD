@@ -307,7 +307,7 @@ static void winsock_init(void)
 static void
 initialize_decoder_and_player(void)
 {
-	const struct config_param *param;
+	const ConfigParam *param;
 
 	size_t buffer_size;
 	param = config_get_param(ConfigOption::AUDIO_BUFFER_SIZE);

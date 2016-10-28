@@ -145,7 +145,7 @@ struct AudioOutputPlugin {
 	/**
 	 * The mixer plugin associated with this output plugin.  This
 	 * may be nullptr if no mixer plugin is implemented.  When
-	 * created, this mixer plugin gets the same #config_param as
+	 * created, this mixer plugin gets the same #ConfigParam as
 	 * this audio output device.
 	 */
 	const MixerPlugin *mixer_plugin;

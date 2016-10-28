@@ -87,7 +87,7 @@ static unsigned parsePermissions(const char *string)
 void initPermissions(void)
 {
 	unsigned permission;
-	const struct config_param *param;
+	const ConfigParam *param;
 
 	permission_default = PERMISSION_READ | PERMISSION_ADD |
 	    PERMISSION_CONTROL | PERMISSION_ADMIN;

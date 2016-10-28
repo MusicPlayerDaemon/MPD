@@ -20,10 +20,10 @@
 #include "config.h"
 #include "Param.hxx"
 
-config_param::config_param(const char *_value, int _line)
+ConfigParam::ConfigParam(const char *_value, int _line)
 	:next(nullptr), value(_value), line(_line), used(false) {}
 
-config_param::~config_param()
+ConfigParam::~ConfigParam()
 {
 	delete next;
 }

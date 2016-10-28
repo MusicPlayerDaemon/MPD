@@ -124,18 +124,16 @@ log_init(bool verbose, bool use_stdout, Error &error)
 
 	return true;
 #else
-	const struct config_param *param;
-
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
-	else if ((param = config_get_param(ConfigOption::LOG_LEVEL)) != nullptr)
+	else if (const auto &param = config_get_param(ConfigOption::LOG_LEVEL))
 		SetLogThreshold(parse_log_level(param->value.c_str(),
 						param->line));
 
 	if (use_stdout) {
 		return true;
 	} else {
-		param = config_get_param(ConfigOption::LOG_FILE);
+		const auto *param = config_get_param(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
 #ifdef HAVE_SYSLOG
 			/* no configuration: default to syslog (if
