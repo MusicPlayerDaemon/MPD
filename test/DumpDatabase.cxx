@@ -127,13 +127,7 @@ try {
 	if (path != nullptr)
 		block.AddBlockParam("path", path->value.c_str(), path->line);
 
-	Database *db = plugin->create(event_loop, database_listener,
-				      block, error);
-
-	if (db == nullptr) {
-		cerr << error.GetMessage() << endl;
-		return EXIT_FAILURE;
-	}
+	Database *db = plugin->create(event_loop, database_listener, block);
 
 	AtScopeExit(db) { delete db; };
 

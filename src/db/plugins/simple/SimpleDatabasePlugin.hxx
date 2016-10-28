@@ -73,8 +73,7 @@ class SimpleDatabase : public Database {
 
 public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
-				const ConfigBlock &block,
-				Error &error);
+				const ConfigBlock &block);
 
 	gcc_pure
 	Directory &GetRoot() {

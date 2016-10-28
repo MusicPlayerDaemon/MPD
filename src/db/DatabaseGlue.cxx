@@ -39,5 +39,5 @@ DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
 		return nullptr;
 	}
 
-	return plugin->create(loop, listener, block, error);
+	return plugin->create(loop, listener, block);
 }

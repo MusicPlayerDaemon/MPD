@@ -84,7 +84,7 @@ inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 Database *
 SimpleDatabase::Create(gcc_unused EventLoop &loop,
 		       gcc_unused DatabaseListener &listener,
-		       const ConfigBlock &block, Error &)
+		       const ConfigBlock &block)
 {
 	return new SimpleDatabase(block);
 }

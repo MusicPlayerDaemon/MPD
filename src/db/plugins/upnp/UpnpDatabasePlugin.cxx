@@ -77,8 +77,7 @@ public:
 	UpnpDatabase():Database(upnp_db_plugin) {}
 
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
-				const ConfigBlock &block,
-				Error &error);
+				const ConfigBlock &block);
 
 	virtual void Open() override;
 	virtual void Close() override;
@@ -102,9 +101,6 @@ public:
 	time_t GetUpdateStamp() const override {
 		return 0;
 	}
-
-protected:
-	bool Configure(const ConfigBlock &block, Error &error);
 
 private:
 	bool VisitServer(const ContentDirectoryService &server,
@@ -150,21 +146,9 @@ private:
 Database *
 UpnpDatabase::Create(gcc_unused EventLoop &loop,
 		     gcc_unused DatabaseListener &listener,
-		     const ConfigBlock &block, Error &error)
+		     const ConfigBlock &)
 {
-	UpnpDatabase *db = new UpnpDatabase();
-	if (!db->Configure(block, error)) {
-		delete db;
-		return nullptr;
-	}
-
-	return db;
-}
-
-inline bool
-UpnpDatabase::Configure(const ConfigBlock &, Error &)
-{
-	return true;
+	return new UpnpDatabase();
 }
 
 void

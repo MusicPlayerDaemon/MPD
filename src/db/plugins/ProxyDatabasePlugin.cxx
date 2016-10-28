@@ -82,9 +82,9 @@ public:
 class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 	DatabaseListener &listener;
 
-	std::string host;
-	unsigned port;
-	bool keepalive;
+	const std::string host;
+	const unsigned port;
+	const bool keepalive;
 
 	struct mpd_connection *connection;
 
@@ -104,14 +104,11 @@ class ProxyDatabase final : public Database, SocketMonitor, IdleMonitor {
 	bool is_idle;
 
 public:
-	ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener)
-		:Database(proxy_db_plugin),
-		 SocketMonitor(_loop), IdleMonitor(_loop),
-		 listener(_listener) {}
+	ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
+		      const ConfigBlock &block);
 
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
-				const ConfigBlock &block,
-				Error &error);
+				const ConfigBlock &block);
 
 	virtual void Open() override;
 	virtual void Close() override;
@@ -141,8 +138,6 @@ public:
 	}
 
 private:
-	bool Configure(const ConfigBlock &block, Error &error);
-
 	void Connect();
 	void CheckConnection();
 	void EnsureConnected();
@@ -338,27 +333,22 @@ SendConstraints(mpd_connection *connection, const DatabaseSelection &selection)
 	return true;
 }
 
-Database *
-ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
-		      const ConfigBlock &block, Error &error)
+ProxyDatabase::ProxyDatabase(EventLoop &_loop, DatabaseListener &_listener,
+			     const ConfigBlock &block)
+	:Database(proxy_db_plugin),
+	 SocketMonitor(_loop), IdleMonitor(_loop),
+	 listener(_listener),
+	 host(block.GetBlockValue("host", "")),
+	 port(block.GetBlockValue("port", 0u)),
+	 keepalive(block.GetBlockValue("keepalive", false))
 {
-	ProxyDatabase *db = new ProxyDatabase(loop, listener);
-	if (!db->Configure(block, error)) {
-		delete db;
-		db = nullptr;
-	}
-
-	return db;
 }
 
-bool
-ProxyDatabase::Configure(const ConfigBlock &block, gcc_unused Error &error)
+Database *
+ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
+		      const ConfigBlock &block)
 {
-	host = block.GetBlockValue("host", "");
-	port = block.GetBlockValue("port", 0u);
-	keepalive = block.GetBlockValue("keepalive", false);
-
-	return true;
+	return new ProxyDatabase(loop, listener, block);
 }
 
 void
@@ -395,6 +385,9 @@ ProxyDatabase::Connect()
 
 #if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
 	mpd_connection_set_keepalive(connection, keepalive);
+#else
+	// suppress -Wunused-private-field
+	(void)keepalive;
 #endif
 
 	idle_received = unsigned(-1);
