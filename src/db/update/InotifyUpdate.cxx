@@ -25,7 +25,6 @@
 #include "storage/StorageInterface.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <string>
@@ -157,7 +156,6 @@ static void
 recursive_watch_subdirectories(WatchDirectory *directory,
 			       const AllocatedPath &path_fs, unsigned depth)
 {
-	Error error;
 	DIR *dir;
 	struct dirent *ent;
 
@@ -187,22 +185,23 @@ recursive_watch_subdirectories(WatchDirectory *directory,
 			AllocatedPath::Build(path_fs, ent->d_name);
 
 		FileInfo fi;
-		if (!GetFileInfo(child_path_fs, fi, error)) {
-			LogError(error);
-			error.Clear();
+		try {
+			fi = FileInfo(child_path_fs);
+		} catch (const std::runtime_error &e) {
+			LogError(e);
 			continue;
 		}
 
 		if (!fi.IsDirectory())
 			continue;
 
-		ret = inotify_source->Add(child_path_fs.c_str(), IN_MASK,
-					  error);
-		if (ret < 0) {
-			FormatError(error,
+		try {
+			ret = inotify_source->Add(child_path_fs.c_str(),
+						  IN_MASK);
+		} catch (const std::runtime_error &e) {
+			FormatError(e,
 				    "Failed to register %s",
 				    child_path_fs.c_str());
-			error.Clear();
 			continue;
 		}
 
@@ -299,20 +298,22 @@ mpd_inotify_init(EventLoop &loop, Storage &storage, UpdateService &update,
 		return;
 	}
 
-	Error error;
-	inotify_source = InotifySource::Create(loop,
-					       mpd_inotify_callback, nullptr,
-					       error);
-	if (inotify_source == nullptr) {
-		LogError(error);
+	try {
+		inotify_source = new InotifySource(loop,
+						   mpd_inotify_callback,
+						   nullptr);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		return;
 	}
 
 	inotify_max_depth = max_depth;
 
-	int descriptor = inotify_source->Add(path.c_str(), IN_MASK, error);
-	if (descriptor < 0) {
-		LogError(error);
+	int descriptor;
+	try {
+		descriptor = inotify_source->Add(path.c_str(), IN_MASK);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		delete inotify_source;
 		inotify_source = nullptr;
 		return;
