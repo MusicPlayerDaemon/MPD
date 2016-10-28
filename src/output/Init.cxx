@@ -162,13 +162,9 @@ AudioOutput::Configure(const ConfigBlock &block, Error &error)
 		}
 
 		const char *p = block.GetBlockValue(AUDIO_OUTPUT_FORMAT);
-		if (p != nullptr) {
-			bool success =
-				audio_format_parse(config_audio_format,
-						   p, true, error);
-			if (!success)
-				return false;
-		} else
+		if (p != nullptr)
+			config_audio_format = ParseAudioFormat(p, true);
+		else
 			config_audio_format.Clear();
 	} else {
 		name = "default detected output";

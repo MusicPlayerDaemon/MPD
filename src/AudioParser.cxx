@@ -25,73 +25,59 @@
 #include "config.h"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
-#include "CheckAudioFormat.hxx"
-#include "util/Error.hxx"
-#include "Compiler.h"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 
-static bool
-parse_sample_rate(const char *src, bool mask, uint32_t *sample_rate_r,
-		  const char **endptr_r, Error &error)
+static uint32_t
+ParseSampleRate(const char *src, bool mask, const char **endptr_r)
 {
 	unsigned long value;
 	char *endptr;
 
 	if (mask && *src == '*') {
-		*sample_rate_r = 0;
 		*endptr_r = src + 1;
-		return true;
+		return 0;
 	}
 
 	value = strtoul(src, &endptr, 10);
 	if (endptr == src) {
-		error.Set(audio_format_domain,
-			  "Failed to parse the sample rate");
-		return false;
-	} else if (!audio_check_sample_rate(value, error))
-		return false;
+		throw std::runtime_error("Failed to parse the sample rate");
+	} else if (!audio_valid_sample_rate(value))
+		throw FormatRuntimeError("Invalid sample rate: %lu",
+					 value);
 
-	*sample_rate_r = value;
 	*endptr_r = endptr;
-	return true;
+	return value;
 }
 
-static bool
-parse_sample_format(const char *src, bool mask,
-		    SampleFormat *sample_format_r,
-		    const char **endptr_r, Error &error)
+static SampleFormat
+ParseSampleFormat(const char *src, bool mask, const char **endptr_r)
 {
 	unsigned long value;
 	char *endptr;
 	SampleFormat sample_format;
 
 	if (mask && *src == '*') {
-		*sample_format_r = SampleFormat::UNDEFINED;
 		*endptr_r = src + 1;
-		return true;
+		return SampleFormat::UNDEFINED;
 	}
 
 	if (*src == 'f') {
-		*sample_format_r = SampleFormat::FLOAT;
 		*endptr_r = src + 1;
-		return true;
+		return SampleFormat::FLOAT;
 	}
 
 	if (memcmp(src, "dsd", 3) == 0) {
-		*sample_format_r = SampleFormat::DSD;
 		*endptr_r = src + 3;
-		return true;
+		return SampleFormat::DSD;
 	}
 
 	value = strtoul(src, &endptr, 10);
-	if (endptr == src) {
-		error.Set(audio_format_domain,
-			  "Failed to parse the sample format");
-		return false;
-	}
+	if (endptr == src)
+		throw std::runtime_error("Failed to parse the sample format");
 
 	switch (value) {
 	case 8:
@@ -115,99 +101,65 @@ parse_sample_format(const char *src, bool mask,
 		break;
 
 	default:
-		error.Format(audio_format_domain,
-			     "Invalid sample format: %lu", value);
-		return false;
+		throw FormatRuntimeError("Invalid sample format: %lu", value);
 	}
 
 	assert(audio_valid_sample_format(sample_format));
 
-	*sample_format_r = sample_format;
 	*endptr_r = endptr;
-	return true;
+	return sample_format;
 }
 
-static bool
-parse_channel_count(const char *src, bool mask, uint8_t *channels_r,
-		    const char **endptr_r, Error &error)
+static uint8_t
+ParseChannelCount(const char *src, bool mask, const char **endptr_r)
 {
 	unsigned long value;
 	char *endptr;
 
 	if (mask && *src == '*') {
-		*channels_r = 0;
 		*endptr_r = src + 1;
-		return true;
+		return 0;
 	}
 
 	value = strtoul(src, &endptr, 10);
-	if (endptr == src) {
-		error.Set(audio_format_domain,
-			  "Failed to parse the channel count");
-		return false;
-	} else if (!audio_check_channel_count(value, error))
-		return false;
+	if (endptr == src)
+		throw std::runtime_error("Failed to parse the channel count");
+	else if (!audio_valid_channel_count(value))
+		throw FormatRuntimeError("Invalid channel count: %u", value);
 
-	*channels_r = value;
 	*endptr_r = endptr;
-	return true;
+	return value;
 }
 
-bool
-audio_format_parse(AudioFormat &dest, const char *src,
-		   bool mask, Error &error)
+AudioFormat
+ParseAudioFormat(const char *src, bool mask)
 {
-	uint32_t rate;
-	SampleFormat sample_format;
-	uint8_t channels;
-
+	AudioFormat dest;
 	dest.Clear();
 
 	/* parse sample rate */
 
-#if GCC_CHECK_VERSION(4,7)
-	/* workaround -Wmaybe-uninitialized false positive */
-	rate = 0;
-#endif
+	dest.sample_rate = ParseSampleRate(src, mask, &src);
 
-	if (!parse_sample_rate(src, mask, &rate, &src, error))
-		return false;
-
-	if (*src++ != ':') {
-		error.Set(audio_format_domain, "Sample format missing");
-		return false;
-	}
+	if (*src++ != ':')
+		throw std::runtime_error("Sample format missing");
 
 	/* parse sample format */
 
-#if GCC_CHECK_VERSION(4,7)
-	/* workaround -Wmaybe-uninitialized false positive */
-	sample_format = SampleFormat::UNDEFINED;
-#endif
+	dest.format = ParseSampleFormat(src, mask, &src);
 
-	if (!parse_sample_format(src, mask, &sample_format, &src, error))
-		return false;
-
-	if (*src++ != ':') {
-		error.Set(audio_format_domain, "Channel count missing");
-		return false;
-	}
+	if (*src++ != ':')
+		throw std::runtime_error("Channel count missing");
 
 	/* parse channel count */
 
-	if (!parse_channel_count(src, mask, &channels, &src, error))
-		return false;
+	dest.channels = ParseChannelCount(src, mask, &src);
 
-	if (*src != 0) {
-		error.Format(audio_format_domain,
-			    "Extra data after channel count: %s", src);
-		return false;
-	}
+	if (*src != 0)
+		throw FormatRuntimeError("Extra data after channel count: %s", src);
 
-	dest = AudioFormat(rate, sample_format, channels);
 	assert(mask
 	       ? dest.IsMaskValid()
 	       : dest.IsValid());
-
-	return true;
+	return dest;
 }

@@ -28,7 +28,6 @@
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <stdio.h>
@@ -47,14 +46,9 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	Error error;
 	AudioFormat audio_format(48000, SampleFormat::S16, 2);
-	if (argc > 1) {
-		if (!audio_format_parse(audio_format, argv[1], false, error)) {
-			LogError(error, "Failed to parse audio format");
-			return EXIT_FAILURE;
-		}
-	}
+	if (argc > 1)
+		audio_format = ParseAudioFormat(argv[1], false);
 
 	PcmVolume pv;
 	pv.Open(audio_format.format);

@@ -2023,6 +2023,7 @@ test_run_avahi_LDADD = \
 	$(AVAHI_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioCompress/compress.c \
 	src/AudioParser.cxx

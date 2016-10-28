@@ -175,12 +175,8 @@ try {
 
 	/* parse the audio format */
 
-	if (argc > 3) {
-		if (!audio_format_parse(audio_format, argv[3], false, error)) {
-			LogError(error, "Failed to parse audio format");
-			return EXIT_FAILURE;
-		}
-	}
+	if (argc > 3)
+		audio_format = ParseAudioFormat(argv[3], false);
 
 	/* do it */
 

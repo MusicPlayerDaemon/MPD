@@ -29,7 +29,6 @@
 #include "pcm/PcmConvert.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/StaticFifoBuffer.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -41,29 +40,16 @@
 int
 main(int argc, char **argv)
 try {
-	AudioFormat in_audio_format, out_audio_format;
-
 	if (argc != 3) {
 		fprintf(stderr,
 			"Usage: run_convert IN_FORMAT OUT_FORMAT <IN >OUT\n");
 		return 1;
 	}
 
-	Error error;
-	if (!audio_format_parse(in_audio_format, argv[1],
-				false, error)) {
-		LogError(error, "Failed to parse audio format");
-		return EXIT_FAILURE;
-	}
+	const auto in_audio_format = ParseAudioFormat(argv[1], false);
+	const auto out_audio_format_mask = ParseAudioFormat(argv[2], false);
 
-	AudioFormat out_audio_format_mask;
-	if (!audio_format_parse(out_audio_format_mask, argv[2],
-				true, error)) {
-		LogError(error, "Failed to parse audio format");
-		return EXIT_FAILURE;
-	}
-
-	out_audio_format = in_audio_format;
+	auto out_audio_format = in_audio_format;
 	out_audio_format.ApplyMask(out_audio_format_mask);
 
 	const size_t in_frame_size = in_audio_format.GetFrameSize();

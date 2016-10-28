@@ -72,12 +72,8 @@ int main(int argc, char **argv)
 		/* open the encoder */
 
 		AudioFormat audio_format(44100, SampleFormat::S16, 2);
-		if (argc > 2) {
-			if (!audio_format_parse(audio_format, argv[2], false, error)) {
-				LogError(error, "Failed to parse audio format");
-				return EXIT_FAILURE;
-			}
-		}
+		if (argc > 2)
+			audio_format = ParseAudioFormat(argv[2], false);
 
 		std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format, error));
 		if (encoder == nullptr) {
