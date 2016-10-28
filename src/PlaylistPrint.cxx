@@ -28,7 +28,6 @@
 #include "Instance.hxx"
 #include "db/Interface.hxx"
 #include "client/Response.hxx"
-#include "util/Error.hxx"
 
 #define SONG_FILE "file: "
 #define SONG_TIME "Time: "

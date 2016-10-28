@@ -39,7 +39,6 @@
 #include "util/Alloc.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
