@@ -78,7 +78,7 @@ struct AlsaOutput {
 	unsigned int period_time;
 
 	/** the mode flags passed to snd_pcm_open */
-	int mode;
+	int mode = 0;
 
 	/** the libasound PCM device handle */
 	snd_pcm_t *pcm;
@@ -122,10 +122,7 @@ struct AlsaOutput {
 	 */
 	uint8_t *silence;
 
-	AlsaOutput()
-		:base(alsa_output_plugin),
-		 mode(0) {
-	}
+	AlsaOutput(const ConfigBlock &block);
 
 	~AlsaOutput() {
 		/* free libasound's config cache */
@@ -137,7 +134,6 @@ struct AlsaOutput {
 		return device.empty() ? default_device : device.c_str();
 	}
 
-	bool Configure(const ConfigBlock &block, Error &error);
 	static AlsaOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Enable(Error &error);
@@ -173,12 +169,9 @@ private:
 
 static constexpr Domain alsa_output_domain("alsa_output");
 
-inline bool
-AlsaOutput::Configure(const ConfigBlock &block, Error &error)
+AlsaOutput::AlsaOutput(const ConfigBlock &block)
+	:base(alsa_output_plugin, block)
 {
-	if (!base.Configure(block, error))
-		return false;
-
 	device = block.GetBlockValue("device", "");
 
 #ifdef ENABLE_DSD
@@ -205,21 +198,12 @@ AlsaOutput::Configure(const ConfigBlock &block, Error &error)
 	if (!block.GetBlockValue("auto_format", true))
 		mode |= SND_PCM_NO_AUTO_FORMAT;
 #endif
-
-	return true;
 }
 
 inline AlsaOutput *
-AlsaOutput::Create(const ConfigBlock &block, Error &error)
+AlsaOutput::Create(const ConfigBlock &block, Error &)
 {
-	AlsaOutput *ad = new AlsaOutput();
-
-	if (!ad->Configure(block, error)) {
-		delete ad;
-		return nullptr;
-	}
-
-	return ad;
+	return new AlsaOutput(block);
 }
 
 inline bool
