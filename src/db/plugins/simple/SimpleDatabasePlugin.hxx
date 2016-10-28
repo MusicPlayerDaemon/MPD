@@ -133,7 +133,7 @@ public:
 	}
 
 private:
-	bool Configure(const ConfigBlock &block, Error &error);
+	void Configure(const ConfigBlock &block);
 
 	void Check() const;
 

@@ -183,14 +183,10 @@ FifoOutput::Create(const ConfigBlock &block, Error &error)
 {
 	FifoOutput *fd = new FifoOutput();
 
-	fd->path = block.GetPath("path", error);
+	fd->path = block.GetPath("path");
 	if (fd->path.IsNull()) {
 		delete fd;
-
-		if (!error.IsDefined())
-			error.Set(config_domain,
-				  "No \"path\" parameter specified");
-		return nullptr;
+		throw std::runtime_error("No \"path\" parameter specified");
 	}
 
 	fd->path_utf8 = fd->path.ToUTF8();

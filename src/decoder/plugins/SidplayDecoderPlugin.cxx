@@ -85,12 +85,9 @@ static bool
 sidplay_init(const ConfigBlock &block)
 {
 	/* read the songlengths database file */
-	Error error;
-	const auto database_path = block.GetPath("songlength_database", error);
+	const auto database_path = block.GetPath("songlength_database");
 	if (!database_path.IsNull())
 		songlength_database = sidplay_load_songlength_db(database_path);
-	else if (error.IsDefined())
-		FatalError(error);
 
 	default_songlength = block.GetBlockValue("default_songlength", 0u);
 
