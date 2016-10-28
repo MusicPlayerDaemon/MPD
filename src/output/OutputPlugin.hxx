@@ -66,6 +66,8 @@ struct AudioOutputPlugin {
 	 * Enable the device.  This may allocate resources, preparing
 	 * for the device to be opened.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @return true on success, false on error
 	 */
 	bool (*enable)(AudioOutput *data, Error &error);
@@ -78,6 +80,8 @@ struct AudioOutputPlugin {
 
 	/**
 	 * Really open the device.
+	 *
+	 * Throws #std::runtime_error on error.
 	 *
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
@@ -109,6 +113,8 @@ struct AudioOutputPlugin {
 
 	/**
 	 * Play a chunk of audio data.
+	 *
+	 * Throws #std::runtime_error on error.
 	 *
 	 * @return the number of bytes played, or 0 on error
 	 */

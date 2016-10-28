@@ -61,7 +61,7 @@ AudioOutput::Enable()
 	if (really_enabled)
 		return true;
 
-	{
+	try {
 		const ScopeUnlock unlock(mutex);
 		Error error;
 		if (!ao_plugin_enable(this, error)) {
@@ -70,6 +70,11 @@ AudioOutput::Enable()
 				    name, plugin.name);
 			return false;
 		}
+	} catch (const std::runtime_error &e) {
+		FormatError(e,
+			    "Failed to enable \"%s\" [%s]",
+			    name, plugin.name);
+		return false;
 	}
 
 	really_enabled = true;
@@ -174,7 +179,18 @@ AudioOutput::Open()
 	const AudioFormat retry_audio_format = out_audio_format;
 
  retry_without_dsd:
-	success = ao_plugin_open(this, out_audio_format, error);
+	try {
+		success = ao_plugin_open(this, out_audio_format, error);
+	} catch (const std::runtime_error &e) {
+		FormatError(error, "Failed to open \"%s\" [%s]",
+			    name, plugin.name);
+
+		CloseFilter();
+		mutex.lock();
+		fail_timer.Update();
+		return;
+	}
+
 	mutex.lock();
 
 	assert(!open);
@@ -478,17 +494,23 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 
 		size_t nbytes;
 
-		{
+		try {
 			const ScopeUnlock unlock(mutex);
 			nbytes = ao_plugin_play(this, data.data, data.size,
 						error);
+
+			if (nbytes == 0)
+				/* play()==0 means failure */
+				FormatError(error, "\"%s\" [%s] failed to play",
+					    name, plugin.name);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "\"%s\" [%s] failed to play",
+				    name, plugin.name);
+
+			nbytes = 0;
 		}
 
 		if (nbytes == 0) {
-			/* play()==0 means failure */
-			FormatError(error, "\"%s\" [%s] failed to play",
-				    name, plugin.name);
-
 			Close(false);
 
 			/* don't automatically reopen this device for
