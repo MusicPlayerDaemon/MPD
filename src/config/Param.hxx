@@ -72,6 +72,15 @@ struct ConfigParam {
 	 * AllocatedPath::Null() and sets the error.
 	 */
 	AllocatedPath GetPath(Error &error) const;
+
+	/**
+	 * Parse the value as a path.  If there is a tilde prefix, it
+	 * is expanded.
+	 *
+	 * Throws #std::runtime_error on error.
+	 */
+	gcc_pure
+	AllocatedPath GetPath() const;
 };
 
 #endif

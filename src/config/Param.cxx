@@ -23,6 +23,8 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/Error.hxx"
 
+#include <stdexcept>
+
 ConfigParam::ConfigParam(const char *_value, int _line)
 	:next(nullptr), value(_value), line(_line), used(false) {}
 
@@ -37,6 +39,18 @@ ConfigParam::GetPath(Error &error) const
 	auto path = ParsePath(value.c_str(), error);
 	if (gcc_unlikely(path.IsNull()))
 		error.FormatPrefix("Invalid path at line %i: ", line);
+
+	return path;
+
+}
+
+AllocatedPath
+ConfigParam::GetPath() const
+{
+	Error error;
+	auto path = ParsePath(value.c_str(), error);
+	if (gcc_unlikely(path.IsNull()))
+		throw std::runtime_error(error.GetMessage());
 
 	return path;
 
