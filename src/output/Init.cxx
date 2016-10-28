@@ -58,6 +58,15 @@ AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
 	assert(plugin.play != nullptr);
 }
 
+AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
+			 const ConfigBlock &block)
+	:AudioOutput(_plugin)
+{
+	Error error;
+	if (!Configure(block, error))
+		throw std::runtime_error(error.GetMessage());
+}
+
 static const AudioOutputPlugin *
 audio_output_detect(Error &error)
 {

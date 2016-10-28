@@ -283,6 +283,13 @@ struct AudioOutput {
 	bool current_chunk_finished;
 
 	AudioOutput(const AudioOutputPlugin &_plugin);
+
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	AudioOutput(const AudioOutputPlugin &_plugin,
+		    const ConfigBlock &block);
+
 	~AudioOutput();
 
 	bool Configure(const ConfigBlock &block, Error &error);
