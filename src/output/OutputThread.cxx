@@ -51,9 +51,8 @@ AudioOutput::CommandFinished()
 	assert(command != Command::NONE);
 	command = Command::NONE;
 
-	mutex.unlock();
+	const ScopeUnlock unlock(mutex);
 	audio_output_client_notify.Signal();
-	mutex.lock();
 }
 
 inline bool
@@ -62,15 +61,15 @@ AudioOutput::Enable()
 	if (really_enabled)
 		return true;
 
-	mutex.unlock();
-	Error error;
-	bool success = ao_plugin_enable(this, error);
-	mutex.lock();
-	if (!success) {
-		FormatError(error,
-			    "Failed to enable \"%s\" [%s]",
-			    name, plugin.name);
-		return false;
+	{
+		const ScopeUnlock unlock(mutex);
+		Error error;
+		if (!ao_plugin_enable(this, error)) {
+			FormatError(error,
+				    "Failed to enable \"%s\" [%s]",
+				    name, plugin.name);
+			return false;
+		}
 	}
 
 	really_enabled = true;
@@ -86,9 +85,8 @@ AudioOutput::Disable()
 	if (really_enabled) {
 		really_enabled = false;
 
-		mutex.unlock();
+		const ScopeUnlock unlock(mutex);
 		ao_plugin_disable(this);
-		mutex.lock();
 	}
 }
 
@@ -185,9 +183,10 @@ AudioOutput::Open()
 		FormatError(error, "Failed to open \"%s\" [%s]",
 			    name, plugin.name);
 
-		mutex.unlock();
-		CloseFilter();
-		mutex.lock();
+		{
+			const ScopeUnlock unlock(mutex);
+			CloseFilter();
+		}
 
 		fail_timer.Update();
 		return;
@@ -256,12 +255,10 @@ AudioOutput::Close(bool drain)
 	current_chunk = nullptr;
 	open = false;
 
-	mutex.unlock();
+	const ScopeUnlock unlock(mutex);
 
 	CloseOutput(drain);
 	CloseFilter();
-
-	mutex.lock();
 
 	FormatDebug(output_domain, "closed plugin=%s name=\"%s\"",
 		    plugin.name, name);
@@ -283,9 +280,10 @@ AudioOutput::ReopenFilter()
 {
 	Error error;
 
-	mutex.unlock();
-	CloseFilter();
-	mutex.lock();
+	{
+		const ScopeUnlock unlock(mutex);
+		CloseFilter();
+	}
 
 	AudioFormat filter_audio_format;
 	try {
@@ -458,9 +456,8 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 	assert(filter_instance != nullptr);
 
 	if (tags && gcc_unlikely(chunk->tag != nullptr)) {
-		mutex.unlock();
+		const ScopeUnlock unlock(mutex);
 		ao_plugin_send_tag(this, *chunk->tag);
-		mutex.lock();
 	}
 
 	auto data = ConstBuffer<char>::FromVoid(ao_filter_chunk(this, chunk));
@@ -479,10 +476,14 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 		if (!WaitForDelay())
 			break;
 
-		mutex.unlock();
-		size_t nbytes = ao_plugin_play(this, data.data, data.size,
-					       error);
-		mutex.lock();
+		size_t nbytes;
+
+		{
+			const ScopeUnlock unlock(mutex);
+			nbytes = ao_plugin_play(this, data.data, data.size,
+						error);
+		}
+
 		if (nbytes == 0) {
 			/* play()==0 means failure */
 			FormatError(error, "\"%s\" [%s] failed to play",
@@ -552,9 +553,8 @@ AudioOutput::Play()
 
 	current_chunk_finished = true;
 
-	mutex.unlock();
+	const ScopeUnlock unlock(mutex);
 	player_control->LockSignal();
-	mutex.lock();
 
 	return true;
 }
@@ -562,9 +562,10 @@ AudioOutput::Play()
 inline void
 AudioOutput::Pause()
 {
-	mutex.unlock();
-	ao_plugin_cancel(this);
-	mutex.lock();
+	{
+		const ScopeUnlock unlock(mutex);
+		ao_plugin_cancel(this);
+	}
 
 	pause = true;
 	CommandFinished();
@@ -573,9 +574,11 @@ AudioOutput::Pause()
 		if (!WaitForDelay())
 			break;
 
-		mutex.unlock();
-		bool success = ao_plugin_pause(this);
-		mutex.lock();
+		bool success;
+		{
+			const ScopeUnlock unlock(mutex);
+			success = ao_plugin_pause(this);
+		}
 
 		if (!success) {
 			Close(false);
@@ -600,7 +603,7 @@ AudioOutput::Task()
 
 	SetThreadTimerSlackUS(100);
 
-	mutex.lock();
+	const ScopeLock lock(mutex);
 
 	while (1) {
 		switch (command) {
@@ -657,9 +660,8 @@ AudioOutput::Task()
 				assert(current_chunk == nullptr);
 				assert(pipe->Peek() == nullptr);
 
-				mutex.unlock();
+				const ScopeUnlock unlock(mutex);
 				ao_plugin_drain(this);
-				mutex.lock();
 			}
 
 			CommandFinished();
@@ -669,9 +671,8 @@ AudioOutput::Task()
 			current_chunk = nullptr;
 
 			if (open) {
-				mutex.unlock();
+				const ScopeUnlock unlock(mutex);
 				ao_plugin_cancel(this);
-				mutex.lock();
 			}
 
 			CommandFinished();
@@ -680,7 +681,6 @@ AudioOutput::Task()
 		case Command::KILL:
 			current_chunk = nullptr;
 			CommandFinished();
-			mutex.unlock();
 			return;
 		}
 
