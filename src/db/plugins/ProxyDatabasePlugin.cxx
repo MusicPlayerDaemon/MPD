@@ -563,9 +563,8 @@ Visit(struct mpd_connection *connection,
 	time_t mtime = 0;
 #endif
 
-	if (visit_directory &&
-	    !visit_directory(LightDirectory(path, mtime), error))
-		return false;
+	if (visit_directory)
+		visit_directory(LightDirectory(path, mtime));
 
 	if (recursive &&
 	    !Visit(connection, path, recursive, filter,
@@ -582,29 +581,30 @@ Match(const SongFilter *filter, const LightSong &song)
 	return filter == nullptr || filter->Match(song);
 }
 
-static bool
+static void
 Visit(const SongFilter *filter,
       const mpd_song *_song,
-      VisitSong visit_song, Error &error)
+      VisitSong visit_song)
 {
 	if (!visit_song)
-		return true;
+		return;
 
 	const ProxySong song(_song);
-	return !Match(filter, song) || visit_song(song, error);
+	if (Match(filter, song))
+		visit_song(song);
 }
 
-static bool
+static void
 Visit(const struct mpd_playlist *playlist,
-      VisitPlaylist visit_playlist, Error &error)
+      VisitPlaylist visit_playlist)
 {
 	if (!visit_playlist)
-		return true;
+		return;
 
 	PlaylistInfo p(mpd_playlist_get_path(playlist),
 		       mpd_playlist_get_last_modified(playlist));
 
-	return visit_playlist(p, LightDirectory::Root(), error);
+	visit_playlist(p, LightDirectory::Root());
 }
 
 class ProxyEntity {
@@ -671,16 +671,12 @@ Visit(struct mpd_connection *connection, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_SONG:
-			if (!Visit(filter,
-				   mpd_entity_get_song(entity), visit_song,
-				   error))
-				return false;
+			Visit(filter, mpd_entity_get_song(entity), visit_song);
 			break;
 
 		case MPD_ENTITY_TYPE_PLAYLIST:
-			if (!Visit(mpd_entity_get_playlist(entity),
-				   visit_playlist, error))
-				return false;
+			Visit(mpd_entity_get_playlist(entity),
+			      visit_playlist);
 			break;
 		}
 	}
@@ -688,11 +684,10 @@ Visit(struct mpd_connection *connection, const char *uri,
 	return true;
 }
 
-static bool
+static void
 SearchSongs(struct mpd_connection *connection,
 	    const DatabaseSelection &selection,
-	    VisitSong visit_song,
-	    Error &error)
+	    VisitSong visit_song)
 {
 	assert(selection.recursive);
 	assert(visit_song);
@@ -705,19 +700,21 @@ SearchSongs(struct mpd_connection *connection,
 	    !mpd_search_commit(connection))
 		ThrowError(connection);
 
-	bool result = true;
-	struct mpd_song *song;
-	while (result && (song = mpd_recv_song(connection)) != nullptr) {
+	while (auto *song = mpd_recv_song(connection)) {
 		AllocatedProxySong song2(song);
 
-		result = !Match(selection.filter, song2) ||
-			visit_song(song2, error);
+		if (Match(selection.filter, song2)) {
+			try {
+				visit_song(song2);
+			} catch (...) {
+				mpd_response_finish(connection);
+				throw;
+			}
+		}
 	}
 
-	if (!mpd_response_finish(connection) && result)
+	if (!mpd_response_finish(connection))
 		ThrowError(connection);
-
-	return result;
 }
 
 /**
@@ -750,10 +747,12 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 	if (!visit_directory && !visit_playlist && selection.recursive &&
 	    (ServerSupportsSearchBase(connection)
 	     ? !selection.IsEmpty()
-	     : selection.HasOtherThanBase()))
+	     : selection.HasOtherThanBase())) {
 		/* this optimized code path can only be used under
 		   certain conditions */
-		return ::SearchSongs(connection, selection, visit_song, error);
+		::SearchSongs(connection, selection, visit_song);
+		return true;
+	}
 
 	/* fall back to recursive walk (slow!) */
 	return ::Visit(connection, selection.uri.c_str(),
@@ -787,11 +786,7 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 	if (!mpd_search_commit(connection))
 		ThrowError(connection);
 
-	bool result = true;
-
-	struct mpd_pair *pair;
-	while (result &&
-	       (pair = mpd_recv_pair_tag(connection, tag_type2)) != nullptr) {
+	while (auto *pair = mpd_recv_pair_tag(connection, tag_type2)) {
 		AtScopeExit(this, pair) {
 			mpd_return_pair(connection, pair);
 		};
@@ -807,13 +802,18 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			   given tag type to be present */
 			tag.AddEmptyItem(tag_type);
 
-		result = visit_tag(tag.Commit(), error);
+		try {
+			visit_tag(tag.Commit());
+		} catch (...) {
+			mpd_response_finish(connection);
+			throw;
+		}
 	}
 
-	if (!mpd_response_finish(connection) && result)
+	if (!mpd_response_finish(connection))
 		ThrowError(connection);
 
-	return result;
+	return true;
 }
 
 bool

@@ -40,29 +40,27 @@ struct PrefixedLightDirectory : LightDirectory {
 	}
 };
 
-static bool
+static void
 PrefixVisitDirectory(const char *base, const VisitDirectory &visit_directory,
-		     const LightDirectory &directory, Error &error)
+		     const LightDirectory &directory)
 {
-	return visit_directory(PrefixedLightDirectory(directory, base), error);
+	visit_directory(PrefixedLightDirectory(directory, base));
 }
 
-static bool
+static void
 PrefixVisitSong(const char *base, const VisitSong &visit_song,
-		const LightSong &song, Error &error)
+		const LightSong &song)
 {
-	return visit_song(PrefixedLightSong(song, base), error);
+	visit_song(PrefixedLightSong(song, base));
 }
 
-static bool
+static void
 PrefixVisitPlaylist(const char *base, const VisitPlaylist &visit_playlist,
 		    const PlaylistInfo &playlist,
-		    const LightDirectory &directory,
-		    Error &error)
+		    const LightDirectory &directory)
 {
-	return visit_playlist(playlist,
-			      PrefixedLightDirectory(directory, base),
-			      error);
+	visit_playlist(playlist,
+		       PrefixedLightDirectory(directory, base));
 }
 
 bool
@@ -77,17 +75,17 @@ WalkMount(const char *base, const Database &db,
 	VisitDirectory vd;
 	if (visit_directory)
 		vd = std::bind(PrefixVisitDirectory,
-			       base, std::ref(visit_directory), _1, _2);
+			       base, std::ref(visit_directory), _1);
 
 	VisitSong vs;
 	if (visit_song)
 		vs = std::bind(PrefixVisitSong,
-			       base, std::ref(visit_song), _1, _2);
+			       base, std::ref(visit_song), _1);
 
 	VisitPlaylist vp;
 	if (visit_playlist)
 		vp = std::bind(PrefixVisitPlaylist,
-			       base, std::ref(visit_playlist), _1, _2, _3);
+			       base, std::ref(visit_playlist), _1, _2);
 
 	return db.Visit(DatabaseSelection("", recursive, filter),
 			vd, vs, vp, error);

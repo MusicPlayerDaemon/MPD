@@ -26,7 +26,7 @@
 
 #include <assert.h>
 
-static bool
+static void
 CollectTags(TagSet &set, TagType tag_type, tag_mask_t group_mask,
 	    const LightSong &song)
 {
@@ -34,7 +34,6 @@ CollectTags(TagSet &set, TagType tag_type, tag_mask_t group_mask,
 	const Tag &tag = *song.tag;
 
 	set.InsertUnique(tag, tag_type, group_mask);
-	return true;
 }
 
 bool
@@ -52,8 +51,7 @@ VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
 		return false;
 
 	for (const auto &value : set)
-		if (!visit_tag(value, error))
-			return false;
+		visit_tag(value);
 
 	return true;
 }

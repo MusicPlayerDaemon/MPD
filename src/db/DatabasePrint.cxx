@@ -173,11 +173,11 @@ db_selection_print(Response &r, Partition &partition,
 
 	if (window_start > 0 ||
 	    window_end < (unsigned)std::numeric_limits<int>::max())
-		s = [s, window_start, window_end, &i](const LightSong &song,
-						      Error &error2){
+		s = [s, window_start, window_end, &i](const LightSong &song){
 			const bool in_window = i >= window_start && i < window_end;
 			++i;
-			return !in_window || s(song, error2);
+			if (in_window)
+				s(song);
 		};
 
 	return db.Visit(selection, d, s, p, error);

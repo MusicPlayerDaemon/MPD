@@ -64,30 +64,26 @@ public:
 	}
 };
 
-static bool
-DumpDirectory(const LightDirectory &directory, Error &)
+static void
+DumpDirectory(const LightDirectory &directory)
 {
 	cout << "D " << directory.GetPath() << endl;
-	return true;
 }
 
-static bool
-DumpSong(const LightSong &song, Error &)
+static void
+DumpSong(const LightSong &song)
 {
 	cout << "S ";
 	if (song.directory != nullptr)
 		cout << song.directory << "/";
 	cout << song.uri << endl;
-	return true;
 }
 
-static bool
-DumpPlaylist(const PlaylistInfo &playlist,
-	     const LightDirectory &directory, Error &)
+static void
+DumpPlaylist(const PlaylistInfo &playlist, const LightDirectory &directory)
 {
 	cout << "P " << directory.GetPath()
 	     << "/" << playlist.name.c_str() << endl;
-	return true;
 }
 
 int

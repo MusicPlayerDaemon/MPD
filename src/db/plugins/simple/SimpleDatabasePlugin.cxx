@@ -274,9 +274,8 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	if (r.uri == nullptr) {
 		/* it's a directory */
 
-		if (selection.recursive && visit_directory &&
-		    !visit_directory(r.directory->Export(), error))
-			return false;
+		if (selection.recursive && visit_directory)
+			visit_directory(r.directory->Export());
 
 		return r.directory->Walk(selection.recursive, selection.filter,
 					 visit_directory, visit_song,
@@ -289,8 +288,8 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 			Song *song = r.directory->FindSong(r.uri);
 			if (song != nullptr) {
 				const LightSong song2 = song->Export();
-				return !selection.Match(song2) ||
-					visit_song(song2, error);
+				if (selection.Match(song2))
+					visit_song(song2);
 			}
 		}
 	}

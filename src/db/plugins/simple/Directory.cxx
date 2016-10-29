@@ -243,22 +243,19 @@ Directory::Walk(bool recursive, const SongFilter *filter,
 	if (visit_song) {
 		for (auto &song : songs){
 			const LightSong song2 = song.Export();
-			if ((filter == nullptr || filter->Match(song2)) &&
-			    !visit_song(song2, error))
-				return false;
+			if (filter == nullptr || filter->Match(song2))
+				visit_song(song2);
 		}
 	}
 
 	if (visit_playlist) {
 		for (const PlaylistInfo &p : playlists)
-			if (!visit_playlist(p, Export(), error))
-				return false;
+			visit_playlist(p, Export());
 	}
 
 	for (auto &child : children) {
-		if (visit_directory &&
-		    !visit_directory(child.Export(), error))
-			return false;
+		if (visit_directory)
+			visit_directory(child.Export());
 
 		if (recursive &&
 		    !child.Walk(recursive, filter,
