@@ -24,7 +24,6 @@
 #include "Request.hxx"
 #include "CommandError.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
@@ -211,11 +210,7 @@ handle_mount(Client &client, Request args, Response &r)
 		SimpleDatabase &db = *(SimpleDatabase *)_db;
 
 		try {
-			Error error;
-			if (!db.Mount(local_uri, remote_uri, error)) {
-				composite.Unmount(local_uri);
-				return print_error(r, error);
-			}
+			db.Mount(local_uri, remote_uri);
 		} catch (...) {
 			composite.Unmount(local_uri);
 			throw;

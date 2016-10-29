@@ -98,9 +98,11 @@ public:
 	gcc_nonnull_all
 	void Mount(const char *uri, Database *db);
 
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
 	gcc_nonnull_all
-	bool Mount(const char *local_uri, const char *storage_uri,
-		   Error &error);
+	void Mount(const char *local_uri, const char *storage_uri);
 
 	gcc_nonnull_all
 	bool Unmount(const char *uri);

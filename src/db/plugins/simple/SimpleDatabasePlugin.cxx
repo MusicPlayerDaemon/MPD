@@ -395,9 +395,8 @@ IsUnsafeChar(char ch)
 	return !IsSafeChar(ch);
 }
 
-bool
-SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
-		      Error &error)
+void
+SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 {
 	if (cache_path.IsNull())
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
@@ -406,9 +405,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	std::string name(storage_uri);
 	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
 
-	const auto name_fs = AllocatedPath::FromUTF8(name.c_str(), error);
-	if (name_fs.IsNull())
-		return false;
+	const auto name_fs = AllocatedPath::FromUTF8Throw(name.c_str());
 
 #ifndef ENABLE_ZLIB
 	constexpr bool compress = false;
@@ -432,8 +429,6 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 		delete db;
 		throw;
 	}
-
-	return true;
 }
 
 Database *
