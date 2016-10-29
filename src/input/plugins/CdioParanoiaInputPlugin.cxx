@@ -28,7 +28,6 @@
 #include "util/StringUtil.hxx"
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
 #include "fs/AllocatedPath.hxx"

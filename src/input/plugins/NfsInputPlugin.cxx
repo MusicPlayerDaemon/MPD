@@ -24,7 +24,6 @@
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Error.hxx"
 
 #include <string.h>
 
