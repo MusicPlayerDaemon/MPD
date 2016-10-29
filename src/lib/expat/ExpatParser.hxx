@@ -75,9 +75,6 @@ public:
 	gcc_pure
 	static const char *GetAttributeCase(const XML_Char **atts,
 					    const char *name);
-
-private:
-	void SetError(Error &error);
 };
 
 /**

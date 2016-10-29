@@ -21,20 +21,8 @@
 #include "ExpatParser.hxx"
 #include "input/InputStream.hxx"
 #include "util/ASCII.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <string.h>
-
-static constexpr Domain expat_domain("expat");
-
-void
-ExpatParser::SetError(Error &error)
-{
-	XML_Error code = XML_GetErrorCode(parser);
-	error.Format(expat_domain, int(code), "XML parser failed: %s",
-		     XML_ErrorString(code));
-}
 
 void
 ExpatParser::Parse(const char *data, size_t length, bool is_final)
