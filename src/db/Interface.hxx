@@ -31,7 +31,6 @@ struct DatabasePlugin;
 struct DatabaseStats;
 struct DatabaseSelection;
 struct LightSong;
-class Error;
 
 class Database {
 	const DatabasePlugin &plugin;
@@ -111,14 +110,15 @@ public:
 	virtual DatabaseStats GetStats(const DatabaseSelection &selection) const = 0;
 
 	/**
-	 * Update the database.  Returns the job id on success, 0 on
-	 * error (with #Error set) and 0 if not implemented (#Error
-	 * not set).
+	 * Update the database.
+	 *
+	 * Throws #std::runtime_error on error.
+	 *
+	 * @return the job id or 0 if not implemented
 	 */
 	virtual unsigned Update(gcc_unused const char *uri_utf8,
-				gcc_unused bool discard,
-				gcc_unused Error &error) {
-		/* not implemented: return 0 and don't set an Error */
+				gcc_unused bool discard) {
+		/* not implemented: return 0 */
 		return 0;
 	}
 

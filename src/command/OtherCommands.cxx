@@ -36,7 +36,6 @@
 #include "ls.hxx"
 #include "mixer/Volume.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/StringAPI.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Stats.hxx"
@@ -277,13 +276,10 @@ static CommandResult
 handle_update(Response &r, Database &db,
 	      const char *uri_utf8, bool discard)
 {
-	Error error;
-	unsigned id = db.Update(uri_utf8, discard, error);
+	unsigned id = db.Update(uri_utf8, discard);
 	if (id > 0) {
 		r.Format("updating_db: %i\n", id);
 		return CommandResult::OK;
-	} else if (error.IsDefined()) {
-		return print_error(r, error);
 	} else {
 		/* Database::Update() has returned 0 without setting
 		   the Error: the method is not implemented */

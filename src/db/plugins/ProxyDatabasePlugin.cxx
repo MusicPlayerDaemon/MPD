@@ -124,8 +124,7 @@ public:
 
 	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
-	virtual unsigned Update(const char *uri_utf8, bool discard,
-				Error &error) override;
+	unsigned Update(const char *uri_utf8, bool discard) override;
 
 	virtual time_t GetUpdateStamp() const override {
 		return update_stamp;
@@ -820,8 +819,7 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection) const
 }
 
 unsigned
-ProxyDatabase::Update(const char *uri_utf8, bool discard,
-		      gcc_unused Error &error)
+ProxyDatabase::Update(const char *uri_utf8, bool discard)
 {
 	EnsureConnected();
 
