@@ -23,6 +23,7 @@
 #include "db/DatabasePlugin.hxx"
 #include "db/Selection.hxx"
 #include "db/Helpers.hxx"
+#include "db/Stats.hxx"
 #include "db/UniqueTags.hxx"
 #include "db/LightDirectory.hxx"
 #include "Directory.hxx"
@@ -37,7 +38,6 @@
 #include "config/Block.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -261,12 +261,11 @@ SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 #endif
 }
 
-bool
+void
 SimpleDatabase::Visit(const DatabaseSelection &selection,
 		      VisitDirectory visit_directory,
 		      VisitSong visit_song,
-		      VisitPlaylist visit_playlist,
-		      Error &error) const
+		      VisitPlaylist visit_playlist) const
 {
 	ScopeDatabaseLock protect;
 
@@ -277,10 +276,10 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 		if (selection.recursive && visit_directory)
 			visit_directory(r.directory->Export());
 
-		return r.directory->Walk(selection.recursive, selection.filter,
-					 visit_directory, visit_song,
-					 visit_playlist,
-					 error);
+		r.directory->Walk(selection.recursive, selection.filter,
+				  visit_directory, visit_song,
+				  visit_playlist);
+		return;
 	}
 
 	if (strchr(r.uri, '/') == nullptr) {
@@ -298,22 +297,18 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 			    "No such directory");
 }
 
-bool
+void
 SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 				TagType tag_type, tag_mask_t group_mask,
-				VisitTag visit_tag,
-				Error &error) const
+				VisitTag visit_tag) const
 {
-	return ::VisitUniqueTags(*this, selection, tag_type, group_mask,
-				 visit_tag,
-				 error);
+	::VisitUniqueTags(*this, selection, tag_type, group_mask, visit_tag);
 }
 
-bool
-SimpleDatabase::GetStats(const DatabaseSelection &selection,
-			 DatabaseStats &stats, Error &error) const
+DatabaseStats
+SimpleDatabase::GetStats(const DatabaseSelection &selection) const
 {
-	return ::GetStats(*this, selection, stats, error);
+	return ::GetStats(*this, selection);
 }
 
 void

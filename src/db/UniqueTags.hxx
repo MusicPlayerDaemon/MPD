@@ -24,14 +24,12 @@
 #include "tag/TagType.h"
 #include "tag/Mask.hxx"
 
-class Error;
 class Database;
 struct DatabaseSelection;
 
-bool
+void
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
 		TagType tag_type, tag_mask_t group_mask,
-		VisitTag visit_tag,
-		Error &error);
+		VisitTag visit_tag);
 
 #endif

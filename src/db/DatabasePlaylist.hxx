@@ -25,13 +25,11 @@
 class Database;
 class Storage;
 class SongFilter;
-class Error;
 
 gcc_nonnull(3,4)
-bool
+void
 search_add_to_playlist(const Database &db, const Storage &storage,
 		       const char *uri, const char *path_utf8,
-		       const SongFilter *filter,
-		       Error &error);
+		       const SongFilter *filter);
 
 #endif

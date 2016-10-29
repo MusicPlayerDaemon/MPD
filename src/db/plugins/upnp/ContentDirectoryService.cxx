@@ -26,7 +26,6 @@
 #include "util/NumberParser.hxx"
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Error.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <stdio.h>

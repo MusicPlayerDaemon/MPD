@@ -36,22 +36,18 @@ CollectTags(TagSet &set, TagType tag_type, tag_mask_t group_mask,
 	set.InsertUnique(tag, tag_type, group_mask);
 }
 
-bool
+void
 VisitUniqueTags(const Database &db, const DatabaseSelection &selection,
 		TagType tag_type, tag_mask_t group_mask,
-		VisitTag visit_tag,
-		Error &error)
+		VisitTag visit_tag)
 {
 	TagSet set;
 
 	using namespace std::placeholders;
 	const auto f = std::bind(CollectTags, std::ref(set),
 				 tag_type, group_mask, _1);
-	if (!db.Visit(selection, f, error))
-		return false;
+	db.Visit(selection, f);
 
 	for (const auto &value : set)
 		visit_tag(value);
-
-	return true;
 }

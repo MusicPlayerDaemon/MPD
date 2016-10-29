@@ -26,7 +26,6 @@
 #include "db/Selection.hxx"
 #include "db/Interface.hxx"
 #include "db/Stats.hxx"
-#include "util/Error.hxx"
 #include "system/Clock.hxx"
 #include "Log.hxx"
 
@@ -79,20 +78,12 @@ stats_update(const Database &db)
 		return false;
 	}
 
-	Error error;
-
 	const DatabaseSelection selection("", true);
 
 	try {
-		if (db.GetStats(selection, stats, error)) {
-			stats_validity = StatsValidity::VALID;
-			return true;
-		} else {
-			LogError(error);
-
-			stats_validity = StatsValidity::FAILED;
-			return false;
-		}
+		stats = db.GetStats(selection);
+		stats_validity = StatsValidity::VALID;
+		return true;
 	} catch (const std::runtime_error &e) {
 		LogError(e);
 		stats_validity = StatsValidity::FAILED;

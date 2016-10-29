@@ -26,28 +26,25 @@ class SongFilter;
 struct DatabaseSelection;
 struct Partition;
 class Response;
-class Error;
 
 /**
  * @param full print attributes/tags
  * @param base print only base name of songs/directories?
  */
-bool
+void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
-		   bool full, bool base, Error &error);
+		   bool full, bool base);
 
-bool
+void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
 		   bool full, bool base,
-		   unsigned window_start, unsigned window_end,
-		   Error &error);
+		   unsigned window_start, unsigned window_end);
 
-bool
+void
 PrintUniqueTags(Response &r, Partition &partition,
 		unsigned type, tag_mask_t group_mask,
-		const SongFilter *filter,
-		Error &error);
+		const SongFilter *filter);
 
 #endif

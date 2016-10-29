@@ -107,11 +107,10 @@ GroupCountVisitor(TagCountMap &map, TagType group, const LightSong &song)
 	return true;
 }
 
-bool
+void
 PrintSongCount(Response &r, const Partition &partition, const char *name,
 	       const SongFilter *filter,
-	       TagType group,
-	       Error &error)
+	       TagType group)
 {
 	const Database &db = partition.GetDatabaseOrThrow();
 
@@ -125,8 +124,7 @@ PrintSongCount(Response &r, const Partition &partition, const char *name,
 		using namespace std::placeholders;
 		const auto f = std::bind(stats_visitor_song, std::ref(stats),
 					 _1);
-		if (!db.Visit(selection, f, error))
-			return false;
+		db.Visit(selection, f);
 
 		PrintSearchStats(r, stats);
 	} else {
@@ -138,11 +136,8 @@ PrintSongCount(Response &r, const Partition &partition, const char *name,
 		using namespace std::placeholders;
 		const auto f = std::bind(GroupCountVisitor, std::ref(map),
 					 group, _1);
-		if (!db.Visit(selection, f, error))
-			return false;
+		db.Visit(selection, f);
 
 		Print(r, group, map);
 	}
-
-	return true;
 }

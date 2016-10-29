@@ -44,7 +44,6 @@ static constexpr unsigned DEVICE_INARCHIVE = -1;
 static constexpr unsigned DEVICE_CONTAINER = -2;
 
 class SongFilter;
-class Error;
 class Database;
 
 struct Directory {
@@ -266,10 +265,9 @@ public:
 	/**
 	 * Caller must lock #db_mutex.
 	 */
-	bool Walk(bool recursive, const SongFilter *match,
+	void Walk(bool recursive, const SongFilter *match,
 		  VisitDirectory visit_directory, VisitSong visit_song,
-		  VisitPlaylist visit_playlist,
-		  Error &error) const;
+		  VisitPlaylist visit_playlist) const;
 
 	gcc_pure
 	LightDirectory Export() const;

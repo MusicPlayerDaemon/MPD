@@ -35,8 +35,6 @@
 #include "config/Block.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/TagTable.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "fs/Traits.hxx"
 #include "Log.hxx"
 #include "SongFilter.hxx"
@@ -84,20 +82,17 @@ public:
 	virtual const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
 
-	virtual bool Visit(const DatabaseSelection &selection,
-			   VisitDirectory visit_directory,
-			   VisitSong visit_song,
-			   VisitPlaylist visit_playlist,
-			   Error &error) const override;
+	void Visit(const DatabaseSelection &selection,
+		   VisitDirectory visit_directory,
+		   VisitSong visit_song,
+		   VisitPlaylist visit_playlist) const override;
 
-	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, tag_mask_t group_mask,
-				     VisitTag visit_tag,
-				     Error &error) const override;
+	void VisitUniqueTags(const DatabaseSelection &selection,
+			     TagType tag_type, tag_mask_t group_mask,
+			     VisitTag visit_tag) const override;
 
-	virtual bool GetStats(const DatabaseSelection &selection,
-			      DatabaseStats &stats,
-			      Error &error) const override;
+	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
+
 	time_t GetUpdateStamp() const override {
 		return 0;
 	}
@@ -576,12 +571,11 @@ UpnpDatabase::VisitServer(const ContentDirectoryService &server,
 }
 
 // Deal with the possibly multiple servers, call VisitServer if needed.
-bool
+void
 UpnpDatabase::Visit(const DatabaseSelection &selection,
 		    VisitDirectory visit_directory,
 		    VisitSong visit_song,
-		    VisitPlaylist visit_playlist,
-		    Error &) const
+		    VisitPlaylist visit_playlist) const
 {
 	auto vpath = stringToTokens(selection.uri, "/", true);
 	if (vpath.empty()) {
@@ -597,7 +591,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 					    visit_playlist);
 		}
 
-		return true;
+		return;
 	}
 
 	// We do have a path: the first element selects the server
@@ -607,19 +601,17 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 	auto server = discovery->GetServer(servername.c_str());
 	VisitServer(server, vpath, selection,
 		    visit_directory, visit_song, visit_playlist);
-	return true;
 }
 
-bool
+void
 UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			      TagType tag, gcc_unused tag_mask_t group_mask,
-			      VisitTag visit_tag,
-			      Error &) const
+			      VisitTag visit_tag) const
 {
 	// TODO: use group_mask
 
 	if (!visit_tag)
-		return true;
+		return;
 
 	std::set<std::string> values;
 	for (auto& server : discovery->GetDirectories()) {
@@ -646,18 +638,16 @@ UpnpDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 		builder.AddItem(tag, value.c_str());
 		visit_tag(builder.Commit());
 	}
-
-	return true;
 }
 
-bool
-UpnpDatabase::GetStats(const DatabaseSelection &,
-		       DatabaseStats &stats, Error &) const
+DatabaseStats
+UpnpDatabase::GetStats(const DatabaseSelection &) const
 {
 	/* Note: this gets called before the daemonizing so we can't
 	   reallyopen this would be a problem if we had real stats */
+	DatabaseStats stats;
 	stats.Clear();
-	return true;
+	return stats;
 }
 
 const DatabasePlugin upnp_db_plugin = {

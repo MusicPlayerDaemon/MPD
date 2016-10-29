@@ -63,12 +63,11 @@ PrefixVisitPlaylist(const char *base, const VisitPlaylist &visit_playlist,
 		       PrefixedLightDirectory(directory, base));
 }
 
-bool
+void
 WalkMount(const char *base, const Database &db,
 	  bool recursive, const SongFilter *filter,
 	  const VisitDirectory &visit_directory, const VisitSong &visit_song,
-	  const VisitPlaylist &visit_playlist,
-	  Error &error)
+	  const VisitPlaylist &visit_playlist)
 {
 	using namespace std::placeholders;
 
@@ -87,6 +86,5 @@ WalkMount(const char *base, const Database &db,
 		vp = std::bind(PrefixVisitPlaylist,
 			       base, std::ref(visit_playlist), _1, _2);
 
-	return db.Visit(DatabaseSelection("", recursive, filter),
-			vd, vs, vp, error);
+	db.Visit(DatabaseSelection("", recursive, filter), vd, vs, vp);
 }

@@ -33,7 +33,6 @@
 #include "fs/Path.hxx"
 #include "event/Loop.hxx"
 #include "Log.hxx"
-#include "util/Error.hxx"
 #include "util/ScopeExit.hxx"
 
 #include <stdexcept>
@@ -108,7 +107,6 @@ try {
 	config_global_init();
 	AtScopeExit() { config_global_finish(); };
 
-	Error error;
 	ReadConfigFile(config_path);
 
 	TagLoadConfig();
@@ -133,11 +131,7 @@ try {
 
 	const DatabaseSelection selection("", true);
 
-	if (!db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist,
-		       error)) {
-		cerr << error.GetMessage() << endl;
-		return EXIT_FAILURE;
-	}
+	db->Visit(selection, DumpDirectory, DumpSong, DumpPlaylist);
 
 	return EXIT_SUCCESS;
  } catch (const std::exception &e) {

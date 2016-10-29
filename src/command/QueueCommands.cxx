@@ -52,16 +52,15 @@ AddUri(Client &client, const LocatedUri &uri)
 }
 
 static CommandResult
-AddDatabaseSelection(Client &client, const char *uri, Response &r)
+AddDatabaseSelection(Client &client, const char *uri,
+		     gcc_unused Response &r)
 {
 #ifdef ENABLE_DATABASE
 	const ScopeBulkEdit bulk_edit(client.partition);
 
 	const DatabaseSelection selection(uri, true);
-	Error error;
-	return AddFromDatabase(client.partition, selection, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	AddFromDatabase(client.partition, selection);
+	return CommandResult::OK;
 #else
 	(void)client;
 	(void)uri;

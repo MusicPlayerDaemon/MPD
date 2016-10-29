@@ -112,20 +112,16 @@ public:
 	const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
 
-	virtual bool Visit(const DatabaseSelection &selection,
-			   VisitDirectory visit_directory,
-			   VisitSong visit_song,
-			   VisitPlaylist visit_playlist,
-			   Error &error) const override;
+	void Visit(const DatabaseSelection &selection,
+		   VisitDirectory visit_directory,
+		   VisitSong visit_song,
+		   VisitPlaylist visit_playlist) const override;
 
-	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, tag_mask_t group_mask,
-				     VisitTag visit_tag,
-				     Error &error) const override;
+	void VisitUniqueTags(const DatabaseSelection &selection,
+			     TagType tag_type, tag_mask_t group_mask,
+			     VisitTag visit_tag) const override;
 
-	virtual bool GetStats(const DatabaseSelection &selection,
-			      DatabaseStats &stats,
-			      Error &error) const override;
+	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
 	virtual time_t GetUpdateStamp() const override {
 		return mtime;

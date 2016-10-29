@@ -33,8 +33,6 @@
 #include "config/Block.hxx"
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
 #include "protocol/Ack.hxx"
 #include "event/SocketMonitor.hxx"
@@ -115,20 +113,16 @@ public:
 	const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
 
-	virtual bool Visit(const DatabaseSelection &selection,
-			   VisitDirectory visit_directory,
-			   VisitSong visit_song,
-			   VisitPlaylist visit_playlist,
-			   Error &error) const override;
+	void Visit(const DatabaseSelection &selection,
+		   VisitDirectory visit_directory,
+		   VisitSong visit_song,
+		   VisitPlaylist visit_playlist) const override;
 
-	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
-				     TagType tag_type, tag_mask_t group_mask,
-				     VisitTag visit_tag,
-				     Error &error) const override;
+	void VisitUniqueTags(const DatabaseSelection &selection,
+			     TagType tag_type, tag_mask_t group_mask,
+			     VisitTag visit_tag) const override;
 
-	virtual bool GetStats(const DatabaseSelection &selection,
-			      DatabaseStats &stats,
-			      Error &error) const override;
+	DatabaseStats GetStats(const DatabaseSelection &selection) const override;
 
 	virtual unsigned Update(const char *uri_utf8, bool discard,
 				Error &error) override;
@@ -150,8 +144,6 @@ private:
 	/* virtual methods from IdleMonitor */
 	virtual void OnIdle() override;
 };
-
-static constexpr Domain libmpdclient_domain("libmpdclient");
 
 static constexpr struct {
 	TagType d;
@@ -543,18 +535,18 @@ ProxyDatabase::ReturnSong(const LightSong *_song) const
 	delete song;
 }
 
-static bool
+static void
 Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, const SongFilter *filter,
       VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist, Error &error);
+      VisitPlaylist visit_playlist);
 
-static bool
+static void
 Visit(struct mpd_connection *connection,
       bool recursive, const SongFilter *filter,
       const struct mpd_directory *directory,
       VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist, Error &error)
+      VisitPlaylist visit_playlist)
 {
 	const char *path = mpd_directory_get_path(directory);
 #if LIBMPDCLIENT_CHECK_VERSION(2,9,0)
@@ -566,12 +558,9 @@ Visit(struct mpd_connection *connection,
 	if (visit_directory)
 		visit_directory(LightDirectory(path, mtime));
 
-	if (recursive &&
-	    !Visit(connection, path, recursive, filter,
-		   visit_directory, visit_song, visit_playlist, error))
-		return false;
-
-	return true;
+	if (recursive)
+		Visit(connection, path, recursive, filter,
+		      visit_directory, visit_song, visit_playlist);
 }
 
 gcc_pure
@@ -645,11 +634,11 @@ ReceiveEntities(struct mpd_connection *connection)
 	return entities;
 }
 
-static bool
+static void
 Visit(struct mpd_connection *connection, const char *uri,
       bool recursive, const SongFilter *filter,
       VisitDirectory visit_directory, VisitSong visit_song,
-      VisitPlaylist visit_playlist, Error &error)
+      VisitPlaylist visit_playlist)
 {
 	if (!mpd_send_list_meta(connection, uri))
 		ThrowError(connection);
@@ -663,11 +652,9 @@ Visit(struct mpd_connection *connection, const char *uri,
 			break;
 
 		case MPD_ENTITY_TYPE_DIRECTORY:
-			if (!Visit(connection, recursive, filter,
-				   mpd_entity_get_directory(entity),
-				   visit_directory, visit_song, visit_playlist,
-				   error))
-				return false;
+			Visit(connection, recursive, filter,
+			      mpd_entity_get_directory(entity),
+			      visit_directory, visit_song, visit_playlist);
 			break;
 
 		case MPD_ENTITY_TYPE_SONG:
@@ -680,8 +667,6 @@ Visit(struct mpd_connection *connection, const char *uri,
 			break;
 		}
 	}
-
-	return true;
 }
 
 static void
@@ -734,12 +719,11 @@ ServerSupportsSearchBase(const struct mpd_connection *connection)
 #endif
 }
 
-bool
+void
 ProxyDatabase::Visit(const DatabaseSelection &selection,
 		     VisitDirectory visit_directory,
 		     VisitSong visit_song,
-		     VisitPlaylist visit_playlist,
-		     Error &error) const
+		     VisitPlaylist visit_playlist) const
 {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
@@ -751,31 +735,27 @@ ProxyDatabase::Visit(const DatabaseSelection &selection,
 		/* this optimized code path can only be used under
 		   certain conditions */
 		::SearchSongs(connection, selection, visit_song);
-		return true;
+		return;
 	}
 
 	/* fall back to recursive walk (slow!) */
-	return ::Visit(connection, selection.uri.c_str(),
-		       selection.recursive, selection.filter,
-		       visit_directory, visit_song, visit_playlist,
-		       error);
+	::Visit(connection, selection.uri.c_str(),
+		selection.recursive, selection.filter,
+		visit_directory, visit_song, visit_playlist);
 }
 
-bool
+void
 ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 			       TagType tag_type,
 			       gcc_unused tag_mask_t group_mask,
-			       VisitTag visit_tag,
-			       Error &error) const
+			       VisitTag visit_tag) const
 {
 	// TODO: eliminate the const_cast
 	const_cast<ProxyDatabase *>(this)->EnsureConnected();
 
 	enum mpd_tag_type tag_type2 = Convert(tag_type);
-	if (tag_type2 == MPD_TAG_COUNT) {
-		error.Set(libmpdclient_domain, "Unsupported tag");
-		return false;
-	}
+	if (tag_type2 == MPD_TAG_COUNT)
+		throw std::runtime_error("Unsupported tag");
 
 	if (!mpd_search_db_tags(connection, tag_type2) ||
 	    !SendConstraints(connection, selection))
@@ -812,13 +792,10 @@ ProxyDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 
 	if (!mpd_response_finish(connection))
 		ThrowError(connection);
-
-	return true;
 }
 
-bool
-ProxyDatabase::GetStats(const DatabaseSelection &selection,
-			DatabaseStats &stats, gcc_unused Error &error) const
+DatabaseStats
+ProxyDatabase::GetStats(const DatabaseSelection &selection) const
 {
 	// TODO: match
 	(void)selection;
@@ -833,13 +810,13 @@ ProxyDatabase::GetStats(const DatabaseSelection &selection,
 
 	update_stamp = (time_t)mpd_stats_get_db_update_time(stats2);
 
+	DatabaseStats stats;
 	stats.song_count = mpd_stats_get_number_of_songs(stats2);
 	stats.total_duration = std::chrono::seconds(mpd_stats_get_db_play_time(stats2));
 	stats.artist_count = mpd_stats_get_number_of_artists(stats2);
 	stats.album_count = mpd_stats_get_number_of_albums(stats2);
 	mpd_stats_free(stats2);
-
-	return true;
+	return stats;
 }
 
 unsigned
