@@ -224,7 +224,7 @@ libmpd_a_SOURCES += \
 	src/db/DatabasePrint.cxx src/db/DatabasePrint.hxx \
 	src/db/DatabaseQueue.cxx src/db/DatabaseQueue.hxx \
 	src/db/DatabasePlaylist.cxx src/db/DatabasePlaylist.hxx \
-	src/db/DatabaseError.cxx src/db/DatabaseError.hxx \
+	src/db/DatabaseError.hxx \
 	src/db/DatabaseLock.cxx src/db/DatabaseLock.hxx \
 	src/db/DatabasePlugin.hxx \
 	src/db/Interface.hxx \
@@ -1709,7 +1709,6 @@ test_DumpDatabase_LDADD = \
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/protocol/Ack.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/db/DatabaseError.cxx \
 	src/db/Registry.cxx \
 	src/db/Selection.cxx \
 	src/db/PlaylistVector.cxx \

@@ -22,8 +22,6 @@
 
 #include <stdexcept>
 
-class Domain;
-
 enum class DatabaseErrorCode {
 	/**
 	 * The database is disabled, i.e. none is configured in this
@@ -47,7 +45,5 @@ public:
 		return code;
 	}
 };
-
-extern const Domain db_domain;
 
 #endif
