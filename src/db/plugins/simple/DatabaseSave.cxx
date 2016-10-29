@@ -29,7 +29,7 @@
 #include "tag/Settings.hxx"
 #include "fs/Charset.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <string.h>
@@ -66,8 +66,8 @@ db_save_internal(BufferedOutputStream &os, const Directory &music_root)
 	directory_save(os, music_root);
 }
 
-bool
-db_load_internal(TextFile &file, Directory &music_root, Error &error)
+void
+db_load_internal(TextFile &file, Directory &music_root)
 {
 	char *line;
 	unsigned format = 0;
@@ -76,10 +76,8 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 
 	/* get initial info */
 	line = file.ReadLine();
-	if (line == nullptr || strcmp(DIRECTORY_INFO_BEGIN, line) != 0) {
-		error.Set(db_domain, "Database corrupted");
-		return false;
-	}
+	if (line == nullptr || strcmp(DIRECTORY_INFO_BEGIN, line) != 0)
+		throw std::runtime_error("Database corrupted");
 
 	memset(tags, false, sizeof(tags));
 
@@ -90,67 +88,49 @@ db_load_internal(TextFile &file, Directory &music_root, Error &error)
 		if ((p = StringAfterPrefix(line, DB_FORMAT_PREFIX))) {
 			format = atoi(p);
 		} else if (StringStartsWith(line, DIRECTORY_MPD_VERSION)) {
-			if (found_version) {
-				error.Set(db_domain, "Duplicate version line");
-				return false;
-			}
+			if (found_version)
+				throw std::runtime_error("Duplicate version line");
 
 			found_version = true;
 		} else if ((p = StringAfterPrefix(line, DIRECTORY_FS_CHARSET))) {
-			if (found_charset) {
-				error.Set(db_domain, "Duplicate charset line");
-				return false;
-			}
+			if (found_charset)
+				throw std::runtime_error("Duplicate charset line");
 
 			found_charset = true;
 
 			const char *new_charset = p;
 			const char *const old_charset = GetFSCharset();
 			if (*old_charset != 0
-			    && strcmp(new_charset, old_charset) != 0) {
-				error.Format(db_domain,
-					     "Existing database has charset "
-					     "\"%s\" instead of \"%s\"; "
-					     "discarding database file",
-					     new_charset, old_charset);
-				return false;
-			}
+			    && strcmp(new_charset, old_charset) != 0)
+				throw FormatRuntimeError("Existing database has charset "
+							 "\"%s\" instead of \"%s\"; "
+							 "discarding database file",
+							 new_charset, old_charset);
 		} else if ((p = StringAfterPrefix(line, DB_TAG_PREFIX))) {
 			const char *name = p;
 			TagType tag = tag_name_parse(name);
-			if (tag == TAG_NUM_OF_ITEM_TYPES) {
-				error.Format(db_domain,
-					     "Unrecognized tag '%s', "
-					     "discarding database file",
-					     name);
-				return false;
-			}
+			if (tag == TAG_NUM_OF_ITEM_TYPES)
+				throw FormatRuntimeError("Unrecognized tag '%s', "
+							 "discarding database file",
+							 name);
 
 			tags[tag] = true;
 		} else {
-			error.Format(db_domain, "Malformed line: %s", line);
-			return false;
+			throw FormatRuntimeError("Malformed line: %s", line);
 		}
 	}
 
-	if (format < OLDEST_DB_FORMAT || format > DB_FORMAT) {
-		error.Set(db_domain,
-			  "Database format mismatch, "
-			  "discarding database file");
-		return false;
-	}
+	if (format < OLDEST_DB_FORMAT || format > DB_FORMAT)
+		throw std::runtime_error("Database format mismatch, "
+					 "discarding database file");
 
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		if (IsTagEnabled(i) && !tags[i]) {
-			error.Set(db_domain,
-				  "Tag list mismatch, "
-				  "discarding database file");
-			return false;
-		}
-	}
+	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i)
+		if (IsTagEnabled(i) && !tags[i])
+			throw std::runtime_error("Tag list mismatch, "
+						 "discarding database file");
 
 	LogDebug(db_domain, "reading DB");
 
 	const ScopeDatabaseLock protect;
-	return directory_load(file, music_root, error);
+	directory_load(file, music_root);
 }

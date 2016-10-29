@@ -136,7 +136,10 @@ private:
 
 	void Check() const;
 
-	bool Load(Error &error);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void Load();
 
 	Database *LockUmountSteal(const char *uri);
 };

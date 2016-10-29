@@ -28,8 +28,7 @@
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/StringCompare.hxx"
 #include "util/NumberParser.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <string.h>
 
@@ -38,8 +37,6 @@
 #define DIRECTORY_MTIME "mtime: "
 #define DIRECTORY_BEGIN "begin: "
 #define DIRECTORY_END "end: "
-
-static constexpr Domain directory_domain("directory");
 
 gcc_const
 static const char *
@@ -115,49 +112,37 @@ ParseLine(Directory &directory, const char *line)
 }
 
 static Directory *
-directory_load_subdir(TextFile &file, Directory &parent, const char *name,
-		      Error &error)
+directory_load_subdir(TextFile &file, Directory &parent, const char *name)
 {
-	bool success;
-
-	if (parent.FindChild(name) != nullptr) {
-		error.Format(directory_domain,
-			     "Duplicate subdirectory '%s'", name);
-		return nullptr;
-	}
+	if (parent.FindChild(name) != nullptr)
+		throw FormatRuntimeError("Duplicate subdirectory '%s'", name);
 
 	Directory *directory = parent.CreateChild(name);
 
-	while (true) {
-		const char *line = file.ReadLine();
-		if (line == nullptr) {
-			error.Set(directory_domain, "Unexpected end of file");
-			directory->Delete();
-			return nullptr;
+	try {
+		while (true) {
+			const char *line = file.ReadLine();
+			if (line == nullptr)
+				throw std::runtime_error("Unexpected end of file");
+
+			if (StringStartsWith(line, DIRECTORY_BEGIN))
+				break;
+
+			if (!ParseLine(*directory, line))
+				throw FormatRuntimeError("Malformed line: %s", line);
 		}
 
-		if (StringStartsWith(line, DIRECTORY_BEGIN))
-			break;
-
-		if (!ParseLine(*directory, line)) {
-			error.Format(directory_domain,
-				     "Malformed line: %s", line);
-			directory->Delete();
-			return nullptr;
-		}
-	}
-
-	success = directory_load(file, *directory, error);
-	if (!success) {
+		directory_load(file, *directory);
+	} catch (...) {
 		directory->Delete();
-		return nullptr;
+		throw;
 	}
 
 	return directory;
 }
 
-bool
-directory_load(TextFile &file, Directory &directory, Error &error)
+void
+directory_load(TextFile &file, Directory &directory)
 {
 	const char *line;
 
@@ -165,38 +150,23 @@ directory_load(TextFile &file, Directory &directory, Error &error)
 	       !StringStartsWith(line, DIRECTORY_END)) {
 		const char *p;
 		if ((p = StringAfterPrefix(line, DIRECTORY_DIR))) {
-			Directory *subdir =
-				directory_load_subdir(file, directory,
-						      p, error);
-			if (subdir == nullptr)
-				return false;
+			directory_load_subdir(file, directory, p);
 		} else if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
 			const char *name = p;
 
-			if (directory.FindSong(name) != nullptr) {
-				error.Format(directory_domain,
-					     "Duplicate song '%s'", name);
-				return false;
-			}
+			if (directory.FindSong(name) != nullptr)
+				throw FormatRuntimeError("Duplicate song '%s'", name);
 
-			DetachedSong *song = song_load(file, name, error);
-			if (song == nullptr)
-				return false;
+			DetachedSong *song = song_load(file, name);
 
 			directory.AddSong(Song::NewFrom(std::move(*song),
 							directory));
 			delete song;
 		} else if ((p = StringAfterPrefix(line, PLAYLIST_META_BEGIN))) {
 			const char *name = p;
-			if (!playlist_metadata_load(file, directory.playlists,
-						    name, error))
-				return false;
+			playlist_metadata_load(file, directory.playlists, name);
 		} else {
-			error.Format(directory_domain,
-				     "Malformed line: %s", line);
-			return false;
+			throw FormatRuntimeError("Malformed line: %s", line);
 		}
 	}
-
-	return true;
 }

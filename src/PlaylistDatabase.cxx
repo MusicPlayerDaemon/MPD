@@ -23,13 +23,10 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/StringUtil.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <string.h>
 #include <stdlib.h>
-
-static constexpr Domain playlist_database_domain("playlist_database");
 
 void
 playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv)
@@ -41,9 +38,8 @@ playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv)
 			  pi.name.c_str(), (long)pi.mtime);
 }
 
-bool
-playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
-		       Error &error)
+void
+playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name)
 {
 	PlaylistInfo pm(name, 0);
 
@@ -53,24 +49,19 @@ playlist_metadata_load(TextFile &file, PlaylistVector &pv, const char *name,
 	while ((line = file.ReadLine()) != nullptr &&
 	       strcmp(line, "playlist_end") != 0) {
 		colon = strchr(line, ':');
-		if (colon == nullptr || colon == line) {
-			error.Format(playlist_database_domain,
-				     "unknown line in db: %s", line);
-			return false;
-		}
+		if (colon == nullptr || colon == line)
+			throw FormatRuntimeError("unknown line in db: %s",
+						 line);
 
 		*colon++ = 0;
 		value = StripLeft(colon);
 
 		if (strcmp(line, "mtime") == 0)
 			pm.mtime = strtol(value, nullptr, 10);
-		else {
-			error.Format(playlist_database_domain,
-				     "unknown line in db: %s", line);
-			return false;
-		}
+		else
+			throw FormatRuntimeError("unknown line in db: %s",
+						 line);
 	}
 
 	pv.UpdateOrInsert(std::move(pm));
-	return true;
 }

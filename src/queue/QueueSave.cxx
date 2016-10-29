@@ -27,7 +27,6 @@
 #include "fs/io/TextFile.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <stdlib.h>
@@ -95,10 +94,10 @@ queue_load_song(TextFile &file, const SongLoader &loader,
 	if ((p = StringAfterPrefix(line, SONG_BEGIN))) {
 		const char *uri = p;
 
-		Error error;
-		song = song_load(file, uri, error);
-		if (song == nullptr) {
-			LogError(error);
+		try {
+			song = song_load(file, uri);
+		} catch (const std::runtime_error &e) {
+			LogError(e);
 			return;
 		}
 	} else {

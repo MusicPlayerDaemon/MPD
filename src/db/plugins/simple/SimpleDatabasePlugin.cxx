@@ -142,22 +142,19 @@ SimpleDatabase::Check() const
 #endif
 }
 
-bool
-SimpleDatabase::Load(Error &error)
+void
+SimpleDatabase::Load()
 {
 	assert(!path.IsNull());
 	assert(root != nullptr);
 
 	TextFile file(path);
 
-	if (!db_load_internal(file, *root, error))
-		return false;
+	db_load_internal(file, *root);
 
 	FileInfo fi;
 	if (GetFileInfo(path, fi))
 		mtime = fi.GetModificationTime();
-
-	return true;
 }
 
 void
@@ -173,16 +170,7 @@ SimpleDatabase::Open()
 #endif
 
 	try {
-		Error error2;
-		if (!Load(error2)) {
-			LogError(error2);
-
-			delete root;
-
-			Check();
-
-			root = Directory::NewRoot();
-		}
+		Load();
 	} catch (const std::exception &e) {
 		LogError(e);
 
