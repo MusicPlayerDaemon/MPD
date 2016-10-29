@@ -150,6 +150,8 @@ SimpleDatabase::Load()
 
 	TextFile file(path);
 
+	LogDebug(simple_db_domain, "reading DB");
+
 	db_load_internal(file, *root);
 
 	FileInfo fi;

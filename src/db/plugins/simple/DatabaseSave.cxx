@@ -20,7 +20,6 @@
 #include "config.h"
 #include "DatabaseSave.hxx"
 #include "db/DatabaseLock.hxx"
-#include "db/DatabaseError.hxx"
 #include "Directory.hxx"
 #include "DirectorySave.hxx"
 #include "fs/io/BufferedOutputStream.hxx"
@@ -30,7 +29,6 @@
 #include "fs/Charset.hxx"
 #include "util/StringCompare.hxx"
 #include "util/RuntimeError.hxx"
-#include "Log.hxx"
 
 #include <string.h>
 #include <stdlib.h>
@@ -128,8 +126,6 @@ db_load_internal(TextFile &file, Directory &music_root)
 		if (IsTagEnabled(i) && !tags[i])
 			throw std::runtime_error("Tag list mismatch, "
 						 "discarding database file");
-
-	LogDebug(db_domain, "reading DB");
 
 	const ScopeDatabaseLock protect;
 	directory_load(file, music_root);
