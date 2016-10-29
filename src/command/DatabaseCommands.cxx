@@ -35,6 +35,8 @@
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
 
+#include <memory>
+
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
@@ -207,7 +209,7 @@ handle_list(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	SongFilter *filter = nullptr;
+	std::unique_ptr<SongFilter> filter;
 	tag_mask_t group_mask = 0;
 
 	if (args.size == 1) {
@@ -219,7 +221,8 @@ handle_list(Client &client, Request args, Response &r)
 			return CommandResult::ERROR;
 		}
 
-		filter = new SongFilter((unsigned)TAG_ARTIST, args.shift());
+		filter.reset(new SongFilter((unsigned)TAG_ARTIST,
+					    args.shift()));
 	}
 
 	while (args.size >= 2 &&
@@ -239,9 +242,8 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	if (!args.IsEmpty()) {
-		filter = new SongFilter();
+		filter.reset(new SongFilter());
 		if (!filter->Parse(args, false)) {
-			delete filter;
 			r.Error(ACK_ERROR_ARG, "not able to parse args");
 			return CommandResult::ERROR;
 		}
@@ -249,7 +251,6 @@ handle_list(Client &client, Request args, Response &r)
 
 	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
 	    group_mask & (tag_mask_t(1) << tagType)) {
-		delete filter;
 		r.Error(ACK_ERROR_ARG, "Conflicting group");
 		return CommandResult::ERROR;
 	}
@@ -257,11 +258,9 @@ handle_list(Client &client, Request args, Response &r)
 	Error error;
 	CommandResult ret =
 		PrintUniqueTags(r, client.partition,
-				tagType, group_mask, filter, error)
+				tagType, group_mask, filter.get(), error)
 		? CommandResult::OK
 		: print_error(r, error);
-
-	delete filter;
 
 	return ret;
 }
