@@ -150,12 +150,13 @@ start_time_fallback(const AVStream &stream)
 
 /**
  * Copy PCM data from a non-empty AVFrame to an interleaved buffer.
+ *
+ * Throws #std::exception on error.
  */
 static ConstBuffer<void>
 copy_interleave_frame(const AVCodecContext &codec_context,
 		      const AVFrame &frame,
-		      FfmpegBuffer &global_buffer,
-		      Error &error)
+		      FfmpegBuffer &global_buffer)
 {
 	assert(frame.nb_samples > 0);
 
@@ -166,20 +167,16 @@ copy_interleave_frame(const AVCodecContext &codec_context,
 					   frame.nb_samples,
 					   codec_context.sample_fmt, 1);
 	assert(data_size != 0);
-	if (data_size < 0) {
-		SetFfmpegError(error, data_size);
-		return 0;
-	}
+	if (data_size < 0)
+		throw MakeFfmpegError(data_size);
 
 	void *output_buffer;
 	if (av_sample_fmt_is_planar(codec_context.sample_fmt) &&
 	    codec_context.channels > 1) {
 		output_buffer = global_buffer.GetT<uint8_t>(data_size);
-		if (output_buffer == nullptr) {
+		if (output_buffer == nullptr)
 			/* Not enough memory - shouldn't happen */
-			error.SetErrno(ENOMEM);
-			return 0;
-		}
+			throw std::bad_alloc();
 
 		PcmInterleave(output_buffer,
 			      ConstBuffer<const void *>((const void *const*)frame.extended_data,
@@ -231,13 +228,14 @@ FfmpegSendFrame(Decoder &decoder, InputStream &is,
 		size_t &skip_bytes,
 		FfmpegBuffer &buffer)
 {
-	Error error;
-	auto output_buffer =
-		copy_interleave_frame(codec_context, frame,
-				      buffer, error);
-	if (output_buffer.IsNull()) {
+	ConstBuffer<void> output_buffer;
+
+	try {
+		output_buffer = copy_interleave_frame(codec_context, frame,
+						      buffer);
+	} catch (const std::exception e) {
 		/* this must be a serious error, e.g. OOM */
-		LogError(error);
+		LogError(e);
 		return DecoderCommand::STOP;
 	}
 
