@@ -19,8 +19,6 @@
 
 #include "config.h"
 #include "Error.hxx"
-#include "Domain.hxx"
-#include "util/Error.hxx"
 #include "util/RuntimeError.hxx"
 
 extern "C" {
@@ -41,20 +39,4 @@ MakeFfmpegError(int errnum, const char *prefix)
 	char msg[256];
 	av_strerror(errnum, msg, sizeof(msg));
 	return FormatRuntimeError("%s: %s", prefix, msg);
-}
-
-void
-SetFfmpegError(Error &error, int errnum)
-{
-	char msg[256];
-	av_strerror(errnum, msg, sizeof(msg));
-	error.Set(ffmpeg_domain, errnum, msg);
-}
-
-void
-SetFfmpegError(Error &error, int errnum, const char *prefix)
-{
-	char msg[256];
-	av_strerror(errnum, msg, sizeof(msg));
-	error.Format(ffmpeg_domain, errnum, "%s: %s", prefix, msg);
 }
