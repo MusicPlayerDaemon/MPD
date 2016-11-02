@@ -400,10 +400,7 @@ try {
 #endif
 #endif
 
-	if (!IcuInit(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	IcuInit();
 
 	winsock_init();
 	io_thread_init();

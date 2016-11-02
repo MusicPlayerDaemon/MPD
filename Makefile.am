@@ -508,8 +508,7 @@ libevent_a_SOURCES = \
 
 libicu_a_SOURCES = \
 	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
-	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx \
-	src/lib/icu/Error.cxx src/lib/icu/Error.hxx
+	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx
 
 if HAVE_ICU
 libicu_a_SOURCES += \

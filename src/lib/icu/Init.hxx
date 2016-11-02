@@ -22,19 +22,17 @@
 
 #include "check.h"
 
-class Error;
-
 #ifdef HAVE_ICU
 
-bool
-IcuInit(Error &error);
+void
+IcuInit();
 
 void
 IcuFinish();
 
 #else
 
-static inline bool IcuInit(Error &) { return true; }
+static inline void IcuInit() {}
 static inline void IcuFinish() {}
 
 #endif
