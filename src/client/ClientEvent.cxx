@@ -22,9 +22,9 @@
 #include "Log.hxx"
 
 void
-Client::OnSocketError(Error &&error)
+Client::OnSocketError(std::exception_ptr ep)
 {
-	FormatError(error, "error on client %d", num);
+	FormatError(ep, "error on client %d", num);
 
 	SetExpired();
 }

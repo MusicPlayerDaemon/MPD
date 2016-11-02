@@ -474,9 +474,9 @@ HttpdClient::OnSocketInput(void *data, size_t length)
 }
 
 void
-HttpdClient::OnSocketError(Error &&error)
+HttpdClient::OnSocketError(std::exception_ptr ep)
 {
-	LogError(error);
+	LogError(ep);
 }
 
 void

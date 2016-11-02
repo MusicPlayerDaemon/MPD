@@ -191,7 +191,7 @@ private:
 protected:
 	virtual bool OnSocketReady(unsigned flags) override;
 	virtual InputResult OnSocketInput(void *data, size_t length) override;
-	virtual void OnSocketError(Error &&error) override;
+	void OnSocketError(std::exception_ptr ep) override;
 	virtual void OnSocketClosed() override;
 };
 

@@ -24,10 +24,11 @@
 #include "SocketMonitor.hxx"
 #include "util/StaticFifoBuffer.hxx"
 
+#include <exception>
+
 #include <assert.h>
 #include <stdint.h>
 
-class Error;
 class EventLoop;
 
 /**
@@ -109,7 +110,7 @@ protected:
 	 */
 	virtual InputResult OnSocketInput(void *data, size_t length) = 0;
 
-	virtual void OnSocketError(Error &&error) = 0;
+	virtual void OnSocketError(std::exception_ptr ep) = 0;
 	virtual void OnSocketClosed() = 0;
 
 	virtual bool OnSocketReady(unsigned flags) override;
