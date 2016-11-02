@@ -26,7 +26,6 @@
 #include "fs/StandardDirectory.hxx"
 #include "fs/CheckFile.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <assert.h>
@@ -44,14 +43,9 @@ CreateConfiguredStorageUri(EventLoop &event_loop, const char *uri)
 static AllocatedPath
 GetConfiguredMusicDirectory()
 {
-	Error error;
-	AllocatedPath path = config_get_path(ConfigOption::MUSIC_DIR, error);
-	if (path.IsNull()) {
-		if (error.IsDefined())
-			throw std::runtime_error(error.GetMessage());
-
+	AllocatedPath path = config_get_path(ConfigOption::MUSIC_DIR);
+	if (path.IsNull())
 		path = GetUserMusicDir();
-	}
 
 	return path;
 }

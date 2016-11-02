@@ -23,7 +23,6 @@
 #include "ConfigOption.hxx"
 #include "Compiler.h"
 
-class Error;
 class Path;
 class AllocatedPath;
 struct ConfigParam;
@@ -78,11 +77,12 @@ config_get_string(enum ConfigOption option, const char *default_value=nullptr);
 /**
  * Returns an optional configuration variable which contains an
  * absolute path.  If there is a tilde prefix, it is expanded.
- * Returns AllocatedPath::Null() if the value is not present.  If the path
- * could not be parsed, returns AllocatedPath::Null() and sets the error.
+ * Returns AllocatedPath::Null() if the value is not present.
+ *
+ * Throws #std::runtime_error on error.
  */
 AllocatedPath
-config_get_path(enum ConfigOption option, Error &error);
+config_get_path(enum ConfigOption option);
 
 gcc_pure
 unsigned

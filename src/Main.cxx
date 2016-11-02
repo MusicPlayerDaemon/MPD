@@ -129,34 +129,23 @@ Instance *instance;
 
 #ifdef ENABLE_DAEMON
 
-static bool
-glue_daemonize_init(const struct options *options, Error &error)
+static void
+glue_daemonize_init(const struct options *options)
 {
-	auto pid_file = config_get_path(ConfigOption::PID_FILE, error);
-	if (pid_file.IsNull() && error.IsDefined())
-		return false;
-
 	daemonize_init(config_get_string(ConfigOption::USER, nullptr),
 		       config_get_string(ConfigOption::GROUP, nullptr),
-		       std::move(pid_file));
+		       config_get_path(ConfigOption::PID_FILE));
 
 	if (options->kill)
 		daemonize_kill();
-
-	return true;
 }
 
 #endif
 
-static bool
-glue_mapper_init(Error &error)
+static void
+glue_mapper_init()
 {
-	auto playlist_dir = config_get_path(ConfigOption::PLAYLIST_DIR, error);
-	if (playlist_dir.IsNull() && error.IsDefined())
-		return false;
-
-	mapper_init(std::move(playlist_dir));
-	return true;
+	mapper_init(config_get_path(ConfigOption::PLAYLIST_DIR));
 }
 
 #ifdef ENABLE_DATABASE
@@ -232,37 +221,30 @@ InitDatabaseAndStorage()
  * Configure and initialize the sticker subsystem.
  */
 static void
-glue_sticker_init(void)
+glue_sticker_init()
 {
 #ifdef ENABLE_SQLITE
-	Error error;
-	auto sticker_file = config_get_path(ConfigOption::STICKER_FILE, error);
-	if (sticker_file.IsNull()) {
-		if (error.IsDefined())
-			FatalError(error);
+	auto sticker_file = config_get_path(ConfigOption::STICKER_FILE);
+	if (sticker_file.IsNull())
 		return;
-	}
 
 	sticker_global_init(std::move(sticker_file));
 #endif
 }
 
-static bool
-glue_state_file_init(Error &error)
+static void
+glue_state_file_init()
 {
-	auto path_fs = config_get_path(ConfigOption::STATE_FILE, error);
+	auto path_fs = config_get_path(ConfigOption::STATE_FILE);
 	if (path_fs.IsNull()) {
-		if (error.IsDefined())
-			return false;
-
 #ifdef ANDROID
 		const auto cache_dir = GetUserCacheDir();
 		if (cache_dir.IsNull())
-			return true;
+			return;
 
 		path_fs = AllocatedPath::Build(cache_dir, "state");
 #else
-		return true;
+		return;
 #endif
 	}
 
@@ -274,7 +256,6 @@ glue_state_file_init(Error &error)
 					     *instance->partition,
 					     instance->event_loop);
 	instance->state_file->Read();
-	return true;
 }
 
 /**
@@ -425,10 +406,7 @@ try {
 #endif
 
 #ifdef ENABLE_DAEMON
-	if (!glue_daemonize_init(&options, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	glue_daemonize_init(&options);
 #endif
 
 	stats_global_init();
@@ -490,10 +468,7 @@ try {
 
 	ConfigureFS();
 
-	if (!glue_mapper_init(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	glue_mapper_init();
 
 	initPermissions();
 	spl_global_init();
@@ -551,10 +526,7 @@ try {
 	}
 #endif
 
-	if (!glue_state_file_init(error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	glue_state_file_init();
 
 	instance->partition->outputs.SetReplayGainMode(replay_gain_get_real_mode(instance->partition->playlist.queue.random));
 

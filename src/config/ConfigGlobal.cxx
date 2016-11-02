@@ -28,7 +28,6 @@
 #include "ConfigError.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/Error.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
@@ -122,13 +121,13 @@ config_get_string(ConfigOption option, const char *default_value)
 }
 
 AllocatedPath
-config_get_path(ConfigOption option, Error &error)
+config_get_path(ConfigOption option)
 {
 	const auto *param = config_get_param(option);
 	if (param == nullptr)
 		return AllocatedPath::Null();
 
-	return param->GetPath(error);
+	return param->GetPath();
 }
 
 unsigned
