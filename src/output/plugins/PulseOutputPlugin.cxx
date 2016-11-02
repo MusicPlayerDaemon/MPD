@@ -54,18 +54,16 @@ class PulseOutput {
 	const char *server;
 	const char *sink;
 
-	PulseMixer *mixer;
+	PulseMixer *mixer = nullptr;
 
-	struct pa_threaded_mainloop *mainloop;
+	struct pa_threaded_mainloop *mainloop = nullptr;
 	struct pa_context *context;
-	struct pa_stream *stream;
+	struct pa_stream *stream = nullptr;
 
 	size_t writable;
 
 	PulseOutput()
-		:base(pulse_output_plugin),
-		 mixer(nullptr),
-		 mainloop(nullptr), stream(nullptr) {}
+		:base(pulse_output_plugin) {}
 
 public:
 	void SetMixer(PulseMixer &_mixer);
