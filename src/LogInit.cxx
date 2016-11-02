@@ -151,9 +151,8 @@ log_init(bool verbose, bool use_stdout, Error &error)
 			return true;
 #endif
 		} else {
-			out_path = config_get_path(ConfigOption::LOG_FILE, error);
-			return !out_path.IsNull() &&
-				log_init_file(param->line, error);
+			out_path = param->GetPath();
+			return log_init_file(param->line, error);
 		}
 	}
 #endif
