@@ -27,9 +27,10 @@
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 #include "system/FatalError.hxx"
+#include "system/Error.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -66,21 +67,26 @@ open_log_file(void)
 	return OpenFile(out_path, O_CREAT | O_WRONLY | O_APPEND, 0666);
 }
 
-static bool
-log_init_file(int line, Error &error)
+static void
+log_init_file(int line)
 {
 	assert(!out_path.IsNull());
 
 	out_fd = open_log_file();
 	if (out_fd < 0) {
+#ifdef WIN32
 		const std::string out_path_utf8 = out_path.ToUTF8();
-		error.FormatErrno("failed to open log file \"%s\" (config line %d)",
+		throw FormatRuntimeError("failed to open log file \"%s\" (config line %d)",
+					 out_path_utf8.c_str(), line);
+#else
+		int e = errno;
+		const std::string out_path_utf8 = out_path.ToUTF8();
+		throw FormatErrno(e, "failed to open log file \"%s\" (config line %d)",
 				  out_path_utf8.c_str(), line);
-		return false;
+#endif
 	}
 
 	EnableLogTimestamp();
-	return true;
 }
 
 static inline LogLevel
@@ -114,15 +120,12 @@ log_early_init(bool verbose)
 #endif
 }
 
-bool
-log_init(bool verbose, bool use_stdout, Error &error)
+void
+log_init(bool verbose, bool use_stdout)
 {
 #ifdef ANDROID
 	(void)verbose;
 	(void)use_stdout;
-	(void)error;
-
-	return true;
 #else
 	if (verbose)
 		SetLogThreshold(LogLevel::DEBUG);
@@ -130,29 +133,21 @@ log_init(bool verbose, bool use_stdout, Error &error)
 		SetLogThreshold(parse_log_level(param->value.c_str(),
 						param->line));
 
-	if (use_stdout) {
-		return true;
-	} else {
+	if (!use_stdout) {
 		const auto *param = config_get_param(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
-#ifdef HAVE_SYSLOG
 			/* no configuration: default to syslog (if
 			   available) */
-			LogInitSysLog();
-			return true;
-#else
-			error.Set(log_domain,
-				  "config parameter 'log_file' not found");
-			return false;
+#ifndef HAVE_SYSLOG
+			throw std::runtime_error("config parameter 'log_file' not found");
 #endif
 #ifdef HAVE_SYSLOG
 		} else if (strcmp(param->value.c_str(), "syslog") == 0) {
 			LogInitSysLog();
-			return true;
 #endif
 		} else {
 			out_path = param->GetPath();
-			return log_init_file(param->line, error);
+			log_init_file(param->line);
 		}
 	}
 #endif

@@ -412,10 +412,7 @@ try {
 	stats_global_init();
 	TagLoadConfig();
 
-	if (!log_init(options.verbose, options.log_stderr, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	log_init(options.verbose, options.log_stderr);
 
 	instance = new Instance();
 
