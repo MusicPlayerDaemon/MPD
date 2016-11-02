@@ -49,7 +49,6 @@
 #include "pcm/PcmConvert.hxx"
 #include "unix/SignalHandlers.hxx"
 #include "system/FatalError.hxx"
-#include "util/Error.hxx"
 #include "thread/Slack.hxx"
 #include "lib/icu/Init.hxx"
 #include "config/ConfigGlobal.hxx"
@@ -170,7 +169,6 @@ InitStorage()
 static bool
 glue_db_init_and_load(void)
 {
-	Error error;
 	instance->database =
 		CreateConfiguredDatabase(instance->event_loop, *instance);
 	if (instance->database == nullptr)
@@ -367,7 +365,6 @@ static inline
 int mpd_main(int argc, char *argv[])
 try {
 	struct options options;
-	Error error;
 
 #ifdef ENABLE_DAEMON
 	daemonize_close_stdin();
@@ -399,10 +396,7 @@ try {
 			ReadConfigFile(config_path);
 	}
 #else
-	if (!parse_cmdline(argc, argv, &options, error)) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	ParseCommandLine(argc, argv, &options);
 #endif
 
 #ifdef ENABLE_DAEMON
@@ -461,8 +455,6 @@ try {
 
 static int mpd_main_after_fork(struct options options)
 try {
-	Error error;
-
 	ConfigureFS();
 
 	glue_mapper_init();
