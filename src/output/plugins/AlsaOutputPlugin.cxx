@@ -59,7 +59,7 @@ struct AlsaOutput {
 	 * The configured name of the ALSA device; empty for the
 	 * default device
 	 */
-	std::string device;
+	const std::string device;
 
 #ifdef ENABLE_DSD
 	/**
@@ -67,14 +67,14 @@ struct AlsaOutput {
 	 *
 	 * @see http://dsd-guide.com/dop-open-standard
 	 */
-	bool dop;
+	const bool dop;
 #endif
 
 	/** libasound's buffer_time setting (in microseconds) */
-	unsigned int buffer_time;
+	const unsigned buffer_time;
 
 	/** libasound's period_time setting (in microseconds) */
-	unsigned int period_time;
+	const unsigned period_time;
 
 	/** the mode flags passed to snd_pcm_open */
 	int mode = 0;
@@ -167,20 +167,17 @@ private:
 static constexpr Domain alsa_output_domain("alsa_output");
 
 AlsaOutput::AlsaOutput(const ConfigBlock &block)
-	:base(alsa_output_plugin, block)
-{
-	device = block.GetBlockValue("device", "");
-
+	:base(alsa_output_plugin, block),
+	 device(block.GetBlockValue("device", "")),
 #ifdef ENABLE_DSD
-	dop = block.GetBlockValue("dop", false) ||
-		/* legacy name from MPD 0.18 and older: */
-		block.GetBlockValue("dsd_usb", false);
+	 dop(block.GetBlockValue("dop", false) ||
+	     /* legacy name from MPD 0.18 and older: */
+	     block.GetBlockValue("dsd_usb", false)),
 #endif
-
-	buffer_time = block.GetBlockValue("buffer_time",
-					  MPD_ALSA_BUFFER_TIME_US);
-	period_time = block.GetBlockValue("period_time", 0u);
-
+	 buffer_time(block.GetBlockValue("buffer_time",
+					 MPD_ALSA_BUFFER_TIME_US)),
+	 period_time(block.GetBlockValue("period_time", 0u))
+{
 #ifdef SND_PCM_NO_AUTO_RESAMPLE
 	if (!block.GetBlockValue("auto_resample", true))
 		mode |= SND_PCM_NO_AUTO_RESAMPLE;
