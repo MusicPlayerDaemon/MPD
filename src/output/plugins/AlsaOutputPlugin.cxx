@@ -501,8 +501,7 @@ configure_hw:
 	err = AlsaSetupFormat(ad->pcm, hwparams, audio_format, params);
 	if (err < 0) {
 		error.Format(alsa_output_domain, err,
-			     "ALSA device \"%s\" does not support format %s: %s",
-			     ad->GetDevice(),
+			     "Failed to configure format %s: %s",
 			     sample_format_to_string(audio_format.format),
 			     snd_strerror(-err));
 		return false;
@@ -518,8 +517,8 @@ configure_hw:
 						  &channels);
 	if (err < 0) {
 		error.Format(alsa_output_domain, err,
-			     "ALSA device \"%s\" does not support %i channels: %s",
-			     ad->GetDevice(), (int)audio_format.channels,
+			     "Failed to configure %i channels: %s",
+			     (int)audio_format.channels,
 			     snd_strerror(-err));
 		return false;
 	}
@@ -527,12 +526,21 @@ configure_hw:
 
 	err = snd_pcm_hw_params_set_rate_near(ad->pcm, hwparams,
 					      &sample_rate, nullptr);
-	if (err < 0 || sample_rate == 0) {
+	if (err < 0) {
 		error.Format(alsa_output_domain, err,
-			     "ALSA device \"%s\" does not support %u Hz audio",
-			     ad->GetDevice(), audio_format.sample_rate);
+			     "Failed to configure sample rate %u Hz: %s",
+			     audio_format.sample_rate,
+			     snd_strerror(-err));
 		return false;
 	}
+
+	if (sample_rate == 0) {
+		error.Format(alsa_output_domain, err,
+			     "Failed to configure sample rate %u Hz",
+			     audio_format.sample_rate);
+		return false;
+	}
+
 	audio_format.sample_rate = sample_rate;
 
 	snd_pcm_uframes_t buffer_size_min, buffer_size_max;
@@ -660,8 +668,8 @@ configure_hw:
 
 error:
 	error.Format(alsa_output_domain, err,
-		     "Error opening ALSA device \"%s\" (%s): %s",
-		     ad->GetDevice(), cmd, snd_strerror(-err));
+		     "%s failed: %s",
+		     cmd, snd_strerror(-err));
 	return false;
 }
 
@@ -698,9 +706,8 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 	if (dop_format != check) {
 		/* no bit-perfect playback, which is required
 		   for DSD over USB */
-		error.Format(alsa_output_domain,
-			     "Failed to configure DSD-over-PCM on ALSA device \"%s\"",
-			     GetDevice());
+		error.Set(alsa_output_domain,
+			  "Failed to configure DSD-over-PCM");
 		delete[] silence;
 		return false;
 	}
@@ -757,6 +764,8 @@ AlsaOutput::Open(AudioFormat &audio_format, Error &error)
 
 	if (!SetupOrDop(audio_format, params, error)) {
 		snd_pcm_close(pcm);
+		error.FormatPrefix("Error opening ALSA device \"%s\": ",
+				   GetDevice());
 		return false;
 	}
 
