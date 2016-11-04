@@ -182,7 +182,7 @@ AudioOutput::Open()
 	try {
 		success = ao_plugin_open(this, out_audio_format, error);
 	} catch (const std::runtime_error &e) {
-		FormatError(error, "Failed to open \"%s\" [%s]",
+		FormatError(e, "Failed to open \"%s\" [%s]",
 			    name, plugin.name);
 
 		CloseFilter();
