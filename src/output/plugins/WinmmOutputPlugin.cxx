@@ -148,10 +148,10 @@ winmm_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	}
 
 	switch (audio_format.format) {
-	case SampleFormat::S8:
 	case SampleFormat::S16:
 		break;
 
+	case SampleFormat::S8:
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
 	case SampleFormat::FLOAT:
