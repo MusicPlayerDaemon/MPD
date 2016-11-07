@@ -362,7 +362,6 @@ CommandResult
 command_process(Client &client, unsigned num, char *line)
 try {
 	Response r(client, num);
-	Error error;
 
 	/* get the command name (first word on the line) */
 	/* we have to set current_command because Response::Error()

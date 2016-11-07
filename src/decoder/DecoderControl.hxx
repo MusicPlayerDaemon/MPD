@@ -40,7 +40,6 @@
 #undef ERROR
 #endif
 
-class Error;
 class DetachedSong;
 class MusicBuffer;
 class MusicPipe;
@@ -367,7 +366,10 @@ public:
 
 	void Stop();
 
-	bool Seek(SongTime t, Error &error_r);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void Seek(SongTime t);
 
 	void Quit();
 

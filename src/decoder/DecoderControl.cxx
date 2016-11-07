@@ -22,7 +22,8 @@
 #include "DecoderError.hxx"
 #include "MusicPipe.hxx"
 #include "DetachedSong.hxx"
-#include "util/Error.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 
@@ -104,8 +105,8 @@ DecoderControl::Stop()
 		SynchronousCommandLocked(DecoderCommand::STOP);
 }
 
-bool
-DecoderControl::Seek(SongTime t, Error &error_r)
+void
+DecoderControl::Seek(SongTime t)
 {
 	assert(state != DecoderState::START);
 	assert(state != DecoderState::ERROR);
@@ -118,28 +119,21 @@ DecoderControl::Seek(SongTime t, Error &error_r)
 	case DecoderState::STOP:
 		/* TODO: if this happens, the caller should be given a
 		   chance to restart the decoder */
-		error_r.Set(decoder_domain, "Decoder is dead");
-		return false;
+		throw std::runtime_error("Decoder is dead");
 
 	case DecoderState::DECODE:
 		break;
 	}
 
-	if (!seekable) {
-		error_r.Set(decoder_domain, "Not seekable");
-		return false;
-	}
+	if (!seekable)
+		throw std::runtime_error("Not seekable");
 
 	seek_time = t;
 	seek_error = false;
 	LockSynchronousCommand(DecoderCommand::SEEK);
 
-	if (seek_error) {
-		error_r.Set(decoder_domain, "Decoder failed to seek");
-		return false;
-	}
-
-	return true;
+	if (seek_error)
+		throw std::runtime_error("Decoder failed to seek");
 }
 
 void
