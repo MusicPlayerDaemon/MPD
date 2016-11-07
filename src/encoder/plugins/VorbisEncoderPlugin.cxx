@@ -26,8 +26,6 @@
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #include <vorbis/vorbisenc.h>
 
@@ -39,10 +37,7 @@ class VorbisEncoder final : public OggEncoder {
 	vorbis_info vi;
 
 public:
-	VorbisEncoder()
-		:OggEncoder(true) {
-		vorbis_info_init(&vi);
-	}
+	VorbisEncoder(float quality, int bitrate, AudioFormat &_audio_format);
 
 	virtual ~VorbisEncoder() {
 		vorbis_block_clear(&vb);
@@ -50,18 +45,15 @@ public:
 		vorbis_info_clear(&vi);
 	}
 
-	bool Open(float quality, int bitrate, AudioFormat &audio_format,
-		  Error &error);
-
 	/* virtual methods from class Encoder */
-	bool End(Error &error) override {
-		return PreTag(error);
+	void End() override {
+		PreTag();
 	}
 
-	bool PreTag(Error &error) override;
-	bool SendTag(const Tag &tag, Error &error) override;
+	void PreTag() override;
+	void SendTag(const Tag &tag) override;
 
-	bool Write(const void *data, size_t length, Error &) override;
+	void Write(const void *data, size_t length) override;
 
 private:
 	void HeaderOut(vorbis_comment &vc);
@@ -77,14 +69,12 @@ public:
 	PreparedVorbisEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
-	Encoder *Open(AudioFormat &audio_format, Error &) override;
+	Encoder *Open(AudioFormat &audio_format) override;
 
 	const char *GetMimeType() const override {
 		return "audio/ogg";
 	}
 };
-
-static constexpr Domain vorbis_encoder_domain("vorbis_encoder");
 
 PreparedVorbisEncoder::PreparedVorbisEncoder(const ConfigBlock &block)
 {
@@ -124,10 +114,12 @@ vorbis_encoder_init(const ConfigBlock &block)
 	return new PreparedVorbisEncoder(block);
 }
 
-bool
-VorbisEncoder::Open(float quality, int bitrate, AudioFormat &_audio_format,
-		    Error &error)
+VorbisEncoder::VorbisEncoder(float quality, int bitrate,
+			     AudioFormat &_audio_format)
+	:OggEncoder(true)
 {
+	vorbis_info_init(&vi);
+
 	_audio_format.format = SampleFormat::FLOAT;
 	audio_format = _audio_format;
 
@@ -138,9 +130,8 @@ VorbisEncoder::Open(float quality, int bitrate, AudioFormat &_audio_format,
 						audio_format.channels,
 						audio_format.sample_rate,
 						quality * 0.1)) {
-			error.Set(vorbis_encoder_domain,
-				  "error initializing vorbis vbr");
-			return false;
+			vorbis_info_clear(&vi);
+			throw std::runtime_error("error initializing vorbis vbr");
 		}
 	} else {
 		/* a bit rate was configured */
@@ -149,9 +140,8 @@ VorbisEncoder::Open(float quality, int bitrate, AudioFormat &_audio_format,
 					    audio_format.channels,
 					    audio_format.sample_rate, -1.0,
 					    bitrate * 1000, -1.0)) {
-			error.Set(vorbis_encoder_domain,
-				  "error initializing vorbis encoder");
-			return false;
+			vorbis_info_clear(&vi);
+			throw std::runtime_error("error initializing vorbis encoder");
 		}
 	}
 
@@ -159,8 +149,6 @@ VorbisEncoder::Open(float quality, int bitrate, AudioFormat &_audio_format,
 	vorbis_block_init(&vd, &vb);
 
 	SendHeader();
-
-	return true;
 }
 
 void
@@ -184,15 +172,9 @@ VorbisEncoder::SendHeader()
 }
 
 Encoder *
-PreparedVorbisEncoder::Open(AudioFormat &audio_format, Error &error)
+PreparedVorbisEncoder::Open(AudioFormat &audio_format)
 {
-	auto *e = new VorbisEncoder();
-	if (!e->Open(quality, bitrate, audio_format, error)) {
-		delete e;
-		return nullptr;
-	}
-
-	return e;
+	return new VorbisEncoder(quality, bitrate, audio_format);
 }
 
 void
@@ -208,8 +190,8 @@ VorbisEncoder::BlockOut()
 	}
 }
 
-bool
-VorbisEncoder::PreTag(gcc_unused Error &error)
+void
+VorbisEncoder::PreTag()
 {
 	vorbis_analysis_wrote(&vd, 0);
 	BlockOut();
@@ -222,7 +204,6 @@ VorbisEncoder::PreTag(gcc_unused Error &error)
 	vorbis_block_init(&vd, &vb);
 
 	Flush();
-	return true;
 }
 
 static void
@@ -235,8 +216,8 @@ copy_tag_to_vorbis_comment(VorbisComment &vc, const Tag &tag)
 	}
 }
 
-bool
-VorbisEncoder::SendTag(const Tag &tag, gcc_unused Error &error)
+void
+VorbisEncoder::SendTag(const Tag &tag)
 {
 	/* write the vorbis_comment object */
 
@@ -250,8 +231,6 @@ VorbisEncoder::SendTag(const Tag &tag, gcc_unused Error &error)
 	/* send that vorbis_comment to the ogg_stream_state */
 
 	HeaderOut(comment);
-
-	return true;
 }
 
 static void
@@ -263,8 +242,8 @@ interleaved_to_vorbis_buffer(float **dest, const float *src,
 			dest[j][i] = *src++;
 }
 
-bool
-VorbisEncoder::Write(const void *data, size_t length, gcc_unused Error &error)
+void
+VorbisEncoder::Write(const void *data, size_t length)
 {
 	unsigned num_frames = length / audio_format.GetFrameSize();
 
@@ -277,7 +256,6 @@ VorbisEncoder::Write(const void *data, size_t length, gcc_unused Error &error)
 
 	vorbis_analysis_wrote(&vd, num_frames);
 	BlockOut();
-	return true;
 }
 
 const EncoderPlugin vorbis_encoder_plugin = {

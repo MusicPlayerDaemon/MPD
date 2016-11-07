@@ -32,9 +32,8 @@ public:
 		 buffer(8192) {}
 
 	/* virtual methods from class Encoder */
-	bool Write(const void *data, size_t length, Error &) override {
+	void Write(const void *data, size_t length) override {
 		buffer.Append((const uint8_t *)data, length);
-		return true;
 	}
 
 	size_t Read(void *dest, size_t length) override {
@@ -45,7 +44,7 @@ public:
 class PreparedNullEncoder final : public PreparedEncoder {
 public:
 	/* virtual methods from class PreparedEncoder */
-	Encoder *Open(AudioFormat &, Error &) override {
+	Encoder *Open(AudioFormat &) override {
 		return new NullEncoder();
 	}
 };

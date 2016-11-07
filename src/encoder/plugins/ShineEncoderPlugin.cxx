@@ -23,7 +23,7 @@
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
 #include "util/DynamicFifoBuffer.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 extern "C"
 {
@@ -71,13 +71,13 @@ public:
 	bool WriteChunk(bool flush);
 
 	/* virtual methods from class Encoder */
-	bool End(Error &error) override {
-		return Flush(error);
+	void End() override {
+		return Flush();
 	}
 
-	bool Flush(Error &) override;
+	void Flush() override;
 
-	bool Write(const void *data, size_t length, Error &) override;
+	void Write(const void *data, size_t length) override;
 
 	size_t Read(void *dest, size_t length) override {
 		return output_buffer.Read((uint8_t *)dest, length);
@@ -91,7 +91,7 @@ public:
 	PreparedShineEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
-	Encoder *Open(AudioFormat &audio_format, Error &) override;
+	Encoder *Open(AudioFormat &audio_format) override;
 
 	const char *GetMimeType() const override {
 		return  "audio/mpeg";
@@ -111,8 +111,7 @@ shine_encoder_init(const ConfigBlock &block)
 }
 
 static shine_t
-SetupShine(shine_config_t config, AudioFormat &audio_format,
-	   Error &error)
+SetupShine(shine_config_t config, AudioFormat &audio_format)
 {
 	audio_format.format = SampleFormat::S16;
 	audio_format.channels = CHANNELS;
@@ -122,32 +121,24 @@ SetupShine(shine_config_t config, AudioFormat &audio_format,
 	config.wave.channels =
 		audio_format.channels == 2 ? PCM_STEREO : PCM_MONO;
 
-	if (shine_check_config(config.wave.samplerate, config.mpeg.bitr) < 0) {
-		error.Format(config_domain,
-			     "error configuring shine. "
-			     "samplerate %d and bitrate %d configuration"
-			     " not supported.",
-			     config.wave.samplerate,
-			     config.mpeg.bitr);
-
-		return nullptr;
-	}
+	if (shine_check_config(config.wave.samplerate, config.mpeg.bitr) < 0)
+		throw FormatRuntimeError("error configuring shine. "
+					 "samplerate %d and bitrate %d configuration"
+					 " not supported.",
+					 config.wave.samplerate,
+					 config.mpeg.bitr);
 
 	auto shine = shine_initialise(&config);
 	if (!shine)
-		error.Format(config_domain,
-			     "error initializing shine.");
+		throw std::runtime_error("error initializing shine");
 
 	return shine;
 }
 
 Encoder *
-PreparedShineEncoder::Open(AudioFormat &audio_format, Error &error)
+PreparedShineEncoder::Open(AudioFormat &audio_format)
 {
-	auto shine = SetupShine(config, audio_format, error);
-	if (!shine)
-		return nullptr;
-
+	auto shine = SetupShine(config, audio_format);
 	return new ShineEncoder(audio_format, shine);
 }
 
@@ -175,8 +166,8 @@ ShineEncoder::WriteChunk(bool flush)
 	return true;
 }
 
-bool
-ShineEncoder::Write(const void *_data, size_t length, gcc_unused Error &error)
+void
+ShineEncoder::Write(const void *_data, size_t length)
 {
 	const int16_t *data = (const int16_t*)_data;
 	length /= sizeof(*data) * audio_format.channels;
@@ -198,12 +189,10 @@ ShineEncoder::Write(const void *_data, size_t length, gcc_unused Error &error)
 		/* write if chunk is filled */
 		WriteChunk(false);
 	}
-
-	return true;
 }
 
-bool
-ShineEncoder::Flush(gcc_unused Error &error)
+void
+ShineEncoder::Flush()
 {
 	/* flush buffers and flush shine */
 	WriteChunk(true);
@@ -213,8 +202,6 @@ ShineEncoder::Flush(gcc_unused Error &error)
 
 	if (written > 0)
 		output_buffer.Append(data, written);
-
-	return true;
 }
 
 const EncoderPlugin shine_encoder_plugin = {

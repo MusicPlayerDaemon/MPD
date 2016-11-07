@@ -32,6 +32,8 @@
 
 #include <shout/shout.h>
 
+#include <stdexcept>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -366,8 +368,12 @@ void
 ShoutOutput::Close()
 {
 	if (encoder != nullptr) {
-		if (encoder->End(IgnoreError()))
+		try {
+			encoder->End();
 			write_page(this, IgnoreError());
+		} catch (const std::runtime_error &) {
+			/* ignore */
+		}
 
 		delete encoder;
 	}
@@ -410,16 +416,22 @@ ShoutOutput::Open(AudioFormat &audio_format, Error &error)
 	if (!shout_connect(this, error))
 		return false;
 
-	encoder = prepared_encoder->Open(audio_format, error);
-	if (encoder == nullptr) {
-		shout_close(shout_conn);
-		return false;
-	}
+	try {
+		encoder = prepared_encoder->Open(audio_format);
 
-	if (!write_page(this, error)) {
-		delete encoder;
+		try {
+			if (!write_page(this, error)) {
+				delete encoder;
+				shout_close(shout_conn);
+				return false;
+			}
+		} catch (const std::runtime_error &) {
+			delete encoder;
+			throw;
+		}
+	} catch (const std::runtime_error &) {
 		shout_close(shout_conn);
-		return false;
+		throw;
 	}
 
 	return true;
@@ -438,8 +450,8 @@ ShoutOutput::Delay() const
 size_t
 ShoutOutput::Play(const void *chunk, size_t size, Error &error)
 {
-	return encoder->Write(chunk, size, error) &&
-		write_page(this, error)
+	encoder->Write(chunk, size);
+	return write_page(this, error)
 		? size
 		: 0;
 }
@@ -484,13 +496,15 @@ ShoutOutput::SendTag(const Tag &tag)
 	if (encoder->ImplementsTag()) {
 		/* encoder plugin supports stream tags */
 
+		encoder->PreTag();
+
 		Error error;
-		if (!encoder->PreTag(error) ||
-		    !write_page(this, error) ||
-		    !encoder->SendTag(tag, error)) {
+		if (!write_page(this, error)) {
 			LogError(error);
 			return;
 		}
+
+		encoder->SendTag(tag);
 	} else {
 		/* no stream tag support: fall back to icy-metadata */
 		char song[1024];

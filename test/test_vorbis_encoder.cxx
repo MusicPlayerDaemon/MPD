@@ -27,7 +27,6 @@
 #include "fs/io/StdioOutputStream.hxx"
 #include "tag/Tag.hxx"
 #include "tag/TagBuilder.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <memory>
@@ -40,8 +39,6 @@ static uint8_t zero[256];
 int
 main(gcc_unused int argc, gcc_unused char **argv)
 try {
-	gcc_unused bool success;
-
 	/* create the encoder */
 
 	const auto plugin = encoder_plugin_get("vorbis");
@@ -56,8 +53,7 @@ try {
 	/* open the encoder */
 
 	AudioFormat audio_format(44100, SampleFormat::S16, 2);
-	std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format,
-							 IgnoreError()));
+	std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format));
 	assert(encoder != nullptr);
 
 	StdioOutputStream os(stdout);
@@ -66,15 +62,13 @@ try {
 
 	/* write a block of data */
 
-	success = encoder->Write(zero, sizeof(zero), IgnoreError());
-	assert(success);
+	encoder->Write(zero, sizeof(zero));
 
 	EncoderToOutputStream(os, *encoder);
 
 	/* write a tag */
 
-	success = encoder->PreTag(IgnoreError());
-	assert(success);
+	encoder->PreTag();
 
 	EncoderToOutputStream(os, *encoder);
 
@@ -87,21 +81,17 @@ try {
 		tag_builder.Commit(tag);
 	}
 
-	success = encoder->SendTag(tag, IgnoreError());
-	assert(success);
+	encoder->SendTag(tag);
 
 	EncoderToOutputStream(os, *encoder);
 
 	/* write another block of data */
 
-	success = encoder->Write(zero, sizeof(zero), IgnoreError());
-	assert(success);
+	encoder->Write(zero, sizeof(zero));
 
 	/* finish */
 
-	success = encoder->End(IgnoreError());
-	assert(success);
-
+	encoder->End();
 	EncoderToOutputStream(os, *encoder);
 
 	return EXIT_SUCCESS;

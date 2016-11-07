@@ -171,8 +171,10 @@ public:
 
 	/**
 	 * Caller must lock the mutex.
+	 *
+	 * Throws #std::runtime_error on error.
 	 */
-	bool OpenEncoder(AudioFormat &audio_format, Error &error);
+	void OpenEncoder(AudioFormat &audio_format);
 
 	/**
 	 * Caller must lock the mutex.
@@ -237,7 +239,10 @@ public:
 	 */
 	void BroadcastFromEncoder();
 
-	bool EncodeAndPlay(const void *chunk, size_t size, Error &error);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void EncodeAndPlay(const void *chunk, size_t size);
 
 	void SendTag(const Tag &tag);
 

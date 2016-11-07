@@ -28,7 +28,6 @@
 
 struct AudioFormat;
 struct Tag;
-class Error;
 
 class Encoder {
 	const bool implements_tag;
@@ -51,20 +50,18 @@ public:
 	 * usable for more data, and only Read() and Close() can be
 	 * called.
 	 *
-	 * @return true on success
+	 * Throws #std::runtime_error on error.
 	 */
-	virtual bool End(gcc_unused Error &error) {
-		return true;
+	virtual void End() {
 	}
 
 	/**
 	 * Flushes an encoder object, make everything which might
 	 * currently be buffered available by Read().
 	 *
-	 * @return true on success
+	 * Throws #std::runtime_error on error.
 	 */
-	virtual bool Flush(gcc_unused Error &error) {
-		return true;
+	virtual void Flush() {
 	}
 
 	/**
@@ -72,10 +69,9 @@ public:
 	 * some encoders to flush the previous sub-stream, in
 	 * preparation to begin a new one.
 	 *
-	 * @return true on success
+	 * Throws #std::runtime_error on error.
 	 */
-	virtual bool PreTag(gcc_unused Error &error) {
-		return true;
+	virtual void PreTag() {
 	}
 
 	/**
@@ -84,23 +80,22 @@ public:
 	 * Instructions: call PreTag(); then obtain flushed data with
 	 * Read(); finally call Tag().
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param tag the tag object
-	 * @return true on success
 	 */
-	virtual bool SendTag(gcc_unused const Tag &tag,
-			     gcc_unused Error &error) {
-		return true;
+	virtual void SendTag(gcc_unused const Tag &tag) {
 	}
 
 	/**
 	 * Writes raw PCM data to the encoder.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param data the buffer containing PCM samples
 	 * @param length the length of the buffer in bytes
-	 * @return true on success
 	 */
-	virtual bool Write(const void *data, size_t length,
-			   Error &error) = 0;
+	virtual void Write(const void *data, size_t length) = 0;
 
 	/**
 	 * Reads encoded data from the encoder.
@@ -127,11 +122,12 @@ public:
 	 * first encoder_write() call, you should invoke
 	 * encoder_read() to obtain the file header.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param audio_format the encoder's input audio format; the plugin
 	 * may modify the struct to adapt it to its abilities
-	 * @return true on success
 	 */
-	virtual Encoder *Open(AudioFormat &audio_format, Error &error) = 0;
+	virtual Encoder *Open(AudioFormat &audio_format) = 0;
 
 	/**
 	 * Get mime type of encoded content.

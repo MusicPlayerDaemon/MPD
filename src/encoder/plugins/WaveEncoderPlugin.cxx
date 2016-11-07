@@ -37,7 +37,7 @@ public:
 	WaveEncoder(AudioFormat &audio_format);
 
 	/* virtual methods from class Encoder */
-	bool Write(const void *data, size_t length, Error &) override;
+	void Write(const void *data, size_t length) override;
 
 	size_t Read(void *dest, size_t length) override {
 		return buffer.Read((uint8_t *)dest, length);
@@ -46,7 +46,7 @@ public:
 
 class PreparedWaveEncoder final : public PreparedEncoder {
 	/* virtual methods from class PreparedEncoder */
-	Encoder *Open(AudioFormat &audio_format, Error &) override {
+	Encoder *Open(AudioFormat &audio_format) override {
 		return new WaveEncoder(audio_format);
 	}
 
@@ -186,9 +186,8 @@ pcm24_to_wave(uint8_t *dst8, const uint32_t *src32, size_t length)
 	return (dst8 - dst_old);
 }
 
-bool
-WaveEncoder::Write(const void *src, size_t length,
-		   gcc_unused Error &error)
+void
+WaveEncoder::Write(const void *src, size_t length)
 {
 	uint8_t *dst = buffer.Write(length);
 
@@ -223,7 +222,6 @@ WaveEncoder::Write(const void *src, size_t length,
 	}
 
 	buffer.Append(length);
-	return true;
 }
 
 const EncoderPlugin wave_encoder_plugin = {

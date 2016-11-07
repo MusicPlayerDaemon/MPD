@@ -23,8 +23,6 @@
 #include "AudioFormat.hxx"
 #include "config/ConfigError.hxx"
 #include "util/Alloc.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
 
 #include <opus.h>
@@ -61,14 +59,14 @@ public:
 	~OpusEncoder() override;
 
 	/* virtual methods from class Encoder */
-	bool End(Error &) override;
-	bool Write(const void *data, size_t length, Error &) override;
+	void End() override;
+	void Write(const void *data, size_t length) override;
 
 	size_t Read(void *dest, size_t length) override;
 
 private:
-	bool DoEncode(bool eos, Error &error);
-	bool WriteSilence(unsigned fill_frames, Error &error);
+	void DoEncode(bool eos);
+	void WriteSilence(unsigned fill_frames);
 
 	void GenerateHead();
 	void GenerateTags();
@@ -83,14 +81,12 @@ public:
 	PreparedOpusEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
-	Encoder *Open(AudioFormat &audio_format, Error &) override;
+	Encoder *Open(AudioFormat &audio_format) override;
 
 	const char *GetMimeType() const override {
 		return "audio/ogg";
 	}
 };
-
-static constexpr Domain opus_encoder_domain("opus_encoder");
 
 PreparedOpusEncoder::PreparedOpusEncoder(const ConfigBlock &block)
 {
@@ -141,7 +137,7 @@ OpusEncoder::OpusEncoder(AudioFormat &_audio_format, ::OpusEncoder *_enc)
 }
 
 Encoder *
-PreparedOpusEncoder::Open(AudioFormat &audio_format, Error &error)
+PreparedOpusEncoder::Open(AudioFormat &audio_format)
 {
 	/* libopus supports only 48 kHz */
 	audio_format.sample_rate = 48000;
@@ -168,11 +164,8 @@ PreparedOpusEncoder::Open(AudioFormat &audio_format, Error &error)
 					audio_format.channels,
 					OPUS_APPLICATION_AUDIO,
 					&error_code);
-	if (enc == nullptr) {
-		error.Set(opus_encoder_domain, error_code,
-			  opus_strerror(error_code));
-		return nullptr;
-	}
+	if (enc == nullptr)
+		throw std::runtime_error(opus_strerror(error_code));
 
 	opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate));
 	opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(complexity));
@@ -187,8 +180,8 @@ OpusEncoder::~OpusEncoder()
 	opus_encoder_destroy(enc);
 }
 
-bool
-OpusEncoder::DoEncode(bool eos, Error &error)
+void
+OpusEncoder::DoEncode(bool eos)
 {
 	assert(buffer_position == buffer_size);
 
@@ -204,10 +197,8 @@ OpusEncoder::DoEncode(bool eos, Error &error)
 				    buffer_frames,
 				    buffer2,
 				    sizeof(buffer2));
-	if (result < 0) {
-		error.Set(opus_encoder_domain, "Opus encoder error");
-		return false;
-	}
+	if (result < 0)
+		throw std::runtime_error("Opus encoder error");
 
 	granulepos += buffer_frames;
 
@@ -221,12 +212,10 @@ OpusEncoder::DoEncode(bool eos, Error &error)
 	stream.PacketIn(packet);
 
 	buffer_position = 0;
-
-	return true;
 }
 
-bool
-OpusEncoder::End(Error &error)
+void
+OpusEncoder::End()
 {
 	Flush();
 
@@ -234,11 +223,11 @@ OpusEncoder::End(Error &error)
 	       buffer_size - buffer_position);
 	buffer_position = buffer_size;
 
-	return DoEncode(true, error);
+	DoEncode(true);
 }
 
-bool
-OpusEncoder::WriteSilence(unsigned fill_frames, Error &error)
+void
+OpusEncoder::WriteSilence(unsigned fill_frames)
 {
 	size_t fill_bytes = fill_frames * frame_size;
 
@@ -251,16 +240,13 @@ OpusEncoder::WriteSilence(unsigned fill_frames, Error &error)
 		buffer_position += nbytes;
 		fill_bytes -= nbytes;
 
-		if (buffer_position == buffer_size &&
-		    !DoEncode(false, error))
-			return false;
+		if (buffer_position == buffer_size)
+			DoEncode(false);
 	}
-
-	return true;
 }
 
-bool
-OpusEncoder::Write(const void *_data, size_t length, Error &error)
+void
+OpusEncoder::Write(const void *_data, size_t length)
 {
 	const uint8_t *data = (const uint8_t *)_data;
 
@@ -270,9 +256,7 @@ OpusEncoder::Write(const void *_data, size_t length, Error &error)
 
 		assert(buffer_position == 0);
 
-		if (!WriteSilence(lookahead, error))
-			return false;
-
+		WriteSilence(lookahead);
 		lookahead = 0;
 	}
 
@@ -286,12 +270,9 @@ OpusEncoder::Write(const void *_data, size_t length, Error &error)
 		length -= nbytes;
 		buffer_position += nbytes;
 
-		if (buffer_position == buffer_size &&
-		    !DoEncode(false, error))
-			return false;
+		if (buffer_position == buffer_size)
+			DoEncode(false);
 	}
-
-	return true;
 }
 
 void
