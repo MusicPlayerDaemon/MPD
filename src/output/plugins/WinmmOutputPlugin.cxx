@@ -20,6 +20,7 @@
 #include "config.h"
 #include "WinmmOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "mixer/MixerList.hxx"
 #include "fs/AllocatedPath.hxx"
@@ -36,7 +37,9 @@ struct WinmmBuffer {
 	WAVEHDR hdr;
 };
 
-struct WinmmOutput {
+class WinmmOutput {
+	friend struct AudioOutputWrapper<WinmmOutput>;
+
 	AudioOutput base;
 
 	const UINT device_id;
@@ -51,7 +54,34 @@ struct WinmmOutput {
 	WinmmBuffer buffers[8];
 	unsigned next_buffer;
 
+public:
 	WinmmOutput(const ConfigBlock &block);
+
+	HWAVEOUT GetHandle() {
+		return handle;
+	}
+
+	static WinmmOutput *Create(const ConfigBlock &block, Error &) {
+		return new WinmmOutput(block);
+	}
+
+	bool Open(AudioFormat &audio_format, Error &);
+	void Close();
+
+	size_t Play(const void *chunk, size_t size, Error &);
+	void Drain();
+	void Cancel();
+
+private:
+	/**
+	 * Wait until the buffer is finished.
+	 */
+	void DrainBuffer(WinmmBuffer &buffer);
+
+	void DrainAllBuffers();
+
+	void Stop();
+
 };
 
 static std::runtime_error
@@ -68,7 +98,7 @@ MakeWaveOutError(MMRESULT result, const char *prefix)
 HWAVEOUT
 winmm_output_get_handle(WinmmOutput &output)
 {
-	return output.handle;
+	return output.GetHandle();
 }
 
 static bool
@@ -121,27 +151,11 @@ WinmmOutput::WinmmOutput(const ConfigBlock &block)
 {
 }
 
-static AudioOutput *
-winmm_output_init(const ConfigBlock &block, Error &)
+bool
+WinmmOutput::Open(AudioFormat &audio_format, Error &)
 {
-	return &(new WinmmOutput(block))->base;
-}
-
-static void
-winmm_output_finish(AudioOutput *ao)
-{
-	WinmmOutput *wo = (WinmmOutput *)ao;
-
-	delete wo;
-}
-
-static bool
-winmm_output_open(AudioOutput *ao, AudioFormat &audio_format, Error &)
-{
-	WinmmOutput *wo = (WinmmOutput *)ao;
-
-	wo->event = CreateEvent(nullptr, false, false, nullptr);
-	if (wo->event == nullptr)
+	event = CreateEvent(nullptr, false, false, nullptr);
+	if (event == nullptr)
 		throw std::runtime_error("CreateEvent() failed");
 
 	switch (audio_format.format) {
@@ -172,40 +186,37 @@ winmm_output_open(AudioOutput *ao, AudioFormat &audio_format, Error &)
 	format.wBitsPerSample = audio_format.GetSampleSize() * 8;
 	format.cbSize = 0;
 
-	MMRESULT result = waveOutOpen(&wo->handle, wo->device_id, &format,
-				      (DWORD_PTR)wo->event, 0, CALLBACK_EVENT);
+	MMRESULT result = waveOutOpen(&handle, device_id, &format,
+				      (DWORD_PTR)event, 0, CALLBACK_EVENT);
 	if (result != MMSYSERR_NOERROR) {
-		CloseHandle(wo->event);
+		CloseHandle(event);
 		throw MakeWaveOutError(result, "waveOutOpen() failed");
 	}
 
-	for (unsigned i = 0; i < ARRAY_SIZE(wo->buffers); ++i) {
-		memset(&wo->buffers[i].hdr, 0, sizeof(wo->buffers[i].hdr));
-	}
+	for (unsigned i = 0; i < ARRAY_SIZE(buffers); ++i)
+		memset(&buffers[i].hdr, 0, sizeof(buffers[i].hdr));
 
-	wo->next_buffer = 0;
+	next_buffer = 0;
 
 	return true;
 }
 
-static void
-winmm_output_close(AudioOutput *ao)
+void
+WinmmOutput::Close()
 {
-	WinmmOutput *wo = (WinmmOutput *)ao;
+	for (unsigned i = 0; i < ARRAY_SIZE(buffers); ++i)
+		buffers[i].buffer.Clear();
 
-	for (unsigned i = 0; i < ARRAY_SIZE(wo->buffers); ++i)
-		wo->buffers[i].buffer.Clear();
+	waveOutClose(handle);
 
-	waveOutClose(wo->handle);
-
-	CloseHandle(wo->event);
+	CloseHandle(event);
 }
 
 /**
  * Copy data into a buffer, and prepare the wave header.
  */
 static void
-winmm_set_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
+winmm_set_buffer(HWAVEOUT handle, WinmmBuffer *buffer,
 		 const void *data, size_t size)
 {
 	void *dest = buffer->buffer.Get(size);
@@ -217,27 +228,24 @@ winmm_set_buffer(WinmmOutput *wo, WinmmBuffer *buffer,
 	buffer->hdr.lpData = (LPSTR)dest;
 	buffer->hdr.dwBufferLength = size;
 
-	MMRESULT result = waveOutPrepareHeader(wo->handle, &buffer->hdr,
+	MMRESULT result = waveOutPrepareHeader(handle, &buffer->hdr,
 					       sizeof(buffer->hdr));
 	if (result != MMSYSERR_NOERROR)
 		throw MakeWaveOutError(result,
 				       "waveOutPrepareHeader() failed");
 }
 
-/**
- * Wait until the buffer is finished.
- */
-static void
-winmm_drain_buffer(WinmmOutput *wo, WinmmBuffer *buffer)
+void
+WinmmOutput::DrainBuffer(WinmmBuffer &buffer)
 {
-	if ((buffer->hdr.dwFlags & WHDR_DONE) == WHDR_DONE)
+	if ((buffer.hdr.dwFlags & WHDR_DONE) == WHDR_DONE)
 		/* already finished */
 		return;
 
 	while (true) {
-		MMRESULT result = waveOutUnprepareHeader(wo->handle,
-							 &buffer->hdr,
-							 sizeof(buffer->hdr));
+		MMRESULT result = waveOutUnprepareHeader(handle,
+							 &buffer.hdr,
+							 sizeof(buffer.hdr));
 		if (result == MMSYSERR_NOERROR)
 			return;
 		else if (result != WAVERR_STILLPLAYING)
@@ -245,93 +253,88 @@ winmm_drain_buffer(WinmmOutput *wo, WinmmBuffer *buffer)
 					       "waveOutUnprepareHeader() failed");
 
 		/* wait some more */
-		WaitForSingleObject(wo->event, INFINITE);
+		WaitForSingleObject(event, INFINITE);
 	}
 }
 
-static size_t
-winmm_output_play(AudioOutput *ao, const void *chunk, size_t size, Error &)
+size_t
+WinmmOutput::Play(const void *chunk, size_t size, Error &)
 {
-	WinmmOutput *wo = (WinmmOutput *)ao;
-
 	/* get the next buffer from the ring and prepare it */
-	WinmmBuffer *buffer = &wo->buffers[wo->next_buffer];
-	winmm_drain_buffer(wo, buffer);
-	winmm_set_buffer(wo, buffer, chunk, size);
+	WinmmBuffer *buffer = &buffers[next_buffer];
+	DrainBuffer(*buffer);
+	winmm_set_buffer(handle, buffer, chunk, size);
 
 	/* enqueue the buffer */
-	MMRESULT result = waveOutWrite(wo->handle, &buffer->hdr,
+	MMRESULT result = waveOutWrite(handle, &buffer->hdr,
 				       sizeof(buffer->hdr));
 	if (result != MMSYSERR_NOERROR) {
-		waveOutUnprepareHeader(wo->handle, &buffer->hdr,
+		waveOutUnprepareHeader(handle, &buffer->hdr,
 				       sizeof(buffer->hdr));
 		throw MakeWaveOutError(result, "waveOutWrite() failed");
 	}
 
 	/* mark our buffer as "used" */
-	wo->next_buffer = (wo->next_buffer + 1) %
-		ARRAY_SIZE(wo->buffers);
+	next_buffer = (next_buffer + 1) % ARRAY_SIZE(buffers);
 
 	return size;
 }
 
-static void
-winmm_drain_all_buffers(WinmmOutput *wo)
+void
+WinmmOutput::DrainAllBuffers()
 {
-	for (unsigned i = wo->next_buffer; i < ARRAY_SIZE(wo->buffers); ++i)
-		winmm_drain_buffer(wo, &wo->buffers[i]);
+	for (unsigned i = next_buffer; i < ARRAY_SIZE(buffers); ++i)
+		DrainBuffer(buffers[i]);
 
-	for (unsigned i = 0; i < wo->next_buffer; ++i)
-		winmm_drain_buffer(wo, &wo->buffers[i]);
+	for (unsigned i = 0; i < next_buffer; ++i)
+		DrainBuffer(buffers[i]);
 }
 
-static void
-winmm_stop(WinmmOutput *wo)
+void
+WinmmOutput::Stop()
 {
-	waveOutReset(wo->handle);
+	waveOutReset(handle);
 
-	for (unsigned i = 0; i < ARRAY_SIZE(wo->buffers); ++i) {
-		WinmmBuffer *buffer = &wo->buffers[i];
-		waveOutUnprepareHeader(wo->handle, &buffer->hdr,
+	for (unsigned i = 0; i < ARRAY_SIZE(buffers); ++i) {
+		WinmmBuffer *buffer = &buffers[i];
+		waveOutUnprepareHeader(handle, &buffer->hdr,
 				       sizeof(buffer->hdr));
 	}
 }
 
-static void
-winmm_output_drain(AudioOutput *ao)
+void
+WinmmOutput::Drain()
 {
-	WinmmOutput *wo = (WinmmOutput *)ao;
-
 	try {
-		winmm_drain_all_buffers(wo);
+		DrainAllBuffers();
 	} catch (...) {
-		winmm_stop(wo);
+		Stop();
 		throw;
 	}
 }
 
-static void
-winmm_output_cancel(AudioOutput *ao)
+void
+WinmmOutput::Cancel()
 {
-	WinmmOutput *wo = (WinmmOutput *)ao;
-
-	winmm_stop(wo);
+	Stop();
 }
+
+typedef AudioOutputWrapper<WinmmOutput> Wrapper;
 
 const struct AudioOutputPlugin winmm_output_plugin = {
 	"winmm",
 	winmm_output_test_default_device,
-	winmm_output_init,
-	winmm_output_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	winmm_output_open,
-	winmm_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
 	nullptr,
-	winmm_output_play,
-	winmm_output_drain,
-	winmm_output_cancel,
+	&Wrapper::Play,
+	&Wrapper::Drain,
+	&Wrapper::Cancel,
 	nullptr,
 	&winmm_mixer_plugin,
 };
