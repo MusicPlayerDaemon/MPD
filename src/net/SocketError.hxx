@@ -22,7 +22,6 @@
 
 #include "Compiler.h"
 #include "system/Error.hxx"
-#include "util/Error.hxx" // IWYU pragma: export
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -31,14 +30,6 @@ typedef DWORD socket_error_t;
 #include <errno.h>
 typedef int socket_error_t;
 #endif
-
-class Domain;
-
-/**
- * A #Domain for #Error for socket I/O errors.  The code is an errno
- * value (or WSAGetLastError() on Windows).
- */
-extern const Domain socket_domain;
 
 gcc_pure
 static inline socket_error_t
@@ -107,35 +98,6 @@ public:
 		return msg;
 	}
 };
-
-static inline void
-SetSocketError(Error &error, socket_error_t code)
-{
-	const SocketErrorMessage msg(code);
-	error.Set(socket_domain, code, msg);
-}
-
-static inline void
-SetSocketError(Error &error)
-{
-	SetSocketError(error, GetSocketError());
-}
-
-gcc_const
-static inline Error
-NewSocketError(socket_error_t code)
-{
-	Error error;
-	SetSocketError(error, code);
-	return error;
-}
-
-gcc_pure
-static inline Error
-NewSocketError()
-{
-	return NewSocketError(GetSocketError());
-}
 
 gcc_const
 static inline std::system_error
