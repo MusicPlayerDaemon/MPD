@@ -23,7 +23,6 @@
 #include "client/Client.hxx"
 #include "db/DatabaseSong.hxx"
 #include "storage/StorageInterface.hxx"
-#include "util/Error.hxx"
 #include "DetachedSong.hxx"
 #include "PlaylistError.hxx"
 

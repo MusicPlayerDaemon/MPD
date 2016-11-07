@@ -28,7 +28,6 @@
 #include "mixer/MixerControl.hxx"
 #include "pcm/Volume.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 

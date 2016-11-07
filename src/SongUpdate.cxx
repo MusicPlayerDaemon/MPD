@@ -24,7 +24,6 @@
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileInfo.hxx"
 #include "tag/TagBuilder.hxx"

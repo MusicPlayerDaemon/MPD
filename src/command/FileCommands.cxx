@@ -28,7 +28,6 @@
 #include "client/Response.hxx"
 #include "util/CharUtil.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/Generic.hxx"
 #include "TagStream.hxx"

@@ -36,7 +36,6 @@
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 
 bool
@@ -70,7 +69,6 @@ handle_load(Client &client, Request args, gcc_unused Response &r)
 
 	const ScopeBulkEdit bulk_edit(client.partition);
 
-	Error error;
 	const SongLoader loader(client);
 	playlist_open_into_queue(args.front(),
 				 range.start, range.end,

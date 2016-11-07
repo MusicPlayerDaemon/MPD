@@ -36,7 +36,6 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
-#include "util/Error.hxx"
 
 #include <memory>
 #include <limits>
