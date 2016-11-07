@@ -28,6 +28,8 @@
 #include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
 
+#include <array>
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -51,7 +53,7 @@ class WinmmOutput {
 	 */
 	HANDLE event;
 
-	WinmmBuffer buffers[8];
+	std::array<WinmmBuffer, 8> buffers;
 	unsigned next_buffer;
 
 public:
@@ -275,7 +277,7 @@ WinmmOutput::Play(const void *chunk, size_t size, Error &)
 	}
 
 	/* mark our buffer as "used" */
-	next_buffer = (next_buffer + 1) % ARRAY_SIZE(buffers);
+	next_buffer = (next_buffer + 1) % buffers.size();
 
 	return size;
 }
@@ -283,7 +285,7 @@ WinmmOutput::Play(const void *chunk, size_t size, Error &)
 void
 WinmmOutput::DrainAllBuffers()
 {
-	for (unsigned i = next_buffer; i < ARRAY_SIZE(buffers); ++i)
+	for (unsigned i = next_buffer; i < buffers.size(); ++i)
 		DrainBuffer(buffers[i]);
 
 	for (unsigned i = 0; i < next_buffer; ++i)
