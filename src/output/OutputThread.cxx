@@ -473,7 +473,12 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 
 	if (tags && gcc_unlikely(chunk->tag != nullptr)) {
 		const ScopeUnlock unlock(mutex);
-		ao_plugin_send_tag(this, *chunk->tag);
+		try {
+			ao_plugin_send_tag(this, *chunk->tag);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "Failed to send tag to \"%s\" [%s]",
+				    name, plugin.name);
+		}
 	}
 
 	auto data = ConstBuffer<char>::FromVoid(ao_filter_chunk(this, chunk));
