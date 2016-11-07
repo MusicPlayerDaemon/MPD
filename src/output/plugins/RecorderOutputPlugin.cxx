@@ -33,6 +33,9 @@
 #include "fs/io/FileOutputStream.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -369,11 +372,14 @@ RecorderOutput::SendTag(const Tag &tag)
 			return;
 		}
 
-		Error error;
-		AllocatedPath new_path = ParsePath(p, error);
-		free(p);
-		if (new_path.IsNull()) {
-			LogError(error);
+		AtScopeExit(p) { free(p); };
+
+		AllocatedPath new_path = AllocatedPath::Null();
+
+		try {
+			new_path = ParsePath(p);
+		} catch (const std::runtime_error &e) {
+			LogError(e);
 			FinishFormat();
 			return;
 		}
@@ -381,6 +387,7 @@ RecorderOutput::SendTag(const Tag &tag)
 		if (new_path != path) {
 			FinishFormat();
 
+			Error error;
 			if (!ReopenFormat(std::move(new_path), error)) {
 				LogError(error);
 				return;

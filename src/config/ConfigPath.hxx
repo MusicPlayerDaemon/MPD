@@ -21,9 +21,11 @@
 #define MPD_CONFIG_PATH_HXX
 
 class AllocatedPath;
-class Error;
 
+/**
+ * Throws #std::runtime_error on error.
+ */
 AllocatedPath
-ParsePath(const char *path, Error &error);
+ParsePath(const char *path);
 
 #endif

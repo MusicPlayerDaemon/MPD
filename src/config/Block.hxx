@@ -27,7 +27,6 @@
 #include <string>
 #include <vector>
 
-class Error;
 class AllocatedPath;
 
 struct BlockParam {

@@ -24,7 +24,6 @@
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Error.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -94,12 +93,10 @@ ConfigBlock::GetBlockValue(const char *name, const char *default_value) const
 AllocatedPath
 ConfigBlock::GetPath(const char *name, const char *default_value) const
 {
-	int line2 = line;
 	const char *s;
 
 	const BlockParam *bp = GetBlockParam(name);
 	if (bp != nullptr) {
-		line2 = bp->line;
 		s = bp->value.c_str();
 	} else {
 		if (default_value == nullptr)
@@ -108,13 +105,7 @@ ConfigBlock::GetPath(const char *name, const char *default_value) const
 		s = default_value;
 	}
 
-	Error error;
-	AllocatedPath path = ParsePath(s, error);
-	if (gcc_unlikely(path.IsNull()))
-		throw FormatRuntimeError("Invalid path in \"%s\" at line %i: %s",
-					 name, line2, error.GetMessage());
-
-	return path;
+	return ParsePath(s);
 }
 
 int

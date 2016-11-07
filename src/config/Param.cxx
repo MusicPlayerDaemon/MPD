@@ -21,7 +21,7 @@
 #include "Param.hxx"
 #include "ConfigPath.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <stdexcept>
 
@@ -34,24 +34,12 @@ ConfigParam::~ConfigParam()
 }
 
 AllocatedPath
-ConfigParam::GetPath(Error &error) const
-{
-	auto path = ParsePath(value.c_str(), error);
-	if (gcc_unlikely(path.IsNull()))
-		error.FormatPrefix("Invalid path at line %i: ", line);
-
-	return path;
-
-}
-
-AllocatedPath
 ConfigParam::GetPath() const
 {
-	Error error;
-	auto path = ParsePath(value.c_str(), error);
-	if (gcc_unlikely(path.IsNull()))
-		throw std::runtime_error(error.GetMessage());
-
-	return path;
+	try {
+		return ParsePath(value.c_str());
+	} catch (...) {
+		std::throw_with_nested(FormatRuntimeError("Invalid path at line %i: ", line));
+	}
 
 }
