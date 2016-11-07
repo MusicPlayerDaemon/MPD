@@ -193,8 +193,8 @@ WinmmOutput::Open(AudioFormat &audio_format, Error &)
 		throw MakeWaveOutError(result, "waveOutOpen() failed");
 	}
 
-	for (unsigned i = 0; i < ARRAY_SIZE(buffers); ++i)
-		memset(&buffers[i].hdr, 0, sizeof(buffers[i].hdr));
+	for (auto &i : buffers)
+		memset(&i.hdr, 0, sizeof(i.hdr));
 
 	next_buffer = 0;
 
@@ -204,8 +204,8 @@ WinmmOutput::Open(AudioFormat &audio_format, Error &)
 void
 WinmmOutput::Close()
 {
-	for (unsigned i = 0; i < ARRAY_SIZE(buffers); ++i)
-		buffers[i].buffer.Clear();
+	for (auto &i : buffers)
+		i.buffer.Clear();
 
 	waveOutClose(handle);
 
@@ -295,11 +295,8 @@ WinmmOutput::Stop()
 {
 	waveOutReset(handle);
 
-	for (unsigned i = 0; i < ARRAY_SIZE(buffers); ++i) {
-		WinmmBuffer *buffer = &buffers[i];
-		waveOutUnprepareHeader(handle, &buffer->hdr,
-				       sizeof(buffer->hdr));
-	}
+	for (auto &i : buffers)
+		waveOutUnprepareHeader(handle, &i.hdr, sizeof(i.hdr));
 }
 
 void
