@@ -21,8 +21,7 @@
 #include "OpenALOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <unistd.h>
 
@@ -51,10 +50,7 @@ class OpenALOutput {
 	ALenum format;
 	ALuint frequency;
 
-	OpenALOutput()
-		:base(openal_output_plugin) {}
-
-	bool Configure(const ConfigBlock &block, Error &error);
+	OpenALOutput(const ConfigBlock &block);
 
 	static OpenALOutput *Create(const ConfigBlock &block, Error &error);
 
@@ -94,10 +90,11 @@ private:
 		return GetSourceI(AL_SOURCE_STATE) == AL_PLAYING;
 	}
 
-	bool SetupContext(Error &error);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void SetupContext();
 };
-
-static constexpr Domain openal_output_domain("openal_output");
 
 static ALenum
 openal_audio_format(AudioFormat &audio_format)
@@ -124,80 +121,55 @@ openal_audio_format(AudioFormat &audio_format)
 	}
 }
 
-inline bool
-OpenALOutput::SetupContext(Error &error)
+inline void
+OpenALOutput::SetupContext()
 {
 	device = alcOpenDevice(device_name);
-
-	if (device == nullptr) {
-		error.Format(openal_output_domain,
-			     "Error opening OpenAL device \"%s\"",
-			     device_name);
-		return false;
-	}
+	if (device == nullptr)
+		throw FormatRuntimeError("Error opening OpenAL device \"%s\"",
+					 device_name);
 
 	context = alcCreateContext(device, nullptr);
-
 	if (context == nullptr) {
-		error.Format(openal_output_domain,
-			     "Error creating context for \"%s\"",
-			     device_name);
 		alcCloseDevice(device);
-		return false;
+		throw FormatRuntimeError("Error creating context for \"%s\"",
+					 device_name);
 	}
-
-	return true;
 }
 
-inline bool
-OpenALOutput::Configure(const ConfigBlock &block, Error &error)
+OpenALOutput::OpenALOutput(const ConfigBlock &block)
+	:base(openal_output_plugin, block),
+	 device_name(block.GetBlockValue("device"))
 {
-	if (!base.Configure(block, error))
-		return false;
-
-	device_name = block.GetBlockValue("device");
 	if (device_name == nullptr)
 		device_name = alcGetString(nullptr,
 					   ALC_DEFAULT_DEVICE_SPECIFIER);
-
-	return true;
 }
 
 inline OpenALOutput *
-OpenALOutput::Create(const ConfigBlock &block, Error &error)
+OpenALOutput::Create(const ConfigBlock &block, Error &)
 {
-	OpenALOutput *oo = new OpenALOutput();
-
-	if (!oo->Configure(block, error)) {
-		delete oo;
-		return nullptr;
-	}
-
-	return oo;
+	return new OpenALOutput(block);
 }
 
 inline bool
-OpenALOutput::Open(AudioFormat &audio_format, Error &error)
+OpenALOutput::Open(AudioFormat &audio_format, Error &)
 {
 	format = openal_audio_format(audio_format);
 
-	if (!SetupContext(error))
-		return false;
+	SetupContext();
 
 	alcMakeContextCurrent(context);
 	alGenBuffers(NUM_BUFFERS, buffers);
 
-	if (alGetError() != AL_NO_ERROR) {
-		error.Set(openal_output_domain, "Failed to generate buffers");
-		return false;
-	}
+	if (alGetError() != AL_NO_ERROR)
+		throw std::runtime_error("Failed to generate buffers");
 
 	alGenSources(1, &source);
 
 	if (alGetError() != AL_NO_ERROR) {
-		error.Set(openal_output_domain, "Failed to generate source");
 		alDeleteBuffers(NUM_BUFFERS, buffers);
-		return false;
+		throw std::runtime_error("Failed to generate source");
 	}
 
 	filled = 0;
