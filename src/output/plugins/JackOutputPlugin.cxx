@@ -25,7 +25,7 @@
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/IterableSplitString.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -48,11 +48,11 @@ struct JackOutput {
 	/**
 	 * libjack options passed to jack_client_open().
 	 */
-	jack_options_t options;
+	jack_options_t options = JackNullOption;
 
 	const char *name;
 
-	const char *server_name;
+	const char *const server_name;
 
 	/* configuration */
 
@@ -80,12 +80,15 @@ struct JackOutput {
 	 */
 	bool pause;
 
-	JackOutput()
-		:base(jack_output_plugin) {}
+	explicit JackOutput(const ConfigBlock &block);
 
-	bool Configure(const ConfigBlock &block, Error &error);
-
-	bool Connect(Error &error);
+	/**
+	 * Connect the JACK client and performs some basic setup
+	 * (e.g. register callbacks).
+	 *
+	 * Throws #std::runtime_error on error.
+	 */
+	void Connect();
 
 	/**
 	 * Disconnect the JACK client.
@@ -105,7 +108,10 @@ struct JackOutput {
 		Stop();
 	}
 
-	bool Start(Error &error);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void Start();
 	void Stop();
 
 	/**
@@ -134,6 +140,79 @@ struct JackOutput {
 };
 
 static constexpr Domain jack_output_domain("jack_output");
+
+/**
+ * Throws #std::runtime_error on error.
+ */
+static unsigned
+parse_port_list(const char *source, std::string dest[])
+{
+	unsigned n = 0;
+	for (auto i : IterableSplitString(source, ',')) {
+		if (n >= MAX_PORTS)
+			throw std::runtime_error("too many port names");
+
+		dest[n++] = std::string(i.data, i.size);
+	}
+
+	if (n == 0)
+		throw std::runtime_error("at least one port name expected");
+
+	return n;
+}
+
+JackOutput::JackOutput(const ConfigBlock &block)
+	:base(jack_output_plugin, block),
+	 name(block.GetBlockValue("client_name", nullptr)),
+	 server_name(block.GetBlockValue("server_name", nullptr))
+{
+	if (name != nullptr)
+		options = jack_options_t(options | JackUseExactName);
+	else
+		/* if there's a no configured client name, we don't
+		   care about the JackUseExactName option */
+		name = "Music Player Daemon";
+
+	if (server_name != nullptr)
+		options = jack_options_t(options | JackServerName);
+
+	if (!block.GetBlockValue("autostart", false))
+		options = jack_options_t(options | JackNoStartServer);
+
+	/* configure the source ports */
+
+	const char *value = block.GetBlockValue("source_ports", "left,right");
+	num_source_ports = parse_port_list(value, source_ports);
+
+	/* configure the destination ports */
+
+	value = block.GetBlockValue("destination_ports", nullptr);
+	if (value == nullptr) {
+		/* compatibility with MPD < 0.16 */
+		value = block.GetBlockValue("ports", nullptr);
+		if (value != nullptr)
+			FormatWarning(jack_output_domain,
+				      "deprecated option 'ports' in line %d",
+				      block.line);
+	}
+
+	if (value != nullptr) {
+		num_destination_ports =
+			parse_port_list(value, destination_ports);
+	} else {
+		num_destination_ports = 0;
+	}
+
+	if (num_destination_ports > 0 &&
+	    num_destination_ports != num_source_ports)
+		FormatWarning(jack_output_domain,
+			      "number of source ports (%u) mismatches the "
+			      "number of destination ports (%u) in line %d",
+			      num_source_ports, num_destination_ports,
+			      block.line);
+
+	ringbuffer_size = block.GetBlockValue("ringbuffer_size", 32768u);
+}
 
 inline jack_nframes_t
 JackOutput::GetAvailable() const
@@ -308,23 +387,16 @@ JackOutput::Disconnect()
 	client = nullptr;
 }
 
-/**
- * Connect the JACK client and performs some basic setup
- * (e.g. register callbacks).
- */
-bool
-JackOutput::Connect(Error &error)
+void
+JackOutput::Connect()
 {
 	shutdown = false;
 
 	jack_status_t status;
 	client = jack_client_open(name, options, &status, server_name);
-	if (client == nullptr) {
-		error.Format(jack_output_domain, status,
-			     "Failed to connect to JACK server, status=%d",
-			     status);
-		return false;
-	}
+	if (client == nullptr)
+		throw FormatRuntimeError("Failed to connect to JACK server, status=%d",
+					 status);
 
 	jack_set_process_callback(client, mpd_jack_process, this);
 	jack_on_shutdown(client, mpd_jack_shutdown, this);
@@ -335,15 +407,11 @@ JackOutput::Connect(Error &error)
 					      JACK_DEFAULT_AUDIO_TYPE,
 					      JackPortIsOutput, 0);
 		if (ports[i] == nullptr) {
-			error.Format(jack_output_domain,
-				     "Cannot register output port \"%s\"",
-				     source_ports[i].c_str());
 			Disconnect();
-			return false;
+			throw FormatRuntimeError("Cannot register output port \"%s\"",
+						 source_ports[i].c_str());
 		}
 	}
-
-	return true;
 }
 
 static bool
@@ -352,100 +420,14 @@ mpd_jack_test_default_device(void)
 	return true;
 }
 
-static unsigned
-parse_port_list(const char *source, std::string dest[], Error &error)
-{
-	unsigned n = 0;
-	for (auto i : IterableSplitString(source, ',')) {
-		if (n >= MAX_PORTS) {
-			error.Set(config_domain,
-				  "too many port names");
-			return 0;
-		}
-
-		dest[n++] = std::string(i.data, i.size);
-	}
-
-	if (n == 0) {
-		error.Format(config_domain,
-			     "at least one port name expected");
-		return 0;
-	}
-
-	return n;
-}
-
-bool
-JackOutput::Configure(const ConfigBlock &block, Error &error)
-{
-	if (!base.Configure(block, error))
-		return false;
-
-	options = JackNullOption;
-
-	name = block.GetBlockValue("client_name", nullptr);
-	if (name != nullptr)
-		options = jack_options_t(options | JackUseExactName);
-	else
-		/* if there's a no configured client name, we don't
-		   care about the JackUseExactName option */
-		name = "Music Player Daemon";
-
-	server_name = block.GetBlockValue("server_name", nullptr);
-	if (server_name != nullptr)
-		options = jack_options_t(options | JackServerName);
-
-	if (!block.GetBlockValue("autostart", false))
-		options = jack_options_t(options | JackNoStartServer);
-
-	/* configure the source ports */
-
-	const char *value = block.GetBlockValue("source_ports", "left,right");
-	num_source_ports = parse_port_list(value, source_ports, error);
-	if (num_source_ports == 0)
-		return false;
-
-	/* configure the destination ports */
-
-	value = block.GetBlockValue("destination_ports", nullptr);
-	if (value == nullptr) {
-		/* compatibility with MPD < 0.16 */
-		value = block.GetBlockValue("ports", nullptr);
-		if (value != nullptr)
-			FormatWarning(jack_output_domain,
-				      "deprecated option 'ports' in line %d",
-				      block.line);
-	}
-
-	if (value != nullptr) {
-		num_destination_ports =
-			parse_port_list(value, destination_ports, error);
-		if (num_destination_ports == 0)
-			return false;
-	} else {
-		num_destination_ports = 0;
-	}
-
-	if (num_destination_ports > 0 &&
-	    num_destination_ports != num_source_ports)
-		FormatWarning(jack_output_domain,
-			      "number of source ports (%u) mismatches the "
-			      "number of destination ports (%u) in line %d",
-			      num_source_ports, num_destination_ports,
-			      block.line);
-
-	ringbuffer_size = block.GetBlockValue("ringbuffer_size", 32768u);
-
-	return true;
-}
-
 inline bool
-JackOutput::Enable(Error &error)
+JackOutput::Enable(Error &)
 {
 	for (unsigned i = 0; i < num_source_ports; ++i)
 		ringbuffer[i] = nullptr;
 
-	return Connect(error);
+	Connect();
+	return true;
 }
 
 inline void
@@ -463,21 +445,15 @@ JackOutput::Disable()
 }
 
 static AudioOutput *
-mpd_jack_init(const ConfigBlock &block, Error &error)
+mpd_jack_init(const ConfigBlock &block, Error &)
 {
-	JackOutput *jd = new JackOutput();
-
-	if (!jd->Configure(block, error)) {
-		delete jd;
-		return nullptr;
-	}
-
 	jack_set_error_function(mpd_jack_error);
 
 #ifdef HAVE_JACK_SET_INFO_FUNCTION
 	jack_set_info_function(mpd_jack_info);
 #endif
 
+	auto *jd = new JackOutput(block);
 	return &jd->base;
 }
 
@@ -498,8 +474,8 @@ JackOutput::Stop()
 		jack_deactivate(client);
 }
 
-inline bool
-JackOutput::Start(Error &error)
+inline void
+JackOutput::Start()
 {
 	assert(client != nullptr);
 	assert(audio_format.channels <= num_source_ports);
@@ -519,9 +495,8 @@ JackOutput::Start(Error &error)
 	}
 
 	if ( jack_activate(client) ) {
-		error.Set(jack_output_domain, "cannot activate client");
 		Stop();
-		return false;
+		throw std::runtime_error("cannot activate client");
 	}
 
 	const char *dports[MAX_PORTS], **jports;
@@ -532,9 +507,8 @@ JackOutput::Start(Error &error)
 		jports = jack_get_ports(client, nullptr, nullptr,
 					JackPortIsPhysical | JackPortIsInput);
 		if (jports == nullptr) {
-			error.Set(jack_output_domain, "no ports found");
 			Stop();
-			return false;
+			throw std::runtime_error("no ports found");
 		}
 
 		assert(*jports != nullptr);
@@ -585,10 +559,9 @@ JackOutput::Start(Error &error)
 		int ret = jack_connect(client, jack_port_name(ports[i]),
 				       dports[i]);
 		if (ret != 0) {
-			error.Format(jack_output_domain,
-				     "Not a valid JACK port: %s", dports[i]);
 			Stop();
-			return false;
+			throw FormatRuntimeError("Not a valid JACK port: %s",
+						 dports[i]);
 		}
 	}
 
@@ -600,32 +573,29 @@ JackOutput::Start(Error &error)
 		ret = jack_connect(client, jack_port_name(ports[0]),
 				   duplicate_port);
 		if (ret != 0) {
-			error.Format(jack_output_domain,
-				     "Not a valid JACK port: %s",
-				     duplicate_port);
 			Stop();
-			return false;
+			throw FormatRuntimeError("Not a valid JACK port: %s",
+						 duplicate_port);
 		}
 	}
-
-	return true;
 }
 
 inline bool
-JackOutput::Open(AudioFormat &new_audio_format, Error &error)
+JackOutput::Open(AudioFormat &new_audio_format, Error &)
 {
 	pause = false;
 
 	if (client != nullptr && shutdown)
 		Disconnect();
 
-	if (client == nullptr && !Connect(error))
-		return false;
+	if (client == nullptr)
+		Connect();
 
 	set_audioformat(this, new_audio_format);
 	audio_format = new_audio_format;
 
-	return Start(error);
+	Start();
+	return true;
 }
 
 inline size_t
@@ -670,7 +640,7 @@ JackOutput::WriteSamples(const float *src, size_t n_frames)
 }
 
 inline size_t
-JackOutput::Play(const void *chunk, size_t size, Error &error)
+JackOutput::Play(const void *chunk, size_t size, Error &)
 {
 	pause = false;
 
@@ -679,12 +649,9 @@ JackOutput::Play(const void *chunk, size_t size, Error &error)
 	size /= frame_size;
 
 	while (true) {
-		if (shutdown) {
-			error.Set(jack_output_domain,
-				  "Refusing to play, because "
-				  "there is no client thread");
-			return 0;
-		}
+		if (shutdown)
+			throw std::runtime_error("Refusing to play, because "
+						 "there is no client thread");
 
 		size_t frames_written =
 			WriteSamples((const float *)chunk, size);
