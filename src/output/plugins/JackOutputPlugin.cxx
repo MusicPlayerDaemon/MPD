@@ -22,6 +22,7 @@
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
 #include "config/ConfigError.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/IterableSplitString.hxx"
 #include "util/Error.hxx"
@@ -557,6 +558,8 @@ JackOutput::Start(Error &error)
 		jports = nullptr;
 	}
 
+	AtScopeExit(jports) { free(jports); };
+
 	assert(num_dports > 0);
 
 	const char *duplicate_port = nullptr;
@@ -584,10 +587,6 @@ JackOutput::Start(Error &error)
 		if (ret != 0) {
 			error.Format(jack_output_domain,
 				     "Not a valid JACK port: %s", dports[i]);
-
-			if (jports != nullptr)
-				free(jports);
-
 			Stop();
 			return false;
 		}
@@ -604,17 +603,10 @@ JackOutput::Start(Error &error)
 			error.Format(jack_output_domain,
 				     "Not a valid JACK port: %s",
 				     duplicate_port);
-
-			if (jports != nullptr)
-				free(jports);
-
 			Stop();
 			return false;
 		}
 	}
-
-	if (jports != nullptr)
-		free(jports);
 
 	return true;
 }
