@@ -33,7 +33,6 @@
 #include "IOThread.hxx"
 #include "event/Call.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "Log.hxx"
@@ -419,7 +418,7 @@ HttpdOutput::EncodeAndPlay(const void *chunk, size_t size)
 }
 
 inline size_t
-HttpdOutput::Play(const void *chunk, size_t size, Error &)
+HttpdOutput::Play(const void *chunk, size_t size)
 {
 	if (LockHasClients())
 		EncodeAndPlay(chunk, size);
@@ -433,11 +432,11 @@ HttpdOutput::Play(const void *chunk, size_t size, Error &)
 
 static size_t
 httpd_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		  Error &error)
+		  Error &)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	return httpd->Play(chunk, size, error);
+	return httpd->Play(chunk, size);
 }
 
 static bool
@@ -447,11 +446,10 @@ httpd_output_pause(AudioOutput *ao)
 
 	if (httpd->LockHasClients()) {
 		static const char silence[1020] = { 0 };
-		return httpd_output_play(ao, silence, sizeof(silence),
-					 IgnoreError()) > 0;
-	} else {
-		return true;
+		httpd->Play(silence, sizeof(silence));
 	}
+
+	return true;
 }
 
 inline void
