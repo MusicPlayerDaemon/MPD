@@ -30,7 +30,6 @@
 #include "DecoderInternal.hxx"
 #include "DetachedSong.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "Log.hxx"
 
