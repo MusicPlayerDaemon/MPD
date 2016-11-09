@@ -20,6 +20,7 @@
 #include "config.h"
 #include "OSXOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "thread/Mutex.hxx"
@@ -445,6 +446,11 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	char name[256];
 	unsigned int i;
 
+	AtScopeExit(&cfname) {
+		if (cfname)
+			CFRelease(cfname);
+	};
+
 	if (oo->component_subtype != kAudioUnitSubType_HALOutput)
 		goto done;
 
@@ -537,8 +543,6 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 
 done:
 	delete[] deviceids;
-	if (cfname)
-		CFRelease(cfname);
 	return ret;
 }
 
