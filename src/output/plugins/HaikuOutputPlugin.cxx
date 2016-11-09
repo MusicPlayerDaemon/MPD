@@ -52,7 +52,7 @@ class HaikuOutput {
 
 	size_t write_size;
 
-	media_raw_audio_format* format;
+	media_raw_audio_format format;
 	BSoundPlayer* sound_player;
 
 	sem_id new_buffer;
@@ -129,17 +129,10 @@ finalize_application()
 }
 
 inline bool
-HaikuOutput::Configure(const ConfigBlock &block, Error &error)
+HaikuOutput::Configure(const ConfigBlock &block, Error &)
 {
 	/* XXX: by default we should let the MediaKit propose the buffer size */
 	write_size = block.GetBlockValue("write_size", 4096u);
-
-	format = (media_raw_audio_format*)malloc(
-		sizeof(media_raw_audio_format));
-	if (format == nullptr) {
-		haiku_output_error(error, B_NO_MEMORY);
-		return false;
-	}
 
 	return true;
 }
@@ -187,7 +180,6 @@ HaikuOutput::DoClose()
 
 HaikuOutput::~HaikuOutput()
 {
-	free(format);
 	delete_sem(new_buffer);
 	delete_sem(buffer_done);
 
@@ -235,53 +227,53 @@ inline bool
 HaikuOutput::Open(AudioFormat &audio_format, Error &error)
 {
 	status_t err;
-	*format = media_multi_audio_format::wildcard;
+	format = media_multi_audio_format::wildcard;
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
-		format->format = media_raw_audio_format::B_AUDIO_CHAR;
+		format.format = media_raw_audio_format::B_AUDIO_CHAR;
 		break;
 
 	case SampleFormat::S16:
-		format->format = media_raw_audio_format::B_AUDIO_SHORT;
+		format.format = media_raw_audio_format::B_AUDIO_SHORT;
 		break;
 
 	case SampleFormat::S32:
-		format->format = media_raw_audio_format::B_AUDIO_INT;
+		format.format = media_raw_audio_format::B_AUDIO_INT;
 		break;
 
 	case SampleFormat::FLOAT:
-		format->format = media_raw_audio_format::B_AUDIO_FLOAT;
+		format.format = media_raw_audio_format::B_AUDIO_FLOAT;
 		break;
 
 	default:
 		/* fall back to float */
 		audio_format.format = SampleFormat::FLOAT;
-		format->format = media_raw_audio_format::B_AUDIO_FLOAT;
+		format.format = media_raw_audio_format::B_AUDIO_FLOAT;
 		break;
 	}
 
-	format->frame_rate = audio_format.sample_rate;
-	format->byte_order = B_MEDIA_HOST_ENDIAN;
-	format->channel_count = audio_format.channels;
+	format.frame_rate = audio_format.sample_rate;
+	format.byte_order = B_MEDIA_HOST_ENDIAN;
+	format.channel_count = audio_format.channels;
 
 	buffer_size = 0;
 
 	if (write_size)
-		format->buffer_size = write_size;
+		format.buffer_size = write_size;
 	else
-		format->buffer_size = BMediaRoster::Roster()->AudioBufferSizeFor(
-			format->channel_count, format->format,
-			format->frame_rate, B_UNKNOWN_BUS) * 2;
+		format.buffer_size = BMediaRoster::Roster()->AudioBufferSizeFor(
+			format.channel_count, format.format,
+			format.frame_rate, B_UNKNOWN_BUS) * 2;
 
 	FormatDebug(haiku_output_domain,
 		"using haiku driver ad: bs: %d ws: %d "
 		"channels %d rate %f fmt %08lx bs %d\n",
 			(int)buffer_size, (int)write_size,
-			(int)format->channel_count, format->frame_rate,
-			format->format, (int)format->buffer_size);
+			(int)format.channel_count, format.frame_rate,
+			format.format, (int)format.buffer_size);
 
-	sound_player = new BSoundPlayer(format, "MPD Output",
+	sound_player = new BSoundPlayer(&format, "MPD Output",
 		fill_buffer, NULL, this);
 
 	err = sound_player->InitCheck();
@@ -293,11 +285,11 @@ HaikuOutput::Open(AudioFormat &audio_format, Error &error)
 	}
 
 	// calculate the allowable delay for the buffer (ms)
-	buffer_delay = format->buffer_size;
-	buffer_delay /= (format->format &
+	buffer_delay = format.buffer_size;
+	buffer_delay /= (format.format &
 		media_raw_audio_format::B_AUDIO_SIZE_MASK);
-	buffer_delay /= format->channel_count;
-	buffer_delay *= 1000 / format->frame_rate;
+	buffer_delay /= format.channel_count;
+	buffer_delay *= 1000 / format.frame_rate;
 	// half of the total buffer play time
 	buffer_delay /= 2;
 	FormatDebug(haiku_output_domain,
