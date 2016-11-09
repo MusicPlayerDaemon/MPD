@@ -23,7 +23,6 @@
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -65,13 +64,12 @@ class HaikuOutput {
 	unsigned buffer_delay;
 
 public:
-	HaikuOutput()
-		:base(haiku_output_plugin) {}
-	~HaikuOutput();
+	HaikuOutput(const ConfigBlock &block)
+		:base(haiku_output_plugin, block),
+		 /* XXX: by default we should let the MediaKit propose the buffer size */
+		 write_size(block.GetBlockValue("write_size", 4096u)) {}
 
-	bool Initialize(const ConfigBlock &block, Error &error) {
-		return base.Configure(block, error);
-	}
+	~HaikuOutput();
 
 	static HaikuOutput *Create(const ConfigBlock &block, Error &error);
 
@@ -83,8 +81,6 @@ public:
 
 	size_t Play(const void *chunk, size_t size, Error &error);
 	void Cancel();
-
-	bool Configure(const ConfigBlock &block, Error &error);
 
 	size_t Delay();
 
@@ -99,13 +95,6 @@ private:
 };
 
 static constexpr Domain haiku_output_domain("haiku_output");
-
-static void
-haiku_output_error(Error &error_r, status_t err)
-{
-	const char *error = strerror(err);
-	error_r.Set(haiku_output_domain, err, error);
-}
 
 static void
 initialize_application()
@@ -128,15 +117,6 @@ finalize_application()
 	FormatDebug(haiku_output_domain, "deleting be_app\n");
 }
 
-inline bool
-HaikuOutput::Configure(const ConfigBlock &block, Error &)
-{
-	/* XXX: by default we should let the MediaKit propose the buffer size */
-	write_size = block.GetBlockValue("write_size", 4096u);
-
-	return true;
-}
-
 static bool
 haiku_test_default_device(void)
 {
@@ -146,23 +126,11 @@ haiku_test_default_device(void)
 }
 
 inline HaikuOutput *
-HaikuOutput::Create(const ConfigBlock &block, Error &error)
+HaikuOutput::Create(const ConfigBlock &block, Error &)
 {
 	initialize_application();
 
-	HaikuOutput *ad = new HaikuOutput();
-
-	if (!ad->Initialize(block, error)) {
-		delete ad;
-		return nullptr;
-	}
-
-	if (!ad->Configure(block, error)) {
-		delete ad;
-		return nullptr;
-	}
-
-	return ad;
+	return new HaikuOutput(block);
 }
 
 void
@@ -224,7 +192,7 @@ HaikuOutput::FillBuffer(void* _buffer, size_t size,
 }
 
 inline bool
-HaikuOutput::Open(AudioFormat &audio_format, Error &error)
+HaikuOutput::Open(AudioFormat &audio_format, Error &)
 {
 	status_t err;
 	format = media_multi_audio_format::wildcard;
@@ -280,8 +248,7 @@ HaikuOutput::Open(AudioFormat &audio_format, Error &error)
 	if (err != B_OK) {
 		delete sound_player;
 		sound_player = NULL;
-		haiku_output_error(error, err);
-		return false;
+		throw MakeErrno(err, "BSoundPlayer::InitCheck() failed");
 	}
 
 	// calculate the allowable delay for the buffer (ms)
