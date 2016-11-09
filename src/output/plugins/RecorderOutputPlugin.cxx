@@ -81,9 +81,9 @@ class RecorderOutput {
 		delete prepared_encoder;
 	}
 
-	static RecorderOutput *Create(const ConfigBlock &block, Error &error);
+	static RecorderOutput *Create(const ConfigBlock &block);
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	/**
@@ -93,7 +93,7 @@ class RecorderOutput {
 
 	void SendTag(const Tag &tag);
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 
 private:
 	gcc_pure
@@ -141,7 +141,7 @@ RecorderOutput::RecorderOutput(const ConfigBlock &block)
 }
 
 RecorderOutput *
-RecorderOutput::Create(const ConfigBlock &block, Error &)
+RecorderOutput::Create(const ConfigBlock &block)
 {
 	return new RecorderOutput(block);
 }
@@ -154,8 +154,8 @@ RecorderOutput::EncoderToFile()
 	EncoderToOutputStream(*file, *encoder);
 }
 
-inline bool
-RecorderOutput::Open(AudioFormat &audio_format, Error &)
+inline void
+RecorderOutput::Open(AudioFormat &audio_format)
 {
 	/* create the output file */
 
@@ -195,8 +195,6 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &)
 		   soon as we have received a tag */
 		delete encoder;
 	}
-
-	return true;
 }
 
 inline void
@@ -349,7 +347,7 @@ RecorderOutput::SendTag(const Tag &tag)
 }
 
 inline size_t
-RecorderOutput::Play(const void *chunk, size_t size, Error &)
+RecorderOutput::Play(const void *chunk, size_t size)
 {
 	if (file == nullptr) {
 		/* not currently encoding to a file; discard incoming

@@ -26,7 +26,6 @@
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "system/FatalError.hxx"
-#include "util/Error.hxx"
 #include "config/Block.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
@@ -54,14 +53,9 @@ static AudioOutput *
 LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
 	   PlayerControl &pc, const ConfigBlock &block)
 try {
-	Error error;
-	AudioOutput *output = audio_output_new(event_loop, block,
-					       mixer_listener,
-					       pc, error);
-	if (output == nullptr)
-		throw std::runtime_error(error.GetMessage());
-
-	return output;
+	return audio_output_new(event_loop, block,
+				mixer_listener,
+				pc);
 } catch (const std::runtime_error &e) {
 	if (block.line > 0)
 		FormatFatalError("line %i: %s",

@@ -91,16 +91,16 @@ public:
 		return &base;
 	}
 
-	static SlesOutput *Create(const ConfigBlock &block, Error &error);
+	static SlesOutput *Create(const ConfigBlock &block);
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	unsigned Delay() {
 		return pause && !cancel ? 100 : 0;
 	}
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 
 	void Drain();
 	void Cancel();
@@ -129,8 +129,8 @@ SlesOutput::SlesOutput(const ConfigBlock &block)
 {
 }
 
-inline bool
-SlesOutput::Open(AudioFormat &audio_format, Error &)
+inline void
+SlesOutput::Open(AudioFormat &audio_format)
 {
 	SLresult result;
 	SLObjectItf _object;
@@ -146,7 +146,6 @@ SlesOutput::Open(AudioFormat &audio_format, Error &)
 	if (result != SL_RESULT_SUCCESS) {
 		engine_object.Destroy();
 		throw std::runtime_error("Engine.Realize() failed");
-		return false;
 	}
 
 	SLEngineItf _engine;
@@ -294,7 +293,6 @@ SlesOutput::Open(AudioFormat &audio_format, Error &)
 
 	// TODO: support other sample formats
 	audio_format.format = SampleFormat::S16;
-	return true;
 }
 
 inline void
@@ -307,7 +305,7 @@ SlesOutput::Close()
 }
 
 inline size_t
-SlesOutput::Play(const void *chunk, size_t size, Error &)
+SlesOutput::Play(const void *chunk, size_t size)
 {
 	cancel = false;
 
@@ -413,7 +411,7 @@ sles_test_default_device()
 }
 
 inline SlesOutput *
-SlesOutput::Create(const ConfigBlock &block, Error &)
+SlesOutput::Create(const ConfigBlock &block)
 {
 	return new SlesOutput(block);
 }

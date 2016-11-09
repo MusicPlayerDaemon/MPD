@@ -47,14 +47,12 @@ class SndioOutput {
 public:
 	SndioOutput(const ConfigBlock &block);
 
-	bool Configure(const ConfigBlock &block, Error &error);
+	static SndioOutput *Create(const ConfigBlock &block);
 
-	static SndioOutput *Create(const ConfigBlock &block, Error &error);
-
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 	unsigned Delay() const;
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 };
 
@@ -67,7 +65,7 @@ SndioOutput::SndioOutput(const ConfigBlock &block)
 }
 
 SndioOutput *
-SndioOutput::Create(const ConfigBlock &block, Error &)
+SndioOutput::Create(const ConfigBlock &block)
 {
 	return new SndioOutput(block);
 }
@@ -88,8 +86,8 @@ sndio_test_default_device()
 	return true;
 }
 
-bool
-SndioOutput::Open(AudioFormat &audio_format, Error &)
+void
+SndioOutput::Open(AudioFormat &audio_format)
 {
 	struct sio_par par;
 	unsigned bits, rate, chans;
@@ -145,8 +143,6 @@ SndioOutput::Open(AudioFormat &audio_format, Error &)
 		sio_close(sio_hdl);
 		throw std::runtime_error("Failed to start audio device");
 	}
-
-	return true;
 }
 
 void
@@ -156,7 +152,7 @@ SndioOutput::Close()
 }
 
 size_t
-SndioOutput::Play(const void *chunk, size_t size, Error &)
+SndioOutput::Play(const void *chunk, size_t size)
 {
 	size_t n;
 

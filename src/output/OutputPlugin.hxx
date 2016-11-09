@@ -29,7 +29,6 @@ struct AudioFormat;
 struct Tag;
 struct AudioOutput;
 struct MixerPlugin;
-class Error;
 
 /**
  * A plugin which controls an audio output device.
@@ -54,10 +53,8 @@ struct AudioOutputPlugin {
 	 *
 	 * @param param the configuration section, or nullptr if there is
 	 * no configuration
-	 * @return nullptr on error, or an opaque pointer to the plugin's
-	 * data
 	 */
-	AudioOutput *(*init)(const ConfigBlock &block, Error &error);
+	AudioOutput *(*init)(const ConfigBlock &block);
 
 	/**
 	 * Free resources allocated by this device.
@@ -69,10 +66,8 @@ struct AudioOutputPlugin {
 	 * for the device to be opened.
 	 *
 	 * Throws #std::runtime_error on error.
-	 *
-	 * @return true on success, false on error
 	 */
-	bool (*enable)(AudioOutput *data, Error &error);
+	void (*enable)(AudioOutput *data);
 
 	/**
 	 * Disables the device.  It is closed before this method is
@@ -88,8 +83,7 @@ struct AudioOutputPlugin {
 	 * @param audio_format the audio format in which data is going
 	 * to be delivered; may be modified by the plugin
 	 */
-	bool (*open)(AudioOutput *data, AudioFormat &audio_format,
-		     Error &error);
+	void (*open)(AudioOutput *data, AudioFormat &audio_format);
 
 	/**
 	 * Close the device.
@@ -118,11 +112,10 @@ struct AudioOutputPlugin {
 	 *
 	 * Throws #std::runtime_error on error.
 	 *
-	 * @return the number of bytes played, or 0 on error
+	 * @return the number of bytes played
 	 */
 	size_t (*play)(AudioOutput *data,
-		       const void *chunk, size_t size,
-		       Error &error);
+		       const void *chunk, size_t size);
 
 	/**
 	 * Wait until the device has finished playing.
@@ -168,21 +161,19 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 gcc_malloc
 AudioOutput *
 ao_plugin_init(const AudioOutputPlugin *plugin,
-	       const ConfigBlock &block,
-	       Error &error);
+	       const ConfigBlock &block);
 
 void
 ao_plugin_finish(AudioOutput *ao);
 
-bool
-ao_plugin_enable(AudioOutput *ao, Error &error);
+void
+ao_plugin_enable(AudioOutput *ao);
 
 void
 ao_plugin_disable(AudioOutput *ao);
 
-bool
-ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format,
-	       Error &error);
+void
+ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format);
 
 void
 ao_plugin_close(AudioOutput *ao);
@@ -195,8 +186,7 @@ void
 ao_plugin_send_tag(AudioOutput *ao, const Tag &tag);
 
 size_t
-ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size,
-	       Error &error);
+ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size);
 
 void
 ao_plugin_drain(AudioOutput *ao);

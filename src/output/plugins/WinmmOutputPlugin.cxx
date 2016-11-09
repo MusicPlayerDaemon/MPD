@@ -63,14 +63,14 @@ public:
 		return handle;
 	}
 
-	static WinmmOutput *Create(const ConfigBlock &block, Error &) {
+	static WinmmOutput *Create(const ConfigBlock &block) {
 		return new WinmmOutput(block);
 	}
 
-	bool Open(AudioFormat &audio_format, Error &);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
-	size_t Play(const void *chunk, size_t size, Error &);
+	size_t Play(const void *chunk, size_t size);
 	void Drain();
 	void Cancel();
 
@@ -153,8 +153,8 @@ WinmmOutput::WinmmOutput(const ConfigBlock &block)
 {
 }
 
-bool
-WinmmOutput::Open(AudioFormat &audio_format, Error &)
+void
+WinmmOutput::Open(AudioFormat &audio_format)
 {
 	event = CreateEvent(nullptr, false, false, nullptr);
 	if (event == nullptr)
@@ -199,8 +199,6 @@ WinmmOutput::Open(AudioFormat &audio_format, Error &)
 		memset(&i.hdr, 0, sizeof(i.hdr));
 
 	next_buffer = 0;
-
-	return true;
 }
 
 void
@@ -260,7 +258,7 @@ WinmmOutput::DrainBuffer(WinmmBuffer &buffer)
 }
 
 size_t
-WinmmOutput::Play(const void *chunk, size_t size, Error &)
+WinmmOutput::Play(const void *chunk, size_t size)
 {
 	/* get the next buffer from the ring and prepare it */
 	WinmmBuffer *buffer = &buffers[next_buffer];

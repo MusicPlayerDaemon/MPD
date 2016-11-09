@@ -178,7 +178,7 @@ public:
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 
 	/**
 	 * Caller must lock the mutex.

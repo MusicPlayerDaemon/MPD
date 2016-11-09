@@ -52,10 +52,9 @@ class OpenALOutput {
 
 	OpenALOutput(const ConfigBlock &block);
 
-	static OpenALOutput *Create(const ConfigBlock &block, Error &error);
+	static OpenALOutput *Create(const ConfigBlock &block);
 
-	bool Open(AudioFormat &audio_format, Error &error);
-
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	gcc_pure
@@ -68,7 +67,7 @@ class OpenALOutput {
 			: 50;
 	}
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 
 	void Cancel();
 
@@ -147,13 +146,13 @@ OpenALOutput::OpenALOutput(const ConfigBlock &block)
 }
 
 inline OpenALOutput *
-OpenALOutput::Create(const ConfigBlock &block, Error &)
+OpenALOutput::Create(const ConfigBlock &block)
 {
 	return new OpenALOutput(block);
 }
 
-inline bool
-OpenALOutput::Open(AudioFormat &audio_format, Error &)
+inline void
+OpenALOutput::Open(AudioFormat &audio_format)
 {
 	format = openal_audio_format(audio_format);
 
@@ -174,8 +173,6 @@ OpenALOutput::Open(AudioFormat &audio_format, Error &)
 
 	filled = 0;
 	frequency = audio_format.sample_rate;
-
-	return true;
 }
 
 inline void
@@ -189,7 +186,7 @@ OpenALOutput::Close()
 }
 
 inline size_t
-OpenALOutput::Play(const void *chunk, size_t size, gcc_unused Error &error)
+OpenALOutput::Play(const void *chunk, size_t size)
 {
 	if (alcGetCurrentContext() != context)
 		alcMakeContextCurrent(context);

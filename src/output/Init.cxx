@@ -36,7 +36,7 @@
 #include "config/ConfigError.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -62,7 +62,7 @@ AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
 }
 
 static const AudioOutputPlugin *
-audio_output_detect(Error &error)
+audio_output_detect()
 {
 	LogDefault(output_domain, "Attempt to detect audio output device");
 
@@ -77,8 +77,7 @@ audio_output_detect(Error &error)
 			return plugin;
 	}
 
-	error.Set(output_domain, "Unable to detect an audio device");
-	return nullptr;
+	throw std::runtime_error("Unable to detect an audio device");
 }
 
 /**
@@ -272,8 +271,7 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 AudioOutput *
 audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 		 MixerListener &mixer_listener,
-		 PlayerControl &pc,
-		 Error &error)
+		 PlayerControl &pc)
 {
 	const AudioOutputPlugin *plugin;
 
@@ -281,34 +279,25 @@ audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 		const char *p;
 
 		p = block.GetBlockValue(AUDIO_OUTPUT_TYPE);
-		if (p == nullptr) {
-			error.Set(config_domain,
-				  "Missing \"type\" configuration");
-			return nullptr;
-		}
+		if (p == nullptr)
+			throw std::runtime_error("Missing \"type\" configuration");
 
 		plugin = AudioOutputPlugin_get(p);
-		if (plugin == nullptr) {
-			error.Format(config_domain,
-				     "No such audio output plugin: %s", p);
-			return nullptr;
-		}
+		if (plugin == nullptr)
+			throw FormatRuntimeError("No such audio output plugin: %s", p);
 	} else {
 		LogWarning(output_domain,
 			   "No 'AudioOutput' defined in config file");
 
-		plugin = audio_output_detect(error);
-		if (plugin == nullptr)
-			return nullptr;
+		plugin = audio_output_detect();
 
 		FormatDefault(output_domain,
 			      "Successfully detected a %s audio device",
 			      plugin->name);
 	}
 
-	AudioOutput *ao = ao_plugin_init(plugin, block, error);
-	if (ao == nullptr)
-		return nullptr;
+	AudioOutput *ao = ao_plugin_init(plugin, block);
+	assert(ao != nullptr);
 
 	try {
 		audio_output_setup(event_loop, *ao, mixer_listener, block);

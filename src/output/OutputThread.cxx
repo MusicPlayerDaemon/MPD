@@ -34,7 +34,6 @@
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
 #include "thread/Name.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "Log.hxx"
 #include "Compiler.h"
@@ -62,13 +61,7 @@ AudioOutput::Enable()
 
 	try {
 		const ScopeUnlock unlock(mutex);
-		Error error;
-		if (!ao_plugin_enable(this, error)) {
-			FormatError(error,
-				    "Failed to enable \"%s\" [%s]",
-				    name, plugin.name);
-			return false;
-		}
+		ao_plugin_enable(this);
 	} catch (const std::runtime_error &e) {
 		FormatError(e,
 			    "Failed to enable \"%s\" [%s]",
@@ -138,8 +131,6 @@ AudioOutput::CloseFilter()
 inline void
 AudioOutput::Open()
 {
-	bool success;
-	Error error;
 	struct audio_format_string af_string;
 
 	assert(!open);
@@ -179,7 +170,7 @@ AudioOutput::Open()
 
  retry_without_dsd:
 	try {
-		success = ao_plugin_open(this, out_audio_format, error);
+		ao_plugin_open(this, out_audio_format);
 	} catch (const std::runtime_error &e) {
 		FormatError(e, "Failed to open \"%s\" [%s]",
 			    name, plugin.name);
@@ -193,19 +184,6 @@ AudioOutput::Open()
 	mutex.lock();
 
 	assert(!open);
-
-	if (!success) {
-		FormatError(error, "Failed to open \"%s\" [%s]",
-			    name, plugin.name);
-
-		{
-			const ScopeUnlock unlock(mutex);
-			CloseFilter();
-		}
-
-		fail_timer.Update();
-		return;
-	}
 
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
@@ -289,8 +267,6 @@ AudioOutput::CloseOutput(bool drain)
 void
 AudioOutput::ReopenFilter()
 {
-	Error error;
-
 	{
 		const ScopeUnlock unlock(mutex);
 		CloseFilter();
@@ -486,8 +462,6 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 		return false;
 	}
 
-	Error error;
-
 	while (!data.IsEmpty() && command == Command::NONE) {
 		if (!WaitForDelay())
 			break;
@@ -496,13 +470,7 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 
 		try {
 			const ScopeUnlock unlock(mutex);
-			nbytes = ao_plugin_play(this, data.data, data.size,
-						error);
-
-			if (nbytes == 0)
-				/* play()==0 means failure */
-				FormatError(error, "\"%s\" [%s] failed to play",
-					    name, plugin.name);
+			nbytes = ao_plugin_play(this, data.data, data.size);
 		} catch (const std::runtime_error &e) {
 			FormatError(e, "\"%s\" [%s] failed to play",
 				    name, plugin.name);

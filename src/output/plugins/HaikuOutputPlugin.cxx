@@ -71,12 +71,12 @@ public:
 
 	~HaikuOutput();
 
-	static HaikuOutput *Create(const ConfigBlock &block, Error &error);
+	static HaikuOutput *Create(const ConfigBlock &block);
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 
 	size_t Delay();
@@ -119,7 +119,7 @@ haiku_test_default_device(void)
 }
 
 inline HaikuOutput *
-HaikuOutput::Create(const ConfigBlock &block, Error &)
+HaikuOutput::Create(const ConfigBlock &block)
 {
 	initialize_application();
 
@@ -184,8 +184,8 @@ HaikuOutput::FillBuffer(void* _buffer, size_t size,
 	}
 }
 
-inline bool
-HaikuOutput::Open(AudioFormat &audio_format, Error &)
+inline void
+HaikuOutput::Open(AudioFormat &audio_format)
 {
 	status_t err;
 	format = media_multi_audio_format::wildcard;
@@ -261,12 +261,10 @@ HaikuOutput::Open(AudioFormat &audio_format, Error &)
 	sound_player->SetVolume(1.0);
 	sound_player->Start();
 	sound_player->SetHasData(false);
-
-	return true;
 }
 
 inline size_t
-HaikuOutput::Play(const void *chunk, size_t size, gcc_unused Error &error)
+HaikuOutput::Play(const void *chunk, size_t size)
 {
 	BSoundPlayer* const soundPlayer = sound_player;
 	const uint8 *data = (const uint8 *)chunk;

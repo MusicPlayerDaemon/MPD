@@ -54,7 +54,7 @@ public:
 		CloseFifo();
 	}
 
-	static FifoOutput *Create(const ConfigBlock &block, Error &error);
+	static FifoOutput *Create(const ConfigBlock &block);
 
 	void Create();
 	void Check();
@@ -63,11 +63,11 @@ public:
 	void OpenFifo();
 	void CloseFifo();
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	unsigned Delay() const;
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 };
 
@@ -169,16 +169,15 @@ try {
 }
 
 inline FifoOutput *
-FifoOutput::Create(const ConfigBlock &block, Error &)
+FifoOutput::Create(const ConfigBlock &block)
 {
 	return new FifoOutput(block);
 }
 
-bool
-FifoOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
+void
+FifoOutput::Open(AudioFormat &audio_format)
 {
 	timer = new Timer(audio_format);
-	return true;
 }
 
 void
@@ -214,7 +213,7 @@ FifoOutput::Delay() const
 }
 
 inline size_t
-FifoOutput::Play(const void *chunk, size_t size, Error &)
+FifoOutput::Play(const void *chunk, size_t size)
 {
 	if (!timer->IsStarted())
 		timer->Start();

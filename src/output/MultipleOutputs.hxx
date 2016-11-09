@@ -42,7 +42,6 @@ class MixerListener;
 struct MusicChunk;
 struct PlayerControl;
 struct AudioOutput;
-class Error;
 
 class MultipleOutputs {
 	MixerListener &mixer_listener;

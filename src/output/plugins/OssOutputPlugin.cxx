@@ -89,12 +89,11 @@ public:
 		:base(oss_output_plugin, block),
 		 fd(-1), device(_device) {}
 
-	static OssOutput *Create(const ConfigBlock &block, Error &error);
+	static OssOutput *Create(const ConfigBlock &block);
 
 #ifdef AFMT_S24_PACKED
-	bool Enable(gcc_unused Error &error) {
+	void Enable() {
 		pcm_export.Construct();
-		return true;
 	}
 
 	void Disable() {
@@ -102,13 +101,13 @@ public:
 	}
 #endif
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 
 	void Close() {
 		DoClose();
 	}
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 
 private:
@@ -227,7 +226,7 @@ oss_open_default()
 }
 
 inline OssOutput *
-OssOutput::Create(const ConfigBlock &block, gcc_unused Error &error)
+OssOutput::Create(const ConfigBlock &block)
 {
 	const char *device = block.GetBlockValue("device");
 	if (device != nullptr)
@@ -638,8 +637,8 @@ try {
 	throw;
 }
 
-inline bool
-OssOutput::Open(AudioFormat &_audio_format, Error &)
+inline void
+OssOutput::Open(AudioFormat &_audio_format)
 try {
 	fd = open_cloexec(device, O_WRONLY, 0);
 	if (fd < 0)
@@ -648,7 +647,6 @@ try {
 	Setup(_audio_format);
 
 	audio_format = _audio_format;
-	return true;
 } catch (...) {
 	DoClose();
 	throw;
@@ -664,7 +662,7 @@ OssOutput::Cancel()
 }
 
 inline size_t
-OssOutput::Play(const void *chunk, size_t size, Error &)
+OssOutput::Play(const void *chunk, size_t size)
 {
 	ssize_t ret;
 

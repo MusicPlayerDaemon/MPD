@@ -30,7 +30,6 @@
 #include "thread/Thread.hxx"
 #include "system/PeriodClock.hxx"
 
-class Error;
 class PreparedFilter;
 class Filter;
 class MusicPipe;
@@ -467,8 +466,7 @@ extern struct notify audio_output_client_notify;
 AudioOutput *
 audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 		 MixerListener &mixer_listener,
-		 PlayerControl &pc,
-		 Error &error);
+		 PlayerControl &pc);
 
 void
 audio_output_free(AudioOutput *ao);

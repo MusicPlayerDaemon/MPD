@@ -99,10 +99,10 @@ struct JackOutput {
 		shutdown = true;
 	}
 
-	bool Enable(Error &error);
+	void Enable();
 	void Disable();
 
-	bool Open(AudioFormat &new_audio_format, Error &error);
+	void Open(AudioFormat &new_audio_format);
 
 	void Close() {
 		Stop();
@@ -134,7 +134,7 @@ struct JackOutput {
 			: 0;
 	}
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 
 	bool Pause();
 };
@@ -420,14 +420,13 @@ mpd_jack_test_default_device(void)
 	return true;
 }
 
-inline bool
-JackOutput::Enable(Error &)
+inline void
+JackOutput::Enable()
 {
 	for (unsigned i = 0; i < num_source_ports; ++i)
 		ringbuffer[i] = nullptr;
 
 	Connect();
-	return true;
 }
 
 inline void
@@ -445,7 +444,7 @@ JackOutput::Disable()
 }
 
 static AudioOutput *
-mpd_jack_init(const ConfigBlock &block, Error &)
+mpd_jack_init(const ConfigBlock &block)
 {
 	jack_set_error_function(mpd_jack_error);
 
@@ -580,8 +579,8 @@ JackOutput::Start()
 	}
 }
 
-inline bool
-JackOutput::Open(AudioFormat &new_audio_format, Error &)
+inline void
+JackOutput::Open(AudioFormat &new_audio_format)
 {
 	pause = false;
 
@@ -595,7 +594,6 @@ JackOutput::Open(AudioFormat &new_audio_format, Error &)
 	audio_format = new_audio_format;
 
 	Start();
-	return true;
 }
 
 inline size_t
@@ -640,7 +638,7 @@ JackOutput::WriteSamples(const float *src, size_t n_frames)
 }
 
 inline size_t
-JackOutput::Play(const void *chunk, size_t size, Error &)
+JackOutput::Play(const void *chunk, size_t size)
 {
 	pause = false;
 

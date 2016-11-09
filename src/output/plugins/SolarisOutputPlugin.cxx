@@ -72,7 +72,7 @@ solaris_output_test_default_device(void)
 }
 
 static AudioOutput *
-solaris_output_init(const ConfigBlock &block, Error &)
+solaris_output_init(const ConfigBlock &block)
 {
 	SolarisOutput *so = new SolarisOutput(block);
 	return &so->base;
@@ -86,8 +86,8 @@ solaris_output_finish(AudioOutput *ao)
 	delete so;
 }
 
-static bool
-solaris_output_open(AudioOutput *ao, AudioFormat &audio_format, Error &)
+static void
+solaris_output_open(AudioOutput *ao, AudioFormat &audio_format)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 	struct audio_info info;
@@ -130,8 +130,6 @@ solaris_output_open(AudioOutput *ao, AudioFormat &audio_format, Error &)
 		close(so->fd);
 		throw MakeErrno(e, "AUDIO_SETINFO failed");
 	}
-
-	return true;
 }
 
 static void
@@ -143,8 +141,7 @@ solaris_output_close(AudioOutput *ao)
 }
 
 static size_t
-solaris_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		    Error &)
+solaris_output_play(AudioOutput *ao, const void *chunk, size_t size)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 	ssize_t nbytes;

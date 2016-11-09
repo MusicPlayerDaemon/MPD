@@ -23,7 +23,6 @@
 class PulseOutput;
 class PulseMixer;
 struct pa_cvolume;
-class Error;
 
 extern const struct AudioOutputPlugin pulse_output_plugin;
 

@@ -58,14 +58,14 @@ struct ShoutOutput final {
 	explicit ShoutOutput(const ConfigBlock &block);
 	~ShoutOutput();
 
-	static ShoutOutput *Create(const ConfigBlock &block, Error &error);
+	static ShoutOutput *Create(const ConfigBlock &block);
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	unsigned Delay() const;
 	void SendTag(const Tag &tag);
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 	bool Pause();
 };
@@ -246,7 +246,7 @@ ShoutOutput::~ShoutOutput()
 }
 
 ShoutOutput *
-ShoutOutput::Create(const ConfigBlock &block, Error &)
+ShoutOutput::Create(const ConfigBlock &block)
 {
 	if (shout_init_count == 0)
 		shout_init();
@@ -340,8 +340,8 @@ shout_connect(ShoutOutput *sd)
 	}
 }
 
-bool
-ShoutOutput::Open(AudioFormat &audio_format, Error &)
+void
+ShoutOutput::Open(AudioFormat &audio_format)
 {
 	shout_connect(this);
 
@@ -358,8 +358,6 @@ ShoutOutput::Open(AudioFormat &audio_format, Error &)
 		shout_close(shout_conn);
 		throw;
 	}
-
-	return true;
 }
 
 unsigned
@@ -373,7 +371,7 @@ ShoutOutput::Delay() const
 }
 
 size_t
-ShoutOutput::Play(const void *chunk, size_t size, Error &)
+ShoutOutput::Play(const void *chunk, size_t size)
 {
 	encoder->Write(chunk, size);
 	write_page(this);

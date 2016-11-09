@@ -133,15 +133,15 @@ struct AlsaOutput {
 		return device.empty() ? default_device : device.c_str();
 	}
 
-	static AlsaOutput *Create(const ConfigBlock &block, Error &error);
+	static AlsaOutput *Create(const ConfigBlock &block);
 
-	bool Enable(Error &error);
+	void Enable();
 	void Disable();
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Drain();
 	void Cancel();
 
@@ -195,16 +195,15 @@ AlsaOutput::AlsaOutput(const ConfigBlock &block)
 }
 
 inline AlsaOutput *
-AlsaOutput::Create(const ConfigBlock &block, Error &)
+AlsaOutput::Create(const ConfigBlock &block)
 {
 	return new AlsaOutput(block);
 }
 
-inline bool
-AlsaOutput::Enable(gcc_unused Error &error)
+inline void
+AlsaOutput::Enable()
 {
 	pcm_export.Construct();
-	return true;
 }
 
 inline void
@@ -719,8 +718,8 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params)
 #endif
 }
 
-inline bool
-AlsaOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
+inline void
+AlsaOutput::Open(AudioFormat &audio_format)
 {
 	int err = snd_pcm_open(&pcm, GetDevice(),
 			       SND_PCM_STREAM_PLAYBACK, mode);
@@ -751,8 +750,6 @@ AlsaOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 	out_frame_size = pcm_export->GetFrameSize(audio_format);
 
 	must_prepare = false;
-
-	return true;
 }
 
 inline int
@@ -832,7 +829,7 @@ AlsaOutput::Close()
 }
 
 inline size_t
-AlsaOutput::Play(const void *chunk, size_t size, gcc_unused Error &error)
+AlsaOutput::Play(const void *chunk, size_t size)
 {
 	assert(size > 0);
 	assert(size % in_frame_size == 0);

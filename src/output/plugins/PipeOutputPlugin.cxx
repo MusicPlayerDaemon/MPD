@@ -39,15 +39,15 @@ class PipeOutput {
 	PipeOutput(const ConfigBlock &block);
 
 public:
-	static PipeOutput *Create(const ConfigBlock &block, Error &error);
+	static PipeOutput *Create(const ConfigBlock &block);
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 
 	void Close() {
 		pclose(fh);
 	}
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 };
 
 PipeOutput::PipeOutput(const ConfigBlock &block)
@@ -59,23 +59,21 @@ PipeOutput::PipeOutput(const ConfigBlock &block)
 }
 
 inline PipeOutput *
-PipeOutput::Create(const ConfigBlock &block, Error &)
+PipeOutput::Create(const ConfigBlock &block)
 {
 	return new PipeOutput(block);
 }
 
-inline bool
-PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &)
+inline void
+PipeOutput::Open(gcc_unused AudioFormat &audio_format)
 {
 	fh = popen(cmd.c_str(), "w");
 	if (fh == nullptr)
 		throw FormatErrno("Error opening pipe \"%s\"", cmd.c_str());
-
-	return true;
 }
 
 inline size_t
-PipeOutput::Play(const void *chunk, size_t size, Error &)
+PipeOutput::Play(const void *chunk, size_t size)
 {
 	size_t nbytes = fwrite(chunk, 1, size, fh);
 	if (nbytes == 0)

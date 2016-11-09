@@ -37,13 +37,11 @@ public:
 		:base(null_output_plugin, block),
 		 sync(block.GetBlockValue("sync", true)) {}
 
-	static NullOutput *Create(const ConfigBlock &block, Error &error);
+	static NullOutput *Create(const ConfigBlock &block);
 
-	bool Open(AudioFormat &audio_format, gcc_unused Error &error) {
+	void Open(AudioFormat &audio_format) {
 		if (sync)
 			timer = new Timer(audio_format);
-
-		return true;
 	}
 
 	void Close() {
@@ -57,8 +55,7 @@ public:
 			: 0;
 	}
 
-	size_t Play(gcc_unused const void *chunk, size_t size,
-		    gcc_unused Error &error) {
+	size_t Play(gcc_unused const void *chunk, size_t size) {
 		if (sync) {
 			if (!timer->IsStarted())
 				timer->Start();
@@ -75,7 +72,7 @@ public:
 };
 
 inline NullOutput *
-NullOutput::Create(const ConfigBlock &block, Error &)
+NullOutput::Create(const ConfigBlock &block)
 {
 	return new NullOutput(block);
 }

@@ -58,11 +58,11 @@ public:
 		return &base;
 	}
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	void SendTag(const Tag &tag);
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 
 	int GetVolume() const;
@@ -134,7 +134,7 @@ roar_output_set_volume(RoarOutput &roar, unsigned volume)
 }
 
 static AudioOutput *
-roar_init(const ConfigBlock &block, Error &)
+roar_init(const ConfigBlock &block)
 {
 	return *new RoarOutput(block);
 }
@@ -174,8 +174,8 @@ roar_use_audio_format(struct roar_audio_info *info,
 	}
 }
 
-inline bool
-RoarOutput::Open(AudioFormat &audio_format, Error &)
+inline void
+RoarOutput::Open(AudioFormat &audio_format)
 {
 	const ScopeLock protect(mutex);
 
@@ -196,7 +196,6 @@ RoarOutput::Open(AudioFormat &audio_format, Error &)
 
 	roar_vs_role(vss, role, &err);
 	alive = true;
-	return true;
 }
 
 inline void
@@ -241,7 +240,7 @@ RoarOutput::Cancel()
 }
 
 inline size_t
-RoarOutput::Play(const void *chunk, size_t size, Error &)
+RoarOutput::Play(const void *chunk, size_t size)
 {
 	if (vss == nullptr)
 		throw std::runtime_error("Connection is invalid");

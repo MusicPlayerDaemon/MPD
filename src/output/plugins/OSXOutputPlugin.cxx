@@ -104,7 +104,7 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 }
 
 static AudioOutput *
-osx_output_init(const ConfigBlock &block, Error &)
+osx_output_init(const ConfigBlock &block)
 {
 	OSXOutput *oo = new OSXOutput(block);
 
@@ -512,8 +512,8 @@ osx_render(void *vdata,
  	return noErr;
 }
 
-static bool
-osx_output_enable(AudioOutput *ao, Error &)
+static void
+osx_output_enable(AudioOutput *ao)
 {
 	char errormsg[1024];
 	OSXOutput *oo = (OSXOutput *)ao;
@@ -546,8 +546,6 @@ osx_output_enable(AudioOutput *ao, Error &)
 	if (oo->hog_device) {
 		osx_output_hog_device(oo->dev_id, true);
 	}
-
-	return true;
 }
 
 static void
@@ -573,9 +571,8 @@ osx_output_close(AudioOutput *ao)
 	delete od->ring_buffer;
 }
 
-static bool
-osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
-		Error &)
+static void
+osx_output_open(AudioOutput *ao, AudioFormat &audio_format)
 {
 	char errormsg[1024];
 	OSXOutput *od = (OSXOutput *)ao;
@@ -662,13 +659,10 @@ osx_output_open(AudioOutput *ao, AudioFormat &audio_format,
 		throw FormatRuntimeError("unable to start audio output: %s",
 					 errormsg);
 	}
-
-	return true;
 }
 
 static size_t
-osx_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		gcc_unused Error &error)
+osx_output_play(AudioOutput *ao, const void *chunk, size_t size)
 {
 	OSXOutput *od = (OSXOutput *)ao;
 	return od->ring_buffer->push((uint8_t *)chunk, size);

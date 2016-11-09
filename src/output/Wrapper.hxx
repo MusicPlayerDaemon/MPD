@@ -30,11 +30,9 @@ struct AudioOutputWrapper {
 		return ContainerCast(ao, &T::base);
 	}
 
-	static AudioOutput *Init(const ConfigBlock &block, Error &error) {
-		T *t = T::Create(block, error);
-		return t != nullptr
-			? &t->base
-			: nullptr;
+	static AudioOutput *Init(const ConfigBlock &block) {
+		T *t = T::Create(block);
+		return &t->base;
 	}
 
 	static void Finish(AudioOutput *ao) {
@@ -42,9 +40,9 @@ struct AudioOutputWrapper {
 		delete t;
 	}
 
-	static bool Enable(AudioOutput *ao, Error &error) {
+	static void Enable(AudioOutput *ao) {
 		T &t = Cast(*ao);
-		return t.Enable(error);
+		t.Enable();
 	}
 
 	static void Disable(AudioOutput *ao) {
@@ -52,10 +50,9 @@ struct AudioOutputWrapper {
 		t.Disable();
 	}
 
-	static bool Open(AudioOutput *ao, AudioFormat &audio_format,
-			 Error &error) {
+	static void Open(AudioOutput *ao, AudioFormat &audio_format) {
 		T &t = Cast(*ao);
-		return t.Open(audio_format, error);
+		t.Open(audio_format);
 	}
 
 	static void Close(AudioOutput *ao) {
@@ -75,10 +72,9 @@ struct AudioOutputWrapper {
 		t.SendTag(tag);
 	}
 
-	static size_t Play(AudioOutput *ao, const void *chunk, size_t size,
-			   Error &error) {
+	static size_t Play(AudioOutput *ao, const void *chunk, size_t size) {
 		T &t = Cast(*ao);
-		return t.Play(chunk, size, error);
+		return t.Play(chunk, size);
 	}
 
 	static void Drain(AudioOutput *ao) {

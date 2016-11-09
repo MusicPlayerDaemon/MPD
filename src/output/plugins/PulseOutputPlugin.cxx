@@ -93,16 +93,16 @@ public:
 	gcc_const
 	static bool TestDefaultDevice();
 
-	static PulseOutput *Create(const ConfigBlock &block, Error &error);
+	static PulseOutput *Create(const ConfigBlock &block);
 
-	bool Enable(Error &error);
+	void Enable();
 	void Disable();
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	unsigned Delay();
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 	bool Pause();
 
@@ -415,13 +415,13 @@ PulseOutput::SetupContext()
 }
 
 PulseOutput *
-PulseOutput::Create(const ConfigBlock &block, gcc_unused Error &error)
+PulseOutput::Create(const ConfigBlock &block)
 {
 	return new PulseOutput(block);
 }
 
-inline bool
-PulseOutput::Enable(gcc_unused Error &error)
+inline void
+PulseOutput::Enable()
 {
 	assert(mainloop == nullptr);
 
@@ -454,8 +454,6 @@ PulseOutput::Enable(gcc_unused Error &error)
 	}
 
 	pa_threaded_mainloop_unlock(mainloop);
-
-	return true;
 }
 
 inline void
@@ -607,8 +605,8 @@ PulseOutput::SetupStream(const pa_sample_spec &ss)
 				     pulse_output_stream_write_cb, this);
 }
 
-inline bool
-PulseOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
+inline void
+PulseOutput::Open(AudioFormat &audio_format)
 {
 	assert(mainloop != nullptr);
 
@@ -676,8 +674,6 @@ PulseOutput::Open(AudioFormat &audio_format, gcc_unused Error &error)
 		throw MakePulseError(context,
 				     "pa_stream_connect_playback() has failed");
 	}
-
-	return true;
 }
 
 inline void
@@ -759,7 +755,7 @@ PulseOutput::Delay()
 }
 
 inline size_t
-PulseOutput::Play(const void *chunk, size_t size, gcc_unused Error &error)
+PulseOutput::Play(const void *chunk, size_t size)
 {
 	assert(mainloop != nullptr);
 	assert(stream != nullptr);

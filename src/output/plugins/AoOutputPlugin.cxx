@@ -121,7 +121,7 @@ AoOutput::AoOutput(const ConfigBlock &block)
 }
 
 static AudioOutput *
-ao_output_init(const ConfigBlock &block, gcc_unused Error &error)
+ao_output_init(const ConfigBlock &block)
 {
 	return &(new AoOutput(block))->base;
 }
@@ -148,9 +148,8 @@ ao_output_close(AudioOutput *ao)
 	ao_close(ad->device);
 }
 
-static bool
-ao_output_open(AudioOutput *ao, AudioFormat &audio_format,
-	       gcc_unused Error &error)
+static void
+ao_output_open(AudioOutput *ao, AudioFormat &audio_format)
 {
 	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
 	AoOutput *ad = (AoOutput *)ao;
@@ -181,8 +180,6 @@ ao_output_open(AudioOutput *ao, AudioFormat &audio_format,
 
 	if (ad->device == nullptr)
 		throw MakeAoError();
-
-	return true;
 }
 
 /**
@@ -203,8 +200,7 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 }
 
 static size_t
-ao_output_play(AudioOutput *ao, const void *chunk, size_t size,
-	       gcc_unused Error &error)
+ao_output_play(AudioOutput *ao, const void *chunk, size_t size)
 {
 	AoOutput *ad = (AoOutput *)ao;
 
