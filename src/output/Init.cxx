@@ -58,9 +58,7 @@ AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
 	assert(plugin.close != nullptr);
 	assert(plugin.play != nullptr);
 
-	Error error;
-	if (!Configure(block, error))
-		throw std::runtime_error(error.GetMessage());
+	Configure(block);
 }
 
 static const AudioOutputPlugin *
@@ -155,16 +153,13 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 	gcc_unreachable();
 }
 
-bool
-AudioOutput::Configure(const ConfigBlock &block, Error &error)
+void
+AudioOutput::Configure(const ConfigBlock &block)
 {
 	if (!block.IsNull()) {
 		name = block.GetBlockValue(AUDIO_OUTPUT_NAME);
-		if (name == nullptr) {
-			error.Set(config_domain,
-				  "Missing \"name\" configuration");
-			return false;
-		}
+		if (name == nullptr)
+			throw std::runtime_error("Missing \"name\" configuration");
 
 		const char *p = block.GetBlockValue(AUDIO_OUTPUT_FORMAT);
 		if (p != nullptr)
@@ -208,10 +203,6 @@ AudioOutput::Configure(const ConfigBlock &block, Error &error)
 			    "Failed to initialize filter chain for '%s'",
 			    name);
 	}
-
-	/* done */
-
-	return true;
 }
 
 static bool

@@ -291,7 +291,7 @@ struct AudioOutput {
 	~AudioOutput();
 
 private:
-	bool Configure(const ConfigBlock &block, Error &error);
+	void Configure(const ConfigBlock &block);
 
 public:
 	void StartThread();
