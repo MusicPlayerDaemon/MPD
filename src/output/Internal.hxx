@@ -282,8 +282,6 @@ struct AudioOutput {
 	 */
 	bool current_chunk_finished;
 
-	AudioOutput(const AudioOutputPlugin &_plugin);
-
 	/**
 	 * Throws #std::runtime_error on error.
 	 */
@@ -292,8 +290,10 @@ struct AudioOutput {
 
 	~AudioOutput();
 
+private:
 	bool Configure(const ConfigBlock &block, Error &error);
 
+public:
 	void StartThread();
 	void StopThread();
 

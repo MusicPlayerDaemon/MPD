@@ -60,10 +60,6 @@ struct SolarisOutput {
 	explicit SolarisOutput(const ConfigBlock &block)
 		:base(solaris_output_plugin, block),
 		 device(block.GetBlockValue("device", "/dev/audio")) {}
-
-	bool Initialize(const ConfigBlock &block, Error &error_r) {
-		return base.Configure(block, error_r);
-	}
 };
 
 static bool

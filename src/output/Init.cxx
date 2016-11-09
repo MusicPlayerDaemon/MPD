@@ -49,19 +49,15 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
-AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
+AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
+			 const ConfigBlock &block)
 	:plugin(_plugin)
 {
 	assert(plugin.finish != nullptr);
 	assert(plugin.open != nullptr);
 	assert(plugin.close != nullptr);
 	assert(plugin.play != nullptr);
-}
 
-AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
-			 const ConfigBlock &block)
-	:AudioOutput(_plugin)
-{
 	Error error;
 	if (!Configure(block, error))
 		throw std::runtime_error(error.GetMessage());
