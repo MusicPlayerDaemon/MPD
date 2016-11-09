@@ -74,10 +74,7 @@ public:
 	static HaikuOutput *Create(const ConfigBlock &block, Error &error);
 
 	bool Open(AudioFormat &audio_format, Error &error);
-
-	void Close() {
-		DoClose();
-	}
+	void Close();
 
 	size_t Play(const void *chunk, size_t size, Error &error);
 	void Cancel();
@@ -88,10 +85,6 @@ public:
 		gcc_unused const media_raw_audio_format& _format);
 
 	void SendTag(const Tag &tag);
-
-private:
-
-	void DoClose();
 };
 
 static constexpr Domain haiku_output_domain("haiku_output");
@@ -134,7 +127,7 @@ HaikuOutput::Create(const ConfigBlock &block, Error &)
 }
 
 void
-HaikuOutput::DoClose()
+HaikuOutput::Close()
 {
 	sound_player->SetHasData(false);
 	delete_sem(new_buffer);
