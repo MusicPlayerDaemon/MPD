@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Volume.hxx"
 #include "Silence.hxx"
-#include "Domain.hxx"
 #include "Traits.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/WritableBuffer.hxx"

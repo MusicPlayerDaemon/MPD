@@ -20,7 +20,6 @@
 #include "config.h"
 #include "ChannelsConverter.hxx"
 #include "PcmChannels.hxx"
-#include "Domain.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 

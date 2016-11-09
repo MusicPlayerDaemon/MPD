@@ -529,7 +529,6 @@ ICU_LDADD = libicu.a $(ICU_LIBS)
 # PCM library
 
 libpcm_a_SOURCES = \
-	src/pcm/Domain.cxx src/pcm/Domain.hxx \
 	src/pcm/Traits.hxx \
 	src/pcm/Interleave.cxx src/pcm/Interleave.hxx \
 	src/pcm/PcmBuffer.cxx src/pcm/PcmBuffer.hxx \
