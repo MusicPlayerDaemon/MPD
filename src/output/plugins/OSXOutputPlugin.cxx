@@ -33,6 +33,8 @@
 #include <CoreServices/CoreServices.h>
 #include <boost/lockfree/spsc_queue.hpp>
 
+#include <memory>
+
 struct OSXOutput {
 	AudioOutput base;
 
@@ -206,10 +208,8 @@ osx_output_set_channel_map(OSXOutput *oo, Error &error)
 {
 	AudioStreamBasicDescription desc;
 	OSStatus status;
-	SInt32 *channel_map = nullptr;
 	UInt32 size, num_channels;
 	char errormsg[1024];
-	bool ret = true;
 
 	size = sizeof(desc);
 	memset(&desc, 0, size);
@@ -224,20 +224,18 @@ osx_output_set_channel_map(OSXOutput *oo, Error &error)
 		error.Format(osx_output_domain, status,
 			"%s: unable to get number of output device channels: %s",
 			oo->device_name, errormsg);
-		ret = false;
-		goto done;
+		return false;
 	}
 
 	num_channels = desc.mChannelsPerFrame;
-	channel_map = new SInt32[num_channels];
+	std::unique_ptr<SInt32[]> channel_map(new SInt32[num_channels]);
 	if (!osx_output_parse_channel_map(oo->device_name,
 		oo->channel_map,
-		channel_map,
+		channel_map.get(),
 		num_channels,
 		error)
 	) {
-		ret = false;
-		goto done;
+		return false;
 	}
 
 	size = num_channels * sizeof(SInt32);
@@ -245,19 +243,16 @@ osx_output_set_channel_map(OSXOutput *oo, Error &error)
 		kAudioOutputUnitProperty_ChannelMap,
 		kAudioUnitScope_Input,
 		0,
-		channel_map,
+		channel_map.get(),
 		size);
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			"%s: unable to set channel map: %s", oo->device_name, errormsg);
-		ret = false;
-		goto done;
+		return false;
 	}
 
-done:
-	delete[] channel_map;
-	return ret;
+	return true;
 }
 
 static void
@@ -436,10 +431,8 @@ osx_output_hog_device(AudioDeviceID dev_id, bool hog)
 static bool
 osx_output_set_device(OSXOutput *oo, Error &error)
 {
-	bool ret = true;
 	OSStatus status;
 	UInt32 size, numdevices;
-	AudioDeviceID *deviceids = nullptr;
 	AudioObjectPropertyAddress propaddr;
 	CFStringRef cfname = nullptr;
 	char errormsg[1024];
@@ -452,7 +445,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 	};
 
 	if (oo->component_subtype != kAudioUnitSubType_HALOutput)
-		goto done;
+		return true;
 
 	/* how many audio devices are there? */
 	propaddr = { kAudioHardwarePropertyDevices, kAudioObjectPropertyScopeGlobal, kAudioObjectPropertyElementMaster };
@@ -462,21 +455,19 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		error.Format(osx_output_domain, status,
 			     "Unable to determine number of OS X audio devices: %s",
 			     errormsg);
-		ret = false;
-		goto done;
+		return false;
 	}
 
 	/* what are the available audio device IDs? */
 	numdevices = size / sizeof(AudioDeviceID);
-	deviceids = new AudioDeviceID[numdevices];
-	status = AudioObjectGetPropertyData(kAudioObjectSystemObject, &propaddr, 0, nullptr, &size, deviceids);
+	std::unique_ptr<AudioDeviceID[]> deviceids(new AudioDeviceID[numdevices]);
+	status = AudioObjectGetPropertyData(kAudioObjectSystemObject, &propaddr, 0, nullptr, &size, deviceids.get());
 	if (status != noErr) {
 		osx_os_status_to_cstring(status, errormsg, sizeof(errormsg));
 		error.Format(osx_output_domain, status,
 			     "Unable to determine OS X audio device IDs: %s",
 			     errormsg);
-		ret = false;
-		goto done;
+		return false;
 	}
 
 	/* which audio device matches oo->device_name? */
@@ -491,14 +482,12 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 				     "(device %u): %s",
 				     (unsigned int) deviceids[i],
 				     errormsg);
-			ret = false;
-			goto done;
+			return false;
 		}
 
 		if (!CFStringGetCString(cfname, name, sizeof(name), kCFStringEncodingUTF8)) {
 			error.Set(osx_output_domain, "Unable to convert device name from CFStringRef to char*");
-			ret = false;
-			goto done;
+			return false;
 		}
 
 		if (strcmp(oo->device_name, name) == 0) {
@@ -513,7 +502,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 			      "Found no audio device with name '%s' "
 			      "(will use default audio device)",
 			      oo->device_name);
-		goto done;
+		return true;
 	}
 
 	status = AudioUnitSetProperty(oo->au,
@@ -527,8 +516,7 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		error.Format(osx_output_domain, status,
 			     "Unable to set OS X audio output device: %s",
 			     errormsg);
-		ret = false;
-		goto done;
+		return false;
 	}
 
 	oo->dev_id = deviceids[i];
@@ -536,14 +524,10 @@ osx_output_set_device(OSXOutput *oo, Error &error)
 		    "set OS X audio output device ID=%u, name=%s",
 		    (unsigned)deviceids[i], name);
 
-	if (oo->channel_map && !osx_output_set_channel_map(oo, error)) {
-		ret = false;
-		goto done;
-	}
+	if (oo->channel_map && !osx_output_set_channel_map(oo, error))
+		return false;
 
-done:
-	delete[] deviceids;
-	return ret;
+	return true;
 }
 
 
