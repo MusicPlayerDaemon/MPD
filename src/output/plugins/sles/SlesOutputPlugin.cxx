@@ -26,13 +26,14 @@
 #include "../../OutputAPI.hxx"
 #include "../../Wrapper.hxx"
 #include "util/Macros.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
 #include "Log.hxx"
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
+
+#include <stdexcept>
 
 class SlesOutput {
 	friend struct AudioOutputWrapper<SlesOutput>;
@@ -84,18 +85,11 @@ class SlesOutput {
 	uint8_t buffers[N_BUFFERS][BUFFER_SIZE];
 
 public:
-	SlesOutput()
-		:base(sles_output_plugin) {}
+	SlesOutput(const ConfigBlock &block);
 
 	operator AudioOutput *() {
 		return &base;
 	}
-
-	bool Initialize(const ConfigBlock &block, Error &error) {
-		return base.Configure(block, error);
-	}
-
-	bool Configure(const ConfigBlock &block, Error &error);
 
 	static SlesOutput *Create(const ConfigBlock &block, Error &error);
 
@@ -130,62 +124,53 @@ private:
 
 static constexpr Domain sles_domain("sles");
 
-inline bool
-SlesOutput::Configure(const ConfigBlock &, Error &)
+SlesOutput::SlesOutput(const ConfigBlock &block)
+	:base(sles_output_plugin, block)
 {
-	return true;
 }
 
 inline bool
-SlesOutput::Open(AudioFormat &audio_format, Error &error)
+SlesOutput::Open(AudioFormat &audio_format, Error &)
 {
 	SLresult result;
 	SLObjectItf _object;
 
 	result = slCreateEngine(&_object, 0, nullptr, 0,
 				nullptr, nullptr);
-	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result), "slCreateEngine() failed");
-		return false;
-	}
+	if (result != SL_RESULT_SUCCESS)
+		throw std::runtime_error("slCreateEngine() failed");
 
 	engine_object = SLES::Object(_object);
 
 	result = engine_object.Realize(false);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result), "Engine.Realize() failed");
 		engine_object.Destroy();
+		throw std::runtime_error("Engine.Realize() failed");
 		return false;
 	}
 
 	SLEngineItf _engine;
 	result = engine_object.GetInterface(SL_IID_ENGINE, &_engine);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Engine.GetInterface(IID_ENGINE) failed");
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Engine.GetInterface(IID_ENGINE) failed");
 	}
 
 	SLES::Engine engine(_engine);
 
 	result = engine.CreateOutputMix(&_object, 0, nullptr, nullptr);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Engine.CreateOutputMix() failed");
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Engine.CreateOutputMix() failed");
 	}
 
 	mix_object = SLES::Object(_object);
 
 	result = mix_object.Realize(false);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Mix.Realize() failed");
 		mix_object.Destroy();
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Mix.Realize() failed");
 	}
 
 	SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {
@@ -238,11 +223,9 @@ SlesOutput::Open(AudioFormat &audio_format, Error &error)
 	result = engine.CreateAudioPlayer(&_object, &audioSrc, &audioSnk,
 					  ARRAY_SIZE(ids2), ids2, req2);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Engine.CreateAudioPlayer() failed");
 		mix_object.Destroy();
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Engine.CreateAudioPlayer() failed");
 	}
 
 	play_object = SLES::Object(_object);
@@ -260,23 +243,19 @@ SlesOutput::Open(AudioFormat &audio_format, Error &error)
 	result = play_object.Realize(false);
 
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Play.Realize() failed");
 		play_object.Destroy();
 		mix_object.Destroy();
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Play.Realize() failed");
 	}
 
 	SLPlayItf _play;
 	result = play_object.GetInterface(SL_IID_PLAY, &_play);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Play.GetInterface(IID_PLAY) failed");
 		play_object.Destroy();
 		mix_object.Destroy();
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Play.GetInterface(IID_PLAY) failed");
 	}
 
 	play = SLES::Play(_play);
@@ -285,33 +264,27 @@ SlesOutput::Open(AudioFormat &audio_format, Error &error)
 	result = play_object.GetInterface(SL_IID_ANDROIDSIMPLEBUFFERQUEUE,
 					  &_queue);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Play.GetInterface(IID_ANDROIDSIMPLEBUFFERQUEUE) failed");
 		play_object.Destroy();
 		mix_object.Destroy();
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Play.GetInterface(IID_ANDROIDSIMPLEBUFFERQUEUE) failed");
 	}
 
 	queue = SLES::AndroidSimpleBufferQueue(_queue);
 	result = queue.RegisterCallback(PlayedCallback, (void *)this);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Play.RegisterCallback() failed");
 		play_object.Destroy();
 		mix_object.Destroy();
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Play.RegisterCallback() failed");
 	}
 
 	result = play.SetPlayState(SL_PLAYSTATE_PLAYING);
 	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "Play.SetPlayState(PLAYING) failed");
 		play_object.Destroy();
 		mix_object.Destroy();
 		engine_object.Destroy();
-		return false;
+		throw std::runtime_error("Play.SetPlayState(PLAYING) failed");
 	}
 
 	pause = cancel = false;
@@ -321,7 +294,6 @@ SlesOutput::Open(AudioFormat &audio_format, Error &error)
 
 	// TODO: support other sample formats
 	audio_format.format = SampleFormat::S16;
-
 	return true;
 }
 
@@ -335,17 +307,14 @@ SlesOutput::Close()
 }
 
 inline size_t
-SlesOutput::Play(const void *chunk, size_t size, Error &error)
+SlesOutput::Play(const void *chunk, size_t size, Error &)
 {
 	cancel = false;
 
 	if (pause) {
 		SLresult result = play.SetPlayState(SL_PLAYSTATE_PLAYING);
-		if (result != SL_RESULT_SUCCESS) {
-			error.Set(sles_domain, int(result),
-				  "Play.SetPlayState(PLAYING) failed");
-			return false;
-		}
+		if (result != SL_RESULT_SUCCESS)
+			throw std::runtime_error("Play.SetPlayState(PLAYING) failed");
 
 		pause = false;
 	}
@@ -366,11 +335,8 @@ SlesOutput::Play(const void *chunk, size_t size, Error &error)
 		return nbytes;
 
 	SLresult result = queue.Enqueue(buffers[next], BUFFER_SIZE);
-	if (result != SL_RESULT_SUCCESS) {
-		error.Set(sles_domain, int(result),
-			  "AndroidSimpleBufferQueue.Enqueue() failed");
-		return 0;
-	}
+	if (result != SL_RESULT_SUCCESS)
+		throw std::runtime_error("AndroidSimpleBufferQueue.Enqueue() failed");
 
 	++n_queued;
 	next = (next + 1) % N_BUFFERS;
@@ -447,17 +413,9 @@ sles_test_default_device()
 }
 
 inline SlesOutput *
-SlesOutput::Create(const ConfigBlock &block, Error &error)
+SlesOutput::Create(const ConfigBlock &block, Error &)
 {
-	SlesOutput *sles = new SlesOutput();
-
-	if (!sles->Initialize(block, error) ||
-	    !sles->Configure(block, error)) {
-		delete sles;
-		return nullptr;
-	}
-
-	return sles;
+	return new SlesOutput(block);
 }
 
 typedef AudioOutputWrapper<SlesOutput> Wrapper;
