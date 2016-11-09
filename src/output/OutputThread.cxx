@@ -22,7 +22,6 @@
 #include "OutputAPI.hxx"
 #include "Domain.hxx"
 #include "pcm/PcmMix.hxx"
-#include "pcm/Domain.hxx"
 #include "notify.hxx"
 #include "filter/FilterInternal.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
@@ -217,8 +216,7 @@ AudioOutput::Open()
 		mutex.unlock();
 		ao_plugin_close(this);
 
-		if (error.IsDomain(pcm_domain) &&
-		    out_audio_format.format == SampleFormat::DSD) {
+		if (out_audio_format.format == SampleFormat::DSD) {
 			/* if the audio output supports DSD, but not
 			   the given sample rate, it asks MPD to
 			   resample; resampling DSD however is not
@@ -231,9 +229,6 @@ AudioOutput::Open()
 
 			out_audio_format = retry_audio_format;
 			out_audio_format.format = SampleFormat::FLOAT;
-
-			/* clear the Error to allow reusing it */
-			error.Clear();
 
 			/* sorry for the "goto" - this is a workaround
 			   for the stable branch that should be as
