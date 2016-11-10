@@ -33,7 +33,6 @@
 #include "DecoderList.hxx"
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/ScopeExit.hxx"
@@ -466,8 +465,6 @@ decoder_task(void *arg)
 					std::rethrow_exception(dc.error);
 				} catch (const std::exception &e) {
 					LogError(e);
-				} catch (const Error &error) {
-					LogError(error);
 				} catch (...) {
 				}
 			}
