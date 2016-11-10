@@ -29,8 +29,6 @@
 #include <utility>
 #include <string>
 
-class Error;
-
 /**
  * A path name in the native file system character set.
  *
@@ -163,9 +161,6 @@ public:
 	 */
 	gcc_pure gcc_nonnull_all
 	static AllocatedPath FromUTF8Throw(const char *path_utf8);
-
-	gcc_pure gcc_nonnull_all
-	static AllocatedPath FromUTF8(const char *path_utf8, Error &error);
 
 	/**
 	 * Copy an #AllocatedPath object.

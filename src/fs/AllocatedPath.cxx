@@ -21,7 +21,6 @@
 #include "AllocatedPath.hxx"
 #include "Domain.hxx"
 #include "Charset.hxx"
-#include "util/Error.hxx"
 #include "Compiler.h"
 
 #include <stdexcept>
@@ -51,18 +50,6 @@ AllocatedPath::FromUTF8Throw(const char *path_utf8)
 #else
 	return FromFS(path_utf8);
 #endif
-}
-
-AllocatedPath
-AllocatedPath::FromUTF8(const char *path_utf8, Error &error)
-{
-	AllocatedPath path = FromUTF8(path_utf8);
-	if (path.IsNull())
-		error.Format(path_domain,
-			     "Failed to convert to file system charset: %s",
-			     path_utf8);
-
-	return path;
 }
 
 AllocatedPath
