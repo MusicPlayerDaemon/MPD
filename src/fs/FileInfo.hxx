@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "Path.hxx"
-#include "util/Error.hxx"
 #include "system/Error.hxx"
 
 #include <stdint.h>
@@ -53,8 +52,6 @@ FileTimeToTimeT(FILETIME ft)
 class FileInfo {
 	friend bool GetFileInfo(Path path, FileInfo &info,
 				bool follow_symlinks);
-	friend bool GetFileInfo(Path path, FileInfo &info,
-				Error &error);
 	friend class FileReader;
 
 #ifdef WIN32
@@ -143,29 +140,6 @@ GetFileInfo(Path path, FileInfo &info, bool follow_symlinks=true)
 		: lstat(path.c_str(), &info.st);
 	return ret == 0;
 #endif
-}
-
-inline bool
-GetFileInfo(Path path, FileInfo &info, bool follow_symlinks, Error &error)
-{
-	bool success = GetFileInfo(path, info, follow_symlinks);
-	if (!success) {
-		const auto path_utf8 = path.ToUTF8();
-#ifdef WIN32
-		error.FormatLastError("Failed to access %s",
-				      path_utf8.c_str());
-#else
-		error.FormatErrno("Failed to access %s", path_utf8.c_str());
-#endif
-	}
-
-	return success;
-}
-
-inline bool
-GetFileInfo(Path path, FileInfo &info, Error &error)
-{
-	return GetFileInfo(path, info, true, error);
 }
 
 #endif
