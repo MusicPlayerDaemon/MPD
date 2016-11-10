@@ -429,13 +429,7 @@ try {
 	Path path_fs = Path::Null();
 	AllocatedPath path_buffer = AllocatedPath::Null();
 	if (PathTraitsUTF8::IsAbsolute(uri_utf8)) {
-		Error error;
-		path_buffer = AllocatedPath::FromUTF8(uri_utf8, error);
-		if (path_buffer.IsNull()) {
-			dc.CommandFinishedLocked();
-			throw std::move(error);
-		}
-
+		path_buffer = AllocatedPath::FromUTF8Throw(uri_utf8);
 		path_fs = path_buffer;
 	}
 
