@@ -31,30 +31,27 @@
 
 void
 CheckDirectoryReadable(Path path_fs)
-{
-	Error error;
+try {
+	const auto path_utf8 = path_fs.ToUTF8();
 
-	FileInfo fi;
-	if (!GetFileInfo(path_fs, fi, error)) {
-		LogError(error);
-		return;
-	}
-
+	const FileInfo fi(path_fs);
 	if (!fi.IsDirectory()) {
-		const auto path_utf8 = path_fs.ToUTF8();
 		FormatError(config_domain,
 			    "Not a directory: %s", path_utf8.c_str());
 		return;
 	}
 
 #ifndef WIN32
-	const auto x = AllocatedPath::Build(path_fs,
-					    PathTraitsFS::CURRENT_DIRECTORY);
-	if (!GetFileInfo(x, fi) && errno == EACCES) {
-		const auto path_utf8 = path_fs.ToUTF8();
-		FormatError(config_domain,
-			    "No permission to traverse (\"execute\") directory: %s",
-			    path_utf8.c_str());
+	try {
+		const auto x = AllocatedPath::Build(path_fs,
+						    PathTraitsFS::CURRENT_DIRECTORY);
+		const FileInfo fi2(x);
+	} catch (const std::system_error &e) {
+		if (e.code().category() == std::system_category() &&
+		    e.code().value() == EACCES)
+			FormatError(config_domain,
+				    "No permission to traverse (\"execute\") directory: %s",
+				    path_utf8.c_str());
 	}
 #endif
 
@@ -66,4 +63,6 @@ CheckDirectoryReadable(Path path_fs)
 				    "No permission to read directory: %s",
 				    path_fs.ToUTF8().c_str());
 	}
+} catch (const std::runtime_error &e) {
+	LogError(e);
 }
