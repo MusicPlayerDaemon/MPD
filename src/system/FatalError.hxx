@@ -27,8 +27,6 @@
 #include <windef.h>
 #endif
 
-class Error;
-
 /**
  * Log the specified message and abort the process.
  */
@@ -39,14 +37,6 @@ FatalError(const char *msg);
 gcc_noreturn
 void
 FormatFatalError(const char *fmt, ...);
-
-gcc_noreturn
-void
-FatalError(const Error &error);
-
-gcc_noreturn
-void
-FatalError(const char *msg, const Error &error);
 
 /**
  * Call this after a system call has failed that is not supposed to
