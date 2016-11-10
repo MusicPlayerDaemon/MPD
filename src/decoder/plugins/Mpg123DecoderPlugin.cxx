@@ -26,7 +26,6 @@
 #include "tag/ReplayGain.hxx"
 #include "tag/MixRamp.hxx"
 #include "fs/Path.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/StringView.hxx"
 #include "Log.hxx"
@@ -95,13 +94,7 @@ mpd_mpg123_open(mpg123_handle *handle, const char *path_fs,
 		return false;
 	}
 
-	Error error2;
-	if (!audio_format_init_checked(audio_format, rate, SampleFormat::S16,
-				       channels, error2)) {
-		LogError(error2);
-		return false;
-	}
-
+	audio_format = CheckAudioFormat(rate, SampleFormat::S16, channels);
 	return true;
 }
 

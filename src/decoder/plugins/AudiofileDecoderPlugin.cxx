@@ -24,7 +24,6 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "util/ScopeExit.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -198,16 +197,10 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 
 	AtScopeExit(fh) { afCloseFile(fh); };
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format,
-				       afGetRate(fh, AF_DEFAULT_TRACK),
-				       audiofile_setup_sample_format(fh),
-				       afGetVirtualChannels(fh, AF_DEFAULT_TRACK),
-				       error)) {
-		LogError(error);
-		return;
-	}
+	const auto audio_format =
+		CheckAudioFormat(afGetRate(fh, AF_DEFAULT_TRACK),
+				 audiofile_setup_sample_format(fh),
+				 afGetVirtualChannels(fh, AF_DEFAULT_TRACK));
 
 	const auto total_time = audiofile_get_duration(fh);
 

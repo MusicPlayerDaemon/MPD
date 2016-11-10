@@ -24,7 +24,6 @@
 #include "CheckAudioFormat.hxx"
 #include "pcm/Traits.hxx"
 #include "tag/TagHandler.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Clamp.hxx"
@@ -162,15 +161,9 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, info.sample_freq,
-				       mpcdec_sample_format,
-				       info.channels, error)) {
-		LogError(error);
-		mpc_demux_exit(demux);
-		return;
-	}
+	auto audio_format = CheckAudioFormat(info.sample_freq,
+					     mpcdec_sample_format,
+					     info.channels);
 
 	ReplayGainInfo rgi;
 	rgi.Clear();

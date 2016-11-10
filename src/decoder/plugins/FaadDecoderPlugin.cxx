@@ -273,8 +273,9 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer,
 
 	buffer.Consume(nbytes);
 
-	return audio_format_init_checked(audio_format, sample_rate,
-					 SampleFormat::S16, channels, error);
+	audio_format = CheckAudioFormat(sample_rate, SampleFormat::S16,
+					channels);
+	return true;
 }
 
 /**

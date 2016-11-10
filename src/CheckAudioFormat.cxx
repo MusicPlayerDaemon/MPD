@@ -20,61 +20,43 @@
 #include "config.h"
 #include "CheckAudioFormat.hxx"
 #include "AudioFormat.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 
-const Domain audio_format_domain("audio_format");
-
-bool
-audio_check_sample_rate(unsigned long sample_rate, Error &error)
+void
+CheckSampleRate(unsigned long sample_rate)
 {
-	if (!audio_valid_sample_rate(sample_rate)) {
-		error.Format(audio_format_domain,
-			     "Invalid sample rate: %lu", sample_rate);
-		return false;
-	}
-
-	return true;
+	if (!audio_valid_sample_rate(sample_rate))
+		throw FormatRuntimeError("Invalid sample rate: %lu",
+					 sample_rate);
 }
 
-bool
-audio_check_sample_format(SampleFormat sample_format, Error &error)
+void
+CheckSampleFormat(SampleFormat sample_format)
 {
-	if (!audio_valid_sample_format(sample_format)) {
-		error.Format(audio_format_domain,
-			     "Invalid sample format: %u",
-			     unsigned(sample_format));
-		return false;
-	}
-
-	return true;
+	if (!audio_valid_sample_format(sample_format))
+		throw FormatRuntimeError("Invalid sample format: %u",
+					 unsigned(sample_format));
 }
 
-bool
-audio_check_channel_count(unsigned channels, Error &error)
+void
+CheckChannelCount(unsigned channels)
 {
-	if (!audio_valid_channel_count(channels)) {
-		error.Format(audio_format_domain,
-			     "Invalid channel count: %u", channels);
-		return false;
-	}
-
-	return true;
+	if (!audio_valid_channel_count(channels))
+		throw FormatRuntimeError("Invalid channel count: %u",
+					 channels);
 }
 
-bool
-audio_format_init_checked(AudioFormat &af, unsigned long sample_rate,
-			  SampleFormat sample_format, unsigned channels,
-			  Error &error)
+AudioFormat
+CheckAudioFormat(unsigned long sample_rate,
+		 SampleFormat sample_format, unsigned channels)
 {
-	if (audio_check_sample_rate(sample_rate, error) &&
-	    audio_check_sample_format(sample_format, error) &&
-	    audio_check_channel_count(channels, error)) {
-		af = AudioFormat(sample_rate, sample_format, channels);
-		assert(af.IsValid());
-		return true;
-	} else
-		return false;
+	CheckSampleRate(sample_rate);
+	CheckSampleFormat(sample_format);
+	CheckChannelCount(channels);
+
+	return AudioFormat(sample_rate, sample_format, channels);
 }

@@ -23,7 +23,6 @@
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "fs/Path.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "Log.hxx"
@@ -43,13 +42,8 @@ adplug_init(const ConfigBlock &block)
 	FormatDebug(adplug_domain, "adplug %s",
 		    CAdPlug::get_version().c_str());
 
-	Error error;
-
 	sample_rate = block.GetBlockValue("sample_rate", 48000u);
-	if (!audio_check_sample_rate(sample_rate, error)) {
-		LogError(error);
-		return false;
-	}
+	CheckSampleRate(sample_rate);
 
 	return true;
 }

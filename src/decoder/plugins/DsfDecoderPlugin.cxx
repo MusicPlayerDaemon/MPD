@@ -33,7 +33,6 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
-#include "util/Error.hxx"
 #include "system/ByteOrder.hxx"
 #include "DsdLib.hxx"
 #include "tag/TagHandler.hxx"
@@ -307,14 +306,10 @@ dsf_stream_decode(Decoder &decoder, InputStream &is)
 	if (!dsf_read_metadata(&decoder, is, &metadata))
 		return;
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
-				       SampleFormat::DSD,
-				       metadata.channels, error)) {
-		LogError(error);
-		return;
-	}
+	auto audio_format = CheckAudioFormat(metadata.sample_rate / 8,
+					     SampleFormat::DSD,
+					     metadata.channels);
+
 	/* Calculate song time from DSD chunk size and sample frequency */
 	const auto n_blocks = metadata.n_blocks;
 	auto songtime = SongTime::FromScale<uint64_t>(n_blocks * DSF_BLOCK_SIZE,
@@ -339,12 +334,9 @@ dsf_scan_stream(InputStream &is,
 	if (!dsf_read_metadata(nullptr, is, &metadata))
 		return false;
 
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
-				       SampleFormat::DSD,
-				       metadata.channels, IgnoreError()))
-		/* refuse to parse files which we cannot play anyway */
-		return false;
+	auto audio_format = CheckAudioFormat(metadata.sample_rate / 8,
+					     SampleFormat::DSD,
+					     metadata.channels);
 
 	/* calculate song time and add as tag */
 	const auto n_blocks = metadata.n_blocks;

@@ -58,12 +58,7 @@ FlacPcmImport::Open(unsigned sample_rate, unsigned bits_per_sample,
 		return false;
 	}
 
-	if (!audio_format_init_checked(audio_format,
-				       sample_rate,
-				       sample_format,
-				       channels, error))
-		return false;
-
+	audio_format = CheckAudioFormat(sample_rate, sample_format, channels);
 	return true;
 }
 

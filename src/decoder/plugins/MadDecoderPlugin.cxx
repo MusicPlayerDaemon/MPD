@@ -29,7 +29,6 @@
 #include "tag/MixRamp.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -1051,19 +1050,10 @@ mp3_decode(Decoder &decoder, InputStream &input_stream)
 
 	data.AllocateBuffers();
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format,
-				       data.frame.header.samplerate,
-				       SampleFormat::S24_P32,
-				       MAD_NCHANNELS(&data.frame.header),
-				       error)) {
-		LogError(error);
-		delete tag;
-		return;
-	}
-
-	decoder_initialized(decoder, audio_format,
+	decoder_initialized(decoder,
+			    CheckAudioFormat(data.frame.header.samplerate,
+					     SampleFormat::S24_P32,
+					     MAD_NCHANNELS(&data.frame.header)),
 			    input_stream.IsSeekable(),
 			    data.total_time);
 

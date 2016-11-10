@@ -23,7 +23,7 @@
 #include "CheckAudioFormat.hxx"
 #include "input/InputStream.hxx"
 #include "system/ByteOrder.hxx"
-#include "util/Error.hxx"
+#include "util/Domain.hxx"
 #include "util/ByteReverse.hxx"
 #include "util/NumberParser.hxx"
 #include "util/MimeType.hxx"
@@ -32,6 +32,8 @@
 #include <stdexcept>
 
 #include <string.h>
+
+static constexpr Domain pcm_decoder_domain("pcm_decoder");
 
 static void
 pcm_stream_decode(Decoder &decoder, InputStream &is)
@@ -62,7 +64,6 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 
 	{
 		const auto mime_parameters = ParseMimeTypeParameters(mime);
-		Error error;
 
 		/* MIME type parameters according to RFC 2586 */
 		auto i = mime_parameters.find("rate");
@@ -71,14 +72,16 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 			char *endptr;
 			unsigned value = ParseUnsigned(s, &endptr);
 			if (endptr == s || *endptr != 0) {
-				FormatWarning(audio_format_domain,
+				FormatWarning(pcm_decoder_domain,
 					      "Failed to parse sample rate: %s",
 					      s);
 				return;
 			}
 
-			if (!audio_check_sample_rate(value, error)) {
-				LogError(error);
+			try {
+				CheckSampleRate(value);
+			} catch (const std::runtime_error &e) {
+				LogError(e);
 				return;
 			}
 
@@ -91,14 +94,16 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 			char *endptr;
 			unsigned value = ParseUnsigned(s, &endptr);
 			if (endptr == s || *endptr != 0) {
-				FormatWarning(audio_format_domain,
+				FormatWarning(pcm_decoder_domain,
 					      "Failed to parse sample rate: %s",
 					      s);
 				return;
 			}
 
-			if (!audio_check_channel_count(value, error)) {
-				LogError(error);
+			try {
+				CheckChannelCount(value);
+			} catch (const std::runtime_error &e) {
+				LogError(e);
 				return;
 			}
 
@@ -107,7 +112,7 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 	}
 
 	if (audio_format.sample_rate == 0) {
-		FormatWarning(audio_format_domain,
+		FormatWarning(pcm_decoder_domain,
 			      "Missing 'rate' parameter: %s",
 			      mime);
 		return;

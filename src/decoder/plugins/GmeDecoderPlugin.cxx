@@ -29,7 +29,6 @@
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -168,14 +167,9 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 
 	/* initialize the MPD decoder */
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, GME_SAMPLE_RATE,
-				       SampleFormat::S16, GME_CHANNELS,
-				       error)) {
-		LogError(error);
-		return;
-	}
+	const auto audio_format = CheckAudioFormat(GME_SAMPLE_RATE,
+						   SampleFormat::S16,
+						   GME_CHANNELS);
 
 	decoder_initialized(decoder, audio_format, true, song_len);
 

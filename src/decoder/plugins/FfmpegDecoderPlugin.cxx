@@ -40,7 +40,6 @@
 #include "CheckAudioFormat.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
 #include "LogV.hxx"
 
 extern "C" {
@@ -666,15 +665,9 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 		return;
 	}
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format,
-				       codec_params.sample_rate,
-				       sample_format,
-				       codec_params.channels, error)) {
-		LogError(error);
-		return;
-	}
+	const auto audio_format = CheckAudioFormat(codec_params.sample_rate,
+						   sample_format,
+						   codec_params.channels);
 
 	/* the audio format must be read from AVCodecContext by now,
 	   because avcodec_open() has been demonstrated to fill bogus

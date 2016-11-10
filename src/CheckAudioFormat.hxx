@@ -22,25 +22,23 @@
 
 #include "AudioFormat.hxx"
 
-class Error;
+void
+CheckSampleRate(unsigned long sample_rate);
 
-extern const class Domain audio_format_domain;
+void
+CheckSampleFormat(SampleFormat sample_format);
 
-bool
-audio_check_sample_rate(unsigned long sample_rate, Error &error);
-
-bool
-audio_check_sample_format(SampleFormat sample_format, Error &error);
-
-bool
-audio_check_channel_count(unsigned sample_format, Error &error);
+void
+CheckChannelCount(unsigned sample_format);
 
 /**
- * Wrapper for audio_format_init(), which checks all attributes.
+ * Check #AudioFormat attributes and construct an #AudioFormat
+ * instance.
+ *
+ * Throws #std::runtime_error on error.
  */
-bool
-audio_format_init_checked(AudioFormat &af, unsigned long sample_rate,
-			  SampleFormat sample_format, unsigned channels,
-			  Error &error);
+AudioFormat
+CheckAudioFormat(unsigned long sample_rate,
+		 SampleFormat sample_format, unsigned channels);
 
 #endif

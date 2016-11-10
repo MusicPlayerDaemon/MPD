@@ -27,7 +27,6 @@
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
-#include "util/Error.hxx"
 #include "system/ByteOrder.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"

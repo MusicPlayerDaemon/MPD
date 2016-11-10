@@ -39,9 +39,6 @@ class FlacPcmImport {
 	AudioFormat audio_format;
 
 public:
-	/**
-	 * @return false on error
-	 */
 	bool Open(unsigned sample_rate, unsigned bits_per_sample,
 		  unsigned channels, Error &error);
 
