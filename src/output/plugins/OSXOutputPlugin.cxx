@@ -163,6 +163,7 @@ osx_output_parse_channel_map(
 			channel_map[inserted_channels] = strtol(channel_map_str, &endptr, 10);
 			if (channel_map[inserted_channels] < -1)
 				throw FormatRuntimeError("%s: channel map value %d not allowed (must be -1 or greater)",
+							 device_name, channel_map[inserted_channels]);
 
 			channel_map_str = endptr;
 			want_number = false;
@@ -209,7 +210,7 @@ osx_output_set_channel_map(OSXOutput *oo)
 	osx_output_parse_channel_map(oo->device_name,
 				     oo->channel_map,
 				     channel_map.get(),
-				     num_channels));
+				     num_channels);
 
 	size = num_channels * sizeof(SInt32);
 	status = AudioUnitSetProperty(oo->au,
