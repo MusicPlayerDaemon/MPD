@@ -28,7 +28,6 @@
 #include <stdexcept>
 
 class InputStream;
-class Error;
 
 class ExpatError final : public std::runtime_error {
 public:

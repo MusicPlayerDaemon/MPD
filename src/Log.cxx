@@ -19,13 +19,15 @@
 
 #include "config.h"
 #include "LogV.hxx"
-#include "util/Error.hxx"
+#include "util/Domain.hxx"
 
 #include <exception>
 
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+
+static constexpr Domain exception_domain("exception");
 
 void
 LogFormatV(const Domain &domain, LogLevel level, const char *fmt, va_list ap)

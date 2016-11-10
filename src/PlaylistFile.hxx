@@ -26,7 +26,6 @@
 class DetachedSong;
 class SongLoader;
 class PlaylistVector;
-class Error;
 class AllocatedPath;
 
 typedef std::vector<std::string> PlaylistFileContents;

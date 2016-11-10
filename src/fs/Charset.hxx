@@ -28,8 +28,6 @@
 #define HAVE_FS_CHARSET
 #endif
 
-class Error;
-
 /**
  * Gets file system character set name.
  */

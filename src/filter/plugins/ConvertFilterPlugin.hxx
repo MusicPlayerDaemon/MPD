@@ -21,7 +21,6 @@
 #define MPD_CONVERT_FILTER_PLUGIN_HXX
 
 class Filter;
-class Error;
 struct AudioFormat;
 
 Filter *

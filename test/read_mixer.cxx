@@ -25,7 +25,6 @@
 #include "Main.hxx"
 #include "event/Loop.hxx"
 #include "config/Block.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <assert.h>

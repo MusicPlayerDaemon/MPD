@@ -23,7 +23,6 @@
 struct Directory;
 class BufferedOutputStream;
 class TextFile;
-class Error;
 
 void
 db_save_internal(BufferedOutputStream &os, const Directory &root);

@@ -31,7 +31,6 @@
 #include <assert.h>
 
 class Cond;
-class Error;
 struct Tag;
 
 class InputStream {

@@ -23,7 +23,6 @@
 struct Directory;
 class TextFile;
 class BufferedOutputStream;
-class Error;
 
 void
 directory_save(BufferedOutputStream &os, const Directory &directory);

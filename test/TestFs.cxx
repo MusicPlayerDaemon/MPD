@@ -4,7 +4,6 @@
 
 #include "config.h"
 #include "fs/Glob.hxx"
-#include "util/Error.hxx"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>

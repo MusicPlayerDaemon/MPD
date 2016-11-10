@@ -26,7 +26,6 @@ struct Song;
 class DetachedSong;
 class BufferedOutputStream;
 class TextFile;
-class Error;
 
 void
 song_save(BufferedOutputStream &os, const Song &song);

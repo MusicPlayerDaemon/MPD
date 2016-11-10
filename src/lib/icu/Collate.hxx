@@ -23,7 +23,6 @@
 #include "check.h"
 #include "Compiler.h"
 
-class Error;
 template<typename T> class AllocatedString;
 
 /**

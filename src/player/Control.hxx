@@ -31,7 +31,6 @@
 
 #include <stdint.h>
 
-class Error;
 class PlayerListener;
 class MultipleOutputs;
 class DetachedSong;

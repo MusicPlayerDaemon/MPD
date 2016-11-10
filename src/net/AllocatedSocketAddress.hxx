@@ -39,7 +39,6 @@
 #include <stdlib.h>
 
 struct sockaddr;
-class Error;
 
 class AllocatedSocketAddress {
 public:

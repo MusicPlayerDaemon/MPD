@@ -47,7 +47,6 @@
 
 #include <string>
 
-class Error;
 class Path;
 struct Sticker;
 

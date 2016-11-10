@@ -20,7 +20,6 @@
 #include "config.h"
 #include "fs/io/FileOutputStream.hxx"
 #include "Log.hxx"
-#include "util/Error.hxx"
 
 #include <unistd.h>
 #include <errno.h>
@@ -32,8 +31,6 @@
 static bool
 Copy(OutputStream &dest, int src)
 {
-	Error error;
-
 	while (true) {
 		uint8_t buffer[8192];
 		ssize_t nbytes = read(src, buffer, sizeof(buffer));

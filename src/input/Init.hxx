@@ -20,8 +20,6 @@
 #ifndef MPD_INPUT_INIT_HXX
 #define MPD_INPUT_INIT_HXX
 
-class Error;
-
 /**
  * Initializes this library and all #InputStream implementations.
  */

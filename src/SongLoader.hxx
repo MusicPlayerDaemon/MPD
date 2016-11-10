@@ -30,7 +30,6 @@ class Database;
 class Storage;
 class DetachedSong;
 class Path;
-class Error;
 struct LocatedUri;
 
 /**

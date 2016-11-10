@@ -23,7 +23,6 @@
 #include "storage/Registry.hxx"
 #include "storage/StorageInterface.hxx"
 #include "storage/FileInfo.hxx"
-#include "util/Error.hxx"
 
 #include <memory>
 #include <stdexcept>

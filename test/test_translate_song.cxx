@@ -15,7 +15,6 @@
 #include "Log.hxx"
 #include "db/DatabaseSong.hxx"
 #include "storage/plugins/LocalStorage.hxx"
-#include "util/Error.hxx"
 #include "Mapper.hxx"
 
 #include <cppunit/TestFixture.h>

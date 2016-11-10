@@ -27,7 +27,6 @@
 class PlaylistVector;
 class BufferedOutputStream;
 class TextFile;
-class Error;
 
 void
 playlist_vector_save(BufferedOutputStream &os, const PlaylistVector &pv);

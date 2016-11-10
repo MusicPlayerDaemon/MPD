@@ -37,7 +37,6 @@ class Storage;
 class UpdateService;
 #endif
 
-class Error;
 class ClientList;
 struct Partition;
 class StateFile;

@@ -30,7 +30,6 @@
 #include <stddef.h>
 
 struct AudioFormat;
-class Error;
 template<typename T> struct ConstBuffer;
 
 class Filter {

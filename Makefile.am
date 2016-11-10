@@ -399,7 +399,6 @@ libutil_a_SOURCES = \
 	src/util/AllocatedArray.hxx \
 	src/util/VarSize.hxx \
 	src/util/ScopeExit.hxx \
-	src/util/Error.cxx src/util/Error.hxx \
 	src/util/Domain.hxx \
 	src/util/ReusableArray.hxx \
 	src/util/ASCII.hxx \

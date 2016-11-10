@@ -26,7 +26,6 @@ enum TagType : uint8_t;
 struct PlayerControl;
 class DetachedSong;
 class Database;
-class Error;
 class SongLoader;
 class SongTime;
 class SignedSongTime;

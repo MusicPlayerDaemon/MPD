@@ -25,7 +25,6 @@
 
 #include <string>
 
-class Error;
 class AllocatedPath;
 
 struct ConfigParam {

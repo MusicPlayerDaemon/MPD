@@ -56,8 +56,6 @@ public:
 		 audio_format(_audio_format), options(_options) {}
 	~TwolameEncoder() override;
 
-	bool Configure(const ConfigBlock &block, Error &error);
-
 	/* virtual methods from class Encoder */
 
 	void End() override {
