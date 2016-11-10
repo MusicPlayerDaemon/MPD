@@ -98,8 +98,6 @@ LogError(const std::exception &e)
 		std::rethrow_if_nested(e);
 	} catch (const std::exception &nested) {
 		LogError(nested, "nested");
-	} catch (const Error &nested) {
-		LogError(nested, "nested");
 	} catch (...) {
 		Log(exception_domain, LogLevel::ERROR,
 		    "Unrecognized nested exception");
@@ -114,8 +112,6 @@ LogError(const std::exception &e, const char *msg)
 	try {
 		std::rethrow_if_nested(e);
 	} catch (const std::exception &nested) {
-		LogError(nested);
-	} catch (const Error &nested) {
 		LogError(nested);
 	} catch (...) {
 		Log(exception_domain, LogLevel::ERROR,
@@ -142,8 +138,6 @@ LogError(const std::exception_ptr &ep)
 		std::rethrow_exception(ep);
 	} catch (const std::exception &e) {
 		LogError(e);
-	} catch (const Error &e) {
-		LogError(e);
 	} catch (...) {
 		Log(exception_domain, LogLevel::ERROR,
 		    "Unrecognized exception");
@@ -156,8 +150,6 @@ LogError(const std::exception_ptr &ep, const char *msg)
 	try {
 		std::rethrow_exception(ep);
 	} catch (const std::exception &e) {
-		LogError(e, msg);
-	} catch (const Error &e) {
 		LogError(e, msg);
 	} catch (...) {
 		FormatError(exception_domain,
@@ -175,31 +167,6 @@ FormatError(const std::exception_ptr &ep, const char *fmt, ...)
 	va_end(ap);
 
 	LogError(ep, msg);
-}
-
-void
-LogError(const Error &error)
-{
-	Log(error.GetDomain(), LogLevel::ERROR, error.GetMessage());
-}
-
-void
-LogError(const Error &error, const char *msg)
-{
-	LogFormat(error.GetDomain(), LogLevel::ERROR, "%s: %s",
-		  msg, error.GetMessage());
-}
-
-void
-FormatError(const Error &error, const char *fmt, ...)
-{
-	char msg[1024];
-	va_list ap;
-	va_start(ap, fmt);
-	vsnprintf(msg, sizeof(msg), fmt, ap);
-	va_end(ap);
-
-	LogError(error, msg);
 }
 
 void
