@@ -24,6 +24,7 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/Error.hxx"
 #include "util/Domain.hxx"
@@ -310,6 +311,7 @@ faad_get_file_time(InputStream &is)
 
 	if (!recognized) {
 		NeAACDecHandle decoder = faad_decoder_new();
+		AtScopeExit(decoder) { NeAACDecClose(decoder); };
 
 		buffer.Fill();
 
@@ -317,8 +319,6 @@ faad_get_file_time(InputStream &is)
 		if (faad_decoder_init(decoder, buffer, audio_format,
 				      IgnoreError()))
 			recognized = true;
-
-		NeAACDecClose(decoder);
 	}
 
 	return std::make_pair(recognized, duration);
@@ -413,12 +413,9 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	/* create the libfaad decoder */
 
 	const NeAACDecHandle decoder = faad_decoder_new();
+	AtScopeExit(decoder) { NeAACDecClose(decoder); };
 
 	faad_stream_decode(mpd_decoder, is, buffer, decoder);
-
-	/* cleanup */
-
-	NeAACDecClose(decoder);
 }
 
 static bool
