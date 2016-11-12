@@ -283,6 +283,11 @@ struct Queue {
 	}
 
 	/**
+	 * Moves a song to a new position in the "order" list.
+	 */
+	void MoveOrder(unsigned from_order, unsigned to_order);
+
+	/**
 	 * Moves a song to a new position.
 	 */
 	void MovePostion(unsigned from, unsigned to);
@@ -350,11 +355,6 @@ struct Queue {
 			      uint8_t priority, int after_order);
 
 private:
-	/**
-	 * Moves a song to a new position in the "order" list.
-	 */
-	void MoveOrder(unsigned from_order, unsigned to_order);
-
 	void MoveItemTo(unsigned from, unsigned to) {
 		unsigned from_id = items[from].id;
 
