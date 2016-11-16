@@ -760,6 +760,9 @@ alsa_recover(AlsaOutput *ad, int err)
 		if (err == -EAGAIN)
 			return 0;
 		/* fall-through to snd_pcm_prepare: */
+#if GCC_CHECK_VERSION(7,0)
+		[[fallthrough]];
+#endif
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
 		ad->period_position = 0;

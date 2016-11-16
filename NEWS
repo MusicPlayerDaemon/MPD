@@ -4,6 +4,7 @@ ver 0.19.20 (not yet released)
   - sidplay: fix playback speed with libsidplayfp
 * output
   - winmm: fix 8 bit playback
+* fix gcc 7.0 -Wimplicit-fallthrough
 
 ver 0.19.19 (2016/08/23)
 * decoder
