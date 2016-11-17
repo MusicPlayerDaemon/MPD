@@ -23,9 +23,27 @@
 #include "input/InputStream.hxx"
 #include "util/Error.hxx"
 #include "util/ByteReverse.hxx"
+#include "util/StaticFifoBuffer.hxx"
 #include "Log.hxx"
 
+#include <assert.h>
 #include <string.h>
+
+template<typename B>
+static bool
+FillBuffer(Decoder &decoder, InputStream &is, B &buffer)
+{
+	buffer.Shift();
+	auto w = buffer.Write();
+	assert(!w.IsEmpty());
+
+	size_t nbytes = decoder_read(decoder, is, w.data, w.size);
+	if (nbytes == 0 && is.LockIsEOF())
+		return false;
+
+	buffer.Append(nbytes);
+	return true;
+}
 
 static void
 pcm_stream_decode(Decoder &decoder, InputStream &is)
@@ -50,25 +68,27 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 	decoder_initialized(decoder, audio_format,
 			    is.IsSeekable(), total_time);
 
+	StaticFifoBuffer<uint8_t, 4096> buffer;
+
 	DecoderCommand cmd;
 	do {
-		char buffer[4096];
-
-		size_t nbytes = decoder_read(decoder, is,
-					     buffer, sizeof(buffer));
-
-		if (nbytes == 0 && is.LockIsEOF())
+		if (!FillBuffer(decoder, is, buffer))
 			break;
+
+		auto r = buffer.Read();
+		/* round down to the nearest frame size, because we
+		   must not pass partial frames to decoder_data() */
+		r.size -= r.size % frame_size;
+		buffer.Consume(r.size);
 
 		if (reverse_endian)
 			/* make sure we deliver samples in host byte order */
-			reverse_bytes_16((uint16_t *)buffer,
-					 (uint16_t *)buffer,
-					 (uint16_t *)(buffer + nbytes));
+			reverse_bytes_16((uint16_t *)r.data,
+					 (uint16_t *)r.data,
+					 (uint16_t *)(r.data + r.size));
 
-		cmd = nbytes > 0
-			? decoder_data(decoder, is,
-				       buffer, nbytes, 0)
+		cmd = !r.IsEmpty()
+			? decoder_data(decoder, is, r.data, r.size, 0)
 			: decoder_get_command(decoder);
 		if (cmd == DecoderCommand::SEEK) {
 			uint64_t frame = decoder_seek_where_frame(decoder);
@@ -76,6 +96,7 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 
 			Error error;
 			if (is.LockSeek(offset, error)) {
+				buffer.Clear();
 				decoder_command_finished(decoder);
 			} else {
 				LogError(error);
