@@ -161,10 +161,10 @@ WinmmOutput::Open(AudioFormat &audio_format)
 		throw std::runtime_error("CreateEvent() failed");
 
 	switch (audio_format.format) {
-	case SampleFormat::S8:
 	case SampleFormat::S16:
 		break;
 
+	case SampleFormat::S8:
 	case SampleFormat::S24_P32:
 	case SampleFormat::S32:
 	case SampleFormat::FLOAT:

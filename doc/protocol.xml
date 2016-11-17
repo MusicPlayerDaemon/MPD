@@ -66,8 +66,8 @@
         <function>strcpy</function> just fine with UTF-8 encoded
         strings. For example: <returnvalue>OK</returnvalue> encoded in
         UTF-8 is simply <returnvalue>OK</returnvalue>.  For more
-        information on UTF=8:
-        http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8)
+        information on UTF-8:
+        <ulink url="http://www.cl.cam.ac.uk/~mgk25/unicode.html#utf-8"/>)
       </para>
     </section>
 

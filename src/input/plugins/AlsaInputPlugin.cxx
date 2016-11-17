@@ -223,6 +223,10 @@ AlsaInputStream::Recover(int err)
 	case -EPIPE:
 		LogDebug(alsa_input_domain, "Buffer Overrun");
 		// drop through
+#if GCC_CHECK_VERSION(7,0)
+		[[fallthrough]];
+#endif
+
 	case -ESTRPIPE:
 	case -EINTR:
 		err = snd_pcm_recover(capture_handle, err, 1);

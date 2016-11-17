@@ -57,7 +57,11 @@ ver 0.20 (not yet released)
 ver 0.19.20 (not yet released)
 * decoder
   - ffmpeg: ignore empty packets
+  - pcm: fix corruption bug with partial frames (after short read)
   - sidplay: fix playback speed with libsidplayfp
+* output
+  - winmm: fix 8 bit playback
+* fix gcc 7.0 -Wimplicit-fallthrough
 
 ver 0.19.19 (2016/08/23)
 * decoder
