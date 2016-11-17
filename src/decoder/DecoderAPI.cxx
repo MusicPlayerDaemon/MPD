@@ -292,6 +292,10 @@ decoder_check_cancel_read(const Decoder *decoder)
 	if (decoder == nullptr)
 		return false;
 
+	if (decoder->error)
+		/* this translates to DecoderCommand::STOP */
+		return true;
+
 	const DecoderControl &dc = decoder->dc;
 	if (dc.command == DecoderCommand::NONE)
 		return false;
