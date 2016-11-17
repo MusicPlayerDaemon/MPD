@@ -275,7 +275,7 @@ decoder_open_uri(Decoder &decoder, const char *uri)
 			return is;
 
 		if (dc.command == DecoderCommand::STOP)
-			return nullptr;
+			throw StopDecoder();
 
 		cond.wait(mutex);
 	}

@@ -118,8 +118,9 @@ void
 decoder_seek_error(Decoder &decoder);
 
 /**
- * Open a new #InputStream and wait until it's ready.  Can get
- * cancelled by DecoderCommand::STOP (returns nullptr).
+ * Open a new #InputStream and wait until it's ready.
+ *
+ * Throws #StopDecoder if DecoderCommand::STOP was received.
  *
  * Throws std::runtime_error on error.
  */
