@@ -342,7 +342,10 @@ try {
 
 	return nbytes;
 } catch (const std::runtime_error &e) {
-	LogError(e);
+	if (decoder != nullptr)
+		decoder->error = std::current_exception();
+	else
+		LogError(e);
 	return 0;
 }
 
@@ -490,7 +493,7 @@ decoder_data(Decoder &decoder,
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
 			   bail out */
-			LogError(e);
+			decoder.error = std::current_exception();
 			return DecoderCommand::STOP;
 		}
 	} else {
