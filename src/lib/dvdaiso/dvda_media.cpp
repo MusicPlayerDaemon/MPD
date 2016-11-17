@@ -119,12 +119,11 @@ int64_t dvda_media_stream_t::get_size() {
 }
 
 bool dvda_media_stream_t::open(const char* path) {
-	Error error;
-	is = InputStream::OpenReady(path, mutex, cond, error);
-	if (is == nullptr) {
-		if (error.IsDefined()) {
-			LogError(error);
-		}
+	try {
+		is = InputStream::OpenReady(path, mutex, cond);
+	}
+	catch (const std::exception &e) {
+		LogError(e);
 		return false;
 	}
 	return true;
@@ -136,39 +135,36 @@ bool dvda_media_stream_t::close() {
 }
 
 bool dvda_media_stream_t::seek(int64_t position) {
-	Error error;
-	if (is->Seek(position, error)) {
-		return true;
+	try {
+		is->Seek(position);
 	}
-	else {
-		if (error.IsDefined()) {
-			LogError(error);
-		}
+	catch (const std::exception &e) {
+		LogError(e);
 		return false;
 	}
+	return true;
 }
 
 size_t dvda_media_stream_t::read(void* data, size_t size) {
-	Error error;
-	size_t read_bytes = is->Read(data, size, error);
-	if (read_bytes == 0) {
-		if (error.IsDefined()) {
-			LogError(error);
-		}
+	size_t read_bytes;
+	try {
+		read_bytes = is->Read(data, size);
+	}
+	catch (const std::exception &e) {
+		LogError(e);
+		return 0;
 	}
 	return read_bytes;
 }
 
 int64_t dvda_media_stream_t::skip(int64_t bytes) {
-	Error error;
 	int64_t position = is->GetOffset() + bytes;
-	if (is->Seek(position, error)) {
-		return position;
+	try {
+		is->Seek(position);
 	}
-	else {
-		if (error.IsDefined()) {
-			LogError(error);
-		}
+	catch (const std::exception &e) {
+		LogError(e);
 		return -1;
 	}
+	return position;
 }

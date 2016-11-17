@@ -322,12 +322,18 @@ decoder_run_file(Decoder &decoder, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	auto input_stream = decoder_input_stream_open(decoder.dc, path_fs);
+	InputStreamPtr input_stream = nullptr;
+	try {
+		input_stream = decoder_input_stream_open(decoder.dc, path_fs);
+	}
+	catch (...) {
+	}
+
 	if (input_stream == nullptr && (strcasecmp(suffix, "dff") != 0 && strcasecmp(suffix, "iso") != 0))
 		return false;
-	assert(input_stream);
 
-	LoadReplayGain(decoder, *input_stream);
+	if (input_stream != nullptr)
+		LoadReplayGain(decoder, *input_stream);
 
 	auto &is = *input_stream;
 	return decoder_plugins_try([&decoder, path_fs, suffix,

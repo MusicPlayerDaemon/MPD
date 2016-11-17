@@ -100,33 +100,31 @@ sacd_media_stream_t::~sacd_media_stream_t() {
 }
 
 bool sacd_media_stream_t::open(const char* path) {
-	Error error;
-	is = InputStream::OpenReady(path, mutex, cond, error);
-	if (is == nullptr) {
-		if (error.IsDefined()) {
-			LogError(error);
-		}
+	try {
+		is = InputStream::OpenReady(path, mutex, cond);
+	}
+	catch (const std::runtime_error &e) {
+		LogError(e);
 		return false;
 	}
 	return true;
 }
 
 bool sacd_media_stream_t::close() {
-    is.release();
+	is.release();
 	return true;
 }
 
 bool sacd_media_stream_t::seek(int64_t position) {
 	Error error;
-	if (is->Seek(position, error)) {
-		return true;
+	try {
+		is->Seek(position);
 	}
-	else {
-		if (error.IsDefined()) {
-			LogError(error);
-		}
+	catch (const std::runtime_error &e) {
+		LogError(e);
 		return false;
 	}
+	return true;
 }
 
 int64_t sacd_media_stream_t::get_position() {
@@ -138,26 +136,25 @@ int64_t sacd_media_stream_t::get_size() {
 }
 
 size_t sacd_media_stream_t::read(void* data, size_t size) {
-	Error error;
-	size_t read_bytes = is->Read(data, size, error);
-	if (read_bytes == 0) {
-		if (error.IsDefined()) {
-			LogError(error);
-		}
+	size_t read_bytes;
+	try {
+		read_bytes = is->Read(data, size);
+	}
+	catch (const std::runtime_error &e) {
+		LogError(e);
+		return 0;
 	}
 	return read_bytes;
 }
 
 int64_t sacd_media_stream_t::skip(int64_t bytes) {
-	Error error;
 	int64_t position = is->GetOffset() + bytes;
-	if (is->Seek(position, error)) {
-		return position;
+	try {
+		is->Seek(position);
 	}
-	else {
-		if (error.IsDefined()) {
-			LogError(error);
-		}
+	catch (const std::runtime_error &e) {
+		LogError(e);
 		return -1;
 	}
+	return position;
 }
