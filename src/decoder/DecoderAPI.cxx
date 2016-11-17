@@ -164,7 +164,7 @@ decoder_lock_get_virtual_command(Decoder &decoder)
 DecoderCommand
 decoder_get_command(Decoder &decoder)
 {
-	return decoder_get_virtual_command(decoder);
+	return decoder_lock_get_virtual_command(decoder);
 }
 
 void
