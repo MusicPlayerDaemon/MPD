@@ -26,7 +26,6 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 class sacd_media_t {

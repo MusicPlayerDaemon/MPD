@@ -27,7 +27,6 @@
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 using namespace std;

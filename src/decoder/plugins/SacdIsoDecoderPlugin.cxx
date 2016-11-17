@@ -38,7 +38,6 @@
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -270,12 +269,7 @@ sacdiso_file_decode(Decoder& decoder, Path path_fs) {
 	dst_buf.resize(param_dstdec_threads * dst_buf_size);
 
 	// initialize decoder
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, dsd_samplerate / 8, SampleFormat::DSD, dsd_channels, error)) {
-		LogError(error);
-		return;
-	}
+	AudioFormat audio_format = CheckAudioFormat(dsd_samplerate / 8, SampleFormat::DSD, dsd_channels);
 	SongTime songtime = SongTime::FromS(sacd_reader->get_duration(track));
 	decoder_initialized(decoder, audio_format, true, songtime);
 

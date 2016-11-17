@@ -149,7 +149,6 @@ src/db/Configured.cxx
 src/db/Configured.hxx
 src/db/Count.cxx
 src/db/Count.hxx
-src/db/DatabaseError.cxx
 src/db/DatabaseError.hxx
 src/db/DatabaseGlue.cxx
 src/db/DatabaseGlue.hxx
@@ -533,8 +532,6 @@ src/lib/icu/Collate.cxx
 src/lib/icu/Collate.hxx
 src/lib/icu/Converter.cxx
 src/lib/icu/Converter.hxx
-src/lib/icu/Error.cxx
-src/lib/icu/Error.hxx
 src/lib/icu/Init.cxx
 src/lib/icu/Init.hxx
 src/lib/icu/Util.cxx
@@ -598,8 +595,8 @@ src/lib/smbclient/Init.cxx
 src/lib/smbclient/Init.hxx
 src/lib/smbclient/Mutex.cxx
 src/lib/smbclient/Mutex.hxx
-src/lib/sqlite/Domain.cxx
-src/lib/sqlite/Domain.hxx
+src/lib/sqlite/Error.cxx
+src/lib/sqlite/Error.hxx
 src/lib/sqlite/Util.hxx
 src/lib/upnp/Action.hxx
 src/lib/upnp/Callback.hxx
@@ -770,8 +767,6 @@ src/pcm/ChannelsConverter.cxx
 src/pcm/ChannelsConverter.hxx
 src/pcm/ConfiguredResampler.cxx
 src/pcm/ConfiguredResampler.hxx
-src/pcm/Domain.cxx
-src/pcm/Domain.hxx
 src/pcm/FallbackResampler.cxx
 src/pcm/FallbackResampler.hxx
 src/pcm/FloatConvert.hxx
@@ -1018,8 +1013,6 @@ src/util/DivideString.cxx
 src/util/DivideString.hxx
 src/util/Domain.hxx
 src/util/DynamicFifoBuffer.hxx
-src/util/Error.cxx
-src/util/Error.hxx
 src/util/ForeignFifoBuffer.hxx
 src/util/format.c
 src/util/format.h

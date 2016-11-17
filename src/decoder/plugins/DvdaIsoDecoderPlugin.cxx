@@ -38,7 +38,6 @@
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -283,12 +282,7 @@ dvdaiso_file_decode(Decoder& decoder, Path path_fs) {
 	vector<uint8_t> pcm_data(192000);
 
 	// initialize decoder
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, samplerate, SampleFormat::S32, channels, error)) {
-		LogError(error);
-		return;
-	}
+	AudioFormat audio_format = CheckAudioFormat(samplerate, SampleFormat::S32, channels);
 	SongTime songtime = SongTime::FromS(dvda_reader->get_duration(track));
 	decoder_initialized(decoder, audio_format, true, songtime);
 

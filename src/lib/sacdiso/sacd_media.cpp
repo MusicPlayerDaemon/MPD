@@ -116,7 +116,6 @@ bool sacd_media_stream_t::close() {
 }
 
 bool sacd_media_stream_t::seek(int64_t position) {
-	Error error;
 	try {
 		is->Seek(position);
 	}
