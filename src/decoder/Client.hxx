@@ -99,6 +99,17 @@ public:
 	virtual InputStreamPtr OpenUri(const char *uri) = 0;
 
 	/**
+	 * Blocking read from the input stream.
+	 *
+	 * @param is the input stream to read from
+	 * @param buffer the destination buffer
+	 * @param length the maximum number of bytes to read
+	 * @return the number of bytes read, or 0 if one of the following
+	 * occurs: end of file; error; command (like SEEK or STOP).
+	 */
+	virtual size_t Read(InputStream &is, void *buffer, size_t length) = 0;
+
+	/**
 	 * Sets the time stamp for the next data chunk [seconds].  The MPD
 	 * core automatically counts it up, and a decoder plugin only needs to
 	 * use this function if it thinks that adding to the time stamp based

@@ -19,8 +19,6 @@
 
 #include "config.h"
 #include "DecoderAPI.hxx"
-#include "DecoderControl.hxx"
-#include "Bridge.hxx"
 #include "input/InputStream.hxx"
 #include "Log.hxx"
 
@@ -30,44 +28,19 @@ size_t
 decoder_read(DecoderClient *client,
 	     InputStream &is,
 	     void *buffer, size_t length)
-try {
+{
 	assert(buffer != nullptr);
 
 	/* XXX don't allow client==nullptr */
-	if (client == nullptr)
+	if (client != nullptr)
+		return client->Read(is, buffer, length);
+
+	try {
 		return is.LockRead(buffer, length);
-
-	auto &bridge = *(DecoderBridge *)client;
-
-	assert(bridge.dc.state == DecoderState::START ||
-	       bridge.dc.state == DecoderState::DECODE);
-
-	if (length == 0)
-		return 0;
-
-	ScopeLock lock(is.mutex);
-
-	while (true) {
-		if (bridge.CheckCancelRead())
-			return 0;
-
-		if (is.IsAvailable())
-			break;
-
-		is.cond.wait(is.mutex);
-	}
-
-	size_t nbytes = is.Read(buffer, length);
-	assert(nbytes > 0 || is.IsEOF());
-
-	return nbytes;
-} catch (const std::runtime_error &e) {
-	auto *bridge = (DecoderBridge *)client;
-	if (bridge != nullptr)
-		bridge->error = std::current_exception();
-	else
+	} catch (const std::runtime_error &e) {
 		LogError(e);
-	return 0;
+		return 0;
+	}
 }
 
 bool

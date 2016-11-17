@@ -40,6 +40,7 @@ struct FakeDecoder final : DecoderClient {
 	uint64_t GetSeekFrame() override;
 	void SeekError() override;
 	InputStreamPtr OpenUri(const char *uri) override;
+	size_t Read(InputStream &is, void *buffer, size_t length) override;
 	void SubmitTimestamp(double t) override;
 	DecoderCommand SubmitData(InputStream *is,
 				  const void *data, size_t length,

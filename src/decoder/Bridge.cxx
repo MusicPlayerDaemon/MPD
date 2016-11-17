@@ -401,6 +401,37 @@ DecoderBridge::OpenUri(const char *uri)
 	}
 }
 
+size_t
+DecoderBridge::Read(InputStream &is, void *buffer, size_t length)
+try {
+	assert(buffer != nullptr);
+	assert(dc.state == DecoderState::START ||
+	       dc.state == DecoderState::DECODE);
+
+	if (length == 0)
+		return 0;
+
+	ScopeLock lock(is.mutex);
+
+	while (true) {
+		if (CheckCancelRead())
+			return 0;
+
+		if (is.IsAvailable())
+			break;
+
+		is.cond.wait(is.mutex);
+	}
+
+	size_t nbytes = is.Read(buffer, length);
+	assert(nbytes > 0 || is.IsEOF());
+
+	return nbytes;
+} catch (const std::runtime_error &e) {
+	error = std::current_exception();
+	return 0;
+}
+
 void
 DecoderBridge::SubmitTimestamp(double t)
 {
