@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -201,14 +200,10 @@ sndfile_stream_decode(Decoder &decoder, InputStream &is)
 		return;
 	}
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, info.samplerate,
-				       sndfile_sample_format(info),
-				       info.channels, error)) {
-		LogError(error);
-		return;
-	}
+	const auto audio_format =
+		CheckAudioFormat(info.samplerate,
+				 sndfile_sample_format(info),
+				 info.channels);
 
 	decoder_initialized(decoder, audio_format, info.seekable,
 			    sndfile_duration(info));

@@ -26,7 +26,6 @@ struct Song;
 class DetachedSong;
 class BufferedOutputStream;
 class TextFile;
-class Error;
 
 void
 song_save(BufferedOutputStream &os, const Song &song);
@@ -38,11 +37,9 @@ song_save(BufferedOutputStream &os, const DetachedSong &song);
  * Loads a song from the input file.  Reading stops after the
  * "song_end" line.
  *
- * @param error location to store the error occurring
- * @return true on success, false on error
+ * Throws #std::runtime_error on error.
  */
 DetachedSong *
-song_load(TextFile &file, const char *uri,
-	  Error &error);
+song_load(TextFile &file, const char *uri);
 
 #endif

@@ -19,12 +19,9 @@
 
 #include "config.h"
 #include "SocketError.hxx"
-#include "util/Domain.hxx"
 #include "util/Macros.hxx"
 
 #include <string.h>
-
-const Domain socket_domain("socket");
 
 #ifdef WIN32
 

@@ -145,11 +145,11 @@ ReadConfigBlock(ConfigData &config_data, BufferedReader &reader,
 
 gcc_nonnull_all
 static void
-Append(config_param *&head, config_param *p)
+Append(ConfigParam *&head, ConfigParam *p)
 {
 	assert(p->next == nullptr);
 
-	config_param **i = &head;
+	auto **i = &head;
 	while (*i != nullptr)
 		i = &(*i)->next;
 
@@ -163,10 +163,10 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 {
 	const unsigned i = unsigned(o);
 	const ConfigTemplate &option = config_param_templates[i];
-	config_param *&head = config_data.params[i];
+	auto *&head = config_data.params[i];
 
 	if (head != nullptr && !option.repeatable) {
-		struct config_param *param = head;
+		auto *param = head;
 		throw FormatRuntimeError("config parameter \"%s\" is first defined "
 					 "on line %d and redefined on line %u\n",
 					 name, param->line,
@@ -184,7 +184,7 @@ ReadConfigParam(ConfigData &config_data, BufferedReader &reader,
 		throw FormatRuntimeError("line %u: Unknown tokens after value",
 					 reader.GetLineNumber());
 
-	auto *param = new config_param(value, reader.GetLineNumber());
+	auto *param = new ConfigParam(value, reader.GetLineNumber());
 	Append(head, param);
 }
 

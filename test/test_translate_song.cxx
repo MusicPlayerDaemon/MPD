@@ -15,7 +15,6 @@
 #include "Log.hxx"
 #include "db/DatabaseSong.hxx"
 #include "storage/plugins/LocalStorage.hxx"
-#include "util/Error.hxx"
 #include "Mapper.hxx"
 
 #include <cppunit/TestFixture.h>
@@ -131,7 +130,7 @@ DetachedSong::LoadFile(Path path)
 }
 
 const Database *
-Client::GetDatabase(gcc_unused Error &error) const
+Client::GetDatabase() const
 {
 	return reinterpret_cast<const Database *>(this);
 }
@@ -142,13 +141,13 @@ Client::GetStorage() const
 	return ::storage;
 }
 
-bool
-Client::AllowFile(gcc_unused Path path_fs, gcc_unused Error &error) const
+void
+Client::AllowFile(gcc_unused Path path_fs) const
 {
-	/* always return false, so a SongLoader with a non-nullptr
+	/* always fail, so a SongLoader with a non-nullptr
 	   Client pointer will be regarded "insecure", while one with
 	   client==nullptr will allow all files */
-	return false;
+	throw std::runtime_error("foo");
 }
 
 static std::string

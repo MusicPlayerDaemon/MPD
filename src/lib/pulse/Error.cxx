@@ -19,15 +19,14 @@
 
 #include "config.h"
 #include "Error.hxx"
-#include "Domain.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <pulse/context.h>
 #include <pulse/error.h>
 
-void
-SetPulseError(Error &error, pa_context *context, const char *prefix)
+std::runtime_error
+MakePulseError(pa_context *context, const char *prefix)
 {
 	const int e = pa_context_errno(context);
-	error.Format(pulse_domain, e, "%s: %s", prefix, pa_strerror(e));
+	return FormatRuntimeError("%s: %s", prefix, pa_strerror(e));
 }

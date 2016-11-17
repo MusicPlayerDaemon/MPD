@@ -21,7 +21,6 @@
 #include "ShutdownHandler.hxx"
 #include "db/update/InotifySource.hxx"
 #include "event/Loop.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <sys/inotify.h>
@@ -41,7 +40,7 @@ my_inotify_callback(gcc_unused int wd, unsigned mask,
 }
 
 int main(int argc, char **argv)
-{
+try {
 	const char *path;
 
 	if (argc != 2) {
@@ -54,24 +53,13 @@ int main(int argc, char **argv)
 	EventLoop event_loop;
 	const ShutdownHandler shutdown_handler(event_loop);
 
-	Error error;
-	InotifySource *source = InotifySource::Create(event_loop,
-						      my_inotify_callback,
-						      nullptr, error);
-	if (source == NULL) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
-
-	int descriptor = source->Add(path, IN_MASK, error);
-	if (descriptor < 0) {
-		delete source;
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+	InotifySource source(event_loop, my_inotify_callback, nullptr);
+	source.Add(path, IN_MASK);
 
 	event_loop.Run();
 
-	delete source;
 	return EXIT_SUCCESS;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

@@ -19,13 +19,12 @@
 
 #include "config.h"
 #include "StickerDatabase.hxx"
-#include "lib/sqlite/Domain.hxx"
 #include "lib/sqlite/Util.hxx"
 #include "fs/Path.hxx"
 #include "Idle.hxx"
-#include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "util/StringCompare.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <string>
 #include <map>
@@ -90,22 +89,19 @@ static sqlite3 *sticker_db;
 static sqlite3_stmt *sticker_stmt[ARRAY_SIZE(sticker_sql)];
 
 static sqlite3_stmt *
-sticker_prepare(const char *sql, Error &error)
+sticker_prepare(const char *sql)
 {
 	sqlite3_stmt *stmt;
 	int ret = sqlite3_prepare_v2(sticker_db, sql, -1, &stmt, nullptr);
-	if (ret != SQLITE_OK) {
-		error.Format(sqlite_domain, ret,
-			     "sqlite3_prepare_v2() failed: %s",
-			     sqlite3_errmsg(sticker_db));
-		return nullptr;
-	}
+	if (ret != SQLITE_OK)
+		throw SqliteError(sticker_db, ret,
+				  "sqlite3_prepare_v2() failed");
 
 	return stmt;
 }
 
-bool
-sticker_global_init(Path path, Error &error)
+void
+sticker_global_init(Path path)
 {
 	assert(!path.IsNull());
 
@@ -116,34 +112,26 @@ sticker_global_init(Path path, Error &error)
 	ret = sqlite3_open(path.c_str(), &sticker_db);
 	if (ret != SQLITE_OK) {
 		const std::string utf8 = path.ToUTF8();
-		error.Format(sqlite_domain, ret,
-			     "Failed to open sqlite database '%s': %s",
-			     utf8.c_str(), sqlite3_errmsg(sticker_db));
-		return false;
+		throw SqliteError(sticker_db, ret,
+				  ("Failed to open sqlite database '" +
+				   utf8 + "'").c_str());
 	}
 
 	/* create the table and index */
 
 	ret = sqlite3_exec(sticker_db, sticker_sql_create,
 			   nullptr, nullptr, nullptr);
-	if (ret != SQLITE_OK) {
-		error.Format(sqlite_domain, ret,
-			     "Failed to create sticker table: %s",
-			     sqlite3_errmsg(sticker_db));
-		return false;
-	}
+	if (ret != SQLITE_OK)
+		throw SqliteError(sticker_db, ret,
+				  "Failed to create sticker table");
 
 	/* prepare the statements we're going to use */
 
 	for (unsigned i = 0; i < ARRAY_SIZE(sticker_sql); ++i) {
 		assert(sticker_sql[i] != nullptr);
 
-		sticker_stmt[i] = sticker_prepare(sticker_sql[i], error);
-		if (sticker_stmt[i] == nullptr)
-			return false;
+		sticker_stmt[i] = sticker_prepare(sticker_sql[i]);
 	}
-
-	return true;
 }
 
 void
@@ -169,8 +157,7 @@ sticker_enabled()
 }
 
 std::string
-sticker_load_value(const char *type, const char *uri, const char *name,
-		   Error &error)
+sticker_load_value(const char *type, const char *uri, const char *name)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_GET];
 
@@ -182,23 +169,23 @@ sticker_load_value(const char *type, const char *uri, const char *name,
 	if (StringIsEmpty(name))
 		return std::string();
 
-	if (!BindAll(error, stmt, type, uri, name))
-		return std::string();
+	BindAll(stmt, type, uri, name);
+
+	AtScopeExit(stmt) {
+		sqlite3_reset(stmt);
+		sqlite3_clear_bindings(stmt);
+	};
 
 	std::string value;
-	if (ExecuteRow(stmt, error))
+	if (ExecuteRow(stmt))
 		value = (const char*)sqlite3_column_text(stmt, 0);
-
-	sqlite3_reset(stmt);
-	sqlite3_clear_bindings(stmt);
 
 	return value;
 }
 
-static bool
+static void
 sticker_list_values(std::map<std::string, std::string> &table,
-		    const char *type, const char *uri,
-		    Error &error)
+		    const char *type, const char *uri)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_LIST];
 
@@ -206,25 +193,23 @@ sticker_list_values(std::map<std::string, std::string> &table,
 	assert(uri != nullptr);
 	assert(sticker_enabled());
 
-	if (!BindAll(error, stmt, type, uri))
-		return false;
+	BindAll(stmt, type, uri);
 
-	const bool success = ExecuteForEach(stmt, error, [stmt, &table](){
+	AtScopeExit(stmt) {
+		sqlite3_reset(stmt);
+		sqlite3_clear_bindings(stmt);
+	};
+
+	ExecuteForEach(stmt, [stmt, &table](){
 			const char *name = (const char *)sqlite3_column_text(stmt, 0);
 			const char *value = (const char *)sqlite3_column_text(stmt, 1);
 			table.insert(std::make_pair(name, value));
 		});
-
-	sqlite3_reset(stmt);
-	sqlite3_clear_bindings(stmt);
-
-	return success;
 }
 
 static bool
 sticker_update_value(const char *type, const char *uri,
-		     const char *name, const char *value,
-		     Error &error)
+		     const char *name, const char *value)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_UPDATE];
 
@@ -236,23 +221,23 @@ sticker_update_value(const char *type, const char *uri,
 
 	assert(sticker_enabled());
 
-	if (!BindAll(error, stmt, value, type, uri, name))
-		return false;
+	BindAll(stmt, value, type, uri, name);
 
-	bool modified = ExecuteModified(stmt, error);
+	AtScopeExit(stmt) {
+		sqlite3_reset(stmt);
+		sqlite3_clear_bindings(stmt);
+	};
 
-	sqlite3_reset(stmt);
-	sqlite3_clear_bindings(stmt);
+	bool modified = ExecuteModified(stmt);
 
 	if (modified)
 		idle_add(IDLE_STICKER);
 	return modified;
 }
 
-static bool
+static void
 sticker_insert_value(const char *type, const char *uri,
-		     const char *name, const char *value,
-		     Error &error)
+		     const char *name, const char *value)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_INSERT];
 
@@ -264,23 +249,20 @@ sticker_insert_value(const char *type, const char *uri,
 
 	assert(sticker_enabled());
 
-	if (!BindAll(error, stmt, type, uri, name, value))
-		return false;
+	BindAll(stmt, type, uri, name, value);
 
-	bool success = ExecuteCommand(stmt, error);
+	AtScopeExit(stmt) {
+		sqlite3_reset(stmt);
+		sqlite3_clear_bindings(stmt);
+	};
 
-	sqlite3_reset(stmt);
-	sqlite3_clear_bindings(stmt);
-
-	if (success)
-		idle_add(IDLE_STICKER);
-	return success;
+	ExecuteCommand(stmt);
+	idle_add(IDLE_STICKER);
 }
 
-bool
+void
 sticker_store_value(const char *type, const char *uri,
-		    const char *name, const char *value,
-		    Error &error)
+		    const char *name, const char *value)
 {
 	assert(sticker_enabled());
 	assert(type != nullptr);
@@ -289,14 +271,14 @@ sticker_store_value(const char *type, const char *uri,
 	assert(value != nullptr);
 
 	if (StringIsEmpty(name))
-		return false;
+		return;
 
-	return sticker_update_value(type, uri, name, value, error) ||
-		sticker_insert_value(type, uri, name, value, error);
+	if (!sticker_update_value(type, uri, name, value))
+		sticker_insert_value(type, uri, name, value);
 }
 
 bool
-sticker_delete(const char *type, const char *uri, Error &error)
+sticker_delete(const char *type, const char *uri)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_DELETE];
 
@@ -304,22 +286,21 @@ sticker_delete(const char *type, const char *uri, Error &error)
 	assert(type != nullptr);
 	assert(uri != nullptr);
 
-	if (!BindAll(error, stmt, type, uri))
-		return false;
+	BindAll(stmt, type, uri);
 
-	bool modified = ExecuteModified(stmt, error);
+	AtScopeExit(stmt) {
+		sqlite3_reset(stmt);
+		sqlite3_clear_bindings(stmt);
+	};
 
-	sqlite3_reset(stmt);
-	sqlite3_clear_bindings(stmt);
-
+	bool modified = ExecuteModified(stmt);
 	if (modified)
 		idle_add(IDLE_STICKER);
 	return modified;
 }
 
 bool
-sticker_delete_value(const char *type, const char *uri, const char *name,
-		     Error &error)
+sticker_delete_value(const char *type, const char *uri, const char *name)
 {
 	sqlite3_stmt *const stmt = sticker_stmt[STICKER_SQL_DELETE_VALUE];
 
@@ -327,14 +308,14 @@ sticker_delete_value(const char *type, const char *uri, const char *name,
 	assert(type != nullptr);
 	assert(uri != nullptr);
 
-	if (!BindAll(error, stmt, type, uri, name))
-		return false;
+	BindAll(stmt, type, uri, name);
 
-	bool modified = ExecuteModified(stmt, error);
+	AtScopeExit(stmt) {
+		sqlite3_reset(stmt);
+		sqlite3_clear_bindings(stmt);
+	};
 
-	sqlite3_reset(stmt);
-	sqlite3_clear_bindings(stmt);
-
+	bool modified = ExecuteModified(stmt);
 	if (modified)
 		idle_add(IDLE_STICKER);
 	return modified;
@@ -367,12 +348,11 @@ sticker_foreach(const Sticker &sticker,
 }
 
 Sticker *
-sticker_load(const char *type, const char *uri, Error &error)
+sticker_load(const char *type, const char *uri)
 {
 	Sticker s;
 
-	if (!sticker_list_values(s.table, type, uri, error))
-		return nullptr;
+	sticker_list_values(s.table, type, uri);
 
 	if (s.table.empty())
 		/* don't return empty sticker objects */
@@ -383,8 +363,7 @@ sticker_load(const char *type, const char *uri, Error &error)
 
 static sqlite3_stmt *
 BindFind(const char *type, const char *base_uri, const char *name,
-	 StickerOperator op, const char *value,
-	 Error &error)
+	 StickerOperator op, const char *value)
 {
 	assert(type != nullptr);
 	assert(name != nullptr);
@@ -394,54 +373,50 @@ BindFind(const char *type, const char *base_uri, const char *name,
 
 	switch (op) {
 	case StickerOperator::EXISTS:
-		return BindAllOrNull(error, sticker_stmt[STICKER_SQL_FIND],
-				     type, base_uri, name);
+		BindAll(sticker_stmt[STICKER_SQL_FIND], type, base_uri, name);
+		return sticker_stmt[STICKER_SQL_FIND];
 
 	case StickerOperator::EQUALS:
-		return BindAllOrNull(error,
-				     sticker_stmt[STICKER_SQL_FIND_VALUE],
-				     type, base_uri, name, value);
+		BindAll(sticker_stmt[STICKER_SQL_FIND_VALUE],
+			type, base_uri, name, value);
+		return sticker_stmt[STICKER_SQL_FIND_VALUE];
 
 	case StickerOperator::LESS_THAN:
-		return BindAllOrNull(error,
-				     sticker_stmt[STICKER_SQL_FIND_LT],
-				     type, base_uri, name, value);
+		BindAll(sticker_stmt[STICKER_SQL_FIND_LT],
+			type, base_uri, name, value);
+		return sticker_stmt[STICKER_SQL_FIND_LT];
 
 	case StickerOperator::GREATER_THAN:
-		return BindAllOrNull(error,
-				     sticker_stmt[STICKER_SQL_FIND_GT],
-				     type, base_uri, name, value);
+		BindAll(sticker_stmt[STICKER_SQL_FIND_GT],
+			type, base_uri, name, value);
+		return sticker_stmt[STICKER_SQL_FIND_GT];
 	}
 
 	assert(false);
 	gcc_unreachable();
 }
 
-bool
+void
 sticker_find(const char *type, const char *base_uri, const char *name,
 	     StickerOperator op, const char *value,
 	     void (*func)(const char *uri, const char *value,
 			  void *user_data),
-	     void *user_data,
-	     Error &error)
+	     void *user_data)
 {
 	assert(func != nullptr);
 	assert(sticker_enabled());
 
-	sqlite3_stmt *const stmt = BindFind(type, base_uri, name, op, value,
-					    error);
-	if (stmt == nullptr)
-		return false;
+	sqlite3_stmt *const stmt = BindFind(type, base_uri, name, op, value);
+	assert(stmt != nullptr);
 
-	const bool success = ExecuteForEach(stmt, error,
-					    [stmt, func, user_data](){
+	AtScopeExit(stmt) {
+		sqlite3_reset(stmt);
+		sqlite3_clear_bindings(stmt);
+	};
+
+	ExecuteForEach(stmt, [stmt, func, user_data](){
 			func((const char*)sqlite3_column_text(stmt, 0),
 			     (const char*)sqlite3_column_text(stmt, 1),
 			     user_data);
 		});
-
-	sqlite3_reset(stmt);
-	sqlite3_clear_bindings(stmt);
-
-	return success;
 }

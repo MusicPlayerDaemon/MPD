@@ -21,7 +21,7 @@
 #include "SolarisOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "system/fd_util.h"
-#include "util/Error.hxx"
+#include "system/Error.hxx"
 
 #include <sys/stropts.h>
 #include <sys/types.h>
@@ -53,16 +53,13 @@ struct SolarisOutput {
 	AudioOutput base;
 
 	/* configuration */
-	const char *device;
+	const char *const device;
 
 	int fd;
 
-	SolarisOutput()
-		:base(solaris_output_plugin) {}
-
-	bool Initialize(const ConfigBlock &block, Error &error_r) {
-		return base.Configure(block, error_r);
-	}
+	explicit SolarisOutput(const ConfigBlock &block)
+		:base(solaris_output_plugin, block),
+		 device(block.GetBlockValue("device", "/dev/audio")) {}
 };
 
 static bool
@@ -75,16 +72,9 @@ solaris_output_test_default_device(void)
 }
 
 static AudioOutput *
-solaris_output_init(const ConfigBlock &block, Error &error_r)
+solaris_output_init(const ConfigBlock &block)
 {
-	SolarisOutput *so = new SolarisOutput();
-	if (!so->Initialize(block, error_r)) {
-		delete so;
-		return nullptr;
-	}
-
-	so->device = block.GetBlockValue("device", "/dev/audio");
-
+	SolarisOutput *so = new SolarisOutput(block);
 	return &so->base;
 }
 
@@ -96,9 +86,8 @@ solaris_output_finish(AudioOutput *ao)
 	delete so;
 }
 
-static bool
-solaris_output_open(AudioOutput *ao, AudioFormat &audio_format,
-		    Error &error)
+static void
+solaris_output_open(AudioOutput *ao, AudioFormat &audio_format)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 	struct audio_info info;
@@ -111,11 +100,9 @@ solaris_output_open(AudioOutput *ao, AudioFormat &audio_format,
 	/* open the device in non-blocking mode */
 
 	so->fd = open_cloexec(so->device, O_WRONLY|O_NONBLOCK, 0);
-	if (so->fd < 0) {
-		error.FormatErrno("Failed to open %s",
+	if (so->fd < 0)
+		throw FormatErrno("Failed to open %s",
 				  so->device);
-		return false;
-	}
 
 	/* restore blocking mode */
 
@@ -127,9 +114,9 @@ solaris_output_open(AudioOutput *ao, AudioFormat &audio_format,
 
 	ret = ioctl(so->fd, AUDIO_GETINFO, &info);
 	if (ret < 0) {
-		error.SetErrno("AUDIO_GETINFO failed");
+		const int e = errno;
 		close(so->fd);
-		return false;
+		throw MakeErrno(e, "AUDIO_GETINFO failed");
 	}
 
 	info.play.sample_rate = audio_format.sample_rate;
@@ -139,12 +126,10 @@ solaris_output_open(AudioOutput *ao, AudioFormat &audio_format,
 
 	ret = ioctl(so->fd, AUDIO_SETINFO, &info);
 	if (ret < 0) {
-		error.SetErrno("AUDIO_SETINFO failed");
+		const int e = errno;
 		close(so->fd);
-		return false;
+		throw MakeErrno(e, "AUDIO_SETINFO failed");
 	}
-
-	return true;
 }
 
 static void
@@ -156,17 +141,14 @@ solaris_output_close(AudioOutput *ao)
 }
 
 static size_t
-solaris_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		    Error &error)
+solaris_output_play(AudioOutput *ao, const void *chunk, size_t size)
 {
 	SolarisOutput *so = (SolarisOutput *)ao;
 	ssize_t nbytes;
 
 	nbytes = write(so->fd, chunk, size);
-	if (nbytes <= 0) {
-		error.SetErrno("Write failed");
-		return 0;
-	}
+	if (nbytes <= 0)
+		throw MakeErrno("Write failed");
 
 	return nbytes;
 }

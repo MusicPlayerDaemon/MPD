@@ -148,16 +148,13 @@ PrintPlaylistFull(Response &r, bool base,
 	return true;
 }
 
-bool
+void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
 		   bool full, bool base,
-		   unsigned window_start, unsigned window_end,
-		   Error &error)
+		   unsigned window_start, unsigned window_end)
 {
-	const Database *db = partition.GetDatabase(error);
-	if (db == nullptr)
-		return false;
+	const Database &db = partition.GetDatabaseOrThrow();
 
 	unsigned i = 0;
 
@@ -175,25 +172,23 @@ db_selection_print(Response &r, Partition &partition,
 
 	if (window_start > 0 ||
 	    window_end < (unsigned)std::numeric_limits<int>::max())
-		s = [s, window_start, window_end, &i](const LightSong &song,
-						      Error &error2){
+		s = [s, window_start, window_end, &i](const LightSong &song){
 			const bool in_window = i >= window_start && i < window_end;
 			++i;
-			return !in_window || s(song, error2);
+			if (in_window)
+				s(song);
 		};
 
-	return db->Visit(selection, d, s, p, error);
+	db.Visit(selection, d, s, p);
 }
 
-bool
+void
 db_selection_print(Response &r, Partition &partition,
 		   const DatabaseSelection &selection,
-		   bool full, bool base,
-		   Error &error)
+		   bool full, bool base)
 {
-	return db_selection_print(r, partition, selection, full, base,
-				  0, std::numeric_limits<int>::max(),
-				  error);
+	db_selection_print(r, partition, selection, full, base,
+			   0, std::numeric_limits<int>::max());
 }
 
 static bool
@@ -220,15 +215,12 @@ PrintUniqueTag(Response &r, TagType tag_type,
 	return true;
 }
 
-bool
+void
 PrintUniqueTags(Response &r, Partition &partition,
 		unsigned type, tag_mask_t group_mask,
-		const SongFilter *filter,
-		Error &error)
+		const SongFilter *filter)
 {
-	const Database *db = partition.GetDatabase(error);
-	if (db == nullptr)
-		return false;
+	const Database &db = partition.GetDatabaseOrThrow();
 
 	const DatabaseSelection selection("", true, filter);
 
@@ -236,15 +228,14 @@ PrintUniqueTags(Response &r, Partition &partition,
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintSongURIVisitor,
 					 std::ref(r), std::ref(partition), _1);
-		return db->Visit(selection, f, error);
+		db.Visit(selection, f);
 	} else {
 		assert(type < TAG_NUM_OF_ITEM_TYPES);
 
 		using namespace std::placeholders;
 		const auto f = std::bind(PrintUniqueTag, std::ref(r),
 					 (TagType)type, _1);
-		return db->VisitUniqueTags(selection, (TagType)type,
-					   group_mask,
-					   f, error);
+		db.VisitUniqueTags(selection, (TagType)type,
+				   group_mask, f);
 	}
 }

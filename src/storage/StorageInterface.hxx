@@ -27,7 +27,6 @@
 
 struct StorageFileInfo;
 class AllocatedPath;
-class Error;
 
 class StorageDirectoryReader {
 public:
@@ -36,8 +35,12 @@ public:
 	virtual ~StorageDirectoryReader() {}
 
 	virtual const char *Read() = 0;
-	virtual bool GetInfo(bool follow, StorageFileInfo &info,
-			     Error &error) = 0;
+
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	gcc_pure
+	virtual StorageFileInfo GetInfo(bool follow) = 0;
 };
 
 class Storage {
@@ -46,12 +49,16 @@ public:
 	Storage(const Storage &) = delete;
 	virtual ~Storage() {}
 
-	virtual bool GetInfo(const char *uri_utf8, bool follow,
-			     StorageFileInfo &info,
-			     Error &error) = 0;
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	gcc_pure
+	virtual StorageFileInfo GetInfo(const char *uri_utf8, bool follow) = 0;
 
-	virtual StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
-						      Error &error) = 0;
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	virtual StorageDirectoryReader *OpenDirectory(const char *uri_utf8) = 0;
 
 	/**
 	 * Map the given relative URI to an absolute URI.

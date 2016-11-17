@@ -29,7 +29,6 @@
 #include "input/Reader.hxx"
 #include "OggCodec.hxx"
 #include "pcm/Interleave.hxx"
-#include "util/Error.hxx"
 #include "util/Macros.hxx"
 #include "util/ScopeExit.hxx"
 #include "CheckAudioFormat.hxx"
@@ -166,10 +165,7 @@ VorbisDecoder::SubmitInit()
 {
 	assert(!dsp_initialized);
 
-	Error error;
-	if (!audio_format_init_checked(audio_format, vi.rate, sample_format,
-				       vi.channels, error))
-		throw std::runtime_error(error.GetMessage());
+	audio_format = CheckAudioFormat(vi.rate, sample_format, vi.channels);
 
 	frame_size = audio_format.GetFrameSize();
 

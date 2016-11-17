@@ -24,7 +24,6 @@
 #include "Request.hxx"
 #include "CommandError.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "fs/Traits.hxx"
 #include "client/Client.hxx"
@@ -39,6 +38,8 @@
 #include "TimePrint.hxx"
 #include "IOThread.hxx"
 #include "Idle.hxx"
+
+#include <memory>
 
 #include <inttypes.h> /* for PRIu64 */
 
@@ -56,9 +57,8 @@ skip_path(const char *name_utf8)
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #endif
 
-static bool
-handle_listfiles_storage(Response &r, StorageDirectoryReader &reader,
-			 Error &error)
+static void
+handle_listfiles_storage(Response &r, StorageDirectoryReader &reader)
 {
 	const char *name_utf8;
 	while ((name_utf8 = reader.Read()) != nullptr) {
@@ -66,8 +66,11 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader,
 			continue;
 
 		StorageFileInfo info;
-		if (!reader.GetInfo(false, info, error))
+		try {
+			info = reader.GetInfo(false);
+		} catch (const std::runtime_error &) {
 			continue;
+		}
 
 		switch (info.type) {
 		case StorageFileInfo::Type::OTHER:
@@ -89,56 +92,30 @@ handle_listfiles_storage(Response &r, StorageDirectoryReader &reader,
 		if (info.mtime != 0)
 			time_print(r, "Last-Modified", info.mtime);
 	}
-
-	return true;
 }
 
 #if defined(WIN32) && GCC_CHECK_VERSION(4,6)
 #pragma GCC diagnostic pop
 #endif
 
-static bool
-handle_listfiles_storage(Response &r, Storage &storage, const char *uri,
-			 Error &error)
-{
-	auto reader = storage.OpenDirectory(uri, error);
-	if (reader == nullptr)
-		return false;
-
-	bool success = handle_listfiles_storage(r, *reader, error);
-	delete reader;
-	return success;
-}
-
 CommandResult
 handle_listfiles_storage(Response &r, Storage &storage, const char *uri)
 {
-	Error error;
-	if (!handle_listfiles_storage(r, storage, uri, error))
-		return print_error(r, error);
-
+	std::unique_ptr<StorageDirectoryReader> reader(storage.OpenDirectory(uri));
+	handle_listfiles_storage(r, *reader);
 	return CommandResult::OK;
 }
 
 CommandResult
 handle_listfiles_storage(Response &r, const char *uri)
 {
-	Error error;
-	Storage *storage = CreateStorageURI(io_thread_get(), uri, error);
+	std::unique_ptr<Storage> storage(CreateStorageURI(io_thread_get(), uri));
 	if (storage == nullptr) {
-		if (error.IsDefined())
-			return print_error(r, error);
-
 		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
 		return CommandResult::ERROR;
 	}
 
-	bool success = handle_listfiles_storage(r, *storage, "", error);
-	delete storage;
-	if (!success)
-		return print_error(r, error);
-
-	return CommandResult::OK;
+	return handle_listfiles_storage(r, *storage, "");
 }
 
 static void
@@ -218,13 +195,8 @@ handle_mount(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	Error error;
-	Storage *storage = CreateStorageURI(io_thread_get(), remote_uri,
-					    error);
+	Storage *storage = CreateStorageURI(io_thread_get(), remote_uri);
 	if (storage == nullptr) {
-		if (error.IsDefined())
-			return print_error(r, error);
-
 		r.Error(ACK_ERROR_ARG, "Unrecognized storage URI");
 		return CommandResult::ERROR;
 	}
@@ -238,10 +210,7 @@ handle_mount(Client &client, Request args, Response &r)
 		SimpleDatabase &db = *(SimpleDatabase *)_db;
 
 		try {
-			if (!db.Mount(local_uri, remote_uri, error)) {
-				composite.Unmount(local_uri);
-				return print_error(r, error);
-			}
+			db.Mount(local_uri, remote_uri);
 		} catch (...) {
 			composite.Unmount(local_uri);
 			throw;

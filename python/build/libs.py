@@ -58,8 +58,8 @@ libmad = AutotoolsProject(
 )
 
 ffmpeg = FfmpegProject(
-    'http://ffmpeg.org/releases/ffmpeg-3.1.1.tar.xz',
-    '4ba7033da5d9ac4d0391516c7e5d97e4',
+    'http://ffmpeg.org/releases/ffmpeg-3.1.5.tar.xz',
+    'a09f7730ceeb665c6f7da0b884dd00f9',
     'lib/libavcodec.a',
     [
         '--disable-shared', '--enable-static',
@@ -82,8 +82,8 @@ ffmpeg = FfmpegProject(
 )
 
 curl = AutotoolsProject(
-    'http://curl.haxx.se/download/curl-7.50.0.tar.lzma',
-    'ecb8d3699c7087146b2953fee1bdaa41',
+    'http://curl.haxx.se/download/curl-7.50.3.tar.lzma',
+    '6080c1eb3e72d5da6c892ba72a074ad2',
     'lib/libcurl.a',
     [
         '--disable-shared', '--enable-static',
@@ -103,7 +103,7 @@ curl = AutotoolsProject(
 )
 
 boost = BoostProject(
-    'http://downloads.sourceforge.net/boost/boost_1_61_0.tar.bz2',
-    '6095876341956f65f9d35939ccea1a9f',
+    'http://downloads.sourceforge.net/project/boost/boost/1.62.0/boost_1_62_0.tar.bz2',
+    '5fb94629535c19e48703bdb2b2e9490f',
     'include/boost/version.hpp',
 )

@@ -47,17 +47,16 @@
 
 #include <string>
 
-class Error;
 class Path;
 struct Sticker;
 
 /**
  * Opens the sticker database.
  *
- * @return true on success, false on error
+ * Throws std::runtime_error on error.
  */
-bool
-sticker_global_init(Path path, Error &error);
+void
+sticker_global_init(Path path);
 
 /**
  * Close the sticker database.
@@ -75,35 +74,39 @@ sticker_enabled();
 /**
  * Returns one value from an object's sticker record.  Returns an
  * empty string if the value doesn't exist.
+ *
+ * Throws #SqliteError on error.
  */
 std::string
-sticker_load_value(const char *type, const char *uri, const char *name,
-		   Error &error);
+sticker_load_value(const char *type, const char *uri, const char *name);
 
 /**
  * Sets a sticker value in the specified object.  Overwrites existing
  * values.
+ *
+ * Throws #SqliteError on error.
  */
-bool
+void
 sticker_store_value(const char *type, const char *uri,
-		    const char *name, const char *value,
-		    Error &error);
+		    const char *name, const char *value);
 
 /**
  * Deletes a sticker from the database.  All sticker values of the
  * specified object are deleted.
+ *
+ * Throws #SqliteError on error.
  */
 bool
-sticker_delete(const char *type, const char *uri,
-	       Error &error);
+sticker_delete(const char *type, const char *uri);
 
 /**
  * Deletes a sticker value.  Fails if no sticker with this name
  * exists.
+ *
+ * Throws #SqliteError on error.
  */
 bool
-sticker_delete_value(const char *type, const char *uri, const char *name,
-		     Error &error);
+sticker_delete_value(const char *type, const char *uri, const char *name);
 
 /**
  * Frees resources held by the sticker object.
@@ -140,13 +143,14 @@ sticker_foreach(const Sticker &sticker,
 /**
  * Loads the sticker for the specified resource.
  *
+ * Throws #SqliteError on error.
+ *
  * @param type the resource type, e.g. "song"
  * @param uri the URI of the resource, e.g. the song path
- * @return a sticker object, or nullptr on error or if there is no sticker
+ * @return a sticker object, or nullptr if there is no sticker
  */
 Sticker *
-sticker_load(const char *type, const char *uri,
-	     Error &error);
+sticker_load(const char *type, const char *uri);
 
 /**
  * Finds stickers with the specified name below the specified URI.
@@ -157,15 +161,12 @@ sticker_load(const char *type, const char *uri,
  * @param name the name of the sticker
  * @param op the comparison operator
  * @param value the operand
- * @return true on success (even if no sticker was found), false on
- * failure
  */
-bool
+void
 sticker_find(const char *type, const char *base_uri, const char *name,
 	     StickerOperator op, const char *value,
 	     void (*func)(const char *uri, const char *value,
 			  void *user_data),
-	     void *user_data,
-	     Error &error);
+	     void *user_data);
 
 #endif

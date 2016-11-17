@@ -45,9 +45,15 @@ Partition::EmitIdle(unsigned mask)
 #ifdef ENABLE_DATABASE
 
 const Database *
-Partition::GetDatabase(Error &error) const
+Partition::GetDatabase() const
 {
-	return instance.GetDatabase(error);
+	return instance.GetDatabase();
+}
+
+const Database &
+Partition::GetDatabaseOrThrow() const
+{
+	return instance.GetDatabaseOrThrow();
 }
 
 void

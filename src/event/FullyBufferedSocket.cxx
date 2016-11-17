@@ -20,8 +20,6 @@
 #include "config.h"
 #include "FullyBufferedSocket.hxx"
 #include "net/SocketError.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "Compiler.h"
 
 #include <assert.h>
@@ -42,7 +40,7 @@ FullyBufferedSocket::DirectWrite(const void *data, size_t length)
 		if (IsSocketErrorClosed(code))
 			OnSocketClosed();
 		else
-			OnSocketError(NewSocketError(code));
+			OnSocketError(std::make_exception_ptr(MakeSocketError(code, "Failed to send to socket")));
 	}
 
 	return nbytes;
@@ -85,11 +83,7 @@ FullyBufferedSocket::Write(const void *data, size_t length)
 	const bool was_empty = output.IsEmpty();
 
 	if (!output.Append(data, length)) {
-		// TODO
-		static constexpr Domain buffered_socket_domain("buffered_socket");
-		Error error;
-		error.Set(buffered_socket_domain, "Output buffer is full");
-		OnSocketError(std::move(error));
+		OnSocketError(std::make_exception_ptr(std::runtime_error("Output buffer is full")));
 		return false;
 	}
 

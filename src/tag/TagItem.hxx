@@ -34,13 +34,14 @@ struct TagItem {
 	/**
 	 * the value of this tag; this is a variable length string
 	 */
-	char value[sizeof(long) - sizeof(type)];
+	char value[1];
 
 	TagItem() = default;
 	TagItem(const TagItem &other) = delete;
 	TagItem &operator=(const TagItem &other) = delete;
 };
 
+static_assert(sizeof(TagItem) == 2, "Unexpected size");
 static_assert(alignof(TagItem) == 1, "Unexpected alignment");
 
 #endif

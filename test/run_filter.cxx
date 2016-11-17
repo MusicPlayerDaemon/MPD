@@ -27,12 +27,12 @@
 #include "filter/FilterInternal.hxx"
 #include "pcm/Volume.hxx"
 #include "mixer/MixerControl.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
 
 #include <memory>
+#include <stdexcept>
 
 #include <assert.h>
 #include <string.h>
@@ -81,13 +81,8 @@ try {
 
 	/* parse the audio format */
 
-	if (argc > 3) {
-		Error error;
-		if (!audio_format_parse(audio_format, argv[3], false, error)) {
-			LogError(error, "Failed to parse audio format");
-			return EXIT_FAILURE;
-		}
-	}
+	if (argc > 3)
+		audio_format = ParseAudioFormat(argv[3], false);
 
 	/* initialize the filter */
 

@@ -30,21 +30,18 @@
 #include "client/Response.hxx"
 #include "tag/Tag.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
 #include "util/StringAPI.hxx"
 #include "SongFilter.hxx"
 #include "BulkEdit.hxx"
+
+#include <memory>
 
 CommandResult
 handle_listfiles_db(Client &client, Response &r, const char *uri)
 {
 	const DatabaseSelection selection(uri, false);
-
-	Error error;
-	if (!db_selection_print(r, client.partition,
-				selection, false, true, error))
-		return print_error(r, error);
-
+	db_selection_print(r, client.partition,
+			   selection, false, true);
 	return CommandResult::OK;
 }
 
@@ -52,12 +49,8 @@ CommandResult
 handle_lsinfo2(Client &client, const char *uri, Response &r)
 {
 	const DatabaseSelection selection(uri, false);
-
-	Error error;
-	if (!db_selection_print(r, client.partition,
-				selection, true, false, error))
-		return print_error(r, error);
-
+	db_selection_print(r, client.partition,
+			   selection, true, false);
 	return CommandResult::OK;
 }
 
@@ -81,12 +74,10 @@ handle_match(Client &client, Request args, Response &r, bool fold_case)
 
 	const DatabaseSelection selection("", true, &filter);
 
-	Error error;
-	return db_selection_print(r, client.partition,
-				  selection, true, false,
-				  window.start, window.end, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	db_selection_print(r, client.partition,
+			   selection, true, false,
+			   window.start, window.end);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -113,10 +104,8 @@ handle_match_add(Client &client, Request args, Response &r, bool fold_case)
 	const ScopeBulkEdit bulk_edit(client.partition);
 
 	const DatabaseSelection selection("", true, &filter);
-	Error error;
-	return AddFromDatabase(client.partition, selection, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	AddFromDatabase(client.partition, selection);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -142,15 +131,11 @@ handle_searchaddpl(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	Error error;
-	const Database *db = client.GetDatabase(error);
-	if (db == nullptr)
-		return print_error(r, error);
+	const Database &db = client.GetDatabaseOrThrow();
 
-	return search_add_to_playlist(*db, *client.GetStorage(),
-				      "", playlist, &filter, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	search_add_to_playlist(db, *client.GetStorage(),
+			       "", playlist, &filter);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -176,10 +161,8 @@ handle_count(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	Error error;
-	return PrintSongCount(r, client.partition, "", &filter, group, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	PrintSongCount(r, client.partition, "", &filter, group);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -188,12 +171,10 @@ handle_listall(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	Error error;
-	return db_selection_print(r, client.partition,
-				  DatabaseSelection(uri, true),
-				  false, false, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	db_selection_print(r, client.partition,
+			   DatabaseSelection(uri, true),
+			   false, false);
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -209,7 +190,7 @@ handle_list(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	SongFilter *filter = nullptr;
+	std::unique_ptr<SongFilter> filter;
 	tag_mask_t group_mask = 0;
 
 	if (args.size == 1) {
@@ -221,7 +202,8 @@ handle_list(Client &client, Request args, Response &r)
 			return CommandResult::ERROR;
 		}
 
-		filter = new SongFilter((unsigned)TAG_ARTIST, args.shift());
+		filter.reset(new SongFilter((unsigned)TAG_ARTIST,
+					    args.shift()));
 	}
 
 	while (args.size >= 2 &&
@@ -241,9 +223,8 @@ handle_list(Client &client, Request args, Response &r)
 	}
 
 	if (!args.IsEmpty()) {
-		filter = new SongFilter();
+		filter.reset(new SongFilter());
 		if (!filter->Parse(args, false)) {
-			delete filter;
 			r.Error(ACK_ERROR_ARG, "not able to parse args");
 			return CommandResult::ERROR;
 		}
@@ -251,21 +232,13 @@ handle_list(Client &client, Request args, Response &r)
 
 	if (tagType < TAG_NUM_OF_ITEM_TYPES &&
 	    group_mask & (tag_mask_t(1) << tagType)) {
-		delete filter;
 		r.Error(ACK_ERROR_ARG, "Conflicting group");
 		return CommandResult::ERROR;
 	}
 
-	Error error;
-	CommandResult ret =
-		PrintUniqueTags(r, client.partition,
-				tagType, group_mask, filter, error)
-		? CommandResult::OK
-		: print_error(r, error);
-
-	delete filter;
-
-	return ret;
+	PrintUniqueTags(r, client.partition,
+			tagType, group_mask, filter.get());
+	return CommandResult::OK;
 }
 
 CommandResult
@@ -274,10 +247,8 @@ handle_listallinfo(Client &client, Request args, Response &r)
 	/* default is root directory */
 	const auto uri = args.GetOptional(0, "");
 
-	Error error;
-	return db_selection_print(r, client.partition,
-				  DatabaseSelection(uri, true),
-				  true, false, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	db_selection_print(r, client.partition,
+			   DatabaseSelection(uri, true),
+			   true, false);
+	return CommandResult::OK;
 }

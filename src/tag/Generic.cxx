@@ -27,7 +27,6 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "Log.hxx"
-#include "util/Error.hxx"
 
 #include <stdexcept>
 

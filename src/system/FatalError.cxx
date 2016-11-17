@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "FatalError.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "LogV.hxx"
 
@@ -60,18 +59,6 @@ FormatFatalError(const char *fmt, ...)
 	va_end(ap);
 
 	Abort();
-}
-
-void
-FatalError(const Error &error)
-{
-	FatalError(error.GetMessage());
-}
-
-void
-FatalError(const char *msg, const Error &error)
-{
-	FormatFatalError("%s: %s", msg, error.GetMessage());
 }
 
 #ifdef WIN32

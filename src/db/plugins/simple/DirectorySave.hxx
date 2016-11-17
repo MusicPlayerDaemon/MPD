@@ -23,12 +23,14 @@
 struct Directory;
 class TextFile;
 class BufferedOutputStream;
-class Error;
 
 void
 directory_save(BufferedOutputStream &os, const Directory &directory);
 
-bool
-directory_load(TextFile &file, Directory &directory, Error &error);
+/**
+ * Throws #std::runtime_error on error.
+ */
+void
+directory_load(TextFile &file, Directory &directory);
 
 #endif

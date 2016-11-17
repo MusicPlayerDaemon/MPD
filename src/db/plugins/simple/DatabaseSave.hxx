@@ -23,12 +23,14 @@
 struct Directory;
 class BufferedOutputStream;
 class TextFile;
-class Error;
 
 void
 db_save_internal(BufferedOutputStream &os, const Directory &root);
 
-bool
-db_load_internal(TextFile &file, Directory &root, Error &error);
+/**
+ * Throws #std::runtime_error on error.
+ */
+void
+db_load_internal(TextFile &file, Directory &root);
 
 #endif

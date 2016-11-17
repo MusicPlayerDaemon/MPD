@@ -23,6 +23,7 @@
 #include "db/DatabasePlugin.hxx"
 #include "db/Selection.hxx"
 #include "db/Helpers.hxx"
+#include "db/Stats.hxx"
 #include "db/UniqueTags.hxx"
 #include "db/LightDirectory.hxx"
 #include "Directory.hxx"
@@ -37,7 +38,6 @@
 #include "config/Block.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/CharUtil.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -51,14 +51,20 @@
 
 static constexpr Domain simple_db_domain("simple_db");
 
-inline SimpleDatabase::SimpleDatabase()
+inline SimpleDatabase::SimpleDatabase(const ConfigBlock &block)
 	:Database(simple_db_plugin),
-	 path(AllocatedPath::Null()),
+	 path(block.GetPath("path")),
 #ifdef ENABLE_ZLIB
-	 compress(true),
+	 compress(block.GetBlockValue("compress", true)),
 #endif
-	 cache_path(AllocatedPath::Null()),
-	 prefixed_light_song(nullptr) {}
+	 cache_path(block.GetPath("cache_directory")),
+	 prefixed_light_song(nullptr)
+{
+	if (path.IsNull())
+		throw std::runtime_error("No \"path\" parameter specified");
+
+	path_utf8 = path.ToUTF8();
+}
 
 inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 #ifndef ENABLE_ZLIB
@@ -78,39 +84,9 @@ inline SimpleDatabase::SimpleDatabase(AllocatedPath &&_path,
 Database *
 SimpleDatabase::Create(gcc_unused EventLoop &loop,
 		       gcc_unused DatabaseListener &listener,
-		       const ConfigBlock &block, Error &error)
+		       const ConfigBlock &block)
 {
-	SimpleDatabase *db = new SimpleDatabase();
-	if (!db->Configure(block, error)) {
-		delete db;
-		db = nullptr;
-	}
-
-	return db;
-}
-
-bool
-SimpleDatabase::Configure(const ConfigBlock &block, Error &error)
-{
-	path = block.GetBlockPath("path", error);
-	if (path.IsNull()) {
-		if (!error.IsDefined())
-			error.Set(simple_db_domain,
-				  "No \"path\" parameter specified");
-		return false;
-	}
-
-	path_utf8 = path.ToUTF8();
-
-	cache_path = block.GetBlockPath("cache_directory", error);
-	if (path.IsNull() && error.IsDefined())
-		return false;
-
-#ifdef ENABLE_ZLIB
-	compress = block.GetBlockValue("compress", compress);
-#endif
-
-	return true;
+	return new SimpleDatabase(block);
 }
 
 void
@@ -166,22 +142,21 @@ SimpleDatabase::Check() const
 #endif
 }
 
-bool
-SimpleDatabase::Load(Error &error)
+void
+SimpleDatabase::Load()
 {
 	assert(!path.IsNull());
 	assert(root != nullptr);
 
 	TextFile file(path);
 
-	if (!db_load_internal(file, *root, error))
-		return false;
+	LogDebug(simple_db_domain, "reading DB");
+
+	db_load_internal(file, *root);
 
 	FileInfo fi;
 	if (GetFileInfo(path, fi))
 		mtime = fi.GetModificationTime();
-
-	return true;
 }
 
 void
@@ -197,16 +172,7 @@ SimpleDatabase::Open()
 #endif
 
 	try {
-		Error error2;
-		if (!Load(error2)) {
-			LogError(error2);
-
-			delete root;
-
-			Check();
-
-			root = Directory::NewRoot();
-		}
+		Load();
 	} catch (const std::exception &e) {
 		LogError(e);
 
@@ -295,12 +261,11 @@ SimpleDatabase::ReturnSong(gcc_unused const LightSong *song) const
 #endif
 }
 
-bool
+void
 SimpleDatabase::Visit(const DatabaseSelection &selection,
 		      VisitDirectory visit_directory,
 		      VisitSong visit_song,
-		      VisitPlaylist visit_playlist,
-		      Error &error) const
+		      VisitPlaylist visit_playlist) const
 {
 	ScopeDatabaseLock protect;
 
@@ -308,14 +273,13 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 	if (r.uri == nullptr) {
 		/* it's a directory */
 
-		if (selection.recursive && visit_directory &&
-		    !visit_directory(r.directory->Export(), error))
-			return false;
+		if (selection.recursive && visit_directory)
+			visit_directory(r.directory->Export());
 
-		return r.directory->Walk(selection.recursive, selection.filter,
-					 visit_directory, visit_song,
-					 visit_playlist,
-					 error);
+		r.directory->Walk(selection.recursive, selection.filter,
+				  visit_directory, visit_song,
+				  visit_playlist);
+		return;
 	}
 
 	if (strchr(r.uri, '/') == nullptr) {
@@ -323,8 +287,8 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 			Song *song = r.directory->FindSong(r.uri);
 			if (song != nullptr) {
 				const LightSong song2 = song->Export();
-				return !selection.Match(song2) ||
-					visit_song(song2, error);
+				if (selection.Match(song2))
+					visit_song(song2);
 			}
 		}
 	}
@@ -333,22 +297,18 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 			    "No such directory");
 }
 
-bool
+void
 SimpleDatabase::VisitUniqueTags(const DatabaseSelection &selection,
 				TagType tag_type, tag_mask_t group_mask,
-				VisitTag visit_tag,
-				Error &error) const
+				VisitTag visit_tag) const
 {
-	return ::VisitUniqueTags(*this, selection, tag_type, group_mask,
-				 visit_tag,
-				 error);
+	::VisitUniqueTags(*this, selection, tag_type, group_mask, visit_tag);
 }
 
-bool
-SimpleDatabase::GetStats(const DatabaseSelection &selection,
-			 DatabaseStats &stats, Error &error) const
+DatabaseStats
+SimpleDatabase::GetStats(const DatabaseSelection &selection) const
 {
-	return ::GetStats(*this, selection, stats, error);
+	return ::GetStats(*this, selection);
 }
 
 void
@@ -435,9 +395,8 @@ IsUnsafeChar(char ch)
 	return !IsSafeChar(ch);
 }
 
-bool
-SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
-		      Error &error)
+void
+SimpleDatabase::Mount(const char *local_uri, const char *storage_uri)
 {
 	if (cache_path.IsNull())
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
@@ -446,9 +405,7 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 	std::string name(storage_uri);
 	std::replace_if(name.begin(), name.end(), IsUnsafeChar, '_');
 
-	const auto name_fs = AllocatedPath::FromUTF8(name.c_str(), error);
-	if (name_fs.IsNull())
-		return false;
+	const auto name_fs = AllocatedPath::FromUTF8Throw(name.c_str());
 
 #ifndef ENABLE_ZLIB
 	constexpr bool compress = false;
@@ -472,8 +429,6 @@ SimpleDatabase::Mount(const char *local_uri, const char *storage_uri,
 		delete db;
 		throw;
 	}
-
-	return true;
 }
 
 Database *

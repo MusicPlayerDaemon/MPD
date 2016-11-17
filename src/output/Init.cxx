@@ -36,7 +36,7 @@
 #include "config/ConfigError.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -49,17 +49,20 @@
 #define AUDIO_OUTPUT_FORMAT	"format"
 #define AUDIO_FILTERS		"filters"
 
-AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin)
+AudioOutput::AudioOutput(const AudioOutputPlugin &_plugin,
+			 const ConfigBlock &block)
 	:plugin(_plugin)
 {
 	assert(plugin.finish != nullptr);
 	assert(plugin.open != nullptr);
 	assert(plugin.close != nullptr);
 	assert(plugin.play != nullptr);
+
+	Configure(block);
 }
 
 static const AudioOutputPlugin *
-audio_output_detect(Error &error)
+audio_output_detect()
 {
 	LogDefault(output_domain, "Attempt to detect audio output device");
 
@@ -74,8 +77,7 @@ audio_output_detect(Error &error)
 			return plugin;
 	}
 
-	error.Set(output_domain, "Unable to detect an audio device");
-	return nullptr;
+	throw std::runtime_error("Unable to detect an audio device");
 }
 
 /**
@@ -150,25 +152,18 @@ audio_output_load_mixer(EventLoop &event_loop, AudioOutput &ao,
 	gcc_unreachable();
 }
 
-bool
-AudioOutput::Configure(const ConfigBlock &block, Error &error)
+void
+AudioOutput::Configure(const ConfigBlock &block)
 {
 	if (!block.IsNull()) {
 		name = block.GetBlockValue(AUDIO_OUTPUT_NAME);
-		if (name == nullptr) {
-			error.Set(config_domain,
-				  "Missing \"name\" configuration");
-			return false;
-		}
+		if (name == nullptr)
+			throw std::runtime_error("Missing \"name\" configuration");
 
 		const char *p = block.GetBlockValue(AUDIO_OUTPUT_FORMAT);
-		if (p != nullptr) {
-			bool success =
-				audio_format_parse(config_audio_format,
-						   p, true, error);
-			if (!success)
-				return false;
-		} else
+		if (p != nullptr)
+			config_audio_format = ParseAudioFormat(p, true);
+		else
 			config_audio_format.Clear();
 	} else {
 		name = "default detected output";
@@ -207,17 +202,12 @@ AudioOutput::Configure(const ConfigBlock &block, Error &error)
 			    "Failed to initialize filter chain for '%s'",
 			    name);
 	}
-
-	/* done */
-
-	return true;
 }
 
-static bool
+static void
 audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 		   MixerListener &mixer_listener,
-		   const ConfigBlock &block,
-		   Error &error)
+		   const ConfigBlock &block)
 {
 
 	/* create the replay_gain filter */
@@ -266,9 +256,7 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 				    "No such mixer for output '%s'", ao.name);
 	} else if (strcmp(replay_gain_handler, "software") != 0 &&
 		   ao.prepared_replay_gain_filter != nullptr) {
-		error.Set(config_domain,
-			  "Invalid \"replay_gain_handler\" value");
-		return false;
+		throw std::runtime_error("Invalid \"replay_gain_handler\" value");
 	}
 
 	/* the "convert" filter must be the last one in the chain */
@@ -278,15 +266,12 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 
 	filter_chain_append(*ao.prepared_filter, "convert",
 			    ao.convert_filter.Set(f));
-
-	return true;
 }
 
 AudioOutput *
 audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 		 MixerListener &mixer_listener,
-		 PlayerControl &pc,
-		 Error &error)
+		 PlayerControl &pc)
 {
 	const AudioOutputPlugin *plugin;
 
@@ -294,39 +279,31 @@ audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 		const char *p;
 
 		p = block.GetBlockValue(AUDIO_OUTPUT_TYPE);
-		if (p == nullptr) {
-			error.Set(config_domain,
-				  "Missing \"type\" configuration");
-			return nullptr;
-		}
+		if (p == nullptr)
+			throw std::runtime_error("Missing \"type\" configuration");
 
 		plugin = AudioOutputPlugin_get(p);
-		if (plugin == nullptr) {
-			error.Format(config_domain,
-				     "No such audio output plugin: %s", p);
-			return nullptr;
-		}
+		if (plugin == nullptr)
+			throw FormatRuntimeError("No such audio output plugin: %s", p);
 	} else {
 		LogWarning(output_domain,
 			   "No 'AudioOutput' defined in config file");
 
-		plugin = audio_output_detect(error);
-		if (plugin == nullptr)
-			return nullptr;
+		plugin = audio_output_detect();
 
 		FormatDefault(output_domain,
 			      "Successfully detected a %s audio device",
 			      plugin->name);
 	}
 
-	AudioOutput *ao = ao_plugin_init(plugin, block, error);
-	if (ao == nullptr)
-		return nullptr;
+	AudioOutput *ao = ao_plugin_init(plugin, block);
+	assert(ao != nullptr);
 
-	if (!audio_output_setup(event_loop, *ao, mixer_listener,
-				block, error)) {
+	try {
+		audio_output_setup(event_loop, *ao, mixer_listener, block);
+	} catch (...) {
 		ao_plugin_finish(ao);
-		return nullptr;
+		throw;
 	}
 
 	ao->player_control = &pc;

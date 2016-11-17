@@ -24,13 +24,11 @@
 
 class Database;
 class SongFilter;
-class Error;
 
-bool
+void
 WalkMount(const char *base, const Database &db,
 	  bool recursive, const SongFilter *filter,
 	  const VisitDirectory &visit_directory, const VisitSong &visit_song,
-	  const VisitPlaylist &visit_playlist,
-	  Error &error);
+	  const VisitPlaylist &visit_playlist);
 
 #endif

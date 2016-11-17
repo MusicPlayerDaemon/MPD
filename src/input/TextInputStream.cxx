@@ -68,6 +68,8 @@ TextInputStream::ReadLine()
 			return nullptr;
 		}
 
+		buffer.Append(nbytes);
+
 		line = ReadBufferedLine(buffer);
 		if (line != nullptr)
 			return line;

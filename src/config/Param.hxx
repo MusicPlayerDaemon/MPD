@@ -25,12 +25,14 @@
 
 #include <string>
 
-struct config_param {
+class AllocatedPath;
+
+struct ConfigParam {
 	/**
-	 * The next config_param with the same name.  The destructor
+	 * The next ConfigParam with the same name.  The destructor
 	 * deletes the whole chain.
 	 */
-	struct config_param *next;
+	ConfigParam *next;
 
 	std::string value;
 
@@ -42,17 +44,17 @@ struct config_param {
 	 */
 	bool used;
 
-	explicit config_param(int _line=-1)
+	explicit ConfigParam(int _line=-1)
 		:next(nullptr), line(_line), used(false) {}
 
 	gcc_nonnull_all
-	config_param(const char *_value, int _line=-1);
+	ConfigParam(const char *_value, int _line=-1);
 
-	config_param(const config_param &) = delete;
+	ConfigParam(const ConfigParam &) = delete;
 
-	~config_param();
+	~ConfigParam();
 
-	config_param &operator=(const config_param &) = delete;
+	ConfigParam &operator=(const ConfigParam &) = delete;
 
 	/**
 	 * Determine if this is a "null" instance, i.e. an empty
@@ -62,6 +64,15 @@ struct config_param {
 	bool IsNull() const {
 		return line < 0;
 	}
+
+	/**
+	 * Parse the value as a path.  If there is a tilde prefix, it
+	 * is expanded.
+	 *
+	 * Throws #std::runtime_error on error.
+	 */
+	gcc_pure
+	AllocatedPath GetPath() const;
 };
 
 #endif

@@ -21,8 +21,9 @@
 #include "net/Resolver.hxx"
 #include "net/ToString.hxx"
 #include "net/SocketAddress.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
+
+#include <stdexcept>
 
 #ifdef WIN32
 #include <ws2tcpip.h>
@@ -36,20 +37,14 @@
 #include <stdlib.h>
 
 int main(int argc, char **argv)
-{
+try {
 	if (argc != 2) {
 		fprintf(stderr, "Usage: run_resolver HOST\n");
 		return EXIT_FAILURE;
 	}
 
-	Error error;
 	struct addrinfo *ai =
-		resolve_host_port(argv[1], 80, AI_PASSIVE, SOCK_STREAM,
-				  error);
-	if (ai == NULL) {
-		LogError(error);
-		return EXIT_FAILURE;
-	}
+		resolve_host_port(argv[1], 80, AI_PASSIVE, SOCK_STREAM);
 
 	for (const struct addrinfo *i = ai; i != NULL; i = i->ai_next) {
 		const auto s = ToString({i->ai_addr, i->ai_addrlen});
@@ -58,4 +53,7 @@ int main(int argc, char **argv)
 
 	freeaddrinfo(ai);
 	return EXIT_SUCCESS;
+} catch (const std::runtime_error &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

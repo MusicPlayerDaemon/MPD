@@ -40,7 +40,6 @@
 #include <list>
 
 struct ConfigBlock;
-class Error;
 class EventLoop;
 class ServerSocket;
 class HttpdClient;
@@ -150,8 +149,12 @@ private:
 	unsigned clients_max;
 
 public:
-	HttpdOutput(EventLoop &_loop);
+	HttpdOutput(EventLoop &_loop, const ConfigBlock &block);
 	~HttpdOutput();
+
+	operator AudioOutput *() {
+		return &base;
+	}
 
 #if CLANG_OR_GCC_VERSION(4,7)
 	constexpr
@@ -162,33 +165,20 @@ public:
 
 	using DeferredMonitor::GetEventLoop;
 
-	bool Init(const ConfigBlock &block, Error &error);
-
-	bool Configure(const ConfigBlock &block, Error &error);
-
-	AudioOutput *InitAndConfigure(const ConfigBlock &block,
-				       Error &error) {
-		if (!Init(block, error))
-			return nullptr;
-
-		if (!Configure(block, error))
-			return nullptr;
-
-		return &base;
-	}
-
-	bool Bind(Error &error);
+	void Bind();
 	void Unbind();
 
 	/**
 	 * Caller must lock the mutex.
+	 *
+	 * Throws #std::runtime_error on error.
 	 */
-	bool OpenEncoder(AudioFormat &audio_format, Error &error);
+	void OpenEncoder(AudioFormat &audio_format);
 
 	/**
 	 * Caller must lock the mutex.
 	 */
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 
 	/**
 	 * Caller must lock the mutex.
@@ -248,11 +238,14 @@ public:
 	 */
 	void BroadcastFromEncoder();
 
-	bool EncodeAndPlay(const void *chunk, size_t size, Error &error);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void EncodeAndPlay(const void *chunk, size_t size);
 
 	void SendTag(const Tag &tag);
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 
 	void CancelAllClients();
 

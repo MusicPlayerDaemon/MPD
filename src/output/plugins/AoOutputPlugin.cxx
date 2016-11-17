@@ -20,9 +20,10 @@
 #include "config.h"
 #include "AoOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "system/Error.hxx"
 #include "util/DivideString.hxx"
 #include "util/SplitString.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -38,27 +39,21 @@ static unsigned ao_output_ref;
 struct AoOutput {
 	AudioOutput base;
 
-	size_t write_size;
+	const size_t write_size;
 	int driver;
-	ao_option *options;
+	ao_option *options = nullptr;
 	ao_device *device;
 
-	AoOutput()
-		:base(ao_output_plugin) {}
-
-	bool Initialize(const ConfigBlock &block, Error &error) {
-		return base.Configure(block, error);
-	}
-
-	bool Configure(const ConfigBlock &block, Error &error);
+	AoOutput(const ConfigBlock &block);
 };
 
 static constexpr Domain ao_output_domain("ao_output");
 
-static void
-ao_output_error(Error &error_r)
+
+static std::system_error
+MakeAoError()
 {
-	const char *error;
+	const char *error = "Unknown libao failure";
 
 	switch (errno) {
 	case AO_ENODRIVER:
@@ -80,47 +75,33 @@ ao_output_error(Error &error_r)
 	case AO_EFAIL:
 		error = "Generic libao failure";
 		break;
-
-	default:
-		error_r.SetErrno();
-		return;
 	}
 
-	error_r.Set(ao_output_domain, errno, error);
+	return MakeErrno(errno, error);
 }
 
-inline bool
-AoOutput::Configure(const ConfigBlock &block, Error &error)
+AoOutput::AoOutput(const ConfigBlock &block)
+	:base(ao_output_plugin, block),
+	 write_size(block.GetBlockValue("write_size", 1024u))
 {
-	const char *value;
-
-	options = nullptr;
-
-	write_size = block.GetBlockValue("write_size", 1024u);
-
 	if (ao_output_ref == 0) {
 		ao_initialize();
 	}
 	ao_output_ref++;
 
-	value = block.GetBlockValue("driver", "default");
+	const char *value = block.GetBlockValue("driver", "default");
 	if (0 == strcmp(value, "default"))
 		driver = ao_default_driver_id();
 	else
 		driver = ao_driver_id(value);
 
-	if (driver < 0) {
-		error.Format(ao_output_domain,
-			     "\"%s\" is not a valid ao driver",
-			     value);
-		return false;
-	}
+	if (driver < 0)
+		throw FormatRuntimeError("\"%s\" is not a valid ao driver",
+					 value);
 
 	ao_info *ai = ao_driver_info(driver);
-	if (ai == nullptr) {
-		error.Set(ao_output_domain, "problems getting driver info");
-		return false;
-	}
+	if (ai == nullptr)
+		throw std::runtime_error("problems getting driver info");
 
 	FormatDebug(ao_output_domain, "using ao driver \"%s\" for \"%s\"\n",
 		    ai->short_name, block.GetBlockValue("name", nullptr));
@@ -130,36 +111,19 @@ AoOutput::Configure(const ConfigBlock &block, Error &error)
 		for (const auto &i : SplitString(value, ';')) {
 			const DivideString ss(i.c_str(), '=', true);
 
-			if (!ss.IsDefined()) {
-				error.Format(ao_output_domain,
-					     "problems parsing options \"%s\"",
+			if (!ss.IsDefined())
+				throw FormatRuntimeError("problems parsing options \"%s\"",
 					     i.c_str());
-				return false;
-			}
 
 			ao_append_option(&options, ss.GetFirst(), ss.GetSecond());
 		}
 	}
-
-	return true;
 }
 
 static AudioOutput *
-ao_output_init(const ConfigBlock &block, Error &error)
+ao_output_init(const ConfigBlock &block)
 {
-	AoOutput *ad = new AoOutput();
-
-	if (!ad->Initialize(block, error)) {
-		delete ad;
-		return nullptr;
-	}
-
-	if (!ad->Configure(block, error)) {
-		delete ad;
-		return nullptr;
-	}
-
-	return &ad->base;
+	return &(new AoOutput(block))->base;
 }
 
 static void
@@ -184,9 +148,8 @@ ao_output_close(AudioOutput *ao)
 	ao_close(ad->device);
 }
 
-static bool
-ao_output_open(AudioOutput *ao, AudioFormat &audio_format,
-	       Error &error)
+static void
+ao_output_open(AudioOutput *ao, AudioFormat &audio_format)
 {
 	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
 	AoOutput *ad = (AoOutput *)ao;
@@ -215,12 +178,8 @@ ao_output_open(AudioOutput *ao, AudioFormat &audio_format,
 
 	ad->device = ao_open_live(ad->driver, &format, ad->options);
 
-	if (ad->device == nullptr) {
-		ao_output_error(error);
-		return false;
-	}
-
-	return true;
+	if (ad->device == nullptr)
+		throw MakeAoError();
 }
 
 /**
@@ -241,18 +200,15 @@ static int ao_play_deconst(ao_device *device, const void *output_samples,
 }
 
 static size_t
-ao_output_play(AudioOutput *ao, const void *chunk, size_t size,
-	       Error &error)
+ao_output_play(AudioOutput *ao, const void *chunk, size_t size)
 {
 	AoOutput *ad = (AoOutput *)ao;
 
 	if (size > ad->write_size)
 		size = ad->write_size;
 
-	if (ao_play_deconst(ad->device, chunk, size) == 0) {
-		ao_output_error(error);
-		return 0;
-	}
+	if (ao_play_deconst(ad->device, chunk, size) == 0)
+		throw MakeAoError();
 
 	return size;
 }

@@ -26,7 +26,6 @@
 #include "OggCodec.hxx"
 #include "fs/Path.hxx"
 #include "fs/NarrowPath.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #if !defined(FLAC_API_VERSION_CURRENT) || FLAC_API_VERSION_CURRENT <= 7

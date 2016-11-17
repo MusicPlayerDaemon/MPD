@@ -42,7 +42,6 @@ class MixerListener;
 struct MusicChunk;
 struct PlayerControl;
 struct AudioOutput;
-class Error;
 
 class MultipleOutputs {
 	MixerListener &mixer_listener;
@@ -118,13 +117,13 @@ public:
 	/**
 	 * Opens all audio outputs which are not disabled.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param audio_format the preferred audio format
 	 * @param _buffer the #music_buffer where consumed #MusicChunk objects
 	 * should be returned
-	 * @return true on success, false on failure
 	 */
-	bool Open(const AudioFormat audio_format, MusicBuffer &_buffer,
-		  Error &error);
+	void Open(const AudioFormat audio_format, MusicBuffer &_buffer);
 
 	/**
 	 * Closes all audio outputs.
@@ -143,11 +142,11 @@ public:
 	 * Enqueue a #MusicChunk object for playing, i.e. pushes it to a
 	 * #MusicPipe.
 	 *
+	 * Throws #std::runtime_error on error (all closed then).
+	 *
 	 * @param chunk the #MusicChunk object to be played
-	 * @return true on success, false if no audio output was able to play
-	 * (all closed then)
 	 */
-	bool Play(MusicChunk *chunk, Error &error);
+	void Play(MusicChunk *chunk);
 
 	/**
 	 * Checks if the output devices have drained their music pipe, and

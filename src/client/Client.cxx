@@ -28,9 +28,15 @@ const Domain client_domain("client");
 #ifdef ENABLE_DATABASE
 
 const Database *
-Client::GetDatabase(Error &error) const
+Client::GetDatabase() const
 {
-	return partition.instance.GetDatabase(error);
+	return partition.instance.GetDatabase();
+}
+
+const Database &
+Client::GetDatabaseOrThrow() const
+{
+	return partition.instance.GetDatabaseOrThrow();
 }
 
 const Storage *

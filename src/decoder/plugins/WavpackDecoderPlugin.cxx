@@ -25,7 +25,6 @@
 #include "tag/TagHandler.hxx"
 #include "tag/ApeTag.hxx"
 #include "fs/Path.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Alloc.hxx"
@@ -149,15 +148,9 @@ wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 		wavpack_bits_to_sample_format(is_float,
 					      WavpackGetBytesPerSample(wpc));
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format,
-				       WavpackGetSampleRate(wpc),
-				       sample_format,
-				       WavpackGetNumChannels(wpc), error)) {
-		LogError(error);
-		return;
-	}
+	auto audio_format = CheckAudioFormat(WavpackGetSampleRate(wpc),
+					     sample_format,
+					     WavpackGetNumChannels(wpc));
 
 	const format_samples_t format_samples = is_float
 		? format_samples_float

@@ -21,7 +21,6 @@
 #include "Control.hxx"
 #include "Idle.hxx"
 #include "DetachedSong.hxx"
-#include "util/Error.hxx"
 
 #include <algorithm>
 
@@ -169,15 +168,6 @@ PlayerControl::SetError(PlayerError type, std::exception_ptr &&_error)
 
 	error_type = type;
 	error = std::move(_error);
-}
-
-void
-PlayerControl::SetError(PlayerError type, Error &&_error)
-{
-	assert(type != PlayerError::NONE);
-	assert(_error.IsDefined());
-
-	SetError(type, std::make_exception_ptr(std::move(_error)));
 }
 
 void

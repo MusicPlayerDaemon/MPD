@@ -7,7 +7,6 @@
 #include "input/InputStream.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
-#include "util/Error.hxx"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -73,7 +72,6 @@ public:
 		CPPUNIT_ASSERT(!ris->KnownSize());
 		CPPUNIT_ASSERT_EQUAL(offset_type(0), ris->GetOffset());
 
-		Error error;
 		char buffer[16];
 		size_t nbytes = ris->Read(buffer, 2);
 		CPPUNIT_ASSERT_EQUAL(size_t(2), nbytes);

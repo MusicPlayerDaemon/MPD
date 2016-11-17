@@ -31,7 +31,6 @@
 
 #include <stdint.h>
 
-class Error;
 class PlayerListener;
 class MultipleOutputs;
 class DetachedSong;
@@ -355,9 +354,7 @@ public:
 	 * Caller must lock the object.
 	 *
 	 * @param type the error type; must not be #PlayerError::NONE
-	 * @param error detailed error information; must be defined.
 	 */
-	void SetError(PlayerError type, Error &&error);
 	void SetError(PlayerError type, std::exception_ptr &&_error);
 
 	/**

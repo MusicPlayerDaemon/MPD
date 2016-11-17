@@ -31,7 +31,6 @@ struct DatabasePlugin;
 struct DatabaseStats;
 struct DatabaseSelection;
 struct LightSong;
-class Error;
 
 class Database {
 	const DatabasePlugin &plugin;
@@ -84,46 +83,42 @@ public:
 	/**
 	 * Visit the selected entities.
 	 */
-	virtual bool Visit(const DatabaseSelection &selection,
+	virtual void Visit(const DatabaseSelection &selection,
 			   VisitDirectory visit_directory,
 			   VisitSong visit_song,
-			   VisitPlaylist visit_playlist,
-			   Error &error) const = 0;
+			   VisitPlaylist visit_playlist) const = 0;
 
-	bool Visit(const DatabaseSelection &selection,
+	void Visit(const DatabaseSelection &selection,
 		   VisitDirectory visit_directory,
-		   VisitSong visit_song,
-		   Error &error) const {
-		return Visit(selection, visit_directory, visit_song,
-			     VisitPlaylist(), error);
+		   VisitSong visit_song) const {
+		Visit(selection, visit_directory, visit_song, VisitPlaylist());
 	}
 
-	bool Visit(const DatabaseSelection &selection, VisitSong visit_song,
-		   Error &error) const {
-		return Visit(selection, VisitDirectory(), visit_song, error);
+	void Visit(const DatabaseSelection &selection,
+		   VisitSong visit_song) const {
+		return Visit(selection, VisitDirectory(), visit_song);
 	}
 
 	/**
 	 * Visit all unique tag values.
 	 */
-	virtual bool VisitUniqueTags(const DatabaseSelection &selection,
+	virtual void VisitUniqueTags(const DatabaseSelection &selection,
 				     TagType tag_type, tag_mask_t group_mask,
-				     VisitTag visit_tag,
-				     Error &error) const = 0;
+				     VisitTag visit_tag) const = 0;
 
-	virtual bool GetStats(const DatabaseSelection &selection,
-			      DatabaseStats &stats,
-			      Error &error) const = 0;
+	gcc_pure
+	virtual DatabaseStats GetStats(const DatabaseSelection &selection) const = 0;
 
 	/**
-	 * Update the database.  Returns the job id on success, 0 on
-	 * error (with #Error set) and 0 if not implemented (#Error
-	 * not set).
+	 * Update the database.
+	 *
+	 * Throws #std::runtime_error on error.
+	 *
+	 * @return the job id or 0 if not implemented
 	 */
 	virtual unsigned Update(gcc_unused const char *uri_utf8,
-				gcc_unused bool discard,
-				gcc_unused Error &error) {
-		/* not implemented: return 0 and don't set an Error */
+				gcc_unused bool discard) {
+		/* not implemented: return 0 */
 		return 0;
 	}
 

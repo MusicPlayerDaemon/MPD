@@ -17,13 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_ICU_ERROR_HXX
-#define MPD_ICU_ERROR_HXX
+#include "Error.hxx"
 
-#include "check.h"
+#include <sqlite3.h>
 
-class Domain;
+#include <string>
 
-extern const Domain icu_domain;
+static std::string
+MakeSqliteErrorMessage(sqlite3 *db, const char *msg)
+{
+	return std::string(msg) + ": " + sqlite3_errmsg(db);
+}
 
-#endif
+SqliteError::SqliteError(sqlite3 *db, int _code, const char *msg)
+	:std::runtime_error(MakeSqliteErrorMessage(db, msg)), code(_code) {}
+
+SqliteError::SqliteError(sqlite3_stmt *stmt, int _code, const char *msg)
+	:SqliteError(sqlite3_db_handle(stmt), _code, msg) {}

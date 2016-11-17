@@ -26,8 +26,6 @@
 #include <string>
 #include <vector>
 
-class Error;
-
 /**
  * Image of a MediaServer Directory Service container (directory),
  * possibly containing items and subordinate containers.

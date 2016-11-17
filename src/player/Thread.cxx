@@ -33,9 +33,10 @@
 #include "tag/Tag.hxx"
 #include "Idle.hxx"
 #include "util/Domain.hxx"
-#include "util/Error.hxx"
 #include "thread/Name.hxx"
 #include "Log.hxx"
+
+#include <stdexcept>
 
 #include <string.h>
 
@@ -443,20 +444,10 @@ Player::OpenOutput()
 	assert(pc.state == PlayerState::PLAY ||
 	       pc.state == PlayerState::PAUSE);
 
-	Error error;
-	if (pc.outputs.Open(play_audio_format, buffer, error)) {
-		output_open = true;
-		paused = false;
-
-		pc.Lock();
-		pc.state = PlayerState::PLAY;
-		pc.Unlock();
-
-		idle_add(IDLE_PLAYER);
-
-		return true;
-	} else {
-		LogError(error);
+	try {
+		pc.outputs.Open(play_audio_format, buffer);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 
 		output_open = false;
 
@@ -465,7 +456,7 @@ Player::OpenOutput()
 		paused = true;
 
 		pc.Lock();
-		pc.SetError(PlayerError::OUTPUT, std::move(error));
+		pc.SetError(PlayerError::OUTPUT, std::current_exception());
 		pc.state = PlayerState::PAUSE;
 		pc.Unlock();
 
@@ -473,6 +464,17 @@ Player::OpenOutput()
 
 		return false;
 	}
+
+	output_open = true;
+	paused = false;
+
+	pc.Lock();
+	pc.state = PlayerState::PLAY;
+	pc.Unlock();
+
+	idle_add(IDLE_PLAYER);
+
+	return true;
 }
 
 bool
@@ -556,9 +558,10 @@ Player::SendSilence()
 	chunk->length = num_frames * frame_size;
 	PcmSilence({chunk->data, chunk->length}, play_audio_format.format);
 
-	Error error;
-	if (!pc.outputs.Play(chunk, error)) {
-		LogError(error);
+	try {
+		pc.outputs.Play(chunk);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		buffer.Return(chunk);
 		return false;
 	}
@@ -618,10 +621,12 @@ Player::SeekDecoder()
 				where = total_time;
 		}
 
-		Error error;
-		if (!dc.Seek(where + start_time, error)) {
+		try {
+			dc.Seek(where + start_time);
+		} catch (...) {
 			/* decoder failure */
-			pc.SetError(PlayerError::DECODER, std::move(error));
+			pc.SetError(PlayerError::DECODER,
+				    std::current_exception());
 			pc.LockCommandFinished();
 			return false;
 		}
@@ -768,12 +773,11 @@ update_song_tag(PlayerControl &pc, DetachedSong &song, const Tag &new_tag)
  *
  * Player lock is not held.
  */
-static bool
+static void
 play_chunk(PlayerControl &pc,
 	   DetachedSong &song, MusicChunk *chunk,
 	   MusicBuffer &buffer,
-	   const AudioFormat format,
-	   Error &error)
+	   const AudioFormat format)
 {
 	assert(chunk->CheckFormat(format));
 
@@ -782,7 +786,7 @@ play_chunk(PlayerControl &pc,
 
 	if (chunk->IsEmpty()) {
 		buffer.Return(chunk);
-		return true;
+		return;
 	}
 
 	pc.Lock();
@@ -791,12 +795,9 @@ play_chunk(PlayerControl &pc,
 
 	/* send the chunk to the audio outputs */
 
-	if (!pc.outputs.Play(chunk, error))
-		return false;
-
+	pc.outputs.Play(chunk);
 	pc.total_play_time += (double)chunk->length /
 		format.GetTimeToSize();
-	return true;
 }
 
 inline bool
@@ -897,15 +898,16 @@ Player::PlayNextChunk()
 
 	/* play the current chunk */
 
-	Error error;
-	if (!play_chunk(pc, *song, chunk, buffer, play_audio_format, error)) {
-		LogError(error);
+	try {
+		play_chunk(pc, *song, chunk, buffer, play_audio_format);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 
 		buffer.Return(chunk);
 
 		pc.Lock();
 
-		pc.SetError(PlayerError::OUTPUT, std::move(error));
+		pc.SetError(PlayerError::OUTPUT, std::current_exception());
 
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */

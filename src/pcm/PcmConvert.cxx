@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "PcmConvert.hxx"
-#include "Domain.hxx"
 #include "ConfiguredResampler.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"

@@ -22,8 +22,6 @@
 
 #include "check.h"
 
-class Error;
-
 /**
  * Performs global one-time initialization of this class.
  *

@@ -25,7 +25,6 @@
 
 struct StoragePlugin;
 class Storage;
-class Error;
 class EventLoop;
 
 /**
@@ -40,6 +39,6 @@ GetStoragePluginByName(const char *name);
 
 gcc_nonnull_all gcc_malloc
 Storage *
-CreateStorageURI(EventLoop &event_loop, const char *uri, Error &error);
+CreateStorageURI(EventLoop &event_loop, const char *uri);
 
 #endif

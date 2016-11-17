@@ -24,8 +24,8 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -247,16 +247,16 @@ faad_decoder_new()
 /**
  * Wrapper for NeAACDecInit() which works around some API
  * inconsistencies in libfaad.
+ *
+ * Throws #std::runtime_error on error.
  */
-static bool
+static void
 faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer,
-		  AudioFormat &audio_format, Error &error)
+		  AudioFormat &audio_format)
 {
 	auto data = ConstBuffer<uint8_t>::FromVoid(buffer.Read());
-	if (data.IsEmpty()) {
-		error.Set(faad_decoder_domain, "Empty file");
-		return false;
-	}
+	if (data.IsEmpty())
+		throw std::runtime_error("Empty file");
 
 	uint8_t channels;
 	unsigned long sample_rate;
@@ -265,15 +265,13 @@ faad_decoder_init(NeAACDecHandle decoder, DecoderBuffer &buffer,
 				   const_cast<unsigned char *>(data.data),
 				   data.size,
 				   &sample_rate, &channels);
-	if (nbytes < 0) {
-		error.Set(faad_decoder_domain, "Not an AAC stream");
-		return false;
-	}
+	if (nbytes < 0)
+		throw std::runtime_error("Not an AAC stream");
 
 	buffer.Consume(nbytes);
 
-	return audio_format_init_checked(audio_format, sample_rate,
-					 SampleFormat::S16, channels, error);
+	audio_format = CheckAudioFormat(sample_rate, SampleFormat::S16,
+					channels);
 }
 
 /**
@@ -310,15 +308,16 @@ faad_get_file_time(InputStream &is)
 
 	if (!recognized) {
 		NeAACDecHandle decoder = faad_decoder_new();
+		AtScopeExit(decoder) { NeAACDecClose(decoder); };
 
 		buffer.Fill();
 
 		AudioFormat audio_format;
-		if (faad_decoder_init(decoder, buffer, audio_format,
-				      IgnoreError()))
+		try {
+			faad_decoder_init(decoder, buffer, audio_format);
 			recognized = true;
-
-		NeAACDecClose(decoder);
+		} catch (const std::runtime_error &e) {
+		}
 	}
 
 	return std::make_pair(recognized, duration);
@@ -335,12 +334,8 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
 
 	/* initialize it */
 
-	Error error;
 	AudioFormat audio_format;
-	if (!faad_decoder_init(decoder, buffer, audio_format, error)) {
-		LogError(error);
-		return;
-	}
+	faad_decoder_init(decoder, buffer, audio_format);
 
 	/* initialize the MPD core */
 
@@ -413,12 +408,9 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	/* create the libfaad decoder */
 
 	const NeAACDecHandle decoder = faad_decoder_new();
+	AtScopeExit(decoder) { NeAACDecClose(decoder); };
 
 	faad_stream_decode(mpd_decoder, is, buffer, decoder);
-
-	/* cleanup */
-
-	NeAACDecClose(decoder);
 }
 
 static bool

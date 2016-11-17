@@ -26,7 +26,6 @@
 
 #include <forward_list>
 
-struct config_param;
 class EventLoop;
 class NeighborExplorer;
 class NeighborListener;

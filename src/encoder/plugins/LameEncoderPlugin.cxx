@@ -24,10 +24,11 @@
 #include "config/ConfigError.hxx"
 #include "util/NumberParser.hxx"
 #include "util/ReusableArray.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <lame/lame.h>
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <string.h>
@@ -49,7 +50,7 @@ public:
 	~LameEncoder() override;
 
 	/* virtual methods from class Encoder */
-	bool Write(const void *data, size_t length, Error &) override;
+	void Write(const void *data, size_t length) override;
 	size_t Read(void *dest, size_t length) override;
 };
 
@@ -58,20 +59,17 @@ class PreparedLameEncoder final : public PreparedEncoder {
 	int bitrate;
 
 public:
-	bool Configure(const ConfigBlock &block, Error &error);
+	PreparedLameEncoder(const ConfigBlock &block);
 
 	/* virtual methods from class PreparedEncoder */
-	Encoder *Open(AudioFormat &audio_format, Error &) override;
+	Encoder *Open(AudioFormat &audio_format) override;
 
 	const char *GetMimeType() const override {
 		return "audio/mpeg";
 	}
 };
 
-static constexpr Domain lame_encoder_domain("lame_encoder");
-
-bool
-PreparedLameEncoder::Configure(const ConfigBlock &block, Error &error)
+PreparedLameEncoder::PreparedLameEncoder(const ConfigBlock &block)
 {
 	const char *value;
 	char *endptr;
@@ -82,127 +80,81 @@ PreparedLameEncoder::Configure(const ConfigBlock &block, Error &error)
 
 		quality = ParseDouble(value, &endptr);
 
-		if (*endptr != '\0' || quality < -1.0 || quality > 10.0) {
-			error.Format(config_domain,
-				     "quality \"%s\" is not a number in the "
-				     "range -1 to 10",
-				     value);
-			return false;
-		}
+		if (*endptr != '\0' || quality < -1.0 || quality > 10.0)
+			throw FormatRuntimeError("quality \"%s\" is not a number in the "
+						 "range -1 to 10",
+						 value);
 
-		if (block.GetBlockValue("bitrate") != nullptr) {
-			error.Set(config_domain,
-				  "quality and bitrate are both defined");
-			return false;
-		}
+		if (block.GetBlockValue("bitrate") != nullptr)
+			throw std::runtime_error("quality and bitrate are both defined");
 	} else {
 		/* a bit rate was configured */
 
 		value = block.GetBlockValue("bitrate");
-		if (value == nullptr) {
-			error.Set(config_domain,
-				  "neither bitrate nor quality defined");
-			return false;
-		}
+		if (value == nullptr)
+			throw std::runtime_error("neither bitrate nor quality defined");
 
 		quality = -2.0;
 		bitrate = ParseInt(value, &endptr);
 
-		if (*endptr != '\0' || bitrate <= 0) {
-			error.Set(config_domain,
-				  "bitrate should be a positive integer");
-			return false;
-		}
+		if (*endptr != '\0' || bitrate <= 0)
+			throw std::runtime_error("bitrate should be a positive integer");
 	}
-
-	return true;
 }
 
 static PreparedEncoder *
-lame_encoder_init(const ConfigBlock &block, Error &error)
+lame_encoder_init(const ConfigBlock &block)
 {
-	auto *encoder = new PreparedLameEncoder();
-
-	/* load configuration from "block" */
-	if (!encoder->Configure(block, error)) {
-		/* configuration has failed, roll back and return error */
-		delete encoder;
-		return nullptr;
-	}
-
-	return encoder;
+	return new PreparedLameEncoder(block);
 }
 
-static bool
+static void
 lame_encoder_setup(lame_global_flags *gfp, float quality, int bitrate,
-		   const AudioFormat &audio_format, Error &error)
+		   const AudioFormat &audio_format)
 {
 	if (quality >= -1.0) {
 		/* a quality was configured (VBR) */
 
-		if (0 != lame_set_VBR(gfp, vbr_rh)) {
-			error.Set(lame_encoder_domain,
-				  "error setting lame VBR mode");
-			return false;
-		}
-		if (0 != lame_set_VBR_q(gfp, quality)) {
-			error.Set(lame_encoder_domain,
-				  "error setting lame VBR quality");
-			return false;
-		}
+		if (0 != lame_set_VBR(gfp, vbr_rh))
+			throw std::runtime_error("error setting lame VBR mode");
+
+		if (0 != lame_set_VBR_q(gfp, quality))
+			throw std::runtime_error("error setting lame VBR quality");
 	} else {
 		/* a bit rate was configured */
 
-		if (0 != lame_set_brate(gfp, bitrate)) {
-			error.Set(lame_encoder_domain,
-				  "error setting lame bitrate");
-			return false;
-		}
+		if (0 != lame_set_brate(gfp, bitrate))
+			throw std::runtime_error("error setting lame bitrate");
 	}
 
-	if (0 != lame_set_num_channels(gfp, audio_format.channels)) {
-		error.Set(lame_encoder_domain,
-			  "error setting lame num channels");
-		return false;
-	}
+	if (0 != lame_set_num_channels(gfp, audio_format.channels))
+		throw std::runtime_error("error setting lame num channels");
 
-	if (0 != lame_set_in_samplerate(gfp, audio_format.sample_rate)) {
-		error.Set(lame_encoder_domain,
-			  "error setting lame sample rate");
-		return false;
-	}
+	if (0 != lame_set_in_samplerate(gfp, audio_format.sample_rate))
+		throw std::runtime_error("error setting lame sample rate");
 
-	if (0 != lame_set_out_samplerate(gfp, audio_format.sample_rate)) {
-		error.Set(lame_encoder_domain,
-			  "error setting lame out sample rate");
-		return false;
-	}
+	if (0 != lame_set_out_samplerate(gfp, audio_format.sample_rate))
+		throw std::runtime_error("error setting lame out sample rate");
 
-	if (0 > lame_init_params(gfp)) {
-		error.Set(lame_encoder_domain,
-			  "error initializing lame params");
-		return false;
-	}
-
-	return true;
+	if (0 > lame_init_params(gfp))
+		throw std::runtime_error("error initializing lame params");
 }
 
 Encoder *
-PreparedLameEncoder::Open(AudioFormat &audio_format, Error &error)
+PreparedLameEncoder::Open(AudioFormat &audio_format)
 {
 	audio_format.format = SampleFormat::S16;
 	audio_format.channels = 2;
 
 	auto gfp = lame_init();
-	if (gfp == nullptr) {
-		error.Set(lame_encoder_domain, "lame_init() failed");
-		return nullptr;
-	}
+	if (gfp == nullptr)
+		throw std::runtime_error("lame_init() failed");
 
-	if (!lame_encoder_setup(gfp, quality, bitrate,
-				audio_format, error)) {
+	try {
+		lame_encoder_setup(gfp, quality, bitrate, audio_format);
+	} catch (...) {
 		lame_close(gfp);
-		return nullptr;
+		throw;
 	}
 
 	return new LameEncoder(audio_format, gfp);
@@ -213,9 +165,8 @@ LameEncoder::~LameEncoder()
 	lame_close(gfp);
 }
 
-bool
-LameEncoder::Write(const void *data, size_t length,
-		   gcc_unused Error &error)
+void
+LameEncoder::Write(const void *data, size_t length)
 {
 	const int16_t *src = (const int16_t*)data;
 
@@ -235,14 +186,11 @@ LameEncoder::Write(const void *data, size_t length,
 						       num_frames,
 						       dest, output_buffer_size);
 
-	if (bytes_out < 0) {
-		error.Set(lame_encoder_domain, "lame encoder failed");
-		return false;
-	}
+	if (bytes_out < 0)
+		throw std::runtime_error("lame encoder failed");
 
 	output_begin = dest;
 	output_end = dest + bytes_out;
-	return true;
 }
 
 size_t

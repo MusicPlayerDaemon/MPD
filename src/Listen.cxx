@@ -25,7 +25,8 @@
 #include "config/ConfigOption.hxx"
 #include "net/SocketAddress.hxx"
 #include "event/ServerSocket.hxx"
-#include "util/Error.hxx"
+#include "system/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "Log.hxx"
@@ -58,63 +59,56 @@ private:
 static ClientListener *listen_socket;
 int listen_port;
 
-static bool
+/**
+ * Throws #std::runtime_error on error.
+ */
+static void
 listen_add_config_param(unsigned int port,
-			const struct config_param *param,
-			Error &error_r)
+			const ConfigParam *param)
 {
 	assert(param != nullptr);
 
 	if (0 == strcmp(param->value.c_str(), "any")) {
-		return listen_socket->AddPort(port, error_r);
+		listen_socket->AddPort(port);
 	} else if (param->value[0] == '/' || param->value[0] == '~') {
-		auto path = config_parse_path(param, error_r);
-		return !path.IsNull() &&
-			listen_socket->AddPath(std::move(path), error_r);
+		listen_socket->AddPath(param->GetPath());
 	} else {
-		return listen_socket->AddHost(param->value.c_str(), port,
-					      error_r);
+		listen_socket->AddHost(param->value.c_str(), port);
 	}
 }
 
 #ifdef ENABLE_SYSTEMD_DAEMON
 
 static bool
-listen_systemd_activation(Error &error_r)
+listen_systemd_activation()
 {
 	int n = sd_listen_fds(true);
 	if (n <= 0) {
 		if (n < 0)
-			FormatErrno(listen_domain, -n,
-				    "sd_listen_fds() failed");
+			throw MakeErrno(-n, "sd_listen_fds() failed");
 		return false;
 	}
 
 	for (int i = SD_LISTEN_FDS_START, end = SD_LISTEN_FDS_START + n;
 	     i != end; ++i)
-		if (!listen_socket->AddFD(i, error_r))
-			return false;
+		listen_socket->AddFD(i);
 
 	return true;
 }
 
 #endif
 
-bool
-listen_global_init(EventLoop &loop, Partition &partition, Error &error)
+void
+listen_global_init(EventLoop &loop, Partition &partition)
 {
 	int port = config_get_positive(ConfigOption::PORT, DEFAULT_PORT);
-	const struct config_param *param =
-		config_get_param(ConfigOption::BIND_TO_ADDRESS);
+	const auto *param = config_get_param(ConfigOption::BIND_TO_ADDRESS);
 
 	listen_socket = new ClientListener(loop, partition);
 
 #ifdef ENABLE_SYSTEMD_DAEMON
-	if (listen_systemd_activation(error))
-		return true;
-
-	if (error.IsDefined())
-		return false;
+	if (listen_systemd_activation())
+		return;
 #endif
 
 	if (param != nullptr) {
@@ -122,32 +116,35 @@ listen_global_init(EventLoop &loop, Partition &partition, Error &error)
 		   for all values */
 
 		do {
-			if (!listen_add_config_param(port, param, error)) {
+			try {
+				listen_add_config_param(port, param);
+			} catch (const std::runtime_error &e) {
 				delete listen_socket;
-				error.FormatPrefix("Failed to listen on %s (line %i): ",
-						   param->value.c_str(),
-						   param->line);
-				return false;
+				std::throw_with_nested(FormatRuntimeError("Failed to listen on %s (line %i)",
+									  param->value.c_str(),
+									  param->line));
 			}
 		} while ((param = param->next) != nullptr);
 	} else {
 		/* no "bind_to_address" configured, bind the
 		   configured port on all interfaces */
 
-		if (!listen_socket->AddPort(port, error)) {
+		try {
+			listen_socket->AddPort(port);
+		} catch (const std::runtime_error &e) {
 			delete listen_socket;
-			error.FormatPrefix("Failed to listen on *:%d: ", port);
-			return false;
+			std::throw_with_nested(FormatRuntimeError("Failed to listen on *:%d: ", port));
 		}
 	}
 
-	if (!listen_socket->Open(error)) {
+	try {
+		listen_socket->Open();
+	} catch (const std::runtime_error &e) {
 		delete listen_socket;
-		return false;
+		throw;
 	}
 
 	listen_port = port;
-	return true;
 }
 
 void listen_global_finish(void)

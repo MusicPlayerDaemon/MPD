@@ -22,7 +22,6 @@
 #include "fs/io/FileReader.hxx"
 #include "fs/io/StdioOutputStream.hxx"
 #include "Log.hxx"
-#include "util/Error.hxx"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -32,7 +32,8 @@
 #include "pcm/PcmConvert.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "player/Control.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <assert.h>
@@ -62,43 +63,29 @@ load_audio_output(EventLoop &event_loop, const char *name)
 {
 	const auto *param = config_find_block(ConfigBlockOption::AUDIO_OUTPUT,
 					      "name", name);
-	if (param == NULL) {
-		fprintf(stderr, "No such configured audio output: %s\n", name);
-		return nullptr;
-	}
+	if (param == NULL)
+		throw FormatRuntimeError("No such configured audio output: %s\n",
+					 name);
 
 	static struct PlayerControl dummy_player_control(*(PlayerListener *)nullptr,
 							 *(MultipleOutputs *)nullptr,
 							 32, 4);
 
-	Error error;
-	AudioOutput *ao =
-		audio_output_new(event_loop, *param,
-				 *(MixerListener *)nullptr,
-				 dummy_player_control,
-				 error);
-	if (ao == nullptr)
-		LogError(error);
-
-	return ao;
+	return audio_output_new(event_loop, *param,
+				*(MixerListener *)nullptr,
+				dummy_player_control);
 }
 
-static bool
+static void
 run_output(AudioOutput *ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
-	Error error;
-	if (!ao_plugin_enable(ao, error)) {
-		LogError(error, "Failed to enable audio output");
-		return false;
-	}
+	ao_plugin_enable(ao);
+	AtScopeExit(ao) { ao_plugin_disable(ao); };
 
-	if (!ao_plugin_open(ao, audio_format, error)) {
-		ao_plugin_disable(ao);
-		LogError(error, "Failed to open audio output");
-		return false;
-	}
+	ao_plugin_open(ao, audio_format);
+	AtScopeExit(ao) { ao_plugin_close(ao); };
 
 	struct audio_format_string af_string;
 	fprintf(stderr, "audio_format=%s\n",
@@ -123,14 +110,7 @@ run_output(AudioOutput *ao, AudioFormat audio_format)
 		size_t play_length = (length / frame_size) * frame_size;
 		if (play_length > 0) {
 			size_t consumed = ao_plugin_play(ao,
-							 buffer, play_length,
-							 error);
-			if (consumed == 0) {
-				ao_plugin_close(ao);
-				ao_plugin_disable(ao);
-				LogError(error, "Failed to play");
-				return false;
-			}
+							 buffer, play_length);
 
 			assert(consumed <= length);
 			assert(consumed % frame_size == 0);
@@ -139,16 +119,10 @@ run_output(AudioOutput *ao, AudioFormat audio_format)
 			memmove(buffer, buffer + consumed, length);
 		}
 	}
-
-	ao_plugin_close(ao);
-	ao_plugin_disable(ao);
-	return true;
 }
 
 int main(int argc, char **argv)
 try {
-	Error error;
-
 	if (argc < 3 || argc > 4) {
 		fprintf(stderr, "Usage: run_output CONFIG NAME [FORMAT] <IN\n");
 		return EXIT_FAILURE;
@@ -170,21 +144,15 @@ try {
 	/* initialize the audio output */
 
 	AudioOutput *ao = load_audio_output(event_loop, argv[2]);
-	if (ao == NULL)
-		return 1;
 
 	/* parse the audio format */
 
-	if (argc > 3) {
-		if (!audio_format_parse(audio_format, argv[3], false, error)) {
-			LogError(error, "Failed to parse audio format");
-			return EXIT_FAILURE;
-		}
-	}
+	if (argc > 3)
+		audio_format = ParseAudioFormat(argv[3], false);
 
 	/* do it */
 
-	bool success = run_output(ao, audio_format);
+	run_output(ao, audio_format);
 
 	/* cleanup and exit */
 
@@ -192,7 +160,7 @@ try {
 
 	config_global_finish();
 
-	return success ? EXIT_SUCCESS : EXIT_FAILURE;
+	return EXIT_SUCCESS;
  } catch (const std::exception &e) {
 	LogError(e);
 	return EXIT_FAILURE;

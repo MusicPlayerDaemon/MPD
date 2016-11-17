@@ -21,23 +21,21 @@
 #include "DatabaseGlue.hxx"
 #include "Registry.hxx"
 #include "DatabaseError.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "config/Block.hxx"
 #include "DatabasePlugin.hxx"
 
 Database *
 DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
-		   const ConfigBlock &block, Error &error)
+		   const ConfigBlock &block)
 {
 	const char *plugin_name =
 		block.GetBlockValue("plugin", "simple");
 
 	const DatabasePlugin *plugin = GetDatabasePluginByName(plugin_name);
-	if (plugin == nullptr) {
-		error.Format(db_domain,
-			     "No such database plugin: %s", plugin_name);
-		return nullptr;
-	}
+	if (plugin == nullptr)
+		throw FormatRuntimeError("No such database plugin: %s",
+					 plugin_name);
 
-	return plugin->create(loop, listener, block, error);
+	return plugin->create(loop, listener, block);
 }

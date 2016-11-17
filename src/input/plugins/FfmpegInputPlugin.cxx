@@ -29,7 +29,6 @@
 #include "../InputPlugin.hxx"
 #include "PluginUnavailable.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Error.hxx"
 
 extern "C" {
 #include <libavformat/avio.h>

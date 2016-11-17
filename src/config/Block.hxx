@@ -27,7 +27,6 @@
 #include <string>
 #include <vector>
 
-class Error;
 class AllocatedPath;
 
 struct BlockParam {
@@ -111,11 +110,11 @@ struct ConfigBlock {
 	/**
 	 * Same as config_get_path(), but looks up the setting in the
 	 * specified block.
+	 *
+	 * Throws #std::runtime_error on error.
 	 */
-	AllocatedPath GetBlockPath(const char *name, const char *default_value,
-				   Error &error) const;
-
-	AllocatedPath GetBlockPath(const char *name, Error &error) const;
+	AllocatedPath GetPath(const char *name,
+			      const char *default_value=nullptr) const;
 
 	gcc_pure
 	int GetBlockValue(const char *name, int default_value) const;

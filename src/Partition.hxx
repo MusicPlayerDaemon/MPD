@@ -68,9 +68,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	}
 
 	unsigned AppendURI(const SongLoader &loader,
-			   const char *uri_utf8,
-			   Error &error) {
-		return playlist.AppendURI(pc, loader, uri_utf8, error);
+			   const char *uri_utf8) {
+		return playlist.AppendURI(pc, loader, uri_utf8);
 	}
 
 	void DeletePosition(unsigned position) {
@@ -183,7 +182,10 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	 * if this MPD configuration has no database (no
 	 * music_directory was configured).
 	 */
-	const Database *GetDatabase(Error &error) const;
+	const Database *GetDatabase() const;
+
+	gcc_pure
+	const Database &GetDatabaseOrThrow() const;
 
 	/**
 	 * The database has been modified.  Propagate the change to

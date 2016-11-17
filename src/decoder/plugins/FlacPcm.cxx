@@ -19,9 +19,8 @@
 
 #include "config.h"
 #include "FlacPcm.hxx"
-#include "FlacDomain.hxx"
 #include "CheckAudioFormat.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>
@@ -47,24 +46,16 @@ flac_sample_format(unsigned bits_per_sample)
 	}
 }
 
-bool
+void
 FlacPcmImport::Open(unsigned sample_rate, unsigned bits_per_sample,
-		    unsigned channels, Error &error)
+		    unsigned channels)
 {
 	auto sample_format = flac_sample_format(bits_per_sample);
-	if (sample_format == SampleFormat::UNDEFINED) {
-		error.Format(flac_domain, "Unsupported FLAC bit depth: %u",
-			     bits_per_sample);
-		return false;
-	}
+	if (sample_format == SampleFormat::UNDEFINED)
+		throw FormatRuntimeError("Unsupported FLAC bit depth: %u",
+					 bits_per_sample);
 
-	if (!audio_format_init_checked(audio_format,
-				       sample_rate,
-				       sample_format,
-				       channels, error))
-		return false;
-
-	return true;
+	audio_format = CheckAudioFormat(sample_rate, sample_format, channels);
 }
 
 template<typename T>

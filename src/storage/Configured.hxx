@@ -23,17 +23,17 @@
 #include "check.h"
 #include "Compiler.h"
 
-class Error;
 class Storage;
 class EventLoop;
 
 /**
  * Read storage configuration settings and create a #Storage instance
- * from it.  Returns nullptr on error or if no storage is configured
- * (no #Error set in that case).
+ * from it.  Returns nullptr if no storage is configured.
+ *
+ * Throws #std::runtime_error on error.
  */
 Storage *
-CreateConfiguredStorage(EventLoop &event_loop, Error &error);
+CreateConfiguredStorage(EventLoop &event_loop);
 
 /**
  * Returns true if there is configuration for a #Storage instance.

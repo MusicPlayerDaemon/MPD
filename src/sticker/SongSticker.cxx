@@ -22,8 +22,8 @@
 #include "StickerDatabase.hxx"
 #include "db/LightSong.hxx"
 #include "db/Interface.hxx"
-#include "util/Error.hxx"
 #include "util/Alloc.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <stdexcept>
 
@@ -31,46 +31,44 @@
 #include <stdlib.h>
 
 std::string
-sticker_song_get_value(const LightSong &song, const char *name, Error &error)
+sticker_song_get_value(const LightSong &song, const char *name)
 {
 	const auto uri = song.GetURI();
-	return sticker_load_value("song", uri.c_str(), name, error);
+	return sticker_load_value("song", uri.c_str(), name);
 }
 
-bool
+void
 sticker_song_set_value(const LightSong &song,
-		       const char *name, const char *value,
-		       Error &error)
+		       const char *name, const char *value)
 {
 	const auto uri = song.GetURI();
-	return sticker_store_value("song", uri.c_str(), name, value, error);
+	sticker_store_value("song", uri.c_str(), name, value);
 }
 
 bool
-sticker_song_delete(const char *uri, Error &error)
+sticker_song_delete(const char *uri)
 {
-	return sticker_delete("song", uri, error);
+	return sticker_delete("song", uri);
 }
 
 bool
-sticker_song_delete(const LightSong &song, Error &error)
+sticker_song_delete(const LightSong &song)
 {
-	return sticker_song_delete(song.GetURI().c_str(), error);
+	return sticker_song_delete(song.GetURI().c_str());
 }
 
 bool
-sticker_song_delete_value(const LightSong &song, const char *name,
-			  Error &error)
+sticker_song_delete_value(const LightSong &song, const char *name)
 {
 	const auto uri = song.GetURI();
-	return sticker_delete_value("song", uri.c_str(), name, error);
+	return sticker_delete_value("song", uri.c_str(), name);
 }
 
 Sticker *
-sticker_song_get(const LightSong &song, Error &error)
+sticker_song_get(const LightSong &song)
 {
 	const auto uri = song.GetURI();
-	return sticker_load("song", uri.c_str(), error);
+	return sticker_load("song", uri.c_str());
 }
 
 struct sticker_song_find_data {
@@ -102,13 +100,12 @@ sticker_song_find_cb(const char *uri, const char *value, void *user_data)
 	}
 }
 
-bool
+void
 sticker_song_find(const Database &db, const char *base_uri, const char *name,
 		  StickerOperator op, const char *value,
 		  void (*func)(const LightSong &song, const char *value,
 			       void *user_data),
-		  void *user_data,
-		  Error &error)
+		  void *user_data)
 {
 	struct sticker_song_find_data data;
 	data.db = &db;
@@ -125,12 +122,10 @@ sticker_song_find(const Database &db, const char *base_uri, const char *name,
 		/* searching in root directory - no trailing slash */
 		allocated = nullptr;
 
+	AtScopeExit(allocated) { free(allocated); };
+
 	data.base_uri_length = strlen(data.base_uri);
 
-	bool success = sticker_find("song", data.base_uri, name, op, value,
-				    sticker_song_find_cb, &data,
-				    error);
-	free(allocated);
-
-	return success;
+	sticker_find("song", data.base_uri, name, op, value,
+		     sticker_song_find_cb, &data);
 }

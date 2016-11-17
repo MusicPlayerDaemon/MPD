@@ -21,7 +21,6 @@
 #include "WildmidiDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
@@ -40,13 +39,9 @@ static constexpr unsigned WILDMIDI_SAMPLE_RATE = 48000;
 static bool
 wildmidi_init(const ConfigBlock &block)
 {
-	Error error;
 	const AllocatedPath path =
-		block.GetBlockPath("config_file",
-				   "/etc/timidity/timidity.cfg",
-				   error);
-	if (path.IsNull())
-		FatalError(error);
+		block.GetPath("config_file",
+			      "/etc/timidity/timidity.cfg");
 
 	if (!FileExists(path)) {
 		const auto utf8 = path.ToUTF8();

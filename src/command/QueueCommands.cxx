@@ -36,7 +36,6 @@
 #include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
 #include "util/NumberParser.hxx"
-#include "util/Error.hxx"
 
 #include <memory>
 #include <limits>
@@ -52,16 +51,15 @@ AddUri(Client &client, const LocatedUri &uri)
 }
 
 static CommandResult
-AddDatabaseSelection(Client &client, const char *uri, Response &r)
+AddDatabaseSelection(Client &client, const char *uri,
+		     gcc_unused Response &r)
 {
 #ifdef ENABLE_DATABASE
 	const ScopeBulkEdit bulk_edit(client.partition);
 
 	const DatabaseSelection selection(uri, true);
-	Error error;
-	return AddFromDatabase(client.partition, selection, error)
-		? CommandResult::OK
-		: print_error(r, error);
+	AddFromDatabase(client.partition, selection);
+	return CommandResult::OK;
 #else
 	(void)client;
 	(void)uri;
@@ -83,16 +81,12 @@ handle_add(Client &client, Request args, Response &r)
 		   here */
 		uri = "";
 
-	Error error;
-	const auto located_uri = LocateUri(uri, &client,
+	const auto located_uri = LocateUri(uri, &client
 #ifdef ENABLE_DATABASE
-					   nullptr,
+					   , nullptr
 #endif
-					   error);
+					   );
 	switch (located_uri.type) {
-	case LocatedUri::Type::UNKNOWN:
-		return print_error(r, error);
-
 	case LocatedUri::Type::ABSOLUTE:
 	case LocatedUri::Type::PATH:
 		AddUri(client, located_uri);
@@ -112,10 +106,7 @@ handle_addid(Client &client, Request args, Response &r)
 	const char *const uri = args.front();
 
 	const SongLoader loader(client);
-	Error error;
-	unsigned added_id = client.partition.AppendURI(loader, uri, error);
-	if (added_id == 0)
-		return print_error(r, error);
+	unsigned added_id = client.partition.AppendURI(loader, uri);
 
 	if (args.size == 2) {
 		unsigned to = args.ParseUnsigned(1);

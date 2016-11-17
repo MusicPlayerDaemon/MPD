@@ -50,11 +50,11 @@ struct StorageFileInfo {
 	 */
 	unsigned device, inode;
 
-	bool IsRegular() const {
+	constexpr bool IsRegular() const {
 		return type == Type::REGULAR;
 	}
 
-	bool IsDirectory() const {
+	constexpr bool IsDirectory() const {
 		return type == Type::DIRECTORY;
 	}
 };

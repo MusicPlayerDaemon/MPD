@@ -22,15 +22,16 @@
 
 #include "check.h"
 
-class Error;
 class Storage;
 class EventLoop;
 
 struct StoragePlugin {
 	const char *name;
 
-	Storage *(*create_uri)(EventLoop &event_loop, const char *uri,
-			       Error &error);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	Storage *(*create_uri)(EventLoop &event_loop, const char *uri);
 };
 
 #endif

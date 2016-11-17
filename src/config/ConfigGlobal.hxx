@@ -23,10 +23,9 @@
 #include "ConfigOption.hxx"
 #include "Compiler.h"
 
-class Error;
 class Path;
 class AllocatedPath;
-struct config_param;
+struct ConfigParam;
 struct ConfigBlock;
 
 void
@@ -46,7 +45,7 @@ void
 ReadConfigFile(Path path);
 
 gcc_pure
-const config_param *
+const ConfigParam *
 config_get_param(enum ConfigOption option);
 
 gcc_pure
@@ -78,19 +77,12 @@ config_get_string(enum ConfigOption option, const char *default_value=nullptr);
 /**
  * Returns an optional configuration variable which contains an
  * absolute path.  If there is a tilde prefix, it is expanded.
- * Returns AllocatedPath::Null() if the value is not present.  If the path
- * could not be parsed, returns AllocatedPath::Null() and sets the error.
+ * Returns AllocatedPath::Null() if the value is not present.
+ *
+ * Throws #std::runtime_error on error.
  */
 AllocatedPath
-config_get_path(enum ConfigOption option, Error &error);
-
-/**
- * Parse a configuration parameter as a path.
- * If there is a tilde prefix, it is expanded. If the path could
- * not be parsed, returns AllocatedPath::Null() and sets the error.
- */
-AllocatedPath
-config_parse_path(const struct config_param *param, Error & error_r);
+config_get_path(enum ConfigOption option);
 
 gcc_pure
 unsigned

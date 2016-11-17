@@ -27,15 +27,18 @@
 #include "AudioCompress/compress.h"
 #include "AudioParser.hxx"
 #include "AudioFormat.hxx"
-#include "util/Error.hxx"
+#include "Log.hxx"
+
+#include <stdexcept>
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
 int main(int argc, char **argv)
-{
+try {
 	struct Compressor *compressor;
 	static char buffer[4096];
 	ssize_t nbytes;
@@ -46,14 +49,8 @@ int main(int argc, char **argv)
 	}
 
 	AudioFormat audio_format(48000, SampleFormat::S16, 2);
-	if (argc > 1) {
-		Error error;
-		if (!audio_format_parse(audio_format, argv[1], false, error)) {
-			fprintf(stderr, "Failed to parse audio format: %s\n",
-				   error.GetMessage());
-			return 1;
-		}
-	}
+	if (argc > 1)
+		audio_format = ParseAudioFormat(argv[1], false);
 
 	compressor = Compressor_new(0);
 
@@ -65,4 +62,8 @@ int main(int argc, char **argv)
 	}
 
 	Compressor_delete(compressor);
+	return EXIT_SUCCESS;
+} catch (const std::exception &e) {
+	LogError(e);
+	return EXIT_FAILURE;
 }

@@ -32,7 +32,6 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "util/bit_reverse.h"
-#include "util/Error.hxx"
 #include "system/ByteOrder.hxx"
 #include "tag/TagHandler.hxx"
 #include "DsdLib.hxx"
@@ -426,14 +425,9 @@ dsdiff_stream_decode(Decoder &decoder, InputStream &is)
 	if (!dsdiff_read_metadata(&decoder, is, &metadata, &chunk_header))
 		return;
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
-				       SampleFormat::DSD,
-				       metadata.channels, error)) {
-		LogError(error);
-		return;
-	}
+	auto audio_format = CheckAudioFormat(metadata.sample_rate / 8,
+					     SampleFormat::DSD,
+					     metadata.channels);
 
 	/* calculate song time from DSD chunk size and sample frequency */
 	offset_type chunk_size = metadata.chunk_size;
@@ -466,12 +460,9 @@ dsdiff_scan_stream(InputStream &is,
 	if (!dsdiff_read_metadata(nullptr, is, &metadata, &chunk_header))
 		return false;
 
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, metadata.sample_rate / 8,
-				       SampleFormat::DSD,
-				       metadata.channels, IgnoreError()))
-		/* refuse to parse files which we cannot play anyway */
-		return false;
+	auto audio_format = CheckAudioFormat(metadata.sample_rate / 8,
+					     SampleFormat::DSD,
+					     metadata.channels);
 
 	/* calculate song time and add as tag */
 	uint64_t n_frames = metadata.chunk_size / audio_format.channels;

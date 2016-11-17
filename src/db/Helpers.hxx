@@ -20,13 +20,11 @@
 #ifndef MPD_MEMORY_DATABASE_PLUGIN_HXX
 #define MPD_MEMORY_DATABASE_PLUGIN_HXX
 
-class Error;
 class Database;
 struct DatabaseSelection;
 struct DatabaseStats;
 
-bool
-GetStats(const Database &db, const DatabaseSelection &selection,
-	 DatabaseStats &stats, Error &error);
+DatabaseStats
+GetStats(const Database &db, const DatabaseSelection &selection);
 
 #endif

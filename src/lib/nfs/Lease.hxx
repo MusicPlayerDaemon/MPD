@@ -24,8 +24,6 @@
 
 #include <exception>
 
-class Error;
-
 class NfsLease {
 public:
 	/**

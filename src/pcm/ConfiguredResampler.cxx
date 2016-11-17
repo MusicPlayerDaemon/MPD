@@ -71,7 +71,7 @@ MakeResamplerDefaultConfig(ConfigBlock &block)
  * "resampler" block.
  */
 static const ConfigBlock *
-MigrateResamplerConfig(const config_param &param, ConfigBlock &block)
+MigrateResamplerConfig(const ConfigParam &param, ConfigBlock &block)
 {
 	assert(block.IsEmpty());
 
@@ -102,7 +102,7 @@ MigrateResamplerConfig(const config_param &param, ConfigBlock &block)
 }
 
 static const ConfigBlock *
-MigrateResamplerConfig(const config_param *param, ConfigBlock &buffer)
+MigrateResamplerConfig(const ConfigParam *param, ConfigBlock &buffer)
 {
 	assert(buffer.IsEmpty());
 

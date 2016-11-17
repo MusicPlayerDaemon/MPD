@@ -25,14 +25,10 @@
 #include <exception>
 
 class Response;
-class Error;
 
 /**
- * Send the #Error to the client.
+ * Send the exception to the client.
  */
-CommandResult
-print_error(Response &r, const Error &error);
-
 void
 PrintError(Response &r, std::exception_ptr ep);
 

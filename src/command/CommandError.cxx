@@ -21,9 +21,7 @@
 #include "CommandError.hxx"
 #include "PlaylistError.hxx"
 #include "db/DatabaseError.hxx"
-#include "LocateUri.hxx"
 #include "client/Response.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <system_error>
@@ -85,32 +83,6 @@ ToAck(DatabaseErrorCode code)
 
 gcc_pure
 static enum ack
-ToAck(const Error &error)
-{
-	if (error.IsDomain(ack_domain)) {
-		return (enum ack)error.GetCode();
-	} else if (error.IsDomain(locate_uri_domain)) {
-		return ACK_ERROR_ARG;
-	} else if (error.IsDomain(errno_domain)) {
-		return ACK_ERROR_SYSTEM;
-	}
-
-	return ACK_ERROR_UNKNOWN;
-}
-
-CommandResult
-print_error(Response &r, const Error &error)
-{
-	assert(error.IsDefined());
-
-	LogError(error);
-
-	r.Error(ToAck(error), error.GetMessage());
-	return CommandResult::ERROR;
-}
-
-gcc_pure
-static enum ack
 ToAck(std::exception_ptr ep)
 {
 	try {
@@ -128,8 +100,6 @@ ToAck(std::exception_ptr ep)
 #if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204
 	} catch (const std::exception &e) {
 #else
-	} catch (const Error &error) {
-		return ToAck(error);
 	} catch (...) {
 #endif
 		try {
@@ -155,8 +125,6 @@ PrintError(Response &r, std::exception_ptr ep)
 	} catch (const std::exception &e) {
 		LogError(e);
 		r.Error(ToAck(ep), e.what());
-	} catch (const Error &error) {
-		print_error(r, error);
 	} catch (...) {
 		r.Error(ACK_ERROR_UNKNOWN, "Unknown error");
 	}

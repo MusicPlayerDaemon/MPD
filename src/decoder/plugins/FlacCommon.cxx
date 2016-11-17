@@ -24,9 +24,10 @@
 #include "config.h"
 #include "FlacCommon.hxx"
 #include "FlacMetadata.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "Log.hxx"
+
+#include <stdexcept>
 
 bool
 FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
@@ -35,10 +36,11 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 	assert(!initialized);
 	assert(!unsupported);
 
-	::Error error;
-	if (!pcm_import.Open(sample_rate, bits_per_sample,
-			     channels, error)) {
-		LogError(error);
+	try {
+		pcm_import.Open(sample_rate, bits_per_sample,
+				channels);
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		unsupported = true;
 		return false;
 	}

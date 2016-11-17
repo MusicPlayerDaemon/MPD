@@ -22,27 +22,27 @@
 
 class PreparedEncoder;
 struct ConfigBlock;
-class Error;
 
 struct EncoderPlugin {
 	const char *name;
 
-	PreparedEncoder *(*init)(const ConfigBlock &block,
-				 Error &error);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	PreparedEncoder *(*init)(const ConfigBlock &block);
 };
 
 /**
  * Creates a new encoder object.
  *
+ * Throws #std::runtime_error on error.
+ *
  * @param plugin the encoder plugin
- * @param error location to store the error occurring, or nullptr to ignore errors.
- * @return an encoder object on success, nullptr on failure
  */
 static inline PreparedEncoder *
-encoder_init(const EncoderPlugin &plugin, const ConfigBlock &block,
-	     Error &error)
+encoder_init(const EncoderPlugin &plugin, const ConfigBlock &block)
 {
-	return plugin.init(block, error);
+	return plugin.init(block);
 }
 
 #endif

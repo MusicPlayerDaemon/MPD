@@ -26,7 +26,6 @@
 #include "plugins/RewindInputPlugin.hxx"
 #include "fs/Traits.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/Error.hxx"
 
 #include <stdexcept>
 
@@ -35,11 +34,7 @@ InputStream::Open(const char *url,
 		  Mutex &mutex, Cond &cond)
 {
 	if (PathTraitsUTF8::IsAbsolute(url)) {
-		Error error;
-		const auto path = AllocatedPath::FromUTF8(url, error);
-		if (path.IsNull())
-			throw std::runtime_error(error.GetMessage());
-
+		const auto path = AllocatedPath::FromUTF8Throw(url);
 		return OpenLocalInputStream(path, mutex, cond);
 	}
 

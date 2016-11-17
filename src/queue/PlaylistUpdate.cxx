@@ -21,9 +21,9 @@
 #include "Playlist.hxx"
 #include "db/Interface.hxx"
 #include "db/LightSong.hxx"
-#include "db/DatabaseError.hxx"
 #include "DetachedSong.hxx"
-#include "util/Error.hxx"
+
+#include <stdexcept>
 
 static bool
 UpdatePlaylistSong(const Database &db, DetachedSong &song)

@@ -24,13 +24,13 @@
 #include "encoder/EncoderInterface.hxx"
 #include "encoder/EncoderPlugin.hxx"
 #include "encoder/EncoderList.hxx"
-#include "config/ConfigError.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
-#include "system/FatalError.hxx"
 #include "Log.hxx"
 
 #include <shout/shout.h>
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -55,26 +55,17 @@ struct ShoutOutput final {
 
 	uint8_t buffer[32768];
 
-	ShoutOutput()
-		:base(shout_output_plugin),
-		 shout_conn(shout_new()),
-		 shout_meta(shout_metadata_new()) {}
-
+	explicit ShoutOutput(const ConfigBlock &block);
 	~ShoutOutput();
 
-	bool Initialize(const ConfigBlock &block, Error &error) {
-		return base.Configure(block, error);
-	}
+	static ShoutOutput *Create(const ConfigBlock &block);
 
-	bool Configure(const ConfigBlock &block, Error &error);
-	static ShoutOutput *Create(const ConfigBlock &block, Error &error);
-
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	unsigned Delay() const;
 	void SendTag(const Tag &tag);
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 	bool Pause();
 };
@@ -83,18 +74,16 @@ static int shout_init_count;
 
 static constexpr Domain shout_output_domain("shout_output");
 
-ShoutOutput::~ShoutOutput()
+gcc_pure
+static const char *
+require_block_string(const ConfigBlock &block, const char *name)
 {
-	if (shout_meta != nullptr)
-		shout_metadata_free(shout_meta);
-	if (shout_conn != nullptr)
-		shout_free(shout_conn);
+	const char *value = block.GetBlockValue(name);
+	if (value == nullptr)
+		throw FormatRuntimeError("no \"%s\" defined for shout device defined "
+					 "at line %d\n", name, block.line);
 
-	shout_init_count--;
-	if (shout_init_count == 0)
-		shout_shutdown();
-
-	delete prepared_encoder;
+	return value;
 }
 
 static const EncoderPlugin *
@@ -108,36 +97,20 @@ shout_encoder_plugin_get(const char *name)
 	return encoder_plugin_get(name);
 }
 
-gcc_pure
-static const char *
-require_block_string(const ConfigBlock &block, const char *name)
+ShoutOutput::ShoutOutput(const ConfigBlock &block)
+	:base(shout_output_plugin, block),
+	 shout_conn(shout_new()),
+	 shout_meta(shout_metadata_new())
 {
-	const char *value = block.GetBlockValue(name);
-	if (value == nullptr)
-		FormatFatalError("no \"%s\" defined for shout device defined "
-				 "at line %d\n", name, block.line);
-
-	return value;
-}
-
-inline bool
-ShoutOutput::Configure(const ConfigBlock &block, Error &error)
-{
-
 	const AudioFormat audio_format = base.config_audio_format;
-	if (!audio_format.IsFullyDefined()) {
-		error.Set(config_domain,
-			  "Need full audio format specification");
-		return false;
-	}
+	if (!audio_format.IsFullyDefined())
+		throw std::runtime_error("Need full audio format specification");
 
 	const char *host = require_block_string(block, "host");
 	const char *mount = require_block_string(block, "mount");
 	unsigned port = block.GetBlockValue("port", 0u);
-	if (port == 0) {
-		error.Set(config_domain, "shout port must be configured");
-		return false;
-	}
+	if (port == 0)
+		throw std::runtime_error("shout port must be configured");
 
 	const char *passwd = require_block_string(block, "password");
 	const char *name = require_block_string(block, "name");
@@ -151,52 +124,35 @@ ShoutOutput::Configure(const ConfigBlock &block, Error &error)
 		char *test;
 		quality = strtod(value, &test);
 
-		if (*test != '\0' || quality < -1.0 || quality > 10.0) {
-			error.Format(config_domain,
-				     "shout quality \"%s\" is not a number in the "
-				     "range -1 to 10",
-				     value);
-			return false;
-		}
+		if (*test != '\0' || quality < -1.0 || quality > 10.0)
+			throw FormatRuntimeError("shout quality \"%s\" is not a number in the "
+						 "range -1 to 10",
+						 value);
 
-		if (block.GetBlockValue("bitrate") != nullptr) {
-			error.Set(config_domain,
-				  "quality and bitrate are "
-				  "both defined");
-			return false;
-		}
+		if (block.GetBlockValue("bitrate") != nullptr)
+			throw std::runtime_error("quality and bitrate are "
+						 "both defined");
 	} else {
 		value = block.GetBlockValue("bitrate");
-		if (value == nullptr) {
-			error.Set(config_domain,
-				  "neither bitrate nor quality defined");
-			return false;
-		}
+		if (value == nullptr)
+			throw std::runtime_error("neither bitrate nor quality defined");
 
 		char *test;
 		bitrate = strtol(value, &test, 10);
 
-		if (*test != '\0' || bitrate <= 0) {
-			error.Set(config_domain,
-				  "bitrate must be a positive integer");
-			return false;
-		}
+		if (*test != '\0' || bitrate <= 0)
+			throw std::runtime_error("bitrate must be a positive integer");
 	}
 
 	const char *encoding = block.GetBlockValue("encoder", nullptr);
 	if (encoding == nullptr)
 		encoding = block.GetBlockValue("encoding", "vorbis");
 	const auto encoder_plugin = shout_encoder_plugin_get(encoding);
-	if (encoder_plugin == nullptr) {
-		error.Format(config_domain,
-			     "couldn't find shout encoder plugin \"%s\"",
-			     encoding);
-		return false;
-	}
+	if (encoder_plugin == nullptr)
+		throw FormatRuntimeError("couldn't find shout encoder plugin \"%s\"",
+					 encoding);
 
-	prepared_encoder = encoder_init(*encoder_plugin, block, error);
-	if (prepared_encoder == nullptr)
-		return false;
+	prepared_encoder = encoder_init(*encoder_plugin, block);
 
 	unsigned shout_format;
 	if (strcmp(encoding, "mp3") == 0 || strcmp(encoding, "lame") == 0)
@@ -208,24 +164,19 @@ ShoutOutput::Configure(const ConfigBlock &block, Error &error)
 	value = block.GetBlockValue("protocol");
 	if (value != nullptr) {
 		if (0 == strcmp(value, "shoutcast") &&
-		    0 != strcmp(encoding, "mp3")) {
-			error.Format(config_domain,
-				     "you cannot stream \"%s\" to shoutcast, use mp3",
-				     encoding);
-			return false;
-		} else if (0 == strcmp(value, "shoutcast"))
+		    0 != strcmp(encoding, "mp3"))
+			throw FormatRuntimeError("you cannot stream \"%s\" to shoutcast, use mp3",
+						 encoding);
+		else if (0 == strcmp(value, "shoutcast"))
 			protocol = SHOUT_PROTOCOL_ICY;
 		else if (0 == strcmp(value, "icecast1"))
 			protocol = SHOUT_PROTOCOL_XAUDIOCAST;
 		else if (0 == strcmp(value, "icecast2"))
 			protocol = SHOUT_PROTOCOL_HTTP;
-		else {
-			error.Format(config_domain,
-				     "shout protocol \"%s\" is not \"shoutcast\" or "
-				     "\"icecast1\"or \"icecast2\"",
-				     value);
-			return false;
-		}
+		else
+			throw FormatRuntimeError("shout protocol \"%s\" is not \"shoutcast\" or "
+						 "\"icecast1\"or \"icecast2\"",
+						 value);
 	} else {
 		protocol = SHOUT_PROTOCOL_HTTP;
 	}
@@ -240,31 +191,23 @@ ShoutOutput::Configure(const ConfigBlock &block, Error &error)
 	    shout_set_format(shout_conn, shout_format)
 	    != SHOUTERR_SUCCESS ||
 	    shout_set_protocol(shout_conn, protocol) != SHOUTERR_SUCCESS ||
-	    shout_set_agent(shout_conn, "MPD") != SHOUTERR_SUCCESS) {
-		error.Set(shout_output_domain, shout_get_error(shout_conn));
-		return false;
-	}
+	    shout_set_agent(shout_conn, "MPD") != SHOUTERR_SUCCESS)
+		throw std::runtime_error(shout_get_error(shout_conn));
 
 	/* optional paramters */
 	timeout = block.GetBlockValue("timeout", DEFAULT_CONN_TIMEOUT);
 
 	value = block.GetBlockValue("genre");
-	if (value != nullptr && shout_set_genre(shout_conn, value)) {
-		error.Set(shout_output_domain, shout_get_error(shout_conn));
-		return false;
-	}
+	if (value != nullptr && shout_set_genre(shout_conn, value))
+		throw std::runtime_error(shout_get_error(shout_conn));
 
 	value = block.GetBlockValue("description");
-	if (value != nullptr && shout_set_description(shout_conn, value)) {
-		error.Set(shout_output_domain, shout_get_error(shout_conn));
-		return false;
-	}
+	if (value != nullptr && shout_set_description(shout_conn, value))
+		throw std::runtime_error(shout_get_error(shout_conn));
 
 	value = block.GetBlockValue("url");
-	if (value != nullptr && shout_set_url(shout_conn, value)) {
-		error.Set(shout_output_domain, shout_get_error(shout_conn));
-		return false;
-	}
+	if (value != nullptr && shout_set_url(shout_conn, value))
+		throw std::runtime_error(shout_get_error(shout_conn));
 
 	{
 		char temp[11];
@@ -286,34 +229,35 @@ ShoutOutput::Configure(const ConfigBlock &block, Error &error)
 					     temp);
 		}
 	}
+}
 
-	return true;
+ShoutOutput::~ShoutOutput()
+{
+	if (shout_meta != nullptr)
+		shout_metadata_free(shout_meta);
+	if (shout_conn != nullptr)
+		shout_free(shout_conn);
+
+	shout_init_count--;
+	if (shout_init_count == 0)
+		shout_shutdown();
+
+	delete prepared_encoder;
 }
 
 ShoutOutput *
-ShoutOutput::Create(const ConfigBlock &block, Error &error)
+ShoutOutput::Create(const ConfigBlock &block)
 {
 	if (shout_init_count == 0)
 		shout_init();
 
 	shout_init_count++;
 
-	ShoutOutput *sd = new ShoutOutput();
-	if (!sd->Initialize(block, error)) {
-		delete sd;
-		return nullptr;
-	}
-
-	if (!sd->Configure(block, error)) {
-		delete sd;
-		return nullptr;
-	}
-
-	return sd;
+	return new ShoutOutput(block);
 }
 
-static bool
-handle_shout_error(ShoutOutput *sd, int err, Error &error)
+static void
+handle_shout_error(ShoutOutput *sd, int err)
 {
 	switch (err) {
 	case SHOUTERR_SUCCESS:
@@ -321,27 +265,21 @@ handle_shout_error(ShoutOutput *sd, int err, Error &error)
 
 	case SHOUTERR_UNCONNECTED:
 	case SHOUTERR_SOCKET:
-		error.Format(shout_output_domain, err,
-			     "Lost shout connection to %s:%i: %s",
-			     shout_get_host(sd->shout_conn),
-			     shout_get_port(sd->shout_conn),
-			     shout_get_error(sd->shout_conn));
-		return false;
+		throw FormatRuntimeError("Lost shout connection to %s:%i: %s",
+					 shout_get_host(sd->shout_conn),
+					 shout_get_port(sd->shout_conn),
+					 shout_get_error(sd->shout_conn));
 
 	default:
-		error.Format(shout_output_domain, err,
-			     "connection to %s:%i error: %s",
-			     shout_get_host(sd->shout_conn),
-			     shout_get_port(sd->shout_conn),
-			     shout_get_error(sd->shout_conn));
-		return false;
+		throw FormatRuntimeError("connection to %s:%i error: %s",
+					 shout_get_host(sd->shout_conn),
+					 shout_get_port(sd->shout_conn),
+					 shout_get_error(sd->shout_conn));
 	}
-
-	return true;
 }
 
 static bool
-write_page(ShoutOutput *sd, Error &error)
+write_page(ShoutOutput *sd)
 {
 	assert(sd->encoder != nullptr);
 
@@ -352,8 +290,7 @@ write_page(ShoutOutput *sd, Error &error)
 			return true;
 
 		int err = shout_send(sd->shout_conn, sd->buffer, nbytes);
-		if (!handle_shout_error(sd, err, error))
-			return false;
+		handle_shout_error(sd, err);
 	}
 
 	return true;
@@ -363,8 +300,12 @@ void
 ShoutOutput::Close()
 {
 	if (encoder != nullptr) {
-		if (encoder->End(IgnoreError()))
-			write_page(this, IgnoreError());
+		try {
+			encoder->End();
+			write_page(this);
+		} catch (const std::runtime_error &) {
+			/* ignore */
+		}
 
 		delete encoder;
 	}
@@ -383,43 +324,40 @@ ShoutOutput::Cancel()
 	/* needs to be implemented for shout */
 }
 
-static bool
-shout_connect(ShoutOutput *sd, Error &error)
+static void
+shout_connect(ShoutOutput *sd)
 {
 	switch (shout_open(sd->shout_conn)) {
 	case SHOUTERR_SUCCESS:
 	case SHOUTERR_CONNECTED:
-		return true;
+		break;
 
 	default:
-		error.Format(shout_output_domain,
-			     "problem opening connection to shout server %s:%i: %s",
-			     shout_get_host(sd->shout_conn),
-			     shout_get_port(sd->shout_conn),
-			     shout_get_error(sd->shout_conn));
-		return false;
+		throw FormatRuntimeError("problem opening connection to shout server %s:%i: %s",
+					 shout_get_host(sd->shout_conn),
+					 shout_get_port(sd->shout_conn),
+					 shout_get_error(sd->shout_conn));
 	}
 }
 
-bool
-ShoutOutput::Open(AudioFormat &audio_format, Error &error)
+void
+ShoutOutput::Open(AudioFormat &audio_format)
 {
-	if (!shout_connect(this, error))
-		return false;
+	shout_connect(this);
 
-	encoder = prepared_encoder->Open(audio_format, error);
-	if (encoder == nullptr) {
+	try {
+		encoder = prepared_encoder->Open(audio_format);
+
+		try {
+			write_page(this);
+		} catch (const std::runtime_error &) {
+			delete encoder;
+			throw;
+		}
+	} catch (const std::runtime_error &) {
 		shout_close(shout_conn);
-		return false;
+		throw;
 	}
-
-	if (!write_page(this, error)) {
-		delete encoder;
-		shout_close(shout_conn);
-		return false;
-	}
-
-	return true;
 }
 
 unsigned
@@ -433,12 +371,11 @@ ShoutOutput::Delay() const
 }
 
 size_t
-ShoutOutput::Play(const void *chunk, size_t size, Error &error)
+ShoutOutput::Play(const void *chunk, size_t size)
 {
-	return encoder->Write(chunk, size, error) &&
-		write_page(this, error)
-		? size
-		: 0;
+	encoder->Write(chunk, size);
+	write_page(this);
+	return size;
 }
 
 bool
@@ -446,7 +383,14 @@ ShoutOutput::Pause()
 {
 	static char silence[1020];
 
-	return Play(silence, sizeof(silence), IgnoreError());
+	try {
+		encoder->Write(silence, sizeof(silence));
+		write_page(this);
+	} catch (const std::runtime_error &) {
+		return false;
+	}
+
+	return true;
 }
 
 static void
@@ -481,13 +425,9 @@ ShoutOutput::SendTag(const Tag &tag)
 	if (encoder->ImplementsTag()) {
 		/* encoder plugin supports stream tags */
 
-		Error error;
-		if (!encoder->PreTag(error) ||
-		    !write_page(this, error) ||
-		    !encoder->SendTag(tag, error)) {
-			LogError(error);
-			return;
-		}
+		encoder->PreTag();
+		write_page(this);
+		encoder->SendTag(tag);
 	} else {
 		/* no stream tag support: fall back to icy-metadata */
 		char song[1024];
@@ -501,7 +441,7 @@ ShoutOutput::SendTag(const Tag &tag)
 		}
 	}
 
-	write_page(this, IgnoreError());
+	write_page(this);
 }
 
 typedef AudioOutputWrapper<ShoutOutput> Wrapper;

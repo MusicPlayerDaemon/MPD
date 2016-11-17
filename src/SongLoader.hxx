@@ -30,7 +30,6 @@ class Database;
 class Storage;
 class DetachedSong;
 class Path;
-class Error;
 struct LocatedUri;
 
 /**
@@ -70,8 +69,11 @@ public:
 
 	DetachedSong *LoadSong(const LocatedUri &uri) const;
 
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
 	gcc_nonnull_all
-	DetachedSong *LoadSong(const char *uri_utf8, Error &error) const;
+	DetachedSong *LoadSong(const char *uri_utf8) const;
 
 private:
 	gcc_nonnull_all

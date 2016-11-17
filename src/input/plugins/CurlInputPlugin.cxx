@@ -33,7 +33,6 @@
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
 #include "util/RuntimeError.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 #include "PluginUnavailable.hxx"

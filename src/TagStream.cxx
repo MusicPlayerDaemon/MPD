@@ -24,7 +24,6 @@
 #include "tag/TagBuilder.hxx"
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "input/InputStream.hxx"

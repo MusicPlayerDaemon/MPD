@@ -23,11 +23,13 @@
 #include "check.h"
 #include "Compiler.h"
 
-class Error;
 template<typename T> class AllocatedString;
 
-bool
-IcuCollateInit(Error &error);
+/**
+ * Throws #std::runtime_error on error.
+ */
+void
+IcuCollateInit();
 
 void
 IcuCollateFinish();

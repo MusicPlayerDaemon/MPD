@@ -22,18 +22,10 @@
 
 #include <stdexcept>
 
-class Error;
-
 std::runtime_error
 MakeFfmpegError(int errnum);
 
 std::runtime_error
 MakeFfmpegError(int errnum, const char *prefix);
-
-void
-SetFfmpegError(Error &error, int errnum);
-
-void
-SetFfmpegError(Error &error, int errnum, const char *prefix);
 
 #endif

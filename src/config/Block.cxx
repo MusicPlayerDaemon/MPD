@@ -23,7 +23,7 @@
 #include "ConfigPath.hxx"
 #include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -91,17 +91,12 @@ ConfigBlock::GetBlockValue(const char *name, const char *default_value) const
 }
 
 AllocatedPath
-ConfigBlock::GetBlockPath(const char *name, const char *default_value,
-			   Error &error) const
+ConfigBlock::GetPath(const char *name, const char *default_value) const
 {
-	assert(!error.IsDefined());
-
-	int line2 = line;
 	const char *s;
 
 	const BlockParam *bp = GetBlockParam(name);
 	if (bp != nullptr) {
-		line2 = bp->line;
 		s = bp->value.c_str();
 	} else {
 		if (default_value == nullptr)
@@ -110,18 +105,7 @@ ConfigBlock::GetBlockPath(const char *name, const char *default_value,
 		s = default_value;
 	}
 
-	AllocatedPath path = ParsePath(s, error);
-	if (gcc_unlikely(path.IsNull()))
-		error.FormatPrefix("Invalid path in \"%s\" at line %i: ",
-				   name, line2);
-
-	return path;
-}
-
-AllocatedPath
-ConfigBlock::GetBlockPath(const char *name, Error &error) const
-{
-	return GetBlockPath(name, nullptr, error);
+	return ParsePath(s);
 }
 
 int

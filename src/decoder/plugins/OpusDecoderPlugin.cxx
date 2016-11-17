@@ -32,7 +32,6 @@
 #include "tag/TagHandler.hxx"
 #include "tag/TagBuilder.hxx"
 #include "input/InputStream.hxx"
-#include "util/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 

@@ -39,7 +39,6 @@
 #include "client/Response.hxx"
 #include "util/Macros.hxx"
 #include "util/Tokenizer.hxx"
-#include "util/Error.hxx"
 #include "util/StringAPI.hxx"
 
 #ifdef ENABLE_SQLITE
@@ -362,7 +361,6 @@ CommandResult
 command_process(Client &client, unsigned num, char *line)
 try {
 	Response r(client, num);
-	Error error;
 
 	/* get the command name (first word on the line) */
 	/* we have to set current_command because Response::Error()
@@ -418,9 +416,5 @@ try {
 } catch (const std::exception &e) {
 	Response r(client, num);
 	PrintError(r, std::current_exception());
-	return CommandResult::ERROR;
-} catch (const Error &error) {
-	Response r(client, num);
-	print_error(r, error);
 	return CommandResult::ERROR;
 }

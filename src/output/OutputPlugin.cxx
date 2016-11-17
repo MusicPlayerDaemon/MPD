@@ -23,13 +23,12 @@
 
 AudioOutput *
 ao_plugin_init(const AudioOutputPlugin *plugin,
-	       const ConfigBlock &block,
-	       Error &error)
+	       const ConfigBlock &block)
 {
 	assert(plugin != nullptr);
 	assert(plugin->init != nullptr);
 
-	return plugin->init(block, error);
+	return plugin->init(block);
 }
 
 void
@@ -38,12 +37,11 @@ ao_plugin_finish(AudioOutput *ao)
 	ao->plugin.finish(ao);
 }
 
-bool
-ao_plugin_enable(AudioOutput *ao, Error &error_r)
+void
+ao_plugin_enable(AudioOutput *ao)
 {
-	return ao->plugin.enable != nullptr
-		? ao->plugin.enable(ao, error_r)
-		: true;
+	if (ao->plugin.enable != nullptr)
+		ao->plugin.enable(ao);
 }
 
 void
@@ -53,11 +51,10 @@ ao_plugin_disable(AudioOutput *ao)
 		ao->plugin.disable(ao);
 }
 
-bool
-ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format,
-	       Error &error)
+void
+ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format)
 {
-	return ao->plugin.open(ao, audio_format, error);
+	ao->plugin.open(ao, audio_format);
 }
 
 void
@@ -82,10 +79,9 @@ ao_plugin_send_tag(AudioOutput *ao, const Tag &tag)
 }
 
 size_t
-ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size,
-	       Error &error)
+ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size)
 {
-	return ao->plugin.play(ao, chunk, size, error);
+	return ao->plugin.play(ao, chunk, size);
 }
 
 void

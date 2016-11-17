@@ -28,7 +28,6 @@
 #include "Listener.hxx"
 #include "PlaylistError.hxx"
 #include "player/Control.hxx"
-#include "util/Error.hxx"
 #include "DetachedSong.hxx"
 #include "SongLoader.hxx"
 
@@ -124,13 +123,9 @@ playlist::AppendSong(PlayerControl &pc, DetachedSong &&song)
 
 unsigned
 playlist::AppendURI(PlayerControl &pc, const SongLoader &loader,
-		    const char *uri,
-		    Error &error)
+		    const char *uri)
 {
-	std::unique_ptr<DetachedSong> song(loader.LoadSong(uri, error));
-	if (song == nullptr)
-		return 0;
-
+	std::unique_ptr<DetachedSong> song(loader.LoadSong(uri));
 	return AppendSong(pc, std::move(*song));
 }
 

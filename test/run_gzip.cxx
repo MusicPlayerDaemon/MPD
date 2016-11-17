@@ -20,47 +20,43 @@
 #include "config.h"
 #include "fs/io/GzipOutputStream.hxx"
 #include "fs/io/StdioOutputStream.hxx"
+#include "system/Error.hxx"
 #include "Log.hxx"
-#include "util/Error.hxx"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-static bool
-Copy(OutputStream &dest, int src, Error &error)
+static void
+Copy(OutputStream &dest, int src)
 {
 	while (true) {
 		char buffer[4096];
 		ssize_t nbytes = read(src, buffer, sizeof(buffer));
 		if (nbytes <= 0) {
-			if (nbytes < 0) {
-				error.SetErrno();
-				return false;
-			} else
-				return true;
+			if (nbytes < 0)
+				throw MakeErrno("read() failed");
+
+			return;
 		}
 
 		dest.Write(buffer, nbytes);
 	}
 }
 
-static bool
-CopyGzip(OutputStream &_dest, int src, Error &error)
+static void
+CopyGzip(OutputStream &_dest, int src)
 {
 	GzipOutputStream dest(_dest);
-	if (!Copy(dest, src, error))
-		return false;
-
+	Copy(dest, src);
 	dest.Flush();
-	return true;
 }
 
-static bool
-CopyGzip(FILE *_dest, int src, Error &error)
+static void
+CopyGzip(FILE *_dest, int src)
 {
 	StdioOutputStream dest(_dest);
-	return CopyGzip(dest, src, error);
+	CopyGzip(dest, src);
 }
 
 int
@@ -72,12 +68,7 @@ main(int argc, gcc_unused char **argv)
 	}
 
 	try {
-		Error error;
-		if (!CopyGzip(stdout, STDIN_FILENO, error)) {
-			fprintf(stderr, "%s\n", error.GetMessage());
-			return EXIT_FAILURE;
-		}
-
+		CopyGzip(stdout, STDIN_FILENO);
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {
 		LogError(e);

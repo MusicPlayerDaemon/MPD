@@ -29,7 +29,6 @@
 #include "../InputPlugin.hxx"
 #include "../AsyncInputStream.hxx"
 #include "util/Domain.hxx"
-#include "util/Error.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ReusableArray.hxx"

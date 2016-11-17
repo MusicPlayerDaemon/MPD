@@ -32,7 +32,7 @@
 #include "system/fd_util.h"
 #include "IOThread.hxx"
 #include "event/Call.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
 #include "util/DeleteDisposer.hxx"
 #include "Log.hxx"
@@ -50,12 +50,43 @@
 const Domain httpd_output_domain("httpd_output");
 
 inline
-HttpdOutput::HttpdOutput(EventLoop &_loop)
+HttpdOutput::HttpdOutput(EventLoop &_loop, const ConfigBlock &block)
 	:ServerSocket(_loop), DeferredMonitor(_loop),
-	 base(httpd_output_plugin),
+	 base(httpd_output_plugin, block),
 	 encoder(nullptr), unflushed_input(0),
 	 metadata(nullptr)
 {
+	/* read configuration */
+	name = block.GetBlockValue("name", "Set name in config");
+	genre = block.GetBlockValue("genre", "Set genre in config");
+	website = block.GetBlockValue("website", "Set website in config");
+
+	unsigned port = block.GetBlockValue("port", 8000u);
+
+	const char *encoder_name =
+		block.GetBlockValue("encoder", "vorbis");
+	const auto encoder_plugin = encoder_plugin_get(encoder_name);
+	if (encoder_plugin == nullptr)
+		throw FormatRuntimeError("No such encoder: %s", encoder_name);
+
+	clients_max = block.GetBlockValue("max_clients", 0u);
+
+	/* set up bind_to_address */
+
+	const char *bind_to_address = block.GetBlockValue("bind_to_address");
+	if (bind_to_address != nullptr && strcmp(bind_to_address, "any") != 0)
+		AddHost(bind_to_address, port);
+	else
+		AddPort(port);
+
+	/* initialize encoder */
+
+	prepared_encoder = encoder_init(*encoder_plugin, block);
+
+	/* determine content type */
+	content_type = prepared_encoder->GetMimeType();
+	if (content_type == nullptr)
+		content_type = "application/octet-stream";
 }
 
 HttpdOutput::~HttpdOutput()
@@ -66,16 +97,14 @@ HttpdOutput::~HttpdOutput()
 	delete prepared_encoder;
 }
 
-inline bool
-HttpdOutput::Bind(Error &error)
+inline void
+HttpdOutput::Bind()
 {
 	open = false;
 
-	bool result = false;
-	BlockingCall(GetEventLoop(), [this, &error, &result](){
-			result = ServerSocket::Open(error);
+	BlockingCall(GetEventLoop(), [this](){
+			ServerSocket::Open();
 		});
-	return result;
 }
 
 inline void
@@ -88,67 +117,10 @@ HttpdOutput::Unbind()
 		});
 }
 
-inline bool
-HttpdOutput::Configure(const ConfigBlock &block, Error &error)
-{
-	/* read configuration */
-	name = block.GetBlockValue("name", "Set name in config");
-	genre = block.GetBlockValue("genre", "Set genre in config");
-	website = block.GetBlockValue("website", "Set website in config");
-
-	unsigned port = block.GetBlockValue("port", 8000u);
-
-	const char *encoder_name =
-		block.GetBlockValue("encoder", "vorbis");
-	const auto encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin == nullptr) {
-		error.Format(httpd_output_domain,
-			     "No such encoder: %s", encoder_name);
-		return false;
-	}
-
-	clients_max = block.GetBlockValue("max_clients", 0u);
-
-	/* set up bind_to_address */
-
-	const char *bind_to_address = block.GetBlockValue("bind_to_address");
-	bool success = bind_to_address != nullptr &&
-		strcmp(bind_to_address, "any") != 0
-		? AddHost(bind_to_address, port, error)
-		: AddPort(port, error);
-	if (!success)
-		return false;
-
-	/* initialize encoder */
-
-	prepared_encoder = encoder_init(*encoder_plugin, block, error);
-	if (prepared_encoder == nullptr)
-		return false;
-
-	/* determine content type */
-	content_type = prepared_encoder->GetMimeType();
-	if (content_type == nullptr)
-		content_type = "application/octet-stream";
-
-	return true;
-}
-
-inline bool
-HttpdOutput::Init(const ConfigBlock &block, Error &error)
-{
-	return base.Configure(block, error);
-}
-
 static AudioOutput *
-httpd_output_init(const ConfigBlock &block, Error &error)
+httpd_output_init(const ConfigBlock &block)
 {
-	HttpdOutput *httpd = new HttpdOutput(io_thread_get());
-
-	AudioOutput *result = httpd->InitAndConfigure(block, error);
-	if (result == nullptr)
-		delete httpd;
-
-	return result;
+	return *new HttpdOutput(io_thread_get(), block);
 }
 
 static void
@@ -248,7 +220,12 @@ HttpdOutput::ReadPage()
 		/* we have fed a lot of input into the encoder, but it
 		   didn't give anything back yet - flush now to avoid
 		   buffer underruns */
-		encoder->Flush(IgnoreError());
+		try {
+			encoder->Flush();
+		} catch (const std::runtime_error &) {
+			/* ignore */
+		}
+
 		unflushed_input = 0;
 	}
 
@@ -270,12 +247,12 @@ HttpdOutput::ReadPage()
 	return Page::Copy(buffer, size);
 }
 
-static bool
-httpd_output_enable(AudioOutput *ao, Error &error)
+static void
+httpd_output_enable(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	return httpd->Bind(error);
+	httpd->Bind();
 }
 
 static void
@@ -286,12 +263,10 @@ httpd_output_disable(AudioOutput *ao)
 	httpd->Unbind();
 }
 
-inline bool
-HttpdOutput::OpenEncoder(AudioFormat &audio_format, Error &error)
+inline void
+HttpdOutput::OpenEncoder(AudioFormat &audio_format)
 {
-	encoder = prepared_encoder->Open(audio_format, error);
-	if (encoder == nullptr)
-		return false;
+	encoder = prepared_encoder->Open(audio_format);
 
 	/* we have to remember the encoder header, i.e. the first
 	   bytes of encoder output after opening it, because it has to
@@ -299,38 +274,30 @@ HttpdOutput::OpenEncoder(AudioFormat &audio_format, Error &error)
 	header = ReadPage();
 
 	unflushed_input = 0;
-
-	return true;
 }
 
-inline bool
-HttpdOutput::Open(AudioFormat &audio_format, Error &error)
+inline void
+HttpdOutput::Open(AudioFormat &audio_format)
 {
 	assert(!open);
 	assert(clients.empty());
 
-	/* open the encoder */
-
-	if (!OpenEncoder(audio_format, error))
-		return false;
+	OpenEncoder(audio_format);
 
 	/* initialize other attributes */
 
 	timer = new Timer(audio_format);
 
 	open = true;
-
-	return true;
 }
 
-static bool
-httpd_output_open(AudioOutput *ao, AudioFormat &audio_format,
-		  Error &error)
+static void
+httpd_output_open(AudioOutput *ao, AudioFormat &audio_format)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
 	const ScopeLock protect(httpd->mutex);
-	return httpd->Open(audio_format, error);
+	httpd->Open(audio_format);
 }
 
 inline void
@@ -436,25 +403,21 @@ HttpdOutput::BroadcastFromEncoder()
 	DeferredMonitor::Schedule();
 }
 
-inline bool
-HttpdOutput::EncodeAndPlay(const void *chunk, size_t size, Error &error)
+inline void
+HttpdOutput::EncodeAndPlay(const void *chunk, size_t size)
 {
-	if (!encoder->Write(chunk, size, error))
-		return false;
+	encoder->Write(chunk, size);
 
 	unflushed_input += size;
 
 	BroadcastFromEncoder();
-	return true;
 }
 
 inline size_t
-HttpdOutput::Play(const void *chunk, size_t size, Error &error)
+HttpdOutput::Play(const void *chunk, size_t size)
 {
-	if (LockHasClients()) {
-		if (!EncodeAndPlay(chunk, size, error))
-			return 0;
-	}
+	if (LockHasClients())
+		EncodeAndPlay(chunk, size);
 
 	if (!timer->IsStarted())
 		timer->Start();
@@ -464,12 +427,11 @@ HttpdOutput::Play(const void *chunk, size_t size, Error &error)
 }
 
 static size_t
-httpd_output_play(AudioOutput *ao, const void *chunk, size_t size,
-		  Error &error)
+httpd_output_play(AudioOutput *ao, const void *chunk, size_t size)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	return httpd->Play(chunk, size, error);
+	return httpd->Play(chunk, size);
 }
 
 static bool
@@ -479,11 +441,10 @@ httpd_output_pause(AudioOutput *ao)
 
 	if (httpd->LockHasClients()) {
 		static const char silence[1020] = { 0 };
-		return httpd_output_play(ao, silence, sizeof(silence),
-					 IgnoreError()) > 0;
-	} else {
-		return true;
+		httpd->Play(silence, sizeof(silence));
 	}
+
+	return true;
 }
 
 inline void
@@ -494,13 +455,22 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		/* flush the current stream, and end it */
 
-		encoder->PreTag(IgnoreError());
+		try {
+			encoder->PreTag();
+		} catch (const std::runtime_error &) {
+			/* ignore */
+		}
+
 		BroadcastFromEncoder();
 
 		/* send the tag to the encoder - which starts a new
 		   stream now */
 
-		encoder->SendTag(tag, IgnoreError());
+		try {
+			encoder->SendTag(tag);
+		} catch (const std::runtime_error &) {
+			/* ignore */
+		}
 
 		/* the first page generated by the encoder will now be
 		   used as the new "header" page, which is sent to all

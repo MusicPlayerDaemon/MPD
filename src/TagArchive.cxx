@@ -23,7 +23,6 @@
 #include "archive/ArchiveFile.hxx"
 #include "input/InputStream.hxx"
 #include "thread/Cond.hxx"
-#include "util/Error.hxx"
 
 bool
 tag_archive_scan(ArchiveFile &archive, const char *path_utf8,

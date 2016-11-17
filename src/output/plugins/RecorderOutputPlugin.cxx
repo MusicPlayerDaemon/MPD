@@ -31,8 +31,11 @@
 #include "Log.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/io/FileOutputStream.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
+#include "util/ScopeExit.hxx"
+
+#include <stdexcept>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -72,22 +75,15 @@ class RecorderOutput {
 	 */
 	FileOutputStream *file;
 
-	RecorderOutput()
-		:base(recorder_output_plugin) {}
+	RecorderOutput(const ConfigBlock &block);
 
 	~RecorderOutput() {
 		delete prepared_encoder;
 	}
 
-	bool Initialize(const ConfigBlock &block, Error &error_r) {
-		return base.Configure(block, error_r);
-	}
+	static RecorderOutput *Create(const ConfigBlock &block);
 
-	static RecorderOutput *Create(const ConfigBlock &block, Error &error);
-
-	bool Configure(const ConfigBlock &block, Error &error);
-
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 
 	/**
@@ -97,7 +93,7 @@ class RecorderOutput {
 
 	void SendTag(const Tag &tag);
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 
 private:
 	gcc_pure
@@ -107,70 +103,47 @@ private:
 
 	/**
 	 * Finish the encoder and commit the file.
+	 *
+	 * Throws #std::runtime_error on error.
 	 */
-	bool Commit(Error &error);
+	void Commit();
 
 	void FinishFormat();
-	bool ReopenFormat(AllocatedPath &&new_path, Error &error);
+	void ReopenFormat(AllocatedPath &&new_path);
 };
 
-inline bool
-RecorderOutput::Configure(const ConfigBlock &block, Error &error)
+RecorderOutput::RecorderOutput(const ConfigBlock &block)
+	:base(recorder_output_plugin, block)
 {
 	/* read configuration */
 
 	const char *encoder_name =
 		block.GetBlockValue("encoder", "vorbis");
 	const auto encoder_plugin = encoder_plugin_get(encoder_name);
-	if (encoder_plugin == nullptr) {
-		error.Format(config_domain,
-			     "No such encoder: %s", encoder_name);
-		return false;
-	}
+	if (encoder_plugin == nullptr)
+		throw FormatRuntimeError("No such encoder: %s", encoder_name);
 
-	path = block.GetBlockPath("path", error);
-	if (error.IsDefined())
-		return false;
+	path = block.GetPath("path");
 
 	const char *fmt = block.GetBlockValue("format_path", nullptr);
 	if (fmt != nullptr)
 		format_path = fmt;
 
-	if (path.IsNull() && fmt == nullptr) {
-		error.Set(config_domain, "'path' not configured");
-		return false;
-	}
+	if (path.IsNull() && fmt == nullptr)
+		throw std::runtime_error("'path' not configured");
 
-	if (!path.IsNull() && fmt != nullptr) {
-		error.Set(config_domain, "Cannot have both 'path' and 'format_path'");
-		return false;
-	}
+	if (!path.IsNull() && fmt != nullptr)
+		throw std::runtime_error("Cannot have both 'path' and 'format_path'");
 
 	/* initialize encoder */
 
-	prepared_encoder = encoder_init(*encoder_plugin, block, error);
-	if (prepared_encoder == nullptr)
-		return false;
-
-	return true;
+	prepared_encoder = encoder_init(*encoder_plugin, block);
 }
 
 RecorderOutput *
-RecorderOutput::Create(const ConfigBlock &block, Error &error)
+RecorderOutput::Create(const ConfigBlock &block)
 {
-	RecorderOutput *recorder = new RecorderOutput();
-
-	if (!recorder->Initialize(block, error)) {
-		delete recorder;
-		return nullptr;
-	}
-
-	if (!recorder->Configure(block, error)) {
-		delete recorder;
-		return nullptr;
-	}
-
-	return recorder;
+	return new RecorderOutput(block);
 }
 
 inline void
@@ -181,20 +154,15 @@ RecorderOutput::EncoderToFile()
 	EncoderToOutputStream(*file, *encoder);
 }
 
-inline bool
-RecorderOutput::Open(AudioFormat &audio_format, Error &error)
+inline void
+RecorderOutput::Open(AudioFormat &audio_format)
 {
 	/* create the output file */
 
 	if (!HasDynamicPath()) {
 		assert(!path.IsNull());
 
-		try {
-			file = new FileOutputStream(path);
-		} catch (const std::exception &e) {
-			error.Set(recorder_domain, e.what());
-			return false;
-		}
+		file = new FileOutputStream(path);
 	} else {
 		/* don't open the file just yet; wait until we have
 		   a tag that we can use to build the path */
@@ -205,19 +173,19 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 
 	/* open the encoder */
 
-	encoder = prepared_encoder->Open(audio_format, error);
-	if (encoder == nullptr) {
+	try {
+		encoder = prepared_encoder->Open(audio_format);
+	} catch (const std::runtime_error &) {
 		delete file;
-		return false;
+		throw;
 	}
 
 	if (!HasDynamicPath()) {
 		try {
 			EncoderToFile();
-		} catch (const std::exception &e) {
+		} catch (const std::runtime_error &) {
 			delete encoder;
-			error.Set(recorder_domain, e.what());
-			return false;
+			throw;
 		}
 	} else {
 		/* remember the AudioFormat for ReopenFormat() */
@@ -227,43 +195,35 @@ RecorderOutput::Open(AudioFormat &audio_format, Error &error)
 		   soon as we have received a tag */
 		delete encoder;
 	}
-
-	return true;
 }
 
-inline bool
-RecorderOutput::Commit(Error &error)
+inline void
+RecorderOutput::Commit()
 {
 	assert(!path.IsNull());
 
 	/* flush the encoder and write the rest to the file */
 
-	bool success = encoder->End(error);
-	if (success) {
-		try {
-			EncoderToFile();
-		} catch (...) {
-			delete encoder;
-			throw;
-		}
+	try {
+		encoder->End();
+		EncoderToFile();
+	} catch (...) {
+		delete encoder;
+		throw;
 	}
 
 	/* now really close everything */
 
 	delete encoder;
 
-	if (success) {
-		try {
-			file->Commit();
-		} catch (...) {
-			delete file;
-			throw;
-		}
+	try {
+		file->Commit();
+	} catch (...) {
+		delete file;
+		throw;
 	}
 
 	delete file;
-
-	return success;
 }
 
 inline void
@@ -278,9 +238,7 @@ RecorderOutput::Close()
 	}
 
 	try {
-		Error error;
-		if (!Commit(error))
-			LogError(error);
+		Commit();
 	} catch (const std::exception &e) {
 		LogError(e);
 	}
@@ -300,9 +258,7 @@ RecorderOutput::FinishFormat()
 		return;
 
 	try {
-		Error error;
-		if (!Commit(error))
-			LogError(error);
+		Commit();
 	} catch (const std::exception &e) {
 		LogError(e);
 	}
@@ -311,26 +267,22 @@ RecorderOutput::FinishFormat()
 	path.SetNull();
 }
 
-inline bool
-RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
+inline void
+RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 {
 	assert(HasDynamicPath());
 	assert(path.IsNull());
 	assert(file == nullptr);
 
-	FileOutputStream *new_file;
-	try {
-		new_file = new FileOutputStream(path);
-	} catch (const std::exception &e) {
-		error.Set(recorder_domain, e.what());
-		return false;
-	}
+	FileOutputStream *new_file = new FileOutputStream(path);
 
 	AudioFormat new_audio_format = effective_audio_format;
-	encoder = prepared_encoder->Open(new_audio_format, error);
-	if (encoder == nullptr) {
+
+	try {
+		encoder = prepared_encoder->Open(new_audio_format);
+	} catch (...) {
 		delete new_file;
-		return false;
+		throw;
 	}
 
 	/* reopening the encoder must always result in the same
@@ -342,8 +294,7 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
 	} catch (const std::exception &e) {
 		delete encoder;
 		delete new_file;
-		error.Set(recorder_domain, e.what());
-		return false;
+		throw;
 	}
 
 	path = std::move(new_path);
@@ -351,8 +302,6 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path, Error &error)
 
 	FormatDebug(recorder_domain, "Recording to \"%s\"",
 		    path.ToUTF8().c_str());
-
-	return true;
 }
 
 inline void
@@ -368,11 +317,14 @@ RecorderOutput::SendTag(const Tag &tag)
 			return;
 		}
 
-		Error error;
-		AllocatedPath new_path = ParsePath(p, error);
-		free(p);
-		if (new_path.IsNull()) {
-			LogError(error);
+		AtScopeExit(p) { free(p); };
+
+		AllocatedPath new_path = AllocatedPath::Null();
+
+		try {
+			new_path = ParsePath(p);
+		} catch (const std::runtime_error &e) {
+			LogError(e);
 			FinishFormat();
 			return;
 		}
@@ -380,32 +332,22 @@ RecorderOutput::SendTag(const Tag &tag)
 		if (new_path != path) {
 			FinishFormat();
 
-			if (!ReopenFormat(std::move(new_path), error)) {
-				LogError(error);
+			try {
+				ReopenFormat(std::move(new_path));
+			} catch (const std::runtime_error &e) {
+				LogError(e);
 				return;
 			}
 		}
 	}
 
-	Error error;
-	if (!encoder->PreTag(error)) {
-		LogError(error);
-		return;
-	}
-
-	try {
-		EncoderToFile();
-	} catch (const std::exception &e) {
-		LogError(e);
-		return;
-	}
-
-	if (!encoder->SendTag(tag, error))
-		LogError(error);
+	encoder->PreTag();
+	EncoderToFile();
+	encoder->SendTag(tag);
 }
 
 inline size_t
-RecorderOutput::Play(const void *chunk, size_t size, Error &error)
+RecorderOutput::Play(const void *chunk, size_t size)
 {
 	if (file == nullptr) {
 		/* not currently encoding to a file; discard incoming
@@ -415,15 +357,9 @@ RecorderOutput::Play(const void *chunk, size_t size, Error &error)
 		return size;
 	}
 
-	if (!encoder->Write(chunk, size, error))
-		return 0;
+	encoder->Write(chunk, size);
 
-	try {
-		EncoderToFile();
-	} catch (const std::exception &e) {
-		error.Set(recorder_domain, e.what());
-		return 0;
-	}
+	EncoderToFile();
 
 	return size;
 }

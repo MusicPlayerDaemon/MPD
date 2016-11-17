@@ -176,16 +176,23 @@ public:
 	 * We cannot fix this as long as there are plugins that open a file by
 	 * its name, and not by file descriptor / callbacks.
 	 *
+	 * Throws #std::runtime_error on error.
+	 *
 	 * @param path_fs the absolute path name in filesystem encoding
-	 * @return true if access is allowed
 	 */
-	bool AllowFile(Path path_fs, Error &error) const;
+	void AllowFile(Path path_fs) const;
 
 	/**
 	 * Wrapper for Instance::GetDatabase().
 	 */
 	gcc_pure
-	const Database *GetDatabase(Error &error) const;
+	const Database *GetDatabase() const;
+
+	/**
+	 * Wrapper for Instance::GetDatabaseOrThrow().
+	 */
+	gcc_pure
+	const Database &GetDatabaseOrThrow() const;
 
 	gcc_pure
 	const Storage *GetStorage() const;
@@ -193,7 +200,7 @@ public:
 private:
 	/* virtual methods from class BufferedSocket */
 	virtual InputResult OnSocketInput(void *data, size_t length) override;
-	virtual void OnSocketError(Error &&error) override;
+	void OnSocketError(std::exception_ptr ep) override;
 	virtual void OnSocketClosed() override;
 
 	/* virtual methods from class TimeoutMonitor */

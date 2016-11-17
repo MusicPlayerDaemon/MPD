@@ -23,7 +23,6 @@
 #include "event/SocketMonitor.hxx"
 #include "Compiler.h"
 
-class Error;
 class FileDescriptor;
 
 typedef void (*mpd_inotify_callback_t)(int wd, unsigned mask,
@@ -33,33 +32,31 @@ class InotifySource final : private SocketMonitor {
 	mpd_inotify_callback_t callback;
 	void *callback_ctx;
 
-	InotifySource(EventLoop &_loop,
-		      mpd_inotify_callback_t callback, void *ctx,
-		      FileDescriptor fd);
-
 public:
+	/**
+	 * Creates a new inotify source and registers it in the
+	 * #EventLoop.
+	 *
+	 * Throws #std::system_error on error.
+	 *
+	 * @param callback a callback invoked for events received from
+	 * the kernel
+	 */
+	InotifySource(EventLoop &_loop,
+		      mpd_inotify_callback_t callback, void *ctx);
+
 	~InotifySource() {
 		Close();
 	}
 
 	/**
-	 * Creates a new inotify source and registers it in the
-	 * #EventLoop.
-	 *
-	 * @param callback a callback invoked for events received from
-	 * the kernel
-	 */
-	static InotifySource *Create(EventLoop &_loop,
-				     mpd_inotify_callback_t callback,
-				     void *ctx,
-				     Error &error);
-
-	/**
 	 * Adds a path to the notify list.
 	 *
-	 * @return a watch descriptor or -1 on error
+	 * Throws #std::system_error on error.
+	 *
+	 * @return a watch descriptor
 	 */
-	int Add(const char *path_fs, unsigned mask, Error &error);
+	int Add(const char *path_fs, unsigned mask);
 
 	/**
 	 * Removes a path from the notify list.

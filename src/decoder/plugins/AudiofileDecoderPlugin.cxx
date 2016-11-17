@@ -23,7 +23,7 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
-#include "util/Error.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -195,17 +195,12 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 	if (fh == AF_NULL_FILEHANDLE)
 		return;
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format,
-				       afGetRate(fh, AF_DEFAULT_TRACK),
-				       audiofile_setup_sample_format(fh),
-				       afGetVirtualChannels(fh, AF_DEFAULT_TRACK),
-				       error)) {
-		LogError(error);
-		afCloseFile(fh);
-		return;
-	}
+	AtScopeExit(fh) { afCloseFile(fh); };
+
+	const auto audio_format =
+		CheckAudioFormat(afGetRate(fh, AF_DEFAULT_TRACK),
+				 audiofile_setup_sample_format(fh),
+				 afGetVirtualChannels(fh, AF_DEFAULT_TRACK));
 
 	const auto total_time = audiofile_get_duration(fh);
 
@@ -240,8 +235,6 @@ audiofile_stream_decode(Decoder &decoder, InputStream &is)
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);
-
-	afCloseFile(fh);
 }
 
 gcc_pure

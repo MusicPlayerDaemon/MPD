@@ -6,7 +6,6 @@
 #include "lib/icu/Converter.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/StringAPI.hxx"
-#include "util/Error.hxx"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>

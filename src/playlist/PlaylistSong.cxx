@@ -24,7 +24,6 @@
 #include "tag/TagBuilder.hxx"
 #include "fs/Traits.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "DetachedSong.hxx"
 
 #include <stdexcept>
@@ -49,7 +48,7 @@ playlist_check_load_song(DetachedSong &song, const SongLoader &loader)
 	DetachedSong *tmp;
 
 	try {
-		tmp = loader.LoadSong(song.GetURI(), IgnoreError());
+		tmp = loader.LoadSong(song.GetURI());
 	} catch (const std::runtime_error &) {
 		return false;
 	}

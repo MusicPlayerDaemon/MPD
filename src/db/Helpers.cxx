@@ -78,10 +78,10 @@ StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 	return true;
 }
 
-bool
-GetStats(const Database &db, const DatabaseSelection &selection,
-	 DatabaseStats &stats, Error &error)
+DatabaseStats
+GetStats(const Database &db, const DatabaseSelection &selection)
 {
+	DatabaseStats stats;
 	stats.Clear();
 
 	StringSet artists, albums;
@@ -89,10 +89,9 @@ GetStats(const Database &db, const DatabaseSelection &selection,
 	const auto f = std::bind(StatsVisitSong,
 				 std::ref(stats), std::ref(artists),
 				 std::ref(albums), _1);
-	if (!db.Visit(selection, f, error))
-		return false;
+	db.Visit(selection, f);
 
 	stats.artist_count = artists.size();
 	stats.album_count = albums.size();
-	return true;
+	return stats;
 }

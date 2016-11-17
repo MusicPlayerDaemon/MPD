@@ -47,9 +47,8 @@ public:
 	}
 
 	/* virtual methods from class Encoder */
-	bool Flush(Error &) override {
-		Flush();
-		return true;
+	void Flush() final {
+		flush = true;
 	}
 
 	size_t Read(void *dest, size_t length) override {
@@ -66,11 +65,6 @@ public:
 		}
 
 		return ReadPage(page, dest, length);
-	}
-
-protected:
-	void Flush() {
-		flush = true;
 	}
 };
 

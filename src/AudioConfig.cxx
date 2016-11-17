@@ -24,8 +24,7 @@
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "util/Error.hxx"
-#include "system/FatalError.hxx"
+#include "util/RuntimeError.hxx"
 
 static AudioFormat configured_audio_format;
 
@@ -39,14 +38,15 @@ getOutputAudioFormat(AudioFormat inAudioFormat)
 
 void initAudioConfig(void)
 {
-	const struct config_param *param = config_get_param(ConfigOption::AUDIO_OUTPUT_FORMAT);
+	const auto *param = config_get_param(ConfigOption::AUDIO_OUTPUT_FORMAT);
 
 	if (param == nullptr)
 		return;
 
-	Error error;
-	if (!audio_format_parse(configured_audio_format, param->value.c_str(),
-				true, error))
-		FormatFatalError("error parsing line %i: %s",
-				 param->line, error.GetMessage());
+	try {
+		configured_audio_format = ParseAudioFormat(param->value.c_str(), true);
+	} catch (const std::runtime_error &) {
+		std::throw_with_nested(FormatRuntimeError("error parsing line %i",
+							  param->line));
+	}
 }

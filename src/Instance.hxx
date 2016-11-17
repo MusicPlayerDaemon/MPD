@@ -37,7 +37,6 @@ class Storage;
 class UpdateService;
 #endif
 
-class Error;
 class ClientList;
 struct Partition;
 class StateFile;
@@ -90,7 +89,7 @@ struct Instance final
 	StateFile *state_file;
 
 	Instance()
-		:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle)) {}
+		:idle_monitor(event_loop, BIND_THIS_METHOD(OnIdle)), state_file(nullptr) {}
 
 	/**
 	 * Initiate shutdown.  Wrapper for EventLoop::Break().
@@ -109,7 +108,17 @@ struct Instance final
 	 * if this MPD configuration has no database (no
 	 * music_directory was configured).
 	 */
-	Database *GetDatabase(Error &error);
+	Database *GetDatabase() {
+		return database;
+	}
+
+	/**
+	 * Returns the global #Database instance.  Throws
+	 * DatabaseError if this MPD configuration has no database (no
+	 * music_directory was configured).
+	 */
+	gcc_pure
+	const Database &GetDatabaseOrThrow() const;
 #endif
 
 private:

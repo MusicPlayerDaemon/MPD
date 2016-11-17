@@ -30,7 +30,6 @@
 #include "thread/Thread.hxx"
 #include "system/PeriodClock.hxx"
 
-class Error;
 class PreparedFilter;
 class Filter;
 class MusicPipe;
@@ -282,11 +281,18 @@ struct AudioOutput {
 	 */
 	bool current_chunk_finished;
 
-	AudioOutput(const AudioOutputPlugin &_plugin);
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	AudioOutput(const AudioOutputPlugin &_plugin,
+		    const ConfigBlock &block);
+
 	~AudioOutput();
 
-	bool Configure(const ConfigBlock &block, Error &error);
+private:
+	void Configure(const ConfigBlock &block);
 
+public:
 	void StartThread();
 	void StopThread();
 
@@ -454,11 +460,13 @@ private:
  */
 extern struct notify audio_output_client_notify;
 
+/**
+ * Throws #std::runtime_error on error.
+ */
 AudioOutput *
 audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 		 MixerListener &mixer_listener,
-		 PlayerControl &pc,
-		 Error &error);
+		 PlayerControl &pc);
 
 void
 audio_output_free(AudioOutput *ao);

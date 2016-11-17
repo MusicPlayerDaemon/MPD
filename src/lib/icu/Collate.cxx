@@ -23,10 +23,9 @@
 
 #ifdef HAVE_ICU
 #include "Util.hxx"
-#include "Error.hxx"
 #include "util/AllocatedArray.hxx"
 #include "util/ConstBuffer.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <unicode/ucol.h>
 #include <unicode/ustring.h>
@@ -53,21 +52,16 @@ static UCollator *collator;
 
 #ifdef HAVE_ICU
 
-bool
-IcuCollateInit(Error &error)
+void
+IcuCollateInit()
 {
 	assert(collator == nullptr);
-	assert(!error.IsDefined());
 
 	UErrorCode code = U_ZERO_ERROR;
 	collator = ucol_open("", &code);
-	if (collator == nullptr) {
-		error.Format(icu_domain, int(code),
-			     "ucol_open() failed: %s", u_errorName(code));
-		return false;
-	}
-
-	return true;
+	if (collator == nullptr)
+		throw FormatRuntimeError("ucol_open() failed: %s",
+					 u_errorName(code));
 }
 
 void

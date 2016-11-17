@@ -37,15 +37,12 @@ AddToQueue(Partition &partition, const LightSong &song)
 	return true;
 }
 
-bool
-AddFromDatabase(Partition &partition, const DatabaseSelection &selection,
-		Error &error)
+void
+AddFromDatabase(Partition &partition, const DatabaseSelection &selection)
 {
-	const Database *db = partition.instance.GetDatabase(error);
-	if (db == nullptr)
-		return false;
+	const Database &db = partition.instance.GetDatabaseOrThrow();
 
 	using namespace std::placeholders;
 	const auto f = std::bind(AddToQueue, std::ref(partition), _1);
-	return db->Visit(selection, f, error);
+	db.Visit(selection, f);
 }

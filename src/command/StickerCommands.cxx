@@ -25,13 +25,11 @@
 #include "sticker/SongSticker.hxx"
 #include "sticker/StickerPrint.hxx"
 #include "sticker/StickerDatabase.hxx"
-#include "CommandError.hxx"
 #include "client/Client.hxx"
 #include "client/Response.hxx"
 #include "Partition.hxx"
-#include "util/Error.hxx"
-#include "util/ConstBuffer.hxx"
 #include "util/StringAPI.hxx"
+#include "util/ScopeExit.hxx"
 
 struct sticker_song_find_data {
 	Response &r;
@@ -53,24 +51,18 @@ sticker_song_find_print_cb(const LightSong &song, const char *value,
 static CommandResult
 handle_sticker_song(Response &r, Partition &partition, Request args)
 {
-	Error error;
-	const Database *db = partition.GetDatabase(error);
-	if (db == nullptr)
-		return print_error(r, error);
+	const Database &db = partition.GetDatabaseOrThrow();
 
 	const char *const cmd = args.front();
 
 	/* get song song_id key */
 	if (args.size == 4 && StringIsEqual(cmd, "get")) {
-		const LightSong *song = db->GetSong(args[2]);
+		const LightSong *song = db.GetSong(args[2]);
+		assert(song != nullptr);
+		AtScopeExit(&db, song) { db.ReturnSong(song); };
 
-		const auto value = sticker_song_get_value(*song, args[3],
-							  error);
-		db->ReturnSong(song);
+		const auto value = sticker_song_get_value(*song, args[3]);
 		if (value.empty()) {
-			if (error.IsDefined())
-				return print_error(r, error);
-
 			r.Error(ACK_ERROR_NO_EXIST, "no such sticker");
 			return CommandResult::ERROR;
 		}
@@ -80,50 +72,36 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 		return CommandResult::OK;
 	/* list song song_id */
 	} else if (args.size == 3 && StringIsEqual(cmd, "list")) {
-		const LightSong *song = db->GetSong(args[2]);
+		const LightSong *song = db.GetSong(args[2]);
 		assert(song != nullptr);
+		AtScopeExit(&db, song) { db.ReturnSong(song); };
 
-		Sticker *sticker = sticker_song_get(*song, error);
-		db->ReturnSong(song);
+		Sticker *sticker = sticker_song_get(*song);
 		if (sticker) {
 			sticker_print(r, *sticker);
 			sticker_free(sticker);
-		} else if (error.IsDefined())
-			return print_error(r, error);
+		}
 
 		return CommandResult::OK;
 	/* set song song_id id key */
 	} else if (args.size == 5 && StringIsEqual(cmd, "set")) {
-		const LightSong *song = db->GetSong(args[2]);
+		const LightSong *song = db.GetSong(args[2]);
 		assert(song != nullptr);
+		AtScopeExit(&db, song) { db.ReturnSong(song); };
 
-		bool ret = sticker_song_set_value(*song, args[3], args[4],
-						  error);
-		db->ReturnSong(song);
-		if (!ret) {
-			if (error.IsDefined())
-				return print_error(r, error);
-
-			r.Error(ACK_ERROR_SYSTEM,
-				"failed to set sticker value");
-			return CommandResult::ERROR;
-		}
-
+		sticker_song_set_value(*song, args[3], args[4]);
 		return CommandResult::OK;
 	/* delete song song_id [key] */
 	} else if ((args.size == 3 || args.size == 4) &&
 		   StringIsEqual(cmd, "delete")) {
-		const LightSong *song = db->GetSong(args[2]);
+		const LightSong *song = db.GetSong(args[2]);
 		assert(song != nullptr);
+		AtScopeExit(&db, song) { db.ReturnSong(song); };
 
 		bool ret = args.size == 3
-			? sticker_song_delete(*song, error)
-			: sticker_song_delete_value(*song, args[3], error);
-		db->ReturnSong(song);
+			? sticker_song_delete(*song)
+			: sticker_song_delete_value(*song, args[3]);
 		if (!ret) {
-			if (error.IsDefined())
-				return print_error(r, error);
-
 			r.Error(ACK_ERROR_SYSTEM, "no such sticker");
 			return CommandResult::ERROR;
 		}
@@ -163,17 +141,9 @@ handle_sticker_song(Response &r, Partition &partition, Request args)
 			args[3],
 		};
 
-		if (!sticker_song_find(*db, base_uri, data.name,
-				       op, value,
-				       sticker_song_find_print_cb, &data,
-				       error)) {
-			if (error.IsDefined())
-				return print_error(r, error);
-
-			r.Error(ACK_ERROR_SYSTEM,
-				"failed to set search sticker database");
-			return CommandResult::ERROR;
-		}
+		sticker_song_find(db, base_uri, data.name,
+				  op, value,
+				  sticker_song_find_print_cb, &data);
 
 		return CommandResult::OK;
 	} else {

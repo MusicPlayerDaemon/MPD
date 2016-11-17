@@ -26,7 +26,6 @@
 
 #include <FLAC/ordinals.h>
 
-class Error;
 template<typename T> struct ConstBuffer;
 
 /**
@@ -40,10 +39,10 @@ class FlacPcmImport {
 
 public:
 	/**
-	 * @return false on error
+	 * Throws #std::runtime_error on error.
 	 */
-	bool Open(unsigned sample_rate, unsigned bits_per_sample,
-		  unsigned channels, Error &error);
+	void Open(unsigned sample_rate, unsigned bits_per_sample,
+		  unsigned channels);
 
 	const AudioFormat &GetAudioFormat() const {
 		return audio_format;

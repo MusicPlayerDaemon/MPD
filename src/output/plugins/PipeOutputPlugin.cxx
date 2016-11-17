@@ -21,10 +21,10 @@
 #include "PipeOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
-#include "config/ConfigError.hxx"
-#include "util/Error.hxx"
+#include "system/Error.hxx"
 
 #include <string>
+#include <stdexcept>
 
 #include <stdio.h>
 
@@ -33,74 +33,51 @@ class PipeOutput {
 
 	AudioOutput base;
 
-	std::string cmd;
+	const std::string cmd;
 	FILE *fh;
 
-	PipeOutput()
-		:base(pipe_output_plugin) {}
-
-	bool Configure(const ConfigBlock &block, Error &error);
+	PipeOutput(const ConfigBlock &block);
 
 public:
-	static PipeOutput *Create(const ConfigBlock &block, Error &error);
+	static PipeOutput *Create(const ConfigBlock &block);
 
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 
 	void Close() {
 		pclose(fh);
 	}
 
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 };
 
-inline bool
-PipeOutput::Configure(const ConfigBlock &block, Error &error)
+PipeOutput::PipeOutput(const ConfigBlock &block)
+	:base(pipe_output_plugin, block),
+	 cmd(block.GetBlockValue("command", ""))
 {
-	if (!base.Configure(block, error))
-		return false;
-
-	cmd = block.GetBlockValue("command", "");
-	if (cmd.empty()) {
-		error.Set(config_domain,
-			  "No \"command\" parameter specified");
-		return false;
-	}
-
-	return true;
+	if (cmd.empty())
+		throw std::runtime_error("No \"command\" parameter specified");
 }
 
 inline PipeOutput *
-PipeOutput::Create(const ConfigBlock &block, Error &error)
+PipeOutput::Create(const ConfigBlock &block)
 {
-	PipeOutput *po = new PipeOutput();
-
-	if (!po->Configure(block, error)) {
-		delete po;
-		return nullptr;
-	}
-
-	return po;
+	return new PipeOutput(block);
 }
 
-inline bool
-PipeOutput::Open(gcc_unused AudioFormat &audio_format, Error &error)
+inline void
+PipeOutput::Open(gcc_unused AudioFormat &audio_format)
 {
 	fh = popen(cmd.c_str(), "w");
-	if (fh == nullptr) {
-		error.FormatErrno("Error opening pipe \"%s\"",
-				  cmd.c_str());
-		return false;
-	}
-
-	return true;
+	if (fh == nullptr)
+		throw FormatErrno("Error opening pipe \"%s\"", cmd.c_str());
 }
 
 inline size_t
-PipeOutput::Play(const void *chunk, size_t size, Error &error)
+PipeOutput::Play(const void *chunk, size_t size)
 {
 	size_t nbytes = fwrite(chunk, 1, size, fh);
 	if (nbytes == 0)
-		error.SetErrno("Write error on pipe");
+		throw MakeErrno("Write error on pipe");
 
 	return nbytes;
 }

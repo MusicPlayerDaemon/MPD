@@ -28,13 +28,11 @@ enum TagType : uint8_t;
 struct Partition;
 class Response;
 class SongFilter;
-class Error;
 
 gcc_nonnull(3)
-bool
+void
 PrintSongCount(Response &r, const Partition &partition, const char *name,
 	       const SongFilter *filter,
-	       TagType group,
-	       Error &error);
+	       TagType group);
 
 #endif

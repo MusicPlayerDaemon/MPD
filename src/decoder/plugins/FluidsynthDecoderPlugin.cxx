@@ -22,7 +22,6 @@
 #include "../DecoderAPI.hxx"
 #include "CheckAudioFormat.hxx"
 #include "fs/Path.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "Log.hxx"
@@ -75,13 +74,8 @@ fluidsynth_mpd_log_function(int level, char *message, gcc_unused void *data)
 static bool
 fluidsynth_init(const ConfigBlock &block)
 {
-	Error error;
-
 	sample_rate = block.GetBlockValue("sample_rate", 48000u);
-	if (!audio_check_sample_rate(sample_rate, error)) {
-		LogError(error);
-		return false;
-	}
+	CheckSampleRate(sample_rate);
 
 	soundfont_path = block.GetBlockValue("soundfont",
 					     "/usr/share/sounds/sf2/FluidR3_GM.sf2");

@@ -19,8 +19,7 @@
 
 #include "config.h"
 #include "Resolver.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <string>
 
@@ -35,12 +34,9 @@
 #include <string.h>
 #include <stdio.h>
 
-const Domain resolver_domain("resolver");
-
 struct addrinfo *
 resolve_host_port(const char *host_port, unsigned default_port,
-		  int flags, int socktype,
-		  Error &error)
+		  int flags, int socktype)
 {
 	std::string p(host_port);
 	const char *host = p.c_str(), *port = nullptr;
@@ -87,12 +83,9 @@ resolve_host_port(const char *host_port, unsigned default_port,
 
 	struct addrinfo *ai;
 	int ret = getaddrinfo(host, port, &hints, &ai);
-	if (ret != 0) {
-		error.Format(resolver_domain, ret,
-			     "Failed to look up '%s': %s",
-			     host_port, gai_strerror(ret));
-		return nullptr;
-	}
+	if (ret != 0)
+		throw FormatRuntimeError("Failed to look up '%s': %s",
+					 host_port, gai_strerror(ret));
 
 	return ai;
 }

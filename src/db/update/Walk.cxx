@@ -39,7 +39,6 @@
 #include "util/Alloc.hxx"
 #include "util/StringCompare.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <stdexcept>
@@ -338,12 +337,7 @@ UpdateWalk::UpdateDirectory(Directory &directory,
 	std::unique_ptr<StorageDirectoryReader> reader;
 
 	try {
-		Error error;
-		reader.reset(storage.OpenDirectory(directory.GetPath(), error));
-		if (!reader) {
-			LogError(error);
-			return false;
-		}
+		reader.reset(storage.OpenDirectory(directory.GetPath()));
 	} catch (const std::runtime_error &e) {
 		LogError(e);
 		return false;

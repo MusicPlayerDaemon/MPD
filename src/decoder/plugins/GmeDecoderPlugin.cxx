@@ -25,10 +25,10 @@
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
+#include "util/ScopeExit.hxx"
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -141,6 +141,8 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		return;
 	}
 
+	AtScopeExit(emu) { gme_delete(emu); };
+
 	FormatDebug(gme_domain, "emulator type '%s'\n",
 		    gme_type_system(gme_type(emu)));
 
@@ -153,7 +155,6 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 	gme_err = gme_track_info(emu, &ti, container.track);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
-		gme_delete(emu);
 		return;
 	}
 
@@ -166,15 +167,9 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 
 	/* initialize the MPD decoder */
 
-	Error error;
-	AudioFormat audio_format;
-	if (!audio_format_init_checked(audio_format, GME_SAMPLE_RATE,
-				       SampleFormat::S16, GME_CHANNELS,
-				       error)) {
-		LogError(error);
-		gme_delete(emu);
-		return;
-	}
+	const auto audio_format = CheckAudioFormat(GME_SAMPLE_RATE,
+						   SampleFormat::S16,
+						   GME_CHANNELS);
 
 	decoder_initialized(decoder, audio_format, true, song_len);
 
@@ -209,8 +204,6 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 		if (gme_track_ended(emu))
 			break;
 	} while (cmd != DecoderCommand::STOP);
-
-	gme_delete(emu);
 }
 
 static void

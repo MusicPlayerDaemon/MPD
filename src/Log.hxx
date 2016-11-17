@@ -25,7 +25,6 @@
 
 #include <exception>
 
-class Error;
 class Domain;
 
 void
@@ -104,16 +103,6 @@ FormatError(const std::exception_ptr &ep, const char *fmt, ...);
 gcc_printf(2,3)
 void
 FormatError(const Domain &domain, const char *fmt, ...);
-
-void
-LogError(const Error &error);
-
-void
-LogError(const Error &error, const char *msg);
-
-gcc_printf(2,3)
-void
-FormatError(const Error &error, const char *fmt, ...);
 
 void
 LogErrno(const Domain &domain, int e, const char *msg);

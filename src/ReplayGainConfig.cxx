@@ -78,8 +78,7 @@ replay_gain_set_mode_string(const char *p)
 
 void replay_gain_global_init(void)
 {
-	const struct config_param *param =
-		config_get_param(ConfigOption::REPLAYGAIN);
+	const auto *param = config_get_param(ConfigOption::REPLAYGAIN);
 
 	if (param != nullptr &&
 	    !replay_gain_set_mode_string(param->value.c_str())) {

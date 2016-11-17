@@ -25,22 +25,21 @@
 #ifndef MPD_AUDIO_PARSER_HXX
 #define MPD_AUDIO_PARSER_HXX
 
+#include "Compiler.h"
+
 struct AudioFormat;
-class Error;
 
 /**
  * Parses a string in the form "SAMPLE_RATE:BITS:CHANNELS" into an
  * #AudioFormat.
  *
- * @param dest the destination #audio_format struct
+ * Throws #std::runtime_error on error.
+ *
  * @param src the input string
  * @param mask if true, then "*" is allowed for any number of items
- * @param error location to store the error occurring, or NULL to
- * ignore errors
- * @return true on success
  */
-bool
-audio_format_parse(AudioFormat &dest, const char *src,
-		   bool mask, Error &error);
+gcc_pure
+AudioFormat
+ParseAudioFormat(const char *src, bool mask);
 
 #endif

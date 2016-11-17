@@ -23,7 +23,6 @@
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
 #include "mixer/MixerList.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
@@ -52,7 +51,7 @@ class HaikuOutput {
 
 	size_t write_size;
 
-	media_raw_audio_format* format;
+	media_raw_audio_format format;
 	BSoundPlayer* sound_player;
 
 	sem_id new_buffer;
@@ -65,26 +64,20 @@ class HaikuOutput {
 	unsigned buffer_delay;
 
 public:
-	HaikuOutput()
-		:base(haiku_output_plugin) {}
+	HaikuOutput(const ConfigBlock &block)
+		:base(haiku_output_plugin, block),
+		 /* XXX: by default we should let the MediaKit propose the buffer size */
+		 write_size(block.GetBlockValue("write_size", 4096u)) {}
+
 	~HaikuOutput();
 
-	bool Initialize(const ConfigBlock &block, Error &error) {
-		return base.Configure(block, error);
-	}
+	static HaikuOutput *Create(const ConfigBlock &block);
 
-	static HaikuOutput *Create(const ConfigBlock &block, Error &error);
+	void Open(AudioFormat &audio_format);
+	void Close();
 
-	bool Open(AudioFormat &audio_format, Error &error);
-
-	void Close() {
-		DoClose();
-	}
-
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
-
-	bool Configure(const ConfigBlock &block, Error &error);
 
 	size_t Delay();
 
@@ -92,20 +85,9 @@ public:
 		gcc_unused const media_raw_audio_format& _format);
 
 	void SendTag(const Tag &tag);
-
-private:
-
-	void DoClose();
 };
 
 static constexpr Domain haiku_output_domain("haiku_output");
-
-static void
-haiku_output_error(Error &error_r, status_t err)
-{
-	const char *error = strerror(err);
-	error_r.Set(haiku_output_domain, err, error);
-}
 
 static void
 initialize_application()
@@ -128,22 +110,6 @@ finalize_application()
 	FormatDebug(haiku_output_domain, "deleting be_app\n");
 }
 
-inline bool
-HaikuOutput::Configure(const ConfigBlock &block, Error &error)
-{
-	/* XXX: by default we should let the MediaKit propose the buffer size */
-	write_size = block.GetBlockValue("write_size", 4096u);
-
-	format = (media_raw_audio_format*)malloc(
-		sizeof(media_raw_audio_format));
-	if (format == nullptr) {
-		haiku_output_error(error, B_NO_MEMORY);
-		return false;
-	}
-
-	return true;
-}
-
 static bool
 haiku_test_default_device(void)
 {
@@ -153,27 +119,15 @@ haiku_test_default_device(void)
 }
 
 inline HaikuOutput *
-HaikuOutput::Create(const ConfigBlock &block, Error &error)
+HaikuOutput::Create(const ConfigBlock &block)
 {
 	initialize_application();
 
-	HaikuOutput *ad = new HaikuOutput();
-
-	if (!ad->Initialize(block, error)) {
-		delete ad;
-		return nullptr;
-	}
-
-	if (!ad->Configure(block, error)) {
-		delete ad;
-		return nullptr;
-	}
-
-	return ad;
+	return new HaikuOutput(block);
 }
 
 void
-HaikuOutput::DoClose()
+HaikuOutput::Close()
 {
 	sound_player->SetHasData(false);
 	delete_sem(new_buffer);
@@ -187,7 +141,6 @@ HaikuOutput::DoClose()
 
 HaikuOutput::~HaikuOutput()
 {
-	free(format);
 	delete_sem(new_buffer);
 	delete_sem(buffer_done);
 
@@ -231,73 +184,72 @@ HaikuOutput::FillBuffer(void* _buffer, size_t size,
 	}
 }
 
-inline bool
-HaikuOutput::Open(AudioFormat &audio_format, Error &error)
+inline void
+HaikuOutput::Open(AudioFormat &audio_format)
 {
 	status_t err;
-	*format = media_multi_audio_format::wildcard;
+	format = media_multi_audio_format::wildcard;
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
-		format->format = media_raw_audio_format::B_AUDIO_CHAR;
+		format.format = media_raw_audio_format::B_AUDIO_CHAR;
 		break;
 
 	case SampleFormat::S16:
-		format->format = media_raw_audio_format::B_AUDIO_SHORT;
+		format.format = media_raw_audio_format::B_AUDIO_SHORT;
 		break;
 
 	case SampleFormat::S32:
-		format->format = media_raw_audio_format::B_AUDIO_INT;
+		format.format = media_raw_audio_format::B_AUDIO_INT;
 		break;
 
 	case SampleFormat::FLOAT:
-		format->format = media_raw_audio_format::B_AUDIO_FLOAT;
+		format.format = media_raw_audio_format::B_AUDIO_FLOAT;
 		break;
 
 	default:
 		/* fall back to float */
 		audio_format.format = SampleFormat::FLOAT;
-		format->format = media_raw_audio_format::B_AUDIO_FLOAT;
+		format.format = media_raw_audio_format::B_AUDIO_FLOAT;
 		break;
 	}
 
-	format->frame_rate = audio_format.sample_rate;
-	format->byte_order = B_MEDIA_HOST_ENDIAN;
-	format->channel_count = audio_format.channels;
+	format.frame_rate = audio_format.sample_rate;
+	format.byte_order = B_MEDIA_HOST_ENDIAN;
+	format.channel_count = audio_format.channels;
 
 	buffer_size = 0;
 
 	if (write_size)
-		format->buffer_size = write_size;
+		format.buffer_size = write_size;
 	else
-		format->buffer_size = BMediaRoster::Roster()->AudioBufferSizeFor(
-			format->channel_count, format->format,
-			format->frame_rate, B_UNKNOWN_BUS) * 2;
+		format.buffer_size = BMediaRoster::Roster()->AudioBufferSizeFor(
+			format.channel_count, format.format,
+			format.frame_rate, B_UNKNOWN_BUS) * 2;
 
 	FormatDebug(haiku_output_domain,
 		"using haiku driver ad: bs: %d ws: %d "
 		"channels %d rate %f fmt %08lx bs %d\n",
 			(int)buffer_size, (int)write_size,
-			(int)format->channel_count, format->frame_rate,
-			format->format, (int)format->buffer_size);
+			(int)format.channel_count, format.frame_rate,
+			format.format, (int)format.buffer_size);
 
-	sound_player = new BSoundPlayer(format, "MPD Output",
+	sound_player = new BSoundPlayer(&format, "MPD Output",
 		fill_buffer, NULL, this);
 
 	err = sound_player->InitCheck();
 	if (err != B_OK) {
 		delete sound_player;
 		sound_player = NULL;
-		haiku_output_error(error, err);
-		return false;
+		throw MakeErrno(err, "BSoundPlayer::InitCheck() failed");
 	}
 
 	// calculate the allowable delay for the buffer (ms)
-	buffer_delay = format->buffer_size;
-	buffer_delay /= (format->format &
+	buffer_delay = format.buffer_size;
+	buffer_delay /= (format.format &
 		media_raw_audio_format::B_AUDIO_SIZE_MASK);
-	buffer_delay /= format->channel_count;
-	buffer_delay *= 1000 / format->frame_rate;
+	buffer_delay /= format.channel_count;
+	buffer_delay *= 1000 / format.frame_rate;
 	// half of the total buffer play time
 	buffer_delay /= 2;
 	FormatDebug(haiku_output_domain,
@@ -309,12 +261,10 @@ HaikuOutput::Open(AudioFormat &audio_format, Error &error)
 	sound_player->SetVolume(1.0);
 	sound_player->Start();
 	sound_player->SetHasData(false);
-
-	return true;
 }
 
 inline size_t
-HaikuOutput::Play(const void *chunk, size_t size, gcc_unused Error &error)
+HaikuOutput::Play(const void *chunk, size_t size)
 {
 	BSoundPlayer* const soundPlayer = sound_player;
 	const uint8 *data = (const uint8 *)chunk;

@@ -20,8 +20,6 @@
 #ifndef MPD_LOG_INIT_HXX
 #define MPD_LOG_INIT_HXX
 
-class Error;
-
 /**
  * Configure a logging destination for daemon startup, before the
  * configuration file is read.  This allows the daemon to use the
@@ -33,8 +31,11 @@ class Error;
 void
 log_early_init(bool verbose);
 
-bool
-log_init(bool verbose, bool use_stdout, Error &error);
+/**
+ * Throws #std::runtime_error on error.
+ */
+void
+log_init(bool verbose, bool use_stdout);
 
 void
 log_deinit();

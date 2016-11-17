@@ -17,11 +17,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_SQLITE_DOMAIN_HXX
-#define MPD_SQLITE_DOMAIN_HXX
+#ifndef MPD_SQLITE_ERROR_HXX
+#define MPD_SQLITE_ERROR_HXX
 
-class Domain;
+#include <stdexcept>
 
-extern const Domain sqlite_domain;
+struct sqlite3;
+struct sqlite3_stmt;
+
+class SqliteError final : public std::runtime_error {
+	int code;
+
+public:
+	SqliteError(sqlite3 *db, int _code, const char *msg);
+	SqliteError(sqlite3_stmt *stmt, int _code, const char *msg);
+
+	int GetCode() const {
+		return code;
+	}
+};
 
 #endif

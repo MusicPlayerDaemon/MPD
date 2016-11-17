@@ -23,7 +23,7 @@
 #include "fs/Traits.hxx"
 #include "fs/Domain.hxx"
 #include "fs/StandardDirectory.hxx"
-#include "util/Error.hxx"
+#include "util/RuntimeError.hxx"
 #include "ConfigGlobal.hxx"
 
 #include <assert.h>
@@ -36,14 +36,11 @@
  * Determine a given user's home directory.
  */
 static AllocatedPath
-GetHome(const char *user, Error &error)
+GetHome(const char *user)
 {
 	AllocatedPath result = GetHomeDir(user);
-	if (result.IsNull()) {
-		error.Format(path_domain,
-			     "no such user: %s", user);
-		return AllocatedPath::Null();
-	}
+	if (result.IsNull())
+		throw FormatRuntimeError("no such user: %s", user);
 
 	return result;
 }
@@ -52,34 +49,33 @@ GetHome(const char *user, Error &error)
  * Determine the current user's home directory.
  */
 static AllocatedPath
-GetHome(Error &error)
+GetHome()
 {
 	AllocatedPath result = GetHomeDir();
-	if (result.IsNull()) {
-		error.Set(path_domain,
-			  "problems getting home for current user");
-		return AllocatedPath::Null();
-	}
+	if (result.IsNull())
+		throw std::runtime_error("problems getting home for current user");
 
 	return result;
 }
 
 /**
  * Determine the configured user's home directory.
+ *
+ * Throws #std::runtime_error on error.
  */
 static AllocatedPath
-GetConfiguredHome(Error &error)
+GetConfiguredHome()
 {
 	const char *user = config_get_string(ConfigOption::USER);
 	return user != nullptr
-		? GetHome(user, error)
-		: GetHome(error);
+		? GetHome(user)
+		: GetHome();
 }
 
 #endif
 
 AllocatedPath
-ParsePath(const char *path, Error &error)
+ParsePath(const char *path)
 {
 	assert(path != nullptr);
 
@@ -88,12 +84,12 @@ ParsePath(const char *path, Error &error)
 		++path;
 
 		if (*path == '\0')
-			return GetConfiguredHome(error);
+			return GetConfiguredHome();
 
 		AllocatedPath home = AllocatedPath::Null();
 
 		if (*path == '/') {
-			home = GetConfiguredHome(error);
+			home = GetConfiguredHome();
 
 			++path;
 		} else {
@@ -102,7 +98,7 @@ ParsePath(const char *path, Error &error)
 					? path + strlen(path)
 					: slash;
 			const std::string user(path, end);
-			home = GetHome(user.c_str(), error);
+			home = GetHome(user.c_str());
 
 			if (slash == nullptr)
 				return home;
@@ -113,18 +109,16 @@ ParsePath(const char *path, Error &error)
 		if (home.IsNull())
 			return AllocatedPath::Null();
 
-		AllocatedPath path2 = AllocatedPath::FromUTF8(path, error);
+		AllocatedPath path2 = AllocatedPath::FromUTF8Throw(path);
 		if (path2.IsNull())
 			return AllocatedPath::Null();
 
 		return AllocatedPath::Build(home, path2);
 	} else if (!PathTraitsUTF8::IsAbsolute(path)) {
-		error.Format(path_domain,
-			     "not an absolute path: %s", path);
-		return AllocatedPath::Null();
+		throw FormatRuntimeError("not an absolute path: %s", path);
 	} else {
 #endif
-		return AllocatedPath::FromUTF8(path, error);
+		return AllocatedPath::FromUTF8Throw(path);
 #ifndef WIN32
 	}
 #endif

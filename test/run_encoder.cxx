@@ -26,7 +26,6 @@
 #include "AudioParser.hxx"
 #include "config/Block.hxx"
 #include "fs/io/StdioOutputStream.hxx"
-#include "util/Error.hxx"
 #include "Log.hxx"
 
 #include <memory>
@@ -66,28 +65,15 @@ int main(int argc, char **argv)
 	block.AddBlockParam("quality", "5.0", -1);
 
 	try {
-		Error error;
-		std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block, error));
-		if (p_encoder == nullptr) {
-			LogError(error, "Failed to initialize encoder");
-			return EXIT_FAILURE;
-		}
+		std::unique_ptr<PreparedEncoder> p_encoder(encoder_init(*plugin, block));
 
 		/* open the encoder */
 
 		AudioFormat audio_format(44100, SampleFormat::S16, 2);
-		if (argc > 2) {
-			if (!audio_format_parse(audio_format, argv[2], false, error)) {
-				LogError(error, "Failed to parse audio format");
-				return EXIT_FAILURE;
-			}
-		}
+		if (argc > 2)
+			audio_format = ParseAudioFormat(argv[2], false);
 
-		std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format, error));
-		if (encoder == nullptr) {
-			LogError(error, "Failed to open encoder");
-			return EXIT_FAILURE;
-		}
+		std::unique_ptr<Encoder> encoder(p_encoder->Open(audio_format));
 
 		StdioOutputStream os(stdout);
 
@@ -97,19 +83,11 @@ int main(int argc, char **argv)
 
 		ssize_t nbytes;
 		while ((nbytes = read(0, buffer, sizeof(buffer))) > 0) {
-			if (!encoder->Write(buffer, nbytes, error)) {
-				LogError(error, "encoder_write() failed");
-				return EXIT_FAILURE;
-			}
-
+			encoder->Write(buffer, nbytes);
 			EncoderToOutputStream(os, *encoder);
 		}
 
-		if (!encoder->End(error)) {
-			LogError(error, "encoder_flush() failed");
-			return EXIT_FAILURE;
-		}
-
+		encoder->End();
 		EncoderToOutputStream(os, *encoder);
 
 		return EXIT_SUCCESS;

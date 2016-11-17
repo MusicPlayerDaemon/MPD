@@ -20,9 +20,9 @@
 #include "config.h"
 #include "InotifySource.hxx"
 #include "InotifyDomain.hxx"
-#include "util/Error.hxx"
 #include "system/FileDescriptor.hxx"
 #include "system/FatalError.hxx"
+#include "system/Error.hxx"
 #include "Log.hxx"
 
 #include <sys/inotify.h>
@@ -67,37 +67,30 @@ InotifySource::OnSocketReady(gcc_unused unsigned flags)
 	return true;
 }
 
-inline
+static int
+InotifyInit()
+{
+	FileDescriptor fd;
+	if (!fd.CreateInotify())
+		throw MakeErrno("inotify_init() has failed");
+
+	return fd.Get();
+}
+
 InotifySource::InotifySource(EventLoop &_loop,
-			     mpd_inotify_callback_t _callback, void *_ctx,
-			     FileDescriptor _fd)
-	:SocketMonitor(_fd.Get(), _loop),
+			     mpd_inotify_callback_t _callback, void *_ctx)
+	:SocketMonitor(InotifyInit(), _loop),
 	 callback(_callback), callback_ctx(_ctx)
 {
 	ScheduleRead();
-
-}
-
-InotifySource *
-InotifySource::Create(EventLoop &loop,
-		      mpd_inotify_callback_t callback, void *callback_ctx,
-		      Error &error)
-{
-	FileDescriptor fd;
-	if (!fd.CreateInotify()) {
-		error.SetErrno("inotify_init() has failed");
-		return nullptr;
-	}
-
-	return new InotifySource(loop, callback, callback_ctx, fd);
 }
 
 int
-InotifySource::Add(const char *path_fs, unsigned mask, Error &error)
+InotifySource::Add(const char *path_fs, unsigned mask)
 {
 	int wd = inotify_add_watch(Get(), path_fs, mask);
 	if (wd < 0)
-		error.SetErrno("inotify_add_watch() has failed");
+		throw MakeErrno("inotify_add_watch() has failed");
 
 	return wd;
 }

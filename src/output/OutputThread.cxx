@@ -22,7 +22,6 @@
 #include "OutputAPI.hxx"
 #include "Domain.hxx"
 #include "pcm/PcmMix.hxx"
-#include "pcm/Domain.hxx"
 #include "notify.hxx"
 #include "filter/FilterInternal.hxx"
 #include "filter/plugins/ConvertFilterPlugin.hxx"
@@ -35,7 +34,6 @@
 #include "thread/Util.hxx"
 #include "thread/Slack.hxx"
 #include "thread/Name.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 #include "Log.hxx"
 #include "Compiler.h"
@@ -51,9 +49,8 @@ AudioOutput::CommandFinished()
 	assert(command != Command::NONE);
 	command = Command::NONE;
 
-	mutex.unlock();
+	const ScopeUnlock unlock(mutex);
 	audio_output_client_notify.Signal();
-	mutex.lock();
 }
 
 inline bool
@@ -62,12 +59,11 @@ AudioOutput::Enable()
 	if (really_enabled)
 		return true;
 
-	mutex.unlock();
-	Error error;
-	bool success = ao_plugin_enable(this, error);
-	mutex.lock();
-	if (!success) {
-		FormatError(error,
+	try {
+		const ScopeUnlock unlock(mutex);
+		ao_plugin_enable(this);
+	} catch (const std::runtime_error &e) {
+		FormatError(e,
 			    "Failed to enable \"%s\" [%s]",
 			    name, plugin.name);
 		return false;
@@ -86,9 +82,8 @@ AudioOutput::Disable()
 	if (really_enabled) {
 		really_enabled = false;
 
-		mutex.unlock();
+		const ScopeUnlock unlock(mutex);
 		ao_plugin_disable(this);
-		mutex.lock();
 	}
 }
 
@@ -136,8 +131,6 @@ AudioOutput::CloseFilter()
 inline void
 AudioOutput::Open()
 {
-	bool success;
-	Error error;
 	struct audio_format_string af_string;
 
 	assert(!open);
@@ -176,22 +169,21 @@ AudioOutput::Open()
 	const AudioFormat retry_audio_format = out_audio_format;
 
  retry_without_dsd:
-	success = ao_plugin_open(this, out_audio_format, error);
-	mutex.lock();
-
-	assert(!open);
-
-	if (!success) {
-		FormatError(error, "Failed to open \"%s\" [%s]",
+	try {
+		ao_plugin_open(this, out_audio_format);
+	} catch (const std::runtime_error &e) {
+		FormatError(e, "Failed to open \"%s\" [%s]",
 			    name, plugin.name);
 
-		mutex.unlock();
 		CloseFilter();
 		mutex.lock();
-
 		fail_timer.Update();
 		return;
 	}
+
+	mutex.lock();
+
+	assert(!open);
 
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
@@ -202,8 +194,7 @@ AudioOutput::Open()
 		mutex.unlock();
 		ao_plugin_close(this);
 
-		if (error.IsDomain(pcm_domain) &&
-		    out_audio_format.format == SampleFormat::DSD) {
+		if (out_audio_format.format == SampleFormat::DSD) {
 			/* if the audio output supports DSD, but not
 			   the given sample rate, it asks MPD to
 			   resample; resampling DSD however is not
@@ -216,9 +207,6 @@ AudioOutput::Open()
 
 			out_audio_format = retry_audio_format;
 			out_audio_format.format = SampleFormat::FLOAT;
-
-			/* clear the Error to allow reusing it */
-			error.Clear();
 
 			/* sorry for the "goto" - this is a workaround
 			   for the stable branch that should be as
@@ -256,12 +244,10 @@ AudioOutput::Close(bool drain)
 	current_chunk = nullptr;
 	open = false;
 
-	mutex.unlock();
+	const ScopeUnlock unlock(mutex);
 
 	CloseOutput(drain);
 	CloseFilter();
-
-	mutex.lock();
 
 	FormatDebug(output_domain, "closed plugin=%s name=\"%s\"",
 		    plugin.name, name);
@@ -281,11 +267,10 @@ AudioOutput::CloseOutput(bool drain)
 void
 AudioOutput::ReopenFilter()
 {
-	Error error;
-
-	mutex.unlock();
-	CloseFilter();
-	mutex.lock();
+	{
+		const ScopeUnlock unlock(mutex);
+		CloseFilter();
+	}
 
 	AudioFormat filter_audio_format;
 	try {
@@ -458,9 +443,13 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 	assert(filter_instance != nullptr);
 
 	if (tags && gcc_unlikely(chunk->tag != nullptr)) {
-		mutex.unlock();
-		ao_plugin_send_tag(this, *chunk->tag);
-		mutex.lock();
+		const ScopeUnlock unlock(mutex);
+		try {
+			ao_plugin_send_tag(this, *chunk->tag);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "Failed to send tag to \"%s\" [%s]",
+				    name, plugin.name);
+		}
 	}
 
 	auto data = ConstBuffer<char>::FromVoid(ao_filter_chunk(this, chunk));
@@ -473,21 +462,23 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 		return false;
 	}
 
-	Error error;
-
 	while (!data.IsEmpty() && command == Command::NONE) {
 		if (!WaitForDelay())
 			break;
 
-		mutex.unlock();
-		size_t nbytes = ao_plugin_play(this, data.data, data.size,
-					       error);
-		mutex.lock();
-		if (nbytes == 0) {
-			/* play()==0 means failure */
-			FormatError(error, "\"%s\" [%s] failed to play",
+		size_t nbytes;
+
+		try {
+			const ScopeUnlock unlock(mutex);
+			nbytes = ao_plugin_play(this, data.data, data.size);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "\"%s\" [%s] failed to play",
 				    name, plugin.name);
 
+			nbytes = 0;
+		}
+
+		if (nbytes == 0) {
 			Close(false);
 
 			/* don't automatically reopen this device for
@@ -552,9 +543,8 @@ AudioOutput::Play()
 
 	current_chunk_finished = true;
 
-	mutex.unlock();
+	const ScopeUnlock unlock(mutex);
 	player_control->LockSignal();
-	mutex.lock();
 
 	return true;
 }
@@ -562,9 +552,10 @@ AudioOutput::Play()
 inline void
 AudioOutput::Pause()
 {
-	mutex.unlock();
-	ao_plugin_cancel(this);
-	mutex.lock();
+	{
+		const ScopeUnlock unlock(mutex);
+		ao_plugin_cancel(this);
+	}
 
 	pause = true;
 	CommandFinished();
@@ -573,9 +564,15 @@ AudioOutput::Pause()
 		if (!WaitForDelay())
 			break;
 
-		mutex.unlock();
-		bool success = ao_plugin_pause(this);
-		mutex.lock();
+		bool success;
+		try {
+			const ScopeUnlock unlock(mutex);
+			success = ao_plugin_pause(this);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "\"%s\" [%s] failed to pause",
+				    name, plugin.name);
+			success = false;
+		}
 
 		if (!success) {
 			Close(false);
@@ -600,7 +597,7 @@ AudioOutput::Task()
 
 	SetThreadTimerSlackUS(100);
 
-	mutex.lock();
+	const ScopeLock lock(mutex);
 
 	while (1) {
 		switch (command) {
@@ -657,9 +654,8 @@ AudioOutput::Task()
 				assert(current_chunk == nullptr);
 				assert(pipe->Peek() == nullptr);
 
-				mutex.unlock();
+				const ScopeUnlock unlock(mutex);
 				ao_plugin_drain(this);
-				mutex.lock();
 			}
 
 			CommandFinished();
@@ -669,9 +665,8 @@ AudioOutput::Task()
 			current_chunk = nullptr;
 
 			if (open) {
-				mutex.unlock();
+				const ScopeUnlock unlock(mutex);
 				ao_plugin_cancel(this);
-				mutex.lock();
 			}
 
 			CommandFinished();
@@ -680,7 +675,6 @@ AudioOutput::Task()
 		case Command::KILL:
 			current_chunk = nullptr;
 			CommandFinished();
-			mutex.unlock();
 			return;
 		}
 

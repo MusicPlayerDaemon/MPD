@@ -20,8 +20,6 @@
 #ifndef MPD_COMMAND_LINE_HXX
 #define MPD_COMMAND_LINE_HXX
 
-class Error;
-
 struct options {
 	bool kill;
 	bool daemon;
@@ -29,8 +27,7 @@ struct options {
 	bool verbose;
 };
 
-bool
-parse_cmdline(int argc, char **argv, struct options *options,
-	      Error &error);
+void
+ParseCommandLine(int argc, char **argv, struct options *options);
 
 #endif

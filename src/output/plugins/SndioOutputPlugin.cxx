@@ -17,18 +17,16 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <sndio.h>
-#include <string.h>
-#include <unistd.h>
-
 #include "config.h"
 #include "SndioOutputPlugin.hxx"
-#include "config/ConfigError.hxx"
 #include "../OutputAPI.hxx"
 #include "../Wrapper.hxx"
-#include "util/Error.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
+
+#include <sndio.h>
+
+#include <stdexcept>
 
 #ifndef SIO_DEVANY
 /* this macro is missing in libroar-dev 1.0~beta2-3 (Debian Wheezy) */
@@ -42,48 +40,34 @@ static constexpr Domain sndio_output_domain("sndio_output");
 class SndioOutput {
 	friend struct AudioOutputWrapper<SndioOutput>;
 	AudioOutput base;
-	const char *device;
-	unsigned buffer_time; /* in ms */
+	const char *const device;
+	const unsigned buffer_time; /* in ms */
 	struct sio_hdl *sio_hdl;
 
 public:
-	SndioOutput()
-		:base(sndio_output_plugin) {}
-	~SndioOutput() {}
+	SndioOutput(const ConfigBlock &block);
 
-	bool Configure(const ConfigBlock &block, Error &error);
+	static SndioOutput *Create(const ConfigBlock &block);
 
-	static SndioOutput *Create(const ConfigBlock &block, Error &error);
-
-	bool Open(AudioFormat &audio_format, Error &error);
+	void Open(AudioFormat &audio_format);
 	void Close();
 	unsigned Delay() const;
-	size_t Play(const void *chunk, size_t size, Error &error);
+	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 };
 
-bool
-SndioOutput::Configure(const ConfigBlock &block, Error &error)
+SndioOutput::SndioOutput(const ConfigBlock &block)
+	:base(sndio_output_plugin, block),
+	 device(block.GetBlockValue("device", SIO_DEVANY)),
+	 buffer_time(block.GetBlockValue("buffer_time",
+					 MPD_SNDIO_BUFFER_TIME_MS))
 {
-	if (!base.Configure(block, error))
-		return false;
-	device = block.GetBlockValue("device", SIO_DEVANY);
-	buffer_time = block.GetBlockValue("buffer_time",
-	                                  MPD_SNDIO_BUFFER_TIME_MS);
-	return true;
 }
 
 SndioOutput *
-SndioOutput::Create(const ConfigBlock &block, Error &error)
+SndioOutput::Create(const ConfigBlock &block)
 {
-	SndioOutput *ao = new SndioOutput();
-
-	if (!ao->Configure(block, error)) {
-		delete ao;
-		return nullptr;
-	}
-
-	return ao;
+	return new SndioOutput(block);
 }
 
 static bool
@@ -102,18 +86,15 @@ sndio_test_default_device()
 	return true;
 }
 
-bool
-SndioOutput::Open(AudioFormat &audio_format, Error &error)
+void
+SndioOutput::Open(AudioFormat &audio_format)
 {
 	struct sio_par par;
 	unsigned bits, rate, chans;
 
 	sio_hdl = sio_open(device, SIO_PLAY, 0);
-	if (!sio_hdl) {
-		error.Format(sndio_output_domain, -1,
-		             "Failed to open default sndio device");
-		return false;
-	}
+	if (!sio_hdl)
+		throw std::runtime_error("Failed to open default sndio device");
 
 	switch (audio_format.format) {
 	case SampleFormat::S16:
@@ -144,10 +125,8 @@ SndioOutput::Open(AudioFormat &audio_format, Error &error)
 
 	if (!sio_setpar(sio_hdl, &par) ||
 	    !sio_getpar(sio_hdl, &par)) {
-		error.Format(sndio_output_domain, -1,
-		             "Failed to set/get audio params");
 		sio_close(sio_hdl);
-		return false;
+		throw std::runtime_error("Failed to set/get audio params");
 	}
 
 	if (par.bits != bits ||
@@ -156,20 +135,14 @@ SndioOutput::Open(AudioFormat &audio_format, Error &error)
 	    par.pchan != chans ||
 	    par.sig != 1 ||
 	    par.le != SIO_LE_NATIVE) {
-		error.Format(sndio_output_domain, -1,
-		             "Requested audio params cannot be satisfied");
 		sio_close(sio_hdl);
-		return false;
+		throw std::runtime_error("Requested audio params cannot be satisfied");
 	}
 
 	if (!sio_start(sio_hdl)) {
-		error.Format(sndio_output_domain, -1,
-		             "Failed to start audio device");
 		sio_close(sio_hdl);
-		return false;
+		throw std::runtime_error("Failed to start audio device");
 	}
-
-	return true;
 }
 
 void
@@ -179,13 +152,13 @@ SndioOutput::Close()
 }
 
 size_t
-SndioOutput::Play(const void *chunk, size_t size, Error &error)
+SndioOutput::Play(const void *chunk, size_t size)
 {
 	size_t n;
 
 	n = sio_write(sio_hdl, chunk, size);
 	if (n == 0 && sio_eof(sio_hdl) != 0)
-		error.Set(sndio_output_domain, -1, "sndio write failed");
+		throw std::runtime_error("sndio write failed");
 	return n;
 }
 

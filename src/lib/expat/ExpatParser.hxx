@@ -28,7 +28,6 @@
 #include <stdexcept>
 
 class InputStream;
-class Error;
 
 class ExpatError final : public std::runtime_error {
 public:
@@ -75,9 +74,6 @@ public:
 	gcc_pure
 	static const char *GetAttributeCase(const XML_Char **atts,
 					    const char *name);
-
-private:
-	void SetError(Error &error);
 };
 
 /**

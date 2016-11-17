@@ -21,15 +21,12 @@
 #include "CompositeStorage.hxx"
 #include "FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 #include "util/StringCompare.hxx"
 
 #include <set>
+#include <stdexcept>
 
 #include <string.h>
-
-static constexpr Domain composite_domain("composite");
 
 /**
  * Combines the directory entries of another #StorageDirectoryReader
@@ -57,7 +54,7 @@ public:
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
-	bool GetInfo(bool follow, StorageFileInfo &info, Error &error) override;
+	StorageFileInfo GetInfo(bool follow) override;
 };
 
 const char *
@@ -81,20 +78,20 @@ CompositeDirectoryReader::Read()
 	return current->c_str();
 }
 
-bool
-CompositeDirectoryReader::GetInfo(bool follow, StorageFileInfo &info,
-				  Error &error)
+StorageFileInfo
+CompositeDirectoryReader::GetInfo(bool follow)
 {
 	if (other != nullptr)
-		return other->GetInfo(follow, info, error);
+		return other->GetInfo(follow);
 
 	assert(current != names.end());
 
+	StorageFileInfo info;
 	info.type = StorageFileInfo::Type::DIRECTORY;
 	info.mtime = 0;
 	info.device = 0;
 	info.inode = 0;
-	return true;
+	return info;
 }
 
 static std::string
@@ -266,58 +263,61 @@ CompositeStorage::FindStorage(const char *uri) const
 	return result;
 }
 
-CompositeStorage::FindResult
-CompositeStorage::FindStorage(const char *uri, Error &error) const
-{
-	auto result = FindStorage(uri);
-	if (result.directory == nullptr)
-		error.Set(composite_domain, "No such directory");
-	return result;
-}
-
-bool
-CompositeStorage::GetInfo(const char *uri, bool follow, StorageFileInfo &info,
-			  Error &error)
+StorageFileInfo
+CompositeStorage::GetInfo(const char *uri, bool follow)
 {
 	const ScopeLock protect(mutex);
 
-	auto f = FindStorage(uri, error);
-	if (f.directory->storage != nullptr &&
-	    f.directory->storage->GetInfo(f.uri, follow, info, error))
-		return true;
+	std::exception_ptr error;
+
+	auto f = FindStorage(uri);
+	if (f.directory->storage != nullptr) {
+		try {
+			return f.directory->storage->GetInfo(f.uri, follow);
+		} catch (...) {
+			error = std::current_exception();
+		}
+	}
 
 	const Directory *directory = f.directory->Find(f.uri);
 	if (directory != nullptr) {
-		error.Clear();
+		StorageFileInfo info;
 		info.type = StorageFileInfo::Type::DIRECTORY;
 		info.mtime = 0;
 		info.device = 0;
 		info.inode = 0;
-		return true;
+		return info;
 	}
 
-	return false;
+	if (error)
+		std::rethrow_exception(error);
+	else
+		throw std::runtime_error("No such file or directory");
 }
 
 StorageDirectoryReader *
-CompositeStorage::OpenDirectory(const char *uri,
-				Error &error)
+CompositeStorage::OpenDirectory(const char *uri)
 {
 	const ScopeLock protect(mutex);
 
-	auto f = FindStorage(uri, error);
+	auto f = FindStorage(uri);
 	const Directory *directory = f.directory->Find(f.uri);
 	if (directory == nullptr || directory->children.empty()) {
 		/* no virtual directories here */
 
 		if (f.directory->storage == nullptr)
-			return nullptr;
+			throw std::runtime_error("No such directory");
 
-		return f.directory->storage->OpenDirectory(f.uri, error);
+		return f.directory->storage->OpenDirectory(f.uri);
 	}
 
-	StorageDirectoryReader *other =
-		f.directory->storage->OpenDirectory(f.uri, IgnoreError());
+	StorageDirectoryReader *other = nullptr;
+
+	try {
+		other = f.directory->storage->OpenDirectory(f.uri);
+	} catch (const std::runtime_error &) {
+	}
+
 	return new CompositeDirectoryReader(other, directory->children);
 }
 

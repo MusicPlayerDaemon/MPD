@@ -83,34 +83,33 @@ class CueParser {
 
 	/**
 	 * A song that is completely finished and can be returned to
-	 * the caller via cue_parser_get().
+	 * the caller via Get().
 	 */
 	std::unique_ptr<DetachedSong> finished;
 
 	/**
-	 * Tracks whether cue_parser_finish() has been called.  If
-	 * true, then all remaining (partial) results will be
-	 * delivered by cue_parser_get().
+	 * Tracks whether Finish() has been called.  If true, then all
+	 * remaining (partial) results will be delivered by Get().
 	 */
 	bool end = false;
 
 public:
 	/**
 	 * Feed a text line from the CUE file into the parser.  Call
-	 * cue_parser_get() after this to see if a song has been finished.
+	 * Get() after this to see if a song has been finished.
 	 */
 	void Feed(const char *line);
 
 	/**
 	 * Tell the parser that the end of the file has been reached.  Call
-	 * cue_parser_get() after this to see if a song has been finished.
+	 * Get() after this to see if a song has been finished.
 	 * This procedure must be done twice!
 	 */
 	void Finish();
 
 	/**
-	 * Check if a song was finished by the last cue_parser_feed() or
-	 * cue_parser_finish() call.
+	 * Check if a song was finished by the last Feed() or Finish()
+	 * call.
 	 *
 	 * @return a song object that must be freed by the caller, or NULL if
 	 * no song was finished at this time

@@ -20,10 +20,11 @@
 #ifndef MPD_PULSE_ERROR_HXX
 #define MPD_PULSE_ERROR_HXX
 
-class Error;
+#include <stdexcept>
+
 struct pa_context;
 
-void
-SetPulseError(Error &error, pa_context *context, const char *prefix);
+std::runtime_error
+MakePulseError(pa_context *context, const char *prefix);
 
 #endif

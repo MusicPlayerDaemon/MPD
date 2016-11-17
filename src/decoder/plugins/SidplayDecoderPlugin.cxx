@@ -27,7 +27,6 @@
 #include "util/FormatString.hxx"
 #include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
-#include "util/Error.hxx"
 #include "system/ByteOrder.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
@@ -85,12 +84,9 @@ static bool
 sidplay_init(const ConfigBlock &block)
 {
 	/* read the songlengths database file */
-	Error error;
-	const auto database_path = block.GetBlockPath("songlength_database", error);
+	const auto database_path = block.GetPath("songlength_database");
 	if (!database_path.IsNull())
 		songlength_database = sidplay_load_songlength_db(database_path);
-	else if (error.IsDefined())
-		FatalError(error);
 
 	default_songlength = block.GetBlockValue("default_songlength", 0u);
 
@@ -357,11 +353,18 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	DecoderCommand cmd;
 	do {
 		short buffer[4096];
-		size_t nbytes;
 
-		nbytes = player.play(buffer, ARRAY_SIZE(buffer));
-		if (nbytes == 0)
+		const auto result = player.play(buffer, ARRAY_SIZE(buffer));
+		if (result <= 0)
 			break;
+
+#ifdef HAVE_SIDPLAYFP
+		/* libsidplayfp returns the number of samples */
+		const size_t nbytes = result * sizeof(buffer[0]);
+#else
+		/* libsidplay2 returns the number of bytes */
+		const size_t nbytes = result;
+#endif
 
 		decoder_timestamp(decoder, (double)player.time() / timebase);
 
@@ -379,12 +382,9 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 			}
 
 			/* ignore data until target time is reached */
-			while(data_time<target_time) {
-				nbytes=player.play(buffer, ARRAY_SIZE(buffer));
-				if(nbytes==0)
-					break;
+			while (data_time < target_time &&
+			       player.play(buffer, ARRAY_SIZE(buffer)) > 0)
 				data_time = player.time();
-			}
 
 			decoder_command_finished(decoder);
 		}

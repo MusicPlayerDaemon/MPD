@@ -36,7 +36,6 @@
 #include "Mapper.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/UriUtil.hxx"
-#include "util/Error.hxx"
 #include "util/ConstBuffer.hxx"
 
 bool
@@ -70,7 +69,6 @@ handle_load(Client &client, Request args, gcc_unused Response &r)
 
 	const ScopeBulkEdit bulk_edit(client.partition);
 
-	Error error;
 	const SongLoader loader(client);
 	playlist_open_into_queue(args.front(),
 				 range.start, range.end,
@@ -156,36 +154,27 @@ handle_playlistclear(gcc_unused Client &client,
 }
 
 CommandResult
-handle_playlistadd(Client &client, Request args, Response &r)
+handle_playlistadd(Client &client, Request args, gcc_unused Response &r)
 {
 	const char *const playlist = args[0];
 	const char *const uri = args[1];
 
-	bool success;
-	Error error;
 	if (uri_has_scheme(uri)) {
 		const SongLoader loader(client);
-		success = spl_append_uri(playlist, loader, uri, error);
+		spl_append_uri(playlist, loader, uri);
 	} else {
 #ifdef ENABLE_DATABASE
-		const Database *db = client.GetDatabase(error);
-		if (db == nullptr)
-			return print_error(r, error);
+		const Database &db = client.GetDatabaseOrThrow();
 
-		success = search_add_to_playlist(*db, *client.GetStorage(),
-						 uri, playlist, nullptr,
-						 error);
+		search_add_to_playlist(db, *client.GetStorage(),
+				       uri, playlist, nullptr);
 #else
-		success = false;
+		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");
+		return CommandResult::ERROR;
 #endif
 	}
 
-	if (!success && !error.IsDefined()) {
-		r.Error(ACK_ERROR_NO_EXIST, "directory or file not found");
-		return CommandResult::ERROR;
-	}
-
-	return success ? CommandResult::OK : print_error(r, error);
+	return CommandResult::OK;
 }
 
 CommandResult

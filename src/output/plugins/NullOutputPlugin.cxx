@@ -28,25 +28,20 @@ class NullOutput {
 
 	AudioOutput base;
 
-	bool sync;
+	const bool sync;
 
 	Timer *timer;
 
 public:
-	NullOutput()
-		:base(null_output_plugin) {}
+	NullOutput(const ConfigBlock &block)
+		:base(null_output_plugin, block),
+		 sync(block.GetBlockValue("sync", true)) {}
 
-	bool Initialize(const ConfigBlock &block, Error &error) {
-		return base.Configure(block, error);
-	}
+	static NullOutput *Create(const ConfigBlock &block);
 
-	static NullOutput *Create(const ConfigBlock &block, Error &error);
-
-	bool Open(AudioFormat &audio_format, gcc_unused Error &error) {
+	void Open(AudioFormat &audio_format) {
 		if (sync)
 			timer = new Timer(audio_format);
-
-		return true;
 	}
 
 	void Close() {
@@ -60,8 +55,7 @@ public:
 			: 0;
 	}
 
-	size_t Play(gcc_unused const void *chunk, size_t size,
-		    gcc_unused Error &error) {
+	size_t Play(gcc_unused const void *chunk, size_t size) {
 		if (sync) {
 			if (!timer->IsStarted())
 				timer->Start();
@@ -78,18 +72,9 @@ public:
 };
 
 inline NullOutput *
-NullOutput::Create(const ConfigBlock &block, Error &error)
+NullOutput::Create(const ConfigBlock &block)
 {
-	NullOutput *nd = new NullOutput();
-
-	if (!nd->Initialize(block, error)) {
-		delete nd;
-		return nullptr;
-	}
-
-	nd->sync = block.GetBlockValue("sync", true);
-
-	return nd;
+	return new NullOutput(block);
 }
 
 typedef AudioOutputWrapper<NullOutput> Wrapper;

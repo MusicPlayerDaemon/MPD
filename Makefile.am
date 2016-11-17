@@ -20,6 +20,7 @@ noinst_LIBRARIES = \
 	libevent.a \
 	libicu.a \
 	libpcm.a \
+	libbasic.a \
 	libconf.a \
 	libtag.a \
 	libinput.a \
@@ -54,6 +55,7 @@ src_mpd_LDADD = \
 	$(ENCODER_LIBS) \
 	$(MIXER_LIBS) \
 	libconf.a \
+	libbasic.a \
 	libevent.a \
 	libthread.a \
 	libnet.a \
@@ -75,9 +77,6 @@ libmpd_a_SOURCES = \
 	src/poison.h \
 	src/notify.cxx src/notify.hxx \
 	src/AudioConfig.cxx src/AudioConfig.hxx \
-	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
-	src/AudioFormat.cxx src/AudioFormat.hxx \
-	src/AudioParser.cxx src/AudioParser.hxx \
 	src/protocol/Ack.cxx src/protocol/Ack.hxx \
 	src/protocol/ArgParser.cxx src/protocol/ArgParser.hxx \
 	src/protocol/Result.cxx src/protocol/Result.hxx \
@@ -168,7 +167,6 @@ libmpd_a_SOURCES = \
 	src/queue/Listener.hxx \
 	src/PluginUnavailable.hxx \
 	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
-	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
 	src/LocateUri.cxx src/LocateUri.hxx \
 	src/SongUpdate.cxx \
@@ -226,7 +224,7 @@ libmpd_a_SOURCES += \
 	src/db/DatabasePrint.cxx src/db/DatabasePrint.hxx \
 	src/db/DatabaseQueue.cxx src/db/DatabaseQueue.hxx \
 	src/db/DatabasePlaylist.cxx src/db/DatabasePlaylist.hxx \
-	src/db/DatabaseError.cxx src/db/DatabaseError.hxx \
+	src/db/DatabaseError.hxx \
 	src/db/DatabaseLock.cxx src/db/DatabaseLock.hxx \
 	src/db/DatabasePlugin.hxx \
 	src/db/Interface.hxx \
@@ -380,7 +378,7 @@ endif
 if ENABLE_SQLITE
 libmpd_a_SOURCES += \
 	src/command/StickerCommands.cxx src/command/StickerCommands.hxx \
-	src/lib/sqlite/Domain.cxx src/lib/sqlite/Domain.hxx \
+	src/lib/sqlite/Error.cxx src/lib/sqlite/Error.hxx \
 	src/lib/sqlite/Util.hxx \
 	src/sticker/Match.hxx \
 	src/sticker/StickerDatabase.cxx src/sticker/StickerDatabase.hxx \
@@ -401,7 +399,6 @@ libutil_a_SOURCES = \
 	src/util/AllocatedArray.hxx \
 	src/util/VarSize.hxx \
 	src/util/ScopeExit.hxx \
-	src/util/Error.cxx src/util/Error.hxx \
 	src/util/Domain.hxx \
 	src/util/ReusableArray.hxx \
 	src/util/ASCII.hxx \
@@ -510,8 +507,7 @@ libevent_a_SOURCES = \
 
 libicu_a_SOURCES = \
 	src/lib/icu/Collate.cxx src/lib/icu/Collate.hxx \
-	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx \
-	src/lib/icu/Error.cxx src/lib/icu/Error.hxx
+	src/lib/icu/Converter.cxx src/lib/icu/Converter.hxx
 
 if HAVE_ICU
 libicu_a_SOURCES += \
@@ -532,7 +528,6 @@ ICU_LDADD = libicu.a $(ICU_LIBS)
 # PCM library
 
 libpcm_a_SOURCES = \
-	src/pcm/Domain.cxx src/pcm/Domain.hxx \
 	src/pcm/Traits.hxx \
 	src/pcm/Interleave.cxx src/pcm/Interleave.hxx \
 	src/pcm/PcmBuffer.cxx src/pcm/PcmBuffer.hxx \
@@ -853,6 +848,12 @@ endif
 else
 ARCHIVE_LIBS =
 endif
+
+libbasic_a_SOURCES = \
+	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
+	src/AudioFormat.cxx src/AudioFormat.hxx \
+	src/AudioParser.cxx src/AudioParser.hxx \
+	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx
 
 # configuration library
 
@@ -1811,7 +1812,6 @@ test_DumpDatabase_LDADD = \
 test_DumpDatabase_SOURCES = test/DumpDatabase.cxx \
 	src/protocol/Ack.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/db/DatabaseError.cxx \
 	src/db/Registry.cxx \
 	src/db/Selection.cxx \
 	src/db/PlaylistVector.cxx \
@@ -1958,6 +1958,7 @@ test_dump_playlist_LDADD = \
 	$(INPUT_LIBS) \
 	$(ARCHIVE_LIBS) \
 	libconf.a \
+	libbasic.a \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
@@ -1973,7 +1974,6 @@ test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	src/IOThread.cxx \
 	src/TagSave.cxx \
 	src/TagFile.cxx \
-	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	src/DetachedSong.cxx
 
 if ENABLE_FLAC
@@ -1989,6 +1989,7 @@ test_run_decoder_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
+	libbasic.a \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
@@ -2001,7 +2002,6 @@ test_run_decoder_SOURCES = test/run_decoder.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
-	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	$(ARCHIVE_SRC) \
 	$(INPUT_SRC) \
 	$(TAG_SRC) \
@@ -2014,6 +2014,7 @@ test_read_tags_LDADD = \
 	$(ARCHIVE_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
+	libbasic.a \
 	libevent.a \
 	libthread.a \
 	$(FS_LIBS) \
@@ -2026,7 +2027,6 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx \
-	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
 	$(DECODER_SRC)
 
 test_ReadApeTags_LDADD = \
@@ -2058,6 +2058,7 @@ endif
 test_run_filter_LDADD = \
 	$(FILTER_LIBS) \
 	libconf.a \
+	libbasic.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
@@ -2065,23 +2066,17 @@ test_run_filter_LDADD = \
 test_run_filter_SOURCES = test/run_filter.cxx \
 	test/FakeReplayGainConfig.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/filter/FilterPlugin.cxx src/filter/FilterRegistry.cxx \
-	src/CheckAudioFormat.cxx \
-	src/AudioFormat.cxx \
-	src/AudioParser.cxx \
-	src/ReplayGainInfo.cxx
+	src/filter/FilterPlugin.cxx src/filter/FilterRegistry.cxx
 
 if ENABLE_ENCODER
 noinst_PROGRAMS += test/run_encoder
 test_run_encoder_SOURCES = test/run_encoder.cxx \
-	src/Log.cxx src/LogBackend.cxx \
-	src/CheckAudioFormat.cxx \
-	src/AudioFormat.cxx \
-	src/AudioParser.cxx
+	src/Log.cxx src/LogBackend.cxx
 test_run_encoder_LDADD = \
 	$(ENCODER_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
+	libbasic.a \
 	libpcm.a \
 	libthread.a \
 	$(FS_LIBS) \
@@ -2094,9 +2089,6 @@ if ENABLE_VORBISENC
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
 	src/Log.cxx src/LogBackend.cxx \
-	src/CheckAudioFormat.cxx \
-	src/AudioFormat.cxx \
-	src/AudioParser.cxx \
 	$(ENCODER_SRC)
 test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
@@ -2105,6 +2097,7 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 	$(PCM_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
+	libbasic.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
 	libsystem.a \
@@ -2112,11 +2105,10 @@ test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
 endif
 
 test_software_volume_SOURCES = test/software_volume.cxx \
-	src/Log.cxx src/LogBackend.cxx \
-	src/AudioFormat.cxx src/CheckAudioFormat.cxx \
-	src/AudioParser.cxx
+	src/Log.cxx src/LogBackend.cxx
 test_software_volume_LDADD = \
 	$(PCM_LIBS) \
+	libbasic.a \
 	libutil.a
 
 test_run_avahi_SOURCES = \
@@ -2133,6 +2125,7 @@ test_run_avahi_LDADD = \
 	$(AVAHI_LIBS)
 
 test_run_normalize_SOURCES = test/run_normalize.cxx \
+	src/Log.cxx src/LogBackend.cxx \
 	src/CheckAudioFormat.cxx \
 	src/AudioCompress/compress.c \
 	src/AudioParser.cxx
@@ -2140,13 +2133,11 @@ test_run_normalize_LDADD = \
 	libutil.a
 
 test_run_convert_SOURCES = test/run_convert.cxx \
-	src/Log.cxx src/LogBackend.cxx \
-	src/AudioFormat.cxx \
-	src/CheckAudioFormat.cxx \
-	src/AudioParser.cxx
+	src/Log.cxx src/LogBackend.cxx
 test_run_convert_LDADD = \
 	$(PCM_LIBS) \
 	libconf.a \
+	libbasic.a \
 	$(FS_LIBS) \
 	libsystem.a \
 	$(ICU_LDADD) \
@@ -2160,6 +2151,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	$(FILTER_LIBS) \
 	$(TAG_LIBS) \
 	libconf.a \
+	libbasic.a \
 	libevent.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
@@ -2172,9 +2164,6 @@ test_run_output_SOURCES = test/run_output.cxx \
 	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
-	src/CheckAudioFormat.cxx \
-	src/AudioFormat.cxx \
-	src/AudioParser.cxx \
 	src/output/Domain.cxx \
 	src/output/Init.cxx src/output/Finish.cxx src/output/Registry.cxx \
 	src/output/OutputPlugin.cxx \
@@ -2182,14 +2171,14 @@ test_run_output_SOURCES = test/run_output.cxx \
 	src/mixer/MixerType.cxx \
 	src/filter/FilterPlugin.cxx \
 	src/filter/FilterConfig.cxx \
-	src/filter/Observer.cxx \
-	src/ReplayGainInfo.cxx
+	src/filter/Observer.cxx
 
 test_read_mixer_LDADD = \
 	libpcm.a \
 	libmixer_plugins.a \
 	$(OUTPUT_LIBS) \
 	libconf.a \
+	libbasic.a \
 	libevent.a \
 	$(FS_LIBS) \
 	$(ICU_LDADD) \
@@ -2199,7 +2188,6 @@ test_read_mixer_SOURCES = test/read_mixer.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/mixer/MixerControl.cxx \
 	src/filter/FilterPlugin.cxx \
-	src/AudioFormat.cxx \
 	src/filter/plugins/VolumeFilterPlugin.cxx
 
 if ENABLE_BZIP2_TEST
@@ -2282,7 +2270,6 @@ test_test_icy_parser_LDADD = \
 endif
 
 test_test_pcm_SOURCES = \
-	src/AudioFormat.cxx \
 	test/test_pcm_util.hxx \
 	test/test_pcm_dither.cxx \
 	test/test_pcm_pack.cxx \
@@ -2298,6 +2285,7 @@ test_test_pcm_CPPFLAGS = $(AM_CPPFLAGS) $(CPPUNIT_CFLAGS) -DCPPUNIT_HAVE_RTTI=0
 test_test_pcm_CXXFLAGS = $(AM_CXXFLAGS) -Wno-error=deprecated-declarations
 test_test_pcm_LDADD = \
 	$(PCM_LIBS) \
+	libbasic.a \
 	libutil.a \
 	$(CPPUNIT_LIBS)
 

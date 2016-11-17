@@ -25,7 +25,6 @@
 #include "fs/FileInfo.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/DirectoryReader.hxx"
-#include "util/Error.hxx"
 #include "util/StringCompare.hxx"
 
 #include <string>
@@ -43,8 +42,7 @@ public:
 
 	/* virtual methods from class StorageDirectoryReader */
 	const char *Read() override;
-	bool GetInfo(bool follow, StorageFileInfo &info,
-		     Error &error) override;
+	StorageFileInfo GetInfo(bool follow) override;
 };
 
 class LocalStorage final : public Storage {
@@ -59,11 +57,9 @@ public:
 	}
 
 	/* virtual methods from class Storage */
-	bool GetInfo(const char *uri_utf8, bool follow, StorageFileInfo &info,
-		     Error &error) override;
+	StorageFileInfo GetInfo(const char *uri_utf8, bool follow) override;
 
-	StorageDirectoryReader *OpenDirectory(const char *uri_utf8,
-					      Error &error) override;
+	StorageDirectoryReader *OpenDirectory(const char *uri_utf8) override;
 
 	std::string MapUTF8(const char *uri_utf8) const override;
 
@@ -72,15 +68,15 @@ public:
 	const char *MapToRelativeUTF8(const char *uri_utf8) const override;
 
 private:
-	AllocatedPath MapFS(const char *uri_utf8, Error &error) const;
+	AllocatedPath MapFSOrThrow(const char *uri_utf8) const;
 };
 
-static bool
-Stat(Path path, bool follow, StorageFileInfo &info, Error &error)
+gcc_pure
+static StorageFileInfo
+Stat(Path path, bool follow)
 {
-	FileInfo src;
-	if (!GetFileInfo(path, src, follow, error))
-		return false;
+	const FileInfo src(path, follow);
+	StorageFileInfo info;
 
 	if (src.IsRegular())
 		info.type = StorageFileInfo::Type::REGULAR;
@@ -97,7 +93,7 @@ Stat(Path path, bool follow, StorageFileInfo &info, Error &error)
 	info.device = src.GetDevice();
 	info.inode = src.GetInode();
 #endif
-	return true;
+	return info;
 }
 
 std::string
@@ -112,24 +108,25 @@ LocalStorage::MapUTF8(const char *uri_utf8) const
 }
 
 AllocatedPath
-LocalStorage::MapFS(const char *uri_utf8, Error &error) const
+LocalStorage::MapFSOrThrow(const char *uri_utf8) const
 {
 	assert(uri_utf8 != nullptr);
 
 	if (StringIsEmpty(uri_utf8))
 		return base_fs;
 
-	AllocatedPath path_fs = AllocatedPath::FromUTF8(uri_utf8, error);
-	if (!path_fs.IsNull())
-		path_fs = AllocatedPath::Build(base_fs, path_fs);
-
-	return path_fs;
+	return AllocatedPath::Build(base_fs,
+				    AllocatedPath::FromUTF8Throw(uri_utf8));
 }
 
 AllocatedPath
 LocalStorage::MapFS(const char *uri_utf8) const
 {
-	return MapFS(uri_utf8, IgnoreError());
+	try {
+		return MapFSOrThrow(uri_utf8);
+	} catch (const std::runtime_error &) {
+		return AllocatedPath::Null();
+	}
 }
 
 const char *
@@ -138,25 +135,16 @@ LocalStorage::MapToRelativeUTF8(const char *uri_utf8) const
 	return PathTraitsUTF8::Relative(base_utf8.c_str(), uri_utf8);
 }
 
-bool
-LocalStorage::GetInfo(const char *uri_utf8, bool follow, StorageFileInfo &info,
-		      Error &error)
+StorageFileInfo
+LocalStorage::GetInfo(const char *uri_utf8, bool follow)
 {
-	AllocatedPath path_fs = MapFS(uri_utf8, error);
-	if (path_fs.IsNull())
-		return false;
-
-	return Stat(path_fs, follow, info, error);
+	return Stat(MapFSOrThrow(uri_utf8), follow);
 }
 
 StorageDirectoryReader *
-LocalStorage::OpenDirectory(const char *uri_utf8, Error &error)
+LocalStorage::OpenDirectory(const char *uri_utf8)
 {
-	AllocatedPath path_fs = MapFS(uri_utf8, error);
-	if (path_fs.IsNull())
-		return nullptr;
-
-	return new LocalDirectoryReader(std::move(path_fs));
+	return new LocalDirectoryReader(MapFSOrThrow(uri_utf8));
 }
 
 gcc_pure
@@ -186,12 +174,10 @@ LocalDirectoryReader::Read()
 	return nullptr;
 }
 
-bool
-LocalDirectoryReader::GetInfo(bool follow, StorageFileInfo &info, Error &error)
+StorageFileInfo
+LocalDirectoryReader::GetInfo(bool follow)
 {
-	const AllocatedPath path_fs =
-		AllocatedPath::Build(base_fs, reader.GetEntry());
-	return Stat(path_fs, follow, info, error);
+	return Stat(AllocatedPath::Build(base_fs, reader.GetEntry()), follow);
 }
 
 Storage *

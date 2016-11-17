@@ -19,11 +19,27 @@
 
 #include "config.h"
 #include "Param.hxx"
+#include "ConfigPath.hxx"
+#include "fs/AllocatedPath.hxx"
+#include "util/RuntimeError.hxx"
 
-config_param::config_param(const char *_value, int _line)
+#include <stdexcept>
+
+ConfigParam::ConfigParam(const char *_value, int _line)
 	:next(nullptr), value(_value), line(_line), used(false) {}
 
-config_param::~config_param()
+ConfigParam::~ConfigParam()
 {
 	delete next;
+}
+
+AllocatedPath
+ConfigParam::GetPath() const
+{
+	try {
+		return ParsePath(value.c_str());
+	} catch (...) {
+		std::throw_with_nested(FormatRuntimeError("Invalid path at line %i: ", line));
+	}
+
 }

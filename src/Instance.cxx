@@ -22,7 +22,6 @@
 #include "Partition.hxx"
 #include "Idle.hxx"
 #include "Stats.hxx"
-#include "util/Error.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/DatabaseError.hxx"
@@ -33,15 +32,18 @@
 #endif
 #endif
 
+#include <stdexcept>
+
 #ifdef ENABLE_DATABASE
 
-Database *
-Instance::GetDatabase(Error &error)
+const Database &
+Instance::GetDatabaseOrThrow() const
 {
 	if (database == nullptr)
-		error.Set(db_domain, int(DatabaseErrorCode::DISABLED),
-			  "No database");
-	return database;
+		throw DatabaseError(DatabaseErrorCode::DISABLED,
+				    "No database");
+
+	return *database;
 }
 
 void
@@ -62,8 +64,12 @@ Instance::OnDatabaseSongRemoved(const char *uri)
 
 #ifdef ENABLE_SQLITE
 	/* if the song has a sticker, remove it */
-	if (sticker_enabled())
-		sticker_song_delete(uri, IgnoreError());
+	if (sticker_enabled()) {
+		try {
+			sticker_song_delete(uri);
+		} catch (const std::runtime_error &) {
+		}
+	}
 #endif
 
 	partition->StaleSong(uri);

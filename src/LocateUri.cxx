@@ -24,25 +24,19 @@
 #include "ls.hxx"
 #include "util/UriUtil.hxx"
 #include "util/StringCompare.hxx"
-#include "util/Error.hxx"
-#include "util/Domain.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "storage/StorageInterface.hxx"
 #endif
 
-const Domain locate_uri_domain("locate_uri");
-
 static LocatedUri
-LocateFileUri(const char *uri, const Client *client,
+LocateFileUri(const char *uri, const Client *client
 #ifdef ENABLE_DATABASE
-	      const Storage *storage,
+	      , const Storage *storage
 #endif
-	      Error &error)
+	      )
 {
-	auto path = AllocatedPath::FromUTF8(uri, error);
-	if (path.IsNull())
-		return LocatedUri::Unknown();
+	auto path = AllocatedPath::FromUTF8Throw(uri);
 
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
@@ -54,23 +48,21 @@ LocateFileUri(const char *uri, const Client *client,
 	}
 #endif
 
-	if (client != nullptr && !client->AllowFile(path, error))
-		return LocatedUri::Unknown();
+	if (client != nullptr)
+		client->AllowFile(path);
 
 	return LocatedUri(LocatedUri::Type::PATH, uri, std::move(path));
 }
 
 static LocatedUri
-LocateAbsoluteUri(const char *uri,
+LocateAbsoluteUri(const char *uri
 #ifdef ENABLE_DATABASE
-		  const Storage *storage,
+		  , const Storage *storage
 #endif
-		  Error &error)
+		  )
 {
-	if (!uri_supported_scheme(uri)) {
-		error.Set(locate_uri_domain, "Unsupported URI scheme");
-		return LocatedUri::Unknown();
-	}
+	if (!uri_supported_scheme(uri))
+		throw std::runtime_error("Unsupported URI scheme");
 
 #ifdef ENABLE_DATABASE
 	if (storage != nullptr) {
@@ -84,37 +76,35 @@ LocateAbsoluteUri(const char *uri,
 }
 
 LocatedUri
-LocateUri(const char *uri, const Client *client,
+LocateUri(const char *uri, const Client *client
 #ifdef ENABLE_DATABASE
-	  const Storage *storage,
+	  , const Storage *storage
 #endif
-	  Error &error)
+	  )
 {
 	/* skip the obsolete "file://" prefix */
 	const char *path_utf8 = StringAfterPrefix(uri, "file://");
 	if (path_utf8 != nullptr) {
-		if (!PathTraitsUTF8::IsAbsolute(path_utf8)) {
-			error.Set(locate_uri_domain, "Malformed file:// URI");
-			return LocatedUri::Unknown();
-		}
+		if (!PathTraitsUTF8::IsAbsolute(path_utf8))
+			throw std::runtime_error("Malformed file:// URI");
 
-		return LocateFileUri(path_utf8, client,
+		return LocateFileUri(path_utf8, client
 #ifdef ENABLE_DATABASE
-				     storage,
+				     , storage
 #endif
-				     error);
+				     );
 	} else if (PathTraitsUTF8::IsAbsolute(uri))
-		return LocateFileUri(uri, client,
+		return LocateFileUri(uri, client
 #ifdef ENABLE_DATABASE
-				     storage,
+				     , storage
 #endif
-				     error);
+				     );
 	else if (uri_has_scheme(uri))
-		return LocateAbsoluteUri(uri,
+		return LocateAbsoluteUri(uri
 #ifdef ENABLE_DATABASE
-					 storage,
+					 , storage
 #endif
-					 error);
+					 );
 	else
 		return LocatedUri(LocatedUri::Type::RELATIVE, uri);
 }
