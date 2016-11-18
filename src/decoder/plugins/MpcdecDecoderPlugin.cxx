@@ -27,6 +27,7 @@
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Clamp.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 
 #include <mpc/mpcdec.h>
@@ -158,6 +159,8 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 		return;
 	}
 
+	AtScopeExit(demux) { mpc_demux_exit(demux); };
+
 	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
 
@@ -217,8 +220,6 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 					chunk, ret * sizeof(chunk[0]),
 					bit_rate);
 	} while (cmd != DecoderCommand::STOP);
-
-	mpc_demux_exit(demux);
 }
 
 static SignedSongTime
@@ -238,9 +239,10 @@ mpcdec_get_file_duration(InputStream &is)
 	if (demux == nullptr)
 		return SignedSongTime::Negative();
 
+	AtScopeExit(demux) { mpc_demux_exit(demux); };
+
 	mpc_streaminfo info;
 	mpc_demux_get_info(demux, &info);
-	mpc_demux_exit(demux);
 
 	return SongTime::FromS(mpc_streaminfo_get_length(&info));
 }
