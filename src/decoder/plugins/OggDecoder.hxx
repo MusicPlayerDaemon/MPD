@@ -28,13 +28,13 @@ class OggDecoder : public OggVisitor {
 	ogg_int64_t end_granulepos;
 
 protected:
-	Decoder &decoder;
+	DecoderClient &client;
 	InputStream &input_stream;
 
 public:
 	explicit OggDecoder(DecoderReader &reader)
 		:OggVisitor(reader),
-		 decoder(reader.GetDecoder()),
+		 client(reader.GetClient()),
 		 input_stream(reader.GetInputStream()) {}
 
 	bool Seek(OggSyncState &oy, uint64_t where_frame);

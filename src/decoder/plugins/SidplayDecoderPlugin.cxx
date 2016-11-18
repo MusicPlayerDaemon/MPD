@@ -179,7 +179,7 @@ get_song_length(SidTuneMod &tune)
 #endif
 
 static void
-sidplay_file_decode(Decoder &decoder, Path path_fs)
+sidplay_file_decode(DecoderClient &client, Path path_fs)
 {
 	int channels;
 
@@ -337,7 +337,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 	const AudioFormat audio_format(48000, SampleFormat::S16, channels);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, audio_format, true, duration);
+	decoder_initialized(client, audio_format, true, duration);
 
 	/* .. and play */
 
@@ -366,14 +366,14 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 		const size_t nbytes = result;
 #endif
 
-		decoder_timestamp(decoder, (double)player.time() / timebase);
+		decoder_timestamp(client, (double)player.time() / timebase);
 
-		cmd = decoder_data(decoder, nullptr, buffer, nbytes, 0);
+		cmd = decoder_data(client, nullptr, buffer, nbytes, 0);
 
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned data_time = player.time();
 			unsigned target_time =
-				decoder_seek_time(decoder).ToScale(timebase);
+				decoder_seek_time(client).ToScale(timebase);
 
 			/* can't rewind so return to zero and seek forward */
 			if(target_time<data_time) {
@@ -386,7 +386,7 @@ sidplay_file_decode(Decoder &decoder, Path path_fs)
 			       player.play(buffer, ARRAY_SIZE(buffer)) > 0)
 				data_time = player.time();
 
-			decoder_command_finished(decoder);
+			decoder_command_finished(client);
 		}
 
 		if (end > 0 && player.time() >= end)

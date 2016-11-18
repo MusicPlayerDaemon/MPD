@@ -141,7 +141,7 @@ wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
  * Requires an already opened WavpackContext.
  */
 static void
-wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
+wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 {
 	bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
 	SampleFormat sample_format =
@@ -168,21 +168,21 @@ wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 	const uint32_t samples_requested = ARRAY_SIZE(chunk) /
 		audio_format.channels;
 
-	decoder_initialized(decoder, audio_format, can_seek, total_time);
+	decoder_initialized(client, audio_format, can_seek, total_time);
 
-	DecoderCommand cmd = decoder_get_command(decoder);
+	DecoderCommand cmd = decoder_get_command(client);
 	while (cmd != DecoderCommand::STOP) {
 		if (cmd == DecoderCommand::SEEK) {
 			if (can_seek) {
-				auto where = decoder_seek_where_frame(decoder);
+				auto where = decoder_seek_where_frame(client);
 
 				if (WavpackSeekSample(wpc, where)) {
-					decoder_command_finished(decoder);
+					decoder_command_finished(client);
 				} else {
-					decoder_seek_error(decoder);
+					decoder_seek_error(client);
 				}
 			} else {
-				decoder_seek_error(decoder);
+				decoder_seek_error(client);
 			}
 		}
 
@@ -196,7 +196,7 @@ wavpack_decode(Decoder &decoder, WavpackContext *wpc, bool can_seek)
 		format_samples(bytes_per_sample, chunk,
 			       samples_got * audio_format.channels);
 
-		cmd = decoder_data(decoder, nullptr, chunk,
+		cmd = decoder_data(client, nullptr, chunk,
 				   samples_got * output_sample_size,
 				   bitrate);
 	}
@@ -323,13 +323,13 @@ wavpack_scan_file(Path path_fs,
 
 /* This struct is needed for per-stream last_byte storage. */
 struct WavpackInput {
-	Decoder &decoder;
+	DecoderClient &client;
 	InputStream &is;
 	/* Needed for push_back_byte() */
 	int last_byte;
 
-	constexpr WavpackInput(Decoder &_decoder, InputStream &_is)
-		:decoder(_decoder), is(_is), last_byte(EOF) {}
+	constexpr WavpackInput(DecoderClient &_client, InputStream &_is)
+		:client(_client), is(_is), last_byte(EOF) {}
 
 	int32_t ReadBytes(void *data, size_t bcount);
 };
@@ -366,7 +366,7 @@ WavpackInput::ReadBytes(void *data, size_t bcount)
 	/* wavpack fails if we return a partial read, so we just wait
 	   until the buffer is full */
 	while (bcount > 0) {
-		size_t nbytes = decoder_read(&decoder, is, buf, bcount);
+		size_t nbytes = decoder_read(&client, is, buf, bcount);
 		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
 			break;
@@ -481,7 +481,7 @@ static WavpackStreamReader mpd_is_reader = {
 };
 
 static InputStreamPtr
-wavpack_open_wvc(Decoder &decoder, const char *uri)
+wavpack_open_wvc(DecoderClient &client, const char *uri)
 {
 	/*
 	 * As we use dc->utf8url, this function will be bad for
@@ -496,7 +496,7 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
 	};
 
 	try {
-		return decoder_open_uri(decoder, uri);
+		return decoder_open_uri(client, uri);
 	} catch (const std::runtime_error &) {
 		return nullptr;
 	}
@@ -506,25 +506,25 @@ wavpack_open_wvc(Decoder &decoder, const char *uri)
  * Decodes a stream.
  */
 static void
-wavpack_streamdecode(Decoder &decoder, InputStream &is)
+wavpack_streamdecode(DecoderClient &client, InputStream &is)
 {
 	int open_flags = OPEN_NORMALIZE;
 	bool can_seek = is.IsSeekable();
 
 	std::unique_ptr<WavpackInput> wvc;
-	auto is_wvc = wavpack_open_wvc(decoder, is.GetURI());
+	auto is_wvc = wavpack_open_wvc(client, is.GetURI());
 	if (is_wvc) {
 		open_flags |= OPEN_WVC;
 		can_seek &= wvc->is.IsSeekable();
 
-		wvc.reset(new WavpackInput(decoder, *is_wvc));
+		wvc.reset(new WavpackInput(client, *is_wvc));
 	}
 
 	if (!can_seek) {
 		open_flags |= OPEN_STREAMING;
 	}
 
-	WavpackInput isp(decoder, is);
+	WavpackInput isp(client, is);
 
 	char error[ERRORLEN];
 	WavpackContext *wpc =
@@ -541,14 +541,14 @@ wavpack_streamdecode(Decoder &decoder, InputStream &is)
 		WavpackCloseFile(wpc);
 	};
 
-	wavpack_decode(decoder, wpc, can_seek);
+	wavpack_decode(client, wpc, can_seek);
 }
 
 /*
  * Decodes a file.
  */
 static void
-wavpack_filedecode(Decoder &decoder, Path path_fs)
+wavpack_filedecode(DecoderClient &client, Path path_fs)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
@@ -563,9 +563,9 @@ wavpack_filedecode(Decoder &decoder, Path path_fs)
 
 	ReplayGainInfo rgi;
 	if (wavpack_replaygain(rgi, wpc))
-		decoder_replay_gain(decoder, &rgi);
+		decoder_replay_gain(client, &rgi);
 
-	wavpack_decode(decoder, wpc, true);
+	wavpack_decode(client, wpc, true);
 
 	WavpackCloseFile(wpc);
 }

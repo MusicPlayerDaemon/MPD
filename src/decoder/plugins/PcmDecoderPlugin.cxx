@@ -39,13 +39,13 @@ static constexpr Domain pcm_decoder_domain("pcm_decoder");
 
 template<typename B>
 static bool
-FillBuffer(Decoder &decoder, InputStream &is, B &buffer)
+FillBuffer(DecoderClient &client, InputStream &is, B &buffer)
 {
 	buffer.Shift();
 	auto w = buffer.Write();
 	assert(!w.IsEmpty());
 
-	size_t nbytes = decoder_read(decoder, is, w.data, w.size);
+	size_t nbytes = decoder_read(client, is, w.data, w.size);
 	if (nbytes == 0 && is.LockIsEOF())
 		return false;
 
@@ -54,7 +54,7 @@ FillBuffer(Decoder &decoder, InputStream &is, B &buffer)
 }
 
 static void
-pcm_stream_decode(Decoder &decoder, InputStream &is)
+pcm_stream_decode(DecoderClient &client, InputStream &is)
 {
 	AudioFormat audio_format = {
 		44100,
@@ -143,14 +143,14 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(decoder, audio_format,
+	decoder_initialized(client, audio_format,
 			    is.IsSeekable(), total_time);
 
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 
 	DecoderCommand cmd;
 	do {
-		if (!FillBuffer(decoder, is, buffer))
+		if (!FillBuffer(client, is, buffer))
 			break;
 
 		auto r = buffer.Read();
@@ -166,19 +166,19 @@ pcm_stream_decode(Decoder &decoder, InputStream &is)
 					 (uint16_t *)(r.data + r.size));
 
 		cmd = !r.IsEmpty()
-			? decoder_data(decoder, is, r.data, r.size, 0)
-			: decoder_get_command(decoder);
+			? decoder_data(client, is, r.data, r.size, 0)
+			: decoder_get_command(client);
 		if (cmd == DecoderCommand::SEEK) {
-			uint64_t frame = decoder_seek_where_frame(decoder);
+			uint64_t frame = decoder_seek_where_frame(client);
 			offset_type offset = frame * frame_size;
 
 			try {
 				is.LockSeek(offset);
 				buffer.Clear();
-				decoder_command_finished(decoder);
+				decoder_command_finished(client);
 			} catch (const std::runtime_error &e) {
 				LogError(e);
-				decoder_seek_error(decoder);
+				decoder_seek_error(client);
 			}
 
 			cmd = DecoderCommand::NONE;

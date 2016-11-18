@@ -49,7 +49,7 @@ adplug_init(const ConfigBlock &block)
 }
 
 static void
-adplug_file_decode(Decoder &decoder, Path path_fs)
+adplug_file_decode(DecoderClient &client, Path path_fs)
 {
 	CEmuopl opl(sample_rate, true, true);
 	opl.init();
@@ -61,7 +61,7 @@ adplug_file_decode(Decoder &decoder, Path path_fs)
 	const AudioFormat audio_format(sample_rate, SampleFormat::S16, 2);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(decoder, audio_format, false,
+	decoder_initialized(client, audio_format, false,
 			    SongTime::FromMS(player->songlength()));
 
 	DecoderCommand cmd;
@@ -73,7 +73,7 @@ adplug_file_decode(Decoder &decoder, Path path_fs)
 		int16_t buffer[2048];
 		constexpr unsigned frames_per_buffer = ARRAY_SIZE(buffer) / 2;
 		opl.update(buffer, frames_per_buffer);
-		cmd = decoder_data(decoder, nullptr,
+		cmd = decoder_data(client, nullptr,
 				   buffer, sizeof(buffer),
 				   0);
 	} while (cmd == DecoderCommand::NONE);

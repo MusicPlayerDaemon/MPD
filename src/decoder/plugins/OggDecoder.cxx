@@ -45,7 +45,7 @@ OggDecoder::LoadEndPacket(ogg_packet &packet) const
 	bool result;
 
 	{
-		DecoderReader reader(decoder, input_stream);
+		DecoderReader reader(client, input_stream);
 		OggSyncState sync2(reader);
 		OggStreamState stream2(GetSerialNo());
 		result = OggSeekFindEOS(sync2, stream2, packet,

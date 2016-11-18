@@ -24,7 +24,7 @@
 #ifndef MPD_OGG_CODEC_HXX
 #define MPD_OGG_CODEC_HXX
 
-struct Decoder;
+class DecoderClient;
 class InputStream;
 
 enum ogg_codec {
@@ -35,6 +35,6 @@ enum ogg_codec {
 };
 
 enum ogg_codec
-ogg_codec_detect(Decoder *decoder, InputStream &is);
+ogg_codec_detect(DecoderClient *client, InputStream &is);
 
 #endif /* _OGG_COMMON_H */

@@ -26,8 +26,8 @@
 
 #include <stdint.h>
 
-struct Decoder;
 struct TagHandler;
+class DecoderClient;
 class InputStream;
 
 struct DsdId {
@@ -60,11 +60,11 @@ public:
 };
 
 bool
-dsdlib_skip_to(Decoder *decoder, InputStream &is,
+dsdlib_skip_to(DecoderClient *client, InputStream &is,
 	       offset_type offset);
 
 bool
-dsdlib_skip(Decoder *decoder, InputStream &is,
+dsdlib_skip(DecoderClient *client, InputStream &is,
 	    offset_type delta);
 
 /**

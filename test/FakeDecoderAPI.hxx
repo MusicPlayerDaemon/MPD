@@ -21,17 +21,15 @@
 #define FAKE_DECODER_API_HXX
 
 #include "check.h"
+#include "decoder/Client.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
 
-struct Decoder {
+struct FakeDecoder final : DecoderClient {
 	Mutex mutex;
 	Cond cond;
 
-	bool initialized;
-
-	Decoder()
-		:initialized(false) {}
+	bool initialized = false;
 };
 
 #endif

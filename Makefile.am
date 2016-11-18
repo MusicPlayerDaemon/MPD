@@ -100,6 +100,7 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderCommand.hxx \
 	src/decoder/DecoderControl.cxx src/decoder/DecoderControl.hxx \
 	src/decoder/DecoderAPI.cxx src/decoder/DecoderAPI.hxx \
+	src/decoder/Client.hxx \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/DecoderInternal.cxx src/decoder/DecoderInternal.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \

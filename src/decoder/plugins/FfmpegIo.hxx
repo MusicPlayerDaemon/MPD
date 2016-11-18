@@ -28,17 +28,17 @@ extern "C" {
 
 #include <stdint.h>
 
+class DecoderClient;
 class InputStream;
-struct Decoder;
 
 struct AvioStream {
-	Decoder *const decoder;
+	DecoderClient *const client;
 	InputStream &input;
 
 	AVIOContext *io;
 
-	AvioStream(Decoder *_decoder, InputStream &_input)
-		:decoder(_decoder), input(_input), io(nullptr) {}
+	AvioStream(DecoderClient *_client, InputStream &_input)
+		:client(_client), input(_input), io(nullptr) {}
 
 	~AvioStream();
 

@@ -129,7 +129,7 @@ gme_container_scan(Path path_fs, const unsigned int tnum)
 }
 
 static void
-gme_file_decode(Decoder &decoder, Path path_fs)
+gme_file_decode(DecoderClient &client, Path path_fs)
 {
 	const auto container = ParseContainerPath(path_fs);
 
@@ -171,7 +171,7 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 						   SampleFormat::S16,
 						   GME_CHANNELS);
 
-	decoder_initialized(decoder, audio_format, true, song_len);
+	decoder_initialized(client, audio_format, true, song_len);
 
 	gme_err = gme_start_track(emu, container.track);
 	if (gme_err != nullptr)
@@ -190,15 +190,15 @@ gme_file_decode(Decoder &decoder, Path path_fs)
 			return;
 		}
 
-		cmd = decoder_data(decoder, nullptr, buf, sizeof(buf), 0);
+		cmd = decoder_data(client, nullptr, buf, sizeof(buf), 0);
 		if (cmd == DecoderCommand::SEEK) {
-			unsigned where = decoder_seek_time(decoder).ToMS();
+			unsigned where = decoder_seek_time(client).ToMS();
 			gme_err = gme_seek(emu, where);
 			if (gme_err != nullptr) {
 				LogWarning(gme_domain, gme_err);
-				decoder_seek_error(decoder);
+				decoder_seek_error(client);
 			} else
-				decoder_command_finished(decoder);
+				decoder_command_finished(client);
 		}
 
 		if (gme_track_ended(emu))

@@ -42,7 +42,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	Decoder decoder;
+	FakeDecoder decoder;
 	const char *const decoder_name = argv[1];
 	const char *const uri = argv[2];
 

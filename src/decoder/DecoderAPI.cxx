@@ -38,10 +38,11 @@
 #include <math.h>
 
 void
-decoder_initialized(Decoder &decoder,
+decoder_initialized(DecoderClient &client,
 		    const AudioFormat audio_format,
 		    bool seekable, SignedSongTime duration)
 {
+	auto &decoder = (Decoder &)client;
 	DecoderControl &dc = decoder.dc;
 	struct audio_format_string af_string;
 
@@ -91,8 +92,9 @@ decoder_initialized(Decoder &decoder,
  */
 gcc_pure
 static bool
-decoder_prepare_initial_seek(Decoder &decoder)
+decoder_prepare_initial_seek(DecoderClient &client)
 {
+	auto &decoder = (Decoder &)client;
 	const DecoderControl &dc = decoder.dc;
 	assert(dc.pipe != nullptr);
 
@@ -138,8 +140,10 @@ decoder_prepare_initial_seek(Decoder &decoder)
  */
 gcc_pure
 static DecoderCommand
-decoder_get_virtual_command(Decoder &decoder)
+decoder_get_virtual_command(DecoderClient &client)
 {
+	auto &decoder = (Decoder &)client;
+
 	if (decoder.error)
 		/* an error has occurred: stop the decoder plugin */
 		return DecoderCommand::STOP;
@@ -155,21 +159,24 @@ decoder_get_virtual_command(Decoder &decoder)
 
 gcc_pure
 static DecoderCommand
-decoder_lock_get_virtual_command(Decoder &decoder)
+decoder_lock_get_virtual_command(DecoderClient &client)
 {
+	auto &decoder = (Decoder &)client;
 	const ScopeLock protect(decoder.dc.mutex);
 	return decoder_get_virtual_command(decoder);
 }
 
 DecoderCommand
-decoder_get_command(Decoder &decoder)
+decoder_get_command(DecoderClient &client)
 {
+	auto &decoder = (Decoder &)client;
 	return decoder_lock_get_virtual_command(decoder);
 }
 
 void
-decoder_command_finished(Decoder &decoder)
+decoder_command_finished(DecoderClient &client)
 {
+	auto &decoder = (Decoder &)client;
 	DecoderControl &dc = decoder.dc;
 
 	const ScopeLock protect(dc.mutex);
@@ -211,8 +218,9 @@ decoder_command_finished(Decoder &decoder)
 }
 
 SongTime
-decoder_seek_time(Decoder &decoder)
+decoder_seek_time(DecoderClient &client)
 {
+	auto &decoder = (Decoder &)client;
 	const DecoderControl &dc = decoder.dc;
 
 	assert(dc.pipe != nullptr);
@@ -228,15 +236,18 @@ decoder_seek_time(Decoder &decoder)
 }
 
 uint64_t
-decoder_seek_where_frame(Decoder &decoder)
+decoder_seek_where_frame(DecoderClient &client)
 {
+	auto &decoder = (Decoder &)client;
 	const DecoderControl &dc = decoder.dc;
 
 	return decoder_seek_time(decoder).ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 }
 
-void decoder_seek_error(Decoder & decoder)
+void
+decoder_seek_error(DecoderClient &client)
 {
+	auto &decoder = (Decoder &)client;
 	DecoderControl &dc = decoder.dc;
 
 	assert(dc.pipe != nullptr);
@@ -257,8 +268,10 @@ void decoder_seek_error(Decoder & decoder)
 }
 
 InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri)
+decoder_open_uri(DecoderClient &client, const char *uri)
 {
+	auto &decoder = (Decoder &)client;
+
 	assert(decoder.dc.state == DecoderState::START ||
 	       decoder.dc.state == DecoderState::DECODE);
 
@@ -311,11 +324,12 @@ decoder_check_cancel_read(const Decoder *decoder)
 }
 
 size_t
-decoder_read(Decoder *decoder,
+decoder_read(DecoderClient *client,
 	     InputStream &is,
 	     void *buffer, size_t length)
 try {
 	/* XXX don't allow decoder==nullptr */
+	auto *decoder = (Decoder *)client;
 
 	assert(decoder == nullptr ||
 	       decoder->dc.state == DecoderState::START ||
@@ -342,6 +356,7 @@ try {
 
 	return nbytes;
 } catch (const std::runtime_error &e) {
+	auto *decoder = (Decoder *)client;
 	if (decoder != nullptr)
 		decoder->error = std::current_exception();
 	else
@@ -350,13 +365,13 @@ try {
 }
 
 bool
-decoder_read_full(Decoder *decoder, InputStream &is,
+decoder_read_full(DecoderClient *client, InputStream &is,
 		  void *_buffer, size_t size)
 {
 	uint8_t *buffer = (uint8_t *)_buffer;
 
 	while (size > 0) {
-		size_t nbytes = decoder_read(decoder, is, buffer, size);
+		size_t nbytes = decoder_read(client, is, buffer, size);
 		if (nbytes == 0)
 			return false;
 
@@ -368,11 +383,11 @@ decoder_read_full(Decoder *decoder, InputStream &is,
 }
 
 bool
-decoder_skip(Decoder *decoder, InputStream &is, size_t size)
+decoder_skip(DecoderClient *client, InputStream &is, size_t size)
 {
 	while (size > 0) {
 		char buffer[1024];
-		size_t nbytes = decoder_read(decoder, is, buffer,
+		size_t nbytes = decoder_read(client, is, buffer,
 					     std::min(sizeof(buffer), size));
 		if (nbytes == 0)
 			return false;
@@ -384,10 +399,11 @@ decoder_skip(Decoder *decoder, InputStream &is, size_t size)
 }
 
 void
-decoder_timestamp(Decoder &decoder, double t)
+decoder_timestamp(DecoderClient &client, double t)
 {
 	assert(t >= 0);
 
+	auto &decoder = (Decoder &)client;
 	decoder.timestamp = t;
 }
 
@@ -396,8 +412,9 @@ decoder_timestamp(Decoder &decoder, double t)
  * (decoder.chunk) if there is one.
  */
 static DecoderCommand
-do_send_tag(Decoder &decoder, const Tag &tag)
+do_send_tag(DecoderClient &client, const Tag &tag)
 {
+	auto &decoder = (Decoder &)client;
 	MusicChunk *chunk;
 
 	if (decoder.current_chunk != nullptr) {
@@ -419,8 +436,9 @@ do_send_tag(Decoder &decoder, const Tag &tag)
 }
 
 static bool
-update_stream_tag(Decoder &decoder, InputStream *is)
+update_stream_tag(DecoderClient &client, InputStream *is)
 {
+	auto &decoder = (Decoder &)client;
 	Tag *tag;
 
 	tag = is != nullptr
@@ -445,11 +463,12 @@ update_stream_tag(Decoder &decoder, InputStream *is)
 }
 
 DecoderCommand
-decoder_data(Decoder &decoder,
+decoder_data(DecoderClient &client,
 	     InputStream *is,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate)
 {
+	auto &decoder = (Decoder &)client;
 	DecoderControl &dc = decoder.dc;
 
 	assert(dc.state == DecoderState::DECODE);
@@ -552,9 +571,10 @@ decoder_data(Decoder &decoder,
 }
 
 DecoderCommand
-decoder_tag(Decoder &decoder, InputStream *is,
+decoder_tag(DecoderClient &client, InputStream *is,
 	    Tag &&tag)
 {
+	auto &decoder = (Decoder &)client;
 	gcc_unused const DecoderControl &dc = decoder.dc;
 	DecoderCommand cmd;
 
@@ -596,9 +616,11 @@ decoder_tag(Decoder &decoder, InputStream *is,
 }
 
 void
-decoder_replay_gain(Decoder &decoder,
+decoder_replay_gain(DecoderClient &client,
 		    const ReplayGainInfo *replay_gain_info)
 {
+	auto &decoder = (Decoder &)client;
+
 	if (replay_gain_info != nullptr) {
 		static unsigned serial;
 		if (++serial == 0)
@@ -631,8 +653,9 @@ decoder_replay_gain(Decoder &decoder,
 }
 
 void
-decoder_mixramp(Decoder &decoder, MixRampInfo &&mix_ramp)
+decoder_mixramp(DecoderClient &client, MixRampInfo &&mix_ramp)
 {
+	auto &decoder = (Decoder &)client;
 	DecoderControl &dc = decoder.dc;
 
 	dc.SetMixRamp(std::move(mix_ramp));

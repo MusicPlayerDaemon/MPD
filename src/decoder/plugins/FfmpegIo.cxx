@@ -38,7 +38,7 @@ AvioStream::~AvioStream()
 inline int
 AvioStream::Read(void *dest, int size)
 {
-	return decoder_read(decoder, input, dest, size);
+	return decoder_read(client, input, dest, size);
 }
 
 inline int64_t

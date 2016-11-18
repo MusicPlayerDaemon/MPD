@@ -87,7 +87,7 @@ fluidsynth_init(const ConfigBlock &block)
 }
 
 static void
-fluidsynth_file_decode(Decoder &decoder, Path path_fs)
+fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 {
 	char setting_sample_rate[] = "synth.sample-rate";
 	/*
@@ -160,7 +160,7 @@ fluidsynth_file_decode(Decoder &decoder, Path path_fs)
 	   MPD core */
 
 	const AudioFormat audio_format(sample_rate, SampleFormat::S16, 2);
-	decoder_initialized(decoder, audio_format, false,
+	decoder_initialized(client, audio_format, false,
 			    SignedSongTime::Negative());
 
 	DecoderCommand cmd;
@@ -177,7 +177,7 @@ fluidsynth_file_decode(Decoder &decoder, Path path_fs)
 		if (ret != 0)
 			break;
 
-		cmd = decoder_data(decoder, nullptr, buffer, sizeof(buffer),
+		cmd = decoder_data(client, nullptr, buffer, sizeof(buffer),
 				   0);
 		if (cmd != DecoderCommand::NONE)
 			break;

@@ -44,6 +44,8 @@
 
 #include <stdint.h>
 
+class DecoderClient;
+
 /**
  * Throw an instance of this class to stop decoding the current song
  * (successfully).  It can be used to jump out of all of a decoder's
@@ -63,7 +65,7 @@ class StopDecoder {};
  * unknown
  */
 void
-decoder_initialized(Decoder &decoder,
+decoder_initialized(DecoderClient &decoder,
 		    AudioFormat audio_format,
 		    bool seekable, SignedSongTime duration);
 
@@ -76,7 +78,7 @@ decoder_initialized(Decoder &decoder,
  */
 gcc_pure
 DecoderCommand
-decoder_get_command(Decoder &decoder);
+decoder_get_command(DecoderClient &decoder);
 
 /**
  * Called by the decoder when it has performed the requested command
@@ -86,7 +88,7 @@ decoder_get_command(Decoder &decoder);
  * @param decoder the decoder object
  */
 void
-decoder_command_finished(Decoder &decoder);
+decoder_command_finished(DecoderClient &decoder);
 
 /**
  * Call this when you have received the DecoderCommand::SEEK command.
@@ -96,7 +98,7 @@ decoder_command_finished(Decoder &decoder);
  */
 gcc_pure
 SongTime
-decoder_seek_time(Decoder &decoder);
+decoder_seek_time(DecoderClient &decoder);
 
 /**
  * Call this when you have received the DecoderCommand::SEEK command.
@@ -106,7 +108,7 @@ decoder_seek_time(Decoder &decoder);
  */
 gcc_pure
 uint64_t
-decoder_seek_where_frame(Decoder &decoder);
+decoder_seek_where_frame(DecoderClient &decoder);
 
 /**
  * Call this instead of decoder_command_finished() when seeking has
@@ -115,7 +117,7 @@ decoder_seek_where_frame(Decoder &decoder);
  * @param decoder the decoder object
  */
 void
-decoder_seek_error(Decoder &decoder);
+decoder_seek_error(DecoderClient &decoder);
 
 /**
  * Open a new #InputStream and wait until it's ready.
@@ -125,7 +127,7 @@ decoder_seek_error(Decoder &decoder);
  * Throws std::runtime_error on error.
  */
 InputStreamPtr
-decoder_open_uri(Decoder &decoder, const char *uri);
+decoder_open_uri(DecoderClient &decoder, const char *uri);
 
 /**
  * Blocking read from the input stream.
@@ -138,11 +140,11 @@ decoder_open_uri(Decoder &decoder, const char *uri);
  * occurs: end of file; error; command (like SEEK or STOP).
  */
 size_t
-decoder_read(Decoder *decoder, InputStream &is,
+decoder_read(DecoderClient *decoder, InputStream &is,
 	     void *buffer, size_t length);
 
 static inline size_t
-decoder_read(Decoder &decoder, InputStream &is,
+decoder_read(DecoderClient &decoder, InputStream &is,
 	     void *buffer, size_t length)
 {
 	return decoder_read(&decoder, is, buffer, length);
@@ -156,7 +158,7 @@ decoder_read(Decoder &decoder, InputStream &is,
  * data
  */
 bool
-decoder_read_full(Decoder *decoder, InputStream &is,
+decoder_read_full(DecoderClient *decoder, InputStream &is,
 		  void *buffer, size_t size);
 
 /**
@@ -165,7 +167,7 @@ decoder_read_full(Decoder *decoder, InputStream &is,
  * @return true on success, false on error or command
  */
 bool
-decoder_skip(Decoder *decoder, InputStream &is, size_t size);
+decoder_skip(DecoderClient *decoder, InputStream &is, size_t size);
 
 /**
  * Sets the time stamp for the next data chunk [seconds].  The MPD
@@ -174,7 +176,7 @@ decoder_skip(Decoder *decoder, InputStream &is, size_t size);
  * on the buffer size won't work.
  */
 void
-decoder_timestamp(Decoder &decoder, double t);
+decoder_timestamp(DecoderClient &decoder, double t);
 
 /**
  * This function is called by the decoder plugin when it has
@@ -189,12 +191,12 @@ decoder_timestamp(Decoder &decoder, double t);
  * command pending
  */
 DecoderCommand
-decoder_data(Decoder &decoder, InputStream *is,
+decoder_data(DecoderClient &decoder, InputStream *is,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate);
 
 static inline DecoderCommand
-decoder_data(Decoder &decoder, InputStream &is,
+decoder_data(DecoderClient &decoder, InputStream &is,
 	     const void *data, size_t length,
 	     uint16_t kbit_rate)
 {
@@ -212,10 +214,10 @@ decoder_data(Decoder &decoder, InputStream &is,
  * command pending
  */
 DecoderCommand
-decoder_tag(Decoder &decoder, InputStream *is, Tag &&tag);
+decoder_tag(DecoderClient &decoder, InputStream *is, Tag &&tag);
 
 static inline DecoderCommand
-decoder_tag(Decoder &decoder, InputStream &is, Tag &&tag)
+decoder_tag(DecoderClient &decoder, InputStream &is, Tag &&tag)
 {
 	return decoder_tag(decoder, &is, std::move(tag));
 }
@@ -227,13 +229,13 @@ decoder_tag(Decoder &decoder, InputStream &is, Tag &&tag)
  * to invalidate the previous replay gain values
  */
 void
-decoder_replay_gain(Decoder &decoder,
+decoder_replay_gain(DecoderClient &decoder,
 		    const ReplayGainInfo *replay_gain_info);
 
 /**
  * Store MixRamp tags.
  */
 void
-decoder_mixramp(Decoder &decoder, MixRampInfo &&mix_ramp);
+decoder_mixramp(DecoderClient &decoder, MixRampInfo &&mix_ramp);
 
 #endif

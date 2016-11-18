@@ -27,12 +27,7 @@ class InputStream;
 struct TagHandler;
 class Path;
 template<typename T> class AllocatedString;
-
-/**
- * Opaque handle which the decoder plugin passes to the functions in
- * this header.
- */
-struct Decoder;
+class DecoderClient;
 
 struct DecoderPlugin {
 	const char *name;
@@ -60,14 +55,14 @@ struct DecoderPlugin {
 	 * possible, it is recommended to implement this method,
 	 * because it is more versatile.
 	 */
-	void (*stream_decode)(Decoder &decoder, InputStream &is);
+	void (*stream_decode)(DecoderClient &client, InputStream &is);
 
 	/**
 	 * Decode a local file.
 	 *
 	 * Either implement this method or stream_decode().
 	 */
-	void (*file_decode)(Decoder &decoder, Path path_fs);
+	void (*file_decode)(DecoderClient &client, Path path_fs);
 
 	/**
 	 * Scan metadata of a file.
@@ -127,16 +122,16 @@ struct DecoderPlugin {
 	/**
 	 * Decode a stream.
 	 */
-	void StreamDecode(Decoder &decoder, InputStream &is) const {
-		stream_decode(decoder, is);
+	void StreamDecode(DecoderClient &client, InputStream &is) const {
+		stream_decode(client, is);
 	}
 
 	/**
 	 * Decode a file.
 	 */
 	template<typename P>
-	void FileDecode(Decoder &decoder, P path_fs) const {
-		file_decode(decoder, path_fs);
+	void FileDecode(DecoderClient &client, P path_fs) const {
+		file_decode(client, path_fs);
 	}
 
 	/**

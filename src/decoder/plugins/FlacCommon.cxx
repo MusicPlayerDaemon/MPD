@@ -52,7 +52,7 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(*GetDecoder(), audio_format,
+	decoder_initialized(*GetClient(), audio_format,
 			    GetInputStream().IsSeekable(),
 			    duration);
 
@@ -77,9 +77,9 @@ FlacDecoder::OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc)
 {
 	ReplayGainInfo rgi;
 	if (flac_parse_replay_gain(rgi, vc))
-		decoder_replay_gain(*GetDecoder(), &rgi);
+		decoder_replay_gain(*GetClient(), &rgi);
 
-	decoder_mixramp(*GetDecoder(), flac_parse_mixramp(vc));
+	decoder_mixramp(*GetClient(), flac_parse_mixramp(vc));
 
 	tag = flac_vorbis_comments_to_tag(&vc);
 }
@@ -148,7 +148,7 @@ FlacDecoder::OnWrite(const FLAC__Frame &frame,
 	unsigned bit_rate = nbytes * 8 * frame.header.sample_rate /
 		(1000 * frame.header.blocksize);
 
-	auto cmd = decoder_data(*GetDecoder(), GetInputStream(),
+	auto cmd = decoder_data(*GetClient(), GetInputStream(),
 				data.data, data.size,
 				bit_rate);
 	switch (cmd) {

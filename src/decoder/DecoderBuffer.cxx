@@ -29,7 +29,7 @@ DecoderBuffer::Fill()
 		/* buffer is full */
 		return false;
 
-	size_t nbytes = decoder_read(decoder, is,
+	size_t nbytes = decoder_read(client, is,
 				     w.data, w.size);
 	if (nbytes == 0)
 		/* end of file, I/O error or decoder command
@@ -65,5 +65,5 @@ DecoderBuffer::Skip(size_t nbytes)
 	buffer.Clear();
 	nbytes -= r.size;
 
-	return decoder_skip(decoder, is, nbytes);
+	return decoder_skip(client, is, nbytes);
 }

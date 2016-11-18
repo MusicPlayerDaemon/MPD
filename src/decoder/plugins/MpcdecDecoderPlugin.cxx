@@ -37,10 +37,10 @@
 
 struct mpc_decoder_data {
 	InputStream &is;
-	Decoder *decoder;
+	DecoderClient *client;
 
-	mpc_decoder_data(InputStream &_is, Decoder *_decoder)
-		:is(_is), decoder(_decoder) {}
+	mpc_decoder_data(InputStream &_is, DecoderClient *_client)
+		:is(_is), client(_client) {}
 };
 
 static constexpr Domain mpcdec_domain("mpcdec");
@@ -54,7 +54,7 @@ mpc_read_cb(mpc_reader *reader, void *ptr, mpc_int32_t size)
 	struct mpc_decoder_data *data =
 		(struct mpc_decoder_data *)reader->data;
 
-	return decoder_read(data->decoder, data->is, ptr, size);
+	return decoder_read(data->client, data->is, ptr, size);
 }
 
 static mpc_bool_t
@@ -138,9 +138,9 @@ mpc_to_mpd_buffer(MpcdecSampleTraits::pointer_type dest,
 }
 
 static void
-mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
+mpcdec_decode(DecoderClient &client, InputStream &is)
 {
-	mpc_decoder_data data(is, &mpd_decoder);
+	mpc_decoder_data data(is, &client);
 
 	mpc_reader reader;
 	reader.read = mpc_read_cb;
@@ -152,7 +152,7 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 
 	mpc_demux *demux = mpc_demux_init(&reader);
 	if (demux == nullptr) {
-		if (decoder_get_command(mpd_decoder) != DecoderCommand::STOP)
+		if (decoder_get_command(client) != DecoderCommand::STOP)
 			LogWarning(mpcdec_domain,
 				   "Not a valid musepack stream");
 		return;
@@ -172,9 +172,9 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 	rgi.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
 	rgi.tuples[REPLAY_GAIN_TRACK].peak = pow(10, info.peak_title / 256. / 20) / 32767;
 
-	decoder_replay_gain(mpd_decoder, &rgi);
+	decoder_replay_gain(client, &rgi);
 
-	decoder_initialized(mpd_decoder, audio_format,
+	decoder_initialized(client, audio_format,
 			    is.IsSeekable(),
 			    SongTime::FromS(mpc_streaminfo_get_length(&info)));
 
@@ -182,15 +182,15 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 	do {
 		if (cmd == DecoderCommand::SEEK) {
 			mpc_int64_t where =
-				decoder_seek_where_frame(mpd_decoder);
+				decoder_seek_where_frame(client);
 			bool success;
 
 			success = mpc_demux_seek_sample(demux, where)
 				== MPC_STATUS_OK;
 			if (success)
-				decoder_command_finished(mpd_decoder);
+				decoder_command_finished(client);
 			else
-				decoder_seek_error(mpd_decoder);
+				decoder_seek_error(client);
 		}
 
 		MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];
@@ -215,7 +215,7 @@ mpcdec_decode(Decoder &mpd_decoder, InputStream &is)
 		long bit_rate = unsigned(frame.bits) * audio_format.sample_rate
 			/ (1000 * frame.samples);
 
-		cmd = decoder_data(mpd_decoder, is,
+		cmd = decoder_data(client, is,
 				   chunk, ret * sizeof(chunk[0]),
 				   bit_rate);
 	} while (cmd != DecoderCommand::STOP);

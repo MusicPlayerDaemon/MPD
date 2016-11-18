@@ -22,7 +22,7 @@
 
 #include <FLAC/stream_decoder.h>
 
-struct Decoder;
+class DecoderClient;
 class InputStream;
 
 /**
@@ -30,17 +30,17 @@ class InputStream;
  * callbacks.
  */
 class FlacInput {
-	Decoder *const decoder;
+	DecoderClient *const client;
 
 	InputStream &input_stream;
 
 public:
 	FlacInput(InputStream &_input_stream,
-		  Decoder *_decoder=nullptr)
-		:decoder(_decoder), input_stream(_input_stream) {}
+		  DecoderClient *_client=nullptr)
+		:client(_client), input_stream(_input_stream) {}
 
-	Decoder *GetDecoder() {
-		return decoder;
+	DecoderClient *GetClient() {
+		return client;
 	}
 
 	InputStream &GetInputStream() {

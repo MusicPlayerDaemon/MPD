@@ -51,8 +51,8 @@ struct FlacDecoder : public FlacInput {
 
 	Tag tag;
 
-	FlacDecoder(Decoder &_decoder, InputStream &_input_stream)
-		:FlacInput(_input_stream, &_decoder) {}
+	FlacDecoder(DecoderClient &_client, InputStream &_input_stream)
+		:FlacInput(_input_stream, &_client) {}
 
 	/**
 	 * Wrapper for decoder_initialized().

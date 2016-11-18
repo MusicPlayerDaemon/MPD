@@ -17,12 +17,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "Reader.hxx"
-#include "DecoderAPI.hxx"
+#ifndef MPD_DECODER_CLIENT_HXX
+#define MPD_DECODER_CLIENT_HXX
 
-size_t
-DecoderReader::Read(void *data, size_t size)
-{
-	return decoder_read(client, is, data, size);
-}
+#include "check.h"
+
+/**
+ * An interface between the decoder plugin and the MPD core.
+ */
+class DecoderClient {
+};
+
+#endif

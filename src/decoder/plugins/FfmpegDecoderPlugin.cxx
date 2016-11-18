@@ -221,7 +221,7 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
  * Invoke decoder_data() with the contents of an #AVFrame.
  */
 static DecoderCommand
-FfmpegSendFrame(Decoder &decoder, InputStream &is,
+FfmpegSendFrame(DecoderClient &client, InputStream &is,
 		AVCodecContext &codec_context,
 		const AVFrame &frame,
 		size_t &skip_bytes,
@@ -250,7 +250,7 @@ FfmpegSendFrame(Decoder &decoder, InputStream &is,
 		skip_bytes = 0;
 	}
 
-	return decoder_data(decoder, is,
+	return decoder_data(client, is,
 			    output_buffer.data, output_buffer.size,
 			    codec_context.bit_rate / 1000);
 }
@@ -258,7 +258,7 @@ FfmpegSendFrame(Decoder &decoder, InputStream &is,
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 0)
 
 static DecoderCommand
-FfmpegReceiveFrames(Decoder &decoder, InputStream &is,
+FfmpegReceiveFrames(DecoderClient &client, InputStream &is,
 		    AVCodecContext &codec_context,
 		    AVFrame &frame,
 		    size_t &skip_bytes,
@@ -271,7 +271,7 @@ FfmpegReceiveFrames(Decoder &decoder, InputStream &is,
 		int err = avcodec_receive_frame(&codec_context, &frame);
 		switch (err) {
 		case 0:
-			cmd = FfmpegSendFrame(decoder, is, codec_context,
+			cmd = FfmpegSendFrame(client, is, codec_context,
 					      frame, skip_bytes,
 					      buffer);
 			if (cmd != DecoderCommand::NONE)
@@ -312,7 +312,7 @@ FfmpegReceiveFrames(Decoder &decoder, InputStream &is,
  * desired time stamp has been reached
  */
 static DecoderCommand
-ffmpeg_send_packet(Decoder &decoder, InputStream &is,
+ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 		   AVPacket &&packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
@@ -330,7 +330,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 			if (cur_frame < min_frame)
 				skip_bytes = pcm_frame_size * (min_frame - cur_frame);
 		} else
-			decoder_timestamp(decoder,
+			decoder_timestamp(client,
 					  FfmpegTimeToDouble(pts,
 							     stream.time_base));
 	}
@@ -358,7 +358,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		return DecoderCommand::NONE;
 	}
 
-	auto cmd = FfmpegReceiveFrames(decoder, is, codec_context,
+	auto cmd = FfmpegReceiveFrames(client, is, codec_context,
 				       frame,
 				       skip_bytes, buffer, eof);
 
@@ -383,7 +383,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		if (!got_frame || frame.nb_samples <= 0)
 			continue;
 
-		cmd = FfmpegSendFrame(decoder, is, codec_context,
+		cmd = FfmpegSendFrame(client, is, codec_context,
 				      frame, skip_bytes,
 				      buffer);
 	}
@@ -393,7 +393,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 }
 
 static DecoderCommand
-ffmpeg_send_packet(Decoder &decoder, InputStream &is,
+ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 		   const AVPacket &packet,
 		   AVCodecContext &codec_context,
 		   const AVStream &stream,
@@ -401,7 +401,7 @@ ffmpeg_send_packet(Decoder &decoder, InputStream &is,
 		   uint64_t min_frame, size_t pcm_frame_size,
 		   FfmpegBuffer &buffer)
 {
-	return ffmpeg_send_packet(decoder, is,
+	return ffmpeg_send_packet(client, is,
 				  /* copy the AVPacket, because FFmpeg
 				     < 3.0 requires this */
 				  AVPacket(packet),
@@ -446,13 +446,13 @@ ffmpeg_sample_format(enum AVSampleFormat sample_fmt)
 }
 
 static AVInputFormat *
-ffmpeg_probe(Decoder *decoder, InputStream &is)
+ffmpeg_probe(DecoderClient *client, InputStream &is)
 {
 	constexpr size_t BUFFER_SIZE = 16384;
 	constexpr size_t PADDING = 16;
 
 	unsigned char buffer[BUFFER_SIZE];
-	size_t nbytes = decoder_read(decoder, is, buffer, BUFFER_SIZE);
+	size_t nbytes = decoder_read(client, is, buffer, BUFFER_SIZE);
 	if (nbytes <= PADDING)
 		return nullptr;
 
@@ -528,7 +528,7 @@ FfmpegParseMetaData(const AVFormatContext &format_context, int audio_stream,
 }
 
 static void
-FfmpegParseMetaData(Decoder &decoder,
+FfmpegParseMetaData(DecoderClient &client,
 		    const AVFormatContext &format_context, int audio_stream)
 {
 	ReplayGainInfo rg;
@@ -540,10 +540,10 @@ FfmpegParseMetaData(Decoder &decoder,
 	FfmpegParseMetaData(format_context, audio_stream, rg, mr);
 
 	if (rg.IsDefined())
-		decoder_replay_gain(decoder, &rg);
+		decoder_replay_gain(client, &rg);
 
 	if (mr.IsDefined())
-		decoder_mixramp(decoder, std::move(mr));
+		decoder_mixramp(client, std::move(mr));
 }
 
 static void
@@ -579,7 +579,7 @@ FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
  * decoder_tag().
  */
 static void
-FfmpegCheckTag(Decoder &decoder, InputStream &is,
+FfmpegCheckTag(DecoderClient &client, InputStream &is,
 	       AVFormatContext &format_context, int audio_stream)
 {
 	AVStream &stream = *format_context.streams[audio_stream];
@@ -593,13 +593,13 @@ FfmpegCheckTag(Decoder &decoder, InputStream &is,
 	TagBuilder tag;
 	FfmpegScanTag(format_context, audio_stream, tag);
 	if (!tag.IsEmpty())
-		decoder_tag(decoder, is, tag.Commit());
+		decoder_tag(client, is, tag.Commit());
 }
 
 #endif
 
 static void
-FfmpegDecode(Decoder &decoder, InputStream &input,
+FfmpegDecode(DecoderClient &client, InputStream &input,
 	     AVFormatContext &format_context)
 {
 	const int find_result =
@@ -689,10 +689,10 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 	const SignedSongTime total_time =
 		FromFfmpegTimeChecked(av_stream.duration, av_stream.time_base);
 
-	decoder_initialized(decoder, audio_format,
+	decoder_initialized(client, audio_format,
 			    input.IsSeekable(), total_time);
 
-	FfmpegParseMetaData(decoder, format_context, audio_stream);
+	FfmpegParseMetaData(client, format_context, audio_stream);
 
 #if LIBAVUTIL_VERSION_MAJOR >= 53
 	AVFrame *frame = av_frame_alloc();
@@ -718,11 +718,11 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 
 	uint64_t min_frame = 0;
 
-	DecoderCommand cmd = decoder_get_command(decoder);
+	DecoderCommand cmd = decoder_get_command(client);
 	while (cmd != DecoderCommand::STOP) {
 		if (cmd == DecoderCommand::SEEK) {
 			int64_t where =
-				ToFfmpegTime(decoder_seek_time(decoder),
+				ToFfmpegTime(decoder_seek_time(client),
 					     av_stream.time_base) +
 				start_time_fallback(av_stream);
 
@@ -731,11 +731,11 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 			   stamp, not after */
 			if (av_seek_frame(&format_context, audio_stream, where,
 					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
-				decoder_seek_error(decoder);
+				decoder_seek_error(client);
 			else {
 				avcodec_flush_buffers(codec_context);
-				min_frame = decoder_seek_where_frame(decoder);
-				decoder_command_finished(decoder);
+				min_frame = decoder_seek_where_frame(client);
+				decoder_command_finished(client);
 			}
 		}
 
@@ -745,11 +745,11 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 			break;
 
 #if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(56, 1, 0)
-		FfmpegCheckTag(decoder, input, format_context, audio_stream);
+		FfmpegCheckTag(client, input, format_context, audio_stream);
 #endif
 
 		if (packet.size > 0 && packet.stream_index == audio_stream) {
-			cmd = ffmpeg_send_packet(decoder, input,
+			cmd = ffmpeg_send_packet(client, input,
 						 packet,
 						 *codec_context,
 						 av_stream,
@@ -758,7 +758,7 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 						 interleaved_buffer);
 			min_frame = 0;
 		} else
-			cmd = decoder_get_command(decoder);
+			cmd = decoder_get_command(client);
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(56, 25, 100)
 		av_packet_unref(&packet);
@@ -769,16 +769,16 @@ FfmpegDecode(Decoder &decoder, InputStream &input,
 }
 
 static void
-ffmpeg_decode(Decoder &decoder, InputStream &input)
+ffmpeg_decode(DecoderClient &client, InputStream &input)
 {
-	AVInputFormat *input_format = ffmpeg_probe(&decoder, input);
+	AVInputFormat *input_format = ffmpeg_probe(&client, input);
 	if (input_format == nullptr)
 		return;
 
 	FormatDebug(ffmpeg_domain, "detected input format '%s' (%s)",
 		    input_format->name, input_format->long_name);
 
-	AvioStream stream(&decoder, input);
+	AvioStream stream(&client, input);
 	if (!stream.Open()) {
 		LogError(ffmpeg_domain, "Failed to open stream");
 		return;
@@ -797,7 +797,7 @@ ffmpeg_decode(Decoder &decoder, InputStream &input)
 		avformat_close_input(&format_context);
 	};
 
-	FfmpegDecode(decoder, input, *format_context);
+	FfmpegDecode(client, input, *format_context);
 }
 
 static bool

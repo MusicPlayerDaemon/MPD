@@ -98,11 +98,11 @@ struct DsfDataChunk {
  * Read and parse all needed metadata chunks for DSF files.
  */
 static bool
-dsf_read_metadata(Decoder *decoder, InputStream &is,
+dsf_read_metadata(DecoderClient *client, InputStream &is,
 		  DsfMetaData *metadata)
 {
 	DsfHeader dsf_header;
-	if (!decoder_read_full(decoder, is, &dsf_header, sizeof(dsf_header)) ||
+	if (!decoder_read_full(client, is, &dsf_header, sizeof(dsf_header)) ||
 	    !dsf_header.id.Equals("DSD "))
 		return false;
 
@@ -116,7 +116,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 
 	/* read the 'fmt ' chunk of the DSF file */
 	DsfFmtChunk dsf_fmt_chunk;
-	if (!decoder_read_full(decoder, is,
+	if (!decoder_read_full(client, is,
 			       &dsf_fmt_chunk, sizeof(dsf_fmt_chunk)) ||
 	    !dsf_fmt_chunk.id.Equals("fmt "))
 		return false;
@@ -144,7 +144,7 @@ dsf_read_metadata(Decoder *decoder, InputStream &is,
 
 	/* read the 'data' chunk of the DSF file */
 	DsfDataChunk data_chunk;
-	if (!decoder_read_full(decoder, is, &data_chunk, sizeof(data_chunk)) ||
+	if (!decoder_read_full(client, is, &data_chunk, sizeof(data_chunk)) ||
 	    !data_chunk.id.Equals("data"))
 		return false;
 
@@ -251,7 +251,7 @@ FrameToBlock(uint64_t frame)
  * Decode one complete DSF 'data' chunk i.e. a complete song
  */
 static bool
-dsf_decode_chunk(Decoder &decoder, InputStream &is,
+dsf_decode_chunk(DecoderClient &client, InputStream &is,
 		 unsigned channels, unsigned sample_rate,
 		 offset_type n_blocks,
 		 bool bitreverse)
@@ -259,28 +259,28 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 	const size_t block_size = channels * DSF_BLOCK_SIZE;
 	const offset_type start_offset = is.GetOffset();
 
-	auto cmd = decoder_get_command(decoder);
+	auto cmd = decoder_get_command(client);
 	for (offset_type i = 0; i < n_blocks && cmd != DecoderCommand::STOP;) {
 		if (cmd == DecoderCommand::SEEK) {
-			uint64_t frame = decoder_seek_where_frame(decoder);
+			uint64_t frame = decoder_seek_where_frame(client);
 			offset_type block = FrameToBlock(frame);
 			if (block >= n_blocks) {
-				decoder_command_finished(decoder);
+				decoder_command_finished(client);
 				break;
 			}
 
 			offset_type offset =
 				start_offset + block * block_size;
-			if (dsdlib_skip_to(&decoder, is, offset)) {
-				decoder_command_finished(decoder);
+			if (dsdlib_skip_to(&client, is, offset)) {
+				decoder_command_finished(client);
 				i = block;
 			} else
-				decoder_seek_error(decoder);
+				decoder_seek_error(client);
 		}
 
 		/* worst-case buffer size */
 		uint8_t buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
-		if (!decoder_read_full(&decoder, is, buffer, block_size))
+		if (!decoder_read_full(&client, is, buffer, block_size))
 			return false;
 
 		if (bitreverse)
@@ -289,7 +289,7 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 		uint8_t interleaved_buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 		InterleaveDsfBlock(interleaved_buffer, buffer, channels);
 
-		cmd = decoder_data(decoder, is,
+		cmd = decoder_data(client, is,
 				   interleaved_buffer, block_size,
 				   sample_rate / 1000);
 		++i;
@@ -299,11 +299,11 @@ dsf_decode_chunk(Decoder &decoder, InputStream &is,
 }
 
 static void
-dsf_stream_decode(Decoder &decoder, InputStream &is)
+dsf_stream_decode(DecoderClient &client, InputStream &is)
 {
 	/* check if it is a proper DSF file */
 	DsfMetaData metadata;
-	if (!dsf_read_metadata(&decoder, is, &metadata))
+	if (!dsf_read_metadata(&client, is, &metadata))
 		return;
 
 	auto audio_format = CheckAudioFormat(metadata.sample_rate / 8,
@@ -316,9 +316,9 @@ dsf_stream_decode(Decoder &decoder, InputStream &is)
 						      audio_format.sample_rate);
 
 	/* success: file was recognized */
-	decoder_initialized(decoder, audio_format, is.IsSeekable(), songtime);
+	decoder_initialized(client, audio_format, is.IsSeekable(), songtime);
 
-	dsf_decode_chunk(decoder, is, metadata.channels,
+	dsf_decode_chunk(client, is, metadata.channels,
 			 metadata.sample_rate,
 			 n_blocks,
 			 metadata.bitreverse);

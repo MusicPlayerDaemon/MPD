@@ -324,7 +324,7 @@ faad_get_file_time(InputStream &is)
 }
 
 static void
-faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
+faad_stream_decode(DecoderClient &client, InputStream &is,
 		   DecoderBuffer &buffer, const NeAACDecHandle decoder)
 {
 	const auto total_time = faad_song_duration(buffer, is);
@@ -339,7 +339,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
 
 	/* initialize the MPD core */
 
-	decoder_initialized(mpd_decoder, audio_format, false, total_time);
+	decoder_initialized(client, audio_format, false, total_time);
 
 	/* the decoder loop */
 
@@ -393,16 +393,16 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is,
 
 		/* send PCM samples to MPD */
 
-		cmd = decoder_data(mpd_decoder, is, decoded,
+		cmd = decoder_data(client, is, decoded,
 				   (size_t)frame_info.samples * 2,
 				   bit_rate);
 	} while (cmd != DecoderCommand::STOP);
 }
 
 static void
-faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
+faad_stream_decode(DecoderClient &client, InputStream &is)
 {
-	DecoderBuffer buffer(&mpd_decoder, is,
+	DecoderBuffer buffer(&client, is,
 			     FAAD_MIN_STREAMSIZE * MAX_CHANNELS);
 
 	/* create the libfaad decoder */
@@ -410,7 +410,7 @@ faad_stream_decode(Decoder &mpd_decoder, InputStream &is)
 	const NeAACDecHandle decoder = faad_decoder_new();
 	AtScopeExit(decoder) { NeAACDecClose(decoder); };
 
-	faad_stream_decode(mpd_decoder, is, buffer, decoder);
+	faad_stream_decode(client, is, buffer, decoder);
 }
 
 static bool

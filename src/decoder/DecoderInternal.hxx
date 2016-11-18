@@ -20,6 +20,7 @@
 #ifndef MPD_DECODER_INTERNAL_HXX
 #define MPD_DECODER_INTERNAL_HXX
 
+#include "Client.hxx"
 #include "ReplayGainInfo.hxx"
 
 #include <exception>
@@ -29,7 +30,7 @@ struct MusicChunk;
 struct DecoderControl;
 struct Tag;
 
-struct Decoder {
+struct Decoder final : DecoderClient {
 	DecoderControl &dc;
 
 	/**

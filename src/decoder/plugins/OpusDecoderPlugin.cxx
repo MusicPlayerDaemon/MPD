@@ -175,14 +175,14 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	previous_channels = channels;
 	const AudioFormat audio_format(opus_sample_rate,
 				       SampleFormat::S16, channels);
-	decoder_initialized(decoder, audio_format,
+	decoder_initialized(client, audio_format,
 			    eos_granulepos > 0, duration);
 	frame_size = audio_format.GetFrameSize();
 
 	output_buffer = new opus_int16[opus_output_buffer_frames
 				       * audio_format.channels];
 
-	auto cmd = decoder_get_command(decoder);
+	auto cmd = decoder_get_command(client);
 	if (cmd != DecoderCommand::NONE)
 		throw cmd;
 }
@@ -213,10 +213,10 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 			 &rgi,
 			 add_tag_handler, &tag_builder) &&
 	    !tag_builder.IsEmpty()) {
-		decoder_replay_gain(decoder, &rgi);
+		decoder_replay_gain(client, &rgi);
 
 		Tag tag = tag_builder.Commit();
-		auto cmd = decoder_tag(decoder, input_stream, std::move(tag));
+		auto cmd = decoder_tag(client, input_stream, std::move(tag));
 		if (cmd != DecoderCommand::NONE)
 			throw cmd;
 	}
@@ -238,14 +238,14 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 
 	if (nframes > 0) {
 		const size_t nbytes = nframes * frame_size;
-		auto cmd = decoder_data(decoder, input_stream,
+		auto cmd = decoder_data(client, input_stream,
 					output_buffer, nbytes,
 					0);
 		if (cmd != DecoderCommand::NONE)
 			throw cmd;
 
 		if (packet.granulepos > 0)
-			decoder_timestamp(decoder,
+			decoder_timestamp(client,
 					  double(packet.granulepos)
 					  / opus_sample_rate);
 	}
@@ -269,10 +269,10 @@ MPDOpusDecoder::Seek(uint64_t where_frame)
 }
 
 static void
-mpd_opus_stream_decode(Decoder &decoder,
+mpd_opus_stream_decode(DecoderClient &client,
 		       InputStream &input_stream)
 {
-	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_OPUS)
+	if (ogg_codec_detect(&client, input_stream) != OGG_CODEC_OPUS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
@@ -282,7 +282,7 @@ mpd_opus_stream_decode(Decoder &decoder,
 	} catch (const std::runtime_error &) {
 	}
 
-	DecoderReader reader(decoder, input_stream);
+	DecoderReader reader(client, input_stream);
 
 	MPDOpusDecoder d(reader);
 
@@ -292,10 +292,10 @@ mpd_opus_stream_decode(Decoder &decoder,
 			break;
 		} catch (DecoderCommand cmd) {
 			if (cmd == DecoderCommand::SEEK) {
-				if (d.Seek(decoder_seek_where_frame(decoder)))
-					decoder_command_finished(decoder);
+				if (d.Seek(decoder_seek_where_frame(client)))
+					decoder_command_finished(client);
 				else
-					decoder_seek_error(decoder);
+					decoder_seek_error(client);
 			} else if (cmd != DecoderCommand::NONE)
 				break;
 		}

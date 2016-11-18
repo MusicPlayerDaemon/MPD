@@ -149,14 +149,14 @@ VorbisDecoder::OnOggBeginning(const ogg_packet &_packet)
 }
 
 static void
-vorbis_send_comments(Decoder &decoder, InputStream &is,
+vorbis_send_comments(DecoderClient &client, InputStream &is,
 		     char **comments)
 {
 	Tag *tag = vorbis_comments_to_tag(comments);
 	if (!tag)
 		return;
 
-	decoder_tag(decoder, is, std::move(*tag));
+	decoder_tag(client, is, std::move(*tag));
 	delete tag;
 }
 
@@ -175,7 +175,7 @@ VorbisDecoder::SubmitInit()
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(decoder, audio_format,
+	decoder_initialized(client, audio_format,
 			    eos_granulepos > 0, duration);
 }
 
@@ -212,7 +212,7 @@ VorbisDecoder::SubmitSomePcm()
 	vorbis_synthesis_read(&dsp, n_frames);
 
 	const size_t nbytes = n_frames * frame_size;
-	auto cmd = decoder_data(decoder, input_stream,
+	auto cmd = decoder_data(client, input_stream,
 				buffer, nbytes,
 				0);
 	if (cmd != DecoderCommand::NONE)
@@ -249,11 +249,11 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 		} else
 			SubmitInit();
 
-		vorbis_send_comments(decoder, input_stream, vc.user_comments);
+		vorbis_send_comments(client, input_stream, vc.user_comments);
 
 		ReplayGainInfo rgi;
 		if (vorbis_comments_to_replay_gain(rgi, vc.user_comments))
-			decoder_replay_gain(decoder, &rgi);
+			decoder_replay_gain(client, &rgi);
 	} else {
 		if (!dsp_initialized) {
 			dsp_initialized = true;
@@ -265,7 +265,7 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 		if (vorbis_synthesis(&block, &packet) != 0) {
 			/* ignore bad packets, but give the MPD core a
 			   chance to stop us */
-			auto cmd = decoder_get_command(decoder);
+			auto cmd = decoder_get_command(client);
 			if (cmd != DecoderCommand::NONE)
 				throw cmd;
 			return;
@@ -278,7 +278,7 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 
 #ifndef HAVE_TREMOR
 		if (packet.granulepos > 0)
-			decoder_timestamp(decoder,
+			decoder_timestamp(client,
 					  vorbis_granule_time(&dsp, packet.granulepos));
 #endif
 	}
@@ -301,10 +301,10 @@ vorbis_init(gcc_unused const ConfigBlock &block)
 }
 
 static void
-vorbis_stream_decode(Decoder &decoder,
+vorbis_stream_decode(DecoderClient &client,
 		     InputStream &input_stream)
 {
-	if (ogg_codec_detect(&decoder, input_stream) != OGG_CODEC_VORBIS)
+	if (ogg_codec_detect(&client, input_stream) != OGG_CODEC_VORBIS)
 		return;
 
 	/* rewind the stream, because ogg_codec_detect() has
@@ -314,7 +314,7 @@ vorbis_stream_decode(Decoder &decoder,
 	} catch (const std::runtime_error &) {
 	}
 
-	DecoderReader reader(decoder, input_stream);
+	DecoderReader reader(client, input_stream);
 	VorbisDecoder d(reader);
 
 	while (true) {
@@ -323,10 +323,10 @@ vorbis_stream_decode(Decoder &decoder,
 			break;
 		} catch (DecoderCommand cmd) {
 			if (cmd == DecoderCommand::SEEK) {
-				if (d.Seek(decoder_seek_where_frame(decoder)))
-					decoder_command_finished(decoder);
+				if (d.Seek(decoder_seek_where_frame(client)))
+					decoder_command_finished(client);
 				else
-					decoder_seek_error(decoder);
+					decoder_seek_error(client);
 			} else if (cmd != DecoderCommand::NONE)
 				break;
 		}

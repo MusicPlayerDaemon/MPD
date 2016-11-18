@@ -141,11 +141,11 @@ struct MadDecoder {
 	bool found_first_frame = false;
 	bool decoded_first_frame = false;
 	unsigned long bit_rate;
-	Decoder *const decoder;
+	DecoderClient *const client;
 	InputStream &input_stream;
 	enum mad_layer layer = mad_layer(0);
 
-	MadDecoder(Decoder *decoder, InputStream &input_stream);
+	MadDecoder(DecoderClient *client, InputStream &input_stream);
 	~MadDecoder();
 
 	bool Seek(long offset);
@@ -195,9 +195,9 @@ struct MadDecoder {
 	bool Read();
 };
 
-MadDecoder::MadDecoder(Decoder *_decoder,
+MadDecoder::MadDecoder(DecoderClient *_client,
 		       InputStream &_input_stream)
-	:decoder(_decoder), input_stream(_input_stream)
+	:client(_client), input_stream(_input_stream)
 {
 	mad_stream_init(&stream);
 	mad_stream_options(&stream, MAD_OPTION_IGNORECRC);
@@ -243,7 +243,7 @@ MadDecoder::FillBuffer()
 	if (length == 0)
 		return false;
 
-	length = decoder_read(decoder, input_stream, dest, length);
+	length = decoder_read(client, input_stream, dest, length);
 	if (length == 0)
 		return false;
 
@@ -333,7 +333,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		memcpy(allocated, stream.this_frame, count);
 		mad_stream_skip(&(stream), count);
 
-		if (!decoder_read_full(decoder, input_stream,
+		if (!decoder_read_full(client, input_stream,
 				       allocated + count, tagsize - count)) {
 			LogDebug(mad_domain, "error parsing ID3 tag");
 			delete[] allocated;
@@ -357,15 +357,15 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		}
 	}
 
-	if (decoder != nullptr) {
+	if (client != nullptr) {
 		ReplayGainInfo rgi;
 
 		if (parse_id3_replay_gain_info(rgi, id3_tag)) {
-			decoder_replay_gain(*decoder, &rgi);
+			decoder_replay_gain(*client, &rgi);
 			found_replay_gain = true;
 		}
 
-		decoder_mixramp(*decoder, parse_id3_mixramp(id3_tag));
+		decoder_mixramp(*client, parse_id3_mixramp(id3_tag));
 	}
 
 	id3_tag_delete(id3_tag);
@@ -383,7 +383,7 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		mad_stream_skip(&stream, tagsize);
 	} else {
 		mad_stream_skip(&stream, count);
-		decoder_skip(decoder, input_stream, tagsize - count);
+		decoder_skip(client, input_stream, tagsize - count);
 	}
 #endif
 }
@@ -800,13 +800,13 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 
 			/* Album gain isn't currently used.  See comment in
 			 * parse_lame() for details. -- jat */
-			if (decoder != nullptr && !found_replay_gain &&
+			if (client != nullptr && !found_replay_gain &&
 			    lame.track_gain) {
 				ReplayGainInfo rgi;
 				rgi.Clear();
 				rgi.tuples[REPLAY_GAIN_TRACK].gain = lame.track_gain;
 				rgi.tuples[REPLAY_GAIN_TRACK].peak = lame.peak;
-				decoder_replay_gain(*decoder, &rgi);
+				decoder_replay_gain(*client, &rgi);
 			}
 		}
 	}
@@ -903,7 +903,7 @@ MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
 				       MAD_NCHANNELS(&frame.header));
 		num_samples *= MAD_NCHANNELS(&frame.header);
 
-		auto cmd = decoder_data(*decoder, input_stream, output_buffer,
+		auto cmd = decoder_data(*client, input_stream, output_buffer,
 					sizeof(output_buffer[0]) * num_samples,
 					bit_rate / 1000);
 		if (cmd != DecoderCommand::NONE)
@@ -986,17 +986,17 @@ MadDecoder::Read()
 			assert(input_stream.IsSeekable());
 
 			unsigned long j =
-				TimeToFrame(decoder_seek_time(*decoder));
+				TimeToFrame(decoder_seek_time(*client));
 			if (j < highest_frame) {
 				if (Seek(frame_offsets[j])) {
 					current_frame = j;
-					decoder_command_finished(*decoder);
+					decoder_command_finished(*client);
 				} else
-					decoder_seek_error(*decoder);
+					decoder_seek_error(*client);
 			} else {
-				seek_time = decoder_seek_time(*decoder);
+				seek_time = decoder_seek_time(*client);
 				mute_frame = MUTEFRAME_SEEK;
-				decoder_command_finished(*decoder);
+				decoder_command_finished(*client);
 			}
 		} else if (cmd != DecoderCommand::NONE)
 			return false;
@@ -1010,7 +1010,7 @@ MadDecoder::Read()
 			ret = DecodeNextFrameHeader(&tag);
 
 			if (tag != nullptr) {
-				decoder_tag(*decoder, input_stream,
+				decoder_tag(*client, input_stream,
 					    std::move(*tag));
 				delete tag;
 			}
@@ -1034,15 +1034,15 @@ MadDecoder::Read()
 }
 
 static void
-mp3_decode(Decoder &decoder, InputStream &input_stream)
+mp3_decode(DecoderClient &client, InputStream &input_stream)
 {
-	MadDecoder data(&decoder, input_stream);
+	MadDecoder data(&client, input_stream);
 
 	Tag *tag = nullptr;
 	if (!data.DecodeFirstFrame(&tag)) {
 		delete tag;
 
-		if (decoder_get_command(decoder) == DecoderCommand::NONE)
+		if (decoder_get_command(client) == DecoderCommand::NONE)
 			LogError(mad_domain,
 				 "input/Input does not appear to be a mp3 bit stream");
 		return;
@@ -1050,7 +1050,7 @@ mp3_decode(Decoder &decoder, InputStream &input_stream)
 
 	data.AllocateBuffers();
 
-	decoder_initialized(decoder,
+	decoder_initialized(client,
 			    CheckAudioFormat(data.frame.header.samplerate,
 					     SampleFormat::S24_P32,
 					     MAD_NCHANNELS(&data.frame.header)),
@@ -1058,7 +1058,7 @@ mp3_decode(Decoder &decoder, InputStream &input_stream)
 			    data.total_time);
 
 	if (tag != nullptr) {
-		decoder_tag(decoder, input_stream, std::move(*tag));
+		decoder_tag(client, input_stream, std::move(*tag));
 		delete tag;
 	}
 
