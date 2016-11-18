@@ -50,7 +50,7 @@
  */
 template<class T>
 class Manual {
-	gcc_alignas(T, 8)
+	alignas(T)
 	char data[sizeof(T)];
 
 #ifndef NDEBUG
