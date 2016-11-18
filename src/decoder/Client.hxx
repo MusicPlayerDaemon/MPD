@@ -23,6 +23,7 @@
 #include "check.h"
 #include "DecoderCommand.hxx"
 #include "Chrono.hxx"
+#include "input/Ptr.hxx"
 #include "Compiler.h"
 
 #include <stdint.h>
@@ -31,7 +32,6 @@ struct AudioFormat;
 struct Tag;
 struct ReplayGainInfo;
 class MixRampInfo;
-class InputStream;
 
 /**
  * An interface between the decoder plugin and the MPD core.
@@ -88,6 +88,15 @@ public:
 	 * failed.
 	 */
 	virtual void SeekError() = 0;
+
+	/**
+	 * Open a new #InputStream and wait until it's ready.
+	 *
+	 * Throws #StopDecoder if DecoderCommand::STOP was received.
+	 *
+	 * Throws std::runtime_error on error.
+	 */
+	virtual InputStreamPtr OpenUri(const char *uri) = 0;
 
 	/**
 	 * Sets the time stamp for the next data chunk [seconds].  The MPD

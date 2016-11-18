@@ -55,16 +55,6 @@ class DecoderClient;
 class StopDecoder {};
 
 /**
- * Open a new #InputStream and wait until it's ready.
- *
- * Throws #StopDecoder if DecoderCommand::STOP was received.
- *
- * Throws std::runtime_error on error.
- */
-InputStreamPtr
-decoder_open_uri(DecoderClient &decoder, const char *uri);
-
-/**
  * Blocking read from the input stream.
  *
  * @param decoder the decoder object

@@ -496,7 +496,7 @@ wavpack_open_wvc(DecoderClient &client, const char *uri)
 	};
 
 	try {
-		return decoder_open_uri(client, uri);
+		return client.OpenUri(uri);
 	} catch (const std::runtime_error &) {
 		return nullptr;
 	}

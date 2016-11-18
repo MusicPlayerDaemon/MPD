@@ -74,10 +74,9 @@ FakeDecoder::SeekError()
 }
 
 InputStreamPtr
-decoder_open_uri(DecoderClient &client, const char *uri)
+FakeDecoder::OpenUri(const char *uri)
 {
-	auto &decoder = (FakeDecoder &)client;
-	return InputStream::OpenReady(uri, decoder.mutex, decoder.cond);
+	return InputStream::OpenReady(uri, mutex, cond);
 }
 
 size_t

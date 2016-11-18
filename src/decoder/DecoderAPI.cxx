@@ -251,14 +251,11 @@ Decoder::SeekError()
 }
 
 InputStreamPtr
-decoder_open_uri(DecoderClient &client, const char *uri)
+Decoder::OpenUri(const char *uri)
 {
-	auto &decoder = (Decoder &)client;
+	assert(dc.state == DecoderState::START ||
+	       dc.state == DecoderState::DECODE);
 
-	assert(decoder.dc.state == DecoderState::START ||
-	       decoder.dc.state == DecoderState::DECODE);
-
-	DecoderControl &dc = decoder.dc;
 	Mutex &mutex = dc.mutex;
 	Cond &cond = dc.cond;
 
