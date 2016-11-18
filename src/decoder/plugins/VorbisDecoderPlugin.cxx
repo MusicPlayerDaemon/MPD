@@ -264,7 +264,7 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 		if (vorbis_synthesis(&block, &packet) != 0) {
 			/* ignore bad packets, but give the MPD core a
 			   chance to stop us */
-			auto cmd = decoder_get_command(client);
+			auto cmd = client.GetCommand();
 			if (cmd != DecoderCommand::NONE)
 				throw cmd;
 			return;
@@ -322,10 +322,10 @@ vorbis_stream_decode(DecoderClient &client,
 			break;
 		} catch (DecoderCommand cmd) {
 			if (cmd == DecoderCommand::SEEK) {
-				if (d.Seek(decoder_seek_where_frame(client)))
-					decoder_command_finished(client);
+				if (d.Seek(client.GetSeekFrame()))
+					client.CommandFinished();
 				else
-					decoder_seek_error(client);
+					client.SeekError();
 			} else if (cmd != DecoderCommand::NONE)
 				break;
 		}

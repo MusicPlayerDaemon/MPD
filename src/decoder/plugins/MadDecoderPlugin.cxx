@@ -985,18 +985,18 @@ MadDecoder::Read()
 		if (cmd == DecoderCommand::SEEK) {
 			assert(input_stream.IsSeekable());
 
-			unsigned long j =
-				TimeToFrame(decoder_seek_time(*client));
+			const auto t = client->GetSeekTime();
+			unsigned long j = TimeToFrame(t);
 			if (j < highest_frame) {
 				if (Seek(frame_offsets[j])) {
 					current_frame = j;
-					decoder_command_finished(*client);
+					client->CommandFinished();
 				} else
-					decoder_seek_error(*client);
+					client->SeekError();
 			} else {
-				seek_time = decoder_seek_time(*client);
+				seek_time = t;
 				mute_frame = MUTEFRAME_SEEK;
-				decoder_command_finished(*client);
+				client->CommandFinished();
 			}
 		} else if (cmd != DecoderCommand::NONE)
 			return false;
@@ -1042,7 +1042,7 @@ mp3_decode(DecoderClient &client, InputStream &input_stream)
 	if (!data.DecodeFirstFrame(&tag)) {
 		delete tag;
 
-		if (decoder_get_command(client) == DecoderCommand::NONE)
+		if (client.GetCommand() == DecoderCommand::NONE)
 			LogError(mad_domain,
 				 "input/Input does not appear to be a mp3 bit stream");
 		return;

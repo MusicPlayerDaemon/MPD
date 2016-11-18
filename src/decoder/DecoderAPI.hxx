@@ -55,56 +55,6 @@ class DecoderClient;
 class StopDecoder {};
 
 /**
- * Determines the pending decoder command.
- *
- * @param decoder the decoder object
- * @return the current command, or DecoderCommand::NONE if there is no
- * command pending
- */
-gcc_pure
-DecoderCommand
-decoder_get_command(DecoderClient &decoder);
-
-/**
- * Called by the decoder when it has performed the requested command
- * (dc->command).  This function resets dc->command and wakes up the
- * player thread.
- *
- * @param decoder the decoder object
- */
-void
-decoder_command_finished(DecoderClient &decoder);
-
-/**
- * Call this when you have received the DecoderCommand::SEEK command.
- *
- * @param decoder the decoder object
- * @return the destination position for the seek in milliseconds
- */
-gcc_pure
-SongTime
-decoder_seek_time(DecoderClient &decoder);
-
-/**
- * Call this when you have received the DecoderCommand::SEEK command.
- *
- * @param decoder the decoder object
- * @return the destination position for the seek in frames
- */
-gcc_pure
-uint64_t
-decoder_seek_where_frame(DecoderClient &decoder);
-
-/**
- * Call this instead of decoder_command_finished() when seeking has
- * failed.
- *
- * @param decoder the decoder object
- */
-void
-decoder_seek_error(DecoderClient &decoder);
-
-/**
  * Open a new #InputStream and wait until it's ready.
  *
  * Throws #StopDecoder if DecoderCommand::STOP was received.

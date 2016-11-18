@@ -152,7 +152,7 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 
 	mpc_demux *demux = mpc_demux_init(&reader);
 	if (demux == nullptr) {
-		if (decoder_get_command(client) != DecoderCommand::STOP)
+		if (client.GetCommand() != DecoderCommand::STOP)
 			LogWarning(mpcdec_domain,
 				   "Not a valid musepack stream");
 		return;
@@ -180,16 +180,15 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 	DecoderCommand cmd = DecoderCommand::NONE;
 	do {
 		if (cmd == DecoderCommand::SEEK) {
-			mpc_int64_t where =
-				decoder_seek_where_frame(client);
+			mpc_int64_t where = client.GetSeekFrame();
 			bool success;
 
 			success = mpc_demux_seek_sample(demux, where)
 				== MPC_STATUS_OK;
 			if (success)
-				decoder_command_finished(client);
+				client.CommandFinished();
 			else
-				decoder_seek_error(client);
+				client.SeekError();
 		}
 
 		MPC_SAMPLE_FORMAT sample_buffer[MPC_DECODER_BUFFER_LENGTH];

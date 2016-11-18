@@ -260,12 +260,12 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 		cmd = decoder_data(client, nullptr, buffer, nbytes, info.bitrate);
 
 		if (cmd == DecoderCommand::SEEK) {
-			off_t c = decoder_seek_where_frame(client);
+			off_t c = client.GetSeekFrame();
 			c = mpg123_seek(handle, c, SEEK_SET);
 			if (c < 0)
-				decoder_seek_error(client);
+				client.SeekError();
 			else {
-				decoder_command_finished(client);
+				client.CommandFinished();
 				decoder_timestamp(client, c/(double)audio_format.sample_rate);
 			}
 

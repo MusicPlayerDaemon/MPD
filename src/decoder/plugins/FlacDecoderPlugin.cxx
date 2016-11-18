@@ -151,16 +151,15 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 					  std::move(data->tag));
 			data->tag.Clear();
 		} else
-			cmd = decoder_get_command(client);
+			cmd = client.GetCommand();
 
 		if (cmd == DecoderCommand::SEEK) {
-			FLAC__uint64 seek_sample =
-				decoder_seek_where_frame(client);
+			FLAC__uint64 seek_sample = client.GetSeekFrame();
 			if (FLAC__stream_decoder_seek_absolute(flac_dec, seek_sample)) {
 				data->position = 0;
-				decoder_command_finished(client);
+				client.CommandFinished();
 			} else
-				decoder_seek_error(client);
+				client.SeekError();
 		} else if (cmd == DecoderCommand::STOP)
 			break;
 
@@ -198,7 +197,7 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 		}
 
 		if (!FLAC__stream_decoder_process_single(flac_dec) &&
-		    decoder_get_command(client) == DecoderCommand::NONE) {
+		    client.GetCommand() == DecoderCommand::NONE) {
 			/* a failure that was not triggered by a
 			   decoder command */
 			flacPrintErroredState(FLAC__stream_decoder_get_state(flac_dec));

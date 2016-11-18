@@ -181,7 +181,7 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	output_buffer = new opus_int16[opus_output_buffer_frames
 				       * audio_format.channels];
 
-	auto cmd = decoder_get_command(client);
+	auto cmd = client.GetCommand();
 	if (cmd != DecoderCommand::NONE)
 		throw cmd;
 }
@@ -291,10 +291,10 @@ mpd_opus_stream_decode(DecoderClient &client,
 			break;
 		} catch (DecoderCommand cmd) {
 			if (cmd == DecoderCommand::SEEK) {
-				if (d.Seek(decoder_seek_where_frame(client)))
-					decoder_command_finished(client);
+				if (d.Seek(client.GetSeekFrame()))
+					client.CommandFinished();
 				else
-					decoder_seek_error(client);
+					client.SeekError();
 			} else if (cmd != DecoderCommand::NONE)
 				break;
 		}

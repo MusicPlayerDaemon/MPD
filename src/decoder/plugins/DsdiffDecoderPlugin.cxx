@@ -372,23 +372,23 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 	const unsigned buffer_frames = sizeof(buffer) / frame_size;
 	const size_t buffer_size = buffer_frames * frame_size;
 
-	auto cmd = decoder_get_command(client);
+	auto cmd = client.GetCommand();
 	for (offset_type remaining_bytes = total_bytes;
 	     remaining_bytes >= frame_size && cmd != DecoderCommand::STOP;) {
 		if (cmd == DecoderCommand::SEEK) {
-			uint64_t frame = decoder_seek_where_frame(client);
+			uint64_t frame = client.GetSeekFrame();
 			offset_type offset = FrameToOffset(frame, channels);
 			if (offset >= total_bytes) {
-				decoder_command_finished(client);
+				client.CommandFinished();
 				break;
 			}
 
 			if (dsdlib_skip_to(&client, is,
 					   start_offset + offset)) {
-				decoder_command_finished(client);
+				client.CommandFinished();
 				remaining_bytes = total_bytes - offset;
 			} else
-				decoder_seek_error(client);
+				client.SeekError();
 		}
 
 		/* see how much aligned data from the remaining chunk

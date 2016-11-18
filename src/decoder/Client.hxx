@@ -21,7 +21,11 @@
 #define MPD_DECODER_CLIENT_HXX
 
 #include "check.h"
+#include "DecoderCommand.hxx"
 #include "Chrono.hxx"
+#include "Compiler.h"
+
+#include <stdint.h>
 
 struct AudioFormat;
 
@@ -42,6 +46,44 @@ public:
 	 */
 	virtual void Ready(AudioFormat audio_format,
 			   bool seekable, SignedSongTime duration) = 0;
+
+	/**
+	 * Determines the pending decoder command.
+	 *
+	 * @return the current command, or DecoderCommand::NONE if there is no
+	 * command pending
+	 */
+	gcc_pure
+	virtual DecoderCommand GetCommand() = 0;
+
+	/**
+	 * Called by the decoder when it has performed the requested command
+	 * (dc->command).  This function resets dc->command and wakes up the
+	 * player thread.
+	 */
+	virtual void CommandFinished() = 0;
+
+	/**
+	 * Call this when you have received the DecoderCommand::SEEK command.
+	 *
+	 * @return the destination position for the seek in milliseconds
+	 */
+	gcc_pure
+	virtual SongTime GetSeekTime() = 0;
+
+	/**
+	 * Call this when you have received the DecoderCommand::SEEK command.
+	 *
+	 * @return the destination position for the seek in frames
+	 */
+	gcc_pure
+	virtual uint64_t GetSeekFrame() = 0;
+
+	/**
+	 * Call this instead of CommandFinished() when seeking has
+	 * failed.
+	 */
+	virtual void SeekError() = 0;
 };
 
 #endif

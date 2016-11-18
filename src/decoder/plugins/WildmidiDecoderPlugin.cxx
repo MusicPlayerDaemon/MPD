@@ -114,11 +114,10 @@ wildmidi_file_decode(DecoderClient &client, Path path_fs)
 		cmd = wildmidi_output(client, wm);
 
 		if (cmd == DecoderCommand::SEEK) {
-			unsigned long seek_where =
-				decoder_seek_where_frame(client);
+			unsigned long seek_where = client.GetSeekFrame();
 
 			WildMidi_FastSeek(wm, &seek_where);
-			decoder_command_finished(client);
+			client.CommandFinished();
 			cmd = DecoderCommand::NONE;
 		}
 

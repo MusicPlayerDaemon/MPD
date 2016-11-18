@@ -170,19 +170,19 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 
 	client.Ready(audio_format, can_seek, total_time);
 
-	DecoderCommand cmd = decoder_get_command(client);
+	DecoderCommand cmd = client.GetCommand();
 	while (cmd != DecoderCommand::STOP) {
 		if (cmd == DecoderCommand::SEEK) {
 			if (can_seek) {
-				auto where = decoder_seek_where_frame(client);
+				auto where = client.GetSeekFrame();
 
 				if (WavpackSeekSample(wpc, where)) {
-					decoder_command_finished(client);
+					client.CommandFinished();
 				} else {
-					decoder_seek_error(client);
+					client.SeekError();
 				}
 			} else {
-				decoder_seek_error(client);
+				client.SeekError();
 			}
 		}
 

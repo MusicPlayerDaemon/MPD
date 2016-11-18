@@ -164,50 +164,45 @@ decoder_lock_get_virtual_command(DecoderClient &client)
 }
 
 DecoderCommand
-decoder_get_command(DecoderClient &client)
+Decoder::GetCommand()
 {
-	auto &decoder = (Decoder &)client;
-	return decoder_lock_get_virtual_command(decoder);
+	return decoder_lock_get_virtual_command(*this);
 }
 
 void
-decoder_command_finished(DecoderClient &client)
+Decoder::CommandFinished()
 {
-	auto &decoder = (Decoder &)client;
-	DecoderControl &dc = decoder.dc;
-
 	const ScopeLock protect(dc.mutex);
 
-	assert(dc.command != DecoderCommand::NONE ||
-	       decoder.initial_seek_running);
+	assert(dc.command != DecoderCommand::NONE || initial_seek_running);
 	assert(dc.command != DecoderCommand::SEEK ||
-	       decoder.initial_seek_running ||
-	       dc.seek_error || decoder.seeking);
+	       initial_seek_running ||
+	       dc.seek_error || seeking);
 	assert(dc.pipe != nullptr);
 
-	if (decoder.initial_seek_running) {
-		assert(!decoder.seeking);
-		assert(decoder.current_chunk == nullptr);
+	if (initial_seek_running) {
+		assert(!seeking);
+		assert(current_chunk == nullptr);
 		assert(dc.pipe->IsEmpty());
 
-		decoder.initial_seek_running = false;
-		decoder.timestamp = dc.start_time.ToDoubleS();
+		initial_seek_running = false;
+		timestamp = dc.start_time.ToDoubleS();
 		return;
 	}
 
-	if (decoder.seeking) {
-		decoder.seeking = false;
+	if (seeking) {
+		seeking = false;
 
 		/* delete frames from the old song position */
 
-		if (decoder.current_chunk != nullptr) {
-			dc.buffer->Return(decoder.current_chunk);
-			decoder.current_chunk = nullptr;
+		if (current_chunk != nullptr) {
+			dc.buffer->Return(current_chunk);
+			current_chunk = nullptr;
 		}
 
 		dc.pipe->Clear(*dc.buffer);
 
-		decoder.timestamp = dc.seek_time.ToDoubleS();
+		timestamp = dc.seek_time.ToDoubleS();
 	}
 
 	dc.command = DecoderCommand::NONE;
@@ -215,53 +210,44 @@ decoder_command_finished(DecoderClient &client)
 }
 
 SongTime
-decoder_seek_time(DecoderClient &client)
+Decoder::GetSeekTime()
 {
-	auto &decoder = (Decoder &)client;
-	const DecoderControl &dc = decoder.dc;
-
 	assert(dc.pipe != nullptr);
 
-	if (decoder.initial_seek_running)
+	if (initial_seek_running)
 		return dc.start_time;
 
 	assert(dc.command == DecoderCommand::SEEK);
 
-	decoder.seeking = true;
+	seeking = true;
 
 	return dc.seek_time;
 }
 
 uint64_t
-decoder_seek_where_frame(DecoderClient &client)
+Decoder::GetSeekFrame()
 {
-	auto &decoder = (Decoder &)client;
-	const DecoderControl &dc = decoder.dc;
-
-	return decoder_seek_time(decoder).ToScale<uint64_t>(dc.in_audio_format.sample_rate);
+	return GetSeekTime().ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 }
 
 void
-decoder_seek_error(DecoderClient &client)
+Decoder::SeekError()
 {
-	auto &decoder = (Decoder &)client;
-	DecoderControl &dc = decoder.dc;
-
 	assert(dc.pipe != nullptr);
 
-	if (decoder.initial_seek_running) {
+	if (initial_seek_running) {
 		/* d'oh, we can't seek to the sub-song start position,
 		   what now? - no idea, ignoring the problem for now. */
-		decoder.initial_seek_running = false;
+		initial_seek_running = false;
 		return;
 	}
 
 	assert(dc.command == DecoderCommand::SEEK);
 
 	dc.seek_error = true;
-	decoder.seeking = false;
+	seeking = false;
 
-	decoder_command_finished(decoder);
+	CommandFinished();
 }
 
 InputStreamPtr

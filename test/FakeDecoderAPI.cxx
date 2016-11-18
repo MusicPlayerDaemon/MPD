@@ -46,30 +46,30 @@ FakeDecoder::Ready(const AudioFormat audio_format,
 }
 
 DecoderCommand
-decoder_get_command(gcc_unused DecoderClient &client)
+FakeDecoder::GetCommand()
 {
 	return DecoderCommand::NONE;
 }
 
 void
-decoder_command_finished(gcc_unused DecoderClient &client)
+FakeDecoder::CommandFinished()
 {
 }
 
 SongTime
-decoder_seek_time(gcc_unused DecoderClient &client)
+FakeDecoder::GetSeekTime()
 {
 	return SongTime();
 }
 
 uint64_t
-decoder_seek_where_frame(gcc_unused DecoderClient &client)
+FakeDecoder::GetSeekFrame()
 {
 	return 1;
 }
 
 void
-decoder_seek_error(gcc_unused DecoderClient &client)
+FakeDecoder::SeekError()
 {
 }
 

@@ -34,6 +34,11 @@ struct FakeDecoder final : DecoderClient {
 	/* virtual methods from DecoderClient */
 	void Ready(AudioFormat audio_format,
 		   bool seekable, SignedSongTime duration) override;
+	DecoderCommand GetCommand() override;
+	void CommandFinished() override;
+	SongTime GetSeekTime() override;
+	uint64_t GetSeekFrame() override;
+	void SeekError() override;
 };
 
 #endif

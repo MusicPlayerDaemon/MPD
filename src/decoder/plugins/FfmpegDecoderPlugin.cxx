@@ -717,11 +717,11 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 
 	uint64_t min_frame = 0;
 
-	DecoderCommand cmd = decoder_get_command(client);
+	DecoderCommand cmd = client.GetCommand();
 	while (cmd != DecoderCommand::STOP) {
 		if (cmd == DecoderCommand::SEEK) {
 			int64_t where =
-				ToFfmpegTime(decoder_seek_time(client),
+				ToFfmpegTime(client.GetSeekTime(),
 					     av_stream.time_base) +
 				start_time_fallback(av_stream);
 
@@ -730,11 +730,11 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 			   stamp, not after */
 			if (av_seek_frame(&format_context, audio_stream, where,
 					  AVSEEK_FLAG_ANY|AVSEEK_FLAG_BACKWARD) < 0)
-				decoder_seek_error(client);
+				client.SeekError();
 			else {
 				avcodec_flush_buffers(codec_context);
-				min_frame = decoder_seek_where_frame(client);
-				decoder_command_finished(client);
+				min_frame = client.GetSeekFrame();
+				client.CommandFinished();
 			}
 		}
 
@@ -757,7 +757,7 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 						 interleaved_buffer);
 			min_frame = 0;
 		} else
-			cmd = decoder_get_command(client);
+			cmd = client.GetCommand();
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(56, 25, 100)
 		av_packet_unref(&packet);

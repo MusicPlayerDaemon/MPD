@@ -36,7 +36,7 @@ FlacInput::Read(FLAC__byte buffer[], size_t *bytes)
 	if (r == 0) {
 		if (input_stream.LockIsEOF() ||
 		    (client != nullptr &&
-		     decoder_get_command(*client) != DecoderCommand::NONE))
+		     client->GetCommand() != DecoderCommand::NONE))
 			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 		else
 			return FLAC__STREAM_DECODER_READ_STATUS_ABORT;
@@ -84,8 +84,8 @@ FLAC__bool
 FlacInput::Eof()
 {
 	return (client != nullptr &&
-		decoder_get_command(*client) != DecoderCommand::NONE &&
-		decoder_get_command(*client) != DecoderCommand::SEEK) ||
+		client->GetCommand() != DecoderCommand::NONE &&
+		client->GetCommand() != DecoderCommand::SEEK) ||
 		input_stream.LockIsEOF();
 }
 
@@ -93,7 +93,7 @@ void
 FlacInput::Error(FLAC__StreamDecoderErrorStatus status)
 {
 	if (client == nullptr ||
-	    decoder_get_command(*client) != DecoderCommand::STOP)
+	    client->GetCommand() != DecoderCommand::STOP)
 		LogWarning(flac_domain,
 			   FLAC__StreamDecoderErrorStatusString[status]);
 }

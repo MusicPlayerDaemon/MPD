@@ -165,8 +165,8 @@ mod_decode(DecoderClient &client, InputStream &is)
 				   0);
 
 		if (cmd == DecoderCommand::SEEK) {
-			ModPlug_Seek(f, decoder_seek_time(client).ToMS());
-			decoder_command_finished(client);
+			ModPlug_Seek(f, client.GetSeekTime().ToMS());
+			client.CommandFinished();
 		}
 
 	} while (cmd != DecoderCommand::STOP);

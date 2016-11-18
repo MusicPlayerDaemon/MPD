@@ -259,23 +259,23 @@ dsf_decode_chunk(DecoderClient &client, InputStream &is,
 	const size_t block_size = channels * DSF_BLOCK_SIZE;
 	const offset_type start_offset = is.GetOffset();
 
-	auto cmd = decoder_get_command(client);
+	auto cmd = client.GetCommand();
 	for (offset_type i = 0; i < n_blocks && cmd != DecoderCommand::STOP;) {
 		if (cmd == DecoderCommand::SEEK) {
-			uint64_t frame = decoder_seek_where_frame(client);
+			uint64_t frame = client.GetSeekFrame();
 			offset_type block = FrameToBlock(frame);
 			if (block >= n_blocks) {
-				decoder_command_finished(client);
+				client.CommandFinished();
 				break;
 			}
 
 			offset_type offset =
 				start_offset + block * block_size;
 			if (dsdlib_skip_to(&client, is, offset)) {
-				decoder_command_finished(client);
+				client.CommandFinished();
 				i = block;
 			} else
-				decoder_seek_error(client);
+				client.SeekError();
 		}
 
 		/* worst-case buffer size */

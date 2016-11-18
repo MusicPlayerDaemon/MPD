@@ -373,7 +373,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned data_time = player.time();
 			unsigned target_time =
-				decoder_seek_time(client).ToScale(timebase);
+				client.GetSeekTime().ToScale(timebase);
 
 			/* can't rewind so return to zero and seek forward */
 			if(target_time<data_time) {
@@ -386,7 +386,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 			       player.play(buffer, ARRAY_SIZE(buffer)) > 0)
 				data_time = player.time();
 
-			decoder_command_finished(client);
+			client.CommandFinished();
 		}
 
 		if (end > 0 && player.time() >= end)

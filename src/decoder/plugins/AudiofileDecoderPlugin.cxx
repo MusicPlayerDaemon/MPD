@@ -228,10 +228,10 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 				   kbit_rate);
 
 		if (cmd == DecoderCommand::SEEK) {
-			AFframecount frame = decoder_seek_where_frame(client);
+			AFframecount frame = client.GetSeekFrame();
 			afSeekFrame(fh, AF_DEFAULT_TRACK, frame);
 
-			decoder_command_finished(client);
+			client.CommandFinished();
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);

@@ -166,18 +166,18 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 
 		cmd = !r.IsEmpty()
 			? decoder_data(client, is, r.data, r.size, 0)
-			: decoder_get_command(client);
+			: client.GetCommand();
 		if (cmd == DecoderCommand::SEEK) {
-			uint64_t frame = decoder_seek_where_frame(client);
+			uint64_t frame = client.GetSeekFrame();
 			offset_type offset = frame * frame_size;
 
 			try {
 				is.LockSeek(offset);
 				buffer.Clear();
-				decoder_command_finished(client);
+				client.CommandFinished();
 			} catch (const std::runtime_error &e) {
 				LogError(e);
-				decoder_seek_error(client);
+				client.SeekError();
 			}
 
 			cmd = DecoderCommand::NONE;

@@ -225,12 +225,12 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 				   buffer, num_frames * frame_size,
 				   0);
 		if (cmd == DecoderCommand::SEEK) {
-			sf_count_t c = decoder_seek_where_frame(client);
+			sf_count_t c = client.GetSeekFrame();
 			c = sf_seek(sf, c, SEEK_SET);
 			if (c < 0)
-				decoder_seek_error(client);
+				client.SeekError();
 			else
-				decoder_command_finished(client);
+				client.CommandFinished();
 			cmd = DecoderCommand::NONE;
 		}
 	} while (cmd == DecoderCommand::NONE);
