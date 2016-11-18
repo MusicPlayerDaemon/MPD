@@ -221,9 +221,9 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 		if (num_frames <= 0)
 			break;
 
-		cmd = decoder_data(client, is,
-				   buffer, num_frames * frame_size,
-				   0);
+		cmd = client.SubmitData(is,
+					buffer, num_frames * frame_size,
+					0);
 		if (cmd == DecoderCommand::SEEK) {
 			sf_count_t c = client.GetSeekFrame();
 			c = sf_seek(sf, c, SEEK_SET);

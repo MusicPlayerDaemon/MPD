@@ -75,7 +75,7 @@ wildmidi_output(DecoderClient &client, midi *wm)
 	if (length <= 0)
 		return DecoderCommand::STOP;
 
-	return decoder_data(client, nullptr, buffer, length, 0);
+	return client.SubmitData(nullptr, buffer, length, 0);
 }
 
 static void

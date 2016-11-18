@@ -177,7 +177,7 @@ mikmod_decoder_file_decode(DecoderClient &client, Path path_fs)
 	DecoderCommand cmd = DecoderCommand::NONE;
 	while (cmd == DecoderCommand::NONE && Player_Active()) {
 		ret = VC_WriteBytes(buffer, sizeof(buffer));
-		cmd = decoder_data(client, nullptr, buffer, ret, 0);
+		cmd = client.SubmitData(nullptr, buffer, ret, 0);
 	}
 
 	Player_Stop();

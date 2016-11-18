@@ -182,13 +182,14 @@ struct MadDecoder {
 	void UpdateTimerNextFrame();
 
 	/**
-	 * Sends the synthesized current frame via decoder_data().
+	 * Sends the synthesized current frame via
+	 * DecoderClient::SubmitData().
 	 */
 	DecoderCommand SendPCM(unsigned i, unsigned pcm_length);
 
 	/**
 	 * Synthesize the current frame and send it via
-	 * decoder_data().
+	 * DecoderClient::SubmitData().
 	 */
 	DecoderCommand SyncAndSend();
 
@@ -361,11 +362,11 @@ MadDecoder::ParseId3(size_t tagsize, Tag **mpd_tag)
 		ReplayGainInfo rgi;
 
 		if (parse_id3_replay_gain_info(rgi, id3_tag)) {
-			decoder_replay_gain(*client, &rgi);
+			client->SubmitReplayGain(&rgi);
 			found_replay_gain = true;
 		}
 
-		decoder_mixramp(*client, parse_id3_mixramp(id3_tag));
+		client->SubmitMixRamp(parse_id3_mixramp(id3_tag));
 	}
 
 	id3_tag_delete(id3_tag);
@@ -806,7 +807,7 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 				rgi.Clear();
 				rgi.tuples[REPLAY_GAIN_TRACK].gain = lame.track_gain;
 				rgi.tuples[REPLAY_GAIN_TRACK].peak = lame.peak;
-				decoder_replay_gain(*client, &rgi);
+				client->SubmitReplayGain(&rgi);
 			}
 		}
 	}
@@ -903,9 +904,9 @@ MadDecoder::SendPCM(unsigned i, unsigned pcm_length)
 				       MAD_NCHANNELS(&frame.header));
 		num_samples *= MAD_NCHANNELS(&frame.header);
 
-		auto cmd = decoder_data(*client, input_stream, output_buffer,
-					sizeof(output_buffer[0]) * num_samples,
-					bit_rate / 1000);
+		auto cmd = client->SubmitData(input_stream, output_buffer,
+					      sizeof(output_buffer[0]) * num_samples,
+					      bit_rate / 1000);
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
 	}
@@ -1010,8 +1011,8 @@ MadDecoder::Read()
 			ret = DecodeNextFrameHeader(&tag);
 
 			if (tag != nullptr) {
-				decoder_tag(*client, input_stream,
-					    std::move(*tag));
+				client->SubmitTag(input_stream,
+						  std::move(*tag));
 				delete tag;
 			}
 		} while (ret == DECODE_CONT);
@@ -1057,7 +1058,7 @@ mp3_decode(DecoderClient &client, InputStream &input_stream)
 		     data.total_time);
 
 	if (tag != nullptr) {
-		decoder_tag(client, input_stream, std::move(*tag));
+		client.SubmitTag(input_stream, std::move(*tag));
 		delete tag;
 	}
 

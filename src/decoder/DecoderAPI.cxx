@@ -382,12 +382,11 @@ decoder_skip(DecoderClient *client, InputStream &is, size_t size)
 }
 
 void
-decoder_timestamp(DecoderClient &client, double t)
+Decoder::SubmitTimestamp(double t)
 {
 	assert(t >= 0);
 
-	auto &decoder = (Decoder &)client;
-	decoder.timestamp = t;
+	timestamp = t;
 }
 
 /**
@@ -446,56 +445,52 @@ update_stream_tag(DecoderClient &client, InputStream *is)
 }
 
 DecoderCommand
-decoder_data(DecoderClient &client,
-	     InputStream *is,
-	     const void *data, size_t length,
-	     uint16_t kbit_rate)
+Decoder::SubmitData(InputStream *is,
+		    const void *data, size_t length,
+		    uint16_t kbit_rate)
 {
-	auto &decoder = (Decoder &)client;
-	DecoderControl &dc = decoder.dc;
-
 	assert(dc.state == DecoderState::DECODE);
 	assert(dc.pipe != nullptr);
 	assert(length % dc.in_audio_format.GetFrameSize() == 0);
 
-	DecoderCommand cmd = decoder_lock_get_virtual_command(decoder);
+	DecoderCommand cmd = decoder_lock_get_virtual_command(*this);
 
 	if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK ||
 	    length == 0)
 		return cmd;
 
-	assert(!decoder.initial_seek_pending);
-	assert(!decoder.initial_seek_running);
+	assert(!initial_seek_pending);
+	assert(!initial_seek_running);
 
 	/* send stream tags */
 
-	if (update_stream_tag(decoder, is)) {
-		if (decoder.decoder_tag != nullptr) {
+	if (update_stream_tag(*this, is)) {
+		if (decoder_tag != nullptr) {
 			/* merge with tag from decoder plugin */
-			Tag *tag = Tag::Merge(*decoder.decoder_tag,
-					      *decoder.stream_tag);
-			cmd = do_send_tag(decoder, *tag);
+			Tag *tag = Tag::Merge(*decoder_tag,
+					      *stream_tag);
+			cmd = do_send_tag(*this, *tag);
 			delete tag;
 		} else
 			/* send only the stream tag */
-			cmd = do_send_tag(decoder, *decoder.stream_tag);
+			cmd = do_send_tag(*this, *stream_tag);
 
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
 	}
 
-	if (decoder.convert != nullptr) {
+	if (convert != nullptr) {
 		assert(dc.in_audio_format != dc.out_audio_format);
 
 		try {
-			auto result = decoder.convert->Convert({data, length});
+			auto result = convert->Convert({data, length});
 			data = result.data;
 			length = result.size;
 		} catch (const std::runtime_error &e) {
 			/* the PCM conversion has failed - stop
 			   playback, since we have no better way to
 			   bail out */
-			decoder.error = std::current_exception();
+			error = std::current_exception();
 			return DecoderCommand::STOP;
 		}
 	} else {
@@ -503,10 +498,9 @@ decoder_data(DecoderClient &client,
 	}
 
 	while (length > 0) {
-		MusicChunk *chunk;
 		bool full;
 
-		chunk = decoder.GetChunk();
+		auto *chunk = GetChunk();
 		if (chunk == nullptr) {
 			assert(dc.command != DecoderCommand::NONE);
 			return dc.command;
@@ -514,12 +508,12 @@ decoder_data(DecoderClient &client,
 
 		const auto dest =
 			chunk->Write(dc.out_audio_format,
-				     SongTime::FromS(decoder.timestamp) -
+				     SongTime::FromS(timestamp) -
 				     dc.song->GetStartTime(),
 				     kbit_rate);
 		if (dest.IsEmpty()) {
 			/* the chunk is full, flush it */
-			decoder.FlushChunk();
+			FlushChunk();
 			continue;
 		}
 
@@ -534,17 +528,17 @@ decoder_data(DecoderClient &client,
 		full = chunk->Expand(dc.out_audio_format, nbytes);
 		if (full) {
 			/* the chunk is full, flush it */
-			decoder.FlushChunk();
+			FlushChunk();
 		}
 
 		data = (const uint8_t *)data + nbytes;
 		length -= nbytes;
 
-		decoder.timestamp += (double)nbytes /
+		timestamp += (double)nbytes /
 			dc.out_audio_format.GetTimeToSize();
 
 		if (dc.end_time.IsPositive() &&
-		    decoder.timestamp >= dc.end_time.ToDoubleS())
+		    timestamp >= dc.end_time.ToDoubleS())
 			/* the end of this range has been reached:
 			   stop decoding */
 			return DecoderCommand::STOP;
@@ -554,11 +548,8 @@ decoder_data(DecoderClient &client,
 }
 
 DecoderCommand
-decoder_tag(DecoderClient &client, InputStream *is,
-	    Tag &&tag)
+Decoder::SubmitTag(InputStream *is, Tag &&tag)
 {
-	auto &decoder = (Decoder &)client;
-	gcc_unused const DecoderControl &dc = decoder.dc;
 	DecoderCommand cmd;
 
 	assert(dc.state == DecoderState::DECODE);
@@ -566,16 +557,16 @@ decoder_tag(DecoderClient &client, InputStream *is,
 
 	/* save the tag */
 
-	delete decoder.decoder_tag;
-	decoder.decoder_tag = new Tag(std::move(tag));
+	delete decoder_tag;
+	decoder_tag = new Tag(std::move(tag));
 
 	/* check for a new stream tag */
 
-	update_stream_tag(decoder, is);
+	update_stream_tag(*this, is);
 
 	/* check if we're seeking */
 
-	if (decoder_prepare_initial_seek(decoder))
+	if (decoder_prepare_initial_seek(*this))
 		/* during initial seek, no music chunk must be created
 		   until seeking is finished; skip the rest of the
 		   function here */
@@ -583,28 +574,24 @@ decoder_tag(DecoderClient &client, InputStream *is,
 
 	/* send tag to music pipe */
 
-	if (decoder.stream_tag != nullptr) {
+	if (stream_tag != nullptr) {
 		/* merge with tag from input stream */
 		Tag *merged;
 
-		merged = Tag::Merge(*decoder.stream_tag,
-				    *decoder.decoder_tag);
-		cmd = do_send_tag(decoder, *merged);
+		merged = Tag::Merge(*stream_tag, *decoder_tag);
+		cmd = do_send_tag(*this, *merged);
 		delete merged;
 	} else
 		/* send only the decoder tag */
-		cmd = do_send_tag(decoder, *decoder.decoder_tag);
+		cmd = do_send_tag(*this, *decoder_tag);
 
 	return cmd;
 }
 
 void
-decoder_replay_gain(DecoderClient &client,
-		    const ReplayGainInfo *replay_gain_info)
+Decoder::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
 {
-	auto &decoder = (Decoder &)client;
-
-	if (replay_gain_info != nullptr) {
+	if (new_replay_gain_info != nullptr) {
 		static unsigned serial;
 		if (++serial == 0)
 			serial = 1;
@@ -614,32 +601,29 @@ decoder_replay_gain(DecoderClient &client,
 			if (rgm != REPLAY_GAIN_ALBUM)
 				rgm = REPLAY_GAIN_TRACK;
 
-			const auto &tuple = replay_gain_info->tuples[rgm];
+			const auto &tuple = new_replay_gain_info->tuples[rgm];
 			const auto scale =
 				tuple.CalculateScale(replay_gain_preamp,
 						     replay_gain_missing_preamp,
 						     replay_gain_limit);
-			decoder.dc.replay_gain_db = 20.0 * log10f(scale);
+			dc.replay_gain_db = 20.0 * log10f(scale);
 		}
 
-		decoder.replay_gain_info = *replay_gain_info;
-		decoder.replay_gain_serial = serial;
+		replay_gain_info = *new_replay_gain_info;
+		replay_gain_serial = serial;
 
-		if (decoder.current_chunk != nullptr) {
+		if (current_chunk != nullptr) {
 			/* flush the current chunk because the new
 			   replay gain values affect the following
 			   samples */
-			decoder.FlushChunk();
+			FlushChunk();
 		}
 	} else
-		decoder.replay_gain_serial = 0;
+		replay_gain_serial = 0;
 }
 
 void
-decoder_mixramp(DecoderClient &client, MixRampInfo &&mix_ramp)
+Decoder::SubmitMixRamp(MixRampInfo &&mix_ramp)
 {
-	auto &decoder = (Decoder &)client;
-	DecoderControl &dc = decoder.dc;
-
 	dc.SetMixRamp(std::move(mix_ramp));
 }

@@ -129,7 +129,7 @@ mpd_mpg123_id3v2_tag(DecoderClient &client, const mpg123_id3v2 &id3v2)
 	for (size_t i = 0, n = id3v2.comments; i < n; ++i)
 		AddTagItem(tag, TAG_COMMENT, id3v2.comment_list[i].text);
 
-	decoder_tag(client, nullptr, tag.Commit());
+	client.SubmitTag(nullptr, tag.Commit());
 }
 
 static void
@@ -154,10 +154,10 @@ mpd_mpg123_id3v2_extras(DecoderClient &client, const mpg123_id3v2 &id3v2)
 	}
 
 	if (found_replay_gain)
-		decoder_replay_gain(client, &replay_gain);
+		client.SubmitReplayGain(&replay_gain);
 
 	if (found_mixramp)
-		decoder_mixramp(client, std::move(mix_ramp));
+		client.SubmitMixRamp(std::move(mix_ramp));
 }
 
 static void
@@ -257,7 +257,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 
 		/* send to MPD */
 
-		cmd = decoder_data(client, nullptr, buffer, nbytes, info.bitrate);
+		cmd = client.SubmitData(nullptr, buffer, nbytes, info.bitrate);
 
 		if (cmd == DecoderCommand::SEEK) {
 			off_t c = client.GetSeekFrame();
@@ -266,7 +266,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 				client.SeekError();
 			else {
 				client.CommandFinished();
-				decoder_timestamp(client, c/(double)audio_format.sample_rate);
+				client.SubmitTimestamp(c / (double)audio_format.sample_rate);
 			}
 
 			cmd = DecoderCommand::NONE;

@@ -147,8 +147,8 @@ flac_decoder_loop(FlacDecoder *data, FLAC__StreamDecoder *flac_dec)
 	while (true) {
 		DecoderCommand cmd;
 		if (!data->tag.IsEmpty()) {
-			cmd = decoder_tag(client, data->GetInputStream(),
-					  std::move(data->tag));
+			cmd = client.SubmitTag(data->GetInputStream(),
+					       std::move(data->tag));
 			data->tag.Clear();
 		} else
 			cmd = client.GetCommand();

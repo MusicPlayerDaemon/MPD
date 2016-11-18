@@ -154,7 +154,8 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 
 		auto r = buffer.Read();
 		/* round down to the nearest frame size, because we
-		   must not pass partial frames to decoder_data() */
+		   must not pass partial frames to
+		   DecoderClient::SubmitData() */
 		r.size -= r.size % frame_size;
 		buffer.Consume(r.size);
 
@@ -165,7 +166,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 					 (uint16_t *)(r.data + r.size));
 
 		cmd = !r.IsEmpty()
-			? decoder_data(client, is, r.data, r.size, 0)
+			? client.SubmitData(is, r.data, r.size, 0)
 			: client.GetCommand();
 		if (cmd == DecoderCommand::SEEK) {
 			uint64_t frame = client.GetSeekFrame();

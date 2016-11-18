@@ -408,8 +408,8 @@ dsdiff_decode_chunk(DecoderClient &client, InputStream &is,
 		if (lsbitfirst)
 			bit_reverse_buffer(buffer, buffer + nbytes);
 
-		cmd = decoder_data(client, is, buffer, nbytes,
-				   sample_rate / 1000);
+		cmd = client.SubmitData(is, buffer, nbytes,
+					sample_rate / 1000);
 	}
 
 	return true;

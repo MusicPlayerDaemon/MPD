@@ -366,9 +366,9 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 		const size_t nbytes = result;
 #endif
 
-		decoder_timestamp(client, (double)player.time() / timebase);
+		client.SubmitTimestamp((double)player.time() / timebase);
 
-		cmd = decoder_data(client, nullptr, buffer, nbytes, 0);
+		cmd = client.SubmitData(nullptr, buffer, nbytes, 0);
 
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned data_time = player.time();

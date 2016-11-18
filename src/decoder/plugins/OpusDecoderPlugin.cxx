@@ -212,10 +212,10 @@ MPDOpusDecoder::HandleTags(const ogg_packet &packet)
 			 &rgi,
 			 add_tag_handler, &tag_builder) &&
 	    !tag_builder.IsEmpty()) {
-		decoder_replay_gain(client, &rgi);
+		client.SubmitReplayGain(&rgi);
 
 		Tag tag = tag_builder.Commit();
-		auto cmd = decoder_tag(client, input_stream, std::move(tag));
+		auto cmd = client.SubmitTag(input_stream, std::move(tag));
 		if (cmd != DecoderCommand::NONE)
 			throw cmd;
 	}
@@ -237,16 +237,15 @@ MPDOpusDecoder::HandleAudio(const ogg_packet &packet)
 
 	if (nframes > 0) {
 		const size_t nbytes = nframes * frame_size;
-		auto cmd = decoder_data(client, input_stream,
-					output_buffer, nbytes,
-					0);
+		auto cmd = client.SubmitData(input_stream,
+					     output_buffer, nbytes,
+					     0);
 		if (cmd != DecoderCommand::NONE)
 			throw cmd;
 
 		if (packet.granulepos > 0)
-			decoder_timestamp(client,
-					  double(packet.granulepos)
-					  / opus_sample_rate);
+			client.SubmitTimestamp(double(packet.granulepos)
+					       / opus_sample_rate);
 	}
 }
 

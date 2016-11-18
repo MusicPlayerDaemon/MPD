@@ -218,7 +218,8 @@ PtsToPcmFrame(uint64_t pts, const AVStream &stream,
 }
 
 /**
- * Invoke decoder_data() with the contents of an #AVFrame.
+ * Invoke DecoderClient::SubmitData() with the contents of an
+ * #AVFrame.
  */
 static DecoderCommand
 FfmpegSendFrame(DecoderClient &client, InputStream &is,
@@ -250,9 +251,9 @@ FfmpegSendFrame(DecoderClient &client, InputStream &is,
 		skip_bytes = 0;
 	}
 
-	return decoder_data(client, is,
-			    output_buffer.data, output_buffer.size,
-			    codec_context.bit_rate / 1000);
+	return client.SubmitData(is,
+				 output_buffer.data, output_buffer.size,
+				 codec_context.bit_rate / 1000);
 }
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 0)
@@ -330,9 +331,8 @@ ffmpeg_send_packet(DecoderClient &client, InputStream &is,
 			if (cur_frame < min_frame)
 				skip_bytes = pcm_frame_size * (min_frame - cur_frame);
 		} else
-			decoder_timestamp(client,
-					  FfmpegTimeToDouble(pts,
-							     stream.time_base));
+			client.SubmitTimestamp(FfmpegTimeToDouble(pts,
+								  stream.time_base));
 	}
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 37, 0)
@@ -540,10 +540,10 @@ FfmpegParseMetaData(DecoderClient &client,
 	FfmpegParseMetaData(format_context, audio_stream, rg, mr);
 
 	if (rg.IsDefined())
-		decoder_replay_gain(client, &rg);
+		client.SubmitReplayGain(&rg);
 
 	if (mr.IsDefined())
-		decoder_mixramp(client, std::move(mr));
+		client.SubmitMixRamp(std::move(mr));
 }
 
 static void
@@ -576,7 +576,7 @@ FfmpegScanTag(const AVFormatContext &format_context, int audio_stream,
 
 /**
  * Check if a new stream tag was received and pass it to
- * decoder_tag().
+ * DecoderClient::SubmitTag().
  */
 static void
 FfmpegCheckTag(DecoderClient &client, InputStream &is,
@@ -593,7 +593,7 @@ FfmpegCheckTag(DecoderClient &client, InputStream &is,
 	TagBuilder tag;
 	FfmpegScanTag(format_context, audio_stream, tag);
 	if (!tag.IsEmpty())
-		decoder_tag(client, is, tag.Commit());
+		client.SubmitTag(is, tag.Commit());
 }
 
 #endif

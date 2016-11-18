@@ -156,7 +156,7 @@ vorbis_send_comments(DecoderClient &client, InputStream &is,
 	if (!tag)
 		return;
 
-	decoder_tag(client, is, std::move(*tag));
+	client.SubmitTag(is, std::move(*tag));
 	delete tag;
 }
 
@@ -211,9 +211,9 @@ VorbisDecoder::SubmitSomePcm()
 	vorbis_synthesis_read(&dsp, n_frames);
 
 	const size_t nbytes = n_frames * frame_size;
-	auto cmd = decoder_data(client, input_stream,
-				buffer, nbytes,
-				0);
+	auto cmd = client.SubmitData(input_stream,
+				     buffer, nbytes,
+				     0);
 	if (cmd != DecoderCommand::NONE)
 		throw cmd;
 
@@ -252,7 +252,7 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 
 		ReplayGainInfo rgi;
 		if (vorbis_comments_to_replay_gain(rgi, vc.user_comments))
-			decoder_replay_gain(client, &rgi);
+			client.SubmitReplayGain(&rgi);
 	} else {
 		if (!dsp_initialized) {
 			dsp_initialized = true;
@@ -277,8 +277,7 @@ VorbisDecoder::OnOggPacket(const ogg_packet &_packet)
 
 #ifndef HAVE_TREMOR
 		if (packet.granulepos > 0)
-			decoder_timestamp(client,
-					  vorbis_granule_time(&dsp, packet.granulepos));
+			client.SubmitTimestamp(vorbis_granule_time(&dsp, packet.granulepos));
 #endif
 	}
 }

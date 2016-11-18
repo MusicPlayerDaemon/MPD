@@ -160,9 +160,9 @@ mod_decode(DecoderClient &client, InputStream &is)
 		if (ret <= 0)
 			break;
 
-		cmd = decoder_data(client, nullptr,
-				   audio_buffer, ret,
-				   0);
+		cmd = client.SubmitData(nullptr,
+					audio_buffer, ret,
+					0);
 
 		if (cmd == DecoderCommand::SEEK) {
 			ModPlug_Seek(f, client.GetSeekTime().ToMS());

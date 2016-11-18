@@ -190,7 +190,7 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 			return;
 		}
 
-		cmd = decoder_data(client, nullptr, buf, sizeof(buf), 0);
+		cmd = client.SubmitData(nullptr, buf, sizeof(buf), 0);
 		if (cmd == DecoderCommand::SEEK) {
 			unsigned where = client.GetSeekTime().ToMS();
 			gme_err = gme_seek(emu, where);

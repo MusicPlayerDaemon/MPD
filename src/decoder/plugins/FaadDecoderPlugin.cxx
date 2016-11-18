@@ -393,9 +393,9 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 
 		/* send PCM samples to MPD */
 
-		cmd = decoder_data(client, is, decoded,
-				   (size_t)frame_info.samples * 2,
-				   bit_rate);
+		cmd = client.SubmitData(is, decoded,
+					(size_t)frame_info.samples * 2,
+					bit_rate);
 	} while (cmd != DecoderCommand::STOP);
 }
 

@@ -196,9 +196,9 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		format_samples(bytes_per_sample, chunk,
 			       samples_got * audio_format.channels);
 
-		cmd = decoder_data(client, nullptr, chunk,
-				   samples_got * output_sample_size,
-				   bitrate);
+		cmd = client.SubmitData(nullptr, chunk,
+					samples_got * output_sample_size,
+					bitrate);
 	}
 }
 
@@ -563,7 +563,7 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
 
 	ReplayGainInfo rgi;
 	if (wavpack_replaygain(rgi, wpc))
-		decoder_replay_gain(client, &rgi);
+		client.SubmitReplayGain(&rgi);
 
 	wavpack_decode(client, wpc, true);
 

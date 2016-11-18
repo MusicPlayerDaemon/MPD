@@ -77,9 +77,9 @@ FlacDecoder::OnVorbisComment(const FLAC__StreamMetadata_VorbisComment &vc)
 {
 	ReplayGainInfo rgi;
 	if (flac_parse_replay_gain(rgi, vc))
-		decoder_replay_gain(*GetClient(), &rgi);
+		GetClient()->SubmitReplayGain(&rgi);
 
-	decoder_mixramp(*GetClient(), flac_parse_mixramp(vc));
+	GetClient()->SubmitMixRamp(flac_parse_mixramp(vc));
 
 	tag = flac_vorbis_comments_to_tag(&vc);
 }
@@ -148,9 +148,9 @@ FlacDecoder::OnWrite(const FLAC__Frame &frame,
 	unsigned bit_rate = nbytes * 8 * frame.header.sample_rate /
 		(1000 * frame.header.blocksize);
 
-	auto cmd = decoder_data(*GetClient(), GetInputStream(),
-				data.data, data.size,
-				bit_rate);
+	auto cmd = GetClient()->SubmitData(GetInputStream(),
+					   data.data, data.size,
+					   bit_rate);
 	switch (cmd) {
 	case DecoderCommand::NONE:
 	case DecoderCommand::START:

@@ -245,14 +245,14 @@ decoder_run_stream_fallback(Decoder &decoder, InputStream &is)
 
 /**
  * Attempt to load replay gain data, and pass it to
- * decoder_replay_gain().
+ * DecoderClient::SubmitReplayGain().
  */
 static void
-LoadReplayGain(Decoder &decoder, InputStream &is)
+LoadReplayGain(DecoderClient &client, InputStream &is)
 {
 	ReplayGainInfo info;
 	if (replay_gain_ape_read(is, info))
-		decoder_replay_gain(decoder, &info);
+		client.SubmitReplayGain(&info);
 }
 
 /**

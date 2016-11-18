@@ -289,9 +289,9 @@ dsf_decode_chunk(DecoderClient &client, InputStream &is,
 		uint8_t interleaved_buffer[MAX_CHANNELS * DSF_BLOCK_SIZE];
 		InterleaveDsfBlock(interleaved_buffer, buffer, channels);
 
-		cmd = decoder_data(client, is,
-				   interleaved_buffer, block_size,
-				   sample_rate / 1000);
+		cmd = client.SubmitData(is,
+					interleaved_buffer, block_size,
+					sample_rate / 1000);
 		++i;
 	}
 

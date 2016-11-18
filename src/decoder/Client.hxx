@@ -28,6 +28,10 @@
 #include <stdint.h>
 
 struct AudioFormat;
+struct Tag;
+struct ReplayGainInfo;
+class MixRampInfo;
+class InputStream;
 
 /**
  * An interface between the decoder plugin and the MPD core.
@@ -84,6 +88,64 @@ public:
 	 * failed.
 	 */
 	virtual void SeekError() = 0;
+
+	/**
+	 * Sets the time stamp for the next data chunk [seconds].  The MPD
+	 * core automatically counts it up, and a decoder plugin only needs to
+	 * use this function if it thinks that adding to the time stamp based
+	 * on the buffer size won't work.
+	 */
+	virtual void SubmitTimestamp(double t) = 0;
+
+	/**
+	 * This function is called by the decoder plugin when it has
+	 * successfully decoded block of input data.
+	 *
+	 * @param is an input stream which is buffering while we are waiting
+	 * for the player
+	 * @param data the source buffer
+	 * @param length the number of bytes in the buffer
+	 * @return the current command, or DecoderCommand::NONE if there is no
+	 * command pending
+	 */
+	virtual DecoderCommand SubmitData(InputStream *is,
+					  const void *data, size_t length,
+					  uint16_t kbit_rate) = 0;
+
+	DecoderCommand SubmitData(InputStream &is,
+				  const void *data, size_t length,
+				  uint16_t kbit_rate) {
+		return SubmitData(&is, data, length, kbit_rate);
+	}
+
+	/**
+	 * This function is called by the decoder plugin when it has
+	 * successfully decoded a tag.
+	 *
+	 * @param is an input stream which is buffering while we are waiting
+	 * for the player
+	 * @param tag the tag to send
+	 * @return the current command, or DecoderCommand::NONE if there is no
+	 * command pending
+	 */
+	virtual DecoderCommand SubmitTag(InputStream *is, Tag &&tag) = 0 ;
+
+	DecoderCommand SubmitTag(InputStream &is, Tag &&tag) {
+		return SubmitTag(&is, std::move(tag));
+	}
+
+	/**
+	 * Set replay gain values for the following chunks.
+	 *
+	 * @param replay_gain_info the replay_gain_info object; may be nullptr
+	 * to invalidate the previous replay gain values
+	 */
+	virtual void SubmitReplayGain(const ReplayGainInfo *replay_gain_info) = 0;
+
+	/**
+	 * Store MixRamp tags.
+	 */
+	virtual void SubmitMixRamp(MixRampInfo &&mix_ramp) = 0;
 };
 
 #endif

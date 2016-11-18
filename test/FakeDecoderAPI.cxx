@@ -127,16 +127,14 @@ decoder_skip(DecoderClient *client, InputStream &is, size_t size)
 }
 
 void
-decoder_timestamp(gcc_unused DecoderClient &client,
-		  gcc_unused double t)
+FakeDecoder::SubmitTimestamp(gcc_unused double t)
 {
 }
 
 DecoderCommand
-decoder_data(gcc_unused DecoderClient &client,
-	     gcc_unused InputStream *is,
-	     const void *data, size_t datalen,
-	     gcc_unused uint16_t kbit_rate)
+FakeDecoder::SubmitData(gcc_unused InputStream *is,
+			const void *data, size_t datalen,
+			gcc_unused uint16_t kbit_rate)
 {
 	static uint16_t prev_kbit_rate;
 	if (kbit_rate != prev_kbit_rate) {
@@ -149,9 +147,8 @@ decoder_data(gcc_unused DecoderClient &client,
 }
 
 DecoderCommand
-decoder_tag(gcc_unused DecoderClient &client,
-	    gcc_unused InputStream *is,
-	    Tag &&tag)
+FakeDecoder::SubmitTag(gcc_unused InputStream *is,
+		       Tag &&tag)
 {
 	fprintf(stderr, "TAG: duration=%f\n", tag.duration.ToDoubleS());
 
@@ -162,8 +159,7 @@ decoder_tag(gcc_unused DecoderClient &client,
 }
 
 void
-decoder_replay_gain(gcc_unused DecoderClient &client,
-		    const ReplayGainInfo *rgi)
+FakeDecoder::SubmitReplayGain(const ReplayGainInfo *rgi)
 {
 	const ReplayGainTuple *tuple = &rgi->tuples[REPLAY_GAIN_ALBUM];
 	if (tuple->IsDefined())
@@ -177,7 +173,7 @@ decoder_replay_gain(gcc_unused DecoderClient &client,
 }
 
 void
-decoder_mixramp(gcc_unused DecoderClient &client, gcc_unused MixRampInfo &&mix_ramp)
+FakeDecoder::SubmitMixRamp(gcc_unused MixRampInfo &&mix_ramp)
 {
 	fprintf(stderr, "MixRamp: start='%s' end='%s'\n",
 		mix_ramp.GetStart(), mix_ramp.GetEnd());

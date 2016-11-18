@@ -176,8 +176,7 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 		if (ret != 0)
 			break;
 
-		cmd = decoder_data(client, nullptr, buffer, sizeof(buffer),
-				   0);
+		cmd = client.SubmitData(nullptr, buffer, sizeof(buffer), 0);
 		if (cmd != DecoderCommand::NONE)
 			break;
 	}

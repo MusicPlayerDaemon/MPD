@@ -172,7 +172,7 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 	rgi.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
 	rgi.tuples[REPLAY_GAIN_TRACK].peak = pow(10, info.peak_title / 256. / 20) / 32767;
 
-	decoder_replay_gain(client, &rgi);
+	client.SubmitReplayGain(&rgi);
 
 	client.Ready(audio_format, is.IsSeekable(),
 		     SongTime::FromS(mpc_streaminfo_get_length(&info)));
@@ -213,9 +213,9 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 		long bit_rate = unsigned(frame.bits) * audio_format.sample_rate
 			/ (1000 * frame.samples);
 
-		cmd = decoder_data(client, is,
-				   chunk, ret * sizeof(chunk[0]),
-				   bit_rate);
+		cmd = client.SubmitData(is,
+					chunk, ret * sizeof(chunk[0]),
+					bit_rate);
 	} while (cmd != DecoderCommand::STOP);
 
 	mpc_demux_exit(demux);

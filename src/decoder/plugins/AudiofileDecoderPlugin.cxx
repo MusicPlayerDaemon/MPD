@@ -223,9 +223,9 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 		if (nframes <= 0)
 			break;
 
-		cmd = decoder_data(client, nullptr,
-				   chunk, nframes * frame_size,
-				   kbit_rate);
+		cmd = client.SubmitData(nullptr,
+					chunk, nframes * frame_size,
+					kbit_rate);
 
 		if (cmd == DecoderCommand::SEEK) {
 			AFframecount frame = client.GetSeekFrame();
