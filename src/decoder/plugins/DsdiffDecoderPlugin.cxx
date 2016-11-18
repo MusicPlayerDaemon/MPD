@@ -437,7 +437,7 @@ dsdiff_stream_decode(DecoderClient &client, InputStream &is)
 						      audio_format.sample_rate);
 
 	/* success: file was recognized */
-	decoder_initialized(client, audio_format, is.IsSeekable(), songtime);
+	client.Ready(audio_format, is.IsSeekable(), songtime);
 
 	/* every iteration of the following loop decodes one "DSD"
 	   chunk from a DFF file */

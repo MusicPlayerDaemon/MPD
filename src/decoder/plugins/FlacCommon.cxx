@@ -52,9 +52,9 @@ FlacDecoder::Initialize(unsigned sample_rate, unsigned bits_per_sample,
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(*GetClient(), audio_format,
-			    GetInputStream().IsSeekable(),
-			    duration);
+	GetClient()->Ready(audio_format,
+			   GetInputStream().IsSeekable(),
+			   duration);
 
 	initialized = true;
 	return true;

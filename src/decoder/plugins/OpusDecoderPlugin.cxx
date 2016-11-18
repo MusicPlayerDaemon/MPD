@@ -93,7 +93,7 @@ public:
 	~MPDOpusDecoder();
 
 	/**
-	 * Has decoder_initialized() been called yet?
+	 * Has DecoderClient::Ready() been called yet?
 	 */
 	bool IsInitialized() const {
 		return previous_channels != 0;
@@ -175,8 +175,7 @@ MPDOpusDecoder::OnOggBeginning(const ogg_packet &packet)
 	previous_channels = channels;
 	const AudioFormat audio_format(opus_sample_rate,
 				       SampleFormat::S16, channels);
-	decoder_initialized(client, audio_format,
-			    eos_granulepos > 0, duration);
+	client.Ready(audio_format, eos_granulepos > 0, duration);
 	frame_size = audio_format.GetFrameSize();
 
 	output_buffer = new opus_int16[opus_output_buffer_frames

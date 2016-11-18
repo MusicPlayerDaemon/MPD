@@ -151,9 +151,8 @@ mod_decode(DecoderClient &client, InputStream &is)
 	static constexpr AudioFormat audio_format(44100, SampleFormat::S16, 2);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(client, audio_format,
-			    is.IsSeekable(),
-			    SongTime::FromMS(ModPlug_GetLength(f)));
+	client.Ready(audio_format, is.IsSeekable(),
+		     SongTime::FromMS(ModPlug_GetLength(f)));
 
 	DecoderCommand cmd;
 	do {

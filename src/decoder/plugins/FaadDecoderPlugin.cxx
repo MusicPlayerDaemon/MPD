@@ -339,7 +339,7 @@ faad_stream_decode(DecoderClient &client, InputStream &is,
 
 	/* initialize the MPD core */
 
-	decoder_initialized(client, audio_format, false, total_time);
+	client.Ready(audio_format, false, total_time);
 
 	/* the decoder loop */
 

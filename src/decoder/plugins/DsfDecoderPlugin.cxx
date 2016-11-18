@@ -316,7 +316,7 @@ dsf_stream_decode(DecoderClient &client, InputStream &is)
 						      audio_format.sample_rate);
 
 	/* success: file was recognized */
-	decoder_initialized(client, audio_format, is.IsSeekable(), songtime);
+	client.Ready(audio_format, is.IsSeekable(), songtime);
 
 	dsf_decode_chunk(client, is, metadata.channels,
 			 metadata.sample_rate,

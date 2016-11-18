@@ -30,6 +30,7 @@
 // IWYU pragma: begin_exports
 
 #include "check.h"
+#include "Client.hxx"
 #include "input/Ptr.hxx"
 #include "DecoderCommand.hxx"
 #include "DecoderPlugin.hxx"
@@ -52,22 +53,6 @@ class DecoderClient;
  * stack frames.
  */
 class StopDecoder {};
-
-/**
- * Notify the player thread that it has finished initialization and
- * that it has read the song's meta data.
- *
- * @param decoder the decoder object
- * @param audio_format the audio format which is going to be sent to
- * decoder_data()
- * @param seekable true if the song is seekable
- * @param duration the total duration of this song; negative if
- * unknown
- */
-void
-decoder_initialized(DecoderClient &decoder,
-		    AudioFormat audio_format,
-		    bool seekable, SignedSongTime duration);
 
 /**
  * Determines the pending decoder command.

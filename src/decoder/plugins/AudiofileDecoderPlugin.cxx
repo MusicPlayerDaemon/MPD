@@ -210,7 +210,7 @@ audiofile_stream_decode(DecoderClient &client, InputStream &is)
 	const unsigned frame_size = (unsigned)
 		afGetVirtualFrameSize(fh, AF_DEFAULT_TRACK, true);
 
-	decoder_initialized(client, audio_format, true, total_time);
+	client.Ready(audio_format, true, total_time);
 
 	DecoderCommand cmd;
 	do {

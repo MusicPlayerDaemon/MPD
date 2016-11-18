@@ -30,6 +30,10 @@ struct FakeDecoder final : DecoderClient {
 	Cond cond;
 
 	bool initialized = false;
+
+	/* virtual methods from DecoderClient */
+	void Ready(AudioFormat audio_format,
+		   bool seekable, SignedSongTime duration) override;
 };
 
 #endif

@@ -205,8 +205,7 @@ sndfile_stream_decode(DecoderClient &client, InputStream &is)
 				 sndfile_sample_format(info),
 				 info.channels);
 
-	decoder_initialized(client, audio_format, info.seekable,
-			    sndfile_duration(info));
+	client.Ready(audio_format, info.seekable, sndfile_duration(info));
 
 	char buffer[16384];
 

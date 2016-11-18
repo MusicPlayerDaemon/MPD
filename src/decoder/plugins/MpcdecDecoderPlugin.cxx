@@ -174,9 +174,8 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 
 	decoder_replay_gain(client, &rgi);
 
-	decoder_initialized(client, audio_format,
-			    is.IsSeekable(),
-			    SongTime::FromS(mpc_streaminfo_get_length(&info)));
+	client.Ready(audio_format, is.IsSeekable(),
+		     SongTime::FromS(mpc_streaminfo_get_length(&info)));
 
 	DecoderCommand cmd = DecoderCommand::NONE;
 	do {

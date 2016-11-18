@@ -175,8 +175,7 @@ VorbisDecoder::SubmitInit()
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(client, audio_format,
-			    eos_granulepos > 0, duration);
+	client.Ready(audio_format, eos_granulepos > 0, duration);
 }
 
 bool

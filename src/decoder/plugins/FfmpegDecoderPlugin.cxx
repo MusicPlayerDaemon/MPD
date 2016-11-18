@@ -689,8 +689,7 @@ FfmpegDecode(DecoderClient &client, InputStream &input,
 	const SignedSongTime total_time =
 		FromFfmpegTimeChecked(av_stream.duration, av_stream.time_base);
 
-	decoder_initialized(client, audio_format,
-			    input.IsSeekable(), total_time);
+	client.Ready(audio_format, input.IsSeekable(), total_time);
 
 	FfmpegParseMetaData(client, format_context, audio_stream);
 

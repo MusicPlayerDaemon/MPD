@@ -160,8 +160,7 @@ fluidsynth_file_decode(DecoderClient &client, Path path_fs)
 	   MPD core */
 
 	const AudioFormat audio_format(sample_rate, SampleFormat::S16, 2);
-	decoder_initialized(client, audio_format, false,
-			    SignedSongTime::Negative());
+	client.Ready(audio_format, false, SignedSongTime::Negative());
 
 	DecoderCommand cmd;
 	while (fluid_player_get_status(player) == FLUID_PLAYER_PLAYING) {

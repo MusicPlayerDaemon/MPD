@@ -168,7 +168,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 	const uint32_t samples_requested = ARRAY_SIZE(chunk) /
 		audio_format.channels;
 
-	decoder_initialized(client, audio_format, can_seek, total_time);
+	client.Ready(audio_format, can_seek, total_time);
 
 	DecoderCommand cmd = decoder_get_command(client);
 	while (cmd != DecoderCommand::STOP) {

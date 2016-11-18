@@ -116,6 +116,10 @@ struct Decoder final : DecoderClient {
 	 * Caller must not lock the #DecoderControl object.
 	 */
 	void FlushChunk();
+
+	/* virtual methods from DecoderClient */
+	void Ready(AudioFormat audio_format,
+		   bool seekable, SignedSongTime duration) override;
 };
 
 #endif

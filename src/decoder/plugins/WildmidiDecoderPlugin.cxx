@@ -103,7 +103,7 @@ wildmidi_file_decode(DecoderClient &client, Path path_fs)
 		SongTime::FromScale<uint64_t>(info->approx_total_samples,
 					      WILDMIDI_SAMPLE_RATE);
 
-	decoder_initialized(client, audio_format, true, duration);
+	client.Ready(audio_format, true, duration);
 
 	DecoderCommand cmd;
 	do {

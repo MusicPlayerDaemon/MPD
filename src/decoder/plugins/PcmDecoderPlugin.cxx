@@ -143,8 +143,7 @@ pcm_stream_decode(DecoderClient &client, InputStream &is)
 						      audio_format.sample_rate)
 		: SignedSongTime::Negative();
 
-	decoder_initialized(client, audio_format,
-			    is.IsSeekable(), total_time);
+	client.Ready(audio_format, is.IsSeekable(), total_time);
 
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 

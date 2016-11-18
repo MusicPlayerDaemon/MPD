@@ -21,11 +21,27 @@
 #define MPD_DECODER_CLIENT_HXX
 
 #include "check.h"
+#include "Chrono.hxx"
+
+struct AudioFormat;
 
 /**
  * An interface between the decoder plugin and the MPD core.
  */
 class DecoderClient {
+public:
+	/**
+	 * Notify the client that it has finished initialization and
+	 * that it has read the song's meta data.
+	 *
+	 * @param audio_format the audio format which is going to be
+	 * sent to SubmitData()
+	 * @param seekable true if the song is seekable
+	 * @param duration the total duration of this song; negative if
+	 * unknown
+	 */
+	virtual void Ready(AudioFormat audio_format,
+			   bool seekable, SignedSongTime duration) = 0;
 };
 
 #endif

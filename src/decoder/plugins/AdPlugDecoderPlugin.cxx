@@ -61,8 +61,8 @@ adplug_file_decode(DecoderClient &client, Path path_fs)
 	const AudioFormat audio_format(sample_rate, SampleFormat::S16, 2);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(client, audio_format, false,
-			    SongTime::FromMS(player->songlength()));
+	client.Ready(audio_format, false,
+		     SongTime::FromMS(player->songlength()));
 
 	DecoderCommand cmd;
 

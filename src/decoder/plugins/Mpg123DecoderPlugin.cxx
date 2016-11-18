@@ -210,7 +210,7 @@ mpd_mpg123_file_decode(DecoderClient &client, Path path_fs)
 		SongTime::FromScale<uint64_t>(num_samples,
 					      audio_format.sample_rate);
 
-	decoder_initialized(client, audio_format, true, duration);
+	client.Ready(audio_format, true, duration);
 
 	struct mpg123_frameinfo info;
 	if (mpg123_info(handle, &info) != MPG123_OK) {

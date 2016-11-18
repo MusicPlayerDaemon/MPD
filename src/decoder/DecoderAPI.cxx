@@ -38,21 +38,18 @@
 #include <math.h>
 
 void
-decoder_initialized(DecoderClient &client,
-		    const AudioFormat audio_format,
-		    bool seekable, SignedSongTime duration)
+Decoder::Ready(const AudioFormat audio_format,
+	       bool seekable, SignedSongTime duration)
 {
-	auto &decoder = (Decoder &)client;
-	DecoderControl &dc = decoder.dc;
 	struct audio_format_string af_string;
 
 	assert(dc.state == DecoderState::START);
 	assert(dc.pipe != nullptr);
 	assert(dc.pipe->IsEmpty());
-	assert(decoder.convert == nullptr);
-	assert(decoder.stream_tag == nullptr);
-	assert(decoder.decoder_tag == nullptr);
-	assert(!decoder.seeking);
+	assert(convert == nullptr);
+	assert(stream_tag == nullptr);
+	assert(decoder_tag == nullptr);
+	assert(!seeking);
 	assert(audio_format.IsDefined());
 	assert(audio_format.IsValid());
 
@@ -71,13 +68,13 @@ decoder_initialized(DecoderClient &client,
 			    audio_format_to_string(dc.out_audio_format,
 						   &af_string));
 
-		decoder.convert = new PcmConvert();
+		convert = new PcmConvert();
 
 		try {
-			decoder.convert->Open(dc.in_audio_format,
+			convert->Open(dc.in_audio_format,
 					      dc.out_audio_format);
 		} catch (...) {
-			decoder.error = std::current_exception();
+			error = std::current_exception();
 		}
 	}
 

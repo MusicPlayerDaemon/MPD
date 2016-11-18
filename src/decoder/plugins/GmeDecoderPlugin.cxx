@@ -171,7 +171,7 @@ gme_file_decode(DecoderClient &client, Path path_fs)
 						   SampleFormat::S16,
 						   GME_CHANNELS);
 
-	decoder_initialized(client, audio_format, true, song_len);
+	client.Ready(audio_format, true, song_len);
 
 	gme_err = gme_start_track(emu, container.track);
 	if (gme_err != nullptr)

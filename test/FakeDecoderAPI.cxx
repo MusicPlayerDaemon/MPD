@@ -29,22 +29,20 @@
 #include <stdio.h>
 
 void
-decoder_initialized(DecoderClient &client,
-		    const AudioFormat audio_format,
-		    gcc_unused bool seekable,
-		    SignedSongTime duration)
+FakeDecoder::Ready(const AudioFormat audio_format,
+		   gcc_unused bool seekable,
+		   SignedSongTime duration)
 {
-	auto &decoder = (FakeDecoder &)client;
 	struct audio_format_string af_string;
 
-	assert(!decoder.initialized);
+	assert(!initialized);
 	assert(audio_format.IsValid());
 
 	fprintf(stderr, "audio_format=%s duration=%f\n",
 		audio_format_to_string(audio_format, &af_string),
 		duration.ToDoubleS());
 
-	decoder.initialized = true;
+	initialized = true;
 }
 
 DecoderCommand

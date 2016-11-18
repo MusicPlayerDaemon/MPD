@@ -337,7 +337,7 @@ sidplay_file_decode(DecoderClient &client, Path path_fs)
 	const AudioFormat audio_format(48000, SampleFormat::S16, channels);
 	assert(audio_format.IsValid());
 
-	decoder_initialized(client, audio_format, true, duration);
+	client.Ready(audio_format, true, duration);
 
 	/* .. and play */
 

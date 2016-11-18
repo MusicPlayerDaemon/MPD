@@ -1050,12 +1050,11 @@ mp3_decode(DecoderClient &client, InputStream &input_stream)
 
 	data.AllocateBuffers();
 
-	decoder_initialized(client,
-			    CheckAudioFormat(data.frame.header.samplerate,
-					     SampleFormat::S24_P32,
-					     MAD_NCHANNELS(&data.frame.header)),
-			    input_stream.IsSeekable(),
-			    data.total_time);
+	client.Ready(CheckAudioFormat(data.frame.header.samplerate,
+				      SampleFormat::S24_P32,
+				      MAD_NCHANNELS(&data.frame.header)),
+		     input_stream.IsSeekable(),
+		     data.total_time);
 
 	if (tag != nullptr) {
 		decoder_tag(client, input_stream, std::move(*tag));
