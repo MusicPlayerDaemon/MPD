@@ -35,10 +35,6 @@
 #include <new>
 #include <utility>
 
-#if GCC_OLDER_THAN(4,8)
-#include <type_traits>
-#endif
-
 #include <assert.h>
 
 #if CLANG_OR_GCC_VERSION(4,7)

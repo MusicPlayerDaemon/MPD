@@ -53,6 +53,8 @@ ver 0.20 (not yet released)
   - proxy: add TCP keepalive option
 * update
   - apply .mpdignore matches to subdirectories
+* switch the code base to C++14
+  - GCC 4.9 or clang 3.4 (or newer) recommended
 
 ver 0.19.20 (not yet released)
 * decoder

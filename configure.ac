@@ -186,14 +186,7 @@ dnl ---------------------------------------------------------------------------
 dnl Language Checks
 dnl ---------------------------------------------------------------------------
 
-AC_CXX_COMPILE_STDCXX_0X
-if test "$ax_cv_cxx_compile_cxx0x_native" != yes; then
-	if test "$ax_cv_cxx_compile_cxx0x_gxx" = yes; then
-	   	AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x"
-	elif test "$ax_cv_cxx_compile_cxx0x_cxx" = yes; then
-	   	AM_CXXFLAGS="$AM_CXXFLAGS -std=c++0x"
-	fi
-fi
+AX_CXX_COMPILE_STDCXX_14([noext], [mandatory])
 
 dnl ---------------------------------------------------------------------------
 dnl Header/Library Checks

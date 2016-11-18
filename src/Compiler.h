@@ -62,8 +62,8 @@
 #    error Sorry, your clang version is too old.  You need at least version 3.1.
 #  endif
 #elif defined(__GNUC__)
-#  if GCC_OLDER_THAN(4,7)
-#    error Sorry, your gcc version is too old.  You need at least version 4.6.
+#  if GCC_OLDER_THAN(4,9)
+#    error Sorry, your gcc version is too old.  You need at least version 4.9.
 #  endif
 #else
 #  warning Untested compiler.  Use at your own risk!
@@ -97,8 +97,6 @@
 #define gcc_likely(x) __builtin_expect (!!(x), 1)
 #define gcc_unlikely(x) __builtin_expect (!!(x), 0)
 
-#define gcc_aligned(n) __attribute__((aligned(n)))
-
 #define gcc_visibility_hidden __attribute__((visibility("hidden")))
 #define gcc_visibility_default __attribute__((visibility("default")))
 
@@ -125,8 +123,6 @@
 
 #define gcc_likely(x) (x)
 #define gcc_unlikely(x) (x)
-
-#define gcc_aligned(n)
 
 #define gcc_visibility_hidden
 #define gcc_visibility_default
@@ -168,17 +164,7 @@
 
 #if defined(__cplusplus)
 
-/* support for C++11 "override" was added in gcc 4.7 */
-#if GCC_OLDER_THAN(4,7)
-#define override
-#define final
-#endif
-
-#if CLANG_OR_GCC_VERSION(4,8)
 #define gcc_alignas(T, fallback) alignas(T)
-#else
-#define gcc_alignas(T, fallback) gcc_aligned(fallback)
-#endif
 
 #endif
 
