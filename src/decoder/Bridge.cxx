@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "DecoderInternal.hxx"
+#include "Bridge.hxx"
 #include "DecoderControl.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "MusicPipe.hxx"
@@ -28,7 +28,7 @@
 
 #include <assert.h>
 
-Decoder::~Decoder()
+DecoderBridge::~DecoderBridge()
 {
 	/* caller must flush the chunk */
 	assert(current_chunk == nullptr);
@@ -64,7 +64,7 @@ LockNeedChunks(DecoderControl &dc)
 }
 
 MusicChunk *
-Decoder::GetChunk()
+DecoderBridge::GetChunk()
 {
 	DecoderCommand cmd;
 
@@ -88,7 +88,7 @@ Decoder::GetChunk()
 }
 
 void
-Decoder::FlushChunk()
+DecoderBridge::FlushChunk()
 {
 	assert(!seeking);
 	assert(!initial_seek_running);

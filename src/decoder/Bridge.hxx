@@ -17,8 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_DECODER_INTERNAL_HXX
-#define MPD_DECODER_INTERNAL_HXX
+#ifndef MPD_DECODER_BRIDGE_HXX
+#define MPD_DECODER_BRIDGE_HXX
 
 #include "Client.hxx"
 #include "ReplayGainInfo.hxx"
@@ -30,7 +30,12 @@ struct MusicChunk;
 struct DecoderControl;
 struct Tag;
 
-struct Decoder final : DecoderClient {
+/**
+ * A bridge between the #DecoderClient interface and the MPD core
+ * (#DecoderControl, #MusicPipe etc.).
+ */
+class DecoderBridge final : public DecoderClient {
+public:
 	DecoderControl &dc;
 
 	/**
@@ -94,12 +99,13 @@ struct Decoder final : DecoderClient {
 	 */
 	std::exception_ptr error;
 
-	Decoder(DecoderControl &_dc, bool _initial_seek_pending, Tag *_tag)
+	DecoderBridge(DecoderControl &_dc, bool _initial_seek_pending,
+		      Tag *_tag)
 		:dc(_dc),
 		 initial_seek_pending(_initial_seek_pending),
 		 song_tag(_tag) {}
 
-	~Decoder();
+	~DecoderBridge();
 
 	/**
 	 * Returns the current chunk the decoder writes to, or allocates a new

@@ -102,7 +102,7 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderAPI.cxx src/decoder/DecoderAPI.hxx \
 	src/decoder/Client.hxx \
 	src/decoder/DecoderPlugin.hxx \
-	src/decoder/DecoderInternal.cxx src/decoder/DecoderInternal.hxx \
+	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \
 	src/decoder/DecoderPrint.cxx src/decoder/DecoderPrint.hxx \
 	src/filter/FilterConfig.cxx src/filter/FilterConfig.hxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterPlugin.hxx \

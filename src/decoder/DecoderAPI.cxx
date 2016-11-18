@@ -27,7 +27,7 @@
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"
 #include "DecoderControl.hxx"
-#include "DecoderInternal.hxx"
+#include "Bridge.hxx"
 #include "DetachedSong.hxx"
 #include "input/InputStream.hxx"
 #include "util/ConstBuffer.hxx"
@@ -38,8 +38,8 @@
 #include <math.h>
 
 void
-Decoder::Ready(const AudioFormat audio_format,
-	       bool seekable, SignedSongTime duration)
+DecoderBridge::Ready(const AudioFormat audio_format,
+		     bool seekable, SignedSongTime duration)
 {
 	struct audio_format_string af_string;
 
@@ -89,10 +89,9 @@ Decoder::Ready(const AudioFormat audio_format,
  */
 gcc_pure
 static bool
-decoder_prepare_initial_seek(DecoderClient &client)
+decoder_prepare_initial_seek(DecoderBridge &bridge)
 {
-	auto &decoder = (Decoder &)client;
-	const DecoderControl &dc = decoder.dc;
+	const DecoderControl &dc = bridge.dc;
 	assert(dc.pipe != nullptr);
 
 	if (dc.state != DecoderState::DECODE)
@@ -101,30 +100,30 @@ decoder_prepare_initial_seek(DecoderClient &client)
 		   virtual "SEEK" command */
 		return false;
 
-	if (decoder.initial_seek_running)
+	if (bridge.initial_seek_running)
 		/* initial seek has already begun - override any other
 		   command */
 		return true;
 
-	if (decoder.initial_seek_pending) {
+	if (bridge.initial_seek_pending) {
 		if (!dc.seekable) {
 			/* seeking is not possible */
-			decoder.initial_seek_pending = false;
+			bridge.initial_seek_pending = false;
 			return false;
 		}
 
 		if (dc.command == DecoderCommand::NONE) {
 			/* begin initial seek */
 
-			decoder.initial_seek_pending = false;
-			decoder.initial_seek_running = true;
+			bridge.initial_seek_pending = false;
+			bridge.initial_seek_running = true;
 			return true;
 		}
 
 		/* skip initial seek when there's another command
 		   (e.g. STOP) */
 
-		decoder.initial_seek_pending = false;
+		bridge.initial_seek_pending = false;
 	}
 
 	return false;
@@ -137,18 +136,16 @@ decoder_prepare_initial_seek(DecoderClient &client)
  */
 gcc_pure
 static DecoderCommand
-decoder_get_virtual_command(DecoderClient &client)
+decoder_get_virtual_command(DecoderBridge &bridge)
 {
-	auto &decoder = (Decoder &)client;
-
-	if (decoder.error)
+	if (bridge.error)
 		/* an error has occurred: stop the decoder plugin */
 		return DecoderCommand::STOP;
 
-	const DecoderControl &dc = decoder.dc;
+	const DecoderControl &dc = bridge.dc;
 	assert(dc.pipe != nullptr);
 
-	if (decoder_prepare_initial_seek(decoder))
+	if (decoder_prepare_initial_seek(bridge))
 		return DecoderCommand::SEEK;
 
 	return dc.command;
@@ -156,21 +153,20 @@ decoder_get_virtual_command(DecoderClient &client)
 
 gcc_pure
 static DecoderCommand
-decoder_lock_get_virtual_command(DecoderClient &client)
+decoder_lock_get_virtual_command(DecoderBridge &bridge)
 {
-	auto &decoder = (Decoder &)client;
-	const ScopeLock protect(decoder.dc.mutex);
-	return decoder_get_virtual_command(decoder);
+	const ScopeLock protect(bridge.dc.mutex);
+	return decoder_get_virtual_command(bridge);
 }
 
 DecoderCommand
-Decoder::GetCommand()
+DecoderBridge::GetCommand()
 {
 	return decoder_lock_get_virtual_command(*this);
 }
 
 void
-Decoder::CommandFinished()
+DecoderBridge::CommandFinished()
 {
 	const ScopeLock protect(dc.mutex);
 
@@ -210,7 +206,7 @@ Decoder::CommandFinished()
 }
 
 SongTime
-Decoder::GetSeekTime()
+DecoderBridge::GetSeekTime()
 {
 	assert(dc.pipe != nullptr);
 
@@ -225,13 +221,13 @@ Decoder::GetSeekTime()
 }
 
 uint64_t
-Decoder::GetSeekFrame()
+DecoderBridge::GetSeekFrame()
 {
 	return GetSeekTime().ToScale<uint64_t>(dc.in_audio_format.sample_rate);
 }
 
 void
-Decoder::SeekError()
+DecoderBridge::SeekError()
 {
 	assert(dc.pipe != nullptr);
 
@@ -251,7 +247,7 @@ Decoder::SeekError()
 }
 
 InputStreamPtr
-Decoder::OpenUri(const char *uri)
+DecoderBridge::OpenUri(const char *uri)
 {
 	assert(dc.state == DecoderState::START ||
 	       dc.state == DecoderState::DECODE);
@@ -280,24 +276,24 @@ Decoder::OpenUri(const char *uri)
  */
 gcc_pure
 static inline bool
-decoder_check_cancel_read(const Decoder *decoder)
+decoder_check_cancel_read(const DecoderBridge *bridge)
 {
-	if (decoder == nullptr)
+	if (bridge == nullptr)
 		return false;
 
-	if (decoder->error)
+	if (bridge->error)
 		/* this translates to DecoderCommand::STOP */
 		return true;
 
-	const DecoderControl &dc = decoder->dc;
+	const DecoderControl &dc = bridge->dc;
 	if (dc.command == DecoderCommand::NONE)
 		return false;
 
 	/* ignore the SEEK command during initialization, the plugin
 	   should handle that after it has initialized successfully */
 	if (dc.command == DecoderCommand::SEEK &&
-	    (dc.state == DecoderState::START || decoder->seeking ||
-	     decoder->initial_seek_running))
+	    (dc.state == DecoderState::START || bridge->seeking ||
+	     bridge->initial_seek_running))
 		return false;
 
 	return true;
@@ -309,11 +305,11 @@ decoder_read(DecoderClient *client,
 	     void *buffer, size_t length)
 try {
 	/* XXX don't allow decoder==nullptr */
-	auto *decoder = (Decoder *)client;
+	auto *bridge = (DecoderBridge *)client;
 
-	assert(decoder == nullptr ||
-	       decoder->dc.state == DecoderState::START ||
-	       decoder->dc.state == DecoderState::DECODE);
+	assert(bridge == nullptr ||
+	       bridge->dc.state == DecoderState::START ||
+	       bridge->dc.state == DecoderState::DECODE);
 	assert(buffer != nullptr);
 
 	if (length == 0)
@@ -322,7 +318,7 @@ try {
 	ScopeLock lock(is.mutex);
 
 	while (true) {
-		if (decoder_check_cancel_read(decoder))
+		if (decoder_check_cancel_read(bridge))
 			return 0;
 
 		if (is.IsAvailable())
@@ -336,9 +332,9 @@ try {
 
 	return nbytes;
 } catch (const std::runtime_error &e) {
-	auto *decoder = (Decoder *)client;
-	if (decoder != nullptr)
-		decoder->error = std::current_exception();
+	auto *bridge = (DecoderBridge *)client;
+	if (bridge != nullptr)
+		bridge->error = std::current_exception();
 	else
 		LogError(e);
 	return 0;
@@ -379,7 +375,7 @@ decoder_skip(DecoderClient *client, InputStream &is, size_t size)
 }
 
 void
-Decoder::SubmitTimestamp(double t)
+DecoderBridge::SubmitTimestamp(double t)
 {
 	assert(t >= 0);
 
@@ -388,26 +384,25 @@ Decoder::SubmitTimestamp(double t)
 
 /**
  * Sends a #tag as-is to the music pipe.  Flushes the current chunk
- * (decoder.chunk) if there is one.
+ * (DecoderBridge::chunk) if there is one.
  */
 static DecoderCommand
 do_send_tag(DecoderClient &client, const Tag &tag)
 {
-	auto &decoder = (Decoder &)client;
-	MusicChunk *chunk;
+	auto &bridge = (DecoderBridge &)client;
 
-	if (decoder.current_chunk != nullptr) {
+	if (bridge.current_chunk != nullptr) {
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
-		decoder.FlushChunk();
+		bridge.FlushChunk();
 	}
 
-	assert(decoder.current_chunk == nullptr);
+	assert(bridge.current_chunk == nullptr);
 
-	chunk = decoder.GetChunk();
+	auto *chunk = bridge.GetChunk();
 	if (chunk == nullptr) {
-		assert(decoder.dc.command != DecoderCommand::NONE);
-		return decoder.dc.command;
+		assert(bridge.dc.command != DecoderCommand::NONE);
+		return bridge.dc.command;
 	}
 
 	chunk->tag = new Tag(tag);
@@ -417,14 +412,13 @@ do_send_tag(DecoderClient &client, const Tag &tag)
 static bool
 update_stream_tag(DecoderClient &client, InputStream *is)
 {
-	auto &decoder = (Decoder &)client;
-	Tag *tag;
+	auto &bridge = (DecoderBridge &)client;
 
-	tag = is != nullptr
+	auto *tag = is != nullptr
 		? is->LockReadTag()
 		: nullptr;
 	if (tag == nullptr) {
-		tag = decoder.song_tag;
+		tag = bridge.song_tag;
 		if (tag == nullptr)
 			return false;
 
@@ -432,19 +426,19 @@ update_stream_tag(DecoderClient &client, InputStream *is)
 		   instead */
 	} else
 		/* discard the song tag; we don't need it */
-		delete decoder.song_tag;
+		delete bridge.song_tag;
 
-	decoder.song_tag = nullptr;
+	bridge.song_tag = nullptr;
 
-	delete decoder.stream_tag;
-	decoder.stream_tag = tag;
+	delete bridge.stream_tag;
+	bridge.stream_tag = tag;
 	return true;
 }
 
 DecoderCommand
-Decoder::SubmitData(InputStream *is,
-		    const void *data, size_t length,
-		    uint16_t kbit_rate)
+DecoderBridge::SubmitData(InputStream *is,
+			  const void *data, size_t length,
+			  uint16_t kbit_rate)
 {
 	assert(dc.state == DecoderState::DECODE);
 	assert(dc.pipe != nullptr);
@@ -545,7 +539,7 @@ Decoder::SubmitData(InputStream *is,
 }
 
 DecoderCommand
-Decoder::SubmitTag(InputStream *is, Tag &&tag)
+DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 {
 	DecoderCommand cmd;
 
@@ -586,7 +580,7 @@ Decoder::SubmitTag(InputStream *is, Tag &&tag)
 }
 
 void
-Decoder::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
+DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
 {
 	if (new_replay_gain_info != nullptr) {
 		static unsigned serial;
@@ -620,7 +614,7 @@ Decoder::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
 }
 
 void
-Decoder::SubmitMixRamp(MixRampInfo &&mix_ramp)
+DecoderBridge::SubmitMixRamp(MixRampInfo &&mix_ramp)
 {
 	dc.SetMixRamp(std::move(mix_ramp));
 }
