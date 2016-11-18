@@ -31,7 +31,7 @@
 Decoder::~Decoder()
 {
 	/* caller must flush the chunk */
-	assert(chunk == nullptr);
+	assert(current_chunk == nullptr);
 
 	if (convert != nullptr) {
 		convert->Close();
@@ -68,17 +68,17 @@ Decoder::GetChunk()
 {
 	DecoderCommand cmd;
 
-	if (chunk != nullptr)
-		return chunk;
+	if (current_chunk != nullptr)
+		return current_chunk;
 
 	do {
-		chunk = dc.buffer->Allocate();
-		if (chunk != nullptr) {
-			chunk->replay_gain_serial = replay_gain_serial;
+		current_chunk = dc.buffer->Allocate();
+		if (current_chunk != nullptr) {
+			current_chunk->replay_gain_serial = replay_gain_serial;
 			if (replay_gain_serial != 0)
-				chunk->replay_gain_info = replay_gain_info;
+				current_chunk->replay_gain_info = replay_gain_info;
 
-			return chunk;
+			return current_chunk;
 		}
 
 		cmd = LockNeedChunks(dc);
@@ -93,14 +93,13 @@ Decoder::FlushChunk()
 	assert(!seeking);
 	assert(!initial_seek_running);
 	assert(!initial_seek_pending);
-	assert(chunk != nullptr);
+	assert(current_chunk != nullptr);
 
+	auto *chunk = std::exchange(current_chunk, nullptr);
 	if (chunk->IsEmpty())
 		dc.buffer->Return(chunk);
 	else
 		dc.pipe->Push(chunk);
-
-	chunk = nullptr;
 
 	const ScopeLock protect(dc.mutex);
 	if (dc.client_is_waiting)

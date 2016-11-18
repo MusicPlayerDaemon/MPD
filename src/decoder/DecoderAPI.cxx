@@ -183,7 +183,7 @@ decoder_command_finished(Decoder &decoder)
 
 	if (decoder.initial_seek_running) {
 		assert(!decoder.seeking);
-		assert(decoder.chunk == nullptr);
+		assert(decoder.current_chunk == nullptr);
 		assert(dc.pipe->IsEmpty());
 
 		decoder.initial_seek_running = false;
@@ -196,9 +196,9 @@ decoder_command_finished(Decoder &decoder)
 
 		/* delete frames from the old song position */
 
-		if (decoder.chunk != nullptr) {
-			dc.buffer->Return(decoder.chunk);
-			decoder.chunk = nullptr;
+		if (decoder.current_chunk != nullptr) {
+			dc.buffer->Return(decoder.current_chunk);
+			decoder.current_chunk = nullptr;
 		}
 
 		dc.pipe->Clear(*dc.buffer);
@@ -400,13 +400,13 @@ do_send_tag(Decoder &decoder, const Tag &tag)
 {
 	MusicChunk *chunk;
 
-	if (decoder.chunk != nullptr) {
+	if (decoder.current_chunk != nullptr) {
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
 		decoder.FlushChunk();
 	}
 
-	assert(decoder.chunk == nullptr);
+	assert(decoder.current_chunk == nullptr);
 
 	chunk = decoder.GetChunk();
 	if (chunk == nullptr) {
@@ -620,7 +620,7 @@ decoder_replay_gain(Decoder &decoder,
 		decoder.replay_gain_info = *replay_gain_info;
 		decoder.replay_gain_serial = serial;
 
-		if (decoder.chunk != nullptr) {
+		if (decoder.current_chunk != nullptr) {
 			/* flush the current chunk because the new
 			   replay gain values affect the following
 			   samples */

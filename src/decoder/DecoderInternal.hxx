@@ -78,7 +78,7 @@ struct Decoder {
 	Tag *decoder_tag = nullptr;
 
 	/** the chunk currently being written to */
-	MusicChunk *chunk = nullptr;
+	MusicChunk *current_chunk = nullptr;
 
 	ReplayGainInfo replay_gain_info;
 
