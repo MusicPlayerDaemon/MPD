@@ -99,7 +99,6 @@ libmpd_a_SOURCES = \
 	src/decoder/DecoderThread.cxx src/decoder/DecoderThread.hxx \
 	src/decoder/DecoderCommand.hxx \
 	src/decoder/DecoderControl.cxx src/decoder/DecoderControl.hxx \
-	src/decoder/DecoderAPI.cxx src/decoder/DecoderAPI.hxx \
 	src/decoder/Client.hxx \
 	src/decoder/DecoderPlugin.hxx \
 	src/decoder/Bridge.cxx src/decoder/Bridge.hxx \
@@ -934,6 +933,7 @@ endif
 libdecoder_a_SOURCES = \
 	src/decoder/plugins/PcmDecoderPlugin.cxx \
 	src/decoder/plugins/PcmDecoderPlugin.hxx \
+	src/decoder/DecoderAPI.cxx src/decoder/DecoderAPI.hxx \
 	src/decoder/Reader.cxx src/decoder/Reader.hxx \
 	src/decoder/DecoderBuffer.cxx src/decoder/DecoderBuffer.hxx \
 	src/decoder/DecoderPlugin.cxx \
