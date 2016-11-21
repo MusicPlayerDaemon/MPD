@@ -108,6 +108,15 @@ public:
 	~DecoderBridge();
 
 	/**
+	 * Should be read operation be cancelled?  That is the case when the
+	 * player thread has sent a command such as "STOP".
+	 *
+	 * Caller must lock the #DecoderControl object.
+	 */
+	gcc_pure
+	bool CheckCancelRead() const;
+
+	/**
 	 * Returns the current chunk the decoder writes to, or allocates a new
 	 * chunk if there is none.
 	 *

@@ -43,6 +43,26 @@ DecoderBridge::~DecoderBridge()
 	delete decoder_tag;
 }
 
+bool
+DecoderBridge::CheckCancelRead() const
+{
+	if (error)
+		/* this translates to DecoderCommand::STOP */
+		return true;
+
+	if (dc.command == DecoderCommand::NONE)
+		return false;
+
+	/* ignore the SEEK command during initialization, the plugin
+	   should handle that after it has initialized successfully */
+	if (dc.command == DecoderCommand::SEEK &&
+	    (dc.state == DecoderState::START || seeking ||
+	     initial_seek_running))
+		return false;
+
+	return true;
+}
+
 /**
  * All chunks are full of decoded data; wait for the player to free
  * one.

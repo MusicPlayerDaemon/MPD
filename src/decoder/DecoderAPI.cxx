@@ -264,25 +264,7 @@ gcc_pure
 static inline bool
 decoder_check_cancel_read(const DecoderBridge *bridge)
 {
-	if (bridge == nullptr)
-		return false;
-
-	if (bridge->error)
-		/* this translates to DecoderCommand::STOP */
-		return true;
-
-	const DecoderControl &dc = bridge->dc;
-	if (dc.command == DecoderCommand::NONE)
-		return false;
-
-	/* ignore the SEEK command during initialization, the plugin
-	   should handle that after it has initialized successfully */
-	if (dc.command == DecoderCommand::SEEK &&
-	    (dc.state == DecoderState::START || bridge->seeking ||
-	     bridge->initial_seek_running))
-		return false;
-
-	return true;
+	return bridge != nullptr && bridge->CheckCancelRead();
 }
 
 size_t
