@@ -138,6 +138,29 @@ public:
 	DecoderCommand SubmitTag(InputStream *is, Tag &&tag) override ;
 	void SubmitReplayGain(const ReplayGainInfo *replay_gain_info) override;
 	void SubmitMixRamp(MixRampInfo &&mix_ramp) override;
+
+private:
+	/**
+	 * Checks if we need an "initial seek".  If so, then the
+	 * initial seek is prepared, and the function returns true.
+	 */
+	bool PrepareInitialSeek();
+
+	/**
+	 * Returns the current decoder command.  May return a
+	 * "virtual" synthesized command, e.g. to seek to the
+	 * beginning of the CUE track.
+	 */
+	DecoderCommand GetVirtualCommand();
+	DecoderCommand LockGetVirtualCommand();
+
+	/**
+	 * Sends a #Tag as-is to the #MusicPipe.  Flushes the current
+	 * chunk (DecoderBridge::chunk) if there is one.
+	 */
+	DecoderCommand DoSendTag(const Tag &tag);
+
+	bool UpdateStreamTag(InputStream *is);
 };
 
 #endif

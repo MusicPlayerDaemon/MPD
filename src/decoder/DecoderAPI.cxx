@@ -83,15 +83,9 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 	dc.client_cond.signal();
 }
 
-/**
- * Checks if we need an "initial seek".  If so, then the initial seek
- * is prepared, and the function returns true.
- */
-gcc_pure
-static bool
-decoder_prepare_initial_seek(DecoderBridge &bridge)
+bool
+DecoderBridge::PrepareInitialSeek()
 {
-	const DecoderControl &dc = bridge.dc;
 	assert(dc.pipe != nullptr);
 
 	if (dc.state != DecoderState::DECODE)
@@ -100,69 +94,61 @@ decoder_prepare_initial_seek(DecoderBridge &bridge)
 		   virtual "SEEK" command */
 		return false;
 
-	if (bridge.initial_seek_running)
+	if (initial_seek_running)
 		/* initial seek has already begun - override any other
 		   command */
 		return true;
 
-	if (bridge.initial_seek_pending) {
+	if (initial_seek_pending) {
 		if (!dc.seekable) {
 			/* seeking is not possible */
-			bridge.initial_seek_pending = false;
+			initial_seek_pending = false;
 			return false;
 		}
 
 		if (dc.command == DecoderCommand::NONE) {
 			/* begin initial seek */
 
-			bridge.initial_seek_pending = false;
-			bridge.initial_seek_running = true;
+			initial_seek_pending = false;
+			initial_seek_running = true;
 			return true;
 		}
 
 		/* skip initial seek when there's another command
 		   (e.g. STOP) */
 
-		bridge.initial_seek_pending = false;
+		initial_seek_pending = false;
 	}
 
 	return false;
 }
 
-/**
- * Returns the current decoder command.  May return a "virtual"
- * synthesized command, e.g. to seek to the beginning of the CUE
- * track.
- */
-gcc_pure
-static DecoderCommand
-decoder_get_virtual_command(DecoderBridge &bridge)
+DecoderCommand
+DecoderBridge::GetVirtualCommand()
 {
-	if (bridge.error)
+	if (error)
 		/* an error has occurred: stop the decoder plugin */
 		return DecoderCommand::STOP;
 
-	const DecoderControl &dc = bridge.dc;
 	assert(dc.pipe != nullptr);
 
-	if (decoder_prepare_initial_seek(bridge))
+	if (PrepareInitialSeek())
 		return DecoderCommand::SEEK;
 
 	return dc.command;
 }
 
-gcc_pure
-static DecoderCommand
-decoder_lock_get_virtual_command(DecoderBridge &bridge)
+DecoderCommand
+DecoderBridge::LockGetVirtualCommand()
 {
-	const ScopeLock protect(bridge.dc.mutex);
-	return decoder_get_virtual_command(bridge);
+	const ScopeLock protect(dc.mutex);
+	return GetVirtualCommand();
 }
 
 DecoderCommand
 DecoderBridge::GetCommand()
 {
-	return decoder_lock_get_virtual_command(*this);
+	return LockGetVirtualCommand();
 }
 
 void
@@ -382,43 +368,35 @@ DecoderBridge::SubmitTimestamp(double t)
 	timestamp = t;
 }
 
-/**
- * Sends a #tag as-is to the music pipe.  Flushes the current chunk
- * (DecoderBridge::chunk) if there is one.
- */
-static DecoderCommand
-do_send_tag(DecoderClient &client, const Tag &tag)
+DecoderCommand
+DecoderBridge::DoSendTag(const Tag &tag)
 {
-	auto &bridge = (DecoderBridge &)client;
-
-	if (bridge.current_chunk != nullptr) {
+	if (current_chunk != nullptr) {
 		/* there is a partial chunk - flush it, we want the
 		   tag in a new chunk */
-		bridge.FlushChunk();
+		FlushChunk();
 	}
 
-	assert(bridge.current_chunk == nullptr);
+	assert(current_chunk == nullptr);
 
-	auto *chunk = bridge.GetChunk();
+	auto *chunk = GetChunk();
 	if (chunk == nullptr) {
-		assert(bridge.dc.command != DecoderCommand::NONE);
-		return bridge.dc.command;
+		assert(dc.command != DecoderCommand::NONE);
+		return dc.command;
 	}
 
 	chunk->tag = new Tag(tag);
 	return DecoderCommand::NONE;
 }
 
-static bool
-update_stream_tag(DecoderClient &client, InputStream *is)
+bool
+DecoderBridge::UpdateStreamTag(InputStream *is)
 {
-	auto &bridge = (DecoderBridge &)client;
-
 	auto *tag = is != nullptr
 		? is->LockReadTag()
 		: nullptr;
 	if (tag == nullptr) {
-		tag = bridge.song_tag;
+		tag = song_tag;
 		if (tag == nullptr)
 			return false;
 
@@ -426,12 +404,12 @@ update_stream_tag(DecoderClient &client, InputStream *is)
 		   instead */
 	} else
 		/* discard the song tag; we don't need it */
-		delete bridge.song_tag;
+		delete song_tag;
 
-	bridge.song_tag = nullptr;
+	song_tag = nullptr;
 
-	delete bridge.stream_tag;
-	bridge.stream_tag = tag;
+	delete stream_tag;
+	stream_tag = tag;
 	return true;
 }
 
@@ -444,7 +422,7 @@ DecoderBridge::SubmitData(InputStream *is,
 	assert(dc.pipe != nullptr);
 	assert(length % dc.in_audio_format.GetFrameSize() == 0);
 
-	DecoderCommand cmd = decoder_lock_get_virtual_command(*this);
+	DecoderCommand cmd = LockGetVirtualCommand();
 
 	if (cmd == DecoderCommand::STOP || cmd == DecoderCommand::SEEK ||
 	    length == 0)
@@ -455,16 +433,16 @@ DecoderBridge::SubmitData(InputStream *is,
 
 	/* send stream tags */
 
-	if (update_stream_tag(*this, is)) {
+	if (UpdateStreamTag(is)) {
 		if (decoder_tag != nullptr) {
 			/* merge with tag from decoder plugin */
 			Tag *tag = Tag::Merge(*decoder_tag,
 					      *stream_tag);
-			cmd = do_send_tag(*this, *tag);
+			cmd = DoSendTag(*tag);
 			delete tag;
 		} else
 			/* send only the stream tag */
-			cmd = do_send_tag(*this, *stream_tag);
+			cmd = DoSendTag(*stream_tag);
 
 		if (cmd != DecoderCommand::NONE)
 			return cmd;
@@ -553,11 +531,11 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 
 	/* check for a new stream tag */
 
-	update_stream_tag(*this, is);
+	UpdateStreamTag(is);
 
 	/* check if we're seeking */
 
-	if (decoder_prepare_initial_seek(*this))
+	if (PrepareInitialSeek())
 		/* during initial seek, no music chunk must be created
 		   until seeking is finished; skip the rest of the
 		   function here */
@@ -570,11 +548,11 @@ DecoderBridge::SubmitTag(InputStream *is, Tag &&tag)
 		Tag *merged;
 
 		merged = Tag::Merge(*stream_tag, *decoder_tag);
-		cmd = do_send_tag(*this, *merged);
+		cmd = DoSendTag(*merged);
 		delete merged;
 	} else
 		/* send only the decoder tag */
-		cmd = do_send_tag(*this, *decoder_tag);
+		cmd = DoSendTag(*decoder_tag);
 
 	return cmd;
 }
