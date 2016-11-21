@@ -256,29 +256,21 @@ DecoderBridge::OpenUri(const char *uri)
 	}
 }
 
-/**
- * Should be read operation be cancelled?  That is the case when the
- * player thread has sent a command such as "STOP".
- */
-gcc_pure
-static inline bool
-decoder_check_cancel_read(const DecoderBridge *bridge)
-{
-	return bridge != nullptr && bridge->CheckCancelRead();
-}
-
 size_t
 decoder_read(DecoderClient *client,
 	     InputStream &is,
 	     void *buffer, size_t length)
 try {
-	/* XXX don't allow decoder==nullptr */
-	auto *bridge = (DecoderBridge *)client;
-
-	assert(bridge == nullptr ||
-	       bridge->dc.state == DecoderState::START ||
-	       bridge->dc.state == DecoderState::DECODE);
 	assert(buffer != nullptr);
+
+	/* XXX don't allow client==nullptr */
+	if (client == nullptr)
+		return is.LockRead(buffer, length);
+
+	auto &bridge = *(DecoderBridge *)client;
+
+	assert(bridge.dc.state == DecoderState::START ||
+	       bridge.dc.state == DecoderState::DECODE);
 
 	if (length == 0)
 		return 0;
@@ -286,7 +278,7 @@ try {
 	ScopeLock lock(is.mutex);
 
 	while (true) {
-		if (decoder_check_cancel_read(bridge))
+		if (bridge.CheckCancelRead())
 			return 0;
 
 		if (is.IsAvailable())
