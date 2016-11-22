@@ -31,6 +31,7 @@
 #include "input/InputStream.hxx"
 #include "input/LocalOpen.hxx"
 #include "DecoderList.hxx"
+#include "system/Error.hxx"
 #include "util/MimeType.hxx"
 #include "util/UriUtil.hxx"
 #include "util/RuntimeError.hxx"
@@ -310,6 +311,44 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, const char *suffix,
 }
 
 /**
+ * Decode a container file with the given decoder plugin.
+ *
+ * DecoderControl::mutex is not locked by caller.
+ */
+static bool
+TryContainerDecoder(DecoderBridge &bridge, Path path_fs, const char *suffix,
+		    const DecoderPlugin &plugin)
+{
+	if (plugin.container_scan == nullptr ||
+	    plugin.file_decode == nullptr ||
+	    !plugin.SupportsSuffix(suffix))
+		return false;
+
+	bridge.error = nullptr;
+
+	DecoderControl &dc = bridge.dc;
+	const ScopeLock protect(dc.mutex);
+	return decoder_file_decode(plugin, bridge, path_fs);
+}
+
+/**
+ * Decode a container file.
+ *
+ * DecoderControl::mutex is not locked by caller.
+ */
+static bool
+TryContainerDecoder(DecoderBridge &bridge, Path path_fs, const char *suffix)
+{
+	return decoder_plugins_try([&bridge, path_fs,
+				    suffix](const DecoderPlugin &plugin){
+					   return TryContainerDecoder(bridge,
+								      path_fs,
+								      suffix,
+								      plugin);
+				   });
+}
+
+/**
  * Try decoding a file.
  *
  * DecoderControl::mutex is not locked by caller.
@@ -321,7 +360,20 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 	if (suffix == nullptr)
 		return false;
 
-	auto input_stream = decoder_input_stream_open(bridge.dc, path_fs);
+	InputStreamPtr input_stream;
+
+	try {
+		input_stream = decoder_input_stream_open(bridge.dc, path_fs);
+	} catch (const std::system_error &e) {
+		if (IsPathNotFound(e) &&
+		    /* ENOTDIR means this may be a path inside a
+		       "container" file */
+		    TryContainerDecoder(bridge, path_fs, suffix))
+			return true;
+
+		throw;
+	}
+
 	assert(input_stream);
 
 	LoadReplayGain(bridge, *input_stream);
