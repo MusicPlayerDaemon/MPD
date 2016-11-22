@@ -300,7 +300,6 @@ static const char *const gme_suffixes[] = {
 	nullptr
 };
 
-extern const struct DecoderPlugin gme_decoder_plugin;
 const struct DecoderPlugin gme_decoder_plugin = {
 	"gme",
 	gme_plugin_init,
