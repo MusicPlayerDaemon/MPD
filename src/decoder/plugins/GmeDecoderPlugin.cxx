@@ -287,11 +287,9 @@ gme_scan_file(Path path_fs,
 		return false;
 	}
 
-	const bool result = ScanMusicEmu(emu, container.track, handler, handler_ctx);
+	AtScopeExit(emu) { gme_delete(emu); };
 
-	gme_delete(emu);
-
-	return result;
+	return ScanMusicEmu(emu, container.track, handler, handler_ctx);
 }
 
 static const char *const gme_suffixes[] = {
