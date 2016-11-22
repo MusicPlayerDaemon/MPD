@@ -103,38 +103,6 @@ ParseContainerPath(Path path_fs)
 	return { path_fs.GetDirectoryName(), track - 1 };
 }
 
-static std::forward_list<std::string>
-gme_container_scan(Path path_fs)
-{
-	std::forward_list<std::string> list;
-
-	Music_Emu *emu;
-	const char *gme_err = gme_open_file(path_fs.c_str(), &emu,
-					    GME_SAMPLE_RATE);
-	if (gme_err != nullptr) {
-		LogWarning(gme_domain, gme_err);
-		return list;
-	}
-
-	const unsigned num_songs = gme_track_count(emu);
-	gme_delete(emu);
-	/* if it only contains a single tune, don't treat as container */
-	if (num_songs < 2)
-		return list;
-
-	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
-
-	auto tail = list.before_begin();
-	for (unsigned i = 1; i <= num_songs; ++i) {
-		char track_name[64];
-		snprintf(track_name, sizeof(track_name),
-			 SUBTUNE_PREFIX "%03u.%s", i, subtune_suffix);
-		tail = list.emplace_after(tail, track_name);
-	}
-
-	return list;
-}
-
 static void
 gme_file_decode(DecoderClient &client, Path path_fs)
 {
@@ -296,6 +264,38 @@ gme_scan_file(Path path_fs,
 	AtScopeExit(emu) { gme_delete(emu); };
 
 	return ScanMusicEmu(emu, container.track, handler, handler_ctx);
+}
+
+static std::forward_list<std::string>
+gme_container_scan(Path path_fs)
+{
+	std::forward_list<std::string> list;
+
+	Music_Emu *emu;
+	const char *gme_err = gme_open_file(path_fs.c_str(), &emu,
+					    GME_SAMPLE_RATE);
+	if (gme_err != nullptr) {
+		LogWarning(gme_domain, gme_err);
+		return list;
+	}
+
+	const unsigned num_songs = gme_track_count(emu);
+	gme_delete(emu);
+	/* if it only contains a single tune, don't treat as container */
+	if (num_songs < 2)
+		return list;
+
+	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
+
+	auto tail = list.before_begin();
+	for (unsigned i = 1; i <= num_songs; ++i) {
+		char track_name[64];
+		snprintf(track_name, sizeof(track_name),
+			 SUBTUNE_PREFIX "%03u.%s", i, subtune_suffix);
+		tail = list.emplace_after(tail, track_name);
+	}
+
+	return list;
 }
 
 static const char *const gme_suffixes[] = {
