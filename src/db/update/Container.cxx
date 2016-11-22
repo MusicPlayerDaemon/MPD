@@ -96,38 +96,50 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		return false;
 	}
 
-	const auto v = plugin.container_scan(pathname);
-	if (v.empty()) {
-		editor.LockDeleteDirectory(contdir);
-		return false;
-	}
-
-	TagBuilder tag_builder;
-	for (const auto &vtrack : v) {
-		Song *song = Song::NewFile(vtrack.c_str(), *contdir);
-
-		// shouldn't be necessary but it's there..
-		song->mtime = info.mtime;
-
-		const auto vtrack_fs = AllocatedPath::FromUTF8(vtrack.c_str());
-		// TODO: check vtrack_fs.IsNull()
-
-		const auto child_path_fs = AllocatedPath::Build(pathname,
-								vtrack_fs);
-		plugin.ScanFile(child_path_fs,
-				add_tag_handler, &tag_builder);
-
-		tag_builder.Commit(song->tag);
-
-		{
-			const ScopeDatabaseLock protect;
-			contdir->AddSong(song);
+	try {
+		const auto v = plugin.container_scan(pathname);
+		if (v.empty()) {
+			editor.LockDeleteDirectory(contdir);
+			return false;
 		}
 
-		modified = true;
+		TagBuilder tag_builder;
+		for (const auto &vtrack : v) {
+			Song *song = Song::NewFile(vtrack.c_str(), *contdir);
 
-		FormatDefault(update_domain, "added %s/%s",
-			      directory.GetPath(), vtrack.c_str());
+			// shouldn't be necessary but it's there..
+			song->mtime = info.mtime;
+
+			try {
+				const auto vtrack_fs =
+					AllocatedPath::FromUTF8Throw(vtrack.c_str());
+
+				const auto child_path_fs = AllocatedPath::Build(pathname,
+										vtrack_fs);
+				plugin.ScanFile(child_path_fs,
+						add_tag_handler, &tag_builder);
+			} catch (const std::runtime_error &e) {
+				song->Free();
+				LogError(e);
+				continue;
+			}
+
+			tag_builder.Commit(song->tag);
+
+			{
+				const ScopeDatabaseLock protect;
+				contdir->AddSong(song);
+			}
+
+			modified = true;
+
+			FormatDefault(update_domain, "added %s/%s",
+				      directory.GetPath(), vtrack.c_str());
+		}
+	} catch (const std::runtime_error &e) {
+		editor.LockDeleteDirectory(contdir);
+		LogError(e);
+		return false;
 	}
 
 	return true;

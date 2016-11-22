@@ -266,10 +266,10 @@ ScanMusicEmu(Music_Emu *emu, unsigned song_num,
 
 	assert(ti != nullptr);
 
+	AtScopeExit(ti) { gme_free_info(ti); };
+
 	ScanGmeInfo(*ti, song_num, gme_track_count(emu),
 		    handler, handler_ctx);
-
-	gme_free_info(ti);
 	return true;
 }
 
