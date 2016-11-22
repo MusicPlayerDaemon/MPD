@@ -23,13 +23,13 @@
 #include "Compiler.h"
 
 #include <forward_list>
-#include <string>
 
 struct ConfigBlock;
 class InputStream;
 struct TagHandler;
 class Path;
 class DecoderClient;
+class DetachedSong;
 
 struct DecoderPlugin {
 	const char *name;
@@ -93,7 +93,7 @@ struct DecoderPlugin {
 	 * a filename for every single track;
 	 * do not include full pathname here, just the "virtual" file
 	 */
-	std::forward_list<std::string> (*container_scan)(Path path_fs);
+	std::forward_list<DetachedSong> (*container_scan)(Path path_fs);
 
 	/* last element in these arrays must always be a nullptr: */
 	const char *const*suffixes;

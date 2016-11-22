@@ -1894,6 +1894,7 @@ test_run_decoder_LDADD = \
 test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
+	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx
@@ -1915,6 +1916,7 @@ test_read_tags_LDADD = \
 test_read_tags_SOURCES = test/read_tags.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
+	src/DetachedSong.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/ReplayGainInfo.cxx
@@ -1946,6 +1948,8 @@ test_ContainerScan_LDADD = \
 	libsystem.a \
 	libutil.a
 test_ContainerScan_SOURCES = test/ContainerScan.cxx \
+	src/DetachedSong.cxx \
+	src/SongSave.cxx src/TagSave.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/ReplayGainInfo.cxx \
 	$(DECODER_SRC)

@@ -21,6 +21,8 @@
 #include "SidplayDecoderPlugin.hxx"
 #include "../DecoderAPI.hxx"
 #include "tag/TagHandler.hxx"
+#include "tag/TagBuilder.hxx"
+#include "DetachedSong.hxx"
 #include "fs/Path.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "util/Macros.hxx"
@@ -467,12 +469,16 @@ sidplay_scan_file(Path path_fs,
 	return true;
 }
 
-static std::forward_list<std::string>
+static std::forward_list<DetachedSong>
 sidplay_container_scan(Path path_fs)
 {
-	std::forward_list<std::string> list;
+	std::forward_list<DetachedSong> list;
 
-	SidTune tune(path_fs.c_str(), nullptr, true);
+#ifdef HAVE_SIDPLAYFP
+	SidTune tune(path_fs.c_str());
+#else
+	SidTuneMod tune(path_fs.c_str());
+#endif
 	if (!tune.getStatus())
 		return list;
 
@@ -489,13 +495,21 @@ sidplay_container_scan(Path path_fs)
 	if(!all_files_are_containers && n_tracks < 2)
 		return list;
 
+	TagBuilder tag_builder;
+
 	auto tail = list.before_begin();
 	for (unsigned i = 1; i <= n_tracks; ++i) {
+		tune.selectSong(i);
+
+		ScanSidTuneInfo(info, i, n_tracks,
+				add_tag_handler, &tag_builder);
+
 		char track_name[32];
 		/* Construct container/tune path names, eg.
 		   Delta.sid/tune_001.sid */
 		sprintf(track_name, SUBTUNE_PREFIX "%03u.sid", i);
-		tail = list.emplace_after(tail, track_name);
+		tail = list.emplace_after(tail, track_name,
+					  tag_builder.Commit());
 	}
 
 	return list;

@@ -20,6 +20,7 @@
 #include "config.h" /* must be first for large file support */
 #include "Walk.hxx"
 #include "UpdateDomain.hxx"
+#include "DetachedSong.hxx"
 #include "db/DatabaseLock.hxx"
 #include "db/plugins/simple/Directory.hxx"
 #include "db/plugins/simple/Song.hxx"
@@ -28,8 +29,6 @@
 #include "decoder/DecoderList.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "storage/FileInfo.hxx"
-#include "tag/TagHandler.hxx"
-#include "tag/TagBuilder.hxx"
 #include "Log.hxx"
 #include "util/AllocatedString.hxx"
 
@@ -97,34 +96,21 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 	}
 
 	try {
-		const auto v = plugin.container_scan(pathname);
+		auto v = plugin.container_scan(pathname);
 		if (v.empty()) {
 			editor.LockDeleteDirectory(contdir);
 			return false;
 		}
 
-		TagBuilder tag_builder;
-		for (const auto &vtrack : v) {
-			Song *song = Song::NewFile(vtrack.c_str(), *contdir);
+		for (auto &vtrack : v) {
+			Song *song = Song::NewFrom(std::move(vtrack),
+						   *contdir);
 
 			// shouldn't be necessary but it's there..
 			song->mtime = info.mtime;
 
-			try {
-				const auto vtrack_fs =
-					AllocatedPath::FromUTF8Throw(vtrack.c_str());
-
-				const auto child_path_fs = AllocatedPath::Build(pathname,
-										vtrack_fs);
-				plugin.ScanFile(child_path_fs,
-						add_tag_handler, &tag_builder);
-			} catch (const std::runtime_error &e) {
-				song->Free();
-				LogError(e);
-				continue;
-			}
-
-			tag_builder.Commit(song->tag);
+			FormatDefault(update_domain, "added %s/%s",
+				      contdir->GetPath(), song->uri);
 
 			{
 				const ScopeDatabaseLock protect;
@@ -132,9 +118,6 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 			}
 
 			modified = true;
-
-			FormatDefault(update_domain, "added %s/%s",
-				      directory.GetPath(), vtrack.c_str());
 		}
 	} catch (const std::runtime_error &e) {
 		editor.LockDeleteDirectory(contdir);

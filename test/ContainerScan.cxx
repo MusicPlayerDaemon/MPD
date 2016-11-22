@@ -19,6 +19,8 @@
 
 #include "config.h"
 #include "Log.hxx"
+#include "DetachedSong.hxx"
+#include "SongSave.hxx"
 #include "decoder/DecoderList.hxx"
 #include "decoder/DecoderPlugin.hxx"
 #include "fs/Path.hxx"
@@ -84,7 +86,7 @@ try {
 	BufferedOutputStream bos(sos);
 
 	for (const auto &song : v)
-		bos.Format("%s\n", song.c_str());
+		song_save(bos, song);
 
 	bos.Flush();
 
