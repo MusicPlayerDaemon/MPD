@@ -1864,7 +1864,6 @@ test_dump_playlist_LDADD = \
 test_dump_playlist_SOURCES = test/dump_playlist.cxx \
 	test/FakeDecoderAPI.cxx test/FakeDecoderAPI.hxx \
 	test/ScopeIOThread.hxx \
-	$(DECODER_SRC) \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
 	src/TagSave.cxx \
@@ -1896,11 +1895,7 @@ test_run_decoder_SOURCES = test/run_decoder.cxx \
 	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
-	src/ReplayGainInfo.cxx \
-	$(ARCHIVE_SRC) \
-	$(INPUT_SRC) \
-	$(TAG_SRC) \
-	$(DECODER_SRC)
+	src/ReplayGainInfo.cxx
 
 test_read_tags_LDADD = \
 	$(DECODER_LIBS) \
@@ -1921,8 +1916,7 @@ test_read_tags_SOURCES = test/read_tags.cxx \
 	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \
-	src/ReplayGainInfo.cxx \
-	$(DECODER_SRC)
+	src/ReplayGainInfo.cxx
 
 test_ReadApeTags_LDADD = \
 	$(TAG_LIBS) \
@@ -1983,8 +1977,7 @@ endif
 if ENABLE_VORBISENC
 noinst_PROGRAMS += test/test_vorbis_encoder
 test_test_vorbis_encoder_SOURCES = test/test_vorbis_encoder.cxx \
-	src/Log.cxx src/LogBackend.cxx \
-	$(ENCODER_SRC)
+	src/Log.cxx src/LogBackend.cxx
 test_test_vorbis_encoder_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ENCODER_CFLAGS)
 test_test_vorbis_encoder_LDADD = $(MPD_LIBS) \
