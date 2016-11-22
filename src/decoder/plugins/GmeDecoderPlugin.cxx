@@ -221,6 +221,12 @@ ScanGmeInfo(const gme_info_t &info, unsigned song_num, int track_count,
 		tag_handler_invoke_duration(handler, handler_ctx,
 					    SongTime::FromMS(info.play_length));
 
+	if (track_count > 1) {
+		char track[16];
+		sprintf(track, "%u", song_num + 1);
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
+	}
+
 	if (info.song != nullptr) {
 		if (track_count > 1) {
 			/* start numbering subtunes from 1 */

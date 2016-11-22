@@ -21,6 +21,7 @@ ver 0.20 (not yet released)
   - ffmpeg: support ReplayGain and MixRamp
   - ffmpeg: support stream tags
   - gme: add option "accuracy"
+  - gme: provide the TRACK tag
   - gme: faster scanning
   - mad: reduce memory usage while scanning tags
   - mpcdec: read the bit rate
