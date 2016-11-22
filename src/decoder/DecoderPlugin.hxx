@@ -22,11 +22,13 @@
 
 #include "Compiler.h"
 
+#include <forward_list>
+#include <string>
+
 struct ConfigBlock;
 class InputStream;
 struct TagHandler;
 class Path;
-template<typename T> class AllocatedString;
 class DecoderClient;
 
 struct DecoderPlugin {
@@ -85,14 +87,13 @@ struct DecoderPlugin {
 	/**
 	 * @brief Return a "virtual" filename for subtracks in
 	 * container formats like flac
-	 * @param const char* pathname full pathname for the file on fs
-	 * @param const unsigned int tnum track number
+	 * @param path_fs full pathname for the file on fs
 	 *
-	 * @return nullptr if there are no multiple files
-	 * a filename for every single track according to tnum (param 2)
+	 * @return an empty list if there are no multiple files
+	 * a filename for every single track;
 	 * do not include full pathname here, just the "virtual" file
 	 */
-	AllocatedString<char> (*container_scan)(Path path_fs, unsigned tnum);
+	std::forward_list<std::string> (*container_scan)(Path path_fs);
 
 	/* last element in these arrays must always be a nullptr: */
 	const char *const*suffixes;

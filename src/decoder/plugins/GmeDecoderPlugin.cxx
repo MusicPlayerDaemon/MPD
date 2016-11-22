@@ -27,16 +27,16 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/FormatString.hxx"
-#include "util/AllocatedString.hxx"
 #include "util/UriUtil.hxx"
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+#include <gme/gme.h>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <gme/gme.h>
+#include <stdio.h>
 
 #define SUBTUNE_PREFIX "tune_"
 
@@ -103,29 +103,36 @@ ParseContainerPath(Path path_fs)
 	return { path_fs.GetDirectoryName(), track - 1 };
 }
 
-static AllocatedString<>
-gme_container_scan(Path path_fs, const unsigned int tnum)
+static std::forward_list<std::string>
+gme_container_scan(Path path_fs)
 {
+	std::forward_list<std::string> list;
+
 	Music_Emu *emu;
 	const char *gme_err = gme_open_file(path_fs.c_str(), &emu,
 					    GME_SAMPLE_RATE);
 	if (gme_err != nullptr) {
 		LogWarning(gme_domain, gme_err);
-		return nullptr;
+		return list;
 	}
 
 	const unsigned num_songs = gme_track_count(emu);
 	gme_delete(emu);
 	/* if it only contains a single tune, don't treat as container */
 	if (num_songs < 2)
-		return nullptr;
+		return list;
 
 	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
-	if (tnum <= num_songs){
-		return FormatString(SUBTUNE_PREFIX "%03u.%s",
-				    tnum, subtune_suffix);
-	} else
-		return nullptr;
+
+	auto tail = list.before_begin();
+	for (unsigned i = 1; i < num_songs; ++i) {
+		char track_name[64];
+		snprintf(track_name, sizeof(track_name),
+			 "%03u.%s", i, subtune_suffix);
+		tail = list.emplace_after(tail, track_name);
+	}
+
+	return list;
 }
 
 static void

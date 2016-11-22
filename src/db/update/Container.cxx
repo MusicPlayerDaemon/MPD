@@ -96,10 +96,14 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 		return false;
 	}
 
-	AllocatedString<> vtrack = nullptr;
-	unsigned int tnum = 0;
+	const auto v = plugin.container_scan(pathname);
+	if (v.empty()) {
+		editor.LockDeleteDirectory(contdir);
+		return false;
+	}
+
 	TagBuilder tag_builder;
-	while ((vtrack = plugin.container_scan(pathname, ++tnum)) != nullptr) {
+	for (const auto &vtrack : v) {
 		Song *song = Song::NewFile(vtrack.c_str(), *contdir);
 
 		// shouldn't be necessary but it's there..
@@ -126,9 +130,5 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 			      directory.GetPath(), vtrack.c_str());
 	}
 
-	if (tnum == 1) {
-		editor.LockDeleteDirectory(contdir);
-		return false;
-	} else
-		return true;
+	return true;
 }

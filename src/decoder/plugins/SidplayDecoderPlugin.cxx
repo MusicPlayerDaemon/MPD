@@ -25,13 +25,10 @@
 #include "fs/AllocatedPath.hxx"
 #include "util/Macros.hxx"
 #include "util/FormatString.hxx"
-#include "util/AllocatedString.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
 #include "system/FatalError.hxx"
 #include "Log.hxx"
-
-#include <string.h>
 
 #ifdef HAVE_SIDPLAYFP
 #include <sidplayfp/sidplayfp.h>
@@ -48,6 +45,9 @@
 #include <sidplay/utils/SidTuneMod.h>
 #include <sidplay/utils/SidDatabase.h>
 #endif
+
+#include <string.h>
+#include <stdio.h>
 
 #define SUBTUNE_PREFIX "tune_"
 
@@ -476,12 +476,14 @@ sidplay_scan_file(Path path_fs,
 	return true;
 }
 
-static AllocatedString<>
-sidplay_container_scan(Path path_fs, const unsigned int tnum)
+static std::forward_list<std::string>
+sidplay_container_scan(Path path_fs)
 {
+	std::forward_list<std::string> list;
+
 	SidTune tune(path_fs.c_str(), nullptr, true);
 	if (!tune.getStatus())
-		return nullptr;
+		return list;
 
 #ifdef HAVE_SIDPLAYFP
 	const SidTuneInfo &info = *tune.getInfo();
@@ -494,14 +496,18 @@ sidplay_container_scan(Path path_fs, const unsigned int tnum)
 	/* Don't treat sids containing a single tune
 		as containers */
 	if(!all_files_are_containers && n_tracks < 2)
-		return nullptr;
+		return list;
 
-	/* Construct container/tune path names, eg.
-		Delta.sid/tune_001.sid */
-	if (tnum <= n_tracks) {
-		return FormatString(SUBTUNE_PREFIX "%03u.sid", tnum);
-	} else
-		return nullptr;
+	auto tail = list.before_begin();
+	for (unsigned i = 1; i < n_tracks; ++i) {
+		char track_name[32];
+		/* Construct container/tune path names, eg.
+		   Delta.sid/tune_001.sid */
+		sprintf(track_name, SUBTUNE_PREFIX "%03u.sid", i);
+		tail = list.emplace_after(tail, track_name);
+	}
+
+	return list;
 }
 
 static const char *const sidplay_suffixes[] = {
