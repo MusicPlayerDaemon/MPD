@@ -128,7 +128,7 @@ gme_container_scan(Path path_fs)
 	for (unsigned i = 1; i < num_songs; ++i) {
 		char track_name[64];
 		snprintf(track_name, sizeof(track_name),
-			 "%03u.%s", i, subtune_suffix);
+			 SUBTUNE_PREFIX "%03u.%s", i, subtune_suffix);
 		tail = list.emplace_after(tail, track_name);
 	}
 
