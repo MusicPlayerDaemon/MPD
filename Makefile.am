@@ -1644,6 +1644,7 @@ noinst_PROGRAMS = \
 	test/run_decoder \
 	test/read_tags \
 	test/ReadApeTags \
+	test/ContainerScan \
 	test/run_filter \
 	test/run_output \
 	test/run_convert \
@@ -1929,6 +1930,25 @@ test_ReadApeTags_LDADD = \
 test_ReadApeTags_SOURCES = \
 	src/Log.cxx src/LogBackend.cxx \
 	test/ReadApeTags.cxx
+
+test_ContainerScan_LDADD = \
+	$(DECODER_LIBS) \
+	libpcm.a \
+	$(INPUT_LIBS) \
+	$(ARCHIVE_LIBS) \
+	$(TAG_LIBS) \
+	libconf.a \
+	libbasic.a \
+	libevent.a \
+	libthread.a \
+	$(FS_LIBS) \
+	$(ICU_LDADD) \
+	libsystem.a \
+	libutil.a
+test_ContainerScan_SOURCES = test/ContainerScan.cxx \
+	src/Log.cxx src/LogBackend.cxx \
+	src/ReplayGainInfo.cxx \
+	$(DECODER_SRC)
 
 if ENABLE_ID3TAG
 test_dump_rva2_LDADD = \
