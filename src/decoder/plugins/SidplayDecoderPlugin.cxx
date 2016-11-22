@@ -410,6 +410,43 @@ GetInfoString(const SidTuneInfo &info, unsigned i)
 #endif
 }
 
+static void
+ScanSidTuneInfo(const SidTuneInfo &info, unsigned track, unsigned n_tracks,
+		const TagHandler &handler, void *handler_ctx)
+{
+	/* title */
+	const char *title = GetInfoString(info, 0);
+	if (title == nullptr)
+		title = "";
+
+	if (n_tracks > 1) {
+		char tag_title[1024];
+		snprintf(tag_title, sizeof(tag_title),
+			 "%s (%u/%u)",
+			 title, track, n_tracks);
+		tag_handler_invoke_tag(handler, handler_ctx,
+				       TAG_TITLE, tag_title);
+	} else
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
+
+	/* artist */
+	const char *artist = GetInfoString(info, 1);
+	if (artist != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
+				       artist);
+
+	/* date */
+	const char *date = GetInfoString(info, 2);
+	if (date != nullptr)
+		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE,
+				       date);
+
+	/* track */
+	char track_buffer[16];
+	sprintf(track_buffer, "%d", track);
+	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track_buffer);
+}
+
 static bool
 sidplay_scan_file(Path path_fs,
 		  const TagHandler &handler, void *handler_ctx)
@@ -435,37 +472,7 @@ sidplay_scan_file(Path path_fs,
 	const unsigned n_tracks = info.songs;
 #endif
 
-	/* title */
-	const char *title = GetInfoString(info, 0);
-	if (title == nullptr)
-		title = "";
-
-	if (n_tracks > 1) {
-		char tag_title[1024];
-		snprintf(tag_title, sizeof(tag_title),
-			 "%s (%d/%u)",
-			 title, song_num, n_tracks);
-		tag_handler_invoke_tag(handler, handler_ctx,
-				       TAG_TITLE, tag_title);
-	} else
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_TITLE, title);
-
-	/* artist */
-	const char *artist = GetInfoString(info, 1);
-	if (artist != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_ARTIST,
-				       artist);
-
-	/* date */
-	const char *date = GetInfoString(info, 2);
-	if (date != nullptr)
-		tag_handler_invoke_tag(handler, handler_ctx, TAG_DATE,
-				       date);
-
-	/* track */
-	char track[16];
-	sprintf(track, "%d", song_num);
-	tag_handler_invoke_tag(handler, handler_ctx, TAG_TRACK, track);
+	ScanSidTuneInfo(info, song_num, n_tracks, handler, handler_ctx);
 
 	/* time */
 	const auto duration = get_song_length(tune);
