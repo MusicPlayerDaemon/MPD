@@ -142,10 +142,13 @@ ParseContainerPath(Path path_fs)
 	return { path_fs.GetDirectoryName(), track };
 }
 
-#ifdef HAVE_SIDPLAYFP
-
+/**
+ * This is a template, because libsidplay requires SidTuneMod while
+ * libsidplayfp requires just a plain Sidtune.
+ */
+template<typename T>
 static SignedSongTime
-get_song_length(SidTune &tune)
+get_song_length(T &tune)
 {
 	assert(tune.getStatus());
 
@@ -158,25 +161,6 @@ get_song_length(SidTune &tune)
 
 	return SignedSongTime::FromS(length);
 }
-
-#else
-
-static SignedSongTime
-get_song_length(SidTuneMod &tune)
-{
-	assert(tune);
-
-	if (songlength_database == nullptr)
-		return SignedSongTime::Negative();
-
-	const auto length = songlength_database->length(tune);
-	if (length < 0)
-		return SignedSongTime::Negative();
-
-	return SignedSongTime::FromS(length);
-}
-
-#endif
 
 static void
 sidplay_file_decode(DecoderClient &client, Path path_fs)
