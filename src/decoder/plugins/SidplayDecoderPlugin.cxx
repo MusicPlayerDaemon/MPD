@@ -499,7 +499,7 @@ sidplay_container_scan(Path path_fs)
 		return list;
 
 	auto tail = list.before_begin();
-	for (unsigned i = 1; i < n_tracks; ++i) {
+	for (unsigned i = 1; i <= n_tracks; ++i) {
 		char track_name[32];
 		/* Construct container/tune path names, eg.
 		   Delta.sid/tune_001.sid */

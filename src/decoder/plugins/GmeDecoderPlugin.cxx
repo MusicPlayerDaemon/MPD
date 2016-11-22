@@ -125,7 +125,7 @@ gme_container_scan(Path path_fs)
 	const char *subtune_suffix = uri_get_suffix(path_fs.c_str());
 
 	auto tail = list.before_begin();
-	for (unsigned i = 1; i < num_songs; ++i) {
+	for (unsigned i = 1; i <= num_songs; ++i) {
 		char track_name[64];
 		snprintf(track_name, sizeof(track_name),
 			 SUBTUNE_PREFIX "%03u.%s", i, subtune_suffix);
