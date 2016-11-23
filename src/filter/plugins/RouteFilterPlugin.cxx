@@ -272,7 +272,7 @@ RouteFilter::FilterPCM(ConstBuffer<void> src)
 	return { result, result_size };
 }
 
-const struct filter_plugin route_filter_plugin = {
+const FilterPlugin route_filter_plugin = {
 	"route",
 	route_filter_init,
 };

@@ -28,16 +28,18 @@
 
 #include "Compiler.h"
 
-extern const struct filter_plugin null_filter_plugin;
-extern const struct filter_plugin chain_filter_plugin;
-extern const struct filter_plugin convert_filter_plugin;
-extern const struct filter_plugin route_filter_plugin;
-extern const struct filter_plugin normalize_filter_plugin;
-extern const struct filter_plugin volume_filter_plugin;
-extern const struct filter_plugin replay_gain_filter_plugin;
+struct FilterPlugin;
+
+extern const FilterPlugin null_filter_plugin;
+extern const FilterPlugin chain_filter_plugin;
+extern const FilterPlugin convert_filter_plugin;
+extern const FilterPlugin route_filter_plugin;
+extern const FilterPlugin normalize_filter_plugin;
+extern const FilterPlugin volume_filter_plugin;
+extern const FilterPlugin replay_gain_filter_plugin;
 
 gcc_pure
-const struct filter_plugin *
+const FilterPlugin *
 filter_plugin_by_name(const char *name);
 
 #endif

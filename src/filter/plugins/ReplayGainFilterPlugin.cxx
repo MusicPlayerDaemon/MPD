@@ -186,7 +186,7 @@ ReplayGainFilter::FilterPCM(ConstBuffer<void> src)
 		: pv.Apply(src);
 }
 
-const struct filter_plugin replay_gain_filter_plugin = {
+const FilterPlugin replay_gain_filter_plugin = {
 	"replay_gain",
 	replay_gain_filter_init,
 };

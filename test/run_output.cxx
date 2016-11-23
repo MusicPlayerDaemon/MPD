@@ -42,7 +42,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-const struct filter_plugin *
+const FilterPlugin *
 filter_plugin_by_name(gcc_unused const char *name)
 {
 	assert(false);

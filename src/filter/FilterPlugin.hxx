@@ -29,7 +29,7 @@
 struct ConfigBlock;
 class PreparedFilter;
 
-struct filter_plugin {
+struct FilterPlugin {
 	const char *name;
 
 	/**
@@ -47,7 +47,7 @@ struct filter_plugin {
  * @param block configuration section
  */
 PreparedFilter *
-filter_new(const struct filter_plugin *plugin,
+filter_new(const FilterPlugin *plugin,
 	   const ConfigBlock &block);
 
 /**

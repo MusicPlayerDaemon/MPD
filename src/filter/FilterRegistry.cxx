@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-const struct filter_plugin *const filter_plugins[] = {
+const FilterPlugin *const filter_plugins[] = {
 	&null_filter_plugin,
 	&route_filter_plugin,
 	&normalize_filter_plugin,
@@ -32,7 +32,7 @@ const struct filter_plugin *const filter_plugins[] = {
 	nullptr,
 };
 
-const struct filter_plugin *
+const FilterPlugin *
 filter_plugin_by_name(const char *name)
 {
 	for (unsigned i = 0; filter_plugins[i] != nullptr; ++i)

@@ -76,7 +76,7 @@ NormalizeFilter::FilterPCM(ConstBuffer<void> src)
 	return { (const void *)dest, src.size };
 }
 
-const struct filter_plugin normalize_filter_plugin = {
+const FilterPlugin normalize_filter_plugin = {
 	"normalize",
 	normalize_filter_init,
 };

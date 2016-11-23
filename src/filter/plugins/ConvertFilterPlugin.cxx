@@ -125,7 +125,7 @@ ConvertFilter::FilterPCM(ConstBuffer<void> src)
 	return state.Convert(src);
 }
 
-const struct filter_plugin convert_filter_plugin = {
+const FilterPlugin convert_filter_plugin = {
 	"convert",
 	convert_filter_init,
 };

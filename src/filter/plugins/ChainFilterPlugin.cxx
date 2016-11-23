@@ -143,7 +143,7 @@ ChainFilter::FilterPCM(ConstBuffer<void> src)
 	return src;
 }
 
-const struct filter_plugin chain_filter_plugin = {
+const FilterPlugin chain_filter_plugin = {
 	"chain",
 	chain_filter_init,
 };

@@ -75,7 +75,7 @@ VolumeFilter::FilterPCM(ConstBuffer<void> src)
 	return pv.Apply(src);
 }
 
-const struct filter_plugin volume_filter_plugin = {
+const FilterPlugin volume_filter_plugin = {
 	"volume",
 	volume_filter_init,
 };

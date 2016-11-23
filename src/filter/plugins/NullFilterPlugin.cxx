@@ -54,7 +54,7 @@ null_filter_init(gcc_unused const ConfigBlock &block)
 	return new PreparedNullFilter();
 }
 
-const struct filter_plugin null_filter_plugin = {
+const FilterPlugin null_filter_plugin = {
 	"null",
 	null_filter_init,
 };
