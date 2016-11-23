@@ -59,6 +59,8 @@ public:
 	 */
 	MusicPipe() = default;
 
+	MusicPipe(const MusicPipe &) = delete;
+
 	/**
 	 * Frees the object.  It must be empty now.
 	 */
@@ -66,6 +68,8 @@ public:
 		assert(head == nullptr);
 		assert(tail_r == &head);
 	}
+
+	MusicPipe &operator=(const MusicPipe &) = delete;
 
 #ifndef NDEBUG
 	/**
