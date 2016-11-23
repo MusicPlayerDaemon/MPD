@@ -95,7 +95,11 @@ struct MusicChunk {
 
 	MusicChunk() = default;
 
+	MusicChunk(const MusicChunk &) = delete;
+
 	~MusicChunk();
+
+	MusicChunk &operator=(const MusicChunk &) = delete;
 
 	bool IsEmpty() const {
 		return length == 0 && tag == nullptr;
