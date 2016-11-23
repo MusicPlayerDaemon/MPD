@@ -48,7 +48,7 @@ struct MusicChunk {
 	 * An optional chunk which should be mixed into this chunk.
 	 * This is used for cross-fading.
 	 */
-	MusicChunk *other;
+	MusicChunk *other = nullptr;
 
 	/**
 	 * The current mix ratio for cross-fading: 1.0 means play 100%
@@ -57,7 +57,7 @@ struct MusicChunk {
 	float mix_ratio;
 
 	/** number of bytes stored in this chunk */
-	uint16_t length;
+	uint16_t length = 0;
 
 	/** current bit rate of the source file */
 	uint16_t bit_rate;
@@ -71,7 +71,7 @@ struct MusicChunk {
 	 * object is owned by this chunk, and must be freed when this
 	 * chunk is deinitialized.
 	 */
-	Tag *tag;
+	Tag *tag = nullptr;
 
 	/**
 	 * Replay gain information associated with this chunk.
@@ -84,7 +84,7 @@ struct MusicChunk {
 	 * changed since the last chunk.  The magic value 0 indicates
 	 * that there is no replay gain info available.
 	 */
-	unsigned replay_gain_serial;
+	unsigned replay_gain_serial = 0;
 
 	/** the data (probably PCM) */
 	uint8_t data[CHUNK_SIZE];
@@ -93,11 +93,7 @@ struct MusicChunk {
 	AudioFormat audio_format;
 #endif
 
-	MusicChunk()
-		:other(nullptr),
-		 length(0),
-		 tag(nullptr),
-		 replay_gain_serial(0) {}
+	MusicChunk() = default;
 
 	~MusicChunk();
 
