@@ -38,31 +38,26 @@ class MusicBuffer;
  */
 class MusicPipe {
 	/** the first chunk */
-	MusicChunk *head;
+	MusicChunk *head = nullptr;
 
 	/** a pointer to the tail of the chunk */
-	MusicChunk **tail_r;
+	MusicChunk **tail_r = &head;
 
 	/** the current number of chunks */
-	unsigned size;
+	unsigned size = 0;
 
 	/** a mutex which protects #head and #tail_r */
 	mutable Mutex mutex;
 
 #ifndef NDEBUG
-	AudioFormat audio_format;
+	AudioFormat audio_format = AudioFormat::Undefined();
 #endif
 
 public:
 	/**
 	 * Creates a new #MusicPipe object.  It is empty.
 	 */
-	MusicPipe()
-		:head(nullptr), tail_r(&head), size(0) {
-#ifndef NDEBUG
-		audio_format.Clear();
-#endif
-	}
+	MusicPipe() = default;
 
 	/**
 	 * Frees the object.  It must be empty now.
