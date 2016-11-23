@@ -289,6 +289,8 @@ SimpleDatabase::Visit(const DatabaseSelection &selection,
 				const LightSong song2 = song->Export();
 				if (selection.Match(song2))
 					visit_song(song2);
+
+				return;
 			}
 		}
 	}
