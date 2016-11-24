@@ -176,6 +176,14 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.SetConsume(new_value);
 	}
 
+	/**
+	 * Publishes the effective #ReplayGainMode to all subsystems.
+	 * #REPLAY_GAIN_AUTO is substituted.
+	 *
+	 * @param mode the configured mode
+	 */
+	void UpdateEffectiveReplayGainMode(ReplayGainMode mode);
+
 #ifdef ENABLE_DATABASE
 	/**
 	 * Returns the global #Database instance.  May return nullptr

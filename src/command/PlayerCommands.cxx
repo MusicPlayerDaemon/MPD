@@ -263,7 +263,7 @@ handle_random(Client &client, Request args, gcc_unused Response &r)
 {
 	bool status = args.ParseBool(0);
 	client.partition.SetRandom(status);
-	client.partition.outputs.SetReplayGainMode(replay_gain_get_real_mode(client.partition.GetRandom()));
+	client.partition.UpdateEffectiveReplayGainMode(replay_gain_mode);
 	return CommandResult::OK;
 }
 
@@ -338,7 +338,7 @@ handle_replay_gain_mode(Client &client, Request args, Response &r)
 		return CommandResult::ERROR;
 	}
 
-	client.partition.outputs.SetReplayGainMode(replay_gain_get_real_mode(client.playlist.queue.random));
+	client.partition.UpdateEffectiveReplayGainMode(replay_gain_mode);
 	client.partition.EmitIdle(IDLE_OPTIONS);
 	return CommandResult::OK;
 }

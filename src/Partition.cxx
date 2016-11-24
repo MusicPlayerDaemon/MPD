@@ -42,6 +42,17 @@ Partition::EmitIdle(unsigned mask)
 	instance.EmitIdle(mask);
 }
 
+void
+Partition::UpdateEffectiveReplayGainMode(ReplayGainMode mode)
+{
+	if (mode == REPLAY_GAIN_AUTO)
+	    mode = playlist.queue.random
+		    ? REPLAY_GAIN_TRACK
+		    : REPLAY_GAIN_ALBUM;
+
+	outputs.SetReplayGainMode(mode);
+}
+
 #ifdef ENABLE_DATABASE
 
 const Database *

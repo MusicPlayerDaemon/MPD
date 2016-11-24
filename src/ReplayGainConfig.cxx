@@ -131,16 +131,3 @@ void replay_gain_global_init(void)
 	replay_gain_limit = config_get_bool(ConfigOption::REPLAYGAIN_LIMIT,
 					    DEFAULT_REPLAYGAIN_LIMIT);
 }
-
-ReplayGainMode
-replay_gain_get_real_mode(bool random_mode)
-{
-	ReplayGainMode rgm;
-
-	rgm = replay_gain_mode;
-
-	if (rgm == REPLAY_GAIN_AUTO)
-	    rgm = random_mode ? REPLAY_GAIN_TRACK : REPLAY_GAIN_ALBUM;
-
-	return rgm;
-}

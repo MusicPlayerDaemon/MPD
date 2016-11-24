@@ -47,11 +47,4 @@ replay_gain_get_mode_string();
 bool
 replay_gain_set_mode_string(const char *p);
 
-/**
-  * Returns the "real" mode according to the "auto" setting"
-  */
-gcc_pure
-ReplayGainMode
-replay_gain_get_real_mode(bool random_mode);
-
 #endif
