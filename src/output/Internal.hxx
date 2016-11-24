@@ -23,7 +23,7 @@
 #include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/PcmDither.hxx"
-#include "ReplayGainInfo.hxx"
+#include "ReplayGainMode.hxx"
 #include "filter/Observer.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"

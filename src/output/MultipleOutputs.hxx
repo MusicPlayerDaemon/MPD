@@ -27,7 +27,7 @@
 #define OUTPUT_ALL_H
 
 #include "AudioFormat.hxx"
-#include "ReplayGainInfo.hxx"
+#include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 

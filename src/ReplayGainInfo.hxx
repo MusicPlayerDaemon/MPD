@@ -22,13 +22,7 @@
 
 #include "check.h"
 #include "Compiler.h"
-
-enum ReplayGainMode {
-	REPLAY_GAIN_AUTO = -2,
-	REPLAY_GAIN_OFF,
-	REPLAY_GAIN_ALBUM,
-	REPLAY_GAIN_TRACK,
-};
+#include "ReplayGainMode.hxx"
 
 struct ReplayGainTuple {
 	float gain;
