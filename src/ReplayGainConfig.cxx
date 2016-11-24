@@ -21,7 +21,6 @@
 #include "ReplayGainConfig.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
-#include "system/FatalError.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <assert.h>
@@ -36,6 +35,33 @@ float replay_gain_preamp = 1.0;
 float replay_gain_missing_preamp = 1.0;
 bool replay_gain_limit = DEFAULT_REPLAYGAIN_LIMIT;
 
+static float
+ParsePreamp(const char *s)
+{
+	assert(s != nullptr);
+
+	char *endptr;
+	float f = strtod(s, &endptr);
+	if (endptr == s || *endptr != '\0')
+		throw std::invalid_argument("Not a numeric value");
+
+	if (f < -15 || f > 15)
+		throw std::invalid_argument("Number must be between -15 and 15");
+
+	return pow(10, f / 20.0);
+}
+
+static float
+ParsePreamp(const ConfigParam &p)
+{
+	try {
+		return ParsePreamp(p.value.c_str());
+	} catch (...) {
+		std::throw_with_nested(FormatRuntimeError("Failed to parse line %i",
+							  p.line));
+	}
+}
+
 void replay_gain_global_init(void)
 {
 	const auto *param = config_get_param(ConfigOption::REPLAYGAIN);
@@ -49,46 +75,12 @@ void replay_gain_global_init(void)
 	}
 
 	param = config_get_param(ConfigOption::REPLAYGAIN_PREAMP);
-
-	if (param) {
-		char *test;
-		float f = strtod(param->value.c_str(), &test);
-
-		if (*test != '\0') {
-			FormatFatalError("Replaygain preamp \"%s\" is not a number at "
-					 "line %i\n",
-					 param->value.c_str(), param->line);
-		}
-
-		if (f < -15 || f > 15) {
-			FormatFatalError("Replaygain preamp \"%s\" is not between -15 and"
-					 "15 at line %i\n",
-					 param->value.c_str(), param->line);
-		}
-
-		replay_gain_preamp = pow(10, f / 20.0);
-	}
+	if (param)
+		replay_gain_preamp = ParsePreamp(*param);
 
 	param = config_get_param(ConfigOption::REPLAYGAIN_MISSING_PREAMP);
-
-	if (param) {
-		char *test;
-		float f = strtod(param->value.c_str(), &test);
-
-		if (*test != '\0') {
-			FormatFatalError("Replaygain missing preamp \"%s\" is not a number at "
-					 "line %i\n",
-					 param->value.c_str(), param->line);
-		}
-
-		if (f < -15 || f > 15) {
-			FormatFatalError("Replaygain missing preamp \"%s\" is not between -15 and"
-					 "15 at line %i\n",
-					 param->value.c_str(), param->line);
-		}
-
-		replay_gain_missing_preamp = pow(10, f / 20.0);
-	}
+	if (param)
+		replay_gain_missing_preamp = ParsePreamp(*param);
 
 	replay_gain_limit = config_get_bool(ConfigOption::REPLAYGAIN_LIMIT,
 					    DEFAULT_REPLAYGAIN_LIMIT);
