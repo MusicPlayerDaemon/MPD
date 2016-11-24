@@ -140,7 +140,7 @@ ReplayGainFilter::Update()
 {
 	unsigned volume = PCM_VOLUME_1;
 	if (mode != REPLAY_GAIN_OFF) {
-		const auto &tuple = info.tuples[mode];
+		const auto &tuple = info.Get(mode);
 		float scale = tuple.CalculateScale(replay_gain_preamp,
 						   replay_gain_missing_preamp,
 						   replay_gain_limit);

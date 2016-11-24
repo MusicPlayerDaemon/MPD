@@ -597,7 +597,7 @@ DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
 			if (rgm != REPLAY_GAIN_ALBUM)
 				rgm = REPLAY_GAIN_TRACK;
 
-			const auto &tuple = new_replay_gain_info->tuples[rgm];
+			const auto &tuple = new_replay_gain_info->Get(rgm);
 			const auto scale =
 				tuple.CalculateScale(replay_gain_preamp,
 						     replay_gain_missing_preamp,

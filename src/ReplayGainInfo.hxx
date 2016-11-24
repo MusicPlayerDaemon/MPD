@@ -56,6 +56,10 @@ struct ReplayGainInfo {
 			tuples[REPLAY_GAIN_TRACK].IsDefined();
 	}
 
+	const ReplayGainTuple &Get(ReplayGainMode mode) const {
+		return tuples[mode];
+	}
+
 	void Clear() {
 		tuples[REPLAY_GAIN_ALBUM].Clear();
 		tuples[REPLAY_GAIN_TRACK].Clear();
