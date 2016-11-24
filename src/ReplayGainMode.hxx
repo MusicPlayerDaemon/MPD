@@ -20,11 +20,13 @@
 #ifndef MPD_REPLAY_GAIN_MODE_HXX
 #define MPD_REPLAY_GAIN_MODE_HXX
 
-enum ReplayGainMode {
-	REPLAY_GAIN_AUTO = -2,
-	REPLAY_GAIN_OFF,
-	REPLAY_GAIN_ALBUM,
-	REPLAY_GAIN_TRACK,
+#include <stdint.h>
+
+enum class ReplayGainMode : uint8_t {
+	OFF,
+	ALBUM,
+	TRACK,
+	AUTO,
 };
 
 #endif

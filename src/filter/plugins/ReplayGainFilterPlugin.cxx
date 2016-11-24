@@ -50,7 +50,7 @@ class ReplayGainFilter final : public Filter {
 	 */
 	const unsigned base;
 
-	ReplayGainMode mode = REPLAY_GAIN_OFF;
+	ReplayGainMode mode = ReplayGainMode::OFF;
 
 	ReplayGainInfo info;
 
@@ -72,7 +72,7 @@ public:
 	ReplayGainFilter(const AudioFormat &audio_format,
 			 Mixer *_mixer, unsigned _base)
 		:Filter(audio_format),
-		 mixer(_mixer), base(_base), mode(REPLAY_GAIN_OFF) {
+		 mixer(_mixer), base(_base) {
 		info.Clear();
 
 		pv.Open(out_audio_format.format);
@@ -94,7 +94,7 @@ public:
 
 		FormatDebug(replay_gain_domain,
 			    "replay gain mode has changed %d->%d\n",
-			    mode, _mode);
+			    (int)mode, (int)_mode);
 
 		mode = _mode;
 		Update();
@@ -138,7 +138,7 @@ void
 ReplayGainFilter::Update()
 {
 	unsigned volume = PCM_VOLUME_1;
-	if (mode != REPLAY_GAIN_OFF) {
+	if (mode != ReplayGainMode::OFF) {
 		const auto &tuple = info.Get(mode);
 		float scale = tuple.CalculateScale(replay_gain_preamp,
 						   replay_gain_missing_preamp,

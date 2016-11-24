@@ -178,7 +178,7 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 
 	/**
 	 * Publishes the effective #ReplayGainMode to all subsystems.
-	 * #REPLAY_GAIN_AUTO is substituted.
+	 * #ReplayGainMode::AUTO is substituted.
 	 *
 	 * @param mode the configured mode
 	 */

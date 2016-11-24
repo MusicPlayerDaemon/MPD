@@ -50,7 +50,7 @@ struct ReplayGainInfo {
 	}
 
 	const ReplayGainTuple &Get(ReplayGainMode mode) const {
-		return mode == REPLAY_GAIN_ALBUM
+		return mode == ReplayGainMode::ALBUM
 			? (album.IsDefined() ? album : track)
 			: (track.IsDefined() ? track : album);
 	}

@@ -45,10 +45,10 @@ Partition::EmitIdle(unsigned mask)
 void
 Partition::UpdateEffectiveReplayGainMode(ReplayGainMode mode)
 {
-	if (mode == REPLAY_GAIN_AUTO)
+	if (mode == ReplayGainMode::AUTO)
 	    mode = playlist.queue.random
-		    ? REPLAY_GAIN_TRACK
-		    : REPLAY_GAIN_ALBUM;
+		    ? ReplayGainMode::TRACK
+		    : ReplayGainMode::ALBUM;
 
 	outputs.SetReplayGainMode(mode);
 }

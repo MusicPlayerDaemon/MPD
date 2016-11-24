@@ -148,7 +148,7 @@ struct AudioOutput {
 	 */
 	bool woken_for_play = false;
 
-	ReplayGainMode replay_gain_mode = REPLAY_GAIN_OFF;
+	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
 	/**
 	 * If not nullptr, the device has failed, and this timer is used

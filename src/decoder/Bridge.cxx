@@ -592,10 +592,10 @@ DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
 		if (++serial == 0)
 			serial = 1;
 
-		if (REPLAY_GAIN_OFF != replay_gain_mode) {
+		if (ReplayGainMode::OFF != replay_gain_mode) {
 			ReplayGainMode rgm = replay_gain_mode;
-			if (rgm != REPLAY_GAIN_ALBUM)
-				rgm = REPLAY_GAIN_TRACK;
+			if (rgm != ReplayGainMode::ALBUM)
+				rgm = ReplayGainMode::TRACK;
 
 			const auto &tuple = new_replay_gain_info->Get(rgm);
 			const auto scale =

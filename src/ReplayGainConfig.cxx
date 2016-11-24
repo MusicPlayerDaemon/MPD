@@ -28,7 +28,7 @@
 #include <string.h>
 #include <math.h>
 
-ReplayGainMode replay_gain_mode = REPLAY_GAIN_OFF;
+ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
 static constexpr bool DEFAULT_REPLAYGAIN_LIMIT = true;
 
@@ -40,16 +40,16 @@ const char *
 replay_gain_get_mode_string(void)
 {
 	switch (replay_gain_mode) {
-	case REPLAY_GAIN_AUTO:
+	case ReplayGainMode::AUTO:
 		return "auto";
 
-	case REPLAY_GAIN_OFF:
+	case ReplayGainMode::OFF:
 		return "off";
 
-	case REPLAY_GAIN_TRACK:
+	case ReplayGainMode::TRACK:
 		return "track";
 
-	case REPLAY_GAIN_ALBUM:
+	case ReplayGainMode::ALBUM:
 		return "album";
 	}
 
@@ -63,13 +63,13 @@ replay_gain_set_mode_string(const char *p)
 	assert(p != nullptr);
 
 	if (strcmp(p, "off") == 0)
-		replay_gain_mode = REPLAY_GAIN_OFF;
+		replay_gain_mode = ReplayGainMode::OFF;
 	else if (strcmp(p, "track") == 0)
-		replay_gain_mode = REPLAY_GAIN_TRACK;
+		replay_gain_mode = ReplayGainMode::TRACK;
 	else if (strcmp(p, "album") == 0)
-		replay_gain_mode = REPLAY_GAIN_ALBUM;
+		replay_gain_mode = ReplayGainMode::ALBUM;
 	else if (strcmp(p, "auto") == 0)
-		replay_gain_mode = REPLAY_GAIN_AUTO;
+		replay_gain_mode = ReplayGainMode::AUTO;
 	else
 		return false;
 
