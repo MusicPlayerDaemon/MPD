@@ -45,6 +45,21 @@ config_get_string(gcc_unused enum ConfigOption option,
 	return default_value;
 }
 
+static void
+DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple)
+{
+	if (tuple.IsDefined())
+		fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
+			name, tuple.gain, tuple.peak);
+}
+
+static void
+DumpReplayGainInfo(const ReplayGainInfo &info)
+{
+	DumpReplayGainTuple("album", info.tuples[REPLAY_GAIN_ALBUM]);
+	DumpReplayGainTuple("track", info.tuples[REPLAY_GAIN_TRACK]);
+}
+
 int main(int argc, char **argv)
 try {
 #ifdef HAVE_LOCALE_H
@@ -79,15 +94,7 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	const ReplayGainTuple *tuple = &replay_gain.tuples[REPLAY_GAIN_ALBUM];
-	if (tuple->IsDefined())
-		fprintf(stderr, "replay_gain[album]: gain=%f peak=%f\n",
-			tuple->gain, tuple->peak);
-
-	tuple = &replay_gain.tuples[REPLAY_GAIN_TRACK];
-	if (tuple->IsDefined())
-		fprintf(stderr, "replay_gain[track]: gain=%f peak=%f\n",
-			tuple->gain, tuple->peak);
+	DumpReplayGainInfo(replay_gain);
 
 	return EXIT_SUCCESS;
 } catch (const std::exception &e) {

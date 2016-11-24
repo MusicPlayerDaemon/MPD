@@ -121,18 +121,26 @@ FakeDecoder::SubmitTag(gcc_unused InputStream *is,
 	return DecoderCommand::NONE;
 }
 
+static void
+DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple)
+{
+	if (tuple.IsDefined())
+		fprintf(stderr, "replay_gain[%s]: gain=%f peak=%f\n",
+			name, tuple.gain, tuple.peak);
+}
+
+static void
+DumpReplayGainInfo(const ReplayGainInfo &info)
+{
+	DumpReplayGainTuple("album", info.tuples[REPLAY_GAIN_ALBUM]);
+	DumpReplayGainTuple("track", info.tuples[REPLAY_GAIN_TRACK]);
+}
+
 void
 FakeDecoder::SubmitReplayGain(const ReplayGainInfo *rgi)
 {
-	const ReplayGainTuple *tuple = &rgi->tuples[REPLAY_GAIN_ALBUM];
-	if (tuple->IsDefined())
-		fprintf(stderr, "replay_gain[album]: gain=%f peak=%f\n",
-			tuple->gain, tuple->peak);
-
-	tuple = &rgi->tuples[REPLAY_GAIN_TRACK];
-	if (tuple->IsDefined())
-		fprintf(stderr, "replay_gain[track]: gain=%f peak=%f\n",
-			tuple->gain, tuple->peak);
+	if (rgi != nullptr)
+		DumpReplayGainInfo(*rgi);
 }
 
 void
