@@ -97,6 +97,8 @@ ToAck(std::exception_ptr ep)
 #endif
 	} catch (const std::system_error &e) {
 		return ACK_ERROR_SYSTEM;
+	} catch (const std::invalid_argument &e) {
+		return ACK_ERROR_ARG;
 #if defined(__GLIBCXX__) && __GLIBCXX__ < 20151204
 	} catch (const std::exception &e) {
 #else
