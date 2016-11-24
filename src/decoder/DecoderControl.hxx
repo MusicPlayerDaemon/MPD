@@ -89,8 +89,8 @@ struct DecoderControl {
 	 */
 	Cond &client_cond;
 
-	DecoderState state;
-	DecoderCommand command;
+	DecoderState state = DecoderState::STOP;
+	DecoderCommand command = DecoderCommand::NONE;
 
 	/**
 	 * The error that occurred in the decoder thread.  This
@@ -107,7 +107,7 @@ struct DecoderControl {
 	 * false, the DecoderThread may omit invoking Cond::signal(),
 	 * reducing the number of system calls.
 	 */
-	bool client_is_waiting;
+	bool client_is_waiting = false;
 
 	bool seek_error;
 	bool seekable;
@@ -127,7 +127,7 @@ struct DecoderControl {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	DetachedSong *song;
+	DetachedSong *song = nullptr;
 
 	/**
 	 * The initial seek position, e.g. to the start of a sub-track
@@ -156,8 +156,8 @@ struct DecoderControl {
 	 */
 	MusicPipe *pipe;
 
-	float replay_gain_db;
-	float replay_gain_prev_db;
+	float replay_gain_db = 0;
+	float replay_gain_prev_db = 0;
 
 	MixRampInfo mix_ramp, previous_mix_ramp;
 
