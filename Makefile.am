@@ -853,7 +853,7 @@ libbasic_a_SOURCES = \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
 	src/AudioFormat.cxx src/AudioFormat.hxx \
 	src/AudioParser.cxx src/AudioParser.hxx \
-	src/ReplayGainMode.hxx \
+	src/ReplayGainMode.cxx src/ReplayGainMode.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx
 
 # configuration library

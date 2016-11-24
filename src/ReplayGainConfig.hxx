@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "ReplayGainMode.hxx"
-#include "Compiler.h"
 
 extern ReplayGainMode replay_gain_mode;
 extern float replay_gain_preamp;
@@ -31,20 +30,5 @@ extern bool replay_gain_limit;
 
 void
 replay_gain_global_init();
-
-/**
- * Returns the current replay gain mode as a machine-readable string.
- */
-gcc_pure
-const char *
-replay_gain_get_mode_string();
-
-/**
- * Sets the replay gain mode, parsed from a string.
- *
- * @return true on success, false if the string could not be parsed
- */
-bool
-replay_gain_set_mode_string(const char *p);
 
 #endif

@@ -17,33 +17,47 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_REPLAY_GAIN_MODE_HXX
-#define MPD_REPLAY_GAIN_MODE_HXX
+#include "ReplayGainMode.hxx"
 
-#include "Compiler.h"
+#include <stdexcept>
 
-#include <stdint.h>
+#include <assert.h>
+#include <string.h>
 
-enum class ReplayGainMode : uint8_t {
-	OFF,
-	ALBUM,
-	TRACK,
-	AUTO,
-};
-
-/**
- * Return the string representation of a #ReplayGainMode.
- */
-gcc_pure
 const char *
-ToString(ReplayGainMode mode);
+ToString(ReplayGainMode mode)
+{
+	switch (mode) {
+	case ReplayGainMode::AUTO:
+		return "auto";
 
-/**
- * Parse a string to a #ReplayGainMode.  Throws std::runtime_error on
- * error.
- */
-gcc_pure
+	case ReplayGainMode::OFF:
+		return "off";
+
+	case ReplayGainMode::TRACK:
+		return "track";
+
+	case ReplayGainMode::ALBUM:
+		return "album";
+	}
+
+	assert(false);
+	gcc_unreachable();
+}
+
 ReplayGainMode
-FromString(const char *s);
+FromString(const char *s)
+{
+	assert(s != nullptr);
 
-#endif
+	if (strcmp(s, "off") == 0)
+		return ReplayGainMode::OFF;
+	else if (strcmp(s, "track") == 0)
+		return ReplayGainMode::TRACK;
+	else if (strcmp(s, "album") == 0)
+		return ReplayGainMode::ALBUM;
+	else if (strcmp(s, "auto") == 0)
+		return ReplayGainMode::AUTO;
+	else
+		throw std::invalid_argument("Unrecognized replay gain mode");
+}

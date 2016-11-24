@@ -331,13 +331,9 @@ handle_mixrampdelay(Client &client, Request args, gcc_unused Response &r)
 }
 
 CommandResult
-handle_replay_gain_mode(Client &client, Request args, Response &r)
+handle_replay_gain_mode(Client &client, Request args, Response &)
 {
-	if (!replay_gain_set_mode_string(args.front())) {
-		r.Error(ACK_ERROR_ARG, "Unrecognized replay gain mode");
-		return CommandResult::ERROR;
-	}
-
+	replay_gain_mode = FromString(args.front());
 	client.partition.UpdateEffectiveReplayGainMode(replay_gain_mode);
 	client.partition.EmitIdle(IDLE_OPTIONS);
 	return CommandResult::OK;
@@ -347,6 +343,6 @@ CommandResult
 handle_replay_gain_status(gcc_unused Client &client, gcc_unused Request args,
 			  Response &r)
 {
-	r.Format("replay_gain_mode: %s\n", replay_gain_get_mode_string());
+	r.Format("replay_gain_mode: %s\n", ToString(replay_gain_mode));
 	return CommandResult::OK;
 }

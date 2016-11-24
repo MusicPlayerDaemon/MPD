@@ -22,10 +22,10 @@
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "system/FatalError.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
 
 ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
@@ -36,54 +36,16 @@ float replay_gain_preamp = 1.0;
 float replay_gain_missing_preamp = 1.0;
 bool replay_gain_limit = DEFAULT_REPLAYGAIN_LIMIT;
 
-const char *
-replay_gain_get_mode_string(void)
-{
-	switch (replay_gain_mode) {
-	case ReplayGainMode::AUTO:
-		return "auto";
-
-	case ReplayGainMode::OFF:
-		return "off";
-
-	case ReplayGainMode::TRACK:
-		return "track";
-
-	case ReplayGainMode::ALBUM:
-		return "album";
-	}
-
-	assert(false);
-	gcc_unreachable();
-}
-
-bool
-replay_gain_set_mode_string(const char *p)
-{
-	assert(p != nullptr);
-
-	if (strcmp(p, "off") == 0)
-		replay_gain_mode = ReplayGainMode::OFF;
-	else if (strcmp(p, "track") == 0)
-		replay_gain_mode = ReplayGainMode::TRACK;
-	else if (strcmp(p, "album") == 0)
-		replay_gain_mode = ReplayGainMode::ALBUM;
-	else if (strcmp(p, "auto") == 0)
-		replay_gain_mode = ReplayGainMode::AUTO;
-	else
-		return false;
-
-	return true;
-}
-
 void replay_gain_global_init(void)
 {
 	const auto *param = config_get_param(ConfigOption::REPLAYGAIN);
 
-	if (param != nullptr &&
-	    !replay_gain_set_mode_string(param->value.c_str())) {
-		FormatFatalError("replaygain value \"%s\" at line %i is invalid\n",
-				 param->value.c_str(), param->line);
+	try {
+		if (param != nullptr)
+			replay_gain_mode = FromString(param->value.c_str());
+	} catch (...) {
+		std::throw_with_nested(FormatRuntimeError("Failed to parse line %i",
+							  param->line));
 	}
 
 	param = config_get_param(ConfigOption::REPLAYGAIN_PREAMP);
