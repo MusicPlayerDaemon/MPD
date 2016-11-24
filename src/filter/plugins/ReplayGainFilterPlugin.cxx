@@ -79,10 +79,9 @@ public:
 	}
 
 	void SetInfo(const ReplayGainInfo *_info) {
-		if (_info != nullptr) {
+		if (_info != nullptr)
 			info = *_info;
-			info.Complete();
-		} else
+		else
 			info.Clear();
 
 		Update();

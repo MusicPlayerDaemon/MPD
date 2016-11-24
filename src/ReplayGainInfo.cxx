@@ -41,10 +41,3 @@ ReplayGainTuple::CalculateScale(float preamp, float missing_preamp,
 
 	return scale;
 }
-
-void
-ReplayGainInfo::Complete()
-{
-	if (!tuples[REPLAY_GAIN_ALBUM].IsDefined())
-		tuples[REPLAY_GAIN_ALBUM] = tuples[REPLAY_GAIN_TRACK];
-}

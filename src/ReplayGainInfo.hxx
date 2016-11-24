@@ -57,19 +57,19 @@ struct ReplayGainInfo {
 	}
 
 	const ReplayGainTuple &Get(ReplayGainMode mode) const {
-		return tuples[mode];
+		return mode == REPLAY_GAIN_ALBUM
+			? (tuples[REPLAY_GAIN_ALBUM].IsDefined()
+			   ? tuples[REPLAY_GAIN_ALBUM]
+			   : tuples[REPLAY_GAIN_TRACK])
+			: (tuples[REPLAY_GAIN_TRACK].IsDefined()
+			   ? tuples[REPLAY_GAIN_TRACK]
+			   : tuples[REPLAY_GAIN_ALBUM]);
 	}
 
 	void Clear() {
 		tuples[REPLAY_GAIN_ALBUM].Clear();
 		tuples[REPLAY_GAIN_TRACK].Clear();
 	}
-
-	/**
-	 * Attempt to auto-complete missing data.  In particular, if
-	 * album information is missing, track gain is used.
-	 */
-	void Complete();
 };
 
 #endif
