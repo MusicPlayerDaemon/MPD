@@ -170,10 +170,10 @@ mpcdec_decode(DecoderClient &client, InputStream &is)
 
 	ReplayGainInfo rgi;
 	rgi.Clear();
-	rgi.tuples[REPLAY_GAIN_ALBUM].gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
-	rgi.tuples[REPLAY_GAIN_ALBUM].peak = pow(10, info.peak_album / 256. / 20) / 32767;
-	rgi.tuples[REPLAY_GAIN_TRACK].gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
-	rgi.tuples[REPLAY_GAIN_TRACK].peak = pow(10, info.peak_title / 256. / 20) / 32767;
+	rgi.album.gain = MPC_OLD_GAIN_REF  - (info.gain_album  / 256.);
+	rgi.album.peak = pow(10, info.peak_album / 256. / 20) / 32767;
+	rgi.track.gain = MPC_OLD_GAIN_REF  - (info.gain_title  / 256.);
+	rgi.track.peak = pow(10, info.peak_title / 256. / 20) / 32767;
 
 	client.SubmitReplayGain(&rgi);
 

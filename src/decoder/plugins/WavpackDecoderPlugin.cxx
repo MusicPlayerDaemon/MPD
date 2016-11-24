@@ -225,13 +225,13 @@ wavpack_replaygain(ReplayGainInfo &rgi,
 
 	bool found = false;
 	found |= wavpack_tag_float(wpc, "replaygain_track_gain",
-				   &rgi.tuples[REPLAY_GAIN_TRACK].gain);
+				   &rgi.track.gain);
 	found |= wavpack_tag_float(wpc, "replaygain_track_peak",
-				   &rgi.tuples[REPLAY_GAIN_TRACK].peak);
+				   &rgi.track.peak);
 	found |= wavpack_tag_float(wpc, "replaygain_album_gain",
-				   &rgi.tuples[REPLAY_GAIN_ALBUM].gain);
+				   &rgi.album.gain);
 	found |= wavpack_tag_float(wpc, "replaygain_album_peak",
-				   &rgi.tuples[REPLAY_GAIN_ALBUM].peak);
+				   &rgi.album.peak);
 
 	return found;
 }

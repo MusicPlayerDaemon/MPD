@@ -805,8 +805,8 @@ MadDecoder::DecodeFirstFrame(Tag **tag)
 			    lame.track_gain) {
 				ReplayGainInfo rgi;
 				rgi.Clear();
-				rgi.tuples[REPLAY_GAIN_TRACK].gain = lame.track_gain;
-				rgi.tuples[REPLAY_GAIN_TRACK].peak = lame.peak;
+				rgi.track.gain = lame.track_gain;
+				rgi.track.peak = lame.peak;
 				client->SubmitReplayGain(&rgi);
 			}
 		}

@@ -56,8 +56,8 @@ DumpReplayGainTuple(const char *name, const ReplayGainTuple &tuple)
 static void
 DumpReplayGainInfo(const ReplayGainInfo &info)
 {
-	DumpReplayGainTuple("album", info.tuples[REPLAY_GAIN_ALBUM]);
-	DumpReplayGainTuple("track", info.tuples[REPLAY_GAIN_TRACK]);
+	DumpReplayGainTuple("album", info.album);
+	DumpReplayGainTuple("track", info.track);
 }
 
 int main(int argc, char **argv)

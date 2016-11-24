@@ -49,26 +49,21 @@ struct ReplayGainTuple {
 };
 
 struct ReplayGainInfo {
-	ReplayGainTuple tuples[2];
+	ReplayGainTuple track, album;
 
 	constexpr bool IsDefined() const {
-		return tuples[REPLAY_GAIN_ALBUM].IsDefined() ||
-			tuples[REPLAY_GAIN_TRACK].IsDefined();
+		return track.IsDefined() || album.IsDefined();
 	}
 
 	const ReplayGainTuple &Get(ReplayGainMode mode) const {
 		return mode == REPLAY_GAIN_ALBUM
-			? (tuples[REPLAY_GAIN_ALBUM].IsDefined()
-			   ? tuples[REPLAY_GAIN_ALBUM]
-			   : tuples[REPLAY_GAIN_TRACK])
-			: (tuples[REPLAY_GAIN_TRACK].IsDefined()
-			   ? tuples[REPLAY_GAIN_TRACK]
-			   : tuples[REPLAY_GAIN_ALBUM]);
+			? (album.IsDefined() ? album : track)
+			: (track.IsDefined() ? track : album);
 	}
 
 	void Clear() {
-		tuples[REPLAY_GAIN_ALBUM].Clear();
-		tuples[REPLAY_GAIN_TRACK].Clear();
+		track.Clear();
+		album.Clear();
 	}
 };
 
