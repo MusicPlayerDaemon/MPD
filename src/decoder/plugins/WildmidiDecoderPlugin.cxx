@@ -25,7 +25,6 @@
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "fs/Path.hxx"
-#include "system/FatalError.hxx"
 #include "Log.hxx"
 
 extern "C" {

@@ -22,9 +22,9 @@
 #include "../DecoderAPI.hxx"
 #include "input/InputStream.hxx"
 #include "tag/TagHandler.hxx"
-#include "system/FatalError.hxx"
 #include "util/WritableBuffer.hxx"
 #include "util/Domain.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
 #include <libmodplug/modplug.h>
@@ -45,8 +45,8 @@ modplug_decoder_init(const ConfigBlock &block)
 {
 	modplug_loop_count = block.GetBlockValue("loop_count", 0);
 	if (modplug_loop_count < -1)
-		FormatFatalError("Invalid loop count in line %d: %i",
-				 block.line, modplug_loop_count);
+		throw FormatRuntimeError("Invalid loop count in line %d: %i",
+					 block.line, modplug_loop_count);
 
 	return true;
 }

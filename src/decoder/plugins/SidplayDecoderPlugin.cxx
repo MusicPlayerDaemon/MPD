@@ -29,7 +29,6 @@
 #include "util/FormatString.hxx"
 #include "util/Domain.hxx"
 #include "system/ByteOrder.hxx"
-#include "system/FatalError.hxx"
 #include "Log.hxx"
 
 #ifdef HAVE_SIDPLAYFP
