@@ -93,8 +93,8 @@ public:
 			return;
 
 		FormatDebug(replay_gain_domain,
-			    "replay gain mode has changed %d->%d\n",
-			    (int)mode, (int)_mode);
+			    "replay gain mode has changed %s->%s\n",
+			    ToString(mode), ToString(_mode));
 
 		mode = _mode;
 		Update();
