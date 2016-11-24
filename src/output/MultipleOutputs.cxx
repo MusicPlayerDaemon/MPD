@@ -25,11 +25,11 @@
 #include "MusicBuffer.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
-#include "system/FatalError.hxx"
 #include "config/Block.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
 #include "notify.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <stdexcept>
 
@@ -58,11 +58,10 @@ try {
 				pc);
 } catch (const std::runtime_error &e) {
 	if (block.line > 0)
-		FormatFatalError("line %i: %s",
-				 block.line,
-				 e.what());
+		std::throw_with_nested(FormatRuntimeError("Failed to configure output in line %i",
+							  block.line));
 	else
-		FatalError(e.what());
+		throw;
 }
 
 void
@@ -73,8 +72,8 @@ MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 		auto output = LoadOutput(event_loop, mixer_listener,
 					 pc, *param);
 		if (FindByName(output->name) != nullptr)
-			FormatFatalError("output devices with identical "
-					 "names: %s", output->name);
+			throw FormatRuntimeError("output devices with identical "
+						 "names: %s", output->name);
 
 		outputs.push_back(output);
 	}
