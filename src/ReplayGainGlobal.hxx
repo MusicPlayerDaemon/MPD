@@ -17,49 +17,19 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_REPLAY_GAIN_INFO_HXX
-#define MPD_REPLAY_GAIN_INFO_HXX
+#ifndef MPD_REPLAY_GAIN_GLOBAL_HXX
+#define MPD_REPLAY_GAIN_GLOBAL_HXX
 
 #include "check.h"
-#include "Compiler.h"
 #include "ReplayGainMode.hxx"
 
 struct ReplayGainConfig;
 
-struct ReplayGainTuple {
-	float gain;
-	float peak;
+extern ReplayGainMode replay_gain_mode;
 
-	void Clear() {
-		gain = -200;
-		peak = 0.0;
-	}
+extern ReplayGainConfig replay_gain_config;
 
-	constexpr bool IsDefined() const {
-		return gain > -100;
-	}
-
-	gcc_pure
-	float CalculateScale(const ReplayGainConfig &config) const;
-};
-
-struct ReplayGainInfo {
-	ReplayGainTuple track, album;
-
-	constexpr bool IsDefined() const {
-		return track.IsDefined() || album.IsDefined();
-	}
-
-	const ReplayGainTuple &Get(ReplayGainMode mode) const {
-		return mode == ReplayGainMode::ALBUM
-			? (album.IsDefined() ? album : track)
-			: (track.IsDefined() ? track : album);
-	}
-
-	void Clear() {
-		track.Clear();
-		album.Clear();
-	}
-};
+void
+replay_gain_global_init();
 
 #endif

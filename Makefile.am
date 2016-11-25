@@ -166,7 +166,7 @@ libmpd_a_SOURCES = \
 	src/queue/PlaylistState.cxx src/queue/PlaylistState.hxx \
 	src/queue/Listener.hxx \
 	src/PluginUnavailable.hxx \
-	src/ReplayGainConfig.cxx src/ReplayGainConfig.hxx \
+	src/ReplayGainGlobal.cxx src/ReplayGainGlobal.hxx \
 	src/DetachedSong.cxx src/DetachedSong.hxx \
 	src/LocateUri.cxx src/LocateUri.hxx \
 	src/SongUpdate.cxx \
@@ -853,6 +853,7 @@ libbasic_a_SOURCES = \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
 	src/AudioFormat.cxx src/AudioFormat.hxx \
 	src/AudioParser.cxx src/AudioParser.hxx \
+	src/ReplayGainConfig.hxx \
 	src/ReplayGainMode.cxx src/ReplayGainMode.hxx \
 	src/ReplayGainInfo.cxx src/ReplayGainInfo.hxx
 
@@ -1978,7 +1979,7 @@ test_run_filter_LDADD = \
 	libsystem.a \
 	libutil.a
 test_run_filter_SOURCES = test/run_filter.cxx \
-	test/FakeReplayGainConfig.cxx \
+	test/FakeReplayGainGlobal.cxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/filter/FilterPlugin.cxx src/filter/FilterRegistry.cxx
 
@@ -2073,7 +2074,7 @@ test_run_output_LDADD = $(MPD_LIBS) \
 	libthread.a \
 	libutil.a
 test_run_output_SOURCES = test/run_output.cxx \
-	test/FakeReplayGainConfig.cxx \
+	test/FakeReplayGainGlobal.cxx \
 	test/ScopeIOThread.hxx \
 	src/Log.cxx src/LogBackend.cxx \
 	src/IOThread.cxx \

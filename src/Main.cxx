@@ -33,7 +33,7 @@
 #include "command/AllCommands.hxx"
 #include "Partition.hxx"
 #include "tag/TagConfig.hxx"
-#include "ReplayGainConfig.hxx"
+#include "ReplayGainGlobal.hxx"
 #include "Idle.hxx"
 #include "Log.hxx"
 #include "LogInit.hxx"

@@ -18,8 +18,7 @@
  */
 
 #include "config.h"
+#include "ReplayGainGlobal.hxx"
 #include "ReplayGainConfig.hxx"
 
-float replay_gain_preamp = 1.0;
-float replay_gain_missing_preamp = 1.0;
-bool replay_gain_limit = true;
+ReplayGainConfig replay_gain_config;

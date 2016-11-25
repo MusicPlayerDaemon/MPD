@@ -24,7 +24,7 @@
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainInfo.hxx"
-#include "ReplayGainConfig.hxx"
+#include "ReplayGainGlobal.hxx"
 #include "mixer/MixerControl.hxx"
 #include "pcm/Volume.hxx"
 #include "util/ConstBuffer.hxx"
@@ -140,9 +140,7 @@ ReplayGainFilter::Update()
 	unsigned volume = PCM_VOLUME_1;
 	if (mode != ReplayGainMode::OFF) {
 		const auto &tuple = info.Get(mode);
-		float scale = tuple.CalculateScale(replay_gain_preamp,
-						   replay_gain_missing_preamp,
-						   replay_gain_limit);
+		float scale = tuple.CalculateScale(replay_gain_config);
 		FormatDebug(replay_gain_domain,
 			    "scale=%f\n", (double)scale);
 

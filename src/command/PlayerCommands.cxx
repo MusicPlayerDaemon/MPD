@@ -30,7 +30,7 @@
 #include "Instance.hxx"
 #include "Idle.hxx"
 #include "AudioFormat.hxx"
-#include "ReplayGainConfig.hxx"
+#include "ReplayGainGlobal.hxx"
 #include "util/ScopeExit.hxx"
 
 #ifdef ENABLE_DATABASE

@@ -18,6 +18,7 @@
  */
 
 #include "config.h"
+#include "ReplayGainGlobal.hxx"
 #include "ReplayGainConfig.hxx"
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
@@ -28,12 +29,7 @@
 #include <math.h>
 
 ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
-
-static constexpr bool DEFAULT_REPLAYGAIN_LIMIT = true;
-
-float replay_gain_preamp = 1.0;
-float replay_gain_missing_preamp = 1.0;
-bool replay_gain_limit = DEFAULT_REPLAYGAIN_LIMIT;
+ReplayGainConfig replay_gain_config;
 
 static float
 ParsePreamp(const char *s)
@@ -76,12 +72,12 @@ void replay_gain_global_init(void)
 
 	param = config_get_param(ConfigOption::REPLAYGAIN_PREAMP);
 	if (param)
-		replay_gain_preamp = ParsePreamp(*param);
+		replay_gain_config.preamp = ParsePreamp(*param);
 
 	param = config_get_param(ConfigOption::REPLAYGAIN_MISSING_PREAMP);
 	if (param)
-		replay_gain_missing_preamp = ParsePreamp(*param);
+		replay_gain_config.missing_preamp = ParsePreamp(*param);
 
-	replay_gain_limit = config_get_bool(ConfigOption::REPLAYGAIN_LIMIT,
-					    DEFAULT_REPLAYGAIN_LIMIT);
+	replay_gain_config.limit = config_get_bool(ConfigOption::REPLAYGAIN_LIMIT,
+						   ReplayGainConfig::DEFAULT_LIMIT);
 }

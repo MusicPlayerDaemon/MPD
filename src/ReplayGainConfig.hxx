@@ -21,14 +21,15 @@
 #define MPD_REPLAY_GAIN_CONFIG_HXX
 
 #include "check.h"
-#include "ReplayGainMode.hxx"
 
-extern ReplayGainMode replay_gain_mode;
-extern float replay_gain_preamp;
-extern float replay_gain_missing_preamp;
-extern bool replay_gain_limit;
+struct ReplayGainConfig {
+	static constexpr bool DEFAULT_LIMIT = true;
 
-void
-replay_gain_global_init();
+	float preamp = 1.0;
+
+	float missing_preamp = 1.0;
+
+	bool limit = DEFAULT_LIMIT;
+};
 
 #endif
