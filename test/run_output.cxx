@@ -29,6 +29,7 @@
 #include "ScopeIOThread.hxx"
 #include "fs/Path.hxx"
 #include "AudioParser.hxx"
+#include "ReplayGainConfig.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "filter/FilterRegistry.hxx"
 #include "player/Control.hxx"
@@ -71,7 +72,7 @@ load_audio_output(EventLoop &event_loop, const char *name)
 							 *(MultipleOutputs *)nullptr,
 							 32, 4);
 
-	return audio_output_new(event_loop, *param,
+	return audio_output_new(event_loop, ReplayGainConfig(), *param,
 				*(MixerListener *)nullptr,
 				dummy_player_control);
 }

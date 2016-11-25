@@ -22,7 +22,7 @@
 #include "filter/FilterInternal.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainInfo.hxx"
-#include "ReplayGainGlobal.hxx"
+#include "ReplayGainConfig.hxx"
 #include "mixer/MixerControl.hxx"
 #include "pcm/Volume.hxx"
 #include "util/ConstBuffer.hxx"
@@ -36,6 +36,8 @@
 static constexpr Domain replay_gain_domain("replay_gain");
 
 class ReplayGainFilter final : public Filter {
+	const ReplayGainConfig config;
+
 	/**
 	 * If set, then this hardware mixer is used for applying
 	 * replay gain, instead of the software volume library.
@@ -67,9 +69,11 @@ class ReplayGainFilter final : public Filter {
 	PcmVolume pv;
 
 public:
-	ReplayGainFilter(const AudioFormat &audio_format,
+	ReplayGainFilter(const ReplayGainConfig &_config,
+			 const AudioFormat &audio_format,
 			 Mixer *_mixer, unsigned _base)
 		:Filter(audio_format),
+		 config(_config),
 		 mixer(_mixer), base(_base) {
 		info.Clear();
 
@@ -108,6 +112,8 @@ public:
 };
 
 class PreparedReplayGainFilter final : public PreparedFilter {
+	const ReplayGainConfig config;
+
 	/**
 	 * If set, then this hardware mixer is used for applying
 	 * replay gain, instead of the software volume library.
@@ -121,6 +127,9 @@ class PreparedReplayGainFilter final : public PreparedFilter {
 	unsigned base;
 
 public:
+	explicit PreparedReplayGainFilter(const ReplayGainConfig _config)
+		:config(_config) {}
+
 	void SetMixer(Mixer *_mixer, unsigned _base) {
 		assert(_mixer == nullptr || (_base > 0 && _base <= 100));
 
@@ -138,7 +147,7 @@ ReplayGainFilter::Update()
 	unsigned volume = PCM_VOLUME_1;
 	if (mode != ReplayGainMode::OFF) {
 		const auto &tuple = info.Get(mode);
-		float scale = tuple.CalculateScale(replay_gain_config);
+		float scale = tuple.CalculateScale(config);
 		FormatDebug(replay_gain_domain,
 			    "scale=%f\n", (double)scale);
 
@@ -162,15 +171,15 @@ ReplayGainFilter::Update()
 }
 
 PreparedFilter *
-NewReplayGainFilter()
+NewReplayGainFilter(const ReplayGainConfig &config)
 {
-	return new PreparedReplayGainFilter();
+	return new PreparedReplayGainFilter(config);
 }
 
 Filter *
 PreparedReplayGainFilter::Open(AudioFormat &af)
 {
-	return new ReplayGainFilter(af, mixer, base);
+	return new ReplayGainFilter(config, af, mixer, base);
 }
 
 ConstBuffer<void>

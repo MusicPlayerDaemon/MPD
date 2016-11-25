@@ -42,6 +42,7 @@ class MixerListener;
 struct MusicChunk;
 struct PlayerControl;
 struct AudioOutput;
+struct ReplayGainConfig;
 
 class MultipleOutputs {
 	MixerListener &mixer_listener;
@@ -75,7 +76,9 @@ public:
 	MultipleOutputs(MixerListener &_mixer_listener);
 	~MultipleOutputs();
 
-	void Configure(EventLoop &event_loop, PlayerControl &pc);
+	void Configure(EventLoop &event_loop,
+		       const ReplayGainConfig &replay_gain_config,
+		       PlayerControl &pc);
 
 	/**
 	 * Returns the total number of audio output devices, including

@@ -25,10 +25,11 @@
 class Filter;
 class PreparedFilter;
 class Mixer;
+struct ReplayGainConfig;
 struct ReplayGainInfo;
 
 PreparedFilter *
-NewReplayGainFilter();
+NewReplayGainFilter(const ReplayGainConfig &config);
 
 /**
  * Enables or disables the hardware mixer for applying replay gain.

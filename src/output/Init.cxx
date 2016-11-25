@@ -205,7 +205,9 @@ AudioOutput::Configure(const ConfigBlock &block)
 }
 
 static void
-audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
+audio_output_setup(EventLoop &event_loop,
+		   const ReplayGainConfig &replay_gain_config,
+		   AudioOutput &ao,
 		   MixerListener &mixer_listener,
 		   const ConfigBlock &block)
 {
@@ -216,12 +218,14 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 		block.GetBlockValue("replay_gain_handler", "software");
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
-		ao.prepared_replay_gain_filter = NewReplayGainFilter();
+		ao.prepared_replay_gain_filter =
+			NewReplayGainFilter(replay_gain_config);
 		assert(ao.prepared_replay_gain_filter != nullptr);
 
 		ao.replay_gain_serial = 0;
 
-		ao.prepared_other_replay_gain_filter = NewReplayGainFilter();
+		ao.prepared_other_replay_gain_filter =
+			NewReplayGainFilter(replay_gain_config);
 		assert(ao.prepared_other_replay_gain_filter != nullptr);
 
 		ao.other_replay_gain_serial = 0;
@@ -267,7 +271,9 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 }
 
 AudioOutput *
-audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
+audio_output_new(EventLoop &event_loop,
+		 const ReplayGainConfig &replay_gain_config,
+		 const ConfigBlock &block,
 		 MixerListener &mixer_listener,
 		 PlayerControl &pc)
 {
@@ -298,7 +304,8 @@ audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
 	assert(ao != nullptr);
 
 	try {
-		audio_output_setup(event_loop, *ao, mixer_listener, block);
+		audio_output_setup(event_loop, replay_gain_config,
+				   *ao, mixer_listener, block);
 	} catch (...) {
 		ao_plugin_finish(ao);
 		throw;

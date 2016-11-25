@@ -477,10 +477,11 @@ try {
 
 	command_init();
 	initAudioConfig();
+	replay_gain_global_init();
 	instance->partition->outputs.Configure(instance->event_loop,
+					       replay_gain_config,
 					       instance->partition->pc);
 	client_manager_init();
-	replay_gain_global_init();
 	input_stream_global_init();
 	playlist_list_global_init();
 

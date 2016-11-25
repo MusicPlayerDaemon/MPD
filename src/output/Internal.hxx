@@ -40,6 +40,7 @@ struct MusicChunk;
 struct ConfigBlock;
 struct PlayerControl;
 struct AudioOutputPlugin;
+struct ReplayGainConfig;
 
 struct AudioOutput {
 	enum class Command {
@@ -464,7 +465,9 @@ extern struct notify audio_output_client_notify;
  * Throws #std::runtime_error on error.
  */
 AudioOutput *
-audio_output_new(EventLoop &event_loop, const ConfigBlock &block,
+audio_output_new(EventLoop &event_loop,
+		 const ReplayGainConfig &replay_gain_config,
+		 const ConfigBlock &block,
 		 MixerListener &mixer_listener,
 		 PlayerControl &pc);
 

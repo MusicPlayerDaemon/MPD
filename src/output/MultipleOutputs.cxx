@@ -50,10 +50,12 @@ MultipleOutputs::~MultipleOutputs()
 }
 
 static AudioOutput *
-LoadOutput(EventLoop &event_loop, MixerListener &mixer_listener,
+LoadOutput(EventLoop &event_loop,
+	   const ReplayGainConfig &replay_gain_config,
+	   MixerListener &mixer_listener,
 	   PlayerControl &pc, const ConfigBlock &block)
 try {
-	return audio_output_new(event_loop, block,
+	return audio_output_new(event_loop, replay_gain_config, block,
 				mixer_listener,
 				pc);
 } catch (const std::runtime_error &e) {
@@ -65,11 +67,14 @@ try {
 }
 
 void
-MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
+MultipleOutputs::Configure(EventLoop &event_loop,
+			   const ReplayGainConfig &replay_gain_config,
+			   PlayerControl &pc)
 {
 	for (const auto *param = config_get_block(ConfigBlockOption::AUDIO_OUTPUT);
 	     param != nullptr; param = param->next) {
-		auto output = LoadOutput(event_loop, mixer_listener,
+		auto output = LoadOutput(event_loop, replay_gain_config,
+					 mixer_listener,
 					 pc, *param);
 		if (FindByName(output->name) != nullptr)
 			throw FormatRuntimeError("output devices with identical "
@@ -81,7 +86,8 @@ MultipleOutputs::Configure(EventLoop &event_loop, PlayerControl &pc)
 	if (outputs.empty()) {
 		/* auto-detect device */
 		const ConfigBlock empty;
-		auto output = LoadOutput(event_loop, mixer_listener,
+		auto output = LoadOutput(event_loop, replay_gain_config,
+					 mixer_listener,
 					 pc, empty);
 		outputs.push_back(output);
 	}
