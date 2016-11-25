@@ -257,6 +257,23 @@ LoadReplayGain(DecoderClient &client, InputStream &is)
 }
 
 /**
+ * Call LoadReplayGain() unless ReplayGain is disabled.  This saves
+ * the I/O overhead when the user is not interested in the feature.
+ */
+static void
+MaybeLoadReplayGain(DecoderBridge &bridge, InputStream &is)
+{
+	{
+		const ScopeLock protect(bridge.dc.mutex);
+		if (bridge.dc.replay_gain_mode == ReplayGainMode::OFF)
+			/* ReplayGain is disabled */
+			return;
+	}
+
+	LoadReplayGain(bridge, is);
+}
+
+/**
  * Try decoding a stream.
  *
  * DecoderControl::mutex is not locked by caller.
@@ -269,7 +286,7 @@ decoder_run_stream(DecoderBridge &bridge, const char *uri)
 	auto input_stream = decoder_input_stream_open(dc, uri);
 	assert(input_stream);
 
-	LoadReplayGain(bridge, *input_stream);
+	MaybeLoadReplayGain(bridge, *input_stream);
 
 	const ScopeLock protect(dc.mutex);
 
@@ -376,7 +393,7 @@ decoder_run_file(DecoderBridge &bridge, const char *uri_utf8, Path path_fs)
 
 	assert(input_stream);
 
-	LoadReplayGain(bridge, *input_stream);
+	MaybeLoadReplayGain(bridge, *input_stream);
 
 	auto &is = *input_stream;
 	return decoder_plugins_try([&bridge, path_fs, suffix,
