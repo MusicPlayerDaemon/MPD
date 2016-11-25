@@ -23,6 +23,7 @@
 #include "DetachedSong.hxx"
 #include "mixer/Volume.hxx"
 #include "IdleFlags.hxx"
+#include "ReplayGainGlobal.hxx"
 
 Partition::Partition(Instance &_instance,
 		     unsigned max_length,
@@ -49,6 +50,8 @@ Partition::UpdateEffectiveReplayGainMode(ReplayGainMode mode)
 	    mode = playlist.queue.random
 		    ? ReplayGainMode::TRACK
 		    : ReplayGainMode::ALBUM;
+
+	pc.LockSetReplayGain(replay_gain_config, mode);
 
 	outputs.SetReplayGainMode(mode);
 }

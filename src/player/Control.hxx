@@ -26,6 +26,8 @@
 #include "thread/Thread.hxx"
 #include "CrossFade.hxx"
 #include "Chrono.hxx"
+#include "ReplayGainConfig.hxx"
+#include "ReplayGainMode.hxx"
 
 #include <exception>
 
@@ -166,6 +168,9 @@ struct PlayerControl {
 	SongTime seek_time;
 
 	CrossFadeSettings cross_fade;
+
+	ReplayGainConfig replay_gain_config;
+	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
 	double total_play_time;
 
@@ -461,6 +466,13 @@ public:
 
 	float GetMixRampDelay() const {
 		return cross_fade.mixramp_delay;
+	}
+
+	void LockSetReplayGain(const ReplayGainConfig &_config,
+			       ReplayGainMode _mode) {
+		const ScopeLock protect(mutex);
+		replay_gain_config = _config;
+		replay_gain_mode = _mode;
 	}
 
 	double GetTotalPlayTime() const {

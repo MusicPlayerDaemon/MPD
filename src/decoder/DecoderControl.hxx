@@ -27,6 +27,8 @@
 #include "thread/Cond.hxx"
 #include "thread/Thread.hxx"
 #include "Chrono.hxx"
+#include "ReplayGainConfig.hxx"
+#include "ReplayGainMode.hxx"
 
 #include <exception>
 
@@ -155,6 +157,9 @@ struct DecoderControl {
 	 * owns this object, and is responsible for freeing it.
 	 */
 	MusicPipe *pipe;
+
+	ReplayGainConfig replay_gain_config;
+	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
 	float replay_gain_db = 0;
 	float replay_gain_prev_db = 0;

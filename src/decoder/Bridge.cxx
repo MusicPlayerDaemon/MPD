@@ -30,7 +30,6 @@
 #include "pcm/PcmConvert.hxx"
 #include "tag/Tag.hxx"
 #include "AudioConfig.hxx"
-#include "ReplayGainGlobal.hxx"
 #include "Log.hxx"
 #include "input/InputStream.hxx"
 #include "util/ConstBuffer.hxx"
@@ -592,14 +591,14 @@ DecoderBridge::SubmitReplayGain(const ReplayGainInfo *new_replay_gain_info)
 		if (++serial == 0)
 			serial = 1;
 
-		if (ReplayGainMode::OFF != replay_gain_mode) {
-			ReplayGainMode rgm = replay_gain_mode;
+		if (ReplayGainMode::OFF != dc.replay_gain_mode) {
+			ReplayGainMode rgm = dc.replay_gain_mode;
 			if (rgm != ReplayGainMode::ALBUM)
 				rgm = ReplayGainMode::TRACK;
 
 			const auto &tuple = new_replay_gain_info->Get(rgm);
 			const auto scale =
-				tuple.CalculateScale(replay_gain_config);
+				tuple.CalculateScale(dc.replay_gain_config);
 			dc.replay_gain_db = 20.0 * log10f(scale);
 		}
 

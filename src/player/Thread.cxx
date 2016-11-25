@@ -342,6 +342,13 @@ Player::StartDecoder(MusicPipe &_pipe)
 	assert(queued || pc.command == PlayerCommand::SEEK);
 	assert(pc.next_song != nullptr);
 
+	{
+		/* copy ReplayGain parameters to the decoder */
+		const ScopeLock protect(pc.mutex);
+		dc.replay_gain_config = pc.replay_gain_config;
+		dc.replay_gain_mode = pc.replay_gain_mode;
+	}
+
 	SongTime start_time = pc.next_song->GetStartTime() + pc.seek_time;
 
 	dc.Start(new DetachedSong(*pc.next_song),
