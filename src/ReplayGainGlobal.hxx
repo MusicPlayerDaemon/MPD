@@ -24,9 +24,7 @@
 
 struct ReplayGainConfig;
 
-extern ReplayGainConfig replay_gain_config;
-
-void
-replay_gain_global_init();
+ReplayGainConfig
+LoadReplayGainConfig();
 
 #endif

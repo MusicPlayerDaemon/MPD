@@ -28,8 +28,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-ReplayGainConfig replay_gain_config;
-
 static float
 ParsePreamp(const char *s)
 {
@@ -57,8 +55,11 @@ ParsePreamp(const ConfigParam &p)
 	}
 }
 
-void replay_gain_global_init(void)
+ReplayGainConfig
+LoadReplayGainConfig()
 {
+	ReplayGainConfig replay_gain_config;
+
 	const auto *param = config_get_param(ConfigOption::REPLAYGAIN_PREAMP);
 	if (param)
 		replay_gain_config.preamp = ParsePreamp(*param);
@@ -69,4 +70,6 @@ void replay_gain_global_init(void)
 
 	replay_gain_config.limit = config_get_bool(ConfigOption::REPLAYGAIN_LIMIT,
 						   ReplayGainConfig::DEFAULT_LIMIT);
+
+	return replay_gain_config;
 }

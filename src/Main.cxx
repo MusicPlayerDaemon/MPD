@@ -128,13 +128,14 @@ Context *context;
 Instance *instance;
 
 struct Config {
+	ReplayGainConfig replay_gain;
 };
 
 gcc_const
 static Config
 LoadConfig()
 {
-	return {};
+	return {LoadReplayGainConfig()};
 }
 
 #ifdef ENABLE_DAEMON
@@ -290,7 +291,7 @@ static void winsock_init(void)
  * Initialize the decoder and player core, including the music pipe.
  */
 static void
-initialize_decoder_and_player(void)
+initialize_decoder_and_player(const ReplayGainConfig &replay_gain_config)
 {
 	const ConfigParam *param;
 
@@ -443,7 +444,6 @@ try {
 
 	stats_global_init();
 	TagLoadConfig();
-	replay_gain_global_init();
 
 	log_init(options.verbose, options.log_stderr);
 
@@ -463,7 +463,7 @@ try {
 		config_get_positive(ConfigOption::MAX_CONN, 10);
 	instance->client_list = new ClientList(max_clients);
 
-	initialize_decoder_and_player();
+	initialize_decoder_and_player(config.replay_gain);
 
 	listen_global_init(instance->event_loop, *instance->partition);
 
@@ -495,8 +495,6 @@ try {
 static int
 mpd_main_after_fork(const Config &config)
 try {
-	(void)config;
-
 	ConfigureFS();
 
 	glue_mapper_init();
@@ -518,8 +516,9 @@ try {
 	glue_sticker_init();
 
 	command_init();
+
 	instance->partition->outputs.Configure(instance->event_loop,
-					       replay_gain_config,
+					       config.replay_gain,
 					       instance->partition->pc);
 	client_manager_init();
 	input_stream_global_init();
