@@ -32,14 +32,7 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 			     unsigned _buffered_before_play)
 	:listener(_listener), outputs(_outputs),
 	 buffer_chunks(_buffer_chunks),
-	 buffered_before_play(_buffered_before_play),
-	 command(PlayerCommand::NONE),
-	 state(PlayerState::STOP),
-	 error_type(PlayerError::NONE),
-	 tagged_song(nullptr),
-	 next_song(nullptr),
-	 total_play_time(0),
-	 border_pause(false)
+	 buffered_before_play(_buffered_before_play)
 {
 }
 

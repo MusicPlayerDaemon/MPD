@@ -127,10 +127,10 @@ struct PlayerControl {
 	 */
 	Cond client_cond;
 
-	PlayerCommand command;
-	PlayerState state;
+	PlayerCommand command = PlayerCommand::NONE;
+	PlayerState state = PlayerState::STOP;
 
-	PlayerError error_type;
+	PlayerError error_type = PlayerError::NONE;
 
 	/**
 	 * The error that occurred in the player thread.  This
@@ -150,7 +150,7 @@ struct PlayerControl {
 	 * Protected by #mutex.  Set by the PlayerThread and consumed
 	 * by the main thread.
 	 */
-	DetachedSong *tagged_song;
+	DetachedSong *tagged_song = nullptr;
 
 	uint16_t bit_rate;
 	AudioFormat audio_format;
@@ -163,7 +163,7 @@ struct PlayerControl {
 	 * This is a duplicate, and must be freed when this attribute
 	 * is cleared.
 	 */
-	DetachedSong *next_song;
+	DetachedSong *next_song = nullptr;
 
 	SongTime seek_time;
 
@@ -172,7 +172,7 @@ struct PlayerControl {
 	ReplayGainConfig replay_gain_config;
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
-	double total_play_time;
+	double total_play_time = 0;
 
 	/**
 	 * If this flag is set, then the player will be auto-paused at
@@ -181,7 +181,7 @@ struct PlayerControl {
 	 * This is a copy of the queue's "single" flag most of the
 	 * time.
 	 */
-	bool border_pause;
+	bool border_pause = false;
 
 	PlayerControl(PlayerListener &_listener,
 		      MultipleOutputs &_outputs,
