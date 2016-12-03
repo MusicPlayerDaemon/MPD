@@ -20,11 +20,12 @@
 #ifndef MPD_REPLAY_GAIN_FILTER_PLUGIN_HXX
 #define MPD_REPLAY_GAIN_FILTER_PLUGIN_HXX
 
-#include "ReplayGainInfo.hxx"
+#include "ReplayGainMode.hxx"
 
 class Filter;
 class PreparedFilter;
 class Mixer;
+struct ReplayGainInfo;
 
 /**
  * Enables or disables the hardware mixer for applying replay gain.
