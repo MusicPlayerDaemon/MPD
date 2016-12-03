@@ -405,6 +405,7 @@ try {
 
 	stats_global_init();
 	TagLoadConfig();
+	replay_gain_global_init();
 
 	log_init(options.verbose, options.log_stderr);
 
@@ -477,7 +478,6 @@ try {
 
 	command_init();
 	initAudioConfig();
-	replay_gain_global_init();
 	instance->partition->outputs.Configure(instance->event_loop,
 					       replay_gain_config,
 					       instance->partition->pc);
