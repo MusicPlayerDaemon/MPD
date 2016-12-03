@@ -35,7 +35,7 @@ class Mixer;
  * (including).
  */
 void
-replay_gain_filter_set_mixer(PreparedFilter *_filter, Mixer *mixer,
+replay_gain_filter_set_mixer(PreparedFilter &_filter, Mixer *mixer,
 			     unsigned base);
 
 /**
@@ -45,9 +45,9 @@ replay_gain_filter_set_mixer(PreparedFilter *_filter, Mixer *mixer,
  * gain data is available for the current song
  */
 void
-replay_gain_filter_set_info(Filter *filter, const ReplayGainInfo *info);
+replay_gain_filter_set_info(Filter &filter, const ReplayGainInfo *info);
 
 void
-replay_gain_filter_set_mode(Filter *filter, ReplayGainMode mode);
+replay_gain_filter_set_mode(Filter &filter, ReplayGainMode mode);
 
 #endif

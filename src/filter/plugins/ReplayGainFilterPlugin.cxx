@@ -189,26 +189,26 @@ const FilterPlugin replay_gain_filter_plugin = {
 };
 
 void
-replay_gain_filter_set_mixer(PreparedFilter *_filter, Mixer *mixer,
+replay_gain_filter_set_mixer(PreparedFilter &_filter, Mixer *mixer,
 			     unsigned base)
 {
-	PreparedReplayGainFilter *filter = (PreparedReplayGainFilter *)_filter;
+	auto &filter = (PreparedReplayGainFilter &)_filter;
 
-	filter->SetMixer(mixer, base);
+	filter.SetMixer(mixer, base);
 }
 
 void
-replay_gain_filter_set_info(Filter *_filter, const ReplayGainInfo *info)
+replay_gain_filter_set_info(Filter &_filter, const ReplayGainInfo *info)
 {
-	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;
+	auto &filter = (ReplayGainFilter &)_filter;
 
-	filter->SetInfo(info);
+	filter.SetInfo(info);
 }
 
 void
-replay_gain_filter_set_mode(Filter *_filter, ReplayGainMode mode)
+replay_gain_filter_set_mode(Filter &_filter, ReplayGainMode mode)
 {
-	ReplayGainFilter *filter = (ReplayGainFilter *)_filter;
+	auto &filter = (ReplayGainFilter &)_filter;
 
-	filter->SetMode(mode);
+	filter.SetMode(mode);
 }

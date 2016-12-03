@@ -249,7 +249,7 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 
 	if (strcmp(replay_gain_handler, "mixer") == 0) {
 		if (ao.mixer != nullptr)
-			replay_gain_filter_set_mixer(ao.prepared_replay_gain_filter,
+			replay_gain_filter_set_mixer(*ao.prepared_replay_gain_filter,
 						     ao.mixer, 100);
 		else
 			FormatError(output_domain,

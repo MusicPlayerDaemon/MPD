@@ -349,11 +349,11 @@ ao_chunk_data(AudioOutput *ao, const MusicChunk *chunk,
 	assert(data.size % ao->in_audio_format.GetFrameSize() == 0);
 
 	if (!data.IsEmpty() && replay_gain_filter != nullptr) {
-		replay_gain_filter_set_mode(replay_gain_filter,
+		replay_gain_filter_set_mode(*replay_gain_filter,
 					    ao->replay_gain_mode);
 
 		if (chunk->replay_gain_serial != *replay_gain_serial_p) {
-			replay_gain_filter_set_info(replay_gain_filter,
+			replay_gain_filter_set_info(*replay_gain_filter,
 						    chunk->replay_gain_serial != 0
 						    ? &chunk->replay_gain_info
 						    : nullptr);
