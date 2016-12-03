@@ -36,7 +36,6 @@ extern const FilterPlugin convert_filter_plugin;
 extern const FilterPlugin route_filter_plugin;
 extern const FilterPlugin normalize_filter_plugin;
 extern const FilterPlugin volume_filter_plugin;
-extern const FilterPlugin replay_gain_filter_plugin;
 
 gcc_pure
 const FilterPlugin *

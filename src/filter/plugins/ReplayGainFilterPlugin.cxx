@@ -19,9 +19,7 @@
 
 #include "config.h"
 #include "ReplayGainFilterPlugin.hxx"
-#include "filter/FilterPlugin.hxx"
 #include "filter/FilterInternal.hxx"
-#include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "ReplayGainInfo.hxx"
 #include "ReplayGainGlobal.hxx"
@@ -163,8 +161,8 @@ ReplayGainFilter::Update()
 		pv.SetVolume(volume);
 }
 
-static PreparedFilter *
-replay_gain_filter_init(gcc_unused const ConfigBlock &block)
+PreparedFilter *
+NewReplayGainFilter()
 {
 	return new PreparedReplayGainFilter();
 }
@@ -182,11 +180,6 @@ ReplayGainFilter::FilterPCM(ConstBuffer<void> src)
 		? src
 		: pv.Apply(src);
 }
-
-const FilterPlugin replay_gain_filter_plugin = {
-	"replay_gain",
-	replay_gain_filter_init,
-};
 
 void
 replay_gain_filter_set_mixer(PreparedFilter &_filter, Mixer *mixer,

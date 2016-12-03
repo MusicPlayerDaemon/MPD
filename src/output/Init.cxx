@@ -216,14 +216,12 @@ audio_output_setup(EventLoop &event_loop, AudioOutput &ao,
 		block.GetBlockValue("replay_gain_handler", "software");
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
-		ao.prepared_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-							    block);
+		ao.prepared_replay_gain_filter = NewReplayGainFilter();
 		assert(ao.prepared_replay_gain_filter != nullptr);
 
 		ao.replay_gain_serial = 0;
 
-		ao.prepared_other_replay_gain_filter = filter_new(&replay_gain_filter_plugin,
-								  block);
+		ao.prepared_other_replay_gain_filter = NewReplayGainFilter();
 		assert(ao.prepared_other_replay_gain_filter != nullptr);
 
 		ao.other_replay_gain_serial = 0;

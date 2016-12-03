@@ -27,6 +27,9 @@ class PreparedFilter;
 class Mixer;
 struct ReplayGainInfo;
 
+PreparedFilter *
+NewReplayGainFilter();
+
 /**
  * Enables or disables the hardware mixer for applying replay gain.
  *
