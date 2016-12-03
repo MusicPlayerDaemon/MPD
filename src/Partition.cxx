@@ -33,7 +33,8 @@ Partition::Partition(Instance &_instance,
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
 	 outputs(*this),
-	 pc(*this, outputs, buffer_chunks, buffered_before_play)
+	 pc(*this, outputs, buffer_chunks, buffered_before_play,
+	    replay_gain_config)
 {
 }
 
@@ -51,7 +52,7 @@ Partition::UpdateEffectiveReplayGainMode(ReplayGainMode mode)
 		    ? ReplayGainMode::TRACK
 		    : ReplayGainMode::ALBUM;
 
-	pc.LockSetReplayGain(replay_gain_config, mode);
+	pc.LockSetReplayGainMode(mode);
 
 	outputs.SetReplayGainMode(mode);
 }

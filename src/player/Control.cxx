@@ -29,10 +29,12 @@
 PlayerControl::PlayerControl(PlayerListener &_listener,
 			     MultipleOutputs &_outputs,
 			     unsigned _buffer_chunks,
-			     unsigned _buffered_before_play)
+			     unsigned _buffered_before_play,
+			     const ReplayGainConfig &_replay_gain_config)
 	:listener(_listener), outputs(_outputs),
 	 buffer_chunks(_buffer_chunks),
-	 buffered_before_play(_buffered_before_play)
+	 buffered_before_play(_buffered_before_play),
+	 replay_gain_config(_replay_gain_config)
 {
 }
 

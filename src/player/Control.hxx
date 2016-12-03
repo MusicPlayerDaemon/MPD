@@ -169,7 +169,7 @@ struct PlayerControl {
 
 	CrossFadeSettings cross_fade;
 
-	ReplayGainConfig replay_gain_config;
+	const ReplayGainConfig replay_gain_config;
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
 	double total_play_time = 0;
@@ -186,7 +186,8 @@ struct PlayerControl {
 	PlayerControl(PlayerListener &_listener,
 		      MultipleOutputs &_outputs,
 		      unsigned buffer_chunks,
-		      unsigned buffered_before_play);
+		      unsigned buffered_before_play,
+		      const ReplayGainConfig &_replay_gain_config);
 	~PlayerControl();
 
 	/**
@@ -468,10 +469,8 @@ public:
 		return cross_fade.mixramp_delay;
 	}
 
-	void LockSetReplayGain(const ReplayGainConfig &_config,
-			       ReplayGainMode _mode) {
+	void LockSetReplayGainMode(ReplayGainMode _mode) {
 		const ScopeLock protect(mutex);
-		replay_gain_config = _config;
 		replay_gain_mode = _mode;
 	}
 
