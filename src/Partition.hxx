@@ -27,6 +27,7 @@
 #include "mixer/Listener.hxx"
 #include "player/Control.hxx"
 #include "player/Listener.hxx"
+#include "ReplayGainMode.hxx"
 #include "Chrono.hxx"
 #include "Compiler.h"
 
@@ -51,6 +52,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	MultipleOutputs outputs;
 
 	PlayerControl pc;
+
+	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
 	Partition(Instance &_instance,
 		  unsigned max_length,
@@ -177,13 +180,16 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 		playlist.SetConsume(new_value);
 	}
 
+	void SetReplayGainMode(ReplayGainMode mode) {
+		replay_gain_mode = mode;
+		UpdateEffectiveReplayGainMode();
+	}
+
 	/**
 	 * Publishes the effective #ReplayGainMode to all subsystems.
 	 * #ReplayGainMode::AUTO is substituted.
-	 *
-	 * @param mode the configured mode
 	 */
-	void UpdateEffectiveReplayGainMode(ReplayGainMode mode);
+	void UpdateEffectiveReplayGainMode();
 
 #ifdef ENABLE_DATABASE
 	/**

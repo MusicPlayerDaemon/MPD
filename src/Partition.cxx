@@ -36,6 +36,7 @@ Partition::Partition(Instance &_instance,
 	 pc(*this, outputs, buffer_chunks, buffered_before_play,
 	    replay_gain_config)
 {
+	UpdateEffectiveReplayGainMode();
 }
 
 void
@@ -45,8 +46,9 @@ Partition::EmitIdle(unsigned mask)
 }
 
 void
-Partition::UpdateEffectiveReplayGainMode(ReplayGainMode mode)
+Partition::UpdateEffectiveReplayGainMode()
 {
+	auto mode = replay_gain_mode;
 	if (mode == ReplayGainMode::AUTO)
 	    mode = playlist.queue.random
 		    ? ReplayGainMode::TRACK

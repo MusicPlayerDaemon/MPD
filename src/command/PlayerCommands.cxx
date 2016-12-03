@@ -30,7 +30,6 @@
 #include "Instance.hxx"
 #include "Idle.hxx"
 #include "AudioFormat.hxx"
-#include "ReplayGainGlobal.hxx"
 #include "util/ScopeExit.hxx"
 
 #ifdef ENABLE_DATABASE
@@ -263,7 +262,7 @@ handle_random(Client &client, Request args, gcc_unused Response &r)
 {
 	bool status = args.ParseBool(0);
 	client.partition.SetRandom(status);
-	client.partition.UpdateEffectiveReplayGainMode(replay_gain_mode);
+	client.partition.UpdateEffectiveReplayGainMode();
 	return CommandResult::OK;
 }
 
@@ -333,16 +332,17 @@ handle_mixrampdelay(Client &client, Request args, gcc_unused Response &r)
 CommandResult
 handle_replay_gain_mode(Client &client, Request args, Response &)
 {
-	replay_gain_mode = FromString(args.front());
-	client.partition.UpdateEffectiveReplayGainMode(replay_gain_mode);
+	auto new_mode = FromString(args.front());
+	client.partition.SetReplayGainMode(new_mode);
 	client.partition.EmitIdle(IDLE_OPTIONS);
 	return CommandResult::OK;
 }
 
 CommandResult
-handle_replay_gain_status(gcc_unused Client &client, gcc_unused Request args,
+handle_replay_gain_status(Client &client, gcc_unused Request args,
 			  Response &r)
 {
-	r.Format("replay_gain_mode: %s\n", ToString(replay_gain_mode));
+	r.Format("replay_gain_mode: %s\n",
+		 ToString(client.partition.replay_gain_mode));
 	return CommandResult::OK;
 }

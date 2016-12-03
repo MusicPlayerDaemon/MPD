@@ -21,11 +21,8 @@
 #define MPD_REPLAY_GAIN_GLOBAL_HXX
 
 #include "check.h"
-#include "ReplayGainMode.hxx"
 
 struct ReplayGainConfig;
-
-extern ReplayGainMode replay_gain_mode;
 
 extern ReplayGainConfig replay_gain_config;
 

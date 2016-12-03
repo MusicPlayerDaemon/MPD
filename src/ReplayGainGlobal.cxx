@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 ReplayGainConfig replay_gain_config;
 
 static float
@@ -60,17 +59,7 @@ ParsePreamp(const ConfigParam &p)
 
 void replay_gain_global_init(void)
 {
-	const auto *param = config_get_param(ConfigOption::REPLAYGAIN);
-
-	try {
-		if (param != nullptr)
-			replay_gain_mode = FromString(param->value.c_str());
-	} catch (...) {
-		std::throw_with_nested(FormatRuntimeError("Failed to parse line %i",
-							  param->line));
-	}
-
-	param = config_get_param(ConfigOption::REPLAYGAIN_PREAMP);
+	const auto *param = config_get_param(ConfigOption::REPLAYGAIN_PREAMP);
 	if (param)
 		replay_gain_config.preamp = ParsePreamp(*param);
 

@@ -57,6 +57,7 @@
 #include "config/ConfigOption.hxx"
 #include "config/ConfigError.hxx"
 #include "Stats.hxx"
+#include "util/RuntimeError.hxx"
 
 #ifdef ENABLE_DAEMON
 #include "unix/Daemon.hxx"
@@ -331,6 +332,16 @@ initialize_decoder_and_player(void)
 					    buffered_chunks,
 					    buffered_before_play,
 					    replay_gain_config);
+
+	try {
+		param = config_get_param(ConfigOption::REPLAYGAIN);
+		if (param != nullptr)
+			instance->partition->replay_gain_mode =
+				FromString(param->value.c_str());
+	} catch (...) {
+		std::throw_with_nested(FormatRuntimeError("Failed to parse line %i",
+							  param->line));
+	}
 }
 
 void
@@ -518,8 +529,6 @@ try {
 #endif
 
 	glue_state_file_init();
-
-	instance->partition->UpdateEffectiveReplayGainMode(replay_gain_mode);
 
 #ifdef ENABLE_DATABASE
 	if (config_get_bool(ConfigOption::AUTO_UPDATE, false)) {
