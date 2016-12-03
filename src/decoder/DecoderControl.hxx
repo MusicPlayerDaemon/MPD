@@ -115,6 +115,11 @@ struct DecoderControl {
 	bool seekable;
 	SongTime seek_time;
 
+	/**
+	 * The "audio_output_format" setting.
+	 */
+	const AudioFormat configured_audio_format;
+
 	/** the format of the song file */
 	AudioFormat in_audio_format;
 
@@ -171,6 +176,7 @@ struct DecoderControl {
 	 * @param _client_cond see #client_cond
 	 */
 	DecoderControl(Mutex &_mutex, Cond &_client_cond,
+		       const AudioFormat _configured_audio_format,
 		       const ReplayGainConfig &_replay_gain_config);
 	~DecoderControl();
 

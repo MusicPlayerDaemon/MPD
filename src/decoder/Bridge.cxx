@@ -29,7 +29,6 @@
 #include "MusicChunk.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "tag/Tag.hxx"
-#include "AudioConfig.hxx"
 #include "Log.hxx"
 #include "input/InputStream.hxx"
 #include "util/ConstBuffer.hxx"
@@ -260,7 +259,8 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 	assert(audio_format.IsValid());
 
 	dc.in_audio_format = audio_format;
-	dc.out_audio_format = getOutputAudioFormat(audio_format);
+	dc.out_audio_format = audio_format;
+	dc.out_audio_format.ApplyMask(dc.configured_audio_format);
 
 	dc.seekable = seekable;
 	dc.total_time = duration;

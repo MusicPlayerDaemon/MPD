@@ -1163,7 +1163,9 @@ player_task(void *arg)
 
 	SetThreadName("player");
 
-	DecoderControl dc(pc.mutex, pc.cond, pc.replay_gain_config);
+	DecoderControl dc(pc.mutex, pc.cond,
+			  pc.configured_audio_format,
+			  pc.replay_gain_config);
 	decoder_thread_start(dc);
 
 	MusicBuffer buffer(pc.buffer_chunks);

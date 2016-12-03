@@ -28,13 +28,14 @@ Partition::Partition(Instance &_instance,
 		     unsigned max_length,
 		     unsigned buffer_chunks,
 		     unsigned buffered_before_play,
+		     AudioFormat configured_audio_format,
 		     const ReplayGainConfig &replay_gain_config)
 	:instance(_instance),
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
 	 outputs(*this),
 	 pc(*this, outputs, buffer_chunks, buffered_before_play,
-	    replay_gain_config)
+	    configured_audio_format, replay_gain_config)
 {
 	UpdateEffectiveReplayGainMode();
 }

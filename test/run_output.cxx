@@ -54,10 +54,12 @@ PlayerControl::PlayerControl(PlayerListener &_listener,
 			     MultipleOutputs &_outputs,
 			     unsigned _buffer_chunks,
 			     unsigned _buffered_before_play,
+			     AudioFormat _configured_audio_format,
 			     const ReplayGainConfig &_replay_gain_config)
 	:listener(_listener), outputs(_outputs),
 	 buffer_chunks(_buffer_chunks),
 	 buffered_before_play(_buffered_before_play),
+	 configured_audio_format(_configured_audio_format),
 	 replay_gain_config(_replay_gain_config) {}
 PlayerControl::~PlayerControl() {}
 
@@ -73,6 +75,7 @@ load_audio_output(EventLoop &event_loop, const char *name)
 	static struct PlayerControl dummy_player_control(*(PlayerListener *)nullptr,
 							 *(MultipleOutputs *)nullptr,
 							 32, 4,
+							 AudioFormat::Undefined(),
 							 ReplayGainConfig());
 
 	return audio_output_new(event_loop, ReplayGainConfig(), *param,

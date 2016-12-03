@@ -106,6 +106,11 @@ struct PlayerControl {
 	const unsigned buffered_before_play;
 
 	/**
+	 * The "audio_output_format" setting.
+	 */
+	const AudioFormat configured_audio_format;
+
+	/**
 	 * The handle of the player thread.
 	 */
 	Thread thread;
@@ -187,6 +192,7 @@ struct PlayerControl {
 		      MultipleOutputs &_outputs,
 		      unsigned buffer_chunks,
 		      unsigned buffered_before_play,
+		      AudioFormat _configured_audio_format,
 		      const ReplayGainConfig &_replay_gain_config);
 	~PlayerControl();
 

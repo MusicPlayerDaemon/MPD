@@ -45,7 +45,7 @@
 #include "playlist/PlaylistRegistry.hxx"
 #include "zeroconf/ZeroconfGlue.hxx"
 #include "decoder/DecoderList.hxx"
-#include "AudioConfig.hxx"
+#include "AudioParser.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "unix/SignalHandlers.hxx"
 #include "system/FatalError.hxx"
@@ -327,10 +327,23 @@ initialize_decoder_and_player(void)
 		config_get_positive(ConfigOption::MAX_PLAYLIST_LENGTH,
 				    DEFAULT_PLAYLIST_MAX_LENGTH);
 
+	AudioFormat configured_audio_format = AudioFormat::Undefined();
+	param = config_get_param(ConfigOption::AUDIO_OUTPUT_FORMAT);
+	if (param != nullptr) {
+		try {
+			configured_audio_format = ParseAudioFormat(param->value.c_str(),
+								   true);
+		} catch (const std::runtime_error &) {
+			std::throw_with_nested(FormatRuntimeError("error parsing line %i",
+								  param->line));
+		}
+	}
+
 	instance->partition = new Partition(*instance,
 					    max_length,
 					    buffered_chunks,
 					    buffered_before_play,
+					    configured_audio_format,
 					    replay_gain_config);
 
 	try {
@@ -489,7 +502,6 @@ try {
 	glue_sticker_init();
 
 	command_init();
-	initAudioConfig();
 	instance->partition->outputs.Configure(instance->event_loop,
 					       replay_gain_config,
 					       instance->partition->pc);
