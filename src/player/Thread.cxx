@@ -345,7 +345,6 @@ Player::StartDecoder(MusicPipe &_pipe)
 	{
 		/* copy ReplayGain parameters to the decoder */
 		const ScopeLock protect(pc.mutex);
-		dc.replay_gain_config = pc.replay_gain_config;
 		dc.replay_gain_mode = pc.replay_gain_mode;
 	}
 
@@ -1164,7 +1163,7 @@ player_task(void *arg)
 
 	SetThreadName("player");
 
-	DecoderControl dc(pc.mutex, pc.cond);
+	DecoderControl dc(pc.mutex, pc.cond, pc.replay_gain_config);
 	decoder_thread_start(dc);
 
 	MusicBuffer buffer(pc.buffer_chunks);

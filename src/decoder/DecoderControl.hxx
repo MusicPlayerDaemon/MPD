@@ -158,7 +158,7 @@ struct DecoderControl {
 	 */
 	MusicPipe *pipe;
 
-	ReplayGainConfig replay_gain_config;
+	const ReplayGainConfig replay_gain_config;
 	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
 
 	float replay_gain_db = 0;
@@ -170,7 +170,8 @@ struct DecoderControl {
 	 * @param _mutex see #mutex
 	 * @param _client_cond see #client_cond
 	 */
-	DecoderControl(Mutex &_mutex, Cond &_client_cond);
+	DecoderControl(Mutex &_mutex, Cond &_client_cond,
+		       const ReplayGainConfig &_replay_gain_config);
 	~DecoderControl();
 
 	/**

@@ -27,8 +27,10 @@
 
 #include <assert.h>
 
-DecoderControl::DecoderControl(Mutex &_mutex, Cond &_client_cond)
-	:mutex(_mutex), client_cond(_client_cond) {}
+DecoderControl::DecoderControl(Mutex &_mutex, Cond &_client_cond,
+			       const ReplayGainConfig &_replay_gain_config)
+	:mutex(_mutex), client_cond(_client_cond),
+	 replay_gain_config(_replay_gain_config) {}
 
 DecoderControl::~DecoderControl()
 {
