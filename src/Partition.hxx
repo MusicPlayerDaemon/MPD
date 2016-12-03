@@ -55,7 +55,8 @@ struct Partition final : QueueListener, PlayerListener, MixerListener {
 	Partition(Instance &_instance,
 		  unsigned max_length,
 		  unsigned buffer_chunks,
-		  unsigned buffered_before_play);
+		  unsigned buffered_before_play,
+		  const ReplayGainConfig &replay_gain_config);
 
 	void EmitGlobalEvent(unsigned mask) {
 		global_events.OrMask(mask);

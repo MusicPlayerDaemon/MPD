@@ -329,7 +329,8 @@ initialize_decoder_and_player(void)
 	instance->partition = new Partition(*instance,
 					    max_length,
 					    buffered_chunks,
-					    buffered_before_play);
+					    buffered_before_play,
+					    replay_gain_config);
 }
 
 void

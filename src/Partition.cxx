@@ -23,12 +23,12 @@
 #include "DetachedSong.hxx"
 #include "mixer/Volume.hxx"
 #include "IdleFlags.hxx"
-#include "ReplayGainGlobal.hxx"
 
 Partition::Partition(Instance &_instance,
 		     unsigned max_length,
 		     unsigned buffer_chunks,
-		     unsigned buffered_before_play)
+		     unsigned buffered_before_play,
+		     const ReplayGainConfig &replay_gain_config)
 	:instance(_instance),
 	 global_events(instance.event_loop, BIND_THIS_METHOD(OnGlobalEvent)),
 	 playlist(max_length, *this),
