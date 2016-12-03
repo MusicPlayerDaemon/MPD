@@ -248,26 +248,19 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 {
 	struct audio_format_string af_string;
 
-	assert(dc.state == DecoderState::START);
-	assert(dc.pipe != nullptr);
-	assert(dc.pipe->IsEmpty());
 	assert(convert == nullptr);
 	assert(stream_tag == nullptr);
 	assert(decoder_tag == nullptr);
 	assert(!seeking);
-	assert(audio_format.IsDefined());
-	assert(audio_format.IsValid());
-
-	dc.in_audio_format = audio_format;
-	dc.out_audio_format = audio_format;
-	dc.out_audio_format.ApplyMask(dc.configured_audio_format);
-
-	dc.seekable = seekable;
-	dc.total_time = duration;
 
 	FormatDebug(decoder_domain, "audio_format=%s, seekable=%s",
-		    audio_format_to_string(dc.in_audio_format, &af_string),
+		    audio_format_to_string(audio_format, &af_string),
 		    seekable ? "true" : "false");
+
+	{
+		const ScopeLock protect(dc.mutex);
+		dc.SetReady(audio_format, seekable, duration);
+	}
 
 	if (dc.in_audio_format != dc.out_audio_format) {
 		FormatDebug(decoder_domain, "converting to %s",
@@ -283,10 +276,6 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 			error = std::current_exception();
 		}
 	}
-
-	const ScopeLock protect(dc.mutex);
-	dc.state = DecoderState::DECODE;
-	dc.client_cond.signal();
 }
 
 DecoderCommand

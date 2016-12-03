@@ -255,6 +255,15 @@ struct DecoderControl {
 	}
 
 	/**
+	 * Transition this obejct from DecoderState::START to
+	 * DecoderState::DECODE.
+	 *
+	 * Caller must lock the object.
+	 */
+	void SetReady(const AudioFormat audio_format,
+		      bool _seekable, SignedSongTime _duration);
+
+	/**
 	 * Checks whether an error has occurred, and if so, rethrows
 	 * it.
 	 *
