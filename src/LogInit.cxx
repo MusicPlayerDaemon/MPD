@@ -24,12 +24,10 @@
 #include "config/Param.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/ConfigOption.hxx"
-#include "system/FatalError.hxx"
 #include "fs/AllocatedPath.hxx"
 #include "fs/FileSystem.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
-#include "system/FatalError.hxx"
 #include "system/Error.hxx"
 
 #include <assert.h>
@@ -54,9 +52,9 @@ static void redirect_logs(int fd)
 {
 	assert(fd >= 0);
 	if (dup2(fd, STDOUT_FILENO) < 0)
-		FatalSystemError("Failed to dup2 stdout");
+		throw MakeErrno("Failed to dup2 stdout");
 	if (dup2(fd, STDERR_FILENO) < 0)
-		FatalSystemError("Failed to dup2 stderr");
+		throw MakeErrno("Failed to dup2 stderr");
 }
 
 static int
@@ -98,10 +96,9 @@ parse_log_level(const char *value, int line)
 		return LOG_LEVEL_SECURE;
 	else if (0 == strcmp(value, "verbose"))
 		return LogLevel::DEBUG;
-	else {
-		FormatFatalError("unknown log level \"%s\" at line %d",
-				 value, line);
-	}
+	else
+		throw FormatRuntimeError("unknown log level \"%s\" at line %d",
+					 value, line);
 }
 
 #endif
