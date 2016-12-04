@@ -95,10 +95,32 @@ FormatLastError(const char *fmt, Args&&... args)
 #include <errno.h>
 #include <string.h>
 
+/**
+ * Returns the error_category to be used to wrap errno values.  The
+ * C++ standard does not define this well, so this code is based on
+ * observations what C++ standard library implementations actually
+ * use.
+ *
+ * @see https://stackoverflow.com/questions/28746372/system-error-categories-and-standard-system-error-codes
+ */
+static inline const std::error_category &
+ErrnoCategory()
+{
+#ifdef WIN32
+	/* on Windows, the generic_category() is used for errno
+	   values */
+	return std::generic_category();
+#else
+	/* on POSIX, system_category() appears to be the best
+	   choice */
+	return std::system_category();
+#endif
+}
+
 static inline std::system_error
 MakeErrno(int code, const char *msg)
 {
-	return std::system_error(std::error_code(code, std::system_category()),
+	return std::system_error(std::error_code(code, ErrnoCategory()),
 				 msg);
 }
 
@@ -133,7 +155,7 @@ IsFileNotFound(const std::system_error &e)
 	return e.code().category() == std::system_category() &&
 		e.code().value() == ERROR_FILE_NOT_FOUND;
 #else
-	return e.code().category() == std::system_category() &&
+	return e.code().category() == ErrnoCategory() &&
 		e.code().value() == ENOENT;
 #endif
 }
@@ -146,7 +168,7 @@ IsPathNotFound(const std::system_error &e)
 	return e.code().category() == std::system_category() &&
 		e.code().value() == ERROR_PATH_NOT_FOUND;
 #else
-	return e.code().category() == std::system_category() &&
+	return e.code().category() == ErrnoCategory() &&
 		e.code().value() == ENOTDIR;
 #endif
 }
@@ -159,7 +181,7 @@ IsAccessDenied(const std::system_error &e)
 	return e.code().category() == std::system_category() &&
 		e.code().value() == ERROR_ACCESS_DENIED;
 #else
-	return e.code().category() == std::system_category() &&
+	return e.code().category() == ErrnoCategory() &&
 		e.code().value() == EACCES;
 #endif
 }

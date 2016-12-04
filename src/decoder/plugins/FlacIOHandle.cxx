@@ -21,8 +21,7 @@
 #include "FlacIOHandle.hxx"
 #include "Log.hxx"
 #include "Compiler.h"
-
-#include <system_error>
+#include "system/Error.hxx"
 
 #include <errno.h>
 #include <stdio.h>
@@ -49,7 +48,7 @@ FlacIORead(void *ptr, size_t size, size_t nmemb, FLAC__IOHandle handle)
 
 #ifndef WIN32
 		} catch (const std::system_error &e) {
-			errno = e.code().category() == std::system_category()
+			errno = e.code().category() == ErrnoCategory()
 				? e.code().value()
 				/* just some random non-zero errno
 				   value */
