@@ -26,6 +26,19 @@
 #include <errno.h>
 #include <fcntl.h>
 
+void
+RenameFile(Path oldpath, Path newpath)
+{
+#ifdef WIN32
+	if (!MoveFileEx(oldpath.c_str(), newpath.c_str(),
+			MOVEFILE_REPLACE_EXISTING))
+		throw MakeLastError("Failed to rename file");
+#else
+	if (rename(oldpath.c_str(), newpath.c_str()) < 0)
+		throw MakeErrno("Failed to rename file");
+#endif
+}
+
 AllocatedPath
 ReadLink(Path path)
 {

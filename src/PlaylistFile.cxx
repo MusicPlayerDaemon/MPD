@@ -122,24 +122,6 @@ spl_map_to_fs(const char *name_utf8)
 	return path_fs;
 }
 
-/**
- * Throw an exception for the current errno.
- */
-static void
-ThrowPlaylistErrno()
-{
-	switch (errno) {
-	case ENOENT:
-		throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
-				    "No such playlist");
-
-	default:
-		throw std::system_error(std::error_code(errno,
-							std::system_category()),
-					"Error");
-	}
-}
-
 static bool
 LoadPlaylistFileInfo(PlaylistInfo &info,
 		     const Path parent_path_fs,
@@ -392,8 +374,15 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs)
 		throw PlaylistError(PlaylistResult::LIST_EXISTS,
 				    "Playlist exists already");
 
-	if (!RenameFile(from_path_fs, to_path_fs))
-		ThrowPlaylistErrno();
+	try {
+		RenameFile(from_path_fs, to_path_fs);
+	} catch (const std::system_error &e) {
+		if (IsPathNotFound(e))
+			throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
+					    "No such playlist");
+		else
+			throw;
+	}
 
 	idle_add(IDLE_STORED_PLAYLIST);
 }

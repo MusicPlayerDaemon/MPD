@@ -63,18 +63,13 @@ OpenFile(Path file, int flags, int mode)
 #endif
 }
 
-/**
+/*
  * Wrapper for rename() that uses #Path names.
+ *
+ * Throws std::system_error on error.
  */
-static inline bool
-RenameFile(Path oldpath, Path newpath)
-{
-#ifdef WIN32
-	return _trename(oldpath.c_str(), newpath.c_str()) == 0;
-#else
-	return rename(oldpath.c_str(), newpath.c_str()) == 0;
-#endif
-}
+void
+RenameFile(Path oldpath, Path newpath);
 
 #ifndef WIN32
 
