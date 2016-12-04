@@ -366,10 +366,6 @@ spl_append_uri(const char *utf8file,
 static void
 spl_rename_internal(Path from_path_fs, Path to_path_fs)
 {
-	if (!FileExists(from_path_fs))
-		throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
-				    "No such playlist");
-
 	if (FileExists(to_path_fs))
 		throw PlaylistError(PlaylistResult::LIST_EXISTS,
 				    "Playlist exists already");
@@ -377,7 +373,7 @@ spl_rename_internal(Path from_path_fs, Path to_path_fs)
 	try {
 		RenameFile(from_path_fs, to_path_fs);
 	} catch (const std::system_error &e) {
-		if (IsPathNotFound(e))
+		if (IsFileNotFound(e))
 			throw PlaylistError(PlaylistResult::NO_SUCH_LIST,
 					    "No such playlist");
 		else
