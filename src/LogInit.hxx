@@ -40,7 +40,8 @@ log_init(bool verbose, bool use_stdout);
 void
 log_deinit();
 
-void setup_log_output(bool use_stdout);
+void
+setup_log_output();
 
 int
 cycle_log_files();

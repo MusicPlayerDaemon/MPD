@@ -382,7 +382,8 @@ int main(int argc, char *argv[])
 
 #endif
 
-static int mpd_main_after_fork(struct options);
+static int
+mpd_main_after_fork();
 
 #ifdef ANDROID
 static inline
@@ -467,19 +468,20 @@ try {
 	   This must be run after forking; if dispatch is called before forking,
 	   the child process will have a broken internal dispatch state. */
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		exit(mpd_main_after_fork(options));
+		exit(mpd_main_after_fork());
 	});
 	dispatch_main();
 	return EXIT_FAILURE; // unreachable, because dispatch_main never returns
 #else
-	return mpd_main_after_fork(options);
+	return mpd_main_after_fork();
 #endif
 } catch (const std::exception &e) {
 	LogError(e);
 	return EXIT_FAILURE;
 }
 
-static int mpd_main_after_fork(struct options options)
+static int
+mpd_main_after_fork()
 try {
 	ConfigureFS();
 
@@ -514,7 +516,7 @@ try {
 #endif
 
 #ifndef ANDROID
-	setup_log_output(options.log_stderr);
+	setup_log_output();
 
 	SignalHandlersInit(instance->event_loop);
 #endif

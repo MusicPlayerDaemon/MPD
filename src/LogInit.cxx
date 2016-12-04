@@ -130,7 +130,9 @@ log_init(bool verbose, bool use_stdout)
 		SetLogThreshold(parse_log_level(param->value.c_str(),
 						param->line));
 
-	if (!use_stdout) {
+	if (use_stdout) {
+		out_fd = STDOUT_FILENO;
+	} else {
 		const auto *param = config_get_param(ConfigOption::LOG_FILE);
 		if (param == nullptr) {
 			/* no configuration: default to syslog (if
@@ -171,12 +173,10 @@ log_deinit(void)
 #endif
 }
 
-void setup_log_output(bool use_stdout)
+void setup_log_output()
 {
-#ifdef ANDROID
-	(void)use_stdout;
-#else
-	if (use_stdout)
+#ifndef ANDROID
+	if (out_fd == STDOUT_FILENO)
 		return;
 
 	fflush(nullptr);
