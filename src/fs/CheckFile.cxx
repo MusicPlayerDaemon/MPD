@@ -47,8 +47,7 @@ try {
 						    PathTraitsFS::CURRENT_DIRECTORY);
 		const FileInfo fi2(x);
 	} catch (const std::system_error &e) {
-		if (e.code().category() == std::system_category() &&
-		    e.code().value() == EACCES)
+		if (IsAccessDenied(e))
 			FormatError(config_domain,
 				    "No permission to traverse (\"execute\") directory: %s",
 				    path_utf8.c_str());
