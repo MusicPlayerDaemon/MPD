@@ -54,6 +54,10 @@ static SignedSongTime
 GetDuration(WavpackContext *wpc)
 {
 	const uint32_t n_samples = WavpackGetNumSamples(wpc);
+	if (n_samples == uint32_t(-1))
+		/* unknown */
+		return SignedSongTime::Negative();
+
 	return SongTime::FromScale<uint64_t>(n_samples,
 					     WavpackGetSampleRate(wpc));
 }
@@ -230,7 +234,8 @@ wavpack_scan_file(Path path_fs,
 	};
 
 	const auto duration = GetDuration(wpc);
-	tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+	if (!duration.IsNegative())
+		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
 
 	return true;
 }
