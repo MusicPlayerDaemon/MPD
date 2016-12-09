@@ -118,11 +118,11 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 }
 
 /*
- * This function converts floating point sample data to 24-bit integer.
+ * No conversion necessary.
  */
 static void
-format_samples_float(gcc_unused int bytes_per_sample, gcc_unused void *buffer,
-		     gcc_unused uint32_t count)
+format_samples_nop(gcc_unused int bytes_per_sample, gcc_unused void *buffer,
+		   gcc_unused uint32_t count)
 {
 	/* do nothing */
 }
@@ -171,7 +171,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 					     WavpackGetReducedChannels(wpc));
 
 	const format_samples_t format_samples = is_float
-		? format_samples_float
+		? format_samples_nop
 		: format_samples_int;
 
 	client.Ready(audio_format, can_seek, GetDuration(wpc));
