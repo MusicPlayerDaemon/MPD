@@ -220,34 +220,6 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 }
 
 /*
- * Reads metainfo from the specified file.
- */
-static bool
-wavpack_scan_file(Path path_fs,
-		  const TagHandler &handler, void *handler_ctx)
-{
-	char error[ERRORLEN];
-	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   OPEN_DSD_FLAG, 0);
-	if (wpc == nullptr) {
-		FormatError(wavpack_domain,
-			    "failed to open WavPack file \"%s\": %s",
-			    path_fs.c_str(), error);
-		return false;
-	}
-
-	AtScopeExit(wpc) {
-		WavpackCloseFile(wpc);
-	};
-
-	const auto duration = GetDuration(wpc);
-	if (!duration.IsNegative())
-		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
-
-	return true;
-}
-
-/*
  * #InputStream <=> WavpackStreamReader wrapper callbacks
  */
 
@@ -496,6 +468,34 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
 	};
 
 	wavpack_decode(client, wpc, true);
+}
+
+/*
+ * Reads metainfo from the specified file.
+ */
+static bool
+wavpack_scan_file(Path path_fs,
+		  const TagHandler &handler, void *handler_ctx)
+{
+	char error[ERRORLEN];
+	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
+						   OPEN_DSD_FLAG, 0);
+	if (wpc == nullptr) {
+		FormatError(wavpack_domain,
+			    "failed to open WavPack file \"%s\": %s",
+			    path_fs.c_str(), error);
+		return false;
+	}
+
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
+
+	const auto duration = GetDuration(wpc);
+	if (!duration.IsNegative())
+		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+
+	return true;
 }
 
 static char const *const wavpack_suffixes[] = {
