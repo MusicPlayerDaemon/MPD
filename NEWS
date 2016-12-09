@@ -1,4 +1,6 @@
 ver 0.19.20 (not yet released)
+* protocol
+  - "setprio" re-enqueues old song if priority has been raised
 * decoder
   - ffmpeg: ignore empty packets
   - pcm: fix corruption bug with partial frames (after short read)

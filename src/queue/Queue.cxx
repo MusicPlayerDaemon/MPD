@@ -426,14 +426,15 @@ Queue::SetPriority(unsigned position, uint8_t priority, int after_order)
 
 		if (_order < (unsigned)after_order) {
 			/* the specified song has been played already
-			   - enqueue it only if its priority has just
-			   become bigger than the current one's */
+			   - enqueue it only if its priority has been
+			   increased and is now bigger than the
+			   current one's */
 
 			const unsigned after_position =
 				OrderToPosition(after_order);
 			const Item *after_item =
 				&items[after_position];
-			if (old_priority > after_item->priority ||
+			if (priority <= old_priority ||
 			    priority <= after_item->priority)
 				/* priority hasn't become bigger */
 				return true;
