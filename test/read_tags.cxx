@@ -101,7 +101,14 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	bool success = plugin->ScanFile(path, print_handler, nullptr);
+	bool success;
+	try {
+		success = plugin->ScanFile(path, print_handler, nullptr);
+	} catch (const std::exception &e) {
+		LogError(e);
+		success = false;
+	}
+
 	if (!success && plugin->scan_stream != NULL) {
 		Mutex mutex;
 		Cond cond;
