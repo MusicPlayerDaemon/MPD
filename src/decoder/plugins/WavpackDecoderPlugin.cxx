@@ -53,10 +53,18 @@ gcc_pure
 static SignedSongTime
 GetDuration(WavpackContext *wpc)
 {
+#ifdef OPEN_DSD_AS_PCM
+	/* libWavPack 5 */
+	const auto n_samples = WavpackGetNumSamples64(wpc);
+	if (n_samples == -1)
+		/* unknown */
+		return SignedSongTime::Negative();
+#else
 	const uint32_t n_samples = WavpackGetNumSamples(wpc);
 	if (n_samples == uint32_t(-1))
 		/* unknown */
 		return SignedSongTime::Negative();
+#endif
 
 	return SongTime::FromScale<uint64_t>(n_samples,
 					     WavpackGetSampleRate(wpc));
