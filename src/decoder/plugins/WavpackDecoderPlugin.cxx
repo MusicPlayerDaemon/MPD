@@ -151,7 +151,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 
 	auto audio_format = CheckAudioFormat(WavpackGetSampleRate(wpc),
 					     sample_format,
-					     WavpackGetNumChannels(wpc));
+					     WavpackGetReducedChannels(wpc));
 
 	const format_samples_t format_samples = is_float
 		? format_samples_float
