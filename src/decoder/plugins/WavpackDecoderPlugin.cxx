@@ -98,9 +98,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
 
 		/* pass through and align 8-bit samples */
-		while (count--) {
-			*dst++ = *src++;
-		}
+		std::copy_n(src, count, dst);
 		break;
 	}
 	case 2: {
@@ -108,9 +106,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
 
 		/* pass through and align 16-bit samples */
-		while (count--) {
-			*dst++ = *src++;
-		}
+		std::copy_n(src, count, dst);
 		break;
 	}
 
