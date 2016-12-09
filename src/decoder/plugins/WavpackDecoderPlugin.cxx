@@ -104,7 +104,7 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
 		break;
 	}
 	case 2: {
-		uint16_t *dst = (uint16_t *)buffer;
+		auto *dst = (int16_t *)buffer;
 		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
 
 		/* pass through and align 16-bit samples */
