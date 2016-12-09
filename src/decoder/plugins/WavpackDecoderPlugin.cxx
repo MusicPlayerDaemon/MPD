@@ -249,12 +249,12 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 
 /* This struct is needed for per-stream last_byte storage. */
 struct WavpackInput {
-	DecoderClient &client;
+	DecoderClient *const client;
 	InputStream &is;
 	/* Needed for push_back_byte() */
 	int last_byte;
 
-	constexpr WavpackInput(DecoderClient &_client, InputStream &_is)
+	constexpr WavpackInput(DecoderClient *_client, InputStream &_is)
 		:client(_client), is(_is), last_byte(EOF) {}
 
 	int32_t ReadBytes(void *data, size_t bcount);
@@ -292,7 +292,7 @@ WavpackInput::ReadBytes(void *data, size_t bcount)
 	/* wavpack fails if we return a partial read, so we just wait
 	   until the buffer is full */
 	while (bcount > 0) {
-		size_t nbytes = decoder_read(&client, is, buf, bcount);
+		size_t nbytes = decoder_read(client, is, buf, bcount);
 		if (nbytes == 0) {
 			/* EOF, error or a decoder command */
 			break;
@@ -443,14 +443,14 @@ wavpack_streamdecode(DecoderClient &client, InputStream &is)
 		open_flags |= OPEN_WVC;
 		can_seek &= wvc->is.IsSeekable();
 
-		wvc.reset(new WavpackInput(client, *is_wvc));
+		wvc.reset(new WavpackInput(&client, *is_wvc));
 	}
 
 	if (!can_seek) {
 		open_flags |= OPEN_STREAMING;
 	}
 
-	WavpackInput isp(client, is);
+	WavpackInput isp(&client, is);
 
 	auto *wpc = WavpackOpenInput(&mpd_is_reader, &isp, wvc.get(),
 				     open_flags, 0);
