@@ -41,6 +41,14 @@
 
 static constexpr Domain wavpack_domain("wavpack");
 
+#ifdef OPEN_DSD_AS_PCM
+/* libWavPack supports DSD since version 5 */
+static constexpr int OPEN_DSD_FLAG = OPEN_DSD_AS_PCM;
+#else
+/* no DSD support in this libWavPack version */
+static constexpr int OPEN_DSD_FLAG = 0;
+#endif
+
 /** A pointer type for format converter function. */
 typedef void (*format_samples_t)(
 	int bytes_per_sample,
@@ -204,7 +212,7 @@ wavpack_scan_file(Path path_fs,
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   0, 0);
+						   OPEN_DSD_FLAG, 0);
 	if (wpc == nullptr) {
 		FormatError(wavpack_domain,
 			    "failed to open WavPack file \"%s\": %s",
@@ -415,7 +423,7 @@ wavpack_open_wvc(DecoderClient &client, const char *uri)
 static void
 wavpack_streamdecode(DecoderClient &client, InputStream &is)
 {
-	int open_flags = OPEN_NORMALIZE;
+	int open_flags = OPEN_DSD_FLAG | OPEN_NORMALIZE;
 	bool can_seek = is.IsSeekable();
 
 	std::unique_ptr<WavpackInput> wvc;
@@ -459,7 +467,7 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   OPEN_WVC | OPEN_NORMALIZE,
+						   OPEN_DSD_FLAG | OPEN_NORMALIZE | OPEN_WVC,
 						   0);
 	if (wpc == nullptr) {
 		FormatWarning(wavpack_domain,
