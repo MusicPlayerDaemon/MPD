@@ -28,6 +28,7 @@ ver 0.20 (not yet released)
   - pcm: support audio/L16 (RFC 2586) and audio/x-mpd-float
   - sidplay: faster scanning
   - wavpack: support DSD (WavPack 5)
+  - wavpack: archive support
 * playlist
   - cue: don't skip pregap
   - embcue: fix last track

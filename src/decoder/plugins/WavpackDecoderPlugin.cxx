@@ -496,6 +496,24 @@ wavpack_scan_file(Path path_fs,
 	return true;
 }
 
+static bool
+wavpack_scan_stream(InputStream &is,
+		    const TagHandler &handler, void *handler_ctx)
+{
+	WavpackInput isp(nullptr, is);
+	auto *wpc = WavpackOpenInput(&mpd_is_reader, &isp, nullptr,
+				     OPEN_DSD_FLAG, 0);
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
+
+	const auto duration = GetDuration(wpc);
+	if (!duration.IsNegative())
+		tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
+
+	return true;
+}
+
 static char const *const wavpack_suffixes[] = {
 	"wv",
 	nullptr
@@ -513,7 +531,7 @@ const struct DecoderPlugin wavpack_decoder_plugin = {
 	wavpack_streamdecode,
 	wavpack_filedecode,
 	wavpack_scan_file,
-	nullptr,
+	wavpack_scan_stream,
 	nullptr,
 	wavpack_suffixes,
 	wavpack_mime_types
