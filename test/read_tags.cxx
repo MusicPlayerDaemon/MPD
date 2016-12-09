@@ -29,6 +29,7 @@
 #include "fs/Path.hxx"
 #include "thread/Cond.hxx"
 #include "Log.hxx"
+#include "util/ScopeExit.hxx"
 
 #include <stdexcept>
 
@@ -89,7 +90,10 @@ try {
 	const ScopeIOThread io_thread;
 
 	input_stream_global_init();
+	AtScopeExit() { input_stream_global_finish(); };
+
 	decoder_plugin_init_all();
+	AtScopeExit() { decoder_plugin_deinit_all(); };
 
 	plugin = decoder_plugin_from_name(decoder_name);
 	if (plugin == NULL) {
@@ -106,9 +110,6 @@ try {
 						 mutex, cond);
 		success = plugin->ScanStream(*is, print_handler, nullptr);
 	}
-
-	decoder_plugin_deinit_all();
-	input_stream_global_finish();
 
 	if (!success) {
 		fprintf(stderr, "Failed to read tags\n");
