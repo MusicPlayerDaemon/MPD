@@ -127,6 +127,16 @@ Context *context;
 
 Instance *instance;
 
+struct Config {
+};
+
+gcc_const
+static Config
+LoadConfig()
+{
+	return {};
+}
+
 #ifdef ENABLE_DAEMON
 
 static void
@@ -383,7 +393,7 @@ int main(int argc, char *argv[])
 #endif
 
 static int
-mpd_main_after_fork();
+mpd_main_after_fork(const Config &config);
 
 #ifdef ANDROID
 static inline
@@ -424,6 +434,8 @@ try {
 #else
 	ParseCommandLine(argc, argv, &options);
 #endif
+
+	const auto config = LoadConfig();
 
 #ifdef ENABLE_DAEMON
 	glue_daemonize_init(&options);
@@ -468,12 +480,12 @@ try {
 	   This must be run after forking; if dispatch is called before forking,
 	   the child process will have a broken internal dispatch state. */
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		exit(mpd_main_after_fork());
+		exit(mpd_main_after_fork(config));
 	});
 	dispatch_main();
 	return EXIT_FAILURE; // unreachable, because dispatch_main never returns
 #else
-	return mpd_main_after_fork();
+	return mpd_main_after_fork(config);
 #endif
 } catch (const std::exception &e) {
 	LogError(e);
@@ -481,8 +493,10 @@ try {
 }
 
 static int
-mpd_main_after_fork()
+mpd_main_after_fork(const Config &config)
 try {
+	(void)config;
+
 	ConfigureFS();
 
 	glue_mapper_init();
