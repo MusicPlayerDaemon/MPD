@@ -264,6 +264,63 @@ struct WavpackInput {
 		:client(_client), is(_is), last_byte(EOF) {}
 
 	int32_t ReadBytes(void *data, size_t bcount);
+
+	InputStream::offset_type GetPos() const {
+		return is.GetOffset();
+	}
+
+	int SetPosAbs(InputStream::offset_type pos) {
+		try {
+			is.LockSeek(pos);
+			return 0;
+		} catch (const std::runtime_error &) {
+			return -1;
+		}
+	}
+
+	int SetPosRel(InputStream::offset_type delta, int mode) {
+		offset_type offset = delta;
+		switch (mode) {
+		case SEEK_SET:
+			break;
+
+		case SEEK_CUR:
+			offset += is.GetOffset();
+			break;
+
+		case SEEK_END:
+			if (!is.KnownSize())
+				return -1;
+
+			offset += is.GetSize();
+			break;
+
+		default:
+			return -1;
+		}
+
+		return SetPosAbs(offset);
+	}
+
+	int PushBackByte(int c) {
+		if (last_byte == EOF) {
+			last_byte = c;
+			return c;
+		} else {
+			return EOF;
+		}
+	}
+
+	InputStream::offset_type GetLength() const {
+		if (!is.KnownSize())
+			return 0;
+
+		return is.GetSize();
+	}
+
+	bool CanSeek() const {
+		return is.IsSeekable();
+	}
 };
 
 /**
@@ -316,89 +373,42 @@ static uint32_t
 wavpack_input_get_pos(void *id)
 {
 	WavpackInput &wpi = *wpin(id);
-
-	return wpi.is.GetOffset();
+	return wpi.GetPos();
 }
 
 static int
 wavpack_input_set_pos_abs(void *id, uint32_t pos)
 {
 	WavpackInput &wpi = *wpin(id);
-
-	try {
-		wpi.is.LockSeek(pos);
-		return 0;
-	} catch (const std::runtime_error &) {
-		return -1;
-	}
+	return wpi.SetPosAbs(pos);
 }
 
 static int
 wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 {
 	WavpackInput &wpi = *wpin(id);
-	InputStream &is = wpi.is;
-
-	offset_type offset = delta;
-	switch (mode) {
-	case SEEK_SET:
-		break;
-
-	case SEEK_CUR:
-		offset += is.GetOffset();
-		break;
-
-	case SEEK_END:
-		if (!is.KnownSize())
-			return -1;
-
-		offset += is.GetSize();
-		break;
-
-	default:
-		return -1;
-	}
-
-	try {
-		wpi.is.LockSeek(offset);
-		return 0;
-	} catch (const std::runtime_error &) {
-		return -1;
-	}
+	return wpi.SetPosRel(delta, mode);
 }
 
 static int
 wavpack_input_push_back_byte(void *id, int c)
 {
 	WavpackInput &wpi = *wpin(id);
-
-	if (wpi.last_byte == EOF) {
-		wpi.last_byte = c;
-		return c;
-	} else {
-		return EOF;
-	}
+	return wpi.PushBackByte(c);
 }
 
 static uint32_t
 wavpack_input_get_length(void *id)
 {
 	WavpackInput &wpi = *wpin(id);
-	InputStream &is = wpi.is;
-
-	if (!is.KnownSize())
-		return 0;
-
-	return is.GetSize();
+	return wpi.GetLength();
 }
 
 static int
 wavpack_input_can_seek(void *id)
 {
 	WavpackInput &wpi = *wpin(id);
-	InputStream &is = wpi.is;
-
-	return is.IsSeekable();
+	return wpi.CanSeek();
 }
 
 static WavpackStreamReader mpd_is_reader = {
