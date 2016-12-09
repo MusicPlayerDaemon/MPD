@@ -49,6 +49,15 @@ static constexpr int OPEN_DSD_FLAG = OPEN_DSD_AS_PCM;
 static constexpr int OPEN_DSD_FLAG = 0;
 #endif
 
+gcc_pure
+static SignedSongTime
+GetDuration(WavpackContext *wpc)
+{
+	const uint32_t n_samples = WavpackGetNumSamples(wpc);
+	return SongTime::FromScale<uint64_t>(n_samples,
+					     WavpackGetSampleRate(wpc));
+}
+
 /** A pointer type for format converter function. */
 typedef void (*format_samples_t)(
 	int bytes_per_sample,
@@ -157,9 +166,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		? format_samples_float
 		: format_samples_int;
 
-	const auto total_time =
-		SongTime::FromScale<uint64_t>(WavpackGetNumSamples(wpc),
-					      audio_format.sample_rate);
+	client.Ready(audio_format, can_seek, GetDuration(wpc));
 
 	const int bytes_per_sample = WavpackGetBytesPerSample(wpc);
 	const int output_sample_size = audio_format.GetFrameSize();
@@ -168,8 +175,6 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 	int32_t chunk[1024];
 	const uint32_t samples_requested = ARRAY_SIZE(chunk) /
 		audio_format.channels;
-
-	client.Ready(audio_format, can_seek, total_time);
 
 	DecoderCommand cmd = client.GetCommand();
 	while (cmd != DecoderCommand::STOP) {
@@ -224,10 +229,8 @@ wavpack_scan_file(Path path_fs,
 		WavpackCloseFile(wpc);
 	};
 
-	const auto duration =
-		SongTime::FromScale<uint64_t>(WavpackGetNumSamples(wpc),
-					      WavpackGetSampleRate(wpc));
-	tag_handler_invoke_duration(handler, handler_ctx, duration);
+	const auto duration = GetDuration(wpc);
+	tag_handler_invoke_duration(handler, handler_ctx, SongTime(duration));
 
 	return true;
 }
