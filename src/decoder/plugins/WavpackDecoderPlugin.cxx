@@ -217,7 +217,12 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		if (cmd == DecoderCommand::SEEK) {
 			if (can_seek) {
 				auto where = client.GetSeekFrame();
-				if (!WavpackSeekSample(wpc, where)) {
+#ifdef OPEN_DSD_AS_PCM
+				bool success = WavpackSeekSample64(wpc, where);
+#else
+				bool success = WavpackSeekSample(wpc, where);
+#endif
+				if (!success) {
 					/* seek errors are fatal */
 					client.SeekError();
 					break;
