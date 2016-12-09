@@ -144,7 +144,7 @@ wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
 static void
 wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 {
-	bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
+	const bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
 	SampleFormat sample_format =
 		wavpack_bits_to_sample_format(is_float,
 					      WavpackGetBytesPerSample(wpc));
