@@ -59,7 +59,9 @@ ver 0.20 (not yet released)
 * switch the code base to C++14
   - GCC 4.9 or clang 3.4 (or newer) recommended
 
-ver 0.19.20 (not yet released)
+ver 0.19.20 (2016/12/09)
+* protocol
+  - "setprio" re-enqueues old song if priority has been raised
 * decoder
   - ffmpeg: ignore empty packets
   - pcm: fix corruption bug with partial frames (after short read)
@@ -67,6 +69,7 @@ ver 0.19.20 (not yet released)
 * output
   - winmm: fix 8 bit playback
 * fix gcc 7.0 -Wimplicit-fallthrough
+* systemd: paranoid security settings
 
 ver 0.19.19 (2016/08/23)
 * decoder
