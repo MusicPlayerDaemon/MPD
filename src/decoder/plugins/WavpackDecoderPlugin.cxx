@@ -23,7 +23,6 @@
 #include "input/InputStream.hxx"
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
-#include "tag/ApeTag.hxx"
 #include "fs/Path.hxx"
 #include "util/Domain.hxx"
 #include "util/Macros.hxx"
@@ -34,10 +33,9 @@
 #include <wavpack/wavpack.h>
 
 #include <stdexcept>
+#include <memory>
 
 #include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #define ERRORLEN 80
 
@@ -197,66 +195,6 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 	}
 }
 
-/**
- * Locate and parse a floating point tag.  Returns true if it was
- * found.
- */
-static bool
-wavpack_tag_float(WavpackContext *wpc, const char *key, float *value_r)
-{
-	char buffer[64];
-	if (WavpackGetTagItem(wpc, key, buffer, sizeof(buffer)) <= 0)
-		return false;
-
-	*value_r = atof(buffer);
-	return true;
-}
-
-static bool
-wavpack_replaygain(ReplayGainInfo &rgi,
-		   WavpackContext *wpc)
-{
-	rgi.Clear();
-
-	bool found = false;
-	found |= wavpack_tag_float(wpc, "replaygain_track_gain",
-				   &rgi.track.gain);
-	found |= wavpack_tag_float(wpc, "replaygain_track_peak",
-				   &rgi.track.peak);
-	found |= wavpack_tag_float(wpc, "replaygain_album_gain",
-				   &rgi.album.gain);
-	found |= wavpack_tag_float(wpc, "replaygain_album_peak",
-				   &rgi.album.peak);
-
-	return found;
-}
-
-static void
-wavpack_scan_tag_item(WavpackContext *wpc, const char *name,
-		      TagType type,
-		      const TagHandler &handler, void *handler_ctx)
-{
-	char buffer[1024];
-	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
-	if (len <= 0 || (unsigned)len >= sizeof(buffer))
-		return;
-
-	tag_handler_invoke_tag(handler, handler_ctx, type, buffer);
-
-}
-
-static void
-wavpack_scan_pair(WavpackContext *wpc, const char *name,
-		  const TagHandler &handler, void *handler_ctx)
-{
-	char buffer[8192];
-	int len = WavpackGetTagItem(wpc, name, buffer, sizeof(buffer));
-	if (len <= 0 || (unsigned)len >= sizeof(buffer))
-		return;
-
-	tag_handler_invoke_pair(handler, handler_ctx, name, buffer);
-}
-
 /*
  * Reads metainfo from the specified file.
  */
@@ -266,7 +204,7 @@ wavpack_scan_file(Path path_fs,
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   OPEN_TAGS, 0);
+						   0, 0);
 	if (wpc == nullptr) {
 		FormatError(wavpack_domain,
 			    "failed to open WavPack file \"%s\": %s",
@@ -282,34 +220,6 @@ wavpack_scan_file(Path path_fs,
 		SongTime::FromScale<uint64_t>(WavpackGetNumSamples(wpc),
 					      WavpackGetSampleRate(wpc));
 	tag_handler_invoke_duration(handler, handler_ctx, duration);
-
-	/* the WavPack format implies APEv2 tags, which means we can
-	   reuse the mapping from tag_ape.c */
-
-	for (unsigned i = 0; i < TAG_NUM_OF_ITEM_TYPES; ++i) {
-		const char *name = tag_item_names[i];
-		if (name != nullptr)
-			wavpack_scan_tag_item(wpc, name, (TagType)i,
-					      handler, handler_ctx);
-	}
-
-	for (const struct tag_table *i = ape_tags; i->name != nullptr; ++i)
-		wavpack_scan_tag_item(wpc, i->name, i->type,
-				      handler, handler_ctx);
-
-	if (handler.pair != nullptr) {
-		char name[64];
-
-		for (int i = 0, n = WavpackGetNumTagItems(wpc);
-		     i < n; ++i) {
-			int len = WavpackGetTagItemIndexed(wpc, i, name,
-							   sizeof(name));
-			if (len <= 0 || (unsigned)len >= sizeof(name))
-				continue;
-
-			wavpack_scan_pair(wpc, name, handler, handler_ctx);
-		}
-	}
 
 	return true;
 }
@@ -549,7 +459,7 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
 {
 	char error[ERRORLEN];
 	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE,
+						   OPEN_WVC | OPEN_NORMALIZE,
 						   0);
 	if (wpc == nullptr) {
 		FormatWarning(wavpack_domain,
@@ -561,10 +471,6 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
 	};
-
-	ReplayGainInfo rgi;
-	if (wavpack_replaygain(rgi, wpc))
-		client.SubmitReplayGain(&rgi);
 
 	wavpack_decode(client, wpc, true);
 }
