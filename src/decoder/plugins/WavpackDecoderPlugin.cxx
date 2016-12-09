@@ -43,7 +43,11 @@ static constexpr Domain wavpack_domain("wavpack");
 
 #ifdef OPEN_DSD_AS_PCM
 /* libWavPack supports DSD since version 5 */
+  #ifdef ENABLE_DSD
+static constexpr int OPEN_DSD_FLAG = OPEN_DSD_NATIVE;
+  #else
 static constexpr int OPEN_DSD_FLAG = OPEN_DSD_AS_PCM;
+  #endif
 #else
 /* no DSD support in this libWavPack version */
 static constexpr int OPEN_DSD_FLAG = 0;
@@ -104,10 +108,19 @@ format_samples_nop(gcc_unused void *buffer, gcc_unused uint32_t count)
  * Choose a MPD sample format from libwavpacks' number of bits.
  */
 static SampleFormat
-wavpack_bits_to_sample_format(bool is_float, int bytes_per_sample)
+wavpack_bits_to_sample_format(bool is_float,
+#if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
+			      bool is_dsd,
+#endif
+			      int bytes_per_sample)
 {
 	if (is_float)
 		return SampleFormat::FLOAT;
+
+#if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
+	if (is_dsd)
+		return SampleFormat::DSD;
+#endif
 
 	switch (bytes_per_sample) {
 	case 1:
@@ -135,8 +148,16 @@ static void
 wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 {
 	const bool is_float = (WavpackGetMode(wpc) & MODE_FLOAT) != 0;
+#if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
+	const bool is_dsd = (WavpackGetQualifyMode(wpc) & QMODE_DSD_AUDIO) != 0;
+#else
+	constexpr bool is_dsd = false;
+#endif
 	SampleFormat sample_format =
 		wavpack_bits_to_sample_format(is_float,
+#if defined(OPEN_DSD_AS_PCM) && defined(ENABLE_DSD)
+					      is_dsd,
+#endif
 					      WavpackGetBytesPerSample(wpc));
 
 	auto audio_format = CheckAudioFormat(WavpackGetSampleRate(wpc),
@@ -144,7 +165,9 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 					     WavpackGetReducedChannels(wpc));
 
 	auto *format_samples = format_samples_nop;
-	if (!is_float) {
+	if (is_dsd)
+		format_samples = format_samples_int<uint8_t>;
+	else if (!is_float) {
 		switch (WavpackGetBytesPerSample(wpc)) {
 		case 1:
 			format_samples = format_samples_int<int8_t>;
