@@ -279,6 +279,10 @@ wavpack_scan_file(Path path_fs,
 		return false;
 	}
 
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
+
 	const auto duration =
 		SongTime::FromScale<uint64_t>(WavpackGetNumSamples(wpc),
 					      WavpackGetSampleRate(wpc));
@@ -311,8 +315,6 @@ wavpack_scan_file(Path path_fs,
 			wavpack_scan_pair(wpc, name, handler, handler_ctx);
 		}
 	}
-
-	WavpackCloseFile(wpc);
 
 	return true;
 }
@@ -561,13 +563,15 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
 		return;
 	}
 
+	AtScopeExit(wpc) {
+		WavpackCloseFile(wpc);
+	};
+
 	ReplayGainInfo rgi;
 	if (wavpack_replaygain(rgi, wpc))
 		client.SubmitReplayGain(&rgi);
 
 	wavpack_decode(client, wpc, true);
-
-	WavpackCloseFile(wpc);
 }
 
 static char const *const wavpack_suffixes[] = {
