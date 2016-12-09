@@ -71,13 +71,14 @@ GetDuration(WavpackContext *wpc)
 }
 
 /*
- * Convert 8 bit.
+ * Convert integer samples.
  */
+template<typename T>
 static void
-format_samples_8(void *buffer, uint32_t count)
+format_samples_int(void *buffer, uint32_t count)
 {
 	int32_t *src = (int32_t *)buffer;
-	int8_t *dst = (int8_t *)buffer;
+	T *dst = (T *)buffer;
 	/*
 	 * The asserts like the following one are because we do the
 	 * formatting of samples within a single buffer. The size of
@@ -86,21 +87,7 @@ format_samples_8(void *buffer, uint32_t count)
 	 */
 	static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
 
-	/* pass through and align 8-bit samples */
-	std::copy_n(src, count, dst);
-}
-
-/*
- * Convert 16 bit.
- */
-static void
-format_samples_16(void *buffer, uint32_t count)
-{
-	int32_t *src = (int32_t *)buffer;
-	int16_t *dst = (int16_t *)buffer;
-	static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
-
-	/* pass through and align 16-bit samples */
+	/* pass through and align samples */
 	std::copy_n(src, count, dst);
 }
 
@@ -160,11 +147,11 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 	if (!is_float) {
 		switch (WavpackGetBytesPerSample(wpc)) {
 		case 1:
-			format_samples = format_samples_8;
+			format_samples = format_samples_int<int8_t>;
 			break;
 
 		case 2:
-			format_samples = format_samples_16;
+			format_samples = format_samples_int<int16_t>;
 			break;
 		}
 	}
