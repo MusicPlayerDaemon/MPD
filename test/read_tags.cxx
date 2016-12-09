@@ -109,12 +109,12 @@ try {
 		success = false;
 	}
 
-	if (!success && plugin->scan_stream != NULL) {
-		Mutex mutex;
-		Cond cond;
+	Mutex mutex;
+	Cond cond;
+	InputStreamPtr is;
 
-		auto is = InputStream::OpenReady(path.c_str(),
-						 mutex, cond);
+	if (!success && plugin->scan_stream != NULL) {
+		is = InputStream::OpenReady(path.c_str(), mutex, cond);
 		success = plugin->ScanStream(*is, print_handler, nullptr);
 	}
 
@@ -123,8 +123,12 @@ try {
 		return EXIT_FAILURE;
 	}
 
-	if (empty)
-		ScanGenericTags(path, print_handler, nullptr);
+	if (empty) {
+		if (is)
+			ScanGenericTags(*is, print_handler, nullptr);
+		else
+			ScanGenericTags(path, print_handler, nullptr);
+	}
 
 	return 0;
 } catch (const std::exception &e) {
