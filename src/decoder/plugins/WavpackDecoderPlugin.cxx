@@ -98,15 +98,10 @@ format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
  * This function converts floating point sample data to 24-bit integer.
  */
 static void
-format_samples_float(gcc_unused int bytes_per_sample, void *buffer,
-		     uint32_t count)
+format_samples_float(gcc_unused int bytes_per_sample, gcc_unused void *buffer,
+		     gcc_unused uint32_t count)
 {
-	float *p = (float *)buffer;
-
-	while (count--) {
-		*p /= (1 << 23);
-		++p;
-	}
+	/* do nothing */
 }
 
 /**
@@ -531,7 +526,7 @@ wavpack_streamdecode(DecoderClient &client, InputStream &is)
 	char error[ERRORLEN];
 	WavpackContext *wpc =
 		WavpackOpenFileInputEx(&mpd_is_reader, &isp, wvc.get(),
-				       error, open_flags, 23);
+				       error, open_flags, 0);
 
 	if (wpc == nullptr) {
 		FormatError(wavpack_domain,
@@ -555,7 +550,7 @@ wavpack_filedecode(DecoderClient &client, Path path_fs)
 	char error[ERRORLEN];
 	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
 						   OPEN_TAGS | OPEN_WVC | OPEN_NORMALIZE,
-						   23);
+						   0);
 	if (wpc == nullptr) {
 		FormatWarning(wavpack_domain,
 			      "failed to open WavPack file \"%s\": %s",
