@@ -29,7 +29,7 @@
 
 #include <string.h>
 
-const struct tag_table ape_tags[] = {
+static constexpr struct tag_table ape_tags[] = {
 	{ "year", TAG_DATE },
 	{ nullptr, TAG_NUM_OF_ITEM_TYPES }
 };

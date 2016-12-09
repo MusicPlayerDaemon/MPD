@@ -25,8 +25,6 @@
 class InputStream;
 struct TagHandler;
 
-extern const struct tag_table ape_tags[];
-
 /**
  * Scan the APE tags of a stream.
  *
