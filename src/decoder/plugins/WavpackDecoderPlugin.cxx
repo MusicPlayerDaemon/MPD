@@ -63,6 +63,24 @@ WavpackOpenInput(Path path, int flags, int norm_offset)
 	return wpc;
 }
 
+#ifdef OPEN_DSD_AS_PCM
+
+static WavpackContext *
+WavpackOpenInput(WavpackStreamReader64 *reader, void *wv_id, void *wvc_id,
+		 int flags, int norm_offset)
+{
+	char error[ERRORLEN];
+	auto *wpc = WavpackOpenFileInputEx64(reader, wv_id, wvc_id, error,
+					   flags, norm_offset);
+	if (wpc == nullptr)
+		throw FormatRuntimeError("failed to open WavPack stream: %s",
+					 error);
+
+	return wpc;
+}
+
+#else
+
 static WavpackContext *
 WavpackOpenInput(WavpackStreamReader *reader, void *wv_id, void *wvc_id,
 		 int flags, int norm_offset)
@@ -76,6 +94,8 @@ WavpackOpenInput(WavpackStreamReader *reader, void *wv_id, void *wvc_id,
 
 	return wpc;
 }
+
+#endif
 
 gcc_pure
 static SignedSongTime
@@ -369,6 +389,31 @@ WavpackInput::ReadBytes(void *data, size_t bcount)
 	return i;
 }
 
+#ifdef OPEN_DSD_AS_PCM
+
+static int64_t
+wavpack_input_get_pos(void *id)
+{
+	WavpackInput &wpi = *wpin(id);
+	return wpi.GetPos();
+}
+
+static int
+wavpack_input_set_pos_abs(void *id, int64_t pos)
+{
+	WavpackInput &wpi = *wpin(id);
+	return wpi.SetPosAbs(pos);
+}
+
+static int
+wavpack_input_set_pos_rel(void *id, int64_t delta, int mode)
+{
+	WavpackInput &wpi = *wpin(id);
+	return wpi.SetPosRel(delta, mode);
+}
+
+#else
+
 static uint32_t
 wavpack_input_get_pos(void *id)
 {
@@ -390,12 +435,25 @@ wavpack_input_set_pos_rel(void *id, int32_t delta, int mode)
 	return wpi.SetPosRel(delta, mode);
 }
 
+#endif
+
 static int
 wavpack_input_push_back_byte(void *id, int c)
 {
 	WavpackInput &wpi = *wpin(id);
 	return wpi.PushBackByte(c);
 }
+
+#ifdef OPEN_DSD_AS_PCM
+
+static int64_t
+wavpack_input_get_length(void *id)
+{
+	WavpackInput &wpi = *wpin(id);
+	return wpi.GetLength();
+}
+
+#else
 
 static uint32_t
 wavpack_input_get_length(void *id)
@@ -404,12 +462,31 @@ wavpack_input_get_length(void *id)
 	return wpi.GetLength();
 }
 
+#endif
+
 static int
 wavpack_input_can_seek(void *id)
 {
 	WavpackInput &wpi = *wpin(id);
 	return wpi.CanSeek();
 }
+
+#ifdef OPEN_DSD_AS_PCM
+
+static WavpackStreamReader64 mpd_is_reader = {
+	wavpack_input_read_bytes,
+	nullptr, /* write_bytes */
+	wavpack_input_get_pos,
+	wavpack_input_set_pos_abs,
+	wavpack_input_set_pos_rel,
+	wavpack_input_push_back_byte,
+	wavpack_input_get_length,
+	wavpack_input_can_seek,
+	nullptr, /* truncate_here */
+	nullptr, /* close */
+};
+
+#else
 
 static WavpackStreamReader mpd_is_reader = {
 	wavpack_input_read_bytes,
@@ -421,6 +498,8 @@ static WavpackStreamReader mpd_is_reader = {
 	wavpack_input_can_seek,
 	nullptr /* no need to write edited tags */
 };
+
+#endif
 
 static InputStreamPtr
 wavpack_open_wvc(DecoderClient &client, const char *uri)
