@@ -24,11 +24,10 @@
 #include "CheckAudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "fs/Path.hxx"
-#include "util/Domain.hxx"
 #include "util/Macros.hxx"
 #include "util/Alloc.hxx"
 #include "util/ScopeExit.hxx"
-#include "Log.hxx"
+#include "util/RuntimeError.hxx"
 
 #include <wavpack/wavpack.h>
 
@@ -38,8 +37,6 @@
 #include <assert.h>
 
 #define ERRORLEN 80
-
-static constexpr Domain wavpack_domain("wavpack");
 
 #ifdef OPEN_DSD_AS_PCM
 /* libWavPack supports DSD since version 5 */
@@ -52,6 +49,33 @@ static constexpr int OPEN_DSD_FLAG = OPEN_DSD_AS_PCM;
 /* no DSD support in this libWavPack version */
 static constexpr int OPEN_DSD_FLAG = 0;
 #endif
+
+static WavpackContext *
+WavpackOpenInput(Path path, int flags, int norm_offset)
+{
+	char error[ERRORLEN];
+	auto *wpc = WavpackOpenFileInput(path.c_str(), error,
+					 flags, norm_offset);
+	if (wpc == nullptr)
+		throw FormatRuntimeError("failed to open WavPack file \"%s\": %s",
+					 path.c_str(), error);
+
+	return wpc;
+}
+
+static WavpackContext *
+WavpackOpenInput(WavpackStreamReader *reader, void *wv_id, void *wvc_id,
+		 int flags, int norm_offset)
+{
+	char error[ERRORLEN];
+	auto *wpc = WavpackOpenFileInputEx(reader, wv_id, wvc_id, error,
+					   flags, norm_offset);
+	if (wpc == nullptr)
+		throw FormatRuntimeError("failed to open WavPack stream: %s",
+					 error);
+
+	return wpc;
+}
 
 gcc_pure
 static SignedSongTime
@@ -428,17 +452,8 @@ wavpack_streamdecode(DecoderClient &client, InputStream &is)
 
 	WavpackInput isp(client, is);
 
-	char error[ERRORLEN];
-	WavpackContext *wpc =
-		WavpackOpenFileInputEx(&mpd_is_reader, &isp, wvc.get(),
-				       error, open_flags, 0);
-
-	if (wpc == nullptr) {
-		FormatError(wavpack_domain,
-			    "failed to open WavPack stream: %s", error);
-		return;
-	}
-
+	auto *wpc = WavpackOpenInput(&mpd_is_reader, &isp, wvc.get(),
+				     open_flags, 0);
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
 	};
@@ -452,17 +467,9 @@ wavpack_streamdecode(DecoderClient &client, InputStream &is)
 static void
 wavpack_filedecode(DecoderClient &client, Path path_fs)
 {
-	char error[ERRORLEN];
-	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   OPEN_DSD_FLAG | OPEN_NORMALIZE | OPEN_WVC,
-						   0);
-	if (wpc == nullptr) {
-		FormatWarning(wavpack_domain,
-			      "failed to open WavPack file \"%s\": %s",
-			      path_fs.c_str(), error);
-		return;
-	}
-
+	auto *wpc = WavpackOpenInput(path_fs,
+				     OPEN_DSD_FLAG | OPEN_NORMALIZE | OPEN_WVC,
+				     0);
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
 	};
@@ -477,16 +484,7 @@ static bool
 wavpack_scan_file(Path path_fs,
 		  const TagHandler &handler, void *handler_ctx)
 {
-	char error[ERRORLEN];
-	WavpackContext *wpc = WavpackOpenFileInput(path_fs.c_str(), error,
-						   OPEN_DSD_FLAG, 0);
-	if (wpc == nullptr) {
-		FormatError(wavpack_domain,
-			    "failed to open WavPack file \"%s\": %s",
-			    path_fs.c_str(), error);
-		return false;
-	}
-
+	auto *wpc = WavpackOpenInput(path_fs, OPEN_DSD_FLAG, 0);
 	AtScopeExit(wpc) {
 		WavpackCloseFile(wpc);
 	};
