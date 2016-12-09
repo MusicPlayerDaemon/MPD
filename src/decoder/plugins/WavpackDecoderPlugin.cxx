@@ -217,12 +217,13 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 		if (cmd == DecoderCommand::SEEK) {
 			if (can_seek) {
 				auto where = client.GetSeekFrame();
-
-				if (WavpackSeekSample(wpc, where)) {
-					client.CommandFinished();
-				} else {
+				if (!WavpackSeekSample(wpc, where)) {
+					/* seek errors are fatal */
 					client.SeekError();
+					break;
 				}
+
+				client.CommandFinished();
 			} else {
 				client.SeekError();
 			}
