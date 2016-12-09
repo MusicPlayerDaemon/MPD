@@ -70,59 +70,45 @@ GetDuration(WavpackContext *wpc)
 					     WavpackGetSampleRate(wpc));
 }
 
-/** A pointer type for format converter function. */
-typedef void (*format_samples_t)(
-	int bytes_per_sample,
-	void *buffer, uint32_t count
-);
-
 /*
- * This function has been borrowed from the tiny player found on
- * wavpack.com. Modifications were required because mpd only handles
- * max 24-bit samples.
+ * Convert 8 bit.
  */
 static void
-format_samples_int(int bytes_per_sample, void *buffer, uint32_t count)
+format_samples_8(void *buffer, uint32_t count)
 {
 	int32_t *src = (int32_t *)buffer;
+	int8_t *dst = (int8_t *)buffer;
+	/*
+	 * The asserts like the following one are because we do the
+	 * formatting of samples within a single buffer. The size of
+	 * the output samples never can be greater than the size of
+	 * the input ones. Otherwise we would have an overflow.
+	 */
+	static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
 
-	switch (bytes_per_sample) {
-	case 1: {
-		int8_t *dst = (int8_t *)buffer;
-		/*
-		 * The asserts like the following one are because we do the
-		 * formatting of samples within a single buffer. The size
-		 * of the output samples never can be greater than the size
-		 * of the input ones. Otherwise we would have an overflow.
-		 */
-		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
+	/* pass through and align 8-bit samples */
+	std::copy_n(src, count, dst);
+}
 
-		/* pass through and align 8-bit samples */
-		std::copy_n(src, count, dst);
-		break;
-	}
-	case 2: {
-		auto *dst = (int16_t *)buffer;
-		static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
+/*
+ * Convert 16 bit.
+ */
+static void
+format_samples_16(void *buffer, uint32_t count)
+{
+	int32_t *src = (int32_t *)buffer;
+	int16_t *dst = (int16_t *)buffer;
+	static_assert(sizeof(*dst) <= sizeof(*src), "Wrong size");
 
-		/* pass through and align 16-bit samples */
-		std::copy_n(src, count, dst);
-		break;
-	}
-
-	case 3:
-	case 4:
-		/* do nothing */
-		break;
-	}
+	/* pass through and align 16-bit samples */
+	std::copy_n(src, count, dst);
 }
 
 /*
  * No conversion necessary.
  */
 static void
-format_samples_nop(gcc_unused int bytes_per_sample, gcc_unused void *buffer,
-		   gcc_unused uint32_t count)
+format_samples_nop(gcc_unused void *buffer, gcc_unused uint32_t count)
 {
 	/* do nothing */
 }
@@ -170,13 +156,21 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 					     sample_format,
 					     WavpackGetReducedChannels(wpc));
 
-	const format_samples_t format_samples = is_float
-		? format_samples_nop
-		: format_samples_int;
+	auto *format_samples = format_samples_nop;
+	if (!is_float) {
+		switch (WavpackGetBytesPerSample(wpc)) {
+		case 1:
+			format_samples = format_samples_8;
+			break;
+
+		case 2:
+			format_samples = format_samples_16;
+			break;
+		}
+	}
 
 	client.Ready(audio_format, can_seek, GetDuration(wpc));
 
-	const int bytes_per_sample = WavpackGetBytesPerSample(wpc);
 	const int output_sample_size = audio_format.GetFrameSize();
 
 	/* wavpack gives us all kind of samples in a 32-bit space */
@@ -207,8 +201,7 @@ wavpack_decode(DecoderClient &client, WavpackContext *wpc, bool can_seek)
 
 		int bitrate = (int)(WavpackGetInstantBitrate(wpc) / 1000 +
 				    0.5);
-		format_samples(bytes_per_sample, chunk,
-			       samples_got * audio_format.channels);
+		format_samples(chunk, samples_got * audio_format.channels);
 
 		cmd = client.SubmitData(nullptr, chunk,
 					samples_got * output_sample_size,
