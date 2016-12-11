@@ -251,40 +251,12 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 	}
 }
 
-/**
- * Has the specified audio output already consumed this chunk?
- */
-gcc_pure
-static bool
-chunk_is_consumed_in(const AudioOutput *ao,
-		     gcc_unused const MusicPipe *pipe,
-		     const MusicChunk *chunk)
-{
-	if (!ao->open)
-		return true;
-
-	if (ao->current_chunk == nullptr)
-		return false;
-
-	assert(chunk == ao->current_chunk ||
-	       pipe->Contains(ao->current_chunk));
-
-	if (chunk != ao->current_chunk) {
-		assert(chunk->next != nullptr);
-		return true;
-	}
-
-	return ao->current_chunk_finished && chunk->next == nullptr;
-}
-
 bool
 MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const
 {
-	for (auto ao : outputs) {
-		const ScopeLock protect(ao->mutex);
-		if (!chunk_is_consumed_in(ao, pipe, chunk))
+	for (auto ao : outputs)
+		if (!ao->LockIsChunkConsumed(*chunk))
 			return false;
-	}
 
 	return true;
 }

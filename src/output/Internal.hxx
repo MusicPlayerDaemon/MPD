@@ -394,6 +394,20 @@ public:
 	 */
 	void LockAllowPlay();
 
+	/**
+	 * Did we already consumed this chunk?
+	 *
+	 * Caller must lock the mutex.
+	 */
+	gcc_pure
+	bool IsChunkConsumed(const MusicChunk &chunk) const;
+
+	gcc_pure
+	bool LockIsChunkConsumed(const MusicChunk &chunk) {
+		const ScopeLock protect(mutex);
+		return IsChunkConsumed(chunk);
+	}
+
 private:
 	void CommandFinished();
 
