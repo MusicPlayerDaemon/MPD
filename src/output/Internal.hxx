@@ -20,6 +20,7 @@
 #ifndef MPD_OUTPUT_INTERNAL_HXX
 #define MPD_OUTPUT_INTERNAL_HXX
 
+#include "SharedPipeConsumer.hxx"
 #include "AudioFormat.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/PcmDither.hxx"
@@ -247,13 +248,7 @@ struct AudioOutput {
 	Command command = Command::NONE;
 
 	/**
-	 * The music pipe which provides music chunks to be played.
-	 */
-	const MusicPipe *pipe;
-
-	/**
-	 * This mutex protects #open, #fail_timer, #current_chunk and
-	 * #current_chunk_finished.
+	 * This mutex protects #open, #fail_timer, #pipe.
 	 */
 	Mutex mutex;
 
@@ -270,17 +265,9 @@ struct AudioOutput {
 	PlayerControl *player_control;
 
 	/**
-	 * The #MusicChunk which is currently being played.  All
-	 * chunks before this one may be returned to the
-	 * #music_buffer, because they are not going to be used by
-	 * this output anymore.
+	 * A reference to the #MusicPipe and the current position.
 	 */
-	const MusicChunk *current_chunk;
-
-	/**
-	 * Has the output finished playing #current_chunk?
-	 */
-	bool current_chunk_finished;
+	SharedPipeConsumer pipe;
 
 	/**
 	 * Throws #std::runtime_error on error.
@@ -444,9 +431,6 @@ private:
 	 * command was issued
 	 */
 	bool WaitForDelay();
-
-	gcc_pure
-	const MusicChunk *GetNextChunk() const;
 
 	bool PlayChunk(const MusicChunk *chunk);
 

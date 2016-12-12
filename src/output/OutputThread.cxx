@@ -134,8 +134,6 @@ AudioOutput::Open()
 	struct audio_format_string af_string;
 
 	assert(!open);
-	assert(pipe != nullptr);
-	assert(current_chunk == nullptr);
 	assert(in_audio_format.IsValid());
 
 	fail_timer.Reset();
@@ -239,9 +237,8 @@ AudioOutput::Close(bool drain)
 {
 	assert(open);
 
-	pipe = nullptr;
+	pipe.Deinit();
 
-	current_chunk = nullptr;
 	open = false;
 
 	const ScopeUnlock unlock(mutex);
@@ -292,9 +289,9 @@ AudioOutput::Reopen()
 {
 	if (!config_audio_format.IsFullyDefined()) {
 		if (open) {
-			const MusicPipe *mp = pipe;
+			const MusicPipe &old_pipe = pipe.GetPipe();
 			Close(true);
-			pipe = mp;
+			pipe.Init(old_pipe);
 		}
 
 		/* no audio format is configured: copy in->out, let
@@ -499,49 +496,27 @@ AudioOutput::PlayChunk(const MusicChunk *chunk)
 	return true;
 }
 
-inline const MusicChunk *
-AudioOutput::GetNextChunk() const
-{
-	return current_chunk != nullptr
-		/* continue the previous play() call */
-		? current_chunk->next
-		/* get the first chunk from the pipe */
-		: pipe->Peek();
-}
-
 inline bool
 AudioOutput::Play()
 {
-	assert(pipe != nullptr);
-
-	const MusicChunk *chunk = GetNextChunk();
+	const MusicChunk *chunk = pipe.Get();
 	if (chunk == nullptr)
 		/* no chunk available */
 		return false;
-
-	current_chunk_finished = false;
 
 	assert(!in_playback_loop);
 	in_playback_loop = true;
 
 	while (chunk != nullptr && command == Command::NONE) {
-		assert(!current_chunk_finished);
-
-		current_chunk = chunk;
-
-		if (!PlayChunk(chunk)) {
-			assert(current_chunk == nullptr);
+		if (!PlayChunk(chunk))
 			break;
-		}
 
-		assert(current_chunk == chunk);
-		chunk = chunk->next;
+		pipe.Consume(*chunk);
+		chunk = pipe.Get();
 	}
 
 	assert(in_playback_loop);
 	in_playback_loop = false;
-
-	current_chunk_finished = true;
 
 	const ScopeUnlock unlock(mutex);
 	player_control->LockSignal();
@@ -626,7 +601,6 @@ AudioOutput::Task()
 
 		case Command::CLOSE:
 			assert(open);
-			assert(pipe != nullptr);
 
 			Close(false);
 			CommandFinished();
@@ -651,8 +625,8 @@ AudioOutput::Task()
 
 		case Command::DRAIN:
 			if (open) {
-				assert(current_chunk == nullptr);
-				assert(pipe->Peek() == nullptr);
+				assert(pipe.IsInitial());
+				assert(pipe.GetPipe().Peek() == nullptr);
 
 				const ScopeUnlock unlock(mutex);
 				ao_plugin_drain(this);
@@ -662,7 +636,7 @@ AudioOutput::Task()
 			continue;
 
 		case Command::CANCEL:
-			current_chunk = nullptr;
+			pipe.Cancel();
 
 			if (open) {
 				const ScopeUnlock unlock(mutex);
@@ -673,7 +647,7 @@ AudioOutput::Task()
 			continue;
 
 		case Command::KILL:
-			current_chunk = nullptr;
+			pipe.Cancel();
 			CommandFinished();
 			return;
 		}

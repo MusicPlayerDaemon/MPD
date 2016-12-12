@@ -113,11 +113,10 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	fail_timer.Reset();
 
 	if (open && audio_format == in_audio_format) {
-		assert(pipe == &mp || (always_on && pause));
+		assert(&pipe.GetPipe() == &mp || (always_on && pause));
 
 		if (pause) {
-			current_chunk = nullptr;
-			pipe = &mp;
+			pipe.Init(mp);
 
 			/* unpause with the CANCEL command; this is a
 			   hack, but suits well for forcing the thread
@@ -133,9 +132,8 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	}
 
 	in_audio_format = audio_format;
-	current_chunk = nullptr;
 
-	pipe = &mp;
+	pipe.Init(mp);
 
 	if (!thread.IsDefined())
 		StartThread();

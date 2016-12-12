@@ -1333,6 +1333,7 @@ OUTPUT_API_SRC = \
 	src/output/Wrapper.hxx \
 	src/output/Registry.cxx src/output/Registry.hxx \
 	src/output/MultipleOutputs.cxx src/output/MultipleOutputs.hxx \
+	src/output/SharedPipeConsumer.cxx src/output/SharedPipeConsumer.hxx \
 	src/output/OutputThread.cxx \
 	src/output/Domain.cxx src/output/Domain.hxx \
 	src/output/OutputControl.cxx \

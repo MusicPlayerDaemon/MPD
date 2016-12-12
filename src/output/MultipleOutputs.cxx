@@ -262,7 +262,7 @@ MultipleOutputs::IsChunkConsumed(const MusicChunk *chunk) const
 }
 
 inline void
-MultipleOutputs::ClearTailChunk(gcc_unused const MusicChunk *chunk,
+MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
 				bool *locked)
 {
 	assert(chunk->next == nullptr);
@@ -281,9 +281,7 @@ MultipleOutputs::ClearTailChunk(gcc_unused const MusicChunk *chunk,
 			continue;
 		}
 
-		assert(ao->current_chunk == chunk);
-		assert(ao->current_chunk_finished);
-		ao->current_chunk = nullptr;
+		ao->pipe.ClearTail(*chunk);
 	}
 }
 

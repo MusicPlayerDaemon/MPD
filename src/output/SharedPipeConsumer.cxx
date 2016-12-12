@@ -18,13 +18,41 @@
  */
 
 #include "config.h"
-#include "Internal.hxx"
+#include "SharedPipeConsumer.hxx"
+#include "MusicChunk.hxx"
+#include "MusicPipe.hxx"
+
+const MusicChunk *
+SharedPipeConsumer::Get()
+{
+	if (chunk != nullptr) {
+		if (!consumed)
+			return chunk;
+
+		if (chunk->next == nullptr)
+			return nullptr;
+
+		consumed = false;
+		return chunk = chunk->next;
+	} else {
+		/* get the first chunk from the pipe */
+		consumed = false;
+		return chunk = pipe->Peek();
+	}
+}
 
 bool
-AudioOutput::IsChunkConsumed(const MusicChunk &chunk) const
+SharedPipeConsumer::IsConsumed(const MusicChunk &_chunk) const
 {
-	if (!open)
-		return true;
+	if (chunk == nullptr)
+		return false;
 
-	return pipe.IsConsumed(chunk);
+	assert(&_chunk == chunk || pipe->Contains(chunk));
+
+	if (&_chunk != chunk) {
+		assert(_chunk.next != nullptr);
+		return true;
+	}
+
+	return consumed && _chunk.next == nullptr;
 }
