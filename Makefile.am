@@ -1453,6 +1453,11 @@ systemdsystemunit_DATA = \
 	systemd/system/mpd.service
 endif
 
+if HAVE_SYSTEMD_USER
+systemduserunit_DATA = \
+	systemd/user/mpd.service
+endif
+
 
 #
 # Test programs

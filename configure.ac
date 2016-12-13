@@ -52,6 +52,22 @@ if test "x$with_systemdsystemunitdir" != xno; then
 fi
 AM_CONDITIONAL(HAVE_SYSTEMD, [test -n "$with_systemdsystemunitdir" -a "x$with_systemdsystemunitdir" != xno ])
 
+AC_ARG_WITH([systemduserunitdir],
+	    AS_HELP_STRING([--with-systemduserunitdir=DIR], [Directory for systemd service files]),
+	    [], [with_systemduserunitdir=no])
+if test "x$with_systemduserunitdir" = xyes; then
+	AC_MSG_CHECKING(for systemd)
+	with_systemduserunitdir=$($PKG_CONFIG --variable=systemduserunitdir systemd)
+	if test -z "$with_systemduserunitdir"; then
+		AC_MSG_ERROR([Failed to detect systemd])
+	fi
+	AC_MSG_RESULT([$with_systemduserunitdir])
+fi
+if test "x$with_systemduserunitdir" != xno; then
+	AC_SUBST([systemduserunitdir], [$with_systemduserunitdir])
+fi
+AM_CONDITIONAL(HAVE_SYSTEMD_USER, [test -n "$with_systemduserunitdir" -a "x$with_systemduserunitdir" != xno ])
+
 dnl ---------------------------------------------------------------------------
 dnl Declare Variables
 dnl ---------------------------------------------------------------------------
@@ -1906,6 +1922,7 @@ dnl ---------------------------------------------------------------------------
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES(doc/doxygen.conf)
 AC_CONFIG_FILES(systemd/system/mpd.service)
+AC_CONFIG_FILES(systemd/user/mpd.service)
 AC_OUTPUT
 
 echo 'MPD is ready for compilation, type "make" to begin.'

@@ -167,6 +167,33 @@ systemctl start mpd.socket</programlisting>
         <varname>port</varname> settings.
       </para>
     </section>
+
+    <section id="systemd_user">
+      <title><filename>systemd</filename> user unit</title>
+
+      <para>
+        You can launch <application>MPD</application> as a
+        <filename>systemd</filename> user unit.  The service file will
+        only be installed when <application>MPD</application> was
+        configured with
+        <parameter>--with-systemduserunitdir=/usr/lib/systemd/user</parameter>
+        or
+        <parameter>--with-systemduserunitdir=$HOME/.local/share/systemd/user</parameter>.
+      </para>
+
+      <para>
+        Once the user unit is installed, you can start and stop
+        <application>MPD</application> like any other service:
+      </para>
+
+      <programlisting>systemctl --user start mpd</programlisting>
+
+      <para>
+        To auto-start <application>MPD</application> upon login, type:
+      </para>
+
+      <programlisting>systemctl --user enable mpd</programlisting>
+    </section>
   </chapter>
 
   <chapter id="config">
