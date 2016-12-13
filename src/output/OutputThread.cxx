@@ -161,9 +161,8 @@ AudioOutput::Open()
 
 	assert(filter_audio_format.IsValid());
 
-	out_audio_format = filter_audio_format.WithMask(config_audio_format);
-
-	const AudioFormat retry_audio_format = out_audio_format;
+	const auto retry_audio_format = out_audio_format =
+		filter_audio_format.WithMask(config_audio_format);
 
  retry_without_dsd:
 	try {
