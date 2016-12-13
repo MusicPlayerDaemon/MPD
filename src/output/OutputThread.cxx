@@ -148,6 +148,7 @@ AudioOutput::Open()
 
 	AudioFormat filter_audio_format;
 	try {
+		const ScopeUnlock unlock(mutex);
 		filter_audio_format = OpenFilter(in_audio_format);
 	} catch (const std::runtime_error &e) {
 		FormatError(e, "Failed to open filter for \"%s\" [%s]",
@@ -263,10 +264,9 @@ AudioOutput::CloseOutput(bool drain)
 void
 AudioOutput::ReopenFilter()
 {
-	{
-		const ScopeUnlock unlock(mutex);
-		CloseFilter();
-	}
+	const ScopeUnlock unlock(mutex);
+
+	CloseFilter();
 
 	try {
 		OpenFilter(in_audio_format);
@@ -276,6 +276,7 @@ AudioOutput::ReopenFilter()
 			    "Failed to open filter for \"%s\" [%s]",
 			    name, plugin.name);
 
+		const ScopeLock lock(mutex);
 		Close(false);
 	}
 }

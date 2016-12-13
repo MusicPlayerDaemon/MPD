@@ -413,6 +413,8 @@ private:
 
 	/**
 	 * Throws std::runtime_error on error.
+	 *
+	 * Mutex must not be locked.
 	 */
 	AudioFormat OpenFilter(AudioFormat &format);
 
