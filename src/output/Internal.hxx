@@ -48,13 +48,12 @@ struct AudioOutput {
 		NONE,
 		ENABLE,
 		DISABLE,
-		OPEN,
 
 		/**
-		 * This command is invoked when the input audio format
-		 * changes.
+		 * Open the output, or reopen it if it is already
+		 * open, adjusting for input #AudioFormat changes.
 		 */
-		REOPEN,
+		OPEN,
 
 		CLOSE,
 		PAUSE,

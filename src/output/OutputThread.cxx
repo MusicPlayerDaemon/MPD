@@ -590,12 +590,10 @@ AudioOutput::Task()
 			break;
 
 		case Command::OPEN:
-			Open();
-			CommandFinished();
-			break;
-
-		case Command::REOPEN:
-			Reopen();
+			if (open)
+				Reopen();
+			else
+				Open();
 			CommandFinished();
 			break;
 

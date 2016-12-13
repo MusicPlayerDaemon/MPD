@@ -138,9 +138,7 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	if (!thread.IsDefined())
 		StartThread();
 
-	CommandWait(open
-		    ? Command::REOPEN
-		    : Command::OPEN);
+	CommandWait(Command::OPEN);
 	const bool open2 = open;
 
 	if (open2 && mixer != nullptr) {
