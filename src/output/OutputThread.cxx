@@ -268,9 +268,8 @@ AudioOutput::ReopenFilter()
 		CloseFilter();
 	}
 
-	AudioFormat filter_audio_format;
 	try {
-		filter_audio_format = OpenFilter(in_audio_format);
+		OpenFilter(in_audio_format);
 		convert_filter_set(convert_filter.Get(), out_audio_format);
 	} catch (const std::runtime_error &e) {
 		FormatError(e,
@@ -278,8 +277,6 @@ AudioOutput::ReopenFilter()
 			    name, plugin.name);
 
 		Close(false);
-
-		return;
 	}
 }
 
