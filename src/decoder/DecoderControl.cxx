@@ -64,8 +64,7 @@ DecoderControl::SetReady(const AudioFormat audio_format,
 	assert(audio_format.IsValid());
 
 	in_audio_format = audio_format;
-	out_audio_format = audio_format;
-	out_audio_format.ApplyMask(configured_audio_format);
+	out_audio_format = audio_format.WithMask(configured_audio_format);
 
 	seekable = _seekable;
 	total_time = _duration;

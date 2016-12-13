@@ -159,8 +159,7 @@ AudioOutput::Open()
 
 	assert(filter_audio_format.IsValid());
 
-	out_audio_format = filter_audio_format;
-	out_audio_format.ApplyMask(config_audio_format);
+	out_audio_format = filter_audio_format.WithMask(config_audio_format);
 
 	mutex.unlock();
 

@@ -159,6 +159,13 @@ struct AudioFormat {
 
 	void ApplyMask(AudioFormat mask);
 
+	gcc_pure
+	AudioFormat WithMask(AudioFormat mask) const {
+		AudioFormat result = *this;
+		result.ApplyMask(mask);
+		return result;
+	}
+
 	/**
 	 * Returns the size of each (mono) sample in bytes.
 	 */
