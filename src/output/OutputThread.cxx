@@ -146,9 +146,10 @@ AudioOutput::Open()
 
 	/* open the filter */
 
+	const ScopeUnlock unlock(mutex);
+
 	AudioFormat filter_audio_format;
 	try {
-		const ScopeUnlock unlock(mutex);
 		filter_audio_format = OpenFilter(in_audio_format);
 	} catch (const std::runtime_error &e) {
 		FormatError(e, "Failed to open filter for \"%s\" [%s]",
@@ -162,8 +163,6 @@ AudioOutput::Open()
 
 	out_audio_format = filter_audio_format.WithMask(config_audio_format);
 
-	mutex.unlock();
-
 	const AudioFormat retry_audio_format = out_audio_format;
 
  retry_without_dsd:
@@ -174,12 +173,11 @@ AudioOutput::Open()
 			    name, plugin.name);
 
 		CloseFilter();
-		mutex.lock();
+
+		const ScopeLock lock(mutex);
 		fail_timer.Update();
 		return;
 	}
-
-	mutex.lock();
 
 	assert(!open);
 
@@ -189,7 +187,6 @@ AudioOutput::Open()
 		FormatError(e, "Failed to convert for \"%s\" [%s]",
 			    name, plugin.name);
 
-		mutex.unlock();
 		ao_plugin_close(this);
 
 		if (out_audio_format.format == SampleFormat::DSD) {
@@ -213,13 +210,11 @@ AudioOutput::Open()
 		}
 
 		CloseFilter();
-		mutex.lock();
 
+		const ScopeLock lock(mutex);
 		fail_timer.Update();
 		return;
 	}
-
-	open = true;
 
 	FormatDebug(output_domain,
 		    "opened plugin=%s name=\"%s\" audio_format=%s",
@@ -230,6 +225,9 @@ AudioOutput::Open()
 		FormatDebug(output_domain, "converting from %s",
 			    audio_format_to_string(in_audio_format,
 						   &af_string));
+
+	const ScopeLock lock(mutex);
+	open = true;
 }
 
 void
