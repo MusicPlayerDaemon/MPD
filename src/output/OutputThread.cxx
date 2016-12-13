@@ -493,7 +493,7 @@ AudioOutput::Play()
 		in_playback_loop = false;
 	};
 
-	while (chunk != nullptr) {
+	do {
 		if (command != Command::NONE)
 			return true;
 
@@ -502,7 +502,7 @@ AudioOutput::Play()
 
 		pipe.Consume(*chunk);
 		chunk = pipe.Get();
-	}
+	} while (chunk != nullptr);
 
 	const ScopeUnlock unlock(mutex);
 	player_control->LockSignal();
