@@ -237,7 +237,7 @@ AudioOutput::Close(bool drain)
 {
 	assert(open);
 
-	pipe.Deinit();
+	pipe.Cancel();
 
 	open = false;
 
@@ -288,11 +288,8 @@ void
 AudioOutput::Reopen()
 {
 	if (!config_audio_format.IsFullyDefined()) {
-		if (open) {
-			const MusicPipe &old_pipe = pipe.GetPipe();
+		if (open)
 			Close(true);
-			pipe.Init(old_pipe);
-		}
 
 		/* no audio format is configured: copy in->out, let
 		   the output's open() method determine the effective

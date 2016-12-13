@@ -56,11 +56,6 @@ public:
 		chunk = nullptr;
 	}
 
-	void Deinit() {
-		pipe = nullptr;
-		chunk = nullptr;
-	}
-
 	const MusicPipe &GetPipe() {
 		assert(pipe != nullptr);
 
