@@ -287,9 +287,10 @@ AudioOutput::ReopenFilter()
 void
 AudioOutput::Reopen()
 {
+	assert(open);
+
 	if (!config_audio_format.IsFullyDefined()) {
-		if (open)
-			Close(true);
+		Close(true);
 
 		/* no audio format is configured: copy in->out, let
 		   the output's open() method determine the effective
