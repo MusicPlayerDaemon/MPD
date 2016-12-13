@@ -35,6 +35,7 @@
 #include "thread/Slack.hxx"
 #include "thread/Name.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/ScopeExit.hxx"
 #include "Log.hxx"
 #include "Compiler.h"
 
@@ -487,6 +488,11 @@ AudioOutput::Play()
 	assert(!in_playback_loop);
 	in_playback_loop = true;
 
+	AtScopeExit(this) {
+		assert(in_playback_loop);
+		in_playback_loop = false;
+	};
+
 	while (chunk != nullptr && command == Command::NONE) {
 		if (!PlayChunk(chunk))
 			break;
@@ -494,9 +500,6 @@ AudioOutput::Play()
 		pipe.Consume(*chunk);
 		chunk = pipe.Get();
 	}
-
-	assert(in_playback_loop);
-	in_playback_loop = false;
 
 	const ScopeUnlock unlock(mutex);
 	player_control->LockSignal();
