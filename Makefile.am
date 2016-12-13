@@ -2171,7 +2171,7 @@ EXTRA_DIST = $(doc_DATA) autogen.sh \
 	$(wildcard $(srcdir)/scripts/*.rb) \
 	$(man_MANS) $(DOCBOOK_FILES) doc/mpdconf.example doc/doxygen.conf \
 	$(wildcard $(srcdir)/doc/include/*.xml) \
-	systemd/mpd.socket \
+	systemd/system/mpd.socket \
 	android/AndroidManifest.xml \
 	android/build.py \
 	android/custom_rules.xml \
