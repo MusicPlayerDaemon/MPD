@@ -151,7 +151,7 @@ apt-get install g++ \
         <application>systemd</application> unit files: a "service"
         unit and a "socket" unit.  These will only be installed when
         <application>MPD</application> was configured with
-        <parameter>--with-systemdsystemunitdir=/lib/systemd</parameter>.
+        <parameter>--with-systemdsystemunitdir=/lib/systemd/system</parameter>.
       </para>
 
       <para>
