@@ -1,4 +1,6 @@
 ver 0.19.20 (not yet released)
+* decoder
+  - ffmpeg: fix crash bug
 
 ver 0.19.20 (2016/12/09)
 * protocol
