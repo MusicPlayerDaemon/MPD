@@ -35,7 +35,8 @@ tags
 /mkinstalldirs
 /build
 /src/mpd
-/systemd/mpd.service
+/systemd/system/mpd.service
+/systemd/user/mpd.service
 /stamp-h1
 
 /src/dsd2pcm/dsd2pcm

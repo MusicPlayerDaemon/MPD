@@ -62,6 +62,12 @@ ver 0.20 (not yet released)
 * switch the code base to C++14
   - GCC 4.9 or clang 3.4 (or newer) recommended
 
+ver 0.19.21 (2016/12/13)
+* decoder
+  - ffmpeg: fix crash bug
+* fix unit test failure after recent "setprio" change
+* systemd: add user unit
+
 ver 0.19.20 (2016/12/09)
 * protocol
   - "setprio" re-enqueues old song if priority has been raised
