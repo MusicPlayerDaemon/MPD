@@ -291,13 +291,6 @@ AudioOutput::Reopen()
 
 	if (!config_audio_format.IsFullyDefined()) {
 		Close(true);
-
-		/* no audio format is configured: copy in->out, let
-		   the output's open() method determine the effective
-		   out_audio_format */
-		out_audio_format = in_audio_format;
-		out_audio_format.ApplyMask(config_audio_format);
-
 		Open();
 	} else
 		/* the audio format has changed, and all filters have
