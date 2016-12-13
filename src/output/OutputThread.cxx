@@ -493,7 +493,10 @@ AudioOutput::Play()
 		in_playback_loop = false;
 	};
 
-	while (chunk != nullptr && command == Command::NONE) {
+	while (chunk != nullptr) {
+		if (command != Command::NONE)
+			return true;
+
 		if (!PlayChunk(chunk))
 			break;
 
