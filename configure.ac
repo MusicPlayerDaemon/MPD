@@ -1905,7 +1905,7 @@ dnl Generate files
 dnl ---------------------------------------------------------------------------
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES(doc/doxygen.conf)
-AC_CONFIG_FILES(systemd/mpd.service)
+AC_CONFIG_FILES(systemd/system/mpd.service)
 AC_OUTPUT
 
 echo 'MPD is ready for compilation, type "make" to begin.'
