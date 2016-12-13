@@ -131,8 +131,6 @@ AudioOutput::CloseFilter()
 inline void
 AudioOutput::Open()
 {
-	struct audio_format_string af_string;
-
 	assert(!open);
 	assert(in_audio_format.IsValid());
 
@@ -144,41 +142,54 @@ AudioOutput::Open()
 		/* still no luck */
 		return;
 
-	/* open the filter */
+	bool success;
 
-	const ScopeUnlock unlock(mutex);
+	{
+		const ScopeUnlock unlock(mutex);
+		success = OpenFilterAndOutput();
+	}
 
+	if (success)
+		open = true;
+	else
+		fail_timer.Update();
+}
+
+bool
+AudioOutput::OpenFilterAndOutput()
+{
 	AudioFormat filter_audio_format;
 	try {
 		filter_audio_format = OpenFilter(in_audio_format);
 	} catch (const std::runtime_error &e) {
 		FormatError(e, "Failed to open filter for \"%s\" [%s]",
 			    name, plugin.name);
-
-		fail_timer.Update();
-		return;
+		return false;
 	}
 
 	assert(filter_audio_format.IsValid());
 
-	const auto retry_audio_format = out_audio_format =
+	const auto audio_format =
 		filter_audio_format.WithMask(config_audio_format);
+	bool success = OpenOutputAndConvert(audio_format);
+	if (!success)
+		CloseFilter();
 
- retry_without_dsd:
+	return success;
+}
+
+bool
+AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
+{
+	out_audio_format = desired_audio_format;
+
 	try {
 		ao_plugin_open(this, out_audio_format);
 	} catch (const std::runtime_error &e) {
 		FormatError(e, "Failed to open \"%s\" [%s]",
 			    name, plugin.name);
-
-		CloseFilter();
-
-		const ScopeLock lock(mutex);
-		fail_timer.Update();
-		return;
+		return false;
 	}
-
-	assert(!open);
 
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
@@ -195,26 +206,16 @@ AudioOutput::Open()
 			   implemented; our last resort is to give up
 			   DSD and fall back to PCM */
 
-			// TODO: clean up this workaround
-
 			FormatError(output_domain, "Retrying without DSD");
 
-			out_audio_format = retry_audio_format;
-			out_audio_format.format = SampleFormat::FLOAT;
-
-			/* sorry for the "goto" - this is a workaround
-			   for the stable branch that should be as
-			   unintrusive as possible */
-			goto retry_without_dsd;
+			desired_audio_format.format = SampleFormat::FLOAT;
+			return OpenOutputAndConvert(desired_audio_format);
 		}
 
-		CloseFilter();
-
-		const ScopeLock lock(mutex);
-		fail_timer.Update();
-		return;
+		return false;
 	}
 
+	struct audio_format_string af_string;
 	FormatDebug(output_domain,
 		    "opened plugin=%s name=\"%s\" audio_format=%s",
 		    plugin.name, name,
@@ -225,8 +226,7 @@ AudioOutput::Open()
 			    audio_format_to_string(in_audio_format,
 						   &af_string));
 
-	const ScopeLock lock(mutex);
-	open = true;
+	return true;
 }
 
 void

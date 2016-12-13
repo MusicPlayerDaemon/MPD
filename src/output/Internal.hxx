@@ -401,6 +401,26 @@ private:
 	void Disable();
 
 	void Open();
+
+	/**
+	 * Open the #ChainFilter and call OpenOutputAndConvert().
+	 *
+	 * Caller must not lock the mutex.
+	 *
+	 * @return true on success
+	 */
+	bool OpenFilterAndOutput();
+
+	/**
+	 * Invoke OutputPlugin::open() and configure the
+	 * #ConvertFilter.
+	 *
+	 * Caller must not lock the mutex.
+	 *
+	 * @return true on success
+	 */
+	bool OpenOutputAndConvert(AudioFormat audio_format);
+
 	void Close(bool drain);
 	void Reopen();
 
