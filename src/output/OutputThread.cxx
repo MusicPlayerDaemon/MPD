@@ -493,9 +493,20 @@ AudioOutput::Play()
 		in_playback_loop = false;
 	};
 
+	unsigned n = 0;
+
 	do {
 		if (command != Command::NONE)
 			return true;
+
+		if (++n >= 64) {
+			/* wake up the player every now and then to
+			   give it a chance to refill the pipe before
+			   it runs empty */
+			const ScopeUnlock unlock(mutex);
+			player_control->LockSignal();
+			n = 0;
+		}
 
 		if (!PlayChunk(chunk))
 			break;

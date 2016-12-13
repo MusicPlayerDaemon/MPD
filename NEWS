@@ -52,6 +52,7 @@ ver 0.20 (not yet released)
   - soxr: allow multi-threaded resampling
 * player
   - reset song priority on playback
+  - reduce xruns
 * write database and state file atomically
 * always write UTF-8 to the log file.
 * remove dependency on GLib
