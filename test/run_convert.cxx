@@ -55,7 +55,7 @@ try {
 	const size_t in_frame_size = in_audio_format.GetFrameSize();
 
 	PcmConvert state;
-	state.Open(in_audio_format, out_audio_format_mask);
+	state.Open(in_audio_format, out_audio_format);
 
 	StaticFifoBuffer<uint8_t, 4096> buffer;
 
