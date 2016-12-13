@@ -1,4 +1,4 @@
-ver 0.19.21 (not yet released)
+ver 0.19.21 (2016/12/13)
 * decoder
   - ffmpeg: fix crash bug
 * fix unit test failure after recent "setprio" change
