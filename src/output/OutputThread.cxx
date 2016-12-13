@@ -297,14 +297,12 @@ AudioOutput::Reopen()
 		   out_audio_format */
 		out_audio_format = in_audio_format;
 		out_audio_format.ApplyMask(config_audio_format);
-	}
 
-	if (open)
+		Open();
+	} else
 		/* the audio format has changed, and all filters have
 		   to be reconfigured */
 		ReopenFilter();
-	else
-		Open();
 }
 
 /**
