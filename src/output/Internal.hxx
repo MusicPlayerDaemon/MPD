@@ -323,34 +323,34 @@ public:
 	void LockCommandWait(Command cmd);
 
 	/**
-	 * Enables the device.
+	 * Enables the device, but don't wait for completion.
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void EnableWait();
+	void EnableAsync();
 
 	/**
-	 * Disables the device.
+	 * Disables the device, but don't wait for completion.
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void DisableWait();
+	void DisableAsync();
 
 	/**
 	 * Attempt to enable or disable the device as specified by the
 	 * #enabled attribute; attempt to sync it with #really_enabled
-	 * (wrapper for EnableWait() or DisableWait()).
+	 * (wrapper for EnableAsync() or DisableAsync()).
 	 *
 	 * Caller must lock the mutex.
 	 */
-	void EnableDisableWait() {
+	void EnableDisableAsync() {
 		if (enabled == really_enabled)
 			return;
 
 		if (enabled)
-			EnableWait();
+			EnableAsync();
 		else
-			DisableWait();
+			DisableAsync();
 	}
 
 	void LockPauseAsync();

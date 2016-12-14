@@ -70,7 +70,7 @@ AudioOutput::LockCommandWait(Command cmd)
 }
 
 void
-AudioOutput::EnableWait()
+AudioOutput::EnableAsync()
 {
 	if (!thread.IsDefined()) {
 		if (plugin.enable == nullptr) {
@@ -84,11 +84,11 @@ AudioOutput::EnableWait()
 		StartThread();
 	}
 
-	CommandWait(Command::ENABLE);
+	CommandAsync(Command::ENABLE);
 }
 
 void
-AudioOutput::DisableWait()
+AudioOutput::DisableAsync()
 {
 	if (!thread.IsDefined()) {
 		if (plugin.disable == nullptr)
@@ -101,7 +101,7 @@ AudioOutput::DisableWait()
 		return;
 	}
 
-	CommandWait(Command::DISABLE);
+	CommandAsync(Command::DISABLE);
 }
 
 inline bool

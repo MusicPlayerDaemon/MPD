@@ -107,9 +107,16 @@ MultipleOutputs::FindByName(const char *name) const
 void
 MultipleOutputs::EnableDisable()
 {
+	/* parallel execution */
+
 	for (auto ao : outputs) {
 		const ScopeLock lock(ao->mutex);
-		ao->EnableDisableWait();
+		ao->EnableDisableAsync();
+	}
+
+	for (auto ao : outputs) {
+		const ScopeLock lock(ao->mutex);
+		ao->WaitForCommand();
 	}
 }
 
