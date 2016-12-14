@@ -398,25 +398,26 @@ Player::ActivateDecoder()
 
 	queued = false;
 
-	pc.Lock();
-	pc.ClearTaggedSong();
+	{
+		const ScopeLock lock(pc.mutex);
 
-	delete song;
-	song = pc.next_song;
-	pc.next_song = nullptr;
+		pc.ClearTaggedSong();
 
-	elapsed_time = pc.seek_time;
+		delete song;
+		song = pc.next_song;
+		pc.next_song = nullptr;
 
-	/* set the "starting" flag, which will be cleared by
-	   player_check_decoder_startup() */
-	decoder_starting = true;
+		elapsed_time = pc.seek_time;
 
-	/* update PlayerControl's song information */
-	pc.total_time = song->GetDuration();
-	pc.bit_rate = 0;
-	pc.audio_format.Clear();
+		/* set the "starting" flag, which will be cleared by
+		   player_check_decoder_startup() */
+		decoder_starting = true;
 
-	pc.Unlock();
+		/* update PlayerControl's song information */
+		pc.total_time = song->GetDuration();
+		pc.bit_rate = 0;
+		pc.audio_format.Clear();
+	}
 
 	/* call syncPlaylistWithQueue() in the main thread */
 	pc.listener.OnPlayerSync();
@@ -471,9 +472,10 @@ Player::OpenOutput()
 	output_open = true;
 	paused = false;
 
-	pc.Lock();
-	pc.state = PlayerState::PLAY;
-	pc.Unlock();
+	{
+		const ScopeLock lock(pc.mutex);
+		pc.state = PlayerState::PLAY;
+	}
 
 	idle_add(IDLE_PLAYER);
 
@@ -503,10 +505,12 @@ Player::CheckDecoderStartup()
 			   all chunks yet - wait for that */
 			return true;
 
-		pc.Lock();
-		pc.total_time = real_song_duration(*dc.song, dc.total_time);
-		pc.audio_format = dc.in_audio_format;
-		pc.Unlock();
+		{
+			const ScopeLock lock(pc.mutex);
+			pc.total_time = real_song_duration(*dc.song,
+							   dc.total_time);
+			pc.audio_format = dc.in_audio_format;
+		}
 
 		idle_add(IDLE_PLAYER);
 
@@ -658,9 +662,11 @@ Player::ProcessCommand()
 		break;
 
 	case PlayerCommand::UPDATE_AUDIO:
-		pc.Unlock();
-		pc.outputs.EnableDisable();
-		pc.Lock();
+		{
+			const ScopeUnlock unlock(pc.mutex);
+			pc.outputs.EnableDisable();
+		}
+
 		pc.CommandFinished();
 		break;
 
@@ -672,10 +678,11 @@ Player::ProcessCommand()
 		queued = true;
 		pc.CommandFinished();
 
-		pc.Unlock();
-		if (dc.LockIsIdle())
-			StartDecoder(*new MusicPipe());
-		pc.Lock();
+		{
+			const ScopeUnlock unlock(pc.mutex);
+			if (dc.LockIsIdle())
+				StartDecoder(*new MusicPipe());
+		}
 
 		break;
 
@@ -704,9 +711,10 @@ Player::ProcessCommand()
 		break;
 
 	case PlayerCommand::SEEK:
-		pc.Unlock();
-		SeekDecoder();
-		pc.Lock();
+		{
+			const ScopeUnlock unlock(pc.mutex);
+			SeekDecoder();
+		}
 		break;
 
 	case PlayerCommand::CANCEL:
@@ -721,9 +729,8 @@ Player::ProcessCommand()
 		if (IsDecoderAtNextSong()) {
 			/* the decoder is already decoding the song -
 			   stop it and reset the position */
-			pc.Unlock();
+			const ScopeUnlock unlock(pc.mutex);
 			StopDecoder();
-			pc.Lock();
 		}
 
 		delete pc.next_song;
@@ -734,9 +741,8 @@ Player::ProcessCommand()
 
 	case PlayerCommand::REFRESH:
 		if (output_open && !paused) {
-			pc.Unlock();
+			const ScopeUnlock unlock(pc.mutex);
 			pc.outputs.Check();
-			pc.Lock();
 		}
 
 		pc.elapsed_time = !pc.outputs.GetElapsedTime().IsNegative()
@@ -792,9 +798,10 @@ play_chunk(PlayerControl &pc,
 		return;
 	}
 
-	pc.Lock();
-	pc.bit_rate = chunk->bit_rate;
-	pc.Unlock();
+	{
+		const ScopeLock lock(pc.mutex);
+		pc.bit_rate = chunk->bit_rate;
+	}
 
 	/* send the chunk to the audio outputs */
 
@@ -868,19 +875,16 @@ Player::PlayNextChunk()
 		} else {
 			/* there are not enough decoded chunks yet */
 
-			pc.Lock();
+			const ScopeLock lock(pc.mutex);
 
 			if (dc.IsIdle()) {
 				/* the decoder isn't running, abort
 				   cross fading */
-				pc.Unlock();
-
 				xfade_state = CrossFadeState::DISABLED;
 			} else {
 				/* wait for the decoder */
 				dc.Signal();
 				dc.WaitForDecoder();
-				pc.Unlock();
 
 				return true;
 			}
@@ -919,10 +923,11 @@ Player::PlayNextChunk()
 		return false;
 	}
 
+	const ScopeLock lock(pc.mutex);
+
 	/* this formula should prevent that the decoder gets woken up
 	   with each chunk; it is more efficient to make it decode a
 	   larger block at a time */
-	pc.Lock();
 	if (!dc.IsIdle() &&
 	    dc.pipe->GetSize() <= (pc.buffered_before_play +
 				   buffer.GetSize() * 3) / 4) {
@@ -932,7 +937,6 @@ Player::PlayNextChunk()
 		}
 	} else
 		decoder_woken = false;
-	pc.Unlock();
 
 	return true;
 }
