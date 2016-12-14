@@ -351,6 +351,17 @@ public:
 	 */
 	void LockSetBorderPause(bool border_pause);
 
+	bool ApplyBorderPause() {
+		if (border_pause)
+			state = PlayerState::PAUSE;
+		return border_pause;
+	}
+
+	bool LockApplyBorderPause() {
+		const ScopeLock lock(mutex);
+		return ApplyBorderPause();
+	}
+
 	void Kill();
 
 	gcc_pure

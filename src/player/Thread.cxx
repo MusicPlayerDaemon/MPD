@@ -948,18 +948,11 @@ Player::SongBorder()
 
 	ActivateDecoder();
 
-	pc.Lock();
-
-	const bool border_pause = pc.border_pause;
+	const bool border_pause = pc.LockApplyBorderPause();
 	if (border_pause) {
 		paused = true;
-		pc.state = PlayerState::PAUSE;
-	}
-
-	pc.Unlock();
-
-	if (border_pause)
 		idle_add(IDLE_PLAYER);
+	}
 }
 
 inline void
