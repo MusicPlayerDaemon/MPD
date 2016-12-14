@@ -297,6 +297,8 @@ private:
 	 * Wrapper for MultipleOutputs::Open().  Upon failure, it
 	 * pauses the player.
 	 *
+	 * Caller must lock the mutex.
+	 *
 	 * @return true on success
 	 */
 	bool OpenOutput();
@@ -457,6 +459,7 @@ Player::OpenOutput()
 	       pc.state == PlayerState::PAUSE);
 
 	try {
+		const ScopeUnlock unlock(pc.mutex);
 		pc.outputs.Open(play_audio_format, buffer);
 	} catch (const std::runtime_error &e) {
 		LogError(e);
@@ -467,7 +470,7 @@ Player::OpenOutput()
 		   audio output becomes available */
 		paused = true;
 
-		pc.LockSetOutputError(std::current_exception());
+		pc.SetOutputError(std::current_exception());
 
 		idle_add(IDLE_PLAYER);
 
@@ -477,10 +480,7 @@ Player::OpenOutput()
 	output_open = true;
 	paused = false;
 
-	{
-		const ScopeLock lock(pc.mutex);
-		pc.state = PlayerState::PLAY;
-	}
+	pc.state = PlayerState::PLAY;
 
 	idle_add(IDLE_PLAYER);
 
@@ -509,8 +509,6 @@ Player::CheckDecoderStartup()
 		pc.audio_format = dc.in_audio_format;
 		play_audio_format = dc.out_audio_format;
 		decoder_starting = false;
-
-		const ScopeUnlock unlock(pc.mutex);
 
 		idle_add(IDLE_PLAYER);
 
@@ -698,9 +696,9 @@ Player::ProcessCommand()
 
 			pc.state = PlayerState::PLAY;
 		} else {
-			OpenOutput();
-
 			pc.Lock();
+
+			OpenOutput();
 		}
 
 		pc.CommandFinished();
