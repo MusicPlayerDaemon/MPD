@@ -200,7 +200,7 @@ private:
 	 * ActivateDecoder()).  This function checks if the decoder
 	 * initialization has completed yet.
 	 *
-	 * The player lock is not held.
+	 * Caller must lock the mutex.
 	 */
 	bool CheckDecoderStartup();
 
@@ -213,14 +213,19 @@ private:
 	 * allowed to be used while a command is being handled.
 	 */
 	bool WaitDecoderStartup() {
+		const ScopeLock lock(pc.mutex);
+
 		while (decoder_starting) {
 			if (!CheckDecoderStartup()) {
 				/* if decoder startup fails, make sure
 				   the previous song is not being
 				   played anymore */
-				pc.outputs.Cancel();
+				{
+					const ScopeUnlock unlock(pc.mutex);
+					pc.outputs.Cancel();
+				}
 
-				pc.LockCommandFinished();
+				pc.CommandFinished();
 				return false;
 			}
 		}
@@ -487,35 +492,27 @@ Player::CheckDecoderStartup()
 {
 	assert(decoder_starting);
 
-	pc.Lock();
-
 	if (!ForwardDecoderError()) {
 		/* the decoder failed */
-		pc.Unlock();
-
 		return false;
 	} else if (!dc.IsStarting()) {
 		/* the decoder is ready and ok */
 
-		pc.Unlock();
-
 		if (output_open &&
-		    !pc.LockWaitOutputConsumed(1))
+		    !pc.WaitOutputConsumed(1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
 			return true;
 
-		{
-			const ScopeLock lock(pc.mutex);
-			pc.total_time = real_song_duration(*dc.song,
-							   dc.total_time);
-			pc.audio_format = dc.in_audio_format;
-		}
-
-		idle_add(IDLE_PLAYER);
-
+		pc.total_time = real_song_duration(*dc.song,
+						   dc.total_time);
+		pc.audio_format = dc.in_audio_format;
 		play_audio_format = dc.out_audio_format;
 		decoder_starting = false;
+
+		const ScopeUnlock unlock(pc.mutex);
+
+		idle_add(IDLE_PLAYER);
 
 		if (!paused && !OpenOutput()) {
 			FormatError(player_domain,
@@ -530,7 +527,6 @@ Player::CheckDecoderStartup()
 		/* the decoder is not yet ready; wait
 		   some more */
 		dc.WaitForDecoder();
-		pc.Unlock();
 
 		return true;
 	}
@@ -1011,10 +1007,13 @@ Player::Run()
 		if (decoder_starting) {
 			/* wait until the decoder is initialized completely */
 
-			if (!CheckDecoderStartup())
-				break;
-
 			pc.Lock();
+
+			if (!CheckDecoderStartup()) {
+				pc.Unlock();
+				break;
+			}
+
 			continue;
 		}
 
