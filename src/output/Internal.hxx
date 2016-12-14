@@ -283,7 +283,8 @@ public:
 	void StartThread();
 	void StopThread();
 
-	void Finish();
+	void BeginDestroy();
+	void FinishDestroy();
 
 	bool IsOpen() const {
 		return open;

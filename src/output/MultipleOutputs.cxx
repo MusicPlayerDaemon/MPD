@@ -43,8 +43,11 @@ MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
 
 MultipleOutputs::~MultipleOutputs()
 {
+	/* parallel destruction */
 	for (auto i : outputs)
-		i->Finish();
+		i->BeginDestroy();
+	for (auto i : outputs)
+		i->FinishDestroy();
 }
 
 static AudioOutput *

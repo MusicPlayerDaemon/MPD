@@ -274,13 +274,22 @@ AudioOutput::StopThread()
 }
 
 void
-AudioOutput::Finish()
+AudioOutput::BeginDestroy()
 {
 	if (mixer != nullptr)
 		mixer_auto_close(mixer);
 
+	if (thread.IsDefined()) {
+		const ScopeLock protect(mutex);
+		CommandAsync(Command::KILL);
+	}
+}
+
+void
+AudioOutput::FinishDestroy()
+{
 	if (thread.IsDefined())
-		StopThread();
+		thread.Join();
 
 	audio_output_free(this);
 }
