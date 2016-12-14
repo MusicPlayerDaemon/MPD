@@ -275,7 +275,7 @@ audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 MixerListener &mixer_listener,
-		 PlayerControl &pc)
+		 AudioOutputClient &client)
 {
 	const AudioOutputPlugin *plugin;
 
@@ -311,6 +311,6 @@ audio_output_new(EventLoop &event_loop,
 		throw;
 	}
 
-	ao->player_control = &pc;
+	ao->client = &client;
 	return ao;
 }

@@ -37,9 +37,9 @@ class MusicPipe;
 class EventLoop;
 class Mixer;
 class MixerListener;
+class AudioOutputClient;
 struct MusicChunk;
 struct ConfigBlock;
-struct PlayerControl;
 struct AudioOutputPlugin;
 struct ReplayGainConfig;
 
@@ -261,7 +261,7 @@ struct AudioOutput {
 	 * The PlayerControl object which "owns" this output.  This
 	 * object is needed to signal command completion.
 	 */
-	PlayerControl *player_control;
+	AudioOutputClient *client;
 
 	/**
 	 * A reference to the #MusicPipe and the current position.
@@ -510,7 +510,7 @@ audio_output_new(EventLoop &event_loop,
 		 const ReplayGainConfig &replay_gain_config,
 		 const ConfigBlock &block,
 		 MixerListener &mixer_listener,
-		 PlayerControl &pc);
+		 AudioOutputClient &client);
 
 void
 audio_output_free(AudioOutput *ao);

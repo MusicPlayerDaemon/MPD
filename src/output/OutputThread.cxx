@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Internal.hxx"
+#include "Client.hxx"
 #include "OutputAPI.hxx"
 #include "Domain.hxx"
 #include "pcm/PcmMix.hxx"
@@ -28,7 +29,6 @@
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "mixer/MixerInternal.hxx"
 #include "mixer/plugins/SoftwareMixerPlugin.hxx"
-#include "player/Control.hxx"
 #include "MusicPipe.hxx"
 #include "MusicChunk.hxx"
 #include "thread/Util.hxx"
@@ -504,7 +504,7 @@ AudioOutput::Play()
 			   give it a chance to refill the pipe before
 			   it runs empty */
 			const ScopeUnlock unlock(mutex);
-			player_control->LockSignal();
+			client->ChunksConsumed();
 			n = 0;
 		}
 
@@ -516,7 +516,7 @@ AudioOutput::Play()
 	} while (chunk != nullptr);
 
 	const ScopeUnlock unlock(mutex);
-	player_control->LockSignal();
+	client->ChunksConsumed();
 
 	return true;
 }

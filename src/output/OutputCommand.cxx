@@ -28,6 +28,7 @@
 #include "OutputCommand.hxx"
 #include "MultipleOutputs.hxx"
 #include "Internal.hxx"
+#include "Client.hxx"
 #include "player/Control.hxx"
 #include "mixer/MixerControl.hxx"
 #include "mixer/Volume.hxx"
@@ -53,7 +54,7 @@ audio_output_enable_index(MultipleOutputs &outputs, unsigned idx)
 		idle_add(IDLE_MIXER);
 	}
 
-	ao.player_control->LockUpdateAudio();
+	ao.client->ApplyEnabled();
 
 	++audio_output_state_version;
 
@@ -80,7 +81,7 @@ audio_output_disable_index(MultipleOutputs &outputs, unsigned idx)
 		idle_add(IDLE_MIXER);
 	}
 
-	ao.player_control->LockUpdateAudio();
+	ao.client->ApplyEnabled();
 
 	++audio_output_state_version;
 
@@ -106,7 +107,7 @@ audio_output_toggle_index(MultipleOutputs &outputs, unsigned idx)
 		}
 	}
 
-	ao.player_control->LockUpdateAudio();
+	ao.client->ApplyEnabled();
 
 	++audio_output_state_version;
 

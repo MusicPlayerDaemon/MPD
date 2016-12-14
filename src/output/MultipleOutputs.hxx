@@ -39,8 +39,8 @@ class MusicBuffer;
 class MusicPipe;
 class EventLoop;
 class MixerListener;
+class AudioOutputClient;
 struct MusicChunk;
-struct PlayerControl;
 struct AudioOutput;
 struct ReplayGainConfig;
 
@@ -78,7 +78,7 @@ public:
 
 	void Configure(EventLoop &event_loop,
 		       const ReplayGainConfig &replay_gain_config,
-		       PlayerControl &pc);
+		       AudioOutputClient &client);
 
 	/**
 	 * Returns the total number of audio output devices, including

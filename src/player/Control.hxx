@@ -20,6 +20,7 @@
 #ifndef MPD_PLAYER_CONTROL_HXX
 #define MPD_PLAYER_CONTROL_HXX
 
+#include "output/Client.hxx"
 #include "AudioFormat.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
@@ -96,7 +97,7 @@ struct player_status {
 	SongTime elapsed_time;
 };
 
-struct PlayerControl {
+struct PlayerControl final : AudioOutputClient {
 	PlayerListener &listener;
 
 	MultipleOutputs &outputs;
@@ -526,6 +527,15 @@ public:
 
 	double GetTotalPlayTime() const {
 		return total_play_time;
+	}
+
+	/* virtual methods from AudioOutputClient */
+	void ChunksConsumed() override {
+		LockSignal();
+	}
+
+	void ApplyEnabled() override {
+		LockUpdateAudio();
 	}
 };
 
