@@ -335,6 +335,23 @@ public:
 	 */
 	void DisableWait();
 
+	/**
+	 * Attempt to enable or disable the device as specified by the
+	 * #enabled attribute; attempt to sync it with #really_enabled
+	 * (wrapper for EnableWait() or DisableWait()).
+	 *
+	 * Caller must lock the mutex.
+	 */
+	void EnableDisableWait() {
+		if (enabled == really_enabled)
+			return;
+
+		if (enabled)
+			EnableWait();
+		else
+			DisableWait();
+	}
+
 	void LockPauseAsync();
 
 	/**

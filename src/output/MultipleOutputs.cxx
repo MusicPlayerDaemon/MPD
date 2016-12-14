@@ -112,13 +112,7 @@ MultipleOutputs::EnableDisable()
 {
 	for (auto ao : outputs) {
 		const ScopeLock lock(ao->mutex);
-
-		if (ao->enabled != ao->really_enabled) {
-			if (ao->enabled)
-				ao->EnableWait();
-			else
-				ao->DisableWait();
-		}
+		ao->EnableDisableWait();
 	}
 }
 
