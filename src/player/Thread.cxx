@@ -461,10 +461,7 @@ Player::OpenOutput()
 		   audio output becomes available */
 		paused = true;
 
-		pc.Lock();
-		pc.SetError(PlayerError::OUTPUT, std::current_exception());
-		pc.state = PlayerState::PAUSE;
-		pc.Unlock();
+		pc.LockSetOutputError(std::current_exception());
 
 		idle_add(IDLE_PLAYER);
 
@@ -911,16 +908,11 @@ Player::PlayNextChunk()
 
 		buffer.Return(chunk);
 
-		pc.Lock();
-
-		pc.SetError(PlayerError::OUTPUT, std::current_exception());
-
 		/* pause: the user may resume playback as soon as an
 		   audio output becomes available */
-		pc.state = PlayerState::PAUSE;
 		paused = true;
 
-		pc.Unlock();
+		pc.LockSetOutputError(std::current_exception());
 
 		idle_add(IDLE_PLAYER);
 

@@ -370,6 +370,22 @@ public:
 	void SetError(PlayerError type, std::exception_ptr &&_error);
 
 	/**
+	 * Set the error and set state to PlayerState::PAUSE.
+	 */
+	void SetOutputError(std::exception_ptr &&_error) {
+		SetError(PlayerError::OUTPUT, std::move(_error));
+
+		/* pause: the user may resume playback as soon as an
+		   audio output becomes available */
+		state = PlayerState::PAUSE;
+	}
+
+	void LockSetOutputError(std::exception_ptr &&_error) {
+		const ScopeLock lock(mutex);
+		SetOutputError(std::move(_error));
+	}
+
+	/**
 	 * Checks whether an error has occurred, and if so, rethrows
 	 * it.
 	 *
