@@ -21,6 +21,7 @@
 #include "Control.hxx"
 #include "Idle.hxx"
 #include "DetachedSong.hxx"
+#include "output/MultipleOutputs.hxx"
 
 #include <algorithm>
 
@@ -44,6 +45,18 @@ PlayerControl::~PlayerControl()
 {
 	delete next_song;
 	delete tagged_song;
+}
+
+bool
+PlayerControl::WaitOutputConsumed(unsigned threshold)
+{
+	bool result = outputs.Check() < threshold;
+	if (!result && command == PlayerCommand::NONE) {
+		Wait();
+		result = outputs.Check() < threshold;
+	}
+
+	return result;
 }
 
 void

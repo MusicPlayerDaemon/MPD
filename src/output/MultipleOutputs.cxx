@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "MultipleOutputs.hxx"
-#include "player/Control.hxx"
 #include "Internal.hxx"
 #include "Domain.hxx"
 #include "MusicBuffer.hxx"
@@ -329,22 +328,6 @@ MultipleOutputs::Check()
 	}
 
 	return 0;
-}
-
-bool
-MultipleOutputs::Wait(PlayerControl &pc, unsigned threshold)
-{
-	pc.Lock();
-
-	if (Check() < threshold) {
-		pc.Unlock();
-		return true;
-	}
-
-	pc.Wait();
-	pc.Unlock();
-
-	return Check() < threshold;
 }
 
 void

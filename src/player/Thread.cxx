@@ -500,7 +500,7 @@ Player::CheckDecoderStartup()
 		pc.Unlock();
 
 		if (output_open &&
-		    !pc.outputs.Wait(pc, 1))
+		    !pc.LockWaitOutputConsumed(1))
 			/* the output devices havn't finished playing
 			   all chunks yet - wait for that */
 			return true;
@@ -813,7 +813,7 @@ play_chunk(PlayerControl &pc,
 inline bool
 Player::PlayNextChunk()
 {
-	if (!pc.outputs.Wait(pc, 64))
+	if (!pc.LockWaitOutputConsumed(64))
 		/* the output pipe is still large enough, don't send
 		   another chunk */
 		return true;

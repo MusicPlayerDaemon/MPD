@@ -160,16 +160,6 @@ public:
 	unsigned Check();
 
 	/**
-	 * Checks if the size of the #MusicPipe is below the #threshold.  If
-	 * not, it attempts to synchronize with all output threads, and waits
-	 * until another #MusicChunk is finished.
-	 *
-	 * @param threshold the maximum number of chunks in the pipe
-	 * @return true if there are less than #threshold chunks in the pipe
-	 */
-	bool Wait(PlayerControl &pc, unsigned threshold);
-
-	/**
 	 * Puts all audio outputs into pause mode.  Most implementations will
 	 * simply close it then.
 	 */
