@@ -43,14 +43,8 @@ MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
 
 MultipleOutputs::~MultipleOutputs()
 {
-	for (auto i : outputs) {
-		{
-			const ScopeLock lock(i->mutex);
-			i->DisableWait();
-		}
-
+	for (auto i : outputs)
 		i->Finish();
-	}
 }
 
 static AudioOutput *

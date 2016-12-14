@@ -276,9 +276,8 @@ AudioOutput::StopThread()
 void
 AudioOutput::Finish()
 {
-	LockCloseWait();
-
-	assert(!fail_timer.IsDefined());
+	if (mixer != nullptr)
+		mixer_auto_close(mixer);
 
 	if (thread.IsDefined())
 		StopThread();

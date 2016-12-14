@@ -642,6 +642,7 @@ AudioOutput::Task()
 			continue;
 
 		case Command::KILL:
+			Disable();
 			pipe.Cancel();
 			CommandFinished();
 			return;
