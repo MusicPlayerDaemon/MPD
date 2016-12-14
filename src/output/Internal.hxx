@@ -323,13 +323,17 @@ public:
 
 	/**
 	 * Enables the device.
+	 *
+	 * Caller must lock the mutex.
 	 */
-	void LockEnableWait();
+	void EnableWait();
 
 	/**
 	 * Disables the device.
+	 *
+	 * Caller must lock the mutex.
 	 */
-	void LockDisableWait();
+	void DisableWait();
 
 	void LockPauseAsync();
 

@@ -44,7 +44,11 @@ MultipleOutputs::MultipleOutputs(MixerListener &_mixer_listener)
 MultipleOutputs::~MultipleOutputs()
 {
 	for (auto i : outputs) {
-		i->LockDisableWait();
+		{
+			const ScopeLock lock(i->mutex);
+			i->DisableWait();
+		}
+
 		i->Finish();
 	}
 }
@@ -107,17 +111,13 @@ void
 MultipleOutputs::EnableDisable()
 {
 	for (auto ao : outputs) {
-		bool enabled;
+		const ScopeLock lock(ao->mutex);
 
-		ao->mutex.lock();
-		enabled = ao->really_enabled;
-		ao->mutex.unlock();
-
-		if (ao->enabled != enabled) {
+		if (ao->enabled != ao->really_enabled) {
 			if (ao->enabled)
-				ao->LockEnableWait();
+				ao->EnableWait();
 			else
-				ao->LockDisableWait();
+				ao->DisableWait();
 		}
 	}
 }
