@@ -681,23 +681,17 @@ Player::ProcessCommand()
 		break;
 
 	case PlayerCommand::PAUSE:
-		pc.Unlock();
-
 		paused = !paused;
 		if (paused) {
-			pc.outputs.Pause();
-			pc.Lock();
-
 			pc.state = PlayerState::PAUSE;
+
+			const ScopeUnlock unlock(pc.mutex);
+			pc.outputs.Pause();
 		} else if (!play_audio_format.IsDefined()) {
 			/* the decoder hasn't provided an audio format
 			   yet - don't open the audio device yet */
-			pc.Lock();
-
 			pc.state = PlayerState::PLAY;
 		} else {
-			pc.Lock();
-
 			OpenOutput();
 		}
 
