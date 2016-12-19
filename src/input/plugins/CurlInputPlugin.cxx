@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "CurlInputPlugin.hxx"
+#include "lib/curl/Easy.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
 #include "../InputPlugin.hxx"
@@ -65,7 +66,7 @@ struct CurlInputStream final : public AsyncInputStream {
 	struct curl_slist *request_headers;
 
 	/** the curl handles */
-	CURL *easy = nullptr;
+	CurlEasy easy;
 
 	/** error message provided by libcurl */
 	char error_buffer[CURL_ERROR_SIZE];
@@ -78,6 +79,7 @@ struct CurlInputStream final : public AsyncInputStream {
 				  CURL_MAX_BUFFERED,
 				  CURL_RESUME_AT),
 		 request_headers(nullptr),
+		 easy(nullptr),
 		 icy(new IcyInputStream(this)) {
 	}
 
@@ -293,7 +295,7 @@ CurlInputStream::DoResume()
 
 	mutex.unlock();
 
-	curl_easy_pause(easy, CURLPAUSE_CONT);
+	curl_easy_pause(easy.Get(), CURLPAUSE_CONT);
 
 	if (curl_version_num < 0x072000)
 		/* libcurl older than 7.32.0 does not update
@@ -362,9 +364,9 @@ CurlMulti::Add(CurlInputStream *c)
 {
 	assert(io_thread_inside());
 	assert(c != nullptr);
-	assert(c->easy != nullptr);
+	assert(c->easy);
 
-	CURLMcode mcode = curl_multi_add_handle(multi, c->easy);
+	CURLMcode mcode = curl_multi_add_handle(multi, c->easy.Get());
 	if (mcode != CURLM_OK)
 		throw FormatRuntimeError("curl_multi_add_handle() failed: %s",
 					 curl_multi_strerror(mcode));
@@ -382,7 +384,7 @@ static void
 input_curl_easy_add_indirect(CurlInputStream *c)
 {
 	assert(c != nullptr);
-	assert(c->easy != nullptr);
+	assert(c->easy);
 
 	BlockingCall(io_thread_get(), [c](){
 			curl_multi->Add(c);
@@ -392,7 +394,7 @@ input_curl_easy_add_indirect(CurlInputStream *c)
 inline void
 CurlMulti::Remove(CurlInputStream *c)
 {
-	curl_multi_remove_handle(multi, c->easy);
+	curl_multi_remove_handle(multi, c->easy.Get());
 }
 
 void
@@ -400,12 +402,11 @@ CurlInputStream::FreeEasy()
 {
 	assert(io_thread_inside());
 
-	if (easy == nullptr)
+	if (!easy)
 		return;
 
 	curl_multi->Remove(this);
 
-	curl_easy_cleanup(easy);
 	easy = nullptr;
 
 	curl_slist_free_all(request_headers);
@@ -420,7 +421,7 @@ CurlInputStream::FreeEasyIndirect()
 			curl_multi->InvalidateSockets();
 		});
 
-	assert(easy == nullptr);
+	assert(!easy);
 }
 
 inline void
@@ -726,55 +727,47 @@ input_curl_writefunction(void *ptr, size_t size, size_t nmemb, void *stream)
 void
 CurlInputStream::InitEasy()
 {
-	easy = curl_easy_init();
-	if (easy == nullptr)
-		throw std::runtime_error("curl_easy_init() failed");
+	easy = CurlEasy();
 
-	curl_easy_setopt(easy, CURLOPT_PRIVATE, (void *)this);
-	curl_easy_setopt(easy, CURLOPT_USERAGENT,
-			 "Music Player Daemon " VERSION);
-	curl_easy_setopt(easy, CURLOPT_HEADERFUNCTION,
-			 input_curl_headerfunction);
-	curl_easy_setopt(easy, CURLOPT_WRITEHEADER, this);
-	curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION,
-			 input_curl_writefunction);
-	curl_easy_setopt(easy, CURLOPT_WRITEDATA, this);
-	curl_easy_setopt(easy, CURLOPT_HTTP200ALIASES, http_200_aliases);
-	curl_easy_setopt(easy, CURLOPT_FOLLOWLOCATION, 1l);
-	curl_easy_setopt(easy, CURLOPT_NETRC, 1l);
-	curl_easy_setopt(easy, CURLOPT_MAXREDIRS, 5l);
-	curl_easy_setopt(easy, CURLOPT_FAILONERROR, 1l);
-	curl_easy_setopt(easy, CURLOPT_ERRORBUFFER, error_buffer);
-	curl_easy_setopt(easy, CURLOPT_NOPROGRESS, 1l);
-	curl_easy_setopt(easy, CURLOPT_NOSIGNAL, 1l);
-	curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT, 10l);
+	easy.SetOption(CURLOPT_PRIVATE, (void *)this);
+	easy.SetOption(CURLOPT_USERAGENT, "Music Player Daemon " VERSION);
+	easy.SetOption(CURLOPT_HEADERFUNCTION, input_curl_headerfunction);
+	easy.SetOption(CURLOPT_WRITEHEADER, this);
+	easy.SetOption(CURLOPT_WRITEFUNCTION, input_curl_writefunction);
+	easy.SetOption(CURLOPT_WRITEDATA, this);
+	easy.SetOption(CURLOPT_HTTP200ALIASES, http_200_aliases);
+	easy.SetOption(CURLOPT_FOLLOWLOCATION, 1l);
+	easy.SetOption(CURLOPT_NETRC, 1l);
+	easy.SetOption(CURLOPT_MAXREDIRS, 5l);
+	easy.SetOption(CURLOPT_FAILONERROR, 1l);
+	easy.SetOption(CURLOPT_ERRORBUFFER, error_buffer);
+	easy.SetOption(CURLOPT_NOPROGRESS, 1l);
+	easy.SetOption(CURLOPT_NOSIGNAL, 1l);
+	easy.SetOption(CURLOPT_CONNECTTIMEOUT, 10l);
 
 	if (proxy != nullptr)
-		curl_easy_setopt(easy, CURLOPT_PROXY, proxy);
+		easy.SetOption(CURLOPT_PROXY, proxy);
 
 	if (proxy_port > 0)
-		curl_easy_setopt(easy, CURLOPT_PROXYPORT, (long)proxy_port);
+		easy.SetOption(CURLOPT_PROXYPORT, (long)proxy_port);
 
 	if (proxy_user != nullptr && proxy_password != nullptr) {
 		char proxy_auth_str[1024];
 		snprintf(proxy_auth_str, sizeof(proxy_auth_str),
 			 "%s:%s",
 			 proxy_user, proxy_password);
-		curl_easy_setopt(easy, CURLOPT_PROXYUSERPWD, proxy_auth_str);
+		easy.SetOption(CURLOPT_PROXYUSERPWD, proxy_auth_str);
 	}
 
-	curl_easy_setopt(easy, CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
-	curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
+	easy.SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
+	easy.SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
 
-	CURLcode code = curl_easy_setopt(easy, CURLOPT_URL, GetURI());
-	if (code != CURLE_OK)
-		throw FormatRuntimeError("curl_easy_setopt() failed: %s",
-					 curl_easy_strerror(code));
+	easy.SetOption(CURLOPT_URL, GetURI());
 
 	request_headers = nullptr;
 	request_headers = curl_slist_append(request_headers,
 					       "Icy-Metadata: 1");
-	curl_easy_setopt(easy, CURLOPT_HTTPHEADER, request_headers);
+	easy.SetOption(CURLOPT_HTTPHEADER, request_headers);
 }
 
 void
@@ -809,7 +802,7 @@ CurlInputStream::DoSeek(offset_type new_offset)
 
 	if (offset > 0) {
 		sprintf(range, "%lld-", (long long)offset);
-		curl_easy_setopt(easy, CURLOPT_RANGE, range);
+		easy.SetOption(CURLOPT_RANGE, range);
 	}
 
 	try {
