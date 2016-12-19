@@ -65,7 +65,7 @@ struct CurlInputStream final : public AsyncInputStream {
 	struct curl_slist *request_headers;
 
 	/** the curl handles */
-	CURL *easy;
+	CURL *easy = nullptr;
 
 	/** error message provided by libcurl */
 	char error_buffer[CURL_ERROR_SIZE];
@@ -79,7 +79,6 @@ struct CurlInputStream final : public AsyncInputStream {
 				  CURL_RESUME_AT),
 		 request_headers(nullptr),
 		 icy(new IcyInputStream(this)) {
-		InitEasy();
 	}
 
 	~CurlInputStream();

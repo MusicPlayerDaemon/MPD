@@ -7,6 +7,8 @@ ver 0.20 (not yet released)
   - drop the "file:///" prefix for absolute file paths
   - add range parameter to command "plchanges" and "plchangesposid"
   - send verbose error message to client
+* input
+  - curl: fix memory leak
 * tags
   - ape, ogg: drop support for non-standard tag "album artist"
     affected filetypes: vorbis, flac, opus & all files with ape2 tags
