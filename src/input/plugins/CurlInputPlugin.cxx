@@ -20,6 +20,7 @@
 #include "config.h"
 #include "CurlInputPlugin.hxx"
 #include "lib/curl/Easy.hxx"
+#include "lib/curl/Multi.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
 #include "../InputPlugin.hxx"
@@ -194,14 +195,10 @@ private:
  * Manager for the global CURLM object.
  */
 class CurlGlobal final : private TimeoutMonitor {
-	CURLM *const multi;
+	CurlMulti multi;
 
 public:
-	CurlGlobal(EventLoop &_loop, CURLM *_multi);
-
-	~CurlGlobal() {
-		curl_multi_cleanup(multi);
-	}
+	explicit CurlGlobal(EventLoop &_loop);
 
 	void Add(CurlInputStream *c);
 	void Remove(CurlInputStream *c);
@@ -214,7 +211,7 @@ public:
 	void ReadInfo();
 
 	void Assign(curl_socket_t fd, CurlSocket &cs) {
-		curl_multi_assign(multi, fd, &cs);
+		curl_multi_assign(multi.Get(), fd, &cs);
 	}
 
 	void SocketAction(curl_socket_t fd, int ev_bitmask);
@@ -230,7 +227,7 @@ public:
 	 */
 	void ResumeSockets() {
 		int running_handles;
-		curl_multi_socket_all(multi, &running_handles);
+		curl_multi_socket_all(multi.Get(), &running_handles);
 	}
 
 private:
@@ -258,15 +255,14 @@ static CurlGlobal *curl_global;
 static constexpr Domain curl_domain("curl");
 static constexpr Domain curlm_domain("curlm");
 
-CurlGlobal::CurlGlobal(EventLoop &_loop, CURLM *_mutex)
-	:TimeoutMonitor(_loop), multi(_mutex)
+CurlGlobal::CurlGlobal(EventLoop &_loop)
+	:TimeoutMonitor(_loop)
 {
-	curl_multi_setopt(multi, CURLMOPT_SOCKETFUNCTION,
-			  CurlSocket::SocketFunction);
-	curl_multi_setopt(multi, CURLMOPT_SOCKETDATA, this);
+	multi.SetOption(CURLMOPT_SOCKETFUNCTION, CurlSocket::SocketFunction);
+	multi.SetOption(CURLMOPT_SOCKETDATA, this);
 
-	curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, TimerFunction);
-	curl_multi_setopt(multi, CURLMOPT_TIMERDATA, this);
+	multi.SetOption(CURLMOPT_TIMERFUNCTION, TimerFunction);
+	multi.SetOption(CURLMOPT_TIMERDATA, this);
 }
 
 /**
@@ -366,7 +362,7 @@ CurlGlobal::Add(CurlInputStream *c)
 	assert(c != nullptr);
 	assert(c->easy);
 
-	CURLMcode mcode = curl_multi_add_handle(multi, c->easy.Get());
+	CURLMcode mcode = curl_multi_add_handle(multi.Get(), c->easy.Get());
 	if (mcode != CURLM_OK)
 		throw FormatRuntimeError("curl_multi_add_handle() failed: %s",
 					 curl_multi_strerror(mcode));
@@ -394,7 +390,7 @@ input_curl_easy_add_indirect(CurlInputStream *c)
 inline void
 CurlGlobal::Remove(CurlInputStream *c)
 {
-	curl_multi_remove_handle(multi, c->easy.Get());
+	curl_multi_remove_handle(multi.Get(), c->easy.Get());
 }
 
 void
@@ -467,7 +463,7 @@ void
 CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask)
 {
 	int running_handles;
-	CURLMcode mcode = curl_multi_socket_action(multi, fd, ev_bitmask,
+	CURLMcode mcode = curl_multi_socket_action(multi.Get(), fd, ev_bitmask,
 						   &running_handles);
 	if (mcode != CURLM_OK)
 		FormatError(curlm_domain,
@@ -490,7 +486,7 @@ CurlGlobal::ReadInfo()
 	CURLMsg *msg;
 	int msgs_in_queue;
 
-	while ((msg = curl_multi_info_read(multi,
+	while ((msg = curl_multi_info_read(multi.Get(),
 					   &msgs_in_queue)) != nullptr) {
 		if (msg->msg == CURLMSG_DONE)
 			input_curl_handle_done(msg->easy_handle, msg->data.result);
@@ -501,7 +497,7 @@ int
 CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *userp)
 {
 	auto &global = *(CurlGlobal *)userp;
-	assert(_global == global.multi);
+	assert(_global == global.multi.Get());
 
 	if (timeout_ms < 0) {
 		global.Cancel();
@@ -566,14 +562,14 @@ input_curl_init(const ConfigBlock &block)
 	verify_peer = block.GetBlockValue("verify_peer", true);
 	verify_host = block.GetBlockValue("verify_host", true);
 
-	CURLM *global = curl_multi_init();
-	if (global == nullptr) {
+	try {
+		curl_global = new CurlGlobal(io_thread_get());
+	} catch (const std::runtime_error &e) {
+		LogError(e);
 		curl_slist_free_all(http_200_aliases);
 		curl_global_cleanup();
 		throw PluginUnavailable("curl_multi_init() failed");
 	}
-
-	curl_global = new CurlGlobal(io_thread_get(), global);
 }
 
 static void
