@@ -131,17 +131,17 @@ struct CurlInputStream final : public AsyncInputStream {
 	virtual void DoSeek(offset_type new_offset) override;
 };
 
-class CurlMulti;
+class CurlGlobal;
 
 /**
  * Monitor for one socket created by CURL.
  */
 class CurlSocket final : SocketMonitor {
-	CurlMulti &multi;
+	CurlGlobal &global;
 
 public:
-	CurlSocket(CurlMulti &_multi, EventLoop &_loop, int _fd)
-		:SocketMonitor(_fd, _loop), multi(_multi) {}
+	CurlSocket(CurlGlobal &_global, EventLoop &_loop, int _fd)
+		:SocketMonitor(_fd, _loop), global(_global) {}
 
 	~CurlSocket() {
 		/* TODO: sometimes, CURL uses CURL_POLL_REMOVE after
@@ -193,13 +193,13 @@ private:
 /**
  * Manager for the global CURLM object.
  */
-class CurlMulti final : private TimeoutMonitor {
+class CurlGlobal final : private TimeoutMonitor {
 	CURLM *const multi;
 
 public:
-	CurlMulti(EventLoop &_loop, CURLM *_multi);
+	CurlGlobal(EventLoop &_loop, CURLM *_multi);
 
-	~CurlMulti() {
+	~CurlGlobal() {
 		curl_multi_cleanup(multi);
 	}
 
@@ -234,7 +234,7 @@ public:
 	}
 
 private:
-	static int TimerFunction(CURLM *multi, long timeout_ms, void *userp);
+	static int TimerFunction(CURLM *global, long timeout_ms, void *userp);
 
 	virtual void OnTimeout() override;
 };
@@ -253,13 +253,13 @@ static unsigned proxy_port;
 
 static bool verify_peer, verify_host;
 
-static CurlMulti *curl_multi;
+static CurlGlobal *curl_global;
 
 static constexpr Domain curl_domain("curl");
 static constexpr Domain curlm_domain("curlm");
 
-CurlMulti::CurlMulti(EventLoop &_loop, CURLM *_multi)
-	:TimeoutMonitor(_loop), multi(_multi)
+CurlGlobal::CurlGlobal(EventLoop &_loop, CURLM *_mutex)
+	:TimeoutMonitor(_loop), multi(_mutex)
 {
 	curl_multi_setopt(multi, CURLMOPT_SOCKETFUNCTION,
 			  CurlSocket::SocketFunction);
@@ -301,9 +301,9 @@ CurlInputStream::DoResume()
 		/* libcurl older than 7.32.0 does not update
 		   its sockets after curl_easy_pause(); force
 		   libcurl to do it now */
-		curl_multi->ResumeSockets();
+		curl_global->ResumeSockets();
 
-	curl_multi->InvalidateSockets();
+	curl_global->InvalidateSockets();
 
 	mutex.lock();
 }
@@ -312,7 +312,7 @@ int
 CurlSocket::SocketFunction(gcc_unused CURL *easy,
 			   curl_socket_t s, int action,
 			   void *userp, void *socketp) {
-	CurlMulti &multi = *(CurlMulti *)userp;
+	auto &global = *(CurlGlobal *)userp;
 	CurlSocket *cs = (CurlSocket *)socketp;
 
 	assert(io_thread_inside());
@@ -323,8 +323,8 @@ CurlSocket::SocketFunction(gcc_unused CURL *easy,
 	}
 
 	if (cs == nullptr) {
-		cs = new CurlSocket(multi, io_thread_get(), s);
-		multi.Assign(s, *cs);
+		cs = new CurlSocket(global, io_thread_get(), s);
+		global.Assign(s, *cs);
 	} else {
 #ifdef USE_EPOLL
 		/* when using epoll, we need to unregister the socket
@@ -350,7 +350,7 @@ CurlSocket::OnSocketReady(unsigned flags)
 {
 	assert(io_thread_inside());
 
-	multi.SocketAction(Get(), FlagsToCurlCSelect(flags));
+	global.SocketAction(Get(), FlagsToCurlCSelect(flags));
 	return true;
 }
 
@@ -360,7 +360,7 @@ CurlSocket::OnSocketReady(unsigned flags)
  * Throws std::runtime_error on error.
  */
 inline void
-CurlMulti::Add(CurlInputStream *c)
+CurlGlobal::Add(CurlInputStream *c)
 {
 	assert(io_thread_inside());
 	assert(c != nullptr);
@@ -387,12 +387,12 @@ input_curl_easy_add_indirect(CurlInputStream *c)
 	assert(c->easy);
 
 	BlockingCall(io_thread_get(), [c](){
-			curl_multi->Add(c);
+			curl_global->Add(c);
 		});
 }
 
 inline void
-CurlMulti::Remove(CurlInputStream *c)
+CurlGlobal::Remove(CurlInputStream *c)
 {
 	curl_multi_remove_handle(multi, c->easy.Get());
 }
@@ -405,7 +405,7 @@ CurlInputStream::FreeEasy()
 	if (!easy)
 		return;
 
-	curl_multi->Remove(this);
+	curl_global->Remove(this);
 
 	easy = nullptr;
 
@@ -418,7 +418,7 @@ CurlInputStream::FreeEasyIndirect()
 {
 	BlockingCall(io_thread_get(), [this](){
 			FreeEasy();
-			curl_multi->InvalidateSockets();
+			curl_global->InvalidateSockets();
 		});
 
 	assert(!easy);
@@ -464,7 +464,7 @@ input_curl_handle_done(CURL *easy_handle, CURLcode result)
 }
 
 void
-CurlMulti::SocketAction(curl_socket_t fd, int ev_bitmask)
+CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask)
 {
 	int running_handles;
 	CURLMcode mcode = curl_multi_socket_action(multi, fd, ev_bitmask,
@@ -483,7 +483,7 @@ CurlMulti::SocketAction(curl_socket_t fd, int ev_bitmask)
  * Runs in the I/O thread.  The caller must not hold locks.
  */
 inline void
-CurlMulti::ReadInfo()
+CurlGlobal::ReadInfo()
 {
 	assert(io_thread_inside());
 
@@ -498,13 +498,13 @@ CurlMulti::ReadInfo()
 }
 
 int
-CurlMulti::TimerFunction(gcc_unused CURLM *_multi, long timeout_ms, void *userp)
+CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *userp)
 {
-	CurlMulti &multi = *(CurlMulti *)userp;
-	assert(_multi == multi.multi);
+	auto &global = *(CurlGlobal *)userp;
+	assert(_global == global.multi);
 
 	if (timeout_ms < 0) {
-		multi.Cancel();
+		global.Cancel();
 		return 0;
 	}
 
@@ -515,12 +515,12 @@ CurlMulti::TimerFunction(gcc_unused CURLM *_multi, long timeout_ms, void *userp)
 		   of 10ms. */
 		timeout_ms = 10;
 
-	multi.Schedule(timeout_ms);
+	global.Schedule(timeout_ms);
 	return 0;
 }
 
 void
-CurlMulti::OnTimeout()
+CurlGlobal::OnTimeout()
 {
 	SocketAction(CURL_SOCKET_TIMEOUT, 0);
 }
@@ -566,21 +566,21 @@ input_curl_init(const ConfigBlock &block)
 	verify_peer = block.GetBlockValue("verify_peer", true);
 	verify_host = block.GetBlockValue("verify_host", true);
 
-	CURLM *multi = curl_multi_init();
-	if (multi == nullptr) {
+	CURLM *global = curl_multi_init();
+	if (global == nullptr) {
 		curl_slist_free_all(http_200_aliases);
 		curl_global_cleanup();
 		throw PluginUnavailable("curl_multi_init() failed");
 	}
 
-	curl_multi = new CurlMulti(io_thread_get(), multi);
+	curl_global = new CurlGlobal(io_thread_get(), global);
 }
 
 static void
 input_curl_finish(void)
 {
 	BlockingCall(io_thread_get(), [](){
-			delete curl_multi;
+			delete curl_global;
 		});
 
 	curl_slist_free_all(http_200_aliases);
