@@ -222,13 +222,9 @@ audio_output_setup(EventLoop &event_loop,
 			NewReplayGainFilter(replay_gain_config);
 		assert(ao.prepared_replay_gain_filter != nullptr);
 
-		ao.replay_gain_serial = 0;
-
 		ao.prepared_other_replay_gain_filter =
 			NewReplayGainFilter(replay_gain_config);
 		assert(ao.prepared_other_replay_gain_filter != nullptr);
-
-		ao.other_replay_gain_serial = 0;
 	} else {
 		ao.prepared_replay_gain_filter = nullptr;
 		ao.prepared_other_replay_gain_filter = nullptr;

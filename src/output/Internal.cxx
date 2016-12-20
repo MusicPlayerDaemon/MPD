@@ -26,5 +26,5 @@ AudioOutput::IsChunkConsumed(const MusicChunk &chunk) const
 	if (!open)
 		return true;
 
-	return pipe.IsConsumed(chunk);
+	return source.IsChunkConsumed(chunk);
 }

@@ -20,11 +20,9 @@
 #ifndef MPD_OUTPUT_INTERNAL_HXX
 #define MPD_OUTPUT_INTERNAL_HXX
 
+#include "Source.hxx"
 #include "SharedPipeConsumer.hxx"
 #include "AudioFormat.hxx"
-#include "pcm/PcmBuffer.hxx"
-#include "pcm/PcmDither.hxx"
-#include "ReplayGainMode.hxx"
 #include "filter/Observer.hxx"
 #include "thread/Mutex.hxx"
 #include "thread/Cond.hxx"
@@ -149,8 +147,6 @@ struct AudioOutput {
 	 */
 	bool woken_for_play = false;
 
-	ReplayGainMode replay_gain_mode = ReplayGainMode::OFF;
-
 	/**
 	 * If not nullptr, the device has failed, and this timer is used
 	 * to estimate how long it should stay disabled (unless
@@ -162,14 +158,6 @@ struct AudioOutput {
 	 * The configured audio format.
 	 */
 	AudioFormat config_audio_format;
-
-	/**
-	 * The audio_format in which audio data is received from the
-	 * player thread (which in turn receives it from the decoder).
-	 *
-	 * Only accessible from within the OutputThread.
-	 */
-	AudioFormat in_audio_format;
 
 	/**
 	 * The #AudioFormat which is emitted by the #Filter, with
@@ -188,21 +176,10 @@ struct AudioOutput {
 	AudioFormat out_audio_format;
 
 	/**
-	 * The buffer used to allocate the cross-fading result.
-	 */
-	PcmBuffer cross_fade_buffer;
-
-	/**
-	 * The dithering state for cross-fading two streams.
-	 */
-	PcmDither cross_fade_dither;
-
-	/**
 	 * The filter object of this audio output.  This is an
 	 * instance of chain_filter_plugin.
 	 */
 	PreparedFilter *prepared_filter = nullptr;
-	Filter *filter_instance = nullptr;
 
 	/**
 	 * The #VolumeFilter instance of this audio output.  It is
@@ -215,13 +192,6 @@ struct AudioOutput {
 	 * output.
 	 */
 	PreparedFilter *prepared_replay_gain_filter = nullptr;
-	Filter *replay_gain_filter_instance = nullptr;
-
-	/**
-	 * The serial number of the last replay gain info.  0 means no
-	 * replay gain info was available.
-	 */
-	unsigned replay_gain_serial;
 
 	/**
 	 * The replay_gain_filter_plugin instance of this audio
@@ -229,13 +199,6 @@ struct AudioOutput {
 	 * cross-fading.
 	 */
 	PreparedFilter *prepared_other_replay_gain_filter = nullptr;
-	Filter *other_replay_gain_filter_instance = nullptr;
-
-	/**
-	 * The serial number of the last replay gain info by the
-	 * "other" chunk during cross-fading.
-	 */
-	unsigned other_replay_gain_serial;
 
 	/**
 	 * The convert_filter_plugin instance of this audio output.
@@ -289,9 +252,9 @@ struct AudioOutput {
 	AudioOutputClient *client;
 
 	/**
-	 * A reference to the #MusicPipe and the current position.
+	 * Source of audio data.
 	 */
-	SharedPipeConsumer pipe;
+	AudioOutputSource source;
 
 	/**
 	 * Throws #std::runtime_error on error.
@@ -394,7 +357,7 @@ public:
 	void LockRelease();
 
 	void SetReplayGainMode(ReplayGainMode _mode) {
-		replay_gain_mode = _mode;
+		source.SetReplayGainMode(_mode);
 	}
 
 	/**
@@ -442,7 +405,7 @@ public:
 	}
 
 	void ClearTailChunk(const MusicChunk &chunk) {
-		pipe.ClearTail(chunk);
+		source.ClearTailChunk(chunk);
 	}
 
 private:

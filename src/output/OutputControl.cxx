@@ -113,7 +113,7 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	fail_timer.Reset();
 
 	if (open && audio_format == request.audio_format) {
-		assert(&pipe.GetPipe() == &mp || (always_on && pause));
+		assert(request.pipe == &mp || (always_on && pause));
 
 		if (!pause)
 			/* already open, already the right parameters
