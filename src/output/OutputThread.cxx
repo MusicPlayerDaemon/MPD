@@ -145,6 +145,7 @@ AudioOutput::Open()
 		return;
 
 	in_audio_format = request.audio_format;
+	pipe.Init(*request.pipe);
 
 	bool success;
 
@@ -284,8 +285,9 @@ AudioOutput::Reopen()
 {
 	assert(open);
 
-	if (request.audio_format != in_audio_format &&
-	    !config_audio_format.IsFullyDefined()) {
+	if ((request.audio_format != in_audio_format &&
+	     !config_audio_format.IsFullyDefined()) ||
+	    request.pipe != &pipe.GetPipe()) {
 		Close(true);
 		Open();
 	} else {

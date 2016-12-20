@@ -256,6 +256,11 @@ struct AudioOutput {
 		 * The #AudioFormat requested by #Command::OPEN.
 		 */
 		AudioFormat audio_format;
+
+		/**
+		 * The #MusicPipe passed to #Command::OPEN.
+		 */
+		const MusicPipe *pipe;
 	} request;
 
 	/**

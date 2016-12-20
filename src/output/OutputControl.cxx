@@ -122,8 +122,7 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	}
 
 	request.audio_format = audio_format;
-
-	pipe.Init(mp);
+	request.pipe = &mp;
 
 	if (!thread.IsDefined())
 		StartThread();
