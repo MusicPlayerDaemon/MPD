@@ -46,7 +46,7 @@ class SharedPipeConsumer {
 	const MusicChunk *chunk;
 
 	/**
-	 * Has the output finished playing #current_chunk?
+	 * Has the output finished playing #chunk?
 	 */
 	bool consumed;
 
