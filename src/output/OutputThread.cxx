@@ -464,11 +464,9 @@ AudioOutput::PlayChunk(const MusicChunk &chunk)
 			return false;
 		}
 
-		assert(nbytes <= data.size);
 		assert(nbytes % out_audio_format.GetFrameSize() == 0);
 
-		data.data += nbytes;
-		data.size -= nbytes;
+		data.skip_front(nbytes);
 	}
 
 	return true;
