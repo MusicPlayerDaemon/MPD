@@ -475,7 +475,7 @@ private:
 	 */
 	bool WaitForDelay();
 
-	bool PlayChunk(const MusicChunk *chunk);
+	bool PlayChunk(const MusicChunk &chunk);
 
 	/**
 	 * Plays all remaining chunks, until the tail of the pipe has
