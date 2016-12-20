@@ -36,6 +36,7 @@
 #include "thread/Name.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/RuntimeError.hxx"
 #include "Log.hxx"
 #include "Compiler.h"
 
@@ -335,13 +336,7 @@ ao_chunk_data(AudioOutput &ao, const MusicChunk &chunk,
 			*replay_gain_serial_p = chunk.replay_gain_serial;
 		}
 
-		try {
-			data = replay_gain_filter->FilterPCM(data);
-		} catch (const std::runtime_error &e) {
-			FormatError(e, "\"%s\" [%s] failed to filter",
-				    ao.name, ao.plugin.name);
-			return nullptr;
-		}
+		data = replay_gain_filter->FilterPCM(data);
 	}
 
 	return data;
@@ -363,9 +358,6 @@ ao_filter_chunk(AudioOutput &ao, const MusicChunk &chunk)
 			ao_chunk_data(ao, *chunk.other,
 				      ao.other_replay_gain_filter_instance,
 				      &ao.other_replay_gain_serial);
-		if (other_data.IsNull())
-			return nullptr;
-
 		if (other_data.IsEmpty())
 			return data;
 
@@ -390,12 +382,9 @@ ao_filter_chunk(AudioOutput &ao, const MusicChunk &chunk)
 		memcpy(dest, other_data.data, other_data.size);
 		if (!pcm_mix(ao.cross_fade_dither, dest, data.data, data.size,
 			     ao.in_audio_format.format,
-			     mix_ratio)) {
-			FormatError(output_domain,
-				    "Cannot cross-fade format %s",
-				    sample_format_to_string(ao.in_audio_format.format));
-			return nullptr;
-		}
+			     mix_ratio))
+			throw FormatRuntimeError("Cannot cross-fade format %s",
+						 sample_format_to_string(ao.in_audio_format.format));
 
 		data.data = dest;
 		data.size = other_data.size;
@@ -403,13 +392,7 @@ ao_filter_chunk(AudioOutput &ao, const MusicChunk &chunk)
 
 	/* apply filter chain */
 
-	try {
-		return ao.filter_instance->FilterPCM(data);
-	} catch (const std::runtime_error &e) {
-		FormatError(e, "\"%s\" [%s] failed to filter",
-			    ao.name, ao.plugin.name);
-		return nullptr;
-	}
+	return ao.filter_instance->FilterPCM(data);
 }
 
 inline bool
@@ -427,8 +410,14 @@ AudioOutput::PlayChunk(const MusicChunk &chunk)
 		}
 	}
 
-	auto data = ConstBuffer<char>::FromVoid(ao_filter_chunk(*this, chunk));
-	if (data.IsNull()) {
+	ConstBuffer<uint8_t> data;
+
+	try {
+		data = data.FromVoid(ao_filter_chunk(*this, chunk));
+	} catch (const std::runtime_error &e) {
+		FormatError(e, "Failed to filter for output \"%s\" [%s]",
+			    name, plugin.name);
+
 		Close(false);
 
 		/* don't automatically reopen this device for 10
