@@ -115,20 +115,10 @@ AudioOutput::Open(const AudioFormat audio_format, const MusicPipe &mp)
 	if (open && audio_format == request.audio_format) {
 		assert(&pipe.GetPipe() == &mp || (always_on && pause));
 
-		if (pause) {
-			pipe.Init(mp);
-
-			/* unpause with the CANCEL command; this is a
-			   hack, but suits well for forcing the thread
-			   to leave the ao_pause() thread, and we need
-			   to flush the device buffer anyway */
-
-			/* we're not using audio_output_cancel() here,
-			   because that function is asynchronous */
-			CommandWait(Command::CANCEL);
-		}
-
-		return true;
+		if (!pause)
+			/* already open, already the right parameters
+			   - nothing needs to be done */
+			return true;
 	}
 
 	request.audio_format = audio_format;
