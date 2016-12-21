@@ -284,7 +284,8 @@ AudioOutput::Reopen()
 {
 	assert(open);
 
-	if (!config_audio_format.IsFullyDefined()) {
+	if (request.audio_format != in_audio_format &&
+	    !config_audio_format.IsFullyDefined()) {
 		Close(true);
 		Open();
 	} else
