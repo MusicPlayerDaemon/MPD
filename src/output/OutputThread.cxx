@@ -134,7 +134,7 @@ inline void
 AudioOutput::Open()
 {
 	assert(!open);
-	assert(in_audio_format.IsValid());
+	assert(request.audio_format.IsValid());
 
 	fail_timer.Reset();
 
@@ -143,6 +143,8 @@ AudioOutput::Open()
 	if (!Enable())
 		/* still no luck */
 		return;
+
+	in_audio_format = request.audio_format;
 
 	bool success;
 

@@ -166,6 +166,8 @@ struct AudioOutput {
 	/**
 	 * The audio_format in which audio data is received from the
 	 * player thread (which in turn receives it from the decoder).
+	 *
+	 * Only accessible from within the OutputThread.
 	 */
 	AudioFormat in_audio_format;
 
@@ -245,6 +247,16 @@ struct AudioOutput {
 	 * The next command to be performed by the output thread.
 	 */
 	Command command = Command::NONE;
+
+	/**
+	 * Additional data for #command.  Protected by #mutex.
+	 */
+	struct Request {
+		/**
+		 * The #AudioFormat requested by #Command::OPEN.
+		 */
+		AudioFormat audio_format;
+	} request;
 
 	/**
 	 * This mutex protects #open, #fail_timer, #pipe.
