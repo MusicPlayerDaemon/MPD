@@ -278,7 +278,7 @@ MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
 			continue;
 		}
 
-		ao->pipe.ClearTail(*chunk);
+		ao->ClearTailChunk(*chunk);
 	}
 }
 

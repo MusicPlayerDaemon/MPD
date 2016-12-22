@@ -433,6 +433,10 @@ public:
 		return IsChunkConsumed(chunk);
 	}
 
+	void ClearTailChunk(const MusicChunk &chunk) {
+		pipe.ClearTail(chunk);
+	}
+
 private:
 	void CommandFinished();
 
