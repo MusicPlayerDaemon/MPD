@@ -288,10 +288,12 @@ AudioOutput::Reopen()
 	    !config_audio_format.IsFullyDefined()) {
 		Close(true);
 		Open();
-	} else
+	} else {
 		/* the audio format has changed, and all filters have
 		   to be reconfigured */
+		in_audio_format = request.audio_format;
 		ReopenFilter();
+	}
 }
 
 /**
