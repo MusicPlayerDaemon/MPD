@@ -133,54 +133,61 @@ AudioOutput::CloseFilter()
 inline void
 AudioOutput::Open()
 {
-	assert(!open);
 	assert(request.audio_format.IsValid());
 
 	fail_timer.Reset();
 
 	/* enable the device (just in case the last enable has failed) */
-
-	if (!Enable())
+	if (!Enable()) {
 		/* still no luck */
-		return;
-
-	in_audio_format = request.audio_format;
-	pipe.Init(*request.pipe);
-
-	bool success;
-
-	{
-		const ScopeUnlock unlock(mutex);
-		success = OpenFilterAndOutput();
-	}
-
-	if (success)
-		open = true;
-	else
 		fail_timer.Update();
-}
-
-bool
-AudioOutput::OpenFilterAndOutput()
-{
-	AudioFormat filter_audio_format;
-	try {
-		filter_audio_format = OpenFilter(in_audio_format);
-	} catch (const std::runtime_error &e) {
-		FormatError(e, "Failed to open filter for \"%s\" [%s]",
-			    name, plugin.name);
-		return false;
+		return;
 	}
 
-	assert(filter_audio_format.IsValid());
+	if (!open || request.pipe != &pipe.GetPipe())
+		pipe.Init(*request.pipe);
 
-	const auto audio_format =
-		filter_audio_format.WithMask(config_audio_format);
-	bool success = OpenOutputAndConvert(audio_format);
-	if (!success)
+	/* (re)open the filter */
+
+	if (filter_instance != nullptr &&
+	    request.audio_format != in_audio_format)
+		/* the filter must be reopened on all input format
+		   changes */
 		CloseFilter();
 
-	return success;
+	if (filter_instance == nullptr) {
+		/* open the filter */
+		AudioFormat f;
+		try {
+			f = OpenFilter(request.audio_format)
+				.WithMask(config_audio_format);
+		} catch (const std::runtime_error &e) {
+			FormatError(e, "Failed to open filter for \"%s\" [%s]",
+				    name, plugin.name);
+			fail_timer.Update();
+			return;
+		}
+
+		if (open && f != filter_audio_format) {
+			/* if the filter's output format changes, the
+			   outpuit must be reopened as well */
+			CloseOutput(true);
+			open = false;
+		}
+
+		filter_audio_format = f;
+	}
+
+	in_audio_format = request.audio_format;
+
+	if (!open) {
+		if (OpenOutputAndConvert(filter_audio_format)) {
+			open = true;
+		} else {
+			CloseFilter();
+			fail_timer.Update();
+		}
+	}
 }
 
 bool
@@ -261,41 +268,6 @@ AudioOutput::CloseOutput(bool drain)
 		ao_plugin_cancel(this);
 
 	ao_plugin_close(this);
-}
-
-void
-AudioOutput::ReopenFilter()
-{
-	try {
-		const ScopeUnlock unlock(mutex);
-		CloseFilter();
-		OpenFilter(in_audio_format);
-		convert_filter_set(convert_filter.Get(), out_audio_format);
-	} catch (const std::runtime_error &e) {
-		FormatError(e,
-			    "Failed to open filter for \"%s\" [%s]",
-			    name, plugin.name);
-
-		Close(false);
-	}
-}
-
-void
-AudioOutput::Reopen()
-{
-	assert(open);
-
-	if ((request.audio_format != in_audio_format &&
-	     !config_audio_format.IsFullyDefined()) ||
-	    request.pipe != &pipe.GetPipe()) {
-		Close(true);
-		Open();
-	} else {
-		/* the audio format has changed, and all filters have
-		   to be reconfigured */
-		in_audio_format = request.audio_format;
-		ReopenFilter();
-	}
 }
 
 /**
@@ -578,10 +550,7 @@ AudioOutput::Task()
 			break;
 
 		case Command::OPEN:
-			if (open)
-				Reopen();
-			else
-				Open();
+			Open();
 			CommandFinished();
 			break;
 

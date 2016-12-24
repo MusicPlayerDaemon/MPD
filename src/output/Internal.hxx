@@ -172,6 +172,14 @@ struct AudioOutput {
 	AudioFormat in_audio_format;
 
 	/**
+	 * The #AudioFormat which is emitted by the #Filter, with
+	 * #config_audio_format already applied.  This is used to
+	 * decide whether this object needs to be closed and reopened
+	 * upon #AudioFormat changes.
+	 */
+	AudioFormat filter_audio_format;
+
+	/**
 	 * The audio_format which is really sent to the device.  This
 	 * is basically config_audio_format (if configured) or
 	 * in_audio_format, but may have been modified by
@@ -446,15 +454,6 @@ private:
 	void Open();
 
 	/**
-	 * Open the #ChainFilter and call OpenOutputAndConvert().
-	 *
-	 * Caller must not lock the mutex.
-	 *
-	 * @return true on success
-	 */
-	bool OpenFilterAndOutput();
-
-	/**
 	 * Invoke OutputPlugin::open() and configure the
 	 * #ConvertFilter.
 	 *
@@ -465,7 +464,6 @@ private:
 	bool OpenOutputAndConvert(AudioFormat audio_format);
 
 	void Close(bool drain);
-	void Reopen();
 
 	/**
 	 * Close the output plugin.
@@ -485,8 +483,6 @@ private:
 	 * Mutex must not be locked.
 	 */
 	void CloseFilter();
-
-	void ReopenFilter();
 
 	/**
 	 * Wait until the output's delay reaches zero.
