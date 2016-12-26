@@ -30,6 +30,11 @@ class MusicPipe;
 
 /**
  * A utility class which helps with consuming data from a #MusicPipe.
+ *
+ * This class is intentionally not thread-safe.  Since it is designed
+ * to be called from two distinct threads (PlayerThread=feeder and
+ * OutputThread=consumer), all methods must be called with a mutex
+ * locked to serialize access.  Usually, this is #AudioOutput::mutex.
  */
 class SharedPipeConsumer {
 	/**
