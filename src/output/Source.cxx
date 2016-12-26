@@ -185,3 +185,38 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 
 	return filter_instance->FilterPCM(data);
 }
+
+bool
+AudioOutputSource::Fill()
+{
+	if (current_chunk != nullptr && pending_tag == nullptr &&
+	    pending_data.IsEmpty())
+		pipe.Consume(*std::exchange(current_chunk, nullptr));
+
+	if (current_chunk != nullptr)
+		return true;
+
+	current_chunk = pipe.Get();
+	if (current_chunk == nullptr)
+		return false;
+
+	pending_tag = current_chunk->tag;
+
+	try {
+		pending_data = pending_data.FromVoid(FilterChunk(*current_chunk));
+	} catch (...) {
+		current_chunk = nullptr;
+		throw;
+	}
+
+	return true;
+}
+
+void
+AudioOutputSource::ConsumeData(size_t nbytes) noexcept
+{
+	pending_data.skip_front(nbytes);
+
+	if (pending_data.IsEmpty())
+		pipe.Consume(*std::exchange(current_chunk, nullptr));
+}

@@ -261,36 +261,43 @@ AudioOutput::WaitForDelay()
 	}
 }
 
+bool
+AudioOutput::FillSourceOrClose()
+try {
+	return source.Fill();
+} catch (const std::runtime_error &e) {
+	FormatError(e, "Failed to filter for output \"%s\" [%s]",
+		    name, plugin.name);
+
+	Close(false);
+
+	/* don't automatically reopen this device for 10
+	   seconds */
+	fail_timer.Update();
+	return false;
+}
+
 inline bool
-AudioOutput::PlayChunk(const MusicChunk &chunk)
+AudioOutput::PlayChunk()
 {
-	if (tags && gcc_unlikely(chunk.tag != nullptr)) {
-		const ScopeUnlock unlock(mutex);
-		try {
-			ao_plugin_send_tag(this, *chunk.tag);
-		} catch (const std::runtime_error &e) {
-			FormatError(e, "Failed to send tag to \"%s\" [%s]",
-				    name, plugin.name);
+	if (tags) {
+		const auto *tag = source.ReadTag();
+		if (tag != nullptr) {
+			const ScopeUnlock unlock(mutex);
+			try {
+				ao_plugin_send_tag(this, *tag);
+			} catch (const std::runtime_error &e) {
+				FormatError(e, "Failed to send tag to \"%s\" [%s]",
+					    name, plugin.name);
+			}
 		}
 	}
 
-	ConstBuffer<uint8_t> data;
+	while (command == Command::NONE) {
+		const auto data = source.PeekData();
+		if (data.IsEmpty())
+			break;
 
-	try {
-		data = data.FromVoid(source.FilterChunk(chunk));
-	} catch (const std::runtime_error &e) {
-		FormatError(e, "Failed to filter for output \"%s\" [%s]",
-			    name, plugin.name);
-
-		Close(false);
-
-		/* don't automatically reopen this device for 10
-		   seconds */
-		fail_timer.Update();
-		return false;
-	}
-
-	while (!data.IsEmpty() && command == Command::NONE) {
 		if (!WaitForDelay())
 			break;
 
@@ -319,7 +326,7 @@ AudioOutput::PlayChunk(const MusicChunk &chunk)
 
 		assert(nbytes % out_audio_format.GetFrameSize() == 0);
 
-		data.skip_front(nbytes);
+		source.ConsumeData(nbytes);
 	}
 
 	return true;
@@ -328,8 +335,7 @@ AudioOutput::PlayChunk(const MusicChunk &chunk)
 inline bool
 AudioOutput::Play()
 {
-	const MusicChunk *chunk = source.Get();
-	if (chunk == nullptr)
+	if (!FillSourceOrClose())
 		/* no chunk available */
 		return false;
 
@@ -356,12 +362,9 @@ AudioOutput::Play()
 			n = 0;
 		}
 
-		if (!PlayChunk(*chunk))
+		if (!PlayChunk())
 			break;
-
-		source.Consume(*chunk);
-		chunk = source.Get();
-	} while (chunk != nullptr);
+	} while (FillSourceOrClose());
 
 	const ScopeUnlock unlock(mutex);
 	client->ChunksConsumed();

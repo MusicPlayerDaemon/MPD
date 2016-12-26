@@ -30,7 +30,6 @@
 #include "system/PeriodClock.hxx"
 
 class PreparedFilter;
-class Filter;
 class MusicPipe;
 class EventLoop;
 class Mixer;
@@ -455,7 +454,9 @@ private:
 	 */
 	bool WaitForDelay();
 
-	bool PlayChunk(const MusicChunk &chunk);
+	bool FillSourceOrClose();
+
+	bool PlayChunk();
 
 	/**
 	 * Plays all remaining chunks, until the tail of the pipe has

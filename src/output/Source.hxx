@@ -27,11 +27,15 @@
 #include "ReplayGainMode.hxx"
 #include "pcm/PcmBuffer.hxx"
 #include "pcm/PcmDither.hxx"
+#include "util/ConstBuffer.hxx"
+
+#include <utility>
 
 #include <assert.h>
+#include <stdint.h>
 
-template<typename T> struct ConstBuffer;
 struct MusicChunk;
+struct Tag;
 class Filter;
 class PreparedFilter;
 
@@ -96,6 +100,23 @@ class AudioOutputSource {
 	 */
 	Filter *filter_instance = nullptr;
 
+	/**
+	 * The #MusicChunk currently being processed (see
+	 * #pending_tag, #pending_data).
+	 */
+	const MusicChunk *current_chunk = nullptr;
+
+	/**
+	 * The #Tag to be processed by the #AudioOutput.
+	 */
+	const Tag *pending_tag;
+
+	/**
+	 * Filtered #MusicChunk PCM data to be processed by the
+	 * #AudioOutput.
+	 */
+	ConstBuffer<uint8_t> pending_data;
+
 public:
 	void SetReplayGainMode(ReplayGainMode _mode) {
 		replay_gain_mode = _mode;
@@ -117,20 +138,46 @@ public:
 	void Close();
 
 	void Cancel() {
+		current_chunk = nullptr;
 		pipe.Cancel();
 	}
 
-	const MusicChunk *Get() {
-		assert(IsOpen());
+	/**
+	 * Ensure that ReadTag() or PeekData() return any input.
+	 *
+	 * Throws std::runtime_error on error
+	 *
+	 * @return true if any input is available, false if the source
+	 * has (temporarily?) run empty
+	 */
+	bool Fill();
 
-		return pipe.Get();
+	/**
+	 * Reads the #Tag to be processed.  Be sure to call Fill()
+	 * successfully before calling this metohd.
+	 */
+	const Tag *ReadTag() noexcept {
+		assert(current_chunk != nullptr);
+
+		return std::exchange(pending_tag, nullptr);
 	}
 
-	void Consume(const MusicChunk &chunk) {
-		assert(IsOpen());
-
-		pipe.Consume(chunk);
+	/**
+	 * Returns the remaining filtered PCM data be played.  The
+	 * caller shall use ConsumeData() to mark portions of the
+	 * return value as "consumed".
+	 *
+	 * Be sure to call Fill() successfully before calling this
+	 * metohd.
+	 */
+	ConstBuffer<void> PeekData() const noexcept {
+		return pending_data.ToVoid();
 	}
+
+	/**
+	 * Mark portions of the PeekData() return value as "consumed".
+	 */
+	void ConsumeData(size_t nbytes) noexcept;
 
 	bool IsChunkConsumed(const MusicChunk &chunk) const {
 		assert(IsOpen());
@@ -141,8 +188,6 @@ public:
 	void ClearTailChunk(const MusicChunk &chunk) {
 		pipe.ClearTail(chunk);
 	}
-
-	ConstBuffer<void> FilterChunk(const MusicChunk &chunk);
 
 private:
 	void OpenFilter(AudioFormat audio_format,
@@ -155,6 +200,8 @@ private:
 	ConstBuffer<void> GetChunkData(const MusicChunk &chunk,
 				       Filter *replay_gain_filter,
 				       unsigned *replay_gain_serial_p);
+
+	ConstBuffer<void> FilterChunk(const MusicChunk &chunk);
 };
 
 #endif
