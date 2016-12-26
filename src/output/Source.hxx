@@ -128,6 +128,8 @@ public:
 	}
 
 	const AudioFormat &GetInputAudioFormat() const {
+		assert(IsOpen());
+
 		return in_audio_format;
 	}
 
