@@ -36,6 +36,7 @@
 
 struct MusicChunk;
 struct Tag;
+class Mutex;
 class Filter;
 class PreparedFilter;
 
@@ -147,10 +148,13 @@ public:
 	 *
 	 * Throws std::runtime_error on error
 	 *
+	 * @param mutex the #Mutex which protects the
+	 * #SharedPipeConsumer; it is locked by the caller, and may be
+	 * unlocked temporarily by this method
 	 * @return true if any input is available, false if the source
 	 * has (temporarily?) run empty
 	 */
-	bool Fill();
+	bool Fill(Mutex &mutex);
 
 	/**
 	 * Reads the #Tag to be processed.  Be sure to call Fill()

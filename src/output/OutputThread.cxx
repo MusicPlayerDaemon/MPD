@@ -264,7 +264,7 @@ AudioOutput::WaitForDelay()
 bool
 AudioOutput::FillSourceOrClose()
 try {
-	return source.Fill();
+	return source.Fill(mutex);
 } catch (const std::runtime_error &e) {
 	FormatError(e, "Failed to filter for output \"%s\" [%s]",
 		    name, plugin.name);

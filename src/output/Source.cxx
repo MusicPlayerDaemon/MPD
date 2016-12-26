@@ -23,6 +23,7 @@
 #include "filter/FilterInternal.hxx"
 #include "filter/plugins/ReplayGainFilterPlugin.hxx"
 #include "pcm/PcmMix.hxx"
+#include "thread/Mutex.hxx"
 #include "util/ConstBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -187,7 +188,7 @@ AudioOutputSource::FilterChunk(const MusicChunk &chunk)
 }
 
 bool
-AudioOutputSource::Fill()
+AudioOutputSource::Fill(Mutex &mutex)
 {
 	if (current_chunk != nullptr && pending_tag == nullptr &&
 	    pending_data.IsEmpty())
@@ -203,6 +204,10 @@ AudioOutputSource::Fill()
 	pending_tag = current_chunk->tag;
 
 	try {
+		/* release the mutex while the filter runs, because
+		   that may take a while */
+		const ScopeUnlock unlock(mutex);
+
 		pending_data = pending_data.FromVoid(FilterChunk(*current_chunk));
 	} catch (...) {
 		current_chunk = nullptr;
