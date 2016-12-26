@@ -89,6 +89,19 @@ AC_DEFUN([MPD_AUTO_LIB], [
 			[$5])])
 ])
 
+dnl Wrapper for AC_CHECK_HEADER.
+dnl
+dnl Parameters: varname1, varname2, header, libs, cflags, description, errmsg
+AC_DEFUN([MPD_AUTO_HEADER], [
+	AC_SUBST([$2_LIBS], [])
+	AC_SUBST([$2_CFLAGS], [])
+
+	MPD_AUTO([$1], [$6], [$7],
+		[AC_CHECK_HEADER([$3],
+			[found_$1=yes $2_LIBS='$4' $2_CFLAGS='$5'],
+			[found_$1=no])])
+])
+
 dnl Convert the given string into a string for the "default value" in
 dnl the help text.  If the string is a literal, then it is returned
 dnl as-is; if it contains a variable reference, just "auto" is
@@ -150,6 +163,16 @@ AC_DEFUN([MPD_ENABLE_AUTO_LIB], [
 	MPD_ARG_ENABLE([$1], [$2], [$7], [$9], [
 		$10
 		MPD_AUTO_LIB($1, $2, $3, $4, $5, $6, $7, $8)
+	])
+])
+
+dnl Wrapper for AC_ARG_ENABLE and MPD_AUTO_HEADER
+dnl
+dnl Parameters: varname1, varname2, header, libs, cflags, description, errmsg, default, pre
+AC_DEFUN([MPD_ENABLE_AUTO_HEADER], [
+	MPD_ARG_ENABLE([$1], [$2], [$6], [$8], [
+		$9
+		MPD_AUTO_HEADER($1, $2, $3, $4, $5, $6, $7)
 	])
 ])
 

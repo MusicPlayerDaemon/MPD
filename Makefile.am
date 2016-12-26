@@ -349,7 +349,7 @@ endif
 src/haiku/mpd.rsrc: src/haiku/mpd.rdef
 	$(RC) -o $@ $<
 
-if HAVE_HAIKU
+if ENABLE_HAIKU
 noinst_DATA = src/haiku/mpd.rdef
 
 EXTRA_src_mpd_DEPENDENCIES = src/haiku/mpd.rsrc
@@ -1313,9 +1313,11 @@ liboutput_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(AO_CFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(JACK_CFLAGS) \
+	$(HAIKU_CFLAGS) \
 	$(OPENAL_CFLAGS) \
 	$(OPENSSL_CFLAGS) \
 	$(PULSE_CFLAGS) \
+	$(SNDIO_CFLAGS) \
 	$(SHOUT_CFLAGS)
 
 OUTPUT_LIBS = \
@@ -1325,7 +1327,9 @@ OUTPUT_LIBS = \
 	$(ALSA_LIBS) \
 	$(ROAR_LIBS) \
 	$(JACK_LIBS) \
+	$(HAIKU_LIBS) \
 	$(OPENAL_LIBS) \
+	$(SNDIO_LIBS) \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
@@ -1410,13 +1414,13 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/FifoOutputPlugin.hxx
 endif
 
-if HAVE_SNDIO
+if ENABLE_SNDIO
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/SndioOutputPlugin.cxx \
 	src/output/plugins/SndioOutputPlugin.hxx
 endif
 
-if HAVE_HAIKU
+if ENABLE_HAIKU
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/HaikuOutputPlugin.cxx \
 	src/output/plugins/HaikuOutputPlugin.hxx

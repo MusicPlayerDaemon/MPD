@@ -343,16 +343,6 @@ AC_ARG_ENABLE(fifo,
 		[disable support for writing audio to a FIFO (default: enable)]),,
 	enable_fifo=yes)
 
-AC_ARG_ENABLE(sndio,
-	AS_HELP_STRING([--enable-sndio],
-		[enable support for sndio output plugin (default: auto)]),,
-	enable_sndio=auto)
-
-AC_ARG_ENABLE(haiku,
-	AS_HELP_STRING([--enable-haiku],
-		[enable the Haiku output plugin (default: auto)]),,
-	enable_haiku=auto)
-
 AC_ARG_ENABLE(httpd-output,
 	AS_HELP_STRING([--enable-httpd-output],
 		[enables the HTTP server output]),,
@@ -1129,31 +1119,16 @@ MPD_DEFINE_CONDITIONAL(enable_fifo, HAVE_FIFO,
 	[support for writing audio to a FIFO])
 
 dnl ----------------------------------- SNDIO ----------------------------------
-if test x$enable_sndio = xauto; then
-	AC_CHECK_HEADER(sndio.h,
-		[enable_sndio=yes],
-		[enable_sndio=no;AC_MSG_WARN([sndio.h not found -- disabling support for sndio output])])
-fi
-
-if test x$enable_sndio = xyes; then
-	AC_DEFINE(HAVE_SNDIO,1,[Define for compiling sndio support])
-	LIBS="$LIBS -lsndio"
-fi
-
-AM_CONDITIONAL(HAVE_SNDIO, test x$enable_sndio = xyes)
+MPD_ENABLE_AUTO_HEADER([sndio], [SNDIO], [sndio.h],
+	[-lsndio], [],
+	[sndio output plugin],
+	[libsndio not found])
 
 dnl ----------------------------------- Haiku ---------------------------------
-if test x$enable_haiku = xauto; then
-	AC_CHECK_HEADER(media/MediaDefs.h,
-		[enable_haiku=yes],
-		[enable_haiku=no])
-fi
-if test x$enable_haiku = xyes; then
-	AC_DEFINE(HAVE_HAIKU,1,[Define for compiling Haiku support])
-	LIBS="$LIBS -lbe -lmedia"
-fi
-
-AM_CONDITIONAL(HAVE_HAIKU, test x$enable_haiku = xyes)
+MPD_ENABLE_AUTO_HEADER([haiku], [HAIKU], [media/MediaDefs.h],
+	[-lbe -lmedia], [],
+	[Haiku output plugin],
+	[Haiku headers not found])
 
 dnl ------------------------------- HTTPD Output ------------------------------
 if test x$enable_httpd_output = xauto; then

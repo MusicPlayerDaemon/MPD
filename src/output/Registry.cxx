@@ -53,10 +53,10 @@ const AudioOutputPlugin *const audio_output_plugins[] = {
 #ifdef HAVE_FIFO
 	&fifo_output_plugin,
 #endif
-#ifdef HAVE_SNDIO
+#ifdef ENABLE_SNDIO
 	&sndio_output_plugin,
 #endif
-#ifdef HAVE_HAIKU
+#ifdef ENABLE_HAIKU
 	&haiku_output_plugin,
 #endif
 #ifdef ENABLE_PIPE_OUTPUT
