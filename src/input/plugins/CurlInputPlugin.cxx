@@ -511,7 +511,7 @@ CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *user
 		   of 10ms. */
 		timeout_ms = 10;
 
-	global.Schedule(timeout_ms);
+	global.Schedule(std::chrono::milliseconds(timeout_ms));
 	return 0;
 }
 

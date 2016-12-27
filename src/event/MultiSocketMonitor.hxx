@@ -163,9 +163,9 @@ public:
 
 protected:
 	/**
-	 * @return timeout [ms] or -1 for no timeout
+	 * @return timeout or a negative value for no timeout
 	 */
-	virtual int PrepareSockets() = 0;
+	virtual std::chrono::steady_clock::duration PrepareSockets() = 0;
 	virtual void DispatchSockets() = 0;
 
 private:

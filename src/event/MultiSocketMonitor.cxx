@@ -73,9 +73,9 @@ MultiSocketMonitor::ReplaceSocketList(pollfd *pfds, unsigned n)
 void
 MultiSocketMonitor::Prepare()
 {
-	int timeout_ms = PrepareSockets();
-	if (timeout_ms >= 0)
-		TimeoutMonitor::Schedule(timeout_ms);
+	const auto timeout = PrepareSockets();
+	if (timeout >= timeout.zero())
+		TimeoutMonitor::Schedule(timeout);
 	else
 		TimeoutMonitor::Cancel();
 

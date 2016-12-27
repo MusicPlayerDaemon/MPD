@@ -258,7 +258,7 @@ glue_state_file_init()
 #endif
 	}
 
-	const unsigned interval =
+	const auto interval =
 		config_get_unsigned(ConfigOption::STATE_FILE_INTERVAL,
 				    StateFile::DEFAULT_INTERVAL);
 

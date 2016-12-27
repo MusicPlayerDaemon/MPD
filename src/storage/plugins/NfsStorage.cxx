@@ -102,14 +102,14 @@ public:
 		assert(state == State::CONNECTING);
 
 		SetState(State::DELAY, std::move(e));
-		TimeoutMonitor::ScheduleSeconds(60);
+		TimeoutMonitor::Schedule(std::chrono::minutes(1));
 	}
 
 	void OnNfsConnectionDisconnected(std::exception_ptr e) final {
 		assert(state == State::READY);
 
 		SetState(State::DELAY, std::move(e));
-		TimeoutMonitor::ScheduleSeconds(5);
+		TimeoutMonitor::Schedule(std::chrono::seconds(5));
 	}
 
 	/* virtual methods from DeferredMonitor */

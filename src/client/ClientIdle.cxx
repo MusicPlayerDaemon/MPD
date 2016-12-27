@@ -42,7 +42,7 @@ Client::IdleNotify()
 
 	client_puts(*this, "OK\n");
 
-	TimeoutMonitor::ScheduleSeconds(client_timeout);
+	TimeoutMonitor::Schedule(client_timeout);
 }
 
 void

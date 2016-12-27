@@ -78,10 +78,10 @@ protected:
 	}
 };
 
-static constexpr unsigned
-TimevalToMS(const timeval &tv)
+static constexpr std::chrono::steady_clock::duration
+TimevalToChrono(const timeval &tv)
 {
-	return tv.tv_sec * 1000 + (tv.tv_usec + 500) / 1000;
+	return std::chrono::seconds(tv.tv_sec) + std::chrono::microseconds(tv.tv_usec);
 }
 
 struct AvahiTimeout final : private TimeoutMonitor {
@@ -96,12 +96,12 @@ public:
 		:TimeoutMonitor(_loop),
 		 callback(_callback), userdata(_userdata) {
 		if (tv != nullptr)
-			Schedule(TimevalToMS(*tv));
+			Schedule(TimevalToChrono(*tv));
 	}
 
 	static void TimeoutUpdate(AvahiTimeout *t, const struct timeval *tv) {
 		if (tv != nullptr)
-			t->Schedule(TimevalToMS(*tv));
+			t->Schedule(TimevalToChrono(*tv));
 		else
 			t->Cancel();
 	}

@@ -37,7 +37,10 @@
 
 static constexpr Domain state_file_domain("state_file");
 
-StateFile::StateFile(AllocatedPath &&_path, unsigned _interval,
+constexpr std::chrono::steady_clock::duration StateFile::DEFAULT_INTERVAL;
+
+StateFile::StateFile(AllocatedPath &&_path,
+		     std::chrono::steady_clock::duration _interval,
 		     Partition &_partition, EventLoop &_loop)
 	:TimeoutMonitor(_loop),
 	 path(std::move(_path)), path_utf8(path.ToUTF8()),
@@ -135,7 +138,7 @@ void
 StateFile::CheckModified()
 {
 	if (!IsActive() && IsModified())
-		ScheduleSeconds(interval);
+		Schedule(interval);
 }
 
 void

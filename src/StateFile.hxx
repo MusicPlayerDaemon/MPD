@@ -25,6 +25,7 @@
 #include "Compiler.h"
 
 #include <string>
+#include <chrono>
 
 struct Partition;
 class OutputStream;
@@ -34,7 +35,7 @@ class StateFile final : private TimeoutMonitor {
 	const AllocatedPath path;
 	const std::string path_utf8;
 
-	const unsigned interval;
+	const std::chrono::steady_clock::duration interval;
 
 	Partition &partition;
 
@@ -46,9 +47,9 @@ class StateFile final : private TimeoutMonitor {
 		prev_playlist_version = 0;
 
 public:
-	static constexpr unsigned DEFAULT_INTERVAL = 2 * 60;
+	static constexpr std::chrono::steady_clock::duration DEFAULT_INTERVAL = std::chrono::minutes(2);
 
-	StateFile(AllocatedPath &&path, unsigned interval,
+	StateFile(AllocatedPath &&path, std::chrono::steady_clock::duration interval,
 		  Partition &partition, EventLoop &loop);
 
 	void Read();

@@ -136,7 +136,7 @@ private:
 		InvalidateSockets();
 	}
 
-	virtual int PrepareSockets() override;
+	virtual std::chrono::steady_clock::duration PrepareSockets() override;
 	virtual void DispatchSockets() override;
 };
 
@@ -165,18 +165,18 @@ AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond)
 				   handle, frame_size);
 }
 
-int
+std::chrono::steady_clock::duration
 AlsaInputStream::PrepareSockets()
 {
 	if (IsPaused()) {
 		ClearSocketList();
-		return -1;
+		return std::chrono::steady_clock::duration(-1);
 	}
 
 	int count = snd_pcm_poll_descriptors_count(capture_handle);
 	if (count < 0) {
 		ClearSocketList();
-		return -1;
+		return std::chrono::steady_clock::duration(-1);
 	}
 
 	struct pollfd *pfds = pfd_buffer.Get(count);
@@ -186,7 +186,7 @@ AlsaInputStream::PrepareSockets()
 		count = 0;
 
 	ReplaceSocketList(pfds, count);
-	return -1;
+	return std::chrono::steady_clock::duration(-1);
 }
 
 void

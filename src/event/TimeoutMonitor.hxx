@@ -22,6 +22,8 @@
 
 #include "check.h"
 
+#include <chrono>
+
 class EventLoop;
 
 /**
@@ -56,8 +58,7 @@ public:
 		return active;
 	}
 
-	void Schedule(unsigned ms);
-	void ScheduleSeconds(unsigned s);
+	void Schedule(std::chrono::steady_clock::duration d);
 	void Cancel();
 
 protected:

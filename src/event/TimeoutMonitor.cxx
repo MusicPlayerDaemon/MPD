@@ -31,21 +31,12 @@ TimeoutMonitor::Cancel()
 }
 
 void
-
-TimeoutMonitor::Schedule(unsigned ms)
+TimeoutMonitor::Schedule(std::chrono::steady_clock::duration d)
 {
 	Cancel();
 
 	active = true;
-	loop.AddTimer(*this, ms);
-}
-
-void
-TimeoutMonitor::ScheduleSeconds(unsigned s)
-{
-	Cancel();
-
-	Schedule(s * 1000u);
+	loop.AddTimer(*this, d);
 }
 
 void

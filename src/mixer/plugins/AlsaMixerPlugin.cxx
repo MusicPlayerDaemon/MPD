@@ -55,7 +55,7 @@ private:
 		InvalidateSockets();
 	}
 
-	virtual int PrepareSockets() override;
+	virtual std::chrono::steady_clock::duration PrepareSockets() override;
 	virtual void DispatchSockets() override;
 };
 
@@ -93,12 +93,12 @@ public:
 
 static constexpr Domain alsa_mixer_domain("alsa_mixer");
 
-int
+std::chrono::steady_clock::duration
 AlsaMixerMonitor::PrepareSockets()
 {
 	if (mixer == nullptr) {
 		ClearSocketList();
-		return -1;
+		return std::chrono::steady_clock::duration(-1);
 	}
 
 	int count = snd_mixer_poll_descriptors_count(mixer);
@@ -112,7 +112,7 @@ AlsaMixerMonitor::PrepareSockets()
 		count = 0;
 
 	ReplaceSocketList(pfds, count);
-	return -1;
+	return std::chrono::steady_clock::duration(-1);
 }
 
 void

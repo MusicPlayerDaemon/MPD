@@ -34,7 +34,7 @@ Client::OnSocketInput(void *data, size_t length)
 	if (newline == nullptr)
 		return InputResult::MORE;
 
-	TimeoutMonitor::ScheduleSeconds(client_timeout);
+	TimeoutMonitor::Schedule(client_timeout);
 
 	BufferedSocket::ConsumeInput(newline + 1 - p);
 

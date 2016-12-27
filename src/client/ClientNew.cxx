@@ -53,7 +53,7 @@ Client::Client(EventLoop &_loop, Partition &_partition,
 	 idle_waiting(false), idle_flags(0),
 	 num_subscriptions(0)
 {
-	TimeoutMonitor::ScheduleSeconds(client_timeout);
+	TimeoutMonitor::Schedule(client_timeout);
 }
 
 void

@@ -24,12 +24,14 @@
 #include "Client.hxx"
 #include "command/CommandResult.hxx"
 
+#include <chrono>
+
 static constexpr unsigned CLIENT_MAX_SUBSCRIPTIONS = 16;
 static constexpr unsigned CLIENT_MAX_MESSAGES = 64;
 
 extern const class Domain client_domain;
 
-extern int client_timeout;
+extern std::chrono::steady_clock::duration client_timeout;
 extern size_t client_max_command_list_size;
 extern size_t client_max_output_buffer_size;
 

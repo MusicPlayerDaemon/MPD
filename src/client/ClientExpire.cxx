@@ -28,7 +28,7 @@ Client::SetExpired()
 		return;
 
 	FullyBufferedSocket::Close();
-	TimeoutMonitor::Schedule(0);
+	TimeoutMonitor::Schedule(std::chrono::steady_clock::duration::zero());
 }
 
 void

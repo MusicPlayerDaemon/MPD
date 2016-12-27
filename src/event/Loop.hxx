@@ -29,6 +29,7 @@
 #include "WakeFD.hxx"
 #include "SocketMonitor.hxx"
 
+#include <chrono>
 #include <list>
 #include <set>
 
@@ -54,20 +55,20 @@ class EventLoop final : SocketMonitor
 		 * Projected monotonic_clock_ms() value when this
 		 * timer is due.
 		 */
-		const unsigned due_ms;
+		const std::chrono::steady_clock::time_point due;
 
 		TimeoutMonitor &timer;
 
 		constexpr TimerRecord(TimeoutMonitor &_timer,
-				      unsigned _due_ms)
-			:due_ms(_due_ms), timer(_timer) {}
+				      std::chrono::steady_clock::time_point _due)
+			:due(_due), timer(_timer) {}
 
 		bool operator<(const TimerRecord &other) const {
-			return due_ms < other.due_ms;
+			return due < other.due;
 		}
 
-		bool IsDue(unsigned _now_ms) const {
-			return _now_ms >= due_ms;
+		bool IsDue(std::chrono::steady_clock::time_point _now) const {
+			return _now >= due;
 		}
 	};
 
@@ -79,7 +80,7 @@ class EventLoop final : SocketMonitor
 	Mutex mutex;
 	std::list<DeferredMonitor *> deferred;
 
-	unsigned now_ms;
+	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
 
 	bool quit = false;
 
@@ -118,12 +119,12 @@ public:
 	~EventLoop();
 
 	/**
-	 * A caching wrapper for MonotonicClockMS().
+	 * A caching wrapper for std::chrono::steady_clock::now().
 	 */
-	unsigned GetTimeMS() const {
+	std::chrono::steady_clock::time_point GetTime() const {
 		assert(IsInside());
 
-		return now_ms;
+		return now;
 	}
 
 	/**
@@ -157,7 +158,8 @@ public:
 	void AddIdle(IdleMonitor &i);
 	void RemoveIdle(IdleMonitor &i);
 
-	void AddTimer(TimeoutMonitor &t, unsigned ms);
+	void AddTimer(TimeoutMonitor &t,
+		      std::chrono::steady_clock::duration d);
 	void CancelTimer(TimeoutMonitor &t);
 
 	/**
