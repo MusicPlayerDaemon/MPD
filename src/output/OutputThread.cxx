@@ -55,24 +55,21 @@ AudioOutput::CommandFinished()
 	audio_output_client_notify.Signal();
 }
 
-inline bool
+inline void
 AudioOutput::Enable()
 {
 	if (really_enabled)
-		return true;
+		return;
 
 	try {
 		const ScopeUnlock unlock(mutex);
 		ao_plugin_enable(this);
 	} catch (const std::runtime_error &e) {
-		FormatError(e,
-			    "Failed to enable \"%s\" [%s]",
-			    name, plugin.name);
-		return false;
+		std::throw_with_nested(FormatRuntimeError("Failed to enable output \"%s\" [%s]",
+							  name, plugin.name));
 	}
 
 	really_enabled = true;
-	return true;
 }
 
 inline void
@@ -106,11 +103,7 @@ AudioOutput::Open()
 	fail_timer.Reset();
 
 	/* enable the device (just in case the last enable has failed) */
-	if (!Enable()) {
-		/* still no luck */
-		fail_timer.Update();
-		return;
-	}
+	Enable();
 
 	AudioFormat f;
 
@@ -124,10 +117,8 @@ AudioOutput::Open()
 		if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 			software_mixer_set_filter(*mixer, volume_filter.Get());
 	} catch (const std::runtime_error &e) {
-		FormatError(e, "Failed to open filter for \"%s\" [%s]",
-			    name, plugin.name);
-		fail_timer.Update();
-		return;
+		std::throw_with_nested(FormatRuntimeError("Failed to open filter for \"%s\" [%s]",
+							  name, plugin.name));
 	}
 
 	if (open && f != filter_audio_format) {
@@ -140,16 +131,18 @@ AudioOutput::Open()
 	filter_audio_format = f;
 
 	if (!open) {
-		if (OpenOutputAndConvert(filter_audio_format)) {
-			open = true;
-		} else {
+		try {
+			OpenOutputAndConvert(filter_audio_format);
+		} catch (...) {
 			CloseFilter();
-			fail_timer.Update();
+			throw;
 		}
+
+		open = true;
 	}
 }
 
-bool
+void
 AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 {
 	out_audio_format = desired_audio_format;
@@ -157,17 +150,13 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	try {
 		ao_plugin_open(this, out_audio_format);
 	} catch (const std::runtime_error &e) {
-		FormatError(e, "Failed to open \"%s\" [%s]",
-			    name, plugin.name);
-		return false;
+		std::throw_with_nested(FormatRuntimeError("Failed to open \"%s\" [%s]",
+							  name, plugin.name));
 	}
 
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
 	} catch (const std::runtime_error &e) {
-		FormatError(e, "Failed to convert for \"%s\" [%s]",
-			    name, plugin.name);
-
 		ao_plugin_close(this);
 
 		if (out_audio_format.format == SampleFormat::DSD) {
@@ -177,13 +166,16 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 			   implemented; our last resort is to give up
 			   DSD and fall back to PCM */
 
+			LogError(e);
 			FormatError(output_domain, "Retrying without DSD");
 
 			desired_audio_format.format = SampleFormat::FLOAT;
-			return OpenOutputAndConvert(desired_audio_format);
+			OpenOutputAndConvert(desired_audio_format);
+			return;
 		}
 
-		return false;
+		std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
+							  name, plugin.name));
 	}
 
 	struct audio_format_string af_string;
@@ -196,8 +188,6 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 		FormatDebug(output_domain, "converting from %s",
 			    audio_format_to_string(source.GetInputAudioFormat(),
 						   &af_string));
-
-	return true;
 }
 
 void
@@ -415,7 +405,13 @@ AudioOutput::Task()
 			break;
 
 		case Command::ENABLE:
-			Enable();
+			try {
+				Enable();
+			} catch (const std::runtime_error &e) {
+				LogError(e);
+				fail_timer.Update();
+			}
+
 			CommandFinished();
 			break;
 
@@ -425,7 +421,13 @@ AudioOutput::Task()
 			break;
 
 		case Command::OPEN:
-			Open();
+			try {
+				Open();
+			} catch (const std::runtime_error &e) {
+				LogError(e);
+				fail_timer.Update();
+			}
+
 			CommandFinished();
 			break;
 

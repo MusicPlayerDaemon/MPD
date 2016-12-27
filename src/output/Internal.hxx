@@ -410,20 +410,27 @@ public:
 private:
 	void CommandFinished();
 
-	bool Enable();
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
+	void Enable();
+
 	void Disable();
 
+	/**
+	 * Throws #std::runtime_error on error.
+	 */
 	void Open();
 
 	/**
 	 * Invoke OutputPlugin::open() and configure the
 	 * #ConvertFilter.
 	 *
-	 * Caller must not lock the mutex.
+	 * Throws #std::runtime_error on error.
 	 *
-	 * @return true on success
+	 * Caller must not lock the mutex.
 	 */
-	bool OpenOutputAndConvert(AudioFormat audio_format);
+	void OpenOutputAndConvert(AudioFormat audio_format);
 
 	void Close(bool drain);
 
