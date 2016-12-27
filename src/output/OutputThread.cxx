@@ -443,9 +443,8 @@ AudioOutput::Task()
 			break;
 
 		case Command::CLOSE:
-			assert(open);
-
-			Close(false);
+			if (open)
+				Close(false);
 			CommandFinished();
 			break;
 
