@@ -42,8 +42,8 @@ class StateFile final : private TimeoutMonitor {
 	 * These version numbers determine whether we need to save the state
 	 * file.  If nothing has changed, we won't let the hard drive spin up.
 	 */
-	unsigned prev_volume_version, prev_output_version,
-		prev_playlist_version;
+	unsigned prev_volume_version = 0, prev_output_version = 0,
+		prev_playlist_version = 0;
 
 public:
 	static constexpr unsigned DEFAULT_INTERVAL = 2 * 60;

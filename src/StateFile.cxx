@@ -42,9 +42,7 @@ StateFile::StateFile(AllocatedPath &&_path, unsigned _interval,
 	:TimeoutMonitor(_loop),
 	 path(std::move(_path)), path_utf8(path.ToUTF8()),
 	 interval(_interval),
-	 partition(_partition),
-	 prev_volume_version(0), prev_output_version(0),
-	 prev_playlist_version(0)
+	 partition(_partition)
 {
 }
 
