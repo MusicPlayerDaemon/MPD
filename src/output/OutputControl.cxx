@@ -30,9 +30,9 @@
 
 #include <assert.h>
 
-/** after a failure, wait this number of seconds before
+/** after a failure, wait this duration before
     automatically reopening the device */
-static constexpr unsigned REOPEN_AFTER = 10;
+static constexpr PeriodClock::Duration REOPEN_AFTER = std::chrono::seconds(10);
 
 struct notify audio_output_client_notify;
 

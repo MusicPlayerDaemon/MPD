@@ -20,15 +20,17 @@
 #ifndef MPD_PERIOD_CLOCK_HXX
 #define MPD_PERIOD_CLOCK_HXX
 
-#include "Clock.hxx"
+#include <chrono>
 
 /**
  * This is a stopwatch which saves the timestamp of an event, and can
  * check whether a specified time span has passed since then.
  */
 class PeriodClock {
-protected:
-	typedef unsigned Stamp;
+public:
+	typedef std::chrono::steady_clock::duration Duration;
+	typedef Duration Delta;
+	typedef std::chrono::steady_clock::time_point Stamp;
 
 private:
 	Stamp last;
@@ -41,20 +43,20 @@ public:
 	 * object.
 	 */
 	constexpr
-	PeriodClock():last(0) {}
+	PeriodClock():last() {}
 
 protected:
 	static Stamp GetNow() {
-		return MonotonicClockMS();
+		return std::chrono::steady_clock::now();
 	}
 
-	constexpr int Elapsed(Stamp now) const {
-		return last == 0
-			? -1
-			: now - last;
+	constexpr Delta Elapsed(Stamp now) const {
+		return last == Stamp()
+			? Delta(-1)
+			: Delta(now - last);
 	}
 
-	constexpr bool Check(Stamp now, unsigned duration) const {
+	constexpr bool Check(Stamp now, Duration duration) const {
 		return now >= last + duration;
 	}
 
@@ -64,30 +66,30 @@ protected:
 
 public:
 	constexpr bool IsDefined() const {
-		return last != 0;
+		return last > Stamp();
 	}
 
 	/**
 	 * Resets the clock.
 	 */
 	void Reset() {
-		last = 0;
+		last = Stamp();
 	}
 
 	/**
-	 * Returns the number of milliseconds elapsed since the last
-	 * update().  Returns -1 if update() was never called.
+	 * Returns the time elapsed since the last update().  Returns
+	 * a negative value if update() was never called.
 	 */
-	int Elapsed() const {
+	Delta Elapsed() const {
 		return Elapsed(GetNow());
 	}
 
 	/**
 	 * Combines a call to Elapsed() and Update().
 	 */
-	int ElapsedUpdate() {
+	Delta ElapsedUpdate() {
 		const auto now = GetNow();
-		int result = Elapsed(now);
+		const auto result = Elapsed(now);
 		Update(now);
 		return result;
 	}
@@ -96,9 +98,9 @@ public:
 	 * Checks whether the specified duration has passed since the last
 	 * update.
 	 *
-	 * @param duration the duration in milliseconds
+	 * @param duration the duration
 	 */
-	bool Check(unsigned duration) const {
+	bool Check(Duration duration) const {
 		return Check(GetNow(), duration);
 	}
 
@@ -113,7 +115,7 @@ public:
 	 * Updates the time stamp, setting it to the current clock plus the
 	 * specified offset.
 	 */
-	void UpdateWithOffset(int offset) {
+	void UpdateWithOffset(Delta offset) {
 		Update(GetNow() + offset);
 	}
 
@@ -123,7 +125,7 @@ public:
 	 *
 	 * @param duration the duration in milliseconds
 	 */
-	bool CheckUpdate(unsigned duration) {
+	bool CheckUpdate(Duration duration) {
 		Stamp now = GetNow();
 		if (Check(now, duration)) {
 			Update(now);
@@ -138,7 +140,7 @@ public:
 	 *
 	 * @param duration the duration in milliseconds
 	 */
-	bool CheckAlwaysUpdate(unsigned duration) {
+	bool CheckAlwaysUpdate(Duration duration) {
 		Stamp now = GetNow();
 		bool ret = Check(now, duration);
 		Update(now);

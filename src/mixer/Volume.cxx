@@ -52,7 +52,7 @@ int
 volume_level_get(const MultipleOutputs &outputs)
 {
 	if (last_hardware_volume >= 0 &&
-	    !hardware_volume_clock.CheckUpdate(1000))
+	    !hardware_volume_clock.CheckUpdate(std::chrono::seconds(1)))
 		/* throttle access to hardware mixers */
 		return last_hardware_volume;
 
