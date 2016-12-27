@@ -29,6 +29,8 @@
 #include "thread/Thread.hxx"
 #include "system/PeriodClock.hxx"
 
+#include <exception>
+
 class PreparedFilter;
 class MusicPipe;
 class EventLoop;
@@ -254,6 +256,14 @@ struct AudioOutput {
 	 * Source of audio data.
 	 */
 	AudioOutputSource source;
+
+	/**
+	 * The error that occurred in the output thread.  It is
+	 * cleared whenever the output is opened successfully.
+	 *
+	 * Protected by #mutex.
+	 */
+	std::exception_ptr last_error;
 
 	/**
 	 * Throws #std::runtime_error on error.

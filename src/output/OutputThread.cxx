@@ -405,11 +405,14 @@ AudioOutput::Task()
 			break;
 
 		case Command::ENABLE:
+			last_error = nullptr;
+
 			try {
 				Enable();
 			} catch (const std::runtime_error &e) {
 				LogError(e);
 				fail_timer.Update();
+				last_error = std::current_exception();
 			}
 
 			CommandFinished();
@@ -421,11 +424,14 @@ AudioOutput::Task()
 			break;
 
 		case Command::OPEN:
+			last_error = nullptr;
+
 			try {
 				Open();
 			} catch (const std::runtime_error &e) {
 				LogError(e);
 				fail_timer.Update();
+				last_error = std::current_exception();
 			}
 
 			CommandFinished();
