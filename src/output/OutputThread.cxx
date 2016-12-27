@@ -422,7 +422,7 @@ AudioOutput::Task()
 
 	const ScopeLock lock(mutex);
 
-	while (1) {
+	while (true) {
 		switch (command) {
 		case Command::NONE:
 			break;
