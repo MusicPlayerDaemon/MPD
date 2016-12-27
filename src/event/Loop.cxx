@@ -30,12 +30,7 @@
 
 EventLoop::EventLoop()
 	:SocketMonitor(*this),
-	 now_ms(::MonotonicClockMS()),
-	 quit(false), busy(true),
-#ifndef NDEBUG
-	 virgin(true),
-#endif
-	 thread(ThreadId::Null())
+	 now_ms(::MonotonicClockMS())
 {
 	SocketMonitor::Open(wake_fd.Get());
 	SocketMonitor::Schedule(SocketMonitor::READ);

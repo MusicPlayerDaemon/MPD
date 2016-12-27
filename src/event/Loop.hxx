@@ -81,7 +81,7 @@ class EventLoop final : SocketMonitor
 
 	unsigned now_ms;
 
-	bool quit;
+	bool quit = false;
 
 	/**
 	 * True when the object has been modified and another check is
@@ -95,14 +95,14 @@ class EventLoop final : SocketMonitor
 	 *
 	 * Protected with #mutex.
 	 */
-	bool busy;
+	bool busy = true;
 
 #ifndef NDEBUG
 	/**
 	 * True if Run() was never called.  This is used for assert()
 	 * calls.
 	 */
-	bool virgin;
+	bool virgin = true;
 #endif
 
 	PollGroup poll_group;
@@ -111,7 +111,7 @@ class EventLoop final : SocketMonitor
 	/**
 	 * A reference to the thread that is currently inside Run().
 	 */
-	ThreadId thread;
+	ThreadId thread = ThreadId::Null();
 
 public:
 	EventLoop();
