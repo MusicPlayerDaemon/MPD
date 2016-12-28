@@ -29,12 +29,15 @@
 #include "system/Clock.hxx"
 #include "Log.hxx"
 
+#include <chrono>
+
 #ifndef WIN32
 /**
  * The monotonic time stamp when MPD was started.  It is used to
  * calculate the uptime.
  */
-static const unsigned start_time = MonotonicClockS();
+static const std::chrono::steady_clock::time_point start_time =
+	std::chrono::steady_clock::now();
 #endif
 
 #ifdef ENABLE_DATABASE
@@ -114,7 +117,7 @@ stats_print(Response &r, const Partition &partition)
 #ifdef WIN32
 		 GetProcessUptimeS(),
 #else
-		 MonotonicClockS() - start_time,
+		 (unsigned)std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time).count(),
 #endif
 		 (unsigned long)(partition.pc.GetTotalPlayTime() + 0.5));
 
