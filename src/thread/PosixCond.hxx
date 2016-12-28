@@ -32,6 +32,8 @@
 
 #include "PosixMutex.hxx"
 
+#include <chrono>
+
 #include <sys/time.h>
 
 /**
@@ -86,6 +88,17 @@ public:
 		}
 
 		return pthread_cond_timedwait(&cond, &mutex.mutex, &ts) == 0;
+	}
+
+	bool timed_wait(PosixMutex &mutex,
+			std::chrono::steady_clock::duration timeout) {
+		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
+		if (timeout_ms < 0)
+			timeout_ms = 0;
+		else if (timeout_ms > std::numeric_limits<unsigned>::max())
+			timeout_ms = std::numeric_limits<unsigned>::max();
+
+		return timed_wait(mutex, timeout_ms);
 	}
 };
 
