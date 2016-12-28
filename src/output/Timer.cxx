@@ -27,8 +27,7 @@
 #include <assert.h>
 
 Timer::Timer(const AudioFormat af)
-	: time(0),
-	  started(false),
+	:started(false),
 	 rate(af.sample_rate * af.GetFrameSize())
 {
 }
@@ -41,7 +40,6 @@ void Timer::Start()
 
 void Timer::Reset()
 {
-	time = 0;
 	started = false;
 }
 
@@ -56,6 +54,8 @@ void Timer::Add(int size)
 
 unsigned Timer::GetDelay() const
 {
+	assert(started);
+
 	int64_t delay = (int64_t)(time - MonotonicClockUS()) / 1000;
 	if (delay < 0)
 		return 0;
