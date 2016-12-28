@@ -42,7 +42,8 @@ void Timer::Reset()
 	started = false;
 }
 
-void Timer::Add(int size)
+void
+Timer::Add(size_t size)
 {
 	assert(started);
 

@@ -21,6 +21,7 @@
 #define MPD_TIMER_HXX
 
 #include <stdint.h>
+#include <stddef.h>
 
 struct AudioFormat;
 
@@ -36,7 +37,7 @@ public:
 	void Start();
 	void Reset();
 
-	void Add(int size);
+	void Add(size_t size);
 
 	/**
 	 * Returns the number of milliseconds to sleep to get back to sync.
