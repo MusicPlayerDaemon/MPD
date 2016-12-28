@@ -24,9 +24,6 @@ class Response;
 struct Partition;
 
 void
-stats_global_init();
-
-void
 stats_invalidate();
 
 void

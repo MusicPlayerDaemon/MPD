@@ -56,7 +56,6 @@
 #include "config/ConfigDefaults.hxx"
 #include "config/ConfigOption.hxx"
 #include "config/ConfigError.hxx"
-#include "Stats.hxx"
 #include "util/RuntimeError.hxx"
 
 #ifdef ENABLE_DAEMON
@@ -442,7 +441,6 @@ try {
 	glue_daemonize_init(&options);
 #endif
 
-	stats_global_init();
 	TagLoadConfig();
 
 	log_init(options.verbose, options.log_stderr);

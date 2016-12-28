@@ -34,7 +34,7 @@
  * The monotonic time stamp when MPD was started.  It is used to
  * calculate the uptime.
  */
-static unsigned start_time;
+static const unsigned start_time = MonotonicClockS();
 #endif
 
 #ifdef ENABLE_DATABASE
@@ -46,17 +46,6 @@ enum class StatsValidity : uint8_t {
 };
 
 static StatsValidity stats_validity = StatsValidity::INVALID;
-
-#endif
-
-void stats_global_init(void)
-{
-#ifndef WIN32
-	start_time = MonotonicClockS();
-#endif
-}
-
-#ifdef ENABLE_DATABASE
 
 void
 stats_invalidate()
