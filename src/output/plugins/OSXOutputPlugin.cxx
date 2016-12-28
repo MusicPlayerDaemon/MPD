@@ -669,11 +669,13 @@ osx_output_play(AudioOutput *ao, const void *chunk, size_t size)
 	return od->ring_buffer->push((uint8_t *)chunk, size);
 }
 
-static unsigned
+static std::chrono::steady_clock::duration
 osx_output_delay(AudioOutput *ao)
 {
 	OSXOutput *od = (OSXOutput *)ao;
-	return od->ring_buffer->write_available() ? 0 : 25;
+	return od->ring_buffer->write_available()
+		? std::chrono::steady_clock::duration::zero()
+		: std::chrono::milliseconds(25);
 }
 
 const struct AudioOutputPlugin osx_output_plugin = {

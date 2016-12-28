@@ -66,7 +66,7 @@ public:
 	void Open(AudioFormat &audio_format);
 	void Close();
 
-	unsigned Delay() const;
+	std::chrono::steady_clock::duration Delay() const;
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 };
@@ -204,12 +204,12 @@ FifoOutput::Cancel()
 	}
 }
 
-inline unsigned
+inline std::chrono::steady_clock::duration
 FifoOutput::Delay() const
 {
 	return timer->IsStarted()
-		? timer->GetDelay()
-		: 0;
+		? std::chrono::milliseconds(timer->GetDelay())
+		: std::chrono::steady_clock::duration::zero();
 }
 
 inline size_t

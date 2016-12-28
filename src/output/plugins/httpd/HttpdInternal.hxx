@@ -218,7 +218,7 @@ public:
 	void SendHeader(HttpdClient &client) const;
 
 	gcc_pure
-	unsigned Delay() const;
+	std::chrono::steady_clock::duration Delay() const;
 
 	/**
 	 * Reads data from the encoder (as much as available) and

@@ -79,7 +79,7 @@ public:
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 
-	size_t Delay();
+	std::chrono::steady_clock::duration Delay();
 
 	void FillBuffer(void* _buffer, size_t size,
 		gcc_unused const media_raw_audio_format& _format);
@@ -308,7 +308,7 @@ HaikuOutput::Play(const void *chunk, size_t size)
 	return size;
 }
 
-inline size_t
+inline std::chrono::steady_clock::duration
 HaikuOutput::Delay()
 {
 	unsigned delay = buffer_filled ? 0 : buffer_delay;
@@ -319,7 +319,7 @@ HaikuOutput::Delay()
 	//return (delay / 2) ? 1 : 0;
 	(void)delay;
 
-	return 0;
+	return std::chrono::steady_clock::duration::zero();
 }
 
 inline void

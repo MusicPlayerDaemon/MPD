@@ -344,7 +344,7 @@ HttpdOutput::SendHeader(HttpdClient &client) const
 		client.PushPage(header);
 }
 
-inline unsigned
+inline std::chrono::steady_clock::duration
 HttpdOutput::Delay() const
 {
 	if (!LockHasClients() && base.pause) {
@@ -357,15 +357,15 @@ HttpdOutput::Delay() const
 		/* some arbitrary delay that is long enough to avoid
 		   consuming too much CPU, and short enough to notice
 		   new clients quickly enough */
-		return 1000;
+		return std::chrono::seconds(1);
 	}
 
 	return timer->IsStarted()
-		? timer->GetDelay()
-		: 0;
+		? std::chrono::milliseconds(timer->GetDelay())
+		: std::chrono::steady_clock::duration::zero();
 }
 
-static unsigned
+static std::chrono::steady_clock::duration
 httpd_output_delay(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);

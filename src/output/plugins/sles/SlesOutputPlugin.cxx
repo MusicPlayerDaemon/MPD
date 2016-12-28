@@ -96,8 +96,10 @@ public:
 	void Open(AudioFormat &audio_format);
 	void Close();
 
-	unsigned Delay() {
-		return pause && !cancel ? 100 : 0;
+	std::chrono::steady_clock::duration Delay() {
+		return pause && !cancel
+			? std::chrono::milliseconds(100)
+			: std::chrono::steady_clock::duration::zero();
 	}
 
 	size_t Play(const void *chunk, size_t size);

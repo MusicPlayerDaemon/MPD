@@ -22,6 +22,8 @@
 
 #include "util/Cast.hxx"
 
+#include <chrono>
+
 struct ConfigBlock;
 
 template<class T>
@@ -61,7 +63,7 @@ struct AudioOutputWrapper {
 	}
 
 	gcc_pure
-	static unsigned Delay(AudioOutput *ao) {
+	static std::chrono::steady_clock::duration Delay(AudioOutput *ao) {
 		T &t = Cast(*ao);
 		return t.Delay();
 	}

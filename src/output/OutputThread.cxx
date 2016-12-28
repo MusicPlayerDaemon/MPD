@@ -237,8 +237,8 @@ inline bool
 AudioOutput::WaitForDelay()
 {
 	while (true) {
-		unsigned delay = ao_plugin_delay(this);
-		if (delay == 0)
+		const auto delay = ao_plugin_delay(this);
+		if (delay <= std::chrono::steady_clock::duration::zero())
 			return true;
 
 		(void)cond.timed_wait(mutex, delay);

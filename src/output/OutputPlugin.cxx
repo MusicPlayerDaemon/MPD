@@ -63,12 +63,12 @@ ao_plugin_close(AudioOutput *ao)
 	ao->plugin.close(ao);
 }
 
-unsigned
+std::chrono::steady_clock::duration
 ao_plugin_delay(AudioOutput *ao)
 {
 	return ao->plugin.delay != nullptr
 		? ao->plugin.delay(ao)
-		: 0;
+		: std::chrono::steady_clock::duration::zero();
 }
 
 void

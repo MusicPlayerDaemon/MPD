@@ -51,7 +51,6 @@ public:
 
 	void Open(AudioFormat &audio_format);
 	void Close();
-	unsigned Delay() const;
 	size_t Play(const void *chunk, size_t size);
 	void Cancel();
 };

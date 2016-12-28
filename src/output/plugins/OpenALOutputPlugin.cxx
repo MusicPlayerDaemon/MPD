@@ -58,13 +58,13 @@ class OpenALOutput {
 	void Close();
 
 	gcc_pure
-	unsigned Delay() const {
+	std::chrono::steady_clock::duration Delay() const {
 		return filled < NUM_BUFFERS || HasProcessed()
-			? 0
+			? std::chrono::steady_clock::duration::zero()
 			/* we don't know exactly how long we must wait
 			   for the next buffer to finish, so this is a
 			   random guess: */
-			: 50;
+			: std::chrono::milliseconds(50);
 	}
 
 	size_t Play(const void *chunk, size_t size);

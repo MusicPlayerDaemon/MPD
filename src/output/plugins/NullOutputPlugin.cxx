@@ -49,10 +49,10 @@ public:
 			delete timer;
 	}
 
-	unsigned Delay() const {
+	std::chrono::steady_clock::duration Delay() const {
 		return sync && timer->IsStarted()
-			? timer->GetDelay()
-			: 0;
+			? std::chrono::milliseconds(timer->GetDelay())
+			: std::chrono::steady_clock::duration::zero();
 	}
 
 	size_t Play(gcc_unused const void *chunk, size_t size) {

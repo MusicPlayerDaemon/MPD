@@ -22,6 +22,8 @@
 
 #include "Compiler.h"
 
+#include <chrono>
+
 #include <stddef.h>
 
 struct ConfigBlock;
@@ -97,9 +99,9 @@ struct AudioOutputPlugin {
 	 * instead of doing a sleep inside the plugin, because this
 	 * allows MPD to listen to commands meanwhile.
 	 *
-	 * @return the number of milliseconds to wait
+	 * @return the duration to wait
 	 */
-	unsigned (*delay)(AudioOutput *data);
+	std::chrono::steady_clock::duration (*delay)(AudioOutput *data);
 
 	/**
 	 * Display metadata for the next chunk.  Optional method,
@@ -179,7 +181,7 @@ void
 ao_plugin_close(AudioOutput *ao);
 
 gcc_pure
-unsigned
+std::chrono::steady_clock::duration
 ao_plugin_delay(AudioOutput *ao);
 
 void
