@@ -22,29 +22,6 @@
 
 #include "Compiler.h"
 
-#include <stdint.h>
-
-/**
- * Returns the value of a monotonic clock in seconds.
- */
-gcc_pure
-unsigned
-MonotonicClockS();
-
-/**
- * Returns the value of a monotonic clock in milliseconds.
- */
-gcc_pure
-unsigned
-MonotonicClockMS();
-
-/**
- * Returns the value of a monotonic clock in microseconds.
- */
-gcc_pure
-uint64_t
-MonotonicClockUS();
-
 #ifdef WIN32
 
 /**
