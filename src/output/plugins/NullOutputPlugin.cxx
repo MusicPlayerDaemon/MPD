@@ -51,7 +51,7 @@ public:
 
 	std::chrono::steady_clock::duration Delay() const {
 		return sync && timer->IsStarted()
-			? std::chrono::milliseconds(timer->GetDelay())
+			? timer->GetDelay()
 			: std::chrono::steady_clock::duration::zero();
 	}
 

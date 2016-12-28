@@ -33,7 +33,7 @@ Timer::Timer(const AudioFormat af)
 
 void Timer::Start()
 {
-	time = MonotonicClockUS();
+	time = Now();
 	started = true;
 }
 
@@ -49,19 +49,17 @@ Timer::Add(size_t size)
 
 	// (size samples) / (rate samples per second) = duration seconds
 	// duration seconds * 1000000 = duration us
-	time += ((uint64_t)size * 1000000) / rate;
+	time += Time(((uint64_t)size * Time::period::den) / (Time::period::num * rate));
 }
 
-unsigned Timer::GetDelay() const
+std::chrono::steady_clock::duration
+Timer::GetDelay() const
 {
 	assert(started);
 
-	int64_t delay = (int64_t)(time - MonotonicClockUS()) / 1000;
-	if (delay < 0)
-		return 0;
+	const auto delay = time - Now();
+	if (delay < Time::zero())
+		return Time::zero();
 
-	if (delay > std::numeric_limits<int>::max())
-		delay = std::numeric_limits<int>::max();
-
-	return delay;
+	return std::chrono::duration_cast<std::chrono::steady_clock::duration>(delay);
 }

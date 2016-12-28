@@ -208,7 +208,7 @@ inline std::chrono::steady_clock::duration
 FifoOutput::Delay() const
 {
 	return timer->IsStarted()
-		? std::chrono::milliseconds(timer->GetDelay())
+		? timer->GetDelay()
 		: std::chrono::steady_clock::duration::zero();
 }
 
