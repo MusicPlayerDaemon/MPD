@@ -18,10 +18,10 @@
  */
 
 #include "OggSerial.hxx"
-#include "system/Clock.hxx"
 #include "Compiler.h"
 
 #include <atomic>
+#include <chrono>
 
 static std::atomic_uint next_ogg_serial;
 
@@ -34,7 +34,10 @@ GenerateOggSerial()
 		   which is random enough for our use */
 
 		/* this code is not race-free, but good enough */
-		const unsigned seed = MonotonicClockMS();
+		using namespace std::chrono;
+		const auto now = steady_clock::now().time_since_epoch();
+		const auto now_ms = duration_cast<milliseconds>(now);
+		const unsigned seed = now_ms.count();
 		next_ogg_serial = serial = seed;
 	}
 
