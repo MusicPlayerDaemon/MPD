@@ -32,6 +32,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <chrono>
 
 class ContentDirectoryService;
 
@@ -56,7 +57,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	struct DiscoveredTask {
 		std::string url;
 		std::string device_id;
-		unsigned expires; // Seconds valid
+		std::chrono::steady_clock::duration expires;
 
 		DiscoveredTask(const Upnp_Discovery *disco)
 			:url(disco->Location),
@@ -75,16 +76,17 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		UPnPDevice device;
 
 		/**
-		 * The MonotonicClockS() time stamp when this device
-		 * expires.
+		 * The time stamp when this device expires.
 		 */
-		unsigned expires;
+		std::chrono::steady_clock::time_point expires;
 
 		ContentDirectoryDescriptor() = default;
 
 		ContentDirectoryDescriptor(std::string &&_id,
-					   unsigned last, int exp)
-			:id(std::move(_id)), expires(last + exp + 20) {}
+					   std::chrono::steady_clock::time_point last,
+					   std::chrono::steady_clock::duration exp)
+			:id(std::move(_id)),
+			 expires(last + exp + std::chrono::seconds(20)) {}
 
 		void Parse(const std::string &url, const char *description) {
 			device.Parse(url, description);
@@ -106,9 +108,9 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	int search_timeout = 2;
 
 	/**
-	 * The MonotonicClockS() time stamp of the last search.
+	 * The time stamp of the last search.
 	 */
-	unsigned last_search = 0;
+	std::chrono::steady_clock::time_point last_search = std::chrono::steady_clock::time_point();
 
 public:
 	UPnPDeviceDirectory(UpnpClient_Handle _handle,
