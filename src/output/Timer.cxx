@@ -27,8 +27,7 @@
 #include <assert.h>
 
 Timer::Timer(const AudioFormat af)
-	:started(false),
-	 rate(af.sample_rate * af.GetFrameSize())
+	:rate(af.sample_rate * af.GetFrameSize())
 {
 }
 

@@ -26,7 +26,7 @@ struct AudioFormat;
 
 class Timer {
 	uint64_t time;
-	bool started;
+	bool started = false;
 	const int rate;
 public:
 	explicit Timer(AudioFormat af);
