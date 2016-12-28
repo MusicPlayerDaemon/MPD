@@ -230,8 +230,7 @@ UPnPDeviceDirectory::UPnPDeviceDirectory(UpnpClient_Handle _handle,
 					 UPnPDiscoveryListener *_listener)
 	:handle(_handle),
 	 listener(_listener),
-	 queue("DiscoveredQueue"),
-	 search_timeout(2), last_search(0)
+	 queue("DiscoveredQueue")
 {
 }
 

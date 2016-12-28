@@ -103,12 +103,12 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	 * called delay because it's the base of a random delay that
 	 * the devices apply to avoid responding all at the same time.
 	 */
-	int search_timeout;
+	int search_timeout = 2;
 
 	/**
 	 * The MonotonicClockS() time stamp of the last search.
 	 */
-	unsigned last_search;
+	unsigned last_search = 0;
 
 public:
 	UPnPDeviceDirectory(UpnpClient_Handle _handle,
