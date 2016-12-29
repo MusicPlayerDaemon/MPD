@@ -44,16 +44,7 @@ class Mutex : public PosixMutex {};
 
 #endif
 
-class ScopeLock {
-	std::unique_lock<Mutex> lock;
-
-public:
-	ScopeLock(Mutex &_mutex):lock(_mutex) {}
-
-	void Unlock() {
-		lock.unlock();
-	}
-};
+using ScopeLock = std::unique_lock<Mutex>;
 
 /**
  * Within the scope of an instance, this class will keep a #Mutex
