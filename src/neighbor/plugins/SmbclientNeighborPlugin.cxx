@@ -251,7 +251,7 @@ SmbclientNeighborExplorer::ThreadFunc()
 			break;
 
 		// TODO: sleep for how long?
-		cond.timed_wait(mutex, 10000);
+		cond.timed_wait(mutex, std::chrono::seconds(10));
 	}
 
 	mutex.unlock();

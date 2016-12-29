@@ -36,7 +36,8 @@ class NfsConnection;
  * thread, and method Run() waits for completion.
  */
 class BlockingNfsOperation : protected NfsCallback, NfsLease {
-	static constexpr unsigned timeout_ms = 60000;
+	static constexpr std::chrono::steady_clock::duration timeout =
+		std::chrono::minutes(1);
 
 	Mutex mutex;
 	Cond cond;
@@ -61,7 +62,7 @@ private:
 	bool LockWaitFinished() {
 		const ScopeLock protect(mutex);
 		while (!finished)
-			if (!cond.timed_wait(mutex, timeout_ms))
+			if (!cond.timed_wait(mutex, timeout))
 				return false;
 
 		return true;
