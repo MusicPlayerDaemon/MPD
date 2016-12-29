@@ -277,6 +277,11 @@ private:
 	void Configure(const ConfigBlock &block);
 
 public:
+	void Setup(EventLoop &event_loop,
+		   const ReplayGainConfig &replay_gain_config,
+		   MixerListener &mixer_listener,
+		   const ConfigBlock &block);
+
 	void StartThread();
 	void StopThread();
 

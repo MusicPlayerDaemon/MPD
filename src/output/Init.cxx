@@ -204,10 +204,9 @@ AudioOutput::Configure(const ConfigBlock &block)
 	}
 }
 
-static void
-audio_output_setup(EventLoop &event_loop,
+inline void
+AudioOutput::Setup(EventLoop &event_loop,
 		   const ReplayGainConfig &replay_gain_config,
-		   AudioOutput &ao,
 		   MixerListener &mixer_listener,
 		   const ConfigBlock &block)
 {
@@ -218,42 +217,42 @@ audio_output_setup(EventLoop &event_loop,
 		block.GetBlockValue("replay_gain_handler", "software");
 
 	if (strcmp(replay_gain_handler, "none") != 0) {
-		ao.prepared_replay_gain_filter =
+		prepared_replay_gain_filter =
 			NewReplayGainFilter(replay_gain_config);
-		assert(ao.prepared_replay_gain_filter != nullptr);
+		assert(prepared_replay_gain_filter != nullptr);
 
-		ao.prepared_other_replay_gain_filter =
+		prepared_other_replay_gain_filter =
 			NewReplayGainFilter(replay_gain_config);
-		assert(ao.prepared_other_replay_gain_filter != nullptr);
+		assert(prepared_other_replay_gain_filter != nullptr);
 	} else {
-		ao.prepared_replay_gain_filter = nullptr;
-		ao.prepared_other_replay_gain_filter = nullptr;
+		prepared_replay_gain_filter = nullptr;
+		prepared_other_replay_gain_filter = nullptr;
 	}
 
 	/* set up the mixer */
 
 	try {
-		ao.mixer = audio_output_load_mixer(event_loop, ao, block,
-						   ao.plugin.mixer_plugin,
-						   *ao.prepared_filter,
-						   mixer_listener);
+		mixer = audio_output_load_mixer(event_loop, *this, block,
+						plugin.mixer_plugin,
+						*prepared_filter,
+						mixer_listener);
 	} catch (const std::runtime_error &e) {
 		FormatError(e,
 			    "Failed to initialize hardware mixer for '%s'",
-			    ao.name);
+			    name);
 	}
 
 	/* use the hardware mixer for replay gain? */
 
 	if (strcmp(replay_gain_handler, "mixer") == 0) {
-		if (ao.mixer != nullptr)
-			replay_gain_filter_set_mixer(*ao.prepared_replay_gain_filter,
-						     ao.mixer, 100);
+		if (mixer != nullptr)
+			replay_gain_filter_set_mixer(*prepared_replay_gain_filter,
+						     mixer, 100);
 		else
 			FormatError(output_domain,
-				    "No such mixer for output '%s'", ao.name);
+				    "No such mixer for output '%s'", name);
 	} else if (strcmp(replay_gain_handler, "software") != 0 &&
-		   ao.prepared_replay_gain_filter != nullptr) {
+		   prepared_replay_gain_filter != nullptr) {
 		throw std::runtime_error("Invalid \"replay_gain_handler\" value");
 	}
 
@@ -262,8 +261,8 @@ audio_output_setup(EventLoop &event_loop,
 	auto *f = filter_new(&convert_filter_plugin, ConfigBlock());
 	assert(f != nullptr);
 
-	filter_chain_append(*ao.prepared_filter, "convert",
-			    ao.convert_filter.Set(f));
+	filter_chain_append(*prepared_filter, "convert",
+			    convert_filter.Set(f));
 }
 
 AudioOutput *
@@ -300,8 +299,8 @@ audio_output_new(EventLoop &event_loop,
 	assert(ao != nullptr);
 
 	try {
-		audio_output_setup(event_loop, replay_gain_config,
-				   *ao, mixer_listener, block);
+		ao->Setup(event_loop, replay_gain_config,
+			  mixer_listener, block);
 	} catch (...) {
 		ao_plugin_finish(ao);
 		throw;
