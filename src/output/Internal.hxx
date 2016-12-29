@@ -238,7 +238,7 @@ struct AudioOutput {
 	/**
 	 * This mutex protects #open, #fail_timer, #pipe.
 	 */
-	Mutex mutex;
+	mutable Mutex mutex;
 
 	/**
 	 * This condition object wakes up the output thread after
