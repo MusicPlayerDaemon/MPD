@@ -43,6 +43,7 @@ audio_output_state_save(BufferedOutputStream &os,
 {
 	for (unsigned i = 0, n = outputs.Size(); i != n; ++i) {
 		const AudioOutput &ao = outputs.Get(i);
+		const ScopeLock lock(ao.mutex);
 
 		os.Format(AUDIO_DEVICE_STATE "%d:%s\n", ao.enabled, ao.name);
 	}
