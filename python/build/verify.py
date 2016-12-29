@@ -27,6 +27,10 @@ def guess_digest_algorithm(digest):
     l = len(digest)
     if l == 32:
         return hashlib.md5
+    elif l == 40:
+        return hashlib.sha1
+    elif l == 64:
+        return hashlib.sha256
     else:
         return None
 
