@@ -34,7 +34,7 @@ def download_and_verify(url, md5, parent_path):
     calculated_md5 = file_md5(tmp_path)
     if calculated_md5 != md5:
         os.unlink(tmp_path)
-        raise "MD5 mismatch"
+        raise RuntimeError("MD5 mismatch")
 
     os.rename(tmp_path, path)
     return path
