@@ -76,9 +76,9 @@ MultipleOutputs::Configure(EventLoop &event_loop,
 		auto output = LoadOutput(event_loop, replay_gain_config,
 					 mixer_listener,
 					 client, *param);
-		if (FindByName(output->name) != nullptr)
+		if (FindByName(output->GetName()) != nullptr)
 			throw FormatRuntimeError("output devices with identical "
-						 "names: %s", output->name);
+						 "names: %s", output->GetName());
 
 		outputs.push_back(output);
 	}
@@ -97,7 +97,7 @@ AudioOutput *
 MultipleOutputs::FindByName(const char *name) const
 {
 	for (auto i : outputs)
-		if (strcmp(i->name, name) == 0)
+		if (strcmp(i->GetName(), name) == 0)
 			return i;
 
 	return nullptr;
@@ -217,13 +217,13 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 	for (auto ao : outputs) {
 		const ScopeLock lock(ao->mutex);
 
-		if (ao->enabled)
+		if (ao->IsEnabled())
 			enabled = true;
 
-		if (ao->open)
+		if (ao->IsOpen())
 			ret = true;
-		else if (ao->last_error && !first_error)
-			first_error = ao->last_error;
+		else if (!first_error)
+			first_error = ao->GetLastError();
 	}
 
 	if (!enabled) {
@@ -265,7 +265,7 @@ MultipleOutputs::ClearTailChunk(const MusicChunk *chunk,
 		/* this mutex will be unlocked by the caller when it's
 		   ready */
 		ao->mutex.lock();
-		locked[i] = ao->open;
+		locked[i] = ao->IsOpen();
 
 		if (!locked[i]) {
 			ao->mutex.unlock();

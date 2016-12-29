@@ -42,7 +42,7 @@ AudioOutput::~AudioOutput()
 void
 audio_output_free(AudioOutput *ao)
 {
-	assert(!ao->open);
+	assert(!ao->IsOpen());
 	assert(!ao->fail_timer.IsDefined());
 	assert(!ao->thread.IsDefined());
 

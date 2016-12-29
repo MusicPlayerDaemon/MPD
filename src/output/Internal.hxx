@@ -288,12 +288,36 @@ public:
 	void BeginDestroy();
 	void FinishDestroy();
 
+	const char *GetName() const {
+		return name;
+	}
+
+	/**
+	 * Caller must lock the mutex.
+	 */
+	bool IsEnabled() const {
+		return enabled;
+	}
+
+	/**
+	 * Caller must lock the mutex.
+	 */
 	bool IsOpen() const {
 		return open;
 	}
 
+	/**
+	 * Caller must lock the mutex.
+	 */
 	bool IsCommandFinished() const {
 		return command == Command::NONE;
+	}
+
+	/**
+	 * Caller must lock the mutex.
+	 */
+	const std::exception_ptr &GetLastError() const {
+		return last_error;
 	}
 
 	/**

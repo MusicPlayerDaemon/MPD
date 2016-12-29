@@ -45,7 +45,7 @@ output_mixer_get_volume(const AudioOutput &ao)
 	} catch (const std::runtime_error &e) {
 		FormatError(e,
 			    "Failed to read mixer for '%s'",
-			    ao.name);
+			    ao.GetName());
 		return -1;
 	}
 }
@@ -88,7 +88,7 @@ output_mixer_set_volume(AudioOutput &ao, unsigned volume)
 	} catch (const std::runtime_error &e) {
 		FormatError(e,
 			    "Failed to set mixer for '%s'",
-			    ao.name);
+			    ao.GetName());
 		return false;
 	}
 }
