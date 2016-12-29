@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2009-2016 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 #ifndef THREAD_MUTEX_HXX
 #define THREAD_MUTEX_HXX
 
+#include <mutex>
+
 #ifdef WIN32
 
 #include "CriticalSection.hxx"
@@ -43,26 +45,13 @@ class Mutex : public PosixMutex {};
 #endif
 
 class ScopeLock {
-	Mutex &mutex;
-
-	bool active = true;
+	std::unique_lock<Mutex> lock;
 
 public:
-	ScopeLock(Mutex &_mutex):mutex(_mutex) {
-		mutex.lock();
-	};
-
-	~ScopeLock() {
-		if (active)
-			mutex.unlock();
-	};
-
-	ScopeLock(const ScopeLock &other) = delete;
-	ScopeLock &operator=(const ScopeLock &other) = delete;
+	ScopeLock(Mutex &_mutex):lock(_mutex) {}
 
 	void Unlock() {
-		mutex.unlock();
-		active = false;
+		lock.unlock();
 	}
 };
 
