@@ -228,12 +228,16 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 	EnableDisable();
 	Update();
 
+	std::exception_ptr first_error;
+
 	for (auto ao : outputs) {
 		if (ao->enabled)
 			enabled = true;
 
 		if (ao->open)
 			ret = true;
+		else if (ao->last_error && !first_error)
+			first_error = ao->last_error;
 	}
 
 	if (!enabled) {
@@ -243,8 +247,12 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 	} else if (!ret) {
 		/* close all devices if there was an error */
 		Close();
-		/* TODO: obtain real error */
-		throw std::runtime_error("Failed to open audio output");
+
+		if (first_error)
+			/* we have details, so throw that */
+			std::rethrow_exception(first_error);
+		else
+			throw std::runtime_error("Failed to open audio output");
 	}
 }
 
