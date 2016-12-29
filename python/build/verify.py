@@ -16,9 +16,14 @@ def feed_file_path(h, path):
     with open(path, 'rb') as f:
         feed_file(h, f)
 
+def file_digest(algorithm, path):
+    """Calculate the digest of a file and return it in hexadecimal notation."""
+
+    h = algorithm()
+    feed_file_path(h, path)
+    return h.hexdigest()
+
 def file_md5(path):
     """Calculate the MD5 checksum of a file and return it in hexadecimal notation."""
 
-    h = hashlib.md5()
-    feed_file_path(h, path)
-    return h.hexdigest()
+    return file_digest(hashlib.md5, path)
