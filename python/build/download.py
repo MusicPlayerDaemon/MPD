@@ -1,18 +1,6 @@
+from build.verify import file_md5
 import os
-import hashlib
 import urllib.request
-
-def file_md5(path):
-    """Calculate the MD5 checksum of a file and return it in hexadecimal notation."""
-
-    with open(path, 'rb') as f:
-        m = hashlib.md5()
-        while True:
-            data = f.read(65536)
-            if len(data) == 0:
-                # end of file
-                return m.hexdigest()
-            m.update(data)
 
 def download_and_verify(url, md5, parent_path):
     """Download a file, verify its MD5 checksum and return the local path."""
