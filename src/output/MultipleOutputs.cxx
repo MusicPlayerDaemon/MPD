@@ -145,23 +145,8 @@ MultipleOutputs::AllowPlay()
 		ao->LockAllowPlay();
 }
 
-static void
-audio_output_reset_reopen(AudioOutput *ao)
-{
-	const ScopeLock protect(ao->mutex);
-
-	ao->fail_timer.Reset();
-}
-
-void
-MultipleOutputs::ResetReopen()
-{
-	for (auto ao : outputs)
-		audio_output_reset_reopen(ao);
-}
-
 bool
-MultipleOutputs::Update()
+MultipleOutputs::Update(bool force)
 {
 	bool ret = false;
 
@@ -169,7 +154,7 @@ MultipleOutputs::Update()
 		return false;
 
 	for (auto ao : outputs)
-		ret = ao->LockUpdate(input_audio_format, *pipe)
+		ret = ao->LockUpdate(input_audio_format, *pipe, force)
 			|| ret;
 
 	return ret;
@@ -190,7 +175,7 @@ MultipleOutputs::Play(MusicChunk *chunk)
 	assert(chunk != nullptr);
 	assert(chunk->CheckFormat(input_audio_format));
 
-	if (!Update())
+	if (!Update(false))
 		/* TODO: obtain real error */
 		throw std::runtime_error("Failed to open audio output");
 
@@ -224,9 +209,8 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 
 	input_audio_format = audio_format;
 
-	ResetReopen();
 	EnableDisable();
-	Update();
+	Update(true);
 
 	std::exception_ptr first_error;
 
@@ -341,7 +325,7 @@ MultipleOutputs::Check()
 void
 MultipleOutputs::Pause()
 {
-	Update();
+	Update(false);
 
 	for (auto ao : outputs)
 		ao->LockPauseAsync();

@@ -383,10 +383,12 @@ public:
 	 * Opens or closes the device, depending on the "enabled"
 	 * flag.
 	 *
+	 * @param force true to ignore the #fail_timer
 	 * @return true if the device is open
 	 */
 	bool LockUpdate(const AudioFormat audio_format,
-			const MusicPipe &mp);
+			const MusicPipe &mp,
+			bool force);
 
 	void LockPlay();
 

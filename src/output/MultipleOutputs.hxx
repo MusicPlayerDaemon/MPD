@@ -237,19 +237,12 @@ private:
 	void AllowPlay();
 
 	/**
-	 * Resets the "reopen" flag on all audio devices.  MPD should
-	 * immediately retry to open the device instead of waiting for
-	 * the timeout when the user wants to start playback.
-	 */
-	void ResetReopen();
-
-	/**
 	 * Opens all output devices which are enabled, but closed.
 	 *
 	 * @return true if there is at least open output device which
 	 * is open
 	 */
-	bool Update();
+	bool Update(bool force);
 
 	/**
 	 * Has this chunk been consumed by all audio outputs?

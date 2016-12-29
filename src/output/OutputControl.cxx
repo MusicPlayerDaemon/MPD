@@ -159,12 +159,13 @@ AudioOutput::CloseWait()
 
 bool
 AudioOutput::LockUpdate(const AudioFormat audio_format,
-			const MusicPipe &mp)
+			const MusicPipe &mp,
+			bool force)
 {
 	const ScopeLock protect(mutex);
 
 	if (enabled && really_enabled) {
-		if (!fail_timer.IsDefined() ||
+		if (force || !fail_timer.IsDefined() ||
 		    fail_timer.Check(REOPEN_AFTER * 1000)) {
 			return Open(audio_format, mp);
 		}
