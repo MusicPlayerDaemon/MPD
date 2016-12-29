@@ -27,3 +27,8 @@ def file_md5(path):
     """Calculate the MD5 checksum of a file and return it in hexadecimal notation."""
 
     return file_digest(hashlib.md5, path)
+
+def verify_file_digest(path, expected_digest):
+    """Verify the digest of a file, and return True if the digest matches with the given expected digest."""
+
+    return file_md5(path) == expected_digest

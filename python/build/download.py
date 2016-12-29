@@ -1,4 +1,4 @@
-from build.verify import file_md5
+from build.verify import verify_file_digest
 import os
 import urllib.request
 
@@ -9,8 +9,7 @@ def download_and_verify(url, md5, parent_path):
     path = os.path.join(parent_path, os.path.basename(url))
 
     try:
-        calculated_md5 = file_md5(path)
-        if md5 == calculated_md5: return path
+        if verify_file_digest(path, md5): return path
         os.unlink(path)
     except FileNotFoundError:
         pass
@@ -19,8 +18,7 @@ def download_and_verify(url, md5, parent_path):
 
     print("download", url)
     urllib.request.urlretrieve(url, tmp_path)
-    calculated_md5 = file_md5(tmp_path)
-    if calculated_md5 != md5:
+    if not verify_file_digest(tmp_path, md5):
         os.unlink(tmp_path)
         raise RuntimeError("MD5 mismatch")
 
