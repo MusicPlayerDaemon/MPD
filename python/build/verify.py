@@ -23,12 +23,16 @@ def file_digest(algorithm, path):
     feed_file_path(h, path)
     return h.hexdigest()
 
-def file_md5(path):
-    """Calculate the MD5 checksum of a file and return it in hexadecimal notation."""
-
-    return file_digest(hashlib.md5, path)
+def guess_digest_algorithm(digest):
+    l = len(digest)
+    if l == 32:
+        return hashlib.md5
+    else:
+        return None
 
 def verify_file_digest(path, expected_digest):
     """Verify the digest of a file, and return True if the digest matches with the given expected digest."""
 
-    return file_md5(path) == expected_digest
+    algorithm = guess_digest_algorithm(expected_digest)
+    assert(algorithm is not None)
+    return file_digest(algorithm, path) == expected_digest

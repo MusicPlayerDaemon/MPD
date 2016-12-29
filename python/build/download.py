@@ -20,7 +20,7 @@ def download_and_verify(url, md5, parent_path):
     urllib.request.urlretrieve(url, tmp_path)
     if not verify_file_digest(tmp_path, md5):
         os.unlink(tmp_path)
-        raise RuntimeError("MD5 mismatch")
+        raise RuntimeError("Digest mismatch")
 
     os.rename(tmp_path, path)
     return path
