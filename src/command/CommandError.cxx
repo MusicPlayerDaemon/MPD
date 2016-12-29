@@ -23,6 +23,7 @@
 #include "db/DatabaseError.hxx"
 #include "client/Response.hxx"
 #include "Log.hxx"
+#include "util/Exception.hxx"
 
 #include <system_error>
 
@@ -122,12 +123,6 @@ ToAck(std::exception_ptr ep)
 void
 PrintError(Response &r, std::exception_ptr ep)
 {
-	try {
-		std::rethrow_exception(ep);
-	} catch (const std::exception &e) {
-		LogError(e);
-		r.Error(ToAck(ep), e.what());
-	} catch (...) {
-		r.Error(ACK_ERROR_UNKNOWN, "Unknown error");
-	}
+	LogError(ep);
+	r.Error(ToAck(ep), FullMessage(ep).c_str());
 }

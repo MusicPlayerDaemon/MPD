@@ -388,6 +388,7 @@ endif
 # Generic utility library
 
 libutil_a_SOURCES = \
+	src/util/Exception.cxx src/util/Exception.hxx \
 	src/util/RuntimeError.hxx \
 	src/util/Macros.hxx \
 	src/util/BindMethod.hxx \

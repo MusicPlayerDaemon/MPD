@@ -31,6 +31,7 @@
 #include "Idle.hxx"
 #include "AudioFormat.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/Exception.hxx"
 
 #ifdef ENABLE_DATABASE
 #include "db/update/Service.hxx"
@@ -192,10 +193,9 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 
 	try {
 		client.player_control.LockCheckRethrowError();
-	} catch (const std::exception &e) {
-		r.Format(COMMAND_STATUS_ERROR ": %s\n", e.what());
 	} catch (...) {
-		r.Format(COMMAND_STATUS_ERROR ": unknown\n");
+		r.Format(COMMAND_STATUS_ERROR ": %s\n",
+			 FullMessage(std::current_exception()).c_str());
 	}
 
 	song = playlist.GetNextPosition();
