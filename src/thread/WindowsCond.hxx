@@ -56,11 +56,13 @@ public:
 		WakeAllConditionVariable(&cond);
 	}
 
+private:
 	bool timed_wait(CriticalSection &mutex, DWORD timeout_ms) {
 		return SleepConditionVariableCS(&cond, &mutex.critical_section,
 						timeout_ms);
 	}
 
+public:
 	bool timed_wait(CriticalSection &mutex,
 			std::chrono::steady_clock::duration timeout) {
 		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();

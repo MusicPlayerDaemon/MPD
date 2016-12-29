@@ -74,6 +74,7 @@ public:
 		pthread_cond_wait(&cond, &mutex.mutex);
 	}
 
+private:
 	bool timed_wait(PosixMutex &mutex, unsigned timeout_ms) {
 		struct timeval now;
 		gettimeofday(&now, nullptr);
@@ -90,6 +91,7 @@ public:
 		return pthread_cond_timedwait(&cond, &mutex.mutex, &ts) == 0;
 	}
 
+public:
 	bool timed_wait(PosixMutex &mutex,
 			std::chrono::steady_clock::duration timeout) {
 		auto timeout_ms = std::chrono::duration_cast<std::chrono::milliseconds>(timeout).count();
