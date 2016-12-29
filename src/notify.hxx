@@ -26,12 +26,7 @@
 struct notify {
 	Mutex mutex;
 	Cond cond;
-	bool pending;
-
-#ifdef __GLIBC__
-	constexpr
-#endif
-	notify():pending(false) {}
+	bool pending = false;
 
 	/**
 	 * Wait for a notification.  Return immediately if we have already
