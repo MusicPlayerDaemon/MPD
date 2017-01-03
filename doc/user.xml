@@ -601,7 +601,9 @@ systemctl start mpd.socket</programlisting>
               <entry>
                 Specifies whether this audio output is enabled when
                 <application>MPD</application> is started.  By
-                default, all audio outputs are enabled.
+                default, all audio outputs are enabled.  This is just
+                the default setting when there is no state file; with
+                a state file, the previous state is restored.
               </entry>
             </row>
             <row>
