@@ -1250,6 +1250,19 @@ database {
         offer an interface to edit the queue.
       </para>
     </section>
+
+    <section id="stored_playlists">
+      <title>Stored Playlists</title>
+
+      <para>
+        Stored playlists are some kind of secondary playlists which
+        can be created, saved, edited and deleted by the client.  They
+        are addressed by their names.  Its contents can be loaded into
+        the queue, to be played back.  The
+        <varname>playlist_directory</varname> setting specifies where
+        those playlists are stored.
+      </para>
+    </section>
   </chapter>
 
   <chapter id="advanced_usage">
