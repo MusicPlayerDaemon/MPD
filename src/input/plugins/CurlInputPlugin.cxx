@@ -177,23 +177,6 @@ CurlInputStream::DoResume()
 	mutex.lock();
 }
 
-/**
- * Call input_curl_easy_add() in the I/O thread.  May be called from
- * any thread.  Caller must not hold a mutex.
- *
- * Throws std::runtime_error on error.
- */
-static void
-input_curl_easy_add_indirect(CurlInputStream *c)
-{
-	assert(c != nullptr);
-	assert(c->easy);
-
-	BlockingCall(io_thread_get(), [c](){
-			curl_global->Add(c->easy.Get(), *c);
-		});
-}
-
 void
 CurlInputStream::FreeEasy()
 {
@@ -546,7 +529,9 @@ CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 
 	try {
 		c->InitEasy();
-		input_curl_easy_add_indirect(c);
+		BlockingCall(io_thread_get(), [c](){
+				curl_global->Add(c->easy.Get(), *c);
+			});
 	} catch (...) {
 		delete c;
 		throw;
