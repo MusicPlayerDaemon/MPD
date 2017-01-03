@@ -518,6 +518,8 @@ try {
 	instance->partition->outputs.Configure(instance->event_loop,
 					       config.replay_gain,
 					       instance->partition->pc);
+	instance->partition->UpdateEffectiveReplayGainMode();
+
 	client_manager_init();
 	input_stream_global_init();
 	playlist_list_global_init();
