@@ -43,7 +43,7 @@ mpd_smbc_get_auth_data(gcc_unused const char *srv,
 void
 SmbclientInit()
 {
-	const ScopeLock protect(smbclient_mutex);
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
 	constexpr int debug = 0;
 	if (smbc_init(mpd_smbc_get_auth_data, debug) < 0)

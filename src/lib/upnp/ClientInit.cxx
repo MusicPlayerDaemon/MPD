@@ -61,7 +61,7 @@ UpnpClientGlobalInit(UpnpClient_Handle &handle)
 	UpnpGlobalInit();
 
 	try {
-		const ScopeLock protect(upnp_client_init_mutex);
+		const std::lock_guard<Mutex> protect(upnp_client_init_mutex);
 		if (upnp_client_ref == 0)
 			DoInit();
 	} catch (...) {
@@ -77,7 +77,7 @@ void
 UpnpClientGlobalFinish()
 {
 	{
-		const ScopeLock protect(upnp_client_init_mutex);
+		const std::lock_guard<Mutex> protect(upnp_client_init_mutex);
 
 		assert(upnp_client_ref > 0);
 		if (--upnp_client_ref == 0)

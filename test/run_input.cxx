@@ -50,7 +50,7 @@ tag_save(FILE *file, const Tag &tag)
 static int
 dump_input_stream(InputStream *is)
 {
-	const ScopeLock protect(is->mutex);
+	const std::lock_guard<Mutex> protect(is->mutex);
 
 	/* print meta data */
 

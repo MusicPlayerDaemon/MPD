@@ -213,7 +213,7 @@ CompositeStorage::~CompositeStorage()
 Storage *
 CompositeStorage::GetMount(const char *uri)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	auto result = FindStorage(uri);
 	if (*result.uri != 0)
@@ -226,7 +226,7 @@ CompositeStorage::GetMount(const char *uri)
 void
 CompositeStorage::Mount(const char *uri, Storage *storage)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	Directory &directory = root.Make(uri);
 	if (directory.storage != nullptr)
@@ -237,7 +237,7 @@ CompositeStorage::Mount(const char *uri, Storage *storage)
 bool
 CompositeStorage::Unmount(const char *uri)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	return root.Unmount(uri);
 }
@@ -266,7 +266,7 @@ CompositeStorage::FindStorage(const char *uri) const
 StorageFileInfo
 CompositeStorage::GetInfo(const char *uri, bool follow)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	std::exception_ptr error;
 
@@ -298,7 +298,7 @@ CompositeStorage::GetInfo(const char *uri, bool follow)
 StorageDirectoryReader *
 CompositeStorage::OpenDirectory(const char *uri)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	auto f = FindStorage(uri);
 	const Directory *directory = f.directory->Find(f.uri);
@@ -324,7 +324,7 @@ CompositeStorage::OpenDirectory(const char *uri)
 std::string
 CompositeStorage::MapUTF8(const char *uri) const
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	auto f = FindStorage(uri);
 	if (f.directory->storage == nullptr)
@@ -336,7 +336,7 @@ CompositeStorage::MapUTF8(const char *uri) const
 AllocatedPath
 CompositeStorage::MapFS(const char *uri) const
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	auto f = FindStorage(uri);
 	if (f.directory->storage == nullptr)
@@ -348,7 +348,7 @@ CompositeStorage::MapFS(const char *uri) const
 const char *
 CompositeStorage::MapToRelativeUTF8(const char *uri) const
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (root.storage != nullptr) {
 		const char *result = root.storage->MapToRelativeUTF8(uri);

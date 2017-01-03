@@ -429,7 +429,7 @@ CurlInputStream::RequestDone(CURLcode result, long status)
 	FreeEasy();
 	AsyncInputStream::SetClosed();
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (result != CURLE_OK) {
 		postponed_exception = std::make_exception_ptr(FormatRuntimeError("curl failed: %s",
@@ -693,7 +693,7 @@ CurlInputStream::DataReceived(const void *ptr, size_t received_size)
 {
 	assert(received_size > 0);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (IsSeekPending())
 		SeekDone();

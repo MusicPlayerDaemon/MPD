@@ -30,7 +30,7 @@ MusicBuffer::MusicBuffer(unsigned num_chunks)
 MusicChunk *
 MusicBuffer::Allocate()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	return buffer.Allocate();
 }
 
@@ -39,7 +39,7 @@ MusicBuffer::Return(MusicChunk *chunk)
 {
 	assert(chunk != nullptr);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (chunk->other != nullptr) {
 		assert(chunk->other->other == nullptr);

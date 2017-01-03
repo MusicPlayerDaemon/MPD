@@ -90,7 +90,7 @@ input_smbclient_open(const char *uri,
 	if (!StringStartsWith(uri, "smb://"))
 		return nullptr;
 
-	const ScopeLock protect(smbclient_mutex);
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
 	SMBCCTX *ctx = smbc_new_context();
 	if (ctx == nullptr)

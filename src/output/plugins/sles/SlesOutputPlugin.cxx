@@ -319,7 +319,7 @@ SlesOutput::Play(const void *chunk, size_t size)
 		pause = false;
 	}
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	assert(filled < BUFFER_SIZE);
 
@@ -348,7 +348,7 @@ SlesOutput::Play(const void *chunk, size_t size)
 inline void
 SlesOutput::Drain()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	assert(filled < BUFFER_SIZE);
 
@@ -371,7 +371,7 @@ SlesOutput::Cancel()
 		FormatWarning(sles_domain,
 			      "AndroidSimpleBufferQueue.Clear() failed");
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	n_queued = 0;
 	filled = 0;
 }
@@ -398,7 +398,7 @@ SlesOutput::Pause()
 inline void
 SlesOutput::PlayedCallback()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	assert(n_queued > 0);
 	--n_queued;
 	cond.signal();

@@ -23,7 +23,7 @@
 void
 notify::Wait()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	while (!pending)
 		cond.wait(mutex);
 	pending = false;
@@ -32,7 +32,7 @@ notify::Wait()
 void
 notify::Signal()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	pending = true;
 	cond.signal();
 }
@@ -40,6 +40,6 @@ notify::Signal()
 void
 notify::Clear()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	pending = false;
 }

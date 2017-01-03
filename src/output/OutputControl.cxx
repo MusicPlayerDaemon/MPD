@@ -65,7 +65,7 @@ AudioOutput::CommandWait(Command cmd)
 void
 AudioOutput::LockCommandWait(Command cmd)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	CommandWait(cmd);
 }
 
@@ -162,7 +162,7 @@ AudioOutput::LockUpdate(const AudioFormat audio_format,
 			const MusicPipe &mp,
 			bool force)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (enabled && really_enabled) {
 		if (force || !fail_timer.IsDefined() ||
@@ -178,7 +178,7 @@ AudioOutput::LockUpdate(const AudioFormat audio_format,
 void
 AudioOutput::LockPlay()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	assert(allow_play);
 
@@ -197,7 +197,7 @@ AudioOutput::LockPauseAsync()
 		   mixer_auto_close()) */
 		mixer_auto_close(mixer);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	assert(allow_play);
 	if (IsOpen())
@@ -207,7 +207,7 @@ AudioOutput::LockPauseAsync()
 void
 AudioOutput::LockDrainAsync()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	assert(allow_play);
 	if (IsOpen())
@@ -217,7 +217,7 @@ AudioOutput::LockDrainAsync()
 void
 AudioOutput::LockCancelAsync()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (IsOpen()) {
 		allow_play = false;
@@ -228,7 +228,7 @@ AudioOutput::LockCancelAsync()
 void
 AudioOutput::LockAllowPlay()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	allow_play = true;
 	if (IsOpen())
@@ -249,7 +249,7 @@ AudioOutput::LockCloseWait()
 {
 	assert(!open || !fail_timer.IsDefined());
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	CloseWait();
 }
 
@@ -270,7 +270,7 @@ AudioOutput::BeginDestroy()
 		mixer_auto_close(mixer);
 
 	if (thread.IsDefined()) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		CommandAsync(Command::KILL);
 	}
 }

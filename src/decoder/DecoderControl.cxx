@@ -111,7 +111,7 @@ DecoderControl::Start(DetachedSong *_song,
 void
 DecoderControl::Stop()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (command != DecoderCommand::NONE)
 		/* Attempt to cancel the current command.  If it's too

@@ -192,7 +192,7 @@ AlsaInputStream::PrepareSockets()
 void
 AlsaInputStream::DispatchSockets()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	auto w = PrepareWriteBuffer();
 	const snd_pcm_uframes_t w_frames = w.size / frame_size;

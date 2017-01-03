@@ -72,7 +72,7 @@ io_thread_start()
 	assert(io.loop != nullptr);
 	assert(!io.thread.IsDefined());
 
-	const ScopeLock protect(io.mutex);
+	const std::lock_guard<Mutex> protect(io.mutex);
 	io.thread.Start(io_thread_func, nullptr);
 }
 

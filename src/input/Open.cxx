@@ -59,7 +59,7 @@ InputStream::OpenReady(const char *uri,
 	auto is = Open(uri, mutex, cond);
 
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		is->WaitReady();
 		is->Check();
 	}

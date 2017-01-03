@@ -397,7 +397,7 @@ AudioOutput::Task()
 
 	SetThreadTimerSlackUS(100);
 
-	const ScopeLock lock(mutex);
+	const std::lock_guard<Mutex> lock(mutex);
 
 	while (true) {
 		switch (command) {

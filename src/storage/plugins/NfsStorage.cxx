@@ -133,7 +133,7 @@ private:
 	void SetState(State _state) {
 		assert(GetEventLoop().IsInside());
 
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		state = _state;
 		cond.broadcast();
 	}
@@ -141,7 +141,7 @@ private:
 	void SetState(State _state, std::exception_ptr &&e) {
 		assert(GetEventLoop().IsInside());
 
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		state = _state;
 		last_exception = std::move(e);
 		cond.broadcast();
@@ -164,7 +164,7 @@ private:
 	}
 
 	void WaitConnected() {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		while (true) {
 			switch (state) {

@@ -224,7 +224,7 @@ struct PlayerControl final : AudioOutputClient {
 	 * this function.
 	 */
 	void LockSignal() {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		Signal();
 	}
 
@@ -277,7 +277,7 @@ struct PlayerControl final : AudioOutputClient {
 	}
 
 	void LockCommandFinished() {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		CommandFinished();
 	}
 
@@ -294,7 +294,7 @@ struct PlayerControl final : AudioOutputClient {
 	bool WaitOutputConsumed(unsigned threshold);
 
 	bool LockWaitOutputConsumed(unsigned threshold) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return WaitOutputConsumed(threshold);
 	}
 
@@ -333,7 +333,7 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(PlayerCommand cmd) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		SynchronousCommand(cmd);
 	}
 
@@ -376,7 +376,7 @@ public:
 	}
 
 	bool LockApplyBorderPause() {
-		const ScopeLock lock(mutex);
+		const std::lock_guard<Mutex> lock(mutex);
 		return ApplyBorderPause();
 	}
 
@@ -410,7 +410,7 @@ public:
 	}
 
 	void LockSetOutputError(std::exception_ptr &&_error) {
-		const ScopeLock lock(mutex);
+		const std::lock_guard<Mutex> lock(mutex);
 		SetOutputError(std::move(_error));
 	}
 
@@ -429,7 +429,7 @@ public:
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
 	void LockCheckRethrowError() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		CheckRethrowError();
 	}
 
@@ -462,7 +462,7 @@ public:
 	 * Like ReadTaggedSong(), but locks and unlocks the object.
 	 */
 	DetachedSong *LockReadTaggedSong() {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return ReadTaggedSong();
 	}
 
@@ -521,7 +521,7 @@ public:
 	}
 
 	void LockSetReplayGainMode(ReplayGainMode _mode) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		replay_gain_mode = _mode;
 	}
 

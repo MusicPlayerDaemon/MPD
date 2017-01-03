@@ -110,7 +110,7 @@ public:
 	 */
 	template<typename T>
 	void VisitMounts(T t) const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		std::string uri;
 		VisitMounts(uri, root, t);
 	}

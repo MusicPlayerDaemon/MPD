@@ -29,7 +29,7 @@
 ThreadInputStream::~ThreadInputStream()
 {
 	{
-		const ScopeLock lock(mutex);
+		const std::lock_guard<Mutex> lock(mutex);
 		close = true;
 		wake_cond.signal();
 	}
@@ -62,7 +62,7 @@ ThreadInputStream::ThreadFunc()
 {
 	FormatThreadName("input:%s", plugin);
 
-	const ScopeLock lock(mutex);
+	const std::lock_guard<Mutex> lock(mutex);
 
 	try {
 		Open();

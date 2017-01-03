@@ -44,8 +44,6 @@ class Mutex : public PosixMutex {};
 
 #endif
 
-using ScopeLock = std::lock_guard<Mutex>;
-
 /**
  * Within the scope of an instance, this class will keep a #Mutex
  * unlocked.

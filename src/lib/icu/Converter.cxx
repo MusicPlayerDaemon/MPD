@@ -105,7 +105,7 @@ AllocatedString<char>
 IcuConverter::ToUTF8(const char *s) const
 {
 #ifdef HAVE_ICU
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	ucnv_resetToUnicode(converter);
 
@@ -133,7 +133,7 @@ AllocatedString<char>
 IcuConverter::FromUTF8(const char *s) const
 {
 #ifdef HAVE_ICU
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	const auto u = UCharFromUTF8(s);
 

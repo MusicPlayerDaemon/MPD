@@ -103,7 +103,7 @@ SmbclientNeighborExplorer::Close()
 NeighborExplorer::List
 SmbclientNeighborExplorer::GetList() const
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	/*
 	List list;
 	for (const auto &i : servers)
@@ -172,7 +172,7 @@ static NeighborExplorer::List
 DetectServers()
 {
 	NeighborExplorer::List list;
-	const ScopeLock protect(smbclient_mutex);
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
 	ReadServers(list, "smb://");
 	return list;
 }

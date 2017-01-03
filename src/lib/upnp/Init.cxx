@@ -48,7 +48,7 @@ DoInit()
 void
 UpnpGlobalInit()
 {
-	const ScopeLock protect(upnp_init_mutex);
+	const std::lock_guard<Mutex> protect(upnp_init_mutex);
 
 	if (upnp_ref == 0)
 		DoInit();
@@ -59,7 +59,7 @@ UpnpGlobalInit()
 void
 UpnpGlobalFinish()
 {
-	const ScopeLock protect(upnp_init_mutex);
+	const std::lock_guard<Mutex> protect(upnp_init_mutex);
 
 	assert(upnp_ref > 0);
 

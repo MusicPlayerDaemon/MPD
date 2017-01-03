@@ -210,7 +210,7 @@ try {
 UniqueId3Tag
 tag_id3_load(InputStream &is)
 try {
-	const ScopeLock protect(is.mutex);
+	const std::lock_guard<Mutex> protect(is.mutex);
 
 	auto tag = tag_id3_find_from_beginning(is);
 	if (tag == nullptr && is.CheapSeeking()) {

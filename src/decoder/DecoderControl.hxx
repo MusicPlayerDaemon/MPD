@@ -228,7 +228,7 @@ struct DecoderControl {
 
 	gcc_pure
 	bool LockIsIdle() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return IsIdle();
 	}
 
@@ -238,7 +238,7 @@ struct DecoderControl {
 
 	gcc_pure
 	bool LockIsStarting() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return IsStarting();
 	}
 
@@ -250,7 +250,7 @@ struct DecoderControl {
 
 	gcc_pure
 	bool LockHasFailed() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return HasFailed();
 	}
 
@@ -281,7 +281,7 @@ struct DecoderControl {
 	 * Like CheckRethrowError(), but locks and unlocks the object.
 	 */
 	void LockCheckRethrowError() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		CheckRethrowError();
 	}
 
@@ -309,7 +309,7 @@ struct DecoderControl {
 
 	gcc_pure
 	bool LockIsCurrentSong(const DetachedSong &_song) const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return IsCurrentSong(_song);
 	}
 
@@ -346,13 +346,13 @@ private:
 	 * object.
 	 */
 	void LockSynchronousCommand(DecoderCommand cmd) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		ClearError();
 		SynchronousCommandLocked(cmd);
 	}
 
 	void LockAsynchronousCommand(DecoderCommand cmd) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		command = cmd;
 		Signal();
 	}

@@ -37,7 +37,7 @@ UpdateRemoveService::RunDeferred()
 	std::forward_list<std::string> copy;
 
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		std::swap(uris, copy);
 	}
 
@@ -56,7 +56,7 @@ UpdateRemoveService::Remove(std::string &&uri)
 	bool was_empty;
 
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		was_empty = uris.empty();
 		uris.emplace_front(std::move(uri));
 	}

@@ -92,7 +92,7 @@ RoarOutput::RoarOutput(const ConfigBlock &block)
 inline int
 RoarOutput::GetVolume() const
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (vss == nullptr || !alive)
 		return -1;
@@ -116,7 +116,7 @@ RoarOutput::SetVolume(unsigned volume)
 {
 	assert(volume <= 100);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 	if (vss == nullptr || !alive)
 		throw std::runtime_error("closed");
 
@@ -177,7 +177,7 @@ roar_use_audio_format(struct roar_audio_info *info,
 inline void
 RoarOutput::Open(AudioFormat &audio_format)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (roar_simple_connect(&con,
 				host.empty() ? nullptr : host.c_str(),
@@ -201,7 +201,7 @@ RoarOutput::Open(AudioFormat &audio_format)
 inline void
 RoarOutput::Close()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	alive = false;
 
@@ -214,7 +214,7 @@ RoarOutput::Close()
 inline void
 RoarOutput::Cancel()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (vss == nullptr)
 		return;
@@ -306,7 +306,7 @@ RoarOutput::SendTag(const Tag &tag)
 	if (vss == nullptr)
 		return;
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	size_t cnt = 0;
 	struct roar_keyval vals[32];

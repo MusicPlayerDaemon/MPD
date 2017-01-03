@@ -74,7 +74,7 @@ AnnounceLostUPnP(UPnPDiscoveryListener &listener, const UPnPDevice &device)
 inline void
 UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	for (auto &i : directories) {
 		if (i.id == d.id) {
@@ -92,7 +92,7 @@ UPnPDeviceDirectory::LockAdd(ContentDirectoryDescriptor &&d)
 inline void
 UPnPDeviceDirectory::LockRemove(const std::string &id)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	for (auto i = directories.begin(), end = directories.end();
 	     i != end; ++i) {
@@ -273,7 +273,7 @@ UPnPDeviceDirectory::Search()
 std::vector<ContentDirectoryService>
 UPnPDeviceDirectory::GetDirectories()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	ExpireDevices();
 
@@ -293,7 +293,7 @@ UPnPDeviceDirectory::GetDirectories()
 ContentDirectoryService
 UPnPDeviceDirectory::GetServer(const char *friendly_name)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	ExpireDevices();
 

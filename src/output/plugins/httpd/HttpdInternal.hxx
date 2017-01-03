@@ -200,7 +200,7 @@ public:
 	 */
 	gcc_pure
 	bool LockHasClients() const {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return HasClients();
 	}
 

@@ -90,7 +90,7 @@ public:
 	 */
 	bool start(unsigned nworkers, void *(*workproc)(void *), void *arg)
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		assert(nworkers > 0);
 		assert(!ok);
@@ -120,7 +120,7 @@ public:
 	template<typename U>
 	bool put(U &&u)
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		queue.emplace(std::forward<U>(u));
 
@@ -135,7 +135,7 @@ public:
 	 */
 	void setTerminateAndWait()
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		// Wait for all worker threads to have called workerExit()
 		ok = false;
@@ -166,7 +166,7 @@ public:
 	 */
 	bool take(T &tp)
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		if (!ok)
 			return false;
@@ -192,7 +192,7 @@ public:
 	 */
 	void workerExit()
 	{
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 
 		n_workers_exited++;
 		ok = false;

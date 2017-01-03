@@ -61,7 +61,7 @@ decoder_input_stream_open(DecoderControl &dc, const char *uri)
 	/* wait for the input stream to become ready; its metadata
 	   will be available then */
 
-	const ScopeLock protect(dc.mutex);
+	const std::lock_guard<Mutex> protect(dc.mutex);
 
 	is->Update();
 	while (!is->IsReady()) {
@@ -264,7 +264,7 @@ static void
 MaybeLoadReplayGain(DecoderBridge &bridge, InputStream &is)
 {
 	{
-		const ScopeLock protect(bridge.dc.mutex);
+		const std::lock_guard<Mutex> protect(bridge.dc.mutex);
 		if (bridge.dc.replay_gain_mode == ReplayGainMode::OFF)
 			/* ReplayGain is disabled */
 			return;
@@ -288,7 +288,7 @@ decoder_run_stream(DecoderBridge &bridge, const char *uri)
 
 	MaybeLoadReplayGain(bridge, *input_stream);
 
-	const ScopeLock protect(dc.mutex);
+	const std::lock_guard<Mutex> protect(dc.mutex);
 
 	bool tried = false;
 	return dc.command == DecoderCommand::STOP ||
@@ -318,10 +318,10 @@ TryDecoderFile(DecoderBridge &bridge, Path path_fs, const char *suffix,
 	DecoderControl &dc = bridge.dc;
 
 	if (plugin.file_decode != nullptr) {
-		const ScopeLock protect(dc.mutex);
+		const std::lock_guard<Mutex> protect(dc.mutex);
 		return decoder_file_decode(plugin, bridge, path_fs);
 	} else if (plugin.stream_decode != nullptr) {
-		const ScopeLock protect(dc.mutex);
+		const std::lock_guard<Mutex> protect(dc.mutex);
 		return decoder_stream_decode(plugin, bridge, input_stream);
 	} else
 		return false;
@@ -344,7 +344,7 @@ TryContainerDecoder(DecoderBridge &bridge, Path path_fs, const char *suffix,
 	bridge.error = nullptr;
 
 	DecoderControl &dc = bridge.dc;
-	const ScopeLock protect(dc.mutex);
+	const std::lock_guard<Mutex> protect(dc.mutex);
 	return decoder_file_decode(plugin, bridge, path_fs);
 }
 
@@ -517,7 +517,7 @@ decoder_task(void *arg)
 
 	SetThreadName("decoder");
 
-	const ScopeLock protect(dc.mutex);
+	const std::lock_guard<Mutex> protect(dc.mutex);
 
 	do {
 		assert(dc.state == DecoderState::STOP ||

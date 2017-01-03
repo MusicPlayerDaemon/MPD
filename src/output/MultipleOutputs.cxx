@@ -109,12 +109,12 @@ MultipleOutputs::EnableDisable()
 	/* parallel execution */
 
 	for (auto ao : outputs) {
-		const ScopeLock lock(ao->mutex);
+		const std::lock_guard<Mutex> lock(ao->mutex);
 		ao->EnableDisableAsync();
 	}
 
 	for (auto ao : outputs) {
-		const ScopeLock lock(ao->mutex);
+		const std::lock_guard<Mutex> lock(ao->mutex);
 		ao->WaitForCommand();
 	}
 }
@@ -123,7 +123,7 @@ bool
 MultipleOutputs::AllFinished() const
 {
 	for (auto ao : outputs) {
-		const ScopeLock protect(ao->mutex);
+		const std::lock_guard<Mutex> protect(ao->mutex);
 		if (ao->IsOpen() && !ao->IsCommandFinished())
 			return false;
 	}
@@ -215,7 +215,7 @@ MultipleOutputs::Open(const AudioFormat audio_format,
 	std::exception_ptr first_error;
 
 	for (auto ao : outputs) {
-		const ScopeLock lock(ao->mutex);
+		const std::lock_guard<Mutex> lock(ao->mutex);
 
 		if (ao->IsEnabled())
 			enabled = true;

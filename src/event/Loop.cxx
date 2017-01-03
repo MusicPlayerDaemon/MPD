@@ -254,7 +254,7 @@ EventLoop::AddDeferred(DeferredMonitor &d)
 void
 EventLoop::RemoveDeferred(DeferredMonitor &d)
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (!d.pending) {
 		assert(std::find(deferred.begin(),

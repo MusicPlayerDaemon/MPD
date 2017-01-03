@@ -440,7 +440,7 @@ public:
 
 	gcc_pure
 	bool LockIsChunkConsumed(const MusicChunk &chunk) {
-		const ScopeLock protect(mutex);
+		const std::lock_guard<Mutex> protect(mutex);
 		return IsChunkConsumed(chunk);
 	}
 

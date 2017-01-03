@@ -52,7 +52,7 @@ dump_input_stream(InputStreamPtr &&is)
 		dump_text_file(tis);
 	}
 
-	const ScopeLock protect(is->mutex);
+	const std::lock_guard<Mutex> protect(is->mutex);
 
 	is->Check();
 	return 0;

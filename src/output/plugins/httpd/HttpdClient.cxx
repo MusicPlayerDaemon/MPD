@@ -56,7 +56,7 @@ HttpdClient::Close()
 void
 HttpdClient::LockClose()
 {
-	const ScopeLock protect(httpd.mutex);
+	const std::lock_guard<Mutex> protect(httpd.mutex);
 	Close();
 }
 
@@ -272,7 +272,7 @@ HttpdClient::GetBytesTillMetaData() const
 inline bool
 HttpdClient::TryWrite()
 {
-	const ScopeLock protect(httpd.mutex);
+	const std::lock_guard<Mutex> protect(httpd.mutex);
 
 	assert(state == RESPONSE);
 

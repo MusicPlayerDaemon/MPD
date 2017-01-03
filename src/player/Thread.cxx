@@ -213,7 +213,7 @@ private:
 	 * allowed to be used while a command is being handled.
 	 */
 	bool WaitDecoderStartup() {
-		const ScopeLock lock(pc.mutex);
+		const std::lock_guard<Mutex> lock(pc.mutex);
 
 		while (decoder_starting) {
 			if (!CheckDecoderStartup()) {
@@ -351,7 +351,7 @@ Player::StartDecoder(MusicPipe &_pipe)
 
 	{
 		/* copy ReplayGain parameters to the decoder */
-		const ScopeLock protect(pc.mutex);
+		const std::lock_guard<Mutex> protect(pc.mutex);
 		dc.replay_gain_mode = pc.replay_gain_mode;
 	}
 
@@ -406,7 +406,7 @@ Player::ActivateDecoder()
 	queued = false;
 
 	{
-		const ScopeLock lock(pc.mutex);
+		const std::lock_guard<Mutex> lock(pc.mutex);
 
 		pc.ClearTaggedSong();
 
@@ -787,7 +787,7 @@ play_chunk(PlayerControl &pc,
 	}
 
 	{
-		const ScopeLock lock(pc.mutex);
+		const std::lock_guard<Mutex> lock(pc.mutex);
 		pc.bit_rate = chunk->bit_rate;
 	}
 
@@ -863,7 +863,7 @@ Player::PlayNextChunk()
 		} else {
 			/* there are not enough decoded chunks yet */
 
-			const ScopeLock lock(pc.mutex);
+			const std::lock_guard<Mutex> lock(pc.mutex);
 
 			if (dc.IsIdle()) {
 				/* the decoder isn't running, abort
@@ -911,7 +911,7 @@ Player::PlayNextChunk()
 		return false;
 	}
 
-	const ScopeLock lock(pc.mutex);
+	const std::lock_guard<Mutex> lock(pc.mutex);
 
 	/* this formula should prevent that the decoder gets woken up
 	   with each chunk; it is more efficient to make it decode a

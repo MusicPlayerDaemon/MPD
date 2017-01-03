@@ -153,7 +153,7 @@ HttpdOutput::RunDeferred()
 	/* this method runs in the IOThread; it broadcasts pages from
 	   our own queue to all clients */
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	while (!pages.empty()) {
 		Page *page = pages.front();
@@ -200,7 +200,7 @@ HttpdOutput::OnAccept(int fd, SocketAddress address, gcc_unused int uid)
 	(void)address;
 #endif	/* HAVE_WRAP */
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	if (fd >= 0) {
 		/* can we allow additional client */
@@ -296,7 +296,7 @@ httpd_output_open(AudioOutput *ao, AudioFormat &audio_format)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	const ScopeLock protect(httpd->mutex);
+	const std::lock_guard<Mutex> protect(httpd->mutex);
 	httpd->Open(audio_format);
 }
 
@@ -324,7 +324,7 @@ httpd_output_close(AudioOutput *ao)
 {
 	HttpdOutput *httpd = HttpdOutput::Cast(ao);
 
-	const ScopeLock protect(httpd->mutex);
+	const std::lock_guard<Mutex> protect(httpd->mutex);
 	httpd->Close();
 }
 
@@ -496,7 +496,7 @@ HttpdOutput::SendTag(const Tag &tag)
 
 		metadata = icy_server_metadata_page(tag, &types[0]);
 		if (metadata != nullptr) {
-			const ScopeLock protect(mutex);
+			const std::lock_guard<Mutex> protect(mutex);
 			for (auto &client : clients)
 				client.PushMetaData(metadata);
 		}
@@ -514,7 +514,7 @@ httpd_output_tag(AudioOutput *ao, const Tag &tag)
 inline void
 HttpdOutput::CancelAllClients()
 {
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	while (!pages.empty()) {
 		Page *page = pages.front();

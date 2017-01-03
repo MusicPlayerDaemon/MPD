@@ -232,7 +232,7 @@ soundcloud_parse_json(const char *url, yajl_handle hand,
 try {
 	auto input_stream = InputStream::OpenReady(url, mutex, cond);
 
-	const ScopeLock protect(mutex);
+	const std::lock_guard<Mutex> protect(mutex);
 
 	yajl_status stat;
 	bool done = false;

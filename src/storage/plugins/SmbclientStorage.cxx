@@ -97,7 +97,7 @@ GetInfo(const char *path)
 	struct stat st;
 
 	{
-		const ScopeLock protect(smbclient_mutex);
+		const std::lock_guard<Mutex> protect(smbclient_mutex);
 		if (smbc_stat(path, &st) != 0)
 			throw MakeErrno("Failed to access file");
 	}
@@ -132,7 +132,7 @@ SmbclientStorage::OpenDirectory(const char *uri_utf8)
 	int handle;
 
 	{
-		const ScopeLock protect(smbclient_mutex);
+		const std::lock_guard<Mutex> protect(smbclient_mutex);
 		handle = smbc_opendir(mapped.c_str());
 		if (handle < 0)
 			throw MakeErrno("Failed to open directory");
@@ -160,7 +160,7 @@ SmbclientDirectoryReader::~SmbclientDirectoryReader()
 const char *
 SmbclientDirectoryReader::Read()
 {
-	const ScopeLock protect(smbclient_mutex);
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
 
 	struct smbc_dirent *e;
 	while ((e = smbc_readdir(handle)) != nullptr) {
@@ -187,7 +187,7 @@ CreateSmbclientStorageURI(gcc_unused EventLoop &event_loop, const char *base)
 
 	SmbclientInit();
 
-	const ScopeLock protect(smbclient_mutex);
+	const std::lock_guard<Mutex> protect(smbclient_mutex);
 	SMBCCTX *ctx = smbc_new_context();
 	if (ctx == nullptr)
 		throw MakeErrno("smbc_new_context() failed");
