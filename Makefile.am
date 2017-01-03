@@ -1277,6 +1277,8 @@ if ENABLE_CURL
 libinput_a_SOURCES += \
 	src/input/IcyInputStream.cxx src/input/IcyInputStream.hxx \
 	src/input/plugins/CurlInputPlugin.cxx src/input/plugins/CurlInputPlugin.hxx \
+	src/lib/curl/Global.cxx src/lib/curl/Global.hxx \
+	src/lib/curl/Request.hxx \
 	src/lib/curl/Easy.hxx \
 	src/lib/curl/Multi.hxx \
 	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx

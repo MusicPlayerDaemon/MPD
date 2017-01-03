@@ -20,15 +20,14 @@
 #include "config.h"
 #include "CurlInputPlugin.hxx"
 #include "lib/curl/Easy.hxx"
-#include "lib/curl/Multi.hxx"
+#include "lib/curl/Global.hxx"
+#include "lib/curl/Request.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
 #include "../InputPlugin.hxx"
 #include "config/ConfigGlobal.hxx"
 #include "config/Block.hxx"
 #include "tag/TagBuilder.hxx"
-#include "event/SocketMonitor.hxx"
-#include "event/TimeoutMonitor.hxx"
 #include "event/Call.hxx"
 #include "IOThread.hxx"
 #include "util/ASCII.hxx"
@@ -60,7 +59,7 @@ static const size_t CURL_MAX_BUFFERED = 512 * 1024;
  */
 static const size_t CURL_RESUME_AT = 384 * 1024;
 
-struct CurlInputStream final : public AsyncInputStream {
+struct CurlInputStream final : public AsyncInputStream, CurlRequest {
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
 	char range[32];
@@ -127,113 +126,12 @@ struct CurlInputStream final : public AsyncInputStream {
 	 */
 	void RequestDone(CURLcode result, long status);
 
+	/* virtual methods from CurlRequest */
+	void Done(CURLcode result) override;
+
 	/* virtual methods from AsyncInputStream */
 	virtual void DoResume() override;
 	virtual void DoSeek(offset_type new_offset) override;
-};
-
-class CurlGlobal;
-
-/**
- * Monitor for one socket created by CURL.
- */
-class CurlSocket final : SocketMonitor {
-	CurlGlobal &global;
-
-public:
-	CurlSocket(CurlGlobal &_global, EventLoop &_loop, int _fd)
-		:SocketMonitor(_fd, _loop), global(_global) {}
-
-	~CurlSocket() {
-		/* TODO: sometimes, CURL uses CURL_POLL_REMOVE after
-		   closing the socket, and sometimes, it uses
-		   CURL_POLL_REMOVE just to move the (still open)
-		   connection to the pool; in the first case,
-		   Abandon() would be most appropriate, but it breaks
-		   the second case - is that a CURL bug?  is there a
-		   better solution? */
-	}
-
-	/**
-	 * Callback function for CURLMOPT_SOCKETFUNCTION.
-	 */
-	static int SocketFunction(CURL *easy,
-				  curl_socket_t s, int action,
-				  void *userp, void *socketp);
-
-	virtual bool OnSocketReady(unsigned flags) override;
-
-private:
-	static constexpr int FlagsToCurlCSelect(unsigned flags) {
-		return (flags & (READ | HANGUP) ? CURL_CSELECT_IN : 0) |
-			(flags & WRITE ? CURL_CSELECT_OUT : 0) |
-			(flags & ERROR ? CURL_CSELECT_ERR : 0);
-	}
-
-	gcc_const
-	static unsigned CurlPollToFlags(int action) {
-		switch (action) {
-		case CURL_POLL_NONE:
-			return 0;
-
-		case CURL_POLL_IN:
-			return READ;
-
-		case CURL_POLL_OUT:
-			return WRITE;
-
-		case CURL_POLL_INOUT:
-			return READ|WRITE;
-		}
-
-		assert(false);
-		gcc_unreachable();
-	}
-};
-
-/**
- * Manager for the global CURLM object.
- */
-class CurlGlobal final : private TimeoutMonitor {
-	CurlMulti multi;
-
-public:
-	explicit CurlGlobal(EventLoop &_loop);
-
-	void Add(CurlInputStream *c);
-	void Remove(CurlInputStream *c);
-
-	/**
-	 * Check for finished HTTP responses.
-	 *
-	 * Runs in the I/O thread.  The caller must not hold locks.
-	 */
-	void ReadInfo();
-
-	void Assign(curl_socket_t fd, CurlSocket &cs) {
-		curl_multi_assign(multi.Get(), fd, &cs);
-	}
-
-	void SocketAction(curl_socket_t fd, int ev_bitmask);
-
-	void InvalidateSockets() {
-		SocketAction(CURL_SOCKET_TIMEOUT, 0);
-	}
-
-	/**
-	 * This is a kludge to allow pausing/resuming a stream with
-	 * libcurl < 7.32.0.  Read the curl_easy_pause manpage for
-	 * more information.
-	 */
-	void ResumeSockets() {
-		int running_handles;
-		curl_multi_socket_all(multi.Get(), &running_handles);
-	}
-
-private:
-	static int TimerFunction(CURLM *global, long timeout_ms, void *userp);
-
-	virtual void OnTimeout() override;
 };
 
 /**
@@ -253,36 +151,6 @@ static bool verify_peer, verify_host;
 static CurlGlobal *curl_global;
 
 static constexpr Domain curl_domain("curl");
-static constexpr Domain curlm_domain("curlm");
-
-CurlGlobal::CurlGlobal(EventLoop &_loop)
-	:TimeoutMonitor(_loop)
-{
-	multi.SetOption(CURLMOPT_SOCKETFUNCTION, CurlSocket::SocketFunction);
-	multi.SetOption(CURLMOPT_SOCKETDATA, this);
-
-	multi.SetOption(CURLMOPT_TIMERFUNCTION, TimerFunction);
-	multi.SetOption(CURLMOPT_TIMERDATA, this);
-}
-
-/**
- * Find a request by its CURL "easy" handle.
- *
- * Runs in the I/O thread.  No lock needed.
- */
-gcc_pure
-static CurlInputStream *
-input_curl_find_request(CURL *easy)
-{
-	assert(io_thread_inside());
-
-	void *p;
-	CURLcode code = curl_easy_getinfo(easy, CURLINFO_PRIVATE, &p);
-	if (code != CURLE_OK)
-		return nullptr;
-
-	return (CurlInputStream *)p;
-}
 
 void
 CurlInputStream::DoResume()
@@ -304,72 +172,6 @@ CurlInputStream::DoResume()
 	mutex.lock();
 }
 
-int
-CurlSocket::SocketFunction(gcc_unused CURL *easy,
-			   curl_socket_t s, int action,
-			   void *userp, void *socketp) {
-	auto &global = *(CurlGlobal *)userp;
-	CurlSocket *cs = (CurlSocket *)socketp;
-
-	assert(io_thread_inside());
-
-	if (action == CURL_POLL_REMOVE) {
-		delete cs;
-		return 0;
-	}
-
-	if (cs == nullptr) {
-		cs = new CurlSocket(global, io_thread_get(), s);
-		global.Assign(s, *cs);
-	} else {
-#ifdef USE_EPOLL
-		/* when using epoll, we need to unregister the socket
-		   each time this callback is invoked, because older
-		   CURL versions may omit the CURL_POLL_REMOVE call
-		   when the socket has been closed and recreated with
-		   the same file number (bug found in CURL 7.26, CURL
-		   7.33 not affected); in that case, epoll refuses the
-		   EPOLL_CTL_MOD because it does not know the new
-		   socket yet */
-		cs->Cancel();
-#endif
-	}
-
-	unsigned flags = CurlPollToFlags(action);
-	if (flags != 0)
-		cs->Schedule(flags);
-	return 0;
-}
-
-bool
-CurlSocket::OnSocketReady(unsigned flags)
-{
-	assert(io_thread_inside());
-
-	global.SocketAction(Get(), FlagsToCurlCSelect(flags));
-	return true;
-}
-
-/**
- * Runs in the I/O thread.  No lock needed.
- *
- * Throws std::runtime_error on error.
- */
-inline void
-CurlGlobal::Add(CurlInputStream *c)
-{
-	assert(io_thread_inside());
-	assert(c != nullptr);
-	assert(c->easy);
-
-	CURLMcode mcode = curl_multi_add_handle(multi.Get(), c->easy.Get());
-	if (mcode != CURLM_OK)
-		throw FormatRuntimeError("curl_multi_add_handle() failed: %s",
-					 curl_multi_strerror(mcode));
-
-	InvalidateSockets();
-}
-
 /**
  * Call input_curl_easy_add() in the I/O thread.  May be called from
  * any thread.  Caller must not hold a mutex.
@@ -383,14 +185,8 @@ input_curl_easy_add_indirect(CurlInputStream *c)
 	assert(c->easy);
 
 	BlockingCall(io_thread_get(), [c](){
-			curl_global->Add(c);
+			curl_global->Add(c->easy.Get(), *c);
 		});
-}
-
-inline void
-CurlGlobal::Remove(CurlInputStream *c)
-{
-	curl_multi_remove_handle(multi.Get(), c->easy.Get());
 }
 
 void
@@ -447,78 +243,13 @@ CurlInputStream::RequestDone(CURLcode result, long status)
 		cond.broadcast();
 }
 
-static void
-input_curl_handle_done(CURL *easy_handle, CURLcode result)
+void
+CurlInputStream::Done(CURLcode result)
 {
-	CurlInputStream *c = input_curl_find_request(easy_handle);
-	assert(c != nullptr);
-
 	long status = 0;
-	curl_easy_getinfo(easy_handle, CURLINFO_RESPONSE_CODE, &status);
+	curl_easy_getinfo(easy.Get(), CURLINFO_RESPONSE_CODE, &status);
 
-	c->RequestDone(result, status);
-}
-
-void
-CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask)
-{
-	int running_handles;
-	CURLMcode mcode = curl_multi_socket_action(multi.Get(), fd, ev_bitmask,
-						   &running_handles);
-	if (mcode != CURLM_OK)
-		FormatError(curlm_domain,
-			    "curl_multi_socket_action() failed: %s",
-			    curl_multi_strerror(mcode));
-
-	ReadInfo();
-}
-
-/**
- * Check for finished HTTP responses.
- *
- * Runs in the I/O thread.  The caller must not hold locks.
- */
-inline void
-CurlGlobal::ReadInfo()
-{
-	assert(io_thread_inside());
-
-	CURLMsg *msg;
-	int msgs_in_queue;
-
-	while ((msg = curl_multi_info_read(multi.Get(),
-					   &msgs_in_queue)) != nullptr) {
-		if (msg->msg == CURLMSG_DONE)
-			input_curl_handle_done(msg->easy_handle, msg->data.result);
-	}
-}
-
-int
-CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *userp)
-{
-	auto &global = *(CurlGlobal *)userp;
-	assert(_global == global.multi.Get());
-
-	if (timeout_ms < 0) {
-		global.Cancel();
-		return 0;
-	}
-
-	if (timeout_ms >= 0 && timeout_ms < 10)
-		/* CURL 7.21.1 likes to report "timeout=0", which
-		   means we're running in a busy loop.  Quite a bad
-		   idea to waste so much CPU.  Let's use a lower limit
-		   of 10ms. */
-		timeout_ms = 10;
-
-	global.Schedule(std::chrono::milliseconds(timeout_ms));
-	return 0;
-}
-
-void
-CurlGlobal::OnTimeout()
-{
-	SocketAction(CURL_SOCKET_TIMEOUT, 0);
+	RequestDone(result, status);
 }
 
 /*
@@ -725,7 +456,6 @@ CurlInputStream::InitEasy()
 {
 	easy = CurlEasy();
 
-	easy.SetOption(CURLOPT_PRIVATE, (void *)this);
 	easy.SetOption(CURLOPT_USERAGENT, "Music Player Daemon " VERSION);
 	easy.SetOption(CURLOPT_HEADERFUNCTION, input_curl_headerfunction);
 	easy.SetOption(CURLOPT_WRITEHEADER, this);
