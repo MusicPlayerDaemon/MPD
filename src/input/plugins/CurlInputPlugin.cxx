@@ -433,8 +433,8 @@ CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 static InputStream *
 input_curl_open(const char *url, Mutex &mutex, Cond &cond)
 {
-	if (memcmp(url, "http://",  7) != 0 &&
-	    memcmp(url, "https://", 8) != 0)
+	if (strncmp(url, "http://", 7) != 0 &&
+	    strncmp(url, "https://", 8) != 0)
 		return nullptr;
 
 	return CurlInputStream::Open(url, mutex, cond);

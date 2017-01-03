@@ -389,7 +389,7 @@ NfsStorage::OpenDirectory(const char *uri_utf8)
 static Storage *
 CreateNfsStorageURI(EventLoop &event_loop, const char *base)
 {
-	if (memcmp(base, "nfs://", 6) != 0)
+	if (strncmp(base, "nfs://", 6) != 0)
 		return nullptr;
 
 	const char *p = base + 6;

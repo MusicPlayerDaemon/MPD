@@ -34,7 +34,7 @@ Log(const Domain &domain, gcc_unused LogLevel level, const char *msg)
 bool
 uri_supported_scheme(const char *uri)
 {
-	return memcmp(uri, "http://", 7) == 0;
+	return strncmp(uri, "http://", 7) == 0;
 }
 
 static constexpr auto music_directory = PATH_LITERAL("/music");
