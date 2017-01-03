@@ -699,6 +699,8 @@ libstorage_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 STORAGE_LIBS = \
 	libstorage.a \
+	$(CURL_LIBS) \
+	$(EXPAT_LIBS) \
 	$(NFS_LIBS) \
 	$(SMBCLIENT_LIBS)
 
@@ -712,6 +714,12 @@ if ENABLE_NFS
 libstorage_a_SOURCES += \
 	$(NFS_SOURCES) \
 	src/storage/plugins/NfsStorage.cxx src/storage/plugins/NfsStorage.hxx
+endif
+
+if ENABLE_WEBDAV
+libstorage_a_SOURCES += \
+	src/lib/expat/ExpatParser.cxx \
+	src/storage/plugins/CurlStorage.cxx src/storage/plugins/CurlStorage.hxx
 endif
 
 endif
@@ -1767,6 +1775,10 @@ test_run_storage_SOURCES = \
 	src/IOThread.cxx \
 	test/ScopeIOThread.hxx \
 	test/run_storage.cxx
+
+if ENABLE_WEBDAV
+test_run_storage_SOURCES += $(CURL_SOURCES)
+endif
 
 endif
 

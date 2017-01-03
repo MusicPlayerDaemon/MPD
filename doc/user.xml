@@ -1868,6 +1868,18 @@ run</programlisting>
         </para>
       </section>
 
+      <section id="curl_storage">
+        <title><varname>curl</varname></title>
+
+        <para>
+          A WebDAV client using <filename>libcurl</filename>.  It used
+          used when <varname>music_directory</varname> contains a
+          <parameter>http://</parameter> or
+          <parameter>https://</parameter> URI, for example
+          "<parameter>https://the.server/dav/</parameter>".
+        </para>
+      </section>
+
       <section id="smbclient_storage">
         <title><varname>smbclient</varname></title>
 

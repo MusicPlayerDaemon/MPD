@@ -23,6 +23,7 @@
 #include "plugins/LocalStorage.hxx"
 #include "plugins/SmbclientStorage.hxx"
 #include "plugins/NfsStorage.hxx"
+#include "plugins/CurlStorage.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -34,6 +35,9 @@ const StoragePlugin *const storage_plugins[] = {
 #endif
 #ifdef ENABLE_NFS
 	&nfs_storage_plugin,
+#endif
+#ifdef ENABLE_WEBDAV
+	&curl_storage_plugin,
 #endif
 	nullptr
 };

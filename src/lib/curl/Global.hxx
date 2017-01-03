@@ -46,6 +46,8 @@ class CurlGlobal final : TimeoutMonitor, DeferredMonitor {
 public:
 	explicit CurlGlobal(EventLoop &_loop);
 
+	using TimeoutMonitor::GetEventLoop;
+
 	void Add(CURL *easy, CurlRequest &request);
 	void Remove(CURL *easy);
 

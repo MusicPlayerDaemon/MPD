@@ -721,6 +721,19 @@ MPD_ENABLE_AUTO_PKG(mms, MMS, [libmms >= 0.4],
 	[libmms mms:// protocol support], [libmms not found])
 
 dnl ---------------------------------------------------------------------------
+dnl Storage Plugins
+dnl ---------------------------------------------------------------------------
+
+MPD_ENABLE_AUTO(webdav, WEBDAV, [WebDAV storage plugin],
+	[WebDAV requires libcurl and libexpat],
+	[auto],
+	[if test x$enable_curl = xyes && test x$enable_expat = xyes; then
+		found_webdav=yes
+	else
+		found_webdav=no
+	fi])
+
+dnl ---------------------------------------------------------------------------
 dnl Playlist Plugins
 dnl ---------------------------------------------------------------------------
 
