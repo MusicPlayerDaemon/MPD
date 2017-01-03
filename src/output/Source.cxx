@@ -65,7 +65,7 @@ AudioOutputSource::Close()
 	assert(in_audio_format.IsValid());
 	in_audio_format.Clear();
 
-	pipe.Cancel();
+	Cancel();
 
 	CloseFilter();
 }
