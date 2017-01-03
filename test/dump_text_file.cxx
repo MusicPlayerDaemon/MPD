@@ -36,6 +36,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+class GlobalInit {
+	const ScopeIOThread io_thread;
+
+public:
+	GlobalInit() {
+		config_global_init();
+#ifdef ENABLE_ARCHIVE
+		archive_plugin_init_all();
+#endif
+		input_stream_global_init();
+	}
+
+	~GlobalInit() {
+		input_stream_global_finish();
+#ifdef ENABLE_ARCHIVE
+		archive_plugin_deinit_all();
+#endif
+		config_global_finish();
+	}
+};
+
 static void
 dump_text_file(TextInputStream &is)
 {
@@ -60,8 +81,6 @@ dump_input_stream(InputStreamPtr &&is)
 
 int main(int argc, char **argv)
 try {
-	int ret;
-
 	if (argc != 2) {
 		fprintf(stderr, "Usage: run_input URI\n");
 		return EXIT_FAILURE;
@@ -69,37 +88,15 @@ try {
 
 	/* initialize MPD */
 
-	config_global_init();
-
-	const ScopeIOThread io_thread;
-
-#ifdef ENABLE_ARCHIVE
-	archive_plugin_init_all();
-#endif
-
-	input_stream_global_init();
+	const GlobalInit init;
 
 	/* open the stream and dump it */
 
-	{
-		Mutex mutex;
-		Cond cond;
+	Mutex mutex;
+	Cond cond;
 
-		auto is = InputStream::OpenReady(argv[1], mutex, cond);
-		ret = dump_input_stream(std::move(is));
-	}
-
-	/* deinitialize everything */
-
-	input_stream_global_finish();
-
-#ifdef ENABLE_ARCHIVE
-	archive_plugin_deinit_all();
-#endif
-
-	config_global_finish();
-
-	return ret;
+	auto is = InputStream::OpenReady(argv[1], mutex, cond);
+	return dump_input_stream(std::move(is));
 } catch (const std::exception &e) {
 	LogError(e);
 	return EXIT_FAILURE;
