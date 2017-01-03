@@ -109,6 +109,11 @@ struct CurlInputStream final : public AsyncInputStream, CurlRequest {
 	void FreeEasyIndirect();
 
 	/**
+	 * The DoSeek() implementation invoked in the IOThread.
+	 */
+	void SeekInternal(offset_type new_offset);
+
+	/**
 	 * Called when a new response begins.  This is used to discard
 	 * headers from previous responses (for example authentication
 	 * and redirects).
@@ -497,32 +502,20 @@ CurlInputStream::InitEasy()
 }
 
 void
-CurlInputStream::DoSeek(offset_type new_offset)
+CurlInputStream::SeekInternal(offset_type new_offset)
 {
-	assert(IsReady());
-
 	/* close the old connection and open a new one */
 
-	mutex.unlock();
-
-	FreeEasyIndirect();
+	FreeEasy();
 
 	offset = new_offset;
-	if (offset == size) {
+	if (offset == size)
 		/* seek to EOF: simulate empty result; avoid
 		   triggering a "416 Requested Range Not Satisfiable"
 		   response */
-		mutex.lock();
-		SeekDone();
 		return;
-	}
 
-	try {
-		InitEasy();
-	} catch (...) {
-		mutex.lock();
-		throw;
-	}
+	InitEasy();
 
 	/* send the "Range" header */
 
@@ -531,15 +524,19 @@ CurlInputStream::DoSeek(offset_type new_offset)
 		easy.SetOption(CURLOPT_RANGE, range);
 	}
 
-	try {
-		input_curl_easy_add_indirect(this);
-	} catch (...) {
-		mutex.lock();
-		throw;
-	}
+	curl_global->Add(easy.Get(), *this);
+}
 
-	mutex.lock();
-	offset = new_offset;
+void
+CurlInputStream::DoSeek(offset_type new_offset)
+{
+	assert(IsReady());
+
+	const ScopeUnlock unlock(mutex);
+
+	BlockingCall(io_thread_get(), [this, new_offset](){
+			SeekInternal(new_offset);
+		});
 }
 
 inline InputStream *
