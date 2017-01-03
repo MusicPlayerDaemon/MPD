@@ -199,6 +199,40 @@ systemctl start mpd.socket</programlisting>
   <chapter id="config">
     <title>Configuration</title>
 
+    <section id="config_file">
+      <title>The Configuration File</title>
+
+      <para>
+        <application>MPD</application> reads its configuration from a
+        text file.  Usually, that is
+        <filename>/etc/mpd.conf</filename>, unless a different path is
+        specified on the command line.  If you run
+        <application>MPD</application> as a user daemon (and not as a
+        system daemon), the configuration is read from
+        <filename>$XDG_CONFIG_HOME/mpd/mpd.conf</filename> (usually
+        <filename>~/.config/mpd/mpd.conf</filename>).
+      </para>
+
+      <para>
+        Each line in the configuration file contains a setting name
+        and its value, e.g.:
+      </para>
+
+      <programlisting>connection_timeout "5"</programlisting>
+
+      <para>
+        Some of the settings are grouped in blocks with curly braces,
+        e.g. per-plugin settings:
+      </para>
+
+      <programlisting>audio_output {
+    type "alsa"
+    name "My ALSA output"
+    device "iec958:CARD=Intel,DEV=0"
+    mixer_control "PCM"
+}</programlisting>
+    </section>
+
     <section id="config_music_directory">
       <title>Configuring the music directory</title>
 
