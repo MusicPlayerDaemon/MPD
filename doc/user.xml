@@ -1751,6 +1751,21 @@ buffer_size: 16384</programlisting>
         </informaltable>
       </section>
 
+      <section id="ffmpeg_input">
+        <title><varname>ffmpeg</varname></title>
+
+        <para>
+          Access to various network protocols implemented by the
+          <application>FFmpeg</application> library:
+          <filename>gopher://</filename>,
+          <filename>rtp://</filename>,
+          <filename>rtsp://</filename>,
+          <filename>rtmp://</filename>,
+          <filename>rtmpt://</filename>,
+          <filename>rtmps://</filename>
+        </para>
+      </section>
+
       <section>
         <title><varname>file</varname></title>
 
@@ -1814,6 +1829,72 @@ buffer_size: 16384</programlisting>
 
     <section id="decoder_plugins">
       <title>Decoder plugins</title>
+
+      <section id="adplug_decoder">
+        <title><varname>adplug</varname></title>
+
+        <para>
+          Decodes AdLib files.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>sample_rate</varname>
+                  <parameter></parameter>
+                </entry>
+                <entry>
+                  The sample rate that shall be synthesized by the
+                  plugin.  Defaults to 48000.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </section>
+
+      <section id="audiofile_decoder">
+        <title><varname>audiofile</varname></title>
+
+        <para>
+          Decodes WAV and AIFF files using
+          <filename>libaudiofile</filename>.
+        </para>
+      </section>
+
+      <section id="faad_decoder">
+        <title><varname>faad</varname></title>
+
+        <para>
+          Decodes AAC files using <filename>libfaad</filename>.
+        </para>
+      </section>
+
+      <section id="ffmpeg_decoder">
+        <title><varname>ffmpeg</varname></title>
+
+        <para>
+          Decodes various codecs using
+          <application>FFmpeg</application>.
+        </para>
+      </section>
+
+      <section id="flac_decoder">
+        <title><varname>flac</varname></title>
+
+        <para>
+          Decodes FLAC files using
+          <application>libFLAC</application>.
+        </para>
+      </section>
 
       <section id="dsdiff_decoder">
         <title><varname>dsdiff</varname></title>
@@ -1927,6 +2008,14 @@ buffer_size: 16384</programlisting>
         </informaltable>
       </section>
 
+      <section id="mad_decoder">
+        <title><varname>mad</varname></title>
+
+        <para>
+          Decodes MP3 files using <application>libmad</application>.
+        </para>
+      </section>
+
       <section>
         <title><varname>mikmod</varname></title>
 
@@ -1999,6 +2088,23 @@ buffer_size: 16384</programlisting>
         </informaltable>
       </section>
 
+      <section id="mpcdec_decoder">
+        <title><varname>mpcdec</varname></title>
+
+        <para>
+          Decodes Musepack files using
+          <application>libmpcdec</application>.
+        </para>
+      </section>
+
+      <section id="mpg123_decoder">
+        <title><varname>mpg123</varname></title>
+
+        <para>
+          Decodes MP3 files using <application>libmpg123</application>.
+        </para>
+      </section>
+
       <section>
         <title><varname>pcm</varname></title>
 
@@ -2066,6 +2172,33 @@ buffer_size: 16384</programlisting>
             </tbody>
           </tgroup>
         </informaltable>
+      </section>
+
+      <section id="sndfile_decoder">
+        <title><varname>sndfile</varname></title>
+
+        <para>
+          Decodes WAV and AIFF files using
+          <filename>libsndfile</filename>.
+        </para>
+      </section>
+
+      <section id="vorbis_decoder">
+        <title><varname>vorbis</varname></title>
+
+        <para>
+          Decodes Ogg-Vorbis files using
+          <application>libvorbis</application>.
+        </para>
+      </section>
+
+      <section id="wavpack_decoder">
+        <title><varname>wavpack</varname></title>
+
+        <para>
+          Decodes WavPack files using
+          <application>libwavpack</application>.
+        </para>
       </section>
 
       <section>
