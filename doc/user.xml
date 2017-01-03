@@ -221,6 +221,13 @@ systemctl start mpd.socket</programlisting>
       <programlisting>connection_timeout "5"</programlisting>
 
       <para>
+        For settings which specify a filesystem path, the tilde is
+        expanded:
+      </para>
+
+      <programlisting>music_directory "~/Music"</programlisting>
+
+      <para>
         Some of the settings are grouped in blocks with curly braces,
         e.g. per-plugin settings:
       </para>
