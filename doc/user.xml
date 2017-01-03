@@ -515,8 +515,8 @@ systemctl start mpd.socket</programlisting>
       </para>
 
       <para>
-        To configure an audio output manually, add an
-        <varname>audio_output</varname> block to
+        To configure an audio output manually, add one or more
+        <varname>audio_output</varname> blocks to
         <filename>mpd.conf</filename>:
       </para>
 
