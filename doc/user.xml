@@ -647,8 +647,10 @@ systemctl start mpd.socket</programlisting>
                 linkend="pulse_output">PulseAudio</link>), the
                 software mixer, the "null" mixer
                 (<parameter>null</parameter>; allows setting the
-                volume, but with no effect) or no mixer
-                (<parameter>none</parameter>).  By default, the
+                volume, but with no effect; this can be used as a
+                trick to implement an <link
+                linkend="external_mixer">external mixer</link>) or no
+                mixer (<parameter>none</parameter>).  By default, the
                 hardware mixer is used for devices which support it,
                 and none for the others.
               </entry>
@@ -1416,6 +1418,26 @@ buffer_size: 16384</programlisting>
         because there is no way for <application>MPD</application> to
         find out whether the DAC supports it.  DSD to PCM conversion
         is the fallback if DSD cannot be used directly.
+      </para>
+    </section>
+  </chapter>
+
+  <chapter id="client_hacks">
+    <title>Client Hacks</title>
+
+    <section id="external_mixer">
+      <title>External Mixer</title>
+
+      <para>
+        The setting '<varname>mixer_type</varname>
+        "<parameter>null</parameter>"' asks
+        <application>MPD</application> to pretend that there is a
+        mixer, but not actually do something.  This allows you to
+        implement a <application>MPD</application> client which
+        listens for <varname>mixer</varname> events, queries the
+        current (fake) volume, and uses it to program an external
+        mixer.  For example, your client can forward this setting to
+        your amplifier.
       </para>
     </section>
   </chapter>
