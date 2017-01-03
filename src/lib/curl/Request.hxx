@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2016 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2008-2017 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,14 +30,85 @@
 #ifndef CURL_REQUEST_HXX
 #define CURL_REQUEST_HXX
 
-#include <curl/curl.h>
+#include "Easy.hxx"
+
+#include <map>
+#include <string>
+
+struct StringView;
+class CurlGlobal;
+class CurlResponseHandler;
 
 class CurlRequest {
+	CurlGlobal &global;
+
+	CurlResponseHandler &handler;
+
+	/** the curl handle */
+	CurlEasy easy;
+
+	enum class State {
+		HEADERS,
+		BODY,
+		CLOSED,
+	} state = State::HEADERS;
+
+	std::multimap<std::string, std::string> headers;
+
+	/** error message provided by libcurl */
+	char error_buffer[CURL_ERROR_SIZE];
+
 public:
+	CurlRequest(CurlGlobal &_global, const char *url,
+		    CurlResponseHandler &_handler);
+	~CurlRequest();
+
+	CurlRequest(const CurlRequest &) = delete;
+	CurlRequest &operator=(const CurlRequest &) = delete;
+
+	CURL *Get() {
+		return easy.Get();
+	}
+
+	template<typename T>
+	void SetOption(CURLoption option, T value) {
+		easy.SetOption(option, value);
+	}
+
+	/**
+	 * CurlResponseHandler::OnData() shall throw this to pause the
+	 * stream.  Call Resume() to resume the transfer.
+	 */
+	struct Pause {};
+
+	void Resume();
+
 	/**
 	 * A HTTP request is finished.  Called by #CurlGlobal.
 	 */
-	virtual void Done(CURLcode result) = 0;
+	void Done(CURLcode result);
+
+private:
+	/**
+	 * Frees the current "libcurl easy" handle, and everything
+	 * associated with it.
+	 */
+	void FreeEasy();
+
+	bool FinishHeaders();
+	void FinishBody();
+
+	size_t DataReceived(const void *ptr, size_t size);
+
+	void HeaderFunction(StringView s);
+
+	/** called by curl when new data is available */
+	static size_t _HeaderFunction(void *ptr, size_t size, size_t nmemb,
+				      void *stream);
+
+	/** called by curl when new data is available */
+	static size_t WriteFunction(void *ptr, size_t size, size_t nmemb,
+				    void *stream);
 };
 
 #endif

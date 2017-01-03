@@ -179,6 +179,8 @@ CurlGlobal::Remove(CURL *easy)
 	assert(easy != nullptr);
 
 	curl_multi_remove_handle(multi.Get(), easy);
+
+	InvalidateSockets();
 }
 
 static CurlRequest *
