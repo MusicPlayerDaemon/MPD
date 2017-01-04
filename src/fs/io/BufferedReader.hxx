@@ -35,14 +35,13 @@ class BufferedReader {
 
 	DynamicFifoBuffer<char> buffer;
 
-	bool eof;
+	bool eof = false;
 
-	unsigned line_number;
+	unsigned line_number = 0;
 
 public:
 	BufferedReader(Reader &_reader)
-		:reader(_reader), buffer(4096), eof(false),
-		 line_number(0) {}
+		:reader(_reader), buffer(4096) {}
 
 	/**
 	 * Reset the internal state.  Should be called after rewinding

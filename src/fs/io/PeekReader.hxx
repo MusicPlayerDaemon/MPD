@@ -34,13 +34,13 @@
 class PeekReader final : public Reader {
 	Reader &next;
 
-	size_t buffer_size, buffer_position;
+	size_t buffer_size = 0, buffer_position = 0;
 
 	uint8_t buffer[64];
 
 public:
 	PeekReader(Reader &_next)
-		:next(_next), buffer_size(0), buffer_position(0) {}
+		:next(_next) {}
 
 	const void *Peek(size_t size);
 

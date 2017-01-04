@@ -31,13 +31,13 @@ class GunzipReader;
  * #GunzipReader.
  */
 class AutoGunzipReader final : public Reader {
-	Reader *next;
+	Reader *next = nullptr;
 	PeekReader peek;
-	GunzipReader *gunzip;
+	GunzipReader *gunzip = nullptr;
 
 public:
 	AutoGunzipReader(Reader &_next)
-		:next(nullptr), peek(_next), gunzip(nullptr) {}
+		:peek(_next) {}
 	~AutoGunzipReader();
 
 	/* virtual methods from class Reader */
