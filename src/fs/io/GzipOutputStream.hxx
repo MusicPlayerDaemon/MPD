@@ -41,7 +41,7 @@ public:
 	/**
 	 * Construct the filter.
 	 */
-	GzipOutputStream(OutputStream &_next);
+	explicit GzipOutputStream(OutputStream &_next);
 	~GzipOutputStream();
 
 	/**

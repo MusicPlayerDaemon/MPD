@@ -36,7 +36,7 @@ class AutoGunzipReader final : public Reader {
 	GunzipReader *gunzip = nullptr;
 
 public:
-	AutoGunzipReader(Reader &_next)
+	explicit AutoGunzipReader(Reader &_next)
 		:peek(_next) {}
 	~AutoGunzipReader();
 

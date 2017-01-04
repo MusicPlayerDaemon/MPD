@@ -46,7 +46,7 @@ class FileReader final : public Reader {
 #endif
 
 public:
-	FileReader(Path _path);
+	explicit FileReader(Path _path);
 
 #ifdef WIN32
 	FileReader(FileReader &&other)

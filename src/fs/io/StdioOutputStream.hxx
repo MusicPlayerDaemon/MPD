@@ -30,7 +30,7 @@ class StdioOutputStream final : public OutputStream {
 	FILE *const file;
 
 public:
-	StdioOutputStream(FILE *_file):file(_file) {}
+	explicit StdioOutputStream(FILE *_file):file(_file) {}
 
 	/* virtual methods from class OutputStream */
 	void Write(const void *data, size_t size) override {

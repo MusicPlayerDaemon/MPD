@@ -44,7 +44,7 @@ class BufferedOutputStream {
 	DynamicFifoBuffer<char> buffer;
 
 public:
-	BufferedOutputStream(OutputStream &_os)
+	explicit BufferedOutputStream(OutputStream &_os)
 		:os(_os), buffer(32768) {}
 
 	void Write(const void *data, size_t size);

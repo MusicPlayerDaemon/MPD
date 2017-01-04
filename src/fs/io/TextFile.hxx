@@ -38,7 +38,7 @@ class TextFile {
 	BufferedReader *const buffered_reader;
 
 public:
-	TextFile(Path path_fs);
+	explicit TextFile(Path path_fs);
 
 	TextFile(const TextFile &other) = delete;
 

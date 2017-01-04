@@ -40,7 +40,7 @@ class BufferedReader {
 	unsigned line_number = 0;
 
 public:
-	BufferedReader(Reader &_reader)
+	explicit BufferedReader(Reader &_reader)
 		:reader(_reader), buffer(4096) {}
 
 	/**

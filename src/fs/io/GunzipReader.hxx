@@ -43,7 +43,7 @@ public:
 	/**
 	 * Construct the filter.
 	 */
-	GunzipReader(Reader &_next);
+	explicit GunzipReader(Reader &_next);
 
 	~GunzipReader() {
 		inflateEnd(&z);

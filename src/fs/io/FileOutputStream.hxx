@@ -88,7 +88,7 @@ private:
 	Mode mode;
 
 public:
-	FileOutputStream(Path _path, Mode _mode=Mode::CREATE);
+	explicit FileOutputStream(Path _path, Mode _mode=Mode::CREATE);
 
 	~FileOutputStream() {
 		if (IsDefined())
