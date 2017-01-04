@@ -1,4 +1,4 @@
-ver 0.20 (not yet released)
+ver 0.20 (2017/01/04)
 * protocol
   - "commands" returns playlist commands only if playlist_directory configured
   - "search"/"find" have a "window" parameter
