@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2016 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2017 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,7 +32,6 @@
 
 #include "Compiler.h"
 
-#include <new>
 #include <utility>
 
 #include <stddef.h>
@@ -46,7 +45,7 @@
  */
 gcc_malloc
 void *
-HugeAllocate(size_t size) throw(std::bad_alloc);
+HugeAllocate(size_t size);
 
 /**
  * @param p an allocation returned by HugeAllocate()
@@ -71,7 +70,7 @@ HugeDiscard(void *p, size_t size) noexcept;
 
 gcc_malloc
 void *
-HugeAllocate(size_t size) throw(std::bad_alloc);
+HugeAllocate(size_t size);
 
 static inline void
 HugeFree(void *p, gcc_unused size_t size) noexcept
@@ -93,7 +92,7 @@ HugeDiscard(void *p, size_t size) noexcept
 
 gcc_malloc
 static inline void *
-HugeAllocate(size_t size) throw(std::bad_alloc)
+HugeAllocate(size_t size)
 {
 	return new uint8_t[size];
 }
@@ -122,7 +121,7 @@ class HugeAllocation {
 public:
 	HugeAllocation() = default;
 
-	HugeAllocation(size_t _size) throw(std::bad_alloc)
+	HugeAllocation(size_t _size)
 		:data(HugeAllocate(_size)), size(_size) {}
 
 	HugeAllocation(HugeAllocation &&src) noexcept

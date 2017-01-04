@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2016 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2017 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +29,8 @@
 
 #include "HugeAllocator.hxx"
 
+#include <new>
+
 #ifdef __linux__
 #include <sys/mman.h>
 #include <unistd.h>
@@ -54,7 +56,7 @@ AlignToPageSize(size_t size)
 }
 
 void *
-HugeAllocate(size_t size) throw(std::bad_alloc)
+HugeAllocate(size_t size)
 {
 	size = AlignToPageSize(size);
 
@@ -97,7 +99,7 @@ HugeDiscard(void *p, size_t size) noexcept
 #elif defined(WIN32)
 
 void *
-HugeAllocate(size_t size) throw(std::bad_alloc)
+HugeAllocate(size_t size)
 {
 	// TODO: use MEM_LARGE_PAGES
 	void *p = VirtualAlloc(nullptr, size,
