@@ -2352,7 +2352,7 @@ uninstall-local:
 	rm -f $(DESTDIR)$(docdir)/api/html/*.*
 
 upload: $(DOCBOOK_HTML) doc/api/html/index.html
-	rsync -vpruz --delete doc/ www.musicpd.org:/var/www/doc/ \
+	rsync -vpruz --delete doc/ www.musicpd.org:/var/www/mpd/doc/ \
 		--chmod=Dug+rwx,Do+rx,Fug+rw,Fo+r \
 		--include=protocol --include=protocol/** \
 		--include=user --include=user/** \
