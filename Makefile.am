@@ -457,6 +457,7 @@ libthread_a_SOURCES = \
 # Networking library
 
 libnet_a_SOURCES = \
+	src/net/Features.hxx \
 	src/net/ToString.cxx src/net/ToString.hxx \
 	src/net/Resolver.cxx src/net/Resolver.hxx \
 	src/net/StaticSocketAddress.cxx src/net/StaticSocketAddress.hxx \
@@ -1239,6 +1240,7 @@ libinput_a_SOURCES = \
 	src/input/LocalOpen.cxx src/input/LocalOpen.hxx \
 	src/input/Offset.hxx \
 	src/input/InputStream.cxx src/input/InputStream.hxx \
+	src/input/Ptr.hxx \
 	src/input/InputPlugin.hxx \
 	src/input/Reader.cxx src/input/Reader.hxx \
 	src/input/TextInputStream.cxx src/input/TextInputStream.hxx \
@@ -1338,6 +1340,7 @@ OUTPUT_LIBS = \
 	$(SHOUT_LIBS)
 
 OUTPUT_API_SRC = \
+	src/output/Client.hxx \
 	src/output/OutputAPI.hxx \
 	src/output/Internal.cxx \
 	src/output/Internal.hxx \
@@ -1431,7 +1434,7 @@ liboutput_plugins_a_SOURCES += \
 	src/output/plugins/HaikuOutputPlugin.cxx \
 	src/output/plugins/HaikuOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
-	src/mixer/plugins/HaikuMixerPlugin.cxx src/mixer/plugins/HaikuMixerPlugin.hxx
+	src/mixer/plugins/HaikuMixerPlugin.cxx
 endif
 
 if ENABLE_PIPE_OUTPUT
