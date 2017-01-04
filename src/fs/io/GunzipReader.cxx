@@ -19,8 +19,9 @@
 
 #include "config.h"
 #include "GunzipReader.hxx"
+#include "lib/zlib/Error.hxx"
 
-GunzipReader::GunzipReader(Reader &_next) throw(ZlibError)
+GunzipReader::GunzipReader(Reader &_next)
 	:next(_next), eof(false)
 {
 	z.next_in = nullptr;

@@ -23,7 +23,6 @@
 #include "check.h"
 #include "Reader.hxx"
 #include "util/StaticFifoBuffer.hxx"
-#include "lib/zlib/Error.hxx"
 #include "Compiler.h"
 
 #include <zlib.h>
@@ -44,7 +43,7 @@ public:
 	/**
 	 * Construct the filter.
 	 */
-	GunzipReader(Reader &_next) throw(ZlibError);
+	GunzipReader(Reader &_next);
 
 	~GunzipReader() {
 		inflateEnd(&z);

@@ -21,7 +21,7 @@
 #include "GzipOutputStream.hxx"
 #include "lib/zlib/Error.hxx"
 
-GzipOutputStream::GzipOutputStream(OutputStream &_next) throw(ZlibError)
+GzipOutputStream::GzipOutputStream(OutputStream &_next)
 	:next(_next)
 {
 	z.next_in = nullptr;

@@ -22,7 +22,6 @@
 
 #include "check.h"
 #include "OutputStream.hxx"
-#include "lib/zlib/Error.hxx"
 #include "Compiler.h"
 
 #include <zlib.h>
@@ -42,7 +41,7 @@ public:
 	/**
 	 * Construct the filter.
 	 */
-	GzipOutputStream(OutputStream &_next) throw(ZlibError);
+	GzipOutputStream(OutputStream &_next);
 	~GzipOutputStream();
 
 	/**
