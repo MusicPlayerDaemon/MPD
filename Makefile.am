@@ -1386,6 +1386,7 @@ libmixer_plugins_a_SOURCES = \
 	src/mixer/plugins/NullMixerPlugin.cxx \
 	src/mixer/plugins/SoftwareMixerPlugin.cxx \
 	src/mixer/plugins/SoftwareMixerPlugin.hxx
+
 libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(PULSE_CFLAGS)
@@ -1394,7 +1395,10 @@ if ENABLE_ALSA
 liboutput_plugins_a_SOURCES += \
 	src/output/plugins/AlsaOutputPlugin.cxx \
 	src/output/plugins/AlsaOutputPlugin.hxx
-libmixer_plugins_a_SOURCES += src/mixer/plugins/AlsaMixerPlugin.cxx
+libmixer_plugins_a_SOURCES += \
+	src/mixer/plugins/volume_mapping.h \
+	src/mixer/plugins/volume_mapping.c \
+	src/mixer/plugins/AlsaMixerPlugin.cxx
 endif
 
 if ANDROID
