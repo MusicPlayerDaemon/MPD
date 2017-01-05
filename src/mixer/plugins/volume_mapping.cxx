@@ -31,11 +31,9 @@
  */
 
 #define _ISOC99_SOURCE /* lrint() */
-#define _GNU_SOURCE /* exp10() */
-#include "aconfig.h"
 #include <math.h>
 #include <stdbool.h>
-#include "volume_mapping.h"
+#include "volume_mapping.hxx"
 
 #ifdef __UCLIBC__
 /* 10^x = 10^(log e^x) = (e^x)^log10 = e^(x * log 10) */
@@ -77,13 +75,13 @@ static int (* const get_raw[2])(snd_mixer_elem_t *, snd_mixer_selem_channel_id_t
 	snd_mixer_selem_get_playback_volume,
 	snd_mixer_selem_get_capture_volume,
 };
-static int (* const set_dB[2])(snd_mixer_elem_t *, snd_mixer_selem_channel_id_t, long, int) = {
-	snd_mixer_selem_set_playback_dB,
-	snd_mixer_selem_set_capture_dB,
+static int (* const set_dB[2])(snd_mixer_elem_t *, long, int) = {
+	snd_mixer_selem_set_playback_dB_all,
+	snd_mixer_selem_set_capture_dB_all,
 };
-static int (* const set_raw[2])(snd_mixer_elem_t *, snd_mixer_selem_channel_id_t, long) = {
-	snd_mixer_selem_set_playback_volume,
-	snd_mixer_selem_set_capture_volume,
+static int (* const set_raw[2])(snd_mixer_elem_t *, long) = {
+	snd_mixer_selem_set_playback_volume_all,
+	snd_mixer_selem_set_capture_volume_all,
 };
 
 static double get_normalized_volume(snd_mixer_elem_t *elem,
@@ -124,7 +122,6 @@ static double get_normalized_volume(snd_mixer_elem_t *elem,
 }
 
 static int set_normalized_volume(snd_mixer_elem_t *elem,
-				 snd_mixer_selem_channel_id_t channel,
 				 double volume,
 				 int dir,
 				 enum ctl_dir ctl_dir)
@@ -140,12 +137,12 @@ static int set_normalized_volume(snd_mixer_elem_t *elem,
 			return err;
 
 		value = lrint_dir(volume * (max - min), dir) + min;
-		return set_raw[ctl_dir](elem, channel, value);
+		return set_raw[ctl_dir](elem, value);
 	}
 
 	if (use_linear_dB_scale(min, max)) {
 		value = lrint_dir(volume * (max - min), dir) + min;
-		return set_dB[ctl_dir](elem, channel, value, dir);
+		return set_dB[ctl_dir](elem, value, dir);
 	}
 
 	if (min != SND_CTL_TLV_DB_GAIN_MUTE) {
@@ -153,7 +150,7 @@ static int set_normalized_volume(snd_mixer_elem_t *elem,
 		volume = volume * (1 - min_norm) + min_norm;
 	}
 	value = lrint_dir(6000.0 * log10(volume), dir) + max;
-	return set_dB[ctl_dir](elem, channel, value, dir);
+	return set_dB[ctl_dir](elem, value, dir);
 }
 
 double get_normalized_playback_volume(snd_mixer_elem_t *elem,
@@ -168,18 +165,17 @@ double get_normalized_capture_volume(snd_mixer_elem_t *elem,
 	return get_normalized_volume(elem, channel, CAPTURE);
 }
 
+
 int set_normalized_playback_volume(snd_mixer_elem_t *elem,
-				   snd_mixer_selem_channel_id_t channel,
 				   double volume,
 				   int dir)
 {
-	return set_normalized_volume(elem, channel, volume, dir, PLAYBACK);
+	return set_normalized_volume(elem, volume, dir, PLAYBACK);
 }
 
 int set_normalized_capture_volume(snd_mixer_elem_t *elem,
-				  snd_mixer_selem_channel_id_t channel,
 				  double volume,
 				  int dir)
 {
-	return set_normalized_volume(elem, channel, volume, dir, CAPTURE);
+	return set_normalized_volume(elem, volume, dir, CAPTURE);
 }
