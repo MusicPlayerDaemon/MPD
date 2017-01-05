@@ -1,3 +1,5 @@
+ver 0.20.1 (not yet released)
+
 ver 0.20 (2017/01/04)
 * protocol
   - "commands" returns playlist commands only if playlist_directory configured
