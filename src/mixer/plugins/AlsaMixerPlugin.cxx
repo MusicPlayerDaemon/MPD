@@ -25,14 +25,17 @@
 #include "event/DeferredMonitor.hxx"
 #include "util/ASCII.hxx"
 #include "util/ReusableArray.hxx"
-#include "util/Clamp.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "Log.hxx"
 
-#include <algorithm>
+extern "C" {
+#include "volume_mapping.h"
+}
 
 #include <alsa/asoundlib.h>
+
+#include <math.h>
 
 #define VOLUME_MIXER_ALSA_DEFAULT		"default"
 #define VOLUME_MIXER_ALSA_CONTROL_DEFAULT	"PCM"
@@ -68,9 +71,6 @@ class AlsaMixer final : public Mixer {
 
 	snd_mixer_t *handle;
 	snd_mixer_elem_t *elem;
-	long volume_min;
-	long volume_max;
-	int volume_set;
 
 	AlsaMixerMonitor *monitor;
 
@@ -228,9 +228,6 @@ AlsaMixer::Setup()
 	if (elem == nullptr)
 		throw FormatRuntimeError("no such mixer control: %s", control);
 
-	snd_mixer_selem_get_playback_volume_range(elem, &volume_min,
-						  &volume_max);
-
 	snd_mixer_elem_set_callback_private(elem, this);
 	snd_mixer_elem_set_callback(elem, alsa_mixer_elem_callback);
 
@@ -241,8 +238,6 @@ void
 AlsaMixer::Open()
 {
 	int err;
-
-	volume_set = -1;
 
 	err = snd_mixer_open(&handle, 0);
 	if (err < 0)
@@ -272,8 +267,6 @@ int
 AlsaMixer::GetVolume()
 {
 	int err;
-	int ret;
-	long level;
 
 	assert(handle != nullptr);
 
@@ -282,43 +275,15 @@ AlsaMixer::GetVolume()
 		throw FormatRuntimeError("snd_mixer_handle_events() failed: %s",
 					 snd_strerror(err));
 
-	err = snd_mixer_selem_get_playback_volume(elem,
-						  SND_MIXER_SCHN_FRONT_LEFT,
-						  &level);
-	if (err < 0)
-		throw FormatRuntimeError("failed to read ALSA volume: %s",
-					 snd_strerror(err));
-
-	ret = ((volume_set / 100.0) * (volume_max - volume_min)
-	       + volume_min) + 0.5;
-	if (volume_set > 0 && ret == level) {
-		ret = volume_set;
-	} else {
-		ret = (int)(100 * (((float)(level - volume_min)) /
-				   (volume_max - volume_min)) + 0.5);
-	}
-
-	return ret;
+	return lrint(100 * get_normalized_playback_volume(elem, SND_MIXER_SCHN_FRONT_LEFT));
 }
 
 void
 AlsaMixer::SetVolume(unsigned volume)
 {
-	float vol;
-	long level;
-	int err;
-
 	assert(handle != nullptr);
 
-	vol = volume;
-
-	volume_set = vol + 0.5;
-
-	level = (long)(((vol / 100.0) * (volume_max - volume_min) +
-			volume_min) + 0.5);
-	level = Clamp(level, volume_min, volume_max);
-
-	err = snd_mixer_selem_set_playback_volume_all(elem, level);
+	int err = set_normalized_playback_volume(elem, 0.01*volume, 1);
 	if (err < 0)
 		throw FormatRuntimeError("failed to set ALSA volume: %s",
 					 snd_strerror(err));
