@@ -1285,6 +1285,7 @@ libinput_a_SOURCES += \
 	src/lib/curl/Handler.hxx \
 	src/lib/curl/Easy.hxx \
 	src/lib/curl/Multi.hxx \
+	src/lib/curl/Slist.hxx \
 	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
 endif
 

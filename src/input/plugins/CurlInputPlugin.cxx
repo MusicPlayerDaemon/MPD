@@ -23,6 +23,7 @@
 #include "lib/curl/Global.hxx"
 #include "lib/curl/Request.hxx"
 #include "lib/curl/Handler.hxx"
+#include "lib/curl/Slist.hxx"
 #include "../AsyncInputStream.hxx"
 #include "../IcyInputStream.hxx"
 #include "../InputPlugin.hxx"
@@ -64,7 +65,7 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/* some buffers which were passed to libcurl, which we have
 	   too free */
 	char range[32];
-	struct curl_slist *request_headers;
+	CurlSlist request_headers;
 
 	CurlRequest *request = nullptr;
 
@@ -75,7 +76,6 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 		:AsyncInputStream(_url, _mutex, _cond,
 				  CURL_MAX_BUFFERED,
 				  CURL_RESUME_AT),
-		 request_headers(nullptr),
 		 icy(new IcyInputStream(this)) {
 	}
 
@@ -155,8 +155,7 @@ CurlInputStream::FreeEasy()
 	delete request;
 	request = nullptr;
 
-	curl_slist_free_all(request_headers);
-	request_headers = nullptr;
+	request_headers.Clear();
 }
 
 void
@@ -371,10 +370,9 @@ CurlInputStream::InitEasy()
 	request->SetOption(CURLOPT_SSL_VERIFYPEER, verify_peer ? 1l : 0l);
 	request->SetOption(CURLOPT_SSL_VERIFYHOST, verify_host ? 2l : 0l);
 
-	request_headers = nullptr;
-	request_headers = curl_slist_append(request_headers,
-					    "Icy-Metadata: 1");
-	request->SetOption(CURLOPT_HTTPHEADER, request_headers);
+	request_headers.Clear();
+	request_headers.Append("Icy-Metadata: 1");
+	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
 }
 
 void
