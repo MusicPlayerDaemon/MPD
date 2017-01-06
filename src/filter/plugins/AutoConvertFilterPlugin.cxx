@@ -45,7 +45,8 @@ class AutoConvertFilter final : public Filter {
 public:
 	AutoConvertFilter(std::unique_ptr<Filter> &&_filter,
 			  std::unique_ptr<Filter> &&_convert)
-		:filter(std::move(_filter)), convert(std::move(_convert)) {}
+		:Filter(_filter->GetOutAudioFormat()),
+		 filter(std::move(_filter)), convert(std::move(_convert)) {}
 
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
