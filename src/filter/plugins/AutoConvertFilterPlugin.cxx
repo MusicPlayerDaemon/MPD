@@ -92,11 +92,8 @@ PreparedAutoConvertFilter::Open(AudioFormat &in_audio_format)
 ConstBuffer<void>
 AutoConvertFilter::FilterPCM(ConstBuffer<void> src)
 {
-	if (convert != nullptr) {
+	if (convert != nullptr)
 		src = convert->FilterPCM(src);
-		if (src.IsNull())
-			return nullptr;
-	}
 
 	return filter->FilterPCM(src);
 }
