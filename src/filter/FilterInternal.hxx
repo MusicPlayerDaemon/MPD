@@ -27,6 +27,7 @@
 
 #include "AudioFormat.hxx"
 
+#include <assert.h>
 #include <stddef.h>
 
 struct AudioFormat;
@@ -38,7 +39,9 @@ protected:
 
 	Filter() = default;
 	explicit Filter(AudioFormat _out_audio_format)
-		:out_audio_format(_out_audio_format) {}
+		:out_audio_format(_out_audio_format) {
+		assert(out_audio_format.IsValid());
+	}
 
 public:
 	virtual ~Filter() {}
