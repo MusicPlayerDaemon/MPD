@@ -124,7 +124,7 @@ public:
 	}
 
 protected:
-	virtual void StartElement(const XML_Char *name, const XML_Char **attrs)
+	void StartElement(const XML_Char *name, const XML_Char **attrs) override
 	{
 		if (object.type != UPnPDirObject::Type::UNKNOWN &&
 		    tag_type == TAG_NUM_OF_ITEM_TYPES) {
@@ -188,7 +188,7 @@ protected:
 		}
 	}
 
-	virtual void EndElement(const XML_Char *name)
+	void EndElement(const XML_Char *name) override
 	{
 		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
 			assert(object.type != UPnPDirObject::Type::UNKNOWN);
@@ -212,7 +212,7 @@ protected:
 		state = NONE;
 	}
 
-	virtual void CharacterData(const XML_Char *s, int len)
+	void CharacterData(const XML_Char *s, int len) override
 	{
 		if (tag_type != TAG_NUM_OF_ITEM_TYPES) {
 			assert(object.type != UPnPDirObject::Type::UNKNOWN);

@@ -77,9 +77,9 @@ public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
 				const ConfigBlock &block);
 
-	virtual void Open() override;
-	virtual void Close() override;
-	virtual const LightSong *GetSong(const char *uri_utf8) const override;
+	void Open() override;
+	void Close() override;
+	const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
 
 	void Visit(const DatabaseSelection &selection,
