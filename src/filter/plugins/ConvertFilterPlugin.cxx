@@ -57,8 +57,6 @@ public:
 
 class PreparedConvertFilter final : public PreparedFilter {
 public:
-	void Set(const AudioFormat &_out_audio_format);
-
 	Filter *Open(AudioFormat &af) override;
 };
 
