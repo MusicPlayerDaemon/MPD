@@ -59,7 +59,6 @@ public:
 	 * Throws std::runtime_error on error.
 	 *
 	 * @param src the input buffer
-	 * @param error location to store the error occurring
 	 * @return the destination buffer on success (will be
 	 * invalidated by deleting this object or the next FilterPCM()
 	 * call)
