@@ -31,10 +31,10 @@ class InputStream;
 
 class ExpatError final : public std::runtime_error {
 public:
-	ExpatError(XML_Error code)
+	explicit ExpatError(XML_Error code)
 		:std::runtime_error(XML_ErrorString(code)) {}
 
-	ExpatError(XML_Parser parser)
+	explicit ExpatError(XML_Parser parser)
 		:ExpatError(XML_GetErrorCode(parser)) {}
 };
 
@@ -42,7 +42,7 @@ class ExpatParser final {
 	const XML_Parser parser;
 
 public:
-	ExpatParser(void *userData)
+	explicit ExpatParser(void *userData)
 		:parser(XML_ParserCreate(nullptr)) {
 		XML_SetUserData(parser, userData);
 	}
