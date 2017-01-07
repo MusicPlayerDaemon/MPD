@@ -1577,6 +1577,7 @@ endif
 
 if ENABLE_EXPAT
 libplaylist_plugins_a_SOURCES += \
+	src/lib/expat/StreamExpatParser.cxx \
 	src/lib/expat/ExpatParser.cxx src/lib/expat/ExpatParser.hxx \
 	src/playlist/plugins/XspfPlaylistPlugin.cxx \
 	src/playlist/plugins/XspfPlaylistPlugin.hxx \

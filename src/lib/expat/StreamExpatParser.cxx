@@ -19,35 +19,21 @@
 
 #include "config.h"
 #include "ExpatParser.hxx"
-#include "util/ASCII.hxx"
-
-#include <string.h>
+#include "input/InputStream.hxx"
 
 void
-ExpatParser::Parse(const char *data, size_t length, bool is_final)
+ExpatParser::Parse(InputStream &is)
 {
-	if (XML_Parse(parser, data, length, is_final) != XML_STATUS_OK)
-		throw ExpatError(parser);
-}
+	assert(is.IsReady());
 
-const char *
-ExpatParser::GetAttribute(const XML_Char **atts,
-			  const char *name)
-{
-	for (unsigned i = 0; atts[i] != nullptr; i += 2)
-		if (strcmp(atts[i], name) == 0)
-			return atts[i + 1];
+	while (true) {
+		char buffer[4096];
+		size_t nbytes = is.LockRead(buffer, sizeof(buffer));
+		if (nbytes == 0)
+			break;
 
-	return nullptr;
-}
+		Parse(buffer, nbytes, false);
+	}
 
-const char *
-ExpatParser::GetAttributeCase(const XML_Char **atts,
-			      const char *name)
-{
-	for (unsigned i = 0; atts[i] != nullptr; i += 2)
-		if (StringEqualsCaseASCII(atts[i], name))
-			return atts[i + 1];
-
-	return nullptr;
+	Parse("", 0, true);
 }
