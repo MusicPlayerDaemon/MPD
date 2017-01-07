@@ -233,6 +233,15 @@ libmpd_a_SOURCES += \
 	src/db/Selection.cxx src/db/Selection.hxx
 endif
 
+CURL_SOURCES = \
+	src/lib/curl/Version.cxx src/lib/curl/Version.hxx \
+	src/lib/curl/Global.cxx src/lib/curl/Global.hxx \
+	src/lib/curl/Request.cxx src/lib/curl/Request.hxx \
+	src/lib/curl/Handler.hxx \
+	src/lib/curl/Easy.hxx \
+	src/lib/curl/Multi.hxx \
+	src/lib/curl/Slist.hxx
+
 UPNP_SOURCES = \
 	src/lib/upnp/Init.cxx src/lib/upnp/Init.hxx \
 	src/lib/upnp/ClientInit.cxx src/lib/upnp/ClientInit.hxx \
@@ -1279,13 +1288,7 @@ if ENABLE_CURL
 libinput_a_SOURCES += \
 	src/input/IcyInputStream.cxx src/input/IcyInputStream.hxx \
 	src/input/plugins/CurlInputPlugin.cxx src/input/plugins/CurlInputPlugin.hxx \
-	src/lib/curl/Version.cxx src/lib/curl/Version.hxx \
-	src/lib/curl/Global.cxx src/lib/curl/Global.hxx \
-	src/lib/curl/Request.cxx src/lib/curl/Request.hxx \
-	src/lib/curl/Handler.hxx \
-	src/lib/curl/Easy.hxx \
-	src/lib/curl/Multi.hxx \
-	src/lib/curl/Slist.hxx \
+	$(CURL_SOURCES) \
 	src/IcyMetaDataParser.cxx src/IcyMetaDataParser.hxx
 endif
 
