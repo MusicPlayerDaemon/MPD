@@ -373,6 +373,8 @@ CurlInputStream::InitEasy()
 	request_headers.Clear();
 	request_headers.Append("Icy-Metadata: 1");
 	request->SetOption(CURLOPT_HTTPHEADER, request_headers.Get());
+
+	request->Start();
 }
 
 void

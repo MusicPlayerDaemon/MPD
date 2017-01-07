@@ -58,13 +58,33 @@ class CurlRequest {
 	/** error message provided by libcurl */
 	char error_buffer[CURL_ERROR_SIZE];
 
+	bool registered = false;
+
 public:
+	/**
+	 * To start sending the request, call Start().
+	 */
 	CurlRequest(CurlGlobal &_global, const char *url,
 		    CurlResponseHandler &_handler);
 	~CurlRequest();
 
 	CurlRequest(const CurlRequest &) = delete;
 	CurlRequest &operator=(const CurlRequest &) = delete;
+
+	/**
+	 * Register this request via CurlGlobal::Add(), which starts
+	 * the request.
+	 *
+	 * This method must be called in the event loop thread.
+	 */
+	void Start();
+
+	/**
+	 * Unregister this request via CurlGlobal::Remove().
+	 *
+	 * This method must be called in the event loop thread.
+	 */
+	void Stop();
 
 	CURL *Get() {
 		return easy.Get();

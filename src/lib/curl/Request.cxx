@@ -62,8 +62,6 @@ CurlRequest::CurlRequest(CurlGlobal &_global, const char *url,
 	easy.SetOption(CURLOPT_NOSIGNAL, 1l);
 	easy.SetOption(CURLOPT_CONNECTTIMEOUT, 10l);
 	easy.SetOption(CURLOPT_URL, url);
-
-	global.Add(easy.Get(), *this);
 }
 
 CurlRequest::~CurlRequest()
@@ -72,18 +70,39 @@ CurlRequest::~CurlRequest()
 }
 
 void
+CurlRequest::Start()
+{
+	assert(!registered);
+
+	global.Add(easy.Get(), *this);
+	registered = true;
+}
+
+void
+CurlRequest::Stop()
+{
+	assert(registered);
+
+	global.Remove(easy.Get());
+	registered = false;
+}
+
+void
 CurlRequest::FreeEasy()
 {
 	if (!easy)
 		return;
 
-	global.Remove(easy.Get());
+	if (registered)
+		Stop();
 	easy = nullptr;
 }
 
 void
 CurlRequest::Resume()
 {
+	assert(registered);
+
 	curl_easy_pause(easy.Get(), CURLPAUSE_CONT);
 
 	if (IsCurlOlderThan(0x072000))
