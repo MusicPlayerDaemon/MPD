@@ -151,7 +151,7 @@ CurlRequest::FinishBody()
 void
 CurlRequest::Done(CURLcode result)
 {
-	FreeEasy();
+	Stop();
 
 	try {
 		if (result != CURLE_OK) {
