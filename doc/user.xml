@@ -1872,7 +1872,7 @@ run</programlisting>
         <title><varname>curl</varname></title>
 
         <para>
-          A WebDAV client using <filename>libcurl</filename>.  It used
+          A WebDAV client using <filename>libcurl</filename>.  It is
           used when <varname>music_directory</varname> contains a
           <parameter>http://</parameter> or
           <parameter>https://</parameter> URI, for example
@@ -1884,7 +1884,7 @@ run</programlisting>
         <title><varname>smbclient</varname></title>
 
         <para>
-          Load music files from a SMB/CIFS server.  It used used when
+          Load music files from a SMB/CIFS server.  It is used when
           <varname>music_directory</varname> contains a
           <parameter>smb://</parameter> URI, for example
           "<parameter>smb://myfileserver/Music</parameter>".
@@ -1895,7 +1895,7 @@ run</programlisting>
         <title><varname>nfs</varname></title>
 
         <para>
-          Load music files from a NFS server.  It used used when
+          Load music files from a NFS server.  It is used when
           <varname>music_directory</varname> contains a
           <parameter>nfs://</parameter> URI according to <ulink
           url="http://tools.ietf.org/html/rfc2224">RFC2224</ulink>,
