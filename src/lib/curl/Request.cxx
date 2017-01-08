@@ -114,32 +114,24 @@ CurlRequest::Resume()
 	global.InvalidateSockets();
 }
 
-bool
+void
 CurlRequest::FinishHeaders()
 {
 	if (state != State::HEADERS)
-		return true;
+		return;
 
 	state = State::BODY;
 
 	long status = 0;
 	curl_easy_getinfo(easy.Get(), CURLINFO_RESPONSE_CODE, &status);
 
-	try {
-		handler.OnHeaders(status, std::move(headers));
-		return true;
-	} catch (...) {
-		state = State::CLOSED;
-		handler.OnError(std::current_exception());
-		return false;
-	}
+	handler.OnHeaders(status, std::move(headers));
 }
 
 void
 CurlRequest::FinishBody()
 {
-	if (!FinishHeaders())
-		return;
+	FinishHeaders();
 
 	if (state != State::BODY)
 		return;
@@ -167,7 +159,12 @@ CurlRequest::Done(CURLcode result)
 		return;
 	}
 
-	FinishBody();
+	try {
+		FinishBody();
+	} catch (...) {
+		state = State::CLOSED;
+		handler.OnError(std::current_exception());
+	}
 }
 
 inline void
@@ -221,10 +218,8 @@ CurlRequest::DataReceived(const void *ptr, size_t received_size)
 {
 	assert(received_size > 0);
 
-	if (!FinishHeaders())
-		return 0;
-
 	try {
+		FinishHeaders();
 		handler.OnData({ptr, received_size});
 		return received_size;
 	} catch (Pause) {

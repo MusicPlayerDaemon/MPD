@@ -115,7 +115,7 @@ private:
 	 */
 	void FreeEasy();
 
-	bool FinishHeaders();
+	void FinishHeaders();
 	void FinishBody();
 
 	size_t DataReceived(const void *ptr, size_t size);
