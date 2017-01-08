@@ -78,7 +78,8 @@ public:
 private:
 	static int TimerFunction(CURLM *global, long timeout_ms, void *userp);
 
-	virtual void OnTimeout() override;
+	/* virtual methods from class TimeoutMonitor */
+	void OnTimeout() override;
 };
 
 #endif
