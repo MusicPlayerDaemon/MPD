@@ -81,7 +81,8 @@ CurlRequest::Start()
 void
 CurlRequest::Stop()
 {
-	assert(registered);
+	if (!registered)
+		return;
 
 	global.Remove(easy.Get());
 	registered = false;
@@ -93,8 +94,7 @@ CurlRequest::FreeEasy()
 	if (!easy)
 		return;
 
-	if (registered)
-		Stop();
+	Stop();
 	easy = nullptr;
 }
 
