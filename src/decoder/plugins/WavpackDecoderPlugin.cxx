@@ -536,7 +536,7 @@ wavpack_streamdecode(DecoderClient &client, InputStream &is)
 	auto is_wvc = wavpack_open_wvc(client, is.GetURI());
 	if (is_wvc) {
 		open_flags |= OPEN_WVC;
-		can_seek &= wvc->is.IsSeekable();
+		can_seek &= is_wvc->IsSeekable();
 
 		wvc.reset(new WavpackInput(&client, *is_wvc));
 	}

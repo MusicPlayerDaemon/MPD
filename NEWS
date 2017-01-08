@@ -1,6 +1,8 @@
 ver 0.20.1 (not yet released)
 * input
   - curl: fix crash bug
+* decoder
+  - wavpack: fix crash bug
 * storage
   - curl: new storage plugin for WebDAV (work in progress)
 * mixer
