@@ -228,7 +228,7 @@ CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *user
 		return 0;
 	}
 
-	if (timeout_ms >= 0 && timeout_ms < 10)
+	if (timeout_ms < 10)
 		/* CURL 7.21.1 likes to report "timeout=0", which
 		   means we're running in a busy loop.  Quite a bad
 		   idea to waste so much CPU.  Let's use a lower limit
