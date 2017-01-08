@@ -96,7 +96,7 @@ private:
 };
 
 CurlGlobal::CurlGlobal(EventLoop &_loop)
-	:TimeoutMonitor(_loop)
+	:TimeoutMonitor(_loop), DeferredMonitor(_loop)
 {
 	multi.SetOption(CURLMOPT_SOCKETFUNCTION, CurlSocket::SocketFunction);
 	multi.SetOption(CURLMOPT_SOCKETDATA, this);
@@ -262,5 +262,11 @@ CurlGlobal::SocketAction(curl_socket_t fd, int ev_bitmask)
 			    "curl_multi_socket_action() failed: %s",
 			    curl_multi_strerror(mcode));
 
+	DeferredMonitor::Schedule();
+}
+
+void
+CurlGlobal::RunDeferred()
+{
 	ReadInfo();
 }
