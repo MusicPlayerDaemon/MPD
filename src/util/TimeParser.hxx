@@ -30,6 +30,8 @@
 #ifndef TIME_PARSER_HXX
 #define TIME_PARSER_HXX
 
+#include "Compiler.h"
+
 #include <chrono>
 
 /**
@@ -37,6 +39,7 @@
  *
  * Throws std::runtime_error on error.
  */
+gcc_pure
 std::chrono::system_clock::time_point
 ParseTimePoint(const char *s, const char *format);
 
