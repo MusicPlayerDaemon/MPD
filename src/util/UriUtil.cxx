@@ -19,9 +19,56 @@
 
 #include "UriUtil.hxx"
 #include "StringCompare.hxx"
+#include "CharUtil.hxx"
 
 #include <assert.h>
 #include <string.h>
+
+static constexpr bool
+IsValidSchemeStart(char ch)
+{
+	return IsLowerAlphaASCII(ch);
+}
+
+static constexpr bool
+IsValidSchemeChar(char ch)
+{
+	return IsLowerAlphaASCII(ch) || IsDigitASCII(ch) ||
+		ch == '+' || ch == '.' || ch == '-';
+}
+
+gcc_pure
+static bool
+IsValidScheme(StringView p)
+{
+	if (p.IsEmpty() || !IsValidSchemeStart(p.front()))
+		return false;
+
+	for (size_t i = 1; i < p.size; ++i)
+		if (!IsValidSchemeChar(p[i]))
+			return false;
+
+	return true;
+}
+
+/**
+ * Return the URI part after the scheme specification (and after the
+ * double slash).
+ */
+gcc_pure
+static const char *
+uri_after_scheme(const char *uri)
+{
+	if (uri[0] == '/' && uri[1] == '/' && uri[2] != '/')
+		return uri + 2;
+
+	const char *colon = strchr(uri, ':');
+	return colon != nullptr &&
+		IsValidScheme({uri, colon}) &&
+		colon[1] == '/' && colon[2] == '/'
+		? colon + 3
+		: nullptr;
+}
 
 bool uri_has_scheme(const char *uri)
 {
@@ -36,6 +83,16 @@ uri_get_scheme(const char *uri)
 		end = uri;
 
 	return std::string(uri, end);
+}
+
+const char *
+uri_get_path(const char *uri)
+{
+	const char *ap = uri_after_scheme(uri);
+	if (ap != nullptr)
+		return strchr(ap, '/');
+
+	return uri;
 }
 
 /* suffixes should be ascii only characters */

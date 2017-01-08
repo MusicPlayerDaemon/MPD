@@ -38,6 +38,14 @@ gcc_pure
 std::string
 uri_get_scheme(const char *uri);
 
+/**
+ * Returns the URI path (including the query string) or nullptr if the
+ * given URI has no path.
+ */
+gcc_pure gcc_nonnull_all
+const char *
+uri_get_path(const char *uri);
+
 gcc_pure
 const char *
 uri_get_suffix(const char *uri);
