@@ -76,7 +76,7 @@ public:
 		return *this;
 	}
 
-	CURL *Get() {
+	CURLM *Get() {
 		return handle;
 	}
 
