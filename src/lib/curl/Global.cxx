@@ -217,15 +217,12 @@ CurlGlobal::ReadInfo()
 	}
 }
 
-int
-CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *userp)
+inline void
+CurlGlobal::UpdateTimeout(long timeout_ms)
 {
-	auto &global = *(CurlGlobal *)userp;
-	assert(_global == global.multi.Get());
-
 	if (timeout_ms < 0) {
-		global.Cancel();
-		return 0;
+		TimeoutMonitor::Cancel();
+		return;
 	}
 
 	if (timeout_ms < 10)
@@ -235,7 +232,16 @@ CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *user
 		   of 10ms. */
 		timeout_ms = 10;
 
-	global.Schedule(std::chrono::milliseconds(timeout_ms));
+	TimeoutMonitor::Schedule(std::chrono::milliseconds(timeout_ms));
+}
+
+int
+CurlGlobal::TimerFunction(gcc_unused CURLM *_global, long timeout_ms, void *userp)
+{
+	auto &global = *(CurlGlobal *)userp;
+	assert(_global == global.multi.Get());
+
+	global.UpdateTimeout(timeout_ms);
 	return 0;
 }
 

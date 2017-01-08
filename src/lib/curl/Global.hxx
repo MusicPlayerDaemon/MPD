@@ -76,6 +76,7 @@ public:
 	}
 
 private:
+	void UpdateTimeout(long timeout_ms);
 	static int TimerFunction(CURLM *global, long timeout_ms, void *userp);
 
 	/* virtual methods from class TimeoutMonitor */
