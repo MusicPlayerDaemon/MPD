@@ -193,6 +193,13 @@ Foo(const char *abc, int xyz)
       url="http://git.musicpd.org/account-policy.html">an account on
       git.musicpd.org</ulink>, but any public git repository will do.
     </para>
+
+    <para>
+      There is <ulink url="https://github.com/MaxKellermann/MPD">a
+      mirror of the <application>MPD</application> git repository on
+      GitHub</ulink>, and you can use that as well to submit pull
+      requests.
+    </para>
   </chapter>
 
   <chapter id="tools">
