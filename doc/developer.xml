@@ -40,7 +40,7 @@
 
       <listitem>
         <para>
-          the code should be C++11 compliant, and must compile with
+          the code should be C++14 compliant, and must compile with
           <application>GCC</application> 4.9 and
           <application>clang</application> 3.4
         </para>
