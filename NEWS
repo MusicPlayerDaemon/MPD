@@ -1,6 +1,7 @@
 ver 0.20.1 (not yet released)
 * input
   - curl: fix crash bug
+  - curl: fix freeze bug
 * decoder
   - wavpack: fix crash bug
 * storage

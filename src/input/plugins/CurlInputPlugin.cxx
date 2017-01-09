@@ -385,11 +385,13 @@ CurlInputStream::SeekInternal(offset_type new_offset)
 	FreeEasy();
 
 	offset = new_offset;
-	if (offset == size)
+	if (offset == size) {
 		/* seek to EOF: simulate empty result; avoid
 		   triggering a "416 Requested Range Not Satisfiable"
 		   response */
+		SeekDone();
 		return;
+	}
 
 	InitEasy();
 
