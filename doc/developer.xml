@@ -5,7 +5,7 @@
 <book>
   <title>The Music Player Daemon - Developer's Manual</title>
 
-  <chapter>
+  <chapter id="introduction">
     <title>Introduction</title>
 
     <para>
@@ -21,7 +21,7 @@
     </para>
   </chapter>
 
-  <chapter>
+  <chapter id="code_style">
     <title>Code Style</title>
 
     <itemizedlist>
@@ -66,7 +66,7 @@ foo(const char *abc, int xyz)
     </itemizedlist>
   </chapter>
 
-  <chapter>
+  <chapter id="hacking">
     <title>Hacking The Source</title>
 
     <para>
@@ -151,7 +151,7 @@ foo(const char *abc, int xyz)
     </section>
   </chapter>
 
-  <chapter>
+  <chapter id="submitting_patches">
     <title>Submitting Patches</title>
 
     <para>
@@ -169,7 +169,7 @@ foo(const char *abc, int xyz)
     </para>
   </chapter>
 
-  <chapter>
+  <chapter id="tools">
     <title>Development Tools</title>
 
     <section>
