@@ -40,9 +40,35 @@
 
       <listitem>
         <para>
+          comment your code, document your APIs
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
           the code should be C++14 compliant, and must compile with
           <application>GCC</application> 4.9 and
           <application>clang</application> 3.4
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          report error conditions with C++ exceptions, preferable
+          derived from <varname>std::runtime_error</varname>
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          all code must be exception-safe
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          classes and functions names use CamelCase; variables are
+          lower-case with words separated by underscore
         </para>
       </listitem>
 
@@ -52,9 +78,9 @@
         </para>
 
         <programlisting lang="C">static inline int
-foo(const char *abc, int xyz)
+Foo(const char *abc, int xyz)
 {
-        if (abc == NULL) {
+        if (abc == nullptr) {
                 LogWarning("Foo happened!");
                 return -1;
         }
