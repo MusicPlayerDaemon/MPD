@@ -1,4 +1,4 @@
-ver 0.20.1 (not yet released)
+ver 0.20.1 (2017/01/09)
 * input
   - curl: fix crash bug
   - curl: fix freeze bug
