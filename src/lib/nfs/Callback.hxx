@@ -24,9 +24,21 @@
 
 #include <exception>
 
+/**
+ * Callbacks for an asynchronous libnfs operation.
+ *
+ * Note that no callback is invoked for cancelled operations.
+ */
 class NfsCallback {
 public:
+	/**
+	 * The operation completed successfully.
+	 */
 	virtual void OnNfsCallback(unsigned status, void *data) = 0;
+
+	/**
+	 * An error has occurred.
+	 */
 	virtual void OnNfsError(std::exception_ptr &&e) = 0;
 };
 
