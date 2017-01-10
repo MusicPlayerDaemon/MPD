@@ -666,7 +666,6 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 
 	AudioFormat dop_format = audio_format;
 	dop_format.format = SampleFormat::S24_P32;
-	dop_format.sample_rate /= 2;
 
 	const AudioFormat check = dop_format;
 
@@ -698,11 +697,12 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params)
 	std::exception_ptr dop_error;
 	if (dop && audio_format.format == SampleFormat::DSD) {
 		try {
-			SetupDop(audio_format, params);
 			params.dop = true;
+			SetupDop(audio_format, params);
 			return;
 		} catch (...) {
 			dop_error = std::current_exception();
+			params.dop = false;
 		}
 	}
 
