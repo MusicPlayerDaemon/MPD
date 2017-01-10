@@ -98,6 +98,18 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 	return audio_format.GetFrameSize();
 }
 
+unsigned
+PcmExport::Params::CalcOutputSampleRate(unsigned sample_rate) const
+{
+	return sample_rate;
+}
+
+unsigned
+PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const
+{
+	return sample_rate;
+}
+
 ConstBuffer<void>
 PcmExport::Export(ConstBuffer<void> data)
 {

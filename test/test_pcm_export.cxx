@@ -35,6 +35,9 @@ PcmExportTest::TestShift8()
 	PcmExport::Params params;
 	params.shift8 = true;
 
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, params);
 
@@ -71,6 +74,9 @@ PcmExportTest::TestPack24()
 	PcmExport::Params params;
 	params.pack24 = true;
 
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+
 	PcmExport e;
 	e.Open(SampleFormat::S24_P32, 2, params);
 
@@ -96,6 +102,9 @@ PcmExportTest::TestReverseEndian()
 
 	PcmExport::Params params;
 	params.reverse_endian = true;
+
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(SampleFormat::S8, 2, params);
@@ -192,6 +201,9 @@ TestAlsaChannelOrder51()
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
 
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
+
 	PcmExport e;
 	e.Open(F, 6, params);
 
@@ -218,6 +230,9 @@ TestAlsaChannelOrder71()
 
 	PcmExport::Params params;
 	params.alsa_channel_order = true;
+
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(42u), 42u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(42u), 42u);
 
 	PcmExport e;
 	e.Open(F, 8, params);

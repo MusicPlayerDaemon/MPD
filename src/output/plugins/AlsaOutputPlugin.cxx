@@ -469,7 +469,6 @@ static void
 AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
 	  PcmExport::Params &params)
 {
-	unsigned int sample_rate = audio_format.sample_rate;
 	unsigned int channels = audio_format.channels;
 	int err;
 	unsigned retry = MPD_ALSA_RETRY_NR;
@@ -513,18 +512,23 @@ configure_hw:
 
 	audio_format.channels = (int8_t)channels;
 
+	const unsigned requested_sample_rate =
+		params.CalcOutputSampleRate(audio_format.sample_rate);
+	unsigned output_sample_rate = requested_sample_rate;
+
 	err = snd_pcm_hw_params_set_rate_near(ad->pcm, hwparams,
-					      &sample_rate, nullptr);
+					      &output_sample_rate, nullptr);
 	if (err < 0)
 		throw FormatRuntimeError("Failed to configure sample rate %u Hz: %s",
-					 audio_format.sample_rate,
+					 requested_sample_rate,
 					 snd_strerror(-err));
 
-	if (sample_rate == 0)
+	if (output_sample_rate == 0)
 		throw FormatRuntimeError("Failed to configure sample rate %u Hz",
 					 audio_format.sample_rate);
 
-	audio_format.sample_rate = sample_rate;
+	if (output_sample_rate != requested_sample_rate)
+		audio_format.sample_rate = params.CalcInputSampleRate(output_sample_rate);
 
 	snd_pcm_uframes_t buffer_size_min, buffer_size_max;
 	snd_pcm_hw_params_get_buffer_size_min(hwparams, &buffer_size_min);

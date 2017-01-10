@@ -41,6 +41,21 @@ struct PcmExport {
 		bool shift8 = false;
 		bool pack24 = false;
 		bool reverse_endian = false;
+
+		/**
+		 * Calculate the output sample rate, given a specific input
+		 * sample rate.  Usually, both are the same; however, with
+		 * DSD_U32, four input bytes (= 4 * 8 bits) are combined to
+		 * one output word (32 bits), dividing the sample rate by 4.
+		 */
+		gcc_pure
+		unsigned CalcOutputSampleRate(unsigned input_sample_rate) const;
+
+		/**
+		 * The inverse of CalcOutputSampleRate().
+		 */
+		gcc_pure
+		unsigned CalcInputSampleRate(unsigned output_sample_rate) const;
 	};
 
 	/**
