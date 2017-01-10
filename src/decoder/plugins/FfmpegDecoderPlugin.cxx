@@ -56,6 +56,11 @@ extern "C" {
 #include <assert.h>
 #include <string.h>
 
+/**
+ * Muxer options to be passed to avformat_open_input().
+ */
+static AVDictionary *avformat_options = nullptr;
+
 static AVFormatContext *
 FfmpegOpenInput(AVIOContext *pb,
 		const char *filename,
@@ -67,7 +72,11 @@ FfmpegOpenInput(AVIOContext *pb,
 
 	context->pb = pb;
 
-	int err = avformat_open_input(&context, filename, fmt, nullptr);
+	AVDictionary *options = nullptr;
+	AtScopeExit(&options) { av_dict_free(&options); };
+	av_dict_copy(&options, avformat_options, 0);
+
+	int err = avformat_open_input(&context, filename, fmt, &options);
 	if (err < 0)
 		throw MakeFfmpegError(err, "avformat_open_input() failed");
 
@@ -75,10 +84,28 @@ FfmpegOpenInput(AVIOContext *pb,
 }
 
 static bool
-ffmpeg_init(gcc_unused const ConfigBlock &block)
+ffmpeg_init(const ConfigBlock &block)
 {
 	FfmpegInit();
+
+	static constexpr const char *option_names[] = {
+		"probesize",
+		"analyzeduration",
+	};
+
+	for (const char *name : option_names) {
+		const char *value = block.GetBlockValue(name);
+		if (value != nullptr)
+			av_dict_set(&avformat_options, name, value, 0);
+	}
+
 	return true;
+}
+
+static void
+ffmpeg_finish()
+{
+	av_dict_free(&avformat_options);
 }
 
 #if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(57, 25, 0) /* FFmpeg 3.1 */
@@ -967,7 +994,7 @@ static const char *const ffmpeg_mime_types[] = {
 const struct DecoderPlugin ffmpeg_decoder_plugin = {
 	"ffmpeg",
 	ffmpeg_init,
-	nullptr,
+	ffmpeg_finish,
 	ffmpeg_decode,
 	nullptr,
 	nullptr,

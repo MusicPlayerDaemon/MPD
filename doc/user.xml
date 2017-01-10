@@ -2206,6 +2206,48 @@ run</programlisting>
           Decodes various codecs using
           <application>FFmpeg</application>.
         </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>analyzeduration</varname>
+                  <parameter>VALUE</parameter>
+                </entry>
+                <entry>
+                  Sets the FFmpeg muxer option
+                  <varname>analyzeduration</varname>, which specifies
+                  how many microseconds are analyzed to probe the
+                  input.  The <ulink
+                  url="https://ffmpeg.org/ffmpeg-formats.html">FFmpeg
+                  formats documentation</ulink> has more information.
+                </entry>
+              </row>
+
+              <row>
+                <entry>
+                  <varname>probesize</varname>
+                  <parameter>VALUE</parameter>
+                </entry>
+                <entry>
+                  Sets the FFmpeg muxer option
+                  <varname>probesize</varname>, which specifies
+                  probing size in bytes, i.e. the size of the data to
+                  analyze to get stream information.  The <ulink
+                  url="https://ffmpeg.org/ffmpeg-formats.html">FFmpeg
+                  formats documentation</ulink> has more information.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section id="flac_decoder">
