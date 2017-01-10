@@ -1,6 +1,6 @@
 AC_PREREQ(2.60)
 
-AC_INIT(mpd, 0.20.1, musicpd-dev-team@lists.sourceforge.net)
+AC_INIT(mpd, 0.20.2, musicpd-dev-team@lists.sourceforge.net)
 
 VERSION_MAJOR=0
 VERSION_MINOR=20
