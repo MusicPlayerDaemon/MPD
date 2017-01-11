@@ -175,8 +175,8 @@ PcmExportTest::TestDop()
 	PcmExport::Params params;
 	params.dop = true;
 
-	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 176400u);
-	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(176400u), 705600u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 352800u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(352800u), 705600u);
 
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
