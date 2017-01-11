@@ -317,6 +317,9 @@ DecoderBridge::CommandFinished()
 
 		dc.pipe->Clear(*dc.buffer);
 
+		if (convert != nullptr)
+			convert->Reset();
+
 		timestamp = dc.seek_time.ToDoubleS();
 	}
 
