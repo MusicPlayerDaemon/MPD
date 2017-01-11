@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Dsd32.hxx"
 #include "PcmBuffer.hxx"
-#include "dsd2pcm/dsd2pcm.h"
 #include "util/ConstBuffer.hxx"
 
 /**
