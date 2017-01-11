@@ -141,6 +141,7 @@ struct AlsaOutput {
 	void Open(AudioFormat &audio_format);
 	void Close();
 
+	size_t PlayRaw(ConstBuffer<void> data);
 	size_t Play(const void *chunk, size_t size);
 	void Drain();
 	void Cancel();
@@ -838,6 +839,36 @@ AlsaOutput::Close()
 }
 
 inline size_t
+AlsaOutput::PlayRaw(ConstBuffer<void> data)
+{
+	if (data.IsEmpty())
+		return 0;
+
+	assert(data.size % out_frame_size == 0);
+
+	const size_t n_frames = data.size / out_frame_size;
+	assert(n_frames > 0);
+
+	while (true) {
+		const auto frames_written = snd_pcm_writei(pcm, data.data,
+							   n_frames);
+		if (frames_written > 0) {
+			period_position = (period_position + frames_written)
+				% period_frames;
+
+			return frames_written * out_frame_size;
+		}
+
+		if (frames_written < 0 && frames_written != -EAGAIN &&
+		    frames_written != -EINTR &&
+		    Recover(frames_written) < 0)
+			throw FormatRuntimeError("snd_pcm_writei() failed: %s",
+						 snd_strerror(-frames_written));
+	}
+
+}
+
+inline size_t
 AlsaOutput::Play(const void *chunk, size_t size)
 {
 	assert(size > 0);
@@ -862,29 +893,8 @@ AlsaOutput::Play(const void *chunk, size_t size)
 		   been played */
 		return size;
 
-	chunk = e.data;
-	size = e.size;
-
-	assert(size % out_frame_size == 0);
-
-	size /= out_frame_size;
-	assert(size > 0);
-
-	while (true) {
-		snd_pcm_sframes_t ret = snd_pcm_writei(pcm, chunk, size);
-		if (ret > 0) {
-			period_position = (period_position + ret)
-				% period_frames;
-
-			size_t bytes_written = ret * out_frame_size;
-			return pcm_export->CalcSourceSize(bytes_written);
-		}
-
-		if (ret < 0 && ret != -EAGAIN && ret != -EINTR &&
-		    Recover(ret) < 0)
-			throw FormatRuntimeError("snd_pcm_writei() failed: %s",
-						 snd_strerror(-ret));
-	}
+	const size_t bytes_written = PlayRaw(e);
+	return pcm_export->CalcSourceSize(bytes_written);
 }
 
 typedef AudioOutputWrapper<AlsaOutput> Wrapper;
