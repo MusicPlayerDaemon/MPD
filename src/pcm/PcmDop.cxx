@@ -44,8 +44,6 @@ pcm_dsd_to_dop(PcmBuffer &buffer, unsigned channels,
 	       ConstBuffer<uint8_t> _src)
 {
 	assert(audio_valid_channel_count(channels));
-	assert(!_src.IsNull());
-	assert(_src.size > 0);
 	assert(_src.size % channels == 0);
 
 	const unsigned num_src_samples = _src.size;
