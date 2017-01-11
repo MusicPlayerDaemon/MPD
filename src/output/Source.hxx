@@ -139,11 +139,7 @@ public:
 			 PreparedFilter *prepared_filter);
 
 	void Close();
-
-	void Cancel() {
-		current_chunk = nullptr;
-		pipe.Cancel();
-	}
+	void Cancel();
 
 	/**
 	 * Ensure that ReadTag() or PeekData() return any input.

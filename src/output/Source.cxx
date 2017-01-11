@@ -71,6 +71,13 @@ AudioOutputSource::Close()
 }
 
 void
+AudioOutputSource::Cancel()
+{
+	current_chunk = nullptr;
+	pipe.Cancel();
+}
+
+void
 AudioOutputSource::OpenFilter(AudioFormat audio_format,
 			      PreparedFilter *prepared_replay_gain_filter,
 			      PreparedFilter *prepared_other_replay_gain_filter,
