@@ -66,6 +66,10 @@ public:
 		delete[] buffer;
 	}
 
+	size_t GetCapacity() const {
+		return capacity;
+	}
+
 	/**
 	 * Free resources allocated by this object.  This invalidates
 	 * the buffer returned by Get().
