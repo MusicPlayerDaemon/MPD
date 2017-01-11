@@ -659,6 +659,10 @@ OssOutput::Cancel()
 		ioctl(fd, SNDCTL_DSP_RESET, 0);
 		DoClose();
 	}
+
+#ifdef AFMT_S24_PACKED
+	pcm_export->Reset();
+#endif
 }
 
 inline size_t

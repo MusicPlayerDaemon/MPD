@@ -150,6 +150,12 @@ struct PcmExport {
 		  Params params);
 
 	/**
+	 * Reset the filter's state, e.g. drop/flush buffers.
+	 */
+	void Reset() {
+	}
+
+	/**
 	 * Calculate the size of one output frame.
 	 */
 	gcc_pure

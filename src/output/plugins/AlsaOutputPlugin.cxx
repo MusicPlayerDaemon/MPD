@@ -826,6 +826,8 @@ AlsaOutput::Cancel()
 	must_prepare = true;
 
 	snd_pcm_drop(pcm);
+
+	pcm_export->Reset();
 }
 
 inline void
