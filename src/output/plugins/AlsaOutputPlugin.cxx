@@ -763,6 +763,11 @@ AlsaOutput::Open(AudioFormat &audio_format)
 							  GetDevice()));
 	}
 
+#ifdef ENABLE_DSD
+	if (params.dop)
+		FormatDebug(alsa_output_domain, "DoP (DSD over PCM) enabled");
+#endif
+
 	pcm_export->Open(audio_format.format,
 			 audio_format.channels,
 			 params);
