@@ -20,6 +20,8 @@
 #ifndef MPD_TEST_PCM_ALL_HXX
 #define MPD_TEST_PCM_ALL_HXX
 
+#include "check.h"
+
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/HelperMacros.h>
 
