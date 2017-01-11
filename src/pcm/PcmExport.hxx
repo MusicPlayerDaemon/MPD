@@ -31,33 +31,7 @@ template<typename T> struct ConstBuffer;
  * outside of MPD.  It has a few more options to tweak the binary
  * representation which are not supported by the pcm_convert library.
  */
-struct PcmExport {
-	struct Params {
-		bool alsa_channel_order = false;
-#ifdef ENABLE_DSD
-		bool dsd_u32 = false;
-		bool dop = false;
-#endif
-		bool shift8 = false;
-		bool pack24 = false;
-		bool reverse_endian = false;
-
-		/**
-		 * Calculate the output sample rate, given a specific input
-		 * sample rate.  Usually, both are the same; however, with
-		 * DSD_U32, four input bytes (= 4 * 8 bits) are combined to
-		 * one output word (32 bits), dividing the sample rate by 4.
-		 */
-		gcc_pure
-		unsigned CalcOutputSampleRate(unsigned input_sample_rate) const;
-
-		/**
-		 * The inverse of CalcOutputSampleRate().
-		 */
-		gcc_pure
-		unsigned CalcInputSampleRate(unsigned output_sample_rate) const;
-	};
-
+class PcmExport {
 	/**
 	 * This buffer is used to reorder channels.
 	 *
@@ -135,6 +109,33 @@ struct PcmExport {
 	 * sample (2 or bigger).
 	 */
 	uint8_t reverse_endian;
+
+public:
+	struct Params {
+		bool alsa_channel_order = false;
+#ifdef ENABLE_DSD
+		bool dsd_u32 = false;
+		bool dop = false;
+#endif
+		bool shift8 = false;
+		bool pack24 = false;
+		bool reverse_endian = false;
+
+		/**
+		 * Calculate the output sample rate, given a specific input
+		 * sample rate.  Usually, both are the same; however, with
+		 * DSD_U32, four input bytes (= 4 * 8 bits) are combined to
+		 * one output word (32 bits), dividing the sample rate by 4.
+		 */
+		gcc_pure
+		unsigned CalcOutputSampleRate(unsigned input_sample_rate) const;
+
+		/**
+		 * The inverse of CalcOutputSampleRate().
+		 */
+		gcc_pure
+		unsigned CalcInputSampleRate(unsigned output_sample_rate) const;
+	};
 
 	/**
 	 * Open the object.
