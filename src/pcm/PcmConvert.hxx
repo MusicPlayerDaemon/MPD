@@ -68,6 +68,11 @@ public:
 	void Close();
 
 	/**
+	 * Reset the filter's state, e.g. drop/flush buffers.
+	 */
+	void Reset();
+
+	/**
 	 * Converts PCM data between two audio formats.
 	 *
 	 * Throws std::runtime_error on error.

@@ -117,6 +117,17 @@ PcmConvert::Close()
 #endif
 }
 
+void
+PcmConvert::Reset()
+{
+	if (enable_resampler)
+		resampler.Reset();
+
+#ifdef ENABLE_DSD
+	dsd.Reset();
+#endif
+}
+
 ConstBuffer<void>
 PcmConvert::Convert(ConstBuffer<void> buffer)
 {
