@@ -75,6 +75,15 @@ AudioOutputSource::Cancel()
 {
 	current_chunk = nullptr;
 	pipe.Cancel();
+
+	if (replay_gain_filter_instance != nullptr)
+		replay_gain_filter_instance->Reset();
+
+	if (other_replay_gain_filter_instance != nullptr)
+		other_replay_gain_filter_instance->Reset();
+
+	if (filter_instance != nullptr)
+		filter_instance->Reset();
 }
 
 void
