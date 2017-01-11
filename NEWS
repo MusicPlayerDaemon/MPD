@@ -1,6 +1,8 @@
 ver 0.20.2 (not yet released)
 * decoder
   - flac: add options "probesize" and "analyzeduration"
+* output
+  - alsa: fix the DSD_U32 sample rate
 
 ver 0.20.1 (2017/01/09)
 * input

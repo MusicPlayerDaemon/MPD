@@ -146,6 +146,9 @@ PcmExportTest::TestDsdU32()
 	PcmExport::Params params;
 	params.dsd_u32 = true;
 
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 176400u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(176400u), 705600u);
+
 	PcmExport e;
 	e.Open(SampleFormat::DSD, 2, params);
 

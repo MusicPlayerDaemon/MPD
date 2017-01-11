@@ -101,12 +101,24 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 unsigned
 PcmExport::Params::CalcOutputSampleRate(unsigned sample_rate) const
 {
+#ifdef ENABLE_DSD
+	if (dsd_u32)
+		/* DSD_U32 combines four 8-bit "samples" in one 32-bit
+		   "sample" */
+		sample_rate /= 4;
+#endif
+
 	return sample_rate;
 }
 
 unsigned
 PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const
 {
+#ifdef ENABLE_DSD
+	if (dsd_u32)
+		sample_rate *= 4;
+#endif
+
 	return sample_rate;
 }
 
