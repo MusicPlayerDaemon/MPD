@@ -615,7 +615,8 @@ libxiph_a_SOURCES += \
 	src/lib/xiph/OggStreamState.hxx
 endif
 
-XIPH_LIBS = libxiph.a
+XIPH_LIBS = libxiph.a \
+	$(OGG_LIBS)
 
 endif
 
