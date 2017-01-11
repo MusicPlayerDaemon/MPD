@@ -28,7 +28,7 @@ template<typename T> struct ConstBuffer;
 class PcmBuffer;
 
 /**
- * Convert DSD_U8 to DSD_U32 (native endian).
+ * Convert DSD_U8 to DSD_U32 (native endian, oldest bits in MSB).
  */
 ConstBuffer<uint32_t>
 Dsd8To32(PcmBuffer &buffer, unsigned channels, ConstBuffer<uint8_t> src);

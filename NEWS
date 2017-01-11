@@ -5,6 +5,7 @@ ver 0.20.2 (not yet released)
   - libsamplerate: reset state after seeking
 * output
   - alsa: fix the DSD_U32 sample rate
+  - alsa: fix the DSD_U32 byte order
 
 ver 0.20.1 (2017/01/09)
 * input
