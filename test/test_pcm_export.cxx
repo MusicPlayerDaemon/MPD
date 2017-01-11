@@ -137,10 +137,10 @@ PcmExportTest::TestDsdU32()
 	};
 
 	static constexpr uint32_t expected[] = {
-		0xcd894501,
-		0xefab6723,
-		0x77553311,
-		0x88664422,
+		0x014589cd,
+		0x2367abef,
+		0x11335577,
+		0x22446688,
 	};
 
 	PcmExport::Params params;
