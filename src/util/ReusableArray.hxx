@@ -30,9 +30,11 @@
 #ifndef REUSABLE_ARRAY_HXX
 #define REUSABLE_ARRAY_HXX
 
-#include <stddef.h>
-
 #include "Compiler.h"
+
+#include <utility>
+
+#include <stddef.h>
 
 /**
  * Manager for a temporary array which grows as needed.  This attempts
@@ -50,8 +52,15 @@ class ReusableArray {
 public:
 	ReusableArray() = default;
 
-	ReusableArray(const ReusableArray &other) = delete;
-	ReusableArray &operator=(const ReusableArray &other) = delete;
+	ReusableArray(ReusableArray &&src)
+		:buffer(std::exchange(src.buffer, nullptr)),
+		 capacity(std::exchange(src.capacity, 0)) {}
+
+	ReusableArray &operator=(const ReusableArray &&src) {
+		std::swap(buffer, src.buffer);
+		std::swap(capacity, src.capacity);
+		return *this;
+	}
 
 	~ReusableArray() {
 		delete[] buffer;
