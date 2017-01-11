@@ -17,35 +17,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef MPD_PCM_DSD_HXX
-#define MPD_PCM_DSD_HXX
+#ifndef MPD_PCM_DSD_32_HXX
+#define MPD_PCM_DSD_32_HXX
 
 #include "check.h"
-#include "PcmBuffer.hxx"
-#include "AudioFormat.hxx"
-
-#include <array>
 
 #include <stdint.h>
 
 template<typename T> struct ConstBuffer;
+class PcmBuffer;
 
 /**
- * Wrapper for the dsd2pcm library.
+ * Convert DSD_U8 to DSD_U32 (native endian).
  */
-class PcmDsd {
-	PcmBuffer buffer;
-
-	std::array<struct dsd2pcm_ctx_s *, MAX_CHANNELS> dsd2pcm;
-
-public:
-	PcmDsd();
-	~PcmDsd();
-
-	void Reset();
-
-	ConstBuffer<float> ToFloat(unsigned channels,
-				   ConstBuffer<uint8_t> src);
-};
+ConstBuffer<uint32_t>
+Dsd8To32(PcmBuffer &buffer, unsigned channels, ConstBuffer<uint8_t> src);
 
 #endif

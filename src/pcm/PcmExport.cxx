@@ -25,6 +25,7 @@
 #include "util/ConstBuffer.hxx"
 
 #ifdef ENABLE_DSD
+#include "Dsd32.hxx"
 #include "PcmDsd.hxx"
 #include "PcmDop.hxx"
 #endif
