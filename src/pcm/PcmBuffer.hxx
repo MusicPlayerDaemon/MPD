@@ -40,7 +40,7 @@ public:
 
 	/**
 	 * Get the buffer, and guarantee a minimum size.  This buffer becomes
-	 * invalid with the next pcm_buffer_get() call.
+	 * invalid with the next Get() call.
 	 *
 	 * This function will never return nullptr, even if size is
 	 * zero, because the PCM library uses the nullptr return value
