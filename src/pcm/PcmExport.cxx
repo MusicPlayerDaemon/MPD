@@ -56,8 +56,6 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		/* after the conversion to DoP, the DSD
 		   samples are stuffed inside fake 24 bit samples */
 		sample_format = SampleFormat::S24_P32;
-#else
-	(void)_channels;
 #endif
 
 	shift8 = params.shift8 && sample_format == SampleFormat::S24_P32;
