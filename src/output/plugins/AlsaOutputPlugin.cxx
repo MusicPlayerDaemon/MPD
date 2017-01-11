@@ -385,7 +385,7 @@ AlsaTryFormatOrByteSwap(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 
 /**
  * Attempts to configure the specified sample format.  On DSD_U8
- * failure, attempt to switch to DSD_U32.
+ * failure, attempt to switch to DSD_U32 or DSD_U16.
  */
 static int
 AlsaTryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
@@ -394,8 +394,10 @@ AlsaTryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 	int err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
 
 #if defined(ENABLE_DSD) && defined(HAVE_ALSA_DSD_U32)
-	if (err == 0)
+	if (err == 0) {
+		params.dsd_u16 = false;
 		params.dsd_u32 = false;
+	}
 
 	if (err == -EINVAL && fmt == SND_PCM_FORMAT_DSD_U8) {
 		/* attempt to switch to DSD_U32 */
@@ -405,6 +407,20 @@ AlsaTryFormatDsd(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 		err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
 		if (err == 0)
 			params.dsd_u32 = true;
+		else
+			fmt = SND_PCM_FORMAT_DSD_U8;
+	}
+
+	if (err == -EINVAL && fmt == SND_PCM_FORMAT_DSD_U8) {
+		/* attempt to switch to DSD_U16 */
+		fmt = IsLittleEndian()
+			? SND_PCM_FORMAT_DSD_U16_LE
+			: SND_PCM_FORMAT_DSD_U16_BE;
+		err = AlsaTryFormatOrByteSwap(pcm, hwparams, fmt, params);
+		if (err == 0)
+			params.dsd_u16 = true;
+		else
+			fmt = SND_PCM_FORMAT_DSD_U8;
 	}
 #endif
 
