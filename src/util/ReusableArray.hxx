@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Max Kellermann <max@duempel.org>
+ * Copyright (C) 2013-2017 Max Kellermann <max@duempel.org>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,11 +44,11 @@
  */
 template<typename T, size_t M=1>
 class ReusableArray {
-	T *buffer;
-	size_t capacity;
+	T *buffer = nullptr;
+	size_t capacity = 0;
 
 public:
-	ReusableArray():buffer(nullptr), capacity(0) {}
+	ReusableArray() = default;
 
 	ReusableArray(const ReusableArray &other) = delete;
 	ReusableArray &operator=(const ReusableArray &other) = delete;
