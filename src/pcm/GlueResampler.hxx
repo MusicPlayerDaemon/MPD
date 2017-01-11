@@ -55,6 +55,11 @@ public:
 		return output_sample_format;
 	}
 
+	/**
+	 * @see PcmResampler::Reset()
+	 */
+	void Reset();
+
 	ConstBuffer<void> Resample(ConstBuffer<void> src);
 };
 

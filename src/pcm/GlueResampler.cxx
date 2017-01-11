@@ -65,6 +65,12 @@ GluePcmResampler::Close()
 	resampler->Close();
 }
 
+void
+GluePcmResampler::Reset()
+{
+	resampler->Reset();
+}
+
 ConstBuffer<void>
 GluePcmResampler::Resample(ConstBuffer<void> src)
 {

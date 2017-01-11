@@ -114,6 +114,12 @@ LibsampleratePcmResampler::Close()
 	state = src_delete(state);
 }
 
+void
+LibsampleratePcmResampler::Reset()
+{
+	src_reset(state);
+}
+
 inline ConstBuffer<float>
 LibsampleratePcmResampler::Resample2(ConstBuffer<float> src)
 {

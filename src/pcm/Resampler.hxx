@@ -55,6 +55,12 @@ public:
 	virtual void Close() = 0;
 
 	/**
+	 * Reset the filter's state, e.g. drop/flush buffers.
+	 */
+	virtual void Reset() {
+	}
+
+	/**
 	 * Resamples a block of PCM data.
 	 *
 	 * @param src the input buffer
