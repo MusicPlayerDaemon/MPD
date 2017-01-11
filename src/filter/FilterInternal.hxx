@@ -53,6 +53,12 @@ public:
 	}
 
 	/**
+	 * Reset the filter's state, e.g. drop/flush buffers.
+	 */
+	virtual void Reset() {
+	}
+
+	/**
 	 * Filters a block of PCM data.
 	 *
 	 * Throws std::runtime_error on error.
@@ -60,7 +66,7 @@ public:
 	 * @param src the input buffer
 	 * @return the destination buffer on success (will be
 	 * invalidated by deleting this object or the next FilterPCM()
-	 * call)
+	 * or Reset() call)
 	 */
 	virtual ConstBuffer<void> FilterPCM(ConstBuffer<void> src) = 0;
 };

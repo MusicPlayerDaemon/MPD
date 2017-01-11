@@ -48,6 +48,13 @@ public:
 		:Filter(_filter->GetOutAudioFormat()),
 		 filter(std::move(_filter)), convert(std::move(_convert)) {}
 
+	void Reset() override {
+		filter->Reset();
+
+		if (convert)
+			convert->Reset();
+	}
+
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 

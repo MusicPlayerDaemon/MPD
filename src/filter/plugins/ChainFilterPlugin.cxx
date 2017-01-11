@@ -61,6 +61,7 @@ public:
 	}
 
 	/* virtual methods from class Filter */
+	void Reset() override;
 	ConstBuffer<void> FilterPCM(ConstBuffer<void> src) override;
 };
 
@@ -128,6 +129,13 @@ PreparedChainFilter::Open(AudioFormat &in_audio_format)
 	}
 
 	return chain.release();
+}
+
+void
+ChainFilter::Reset()
+{
+	for (auto &child : children)
+		child.filter->Reset();
 }
 
 ConstBuffer<void>
