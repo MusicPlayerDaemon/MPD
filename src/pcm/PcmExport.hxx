@@ -80,6 +80,11 @@ class PcmExport {
 
 #ifdef ENABLE_DSD
 	/**
+	 * Convert DSD (U8) to DSD_U16?
+	 */
+	bool dsd_u16;
+
+	/**
 	 * Convert DSD (U8) to DSD_U32?
 	 */
 	bool dsd_u32;
@@ -114,6 +119,7 @@ public:
 	struct Params {
 		bool alsa_channel_order = false;
 #ifdef ENABLE_DSD
+		bool dsd_u16 = false;
 		bool dsd_u32 = false;
 		bool dop = false;
 #endif

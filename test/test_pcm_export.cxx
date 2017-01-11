@@ -127,6 +127,37 @@ PcmExportTest::TestReverseEndian()
 #ifdef ENABLE_DSD
 
 void
+PcmExportTest::TestDsdU16()
+{
+	static constexpr uint8_t src[] = {
+		0x01, 0x23, 0x45, 0x67,
+		0x89, 0xab, 0xcd, 0xef,
+		0x11, 0x22, 0x33, 0x44,
+		0x55, 0x66, 0x77, 0x88,
+	};
+
+	static constexpr uint16_t expected[] = {
+		0x0145, 0x2367,
+		0x89cd, 0xabef,
+		0x1133, 0x2244,
+		0x5577, 0x6688,
+	};
+
+	PcmExport::Params params;
+	params.dsd_u16 = true;
+
+	CPPUNIT_ASSERT_EQUAL(params.CalcOutputSampleRate(705600u), 352800u);
+	CPPUNIT_ASSERT_EQUAL(params.CalcInputSampleRate(352800u), 705600u);
+
+	PcmExport e;
+	e.Open(SampleFormat::DSD, 2, params);
+
+	auto dest = e.Export({src, sizeof(src)});
+	CPPUNIT_ASSERT_EQUAL(sizeof(expected), dest.size);
+	CPPUNIT_ASSERT(memcmp(dest.data, expected, dest.size) == 0);
+}
+
+void
 PcmExportTest::TestDsdU32()
 {
 	static constexpr uint8_t src[] = {

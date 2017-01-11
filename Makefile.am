@@ -575,6 +575,7 @@ PCM_LIBS = \
 
 if ENABLE_DSD
 libpcm_a_SOURCES += \
+	src/pcm/Dsd16.cxx src/pcm/Dsd16.hxx \
 	src/pcm/Dsd32.cxx src/pcm/Dsd32.hxx \
 	src/pcm/PcmDsd.cxx src/pcm/PcmDsd.hxx \
 	src/pcm/dsd2pcm/dsd2pcm.c src/pcm/dsd2pcm/dsd2pcm.h

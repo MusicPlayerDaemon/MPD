@@ -25,6 +25,7 @@
 #include "util/ConstBuffer.hxx"
 
 #ifdef ENABLE_DSD
+#include "Dsd16.hxx"
 #include "Dsd32.hxx"
 #include "PcmDsd.hxx"
 #include "PcmDop.hxx"
@@ -42,8 +43,14 @@ PcmExport::Open(SampleFormat sample_format, unsigned _channels,
 		: SampleFormat::UNDEFINED;
 
 #ifdef ENABLE_DSD
-	assert(!params.dsd_u32 || !params.dop);
+	assert((params.dsd_u16 + params.dsd_u32 + params.dop) <= 1);
 	assert(!params.dop || audio_valid_channel_count(_channels));
+
+	dsd_u16 = params.dsd_u16 && sample_format == SampleFormat::DSD;
+	if (dsd_u16)
+		/* after the conversion to DSD_U16, the DSD samples
+		   are stuffed inside fake 16 bit samples */
+		sample_format = SampleFormat::S16;
 
 	dsd_u32 = params.dsd_u32 && sample_format == SampleFormat::DSD;
 	if (dsd_u32)
@@ -83,6 +90,9 @@ PcmExport::GetFrameSize(const AudioFormat &audio_format) const
 		return audio_format.channels * 3;
 
 #ifdef ENABLE_DSD
+	if (dsd_u16)
+		return channels * 2;
+
 	if (dsd_u32)
 		return channels * 4;
 
@@ -101,6 +111,11 @@ unsigned
 PcmExport::Params::CalcOutputSampleRate(unsigned sample_rate) const
 {
 #ifdef ENABLE_DSD
+	if (dsd_u16)
+		/* DSD_U16 combines two 8-bit "samples" in one 16-bit
+		   "sample" */
+		sample_rate /= 2;
+
 	if (dsd_u32)
 		/* DSD_U32 combines four 8-bit "samples" in one 32-bit
 		   "sample" */
@@ -119,6 +134,9 @@ unsigned
 PcmExport::Params::CalcInputSampleRate(unsigned sample_rate) const
 {
 #ifdef ENABLE_DSD
+	if (dsd_u16)
+		sample_rate *= 2;
+
 	if (dsd_u32)
 		sample_rate *= 4;
 
@@ -137,6 +155,11 @@ PcmExport::Export(ConstBuffer<void> data)
 					  alsa_channel_order, channels);
 
 #ifdef ENABLE_DSD
+	if (dsd_u16)
+		data = Dsd8To16(dop_buffer, channels,
+				ConstBuffer<uint8_t>::FromVoid(data))
+			.ToVoid();
+
 	if (dsd_u32)
 		data = Dsd8To32(dop_buffer, channels,
 				ConstBuffer<uint8_t>::FromVoid(data))

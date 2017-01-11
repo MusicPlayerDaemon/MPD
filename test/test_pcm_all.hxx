@@ -128,6 +128,7 @@ class PcmExportTest : public CppUnit::TestFixture {
 	CPPUNIT_TEST(TestPack24);
 	CPPUNIT_TEST(TestReverseEndian);
 #ifdef ENABLE_DSD
+	CPPUNIT_TEST(TestDsdU16);
 	CPPUNIT_TEST(TestDsdU32);
 	CPPUNIT_TEST(TestDop);
 #endif
@@ -139,6 +140,7 @@ public:
 	void TestPack24();
 	void TestReverseEndian();
 #ifdef ENABLE_DSD
+	void TestDsdU16();
 	void TestDsdU32();
 	void TestDop();
 #endif
