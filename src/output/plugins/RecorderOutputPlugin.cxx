@@ -274,7 +274,7 @@ RecorderOutput::ReopenFormat(AllocatedPath &&new_path)
 	assert(path.IsNull());
 	assert(file == nullptr);
 
-	FileOutputStream *new_file = new FileOutputStream(path);
+	FileOutputStream *new_file = new FileOutputStream(new_path);
 
 	AudioFormat new_audio_format = effective_audio_format;
 
