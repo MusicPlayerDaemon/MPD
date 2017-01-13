@@ -69,8 +69,8 @@ static constexpr size_t read_buffer_size = 4096;
 class AlsaInputStream final
 	: public AsyncInputStream,
 	  MultiSocketMonitor, DeferredMonitor {
-	snd_pcm_t *capture_handle;
-	size_t frame_size;
+	snd_pcm_t *const capture_handle;
+	const size_t frame_size;
 
 	ReusableArray<pollfd> pfd_buffer;
 
