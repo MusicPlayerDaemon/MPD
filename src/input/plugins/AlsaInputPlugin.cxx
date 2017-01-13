@@ -28,6 +28,7 @@
 #include "AlsaInputPlugin.hxx"
 #include "../InputPlugin.hxx"
 #include "../AsyncInputStream.hxx"
+#include "event/Call.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
@@ -99,6 +100,14 @@ public:
 	}
 
 	~AlsaInputStream() {
+		/* ClearSocketList must be called from within the
+		   IOThread; if we don't do it manually here, the
+		   ~MultiSocketMonitor() will do it in the current
+		   thread */
+		BlockingCall(MultiSocketMonitor::GetEventLoop(), [this](){
+				ClearSocketList();
+			});
+
 		snd_pcm_close(capture_handle);
 	}
 
