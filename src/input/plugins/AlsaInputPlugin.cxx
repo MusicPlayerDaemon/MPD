@@ -367,7 +367,8 @@ AlsaInputStream::OpenDevice(const char *device,
 	snd_pcm_t *capture_handle;
 	int err;
 	if ((err = snd_pcm_open(&capture_handle, device,
-				SND_PCM_STREAM_CAPTURE, 0)) < 0)
+				SND_PCM_STREAM_CAPTURE,
+				SND_PCM_NONBLOCK)) < 0)
 		throw FormatRuntimeError("Failed to open device: %s (%s)",
 					 device, snd_strerror(err));
 
