@@ -386,11 +386,6 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 		snd_pcm_sw_params_free(sw_params);
 	};
 
-	if ((err = snd_pcm_sw_params_set_start_threshold(capture_handle, sw_params,
-							 period)) < 0)
-		throw FormatRuntimeError("unable to set start threshold (%s)",
-					 snd_strerror(err));
-
 	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0)
 		throw FormatRuntimeError("unable to install sw params (%s)",
 					 snd_strerror(err));
