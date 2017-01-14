@@ -267,6 +267,8 @@ AlsaInputStream::Recover(int err)
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
 		err = snd_pcm_prepare(capture_handle);
+		if (err == 0)
+			err = snd_pcm_start(capture_handle);
 		break;
 
 	case SND_PCM_STATE_DISCONNECTED:
