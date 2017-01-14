@@ -69,6 +69,12 @@ static constexpr size_t read_buffer_size = 4096;
 class AlsaInputStream final
 	: public AsyncInputStream,
 	  MultiSocketMonitor, DeferredMonitor {
+
+	/**
+	 * The configured name of the ALSA device.
+	 */
+	const std::string device;
+
 	snd_pcm_t *const capture_handle;
 	const size_t frame_size;
 
@@ -77,11 +83,13 @@ class AlsaInputStream final
 public:
 	AlsaInputStream(EventLoop &loop,
 			const char *_uri, Mutex &_mutex, Cond &_cond,
+			const char *_device,
 			snd_pcm_t *_handle, int _frame_size)
 		:AsyncInputStream(_uri, _mutex, _cond,
 				  ALSA_MAX_BUFFERED, ALSA_RESUME_AT),
 		 MultiSocketMonitor(loop),
 		 DeferredMonitor(loop),
+		 device(_device),
 		 capture_handle(_handle),
 		 frame_size(_frame_size)
 	{
@@ -171,7 +179,7 @@ AlsaInputStream::Create(const char *uri, Mutex &mutex, Cond &cond)
 	int frame_size = snd_pcm_format_width(format) / 8 * channels;
 	return new AlsaInputStream(io_thread_get(),
 				   uri, mutex, cond,
-				   handle, frame_size);
+				   device, handle, frame_size);
 }
 
 std::chrono::steady_clock::duration
@@ -230,7 +238,15 @@ AlsaInputStream::Recover(int err)
 {
 	switch(err) {
 	case -EPIPE:
-		LogDebug(alsa_input_domain, "Buffer Overrun");
+		FormatDebug(alsa_input_domain,
+			    "Overrun on ALSA capture device \"%s\"",
+			    device.c_str());
+		break;
+
+	case -ESTRPIPE:
+		FormatDebug(alsa_input_domain,
+			    "ALSA capture device \"%s\" was suspended",
+			    device.c_str());
 		break;
 	}
 
