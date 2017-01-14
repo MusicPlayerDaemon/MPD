@@ -146,7 +146,9 @@ public:
 	 */
 	gcc_pure
 	bool IsSame(const DetachedSong &other) const {
-		return uri == other.uri;
+		return uri == other.uri &&
+			start_time == other.start_time &&
+			end_time == other.end_time;
 	}
 
 	gcc_pure gcc_nonnull_all

@@ -11,6 +11,8 @@ ver 0.20.2 (not yet released)
   - alsa: fix the DSD_U32 byte order
   - alsa: support DSD_U16
   - recorder: fix error "Failed to create : No such file or directory"
+* playlist
+  - cue: fix skipping songs
 
 ver 0.20.1 (2017/01/09)
 * input
