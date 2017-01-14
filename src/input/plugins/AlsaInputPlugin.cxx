@@ -231,19 +231,40 @@ AlsaInputStream::Recover(int err)
 	switch(err) {
 	case -EPIPE:
 		LogDebug(alsa_input_domain, "Buffer Overrun");
-		// drop through
+		break;
+	}
+
+	switch (snd_pcm_state(capture_handle)) {
+	case SND_PCM_STATE_PAUSED:
+		err = snd_pcm_pause(capture_handle, /* disable */ 0);
+		break;
+
+	case SND_PCM_STATE_SUSPENDED:
+		err = snd_pcm_resume(capture_handle);
+		if (err == -EAGAIN)
+			return 0;
+		/* fall-through to snd_pcm_prepare: */
 #if GCC_CHECK_VERSION(7,0)
 		[[fallthrough]];
 #endif
-
-	case -ESTRPIPE:
-	case -EINTR:
-		err = snd_pcm_recover(capture_handle, err, 1);
+	case SND_PCM_STATE_OPEN:
+	case SND_PCM_STATE_SETUP:
+	case SND_PCM_STATE_XRUN:
+		err = snd_pcm_prepare(capture_handle);
 		break;
-	default:
-		// something broken somewhere, give up
-		err = -1;
+
+	case SND_PCM_STATE_DISCONNECTED:
+		break;
+
+	case SND_PCM_STATE_PREPARED:
+	case SND_PCM_STATE_RUNNING:
+	case SND_PCM_STATE_DRAINING:
+		/* this is no error, so just keep running */
+		err = 0;
+		break;
 	}
+
+
 	return err;
 }
 
