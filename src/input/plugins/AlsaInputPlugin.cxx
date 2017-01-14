@@ -57,15 +57,6 @@ static constexpr unsigned int default_rate = 44100; // cd quality
 static constexpr size_t ALSA_MAX_BUFFERED = default_rate * default_channels * 2;
 static constexpr size_t ALSA_RESUME_AT = ALSA_MAX_BUFFERED / 2;
 
-/**
- * This value should be the same as the read buffer size defined in
- * PcmDecoderPlugin.cxx:pcm_stream_decode().
- * We use it to calculate how many audio frames to buffer in the alsa driver
- * before reading from the device. snd_pcm_readi() blocks until that many
- * frames are ready.
- */
-static constexpr size_t read_buffer_size = 4096;
-
 class AlsaInputStream final
 	: public AsyncInputStream,
 	  MultiSocketMonitor, DeferredMonitor {
@@ -344,18 +335,22 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 		    (unsigned)period_size_min, (unsigned)period_size_max,
 		    period_time_min, period_time_max);
 
-	/* period needs to be big enough so that poll() doesn't fire too often,
-	 * but small enough that buffer overruns don't occur if Read() is not
-	 * invoked often enough.
-	 * the calculation here is empirical; however all measurements were
-	 * done using 44100:16:2. When we extend this plugin to support
-	 * other audio formats then this may need to be revisited */
-	snd_pcm_uframes_t period = read_buffer_size * 2;
-	int direction = -1;
-	if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle, hw_params,
-							  &period, &direction)) < 0)
-		throw FormatRuntimeError("Cannot set period size (%s)",
-					 snd_strerror(err));
+	/* choose the maximum possible buffer_size ... */
+	snd_pcm_hw_params_set_buffer_size(capture_handle, hw_params,
+					  buffer_size_max);
+
+	/* ... and calculate the period_size to have four periods in
+	   one buffer; this way, we get woken up often enough to avoid
+	   buffer overruns, but not too often */
+	snd_pcm_uframes_t buffer_size;
+	if (snd_pcm_hw_params_get_buffer_size(hw_params, &buffer_size) == 0) {
+		snd_pcm_uframes_t period_size = buffer_size / 4;
+		int direction = -1;
+		if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle, hw_params,
+								  &period_size, &direction)) < 0)
+			throw FormatRuntimeError("Cannot set period size (%s)",
+						 snd_strerror(err));
+	}
 
 	if ((err = snd_pcm_hw_params(capture_handle, hw_params)) < 0)
 		throw FormatRuntimeError("Cannot set parameters (%s)",

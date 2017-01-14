@@ -1,6 +1,7 @@
 ver 0.20.2 (not yet released)
 * input
   - alsa: fix crash bug
+  - alsa: fix buffer overruns
 * decoder
   - flac: add options "probesize" and "analyzeduration"
 * resampler
