@@ -324,6 +324,26 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 		throw FormatRuntimeError("Cannot set sample rate (%s)",
 					 snd_strerror(err));
 
+	snd_pcm_uframes_t buffer_size_min, buffer_size_max;
+	snd_pcm_hw_params_get_buffer_size_min(hw_params, &buffer_size_min);
+	snd_pcm_hw_params_get_buffer_size_max(hw_params, &buffer_size_max);
+	unsigned buffer_time_min, buffer_time_max;
+	snd_pcm_hw_params_get_buffer_time_min(hw_params, &buffer_time_min, 0);
+	snd_pcm_hw_params_get_buffer_time_max(hw_params, &buffer_time_max, 0);
+	FormatDebug(alsa_input_domain, "buffer: size=%u..%u time=%u..%u",
+		    (unsigned)buffer_size_min, (unsigned)buffer_size_max,
+		    buffer_time_min, buffer_time_max);
+
+	snd_pcm_uframes_t period_size_min, period_size_max;
+	snd_pcm_hw_params_get_period_size_min(hw_params, &period_size_min, 0);
+	snd_pcm_hw_params_get_period_size_max(hw_params, &period_size_max, 0);
+	unsigned period_time_min, period_time_max;
+	snd_pcm_hw_params_get_period_time_min(hw_params, &period_time_min, 0);
+	snd_pcm_hw_params_get_period_time_max(hw_params, &period_time_max, 0);
+	FormatDebug(alsa_input_domain, "period: size=%u..%u time=%u..%u",
+		    (unsigned)period_size_min, (unsigned)period_size_max,
+		    period_time_min, period_time_max);
+
 	/* period needs to be big enough so that poll() doesn't fire too often,
 	 * but small enough that buffer overruns don't occur if Read() is not
 	 * invoked often enough.
@@ -340,6 +360,22 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 	if ((err = snd_pcm_hw_params(capture_handle, hw_params)) < 0)
 		throw FormatRuntimeError("Cannot set parameters (%s)",
 					 snd_strerror(err));
+
+	snd_pcm_uframes_t alsa_buffer_size;
+	err = snd_pcm_hw_params_get_buffer_size(hw_params, &alsa_buffer_size);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_hw_params_get_buffer_size() failed: %s",
+					 snd_strerror(-err));
+
+	snd_pcm_uframes_t alsa_period_size;
+	err = snd_pcm_hw_params_get_period_size(hw_params, &alsa_period_size,
+						nullptr);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
+					 snd_strerror(-err));
+
+	FormatDebug(alsa_input_domain, "buffer_size=%u period_size=%u",
+		    (unsigned)alsa_buffer_size, (unsigned)alsa_period_size);
 
 	snd_pcm_sw_params_t *sw_params;
 
