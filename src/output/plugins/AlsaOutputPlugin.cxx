@@ -803,6 +803,7 @@ AlsaOutput::Recover(int err)
 #if GCC_CHECK_VERSION(7,0)
 		[[fallthrough]];
 #endif
+	case SND_PCM_STATE_OPEN:
 	case SND_PCM_STATE_SETUP:
 	case SND_PCM_STATE_XRUN:
 		period_position = 0;
@@ -811,11 +812,10 @@ AlsaOutput::Recover(int err)
 	case SND_PCM_STATE_DISCONNECTED:
 		break;
 	/* this is no error, so just keep running */
+	case SND_PCM_STATE_PREPARED:
 	case SND_PCM_STATE_RUNNING:
+	case SND_PCM_STATE_DRAINING:
 		err = 0;
-		break;
-	default:
-		/* unknown state, do nothing */
 		break;
 	}
 
