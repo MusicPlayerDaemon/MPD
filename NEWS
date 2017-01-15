@@ -1,4 +1,4 @@
-ver 0.20.2 (not yet released)
+ver 0.20.2 (2017/01/15)
 * input
   - alsa: fix crash bug
   - alsa: fix buffer overruns
