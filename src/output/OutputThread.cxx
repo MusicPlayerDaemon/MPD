@@ -140,6 +140,18 @@ AudioOutput::Open()
 		}
 
 		open = true;
+	} else if (f != out_audio_format) {
+		/* reconfigure the final ConvertFilter for its new
+		   input AudioFormat */
+
+		try {
+			convert_filter_set(convert_filter.Get(),
+					   out_audio_format);
+		} catch (const std::runtime_error &e) {
+			Close(false);
+			std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
+								  name, plugin.name));
+		}
 	}
 
 	if (f != source.GetInputAudioFormat() || f != out_audio_format) {

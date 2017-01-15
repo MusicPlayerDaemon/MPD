@@ -7,6 +7,7 @@ ver 0.20.2 (not yet released)
 * resampler
   - libsamplerate: reset state after seeking
 * output
+  - fix static noise after changing to a different audio format
   - alsa: fix the DSD_U32 sample rate
   - alsa: fix the DSD_U32 byte order
   - alsa: support DSD_U16
