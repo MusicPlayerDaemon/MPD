@@ -111,8 +111,7 @@ AudioOutput::Open()
 		f = source.Open(request.audio_format, *request.pipe,
 				prepared_replay_gain_filter,
 				prepared_other_replay_gain_filter,
-				prepared_filter)
-			.WithMask(config_audio_format);
+				prepared_filter);
 
 		if (mixer != nullptr && mixer->IsPlugin(software_mixer_plugin))
 			software_mixer_set_filter(*mixer, volume_filter.Get());
@@ -121,14 +120,16 @@ AudioOutput::Open()
 							  name, plugin.name));
 	}
 
-	if (open && f != filter_audio_format) {
+	const auto cf = f.WithMask(config_audio_format);
+
+	if (open && cf != filter_audio_format) {
 		/* if the filter's output format changes, the output
 		   must be reopened as well */
 		CloseOutput(true);
 		open = false;
 	}
 
-	filter_audio_format = f;
+	filter_audio_format = cf;
 
 	if (!open) {
 		try {
