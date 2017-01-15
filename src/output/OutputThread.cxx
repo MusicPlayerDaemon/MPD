@@ -141,6 +141,15 @@ AudioOutput::Open()
 
 		open = true;
 	}
+
+	if (f != source.GetInputAudioFormat() || f != out_audio_format) {
+		struct audio_format_string afs1, afs2, afs3;
+		FormatDebug(output_domain, "converting in=%s -> f=%s -> out=%s",
+			    audio_format_to_string(source.GetInputAudioFormat(),
+						   &afs1),
+			    audio_format_to_string(f, &afs2),
+			    audio_format_to_string(out_audio_format, &afs3));
+	}
 }
 
 void
@@ -154,6 +163,12 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 		std::throw_with_nested(FormatRuntimeError("Failed to open \"%s\" [%s]",
 							  name, plugin.name));
 	}
+
+	struct audio_format_string af_string;
+	FormatDebug(output_domain,
+		    "opened plugin=%s name=\"%s\" audio_format=%s",
+		    plugin.name, name,
+		    audio_format_to_string(out_audio_format, &af_string));
 
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
@@ -178,17 +193,6 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 		std::throw_with_nested(FormatRuntimeError("Failed to convert for \"%s\" [%s]",
 							  name, plugin.name));
 	}
-
-	struct audio_format_string af_string;
-	FormatDebug(output_domain,
-		    "opened plugin=%s name=\"%s\" audio_format=%s",
-		    plugin.name, name,
-		    audio_format_to_string(out_audio_format, &af_string));
-
-	if (source.GetInputAudioFormat() != out_audio_format)
-		FormatDebug(output_domain, "converting from %s",
-			    audio_format_to_string(source.GetInputAudioFormat(),
-						   &af_string));
 }
 
 void
