@@ -1,10 +1,10 @@
 AC_PREREQ(2.60)
 
-AC_INIT(mpd, 0.20.2, musicpd-dev-team@lists.sourceforge.net)
+AC_INIT(mpd, 0.20.3, musicpd-dev-team@lists.sourceforge.net)
 
 VERSION_MAJOR=0
 VERSION_MINOR=20
-VERSION_REVISION=1
+VERSION_REVISION=3
 VERSION_EXTRA=0
 
 AC_CONFIG_SRCDIR([src/Main.cxx])
