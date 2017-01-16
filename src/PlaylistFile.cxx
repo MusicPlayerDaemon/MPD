@@ -335,7 +335,7 @@ try {
 	const auto path_fs = spl_map_to_fs(utf8path);
 	assert(!path_fs.IsNull());
 
-	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_EXISTING);
+	FileOutputStream fos(path_fs, FileOutputStream::Mode::APPEND_OR_CREATE);
 
 	if (fos.Tell() / (MPD_PATH_MAX + 1) >= playlist_max_length)
 		throw PlaylistError(PlaylistResult::TOO_LARGE,
