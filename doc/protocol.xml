@@ -573,7 +573,12 @@
               <listitem>
                 <para>
                   <varname>audio</varname>:
-                  <returnvalue>sampleRate:bits:channels</returnvalue>
+                  <returnvalue>
+                    The format emitted by the decoder plugin during
+                    playback, format:
+                    "<replaceable>samplerate:bits:channels</replaceable>".
+                    Check the user manual for a detailed explanation.
+                  </returnvalue>
                 </para>
               </listitem>
               <listitem>
