@@ -24,7 +24,7 @@
 #include "pcm/PcmDither.hxx"
 #include "pcm/PcmUtils.hxx"
 #include "pcm/PcmBuffer.hxx"
-#include "AudioFormat.hxx"
+#include "pcm/SampleFormat.hxx"
 
 void
 PcmFormatTest::TestFormat8to16()

@@ -21,10 +21,11 @@
 #define PCM_EXPORT_HXX
 
 #include "check.h"
+#include "SampleFormat.hxx"
 #include "PcmBuffer.hxx"
-#include "AudioFormat.hxx"
 
 template<typename T> struct ConstBuffer;
+struct AudioFormat;
 
 /**
  * An object that handles export of PCM samples to some instance

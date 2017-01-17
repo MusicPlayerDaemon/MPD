@@ -23,7 +23,6 @@
 #include "decoder/DecoderPlugin.hxx"
 #include "input/Init.hxx"
 #include "input/InputStream.hxx"
-#include "AudioFormat.hxx"
 #include "tag/TagHandler.hxx"
 #include "tag/Generic.hxx"
 #include "fs/Path.hxx"

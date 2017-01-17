@@ -21,7 +21,7 @@
 #define MPD_PCM_TRAITS_HXX
 
 #include "check.h"
-#include "AudioFormat.hxx"
+#include "SampleFormat.hxx"
 
 #include <stdint.h>
 #include <stddef.h>

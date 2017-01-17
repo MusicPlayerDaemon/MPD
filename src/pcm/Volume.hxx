@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_VOLUME_HXX
 #define MPD_PCM_VOLUME_HXX
 
-#include "AudioFormat.hxx"
+#include "SampleFormat.hxx"
 #include "PcmBuffer.hxx"
 #include "PcmDither.hxx"
 

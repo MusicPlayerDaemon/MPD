@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "PcmExport.hxx"
+#include "AudioFormat.hxx"
 #include "Order.hxx"
 #include "PcmPack.hxx"
 #include "util/ByteReverse.hxx"

@@ -20,7 +20,6 @@
 #include "config.h"
 #include "PcmConvert.hxx"
 #include "ConfiguredResampler.hxx"
-#include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
 
 #include <assert.h>

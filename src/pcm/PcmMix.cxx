@@ -21,7 +21,6 @@
 #include "PcmMix.hxx"
 #include "Volume.hxx"
 #include "PcmUtils.hxx"
-#include "AudioFormat.hxx"
 #include "Traits.hxx"
 #include "util/Clamp.hxx"
 

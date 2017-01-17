@@ -21,7 +21,7 @@
 #define MPD_PCM_FORMAT_CONVERTER_HXX
 
 #include "check.h"
-#include "AudioFormat.hxx"
+#include "SampleFormat.hxx"
 #include "PcmBuffer.hxx"
 #include "PcmDither.hxx"
 

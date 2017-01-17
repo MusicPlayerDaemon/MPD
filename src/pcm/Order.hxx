@@ -21,7 +21,7 @@
 #define MPD_PCM_ORDER_HXX
 
 #include "check.h"
-#include "AudioFormat.hxx"
+#include "SampleFormat.hxx"
 
 class PcmBuffer;
 template<typename T> struct ConstBuffer;

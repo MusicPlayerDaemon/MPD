@@ -20,7 +20,7 @@
 #ifndef MPD_PCM_MIX_HXX
 #define MPD_PCM_MIX_HXX
 
-#include "AudioFormat.hxx"
+#include "SampleFormat.hxx"
 #include "Compiler.h"
 
 #include <stddef.h>

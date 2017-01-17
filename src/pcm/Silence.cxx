@@ -19,7 +19,7 @@
 
 #include "config.h"
 #include "Silence.hxx"
-#include "AudioFormat.hxx"
+#include "SampleFormat.hxx"
 #include "util/WritableBuffer.hxx"
 
 #include <string.h>

@@ -542,6 +542,7 @@ libpcm_a_SOURCES = \
 	src/CheckAudioFormat.cxx src/CheckAudioFormat.hxx \
 	src/AudioFormat.cxx src/AudioFormat.hxx \
 	src/AudioParser.cxx src/AudioParser.hxx \
+	src/pcm/SampleFormat.cxx src/pcm/SampleFormat.hxx \
 	src/pcm/Traits.hxx \
 	src/pcm/Interleave.cxx src/pcm/Interleave.hxx \
 	src/pcm/PcmBuffer.cxx src/pcm/PcmBuffer.hxx \

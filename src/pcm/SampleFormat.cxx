@@ -17,38 +17,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "AudioFormat.hxx"
-
-#include <assert.h>
-#include <stdio.h>
-
-void
-AudioFormat::ApplyMask(AudioFormat mask)
-{
-	assert(IsValid());
-	assert(mask.IsMaskValid());
-
-	if (mask.sample_rate != 0)
-		sample_rate = mask.sample_rate;
-
-	if (mask.format != SampleFormat::UNDEFINED)
-		format = mask.format;
-
-	if (mask.channels != 0)
-		channels = mask.channels;
-
-	assert(IsValid());
-}
+#include "SampleFormat.hxx"
 
 const char *
-audio_format_to_string(const AudioFormat af,
-		       struct audio_format_string *s)
+sample_format_to_string(SampleFormat format)
 {
-	assert(s != nullptr);
+	switch (format) {
+	case SampleFormat::UNDEFINED:
+		return "?";
 
-	snprintf(s->buffer, sizeof(s->buffer), "%u:%s:%u",
-		 af.sample_rate, sample_format_to_string(af.format),
-		 af.channels);
+	case SampleFormat::S8:
+		return "8";
 
-	return s->buffer;
+	case SampleFormat::S16:
+		return "16";
+
+	case SampleFormat::S24_P32:
+		return "24";
+
+	case SampleFormat::S32:
+		return "32";
+
+	case SampleFormat::FLOAT:
+		return "f";
+
+	case SampleFormat::DSD:
+		return "dsd";
+	}
+
+	/* unreachable */
+	assert(false);
+	gcc_unreachable();
 }
