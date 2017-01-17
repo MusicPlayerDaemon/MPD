@@ -21,6 +21,7 @@
 #include "TestAudioFormat.hxx"
 #include "AudioFormat.hxx"
 #include "AudioParser.hxx"
+#include "util/StringBuffer.hxx"
 
 #include <cppunit/TestAssert.h>
 
@@ -51,8 +52,7 @@ struct assertion_traits<AudioFormat>
 
 	static std::string toString(AudioFormat x)
 	{
-		struct audio_format_string s;
-		return audio_format_to_string(x, &s);
+		return ToString(x).c_str();
 	}
 };
 }
@@ -80,10 +80,8 @@ static constexpr AudioFormatStringTest af_mask_tests[] = {
 void
 AudioFormatTest::TestToString()
 {
-	struct audio_format_string s;
-
 	for (const auto &i : af_string_tests)
-		CPPUNIT_ASSERT_EQUAL(i.s, audio_format_to_string(i.af, &s));
+		CPPUNIT_ASSERT_EQUAL(i.s, ToString(i.af).c_str());
 }
 
 void

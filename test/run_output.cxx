@@ -33,6 +33,7 @@
 #include "ReplayGainConfig.hxx"
 #include "pcm/PcmConvert.hxx"
 #include "filter/FilterRegistry.hxx"
+#include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/ScopeExit.hxx"
 #include "Log.hxx"
@@ -86,9 +87,8 @@ run_output(AudioOutput *ao, AudioFormat audio_format)
 	ao_plugin_open(ao, audio_format);
 	AtScopeExit(ao) { ao_plugin_close(ao); };
 
-	struct audio_format_string af_string;
 	fprintf(stderr, "audio_format=%s\n",
-		audio_format_to_string(audio_format, &af_string));
+		ToString(audio_format).c_str());
 
 	size_t frame_size = audio_format.GetFrameSize();
 

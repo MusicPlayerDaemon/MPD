@@ -24,6 +24,7 @@
 #include "filter/FilterRegistry.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringBuffer.hxx"
 #include "util/RuntimeError.hxx"
 
 #include <memory>
@@ -108,10 +109,9 @@ PreparedChainFilter::Child::Open(const AudioFormat &prev_audio_format)
 	if (conv_audio_format != prev_audio_format) {
 		delete new_filter;
 
-		struct audio_format_string s;
 		throw FormatRuntimeError("Audio format not supported by filter '%s': %s",
 					 name,
-					 audio_format_to_string(prev_audio_format, &s));
+					 ToString(prev_audio_format).c_str());
 	}
 
 	return new_filter;

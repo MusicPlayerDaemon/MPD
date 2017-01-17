@@ -30,6 +30,7 @@
 #include "Instance.hxx"
 #include "Idle.hxx"
 #include "AudioFormat.hxx"
+#include "util/StringBuffer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/Exception.hxx"
 
@@ -171,13 +172,9 @@ handle_status(Client &client, gcc_unused Request args, Response &r)
 			r.Format("duration: %1.3f\n",
 				 player_status.total_time.ToDoubleS());
 
-		if (player_status.audio_format.IsDefined()) {
-			struct audio_format_string af_string;
-
+		if (player_status.audio_format.IsDefined())
 			r.Format(COMMAND_STATUS_AUDIO ": %s\n",
-				 audio_format_to_string(player_status.audio_format,
-							&af_string));
-		}
+				 ToString(player_status.audio_format).c_str());
 	}
 
 #ifdef ENABLE_DATABASE

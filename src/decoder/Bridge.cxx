@@ -32,6 +32,7 @@
 #include "Log.hxx"
 #include "input/InputStream.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/StringBuffer.hxx"
 
 #include <assert.h>
 #include <string.h>
@@ -246,15 +247,13 @@ void
 DecoderBridge::Ready(const AudioFormat audio_format,
 		     bool seekable, SignedSongTime duration)
 {
-	struct audio_format_string af_string;
-
 	assert(convert == nullptr);
 	assert(stream_tag == nullptr);
 	assert(decoder_tag == nullptr);
 	assert(!seeking);
 
 	FormatDebug(decoder_domain, "audio_format=%s, seekable=%s",
-		    audio_format_to_string(audio_format, &af_string),
+		    ToString(audio_format).c_str(),
 		    seekable ? "true" : "false");
 
 	{
@@ -264,8 +263,7 @@ DecoderBridge::Ready(const AudioFormat audio_format,
 
 	if (dc.in_audio_format != dc.out_audio_format) {
 		FormatDebug(decoder_domain, "converting to %s",
-			    audio_format_to_string(dc.out_audio_format,
-						   &af_string));
+			    ToString(dc.out_audio_format).c_str());
 
 		convert = new PcmConvert();
 

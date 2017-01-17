@@ -18,6 +18,7 @@
  */
 
 #include "AudioFormat.hxx"
+#include "util/StringBuffer.hxx"
 
 #include <assert.h>
 #include <stdio.h>
@@ -40,15 +41,13 @@ AudioFormat::ApplyMask(AudioFormat mask)
 	assert(IsValid());
 }
 
-const char *
-audio_format_to_string(const AudioFormat af,
-		       struct audio_format_string *s)
+StringBuffer<24>
+ToString(const AudioFormat af)
 {
-	assert(s != nullptr);
-
-	snprintf(s->buffer, sizeof(s->buffer), "%u:%s:%u",
+	StringBuffer<24> buffer;
+	snprintf(buffer.data(), buffer.capacity(), "%u:%s:%u",
 		 af.sample_rate, sample_format_to_string(af.format),
 		 af.channels);
 
-	return s->buffer;
+	return buffer;
 }

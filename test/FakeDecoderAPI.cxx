@@ -21,6 +21,7 @@
 #include "FakeDecoderAPI.hxx"
 #include "decoder/DecoderAPI.hxx"
 #include "input/InputStream.hxx"
+#include "util/StringBuffer.hxx"
 #include "Compiler.h"
 
 #include <stdexcept>
@@ -33,13 +34,11 @@ FakeDecoder::Ready(const AudioFormat audio_format,
 		   gcc_unused bool seekable,
 		   SignedSongTime duration)
 {
-	struct audio_format_string af_string;
-
 	assert(!initialized);
 	assert(audio_format.IsValid());
 
 	fprintf(stderr, "audio_format=%s duration=%f\n",
-		audio_format_to_string(audio_format, &af_string),
+		ToString(audio_format).c_str(),
 		duration.ToDoubleS());
 
 	initialized = true;

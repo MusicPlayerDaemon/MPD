@@ -23,8 +23,11 @@
 #include "pcm/SampleFormat.hxx"
 #include "Compiler.h"
 
-#include <stdint.h>
 #include <assert.h>
+#include <stdint.h>
+#include <stddef.h>
+
+template<size_t CAPACITY> class StringBuffer;
 
 static constexpr unsigned MAX_CHANNELS = 8;
 
@@ -148,13 +151,6 @@ struct AudioFormat {
 };
 
 /**
- * Buffer for audio_format_string().
- */
-struct audio_format_string {
-	char buffer[24];
-};
-
-/**
  * Checks whether the sample rate is valid.
  *
  * @param sample_rate the sample rate in Hz
@@ -226,9 +222,8 @@ AudioFormat::GetTimeToSize() const
  * @param s a buffer to print into
  * @return the string, or nullptr if the #AudioFormat object is invalid
  */
-gcc_pure gcc_malloc
-const char *
-audio_format_to_string(AudioFormat af,
-		       struct audio_format_string *s);
+gcc_const
+StringBuffer<24>
+ToString(AudioFormat af);
 
 #endif
