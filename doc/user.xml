@@ -576,10 +576,11 @@ systemctl start mpd.socket</programlisting>
               </entry>
               <entry>
                 <para>
-                  Always open the audio output with the specified audio
-                  format (samplerate:bits:channels), regardless of the
-                  format of the input file.  This is optional for most
-                  plugins.
+                  Always open the audio output with the specified
+                  audio format
+                  (<replaceable>samplerate:bits:channels</replaceable>),
+                  regardless of the format of the input file.  This is
+                  optional for most plugins.
                 </para>
                 <para>
                   Any of the three attributes may be an asterisk to
