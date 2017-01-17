@@ -22,7 +22,6 @@
 
 #include "Compiler.h"
 
-#include <assert.h>
 #include <stdint.h>
 
 #if defined(WIN32) && GCC_CHECK_VERSION(4,6)
@@ -65,7 +64,7 @@ enum class SampleFormat : uint8_t {
 /**
  * Checks whether the sample format is valid.
  */
-static inline bool
+static constexpr inline bool
 audio_valid_sample_format(SampleFormat format)
 {
 	switch (format) {
@@ -84,8 +83,7 @@ audio_valid_sample_format(SampleFormat format)
 	return false;
 }
 
-gcc_const
-static inline unsigned
+static constexpr inline unsigned
 sample_format_size(SampleFormat format)
 {
 	switch (format) {
@@ -108,7 +106,6 @@ sample_format_size(SampleFormat format)
 		return 0;
 	}
 
-	assert(false);
 	gcc_unreachable();
 }
 

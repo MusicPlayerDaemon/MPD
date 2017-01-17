@@ -27,6 +27,7 @@
 
 #include "PcmDither.cxx" // including the .cxx file to get inlined templates
 
+#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 

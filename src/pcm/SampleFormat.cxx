@@ -19,6 +19,8 @@
 
 #include "SampleFormat.hxx"
 
+#include <assert.h>
+
 const char *
 sample_format_to_string(SampleFormat format)
 {
