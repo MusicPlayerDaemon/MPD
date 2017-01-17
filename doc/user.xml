@@ -598,7 +598,11 @@ systemctl start mpd.socket</programlisting>
                   <varname>32</varname> (signed 32 bit integer
                   samples), <varname>f</varname> (32 bit floating
                   point, -1.0 to 1.0), "<varname>dsd</varname>" means
-                  DSD (Direct Stream Digital).
+                  DSD (Direct Stream Digital).  For DSD, there are
+                  special cases such as "<varname>dsd64</varname>",
+                  which allows you to omit the sample rate
+                  (e.g. <parameter>dsd512:2</parameter> for stereo
+                  DSD512, i.e. 22.5792 MHz).
                 </para>
                 <para>
                   The sample rate is special for DSD:

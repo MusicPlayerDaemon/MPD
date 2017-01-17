@@ -137,6 +137,26 @@ ParseAudioFormat(const char *src, bool mask)
 	AudioFormat dest;
 	dest.Clear();
 
+	if (strncmp(src, "dsd", 3) == 0) {
+		/* allow format specifications such as "dsd64" which
+		   implies the sample rate */
+
+		char *endptr;
+		auto dsd = strtoul(src + 3, &endptr, 10);
+		if (endptr > src + 3 && *endptr == ':' &&
+		    dsd >= 32 && dsd <= 4096 && dsd % 2 == 0) {
+			dest.sample_rate = dsd * 44100 / 8;
+			dest.format = SampleFormat::DSD;
+
+			src = endptr + 1;
+			dest.channels = ParseChannelCount(src, mask, &src);
+			if (*src != 0)
+				throw FormatRuntimeError("Extra data after channel count: %s", src);
+
+			return dest;
+		}
+	}
+
 	/* parse sample rate */
 
 	dest.sample_rate = ParseSampleRate(src, mask, &src);

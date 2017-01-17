@@ -1,6 +1,7 @@
 ver 0.20.3 (not yet released)
 * protocol
   - "playlistadd" creates new playlist if it does not exist, as documented
+* use shortcuts such as "dsd64" in log messages
 
 ver 0.20.2 (2017/01/15)
 * input

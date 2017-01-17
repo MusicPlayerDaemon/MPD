@@ -67,7 +67,8 @@ static constexpr AudioFormatStringTest af_string_tests[] = {
 	{ AudioFormat(44100, SampleFormat::S16, 2), "44100:16:2" },
 	{ AudioFormat(48000, SampleFormat::S24_P32, 6), "48000:24:6" },
 	{ AudioFormat(192000, SampleFormat::FLOAT, 2), "192000:f:2" },
-	{ AudioFormat(352800, SampleFormat::DSD, 2), "352800:dsd:2" },
+	{ AudioFormat(352801, SampleFormat::DSD, 2), "352801:dsd:2" },
+	{ AudioFormat(352800, SampleFormat::DSD, 2), "dsd64:2" },
 };
 
 static constexpr AudioFormatStringTest af_mask_tests[] = {

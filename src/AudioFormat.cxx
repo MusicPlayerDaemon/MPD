@@ -45,6 +45,17 @@ StringBuffer<24>
 ToString(const AudioFormat af)
 {
 	StringBuffer<24> buffer;
+
+	if (af.format == SampleFormat::DSD && af.sample_rate > 0 &&
+	    af.sample_rate % 44100 == 0) {
+		/* use shortcuts such as "dsd64" which implies the
+		   sample rate */
+		snprintf(buffer.data(), buffer.capacity(), "dsd%u:%u",
+			 af.sample_rate * 8 / 44100,
+			 af.channels);
+		return buffer;
+	}
+
 	snprintf(buffer.data(), buffer.capacity(), "%u:%s:%u",
 		 af.sample_rate, sample_format_to_string(af.format),
 		 af.channels);
