@@ -597,7 +597,16 @@ systemctl start mpd.socket</programlisting>
                   24 bit integer samples padded to 32 bit),
                   <varname>32</varname> (signed 32 bit integer
                   samples), <varname>f</varname> (32 bit floating
-                  point, -1.0 to 1.0).
+                  point, -1.0 to 1.0), "<varname>dsd</varname>" means
+                  DSD (Direct Stream Digital).
+                </para>
+                <para>
+                  The sample rate is special for DSD:
+                  <application>MPD</application> counts the number of
+                  bytes, not bits.  Thus, a DSD "bit" rate of 22.5792
+                  MHz (DSD512) is 2822400 from
+                  <application>MPD</application>'s point of view
+                  (44100*512/8).
                 </para>
               </entry>
             </row>
