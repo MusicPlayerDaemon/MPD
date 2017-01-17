@@ -2228,6 +2228,7 @@ test_test_icy_parser_LDADD = \
 endif
 
 test_test_pcm_SOURCES = \
+	test/TestAudioFormat.cxx test/TestAudioFormat.hxx \
 	test/test_pcm_util.hxx \
 	test/test_pcm_dither.cxx \
 	test/test_pcm_pack.cxx \

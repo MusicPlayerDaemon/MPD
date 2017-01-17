@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "test_pcm_all.hxx"
+#include "TestAudioFormat.hxx"
 #include "Compiler.h"
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -34,6 +35,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PcmFormatTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(PcmMixTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(PcmInterleaveTest);
 CPPUNIT_TEST_SUITE_REGISTRATION(PcmExportTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(AudioFormatTest);
 
 int
 main(gcc_unused int argc, gcc_unused char **argv)
