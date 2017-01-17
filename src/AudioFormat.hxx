@@ -219,8 +219,7 @@ AudioFormat::GetTimeToSize() const
  * it in a log file.
  *
  * @param af the #AudioFormat object
- * @param s a buffer to print into
- * @return the string, or nullptr if the #AudioFormat object is invalid
+ * @return the string buffer
  */
 gcc_const
 StringBuffer<24>
