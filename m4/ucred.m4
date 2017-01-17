@@ -1,6 +1,6 @@
 # Check if "struct ucred" is available.
 #
-# Author: Max Kellermann <max@duempel.org>
+# Author: Max Kellermann <max.kellermann@gmail.com>
 
 AC_DEFUN([STRUCT_UCRED],[
 	AC_MSG_CHECKING([for struct ucred])
