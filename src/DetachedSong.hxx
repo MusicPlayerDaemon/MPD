@@ -63,18 +63,18 @@ class DetachedSong {
 
 	Tag tag;
 
-	time_t mtime;
+	time_t mtime = 0;
 
 	/**
 	 * Start of this sub-song within the file.
 	 */
-	SongTime start_time;
+	SongTime start_time = SongTime::zero();
 
 	/**
 	 * End of this sub-song within the file.
 	 * Unused if zero.
 	 */
-	SongTime end_time;
+	SongTime end_time = SongTime::zero();
 
 	explicit DetachedSong(const LightSong &other);
 
@@ -82,26 +82,18 @@ public:
 	explicit DetachedSong(const DetachedSong &) = default;
 
 	explicit DetachedSong(const char *_uri)
-		:uri(_uri),
-		 mtime(0),
-		 start_time(SongTime::zero()), end_time(SongTime::zero()) {}
+		:uri(_uri) {}
 
 	explicit DetachedSong(const std::string &_uri)
-		:uri(_uri),
-		 mtime(0),
-		 start_time(SongTime::zero()), end_time(SongTime::zero()) {}
+		:uri(_uri) {}
 
 	explicit DetachedSong(std::string &&_uri)
-		:uri(std::move(_uri)),
-		 mtime(0),
-		 start_time(SongTime::zero()), end_time(SongTime::zero()) {}
+		:uri(std::move(_uri)) {}
 
 	template<typename U>
 	DetachedSong(U &&_uri, Tag &&_tag)
 		:uri(std::forward<U>(_uri)),
-		 tag(std::move(_tag)),
-		 mtime(0),
-		 start_time(SongTime::zero()), end_time(SongTime::zero()) {}
+		 tag(std::move(_tag)) {}
 
 	DetachedSong(DetachedSong &&) = default;
 
