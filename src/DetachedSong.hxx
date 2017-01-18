@@ -25,10 +25,9 @@
 #include "Chrono.hxx"
 #include "Compiler.h"
 
+#include <chrono>
 #include <string>
 #include <utility>
-
-#include <time.h>
 
 struct LightSong;
 class Storage;
@@ -63,7 +62,12 @@ class DetachedSong {
 
 	Tag tag;
 
-	time_t mtime = 0;
+	/**
+	 * The time stamp of the last file modification.  A negative
+	 * value means that this is unknown/unavailable.
+	 */
+	std::chrono::system_clock::time_point mtime =
+		std::chrono::system_clock::time_point::min();
 
 	/**
 	 * Start of this sub-song within the file.
@@ -201,11 +205,11 @@ public:
 		tag.MoveItemsFrom(std::move(other.tag));
 	}
 
-	time_t GetLastModified() const {
+	std::chrono::system_clock::time_point GetLastModified() const {
 		return mtime;
 	}
 
-	void SetLastModified(time_t _value) {
+	void SetLastModified(std::chrono::system_clock::time_point _value) {
 		mtime = _value;
 	}
 

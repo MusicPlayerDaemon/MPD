@@ -107,7 +107,7 @@ UpdateWalk::UpdateContainerFile(Directory &directory,
 						   *contdir);
 
 			// shouldn't be necessary but it's there..
-			song->mtime = std::chrono::system_clock::to_time_t(info.mtime);
+			song->mtime = info.mtime;
 
 			FormatDefault(update_domain, "added %s/%s",
 				      contdir->GetPath(), song->uri);

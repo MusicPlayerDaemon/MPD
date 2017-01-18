@@ -63,7 +63,7 @@ public:
 		uri = uri2.c_str();
 		real_uri = real_uri2.c_str();
 		tag = &tag2;
-		mtime = 0;
+		mtime = std::chrono::system_clock::time_point::min();
 		start_time = end_time = SongTime::zero();
 	}
 };
@@ -314,7 +314,7 @@ visitSong(const UPnPDirObject &meta, const char *path,
 	song.uri = path;
 	song.real_uri = meta.url.c_str();
 	song.tag = &meta.tag;
-	song.mtime = 0;
+	song.mtime = std::chrono::system_clock::time_point::min();
 	song.start_time = song.end_time = SongTime::zero();
 
 	if (selection.Match(song))

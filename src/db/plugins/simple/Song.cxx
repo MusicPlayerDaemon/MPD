@@ -29,7 +29,7 @@
 #include <string.h>
 
 inline Song::Song(const char *_uri, size_t uri_length, Directory &_parent)
-	:parent(&_parent), mtime(0),
+	:parent(&_parent), mtime(std::chrono::system_clock::time_point::min()),
 	 start_time(SongTime::zero()), end_time(SongTime::zero())
 {
 	memcpy(uri, _uri, uri_length + 1);

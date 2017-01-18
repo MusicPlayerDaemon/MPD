@@ -16,6 +16,7 @@
 #include "db/DatabaseSong.hxx"
 #include "storage/plugins/LocalStorage.hxx"
 #include "Mapper.hxx"
+#include "util/ChronoUtil.hxx"
 
 #include <cppunit/TestFixture.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -179,8 +180,9 @@ ToString(const DetachedSong &song)
 
 	char buffer[64];
 
-	if (song.GetLastModified() > 0) {
-		sprintf(buffer, "%lu", (unsigned long)song.GetLastModified());
+	if (!IsNegative(song.GetLastModified())) {
+		sprintf(buffer, "%lu",
+			(unsigned long)std::chrono::system_clock::to_time_t(song.GetLastModified()));
 		result.append(buffer);
 	}
 

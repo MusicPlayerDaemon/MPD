@@ -197,7 +197,11 @@ ProxySong::ProxySong(const mpd_song *song)
 	uri = mpd_song_get_uri(song);
 	real_uri = nullptr;
 	tag = &tag2;
-	mtime = mpd_song_get_last_modified(song);
+
+	const auto _mtime = mpd_song_get_last_modified(song);
+	mtime = _mtime > 0
+		? std::chrono::system_clock::from_time_t(_mtime)
+		: std::chrono::system_clock::time_point::min();
 
 #if LIBMPDCLIENT_CHECK_VERSION(2,3,0)
 	start_time = SongTime::FromS(mpd_song_get_start(song));

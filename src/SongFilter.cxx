@@ -145,7 +145,7 @@ SongFilter::Item::Match(const DetachedSong &song) const noexcept
 		return uri_is_child_or_same(value.c_str(), song.GetURI());
 
 	if (tag == LOCATE_TAG_MODIFIED_SINCE)
-		return song.GetLastModified() >= time;
+		return song.GetLastModified() >= std::chrono::system_clock::from_time_t(time);
 
 	if (tag == LOCATE_TAG_FILE_TYPE)
 		return StringMatch(song.GetURI());
@@ -162,7 +162,7 @@ SongFilter::Item::Match(const LightSong &song) const noexcept
 	}
 
 	if (tag == LOCATE_TAG_MODIFIED_SINCE)
-		return song.mtime >= time;
+		return song.mtime >= std::chrono::system_clock::from_time_t(time);
 
 	if (tag == LOCATE_TAG_FILE_TYPE) {
 		const auto uri = song.GetURI();
