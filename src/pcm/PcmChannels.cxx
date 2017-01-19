@@ -20,9 +20,14 @@
 #include "config.h"
 #include "PcmChannels.hxx"
 #include "PcmBuffer.hxx"
+#include "Silence.hxx"
 #include "Traits.hxx"
 #include "AudioFormat.hxx"
 #include "util/ConstBuffer.hxx"
+#include "util/WritableBuffer.hxx"
+
+#include <array>
+#include <algorithm>
 
 #include <assert.h>
 
@@ -90,6 +95,38 @@ NToStereo(typename Traits::pointer_type dest,
 	return dest;
 }
 
+/**
+ * Convert stereo to N channels (where N > 2).  Left and right map to
+ * the first two channels (front left and front right), and the
+ * remaining (surround) channels are filled with silence.
+ */
+template<SampleFormat F, class Traits=SampleTraits<F>>
+static typename Traits::pointer_type
+StereoToN(typename Traits::pointer_type dest,
+	  unsigned dest_channels,
+	  typename Traits::const_pointer_type src,
+	  typename Traits::const_pointer_type end)
+{
+	assert(dest_channels > 2);
+	assert((end - src) % 2 == 0);
+
+	std::array<typename Traits::value_type, MAX_CHANNELS - 2> silence;
+	PcmSilence({&silence.front(), sizeof(silence)}, F);
+
+	while (src != end) {
+		/* copy left/right to front-left/front-right, which is
+		   the first two channels in all multi-channel
+		   configurations **/
+		*dest++ = *src++;
+		*dest++ = *src++;
+
+		/* all other channels are silent */
+		dest = std::copy_n(silence.begin(), dest_channels - 2, dest);
+	}
+
+	return dest;
+}
+
 template<SampleFormat F, class Traits=SampleTraits<F>>
 static typename Traits::pointer_type
 NToM(typename Traits::pointer_type dest,
@@ -133,6 +170,9 @@ ConvertChannels(PcmBuffer &buffer,
 		StereoToMono<F>(dest, src.begin(), src.end());
 	else if (dest_channels == 2)
 		NToStereo<F>(dest, src_channels, src.begin(), src.end());
+	else if (src_channels == 2 && dest_channels > 2)
+		StereoToN<F, Traits>(dest, dest_channels,
+				     src.begin(), src.end());
 	else
 		NToM<F>(dest, dest_channels,
 			src_channels, src.begin(), src.end());

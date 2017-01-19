@@ -50,6 +50,21 @@ PcmChannelsTest::TestChannels16()
 		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2]);
 		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2 + 1]);
 	}
+
+	/* stereo to 5.1 */
+
+	dest = pcm_convert_channels_16(buffer, 6, 2, { src, N * 2 });
+	CPPUNIT_ASSERT(!dest.IsNull());
+	CPPUNIT_ASSERT_EQUAL(N * 6, dest.size);
+	constexpr int16_t silence = 0;
+	for (unsigned i = 0; i < N; ++i) {
+		CPPUNIT_ASSERT_EQUAL(src[i * 2], dest[i * 6]);
+		CPPUNIT_ASSERT_EQUAL(src[i * 2 + 1], dest[i * 6+ 1]);
+		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 2]);
+		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 3]);
+		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 4]);
+		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 5]);
+	}
 }
 
 void
@@ -77,5 +92,20 @@ PcmChannelsTest::TestChannels32()
 	for (unsigned i = 0; i < N; ++i) {
 		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2]);
 		CPPUNIT_ASSERT_EQUAL(src[i], dest[i * 2 + 1]);
+	}
+
+	/* stereo to 5.1 */
+
+	dest = pcm_convert_channels_32(buffer, 6, 2, { src, N * 2 });
+	CPPUNIT_ASSERT(!dest.IsNull());
+	CPPUNIT_ASSERT_EQUAL(N * 6, dest.size);
+	constexpr int32_t silence = 0;
+	for (unsigned i = 0; i < N; ++i) {
+		CPPUNIT_ASSERT_EQUAL(src[i * 2], dest[i * 6]);
+		CPPUNIT_ASSERT_EQUAL(src[i * 2 + 1], dest[i * 6+ 1]);
+		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 2]);
+		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 3]);
+		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 4]);
+		CPPUNIT_ASSERT_EQUAL(silence, dest[i * 6 + 5]);
 	}
 }
