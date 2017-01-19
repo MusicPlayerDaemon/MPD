@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include "Silence.hxx"
+#include "Traits.hxx"
 #include "SampleFormat.hxx"
 #include "util/WritableBuffer.hxx"
 
@@ -29,7 +30,7 @@ PcmSilence(WritableBuffer<void> dest, SampleFormat format)
 {
 	uint8_t pattern = 0;
 	if (format == SampleFormat::DSD)
-		pattern = 0x69;
+		pattern = SampleTraits<SampleFormat::DSD>::SILENCE;
 
 	memset(dest.data, pattern, dest.size);
 }

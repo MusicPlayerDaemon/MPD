@@ -85,6 +85,11 @@ struct SampleTraits<SampleFormat::S8> {
 	 * The maximum sample value.
 	 */
 	static constexpr value_type MAX = (sum_type(1) << (BITS - 1)) - 1;
+
+	/**
+	 * A value which represents "silence".
+	 */
+	static constexpr value_type SILENCE = 0;
 };
 
 template<>
@@ -101,6 +106,7 @@ struct SampleTraits<SampleFormat::S16> {
 
 	static constexpr value_type MIN = -(sum_type(1) << (BITS - 1));
 	static constexpr value_type MAX = (sum_type(1) << (BITS - 1)) - 1;
+	static constexpr value_type SILENCE = 0;
 };
 
 template<>
@@ -117,6 +123,7 @@ struct SampleTraits<SampleFormat::S32> {
 
 	static constexpr value_type MIN = -(sum_type(1) << (BITS - 1));
 	static constexpr value_type MAX = (sum_type(1) << (BITS - 1)) - 1;
+	static constexpr value_type SILENCE = 0;
 };
 
 template<>
@@ -133,6 +140,7 @@ struct SampleTraits<SampleFormat::S24_P32> {
 
 	static constexpr value_type MIN = -(sum_type(1) << (BITS - 1));
 	static constexpr value_type MAX = (sum_type(1) << (BITS - 1)) - 1;
+	static constexpr value_type SILENCE = 0;
 };
 
 template<>
@@ -148,6 +156,7 @@ struct SampleTraits<SampleFormat::FLOAT> {
 
 	static constexpr value_type MIN = -1;
 	static constexpr value_type MAX = 1;
+	static constexpr value_type SILENCE = 0;
 };
 
 template<>
@@ -157,6 +166,8 @@ struct SampleTraits<SampleFormat::DSD> {
 	typedef const value_type *const_pointer_type;
 
 	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+
+	static constexpr value_type SILENCE = 0x69;
 };
 
 #endif
