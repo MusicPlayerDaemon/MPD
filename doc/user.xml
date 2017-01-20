@@ -756,9 +756,11 @@ systemctl start mpd.socket</programlisting>
       <title>Configuring playlist plugins</title>
 
       <para>
-        Playlist plugins are used to load remote playlists.  This is
-        not related to <application>MPD</application>'s playlist
-        directory.
+        Playlist plugins are used to load remote playlists (protocol
+        commands <command>load</command>,
+        <command>listplaylist</command> and
+        <command>listplaylistinfo</command>).  This is not related to
+        <application>MPD</application>'s playlist directory.
       </para>
 
       <para>
