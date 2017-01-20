@@ -238,8 +238,7 @@ try {
 	bool done = false;
 
 	while (!done) {
-		char buffer[4096];
-		unsigned char *ubuffer = (unsigned char *)buffer;
+		unsigned char buffer[4096];
 		const size_t nbytes =
 			input_stream->Read(buffer, sizeof(buffer));
 		if (nbytes == 0)
@@ -248,10 +247,10 @@ try {
 		if (done) {
 			stat = yajl_complete_parse(hand);
 		} else
-			stat = yajl_parse(hand, ubuffer, nbytes);
+			stat = yajl_parse(hand, buffer, nbytes);
 
 		if (stat != yajl_status_ok) {
-			unsigned char *str = yajl_get_error(hand, 1, ubuffer, nbytes);
+			unsigned char *str = yajl_get_error(hand, 1, buffer, nbytes);
 			LogError(soundcloud_domain, (const char *)str);
 			yajl_free_error(hand, str);
 			break;
