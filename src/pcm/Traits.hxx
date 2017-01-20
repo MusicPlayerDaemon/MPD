@@ -150,4 +150,13 @@ struct SampleTraits<SampleFormat::FLOAT> {
 	static constexpr value_type MAX = 1;
 };
 
+template<>
+struct SampleTraits<SampleFormat::DSD> {
+	typedef uint8_t value_type;
+	typedef value_type *pointer_type;
+	typedef const value_type *const_pointer_type;
+
+	static constexpr size_t SAMPLE_SIZE = sizeof(value_type);
+};
+
 #endif
