@@ -87,13 +87,6 @@ soundcloud_resolve(const char* uri)
 
 /* YAJL parser for track data from both /tracks/ and /playlists/ JSON */
 
-enum key {
-	Duration,
-	Title,
-	Stream_URL,
-	Other,
-};
-
 static const char *const key_str[] = {
 	"duration",
 	"title",
@@ -102,7 +95,14 @@ static const char *const key_str[] = {
 };
 
 struct SoundCloudJsonData {
-	int key;
+	enum class Key {
+		DURATION,
+		TITLE,
+		STREAM_URL,
+		OTHER,
+	};
+
+	Key key;
 	std::string stream_url;
 	long duration;
 	std::string title;
@@ -117,7 +117,7 @@ handle_integer(void *ctx, long long intval)
 	auto *data = (SoundCloudJsonData *) ctx;
 
 	switch (data->key) {
-	case Duration:
+	case SoundCloudJsonData::Key::DURATION:
 		data->duration = intval;
 		break;
 	default:
@@ -134,13 +134,15 @@ handle_string(void *ctx, const unsigned char *stringval, size_t stringlen)
 	const char *s = (const char *) stringval;
 
 	switch (data->key) {
-	case Title:
+	case SoundCloudJsonData::Key::TITLE:
 		data->title.assign(s, stringlen);
 		break;
-	case Stream_URL:
+
+	case SoundCloudJsonData::Key::STREAM_URL:
 		data->stream_url.assign(s, stringlen);
 		data->got_url = 1;
 		break;
+
 	default:
 		break;
 	}
@@ -153,16 +155,12 @@ handle_mapkey(void *ctx, const unsigned char *stringval, size_t stringlen)
 {
 	auto *data = (SoundCloudJsonData *) ctx;
 
-	int i;
-	data->key = Other;
+	const auto *i = key_str;
+	while (*i != nullptr &&
+	       !StringStartsWith(*i, {(const char *)stringval, stringlen}))
+		++i;
 
-	for (i = 0; i < Other; ++i) {
-		if (StringStartsWith(key_str[i], {(const char *)stringval, stringlen})) {
-			data->key = i;
-			break;
-		}
-	}
-
+	data->key = SoundCloudJsonData::Key(i - key_str);
 	return 1;
 }
 
