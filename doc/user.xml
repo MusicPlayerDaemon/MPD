@@ -4217,6 +4217,22 @@ run</programlisting>
       <title>Playlist plugins</title>
 
       <section>
+        <title><varname>asx</varname></title>
+
+        <para>
+          Reads <filename>.asx</filename> playlist files.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>cue</varname></title>
+
+        <para>
+          Reads <filename>.cue</filename> files.
+        </para>
+      </section>
+
+      <section>
         <title><varname>embcue</varname></title>
 
         <para>
@@ -4241,11 +4257,59 @@ run</programlisting>
       </section>
 
       <section>
+        <title><varname>flac</varname></title>
+
+        <para>
+          Reads the <varname>cuesheet</varname> metablock from a FLAC
+          file.
+        </para>
+      </section>
+
+      <section>
         <title><varname>pls</varname></title>
 
         <para>
           Reads <filename>.pls</filename> playlist files.
         </para>
+      </section>
+
+      <section>
+        <title><varname>rss</varname></title>
+
+        <para>
+          Reads music links from <filename>.rss</filename> files.
+        </para>
+      </section>
+
+      <section>
+        <title><varname>soundcloud</varname></title>
+
+        <para>
+          Download playlist from SoundCloud.  It accepts URIs starting
+          with <filename>soundcloud://</filename>.
+        </para>
+
+        <informaltable>
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry>Setting</entry>
+                <entry>Description</entry>
+              </row>
+            </thead>
+            <tbody>
+              <row>
+                <entry>
+                  <varname>apikey</varname>
+                  <parameter>KEY</parameter>
+                </entry>
+                <entry>
+                  An API key to access the SoundCloud servers.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
       </section>
 
       <section>
