@@ -4,6 +4,8 @@ ver 0.20.3 (not yet released)
 * database
   - proxy: fix error "terminate called after throwing ..."
   - proxy: make connect errors during startup non-fatal
+* neighbor
+  - upnp: fix premature expiry
 * replay gain: don't reset ReplayGain levels when unpausing playback
 * silence surround channels when converting from stereo
 * use shortcuts such as "dsd64" in log messages

@@ -62,7 +62,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		DiscoveredTask(const Upnp_Discovery *disco)
 			:url(disco->Location),
 			 device_id(disco->DeviceId),
-			 expires(disco->Expires) {}
+			 expires(std::chrono::seconds(disco->Expires)) {}
 	};
 
 	/**
