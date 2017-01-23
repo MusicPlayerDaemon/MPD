@@ -95,13 +95,17 @@ try {
 	assert(audio_format.IsValid());
 
 	/* the replay_gain filter cannot fail here */
-	if (prepared_replay_gain_filter != nullptr)
+	if (prepared_replay_gain_filter != nullptr) {
+		replay_gain_serial = 0;
 		replay_gain_filter_instance =
 			prepared_replay_gain_filter->Open(audio_format);
+	}
 
-	if (prepared_other_replay_gain_filter != nullptr)
+	if (prepared_other_replay_gain_filter != nullptr) {
+		other_replay_gain_serial = 0;
 		other_replay_gain_filter_instance =
 			prepared_other_replay_gain_filter->Open(audio_format);
+	}
 
 	filter_instance = prepared_filter->Open(audio_format);
 } catch (...) {

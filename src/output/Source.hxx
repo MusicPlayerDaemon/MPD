@@ -64,13 +64,13 @@ class AudioOutputSource {
 	 * The serial number of the last replay gain info.  0 means no
 	 * replay gain info was available.
 	 */
-	unsigned replay_gain_serial = 0;
+	unsigned replay_gain_serial;
 
 	/**
 	 * The serial number of the last replay gain info by the
 	 * "other" chunk during cross-fading.
 	 */
-	unsigned other_replay_gain_serial = 0;
+	unsigned other_replay_gain_serial;
 
 	/**
 	 * The replay_gain_filter_plugin instance of this audio

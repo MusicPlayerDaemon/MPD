@@ -1,6 +1,7 @@
 ver 0.20.3 (not yet released)
 * protocol
   - "playlistadd" creates new playlist if it does not exist, as documented
+* replay gain: don't reset ReplayGain levels when unpausing playback
 * silence surround channels when converting from stereo
 * use shortcuts such as "dsd64" in log messages
 
