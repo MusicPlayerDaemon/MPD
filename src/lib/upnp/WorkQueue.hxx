@@ -52,11 +52,11 @@ class WorkQueue {
 
 	// Status
 	// Worker threads having called exit
-	unsigned n_workers_exited;
-	bool ok;
+	unsigned n_workers_exited = 0;
+	bool ok = false;
 
-	unsigned n_threads;
-	pthread_t *threads;
+	unsigned n_threads = 0;
+	pthread_t *threads = nullptr;
 
 	// Synchronization
 	std::queue<T> queue;
@@ -69,10 +69,7 @@ public:
 	 * @param _name for message printing
 	 */
 	WorkQueue(const char *_name)
-		:name(_name),
-		 n_workers_exited(0),
-		 ok(false),
-		 n_threads(0), threads(nullptr)
+		:name(_name)
 	{
 	}
 
