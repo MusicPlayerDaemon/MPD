@@ -346,9 +346,15 @@ ProxyDatabase::Create(EventLoop &loop, DatabaseListener &listener,
 void
 ProxyDatabase::Open()
 {
-	Connect();
-
 	update_stamp = 0;
+
+	try {
+		Connect();
+	} catch (const std::runtime_error &error) {
+		/* this error is non-fatal, because this plugin will
+		   attempt to reconnect again automatically */
+		LogError(error);
+	}
 }
 
 void
