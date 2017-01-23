@@ -203,7 +203,11 @@ glue_db_init_and_load(void)
 				   "because the database does not need it");
 	}
 
-	instance->database->Open();
+	try {
+		instance->database->Open();
+	} catch (...) {
+		std::throw_with_nested(std::runtime_error("Failed to open database plugin"));
+	}
 
 	if (!instance->database->IsPlugin(simple_db_plugin))
 		return true;

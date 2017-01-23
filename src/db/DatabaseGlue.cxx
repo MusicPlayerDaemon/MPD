@@ -37,5 +37,10 @@ DatabaseGlobalInit(EventLoop &loop, DatabaseListener &listener,
 		throw FormatRuntimeError("No such database plugin: %s",
 					 plugin_name);
 
-	return plugin->create(loop, listener, block);
+	try {
+		return plugin->create(loop, listener, block);
+	} catch (...) {
+		std::throw_with_nested(FormatRuntimeError("Failed to initialize database plugin '%s'",
+							  plugin_name));
+	}
 }
