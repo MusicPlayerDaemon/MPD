@@ -109,8 +109,8 @@ public:
 	static Database *Create(EventLoop &loop, DatabaseListener &listener,
 				const ConfigBlock &block);
 
-	virtual void Open() override;
-	virtual void Close() override;
+	void Open() override;
+	void Close() override;
 	const LightSong *GetSong(const char *uri_utf8) const override;
 	void ReturnSong(const LightSong *song) const override;
 
@@ -127,7 +127,7 @@ public:
 
 	unsigned Update(const char *uri_utf8, bool discard) override;
 
-	virtual time_t GetUpdateStamp() const override {
+	time_t GetUpdateStamp() const override {
 		return update_stamp;
 	}
 
@@ -139,10 +139,10 @@ private:
 	void Disconnect();
 
 	/* virtual methods from SocketMonitor */
-	virtual bool OnSocketReady(unsigned flags) override;
+	bool OnSocketReady(unsigned flags) override;
 
 	/* virtual methods from IdleMonitor */
-	virtual void OnIdle() override;
+	void OnIdle() override;
 };
 
 static constexpr struct {
