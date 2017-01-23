@@ -68,7 +68,7 @@ public:
 	/** Create a WorkQueue
 	 * @param _name for message printing
 	 */
-	WorkQueue(const char *_name)
+	explicit WorkQueue(const char *_name)
 		:name(_name)
 	{
 	}
