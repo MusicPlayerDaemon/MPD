@@ -97,6 +97,7 @@ public:
 		assert(n_threads == 0);
 		assert(threads == nullptr);
 
+		ok = true;
 		n_threads = nworkers;
 		threads = new pthread_t[n_threads];
 
@@ -109,7 +110,6 @@ public:
 			}
 		}
 
-		ok = true;
 		return true;
 	}
 
