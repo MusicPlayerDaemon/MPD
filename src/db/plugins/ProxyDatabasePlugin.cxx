@@ -46,7 +46,7 @@
 #include <string>
 #include <list>
 
-class LibmpdclientError final : std::runtime_error {
+class LibmpdclientError final : public std::runtime_error {
 	enum mpd_error code;
 
 public:
