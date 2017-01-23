@@ -77,6 +77,9 @@ public:
 		setTerminateAndWait();
 	}
 
+	WorkQueue(const WorkQueue &) = delete;
+	WorkQueue &operator=(const WorkQueue &) = delete;
+
 	/** Start the worker threads.
 	 *
 	 * @param nworkers number of threads copies to start.
