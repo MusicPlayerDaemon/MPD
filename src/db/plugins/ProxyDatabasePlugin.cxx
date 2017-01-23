@@ -34,6 +34,7 @@
 #include "tag/TagBuilder.hxx"
 #include "tag/Tag.hxx"
 #include "util/ScopeExit.hxx"
+#include "util/RuntimeError.hxx"
 #include "protocol/Ack.hxx"
 #include "event/SocketMonitor.hxx"
 #include "event/IdleMonitor.hxx"
@@ -371,7 +372,10 @@ ProxyDatabase::Connect()
 		mpd_connection_free(connection);
 		connection = nullptr;
 
-		throw;
+		std::throw_with_nested(host.empty()
+				       ? std::runtime_error("Failed to connect to remote MPD")
+				       : FormatRuntimeError("Failed to connect to remote MPD '%s'",
+							    host.c_str()));
 	}
 
 #if LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
