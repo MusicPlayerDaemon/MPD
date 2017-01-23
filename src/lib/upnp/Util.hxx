@@ -34,7 +34,7 @@ path_getfather(const std::string &s);
 gcc_pure
 std::list<std::string>
 stringToTokens(const std::string &str,
-	       const char *delims = "/", bool skipinit = true);
+	       const char *delims = "/");
 
 template <class T>
 bool

@@ -180,7 +180,7 @@ UpnpDatabase::ReturnSong(const LightSong *_song) const
 const LightSong *
 UpnpDatabase::GetSong(const char *uri) const
 {
-	auto vpath = stringToTokens(uri, "/", true);
+	auto vpath = stringToTokens(uri, "/");
 	if (vpath.size() < 2)
 		throw DatabaseError(DatabaseErrorCode::NOT_FOUND,
 				    "No such song");
@@ -577,7 +577,7 @@ UpnpDatabase::Visit(const DatabaseSelection &selection,
 		    VisitSong visit_song,
 		    VisitPlaylist visit_playlist) const
 {
-	auto vpath = stringToTokens(selection.uri, "/", true);
+	auto vpath = stringToTokens(selection.uri, "/");
 	if (vpath.empty()) {
 		for (const auto &server : discovery->GetDirectories()) {
 			if (visit_directory) {
