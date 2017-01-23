@@ -71,11 +71,11 @@ path_getfather(const std::string &s)
 
 std::list<std::string>
 stringToTokens(const std::string &str,
-	       const char *delims)
+	       const char delim)
 {
 	std::list<std::string> tokens;
 
-	std::string::size_type startPos = str.find_first_not_of(delims, 0);
+	std::string::size_type startPos = str.find_first_not_of(delim, 0);
 
 	// Skip initial delims, return empty if this eats all.
 	if (startPos == std::string::npos)
@@ -83,7 +83,7 @@ stringToTokens(const std::string &str,
 
 	while (startPos < str.size()) {
 		// Find next delimiter or end of string (end of token)
-		auto pos = str.find_first_of(delims, startPos);
+		auto pos = str.find_first_of(delim, startPos);
 
 		// Add token to the vector and adjust start
 		if (pos == std::string::npos) {
