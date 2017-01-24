@@ -477,50 +477,44 @@ AlsaSetupFormat(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
 }
 
 /**
- * Set up the snd_pcm_t object which was opened by the caller.  Set up
- * the configured settings and the audio format.
+ * Wrapper for snd_pcm_hw_params().
  *
- * Throws #std::runtime_error on error.
+ * @param buffer_time the configured buffer time, or 0 if not configured
+ * @param period_time the configured period time, or 0 if not configured
+ * @param audio_format an #AudioFormat to be configured (or modified)
+ * by this function
+ * @param params to be modified by this function
  */
 static void
-AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
-	  PcmExport::Params &params)
+AlsaSetupHw(snd_pcm_t *pcm, snd_pcm_hw_params_t *hwparams,
+	    unsigned buffer_time, unsigned period_time,
+	    AudioFormat &audio_format, PcmExport::Params &params)
 {
-	unsigned int channels = audio_format.channels;
 	int err;
 	unsigned retry = MPD_ALSA_RETRY_NR;
-	unsigned int period_time, period_time_ro;
-	unsigned int buffer_time;
+	unsigned int period_time_ro = period_time;
 
-	period_time_ro = period_time = ad->period_time;
 configure_hw:
 	/* configure HW params */
-	snd_pcm_hw_params_t *hwparams;
-	snd_pcm_hw_params_alloca(&hwparams);
-	err = snd_pcm_hw_params_any(ad->pcm, hwparams);
+	err = snd_pcm_hw_params_any(pcm, hwparams);
 	if (err < 0)
 		throw FormatRuntimeError("snd_pcm_hw_params_any() failed: %s",
 					 snd_strerror(-err));
 
-	err = snd_pcm_hw_params_set_access(ad->pcm, hwparams,
+	err = snd_pcm_hw_params_set_access(pcm, hwparams,
 					   SND_PCM_ACCESS_RW_INTERLEAVED);
 	if (err < 0)
 		throw FormatRuntimeError("snd_pcm_hw_params_set_access() failed: %s",
 					 snd_strerror(-err));
 
-	err = AlsaSetupFormat(ad->pcm, hwparams, audio_format, params);
+	err = AlsaSetupFormat(pcm, hwparams, audio_format, params);
 	if (err < 0)
 		throw FormatRuntimeError("Failed to configure format %s: %s",
 					 sample_format_to_string(audio_format.format),
 					 snd_strerror(-err));
 
-	snd_pcm_format_t format;
-	if (snd_pcm_hw_params_get_format(hwparams, &format) == 0)
-		FormatDebug(alsa_output_domain,
-			    "format=%s (%s)", snd_pcm_format_name(format),
-			    snd_pcm_format_description(format));
-
-	err = snd_pcm_hw_params_set_channels_near(ad->pcm, hwparams,
+	unsigned int channels = audio_format.channels;
+	err = snd_pcm_hw_params_set_channels_near(pcm, hwparams,
 						  &channels);
 	if (err < 0)
 		throw FormatRuntimeError("Failed to configure %i channels: %s",
@@ -533,7 +527,7 @@ configure_hw:
 		params.CalcOutputSampleRate(audio_format.sample_rate);
 	unsigned output_sample_rate = requested_sample_rate;
 
-	err = snd_pcm_hw_params_set_rate_near(ad->pcm, hwparams,
+	err = snd_pcm_hw_params_set_rate_near(pcm, hwparams,
 					      &output_sample_rate, nullptr);
 	if (err < 0)
 		throw FormatRuntimeError("Failed to configure sample rate %u Hz: %s",
@@ -567,9 +561,8 @@ configure_hw:
 		    (unsigned)period_size_min, (unsigned)period_size_max,
 		    period_time_min, period_time_max);
 
-	if (ad->buffer_time > 0) {
-		buffer_time = ad->buffer_time;
-		err = snd_pcm_hw_params_set_buffer_time_near(ad->pcm, hwparams,
+	if (buffer_time > 0) {
+		err = snd_pcm_hw_params_set_buffer_time_near(pcm, hwparams,
 							     &buffer_time, nullptr);
 		if (err < 0)
 			throw FormatRuntimeError("snd_pcm_hw_params_set_buffer_time_near() failed: %s",
@@ -591,14 +584,14 @@ configure_hw:
 
 	if (period_time_ro > 0) {
 		period_time = period_time_ro;
-		err = snd_pcm_hw_params_set_period_time_near(ad->pcm, hwparams,
+		err = snd_pcm_hw_params_set_period_time_near(pcm, hwparams,
 							     &period_time, nullptr);
 		if (err < 0)
 			throw FormatRuntimeError("snd_pcm_hw_params_set_period_time_near() failed: %s",
 						 snd_strerror(-err));
 	}
 
-	err = snd_pcm_hw_params(ad->pcm, hwparams);
+	err = snd_pcm_hw_params(pcm, hwparams);
 	if (err == -EPIPE && --retry > 0 && period_time_ro > 0) {
 		period_time_ro = period_time_ro >> 1;
 		goto configure_hw;
@@ -608,9 +601,33 @@ configure_hw:
 	if (retry != MPD_ALSA_RETRY_NR)
 		FormatDebug(alsa_output_domain,
 			    "ALSA period_time set to %d", period_time);
+}
+
+/**
+ * Set up the snd_pcm_t object which was opened by the caller.  Set up
+ * the configured settings and the audio format.
+ *
+ * Throws #std::runtime_error on error.
+ */
+static void
+AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
+	  PcmExport::Params &params)
+{
+	snd_pcm_hw_params_t *hwparams;
+	snd_pcm_hw_params_alloca(&hwparams);
+
+	AlsaSetupHw(ad->pcm, hwparams,
+		    ad->buffer_time, ad->period_time,
+		    audio_format, params);
+
+	snd_pcm_format_t format;
+	if (snd_pcm_hw_params_get_format(hwparams, &format) == 0)
+		FormatDebug(alsa_output_domain,
+			    "format=%s (%s)", snd_pcm_format_name(format),
+			    snd_pcm_format_description(format));
 
 	snd_pcm_uframes_t alsa_buffer_size;
-	err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
+	int err = snd_pcm_hw_params_get_buffer_size(hwparams, &alsa_buffer_size);
 	if (err < 0)
 		throw FormatRuntimeError("snd_pcm_hw_params_get_buffer_size() failed: %s",
 					 snd_strerror(-err));
@@ -666,7 +683,7 @@ configure_hw:
 	ad->silence = new uint8_t[snd_pcm_frames_to_bytes(ad->pcm,
 							  alsa_period_size)];
 	snd_pcm_format_set_silence(format, ad->silence,
-				   alsa_period_size * channels);
+				   alsa_period_size * audio_format.channels);
 
 }
 
