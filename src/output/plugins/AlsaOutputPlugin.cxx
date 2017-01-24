@@ -147,6 +147,14 @@ struct AlsaOutput {
 	void Cancel();
 
 private:
+	/**
+	 * Set up the snd_pcm_t object which was opened by the caller.
+	 * Set up the configured settings and the audio format.
+	 *
+	 * Throws #std::runtime_error on error.
+	 */
+	void Setup(AudioFormat &audio_format, PcmExport::Params &params);
+
 #ifdef ENABLE_DSD
 	void SetupDop(AudioFormat audio_format,
 		      PcmExport::Params &params);
@@ -635,21 +643,15 @@ AlsaSetupSw(snd_pcm_t *pcm, snd_pcm_uframes_t start_threshold,
 					 snd_strerror(-err));
 }
 
-/**
- * Set up the snd_pcm_t object which was opened by the caller.  Set up
- * the configured settings and the audio format.
- *
- * Throws #std::runtime_error on error.
- */
-static void
-AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
-	  PcmExport::Params &params)
+inline void
+AlsaOutput::Setup(AudioFormat &audio_format,
+		  PcmExport::Params &params)
 {
 	snd_pcm_hw_params_t *hwparams;
 	snd_pcm_hw_params_alloca(&hwparams);
 
-	AlsaSetupHw(ad->pcm, hwparams,
-		    ad->buffer_time, ad->period_time,
+	AlsaSetupHw(pcm, hwparams,
+		    buffer_time, period_time,
 		    audio_format, params);
 
 	snd_pcm_format_t format;
@@ -671,7 +673,7 @@ AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
 		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
 					 snd_strerror(-err));
 
-	AlsaSetupSw(ad->pcm, alsa_buffer_size - alsa_period_size,
+	AlsaSetupSw(pcm, alsa_buffer_size - alsa_period_size,
 		    alsa_period_size);
 
 	FormatDebug(alsa_output_domain, "buffer_size=%u period_size=%u",
@@ -685,12 +687,11 @@ AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
 		   happen again. */
 		alsa_period_size = 1;
 
-	ad->period_frames = alsa_period_size;
-	ad->period_position = 0;
+	period_frames = alsa_period_size;
+	period_position = 0;
 
-	ad->silence = new uint8_t[snd_pcm_frames_to_bytes(ad->pcm,
-							  alsa_period_size)];
-	snd_pcm_format_set_silence(format, ad->silence,
+	silence = new uint8_t[snd_pcm_frames_to_bytes(pcm, alsa_period_size)];
+	snd_pcm_format_set_silence(format, silence,
 				   alsa_period_size * audio_format.channels);
 
 }
@@ -711,7 +712,7 @@ AlsaOutput::SetupDop(const AudioFormat audio_format,
 
 	const AudioFormat check = dop_format;
 
-	AlsaSetup(this, dop_format, params);
+	Setup(dop_format, params);
 
 	/* if the device allows only 32 bit, shift all DoP
 	   samples left by 8 bit and leave the lower 8 bit cleared;
@@ -750,7 +751,7 @@ AlsaOutput::SetupOrDop(AudioFormat &audio_format, PcmExport::Params &params)
 
 	try {
 #endif
-		AlsaSetup(this, audio_format, params);
+		Setup(audio_format, params);
 #ifdef ENABLE_DSD
 	} catch (...) {
 		if (dop_error)
