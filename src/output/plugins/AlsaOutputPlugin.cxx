@@ -604,6 +604,38 @@ configure_hw:
 }
 
 /**
+ * Wrapper for snd_pcm_sw_params().
+ */
+static void
+AlsaSetupSw(snd_pcm_t *pcm, snd_pcm_uframes_t start_threshold,
+	    snd_pcm_uframes_t avail_min)
+{
+	snd_pcm_sw_params_t *swparams;
+	snd_pcm_sw_params_alloca(&swparams);
+
+	int err = snd_pcm_sw_params_current(pcm, swparams);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_sw_params_current() failed: %s",
+					 snd_strerror(-err));
+
+	err = snd_pcm_sw_params_set_start_threshold(pcm, swparams,
+						    start_threshold);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_sw_params_set_start_threshold() failed: %s",
+					 snd_strerror(-err));
+
+	err = snd_pcm_sw_params_set_avail_min(pcm, swparams, avail_min);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_sw_params_set_avail_min() failed: %s",
+					 snd_strerror(-err));
+
+	err = snd_pcm_sw_params(pcm, swparams);
+	if (err < 0)
+		throw FormatRuntimeError("snd_pcm_sw_params() failed: %s",
+					 snd_strerror(-err));
+}
+
+/**
  * Set up the snd_pcm_t object which was opened by the caller.  Set up
  * the configured settings and the audio format.
  *
@@ -639,32 +671,8 @@ AlsaSetup(AlsaOutput *ad, AudioFormat &audio_format,
 		throw FormatRuntimeError("snd_pcm_hw_params_get_period_size() failed: %s",
 					 snd_strerror(-err));
 
-	/* configure SW params */
-	snd_pcm_sw_params_t *swparams;
-	snd_pcm_sw_params_alloca(&swparams);
-
-	err = snd_pcm_sw_params_current(ad->pcm, swparams);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_sw_params_current() failed: %s",
-					 snd_strerror(-err));
-
-	err = snd_pcm_sw_params_set_start_threshold(ad->pcm, swparams,
-						    alsa_buffer_size -
-						    alsa_period_size);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_sw_params_set_start_threshold() failed: %s",
-					 snd_strerror(-err));
-
-	err = snd_pcm_sw_params_set_avail_min(ad->pcm, swparams,
-					      alsa_period_size);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_sw_params_set_avail_min() failed: %s",
-					 snd_strerror(-err));
-
-	err = snd_pcm_sw_params(ad->pcm, swparams);
-	if (err < 0)
-		throw FormatRuntimeError("snd_pcm_sw_params() failed: %s",
-					 snd_strerror(-err));
+	AlsaSetupSw(ad->pcm, alsa_buffer_size - alsa_period_size,
+		    alsa_period_size);
 
 	FormatDebug(alsa_output_domain, "buffer_size=%u period_size=%u",
 		    (unsigned)alsa_buffer_size, (unsigned)alsa_period_size);
