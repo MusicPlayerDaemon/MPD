@@ -1413,6 +1413,7 @@ libmixer_plugins_a_CPPFLAGS = $(AM_CPPFLAGS) \
 
 if ENABLE_ALSA
 liboutput_plugins_a_SOURCES += \
+	$(ALSA_SOURCES) \
 	src/output/plugins/AlsaOutputPlugin.cxx \
 	src/output/plugins/AlsaOutputPlugin.hxx
 libmixer_plugins_a_SOURCES += \
