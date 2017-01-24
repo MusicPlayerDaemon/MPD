@@ -50,7 +50,9 @@ static constexpr unsigned MPD_ALSA_BUFFER_TIME_US = 500000;
 
 static constexpr unsigned MPD_ALSA_RETRY_NR = 5;
 
-struct AlsaOutput {
+class AlsaOutput {
+	friend struct AudioOutputWrapper<AlsaOutput>;
+
 	AudioOutput base;
 
 	Manual<PcmExport> pcm_export;
@@ -121,6 +123,7 @@ struct AlsaOutput {
 	 */
 	uint8_t *silence;
 
+public:
 	AlsaOutput(const ConfigBlock &block);
 
 	~AlsaOutput() {
