@@ -33,8 +33,9 @@ struct AudioOutputWrapper {
 		return ContainerCast(ao, &T::base);
 	}
 
-	static AudioOutput *Init(const ConfigBlock &block) {
-		T *t = T::Create(block);
+	static AudioOutput *Init(EventLoop &event_loop,
+				 const ConfigBlock &block) {
+		T *t = T::Create(event_loop, block);
 		return &t->base;
 	}
 

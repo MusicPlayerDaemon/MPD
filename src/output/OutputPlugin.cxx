@@ -22,12 +22,13 @@
 #include "Internal.hxx"
 
 AudioOutput *
-ao_plugin_init(const AudioOutputPlugin &plugin,
+ao_plugin_init(EventLoop &event_loop,
+	       const AudioOutputPlugin &plugin,
 	       const ConfigBlock &block)
 {
 	assert(plugin.init != nullptr);
 
-	return plugin.init(block);
+	return plugin.init(event_loop, block);
 }
 
 void

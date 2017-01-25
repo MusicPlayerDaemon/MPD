@@ -104,7 +104,7 @@ OSXOutput::OSXOutput(const ConfigBlock &block)
 }
 
 static AudioOutput *
-osx_output_init(const ConfigBlock &block)
+osx_output_init(EventLoop &, const ConfigBlock &block)
 {
 	OSXOutput *oo = new OSXOutput(block);
 

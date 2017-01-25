@@ -51,7 +51,7 @@ class AoOutput {
 	~AoOutput();
 
 public:
-	static AoOutput *Create(const ConfigBlock &block) {
+	static AoOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new AoOutput(block);
 	}
 

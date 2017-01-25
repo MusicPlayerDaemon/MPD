@@ -295,7 +295,7 @@ audio_output_new(EventLoop &event_loop,
 			      plugin->name);
 	}
 
-	AudioOutput *ao = ao_plugin_init(*plugin, block);
+	AudioOutput *ao = ao_plugin_init(event_loop, *plugin, block);
 	assert(ao != nullptr);
 
 	try {

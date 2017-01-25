@@ -93,7 +93,8 @@ public:
 	gcc_const
 	static bool TestDefaultDevice();
 
-	static PulseOutput *Create(const ConfigBlock &block);
+	static PulseOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 	void Enable();
 	void Disable();
@@ -415,7 +416,7 @@ PulseOutput::SetupContext()
 }
 
 PulseOutput *
-PulseOutput::Create(const ConfigBlock &block)
+PulseOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new PulseOutput(block);
 }

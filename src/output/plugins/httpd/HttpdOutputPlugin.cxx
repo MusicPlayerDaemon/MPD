@@ -30,7 +30,6 @@
 #include "Page.hxx"
 #include "IcyMetaDataServer.hxx"
 #include "system/fd_util.h"
-#include "IOThread.hxx"
 #include "event/Call.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
@@ -118,9 +117,9 @@ HttpdOutput::Unbind()
 }
 
 HttpdOutput *
-HttpdOutput::Create(const ConfigBlock &block)
+HttpdOutput::Create(EventLoop &event_loop, const ConfigBlock &block)
 {
-	return new HttpdOutput(io_thread_get(), block);
+	return new HttpdOutput(event_loop, block);
 }
 
 /**
@@ -466,7 +465,7 @@ HttpdOutput::CancelAllClients()
 void
 HttpdOutput::Cancel()
 {
-	BlockingCall(io_thread_get(), [this](){
+	BlockingCall(GetEventLoop(), [this](){
 			CancelAllClients();
 		});
 }

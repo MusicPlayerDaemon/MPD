@@ -37,7 +37,8 @@ public:
 		:base(null_output_plugin, block),
 		 sync(block.GetBlockValue("sync", true)) {}
 
-	static NullOutput *Create(const ConfigBlock &block);
+	static NullOutput *Create(EventLoop &event_loop,
+				  const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format) {
 		if (sync)
@@ -72,7 +73,7 @@ public:
 };
 
 inline NullOutput *
-NullOutput::Create(const ConfigBlock &block)
+NullOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new NullOutput(block);
 }

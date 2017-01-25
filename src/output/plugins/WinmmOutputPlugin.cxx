@@ -63,7 +63,7 @@ public:
 		return handle;
 	}
 
-	static WinmmOutput *Create(const ConfigBlock &block) {
+	static WinmmOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new WinmmOutput(block);
 	}
 

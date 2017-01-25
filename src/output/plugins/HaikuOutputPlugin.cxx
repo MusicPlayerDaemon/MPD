@@ -71,7 +71,8 @@ public:
 
 	~HaikuOutput();
 
-	static HaikuOutput *Create(const ConfigBlock &block);
+	static HaikuOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format);
 	void Close();
@@ -119,7 +120,7 @@ haiku_test_default_device(void)
 }
 
 inline HaikuOutput *
-HaikuOutput::Create(const ConfigBlock &block)
+HaikuOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	initialize_application();
 

@@ -444,7 +444,7 @@ JackOutput::Disable()
 }
 
 static AudioOutput *
-mpd_jack_init(const ConfigBlock &block)
+mpd_jack_init(EventLoop &, const ConfigBlock &block)
 {
 	jack_set_error_function(mpd_jack_error);
 

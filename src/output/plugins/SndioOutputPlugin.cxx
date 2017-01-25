@@ -47,7 +47,8 @@ class SndioOutput {
 public:
 	SndioOutput(const ConfigBlock &block);
 
-	static SndioOutput *Create(const ConfigBlock &block);
+	static SndioOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format);
 	void Close();
@@ -64,7 +65,7 @@ SndioOutput::SndioOutput(const ConfigBlock &block)
 }
 
 SndioOutput *
-SndioOutput::Create(const ConfigBlock &block)
+SndioOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new SndioOutput(block);
 }

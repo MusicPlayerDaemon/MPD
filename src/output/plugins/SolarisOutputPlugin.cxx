@@ -65,7 +65,7 @@ class SolarisOutput {
 		 device(block.GetBlockValue("device", "/dev/audio")) {}
 
 public:
-	static SolarisOutput *Create(const ConfigBlock &block) {
+	static SolarisOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new SolarisOutput(block);
 	}
 

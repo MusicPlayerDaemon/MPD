@@ -31,6 +31,7 @@ struct AudioFormat;
 struct Tag;
 struct AudioOutput;
 struct MixerPlugin;
+class EventLoop;
 
 /**
  * A plugin which controls an audio output device.
@@ -56,7 +57,7 @@ struct AudioOutputPlugin {
 	 * @param param the configuration section, or nullptr if there is
 	 * no configuration
 	 */
-	AudioOutput *(*init)(const ConfigBlock &block);
+	AudioOutput *(*init)(EventLoop &event_loop, const ConfigBlock &block);
 
 	/**
 	 * Free resources allocated by this device.
@@ -162,7 +163,8 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 
 gcc_malloc
 AudioOutput *
-ao_plugin_init(const AudioOutputPlugin &plugin,
+ao_plugin_init(EventLoop &event_loop,
+	       const AudioOutputPlugin &plugin,
 	       const ConfigBlock &block);
 
 void

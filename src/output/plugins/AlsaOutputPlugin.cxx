@@ -136,7 +136,8 @@ public:
 		return device.empty() ? default_device : device.c_str();
 	}
 
-	static AlsaOutput *Create(const ConfigBlock &block);
+	static AlsaOutput *Create(EventLoop &event_loop,
+				  const ConfigBlock &block);
 
 	void Enable();
 	void Disable();
@@ -207,7 +208,7 @@ AlsaOutput::AlsaOutput(const ConfigBlock &block)
 }
 
 inline AlsaOutput *
-AlsaOutput::Create(const ConfigBlock &block)
+AlsaOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new AlsaOutput(block);
 }

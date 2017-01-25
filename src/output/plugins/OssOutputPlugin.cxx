@@ -89,7 +89,8 @@ public:
 		:base(oss_output_plugin, block),
 		 fd(-1), device(_device) {}
 
-	static OssOutput *Create(const ConfigBlock &block);
+	static OssOutput *Create(EventLoop &event_loop,
+				 const ConfigBlock &block);
 
 #ifdef AFMT_S24_PACKED
 	void Enable() {
@@ -226,7 +227,7 @@ oss_open_default()
 }
 
 inline OssOutput *
-OssOutput::Create(const ConfigBlock &block)
+OssOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	const char *device = block.GetBlockValue("device");
 	if (device != nullptr)

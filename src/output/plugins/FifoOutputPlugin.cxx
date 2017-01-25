@@ -54,7 +54,8 @@ public:
 		CloseFifo();
 	}
 
-	static FifoOutput *Create(const ConfigBlock &block);
+	static FifoOutput *Create(EventLoop &event_loop,
+				  const ConfigBlock &block);
 
 	void Create();
 	void Check();
@@ -169,7 +170,7 @@ try {
 }
 
 inline FifoOutput *
-FifoOutput::Create(const ConfigBlock &block)
+FifoOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new FifoOutput(block);
 }

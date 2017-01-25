@@ -58,7 +58,8 @@ struct ShoutOutput final {
 	explicit ShoutOutput(const ConfigBlock &block);
 	~ShoutOutput();
 
-	static ShoutOutput *Create(const ConfigBlock &block);
+	static ShoutOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format);
 	void Close();
@@ -246,7 +247,7 @@ ShoutOutput::~ShoutOutput()
 }
 
 ShoutOutput *
-ShoutOutput::Create(const ConfigBlock &block)
+ShoutOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	if (shout_init_count == 0)
 		shout_init();

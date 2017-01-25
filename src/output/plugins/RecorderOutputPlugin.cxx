@@ -81,7 +81,8 @@ class RecorderOutput {
 		delete prepared_encoder;
 	}
 
-	static RecorderOutput *Create(const ConfigBlock &block);
+	static RecorderOutput *Create(EventLoop &event_loop,
+				      const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format);
 	void Close();
@@ -141,7 +142,7 @@ RecorderOutput::RecorderOutput(const ConfigBlock &block)
 }
 
 RecorderOutput *
-RecorderOutput::Create(const ConfigBlock &block)
+RecorderOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new RecorderOutput(block);
 }

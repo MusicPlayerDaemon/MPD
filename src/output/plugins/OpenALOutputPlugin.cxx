@@ -52,7 +52,8 @@ class OpenALOutput {
 
 	OpenALOutput(const ConfigBlock &block);
 
-	static OpenALOutput *Create(const ConfigBlock &block);
+	static OpenALOutput *Create(EventLoop &event_loop,
+				    const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format);
 	void Close();
@@ -146,7 +147,7 @@ OpenALOutput::OpenALOutput(const ConfigBlock &block)
 }
 
 inline OpenALOutput *
-OpenALOutput::Create(const ConfigBlock &block)
+OpenALOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new OpenALOutput(block);
 }

@@ -155,7 +155,8 @@ public:
 	HttpdOutput(EventLoop &_loop, const ConfigBlock &block);
 	~HttpdOutput();
 
-	static HttpdOutput *Create(const ConfigBlock &block);
+	static HttpdOutput *Create(EventLoop &event_loop,
+				   const ConfigBlock &block);
 
 #if CLANG_OR_GCC_VERSION(4,7)
 	constexpr

@@ -58,7 +58,7 @@ public:
 		return &base;
 	}
 
-	static RoarOutput *Create(const ConfigBlock &block) {
+	static RoarOutput *Create(EventLoop &, const ConfigBlock &block) {
 		return new RoarOutput(block);
 	}
 

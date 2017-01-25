@@ -91,7 +91,8 @@ public:
 		return &base;
 	}
 
-	static SlesOutput *Create(const ConfigBlock &block);
+	static SlesOutput *Create(EventLoop &event_loop,
+				  const ConfigBlock &block);
 
 	void Open(AudioFormat &audio_format);
 	void Close();
@@ -413,7 +414,7 @@ sles_test_default_device()
 }
 
 inline SlesOutput *
-SlesOutput::Create(const ConfigBlock &block)
+SlesOutput::Create(EventLoop &, const ConfigBlock &block)
 {
 	return new SlesOutput(block);
 }
