@@ -26,6 +26,7 @@
 #define MPD_OUTPUT_HTTPD_INTERNAL_H
 
 #include "HttpdClient.hxx"
+#include "output/Wrapper.hxx"
 #include "output/Internal.hxx"
 #include "output/Timer.hxx"
 #include "thread/Mutex.hxx"
@@ -49,6 +50,8 @@ class Encoder;
 struct Tag;
 
 class HttpdOutput final : ServerSocket, DeferredMonitor {
+	friend struct AudioOutputWrapper<HttpdOutput>;
+
 	AudioOutput base;
 
 	/**
@@ -152,9 +155,7 @@ public:
 	HttpdOutput(EventLoop &_loop, const ConfigBlock &block);
 	~HttpdOutput();
 
-	operator AudioOutput *() {
-		return &base;
-	}
+	static HttpdOutput *Create(const ConfigBlock &block);
 
 #if CLANG_OR_GCC_VERSION(4,7)
 	constexpr
@@ -167,6 +168,14 @@ public:
 
 	void Bind();
 	void Unbind();
+
+	void Enable() {
+		Bind();
+	}
+
+	void Disable() {
+		Unbind();
+	}
 
 	/**
 	 * Caller must lock the mutex.
@@ -248,6 +257,9 @@ public:
 	size_t Play(const void *chunk, size_t size);
 
 	void CancelAllClients();
+
+	void Cancel();
+	bool Pause();
 
 private:
 	virtual void RunDeferred() override;

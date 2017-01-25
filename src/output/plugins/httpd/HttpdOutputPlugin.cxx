@@ -117,18 +117,10 @@ HttpdOutput::Unbind()
 		});
 }
 
-static AudioOutput *
-httpd_output_init(const ConfigBlock &block)
+HttpdOutput *
+HttpdOutput::Create(const ConfigBlock &block)
 {
-	return *new HttpdOutput(io_thread_get(), block);
-}
-
-static void
-httpd_output_finish(AudioOutput *ao)
-{
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	delete httpd;
+	return new HttpdOutput(io_thread_get(), block);
 }
 
 /**
@@ -247,22 +239,6 @@ HttpdOutput::ReadPage()
 	return Page::Copy(buffer, size);
 }
 
-static void
-httpd_output_enable(AudioOutput *ao)
-{
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	httpd->Bind();
-}
-
-static void
-httpd_output_disable(AudioOutput *ao)
-{
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	httpd->Unbind();
-}
-
 inline void
 HttpdOutput::OpenEncoder(AudioFormat &audio_format)
 {
@@ -282,6 +258,8 @@ HttpdOutput::Open(AudioFormat &audio_format)
 	assert(!open);
 	assert(clients.empty());
 
+	const std::lock_guard<Mutex> protect(mutex);
+
 	OpenEncoder(audio_format);
 
 	/* initialize other attributes */
@@ -291,20 +269,12 @@ HttpdOutput::Open(AudioFormat &audio_format)
 	open = true;
 }
 
-static void
-httpd_output_open(AudioOutput *ao, AudioFormat &audio_format)
-{
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	const std::lock_guard<Mutex> protect(httpd->mutex);
-	httpd->Open(audio_format);
-}
-
 inline void
 HttpdOutput::Close()
 {
-	assert(open);
+	const std::lock_guard<Mutex> protect(mutex);
 
+	assert(open);
 	open = false;
 
 	delete timer;
@@ -317,15 +287,6 @@ HttpdOutput::Close()
 		header->Unref();
 
 	delete encoder;
-}
-
-static void
-httpd_output_close(AudioOutput *ao)
-{
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	const std::lock_guard<Mutex> protect(httpd->mutex);
-	httpd->Close();
 }
 
 void
@@ -363,14 +324,6 @@ HttpdOutput::Delay() const
 	return timer->IsStarted()
 		? timer->GetDelay()
 		: std::chrono::steady_clock::duration::zero();
-}
-
-static std::chrono::steady_clock::duration
-httpd_output_delay(AudioOutput *ao)
-{
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	return httpd->Delay();
 }
 
 void
@@ -426,22 +379,12 @@ HttpdOutput::Play(const void *chunk, size_t size)
 	return size;
 }
 
-static size_t
-httpd_output_play(AudioOutput *ao, const void *chunk, size_t size)
+bool
+HttpdOutput::Pause()
 {
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	return httpd->Play(chunk, size);
-}
-
-static bool
-httpd_output_pause(AudioOutput *ao)
-{
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	if (httpd->LockHasClients()) {
+	if (LockHasClients()) {
 		static const char silence[1020] = { 0 };
-		httpd->Play(silence, sizeof(silence));
+		Play(silence, sizeof(silence));
 	}
 
 	return true;
@@ -503,14 +446,6 @@ HttpdOutput::SendTag(const Tag &tag)
 	}
 }
 
-static void
-httpd_output_tag(AudioOutput *ao, const Tag &tag)
-{
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	httpd->SendTag(tag);
-}
-
 inline void
 HttpdOutput::CancelAllClients()
 {
@@ -528,30 +463,30 @@ HttpdOutput::CancelAllClients()
 	cond.broadcast();
 }
 
-static void
-httpd_output_cancel(AudioOutput *ao)
+void
+HttpdOutput::Cancel()
 {
-	HttpdOutput *httpd = HttpdOutput::Cast(ao);
-
-	BlockingCall(io_thread_get(), [httpd](){
-			httpd->CancelAllClients();
+	BlockingCall(io_thread_get(), [this](){
+			CancelAllClients();
 		});
 }
+
+typedef AudioOutputWrapper<HttpdOutput> Wrapper;
 
 const struct AudioOutputPlugin httpd_output_plugin = {
 	"httpd",
 	nullptr,
-	httpd_output_init,
-	httpd_output_finish,
-	httpd_output_enable,
-	httpd_output_disable,
-	httpd_output_open,
-	httpd_output_close,
-	httpd_output_delay,
-	httpd_output_tag,
-	httpd_output_play,
+	&Wrapper::Init,
+	&Wrapper::Finish,
+	&Wrapper::Enable,
+	&Wrapper::Disable,
+	&Wrapper::Open,
+	&Wrapper::Close,
+	&Wrapper::Delay,
+	&Wrapper::SendTag,
+	&Wrapper::Play,
 	nullptr,
-	httpd_output_cancel,
-	httpd_output_pause,
+	&Wrapper::Cancel,
+	&Wrapper::Pause,
 	nullptr,
 };
