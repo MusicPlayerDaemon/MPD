@@ -31,6 +31,7 @@
 struct ConfigBlock;
 class Mutex;
 class Cond;
+class EventLoop;
 class InputStream;
 
 struct InputPlugin {
@@ -44,7 +45,7 @@ struct InputPlugin {
 	 *
 	 * Throws std::runtime_error on (fatal) error.
 	 */
-	void (*init)(const ConfigBlock &block);
+	void (*init)(EventLoop &event_loop, const ConfigBlock &block);
 
 	/**
 	 * Global deinitialization.  Called once before MPD shuts

@@ -25,7 +25,6 @@
 #include "lib/nfs/FileReader.hxx"
 #include "thread/Cond.hxx"
 #include "util/StringCompare.hxx"
-#include "IOThread.hxx"
 
 #include <string.h>
 
@@ -206,9 +205,9 @@ NfsInputStream::OnNfsFileError(std::exception_ptr &&e)
  */
 
 static void
-input_nfs_init(const ConfigBlock &)
+input_nfs_init(EventLoop &event_loop, const ConfigBlock &)
 {
-	nfs_init(io_thread_get());
+	nfs_init(event_loop);
 }
 
 static void

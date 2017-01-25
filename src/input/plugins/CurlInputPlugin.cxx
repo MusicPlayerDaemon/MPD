@@ -32,7 +32,6 @@
 #include "tag/TagBuilder.hxx"
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
-#include "IOThread.hxx"
 #include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
@@ -285,7 +284,7 @@ CurlInputStream::OnError(std::exception_ptr e)
  */
 
 static void
-input_curl_init(const ConfigBlock &block)
+input_curl_init(EventLoop &event_loop, const ConfigBlock &block)
 {
 	CURLcode code = curl_global_init(CURL_GLOBAL_ALL);
 	if (code != CURLE_OK)
@@ -319,7 +318,7 @@ input_curl_init(const ConfigBlock &block)
 	verify_host = block.GetBlockValue("verify_host", true);
 
 	try {
-		curl_global = new CurlGlobal(io_thread_get());
+		curl_global = new CurlGlobal(event_loop);
 	} catch (const std::runtime_error &e) {
 		LogError(e);
 		curl_slist_free_all(http_200_aliases);

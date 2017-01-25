@@ -72,7 +72,7 @@ input_ffmpeg_supported(void)
 }
 
 static void
-input_ffmpeg_init(gcc_unused const ConfigBlock &block)
+input_ffmpeg_init(EventLoop &, const ConfigBlock &)
 {
 	FfmpegInit();
 

@@ -20,11 +20,13 @@
 #ifndef MPD_INPUT_INIT_HXX
 #define MPD_INPUT_INIT_HXX
 
+class EventLoop;
+
 /**
  * Initializes this library and all #InputStream implementations.
  */
 void
-input_stream_global_init();
+input_stream_global_init(EventLoop &event_loop);
 
 /**
  * Deinitializes this library and all #InputStream implementations.

@@ -47,7 +47,7 @@ public:
 #ifdef ENABLE_ARCHIVE
 		archive_plugin_init_all();
 #endif
-		input_stream_global_init();
+		input_stream_global_init(io_thread_get());
 	}
 
 	~GlobalInit() {

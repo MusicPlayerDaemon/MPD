@@ -525,7 +525,7 @@ try {
 	instance->partition->UpdateEffectiveReplayGainMode();
 
 	client_manager_init();
-	input_stream_global_init();
+	input_stream_global_init(io_thread_get());
 	playlist_list_global_init();
 
 #ifdef ENABLE_DAEMON

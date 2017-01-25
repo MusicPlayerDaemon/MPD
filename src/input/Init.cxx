@@ -33,7 +33,7 @@
 #include <assert.h>
 
 void
-input_stream_global_init()
+input_stream_global_init(EventLoop &event_loop)
 {
 	const ConfigBlock empty;
 
@@ -55,7 +55,7 @@ input_stream_global_init()
 
 		try {
 			if (plugin->init != nullptr)
-				plugin->init(*block);
+				plugin->init(event_loop, *block);
 			input_plugins_enabled[i] = true;
 		} catch (const PluginUnavailable &e) {
 			FormatError(e,

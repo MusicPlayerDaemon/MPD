@@ -88,7 +88,7 @@ try {
 
 	const ScopeIOThread io_thread;
 
-	input_stream_global_init();
+	input_stream_global_init(io_thread_get());
 	AtScopeExit() { input_stream_global_finish(); };
 
 	decoder_plugin_init_all();

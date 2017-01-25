@@ -69,7 +69,7 @@ public:
  */
 
 static void
-input_smbclient_init(gcc_unused const ConfigBlock &block)
+input_smbclient_init(EventLoop &, const ConfigBlock &)
 {
 	try {
 		SmbclientInit();
