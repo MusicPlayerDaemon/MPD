@@ -37,7 +37,9 @@ static ao_sample_format OUR_AO_FORMAT_INITIALIZER;
 
 static unsigned ao_output_ref;
 
-struct AoOutput {
+class AoOutput {
+	friend struct AudioOutputWrapper<AoOutput>;
+
 	AudioOutput base;
 
 	const size_t write_size;
@@ -48,6 +50,7 @@ struct AoOutput {
 	AoOutput(const ConfigBlock &block);
 	~AoOutput();
 
+public:
 	static AoOutput *Create(const ConfigBlock &block) {
 		return new AoOutput(block);
 	}
