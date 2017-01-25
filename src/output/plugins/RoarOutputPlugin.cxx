@@ -58,6 +58,10 @@ public:
 		return &base;
 	}
 
+	static RoarOutput *Create(const ConfigBlock &block) {
+		return new RoarOutput(block);
+	}
+
 	void Open(AudioFormat &audio_format);
 	void Close();
 
@@ -131,12 +135,6 @@ void
 roar_output_set_volume(RoarOutput &roar, unsigned volume)
 {
 	roar.SetVolume(volume);
-}
-
-static AudioOutput *
-roar_init(const ConfigBlock &block)
-{
-	return *new RoarOutput(block);
 }
 
 static void
@@ -348,26 +346,19 @@ RoarOutput::SendTag(const Tag &tag)
 	roar_vs_meta(vss, vals, cnt, &(err));
 }
 
-static void
-roar_send_tag(AudioOutput *ao, const Tag &meta)
-{
-	RoarOutput *self = (RoarOutput *)ao;
-	self->SendTag(meta);
-}
-
 typedef AudioOutputWrapper<RoarOutput> Wrapper;
 
 const struct AudioOutputPlugin roar_output_plugin = {
 	"roar",
 	nullptr,
-	roar_init,
+	&Wrapper::Init,
 	&Wrapper::Finish,
 	nullptr,
 	nullptr,
 	&Wrapper::Open,
 	&Wrapper::Close,
 	nullptr,
-	roar_send_tag,
+	&Wrapper::SendTag,
 	&Wrapper::Play,
 	nullptr,
 	&Wrapper::Cancel,
