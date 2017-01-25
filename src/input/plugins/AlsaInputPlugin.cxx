@@ -29,6 +29,7 @@
 #include "../InputPlugin.hxx"
 #include "../AsyncInputStream.hxx"
 #include "event/Call.hxx"
+#include "thread/Cond.hxx"
 #include "util/Domain.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"

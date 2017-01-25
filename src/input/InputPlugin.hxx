@@ -20,12 +20,6 @@
 #ifndef MPD_INPUT_PLUGIN_HXX
 #define MPD_INPUT_PLUGIN_HXX
 
-#include "thread/Mutex.hxx"
-#include "thread/Cond.hxx"
-
-#include <stddef.h>
-#include <stdint.h>
-
 #ifdef WIN32
 #include <windows.h>
 /* damn you, windows.h! */
@@ -35,8 +29,9 @@
 #endif
 
 struct ConfigBlock;
+class Mutex;
+class Cond;
 class InputStream;
-struct Tag;
 
 struct InputPlugin {
 	const char *name;

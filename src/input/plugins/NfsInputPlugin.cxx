@@ -23,6 +23,7 @@
 #include "../InputPlugin.hxx"
 #include "lib/nfs/Glue.hxx"
 #include "lib/nfs/FileReader.hxx"
+#include "thread/Cond.hxx"
 #include "util/StringCompare.hxx"
 #include "IOThread.hxx"
 

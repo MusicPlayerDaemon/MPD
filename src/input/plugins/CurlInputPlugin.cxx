@@ -33,6 +33,7 @@
 #include "event/Call.hxx"
 #include "event/Loop.hxx"
 #include "IOThread.hxx"
+#include "thread/Cond.hxx"
 #include "util/ASCII.hxx"
 #include "util/StringUtil.hxx"
 #include "util/NumberParser.hxx"
