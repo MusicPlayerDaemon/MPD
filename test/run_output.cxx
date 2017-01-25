@@ -77,15 +77,15 @@ load_audio_output(EventLoop &event_loop, AudioOutputClient &client,
 }
 
 static void
-run_output(AudioOutput *ao, AudioFormat audio_format)
+run_output(AudioOutput &ao, AudioFormat audio_format)
 {
 	/* open the audio output */
 
 	ao_plugin_enable(ao);
-	AtScopeExit(ao) { ao_plugin_disable(ao); };
+	AtScopeExit(&ao) { ao_plugin_disable(ao); };
 
 	ao_plugin_open(ao, audio_format);
-	AtScopeExit(ao) { ao_plugin_close(ao); };
+	AtScopeExit(&ao) { ao_plugin_close(ao); };
 
 	fprintf(stderr, "audio_format=%s\n",
 		ToString(audio_format).c_str());
@@ -152,7 +152,7 @@ try {
 
 	/* do it */
 
-	run_output(ao, audio_format);
+	run_output(*ao, audio_format);
 
 	/* cleanup and exit */
 

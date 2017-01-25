@@ -64,7 +64,7 @@ AudioOutput::Enable()
 
 	try {
 		const ScopeUnlock unlock(mutex);
-		ao_plugin_enable(this);
+		ao_plugin_enable(*this);
 	} catch (const std::runtime_error &e) {
 		std::throw_with_nested(FormatRuntimeError("Failed to enable output \"%s\" [%s]",
 							  name, plugin.name));
@@ -83,7 +83,7 @@ AudioOutput::Disable()
 		really_enabled = false;
 
 		const ScopeUnlock unlock(mutex);
-		ao_plugin_disable(this);
+		ao_plugin_disable(*this);
 	}
 }
 
@@ -168,7 +168,7 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	out_audio_format = desired_audio_format;
 
 	try {
-		ao_plugin_open(this, out_audio_format);
+		ao_plugin_open(*this, out_audio_format);
 	} catch (const std::runtime_error &e) {
 		std::throw_with_nested(FormatRuntimeError("Failed to open \"%s\" [%s]",
 							  name, plugin.name));
@@ -182,7 +182,7 @@ AudioOutput::OpenOutputAndConvert(AudioFormat desired_audio_format)
 	try {
 		convert_filter_set(convert_filter.Get(), out_audio_format);
 	} catch (const std::runtime_error &e) {
-		ao_plugin_close(this);
+		ao_plugin_close(*this);
 
 		if (out_audio_format.format == SampleFormat::DSD) {
 			/* if the audio output supports DSD, but not
@@ -224,11 +224,11 @@ inline void
 AudioOutput::CloseOutput(bool drain)
 {
 	if (drain)
-		ao_plugin_drain(this);
+		ao_plugin_drain(*this);
 	else
-		ao_plugin_cancel(this);
+		ao_plugin_cancel(*this);
 
-	ao_plugin_close(this);
+	ao_plugin_close(*this);
 }
 
 /**
@@ -241,7 +241,7 @@ inline bool
 AudioOutput::WaitForDelay()
 {
 	while (true) {
-		const auto delay = ao_plugin_delay(this);
+		const auto delay = ao_plugin_delay(*this);
 		if (delay <= std::chrono::steady_clock::duration::zero())
 			return true;
 
@@ -276,7 +276,7 @@ AudioOutput::PlayChunk()
 		if (tag != nullptr) {
 			const ScopeUnlock unlock(mutex);
 			try {
-				ao_plugin_send_tag(this, *tag);
+				ao_plugin_send_tag(*this, *tag);
 			} catch (const std::runtime_error &e) {
 				FormatError(e, "Failed to send tag to \"%s\" [%s]",
 					    name, plugin.name);
@@ -296,7 +296,7 @@ AudioOutput::PlayChunk()
 
 		try {
 			const ScopeUnlock unlock(mutex);
-			nbytes = ao_plugin_play(this, data.data, data.size);
+			nbytes = ao_plugin_play(*this, data.data, data.size);
 		} catch (const std::runtime_error &e) {
 			FormatError(e, "\"%s\" [%s] failed to play",
 				    name, plugin.name);
@@ -368,7 +368,7 @@ AudioOutput::Pause()
 {
 	{
 		const ScopeUnlock unlock(mutex);
-		ao_plugin_cancel(this);
+		ao_plugin_cancel(*this);
 	}
 
 	pause = true;
@@ -381,7 +381,7 @@ AudioOutput::Pause()
 		bool success;
 		try {
 			const ScopeUnlock unlock(mutex);
-			success = ao_plugin_pause(this);
+			success = ao_plugin_pause(*this);
 		} catch (const std::runtime_error &e) {
 			FormatError(e, "\"%s\" [%s] failed to pause",
 				    name, plugin.name);
@@ -477,7 +477,7 @@ AudioOutput::Task()
 		case Command::DRAIN:
 			if (open) {
 				const ScopeUnlock unlock(mutex);
-				ao_plugin_drain(this);
+				ao_plugin_drain(*this);
 			}
 
 			CommandFinished();
@@ -488,7 +488,7 @@ AudioOutput::Task()
 
 			if (open) {
 				const ScopeUnlock unlock(mutex);
-				ao_plugin_cancel(this);
+				ao_plugin_cancel(*this);
 			}
 
 			CommandFinished();

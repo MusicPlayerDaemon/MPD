@@ -162,41 +162,41 @@ ao_plugin_test_default_device(const AudioOutputPlugin *plugin)
 
 gcc_malloc
 AudioOutput *
-ao_plugin_init(const AudioOutputPlugin *plugin,
+ao_plugin_init(const AudioOutputPlugin &plugin,
 	       const ConfigBlock &block);
 
 void
 ao_plugin_finish(AudioOutput *ao);
 
 void
-ao_plugin_enable(AudioOutput *ao);
+ao_plugin_enable(AudioOutput &ao);
 
 void
-ao_plugin_disable(AudioOutput *ao);
+ao_plugin_disable(AudioOutput &ao);
 
 void
-ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format);
+ao_plugin_open(AudioOutput &ao, AudioFormat &audio_format);
 
 void
-ao_plugin_close(AudioOutput *ao);
+ao_plugin_close(AudioOutput &ao);
 
 gcc_pure
 std::chrono::steady_clock::duration
-ao_plugin_delay(AudioOutput *ao);
+ao_plugin_delay(AudioOutput &ao);
 
 void
-ao_plugin_send_tag(AudioOutput *ao, const Tag &tag);
+ao_plugin_send_tag(AudioOutput &ao, const Tag &tag);
 
 size_t
-ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size);
+ao_plugin_play(AudioOutput &ao, const void *chunk, size_t size);
 
 void
-ao_plugin_drain(AudioOutput *ao);
+ao_plugin_drain(AudioOutput &ao);
 
 void
-ao_plugin_cancel(AudioOutput *ao);
+ao_plugin_cancel(AudioOutput &ao);
 
 bool
-ao_plugin_pause(AudioOutput *ao);
+ao_plugin_pause(AudioOutput &ao);
 
 #endif

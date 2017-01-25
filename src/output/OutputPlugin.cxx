@@ -22,13 +22,12 @@
 #include "Internal.hxx"
 
 AudioOutput *
-ao_plugin_init(const AudioOutputPlugin *plugin,
+ao_plugin_init(const AudioOutputPlugin &plugin,
 	       const ConfigBlock &block)
 {
-	assert(plugin != nullptr);
-	assert(plugin->init != nullptr);
+	assert(plugin.init != nullptr);
 
-	return plugin->init(block);
+	return plugin.init(block);
 }
 
 void
@@ -38,68 +37,68 @@ ao_plugin_finish(AudioOutput *ao)
 }
 
 void
-ao_plugin_enable(AudioOutput *ao)
+ao_plugin_enable(AudioOutput &ao)
 {
-	if (ao->plugin.enable != nullptr)
-		ao->plugin.enable(ao);
+	if (ao.plugin.enable != nullptr)
+		ao.plugin.enable(&ao);
 }
 
 void
-ao_plugin_disable(AudioOutput *ao)
+ao_plugin_disable(AudioOutput &ao)
 {
-	if (ao->plugin.disable != nullptr)
-		ao->plugin.disable(ao);
+	if (ao.plugin.disable != nullptr)
+		ao.plugin.disable(&ao);
 }
 
 void
-ao_plugin_open(AudioOutput *ao, AudioFormat &audio_format)
+ao_plugin_open(AudioOutput &ao, AudioFormat &audio_format)
 {
-	ao->plugin.open(ao, audio_format);
+	ao.plugin.open(&ao, audio_format);
 }
 
 void
-ao_plugin_close(AudioOutput *ao)
+ao_plugin_close(AudioOutput &ao)
 {
-	ao->plugin.close(ao);
+	ao.plugin.close(&ao);
 }
 
 std::chrono::steady_clock::duration
-ao_plugin_delay(AudioOutput *ao)
+ao_plugin_delay(AudioOutput &ao)
 {
-	return ao->plugin.delay != nullptr
-		? ao->plugin.delay(ao)
+	return ao.plugin.delay != nullptr
+		? ao.plugin.delay(&ao)
 		: std::chrono::steady_clock::duration::zero();
 }
 
 void
-ao_plugin_send_tag(AudioOutput *ao, const Tag &tag)
+ao_plugin_send_tag(AudioOutput &ao, const Tag &tag)
 {
-	if (ao->plugin.send_tag != nullptr)
-		ao->plugin.send_tag(ao, tag);
+	if (ao.plugin.send_tag != nullptr)
+		ao.plugin.send_tag(&ao, tag);
 }
 
 size_t
-ao_plugin_play(AudioOutput *ao, const void *chunk, size_t size)
+ao_plugin_play(AudioOutput &ao, const void *chunk, size_t size)
 {
-	return ao->plugin.play(ao, chunk, size);
+	return ao.plugin.play(&ao, chunk, size);
 }
 
 void
-ao_plugin_drain(AudioOutput *ao)
+ao_plugin_drain(AudioOutput &ao)
 {
-	if (ao->plugin.drain != nullptr)
-		ao->plugin.drain(ao);
+	if (ao.plugin.drain != nullptr)
+		ao.plugin.drain(&ao);
 }
 
 void
-ao_plugin_cancel(AudioOutput *ao)
+ao_plugin_cancel(AudioOutput &ao)
 {
-	if (ao->plugin.cancel != nullptr)
-		ao->plugin.cancel(ao);
+	if (ao.plugin.cancel != nullptr)
+		ao.plugin.cancel(&ao);
 }
 
 bool
-ao_plugin_pause(AudioOutput *ao)
+ao_plugin_pause(AudioOutput &ao)
 {
-	return ao->plugin.pause != nullptr && ao->plugin.pause(ao);
+	return ao.plugin.pause != nullptr && ao.plugin.pause(&ao);
 }
