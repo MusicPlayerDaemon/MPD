@@ -182,23 +182,6 @@ ao_output_open(AudioOutput *ao, AudioFormat &audio_format)
 		throw MakeAoError();
 }
 
-/**
- * For whatever reason, libao wants a non-const pointer.  Let's hope
- * it does not write to the buffer, and use the union deconst hack to
- * work around this API misdesign.
- */
-static int ao_play_deconst(ao_device *device, const void *output_samples,
-			   uint_32 num_bytes)
-{
-	union {
-		const void *in;
-		char *out;
-	} u;
-
-	u.in = output_samples;
-	return ao_play(device, u.out, num_bytes);
-}
-
 static size_t
 ao_output_play(AudioOutput *ao, const void *chunk, size_t size)
 {
@@ -207,7 +190,12 @@ ao_output_play(AudioOutput *ao, const void *chunk, size_t size)
 	if (size > ad->write_size)
 		size = ad->write_size;
 
-	if (ao_play_deconst(ad->device, chunk, size) == 0)
+	/* For whatever reason, libao wants a non-const pointer.
+	   Let's hope it does not write to the buffer, and use the
+	   union deconst hack to * work around this API misdesign. */
+	char *data = const_cast<char *>((const char *)chunk);
+
+	if (ao_play(ad->device, data, size) == 0)
 		throw MakeAoError();
 
 	return size;
