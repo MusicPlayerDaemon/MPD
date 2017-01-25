@@ -33,7 +33,6 @@
 #include "util/RuntimeError.hxx"
 #include "util/StringCompare.hxx"
 #include "util/ReusableArray.hxx"
-#include "util/ScopeExit.hxx"
 
 #include "Log.hxx"
 #include "event/MultiSocketMonitor.hxx"
@@ -287,13 +286,7 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 	int err;
 
 	snd_pcm_hw_params_t *hw_params;
-	if ((err = snd_pcm_hw_params_malloc(&hw_params)) < 0)
-		throw FormatRuntimeError("Cannot allocate hardware parameter structure (%s)",
-					 snd_strerror(err));
-
-	AtScopeExit(hw_params) {
-		snd_pcm_hw_params_free(hw_params);
-	};
+	snd_pcm_hw_params_alloca(&hw_params);
 
 	if ((err = snd_pcm_hw_params_any(capture_handle, hw_params)) < 0)
 		throw FormatRuntimeError("Cannot initialize hardware parameter structure (%s)",
@@ -373,13 +366,9 @@ ConfigureCapture(snd_pcm_t *capture_handle,
 		    (unsigned)alsa_buffer_size, (unsigned)alsa_period_size);
 
 	snd_pcm_sw_params_t *sw_params;
+	snd_pcm_sw_params_alloca(&sw_params);
 
-	snd_pcm_sw_params_malloc(&sw_params);
 	snd_pcm_sw_params_current(capture_handle, sw_params);
-
-	AtScopeExit(sw_params) {
-		snd_pcm_sw_params_free(sw_params);
-	};
 
 	if ((err = snd_pcm_sw_params(capture_handle, sw_params)) < 0)
 		throw FormatRuntimeError("unable to install sw params (%s)",
