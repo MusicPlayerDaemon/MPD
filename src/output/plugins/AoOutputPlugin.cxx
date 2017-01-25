@@ -20,6 +20,7 @@
 #include "config.h"
 #include "AoOutputPlugin.hxx"
 #include "../OutputAPI.hxx"
+#include "../Wrapper.hxx"
 #include "system/Error.hxx"
 #include "util/DivideString.hxx"
 #include "util/SplitString.hxx"
@@ -45,6 +46,16 @@ struct AoOutput {
 	ao_device *device;
 
 	AoOutput(const ConfigBlock &block);
+	~AoOutput();
+
+	static AoOutput *Create(const ConfigBlock &block) {
+		return new AoOutput(block);
+	}
+
+	void Open(AudioFormat &audio_format);
+	void Close();
+
+	size_t Play(const void *chunk, size_t size);
 };
 
 static constexpr Domain ao_output_domain("ao_output");
@@ -120,19 +131,9 @@ AoOutput::AoOutput(const ConfigBlock &block)
 	}
 }
 
-static AudioOutput *
-ao_output_init(const ConfigBlock &block)
+AoOutput::~AoOutput()
 {
-	return &(new AoOutput(block))->base;
-}
-
-static void
-ao_output_finish(AudioOutput *ao)
-{
-	AoOutput *ad = (AoOutput *)ao;
-
-	ao_free_options(ad->options);
-	delete ad;
+	ao_free_options(options);
 
 	ao_output_ref--;
 
@@ -140,19 +141,10 @@ ao_output_finish(AudioOutput *ao)
 		ao_shutdown();
 }
 
-static void
-ao_output_close(AudioOutput *ao)
-{
-	AoOutput *ad = (AoOutput *)ao;
-
-	ao_close(ad->device);
-}
-
-static void
-ao_output_open(AudioOutput *ao, AudioFormat &audio_format)
+void
+AoOutput::Open(AudioFormat &audio_format)
 {
 	ao_sample_format format = OUR_AO_FORMAT_INITIALIZER;
-	AoOutput *ad = (AoOutput *)ao;
 
 	switch (audio_format.format) {
 	case SampleFormat::S8:
@@ -176,43 +168,48 @@ ao_output_open(AudioOutput *ao, AudioFormat &audio_format)
 	format.byte_format = AO_FMT_NATIVE;
 	format.channels = audio_format.channels;
 
-	ad->device = ao_open_live(ad->driver, &format, ad->options);
-
-	if (ad->device == nullptr)
+	device = ao_open_live(driver, &format, options);
+	if (device == nullptr)
 		throw MakeAoError();
 }
 
-static size_t
-ao_output_play(AudioOutput *ao, const void *chunk, size_t size)
+void
+AoOutput::Close()
 {
-	AoOutput *ad = (AoOutput *)ao;
+	ao_close(device);
+}
 
-	if (size > ad->write_size)
-		size = ad->write_size;
+size_t
+AoOutput::Play(const void *chunk, size_t size)
+{
+	if (size > write_size)
+		size = write_size;
 
 	/* For whatever reason, libao wants a non-const pointer.
 	   Let's hope it does not write to the buffer, and use the
 	   union deconst hack to * work around this API misdesign. */
 	char *data = const_cast<char *>((const char *)chunk);
 
-	if (ao_play(ad->device, data, size) == 0)
+	if (ao_play(device, data, size) == 0)
 		throw MakeAoError();
 
 	return size;
 }
 
+typedef AudioOutputWrapper<AoOutput> Wrapper;
+
 const struct AudioOutputPlugin ao_output_plugin = {
 	"ao",
 	nullptr,
-	ao_output_init,
-	ao_output_finish,
+	&Wrapper::Init,
+	&Wrapper::Finish,
 	nullptr,
 	nullptr,
-	ao_output_open,
-	ao_output_close,
+	&Wrapper::Open,
+	&Wrapper::Close,
 	nullptr,
 	nullptr,
-	ao_output_play,
+	&Wrapper::Play,
 	nullptr,
 	nullptr,
 	nullptr,
