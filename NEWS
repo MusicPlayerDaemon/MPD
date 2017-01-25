@@ -1,4 +1,4 @@
-ver 0.20.3 (not yet released)
+ver 0.20.3 (2017/01/25)
 * protocol
   - "playlistadd" creates new playlist if it does not exist, as documented
 * database
