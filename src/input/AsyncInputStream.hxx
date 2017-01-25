@@ -80,6 +80,10 @@ public:
 
 	virtual ~AsyncInputStream();
 
+	EventLoop &GetEventLoop() {
+		return deferred_resume.GetEventLoop();
+	}
+
 	/* virtual methods from InputStream */
 	void Check() final;
 	bool IsEOF() final;
