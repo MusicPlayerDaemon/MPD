@@ -35,7 +35,7 @@ static struct {
 	Thread thread;
 } io;
 
-void
+static void
 io_thread_run(void)
 {
 	assert(io_thread_inside());

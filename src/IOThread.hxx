@@ -31,14 +31,6 @@ void
 io_thread_start();
 
 /**
- * Run the I/O event loop synchronously in the current thread.  This
- * can be called instead of io_thread_start().  For testing purposes
- * only.
- */
-void
-io_thread_run();
-
-/**
  * Ask the I/O thread to quit, but does not wait for it.  Usually, you
  * don't need to call this function, because io_thread_deinit()
  * includes this.
