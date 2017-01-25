@@ -76,7 +76,7 @@ public:
 			const char *_uri, Mutex &_mutex, Cond &_cond,
 			const char *_device,
 			snd_pcm_t *_handle, int _frame_size)
-		:AsyncInputStream(_uri, _mutex, _cond,
+		:AsyncInputStream(loop, _uri, _mutex, _cond,
 				  ALSA_MAX_BUFFERED, ALSA_RESUME_AT),
 		 MultiSocketMonitor(loop),
 		 DeferredMonitor(loop),

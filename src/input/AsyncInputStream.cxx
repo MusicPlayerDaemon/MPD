@@ -22,20 +22,20 @@
 #include "Domain.hxx"
 #include "tag/Tag.hxx"
 #include "thread/Cond.hxx"
-#include "IOThread.hxx"
+#include "event/Loop.hxx"
 
 #include <stdexcept>
 
 #include <assert.h>
 #include <string.h>
 
-AsyncInputStream::AsyncInputStream(const char *_url,
+AsyncInputStream::AsyncInputStream(EventLoop &event_loop, const char *_url,
 				   Mutex &_mutex, Cond &_cond,
 				   size_t _buffer_size,
 				   size_t _resume_at)
 	:InputStream(_url, _mutex, _cond),
-	 deferred_resume(io_thread_get(), BIND_THIS_METHOD(DeferredResume)),
-	 deferred_seek(io_thread_get(), BIND_THIS_METHOD(DeferredSeek)),
+	 deferred_resume(event_loop, BIND_THIS_METHOD(DeferredResume)),
+	 deferred_seek(event_loop, BIND_THIS_METHOD(DeferredSeek)),
 	 allocation(_buffer_size),
 	 buffer((uint8_t *)allocation.get(), _buffer_size),
 	 resume_at(_resume_at),
@@ -61,7 +61,7 @@ AsyncInputStream::SetTag(Tag *_tag)
 void
 AsyncInputStream::Pause()
 {
-	assert(io_thread_inside());
+	assert(GetEventLoop().IsInside());
 
 	paused = true;
 }
@@ -69,7 +69,7 @@ AsyncInputStream::Pause()
 inline void
 AsyncInputStream::Resume()
 {
-	assert(io_thread_inside());
+	assert(GetEventLoop().IsInside());
 
 	if (paused) {
 		paused = false;
@@ -143,7 +143,7 @@ AsyncInputStream::Seek(offset_type new_offset)
 void
 AsyncInputStream::SeekDone()
 {
-	assert(io_thread_inside());
+	assert(GetEventLoop().IsInside());
 	assert(IsSeekPending());
 
 	/* we may have reached end-of-file previously, and the
@@ -174,7 +174,7 @@ AsyncInputStream::IsAvailable()
 size_t
 AsyncInputStream::Read(void *ptr, size_t read_size)
 {
-	assert(!io_thread_inside());
+	assert(!GetEventLoop().IsInside());
 
 	/* wait for data */
 	CircularBuffer<uint8_t>::Range r;

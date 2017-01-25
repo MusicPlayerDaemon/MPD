@@ -74,8 +74,9 @@ struct CurlInputStream final : public AsyncInputStream, CurlResponseHandler {
 	/** parser for icy-metadata */
 	IcyInputStream *icy;
 
-	CurlInputStream(const char *_url, Mutex &_mutex, Cond &_cond)
-		:AsyncInputStream(_url, _mutex, _cond,
+	CurlInputStream(EventLoop &event_loop, const char *_url,
+			Mutex &_mutex, Cond &_cond)
+		:AsyncInputStream(event_loop, _url, _mutex, _cond,
 				  CURL_MAX_BUFFERED,
 				  CURL_RESUME_AT),
 		 icy(new IcyInputStream(this)) {
@@ -420,7 +421,8 @@ CurlInputStream::DoSeek(offset_type new_offset)
 inline InputStream *
 CurlInputStream::Open(const char *url, Mutex &mutex, Cond &cond)
 {
-	CurlInputStream *c = new CurlInputStream(url, mutex, cond);
+	CurlInputStream *c = new CurlInputStream(curl_global->GetEventLoop(),
+						 url, mutex, cond);
 
 	try {
 		BlockingCall(c->GetEventLoop(), [c](){

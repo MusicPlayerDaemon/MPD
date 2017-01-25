@@ -73,7 +73,7 @@ public:
 	 * @param _buffer a buffer allocated with HugeAllocate(); the
 	 * destructor will free it using HugeFree()
 	 */
-	AsyncInputStream(const char *_url,
+	AsyncInputStream(EventLoop &event_loop, const char *_url,
 			 Mutex &_mutex, Cond &_cond,
 			 size_t _buffer_size,
 			 size_t _resume_at);
