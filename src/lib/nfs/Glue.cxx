@@ -20,7 +20,6 @@
 #include "config.h"
 #include "Glue.hxx"
 #include "Manager.hxx"
-#include "IOThread.hxx"
 #include "event/Call.hxx"
 #include "util/Manual.hxx"
 
@@ -30,12 +29,12 @@ static Manual<NfsManager> nfs_glue;
 static unsigned in_use;
 
 void
-nfs_init()
+nfs_init(EventLoop &event_loop)
 {
 	if (in_use++ > 0)
 		return;
 
-	nfs_glue.Construct(io_thread_get());
+	nfs_glue.Construct(event_loop);
 }
 
 void
@@ -46,14 +45,13 @@ nfs_finish()
 	if (--in_use > 0)
 		return;
 
-	BlockingCall(io_thread_get(), [](){ nfs_glue.Destruct(); });
+	BlockingCall(nfs_glue->GetEventLoop(), [](){ nfs_glue.Destruct(); });
 }
 
 NfsConnection &
 nfs_get_connection(const char *server, const char *export_name)
 {
 	assert(in_use > 0);
-	assert(io_thread_inside());
 
 	return nfs_glue->GetConnection(server, export_name);
 }

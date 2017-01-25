@@ -97,6 +97,8 @@ public:
 	 */
 	~NfsManager();
 
+	using IdleMonitor::GetEventLoop;
+
 	gcc_pure
 	NfsConnection &GetConnection(const char *server,
 				     const char *export_name);

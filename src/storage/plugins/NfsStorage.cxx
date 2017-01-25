@@ -74,7 +74,7 @@ public:
 		 server(std::move(_server)),
 		 export_name(std::move(_export_name)),
 		 state(State::INITIAL) {
-		nfs_init();
+		nfs_init(_loop);
 	}
 
 	~NfsStorage() {

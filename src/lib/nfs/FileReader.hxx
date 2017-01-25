@@ -64,8 +64,10 @@ class NfsFileReader : NfsLease, NfsCallback, DeferredMonitor {
 	nfsfh *fh;
 
 public:
-	NfsFileReader();
+	NfsFileReader(EventLoop &event_loop);
 	~NfsFileReader();
+
+	using DeferredMonitor::GetEventLoop;
 
 	void Close();
 	void DeferClose();

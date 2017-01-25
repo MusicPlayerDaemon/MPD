@@ -23,10 +23,11 @@
 #include "check.h"
 #include "Compiler.h"
 
+class EventLoop;
 class NfsConnection;
 
 void
-nfs_init();
+nfs_init(EventLoop &event_loop);
 
 void
 nfs_finish();
