@@ -50,7 +50,9 @@ struct audio_info {
 
 #endif
 
-struct SolarisOutput {
+class SolarisOutput {
+	friend struct AudioOutputWrapper<SolarisOutput>;
+
 	AudioOutput base;
 
 	/* configuration */
@@ -62,6 +64,7 @@ struct SolarisOutput {
 		:base(solaris_output_plugin, block),
 		 device(block.GetBlockValue("device", "/dev/audio")) {}
 
+public:
 	static SolarisOutput *Create(const ConfigBlock &block) {
 		return new SolarisOutput(block);
 	}
