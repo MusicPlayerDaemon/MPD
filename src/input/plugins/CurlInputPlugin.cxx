@@ -329,7 +329,7 @@ input_curl_init(const ConfigBlock &block)
 static void
 input_curl_finish(void)
 {
-	BlockingCall(io_thread_get(), [](){
+	BlockingCall(curl_global->GetEventLoop(), [](){
 			delete curl_global;
 		});
 
