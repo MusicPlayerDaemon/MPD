@@ -20,6 +20,7 @@
 #ifndef MPD_OUTPUT_WRAPPER_HXX
 #define MPD_OUTPUT_WRAPPER_HXX
 
+#include "Internal.hxx"
 #include "util/Cast.hxx"
 
 #include <chrono>
