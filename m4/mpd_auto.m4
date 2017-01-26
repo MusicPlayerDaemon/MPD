@@ -181,5 +181,5 @@ dnl
 dnl Parameters: varname1, varname2, pkg, description, errmsg, default, dep_variable, dep_errmsg
 AC_DEFUN([MPD_ENABLE_AUTO_PKG_DEPENDS], [
 	MPD_ENABLE_AUTO_PKG([$1], [$2], [$3], [$4], [$5], [$6],
-		[MPD_DEPENDS([enable_$1], [$7], [$8])])
+		[MPD_DEPENDS([enable_$1], [$7], [$4], [$8])])
 ])

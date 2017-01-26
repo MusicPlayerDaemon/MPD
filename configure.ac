@@ -552,7 +552,7 @@ dnl -------------------------------- libmpdclient ------------------------------
 MPD_ENABLE_AUTO_PKG_DEPENDS(libmpdclient, LIBMPDCLIENT,
 	[libmpdclient >= 2.2],
 	[MPD client library], [libmpdclient not found], [],
-	[enable_database], [Cannot use --enable-libmpdclient with --disable-database])
+	[enable_database], [Database support is disabled])
 
 dnl -------------------------------- expat --------------------------------
 MPD_ENABLE_AUTO_PKG(expat, EXPAT, [expat],
@@ -807,7 +807,7 @@ fi
 
 MPD_ENABLE_AUTO_PKG_DEPENDS(upnp, UPNP, [libupnp],
 	[UPnP client support], [libupnp not found], [],
-	[enable_database], [Cannot use --enable-upnp with --disable-database])
+	[enable_database], [Database support is disabled])
 
 dnl --------------------------------- libzzip ---------------------------------
 MPD_ENABLE_AUTO_PKG(zzip, ZZIP, [zziplib >= 0.13],
