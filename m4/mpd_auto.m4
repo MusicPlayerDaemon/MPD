@@ -178,8 +178,10 @@ AC_DEFUN([MPD_ENABLE_AUTO_HEADER], [
 
 dnl Wrapper for MPD_ENABLE_AUTO_PKG and MPD_DEPENDS
 dnl
-dnl Parameters: varname1, varname2, pkg, description, errmsg, default, dep_variable, dep_errmsg
+dnl Parameters: varname1, varname2, pkg, description, errmsg, default, dep_variable, dep_errmsg, pre
 AC_DEFUN([MPD_ENABLE_AUTO_PKG_DEPENDS], [
-	MPD_ENABLE_AUTO_PKG([$1], [$2], [$3], [$4], [$5], [$6],
-		[MPD_DEPENDS([enable_$1], [$7], [$4], [$8])])
+	MPD_ENABLE_AUTO_PKG([$1], [$2], [$3], [$4], [$5], [$6], [
+		$9
+		MPD_DEPENDS([enable_$1], [$7], [$4], [$8])
+	])
 ])

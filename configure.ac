@@ -796,18 +796,14 @@ AM_CONDITIONAL(ENABLE_BZIP2_TEST, test x$BZIP2 != xno)
 
 dnl ---------------------------------- libupnp ---------------------------------
 
-if test x$enable_expat = xno; then
-	if test x$enable_upnp = xauto; then
-		AC_MSG_WARN([expat disabled -- disabling UPnP])
-		enable_upnp=no
-	elif test x$enable_upnp = xyes; then
-		AC_MSG_ERROR([expat disabled -- required for UPnP])
-	fi
-fi
-
 MPD_ENABLE_AUTO_PKG_DEPENDS(upnp, UPNP, [libupnp],
 	[UPnP client support], [libupnp not found], [],
-	[enable_database], [Database support is disabled])
+	[enable_database], [Database support is disabled], [
+		MPD_DEPENDS([enable_upnp], [enable_expat],
+			[UPnP client support],
+			[UPnP requires expat])
+	]
+)
 
 dnl --------------------------------- libzzip ---------------------------------
 MPD_ENABLE_AUTO_PKG(zzip, ZZIP, [zziplib >= 0.13],
