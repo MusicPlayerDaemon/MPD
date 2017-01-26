@@ -30,8 +30,8 @@
 #include "config.h"
 #include "Global.hxx"
 #include "Request.hxx"
-#include "IOThread.hxx"
 #include "Log.hxx"
+#include "event/Loop.hxx"
 #include "event/SocketMonitor.hxx"
 #include "util/RuntimeError.hxx"
 #include "util/Domain.hxx"
@@ -112,7 +112,7 @@ CurlSocket::SocketFunction(gcc_unused CURL *easy,
 	auto &global = *(CurlGlobal *)userp;
 	CurlSocket *cs = (CurlSocket *)socketp;
 
-	assert(io_thread_inside());
+	assert(global.GetEventLoop().IsInside());
 
 	if (action == CURL_POLL_REMOVE) {
 		delete cs;
@@ -120,7 +120,7 @@ CurlSocket::SocketFunction(gcc_unused CURL *easy,
 	}
 
 	if (cs == nullptr) {
-		cs = new CurlSocket(global, io_thread_get(), s);
+		cs = new CurlSocket(global, global.GetEventLoop(), s);
 		global.Assign(s, *cs);
 	} else {
 #ifdef USE_EPOLL
@@ -145,7 +145,7 @@ CurlSocket::SocketFunction(gcc_unused CURL *easy,
 bool
 CurlSocket::OnSocketReady(unsigned flags)
 {
-	assert(io_thread_inside());
+	assert(GetEventLoop().IsInside());
 
 	global.SocketAction(Get(), FlagsToCurlCSelect(flags));
 	return true;
@@ -159,7 +159,7 @@ CurlSocket::OnSocketReady(unsigned flags)
 void
 CurlGlobal::Add(CURL *easy, CurlRequest &request)
 {
-	assert(io_thread_inside());
+	assert(GetEventLoop().IsInside());
 	assert(easy != nullptr);
 
 	curl_easy_setopt(easy, CURLOPT_PRIVATE, &request);
@@ -175,7 +175,7 @@ CurlGlobal::Add(CURL *easy, CurlRequest &request)
 void
 CurlGlobal::Remove(CURL *easy)
 {
-	assert(io_thread_inside());
+	assert(GetEventLoop().IsInside());
 	assert(easy != nullptr);
 
 	curl_multi_remove_handle(multi.Get(), easy);
@@ -202,7 +202,7 @@ ToRequest(CURL *easy)
 inline void
 CurlGlobal::ReadInfo()
 {
-	assert(io_thread_inside());
+	assert(GetEventLoop().IsInside());
 
 	CURLMsg *msg;
 	int msgs_in_queue;
