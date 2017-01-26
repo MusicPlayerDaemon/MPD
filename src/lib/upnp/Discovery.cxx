@@ -21,6 +21,9 @@
 #include "Discovery.hxx"
 #include "ContentDirectoryService.hxx"
 #include "Log.hxx"
+#include "lib/curl/Global.hxx"
+#include "event/Call.hxx"
+#include "util/DeleteDisposer.hxx"
 #include "util/ScopeExit.hxx"
 #include "util/RuntimeError.hxx"
 
@@ -28,6 +31,74 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+UPnPDeviceDirectory::Downloader::Downloader(UPnPDeviceDirectory &_parent,
+					    const Upnp_Discovery &disco)
+	:parent(_parent),
+	 id(disco.DeviceId), url(disco.Location),
+	 expires(std::chrono::seconds(disco.Expires)),
+	 request(*parent.curl, url.c_str(), *this)
+{
+	parent.downloaders.push_back(*this);
+}
+
+void
+UPnPDeviceDirectory::Downloader::Start()
+{
+	auto &event_loop = parent.curl->GetEventLoop();
+
+	BlockingCall(event_loop, [this](){
+			request.Start();
+		});
+}
+
+void
+UPnPDeviceDirectory::Downloader::Destroy()
+{
+	parent.downloaders.erase_and_dispose(parent.downloaders.iterator_to(*this),
+					     DeleteDisposer());
+}
+
+void
+UPnPDeviceDirectory::Downloader::OnHeaders(unsigned status,
+					   std::multimap<std::string, std::string> &&)
+{
+	if (status != 200) {
+		Destroy();
+		return;
+	}
+}
+
+void
+UPnPDeviceDirectory::Downloader::OnData(ConstBuffer<void> _data)
+{
+	data.append((const char *)_data.data, _data.size);
+}
+
+void
+UPnPDeviceDirectory::Downloader::OnEnd()
+{
+	AtScopeExit(this) { Destroy(); };
+
+	ContentDirectoryDescriptor d(std::move(id),
+				     std::chrono::steady_clock::now(),
+				     expires);
+
+	try {
+		d.Parse(url.c_str(), data.c_str());
+	} catch (const std::exception &e) {
+		LogError(e);
+	}
+
+	parent.LockAdd(std::move(d));
+}
+
+void
+UPnPDeviceDirectory::Downloader::OnError(std::exception_ptr e)
+{
+	LogError(e);
+	Destroy();
+}
 
 // The service type string we are looking for.
 static constexpr char ContentDirectorySType[] = "urn:schemas-upnp-org:service:ContentDirectory:1";
@@ -106,60 +177,23 @@ UPnPDeviceDirectory::LockRemove(const std::string &id)
 	}
 }
 
-inline void
-UPnPDeviceDirectory::Explore()
-{
-	for (;;) {
-		std::unique_ptr<DiscoveredTask> tsk;
-		if (!queue.take(tsk)) {
-			queue.workerExit();
-			return;
-		}
-
-		// Device signals its existence and well-being. Perform the
-		// UPnP "description" phase by downloading and decoding the
-		// description document.
-		char *buf;
-		// LINE_SIZE is defined by libupnp's upnp.h...
-		char contentType[LINE_SIZE];
-		int code = UpnpDownloadUrlItem(tsk->url.c_str(), &buf, contentType);
-		if (code != UPNP_E_SUCCESS) {
-			continue;
-		}
-
-		AtScopeExit(buf){ free(buf); };
-
-		// Update or insert the device
-		ContentDirectoryDescriptor d(std::move(tsk->device_id),
-					     std::chrono::steady_clock::now(),
-					     tsk->expires);
-
-		try {
-			d.Parse(tsk->url, buf);
-		} catch (const std::exception &e) {
-			LogError(e);
-		}
-
-		LockAdd(std::move(d));
-	}
-}
-
-void *
-UPnPDeviceDirectory::Explore(void *ctx)
-{
-	UPnPDeviceDirectory &directory = *(UPnPDeviceDirectory *)ctx;
-	directory.Explore();
-	return (void*)1;
-}
-
 inline int
 UPnPDeviceDirectory::OnAlive(Upnp_Discovery *disco)
 {
 	if (isMSDevice(disco->DeviceType) ||
 	    isCDService(disco->ServiceType)) {
-		DiscoveredTask *tp = new DiscoveredTask(disco);
-		if (queue.put(tp))
-			return UPNP_E_FINISH;
+		auto *downloader = new Downloader(*this, *disco);
+
+		try {
+			downloader->Start();
+		} catch (...) {
+			BlockingCall(curl->GetEventLoop(), [downloader](){
+					downloader->Destroy();
+				});
+
+			LogError(std::current_exception());
+			return UPNP_E_SUCCESS;
+		}
 	}
 
 	return UPNP_E_SUCCESS;
@@ -226,25 +260,26 @@ UPnPDeviceDirectory::ExpireDevices()
 		Search();
 }
 
-UPnPDeviceDirectory::UPnPDeviceDirectory(UpnpClient_Handle _handle,
+UPnPDeviceDirectory::UPnPDeviceDirectory(EventLoop &event_loop,
+					 UpnpClient_Handle _handle,
 					 UPnPDiscoveryListener *_listener)
-	:handle(_handle),
-	 listener(_listener),
-	 queue("DiscoveredQueue")
+	:curl(event_loop), handle(_handle),
+	 listener(_listener)
 {
 }
 
 UPnPDeviceDirectory::~UPnPDeviceDirectory()
 {
 	/* this destructor exists here just so it won't get inlined */
+
+	BlockingCall(curl->GetEventLoop(), [this](){
+			downloaders.clear_and_dispose(DeleteDisposer());
+		});
 }
 
 void
 UPnPDeviceDirectory::Start()
 {
-	if (!queue.start(1, Explore, this))
-		throw std::runtime_error("Discover work queue start failed");
-
 	Search();
 }
 

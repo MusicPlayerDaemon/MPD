@@ -53,11 +53,14 @@ class UpnpNeighborExplorer final
 		}
 	};
 
+	EventLoop &event_loop;
+
 	UPnPDeviceDirectory *discovery;
 
 public:
-	UpnpNeighborExplorer(NeighborListener &_listener)
-		:NeighborExplorer(_listener) {}
+	UpnpNeighborExplorer(EventLoop &_event_loop,
+			     NeighborListener &_listener)
+		:NeighborExplorer(_listener), event_loop(_event_loop) {}
 
 	/* virtual methods from class NeighborExplorer */
 	void Open() override;
@@ -76,7 +79,7 @@ UpnpNeighborExplorer::Open()
 	UpnpClient_Handle handle;
 	UpnpClientGlobalInit(handle);
 
-	discovery = new UPnPDeviceDirectory(handle, this);
+	discovery = new UPnPDeviceDirectory(event_loop, handle, this);
 
 	try {
 		discovery->Start();
@@ -126,11 +129,11 @@ UpnpNeighborExplorer::LostUPnP(const ContentDirectoryService &service)
 }
 
 static NeighborExplorer *
-upnp_neighbor_create(gcc_unused EventLoop &loop,
+upnp_neighbor_create(EventLoop &event_loop,
 		     NeighborListener &listener,
 		     gcc_unused const ConfigBlock &block)
 {
-	return new UpnpNeighborExplorer(listener);
+	return new UpnpNeighborExplorer(event_loop, listener);
 }
 
 const NeighborPlugin upnp_neighbor_plugin = {

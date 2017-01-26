@@ -799,6 +799,9 @@ dnl ---------------------------------- libupnp ---------------------------------
 MPD_ENABLE_AUTO_PKG_DEPENDS(upnp, UPNP, [libupnp],
 	[UPnP client support], [libupnp not found], [],
 	[enable_database], [Database support is disabled], [
+		MPD_DEPENDS([enable_upnp], [enable_curl],
+			[UPnP client support],
+			[UPnP requires CURL])
 		MPD_DEPENDS([enable_upnp], [enable_expat],
 			[UPnP client support],
 			[UPnP requires expat])

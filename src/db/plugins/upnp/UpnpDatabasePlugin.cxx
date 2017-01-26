@@ -69,11 +69,14 @@ public:
 };
 
 class UpnpDatabase : public Database {
+	EventLoop &event_loop;
 	UpnpClient_Handle handle;
 	UPnPDeviceDirectory *discovery;
 
 public:
-	UpnpDatabase():Database(upnp_db_plugin) {}
+	explicit UpnpDatabase(EventLoop &_event_loop)
+		:Database(upnp_db_plugin),
+		 event_loop(_event_loop) {}
 
 	static Database *Create(EventLoop &main_event_loop,
 				EventLoop &io_event_loop,
@@ -140,11 +143,11 @@ private:
 };
 
 Database *
-UpnpDatabase::Create(EventLoop &, EventLoop &,
+UpnpDatabase::Create(EventLoop &, EventLoop &io_event_loop,
 		     gcc_unused DatabaseListener &listener,
 		     const ConfigBlock &)
 {
-	return new UpnpDatabase();
+	return new UpnpDatabase(io_event_loop);
 }
 
 void
@@ -152,7 +155,7 @@ UpnpDatabase::Open()
 {
 	UpnpClientGlobalInit(handle);
 
-	discovery = new UPnPDeviceDirectory(handle);
+	discovery = new UPnPDeviceDirectory(event_loop, handle);
 	try {
 		discovery->Start();
 	} catch (...) {

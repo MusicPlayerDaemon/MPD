@@ -22,11 +22,15 @@
 
 #include "Callback.hxx"
 #include "Device.hxx"
-#include "WorkQueue.hxx"
+#include "lib/curl/Init.hxx"
+#include "lib/curl/Handler.hxx"
+#include "lib/curl/Request.hxx"
 #include "thread/Mutex.hxx"
 #include "Compiler.h"
 
 #include <upnp/upnp.h>
+
+#include <boost/intrusive/list.hpp>
 
 #include <list>
 #include <vector>
@@ -49,22 +53,6 @@ public:
  * for now, but this could be made more general, by removing the filtering.
  */
 class UPnPDeviceDirectory final : UpnpCallback {
-	/**
-	 * Each appropriate discovery event (executing in a libupnp thread
-	 * context) queues the following task object for processing by the
-	 * discovery thread.
-	 */
-	struct DiscoveredTask {
-		std::string url;
-		std::string device_id;
-		std::chrono::steady_clock::duration expires;
-
-		DiscoveredTask(const Upnp_Discovery *disco)
-			:url(disco->Location),
-			 device_id(disco->DeviceId),
-			 expires(std::chrono::seconds(disco->Expires)) {}
-	};
-
 	/**
 	 * Descriptor for one device having a Content Directory
 	 * service found on the network.
@@ -93,12 +81,47 @@ class UPnPDeviceDirectory final : UpnpCallback {
 		}
 	};
 
+	class Downloader final
+		: public boost::intrusive::list_base_hook<boost::intrusive::link_mode<boost::intrusive::normal_link>>,
+		CurlResponseHandler {
+
+		UPnPDeviceDirectory &parent;
+
+		std::string id;
+		const std::string url;
+		const std::chrono::steady_clock::duration expires;
+
+		CurlRequest request;
+
+		std::string data;
+
+	public:
+		Downloader(UPnPDeviceDirectory &_parent,
+			   const Upnp_Discovery &disco);
+
+		void Start();
+		void Destroy();
+
+	private:
+		/* virtual methods from CurlResponseHandler */
+		void OnHeaders(unsigned status,
+			       std::multimap<std::string, std::string> &&headers) override;
+		void OnData(ConstBuffer<void> data) override;
+		void OnEnd() override;
+		void OnError(std::exception_ptr e) override;
+	};
+
+	CurlInit curl;
+
 	const UpnpClient_Handle handle;
 	UPnPDiscoveryListener *const listener;
 
 	Mutex mutex;
+
+	boost::intrusive::list<Downloader,
+			       boost::intrusive::constant_time_size<false>> downloaders;
+
 	std::list<ContentDirectoryDescriptor> directories;
-	WorkQueue<std::unique_ptr<DiscoveredTask>> queue;
 
 	/**
 	 * The UPnP device search timeout, which should actually be
@@ -113,7 +136,7 @@ class UPnPDeviceDirectory final : UpnpCallback {
 	std::chrono::steady_clock::time_point last_search = std::chrono::steady_clock::time_point();
 
 public:
-	UPnPDeviceDirectory(UpnpClient_Handle _handle,
+	UPnPDeviceDirectory(EventLoop &event_loop, UpnpClient_Handle _handle,
 			    UPnPDiscoveryListener *_listener=nullptr);
 	~UPnPDeviceDirectory();
 
@@ -144,14 +167,6 @@ private:
 
 	void LockAdd(ContentDirectoryDescriptor &&d);
 	void LockRemove(const std::string &id);
-
-	/**
-	 * Worker routine for the discovery queue. Get messages about
-	 * devices appearing and disappearing, and update the
-	 * directory pool accordingly.
-	 */
-	static void *Explore(void *);
-	void Explore();
 
 	int OnAlive(Upnp_Discovery *disco);
 	int OnByeBye(Upnp_Discovery *disco);
