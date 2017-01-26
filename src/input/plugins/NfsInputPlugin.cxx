@@ -44,15 +44,14 @@ static const size_t NFS_RESUME_AT = 384 * 1024;
 class NfsInputStream final : public AsyncInputStream, NfsFileReader {
 	uint64_t next_offset;
 
-	bool reconnect_on_resume, reconnecting;
+	bool reconnect_on_resume = false, reconnecting = false;
 
 public:
 	NfsInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
 		:AsyncInputStream(io_thread_get(), _uri, _mutex, _cond,
 				  NFS_MAX_BUFFERED,
 				  NFS_RESUME_AT),
-		 NfsFileReader(io_thread_get()),
-		 reconnect_on_resume(false), reconnecting(false) {}
+		 NfsFileReader(io_thread_get()) {}
 
 	virtual ~NfsInputStream() {
 		DeferClose();
