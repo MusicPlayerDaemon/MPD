@@ -50,8 +50,7 @@ public:
 	NfsInputStream(const char *_uri, Mutex &_mutex, Cond &_cond)
 		:AsyncInputStream(io_thread_get(), _uri, _mutex, _cond,
 				  NFS_MAX_BUFFERED,
-				  NFS_RESUME_AT),
-		 NfsFileReader(io_thread_get()) {}
+				  NFS_RESUME_AT) {}
 
 	virtual ~NfsInputStream() {
 		DeferClose();

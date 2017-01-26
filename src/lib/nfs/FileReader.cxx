@@ -32,8 +32,8 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-NfsFileReader::NfsFileReader(EventLoop &event_loop)
-	:DeferredMonitor(event_loop), state(State::INITIAL)
+NfsFileReader::NfsFileReader()
+	:DeferredMonitor(nfs_get_event_loop()), state(State::INITIAL)
 {
 }
 

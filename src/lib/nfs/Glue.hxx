@@ -36,7 +36,7 @@ nfs_finish();
  * Return the EventLoop that was passed to nfs_init().
  */
 gcc_const
-Event_Loop &
+EventLoop &
 nfs_get_event_loop();
 
 gcc_pure

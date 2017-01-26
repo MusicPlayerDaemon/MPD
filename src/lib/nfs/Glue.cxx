@@ -48,7 +48,7 @@ nfs_finish()
 	BlockingCall(nfs_glue->GetEventLoop(), [](){ nfs_glue.Destruct(); });
 }
 
-Event_Loop &
+EventLoop &
 nfs_get_event_loop()
 {
 	assert(in_use > 0);
