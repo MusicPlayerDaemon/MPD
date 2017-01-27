@@ -64,7 +64,10 @@ enum class SampleFormat : uint8_t {
 /**
  * Checks whether the sample format is valid.
  */
-static constexpr inline bool
+#if !GCC_OLDER_THAN(5,0)
+constexpr
+#endif
+static inline bool
 audio_valid_sample_format(SampleFormat format)
 {
 	switch (format) {
@@ -83,7 +86,10 @@ audio_valid_sample_format(SampleFormat format)
 	return false;
 }
 
-static constexpr inline unsigned
+#if !GCC_OLDER_THAN(5,0)
+constexpr
+#endif
+static inline unsigned
 sample_format_size(SampleFormat format)
 {
 	switch (format) {
