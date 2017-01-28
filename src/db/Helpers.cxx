@@ -67,15 +67,13 @@ StatsVisitTag(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 	}
 }
 
-static bool
+static void
 StatsVisitSong(DatabaseStats &stats, StringSet &artists, StringSet &albums,
 	       const LightSong &song)
 {
 	++stats.song_count;
 
 	StatsVisitTag(stats, artists, albums, *song.tag);
-
-	return true;
 }
 
 DatabaseStats
