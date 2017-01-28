@@ -27,13 +27,12 @@
 
 #include <functional>
 
-static bool
+static void
 AddSong(const Storage &storage, const char *playlist_path_utf8,
 	const LightSong &song)
 {
 	spl_append_song(playlist_path_utf8,
 			DatabaseDetachSong(storage, song));
-	return true;
 }
 
 void
