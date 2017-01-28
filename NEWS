@@ -1,5 +1,6 @@
 ver 0.20.4 (not yet released)
 * workaround for GCC 4.9 "constexpr" bug
+* fix FreeBSD build failure
 
 ver 0.20.3 (2017/01/25)
 * protocol
