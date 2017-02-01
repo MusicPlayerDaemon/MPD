@@ -396,6 +396,17 @@ NfsConnection::ScheduleSocket()
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
 
+	const int which_events = nfs_which_events(context);
+
+	if (which_events == POLLOUT && SocketMonitor::IsDefined())
+		/* kludge: if libnfs asks only for POLLOUT, it means
+		   that it is currently waiting for the connect() to
+		   finish - rpc_reconnect_requeue() may have been
+		   called from inside nfs_service(); we must now
+		   unregister the old socket and register the new one
+		   instead */
+		SocketMonitor::Steal();
+
 	if (!SocketMonitor::IsDefined()) {
 		int _fd = nfs_get_fd(context);
 		if (_fd < 0)
@@ -405,7 +416,7 @@ NfsConnection::ScheduleSocket()
 		SocketMonitor::Open(_fd);
 	}
 
-	SocketMonitor::Schedule(libnfs_to_events(nfs_which_events(context)));
+	SocketMonitor::Schedule(libnfs_to_events(which_events));
 }
 
 inline int
