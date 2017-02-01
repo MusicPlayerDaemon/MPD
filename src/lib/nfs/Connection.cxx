@@ -396,6 +396,17 @@ NfsConnection::ScheduleSocket()
 	assert(GetEventLoop().IsInside());
 	assert(context != nullptr);
 
+	const int which_events = nfs_which_events(context);
+
+	if (which_events == POLLOUT && SocketMonitor::IsDefined())
+		/* kludge: if libnfs asks only for POLLOUT, it means
+		   that it is currently waiting for the connect() to
+		   finish - rpc_reconnect_requeue() may have been
+		   called from inside nfs_service(); we must now
+		   unregister the old socket and register the new one
+		   instead */
+		SocketMonitor::Steal();
+
 	if (!SocketMonitor::IsDefined()) {
 		int _fd = nfs_get_fd(context);
 		if (_fd < 0)
@@ -405,7 +416,8 @@ NfsConnection::ScheduleSocket()
 		SocketMonitor::Open(_fd);
 	}
 
-	SocketMonitor::Schedule(libnfs_to_events(nfs_which_events(context)));
+	SocketMonitor::Schedule(libnfs_to_events(which_events)
+				| SocketMonitor::HANGUP);
 }
 
 inline int
@@ -442,10 +454,14 @@ NfsConnection::OnSocketReady(unsigned flags)
 	bool closed = false;
 
 	const bool was_mounted = mount_finished;
-	if (!mount_finished)
+	if (!mount_finished || (flags & SocketMonitor::HANGUP) != 0)
 		/* until the mount is finished, the NFS client may use
 		   various sockets, therefore we unregister and
 		   re-register it each time */
+		/* also re-register the socket if we got a HANGUP,
+		   which is a sure sign that libnfs will close the
+		   socket, which can lead to a race condition if
+		   epoll_ctl() is called later */
 		SocketMonitor::Steal();
 
 	const int result = Service(flags);

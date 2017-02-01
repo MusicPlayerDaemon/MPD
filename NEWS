@@ -1,5 +1,13 @@
 ver 0.21 (not yet released)
 
+ver 0.20.4 (2017/02/01)
+* input
+  - nfs: fix freeze after reconnect
+* output
+  - sndio: work around a libroar C++ incompatibility
+* workaround for GCC 4.9 "constexpr" bug
+* fix FreeBSD build failure
+
 ver 0.20.3 (2017/01/25)
 * protocol
   - "playlistadd" creates new playlist if it does not exist, as documented

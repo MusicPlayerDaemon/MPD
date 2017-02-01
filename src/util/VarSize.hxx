@@ -36,6 +36,7 @@
 #include <type_traits>
 #include <utility>
 #include <new>
+#include <cstdlib>
 
 /**
  * Allocate and construct a variable-size object.  That is useful for
