@@ -1,4 +1,4 @@
-ver 0.20.4 (not yet released)
+ver 0.20.4 (2017/02/01)
 * input
   - nfs: fix freeze after reconnect
 * output
