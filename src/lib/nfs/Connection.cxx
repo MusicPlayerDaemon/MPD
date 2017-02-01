@@ -416,7 +416,8 @@ NfsConnection::ScheduleSocket()
 		SocketMonitor::Open(_fd);
 	}
 
-	SocketMonitor::Schedule(libnfs_to_events(which_events));
+	SocketMonitor::Schedule(libnfs_to_events(which_events)
+				| SocketMonitor::HANGUP);
 }
 
 inline int
@@ -453,10 +454,14 @@ NfsConnection::OnSocketReady(unsigned flags)
 	bool closed = false;
 
 	const bool was_mounted = mount_finished;
-	if (!mount_finished)
+	if (!mount_finished || (flags & SocketMonitor::HANGUP) != 0)
 		/* until the mount is finished, the NFS client may use
 		   various sockets, therefore we unregister and
 		   re-register it each time */
+		/* also re-register the socket if we got a HANGUP,
+		   which is a sure sign that libnfs will close the
+		   socket, which can lead to a race condition if
+		   epoll_ctl() is called later */
 		SocketMonitor::Steal();
 
 	const int result = Service(flags);
