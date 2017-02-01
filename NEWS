@@ -1,4 +1,6 @@
 ver 0.20.4 (not yet released)
+* output
+  - sndio: work around a libroar C++ incompatibility
 * workaround for GCC 4.9 "constexpr" bug
 * fix FreeBSD build failure
 

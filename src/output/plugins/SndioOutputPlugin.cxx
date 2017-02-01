@@ -24,7 +24,15 @@
 #include "util/Domain.hxx"
 #include "Log.hxx"
 
+/* work around a C++ incompatibility if the sndio API is emulated by
+   libroar: libroar's "struct roar_service_stream" has a member named
+   "new", which is an illegal identifier in C++ */
+#define new new_
+
 #include <sndio.h>
+
+/* undo the libroar workaround */
+#undef new
 
 #include <stdexcept>
 
