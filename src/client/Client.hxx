@@ -55,11 +55,11 @@ public:
 	unsigned permission;
 
 	/** the uid of the client process, or -1 if unknown */
-	int uid;
+	const int uid;
 
 	CommandListBuilder cmd_list;
 
-	unsigned int num;	/* client number */
+	const unsigned int num;	/* client number */
 
 	/** is this client waiting for an "idle" response? */
 	bool idle_waiting;
