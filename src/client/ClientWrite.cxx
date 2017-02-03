@@ -23,6 +23,7 @@
 #include "util/AllocatedString.hxx"
 
 #include <string.h>
+#include <stdarg.h>
 
 bool
 Client::Write(const void *data, size_t length)
@@ -37,7 +38,7 @@ Client::Write(const char *data)
 	return Write(data, strlen(data));
 }
 
-void
+static void
 client_vprintf(Client &client, const char *fmt, va_list args)
 {
 	client.Write(FormatStringV(fmt, args).c_str());

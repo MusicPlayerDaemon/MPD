@@ -35,7 +35,6 @@
 #include <list>
 
 #include <stddef.h>
-#include <stdarg.h>
 
 class SocketAddress;
 class EventLoop;
@@ -213,11 +212,6 @@ client_manager_init();
 void
 client_new(EventLoop &loop, Partition &partition,
 	   int fd, SocketAddress address, int uid);
-
-/**
- * Write a printf-like formatted string to the client.
- */
-void client_vprintf(Client &client, const char *fmt, va_list args);
 
 /**
  * Write a printf-like formatted string to the client.
