@@ -38,12 +38,6 @@ Client::Write(const char *data)
 }
 
 void
-client_puts(Client &client, const char *s)
-{
-	client.Write(s);
-}
-
-void
 client_vprintf(Client &client, const char *fmt, va_list args)
 {
 	client.Write(FormatStringV(fmt, args).c_str());

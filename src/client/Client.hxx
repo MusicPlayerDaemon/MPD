@@ -215,11 +215,6 @@ client_new(EventLoop &loop, Partition &partition,
 	   int fd, SocketAddress address, int uid);
 
 /**
- * Write a C string to the client.
- */
-void client_puts(Client &client, const char *s);
-
-/**
  * Write a printf-like formatted string to the client.
  */
 void client_vprintf(Client &client, const char *fmt, va_list args);
