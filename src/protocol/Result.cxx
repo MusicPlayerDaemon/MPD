@@ -24,5 +24,5 @@
 void
 command_success(Client &client)
 {
-	client_puts(client, "OK\n");
+	client.Write("OK\n");
 }

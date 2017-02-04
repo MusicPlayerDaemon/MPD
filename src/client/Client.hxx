@@ -35,7 +35,6 @@
 #include <list>
 
 #include <stddef.h>
-#include <stdarg.h>
 
 class SocketAddress;
 class EventLoop;
@@ -55,11 +54,11 @@ public:
 	unsigned permission;
 
 	/** the uid of the client process, or -1 if unknown */
-	int uid;
+	const int uid;
 
 	CommandListBuilder cmd_list;
 
-	unsigned int num;	/* client number */
+	const unsigned int num;	/* client number */
 
 	/** is this client waiting for an "idle" response? */
 	bool idle_waiting;
@@ -213,16 +212,6 @@ client_manager_init();
 void
 client_new(EventLoop &loop, Partition &partition,
 	   int fd, SocketAddress address, int uid);
-
-/**
- * Write a C string to the client.
- */
-void client_puts(Client &client, const char *s);
-
-/**
- * Write a printf-like formatted string to the client.
- */
-void client_vprintf(Client &client, const char *fmt, va_list args);
 
 /**
  * Write a printf-like formatted string to the client.

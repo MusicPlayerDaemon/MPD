@@ -44,7 +44,7 @@ client_process_command_list(Client &client, bool list_ok,
 		if (ret != CommandResult::OK || client.IsExpired())
 			break;
 		else if (list_ok)
-			client_puts(client, "list_OK\n");
+			client.Write("list_OK\n");
 	}
 
 	return ret;
